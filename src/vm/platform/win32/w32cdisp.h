@@ -7,13 +7,16 @@
 extern "C" {
 #endif
 
+#include "type.h"
+
 #include <windows.h>
+
 #include <stdint.h>
 
 typedef struct vm_platform_presentation_mailbox vm_platform_presentation_mailbox;
 typedef struct w32cdisp_context w32cdisp_context;
 
-w32cdisp_context *w32cdisp_context_create(void);
+w32cdisp_context *w32cdisp_context_create(C_VOID);
 VOID w32cdisp_context_destroy(w32cdisp_context *context);
 uint64_t w32cdisp_context_generation(const w32cdisp_context *context);
 

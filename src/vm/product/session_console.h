@@ -28,14 +28,14 @@ typedef struct vm_product_console {
 } vm_product_console;
 
 typedef ntvdm64_status (*vm_product_console_operation)(
-    void *context, vm_product_console_command command);
+    C_VOID *context, vm_product_console_command command);
 
-void vm_product_console_initialize(vm_product_console *console);
-vm_product_console_command vm_product_console_parse(const char *line);
+C_VOID vm_product_console_initialize(vm_product_console *console);
+vm_product_console_command vm_product_console_parse(const C_CHAR *line);
 ntvdm64_status vm_product_console_dispatch(
     vm_product_console *console,
     vm_product_console_command command,
     vm_product_console_operation operation,
-    void *context);
+    C_VOID *context);
 
 #endif

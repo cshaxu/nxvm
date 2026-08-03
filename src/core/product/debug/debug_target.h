@@ -1,7 +1,10 @@
 #ifndef NTVDM64_CORE_PRODUCT_DEBUG_TARGET_H
 #define NTVDM64_CORE_PRODUCT_DEBUG_TARGET_H
 
+#include "type.h"
+
 #include <stddef.h>
+
 #include <stdint.h>
 
 typedef enum core_product_debug_register {
@@ -29,46 +32,46 @@ typedef enum core_product_debug_pause_reason {
 } core_product_debug_pause_reason;
 
 typedef struct core_product_debug_target {
-    int (*is_running)(void *context);
-    void (*resume)(void *context);
-    int (*is_paused)(void *context);
-    core_product_debug_pause_reason (*get_pause_reason)(void *context);
-    int (*request_pause)(void *context, core_product_debug_pause_reason reason);
-    void (*continue_execution)(void *context);
-    int (*step)(void *context);
-    int (*read_register)(void *context, core_product_debug_register reg,
+    C_INT (*is_running)(C_VOID *context);
+    C_VOID (*resume)(C_VOID *context);
+    C_INT (*is_paused)(C_VOID *context);
+    core_product_debug_pause_reason (*get_pause_reason)(C_VOID *context);
+    C_INT (*request_pause)(C_VOID *context, core_product_debug_pause_reason reason);
+    C_VOID (*continue_execution)(C_VOID *context);
+    C_INT (*step)(C_VOID *context);
+    C_INT (*read_register)(C_VOID *context, core_product_debug_register reg,
                          uint32_t *value);
-    int (*write_register)(void *context, core_product_debug_register reg,
+    C_INT (*write_register)(C_VOID *context, core_product_debug_register reg,
                           uint32_t value);
-    int (*get_code_default_size)(void *context);
-    uint32_t (*get_code_base)(void *context);
-    int (*read_linear)(void *context, uint32_t address, void *out, uint8_t size);
-    int (*write_linear)(void *context, uint32_t address, const void *in, uint8_t size);
-    int (*read_real)(void *context, uint16_t segment, uint16_t offset,
-                     void *out, size_t size);
-    int (*write_real)(void *context, uint16_t segment, uint16_t offset,
-                      const void *in, size_t size);
-    uint32_t (*read_port)(void *context, uint16_t port);
-    void (*write_port)(void *context, uint16_t port, uint32_t value);
-    void (*set_break_real)(void *context, uint16_t segment, uint16_t offset);
-    void (*set_break_linear)(void *context, uint32_t address);
-    void (*clear_break)(void *context, int linear);
-    void (*set_trace)(void *context, size_t count);
-    void (*clear_trace)(void *context);
-    size_t (*get_break_count)(void *context);
-    void (*set_watch)(void *context, core_product_debug_watch_kind kind,
+    C_INT (*get_code_default_size)(C_VOID *context);
+    uint32_t (*get_code_base)(C_VOID *context);
+    C_INT (*read_linear)(C_VOID *context, uint32_t address, C_VOID *out, uint8_t size);
+    C_INT (*write_linear)(C_VOID *context, uint32_t address, const C_VOID *in, uint8_t size);
+    C_INT (*read_real)(C_VOID *context, uint16_t segment, uint16_t offset,
+                     C_VOID *out, size_t size);
+    C_INT (*write_real)(C_VOID *context, uint16_t segment, uint16_t offset,
+                      const C_VOID *in, size_t size);
+    uint32_t (*read_port)(C_VOID *context, uint16_t port);
+    C_VOID (*write_port)(C_VOID *context, uint16_t port, uint32_t value);
+    C_VOID (*set_break_real)(C_VOID *context, uint16_t segment, uint16_t offset);
+    C_VOID (*set_break_linear)(C_VOID *context, uint32_t address);
+    C_VOID (*clear_break)(C_VOID *context, C_INT linear);
+    C_VOID (*set_trace)(C_VOID *context, size_t count);
+    C_VOID (*clear_trace)(C_VOID *context);
+    size_t (*get_break_count)(C_VOID *context);
+    C_VOID (*set_watch)(C_VOID *context, core_product_debug_watch_kind kind,
                       uint32_t address);
-    void (*clear_watch)(void *context, core_product_debug_watch_kind kind);
-    void (*print_registers)(void *context);
-    void (*print_segment_registers)(void *context);
-    void (*print_control_registers)(void *context);
-    void (*print_memory)(void *context);
-    void (*print_watchpoints)(void *context);
-    void *context;
+    C_VOID (*clear_watch)(C_VOID *context, core_product_debug_watch_kind kind);
+    C_VOID (*print_registers)(C_VOID *context);
+    C_VOID (*print_segment_registers)(C_VOID *context);
+    C_VOID (*print_control_registers)(C_VOID *context);
+    C_VOID (*print_memory)(C_VOID *context);
+    C_VOID (*print_watchpoints)(C_VOID *context);
+    C_VOID *context;
 } core_product_debug_target;
 
-void core_product_debug_scope_enter(const core_product_debug_target *target);
-void core_product_debug_scope_leave(void);
-const core_product_debug_target *core_product_debug_scope_target(void);
+C_VOID core_product_debug_scope_enter(const core_product_debug_target *target);
+C_VOID core_product_debug_scope_leave(C_VOID);
+const core_product_debug_target *core_product_debug_scope_target(C_VOID);
 
 #endif

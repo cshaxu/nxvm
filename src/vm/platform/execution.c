@@ -1,17 +1,20 @@
+#include "type.h"
+
 #include "vm/platform/execution.h"
+
 
 #include <stddef.h>
 
-void vm_platform_execution_transport_initialize(
+C_VOID vm_platform_execution_transport_initialize(
     vm_platform_execution_transport *transport,
-    const vm_platform_execution_sink *sink, void *context)
+    const vm_platform_execution_sink *sink, C_VOID *context)
 {
     if (transport == NULL) return;
     transport->sink = sink;
     transport->context = context;
 }
 
-int vm_platform_execution_is_running_for(
+C_INT vm_platform_execution_is_running_for(
     const vm_platform_execution_transport *transport)
 {
     return transport == NULL || transport->sink == NULL ||
@@ -19,7 +22,7 @@ int vm_platform_execution_is_running_for(
         transport->sink->is_running(transport->context);
 }
 
-int vm_platform_execution_get_flip_for(
+C_INT vm_platform_execution_get_flip_for(
     const vm_platform_execution_transport *transport)
 {
     return transport == NULL || transport->sink == NULL ||
@@ -27,7 +30,7 @@ int vm_platform_execution_get_flip_for(
         transport->sink->get_flip(transport->context);
 }
 
-void vm_platform_execution_start_for(
+C_VOID vm_platform_execution_start_for(
     const vm_platform_execution_transport *transport)
 {
     if (transport != NULL && transport->sink != NULL &&
@@ -36,7 +39,7 @@ void vm_platform_execution_start_for(
     }
 }
 
-void vm_platform_execution_stop_for(
+C_VOID vm_platform_execution_stop_for(
     const vm_platform_execution_transport *transport)
 {
     if (transport != NULL && transport->sink != NULL &&

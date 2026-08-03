@@ -1,8 +1,11 @@
+#include "type.h"
+
 #include <stdio.h>
+
 
 #include "core/machine/machine_interface.h"
 
-int main(void)
+C_INT main(C_VOID)
 {
     core_machine *machine = NULL;
     core_machine_config config = {

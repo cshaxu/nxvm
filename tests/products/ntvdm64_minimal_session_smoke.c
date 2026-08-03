@@ -1,9 +1,13 @@
+#include "type.h"
+
 #include <stdio.h>
+
 #include <string.h>
+
 
 #include "vdm/composition_minimal_session.h"
 
-int main(void)
+C_INT main(C_VOID)
 {
     vdm_composition_minimal_session *first = NULL;
     vdm_composition_minimal_session *second = NULL;

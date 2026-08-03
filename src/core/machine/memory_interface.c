@@ -1,9 +1,13 @@
+#include "type.h"
+
 #include "core/machine/machine.h"
 
+
 #include <stdlib.h>
+
 #include <string.h>
 
-static int core_machine_memory_translate(
+static C_INT core_machine_memory_translate(
     const core_machine_memory *memory,
     uint32_t physical,
     size_t size,
@@ -51,7 +55,7 @@ ntvdm64_status core_machine_instance_memory_initialize(core_machine *machine)
     return NTVDM64_STATUS_OK;
 }
 
-void core_machine_instance_memory_finalize(core_machine *machine)
+C_VOID core_machine_instance_memory_finalize(core_machine *machine)
 {
     if (machine != NULL) {
         STD_FREE(machine->memory.bytes);
@@ -75,7 +79,7 @@ ntvdm64_status core_machine_instance_memory_reset(core_machine *machine)
 ntvdm64_status core_machine_memory_read(
     const core_machine *machine,
     uint32_t physical,
-    void *out_data,
+    C_VOID *out_data,
     size_t size)
 {
     size_t offset;
@@ -95,7 +99,7 @@ ntvdm64_status core_machine_memory_read(
 ntvdm64_status core_machine_memory_write(
     core_machine *machine,
     uint32_t physical,
-    const void *data,
+    const C_VOID *data,
     size_t size)
 {
     size_t offset;
@@ -114,7 +118,7 @@ ntvdm64_status core_machine_memory_write(
 
 ntvdm64_status core_machine_set_a20(
     core_machine *machine,
-    int enabled)
+    C_INT enabled)
 {
     if (machine == NULL) {
         return NTVDM64_STATUS_INVALID_ARGUMENT;

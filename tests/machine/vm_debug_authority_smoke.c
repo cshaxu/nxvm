@@ -1,11 +1,17 @@
+#include "type.h"
+
 #include <stdio.h>
+
 #include <stdlib.h>
 
+
 #include "vm/composition_live_machine.h"
+
 #include "vm/composition_machine.h"
+
 #include "vm/machine/debug.h"
 
-int main(void)
+C_INT main(C_VOID)
 {
     vm_composition_live_machine *session;
     const vm_composition_live_machine *machine;

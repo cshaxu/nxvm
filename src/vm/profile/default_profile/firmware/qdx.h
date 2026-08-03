@@ -11,18 +11,18 @@ extern "C" {
 #include "core/machine/cpu_instructions.h"
 
 typedef struct vm_profile_default_context vm_profile_default_context;
-typedef void (*vm_profile_default_qdx_handler)(
+typedef C_VOID (*vm_profile_default_qdx_handler)(
     vm_profile_default_context *profile);
 
 typedef struct t_qdx {
     vm_profile_default_qdx_handler table[0x100];
 } t_qdx;
 
-void vm_profile_default_qdx_initialize(vm_profile_default_context *profile,
+C_VOID vm_profile_default_qdx_initialize(vm_profile_default_context *profile,
     core_machine_cpu_execution_context *execution);
-void vm_profile_default_qdx_reset(vm_profile_default_context *profile);
-void vm_profile_default_qdx_refresh(vm_profile_default_context *profile);
-void vm_profile_default_qdx_finalize(vm_profile_default_context *profile);
+C_VOID vm_profile_default_qdx_reset(vm_profile_default_context *profile);
+C_VOID vm_profile_default_qdx_refresh(vm_profile_default_context *profile);
+C_VOID vm_profile_default_qdx_finalize(vm_profile_default_context *profile);
 
 #ifdef __cplusplus
 }/*_EOCD_*/

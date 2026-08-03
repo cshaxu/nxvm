@@ -14,25 +14,25 @@ typedef enum core_machine_firmware_service_kind {
 } core_machine_firmware_service_kind;
 
 typedef struct core_machine_firmware_service_descriptor {
-    const char *id;
+    const C_CHAR *id;
     core_machine_firmware_service_kind kind;
-    unsigned order;
-    unsigned vector;
+    C_UINT order;
+    C_UINT vector;
 } core_machine_firmware_service_descriptor;
 
 typedef struct core_machine_firmware {
     const core_machine_firmware_service_descriptor *services[CORE_MACHINE_FIRMWARE_SERVICE_CAPACITY];
     size_t count;
-    int frozen;
+    C_INT frozen;
 } core_machine_firmware;
 
-void core_machine_firmware_initialize(core_machine_firmware *firmware);
+C_VOID core_machine_firmware_initialize(core_machine_firmware *firmware);
 ntvdm64_status core_machine_firmware_register_service(
     core_machine_firmware *firmware, const core_machine_firmware_service_descriptor *service);
 ntvdm64_status core_machine_firmware_freeze(core_machine_firmware *firmware);
 const core_machine_firmware_service_descriptor *core_machine_firmware_service_at(
     const core_machine_firmware *firmware, size_t index);
 const core_machine_firmware_service_descriptor *core_machine_firmware_find_interrupt(
-    const core_machine_firmware *firmware, unsigned vector);
+    const core_machine_firmware *firmware, C_UINT vector);
 
 #endif

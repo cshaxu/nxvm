@@ -1,18 +1,24 @@
+#include "type.h"
+
 #include <windows.h>
 
+
 #include <stdio.h>
+
 #include <stdlib.h>
 
+
 #include "vm/composition_control.h"
+
 #include "vm/machine/fdd.h"
 
-static DWORD WINAPI run_full_pc(void *opaque)
+static DWORD WINAPI run_full_pc(C_VOID *opaque)
 {
     vm_composition_control_start((vm_composition_control_state *)opaque);
     return 0u;
 }
 
-int main(int argc, char **argv)
+C_INT main(C_INT argc, C_CHAR **argv)
 {
     HANDLE thread;
     DWORD result;

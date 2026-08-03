@@ -1,7 +1,10 @@
 #ifndef NXVM_COMPOSITION_CPU_PROBE_H
 #define NXVM_COMPOSITION_CPU_PROBE_H
 
+#include "type.h"
+
 #include <stddef.h>
+
 #include <stdint.h>
 
 #ifdef __cplusplus
@@ -32,13 +35,13 @@ typedef struct vm_composition_cpu_probe_capture {
 
 typedef struct nxvm_cpu_probe nxvm_cpu_probe;
 
-int vm_composition_cpu_probe_create(nxvm_cpu_probe **out_probe);
-int vm_composition_cpu_probe_step(
+C_INT vm_composition_cpu_probe_create(nxvm_cpu_probe **out_probe);
+C_INT vm_composition_cpu_probe_step(
     nxvm_cpu_probe *probe,
     const uint8_t *bytes,
     size_t byte_count,
     vm_composition_cpu_probe_capture *out_capture);
-void vm_composition_cpu_probe_destroy(nxvm_cpu_probe *probe);
+C_VOID vm_composition_cpu_probe_destroy(nxvm_cpu_probe *probe);
 
 #ifdef __cplusplus
 }

@@ -14,14 +14,14 @@ typedef struct core_machine_block_geometry {
 
 typedef struct core_machine_block_provider_slot core_machine_block_provider_slot;
 
-void core_machine_block_get_geometry_from(
+C_VOID core_machine_block_get_geometry_from(
     const core_machine_block_provider_slot *slot,
     core_machine_block_geometry *out_geometry);
-int core_machine_block_read_from(const core_machine_block_provider_slot *slot,
-    ntvdm64_type_unsigned_8 cylinder, ntvdm64_type_unsigned_8 head, ntvdm64_type_unsigned_8 sector, void *buffer,
+C_INT core_machine_block_read_from(const core_machine_block_provider_slot *slot,
+    ntvdm64_type_unsigned_8 cylinder, ntvdm64_type_unsigned_8 head, ntvdm64_type_unsigned_8 sector, C_VOID *buffer,
     ntvdm64_type_native_unsigned byte_count);
-int core_machine_block_write_from(const core_machine_block_provider_slot *slot,
-    ntvdm64_type_unsigned_8 cylinder, ntvdm64_type_unsigned_8 head, ntvdm64_type_unsigned_8 sector, void *buffer,
+C_INT core_machine_block_write_from(const core_machine_block_provider_slot *slot,
+    ntvdm64_type_unsigned_8 cylinder, ntvdm64_type_unsigned_8 head, ntvdm64_type_unsigned_8 sector, C_VOID *buffer,
     ntvdm64_type_native_unsigned byte_count);
 
 #endif

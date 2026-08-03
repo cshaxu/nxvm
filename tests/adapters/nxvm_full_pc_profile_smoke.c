@@ -1,10 +1,15 @@
+#include "type.h"
+
 #include <stdio.h>
+
 #include <string.h>
 
+
 #include "vm/composition_full_pc.h"
+
 #include "vm/profile/full_pc_profile.h"
 
-static int verify_profile(void)
+static C_INT verify_profile(C_VOID)
 {
     const core_product_runtime_profile_descriptor *profile =
         vm_profile_full_pc_profile_descriptor();
@@ -21,7 +26,7 @@ static int verify_profile(void)
                                 NXVM_RUNTIME_DEVICE_VADP)) == 0u;
 }
 
-static int verify_image(const char *fdd, const char *hdd, int boot_hdd)
+static C_INT verify_image(const C_CHAR *fdd, const C_CHAR *hdd, C_INT boot_hdd)
 {
     vm_composition_full_pc_config config = { fdd, hdd, 0, 0u, boot_hdd };
     vm_composition_reset_vector vector;
@@ -39,7 +44,7 @@ static int verify_image(const char *fdd, const char *hdd, int boot_hdd)
     return 0;
 }
 
-int main(int argc, char **argv)
+C_INT main(C_INT argc, C_CHAR **argv)
 {
     if (argc != 3 || verify_profile() != 0 ||
         verify_image(argv[1], NULL, 0) != 0 ||

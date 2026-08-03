@@ -1,12 +1,19 @@
+#include "type.h"
+
 #include <stdio.h>
+
 #include <stdlib.h>
 
+
 #include "core/machine/cpu.h"
+
 #include "core/machine/cpu_instructions.h"
+
 #include "core/machine/memory.h"
+
 #include "core/machine/port.h"
 
-int main(void)
+C_INT main(C_VOID)
 {
     t_cpu *first_cpu = STD_CALLOC(1u, sizeof(*first_cpu));
     t_cpu *second_cpu = STD_CALLOC(1u, sizeof(*second_cpu));
@@ -18,7 +25,7 @@ int main(void)
     t_port *second_port = STD_CALLOC(1u, sizeof(*second_port));
     core_machine_cpu_execution_context first = {0};
     core_machine_cpu_execution_context second = {0};
-    int failed = 0;
+    C_INT failed = 0;
 
     if (first_cpu == NULL || second_cpu == NULL || first_instructions == NULL ||
         second_instructions == NULL || first_memory == NULL ||

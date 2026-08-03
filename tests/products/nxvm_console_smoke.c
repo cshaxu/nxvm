@@ -1,13 +1,16 @@
+#include "type.h"
+
 #include <stdio.h>
+
 
 #include "vm/product/session_console.h"
 
 typedef struct console_fixture {
-    unsigned count;
+    C_UINT count;
     vm_product_console_command last;
 } console_fixture;
 
-static ntvdm64_status record(void *context,
+static ntvdm64_status record(C_VOID *context,
                                vm_product_console_command command)
 {
     console_fixture *fixture = (console_fixture *)context;
@@ -16,7 +19,7 @@ static ntvdm64_status record(void *context,
     return NTVDM64_STATUS_OK;
 }
 
-int main(void)
+C_INT main(C_VOID)
 {
     vm_product_console console;
     console_fixture fixture = { 0u, VM_PRODUCT_CONSOLE_INVALID };

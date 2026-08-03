@@ -1,6 +1,8 @@
 #ifndef NTVDM64_CORE_PLATFORM_DISPLAY_FRAME_H
 #define NTVDM64_CORE_PLATFORM_DISPLAY_FRAME_H
 
+#include "type.h"
+
 #include <stdint.h>
 
 #define CORE_PLATFORM_DISPLAY_MAX_COLUMNS 80u
@@ -17,9 +19,9 @@ typedef struct core_platform_display_frame {
     uint8_t cursor_bottom;
     uint8_t cursor_x;
     uint8_t cursor_y;
-    int cursor_visible;
-    int buffer_changed;
-    int cursor_changed;
+    C_INT cursor_visible;
+    C_INT buffer_changed;
+    C_INT cursor_changed;
     uint64_t generation;
 } core_platform_display_frame;
 

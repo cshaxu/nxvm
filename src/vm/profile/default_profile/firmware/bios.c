@@ -2,11 +2,17 @@
 
 /* VBIOS loads bios data, interrupt routines and post routines for all devices. */
 
+#include "type.h"
+
 #include "core/product/utils.h"
 
+
 #include "core/machine/memory.h"
+
 #include "core/machine/block_interface.h"
+
 #include "core/machine/block_provider.h"
+
 
 #include "bios.h"
 
@@ -36,14 +42,14 @@ static ntvdm64_type_unsigned_32 assemble(t_ram *ram, const ntvdm64_type_string_p
     if (!len) {
         STD_PRINTF("vbios: invalid x86 assembly instruction.\n");
     }
-    STD_MEMCPY(core_machine_memory_real_address(ram, seg, off), (void *) code, len);
+    STD_MEMCPY(core_machine_memory_real_address(ram, seg, off), (C_VOID *) code, len);
     if (code) {
-        STD_FREE((void *) code);
+        STD_FREE((C_VOID *) code);
     }
     return len;
 }
 
-static void bios_load_data(t_bios *bios, t_ram *ram,
+static C_VOID bios_load_data(t_bios *bios, t_ram *ram,
     const core_machine_block_provider_slot *block_provider) {
     core_machine_block_geometry geometry;
     core_machine_block_get_geometry_from(block_provider, &geometry);
@@ -92,7 +98,7 @@ static void bios_load_data(t_bios *bios, t_ram *ram,
     BIOS_BYTE(ram, NTVDM64_TYPE_ZERO_16, VBIOS_ADDR_POST_WORK_AREA) =
         bios->flagBoot ? 0x80 : NTVDM64_TYPE_ZERO_8;
 }
-static void bios_load_rom_info(t_ram *ram) {
+static C_VOID bios_load_rom_info(t_ram *ram) {
     BIOS_WORD(ram, VBIOS_ADDR_START_SEG, VBIOS_ADDR_ROM_INFO + 0) = 0x0008;
     BIOS_BYTE(ram, VBIOS_ADDR_START_SEG, VBIOS_ADDR_ROM_INFO + 2) = 0xfc;
     BIOS_BYTE(ram, VBIOS_ADDR_START_SEG, VBIOS_ADDR_ROM_INFO + 3) = NTVDM64_TYPE_ZERO_8;
@@ -103,7 +109,7 @@ static void bios_load_rom_info(t_ram *ram) {
     BIOS_BYTE(ram, VBIOS_ADDR_START_SEG, VBIOS_ADDR_ROM_INFO + 8) = NTVDM64_TYPE_ZERO_8;
     BIOS_BYTE(ram, VBIOS_ADDR_START_SEG, VBIOS_ADDR_ROM_INFO + 9) = NTVDM64_TYPE_ZERO_8;
 }
-static void bios_load_interrupts(t_bios *bios, t_ram *ram) {
+static C_VOID bios_load_interrupts(t_bios *bios, t_ram *ram) {
     ntvdm64_type_native_unsigned i;
     bios->data.buildIP += (ntvdm64_type_unsigned_16)assemble(ram, "iret",
         VBIOS_ADDR_START_SEG, VBIOS_ADDR_START_OFF);
@@ -120,7 +126,7 @@ static void bios_load_interrupts(t_bios *bios, t_ram *ram) {
         }
     }
 }
-static void bios_load_post(t_bios *bios, t_ram *ram) {
+static C_VOID bios_load_post(t_bios *bios, t_ram *ram) {
     ntvdm64_type_native_unsigned i;
     ntvdm64_type_string_buffer stmt;
     STD_SPRINTF(stmt, "jmp %04x:%04x", bios->data.buildCS, bios->data.buildIP);
@@ -132,7 +138,7 @@ static void bios_load_post(t_bios *bios, t_ram *ram) {
     bios->data.buildIP += (ntvdm64_type_unsigned_16)assemble(ram, VBIOS_POST_BOOT,
         bios->data.buildCS, bios->data.buildIP);
 }
-static void bios_load_additional(t_ram *ram,
+static C_VOID bios_load_additional(t_ram *ram,
     const core_machine_block_provider_slot *block_provider) {
     core_machine_block_geometry geometry;
     core_machine_block_get_geometry_from(block_provider, &geometry);
@@ -153,18 +159,18 @@ static void bios_load_additional(t_ram *ram,
     BIOS_BYTE(ram, VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 15) = NTVDM64_TYPE_ZERO_8;
 }
 
-void vm_profile_default_bios_add_post(t_bios *bios, ntvdm64_type_string_pointer stmt) {
+C_VOID vm_profile_default_bios_add_post(t_bios *bios, ntvdm64_type_string_pointer stmt) {
     if (bios == NULL) return;
     bios->connect.postTable[bios->connect.postCount++] = stmt;
 }
-void vm_profile_default_bios_add_interrupt(t_bios *bios, ntvdm64_type_string_pointer stmt,
+C_VOID vm_profile_default_bios_add_interrupt(t_bios *bios, ntvdm64_type_string_pointer stmt,
     ntvdm64_type_unsigned_8 intid) {
     if (bios == NULL) return;
     bios->connect.intTable[intid] = stmt;
 }
-void vm_profile_default_bios_initialize(t_bios *bios) {
+C_VOID vm_profile_default_bios_initialize(t_bios *bios) {
     if (bios == NULL) return;
-    STD_MEMSET((void *)bios, NTVDM64_TYPE_ZERO_8, sizeof(*bios));
+    STD_MEMSET((C_VOID *)bios, NTVDM64_TYPE_ZERO_8, sizeof(*bios));
     bios->flagBoot = NTVDM64_TYPE_FALSE;
     bios->data.buildCS = bios->data.buildIP = NTVDM64_TYPE_ZERO_16;
     vm_profile_default_bios_add_interrupt(bios, VBIOS_INT_SOFT_MISC_11, 0x11);
@@ -173,10 +179,10 @@ void vm_profile_default_bios_initialize(t_bios *bios) {
 }
 
 /* Loads bios to ram */
-void vm_profile_default_bios_reset(t_bios *bios, t_ram *ram,
+C_VOID vm_profile_default_bios_reset(t_bios *bios, t_ram *ram,
     const core_machine_block_provider_slot *block_provider) {
     if (bios == NULL || ram == NULL) return;
-    STD_MEMSET((void *)(&bios->data), NTVDM64_TYPE_ZERO_8, sizeof(t_bios_data));
+    STD_MEMSET((C_VOID *)(&bios->data), NTVDM64_TYPE_ZERO_8, sizeof(t_bios_data));
     /* bios area starts at f000:0000 */
     bios->data.buildCS = VBIOS_ADDR_START_SEG;
     bios->data.buildIP = VBIOS_ADDR_START_OFF;
@@ -186,15 +192,15 @@ void vm_profile_default_bios_reset(t_bios *bios, t_ram *ram,
     bios_load_post(bios, ram);
     bios_load_additional(ram, block_provider);
 }
-void vm_profile_default_bios_refresh(t_bios *bios) { (void)bios; }
-void vm_profile_default_bios_finalize(t_bios *bios) { (void)bios; }
-void vm_profile_default_bios_print(const t_bios *bios) {
+C_VOID vm_profile_default_bios_refresh(t_bios *bios) { (C_VOID)bios; }
+C_VOID vm_profile_default_bios_finalize(t_bios *bios) { (C_VOID)bios; }
+C_VOID vm_profile_default_bios_print(const t_bios *bios) {
     STD_PRINTF("Boot Disk: %s\n", bios != NULL && bios->flagBoot ? "Hard Drive" : "Floppy");
 }
 
-void vm_profile_default_bios_set_boot_hdd(t_bios *bios, int enabled) {
+C_VOID vm_profile_default_bios_set_boot_hdd(t_bios *bios, C_INT enabled) {
     if (bios != NULL) bios->flagBoot = enabled;
 }
-int vm_profile_default_bios_get_boot_hdd(const t_bios *bios) {
+C_INT vm_profile_default_bios_get_boot_hdd(const t_bios *bios) {
     return bios != NULL && bios->flagBoot;
 }

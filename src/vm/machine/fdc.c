@@ -2,16 +2,23 @@
 
 /* VFDC implements Floppy Driver Controller: Intel 8272A. */
 
+#include "type.h"
+
 #include "core/product/utils.h"
 
+
 #include "core/machine/dma.h"
+
 #include "core/machine/pic.h"
+
 #include "core/machine/port.h"
+
 #include "vm/machine/fdd.h"
+
 
 #include "vm/machine/fdc.h"
 
-void vm_machine_fdc_connect(t_fdc *fdc, t_fdd *fdd, t_latch *dma_latch,
+C_VOID vm_machine_fdc_connect(t_fdc *fdc, t_fdd *fdd, t_latch *dma_latch,
     t_dma *dma_primary, t_dma *dma_secondary, t_pic *pic_master,
     t_pic *pic_slave, t_port *port)
 {
@@ -118,23 +125,23 @@ ntvdm64_type_unsigned_8 VFDC_GetBPSC(ntvdm64_type_unsigned_16 cb) {
 #define GetMSRExecCmd    (NTVDM64_TYPE_GET_BIT(fdc->data.msr, VFDC_MSR_NDM))
 
 /* Resets FDC but keeps CCR */
-static void reset_controller(t_fdc *fdc) {
+static C_VOID reset_controller(t_fdc *fdc) {
     ntvdm64_type_unsigned_8 ccr = fdc->data.ccr;
-    STD_MEMSET((void *)(&fdc->data), NTVDM64_TYPE_ZERO_8, sizeof(t_fdc_data));
+    STD_MEMSET((C_VOID *)(&fdc->data), NTVDM64_TYPE_ZERO_8, sizeof(t_fdc_data));
     fdc->data.ccr = ccr;
 }
 
-static void dma_read(void *owner, t_latch *latch) {
+static C_VOID dma_read(C_VOID *owner, t_latch *latch) {
     t_fdc *fdc = owner;
     /* NOTE: being called by DMA/PIO */
     vm_machine_fdd_transfer_read(fdc->connect.fdd, latch);
 }
-static void dma_write(void *owner, t_latch *latch) {
+static C_VOID dma_write(C_VOID *owner, t_latch *latch) {
     t_fdc *fdc = owner;
     /* NOTE: being called by DMA/PIO */
     vm_machine_fdd_transfer_write(fdc->connect.fdd, latch);
 }
-static void begin_transfer(t_fdc *fdc) {
+static C_VOID begin_transfer(t_fdc *fdc) {
     /* Called by the controller command path. */
     /* read parameters */
     fdc->connect.fdd->data.cyl       = fdc->data.cmd[2];
@@ -154,7 +161,7 @@ static void begin_transfer(t_fdc *fdc) {
     }
     SetMSRExecCmd;
 }
-static void finish_transfer(t_fdc *fdc) {
+static C_VOID finish_transfer(t_fdc *fdc) {
     /* NOTE: being called by DMA/PIO */
     SetST0;
     SetST1;
@@ -173,21 +180,21 @@ static void finish_transfer(t_fdc *fdc) {
     SetMSRReadyRead;
 }
 
-static void execute_specify(t_fdc *fdc) {
+static C_VOID execute_specify(t_fdc *fdc) {
     fdc->data.hut      = VFDC_GetCMD_Specify1_HUT(fdc->data.cmd[1]);
     fdc->data.srt      = VFDC_GetCMD_Specify1_SRT(fdc->data.cmd[1]);
     fdc->data.hlt      = VFDC_GetCMD_Specify2_HLT(fdc->data.cmd[2]);
     fdc->data.flagNDMA = NTVDM64_TYPE_GET_BIT(fdc->data.cmd[2], VFDC_CMD_Specify2_ND);
     SetMSRReadyWrite;
 }
-static void execute_sense_drive_status(t_fdc *fdc) {
+static C_VOID execute_sense_drive_status(t_fdc *fdc) {
     fdc->connect.fdd->data.head = NTVDM64_TYPE_GET_BIT(fdc->data.cmd[1], VFDC_CMD_SenseDriveStatus1_HD);
     vm_machine_fdd_set_pointer(fdc->connect.fdd);
     SetST3;
     fdc->data.ret[0] = fdc->data.st3;
     SetMSRReadyRead;
 }
-static void execute_recalibrate(t_fdc *fdc) {
+static C_VOID execute_recalibrate(t_fdc *fdc) {
     fdc->connect.fdd->data.cyl    = 0;
     fdc->connect.fdd->data.head   = 0;
     fdc->connect.fdd->data.sector = 1;
@@ -200,7 +207,7 @@ static void execute_recalibrate(t_fdc *fdc) {
     }
     SetMSRReadyWrite;
 }
-static void execute_sense_interrupt(t_fdc *fdc) {
+static C_VOID execute_sense_interrupt(t_fdc *fdc) {
     if (fdc->data.flagINTR) {
         fdc->data.ret[0] = fdc->data.st0;
         fdc->data.ret[1] = (ntvdm64_type_unsigned_8)fdc->connect.fdd->data.cyl;
@@ -210,7 +217,7 @@ static void execute_sense_interrupt(t_fdc *fdc) {
     }
     SetMSRReadyRead;
 }
-static void execute_seek(t_fdc *fdc) {
+static C_VOID execute_seek(t_fdc *fdc) {
     fdc->connect.fdd->data.head = NTVDM64_TYPE_GET_BIT(fdc->data.cmd[1], VFDC_CMD_Seek1_HD);
     fdc->connect.fdd->data.cyl  = fdc->data.cmd[2];
     fdc->connect.fdd->data.sector = 1;
@@ -224,14 +231,14 @@ static void execute_seek(t_fdc *fdc) {
     SetMSRReadyWrite;
 }
 #define execute_read_track(fdc) begin_transfer((fdc))
-static void execute_read_id(t_fdc *fdc) {
+static C_VOID execute_read_id(t_fdc *fdc) {
     fdc->connect.fdd->data.head = NTVDM64_TYPE_GET_BIT(fdc->data.cmd[1], VFDC_CMD_ReadId1_HD);
     fdc->connect.fdd->data.sector = 1;
     vm_machine_fdd_set_pointer(fdc->connect.fdd);
     fdc->data.dr = NTVDM64_TYPE_ZERO_8; /* data register: sector id info */
     finish_transfer(fdc);
 }
-static void execute_format_track(t_fdc *fdc) {
+static C_VOID execute_format_track(t_fdc *fdc) {
     /* NOTE: simplified procedure; dma not used */
     ntvdm64_type_unsigned_8 fillByte;
     /* load parameters*/
@@ -267,7 +274,7 @@ static void execute_format_track(t_fdc *fdc) {
 #define execute_read_deleted_data(fdc) begin_transfer((fdc))
 #define execute_scan_equal_all(fdc) execute_scan_equal((fdc))
 #define execute_read_data(fdc) begin_transfer((fdc))
-static void execute_scan_equal(t_fdc *fdc) {
+static C_VOID execute_scan_equal(t_fdc *fdc) {
     /* NOTE: not fully implemented; lack of reference */
     SetST0;
     SetST1;
@@ -283,23 +290,23 @@ static void execute_scan_equal(t_fdc *fdc) {
     fdc->data.ret[6] = VFDC_GetBPSC(fdc->connect.fdd->data.nbyte);
     SetMSRReadyRead;
 }
-static void execute_error(t_fdc *fdc) {
+static C_VOID execute_error(t_fdc *fdc) {
     fdc->data.ret[0] = VFDC_RET_ERROR;
     SetMSRReadyRead;
 }
 
 /* read main status register */
-static void read_03f4(t_port *port, ntvdm64_type_unsigned_16 port_id, void *owner) {
+static C_VOID read_03f4(t_port *port, ntvdm64_type_unsigned_16 port_id, C_VOID *owner) {
     t_fdc *fdc = owner;
-    (void)port;
-    (void)port_id;
+    (C_VOID)port;
+    (C_VOID)port_id;
     fdc->connect.port->data.ioByte = fdc->data.msr;
 }
 /* read standard results */
-static void read_03f5(t_port *port, ntvdm64_type_unsigned_16 port_id, void *owner) {
+static C_VOID read_03f5(t_port *port, ntvdm64_type_unsigned_16 port_id, C_VOID *owner) {
     t_fdc *fdc = owner;
-    (void)port;
-    (void)port_id;
+    (C_VOID)port;
+    (C_VOID)port_id;
     if (!GetMSRReadyRead) {
         return;
     } else {
@@ -390,18 +397,18 @@ static void read_03f5(t_port *port, ntvdm64_type_unsigned_16 port_id, void *owne
     }
 }
 /* read digital input register */
-static void read_03f7(t_port *port, ntvdm64_type_unsigned_16 port_id, void *owner) {
+static C_VOID read_03f7(t_port *port, ntvdm64_type_unsigned_16 port_id, C_VOID *owner) {
     t_fdc *fdc = owner;
-    (void)port;
-    (void)port_id;
+    (C_VOID)port;
+    (C_VOID)port_id;
     fdc->connect.port->data.ioByte = fdc->data.dir;
 }
 
 /* write digital output register */
-static void write_03f2(t_port *port, ntvdm64_type_unsigned_16 port_id, void *owner) {
+static C_VOID write_03f2(t_port *port, ntvdm64_type_unsigned_16 port_id, C_VOID *owner) {
     t_fdc *fdc = owner;
-    (void)port;
-    (void)port_id;
+    (C_VOID)port;
+    (C_VOID)port_id;
     if (!NTVDM64_TYPE_GET_BIT(fdc->data.dor, VFDC_DOR_NRS) && NTVDM64_TYPE_GET_BIT(fdc->connect.port->data.ioByte, VFDC_DOR_NRS)) {
         SetMSRReadyWrite;
     }
@@ -411,10 +418,10 @@ static void write_03f2(t_port *port, ntvdm64_type_unsigned_16 port_id, void *own
     }
 }
 /* write standard commands */
-static void write_03f5(t_port *port, ntvdm64_type_unsigned_16 port_id, void *owner) {
+static C_VOID write_03f5(t_port *port, ntvdm64_type_unsigned_16 port_id, C_VOID *owner) {
     t_fdc *fdc = owner;
-    (void)port;
-    (void)port_id;
+    (C_VOID)port;
+    (C_VOID)port_id;
     if (!GetMSRReadyWrite) {
         return;
     } else {
@@ -502,24 +509,24 @@ static void write_03f5(t_port *port, ntvdm64_type_unsigned_16 port_id, void *own
         break;
     }
 }
-static void write_03f7(t_port *port, ntvdm64_type_unsigned_16 port_id, void *owner) {
+static C_VOID write_03f7(t_port *port, ntvdm64_type_unsigned_16 port_id, C_VOID *owner) {
     t_fdc *fdc = owner;
-    (void)port;
-    (void)port_id;
+    (C_VOID)port;
+    (C_VOID)port_id;
     fdc->data.ccr = fdc->connect.port->data.ioByte;
 }
 
-static void dma_close(void *owner, t_latch *latch)
+static C_VOID dma_close(C_VOID *owner, t_latch *latch)
 {
     t_fdc *fdc = owner;
-    (void)latch;
+    (C_VOID)latch;
     finish_transfer(fdc);
 }
 
-void vm_machine_fdc_initialize(t_fdc *fdc)
+C_VOID vm_machine_fdc_initialize(t_fdc *fdc)
 {
     if (fdc == NULL || fdc->connect.port == NULL) return;
-    STD_MEMSET((void *)&fdc->data, NTVDM64_TYPE_ZERO_8, sizeof(fdc->data));
+    STD_MEMSET((C_VOID *)&fdc->data, NTVDM64_TYPE_ZERO_8, sizeof(fdc->data));
     fdc->data.ccr = VFDC_CCR_DRC;
     core_machine_port_add_read(fdc->connect.port, 0x03f4, read_03f4, fdc);
     core_machine_port_add_read(fdc->connect.port, 0x03f5, read_03f5, fdc);
@@ -531,12 +538,12 @@ void vm_machine_fdc_initialize(t_fdc *fdc)
         fdc->connect.dma_secondary, 2, dma_read, dma_write, dma_close, fdc);
 }
 
-void vm_machine_fdc_reset(t_fdc *fdc)
+C_VOID vm_machine_fdc_reset(t_fdc *fdc)
 {
     if (fdc != NULL) reset_controller(fdc);
 }
 
-void vm_machine_fdc_refresh(t_fdc *fdc)
+C_VOID vm_machine_fdc_refresh(t_fdc *fdc)
 {
     if (fdc == NULL || fdc->connect.fdd == NULL) return;
     if (!fdc->connect.fdd->connect.flagDiskExist) {
@@ -546,10 +553,10 @@ void vm_machine_fdc_refresh(t_fdc *fdc)
     }
 }
 
-void vm_machine_fdc_finalize(t_fdc *fdc) { (void)fdc; }
+C_VOID vm_machine_fdc_finalize(t_fdc *fdc) { (C_VOID)fdc; }
 
 /* Prints FDC status */
-void vm_machine_fdc_print(const t_fdc *fdc) {
+C_VOID vm_machine_fdc_print(const t_fdc *fdc) {
     ntvdm64_type_native_unsigned i;
     STD_PRINTF("FDC INFO\n========\n");
     STD_PRINTF("msr = %x, dir = %x, dor = %x, ccr = %x, dr = %x\n",

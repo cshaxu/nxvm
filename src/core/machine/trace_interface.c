@@ -1,4 +1,7 @@
+#include "type.h"
+
 #include "core/machine/machine.h"
+
 
 #include <string.h>
 
@@ -7,7 +10,7 @@ static uint32_t core_machine_trace_linear_pc(const core_machine *machine)
     return machine->cpu.state.cs_base + machine->cpu.state.eip;
 }
 
-static void core_machine_trace_flush(core_machine *machine)
+static C_VOID core_machine_trace_flush(core_machine *machine)
 {
     core_machine_trace_state *trace = &machine->trace;
     size_t index = 0u;
@@ -25,14 +28,14 @@ static void core_machine_trace_flush(core_machine *machine)
     trace->flushing = 0;
 }
 
-void core_machine_trace_initialize(core_machine *machine)
+C_VOID core_machine_trace_initialize(core_machine *machine)
 {
     if (machine != NULL) {
         STD_MEMSET(&machine->trace, 0, sizeof(machine->trace));
     }
 }
 
-void core_machine_trace_finalize(core_machine *machine)
+C_VOID core_machine_trace_finalize(core_machine *machine)
 {
     if (machine != NULL) {
         STD_MEMSET(&machine->trace, 0, sizeof(machine->trace));
@@ -63,7 +66,7 @@ ntvdm64_status core_machine_set_trace_provider(
     return NTVDM64_STATUS_OK;
 }
 
-void core_machine_trace_record(
+C_VOID core_machine_trace_record(
     core_machine *machine,
     core_machine_trace_event_type type,
     uint32_t address,

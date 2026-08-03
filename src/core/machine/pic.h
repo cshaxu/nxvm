@@ -67,7 +67,7 @@ typedef struct t_pic {
 #define VPIC_ICW2_VALID 0xf8 /* A7-A3 of x86 interrupt vector */
 
 /* ICW3 master bits */
-#define VPIC_ICW3_S(id) (1 << (id)) /* int req id has slave (1) or not(0) */
+#define VPIC_ICW3_S(id) (1 << (id)) /* C_INT req id has slave (1) or not(0) */
 
 /* ICW4 bits */
 #define VPIC_ICW4_uPM   0x01 /* uPM */
@@ -105,12 +105,12 @@ typedef struct t_pic {
 #define VPIC_GetIrrTopId(rpic)  (GetRegTopId((rpic), (rpic)->data.irr))
 #define VPIC_GetImrTopId(rpic)  (GetRegTopId((rpic), (rpic)->data.imr))
 
-void core_machine_pic_initialize(t_pic *master, t_pic *slave, t_port *port);
-void core_machine_pic_reset(t_pic *master, t_pic *slave);
-void core_machine_pic_refresh(t_pic *master, t_pic *slave);
-void core_machine_pic_finalize(t_pic *master, t_pic *slave);
-void core_machine_pic_set_irq(t_pic *master, t_pic *slave, ntvdm64_type_unsigned_8 irq_id);
-void core_machine_pic_timer_output(void *owner);
+C_VOID core_machine_pic_initialize(t_pic *master, t_pic *slave, t_port *port);
+C_VOID core_machine_pic_reset(t_pic *master, t_pic *slave);
+C_VOID core_machine_pic_refresh(t_pic *master, t_pic *slave);
+C_VOID core_machine_pic_finalize(t_pic *master, t_pic *slave);
+C_VOID core_machine_pic_set_irq(t_pic *master, t_pic *slave, ntvdm64_type_unsigned_8 irq_id);
+C_VOID core_machine_pic_timer_output(C_VOID *owner);
 ntvdm64_type_bool core_machine_pic_scan_interrupt(t_pic *master, t_pic *slave);
 ntvdm64_type_unsigned_8 core_machine_pic_get_interrupt(t_pic *master, t_pic *slave);
 

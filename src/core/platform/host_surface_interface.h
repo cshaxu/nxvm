@@ -14,23 +14,23 @@ typedef enum core_platform_host_surface_kind {
 
 typedef struct core_platform_host_surface_context {
     core_platform_host_surface_kind kind;
-    void *native_handle;
+    C_VOID *native_handle;
 } core_platform_host_surface_context;
 
 typedef struct core_platform_host_surface_lease {
     atomic_uintptr_t owner;
 } core_platform_host_surface_lease;
 
-void core_platform_host_surface_context_initialize(
+C_VOID core_platform_host_surface_context_initialize(
     core_platform_host_surface_context *context,
-    core_platform_host_surface_kind kind, void *native_handle);
-void core_platform_host_surface_lease_initialize(
+    core_platform_host_surface_kind kind, C_VOID *native_handle);
+C_VOID core_platform_host_surface_lease_initialize(
     core_platform_host_surface_lease *lease);
 ntvdm64_status core_platform_host_surface_lease_acquire(
-    core_platform_host_surface_lease *lease, const void *owner);
+    core_platform_host_surface_lease *lease, const C_VOID *owner);
 ntvdm64_status core_platform_host_surface_lease_release(
-    core_platform_host_surface_lease *lease, const void *owner);
-int core_platform_host_surface_lease_is_owned_by(
-    const core_platform_host_surface_lease *lease, const void *owner);
+    core_platform_host_surface_lease *lease, const C_VOID *owner);
+C_INT core_platform_host_surface_lease_is_owned_by(
+    const core_platform_host_surface_lease *lease, const C_VOID *owner);
 
 #endif

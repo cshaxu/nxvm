@@ -1,11 +1,17 @@
+#include "type.h"
+
 #include <stdio.h>
 
+
 #include "core/machine/cpu.h"
+
 #include "core/machine/cpu_instructions.h"
+
 #include "core/machine/memory.h"
+
 #include "core/machine/port.h"
 
-int main(void)
+C_INT main(C_VOID)
 {
     t_cpu first_cpu = {0};
     t_cpu second_cpu = {0};
@@ -17,7 +23,7 @@ int main(void)
     t_port second_port = {0};
     core_machine_cpu_execution_context first = {0};
     core_machine_cpu_execution_context second = {0};
-    int result = 0;
+    C_INT result = 0;
 
     core_machine_cpu_execution_context_initialize(
         &first, &first_cpu, &first_instructions, &first_memory, &first_port);

@@ -1,14 +1,17 @@
+#include "type.h"
+
 #include <stdio.h>
+
 
 #include "core/platform/host_surface_interface.h"
 
-int main(void)
+C_INT main(C_VOID)
 {
     core_platform_host_surface_context context;
     core_platform_host_surface_lease lease;
-    int first_owner = 0;
-    int second_owner = 0;
-    int failed = 0;
+    C_INT first_owner = 0;
+    C_INT second_owner = 0;
+    C_INT failed = 0;
 
     core_platform_host_surface_context_initialize(&context,
         CORE_PLATFORM_HOST_SURFACE_TERMINAL, &first_owner);

@@ -1,8 +1,11 @@
+#include "type.h"
+
 #include <stdio.h>
+
 
 #include "vm/platform/platform.h"
 
-int main(void)
+C_INT main(C_VOID)
 {
     vm_platform_run_context first;
     vm_platform_run_context second;

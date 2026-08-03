@@ -10,14 +10,14 @@
 #include "core/machine/pit.h"
 
 /* Initializes counter when status is ready */
-static void LoadInit(t_pit *pit, ntvdm64_type_unsigned_8 id) {
+static C_VOID LoadInit(t_pit *pit, ntvdm64_type_unsigned_8 id) {
     if (pit->data.flagWrite[id] == VPIT_STATUS_RW_READY) {
         pit->data.count[id] = pit->data.init[id];
         pit->data.flagReady[id] = NTVDM64_TYPE_TRUE;
     }
 }
 /* Decreases count */
-static void Decrease(t_pit *pit, ntvdm64_type_unsigned_8 id) {
+static C_VOID Decrease(t_pit *pit, ntvdm64_type_unsigned_8 id) {
     pit->data.count[id]--;
     if (NTVDM64_TYPE_GET_BIT(pit->data.cw[id], VPIT_CW_BCD)) {
         if ((pit->data.count[id] & 0x000f) == 0x000f) {
@@ -35,7 +35,7 @@ static void Decrease(t_pit *pit, ntvdm64_type_unsigned_8 id) {
     }
 }
 
-static void io_read_004x(t_pit *pit, t_port *port, ntvdm64_type_unsigned_8 id) {
+static C_VOID io_read_004x(t_pit *pit, t_port *port, ntvdm64_type_unsigned_8 id) {
     if (pit->data.flagLatch[id]) {
         if (pit->data.flagRead[id] == VPIT_STATUS_RW_MSB) {
             port->data.ioByte = NTVDM64_TYPE_MASK_UNSIGNED_8(pit->data.latch[id] >> 8);
@@ -72,7 +72,7 @@ static void io_read_004x(t_pit *pit, t_port *port, ntvdm64_type_unsigned_8 id) {
         }
     }
 }
-static void io_write_004x(t_pit *pit, t_port *port, ntvdm64_type_unsigned_8 id) {
+static C_VOID io_write_004x(t_pit *pit, t_port *port, ntvdm64_type_unsigned_8 id) {
     switch (VPIT_GetCW_RW(pit->data.cw[id])) {
     case 0x00:
         return;
@@ -126,40 +126,40 @@ static void io_write_004x(t_pit *pit, t_port *port, ntvdm64_type_unsigned_8 id) 
     }
 }
 
-static void io_read_0040(t_port *port, ntvdm64_type_unsigned_16 port_id, void *owner) {
-    (void)port_id;
+static C_VOID io_read_0040(t_port *port, ntvdm64_type_unsigned_16 port_id, C_VOID *owner) {
+    (C_VOID)port_id;
     io_read_004x((t_pit *)owner, port, 0);
 }
 
-static void Emit(t_pit *pit, ntvdm64_type_unsigned_8 id) {
+static C_VOID Emit(t_pit *pit, ntvdm64_type_unsigned_8 id) {
     if (pit->connect.output[id] != NULL) {
         pit->connect.output[id](pit->connect.output_owner[id]);
     }
 }
-static void io_read_0041(t_port *port, ntvdm64_type_unsigned_16 port_id, void *owner) {
-    (void)port_id;
+static C_VOID io_read_0041(t_port *port, ntvdm64_type_unsigned_16 port_id, C_VOID *owner) {
+    (C_VOID)port_id;
     io_read_004x((t_pit *)owner, port, 1);
 }
-static void io_read_0042(t_port *port, ntvdm64_type_unsigned_16 port_id, void *owner) {
-    (void)port_id;
+static C_VOID io_read_0042(t_port *port, ntvdm64_type_unsigned_16 port_id, C_VOID *owner) {
+    (C_VOID)port_id;
     io_read_004x((t_pit *)owner, port, 2);
 }
-static void io_write_0040(t_port *port, ntvdm64_type_unsigned_16 port_id, void *owner) {
-    (void)port_id;
+static C_VOID io_write_0040(t_port *port, ntvdm64_type_unsigned_16 port_id, C_VOID *owner) {
+    (C_VOID)port_id;
     io_write_004x((t_pit *)owner, port, 0);
 }
-static void io_write_0041(t_port *port, ntvdm64_type_unsigned_16 port_id, void *owner) {
-    (void)port_id;
+static C_VOID io_write_0041(t_port *port, ntvdm64_type_unsigned_16 port_id, C_VOID *owner) {
+    (C_VOID)port_id;
     io_write_004x((t_pit *)owner, port, 1);
 }
-static void io_write_0042(t_port *port, ntvdm64_type_unsigned_16 port_id, void *owner) {
-    (void)port_id;
+static C_VOID io_write_0042(t_port *port, ntvdm64_type_unsigned_16 port_id, C_VOID *owner) {
+    (C_VOID)port_id;
     io_write_004x((t_pit *)owner, port, 2);
 }
 /* write control word */
-static void io_write_0043(t_port *port, ntvdm64_type_unsigned_16 port_id, void *owner) {
+static C_VOID io_write_0043(t_port *port, ntvdm64_type_unsigned_16 port_id, C_VOID *owner) {
     t_pit *pit = (t_pit *)owner;
-    (void)port_id;
+    (C_VOID)port_id;
     ntvdm64_type_unsigned_8 id = VPIT_GetCW_SC(port->data.ioByte);
     if (id == (VPIT_CW_SC >> 6)) {
         /* read-back command */
@@ -204,18 +204,18 @@ static void io_write_0043(t_port *port, ntvdm64_type_unsigned_16 port_id, void *
     }
 }
 
-void core_machine_pit_set_output(t_pit *pit, ntvdm64_type_unsigned_8 id,
-    core_machine_pit_output_provider provider, void *owner) {
+C_VOID core_machine_pit_set_output(t_pit *pit, ntvdm64_type_unsigned_8 id,
+    core_machine_pit_output_provider provider, C_VOID *owner) {
     if (pit == NULL || id >= 3u) return;
     pit->connect.output[id] = provider;
     pit->connect.output_owner[id] = owner;
     pit->connect.flagGate[id] = NTVDM64_TYPE_TRUE;
 }
 
-void core_machine_pit_initialize(t_pit *pit, t_port *port)
+C_VOID core_machine_pit_initialize(t_pit *pit, t_port *port)
 {
     if (pit == NULL || port == NULL) return;
-    STD_MEMSET((void *)pit, NTVDM64_TYPE_ZERO_8, sizeof(*pit));
+    STD_MEMSET((C_VOID *)pit, NTVDM64_TYPE_ZERO_8, sizeof(*pit));
     core_machine_port_add_read(port, 0x0040, io_read_0040, pit);
     core_machine_port_add_read(port, 0x0041, io_read_0041, pit);
     core_machine_port_add_read(port, 0x0042, io_read_0042, pit);
@@ -224,16 +224,16 @@ void core_machine_pit_initialize(t_pit *pit, t_port *port)
     core_machine_port_add_write(port, 0x0042, io_write_0042, pit);
     core_machine_port_add_write(port, 0x0043, io_write_0043, pit);
 }
-void core_machine_pit_reset(t_pit *pit) {
+C_VOID core_machine_pit_reset(t_pit *pit) {
     ntvdm64_type_native_unsigned i;
     if (pit == NULL) return;
-    STD_MEMSET((void *)(&pit->data), NTVDM64_TYPE_ZERO_8, sizeof(t_pit_data));
+    STD_MEMSET((C_VOID *)(&pit->data), NTVDM64_TYPE_ZERO_8, sizeof(t_pit_data));
     for (i = 0; i < 3; ++i) {
         pit->data.flagReady[i] = pit->data.flagLatch[i] = NTVDM64_TYPE_TRUE;
         pit->data.flagRead[i] = pit->data.flagWrite[i] = VPIT_STATUS_RW_READY;
     }
 }
-void core_machine_pit_refresh(t_pit *pit) {
+C_VOID core_machine_pit_refresh(t_pit *pit) {
     ntvdm64_type_native_unsigned i;
     if (pit == NULL) return;
     for (i = 0; i < 3; ++i) {
@@ -307,4 +307,4 @@ void core_machine_pit_refresh(t_pit *pit) {
         }
     }
 }
-void core_machine_pit_finalize(t_pit *pit) { (void)pit; }
+C_VOID core_machine_pit_finalize(t_pit *pit) { (C_VOID)pit; }

@@ -65,7 +65,7 @@ ntvdm64_status core_machine_report_fault(
     core_machine *machine,
     uint32_t detail);
 
-void core_machine_destroy(core_machine *machine);
+C_VOID core_machine_destroy(core_machine *machine);
 
 #ifdef __cplusplus
 }

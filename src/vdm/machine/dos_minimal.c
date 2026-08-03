@@ -1,7 +1,12 @@
+#include "type.h"
+
 #include "vdm/machine/dos_minimal.h"
 
+
 #include <stdlib.h>
+
 #include <string.h>
+
 
 #include "core/machine/machine_interface.h"
 
@@ -14,7 +19,7 @@ struct core_product_runtime_dos_minimal {
     uint8_t key_count;
 };
 
-static void core_product_runtime_dos_minimal_clear(
+static C_VOID core_product_runtime_dos_minimal_clear(
     core_product_runtime_dos_minimal *session)
 {
     STD_MEMSET(&session->snapshot, 0, sizeof(session->snapshot));
@@ -27,7 +32,7 @@ static void core_product_runtime_dos_minimal_clear(
 }
 
 static ntvdm64_status core_product_runtime_dos_minimal_port_read_handler(
-    void *owner,
+    C_VOID *owner,
     uint16_t port,
     uint32_t *out_value)
 {
@@ -56,7 +61,7 @@ static ntvdm64_status core_product_runtime_dos_minimal_port_read_handler(
 }
 
 static ntvdm64_status core_product_runtime_dos_minimal_port_write_handler(
-    void *owner,
+    C_VOID *owner,
     uint16_t port,
     uint32_t value)
 {
@@ -203,7 +208,7 @@ ntvdm64_status core_product_runtime_dos_minimal_port_read(
     return core_machine_bus_read(session->machine, port, out_value);
 }
 
-void core_product_runtime_dos_minimal_destroy(core_product_runtime_dos_minimal *session)
+C_VOID core_product_runtime_dos_minimal_destroy(core_product_runtime_dos_minimal *session)
 {
     if (session != NULL) {
         core_machine_destroy(session->machine);

@@ -1,12 +1,14 @@
+#include "type.h"
+
 #include "vm/platform/vm_request_transport.h"
 
 typedef struct keyboard_state_observer {
-    unsigned count;
+    C_UINT count;
     uint32_t asynchronous_keys;
     uint32_t toggle_keys;
 } keyboard_state_observer;
 
-static void observe_keyboard_state(void *opaque,
+static C_VOID observe_keyboard_state(C_VOID *opaque,
                                    const nxvm_platform_vm_request *request)
 {
     keyboard_state_observer *observer = (keyboard_state_observer *)opaque;
@@ -18,7 +20,7 @@ static void observe_keyboard_state(void *opaque,
     }
 }
 
-int main(void)
+C_INT main(C_VOID)
 {
     vm_platform_request_transport transport;
     nxvm_platform_vm_request request;

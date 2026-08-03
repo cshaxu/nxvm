@@ -1,4 +1,7 @@
+#include "type.h"
+
 #include "core/machine/machine.h"
+
 
 #include <stdlib.h>
 
@@ -20,7 +23,7 @@ ntvdm64_status core_machine_bus_initialize(core_machine *machine)
     return NTVDM64_STATUS_OK;
 }
 
-void core_machine_bus_finalize(core_machine *machine)
+C_VOID core_machine_bus_finalize(core_machine *machine)
 {
     if (machine != NULL) {
         STD_FREE(machine->ports.slots);
@@ -33,7 +36,7 @@ ntvdm64_status core_machine_install_port_provider(
     uint16_t first,
     uint16_t last,
     const core_machine_port_provider *provider,
-    void *owner)
+    C_VOID *owner)
 {
     uint32_t port;
 

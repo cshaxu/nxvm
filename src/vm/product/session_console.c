@@ -1,21 +1,25 @@
+#include "type.h"
+
 #include "vm/product/session_console.h"
 
+
 #include <ctype.h>
+
 #include <string.h>
 
-static int vm_product_console_word(const char *line, const char *word)
+static C_INT vm_product_console_word(const C_CHAR *line, const C_CHAR *word)
 {
     size_t index;
 
     if (line == NULL || word == NULL) return 0;
-    while (*line != '\0' && STD_ISSPACE((unsigned char)*line)) ++line;
+    while (*line != '\0' && STD_ISSPACE((C_UCHAR)*line)) ++line;
     for (index = 0u; word[index] != '\0'; ++index) {
-        if (STD_TOUPPER((unsigned char)line[index]) != word[index]) return 0;
+        if (STD_TOUPPER((C_UCHAR)line[index]) != word[index]) return 0;
     }
-    return line[index] == '\0' || STD_ISSPACE((unsigned char)line[index]);
+    return line[index] == '\0' || STD_ISSPACE((C_UCHAR)line[index]);
 }
 
-static int vm_product_console_allowed(
+static C_INT vm_product_console_allowed(
     vm_product_console_state state,
     vm_product_console_command command)
 {
@@ -42,12 +46,12 @@ static int vm_product_console_allowed(
            state == VM_PRODUCT_CONSOLE_PAUSED;
 }
 
-void vm_product_console_initialize(vm_product_console *console)
+C_VOID vm_product_console_initialize(vm_product_console *console)
 {
     if (console != NULL) console->state = VM_PRODUCT_CONSOLE_READY;
 }
 
-vm_product_console_command vm_product_console_parse(const char *line)
+vm_product_console_command vm_product_console_parse(const C_CHAR *line)
 {
     if (vm_product_console_word(line, "HELP")) return VM_PRODUCT_CONSOLE_HELP;
     if (vm_product_console_word(line, "START")) return VM_PRODUCT_CONSOLE_START;
@@ -65,7 +69,7 @@ ntvdm64_status vm_product_console_dispatch(
     vm_product_console *console,
     vm_product_console_command command,
     vm_product_console_operation operation,
-    void *context)
+    C_VOID *context)
 {
     ntvdm64_status status;
 

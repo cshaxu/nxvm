@@ -1,9 +1,13 @@
+#include "type.h"
+
 #include <stdio.h>
 
+
 #include "vm/platform/win32/w32adisp.h"
+
 #include "vm/platform/win32/w32cdisp.h"
 
-int main(void)
+C_INT main(C_VOID)
 {
     w32cdisp_context *console_a = w32cdisp_context_create();
     w32cdisp_context *console_b = w32cdisp_context_create();

@@ -1,9 +1,13 @@
+#include "type.h"
+
 #include <stdio.h>
+
 #include <string.h>
+
 
 #include "vm/profile/default_profile/firmware/default_profile.h"
 
-int main(void)
+C_INT main(C_VOID)
 {
     core_machine_firmware firmware;
     vm_profile_default_firmware_plan plan;

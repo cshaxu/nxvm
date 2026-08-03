@@ -15,18 +15,18 @@ typedef struct core_machine core_machine;
 ntvdm64_status core_machine_memory_read(
     const core_machine *machine,
     uint32_t physical,
-    void *out_data,
+    C_VOID *out_data,
     size_t size);
 
 ntvdm64_status core_machine_memory_write(
     core_machine *machine,
     uint32_t physical,
-    const void *data,
+    const C_VOID *data,
     size_t size);
 
 ntvdm64_status core_machine_set_a20(
     core_machine *machine,
-    int enabled);
+    C_INT enabled);
 
 #ifdef __cplusplus
 }

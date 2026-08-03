@@ -41,17 +41,17 @@ typedef struct {
 #define VHDD_BYTE_PER_MB (1 << 20)
 
 size_t vm_machine_hdd_image_size(const t_hdd *hdd);
-void vm_machine_hdd_set_pointer(t_hdd *hdd);
-void vm_machine_hdd_transfer_read(t_hdd *hdd, t_latch *latch);
-void vm_machine_hdd_transfer_write(t_hdd *hdd, t_latch *latch);
-void vm_machine_hdd_format_track(t_hdd *hdd, ntvdm64_type_unsigned_8 fill_byte);
-void vm_machine_hdd_initialize(t_hdd *hdd);
-void vm_machine_hdd_reset(t_hdd *hdd);
-void vm_machine_hdd_refresh(t_hdd *hdd);
-void vm_machine_hdd_finalize(t_hdd *hdd);
-void vm_machine_hdd_create(t_hdd *hdd, uint16_t cylinders);
-int vm_machine_hdd_insert(t_hdd *hdd, const char *file_name);
-int vm_machine_hdd_remove(t_hdd *hdd, const char *file_name);
+C_VOID vm_machine_hdd_set_pointer(t_hdd *hdd);
+C_VOID vm_machine_hdd_transfer_read(t_hdd *hdd, t_latch *latch);
+C_VOID vm_machine_hdd_transfer_write(t_hdd *hdd, t_latch *latch);
+C_VOID vm_machine_hdd_format_track(t_hdd *hdd, ntvdm64_type_unsigned_8 fill_byte);
+C_VOID vm_machine_hdd_initialize(t_hdd *hdd);
+C_VOID vm_machine_hdd_reset(t_hdd *hdd);
+C_VOID vm_machine_hdd_refresh(t_hdd *hdd);
+C_VOID vm_machine_hdd_finalize(t_hdd *hdd);
+C_VOID vm_machine_hdd_create(t_hdd *hdd, uint16_t cylinders);
+C_INT vm_machine_hdd_insert(t_hdd *hdd, const C_CHAR *file_name);
+C_INT vm_machine_hdd_remove(t_hdd *hdd, const C_CHAR *file_name);
 
 #ifdef __cplusplus
 }/*_EOCD_*/

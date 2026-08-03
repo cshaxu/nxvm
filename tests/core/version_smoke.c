@@ -1,11 +1,15 @@
+#include "type.h"
+
 #include <stdio.h>
+
 #include <string.h>
+
 
 #include "version.h"
 
-int main(void)
+C_INT main(C_VOID)
 {
-    char banner[160];
+    C_CHAR banner[160];
 
     if (!ntvdm64_version_format_nxvm_banner(banner, sizeof(banner), "m5t47")) {
         return 1;

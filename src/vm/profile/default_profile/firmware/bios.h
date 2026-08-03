@@ -93,7 +93,7 @@ typedef struct t_bios {
 #define VBIOS_ADDR_CPU_POINTER        0x0467
 #define VBIOS_ADDR_RTC_DAILY_COUNTER  0x046c
 #define VBIOS_ADDR_RTC_ROLLOVER       0x0470
-#define VBIOS_ADDR_BIOS_BREAK_FLAG    0x0471 /* set by int 9 */
+#define VBIOS_ADDR_BIOS_BREAK_FLAG    0x0471 /* set by C_INT 9 */
 #define VBIOS_ADDR_SOFT_RESET_FLAG    0x0472 /* C-A-D or JUMP FFFF:0000 */
 #define VBIOS_ADDR_HDD_LST_OP_STATUS  0x0474
 #define VBIOS_ADDR_HDD_NUMBER         0x0475
@@ -148,17 +148,17 @@ typedef struct t_bios {
 #define VBIOS_ADDR_INTRAPP_COMM_AREA  0x04f0
 #define VBIOS_ADDR_POST_WORK_AREA     0x0505
 
-void vm_profile_default_bios_add_post(t_bios *bios, ntvdm64_type_string_pointer stmt);
-void vm_profile_default_bios_add_interrupt(t_bios *bios, ntvdm64_type_string_pointer stmt,
+C_VOID vm_profile_default_bios_add_post(t_bios *bios, ntvdm64_type_string_pointer stmt);
+C_VOID vm_profile_default_bios_add_interrupt(t_bios *bios, ntvdm64_type_string_pointer stmt,
     ntvdm64_type_unsigned_8 intid);
-void vm_profile_default_bios_initialize(t_bios *bios);
-void vm_profile_default_bios_reset(t_bios *bios, t_ram *ram,
+C_VOID vm_profile_default_bios_initialize(t_bios *bios);
+C_VOID vm_profile_default_bios_reset(t_bios *bios, t_ram *ram,
     const core_machine_block_provider_slot *block_provider);
-void vm_profile_default_bios_refresh(t_bios *bios);
-void vm_profile_default_bios_finalize(t_bios *bios);
-void vm_profile_default_bios_print(const t_bios *bios);
-void vm_profile_default_bios_set_boot_hdd(t_bios *bios, int enabled);
-int vm_profile_default_bios_get_boot_hdd(const t_bios *bios);
+C_VOID vm_profile_default_bios_refresh(t_bios *bios);
+C_VOID vm_profile_default_bios_finalize(t_bios *bios);
+C_VOID vm_profile_default_bios_print(const t_bios *bios);
+C_VOID vm_profile_default_bios_set_boot_hdd(t_bios *bios, C_INT enabled);
+C_INT vm_profile_default_bios_get_boot_hdd(const t_bios *bios);
 
 #define VBIOS_POST_BOOT "             \
 $(label_post_boot_start):           \n\

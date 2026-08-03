@@ -29,13 +29,13 @@ typedef struct core_machine_trace_event {
     uint32_t detail;
 } core_machine_trace_event;
 
-typedef void (*core_machine_trace_event_provider)(
-    void *context,
+typedef C_VOID (*core_machine_trace_event_provider)(
+    C_VOID *context,
     const core_machine_trace_event *event);
 
 typedef struct core_machine_trace_provider {
     core_machine_trace_event_provider callback;
-    void *context;
+    C_VOID *context;
 } core_machine_trace_provider;
 
 ntvdm64_status core_machine_set_trace_provider(

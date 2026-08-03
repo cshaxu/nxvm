@@ -1,5 +1,22 @@
 # C-Library Facade
 
+## Current Contract
+
+This section supersedes the earlier audit record below. The operative rule is:
+`type.h` owns C language aliases and ISO C vocabulary; `C_*` names scalar
+typedefs, `STD_*` names ISO C types/objects/constants/atomics/wrappers, and
+`WIN32_*` names project-facing Win32 vocabulary only in `platform/win32`.
+
+Native C scalar keywords are permitted only to define the `C_*` typedefs and
+inside external SDK headers. `STD_NULL` expands to `NULL`; fixed-width
+`int*_t`/`uint*_t` remain unchanged. Raw `BOOL`, `SIZE_T`, and other Win32 SDK
+types never leak into core, VM/VDM machine, or product code.
+
+T111--T116 are the required closure sequence: scalar aliases; ISO C
+types/objects/constants/atomics; ISO C header ownership; Win32 vocabulary;
+platform input flush; then static and runtime closure. The older unprefixed
+uppercase names in this document are historical audit vocabulary only.
+
 ## Decision
 
 `src/type.h` is the repository's one facade for ISO C headers and C11 atomics.

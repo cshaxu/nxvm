@@ -1,14 +1,14 @@
 #include "core/machine/block_interface.h"
 #include "core/machine/block_provider.h"
 
-void core_machine_block_provider_slot_initialize(
+C_VOID core_machine_block_provider_slot_initialize(
     core_machine_block_provider_slot *slot)
 {
     if (slot != NULL) STD_MEMSET(slot, NTVDM64_TYPE_ZERO_8, sizeof(*slot));
 }
 
-void core_machine_block_provider_slot_bind(
-    core_machine_block_provider_slot *slot, void *context,
+C_VOID core_machine_block_provider_slot_bind(
+    core_machine_block_provider_slot *slot, C_VOID *context,
     core_machine_block_geometry_provider geometry_provider,
     core_machine_block_transfer_provider read_provider,
     core_machine_block_transfer_provider write_provider)
@@ -20,19 +20,19 @@ void core_machine_block_provider_slot_bind(
     slot->write_provider = write_provider;
 }
 
-void core_machine_block_provider_slot_freeze(
+C_VOID core_machine_block_provider_slot_freeze(
     core_machine_block_provider_slot *slot)
 {
     if (slot != NULL) slot->frozen = NTVDM64_TYPE_TRUE;
 }
 
-void core_machine_block_provider_slot_finalize(
+C_VOID core_machine_block_provider_slot_finalize(
     core_machine_block_provider_slot *slot)
 {
     if (slot != NULL) STD_MEMSET(slot, NTVDM64_TYPE_ZERO_8, sizeof(*slot));
 }
 
-void core_machine_block_get_geometry_from(
+C_VOID core_machine_block_get_geometry_from(
     const core_machine_block_provider_slot *slot,
     core_machine_block_geometry *out_geometry)
 {
@@ -43,8 +43,8 @@ void core_machine_block_get_geometry_from(
     }
 }
 
-int core_machine_block_read_from(const core_machine_block_provider_slot *slot,
-    ntvdm64_type_unsigned_8 cylinder, ntvdm64_type_unsigned_8 head, ntvdm64_type_unsigned_8 sector, void *buffer,
+C_INT core_machine_block_read_from(const core_machine_block_provider_slot *slot,
+    ntvdm64_type_unsigned_8 cylinder, ntvdm64_type_unsigned_8 head, ntvdm64_type_unsigned_8 sector, C_VOID *buffer,
     ntvdm64_type_native_unsigned byte_count)
 {
     return slot != NULL && slot->read_provider != NULL &&
@@ -52,8 +52,8 @@ int core_machine_block_read_from(const core_machine_block_provider_slot *slot,
             byte_count);
 }
 
-int core_machine_block_write_from(const core_machine_block_provider_slot *slot,
-    ntvdm64_type_unsigned_8 cylinder, ntvdm64_type_unsigned_8 head, ntvdm64_type_unsigned_8 sector, void *buffer,
+C_INT core_machine_block_write_from(const core_machine_block_provider_slot *slot,
+    ntvdm64_type_unsigned_8 cylinder, ntvdm64_type_unsigned_8 head, ntvdm64_type_unsigned_8 sector, C_VOID *buffer,
     ntvdm64_type_native_unsigned byte_count)
 {
     return slot != NULL && slot->write_provider != NULL &&

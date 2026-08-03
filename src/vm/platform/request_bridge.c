@@ -1,8 +1,11 @@
+#include "type.h"
+
 #include "vm/platform/request_bridge.h"
+
 
 #include <string.h>
 
-void nxvm_platform_vm_request_bridge_initialize(
+C_VOID nxvm_platform_vm_request_bridge_initialize(
     nxvm_platform_vm_request_bridge *bridge)
 {
     if (bridge != NULL) {

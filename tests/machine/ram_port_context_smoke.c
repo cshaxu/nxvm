@@ -1,9 +1,13 @@
+#include "type.h"
+
 #include <stdio.h>
 
+
 #include "core/machine/memory.h"
+
 #include "core/machine/port.h"
 
-int main(void)
+C_INT main(C_VOID)
 {
     t_ram first_memory = {0};
     t_ram second_memory = {0};
@@ -11,7 +15,7 @@ int main(void)
     t_port second_port = {0};
     ntvdm64_type_unsigned_8 value = 0x5au;
     ntvdm64_type_unsigned_8 observed = 0xffu;
-    int result = 0;
+    C_INT result = 0;
 
     core_machine_memory_initialize(&first_memory);
     core_machine_memory_initialize(&second_memory);

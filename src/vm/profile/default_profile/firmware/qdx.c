@@ -1,16 +1,25 @@
 /* Copyright 2012-2014 Neko. */
 
+#include "type.h"
+
 #include "core/product/utils.h"
+
 #include "core/machine/cpu.h"
+
 #include "core/machine/cpu_instructions.h"
 
+
 #include "vm/profile/default_profile/firmware/context.h"
+
 #include "vm/profile/default_profile/firmware/qdcga.h"
+
 #include "vm/profile/default_profile/firmware/qdkeyb.h"
+
 #include "vm/profile/default_profile/firmware/qddisk.h"
+
 #include "vm/profile/default_profile/firmware/qdx.h"
 
-static void vm_profile_default_qdx_dispatch(
+static C_VOID vm_profile_default_qdx_dispatch(
     core_machine_cpu_execution_context *execution)
 {
     vm_profile_default_context *profile =
@@ -73,7 +82,7 @@ static void vm_profile_default_qdx_dispatch(
     instructions->data.flagIgnore = NTVDM64_TYPE_TRUE;
 }
 
-void vm_profile_default_qdx_initialize(vm_profile_default_context *profile,
+C_VOID vm_profile_default_qdx_initialize(vm_profile_default_context *profile,
     core_machine_cpu_execution_context *execution)
 {
     ntvdm64_type_native_unsigned index;
@@ -90,17 +99,17 @@ void vm_profile_default_qdx_initialize(vm_profile_default_context *profile,
         vm_profile_default_qdx_dispatch;
 }
 
-void vm_profile_default_qdx_reset(vm_profile_default_context *profile)
+C_VOID vm_profile_default_qdx_reset(vm_profile_default_context *profile)
 {
     vm_profile_default_cga_reset(profile);
 }
 
-void vm_profile_default_qdx_refresh(vm_profile_default_context *profile)
+C_VOID vm_profile_default_qdx_refresh(vm_profile_default_context *profile)
 {
-    (void)profile;
+    (C_VOID)profile;
 }
 
-void vm_profile_default_qdx_finalize(vm_profile_default_context *profile)
+C_VOID vm_profile_default_qdx_finalize(vm_profile_default_context *profile)
 {
-    (void)profile;
+    (C_VOID)profile;
 }

@@ -1,6 +1,8 @@
+#include "type.h"
+
 #include "vm/platform/vm_request_transport.h"
 
-static void vm_platform_request_transport_lock(
+static C_VOID vm_platform_request_transport_lock(
     vm_platform_request_transport *transport)
 {
     while (atomic_exchange_explicit(&transport->locked, 1,
@@ -8,13 +10,13 @@ static void vm_platform_request_transport_lock(
     }
 }
 
-static void vm_platform_request_transport_unlock(
+static C_VOID vm_platform_request_transport_unlock(
     vm_platform_request_transport *transport)
 {
     atomic_store_explicit(&transport->locked, 0, memory_order_release);
 }
 
-void vm_platform_request_transport_initialize(
+C_VOID vm_platform_request_transport_initialize(
     vm_platform_request_transport *transport)
 {
     if (transport == NULL) return;
@@ -96,7 +98,7 @@ ntvdm64_status vm_platform_request_transport_dequeue_egress(
         transport, transport != NULL ? &transport->egress : NULL, out_request);
 }
 
-void vm_platform_request_transport_close(
+C_VOID vm_platform_request_transport_close(
     vm_platform_request_transport *transport)
 {
     if (transport == NULL) return;
@@ -106,7 +108,7 @@ void vm_platform_request_transport_close(
     vm_platform_request_transport_unlock(transport);
 }
 
-void vm_platform_request_transport_discard(
+C_VOID vm_platform_request_transport_discard(
     vm_platform_request_transport *transport)
 {
     if (transport == NULL) return;
@@ -118,9 +120,9 @@ void vm_platform_request_transport_discard(
     vm_platform_request_transport_unlock(transport);
 }
 
-void vm_platform_request_transport_bind_consumer(
+C_VOID vm_platform_request_transport_bind_consumer(
     vm_platform_request_transport *transport,
-    vm_platform_request_consumer consumer, void *opaque)
+    vm_platform_request_consumer consumer, C_VOID *opaque)
 {
     if (transport == NULL) return;
 
@@ -130,13 +132,13 @@ void vm_platform_request_transport_bind_consumer(
     vm_platform_request_transport_unlock(transport);
 }
 
-void vm_platform_request_transport_observe_execution_boundary(void *opaque)
+C_VOID vm_platform_request_transport_observe_execution_boundary(C_VOID *opaque)
 {
     vm_platform_request_transport *transport =
         (vm_platform_request_transport *)opaque;
     nxvm_platform_vm_request request;
     vm_platform_request_consumer consumer;
-    void *consumer_opaque;
+    C_VOID *consumer_opaque;
 
     if (transport == NULL) return;
     vm_platform_request_transport_lock(transport);
@@ -157,7 +159,7 @@ void vm_platform_request_transport_observe_execution_boundary(void *opaque)
     }
 }
 
-unsigned vm_platform_request_transport_execution_boundary_count(
+C_UINT vm_platform_request_transport_execution_boundary_count(
     const vm_platform_request_transport *transport)
 {
     return transport != NULL ? transport->execution_boundary_count : 0u;

@@ -31,22 +31,22 @@ typedef struct t_ram {
 #define VRAM_FLAG_A20 0x02
 
 
-void core_machine_memory_read_physical(t_ram *ram, ntvdm64_type_unsigned_32 physical,
+C_VOID core_machine_memory_read_physical(t_ram *ram, ntvdm64_type_unsigned_32 physical,
     ntvdm64_type_virtual_address destination, ntvdm64_type_native_unsigned size);
-void core_machine_memory_write_physical(t_ram *ram, ntvdm64_type_unsigned_32 physical,
+C_VOID core_machine_memory_write_physical(t_ram *ram, ntvdm64_type_unsigned_32 physical,
     ntvdm64_type_virtual_address source, ntvdm64_type_native_unsigned size);
-void core_machine_memory_initialize(t_ram *ram);
-void core_machine_memory_reset(t_ram *ram);
-void core_machine_memory_finalize(t_ram *ram);
-void core_machine_memory_register_ports(t_ram *ram, t_port *port);
+C_VOID core_machine_memory_initialize(t_ram *ram);
+C_VOID core_machine_memory_reset(t_ram *ram);
+C_VOID core_machine_memory_finalize(t_ram *ram);
+C_VOID core_machine_memory_register_ports(t_ram *ram, t_port *port);
 
 
-void core_machine_memory_allocate_for(t_ram *ram, size_t bytes);
-void core_machine_memory_read_real_from(t_ram *ram, uint16_t segment,
-    uint16_t offset, void *out_data, size_t size);
-void core_machine_memory_write_real_to(t_ram *ram, uint16_t segment,
-    uint16_t offset, const void *in_data, size_t size);
-void *core_machine_memory_real_address(t_ram *ram, uint16_t segment,
+C_VOID core_machine_memory_allocate_for(t_ram *ram, size_t bytes);
+C_VOID core_machine_memory_read_real_from(t_ram *ram, uint16_t segment,
+    uint16_t offset, C_VOID *out_data, size_t size);
+C_VOID core_machine_memory_write_real_to(t_ram *ram, uint16_t segment,
+    uint16_t offset, const C_VOID *in_data, size_t size);
+C_VOID *core_machine_memory_real_address(t_ram *ram, uint16_t segment,
     uint16_t offset);
 
 #ifdef __cplusplus

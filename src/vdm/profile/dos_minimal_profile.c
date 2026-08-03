@@ -1,3 +1,5 @@
+#include "type.h"
+
 #include "vdm/profile/dos_minimal_profile.h"
 
 static const core_product_runtime_profile_descriptor ntvdm64_dos_minimal_profile = {
@@ -10,7 +12,7 @@ static const core_product_runtime_profile_descriptor ntvdm64_dos_minimal_profile
     0
 };
 
-const core_product_runtime_profile_descriptor *ntvdm64_dos_minimal_profile_descriptor(void)
+const core_product_runtime_profile_descriptor *ntvdm64_dos_minimal_profile_descriptor(C_VOID)
 {
     return &ntvdm64_dos_minimal_profile;
 }

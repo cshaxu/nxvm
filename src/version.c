@@ -3,40 +3,40 @@
 #include "type.h"
 #include "version.h"
 
-static const char *const nxvm_name = "Neko's x86 Virtual Machine";
-static const char *const nxvm_release = "0.4.015d";
-static const char *const nxvm_copyright = "Copyright (c) 2012-2014 Neko.";
+static const C_CHAR *const nxvm_name = "Neko's x86 Virtual Machine";
+static const C_CHAR *const nxvm_release = "0.4.015d";
+static const C_CHAR *const nxvm_copyright = "Copyright (c) 2012-2014 Neko.";
 
-const char *ntvdm64_version_nxvm_name(void)
+const C_CHAR *ntvdm64_version_nxvm_name(C_VOID)
 {
     return nxvm_name;
 }
 
-const char *ntvdm64_version_nxvm_release(void)
+const C_CHAR *ntvdm64_version_nxvm_release(C_VOID)
 {
     return nxvm_release;
 }
 
-const char *ntvdm64_version_nxvm_copyright(void)
+const C_CHAR *ntvdm64_version_nxvm_copyright(C_VOID)
 {
     return nxvm_copyright;
 }
 
-const char *ntvdm64_version_build_date(void)
+const C_CHAR *ntvdm64_version_build_date(C_VOID)
 {
     return __DATE__;
 }
 
-const char *ntvdm64_version_build_time(void)
+const C_CHAR *ntvdm64_version_build_time(C_VOID)
 {
     return __TIME__;
 }
 
-int ntvdm64_version_format_nxvm_banner(char *buffer, size_t buffer_size,
-    const char *build_suffix)
+C_INT ntvdm64_version_format_nxvm_banner(C_CHAR *buffer, size_t buffer_size,
+    const C_CHAR *build_suffix)
 {
-    int written;
-    const int versioned_suffix = build_suffix != NULL &&
+    C_INT written;
+    const C_INT versioned_suffix = build_suffix != NULL &&
         build_suffix[0] >= '0' && build_suffix[0] <= '9';
 
     if (buffer == NULL || buffer_size == 0 || build_suffix == NULL ||

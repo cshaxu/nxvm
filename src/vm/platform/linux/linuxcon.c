@@ -2,12 +2,19 @@
 
 /* LINUXCON provides linux terminal interface. */
 
+#include "type.h"
+
 #include <curses.h>
+
 #include <pthread.h>
 
+
 #include "core/product/utils.h"
+
 #include "core/platform/display_frame.h"
+
 #include "vm/platform/platform.h"
+
 
 #include "vm/platform/linux/linuxcon.h"
 
@@ -23,7 +30,7 @@
 #define COLOR_BROWN        0x0e
 #define COLOR_LIGHTGRAY    0x0f
 
-static void lnxcdispInit() {
+static C_VOID lnxcdispInit() {
     size_t i, j;
     initscr();
     raw();
@@ -38,7 +45,7 @@ static void lnxcdispInit() {
     }
 }
 
-static void lnxcdispFinal() {
+static C_VOID lnxcdispFinal() {
     noraw();
     nodelay(stdscr, FALSE);
     keypad(stdscr, FALSE);
@@ -72,14 +79,14 @@ static uint8_t ReverseColor(uint8_t value) {
     case COLOR_WHITE:
         return COLOR_BLACK;
         break;
-        /*	case 0x08: return COLOR_GRAY;        break;
-        	case 0x09: return COLOR_LIGHTBLUE;   break;
-        	case 0x0a: return COLOR_LIGHTGREEN;  break;
-        	case 0x0b: return COLOR_LIGHTCYAN;   break;
-        	case 0x0c: return COLOR_LIGHTRED;    break;
-        	case 0x0d: return COLOR_LIGHTMAGENTA;break;
-        	case 0x0e: return COLOR_YELLOW;      break;
-        	case 0x0f: return COLOR_WHITE;       break;*/
+        /* case 0x08: return COLOR_GRAY;        break;
+           case 0x09: return COLOR_LIGHTBLUE;   break;
+           case 0x0a: return COLOR_LIGHTGREEN;  break;
+           case 0x0b: return COLOR_LIGHTCYAN;   break;
+           case 0x0c: return COLOR_LIGHTRED;    break;
+           case 0x0d: return COLOR_LIGHTMAGENTA;break;
+           case 0x0e: return COLOR_YELLOW;      break;
+           case 0x0f: return COLOR_WHITE;       break;*/
     }
     return COLOR_BLACK;
 }
@@ -111,14 +118,14 @@ static uint8_t CharProp2Color(uint8_t value) {
     case 0x07:
         return COLOR_WHITE;
         break;
-        /*	case 0x08: return COLOR_GRAY;        break;
-        	case 0x09: return COLOR_LIGHTBLUE;   break;
-        	case 0x0a: return COLOR_LIGHTGREEN;  break;
-        	case 0x0b: return COLOR_LIGHTCYAN;   break;
-        	case 0x0c: return COLOR_LIGHTRED;    break;
-        	case 0x0d: return COLOR_LIGHTMAGENTA;break;
-        	case 0x0e: return COLOR_YELLOW;      break;
-        	case 0x0f: return COLOR_WHITE;       break;*/
+        /* case 0x08: return COLOR_GRAY;        break;
+           case 0x09: return COLOR_LIGHTBLUE;   break;
+           case 0x0a: return COLOR_LIGHTGREEN;  break;
+           case 0x0b: return COLOR_LIGHTCYAN;   break;
+           case 0x0c: return COLOR_LIGHTRED;    break;
+           case 0x0d: return COLOR_LIGHTMAGENTA;break;
+           case 0x0e: return COLOR_YELLOW;      break;
+           case 0x0f: return COLOR_WHITE;       break;*/
     }
     return COLOR_BLACK;
 }
@@ -206,11 +213,11 @@ static core_platform_host_surface_lease linux_terminal_lease = {
     ATOMIC_VAR_INIT(0)
 };
 
-static void lnxcdispPaint(vm_platform_run_context *context,
+static C_VOID lnxcdispPaint(vm_platform_run_context *context,
                           uint8_t force) {
-    int ref;
+    C_INT ref;
     uint8_t p, c;
-    int i, j, sizeRow, sizeCol, curX, curY;
+    C_INT i, j, sizeRow, sizeCol, curX, curY;
     core_platform_display_frame frame;
 
     vm_platform_presentation_mailbox_capture(context->presentation, &frame);
@@ -246,7 +253,7 @@ static void lnxcdispPaint(vm_platform_run_context *context,
     context->terminal_displayed_generation = frame.generation;
 }
 
-static void *ThreadDisplay(void *arg) {
+static C_VOID *ThreadDisplay(C_VOID *arg) {
     vm_platform_run_context *context = arg;
     core_product_wait_scope previous = core_product_wait_scope_enter(
         context->wait_scope);
@@ -263,7 +270,7 @@ static void *ThreadDisplay(void *arg) {
     return 0;
 }
 
-static void *ThreadKernel(void *arg) {
+static C_VOID *ThreadKernel(C_VOID *arg) {
     const vm_platform_run_context *context = arg;
     core_product_wait_scope previous = core_product_wait_scope_enter(
         context->wait_scope);
@@ -342,8 +349,8 @@ static const uint8_t Ascii2ScanCode[][2] = {
 
 #define send(context, n) vm_platform_keyboard_receive_key_press_for(\
     (context)->keyboard, (n))
-static void lnxckeybMakeKey(const vm_platform_run_context *context,
-                            int keyvalue) {
+static C_VOID lnxckeybMakeKey(const vm_platform_run_context *context,
+                            C_INT keyvalue) {
     if (keyvalue == KEY_F(9)) {
         vm_platform_execution_stop_for(context->execution);
     }
@@ -435,26 +442,26 @@ static void lnxckeybMakeKey(const vm_platform_run_context *context,
     }
 }
 
-static void lnxckeybProcess(const vm_platform_run_context *context) {
-    int keyvalue = getch();
+static C_VOID lnxckeybProcess(const vm_platform_run_context *context) {
+    C_INT keyvalue = getch();
     if (keyvalue != ERR) {
         lnxckeybMakeKey(context, keyvalue);
     }
 }
 
-void lnxcDisplaySetScreen(const vm_platform_run_context *context) {
-    (void)context;
+C_VOID lnxcDisplaySetScreen(const vm_platform_run_context *context) {
+    (C_VOID)context;
 }
 
-void lnxcDisplayPaint(const vm_platform_run_context *context) {
+C_VOID lnxcDisplayPaint(const vm_platform_run_context *context) {
     lnxcdispPaint((vm_platform_run_context *)context, 1);
 }
 
-void lnxcStartMachine(const vm_platform_run_context *context) {
+C_VOID lnxcStartMachine(const vm_platform_run_context *context) {
     pthread_t ThreadIdDisplay;
     pthread_t ThreadIdKernel;
     pthread_attr_t attr;
-    int oldDeviceFlip;
+    C_INT oldDeviceFlip;
     core_product_wait_scope previous;
 
     if (context == NULL || context->execution == NULL ||
@@ -465,13 +472,13 @@ void lnxcStartMachine(const vm_platform_run_context *context) {
     oldDeviceFlip = vm_platform_execution_get_flip_for(context->execution);
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr,PTHREAD_CREATE_DETACHED);
-    pthread_create(&ThreadIdKernel,  &attr, ThreadKernel, (void *)context);
+    pthread_create(&ThreadIdKernel,  &attr, ThreadKernel, (C_VOID *)context);
     while (oldDeviceFlip ==
            vm_platform_execution_get_flip_for(context->execution)) {
         core_product_utils_sleep(100);
     }
     if (pthread_create(&ThreadIdDisplay, &attr, ThreadDisplay,
-                       (void *)context) != 0) {
+                       (C_VOID *)context) != 0) {
         vm_platform_execution_stop_for(context->execution);
         core_platform_host_surface_lease_release(&linux_terminal_lease, context);
     }

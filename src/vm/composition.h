@@ -12,11 +12,11 @@ extern "C" {
 
 #define VM_COMPOSITION_MACHINE_NAME "IBM PC/AT"
 
-void vm_composition_providers_initialize(vm_composition_live_machine *machine);
-void vm_composition_providers_refresh(vm_composition_live_machine *machine);
-void vm_composition_providers_reset(vm_composition_live_machine *machine);
-void vm_composition_providers_finalize(vm_composition_live_machine *machine);
-void vm_composition_print_machine(const vm_composition_live_machine *machine);
+C_VOID vm_composition_providers_initialize(vm_composition_live_machine *machine);
+C_VOID vm_composition_providers_refresh(vm_composition_live_machine *machine);
+C_VOID vm_composition_providers_reset(vm_composition_live_machine *machine);
+C_VOID vm_composition_providers_finalize(vm_composition_live_machine *machine);
+C_VOID vm_composition_print_machine(const vm_composition_live_machine *machine);
 
 #ifdef __cplusplus
 }/*_EOCD_*/

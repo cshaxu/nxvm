@@ -9,12 +9,12 @@
 #include "core/machine/port.h"
 #include "core/machine/dma.h"
 
-static void doReset(t_dma *rdma) {
-    STD_MEMSET((void *)(&rdma->data), NTVDM64_TYPE_ZERO_8, sizeof(t_dma_data));
+static C_VOID doReset(t_dma *rdma) {
+    STD_MEMSET((C_VOID *)(&rdma->data), NTVDM64_TYPE_ZERO_8, sizeof(t_dma_data));
     rdma->data.mask = VDMA_MASK_VALID;
 }
 
-static void dma_read_address(t_dma *dma, t_port *port, ntvdm64_type_unsigned_8 channel)
+static C_VOID dma_read_address(t_dma *dma, t_port *port, ntvdm64_type_unsigned_8 channel)
 {
     port->data.ioByte = !dma->data.flagMSB ?
         NTVDM64_TYPE_MASK_UNSIGNED_8(dma->data.currAddr[channel]) :
@@ -22,7 +22,7 @@ static void dma_read_address(t_dma *dma, t_port *port, ntvdm64_type_unsigned_8 c
     dma->data.flagMSB = !dma->data.flagMSB;
 }
 
-static void dma_read_count(t_dma *dma, t_port *port, ntvdm64_type_unsigned_8 channel)
+static C_VOID dma_read_count(t_dma *dma, t_port *port, ntvdm64_type_unsigned_8 channel)
 {
     port->data.ioByte = !dma->data.flagMSB ?
         NTVDM64_TYPE_MASK_UNSIGNED_8(dma->data.currCount[channel]) :
@@ -30,7 +30,7 @@ static void dma_read_count(t_dma *dma, t_port *port, ntvdm64_type_unsigned_8 cha
     dma->data.flagMSB = !dma->data.flagMSB;
 }
 
-static void dma_write_address(t_dma *dma, t_port *port, ntvdm64_type_unsigned_8 channel)
+static C_VOID dma_write_address(t_dma *dma, t_port *port, ntvdm64_type_unsigned_8 channel)
 {
     if (!dma->data.flagMSB) {
         dma->data.baseAddr[channel] = NTVDM64_TYPE_MASK_UNSIGNED_16(port->data.ioByte);
@@ -41,7 +41,7 @@ static void dma_write_address(t_dma *dma, t_port *port, ntvdm64_type_unsigned_8 
     dma->data.flagMSB = !dma->data.flagMSB;
 }
 
-static void dma_write_count(t_dma *dma, t_port *port, ntvdm64_type_unsigned_8 channel)
+static C_VOID dma_write_count(t_dma *dma, t_port *port, ntvdm64_type_unsigned_8 channel)
 {
     if (!dma->data.flagMSB) {
         dma->data.baseCount[channel] = NTVDM64_TYPE_MASK_UNSIGNED_16(port->data.ioByte);
@@ -52,14 +52,14 @@ static void dma_write_count(t_dma *dma, t_port *port, ntvdm64_type_unsigned_8 ch
     dma->data.flagMSB = !dma->data.flagMSB;
 }
 
-static void dma_write_request(t_dma *dma, t_port *port)
+static C_VOID dma_write_request(t_dma *dma, t_port *port)
 {
     NTVDM64_TYPE_MAKE_BIT(dma->data.request,
         VDMA_REQUEST_DRQ(VDMA_GetREQSC_CS(port->data.ioByte)),
         NTVDM64_TYPE_GET_BIT(port->data.ioByte, VDMA_REQSC_SR));
 }
 
-static void dma_write_mask(t_dma *dma, t_port *port)
+static C_VOID dma_write_mask(t_dma *dma, t_port *port)
 {
     NTVDM64_TYPE_MAKE_BIT(dma->data.mask,
         VDMA_MASK_DRQ(VDMA_GetMASKSC_CS(port->data.ioByte)),
@@ -81,7 +81,7 @@ static ntvdm64_type_unsigned_8 dma_page_channel(ntvdm64_type_unsigned_16 port_id
     }
 }
 
-static void dma_port_read(t_port *port, ntvdm64_type_unsigned_16 port_id, void *owner)
+static C_VOID dma_port_read(t_port *port, ntvdm64_type_unsigned_16 port_id, C_VOID *owner)
 {
     t_dma *primary = (t_dma *)owner;
     t_dma *dma;
@@ -126,7 +126,7 @@ static void dma_port_read(t_port *port, ntvdm64_type_unsigned_16 port_id, void *
     }
 }
 
-static void dma_port_write(t_port *port, ntvdm64_type_unsigned_16 port_id, void *owner)
+static C_VOID dma_port_write(t_port *port, ntvdm64_type_unsigned_16 port_id, C_VOID *owner)
 {
     t_dma *primary = (t_dma *)owner;
     t_dma *dma;
@@ -182,19 +182,19 @@ static ntvdm64_type_unsigned_8 GetRegTopId(t_dma *rdma, ntvdm64_type_unsigned_8 
     }
     return (id + rdma->data.drx) % VDMA_CHANNEL_COUNT;
 }
-static void IncreaseCurrAddr(t_dma *rdma, ntvdm64_type_unsigned_8 id) {
+static C_VOID IncreaseCurrAddr(t_dma *rdma, ntvdm64_type_unsigned_8 id) {
     rdma->data.currAddr[id]++;
     if (rdma->data.currAddr[id] == NTVDM64_TYPE_ZERO_16) {
         rdma->data.page[id]++;
     }
 }
-static void DecreaseCurrAddr(t_dma *rdma, ntvdm64_type_unsigned_8 id) {
+static C_VOID DecreaseCurrAddr(t_dma *rdma, ntvdm64_type_unsigned_8 id) {
     rdma->data.currAddr[id]--;
     if (rdma->data.currAddr[id] == NTVDM64_TYPE_MAX_UNSIGNED_16) {
         rdma->data.page[id]--;
     }
 }
-static void Transmission(t_dma *rdma, t_latch *latch, t_ram *ram,
+static C_VOID Transmission(t_dma *rdma, t_latch *latch, t_ram *ram,
                          ntvdm64_type_unsigned_8 id, ntvdm64_type_bool flagWord) {
     switch (VDMA_GetMODE_TT(rdma->data.mode[id])) {
     case 0x00:
@@ -260,7 +260,7 @@ static void Transmission(t_dma *rdma, t_latch *latch, t_ram *ram,
         break;
     }
 }
-static void Execute(t_dma *rdma, t_latch *latch, t_ram *ram,
+static C_VOID Execute(t_dma *rdma, t_latch *latch, t_ram *ram,
                     ntvdm64_type_unsigned_8 id, ntvdm64_type_bool flagWord) {
     ntvdm64_type_bool flagM2M = ((id == 0) &&
                       VDMA_GetREQUEST_DRQ(rdma->data.request, 1) &&
@@ -347,7 +347,7 @@ static void Execute(t_dma *rdma, t_latch *latch, t_ram *ram,
     rdma->data.flagEOP = NTVDM64_TYPE_FALSE;
 }
 
-void core_machine_dma_set_drq(t_dma *primary, t_dma *secondary,
+C_VOID core_machine_dma_set_drq(t_dma *primary, t_dma *secondary,
                               ntvdm64_type_unsigned_8 drq_id) {
     if (primary == NULL || secondary == NULL) return;
     switch (drq_id) {
@@ -372,7 +372,7 @@ void core_machine_dma_set_drq(t_dma *primary, t_dma *secondary,
         NTVDM64_TYPE_CLEAR_BIT(secondary->data.status, VDMA_STATUS_DRQ(0));
     }
 }
-void core_machine_dma_add_device(t_dma *primary, t_dma *secondary,
+C_VOID core_machine_dma_add_device(t_dma *primary, t_dma *secondary,
     ntvdm64_type_unsigned_8 drq_id, ntvdm64_type_flat_address read_device, ntvdm64_type_flat_address write_device,
     ntvdm64_type_flat_address close_device) {
     if (primary == NULL || secondary == NULL) return;
@@ -398,10 +398,10 @@ void core_machine_dma_add_device(t_dma *primary, t_dma *secondary,
     }
 }
 
-void core_machine_dma_bind_device(t_dma *primary, t_dma *secondary,
+C_VOID core_machine_dma_bind_device(t_dma *primary, t_dma *secondary,
     ntvdm64_type_unsigned_8 drq_id, core_machine_dma_device_provider read_provider,
     core_machine_dma_device_provider write_provider,
-    core_machine_dma_device_provider close_provider, void *owner)
+    core_machine_dma_device_provider close_provider, C_VOID *owner)
 {
     t_dma *dma;
     ntvdm64_type_unsigned_8 channel;
@@ -422,7 +422,7 @@ void core_machine_dma_bind_device(t_dma *primary, t_dma *secondary,
     dma->connect.device_owner[channel] = owner;
 }
 
-void core_machine_dma_initialize(t_latch *latch, t_dma *primary,
+C_VOID core_machine_dma_initialize(t_latch *latch, t_dma *primary,
     t_dma *secondary, t_port *port)
 {
     static const ntvdm64_type_unsigned_16 primary_reads[] = {
@@ -440,9 +440,9 @@ void core_machine_dma_initialize(t_latch *latch, t_dma *primary,
 
     if (latch == NULL || primary == NULL || secondary == NULL ||
         port == NULL) return;
-    STD_MEMSET((void *)latch, NTVDM64_TYPE_ZERO_8, sizeof(*latch));
-    STD_MEMSET((void *)primary, NTVDM64_TYPE_ZERO_8, sizeof(*primary));
-    STD_MEMSET((void *)secondary, NTVDM64_TYPE_ZERO_8, sizeof(*secondary));
+    STD_MEMSET((C_VOID *)latch, NTVDM64_TYPE_ZERO_8, sizeof(*latch));
+    STD_MEMSET((C_VOID *)primary, NTVDM64_TYPE_ZERO_8, sizeof(*primary));
+    STD_MEMSET((C_VOID *)secondary, NTVDM64_TYPE_ZERO_8, sizeof(*secondary));
     primary->connect.latch = latch;
     primary->connect.peer = secondary;
     secondary->connect.latch = latch;
@@ -474,15 +474,15 @@ void core_machine_dma_initialize(t_latch *latch, t_dma *primary,
     }
 }
 
-void core_machine_dma_reset(t_latch *latch, t_dma *primary,
+C_VOID core_machine_dma_reset(t_latch *latch, t_dma *primary,
     t_dma *secondary) {
     if (latch == NULL || primary == NULL || secondary == NULL) return;
-    STD_MEMSET((void *)(&latch->data), NTVDM64_TYPE_ZERO_8, sizeof(t_latch_data));
+    STD_MEMSET((C_VOID *)(&latch->data), NTVDM64_TYPE_ZERO_8, sizeof(t_latch_data));
     doReset(primary);
     doReset(secondary);
 }
 
-void core_machine_dma_refresh(t_latch *latch, t_dma *primary,
+C_VOID core_machine_dma_refresh(t_latch *latch, t_dma *primary,
     t_dma *secondary, t_ram *ram) {
     ntvdm64_type_unsigned_8 id;
     ntvdm64_type_unsigned_8 realDRQ1, realDRQ2;
@@ -534,11 +534,11 @@ void core_machine_dma_refresh(t_latch *latch, t_dma *primary,
     }
 }
 
-void core_machine_dma_finalize(t_latch *latch, t_dma *primary,
+C_VOID core_machine_dma_finalize(t_latch *latch, t_dma *primary,
     t_dma *secondary) {
-    (void)latch;
-    (void)primary;
-    (void)secondary;
+    (C_VOID)latch;
+    (C_VOID)primary;
+    (C_VOID)secondary;
 }
 
 /*

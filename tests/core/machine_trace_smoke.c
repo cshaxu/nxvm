@@ -1,14 +1,17 @@
+#include "type.h"
+
 #include <stdio.h>
+
 
 #include "core/machine/machine_interface.h"
 
 typedef struct trace_fixture {
     core_machine_trace_event events[8];
-    unsigned count;
-    unsigned port_value;
+    C_UINT count;
+    C_UINT port_value;
 } trace_fixture;
 
-static void trace_callback(void *context, const core_machine_trace_event *event)
+static C_VOID trace_callback(C_VOID *context, const core_machine_trace_event *event)
 {
     trace_fixture *fixture = (trace_fixture *)context;
 
@@ -17,30 +20,30 @@ static void trace_callback(void *context, const core_machine_trace_event *event)
     }
 }
 
-static ntvdm64_status port_read(void *owner, uint16_t port, uint32_t *out_value)
+static ntvdm64_status port_read(C_VOID *owner, uint16_t port, uint32_t *out_value)
 {
     trace_fixture *fixture = (trace_fixture *)owner;
 
-    (void)port;
+    (C_VOID)port;
     *out_value = fixture->port_value;
     return NTVDM64_STATUS_OK;
 }
 
-static ntvdm64_status port_write(void *owner, uint16_t port, uint32_t value)
+static ntvdm64_status port_write(C_VOID *owner, uint16_t port, uint32_t value)
 {
     trace_fixture *fixture = (trace_fixture *)owner;
 
-    (void)port;
+    (C_VOID)port;
     fixture->port_value = value;
     return NTVDM64_STATUS_OK;
 }
 
-static int expect_status(ntvdm64_status actual, ntvdm64_status expected)
+static C_INT expect_status(ntvdm64_status actual, ntvdm64_status expected)
 {
     return actual == expected ? 0 : 1;
 }
 
-int main(void)
+C_INT main(C_VOID)
 {
     core_machine *machine = NULL;
     core_machine_config config = {
@@ -52,7 +55,7 @@ int main(void)
     core_machine_run_result result;
     trace_fixture fixture = { { { 0 } }, 0u, 0u };
     uint32_t value;
-    int failed = 0;
+    C_INT failed = 0;
 
     sink.callback = trace_callback;
     sink.context = &fixture;

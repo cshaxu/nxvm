@@ -1,8 +1,11 @@
+#include "type.h"
+
 #include <stdio.h>
+
 
 #include "core/machine/debug_interface.h"
 
-int main(void)
+C_INT main(C_VOID)
 {
     core_machine *machine = NULL;
     core_machine_config config = {
@@ -11,7 +14,7 @@ int main(void)
     core_machine_cpu_state cpu;
     core_machine_run_result result;
     core_machine_run_budget budget = { 2u, 0u };
-    unsigned char byte = 0x5au;
+    C_UCHAR byte = 0x5au;
 
     if (core_machine_create(&config, &machine) != NTVDM64_STATUS_OK ||
         core_machine_debug_read_cpu(machine, &cpu) != NTVDM64_STATUS_INVALID_STATE ||

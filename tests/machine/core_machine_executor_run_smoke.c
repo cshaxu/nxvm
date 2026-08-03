@@ -1,8 +1,11 @@
+#include "type.h"
+
 #include <stdio.h>
+
 
 #include "core/machine/machine.h"
 
-int main(void)
+C_INT main(C_VOID)
 {
     core_machine_config config = {CORE_MACHINE_PROFILE_CUSTOM, 0u};
     core_machine_run_budget budget = {1u, 0u};

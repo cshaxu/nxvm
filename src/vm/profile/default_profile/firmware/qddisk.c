@@ -2,23 +2,31 @@
 
 /* QDDISK implements quick and dirty hard drive control routines. */
 
+#include "type.h"
+
 #include "core/product/utils.h"
 
+
 #include "core/machine/cpu.h"
+
 #include "core/machine/memory.h"
+
 #include "core/machine/block_interface.h"
 
+
 #include "vm/profile/default_profile/firmware/context.h"
+
 #include "vm/profile/default_profile/firmware/qdx.h"
+
 #include "qddisk.h"
 
-static void set_hdd_status(vm_profile_default_context *profile, ntvdm64_type_unsigned_8 status)
+static C_VOID set_hdd_status(vm_profile_default_context *profile, ntvdm64_type_unsigned_8 status)
 {
     core_machine_memory_write_real_to(profile->ram, 0x0040, 0x0074,
         &status, sizeof(status));
 }
 
-static void int_13_02_hdd_read_sector(vm_profile_default_context *profile) {
+static C_VOID int_13_02_hdd_read_sector(vm_profile_default_context *profile) {
     t_cpu *cpu = profile->execution->cpu;
     ntvdm64_type_unsigned_8 drive  = cpu->data.dl;
     ntvdm64_type_unsigned_8 head   = cpu->data.dh;
@@ -38,7 +46,7 @@ static void int_13_02_hdd_read_sector(vm_profile_default_context *profile) {
     set_hdd_status(profile, cpu->data.ah);
 }
 
-static void int_13_03_hdd_write_sector(vm_profile_default_context *profile) {
+static C_VOID int_13_03_hdd_write_sector(vm_profile_default_context *profile) {
     t_cpu *cpu = profile->execution->cpu;
     ntvdm64_type_unsigned_8 drive  = cpu->data.dl;
     ntvdm64_type_unsigned_8 head   = cpu->data.dh;
@@ -58,7 +66,7 @@ static void int_13_03_hdd_write_sector(vm_profile_default_context *profile) {
     set_hdd_status(profile, cpu->data.ah);
 }
 
-void vm_profile_default_disk_initialize(t_qdx *qdx) {
+C_VOID vm_profile_default_disk_initialize(t_qdx *qdx) {
     if (qdx == NULL) return;
     qdx->table[0xa2] = int_13_02_hdd_read_sector;
     qdx->table[0xa3] = int_13_03_hdd_write_sector;

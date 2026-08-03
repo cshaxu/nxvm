@@ -5,13 +5,17 @@
  * device status and stops device thread at breakpoints.
  */
 
+#include "type.h"
+
 #include "core/product/utils.h"
+
 
 #include "core/machine/cpu_instructions.h"
 
+
 #include "vm/machine/debug.h"
 
-static void debug_request_pause(t_debug *debug,
+static C_VOID debug_request_pause(t_debug *debug,
     vm_machine_debug_pause_reason reason)
 {
     if (debug->connect.pauseCallback != NULL) {
@@ -20,7 +24,7 @@ static void debug_request_pause(t_debug *debug,
 }
 
 #if 0
-static void xasm_test(t_debug *debug) {
+static C_VOID xasm_test(t_debug *debug) {
     ntvdm64_type_native_unsigned total = 0; /* diagnostic-only instruction count */
     ntvdm64_type_bool flagStop = NTVDM64_TYPE_TRUE; /* stop the VM if comparison fails */
     ntvdm64_type_native_unsigned i, lenDasm1, lenDasm2, lenAasm;
@@ -101,7 +105,7 @@ static void xasm_test(t_debug *debug) {
     lenAasm  = core_product_utils_aasm32(strDasm1, ins2, debug->connect.cpu->data.cs.seg.exec.defsize);
     lenDasm2 = core_product_utils_dasm32(strDasm2, ins2, debug->connect.cpu->data.cs.seg.exec.defsize);
     if ((flagStop && (lenAasm != lenDasm1 || lenAasm != lenDasm2 || lenDasm1 != lenDasm2 ||
-                      STD_MEMCMP((void *) ins1, (void *) ins2, lenDasm1))) || STD_STRCMP(strDasm1, strDasm2)) {
+                      STD_MEMCMP((C_VOID *) ins1, (C_VOID *) ins2, lenDasm1))) || STD_STRCMP(strDasm1, strDasm2)) {
         STD_PRINTF("diff at #%d %04X:%08X(L%08X), len(a=%x,d1=%x,d2=%x), CodeSegDefSize=%d\n",
                total, debug->connect.cpu->data.cs.selector, debug->connect.cpu->data.eip, debug->connect.cpu->data.cs.base + debug->connect.cpu->data.eip,
                lenAasm, lenDasm1, lenDasm2, debug->connect.cpu->data.cs.seg.exec.defsize ? 32 : 16);
@@ -119,17 +123,17 @@ static void xasm_test(t_debug *debug) {
 
 #endif
 
-void vm_machine_debug_initialize(t_debug *debug, t_cpu *cpu, t_cpuins *cpuins)
+C_VOID vm_machine_debug_initialize(t_debug *debug, t_cpu *cpu, t_cpuins *cpuins)
 {
     if (debug == NULL) return;
-    STD_MEMSET((void *)debug, NTVDM64_TYPE_ZERO_8, sizeof(*debug));
+    STD_MEMSET((C_VOID *)debug, NTVDM64_TYPE_ZERO_8, sizeof(*debug));
     debug->connect.cpu = cpu;
     debug->connect.cpuins = cpuins;
 }
-void vm_machine_debug_reset(t_debug *debug)
+C_VOID vm_machine_debug_reset(t_debug *debug)
 {
     if (debug == NULL) return;
-    STD_MEMSET((void *)&debug->data, NTVDM64_TYPE_ZERO_8, sizeof(debug->data));
+    STD_MEMSET((C_VOID *)&debug->data, NTVDM64_TYPE_ZERO_8, sizeof(debug->data));
 }
 #define _expression "cs:eip=%04x:%08x(L%08x) ss:esp=%04x:%08x(L%08x) \
 eax=%08x ecx=%08x edx=%08x ebx=%08x ebp=%08x esi=%08x edi=%08x ds=%04x es=%04x fs=%04x gs=%04x \

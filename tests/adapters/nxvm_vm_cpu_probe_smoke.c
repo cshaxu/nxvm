@@ -1,10 +1,15 @@
+#include "type.h"
+
 #include <stdio.h>
 
+
 #include "vm/composition_cpu_probe.h"
+
 #include "core/product/runtime/execution_context.h"
+
 #include "core/machine/cpu_instructions.h"
 
-static int expect_capture(
+static C_INT expect_capture(
     const vm_composition_cpu_probe_capture *capture,
     uint32_t eax,
     uint16_t ip,
@@ -14,7 +19,7 @@ static int expect_capture(
         capture->exception_mask == exception_mask;
 }
 
-int main(void)
+C_INT main(C_VOID)
 {
     const uint8_t mov_ax[] = { 0xb8u, 0x34u, 0x12u };
     const uint8_t add_ax[] = { 0x05u, 0x34u, 0x12u };
@@ -24,7 +29,7 @@ int main(void)
     const uint8_t invalid[] = { 0x0fu, 0x0bu };
     vm_composition_cpu_probe_capture capture;
     nxvm_cpu_probe *probe = NULL;
-    int failed = 0;
+    C_INT failed = 0;
 
     if (!vm_composition_cpu_probe_create(&probe)) {
         return 1;

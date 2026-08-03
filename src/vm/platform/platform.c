@@ -2,12 +2,16 @@
 
 /* PLATFORM is the hub that connects all platform-specific modules */
 
+#include "type.h"
+
 #include "core/product/utils.h"
 
+
 #include "core/platform/display_frame.h"
+
 #include "vm/platform/platform.h"
 
-void vm_platform_run_context_initialize(
+C_VOID vm_platform_run_context_initialize(
     vm_platform_run_context *context,
     const vm_platform_execution_transport *execution,
     const vm_platform_keyboard_transport *keyboard,
@@ -31,21 +35,21 @@ void vm_platform_run_context_initialize(
     context->keyboard_state_context = NULL;
 }
 
-int vm_platform_run_context_get_window_display(
+C_INT vm_platform_run_context_get_window_display(
     const vm_platform_run_context *context)
 {
     return context != NULL && context->window_display != 0;
 }
 
-void vm_platform_run_context_set_window_display(
-    vm_platform_run_context *context, int enabled)
+C_VOID vm_platform_run_context_set_window_display(
+    vm_platform_run_context *context, C_INT enabled)
 {
     if (context != NULL) context->window_display = enabled != 0;
 }
 
-void vm_platform_run_context_bind_keyboard_state(
+C_VOID vm_platform_run_context_bind_keyboard_state(
     vm_platform_run_context *context, vm_platform_keyboard_state_sink sink,
-    void *sink_context)
+    C_VOID *sink_context)
 {
     if (context == NULL) return;
     context->keyboard_state_sink = sink;
@@ -53,32 +57,34 @@ void vm_platform_run_context_bind_keyboard_state(
 }
 
 #if GLOBAL_PLATFORM == GLOBAL_VAR_WIN32
+
 #include "vm/platform/win32/win32.h"
-void vm_platform_display_set_screen(const vm_platform_run_context *context) {
+C_VOID vm_platform_display_set_screen(const vm_platform_run_context *context) {
     vm_platform_win32_display_set_screen(vm_platform_run_context_get_window_display(context), context);
 }
-void vm_platform_display_paint(const vm_platform_run_context *context) {
+C_VOID vm_platform_display_paint(const vm_platform_run_context *context) {
     vm_platform_win32_display_paint(vm_platform_run_context_get_window_display(context), context);
 }
-void vm_platform_start(const vm_platform_run_context *context) {
+C_VOID vm_platform_start(const vm_platform_run_context *context) {
     vm_platform_win32_start_machine(vm_platform_run_context_get_window_display(context), context);
 }
 #elif GLOBAL_PLATFORM == GLOBAL_VAR_LINUX
+
 #include "vm/platform/linux/linux.h"
-void vm_platform_display_set_screen(const vm_platform_run_context *context) {
-    (void)context;
+C_VOID vm_platform_display_set_screen(const vm_platform_run_context *context) {
+    (C_VOID)context;
     vm_platform_linux_display_set_screen(vm_platform_run_context_get_window_display(context), context);
 }
-void vm_platform_display_paint(const vm_platform_run_context *context) {
-    (void)context;
+C_VOID vm_platform_display_paint(const vm_platform_run_context *context) {
+    (C_VOID)context;
     vm_platform_linux_display_paint(vm_platform_run_context_get_window_display(context), context);
 }
-void vm_platform_start(const vm_platform_run_context *context) {
+C_VOID vm_platform_start(const vm_platform_run_context *context) {
     vm_platform_linux_start_machine(vm_platform_run_context_get_window_display(context), context);
 }
 #endif
 
-void vm_platform_initialize() {
+C_VOID vm_platform_initialize() {
 }
 
-void vm_platform_finalize() {}
+C_VOID vm_platform_finalize() {}

@@ -1,8 +1,11 @@
+#include "type.h"
+
 #include "core/machine/firmware_interface.h"
+
 
 #include <string.h>
 
-void core_machine_firmware_initialize(core_machine_firmware *firmware)
+C_VOID core_machine_firmware_initialize(core_machine_firmware *firmware)
 {
     if (firmware != NULL) STD_MEMSET(firmware, 0, sizeof(*firmware));
 }
@@ -43,7 +46,7 @@ const core_machine_firmware_service_descriptor *core_machine_firmware_service_at
 }
 
 const core_machine_firmware_service_descriptor *core_machine_firmware_find_interrupt(
-    const core_machine_firmware *firmware, unsigned vector)
+    const core_machine_firmware *firmware, C_UINT vector)
 {
     size_t index;
 

@@ -1,13 +1,19 @@
+#include "type.h"
+
 #include <stdint.h>
+
 #include <stdio.h>
 
+
 #include "core/product/utils.h"
+
 #include "core/product/wait.h"
+
 #include "core/product/wait_provider.h"
 
 static uint32_t observed_milliseconds;
 
-static void core_product_wait_smoke_provider(void *context, uint32_t milliseconds)
+static C_VOID core_product_wait_smoke_provider(C_VOID *context, uint32_t milliseconds)
 {
     uint32_t *calls = context;
 
@@ -15,7 +21,7 @@ static void core_product_wait_smoke_provider(void *context, uint32_t millisecond
     observed_milliseconds = milliseconds;
 }
 
-int main(void)
+C_INT main(C_VOID)
 {
     uint32_t calls = 0u;
     uint32_t nested_calls = 0u;

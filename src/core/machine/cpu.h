@@ -30,17 +30,17 @@ typedef enum core_machine_cpu_watchpoint {
 typedef struct core_machine_cpu_execution_context
     core_machine_cpu_execution_context;
 
-void core_machine_cpu_execution_request_stop(
+C_VOID core_machine_cpu_execution_request_stop(
     core_machine_cpu_execution_context *context);
 ntvdm64_type_bool core_machine_cpu_execution_consume_stop_request(
     core_machine_cpu_execution_context *context);
-void core_machine_cpu_execution_request_reset(
+C_VOID core_machine_cpu_execution_request_reset(
     core_machine_cpu_execution_context *context);
 ntvdm64_type_bool core_machine_cpu_execution_consume_reset_request(
     core_machine_cpu_execution_context *context);
-void core_machine_cpu_state_initialize(
+C_VOID core_machine_cpu_state_initialize(
     core_machine_cpu_execution_context *context);
-void core_machine_cpu_state_reset(core_machine_cpu_execution_context *context);
+C_VOID core_machine_cpu_state_reset(core_machine_cpu_execution_context *context);
 
 #include "type.h"
 
@@ -473,29 +473,29 @@ typedef struct {
 #define _GetCPL  (_GetCR0_PE ? (_GetEFLAGS_VM ? 3 : cpu_state.data.cs.dpl) : 0)
 #define _MakeCPL(cpl) (cpu_state.data.cs.dpl = (cpl))
 
-int core_machine_cpu_read_linear(core_machine_cpu_execution_context *context,
-    uint32_t linear, void *out_data, uint8_t size);
-int core_machine_cpu_write_linear(core_machine_cpu_execution_context *context,
-    uint32_t linear, const void *in_data, uint8_t size);
-int core_machine_cpu_load_segment(core_machine_cpu_execution_context *context,
+C_INT core_machine_cpu_read_linear(core_machine_cpu_execution_context *context,
+    uint32_t linear, C_VOID *out_data, uint8_t size);
+C_INT core_machine_cpu_write_linear(core_machine_cpu_execution_context *context,
+    uint32_t linear, const C_VOID *in_data, uint8_t size);
+C_INT core_machine_cpu_load_segment(core_machine_cpu_execution_context *context,
     core_machine_cpu_segment segment, uint16_t selector);
-int core_machine_cpu_get_code_default_size(
+C_INT core_machine_cpu_get_code_default_size(
     const core_machine_cpu_execution_context *context);
 uint32_t core_machine_cpu_get_code_base(
     const core_machine_cpu_execution_context *context);
-void core_machine_cpu_set_watchpoint(core_machine_cpu_execution_context *context,
+C_VOID core_machine_cpu_set_watchpoint(core_machine_cpu_execution_context *context,
     core_machine_cpu_watchpoint kind, uint32_t linear);
-void core_machine_cpu_clear_watchpoint(core_machine_cpu_execution_context *context,
+C_VOID core_machine_cpu_clear_watchpoint(core_machine_cpu_execution_context *context,
     core_machine_cpu_watchpoint kind);
-void core_machine_cpu_print_registers(
+C_VOID core_machine_cpu_print_registers(
     const core_machine_cpu_execution_context *context);
-void core_machine_cpu_print_segment_registers(
+C_VOID core_machine_cpu_print_segment_registers(
     const core_machine_cpu_execution_context *context);
-void core_machine_cpu_print_control_registers(
+C_VOID core_machine_cpu_print_control_registers(
     const core_machine_cpu_execution_context *context);
-void core_machine_cpu_print_memory_accesses(
+C_VOID core_machine_cpu_print_memory_accesses(
     const core_machine_cpu_execution_context *context);
-void core_machine_cpu_print_watchpoints(
+C_VOID core_machine_cpu_print_watchpoints(
     const core_machine_cpu_execution_context *context);
 
 #ifdef __cplusplus

@@ -4,14 +4,14 @@
 
 #include "type.h"
 
-static void vm_platform_presentation_mailbox_lock(
+static C_VOID vm_platform_presentation_mailbox_lock(
     vm_platform_presentation_mailbox *mailbox)
 {
     while (atomic_flag_test_and_set_explicit(&mailbox->lock,
                                              memory_order_acquire)) {}
 }
 
-void vm_platform_presentation_mailbox_initialize(
+C_VOID vm_platform_presentation_mailbox_initialize(
     vm_platform_presentation_mailbox *mailbox)
 {
     if (mailbox == NULL) return;
@@ -21,7 +21,7 @@ void vm_platform_presentation_mailbox_initialize(
     mailbox->frame.rows = CORE_PLATFORM_DISPLAY_MAX_ROWS;
 }
 
-void vm_platform_presentation_mailbox_publish(
+C_VOID vm_platform_presentation_mailbox_publish(
     vm_platform_presentation_mailbox *mailbox,
     const core_platform_display_frame *frame)
 {
@@ -31,7 +31,7 @@ void vm_platform_presentation_mailbox_publish(
     atomic_flag_clear_explicit(&mailbox->lock, memory_order_release);
 }
 
-void vm_platform_presentation_mailbox_capture(
+C_VOID vm_platform_presentation_mailbox_capture(
     const vm_platform_presentation_mailbox *mailbox,
     core_platform_display_frame *out_frame)
 {

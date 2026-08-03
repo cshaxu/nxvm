@@ -407,7 +407,7 @@ static VOID CreateBitmapFontChar(w32adisp_context *context, UCHAR ch,
     context->font_character_exists[ch][prop] = TRUE;
 }
 
-w32adisp_context *w32adisp_context_create(void) {
+w32adisp_context *w32adisp_context_create(C_VOID) {
     return STD_CALLOC(1u, sizeof(w32adisp_context));
 }
 

@@ -1,15 +1,20 @@
+#include "type.h"
+
 #include "vm/composition_session.h"
+
 
 #include <stdlib.h>
 
+
 #include "vm/composition_full_pc.h"
+
 #include "vm/profile/full_pc_profile.h"
 
 struct vm_composition_full_pc_session {
     vm_composition_full_pc_session_config config;
     const core_product_runtime_profile_descriptor *profile;
     vm_composition_full_pc *full_pc;
-    int active;
+    C_INT active;
 };
 
 static ntvdm64_status vm_composition_full_pc_session_start(
@@ -75,7 +80,7 @@ const core_product_runtime_profile_descriptor *vm_composition_full_pc_session_pr
     return session == NULL ? NULL : session->profile;
 }
 
-void vm_composition_full_pc_session_destroy(vm_composition_full_pc_session *session)
+C_VOID vm_composition_full_pc_session_destroy(vm_composition_full_pc_session *session)
 {
     if (session != NULL) {
         if (session->active) {

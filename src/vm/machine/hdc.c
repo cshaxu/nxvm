@@ -2,10 +2,12 @@
 
 /* VHDC is Hard Disk Driver Controller, not yet implemented. */
 
+#include "type.h"
+
 #include "vm/machine/hdc.h"
 
-void vm_machine_hdc_initialize() {
+C_VOID vm_machine_hdc_initialize() {
 }
-void vm_machine_hdc_reset() {}
-void vm_machine_hdc_refresh() {}
-void vm_machine_hdc_finalize() {}
+C_VOID vm_machine_hdc_reset() {}
+C_VOID vm_machine_hdc_refresh() {}
+C_VOID vm_machine_hdc_finalize() {}

@@ -40,7 +40,7 @@ ntvdm64_status core_product_runtime_dos_minimal_port_read(
     core_product_runtime_dos_minimal *session,
     uint16_t port,
     uint32_t *out_value);
-void core_product_runtime_dos_minimal_destroy(core_product_runtime_dos_minimal *session);
+C_VOID core_product_runtime_dos_minimal_destroy(core_product_runtime_dos_minimal *session);
 
 #ifdef __cplusplus
 }

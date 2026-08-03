@@ -14,8 +14,8 @@ extern "C" {
 #define VPORT_MAX_PORT_COUNT 0x10000
 
 typedef struct t_port t_port;
-typedef void (*core_machine_port_handler)(t_port *port, ntvdm64_type_unsigned_16 port_id,
-    void *owner);
+typedef C_VOID (*core_machine_port_handler)(t_port *port, ntvdm64_type_unsigned_16 port_id,
+    C_VOID *owner);
 
 typedef struct core_machine_port_provider_entry
     core_machine_port_provider_entry;
@@ -39,17 +39,17 @@ struct t_port {
     t_port_connect connect;
 };
 
-void core_machine_port_execute_read(t_port *port, ntvdm64_type_unsigned_16 port_id);
-void core_machine_port_execute_write(t_port *port, ntvdm64_type_unsigned_16 port_id);
-void core_machine_port_add_read(t_port *port, ntvdm64_type_unsigned_16 port_id,
-    core_machine_port_handler handler, void *owner);
-void core_machine_port_add_write(t_port *port, ntvdm64_type_unsigned_16 port_id,
-    core_machine_port_handler handler, void *owner);
+C_VOID core_machine_port_execute_read(t_port *port, ntvdm64_type_unsigned_16 port_id);
+C_VOID core_machine_port_execute_write(t_port *port, ntvdm64_type_unsigned_16 port_id);
+C_VOID core_machine_port_add_read(t_port *port, ntvdm64_type_unsigned_16 port_id,
+    core_machine_port_handler handler, C_VOID *owner);
+C_VOID core_machine_port_add_write(t_port *port, ntvdm64_type_unsigned_16 port_id,
+    core_machine_port_handler handler, C_VOID *owner);
 uint32_t core_machine_port_read(t_port *port, uint16_t port_id);
-void core_machine_port_write(t_port *port, uint16_t port_id, uint32_t value);
-void core_machine_port_initialize(t_port *port);
-void core_machine_port_reset(t_port *port);
-void core_machine_port_finalize(t_port *port);
+C_VOID core_machine_port_write(t_port *port, uint16_t port_id, uint32_t value);
+C_VOID core_machine_port_initialize(t_port *port);
+C_VOID core_machine_port_reset(t_port *port);
+C_VOID core_machine_port_finalize(t_port *port);
 
 
 #ifdef __cplusplus
