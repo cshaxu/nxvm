@@ -82,22 +82,4 @@ C_VOID core_machine_trace_record(
     uint32_t address,
     uint32_t value,
     uint32_t detail);
-t_cpu *core_machine_executor_cpu_borrow(core_machine *machine);
-t_cpuins *core_machine_executor_cpu_instructions_borrow(core_machine *machine);
-core_machine_cpu_execution_context *core_machine_executor_cpu_execution_borrow(
-    core_machine *machine);
-t_ram *core_machine_executor_memory_borrow(core_machine *machine);
-t_port *core_machine_executor_port_borrow(core_machine *machine);
-t_pic *core_machine_shared_pic_master_borrow(core_machine *machine);
-t_pic *core_machine_shared_pic_slave_borrow(core_machine *machine);
-t_pit *core_machine_shared_pit_borrow(core_machine *machine);
-t_latch *core_machine_shared_dma_latch_borrow(core_machine *machine);
-t_dma *core_machine_shared_dma_primary_borrow(core_machine *machine);
-t_dma *core_machine_shared_dma_secondary_borrow(core_machine *machine);
-t_kbc *core_machine_shared_kbc_borrow(core_machine *machine);
-t_vadp *core_machine_shared_vadp_borrow(core_machine *machine);
-ntvdm64_status core_machine_bind_execution_provider(core_machine *machine,
-    const core_machine_execution_provider *provider, C_VOID *context);
-ntvdm64_status core_machine_freeze_execution_providers(core_machine *machine);
-
 #endif

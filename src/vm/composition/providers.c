@@ -75,8 +75,8 @@ C_VOID vm_session_providers_initialize(vm_session *machine) {
         "qdx 10\niret", 0x10);
     _vbios_
     vm_machine_cmos_initialize(machine->cmos,
-        vm_composition_machine_access_cpu(machine->core_access),
-        vm_composition_machine_access_port(machine->core_access));
+        core_machine_executor_cpu_borrow(machine->core_machine),
+        core_machine_executor_port_borrow(machine->core_machine));
     vm_profile_default_bios_add_post(machine->default_bios, VCMOS_POST);
     vm_profile_default_bios_add_interrupt(machine->default_bios, VCMOS_INT_HARD_RTC_08, 0x08);
     vm_profile_default_bios_add_interrupt(machine->default_bios, VCMOS_INT_SOFT_RTC_1A, 0x1a);
@@ -89,12 +89,12 @@ C_VOID vm_session_providers_initialize(vm_session *machine) {
     vm_profile_default_bios_add_post(machine->default_bios, VDMA_POST);
     _vbios_ _vport_
     vm_machine_fdc_connect(machine->fdc, machine->fdd,
-        vm_composition_machine_access_dma_latch(machine->core_access),
-        vm_composition_machine_access_dma_primary(machine->core_access),
-        vm_composition_machine_access_dma_secondary(machine->core_access),
-        vm_composition_machine_access_pic_master(machine->core_access),
-        vm_composition_machine_access_pic_slave(machine->core_access),
-        vm_composition_machine_access_port(machine->core_access));
+        core_machine_shared_dma_latch_borrow(machine->core_machine),
+        core_machine_shared_dma_primary_borrow(machine->core_machine),
+        core_machine_shared_dma_secondary_borrow(machine->core_machine),
+        core_machine_shared_pic_master_borrow(machine->core_machine),
+        core_machine_shared_pic_slave_borrow(machine->core_machine),
+        core_machine_executor_port_borrow(machine->core_machine));
     vm_machine_fdc_initialize(machine->fdc);
     vm_profile_default_bios_add_post(machine->default_bios, VFDC_POST);
     vm_profile_default_bios_add_interrupt(machine->default_bios, VFDC_INT_HARD_FDD_0E, 0x0e);
@@ -110,7 +110,7 @@ C_VOID vm_session_providers_initialize(vm_session *machine) {
     _vbios_ _vport_ _vpic_
     _vbios_ _vport_ _vpit_
     vm_profile_default_qdx_initialize(machine->default_profile_context,
-        vm_composition_machine_access_execution(machine->core_access));
+        core_machine_executor_cpu_execution_borrow(machine->core_machine));
     _vbios_ _vcpu_ _vram_
 }
 
@@ -135,7 +135,7 @@ C_VOID vm_session_providers_reset(vm_session *machine) {
     vm_machine_fdd_reset(machine->fdd);
     vm_machine_hdd_reset(machine->hdd);
     vm_profile_default_bios_reset(machine->default_bios,
-        vm_composition_machine_access_memory(machine->core_access),
+        core_machine_executor_memory_borrow(machine->core_machine),
         machine->block_provider);
     vm_profile_default_qdx_reset(machine->default_profile_context);
 }
@@ -159,7 +159,7 @@ C_VOID vm_session_print_machine(const vm_session *machine) {
     STD_PRINTF("Machine:           %s\n", VM_SESSION_MACHINE_NAME);
     STD_PRINTF("CPU:               %s\n", NXVM_DEVICE_CPU);
     STD_PRINTF("RAM Size:          %d MB\n",
-        vm_composition_machine_access_memory(machine->core_access)->connect.size >> 20);
+        core_machine_executor_memory_borrow(machine->core_machine)->connect.size >> 20);
     STD_PRINTF("Floppy Disk Drive: %s, %.2f MB, %s\n", NXVM_DEVICE_FDD,
            vm_machine_fdd_image_size(machine->fdd) * 1. / VFDD_BYTE_PER_MB,
            machine->fdd->connect.flagDiskExist ? "inserted" : "not inserted");

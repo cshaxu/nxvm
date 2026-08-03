@@ -49,8 +49,6 @@
 
 #include "vm/composition/session_control.h"
 
-#include "vm/composition/machine_access.h"
-
 #include "core/product/debug/debug_target.h"
 
 #include "core/product/debug/debug.h"
@@ -86,7 +84,6 @@ typedef struct vm_session {
     core_product_debug_context debugger_context_storage;
     nxvm_product_console_context console_context_storage;
     nxvm_product_console_target console_target_storage;
-    vm_composition_machine_access core_access_storage;
     uint64_t display_generation;
     core_product_debug_target *debug_target;
     t_cmos *cmos;
@@ -109,7 +106,6 @@ typedef struct vm_session {
     core_product_debug_context *debugger_context;
     nxvm_product_console_context *console_context;
     nxvm_product_console_target *console_target;
-    vm_composition_machine_access *core_access;
     vm_session_control_state *control;
 } vm_session;
 

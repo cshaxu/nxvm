@@ -22,7 +22,7 @@ C_INT main(C_VOID)
         machine->default_qdx != &machine->default_qdx_storage ||
         machine->default_profile_context->qdx != machine->default_qdx ||
         core_machine_cpu_execution_context_extension(
-            vm_composition_machine_access_execution(session->core_access)) !=
+            core_machine_executor_cpu_execution_borrow(session->core_machine)) !=
             machine->default_profile_context) {
         vm_session_finalize(session);
         STD_FREE(session);

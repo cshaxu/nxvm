@@ -3,11 +3,21 @@
 
 
 #include "core/machine/cpu_interface.h"
+#include "core/machine/execution_provider.h"
+#include "core/machine/cpu.h"
+#include "core/machine/cpu_instructions.h"
+#include "core/machine/dma.h"
+#include "core/machine/kbc.h"
 #include "core/machine/lifecycle_interface.h"
+#include "core/machine/memory.h"
 #include "core/machine/memory_interface.h"
+#include "core/machine/pic.h"
+#include "core/machine/pit.h"
+#include "core/machine/port.h"
 #include "core/machine/port_interface.h"
 #include "type.h"
 #include "core/machine/trace_interface.h"
+#include "core/machine/vadp.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -70,6 +80,28 @@ ntvdm64_status core_machine_request_stop(core_machine *machine);
 ntvdm64_status core_machine_report_fault(
     core_machine *machine,
     uint32_t detail);
+
+/* Composition may borrow these core-owned objects only to bind product
+ * providers/profile firmware or construct a product debug target. Borrowing
+ * never transfers lifecycle ownership or permits cached session aliases. */
+t_cpu *core_machine_executor_cpu_borrow(core_machine *machine);
+t_cpuins *core_machine_executor_cpu_instructions_borrow(core_machine *machine);
+core_machine_cpu_execution_context *core_machine_executor_cpu_execution_borrow(
+    core_machine *machine);
+t_ram *core_machine_executor_memory_borrow(core_machine *machine);
+t_port *core_machine_executor_port_borrow(core_machine *machine);
+t_pic *core_machine_shared_pic_master_borrow(core_machine *machine);
+t_pic *core_machine_shared_pic_slave_borrow(core_machine *machine);
+t_pit *core_machine_shared_pit_borrow(core_machine *machine);
+t_latch *core_machine_shared_dma_latch_borrow(core_machine *machine);
+t_dma *core_machine_shared_dma_primary_borrow(core_machine *machine);
+t_dma *core_machine_shared_dma_secondary_borrow(core_machine *machine);
+t_kbc *core_machine_shared_kbc_borrow(core_machine *machine);
+t_vadp *core_machine_shared_vadp_borrow(core_machine *machine);
+
+ntvdm64_status core_machine_bind_execution_provider(core_machine *machine,
+    const core_machine_execution_provider *provider, C_VOID *context);
+ntvdm64_status core_machine_freeze_execution_providers(core_machine *machine);
 
 C_VOID core_machine_destroy(core_machine *machine);
 
