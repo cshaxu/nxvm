@@ -48,20 +48,18 @@ static C_VOID vm_session_console_print_status(C_VOID *context) { vm_session_cont
 static C_VOID vm_session_console_debug(C_VOID *context)
 {
     vm_session *machine = (vm_session *)context;
-    core_product_wait_scope previous;
     if (machine == STD_NULL) return;
     if (vm_session_control_is_running(machine->control)) {
         vm_session_control_request_pause(machine->control, VM_SESSION_PAUSE_EXPLICIT);
         if (!vm_session_control_wait_for_pause(machine->control, 2000u)) return;
     }
-    previous = core_product_wait_scope_enter(machine->wait_scope);
     core_product_debug_context_initialize(machine->debugger_context);
+    machine->debugger_context->wait_scope = machine->wait_scope;
     static const core_product_debug_input_provider input_provider = {
         vm_session_debug_flush_console_input, STD_NULL
     };
     core_product_debug_main(machine->debugger_context,
         vm_session_debug_target(machine), &input_provider);
-    core_product_wait_scope_leave(previous);
 }
 static C_VOID vm_session_console_record_start(C_VOID *context, const C_CHAR *path) { vm_machine_debug_record_start(((vm_session *)context)->debug, path); }
 static C_VOID vm_session_console_record_stop(C_VOID *context) { vm_machine_debug_record_stop(((vm_session *)context)->debug); }

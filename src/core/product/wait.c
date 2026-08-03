@@ -4,8 +4,6 @@
 
 #include "core/product/wait_provider.h"
 
-static _Thread_local core_product_wait_scope coreProductWaitScope;
-
 C_VOID core_product_wait_scope_initialize(core_product_wait_scope *scope,
     core_product_wait_provider provider, C_VOID *context)
 {
@@ -14,33 +12,16 @@ C_VOID core_product_wait_scope_initialize(core_product_wait_scope *scope,
     scope->context = context;
 }
 
-core_product_wait_scope core_product_wait_scope_enter(
-    const core_product_wait_scope *scope)
+C_VOID core_product_wait_milliseconds(const core_product_wait_scope *scope,
+    uint32_t milliseconds)
 {
-    core_product_wait_scope previous = coreProductWaitScope;
-
-    if (scope == STD_NULL) {
-        coreProductWaitScope.provider = STD_NULL;
-        coreProductWaitScope.context = STD_NULL;
-    } else {
-        coreProductWaitScope = *scope;
-    }
-    return previous;
-}
-
-C_VOID core_product_wait_scope_leave(core_product_wait_scope previous)
-{
-    coreProductWaitScope = previous;
-}
-
-C_VOID core_product_wait_milliseconds(uint32_t milliseconds)
-{
-    if (coreProductWaitScope.provider != STD_NULL) {
-        coreProductWaitScope.provider(coreProductWaitScope.context, milliseconds);
+    if (scope != STD_NULL && scope->provider != STD_NULL) {
+        scope->provider(scope->context, milliseconds);
     }
 }
 
-C_VOID core_product_utils_sleep(uint32_t milisec)
+C_VOID core_product_utils_sleep(const core_product_wait_scope *scope,
+    uint32_t milisec)
 {
-    core_product_wait_milliseconds(milisec);
+    core_product_wait_milliseconds(scope, milisec);
 }

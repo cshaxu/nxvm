@@ -134,7 +134,9 @@ static C_VOID keyboard_request_irq(vm_profile_default_context *profile)
 static C_VOID keyboard_read_input(vm_profile_default_context *profile)
 {
     t_cpu *cpu = profile->execution->cpu;
-    while (keyboard_buffer_empty(profile)) core_product_utils_sleep(10);
+    while (keyboard_buffer_empty(profile)) {
+        core_product_utils_sleep(profile->wait_scope, 10);
+    }
     cpu->data.ax = keyboard_buffer_pop(profile);
     keyboard_request_irq(profile);
 }

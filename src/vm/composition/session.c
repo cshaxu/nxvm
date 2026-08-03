@@ -117,6 +117,7 @@ C_VOID vm_session_storage_initialize(vm_session *machine)
     machine->execution_transport = &machine->execution_transport_storage;
     machine->keyboard_transport = &machine->keyboard_transport_storage;
     machine->wait_scope = &machine->wait_scope_storage;
+    machine->default_profile_context->wait_scope = machine->wait_scope;
     machine->platform_run_context = &machine->platform_run_context_storage;
     machine->debugger_context = &machine->debugger_context_storage;
     core_product_debug_context_initialize(machine->debugger_context);

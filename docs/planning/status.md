@@ -219,6 +219,10 @@ milestone. T129 remains the sole active subtask.
 test-minimal profile/state has been removed. T129 remains the sole active
 subtask.
 
+**M5 T131 complete:** wait selection is explicit through platform, profile,
+and debugger contexts; no production wait TLS or enter/leave facade remains.
+T129 remains the sole active subtask.
+
 ## Short-Term M5 Plan
 
 The completed executor sequence is defined in

@@ -4,6 +4,7 @@
 #include "type.h"
 
 #include "core/machine/cpu_instructions.h"
+#include "core/product/wait_provider.h"
 
 typedef struct t_bios t_bios;
 typedef struct t_qdx t_qdx;
@@ -22,6 +23,7 @@ typedef struct vm_profile_default_context {
     core_machine_keyboard_provider_slot *keyboard_provider;
     core_machine_display_provider_slot *display_provider;
     core_machine_cpu_execution_context *execution;
+    const core_product_wait_scope *wait_scope;
 } vm_profile_default_context;
 
 static inline C_VOID vm_profile_default_context_initialize(
@@ -38,6 +40,7 @@ static inline C_VOID vm_profile_default_context_initialize(
     context->keyboard_provider = keyboard_provider;
     context->display_provider = STD_NULL;
     context->execution = STD_NULL;
+    context->wait_scope = STD_NULL;
 }
 
 static inline vm_profile_default_context *

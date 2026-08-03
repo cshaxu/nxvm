@@ -461,7 +461,7 @@ static C_VOID g() {
     }
     core_product_debug_resume();
     while (core_product_debug_is_running()) {
-        core_product_utils_sleep(10);
+        core_product_utils_sleep(debugContext->wait_scope, 10);
     }
     core_product_debug_clear_break(0);
     rprintregs();
@@ -889,7 +889,7 @@ static C_VOID t() {
             core_product_debug_set_trace(1);
             core_product_debug_resume();
             while (core_product_debug_is_running()) {
-                core_product_utils_sleep(10);
+                core_product_utils_sleep(debugContext->wait_scope, 10);
             }
             rprintregs();
             if (i != count - 1) {
@@ -900,7 +900,7 @@ static C_VOID t() {
         core_product_debug_set_trace(count);
         core_product_debug_resume();
         while (core_product_debug_is_running()) {
-            core_product_utils_sleep(10);
+            core_product_utils_sleep(debugContext->wait_scope, 10);
         }
         rprintregs();
     }
@@ -1306,7 +1306,7 @@ static C_VOID xg() {
         core_product_debug_set_break_linear(linear);
         core_product_debug_resume();
         while (core_product_debug_is_running()) {
-            core_product_utils_sleep(10);
+            core_product_utils_sleep(debugContext->wait_scope, 10);
         }
         STD_PRINTF("%d instructions executed before the break point.\n",
                core_product_debug_get_break_count());
@@ -1409,7 +1409,7 @@ static C_VOID xt() {
             core_product_debug_set_trace(1);
             core_product_debug_resume();
             while (core_product_debug_is_running()) {
-                core_product_utils_sleep(10);
+                core_product_utils_sleep(debugContext->wait_scope, 10);
             }
             core_product_debug_print_memory();
             xrprintreg();
@@ -1421,7 +1421,7 @@ static C_VOID xt() {
         core_product_debug_set_trace(count);
         core_product_debug_resume();
         while (core_product_debug_is_running()) {
-            core_product_utils_sleep(10);
+            core_product_utils_sleep(debugContext->wait_scope, 10);
         }
         core_product_debug_print_memory();
         xrprintreg();
