@@ -162,7 +162,8 @@ void machineInit(vm_composition_live_machine *machine) {
     vm_platform_execution_transport_initialize(machine->execution_transport,
         &vm_composition_execution_sink, machine);
     vm_platform_run_context_initialize(machine->platform_run_context,
-        machine->execution_transport, machine->keyboard_transport);
+        machine->execution_transport, machine->keyboard_transport,
+        machine->presentation_mailbox);
     vm_platform_keyboard_bind(&vm_composition_keyboard_sink, machine);
     vm_platform_execution_bind(&vm_composition_execution_sink, machine);
 }

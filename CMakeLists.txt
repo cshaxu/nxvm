@@ -220,6 +220,7 @@ target_include_directories(ntvdm64-core-platform PUBLIC
 )
 set(NXVM_PLATFORM_VM_SOURCES
     src/vm/platform/platform.c
+    src/vm/platform/presentation_mailbox.c
     src/vm/platform/execution.c
     src/vm/platform/input.c
     src/vm/platform/win32/win32.c
@@ -320,6 +321,12 @@ add_executable(nxvm-vm-platform-execution-smoke
     tests/platform/vm_platform_execution_smoke.c
 )
 target_link_libraries(nxvm-vm-platform-execution-smoke PRIVATE nxvm-platform-vm)
+
+add_executable(nxvm-vm-platform-presentation-mailbox-smoke
+    tests/platform/vm_platform_presentation_mailbox_smoke.c
+)
+target_link_libraries(nxvm-vm-platform-presentation-mailbox-smoke PRIVATE
+    nxvm-platform-vm)
 
 add_library(nxvm-vm-composition STATIC ${NXVM_COMPOSITION_VM_SOURCES})
 target_include_directories(nxvm-vm-composition PUBLIC

@@ -204,13 +204,14 @@ static uint8_t Ascii2Print[][2] = {
 
 static uint64_t displayedGeneration;
 
-static void lnxcdispPaint(uint8_t force) {
+static void lnxcdispPaint(const vm_platform_presentation_mailbox *mailbox,
+                          uint8_t force) {
     int ref;
     uint8_t p, c;
     int i, j, sizeRow, sizeCol, curX, curY;
     core_platform_display_frame frame;
 
-    core_platform_display_capture(&frame);
+    vm_platform_presentation_mailbox_capture(mailbox, &frame);
     sizeRow = GetMin(COLS, frame.columns);
     sizeCol = GetMin(LINES, frame.rows);
     ref = 0;
@@ -247,9 +248,9 @@ static void *ThreadDisplay(void *arg) {
     const vm_platform_run_context *context = arg;
 
     lnxcdispInit();
-    lnxcdispPaint(1);
+    lnxcdispPaint(context->presentation, 1);
     while (vm_platform_execution_is_running_for(context->execution)) {
-        lnxcdispPaint(0);
+        lnxcdispPaint(context->presentation, 0);
         utilsSleep(100);
     }
     lnxcdispFinal();
@@ -432,10 +433,12 @@ static void lnxckeybProcess(const vm_platform_run_context *context) {
     }
 }
 
-void lnxcDisplaySetScreen() {}
+void lnxcDisplaySetScreen(const vm_platform_run_context *context) {
+    (void)context;
+}
 
-void lnxcDisplayPaint() {
-    lnxcdispPaint(1);
+void lnxcDisplayPaint(const vm_platform_run_context *context) {
+    lnxcdispPaint(context->presentation, 1);
 }
 
 void lnxcStartMachine(const vm_platform_run_context *context) {

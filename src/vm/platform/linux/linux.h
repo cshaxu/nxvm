@@ -12,8 +12,8 @@
 typedef struct vm_platform_run_context vm_platform_run_context;
 
 void linuxSleep(uint32_t milisec);
-void linuxDisplaySetScreen(int window);
-void linuxDisplayPaint(int window);
+void linuxDisplaySetScreen(int window, const vm_platform_run_context *context);
+void linuxDisplayPaint(int window, const vm_platform_run_context *context);
 void linuxStartMachine(int window, const vm_platform_run_context *context);
 
 #ifdef __cplusplus

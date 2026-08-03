@@ -3,6 +3,7 @@
 /* W32ADISP provides win32 window output interface. */
 
 #include "core/platform/display_frame.h"
+#include "vm/platform/presentation_mailbox.h"
 
 #include "vm/platform/win32/win32app.h"
 #include "vm/platform/win32/w32adisp.h"
@@ -394,7 +395,7 @@ static VOID CreateBitmapFontChar(UCHAR ch, UCHAR prop) {
     bFontCharExist[ch][prop] = TRUE;
 }
 
-VOID w32adispInit() {
+VOID w32adispInit(const vm_platform_presentation_mailbox *mailbox) {
     UINT i, j;
     hdcWnd = GetDC(w32aHWnd);
     hdcBuf = CreateCompatibleDC(NULL);
@@ -403,7 +404,7 @@ VOID w32adispInit() {
     clientWidth  = 0;
     flashCount   = 0;
     flashInterval = 5;
-    w32adispSetScreen();
+    w32adispSetScreen(mailbox);
     hdcFont = CreateCompatibleDC(NULL);
     hBmpFont = CreateCompatibleBitmap(hdcWnd, FONT_WIDTH * FONT_NCHAR, FONT_HEIGHT * FONT_NCOLOR);
     SelectObject(hdcFont, hBmpFont);
@@ -414,12 +415,12 @@ VOID w32adispInit() {
     }
 }
 
-VOID w32adispSetScreen() {
+VOID w32adispSetScreen(const vm_platform_presentation_mailbox *mailbox) {
     RECT clientRect,windowRect;
     LONG widthOffset, heightOffset;
     core_platform_display_frame frame;
 
-    core_platform_display_capture(&frame);
+    vm_platform_presentation_mailbox_capture(mailbox, &frame);
     sizeRow = frame.columns;
     sizeCol = frame.rows;
     GetClientRect(w32aHWnd, &clientRect);
@@ -436,7 +437,7 @@ VOID w32adispSetScreen() {
     hBmpBuf = CreateCompatibleBitmap(hdcWnd,
                                      GetDeviceCaps(hdcWnd, HORZRES), GetDeviceCaps(hdcWnd, VERTRES));
     SelectObject(hdcBuf, hBmpBuf);
-    w32adispPaint(TRUE);
+    w32adispPaint(mailbox, TRUE);
 }
 
 static VOID DisplayCursor(const core_platform_display_frame *frame) {
@@ -462,13 +463,14 @@ static VOID DisplayCursor(const core_platform_display_frame *frame) {
     DeleteObject(hBrush);
 }
 
-VOID w32adispPaint(BOOL flagForce) {
+VOID w32adispPaint(const vm_platform_presentation_mailbox *mailbox,
+                   BOOL flagForce) {
     UCHAR i, j, ch, prop;
     USHORT index;
     BOOL changed;
     core_platform_display_frame frame;
 
-    core_platform_display_capture(&frame);
+    vm_platform_presentation_mailbox_capture(mailbox, &frame);
     flashCount = (flashCount + 1) % 10;
     changed = flagForce || frame.generation != displayedGeneration;
     if (changed) {

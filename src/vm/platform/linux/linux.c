@@ -11,17 +11,17 @@ void linuxSleep(uint32_t milisec) {
     usleep((milisec) * 1000);
 }
 
-void linuxDisplaySetScreen(int window) {
+void linuxDisplaySetScreen(int window, const vm_platform_run_context *context) {
     if (window) {
     } else {
-        lnxcDisplaySetScreen();
+        lnxcDisplaySetScreen(context);
     }
 }
 
-void linuxDisplayPaint(int window) {
+void linuxDisplayPaint(int window, const vm_platform_run_context *context) {
     if (window) {
     } else {
-        lnxcDisplayPaint();
+        lnxcDisplayPaint(context);
     }
 }
 

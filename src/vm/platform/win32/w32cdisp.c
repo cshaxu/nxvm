@@ -5,6 +5,7 @@
 #include "core/product/utils.h"
 
 #include "core/platform/display_frame.h"
+#include "vm/platform/presentation_mailbox.h"
 
 #include "vm/platform/win32/win32con.h"
 #include "vm/platform/win32/w32cdisp.h"
@@ -19,18 +20,18 @@ static CONSOLE_SCREEN_BUFFER_INFO defaultBufInfo;
 static UCHAR bufComp[0x1000];
 static uint64_t displayedGeneration;
 
-VOID w32cdispInit() {
+VOID w32cdispInit(const vm_platform_presentation_mailbox *mailbox) {
     /* GetConsoleCursorInfo(hOut, (PCONSOLE_CURSOR_INFO)(&defaultCurInfo)); */
     GetConsoleScreenBufferInfo(hOut, &defaultBufInfo);
     defaultCodePage = GetConsoleCP();
     charBuf = NULL;
-    w32cdispSetScreen();
+    w32cdispSetScreen(mailbox);
 }
 
-VOID w32cdispSetScreen() {
+VOID w32cdispSetScreen(const vm_platform_presentation_mailbox *mailbox) {
     core_platform_display_frame frame;
 
-    core_platform_display_capture(&frame);
+    vm_platform_presentation_mailbox_capture(mailbox, &frame);
     sizeCol = frame.rows;
     sizeRow = frame.columns;
     coordBufSize.X = sizeRow; /* number of cols */
@@ -50,7 +51,8 @@ VOID w32cdispSetScreen() {
     SetConsoleScreenBufferSize(hOut, coordBufSize);
 }
 
-VOID w32cdispPaint(BOOL flagForce) {
+VOID w32cdispPaint(const vm_platform_presentation_mailbox *mailbox,
+                   BOOL flagForce) {
     core_platform_display_frame frame;
     UCHAR ansiChar;
     WCHAR unicodeChar;
@@ -59,7 +61,7 @@ VOID w32cdispPaint(BOOL flagForce) {
     COORD curPos;
     CONSOLE_CURSOR_INFO curInfo;
     BOOL changed;
-    core_platform_display_capture(&frame);
+    vm_platform_presentation_mailbox_capture(mailbox, &frame);
     if (!charBuf) {
         return;
     }

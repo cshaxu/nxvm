@@ -50,13 +50,16 @@ void vm_composition_publish_display(vm_composition_live_machine *machine,
         }
     }
     frame.generation = ++machine->display_generation;
-    core_platform_display_publish(&frame);
+    vm_platform_presentation_mailbox_publish(machine->presentation_mailbox,
+                                             &frame);
 }
 
 static void vmCompositionDisplayModeChanged(void *context)
 {
-    vm_composition_publish_display((vm_composition_live_machine *)context, 1);
-    platformDisplaySetScreen();
+    vm_composition_live_machine *machine = context;
+
+    vm_composition_publish_display(machine, 1);
+    platformDisplaySetScreen(machine->platform_run_context);
 }
 
 void vm_composition_bind_display(vm_composition_live_machine *machine)

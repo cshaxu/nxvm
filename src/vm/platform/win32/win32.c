@@ -292,19 +292,21 @@ VOID win32KeyboardMakeKey(UCHAR scanCode, UCHAR virtualKey) {
     win32KeyboardMakeKeyFor(NULL, scanCode, virtualKey);
 }
 
-VOID win32DisplaySetScreen(BOOL flagWindow) {
+VOID win32DisplaySetScreen(BOOL flagWindow,
+                           const vm_platform_run_context *context) {
     if (flagWindow) {
-        win32appDisplaySetScreen();
+        win32appDisplaySetScreen(context);
     } else {
-        win32conDisplaySetScreen();
+        win32conDisplaySetScreen(context);
     }
 }
 
-VOID win32DisplayPaint(BOOL flagWindow) {
+VOID win32DisplayPaint(BOOL flagWindow,
+                       const vm_platform_run_context *context) {
     if (flagWindow) {
-        win32appDisplayPaint();
+        win32appDisplayPaint(context);
     } else {
-        win32conDisplayPaint();
+        win32conDisplayPaint(context);
     }
 }
 
