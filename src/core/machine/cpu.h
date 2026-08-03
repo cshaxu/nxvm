@@ -5,6 +5,7 @@
 
 
 #include "core/machine/cpu_interface.h"
+#include "core/machine/fpu_interface.h"
 #include "type.h"
 
 #ifdef __cplusplus
@@ -40,6 +41,10 @@ ntvdm64_type_bool core_machine_cpu_execution_consume_reset_request(
 C_VOID core_machine_cpu_state_initialize(
     core_machine_cpu_execution_context *context);
 C_VOID core_machine_cpu_state_reset(core_machine_cpu_execution_context *context);
+C_VOID core_machine_cpu_execution_context_bind_profiles(
+    core_machine_cpu_execution_context *context,
+    core_machine_cpu_profile cpu_profile,
+    core_machine_fpu_profile fpu_profile);
 
 #include "type.h"
 

@@ -1,6 +1,7 @@
 /* This file is a part of NXVM project. */
 
 /* DEBUGGING OPTIONS ******************************************************* */
+/* T154 retains this compatibility shim; T155 replaces it with profile gates. */
 #define i386(n) if (1)
 /* ************************************************************************* */
 
@@ -4854,6 +4855,67 @@ static C_VOID _a_scas(core_machine_cpu_execution_context *context, ntvdm64_type_
     NTVDM64_TYPE_TRACE_CALL_END;
 }
 #define _adv NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_skip(context, 1))
+
+core_machine_cpu_instruction_metadata core_machine_cpu_instruction_metadata_get(
+    core_machine_cpu_instruction_space space, uint8_t opcode, uint8_t modrm)
+{
+    core_machine_cpu_instruction_metadata metadata = {
+        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_FPU_PROFILE_NONE, 1
+    };
+
+    switch (space) {
+    case CORE_MACHINE_CPU_INSTRUCTION_PRIMARY:
+        if (opcode >= 0xd8u && opcode <= 0xdfu) {
+            metadata.minimum_fpu = CORE_MACHINE_FPU_PROFILE_8087;
+        } else if ((opcode >= 0x60u && opcode <= 0x62u) || opcode == 0x68u ||
+                   opcode == 0x69u || opcode == 0x6au || opcode == 0x6bu ||
+                   (opcode >= 0x6cu && opcode <= 0x6fu) || opcode == 0xc0u ||
+                   opcode == 0xc1u || opcode == 0xc8u || opcode == 0xc9u) {
+            metadata.minimum_cpu = CORE_MACHINE_CPU_PROFILE_80186;
+        } else if (opcode == 0x63u) {
+            metadata.minimum_cpu = CORE_MACHINE_CPU_PROFILE_80286;
+        } else if (opcode >= 0x64u && opcode <= 0x67u) {
+            metadata.minimum_cpu = CORE_MACHINE_CPU_PROFILE_80386;
+        } else if (opcode == 0x82u || opcode == 0xd6u || opcode == 0xf1u) {
+            metadata.valid = 0;
+        }
+        break;
+    case CORE_MACHINE_CPU_INSTRUCTION_0F:
+        metadata.valid = 0;
+        if (opcode == 0x00u) {
+            metadata.minimum_cpu = CORE_MACHINE_CPU_PROFILE_80286;
+            metadata.valid = ((modrm >> 3u) & 7u) <= 3u;
+        } else if (opcode == 0x01u) {
+            metadata.minimum_cpu = CORE_MACHINE_CPU_PROFILE_80286;
+            metadata.valid = ((modrm >> 3u) & 7u) <= 5u;
+        } else if (opcode == 0x02u || opcode == 0x03u) {
+            metadata.minimum_cpu = CORE_MACHINE_CPU_PROFILE_80286;
+            metadata.valid = 1;
+        } else if (opcode == 0x06u ||
+                   (opcode >= 0x20u && opcode <= 0x26u) ||
+                   (opcode >= 0x80u && opcode <= 0x8fu) ||
+                   (opcode >= 0x90u && opcode <= 0x9fu) ||
+                   opcode == 0xa0u || opcode == 0xa1u || opcode == 0xa3u ||
+                   opcode == 0xa4u || opcode == 0xa5u || opcode == 0xa8u ||
+                   opcode == 0xa9u || opcode == 0xabu || opcode == 0xacu ||
+                   opcode == 0xadu || opcode == 0xafu ||
+                   (opcode >= 0xb2u && opcode <= 0xb7u) ||
+                   (opcode >= 0xbbu && opcode <= 0xbfu)) {
+            metadata.minimum_cpu = CORE_MACHINE_CPU_PROFILE_80386;
+            metadata.valid = 1;
+        } else if (opcode == 0xbau) {
+            metadata.minimum_cpu = CORE_MACHINE_CPU_PROFILE_80386;
+            metadata.valid = ((modrm >> 3u) & 7u) >= 4u;
+        }
+        break;
+    case CORE_MACHINE_CPU_INSTRUCTION_FPU_ESCAPE:
+        metadata.minimum_fpu = CORE_MACHINE_FPU_PROFILE_8087;
+        metadata.valid = opcode >= 0xd8u && opcode <= 0xdfu;
+        break;
+    }
+    return metadata;
+}
+
 static C_VOID UndefinedOpcode(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("UndefinedOpcode");
     cpu_state = instruction_state.data.oldcpu;

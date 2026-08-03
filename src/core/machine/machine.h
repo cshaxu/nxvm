@@ -10,6 +10,7 @@
 #include "core/machine/cpu.h"
 
 #include "core/machine/cpu_instructions.h"
+#include "core/machine/fpu.h"
 
 #include "core/machine/execution_provider.h"
 
@@ -60,6 +61,8 @@ struct core_machine {
     core_machine_port_table port_providers;
     core_machine_trace_state trace;
     core_machine_cpu_diagnostic_state cpu_diagnostic;
+    core_machine_cpu_profile cpu_profile;
+    core_machine_fpu fpu;
     t_cpu executor_cpu;
     t_cpuins executor_cpu_instructions;
     core_machine_cpu_execution_context executor_cpu_execution;

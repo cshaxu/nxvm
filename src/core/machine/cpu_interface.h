@@ -3,6 +3,16 @@
 
 #include "type.h"
 
+typedef enum core_machine_cpu_profile {
+    CORE_MACHINE_CPU_PROFILE_DEFAULT = 0,
+    CORE_MACHINE_CPU_PROFILE_8086,
+    CORE_MACHINE_CPU_PROFILE_80186,
+    CORE_MACHINE_CPU_PROFILE_80286,
+    CORE_MACHINE_CPU_PROFILE_80386
+} core_machine_cpu_profile;
+
+const C_CHAR *core_machine_cpu_profile_name(core_machine_cpu_profile profile);
+
 typedef struct core_machine_cpu_state {
     uint16_t cs;
     uint32_t cs_base;
