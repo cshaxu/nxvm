@@ -36,6 +36,35 @@ ntvdm64_status core_machine_enable_executor(core_machine *machine)
     return NTVDM64_STATUS_OK;
 }
 
+ntvdm64_status core_machine_prepare_executor_cpu(core_machine *machine)
+{
+    if (machine == STD_NULL || !machine->executor_enabled) {
+        return NTVDM64_STATUS_INVALID_STATE;
+    }
+    core_machine_cpu_state_initialize(&machine->executor_cpu_execution);
+    return NTVDM64_STATUS_OK;
+}
+
+ntvdm64_status core_machine_prepare_executor_bus(core_machine *machine)
+{
+    if (machine == STD_NULL || !machine->executor_enabled) {
+        return NTVDM64_STATUS_INVALID_STATE;
+    }
+    core_machine_port_initialize(&machine->executor_port);
+    return NTVDM64_STATUS_OK;
+}
+
+ntvdm64_status core_machine_prepare_executor_memory(core_machine *machine)
+{
+    if (machine == STD_NULL || !machine->executor_enabled) {
+        return NTVDM64_STATUS_INVALID_STATE;
+    }
+    core_machine_memory_initialize(&machine->executor_memory);
+    core_machine_memory_register_ports(&machine->executor_memory,
+        &machine->executor_port);
+    return NTVDM64_STATUS_OK;
+}
+
 t_cpu *core_machine_executor_cpu_borrow(core_machine *machine)
 { return machine != STD_NULL && machine->executor_enabled ? &machine->executor_cpu : STD_NULL; }
 
