@@ -74,6 +74,9 @@ add_custom_target(nxvm-product-console-lifecycle-gate
     VERBATIM)
 add_executable(nxvm-product-session-smoke tests/products/nxvm_session_smoke.c)
 target_link_libraries(nxvm-product-session-smoke PRIVATE nxvm-vm-composition)
+add_executable(nxvm-vm-session-manager-smoke
+    tests/products/nxvm_session_manager_smoke.c)
+target_link_libraries(nxvm-vm-session-manager-smoke PRIVATE nxvm-vm-composition)
 
 target_link_libraries(nxvm-core-contract-smoke PRIVATE nxvm-core)
 
@@ -286,6 +289,7 @@ target_include_directories(nxvm-product-core-utils PUBLIC
 target_link_libraries(nxvm-product-core-utils PUBLIC nxvm-product-core-debug)
 
 add_library(nxvm-product-core-session STATIC
+    src/core/product/session/command.c
     src/core/product/session/manager.c
 )
 target_include_directories(nxvm-product-core-session PUBLIC
@@ -748,6 +752,7 @@ add_nxvm_version_artifact(nxvm-0-5-0142 "0.5.0142")
 add_nxvm_version_artifact(nxvm-0-5-0143 "0.5.0143")
 add_nxvm_version_artifact(nxvm-0-5-0145 "0.5.0145")
 add_nxvm_version_artifact(nxvm-0-5-0146 "0.5.0146")
+add_nxvm_version_artifact(nxvm-0-5-0147 "0.5.0147")
 
 option(NTVDM64_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
@@ -843,3 +848,4 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(nxvm-vm-cpu-probe-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-execution-context-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
+

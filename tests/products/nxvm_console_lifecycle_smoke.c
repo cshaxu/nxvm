@@ -61,7 +61,7 @@ C_INT main(C_VOID)
         return 1;
     }
     vm_session_machine_provider_initialize(&machine_provider, session_manager);
-    vm_product_console_main(&console_context, &machine_provider);
+    vm_product_console_main(&console_context, &machine_provider, session_manager);
 
     NXVM_DUP2(saved_stdin, NXVM_FILENO(STD_STDIN));
     NXVM_CLOSE(saved_stdin);

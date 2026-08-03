@@ -115,6 +115,16 @@ ntvdm64_status core_product_session_manager_get_selected_id(
     return NTVDM64_STATUS_OK;
 }
 
+ntvdm64_status core_product_session_manager_get_count(
+    const core_product_session_manager *manager, STD_SIZE_T *out_count)
+{
+    if (manager == STD_NULL || out_count == STD_NULL || manager->count == 0u) {
+        return NTVDM64_STATUS_INVALID_STATE;
+    }
+    *out_count = manager->count;
+    return NTVDM64_STATUS_OK;
+}
+
 ntvdm64_status core_product_session_manager_borrow_selected(
     core_product_session_manager *manager, C_VOID **out_session)
 {

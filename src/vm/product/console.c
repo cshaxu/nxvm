@@ -8,6 +8,7 @@
 #include "type.h"
 
 #include "core/product/utils.h"
+#include "core/product/session/command_interface.h"
 
 
 #include "vm/product/console.h"
@@ -21,6 +22,7 @@
 #define flagExit (consoleContext->exit_requested)
 #define strCmdBuff (consoleContext->command_buffer)
 #define machineProvider (consoleContext->machine_provider)
+#define sessionManager (consoleContext->session_manager)
 
 /*
  * Parses command-line input.
@@ -69,6 +71,13 @@ static C_VOID doHelp(nxvm_product_console_context *context) {
         } else if (!STD_STRCMP(argArray[1], "info")) {
             STD_PRINTF("List virtual machine status\n");
             STD_PRINTF("\nINFO\n");
+            break;
+        } else if (!STD_STRCMP(argArray[1], "session")) {
+            STD_PRINTF("Manage NXVM sessions\n");
+            STD_PRINTF("\nSESSION LIST | OPEN | SELECT <id>\n");
+            STD_PRINTF("  list:   show sessions; * marks the selected session\n");
+            STD_PRINTF("  open:   create one stopped session\n");
+            STD_PRINTF("  select: choose the session for machine commands\n");
             break;
         } else if (!STD_STRCMP(argArray[1], "debug")) {
             STD_PRINTF("Launch NXVM hardware debugger\n");
@@ -133,6 +142,7 @@ static C_VOID doHelp(nxvm_product_console_context *context) {
         STD_PRINTF("HELP    Show help info\n");
         STD_PRINTF("EXIT    Quit the console\n");
         STD_PRINTF("INFO    List all NXVM info\n");
+        STD_PRINTF("SESSION Manage NXVM sessions\n");
         STD_PRINTF("\n");
         STD_PRINTF("DEBUG   Launch NXVM hardware debugger\n");
         STD_PRINTF("RECORD  Record cpu status for each instruction\n");
@@ -338,10 +348,22 @@ static C_VOID doTest(nxvm_product_console_context *context) {
     machineProvider->debug(machineProvider->context);
 }
 
+static C_VOID vm_product_console_write_line(C_VOID *opaque, const C_CHAR *line)
+{
+    (C_VOID)opaque;
+    STD_PRINTF("%s\n", line);
+}
+
 /* Executes commands */
 static C_VOID execute(nxvm_product_console_context *context) {
     if (!argArray[0] || !STD_STRLEN(argArray[0])) {
         return;
+    } else if (!STD_STRCMP(argArray[0], "session")) {
+        const core_product_session_output_provider output = {
+            vm_product_console_write_line, STD_NULL
+        };
+        (C_VOID)core_product_session_command_execute(sessionManager,
+            (C_INT)numArgs, argArray, &output);
     } else if (!STD_STRCMP(argArray[0], "test")) {
         doTest(context);
     } else if (!STD_STRCMP(argArray[0], "help")) {
@@ -400,10 +422,13 @@ C_VOID nxvm_product_console_context_initialize(
 }
 
 C_VOID vm_product_console_main(nxvm_product_console_context *context,
-                 const vm_product_console_machine_provider *machine_provider) {
-    if (context == STD_NULL || machine_provider == STD_NULL) return;
+                 const vm_product_console_machine_provider *machine_provider,
+                 core_product_session_manager *session_manager) {
+    if (context == STD_NULL || machine_provider == STD_NULL ||
+        session_manager == STD_NULL) return;
     nxvm_product_console_context_initialize(context);
     machineProvider = machine_provider;
+    sessionManager = session_manager;
     vm_product_console_initialize(context);
     STD_PRINTF("\nPlease enter 'HELP' for information.\n\n");
     while (!flagExit) {
