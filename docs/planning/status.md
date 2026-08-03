@@ -351,8 +351,13 @@ debugger, and FDD DOS-prompt gates pass. Evidence is
 [`M5-T161.md`](../tracking/M5-T161.md); artifact `nxvm_0_5_0161.exe` is
 verified.
 
-**M5 T162 S1 active: structural closure audit.** Re-audit the post-T160/T161
-tree before selecting further implementation work; it has no behavior change.
+**M5 T162 S1 complete: structural closure audit.** One NXVM executor/run path,
+explicit session selection, core dependency direction, and T161 source split
+are confirmed. The audit records two P1 boundary/source-policy findings and
+bounded P2 cleanup work in [`M5-T162.md`](../tracking/M5-T162.md).
+
+**M5 T163 S1 active: frozen core API boundary design.** Define a safe retained
+`DEVICE ram` and observation contract before changing raw core borrows.
 
 The completed executor sequence is defined in
 [Facade And Executor Convergence](m5-facade-executor-convergence.md). The

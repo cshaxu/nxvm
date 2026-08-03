@@ -148,25 +148,23 @@ VM/VDM root-composition policy.
 
 ## Core Machine: Configuration, State, And Run Result
 
-`CORE_MACHINE_CONFIG` contains only static core-machine capability: RAM
-capacity, CPU architecture capability bits, address-space limits, and baseline
-machine settings such as A20 reset policy. VM/VDM root composition translates a
+`core_machine_config` contains static core-machine capability: RAM capacity and
+the frozen CPU/FPU profile selections. VM/VDM root composition translates a
 selected profile into this configuration.
 
 It contains no profile identifier, ROM/BIOS/CMOS data, storage device, host
 resource, window/Console option, debugger option, or product exit policy.
 Those are provider, product, or root-composition concerns.
 
-CPU selection is expressed as core capability bits, not VM or VDM model names.
-For example, a VM profile may require 386 instruction capability, while root
-composition supplies the corresponding core bit set. This lets core evolve its
-x86 implementation without importing product profile semantics.
+CPU and FPU selection use core-owned profile enums, not VM or VDM model names.
+This lets the core evolve its x86 implementation without importing product
+profile semantics.
 
 `core_machine_lifecycle` exposes `INITIALIZED`, `PAUSED`, `RUNNING`, `STOPPED`,
 and `FAULTED`. `INITIALIZED` is the configuration window and is not runnable;
 `RUNNING` exists only while a synchronous `core_machine_run` call is active.
 
-`CORE_MACHINE_RUN_RESULT` reports why one quantum returned:
+`core_machine_run_result` reports why one quantum returned:
 
 - `QUANTUM_COMPLETE`: instruction budget exhausted and execution may continue.
 - `WAITING_FOR_INTERRUPT`: CPU is halted awaiting an interrupt or another
@@ -181,11 +179,10 @@ The core does not define a DOS program exit or a whole-PC process exit result.
 
 ## Core Machine: CPU State And Physical Memory
 
-`core_machine_get_cpu_state` copies `CORE_MACHINE_CPU_STATE`, including general
-registers, segments, flags, instruction location, execution mode, and fault
-location. `core_machine_set_cpu_state` replaces that state only while the
-machine is `CONFIGURING`, `READY`, or `PAUSED`; it is forbidden while
-`RUNNING`. The contract exposes no separate register-setter API.
+`core_machine_get_cpu_state` copies `core_machine_cpu_state`, including the
+current code location, flags, and halt state. There is no public CPU-state
+setter. T163 will close the remaining direct-observation boundary so this
+copied state is only observed at a synchronized execution boundary.
 
 `core_machine_memory_read` and `core_machine_memory_write` accept only a
 physical address, caller storage, and `size_t` length. The current public
