@@ -52,25 +52,24 @@ void vm_composition_control_start(vm_composition_control_state *control) {
     machine = (vm_composition_live_machine *)control->execution_context.device;
     if (machine == NULL || machine->core_machine == NULL) return;
     nxvm_execution_context_activate(&control->execution_context);
-    control->flagRun = True;
-    control->flagFlip = !control->flagFlip;
-    while (control->flagRun) {
-        if (control->flagReset) {
+    atomic_store(&control->flagRun, True);
+    atomic_store(&control->flagFlip, !atomic_load(&control->flagFlip));
+    while (atomic_load(&control->flagRun)) {
+        if (atomic_exchange(&control->flagReset, False)) {
             nxvm_execution_context_reset(&control->execution_context);
-            control->flagReset = False;
         }
-        if (control->pauseRequested) {
-            control->paused = True;
+        if (atomic_load(&control->pauseRequested)) {
+            atomic_store(&control->paused, True);
         }
-        while (control->flagRun && control->paused) {
+        while (atomic_load(&control->flagRun) && atomic_load(&control->paused)) {
             nxvm_execution_context_run_command_boundary(&control->execution_context);
             core_platform_sleep_milliseconds(1u);
         }
-        if (!control->flagRun) break;
+        if (!atomic_load(&control->flagRun)) break;
         nxvm_execution_context_run_command_boundary(&control->execution_context);
         nxvm_execution_context_debug_refresh(&control->execution_context);
-        if (control->pauseRequested) continue;
-        if (!control->flagRun) {
+        if (atomic_load(&control->pauseRequested)) continue;
+        if (!atomic_load(&control->flagRun)) {
             break;
         }
         if (core_machine_run(machine->core_machine, budget, &result) !=
@@ -88,8 +87,7 @@ void vm_composition_control_start(vm_composition_control_state *control) {
         if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
             core_platform_sleep_milliseconds(1u);
         }
-        if (control->stepRequested) {
-            control->stepRequested = False;
+        if (atomic_exchange(&control->stepRequested, False)) {
             vm_composition_control_request_pause(control, VM_COMPOSITION_PAUSE_STEP);
         }
     }
@@ -99,11 +97,11 @@ void vm_composition_control_start(vm_composition_control_state *control) {
 /* Issues resetting signal to device thread */
 void vm_composition_control_reset(vm_composition_control_state *control) {
     if (control == NULL) return;
-    if (control->flagRun) {
-        control->flagReset = True;
+    if (atomic_load(&control->flagRun)) {
+        atomic_store(&control->flagReset, True);
     } else {
         nxvm_execution_context_reset(&control->execution_context);
-        control->flagReset = False;
+        atomic_store(&control->flagReset, False);
     }
 }
 
@@ -116,22 +114,22 @@ void vm_composition_control_stop(vm_composition_control_state *control)  {
     if (machine != NULL && machine->core_machine != NULL) {
         core_machine_request_stop(machine->core_machine);
     }
-    control->flagRun = False;
-    control->paused = False;
-    control->pauseRequested = False;
+    atomic_store(&control->flagRun, False);
+    atomic_store(&control->paused, False);
+    atomic_store(&control->pauseRequested, False);
 }
 
 void vm_composition_control_request_pause(vm_composition_control_state *control,
     vm_composition_pause_reason reason)
 {
     if (control == NULL) return;
-    if (!control->flagRun) {
-        control->paused = True;
-        control->pauseReason = reason;
+    if (!atomic_load(&control->flagRun)) {
+        atomic_store(&control->paused, True);
+        atomic_store(&control->pauseReason, reason);
         return;
     }
-    control->pauseRequested = True;
-    control->pauseReason = reason;
+    atomic_store(&control->pauseRequested, True);
+    atomic_store(&control->pauseReason, reason);
 }
 
 int vm_composition_control_wait_for_pause(vm_composition_control_state *control,
@@ -140,41 +138,42 @@ int vm_composition_control_wait_for_pause(vm_composition_control_state *control,
     unsigned waited = 0u;
 
     if (control == NULL) return False;
-    while (control->flagRun && !control->paused &&
+    while (atomic_load(&control->flagRun) && !atomic_load(&control->paused) &&
            waited < milliseconds) {
         core_platform_sleep_milliseconds(1u);
         ++waited;
     }
-    return control->paused;
+    return atomic_load(&control->paused);
 }
 
 int vm_composition_control_is_paused(const vm_composition_control_state *control)
 {
-    return control != NULL && control->paused;
+    return control != NULL && atomic_load(&control->paused);
 }
 
 vm_composition_pause_reason vm_composition_control_get_pause_reason(
     const vm_composition_control_state *control)
 {
-    return control == NULL ? VM_COMPOSITION_PAUSE_NONE : control->pauseReason;
+    return control == NULL ? VM_COMPOSITION_PAUSE_NONE :
+        (vm_composition_pause_reason)atomic_load(&control->pauseReason);
 }
 
 void vm_composition_control_continue(vm_composition_control_state *control)
 {
     if (control == NULL) return;
-    control->pauseRequested = False;
-    control->paused = False;
-    control->stepRequested = False;
-    control->pauseReason = VM_COMPOSITION_PAUSE_NONE;
+    atomic_store(&control->pauseRequested, False);
+    atomic_store(&control->paused, False);
+    atomic_store(&control->stepRequested, False);
+    atomic_store(&control->pauseReason, VM_COMPOSITION_PAUSE_NONE);
 }
 
 int vm_composition_control_step(vm_composition_control_state *control)
 {
-    if (control == NULL || !control->paused) return False;
-    control->pauseRequested = False;
-    control->paused = False;
-    control->stepRequested = True;
-    control->pauseReason = VM_COMPOSITION_PAUSE_NONE;
+    if (control == NULL || !atomic_load(&control->paused)) return False;
+    atomic_store(&control->pauseRequested, False);
+    atomic_store(&control->paused, False);
+    atomic_store(&control->stepRequested, True);
+    atomic_store(&control->pauseReason, VM_COMPOSITION_PAUSE_NONE);
     return True;
 }
 
@@ -192,6 +191,13 @@ void vm_composition_control_initialize(vm_composition_control_state *control,
 
     if (control == NULL || machine == NULL) return;
     MEMSET((void *)(control), Zero8, sizeof(*control));
+    atomic_init(&control->flagFlip, False);
+    atomic_init(&control->flagRun, False);
+    atomic_init(&control->flagReset, False);
+    atomic_init(&control->pauseRequested, False);
+    atomic_init(&control->paused, False);
+    atomic_init(&control->stepRequested, False);
+    atomic_init(&control->pauseReason, VM_COMPOSITION_PAUSE_NONE);
     nxvm_execution_context_initialize(&control->execution_context);
     nxvm_execution_context_bind_machine_state(
         &control->execution_context, machine->cpu, machine->ram, machine->port,
@@ -220,15 +226,17 @@ void vm_composition_control_print_status(const vm_composition_control_state *con
         control->execution_context.device != NULL &&
         ((vm_composition_live_machine *)control->execution_context.device)->debug->
             connect.recordFile ? "Yes" : "No");
-    PRINTF("Running:   %s\n", control != NULL && control->flagRun ? "Yes" : "No");
+    PRINTF("Running:   %s\n", control != NULL && atomic_load(&control->flagRun) ?
+        "Yes" : "No");
 }
 
 int vm_composition_control_is_running(const vm_composition_control_state *control)
 {
-    return control != NULL && control->flagRun && !control->paused;
+    return control != NULL && atomic_load(&control->flagRun) &&
+        !atomic_load(&control->paused);
 }
 
 int vm_composition_control_get_flip(const vm_composition_control_state *control)
 {
-    return control != NULL && control->flagFlip;
+    return control != NULL && atomic_load(&control->flagFlip);
 }

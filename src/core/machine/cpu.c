@@ -22,6 +22,12 @@ void core_machine_cpu_execution_context_initialize(
     context->port = port;
     context->pic_master = NULL;
     context->pic_slave = NULL;
+    if (context->trace == NULL) {
+        context->trace = (t_utils_trace *)MALLOC(sizeof(*context->trace));
+    }
+    if (context->trace != NULL) {
+        MEMSET((void *)context->trace, Zero8, sizeof(*context->trace));
+    }
     context->extension_context = NULL;
     context->stop_requested = False;
     context->reset_requested = False;

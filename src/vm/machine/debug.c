@@ -21,7 +21,7 @@ static void debug_request_pause(t_debug *debug,
 
 #if 0
 static void xasm_test(t_debug *debug) {
-    static t_nubitcc total = 0; /* total number of instructions tested */
+    t_nubitcc total = 0; /* diagnostic-only instruction count */
     t_bool flagStop = True; /* stop vmachine if comparison fails */
     t_nubitcc i, lenDasm1, lenDasm2, lenAasm;
     t_string strDasm1, strDasm2;
