@@ -56,6 +56,22 @@ C_VOID vm_platform_run_context_bind_keyboard_state(
     context->keyboard_state_context = sink_context;
 }
 
+C_VOID vm_platform_run_handle_initialize(vm_platform_run_handle *handle)
+{
+    if (handle != STD_NULL) STD_MEMSET(handle, 0, sizeof(*handle));
+}
+
+C_INT vm_platform_run_handle_is_active(const vm_platform_run_handle *handle)
+{
+    return handle != STD_NULL && handle->active;
+}
+
+C_INT vm_platform_run_handle_is_window_display(
+    const vm_platform_run_handle *handle)
+{
+    return handle != STD_NULL && handle->window_display;
+}
+
 #if GLOBAL_PLATFORM == GLOBAL_VAR_WIN32
 
 #include "vm/platform/win32/win32.h"
@@ -65,8 +81,18 @@ C_VOID vm_platform_display_set_screen(const vm_platform_run_context *context) {
 C_VOID vm_platform_display_paint(const vm_platform_run_context *context) {
     vm_platform_win32_display_paint(vm_platform_run_context_get_window_display(context), context);
 }
-C_VOID vm_platform_start(const vm_platform_run_context *context) {
-    vm_platform_win32_start_machine(vm_platform_run_context_get_window_display(context), context);
+ntvdm64_status vm_platform_start(const vm_platform_run_context *context,
+    vm_platform_run_handle *handle) {
+    return vm_platform_win32_run_handle_start(context, handle);
+}
+C_VOID vm_platform_run_handle_request_stop(vm_platform_run_handle *handle) {
+    vm_platform_win32_run_handle_request_stop(handle);
+}
+C_VOID vm_platform_run_handle_join(vm_platform_run_handle *handle) {
+    vm_platform_win32_run_handle_join(handle);
+}
+C_VOID vm_platform_run_handle_finalize(vm_platform_run_handle *handle) {
+    vm_platform_win32_run_handle_finalize(handle);
 }
 #elif GLOBAL_PLATFORM == GLOBAL_VAR_LINUX
 
@@ -79,7 +105,17 @@ C_VOID vm_platform_display_paint(const vm_platform_run_context *context) {
     (C_VOID)context;
     vm_platform_linux_display_paint(vm_platform_run_context_get_window_display(context), context);
 }
-C_VOID vm_platform_start(const vm_platform_run_context *context) {
-    vm_platform_linux_start_machine(vm_platform_run_context_get_window_display(context), context);
+ntvdm64_status vm_platform_start(const vm_platform_run_context *context,
+    vm_platform_run_handle *handle) {
+    return vm_platform_linux_run_handle_start(context, handle);
+}
+C_VOID vm_platform_run_handle_request_stop(vm_platform_run_handle *handle) {
+    vm_platform_linux_run_handle_request_stop(handle);
+}
+C_VOID vm_platform_run_handle_join(vm_platform_run_handle *handle) {
+    vm_platform_linux_run_handle_join(handle);
+}
+C_VOID vm_platform_run_handle_finalize(vm_platform_run_handle *handle) {
+    vm_platform_linux_run_handle_finalize(handle);
 }
 #endif

@@ -80,6 +80,7 @@ typedef struct vm_session {
     vm_platform_keyboard_transport keyboard_transport_storage;
     core_product_wait_scope wait_scope_storage;
     vm_platform_run_context platform_run_context_storage;
+    vm_platform_run_handle platform_run_handle_storage;
     core_product_debug_context debugger_context_storage;
     nxvm_product_console_context console_context_storage;
     nxvm_product_console_target console_target_storage;
@@ -114,6 +115,7 @@ typedef struct vm_session {
     vm_platform_keyboard_transport *keyboard_transport;
     core_product_wait_scope *wait_scope;
     vm_platform_run_context *platform_run_context;
+    vm_platform_run_handle *platform_run_handle;
     core_product_debug_context *debugger_context;
     nxvm_product_console_context *console_context;
     nxvm_product_console_target *console_target;

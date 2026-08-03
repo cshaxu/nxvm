@@ -119,6 +119,7 @@ C_VOID vm_session_storage_initialize(vm_session *machine)
     machine->wait_scope = &machine->wait_scope_storage;
     machine->default_profile_context->wait_scope = machine->wait_scope;
     machine->platform_run_context = &machine->platform_run_context_storage;
+    machine->platform_run_handle = &machine->platform_run_handle_storage;
     machine->debugger_context = &machine->debugger_context_storage;
     core_product_debug_context_initialize(machine->debugger_context);
     machine->console_context = &machine->console_context_storage;
@@ -165,6 +166,7 @@ C_VOID vm_session_storage_finalize(vm_session *machine)
     machine->keyboard_transport = STD_NULL;
     machine->wait_scope = STD_NULL;
     machine->platform_run_context = STD_NULL;
+    machine->platform_run_handle = STD_NULL;
     machine->debugger_context = STD_NULL;
     machine->console_context = STD_NULL;
     machine->console_target = STD_NULL;

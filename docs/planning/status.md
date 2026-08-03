@@ -246,8 +246,13 @@ cancellation/join/destroy sequence, and current Win32/Linux owner map are
 recorded. Workers may report stop/completion but may not release shared
 platform/session state.
 
-**M5 T139 active:** move Win32 run ownership from backend-local contexts to a
-session-owned run handle without changing retained Console or window behavior.
+**M5 T139 complete:** Win32 Console and window workers now run through one
+session-owned handle; task evidence records the join/finalize and DOS-prompt
+gates with `nxvm_0_5_0139.exe`.
+
+**M5 T140 active:** convert Linux Console to the same explicit handle and
+sole-destroyer contract; native POSIX compilation and runtime verification are
+deferred to the designated POSIX environment.
 
 ## Short-Term M5 Plan
 
