@@ -21,21 +21,24 @@
     {
       "name": "nxvm-current-gcc",
       "configurePreset": "mingw-gcc-x64",
-      "targets": ["nxvm-0-5-0078"]
+      "targets": ["nxvm-0-5-0086"]
     },
     {
       "name": "nxvm-current-gates-gcc",
       "configurePreset": "mingw-gcc-x64",
       "targets": [
         "nxvm-vm-two-session-isolation-smoke",
-        "nxvm-vm-full-authority-closure-smoke",
+        "nxvm-vm-core-executor-storage-smoke",
+        "nxvm-core-executor-run-smoke",
         "nxvm-vm-dos-prompt-smoke",
         "nxvm-product-console-smoke",
         "nxvm-vm-debug-target-smoke",
         "nxvm-vm-keyboard-provider-isolation-smoke",
         "verify-dependency-dag",
         "verify-live-machine-authority",
-        "verify-facade-ownership"
+        "verify-facade-ownership",
+        "verify-executor-closure",
+        "verify-session-readiness"
       ]
     },
     {
