@@ -5,6 +5,9 @@
 
 static uint32_t core_machine_linear_pc(const core_machine *machine)
 {
+    if (machine->legacy_executor_enabled) {
+        return machine->legacy_cpu.data.cs.base + machine->legacy_cpu.data.eip;
+    }
     return machine->cpu.state.cs_base + machine->cpu.state.eip;
 }
 
@@ -25,6 +28,7 @@ nxvm_core_status core_machine_enable_legacy_executor(core_machine *machine)
         &machine->legacy_cpu, &machine->legacy_cpu_instructions,
         &machine->legacy_memory, &machine->legacy_port);
     machine->legacy_executor_enabled = 1;
+    machine->lifecycle = CORE_MACHINE_PAUSED;
     return NXVM_CORE_STATUS_OK;
 }
 
@@ -69,7 +73,15 @@ nxvm_core_status core_machine_get_cpu_state(
         return NXVM_CORE_STATUS_INVALID_ARGUMENT;
     }
 
-    *out_state = machine->cpu.state;
+    if (machine->legacy_executor_enabled) {
+        out_state->cs = machine->legacy_cpu.data.cs.selector;
+        out_state->cs_base = machine->legacy_cpu.data.cs.base;
+        out_state->eip = machine->legacy_cpu.data.eip;
+        out_state->eflags = machine->legacy_cpu.data.eflags;
+        out_state->halted = machine->legacy_cpu.data.flagHalt;
+    } else {
+        *out_state = machine->cpu.state;
+    }
     return NXVM_CORE_STATUS_OK;
 }
 
@@ -127,8 +139,11 @@ nxvm_core_status core_machine_reset(core_machine *machine)
         return NXVM_CORE_STATUS_INVALID_STATE;
     }
 
-    if (core_machine_cpu_reset(machine) != NXVM_CORE_STATUS_OK ||
-        core_machine_instance_memory_reset(machine) != NXVM_CORE_STATUS_OK) {
+    if (machine->legacy_executor_enabled) {
+        core_machine_cpu_state_reset(&machine->legacy_cpu_execution);
+    } else if (core_machine_cpu_reset(machine) != NXVM_CORE_STATUS_OK ||
+               core_machine_instance_memory_reset(machine) !=
+                   NXVM_CORE_STATUS_OK) {
         return NXVM_CORE_STATUS_FAULT;
     }
 
@@ -188,6 +203,44 @@ nxvm_core_status core_machine_run(
     }
 
     machine->lifecycle = CORE_MACHINE_RUNNING;
+    if (machine->legacy_executor_enabled) {
+        uint64_t limit = budget.instructions == 0u ? 1u : budget.instructions;
+
+        while (result->executed < limit) {
+            if (atomic_load(&machine->stop_requested) ||
+                core_machine_cpu_execution_consume_stop_request(
+                    &machine->legacy_cpu_execution)) {
+                machine->lifecycle = CORE_MACHINE_STOPPED;
+                result->reason = CORE_MACHINE_STOP_REQUESTED;
+                result->linear_pc = core_machine_linear_pc(machine);
+                core_machine_trace_record(machine, CORE_MACHINE_TRACE_STOP, 0u,
+                    0u, (uint32_t)result->reason);
+                return NXVM_CORE_STATUS_OK;
+            }
+            if (core_machine_cpu_execution_consume_reset_request(
+                    &machine->legacy_cpu_execution)) {
+                machine->lifecycle = CORE_MACHINE_PAUSED;
+                result->reason = CORE_MACHINE_STOP_RESET_REQUESTED;
+                result->linear_pc = core_machine_linear_pc(machine);
+                return NXVM_CORE_STATUS_OK;
+            }
+            if (machine->legacy_cpu.data.flagHalt) {
+                machine->lifecycle = CORE_MACHINE_PAUSED;
+                result->reason = CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
+                result->linear_pc = core_machine_linear_pc(machine);
+                return NXVM_CORE_STATUS_OK;
+            }
+            core_machine_cpu_execution_refresh(&machine->legacy_cpu_execution);
+            ++result->executed;
+        }
+        machine->lifecycle = CORE_MACHINE_PAUSED;
+        result->reason = CORE_MACHINE_STOP_BUDGET;
+        result->linear_pc = core_machine_linear_pc(machine);
+        core_machine_trace_record(machine, CORE_MACHINE_TRACE_RUN_BOUNDARY,
+            result->linear_pc, (uint32_t)result->executed,
+            (uint32_t)result->reason);
+        return NXVM_CORE_STATUS_OK;
+    }
     machine->lifecycle = CORE_MACHINE_PAUSED;
     result->reason = CORE_MACHINE_STOP_BUDGET;
     core_machine_trace_record(machine, CORE_MACHINE_TRACE_RUN_BOUNDARY, 0u, 0u,
