@@ -88,6 +88,10 @@ single live-machine lifetime and a command-level lifecycle gate.
 surface no longer uses `vmachine*` or `devicePrintMachine` names. Evidence is
 [`m5-t97-s1-composition-api-naming.md`](../verification/m5-t97-s1-composition-api-naming.md).
 
+**M5 T98 naming-remediation breakdown: complete.** The remaining active
+legacy symbols are scheduled in owner-bounded tasks; uppercase `type.*`
+C-runtime wrappers and approved compact names are explicit retentions.
+
 ## Short-Term M5 Plan
 
 The completed executor sequence is defined in
@@ -95,6 +99,10 @@ The completed executor sequence is defined in
 active session-readiness sequence is defined in
 [M5 Session Readiness](m5-session-readiness.md): machine, platform, product,
 then root composition in the fixed core/VM/VDM order.
+
+[M5 Naming Remediation](m5-naming-remediation.md) is the approved execution
+order for the remaining active old-style APIs. It begins with `vglobal.h` and
+does not start M6.
 
 M6 has not started. M7 implementation remains ineligible until M6 defines and
 closes its implementation breakdown.

@@ -54,6 +54,12 @@ one module. `src/type.c` owns their non-inline implementations. All modules
 may include `type.h`; this is a foundation-unit dependency, not a dependency
 between product forms or modules.
 
+The all-uppercase C-runtime wrappers in `type.*` are intentional retained
+NXVM vocabulary: `LOCALTIME`, `STRCAT`, `STRCPY`, `STRTOK`, `STRCMP`, `STRLEN`,
+`PRINTF`, `FPRINTF`, `SPRINTF`, `FOPEN`, `FCLOSE`, `FREAD`, `FWRITE`, `FGETS`,
+`MALLOC`, `FREE`, `MEMSET`, `MEMCPY`, and `MEMCMP`. They are not legacy aliases
+and are excluded from naming-remediation scans.
+
 `src/version.h` and `src/version.c` are the sole version and build-identity
 source. They provide product Console banner identity and build timestamp data.
 No module contract contains an ABI version, timestamp, or compatibility probe;
@@ -63,6 +69,12 @@ Public C symbols use their source ownership path: `core_machine_*`,
 `core_platform_*`, `core_product_*`, `vm_machine_*`, `vm_platform_*`,
 `vm_product_*`, `vm_profile_*`, and their VDM counterparts. Root composition
 uses `vm_composition_*` or `vdm_composition_*`.
+
+Approved compact lexical families are also retained: `kbc`, `vadp`,
+`win32app`, `win32con`, `linuxapp`, `linuxcon`, `w32*`, `xasm32`, `aasm`,
+`dasm`, and `debug`. The default-profile QDX firmware hacks remain `qdx`,
+`qdcga`, and `qdkeyb`. Retention of those terms does not exempt their enclosing
+public APIs from their owner prefix.
 
 ## Interface Naming
 
