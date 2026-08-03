@@ -75,7 +75,8 @@ the same session-lifetime rules; modify it only for a demonstrated violation.
 The completed executor sequence is defined in
 [Facade And Executor Convergence](m5-facade-executor-convergence.md). The
 active session-readiness sequence is defined in
-[M5 Session Readiness](m5-session-readiness.md).
+[M5 Session Readiness](m5-session-readiness.md): machine, platform, product,
+then root composition in the fixed core/VM/VDM order.
 
 M6 T1 remains deferred until this M5 sequence closes. M7 implementation remains
 ineligible until M6 defines and closes its implementation breakdown.
