@@ -28,8 +28,8 @@ static void vm_composition_console_initialize(void *context)
 static void vm_composition_console_finalize(void *context) { machineFinal((vm_composition_live_machine *)context); }
 static int vm_composition_console_is_running(void *context) { return vm_composition_control_is_running(((vm_composition_live_machine *)context)->control); }
 static void vm_composition_console_print_machine(void *context) { devicePrintMachine((vm_composition_live_machine *)context); }
-static int vm_composition_console_get_window_display(void *context) { (void)context; return platform.flagMode; }
-static void vm_composition_console_set_window_display(void *context, int enabled) { (void)context; platform.flagMode = enabled; }
+static int vm_composition_console_get_window_display(void *context) { return vm_platform_run_context_get_window_display(((vm_composition_live_machine *)context)->platform_run_context); }
+static void vm_composition_console_set_window_display(void *context, int enabled) { vm_platform_run_context_set_window_display(((vm_composition_live_machine *)context)->platform_run_context, enabled); }
 static void vm_composition_console_print_bios(void *context) { vm_profile_default_bios_print(((vm_composition_live_machine *)context)->default_bios); }
 static void vm_composition_console_print_status(void *context) { vm_composition_control_print_status(((vm_composition_live_machine *)context)->control); }
 static void vm_composition_console_debug(void *context)

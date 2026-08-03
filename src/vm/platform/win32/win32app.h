@@ -11,8 +11,6 @@ extern "C" {
 
 typedef struct vm_platform_run_context vm_platform_run_context;
 
-extern HWND w32aHWnd;
-
 VOID win32appDisplaySetScreen(const vm_platform_run_context *context);
 VOID win32appDisplayPaint(const vm_platform_run_context *context);
 

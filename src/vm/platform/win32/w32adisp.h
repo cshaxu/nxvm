@@ -11,11 +11,14 @@ extern "C" {
 
 typedef struct vm_platform_presentation_mailbox vm_platform_presentation_mailbox;
 
-VOID w32adispSetScreen(const vm_platform_presentation_mailbox *mailbox);
-VOID w32adispPaint(const vm_platform_presentation_mailbox *mailbox,
+VOID w32adispSetScreen(HWND window,
+                        const vm_platform_presentation_mailbox *mailbox);
+VOID w32adispPaint(HWND window,
+                    const vm_platform_presentation_mailbox *mailbox,
                    BOOL flagForce);
 
-VOID w32adispInit(const vm_platform_presentation_mailbox *mailbox);
+VOID w32adispInit(HWND window,
+                  const vm_platform_presentation_mailbox *mailbox);
 VOID w32adispFinal();
 
 #ifdef __cplusplus

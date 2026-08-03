@@ -395,16 +395,16 @@ static VOID CreateBitmapFontChar(UCHAR ch, UCHAR prop) {
     bFontCharExist[ch][prop] = TRUE;
 }
 
-VOID w32adispInit(const vm_platform_presentation_mailbox *mailbox) {
+VOID w32adispInit(HWND window, const vm_platform_presentation_mailbox *mailbox) {
     UINT i, j;
-    hdcWnd = GetDC(w32aHWnd);
+    hdcWnd = GetDC(window);
     hdcBuf = CreateCompatibleDC(NULL);
     hBmpBuf = NULL;
     clientHeight = 0;
     clientWidth  = 0;
     flashCount   = 0;
     flashInterval = 5;
-    w32adispSetScreen(mailbox);
+    w32adispSetScreen(window, mailbox);
     hdcFont = CreateCompatibleDC(NULL);
     hBmpFont = CreateCompatibleBitmap(hdcWnd, FONT_WIDTH * FONT_NCHAR, FONT_HEIGHT * FONT_NCOLOR);
     SelectObject(hdcFont, hBmpFont);
@@ -415,7 +415,8 @@ VOID w32adispInit(const vm_platform_presentation_mailbox *mailbox) {
     }
 }
 
-VOID w32adispSetScreen(const vm_platform_presentation_mailbox *mailbox) {
+VOID w32adispSetScreen(HWND window,
+                        const vm_platform_presentation_mailbox *mailbox) {
     RECT clientRect,windowRect;
     LONG widthOffset, heightOffset;
     core_platform_display_frame frame;
@@ -423,21 +424,21 @@ VOID w32adispSetScreen(const vm_platform_presentation_mailbox *mailbox) {
     vm_platform_presentation_mailbox_capture(mailbox, &frame);
     sizeRow = frame.columns;
     sizeCol = frame.rows;
-    GetClientRect(w32aHWnd, &clientRect);
-    GetWindowRect(w32aHWnd, &windowRect);
+    GetClientRect(window, &clientRect);
+    GetWindowRect(window, &windowRect);
 
     /* fetch window and customer area size to decide window side */
     widthOffset = windowRect.right - windowRect.left - clientRect.right;
     heightOffset = windowRect.bottom - windowRect.top - clientRect.bottom;
-    MoveWindow(w32aHWnd, windowRect.left, windowRect.top, sizeRow * FONT_WIDTH + widthOffset,
+    MoveWindow(window, windowRect.left, windowRect.top, sizeRow * FONT_WIDTH + widthOffset,
                sizeCol * FONT_HEIGHT + heightOffset, SWP_NOMOVE);
-    GetClientRect(w32aHWnd, &clientRect);
+    GetClientRect(window, &clientRect);
     clientHeight = clientRect.bottom - clientRect.top;
     clientWidth  = clientRect.right - clientRect.left;
     hBmpBuf = CreateCompatibleBitmap(hdcWnd,
                                      GetDeviceCaps(hdcWnd, HORZRES), GetDeviceCaps(hdcWnd, VERTRES));
     SelectObject(hdcBuf, hBmpBuf);
-    w32adispPaint(mailbox, TRUE);
+    w32adispPaint(window, mailbox, TRUE);
 }
 
 static VOID DisplayCursor(const core_platform_display_frame *frame) {
@@ -463,7 +464,8 @@ static VOID DisplayCursor(const core_platform_display_frame *frame) {
     DeleteObject(hBrush);
 }
 
-VOID w32adispPaint(const vm_platform_presentation_mailbox *mailbox,
+VOID w32adispPaint(HWND window,
+                   const vm_platform_presentation_mailbox *mailbox,
                    BOOL flagForce) {
     UCHAR i, j, ch, prop;
     USHORT index;

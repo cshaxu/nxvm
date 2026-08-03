@@ -11,8 +11,6 @@ extern "C" {
 
 typedef struct vm_platform_run_context vm_platform_run_context;
 
-extern HANDLE hOut;
-
 VOID win32conDisplaySetScreen(const vm_platform_run_context *context);
 VOID win32conDisplayPaint(const vm_platform_run_context *context);
 
