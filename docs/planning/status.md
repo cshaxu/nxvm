@@ -198,9 +198,9 @@ TLS implementation dependencies (debug, Console, wait), plus VDM's intentional
 non-runnable skeleton boundary and host-lease verification gap. These are
 post-audit work, not evidence that the unique-owner objective has fully closed.
 
-**M5 T128 active:** [`m5-t128-t136-convergence.md`](m5-t128-t136-convergence.md)
-defines the explicit-invocation and unified-executor sequence before runtime
-changes begin.
+**M5 T128 complete:** [`m5-t128-t136-convergence.md`](m5-t128-t136-convergence.md)
+defines the explicit-invocation and unified-executor sequence. T129 is the
+sole active subtask.
 
 **M5 T130 complete:** NXVM Console command helpers receive their explicit
 caller-owned context; `consoleContext` TLS is removed. T129 remains active for
@@ -209,6 +209,11 @@ the shared debugger invocation migration.
 **M5 T133 complete:** core exposes ordered executor CPU/bus/memory preparation;
 VM retains its proven provider order through that common contract. T129 remains
 active for debugger TLS removal.
+
+**M5 T135 complete:** VDM-minimal now borrows the same custom executor CPU,
+RAM, and port path as NXVM, while retaining only VDM-owned providers and
+snapshot state. It remains deliberately non-runnable pending the DOS design
+milestone. T129 remains the sole active subtask.
 
 ## Short-Term M5 Plan
 

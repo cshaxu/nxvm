@@ -101,7 +101,7 @@ ntvdm64_status vdm_machine_dos_minimal_create(
 {
     vdm_machine_dos_minimal *session;
     core_machine_config config = {
-        CORE_MACHINE_PROFILE_TEST_MINIMAL,
+        CORE_MACHINE_PROFILE_CUSTOM,
         CORE_MACHINE_MINIMUM_MEMORY_BYTES
     };
     ntvdm64_status status;
@@ -115,6 +115,15 @@ ntvdm64_status vdm_machine_dos_minimal_create(
         return NTVDM64_STATUS_NO_MEMORY;
     }
     status = core_machine_create(&config, &session->machine);
+    if (status == NTVDM64_STATUS_OK) {
+        status = core_machine_prepare_executor_cpu(session->machine);
+    }
+    if (status == NTVDM64_STATUS_OK) {
+        status = core_machine_prepare_executor_bus(session->machine);
+    }
+    if (status == NTVDM64_STATUS_OK) {
+        status = core_machine_prepare_executor_memory(session->machine);
+    }
     if (status == NTVDM64_STATUS_OK) {
         status = vdm_machine_dos_minimal_install_ports(session);
     }
