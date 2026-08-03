@@ -160,8 +160,6 @@ target_include_directories(ntvdm64-c-facade PUBLIC
 )
 
 set(NXVM_PROFILE_VM_SOURCES
-    src/vm/profile/default_profile/profile.c
-    src/vm/profile/full_pc_profile.c
     src/vm/profile/default_profile/firmware/bios.c
     src/vm/profile/default_profile/firmware/qdcga.c
     src/vm/profile/default_profile/firmware/qddisk.c
@@ -494,7 +492,6 @@ target_link_libraries(nxvm-vm-debug-target-smoke PRIVATE
 
 add_library(nxvm-runtime STATIC
     ${NXVM_CORE_PRODUCT_RUNTIME_SOURCES}
-    src/core/product/runtime/registry.c
 )
 target_include_directories(nxvm-runtime PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
@@ -525,14 +522,6 @@ target_include_directories(ntvdm64-vdm-machine PUBLIC
 )
 target_link_libraries(ntvdm64-vdm-machine PUBLIC nxvm-core)
 
-add_library(ntvdm64-vdm-profile STATIC
-    src/vdm/profile/dos_minimal_profile.c
-)
-target_include_directories(ntvdm64-vdm-profile PUBLIC
-    "${CMAKE_SOURCE_DIR}/src"
-)
-target_link_libraries(ntvdm64-vdm-profile PUBLIC nxvm-runtime)
-
 add_library(ntvdm64-vdm-composition STATIC
     src/vdm/composition/session.c
     src/vdm/composition/presentation.c
@@ -540,9 +529,7 @@ add_library(ntvdm64-vdm-composition STATIC
 target_include_directories(ntvdm64-vdm-composition PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
-target_link_libraries(ntvdm64-vdm-composition PUBLIC
-    ntvdm64-vdm-machine ntvdm64-vdm-profile
-)
+target_link_libraries(ntvdm64-vdm-composition PUBLIC ntvdm64-vdm-machine)
 
 add_executable(ntvdm64-vdm-minimal-session-smoke
     tests/products/ntvdm64_minimal_session_smoke.c
@@ -551,11 +538,6 @@ target_link_libraries(ntvdm64-vdm-minimal-session-smoke PRIVATE
     ntvdm64-vdm-composition
 )
 
-add_executable(nxvm-runtime-registry-smoke
-    tests/runtime/registry_smoke.c
-)
-target_link_libraries(nxvm-runtime-registry-smoke PRIVATE nxvm-runtime nxvm-core)
-
 add_executable(nxvm-dos-minimal-presentation-smoke
     tests/adapters/dos_minimal_presentation_smoke.c
 )
@@ -563,30 +545,6 @@ target_link_libraries(nxvm-dos-minimal-presentation-smoke PRIVATE
     ntvdm64-vdm-composition
 )
 
-add_executable(nxvm-dos-minimal-profile-smoke
-    tests/runtime/dos_minimal_profile_smoke.c
-)
-target_link_libraries(nxvm-dos-minimal-profile-smoke PRIVATE
-    ntvdm64-vdm-machine
-    ntvdm64-vdm-profile
-)
-
-add_executable(nxvm-full-pc-profile-smoke
-    tests/adapters/nxvm_full_pc_profile_smoke.c
-)
-
-add_executable(nxvm-default-profile-smoke
-    tests/adapters/nxvm_default_profile_smoke.c
-)
-target_link_libraries(nxvm-default-profile-smoke PRIVATE
-    nxvm-runtime
-    nxvm-vm-composition
-    nxvm-vm-profile
-)
-target_link_libraries(nxvm-full-pc-profile-smoke PRIVATE
-    nxvm-vm-composition
-    nxvm-vm-profile
-)
 
 function(add_nxvm_task_artifact target suffix)
     string(REGEX REPLACE "^m([0-9]+)t([0-9]+)$" "nxvm-m\\1_t\\2.exe"
@@ -758,6 +716,7 @@ add_nxvm_version_artifact(nxvm-0-5-0120 "0.5.0120")
 add_nxvm_version_artifact(nxvm-0-5-0121 "0.5.0121")
 add_nxvm_version_artifact(nxvm-0-5-0122 "0.5.0122")
 add_nxvm_version_artifact(nxvm-0-5-0123 "0.5.0123")
+add_nxvm_version_artifact(nxvm-0-5-0125 "0.5.0125")
 
 option(NTVDM64_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
@@ -844,18 +803,13 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(ntvdm64-core-platform PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(ntvdm64-core-platform-host-surface-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-runtime PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(nxvm-dos-minimal-profile-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(nxvm-runtime-registry-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-vm-full-pc-session-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-vm-core-executor-storage-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-core-executor-run-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(ntvdm64-vdm-machine PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(ntvdm64-vdm-profile PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(ntvdm64-vdm-composition PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(ntvdm64-vdm-minimal-session-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-dos-minimal-presentation-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-vm-cpu-probe-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-execution-context-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(nxvm-full-pc-profile-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(nxvm-default-profile-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()

@@ -47,13 +47,9 @@
         "nxvm-vm-debug-target-smoke",
         "nxvm-vm-keyboard-provider-isolation-smoke",
         "nxvm-product-session-smoke",
-        "nxvm-product-default-profile-smoke",
-        "nxvm-full-pc-profile-smoke",
-        "nxvm-default-profile-smoke",
         "ntvdm64-core-platform-host-surface-smoke",
         "ntvdm64-vdm-minimal-session-smoke",
         "nxvm-dos-minimal-presentation-smoke",
-        "nxvm-dos-minimal-profile-smoke",
         "verify-dependency-dag",
         "verify-live-machine-authority",
         "verify-facade-ownership",
@@ -67,8 +63,7 @@
       "configurePreset": "mingw-gcc-x64",
       "targets": [
         "ntvdm64-version-smoke",
-        "ntvdm64-vdm-minimal-session-smoke",
-        "nxvm-dos-minimal-profile-smoke"
+        "ntvdm64-vdm-minimal-session-smoke"
       ]
     }
   ]

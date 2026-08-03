@@ -2,7 +2,6 @@
 #define NTVDM64_VDM_MINIMAL_SESSION_H
 
 #include "type.h"
-#include "core/product/runtime/profile_descriptor.h"
 #include "vdm/machine/dos_minimal.h"
 
 #ifdef __cplusplus
@@ -15,8 +14,6 @@ ntvdm64_status vdm_session_create(
     vdm_session **out_session);
 ntvdm64_status vdm_session_reset(
     vdm_session *session);
-const core_product_runtime_profile_descriptor *vdm_session_profile(
-    const vdm_session *session);
 C_VOID vdm_session_destroy(vdm_session *session);
 ntvdm64_status vdm_session_inject_key(vdm_session *session, uint8_t scan_code);
 ntvdm64_status vdm_session_write_text(vdm_session *session, uint16_t cell,

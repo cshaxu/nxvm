@@ -13,10 +13,6 @@ C_INT main(C_VOID)
     if (vdm_session_create(&first) != NTVDM64_STATUS_OK ||
         vdm_session_create(&second) != NTVDM64_STATUS_OK ||
         first == second ||
-        STD_STRCMP(vdm_session_profile(first)->name,
-               "ntvdm64.dos_minimal") != 0 ||
-        STD_STRCMP(vdm_session_profile(second)->name,
-               "ntvdm64.dos_minimal") != 0 ||
         vdm_session_reset(first) != NTVDM64_STATUS_OK ||
         vdm_session_reset(second) != NTVDM64_STATUS_OK) {
         vdm_session_destroy(second);

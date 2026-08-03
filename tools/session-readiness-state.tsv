@@ -6,4 +6,3 @@ src/vm/platform/win32/win32con.c	process-exclusive-lease	T90	vm/platform
 src/vm/platform/linux/linuxcon.c	process-exclusive-lease	T90	vm/platform
 src/vm/product/console.c	thread-local	T92	vm/product
 src/core/product/wait.c	thread-local	T95	core/product
-src/core/product/debug/debug_target.c	thread-local	T95	core/product
