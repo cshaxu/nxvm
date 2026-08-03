@@ -49,7 +49,6 @@ typedef struct core_machine_trace_state {
 } core_machine_trace_state;
 
 struct core_machine {
-    core_machine_config config;
     core_machine_lifecycle lifecycle;
     STD_ATOMIC_BOOL stop_requested;
     uint32_t fault_detail;
@@ -60,7 +59,6 @@ struct core_machine {
     core_machine_cpu_execution_context executor_cpu_execution;
     t_ram executor_memory;
     t_port executor_port;
-    C_INT executor_enabled;
     t_pic shared_pic_master;
     t_pic shared_pic_slave;
     t_pit shared_pit;
@@ -85,7 +83,6 @@ C_VOID core_machine_trace_record(
     uint32_t address,
     uint32_t value,
     uint32_t detail);
-ntvdm64_status core_machine_enable_executor(core_machine *machine);
 t_cpu *core_machine_executor_cpu_borrow(core_machine *machine);
 t_cpuins *core_machine_executor_cpu_instructions_borrow(core_machine *machine);
 core_machine_cpu_execution_context *core_machine_executor_cpu_execution_borrow(

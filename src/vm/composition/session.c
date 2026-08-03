@@ -51,10 +51,7 @@ C_VOID vm_session_storage_initialize(vm_session *machine)
     {
         core_machine_config config = {0};
 
-        config.profile = CORE_MACHINE_PROFILE_CUSTOM;
         if (core_machine_create(&config, &machine->core_machine) !=
-                NTVDM64_STATUS_OK ||
-            core_machine_enable_executor(machine->core_machine) !=
                 NTVDM64_STATUS_OK) {
             core_machine_destroy(machine->core_machine);
             machine->core_machine = STD_NULL;
