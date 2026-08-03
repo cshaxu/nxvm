@@ -47,8 +47,8 @@ profile/session context. Its GCC artifact is `build/output/nxvm_0_5_0077.exe`.
 
 ## Active Work
 
-**M5 T83 S2: Executor storage migration.** Move real CPU, decoder, RAM, and
-port storage into `core_machine`, retaining pointer identity and NXVM behavior.
+**M5 T84 S1: Shared device ownership.** Move PIC, PIT, DMA, KBC, and VADP
+into `core_machine`; bind VM/profile-only services as providers.
 
 ## Short-Term M5 Plan
 
