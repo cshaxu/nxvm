@@ -14,7 +14,7 @@ extern "C" {
 
 #define VKBC_STATUS_KE 0x10 /* keyboard enabled(1) or not(0) */
 
-typedef struct { t_nubit8 reserved; } t_kbc;
+typedef struct { ntvdm64_type_unsigned_8 reserved; } t_kbc;
 void core_machine_kbc_register_ports(t_kbc *controller, t_port *port);
 void core_machine_kbc_initialize(t_kbc *controller, t_port *port);
 void core_machine_kbc_reset(t_kbc *controller);

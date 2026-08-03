@@ -18,22 +18,22 @@ typedef struct t_port t_port;
 #define NXVM_DEVICE_FDC "Intel 8272A"
 
 typedef struct {
-    t_nubit8 dor; /* digital output register */
-    t_nubit8 msr; /* main status register */
-    t_nubit8 dr;  /* data register */
-    t_nubit8 dir; /* digital input register */
-    t_nubit8 ccr; /* configuration control register */
+    ntvdm64_type_unsigned_8 dor; /* digital output register */
+    ntvdm64_type_unsigned_8 msr; /* main status register */
+    ntvdm64_type_unsigned_8 dr;  /* data register */
+    ntvdm64_type_unsigned_8 dir; /* digital input register */
+    ntvdm64_type_unsigned_8 ccr; /* configuration control register */
 
-    t_nubit4 hut; /* head unload time */
-    t_nubit4 hlt; /* head load time */
-    t_nubit8 srt; /* step rate time */
-    t_bool flagNDMA; /* 0 = dma mode; 1 = non-dma mode */
-    t_bool flagINTR; /* 0 = no intr; 1 = has intr */
+    ntvdm64_type_unsigned_4 hut; /* head unload time */
+    ntvdm64_type_unsigned_4 hlt; /* head load time */
+    ntvdm64_type_unsigned_8 srt; /* step rate time */
+    ntvdm64_type_bool flagNDMA; /* 0 = dma mode; 1 = non-dma mode */
+    ntvdm64_type_bool flagINTR; /* 0 = no intr; 1 = has intr */
 
-    t_nubit8 rwCount; /* count of io port command/result rw times */
-    t_nubit8 cmd[9];
-    t_nubit8 ret[7];
-    t_nubit8 st0, st1, st2, st3; /* state registers */
+    ntvdm64_type_unsigned_8 rwCount; /* count of io port command/result rw times */
+    ntvdm64_type_unsigned_8 cmd[9];
+    ntvdm64_type_unsigned_8 ret[7];
+    ntvdm64_type_unsigned_8 st0, st1, st2, st3; /* state registers */
 } t_fdc_data;
 
 typedef struct {
@@ -127,7 +127,7 @@ typedef struct {
 
 /* convert byte per sector from or to bps type  */
 #define VFDC_GetBPS(cb) (0x0080 << (cb))  /* convert bps type to bps */
-t_nubit8 VFDC_GetBPSC(t_nubit16 cb); /* convert bps to bps type */
+ntvdm64_type_unsigned_8 VFDC_GetBPSC(ntvdm64_type_unsigned_16 cb); /* convert bps to bps type */
 
 /* #define VFDC_Get_A0(cbyte)  * Address Line 0 */
 /* #define VFDC_Get_C(cbyte)   * Cylinder Number (0-79) */

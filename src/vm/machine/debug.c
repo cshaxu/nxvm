@@ -21,13 +21,13 @@ static void debug_request_pause(t_debug *debug,
 
 #if 0
 static void xasm_test(t_debug *debug) {
-    t_nubitcc total = 0; /* diagnostic-only instruction count */
-    t_bool flagStop = True; /* stop the VM if comparison fails */
-    t_nubitcc i, lenDasm1, lenDasm2, lenAasm;
-    t_string strDasm1, strDasm2;
-    t_nubit8 ins1[15], ins2[15];
+    ntvdm64_type_native_unsigned total = 0; /* diagnostic-only instruction count */
+    ntvdm64_type_bool flagStop = NTVDM64_TYPE_TRUE; /* stop the VM if comparison fails */
+    ntvdm64_type_native_unsigned i, lenDasm1, lenDasm2, lenAasm;
+    ntvdm64_type_string_buffer strDasm1, strDasm2;
+    ntvdm64_type_unsigned_8 ins1[15], ins2[15];
     total++;
-    debug->connect.cpuinsReadLinear(debug->connect.cpu->data.cs.base + debug->connect.cpu->data.eip, (t_vaddrcc) ins1, 15);
+    debug->connect.cpuinsReadLinear(debug->connect.cpu->data.cs.base + debug->connect.cpu->data.eip, (ntvdm64_type_virtual_address) ins1, 15);
     /* ins1[0] = 0x67;
     ins1[1] = 0xc6;
     ins1[2] = 0x44;
@@ -35,7 +35,7 @@ static void xasm_test(t_debug *debug) {
     ins1[4] = 0x05;
     ins1[5] = 0x8e;
     ins1[6] = 0x00;*/
-    switch (d_nubit8(ins1)) {
+    switch (NTVDM64_TYPE_DEREFERENCE_UNSIGNED_8(ins1)) {
     case 0x88:
     case 0x89:
     case 0x8a:
@@ -72,30 +72,30 @@ static void xasm_test(t_debug *debug) {
     case 0x39:
     case 0x3a:
     case 0x3b:
-        flagStop = False;
+        flagStop = NTVDM64_TYPE_FALSE;
         break;
     }
-    switch (d_nubit8(ins1+1)) {
+    switch (NTVDM64_TYPE_DEREFERENCE_UNSIGNED_8(ins1+1)) {
     case 0x90:
-        flagStop = False;
+        flagStop = NTVDM64_TYPE_FALSE;
         break;
     }
-    switch (d_nubit16(ins1)) {
+    switch (NTVDM64_TYPE_DEREFERENCE_UNSIGNED_16(ins1)) {
     case 0x2e66:
-        flagStop = False;
+        flagStop = NTVDM64_TYPE_FALSE;
         break;
     }
-    switch (GetMax24(d_nubit24(ins1))) {
+    switch (NTVDM64_TYPE_MASK_UNSIGNED_24(NTVDM64_TYPE_DEREFERENCE_UNSIGNED_24(ins1))) {
     case 0xb70f66:
-        flagStop = False;
+        flagStop = NTVDM64_TYPE_FALSE;
         break;
     }
-    switch (GetMax24(d_nubit24(ins1+1))) {
+    switch (NTVDM64_TYPE_MASK_UNSIGNED_24(NTVDM64_TYPE_DEREFERENCE_UNSIGNED_24(ins1+1))) {
     case 0xb70f66:
-        flagStop = False;
+        flagStop = NTVDM64_TYPE_FALSE;
         break;
     }
-    switch (d_nubit32(ins1)) {
+    switch (NTVDM64_TYPE_DEREFERENCE_UNSIGNED_32(ins1)) {
     }
     lenDasm1 = core_product_utils_dasm32(strDasm1, ins1, debug->connect.cpu->data.cs.seg.exec.defsize);
     lenAasm  = core_product_utils_aasm32(strDasm1, ins2, debug->connect.cpu->data.cs.seg.exec.defsize);
@@ -122,14 +122,14 @@ static void xasm_test(t_debug *debug) {
 void vm_machine_debug_initialize(t_debug *debug, t_cpu *cpu, t_cpuins *cpuins)
 {
     if (debug == NULL) return;
-    MEMSET((void *)debug, Zero8, sizeof(*debug));
+    MEMSET((void *)debug, NTVDM64_TYPE_ZERO_8, sizeof(*debug));
     debug->connect.cpu = cpu;
     debug->connect.cpuins = cpuins;
 }
 void vm_machine_debug_reset(t_debug *debug)
 {
     if (debug == NULL) return;
-    MEMSET((void *)&debug->data, Zero8, sizeof(debug->data));
+    MEMSET((void *)&debug->data, NTVDM64_TYPE_ZERO_8, sizeof(debug->data));
 }
 #define _expression "cs:eip=%04x:%08x(L%08x) ss:esp=%04x:%08x(L%08x) \
 eax=%08x ecx=%08x edx=%08x ebx=%08x ebp=%08x esi=%08x edi=%08x ds=%04x es=%04x fs=%04x gs=%04x \
@@ -144,7 +144,7 @@ void vm_machine_debug_refresh(t_debug *debug) {
     debug->data.breakCount++;
     if (debug->data.flagTrace) {
         if (!debug->data.traceCount) {
-            debug->data.flagTrace = False;
+            debug->data.flagTrace = NTVDM64_TYPE_FALSE;
             debug_request_pause(debug, VM_MACHINE_DEBUG_PAUSE_TRACE);
         } else {
             debug->data.traceCount--;
@@ -153,8 +153,8 @@ void vm_machine_debug_refresh(t_debug *debug) {
     /* TODO: xasmTest(); */
     /* dump cpu status before execution */
     if (debug->connect.recordFile) {
-        t_nubitcc i;
-        t_string stmt;
+        ntvdm64_type_native_unsigned i;
+        ntvdm64_type_string_buffer stmt;
         FPRINTF(debug->connect.recordFile, _expression,
                 debug->connect.cpu->data.cs.selector, debug->connect.cpu->data.eip, debug->connect.cpu->data.cs.base + debug->connect.cpu->data.eip,
                 debug->connect.cpu->data.ss.selector, debug->connect.cpu->data.esp, debug->connect.cpu->data.ss.base + debug->connect.cpu->data.esp,
@@ -163,18 +163,18 @@ void vm_machine_debug_refresh(t_debug *debug) {
                 debug->connect.cpu->data.ds.selector, debug->connect.cpu->data.es.selector,
                 debug->connect.cpu->data.fs.selector, debug->connect.cpu->data.gs.selector,
                 debug->connect.cpu->data.eflags,
-                GetBit(debug->connect.cpu->data.eflags, VCPU_EFLAGS_OF) ? "OF" : "of",
-                GetBit(debug->connect.cpu->data.eflags, VCPU_EFLAGS_SF) ? "SF" : "sf",
-                GetBit(debug->connect.cpu->data.eflags, VCPU_EFLAGS_ZF) ? "ZF" : "zf",
-                GetBit(debug->connect.cpu->data.eflags, VCPU_EFLAGS_CF) ? "CF" : "cf",
-                GetBit(debug->connect.cpu->data.eflags, VCPU_EFLAGS_AF) ? "AF" : "af",
-                GetBit(debug->connect.cpu->data.eflags, VCPU_EFLAGS_PF) ? "PF" : "pf",
-                GetBit(debug->connect.cpu->data.eflags, VCPU_EFLAGS_DF) ? "DF" : "df",
-                GetBit(debug->connect.cpu->data.eflags, VCPU_EFLAGS_IF) ? "IF" : "if",
-                GetBit(debug->connect.cpu->data.eflags, VCPU_EFLAGS_TF) ? "TF" : "tf",
-                GetBit(debug->connect.cpu->data.eflags, VCPU_EFLAGS_VM) ? "VM" : "vm",
-                GetBit(debug->connect.cpu->data.eflags, VCPU_EFLAGS_RF) ? "RF" : "rf",
-                GetBit(debug->connect.cpu->data.eflags, VCPU_EFLAGS_NT) ? "NT" : "nt",
+                NTVDM64_TYPE_GET_BIT(debug->connect.cpu->data.eflags, VCPU_EFLAGS_OF) ? "OF" : "of",
+                NTVDM64_TYPE_GET_BIT(debug->connect.cpu->data.eflags, VCPU_EFLAGS_SF) ? "SF" : "sf",
+                NTVDM64_TYPE_GET_BIT(debug->connect.cpu->data.eflags, VCPU_EFLAGS_ZF) ? "ZF" : "zf",
+                NTVDM64_TYPE_GET_BIT(debug->connect.cpu->data.eflags, VCPU_EFLAGS_CF) ? "CF" : "cf",
+                NTVDM64_TYPE_GET_BIT(debug->connect.cpu->data.eflags, VCPU_EFLAGS_AF) ? "AF" : "af",
+                NTVDM64_TYPE_GET_BIT(debug->connect.cpu->data.eflags, VCPU_EFLAGS_PF) ? "PF" : "pf",
+                NTVDM64_TYPE_GET_BIT(debug->connect.cpu->data.eflags, VCPU_EFLAGS_DF) ? "DF" : "df",
+                NTVDM64_TYPE_GET_BIT(debug->connect.cpu->data.eflags, VCPU_EFLAGS_IF) ? "IF" : "if",
+                NTVDM64_TYPE_GET_BIT(debug->connect.cpu->data.eflags, VCPU_EFLAGS_TF) ? "TF" : "tf",
+                NTVDM64_TYPE_GET_BIT(debug->connect.cpu->data.eflags, VCPU_EFLAGS_VM) ? "VM" : "vm",
+                NTVDM64_TYPE_GET_BIT(debug->connect.cpu->data.eflags, VCPU_EFLAGS_RF) ? "RF" : "rf",
+                NTVDM64_TYPE_GET_BIT(debug->connect.cpu->data.eflags, VCPU_EFLAGS_NT) ? "NT" : "nt",
                 debug->connect.cpuins->data.reccs, debug->connect.cpuins->data.receip, debug->connect.cpuins->data.linear);
 
         /* disassemble opcode */
@@ -228,21 +228,21 @@ void vm_machine_debug_set_breakpoint_real(t_debug *debug, uint16_t segment,
     if (debug == NULL) return;
     debug->data.breakCS = segment;
     debug->data.breakIP = offset;
-    debug->data.flagBreak = True;
+    debug->data.flagBreak = NTVDM64_TYPE_TRUE;
 }
 void vm_machine_debug_clear_breakpoint_real(t_debug *debug) {
     if (debug == NULL) return;
-    debug->data.flagBreak = False;
+    debug->data.flagBreak = NTVDM64_TYPE_FALSE;
 }
 void vm_machine_debug_set_breakpoint_linear(t_debug *debug, uint32_t linear) {
     if (debug == NULL) return;
     debug->data.breakLinear = linear;
-    debug->data.flagBreak32 = True;
+    debug->data.flagBreak32 = NTVDM64_TYPE_TRUE;
     debug->data.breakCount = 0;
 }
 void vm_machine_debug_clear_breakpoint_linear(t_debug *debug) {
     if (debug == NULL) return;
-    debug->data.flagBreak32 = False;
+    debug->data.flagBreak32 = NTVDM64_TYPE_FALSE;
 }
 size_t vm_machine_debug_get_breakpoint_count(const t_debug *debug) {
     if (debug == NULL) return 0u;
@@ -251,11 +251,11 @@ size_t vm_machine_debug_get_breakpoint_count(const t_debug *debug) {
 void vm_machine_debug_set_trace(t_debug *debug, size_t instruction_count) {
     if (debug == NULL) return;
     debug->data.traceCount = instruction_count;
-    debug->data.flagTrace = True;
+    debug->data.flagTrace = NTVDM64_TYPE_TRUE;
 }
 void vm_machine_debug_clear_trace(t_debug *debug) {
     if (debug == NULL) return;
-    debug->data.flagTrace = False;
+    debug->data.flagTrace = NTVDM64_TYPE_FALSE;
 }
 void vm_machine_debug_record_start(t_debug *debug, const char *file_name) {
     if (debug == NULL) return;

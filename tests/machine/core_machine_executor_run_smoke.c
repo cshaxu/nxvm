@@ -8,7 +8,7 @@ int main(void)
     core_machine_run_budget budget = {1u, 0u};
     core_machine_run_result result;
     core_machine *machine = NULL;
-    t_nubit8 halt = 0xf4u;
+    ntvdm64_type_unsigned_8 halt = 0xf4u;
 
     if (core_machine_create(&config, &machine) != NTVDM64_STATUS_OK ||
         core_machine_enable_executor(machine) != NTVDM64_STATUS_OK) {
@@ -21,7 +21,7 @@ int main(void)
         machine));
     core_machine_cpu_state_reset(core_machine_executor_cpu_execution_borrow(machine));
     core_machine_memory_write_physical(core_machine_executor_memory_borrow(machine),
-        0xffff0u, (t_vaddrcc)&halt, 1u);
+        0xffff0u, (ntvdm64_type_virtual_address)&halt, 1u);
     if (core_machine_run(machine, budget, &result) != NTVDM64_STATUS_OK ||
         result.executed != 1u || result.reason != CORE_MACHINE_STOP_BUDGET ||
         core_machine_run(machine, budget, &result) != NTVDM64_STATUS_OK ||

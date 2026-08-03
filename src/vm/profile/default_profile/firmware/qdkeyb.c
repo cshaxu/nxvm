@@ -10,39 +10,39 @@
 #include "vm/profile/default_profile/firmware/qdx.h"
 #include "qdkeyb.h"
 
-static t_nubit8 keyboard_read_byte(vm_profile_default_context *profile,
-    t_nubit16 offset)
+static ntvdm64_type_unsigned_8 keyboard_read_byte(vm_profile_default_context *profile,
+    ntvdm64_type_unsigned_16 offset)
 {
-    t_nubit8 value = 0;
-    core_machine_memory_read_real_from(profile->ram, Zero16, offset, &value,
+    ntvdm64_type_unsigned_8 value = 0;
+    core_machine_memory_read_real_from(profile->ram, NTVDM64_TYPE_ZERO_16, offset, &value,
         sizeof(value));
     return value;
 }
 
-static t_nubit16 keyboard_read_word(vm_profile_default_context *profile,
-    t_nubit16 offset)
+static ntvdm64_type_unsigned_16 keyboard_read_word(vm_profile_default_context *profile,
+    ntvdm64_type_unsigned_16 offset)
 {
-    t_nubit16 value = 0;
-    core_machine_memory_read_real_from(profile->ram, Zero16, offset, &value,
+    ntvdm64_type_unsigned_16 value = 0;
+    core_machine_memory_read_real_from(profile->ram, NTVDM64_TYPE_ZERO_16, offset, &value,
         sizeof(value));
     return value;
 }
 
 static void keyboard_write_byte(vm_profile_default_context *profile,
-    t_nubit16 offset, t_nubit8 value)
+    ntvdm64_type_unsigned_16 offset, ntvdm64_type_unsigned_8 value)
 {
-    core_machine_memory_write_real_to(profile->ram, Zero16, offset, &value,
+    core_machine_memory_write_real_to(profile->ram, NTVDM64_TYPE_ZERO_16, offset, &value,
         sizeof(value));
 }
 
 static void keyboard_write_word(vm_profile_default_context *profile,
-    t_nubit16 offset, t_nubit16 value)
+    ntvdm64_type_unsigned_16 offset, ntvdm64_type_unsigned_16 value)
 {
-    core_machine_memory_write_real_to(profile->ram, Zero16, offset, &value,
+    core_machine_memory_write_real_to(profile->ram, NTVDM64_TYPE_ZERO_16, offset, &value,
         sizeof(value));
 }
 
-static t_nubit16 keyboard_buffer_next(t_nubit16 pointer)
+static ntvdm64_type_unsigned_16 keyboard_buffer_next(ntvdm64_type_unsigned_16 pointer)
 {
     return QDKEYB_VBIOS_ADDR_KEYB_BUFFER_START +
         (pointer - QDKEYB_VBIOS_ADDR_KEYB_BUFFER_START + 2u) %
@@ -50,36 +50,36 @@ static t_nubit16 keyboard_buffer_next(t_nubit16 pointer)
          QDKEYB_VBIOS_ADDR_KEYB_BUFFER_START + 1u);
 }
 
-static t_bool keyboard_buffer_empty(vm_profile_default_context *profile)
+static ntvdm64_type_bool keyboard_buffer_empty(vm_profile_default_context *profile)
 {
     return keyboard_read_word(profile, QDKEYB_VBIOS_ADDR_KEYB_BUF_HEAD) ==
         keyboard_read_word(profile, QDKEYB_VBIOS_ADDR_KEYB_BUF_TAIL);
 }
 
-static t_bool keyboard_buffer_full(vm_profile_default_context *profile)
+static ntvdm64_type_bool keyboard_buffer_full(vm_profile_default_context *profile)
 {
     return keyboard_buffer_next(keyboard_read_word(profile,
         QDKEYB_VBIOS_ADDR_KEYB_BUF_TAIL)) == keyboard_read_word(profile,
         QDKEYB_VBIOS_ADDR_KEYB_BUF_HEAD);
 }
 
-static t_bool keyboard_buffer_push(vm_profile_default_context *profile,
-    t_nubit16 code)
+static ntvdm64_type_bool keyboard_buffer_push(vm_profile_default_context *profile,
+    ntvdm64_type_unsigned_16 code)
 {
-    t_nubit16 tail;
+    ntvdm64_type_unsigned_16 tail;
 
-    if (keyboard_buffer_full(profile)) return True;
+    if (keyboard_buffer_full(profile)) return NTVDM64_TYPE_TRUE;
     tail = keyboard_read_word(profile, QDKEYB_VBIOS_ADDR_KEYB_BUF_TAIL);
     keyboard_write_word(profile, tail, code);
     keyboard_write_word(profile, QDKEYB_VBIOS_ADDR_KEYB_BUF_TAIL,
         keyboard_buffer_next(tail));
-    return False;
+    return NTVDM64_TYPE_FALSE;
 }
 
-static t_nubit16 keyboard_buffer_pop(vm_profile_default_context *profile)
+static ntvdm64_type_unsigned_16 keyboard_buffer_pop(vm_profile_default_context *profile)
 {
-    t_nubit16 head;
-    t_nubit16 result;
+    ntvdm64_type_unsigned_16 head;
+    ntvdm64_type_unsigned_16 result;
 
     if (keyboard_buffer_empty(profile)) return 0;
     head = keyboard_read_word(profile, QDKEYB_VBIOS_ADDR_KEYB_BUF_HEAD);
@@ -89,30 +89,30 @@ static t_nubit16 keyboard_buffer_pop(vm_profile_default_context *profile)
     return result;
 }
 
-static t_nubit16 keyboard_buffer_peek(vm_profile_default_context *profile)
+static ntvdm64_type_unsigned_16 keyboard_buffer_peek(vm_profile_default_context *profile)
 {
     return keyboard_read_word(profile, keyboard_read_word(profile,
         QDKEYB_VBIOS_ADDR_KEYB_BUF_HEAD));
 }
 
-static t_nubit8 keyboard_flag0(vm_profile_default_context *profile)
+static ntvdm64_type_unsigned_8 keyboard_flag0(vm_profile_default_context *profile)
 {
     return keyboard_read_byte(profile, QDKEYB_VBIOS_ADDR_KEYB_FLAG0);
 }
 
 static void keyboard_set_flag0(vm_profile_default_context *profile,
-    t_nubit8 mask, int enabled)
+    ntvdm64_type_unsigned_8 mask, int enabled)
 {
-    t_nubit8 value = keyboard_flag0(profile);
-    if (enabled) SetBit(value, mask); else ClrBit(value, mask);
+    ntvdm64_type_unsigned_8 value = keyboard_flag0(profile);
+    if (enabled) NTVDM64_TYPE_SET_BIT(value, mask); else NTVDM64_TYPE_CLEAR_BIT(value, mask);
     keyboard_write_byte(profile, QDKEYB_VBIOS_ADDR_KEYB_FLAG0, value);
 }
 
 static void keyboard_set_flag1(vm_profile_default_context *profile,
-    t_nubit8 mask, int enabled)
+    ntvdm64_type_unsigned_8 mask, int enabled)
 {
-    t_nubit8 value = keyboard_read_byte(profile, QDKEYB_VBIOS_ADDR_KEYB_FLAG1);
-    if (enabled) SetBit(value, mask); else ClrBit(value, mask);
+    ntvdm64_type_unsigned_8 value = keyboard_read_byte(profile, QDKEYB_VBIOS_ADDR_KEYB_FLAG1);
+    if (enabled) NTVDM64_TYPE_SET_BIT(value, mask); else NTVDM64_TYPE_CLEAR_BIT(value, mask);
     keyboard_write_byte(profile, QDKEYB_VBIOS_ADDR_KEYB_FLAG1, value);
 }
 
@@ -133,23 +133,23 @@ static void keyboard_read_input(vm_profile_default_context *profile)
 static void keyboard_get_status(vm_profile_default_context *profile)
 {
     t_cpu *cpu = profile->execution->cpu;
-    t_nubit16 key = keyboard_buffer_peek(profile);
+    ntvdm64_type_unsigned_16 key = keyboard_buffer_peek(profile);
 
     if (keyboard_buffer_empty(profile)) {
-        SetBit(cpu->data.eflags, VCPU_EFLAGS_ZF);
+        NTVDM64_TYPE_SET_BIT(cpu->data.eflags, VCPU_EFLAGS_ZF);
         return;
     }
     switch (key) {
     case 0x1d00:
     case 0x2a00:
     case 0x3800:
-        cpu->data.ax = Zero16;
+        cpu->data.ax = NTVDM64_TYPE_ZERO_16;
         break;
     default:
         cpu->data.ax = key;
         break;
     }
-    ClrBit(cpu->data.eflags, VCPU_EFLAGS_ZF);
+    NTVDM64_TYPE_CLEAR_BIT(cpu->data.eflags, VCPU_EFLAGS_ZF);
 }
 
 static void keyboard_int_09(vm_profile_default_context *profile)
@@ -175,7 +175,7 @@ static void keyboard_int_16(vm_profile_default_context *profile)
         break;
     case 0x05:
         cpu->data.al = keyboard_buffer_push(profile,
-            ((t_nubit16)cpu->data.ch << 8) | cpu->data.cl);
+            ((ntvdm64_type_unsigned_16)cpu->data.ch << 8) | cpu->data.cl);
         break;
     default:
         break;
@@ -186,22 +186,22 @@ static int keyboard_get_modifier(void *context,
     core_machine_keyboard_modifier modifier)
 {
     vm_profile_default_context *profile = context;
-    t_nubit8 flags = keyboard_flag0(profile);
+    ntvdm64_type_unsigned_8 flags = keyboard_flag0(profile);
 
     switch (modifier) {
     case CORE_MACHINE_KEYBOARD_MODIFIER_ALT:
-        return GetBit(flags, QDKEYB_FLAG0_D_ALT);
+        return NTVDM64_TYPE_GET_BIT(flags, QDKEYB_FLAG0_D_ALT);
     case CORE_MACHINE_KEYBOARD_MODIFIER_CONTROL:
-        return GetBit(flags, QDKEYB_FLAG0_D_CTRL);
+        return NTVDM64_TYPE_GET_BIT(flags, QDKEYB_FLAG0_D_CTRL);
     case CORE_MACHINE_KEYBOARD_MODIFIER_SHIFT:
-        return GetBit(flags, QDKEYB_FLAG0_D_LSHIFT) ||
-            GetBit(flags, QDKEYB_FLAG0_D_RSHIFT);
+        return NTVDM64_TYPE_GET_BIT(flags, QDKEYB_FLAG0_D_LSHIFT) ||
+            NTVDM64_TYPE_GET_BIT(flags, QDKEYB_FLAG0_D_RSHIFT);
     case CORE_MACHINE_KEYBOARD_MODIFIER_CAPS_LOCK:
-        return GetBit(flags, QDKEYB_FLAG0_A_CAPLCK);
+        return NTVDM64_TYPE_GET_BIT(flags, QDKEYB_FLAG0_A_CAPLCK);
     case CORE_MACHINE_KEYBOARD_MODIFIER_NUM_LOCK:
-        return GetBit(flags, QDKEYB_FLAG0_A_NUMLCK);
+        return NTVDM64_TYPE_GET_BIT(flags, QDKEYB_FLAG0_A_NUMLCK);
     }
-    return False;
+    return NTVDM64_TYPE_FALSE;
 }
 
 static void keyboard_apply_host_state(void *context,

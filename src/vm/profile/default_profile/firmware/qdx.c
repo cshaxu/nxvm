@@ -17,8 +17,8 @@ static void vm_profile_default_qdx_dispatch(
         vm_profile_default_context_from_execution(execution);
     t_cpu *cpu;
     t_cpuins *instructions;
-    t_nubit8 command_id;
-    t_nubit16 flags;
+    ntvdm64_type_unsigned_8 command_id;
+    ntvdm64_type_unsigned_16 flags;
 
     if (profile == NULL || profile->qdx == NULL || execution == NULL ||
         execution->cpu == NULL || execution->instructions == NULL) return;
@@ -26,7 +26,7 @@ static void vm_profile_default_qdx_dispatch(
     instructions = execution->instructions;
     cpu->data.eip++;
     if (core_machine_cpu_execution_read_linear(execution,
-            cpu->data.cs.base + cpu->data.eip, GetRef(command_id), 1)) {
+            cpu->data.cs.base + cpu->data.eip, NTVDM64_TYPE_REFERENCE_OF(command_id), 1)) {
         PRINTF("Cannot read data from L%08X.\n",
             cpu->data.cs.base + cpu->data.eip);
         core_machine_cpu_execution_request_stop(execution);
@@ -54,15 +54,15 @@ static void vm_profile_default_qdx_dispatch(
         }
         if (command_id < 0x20) {
             if (core_machine_cpu_execution_read_linear(execution,
-                    cpu->data.ss.base + cpu->data.sp + 4, GetRef(flags), 2)) {
+                    cpu->data.ss.base + cpu->data.sp + 4, NTVDM64_TYPE_REFERENCE_OF(flags), 2)) {
                 PRINTF("Cannot read data from L%08X.\n",
                     cpu->data.ss.base + cpu->data.sp + 4);
                 core_machine_cpu_execution_request_stop(execution);
             }
-            MakeBit(flags, VCPU_EFLAGS_ZF, GetBit(cpu->data.eflags, VCPU_EFLAGS_ZF));
-            MakeBit(flags, VCPU_EFLAGS_CF, GetBit(cpu->data.eflags, VCPU_EFLAGS_CF));
+            NTVDM64_TYPE_MAKE_BIT(flags, VCPU_EFLAGS_ZF, NTVDM64_TYPE_GET_BIT(cpu->data.eflags, VCPU_EFLAGS_ZF));
+            NTVDM64_TYPE_MAKE_BIT(flags, VCPU_EFLAGS_CF, NTVDM64_TYPE_GET_BIT(cpu->data.eflags, VCPU_EFLAGS_CF));
             if (core_machine_cpu_execution_write_linear(execution,
-                    cpu->data.ss.base + cpu->data.sp + 4, GetRef(flags), 2)) {
+                    cpu->data.ss.base + cpu->data.sp + 4, NTVDM64_TYPE_REFERENCE_OF(flags), 2)) {
                 PRINTF("Cannot write data to L%08X.\n",
                     cpu->data.ss.base + cpu->data.sp + 4);
                 core_machine_cpu_execution_request_stop(execution);
@@ -70,13 +70,13 @@ static void vm_profile_default_qdx_dispatch(
         }
         break;
     }
-    instructions->data.flagIgnore = True;
+    instructions->data.flagIgnore = NTVDM64_TYPE_TRUE;
 }
 
 void vm_profile_default_qdx_initialize(vm_profile_default_context *profile,
     core_machine_cpu_execution_context *execution)
 {
-    t_nubitcc index;
+    ntvdm64_type_native_unsigned index;
 
     if (profile == NULL || profile->qdx == NULL || execution == NULL ||
         execution->instructions == NULL) return;

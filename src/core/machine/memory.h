@@ -14,12 +14,12 @@ typedef struct t_port t_port;
 #define NXVM_DEVICE_RAM "Unknown Random-access Memory"
 
 typedef struct {
-    t_bool flagA20; /* 0 = disable, 1 = enable */
+    ntvdm64_type_bool flagA20; /* 0 = disable, 1 = enable */
 } t_ram_data;
 
 typedef struct {
-    t_vaddrcc pBase; /* memory base address is 20 bit */
-    t_nubitcc size; /* memory size in byte */
+    ntvdm64_type_virtual_address pBase; /* memory base address is 20 bit */
+    ntvdm64_type_native_unsigned size; /* memory size in byte */
 } t_ram_connect;
 
 typedef struct t_ram {
@@ -31,10 +31,10 @@ typedef struct t_ram {
 #define VRAM_FLAG_A20 0x02
 
 
-void core_machine_memory_read_physical(t_ram *ram, t_nubit32 physical,
-    t_vaddrcc destination, t_nubitcc size);
-void core_machine_memory_write_physical(t_ram *ram, t_nubit32 physical,
-    t_vaddrcc source, t_nubitcc size);
+void core_machine_memory_read_physical(t_ram *ram, ntvdm64_type_unsigned_32 physical,
+    ntvdm64_type_virtual_address destination, ntvdm64_type_native_unsigned size);
+void core_machine_memory_write_physical(t_ram *ram, ntvdm64_type_unsigned_32 physical,
+    ntvdm64_type_virtual_address source, ntvdm64_type_native_unsigned size);
 void core_machine_memory_initialize(t_ram *ram);
 void core_machine_memory_reset(t_ram *ram);
 void core_machine_memory_finalize(t_ram *ram);

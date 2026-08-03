@@ -37,18 +37,18 @@ typedef enum {
     PREFIX_SREG_FS, PREFIX_SREG_GS
 } t_cpuins_data_prefix_sreg;
 
-typedef t_bool t_cpuins_data_prefix;
+typedef ntvdm64_type_bool t_cpuins_data_prefix;
 
 typedef struct {
     t_cpu_data_sreg *rsreg;
-    t_nubit32 offset;
+    ntvdm64_type_unsigned_32 offset;
 } t_cpuins_data_logical;
 
 typedef struct {
-    t_bool flagWrite;
-    t_nubit32 byte;
-    t_nubit32 linear;
-    t_nubit64 data;
+    ntvdm64_type_bool flagWrite;
+    ntvdm64_type_unsigned_32 byte;
+    ntvdm64_type_unsigned_32 linear;
+    ntvdm64_type_unsigned_64 data;
 } t_cpuins_data_memory;
 
 typedef struct {
@@ -60,38 +60,38 @@ typedef struct {
 
     /* execution control */
     t_cpu  oldcpu;
-    t_bool flagInsLoop;
-    t_bool flagMaskInt; /* if int is disabled once */
+    ntvdm64_type_bool flagInsLoop;
+    ntvdm64_type_bool flagMaskInt; /* if int is disabled once */
 
     /* memory management */
     t_cpuins_data_logical mrm;
-    t_vaddrcc rrm, rr;
-    t_nubit64 crm, cr, cimm;
-    t_bool flagMem; /* if rm is in memory */
-    t_bool flagLock;
+    ntvdm64_type_virtual_address rrm, rr;
+    ntvdm64_type_unsigned_64 crm, cr, cimm;
+    ntvdm64_type_bool flagMem; /* if rm is in memory */
+    ntvdm64_type_bool flagLock;
 
     /* arithmetic operands */
-    t_nubit64 opr1, opr2, result;
-    t_nubit32 bit;
+    ntvdm64_type_unsigned_64 opr1, opr2, result;
+    ntvdm64_type_unsigned_32 bit;
     t_cpuins_data_arithtype type;
-    t_nubit32 udf; /* undefined eflags bits */
+    ntvdm64_type_unsigned_32 udf; /* undefined eflags bits */
 
     /* exception handler */
-    t_nubit32 except, excode;
+    ntvdm64_type_unsigned_32 except, excode;
 
     /* debugger */
-    t_nubit32 linear;
-    t_bool flagWR, flagWW, flagWE;
-    t_nubit32 wrLinear, wwLinear, weLinear;
+    ntvdm64_type_unsigned_32 linear;
+    ntvdm64_type_bool flagWR, flagWW, flagWE;
+    ntvdm64_type_unsigned_32 wrLinear, wwLinear, weLinear;
 
     /* cpu recorder */
-    t_bool flagIgnore;
+    ntvdm64_type_bool flagIgnore;
     t_cpuins_data_memory mem[0x20];
-    t_nubit8 msize;
-    t_nubit8 oplen;
-    t_nubit8 opcodes[15];
-    t_nubit16 reccs;
-    t_nubit32 receip;
+    ntvdm64_type_unsigned_8 msize;
+    ntvdm64_type_unsigned_8 oplen;
+    ntvdm64_type_unsigned_8 opcodes[15];
+    ntvdm64_type_unsigned_16 reccs;
+    ntvdm64_type_unsigned_32 receip;
 } t_cpuins_data;
 
 typedef struct t_cpuins t_cpuins;
@@ -122,10 +122,10 @@ struct core_machine_cpu_execution_context {
     t_port *port;
     t_pic *pic_master;
     t_pic *pic_slave;
-    t_utils_trace *trace;
+    ntvdm64_type_trace *trace;
     void *extension_context;
-    t_bool stop_requested;
-    t_bool reset_requested;
+    ntvdm64_type_bool stop_requested;
+    ntvdm64_type_bool reset_requested;
 };
 
 void core_machine_cpu_execution_context_initialize(
@@ -138,15 +138,15 @@ void core_machine_cpu_execution_context_bind_extension(
     core_machine_cpu_execution_context *context, void *extension_context);
 void *core_machine_cpu_execution_context_extension(
     const core_machine_cpu_execution_context *context);
-t_bool core_machine_cpu_execution_load_segment(
+ntvdm64_type_bool core_machine_cpu_execution_load_segment(
     core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg,
-    t_nubit16 selector);
-t_bool core_machine_cpu_execution_read_linear(
-    core_machine_cpu_execution_context *context, t_nubit32 linear,
-    t_vaddrcc rdata, t_nubit8 byte);
-t_bool core_machine_cpu_execution_write_linear(
-    core_machine_cpu_execution_context *context, t_nubit32 linear,
-    t_vaddrcc rdata, t_nubit8 byte);
+    ntvdm64_type_unsigned_16 selector);
+ntvdm64_type_bool core_machine_cpu_execution_read_linear(
+    core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 linear,
+    ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte);
+ntvdm64_type_bool core_machine_cpu_execution_write_linear(
+    core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 linear,
+    ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte);
 void core_machine_cpu_execution_initialize(
     core_machine_cpu_execution_context *context);
 void core_machine_cpu_execution_reset(

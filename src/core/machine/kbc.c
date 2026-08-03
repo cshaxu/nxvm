@@ -5,7 +5,7 @@
 #include "core/machine/port.h"
 #include "core/machine/kbc.h"
 
-static void core_machine_kbc_read_status(t_port *port, t_nubit16 port_id,
+static void core_machine_kbc_read_status(t_port *port, ntvdm64_type_unsigned_16 port_id,
     void *owner)
 {
     (void)port_id;
@@ -21,7 +21,7 @@ void core_machine_kbc_register_ports(t_kbc *controller, t_port *port)
 
 void core_machine_kbc_initialize(t_kbc *controller, t_port *port) {
     if (controller == NULL || port == NULL) return;
-    MEMSET(controller, Zero8, sizeof(*controller));
+    MEMSET(controller, NTVDM64_TYPE_ZERO_8, sizeof(*controller));
     core_machine_kbc_register_ports(controller, port);
 }
 void core_machine_kbc_reset(t_kbc *controller) { (void)controller; }
