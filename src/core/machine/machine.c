@@ -14,6 +14,36 @@ static int core_machine_profile_is_supported(core_machine_profile profile)
            profile == CORE_MACHINE_PROFILE_TEST_MINIMAL;
 }
 
+nxvm_core_status core_machine_enable_legacy_executor(core_machine *machine)
+{
+    if (machine == NULL) return NXVM_CORE_STATUS_INVALID_ARGUMENT;
+    if (machine->legacy_executor_enabled) return NXVM_CORE_STATUS_OK;
+    if (machine->lifecycle == CORE_MACHINE_RUNNING) {
+        return NXVM_CORE_STATUS_INVALID_STATE;
+    }
+    core_machine_cpu_execution_context_initialize(&machine->legacy_cpu_execution,
+        &machine->legacy_cpu, &machine->legacy_cpu_instructions,
+        &machine->legacy_memory, &machine->legacy_port);
+    machine->legacy_executor_enabled = 1;
+    return NXVM_CORE_STATUS_OK;
+}
+
+t_cpu *core_machine_legacy_cpu_borrow(core_machine *machine)
+{ return machine != NULL && machine->legacy_executor_enabled ? &machine->legacy_cpu : NULL; }
+
+t_cpuins *core_machine_legacy_cpu_instructions_borrow(core_machine *machine)
+{ return machine != NULL && machine->legacy_executor_enabled ? &machine->legacy_cpu_instructions : NULL; }
+
+core_machine_cpu_execution_context *core_machine_legacy_cpu_execution_borrow(
+    core_machine *machine)
+{ return machine != NULL && machine->legacy_executor_enabled ? &machine->legacy_cpu_execution : NULL; }
+
+t_ram *core_machine_legacy_memory_borrow(core_machine *machine)
+{ return machine != NULL && machine->legacy_executor_enabled ? &machine->legacy_memory : NULL; }
+
+t_port *core_machine_legacy_port_borrow(core_machine *machine)
+{ return machine != NULL && machine->legacy_executor_enabled ? &machine->legacy_port : NULL; }
+
 nxvm_core_status core_machine_cpu_reset(core_machine *machine)
 {
     core_machine_cpu_state *state;

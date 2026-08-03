@@ -512,6 +512,12 @@ add_executable(nxvm-vm-full-pc-session-smoke
 )
 target_link_libraries(nxvm-vm-full-pc-session-smoke PRIVATE nxvm-vm-composition)
 
+add_executable(nxvm-vm-core-executor-storage-smoke
+    tests/machine/vm_core_executor_storage_smoke.c
+)
+target_link_libraries(nxvm-vm-core-executor-storage-smoke PRIVATE
+    nxvm-vm-composition)
+
 add_library(ntvdm64-vdm-machine STATIC
     src/vdm/machine/dos_minimal.c
 )
@@ -783,6 +789,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(nxvm-dos-minimal-profile-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-runtime-registry-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-vm-full-pc-session-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(nxvm-vm-core-executor-storage-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(ntvdm64-vdm-machine PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(ntvdm64-vdm-profile PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(ntvdm64-vdm-composition PRIVATE -Wall -Wextra -Wpedantic -Werror)

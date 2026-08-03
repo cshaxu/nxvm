@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 #include "core/machine/cpu.h"
+#include "core/machine/machine_interface.h"
 #include "core/machine/cpu_instructions.h"
 #include "core/machine/port.h"
 #include "core/machine/memory.h"
@@ -29,11 +30,7 @@
 #include "vm/platform/platform.h"
 
 typedef struct vm_composition_live_machine {
-    t_cpu cpu_storage;
-    t_cpuins cpuins_storage;
-    core_machine_cpu_execution_context cpu_execution_storage;
-    t_ram ram_storage;
-    t_port port_storage;
+    core_machine *core_machine;
     t_pic pic_master_storage;
     t_pic pic_slave_storage;
     t_pit pit_storage;
