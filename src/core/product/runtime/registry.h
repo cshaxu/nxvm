@@ -11,61 +11,61 @@ extern "C" {
 
 #define NXVM_RUNTIME_REGISTRY_CAPACITY 16u
 
-typedef enum nxvm_runtime_profile_family {
+typedef enum core_product_runtime_profile_family {
     NXVM_RUNTIME_PROFILE_MACHINE = 1,
     NXVM_RUNTIME_PROFILE_EXECUTION = 2
-} nxvm_runtime_profile_family;
+} core_product_runtime_profile_family;
 
-typedef enum nxvm_runtime_firmware_provider_kind {
+typedef enum core_product_runtime_firmware_provider_kind {
     NXVM_RUNTIME_FIRMWARE_PROVIDER_BUILTIN = 1,
     NXVM_RUNTIME_FIRMWARE_PROVIDER_EXTERNAL_ROM_BUNDLE = 2,
     NXVM_RUNTIME_FIRMWARE_PROVIDER_ABSENT = 3
-} nxvm_runtime_firmware_provider_kind;
+} core_product_runtime_firmware_provider_kind;
 
-typedef int (*nxvm_runtime_capability_query)(void *context,
+typedef int (*core_product_runtime_capability_query)(void *context,
                                               unsigned capability);
 
-typedef struct nxvm_runtime_profile_descriptor_v1 {
+typedef struct core_product_runtime_profile_descriptor_v1 {
     const char *id;
-    nxvm_runtime_profile_family family;
+    core_product_runtime_profile_family family;
     const char *owner;
     const unsigned *required_capabilities;
     size_t required_capability_count;
     const char *firmware_provider_id;
-} nxvm_runtime_profile_descriptor_v1;
+} core_product_runtime_profile_descriptor_v1;
 
-typedef struct nxvm_runtime_firmware_provider_descriptor_v1 {
+typedef struct core_product_runtime_firmware_provider_descriptor_v1 {
     const char *id;
-    nxvm_runtime_firmware_provider_kind kind;
+    core_product_runtime_firmware_provider_kind kind;
     const char *owner;
     const char *machine_profile_id;
-} nxvm_runtime_firmware_provider_descriptor_v1;
+} core_product_runtime_firmware_provider_descriptor_v1;
 
-typedef struct nxvm_runtime_registry {
-    const nxvm_runtime_profile_descriptor_v1 *profiles[NXVM_RUNTIME_REGISTRY_CAPACITY];
-    const nxvm_runtime_firmware_provider_descriptor_v1 *providers[NXVM_RUNTIME_REGISTRY_CAPACITY];
+typedef struct core_product_runtime_registry {
+    const core_product_runtime_profile_descriptor_v1 *profiles[NXVM_RUNTIME_REGISTRY_CAPACITY];
+    const core_product_runtime_firmware_provider_descriptor_v1 *providers[NXVM_RUNTIME_REGISTRY_CAPACITY];
     size_t profile_count;
     size_t provider_count;
     int frozen;
-} nxvm_runtime_registry;
+} core_product_runtime_registry;
 
-void nxvm_runtime_registry_initialize(nxvm_runtime_registry *registry);
-ntvdm64_status nxvm_runtime_registry_register_profile(
-    nxvm_runtime_registry *registry,
-    const nxvm_runtime_profile_descriptor_v1 *descriptor);
-ntvdm64_status nxvm_runtime_registry_register_firmware_provider(
-    nxvm_runtime_registry *registry,
-    const nxvm_runtime_firmware_provider_descriptor_v1 *descriptor);
-ntvdm64_status nxvm_runtime_registry_freeze(nxvm_runtime_registry *registry);
-const nxvm_runtime_profile_descriptor_v1 *nxvm_runtime_registry_find_profile(
-    const nxvm_runtime_registry *registry,
+void core_product_runtime_registry_initialize(core_product_runtime_registry *registry);
+ntvdm64_status core_product_runtime_registry_register_profile(
+    core_product_runtime_registry *registry,
+    const core_product_runtime_profile_descriptor_v1 *descriptor);
+ntvdm64_status core_product_runtime_registry_register_firmware_provider(
+    core_product_runtime_registry *registry,
+    const core_product_runtime_firmware_provider_descriptor_v1 *descriptor);
+ntvdm64_status core_product_runtime_registry_freeze(core_product_runtime_registry *registry);
+const core_product_runtime_profile_descriptor_v1 *core_product_runtime_registry_find_profile(
+    const core_product_runtime_registry *registry,
     const char *id,
-    nxvm_runtime_profile_family family,
-    nxvm_runtime_capability_query capability_query,
+    core_product_runtime_profile_family family,
+    core_product_runtime_capability_query capability_query,
     void *capability_context);
-const nxvm_runtime_firmware_provider_descriptor_v1 *
-nxvm_runtime_registry_find_firmware_provider(
-    const nxvm_runtime_registry *registry,
+const core_product_runtime_firmware_provider_descriptor_v1 *
+core_product_runtime_registry_find_firmware_provider(
+    const core_product_runtime_registry *registry,
     const char *id,
     const char *machine_profile_id);
 

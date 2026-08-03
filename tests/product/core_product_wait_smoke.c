@@ -27,24 +27,24 @@ int main(void)
     core_product_wait_scope_initialize(&scope, core_product_wait_smoke_provider,
         &calls);
     previous = core_product_wait_scope_enter(&scope);
-    utilsSleep(17u);
+    core_product_utils_sleep(17u);
     if (calls != 1u || observed_milliseconds != 17u) {
         return 1;
     }
     core_product_wait_scope_initialize(&nested_scope,
         core_product_wait_smoke_provider, &nested_calls);
     nested_previous = core_product_wait_scope_enter(&nested_scope);
-    utilsSleep(23u);
+    core_product_utils_sleep(23u);
     if (calls != 1u || nested_calls != 1u || observed_milliseconds != 23u) {
         return 1;
     }
     core_product_wait_scope_leave(nested_previous);
-    utilsSleep(31u);
+    core_product_utils_sleep(31u);
     if (calls != 2u || nested_calls != 1u || observed_milliseconds != 31u) {
         return 1;
     }
     core_product_wait_scope_leave(previous);
-    utilsSleep(1u);
+    core_product_utils_sleep(1u);
     if (calls != 2u) {
         return 1;
     }

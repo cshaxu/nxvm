@@ -1,6 +1,6 @@
 #include "vm/profile/full_pc_profile.h"
 
-static const nxvm_runtime_profile_descriptor nxvm_vm_full_pc_profile = {
+static const core_product_runtime_profile_descriptor nxvm_vm_full_pc_profile = {
     "nxvm.full_pc",
     NXVM_RUNTIME_DEVICE_CPU | NXVM_RUNTIME_DEVICE_RAM |
         NXVM_RUNTIME_DEVICE_PORTS | NXVM_RUNTIME_DEVICE_PIC |
@@ -14,7 +14,7 @@ static const nxvm_runtime_profile_descriptor nxvm_vm_full_pc_profile = {
     1
 };
 
-const nxvm_runtime_profile_descriptor *nxvm_vm_full_pc_profile_descriptor(void)
+const core_product_runtime_profile_descriptor *nxvm_vm_full_pc_profile_descriptor(void)
 {
     return &nxvm_vm_full_pc_profile;
 }

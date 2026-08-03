@@ -202,7 +202,7 @@ VOID win32appStartMachine(const vm_platform_run_context *context) {
     CreateThread(NULL, 0, ThreadKernel, run_context, 0, &thread_id);
     while (oldDeviceFlip ==
            vm_platform_execution_get_flip_for(context->execution)) {
-        utilsSleep(100);
+        core_product_utils_sleep(100);
     }
     CreateThread(NULL, 0, ThreadDisplay, run_context, 0, &thread_id);
     core_product_wait_scope_leave(previous);

@@ -46,16 +46,16 @@ ntvdm64_status vm_composition_session_model_create(
 
     if (session == NULL || config == NULL) return NTVDM64_STATUS_INVALID_ARGUMENT;
     memset(session, 0, sizeof(*session));
-    nxvm_runtime_registry_initialize(&session->registry);
+    core_product_runtime_registry_initialize(&session->registry);
     status = nxvm_product_nxvm_register_default_profile_builtin(&session->registry);
     if (status != NTVDM64_STATUS_OK ||
-        nxvm_runtime_registry_find_profile(&session->registry,
+        core_product_runtime_registry_find_profile(&session->registry,
             NXVM_PRODUCT_NXVM_PC_AT_PROFILE_ID, NXVM_RUNTIME_PROFILE_MACHINE,
             NULL, NULL) == NULL ||
-        nxvm_runtime_registry_find_firmware_provider(&session->registry,
+        core_product_runtime_registry_find_firmware_provider(&session->registry,
             NXVM_PRODUCT_NXVM_PC_AT_PROVIDER_ID,
             NXVM_PRODUCT_NXVM_PC_AT_PROFILE_ID) == NULL ||
-        nxvm_runtime_registry_freeze(&session->registry) != NTVDM64_STATUS_OK) {
+        core_product_runtime_registry_freeze(&session->registry) != NTVDM64_STATUS_OK) {
         return NTVDM64_STATUS_FAULT;
     }
     core_machine_firmware_initialize(&session->firmware);

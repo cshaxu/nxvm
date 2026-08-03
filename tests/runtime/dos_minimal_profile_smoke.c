@@ -5,9 +5,9 @@
 
 int main(void)
 {
-    const nxvm_runtime_profile_descriptor *profile;
-    nxvm_runtime_dos_minimal *session = NULL;
-    nxvm_runtime_text_snapshot snapshot;
+    const core_product_runtime_profile_descriptor *profile;
+    core_product_runtime_dos_minimal *session = NULL;
+    core_product_runtime_text_snapshot snapshot;
     uint32_t value;
 
     profile = ntvdm64_dos_minimal_profile_descriptor();
@@ -16,25 +16,25 @@ int main(void)
                              NXVM_RUNTIME_DEVICE_FDD |
                              NXVM_RUNTIME_DEVICE_HDD |
                              NXVM_RUNTIME_DEVICE_VADP)) != 0u ||
-        nxvm_runtime_dos_minimal_create(&session) != NTVDM64_STATUS_OK ||
-        nxvm_runtime_dos_minimal_tick(session, 3u) != NTVDM64_STATUS_OK ||
-        nxvm_runtime_dos_minimal_inject_key(session, 0x1eu) != NTVDM64_STATUS_OK ||
-        nxvm_runtime_dos_minimal_port_read(session, 0x20u, &value) != NTVDM64_STATUS_OK ||
+        core_product_runtime_dos_minimal_create(&session) != NTVDM64_STATUS_OK ||
+        core_product_runtime_dos_minimal_tick(session, 3u) != NTVDM64_STATUS_OK ||
+        core_product_runtime_dos_minimal_inject_key(session, 0x1eu) != NTVDM64_STATUS_OK ||
+        core_product_runtime_dos_minimal_port_read(session, 0x20u, &value) != NTVDM64_STATUS_OK ||
         value != 0x02u ||
-        nxvm_runtime_dos_minimal_port_read(session, 0x60u, &value) != NTVDM64_STATUS_OK ||
+        core_product_runtime_dos_minimal_port_read(session, 0x60u, &value) != NTVDM64_STATUS_OK ||
         value != 0x1eu ||
-        nxvm_runtime_dos_minimal_write_text(session, 0u, 'N', 0x1fu) != NTVDM64_STATUS_OK ||
-        nxvm_runtime_dos_minimal_get_snapshot(session, &snapshot) != NTVDM64_STATUS_OK ||
+        core_product_runtime_dos_minimal_write_text(session, 0u, 'N', 0x1fu) != NTVDM64_STATUS_OK ||
+        core_product_runtime_dos_minimal_get_snapshot(session, &snapshot) != NTVDM64_STATUS_OK ||
         snapshot.pit_ticks != 3u || snapshot.keyboard_irq_pending != 0u ||
         snapshot.text.columns != CORE_MACHINE_TEXT_COLUMNS ||
         snapshot.text.rows != CORE_MACHINE_TEXT_ROWS ||
         snapshot.text.characters[0] != 'N' ||
         snapshot.text.attributes[0] != 0x1fu) {
-        nxvm_runtime_dos_minimal_destroy(session);
+        core_product_runtime_dos_minimal_destroy(session);
         return 1;
     }
 
-    nxvm_runtime_dos_minimal_destroy(session);
+    core_product_runtime_dos_minimal_destroy(session);
     puts("M3:T3:S2:DOS-MINIMAL-PROFILE:OK");
     return 0;
 }

@@ -43,7 +43,7 @@ static void vm_composition_console_debug(void *context)
     }
     previous = core_product_wait_scope_enter(machine->wait_scope);
     core_product_debug_context_initialize(machine->debugger_context);
-    debugMain(machine->debugger_context, vm_composition_debug_target(machine));
+    core_product_debug_main(machine->debugger_context, vm_composition_debug_target(machine));
     core_product_wait_scope_leave(previous);
 }
 static void vm_composition_console_record_start(void *context, const char *path) { vm_machine_debug_record_start(((vm_composition_live_machine *)context)->debug, path); }

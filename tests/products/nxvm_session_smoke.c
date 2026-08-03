@@ -22,10 +22,10 @@ static int verify(const char *fdd_path, const char *hdd_path,
     nxvm_product_nxvm_reset_vector execution_vector;
 
     if (vm_composition_session_model_create(&session, &config) != NTVDM64_STATUS_OK ||
-        nxvm_runtime_registry_find_profile(&session.registry,
+        core_product_runtime_registry_find_profile(&session.registry,
             NXVM_PRODUCT_NXVM_PC_AT_PROFILE_ID, NXVM_RUNTIME_PROFILE_MACHINE,
             NULL, NULL) == NULL ||
-        nxvm_runtime_registry_find_firmware_provider(&session.registry,
+        core_product_runtime_registry_find_firmware_provider(&session.registry,
             NXVM_PRODUCT_NXVM_PC_AT_PROVIDER_ID,
             NXVM_PRODUCT_NXVM_PC_AT_PROFILE_ID) == NULL ||
         session.firmware.frozen == 0 || session.media.frozen == 0 ||

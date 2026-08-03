@@ -20,7 +20,7 @@ typedef struct vm_composition_session_model_config {
 } vm_composition_session_model_config;
 
 typedef struct vm_composition_session_model {
-    nxvm_runtime_registry registry;
+    core_product_runtime_registry registry;
     core_machine_firmware firmware;
     vm_profile_default_firmware_plan firmware_plan;
     vm_profile_default_firmware_cmos cmos;

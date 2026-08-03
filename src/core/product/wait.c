@@ -37,7 +37,7 @@ void core_product_wait_milliseconds(uint32_t milliseconds)
     }
 }
 
-void utilsSleep(uint32_t milisec)
+void core_product_utils_sleep(uint32_t milisec)
 {
     core_product_wait_milliseconds(milisec);
 }

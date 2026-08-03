@@ -7,7 +7,7 @@
 
 struct vm_composition_full_pc_session {
     vm_composition_full_pc_session_config config;
-    const nxvm_runtime_profile_descriptor *profile;
+    const core_product_runtime_profile_descriptor *profile;
     nxvm_full_pc *full_pc;
     int active;
 };
@@ -69,7 +69,7 @@ ntvdm64_status vm_composition_full_pc_session_reset(vm_composition_full_pc_sessi
     return vm_composition_full_pc_session_start(session);
 }
 
-const nxvm_runtime_profile_descriptor *vm_composition_full_pc_session_profile(
+const core_product_runtime_profile_descriptor *vm_composition_full_pc_session_profile(
     const vm_composition_full_pc_session *session)
 {
     return session == NULL ? NULL : session->profile;

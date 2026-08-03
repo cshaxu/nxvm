@@ -97,9 +97,9 @@ static void xasm_test(t_debug *debug) {
     }
     switch (d_nubit32(ins1)) {
     }
-    lenDasm1 = utilsDasm32(strDasm1, ins1, debug->connect.cpu->data.cs.seg.exec.defsize);
-    lenAasm  = utilsAasm32(strDasm1, ins2, debug->connect.cpu->data.cs.seg.exec.defsize);
-    lenDasm2 = utilsDasm32(strDasm2, ins2, debug->connect.cpu->data.cs.seg.exec.defsize);
+    lenDasm1 = core_product_utils_dasm32(strDasm1, ins1, debug->connect.cpu->data.cs.seg.exec.defsize);
+    lenAasm  = core_product_utils_aasm32(strDasm1, ins2, debug->connect.cpu->data.cs.seg.exec.defsize);
+    lenDasm2 = core_product_utils_dasm32(strDasm2, ins2, debug->connect.cpu->data.cs.seg.exec.defsize);
     if ((flagStop && (lenAasm != lenDasm1 || lenAasm != lenDasm2 || lenDasm1 != lenDasm2 ||
                       MEMCMP((void *) ins1, (void *) ins2, lenDasm1))) || STRCMP(strDasm1, strDasm2)) {
         PRINTF("diff at #%d %04X:%08X(L%08X), len(a=%x,d1=%x,d2=%x), CodeSegDefSize=%d\n",
@@ -179,7 +179,7 @@ void vm_machine_debug_refresh(t_debug *debug) {
 
         /* disassemble opcode */
         if (debug->connect.cpuins->data.oplen) {
-            debug->connect.cpuins->data.oplen = utilsDasm32(stmt, debug->connect.cpuins->data.opcodes, debug->connect.cpu->data.cs.seg.exec.defsize);
+            debug->connect.cpuins->data.oplen = core_product_utils_dasm32(stmt, debug->connect.cpuins->data.opcodes, debug->connect.cpu->data.cs.seg.exec.defsize);
             for (i = 0; i < STRLEN(stmt); ++i) {
                 if (stmt[i] == '\n') {
                     stmt[i] = ' ';
