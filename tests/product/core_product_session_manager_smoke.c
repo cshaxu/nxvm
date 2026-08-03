@@ -46,8 +46,6 @@ C_INT main(C_VOID)
     STD_SIZE_T count;
 
     if (core_product_session_manager_create(&provider, &manager) != NTVDM64_STATUS_OK ||
-        core_product_session_manager_open(manager, &id) != NTVDM64_STATUS_OK ||
-        id != 0u ||
         core_product_session_manager_get_selected_id(manager, &id) != NTVDM64_STATUS_OK ||
         id != 0u ||
         core_product_session_manager_open(manager, &id) != NTVDM64_STATUS_OK || id != 1u ||

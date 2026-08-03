@@ -143,7 +143,7 @@ assembly remains in the product-root composition.
 
 ```text
 src/core/product/session/
-  manager.h/.c              opaque table, selection, IDs
+  manager.c                 opaque table, selection, IDs
   session_interface.h       generic public manager/snapshot contract
   session_provider.h        injected composition lifecycle contract
   command_interface.h/.c    shared SESSION grammar and output contract
@@ -190,7 +190,7 @@ them. No compatibility wrapper remains.
 | T147 | Route NXVM Console `SESSION` grammar through the shared command facility; add `OPEN`, `SELECT`, and copied list snapshots for stopped sessions. | Complete: manager opens/selects independent VM sessions, Console transcript proves `*` selection, and retained FDD/Console gates pass. |
 | T148 | Add deterministic `CLOSE`, last-session rejection, ID allocation/reuse, and final product shutdown behavior. | Complete: manager-level final-session rejection, selected-ID fallback, synchronous VM destruction, all-session exit scan, repeated open/close smoke, and FDD/Console gates pass. |
 | T149 | Enable and verify concurrent Window sessions; preserve Console lease semantics and selected-session debugger routing. | Complete: two manager-owned Windows run independently, stopping one retains the other; host Console lease and FDD/Console gates pass. |
-| T150 | Perform NXVM feature closure audit and rebuild the current artifact; record the VDM adoption boundary for M6/M8/M9. | Full GCC gates, session-manager structural scan, Console/debugger/FDD regression, artifact and build hygiene. |
+| T150 | Perform NXVM feature closure audit and rebuild the current artifact; record the VDM adoption boundary for M6/M8/M9. | Complete: create atomically establishes session 0, structural manager gate and full GCC gates pass, current artifact is rebuilt, and VDM adoption remains deferred to its design milestones. |
 
 Each implementation task records its applicable `RULES.md` provisions,
 provider lifetime/threading contract, a source migration map, and exact

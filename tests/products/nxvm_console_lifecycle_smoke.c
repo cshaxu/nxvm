@@ -52,8 +52,6 @@ C_INT main(C_VOID)
 
     vm_session_provider_initialize(&session_provider);
     if (core_product_session_manager_create(&session_provider, &session_manager) !=
-            NTVDM64_STATUS_OK ||
-        core_product_session_manager_open(session_manager, STD_NULL) !=
             NTVDM64_STATUS_OK) {
         NXVM_DUP2(saved_stdin, NXVM_FILENO(STD_STDIN));
         NXVM_CLOSE(saved_stdin);

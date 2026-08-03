@@ -760,6 +760,7 @@ add_nxvm_version_artifact(nxvm-0-5-0146 "0.5.0146")
 add_nxvm_version_artifact(nxvm-0-5-0147 "0.5.0147")
 add_nxvm_version_artifact(nxvm-0-5-0148 "0.5.0148")
 add_nxvm_version_artifact(nxvm-0-5-0149 "0.5.0149")
+add_nxvm_version_artifact(nxvm-0-5-0150 "0.5.0150")
 
 option(NTVDM64_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
@@ -824,6 +825,13 @@ if(NTVDM64_VERIFY_DEPENDENCY_DAG)
         COMMENT "Verifying M5 mutable-state inventory"
         VERBATIM)
 
+    add_custom_target(verify-product-session-manager
+        COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
+            -File "${CMAKE_SOURCE_DIR}/tools/VerifyProductSessionManager.ps1"
+            -RepositoryRoot "${CMAKE_SOURCE_DIR}"
+        COMMENT "Verifying M5 product-session manager closure"
+        VERBATIM)
+
     add_custom_target(verify-c-facade-headers
         COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
             -File "${CMAKE_SOURCE_DIR}/tools/Verify-CFacadeHeaders.ps1"
@@ -855,6 +863,3 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(nxvm-vm-cpu-probe-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-execution-context-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
-
-
-
