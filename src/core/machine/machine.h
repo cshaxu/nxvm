@@ -93,4 +93,5 @@ C_VOID core_machine_trace_record(
     uint32_t detail);
 C_VOID core_machine_cpu_diagnostic_initialize(core_machine *machine);
 C_VOID core_machine_cpu_diagnostic_reset(core_machine *machine);
+C_INT core_machine_configuration_is_open(const core_machine *machine);
 #endif

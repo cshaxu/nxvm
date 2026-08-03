@@ -31,10 +31,11 @@ import. `docs/planning/status.md` remains authoritative for active work.
   composition markers, and added a source gate that rejects any VM/VDM direct
   generic core-device lifecycle call. Composition only binds VM/VDM-only
   devices, firmware, and providers.
-- [ ] **Public lifecycle hardening.** Audit direct machine/device initialize,
-  reset, refresh, and finalize calls. The supported lifecycle must have one
-  owner and fail clearly when called out of order; no public helper may create
-  an alternate production executor path.
+- [x] **Public lifecycle hardening.** T160 closes the configuration window
+  explicitly: bind execution/port providers only while `INITIALIZED`, freeze
+  exactly once, then reset/run the frozen topology. Public memory, port, and
+  A20 access require a returned `PAUSED` boundary. The contract smoke rejects
+  reset-before-freeze and topology mutation after freeze.
 - [ ] **Composition naming and separation.** `vm/composition/providers.*`
   currently combines provider binding, default-profile wiring, and lifecycle
   sequencing. Split or rename only after the core lifecycle boundary is

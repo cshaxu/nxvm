@@ -15,6 +15,10 @@ ntvdm64_status core_machine_memory_read(
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
 
+    if (machine->lifecycle != CORE_MACHINE_PAUSED) {
+        return NTVDM64_STATUS_INVALID_STATE;
+    }
+
     if (machine->executor_memory.connect.pBase == 0u) {
         return NTVDM64_STATUS_INVALID_STATE;
     }
@@ -33,6 +37,10 @@ ntvdm64_status core_machine_memory_write(
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
 
+    if (machine->lifecycle != CORE_MACHINE_PAUSED) {
+        return NTVDM64_STATUS_INVALID_STATE;
+    }
+
     if (machine->executor_memory.connect.pBase == 0u) {
         return NTVDM64_STATUS_INVALID_STATE;
     }
@@ -47,6 +55,10 @@ ntvdm64_status core_machine_set_a20(
 {
     if (machine == STD_NULL) {
         return NTVDM64_STATUS_INVALID_ARGUMENT;
+    }
+
+    if (machine->lifecycle != CORE_MACHINE_PAUSED) {
+        return NTVDM64_STATUS_INVALID_STATE;
     }
 
     if (machine->executor_memory.connect.pBase == 0u) {

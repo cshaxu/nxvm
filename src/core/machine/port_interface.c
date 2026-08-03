@@ -70,7 +70,11 @@ ntvdm64_status core_machine_install_port_provider(
 {
     uint32_t port;
 
-    if (machine == STD_NULL || provider == STD_NULL || first > last ||
+    if (!core_machine_configuration_is_open(machine)) {
+        return NTVDM64_STATUS_INVALID_STATE;
+    }
+
+    if (provider == STD_NULL || first > last ||
         (provider->read == STD_NULL && provider->write == STD_NULL)) {
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
@@ -110,6 +114,9 @@ ntvdm64_status core_machine_bus_read(
     if (machine == STD_NULL || out_value == STD_NULL) {
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
+    if (machine->lifecycle != CORE_MACHINE_PAUSED) {
+        return NTVDM64_STATUS_INVALID_STATE;
+    }
 
     slot = &machine->port_providers.slots[port];
     if (slot->provider.read == STD_NULL) {
@@ -130,6 +137,9 @@ ntvdm64_status core_machine_bus_write(
 
     if (machine == STD_NULL) {
         return NTVDM64_STATUS_INVALID_ARGUMENT;
+    }
+    if (machine->lifecycle != CORE_MACHINE_PAUSED) {
+        return NTVDM64_STATUS_INVALID_STATE;
     }
 
     slot = &machine->port_providers.slots[port];

@@ -22,6 +22,7 @@ C_INT main(C_VOID)
     STD_SIZE_T index;
 
     if (core_machine_create(&config, &machine) != NTVDM64_STATUS_OK ||
+        core_machine_freeze_execution_providers(machine) != NTVDM64_STATUS_OK ||
         core_machine_reset(machine) != NTVDM64_STATUS_OK) goto fail;
     cpu = core_machine_executor_cpu_borrow(machine);
     execution = core_machine_executor_cpu_execution_borrow(machine);

@@ -58,6 +58,16 @@ C_INT main(C_VOID)
     result |= expect_status(test_core_machine_create_executor(
                                 CORE_MACHINE_MINIMUM_MEMORY_BYTES, &second),
                             NTVDM64_STATUS_OK);
+    result |= expect_status(core_machine_install_port_provider(
+                                first, 0x1234u, 0x1234u, &ops, &first_port),
+                            NTVDM64_STATUS_OK);
+    result |= expect_status(core_machine_install_port_provider(
+                                second, 0x1234u, 0x1234u, &ops, &second_port),
+                            NTVDM64_STATUS_OK);
+    result |= expect_status(core_machine_freeze_execution_providers(first),
+                            NTVDM64_STATUS_OK);
+    result |= expect_status(core_machine_freeze_execution_providers(second),
+                            NTVDM64_STATUS_OK);
     result |= expect_status(core_machine_reset(first), NTVDM64_STATUS_OK);
     result |= expect_status(core_machine_reset(second), NTVDM64_STATUS_OK);
     result |= expect_status(core_machine_get_cpu_state(first, &cpu),
@@ -86,12 +96,6 @@ C_INT main(C_VOID)
                             NTVDM64_STATUS_OK);
     result |= value != 0u;
 
-    result |= expect_status(core_machine_install_port_provider(
-                                first, 0x1234u, 0x1234u, &ops, &first_port),
-                            NTVDM64_STATUS_OK);
-    result |= expect_status(core_machine_install_port_provider(
-                                second, 0x1234u, 0x1234u, &ops, &second_port),
-                            NTVDM64_STATUS_OK);
     result |= expect_status(core_machine_bus_write(first, 0x1234u, 0xa5a5u),
                             NTVDM64_STATUS_OK);
     result |= expect_status(core_machine_bus_read(first, 0x1234u, &port_value),

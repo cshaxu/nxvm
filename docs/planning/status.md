@@ -337,6 +337,16 @@ and provider work; it cannot interleave generic core-device lifecycle calls.
 Evidence is [`M5-T159.md`](../tracking/M5-T159.md). No guest lifecycle order
 changed.
 
+**M5 T160 S1 complete: public lifecycle hardening.** The configuration window
+now has one-time freeze before reset/run; public memory, port, and A20 helpers
+require the returned paused boundary. Evidence is
+[`M5-T160.md`](../tracking/M5-T160.md); artifact `nxvm_0_5_0160.exe` is
+verified.
+
+**M5 T161 S1 active: VM provider composition separation.** Split the mixed
+VM-only device/firmware provider implementation into accurately named owners
+while preserving the retained full-PC lifecycle sequence.
+
 The completed executor sequence is defined in
 [Facade And Executor Convergence](m5-facade-executor-convergence.md). The
 active session-readiness sequence is defined in

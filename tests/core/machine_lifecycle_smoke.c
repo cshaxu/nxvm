@@ -38,6 +38,9 @@ C_INT main(C_VOID)
     result |= expect_status(core_machine_run(machine, budget, &run_result),
                             NTVDM64_STATUS_INVALID_STATE);
 
+    result |= expect_status(core_machine_freeze_execution_providers(machine),
+                            NTVDM64_STATUS_OK);
+
     result |= expect_status(core_machine_reset(machine), NTVDM64_STATUS_OK);
     result |= expect_lifecycle(machine, CORE_MACHINE_PAUSED);
     result |= expect_status(core_machine_get_cpu_state(machine, &cpu),

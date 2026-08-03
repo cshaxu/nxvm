@@ -60,10 +60,12 @@ C_INT main(C_VOID)
                             NTVDM64_STATUS_OK);
     failed |= expect_status(core_machine_set_trace_provider(machine, &sink),
                             NTVDM64_STATUS_OK);
-    failed |= expect_status(core_machine_reset(machine), NTVDM64_STATUS_OK);
     failed |= expect_status(core_machine_install_port_provider(
                                 machine, 0x60u, 0x60u, &port_ops, &fixture),
                             NTVDM64_STATUS_OK);
+    failed |= expect_status(core_machine_freeze_execution_providers(machine),
+                            NTVDM64_STATUS_OK);
+    failed |= expect_status(core_machine_reset(machine), NTVDM64_STATUS_OK);
     failed |= expect_status(core_machine_bus_write(machine, 0x60u, 0x55u),
                             NTVDM64_STATUS_OK);
     failed |= expect_status(core_machine_bus_read(machine, 0x60u, &value),

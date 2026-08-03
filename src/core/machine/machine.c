@@ -119,6 +119,13 @@ static C_INT core_machine_valid_fpu_profile(core_machine_fpu_profile profile)
         profile <= CORE_MACHINE_FPU_PROFILE_80387;
 }
 
+C_INT core_machine_configuration_is_open(const core_machine *machine)
+{
+    return machine != STD_NULL &&
+        machine->lifecycle == CORE_MACHINE_INITIALIZED &&
+        !machine->execution_provider_frozen;
+}
+
 t_cpu *core_machine_executor_cpu_borrow(core_machine *machine)
 { return machine != STD_NULL ? &machine->executor_cpu : STD_NULL; }
 
@@ -155,9 +162,12 @@ t_vadp *core_machine_shared_vadp_borrow(core_machine *machine)
 ntvdm64_status core_machine_bind_execution_provider(core_machine *machine,
     const core_machine_execution_provider *provider, C_VOID *context)
 {
-    if (machine == STD_NULL || machine->execution_provider_frozen ||
-        machine->lifecycle == CORE_MACHINE_RUNNING) {
+    if (!core_machine_configuration_is_open(machine)) {
         return NTVDM64_STATUS_INVALID_STATE;
+    }
+    if (provider != STD_NULL && provider->reset == STD_NULL &&
+        provider->refresh == STD_NULL) {
+        return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
     machine->execution_provider = provider;
     machine->execution_provider_context = context;
@@ -166,7 +176,7 @@ ntvdm64_status core_machine_bind_execution_provider(core_machine *machine,
 
 ntvdm64_status core_machine_freeze_execution_providers(core_machine *machine)
 {
-    if (machine == STD_NULL || machine->lifecycle == CORE_MACHINE_RUNNING) {
+    if (!core_machine_configuration_is_open(machine)) {
         return NTVDM64_STATUS_INVALID_STATE;
     }
     machine->execution_provider_frozen = 1;
@@ -292,7 +302,8 @@ ntvdm64_status core_machine_reset(core_machine *machine)
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
 
-    if (machine->lifecycle == CORE_MACHINE_RUNNING) {
+    if (!machine->execution_provider_frozen ||
+        machine->lifecycle == CORE_MACHINE_RUNNING) {
         return NTVDM64_STATUS_INVALID_STATE;
     }
 
