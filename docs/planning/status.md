@@ -287,18 +287,24 @@ artifact/gates are `0.5.0143`; generated build products are removed outside
 ## Short-Term M5 Plan
 
 **M5 T152 complete: CPU `MEM` fault capture.** The owner-local FDD smoke
-reproduces `MEM` as x87 `FNINIT` (`DB E3`) at `096A:00CE`; the retained x87
+reproduces `MEM` as FPU `FNINIT` (`DB E3`) at `096A:00CE`; the retained FPU
 escape dispatch produces `#UD`. `core_machine` now owns a fixed 32-entry
 execution window and immutable first-fault snapshot. Evidence is
 [`M5-T152.md`](../tracking/M5-T152.md); artifact `nxvm_0_5_0152.exe` is the
 current diagnostic baseline (SHA-256
 `581843933C979C9719A24F7046311D28F070877477EA48B53B116FC3D2AB0E3C`).
 
-**M5 T153 S1 active: x87 model design.** Decide the default VM profile's x87
-presence/absence contract and the minimum core-owned state, exception, and
-instruction surface required to repair `MEM` without treating `FNINIT` as a
-no-op. M6 remains blocked. The active-task contract is
+**M5 T153 S1 active: CPU/FPU profile design.** Decide frozen per-machine
+`8086`/`80186`/`80286`/`80386` CPU and independent
+`none`/`8087`/`80287`/`80387` FPU profiles; specify FPU escape, `#UD`, `#NM`,
+and `FWAIT` behavior required to repair `MEM` without treating `FNINIT` as a
+no-op. The default remains `80386+none`. M6 remains blocked. The active-task contract is
 [`m5-t153-s1.md`](subtasks/m5-t153-s1.md).
+
+**M5 T154--T158 planned: CPU/FPU profile realization.** The T153 contract
+orders construction metadata, centralized CPU gating, FPU escape/absence
+behavior, session-creation UX, and static closure. It does not claim a usable
+present FPU or complete i386 protected-mode/paging support.
 
 The completed executor sequence is defined in
 [Facade And Executor Convergence](m5-facade-executor-convergence.md). The

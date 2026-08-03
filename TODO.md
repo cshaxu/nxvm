@@ -74,11 +74,14 @@ import. `docs/planning/status.md` remains authoritative for active work.
 
 - [ ] **CPU correctness / MS-DOS MEM.** Do not claim complete 80386 support:
   the CPU is 8086-plus with partial i386 decode/execution coverage. T152
-  reproduced `MEM` as x87 `FNINIT` (`DB E3`) reaching the retained x87-escape
+  reproduced `MEM` as FPU `FNINIT` (`DB E3`) reaching the retained FPU-escape
   `#UD` path and added a fixed 32-entry in-memory first-fault capture plus an
-  owner-local fixture smoke. T153 must design profile-selected x87 presence or
-  absence semantics, add the minimal owned regression probes, repair, and
-  retain them. Protected DOS media stays local.
+  owner-local fixture smoke. T153 defines frozen `8086`/`80186`/`80286`/`80386`
+  CPU and independent `none`/`8087`/`80287`/`80387` FPU profiles, FPU escape
+  absence/presence semantics, centralized per-form `#UD` gating, and
+  session-creation UX. T154--T158 add the probes and repair; present FPU
+  profiles remain unavailable until their state/operations are implemented.
+  Protected DOS media stays local.
 - [ ] **Hardware compatibility corpus.** Audit and prioritize incomplete KBC,
   VADP, PIT read-back, HDC/FDC, DMA, PIC, CMOS, timing, and chipset behavior
   against focused owned probes. Preserve full-PC boot and Console regressions.
