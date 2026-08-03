@@ -107,7 +107,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
          elapsed += 10u) {
         vm_platform_presentation_mailbox_capture(session->presentation_mailbox,
                                                  &frame);
-        if (has_dos_prompt(session->ram) && frame_has_dos_prompt(&frame)) {
+        if (has_dos_prompt(vm_composition_machine_access_memory(session->core_access)) && frame_has_dos_prompt(&frame)) {
             prompt_seen = 1;
             break;
         }
@@ -117,7 +117,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     result = WaitForSingleObject(thread, 2000u);
     CloseHandle(thread);
     if (result != WAIT_OBJECT_0 || !prompt_seen) {
-        dump_text_screen(session->ram);
+        dump_text_screen(vm_composition_machine_access_memory(session->core_access));
         STD_FPUTS("M5:T70:S2:DOS-PROMPT:TIMEOUT\n", STD_STDERR);
         goto fail;
     }

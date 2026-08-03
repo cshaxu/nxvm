@@ -16,8 +16,8 @@ C_INT main(C_VOID)
     if (session == STD_NULL) return 1;
     vm_session_initialize(session);
     vm_profile_default_cga_reset(session->default_profile_context);
-    session->cpu->data.ah = 0x00u;
-    session->cpu->data.al = 0x03u;
+    vm_composition_machine_access_cpu(session->core_access)->data.ah = 0x00u;
+    vm_composition_machine_access_cpu(session->core_access)->data.al = 0x03u;
     if (session->default_qdx->table[0x10u] == STD_NULL) {
         vm_session_finalize(session);
         STD_FREE(session);
