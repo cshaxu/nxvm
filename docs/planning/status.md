@@ -47,9 +47,9 @@ profile/session context. Its GCC artifact is `build/output/nxvm_0_5_0077.exe`.
 
 ## Active Work
 
-**M5 T87 S1: Session readiness inventory.** Define the module checklist and
-bounded T88--T95 closure sequence before changing session, thread, Console,
-debugger, or platform behavior.
+**M5 T88 S1: Machine session-state closure.** Replace the remaining core trace
+workspace and VM control/instrumentation globals with session-owned state and a
+synchronized command boundary.
 
 ## Short-Term M5 Plan
 

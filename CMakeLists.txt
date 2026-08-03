@@ -740,6 +740,13 @@ if(NTVDM64_VERIFY_DEPENDENCY_DAG)
             -RepositoryRoot "${CMAKE_SOURCE_DIR}"
         COMMENT "Verifying M5 single executor closure"
         VERBATIM)
+
+    add_custom_target(verify-session-readiness
+        COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
+            -File "${CMAKE_SOURCE_DIR}/tools/VerifySessionReadiness.ps1"
+            -RepositoryRoot "${CMAKE_SOURCE_DIR}"
+        COMMENT "Verifying M5 mutable-state inventory"
+        VERBATIM)
 endif()
 
 if(NTVDM64_ENABLE_BOCHX_RESEARCH)

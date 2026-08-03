@@ -16,8 +16,8 @@ plan.
 
 | Priority | Module | Current judgement | Closure condition |
 | --- | --- | --- | --- |
-| 1 | `core/machine` | Pass | Guest state, providers, and executor storage are per `core_machine`; retain two-instance regression. |
-| 2 | `vm/machine` | Partial | Full-PC objects are per session, but control flags cross threads without synchronization. |
+| 1 | `core/machine` | Partial | Guest state, providers, and executor storage are per `core_machine`; retire the remaining file-static trace workspace. |
+| 2 | `vm/machine` | Partial | Full-PC objects are per session, but control and debug-instrumentation state cross thread/session boundaries. |
 | 3 | `vdm/machine` | Pass for current scope | DOS-minimal instances own their state. It has no concurrent host-entry contract yet, so no new code is required before a VDM run loop exists. |
 | 4 | `core/platform` | Gap | Define shared host-capability contexts and host-surface lease contract; it must not hold guest state. |
 | 5 | `vm/platform` | Fail | Console/window rendering state becomes context-owned; Linux terminal capability has an explicit exclusive lease. |
@@ -38,10 +38,10 @@ a higher-priority migration.
 
 | Owner | Current mutable state | Required disposition |
 | --- | --- | --- |
-| `core/machine` | `core_machine` and installed provider state | Session-owned; current model passes. |
+| `core/machine` | `core_machine` and installed provider state; CPU instruction trace workspace | Session-owned except the trace workspace, which T88 makes machine- or call-owned. |
 | `core/platform` | wait/debug scopes | Thread-local scopes are allowed; add host-surface context/lease contract before host code moves here. |
 | `core/product` | `debug.c`, `aasm32.c`, and `dasm32.c` parser workspaces | Caller-owned debugger context. |
-| `vm/machine` | `vm_composition_control_state` run/reset/pause/step fields | Synchronized command/state boundary. |
+| `vm/machine` | `vm_composition_control_state` run/reset/pause/step fields; debug instruction counter | Synchronized command/state boundary and session-owned instrumentation. |
 | `vm/platform/win32` | Console buffer and GDI renderer state | Per-surface context owned by the VM platform session. |
 | `vm/platform/linux` | curses `stdscr` and display generation | Explicit process-exclusive terminal lease plus per-lease state. |
 | `vm/product` | `console.c` target, parser buffer, arguments, and exit flag | Console-session object. |
@@ -52,12 +52,12 @@ a higher-priority migration.
 
 | Task | Scope | Depends on | Completion gate |
 | --- | --- | --- | --- |
-| T87 | Establish the authoritative inventory, repair current GCC presets, and add a no-unclassified-mutable-global scan. It confirms the already-passing `core/machine`, `vdm/machine`, and profile rows. | None | Current preset builds the current task artifact and gates; inventory is approved. |
-| T88 | Replace VM control flags with a synchronized command/state boundary. | T87 | Concurrent stop/pause/reset/step regression; retained Console and FDD/HDD gates. |
-| T89 | Define `core/platform` host-surface context and lease contracts; move only mechanism-only shared host facilities there. | T87 | No core-to-machine dependency; capability/lease contract tests. |
-| T90 | Contextualize VM Win32 Console/window renderers and define Linux curses as an explicit exclusive surface lease. VDM platform remains absent, with no speculative code. | T88, T89 | Two Win32 presentation contexts have independent generations/resources; lease conflict is deterministic. |
-| T91 | Make shared debugger parser/assembler/disassembler state session-owned. | T87, T88 for command-boundary tests | Two debug contexts do not cross-target; retained debugger grammar/output gate. |
-| T92 | Make NXVM Console parser, target, and exit state session-owned. VDM product remains absent, with no speculative code. | T88, T91 | Two Console contexts do not cross-target; retained Console grammar/output gate. |
+| T87 | Freeze the inventory, repair current GCC presets, and add a no-unclassified-mutable-global gate. | None | The preset builds the latest verified runnable artifact and all current structural gates; inventory is recorded. |
+| T88 | Close machine state in priority order: make the core instruction trace workspace instance/call-owned, then replace VM control flags and debug instrumentation with a synchronized session command/state boundary. | T87 | Two core-machine trace contexts and concurrent VM stop/pause/reset/step regression; retained Console and FDD/HDD gates. |
+| T89 | Audit current `vdm/machine`, then define `core/platform` host-surface context and lease contracts; move only mechanism-only shared host facilities there. | T87 | VDM-minimal remains instance-owned; no core-to-machine dependency; capability/lease contract tests. |
+| T90 | Contextualize VM Win32 Console/window renderers and define Linux curses as an explicit exclusive surface lease; audit absent VDM platform against that contract without speculative code. | T88, T89 | Two Win32 presentation contexts have independent generations/resources; lease conflict is deterministic. |
+| T91 | Make shared debugger parser/assembler/disassembler state session-owned. | T88 | Two debug contexts do not cross-target; retained debugger grammar/output gate. |
+| T92 | Make NXVM Console parser, target, and exit state session-owned; audit absent VDM product against the same contract without speculative code. | T88, T91 | Two Console contexts do not cross-target; retained Console grammar/output gate. |
 | T93 | Update VM root composition to construct, bind, and tear down the new machine/platform/product contexts. | T88--T92 | Two full VM sessions preserve independent control, Console, debugger, and presentation behavior. |
 | T94 | Audit VDM root composition against the same contracts; change code only if current minimal composition violates them. | T89, T91, T93 | VDM-minimal remains instance-owned and no VM dependency is introduced. |
 | T95 | Run the module checklist closure audit and remove temporary compatibility state. | T88--T94 | Static inventory, default GCC preset, two-session VM, FDD/HDD, display, Console/debugger, and VDM-minimal regressions pass. |
