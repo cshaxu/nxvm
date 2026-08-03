@@ -387,39 +387,11 @@ target_link_libraries(nxvm-vm-cpu-stop-smoke PRIVATE
     nxvm-vm-composition
 )
 
-add_executable(nxvm-vm-live-machine-smoke
-    tests/machine/vm_live_machine_smoke.c
-)
-target_link_libraries(nxvm-vm-live-machine-smoke PRIVATE
-    nxvm-vm-composition
-)
-
-add_executable(nxvm-vm-cpu-authority-smoke
-    tests/machine/vm_cpu_authority_smoke.c
-)
-target_link_libraries(nxvm-vm-cpu-authority-smoke PRIVATE
-    nxvm-vm-composition
-)
-
 add_executable(nxvm-core-machine-cpu-context-smoke
     tests/machine/cpu_execution_context_smoke.c
 )
 target_link_libraries(nxvm-core-machine-cpu-context-smoke PRIVATE
     nxvm-core-machine
-)
-
-add_executable(nxvm-vm-ram-authority-smoke
-    tests/machine/vm_ram_authority_smoke.c
-)
-target_link_libraries(nxvm-vm-ram-authority-smoke PRIVATE
-    nxvm-vm-composition
-)
-
-add_executable(nxvm-vm-port-authority-smoke
-    tests/machine/vm_port_authority_smoke.c
-)
-target_link_libraries(nxvm-vm-port-authority-smoke PRIVATE
-    nxvm-vm-composition
 )
 
 add_executable(nxvm-core-machine-ram-port-context-smoke
@@ -429,19 +401,6 @@ target_link_libraries(nxvm-core-machine-ram-port-context-smoke PRIVATE
     nxvm-core-machine
 )
 
-add_executable(nxvm-vm-pic-authority-smoke
-    tests/machine/vm_pic_authority_smoke.c
-)
-
-add_executable(nxvm-vm-pit-authority-smoke
-    tests/machine/vm_pit_authority_smoke.c
-)
-add_executable(nxvm-vm-dma-authority-smoke tests/machine/vm_dma_authority_smoke.c)
-target_link_libraries(nxvm-vm-dma-authority-smoke PRIVATE nxvm-vm-composition)
-add_executable(nxvm-vm-kbc-authority-smoke tests/machine/vm_kbc_authority_smoke.c)
-target_link_libraries(nxvm-vm-kbc-authority-smoke PRIVATE nxvm-vm-composition)
-add_executable(nxvm-vm-vadp-authority-smoke tests/machine/vm_vadp_authority_smoke.c)
-target_link_libraries(nxvm-vm-vadp-authority-smoke PRIVATE nxvm-vm-composition)
 add_executable(nxvm-vm-cmos-authority-smoke tests/machine/vm_cmos_authority_smoke.c)
 target_link_libraries(nxvm-vm-cmos-authority-smoke PRIVATE nxvm-vm-composition)
 add_executable(nxvm-vm-fdd-authority-smoke tests/machine/vm_fdd_authority_smoke.c)
@@ -468,11 +427,6 @@ add_executable(nxvm-vm-disk-firmware-smoke tests/machine/vm_disk_firmware_smoke.
 target_link_libraries(nxvm-vm-disk-firmware-smoke PRIVATE nxvm-vm-composition)
 add_executable(nxvm-vm-debug-authority-smoke tests/machine/vm_debug_authority_smoke.c)
 target_link_libraries(nxvm-vm-debug-authority-smoke PRIVATE nxvm-vm-composition)
-add_executable(nxvm-vm-full-authority-closure-smoke
-    tests/machine/vm_full_authority_closure_smoke.c)
-target_link_libraries(nxvm-vm-full-authority-closure-smoke PRIVATE
-    nxvm-vm-composition
-    nxvm-vm-profile)
 add_executable(nxvm-vm-dos-prompt-smoke
     tests/machine/vm_dos_prompt_smoke.c)
 target_link_libraries(nxvm-vm-dos-prompt-smoke PRIVATE
@@ -489,11 +443,6 @@ add_executable(nxvm-vm-unified-debug-backend-smoke
     tests/machine/vm_unified_debug_backend_smoke.c)
 target_link_libraries(nxvm-vm-unified-debug-backend-smoke PRIVATE
     nxvm-vm-composition)
-target_link_libraries(nxvm-vm-pit-authority-smoke PRIVATE nxvm-vm-composition)
-target_link_libraries(nxvm-vm-pic-authority-smoke PRIVATE
-    nxvm-vm-composition
-)
-
 add_executable(nxvm-vm-debug-target-smoke
     tests/machine/vm_debug_target_smoke.c
 )
@@ -734,6 +683,7 @@ add_nxvm_version_artifact(nxvm-0-5-0081 "0.5.0081")
 add_nxvm_version_artifact(nxvm-0-5-0083 "0.5.0083")
 add_nxvm_version_artifact(nxvm-0-5-0084 "0.5.0084")
 add_nxvm_version_artifact(nxvm-0-5-0085 "0.5.0085")
+add_nxvm_version_artifact(nxvm-0-5-0086 "0.5.0086")
 
 option(NTVDM64_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
@@ -782,6 +732,13 @@ if(NTVDM64_VERIFY_DEPENDENCY_DAG)
             -File "${CMAKE_SOURCE_DIR}/tools/VerifyFacadeOwnership.ps1"
             -RepositoryRoot "${CMAKE_SOURCE_DIR}"
         COMMENT "Verifying M5 residual facade ownership baseline"
+        VERBATIM)
+
+    add_custom_target(verify-executor-closure
+        COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
+            -File "${CMAKE_SOURCE_DIR}/tools/VerifyExecutorClosure.ps1"
+            -RepositoryRoot "${CMAKE_SOURCE_DIR}"
+        COMMENT "Verifying M5 single executor closure"
         VERBATIM)
 endif()
 

@@ -97,7 +97,15 @@ int nxvm_cpu_probe_step(
     if (!nxvm_cpu_probe_capture_state(probe, &out_capture->before)) {
         return 0;
     }
-    core_machine_cpu_execution_refresh(probe->machine.cpu_execution);
+    {
+        core_machine_run_budget budget = {1u, 0u};
+        core_machine_run_result result;
+
+        if (core_machine_run(probe->machine.core_machine, budget, &result) !=
+                NXVM_CORE_STATUS_OK || result.executed != 1u) {
+            return 0;
+        }
+    }
     if (!nxvm_cpu_probe_capture_state(probe, &out_capture->after)) {
         return 0;
     }
