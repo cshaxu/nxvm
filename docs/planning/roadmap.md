@@ -109,7 +109,8 @@ composition roots. The legacy `device.h` aggregate is deleted; retained CPU,
 RAM, and port execution has one core-machine state/API authority; and reusable
 Win32/Linux host providers live in `core/platform` rather than `vm/platform`.
 No ntvdm64 DOS runner behavior is required. The early structural and naming
-plans are closed historical evidence under `history/m5/planning/`.
+plans are closed historical evidence under `history/m5/planning/`; the bounded
+active-source follow-up is governed by `planning/m5-naming-remediation.md`.
 
 M5 T64 reopens bounded design work for explicit session ownership and
 context-passing. It must produce the next bounded authority-migration plan
@@ -127,6 +128,8 @@ work under [`planning/m5-session-readiness.md`](m5-session-readiness.md).
 That plan fixes the closure order as core/VM/VDM machine, platform, product,
 then root composition; profiles remain immutable cross-cutting checks.
 T96 repairs the retained Console lifecycle regression found after that closure.
+T97 completes the composition API cleanup, and T98 defines the remaining
+owner-bounded naming sequence without expanding M6 scope.
 
 **Compatibility gate:** M5 must not alter NXVM functionality or user experience.
 Any unavoidable user-visible change requires explicit owner approval before
