@@ -79,7 +79,13 @@ static void vm_composition_execution_provider_refresh(void *context)
     vmachineRefreshProviders((vm_composition_live_machine *)context);
 }
 
+static void vm_composition_execution_provider_reset(void *context)
+{
+    vmachineResetProviders((vm_composition_live_machine *)context);
+}
+
 static const core_machine_execution_provider vm_composition_execution_provider = {
+    vm_composition_execution_provider_reset,
     vm_composition_execution_provider_refresh
 };
 

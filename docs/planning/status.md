@@ -47,8 +47,9 @@ profile/session context. Its GCC artifact is `build/output/nxvm_0_5_0077.exe`.
 
 ## Active Work
 
-**M5 T84 S1: Shared device ownership.** Move PIC, PIT, DMA, KBC, and VADP
-into `core_machine`; bind VM/profile-only services as providers.
+**M5 T85 S1: NXVM outer-loop cutover.** Route each bounded guest quantum
+through `core_machine_run()` and delete the old VM instruction loop without
+changing the retained NXVM Console, debugger, boot, reset, or display behavior.
 
 ## Short-Term M5 Plan
 

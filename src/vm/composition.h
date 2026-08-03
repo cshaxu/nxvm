@@ -16,6 +16,7 @@ void vmachineInit(vm_composition_live_machine *machine);
 void vmachineReset(vm_composition_live_machine *machine);
 void vmachineRefresh(vm_composition_live_machine *machine);
 void vmachineRefreshProviders(vm_composition_live_machine *machine);
+void vmachineResetProviders(vm_composition_live_machine *machine);
 void vmachineFinal(vm_composition_live_machine *machine);
 void devicePrintMachine(const vm_composition_live_machine *machine);
 

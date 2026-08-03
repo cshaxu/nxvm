@@ -1,5 +1,4 @@
 #include "core/machine/machine.h"
-#include "core/machine/machine.h"
 
 #include <stdlib.h>
 
@@ -188,6 +187,17 @@ nxvm_core_status core_machine_reset(core_machine *machine)
 
     if (machine->legacy_executor_enabled) {
         core_machine_cpu_state_reset(&machine->legacy_cpu_execution);
+        if (machine->shared_devices_enabled) {
+            core_machine_kbc_reset(&machine->shared_kbc);
+            core_machine_dma_reset(&machine->shared_dma_latch,
+                &machine->shared_dma_primary, &machine->shared_dma_secondary);
+            core_machine_pic_reset(&machine->shared_pic_master,
+                &machine->shared_pic_slave);
+            core_machine_pit_reset(&machine->shared_pit);
+            core_machine_port_reset(&machine->legacy_port);
+            core_machine_vadp_reset(&machine->shared_vadp);
+            core_machine_memory_reset(&machine->legacy_memory);
+        }
     } else if (core_machine_cpu_reset(machine) != NXVM_CORE_STATUS_OK ||
                core_machine_instance_memory_reset(machine) !=
                    NXVM_CORE_STATUS_OK) {
@@ -196,6 +206,10 @@ nxvm_core_status core_machine_reset(core_machine *machine)
 
     atomic_store(&machine->stop_requested, 0);
     machine->fault_detail = 0u;
+    if (machine->execution_provider != NULL &&
+        machine->execution_provider->reset != NULL) {
+        machine->execution_provider->reset(machine->execution_provider_context);
+    }
     machine->lifecycle = CORE_MACHINE_PAUSED;
     core_machine_trace_record(machine, CORE_MACHINE_TRACE_RESET, 0u, 0u, 0u);
     return NXVM_CORE_STATUS_OK;
