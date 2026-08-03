@@ -1,7 +1,7 @@
 #include "vm/product/presentation.h"
 
-void nxvm_product_nxvm_presentation_initialize(
-    nxvm_product_nxvm_presentation *presentation)
+void vm_product_presentation_initialize(
+    vm_product_presentation *presentation)
 {
     if (presentation == NULL) return;
     core_machine_keyboard_queue_initialize(&presentation->pending_input);
@@ -9,15 +9,15 @@ void nxvm_product_nxvm_presentation_initialize(
     presentation->command_boundary_open = 0;
 }
 
-ntvdm64_status nxvm_product_nxvm_presentation_enqueue_input(
-    nxvm_product_nxvm_presentation *presentation, uint16_t scan_code)
+ntvdm64_status vm_product_presentation_enqueue_input(
+    vm_product_presentation *presentation, uint16_t scan_code)
 {
     if (presentation == NULL) return NTVDM64_STATUS_INVALID_ARGUMENT;
     return core_machine_keyboard_queue_push(&presentation->pending_input, scan_code);
 }
 
-ntvdm64_status nxvm_product_nxvm_presentation_open_command_boundary(
-    nxvm_product_nxvm_presentation *presentation)
+ntvdm64_status vm_product_presentation_open_command_boundary(
+    vm_product_presentation *presentation)
 {
     if (presentation == NULL) return NTVDM64_STATUS_INVALID_ARGUMENT;
     if (presentation->command_boundary_open) return NTVDM64_STATUS_INVALID_STATE;
@@ -25,9 +25,9 @@ ntvdm64_status nxvm_product_nxvm_presentation_open_command_boundary(
     return NTVDM64_STATUS_OK;
 }
 
-ntvdm64_status nxvm_product_nxvm_presentation_apply_input(
-    nxvm_product_nxvm_presentation *presentation,
-    nxvm_product_nxvm_input_consumer consumer, void *context)
+ntvdm64_status vm_product_presentation_apply_input(
+    vm_product_presentation *presentation,
+    vm_product_input_consumer consumer, void *context)
 {
     uint16_t scan_code;
     ntvdm64_status status;
@@ -42,8 +42,8 @@ ntvdm64_status nxvm_product_nxvm_presentation_apply_input(
     return status == NTVDM64_STATUS_UNSUPPORTED ? NTVDM64_STATUS_OK : status;
 }
 
-ntvdm64_status nxvm_product_nxvm_presentation_publish_text(
-    nxvm_product_nxvm_presentation *presentation,
+ntvdm64_status vm_product_presentation_publish_text(
+    vm_product_presentation *presentation,
     const core_machine_text_snapshot *snapshot)
 {
     if (presentation == NULL || snapshot == NULL) return NTVDM64_STATUS_INVALID_ARGUMENT;
@@ -51,16 +51,16 @@ ntvdm64_status nxvm_product_nxvm_presentation_publish_text(
     return core_machine_text_snapshot_copy(snapshot, &presentation->published_text);
 }
 
-ntvdm64_status nxvm_product_nxvm_presentation_capture_text(
-    const nxvm_product_nxvm_presentation *presentation,
+ntvdm64_status vm_product_presentation_capture_text(
+    const vm_product_presentation *presentation,
     core_machine_text_snapshot *out_snapshot)
 {
     if (presentation == NULL || out_snapshot == NULL) return NTVDM64_STATUS_INVALID_ARGUMENT;
     return core_machine_text_snapshot_copy(&presentation->published_text, out_snapshot);
 }
 
-void nxvm_product_nxvm_presentation_close_command_boundary(
-    nxvm_product_nxvm_presentation *presentation)
+void vm_product_presentation_close_command_boundary(
+    vm_product_presentation *presentation)
 {
     if (presentation != NULL) presentation->command_boundary_open = 0;
 }

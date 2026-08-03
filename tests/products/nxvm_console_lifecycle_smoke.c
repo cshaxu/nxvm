@@ -52,7 +52,7 @@ int main(void)
         return 1;
     }
     vm_composition_console_target_initialize(machine.console_target, &machine);
-    consoleMain(machine.console_context, machine.console_target);
+    vm_product_console_main(machine.console_context, machine.console_target);
 
     NXVM_DUP2(saved_stdin, NXVM_FILENO(stdin));
     NXVM_CLOSE(saved_stdin);
