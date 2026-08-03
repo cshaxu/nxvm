@@ -74,10 +74,11 @@ static C_VOID doHelp(nxvm_product_console_context *context) {
             break;
         } else if (!STD_STRCMP(argArray[1], "session")) {
             STD_PRINTF("Manage NXVM sessions\n");
-            STD_PRINTF("\nSESSION LIST | OPEN | SELECT <id>\n");
+            STD_PRINTF("\nSESSION LIST | OPEN | SELECT <id> | CLOSE [id]\n");
             STD_PRINTF("  list:   show sessions; * marks the selected session\n");
             STD_PRINTF("  open:   create one stopped session\n");
             STD_PRINTF("  select: choose the session for machine commands\n");
+            STD_PRINTF("  close:  destroy one stopped session; the final session stays\n");
             break;
         } else if (!STD_STRCMP(argArray[1], "debug")) {
             STD_PRINTF("Launch NXVM hardware debugger\n");
@@ -162,14 +163,32 @@ static C_VOID doHelp(nxvm_product_console_context *context) {
 
 /* Quits NXVM. */
 static C_VOID doExit(nxvm_product_console_context *context) {
+    core_product_session_snapshot *snapshots;
+    STD_SIZE_T count;
+    STD_SIZE_T index;
+
     if (numArgs != 1) {
         GetHelp;
     }
-    if (!machineProvider->is_running(machineProvider->context)) {
-        flagExit = 1;
-    } else {
-        STD_PRINTF("Please stop NXVM before exit.\n");
+    if (core_product_session_manager_get_count(sessionManager, &count) !=
+            NTVDM64_STATUS_OK) return;
+    snapshots = (core_product_session_snapshot *)STD_CALLOC(count, sizeof(*snapshots));
+    if (snapshots == STD_NULL || core_product_session_manager_list(sessionManager,
+            snapshots, count, &count) != NTVDM64_STATUS_OK) {
+        STD_FREE(snapshots);
+        return;
     }
+    for (index = 0u; index < count; ++index) {
+        if (snapshots[index].state == CORE_PRODUCT_SESSION_STATE_RUNNING ||
+            snapshots[index].state == CORE_PRODUCT_SESSION_STATE_PAUSED) {
+            STD_PRINTF("Please stop NXVM session %u before exit.\n",
+                (unsigned int)snapshots[index].id);
+            STD_FREE(snapshots);
+            return;
+        }
+    }
+    STD_FREE(snapshots);
+    flagExit = 1;
 }
 
 /* Prints virtual machine status */

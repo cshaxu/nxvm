@@ -753,6 +753,7 @@ add_nxvm_version_artifact(nxvm-0-5-0143 "0.5.0143")
 add_nxvm_version_artifact(nxvm-0-5-0145 "0.5.0145")
 add_nxvm_version_artifact(nxvm-0-5-0146 "0.5.0146")
 add_nxvm_version_artifact(nxvm-0-5-0147 "0.5.0147")
+add_nxvm_version_artifact(nxvm-0-5-0148 "0.5.0148")
 
 option(NTVDM64_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
@@ -848,4 +849,5 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(nxvm-vm-cpu-probe-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-execution-context-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
+
 

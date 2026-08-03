@@ -72,7 +72,7 @@ C_INT core_product_session_command_execute(core_product_session_manager *manager
 
     if (manager == STD_NULL || arguments == STD_NULL || argument_count < 2) {
         core_product_session_command_write(output,
-            "Usage: SESSION LIST | OPEN | SELECT <id>");
+            "Usage: SESSION LIST | OPEN | SELECT <id> | CLOSE [id]");
         return 0;
     }
     if (!STD_STRCMP(arguments[1], "list") && argument_count == 2) {
@@ -99,7 +99,42 @@ C_INT core_product_session_command_execute(core_product_session_manager *manager
         core_product_session_command_write(output, line);
         return 1;
     }
+    if (!STD_STRCMP(arguments[1], "close") &&
+        (argument_count == 2 || argument_count == 3)) {
+        STD_SIZE_T count;
+        if (argument_count == 2) {
+            if (core_product_session_manager_get_selected_id(manager, &id) !=
+                    NTVDM64_STATUS_OK) {
+                core_product_session_command_write(output, "Session manager is unavailable.");
+                return 0;
+            }
+        } else {
+            C_INT parsed = STD_ATOI(arguments[2]);
+            if (parsed < 0) {
+                core_product_session_command_write(output, "Unknown session.");
+                return 0;
+            }
+            id = (core_product_session_id)parsed;
+        }
+        if (core_product_session_manager_get_count(manager, &count) !=
+            NTVDM64_STATUS_OK) {
+            core_product_session_command_write(output, "Session manager is unavailable.");
+            return 0;
+        }
+        if (count == 1u) {
+            core_product_session_command_write(output,
+                "Cannot close the final session.");
+            return 0;
+        }
+        if (core_product_session_manager_close(manager, id) != NTVDM64_STATUS_OK) {
+            core_product_session_command_write(output, "Unknown session.");
+            return 0;
+        }
+        STD_SNPRINTF(line, sizeof(line), "Closed session %u.", (unsigned int)id);
+        core_product_session_command_write(output, line);
+        return 1;
+    }
     core_product_session_command_write(output,
-        "Usage: SESSION LIST | OPEN | SELECT <id>");
+        "Usage: SESSION LIST | OPEN | SELECT <id> | CLOSE [id]");
     return 0;
 }

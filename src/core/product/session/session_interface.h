@@ -36,6 +36,8 @@ ntvdm64_status core_product_session_manager_create(
 C_VOID core_product_session_manager_destroy(core_product_session_manager *manager);
 ntvdm64_status core_product_session_manager_open(
     core_product_session_manager *manager, core_product_session_id *out_id);
+ntvdm64_status core_product_session_manager_close(
+    core_product_session_manager *manager, core_product_session_id id);
 ntvdm64_status core_product_session_manager_select(
     core_product_session_manager *manager, core_product_session_id id);
 ntvdm64_status core_product_session_manager_get_selected_id(
