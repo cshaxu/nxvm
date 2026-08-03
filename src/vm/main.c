@@ -21,6 +21,7 @@ int main(int argc, char **argv) {
     char banner[160];
     vm_composition_live_machine *machine;
     nxvm_product_console_target console_target;
+    nxvm_product_console_context console_context;
 
     (void)argc;
     (void)argv;
@@ -34,7 +35,8 @@ int main(int argc, char **argv) {
     machine = (vm_composition_live_machine *)calloc(1u, sizeof(*machine));
     if (machine == NULL) return 1;
     vm_composition_console_target_initialize(&console_target, machine);
-    consoleMain(&console_target);
+    nxvm_product_console_context_initialize(&console_context);
+    consoleMain(&console_context, &console_target);
     free(machine);
     return 0;
 }
