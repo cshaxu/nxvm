@@ -3,7 +3,7 @@
 
 
 #include "type.h"
-#include "vm/composition/session_execution_context.h"
+#include "vm/composition/session/execution.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -30,7 +30,7 @@ typedef struct vm_session_control_state {
     vm_session_execution_context execution_context;
 } vm_session_control_state;
 
-#include "vm/composition/session.h"
+#include "vm/composition/session/session.h"
 
 C_VOID vm_session_control_start(vm_session_control_state *control);
 C_VOID vm_session_control_reset(vm_session_control_state *control);

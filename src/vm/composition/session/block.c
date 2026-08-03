@@ -4,7 +4,7 @@
 
 #include "vm/machine/hdd.h"
 
-#include "vm/composition/session.h"
+#include "vm/composition/session/session.h"
 
 static C_VOID vmBlockGeometry(C_VOID *context, core_machine_block_geometry *out_geometry)
 {

@@ -1,6 +1,6 @@
 #include "type.h"
 
-#include "vm/composition/session_execution_context.h"
+#include "vm/composition/session/execution.h"
 
 C_VOID vm_session_execution_context_initialize(vm_session_execution_context *context)
 {

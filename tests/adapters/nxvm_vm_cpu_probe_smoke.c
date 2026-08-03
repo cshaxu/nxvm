@@ -4,7 +4,7 @@
 
 #include "adapters/support/vm_cpu_probe.h"
 
-#include "vm/composition/session_execution_context.h"
+#include "vm/composition/session/execution.h"
 
 #include "core/machine/cpu_instructions.h"
 

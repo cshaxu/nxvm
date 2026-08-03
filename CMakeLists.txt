@@ -172,16 +172,16 @@ set(NXVM_PRODUCT_CORE_DEBUG_SOURCES
     src/core/product/debug/xasm32/dasm32.c
 )
 set(NXVM_COMPOSITION_VM_SOURCES
-    src/vm/composition/console_target.c
-    src/vm/composition/debug_target.c
-    src/vm/composition/block_provider.c
-    src/vm/composition/display_bridge.c
-    src/vm/composition/session_lifecycle.c
-    src/vm/composition/session.c
-    src/vm/composition/session_control.c
-    src/vm/composition/session_execution_context.c
-    src/vm/composition/session_runner.c
-    src/vm/composition/providers.c
+    src/vm/composition/session/console_target.c
+    src/vm/composition/session/debug_target.c
+    src/vm/composition/session/block.c
+    src/vm/composition/session/display.c
+    src/vm/composition/session/lifecycle.c
+    src/vm/composition/session/session.c
+    src/vm/composition/session/control.c
+    src/vm/composition/session/execution.c
+    src/vm/composition/session/runner.c
+    src/vm/composition/session/providers.c
 )
 set(NXVM_MACHINE_VM_SOURCES
     src/vm/machine/fdd.c
@@ -290,6 +290,16 @@ add_executable(nxvm-core-product-wait-smoke
 )
 target_link_libraries(nxvm-core-product-wait-smoke PRIVATE
     nxvm-product-core-utils
+)
+
+add_executable(nxvm-core-product-session-contract-smoke
+    tests/product/core_product_session_contract_smoke.c
+)
+target_include_directories(nxvm-core-product-session-contract-smoke PRIVATE
+    "${CMAKE_SOURCE_DIR}/src"
+)
+target_link_libraries(nxvm-core-product-session-contract-smoke PRIVATE
+    ntvdm64-c-facade
 )
 
 add_executable(nxvm-core-product-debug-target-smoke
@@ -720,6 +730,7 @@ add_nxvm_version_artifact(nxvm-0-5-0139 "0.5.0139")
 add_nxvm_version_artifact(nxvm-0-5-0141 "0.5.0141")
 add_nxvm_version_artifact(nxvm-0-5-0142 "0.5.0142")
 add_nxvm_version_artifact(nxvm-0-5-0143 "0.5.0143")
+add_nxvm_version_artifact(nxvm-0-5-0145 "0.5.0145")
 
 option(NTVDM64_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)

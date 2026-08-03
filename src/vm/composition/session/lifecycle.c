@@ -4,11 +4,11 @@
 
 #include "type.h"
 
-#include "vm/composition/session_control.h"
+#include "vm/composition/session/control.h"
 
-#include "vm/composition/providers.h"
+#include "vm/composition/session/providers.h"
 
-#include "vm/composition/session.h"
+#include "vm/composition/session/session.h"
 
 #include "core/product/debug/debug_target.h"
 
@@ -16,7 +16,7 @@
 
 #include "core/platform/sleep.h"
 
-#include "vm/composition/debug_target.h"
+#include "vm/composition/session/debug_target.h"
 
 #include "vm/machine/debug.h"
 
@@ -35,10 +35,10 @@
 #include "vm/platform/platform.h"
 
 
-#include "vm/composition/display_bridge.h"
+#include "vm/composition/session/display.h"
 
 
-#include "vm/composition/session_lifecycle.h"
+#include "vm/composition/session/lifecycle.h"
 
 static C_VOID vm_session_wait(C_VOID *context, uint32_t milliseconds)
 {

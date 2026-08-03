@@ -18,10 +18,12 @@ M5 has preserved the bootable NXVM Console, debugger, boot sequence, and FDD
 fixture behavior while moving the whole-PC execution path into the documented
 `core/` and `vm/` ownership model.
 
-**Latest task:** M5 T144 S1 is complete as a design-only, owner-approved shared
-product-session extension. Its NXVM implementation remains inactive until a
-later explicit start; the authoritative core/product and composition ownership,
-UX, source shape, and T145--T150 breakdown are in
+**Latest task:** M5 T145 S1 moved the VM session composition units and added
+the generic core-product contract skeleton without changing the single-session
+runtime path. Its evidence is
+[`m5-t145-session-composition-contract.md`](../verification/m5-t145-session-composition-contract.md).
+The authoritative core/product and composition ownership, UX, source shape,
+and T145--T150 breakdown are in
 [M5 Shared Product Session Management Design](m5-product-session-management.md).
 
 - T64 defined the explicit session and provider model.

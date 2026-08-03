@@ -3,7 +3,7 @@
 
 
 
-#include "vm/composition/session_lifecycle.h"
+#include "vm/composition/session/lifecycle.h"
 
 #include "vm/profile/default_profile/firmware/qdx.h"
 

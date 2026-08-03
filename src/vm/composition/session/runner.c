@@ -2,11 +2,11 @@
 
 #include "core/machine/machine_interface.h"
 #include "core/platform/sleep.h"
-#include "vm/composition/session_execution_context.h"
-#include "vm/composition/display_bridge.h"
-#include "vm/composition/session.h"
-#include "vm/composition/session_control.h"
-#include "vm/composition/session_runner.h"
+#include "vm/composition/session/execution.h"
+#include "vm/composition/session/display.h"
+#include "vm/composition/session/session.h"
+#include "vm/composition/session/control.h"
+#include "vm/composition/session/runner.h"
 
 C_VOID vm_session_runner_run(vm_session *session)
 {

@@ -5,13 +5,13 @@
 
 
 
-#include "vm/composition/session_control.h"
+#include "vm/composition/session/control.h"
 
 #include "vm/machine/fdd.h"
 
 #include "vm/profile/default_profile/firmware/bios.h"
 
-#include "vm/composition/session_execution_context.h"
+#include "vm/composition/session/execution.h"
 
 static DWORD WINAPI run_device(LPVOID parameter)
 {

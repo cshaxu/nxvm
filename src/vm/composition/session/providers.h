@@ -8,7 +8,7 @@ extern "C" {
 #endif
 
 #include "type.h"
-#include "vm/composition/session.h"
+#include "vm/composition/session/session.h"
 
 #define VM_SESSION_MACHINE_NAME "IBM PC/AT"
 

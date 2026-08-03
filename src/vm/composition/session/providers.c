@@ -31,9 +31,9 @@
 
 #include "vm/machine/hdd.h"
 
-#include "vm/composition/block_provider.h"
+#include "vm/composition/session/block.h"
 
-#include "vm/composition/display_bridge.h"
+#include "vm/composition/session/display.h"
 
 #include "core/machine/kbc.h"
 
@@ -41,10 +41,10 @@
 
 #include "vm/profile/default_profile/firmware/qdx.h"
 
-#include "vm/composition/session.h"
+#include "vm/composition/session/session.h"
 
 
-#include "vm/composition/providers.h"
+#include "vm/composition/session/providers.h"
 
 #define _empty_
 #define _vdebug_

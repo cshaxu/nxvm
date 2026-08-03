@@ -5,7 +5,7 @@
 
 #include "vm/product/console_target.h"
 
-#include "vm/composition/session.h"
+#include "vm/composition/session/session.h"
 
 C_VOID vm_session_console_target_initialize(
     nxvm_product_console_target *target,
