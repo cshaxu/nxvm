@@ -48,7 +48,7 @@ C_INT main(C_INT argc, C_CHAR **argv) {
         return 1;
     }
     vm_session_machine_provider_initialize(&machine_provider, session_manager);
-    vm_product_console_main(&console_context, &machine_provider);
+    vm_product_console_main(&console_context, &machine_provider, session_manager);
     core_product_session_manager_destroy(session_manager);
     return 0;
 }

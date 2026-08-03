@@ -21,7 +21,7 @@
     {
       "name": "nxvm-current-gcc",
       "configurePreset": "mingw-gcc-x64",
-      "targets": ["nxvm-0-5-0146"]
+      "targets": ["nxvm-0-5-0147"]
     },
     {
       "name": "nxvm-current-gates-gcc",
@@ -49,6 +49,7 @@
         "nxvm-vm-debug-target-smoke",
         "nxvm-vm-keyboard-provider-isolation-smoke",
         "nxvm-product-session-smoke",
+        "nxvm-vm-session-manager-smoke",
         "ntvdm64-core-platform-host-surface-smoke",
         "ntvdm64-vdm-minimal-session-smoke",
         "nxvm-dos-minimal-presentation-smoke",
@@ -70,3 +71,4 @@
     }
   ]
 }
+
