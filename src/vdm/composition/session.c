@@ -7,10 +7,7 @@
 
 #include "vdm/machine/dos_minimal.h"
 
-#include "vdm/profile/dos_minimal_profile.h"
-
 struct vdm_session {
-    const core_product_runtime_profile_descriptor *profile;
     vdm_machine_dos_minimal *dos_minimal;
 };
 
@@ -28,7 +25,6 @@ ntvdm64_status vdm_session_create(
     if (session == STD_NULL) {
         return NTVDM64_STATUS_NO_MEMORY;
     }
-    session->profile = ntvdm64_dos_minimal_profile_descriptor();
     status = vdm_machine_dos_minimal_create(&session->dos_minimal);
     if (status != NTVDM64_STATUS_OK) {
         STD_FREE(session);
@@ -45,12 +41,6 @@ ntvdm64_status vdm_session_reset(
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
     return vdm_machine_dos_minimal_reset(session->dos_minimal);
-}
-
-const core_product_runtime_profile_descriptor *vdm_session_profile(
-    const vdm_session *session)
-{
-    return session == STD_NULL ? STD_NULL : session->profile;
 }
 
 C_VOID vdm_session_destroy(vdm_session *session)
