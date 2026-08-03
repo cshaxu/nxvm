@@ -66,15 +66,47 @@ rename and move into `vm/composition`; it is not repeated in this sequence.
 
 ## T141 Core Lifecycle Constraint
 
-T141 removes the remaining historical choice of core-machine shape. It is not
-permitted to introduce a VM core type, a VDM core type, or a second executor.
+Earlier M5 work moved live CPU/RAM/port and shared-device storage into
+`core_machine` while intentionally retaining device initialization order in VM
+composition to protect DOS boot during small migrations. That was a bounded
+transition, not a completed boundary: storage ownership without lifecycle
+ownership is no longer acceptable after T141.
+
+T141 removes the remaining historical choice of core-machine shape and this
+split lifecycle. It is not permitted to introduce a VM core type, a VDM core
+type, a second executor, or a new transitional lifecycle facade.
+
+### Core Responsibility
+
+`core_machine` owns:
+
+- CPU, RAM, port, PIC, PIT, DMA, KBC, and VADP storage; and
+- their prepare, reset, refresh, and finalize order.
+
+It exposes frozen provider-registration points for product/profile bindings;
+it does not acquire VM/VDM policy or firmware implementation.
+
+### VM Composition Responsibility
+
+VM composition only:
+
+- creates one `core_machine`;
+- creates CMOS, FDD, FDC, HDD, debug state, and default-profile firmware;
+- binds VM providers and profile hooks; and
+- freezes configuration before reset/run.
+
+It must never directly prepare, initialize, reset, refresh, or finalize a
+core-owned CPU, RAM, port, PIC, PIT, DMA, KBC, or VADP object.
+
+VDM follows the same core creation and binding contract, differing only in its
+own provider/profile bindings.
 
 - Delete `CORE_MACHINE_PROFILE_*` and the `profile` member of
   `core_machine_config`.
 - Delete the public `core_machine_enable_executor()` selection layer and every
   caller. `core_machine_create()` always constructs the one standard executor.
-- `core_machine` owns prepare, reset, and finalize for that executor and every
-  shared core device: PIC, PIT, DMA, KBC, and video.
+- `core_machine` owns prepare, reset, refresh, and finalize for its standard
+  executor and every shared core device.
 - VM and VDM both call the same core creation path. Their only later
   differences are provider registration, firmware/profile callback binding,
   and VM-only or VDM-only device binding.
