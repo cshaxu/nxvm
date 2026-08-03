@@ -77,6 +77,9 @@ target_link_libraries(nxvm-product-session-smoke PRIVATE nxvm-vm-composition)
 add_executable(nxvm-vm-session-manager-smoke
     tests/products/nxvm_session_manager_smoke.c)
 target_link_libraries(nxvm-vm-session-manager-smoke PRIVATE nxvm-vm-composition)
+add_executable(nxvm-vm-session-profile-smoke
+    tests/products/nxvm_session_profile_smoke.c)
+target_link_libraries(nxvm-vm-session-profile-smoke PRIVATE nxvm-vm-composition)
 
 target_link_libraries(nxvm-core-contract-smoke PRIVATE nxvm-core)
 
@@ -799,6 +802,7 @@ add_nxvm_version_artifact(nxvm-0-5-0152 "0.5.0152")
 add_nxvm_version_artifact(nxvm-0-5-0154 "0.5.0154")
 add_nxvm_version_artifact(nxvm-0-5-0155 "0.5.0155")
 add_nxvm_version_artifact(nxvm-0-5-0156 "0.5.0156")
+add_nxvm_version_artifact(nxvm-0-5-0157 "0.5.0157")
 
 option(NTVDM64_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)

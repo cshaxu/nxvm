@@ -5,7 +5,7 @@
 
 static const C_CHAR *const nxvm_name = "Neko's x86 Virtual Machine";
 static const C_CHAR *const nxvm_release = "0.4.015d";
-static const C_CHAR *const nxvm_copyright = "Copyright (c) 2012-2014 Neko.";
+static const C_CHAR *const nxvm_copyright = "Copyright (c) 2012-2026 Neko.";
 
 const C_CHAR *ntvdm64_version_nxvm_name(C_VOID)
 {

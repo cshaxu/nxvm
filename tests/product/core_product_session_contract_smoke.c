@@ -6,10 +6,10 @@
 C_INT main(C_VOID)
 {
     core_product_session_snapshot snapshot = {
-        0u,
-        NTVDM64_TYPE_TRUE,
-        CORE_PRODUCT_SESSION_STATE_READY,
-        CORE_PRODUCT_SESSION_DISPLAY_CONSOLE
+        .id = 0u,
+        .selected = NTVDM64_TYPE_TRUE,
+        .state = CORE_PRODUCT_SESSION_STATE_READY,
+        .display = CORE_PRODUCT_SESSION_DISPLAY_CONSOLE
     };
     core_product_session_provider provider = {0};
     core_product_session_output_provider output = {0};

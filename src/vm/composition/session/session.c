@@ -55,10 +55,8 @@ C_VOID vm_session_storage_initialize(vm_session *machine)
 
     if (machine == STD_NULL || machine->core_machine != STD_NULL) return;
     {
-        core_machine_config config = {0};
-
-        if (core_machine_create(&config, &machine->core_machine) !=
-                NTVDM64_STATUS_OK) {
+        if (core_machine_create(&machine->core_machine_config,
+                &machine->core_machine) != NTVDM64_STATUS_OK) {
             core_machine_destroy(machine->core_machine);
             machine->core_machine = STD_NULL;
             return;
@@ -149,6 +147,10 @@ C_INT vm_session_create(const vm_session_config *config, vm_session **out_sessio
     *out_session = STD_NULL;
     session = (vm_session *)STD_CALLOC(1u, sizeof(*session));
     if (session == STD_NULL) return NTVDM64_STATUS_NO_MEMORY;
+    if (config != STD_NULL) {
+        session->core_machine_config.cpu_profile = config->cpu_profile;
+        session->core_machine_config.fpu_profile = config->fpu_profile;
+    }
     vm_session_initialize(session);
     if (session->core_machine == STD_NULL) {
         STD_FREE(session);
