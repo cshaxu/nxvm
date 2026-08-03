@@ -165,13 +165,13 @@ void vm_composition_providers_finalize(vm_composition_live_machine *machine) {
 /* Print machine info */
 void vm_composition_print_machine(const vm_composition_live_machine *machine) {
     if (machine == NULL) return;
-    PRINTF("Machine:           %s\n", VM_COMPOSITION_MACHINE_NAME);
-    PRINTF("CPU:               %s\n", NXVM_DEVICE_CPU);
-    PRINTF("RAM Size:          %d MB\n", machine->ram->connect.size >> 20);
-    PRINTF("Floppy Disk Drive: %s, %.2f MB, %s\n", NXVM_DEVICE_FDD,
+    STD_PRINTF("Machine:           %s\n", VM_COMPOSITION_MACHINE_NAME);
+    STD_PRINTF("CPU:               %s\n", NXVM_DEVICE_CPU);
+    STD_PRINTF("RAM Size:          %d MB\n", machine->ram->connect.size >> 20);
+    STD_PRINTF("Floppy Disk Drive: %s, %.2f MB, %s\n", NXVM_DEVICE_FDD,
            vm_machine_fdd_image_size(machine->fdd) * 1. / VFDD_BYTE_PER_MB,
            machine->fdd->connect.flagDiskExist ? "inserted" : "not inserted");
-    PRINTF("Hard Disk Drive:   %d cylinders, %.2f MB, %s\n",
+    STD_PRINTF("Hard Disk Drive:   %d cylinders, %.2f MB, %s\n",
            machine->hdd->data.ncyl,
            vm_machine_hdd_image_size(machine->hdd) * 1. / VHDD_BYTE_PER_MB,
            machine->hdd->connect.flagDiskExist ? "connected" : "disconnected");

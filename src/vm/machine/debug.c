@@ -101,18 +101,18 @@ static void xasm_test(t_debug *debug) {
     lenAasm  = core_product_utils_aasm32(strDasm1, ins2, debug->connect.cpu->data.cs.seg.exec.defsize);
     lenDasm2 = core_product_utils_dasm32(strDasm2, ins2, debug->connect.cpu->data.cs.seg.exec.defsize);
     if ((flagStop && (lenAasm != lenDasm1 || lenAasm != lenDasm2 || lenDasm1 != lenDasm2 ||
-                      MEMCMP((void *) ins1, (void *) ins2, lenDasm1))) || STRCMP(strDasm1, strDasm2)) {
-        PRINTF("diff at #%d %04X:%08X(L%08X), len(a=%x,d1=%x,d2=%x), CodeSegDefSize=%d\n",
+                      STD_MEMCMP((void *) ins1, (void *) ins2, lenDasm1))) || STD_STRCMP(strDasm1, strDasm2)) {
+        STD_PRINTF("diff at #%d %04X:%08X(L%08X), len(a=%x,d1=%x,d2=%x), CodeSegDefSize=%d\n",
                total, debug->connect.cpu->data.cs.selector, debug->connect.cpu->data.eip, debug->connect.cpu->data.cs.base + debug->connect.cpu->data.eip,
                lenAasm, lenDasm1, lenDasm2, debug->connect.cpu->data.cs.seg.exec.defsize ? 32 : 16);
         for (i = 0; i < lenDasm1; ++i) {
-            PRINTF("%02X", ins1[i]);
+            STD_PRINTF("%02X", ins1[i]);
         }
-        PRINTF("\t%s\n", strDasm1);
+        STD_PRINTF("\t%s\n", strDasm1);
         for (i = 0; i < lenDasm2; ++i) {
-            PRINTF("%02X", ins2[i]);
+            STD_PRINTF("%02X", ins2[i]);
         }
-        PRINTF("\t%s\n", strDasm2);
+        STD_PRINTF("\t%s\n", strDasm2);
         debug_request_pause(debug, VM_MACHINE_DEBUG_PAUSE_BREAKPOINT);
     }
 }
@@ -122,14 +122,14 @@ static void xasm_test(t_debug *debug) {
 void vm_machine_debug_initialize(t_debug *debug, t_cpu *cpu, t_cpuins *cpuins)
 {
     if (debug == NULL) return;
-    MEMSET((void *)debug, NTVDM64_TYPE_ZERO_8, sizeof(*debug));
+    STD_MEMSET((void *)debug, NTVDM64_TYPE_ZERO_8, sizeof(*debug));
     debug->connect.cpu = cpu;
     debug->connect.cpuins = cpuins;
 }
 void vm_machine_debug_reset(t_debug *debug)
 {
     if (debug == NULL) return;
-    MEMSET((void *)&debug->data, NTVDM64_TYPE_ZERO_8, sizeof(debug->data));
+    STD_MEMSET((void *)&debug->data, NTVDM64_TYPE_ZERO_8, sizeof(debug->data));
 }
 #define _expression "cs:eip=%04x:%08x(L%08x) ss:esp=%04x:%08x(L%08x) \
 eax=%08x ecx=%08x edx=%08x ebx=%08x ebp=%08x esi=%08x edi=%08x ds=%04x es=%04x fs=%04x gs=%04x \
@@ -155,7 +155,7 @@ void vm_machine_debug_refresh(t_debug *debug) {
     if (debug->connect.recordFile) {
         ntvdm64_type_native_unsigned i;
         ntvdm64_type_string_buffer stmt;
-        FPRINTF(debug->connect.recordFile, _expression,
+        STD_FPRINTF(debug->connect.recordFile, _expression,
                 debug->connect.cpu->data.cs.selector, debug->connect.cpu->data.eip, debug->connect.cpu->data.cs.base + debug->connect.cpu->data.eip,
                 debug->connect.cpu->data.ss.selector, debug->connect.cpu->data.esp, debug->connect.cpu->data.ss.base + debug->connect.cpu->data.esp,
                 debug->connect.cpu->data.eax, debug->connect.cpu->data.ecx, debug->connect.cpu->data.edx, debug->connect.cpu->data.ebx,
@@ -180,37 +180,37 @@ void vm_machine_debug_refresh(t_debug *debug) {
         /* disassemble opcode */
         if (debug->connect.cpuins->data.oplen) {
             debug->connect.cpuins->data.oplen = core_product_utils_dasm32(stmt, debug->connect.cpuins->data.opcodes, debug->connect.cpu->data.cs.seg.exec.defsize);
-            for (i = 0; i < STRLEN(stmt); ++i) {
+            for (i = 0; i < STD_STRLEN(stmt); ++i) {
                 if (stmt[i] == '\n') {
                     stmt[i] = ' ';
                 }
             }
         } else {
-            SPRINTF(stmt, "<ERROR>");
+            STD_SPRINTF(stmt, "<ERROR>");
         }
 
         /* print opcode, at least print 8 bytes */
         for (i = 0; i < debug->connect.cpuins->data.oplen; ++i) {
-            FPRINTF(debug->connect.recordFile, "%02X", debug->connect.cpuins->data.opcodes[i]);
+            STD_FPRINTF(debug->connect.recordFile, "%02X", debug->connect.cpuins->data.opcodes[i]);
         }
         for (i = debug->connect.cpuins->data.oplen; i < 8; ++i) {
-            FPRINTF(debug->connect.recordFile, "  ");
+            STD_FPRINTF(debug->connect.recordFile, "  ");
         }
 
         /* print assembly, at least 40 char in length */
-        FPRINTF(debug->connect.recordFile, "%s ", stmt);
-        for (i = STRLEN(stmt); i < 40; ++i) {
-            FPRINTF(debug->connect.recordFile, " ");
+        STD_FPRINTF(debug->connect.recordFile, "%s ", stmt);
+        for (i = STD_STRLEN(stmt); i < 40; ++i) {
+            STD_FPRINTF(debug->connect.recordFile, " ");
         }
 
         /* print memory usage */
         for (i = 0; i < debug->connect.cpuins->data.msize; ++i) {
-            FPRINTF(debug->connect.recordFile, "[%c:L%08x/%1d/%016llx] ",
+            STD_FPRINTF(debug->connect.recordFile, "[%c:L%08x/%1d/%016llx] ",
                     debug->connect.cpuins->data.mem[i].flagWrite ? 'W' : 'R', debug->connect.cpuins->data.mem[i].linear,
                     debug->connect.cpuins->data.mem[i].byte, debug->connect.cpuins->data.mem[i].data);
         }
 
-        FPRINTF(debug->connect.recordFile, "\n");
+        STD_FPRINTF(debug->connect.recordFile, "\n");
     }
 }
 void vm_machine_debug_finalize(t_debug *debug) { (void)debug; }
@@ -260,22 +260,22 @@ void vm_machine_debug_clear_trace(t_debug *debug) {
 void vm_machine_debug_record_start(t_debug *debug, const char *file_name) {
     if (debug == NULL) return;
     if (debug->connect.recordFile) {
-        FCLOSE(debug->connect.recordFile);
+        STD_FCLOSE(debug->connect.recordFile);
     }
-    debug->connect.recordFile = FOPEN(file_name, "w");
+    debug->connect.recordFile = STD_FOPEN(file_name, "w");
     if (!debug->connect.recordFile) {
-        PRINTF("ERROR:\tcannot write dump file.\n");
+        STD_PRINTF("ERROR:\tcannot write dump file.\n");
     } else {
-        PRINTF("Record started.\n");
+        STD_PRINTF("Record started.\n");
     }
 }
 void vm_machine_debug_record_stop(t_debug *debug) {
     if (debug == NULL) return;
     if (!debug->connect.recordFile) {
-        PRINTF("ERROR:\trecorder not turned on.\n");
+        STD_PRINTF("ERROR:\trecorder not turned on.\n");
     } else {
-        PRINTF("Record finished.\n");
-        FCLOSE(debug->connect.recordFile);
+        STD_PRINTF("Record finished.\n");
+        STD_FCLOSE(debug->connect.recordFile);
         debug->connect.recordFile = (FILE *) NULL;
     }
 }

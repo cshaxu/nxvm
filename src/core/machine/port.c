@@ -104,13 +104,13 @@ void core_machine_port_write(t_port *port, uint16_t port_id, uint32_t value)
 void core_machine_port_initialize(t_port *port)
 {
     if (port == NULL) return;
-    MEMSET((void *)port, NTVDM64_TYPE_ZERO_8, sizeof(*port));
+    STD_MEMSET((void *)port, NTVDM64_TYPE_ZERO_8, sizeof(*port));
 }
 
 void core_machine_port_reset(t_port *port)
 {
     if (port == NULL) return;
-    MEMSET((void *)&port->data, NTVDM64_TYPE_ZERO_8, sizeof(port->data));
+    STD_MEMSET((void *)&port->data, NTVDM64_TYPE_ZERO_8, sizeof(port->data));
 }
 
 void core_machine_port_finalize(t_port *port)

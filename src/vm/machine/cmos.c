@@ -41,14 +41,14 @@ static void io_read_0071(t_port *port, ntvdm64_type_unsigned_16 port_id, void *o
 }
 
 void vm_machine_cmos_initialize(t_cmos *cmos, t_cpu *cpu, t_port *port) {
-    MEMSET((void *)cmos, NTVDM64_TYPE_ZERO_8, sizeof(*cmos));
+    STD_MEMSET((void *)cmos, NTVDM64_TYPE_ZERO_8, sizeof(*cmos));
     cmos->connect.cpu = cpu;
     core_machine_port_add_read(port, 0x0071, io_read_0071, cmos);
     core_machine_port_add_write(port, 0x0070, io_write_0070, cmos);
     core_machine_port_add_write(port, 0x0071, io_write_0071, cmos);
 }
 void vm_machine_cmos_reset(t_cmos *cmos) {
-    MEMSET((void *)(&cmos->data), NTVDM64_TYPE_ZERO_8, sizeof(cmos->data));
+    STD_MEMSET((void *)(&cmos->data), NTVDM64_TYPE_ZERO_8, sizeof(cmos->data));
 }
 void vm_machine_cmos_refresh(t_cmos *cmos) {
     time_t tCurr;
@@ -61,7 +61,7 @@ void vm_machine_cmos_refresh(t_cmos *cmos) {
     } else {
         cmos->connect.last_refresh = tCurr;
     }
-    ptm = LOCALTIME(&tCurr);
+    ptm = STD_LOCALTIME(&tCurr);
 
     century = NTVDM64_TYPE_MASK_UNSIGNED_8(19 + ptm->tm_year / 100);
     year    = NTVDM64_TYPE_MASK_UNSIGNED_8(ptm->tm_year % 100);

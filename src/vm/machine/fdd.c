@@ -61,12 +61,12 @@ void vm_machine_fdd_format_track(t_fdd *fdd, ntvdm64_type_unsigned_8 fill_byte)
     fdd->data.head = 0;
     fdd->data.sector = 1;
     vm_machine_fdd_set_pointer(fdd);
-    MEMSET((void *)fdd->connect.pCurrByte, fill_byte,
+    STD_MEMSET((void *)fdd->connect.pCurrByte, fill_byte,
         fdd->data.nsector * fdd->data.nbyte);
     fdd->data.head = 1;
     fdd->data.sector = 1;
     vm_machine_fdd_set_pointer(fdd);
-    MEMSET((void *)fdd->connect.pCurrByte, fill_byte,
+    STD_MEMSET((void *)fdd->connect.pCurrByte, fill_byte,
         fdd->data.nsector * fdd->data.nbyte);
     fdd->data.sector = fdd->data.nsector;
 }
@@ -74,19 +74,19 @@ void vm_machine_fdd_format_track(t_fdd *fdd, ntvdm64_type_unsigned_8 fill_byte)
 void vm_machine_fdd_initialize(t_fdd *fdd)
 {
     if (fdd == NULL) return;
-    MEMSET((void *)fdd, NTVDM64_TYPE_ZERO_8, sizeof(*fdd));
+    STD_MEMSET((void *)fdd, NTVDM64_TYPE_ZERO_8, sizeof(*fdd));
     fdd->data.ncyl = 0x0050;
     fdd->data.nhead = 0x0002;
     fdd->data.nsector = 0x0012;
     fdd->data.nbyte = 0x0200;
-    fdd->connect.pImgBase = (ntvdm64_type_virtual_address)MALLOC(vm_machine_fdd_image_size(fdd));
-    MEMSET((void *)fdd->connect.pImgBase, NTVDM64_TYPE_ZERO_8, vm_machine_fdd_image_size(fdd));
+    fdd->connect.pImgBase = (ntvdm64_type_virtual_address)STD_MALLOC(vm_machine_fdd_image_size(fdd));
+    STD_MEMSET((void *)fdd->connect.pImgBase, NTVDM64_TYPE_ZERO_8, vm_machine_fdd_image_size(fdd));
 }
 
 void vm_machine_fdd_reset(t_fdd *fdd)
 {
     if (fdd == NULL) return;
-    MEMSET((void *)&fdd->data, NTVDM64_TYPE_ZERO_8, sizeof(fdd->data));
+    STD_MEMSET((void *)&fdd->data, NTVDM64_TYPE_ZERO_8, sizeof(fdd->data));
     fdd->data.ncyl = 0x0050;
     fdd->data.nhead = 0x0002;
     fdd->data.nsector = 0x0012;
@@ -97,7 +97,7 @@ void vm_machine_fdd_refresh(t_fdd *fdd) { (void)fdd; }
 
 void vm_machine_fdd_finalize(t_fdd *fdd)
 {
-    if (fdd != NULL && fdd->connect.pImgBase) FREE((void *)fdd->connect.pImgBase);
+    if (fdd != NULL && fdd->connect.pImgBase) STD_FREE((void *)fdd->connect.pImgBase);
     if (fdd != NULL) fdd->connect.pImgBase = (ntvdm64_type_virtual_address)NULL;
 }
 
@@ -108,13 +108,13 @@ void vm_machine_fdd_create_for(t_fdd *fdd)
 
 int vm_machine_fdd_insert_for(t_fdd *fdd, const char *file_name)
 {
-    FILE *image = FOPEN(file_name, "rb");
+    FILE *image = STD_FOPEN(file_name, "rb");
     if (fdd == NULL || image == NULL ||
         fdd->connect.pImgBase == (ntvdm64_type_virtual_address)NULL) return NTVDM64_TYPE_TRUE;
-    FREAD((void *)fdd->connect.pImgBase, sizeof(ntvdm64_type_unsigned_8),
+    STD_FREAD((void *)fdd->connect.pImgBase, sizeof(ntvdm64_type_unsigned_8),
         vm_machine_fdd_image_size(fdd), image);
     fdd->connect.flagDiskExist = NTVDM64_TYPE_TRUE;
-    FCLOSE(image);
+    STD_FCLOSE(image);
     return NTVDM64_TYPE_FALSE;
 }
 
@@ -123,27 +123,27 @@ int vm_machine_fdd_remove_for(t_fdd *fdd, const char *file_name)
     FILE *image;
     if (fdd == NULL) return NTVDM64_TYPE_TRUE;
     if (file_name != NULL) {
-        image = FOPEN(file_name, "wb");
+        image = STD_FOPEN(file_name, "wb");
         if (image == NULL) return NTVDM64_TYPE_TRUE;
-        if (!fdd->connect.flagReadOnly) FWRITE((void *)fdd->connect.pImgBase,
+        if (!fdd->connect.flagReadOnly) STD_FWRITE((void *)fdd->connect.pImgBase,
             sizeof(ntvdm64_type_unsigned_8), vm_machine_fdd_image_size(fdd), image);
-        FCLOSE(image);
+        STD_FCLOSE(image);
     }
     fdd->connect.flagDiskExist = NTVDM64_TYPE_FALSE;
-    MEMSET((void *)fdd->connect.pImgBase, NTVDM64_TYPE_ZERO_8, vm_machine_fdd_image_size(fdd));
+    STD_MEMSET((void *)fdd->connect.pImgBase, NTVDM64_TYPE_ZERO_8, vm_machine_fdd_image_size(fdd));
     return NTVDM64_TYPE_FALSE;
 }
 
 void vm_machine_fdd_print(const t_fdd *fdd) {
     if (fdd == NULL) return;
-    PRINTF("FDD INFO\n========\n");
-    PRINTF("cyl = %x, head = %x, sector = %x, gpl = %x\n",
+    STD_PRINTF("FDD INFO\n========\n");
+    STD_PRINTF("cyl = %x, head = %x, sector = %x, gpl = %x\n",
            fdd->data.cyl, fdd->data.head, fdd->data.sector, fdd->data.gpl);
-    PRINTF("nsector = %x, nbyte = %x, ncyl = %x, nhead = %x\n",
+    STD_PRINTF("nsector = %x, nbyte = %x, ncyl = %x, nhead = %x\n",
            fdd->data.nsector, fdd->data.nbyte, fdd->data.ncyl,
            fdd->data.nhead);
-    PRINTF("ReadOnly = %x, Exist = %x\n",
+    STD_PRINTF("ReadOnly = %x, Exist = %x\n",
            fdd->connect.flagReadOnly, fdd->connect.flagDiskExist);
-    PRINTF("base = %x, curr = %x, count = %x\n",
+    STD_PRINTF("base = %x, curr = %x, count = %x\n",
            fdd->connect.pImgBase, fdd->connect.pCurrByte, fdd->connect.transCount);
 }

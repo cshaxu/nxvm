@@ -215,7 +215,7 @@ void core_machine_pit_set_output(t_pit *pit, ntvdm64_type_unsigned_8 id,
 void core_machine_pit_initialize(t_pit *pit, t_port *port)
 {
     if (pit == NULL || port == NULL) return;
-    MEMSET((void *)pit, NTVDM64_TYPE_ZERO_8, sizeof(*pit));
+    STD_MEMSET((void *)pit, NTVDM64_TYPE_ZERO_8, sizeof(*pit));
     core_machine_port_add_read(port, 0x0040, io_read_0040, pit);
     core_machine_port_add_read(port, 0x0041, io_read_0041, pit);
     core_machine_port_add_read(port, 0x0042, io_read_0042, pit);
@@ -227,7 +227,7 @@ void core_machine_pit_initialize(t_pit *pit, t_port *port)
 void core_machine_pit_reset(t_pit *pit) {
     ntvdm64_type_native_unsigned i;
     if (pit == NULL) return;
-    MEMSET((void *)(&pit->data), NTVDM64_TYPE_ZERO_8, sizeof(t_pit_data));
+    STD_MEMSET((void *)(&pit->data), NTVDM64_TYPE_ZERO_8, sizeof(t_pit_data));
     for (i = 0; i < 3; ++i) {
         pit->data.flagReady[i] = pit->data.flagLatch[i] = NTVDM64_TYPE_TRUE;
         pit->data.flagRead[i] = pit->data.flagWrite[i] = VPIT_STATUS_RW_READY;

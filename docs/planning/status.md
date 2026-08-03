@@ -123,6 +123,9 @@ legacy APIs now use their actual source-owner prefixes.
 **M5 T107 complete:** root `type.*` aliases and non-retained macros use
 `ntvdm64_type_*` / `NTVDM64_TYPE_*`; module-owned structs remain separate.
 
+**M5 T109 complete:** `C_*`/`STD_*` facade surfaces exist and former root
+wrappers/callers now use `STD_*`; scalar aliases and Win32 remain separate.
+
 ## Short-Term M5 Plan
 
 The completed executor sequence is defined in

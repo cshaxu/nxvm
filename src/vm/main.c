@@ -27,8 +27,8 @@ int main(int argc, char **argv) {
         NXVM_BUILD_SUFFIX)) {
         return 1;
     }
-    PRINTF("%s\n", banner);
-    PRINTF("Built on %s at %s.\n", ntvdm64_version_build_date(),
+    STD_PRINTF("%s\n", banner);
+    STD_PRINTF("Built on %s at %s.\n", ntvdm64_version_build_date(),
         ntvdm64_version_build_time());
     machine = (vm_composition_live_machine *)calloc(1u, sizeof(*machine));
     if (machine == NULL) return 1;

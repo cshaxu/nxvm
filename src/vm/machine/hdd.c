@@ -31,10 +31,10 @@ void vm_machine_hdd_set_pointer(t_hdd *hdd) {
 static void vm_machine_hdd_allocate(t_hdd *hdd) {
     size_t image_size = vm_machine_hdd_image_size(hdd);
     if (hdd->connect.pImgBase) {
-        FREE((void *)hdd->connect.pImgBase);
+        STD_FREE((void *)hdd->connect.pImgBase);
     }
-    hdd->connect.pImgBase = (ntvdm64_type_virtual_address)MALLOC(image_size);
-    MEMSET((void *)hdd->connect.pImgBase, NTVDM64_TYPE_ZERO_8, image_size);
+    hdd->connect.pImgBase = (ntvdm64_type_virtual_address)STD_MALLOC(image_size);
+    STD_MEMSET((void *)hdd->connect.pImgBase, NTVDM64_TYPE_ZERO_8, image_size);
 }
 
 void vm_machine_hdd_transfer_read(t_hdd *hdd, t_latch *latch) {
@@ -78,7 +78,7 @@ void vm_machine_hdd_format_track(t_hdd *hdd, ntvdm64_type_unsigned_8 fill_byte) 
         hdd->data.head = NTVDM64_TYPE_MASK_UNSIGNED_16(i);
         hdd->data.sector = 1;
         vm_machine_hdd_set_pointer(hdd);
-        MEMSET((void *)hdd->connect.pCurrByte, fill_byte,
+        STD_MEMSET((void *)hdd->connect.pCurrByte, fill_byte,
             hdd->data.nsector * hdd->data.nbyte);
         hdd->data.sector = hdd->data.nsector;
     }
@@ -86,7 +86,7 @@ void vm_machine_hdd_format_track(t_hdd *hdd, ntvdm64_type_unsigned_8 fill_byte) 
 
 void vm_machine_hdd_initialize(t_hdd *hdd) {
     if (hdd == NULL) return;
-    MEMSET((void *)hdd, NTVDM64_TYPE_ZERO_8, sizeof(*hdd));
+    STD_MEMSET((void *)hdd, NTVDM64_TYPE_ZERO_8, sizeof(*hdd));
     hdd->data.ncyl = 0;
     hdd->data.nhead = 16;
     hdd->data.nsector = 63;
@@ -96,7 +96,7 @@ void vm_machine_hdd_reset(t_hdd *hdd) {
     ntvdm64_type_unsigned_16 old_cylinders;
     if (hdd == NULL) return;
     old_cylinders = hdd->data.ncyl;
-    MEMSET((void *)&hdd->data, NTVDM64_TYPE_ZERO_8, sizeof(hdd->data));
+    STD_MEMSET((void *)&hdd->data, NTVDM64_TYPE_ZERO_8, sizeof(hdd->data));
     hdd->data.ncyl = old_cylinders;
     hdd->data.nhead = 16;
     hdd->data.nsector = 63;
@@ -105,7 +105,7 @@ void vm_machine_hdd_reset(t_hdd *hdd) {
 void vm_machine_hdd_refresh(t_hdd *hdd) { (void)hdd; }
 void vm_machine_hdd_finalize(t_hdd *hdd) {
     if (hdd != NULL && hdd->connect.pImgBase) {
-        FREE((void *)hdd->connect.pImgBase);
+        STD_FREE((void *)hdd->connect.pImgBase);
     }
     if (hdd != NULL) hdd->connect.pImgBase = (ntvdm64_type_virtual_address)NULL;
 }
@@ -118,7 +118,7 @@ void vm_machine_hdd_create(t_hdd *hdd, uint16_t cylinders) {
 }
 int vm_machine_hdd_insert(t_hdd *hdd, const char *file_name) {
     ntvdm64_type_native_unsigned count;
-    FILE *image = FOPEN(file_name, "rb");
+    FILE *image = STD_FOPEN(file_name, "rb");
     if (hdd != NULL && image) {
         fseek(image, NTVDM64_TYPE_ZERO_32, SEEK_END);
         count = ftell(image);
@@ -126,10 +126,10 @@ int vm_machine_hdd_insert(t_hdd *hdd, const char *file_name) {
             hdd->data.nsector / hdd->data.nbyte);
         fseek(image, NTVDM64_TYPE_ZERO_32, SEEK_SET);
         vm_machine_hdd_allocate(hdd);
-        count = FREAD((void *)hdd->connect.pImgBase, sizeof(ntvdm64_type_unsigned_8),
+        count = STD_FREAD((void *)hdd->connect.pImgBase, sizeof(ntvdm64_type_unsigned_8),
             vm_machine_hdd_image_size(hdd), image);
         hdd->connect.flagDiskExist = NTVDM64_TYPE_TRUE;
-        FCLOSE(image);
+        STD_FCLOSE(image);
         return NTVDM64_TYPE_FALSE;
     } else {
         return NTVDM64_TYPE_TRUE;
@@ -140,18 +140,18 @@ int vm_machine_hdd_remove(t_hdd *hdd, const char *file_name) {
     FILE *image;
     if (hdd == NULL) return NTVDM64_TYPE_TRUE;
     if (file_name) {
-        image = FOPEN(file_name, "wb");
+        image = STD_FOPEN(file_name, "wb");
         if (image) {
             if (!hdd->connect.flagReadOnly)
-                count = FWRITE((void *)hdd->connect.pImgBase, sizeof(ntvdm64_type_unsigned_8),
+                count = STD_FWRITE((void *)hdd->connect.pImgBase, sizeof(ntvdm64_type_unsigned_8),
                     vm_machine_hdd_image_size(hdd), image);
             hdd->connect.flagDiskExist = NTVDM64_TYPE_FALSE;
-            FCLOSE(image);
+            STD_FCLOSE(image);
         } else {
             return NTVDM64_TYPE_TRUE;
         }
     }
     hdd->connect.flagDiskExist = NTVDM64_TYPE_FALSE;
-    MEMSET((void *)hdd->connect.pImgBase, NTVDM64_TYPE_ZERO_8, vm_machine_hdd_image_size(hdd));
+    STD_MEMSET((void *)hdd->connect.pImgBase, NTVDM64_TYPE_ZERO_8, vm_machine_hdd_image_size(hdd));
     return NTVDM64_TYPE_FALSE;
 }

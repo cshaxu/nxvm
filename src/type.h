@@ -33,9 +33,13 @@ extern "C" {
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdatomic.h>
 #include <string.h>
 #include <memory.h>
 #include <time.h>
+#include <ctype.h>
 
 /* COMPATIBILITY DEFINITIONS *********************************************** */
 #if GLOBAL_PLATFORM == GLOBAL_PLATFORM_WIN32
@@ -51,6 +55,38 @@ typedef   signed __int64 int64_t;
 #include <stdint.h>
 #endif
 /* ************************************************************************* */
+
+typedef void C_VOID;
+typedef char C_CHAR;
+typedef signed char C_SCHAR;
+typedef unsigned char C_UCHAR;
+typedef short C_SHORT;
+typedef unsigned short C_USHORT;
+typedef int C_INT;
+typedef unsigned int C_UINT;
+typedef long C_LONG;
+typedef unsigned long C_ULONG;
+typedef long long C_LLONG;
+typedef unsigned long long C_ULLONG;
+typedef float C_FLOAT;
+typedef double C_DOUBLE;
+
+typedef _Bool STD_BOOL;
+typedef size_t STD_SIZE_T;
+typedef ptrdiff_t STD_PTRDIFF_T;
+typedef FILE STD_FILE;
+typedef time_t STD_TIME_T;
+typedef va_list STD_VA_LIST;
+
+#define STD_NULL NULL
+#define STD_EOF EOF
+#define STD_SEEK_SET SEEK_SET
+#define STD_SEEK_END SEEK_END
+#define STD_STDIN stdin
+#define STD_STDOUT stdout
+#define STD_STDERR stderr
+#define STD_ISSPACE(value) isspace((unsigned char)(value))
+#define STD_TOUPPER(value) toupper((unsigned char)(value))
 
 /* Retained NXVM numeric aliases. New code should prefer stdint names. */
 #define MAXLINE   0x100
@@ -209,25 +245,33 @@ typedef enum ntvdm64_status {
 } ntvdm64_status;
 
 /* Legacy C-runtime wrappers are a product-neutral root foundation. */
-struct tm* LOCALTIME(const time_t *_Time);
-char* STRCAT(char *_Dest, const char *_Source);
-char* STRCPY(char *_Dest, const char *_Source);
-char* STRTOK(char *_Str, const char *_Delim);
-int STRCMP(const char *_Str1, const char *_Str2);
-size_t STRLEN(const char *_Str);
-int PRINTF(const char *_Format, ...);
-int FPRINTF(FILE *_File, const char *_Format, ...);
-int SPRINTF(char *_Dest, const char *_Format, ...);
-FILE* FOPEN(const char *_Filename, const char *_Mode);
-int FCLOSE(FILE *_File);
-size_t FREAD(void *_DstBuf, size_t _ElementSize, size_t _Count, FILE *_File);
-size_t FWRITE(void *_Str, size_t _Size, size_t _Count, FILE *_File);
-char* FGETS(char *_Buf, int _MaxCount, FILE *_File);
-void* MALLOC(size_t _Size);
-void FREE(void *_Memory);
-void* MEMSET(void *_Dst, int _Val, size_t _Size);
-void* MEMCPY(void *_Dst, const void *_Src, size_t _Size);
-int MEMCMP(const void *_Buf1, const void *_Buf2, size_t _Size);
+struct tm* STD_LOCALTIME(const STD_TIME_T *_Time);
+C_CHAR* STD_STRCAT(C_CHAR *_Dest, const C_CHAR *_Source);
+C_CHAR* STD_STRCPY(C_CHAR *_Dest, const C_CHAR *_Source);
+C_CHAR* STD_STRTOK(C_CHAR *_Str, const C_CHAR *_Delim);
+C_INT STD_STRCMP(const C_CHAR *_Str1, const C_CHAR *_Str2);
+STD_SIZE_T STD_STRLEN(const C_CHAR *_Str);
+C_INT STD_PRINTF(const C_CHAR *_Format, ...);
+C_INT STD_FPRINTF(STD_FILE *_File, const C_CHAR *_Format, ...);
+C_INT STD_SPRINTF(C_CHAR *_Dest, const C_CHAR *_Format, ...);
+C_INT STD_SNPRINTF(C_CHAR *_Dest, STD_SIZE_T _Size, const C_CHAR *_Format, ...);
+STD_FILE* STD_FOPEN(const C_CHAR *_Filename, const C_CHAR *_Mode);
+C_INT STD_FCLOSE(STD_FILE *_File);
+STD_SIZE_T STD_FREAD(C_VOID *_DstBuf, STD_SIZE_T _ElementSize, STD_SIZE_T _Count, STD_FILE *_File);
+STD_SIZE_T STD_FWRITE(const C_VOID *_Buffer, STD_SIZE_T _Size, STD_SIZE_T _Count, STD_FILE *_File);
+C_CHAR* STD_FGETS(C_CHAR *_Buf, C_INT _MaxCount, STD_FILE *_File);
+C_INT STD_FSEEK(STD_FILE *_File, C_LONG _Offset, C_INT _Origin);
+C_LONG STD_FTELL(STD_FILE *_File);
+C_INT STD_FGETC(STD_FILE *_File);
+C_INT STD_FPUTC(C_INT _Character, STD_FILE *_File);
+C_INT STD_FEOF(STD_FILE *_File);
+STD_TIME_T STD_TIME(STD_TIME_T *_Time);
+C_VOID* STD_CALLOC(STD_SIZE_T _Count, STD_SIZE_T _Size);
+C_VOID* STD_MALLOC(STD_SIZE_T _Size);
+C_VOID STD_FREE(C_VOID *_Memory);
+C_VOID* STD_MEMSET(C_VOID *_Dst, C_INT _Val, STD_SIZE_T _Size);
+C_VOID* STD_MEMCPY(C_VOID *_Dst, const C_VOID *_Src, STD_SIZE_T _Size);
+C_INT STD_MEMCMP(const C_VOID *_Buf1, const C_VOID *_Buf2, STD_SIZE_T _Size);
 void ntvdm64_type_string_lower(char *str);
 
 /* Legacy trace support is shared root diagnostic infrastructure. */
@@ -318,28 +362,6 @@ void ntvdm64_type_trace_block_end(ntvdm64_type_trace *rtrace);
 #define NTVDM64_TYPE_TRACE_IMPOSSIBLE_BREAK  NTVDM64_TYPE_TRACE_CHECK_BREAK(NTVDM64_TYPE_TRACE_SET_ERROR);
 #define NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN  NTVDM64_TYPE_TRACE_CHECK_RETURN(NTVDM64_TYPE_TRACE_SET_ERROR);
 #define NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN_ZERO NTVDM64_TYPE_TRACE_CHECK_RETURN_ZERO(NTVDM64_TYPE_TRACE_SET_ERROR);
-
-/* Legacy C-runtime wrappers are a product-neutral root foundation. */
-struct tm* LOCALTIME(const time_t *_Time);
-char* STRCAT(char *_Dest, const char *_Source);
-char* STRCPY(char *_Dest, const char *_Source);
-char* STRTOK(char *_Str, const char *_Delim);
-int STRCMP(const char *_Str1, const char *_Str2);
-size_t STRLEN(const char *_Str);
-int PRINTF(const char *_Format, ...);
-int FPRINTF(FILE *_File, const char *_Format, ...);
-int SPRINTF(char *_Dest, const char *_Format, ...);
-FILE* FOPEN(const char *_Filename, const char *_Mode);
-int FCLOSE(FILE *_File);
-size_t FREAD(void *_DstBuf, size_t _ElementSize, size_t _Count, FILE *_File);
-size_t FWRITE(void *_Str, size_t _Size, size_t _Count, FILE *_File);
-char* FGETS(char *_Buf, int _MaxCount, FILE *_File);
-void* MALLOC(size_t _Size);
-void FREE(void *_Memory);
-void* MEMSET(void *_Dst, int _Val, size_t _Size);
-void* MEMCPY(void *_Dst, const void *_Src, size_t _Size);
-int MEMCMP(const void *_Buf1, const void *_Buf2, size_t _Size);
-void ntvdm64_type_string_lower(char *str);
 
 #ifdef __cplusplus
 }/*_EOCD_*/

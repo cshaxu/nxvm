@@ -190,7 +190,7 @@ void vm_composition_control_initialize(vm_composition_control_state *control,
     vm_composition_live_machine *machine) {
 
     if (control == NULL || machine == NULL) return;
-    MEMSET((void *)(control), NTVDM64_TYPE_ZERO_8, sizeof(*control));
+    STD_MEMSET((void *)(control), NTVDM64_TYPE_ZERO_8, sizeof(*control));
     atomic_init(&control->flagFlip, NTVDM64_TYPE_FALSE);
     atomic_init(&control->flagRun, NTVDM64_TYPE_FALSE);
     atomic_init(&control->flagReset, NTVDM64_TYPE_FALSE);
@@ -222,11 +222,11 @@ void vm_composition_control_finalize(vm_composition_control_state *control,
 }
 
 void vm_composition_control_print_status(const vm_composition_control_state *control) {
-    PRINTF("Recording: %s\n", control != NULL &&
+    STD_PRINTF("Recording: %s\n", control != NULL &&
         control->execution_context.device != NULL &&
         ((vm_composition_live_machine *)control->execution_context.device)->debug->
             connect.recordFile ? "Yes" : "No");
-    PRINTF("Running:   %s\n", control != NULL && atomic_load(&control->flagRun) ?
+    STD_PRINTF("Running:   %s\n", control != NULL && atomic_load(&control->flagRun) ?
         "Yes" : "No");
 }
 

@@ -23,7 +23,7 @@
 #define _______todo static void
 /* prints untested code path */
 #define _new_code_path_ do { \
-PRINTF("NEW CODE PATH\n");if (context->trace != NULL) ntvdm64_type_trace_print(context->trace);} while (0)
+STD_PRINTF("NEW CODE PATH\n");if (context->trace != NULL) ntvdm64_type_trace_print(context->trace);} while (0)
 
 /* stack pointer size */
 #define _GetStackSize   (cpu_state.data.ss.seg.data.big ? 4 : 2)
@@ -32,29 +32,29 @@ PRINTF("NEW CODE PATH\n");if (context->trace != NULL) ntvdm64_type_trace_print(c
 /* address size of the source operand */
 #define _GetAddressSize ((cpu_state.data.cs.seg.exec.defsize ^ instruction_state.data.prefix_addrsize) ? 4 : 2)
 /* if opcode indicates a prefix */
-#define _SetExcept_DE(n) (NTVDM64_TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_DE), instruction_state.data.excode = (n), PRINTF("#DE(%x) - divide error\n",    instruction_state.data.excode))
-#define _SetExcept_PF(n) (NTVDM64_TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_PF), instruction_state.data.excode = (n), PRINTF("#PF(%x) - page fault\n",      instruction_state.data.excode))
-#define _SetExcept_GP(n) (NTVDM64_TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_GP), instruction_state.data.excode = (n), PRINTF("#GP(%x) - general protect\n", instruction_state.data.excode))
-#define _SetExcept_SS(n) (NTVDM64_TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_SS), instruction_state.data.excode = (n), PRINTF("#SS(%x) - stack segment\n",   instruction_state.data.excode))
-#define _SetExcept_UD(n) (NTVDM64_TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_UD), instruction_state.data.excode = (n), PRINTF("#UD(%x) - undefined\n",       instruction_state.data.excode))
-#define _SetExcept_NP(n) (NTVDM64_TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_NP), instruction_state.data.excode = (n), PRINTF("#NP(%x) - not present\n",     instruction_state.data.excode))
-#define _SetExcept_BR(n) (NTVDM64_TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_BR), instruction_state.data.excode = (n), PRINTF("#BR(%x) - boundary\n",        instruction_state.data.excode))
-#define _SetExcept_TS(n) (NTVDM64_TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_TS), instruction_state.data.excode = (n), PRINTF("#TS(%x) - task state\n",      instruction_state.data.excode))
-#define _SetExcept_NM(n) (NTVDM64_TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_NM), instruction_state.data.excode = (n), PRINTF("#NM(%x) - divide error\n",    instruction_state.data.excode))
-#define _SetExcept_CE(n) (NTVDM64_TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_CE), instruction_state.data.excode = (n), PRINTF("#CE(%x) - internal error\n",  instruction_state.data.excode))
+#define _SetExcept_DE(n) (NTVDM64_TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_DE), instruction_state.data.excode = (n), STD_PRINTF("#DE(%x) - divide error\n",    instruction_state.data.excode))
+#define _SetExcept_PF(n) (NTVDM64_TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_PF), instruction_state.data.excode = (n), STD_PRINTF("#PF(%x) - page fault\n",      instruction_state.data.excode))
+#define _SetExcept_GP(n) (NTVDM64_TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_GP), instruction_state.data.excode = (n), STD_PRINTF("#GP(%x) - general protect\n", instruction_state.data.excode))
+#define _SetExcept_SS(n) (NTVDM64_TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_SS), instruction_state.data.excode = (n), STD_PRINTF("#SS(%x) - stack segment\n",   instruction_state.data.excode))
+#define _SetExcept_UD(n) (NTVDM64_TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_UD), instruction_state.data.excode = (n), STD_PRINTF("#UD(%x) - undefined\n",       instruction_state.data.excode))
+#define _SetExcept_NP(n) (NTVDM64_TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_NP), instruction_state.data.excode = (n), STD_PRINTF("#NP(%x) - not present\n",     instruction_state.data.excode))
+#define _SetExcept_BR(n) (NTVDM64_TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_BR), instruction_state.data.excode = (n), STD_PRINTF("#BR(%x) - boundary\n",        instruction_state.data.excode))
+#define _SetExcept_TS(n) (NTVDM64_TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_TS), instruction_state.data.excode = (n), STD_PRINTF("#TS(%x) - task state\n",      instruction_state.data.excode))
+#define _SetExcept_NM(n) (NTVDM64_TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_NM), instruction_state.data.excode = (n), STD_PRINTF("#NM(%x) - divide error\n",    instruction_state.data.excode))
+#define _SetExcept_CE(n) (NTVDM64_TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_CE), instruction_state.data.excode = (n), STD_PRINTF("#CE(%x) - internal error\n",  instruction_state.data.excode))
 
 /* memory management unit */
 /* kernel memory accessing */
 /* read content from reference */
 static void _kma_read_ref(core_machine_cpu_execution_context *context, ntvdm64_type_virtual_address ref, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_kma_read_ref");
-    MEMCPY((void *) rdata, (void *) ref, byte);
+    STD_MEMCPY((void *) rdata, (void *) ref, byte);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
 /* write content to reference */
 static void _kma_write_ref(core_machine_cpu_execution_context *context, ntvdm64_type_virtual_address ref, ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_kma_write_ref");
-    MEMCPY((void *) ref, (void *) rdata, byte);
+    STD_MEMCPY((void *) ref, (void *) rdata, byte);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
 /* read content from physical */
@@ -352,13 +352,13 @@ static void _kma_read_logical(core_machine_cpu_execution_context *context, t_cpu
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!force");
         instruction_state.data.mem[instruction_state.data.msize].flagWrite = NTVDM64_TYPE_FALSE;
         instruction_state.data.mem[instruction_state.data.msize].data = 0;
-        MEMCPY((void *) NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.mem[instruction_state.data.msize].data), (void *) rdata, byte);
+        STD_MEMCPY((void *) NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.mem[instruction_state.data.msize].data), (void *) rdata, byte);
         instruction_state.data.mem[instruction_state.data.msize].byte = byte;
         instruction_state.data.mem[instruction_state.data.msize].linear = linear;
         if (instruction_state.data.flagWR) {
             if (instruction_state.data.wrLinear >= instruction_state.data.mem[instruction_state.data.msize].linear &&
                     instruction_state.data.wrLinear < instruction_state.data.mem[instruction_state.data.msize].linear + byte) {
-                PRINTF("Watch point caught at L%08x: READ %01x BYTES OF DATA=%08x FROM L%08x\n", instruction_state.data.linear,
+                STD_PRINTF("Watch point caught at L%08x: READ %01x BYTES OF DATA=%08x FROM L%08x\n", instruction_state.data.linear,
                        instruction_state.data.mem[instruction_state.data.msize].byte,
                        instruction_state.data.mem[instruction_state.data.msize].data,
                        instruction_state.data.mem[instruction_state.data.msize].linear);
@@ -389,13 +389,13 @@ static void _kma_write_logical(core_machine_cpu_execution_context *context, t_cp
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!force");
         instruction_state.data.mem[instruction_state.data.msize].flagWrite = NTVDM64_TYPE_TRUE;
         instruction_state.data.mem[instruction_state.data.msize].data = 0;
-        MEMCPY((void *) NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.mem[instruction_state.data.msize].data), (void *) rdata, byte);
+        STD_MEMCPY((void *) NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.mem[instruction_state.data.msize].data), (void *) rdata, byte);
         instruction_state.data.mem[instruction_state.data.msize].byte = byte;
         instruction_state.data.mem[instruction_state.data.msize].linear = linear;
         if (instruction_state.data.flagWW) {
             if (instruction_state.data.wwLinear >= instruction_state.data.mem[instruction_state.data.msize].linear &&
                     instruction_state.data.wwLinear < instruction_state.data.mem[instruction_state.data.msize].linear + byte) {
-                PRINTF("Watch point caught at L%08x: WRITE %01x BYTES OF DATA=%08x TO L%08x\n", instruction_state.data.linear,
+                STD_PRINTF("Watch point caught at L%08x: WRITE %01x BYTES OF DATA=%08x TO L%08x\n", instruction_state.data.linear,
                        instruction_state.data.mem[instruction_state.data.msize].byte,
                        instruction_state.data.mem[instruction_state.data.msize].data,
                        instruction_state.data.mem[instruction_state.data.msize].linear);
@@ -4858,7 +4858,7 @@ static void UndefinedOpcode(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("UndefinedOpcode");
     cpu_state = instruction_state.data.oldcpu;
     if (!_GetCR0_PE) {
-        PRINTF("The NXVM CPU has encountered an illegal instruction at L%08X.\n", cpu_state.data.cs.base + cpu_state.data.eip);
+        STD_PRINTF("The NXVM CPU has encountered an illegal instruction at L%08X.\n", cpu_state.data.cs.base + cpu_state.data.eip);
         core_machine_cpu_execution_request_stop(context);
     }
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
@@ -12327,7 +12327,7 @@ static void INS_0F_01(core_machine_cpu_execution_context *context) {
             NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
-        /* PRINTF("LGDT_M32_16: executed at L%08X, read base=%08X, limit=%04X\n",
+        /* STD_PRINTF("LGDT_M32_16: executed at L%08X, read base=%08X, limit=%04X\n",
                 instruction_state.data.linear, base, limit); */
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_load_gdtr(context, base, limit, _GetOperandSize));
         NTVDM64_TYPE_TRACE_BLOCK_END;
@@ -12355,7 +12355,7 @@ static void INS_0F_01(core_machine_cpu_execution_context *context) {
             NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
-        /* PRINTF("LIDT_M32_16: executed at L%08X, read base=%08X, limit=%04X\n",
+        /* STD_PRINTF("LIDT_M32_16: executed at L%08X, read base=%08X, limit=%04X\n",
                  instruction_state.data.linear, base, limit); */
         NTVDM64_TYPE_TRACE_CHECK_RETURN(_s_load_idtr(context, base, limit, _GetOperandSize));
         NTVDM64_TYPE_TRACE_BLOCK_END;
@@ -12591,13 +12591,13 @@ static void MOV_CR_R32(core_machine_cpu_execution_context *context) {
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm_creg(context));
     NTVDM64_TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, NTVDM64_TYPE_REFERENCE_OF(instruction_state.data.crm), 4));
     /* if (instruction_state.data.rr == (ntvdm64_type_virtual_address)&cpu_state.data.cr0) {
-        PRINTF("MOV_CR_R32: executed at L%08X, CR0=%08X\n", instruction_state.data.linear, cpu_state.data.cr0);
+        STD_PRINTF("MOV_CR_R32: executed at L%08X, CR0=%08X\n", instruction_state.data.linear, cpu_state.data.cr0);
     }
     if (instruction_state.data.rr == (ntvdm64_type_virtual_address)&cpu_state.data.cr2) {
-        PRINTF("MOV_CR_R32: executed at L%08X, CR2=%08X\n", instruction_state.data.linear, cpu_state.data.cr2);
+        STD_PRINTF("MOV_CR_R32: executed at L%08X, CR2=%08X\n", instruction_state.data.linear, cpu_state.data.cr2);
     }
     if (instruction_state.data.rr == (ntvdm64_type_virtual_address)&cpu_state.data.cr3) {
-        PRINTF("MOV_CR_R32: executed at L%08X, CR3=%08X\n", instruction_state.data.linear, cpu_state.data.cr3);
+        STD_PRINTF("MOV_CR_R32: executed at L%08X, CR3=%08X\n", instruction_state.data.linear, cpu_state.data.cr3);
     } */
     NTVDM64_TYPE_TRACE_CALL_END;
 }
@@ -13334,7 +13334,7 @@ static void ExecIns(core_machine_cpu_execution_context *context) {
         NTVDM64_TYPE_TRACE_CALL_END;
     } while (_kdf_check_prefix(context, opcode));
     if (instruction_state.data.flagWE && instruction_state.data.weLinear == instruction_state.data.linear) {
-        PRINTF("Watch point caught at L%08x: EXECUTED\n", instruction_state.data.linear);
+        STD_PRINTF("Watch point caught at L%08x: EXECUTED\n", instruction_state.data.linear);
         /* printCpuReg(); */
         core_machine_cpu_execution_request_stop(context);
     }
@@ -13924,7 +13924,7 @@ void core_machine_cpu_execution_initialize(
 }
 void core_machine_cpu_execution_reset(
     core_machine_cpu_execution_context *context) {
-    MEMSET((void *)(&instruction_state.data), NTVDM64_TYPE_ZERO_8, sizeof(t_cpuins_data));
+    STD_MEMSET((void *)(&instruction_state.data), NTVDM64_TYPE_ZERO_8, sizeof(t_cpuins_data));
 }
 void core_machine_cpu_execution_refresh(
     core_machine_cpu_execution_context *context) {
@@ -13937,7 +13937,7 @@ void core_machine_cpu_execution_finalize(
     core_machine_cpu_execution_context *context)
 {
     if (context != NULL) {
-        FREE(context->trace);
+        STD_FREE(context->trace);
         context->trace = NULL;
     }
 }
