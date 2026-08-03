@@ -1,4 +1,4 @@
-#include "type.h"
+﻿#include "type.h"
 
 #include "vdm/composition/presentation.h"
 
@@ -7,13 +7,13 @@
 #define NXVM_DOS_MINIMAL_INPUT_CAPACITY 32u
 
 struct vdm_presentation {
-    core_product_runtime_dos_minimal *session;
+    vdm_session *session;
     nxvm_platform_input_event input[NXVM_DOS_MINIMAL_INPUT_CAPACITY];
     C_UINT count;
 };
 
 ntvdm64_status vdm_presentation_create(
-    core_product_runtime_dos_minimal *session,
+    vdm_session *session,
     vdm_presentation **out_presentation)
 {
     vdm_presentation *presentation;
@@ -56,7 +56,7 @@ ntvdm64_status vdm_presentation_apply_input(
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
     for (index = 0u; index < presentation->count; ++index) {
-        status = core_product_runtime_dos_minimal_inject_key(
+        status = vdm_session_inject_key(
             presentation->session, presentation->input[index].scan_code);
         if (status != NTVDM64_STATUS_OK) {
             return status;
@@ -71,14 +71,14 @@ ntvdm64_status vdm_presentation_capture_text(
     uint64_t timestamp,
     vdm_presentation_snapshot *out_snapshot)
 {
-    core_product_runtime_text_snapshot text;
+    vdm_machine_text_snapshot text;
     ntvdm64_status status;
 
     if (presentation == STD_NULL || out_snapshot == STD_NULL) {
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
     out_snapshot->timestamp = timestamp;
-    status = core_product_runtime_dos_minimal_get_snapshot(presentation->session, &text);
+    status = vdm_session_get_snapshot(presentation->session, &text);
     if (status != NTVDM64_STATUS_OK) return status;
     out_snapshot->text = text.text;
     return NTVDM64_STATUS_OK;
@@ -89,3 +89,4 @@ C_VOID vdm_presentation_destroy(
 {
     STD_FREE(presentation);
 }
+

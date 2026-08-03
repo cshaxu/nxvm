@@ -182,6 +182,10 @@ are test support, not production VM targets.
 TLS target scope. Retained parser-local TLS is recorded for T127 review; T124
 is active to converge the VDM skeleton boundary.
 
+**M5 T124 complete:** VDM minimal machine APIs are VDM-owned and presentation
+uses the session as its sole entry. T125 is active to remove unused runtime
+profile descriptor and registry layers.
+
 ## Short-Term M5 Plan
 
 The completed executor sequence is defined in

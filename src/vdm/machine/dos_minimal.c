@@ -1,4 +1,4 @@
-#include "type.h"
+﻿#include "type.h"
 
 #include "vdm/machine/dos_minimal.h"
 
@@ -10,15 +10,15 @@
 
 #define NXVM_RUNTIME_KEY_QUEUE_CAPACITY 16u
 
-struct core_product_runtime_dos_minimal {
+struct vdm_machine_dos_minimal {
     core_machine *machine;
-    core_product_runtime_text_snapshot snapshot;
+    vdm_machine_text_snapshot snapshot;
     uint8_t key_queue[NXVM_RUNTIME_KEY_QUEUE_CAPACITY];
     uint8_t key_count;
 };
 
-static C_VOID core_product_runtime_dos_minimal_clear(
-    core_product_runtime_dos_minimal *session)
+static C_VOID vdm_machine_dos_minimal_clear(
+    vdm_machine_dos_minimal *session)
 {
     STD_MEMSET(&session->snapshot, 0, sizeof(session->snapshot));
     core_machine_text_snapshot_initialize(&session->snapshot.text);
@@ -29,12 +29,12 @@ static C_VOID core_product_runtime_dos_minimal_clear(
     session->key_count = 0u;
 }
 
-static ntvdm64_status core_product_runtime_dos_minimal_port_read_handler(
+static ntvdm64_status vdm_machine_dos_minimal_port_read_handler(
     C_VOID *owner,
     uint16_t port,
     uint32_t *out_value)
 {
-    core_product_runtime_dos_minimal *session = (core_product_runtime_dos_minimal *)owner;
+    vdm_machine_dos_minimal *session = (vdm_machine_dos_minimal *)owner;
 
     if (port == 0x20u) {
         *out_value = session->snapshot.keyboard_irq_pending ? 0x02u : 0u;
@@ -58,12 +58,12 @@ static ntvdm64_status core_product_runtime_dos_minimal_port_read_handler(
     return NTVDM64_STATUS_OK;
 }
 
-static ntvdm64_status core_product_runtime_dos_minimal_port_write_handler(
+static ntvdm64_status vdm_machine_dos_minimal_port_write_handler(
     C_VOID *owner,
     uint16_t port,
     uint32_t value)
 {
-    core_product_runtime_dos_minimal *session = (core_product_runtime_dos_minimal *)owner;
+    vdm_machine_dos_minimal *session = (vdm_machine_dos_minimal *)owner;
 
     if (port == 0x20u && value == 0x20u) {
         session->snapshot.keyboard_irq_pending = session->key_count != 0u;
@@ -73,12 +73,12 @@ static ntvdm64_status core_product_runtime_dos_minimal_port_write_handler(
     return NTVDM64_STATUS_UNSUPPORTED;
 }
 
-static ntvdm64_status core_product_runtime_dos_minimal_install_ports(
-    core_product_runtime_dos_minimal *session)
+static ntvdm64_status vdm_machine_dos_minimal_install_ports(
+    vdm_machine_dos_minimal *session)
 {
     const core_machine_port_provider ops = {
-        core_product_runtime_dos_minimal_port_read_handler,
-        core_product_runtime_dos_minimal_port_write_handler
+        vdm_machine_dos_minimal_port_read_handler,
+        vdm_machine_dos_minimal_port_write_handler
     };
     ntvdm64_status status;
 
@@ -96,10 +96,10 @@ static ntvdm64_status core_product_runtime_dos_minimal_install_ports(
                                           &ops, session);
 }
 
-ntvdm64_status core_product_runtime_dos_minimal_create(
-    core_product_runtime_dos_minimal **out_session)
+ntvdm64_status vdm_machine_dos_minimal_create(
+    vdm_machine_dos_minimal **out_session)
 {
-    core_product_runtime_dos_minimal *session;
+    vdm_machine_dos_minimal *session;
     core_machine_config config = {
         CORE_MACHINE_PROFILE_TEST_MINIMAL,
         CORE_MACHINE_MINIMUM_MEMORY_BYTES
@@ -110,27 +110,27 @@ ntvdm64_status core_product_runtime_dos_minimal_create(
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
     *out_session = STD_NULL;
-    session = (core_product_runtime_dos_minimal *)STD_CALLOC(1u, sizeof(*session));
+    session = (vdm_machine_dos_minimal *)STD_CALLOC(1u, sizeof(*session));
     if (session == STD_NULL) {
         return NTVDM64_STATUS_NO_MEMORY;
     }
     status = core_machine_create(&config, &session->machine);
     if (status == NTVDM64_STATUS_OK) {
-        status = core_product_runtime_dos_minimal_install_ports(session);
+        status = vdm_machine_dos_minimal_install_ports(session);
     }
     if (status == NTVDM64_STATUS_OK) {
-        status = core_product_runtime_dos_minimal_reset(session);
+        status = vdm_machine_dos_minimal_reset(session);
     }
     if (status != NTVDM64_STATUS_OK) {
-        core_product_runtime_dos_minimal_destroy(session);
+        vdm_machine_dos_minimal_destroy(session);
         return status;
     }
     *out_session = session;
     return NTVDM64_STATUS_OK;
 }
 
-ntvdm64_status core_product_runtime_dos_minimal_reset(
-    core_product_runtime_dos_minimal *session)
+ntvdm64_status vdm_machine_dos_minimal_reset(
+    vdm_machine_dos_minimal *session)
 {
     ntvdm64_status status;
 
@@ -139,13 +139,13 @@ ntvdm64_status core_product_runtime_dos_minimal_reset(
     }
     status = core_machine_reset(session->machine);
     if (status == NTVDM64_STATUS_OK) {
-        core_product_runtime_dos_minimal_clear(session);
+        vdm_machine_dos_minimal_clear(session);
     }
     return status;
 }
 
-ntvdm64_status core_product_runtime_dos_minimal_tick(
-    core_product_runtime_dos_minimal *session,
+ntvdm64_status vdm_machine_dos_minimal_tick(
+    vdm_machine_dos_minimal *session,
     uint32_t ticks)
 {
     if (session == STD_NULL) {
@@ -155,8 +155,8 @@ ntvdm64_status core_product_runtime_dos_minimal_tick(
     return NTVDM64_STATUS_OK;
 }
 
-ntvdm64_status core_product_runtime_dos_minimal_inject_key(
-    core_product_runtime_dos_minimal *session,
+ntvdm64_status vdm_machine_dos_minimal_inject_key(
+    vdm_machine_dos_minimal *session,
     uint8_t scan_code)
 {
     if (session == STD_NULL) {
@@ -170,8 +170,8 @@ ntvdm64_status core_product_runtime_dos_minimal_inject_key(
     return NTVDM64_STATUS_OK;
 }
 
-ntvdm64_status core_product_runtime_dos_minimal_write_text(
-    core_product_runtime_dos_minimal *session,
+ntvdm64_status vdm_machine_dos_minimal_write_text(
+    vdm_machine_dos_minimal *session,
     uint16_t cell,
     uint8_t character,
     uint8_t attribute)
@@ -184,9 +184,9 @@ ntvdm64_status core_product_runtime_dos_minimal_write_text(
     return NTVDM64_STATUS_OK;
 }
 
-ntvdm64_status core_product_runtime_dos_minimal_get_snapshot(
-    const core_product_runtime_dos_minimal *session,
-    core_product_runtime_text_snapshot *out_snapshot)
+ntvdm64_status vdm_machine_dos_minimal_get_snapshot(
+    const vdm_machine_dos_minimal *session,
+    vdm_machine_text_snapshot *out_snapshot)
 {
     if (session == STD_NULL || out_snapshot == STD_NULL) {
         return NTVDM64_STATUS_INVALID_ARGUMENT;
@@ -195,8 +195,8 @@ ntvdm64_status core_product_runtime_dos_minimal_get_snapshot(
     return NTVDM64_STATUS_OK;
 }
 
-ntvdm64_status core_product_runtime_dos_minimal_port_read(
-    core_product_runtime_dos_minimal *session,
+ntvdm64_status vdm_machine_dos_minimal_port_read(
+    vdm_machine_dos_minimal *session,
     uint16_t port,
     uint32_t *out_value)
 {
@@ -206,10 +206,11 @@ ntvdm64_status core_product_runtime_dos_minimal_port_read(
     return core_machine_bus_read(session->machine, port, out_value);
 }
 
-C_VOID core_product_runtime_dos_minimal_destroy(core_product_runtime_dos_minimal *session)
+C_VOID vdm_machine_dos_minimal_destroy(vdm_machine_dos_minimal *session)
 {
     if (session != STD_NULL) {
         core_machine_destroy(session->machine);
         STD_FREE(session);
     }
 }
+

@@ -1,11 +1,11 @@
-#ifndef NXVM_ADAPTERS_DOS_MINIMAL_PRESENTATION_H
+﻿#ifndef NXVM_ADAPTERS_DOS_MINIMAL_PRESENTATION_H
 #define NXVM_ADAPTERS_DOS_MINIMAL_PRESENTATION_H
 
 #include "type.h"
 
 #include "core/platform/presentation.h"
 
-#include "vdm/machine/dos_minimal.h"
+#include "vdm/composition/session.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -19,7 +19,7 @@ typedef struct vdm_presentation_snapshot {
 } vdm_presentation_snapshot;
 
 ntvdm64_status vdm_presentation_create(
-    core_product_runtime_dos_minimal *session,
+    vdm_session *session,
     vdm_presentation **out_presentation);
 ntvdm64_status vdm_presentation_enqueue_input(
     vdm_presentation *presentation,
@@ -38,3 +38,4 @@ C_VOID vdm_presentation_destroy(
 #endif
 
 #endif
+
