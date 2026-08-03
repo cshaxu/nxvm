@@ -47,9 +47,8 @@ profile/session context. Its GCC artifact is `build/output/nxvm_0_5_0077.exe`.
 
 ## Active Work
 
-**M5 T85 S1: NXVM outer-loop cutover.** Route each bounded guest quantum
-through `core_machine_run()` and delete the old VM instruction loop without
-changing the retained NXVM Console, debugger, boot, reset, or display behavior.
+**M5 T86 S1: Executor closure.** Delete parallel-machine remnants and prove
+that NXVM guest execution only enters through `core_machine_run()`.
 
 ## Short-Term M5 Plan
 

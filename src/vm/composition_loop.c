@@ -11,18 +11,23 @@
 #include "vm/composition.h"
 #include "core/product/runtime/execution_context.h"
 #include "core/machine/cpu.h"
+#include "core/machine/machine_interface.h"
 #include "core/machine/memory.h"
 #include "core/machine/port.h"
 #include "core/platform/sleep.h"
 #include "vm/composition_control.h"
+#include "vm/composition_machine.h"
 #include "vm/composition_live_machine.h"
+#include "vm/composition_display.h"
 
 static void device_execution_context_reset(void *device)
 {
     vm_composition_live_machine *machine =
         (vm_composition_live_machine *)device;
     vm_machine_debug_reset(machine->debug);
-    vmachineReset(machine);
+    if (core_machine_reset(machine->core_machine) != NXVM_CORE_STATUS_OK) {
+        vm_composition_control_stop(machine->control);
+    }
 }
 
 static void device_execution_context_debug_refresh(void *device)
@@ -32,20 +37,20 @@ static void device_execution_context_debug_refresh(void *device)
     vm_machine_debug_refresh(machine == NULL ? NULL : machine->debug);
 }
 
-static void device_execution_context_machine_refresh(void *device)
-{
-    vmachineRefresh((vm_composition_live_machine *)device);
-}
-
 static const nxvm_execution_context_callbacks device_execution_callbacks = {
     device_execution_context_reset,
-    device_execution_context_debug_refresh,
-    device_execution_context_machine_refresh
+    device_execution_context_debug_refresh
 };
 
 /* Starts device thread */
 void vm_composition_control_start(vm_composition_control_state *control) {
+    core_machine_run_budget budget = {1u, 0u};
+    core_machine_run_result result;
+    vm_composition_live_machine *machine;
+
     if (control == NULL) return;
+    machine = (vm_composition_live_machine *)control->execution_context.device;
+    if (machine == NULL || machine->core_machine == NULL) return;
     nxvm_execution_context_activate(&control->execution_context);
     control->flagRun = True;
     control->flagFlip = !control->flagFlip;
@@ -68,16 +73,20 @@ void vm_composition_control_start(vm_composition_control_state *control) {
         if (!control->flagRun) {
             break;
         }
-        nxvm_execution_context_machine_refresh(&control->execution_context);
-        if (core_machine_cpu_execution_consume_reset_request(
-                ((vm_composition_live_machine *)
-                    control->execution_context.device)->cpu_execution)) {
+        if (core_machine_run(machine->core_machine, budget, &result) !=
+            NXVM_CORE_STATUS_OK) {
+            vm_composition_control_stop(control);
+            continue;
+        }
+        vm_composition_publish_display(machine, False);
+        if (result.reason == CORE_MACHINE_STOP_RESET_REQUESTED) {
             vm_composition_control_reset(control);
         }
-        if (core_machine_cpu_execution_consume_stop_request(
-                ((vm_composition_live_machine *)
-                    control->execution_context.device)->cpu_execution)) {
+        if (result.reason == CORE_MACHINE_STOP_REQUESTED) {
             vm_composition_control_stop(control);
+        }
+        if (result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
+            core_platform_sleep_milliseconds(1u);
         }
         if (control->stepRequested) {
             control->stepRequested = False;
@@ -100,7 +109,13 @@ void vm_composition_control_reset(vm_composition_control_state *control) {
 
 /* Issues stopping signal to device thread */
 void vm_composition_control_stop(vm_composition_control_state *control)  {
+    vm_composition_live_machine *machine;
+
     if (control == NULL) return;
+    machine = (vm_composition_live_machine *)control->execution_context.device;
+    if (machine != NULL && machine->core_machine != NULL) {
+        core_machine_request_stop(machine->core_machine);
+    }
     control->flagRun = False;
     control->paused = False;
     control->pauseRequested = False;
@@ -186,6 +201,9 @@ void vm_composition_control_initialize(vm_composition_control_state *control,
     nxvm_execution_context_activate(&control->execution_context);
     vm_machine_debug_initialize(machine->debug, machine->cpu, machine->cpuins);
     vmachineInit(machine);
+    if (!vm_composition_bind_execution_provider(machine)) {
+        vm_composition_control_stop(control);
+    }
 }
 
 /* Finalizes devices */
