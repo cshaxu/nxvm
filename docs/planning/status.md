@@ -62,11 +62,13 @@ workspaces invocation-owned. Its GCC artifact is
 T92 made NXVM Console state caller-owned. Its GCC artifact is
 `build/output/nxvm_0_5_0092.exe`.
 
+T93 moved VM context lifetime into composition. Its GCC artifact is
+`build/output/nxvm_0_5_0093.exe`.
+
 ## Active Work
 
-**M5 T93 S1: VM composition context integration.** Move current caller-owned
-machine, platform, debugger, and Console context ownership into VM composition
-lifecycle without changing the retained NXVM user surface.
+**M5 T94 S1: VDM composition audit.** Verify DOS-minimal composition against
+the same session-lifetime rules; modify it only for a demonstrated violation.
 
 ## Short-Term M5 Plan
 

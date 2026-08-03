@@ -354,8 +354,7 @@ target_include_directories(nxvm-vm-composition PUBLIC
 target_link_libraries(nxvm-vm-composition PUBLIC
     nxvm-vm-machine
     nxvm-core-machine
-    nxvm-product-core-debug
-    nxvm-product-core-utils
+    "$<LINK_GROUP:RESCAN,nxvm-product-core-debug,nxvm-product-core-utils>"
     nxvm-vm-profile
     nxvm-vm-product
     nxvm-vm-request-transport
@@ -709,6 +708,7 @@ add_nxvm_version_artifact(nxvm-0-5-0088 "0.5.0088")
 add_nxvm_version_artifact(nxvm-0-5-0090 "0.5.0090")
 add_nxvm_version_artifact(nxvm-0-5-0091 "0.5.0091")
 add_nxvm_version_artifact(nxvm-0-5-0092 "0.5.0092")
+add_nxvm_version_artifact(nxvm-0-5-0093 "0.5.0093")
 
 option(NTVDM64_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
