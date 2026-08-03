@@ -63,9 +63,10 @@ struct core_machine {
     core_machine_lifecycle lifecycle;
     STD_ATOMIC_BOOL stop_requested;
     uint32_t fault_detail;
-    core_machine_cpu cpu;
-    core_machine_memory memory;
-    core_machine_port_table ports;
+    /* Contract-fixture state for CORE_MACHINE_PROFILE_TEST_MINIMAL only. */
+    core_machine_cpu test_cpu;
+    core_machine_memory test_memory;
+    core_machine_port_table test_ports;
     core_machine_trace_state trace;
     t_cpu executor_cpu;
     t_cpuins executor_cpu_instructions;

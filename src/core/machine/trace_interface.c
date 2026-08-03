@@ -6,7 +6,9 @@
 
 static uint32_t core_machine_trace_linear_pc(const core_machine *machine)
 {
-    return machine->cpu.state.cs_base + machine->cpu.state.eip;
+    return machine->executor_enabled ?
+        machine->executor_cpu.data.cs.base + machine->executor_cpu.data.eip :
+        machine->test_cpu.state.cs_base + machine->test_cpu.state.eip;
 }
 
 static C_VOID core_machine_trace_flush(core_machine *machine)

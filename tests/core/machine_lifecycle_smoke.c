@@ -51,9 +51,7 @@ C_INT main(C_VOID)
 
     budget.instructions = 1u;
     result |= expect_status(core_machine_run(machine, budget, &run_result),
-                            NTVDM64_STATUS_OK);
-    result |= run_result.reason != CORE_MACHINE_STOP_BUDGET ||
-              run_result.executed != 0u;
+                            NTVDM64_STATUS_UNSUPPORTED);
     result |= expect_lifecycle(machine, CORE_MACHINE_PAUSED);
 
     result |= expect_status(core_machine_request_stop(machine),

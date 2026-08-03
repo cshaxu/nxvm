@@ -12,10 +12,10 @@ ntvdm64_status core_machine_bus_initialize(core_machine *machine)
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
 
-    machine->ports.slots = (core_machine_port_slot *)STD_CALLOC(
+    machine->test_ports.slots = (core_machine_port_slot *)STD_CALLOC(
         NXVM_CORE_PORT_COUNT,
-        sizeof(*machine->ports.slots));
-    if (machine->ports.slots == STD_NULL) {
+        sizeof(*machine->test_ports.slots));
+    if (machine->test_ports.slots == STD_NULL) {
         return NTVDM64_STATUS_NO_MEMORY;
     }
 
@@ -25,8 +25,8 @@ ntvdm64_status core_machine_bus_initialize(core_machine *machine)
 C_VOID core_machine_bus_finalize(core_machine *machine)
 {
     if (machine != STD_NULL) {
-        STD_FREE(machine->ports.slots);
-        machine->ports.slots = STD_NULL;
+        STD_FREE(machine->test_ports.slots);
+        machine->test_ports.slots = STD_NULL;
     }
 }
 
@@ -45,15 +45,15 @@ ntvdm64_status core_machine_install_port_provider(
     }
 
     for (port = first; port <= last; ++port) {
-        if (machine->ports.slots[port].provider.read != STD_NULL ||
-            machine->ports.slots[port].provider.write != STD_NULL) {
+        if (machine->test_ports.slots[port].provider.read != STD_NULL ||
+            machine->test_ports.slots[port].provider.write != STD_NULL) {
             return NTVDM64_STATUS_INVALID_STATE;
         }
     }
 
     for (port = first; port <= last; ++port) {
-        machine->ports.slots[port].provider = *provider;
-        machine->ports.slots[port].owner = owner;
+        machine->test_ports.slots[port].provider = *provider;
+        machine->test_ports.slots[port].owner = owner;
     }
 
     return NTVDM64_STATUS_OK;
@@ -70,7 +70,7 @@ ntvdm64_status core_machine_bus_read(
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
 
-    slot = &machine->ports.slots[port];
+    slot = &machine->test_ports.slots[port];
     if (slot->provider.read == STD_NULL) {
         return NTVDM64_STATUS_UNSUPPORTED;
     }
@@ -95,7 +95,7 @@ ntvdm64_status core_machine_bus_write(
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
 
-    slot = &machine->ports.slots[port];
+    slot = &machine->test_ports.slots[port];
     if (slot->provider.write == STD_NULL) {
         return NTVDM64_STATUS_UNSUPPORTED;
     }

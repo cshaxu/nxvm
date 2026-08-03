@@ -9,7 +9,7 @@ static uint32_t core_machine_linear_pc(const core_machine *machine)
     if (machine->executor_enabled) {
         return machine->executor_cpu.data.cs.base + machine->executor_cpu.data.eip;
     }
-    return machine->cpu.state.cs_base + machine->cpu.state.eip;
+    return machine->test_cpu.state.cs_base + machine->test_cpu.state.eip;
 }
 
 static C_INT core_machine_profile_is_supported(core_machine_profile profile)
@@ -21,6 +21,9 @@ static C_INT core_machine_profile_is_supported(core_machine_profile profile)
 ntvdm64_status core_machine_enable_executor(core_machine *machine)
 {
     if (machine == STD_NULL) return NTVDM64_STATUS_INVALID_ARGUMENT;
+    if (machine->config.profile != CORE_MACHINE_PROFILE_CUSTOM) {
+        return NTVDM64_STATUS_UNSUPPORTED;
+    }
     if (machine->executor_enabled) return NTVDM64_STATUS_OK;
     if (machine->lifecycle == CORE_MACHINE_RUNNING) {
         return NTVDM64_STATUS_INVALID_STATE;
@@ -104,7 +107,7 @@ ntvdm64_status core_machine_cpu_reset(core_machine *machine)
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
 
-    state = &machine->cpu.state;
+    state = &machine->test_cpu.state;
     state->cs = 0xf000u;
     state->cs_base = 0xffff0000u;
     state->eip = 0x0000fff0u;
@@ -128,7 +131,7 @@ ntvdm64_status core_machine_get_cpu_state(
         out_state->eflags = machine->executor_cpu.data.eflags;
         out_state->halted = machine->executor_cpu.data.flagHalt;
     } else {
-        *out_state = machine->cpu.state;
+        *out_state = machine->test_cpu.state;
     }
     return NTVDM64_STATUS_OK;
 }
@@ -160,16 +163,23 @@ ntvdm64_status core_machine_create(
     STD_ATOMIC_INIT(&machine->stop_requested, 0);
     core_machine_trace_initialize(machine);
 
-    status = core_machine_instance_memory_initialize(machine);
-    if (status != NTVDM64_STATUS_OK) {
-        core_machine_destroy(machine);
-        return status;
-    }
-
-    status = core_machine_bus_initialize(machine);
-    if (status != NTVDM64_STATUS_OK) {
-        core_machine_destroy(machine);
-        return status;
+    if (machine->config.profile == CORE_MACHINE_PROFILE_TEST_MINIMAL) {
+        status = core_machine_instance_memory_initialize(machine);
+        if (status != NTVDM64_STATUS_OK) {
+            core_machine_destroy(machine);
+            return status;
+        }
+        status = core_machine_bus_initialize(machine);
+        if (status != NTVDM64_STATUS_OK) {
+            core_machine_destroy(machine);
+            return status;
+        }
+    } else {
+        status = core_machine_enable_executor(machine);
+        if (status != NTVDM64_STATUS_OK) {
+            core_machine_destroy(machine);
+            return status;
+        }
     }
 
     *out_machine = machine;
@@ -265,8 +275,12 @@ ntvdm64_status core_machine_run(
         return NTVDM64_STATUS_OK;
     }
 
+    if (!machine->executor_enabled) {
+        return NTVDM64_STATUS_UNSUPPORTED;
+    }
+
     machine->lifecycle = CORE_MACHINE_RUNNING;
-    if (machine->executor_enabled) {
+    {
         uint64_t limit = budget.instructions == 0u ? 1u : budget.instructions;
 
         while (result->executed < limit) {
@@ -319,11 +333,6 @@ ntvdm64_status core_machine_run(
             (uint32_t)result->reason);
         return NTVDM64_STATUS_OK;
     }
-    machine->lifecycle = CORE_MACHINE_PAUSED;
-    result->reason = CORE_MACHINE_STOP_BUDGET;
-    core_machine_trace_record(machine, CORE_MACHINE_TRACE_RUN_BOUNDARY, 0u, 0u,
-                           (uint32_t)result->reason);
-    return NTVDM64_STATUS_OK;
 }
 
 ntvdm64_status core_machine_request_stop(core_machine *machine)
