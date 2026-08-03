@@ -14,7 +14,7 @@
 
 #include "vm/composition/providers.h"
 
-#include "core/product/runtime/execution_context.h"
+#include "vm/composition/session_execution_context.h"
 
 #include "core/machine/cpu.h"
 
@@ -52,7 +52,7 @@ static C_VOID device_execution_context_debug_refresh(C_VOID *device)
     vm_machine_debug_refresh(machine == STD_NULL ? STD_NULL : machine->debug);
 }
 
-static const core_product_execution_context_callbacks device_execution_callbacks = {
+static const vm_session_execution_context_callbacks device_execution_callbacks = {
     device_execution_context_reset,
     device_execution_context_debug_refresh
 };
@@ -63,11 +63,11 @@ C_VOID vm_session_control_start(vm_session_control_state *control) {
     if (control == STD_NULL) return;
     machine = (vm_session *)control->execution_context.device;
     if (machine == STD_NULL || machine->core_machine == STD_NULL) return;
-    core_product_execution_context_activate(&control->execution_context);
+    vm_session_execution_context_activate(&control->execution_context);
     STD_ATOMIC_STORE(&control->flagRun, NTVDM64_TYPE_TRUE);
     STD_ATOMIC_STORE(&control->flagFlip, !STD_ATOMIC_LOAD(&control->flagFlip));
     vm_session_runner_run(machine);
-    core_product_execution_context_deactivate(&control->execution_context);
+    vm_session_execution_context_deactivate(&control->execution_context);
 }
 
 /* Issues resetting signal to device thread */
@@ -76,7 +76,7 @@ C_VOID vm_session_control_reset(vm_session_control_state *control) {
     if (STD_ATOMIC_LOAD(&control->flagRun)) {
         STD_ATOMIC_STORE(&control->flagReset, NTVDM64_TYPE_TRUE);
     } else {
-        core_product_execution_context_reset(&control->execution_context);
+        vm_session_execution_context_reset(&control->execution_context);
         STD_ATOMIC_STORE(&control->flagReset, NTVDM64_TYPE_FALSE);
     }
 }
@@ -157,7 +157,7 @@ C_VOID vm_session_control_bind_command_boundary(
     vm_session_control_state *control,
     C_VOID (*callback)(C_VOID *opaque), C_VOID *opaque)
 {
-    core_product_execution_context_bind_command_boundary(
+    vm_session_execution_context_bind_command_boundary(
         control == STD_NULL ? STD_NULL : &control->execution_context, callback, opaque);
 }
 
@@ -174,13 +174,13 @@ C_VOID vm_session_control_initialize(vm_session_control_state *control,
     STD_ATOMIC_INIT(&control->paused, NTVDM64_TYPE_FALSE);
     STD_ATOMIC_INIT(&control->stepRequested, NTVDM64_TYPE_FALSE);
     STD_ATOMIC_INIT(&control->pauseReason, VM_SESSION_PAUSE_NONE);
-    core_product_execution_context_initialize(&control->execution_context);
-    core_product_execution_context_bind_machine_state(
+    vm_session_execution_context_initialize(&control->execution_context);
+    vm_session_execution_context_bind_machine_state(
         &control->execution_context, machine->cpu, machine->ram, machine->port,
         machine);
-    core_product_execution_context_bind_callbacks(
+    vm_session_execution_context_bind_callbacks(
         &control->execution_context, &device_execution_callbacks);
-    core_product_execution_context_activate(&control->execution_context);
+    vm_session_execution_context_activate(&control->execution_context);
     vm_machine_debug_initialize(machine->debug, machine->cpu, machine->cpuins);
     vm_session_providers_initialize(machine);
     if (!vm_session_bind_execution_provider(machine)) {
@@ -192,7 +192,7 @@ C_VOID vm_session_control_initialize(vm_session_control_state *control,
 C_VOID vm_session_control_finalize(vm_session_control_state *control,
     vm_session *machine) {
     if (control == STD_NULL || machine == STD_NULL) return;
-    core_product_execution_context_deactivate(&control->execution_context);
+    vm_session_execution_context_deactivate(&control->execution_context);
     vm_machine_debug_finalize(machine->debug);
     vm_session_providers_finalize(machine);
 }

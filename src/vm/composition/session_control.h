@@ -3,7 +3,7 @@
 
 
 #include "type.h"
-#include "core/product/runtime/execution_context.h"
+#include "vm/composition/session_execution_context.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -27,7 +27,7 @@ typedef struct vm_session_control_state {
     STD_ATOMIC_BOOL paused;
     STD_ATOMIC_BOOL stepRequested;
     STD_ATOMIC_INT pauseReason;
-    core_product_execution_context execution_context;
+    vm_session_execution_context execution_context;
 } vm_session_control_state;
 
 #include "vm/composition/session.h"

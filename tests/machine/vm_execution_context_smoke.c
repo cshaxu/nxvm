@@ -11,7 +11,7 @@
 
 #include "vm/profile/default_profile/firmware/bios.h"
 
-#include "core/product/runtime/execution_context.h"
+#include "vm/composition/session_execution_context.h"
 
 static DWORD WINAPI run_device(LPVOID parameter)
 {

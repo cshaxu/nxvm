@@ -191,6 +191,7 @@ set(NXVM_COMPOSITION_VM_SOURCES
     src/vm/composition/session_lifecycle.c
     src/vm/composition/session.c
     src/vm/composition/session_control.c
+    src/vm/composition/session_execution_context.c
     src/vm/composition/session_runner.c
     src/vm/composition/providers.c
 )
@@ -214,9 +215,6 @@ set(NXVM_MACHINE_CORE_SOURCES
     src/core/machine/pit.c
     src/core/machine/dma.c
     src/core/machine/kbc.c
-)
-set(NXVM_CORE_PRODUCT_RUNTIME_SOURCES
-    src/core/product/runtime/execution_context.c
 )
 add_library(ntvdm64-core-platform STATIC
     src/core/platform/host_surface_interface.c)
@@ -333,7 +331,6 @@ target_include_directories(nxvm-vm-profile PUBLIC
 )
 target_link_libraries(nxvm-vm-profile PUBLIC
     nxvm-product-core-utils
-    nxvm-runtime
 )
 
 add_library(nxvm-platform-vm STATIC ${NXVM_PLATFORM_VM_SOURCES})
@@ -387,7 +384,6 @@ target_link_libraries(nxvm-vm-composition PUBLIC
     nxvm-core-machine-firmware
     nxvm-vm-profile-default-firmware
     nxvm-platform-vm
-    nxvm-runtime
     user32
     gdi32)
 
@@ -497,12 +493,6 @@ target_link_libraries(nxvm-vm-debug-target-smoke PRIVATE
     nxvm-vm-composition
 )
 
-add_library(nxvm-runtime STATIC
-    ${NXVM_CORE_PRODUCT_RUNTIME_SOURCES}
-)
-target_include_directories(nxvm-runtime PUBLIC
-    "${CMAKE_SOURCE_DIR}/src"
-)
 add_executable(nxvm-vm-full-pc-session-smoke
     tests/products/nxvm_full_pc_session_smoke.c
 )
@@ -732,6 +722,7 @@ add_nxvm_version_artifact(nxvm-0-5-0131 "0.5.0131")
 add_nxvm_version_artifact(nxvm-0-5-0133 "0.5.0133")
 add_nxvm_version_artifact(nxvm-0-5-0135 "0.5.0135")
 add_nxvm_version_artifact(nxvm-0-5-0136 "0.5.0136")
+add_nxvm_version_artifact(nxvm-0-5-0137 "0.5.0137")
 
 option(NTVDM64_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
@@ -817,7 +808,6 @@ endif()
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(ntvdm64-core-platform PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(ntvdm64-core-platform-host-surface-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(nxvm-runtime PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-vm-full-pc-session-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-vm-core-executor-storage-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-core-executor-run-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
