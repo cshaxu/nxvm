@@ -18,9 +18,9 @@ M5 has preserved the bootable NXVM Console, debugger, boot sequence, and FDD
 fixture behavior while moving the whole-PC execution path into the documented
 `core/` and `vm/` ownership model.
 
-**Latest task:** M5 T148 S1 added deterministic `SESSION CLOSE [id]`,
-selection fallback, and manager-level final-session rejection. Its evidence is
-[`M5-T148.md`](../tracking/M5-T148.md).
+**Latest task:** M5 T149 S1 proved two manager-owned Window sessions can run
+concurrently while preserving the explicit process-exclusive Console lease.
+Its evidence is [`M5-T149.md`](../tracking/M5-T149.md).
 The authoritative core/product and composition ownership, UX, source shape,
 and T145--T150 breakdown are in
 [M5 Shared Product Session Management Design](m5-product-session-management.md).

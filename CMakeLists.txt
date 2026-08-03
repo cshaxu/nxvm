@@ -373,6 +373,11 @@ add_executable(nxvm-vm-platform-run-handle-smoke
 )
 target_link_libraries(nxvm-vm-platform-run-handle-smoke PRIVATE
     nxvm-vm-composition)
+add_executable(nxvm-vm-multi-window-session-smoke
+    tests/platform/vm_multi_window_session_smoke.c
+)
+target_link_libraries(nxvm-vm-multi-window-session-smoke PRIVATE
+    nxvm-vm-composition)
 
 add_executable(nxvm-vm-platform-presentation-mailbox-smoke
     tests/platform/vm_platform_presentation_mailbox_smoke.c
@@ -754,6 +759,7 @@ add_nxvm_version_artifact(nxvm-0-5-0145 "0.5.0145")
 add_nxvm_version_artifact(nxvm-0-5-0146 "0.5.0146")
 add_nxvm_version_artifact(nxvm-0-5-0147 "0.5.0147")
 add_nxvm_version_artifact(nxvm-0-5-0148 "0.5.0148")
+add_nxvm_version_artifact(nxvm-0-5-0149 "0.5.0149")
 
 option(NTVDM64_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
@@ -849,5 +855,6 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(nxvm-vm-cpu-probe-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-execution-context-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
+
 
 

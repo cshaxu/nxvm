@@ -21,7 +21,7 @@
     {
       "name": "nxvm-current-gcc",
       "configurePreset": "mingw-gcc-x64",
-      "targets": ["nxvm-0-5-0148"]
+      "targets": ["nxvm-0-5-0149"]
     },
     {
       "name": "nxvm-current-gates-gcc",
@@ -38,6 +38,7 @@
         "nxvm-vm-platform-surface-context-smoke",
         "nxvm-vm-platform-execution-smoke",
         "nxvm-vm-platform-run-handle-smoke",
+        "nxvm-vm-multi-window-session-smoke",
         "nxvm-vm-platform-input-smoke",
         "nxvm-vm-platform-presentation-mailbox-smoke",
         "nxvm-vm-platform-mode-context-smoke",
@@ -71,5 +72,6 @@
     }
   ]
 }
+
 
 
