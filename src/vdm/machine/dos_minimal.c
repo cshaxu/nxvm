@@ -113,15 +113,6 @@ ntvdm64_status vdm_machine_dos_minimal_create(
     }
     status = core_machine_create(&config, &session->machine);
     if (status == NTVDM64_STATUS_OK) {
-        status = core_machine_prepare_executor_cpu(session->machine);
-    }
-    if (status == NTVDM64_STATUS_OK) {
-        status = core_machine_prepare_executor_bus(session->machine);
-    }
-    if (status == NTVDM64_STATUS_OK) {
-        status = core_machine_prepare_executor_memory(session->machine);
-    }
-    if (status == NTVDM64_STATUS_OK) {
         status = vdm_machine_dos_minimal_install_ports(session);
     }
     if (status == NTVDM64_STATUS_OK) {

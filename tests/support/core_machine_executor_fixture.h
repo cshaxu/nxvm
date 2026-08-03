@@ -11,15 +11,6 @@ static ntvdm64_status test_core_machine_create_executor(
     ntvdm64_status status;
 
     status = core_machine_create(&config, out_machine);
-    if (status == NTVDM64_STATUS_OK) {
-        status = core_machine_prepare_executor_cpu(*out_machine);
-    }
-    if (status == NTVDM64_STATUS_OK) {
-        status = core_machine_prepare_executor_bus(*out_machine);
-    }
-    if (status == NTVDM64_STATUS_OK) {
-        status = core_machine_prepare_executor_memory(*out_machine);
-    }
     if (status != NTVDM64_STATUS_OK) {
         core_machine_destroy(*out_machine);
         *out_machine = STD_NULL;

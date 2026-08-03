@@ -50,10 +50,6 @@ ntvdm64_status core_machine_create(
     const core_machine_config *config,
     core_machine **out_machine);
 
-ntvdm64_status core_machine_prepare_executor_cpu(core_machine *machine);
-ntvdm64_status core_machine_prepare_executor_bus(core_machine *machine);
-ntvdm64_status core_machine_prepare_executor_memory(core_machine *machine);
-
 ntvdm64_status core_machine_reset(core_machine *machine);
 
 ntvdm64_status core_machine_get_lifecycle(
