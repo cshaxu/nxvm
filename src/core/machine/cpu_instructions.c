@@ -13300,6 +13300,11 @@ static C_VOID ExecInit(core_machine_cpu_execution_context *context) {
 #if VCPUINS_TRACE == 1
     if (context->trace != STD_NULL) ntvdm64_type_trace_initialize(context->trace);
 #endif
+    if (context->diagnostic_provider != STD_NULL &&
+        context->diagnostic_provider->record_instruction != STD_NULL) {
+        context->diagnostic_provider->record_instruction(context->diagnostic_context,
+            &cpu_state, &instruction_state);
+    }
 }
 static C_VOID ExecFinal(core_machine_cpu_execution_context *context) {
     if (instruction_state.data.flagInsLoop) {
@@ -13313,6 +13318,11 @@ static C_VOID ExecFinal(core_machine_cpu_execution_context *context) {
     if (context->trace != STD_NULL) ntvdm64_type_trace_finalize(context->trace);
 #endif
     if (instruction_state.data.except) {
+        if (context->diagnostic_provider != STD_NULL &&
+            context->diagnostic_provider->record_fault != STD_NULL) {
+            context->diagnostic_provider->record_fault(context->diagnostic_context,
+                &instruction_state.data.oldcpu, &instruction_state);
+        }
         cpu_state = instruction_state.data.oldcpu;
         if (NTVDM64_TYPE_GET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_GP)) {
             ExecInit(context);

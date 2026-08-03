@@ -8,13 +8,16 @@ and execution coverage. It must not claim complete 80386 correctness. Its
 semantics, exceptions, prefixes, addressing, flags, privilege behavior, or
 timing.
 
-An owner-local MS-DOS 6.22 observation is a blocking compatibility signal:
-after boot, invoking `MEM` currently reaches an invalid-opcode (`#UD`) path.
-The guest image is protected local media and is not committed, hashed in this
-repository, or used as release evidence. Before any fix, the reproducer record
-must capture the profile id, CPU capability set, CS:IP/linear PC, instruction
-bytes and prefixes, register/FLAGS state, interrupt/exception state, and a
-bounded trace window.
+An owner-local MS-DOS 6.22 observation is a blocking compatibility signal.
+T152 reproduces `MEM` through the normal FDD boot and keyboard route, then
+captures `#UD` at `096A:00CE` (linear `0000976E`) on `DB E3` (`FNINIT`). The
+retained executor maps x87 escape opcode `DB` to `UndefinedOpcode`; this is an
+absent x87 capability/model, not yet a claim about general i386 decode. The
+guest image is protected local media and is not committed, hashed in this
+repository, or used as release evidence. The project-owned capture records
+CS:IP/linear PC, instruction bytes, registers, FLAGS, exception state, and a
+fixed 32-entry in-memory execution window. T153 must design the profile and
+core-device semantics before any instruction behavior changes.
 
 ## CPU Capability Contract
 

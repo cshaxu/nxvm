@@ -48,12 +48,18 @@ typedef struct core_machine_trace_state {
     C_INT flushing;
 } core_machine_trace_state;
 
+typedef struct core_machine_cpu_diagnostic_state {
+    core_machine_cpu_diagnostic snapshot;
+    STD_SIZE_T next_index;
+} core_machine_cpu_diagnostic_state;
+
 struct core_machine {
     core_machine_lifecycle lifecycle;
     STD_ATOMIC_BOOL stop_requested;
     uint32_t fault_detail;
     core_machine_port_table port_providers;
     core_machine_trace_state trace;
+    core_machine_cpu_diagnostic_state cpu_diagnostic;
     t_cpu executor_cpu;
     t_cpuins executor_cpu_instructions;
     core_machine_cpu_execution_context executor_cpu_execution;
@@ -82,4 +88,6 @@ C_VOID core_machine_trace_record(
     uint32_t address,
     uint32_t value,
     uint32_t detail);
+C_VOID core_machine_cpu_diagnostic_initialize(core_machine *machine);
+C_VOID core_machine_cpu_diagnostic_reset(core_machine *machine);
 #endif
