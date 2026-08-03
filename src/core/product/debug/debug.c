@@ -15,8 +15,8 @@
 #define DEBUG_MAXNARG 256
 #define DEBUG_MAXNASMARG 4
 
-static _Thread_local core_product_debug_context *debugContext;
-static C_VOID core_product_debug_flush_console_input(C_VOID)
+
+static C_VOID core_product_debug_flush_console_input(core_product_debug_context *debugContext)
 {
     if (debugContext->input_provider != STD_NULL &&
         debugContext->input_provider->flush_console_input != STD_NULL) {
@@ -64,33 +64,33 @@ static C_VOID core_product_debug_flush_console_input(C_VOID)
 #define core_product_debug_print_memory() core_product_debug_print_memory(debugTarget)
 #define core_product_debug_print_watchpoints() core_product_debug_print_watchpoints(debugTarget)
 
-static uint32_t debug_register(core_product_debug_register reg) {
+static uint32_t debug_register(core_product_debug_context *debugContext, core_product_debug_register reg) {
     uint32_t value = 0;
     core_product_debug_read_register(reg, &value);
     return value;
 }
-static C_INT debug_set_register(core_product_debug_register reg, uint32_t value) {
+static C_INT debug_set_register(core_product_debug_context *debugContext, core_product_debug_register reg, uint32_t value) {
     return core_product_debug_write_register(reg, value);
 }
-static C_INT debug_flag(uint32_t mask) {
-    return (debug_register(CORE_PRODUCT_DEBUG_EFLAGS) & mask) != 0;
+static C_INT debug_flag(core_product_debug_context *debugContext, uint32_t mask) {
+    return (debug_register(debugContext, CORE_PRODUCT_DEBUG_EFLAGS) & mask) != 0;
 }
-static C_VOID debug_set_flag(uint32_t mask, C_INT set) {
-    uint32_t flags = debug_register(CORE_PRODUCT_DEBUG_EFLAGS);
-    debug_set_register(CORE_PRODUCT_DEBUG_EFLAGS, set ? flags | mask : flags & ~mask);
+static C_VOID debug_set_flag(core_product_debug_context *debugContext, uint32_t mask, C_INT set) {
+    uint32_t flags = debug_register(debugContext, CORE_PRODUCT_DEBUG_EFLAGS);
+    debug_set_register(debugContext, CORE_PRODUCT_DEBUG_EFLAGS, set ? flags | mask : flags & ~mask);
 }
 
-#define _eax debug_register(CORE_PRODUCT_DEBUG_EAX)
-#define _ecx debug_register(CORE_PRODUCT_DEBUG_ECX)
-#define _edx debug_register(CORE_PRODUCT_DEBUG_EDX)
-#define _ebx debug_register(CORE_PRODUCT_DEBUG_EBX)
-#define _esp debug_register(CORE_PRODUCT_DEBUG_ESP)
-#define _ebp debug_register(CORE_PRODUCT_DEBUG_EBP)
-#define _esi debug_register(CORE_PRODUCT_DEBUG_ESI)
-#define _edi debug_register(CORE_PRODUCT_DEBUG_EDI)
-#define _eflags debug_register(CORE_PRODUCT_DEBUG_EFLAGS)
-#define _eip debug_register(CORE_PRODUCT_DEBUG_EIP)
-#define _cr(i) debug_register((core_product_debug_register)(CORE_PRODUCT_DEBUG_CR0 + (i)))
+#define _eax debug_register(debugContext, CORE_PRODUCT_DEBUG_EAX)
+#define _ecx debug_register(debugContext, CORE_PRODUCT_DEBUG_ECX)
+#define _edx debug_register(debugContext, CORE_PRODUCT_DEBUG_EDX)
+#define _ebx debug_register(debugContext, CORE_PRODUCT_DEBUG_EBX)
+#define _esp debug_register(debugContext, CORE_PRODUCT_DEBUG_ESP)
+#define _ebp debug_register(debugContext, CORE_PRODUCT_DEBUG_EBP)
+#define _esi debug_register(debugContext, CORE_PRODUCT_DEBUG_ESI)
+#define _edi debug_register(debugContext, CORE_PRODUCT_DEBUG_EDI)
+#define _eflags debug_register(debugContext, CORE_PRODUCT_DEBUG_EFLAGS)
+#define _eip debug_register(debugContext, CORE_PRODUCT_DEBUG_EIP)
+#define _cr(i) debug_register(debugContext, (core_product_debug_register)(CORE_PRODUCT_DEBUG_CR0 + (i)))
 #define _ax ((uint16_t)_eax)
 #define _cx ((uint16_t)_ecx)
 #define _dx ((uint16_t)_edx)
@@ -100,17 +100,17 @@ static C_VOID debug_set_flag(uint32_t mask, C_INT set) {
 #define _si ((uint16_t)_esi)
 #define _di ((uint16_t)_edi)
 #define _ip ((uint16_t)_eip)
-#define _es ((uint16_t)debug_register(CORE_PRODUCT_DEBUG_ES))
-#define _cs ((uint16_t)debug_register(CORE_PRODUCT_DEBUG_CS))
-#define _ss ((uint16_t)debug_register(CORE_PRODUCT_DEBUG_SS))
-#define _ds ((uint16_t)debug_register(CORE_PRODUCT_DEBUG_DS))
-#define _fs ((uint16_t)debug_register(CORE_PRODUCT_DEBUG_FS))
-#define _gs ((uint16_t)debug_register(CORE_PRODUCT_DEBUG_GS))
+#define _es ((uint16_t)debug_register(debugContext, CORE_PRODUCT_DEBUG_ES))
+#define _cs ((uint16_t)debug_register(debugContext, CORE_PRODUCT_DEBUG_CS))
+#define _ss ((uint16_t)debug_register(debugContext, CORE_PRODUCT_DEBUG_SS))
+#define _ds ((uint16_t)debug_register(debugContext, CORE_PRODUCT_DEBUG_DS))
+#define _fs ((uint16_t)debug_register(debugContext, CORE_PRODUCT_DEBUG_FS))
+#define _gs ((uint16_t)debug_register(debugContext, CORE_PRODUCT_DEBUG_GS))
 
-static C_VOID seterr(STD_SIZE_T pos) {
+static C_VOID seterr(core_product_debug_context *debugContext, STD_SIZE_T pos) {
     nErrPos = (STD_SIZE_T)(arg[pos] - strCmdCopy + STD_STRLEN(arg[pos]) + 1);
 }
-static uint8_t scannubit8(C_CHAR *s) {
+static uint8_t scannubit8(core_product_debug_context *debugContext, C_CHAR *s) {
     uint8_t ans = 0;
     STD_SIZE_T i = 0;
     if (s[0] == '\'' && s[2] == '\'') {
@@ -119,7 +119,7 @@ static uint8_t scannubit8(C_CHAR *s) {
     ntvdm64_type_string_lower(s);
     while (s[i] != '\0' && s[i] != '\n') {
         if (i > 1) {
-            seterr(narg - 1);
+            seterr(debugContext, narg - 1);
             break;
         }
         ans <<= 4;
@@ -128,19 +128,19 @@ static uint8_t scannubit8(C_CHAR *s) {
         } else if (s[i] > 0x60 && s[i] < 0x67) {
             ans += s[i] - 0x57;
         } else {
-            seterr(narg - 1);
+            seterr(debugContext, narg - 1);
         }
         ++i;
     }
     return ans;
 }
-static uint16_t scannubit16(C_CHAR *s) {
+static uint16_t scannubit16(core_product_debug_context *debugContext, C_CHAR *s) {
     uint16_t ans = 0;
     STD_SIZE_T i = 0;
     ntvdm64_type_string_lower(s);
     while (s[i] != '\0' && s[i] != '\n') {
         if (i > 3) {
-            seterr(narg - 1);
+            seterr(debugContext, narg - 1);
             break;
         }
         ans <<= 4;
@@ -149,19 +149,19 @@ static uint16_t scannubit16(C_CHAR *s) {
         } else if (s[i] > 0x60 && s[i] < 0x67) {
             ans += s[i] - 0x57;
         } else {
-            seterr(narg - 1);
+            seterr(debugContext, narg - 1);
         }
         ++i;
     }
     return ans;
 }
-static uint32_t scannubit32(C_CHAR *s) {
+static uint32_t scannubit32(core_product_debug_context *debugContext, C_CHAR *s) {
     uint32_t ans = 0;
     STD_SIZE_T i = 0;
     ntvdm64_type_string_lower(s);
     while (s[i] != '\0' && s[i] != '\n') {
         if (i > 7) {
-            seterr(narg - 1);
+            seterr(debugContext, narg - 1);
             break;
         }
         ans <<= 4;
@@ -170,7 +170,7 @@ static uint32_t scannubit32(C_CHAR *s) {
         } else if (s[i] > 0x60 && s[i] < 0x67) {
             ans += s[i] - 0x57;
         } else {
-            seterr(narg - 1);
+            seterr(debugContext, narg - 1);
         }
         ++i;
     }
@@ -186,7 +186,7 @@ static uint32_t scannubit32(C_CHAR *s) {
 #define seg (debugContext->parsed_segment)
 #define ptr (debugContext->parsed_offset)
 
-static C_VOID addrparse(uint16_t defseg, const C_CHAR *addr) {
+static C_VOID addrparse(core_product_debug_context *debugContext, uint16_t defseg, const C_CHAR *addr) {
     C_CHAR *cseg, *cptr;
     C_CHAR ccopy[0x100];
     STD_STRCPY(ccopy, addr);
@@ -194,7 +194,7 @@ static C_VOID addrparse(uint16_t defseg, const C_CHAR *addr) {
     cptr = STD_STRTOK(STD_NULL,"");
     if (!cptr) {
         seg = defseg;
-        ptr = scannubit16(cseg);
+        ptr = scannubit16(debugContext, cseg);
     } else {
         if (!STD_STRCMP(cseg,"es")) {
             seg = _es;
@@ -205,22 +205,22 @@ static C_VOID addrparse(uint16_t defseg, const C_CHAR *addr) {
         } else if (!STD_STRCMP(cseg,"ds")) {
             seg = _ds;
         } else {
-            seg = scannubit16(cseg);
+            seg = scannubit16(debugContext, cseg);
         }
-        ptr = scannubit16(cptr);
+        ptr = scannubit16(debugContext, cptr);
     }
 }
 
 /* DEBUG CMD BEGIN */
 /* assemble */
-static C_VOID aconsole() {
+static C_VOID aconsole(core_product_debug_context *debugContext) {
     STD_SIZE_T i, len, errAsmPos;
     C_CHAR cmdAsmBuff[0x100];
     uint8_t acode[15];
     C_INT flagExitAsm = 0;
     while (!flagExitAsm) {
         STD_PRINTF("%04X:%04X ", asmSegRec, asmPtrRec);
-        core_product_debug_flush_console_input();
+        core_product_debug_flush_console_input(debugContext);
         STD_FGETS(cmdAsmBuff, 0x100, STD_STDIN);
         ntvdm64_type_string_lower(cmdAsmBuff);
         if (!STD_STRLEN(cmdAsmBuff)) {
@@ -249,36 +249,36 @@ static C_VOID aconsole() {
         }
     }
 }
-static C_VOID a() {
+static C_VOID a(core_product_debug_context *debugContext) {
     if (narg == 1) {
-        aconsole();
+        aconsole(debugContext);
     } else if (narg == 2) {
-        addrparse(_cs, arg[1]);
+        addrparse(debugContext, _cs, arg[1]);
         if (nErrPos) {
             return;
         }
         asmSegRec = seg;
         asmPtrRec = ptr;
-        aconsole();
+        aconsole(debugContext);
     } else {
-        seterr(2);
+        seterr(debugContext, 2);
     }
 }
 /* compare */
-static C_VOID c() {
+static C_VOID c(core_product_debug_context *debugContext) {
     STD_SIZE_T i;
     uint8_t val1, val2;
     uint16_t seg1, ptr1, seg2, ptr2, range;
     if (narg != 4) {
-        seterr(narg - 1);
+        seterr(debugContext, narg - 1);
     } else {
-        addrparse(_ds, arg[1]);
+        addrparse(debugContext, _ds, arg[1]);
         seg1 = seg;
         ptr1 = ptr;
-        addrparse(_ds,arg[3]);
+        addrparse(debugContext, _ds,arg[3]);
         seg2 = seg;
         ptr2 = ptr;
-        range = scannubit16(arg[2])-ptr1;
+        range = scannubit16(debugContext, arg[2])-ptr1;
         if (!nErrPos) {
             for (i = 0; i <= range; ++i) {
                 core_product_debug_read_real(seg1, (uint16_t)(ptr1 + i), (C_VOID *)(&val1), 1);
@@ -293,7 +293,7 @@ static C_VOID c() {
     }
 }
 /* dump */
-static C_VOID dprint(uint16_t segment, uint16_t start, uint16_t end) {
+static C_VOID dprint(core_product_debug_context *debugContext, uint16_t segment, uint16_t start, uint16_t end) {
     C_CHAR t, c[0x11];
     uint16_t iaddr;
     if (start > end) end = 0xffff;
@@ -337,40 +337,40 @@ static C_VOID dprint(uint16_t segment, uint16_t start, uint16_t end) {
     dumpSegRec = segment;
     dumpPtrRec = end + 1;
 }
-static C_VOID d() {
+static C_VOID d(core_product_debug_context *debugContext) {
     uint16_t ptr2;
     if (narg == 1) {
-        dprint(dumpSegRec, dumpPtrRec, dumpPtrRec + 0x7f);
+        dprint(debugContext, dumpSegRec, dumpPtrRec, dumpPtrRec + 0x7f);
     } else if (narg == 2) {
-        addrparse(_ds, arg[1]);
+        addrparse(debugContext, _ds, arg[1]);
         if (nErrPos) {
             return;
         }
-        dprint(seg, ptr, ptr + 0x7f);
+        dprint(debugContext, seg, ptr, ptr + 0x7f);
     } else if (narg == 3) {
-        addrparse(_ds, arg[1]);
-        ptr2 = scannubit16(arg[2]);
+        addrparse(debugContext, _ds, arg[1]);
+        ptr2 = scannubit16(debugContext, arg[2]);
         if (nErrPos) {
             return;
         }
         if (ptr > ptr2) {
-            seterr(2);
+            seterr(debugContext, 2);
         } else {
-            dprint(seg, ptr, ptr2);
+            dprint(debugContext, seg, ptr, ptr2);
         }
     } else {
-        seterr(3);
+        seterr(debugContext, 3);
     }
 }
 /* enter */
-static C_VOID e() {
+static C_VOID e(core_product_debug_context *debugContext) {
     STD_SIZE_T i;
     uint8_t val;
     C_CHAR s[0x100];
     if (narg == 1) {
-        seterr(0);
+        seterr(debugContext, 0);
     } else if (narg == 2) {
-        addrparse(_ds, arg[1]);
+        addrparse(debugContext, _ds, arg[1]);
         if (nErrPos) {
             return;
         }
@@ -380,17 +380,17 @@ static C_VOID e() {
         STD_PRINTF(".");
         STD_FGETS(s, 0x100, STD_STDIN);
         ntvdm64_type_string_lower(s); /* MARK */
-        val = scannubit8(s); /* MARK */
+        val = scannubit8(debugContext, s); /* MARK */
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
             core_product_debug_write_real(seg, ptr, (C_VOID *)(&val), 1);
         }
     } else if (narg > 2) {
-        addrparse(_ds, arg[1]);
+        addrparse(debugContext, _ds, arg[1]);
         if (nErrPos) {
             return;
         }
         for (i = 2; i < narg; ++i) {
-            val = scannubit8(arg[i]); /* MARK */
+            val = scannubit8(debugContext, arg[i]); /* MARK */
             if (!nErrPos) {
                 core_product_debug_write_real(seg, ptr, (C_VOID *)(&val), 1);
             } else {
@@ -401,23 +401,23 @@ static C_VOID e() {
     }
 }
 /* fill */
-static C_VOID f() {
+static C_VOID f(core_product_debug_context *debugContext) {
     uint8_t nbyte;
     uint8_t val;
     STD_SIZE_T i, j;
     uint16_t end;
     if (narg < 4) {
-        seterr(narg - 1);
+        seterr(debugContext, narg - 1);
     } else {
-        addrparse(_ds, arg[1]);
-        end = scannubit16(arg[2]);
+        addrparse(debugContext, _ds, arg[1]);
+        end = scannubit16(debugContext, arg[2]);
         if (end < ptr) {
-            seterr(2);
+            seterr(debugContext, 2);
         }
         if (!nErrPos) {
             nbyte = (uint8_t) narg - 3;
             for (i = ptr, j = 0; i <= end; ++i, ++j) {
-                val = scannubit8(arg[j % nbyte + 3]);
+                val = scannubit8(debugContext, arg[j % nbyte + 3]);
                 if (!nErrPos) {
                     core_product_debug_write_real(seg, (uint16_t) i, (C_VOID *)(&val), 1);
                 } else {
@@ -428,8 +428,8 @@ static C_VOID f() {
     }
 }
 /* go */
-static C_VOID rprintregs();
-static C_VOID g() {
+static C_VOID rprintregs(core_product_debug_context *debugContext);
+static C_VOID g(core_product_debug_context *debugContext) {
     if (core_product_debug_is_running()) {
         STD_PRINTF("NXVM is already running.\n");
         return;
@@ -439,21 +439,21 @@ static C_VOID g() {
         core_product_debug_clear_break(0);
         break;
     case 2:
-        addrparse(_cs, arg[1]);
+        addrparse(debugContext, _cs, arg[1]);
         core_product_debug_set_break_real(seg, ptr);
         break;
     case 3:
-        addrparse(_cs, arg[1]);
-        if (debug_set_register(CORE_PRODUCT_DEBUG_CS, seg)) {
+        addrparse(debugContext, _cs, arg[1]);
+        if (debug_set_register(debugContext, CORE_PRODUCT_DEBUG_CS, seg)) {
             STD_PRINTF("debug: fail to load cs from %04X\n", seg);
             return;
         }
-        debug_set_register(CORE_PRODUCT_DEBUG_EIP, ptr);
-        addrparse(_cs, arg[2]);
+        debug_set_register(debugContext, CORE_PRODUCT_DEBUG_EIP, ptr);
+        addrparse(debugContext, _cs, arg[2]);
         core_product_debug_set_break_real(seg, ptr);
         break;
     default:
-        seterr(narg - 1);
+        seterr(debugContext, narg - 1);
         break;
     }
     if (nErrPos) {
@@ -464,16 +464,16 @@ static C_VOID g() {
         core_product_utils_sleep(debugContext->wait_scope, 10);
     }
     core_product_debug_clear_break(0);
-    rprintregs();
+    rprintregs(debugContext);
 }
 /* hex */
-static C_VOID h() {
+static C_VOID h(core_product_debug_context *debugContext) {
     uint16_t val1, val2;
     if (narg != 3) {
-        seterr(narg - 1);
+        seterr(debugContext, narg - 1);
     } else {
-        val1 = scannubit16(arg[1]);
-        val2 = scannubit16(arg[2]);
+        val1 = scannubit16(debugContext, arg[1]);
+        val2 = scannubit16(debugContext, arg[2]);
         if (!nErrPos) {
             STD_PRINTF("%04X", (uint16_t)(val1 + val2));
             STD_PRINTF("  ");
@@ -483,12 +483,12 @@ static C_VOID h() {
     }
 }
 /* input */
-static C_VOID i() {
+static C_VOID i(core_product_debug_context *debugContext) {
     uint16_t in;
     if (narg != 2) {
-        seterr(narg - 1);
+        seterr(debugContext, narg - 1);
     } else {
-        in = scannubit16(arg[1]);
+        in = scannubit16(debugContext, arg[1]);
         if (nErrPos) {
             return;
         }
@@ -496,7 +496,7 @@ static C_VOID i() {
     }
 }
 /* load */
-static C_VOID l() {
+static C_VOID l(core_product_debug_context *debugContext) {
     uint8_t c;
     uint16_t i = 0;
     uint32_t len = 0;
@@ -509,10 +509,10 @@ static C_VOID l() {
             ptr = 0x100;
             break;
         case 2:
-            addrparse(_cs, arg[1]);
+            addrparse(debugContext, _cs, arg[1]);
             break;
         default:
-            seterr(narg - 1);
+            seterr(debugContext, narg - 1);
             break;
         }
         if (!nErrPos) {
@@ -522,27 +522,27 @@ static C_VOID l() {
                 i = len / 0x10000;
                 c = STD_FGETC(load);
             }
-            debug_set_register(CORE_PRODUCT_DEBUG_ECX, (uint16_t)(len & 0xffff));
-            if (len > 0xffff) debug_set_register(CORE_PRODUCT_DEBUG_EBX, (uint16_t)(len >> 16));
-            else debug_set_register(CORE_PRODUCT_DEBUG_EBX, 0x0000u);
+            debug_set_register(debugContext, CORE_PRODUCT_DEBUG_ECX, (uint16_t)(len & 0xffff));
+            if (len > 0xffff) debug_set_register(debugContext, CORE_PRODUCT_DEBUG_EBX, (uint16_t)(len >> 16));
+            else debug_set_register(debugContext, CORE_PRODUCT_DEBUG_EBX, 0x0000u);
         }
         STD_FCLOSE(load);
     }
 }
 /* move */
-static C_VOID m() {
+static C_VOID m(core_product_debug_context *debugContext) {
     STD_SIZE_T i;
     uint8_t val;
     uint16_t seg1, ptr1, range, seg2, ptr2;
-    if (narg != 4) seterr(narg - 1);
+    if (narg != 4) seterr(debugContext, narg - 1);
     else {
-        addrparse(_ds, arg[1]);
+        addrparse(debugContext, _ds, arg[1]);
         seg1 = seg;
         ptr1 = ptr;
-        addrparse(_ds, arg[3]);
+        addrparse(debugContext, _ds, arg[3]);
         seg2 = seg;
         ptr2 = ptr;
-        range = scannubit16(arg[2]) - ptr1;
+        range = scannubit16(debugContext, arg[2]) - ptr1;
         if (!nErrPos) {
             if (((seg1 << 4) + ptr1) < ((seg2 << 4) + ptr2)) {
                 for (i = 0; i <= range; ++i) {
@@ -559,29 +559,29 @@ static C_VOID m() {
     }
 }
 /* name */
-static C_VOID n() {
-    if (narg != 2) seterr(narg - 1);
+static C_VOID n(core_product_debug_context *debugContext) {
+    if (narg != 2) seterr(debugContext, narg - 1);
     else STD_STRCPY(strFileName,arg[1]);
 }
 /* output */
-static C_VOID o() {
+static C_VOID o(core_product_debug_context *debugContext) {
     uint16_t out;
     uint32_t value;
-    if (narg != 3) seterr(narg - 1);
+    if (narg != 3) seterr(debugContext, narg - 1);
     else {
-        out = scannubit16(arg[1]);
+        out = scannubit16(debugContext, arg[1]);
         if (nErrPos) return;
-        value = scannubit32(arg[2]);
+        value = scannubit32(debugContext, arg[2]);
         if (nErrPos) return;
         core_product_debug_write_port(out, value);
     }
 }
 /* quit */
-static C_VOID q() {
+static C_VOID q(core_product_debug_context *debugContext) {
     flagExit = 1;
 }
 /* register */
-static uint8_t uprintins(uint16_t segment, uint16_t off) {
+static uint8_t uprintins(core_product_debug_context *debugContext, uint16_t segment, uint16_t off) {
     STD_SIZE_T i;
     uint8_t len;
     uint8_t ucode[15];
@@ -604,17 +604,17 @@ static uint8_t uprintins(uint16_t segment, uint16_t off) {
     STD_PRINTF("%s\n", str);
     return len;
 }
-static C_VOID rprintflags() {
-    STD_PRINTF("%s ", debug_flag(0x0800u) ? "OV" : "NV");
-    STD_PRINTF("%s ", debug_flag(0x0400u) ? "DN" : "UP");
-    STD_PRINTF("%s ", debug_flag(0x0200u) ? "EI" : "DI");
-    STD_PRINTF("%s ", debug_flag(0x0080u) ? "NG" : "PL");
-    STD_PRINTF("%s ", debug_flag(0x0040u) ? "ZR" : "NZ");
-    STD_PRINTF("%s ", debug_flag(0x0010u) ? "AC" : "NA");
-    STD_PRINTF("%s ", debug_flag(0x0004u) ? "PE" : "PO");
-    STD_PRINTF("%s ", debug_flag(0x0001u) ? "CY" : "NC");
+static C_VOID rprintflags(core_product_debug_context *debugContext) {
+    STD_PRINTF("%s ", debug_flag(debugContext, 0x0800u) ? "OV" : "NV");
+    STD_PRINTF("%s ", debug_flag(debugContext, 0x0400u) ? "DN" : "UP");
+    STD_PRINTF("%s ", debug_flag(debugContext, 0x0200u) ? "EI" : "DI");
+    STD_PRINTF("%s ", debug_flag(debugContext, 0x0080u) ? "NG" : "PL");
+    STD_PRINTF("%s ", debug_flag(debugContext, 0x0040u) ? "ZR" : "NZ");
+    STD_PRINTF("%s ", debug_flag(debugContext, 0x0010u) ? "AC" : "NA");
+    STD_PRINTF("%s ", debug_flag(debugContext, 0x0004u) ? "PE" : "PO");
+    STD_PRINTF("%s ", debug_flag(debugContext, 0x0001u) ? "CY" : "NC");
 }
-static C_VOID rprintregs() {
+static C_VOID rprintregs(core_product_debug_context *debugContext) {
     STD_PRINTF(  "AX=%04X", _ax);
     STD_PRINTF("  BX=%04X", _bx);
     STD_PRINTF("  CX=%04X", _cx);
@@ -629,13 +629,13 @@ static C_VOID rprintregs() {
     STD_PRINTF("  CS=%04X", _cs);
     STD_PRINTF("  IP=%04X", _ip);
     STD_PRINTF("   ");
-    rprintflags();
+    rprintflags(debugContext);
     STD_PRINTF("\n");
-    uprintins(_cs, _ip);
+    uprintins(debugContext, _cs, _ip);
     uasmSegRec = _cs;
     uasmPtrRec = _ip;
 }
-static C_VOID rscanregs() {
+static C_VOID rscanregs(core_product_debug_context *debugContext) {
     uint16_t value;
     C_CHAR s[0x100];
     if (!STD_STRCMP(arg[1], "ax")) {
@@ -643,81 +643,81 @@ static C_VOID rscanregs() {
         STD_PRINTF("%04X", _ax);
         STD_PRINTF("\n:");
         STD_FGETS(s, 0x100, STD_STDIN);
-        value = scannubit16(s);
+        value = scannubit16(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            debug_set_register(CORE_PRODUCT_DEBUG_EAX, (uint16_t)value);
+            debug_set_register(debugContext, CORE_PRODUCT_DEBUG_EAX, (uint16_t)value);
         }
     } else if (!STD_STRCMP(arg[1], "bx")) {
         STD_PRINTF("BX ");
         STD_PRINTF("%04X", _bx);
         STD_PRINTF("\n:");
         STD_FGETS(s, 0x100, STD_STDIN);
-        value = scannubit16(s);
+        value = scannubit16(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            debug_set_register(CORE_PRODUCT_DEBUG_EBX, (uint16_t)value);
+            debug_set_register(debugContext, CORE_PRODUCT_DEBUG_EBX, (uint16_t)value);
         }
     } else if (!STD_STRCMP(arg[1], "cx")) {
         STD_PRINTF("CX ");
         STD_PRINTF("%04X", _cx);
         STD_PRINTF("\n:");
         STD_FGETS(s, 0x100, STD_STDIN);
-        value = scannubit16(s);
+        value = scannubit16(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            debug_set_register(CORE_PRODUCT_DEBUG_ECX, (uint16_t)value);
+            debug_set_register(debugContext, CORE_PRODUCT_DEBUG_ECX, (uint16_t)value);
         }
     } else if (!STD_STRCMP(arg[1], "dx")) {
         STD_PRINTF("DX ");
         STD_PRINTF("%04X",_dx);
         STD_PRINTF("\n:");
         STD_FGETS(s, 0x100, STD_STDIN);
-        value = scannubit16(s);
+        value = scannubit16(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            debug_set_register(CORE_PRODUCT_DEBUG_EDX, (uint16_t)value);
+            debug_set_register(debugContext, CORE_PRODUCT_DEBUG_EDX, (uint16_t)value);
         }
     } else if (!STD_STRCMP(arg[1], "bp")) {
         STD_PRINTF("BP ");
         STD_PRINTF("%04X",_bp);
         STD_PRINTF("\n:");
         STD_FGETS(s, 0x100, STD_STDIN);
-        value = scannubit16(s);
+        value = scannubit16(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            debug_set_register(CORE_PRODUCT_DEBUG_EBP, (uint16_t)value);
+            debug_set_register(debugContext, CORE_PRODUCT_DEBUG_EBP, (uint16_t)value);
         }
     } else if (!STD_STRCMP(arg[1], "sp")) {
         STD_PRINTF("SP ");
         STD_PRINTF("%04X",_sp);
         STD_PRINTF("\n:");
         STD_FGETS(s, 0x100, STD_STDIN);
-        value = scannubit16(s);
+        value = scannubit16(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            debug_set_register(CORE_PRODUCT_DEBUG_ESP, (uint16_t)value);
+            debug_set_register(debugContext, CORE_PRODUCT_DEBUG_ESP, (uint16_t)value);
         }
     } else if (!STD_STRCMP(arg[1], "si")) {
         STD_PRINTF("SI ");
         STD_PRINTF("%04X",_si);
         STD_PRINTF("\n:");
         STD_FGETS(s, 0x100, STD_STDIN);
-        value = scannubit16(s);
+        value = scannubit16(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            debug_set_register(CORE_PRODUCT_DEBUG_ESI, (uint16_t)value);
+            debug_set_register(debugContext, CORE_PRODUCT_DEBUG_ESI, (uint16_t)value);
         }
     } else if (!STD_STRCMP(arg[1], "di")) {
         STD_PRINTF("DI ");
         STD_PRINTF("%04X",_di);
         STD_PRINTF("\n:");
         STD_FGETS(s, 0x100, STD_STDIN);
-        value = scannubit16(s);
+        value = scannubit16(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            debug_set_register(CORE_PRODUCT_DEBUG_EDI, (uint16_t)value);
+            debug_set_register(debugContext, CORE_PRODUCT_DEBUG_EDI, (uint16_t)value);
         }
     } else if (!STD_STRCMP(arg[1], "ss")) {
         STD_PRINTF("SS ");
         STD_PRINTF("%04X", _ss);
         STD_PRINTF("\n:");
         STD_FGETS(s, 0x100, STD_STDIN);
-        value = scannubit16(s);
+        value = scannubit16(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            if (debug_set_register(CORE_PRODUCT_DEBUG_SS, (uint16_t) value)) {
+            if (debug_set_register(debugContext, CORE_PRODUCT_DEBUG_SS, (uint16_t) value)) {
                 STD_PRINTF("debug: fail to load ss from %04X\n", (uint16_t) value);
             }
         }
@@ -726,9 +726,9 @@ static C_VOID rscanregs() {
         STD_PRINTF("%04X", _cs);
         STD_PRINTF("\n:");
         STD_FGETS(s, 0x100, STD_STDIN);
-        value = scannubit16(s);
+        value = scannubit16(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            if (debug_set_register(CORE_PRODUCT_DEBUG_CS, (uint16_t) value)) {
+            if (debug_set_register(debugContext, CORE_PRODUCT_DEBUG_CS, (uint16_t) value)) {
                 STD_PRINTF("debug: fail to load cs from %04X\n", (uint16_t) value);
             }
         }
@@ -737,9 +737,9 @@ static C_VOID rscanregs() {
         STD_PRINTF("%04X", _ds);
         STD_PRINTF("\n:");
         STD_FGETS(s, 0x100, STD_STDIN);
-        value = scannubit16(s);
+        value = scannubit16(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            if (debug_set_register(CORE_PRODUCT_DEBUG_DS, (uint16_t) value)) {
+            if (debug_set_register(debugContext, CORE_PRODUCT_DEBUG_DS, (uint16_t) value)) {
                 STD_PRINTF("debug: fail to load ds from %04X\n", (uint16_t) value);
             }
         }
@@ -748,9 +748,9 @@ static C_VOID rscanregs() {
         STD_PRINTF("%04X", _es);
         STD_PRINTF("\n:");
         STD_FGETS(s, 0x100, STD_STDIN);
-        value = scannubit16(s);
+        value = scannubit16(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            if (debug_set_register(CORE_PRODUCT_DEBUG_ES, (uint16_t) value)) {
+            if (debug_set_register(debugContext, CORE_PRODUCT_DEBUG_ES, (uint16_t) value)) {
                 STD_PRINTF("debug: fail to load es from %04X\n", (uint16_t) value);
             }
         }
@@ -759,47 +759,47 @@ static C_VOID rscanregs() {
         STD_PRINTF("%04X",_ip);
         STD_PRINTF("\n:");
         STD_FGETS(s, 0x100, STD_STDIN);
-        value = scannubit16(s);
+        value = scannubit16(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            debug_set_register(CORE_PRODUCT_DEBUG_EIP, value);
+            debug_set_register(debugContext, CORE_PRODUCT_DEBUG_EIP, value);
         }
     } else if (!STD_STRCMP(arg[1], "f")) {
-        rprintflags();
+        rprintflags(debugContext);
         STD_PRINTF(" -");
         STD_FGETS(s, 0x100, STD_STDIN);
         ntvdm64_type_string_lower(s);
         if (!STD_STRCMP(s,"ov")) {
-            debug_set_flag(0x0800u, 1);
+            debug_set_flag(debugContext, 0x0800u, 1);
         } else if (!STD_STRCMP(s,"nv")) {
-            debug_set_flag(0x0800u, 0);
+            debug_set_flag(debugContext, 0x0800u, 0);
         } else if (!STD_STRCMP(s,"dn")) {
-            debug_set_flag(0x0400u, 1);
+            debug_set_flag(debugContext, 0x0400u, 1);
         } else if (!STD_STRCMP(s,"up")) {
-            debug_set_flag(0x0400u, 0);
+            debug_set_flag(debugContext, 0x0400u, 0);
         } else if (!STD_STRCMP(s,"ei")) {
-            debug_set_flag(0x0200u, 1);
+            debug_set_flag(debugContext, 0x0200u, 1);
         } else if (!STD_STRCMP(s,"di")) {
-            debug_set_flag(0x0200u, 0);
+            debug_set_flag(debugContext, 0x0200u, 0);
         } else if (!STD_STRCMP(s,"ng")) {
-            debug_set_flag(0x0080u, 1);
+            debug_set_flag(debugContext, 0x0080u, 1);
         } else if (!STD_STRCMP(s,"pl")) {
-            debug_set_flag(0x0080u, 0);
+            debug_set_flag(debugContext, 0x0080u, 0);
         } else if (!STD_STRCMP(s,"zr")) {
-            debug_set_flag(0x0040u, 1);
+            debug_set_flag(debugContext, 0x0040u, 1);
         } else if (!STD_STRCMP(s,"nz")) {
-            debug_set_flag(0x0040u, 0);
+            debug_set_flag(debugContext, 0x0040u, 0);
         } else if (!STD_STRCMP(s,"ac")) {
-            debug_set_flag(0x0010u, 1);
+            debug_set_flag(debugContext, 0x0010u, 1);
         } else if (!STD_STRCMP(s,"na")) {
-            debug_set_flag(0x0010u, 0);
+            debug_set_flag(debugContext, 0x0010u, 0);
         } else if (!STD_STRCMP(s,"pe")) {
-            debug_set_flag(0x0004u, 1);
+            debug_set_flag(debugContext, 0x0004u, 1);
         } else if (!STD_STRCMP(s,"po")) {
-            debug_set_flag(0x0004u, 0);
+            debug_set_flag(debugContext, 0x0004u, 0);
         } else if (!STD_STRCMP(s,"cy")) {
-            debug_set_flag(0x0001u, 1);
+            debug_set_flag(debugContext, 0x0001u, 1);
         } else if (!STD_STRCMP(s,"nc")) {
-            debug_set_flag(0x0001u, 0);
+            debug_set_flag(debugContext, 0x0001u, 0);
         } else {
             STD_PRINTF("bf Error\n");
         }
@@ -807,28 +807,28 @@ static C_VOID rscanregs() {
         STD_PRINTF("br Error\n");
     }
 }
-static C_VOID r() {
+static C_VOID r(core_product_debug_context *debugContext) {
     if (narg == 1) {
-        rprintregs();
+        rprintregs(debugContext);
     } else if (narg == 2) {
-        rscanregs();
-    } else seterr(2);
+        rscanregs(debugContext);
+    } else seterr(debugContext, 2);
 }
 /* search */
-static C_VOID s() {
+static C_VOID s(core_product_debug_context *debugContext) {
     STD_SIZE_T i;
     C_INT flagFound = 0;
     uint16_t p, pfront, start, end;
     uint8_t cstart, val;
     if (narg < 4) {
-        seterr(narg - 1);
+        seterr(debugContext, narg - 1);
     } else {
-        addrparse(_ds, arg[1]);
+        addrparse(debugContext, _ds, arg[1]);
         start = ptr;
-        end = scannubit16(arg[2]);
+        end = scannubit16(debugContext, arg[2]);
         if (!nErrPos) {
             p = start;
-            cstart = scannubit8(arg[3]);
+            cstart = scannubit8(debugContext, arg[3]);
             while (p <= end) {
                 core_product_debug_read_real(seg, p, (C_VOID *)(&val), 1);
                 if (val == cstart) {
@@ -836,7 +836,7 @@ static C_VOID s() {
                     flagFound = 1;
                     for (i = 3; i < narg; ++i) {
                         core_product_debug_read_real(seg, p, (C_VOID *)(&val), 1);
-                        if (val != scannubit8(arg[i])) {
+                        if (val != scannubit8(debugContext, arg[i])) {
                             flagFound = 0;
                             p = pfront + 1;
                             break;
@@ -854,7 +854,7 @@ static C_VOID s() {
     }
 }
 /* trace */
-static C_VOID t() {
+static C_VOID t(core_product_debug_context *debugContext) {
     STD_SIZE_T i;
     uint16_t count;
     if (core_product_debug_is_running()) {
@@ -866,19 +866,19 @@ static C_VOID t() {
         count = 1;
         break;
     case 2:
-        count = scannubit16(arg[1]);
+        count = scannubit16(debugContext, arg[1]);
         break;
     case 3:
-        addrparse(_cs, arg[1]);
-        if (debug_set_register(CORE_PRODUCT_DEBUG_CS, seg)) {
+        addrparse(debugContext, _cs, arg[1]);
+        if (debug_set_register(debugContext, CORE_PRODUCT_DEBUG_CS, seg)) {
             STD_PRINTF("debug: fail to load cs from %04X\n", seg);
             return;
         }
-        debug_set_register(CORE_PRODUCT_DEBUG_EIP, ptr);
-        count = scannubit16(arg[2]);
+        debug_set_register(debugContext, CORE_PRODUCT_DEBUG_EIP, ptr);
+        count = scannubit16(debugContext, arg[2]);
         break;
     default:
-        seterr(narg - 1);
+        seterr(debugContext, narg - 1);
         break;
     }
     if (nErrPos) {
@@ -891,7 +891,7 @@ static C_VOID t() {
             while (core_product_debug_is_running()) {
                 core_product_utils_sleep(debugContext->wait_scope, 10);
             }
-            rprintregs();
+            rprintregs(debugContext);
             if (i != count - 1) {
                 STD_PRINTF("\n");
             }
@@ -902,12 +902,12 @@ static C_VOID t() {
         while (core_product_debug_is_running()) {
             core_product_utils_sleep(debugContext->wait_scope, 10);
         }
-        rprintregs();
+        rprintregs(debugContext);
     }
     core_product_debug_clear_trace();
 }
 /* unassemble */
-static C_VOID uprint(uint16_t segment, uint16_t start, uint16_t end) {
+static C_VOID uprint(core_product_debug_context *debugContext, uint16_t segment, uint16_t start, uint16_t end) {
     uint8_t len;
     uint32_t boundary;
     if (start > end) {
@@ -917,7 +917,7 @@ static C_VOID uprint(uint16_t segment, uint16_t start, uint16_t end) {
         end = (0xfffff - (segment << 4));
     }
     while (start <= end) {
-        len = uprintins(segment, start);
+        len = uprintins(debugContext, segment, start);
         start += len;
         boundary = (uint32_t) start + (uint32_t) len;
         if (boundary > 0xffff) {
@@ -928,33 +928,33 @@ static C_VOID uprint(uint16_t segment, uint16_t start, uint16_t end) {
     uasmPtrRec = start;
     return;
 }
-static C_VOID u() {
+static C_VOID u(core_product_debug_context *debugContext) {
     uint16_t ptr2;
     if (narg == 1) {
-        uprint(uasmSegRec, uasmPtrRec, uasmPtrRec + 0x1f);
+        uprint(debugContext, uasmSegRec, uasmPtrRec, uasmPtrRec + 0x1f);
     } else if (narg == 2) {
-        addrparse(_cs, arg[1]);
+        addrparse(debugContext, _cs, arg[1]);
         if (nErrPos) {
             return;
         }
-        uprint(seg, ptr,  ptr + 0x1f);
+        uprint(debugContext, seg, ptr,  ptr + 0x1f);
     } else if (narg == 3) {
-        addrparse(_ds, arg[1]);
-        ptr2 = scannubit16(arg[2]);
+        addrparse(debugContext, _ds, arg[1]);
+        ptr2 = scannubit16(debugContext, arg[2]);
         if (nErrPos) {
             return;
         }
         if (ptr > ptr2) {
-            seterr(2);
+            seterr(debugContext, 2);
         } else {
-            uprint(seg, ptr, ptr2);
+            uprint(debugContext, seg, ptr, ptr2);
         }
     } else {
-        seterr(3);
+        seterr(debugContext, 3);
     }
 }
 /* verbal */
-static C_VOID v() {
+static C_VOID v(core_product_debug_context *debugContext) {
     STD_SIZE_T i;
     C_CHAR str[0x100];
     STD_PRINTF(":");
@@ -975,7 +975,7 @@ static C_VOID v() {
     }
 }
 /* write */
-static C_VOID w() {
+static C_VOID w(core_product_debug_context *debugContext) {
     STD_SIZE_T i = 0;
     uint8_t val;
     uint32_t len = (_bx << 16) + _cx;
@@ -999,10 +999,10 @@ static C_VOID w() {
             ptr = 0x100;
             break;
         case 2:
-            addrparse(_cs, arg[1]);
+            addrparse(debugContext, _cs, arg[1]);
             break;
         default:
-            seterr(narg - 1);
+            seterr(debugContext, narg - 1);
             break;
         }
         if (!nErrPos) {
@@ -1021,7 +1021,7 @@ uint32_t xalin;
 uint32_t xdlin;
 uint32_t xulin;
 /* print */
-static uint8_t xuprintins(uint32_t linear) {
+static uint8_t xuprintins(core_product_debug_context *debugContext, uint32_t linear) {
     STD_SIZE_T i;
     uint8_t len;
     uint8_t ucode[15];
@@ -1044,13 +1044,13 @@ static uint8_t xuprintins(uint32_t linear) {
     STD_PRINTF("%s\n", str);
     return len;
 }
-static C_VOID xrprintreg() {
+static C_VOID xrprintreg(core_product_debug_context *debugContext) {
     core_product_debug_print_registers();
     xulin = core_product_debug_get_code_base() + _eip;
-    xuprintins(xulin);
+    xuprintins(debugContext, xulin);
 }
 /* assemble */
-static C_VOID xaconsole(uint32_t linear) {
+static C_VOID xaconsole(core_product_debug_context *debugContext, uint32_t linear) {
     STD_SIZE_T i, len, errAsmPos;
     C_CHAR astmt[0x100];
     uint8_t acode[15];
@@ -1058,7 +1058,7 @@ static C_VOID xaconsole(uint32_t linear) {
     while (!flagExitAsm) {
         STD_PRINTF("L%08X ", linear);
         STD_FGETS(astmt, 0x100, STD_STDIN);
-        core_product_debug_flush_console_input();
+        core_product_debug_flush_console_input(debugContext);
         astmt[STD_STRLEN(astmt) - 1] = 0;
         if (!STD_STRLEN(astmt)) {
             flagExitAsm = 1;
@@ -1084,36 +1084,36 @@ static C_VOID xaconsole(uint32_t linear) {
     }
     xalin = linear;
 }
-static C_VOID xa() {
+static C_VOID xa(core_product_debug_context *debugContext) {
     if (narg == 1) {
-        xaconsole(xalin);
+        xaconsole(debugContext, xalin);
     } else if (narg == 2) {
-        xalin = scannubit32(arg[1]);
+        xalin = scannubit32(debugContext, arg[1]);
         if (nErrPos) {
             return;
         }
-        xaconsole(xalin);
+        xaconsole(debugContext, xalin);
     } else {
-        seterr(2);
+        seterr(debugContext, 2);
     }
 }
 /* compare */
-static C_VOID xc() {
+static C_VOID xc(core_product_debug_context *debugContext) {
     STD_SIZE_T i, count;
     uint32_t lin1, lin2;
     uint8_t val1, val2;
     if (narg != 4) {
-        seterr(narg - 1);
+        seterr(debugContext, narg - 1);
     } else {
-        lin1 = scannubit32(arg[1]);
+        lin1 = scannubit32(debugContext, arg[1]);
         if (nErrPos) {
             return;
         }
-        lin2 = scannubit32(arg[2]);
+        lin2 = scannubit32(debugContext, arg[2]);
         if (nErrPos) {
             return;
         }
-        count = scannubit32(arg[3]);
+        count = scannubit32(debugContext, arg[3]);
         if (nErrPos) {
             return;
         }
@@ -1136,7 +1136,7 @@ static C_VOID xc() {
     }
 }
 /* dump */
-static C_VOID xdprint(uint32_t linear,uint32_t count) {
+static C_VOID xdprint(core_product_debug_context *debugContext, uint32_t linear,uint32_t count) {
     C_CHAR t, c[0x11];
     uint32_t ilinear;
     uint32_t start = linear;
@@ -1176,37 +1176,37 @@ static C_VOID xdprint(uint32_t linear,uint32_t count) {
     }
     xdlin = ilinear;
 }
-static C_VOID xd() {
+static C_VOID xd(core_product_debug_context *debugContext) {
     uint32_t count;
     if (narg == 1) {
-        xdprint(xdlin, 0x80);
+        xdprint(debugContext, xdlin, 0x80);
     } else if (narg == 2) {
-        xdlin = scannubit32(arg[1]);
+        xdlin = scannubit32(debugContext, arg[1]);
         if (nErrPos) {
             return;
         }
-        xdprint(xdlin, 0x80);
+        xdprint(debugContext, xdlin, 0x80);
     } else if (narg == 3) {
-        xdlin = scannubit32(arg[1]);
-        count = scannubit32(arg[2]);
+        xdlin = scannubit32(debugContext, arg[1]);
+        count = scannubit32(debugContext, arg[2]);
         if (nErrPos) {
             return;
         }
-        xdprint(xdlin, count);
+        xdprint(debugContext, xdlin, count);
     } else {
-        seterr(3);
+        seterr(debugContext, 3);
     }
 }
 /* enter */
-static C_VOID xe() {
+static C_VOID xe(core_product_debug_context *debugContext) {
     STD_SIZE_T i;
     uint8_t val;
     uint32_t linear;
     C_CHAR s[0x100];
     if (narg == 1) {
-        seterr(0);
+        seterr(debugContext, 0);
     } else if (narg == 2) {
-        linear = scannubit32(arg[1]);
+        linear = scannubit32(debugContext, arg[1]);
         if (nErrPos) {
             return;
         }
@@ -1217,7 +1217,7 @@ static C_VOID xe() {
         STD_PRINTF("L%08X  %02X.", linear, val);
         STD_FGETS(s, 0x100, STD_STDIN);
         ntvdm64_type_string_lower(s);
-        val = scannubit8(s);
+        val = scannubit8(debugContext, s);
         if (nErrPos) {
             return;
         }
@@ -1227,12 +1227,12 @@ static C_VOID xe() {
             }
         }
     } else if (narg > 2) {
-        linear = scannubit32(arg[1]);
+        linear = scannubit32(debugContext, arg[1]);
         if (nErrPos) {
             return;
         }
         for (i = 2; i < narg; ++i) {
-            val = scannubit8(arg[i]);
+            val = scannubit8(debugContext, arg[i]);
             if (!nErrPos) {
                 if (core_product_debug_write_linear(linear, (C_VOID *)(&val), 1)) {
                     STD_PRINTF("debug: fail to write to L%08X.\n", linear);
@@ -1246,24 +1246,24 @@ static C_VOID xe() {
     }
 }
 /* fill */
-static C_VOID xf() {
+static C_VOID xf(core_product_debug_context *debugContext) {
     uint8_t val;
     STD_SIZE_T i, j, count, bcount;
     uint32_t linear;
     if (narg < 4) {
-        seterr(narg - 1);
+        seterr(debugContext, narg - 1);
     } else {
-        linear = scannubit32(arg[1]);
+        linear = scannubit32(debugContext, arg[1]);
         if (nErrPos) {
             return;
         }
-        count = scannubit32(arg[2]);
+        count = scannubit32(debugContext, arg[2]);
         if (nErrPos) {
             return;
         }
         bcount = narg - 3;
         for (i = 0, j = 0; i < count; ++i, ++j) {
-            val = scannubit8(arg[j % bcount + 3]);
+            val = scannubit8(debugContext, arg[j % bcount + 3]);
             if (nErrPos) {
                 return;
             }
@@ -1275,7 +1275,7 @@ static C_VOID xf() {
     }
 }
 /* go */
-static C_VOID xg() {
+static C_VOID xg(core_product_debug_context *debugContext) {
     STD_SIZE_T i, count = 0;
     uint32_t linear;
     if (core_product_debug_is_running()) {
@@ -1285,18 +1285,18 @@ static C_VOID xg() {
     switch (narg) {
     case 1:
         count = 0;
-        g();
+        g(debugContext);
         break;
     case 2:
-        linear = scannubit32(arg[1]);
+        linear = scannubit32(debugContext, arg[1]);
         count = 1;
         break;
     case 3:
-        linear = scannubit32(arg[1]);
-        count = scannubit32(arg[2]);
+        linear = scannubit32(debugContext, arg[1]);
+        count = scannubit32(debugContext, arg[2]);
         break;
     default:
-        seterr(narg - 1);
+        seterr(debugContext, narg - 1);
         break;
     }
     if (nErrPos) {
@@ -1310,27 +1310,27 @@ static C_VOID xg() {
         }
         STD_PRINTF("%d instructions executed before the break point.\n",
                core_product_debug_get_break_count());
-        xrprintreg();
+        xrprintreg(debugContext);
     }
     core_product_debug_clear_break(1);
 }
 /* move */
-static C_VOID xm() {
+static C_VOID xm(core_product_debug_context *debugContext) {
     uint8_t val;
     STD_SIZE_T i;
     uint32_t lin1, lin2, count;
     if (narg != 4) {
-        seterr(narg - 1);
+        seterr(debugContext, narg - 1);
     } else {
-        lin1 = scannubit32(arg[1]);
+        lin1 = scannubit32(debugContext, arg[1]);
         if (nErrPos) {
             return;
         }
-        lin2 = scannubit32(arg[2]);
+        lin2 = scannubit32(debugContext, arg[2]);
         if (nErrPos) {
             return;
         }
-        count = scannubit32(arg[3]);
+        count = scannubit32(debugContext, arg[3]);
         if (nErrPos) {
             return;
         }
@@ -1347,25 +1347,25 @@ static C_VOID xm() {
     }
 }
 /* search */
-static C_VOID xs() {
+static C_VOID xs(core_product_debug_context *debugContext) {
     STD_SIZE_T i, count, bcount;
     uint32_t linear;
     uint8_t val, mem[256], line[256];
     if (narg < 4) {
-        seterr(narg - 1);
+        seterr(debugContext, narg - 1);
     } else {
-        linear = scannubit32(arg[1]);
+        linear = scannubit32(debugContext, arg[1]);
         if (nErrPos) {
             return;
         }
-        count = scannubit32(arg[2]);
+        count = scannubit32(debugContext, arg[2]);
         if (nErrPos) {
             return;
         }
-        addrparse(_ds, arg[1]);
+        addrparse(debugContext, _ds, arg[1]);
         bcount = narg - 3;
         for (i = 0; i < bcount; ++i) {
-            val = scannubit8(arg[i + 3]);
+            val = scannubit8(debugContext, arg[i + 3]);
             if (nErrPos) {
                 return;
             }
@@ -1383,7 +1383,7 @@ static C_VOID xs() {
     }
 }
 /* trace */
-static C_VOID xt() {
+static C_VOID xt(core_product_debug_context *debugContext) {
     STD_SIZE_T i;
     uint32_t count;
     if (core_product_debug_is_running()) {
@@ -1395,10 +1395,10 @@ static C_VOID xt() {
         count = 1;
         break;
     case 2:
-        count = scannubit32(arg[1]);
+        count = scannubit32(debugContext, arg[1]);
         break;
     default:
-        seterr(narg - 1);
+        seterr(debugContext, narg - 1);
         break;
     }
     if (nErrPos) {
@@ -1412,7 +1412,7 @@ static C_VOID xt() {
                 core_product_utils_sleep(debugContext->wait_scope, 10);
             }
             core_product_debug_print_memory();
-            xrprintreg();
+            xrprintreg(debugContext);
             if (i != count - 1) {
                 STD_PRINTF("\n");
             }
@@ -1424,12 +1424,12 @@ static C_VOID xt() {
             core_product_utils_sleep(debugContext->wait_scope, 10);
         }
         core_product_debug_print_memory();
-        xrprintreg();
+        xrprintreg(debugContext);
     }
     core_product_debug_clear_trace();
 }
 /* register */
-static C_VOID xrscanreg() {
+static C_VOID xrscanreg(core_product_debug_context *debugContext) {
     uint32_t value;
     C_CHAR s[0x100];
     if (!STD_STRCMP(arg[1], "eax")) {
@@ -1437,98 +1437,98 @@ static C_VOID xrscanreg() {
         STD_PRINTF("%08X", _eax);
         STD_PRINTF("\n:");
         STD_FGETS(s, 0x100, STD_STDIN);
-        value = scannubit32(s);
+        value = scannubit32(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            debug_set_register(CORE_PRODUCT_DEBUG_EAX, value);
+            debug_set_register(debugContext, CORE_PRODUCT_DEBUG_EAX, value);
         }
     } else if (!STD_STRCMP(arg[1], "ecx")) {
         STD_PRINTF("ECX ");
         STD_PRINTF("%08X", _ecx);
         STD_PRINTF("\n:");
         STD_FGETS(s, 0x100, STD_STDIN);
-        value = scannubit32(s);
+        value = scannubit32(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            debug_set_register(CORE_PRODUCT_DEBUG_ECX, value);
+            debug_set_register(debugContext, CORE_PRODUCT_DEBUG_ECX, value);
         }
     } else if (!STD_STRCMP(arg[1], "edx")) {
         STD_PRINTF("EDX ");
         STD_PRINTF("%08X", _edx);
         STD_PRINTF("\n:");
         STD_FGETS(s, 0x100, STD_STDIN);
-        value = scannubit32(s);
+        value = scannubit32(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            debug_set_register(CORE_PRODUCT_DEBUG_EDX, value);
+            debug_set_register(debugContext, CORE_PRODUCT_DEBUG_EDX, value);
         }
     } else if (!STD_STRCMP(arg[1], "ebx")) {
         STD_PRINTF("EBX ");
         STD_PRINTF("%08X", _ebx);
         STD_PRINTF("\n:");
         STD_FGETS(s, 0x100, STD_STDIN);
-        value = scannubit32(s);
+        value = scannubit32(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            debug_set_register(CORE_PRODUCT_DEBUG_EBX, value);
+            debug_set_register(debugContext, CORE_PRODUCT_DEBUG_EBX, value);
         }
     } else if (!STD_STRCMP(arg[1], "esp")) {
         STD_PRINTF("ESP ");
         STD_PRINTF("%08X", _esp);
         STD_PRINTF("\n:");
         STD_FGETS(s, 0x100, STD_STDIN);
-        value = scannubit32(s);
+        value = scannubit32(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            debug_set_register(CORE_PRODUCT_DEBUG_ESP, value);
+            debug_set_register(debugContext, CORE_PRODUCT_DEBUG_ESP, value);
         }
     } else if (!STD_STRCMP(arg[1], "ebp")) {
         STD_PRINTF("EBP ");
         STD_PRINTF("%08X", _ebp);
         STD_PRINTF("\n:");
         STD_FGETS(s, 0x100, STD_STDIN);
-        value = scannubit32(s);
+        value = scannubit32(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            debug_set_register(CORE_PRODUCT_DEBUG_EBP, value);
+            debug_set_register(debugContext, CORE_PRODUCT_DEBUG_EBP, value);
         }
     } else if (!STD_STRCMP(arg[1], "esi")) {
         STD_PRINTF("ESI ");
         STD_PRINTF("%08X", _esi);
         STD_PRINTF("\n:");
         STD_FGETS(s, 0x100, STD_STDIN);
-        value = scannubit32(s);
+        value = scannubit32(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            debug_set_register(CORE_PRODUCT_DEBUG_ESI, value);
+            debug_set_register(debugContext, CORE_PRODUCT_DEBUG_ESI, value);
         }
     } else if (!STD_STRCMP(arg[1], "edi")) {
         STD_PRINTF("EDI ");
         STD_PRINTF("%08X", _edi);
         STD_PRINTF("\n:");
         STD_FGETS(s, 0x100, STD_STDIN);
-        value = scannubit32(s);
+        value = scannubit32(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            debug_set_register(CORE_PRODUCT_DEBUG_EDI, value);
+            debug_set_register(debugContext, CORE_PRODUCT_DEBUG_EDI, value);
         }
     } else if (!STD_STRCMP(arg[1], "eip")) {
         STD_PRINTF("EIP ");
         STD_PRINTF("%08X", _eip);
         STD_PRINTF("\n:");
         STD_FGETS(s, 0x100, STD_STDIN);
-        value = scannubit32(s);
+        value = scannubit32(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            debug_set_register(CORE_PRODUCT_DEBUG_EIP, value);
+            debug_set_register(debugContext, CORE_PRODUCT_DEBUG_EIP, value);
         }
     } else if (!STD_STRCMP(arg[1], "eflags")) {
         STD_PRINTF("EFLAGS ");
         STD_PRINTF("%08X", _eflags);
         STD_PRINTF("\n:");
         STD_FGETS(s, 0x100, STD_STDIN);
-        value = scannubit32(s);
+        value = scannubit32(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            debug_set_register(CORE_PRODUCT_DEBUG_EFLAGS, value);
+            debug_set_register(debugContext, CORE_PRODUCT_DEBUG_EFLAGS, value);
         }
     } else if (!STD_STRCMP(arg[1], "es")) {
         core_product_debug_print_segment_registers();
         STD_PRINTF(":");
         STD_FGETS(s, 0x100, STD_STDIN);
-        value = scannubit16(s);
+        value = scannubit16(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            if (debug_set_register(CORE_PRODUCT_DEBUG_ES, (uint16_t) value)) {
+            if (debug_set_register(debugContext, CORE_PRODUCT_DEBUG_ES, (uint16_t) value)) {
                 STD_PRINTF("debug: fail to load es from %04X\n", (uint16_t) value);
             }
         }
@@ -1536,9 +1536,9 @@ static C_VOID xrscanreg() {
         core_product_debug_print_segment_registers();
         STD_PRINTF(":");
         STD_FGETS(s, 0x100, STD_STDIN);
-        value = scannubit16(s);
+        value = scannubit16(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            if (debug_set_register(CORE_PRODUCT_DEBUG_CS, (uint16_t) value)) {
+            if (debug_set_register(debugContext, CORE_PRODUCT_DEBUG_CS, (uint16_t) value)) {
                 STD_PRINTF("debug: fail to load cs from %04X\n", (uint16_t) value);
             }
         }
@@ -1546,9 +1546,9 @@ static C_VOID xrscanreg() {
         core_product_debug_print_segment_registers();
         STD_PRINTF(":");
         STD_FGETS(s, 0x100, STD_STDIN);
-        value = scannubit16(s);
+        value = scannubit16(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            if (debug_set_register(CORE_PRODUCT_DEBUG_SS, (uint16_t) value)) {
+            if (debug_set_register(debugContext, CORE_PRODUCT_DEBUG_SS, (uint16_t) value)) {
                 STD_PRINTF("debug: fail to load ss from %04X\n", (uint16_t) value);
             }
         }
@@ -1556,9 +1556,9 @@ static C_VOID xrscanreg() {
         core_product_debug_print_segment_registers();
         STD_PRINTF(":");
         STD_FGETS(s, 0x100, STD_STDIN);
-        value = scannubit16(s);
+        value = scannubit16(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            if (debug_set_register(CORE_PRODUCT_DEBUG_DS, (uint16_t) value)) {
+            if (debug_set_register(debugContext, CORE_PRODUCT_DEBUG_DS, (uint16_t) value)) {
                 STD_PRINTF("debug: fail to load ds from %04X\n", (uint16_t) value);
             }
         }
@@ -1566,9 +1566,9 @@ static C_VOID xrscanreg() {
         core_product_debug_print_segment_registers();
         STD_PRINTF(":");
         STD_FGETS(s, 0x100, STD_STDIN);
-        value = scannubit16(s);
+        value = scannubit16(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            if (debug_set_register(CORE_PRODUCT_DEBUG_FS, (uint16_t) value)) {
+            if (debug_set_register(debugContext, CORE_PRODUCT_DEBUG_FS, (uint16_t) value)) {
                 STD_PRINTF("debug: fail to load fs from %04X\n", (uint16_t) value);
             }
         }
@@ -1576,9 +1576,9 @@ static C_VOID xrscanreg() {
         core_product_debug_print_segment_registers();
         STD_PRINTF(":");
         STD_FGETS(s, 0x100, STD_STDIN);
-        value = scannubit16(s);
+        value = scannubit16(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            if (debug_set_register(CORE_PRODUCT_DEBUG_GS, (uint16_t) value)) {
+            if (debug_set_register(debugContext, CORE_PRODUCT_DEBUG_GS, (uint16_t) value)) {
                 STD_PRINTF("debug: fail to load gs from %04X\n", (uint16_t) value);
             }
         }
@@ -1587,56 +1587,56 @@ static C_VOID xrscanreg() {
         STD_PRINTF("%08X", _cr(0));
         STD_PRINTF("\n:");
         STD_FGETS(s, 0x100, STD_STDIN);
-        value = scannubit32(s);
+        value = scannubit32(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            debug_set_register(CORE_PRODUCT_DEBUG_CR0, value);
+            debug_set_register(debugContext, CORE_PRODUCT_DEBUG_CR0, value);
         }
     } else if (!STD_STRCMP(arg[1], "cr1")) {
         STD_PRINTF("CR1 ");
         STD_PRINTF("%08X", _cr(1));
         STD_PRINTF("\n:");
         STD_FGETS(s, 0x100, STD_STDIN);
-        value = scannubit32(s);
+        value = scannubit32(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            debug_set_register(CORE_PRODUCT_DEBUG_CR1, value);
+            debug_set_register(debugContext, CORE_PRODUCT_DEBUG_CR1, value);
         }
     } else if (!STD_STRCMP(arg[1], "cr2")) {
         STD_PRINTF("CR2 ");
         STD_PRINTF("%08X", _cr(2));
         STD_PRINTF("\n:");
         STD_FGETS(s, 0x100, STD_STDIN);
-        value = scannubit32(s);
+        value = scannubit32(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            debug_set_register(CORE_PRODUCT_DEBUG_CR2, value);
+            debug_set_register(debugContext, CORE_PRODUCT_DEBUG_CR2, value);
         }
     } else if (!STD_STRCMP(arg[1], "cr3")) {
         STD_PRINTF("CR3 ");
         STD_PRINTF("%08X", _cr(3));
         STD_PRINTF("\n:");
         STD_FGETS(s, 0x100, STD_STDIN);
-        value = scannubit32(s);
+        value = scannubit32(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos) {
-            debug_set_register(CORE_PRODUCT_DEBUG_CR3, value);
+            debug_set_register(debugContext, CORE_PRODUCT_DEBUG_CR3, value);
         }
     } else {
         STD_PRINTF("br Error\n");
     }
 }
-static C_VOID xr() {
+static C_VOID xr(core_product_debug_context *debugContext) {
     if (narg == 1) {
-        xrprintreg();
+        xrprintreg(debugContext);
     } else if (narg == 2) {
-        xrscanreg();
+        xrscanreg(debugContext);
     } else {
-        seterr(2);
+        seterr(debugContext, 2);
     }
 }
 /* unassemble */
-static C_VOID xuprint(uint32_t linear, uint8_t count) {
+static C_VOID xuprint(core_product_debug_context *debugContext, uint32_t linear, uint8_t count) {
     uint32_t len = 0;
     STD_SIZE_T i;
     for (i = 0; i < count; ++i) {
-        len = xuprintins(linear);
+        len = xuprintins(debugContext, linear);
         if (!len) {
             break;
         }
@@ -1644,29 +1644,29 @@ static C_VOID xuprint(uint32_t linear, uint8_t count) {
     }
     xulin = linear;
 }
-static C_VOID xu() {
+static C_VOID xu(core_product_debug_context *debugContext) {
     uint32_t count;
     if (narg == 1) {
-        xuprint(xulin, 10);
+        xuprint(debugContext, xulin, 10);
     } else if (narg == 2) {
-        xulin = scannubit32(arg[1]);
+        xulin = scannubit32(debugContext, arg[1]);
         if (nErrPos) {
             return;
         }
-        xuprint(xulin, 0x10);
+        xuprint(debugContext, xulin, 0x10);
     } else if (narg == 3) {
-        xulin = scannubit32(arg[1]);
-        count = scannubit32(arg[2]);
+        xulin = scannubit32(debugContext, arg[1]);
+        count = scannubit32(debugContext, arg[2]);
         if (nErrPos) {
             return;
         }
-        xuprint(xulin, count);
+        xuprint(debugContext, xulin, count);
     } else {
-        seterr(3);
+        seterr(debugContext, 3);
     }
 }
 /* watch */
-static C_VOID xw() {
+static C_VOID xw(core_product_debug_context *debugContext) {
     uint32_t linear;
     switch (narg) {
     case 1:
@@ -1693,35 +1693,35 @@ static C_VOID xw() {
             STD_PRINTF("All watch points removed.\n");
             break;
         default:
-            seterr(1);
+            seterr(debugContext, 1);
             break;
         }
         break;
     case 3:
         switch (arg[1][0]) {
         case 'r':
-            linear = scannubit32(arg[2]);
+            linear = scannubit32(debugContext, arg[2]);
             core_product_debug_set_watch(CORE_PRODUCT_DEBUG_WATCH_READ, linear);
             break;
         case 'w':
-            linear = scannubit32(arg[2]);
+            linear = scannubit32(debugContext, arg[2]);
             core_product_debug_set_watch(CORE_PRODUCT_DEBUG_WATCH_WRITE, linear);
             break;
         case 'e':
-            linear = scannubit32(arg[2]);
+            linear = scannubit32(debugContext, arg[2]);
             core_product_debug_set_watch(CORE_PRODUCT_DEBUG_WATCH_EXECUTE, linear);
             break;
         default:
-            seterr(2);
+            seterr(debugContext, 2);
             break;
         }
         break;
     default:
-        seterr(narg - 1);
+        seterr(debugContext, narg - 1);
         break;
     }
 }
-static C_VOID xhelp() {
+static C_VOID xhelp(core_product_debug_context *debugContext) {
     STD_PRINTF("assemble        XA [address]\n");
     STD_PRINTF("compare         XC addr1 addr2 count_byte\n");
     STD_PRINTF("dump            XD [address [count_byte]]\n");
@@ -1738,7 +1738,7 @@ static C_VOID xhelp() {
     STD_PRINTF("unassemble      XU [address [count_instr]]\n");
     STD_PRINTF("watch           XW r/w/e address\n");
 }
-static C_VOID x() {
+static C_VOID x(core_product_debug_context *debugContext) {
     STD_SIZE_T i;
     arg[narg] = arg[0];
     for (i = 1; i < narg; ++i) {
@@ -1748,46 +1748,46 @@ static C_VOID x() {
     arg[narg] = STD_NULL;
     narg--;
     if (!STD_STRCMP(arg[0], "\?")) {
-        xhelp();
+        xhelp(debugContext);
     } else if (!STD_STRCMP(arg[0], "a")) {
-        xa();
+        xa(debugContext);
     } else if (!STD_STRCMP(arg[0], "c")) {
-        xc();
+        xc(debugContext);
     } else if (!STD_STRCMP(arg[0], "d")) {
-        xd();
+        xd(debugContext);
     } else if (!STD_STRCMP(arg[0], "e")) {
-        xe();
+        xe(debugContext);
     } else if (!STD_STRCMP(arg[0], "f")) {
-        xf();
+        xf(debugContext);
     } else if (!STD_STRCMP(arg[0], "g")) {
-        xg();
+        xg(debugContext);
     } else if (!STD_STRCMP(arg[0], "m")) {
-        xm();
+        xm(debugContext);
     } else if (!STD_STRCMP(arg[0], "r")) {
-        xr();
+        xr(debugContext);
     } else if (!STD_STRCMP(arg[0], "s")) {
-        xs();
+        xs(debugContext);
     } else if (!STD_STRCMP(arg[0], "t")) {
-        xt();
+        xt(debugContext);
     } else if (!STD_STRCMP(arg[0], "u")) {
-        xu();
+        xu(debugContext);
     } else if (!STD_STRCMP(arg[0], "w")) {
-        xw();
+        xw(debugContext);
     } else if (!STD_STRCMP(arg[0], "reg")) {
-        xrprintreg();
+        xrprintreg(debugContext);
     } else if (!STD_STRCMP(arg[0], "sreg")) {
         core_product_debug_print_segment_registers();
     } else if (!STD_STRCMP(arg[0], "creg")) {
         core_product_debug_print_control_registers();
     } else {
         arg[0] = arg[narg];
-        seterr(0);
+        seterr(debugContext, 0);
     }
 }
 /* EXTENDED DEBUG CMD END */
 
 /* main routines */
-static C_VOID help() {
+static C_VOID help(core_product_debug_context *debugContext) {
     STD_PRINTF("assemble        A [address]\n");
     STD_PRINTF("compare         C range address\n");
     STD_PRINTF("dump            D [range]\n");
@@ -1820,7 +1820,7 @@ static C_VOID help() {
     /* STD_PRINTF("display expanded memory status  XS\n"); */
 }
 
-static C_VOID parse() {
+static C_VOID parse(core_product_debug_context *debugContext) {
     STD_STRCPY(strCmdCopy, strCmdBuff);
     narg = 0;
     arg[0] = STD_STRTOK(strCmdCopy, " ,\t\n\r\f");
@@ -1845,77 +1845,77 @@ static C_VOID parse() {
     }
 }
 
-static C_VOID exec() {
+static C_VOID exec(core_product_debug_context *debugContext) {
     nErrPos = 0;
     if (!arg[0]) {
         return;
     }
     switch (arg[0][0]) {
     case '\?':
-        help();
+        help(debugContext);
         break;
     case 'a':
-        a();
+        a(debugContext);
         break;
     case 'c':
-        c();
+        c(debugContext);
         break;
     case 'd':
-        d();
+        d(debugContext);
         break;
     case 'e':
-        e();
+        e(debugContext);
         break;
     case 'f':
-        f();
+        f(debugContext);
         break;
     case 'g':
-        g();
+        g(debugContext);
         break;
     case 'h':
-        h();
+        h(debugContext);
         break;
     case 'i':
-        i();
+        i(debugContext);
         break;
     case 'l':
-        l();
+        l(debugContext);
         break;
     case 'm':
-        m();
+        m(debugContext);
         break;
     case 'n':
-        n();
+        n(debugContext);
         break;
     case 'o':
-        o();
+        o(debugContext);
         break;
     case 'q':
-        q();
+        q(debugContext);
         break;
     case 'r':
-        r();
+        r(debugContext);
         break;
     case 's':
-        s();
+        s(debugContext);
         break;
     case 't':
-        t();
+        t(debugContext);
         break;
     case 'u':
-        u();
+        u(debugContext);
         break;
     case 'v':
-        v();
+        v(debugContext);
         break;
     case 'w':
-        w();
+        w(debugContext);
         break;
     case 'x':
-        x();
+        x(debugContext);
         break;
     default:
-        seterr(0);
+        seterr(debugContext, 0);
         break;
     }
 }
@@ -1928,14 +1928,16 @@ C_VOID core_product_debug_context_initialize(core_product_debug_context *context
 C_VOID core_product_debug_main(core_product_debug_context *context,
                const core_product_debug_target *target,
                const core_product_debug_input_provider *input_provider) {
+    const core_product_wait_scope *wait_scope;
+    core_product_debug_context *debugContext = context;
     STD_SIZE_T i;
-    core_product_debug_context *previous;
+
     if (context == STD_NULL || target == STD_NULL) return;
-    previous = debugContext;
-    debugContext = context;
+    wait_scope = context->wait_scope;
     core_product_debug_context_initialize(context);
     context->target = target;
     context->input_provider = input_provider;
+    context->wait_scope = wait_scope;
     strFileName[0] = '\0';
     asmSegRec = uasmSegRec = _cs;
     asmPtrRec = uasmPtrRec = _ip;
@@ -1947,11 +1949,11 @@ C_VOID core_product_debug_main(core_product_debug_context *context,
     arg = (C_CHAR **) STD_MALLOC(DEBUG_MAXNARG * sizeof(C_CHAR *));
     flagExit = 0;
     while (!flagExit) {
-        core_product_debug_flush_console_input();
+        core_product_debug_flush_console_input(debugContext);
         STD_PRINTF("-");
         STD_FGETS(strCmdBuff, 0x100, STD_STDIN);
-        parse();
-        exec();
+        parse(debugContext);
+        exec(debugContext);
         if (nErrPos) {
             for (i = 0; i < nErrPos; ++i) {
                 STD_PRINTF(" ");
@@ -1962,5 +1964,4 @@ C_VOID core_product_debug_main(core_product_debug_context *context,
     STD_FREE((C_VOID *) arg);
     context->target = STD_NULL;
     context->input_provider = STD_NULL;
-    debugContext = previous;
 }

@@ -170,7 +170,7 @@ typedef struct aasm32_context {
     C_CHAR *rstart;
 } aasm32_context;
 
-static _Thread_local aasm32_context *aasmContext;
+
 
 #define trace (aasmContext->trace)
 #define defsize (aasmContext->defsize)
@@ -623,7 +623,7 @@ typedef enum {
 /* token variables */
 #define tokch  (*tokptr)
 #define take(n) (flagend = 1, token = (n))
-static t_aasm_token gettoken(C_CHAR *str) {
+static t_aasm_token gettoken(aasm32_context *aasmContext, C_CHAR *str) {
     uint8_t toklen = 0;
     uint32_t tokimm = 0;
     uint8_t flagend = 0;
@@ -2552,7 +2552,7 @@ static t_aasm_token gettoken(C_CHAR *str) {
     NTVDM64_TYPE_TRACE_CALL_END;
     return token;
 }
-static C_VOID printtoken(t_aasm_token token) {
+static C_VOID printtoken(aasm32_context *aasmContext, t_aasm_token token) {
     switch (token) {
     case TOKEN_NULL:
         STD_PRINTF(" NULL ");
@@ -2737,14 +2737,14 @@ static C_VOID printtoken(t_aasm_token token) {
         break;
     }
 }
-static C_VOID matchtoken(t_aasm_token token) {
+static C_VOID matchtoken(aasm32_context *aasmContext, t_aasm_token token) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("matchtoken");
-    if (gettoken(STD_NULL) != token) _ser_;
+    if (gettoken(aasmContext, STD_NULL) != token) _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
 
 /* assembly compiler: parser / grammar */
-static t_aasm_oprinfo parsearg_mem(t_aasm_token token) {
+static t_aasm_oprinfo parsearg_mem(aasm32_context *aasmContext, t_aasm_token token) {
     t_aasm_oprinfo info;
     uint8_t oldtoken;
     uint8_t bx,bp,si,di,neg,al;
@@ -2761,7 +2761,7 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token) {
     info.sib.index = R32_ESP; /* ESP for NULL Index */
     info.sib.scale = 0;
     oldtoken = token;
-    _chrf(token = gettoken(STD_NULL));
+    _chrf(token = gettoken(aasmContext, STD_NULL));
     if (token == TOKEN_COLON) {
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_COLON");
         switch (oldtoken) {
@@ -2829,15 +2829,15 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token) {
         NTVDM64_TYPE_TRACE_CALL_END;
         return info;
     } else _serf_;
-    _chrf(matchtoken(TOKEN_LSPAREN));
-    _chrf(token = gettoken(STD_NULL));
+    _chrf(matchtoken(aasmContext, TOKEN_LSPAREN));
+    _chrf(token = gettoken(aasmContext, STD_NULL));
     while (token != TOKEN_RSPAREN) {
         switch (token) {
         case TOKEN_PLUS:
             break;
         case TOKEN_MINUS:
             NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_MINUS)");
-            _chrf(token = gettoken(STD_NULL));
+            _chrf(token = gettoken(aasmContext, STD_NULL));
             neg = 1;
             switch (token) {
             case TOKEN_IMM8:
@@ -2932,19 +2932,19 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token) {
             break;
         case TOKEN_EAX:
             NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_EAX)");
-            _chrf(token = gettoken(STD_NULL));
+            _chrf(token = gettoken(aasmContext, STD_NULL));
             if (token == TOKEN_TIMES) {
                 NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_TIMES)");
                 if (ieax) _serf_;
                 else {
                     NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!ieax");
                     ieax = 1;
-                    _chrf(token = gettoken(STD_NULL));
+                    _chrf(token = gettoken(aasmContext, STD_NULL));
                     if (token != TOKEN_IMM8) _serf_;
                     else {
                         info.sib.scale = tokimm8;
                         info.sib.index = R32_EAX;
-                        _chrf(token = gettoken(STD_NULL));
+                        _chrf(token = gettoken(aasmContext, STD_NULL));
                     }
                     NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
@@ -2963,19 +2963,19 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token) {
             break;
         case TOKEN_ECX:
             NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_ECX)");
-            _chrf(token = gettoken(STD_NULL));
+            _chrf(token = gettoken(aasmContext, STD_NULL));
             if (token == TOKEN_TIMES) {
                 NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_TIMES)");
                 if (iecx) _serf_;
                 else {
                     NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!iecx");
                     iecx = 1;
-                    _chrf(token = gettoken(STD_NULL));
+                    _chrf(token = gettoken(aasmContext, STD_NULL));
                     if (token != TOKEN_IMM8) _serf_;
                     else {
                         info.sib.scale = tokimm8;
                         info.sib.index = R32_ECX;
-                        _chrf(token = gettoken(STD_NULL));
+                        _chrf(token = gettoken(aasmContext, STD_NULL));
                     }
                     NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
@@ -2994,19 +2994,19 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token) {
             break;
         case TOKEN_EDX:
             NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_EDX)");
-            _chrf(token = gettoken(STD_NULL));
+            _chrf(token = gettoken(aasmContext, STD_NULL));
             if (token == TOKEN_TIMES) {
                 NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_TIMES)");
                 if (iedx) _serf_;
                 else {
                     NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!iedx");
                     iedx = 1;
-                    _chrf(token = gettoken(STD_NULL));
+                    _chrf(token = gettoken(aasmContext, STD_NULL));
                     if (token != TOKEN_IMM8) _serf_;
                     else {
                         info.sib.scale = tokimm8;
                         info.sib.index = R32_EDX;
-                        _chrf(token = gettoken(STD_NULL));
+                        _chrf(token = gettoken(aasmContext, STD_NULL));
                     }
                     NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
@@ -3025,19 +3025,19 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token) {
             break;
         case TOKEN_EBX:
             NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_EBX)");
-            _chrf(token = gettoken(STD_NULL));
+            _chrf(token = gettoken(aasmContext, STD_NULL));
             if (token == TOKEN_TIMES) {
                 NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_TIMES)");
                 if (iebx) _serf_;
                 else {
                     NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!iebx");
                     iebx = 1;
-                    _chrf(token = gettoken(STD_NULL));
+                    _chrf(token = gettoken(aasmContext, STD_NULL));
                     if (token != TOKEN_IMM8) _serf_;
                     else {
                         info.sib.scale = tokimm8;
                         info.sib.index = R32_EBX;
-                        _chrf(token = gettoken(STD_NULL));
+                        _chrf(token = gettoken(aasmContext, STD_NULL));
                     }
                     NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
@@ -3056,7 +3056,7 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token) {
             break;
         case TOKEN_ESP:
             NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_ESP)");
-            _chrf(token = gettoken(STD_NULL));
+            _chrf(token = gettoken(aasmContext, STD_NULL));
             if (token == TOKEN_TIMES) _serf_;
             else {
                 NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(!TOKEN_TIMES)");
@@ -3072,19 +3072,19 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token) {
             break;
         case TOKEN_EBP:
             NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_EBP)");
-            _chrf(token = gettoken(STD_NULL));
+            _chrf(token = gettoken(aasmContext, STD_NULL));
             if (token == TOKEN_TIMES) {
                 NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_TIMES)");
                 if (iebp) _serf_;
                 else {
                     NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!iebp");
                     iebx = 1;
-                    _chrf(token = gettoken(STD_NULL));
+                    _chrf(token = gettoken(aasmContext, STD_NULL));
                     if (token != TOKEN_IMM8) _serf_;
                     else {
                         info.sib.scale = tokimm8;
                         info.sib.index = R32_EBP;
-                        _chrf(token = gettoken(STD_NULL));
+                        _chrf(token = gettoken(aasmContext, STD_NULL));
                     }
                     NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
@@ -3103,19 +3103,19 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token) {
             break;
         case TOKEN_ESI:
             NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_ESI)");
-            _chrf(token = gettoken(STD_NULL));
+            _chrf(token = gettoken(aasmContext, STD_NULL));
             if (token == TOKEN_TIMES) {
                 NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_TIMES)");
                 if (iesi) _serf_;
                 else {
                     NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!iesi");
                     iesi = 1;
-                    _chrf(token = gettoken(STD_NULL));
+                    _chrf(token = gettoken(aasmContext, STD_NULL));
                     if (token != TOKEN_IMM8) _serf_;
                     else {
                         info.sib.scale = tokimm8;
                         info.sib.index = R32_ESI;
-                        _chrf(token = gettoken(STD_NULL));
+                        _chrf(token = gettoken(aasmContext, STD_NULL));
                     }
                     NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
@@ -3134,19 +3134,19 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token) {
             break;
         case TOKEN_EDI:
             NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_EDI)");
-            _chrf(token = gettoken(STD_NULL));
+            _chrf(token = gettoken(aasmContext, STD_NULL));
             if (token == TOKEN_TIMES) {
                 NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_TIMES)");
                 if (iedi) _serf_;
                 else {
                     NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!iedi");
                     iedi = 1;
-                    _chrf(token = gettoken(STD_NULL));
+                    _chrf(token = gettoken(aasmContext, STD_NULL));
                     if (token != TOKEN_IMM8) _serf_;
                     else {
                         info.sib.scale = tokimm8;
                         info.sib.index = R32_EDI;
-                        _chrf(token = gettoken(STD_NULL));
+                        _chrf(token = gettoken(aasmContext, STD_NULL));
                     }
                     NTVDM64_TYPE_TRACE_BLOCK_END;
                 }
@@ -3167,9 +3167,9 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token) {
             _serf_;
             break;
         }
-        _chrf(token = gettoken(STD_NULL));
+        _chrf(token = gettoken(aasmContext, STD_NULL));
     }
-    _chrf(token = gettoken(STD_NULL));
+    _chrf(token = gettoken(aasmContext, STD_NULL));
     if (token != TOKEN_END) _serf_;
 
     if (al) {
@@ -3286,7 +3286,7 @@ static t_aasm_oprinfo parsearg_mem(t_aasm_token token) {
     NTVDM64_TYPE_TRACE_CALL_END;
     return info;
 }
-static t_aasm_oprinfo parsearg_imm(t_aasm_token token) {
+static t_aasm_oprinfo parsearg_imm(aasm32_context *aasmContext, t_aasm_token token) {
     t_aasm_oprinfo info;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("parsearg_imm");
 
@@ -3296,13 +3296,13 @@ static t_aasm_oprinfo parsearg_imm(t_aasm_token token) {
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_PLUS)");
         info.imms = 1;
         info.immn = 0;
-        _chrf(token = gettoken(STD_NULL));
+        _chrf(token = gettoken(aasmContext, STD_NULL));
         NTVDM64_TYPE_TRACE_BLOCK_END;
     } else if (token == TOKEN_MINUS) {
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_MINUS)");
         info.imms = 1;
         info.immn = 1;
-        _chrf(token = gettoken(STD_NULL));
+        _chrf(token = gettoken(aasmContext, STD_NULL));
         NTVDM64_TYPE_TRACE_BLOCK_END;
     }
 
@@ -3320,7 +3320,7 @@ static t_aasm_oprinfo parsearg_imm(t_aasm_token token) {
         else info.imm32 = (~tokimm32) + 1;
     } else _serf_;
 
-    _chrf(token = gettoken(STD_NULL));
+    _chrf(token = gettoken(aasmContext, STD_NULL));
     if (token == TOKEN_COLON) {
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(!TOKEN_END)");
         if (info.imms) _serf_;
@@ -3330,7 +3330,7 @@ static t_aasm_oprinfo parsearg_imm(t_aasm_token token) {
             _serf_;
         }
         info.type = TYPE_NONE;
-        _chrf(token = gettoken(STD_NULL));
+        _chrf(token = gettoken(aasmContext, STD_NULL));
         if (token == TOKEN_IMM16) {
             info.reip = tokimm16;
             info.type = TYPE_I16_16;
@@ -3343,7 +3343,7 @@ static t_aasm_oprinfo parsearg_imm(t_aasm_token token) {
     NTVDM64_TYPE_TRACE_CALL_END;
     return info;
 }
-static t_aasm_oprinfo parsearg(C_CHAR *arg) {
+static t_aasm_oprinfo parsearg(aasm32_context *aasmContext, C_CHAR *arg) {
     t_aasm_token token;
     t_aasm_oprinfo info;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("parsearg");
@@ -3353,7 +3353,7 @@ static t_aasm_oprinfo parsearg(C_CHAR *arg) {
         NTVDM64_TYPE_TRACE_CALL_END;
         return info;
     }
-    _chrf(token = gettoken(arg));
+    _chrf(token = gettoken(aasmContext, arg));
     switch (token) {
     case TOKEN_NULL:
     case TOKEN_END:
@@ -3361,26 +3361,26 @@ static t_aasm_oprinfo parsearg(C_CHAR *arg) {
         break;
     case TOKEN_BYTE:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_BYTE)");
-        _chrf(token = gettoken(STD_NULL));
-        if (token == TOKEN_PTR) _chrf(token = gettoken(STD_NULL));
-        _chrf(info = parsearg_mem(token));
+        _chrf(token = gettoken(aasmContext, STD_NULL));
+        if (token == TOKEN_PTR) _chrf(token = gettoken(aasmContext, STD_NULL));
+        _chrf(info = parsearg_mem(aasmContext, token));
         info.type = TYPE_M8;
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case TOKEN_WORD:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_WORD)");
-        _chrf(token = gettoken(STD_NULL));
-        if (token == TOKEN_PTR) _chrf(token = gettoken(STD_NULL));
-        _chrf(info = parsearg_mem(token));
+        _chrf(token = gettoken(aasmContext, STD_NULL));
+        if (token == TOKEN_PTR) _chrf(token = gettoken(aasmContext, STD_NULL));
+        _chrf(info = parsearg_mem(aasmContext, token));
         info.type = TYPE_M16;
         info.ptr = PTR_NEAR;
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case TOKEN_DWORD:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_DWORD)");
-        _chrf(token = gettoken(STD_NULL));
-        if (token == TOKEN_PTR) _chrf(token = gettoken(STD_NULL));
-        _chrf(info = parsearg_mem(token));
+        _chrf(token = gettoken(aasmContext, STD_NULL));
+        if (token == TOKEN_PTR) _chrf(token = gettoken(aasmContext, STD_NULL));
+        _chrf(info = parsearg_mem(aasmContext, token));
         info.type = TYPE_M32;
         info.ptr = PTR_FAR;
         NTVDM64_TYPE_TRACE_BLOCK_END;
@@ -3528,7 +3528,7 @@ static t_aasm_oprinfo parsearg(C_CHAR *arg) {
     case TOKEN_FS:
     case TOKEN_GS:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_SREGs)");
-        _chrf(info = parsearg_mem(token));
+        _chrf(info = parsearg_mem(aasmContext, token));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case TOKEN_PLUS:
@@ -3537,7 +3537,7 @@ static t_aasm_oprinfo parsearg(C_CHAR *arg) {
     case TOKEN_IMM16:
     case TOKEN_IMM32:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_IMMs)");
-        _chrf(info = parsearg_imm(token));
+        _chrf(info = parsearg_imm(aasmContext, token));
         if (info.type == TYPE_I16_16)
             info.ptr = PTR_FAR;
         else if (info.type == TYPE_I16_32)
@@ -3548,11 +3548,11 @@ static t_aasm_oprinfo parsearg(C_CHAR *arg) {
         break;
     case TOKEN_SHORT:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_SHORT)");
-        _chrf(token = gettoken(STD_NULL));
-        if (token == TOKEN_PTR) _chrf(token = gettoken(STD_NULL));
+        _chrf(token = gettoken(aasmContext, STD_NULL));
+        if (token == TOKEN_PTR) _chrf(token = gettoken(aasmContext, STD_NULL));
         if (token == TOKEN_PLUS || token == TOKEN_MINUS) {
             NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_SIGNs)");
-            _chrf(info = parsearg_imm(token));
+            _chrf(info = parsearg_imm(aasmContext, token));
             if (info.type != TYPE_I8) _serf_;
             NTVDM64_TYPE_TRACE_BLOCK_END;
         } else _serf_;
@@ -3561,29 +3561,29 @@ static t_aasm_oprinfo parsearg(C_CHAR *arg) {
         break;
     case TOKEN_NEAR:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_NEAR)");
-        _chrf(token = gettoken(STD_NULL));
-        if (token == TOKEN_PTR) _chrf(token = gettoken(STD_NULL));
+        _chrf(token = gettoken(aasmContext, STD_NULL));
+        if (token == TOKEN_PTR) _chrf(token = gettoken(aasmContext, STD_NULL));
         switch (token) {
         case TOKEN_WORD:
             NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_WORD)");
-            _chrf(token = gettoken(STD_NULL));
-            if (token == TOKEN_PTR) _chrf(token = gettoken(STD_NULL));
-            _chrf(info = parsearg_mem(token));
+            _chrf(token = gettoken(aasmContext, STD_NULL));
+            if (token == TOKEN_PTR) _chrf(token = gettoken(aasmContext, STD_NULL));
+            _chrf(info = parsearg_mem(aasmContext, token));
             info.type = TYPE_M16;
             NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case TOKEN_DWORD:
             NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_DWORD)");
-            _chrf(token = gettoken(STD_NULL));
-            if (token == TOKEN_PTR) _chrf(token = gettoken(STD_NULL));
-            _chrf(info = parsearg_mem(token));
+            _chrf(token = gettoken(aasmContext, STD_NULL));
+            if (token == TOKEN_PTR) _chrf(token = gettoken(aasmContext, STD_NULL));
+            _chrf(info = parsearg_mem(aasmContext, token));
             info.type = TYPE_M32;
             NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case TOKEN_PLUS:
         case TOKEN_MINUS:
             NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_PLUS/TOKEN_MINUS)");
-            _chrf(info = parsearg_imm(token));
+            _chrf(info = parsearg_imm(aasmContext, token));
             if (info.type != TYPE_I16 && info.type != TYPE_I32) _serf_;
             NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
@@ -3594,7 +3594,7 @@ static t_aasm_oprinfo parsearg(C_CHAR *arg) {
         case TOKEN_FS:
         case TOKEN_GS:
             NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_SREGs)");
-            _chrf(info = parsearg_mem(token));
+            _chrf(info = parsearg_mem(aasmContext, token));
             if (info.type != TYPE_M) _serf_;
             NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
@@ -3607,30 +3607,30 @@ static t_aasm_oprinfo parsearg(C_CHAR *arg) {
         break;
     case TOKEN_FAR:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_FAR)");
-        _chrf(token = gettoken(STD_NULL));
-        if (token == TOKEN_PTR) _chrf(token = gettoken(STD_NULL));
+        _chrf(token = gettoken(aasmContext, STD_NULL));
+        if (token == TOKEN_PTR) _chrf(token = gettoken(aasmContext, STD_NULL));
         switch (token) {
         case TOKEN_WORD:
             NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_WORD)");
-            _chrf(token = gettoken(STD_NULL));
-            if (token == TOKEN_PTR) _chrf(token = gettoken(STD_NULL));
-            _chrf(info = parsearg_mem(token));
+            _chrf(token = gettoken(aasmContext, STD_NULL));
+            if (token == TOKEN_PTR) _chrf(token = gettoken(aasmContext, STD_NULL));
+            _chrf(info = parsearg_mem(aasmContext, token));
             info.type = TYPE_M16;
             info.ptr = PTR_FAR;
             NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case TOKEN_DWORD:
             NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_DWORD)");
-            _chrf(token = gettoken(STD_NULL));
-            if (token == TOKEN_PTR) _chrf(token = gettoken(STD_NULL));
-            _chrf(info = parsearg_mem(token));
+            _chrf(token = gettoken(aasmContext, STD_NULL));
+            if (token == TOKEN_PTR) _chrf(token = gettoken(aasmContext, STD_NULL));
+            _chrf(info = parsearg_mem(aasmContext, token));
             info.type = TYPE_M32;
             info.ptr = PTR_FAR;
             NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case TOKEN_IMM16:
             NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_IMM16)");
-            _chrf(info = parsearg_imm(token));
+            _chrf(info = parsearg_imm(aasmContext, token));
             if (info.type != TYPE_I16_16 && info.type != TYPE_I16_32) _serf_;
             NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
@@ -3641,7 +3641,7 @@ static t_aasm_oprinfo parsearg(C_CHAR *arg) {
         case TOKEN_FS:
         case TOKEN_GS:
             NTVDM64_TYPE_TRACE_BLOCK_BEGIN("token(TOKEN_SREGs)");
-            _chrf(info = parsearg_mem(token));
+            _chrf(info = parsearg_mem(aasmContext, token));
             if (info.type != TYPE_M) _serf_;
             NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
@@ -3704,34 +3704,34 @@ static t_aasm_oprinfo parsearg(C_CHAR *arg) {
     return info;
 }
 /* assembly compiler: code generator */
-static C_VOID _c_setbyte(uint8_t byte) {
+static C_VOID _c_setbyte(aasm32_context *aasmContext, uint8_t byte) {
     (*(uint8_t *)(acode + iop)) = byte;
     iop += 1;
 }
-static C_VOID _c_setword(uint16_t word) {
+static C_VOID _c_setword(aasm32_context *aasmContext, uint16_t word) {
     (*(uint16_t *)(acode + iop)) = word;
     iop += 2;
 }
-static C_VOID _c_setdword(uint32_t dword) {
+static C_VOID _c_setdword(aasm32_context *aasmContext, uint32_t dword) {
     (*(uint32_t *)(acode + iop)) = dword;
     iop += 4;
 }
-static C_VOID _c_imm8(uint8_t byte) {
+static C_VOID _c_imm8(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_c_imm8");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_setbyte(byte));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_setbyte(aasmContext, byte));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID _c_imm16(uint16_t word) {
+static C_VOID _c_imm16(aasm32_context *aasmContext, uint16_t word) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_c_imm16");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_setword(word));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_setword(aasmContext, word));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID _c_imm32(uint32_t dword) {
+static C_VOID _c_imm32(aasm32_context *aasmContext, uint32_t dword) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("_c_imm32");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_setdword(dword));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_setdword(aasmContext, dword));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID _c_modrm(t_aasm_oprinfo rminfo, uint8_t reg) {
+static C_VOID _c_modrm(aasm32_context *aasmContext, t_aasm_oprinfo rminfo, uint8_t reg) {
     uint8_t sibval;
     uint8_t modrmval = (reg << 3);
 
@@ -3752,10 +3752,10 @@ static C_VOID _c_modrm(t_aasm_oprinfo rminfo, uint8_t reg) {
         case MOD_M:
             modrmval |= (0 << 6);
             modrmval |= (uint8_t)rminfo.mem;
-            _c_setbyte(modrmval);
+            _c_setbyte(aasmContext, modrmval);
             switch (rminfo.mem) {
             case MEM_BP:
-                _c_setword(rminfo.disp16);
+                _c_setword(aasmContext, rminfo.disp16);
                 break;
             default:
                 break;
@@ -3764,14 +3764,14 @@ static C_VOID _c_modrm(t_aasm_oprinfo rminfo, uint8_t reg) {
         case MOD_M_DISP8:
             modrmval |= (1 << 6);
             modrmval |= (uint8_t)rminfo.mem;
-            _c_setbyte(modrmval);
-            _c_setbyte(rminfo.disp8);
+            _c_setbyte(aasmContext, modrmval);
+            _c_setbyte(aasmContext, rminfo.disp8);
             break;
         case MOD_M_DISP16:
             modrmval |= (2 << 6);
             modrmval |= (uint8_t)rminfo.mem;
-            _c_setbyte(modrmval);
-            _c_setword(rminfo.disp16);
+            _c_setbyte(aasmContext, modrmval);
+            _c_setword(aasmContext, rminfo.disp16);
             break;
         case MOD_R:
             NTVDM64_TYPE_TRACE_BLOCK_BEGIN("mod(MOD_R)");
@@ -3779,15 +3779,15 @@ static C_VOID _c_modrm(t_aasm_oprinfo rminfo, uint8_t reg) {
             switch (rminfo.type) {
             case TYPE_R8:
                 modrmval |= (uint8_t)rminfo.reg8;
-                _c_setbyte(modrmval);
+                _c_setbyte(aasmContext, modrmval);
                 break;
             case TYPE_R16:
                 modrmval |= (uint8_t)rminfo.reg16;
-                _c_setbyte(modrmval);
+                _c_setbyte(aasmContext, modrmval);
                 break;
             case TYPE_R32:
                 modrmval |= (uint8_t)rminfo.reg32;
-                _c_setbyte(modrmval);
+                _c_setbyte(aasmContext, modrmval);
                 break;
             default:
                 _ser_;
@@ -3815,7 +3815,7 @@ static C_VOID _c_modrm(t_aasm_oprinfo rminfo, uint8_t reg) {
         case MOD_M:
             modrmval |= (0 << 6);
             modrmval |= (uint8_t)rminfo.mem & 0x07;
-            _c_setbyte(modrmval);
+            _c_setbyte(aasmContext, modrmval);
             switch (rminfo.mem) {
             case MEM_SIB:
                 sibval = (uint8_t)rminfo.sib.base;
@@ -3841,17 +3841,17 @@ static C_VOID _c_modrm(t_aasm_oprinfo rminfo, uint8_t reg) {
                     break;
                 }
                 sibval |= (rminfo.sib.scale << 6);
-                _c_setbyte(sibval);
+                _c_setbyte(aasmContext, sibval);
                 switch (rminfo.sib.base) {
                 case R32_EBP:
-                    _c_setdword(rminfo.disp32);
+                    _c_setdword(aasmContext, rminfo.disp32);
                     break;
                 default:
                     break;
                 }
                 break;
             case MEM_EBP:
-                _c_setdword(rminfo.disp32);
+                _c_setdword(aasmContext, rminfo.disp32);
                 break;
             default:
                 break;
@@ -3860,7 +3860,7 @@ static C_VOID _c_modrm(t_aasm_oprinfo rminfo, uint8_t reg) {
         case MOD_M_DISP8:
             modrmval |= (1 << 6);
             modrmval |= (uint8_t)rminfo.mem & 0x07;
-            _c_setbyte(modrmval);
+            _c_setbyte(aasmContext, modrmval);
             switch (rminfo.mem) {
             case MEM_SIB:
                 sibval = (uint8_t)rminfo.sib.base;
@@ -3886,17 +3886,17 @@ static C_VOID _c_modrm(t_aasm_oprinfo rminfo, uint8_t reg) {
                     break;
                 }
                 sibval |= (rminfo.sib.scale << 6);
-                _c_setbyte(sibval);
+                _c_setbyte(aasmContext, sibval);
                 break;
             default:
                 break;
             }
-            _c_setbyte(rminfo.disp8);
+            _c_setbyte(aasmContext, rminfo.disp8);
             break;
         case MOD_M_DISP32:
             modrmval |= (2 << 6);
             modrmval |= (uint8_t)rminfo.mem & 0x07;
-            _c_setbyte(modrmval);
+            _c_setbyte(aasmContext, modrmval);
             switch (rminfo.mem) {
             case MEM_SIB:
                 sibval = (uint8_t)rminfo.sib.base;
@@ -3922,12 +3922,12 @@ static C_VOID _c_modrm(t_aasm_oprinfo rminfo, uint8_t reg) {
                     break;
                 }
                 sibval |= (rminfo.sib.scale << 6);
-                _c_setbyte(sibval);
+                _c_setbyte(aasmContext, sibval);
                 break;
             default:
                 break;
             }
-            _c_setdword(rminfo.disp32);
+            _c_setdword(aasmContext, rminfo.disp32);
             break;
         case MOD_R:
             NTVDM64_TYPE_TRACE_BLOCK_BEGIN("mod(MOD_R)");
@@ -3935,15 +3935,15 @@ static C_VOID _c_modrm(t_aasm_oprinfo rminfo, uint8_t reg) {
             switch (rminfo.type) {
             case TYPE_R8:
                 modrmval |= (uint8_t)rminfo.reg8;
-                _c_setbyte(modrmval);
+                _c_setbyte(aasmContext, modrmval);
                 break;
             case TYPE_R16:
                 modrmval |= (uint8_t)rminfo.reg16;
-                _c_setbyte(modrmval);
+                _c_setbyte(aasmContext, modrmval);
                 break;
             case TYPE_R32:
                 modrmval |= (uint8_t)rminfo.reg32;
-                _c_setbyte(modrmval);
+                _c_setbyte(aasmContext, modrmval);
                 break;
             default:
                 _ser_;
@@ -3965,25 +3965,25 @@ static C_VOID _c_modrm(t_aasm_oprinfo rminfo, uint8_t reg) {
 }
 
 /* concrete instructions */
-static C_VOID ADD_RM8_R8() {
+static C_VOID ADD_RM8_R8(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ADD_RM8_R8");
-    _c_setbyte(0x00);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg8));
+    _c_setbyte(aasmContext, 0x00);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID ADD_RM32_R32(uint8_t byte) {
+static C_VOID ADD_RM32_R32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ADD_RM32_R32");
     _SetOperandSize(byte);
-    _c_setbyte(0x01);
+    _c_setbyte(aasmContext, 0x01);
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -3992,25 +3992,25 @@ static C_VOID ADD_RM32_R32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID ADD_R8_RM8() {
+static C_VOID ADD_R8_RM8(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ADD_R8_RM8");
-    _c_setbyte(0x02);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg8));
+    _c_setbyte(aasmContext, 0x02);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID ADD_R32_RM32(uint8_t byte) {
+static C_VOID ADD_R32_RM32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ADD_R32_RM32");
     _SetOperandSize(byte);
-    _c_setbyte(0x03);
+    _c_setbyte(aasmContext, 0x03);
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -4019,25 +4019,25 @@ static C_VOID ADD_R32_RM32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID ADD_AL_I8() {
+static C_VOID ADD_AL_I8(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ADD_AL_I8");
-    _c_setbyte(0x04);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
+    _c_setbyte(aasmContext, 0x04);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aasmContext, aopri2.imm8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID ADD_EAX_I32(uint8_t byte) {
+static C_VOID ADD_EAX_I32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ADD_EAX_I32");
     _SetOperandSize(byte);
-    _c_setbyte(0x05);
+    _c_setbyte(aasmContext, 0x05);
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri2.imm16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aasmContext, aopri2.imm16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aopri2.imm32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aasmContext, aopri2.imm32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -4046,35 +4046,35 @@ static C_VOID ADD_EAX_I32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID PUSH_ES() {
+static C_VOID PUSH_ES(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_ES");
-    _c_setbyte(0x06);
+    _c_setbyte(aasmContext, 0x06);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID POP_ES() {
+static C_VOID POP_ES(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_ES");
-    _c_setbyte(0x07);
+    _c_setbyte(aasmContext, 0x07);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID OR_RM8_R8() {
+static C_VOID OR_RM8_R8(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("OR_RM8_R8");
-    _c_setbyte(0x08);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg8));
+    _c_setbyte(aasmContext, 0x08);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID OR_RM32_R32(uint8_t byte) {
+static C_VOID OR_RM32_R32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("OR_RM32_R32");
     _SetOperandSize(byte);
-    _c_setbyte(0x09);
+    _c_setbyte(aasmContext, 0x09);
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -4083,25 +4083,25 @@ static C_VOID OR_RM32_R32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID OR_R8_RM8() {
+static C_VOID OR_R8_RM8(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("OR_R8_RM8");
-    _c_setbyte(0x0a);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg8));
+    _c_setbyte(aasmContext, 0x0a);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID OR_R32_RM32(uint8_t byte) {
+static C_VOID OR_R32_RM32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("OR_R32_RM32");
     _SetOperandSize(byte);
-    _c_setbyte(0x0b);
+    _c_setbyte(aasmContext, 0x0b);
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -4110,25 +4110,25 @@ static C_VOID OR_R32_RM32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID OR_AL_I8() {
+static C_VOID OR_AL_I8(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("OR_AL_I8");
-    _c_setbyte(0x0c);
-    _c_imm8(aopri2.imm8);
+    _c_setbyte(aasmContext, 0x0c);
+    _c_imm8(aasmContext, aopri2.imm8);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID OR_EAX_I32(uint8_t byte) {
+static C_VOID OR_EAX_I32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("OR_EAX_I32");
     _SetOperandSize(byte);
-    _c_setbyte(0x0d);
+    _c_setbyte(aasmContext, 0x0d);
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri2.imm16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aasmContext, aopri2.imm16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aopri2.imm32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aasmContext, aopri2.imm32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -4137,40 +4137,40 @@ static C_VOID OR_EAX_I32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID PUSH_CS() {
+static C_VOID PUSH_CS(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_CS");
-    _c_setbyte(0x0e);
+    _c_setbyte(aasmContext, 0x0e);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID POP_CS() {
+static C_VOID POP_CS(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_CS");
-    _c_setbyte(0x0f);
+    _c_setbyte(aasmContext, 0x0f);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID INS_0F() {
+static C_VOID INS_0F(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_0F");
-    _c_setbyte(0x0f);
+    _c_setbyte(aasmContext, 0x0f);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID ADC_RM8_R8() {
+static C_VOID ADC_RM8_R8(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ADC_RM8_R8");
-    _c_setbyte(0x10);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg8));
+    _c_setbyte(aasmContext, 0x10);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID ADC_RM32_R32(uint8_t byte) {
+static C_VOID ADC_RM32_R32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ADC_RM32_R32");
     _SetOperandSize(byte);
-    _c_setbyte(0x11);
+    _c_setbyte(aasmContext, 0x11);
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -4179,25 +4179,25 @@ static C_VOID ADC_RM32_R32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID ADC_R8_RM8() {
+static C_VOID ADC_R8_RM8(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ADC_R8_RM8");
-    _c_setbyte(0x12);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg8));
+    _c_setbyte(aasmContext, 0x12);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID ADC_R32_RM32(uint8_t byte) {
+static C_VOID ADC_R32_RM32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ADC_R32_RM32");
     _SetOperandSize(byte);
-    _c_setbyte(0x13);
+    _c_setbyte(aasmContext, 0x13);
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -4206,25 +4206,25 @@ static C_VOID ADC_R32_RM32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID ADC_AL_I8() {
+static C_VOID ADC_AL_I8(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ADC_AL_I8");
-    _c_setbyte(0x14);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
+    _c_setbyte(aasmContext, 0x14);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aasmContext, aopri2.imm8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID ADC_EAX_I32(uint8_t byte) {
+static C_VOID ADC_EAX_I32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ADC_EAX_I32");
     _SetOperandSize(byte);
-    _c_setbyte(0x15);
+    _c_setbyte(aasmContext, 0x15);
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri2.imm16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aasmContext, aopri2.imm16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aopri2.imm32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aasmContext, aopri2.imm32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -4233,35 +4233,35 @@ static C_VOID ADC_EAX_I32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID PUSH_SS() {
+static C_VOID PUSH_SS(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_SS");
-    _c_setbyte(0x16);
+    _c_setbyte(aasmContext, 0x16);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID POP_SS() {
+static C_VOID POP_SS(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_SS");
-    _c_setbyte(0x17);
+    _c_setbyte(aasmContext, 0x17);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID SBB_RM8_R8() {
+static C_VOID SBB_RM8_R8(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SBB_RM8_R8");
-    _c_setbyte(0x18);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg8));
+    _c_setbyte(aasmContext, 0x18);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID SBB_RM32_R32(uint8_t byte) {
+static C_VOID SBB_RM32_R32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SBB_RM32_R32");
     _SetOperandSize(byte);
-    _c_setbyte(0x19);
+    _c_setbyte(aasmContext, 0x19);
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -4270,25 +4270,25 @@ static C_VOID SBB_RM32_R32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID SBB_R8_RM8() {
+static C_VOID SBB_R8_RM8(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SBB_R8_RM8");
-    _c_setbyte(0x1a);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg8));
+    _c_setbyte(aasmContext, 0x1a);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID SBB_R32_RM32(uint8_t byte) {
+static C_VOID SBB_R32_RM32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SBB_R32_RM32");
     _SetOperandSize(byte);
-    _c_setbyte(0x1b);
+    _c_setbyte(aasmContext, 0x1b);
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -4297,25 +4297,25 @@ static C_VOID SBB_R32_RM32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID SBB_AL_I8() {
+static C_VOID SBB_AL_I8(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SBB_AL_I8");
-    _c_setbyte(0x1c);
-    _c_imm8(aopri2.imm8);
+    _c_setbyte(aasmContext, 0x1c);
+    _c_imm8(aasmContext, aopri2.imm8);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID SBB_EAX_I32(uint8_t byte) {
+static C_VOID SBB_EAX_I32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SBB_EAX_I32");
     _SetOperandSize(byte);
-    _c_setbyte(0x1d);
+    _c_setbyte(aasmContext, 0x1d);
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri2.imm16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aasmContext, aopri2.imm16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aopri2.imm32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aasmContext, aopri2.imm32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -4324,35 +4324,35 @@ static C_VOID SBB_EAX_I32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID PUSH_DS() {
+static C_VOID PUSH_DS(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_DS");
-    _c_setbyte(0x1e);
+    _c_setbyte(aasmContext, 0x1e);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID POP_DS() {
+static C_VOID POP_DS(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_DS");
-    _c_setbyte(0x1f);
+    _c_setbyte(aasmContext, 0x1f);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID AND_RM8_R8() {
+static C_VOID AND_RM8_R8(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("AND_RM8_R8");
-    _c_setbyte(0x20);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg8));
+    _c_setbyte(aasmContext, 0x20);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID AND_RM32_R32(uint8_t byte) {
+static C_VOID AND_RM32_R32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("AND_RM32_R32");
     _SetOperandSize(byte);
-    _c_setbyte(0x21);
+    _c_setbyte(aasmContext, 0x21);
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -4361,25 +4361,25 @@ static C_VOID AND_RM32_R32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID AND_R8_RM8() {
+static C_VOID AND_R8_RM8(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("AND_R8_RM8");
-    _c_setbyte(0x22);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg8));
+    _c_setbyte(aasmContext, 0x22);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID AND_R32_RM32(uint8_t byte) {
+static C_VOID AND_R32_RM32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("AND_R32_RM32");
     _SetOperandSize(byte);
-    _c_setbyte(0x23);
+    _c_setbyte(aasmContext, 0x23);
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -4388,25 +4388,25 @@ static C_VOID AND_R32_RM32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID AND_AL_I8() {
+static C_VOID AND_AL_I8(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("AND_AL_I8");
-    _c_setbyte(0x24);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
+    _c_setbyte(aasmContext, 0x24);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aasmContext, aopri2.imm8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID AND_EAX_I32(uint8_t byte) {
+static C_VOID AND_EAX_I32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("AND_EAX_I32");
     _SetOperandSize(byte);
-    _c_setbyte(0x25);
+    _c_setbyte(aasmContext, 0x25);
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri2.imm16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aasmContext, aopri2.imm16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aopri2.imm32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aasmContext, aopri2.imm32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -4415,37 +4415,37 @@ static C_VOID AND_EAX_I32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID PREFIX_ES() {
+static C_VOID PREFIX_ES(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_ES");
     if (ARG_NONE) aoprig.flages = 1;
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID DAA() {
+static C_VOID DAA(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("DAA");
-    if (ARG_NONE) _c_setbyte(0x27);
+    if (ARG_NONE) _c_setbyte(aasmContext, 0x27);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID SUB_RM8_R8() {
+static C_VOID SUB_RM8_R8(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SUB_RM8_R8");
-    _c_setbyte(0x28);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg8));
+    _c_setbyte(aasmContext, 0x28);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID SUB_RM32_R32(uint8_t byte) {
+static C_VOID SUB_RM32_R32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SUB_RM32_R32");
     _SetOperandSize(byte);
-    _c_setbyte(0x29);
+    _c_setbyte(aasmContext, 0x29);
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -4454,25 +4454,25 @@ static C_VOID SUB_RM32_R32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID SUB_R8_RM8() {
+static C_VOID SUB_R8_RM8(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SUB_R8_RM8");
-    _c_setbyte(0x2a);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg8));
+    _c_setbyte(aasmContext, 0x2a);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID SUB_R32_RM32(uint8_t byte) {
+static C_VOID SUB_R32_RM32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SUB_R32_RM32");
     _SetOperandSize(byte);
-    _c_setbyte(0x2b);
+    _c_setbyte(aasmContext, 0x2b);
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -4481,25 +4481,25 @@ static C_VOID SUB_R32_RM32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID SUB_AL_I8() {
+static C_VOID SUB_AL_I8(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SUB_AL_I8");
-    _c_setbyte(0x2c);
-    _c_imm8(aopri2.imm8);
+    _c_setbyte(aasmContext, 0x2c);
+    _c_imm8(aasmContext, aopri2.imm8);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID SUB_EAX_I32(uint8_t byte) {
+static C_VOID SUB_EAX_I32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SUB_EAX_I32");
     _SetOperandSize(byte);
-    _c_setbyte(0x2d);
+    _c_setbyte(aasmContext, 0x2d);
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri2.imm16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aasmContext, aopri2.imm16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aopri2.imm32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aasmContext, aopri2.imm32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -4508,37 +4508,37 @@ static C_VOID SUB_EAX_I32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID PREFIX_CS() {
+static C_VOID PREFIX_CS(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_CS");
     if (ARG_NONE) aoprig.flagcs = 1;
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID DAS() {
+static C_VOID DAS(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("DAS");
-    if (ARG_NONE) _c_setbyte(0x2f);
+    if (ARG_NONE) _c_setbyte(aasmContext, 0x2f);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID XOR_RM8_R8() {
+static C_VOID XOR_RM8_R8(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XOR_RM8_R8");
-    _c_setbyte(0x30);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg8));
+    _c_setbyte(aasmContext, 0x30);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID XOR_RM32_R32(uint8_t byte) {
+static C_VOID XOR_RM32_R32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XOR_RM32_R32");
     _SetOperandSize(byte);
-    _c_setbyte(0x31);
+    _c_setbyte(aasmContext, 0x31);
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -4547,25 +4547,25 @@ static C_VOID XOR_RM32_R32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID XOR_R8_RM8() {
+static C_VOID XOR_R8_RM8(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XOR_R8_RM8");
-    _c_setbyte(0x32);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg8));
+    _c_setbyte(aasmContext, 0x32);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID XOR_R32_RM32(uint8_t byte) {
+static C_VOID XOR_R32_RM32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XOR_R32_RM32");
     _SetOperandSize(byte);
-    _c_setbyte(0x33);
+    _c_setbyte(aasmContext, 0x33);
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -4574,25 +4574,25 @@ static C_VOID XOR_R32_RM32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID XOR_AL_I8() {
+static C_VOID XOR_AL_I8(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XOR_AL_I8");
-    _c_setbyte(0x34);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
+    _c_setbyte(aasmContext, 0x34);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aasmContext, aopri2.imm8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID XOR_EAX_I32(uint8_t byte) {
+static C_VOID XOR_EAX_I32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XOR_EAX_I32");
     _SetOperandSize(byte);
-    _c_setbyte(0x35);
+    _c_setbyte(aasmContext, 0x35);
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri2.imm16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aasmContext, aopri2.imm16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aopri2.imm32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aasmContext, aopri2.imm32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -4601,37 +4601,37 @@ static C_VOID XOR_EAX_I32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID PREFIX_SS() {
+static C_VOID PREFIX_SS(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_SS");
     if (ARG_NONE) aoprig.flagss = 1;
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID AAA() {
+static C_VOID AAA(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("AAA");
-    if (ARG_NONE) _c_setbyte(0x37);
+    if (ARG_NONE) _c_setbyte(aasmContext, 0x37);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID CMP_RM8_R8() {
+static C_VOID CMP_RM8_R8(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CMP_RM8_R8");
-    _c_setbyte(0x38);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg8));
+    _c_setbyte(aasmContext, 0x38);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID CMP_RM32_R32(uint8_t byte) {
+static C_VOID CMP_RM32_R32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CMP_RM32_R32");
     _SetOperandSize(byte);
-    _c_setbyte(0x39);
+    _c_setbyte(aasmContext, 0x39);
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -4640,25 +4640,25 @@ static C_VOID CMP_RM32_R32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID CMP_R8_RM8() {
+static C_VOID CMP_R8_RM8(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CMP_R8_RM8");
-    _c_setbyte(0x3a);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg8));
+    _c_setbyte(aasmContext, 0x3a);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID CMP_R32_RM32(uint8_t byte) {
+static C_VOID CMP_R32_RM32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CMP_R32_RM32");
     _SetOperandSize(byte);
-    _c_setbyte(0x3b);
+    _c_setbyte(aasmContext, 0x3b);
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -4667,25 +4667,25 @@ static C_VOID CMP_R32_RM32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID CMP_AL_I8() {
+static C_VOID CMP_AL_I8(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CMP_AL_I8");
-    _c_setbyte(0x3c);
-    _c_imm8(aopri2.imm8);
+    _c_setbyte(aasmContext, 0x3c);
+    _c_imm8(aasmContext, aopri2.imm8);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID CMP_EAX_I32(uint8_t byte) {
+static C_VOID CMP_EAX_I32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CMP_EAX_I32");
     _SetOperandSize(byte);
-    _c_setbyte(0x3d);
+    _c_setbyte(aasmContext, 0x3d);
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri2.imm16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aasmContext, aopri2.imm16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aopri2.imm32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aasmContext, aopri2.imm32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -4694,236 +4694,236 @@ static C_VOID CMP_EAX_I32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID PREFIX_DS() {
+static C_VOID PREFIX_DS(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_DS");
     if (ARG_NONE) aoprig.flagds = 1;
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID AAS() {
+static C_VOID AAS(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("AAS");
-    if (ARG_NONE) _c_setbyte(0x3f);
+    if (ARG_NONE) _c_setbyte(aasmContext, 0x3f);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID INC_EAX(uint8_t byte) {
+static C_VOID INC_EAX(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_EAX");
     _SetOperandSize(byte);
-    _c_setbyte(0x40);
+    _c_setbyte(aasmContext, 0x40);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID INC_ECX(uint8_t byte) {
+static C_VOID INC_ECX(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_ECX");
     _SetOperandSize(byte);
-    _c_setbyte(0x41);
+    _c_setbyte(aasmContext, 0x41);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID INC_EDX(uint8_t byte) {
+static C_VOID INC_EDX(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_EDX");
     _SetOperandSize(byte);
-    _c_setbyte(0x42);
+    _c_setbyte(aasmContext, 0x42);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID INC_EBX(uint8_t byte) {
+static C_VOID INC_EBX(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_EBX");
     _SetOperandSize(byte);
-    _c_setbyte(0x43);
+    _c_setbyte(aasmContext, 0x43);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID INC_ESP(uint8_t byte) {
+static C_VOID INC_ESP(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_ESP");
     _SetOperandSize(byte);
-    _c_setbyte(0x44);
+    _c_setbyte(aasmContext, 0x44);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID INC_EBP(uint8_t byte) {
+static C_VOID INC_EBP(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_EBP");
     _SetOperandSize(byte);
-    _c_setbyte(0x45);
+    _c_setbyte(aasmContext, 0x45);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID INC_ESI(uint8_t byte) {
+static C_VOID INC_ESI(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_ESI");
     _SetOperandSize(byte);
-    _c_setbyte(0x46);
+    _c_setbyte(aasmContext, 0x46);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID INC_EDI(uint8_t byte) {
+static C_VOID INC_EDI(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_EDI");
     _SetOperandSize(byte);
-    _c_setbyte(0x47);
+    _c_setbyte(aasmContext, 0x47);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID DEC_EAX(uint8_t byte) {
+static C_VOID DEC_EAX(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_EAX");
     _SetOperandSize(byte);
-    _c_setbyte(0x48);
+    _c_setbyte(aasmContext, 0x48);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID DEC_ECX(uint8_t byte) {
+static C_VOID DEC_ECX(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_ECX");
     _SetOperandSize(byte);
-    _c_setbyte(0x49);
+    _c_setbyte(aasmContext, 0x49);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID DEC_EDX(uint8_t byte) {
+static C_VOID DEC_EDX(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_EDX");
     _SetOperandSize(byte);
-    _c_setbyte(0x4a);
+    _c_setbyte(aasmContext, 0x4a);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID DEC_EBX(uint8_t byte) {
+static C_VOID DEC_EBX(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_EBX");
     _SetOperandSize(byte);
-    _c_setbyte(0x4b);
+    _c_setbyte(aasmContext, 0x4b);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID DEC_ESP(uint8_t byte) {
+static C_VOID DEC_ESP(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_ESP");
     _SetOperandSize(byte);
-    _c_setbyte(0x4c);
+    _c_setbyte(aasmContext, 0x4c);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID DEC_EBP(uint8_t byte) {
+static C_VOID DEC_EBP(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_EBP");
     _SetOperandSize(byte);
-    _c_setbyte(0x4d);
+    _c_setbyte(aasmContext, 0x4d);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID DEC_ESI(uint8_t byte) {
+static C_VOID DEC_ESI(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_ESI");
     _SetOperandSize(byte);
-    _c_setbyte(0x4e);
+    _c_setbyte(aasmContext, 0x4e);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID DEC_EDI(uint8_t byte) {
+static C_VOID DEC_EDI(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_EDI");
     _SetOperandSize(byte);
-    _c_setbyte(0x4f);
+    _c_setbyte(aasmContext, 0x4f);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID PUSH_EAX(uint8_t byte) {
+static C_VOID PUSH_EAX(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_EAX");
     _SetOperandSize(byte);
-    _c_setbyte(0x50);
+    _c_setbyte(aasmContext, 0x50);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID PUSH_ECX(uint8_t byte) {
+static C_VOID PUSH_ECX(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_ECX");
     _SetOperandSize(byte);
-    _c_setbyte(0x51);
+    _c_setbyte(aasmContext, 0x51);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID PUSH_EDX(uint8_t byte) {
+static C_VOID PUSH_EDX(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_EDX");
     _SetOperandSize(byte);
-    _c_setbyte(0x52);
+    _c_setbyte(aasmContext, 0x52);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID PUSH_EBX(uint8_t byte) {
+static C_VOID PUSH_EBX(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_EBX");
     _SetOperandSize(byte);
-    _c_setbyte(0x53);
+    _c_setbyte(aasmContext, 0x53);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID PUSH_ESP(uint8_t byte) {
+static C_VOID PUSH_ESP(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_ESP");
     _SetOperandSize(byte);
-    _c_setbyte(0x54);
+    _c_setbyte(aasmContext, 0x54);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID PUSH_EBP(uint8_t byte) {
+static C_VOID PUSH_EBP(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_EBP");
     _SetOperandSize(byte);
-    _c_setbyte(0x55);
+    _c_setbyte(aasmContext, 0x55);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID PUSH_ESI(uint8_t byte) {
+static C_VOID PUSH_ESI(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_ESI");
     _SetOperandSize(byte);
-    _c_setbyte(0x56);
+    _c_setbyte(aasmContext, 0x56);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID PUSH_EDI(uint8_t byte) {
+static C_VOID PUSH_EDI(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_EDI");
     _SetOperandSize(byte);
-    _c_setbyte(0x57);
+    _c_setbyte(aasmContext, 0x57);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID POP_EAX(uint8_t byte) {
+static C_VOID POP_EAX(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_EAX");
     _SetOperandSize(byte);
-    _c_setbyte(0x58);
+    _c_setbyte(aasmContext, 0x58);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID POP_ECX(uint8_t byte) {
+static C_VOID POP_ECX(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_ECX");
     _SetOperandSize(byte);
-    _c_setbyte(0x59);
+    _c_setbyte(aasmContext, 0x59);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID POP_EDX(uint8_t byte) {
+static C_VOID POP_EDX(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_EDX");
     _SetOperandSize(byte);
-    _c_setbyte(0x5a);
+    _c_setbyte(aasmContext, 0x5a);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID POP_EBX(uint8_t byte) {
+static C_VOID POP_EBX(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_EBX");
     _SetOperandSize(byte);
-    _c_setbyte(0x5b);
+    _c_setbyte(aasmContext, 0x5b);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID POP_ESP(uint8_t byte) {
+static C_VOID POP_ESP(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_ESP");
     _SetOperandSize(byte);
-    _c_setbyte(0x5c);
+    _c_setbyte(aasmContext, 0x5c);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID POP_EBP(uint8_t byte) {
+static C_VOID POP_EBP(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_EBP");
     _SetOperandSize(byte);
-    _c_setbyte(0x5d);
+    _c_setbyte(aasmContext, 0x5d);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID POP_ESI(uint8_t byte) {
+static C_VOID POP_ESI(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_ESI");
     _SetOperandSize(byte);
-    _c_setbyte(0x5e);
+    _c_setbyte(aasmContext, 0x5e);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID POP_EDI(uint8_t byte) {
+static C_VOID POP_EDI(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_EDI");
     _SetOperandSize(byte);
-    _c_setbyte(0x5f);
+    _c_setbyte(aasmContext, 0x5f);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID PUSHA(uint8_t byte) {
+static C_VOID PUSHA(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSHA");
     _SetOperandSize(byte);
-    _c_setbyte(0x60);
+    _c_setbyte(aasmContext, 0x60);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID POPA(uint8_t byte) {
+static C_VOID POPA(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("POPA");
     _SetOperandSize(byte);
-    _c_setbyte(0x61);
+    _c_setbyte(aasmContext, 0x61);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
 
-static C_VOID BOUND_R32_M32_32(uint8_t byte) {
+static C_VOID BOUND_R32_M32_32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("BOUND_R32_M32_32");
     _SetOperandSize(byte);
-    _c_setbyte(0x62);
+    _c_setbyte(aasmContext, 0x62);
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -4932,53 +4932,53 @@ static C_VOID BOUND_R32_M32_32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID ARPL_RM16_R16() {
+static C_VOID ARPL_RM16_R16(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ARPL_RM16_R16");
     if (ARG_RM16_R16) {
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ARG_RM16_R16");
-        _c_setbyte(0x63);
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg16));
+        _c_setbyte(aasmContext, 0x63);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
     } else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID PREFIX_FS() {
+static C_VOID PREFIX_FS(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_FS");
     if (ARG_NONE) aoprig.flagfs = 1;
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID PREFIX_GS() {
+static C_VOID PREFIX_GS(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_GS");
     if (ARG_NONE) aoprig.flaggs = 1;
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID PREFIX_OprSize() {
+static C_VOID PREFIX_OprSize(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_OprSize");
     if (ARG_NONE) prefix_oprsizeg = 1;
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID PREFIX_AddrSize() {
+static C_VOID PREFIX_AddrSize(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_AddrSize");
     if (ARG_NONE) prefix_addrsizeg = 1;
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID PUSH_I32(uint8_t byte) {
+static C_VOID PUSH_I32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_I32");
     _SetOperandSize(byte);
-    _c_setbyte(0x68);
+    _c_setbyte(aasmContext, 0x68);
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri1.imm16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aasmContext, aopri1.imm16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aopri1.imm32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aasmContext, aopri1.imm32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -4987,21 +4987,21 @@ static C_VOID PUSH_I32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID IMUL_R32_RM32_I32(uint8_t byte) {
+static C_VOID IMUL_R32_RM32_I32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("IMUL_R32_RM32_I32");
     _SetOperandSize(byte);
-    _c_setbyte(0x69);
+    _c_setbyte(aasmContext, 0x69);
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg16));
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri3.imm16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aasmContext, aopri3.imm16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg32));
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aopri3.imm32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aasmContext, aopri3.imm32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -5010,27 +5010,27 @@ static C_VOID IMUL_R32_RM32_I32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;;
 }
-static C_VOID PUSH_I8() {
+static C_VOID PUSH_I8(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_I8");
-    _c_setbyte(0x6a);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri1.imm8));
+    _c_setbyte(aasmContext, 0x6a);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aasmContext, aopri1.imm8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID IMUL_R32_RM32_I8(uint8_t byte) {
+static C_VOID IMUL_R32_RM32_I8(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("IMUL_R32_RM32_I32");
     _SetOperandSize(byte);
-    _c_setbyte(0x6b);
+    _c_setbyte(aasmContext, 0x6b);
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg16));
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri3.imm8));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aasmContext, aopri3.imm8));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg32));
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri3.imm8));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aasmContext, aopri3.imm8));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -5039,9 +5039,9 @@ static C_VOID IMUL_R32_RM32_I8(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;;
 }
-static C_VOID INSB() {
+static C_VOID INSB(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INSB");
-    _c_setbyte(0x6c);
+    _c_setbyte(aasmContext, 0x6c);
     rinfo = STD_NULL;
     if (ARG_NONE) ;
     else if (ARG_ESDI8_DX) _SetAddressSize(2);
@@ -5049,10 +5049,10 @@ static C_VOID INSB() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID INSW(uint8_t byte) {
+static C_VOID INSW(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INSW");
     _SetOperandSize(byte);
-    _c_setbyte(0x6d);
+    _c_setbyte(aasmContext, 0x6d);
     rinfo = STD_NULL;
     switch (byte) {
     case 2:
@@ -5077,9 +5077,9 @@ static C_VOID INSW(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID OUTSB() {
+static C_VOID OUTSB(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("OUTSB");
-    _c_setbyte(0x6e);
+    _c_setbyte(aasmContext, 0x6e);
     rinfo = &aopri1;
     if (rinfo->flagds) rinfo->flagds = 0;
     if (ARG_NONE) rinfo = STD_NULL;
@@ -5088,10 +5088,10 @@ static C_VOID OUTSB() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID OUTSW(uint8_t byte) {
+static C_VOID OUTSW(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("OUTSW");
     _SetOperandSize(byte);
-    _c_setbyte(0x6f);
+    _c_setbyte(aasmContext, 0x6f);
     rinfo = &aopri1;
     if (rinfo->flagds) rinfo->flagds = 0;
     switch (byte) {
@@ -5117,27 +5117,27 @@ static C_VOID OUTSW(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID INS_80(uint8_t rid) {
+static C_VOID INS_80(aasm32_context *aasmContext, uint8_t rid) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_80");
-    _c_setbyte(0x80);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, rid));
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
+    _c_setbyte(aasmContext, 0x80);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, rid));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aasmContext, aopri2.imm8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID INS_81(uint8_t rid, uint8_t byte) {
+static C_VOID INS_81(aasm32_context *aasmContext, uint8_t rid, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_81");
     _SetOperandSize(byte);
-    _c_setbyte(0x81);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, rid));
+    _c_setbyte(aasmContext, 0x81);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, rid));
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri2.imm16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aasmContext, aopri2.imm16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aopri2.imm32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aasmContext, aopri2.imm32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -5146,33 +5146,33 @@ static C_VOID INS_81(uint8_t rid, uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID INS_83(uint8_t rid, uint8_t byte) {
+static C_VOID INS_83(aasm32_context *aasmContext, uint8_t rid, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_83");
     _SetOperandSize(byte);
-    _c_setbyte(0x83);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, rid));
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
+    _c_setbyte(aasmContext, 0x83);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, rid));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aasmContext, aopri2.imm8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID TEST_RM8_R8() {
+static C_VOID TEST_RM8_R8(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("TEST_RM8_R8");
-    _c_setbyte(0x84);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg8));
+    _c_setbyte(aasmContext, 0x84);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID TEST_RM32_R32(uint8_t byte) {
+static C_VOID TEST_RM32_R32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("TEST_RM32_R32");
     _SetOperandSize(byte);
-    _c_setbyte(0x85);
+    _c_setbyte(aasmContext, 0x85);
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -5181,25 +5181,25 @@ static C_VOID TEST_RM32_R32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID XCHG_RM8_R8() {
+static C_VOID XCHG_RM8_R8(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_RM8_R8");
-    _c_setbyte(0x86);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg8));
+    _c_setbyte(aasmContext, 0x86);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID XCHG_RM32_R32(uint8_t byte) {
+static C_VOID XCHG_RM32_R32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_RM32_R32");
     _SetOperandSize(byte);
-    _c_setbyte(0x87);
+    _c_setbyte(aasmContext, 0x87);
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -5208,25 +5208,25 @@ static C_VOID XCHG_RM32_R32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_RM8_R8() {
+static C_VOID MOV_RM8_R8(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_RM8_R8");
-    _c_setbyte(0x88);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg8));
+    _c_setbyte(aasmContext, 0x88);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_RM32_R32(uint8_t byte) {
+static C_VOID MOV_RM32_R32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_RM32_R32");
     _SetOperandSize(byte);
-    _c_setbyte(0x89);
+    _c_setbyte(aasmContext, 0x89);
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -5235,25 +5235,25 @@ static C_VOID MOV_RM32_R32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_R8_RM8() {
+static C_VOID MOV_R8_RM8(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_RM8_R8");
-    _c_setbyte(0x8a);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg8));
+    _c_setbyte(aasmContext, 0x8a);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_R32_RM32(uint8_t byte) {
+static C_VOID MOV_R32_RM32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_R32_RM32");
     _SetOperandSize(byte);
-    _c_setbyte(0x8b);
+    _c_setbyte(aasmContext, 0x8b);
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -5262,26 +5262,26 @@ static C_VOID MOV_R32_RM32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_RM16_SREG(uint8_t byte) {
+static C_VOID MOV_RM16_SREG(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_RM16_SREG");
     _SetOperandSize(byte);
-    _c_setbyte(0x8c);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.sreg));
+    _c_setbyte(aasmContext, 0x8c);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.sreg));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID LEA_R32_M32(uint8_t byte) {
+static C_VOID LEA_R32_M32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LEA_R32_M32");
     _SetOperandSize(byte);
-    _c_setbyte(0x8d);
+    _c_setbyte(aasmContext, 0x8d);
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -5290,206 +5290,206 @@ static C_VOID LEA_R32_M32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_SREG_RM16(uint8_t byte) {
+static C_VOID MOV_SREG_RM16(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_SREG_RM16");
     _SetOperandSize(byte);
-    _c_setbyte(0x8e);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.sreg));
+    _c_setbyte(aasmContext, 0x8e);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.sreg));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID INS_8F(uint8_t rid, uint8_t byte) {
+static C_VOID INS_8F(aasm32_context *aasmContext, uint8_t rid, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_8F");
     _SetOperandSize(byte);
-    _c_setbyte(0x8f);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, rid));
+    _c_setbyte(aasmContext, 0x8f);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, rid));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID NOP() {
+static C_VOID NOP(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("NOP");
-    if (ARG_NONE) _c_setbyte(0x90);
+    if (ARG_NONE) _c_setbyte(aasmContext, 0x90);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID XCHG_EAX_EAX(uint8_t byte) {
+static C_VOID XCHG_EAX_EAX(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_EAX_EAX");
     _SetOperandSize(byte);
-    _c_setbyte(0x90);
+    _c_setbyte(aasmContext, 0x90);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID XCHG_ECX_EAX(uint8_t byte) {
+static C_VOID XCHG_ECX_EAX(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_ECX_EAX");
     _SetOperandSize(byte);
-    _c_setbyte(0x91);
+    _c_setbyte(aasmContext, 0x91);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID XCHG_EDX_EAX(uint8_t byte) {
+static C_VOID XCHG_EDX_EAX(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_EDX_EAX");
     _SetOperandSize(byte);
-    _c_setbyte(0x92);
+    _c_setbyte(aasmContext, 0x92);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID XCHG_EBX_EAX(uint8_t byte) {
+static C_VOID XCHG_EBX_EAX(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_EBX_EAX");
     _SetOperandSize(byte);
-    _c_setbyte(0x93);
+    _c_setbyte(aasmContext, 0x93);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID XCHG_ESP_EAX(uint8_t byte) {
+static C_VOID XCHG_ESP_EAX(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_ESP_EAX");
     _SetOperandSize(byte);
-    _c_setbyte(0x94);
+    _c_setbyte(aasmContext, 0x94);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID XCHG_EBP_EAX(uint8_t byte) {
+static C_VOID XCHG_EBP_EAX(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_EBP_EAX");
     _SetOperandSize(byte);
-    _c_setbyte(0x95);
+    _c_setbyte(aasmContext, 0x95);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID XCHG_ESI_EAX(uint8_t byte) {
+static C_VOID XCHG_ESI_EAX(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_ESI_EAX");
     _SetOperandSize(byte);
-    _c_setbyte(0x96);
+    _c_setbyte(aasmContext, 0x96);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID XCHG_EDI_EAX(uint8_t byte) {
+static C_VOID XCHG_EDI_EAX(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_EDI_EAX");
     _SetOperandSize(byte);
-    _c_setbyte(0x97);
+    _c_setbyte(aasmContext, 0x97);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID CBW(uint8_t byte) {
+static C_VOID CBW(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CBW");
     _SetOperandSize(byte);
-    if (ARG_NONE) _c_setbyte(0x98);
+    if (ARG_NONE) _c_setbyte(aasmContext, 0x98);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID CWD(uint8_t byte) {
+static C_VOID CWD(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CWD");
     _SetOperandSize(byte);
-    if (ARG_NONE) _c_setbyte(0x99);
+    if (ARG_NONE) _c_setbyte(aasmContext, 0x99);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID CALL_PTR16_32(uint8_t byte) {
+static C_VOID CALL_PTR16_32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CALL_PTR16_32");
     _SetOperandSize(byte);
-    _c_setbyte(0x9a);
+    _c_setbyte(aasmContext, 0x9a);
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16((uint16_t) aopri1.reip));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aasmContext, (uint16_t) aopri1.reip));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32((uint32_t) aopri1.reip));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aasmContext, (uint32_t) aopri1.reip));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri1.rcs));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aasmContext, aopri1.rcs));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID WAIT() {
+static C_VOID WAIT(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("WAIT");
-    _c_setbyte(0x9b);
+    _c_setbyte(aasmContext, 0x9b);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID PUSHF(uint8_t byte) {
+static C_VOID PUSHF(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSHF");
     _SetOperandSize(byte);
-    _c_setbyte(0x9c);
+    _c_setbyte(aasmContext, 0x9c);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID POPF(uint8_t byte) {
+static C_VOID POPF(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("POPF");
     _SetOperandSize(byte);
-    _c_setbyte(0x9d);
+    _c_setbyte(aasmContext, 0x9d);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID SAHF() {
+static C_VOID SAHF(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SAHF");
-    _c_setbyte(0x9e);
+    _c_setbyte(aasmContext, 0x9e);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID LAHF() {
+static C_VOID LAHF(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LAHF");
-    _c_setbyte(0x9f);
+    _c_setbyte(aasmContext, 0x9f);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_AL_MOFFS8() {
+static C_VOID MOV_AL_MOFFS8(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_AL_MOFFS8");
-    _c_setbyte(0xa0);
+    _c_setbyte(aasmContext, 0xa0);
     if (aopri2.mem == MEM_BP) {
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("16-bit Addressing");
         _SetAddressSize(2);
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri2.disp16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aasmContext, aopri2.disp16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
     } else if (aopri2.mem == MEM_EBP) {
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("32-bit Addressing");
         _SetAddressSize(4);
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri2.disp32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aasmContext, aopri2.disp32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
     } else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_EAX_MOFFS32(uint8_t byte) {
+static C_VOID MOV_EAX_MOFFS32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_EAX_MOFFS32");
     _SetOperandSize(byte);
-    _c_setbyte(0xa1);
+    _c_setbyte(aasmContext, 0xa1);
     if (aopri2.mem == MEM_BP) {
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("16-bit Addressing");
         _SetAddressSize(2);
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri2.disp16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aasmContext, aopri2.disp16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
     } else if (aopri2.mem == MEM_EBP) {
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("32-bit Addressing");
         _SetAddressSize(4);
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aopri2.disp32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aasmContext, aopri2.disp32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
     } else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_MOFFS8_AL() {
+static C_VOID MOV_MOFFS8_AL(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_MOFFS8_AL");
-    _c_setbyte(0xa2);
+    _c_setbyte(aasmContext, 0xa2);
     if (aopri1.mem == MEM_BP) {
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("16-bit Addressing");
         _SetAddressSize(2);
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri1.disp16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aasmContext, aopri1.disp16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
     } else if (aopri1.mem == MEM_EBP) {
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("32-bit Addressing");
         _SetAddressSize(4);
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri1.disp32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aasmContext, aopri1.disp32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
     } else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_MOFFS32_EAX(uint8_t byte) {
+static C_VOID MOV_MOFFS32_EAX(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_MOFFS32_EAX");
     _SetOperandSize(byte);
-    _c_setbyte(0xa3);
+    _c_setbyte(aasmContext, 0xa3);
     if (aopri1.mem == MEM_BP) {
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("16-bit Addressing");
         _SetAddressSize(2);
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri1.disp16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aasmContext, aopri1.disp16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
     } else if (aopri1.mem == MEM_EBP) {
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("32-bit Addressing");
         _SetAddressSize(4);
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aopri1.disp32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aasmContext, aopri1.disp32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
     } else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID MOVSB() {
+static C_VOID MOVSB(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOVSB");
-    _c_setbyte(0xa4);
+    _c_setbyte(aasmContext, 0xa4);
     rinfo = &aopri2;
     if (rinfo->flagds) rinfo->flagds = 0;
     if (ARG_NONE) rinfo = STD_NULL;
@@ -5498,10 +5498,10 @@ static C_VOID MOVSB() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID MOVSW(uint8_t byte) {
+static C_VOID MOVSW(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOVSW");
     _SetOperandSize(byte);
-    _c_setbyte(0xa5);
+    _c_setbyte(aasmContext, 0xa5);
     rinfo = &aopri2;
     if (rinfo->flagds) rinfo->flagds = 0;
     switch (byte) {
@@ -5527,9 +5527,9 @@ static C_VOID MOVSW(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID CMPSB() {
+static C_VOID CMPSB(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CMPSB");
-    _c_setbyte(0xa6);
+    _c_setbyte(aasmContext, 0xa6);
     rinfo = &aopri1;
     if (rinfo->flagds) rinfo->flagds = 0;
     if (ARG_NONE) rinfo = STD_NULL;
@@ -5538,10 +5538,10 @@ static C_VOID CMPSB() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID CMPSW(uint8_t byte) {
+static C_VOID CMPSW(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CMPSW");
     _SetOperandSize(byte);
-    _c_setbyte(0xa7);
+    _c_setbyte(aasmContext, 0xa7);
     rinfo = &aopri1;
     if (rinfo->flagds) rinfo->flagds = 0;
     switch (byte) {
@@ -5567,25 +5567,25 @@ static C_VOID CMPSW(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID TEST_AL_I8() {
+static C_VOID TEST_AL_I8(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("TEST_AL_I8");
-    _c_setbyte(0xa8);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
+    _c_setbyte(aasmContext, 0xa8);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aasmContext, aopri2.imm8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID TEST_EAX_I32(uint8_t byte) {
+static C_VOID TEST_EAX_I32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("TEST_EAX_I32");
     _SetOperandSize(byte);
-    _c_setbyte(0xa9);
+    _c_setbyte(aasmContext, 0xa9);
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri2.imm16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aasmContext, aopri2.imm16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aopri2.imm32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aasmContext, aopri2.imm32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -5594,9 +5594,9 @@ static C_VOID TEST_EAX_I32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID STOSB() {
+static C_VOID STOSB(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("STOSB");
-    _c_setbyte(0xaa);
+    _c_setbyte(aasmContext, 0xaa);
     rinfo = STD_NULL;
     if (ARG_NONE) ;
     else if (ARG_ESDI8) _SetAddressSize(2);
@@ -5604,10 +5604,10 @@ static C_VOID STOSB() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID STOSW(uint8_t byte) {
+static C_VOID STOSW(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("STOSW");
     _SetOperandSize(byte);
-    _c_setbyte(0xab);
+    _c_setbyte(aasmContext, 0xab);
     rinfo = STD_NULL;
     switch (byte) {
     case 2:
@@ -5632,9 +5632,9 @@ static C_VOID STOSW(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID LODSB() {
+static C_VOID LODSB(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LODSB");
-    _c_setbyte(0xac);
+    _c_setbyte(aasmContext, 0xac);
     rinfo = &aopri1;
     if (rinfo->flagds) rinfo->flagds = 0;
     if (ARG_NONE) rinfo = STD_NULL;
@@ -5643,10 +5643,10 @@ static C_VOID LODSB() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID LODSW(uint8_t byte) {
+static C_VOID LODSW(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LODSW");
     _SetOperandSize(byte);
-    _c_setbyte(0xad);
+    _c_setbyte(aasmContext, 0xad);
     rinfo = &aopri1;
     if (rinfo->flagds) rinfo->flagds = 0;
     switch (byte) {
@@ -5672,9 +5672,9 @@ static C_VOID LODSW(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID SCASB() {
+static C_VOID SCASB(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SCASB");
-    _c_setbyte(0xae);
+    _c_setbyte(aasmContext, 0xae);
     rinfo = STD_NULL;
     if (ARG_NONE) ;
     else if (ARG_ESDI8) _SetAddressSize(2);
@@ -5682,10 +5682,10 @@ static C_VOID SCASB() {
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID SCASW(uint8_t byte) {
+static C_VOID SCASW(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SCASW");
     _SetOperandSize(byte);
-    _c_setbyte(0xaf);
+    _c_setbyte(aasmContext, 0xaf);
     rinfo = STD_NULL;
     switch (byte) {
     case 2:
@@ -5710,67 +5710,67 @@ static C_VOID SCASW(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_AL_I8() {
+static C_VOID MOV_AL_I8(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_AL_I8");
-    _c_setbyte(0xb0);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
+    _c_setbyte(aasmContext, 0xb0);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aasmContext, aopri2.imm8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_CL_I8() {
+static C_VOID MOV_CL_I8(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_CL_I8");
-    _c_setbyte(0xb1);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
+    _c_setbyte(aasmContext, 0xb1);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aasmContext, aopri2.imm8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_DL_I8() {
+static C_VOID MOV_DL_I8(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_DL_I8");
-    _c_setbyte(0xb2);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
+    _c_setbyte(aasmContext, 0xb2);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aasmContext, aopri2.imm8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_BL_I8() {
+static C_VOID MOV_BL_I8(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_BL_I8");
-    _c_setbyte(0xb3);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
+    _c_setbyte(aasmContext, 0xb3);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aasmContext, aopri2.imm8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_AH_I8() {
+static C_VOID MOV_AH_I8(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_AH_I8");
-    _c_setbyte(0xb4);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
+    _c_setbyte(aasmContext, 0xb4);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aasmContext, aopri2.imm8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_CH_I8() {
+static C_VOID MOV_CH_I8(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_CH_I8");
-    _c_setbyte(0xb5);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
+    _c_setbyte(aasmContext, 0xb5);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aasmContext, aopri2.imm8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_DH_I8() {
+static C_VOID MOV_DH_I8(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_DH_I8");
-    _c_setbyte(0xb6);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
+    _c_setbyte(aasmContext, 0xb6);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aasmContext, aopri2.imm8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_BH_I8() {
+static C_VOID MOV_BH_I8(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_BH_I8");
-    _c_setbyte(0xb7);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
+    _c_setbyte(aasmContext, 0xb7);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aasmContext, aopri2.imm8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_EAX_I32(uint8_t byte) {
+static C_VOID MOV_EAX_I32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_EAX_I32");
     _SetOperandSize(byte);
-    _c_setbyte(0xb8);
+    _c_setbyte(aasmContext, 0xb8);
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri2.imm16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aasmContext, aopri2.imm16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aopri2.imm32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aasmContext, aopri2.imm32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -5779,19 +5779,19 @@ static C_VOID MOV_EAX_I32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_ECX_I32(uint8_t byte) {
+static C_VOID MOV_ECX_I32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_ECX_I32");
     _SetOperandSize(byte);
-    _c_setbyte(0xb9);
+    _c_setbyte(aasmContext, 0xb9);
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri2.imm16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aasmContext, aopri2.imm16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aopri2.imm32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aasmContext, aopri2.imm32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -5800,19 +5800,19 @@ static C_VOID MOV_ECX_I32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_EDX_I32(uint8_t byte) {
+static C_VOID MOV_EDX_I32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_EDX_I32");
     _SetOperandSize(byte);
-    _c_setbyte(0xba);
+    _c_setbyte(aasmContext, 0xba);
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri2.imm16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aasmContext, aopri2.imm16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aopri2.imm32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aasmContext, aopri2.imm32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -5821,19 +5821,19 @@ static C_VOID MOV_EDX_I32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_EBX_I32(uint8_t byte) {
+static C_VOID MOV_EBX_I32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_EBX_I32");
     _SetOperandSize(byte);
-    _c_setbyte(0xbb);
+    _c_setbyte(aasmContext, 0xbb);
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri2.imm16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aasmContext, aopri2.imm16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aopri2.imm32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aasmContext, aopri2.imm32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -5842,19 +5842,19 @@ static C_VOID MOV_EBX_I32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_ESP_I32(uint8_t byte) {
+static C_VOID MOV_ESP_I32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_ESP_I32");
     _SetOperandSize(byte);
-    _c_setbyte(0xbc);
+    _c_setbyte(aasmContext, 0xbc);
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri2.imm16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aasmContext, aopri2.imm16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aopri2.imm32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aasmContext, aopri2.imm32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -5863,19 +5863,19 @@ static C_VOID MOV_ESP_I32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_EBP_I32(uint8_t byte) {
+static C_VOID MOV_EBP_I32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_EBP_I32");
     _SetOperandSize(byte);
-    _c_setbyte(0xbd);
+    _c_setbyte(aasmContext, 0xbd);
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri2.imm16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aasmContext, aopri2.imm16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aopri2.imm32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aasmContext, aopri2.imm32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -5884,19 +5884,19 @@ static C_VOID MOV_EBP_I32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_ESI_I32(uint8_t byte) {
+static C_VOID MOV_ESI_I32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_ESI_I32");
     _SetOperandSize(byte);
-    _c_setbyte(0xbe);
+    _c_setbyte(aasmContext, 0xbe);
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri2.imm16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aasmContext, aopri2.imm16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aopri2.imm32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aasmContext, aopri2.imm32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -5905,19 +5905,19 @@ static C_VOID MOV_ESI_I32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_EDI_I32(uint8_t byte) {
+static C_VOID MOV_EDI_I32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_EDI_I32");
     _SetOperandSize(byte);
-    _c_setbyte(0xbf);
+    _c_setbyte(aasmContext, 0xbf);
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri2.imm16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aasmContext, aopri2.imm16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aopri2.imm32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aasmContext, aopri2.imm32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -5926,45 +5926,45 @@ static C_VOID MOV_EDI_I32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID INS_C0(uint8_t rid) {
+static C_VOID INS_C0(aasm32_context *aasmContext, uint8_t rid) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_C0");
-    _c_setbyte(0xc0);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, rid));
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
+    _c_setbyte(aasmContext, 0xc0);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, rid));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aasmContext, aopri2.imm8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID INS_C1(uint8_t rid, uint8_t byte) {
+static C_VOID INS_C1(aasm32_context *aasmContext, uint8_t rid, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_C1");
     _SetOperandSize(byte);
-    _c_setbyte(0xc1);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, rid));
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
+    _c_setbyte(aasmContext, 0xc1);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, rid));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aasmContext, aopri2.imm8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID RET_I16() {
+static C_VOID RET_I16(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("RET_I16");
-    _c_setbyte(0xc2);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri1.imm16));
+    _c_setbyte(aasmContext, 0xc2);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aasmContext, aopri1.imm16));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID RET_() {
+static C_VOID RET_(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("RET");
-    _c_setbyte(0xc3);
+    _c_setbyte(aasmContext, 0xc3);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID LES_R32_M16_32(uint8_t byte) {
+static C_VOID LES_R32_M16_32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LES_R32_M16_32");
     _SetOperandSize(byte);
-    _c_setbyte(0xc4);
+    _c_setbyte(aasmContext, 0xc4);
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -5973,18 +5973,18 @@ static C_VOID LES_R32_M16_32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID LDS_R32_M16_32(uint8_t byte) {
+static C_VOID LDS_R32_M16_32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LDS_R32_M16_32");
-    _c_setbyte(0xc5);
+    _c_setbyte(aasmContext, 0xc5);
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -5993,27 +5993,27 @@ static C_VOID LDS_R32_M16_32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID INS_C6(uint8_t rid) {
+static C_VOID INS_C6(aasm32_context *aasmContext, uint8_t rid) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_C6");
-    _c_setbyte(0xc6);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, rid));
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
+    _c_setbyte(aasmContext, 0xc6);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, rid));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aasmContext, aopri2.imm8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID INS_C7(uint8_t rid, uint8_t byte) {
+static C_VOID INS_C7(aasm32_context *aasmContext, uint8_t rid, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_C7");
     _SetOperandSize(byte);
-    _c_setbyte(0xc7);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, rid));
+    _c_setbyte(aasmContext, 0xc7);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, rid));
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri2.imm16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aasmContext, aopri2.imm16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aopri2.imm32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aasmContext, aopri2.imm32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -6022,117 +6022,117 @@ static C_VOID INS_C7(uint8_t rid, uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID ENTER() {
+static C_VOID ENTER(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ENTER");
     if (ARG_I16_I8) {
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ARG_I16_I8");
-        _c_setbyte(0xc8);
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri1.imm16));
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
+        _c_setbyte(aasmContext, 0xc8);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aasmContext, aopri1.imm16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aasmContext, aopri2.imm8));
         NTVDM64_TYPE_TRACE_BLOCK_END;
     } else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID LEAVE() {
+static C_VOID LEAVE(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LEAVE");
-    if (ARG_NONE) _c_setbyte(0xc9);
+    if (ARG_NONE) _c_setbyte(aasmContext, 0xc9);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID RETF_I16() {
+static C_VOID RETF_I16(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("RETF_I16");
-    _c_setbyte(0xca);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri1.imm16));
+    _c_setbyte(aasmContext, 0xca);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aasmContext, aopri1.imm16));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID RETF_() {
+static C_VOID RETF_(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("RETF_");
-    _c_setbyte(0xcb);
+    _c_setbyte(aasmContext, 0xcb);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID INT3() {
+static C_VOID INT3(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INT3");
-    _c_setbyte(0xcc);
+    _c_setbyte(aasmContext, 0xcc);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID INT_I8() {
+static C_VOID INT_I8(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INT_I8");
-    _c_setbyte(0xcd);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri1.imm8));
+    _c_setbyte(aasmContext, 0xcd);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aasmContext, aopri1.imm8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID INTO() {
+static C_VOID INTO(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INTO");
-    _c_setbyte(0xcd);
+    _c_setbyte(aasmContext, 0xcd);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID IRET(uint8_t byte) {
+static C_VOID IRET(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("IRET");
     _SetOperandSize(byte);
-    _c_setbyte(0xcf);
+    _c_setbyte(aasmContext, 0xcf);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID INS_D0(uint8_t rid) {
+static C_VOID INS_D0(aasm32_context *aasmContext, uint8_t rid) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_DO");
-    _c_setbyte(0xd0);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, rid));
+    _c_setbyte(aasmContext, 0xd0);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, rid));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID INS_D1(uint8_t rid, uint8_t byte) {
+static C_VOID INS_D1(aasm32_context *aasmContext, uint8_t rid, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_D1");
     _SetOperandSize(byte);
-    _c_setbyte(0xd1);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, rid));
+    _c_setbyte(aasmContext, 0xd1);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, rid));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID INS_D2(uint8_t rid) {
+static C_VOID INS_D2(aasm32_context *aasmContext, uint8_t rid) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_D2");
-    _c_setbyte(0xd2);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, rid));
+    _c_setbyte(aasmContext, 0xd2);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, rid));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID INS_D3(uint8_t rid, uint8_t byte) {
+static C_VOID INS_D3(aasm32_context *aasmContext, uint8_t rid, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_D3");
     _SetOperandSize(byte);
-    _c_setbyte(0xd3);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, rid));
+    _c_setbyte(aasmContext, 0xd3);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, rid));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID AAM() {
+static C_VOID AAM(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("AAM");
     if (ARG_NONE) {
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ARG_NONE");
-        _c_setbyte(0xd4);
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(0x0a));
+        _c_setbyte(aasmContext, 0xd4);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aasmContext, 0x0a));
         NTVDM64_TYPE_TRACE_BLOCK_END;
     } else if (ARG_I8) {
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ARG_I8");
-        _c_setbyte(0xd4);
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri1.imm8));
+        _c_setbyte(aasmContext, 0xd4);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aasmContext, aopri1.imm8));
         NTVDM64_TYPE_TRACE_BLOCK_END;
     } else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID AAD() {
+static C_VOID AAD(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("AAD");
     if (ARG_NONE) {
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ARG_NONE");
-        _c_setbyte(0xd5);
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(0x0a));
+        _c_setbyte(aasmContext, 0xd5);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aasmContext, 0x0a));
         NTVDM64_TYPE_TRACE_BLOCK_END;
     } else if (ARG_I8) {
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ARG_I8");
-        _c_setbyte(0xd5);
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri1.imm8));
+        _c_setbyte(aasmContext, 0xd5);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aasmContext, aopri1.imm8));
         NTVDM64_TYPE_TRACE_BLOCK_END;
     } else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID XLATB() {
+static C_VOID XLATB(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XLATB");
     rinfo = &aopri1;
     if (rinfo->flagds) rinfo->flagds = 0;
-    _c_setbyte(0xd7);
+    _c_setbyte(aasmContext, 0xd7);
     if (ARG_DSBXAL8) {
         _SetAddressSize(2);
     } else if (ARG_DSEBXAL8) {
@@ -6140,44 +6140,44 @@ static C_VOID XLATB() {
     } else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID IN_AL_I8() {
+static C_VOID IN_AL_I8(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("IN_AL_I8");
-    _c_setbyte(0xe4);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
+    _c_setbyte(aasmContext, 0xe4);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aasmContext, aopri2.imm8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID IN_EAX_I8(uint8_t byte) {
+static C_VOID IN_EAX_I8(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("IN_AL_I8");
     _SetOperandSize(byte);
-    _c_setbyte(0xe5);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
+    _c_setbyte(aasmContext, 0xe5);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aasmContext, aopri2.imm8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID OUT_I8_AL() {
+static C_VOID OUT_I8_AL(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("OUT_I8_AL");
-    _c_setbyte(0xe6);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri1.imm8));
+    _c_setbyte(aasmContext, 0xe6);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aasmContext, aopri1.imm8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID OUT_I8_EAX(uint8_t byte) {
+static C_VOID OUT_I8_EAX(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("OUT_I8_EAX");
-    _c_setbyte(0xe7);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri1.imm8));
+    _c_setbyte(aasmContext, 0xe7);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aasmContext, aopri1.imm8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID CALL_REL32(uint8_t byte) {
+static C_VOID CALL_REL32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CALL_REL32");
     _SetOperandSize(byte);
-    _c_setbyte(0xe8);
+    _c_setbyte(aasmContext, 0xe8);
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri1.imm16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aasmContext, aopri1.imm16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aopri1.imm32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aasmContext, aopri1.imm32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -6186,19 +6186,19 @@ static C_VOID CALL_REL32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID JMP_REL32(uint8_t byte) {
+static C_VOID JMP_REL32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JMP_REL32");
     _SetOperandSize(byte);
-    _c_setbyte(0xe9);
+    _c_setbyte(aasmContext, 0xe9);
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri1.imm16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aasmContext, aopri1.imm16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aopri1.imm32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aasmContext, aopri1.imm32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -6207,111 +6207,111 @@ static C_VOID JMP_REL32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID JMP_PTR16_32(uint8_t byte) {
+static C_VOID JMP_PTR16_32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JMP_PTR16_32");
     _SetOperandSize(byte);
-    _c_setbyte(0xea);
+    _c_setbyte(aasmContext, 0xea);
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16((uint16_t) aopri1.reip));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aasmContext, (uint16_t) aopri1.reip));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32((uint32_t) aopri1.reip));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aasmContext, (uint32_t) aopri1.reip));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
         _ser_;
         break;
     }
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri1.rcs));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aasmContext, aopri1.rcs));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID IN_AL_DX() {
+static C_VOID IN_AL_DX(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("IN_AL_DX");
-    _c_setbyte(0xec);
+    _c_setbyte(aasmContext, 0xec);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID IN_EAX_DX(uint8_t byte) {
+static C_VOID IN_EAX_DX(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("IN_EAX_DX");
     _SetOperandSize(byte);
-    _c_setbyte(0xed);
+    _c_setbyte(aasmContext, 0xed);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID OUT_DX_AL() {
+static C_VOID OUT_DX_AL(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("OUT_DX_AL");
-    _c_setbyte(0xee);
+    _c_setbyte(aasmContext, 0xee);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID OUT_DX_EAX(uint8_t byte) {
+static C_VOID OUT_DX_EAX(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("OUT_DX_EAX");
     _SetOperandSize(byte);
-    _c_setbyte(0xef);
+    _c_setbyte(aasmContext, 0xef);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID PREFIX_LOCK() {
+static C_VOID PREFIX_LOCK(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_LOCK");
     if (ARG_NONE) prefix_lock = 1;
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID QDX() {
+static C_VOID QDX(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_LOCK");
     if (ARG_I8) {
-        _c_setbyte(0xf1);
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri1.imm8));
+        _c_setbyte(aasmContext, 0xf1);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aasmContext, aopri1.imm8));
     } else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID PREFIX_REPNZ() {
+static C_VOID PREFIX_REPNZ(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_REPNZ");
     if (ARG_NONE) prefix_repnz = 1;
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID PREFIX_REPZ() {
+static C_VOID PREFIX_REPZ(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_REPZ");
     if (ARG_NONE) prefix_repz = 1;
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID HLT() {
+static C_VOID HLT(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("HLT");
-    if (ARG_NONE) _c_setbyte(0xf4);
+    if (ARG_NONE) _c_setbyte(aasmContext, 0xf4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID CMC() {
+static C_VOID CMC(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CMC");
-    if (ARG_NONE) _c_setbyte(0xf5);
+    if (ARG_NONE) _c_setbyte(aasmContext, 0xf5);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID INS_F6(uint8_t rid) {
+static C_VOID INS_F6(aasm32_context *aasmContext, uint8_t rid) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_F6");
-    _c_setbyte(0xf6);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, rid));
-    if (!rid) NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
+    _c_setbyte(aasmContext, 0xf6);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, rid));
+    if (!rid) NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aasmContext, aopri2.imm8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID INS_F7(uint8_t rid, uint8_t byte) {
+static C_VOID INS_F7(aasm32_context *aasmContext, uint8_t rid, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_F7");
     _SetOperandSize(byte);
-    _c_setbyte(0xf7);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, rid));
+    _c_setbyte(aasmContext, 0xf7);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, rid));
     if (!rid) {
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("!rid");
         switch (byte) {
         case 2:
             NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-            NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aopri2.imm16));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm16(aasmContext, aopri2.imm16));
             NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         case 4:
             NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-            NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aopri2.imm32));
+            NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm32(aasmContext, aopri2.imm32));
             NTVDM64_TYPE_TRACE_BLOCK_END;
             break;
         default:
@@ -6322,86 +6322,86 @@ static C_VOID INS_F7(uint8_t rid, uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID CLC() {
+static C_VOID CLC(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CLC");
-    if (ARG_NONE) _c_setbyte(0xf8);
+    if (ARG_NONE) _c_setbyte(aasmContext, 0xf8);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID STC() {
+static C_VOID STC(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("STC");
-    if (ARG_NONE) _c_setbyte(0xf9);
+    if (ARG_NONE) _c_setbyte(aasmContext, 0xf9);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID CLI() {
+static C_VOID CLI(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CLI");
-    if (ARG_NONE) _c_setbyte(0xfa);
+    if (ARG_NONE) _c_setbyte(aasmContext, 0xfa);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID STI() {
+static C_VOID STI(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("STI");
-    if (ARG_NONE) _c_setbyte(0xfb);
+    if (ARG_NONE) _c_setbyte(aasmContext, 0xfb);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID CLD() {
+static C_VOID CLD(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CLD");
-    if (ARG_NONE) _c_setbyte(0xfc);
+    if (ARG_NONE) _c_setbyte(aasmContext, 0xfc);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID STD() {
+static C_VOID STD(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("STD");
-    if (ARG_NONE) _c_setbyte(0xfd);
+    if (ARG_NONE) _c_setbyte(aasmContext, 0xfd);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID INS_FE(uint8_t rid) {
+static C_VOID INS_FE(aasm32_context *aasmContext, uint8_t rid) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_FE");
-    _c_setbyte(0xfe);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, rid));
+    _c_setbyte(aasmContext, 0xfe);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, rid));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID INS_FF(uint8_t rid, uint8_t byte) {
+static C_VOID INS_FF(aasm32_context *aasmContext, uint8_t rid, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_FF");
     _SetOperandSize(byte);
-    _c_setbyte(0xff);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, rid));
+    _c_setbyte(aasmContext, 0xff);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, rid));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
 /* concrete extended instructions */
-static C_VOID INS_0F_00(uint8_t rid, uint8_t byte) {
+static C_VOID INS_0F_00(aasm32_context *aasmContext, uint8_t rid, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_0F_00");
     _SetOperandSize(byte);
-    INS_0F();
-    _c_setbyte(0x00);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, rid));
+    INS_0F(aasmContext);
+    _c_setbyte(aasmContext, 0x00);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, rid));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID INS_0F_01(uint8_t rid, uint8_t byte) {
+static C_VOID INS_0F_01(aasm32_context *aasmContext, uint8_t rid, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_0F_01");
     _SetOperandSize(byte);
-    INS_0F();
-    _c_setbyte(0x01);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, rid));
+    INS_0F(aasmContext);
+    _c_setbyte(aasmContext, 0x01);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, rid));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID LAR_R32_RM32(uint8_t byte) {
+static C_VOID LAR_R32_RM32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LAR_R32_RM32");
     _SetOperandSize(byte);
-    INS_0F();
-    _c_setbyte(0x02);
+    INS_0F(aasmContext);
+    _c_setbyte(aasmContext, 0x02);
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -6410,20 +6410,20 @@ static C_VOID LAR_R32_RM32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID LSL_R32_RM32(uint8_t byte) {
+static C_VOID LSL_R32_RM32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LSL_R32_RM32");
     _SetOperandSize(byte);
-    INS_0F();
-    _c_setbyte(0x03);
+    INS_0F(aasmContext);
+    _c_setbyte(aasmContext, 0x03);
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -6432,86 +6432,86 @@ static C_VOID LSL_R32_RM32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID CLTS() {
+static C_VOID CLTS(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CLTS");
-    INS_0F();
-    _c_setbyte(0x06);
+    INS_0F(aasmContext);
+    _c_setbyte(aasmContext, 0x06);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_R32_CR(uint8_t crid) {
+static C_VOID MOV_R32_CR(aasm32_context *aasmContext, uint8_t crid) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_R32_CR");
-    INS_0F();
-    _c_setbyte(0x20);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, crid));
+    INS_0F(aasmContext);
+    _c_setbyte(aasmContext, 0x20);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, crid));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_R32_DR(uint8_t drid) {
+static C_VOID MOV_R32_DR(aasm32_context *aasmContext, uint8_t drid) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_R32_DR");
-    INS_0F();
-    _c_setbyte(0x21);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, drid));
+    INS_0F(aasmContext);
+    _c_setbyte(aasmContext, 0x21);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, drid));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_CR_R32(uint8_t crid) {
+static C_VOID MOV_CR_R32(aasm32_context *aasmContext, uint8_t crid) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_CR_R32");
-    INS_0F();
-    _c_setbyte(0x22);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, crid));
+    INS_0F(aasmContext);
+    _c_setbyte(aasmContext, 0x22);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, crid));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_DR_R32(uint8_t drid) {
+static C_VOID MOV_DR_R32(aasm32_context *aasmContext, uint8_t drid) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_DR_R32");
-    INS_0F();
-    _c_setbyte(0x23);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, drid));
+    INS_0F(aasmContext);
+    _c_setbyte(aasmContext, 0x23);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, drid));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_R32_TR(uint8_t trid) {
+static C_VOID MOV_R32_TR(aasm32_context *aasmContext, uint8_t trid) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_R32_TR");
-    INS_0F();
-    _c_setbyte(0x24);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, trid));
+    INS_0F(aasmContext);
+    _c_setbyte(aasmContext, 0x24);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, trid));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_TR_R32(uint8_t trid) {
+static C_VOID MOV_TR_R32(aasm32_context *aasmContext, uint8_t trid) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_TR_R32");
-    INS_0F();
-    _c_setbyte(0x26);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, trid));
+    INS_0F(aasmContext);
+    _c_setbyte(aasmContext, 0x26);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, trid));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID SETCC_RM8(uint8_t opcode) {
+static C_VOID SETCC_RM8(aasm32_context *aasmContext, uint8_t opcode) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SETCC_RM8");
     if (ARG_RM8) {
-        INS_0F();
-        _c_setbyte(opcode);
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, 0));
+        INS_0F(aasmContext);
+        _c_setbyte(aasmContext, opcode);
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, 0));
     } else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID PUSH_FS() {
+static C_VOID PUSH_FS(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_FS");
-    INS_0F();
-    _c_setbyte(0xa0);
+    INS_0F(aasmContext);
+    _c_setbyte(aasmContext, 0xa0);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID POP_FS() {
+static C_VOID POP_FS(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_FS");
-    INS_0F();
-    _c_setbyte(0xa1);
+    INS_0F(aasmContext);
+    _c_setbyte(aasmContext, 0xa1);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID BT_RM32_R32(uint8_t byte) {
+static C_VOID BT_RM32_R32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("BT_RM32_R32");
     _SetOperandSize(byte);
-    INS_0F();
-    _c_setbyte(0xa3);
+    INS_0F(aasmContext);
+    _c_setbyte(aasmContext, 0xa3);
     switch (byte) {
     case 2:
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg16));
         break;
     case 4:
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg32));
         break;
     default:
         _ser_;
@@ -6519,36 +6519,36 @@ static C_VOID BT_RM32_R32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID SHLD_RM32_R32_I8(uint8_t byte) {
+static C_VOID SHLD_RM32_R32_I8(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SHLD_RM32_R32_I8");
     _SetOperandSize(byte);
-    INS_0F();
-    _c_setbyte(0xa4);
+    INS_0F(aasmContext);
+    _c_setbyte(aasmContext, 0xa4);
     switch (byte) {
     case 2:
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg16));
         break;
     case 4:
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg32));
         break;
     default:
         _ser_;
         break;
     }
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri3.imm8));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aasmContext, aopri3.imm8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID SHLD_RM32_R32_CL(uint8_t byte) {
+static C_VOID SHLD_RM32_R32_CL(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SHLD_RM32_R32_CL");
     _SetOperandSize(byte);
-    INS_0F();
-    _c_setbyte(0xa5);
+    INS_0F(aasmContext);
+    _c_setbyte(aasmContext, 0xa5);
     switch (byte) {
     case 2:
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg16));
         break;
     case 4:
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg32));
         break;
     default:
         _ser_;
@@ -6556,29 +6556,29 @@ static C_VOID SHLD_RM32_R32_CL(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID PUSH_GS() {
+static C_VOID PUSH_GS(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_GS");
-    INS_0F();
-    _c_setbyte(0xa8);
+    INS_0F(aasmContext);
+    _c_setbyte(aasmContext, 0xa8);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID POP_GS() {
+static C_VOID POP_GS(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_GS");
-    INS_0F();
-    _c_setbyte(0xa9);
+    INS_0F(aasmContext);
+    _c_setbyte(aasmContext, 0xa9);
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID BTS_RM32_R32(uint8_t byte) {
+static C_VOID BTS_RM32_R32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("BTS_RM32_R32");
     _SetOperandSize(byte);
-    INS_0F();
-    _c_setbyte(0xab);
+    INS_0F(aasmContext);
+    _c_setbyte(aasmContext, 0xab);
     switch (byte) {
     case 2:
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg16));
         break;
     case 4:
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg32));
         break;
     default:
         _ser_;
@@ -6586,36 +6586,36 @@ static C_VOID BTS_RM32_R32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID SHRD_RM32_R32_I8(uint8_t byte) {
+static C_VOID SHRD_RM32_R32_I8(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SHRD_RM32_R32_I8");
     _SetOperandSize(byte);
-    INS_0F();
-    _c_setbyte(0xac);
+    INS_0F(aasmContext);
+    _c_setbyte(aasmContext, 0xac);
     switch (byte) {
     case 2:
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg16));
         break;
     case 4:
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg32));
         break;
     default:
         _ser_;
         break;
     }
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri3.imm8));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aasmContext, aopri3.imm8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID SHRD_RM32_R32_CL(uint8_t byte) {
+static C_VOID SHRD_RM32_R32_CL(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SHRD_RM32_R32_CL");
     _SetOperandSize(byte);
-    INS_0F();
-    _c_setbyte(0xad);
+    INS_0F(aasmContext);
+    _c_setbyte(aasmContext, 0xad);
     switch (byte) {
     case 2:
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg16));
         break;
     case 4:
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg32));
         break;
     default:
         _ser_;
@@ -6623,17 +6623,17 @@ static C_VOID SHRD_RM32_R32_CL(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID IMUL_R32_RM32(uint8_t byte) {
+static C_VOID IMUL_R32_RM32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("IMUL_R32_RM32");
     _SetOperandSize(byte);
-    INS_0F();
-    _c_setbyte(0xab);
+    INS_0F(aasmContext);
+    _c_setbyte(aasmContext, 0xab);
     switch (byte) {
     case 2:
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg16));
         break;
     case 4:
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg32));
         break;
     default:
         _ser_;
@@ -6641,20 +6641,20 @@ static C_VOID IMUL_R32_RM32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID LSS_R32_M16_32(uint8_t byte) {
+static C_VOID LSS_R32_M16_32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LSS_R32_M16_32");
     _SetOperandSize(byte);
-    INS_0F();
-    _c_setbyte(0xb2);
+    INS_0F(aasmContext);
+    _c_setbyte(aasmContext, 0xb2);
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -6663,17 +6663,17 @@ static C_VOID LSS_R32_M16_32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID BTR_RM32_R32(uint8_t byte) {
+static C_VOID BTR_RM32_R32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("BTR_RM32_R32");
     _SetOperandSize(byte);
-    INS_0F();
-    _c_setbyte(0xb3);
+    INS_0F(aasmContext);
+    _c_setbyte(aasmContext, 0xb3);
     switch (byte) {
     case 2:
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg16));
         break;
     case 4:
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg32));
         break;
     default:
         _ser_;
@@ -6681,20 +6681,20 @@ static C_VOID BTR_RM32_R32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID LFS_R32_M16_32(uint8_t byte) {
+static C_VOID LFS_R32_M16_32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LFS_R32_M16_32");
     _SetOperandSize(byte);
-    INS_0F();
-    _c_setbyte(0xb4);
+    INS_0F(aasmContext);
+    _c_setbyte(aasmContext, 0xb4);
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -6703,20 +6703,20 @@ static C_VOID LFS_R32_M16_32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID LGS_R32_M16_32(uint8_t byte) {
+static C_VOID LGS_R32_M16_32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LGS_R32_M16_32");
     _SetOperandSize(byte);
-    INS_0F();
-    _c_setbyte(0xb5);
+    INS_0F(aasmContext);
+    _c_setbyte(aasmContext, 0xb5);
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -6725,20 +6725,20 @@ static C_VOID LGS_R32_M16_32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID MOVZX_R32_RM8(uint8_t byte) {
+static C_VOID MOVZX_R32_RM8(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOVZX_R32_RM8");
     _SetOperandSize(byte);
-    INS_0F();
-    _c_setbyte(0xb6);
+    INS_0F(aasmContext);
+    _c_setbyte(aasmContext, 0xb6);
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -6747,33 +6747,33 @@ static C_VOID MOVZX_R32_RM8(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID MOVZX_R32_RM16() {
+static C_VOID MOVZX_R32_RM16(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOVZX_R32_RM16");
-    INS_0F();
-    _c_setbyte(0xb7);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg32));
+    INS_0F(aasmContext);
+    _c_setbyte(aasmContext, 0xb7);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg32));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID INS_0F_BA(uint8_t rid, uint8_t byte) {
+static C_VOID INS_0F_BA(aasm32_context *aasmContext, uint8_t rid, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_0F_BA");
     _SetOperandSize(byte);
-    INS_0F();
-    _c_setbyte(0xba);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, rid));
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aopri2.imm8));
+    INS_0F(aasmContext);
+    _c_setbyte(aasmContext, 0xba);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, rid));
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_imm8(aasmContext, aopri2.imm8));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID BTC_RM32_R32(uint8_t byte) {
+static C_VOID BTC_RM32_R32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("BTC_RM32_R32");
     _SetOperandSize(byte);
-    INS_0F();
-    _c_setbyte(0xbb);
+    INS_0F(aasmContext);
+    _c_setbyte(aasmContext, 0xbb);
     switch (byte) {
     case 2:
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg16));
         break;
     case 4:
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri1, aopri2.reg32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg32));
         break;
     default:
         _ser_;
@@ -6781,20 +6781,20 @@ static C_VOID BTC_RM32_R32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID BSF_R32_RM32(uint8_t byte) {
+static C_VOID BSF_R32_RM32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("BSF_R32_RM32");
     _SetOperandSize(byte);
-    INS_0F();
-    _c_setbyte(0xbc);
+    INS_0F(aasmContext);
+    _c_setbyte(aasmContext, 0xbc);
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -6803,20 +6803,20 @@ static C_VOID BSF_R32_RM32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID BSR_R32_RM32(uint8_t byte) {
+static C_VOID BSR_R32_RM32(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("BSR_R32_RM32");
     _SetOperandSize(byte);
-    INS_0F();
-    _c_setbyte(0xbd);
+    INS_0F(aasmContext);
+    _c_setbyte(aasmContext, 0xbd);
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -6825,20 +6825,20 @@ static C_VOID BSR_R32_RM32(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID MOVSX_R32_RM8(uint8_t byte) {
+static C_VOID MOVSX_R32_RM8(aasm32_context *aasmContext, uint8_t byte) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOVSX_R32_RM8");
     _SetOperandSize(byte);
-    INS_0F();
-    _c_setbyte(0xbe);
+    INS_0F(aasmContext);
+    _c_setbyte(aasmContext, 0xbe);
     switch (byte) {
     case 2:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg16));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg16));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         NTVDM64_TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg32));
+        NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg32));
         NTVDM64_TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -6847,1175 +6847,1175 @@ static C_VOID MOVSX_R32_RM8(uint8_t byte) {
     }
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID MOVSX_R32_RM16() {
+static C_VOID MOVSX_R32_RM16(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOVSX_R32_RM16");
-    INS_0F();
-    _c_setbyte(0xbf);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aopri2, aopri1.reg32));
+    INS_0F(aasmContext);
+    _c_setbyte(aasmContext, 0xbf);
+    NTVDM64_TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg32));
     NTVDM64_TYPE_TRACE_CALL_END;
 }
 
 /* abstract instructions */
-static C_VOID PUSH() {
+static C_VOID PUSH(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH");
-    if      (ARG_ES) PUSH_ES();
-    else if (ARG_CS) PUSH_CS();
-    else if (ARG_SS) PUSH_SS();
-    else if (ARG_DS) PUSH_DS();
-    else if (ARG_FS) PUSH_FS();
-    else if (ARG_GS) PUSH_GS();
-    else if (ARG_AX) PUSH_EAX(2);
-    else if (ARG_CX) PUSH_ECX(2);
-    else if (ARG_DX) PUSH_EDX(2);
-    else if (ARG_BX) PUSH_EBX(2);
-    else if (ARG_SP) PUSH_ESP(2);
-    else if (ARG_BP) PUSH_EBP(2);
-    else if (ARG_SI) PUSH_ESI(2);
-    else if (ARG_DI) PUSH_EDI(2);
-    else if (ARG_EAX) PUSH_EAX(4);
-    else if (ARG_ECX) PUSH_ECX(4);
-    else if (ARG_EDX) PUSH_EDX(4);
-    else if (ARG_EBX) PUSH_EBX(4);
-    else if (ARG_ESP) PUSH_ESP(4);
-    else if (ARG_EBP) PUSH_EBP(4);
-    else if (ARG_ESI) PUSH_ESI(4);
-    else if (ARG_EDI) PUSH_EDI(4);
-    else if (ARG_RM16) INS_FF(0x06, 2);
-    else if (ARG_RM32) INS_FF(0x06, 4);
-    else if (ARG_I8)  PUSH_I8();
-    else if (ARG_I16) PUSH_I32(2);
-    else if (ARG_I32) PUSH_I32(4);
+    if      (ARG_ES) PUSH_ES(aasmContext);
+    else if (ARG_CS) PUSH_CS(aasmContext);
+    else if (ARG_SS) PUSH_SS(aasmContext);
+    else if (ARG_DS) PUSH_DS(aasmContext);
+    else if (ARG_FS) PUSH_FS(aasmContext);
+    else if (ARG_GS) PUSH_GS(aasmContext);
+    else if (ARG_AX) PUSH_EAX(aasmContext, 2);
+    else if (ARG_CX) PUSH_ECX(aasmContext, 2);
+    else if (ARG_DX) PUSH_EDX(aasmContext, 2);
+    else if (ARG_BX) PUSH_EBX(aasmContext, 2);
+    else if (ARG_SP) PUSH_ESP(aasmContext, 2);
+    else if (ARG_BP) PUSH_EBP(aasmContext, 2);
+    else if (ARG_SI) PUSH_ESI(aasmContext, 2);
+    else if (ARG_DI) PUSH_EDI(aasmContext, 2);
+    else if (ARG_EAX) PUSH_EAX(aasmContext, 4);
+    else if (ARG_ECX) PUSH_ECX(aasmContext, 4);
+    else if (ARG_EDX) PUSH_EDX(aasmContext, 4);
+    else if (ARG_EBX) PUSH_EBX(aasmContext, 4);
+    else if (ARG_ESP) PUSH_ESP(aasmContext, 4);
+    else if (ARG_EBP) PUSH_EBP(aasmContext, 4);
+    else if (ARG_ESI) PUSH_ESI(aasmContext, 4);
+    else if (ARG_EDI) PUSH_EDI(aasmContext, 4);
+    else if (ARG_RM16) INS_FF(aasmContext, 0x06, 2);
+    else if (ARG_RM32) INS_FF(aasmContext, 0x06, 4);
+    else if (ARG_I8)  PUSH_I8(aasmContext);
+    else if (ARG_I16) PUSH_I32(aasmContext, 2);
+    else if (ARG_I32) PUSH_I32(aasmContext, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID POP() {
+static C_VOID POP(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("POP");
-    if      (ARG_ES) POP_ES();
-    else if (ARG_CS) POP_CS();
-    else if (ARG_SS) POP_SS();
-    else if (ARG_DS) POP_DS();
-    else if (ARG_FS) POP_FS();
-    else if (ARG_GS) POP_GS();
-    else if (ARG_AX) POP_EAX(2);
-    else if (ARG_CX) POP_ECX(2);
-    else if (ARG_DX) POP_EDX(2);
-    else if (ARG_BX) POP_EBX(2);
-    else if (ARG_SP) POP_ESP(2);
-    else if (ARG_BP) POP_EBP(2);
-    else if (ARG_SI) POP_ESI(2);
-    else if (ARG_DI) POP_EDI(2);
-    else if (ARG_EAX) POP_EAX(4);
-    else if (ARG_ECX) POP_ECX(4);
-    else if (ARG_EDX) POP_EDX(4);
-    else if (ARG_EBX) POP_EBX(4);
-    else if (ARG_ESP) POP_ESP(4);
-    else if (ARG_EBP) POP_EBP(4);
-    else if (ARG_ESI) POP_ESI(4);
-    else if (ARG_EDI) POP_EDI(4);
-    else if (ARG_RM16) INS_8F(0x00, 2);
-    else if (ARG_RM32) INS_8F(0x00, 4);
+    if      (ARG_ES) POP_ES(aasmContext);
+    else if (ARG_CS) POP_CS(aasmContext);
+    else if (ARG_SS) POP_SS(aasmContext);
+    else if (ARG_DS) POP_DS(aasmContext);
+    else if (ARG_FS) POP_FS(aasmContext);
+    else if (ARG_GS) POP_GS(aasmContext);
+    else if (ARG_AX) POP_EAX(aasmContext, 2);
+    else if (ARG_CX) POP_ECX(aasmContext, 2);
+    else if (ARG_DX) POP_EDX(aasmContext, 2);
+    else if (ARG_BX) POP_EBX(aasmContext, 2);
+    else if (ARG_SP) POP_ESP(aasmContext, 2);
+    else if (ARG_BP) POP_EBP(aasmContext, 2);
+    else if (ARG_SI) POP_ESI(aasmContext, 2);
+    else if (ARG_DI) POP_EDI(aasmContext, 2);
+    else if (ARG_EAX) POP_EAX(aasmContext, 4);
+    else if (ARG_ECX) POP_ECX(aasmContext, 4);
+    else if (ARG_EDX) POP_EDX(aasmContext, 4);
+    else if (ARG_EBX) POP_EBX(aasmContext, 4);
+    else if (ARG_ESP) POP_ESP(aasmContext, 4);
+    else if (ARG_EBP) POP_EBP(aasmContext, 4);
+    else if (ARG_ESI) POP_ESI(aasmContext, 4);
+    else if (ARG_EDI) POP_EDI(aasmContext, 4);
+    else if (ARG_RM16) INS_8F(aasmContext, 0x00, 2);
+    else if (ARG_RM32) INS_8F(aasmContext, 0x00, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID ADD() {
+static C_VOID ADD(aasm32_context *aasmContext) {
     uint8_t rid = 0x00;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ADD");
-    if      (ARG_AL_I8)    ADD_AL_I8();
-    else if (ARG_AX_I16)   ADD_EAX_I32(2);
-    else if (ARG_EAX_I32)  ADD_EAX_I32(4);
-    else if (ARG_R8_RM8)   ADD_R8_RM8();
-    else if (ARG_R16_RM16) ADD_R32_RM32(2);
-    else if (ARG_R32_RM32) ADD_R32_RM32(4);
-    else if (ARG_RM8_I8)   INS_80(rid);
+    if      (ARG_AL_I8)    ADD_AL_I8(aasmContext);
+    else if (ARG_AX_I16)   ADD_EAX_I32(aasmContext, 2);
+    else if (ARG_EAX_I32)  ADD_EAX_I32(aasmContext, 4);
+    else if (ARG_R8_RM8)   ADD_R8_RM8(aasmContext);
+    else if (ARG_R16_RM16) ADD_R32_RM32(aasmContext, 2);
+    else if (ARG_R32_RM32) ADD_R32_RM32(aasmContext, 4);
+    else if (ARG_RM8_I8)   INS_80(aasmContext, rid);
     else if (ARG_RM16_I8) {
         if (!aopri2.immn)
             if (aopri2.imm8 > 0x7f) {
                 aopri2.type = TYPE_I16;
                 aopri2.imm16 = aopri2.imm8;
-                INS_81(rid, 2);
-            } else INS_83(rid, 2);
+                INS_81(aasmContext, rid, 2);
+            } else INS_83(aasmContext, rid, 2);
         else if (aopri2.imm8 > 0x7f)
-            INS_83(rid, 2);
+            INS_83(aasmContext, rid, 2);
         else {
             aopri2.type = TYPE_I16;
             aopri2.imm16 = 0xff00 | aopri2.imm8;
-            INS_81(rid, 2);
+            INS_81(aasmContext, rid, 2);
         }
     } else if (ARG_RM32_I8)  {
         if (!aopri2.immn)
             if (aopri2.imm8 > 0x7f) {
                 aopri2.type = TYPE_I32;
                 aopri2.imm32 = aopri2.imm8;
-                INS_81(rid, 4);
-            } else INS_83(rid, 4);
+                INS_81(aasmContext, rid, 4);
+            } else INS_83(aasmContext, rid, 4);
         else if (aopri2.imm8 > 0x7f)
-            INS_83(rid, 4);
+            INS_83(aasmContext, rid, 4);
         else {
             aopri2.type = TYPE_I32;
             aopri2.imm32 = 0xffffff00 | aopri2.imm8;
-            INS_81(rid, 4);
+            INS_81(aasmContext, rid, 4);
         }
-    } else if (ARG_RM16_I16) INS_81(rid, 2);
-    else if (ARG_RM32_I32) INS_81(rid, 4);
-    else if (ARG_RM8_R8)   ADD_RM8_R8();
-    else if (ARG_RM16_R16) ADD_RM32_R32(2);
-    else if (ARG_RM32_R32) ADD_RM32_R32(4);
+    } else if (ARG_RM16_I16) INS_81(aasmContext, rid, 2);
+    else if (ARG_RM32_I32) INS_81(aasmContext, rid, 4);
+    else if (ARG_RM8_R8)   ADD_RM8_R8(aasmContext);
+    else if (ARG_RM16_R16) ADD_RM32_R32(aasmContext, 2);
+    else if (ARG_RM32_R32) ADD_RM32_R32(aasmContext, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID OR() {
+static C_VOID OR(aasm32_context *aasmContext) {
     uint8_t rid = 0x01;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("OR");
-    if      (ARG_AL_I8)    OR_AL_I8();
-    else if (ARG_AX_I16)   OR_EAX_I32(2);
-    else if (ARG_EAX_I32)  OR_EAX_I32(4);
-    else if (ARG_R8_RM8)   OR_R8_RM8();
-    else if (ARG_R16_RM16) OR_R32_RM32(2);
-    else if (ARG_R32_RM32) OR_R32_RM32(4);
-    else if (ARG_RM8_I8)   INS_80(rid);
+    if      (ARG_AL_I8)    OR_AL_I8(aasmContext);
+    else if (ARG_AX_I16)   OR_EAX_I32(aasmContext, 2);
+    else if (ARG_EAX_I32)  OR_EAX_I32(aasmContext, 4);
+    else if (ARG_R8_RM8)   OR_R8_RM8(aasmContext);
+    else if (ARG_R16_RM16) OR_R32_RM32(aasmContext, 2);
+    else if (ARG_R32_RM32) OR_R32_RM32(aasmContext, 4);
+    else if (ARG_RM8_I8)   INS_80(aasmContext, rid);
     else if (ARG_RM16_I8) {
         if (!aopri2.immn)
             if (aopri2.imm8 > 0x7f) {
                 aopri2.type = TYPE_I16;
                 aopri2.imm16 = aopri2.imm8;
-                INS_81(rid, 2);
-            } else INS_83(rid, 2);
+                INS_81(aasmContext, rid, 2);
+            } else INS_83(aasmContext, rid, 2);
         else if (aopri2.imm8 > 0x7f)
-            INS_83(rid, 2);
+            INS_83(aasmContext, rid, 2);
         else {
             aopri2.type = TYPE_I16;
             aopri2.imm16 = 0xff00 | aopri2.imm8;
-            INS_81(rid, 2);
+            INS_81(aasmContext, rid, 2);
         }
     } else if (ARG_RM32_I8)  {
         if (!aopri2.immn)
             if (aopri2.imm8 > 0x7f) {
                 aopri2.type = TYPE_I32;
                 aopri2.imm32 = aopri2.imm8;
-                INS_81(rid, 4);
-            } else INS_83(rid, 4);
+                INS_81(aasmContext, rid, 4);
+            } else INS_83(aasmContext, rid, 4);
         else if (aopri2.imm8 > 0x7f)
-            INS_83(rid, 4);
+            INS_83(aasmContext, rid, 4);
         else {
             aopri2.type = TYPE_I32;
             aopri2.imm32 = 0xffffff00 | aopri2.imm8;
-            INS_81(rid, 4);
+            INS_81(aasmContext, rid, 4);
         }
-    } else if (ARG_RM16_I16) INS_81(rid, 2);
-    else if (ARG_RM32_I32) INS_81(rid, 4);
-    else if (ARG_RM8_R8)   OR_RM8_R8();
-    else if (ARG_RM16_R16) OR_RM32_R32(2);
-    else if (ARG_RM32_R32) OR_RM32_R32(4);
+    } else if (ARG_RM16_I16) INS_81(aasmContext, rid, 2);
+    else if (ARG_RM32_I32) INS_81(aasmContext, rid, 4);
+    else if (ARG_RM8_R8)   OR_RM8_R8(aasmContext);
+    else if (ARG_RM16_R16) OR_RM32_R32(aasmContext, 2);
+    else if (ARG_RM32_R32) OR_RM32_R32(aasmContext, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID ADC() {
+static C_VOID ADC(aasm32_context *aasmContext) {
     uint8_t rid = 0x02;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ADC");
-    if      (ARG_AL_I8)    ADC_AL_I8();
-    else if (ARG_AX_I16)   ADC_EAX_I32(2);
-    else if (ARG_EAX_I32)  ADC_EAX_I32(4);
-    else if (ARG_R8_RM8)   ADC_R8_RM8();
-    else if (ARG_R16_RM16) ADC_R32_RM32(2);
-    else if (ARG_R32_RM32) ADC_R32_RM32(4);
-    else if (ARG_RM8_I8)   INS_80(rid);
+    if      (ARG_AL_I8)    ADC_AL_I8(aasmContext);
+    else if (ARG_AX_I16)   ADC_EAX_I32(aasmContext, 2);
+    else if (ARG_EAX_I32)  ADC_EAX_I32(aasmContext, 4);
+    else if (ARG_R8_RM8)   ADC_R8_RM8(aasmContext);
+    else if (ARG_R16_RM16) ADC_R32_RM32(aasmContext, 2);
+    else if (ARG_R32_RM32) ADC_R32_RM32(aasmContext, 4);
+    else if (ARG_RM8_I8)   INS_80(aasmContext, rid);
     else if (ARG_RM16_I8) {
         if (!aopri2.immn)
             if (aopri2.imm8 > 0x7f) {
                 aopri2.type = TYPE_I16;
                 aopri2.imm16 = aopri2.imm8;
-                INS_81(rid, 2);
-            } else INS_83(rid, 2);
+                INS_81(aasmContext, rid, 2);
+            } else INS_83(aasmContext, rid, 2);
         else if (aopri2.imm8 > 0x7f)
-            INS_83(rid, 2);
+            INS_83(aasmContext, rid, 2);
         else {
             aopri2.type = TYPE_I16;
             aopri2.imm16 = 0xff00 | aopri2.imm8;
-            INS_81(rid, 2);
+            INS_81(aasmContext, rid, 2);
         }
     } else if (ARG_RM32_I8)  {
         if (!aopri2.immn)
             if (aopri2.imm8 > 0x7f) {
                 aopri2.type = TYPE_I32;
                 aopri2.imm32 = aopri2.imm8;
-                INS_81(rid, 4);
-            } else INS_83(rid, 4);
+                INS_81(aasmContext, rid, 4);
+            } else INS_83(aasmContext, rid, 4);
         else if (aopri2.imm8 > 0x7f)
-            INS_83(rid, 4);
+            INS_83(aasmContext, rid, 4);
         else {
             aopri2.type = TYPE_I32;
             aopri2.imm32 = 0xffffff00 | aopri2.imm8;
-            INS_81(rid, 4);
+            INS_81(aasmContext, rid, 4);
         }
-    } else if (ARG_RM16_I16) INS_81(rid, 2);
-    else if (ARG_RM32_I32) INS_81(rid, 4);
-    else if (ARG_RM8_R8)   ADC_RM8_R8();
-    else if (ARG_RM16_R16) ADC_RM32_R32(2);
-    else if (ARG_RM32_R32) ADC_RM32_R32(4);
+    } else if (ARG_RM16_I16) INS_81(aasmContext, rid, 2);
+    else if (ARG_RM32_I32) INS_81(aasmContext, rid, 4);
+    else if (ARG_RM8_R8)   ADC_RM8_R8(aasmContext);
+    else if (ARG_RM16_R16) ADC_RM32_R32(aasmContext, 2);
+    else if (ARG_RM32_R32) ADC_RM32_R32(aasmContext, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID SBB() {
+static C_VOID SBB(aasm32_context *aasmContext) {
     uint8_t rid = 0x03;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SBB");
-    if      (ARG_AL_I8)    SBB_AL_I8();
-    else if (ARG_AX_I16)   SBB_EAX_I32(2);
-    else if (ARG_EAX_I32)  SBB_EAX_I32(4);
-    else if (ARG_R8_RM8)   SBB_R8_RM8();
-    else if (ARG_R16_RM16) SBB_R32_RM32(2);
-    else if (ARG_R32_RM32) SBB_R32_RM32(4);
-    else if (ARG_RM8_I8)   INS_80(rid);
+    if      (ARG_AL_I8)    SBB_AL_I8(aasmContext);
+    else if (ARG_AX_I16)   SBB_EAX_I32(aasmContext, 2);
+    else if (ARG_EAX_I32)  SBB_EAX_I32(aasmContext, 4);
+    else if (ARG_R8_RM8)   SBB_R8_RM8(aasmContext);
+    else if (ARG_R16_RM16) SBB_R32_RM32(aasmContext, 2);
+    else if (ARG_R32_RM32) SBB_R32_RM32(aasmContext, 4);
+    else if (ARG_RM8_I8)   INS_80(aasmContext, rid);
     else if (ARG_RM16_I8) {
         if (!aopri2.immn)
             if (aopri2.imm8 > 0x7f) {
                 aopri2.type = TYPE_I16;
                 aopri2.imm16 = aopri2.imm8;
-                INS_81(rid, 2);
-            } else INS_83(rid, 2);
+                INS_81(aasmContext, rid, 2);
+            } else INS_83(aasmContext, rid, 2);
         else if (aopri2.imm8 > 0x7f)
-            INS_83(rid, 2);
+            INS_83(aasmContext, rid, 2);
         else {
             aopri2.type = TYPE_I16;
             aopri2.imm16 = 0xff00 | aopri2.imm8;
-            INS_81(rid, 2);
+            INS_81(aasmContext, rid, 2);
         }
     } else if (ARG_RM32_I8)  {
         if (!aopri2.immn)
             if (aopri2.imm8 > 0x7f) {
                 aopri2.type = TYPE_I32;
                 aopri2.imm32 = aopri2.imm8;
-                INS_81(rid, 4);
-            } else INS_83(rid, 4);
+                INS_81(aasmContext, rid, 4);
+            } else INS_83(aasmContext, rid, 4);
         else if (aopri2.imm8 > 0x7f)
-            INS_83(rid, 4);
+            INS_83(aasmContext, rid, 4);
         else {
             aopri2.type = TYPE_I32;
             aopri2.imm32 = 0xffffff00 | aopri2.imm8;
-            INS_81(rid, 4);
+            INS_81(aasmContext, rid, 4);
         }
-    } else if (ARG_RM16_I16) INS_81(rid, 2);
-    else if (ARG_RM32_I32) INS_81(rid, 4);
-    else if (ARG_RM8_R8)   SBB_RM8_R8();
-    else if (ARG_RM16_R16) SBB_RM32_R32(2);
-    else if (ARG_RM32_R32) SBB_RM32_R32(4);
+    } else if (ARG_RM16_I16) INS_81(aasmContext, rid, 2);
+    else if (ARG_RM32_I32) INS_81(aasmContext, rid, 4);
+    else if (ARG_RM8_R8)   SBB_RM8_R8(aasmContext);
+    else if (ARG_RM16_R16) SBB_RM32_R32(aasmContext, 2);
+    else if (ARG_RM32_R32) SBB_RM32_R32(aasmContext, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID AND() {
+static C_VOID AND(aasm32_context *aasmContext) {
     uint8_t rid = 0x04;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("AND");
-    if      (ARG_AL_I8)    AND_AL_I8();
-    else if (ARG_AX_I16)   AND_EAX_I32(2);
-    else if (ARG_EAX_I32)  AND_EAX_I32(4);
-    else if (ARG_R8_RM8)   AND_R8_RM8();
-    else if (ARG_R16_RM16) AND_R32_RM32(2);
-    else if (ARG_R32_RM32) AND_R32_RM32(4);
-    else if (ARG_RM8_I8)   INS_80(rid);
+    if      (ARG_AL_I8)    AND_AL_I8(aasmContext);
+    else if (ARG_AX_I16)   AND_EAX_I32(aasmContext, 2);
+    else if (ARG_EAX_I32)  AND_EAX_I32(aasmContext, 4);
+    else if (ARG_R8_RM8)   AND_R8_RM8(aasmContext);
+    else if (ARG_R16_RM16) AND_R32_RM32(aasmContext, 2);
+    else if (ARG_R32_RM32) AND_R32_RM32(aasmContext, 4);
+    else if (ARG_RM8_I8)   INS_80(aasmContext, rid);
     else if (ARG_RM16_I8) {
         if (!aopri2.immn)
             if (aopri2.imm8 > 0x7f) {
                 aopri2.type = TYPE_I16;
                 aopri2.imm16 = aopri2.imm8;
-                INS_81(rid, 2);
-            } else INS_83(rid, 2);
+                INS_81(aasmContext, rid, 2);
+            } else INS_83(aasmContext, rid, 2);
         else if (aopri2.imm8 > 0x7f)
-            INS_83(rid, 2);
+            INS_83(aasmContext, rid, 2);
         else {
             aopri2.type = TYPE_I16;
             aopri2.imm16 = 0xff00 | aopri2.imm8;
-            INS_81(rid, 2);
+            INS_81(aasmContext, rid, 2);
         }
     } else if (ARG_RM32_I8)  {
         if (!aopri2.immn)
             if (aopri2.imm8 > 0x7f) {
                 aopri2.type = TYPE_I32;
                 aopri2.imm32 = aopri2.imm8;
-                INS_81(rid, 4);
-            } else INS_83(rid, 4);
+                INS_81(aasmContext, rid, 4);
+            } else INS_83(aasmContext, rid, 4);
         else if (aopri2.imm8 > 0x7f)
-            INS_83(rid, 4);
+            INS_83(aasmContext, rid, 4);
         else {
             aopri2.type = TYPE_I32;
             aopri2.imm32 = 0xffffff00 | aopri2.imm8;
-            INS_81(rid, 4);
+            INS_81(aasmContext, rid, 4);
         }
-    } else if (ARG_RM16_I16) INS_81(rid, 2);
-    else if (ARG_RM32_I32) INS_81(rid, 4);
-    else if (ARG_RM8_R8)   AND_RM8_R8();
-    else if (ARG_RM16_R16) AND_RM32_R32(2);
-    else if (ARG_RM32_R32) AND_RM32_R32(4);
+    } else if (ARG_RM16_I16) INS_81(aasmContext, rid, 2);
+    else if (ARG_RM32_I32) INS_81(aasmContext, rid, 4);
+    else if (ARG_RM8_R8)   AND_RM8_R8(aasmContext);
+    else if (ARG_RM16_R16) AND_RM32_R32(aasmContext, 2);
+    else if (ARG_RM32_R32) AND_RM32_R32(aasmContext, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID SUB() {
+static C_VOID SUB(aasm32_context *aasmContext) {
     uint8_t rid = 0x05;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SUB");
-    if      (ARG_AL_I8)    SUB_AL_I8();
-    else if (ARG_AX_I16)   SUB_EAX_I32(2);
-    else if (ARG_EAX_I32)  SUB_EAX_I32(4);
-    else if (ARG_R8_RM8)   SUB_R8_RM8();
-    else if (ARG_R16_RM16) SUB_R32_RM32(2);
-    else if (ARG_R32_RM32) SUB_R32_RM32(4);
-    else if (ARG_RM8_I8)   INS_80(rid);
+    if      (ARG_AL_I8)    SUB_AL_I8(aasmContext);
+    else if (ARG_AX_I16)   SUB_EAX_I32(aasmContext, 2);
+    else if (ARG_EAX_I32)  SUB_EAX_I32(aasmContext, 4);
+    else if (ARG_R8_RM8)   SUB_R8_RM8(aasmContext);
+    else if (ARG_R16_RM16) SUB_R32_RM32(aasmContext, 2);
+    else if (ARG_R32_RM32) SUB_R32_RM32(aasmContext, 4);
+    else if (ARG_RM8_I8)   INS_80(aasmContext, rid);
     else if (ARG_RM16_I8) {
         if (!aopri2.immn)
             if (aopri2.imm8 > 0x7f) {
                 aopri2.type = TYPE_I16;
                 aopri2.imm16 = aopri2.imm8;
-                INS_81(rid, 2);
-            } else INS_83(rid, 2);
+                INS_81(aasmContext, rid, 2);
+            } else INS_83(aasmContext, rid, 2);
         else if (aopri2.imm8 > 0x7f)
-            INS_83(rid, 2);
+            INS_83(aasmContext, rid, 2);
         else {
             aopri2.type = TYPE_I16;
             aopri2.imm16 = 0xff00 | aopri2.imm8;
-            INS_81(rid, 2);
+            INS_81(aasmContext, rid, 2);
         }
     } else if (ARG_RM32_I8)  {
         if (!aopri2.immn)
             if (aopri2.imm8 > 0x7f) {
                 aopri2.type = TYPE_I32;
                 aopri2.imm32 = aopri2.imm8;
-                INS_81(rid, 4);
-            } else INS_83(rid, 4);
+                INS_81(aasmContext, rid, 4);
+            } else INS_83(aasmContext, rid, 4);
         else if (aopri2.imm8 > 0x7f)
-            INS_83(rid, 4);
+            INS_83(aasmContext, rid, 4);
         else {
             aopri2.type = TYPE_I32;
             aopri2.imm32 = 0xffffff00 | aopri2.imm8;
-            INS_81(rid, 4);
+            INS_81(aasmContext, rid, 4);
         }
-    } else if (ARG_RM16_I16) INS_81(rid, 2);
-    else if (ARG_RM32_I32) INS_81(rid, 4);
-    else if (ARG_RM8_R8)   SUB_RM8_R8();
-    else if (ARG_RM16_R16) SUB_RM32_R32(2);
-    else if (ARG_RM32_R32) SUB_RM32_R32(4);
+    } else if (ARG_RM16_I16) INS_81(aasmContext, rid, 2);
+    else if (ARG_RM32_I32) INS_81(aasmContext, rid, 4);
+    else if (ARG_RM8_R8)   SUB_RM8_R8(aasmContext);
+    else if (ARG_RM16_R16) SUB_RM32_R32(aasmContext, 2);
+    else if (ARG_RM32_R32) SUB_RM32_R32(aasmContext, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID XOR() {
+static C_VOID XOR(aasm32_context *aasmContext) {
     uint8_t rid = 0x06;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XOR");
-    if      (ARG_AL_I8)    XOR_AL_I8();
-    else if (ARG_AX_I16)   XOR_EAX_I32(2);
-    else if (ARG_EAX_I32)  XOR_EAX_I32(4);
-    else if (ARG_R8_RM8)   XOR_R8_RM8();
-    else if (ARG_R16_RM16) XOR_R32_RM32(2);
-    else if (ARG_R32_RM32) XOR_R32_RM32(4);
-    else if (ARG_RM8_I8)   INS_80(rid);
+    if      (ARG_AL_I8)    XOR_AL_I8(aasmContext);
+    else if (ARG_AX_I16)   XOR_EAX_I32(aasmContext, 2);
+    else if (ARG_EAX_I32)  XOR_EAX_I32(aasmContext, 4);
+    else if (ARG_R8_RM8)   XOR_R8_RM8(aasmContext);
+    else if (ARG_R16_RM16) XOR_R32_RM32(aasmContext, 2);
+    else if (ARG_R32_RM32) XOR_R32_RM32(aasmContext, 4);
+    else if (ARG_RM8_I8)   INS_80(aasmContext, rid);
     else if (ARG_RM16_I8) {
         if (!aopri2.immn)
             if (aopri2.imm8 > 0x7f) {
                 aopri2.type = TYPE_I16;
                 aopri2.imm16 = aopri2.imm8;
-                INS_81(rid, 2);
-            } else INS_83(rid, 2);
+                INS_81(aasmContext, rid, 2);
+            } else INS_83(aasmContext, rid, 2);
         else if (aopri2.imm8 > 0x7f)
-            INS_83(rid, 2);
+            INS_83(aasmContext, rid, 2);
         else {
             aopri2.type = TYPE_I16;
             aopri2.imm16 = 0xff00 | aopri2.imm8;
-            INS_81(rid, 2);
+            INS_81(aasmContext, rid, 2);
         }
     } else if (ARG_RM32_I8)  {
         if (!aopri2.immn)
             if (aopri2.imm8 > 0x7f) {
                 aopri2.type = TYPE_I32;
                 aopri2.imm32 = aopri2.imm8;
-                INS_81(rid, 4);
-            } else INS_83(rid, 4);
+                INS_81(aasmContext, rid, 4);
+            } else INS_83(aasmContext, rid, 4);
         else if (aopri2.imm8 > 0x7f)
-            INS_83(rid, 4);
+            INS_83(aasmContext, rid, 4);
         else {
             aopri2.type = TYPE_I32;
             aopri2.imm32 = 0xffffff00 | aopri2.imm8;
-            INS_81(rid, 4);
+            INS_81(aasmContext, rid, 4);
         }
-    } else if (ARG_RM16_I16) INS_81(rid, 2);
-    else if (ARG_RM32_I32) INS_81(rid, 4);
-    else if (ARG_RM8_R8)   XOR_RM8_R8();
-    else if (ARG_RM16_R16) XOR_RM32_R32(2);
-    else if (ARG_RM32_R32) XOR_RM32_R32(4);
+    } else if (ARG_RM16_I16) INS_81(aasmContext, rid, 2);
+    else if (ARG_RM32_I32) INS_81(aasmContext, rid, 4);
+    else if (ARG_RM8_R8)   XOR_RM8_R8(aasmContext);
+    else if (ARG_RM16_R16) XOR_RM32_R32(aasmContext, 2);
+    else if (ARG_RM32_R32) XOR_RM32_R32(aasmContext, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID CMP() {
+static C_VOID CMP(aasm32_context *aasmContext) {
     uint8_t rid = 0x07;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CMP");
-    if      (ARG_AL_I8)    CMP_AL_I8();
-    else if (ARG_AX_I16)   CMP_EAX_I32(2);
-    else if (ARG_EAX_I32)  CMP_EAX_I32(4);
-    else if (ARG_R8_RM8)   CMP_R8_RM8();
-    else if (ARG_R16_RM16) CMP_R32_RM32(2);
-    else if (ARG_R32_RM32) CMP_R32_RM32(4);
-    else if (ARG_RM8_I8)   INS_80(rid);
+    if      (ARG_AL_I8)    CMP_AL_I8(aasmContext);
+    else if (ARG_AX_I16)   CMP_EAX_I32(aasmContext, 2);
+    else if (ARG_EAX_I32)  CMP_EAX_I32(aasmContext, 4);
+    else if (ARG_R8_RM8)   CMP_R8_RM8(aasmContext);
+    else if (ARG_R16_RM16) CMP_R32_RM32(aasmContext, 2);
+    else if (ARG_R32_RM32) CMP_R32_RM32(aasmContext, 4);
+    else if (ARG_RM8_I8)   INS_80(aasmContext, rid);
     else if (ARG_RM16_I8) {
         if (!aopri2.immn)
             if (aopri2.imm8 > 0x7f) {
                 aopri2.type = TYPE_I16;
                 aopri2.imm16 = aopri2.imm8;
-                INS_81(rid, 2);
-            } else INS_83(rid, 2);
+                INS_81(aasmContext, rid, 2);
+            } else INS_83(aasmContext, rid, 2);
         else if (aopri2.imm8 > 0x7f)
-            INS_83(rid, 2);
+            INS_83(aasmContext, rid, 2);
         else {
             aopri2.type = TYPE_I16;
             aopri2.imm16 = 0xff00 | aopri2.imm8;
-            INS_81(rid, 2);
+            INS_81(aasmContext, rid, 2);
         }
     } else if (ARG_RM32_I8)  {
         if (!aopri2.immn)
             if (aopri2.imm8 > 0x7f) {
                 aopri2.type = TYPE_I32;
                 aopri2.imm32 = aopri2.imm8;
-                INS_81(rid, 4);
-            } else INS_83(rid, 4);
+                INS_81(aasmContext, rid, 4);
+            } else INS_83(aasmContext, rid, 4);
         else if (aopri2.imm8 > 0x7f)
-            INS_83(rid, 4);
+            INS_83(aasmContext, rid, 4);
         else {
             aopri2.type = TYPE_I32;
             aopri2.imm32 = 0xffffff00 | aopri2.imm8;
-            INS_81(rid, 4);
+            INS_81(aasmContext, rid, 4);
         }
-    } else if (ARG_RM16_I16) INS_81(rid, 2);
-    else if (ARG_RM32_I32) INS_81(rid, 4);
-    else if (ARG_RM8_R8)   CMP_RM8_R8();
-    else if (ARG_RM16_R16) CMP_RM32_R32(2);
-    else if (ARG_RM32_R32) CMP_RM32_R32(4);
+    } else if (ARG_RM16_I16) INS_81(aasmContext, rid, 2);
+    else if (ARG_RM32_I32) INS_81(aasmContext, rid, 4);
+    else if (ARG_RM8_R8)   CMP_RM8_R8(aasmContext);
+    else if (ARG_RM16_R16) CMP_RM32_R32(aasmContext, 2);
+    else if (ARG_RM32_R32) CMP_RM32_R32(aasmContext, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID INC() {
+static C_VOID INC(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INC");
-    if      (ARG_AX) INC_EAX(2);
-    else if (ARG_CX) INC_ECX(2);
-    else if (ARG_DX) INC_EDX(2);
-    else if (ARG_BX) INC_EBX(2);
-    else if (ARG_SP) INC_ESP(2);
-    else if (ARG_BP) INC_EBP(2);
-    else if (ARG_SI) INC_ESI(2);
-    else if (ARG_DI) INC_EDI(2);
-    else if (ARG_EAX) INC_EAX(4);
-    else if (ARG_ECX) INC_ECX(4);
-    else if (ARG_EDX) INC_EDX(4);
-    else if (ARG_EBX) INC_EBX(4);
-    else if (ARG_ESP) INC_ESP(4);
-    else if (ARG_EBP) INC_EBP(4);
-    else if (ARG_ESI) INC_ESI(4);
-    else if (ARG_EDI) INC_EDI(4);
-    else if (ARG_RM8s) INS_FE(0x00);
-    else if (ARG_RM16s) INS_FF(0x00, 2);
-    else if (ARG_RM32s) INS_FF(0x00, 4);
+    if      (ARG_AX) INC_EAX(aasmContext, 2);
+    else if (ARG_CX) INC_ECX(aasmContext, 2);
+    else if (ARG_DX) INC_EDX(aasmContext, 2);
+    else if (ARG_BX) INC_EBX(aasmContext, 2);
+    else if (ARG_SP) INC_ESP(aasmContext, 2);
+    else if (ARG_BP) INC_EBP(aasmContext, 2);
+    else if (ARG_SI) INC_ESI(aasmContext, 2);
+    else if (ARG_DI) INC_EDI(aasmContext, 2);
+    else if (ARG_EAX) INC_EAX(aasmContext, 4);
+    else if (ARG_ECX) INC_ECX(aasmContext, 4);
+    else if (ARG_EDX) INC_EDX(aasmContext, 4);
+    else if (ARG_EBX) INC_EBX(aasmContext, 4);
+    else if (ARG_ESP) INC_ESP(aasmContext, 4);
+    else if (ARG_EBP) INC_EBP(aasmContext, 4);
+    else if (ARG_ESI) INC_ESI(aasmContext, 4);
+    else if (ARG_EDI) INC_EDI(aasmContext, 4);
+    else if (ARG_RM8s) INS_FE(aasmContext, 0x00);
+    else if (ARG_RM16s) INS_FF(aasmContext, 0x00, 2);
+    else if (ARG_RM32s) INS_FF(aasmContext, 0x00, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID DEC() {
+static C_VOID DEC(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC");
-    if      (ARG_AX) DEC_EAX(2);
-    else if (ARG_CX) DEC_ECX(2);
-    else if (ARG_DX) DEC_EDX(2);
-    else if (ARG_BX) DEC_EBX(2);
-    else if (ARG_SP) DEC_ESP(2);
-    else if (ARG_BP) DEC_EBP(2);
-    else if (ARG_SI) DEC_ESI(2);
-    else if (ARG_DI) DEC_EDI(2);
-    else if (ARG_EAX) DEC_EAX(4);
-    else if (ARG_ECX) DEC_ECX(4);
-    else if (ARG_EDX) DEC_EDX(4);
-    else if (ARG_EBX) DEC_EBX(4);
-    else if (ARG_ESP) DEC_ESP(4);
-    else if (ARG_EBP) DEC_EBP(4);
-    else if (ARG_ESI) DEC_ESI(4);
-    else if (ARG_EDI) DEC_EDI(4);
-    else if (ARG_RM8s) INS_FE(0x01);
-    else if (ARG_RM16s) INS_FF(0x01, 2);
-    else if (ARG_RM32s) INS_FF(0x01, 4);
+    if      (ARG_AX) DEC_EAX(aasmContext, 2);
+    else if (ARG_CX) DEC_ECX(aasmContext, 2);
+    else if (ARG_DX) DEC_EDX(aasmContext, 2);
+    else if (ARG_BX) DEC_EBX(aasmContext, 2);
+    else if (ARG_SP) DEC_ESP(aasmContext, 2);
+    else if (ARG_BP) DEC_EBP(aasmContext, 2);
+    else if (ARG_SI) DEC_ESI(aasmContext, 2);
+    else if (ARG_DI) DEC_EDI(aasmContext, 2);
+    else if (ARG_EAX) DEC_EAX(aasmContext, 4);
+    else if (ARG_ECX) DEC_ECX(aasmContext, 4);
+    else if (ARG_EDX) DEC_EDX(aasmContext, 4);
+    else if (ARG_EBX) DEC_EBX(aasmContext, 4);
+    else if (ARG_ESP) DEC_ESP(aasmContext, 4);
+    else if (ARG_EBP) DEC_EBP(aasmContext, 4);
+    else if (ARG_ESI) DEC_ESI(aasmContext, 4);
+    else if (ARG_EDI) DEC_EDI(aasmContext, 4);
+    else if (ARG_RM8s) INS_FE(aasmContext, 0x01);
+    else if (ARG_RM16s) INS_FF(aasmContext, 0x01, 2);
+    else if (ARG_RM32s) INS_FF(aasmContext, 0x01, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID BOUND() {
+static C_VOID BOUND(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("BOUND");
-    if (ARG_R16_M16) BOUND_R32_M32_32(2);
-    else if (ARG_R32_M32) BOUND_R32_M32_32(4);
+    if (ARG_R16_M16) BOUND_R32_M32_32(aasmContext, 2);
+    else if (ARG_R32_M32) BOUND_R32_M32_32(aasmContext, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID IMUL() {
+static C_VOID IMUL(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("IMUL");
-    if      (ARG_RM8s) INS_F6(0x05);
-    else if (ARG_RM16s) INS_F7(0x05, 2);
-    else if (ARG_RM32s) INS_F7(0x05, 4);
-    else if (ARG_R16_RM16) IMUL_R32_RM32(2);
-    else if (ARG_R32_RM32) IMUL_R32_RM32(4);
-    else if (ARG_R16_RM16_I8)  IMUL_R32_RM32_I8(2);
-    else if (ARG_R32_RM32_I8)  IMUL_R32_RM32_I8(4);
-    else if (ARG_R16_RM16_I16) IMUL_R32_RM32_I32(2);
-    else if (ARG_R32_RM32_I32) IMUL_R32_RM32_I32(4);
+    if      (ARG_RM8s) INS_F6(aasmContext, 0x05);
+    else if (ARG_RM16s) INS_F7(aasmContext, 0x05, 2);
+    else if (ARG_RM32s) INS_F7(aasmContext, 0x05, 4);
+    else if (ARG_R16_RM16) IMUL_R32_RM32(aasmContext, 2);
+    else if (ARG_R32_RM32) IMUL_R32_RM32(aasmContext, 4);
+    else if (ARG_R16_RM16_I8)  IMUL_R32_RM32_I8(aasmContext, 2);
+    else if (ARG_R32_RM32_I8)  IMUL_R32_RM32_I8(aasmContext, 4);
+    else if (ARG_R16_RM16_I16) IMUL_R32_RM32_I32(aasmContext, 2);
+    else if (ARG_R32_RM32_I32) IMUL_R32_RM32_I32(aasmContext, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID INS() {
+static C_VOID INS(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INS");
-    if (ARG_ESDI8s_DX || ARG_ESEDI8s_DX) INSB();
-    else if (ARG_ESDI16s_DX || ARG_ESEDI16s_DX) INSW(2);
-    else if (ARG_ESDI32s_DX || ARG_ESEDI32s_DX) INSW(4);
+    if (ARG_ESDI8s_DX || ARG_ESEDI8s_DX) INSB(aasmContext);
+    else if (ARG_ESDI16s_DX || ARG_ESEDI16s_DX) INSW(aasmContext, 2);
+    else if (ARG_ESDI32s_DX || ARG_ESEDI32s_DX) INSW(aasmContext, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID OUTS() {
+static C_VOID OUTS(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("OUTS");
-    if (ARG_DX_DSSI8s || ARG_DX_DSESI8s) OUTSB();
-    else if (ARG_DX_DSSI16s || ARG_DX_DSESI16s) OUTSW(2);
-    else if (ARG_DX_DSSI32s || ARG_DX_DSESI32s) OUTSW(4);
+    if (ARG_DX_DSSI8s || ARG_DX_DSESI8s) OUTSB(aasmContext);
+    else if (ARG_DX_DSSI16s || ARG_DX_DSESI16s) OUTSW(aasmContext, 2);
+    else if (ARG_DX_DSSI32s || ARG_DX_DSESI32s) OUTSW(aasmContext, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID JCC_REL(uint8_t opcode) {
+static C_VOID JCC_REL(aasm32_context *aasmContext, uint8_t opcode) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JCC_REL");
     if (ARG_PNONE_I8s || ARG_SHORT_I8s) {
-        _c_setbyte(opcode);
-        _c_imm8(aopri1.imm8);
+        _c_setbyte(aasmContext, opcode);
+        _c_imm8(aasmContext, aopri1.imm8);
     } else if (ARG_PNONE_I16s || ARG_NEAR_I16s) {
         _SetOperandSize(2);
-        INS_0F();
-        _c_setbyte(opcode + 0x10);
-        _c_imm16(aopri1.imm16);
+        INS_0F(aasmContext);
+        _c_setbyte(aasmContext, opcode + 0x10);
+        _c_imm16(aasmContext, aopri1.imm16);
     } else if (ARG_PNONE_I32s || ARG_NEAR_I32s) {
         _SetOperandSize(4);
-        INS_0F();
-        _c_setbyte(opcode + 0x10);
-        _c_imm16(aopri1.imm32);
+        INS_0F(aasmContext);
+        _c_setbyte(aasmContext, opcode + 0x10);
+        _c_imm16(aasmContext, aopri1.imm32);
     } else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID TEST() {
+static C_VOID TEST(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("TEST");
-    if      (ARG_AL_I8) TEST_AL_I8();
-    else if (ARG_AX_I16) TEST_EAX_I32(2);
-    else if (ARG_EAX_I32) TEST_EAX_I32(4);
-    else if (ARG_RM8_R8) TEST_RM8_R8();
-    else if (ARG_RM16_R16) TEST_RM32_R32(2);
-    else if (ARG_RM32_R32) TEST_RM32_R32(4);
-    else if (ARG_RM8_I8) INS_F6(0x00);
-    else if (ARG_RM16_I16) INS_F7(0x00, 2);
-    else if (ARG_RM32_I32) INS_F7(0x00, 4);
+    if      (ARG_AL_I8) TEST_AL_I8(aasmContext);
+    else if (ARG_AX_I16) TEST_EAX_I32(aasmContext, 2);
+    else if (ARG_EAX_I32) TEST_EAX_I32(aasmContext, 4);
+    else if (ARG_RM8_R8) TEST_RM8_R8(aasmContext);
+    else if (ARG_RM16_R16) TEST_RM32_R32(aasmContext, 2);
+    else if (ARG_RM32_R32) TEST_RM32_R32(aasmContext, 4);
+    else if (ARG_RM8_I8) INS_F6(aasmContext, 0x00);
+    else if (ARG_RM16_I16) INS_F7(aasmContext, 0x00, 2);
+    else if (ARG_RM32_I32) INS_F7(aasmContext, 0x00, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID XCHG() {
+static C_VOID XCHG(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG");
-    if      (ARG_AX_AX) XCHG_EAX_EAX(2);
-    else if (ARG_CX_AX) XCHG_ECX_EAX(2);
-    else if (ARG_DX_AX) XCHG_EDX_EAX(2);
-    else if (ARG_BX_AX) XCHG_EBX_EAX(2);
-    else if (ARG_SP_AX) XCHG_ESP_EAX(2);
-    else if (ARG_BP_AX) XCHG_EBP_EAX(2);
-    else if (ARG_SI_AX) XCHG_ESI_EAX(2);
-    else if (ARG_DI_AX) XCHG_EDI_EAX(2);
-    else if (ARG_EAX_EAX) XCHG_EAX_EAX(4);
-    else if (ARG_ECX_EAX) XCHG_ECX_EAX(4);
-    else if (ARG_EDX_EAX) XCHG_EDX_EAX(4);
-    else if (ARG_EBX_EAX) XCHG_EBX_EAX(4);
-    else if (ARG_ESP_EAX) XCHG_ESP_EAX(4);
-    else if (ARG_EBP_EAX) XCHG_EBP_EAX(4);
-    else if (ARG_ESI_EAX) XCHG_ESI_EAX(4);
-    else if (ARG_EDI_EAX) XCHG_EDI_EAX(4);
-    else if (ARG_RM8_R8) XCHG_RM8_R8();
-    else if (ARG_RM16_R16) XCHG_RM32_R32(2);
-    else if (ARG_RM32_R32) XCHG_RM32_R32(4);
+    if      (ARG_AX_AX) XCHG_EAX_EAX(aasmContext, 2);
+    else if (ARG_CX_AX) XCHG_ECX_EAX(aasmContext, 2);
+    else if (ARG_DX_AX) XCHG_EDX_EAX(aasmContext, 2);
+    else if (ARG_BX_AX) XCHG_EBX_EAX(aasmContext, 2);
+    else if (ARG_SP_AX) XCHG_ESP_EAX(aasmContext, 2);
+    else if (ARG_BP_AX) XCHG_EBP_EAX(aasmContext, 2);
+    else if (ARG_SI_AX) XCHG_ESI_EAX(aasmContext, 2);
+    else if (ARG_DI_AX) XCHG_EDI_EAX(aasmContext, 2);
+    else if (ARG_EAX_EAX) XCHG_EAX_EAX(aasmContext, 4);
+    else if (ARG_ECX_EAX) XCHG_ECX_EAX(aasmContext, 4);
+    else if (ARG_EDX_EAX) XCHG_EDX_EAX(aasmContext, 4);
+    else if (ARG_EBX_EAX) XCHG_EBX_EAX(aasmContext, 4);
+    else if (ARG_ESP_EAX) XCHG_ESP_EAX(aasmContext, 4);
+    else if (ARG_EBP_EAX) XCHG_EBP_EAX(aasmContext, 4);
+    else if (ARG_ESI_EAX) XCHG_ESI_EAX(aasmContext, 4);
+    else if (ARG_EDI_EAX) XCHG_EDI_EAX(aasmContext, 4);
+    else if (ARG_RM8_R8) XCHG_RM8_R8(aasmContext);
+    else if (ARG_RM16_R16) XCHG_RM32_R32(aasmContext, 2);
+    else if (ARG_RM32_R32) XCHG_RM32_R32(aasmContext, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV() {
+static C_VOID MOV(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV");
-    if      (ARG_AL_I8)  MOV_AL_I8();
-    else if (ARG_CL_I8)  MOV_CL_I8();
-    else if (ARG_DL_I8)  MOV_DL_I8();
-    else if (ARG_BL_I8)  MOV_BL_I8();
-    else if (ARG_AH_I8)  MOV_AH_I8();
-    else if (ARG_CH_I8)  MOV_CH_I8();
-    else if (ARG_DH_I8)  MOV_DH_I8();
-    else if (ARG_BH_I8)  MOV_BH_I8();
-    else if (ARG_AX_I16) MOV_EAX_I32(2);
-    else if (ARG_CX_I16) MOV_ECX_I32(2);
-    else if (ARG_DX_I16) MOV_EDX_I32(2);
-    else if (ARG_BX_I16) MOV_EBX_I32(2);
-    else if (ARG_SP_I16) MOV_ESP_I32(2);
-    else if (ARG_BP_I16) MOV_EBP_I32(2);
-    else if (ARG_SI_I16) MOV_ESI_I32(2);
-    else if (ARG_DI_I16) MOV_EDI_I32(2);
-    else if (ARG_EAX_I32) MOV_EAX_I32(4);
-    else if (ARG_ECX_I32) MOV_ECX_I32(4);
-    else if (ARG_EDX_I32) MOV_EDX_I32(4);
-    else if (ARG_EBX_I32) MOV_EBX_I32(4);
-    else if (ARG_ESP_I32) MOV_ESP_I32(4);
-    else if (ARG_EBP_I32) MOV_EBP_I32(4);
-    else if (ARG_ESI_I32) MOV_ESI_I32(4);
-    else if (ARG_EDI_I32) MOV_EDI_I32(4);
-    else if (ARG_AL_MOFFS8)   MOV_AL_MOFFS8();
-    else if (ARG_MOFFS8_AL)   MOV_MOFFS8_AL();
-    else if (ARG_AX_MOFFS16)  MOV_EAX_MOFFS32(2);
-    else if (ARG_MOFFS16_AX)  MOV_MOFFS32_EAX(2);
-    else if (ARG_EAX_MOFFS32) MOV_EAX_MOFFS32(4);
-    else if (ARG_MOFFS32_EAX) MOV_MOFFS32_EAX(4);
-    else if (ARG_R8_RM8)   MOV_R8_RM8();
-    else if (ARG_R16_RM16) MOV_R32_RM32(2);
-    else if (ARG_R32_RM32) MOV_R32_RM32(4);
-    else if (ARG_RM8_R8)   MOV_RM8_R8();
-    else if (ARG_RM16_R16) MOV_RM32_R32(2);
-    else if (ARG_RM32_R32) MOV_RM32_R32(4);
-    else if (ARG_RM16_SREG) MOV_RM16_SREG(2);
-    else if (ARG_RM32_SREG) MOV_RM16_SREG(4);
-    else if (ARG_SREG_RM16) MOV_SREG_RM16(2);
-    else if (ARG_SREG_RM32) MOV_SREG_RM16(4);
-    else if (ARG_RM8_I8)   INS_C6(0x00);
-    else if (ARG_RM16_I16) INS_C7(0x00, 2);
-    else if (ARG_RM32_I32) INS_C7(0x00, 4);
-    else if (ARG_R32_CR0)  MOV_R32_CR(0);
-    else if (ARG_R32_CR2)  MOV_R32_CR(2);
-    else if (ARG_R32_CR3)  MOV_R32_CR(3);
-    else if (ARG_CR0_R32)  MOV_CR_R32(0);
-    else if (ARG_CR2_R32)  MOV_CR_R32(2);
-    else if (ARG_CR3_R32)  MOV_CR_R32(3);
-    else if (ARG_R32_DR0)  MOV_R32_DR(0);
-    else if (ARG_R32_DR1)  MOV_R32_DR(1);
-    else if (ARG_R32_DR2)  MOV_R32_DR(2);
-    else if (ARG_R32_DR3)  MOV_R32_DR(3);
-    else if (ARG_R32_DR6)  MOV_R32_DR(6);
-    else if (ARG_R32_DR7)  MOV_R32_DR(7);
-    else if (ARG_DR0_R32)  MOV_DR_R32(0);
-    else if (ARG_DR1_R32)  MOV_DR_R32(1);
-    else if (ARG_DR2_R32)  MOV_DR_R32(2);
-    else if (ARG_DR3_R32)  MOV_DR_R32(3);
-    else if (ARG_DR6_R32)  MOV_DR_R32(6);
-    else if (ARG_DR7_R32)  MOV_DR_R32(7);
-    else if (ARG_R32_DR6)  MOV_R32_TR(6);
-    else if (ARG_R32_DR7)  MOV_R32_TR(7);
-    else if (ARG_TR6_R32)  MOV_TR_R32(6);
-    else if (ARG_TR7_R32)  MOV_TR_R32(7);
+    if      (ARG_AL_I8)  MOV_AL_I8(aasmContext);
+    else if (ARG_CL_I8)  MOV_CL_I8(aasmContext);
+    else if (ARG_DL_I8)  MOV_DL_I8(aasmContext);
+    else if (ARG_BL_I8)  MOV_BL_I8(aasmContext);
+    else if (ARG_AH_I8)  MOV_AH_I8(aasmContext);
+    else if (ARG_CH_I8)  MOV_CH_I8(aasmContext);
+    else if (ARG_DH_I8)  MOV_DH_I8(aasmContext);
+    else if (ARG_BH_I8)  MOV_BH_I8(aasmContext);
+    else if (ARG_AX_I16) MOV_EAX_I32(aasmContext, 2);
+    else if (ARG_CX_I16) MOV_ECX_I32(aasmContext, 2);
+    else if (ARG_DX_I16) MOV_EDX_I32(aasmContext, 2);
+    else if (ARG_BX_I16) MOV_EBX_I32(aasmContext, 2);
+    else if (ARG_SP_I16) MOV_ESP_I32(aasmContext, 2);
+    else if (ARG_BP_I16) MOV_EBP_I32(aasmContext, 2);
+    else if (ARG_SI_I16) MOV_ESI_I32(aasmContext, 2);
+    else if (ARG_DI_I16) MOV_EDI_I32(aasmContext, 2);
+    else if (ARG_EAX_I32) MOV_EAX_I32(aasmContext, 4);
+    else if (ARG_ECX_I32) MOV_ECX_I32(aasmContext, 4);
+    else if (ARG_EDX_I32) MOV_EDX_I32(aasmContext, 4);
+    else if (ARG_EBX_I32) MOV_EBX_I32(aasmContext, 4);
+    else if (ARG_ESP_I32) MOV_ESP_I32(aasmContext, 4);
+    else if (ARG_EBP_I32) MOV_EBP_I32(aasmContext, 4);
+    else if (ARG_ESI_I32) MOV_ESI_I32(aasmContext, 4);
+    else if (ARG_EDI_I32) MOV_EDI_I32(aasmContext, 4);
+    else if (ARG_AL_MOFFS8)   MOV_AL_MOFFS8(aasmContext);
+    else if (ARG_MOFFS8_AL)   MOV_MOFFS8_AL(aasmContext);
+    else if (ARG_AX_MOFFS16)  MOV_EAX_MOFFS32(aasmContext, 2);
+    else if (ARG_MOFFS16_AX)  MOV_MOFFS32_EAX(aasmContext, 2);
+    else if (ARG_EAX_MOFFS32) MOV_EAX_MOFFS32(aasmContext, 4);
+    else if (ARG_MOFFS32_EAX) MOV_MOFFS32_EAX(aasmContext, 4);
+    else if (ARG_R8_RM8)   MOV_R8_RM8(aasmContext);
+    else if (ARG_R16_RM16) MOV_R32_RM32(aasmContext, 2);
+    else if (ARG_R32_RM32) MOV_R32_RM32(aasmContext, 4);
+    else if (ARG_RM8_R8)   MOV_RM8_R8(aasmContext);
+    else if (ARG_RM16_R16) MOV_RM32_R32(aasmContext, 2);
+    else if (ARG_RM32_R32) MOV_RM32_R32(aasmContext, 4);
+    else if (ARG_RM16_SREG) MOV_RM16_SREG(aasmContext, 2);
+    else if (ARG_RM32_SREG) MOV_RM16_SREG(aasmContext, 4);
+    else if (ARG_SREG_RM16) MOV_SREG_RM16(aasmContext, 2);
+    else if (ARG_SREG_RM32) MOV_SREG_RM16(aasmContext, 4);
+    else if (ARG_RM8_I8)   INS_C6(aasmContext, 0x00);
+    else if (ARG_RM16_I16) INS_C7(aasmContext, 0x00, 2);
+    else if (ARG_RM32_I32) INS_C7(aasmContext, 0x00, 4);
+    else if (ARG_R32_CR0)  MOV_R32_CR(aasmContext, 0);
+    else if (ARG_R32_CR2)  MOV_R32_CR(aasmContext, 2);
+    else if (ARG_R32_CR3)  MOV_R32_CR(aasmContext, 3);
+    else if (ARG_CR0_R32)  MOV_CR_R32(aasmContext, 0);
+    else if (ARG_CR2_R32)  MOV_CR_R32(aasmContext, 2);
+    else if (ARG_CR3_R32)  MOV_CR_R32(aasmContext, 3);
+    else if (ARG_R32_DR0)  MOV_R32_DR(aasmContext, 0);
+    else if (ARG_R32_DR1)  MOV_R32_DR(aasmContext, 1);
+    else if (ARG_R32_DR2)  MOV_R32_DR(aasmContext, 2);
+    else if (ARG_R32_DR3)  MOV_R32_DR(aasmContext, 3);
+    else if (ARG_R32_DR6)  MOV_R32_DR(aasmContext, 6);
+    else if (ARG_R32_DR7)  MOV_R32_DR(aasmContext, 7);
+    else if (ARG_DR0_R32)  MOV_DR_R32(aasmContext, 0);
+    else if (ARG_DR1_R32)  MOV_DR_R32(aasmContext, 1);
+    else if (ARG_DR2_R32)  MOV_DR_R32(aasmContext, 2);
+    else if (ARG_DR3_R32)  MOV_DR_R32(aasmContext, 3);
+    else if (ARG_DR6_R32)  MOV_DR_R32(aasmContext, 6);
+    else if (ARG_DR7_R32)  MOV_DR_R32(aasmContext, 7);
+    else if (ARG_R32_DR6)  MOV_R32_TR(aasmContext, 6);
+    else if (ARG_R32_DR7)  MOV_R32_TR(aasmContext, 7);
+    else if (ARG_TR6_R32)  MOV_TR_R32(aasmContext, 6);
+    else if (ARG_TR7_R32)  MOV_TR_R32(aasmContext, 7);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID LEA() {
+static C_VOID LEA(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LEA");
-    if (ARG_R16_M16) LEA_R32_M32(2);
-    else if (ARG_R32_M32) LEA_R32_M32(4);
+    if (ARG_R16_M16) LEA_R32_M32(aasmContext, 2);
+    else if (ARG_R32_M32) LEA_R32_M32(aasmContext, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID CALL() {
+static C_VOID CALL(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CALL");
-    if      (ARG_FAR_I16_16) CALL_PTR16_32(2);
-    else if (ARG_FAR_I16_32) CALL_PTR16_32(4);
-    else if (ARG_NEAR_I16s  || ARG_PNONE_I16s) CALL_REL32(2);
-    else if (ARG_NEAR_I32s  || ARG_PNONE_I32s) CALL_REL32(4);
-    else if (ARG_NEAR_RM16s || ARG_PNONE_RM16s) INS_FF(0x02, 2);
-    else if (ARG_NEAR_RM32s || ARG_PNONE_RM32s) INS_FF(0x02, 4);
-    else if (ARG_FAR_M16_16) INS_FF(0x03, 2);
-    else if (ARG_FAR_M16_32) INS_FF(0x03, 4);
+    if      (ARG_FAR_I16_16) CALL_PTR16_32(aasmContext, 2);
+    else if (ARG_FAR_I16_32) CALL_PTR16_32(aasmContext, 4);
+    else if (ARG_NEAR_I16s  || ARG_PNONE_I16s) CALL_REL32(aasmContext, 2);
+    else if (ARG_NEAR_I32s  || ARG_PNONE_I32s) CALL_REL32(aasmContext, 4);
+    else if (ARG_NEAR_RM16s || ARG_PNONE_RM16s) INS_FF(aasmContext, 0x02, 2);
+    else if (ARG_NEAR_RM32s || ARG_PNONE_RM32s) INS_FF(aasmContext, 0x02, 4);
+    else if (ARG_FAR_M16_16) INS_FF(aasmContext, 0x03, 2);
+    else if (ARG_FAR_M16_32) INS_FF(aasmContext, 0x03, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID MOVS() {
+static C_VOID MOVS(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOVS");
-    if (ARG_ESDI8s_DSSI8s || ARG_ESEDI8s_DSESI8s) MOVSB();
-    else if (ARG_ESDI16s_DSSI16s || ARG_ESEDI16s_DSESI16s) MOVSW(2);
-    else if (ARG_ESDI32s_DSSI32s || ARG_ESEDI32s_DSESI32s) MOVSW(4);
+    if (ARG_ESDI8s_DSSI8s || ARG_ESEDI8s_DSESI8s) MOVSB(aasmContext);
+    else if (ARG_ESDI16s_DSSI16s || ARG_ESEDI16s_DSESI16s) MOVSW(aasmContext, 2);
+    else if (ARG_ESDI32s_DSSI32s || ARG_ESEDI32s_DSESI32s) MOVSW(aasmContext, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID CMPS() {
+static C_VOID CMPS(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("CMPS");
-    if (ARG_DSSI8s_ESDI8s || ARG_DSESI8s_ESEDI8s) CMPSB();
-    else if (ARG_DSSI16s_ESDI16s || ARG_DSESI16s_ESEDI16s) CMPSW(2);
-    else if (ARG_DSSI32s_ESDI32s || ARG_DSESI32s_ESEDI32s) CMPSW(4);
+    if (ARG_DSSI8s_ESDI8s || ARG_DSESI8s_ESEDI8s) CMPSB(aasmContext);
+    else if (ARG_DSSI16s_ESDI16s || ARG_DSESI16s_ESEDI16s) CMPSW(aasmContext, 2);
+    else if (ARG_DSSI32s_ESDI32s || ARG_DSESI32s_ESEDI32s) CMPSW(aasmContext, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID STOS() {
+static C_VOID STOS(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("STOS");
-    if (ARG_ESDI8s || ARG_ESEDI8s) STOSB();
-    else if (ARG_ESDI16s || ARG_ESEDI16s) STOSW(2);
-    else if (ARG_ESDI32s || ARG_ESEDI32s) STOSW(4);
+    if (ARG_ESDI8s || ARG_ESEDI8s) STOSB(aasmContext);
+    else if (ARG_ESDI16s || ARG_ESEDI16s) STOSW(aasmContext, 2);
+    else if (ARG_ESDI32s || ARG_ESEDI32s) STOSW(aasmContext, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID LODS() {
+static C_VOID LODS(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LODS");
-    if (ARG_DSSI8s || ARG_DSESI8s) LODSB();
-    else if (ARG_DSSI16s || ARG_DSESI16s) LODSW(2);
-    else if (ARG_DSSI32s || ARG_DSESI32s) LODSW(4);
+    if (ARG_DSSI8s || ARG_DSESI8s) LODSB(aasmContext);
+    else if (ARG_DSSI16s || ARG_DSESI16s) LODSW(aasmContext, 2);
+    else if (ARG_DSSI32s || ARG_DSESI32s) LODSW(aasmContext, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID SCAS() {
+static C_VOID SCAS(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SCAS");
-    if (ARG_ESDI8s || ARG_ESEDI8s) SCASB();
-    else if (ARG_ESDI16s || ARG_ESEDI16s) SCASW(2);
-    else if (ARG_ESDI32s || ARG_ESEDI32s) SCASW(4);
+    if (ARG_ESDI8s || ARG_ESEDI8s) SCASB(aasmContext);
+    else if (ARG_ESDI16s || ARG_ESEDI16s) SCASW(aasmContext, 2);
+    else if (ARG_ESDI32s || ARG_ESEDI32s) SCASW(aasmContext, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID RET() {
+static C_VOID RET(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("RET");
-    if (ARG_I16u) RET_I16();
-    else if (ARG_NONE) RET_();
+    if (ARG_I16u) RET_I16(aasmContext);
+    else if (ARG_NONE) RET_(aasmContext);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID LES() {
+static C_VOID LES(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LES");
-    if (ARG_R16_M16) LES_R32_M16_32(2);
-    else if (ARG_R32_M32) LES_R32_M16_32(4);
+    if (ARG_R16_M16) LES_R32_M16_32(aasmContext, 2);
+    else if (ARG_R32_M32) LES_R32_M16_32(aasmContext, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID LDS() {
+static C_VOID LDS(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LDS");
-    if (ARG_R16_M16) LDS_R32_M16_32(2);
-    else if (ARG_R32_M32) LDS_R32_M16_32(4);
+    if (ARG_R16_M16) LDS_R32_M16_32(aasmContext, 2);
+    else if (ARG_R32_M32) LDS_R32_M16_32(aasmContext, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID RETF() {
+static C_VOID RETF(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("RETF");
-    if      (ARG_I16u) RETF_I16();
-    else if (ARG_NONE) RETF_();
+    if      (ARG_I16u) RETF_I16(aasmContext);
+    else if (ARG_NONE) RETF_(aasmContext);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID INT() {
+static C_VOID INT(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("INT");
-    if (ARG_I8) INT_I8();
+    if (ARG_I8) INT_I8(aasmContext);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID XLAT() {
+static C_VOID XLAT(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("XLAT");
-    if (ARG_DSBXAL8 || ARG_DSEBXAL8) XLATB();
+    if (ARG_DSBXAL8 || ARG_DSEBXAL8) XLATB(aasmContext);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID ROL() {
+static C_VOID ROL(aasm32_context *aasmContext) {
     uint8_t rid = 0x00;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ROL");
-    if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(rid);
-    else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(rid, 2);
-    else if (ARG_RM32_I8 && aopri2.imm8 == 1) INS_D1(rid, 4);
-    else if (ARG_RM8_CL)  INS_D2(rid);
-    else if (ARG_RM16_CL) INS_D3(rid, 2);
-    else if (ARG_RM32_CL) INS_D3(rid, 4);
-    else if (ARG_RM8_I8)  INS_C0(rid);
-    else if (ARG_RM16_I8) INS_C1(rid, 2);
-    else if (ARG_RM32_I8) INS_C1(rid, 4);
+    if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(aasmContext, rid);
+    else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(aasmContext, rid, 2);
+    else if (ARG_RM32_I8 && aopri2.imm8 == 1) INS_D1(aasmContext, rid, 4);
+    else if (ARG_RM8_CL)  INS_D2(aasmContext, rid);
+    else if (ARG_RM16_CL) INS_D3(aasmContext, rid, 2);
+    else if (ARG_RM32_CL) INS_D3(aasmContext, rid, 4);
+    else if (ARG_RM8_I8)  INS_C0(aasmContext, rid);
+    else if (ARG_RM16_I8) INS_C1(aasmContext, rid, 2);
+    else if (ARG_RM32_I8) INS_C1(aasmContext, rid, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID ROR() {
+static C_VOID ROR(aasm32_context *aasmContext) {
     uint8_t rid = 0x01;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("ROR");
-    if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(rid);
-    else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(rid, 2);
-    else if (ARG_RM32_I8 && aopri2.imm8 == 1) INS_D1(rid, 4);
-    else if (ARG_RM8_CL)  INS_D2(rid);
-    else if (ARG_RM16_CL) INS_D3(rid, 2);
-    else if (ARG_RM32_CL) INS_D3(rid, 4);
-    else if (ARG_RM8_I8)  INS_C0(rid);
-    else if (ARG_RM16_I8) INS_C1(rid, 2);
-    else if (ARG_RM32_I8) INS_C1(rid, 4);
+    if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(aasmContext, rid);
+    else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(aasmContext, rid, 2);
+    else if (ARG_RM32_I8 && aopri2.imm8 == 1) INS_D1(aasmContext, rid, 4);
+    else if (ARG_RM8_CL)  INS_D2(aasmContext, rid);
+    else if (ARG_RM16_CL) INS_D3(aasmContext, rid, 2);
+    else if (ARG_RM32_CL) INS_D3(aasmContext, rid, 4);
+    else if (ARG_RM8_I8)  INS_C0(aasmContext, rid);
+    else if (ARG_RM16_I8) INS_C1(aasmContext, rid, 2);
+    else if (ARG_RM32_I8) INS_C1(aasmContext, rid, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID RCL() {
+static C_VOID RCL(aasm32_context *aasmContext) {
     uint8_t rid = 0x02;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("RCL");
-    if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(rid);
-    else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(rid, 2);
-    else if (ARG_RM32_I8 && aopri2.imm8 == 1) INS_D1(rid, 4);
-    else if (ARG_RM8_CL)  INS_D2(rid);
-    else if (ARG_RM16_CL) INS_D3(rid, 2);
-    else if (ARG_RM32_CL) INS_D3(rid, 4);
-    else if (ARG_RM8_I8)  INS_C0(rid);
-    else if (ARG_RM16_I8) INS_C1(rid, 2);
-    else if (ARG_RM32_I8) INS_C1(rid, 4);
+    if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(aasmContext, rid);
+    else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(aasmContext, rid, 2);
+    else if (ARG_RM32_I8 && aopri2.imm8 == 1) INS_D1(aasmContext, rid, 4);
+    else if (ARG_RM8_CL)  INS_D2(aasmContext, rid);
+    else if (ARG_RM16_CL) INS_D3(aasmContext, rid, 2);
+    else if (ARG_RM32_CL) INS_D3(aasmContext, rid, 4);
+    else if (ARG_RM8_I8)  INS_C0(aasmContext, rid);
+    else if (ARG_RM16_I8) INS_C1(aasmContext, rid, 2);
+    else if (ARG_RM32_I8) INS_C1(aasmContext, rid, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID RCR() {
+static C_VOID RCR(aasm32_context *aasmContext) {
     uint8_t rid = 0x03;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("IN");
-    if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(rid);
-    else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(rid, 2);
-    else if (ARG_RM32_I8 && aopri2.imm8 == 1) INS_D1(rid, 4);
-    else if (ARG_RM8_CL)  INS_D2(rid);
-    else if (ARG_RM16_CL) INS_D3(rid, 2);
-    else if (ARG_RM32_CL) INS_D3(rid, 4);
-    else if (ARG_RM8_I8)  INS_C0(rid);
-    else if (ARG_RM16_I8) INS_C1(rid, 2);
-    else if (ARG_RM32_I8) INS_C1(rid, 4);
+    if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(aasmContext, rid);
+    else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(aasmContext, rid, 2);
+    else if (ARG_RM32_I8 && aopri2.imm8 == 1) INS_D1(aasmContext, rid, 4);
+    else if (ARG_RM8_CL)  INS_D2(aasmContext, rid);
+    else if (ARG_RM16_CL) INS_D3(aasmContext, rid, 2);
+    else if (ARG_RM32_CL) INS_D3(aasmContext, rid, 4);
+    else if (ARG_RM8_I8)  INS_C0(aasmContext, rid);
+    else if (ARG_RM16_I8) INS_C1(aasmContext, rid, 2);
+    else if (ARG_RM32_I8) INS_C1(aasmContext, rid, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID SHL() {
+static C_VOID SHL(aasm32_context *aasmContext) {
     uint8_t rid = 0x04;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SHL");
-    if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(rid);
-    else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(rid, 2);
-    else if (ARG_RM32_I8 && aopri2.imm8 == 1) INS_D1(rid, 4);
-    else if (ARG_RM8_CL)  INS_D2(rid);
-    else if (ARG_RM16_CL) INS_D3(rid, 2);
-    else if (ARG_RM32_CL) INS_D3(rid, 4);
-    else if (ARG_RM8_I8)  INS_C0(rid);
-    else if (ARG_RM16_I8) INS_C1(rid, 2);
-    else if (ARG_RM32_I8) INS_C1(rid, 4);
+    if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(aasmContext, rid);
+    else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(aasmContext, rid, 2);
+    else if (ARG_RM32_I8 && aopri2.imm8 == 1) INS_D1(aasmContext, rid, 4);
+    else if (ARG_RM8_CL)  INS_D2(aasmContext, rid);
+    else if (ARG_RM16_CL) INS_D3(aasmContext, rid, 2);
+    else if (ARG_RM32_CL) INS_D3(aasmContext, rid, 4);
+    else if (ARG_RM8_I8)  INS_C0(aasmContext, rid);
+    else if (ARG_RM16_I8) INS_C1(aasmContext, rid, 2);
+    else if (ARG_RM32_I8) INS_C1(aasmContext, rid, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID SHR() {
+static C_VOID SHR(aasm32_context *aasmContext) {
     uint8_t rid = 0x05;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SHR");
-    if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(rid);
-    else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(rid, 2);
-    else if (ARG_RM32_I8 && aopri2.imm8 == 1) INS_D1(rid, 4);
-    else if (ARG_RM8_CL)  INS_D2(rid);
-    else if (ARG_RM16_CL) INS_D3(rid, 2);
-    else if (ARG_RM32_CL) INS_D3(rid, 4);
-    else if (ARG_RM8_I8)  INS_C0(rid);
-    else if (ARG_RM16_I8) INS_C1(rid, 2);
-    else if (ARG_RM32_I8) INS_C1(rid, 4);
+    if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(aasmContext, rid);
+    else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(aasmContext, rid, 2);
+    else if (ARG_RM32_I8 && aopri2.imm8 == 1) INS_D1(aasmContext, rid, 4);
+    else if (ARG_RM8_CL)  INS_D2(aasmContext, rid);
+    else if (ARG_RM16_CL) INS_D3(aasmContext, rid, 2);
+    else if (ARG_RM32_CL) INS_D3(aasmContext, rid, 4);
+    else if (ARG_RM8_I8)  INS_C0(aasmContext, rid);
+    else if (ARG_RM16_I8) INS_C1(aasmContext, rid, 2);
+    else if (ARG_RM32_I8) INS_C1(aasmContext, rid, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID SAL() {
+static C_VOID SAL(aasm32_context *aasmContext) {
     uint8_t rid = 0x04;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SAL");
-    if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(rid);
-    else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(rid, 2);
-    else if (ARG_RM32_I8 && aopri2.imm8 == 1) INS_D1(rid, 4);
-    else if (ARG_RM8_CL)  INS_D2(rid);
-    else if (ARG_RM16_CL) INS_D3(rid, 2);
-    else if (ARG_RM32_CL) INS_D3(rid, 4);
-    else if (ARG_RM8_I8)  INS_C0(rid);
-    else if (ARG_RM16_I8) INS_C1(rid, 2);
-    else if (ARG_RM32_I8) INS_C1(rid, 4);
+    if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(aasmContext, rid);
+    else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(aasmContext, rid, 2);
+    else if (ARG_RM32_I8 && aopri2.imm8 == 1) INS_D1(aasmContext, rid, 4);
+    else if (ARG_RM8_CL)  INS_D2(aasmContext, rid);
+    else if (ARG_RM16_CL) INS_D3(aasmContext, rid, 2);
+    else if (ARG_RM32_CL) INS_D3(aasmContext, rid, 4);
+    else if (ARG_RM8_I8)  INS_C0(aasmContext, rid);
+    else if (ARG_RM16_I8) INS_C1(aasmContext, rid, 2);
+    else if (ARG_RM32_I8) INS_C1(aasmContext, rid, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID SAR() {
+static C_VOID SAR(aasm32_context *aasmContext) {
     uint8_t rid = 0x07;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SAR");
-    if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(rid);
-    else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(rid, 2);
-    else if (ARG_RM32_I8 && aopri2.imm8 == 1) INS_D1(rid, 4);
-    else if (ARG_RM8_CL)  INS_D2(rid);
-    else if (ARG_RM16_CL) INS_D3(rid, 2);
-    else if (ARG_RM32_CL) INS_D3(rid, 4);
-    else if (ARG_RM8_I8)  INS_C0(rid);
-    else if (ARG_RM16_I8) INS_C1(rid, 2);
-    else if (ARG_RM32_I8) INS_C1(rid, 4);
+    if (ARG_RM8_I8 && aopri2.imm8 == 1) INS_D0(aasmContext, rid);
+    else if (ARG_RM16_I8 && aopri2.imm8 == 1) INS_D1(aasmContext, rid, 2);
+    else if (ARG_RM32_I8 && aopri2.imm8 == 1) INS_D1(aasmContext, rid, 4);
+    else if (ARG_RM8_CL)  INS_D2(aasmContext, rid);
+    else if (ARG_RM16_CL) INS_D3(aasmContext, rid, 2);
+    else if (ARG_RM32_CL) INS_D3(aasmContext, rid, 4);
+    else if (ARG_RM8_I8)  INS_C0(aasmContext, rid);
+    else if (ARG_RM16_I8) INS_C1(aasmContext, rid, 2);
+    else if (ARG_RM32_I8) INS_C1(aasmContext, rid, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID IN() {
+static C_VOID IN(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("IN");
-    if      (ARG_AL_I8u)  IN_AL_I8();
-    else if (ARG_AX_I8u)  IN_EAX_I8(2);
-    else if (ARG_EAX_I8u) IN_EAX_I8(4);
-    else if (ARG_AL_DX)   IN_AL_DX();
-    else if (ARG_AX_DX)   IN_EAX_DX(2);
-    else if (ARG_EAX_DX)  IN_EAX_DX(4);
+    if      (ARG_AL_I8u)  IN_AL_I8(aasmContext);
+    else if (ARG_AX_I8u)  IN_EAX_I8(aasmContext, 2);
+    else if (ARG_EAX_I8u) IN_EAX_I8(aasmContext, 4);
+    else if (ARG_AL_DX)   IN_AL_DX(aasmContext);
+    else if (ARG_AX_DX)   IN_EAX_DX(aasmContext, 2);
+    else if (ARG_EAX_DX)  IN_EAX_DX(aasmContext, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID OUT() {
+static C_VOID OUT(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("OUT");
-    if      (ARG_I8u_AL)  OUT_I8_AL();
-    else if (ARG_I8u_AX)  OUT_I8_EAX(2);
-    else if (ARG_I8u_EAX) OUT_I8_EAX(4);
-    else if (ARG_DX_AL)   OUT_DX_AL();
-    else if (ARG_DX_AX)   OUT_DX_EAX(2);
-    else if (ARG_DX_EAX)  OUT_DX_EAX(4);
+    if      (ARG_I8u_AL)  OUT_I8_AL(aasmContext);
+    else if (ARG_I8u_AX)  OUT_I8_EAX(aasmContext, 2);
+    else if (ARG_I8u_EAX) OUT_I8_EAX(aasmContext, 4);
+    else if (ARG_DX_AL)   OUT_DX_AL(aasmContext);
+    else if (ARG_DX_AX)   OUT_DX_EAX(aasmContext, 2);
+    else if (ARG_DX_EAX)  OUT_DX_EAX(aasmContext, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID NOT() {
+static C_VOID NOT(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("NOT");
-    if      (ARG_RM8s) INS_F6(0x02);
-    else if (ARG_RM16s) INS_F7(0x02, 2);
-    else if (ARG_RM32s) INS_F7(0x02, 4);
+    if      (ARG_RM8s) INS_F6(aasmContext, 0x02);
+    else if (ARG_RM16s) INS_F7(aasmContext, 0x02, 2);
+    else if (ARG_RM32s) INS_F7(aasmContext, 0x02, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID NEG() {
+static C_VOID NEG(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("NEG");
-    if      (ARG_RM8s) INS_F6(0x03);
-    else if (ARG_RM16s) INS_F7(0x03, 2);
-    else if (ARG_RM32s) INS_F7(0x03, 4);
+    if      (ARG_RM8s) INS_F6(aasmContext, 0x03);
+    else if (ARG_RM16s) INS_F7(aasmContext, 0x03, 2);
+    else if (ARG_RM32s) INS_F7(aasmContext, 0x03, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID MUL() {
+static C_VOID MUL(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MUL");
-    if      (ARG_RM8s) INS_F6(0x04);
-    else if (ARG_RM16s) INS_F7(0x04, 2);
-    else if (ARG_RM32s) INS_F7(0x04, 4);
+    if      (ARG_RM8s) INS_F6(aasmContext, 0x04);
+    else if (ARG_RM16s) INS_F7(aasmContext, 0x04, 2);
+    else if (ARG_RM32s) INS_F7(aasmContext, 0x04, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID DIV() {
+static C_VOID DIV(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("DIV");
-    if      (ARG_RM8s) INS_F6(0x06);
-    else if (ARG_RM16s) INS_F7(0x06, 2);
-    else if (ARG_RM32s) INS_F7(0x06, 4);
+    if      (ARG_RM8s) INS_F6(aasmContext, 0x06);
+    else if (ARG_RM16s) INS_F7(aasmContext, 0x06, 2);
+    else if (ARG_RM32s) INS_F7(aasmContext, 0x06, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID IDIV() {
+static C_VOID IDIV(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("IDIV");
-    if      (ARG_RM8s) INS_F6(0x07);
-    else if (ARG_RM16s) INS_F7(0x07, 2);
-    else if (ARG_RM32s) INS_F7(0x07, 4);
+    if      (ARG_RM8s) INS_F6(aasmContext, 0x07);
+    else if (ARG_RM16s) INS_F7(aasmContext, 0x07, 2);
+    else if (ARG_RM32s) INS_F7(aasmContext, 0x07, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID JMP() {
+static C_VOID JMP(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("JMP");
-    if      (ARG_FAR_I16_16) JMP_PTR16_32(2);
-    else if (ARG_FAR_I16_32) JMP_PTR16_32(4);
-    else if (ARG_SHORT_I8s  || ARG_PNONE_I8s)  JCC_REL(0xeb);
-    else if (ARG_NEAR_I16s  || ARG_PNONE_I16s) JMP_REL32(2);
-    else if (ARG_NEAR_I32s  || ARG_PNONE_I32s) JMP_REL32(4);
-    else if (ARG_NEAR_RM16s || ARG_PNONE_RM16s) INS_FF(0x04, 2);
-    else if (ARG_NEAR_RM32s || ARG_PNONE_RM32s) INS_FF(0x04, 4);
-    else if (ARG_FAR_M16_16) INS_FF(0x05, 2);
-    else if (ARG_FAR_M16_32) INS_FF(0x05, 4);
+    if      (ARG_FAR_I16_16) JMP_PTR16_32(aasmContext, 2);
+    else if (ARG_FAR_I16_32) JMP_PTR16_32(aasmContext, 4);
+    else if (ARG_SHORT_I8s  || ARG_PNONE_I8s)  JCC_REL(aasmContext, 0xeb);
+    else if (ARG_NEAR_I16s  || ARG_PNONE_I16s) JMP_REL32(aasmContext, 2);
+    else if (ARG_NEAR_I32s  || ARG_PNONE_I32s) JMP_REL32(aasmContext, 4);
+    else if (ARG_NEAR_RM16s || ARG_PNONE_RM16s) INS_FF(aasmContext, 0x04, 2);
+    else if (ARG_NEAR_RM32s || ARG_PNONE_RM32s) INS_FF(aasmContext, 0x04, 4);
+    else if (ARG_FAR_M16_16) INS_FF(aasmContext, 0x05, 2);
+    else if (ARG_FAR_M16_32) INS_FF(aasmContext, 0x05, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
 /* abstract extended instructions */
-static C_VOID SLDT() {
+static C_VOID SLDT(aasm32_context *aasmContext) {
     uint8_t rid = 0x00;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SLDT");
-    if (ARG_RM16) INS_0F_00(rid, 2);
-    else if (ARG_R32) INS_0F_00(rid, 4);
+    if (ARG_RM16) INS_0F_00(aasmContext, rid, 2);
+    else if (ARG_R32) INS_0F_00(aasmContext, rid, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID STR() {
+static C_VOID STR(aasm32_context *aasmContext) {
     uint8_t rid = 0x01;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("STR");
-    if (ARG_RM16) INS_0F_00(rid, 2);
-    else if (ARG_R32) INS_0F_00(rid, 4);
+    if (ARG_RM16) INS_0F_00(aasmContext, rid, 2);
+    else if (ARG_R32) INS_0F_00(aasmContext, rid, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID LLDT() {
+static C_VOID LLDT(aasm32_context *aasmContext) {
     uint8_t rid = 0x02;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LLDT");
-    if (ARG_RM16) INS_0F_00(rid, 0);
+    if (ARG_RM16) INS_0F_00(aasmContext, rid, 0);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID LTR() {
+static C_VOID LTR(aasm32_context *aasmContext) {
     uint8_t rid = 0x03;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LTR");
-    if (ARG_RM16) INS_0F_00(rid, 0);
+    if (ARG_RM16) INS_0F_00(aasmContext, rid, 0);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID VERR() {
+static C_VOID VERR(aasm32_context *aasmContext) {
     uint8_t rid = 0x04;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("VERR");
-    if (ARG_RM16) INS_0F_00(rid, 0);
+    if (ARG_RM16) INS_0F_00(aasmContext, rid, 0);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID VERW() {
+static C_VOID VERW(aasm32_context *aasmContext) {
     uint8_t rid = 0x05;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("VERW");
-    if (ARG_RM16) INS_0F_00(rid, 0);
+    if (ARG_RM16) INS_0F_00(aasmContext, rid, 0);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID SGDT() {
+static C_VOID SGDT(aasm32_context *aasmContext) {
     uint8_t rid = 0x00;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SGDT");
-    if (ARG_M16s) INS_0F_01(rid, 2);
-    else if (ARG_M32s) INS_0F_01(rid, 4);
+    if (ARG_M16s) INS_0F_01(aasmContext, rid, 2);
+    else if (ARG_M32s) INS_0F_01(aasmContext, rid, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID SIDT() {
+static C_VOID SIDT(aasm32_context *aasmContext) {
     uint8_t rid = 0x01;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SIDT");
-    if (ARG_M16s) INS_0F_01(rid, 2);
-    else if (ARG_M32s) INS_0F_01(rid, 4);
+    if (ARG_M16s) INS_0F_01(aasmContext, rid, 2);
+    else if (ARG_M32s) INS_0F_01(aasmContext, rid, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID LGDT() {
+static C_VOID LGDT(aasm32_context *aasmContext) {
     uint8_t rid = 0x02;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SIDT");
-    if (ARG_M16s) INS_0F_01(rid, 2);
-    else if (ARG_M32) INS_0F_01(rid, 4);
+    if (ARG_M16s) INS_0F_01(aasmContext, rid, 2);
+    else if (ARG_M32) INS_0F_01(aasmContext, rid, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID LIDT() {
+static C_VOID LIDT(aasm32_context *aasmContext) {
     uint8_t rid = 0x03;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LIDT");
-    if (ARG_M16s) INS_0F_01(rid, 2);
-    else if (ARG_M32) INS_0F_01(rid, 4);
+    if (ARG_M16s) INS_0F_01(aasmContext, rid, 2);
+    else if (ARG_M32) INS_0F_01(aasmContext, rid, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID SMSW() {
+static C_VOID SMSW(aasm32_context *aasmContext) {
     uint8_t rid = 0x04;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SMSW");
-    if (ARG_RM16) INS_0F_01(rid, 2);
-    else if (ARG_R32) INS_0F_01(rid, 4);
+    if (ARG_RM16) INS_0F_01(aasmContext, rid, 2);
+    else if (ARG_R32) INS_0F_01(aasmContext, rid, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID LMSW() {
+static C_VOID LMSW(aasm32_context *aasmContext) {
     uint8_t rid = 0x06;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LMSW");
-    if (ARG_RM16) INS_0F_01(rid, 0);
+    if (ARG_RM16) INS_0F_01(aasmContext, rid, 0);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID LAR() {
+static C_VOID LAR(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LAR");
-    if (ARG_R16_RM16) LAR_R32_RM32(2);
-    else if (ARG_R32_RM32) LAR_R32_RM32(4);
+    if (ARG_R16_RM16) LAR_R32_RM32(aasmContext, 2);
+    else if (ARG_R32_RM32) LAR_R32_RM32(aasmContext, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID LSL() {
+static C_VOID LSL(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LSL");
-    if (ARG_R16_RM16) LSL_R32_RM32(2);
-    else if (ARG_R32_RM32) LSL_R32_RM32(4);
+    if (ARG_R16_RM16) LSL_R32_RM32(aasmContext, 2);
+    else if (ARG_R32_RM32) LSL_R32_RM32(aasmContext, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID BT() {
+static C_VOID BT(aasm32_context *aasmContext) {
     uint8_t rid = 0x04;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("BT");
-    if (ARG_RM16_R16) BT_RM32_R32(2);
-    else if (ARG_RM32_R32) BT_RM32_R32(4);
-    else if (ARG_RM16_I8) INS_0F_BA(rid, 2);
-    else if (ARG_RM32_I8) INS_0F_BA(rid, 4);
+    if (ARG_RM16_R16) BT_RM32_R32(aasmContext, 2);
+    else if (ARG_RM32_R32) BT_RM32_R32(aasmContext, 4);
+    else if (ARG_RM16_I8) INS_0F_BA(aasmContext, rid, 2);
+    else if (ARG_RM32_I8) INS_0F_BA(aasmContext, rid, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID SHLD() {
+static C_VOID SHLD(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SHLD");
-    if (ARG_RM16_R16_I8) SHLD_RM32_R32_I8(2);
-    if (ARG_RM16_R16_CL) SHLD_RM32_R32_CL(2);
-    else if (ARG_RM32_R32_I8) SHLD_RM32_R32_I8(4);
-    else if (ARG_RM32_R32_CL) SHLD_RM32_R32_CL(4);
+    if (ARG_RM16_R16_I8) SHLD_RM32_R32_I8(aasmContext, 2);
+    if (ARG_RM16_R16_CL) SHLD_RM32_R32_CL(aasmContext, 2);
+    else if (ARG_RM32_R32_I8) SHLD_RM32_R32_I8(aasmContext, 4);
+    else if (ARG_RM32_R32_CL) SHLD_RM32_R32_CL(aasmContext, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID BTS() {
+static C_VOID BTS(aasm32_context *aasmContext) {
     uint8_t rid = 0x05;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("BTS");
-    if (ARG_RM16_R16) BTS_RM32_R32(2);
-    else if (ARG_RM32_R32) BTS_RM32_R32(4);
-    else if (ARG_RM16_I8) INS_0F_BA(rid, 2);
-    else if (ARG_RM32_I8) INS_0F_BA(rid, 4);
+    if (ARG_RM16_R16) BTS_RM32_R32(aasmContext, 2);
+    else if (ARG_RM32_R32) BTS_RM32_R32(aasmContext, 4);
+    else if (ARG_RM16_I8) INS_0F_BA(aasmContext, rid, 2);
+    else if (ARG_RM32_I8) INS_0F_BA(aasmContext, rid, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID SHRD() {
+static C_VOID SHRD(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("SHRD");
-    if (ARG_RM16_R16_I8) SHRD_RM32_R32_I8(2);
-    if (ARG_RM16_R16_CL) SHRD_RM32_R32_CL(2);
-    else if (ARG_RM32_R32_I8) SHRD_RM32_R32_I8(4);
-    else if (ARG_RM32_R32_CL) SHRD_RM32_R32_CL(4);
+    if (ARG_RM16_R16_I8) SHRD_RM32_R32_I8(aasmContext, 2);
+    if (ARG_RM16_R16_CL) SHRD_RM32_R32_CL(aasmContext, 2);
+    else if (ARG_RM32_R32_I8) SHRD_RM32_R32_I8(aasmContext, 4);
+    else if (ARG_RM32_R32_CL) SHRD_RM32_R32_CL(aasmContext, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID LSS() {
+static C_VOID LSS(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LSS");
-    if (ARG_R16_M16) LSS_R32_M16_32(2);
-    else if (ARG_R32_M32) LSS_R32_M16_32(4);
+    if (ARG_R16_M16) LSS_R32_M16_32(aasmContext, 2);
+    else if (ARG_R32_M32) LSS_R32_M16_32(aasmContext, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID BTR() {
+static C_VOID BTR(aasm32_context *aasmContext) {
     uint8_t rid = 0x06;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("BTR");
-    if (ARG_RM16_R16) BTR_RM32_R32(2);
-    else if (ARG_RM32_R32) BTR_RM32_R32(4);
-    else if (ARG_RM16_I8) INS_0F_BA(rid, 2);
-    else if (ARG_RM32_I8) INS_0F_BA(rid, 4);
+    if (ARG_RM16_R16) BTR_RM32_R32(aasmContext, 2);
+    else if (ARG_RM32_R32) BTR_RM32_R32(aasmContext, 4);
+    else if (ARG_RM16_I8) INS_0F_BA(aasmContext, rid, 2);
+    else if (ARG_RM32_I8) INS_0F_BA(aasmContext, rid, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID LFS() {
+static C_VOID LFS(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LFS");
-    if (ARG_R16_M16) LFS_R32_M16_32(2);
-    else if (ARG_R32_M32) LFS_R32_M16_32(4);
+    if (ARG_R16_M16) LFS_R32_M16_32(aasmContext, 2);
+    else if (ARG_R32_M32) LFS_R32_M16_32(aasmContext, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID LGS() {
+static C_VOID LGS(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("LGS");
-    if (ARG_R16_M16) LGS_R32_M16_32(2);
-    else if (ARG_R32_M32) LGS_R32_M16_32(4);
+    if (ARG_R16_M16) LGS_R32_M16_32(aasmContext, 2);
+    else if (ARG_R32_M32) LGS_R32_M16_32(aasmContext, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID MOVZX() {
+static C_VOID MOVZX(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOVZX");
-    if (ARG_R16_RM8s) MOVZX_R32_RM8(2);
-    else if (ARG_R32_RM8s) MOVZX_R32_RM8(4);
-    else if (ARG_R32_RM16s) MOVZX_R32_RM16();
+    if (ARG_R16_RM8s) MOVZX_R32_RM8(aasmContext, 2);
+    else if (ARG_R32_RM8s) MOVZX_R32_RM8(aasmContext, 4);
+    else if (ARG_R32_RM16s) MOVZX_R32_RM16(aasmContext);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID BTC() {
+static C_VOID BTC(aasm32_context *aasmContext) {
     uint8_t rid = 0x07;
     NTVDM64_TYPE_TRACE_CALL_BEGIN("BTC");
-    if (ARG_RM16_R16) BTC_RM32_R32(2);
-    else if (ARG_RM32_R32) BTC_RM32_R32(4);
-    else if (ARG_RM16_I8) INS_0F_BA(rid, 2);
-    else if (ARG_RM32_I8) INS_0F_BA(rid, 4);
+    if (ARG_RM16_R16) BTC_RM32_R32(aasmContext, 2);
+    else if (ARG_RM32_R32) BTC_RM32_R32(aasmContext, 4);
+    else if (ARG_RM16_I8) INS_0F_BA(aasmContext, rid, 2);
+    else if (ARG_RM32_I8) INS_0F_BA(aasmContext, rid, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID BSF() {
+static C_VOID BSF(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("BSF");
-    if (ARG_R16_RM16) BSF_R32_RM32(2);
-    else if (ARG_R32_RM32) BSF_R32_RM32(4);
+    if (ARG_R16_RM16) BSF_R32_RM32(aasmContext, 2);
+    else if (ARG_R32_RM32) BSF_R32_RM32(aasmContext, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID BSR() {
+static C_VOID BSR(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("BSR");
-    if (ARG_R16_RM16) BSR_R32_RM32(2);
-    else if (ARG_R32_RM32) BSR_R32_RM32(4);
+    if (ARG_R16_RM16) BSR_R32_RM32(aasmContext, 2);
+    else if (ARG_R32_RM32) BSR_R32_RM32(aasmContext, 4);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_VOID MOVSX() {
+static C_VOID MOVSX(aasm32_context *aasmContext) {
     NTVDM64_TYPE_TRACE_CALL_BEGIN("MOVSX");
-    if (ARG_R16_RM8s) MOVSX_R32_RM8(2);
-    else if (ARG_R32_RM8s) MOVSX_R32_RM8(4);
-    else if (ARG_R32_RM16s) MOVSX_R32_RM16();
+    if (ARG_R16_RM8s) MOVSX_R32_RM8(aasmContext, 2);
+    else if (ARG_R32_RM8s) MOVSX_R32_RM8(aasmContext, 4);
+    else if (ARG_R32_RM16s) MOVSX_R32_RM16(aasmContext);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
 
 /* main routines */
-static C_INT is_end(C_CHAR c) {
+static C_INT is_end(aasm32_context *aasmContext, C_CHAR c) {
     return (!c || c == '\n' || c == ';');
 }
-static C_INT is_space(C_CHAR c) {
+static C_INT is_space(aasm32_context *aasmContext, C_CHAR c) {
     return (c == ' ' || c == '\t');
 }
-static C_INT is_prefix() {
+static C_INT is_prefix(aasm32_context *aasmContext) {
     if (!STD_STRCMP(rop, "es:") || !STD_STRCMP(rop, "cs:") ||
             !STD_STRCMP(rop, "ss:") || !STD_STRCMP(rop, "ds:") ||
             !STD_STRCMP(rop, "fs:") || !STD_STRCMP(rop, "gs:") ||
@@ -8027,229 +8027,229 @@ static C_INT is_prefix() {
         return 0;
     }
 }
-static C_VOID exec() {
+static C_VOID exec(aasm32_context *aasmContext) {
     /* assemble single statement */
     NTVDM64_TYPE_TRACE_CALL_BEGIN("exec");
-    if (!rop || is_end(rop[0])) ;
-    else if (!STD_STRCMP(rop, "add")) ADD();
-    else if (!STD_STRCMP(rop,"push")) PUSH();
-    else if (!STD_STRCMP(rop, "pop")) POP();
-    else if (!STD_STRCMP(rop, "or" )) OR();
-    else if (!STD_STRCMP(rop, "adc")) ADC();
-    else if (!STD_STRCMP(rop, "sbb")) SBB();
-    else if (!STD_STRCMP(rop, "and")) AND();
-    else if (!STD_STRCMP(rop, "es:")) PREFIX_ES();
-    else if (!STD_STRCMP(rop, "daa")) DAA();
-    else if (!STD_STRCMP(rop, "sub")) SUB();
-    else if (!STD_STRCMP(rop, "cs:")) PREFIX_CS();
-    else if (!STD_STRCMP(rop, "das")) DAS();
-    else if (!STD_STRCMP(rop, "xor")) XOR();
-    else if (!STD_STRCMP(rop, "ss:")) PREFIX_SS();
-    else if (!STD_STRCMP(rop, "aaa")) AAA();
-    else if (!STD_STRCMP(rop, "cmp")) CMP();
-    else if (!STD_STRCMP(rop, "ds:")) PREFIX_DS();
-    else if (!STD_STRCMP(rop, "aas")) AAS();
-    else if (!STD_STRCMP(rop, "inc")) INC();
-    else if (!STD_STRCMP(rop, "dec")) DEC();
-    else if (!STD_STRCMP(rop, "pusha")) PUSHA(2);
-    else if (!STD_STRCMP(rop, "pushad")) PUSHA(4);
-    else if (!STD_STRCMP(rop, "popa")) POPA(2);
-    else if (!STD_STRCMP(rop, "popad")) POPA(4);
-    else if (!STD_STRCMP(rop, "bound")) BOUND();
-    else if (!STD_STRCMP(rop, "arpl")) ARPL_RM16_R16();
-    else if (!STD_STRCMP(rop, "fs:")) PREFIX_FS();
-    else if (!STD_STRCMP(rop, "gs:")) PREFIX_GS();
-    else if (!STD_STRCMP(rop, "op+:")) PREFIX_OprSize();
-    else if (!STD_STRCMP(rop, "az+:")) PREFIX_AddrSize();
-    else if (!STD_STRCMP(rop,"imul")) IMUL();
-    else if (!STD_STRCMP(rop,"ins"))  INS();
-    else if (!STD_STRCMP(rop,"insb")) INSB();
-    else if (!STD_STRCMP(rop,"insw")) INSW(2);
-    else if (!STD_STRCMP(rop,"insd")) INSW(4);
-    else if (!STD_STRCMP(rop,"outs"))  OUTS();
-    else if (!STD_STRCMP(rop,"outsb")) OUTSB();
-    else if (!STD_STRCMP(rop,"outsw")) OUTSW(2);
-    else if (!STD_STRCMP(rop,"outsd")) OUTSW(4);
-    else if (!STD_STRCMP(rop, "jo" )) JCC_REL(0x70);
-    else if (!STD_STRCMP(rop, "jno")) JCC_REL(0x71);
-    else if (!STD_STRCMP(rop, "jb" )) JCC_REL(0x72);
-    else if (!STD_STRCMP(rop, "jc" )) JCC_REL(0x72);
-    else if (!STD_STRCMP(rop,"jnae")) JCC_REL(0x72);
-    else if (!STD_STRCMP(rop, "jae")) JCC_REL(0x73);
-    else if (!STD_STRCMP(rop, "jnb")) JCC_REL(0x73);
-    else if (!STD_STRCMP(rop, "jnc")) JCC_REL(0x73);
-    else if (!STD_STRCMP(rop, "je" )) JCC_REL(0x74);
-    else if (!STD_STRCMP(rop, "jz" )) JCC_REL(0x74);
-    else if (!STD_STRCMP(rop, "jne")) JCC_REL(0x75);
-    else if (!STD_STRCMP(rop, "jnz")) JCC_REL(0x75);
-    else if (!STD_STRCMP(rop, "jbe")) JCC_REL(0x76);
-    else if (!STD_STRCMP(rop, "jna")) JCC_REL(0x76);
-    else if (!STD_STRCMP(rop, "ja" )) JCC_REL(0x77);
-    else if (!STD_STRCMP(rop,"jnbe")) JCC_REL(0x77);
-    else if (!STD_STRCMP(rop, "js" )) JCC_REL(0x78);
-    else if (!STD_STRCMP(rop, "jns")) JCC_REL(0x79);
-    else if (!STD_STRCMP(rop, "jp" )) JCC_REL(0x7a);
-    else if (!STD_STRCMP(rop, "jpe")) JCC_REL(0x7a);
-    else if (!STD_STRCMP(rop, "jnp")) JCC_REL(0x7b);
-    else if (!STD_STRCMP(rop, "jpo")) JCC_REL(0x7b);
-    else if (!STD_STRCMP(rop, "jl" )) JCC_REL(0x7c);
-    else if (!STD_STRCMP(rop,"jnge")) JCC_REL(0x7c);
-    else if (!STD_STRCMP(rop, "jge")) JCC_REL(0x7d);
-    else if (!STD_STRCMP(rop, "jnl")) JCC_REL(0x7d);
-    else if (!STD_STRCMP(rop, "jle")) JCC_REL(0x7e);
-    else if (!STD_STRCMP(rop, "jng")) JCC_REL(0x7e);
-    else if (!STD_STRCMP(rop, "jg" )) JCC_REL(0x7f);
-    else if (!STD_STRCMP(rop,"jnle")) JCC_REL(0x7f);
-    else if (!STD_STRCMP(rop,"test")) TEST();
-    else if (!STD_STRCMP(rop,"xchg")) XCHG();
-    else if (!STD_STRCMP(rop, "mov")) MOV();
-    else if (!STD_STRCMP(rop, "lea")) LEA();
-    else if (!STD_STRCMP(rop, "nop")) NOP();
-    else if (!STD_STRCMP(rop, "cbw"))  CBW(2);
-    else if (!STD_STRCMP(rop, "cwde")) CBW(4);
-    else if (!STD_STRCMP(rop, "cwd")) CWD(2);
-    else if (!STD_STRCMP(rop, "cdq")) CWD(4);
-    else if (!STD_STRCMP(rop,"call")) CALL();
-    else if (!STD_STRCMP(rop,"wait")) WAIT();
-    else if (!STD_STRCMP(rop,"pushf"))  PUSHF(2);
-    else if (!STD_STRCMP(rop,"pushfd")) PUSHF(4);
-    else if (!STD_STRCMP(rop,"popf"))  POPF(2);
-    else if (!STD_STRCMP(rop,"popfd")) POPF(4);
-    else if (!STD_STRCMP(rop,"sahf")) SAHF();
-    else if (!STD_STRCMP(rop,"lahf")) LAHF();
-    else if (!STD_STRCMP(rop,"movs"))  MOVS();
-    else if (!STD_STRCMP(rop,"movsb")) MOVSB();
-    else if (!STD_STRCMP(rop,"movsw")) MOVSW(2);
-    else if (!STD_STRCMP(rop,"movsd")) MOVSW(4);
-    else if (!STD_STRCMP(rop,"cmps"))  CMPS();
-    else if (!STD_STRCMP(rop,"cmpsb")) CMPSB();
-    else if (!STD_STRCMP(rop,"cmpsw")) CMPSW(2);
-    else if (!STD_STRCMP(rop,"cmpsd")) CMPSW(4);
-    else if (!STD_STRCMP(rop,"stos"))  STOS();
-    else if (!STD_STRCMP(rop,"stosb")) STOSB();
-    else if (!STD_STRCMP(rop,"stosw")) STOSW(2);
-    else if (!STD_STRCMP(rop,"stosd")) STOSW(4);
-    else if (!STD_STRCMP(rop,"lods"))  LODS();
-    else if (!STD_STRCMP(rop,"lodsb")) LODSB();
-    else if (!STD_STRCMP(rop,"lodsw")) LODSW(2);
-    else if (!STD_STRCMP(rop,"lodsd")) LODSW(4);
-    else if (!STD_STRCMP(rop,"scas"))  SCAS();
-    else if (!STD_STRCMP(rop,"scasb")) SCASB();
-    else if (!STD_STRCMP(rop,"scasw")) SCASW(2);
-    else if (!STD_STRCMP(rop,"scasd")) SCASW(4);
-    else if (!STD_STRCMP(rop, "ret")) RET();
-    else if (!STD_STRCMP(rop, "les")) LES();
-    else if (!STD_STRCMP(rop, "lds")) LDS();
-    else if (!STD_STRCMP(rop, "enter")) ENTER();
-    else if (!STD_STRCMP(rop, "leave")) LEAVE();
-    else if (!STD_STRCMP(rop,"retf")) RETF();
-    else if (!STD_STRCMP(rop, "int")) INT();
-    else if (!STD_STRCMP(rop,"into")) INTO();
-    else if (!STD_STRCMP(rop,"iret"))  IRET(2);
-    else if (!STD_STRCMP(rop,"iretd")) IRET(4);
-    else if (!STD_STRCMP(rop, "rol")) ROL();
-    else if (!STD_STRCMP(rop, "ror")) ROR();
-    else if (!STD_STRCMP(rop, "rcl")) RCL();
-    else if (!STD_STRCMP(rop, "rcr")) RCR();
-    else if (!STD_STRCMP(rop, "shl")) SHL();
-    else if (!STD_STRCMP(rop, "shr")) SHR();
-    else if (!STD_STRCMP(rop, "sal")) SAL();
-    else if (!STD_STRCMP(rop, "sar")) SAR();
-    else if (!STD_STRCMP(rop, "aam")) AAM();
-    else if (!STD_STRCMP(rop, "aad")) AAD();
-    else if (!STD_STRCMP(rop,"xlat"))  XLAT();
-    else if (!STD_STRCMP(rop,"xlatb")) XLATB();
-    else if (!STD_STRCMP(rop,"loopne")) JCC_REL(0xe0);
-    else if (!STD_STRCMP(rop,"loopnz")) JCC_REL(0xe0);
-    else if (!STD_STRCMP(rop,"loope"))  JCC_REL(0xe1);
-    else if (!STD_STRCMP(rop,"loopz"))  JCC_REL(0xe1);
-    else if (!STD_STRCMP(rop,"loop"))   JCC_REL(0xe2);
-    else if (!STD_STRCMP(rop,"jcxz"))   JCC_REL(0xe3);
-    else if (!STD_STRCMP(rop, "in" )) IN();
-    else if (!STD_STRCMP(rop, "out")) OUT();
-    else if (!STD_STRCMP(rop, "jmp")) JMP();
-    else if (!STD_STRCMP(rop, "lock"))  PREFIX_LOCK();
-    else if (!STD_STRCMP(rop,"repne:")) PREFIX_REPNZ();
-    else if (!STD_STRCMP(rop,"repnz:")) PREFIX_REPNZ();
-    else if (!STD_STRCMP(rop, "rep:")) PREFIX_REPZ();
-    else if (!STD_STRCMP(rop,"repe:")) PREFIX_REPZ();
-    else if (!STD_STRCMP(rop,"repz:")) PREFIX_REPZ();
-    else if (!STD_STRCMP(rop, "hlt")) HLT();
-    else if (!STD_STRCMP(rop, "cmc")) CMC();
-    else if (!STD_STRCMP(rop, "not")) NOT();
-    else if (!STD_STRCMP(rop, "neg")) NEG();
-    else if (!STD_STRCMP(rop, "mul")) MUL();
-    else if (!STD_STRCMP(rop, "div")) DIV();
-    else if (!STD_STRCMP(rop,"idiv")) IDIV();
-    else if (!STD_STRCMP(rop, "clc")) CLC();
-    else if (!STD_STRCMP(rop, "stc")) STC();
-    else if (!STD_STRCMP(rop, "cli")) CLI();
-    else if (!STD_STRCMP(rop, "sti")) STI();
-    else if (!STD_STRCMP(rop, "cld")) CLD();
-    else if (!STD_STRCMP(rop, "std")) STD();
-    else if (!STD_STRCMP(rop, "sldt"))  SLDT();
-    else if (!STD_STRCMP(rop, "str"))   STR();
-    else if (!STD_STRCMP(rop, "lldt"))  LLDT();
-    else if (!STD_STRCMP(rop, "ltr"))   LTR();
-    else if (!STD_STRCMP(rop, "verr"))  VERR();
-    else if (!STD_STRCMP(rop, "verw"))  VERW();
-    else if (!STD_STRCMP(rop, "sgdt"))  SGDT();
-    else if (!STD_STRCMP(rop, "sidt"))  SIDT();
-    else if (!STD_STRCMP(rop, "lgdt"))  LGDT();
-    else if (!STD_STRCMP(rop, "lidt"))  LIDT();
-    else if (!STD_STRCMP(rop, "smsw"))  SMSW();
-    else if (!STD_STRCMP(rop, "lmsw"))  LMSW();
-    else if (!STD_STRCMP(rop, "lar"))   LAR();
-    else if (!STD_STRCMP(rop, "lsl"))   LSL();
-    else if (!STD_STRCMP(rop, "clts"))  CLTS();
-    else if (!STD_STRCMP(rop, "seto" )) SETCC_RM8(0x90);
-    else if (!STD_STRCMP(rop, "setno")) SETCC_RM8(0x91);
-    else if (!STD_STRCMP(rop, "setb" )) SETCC_RM8(0x92);
-    else if (!STD_STRCMP(rop, "setc" )) SETCC_RM8(0x92);
-    else if (!STD_STRCMP(rop,"setnae")) SETCC_RM8(0x92);
-    else if (!STD_STRCMP(rop, "setae")) SETCC_RM8(0x93);
-    else if (!STD_STRCMP(rop, "setnb")) SETCC_RM8(0x93);
-    else if (!STD_STRCMP(rop, "setnc")) SETCC_RM8(0x93);
-    else if (!STD_STRCMP(rop, "sete" )) SETCC_RM8(0x94);
-    else if (!STD_STRCMP(rop, "setz" )) SETCC_RM8(0x94);
-    else if (!STD_STRCMP(rop, "setne")) SETCC_RM8(0x95);
-    else if (!STD_STRCMP(rop, "setnz")) SETCC_RM8(0x95);
-    else if (!STD_STRCMP(rop, "setbe")) SETCC_RM8(0x96);
-    else if (!STD_STRCMP(rop, "setna")) SETCC_RM8(0x96);
-    else if (!STD_STRCMP(rop, "seta" )) SETCC_RM8(0x97);
-    else if (!STD_STRCMP(rop,"setnbe")) SETCC_RM8(0x97);
-    else if (!STD_STRCMP(rop, "sets" )) SETCC_RM8(0x98);
-    else if (!STD_STRCMP(rop, "setns")) SETCC_RM8(0x99);
-    else if (!STD_STRCMP(rop, "setp" )) SETCC_RM8(0x9a);
-    else if (!STD_STRCMP(rop, "setpe")) SETCC_RM8(0x9a);
-    else if (!STD_STRCMP(rop, "setnp")) SETCC_RM8(0x9b);
-    else if (!STD_STRCMP(rop, "setpo")) SETCC_RM8(0x9b);
-    else if (!STD_STRCMP(rop, "setl" )) SETCC_RM8(0x9c);
-    else if (!STD_STRCMP(rop,"setnge")) SETCC_RM8(0x9c);
-    else if (!STD_STRCMP(rop, "setge")) SETCC_RM8(0x9d);
-    else if (!STD_STRCMP(rop, "setnl")) SETCC_RM8(0x9d);
-    else if (!STD_STRCMP(rop, "setle")) SETCC_RM8(0x9e);
-    else if (!STD_STRCMP(rop, "setng")) SETCC_RM8(0x9e);
-    else if (!STD_STRCMP(rop, "setg" )) SETCC_RM8(0x9f);
-    else if (!STD_STRCMP(rop,"setnle")) SETCC_RM8(0x9f);
-    else if (!STD_STRCMP(rop, "bt"))    BT();
-    else if (!STD_STRCMP(rop, "shld"))  SHLD();
-    else if (!STD_STRCMP(rop, "bts"))   BTS();
-    else if (!STD_STRCMP(rop, "shrd"))  SHRD();
-    else if (!STD_STRCMP(rop, "lss"))   LSS();
-    else if (!STD_STRCMP(rop, "btr"))   BTR();
-    else if (!STD_STRCMP(rop, "lfs"))   LFS();
-    else if (!STD_STRCMP(rop, "lgs"))   LGS();
-    else if (!STD_STRCMP(rop, "movzx")) MOVZX();
-    else if (!STD_STRCMP(rop, "btc"))   BTC();
-    else if (!STD_STRCMP(rop, "bsf"))   BSF();
-    else if (!STD_STRCMP(rop, "bsr"))   BSR();
-    else if (!STD_STRCMP(rop, "movsx")) MOVSX();
-    else if (!STD_STRCMP(rop, "qdx"))   QDX();
+    if (!rop || is_end(aasmContext, rop[0])) ;
+    else if (!STD_STRCMP(rop, "add")) ADD(aasmContext);
+    else if (!STD_STRCMP(rop,"push")) PUSH(aasmContext);
+    else if (!STD_STRCMP(rop, "pop")) POP(aasmContext);
+    else if (!STD_STRCMP(rop, "or" )) OR(aasmContext);
+    else if (!STD_STRCMP(rop, "adc")) ADC(aasmContext);
+    else if (!STD_STRCMP(rop, "sbb")) SBB(aasmContext);
+    else if (!STD_STRCMP(rop, "and")) AND(aasmContext);
+    else if (!STD_STRCMP(rop, "es:")) PREFIX_ES(aasmContext);
+    else if (!STD_STRCMP(rop, "daa")) DAA(aasmContext);
+    else if (!STD_STRCMP(rop, "sub")) SUB(aasmContext);
+    else if (!STD_STRCMP(rop, "cs:")) PREFIX_CS(aasmContext);
+    else if (!STD_STRCMP(rop, "das")) DAS(aasmContext);
+    else if (!STD_STRCMP(rop, "xor")) XOR(aasmContext);
+    else if (!STD_STRCMP(rop, "ss:")) PREFIX_SS(aasmContext);
+    else if (!STD_STRCMP(rop, "aaa")) AAA(aasmContext);
+    else if (!STD_STRCMP(rop, "cmp")) CMP(aasmContext);
+    else if (!STD_STRCMP(rop, "ds:")) PREFIX_DS(aasmContext);
+    else if (!STD_STRCMP(rop, "aas")) AAS(aasmContext);
+    else if (!STD_STRCMP(rop, "inc")) INC(aasmContext);
+    else if (!STD_STRCMP(rop, "dec")) DEC(aasmContext);
+    else if (!STD_STRCMP(rop, "pusha")) PUSHA(aasmContext, 2);
+    else if (!STD_STRCMP(rop, "pushad")) PUSHA(aasmContext, 4);
+    else if (!STD_STRCMP(rop, "popa")) POPA(aasmContext, 2);
+    else if (!STD_STRCMP(rop, "popad")) POPA(aasmContext, 4);
+    else if (!STD_STRCMP(rop, "bound")) BOUND(aasmContext);
+    else if (!STD_STRCMP(rop, "arpl")) ARPL_RM16_R16(aasmContext);
+    else if (!STD_STRCMP(rop, "fs:")) PREFIX_FS(aasmContext);
+    else if (!STD_STRCMP(rop, "gs:")) PREFIX_GS(aasmContext);
+    else if (!STD_STRCMP(rop, "op+:")) PREFIX_OprSize(aasmContext);
+    else if (!STD_STRCMP(rop, "az+:")) PREFIX_AddrSize(aasmContext);
+    else if (!STD_STRCMP(rop,"imul")) IMUL(aasmContext);
+    else if (!STD_STRCMP(rop,"ins"))  INS(aasmContext);
+    else if (!STD_STRCMP(rop,"insb")) INSB(aasmContext);
+    else if (!STD_STRCMP(rop,"insw")) INSW(aasmContext, 2);
+    else if (!STD_STRCMP(rop,"insd")) INSW(aasmContext, 4);
+    else if (!STD_STRCMP(rop,"outs"))  OUTS(aasmContext);
+    else if (!STD_STRCMP(rop,"outsb")) OUTSB(aasmContext);
+    else if (!STD_STRCMP(rop,"outsw")) OUTSW(aasmContext, 2);
+    else if (!STD_STRCMP(rop,"outsd")) OUTSW(aasmContext, 4);
+    else if (!STD_STRCMP(rop, "jo" )) JCC_REL(aasmContext, 0x70);
+    else if (!STD_STRCMP(rop, "jno")) JCC_REL(aasmContext, 0x71);
+    else if (!STD_STRCMP(rop, "jb" )) JCC_REL(aasmContext, 0x72);
+    else if (!STD_STRCMP(rop, "jc" )) JCC_REL(aasmContext, 0x72);
+    else if (!STD_STRCMP(rop,"jnae")) JCC_REL(aasmContext, 0x72);
+    else if (!STD_STRCMP(rop, "jae")) JCC_REL(aasmContext, 0x73);
+    else if (!STD_STRCMP(rop, "jnb")) JCC_REL(aasmContext, 0x73);
+    else if (!STD_STRCMP(rop, "jnc")) JCC_REL(aasmContext, 0x73);
+    else if (!STD_STRCMP(rop, "je" )) JCC_REL(aasmContext, 0x74);
+    else if (!STD_STRCMP(rop, "jz" )) JCC_REL(aasmContext, 0x74);
+    else if (!STD_STRCMP(rop, "jne")) JCC_REL(aasmContext, 0x75);
+    else if (!STD_STRCMP(rop, "jnz")) JCC_REL(aasmContext, 0x75);
+    else if (!STD_STRCMP(rop, "jbe")) JCC_REL(aasmContext, 0x76);
+    else if (!STD_STRCMP(rop, "jna")) JCC_REL(aasmContext, 0x76);
+    else if (!STD_STRCMP(rop, "ja" )) JCC_REL(aasmContext, 0x77);
+    else if (!STD_STRCMP(rop,"jnbe")) JCC_REL(aasmContext, 0x77);
+    else if (!STD_STRCMP(rop, "js" )) JCC_REL(aasmContext, 0x78);
+    else if (!STD_STRCMP(rop, "jns")) JCC_REL(aasmContext, 0x79);
+    else if (!STD_STRCMP(rop, "jp" )) JCC_REL(aasmContext, 0x7a);
+    else if (!STD_STRCMP(rop, "jpe")) JCC_REL(aasmContext, 0x7a);
+    else if (!STD_STRCMP(rop, "jnp")) JCC_REL(aasmContext, 0x7b);
+    else if (!STD_STRCMP(rop, "jpo")) JCC_REL(aasmContext, 0x7b);
+    else if (!STD_STRCMP(rop, "jl" )) JCC_REL(aasmContext, 0x7c);
+    else if (!STD_STRCMP(rop,"jnge")) JCC_REL(aasmContext, 0x7c);
+    else if (!STD_STRCMP(rop, "jge")) JCC_REL(aasmContext, 0x7d);
+    else if (!STD_STRCMP(rop, "jnl")) JCC_REL(aasmContext, 0x7d);
+    else if (!STD_STRCMP(rop, "jle")) JCC_REL(aasmContext, 0x7e);
+    else if (!STD_STRCMP(rop, "jng")) JCC_REL(aasmContext, 0x7e);
+    else if (!STD_STRCMP(rop, "jg" )) JCC_REL(aasmContext, 0x7f);
+    else if (!STD_STRCMP(rop,"jnle")) JCC_REL(aasmContext, 0x7f);
+    else if (!STD_STRCMP(rop,"test")) TEST(aasmContext);
+    else if (!STD_STRCMP(rop,"xchg")) XCHG(aasmContext);
+    else if (!STD_STRCMP(rop, "mov")) MOV(aasmContext);
+    else if (!STD_STRCMP(rop, "lea")) LEA(aasmContext);
+    else if (!STD_STRCMP(rop, "nop")) NOP(aasmContext);
+    else if (!STD_STRCMP(rop, "cbw"))  CBW(aasmContext, 2);
+    else if (!STD_STRCMP(rop, "cwde")) CBW(aasmContext, 4);
+    else if (!STD_STRCMP(rop, "cwd")) CWD(aasmContext, 2);
+    else if (!STD_STRCMP(rop, "cdq")) CWD(aasmContext, 4);
+    else if (!STD_STRCMP(rop,"call")) CALL(aasmContext);
+    else if (!STD_STRCMP(rop,"wait")) WAIT(aasmContext);
+    else if (!STD_STRCMP(rop,"pushf"))  PUSHF(aasmContext, 2);
+    else if (!STD_STRCMP(rop,"pushfd")) PUSHF(aasmContext, 4);
+    else if (!STD_STRCMP(rop,"popf"))  POPF(aasmContext, 2);
+    else if (!STD_STRCMP(rop,"popfd")) POPF(aasmContext, 4);
+    else if (!STD_STRCMP(rop,"sahf")) SAHF(aasmContext);
+    else if (!STD_STRCMP(rop,"lahf")) LAHF(aasmContext);
+    else if (!STD_STRCMP(rop,"movs"))  MOVS(aasmContext);
+    else if (!STD_STRCMP(rop,"movsb")) MOVSB(aasmContext);
+    else if (!STD_STRCMP(rop,"movsw")) MOVSW(aasmContext, 2);
+    else if (!STD_STRCMP(rop,"movsd")) MOVSW(aasmContext, 4);
+    else if (!STD_STRCMP(rop,"cmps"))  CMPS(aasmContext);
+    else if (!STD_STRCMP(rop,"cmpsb")) CMPSB(aasmContext);
+    else if (!STD_STRCMP(rop,"cmpsw")) CMPSW(aasmContext, 2);
+    else if (!STD_STRCMP(rop,"cmpsd")) CMPSW(aasmContext, 4);
+    else if (!STD_STRCMP(rop,"stos"))  STOS(aasmContext);
+    else if (!STD_STRCMP(rop,"stosb")) STOSB(aasmContext);
+    else if (!STD_STRCMP(rop,"stosw")) STOSW(aasmContext, 2);
+    else if (!STD_STRCMP(rop,"stosd")) STOSW(aasmContext, 4);
+    else if (!STD_STRCMP(rop,"lods"))  LODS(aasmContext);
+    else if (!STD_STRCMP(rop,"lodsb")) LODSB(aasmContext);
+    else if (!STD_STRCMP(rop,"lodsw")) LODSW(aasmContext, 2);
+    else if (!STD_STRCMP(rop,"lodsd")) LODSW(aasmContext, 4);
+    else if (!STD_STRCMP(rop,"scas"))  SCAS(aasmContext);
+    else if (!STD_STRCMP(rop,"scasb")) SCASB(aasmContext);
+    else if (!STD_STRCMP(rop,"scasw")) SCASW(aasmContext, 2);
+    else if (!STD_STRCMP(rop,"scasd")) SCASW(aasmContext, 4);
+    else if (!STD_STRCMP(rop, "ret")) RET(aasmContext);
+    else if (!STD_STRCMP(rop, "les")) LES(aasmContext);
+    else if (!STD_STRCMP(rop, "lds")) LDS(aasmContext);
+    else if (!STD_STRCMP(rop, "enter")) ENTER(aasmContext);
+    else if (!STD_STRCMP(rop, "leave")) LEAVE(aasmContext);
+    else if (!STD_STRCMP(rop,"retf")) RETF(aasmContext);
+    else if (!STD_STRCMP(rop, "int")) INT(aasmContext);
+    else if (!STD_STRCMP(rop,"into")) INTO(aasmContext);
+    else if (!STD_STRCMP(rop,"iret"))  IRET(aasmContext, 2);
+    else if (!STD_STRCMP(rop,"iretd")) IRET(aasmContext, 4);
+    else if (!STD_STRCMP(rop, "rol")) ROL(aasmContext);
+    else if (!STD_STRCMP(rop, "ror")) ROR(aasmContext);
+    else if (!STD_STRCMP(rop, "rcl")) RCL(aasmContext);
+    else if (!STD_STRCMP(rop, "rcr")) RCR(aasmContext);
+    else if (!STD_STRCMP(rop, "shl")) SHL(aasmContext);
+    else if (!STD_STRCMP(rop, "shr")) SHR(aasmContext);
+    else if (!STD_STRCMP(rop, "sal")) SAL(aasmContext);
+    else if (!STD_STRCMP(rop, "sar")) SAR(aasmContext);
+    else if (!STD_STRCMP(rop, "aam")) AAM(aasmContext);
+    else if (!STD_STRCMP(rop, "aad")) AAD(aasmContext);
+    else if (!STD_STRCMP(rop,"xlat"))  XLAT(aasmContext);
+    else if (!STD_STRCMP(rop,"xlatb")) XLATB(aasmContext);
+    else if (!STD_STRCMP(rop,"loopne")) JCC_REL(aasmContext, 0xe0);
+    else if (!STD_STRCMP(rop,"loopnz")) JCC_REL(aasmContext, 0xe0);
+    else if (!STD_STRCMP(rop,"loope"))  JCC_REL(aasmContext, 0xe1);
+    else if (!STD_STRCMP(rop,"loopz"))  JCC_REL(aasmContext, 0xe1);
+    else if (!STD_STRCMP(rop,"loop"))   JCC_REL(aasmContext, 0xe2);
+    else if (!STD_STRCMP(rop,"jcxz"))   JCC_REL(aasmContext, 0xe3);
+    else if (!STD_STRCMP(rop, "in" )) IN(aasmContext);
+    else if (!STD_STRCMP(rop, "out")) OUT(aasmContext);
+    else if (!STD_STRCMP(rop, "jmp")) JMP(aasmContext);
+    else if (!STD_STRCMP(rop, "lock"))  PREFIX_LOCK(aasmContext);
+    else if (!STD_STRCMP(rop,"repne:")) PREFIX_REPNZ(aasmContext);
+    else if (!STD_STRCMP(rop,"repnz:")) PREFIX_REPNZ(aasmContext);
+    else if (!STD_STRCMP(rop, "rep:")) PREFIX_REPZ(aasmContext);
+    else if (!STD_STRCMP(rop,"repe:")) PREFIX_REPZ(aasmContext);
+    else if (!STD_STRCMP(rop,"repz:")) PREFIX_REPZ(aasmContext);
+    else if (!STD_STRCMP(rop, "hlt")) HLT(aasmContext);
+    else if (!STD_STRCMP(rop, "cmc")) CMC(aasmContext);
+    else if (!STD_STRCMP(rop, "not")) NOT(aasmContext);
+    else if (!STD_STRCMP(rop, "neg")) NEG(aasmContext);
+    else if (!STD_STRCMP(rop, "mul")) MUL(aasmContext);
+    else if (!STD_STRCMP(rop, "div")) DIV(aasmContext);
+    else if (!STD_STRCMP(rop,"idiv")) IDIV(aasmContext);
+    else if (!STD_STRCMP(rop, "clc")) CLC(aasmContext);
+    else if (!STD_STRCMP(rop, "stc")) STC(aasmContext);
+    else if (!STD_STRCMP(rop, "cli")) CLI(aasmContext);
+    else if (!STD_STRCMP(rop, "sti")) STI(aasmContext);
+    else if (!STD_STRCMP(rop, "cld")) CLD(aasmContext);
+    else if (!STD_STRCMP(rop, "std")) STD(aasmContext);
+    else if (!STD_STRCMP(rop, "sldt"))  SLDT(aasmContext);
+    else if (!STD_STRCMP(rop, "str"))   STR(aasmContext);
+    else if (!STD_STRCMP(rop, "lldt"))  LLDT(aasmContext);
+    else if (!STD_STRCMP(rop, "ltr"))   LTR(aasmContext);
+    else if (!STD_STRCMP(rop, "verr"))  VERR(aasmContext);
+    else if (!STD_STRCMP(rop, "verw"))  VERW(aasmContext);
+    else if (!STD_STRCMP(rop, "sgdt"))  SGDT(aasmContext);
+    else if (!STD_STRCMP(rop, "sidt"))  SIDT(aasmContext);
+    else if (!STD_STRCMP(rop, "lgdt"))  LGDT(aasmContext);
+    else if (!STD_STRCMP(rop, "lidt"))  LIDT(aasmContext);
+    else if (!STD_STRCMP(rop, "smsw"))  SMSW(aasmContext);
+    else if (!STD_STRCMP(rop, "lmsw"))  LMSW(aasmContext);
+    else if (!STD_STRCMP(rop, "lar"))   LAR(aasmContext);
+    else if (!STD_STRCMP(rop, "lsl"))   LSL(aasmContext);
+    else if (!STD_STRCMP(rop, "clts"))  CLTS(aasmContext);
+    else if (!STD_STRCMP(rop, "seto" )) SETCC_RM8(aasmContext, 0x90);
+    else if (!STD_STRCMP(rop, "setno")) SETCC_RM8(aasmContext, 0x91);
+    else if (!STD_STRCMP(rop, "setb" )) SETCC_RM8(aasmContext, 0x92);
+    else if (!STD_STRCMP(rop, "setc" )) SETCC_RM8(aasmContext, 0x92);
+    else if (!STD_STRCMP(rop,"setnae")) SETCC_RM8(aasmContext, 0x92);
+    else if (!STD_STRCMP(rop, "setae")) SETCC_RM8(aasmContext, 0x93);
+    else if (!STD_STRCMP(rop, "setnb")) SETCC_RM8(aasmContext, 0x93);
+    else if (!STD_STRCMP(rop, "setnc")) SETCC_RM8(aasmContext, 0x93);
+    else if (!STD_STRCMP(rop, "sete" )) SETCC_RM8(aasmContext, 0x94);
+    else if (!STD_STRCMP(rop, "setz" )) SETCC_RM8(aasmContext, 0x94);
+    else if (!STD_STRCMP(rop, "setne")) SETCC_RM8(aasmContext, 0x95);
+    else if (!STD_STRCMP(rop, "setnz")) SETCC_RM8(aasmContext, 0x95);
+    else if (!STD_STRCMP(rop, "setbe")) SETCC_RM8(aasmContext, 0x96);
+    else if (!STD_STRCMP(rop, "setna")) SETCC_RM8(aasmContext, 0x96);
+    else if (!STD_STRCMP(rop, "seta" )) SETCC_RM8(aasmContext, 0x97);
+    else if (!STD_STRCMP(rop,"setnbe")) SETCC_RM8(aasmContext, 0x97);
+    else if (!STD_STRCMP(rop, "sets" )) SETCC_RM8(aasmContext, 0x98);
+    else if (!STD_STRCMP(rop, "setns")) SETCC_RM8(aasmContext, 0x99);
+    else if (!STD_STRCMP(rop, "setp" )) SETCC_RM8(aasmContext, 0x9a);
+    else if (!STD_STRCMP(rop, "setpe")) SETCC_RM8(aasmContext, 0x9a);
+    else if (!STD_STRCMP(rop, "setnp")) SETCC_RM8(aasmContext, 0x9b);
+    else if (!STD_STRCMP(rop, "setpo")) SETCC_RM8(aasmContext, 0x9b);
+    else if (!STD_STRCMP(rop, "setl" )) SETCC_RM8(aasmContext, 0x9c);
+    else if (!STD_STRCMP(rop,"setnge")) SETCC_RM8(aasmContext, 0x9c);
+    else if (!STD_STRCMP(rop, "setge")) SETCC_RM8(aasmContext, 0x9d);
+    else if (!STD_STRCMP(rop, "setnl")) SETCC_RM8(aasmContext, 0x9d);
+    else if (!STD_STRCMP(rop, "setle")) SETCC_RM8(aasmContext, 0x9e);
+    else if (!STD_STRCMP(rop, "setng")) SETCC_RM8(aasmContext, 0x9e);
+    else if (!STD_STRCMP(rop, "setg" )) SETCC_RM8(aasmContext, 0x9f);
+    else if (!STD_STRCMP(rop,"setnle")) SETCC_RM8(aasmContext, 0x9f);
+    else if (!STD_STRCMP(rop, "bt"))    BT(aasmContext);
+    else if (!STD_STRCMP(rop, "shld"))  SHLD(aasmContext);
+    else if (!STD_STRCMP(rop, "bts"))   BTS(aasmContext);
+    else if (!STD_STRCMP(rop, "shrd"))  SHRD(aasmContext);
+    else if (!STD_STRCMP(rop, "lss"))   LSS(aasmContext);
+    else if (!STD_STRCMP(rop, "btr"))   BTR(aasmContext);
+    else if (!STD_STRCMP(rop, "lfs"))   LFS(aasmContext);
+    else if (!STD_STRCMP(rop, "lgs"))   LGS(aasmContext);
+    else if (!STD_STRCMP(rop, "movzx")) MOVZX(aasmContext);
+    else if (!STD_STRCMP(rop, "btc"))   BTC(aasmContext);
+    else if (!STD_STRCMP(rop, "bsf"))   BSF(aasmContext);
+    else if (!STD_STRCMP(rop, "bsr"))   BSR(aasmContext);
+    else if (!STD_STRCMP(rop, "movsx")) MOVSX(aasmContext);
+    else if (!STD_STRCMP(rop, "qdx"))   QDX(aasmContext);
     else _ser_;
     NTVDM64_TYPE_TRACE_CALL_END;
 }
-static C_CHAR *take_arg(C_CHAR *s) {
+static C_CHAR *take_arg(aasm32_context *aasmContext, C_CHAR *s) {
     C_CHAR *rend, *rresult;
     if (s) {
         rstart = s;
@@ -8257,35 +8257,35 @@ static C_CHAR *take_arg(C_CHAR *s) {
     if (!rstart) {
         return STD_NULL;
     }
-    while (!is_end(*rstart) && is_space(*rstart)) {
+    while (!is_end(aasmContext, *rstart) && is_space(aasmContext, *rstart)) {
         rstart++;
     }
-    if (*rstart == ',' || is_end(*rstart)) {
+    if (*rstart == ',' || is_end(aasmContext, *rstart)) {
         return STD_NULL;
     }
     rresult = rstart;
-    while (!is_end(*rstart) && (*rstart) != ',') {
+    while (!is_end(aasmContext, *rstart) && (*rstart) != ',') {
         rstart++;
     }
     rend = rstart - 1;
-    if (is_end(*rstart)) {
+    if (is_end(aasmContext, *rstart)) {
         rstart = STD_NULL;
     } else {
         rstart++;
     }
-    while (!is_end(*rend) && is_space(*rend)) {
+    while (!is_end(aasmContext, *rend) && is_space(aasmContext, *rend)) {
         rend--;
     }
     *(rend + 1) = 0;
     return rresult;
 }
-static uint8_t aasm32_execute(const C_CHAR *stmt, uint8_t *rcode, C_INT flag32) {
+static uint8_t aasm32_execute(aasm32_context *aasmContext, const C_CHAR *stmt, uint8_t *rcode, C_INT flag32) {
     uint8_t len;
     C_CHAR astmt[0x100];
     C_CHAR *rstmt;
     uint8_t flagprefix;
 
-    if (!stmt || is_end(stmt[0])) {
+    if (!stmt || is_end(aasmContext, stmt[0])) {
         return 0;
     }
 
@@ -8314,31 +8314,31 @@ static uint8_t aasm32_execute(const C_CHAR *stmt, uint8_t *rcode, C_INT flag32) 
 
     /* process prefixes */
     do {
-        while (!is_end(*rstmt) && is_space(*rstmt)) {
+        while (!is_end(aasmContext, *rstmt) && is_space(aasmContext, *rstmt)) {
             rstmt++;
         }
         rop = rstmt;
-        while (!is_end(*rstmt) && !is_space(*rstmt)) {
+        while (!is_end(aasmContext, *rstmt) && !is_space(aasmContext, *rstmt)) {
             rstmt++;
         }
-        if (!is_end(*rstmt)) {
+        if (!is_end(aasmContext, *rstmt)) {
             *rstmt = 0;
             rstmt++;
         }
-        flagprefix = is_prefix();
+        flagprefix = is_prefix(aasmContext);
         if (flagprefix) {
-            exec();
+            exec(aasmContext);
         }
     } while (flagprefix && !flagError);
 
     /* process assembly statement */
-    ropr1 = take_arg(rstmt);
-    ropr2 = take_arg(STD_NULL);
-    ropr3 = take_arg(STD_NULL);
+    ropr1 = take_arg(aasmContext, rstmt);
+    ropr2 = take_arg(aasmContext, STD_NULL);
+    ropr3 = take_arg(aasmContext, STD_NULL);
 
-    aopri1 = parsearg(ropr1);
-    aopri2 = parsearg(ropr2);
-    aopri3 = parsearg(ropr3);
+    aopri1 = parsearg(aasmContext, ropr1);
+    aopri2 = parsearg(aasmContext, ropr2);
+    aopri3 = parsearg(aasmContext, ropr3);
 
     if (isM(aopri1)) {
         rinfo = &aopri1;
@@ -8350,7 +8350,7 @@ static uint8_t aasm32_execute(const C_CHAR *stmt, uint8_t *rcode, C_INT flag32) 
         rinfo = STD_NULL;
     }
 
-    exec();
+    exec(aasmContext);
     len = 0;
 
     if (!flagError) {
@@ -8420,15 +8420,9 @@ static uint8_t aasm32_execute(const C_CHAR *stmt, uint8_t *rcode, C_INT flag32) 
 
 uint8_t aasm32(const C_CHAR *stmt, uint8_t *rcode, C_INT flag32) {
     aasm32_context local_context;
-    aasm32_context *previous = aasmContext;
-    uint8_t result;
 
-    if (previous != STD_NULL) return aasm32_execute(stmt, rcode, flag32);
     STD_MEMSET(&local_context, 0, sizeof(local_context));
-    aasmContext = &local_context;
-    result = aasm32_execute(stmt, rcode, flag32);
-    aasmContext = previous;
-    return result;
+    return aasm32_execute(&local_context, stmt, rcode, flag32);
 }
 
 /* extended routines - assemble a paragraph with call/jmp labels */
@@ -8445,7 +8439,7 @@ typedef struct {
 } t_aasm_instr;
 /* default operand size */
 #define _GetOperandSize (defsize ? 4 : 2)
-static C_VOID asmx_get_label(t_aasm_instr *rinstr) {
+static C_VOID asmx_get_label(aasm32_context *aasmContext, t_aasm_instr *rinstr) {
     STD_SIZE_T i = 0, j = 0;
     rinstr->label_str[0] = 0;
     rinstr->flag_has_label = 0;
@@ -8475,27 +8469,27 @@ static C_VOID asmx_get_label(t_aasm_instr *rinstr) {
         rinstr->flag_is_label = 1;
     }
 }
-static C_VOID asmx_parse_instr(t_aasm_instr *rinstr) {
+static C_VOID asmx_parse_instr(aasm32_context *aasmContext, t_aasm_instr *rinstr) {
     STD_SIZE_T i;
     C_CHAR *rstmt;
     t_aasm_token token;
     i = 0;
     rinstr->code_len = 0;
-    while (!is_end(rinstr->stmt[i]) && !is_space(rinstr->stmt[i])) {
+    while (!is_end(aasmContext, rinstr->stmt[i]) && !is_space(aasmContext, rinstr->stmt[i])) {
         rinstr->op_str[i] = rinstr->stmt[i];
         i++;
     }
     rinstr->op_str[i] = 0;
     rstmt = rinstr->stmt + i;
-    if (is_end(*rstmt)) {
+    if (is_end(aasmContext, *rstmt)) {
         return;
     }
-    token = gettoken(rstmt);
+    token = gettoken(aasmContext, rstmt);
     switch (token) {
     case TOKEN_SHORT:
-        token = gettoken(STD_NULL);
+        token = gettoken(aasmContext, STD_NULL);
         if (token == TOKEN_PTR) {
-            token = gettoken(STD_NULL);
+            token = gettoken(aasmContext, STD_NULL);
         }
         if (token != TOKEN_DOLLAR) {
             return;
@@ -8503,9 +8497,9 @@ static C_VOID asmx_parse_instr(t_aasm_instr *rinstr) {
         rinstr->ptr = PTR_SHORT;
         break;
     case TOKEN_NEAR:
-        token = gettoken(STD_NULL);
+        token = gettoken(aasmContext, STD_NULL);
         if (token == TOKEN_PTR) {
-            token = gettoken(STD_NULL);
+            token = gettoken(aasmContext, STD_NULL);
         }
         if (token != TOKEN_DOLLAR) {
             return;
@@ -8579,7 +8573,7 @@ static C_VOID asmx_parse_instr(t_aasm_instr *rinstr) {
         }
     }
 }
-static uint32_t aasm32x_execute(const C_CHAR *stmt, uint8_t *rcode, C_INT flag32) {
+static uint32_t aasm32x_execute(aasm32_context *aasmContext, const C_CHAR *stmt, uint8_t *rcode, C_INT flag32) {
     int32_t i, j, k, count;
     uint32_t len;
     uint32_t offset;
@@ -8594,15 +8588,15 @@ static uint32_t aasm32x_execute(const C_CHAR *stmt, uint8_t *rcode, C_INT flag32
     }
     instr = (t_aasm_instr *) STD_MALLOC(count * sizeof(t_aasm_instr));
     i = j = k = 0;
-    while (is_space(stmt[i])) {
+    while (is_space(aasmContext, stmt[i])) {
         i++;
     }
     while (1) {
-        if (is_end(stmt[i])) {
+        if (is_end(aasmContext, stmt[i])) {
             if (j) {
                 j--;
                 if (j) {
-                    while (is_space(instr[k].stmt[j])) {
+                    while (is_space(aasmContext, instr[k].stmt[j])) {
                         j--;
                     }
                     if (j) {
@@ -8621,7 +8615,7 @@ static uint32_t aasm32x_execute(const C_CHAR *stmt, uint8_t *rcode, C_INT flag32
                 break;
             } else if (stmt[i] == '\n') {
                 i++;
-                while (is_space(stmt[i])) {
+                while (is_space(aasmContext, stmt[i])) {
                     i++;
                 }
             }
@@ -8634,16 +8628,16 @@ static uint32_t aasm32x_execute(const C_CHAR *stmt, uint8_t *rcode, C_INT flag32
     count = k;
     for (i = 0; i < count; ++i) {
         STD_MEMSET((C_VOID *) instr[i].code_array, 0x00, 15);
-        asmx_get_label(&instr[i]);
+        asmx_get_label(aasmContext, &instr[i]);
         if (instr[i].flag_has_label) {
             if (instr[i].flag_is_label) {
                 instr[i].code_array[0] = 0x90;
                 instr[i].code_len = 1;
             } else {
-                asmx_parse_instr(&instr[i]);
+                asmx_parse_instr(aasmContext, &instr[i]);
             }
         } else {
-            instr[i].code_len = aasm32(instr[i].stmt, instr[i].code_array, flag32);
+            instr[i].code_len = aasm32_execute(aasmContext, instr[i].stmt, instr[i].code_array, flag32);
         }
         if (flagError) {
             STD_FREE((C_VOID *) instr);
@@ -8729,7 +8723,7 @@ static uint32_t aasm32x_execute(const C_CHAR *stmt, uint8_t *rcode, C_INT flag32
                             break;
                         }
                         STD_STRCAT(instr[j].stmt, imm);
-                        aasm32(instr[j].stmt, instr[j].code_array, flag32);
+                        aasm32_execute(aasmContext, instr[j].stmt, instr[j].code_array, flag32);
                     }
                     if (flagError) {
                         STD_FREE((C_VOID *) instr);
@@ -8789,7 +8783,7 @@ static uint32_t aasm32x_execute(const C_CHAR *stmt, uint8_t *rcode, C_INT flag32
                             break;
                         }
                         STD_STRCAT(instr[j].stmt, imm);
-                        aasm32(instr[j].stmt, instr[j].code_array, flag32);
+                        aasm32_execute(aasmContext, instr[j].stmt, instr[j].code_array, flag32);
                     }
                     if (flagError) {
                         STD_FREE((C_VOID *) instr);
@@ -8815,13 +8809,7 @@ static uint32_t aasm32x_execute(const C_CHAR *stmt, uint8_t *rcode, C_INT flag32
 
 uint32_t aasm32x(const C_CHAR *stmt, uint8_t *rcode, C_INT flag32) {
     aasm32_context local_context;
-    aasm32_context *previous = aasmContext;
-    uint32_t result;
 
-    if (previous != STD_NULL) return aasm32x_execute(stmt, rcode, flag32);
     STD_MEMSET(&local_context, 0, sizeof(local_context));
-    aasmContext = &local_context;
-    result = aasm32x_execute(stmt, rcode, flag32);
-    aasmContext = previous;
-    return result;
+    return aasm32x_execute(&local_context, stmt, rcode, flag32);
 }

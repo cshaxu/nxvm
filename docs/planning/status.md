@@ -221,7 +221,15 @@ subtask.
 
 **M5 T131 complete:** wait selection is explicit through platform, profile,
 and debugger contexts; no production wait TLS or enter/leave facade remains.
-T129 remains the sole active subtask.
+
+**M5 T129 complete:** debugger command dispatch and xasm execution now pass
+their caller-owned contexts explicitly; no debugger or xasm TLS selection
+remains. The retained Console/debugger and DOS-prompt gates pass with
+`nxvm_0_5_0129.exe`.
+
+**M5 T132 active:** perform the final production-source audit for TLS,
+implicit current-object facades, and second execution paths; run the focused
+suite and record any remaining non-production exceptions.
 
 ## Short-Term M5 Plan
 
