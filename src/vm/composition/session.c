@@ -49,6 +49,9 @@ C_VOID vm_session_storage_initialize(vm_session *machine)
 {
     core_machine_cpu_execution_context *execution;
     t_ram *memory;
+    t_pic *pic_master;
+    t_pic *pic_slave;
+    t_vadp *vadp;
 
     if (machine == STD_NULL || machine->core_machine != STD_NULL) return;
     {
@@ -66,21 +69,11 @@ C_VOID vm_session_storage_initialize(vm_session *machine)
         machine->core_machine);
     memory = vm_composition_machine_access_memory(machine->core_access);
     execution = vm_composition_machine_access_execution(machine->core_access);
-    machine->pic_master = core_machine_shared_pic_master_borrow(
-        machine->core_machine);
-    machine->pic_slave = core_machine_shared_pic_slave_borrow(
-        machine->core_machine);
+    pic_master = vm_composition_machine_access_pic_master(machine->core_access);
+    pic_slave = vm_composition_machine_access_pic_slave(machine->core_access);
     core_machine_cpu_execution_context_bind_pic(execution,
-        machine->pic_master, machine->pic_slave);
-    machine->pit = core_machine_shared_pit_borrow(machine->core_machine);
-    machine->dma_latch = core_machine_shared_dma_latch_borrow(
-        machine->core_machine);
-    machine->dma_primary = core_machine_shared_dma_primary_borrow(
-        machine->core_machine);
-    machine->dma_secondary = core_machine_shared_dma_secondary_borrow(
-        machine->core_machine);
-    machine->kbc = core_machine_shared_kbc_borrow(machine->core_machine);
-    machine->vadp = core_machine_shared_vadp_borrow(machine->core_machine);
+        pic_master, pic_slave);
+    vadp = vm_composition_machine_access_vadp(machine->core_access);
     machine->cmos = &machine->cmos_storage;
     machine->fdd = &machine->fdd_storage;
     machine->fdc = &machine->fdc_storage;
@@ -91,7 +84,7 @@ C_VOID vm_session_storage_initialize(vm_session *machine)
     machine->default_profile_context = &machine->default_profile_context_storage;
     vm_profile_default_context_initialize(machine->default_profile_context,
         machine->default_bios, machine->default_qdx, memory,
-        machine->vadp, STD_NULL, STD_NULL);
+        vadp, STD_NULL, STD_NULL);
     core_machine_cpu_execution_context_bind_extension(execution,
         machine->default_profile_context);
     machine->default_profile_context->execution = execution;
@@ -127,14 +120,6 @@ C_VOID vm_session_storage_finalize(vm_session *machine)
     if (machine == STD_NULL || machine->core_machine == STD_NULL) return;
     core_machine_cpu_execution_context_bind_extension(
         vm_composition_machine_access_execution(machine->core_access), STD_NULL);
-    machine->pic_master = STD_NULL;
-    machine->pic_slave = STD_NULL;
-    machine->pit = STD_NULL;
-    machine->dma_latch = STD_NULL;
-    machine->dma_primary = STD_NULL;
-    machine->dma_secondary = STD_NULL;
-    machine->kbc = STD_NULL;
-    machine->vadp = STD_NULL;
     machine->cmos = STD_NULL;
     machine->fdd = STD_NULL;
     machine->fdc = STD_NULL;

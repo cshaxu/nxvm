@@ -20,11 +20,16 @@ C_INT main(C_VOID)
     machine = session;
     if (machine == STD_NULL || machine->fdc == STD_NULL ||
         machine->fdc->connect.fdd != machine->fdd ||
-        machine->fdc->connect.dma_latch != machine->dma_latch ||
-        machine->fdc->connect.dma_primary != machine->dma_primary ||
-        machine->fdc->connect.dma_secondary != machine->dma_secondary ||
-        machine->fdc->connect.pic_master != machine->pic_master ||
-        machine->fdc->connect.pic_slave != machine->pic_slave ||
+        machine->fdc->connect.dma_latch !=
+            vm_composition_machine_access_dma_latch(machine->core_access) ||
+        machine->fdc->connect.dma_primary !=
+            vm_composition_machine_access_dma_primary(machine->core_access) ||
+        machine->fdc->connect.dma_secondary !=
+            vm_composition_machine_access_dma_secondary(machine->core_access) ||
+        machine->fdc->connect.pic_master !=
+            vm_composition_machine_access_pic_master(machine->core_access) ||
+        machine->fdc->connect.pic_slave !=
+            vm_composition_machine_access_pic_slave(machine->core_access) ||
         machine->fdc->connect.port !=
             vm_composition_machine_access_port(machine->core_access)) {
         vm_session_finalize(session);
