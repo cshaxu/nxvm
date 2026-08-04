@@ -6228,16 +6228,6 @@ static C_VOID MOVSX_R32_RM16(dasm32_context *dasmContext)
     STD_SPRINTF(dopr, "%s,%s%s", dr, dptr, drm);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID QDX(dasm32_context *dasmContext)
-{
-    TYPE_TRACE_CALL_BEGIN("QDX");
-    _adv;
-    STD_SPRINTF(dop, "QDX");
-    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
-    STD_SPRINTF(dopr, "%02X", (uint8_t)(cimm));
-    TYPE_TRACE_CALL_END;
-}
-
 static uint8_t dasm32_execute(dasm32_context *dasmContext, C_CHAR *stmt, uint8_t *rcode, C_INT flag32)
 {
     STD_SIZE_T i;
@@ -6488,7 +6478,6 @@ static uint8_t dasm32_execute(dasm32_context *dasmContext, C_CHAR *stmt, uint8_t
         dtable[0xee] = OUT_DX_AL;
         dtable[0xef] = OUT_DX_EAX;
         dtable[0xf0] = PREFIX_LOCK;
-        dtable[0xf1] = QDX;
         dtable[0xf2] = PREFIX_REPNZ;
         dtable[0xf3] = PREFIX_REPZ;
         dtable[0xf4] = HLT;

@@ -43,8 +43,6 @@
 
 #include "vm/profile/default_profile/firmware/bios.h"
 
-#include "vm/profile/default_profile/firmware/qdx.h"
-
 #include "vm/profile/default_profile/firmware/context.h"
 #include "vm/profile/default_profile/pc_at_profile.h"
 
@@ -83,7 +81,6 @@ typedef struct vm_session {
     t_hdd hdd;
     t_debug debug;
     t_bios default_bios;
-    t_qdx default_qdx;
     vm_profile_default_context default_profile_context;
     core_machine_block_provider_slot block_provider;
     core_machine_keyboard_provider_slot keyboard_provider;

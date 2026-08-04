@@ -5518,11 +5518,6 @@ core_machine_cpu_instruction_metadata core_machine_cpu_instruction_metadata_get(
         {
             metadata.minimum_cpu = CORE_MACHINE_CPU_PROFILE_80386;
         }
-        else if (opcode == 0xf1u)
-        {
-            /* Default-profile QDX claims this profile-reserved escape. */
-            metadata.minimum_cpu = CORE_MACHINE_CPU_PROFILE_80386;
-        }
         else if (opcode == 0x82u || opcode == 0xd6u)
         {
             metadata.valid = 0;
@@ -11202,9 +11197,16 @@ static C_VOID INS_C0(core_machine_cpu_execution_context *context)
 {
     TYPE_TRACE_CALL_BEGIN("INS_C0");
     _new_code_path_;
-    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80186)
     {
-        _adv;
+        if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
+        {
+            _adv;
+        }
+        else
+        {
+            cpu_state.data.ip++;
+        }
         TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 1));
         TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 1));
         TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
@@ -11264,9 +11266,16 @@ static C_VOID INS_C0(core_machine_cpu_execution_context *context)
 static C_VOID INS_C1(core_machine_cpu_execution_context *context)
 {
     TYPE_TRACE_CALL_BEGIN("INS_C1");
-    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80186)
     {
-        _adv;
+        if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
+        {
+            _adv;
+        }
+        else
+        {
+            cpu_state.data.ip++;
+        }
         TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize));
         TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
         TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
@@ -11853,18 +11862,27 @@ static C_VOID INT3(core_machine_cpu_execution_context *context)
 }
 static C_VOID INT_I8(core_machine_cpu_execution_context *context)
 {
+    uint32_t origin_linear = cpu_state.data.cs.base + cpu_state.data.eip;
+
     TYPE_TRACE_CALL_BEGIN("INT_I8");
     if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
     {
         _adv;
         TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
-        TYPE_TRACE_CHECK_RETURN(_e_int_n(context, (type_unsigned_8)instruction_state.data.cimm, _GetOperandSize));
+        if (!core_machine_cpu_execution_context_dispatch_firmware_interrupt_portal(
+                context, origin_linear, (uint8_t)instruction_state.data.cimm)) {
+            TYPE_TRACE_CHECK_RETURN(_e_int_n(context,
+                (type_unsigned_8)instruction_state.data.cimm, _GetOperandSize));
+        }
     }
     else
     {
         cpu_state.data.ip++;
         _d_imm(context, 1);
-        _e_int_n(context, (type_unsigned_8)instruction_state.data.cimm, 2);
+        if (!core_machine_cpu_execution_context_dispatch_firmware_interrupt_portal(
+                context, origin_linear, (uint8_t)instruction_state.data.cimm)) {
+            _e_int_n(context, (type_unsigned_8)instruction_state.data.cimm, 2);
+        }
     }
     TYPE_TRACE_CALL_END;
 }

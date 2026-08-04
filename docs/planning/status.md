@@ -2,11 +2,18 @@
 
 ## Current Work
 
-**Active subtask:** none. **M5 T208 complete:** the default PC/AT profile is
-an immutable declaration interpreted by composition. Its ROM mapping, firmware
-service order, CMOS/FDC port configuration, and FDC IRQ/DMA route no longer
-reside in session wiring or VM device implementation. The retained startup,
-Console, debugger, and DOS-prompt paths are unchanged. See
+**Active subtask:** none. **M5 T209 complete:** the default profile's QDX
+opcode override is replaced with frozen, ROM-origin-limited private `INT`
+portals. Standard `INT`/IVT semantics remain intact outside a matching frozen
+portal. The default machine remains `80386 + no FPU`; its focused strict-8086
+diagnostic stops at a genuine 80186 instruction in the DOS image. See [the
+task record](m5-t209-firmware-interrupt-portal.md).
+
+**M5 T208 complete:** the default PC/AT profile is an immutable declaration
+interpreted by composition. Its ROM mapping, firmware service order,
+CMOS/FDC port configuration, and FDC IRQ/DMA route no longer reside in session
+wiring or VM device implementation. The retained startup, Console, debugger,
+and DOS-prompt paths are unchanged. See
 [`pc-at-profile.md`](../architecture/pc-at-profile.md).
 
 M5 remains open. `M5 Td S2` clarified documentation entry points only; it did
@@ -26,9 +33,9 @@ not activate an implementation task or change M5 closure state.
 
 ## Latest Technical Baseline
 
-M5 T208 retained NXVM behavior while making the default PC/AT topology
-declarative. The recorded developer artifact is `nxvm_0_5_0208.exe`; its
-historical evidence is summarized in [M5 History](../history/m5.md).
+M5 T209 retained NXVM behavior while replacing the non-architectural QDX
+override with frozen firmware-INT portals. The recorded developer artifact is
+`nxvm_0_5_0209.exe`; its historical evidence is summarized in [M5 History](../history/m5.md).
 
 ## Operational Reading Order
 

@@ -19,14 +19,17 @@ if(NOT current_target_count EQUAL 1)
     message(FATAL_ERROR
         "Expected exactly one current artifact target; found ${current_target_count}")
 endif()
-if(NOT current_targets STREQUAL "add_current_vm_artifact(vm-0-5-0208")
-    message(FATAL_ERROR "Unexpected current artifact target: ${current_targets}")
+string(REGEX REPLACE "^add_current_vm_artifact\\((vm-[^ ]+)$" "\\1"
+    current_target "${current_targets}")
+if(current_target STREQUAL current_targets)
+    message(FATAL_ERROR "Could not parse current artifact target: ${current_targets}")
 endif()
 
-string(FIND "${presets_source}" "\"targets\": [\"vm-0-5-0208\"]"
+string(FIND "${presets_source}" "\"targets\": [\"${current_target}\"]"
     preset_position)
 if(preset_position EQUAL -1)
-    message(FATAL_ERROR "The current GCC preset does not name vm-0-5-0208")
+    message(FATAL_ERROR
+        "The current GCC preset does not name ${current_target}")
 endif()
 
-message("M5:T197:S1:CURRENT-ARTIFACT-TARGET:OK")
+message("M5:T197:S1:CURRENT-ARTIFACT-TARGET:${current_target}:OK")

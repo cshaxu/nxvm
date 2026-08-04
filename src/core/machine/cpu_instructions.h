@@ -14,6 +14,7 @@ extern "C" {
 #include "core/machine/cpu.h"
 #include "core/machine/fpu.h"
 #include "core/machine/fpu_interface.h"
+#include "core/machine/firmware_interrupt_interface.h"
 
 typedef enum {
     ARITHTYPE_NULL,
@@ -146,7 +147,6 @@ struct core_machine_cpu_execution_context {
     t_pic *pic_master;
     t_pic *pic_slave;
     type_trace *trace;
-    C_VOID *extension_context;
     const core_machine_cpu_execution_diagnostic_provider *diagnostic_provider;
     C_VOID *diagnostic_context;
     type_bool stop_requested;
@@ -154,6 +154,10 @@ struct core_machine_cpu_execution_context {
     core_machine_cpu_profile cpu_profile;
     core_machine_fpu_profile fpu_profile;
     core_machine_fpu *fpu;
+    core_machine_firmware_interrupt_portal firmware_interrupt_portals[
+        CORE_MACHINE_FIRMWARE_INTERRUPT_PORTAL_CAPACITY];
+    STD_SIZE_T firmware_interrupt_portal_count;
+    C_INT firmware_interrupt_portals_frozen;
 };
 
 C_VOID core_machine_cpu_execution_context_initialize(
@@ -162,16 +166,20 @@ C_VOID core_machine_cpu_execution_context_initialize(
 C_VOID core_machine_cpu_execution_context_bind_pic(
     core_machine_cpu_execution_context *context, t_pic *master,
     t_pic *slave);
-C_VOID core_machine_cpu_execution_context_bind_extension(
-    core_machine_cpu_execution_context *context, C_VOID *extension_context);
-C_VOID *core_machine_cpu_execution_context_extension(
-    const core_machine_cpu_execution_context *context);
 C_VOID core_machine_cpu_execution_context_bind_diagnostic_provider(
     core_machine_cpu_execution_context *context,
     const core_machine_cpu_execution_diagnostic_provider *provider,
     C_VOID *provider_context);
 C_VOID core_machine_cpu_execution_context_bind_fpu(
     core_machine_cpu_execution_context *context, core_machine_fpu *fpu);
+type_status core_machine_cpu_execution_context_register_firmware_interrupt_portal(
+    core_machine_cpu_execution_context *context,
+    const core_machine_firmware_interrupt_portal *portal);
+C_VOID core_machine_cpu_execution_context_freeze_firmware_interrupt_portals(
+    core_machine_cpu_execution_context *context);
+C_INT core_machine_cpu_execution_context_dispatch_firmware_interrupt_portal(
+    core_machine_cpu_execution_context *context, uint32_t origin_linear,
+    uint8_t vector);
 type_bool core_machine_cpu_execution_load_segment(
     core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg,
     type_unsigned_16 selector);

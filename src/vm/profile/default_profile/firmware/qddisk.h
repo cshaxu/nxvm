@@ -10,8 +10,9 @@
 extern "C" {
 #endif
 
-typedef struct t_qdx t_qdx;
-C_VOID vm_profile_default_disk_initialize(t_qdx *qdx);
+typedef struct vm_profile_default_context vm_profile_default_context;
+C_VOID vm_profile_default_disk_handle_hdd_read(vm_profile_default_context *profile);
+C_VOID vm_profile_default_disk_handle_hdd_write(vm_profile_default_context *profile);
 
 #ifdef __cplusplus
 }/*_EOCD_*/

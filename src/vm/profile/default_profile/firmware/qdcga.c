@@ -9,7 +9,6 @@
 
 #include "vm/profile/default_profile/firmware/context.h"
 #include "vm/profile/default_profile/firmware/qdcga.h"
-#include "vm/profile/default_profile/firmware/qdx.h"
 
 #define QDCGA_BDA_MODE 0x0449u
 #define QDCGA_BDA_COLUMNS 0x044au
@@ -194,7 +193,7 @@ static C_VOID qdcga_set_mode(vm_profile_default_context *profile)
     core_machine_display_notify_mode_changed_to(profile->display_provider);
 }
 
-static C_VOID qdcga_int10(vm_profile_default_context *profile)
+C_VOID vm_profile_default_cga_handle_int10(vm_profile_default_context *profile)
 {
     uint8_t page = profile_cpu.data.bh;
     uint16_t index;
@@ -276,16 +275,6 @@ static C_VOID qdcga_int10(vm_profile_default_context *profile)
         break;
     default: break;
     }
-}
-
-static C_VOID vm_profile_default_cga_dispatch(vm_profile_default_context *profile)
-{
-    qdcga_int10(profile);
-}
-
-C_VOID vm_profile_default_cga_initialize(t_qdx *qdx)
-{
-    if (qdx != STD_NULL) qdx->table[0x10] = vm_profile_default_cga_dispatch;
 }
 
 C_VOID vm_profile_default_cga_reset(vm_profile_default_context *profile)
