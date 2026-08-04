@@ -236,6 +236,11 @@ remove the required owner prefix from public APIs.
 - Keep exactly one active subtask in `docs/planning/status.md`. A task record
   defines scope, non-goals, source baseline, API surface, commands, expected
   markers, budgets, assets, and stop conditions before runtime changes.
+- Reserve numeric `T` identifiers for implementation tasks. Standalone
+  governance, roadmap, architecture, audit, and documentation work uses
+  `M<milestone> Td` and does not allocate a task number, task artifact, or
+  artifact version. Design work that belongs to a planned implementation task
+  uses that task's `S` identifier instead.
 - Design closes only after it produces a bounded immediate implementation
   breakdown. Do not start a later milestone merely because supporting code
   exists.

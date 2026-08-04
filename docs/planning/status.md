@@ -4,8 +4,10 @@
 
 **Active subtask:** none.
 
-M5 remains open. T209 clarified documentation entry points only; it did not
-close any M5 technical or verification item.
+M5 remains open. `M5 Td S2` clarified documentation entry points only; it did
+not close any M5 technical or verification item. The earlier documentation-only
+commit labels `T208` and `T209` are reclassified as `M5 Td S1` and `M5 Td S2`;
+they do not reserve numeric implementation task identifiers.
 
 ## Milestone State
 

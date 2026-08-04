@@ -36,4 +36,7 @@ Read these documents before changing the repository:
 - Keep exactly one active subtask in `docs/planning/status.md`.
 - Record evidence, provenance, verification, and task tracking when affected.
 - Preserve unrelated changes and avoid destructive Git operations.
-- Commit subjects use `M<milestone> T<task> S<subtask> P<part>: description`.
+- Commit subjects use `M<milestone> T<task> S<subtask> P<part>: description`
+  for implementation tasks, or `M<milestone> Td [S<subtask>] P<part>:
+  description` for standalone documentation work. `Td` does not consume a
+  numeric task identifier.

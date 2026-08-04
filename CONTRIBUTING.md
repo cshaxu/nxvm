@@ -52,9 +52,13 @@ Every change must state:
 
 ## Commits And Tracking
 
-Use `M<milestone> T<task> S<subtask> P<part>: description`. Keep task records
-under `docs/tracking/`, write a verification record for completed subtasks, and
-preserve all established baselines.
+Use `M<milestone> T<task> S<subtask> P<part>: description` for implementation
+tasks and their task-specific design work. Use
+`M<milestone> Td [S<subtask>] P<part>: description` for a standalone
+documentation/governance task; `Td` does not allocate a numeric `T` identifier
+or require an executable artifact. Keep records appropriate to the work,
+preserve all established baselines, and follow
+`docs/planning/execution-policy.md` for the authoritative identifier rules.
 
 When a completed subtask produces a runnable Windows executable, place its
 verified local copy in ignored `build/output/` using the product-specific
