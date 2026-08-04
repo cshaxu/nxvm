@@ -53,19 +53,19 @@ static C_INT vm_session_keyboard_get_modifier(
         (vm_session *)context;
     switch (modifier) {
     case VM_PLATFORM_KEYBOARD_MODIFIER_ALT:
-        return core_machine_keyboard_get_modifier_from(machine->keyboard_provider,
+        return core_machine_keyboard_get_modifier_from(&machine->keyboard_provider,
             CORE_MACHINE_KEYBOARD_MODIFIER_ALT);
     case VM_PLATFORM_KEYBOARD_MODIFIER_CONTROL:
-        return core_machine_keyboard_get_modifier_from(machine->keyboard_provider,
+        return core_machine_keyboard_get_modifier_from(&machine->keyboard_provider,
             CORE_MACHINE_KEYBOARD_MODIFIER_CONTROL);
     case VM_PLATFORM_KEYBOARD_MODIFIER_SHIFT:
-        return core_machine_keyboard_get_modifier_from(machine->keyboard_provider,
+        return core_machine_keyboard_get_modifier_from(&machine->keyboard_provider,
             CORE_MACHINE_KEYBOARD_MODIFIER_SHIFT);
     case VM_PLATFORM_KEYBOARD_MODIFIER_CAPS_LOCK:
-        return core_machine_keyboard_get_modifier_from(machine->keyboard_provider,
+        return core_machine_keyboard_get_modifier_from(&machine->keyboard_provider,
             CORE_MACHINE_KEYBOARD_MODIFIER_CAPS_LOCK);
     case VM_PLATFORM_KEYBOARD_MODIFIER_NUM_LOCK:
-        return core_machine_keyboard_get_modifier_from(machine->keyboard_provider,
+        return core_machine_keyboard_get_modifier_from(&machine->keyboard_provider,
             CORE_MACHINE_KEYBOARD_MODIFIER_NUM_LOCK);
     }
     return 0;
@@ -76,7 +76,7 @@ static C_VOID vm_session_keyboard_apply_host_state(
 {
     vm_session *machine =
         (vm_session *)context;
-    core_machine_keyboard_apply_host_state_to(machine->keyboard_provider,
+    core_machine_keyboard_apply_host_state_to(&machine->keyboard_provider,
         asynchronous_keys, toggle_keys);
 }
 
@@ -84,7 +84,7 @@ static C_VOID vm_session_keyboard_receive_key_press(C_VOID *context, uint16_t co
 {
     vm_session *machine =
         (vm_session *)context;
-    core_machine_keyboard_receive_key_press_to(machine->keyboard_provider, code);
+    core_machine_keyboard_receive_key_press_to(&machine->keyboard_provider, code);
 }
 
 static C_VOID vm_session_keyboard_request_stop(C_VOID *context)
@@ -216,10 +216,10 @@ C_VOID vm_session_initialize(vm_session *machine) {
     core_product_wait_scope_initialize(&machine->wait_scope,
         vm_session_wait, STD_NULL);
     vm_session_control_initialize(machine->control, machine);
-    core_machine_keyboard_provider_slot_bind(machine->keyboard_provider,
+    core_machine_keyboard_provider_slot_bind(&machine->keyboard_provider,
         &machine->default_profile_context,
         vm_profile_default_keyboard_provider());
-    core_machine_keyboard_provider_slot_freeze(machine->keyboard_provider);
+    core_machine_keyboard_provider_slot_freeze(&machine->keyboard_provider);
     vm_session_bind_display(machine);
     vm_machine_debug_bind_pause(&machine->debug,
         vm_session_debug_request_pause, STD_NULL);
@@ -256,8 +256,8 @@ C_VOID vm_session_finalize(vm_session *machine) {
     vm_platform_request_transport_discard(&machine->request_transport);
     machine->active = 0;
     vm_session_control_finalize(machine->control, machine);
-    core_machine_keyboard_provider_slot_finalize(machine->keyboard_provider);
-    core_machine_display_provider_slot_finalize(machine->display_provider);
+    core_machine_keyboard_provider_slot_finalize(&machine->keyboard_provider);
+    core_machine_display_provider_slot_finalize(&machine->display_provider);
     vm_machine_debug_bind_pause(&machine->debug, STD_NULL, STD_NULL);
     vm_session_debug_target_finalize(machine);
     vm_session_storage_finalize(machine);

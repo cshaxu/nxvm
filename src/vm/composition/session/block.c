@@ -50,7 +50,7 @@ static C_INT vmBlockWrite(C_VOID *context, ntvdm64_type_unsigned_8 cylinder, ntv
 C_VOID vm_session_bind_block(vm_session *machine)
 {
     if (machine == STD_NULL) return;
-    core_machine_block_provider_slot_bind(machine->block_provider, &machine->hdd,
+    core_machine_block_provider_slot_bind(&machine->block_provider, &machine->hdd,
         vmBlockGeometry, vmBlockRead, vmBlockWrite);
-    core_machine_block_provider_slot_freeze(machine->block_provider);
+    core_machine_block_provider_slot_freeze(&machine->block_provider);
 }
