@@ -48,12 +48,12 @@ static t_port *vm_debug_port(const vm_session *machine)
 { return machine == STD_NULL ? STD_NULL :
     core_machine_debug_port_borrow(machine->core_machine); }
 
-static C_INT vm_debug_running(C_VOID *context) { return vm_session_control_is_running(((vm_session *)context)->control); }
+static C_INT vm_debug_running(C_VOID *context) { return vm_session_control_is_running(&((vm_session *)context)->control); }
 static C_VOID vm_debug_resume(C_VOID *context) { vm_session_resume((vm_session *)context); }
-static C_INT vm_debug_paused(C_VOID *context) { return vm_session_control_is_paused(((vm_session *)context)->control); }
+static C_INT vm_debug_paused(C_VOID *context) { return vm_session_control_is_paused(&((vm_session *)context)->control); }
 static core_product_debug_pause_reason vm_debug_pause_reason(C_VOID *context)
 {
-    switch (vm_session_control_get_pause_reason(((vm_session *)context)->control)) {
+    switch (vm_session_control_get_pause_reason(&((vm_session *)context)->control)) {
     case VM_SESSION_PAUSE_EXPLICIT: return CORE_PRODUCT_DEBUG_PAUSE_EXPLICIT;
     case VM_SESSION_PAUSE_BREAKPOINT: return CORE_PRODUCT_DEBUG_PAUSE_BREAKPOINT;
     case VM_SESSION_PAUSE_TRACE: return CORE_PRODUCT_DEBUG_PAUSE_TRACE;
@@ -67,13 +67,13 @@ static C_INT vm_debug_request_pause(C_VOID *context, core_product_debug_pause_re
     if (reason == CORE_PRODUCT_DEBUG_PAUSE_BREAKPOINT) mapped = VM_SESSION_PAUSE_BREAKPOINT;
     else if (reason == CORE_PRODUCT_DEBUG_PAUSE_TRACE) mapped = VM_SESSION_PAUSE_TRACE;
     else if (reason == CORE_PRODUCT_DEBUG_PAUSE_STEP) mapped = VM_SESSION_PAUSE_STEP;
-    vm_session_control_request_pause(((vm_session *)context)->control, mapped);
+    vm_session_control_request_pause(&((vm_session *)context)->control, mapped);
     return 0;
 }
 static C_VOID vm_debug_continue(C_VOID *context)
-{ vm_session_control_continue(((vm_session *)context)->control); }
+{ vm_session_control_continue(&((vm_session *)context)->control); }
 static C_INT vm_debug_step(C_VOID *context)
-{ return vm_session_control_step(((vm_session *)context)->control) ? 0 : 1; }
+{ return vm_session_control_step(&((vm_session *)context)->control) ? 0 : 1; }
 
 static C_INT vm_debug_read_register(C_VOID *context, core_product_debug_register reg,
                                   uint32_t *value)

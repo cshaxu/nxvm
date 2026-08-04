@@ -40,7 +40,7 @@ static C_VOID vm_session_execution_context_reset_callback(vm_session *machine)
     if (machine == STD_NULL) return;
     vm_machine_debug_reset(&machine->debug);
     if (core_machine_reset(machine->core_machine) != NTVDM64_STATUS_OK) {
-        vm_session_control_stop(machine->control);
+        vm_session_control_stop(&machine->control);
     }
 }
 

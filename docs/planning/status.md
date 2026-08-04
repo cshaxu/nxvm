@@ -455,6 +455,10 @@ Artifact: `nxvm_0_5_0181.exe`.
 display slots are embedded; firmware, isolation, and presentation gates pass.
 Artifact: `nxvm_0_5_0182.exe`.
 
+**M5 T183 S1 complete: embedded control ownership.** Control state is no
+longer heap allocated; pause and unified debugger FDD gates pass. Artifact:
+`nxvm_0_5_0183.exe`.
+
 The completed executor sequence is defined in
 [Facade And Executor Convergence](m5-facade-executor-convergence.md). The
 active session-readiness sequence is defined in

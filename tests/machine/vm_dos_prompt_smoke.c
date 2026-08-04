@@ -68,8 +68,8 @@ C_INT main(C_INT argc, C_CHAR **argv)
     for (elapsed = 0u; elapsed < DOS_PROMPT_TIMEOUT_MILLISECONDS; elapsed += 10u) {
         Sleep(10u);
     }
-    vm_session_control_request_pause(session->control, VM_SESSION_PAUSE_EXPLICIT);
-    if (!vm_session_control_wait_for_pause(session->control, 2000u)) goto fail;
+    vm_session_control_request_pause(&session->control, VM_SESSION_PAUSE_EXPLICIT);
+    if (!vm_session_control_wait_for_pause(&session->control, 2000u)) goto fail;
     prompt_seen = has_dos_prompt(session->core_machine);
     if (!prompt_seen) {
         dump_first_fault(session->core_machine);

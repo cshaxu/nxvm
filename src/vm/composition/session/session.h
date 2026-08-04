@@ -95,7 +95,7 @@ typedef struct vm_session {
     core_product_debug_context debugger_context;
     uint64_t display_generation;
     core_product_debug_target *debug_target;
-    vm_session_control_state *control;
+    vm_session_control_state control;
     vm_session_config retained_config;
     C_CHAR fdd_image_path[1024];
     C_CHAR hdd_image_path[1024];

@@ -100,8 +100,8 @@ static ntvdm64_status vm_session_provider_describe(C_VOID *context,
 
     (C_VOID)context;
     if (session == STD_NULL || snapshot == STD_NULL) return NTVDM64_STATUS_INVALID_ARGUMENT;
-    snapshot->state = vm_session_control_is_running(session->control) ?
-        (vm_session_control_is_paused(session->control) ?
+    snapshot->state = vm_session_control_is_running(&session->control) ?
+        (vm_session_control_is_paused(&session->control) ?
             CORE_PRODUCT_SESSION_STATE_PAUSED : CORE_PRODUCT_SESSION_STATE_RUNNING) :
         CORE_PRODUCT_SESSION_STATE_STOPPED;
     snapshot->display = vm_platform_run_context_get_window_display(

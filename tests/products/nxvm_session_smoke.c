@@ -60,10 +60,10 @@ static C_INT verify_initialize_once(C_VOID)
         return 1;
     }
     core_machine = session->core_machine;
-    control = session->control;
+    control = &session->control;
     vm_session_initialize(session);
     if (!session->active || session->core_machine != core_machine ||
-        session->control != control) {
+        &session->control != control) {
         vm_session_destroy(session);
         return 1;
     }

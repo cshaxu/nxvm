@@ -118,8 +118,6 @@ C_VOID vm_session_storage_initialize(vm_session *machine)
     machine->default_profile_context.wait_scope = &machine->wait_scope;
     core_product_debug_context_initialize(&machine->debugger_context);
     machine->display_generation = 0u;
-    machine->control = (vm_session_control_state *)STD_CALLOC(1u,
-        sizeof(*machine->control));
 }
 
 C_VOID vm_session_storage_finalize(vm_session *machine)
@@ -130,8 +128,6 @@ C_VOID vm_session_storage_finalize(vm_session *machine)
     core_machine_block_provider_slot_finalize(&machine->block_provider);
     core_machine_keyboard_provider_slot_finalize(&machine->keyboard_provider);
     core_machine_display_provider_slot_finalize(&machine->display_provider);
-    STD_FREE(machine->control);
-    machine->control = STD_NULL;
     core_machine_destroy(machine->core_machine);
     machine->core_machine = STD_NULL;
 }
@@ -171,7 +167,7 @@ C_INT vm_session_create(const vm_session_config *config, vm_session **out_sessio
         vm_profile_default_bios_set_boot_hdd(&session->default_bios,
             config->boot_hdd != 0);
     }
-    vm_session_control_reset(session->control);
+    vm_session_control_reset(&session->control);
     *out_session = session;
     return NTVDM64_STATUS_OK;
 }
@@ -179,8 +175,8 @@ C_INT vm_session_create(const vm_session_config *config, vm_session **out_sessio
 ntvdm64_status vm_session_reconfigure_memory(vm_session *session,
     STD_SIZE_T memory_bytes)
 {
-    if (session == STD_NULL || session->control == STD_NULL ||
-        vm_session_control_is_running(session->control) ||
+    if (session == STD_NULL ||
+        vm_session_control_is_running(&session->control) ||
         vm_platform_run_handle_is_active(&session->platform_run_handle)) {
         return NTVDM64_STATUS_INVALID_STATE;
     }
