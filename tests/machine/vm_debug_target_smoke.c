@@ -19,6 +19,7 @@ C_INT main(C_VOID)
     session = (vm_session *)STD_CALLOC(1u, sizeof(*session));
     if (session == STD_NULL) return 1;
     vm_session_initialize(session);
+    vm_session_reset(session);
     target = vm_session_debug_target(session);
     if (target == STD_NULL ||
         target->read_register(target->context,

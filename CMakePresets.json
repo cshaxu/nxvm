@@ -21,7 +21,7 @@
     {
       "name": "nxvm-current-gcc",
       "configurePreset": "mingw-gcc-x64",
-      "targets": ["nxvm-0-5-0173"]
+      "targets": ["nxvm-0-5-0174"]
     },
     {
       "name": "nxvm-current-gates-gcc",
@@ -70,7 +70,9 @@
         "verify-session-readiness",
         "verify-product-session-manager",
         "verify-c-facade-headers",
-        "verify-vm-provider-composition"
+        "verify-vm-provider-composition",
+        "verify-ram-reconfigure-closure",
+        "nxvm-vm-session-reconfigure-smoke"
       ]
     },
     {
