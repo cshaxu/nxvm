@@ -4,7 +4,7 @@
 
 **Active subtask:** none.
 
-M5 remains open. T208 reduced the documentation working set only; it did not
+M5 remains open. T209 clarified documentation entry points only; it did not
 close any M5 technical or verification item.
 
 ## Milestone State

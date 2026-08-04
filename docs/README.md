@@ -1,18 +1,18 @@
 # Documentation Guide
 
-This directory contains only current project authority and compact milestone
-history. Read it in this order:
+Read the six principal documents first:
 
-1. `../RULES.md` for the working and review checklist.
-2. `architecture/overview.md`, `architecture/module-layout.md`, and
-   `architecture/contracts.md` for product shape, ownership, and interfaces.
-3. `requirements/` for externally observable behavior and compatibility scope.
-4. `planning/roadmap.md`, `planning/status.md`, and
-   `planning/m5-closure-checklist.md` for what is complete and what is next.
-5. `source-policy.md` and the policy documents beside it for licensing,
-   redistributability, and research boundaries.
+1. [Design Principles](design-principles.md)
+2. [Coding Standard](coding-standard.md)
+3. [Documentation Standard](documentation-standard.md)
+4. [System Architecture](architecture/overview.md)
+5. [Roadmap And Milestones](planning/roadmap.md)
+6. [Debt Tracking](debt-tracking.md)
 
-`history/` is intentionally short: it summarizes completed milestones and
-names the Git baseline that retains their detailed records. It is context, not
-current authority. `provenance/nxvm-imports.md` is the compact NXVM import
-index; `research/` and `references/` are non-default inputs.
+For active work, then read [Project Status](planning/status.md) and the
+applicable closure checklist. `architecture/`, `requirements/`, policy files,
+research, references, provenance, and history are supporting material: they
+refine one of the six subjects but do not create a competing daily entry point.
+
+`../RULES.md` remains the compact implementation/review checklist, and
+`../TODO.md` is the live ledger referenced by Debt Tracking.
