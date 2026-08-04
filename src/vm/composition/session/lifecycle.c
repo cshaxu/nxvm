@@ -221,7 +221,7 @@ C_VOID vm_session_initialize(vm_session *machine) {
         vm_profile_default_keyboard_provider());
     core_machine_keyboard_provider_slot_freeze(machine->keyboard_provider);
     vm_session_bind_display(machine);
-    vm_machine_debug_bind_pause(machine->debug,
+    vm_machine_debug_bind_pause(&machine->debug,
         vm_session_debug_request_pause, STD_NULL);
     vm_platform_keyboard_transport_initialize(&machine->keyboard_transport,
         &vm_session_keyboard_sink, machine);
@@ -258,7 +258,7 @@ C_VOID vm_session_finalize(vm_session *machine) {
     vm_session_control_finalize(machine->control, machine);
     core_machine_keyboard_provider_slot_finalize(machine->keyboard_provider);
     core_machine_display_provider_slot_finalize(machine->display_provider);
-    vm_machine_debug_bind_pause(machine->debug, STD_NULL, STD_NULL);
+    vm_machine_debug_bind_pause(&machine->debug, STD_NULL, STD_NULL);
     vm_session_debug_target_finalize(machine);
     vm_session_storage_finalize(machine);
 }

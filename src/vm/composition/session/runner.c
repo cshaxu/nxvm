@@ -40,7 +40,7 @@ C_VOID vm_session_runner_run(vm_session *session)
         vm_session_publish_display(session, NTVDM64_TYPE_FALSE);
         if (result.reason == CORE_MACHINE_STOP_RESET_REQUESTED) {
             /* core_machine_run completed the one cold reset before returning. */
-            vm_machine_debug_reset(session->debug);
+            vm_machine_debug_reset(&session->debug);
         }
         if (result.reason == CORE_MACHINE_STOP_REQUESTED) {
             vm_session_control_stop(control);

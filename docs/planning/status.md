@@ -439,6 +439,10 @@ command context is embedded, while the independently allocated lazy target is
 retained with explicit teardown. Debug target, Console lifecycle, and unified
 FDD debugger gates pass. Artifact: `nxvm_0_5_0178.exe`.
 
+**M5 T179 S1 complete: direct CMOS and VM-debug ownership.** The two device
+owners are embedded and their aliases are removed. CMOS and debugger authority
+gates pass. Artifact: `nxvm_0_5_0179.exe`.
+
 The completed executor sequence is defined in
 [Facade And Executor Convergence](m5-facade-executor-convergence.md). The
 active session-readiness sequence is defined in

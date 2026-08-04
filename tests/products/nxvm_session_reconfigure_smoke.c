@@ -21,13 +21,13 @@ C_INT main(C_VOID)
     core_identity = session->core_machine;
     fdd_identity = session->fdd;
     hdd_identity = session->hdd;
-    debug_identity = session->debug;
+    debug_identity = &session->debug;
     platform_identity = &session->platform_run_context;
     failed |= vm_session_reconfigure_memory(session, 32u * 1024u * 1024u) !=
         NTVDM64_STATUS_OK;
     failed |= session != identity;
     failed |= session->core_machine != core_identity || session->fdd != fdd_identity ||
-        session->hdd != hdd_identity || session->debug != debug_identity ||
+        session->hdd != hdd_identity || &session->debug != debug_identity ||
         &session->platform_run_context != platform_identity;
     failed |= core_machine_get_memory_bytes(session->core_machine, &bytes) !=
         NTVDM64_STATUS_OK || bytes != 32u * 1024u * 1024u;

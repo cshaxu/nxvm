@@ -102,11 +102,9 @@ C_VOID vm_session_storage_initialize(vm_session *machine)
     core_machine_cpu_execution_context_bind_pic(execution,
         pic_master, pic_slave);
     vadp = core_machine_configuration_shared_vadp_borrow(machine->core_machine);
-    machine->cmos = &machine->cmos_storage;
     machine->fdd = &machine->fdd_storage;
     machine->fdc = &machine->fdc_storage;
     machine->hdd = &machine->hdd_storage;
-    machine->debug = &machine->debug_storage;
     machine->default_bios = &machine->default_bios_storage;
     machine->default_qdx = &machine->default_qdx_storage;
     machine->default_profile_context = &machine->default_profile_context_storage;
@@ -138,11 +136,9 @@ C_VOID vm_session_storage_finalize(vm_session *machine)
     if (machine == STD_NULL || machine->core_machine == STD_NULL) return;
     core_machine_cpu_execution_context_bind_extension(
         core_machine_configuration_cpu_execution_borrow(machine->core_machine), STD_NULL);
-    machine->cmos = STD_NULL;
     machine->fdd = STD_NULL;
     machine->fdc = STD_NULL;
     machine->hdd = STD_NULL;
-    machine->debug = STD_NULL;
     machine->default_bios = STD_NULL;
     machine->default_qdx = STD_NULL;
     machine->default_profile_context = STD_NULL;
@@ -210,7 +206,7 @@ ntvdm64_status vm_session_reconfigure_memory(vm_session *session,
         NTVDM64_STATUS_OK) return NTVDM64_STATUS_INVALID_STATE;
     session->retained_config.memory_bytes = memory_bytes;
     session->core_machine_config.memory_bytes = memory_bytes;
-    vm_machine_debug_reset(session->debug);
+    vm_machine_debug_reset(&session->debug);
     vm_session_publish_display(session, 1);
     return NTVDM64_STATUS_OK;
 }
