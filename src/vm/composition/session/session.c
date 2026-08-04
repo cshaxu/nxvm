@@ -127,8 +127,7 @@ C_VOID vm_session_storage_initialize(vm_session *machine)
     machine->default_profile_context->display_provider = machine->display_provider;
     vm_platform_presentation_mailbox_initialize(&machine->presentation_mailbox);
     machine->default_profile_context->wait_scope = &machine->wait_scope;
-    machine->debugger_context = &machine->debugger_context_storage;
-    core_product_debug_context_initialize(machine->debugger_context);
+    core_product_debug_context_initialize(&machine->debugger_context);
     machine->display_generation = 0u;
     machine->control = (vm_session_control_state *)STD_CALLOC(1u,
         sizeof(*machine->control));
@@ -153,7 +152,6 @@ C_VOID vm_session_storage_finalize(vm_session *machine)
     machine->keyboard_provider = STD_NULL;
     core_machine_display_provider_slot_finalize(machine->display_provider);
     machine->display_provider = STD_NULL;
-    machine->debugger_context = STD_NULL;
     STD_FREE(machine->control);
     machine->control = STD_NULL;
     core_machine_destroy(machine->core_machine);
