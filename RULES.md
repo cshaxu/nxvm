@@ -111,6 +111,14 @@ provider contracts.
   lifecycle ownership, profile wiring, provider binding, UI policy, or test
   support in a generic file name merely because it is convenient. Split,
   relocate, rename, or delete it once its true responsibility is known.
+- File size and file count are not quality metrics. A large, cohesive domain
+  implementation is allowed when it has one clear owner and responsibility, a
+  narrow external boundary, consistent internal organization, and focused
+  verification. Keeping such code together can be more readable than
+  scattering one subsystem across many small files.
+- Split a file only when ownership, lifecycle, policy, or independent change
+  and test boundaries genuinely differ; never impose a line-count threshold or
+  fragment a well-encapsulated implementation merely for visual uniformity.
 - Do not copy an NXVM implementation merely to fill a new directory. Use
   `git mv`, repair direct dependencies, verify, then proceed to the next
   bounded move.
