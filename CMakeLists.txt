@@ -517,6 +517,10 @@ add_executable(core-machine-ram-port-context-smoke
 target_link_libraries(core-machine-ram-port-context-smoke PRIVATE
     core-machine
 )
+add_executable(core-machine-pit-readback-smoke
+    tests/machine/core_machine_pit_readback_smoke.c
+)
+target_link_libraries(core-machine-pit-readback-smoke PRIVATE core-machine)
 
 add_executable(vm-cmos-authority-smoke tests/machine/vm_cmos_authority_smoke.c)
 target_link_libraries(vm-cmos-authority-smoke PRIVATE vm-composition)
@@ -872,6 +876,7 @@ add_vm_version_artifact(vm-0-5-0187 "0.5.0187")
 add_vm_version_artifact(vm-0-5-0188 "0.5.0188")
 add_vm_version_artifact(vm-0-5-0189 "0.5.0189")
 add_vm_version_artifact(vm-0-5-0190 "0.5.0190")
+add_vm_version_artifact(vm-0-5-0191 "0.5.0191")
 
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
