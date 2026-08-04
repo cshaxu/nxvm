@@ -259,7 +259,215 @@ xor bx, bx                \n\
 mov cx, 0001              \n\
 xor dx, dx                \n\
 mov sp, fffe              \n\
-jmp 0000:7c00             \n"
+ jmp 0000:7c00             \n"
+
+/* Default-ROM text INT 10h subset. It intentionally owns only guest BDA,
+ * B8000 text memory, and CRTC cursor ports; VADP observes those real writes. */
+#define VBIOS_INT_SOFT_VIDEO_10 "      \
+cmp ah, 02                        \n\
+jnz $(label_int_10_cmp_06)        \n\
+jmp near $(label_int_10_cursor)   \n\
+$(label_int_10_cmp_06):           \n\
+cmp ah, 06                        \n\
+jnz $(label_int_10_cmp_0b)        \n\
+jmp near $(label_int_10_clear)    \n\
+$(label_int_10_cmp_0b):           \n\
+cmp ah, 0b                        \n\
+jnz $(label_int_10_cmp_0e)        \n\
+iret                              \n\
+$(label_int_10_cmp_0e):           \n\
+cmp ah, 0e                        \n\
+jnz $(label_int_10_cmp_0f)        \n\
+jmp near $(label_int_10_tty)      \n\
+$(label_int_10_cmp_0f):           \n\
+cmp ah, 0f                        \n\
+jnz $(label_int_10_ret)           \n\
+jmp near $(label_int_10_mode)     \n\
+$(label_int_10_ret):              \n\
+iret                              \n\
+\
+$(label_int_10_cursor):           \n\
+push ax                           \n\
+push bx                           \n\
+push cx                           \n\
+push dx                           \n\
+push ds                           \n\
+mov bx, 0040                      \n\
+mov ds, bx                        \n\
+mov ax, dx                         \n\
+mov ds:[0050], ax                 \n\
+mov al, dh                         \n\
+xor ah, ah                         \n\
+mov cl, 50                         \n\
+mul cl                             \n\
+xor dh, dh                         \n\
+add ax, dx                         \n\
+mov cx, ax                         \n\
+mov dx, 03d4                       \n\
+mov al, 0e                         \n\
+out dx, al                         \n\
+inc dx                             \n\
+mov al, ch                         \n\
+out dx, al                         \n\
+dec dx                             \n\
+mov al, 0f                         \n\
+out dx, al                         \n\
+inc dx                             \n\
+mov al, cl                         \n\
+out dx, al                         \n\
+pop ds                             \n\
+pop dx                             \n\
+pop cx                             \n\
+pop bx                             \n\
+pop ax                             \n\
+iret                               \n\
+\
+$(label_int_10_clear):            \n\
+push ax                           \n\
+push cx                           \n\
+push di                           \n\
+push es                           \n\
+mov ax, b800                      \n\
+mov es, ax                        \n\
+xor di, di                        \n\
+xor ax, ax                        \n\
+mov cx, 07d0                      \n\
+rep:                              \n\
+stosw                              \n\
+pop es                            \n\
+pop di                            \n\
+pop cx                            \n\
+pop ax                            \n\
+iret                              \n\
+\
+$(label_int_10_tty):              \n\
+push ax                           \n\
+push bx                           \n\
+push cx                           \n\
+push dx                           \n\
+push si                           \n\
+push di                           \n\
+push bp                           \n\
+push ds                           \n\
+push es                           \n\
+mov si, ax                        \n\
+mov bp, bx                        \n\
+mov bx, 0040                      \n\
+mov ds, bx                        \n\
+mov dh, ds:[0051]                 \n\
+mov dl, ds:[0050]                 \n\
+mov ax, si                        \n\
+cmp al, 0d                        \n\
+jnz $(label_int_10_tty_cmp_lf)    \n\
+mov dl, 00                        \n\
+jmp near $(label_int_10_cursor_store) \n\
+$(label_int_10_tty_cmp_lf):       \n\
+cmp al, 0a                        \n\
+jnz $(label_int_10_tty_cmp_bs)    \n\
+inc dh                            \n\
+jmp near $(label_int_10_tty_row)  \n\
+$(label_int_10_tty_cmp_bs):       \n\
+cmp al, 08                        \n\
+jnz $(label_int_10_tty_put)       \n\
+or dl, dl                          \n\
+jnz $(label_int_10_tty_back_col)  \n\
+or dh, dh                          \n\
+jz $(label_int_10_cursor_store)   \n\
+dec dh                            \n\
+mov dl, 4f                        \n\
+jmp near $(label_int_10_cursor_store) \n\
+$(label_int_10_tty_back_col):     \n\
+dec dl                            \n\
+jmp near $(label_int_10_cursor_store) \n\
+$(label_int_10_tty_put):          \n\
+mov al, dh                         \n\
+xor ah, ah                         \n\
+mov cl, 50                         \n\
+mul cl                             \n\
+mov cx, dx                         \n\
+xor ch, ch                         \n\
+add ax, cx                         \n\
+shl ax, 01                         \n\
+mov di, ax                         \n\
+mov ax, b800                       \n\
+mov es, ax                         \n\
+mov ax, si                         \n\
+mov es:[di], al                    \n\
+mov bx, bp                         \n\
+mov es:[di+01], bl                 \n\
+inc dl                             \n\
+cmp dl, 50                         \n\
+jnb $(label_int_10_tty_wrap)       \n\
+jmp near $(label_int_10_cursor_store) \n\
+$(label_int_10_tty_wrap):          \n\
+mov dl, 00                         \n\
+inc dh                             \n\
+$(label_int_10_tty_row):           \n\
+cmp dh, 19                         \n\
+jnb $(label_int_10_tty_scroll)     \n\
+jmp near $(label_int_10_cursor_store) \n\
+$(label_int_10_tty_scroll):        \n\
+mov bx, b800                       \n\
+mov ds, bx                         \n\
+mov es, bx                         \n\
+mov si, 00a0                       \n\
+xor di, di                         \n\
+mov cx, 0780                       \n\
+rep:                               \n\
+movsw                              \n\
+mov ax, 0720                       \n\
+mov cx, 0050                       \n\
+rep:                               \n\
+stosw                              \n\
+mov bx, 0040                       \n\
+mov ds, bx                         \n\
+mov dh, 18                         \n\
+mov dl, 00                         \n\
+$(label_int_10_cursor_store):      \n\
+mov ax, dx                          \n\
+mov ds:[0050], ax                  \n\
+$(label_int_10_cursor_crtc):       \n\
+mov al, dh                          \n\
+xor ah, ah                          \n\
+mov cl, 50                          \n\
+mul cl                              \n\
+xor dh, dh                          \n\
+add ax, dx                          \n\
+mov cx, ax                          \n\
+mov dx, 03d4                        \n\
+mov al, 0e                          \n\
+out dx, al                          \n\
+inc dx                              \n\
+mov al, ch                          \n\
+out dx, al                          \n\
+dec dx                              \n\
+mov al, 0f                          \n\
+out dx, al                          \n\
+inc dx                              \n\
+mov al, cl                          \n\
+out dx, al                          \n\
+pop es                              \n\
+pop ds                              \n\
+pop bp                              \n\
+pop di                              \n\
+pop si                              \n\
+pop dx                              \n\
+pop cx                              \n\
+pop bx                              \n\
+pop ax                              \n\
+iret                                \n\
+\
+$(label_int_10_mode):               \n\
+push ds                             \n\
+push bx                             \n\
+mov bx, 0040                        \n\
+mov ds, bx                          \n\
+mov al, ds:[0049]                   \n\
+mov ah, ds:[004a]                   \n\
+mov bh, ds:[0062]                   \n\
+pop bx                              \n\
+pop ds                              \n\
+iret                                \n"
 
 #define VBIOS_INT_SOFT_MISC_11 "\
 ; device test            \n\

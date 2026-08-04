@@ -56,6 +56,22 @@ normal host input, and let the T211 report stop the session. Run FDD DOS prompt,
 keyboard `ver`, VADP text, Console, debugger/pause, and two-session coverage.
 The task produces `nxvm_0_5_0212.exe` only after the full matrix passes.
 
+## S2 Result
+
+The default ROM now owns the admitted text services through its normal IVT
+entry. The implementation reads and writes only BDA state, `B8000` text
+memory, and CRTC cursor ports; core VADP observes the same guest state. The
+F2 video portal registration, dispatch branch, flags helper, and public QDCGA
+INT 10h entry have been removed. QDCGA remains only for reset-time text-video
+configuration.
+
+The runner now executes normal guest work in fixed 256-instruction quanta and
+publishes at most one copied display frame at each quantum boundary. Command,
+pause, stop, and debug refresh continue before every quantum; a requested
+single step still uses exactly one instruction. The no-media runner mailbox
+probe reaches its text frame within one second, rejecting a return to
+per-instruction full-frame copying.
+
 ## S1 Finding
 
 The bounded probe passes within 100,000 direct core instruction quanta:
@@ -72,3 +88,20 @@ The FDD/DOS probe reaches the prompt within 500,000 direct core instruction
 quanta and records `INT 10h=200`, `INT F2h=200`, with `AH=02h,06h,0Bh,0Eh,0Fh`.
 Those five functions are the admitted S2 closure. This probe is in the FDD
 smoke group so it continues to reject an unobserved portal dependency.
+
+S2 focused verification passes: the no-media path reports `INT 10h=20`,
+`INT F2h=0`, `BDA cursor=06:00`, renders `Invalid boot disk`, and reaches its
+`INT 16h` wait; the FDD/DOS path reaches its prompt with `INT 10h=200`,
+`INT F2h=0`, and the admitted five-function set.
+
+## S3 Result
+
+`current-gates-gcc` passes with all 48 current CTest smokes. This includes the
+ROM no-media probe, runner-cadence mailbox probe, FDD DOS prompt and keyboard
+coverage, VADP text coverage, Console lifecycle, debugger/pause, host
+cancellation, and multi-session coverage. The T211 boot-failure lifecycle
+smoke remains in the same matrix, retaining the normal key acknowledgement to
+BDA report to session-stop path.
+
+The task artifact is `build/output/nxvm_0_5_0212.exe`; SHA-256:
+`5280BEF8C8BCBE2010C9735163B2562EB5F9EB76536484E328C3598ABD4B5BAF`.

@@ -13,7 +13,6 @@ extern "C" {
 
 typedef struct vm_profile_default_context vm_profile_default_context;
 
-C_VOID vm_profile_default_cga_handle_int10(vm_profile_default_context *profile);
 C_VOID vm_profile_default_cga_reset(vm_profile_default_context *profile);
 
 #ifdef __cplusplus

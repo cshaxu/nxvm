@@ -10,6 +10,10 @@
 #include "vm/machine/debug.h"
 #include "vm/profile/default_profile/firmware/bios.h"
 
+/* A normal quantum bounds host control latency without copying the text frame
+ * after every guest instruction. Single-step remains exactly one instruction. */
+#define VM_SESSION_RUNNER_QUANTUM_INSTRUCTIONS 256u
+
 static C_INT vm_session_runner_consume_boot_failure_report(vm_session *session)
 {
     if (session == STD_NULL ||
@@ -23,7 +27,7 @@ static C_INT vm_session_runner_consume_boot_failure_report(vm_session *session)
 
 C_VOID vm_session_runner_run(vm_session *session)
 {
-    core_machine_run_budget budget = {1u, 0u};
+    core_machine_run_budget budget;
     core_machine_run_result result;
     vm_session_control_state *control;
 
@@ -51,6 +55,9 @@ C_VOID vm_session_runner_run(vm_session *session)
         vm_session_execution_context_run_command_boundary(&control->execution_context);
         vm_session_execution_context_debug_refresh(&control->execution_context);
         if (STD_ATOMIC_LOAD(&control->pauseRequested)) continue;
+        budget.instructions = STD_ATOMIC_LOAD(&control->stepRequested) ? 1u :
+            VM_SESSION_RUNNER_QUANTUM_INSTRUCTIONS;
+        budget.ticks = 0u;
         if (core_machine_run(session->core_machine, budget, &result) != TYPE_STATUS_OK) {
             vm_session_control_stop(control);
             continue;

@@ -2,12 +2,12 @@
 
 ## Current Work
 
-**Active subtask:** **M5 T212 S2 -- default-ROM text slice, F2 retirement, and
-bounded runner display cadence.** S1 has recorded both no-media and FDD/DOS
-paths: the admitted `INT 10h` closure is `AH=02h,06h,0Bh,0Eh,0Fh`. S2 must
-replace the F2 portal with ordinary ROM/IVT execution and remove the
-one-instruction full-snapshot runner regression without changing NXVM user
-experience. See [the task record](m5-t212-video-portal-retirement.md).
+**Active subtask:** **M5 T212 S3 -- system-image and product regression.** S2
+has retired the F2 video portal through the ordinary default-ROM/IVT text
+slice and corrected the per-instruction display-copy performance regression.
+S3 must now pass the retained full matrix, produce the task artifact, and
+record closure evidence without changing NXVM user experience. See [the task
+record](m5-t212-video-portal-retirement.md).
 
 **M5 T211 complete:** the default profile's F0
 boot-failure portal is retired. The ROM reports an acknowledged failure through
@@ -55,9 +55,10 @@ behavior and produces no artifact.
 
 ## Latest Technical Baseline
 
-M5 T211 retained NXVM behavior while removing the boot-failure firmware portal.
-The recorded developer artifact is `nxvm_0_5_0211.exe`; its historical evidence
-is summarized in [M5 History](../history/m5.md).
+M5 T212 retains NXVM behavior while moving the admitted text `INT 10h` subset
+from the F2 portal into default-ROM firmware and bounding runner display-copy
+cadence. The recorded developer artifact is `nxvm_0_5_0212.exe`; its historical
+evidence is summarized in [M5 History](../history/m5.md).
 
 ## Operational Reading Order
 

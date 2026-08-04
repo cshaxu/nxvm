@@ -2,38 +2,9 @@
 
 #include "type.h"
 
-#include "core/machine/cpu.h"
-#include "core/machine/cpu_instructions.h"
-
 #include "vm/profile/default_profile/firmware/context.h"
 #include "vm/profile/default_profile/firmware/firmware_portal.h"
-#include "vm/profile/default_profile/firmware/qdcga.h"
 #include "vm/profile/default_profile/firmware/qddisk.h"
-
-static C_VOID vm_profile_default_firmware_portal_copy_flags(
-    core_machine_cpu_execution_context *execution)
-{
-    t_cpu *cpu;
-    uint16_t flags;
-
-    if (execution == STD_NULL || execution->cpu == STD_NULL) return;
-    cpu = execution->cpu;
-    if (core_machine_cpu_execution_read_linear(execution,
-            cpu->data.ss.base + cpu->data.sp + 4u, TYPE_REFERENCE_OF(flags),
-            sizeof(flags))) {
-        core_machine_cpu_execution_request_stop(execution);
-        return;
-    }
-    TYPE_MAKE_BIT(flags, VCPU_EFLAGS_ZF,
-        TYPE_GET_BIT(cpu->data.eflags, VCPU_EFLAGS_ZF));
-    TYPE_MAKE_BIT(flags, VCPU_EFLAGS_CF,
-        TYPE_GET_BIT(cpu->data.eflags, VCPU_EFLAGS_CF));
-    if (core_machine_cpu_execution_write_linear(execution,
-            cpu->data.ss.base + cpu->data.sp + 4u, TYPE_REFERENCE_OF(flags),
-            sizeof(flags))) {
-        core_machine_cpu_execution_request_stop(execution);
-    }
-}
 
 static C_VOID vm_profile_default_firmware_portal_dispatch(C_VOID *opaque,
     core_machine_cpu_execution_context *execution, uint8_t vector)
@@ -43,10 +14,6 @@ static C_VOID vm_profile_default_firmware_portal_dispatch(C_VOID *opaque,
 
     if (profile == STD_NULL || execution == STD_NULL) return;
     switch (vector) {
-    case VM_PROFILE_DEFAULT_PORTAL_VIDEO_INT10:
-        vm_profile_default_cga_handle_int10(profile);
-        vm_profile_default_firmware_portal_copy_flags(execution);
-        break;
     case VM_PROFILE_DEFAULT_PORTAL_HDD_READ:
         vm_profile_default_disk_handle_hdd_read(profile);
         break;
@@ -61,7 +28,6 @@ type_status vm_profile_default_firmware_portal_install(core_machine *machine,
     uint32_t origin_linear_bytes)
 {
     static const uint8_t vectors[] = {
-        VM_PROFILE_DEFAULT_PORTAL_VIDEO_INT10,
         VM_PROFILE_DEFAULT_PORTAL_HDD_READ,
         VM_PROFILE_DEFAULT_PORTAL_HDD_WRITE
     };
