@@ -62,7 +62,7 @@ C_INT vm_session_insert_fdd(vm_session *session, const C_CHAR *path)
 {
     if (session == STD_NULL || !vm_session_copy_path(session->fdd_image_path,
             sizeof(session->fdd_image_path), path) ||
-        vm_machine_fdd_insert_for(session->fdd, path) != 0) return -1;
+        vm_machine_fdd_insert_for(&session->fdd, path) != 0) return -1;
     session->retained_config.fdd_image = session->fdd_image_path;
     return 0;
 }
@@ -71,7 +71,7 @@ C_INT vm_session_insert_hdd(vm_session *session, const C_CHAR *path)
 {
     if (session == STD_NULL || !vm_session_copy_path(session->hdd_image_path,
             sizeof(session->hdd_image_path), path) ||
-        vm_machine_hdd_insert(session->hdd, path) != 0) return -1;
+        vm_machine_hdd_insert(&session->hdd, path) != 0) return -1;
     session->retained_config.hdd_image = session->hdd_image_path;
     return 0;
 }
@@ -102,9 +102,6 @@ C_VOID vm_session_storage_initialize(vm_session *machine)
     core_machine_cpu_execution_context_bind_pic(execution,
         pic_master, pic_slave);
     vadp = core_machine_configuration_shared_vadp_borrow(machine->core_machine);
-    machine->fdd = &machine->fdd_storage;
-    machine->fdc = &machine->fdc_storage;
-    machine->hdd = &machine->hdd_storage;
     machine->default_bios = &machine->default_bios_storage;
     machine->default_qdx = &machine->default_qdx_storage;
     machine->default_profile_context = &machine->default_profile_context_storage;
@@ -136,9 +133,6 @@ C_VOID vm_session_storage_finalize(vm_session *machine)
     if (machine == STD_NULL || machine->core_machine == STD_NULL) return;
     core_machine_cpu_execution_context_bind_extension(
         core_machine_configuration_cpu_execution_borrow(machine->core_machine), STD_NULL);
-    machine->fdd = STD_NULL;
-    machine->fdc = STD_NULL;
-    machine->hdd = STD_NULL;
     machine->default_bios = STD_NULL;
     machine->default_qdx = STD_NULL;
     machine->default_profile_context = STD_NULL;
@@ -181,9 +175,9 @@ C_INT vm_session_create(const vm_session_config *config, vm_session **out_sessio
         vm_session_destroy(session);
         return NTVDM64_STATUS_FAULT;
     }
-    if (config != STD_NULL && config->create_fdd) vm_machine_fdd_create_for(session->fdd);
+    if (config != STD_NULL && config->create_fdd) vm_machine_fdd_create_for(&session->fdd);
     if (config != STD_NULL && config->create_hdd_cylinders != 0u) {
-        vm_machine_hdd_create(session->hdd, config->create_hdd_cylinders);
+        vm_machine_hdd_create(&session->hdd, config->create_hdd_cylinders);
     }
     if (config != STD_NULL) {
         vm_profile_default_bios_set_boot_hdd(session->default_bios,

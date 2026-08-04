@@ -33,7 +33,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     session = (vm_session *)STD_CALLOC(1u, sizeof(*session));
     if (session == STD_NULL) return 1;
     vm_session_initialize(session);
-    if (vm_machine_fdd_insert_for(session->fdd, argv[1]) != 0) goto fail;
+    if (vm_machine_fdd_insert_for(&session->fdd, argv[1]) != 0) goto fail;
     target = vm_session_debug_target(session);
     if (target == STD_NULL) goto fail;
     vm_session_control_reset(session->control);
