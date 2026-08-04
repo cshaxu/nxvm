@@ -2,11 +2,11 @@
 
 The only source roots are `core`, `vm`, and `vdm`.
 
-- `core/{machine,platform,product}` contains behavior shared by NXVM and VDM.
+- `core/{machine,platform,product}` contains behavior shared by VM and VDM.
   A concrete host implementation belongs under `core/platform/<host>` only when
   it is reusable by both products without product policy.
 - `vm/{machine,platform,product,profile}` contains bootable whole-machine
-  behavior, retained NXVM Console/debugger behavior, and machine profiles.
+  behavior, retained VM Console/debugger behavior, and machine profiles.
 - `vdm/{machine,platform,product,profile}` contains DOS application-runner
   behavior and DOS execution profiles.
 

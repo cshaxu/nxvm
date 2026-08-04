@@ -20,7 +20,7 @@
 
 #include "qddisk.h"
 
-static C_VOID set_hdd_status(vm_profile_default_context *profile, ntvdm64_type_unsigned_8 status)
+static C_VOID set_hdd_status(vm_profile_default_context *profile, type_unsigned_8 status)
 {
     core_machine_memory_write_real_to(vm_profile_default_context_memory(profile), 0x0040, 0x0074,
         &status, sizeof(status));
@@ -28,10 +28,10 @@ static C_VOID set_hdd_status(vm_profile_default_context *profile, ntvdm64_type_u
 
 static C_VOID int_13_02_hdd_read_sector(vm_profile_default_context *profile) {
     t_cpu *cpu = vm_profile_default_context_execution(profile)->cpu;
-    ntvdm64_type_unsigned_8 drive  = cpu->data.dl;
-    ntvdm64_type_unsigned_8 head   = cpu->data.dh;
-    ntvdm64_type_unsigned_8 cyl    = cpu->data.ch | ((cpu->data.cl & 0xc0) << 8);
-    ntvdm64_type_unsigned_8 sector = cpu->data.cl & 0x3f;
+    type_unsigned_8 drive  = cpu->data.dl;
+    type_unsigned_8 head   = cpu->data.dh;
+    type_unsigned_8 cyl    = cpu->data.ch | ((cpu->data.cl & 0xc0) << 8);
+    type_unsigned_8 sector = cpu->data.cl & 0x3f;
     STD_SIZE_T transfer_bytes;
     C_VOID *buffer;
     C_INT failed;
@@ -45,25 +45,25 @@ static C_VOID int_13_02_hdd_read_sector(vm_profile_default_context *profile) {
         !core_machine_block_read_from(profile->block_provider, cyl, head, sector,
             buffer, transfer_bytes) ||
         core_machine_memory_write_real_to(vm_profile_default_context_memory(profile), cpu->data.es.selector,
-            cpu->data.bx, buffer, transfer_bytes) != NTVDM64_STATUS_OK;
+            cpu->data.bx, buffer, transfer_bytes) != TYPE_STATUS_OK;
     STD_FREE(buffer);
     if (failed) {
         /* sector not found */
         cpu->data.ah = 0x04;
-        NTVDM64_TYPE_SET_BIT(cpu->data.eflags, VCPU_EFLAGS_CF);
+        TYPE_SET_BIT(cpu->data.eflags, VCPU_EFLAGS_CF);
     } else {
         cpu->data.ah = 0x00;
-        NTVDM64_TYPE_CLEAR_BIT(cpu->data.eflags, VCPU_EFLAGS_CF);
+        TYPE_CLEAR_BIT(cpu->data.eflags, VCPU_EFLAGS_CF);
     }
     set_hdd_status(profile, cpu->data.ah);
 }
 
 static C_VOID int_13_03_hdd_write_sector(vm_profile_default_context *profile) {
     t_cpu *cpu = vm_profile_default_context_execution(profile)->cpu;
-    ntvdm64_type_unsigned_8 drive  = cpu->data.dl;
-    ntvdm64_type_unsigned_8 head   = cpu->data.dh;
-    ntvdm64_type_unsigned_8 cyl    = cpu->data.ch | ((cpu->data.cl & 0xc0) << 8);
-    ntvdm64_type_unsigned_8 sector = cpu->data.cl & 0x3f;
+    type_unsigned_8 drive  = cpu->data.dl;
+    type_unsigned_8 head   = cpu->data.dh;
+    type_unsigned_8 cyl    = cpu->data.ch | ((cpu->data.cl & 0xc0) << 8);
+    type_unsigned_8 sector = cpu->data.cl & 0x3f;
     STD_SIZE_T transfer_bytes;
     C_VOID *buffer;
     C_INT failed;
@@ -75,17 +75,17 @@ static C_VOID int_13_03_hdd_write_sector(vm_profile_default_context *profile) {
     failed = drive || !sector || head >= geometry.heads || sector > geometry.sectors ||
         cyl >= geometry.cylinders || buffer == STD_NULL ||
         core_machine_memory_read_real_from(vm_profile_default_context_memory(profile), cpu->data.es.selector,
-            cpu->data.bx, buffer, transfer_bytes) != NTVDM64_STATUS_OK ||
+            cpu->data.bx, buffer, transfer_bytes) != TYPE_STATUS_OK ||
         !core_machine_block_write_from(profile->block_provider, cyl, head, sector,
             buffer, transfer_bytes);
     STD_FREE(buffer);
     if (failed) {
         /* sector not found */
         cpu->data.ah = 0x04;
-        NTVDM64_TYPE_SET_BIT(cpu->data.eflags, VCPU_EFLAGS_CF);
+        TYPE_SET_BIT(cpu->data.eflags, VCPU_EFLAGS_CF);
     } else {
         cpu->data.ah = 0x00;
-        NTVDM64_TYPE_CLEAR_BIT(cpu->data.eflags, VCPU_EFLAGS_CF);
+        TYPE_CLEAR_BIT(cpu->data.eflags, VCPU_EFLAGS_CF);
     }
     set_hdd_status(profile, cpu->data.ah);
 }

@@ -1,7 +1,7 @@
 /* Copyright 2012-2014 Neko. */
 
-#ifndef NXVM_PLATFORM_H
-#define NXVM_PLATFORM_H
+#ifndef VM_PLATFORM_H
+#define VM_PLATFORM_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -61,7 +61,7 @@ C_VOID vm_platform_run_handle_finalize(vm_platform_run_handle *handle);
 C_VOID vm_platform_display_set_screen(const vm_platform_run_context *context);
 C_VOID vm_platform_display_paint(const vm_platform_run_context *context);
 
-ntvdm64_status vm_platform_start(const vm_platform_run_context *context,
+type_status vm_platform_start(const vm_platform_run_context *context,
     vm_platform_run_handle *handle);
 
 #ifdef __cplusplus

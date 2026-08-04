@@ -1,7 +1,7 @@
 /* Copyright 2012-2014 Neko. */
 
-#ifndef NXVM_VM_PROFILE_DEFAULT_BIOS_H
-#define NXVM_VM_PROFILE_DEFAULT_BIOS_H
+#ifndef VM_PROFILE_DEFAULT_BIOS_H
+#define VM_PROFILE_DEFAULT_BIOS_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -12,28 +12,28 @@ extern "C" {
 typedef struct t_ram t_ram;
 typedef struct core_machine_block_provider_slot core_machine_block_provider_slot;
 
-#define NXVM_DEVICE_BIOS "Unknown BIOS"
+#define VM_PROFILE_DEFAULT_DEVICE_BIOS "Unknown BIOS"
 
 typedef struct {
-    ntvdm64_type_native_unsigned postCount; /* number of POST routines */
-    ntvdm64_type_string_pointer  postTable[0x100]; /* table of POST routine string pointers */
-    ntvdm64_type_string_pointer  intTable[0x100];  /* table of INT routine string pointers, null if not defined */
+    type_native_unsigned postCount; /* number of POST routines */
+    type_string_pointer  postTable[0x100]; /* table of POST routine string pointers */
+    type_string_pointer  intTable[0x100];  /* table of INT routine string pointers, null if not defined */
 } t_bios_connect;
 
 typedef struct {
-    ntvdm64_type_unsigned_16 buildCS;
-    ntvdm64_type_unsigned_16 buildIP;
+    type_unsigned_16 buildCS;
+    type_unsigned_16 buildIP;
 } t_bios_data;
 
 /* bios connections */
 typedef struct t_bios {
     t_bios_data data;
     t_bios_connect connect;
-    ntvdm64_type_bool flagBoot;
+    type_bool flagBoot;
 } t_bios;
 
 #define VBIOS_ADDR_START_SEG 0xf000
-#define VBIOS_ADDR_START_OFF NTVDM64_TYPE_ZERO_16
+#define VBIOS_ADDR_START_OFF TYPE_ZERO_16
 #define VBIOS_ADDR_POST_SEG  VBIOS_ADDR_START_SEG
 #define VBIOS_ADDR_POST_OFF  0xfff0
 
@@ -148,9 +148,9 @@ typedef struct t_bios {
 #define VBIOS_ADDR_INTRAPP_COMM_AREA  0x04f0
 #define VBIOS_ADDR_POST_WORK_AREA     0x0505
 
-C_VOID vm_profile_default_bios_add_post(t_bios *bios, ntvdm64_type_string_pointer stmt);
-C_VOID vm_profile_default_bios_add_interrupt(t_bios *bios, ntvdm64_type_string_pointer stmt,
-    ntvdm64_type_unsigned_8 intid);
+C_VOID vm_profile_default_bios_add_post(t_bios *bios, type_string_pointer stmt);
+C_VOID vm_profile_default_bios_add_interrupt(t_bios *bios, type_string_pointer stmt,
+    type_unsigned_8 intid);
 C_VOID vm_profile_default_bios_initialize(t_bios *bios);
 C_VOID vm_profile_default_bios_reset(t_bios *bios, t_ram *ram,
     const core_machine_block_provider_slot *block_provider);

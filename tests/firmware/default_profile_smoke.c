@@ -15,7 +15,7 @@ C_INT main(C_VOID)
     uint8_t reset[5];
 
     core_machine_firmware_initialize(&firmware);
-    if (vm_profile_default_firmware_compose(&firmware, &plan) != NTVDM64_STATUS_OK ||
+    if (vm_profile_default_firmware_compose(&firmware, &plan) != TYPE_STATUS_OK ||
         plan.reset_segment != 0xf000u || plan.reset_offset != 0xfff0u ||
         plan.service_count != 6u ||
         STD_STRCMP(core_machine_firmware_service_at(&firmware, 2u)->id,
@@ -23,13 +23,13 @@ C_INT main(C_VOID)
         STD_STRCMP(core_machine_firmware_find_interrupt(&firmware, 0x13u)->id,
                "bios.int13.disk") != 0 ||
         core_machine_firmware_find_interrupt(&firmware, 0x19u) != STD_NULL ||
-        core_machine_firmware_freeze(&firmware) != NTVDM64_STATUS_OK ||
-        test_core_machine_create_executor(0u, &machine) != NTVDM64_STATUS_OK ||
-        core_machine_freeze_execution_providers(machine) != NTVDM64_STATUS_OK ||
-        core_machine_reset(machine) != NTVDM64_STATUS_OK ||
-        vm_profile_default_firmware_apply_image(machine, 1) != NTVDM64_STATUS_OK ||
+        core_machine_firmware_freeze(&firmware) != TYPE_STATUS_OK ||
+        test_core_machine_create_executor(0u, &machine) != TYPE_STATUS_OK ||
+        core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
+        core_machine_reset(machine) != TYPE_STATUS_OK ||
+        vm_profile_default_firmware_apply_image(machine, 1) != TYPE_STATUS_OK ||
         core_machine_memory_read(machine, 0xffff0u, reset,
-                                      sizeof(reset)) != NTVDM64_STATUS_OK ||
+                                      sizeof(reset)) != TYPE_STATUS_OK ||
         reset[0] != 0xeau || reset[4] != 0xf0u) {
         core_machine_destroy(machine);
         return 1;

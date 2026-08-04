@@ -263,3 +263,8 @@ targets, tests, and product entries for:
 5. explicit provider callback/lifetime/threading rules;
 6. accurate file names and directory ownership; and
 7. current CMake, artifact, documentation, and real boot/Console evidence.
+
+Extra
+
+- every task has a context, approach, exit criteria
+- every issue fix: when done, scan the entire codebase for similar issue that exists

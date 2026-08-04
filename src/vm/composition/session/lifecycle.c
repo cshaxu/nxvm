@@ -111,9 +111,9 @@ C_INT vm_session_bind_execution_provider(vm_session *machine)
 {
     return machine != STD_NULL && machine->core_machine != STD_NULL &&
         core_machine_bind_execution_provider(machine->core_machine,
-            &vm_session_execution_provider, machine) == NTVDM64_STATUS_OK &&
+            &vm_session_execution_provider, machine) == TYPE_STATUS_OK &&
         core_machine_freeze_execution_providers(machine->core_machine) ==
-            NTVDM64_STATUS_OK;
+            TYPE_STATUS_OK;
 }
 
 static const vm_platform_keyboard_sink vm_session_keyboard_sink = {
@@ -200,7 +200,7 @@ C_VOID vm_session_resume(vm_session *machine) {
         vm_session_control_continue(&machine->control);
     } else {
         if (vm_platform_start(&machine->platform_run_context,
-                &machine->platform_run_handle) != NTVDM64_STATUS_OK) return;
+                &machine->platform_run_handle) != TYPE_STATUS_OK) return;
         if (!vm_platform_run_handle_is_window_display(&machine->platform_run_handle)) {
             vm_platform_run_handle_join(&machine->platform_run_handle);
             vm_platform_run_handle_finalize(&machine->platform_run_handle);

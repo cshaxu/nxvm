@@ -20,15 +20,15 @@ C_INT main(C_VOID)
     C_INT failed = 0;
 
     vm_session_provider_initialize(&provider);
-    if (core_product_session_manager_create(&provider, &manager) != NTVDM64_STATUS_OK ||
-        core_product_session_manager_borrow_selected(manager, &opaque) != NTVDM64_STATUS_OK) {
+    if (core_product_session_manager_create(&provider, &manager) != TYPE_STATUS_OK ||
+        core_product_session_manager_borrow_selected(manager, &opaque) != TYPE_STATUS_OK) {
         core_product_session_manager_destroy(manager);
         return 1;
     }
     first = (vm_session *)opaque;
-    if (core_product_session_manager_open(manager, &id) != NTVDM64_STATUS_OK ||
-        core_product_session_manager_select(manager, id) != NTVDM64_STATUS_OK ||
-        core_product_session_manager_borrow_selected(manager, &opaque) != NTVDM64_STATUS_OK) {
+    if (core_product_session_manager_open(manager, &id) != TYPE_STATUS_OK ||
+        core_product_session_manager_select(manager, id) != TYPE_STATUS_OK ||
+        core_product_session_manager_borrow_selected(manager, &opaque) != TYPE_STATUS_OK) {
         core_product_session_manager_destroy(manager);
         return 1;
     }

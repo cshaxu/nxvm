@@ -4,37 +4,37 @@
 
 C_INT main(C_VOID)
 {
-    nxvm_platform_vm_request_bridge bridge;
-    nxvm_platform_vm_request request;
-    nxvm_platform_vm_request copy;
+    vm_platform_request_bridge bridge;
+    vm_platform_request request;
+    vm_platform_request copy;
     STD_SIZE_T index;
 
-    nxvm_platform_vm_request_bridge_initialize(&bridge);
-    request.kind = NXVM_PLATFORM_VM_REQUEST_KEY_PRESS;
+    vm_platform_request_bridge_initialize(&bridge);
+    request.kind = VM_PLATFORM_REQUEST_KEY_PRESS;
     request.data.key_press.scan_code = 0x1eu;
     request.data.key_press.virtual_key = 0x41u;
-    if (nxvm_platform_vm_request_bridge_enqueue(&bridge, &request) !=
-        NTVDM64_STATUS_OK) return 1;
+    if (vm_platform_request_bridge_enqueue(&bridge, &request) !=
+        TYPE_STATUS_OK) return 1;
     request.data.key_press.scan_code = 0x30u;
-    if (nxvm_platform_vm_request_bridge_dequeue(&bridge, &copy) !=
-        NTVDM64_STATUS_OK ||
-        copy.kind != NXVM_PLATFORM_VM_REQUEST_KEY_PRESS ||
+    if (vm_platform_request_bridge_dequeue(&bridge, &copy) !=
+        TYPE_STATUS_OK ||
+        copy.kind != VM_PLATFORM_REQUEST_KEY_PRESS ||
         copy.data.key_press.scan_code != 0x1eu ||
         copy.data.key_press.virtual_key != 0x41u) return 1;
 
-    request.kind = NXVM_PLATFORM_VM_REQUEST_STOP;
-    for (index = 0u; index < NXVM_PLATFORM_VM_REQUEST_CAPACITY; ++index) {
-        if (nxvm_platform_vm_request_bridge_enqueue(&bridge, &request) !=
-            NTVDM64_STATUS_OK) return 1;
+    request.kind = VM_PLATFORM_REQUEST_STOP;
+    for (index = 0u; index < VM_PLATFORM_REQUEST_CAPACITY; ++index) {
+        if (vm_platform_request_bridge_enqueue(&bridge, &request) !=
+            TYPE_STATUS_OK) return 1;
     }
-    if (nxvm_platform_vm_request_bridge_enqueue(&bridge, &request) !=
-        NTVDM64_STATUS_NO_MEMORY ||
-        nxvm_platform_vm_request_bridge_dequeue(&bridge, &copy) !=
-        NTVDM64_STATUS_OK ||
-        nxvm_platform_vm_request_bridge_enqueue(&bridge, &request) !=
-        NTVDM64_STATUS_OK ||
-        nxvm_platform_vm_request_bridge_dequeue(&bridge, STD_NULL) !=
-        NTVDM64_STATUS_INVALID_ARGUMENT) return 1;
+    if (vm_platform_request_bridge_enqueue(&bridge, &request) !=
+        TYPE_STATUS_NO_MEMORY ||
+        vm_platform_request_bridge_dequeue(&bridge, &copy) !=
+        TYPE_STATUS_OK ||
+        vm_platform_request_bridge_enqueue(&bridge, &request) !=
+        TYPE_STATUS_OK ||
+        vm_platform_request_bridge_dequeue(&bridge, STD_NULL) !=
+        TYPE_STATUS_INVALID_ARGUMENT) return 1;
 
     return 0;
 }

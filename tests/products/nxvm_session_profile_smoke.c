@@ -16,9 +16,9 @@ static C_INT verify_profile(const vm_session *session,
 
     return session == STD_NULL ||
         core_machine_get_cpu_profile(session->core_machine, &observed_cpu) !=
-            NTVDM64_STATUS_OK ||
+            TYPE_STATUS_OK ||
         core_machine_get_fpu_profile(session->core_machine, &observed_fpu) !=
-            NTVDM64_STATUS_OK ||
+            TYPE_STATUS_OK ||
         observed_cpu != cpu_profile || observed_fpu != fpu_profile;
 }
 
@@ -35,10 +35,10 @@ static C_INT verify_open_profile(core_product_session_manager *manager,
     core_product_session_id id;
 
     return core_product_session_manager_open_with_options(manager, &options,
-            &id) != NTVDM64_STATUS_OK || id != expected_id ||
-        core_product_session_manager_select(manager, id) != NTVDM64_STATUS_OK ||
+            &id) != TYPE_STATUS_OK || id != expected_id ||
+        core_product_session_manager_select(manager, id) != TYPE_STATUS_OK ||
         core_product_session_manager_borrow_selected(manager, &opaque) !=
-            NTVDM64_STATUS_OK || verify_profile((vm_session *)opaque,
+            TYPE_STATUS_OK || verify_profile((vm_session *)opaque,
             cpu_profile, CORE_MACHINE_FPU_PROFILE_NONE);
 }
 
@@ -63,17 +63,17 @@ C_INT main(C_VOID)
     STD_SIZE_T count;
 
     vm_session_provider_initialize(&provider);
-    if (core_product_session_manager_create(&provider, &manager) != NTVDM64_STATUS_OK ||
+    if (core_product_session_manager_create(&provider, &manager) != TYPE_STATUS_OK ||
         core_product_session_manager_list(manager, snapshots, 2u, &count) !=
-            NTVDM64_STATUS_OK || count != 1u ||
+            TYPE_STATUS_OK || count != 1u ||
         STD_STRCMP(snapshots[0].details, "cpu=80386 fpu=none") ||
         verify_open_profile(manager, cpu_8086, CORE_MACHINE_CPU_PROFILE_8086, 1u) ||
         verify_open_profile(manager, cpu_80186, CORE_MACHINE_CPU_PROFILE_80186, 2u) ||
         verify_open_profile(manager, cpu_80286, CORE_MACHINE_CPU_PROFILE_80286, 3u) ||
         verify_open_profile(manager, cpu_80386, CORE_MACHINE_CPU_PROFILE_80386, 4u) ||
-        core_product_session_manager_select(manager, 1u) != NTVDM64_STATUS_OK ||
+        core_product_session_manager_select(manager, 1u) != TYPE_STATUS_OK ||
         core_product_session_manager_borrow_selected(manager, &opaque) !=
-            NTVDM64_STATUS_OK) goto fail;
+            TYPE_STATUS_OK) goto fail;
     session = (vm_session *)opaque;
     if (verify_profile(session, CORE_MACHINE_CPU_PROFILE_8086,
             CORE_MACHINE_FPU_PROFILE_NONE)) goto fail;
@@ -81,10 +81,10 @@ C_INT main(C_VOID)
     if (verify_profile(session, CORE_MACHINE_CPU_PROFILE_8086,
             CORE_MACHINE_FPU_PROFILE_NONE) ||
         core_product_session_manager_open_with_options(manager, &select_fpu,
-            &id) != NTVDM64_STATUS_INVALID_STATE ||
-        core_product_session_manager_get_count(manager, &count) != NTVDM64_STATUS_OK ||
+            &id) != TYPE_STATUS_INVALID_STATE ||
+        core_product_session_manager_get_count(manager, &count) != TYPE_STATUS_OK ||
         count != 5u || core_product_session_manager_list(manager, snapshots,
-            5u, &count) != NTVDM64_STATUS_OK ||
+            5u, &count) != TYPE_STATUS_OK ||
         STD_STRCMP(snapshots[1].details, "cpu=8086 fpu=none")) goto fail;
     core_product_session_manager_destroy(manager);
     STD_PRINTF("M5:T157:S1:SESSION-PROFILES:OK\n");

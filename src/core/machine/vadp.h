@@ -1,7 +1,7 @@
 /* Copyright 2012-2014 Neko. */
 
-#ifndef NXVM_CORE_VADP_H
-#define NXVM_CORE_VADP_H
+#ifndef CORE_MACHINE_VADP_H
+#define CORE_MACHINE_VADP_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -9,14 +9,14 @@ extern "C" {
 
 #include "type.h"
 
-#define NXVM_DEVICE_VADP "Unknown Video Adapter"
+#define CORE_MACHINE_DEVICE_VADP "Unknown Video Adapter"
 
 typedef struct t_vadp_data {
-    ntvdm64_type_bool    flagColor;
-    ntvdm64_type_unsigned_8  colSize; /* C_CHAR per column */
-    ntvdm64_type_virtual_address bufcomp[0x00040000]; /* buffer for video memory comparison */
-    ntvdm64_type_unsigned_8  oldCurPosX, oldCurPosY;
-    ntvdm64_type_unsigned_8  oldCurTop, oldCurBottom;
+    type_bool    flagColor;
+    type_unsigned_8  colSize; /* C_CHAR per column */
+    type_virtual_address bufcomp[0x00040000]; /* buffer for video memory comparison */
+    type_unsigned_8  oldCurPosX, oldCurPosY;
+    type_unsigned_8  oldCurTop, oldCurBottom;
 } t_vadp_data;
 
 typedef struct t_vadp {

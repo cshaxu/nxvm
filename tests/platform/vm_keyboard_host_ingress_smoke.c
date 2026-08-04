@@ -12,7 +12,7 @@ static C_INT vm_keyboard_host_ingress_read_word(const vm_session *session,
     uint16_t offset, uint16_t *out_value)
 {
     return core_machine_debug_read_memory(session->core_machine, offset,
-        out_value, sizeof(*out_value)) == NTVDM64_STATUS_OK;
+        out_value, sizeof(*out_value)) == TYPE_STATUS_OK;
 }
 
 C_INT main(C_VOID)
@@ -22,7 +22,7 @@ C_INT main(C_VOID)
     uint16_t tail;
     uint16_t key;
 
-    if (vm_session_create(STD_NULL, &session) != NTVDM64_STATUS_OK ||
+    if (vm_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||
         !vm_keyboard_host_ingress_read_word(session,
             QDKEYB_VBIOS_ADDR_KEYB_BUF_HEAD, &head) ||
         !vm_keyboard_host_ingress_read_word(session,

@@ -2,8 +2,8 @@
 
 /* VCPUINS implements 8086+ CPU instruction set. */
 
-#ifndef NXVM_VCPUINS_H
-#define NXVM_VCPUINS_H
+#ifndef CORE_MACHINE_CPU_INSTRUCTIONS_H
+#define CORE_MACHINE_CPU_INSTRUCTIONS_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -41,18 +41,18 @@ typedef enum {
     PREFIX_SREG_FS, PREFIX_SREG_GS
 } t_cpuins_data_prefix_sreg;
 
-typedef ntvdm64_type_bool t_cpuins_data_prefix;
+typedef type_bool t_cpuins_data_prefix;
 
 typedef struct {
     t_cpu_data_sreg *rsreg;
-    ntvdm64_type_unsigned_32 offset;
+    type_unsigned_32 offset;
 } t_cpuins_data_logical;
 
 typedef struct {
-    ntvdm64_type_bool flagWrite;
-    ntvdm64_type_unsigned_32 byte;
-    ntvdm64_type_unsigned_32 linear;
-    ntvdm64_type_unsigned_64 data;
+    type_bool flagWrite;
+    type_unsigned_32 byte;
+    type_unsigned_32 linear;
+    type_unsigned_64 data;
 } t_cpuins_data_memory;
 
 typedef struct {
@@ -64,38 +64,38 @@ typedef struct {
 
     /* execution control */
     t_cpu  oldcpu;
-    ntvdm64_type_bool flagInsLoop;
-    ntvdm64_type_bool flagMaskInt; /* if C_INT is disabled once */
+    type_bool flagInsLoop;
+    type_bool flagMaskInt; /* if C_INT is disabled once */
 
     /* memory management */
     t_cpuins_data_logical mrm;
-    ntvdm64_type_virtual_address rrm, rr;
-    ntvdm64_type_unsigned_64 crm, cr, cimm;
-    ntvdm64_type_bool flagMem; /* if rm is in memory */
-    ntvdm64_type_bool flagLock;
+    type_virtual_address rrm, rr;
+    type_unsigned_64 crm, cr, cimm;
+    type_bool flagMem; /* if rm is in memory */
+    type_bool flagLock;
 
     /* arithmetic operands */
-    ntvdm64_type_unsigned_64 opr1, opr2, result;
-    ntvdm64_type_unsigned_32 bit;
+    type_unsigned_64 opr1, opr2, result;
+    type_unsigned_32 bit;
     t_cpuins_data_arithtype type;
-    ntvdm64_type_unsigned_32 udf; /* undefined eflags bits */
+    type_unsigned_32 udf; /* undefined eflags bits */
 
     /* exception handler */
-    ntvdm64_type_unsigned_32 except, excode;
+    type_unsigned_32 except, excode;
 
     /* debugger */
-    ntvdm64_type_unsigned_32 linear;
-    ntvdm64_type_bool flagWR, flagWW, flagWE;
-    ntvdm64_type_unsigned_32 wrLinear, wwLinear, weLinear;
+    type_unsigned_32 linear;
+    type_bool flagWR, flagWW, flagWE;
+    type_unsigned_32 wrLinear, wwLinear, weLinear;
 
     /* cpu recorder */
-    ntvdm64_type_bool flagIgnore;
+    type_bool flagIgnore;
     t_cpuins_data_memory mem[0x20];
-    ntvdm64_type_unsigned_8 msize;
-    ntvdm64_type_unsigned_8 oplen;
-    ntvdm64_type_unsigned_8 opcodes[15];
-    ntvdm64_type_unsigned_16 reccs;
-    ntvdm64_type_unsigned_32 receip;
+    type_unsigned_8 msize;
+    type_unsigned_8 oplen;
+    type_unsigned_8 opcodes[15];
+    type_unsigned_16 reccs;
+    type_unsigned_32 receip;
 } t_cpuins_data;
 
 typedef struct t_cpuins t_cpuins;
@@ -145,12 +145,12 @@ struct core_machine_cpu_execution_context {
     t_port *port;
     t_pic *pic_master;
     t_pic *pic_slave;
-    ntvdm64_type_trace *trace;
+    type_trace *trace;
     C_VOID *extension_context;
     const core_machine_cpu_execution_diagnostic_provider *diagnostic_provider;
     C_VOID *diagnostic_context;
-    ntvdm64_type_bool stop_requested;
-    ntvdm64_type_bool reset_requested;
+    type_bool stop_requested;
+    type_bool reset_requested;
     core_machine_cpu_profile cpu_profile;
     core_machine_fpu_profile fpu_profile;
     core_machine_fpu *fpu;
@@ -172,15 +172,15 @@ C_VOID core_machine_cpu_execution_context_bind_diagnostic_provider(
     C_VOID *provider_context);
 C_VOID core_machine_cpu_execution_context_bind_fpu(
     core_machine_cpu_execution_context *context, core_machine_fpu *fpu);
-ntvdm64_type_bool core_machine_cpu_execution_load_segment(
+type_bool core_machine_cpu_execution_load_segment(
     core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg,
-    ntvdm64_type_unsigned_16 selector);
-ntvdm64_type_bool core_machine_cpu_execution_read_linear(
-    core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 linear,
-    ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte);
-ntvdm64_type_bool core_machine_cpu_execution_write_linear(
-    core_machine_cpu_execution_context *context, ntvdm64_type_unsigned_32 linear,
-    ntvdm64_type_virtual_address rdata, ntvdm64_type_unsigned_8 byte);
+    type_unsigned_16 selector);
+type_bool core_machine_cpu_execution_read_linear(
+    core_machine_cpu_execution_context *context, type_unsigned_32 linear,
+    type_virtual_address rdata, type_unsigned_8 byte);
+type_bool core_machine_cpu_execution_write_linear(
+    core_machine_cpu_execution_context *context, type_unsigned_32 linear,
+    type_virtual_address rdata, type_unsigned_8 byte);
 C_VOID core_machine_cpu_execution_initialize(
     core_machine_cpu_execution_context *context);
 C_VOID core_machine_cpu_execution_reset(

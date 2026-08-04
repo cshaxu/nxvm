@@ -1,7 +1,7 @@
 /* Copyright 2012-2014 Neko. */
 
-#ifndef NXVM_QDX_H
-#define NXVM_QDX_H
+#ifndef VM_PROFILE_DEFAULT_QDX_H
+#define VM_PROFILE_DEFAULT_QDX_H
 
 #ifdef __cplusplus
 extern "C" {

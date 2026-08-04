@@ -81,7 +81,7 @@ C_VOID vm_platform_display_set_screen(const vm_platform_run_context *context) {
 C_VOID vm_platform_display_paint(const vm_platform_run_context *context) {
     vm_platform_win32_display_paint(vm_platform_run_context_get_window_display(context), context);
 }
-ntvdm64_status vm_platform_start(const vm_platform_run_context *context,
+type_status vm_platform_start(const vm_platform_run_context *context,
     vm_platform_run_handle *handle) {
     return vm_platform_win32_run_handle_start(context, handle);
 }
@@ -105,7 +105,7 @@ C_VOID vm_platform_display_paint(const vm_platform_run_context *context) {
     (C_VOID)context;
     vm_platform_linux_display_paint(vm_platform_run_context_get_window_display(context), context);
 }
-ntvdm64_status vm_platform_start(const vm_platform_run_context *context,
+type_status vm_platform_start(const vm_platform_run_context *context,
     vm_platform_run_handle *handle) {
     return vm_platform_linux_run_handle_start(context, handle);
 }

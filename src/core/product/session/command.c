@@ -41,13 +41,13 @@ static C_INT core_product_session_command_list(core_product_session_manager *man
     STD_SIZE_T index;
     C_CHAR line[176];
 
-    if (core_product_session_manager_get_count(manager, &count) != NTVDM64_STATUS_OK) {
+    if (core_product_session_manager_get_count(manager, &count) != TYPE_STATUS_OK) {
         core_product_session_command_write(output, "Session manager is unavailable.");
         return 0;
     }
     snapshots = (core_product_session_snapshot *)STD_CALLOC(count, sizeof(*snapshots));
     if (snapshots == STD_NULL || core_product_session_manager_list(manager, snapshots,
-            count, &count) != NTVDM64_STATUS_OK) {
+            count, &count) != TYPE_STATUS_OK) {
         STD_FREE(snapshots);
         core_product_session_command_write(output, "Unable to list sessions.");
         return 0;
@@ -83,13 +83,13 @@ C_INT core_product_session_command_execute(core_product_session_manager *manager
         const core_product_session_open_options options = {
             argument_count - 2, arguments + 2
         };
-        ntvdm64_status status = core_product_session_manager_open_with_options(
+        type_status status = core_product_session_manager_open_with_options(
             manager, &options, &id);
-        if (status != NTVDM64_STATUS_OK) {
+        if (status != TYPE_STATUS_OK) {
             core_product_session_command_write(output,
-                status == NTVDM64_STATUS_INVALID_ARGUMENT ?
+                status == TYPE_STATUS_INVALID_ARGUMENT ?
                 "Invalid session options." :
-                status == NTVDM64_STATUS_INVALID_STATE ?
+                status == TYPE_STATUS_INVALID_STATE ?
                 "Requested session configuration is unavailable." :
                 "Unable to open session.");
             return 0;
@@ -101,7 +101,7 @@ C_INT core_product_session_command_execute(core_product_session_manager *manager
     if (!STD_STRCMP(arguments[1], "select") && argument_count == 3) {
         C_INT parsed = STD_ATOI(arguments[2]);
         if (parsed < 0 || core_product_session_manager_select(manager,
-                (core_product_session_id)parsed) != NTVDM64_STATUS_OK) {
+                (core_product_session_id)parsed) != TYPE_STATUS_OK) {
             core_product_session_command_write(output, "Unknown session.");
             return 0;
         }
@@ -115,7 +115,7 @@ C_INT core_product_session_command_execute(core_product_session_manager *manager
         STD_SIZE_T count;
         if (argument_count == 2) {
             if (core_product_session_manager_get_selected_id(manager, &id) !=
-                    NTVDM64_STATUS_OK) {
+                    TYPE_STATUS_OK) {
                 core_product_session_command_write(output, "Session manager is unavailable.");
                 return 0;
             }
@@ -128,7 +128,7 @@ C_INT core_product_session_command_execute(core_product_session_manager *manager
             id = (core_product_session_id)parsed;
         }
         if (core_product_session_manager_get_count(manager, &count) !=
-            NTVDM64_STATUS_OK) {
+            TYPE_STATUS_OK) {
             core_product_session_command_write(output, "Session manager is unavailable.");
             return 0;
         }
@@ -137,7 +137,7 @@ C_INT core_product_session_command_execute(core_product_session_manager *manager
                 "Cannot close the final session.");
             return 0;
         }
-        if (core_product_session_manager_close(manager, id) != NTVDM64_STATUS_OK) {
+        if (core_product_session_manager_close(manager, id) != TYPE_STATUS_OK) {
             core_product_session_command_write(output, "Unknown session.");
             return 0;
         }

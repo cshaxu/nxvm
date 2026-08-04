@@ -1,8 +1,8 @@
-if(NOT DEFINED NTVDM64_SOURCE_DIR)
-    message(FATAL_ERROR "NTVDM64_SOURCE_DIR is required")
+if(NOT DEFINED PROJECT_SOURCE_DIR)
+    message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${NTVDM64_SOURCE_DIR}/src/vm/composition/session/session.h" session_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/composition/session/session.h" session_header)
 foreach(forbidden IN ITEMS
     "t_cmos *cmos;"
     "t_fdd *fdd;"
@@ -28,7 +28,7 @@ foreach(required IN ITEMS
     endif()
 endforeach()
 
-file(READ "${NTVDM64_SOURCE_DIR}/src/vm/composition/session/session.c" session_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/composition/session/session.c" session_source)
 foreach(forbidden IN ITEMS
     "STD_CALLOC(1u,\n        sizeof(*machine->control))"
     "STD_FREE(machine->control)")

@@ -74,7 +74,7 @@ static DWORD WINAPI win32con_kernel_thread(LPVOID opaque)
     return 0;
 }
 
-ntvdm64_status vm_platform_win32con_run_handle_start(
+type_status vm_platform_win32con_run_handle_start(
     const vm_platform_run_context *context, vm_platform_run_handle *owner)
 {
     win32con_run_handle *handle;
@@ -84,14 +84,14 @@ ntvdm64_status vm_platform_win32con_run_handle_start(
 
     if (context == STD_NULL || owner == STD_NULL || owner->active ||
         context->execution == STD_NULL || context->keyboard == STD_NULL) {
-        return NTVDM64_STATUS_INVALID_ARGUMENT;
+        return TYPE_STATUS_INVALID_ARGUMENT;
     }
     if (core_platform_host_surface_lease_acquire(&win32_console_lease,
-            context) != NTVDM64_STATUS_OK) return NTVDM64_STATUS_INVALID_STATE;
+            context) != TYPE_STATUS_OK) return TYPE_STATUS_INVALID_STATE;
     handle = (win32con_run_handle *)STD_CALLOC(1u, sizeof(*handle));
     if (handle == STD_NULL) {
         core_platform_host_surface_lease_release(&win32_console_lease, context);
-        return NTVDM64_STATUS_NO_MEMORY;
+        return TYPE_STATUS_NO_MEMORY;
     }
     handle->owner = owner;
     handle->platform = context;
@@ -106,14 +106,14 @@ ntvdm64_status vm_platform_win32con_run_handle_start(
     platform->console_renderer = w32cdisp_context_create();
     if (platform->console_renderer == STD_NULL) {
         vm_platform_win32con_run_handle_finalize(owner);
-        return NTVDM64_STATUS_NO_MEMORY;
+        return TYPE_STATUS_NO_MEMORY;
     }
     old_flip = vm_platform_execution_get_flip_for(context->execution);
     handle->kernel_thread = CreateThread(STD_NULL, 0, win32con_kernel_thread,
         handle, 0, &thread_id);
     if (handle->kernel_thread == STD_NULL) {
         vm_platform_win32con_run_handle_finalize(owner);
-        return NTVDM64_STATUS_INVALID_STATE;
+        return TYPE_STATUS_INVALID_STATE;
     }
     while (old_flip == vm_platform_execution_get_flip_for(context->execution)) {
         core_product_wait_milliseconds(context->wait_scope, 100u);
@@ -124,9 +124,9 @@ ntvdm64_status vm_platform_win32con_run_handle_start(
         vm_platform_win32con_run_handle_request_stop(owner);
         vm_platform_win32con_run_handle_join(owner);
         vm_platform_win32con_run_handle_finalize(owner);
-        return NTVDM64_STATUS_INVALID_STATE;
+        return TYPE_STATUS_INVALID_STATE;
     }
-    return NTVDM64_STATUS_OK;
+    return TYPE_STATUS_OK;
 }
 
 C_VOID vm_platform_win32con_run_handle_request_stop(vm_platform_run_handle *owner)

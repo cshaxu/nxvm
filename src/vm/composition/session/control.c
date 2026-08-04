@@ -39,7 +39,7 @@ static C_VOID vm_session_execution_context_reset_callback(vm_session *machine)
 {
     if (machine == STD_NULL) return;
     vm_machine_debug_reset(&machine->debug);
-    if (core_machine_reset(machine->core_machine) != NTVDM64_STATUS_OK) {
+    if (core_machine_reset(machine->core_machine) != TYPE_STATUS_OK) {
         vm_session_control_stop(&machine->control);
     }
 }
@@ -62,7 +62,7 @@ C_VOID vm_session_control_start(vm_session_control_state *control) {
     machine = control->execution_context.session;
     if (machine == STD_NULL || machine->core_machine == STD_NULL) return;
     vm_session_execution_context_activate(&control->execution_context);
-    STD_ATOMIC_STORE(&control->flagRun, NTVDM64_TYPE_TRUE);
+    STD_ATOMIC_STORE(&control->flagRun, TYPE_TRUE);
     STD_ATOMIC_STORE(&control->flagFlip, !STD_ATOMIC_LOAD(&control->flagFlip));
     vm_session_runner_run(machine);
     vm_session_execution_context_deactivate(&control->execution_context);
@@ -72,10 +72,10 @@ C_VOID vm_session_control_start(vm_session_control_state *control) {
 C_VOID vm_session_control_reset(vm_session_control_state *control) {
     if (control == STD_NULL) return;
     if (STD_ATOMIC_LOAD(&control->flagRun)) {
-        STD_ATOMIC_STORE(&control->flagReset, NTVDM64_TYPE_TRUE);
+        STD_ATOMIC_STORE(&control->flagReset, TYPE_TRUE);
     } else {
         vm_session_execution_context_reset(&control->execution_context);
-        STD_ATOMIC_STORE(&control->flagReset, NTVDM64_TYPE_FALSE);
+        STD_ATOMIC_STORE(&control->flagReset, TYPE_FALSE);
     }
 }
 
@@ -88,9 +88,9 @@ C_VOID vm_session_control_stop(vm_session_control_state *control)  {
     if (machine != STD_NULL && machine->core_machine != STD_NULL) {
         core_machine_request_stop(machine->core_machine);
     }
-    STD_ATOMIC_STORE(&control->flagRun, NTVDM64_TYPE_FALSE);
-    STD_ATOMIC_STORE(&control->paused, NTVDM64_TYPE_FALSE);
-    STD_ATOMIC_STORE(&control->pauseRequested, NTVDM64_TYPE_FALSE);
+    STD_ATOMIC_STORE(&control->flagRun, TYPE_FALSE);
+    STD_ATOMIC_STORE(&control->paused, TYPE_FALSE);
+    STD_ATOMIC_STORE(&control->pauseRequested, TYPE_FALSE);
 }
 
 C_VOID vm_session_control_request_pause(vm_session_control_state *control,
@@ -98,11 +98,11 @@ C_VOID vm_session_control_request_pause(vm_session_control_state *control,
 {
     if (control == STD_NULL) return;
     if (!STD_ATOMIC_LOAD(&control->flagRun)) {
-        STD_ATOMIC_STORE(&control->paused, NTVDM64_TYPE_TRUE);
+        STD_ATOMIC_STORE(&control->paused, TYPE_TRUE);
         STD_ATOMIC_STORE(&control->pauseReason, reason);
         return;
     }
-    STD_ATOMIC_STORE(&control->pauseRequested, NTVDM64_TYPE_TRUE);
+    STD_ATOMIC_STORE(&control->pauseRequested, TYPE_TRUE);
     STD_ATOMIC_STORE(&control->pauseReason, reason);
 }
 
@@ -111,7 +111,7 @@ C_INT vm_session_control_wait_for_pause(vm_session_control_state *control,
 {
     C_UINT waited = 0u;
 
-    if (control == STD_NULL) return NTVDM64_TYPE_FALSE;
+    if (control == STD_NULL) return TYPE_FALSE;
     while (STD_ATOMIC_LOAD(&control->flagRun) && !STD_ATOMIC_LOAD(&control->paused) &&
            waited < milliseconds) {
         core_platform_sleep_milliseconds(1u);
@@ -135,20 +135,20 @@ vm_session_pause_reason vm_session_control_get_pause_reason(
 C_VOID vm_session_control_continue(vm_session_control_state *control)
 {
     if (control == STD_NULL) return;
-    STD_ATOMIC_STORE(&control->pauseRequested, NTVDM64_TYPE_FALSE);
-    STD_ATOMIC_STORE(&control->paused, NTVDM64_TYPE_FALSE);
-    STD_ATOMIC_STORE(&control->stepRequested, NTVDM64_TYPE_FALSE);
+    STD_ATOMIC_STORE(&control->pauseRequested, TYPE_FALSE);
+    STD_ATOMIC_STORE(&control->paused, TYPE_FALSE);
+    STD_ATOMIC_STORE(&control->stepRequested, TYPE_FALSE);
     STD_ATOMIC_STORE(&control->pauseReason, VM_SESSION_PAUSE_NONE);
 }
 
 C_INT vm_session_control_step(vm_session_control_state *control)
 {
-    if (control == STD_NULL || !STD_ATOMIC_LOAD(&control->paused)) return NTVDM64_TYPE_FALSE;
-    STD_ATOMIC_STORE(&control->pauseRequested, NTVDM64_TYPE_FALSE);
-    STD_ATOMIC_STORE(&control->paused, NTVDM64_TYPE_FALSE);
-    STD_ATOMIC_STORE(&control->stepRequested, NTVDM64_TYPE_TRUE);
+    if (control == STD_NULL || !STD_ATOMIC_LOAD(&control->paused)) return TYPE_FALSE;
+    STD_ATOMIC_STORE(&control->pauseRequested, TYPE_FALSE);
+    STD_ATOMIC_STORE(&control->paused, TYPE_FALSE);
+    STD_ATOMIC_STORE(&control->stepRequested, TYPE_TRUE);
     STD_ATOMIC_STORE(&control->pauseReason, VM_SESSION_PAUSE_NONE);
-    return NTVDM64_TYPE_TRUE;
+    return TYPE_TRUE;
 }
 
 C_VOID vm_session_control_bind_command_boundary(
@@ -164,13 +164,13 @@ C_VOID vm_session_control_initialize(vm_session_control_state *control,
     vm_session *machine) {
 
     if (control == STD_NULL || machine == STD_NULL) return;
-    STD_MEMSET((C_VOID *)(control), NTVDM64_TYPE_ZERO_8, sizeof(*control));
-    STD_ATOMIC_INIT(&control->flagFlip, NTVDM64_TYPE_FALSE);
-    STD_ATOMIC_INIT(&control->flagRun, NTVDM64_TYPE_FALSE);
-    STD_ATOMIC_INIT(&control->flagReset, NTVDM64_TYPE_FALSE);
-    STD_ATOMIC_INIT(&control->pauseRequested, NTVDM64_TYPE_FALSE);
-    STD_ATOMIC_INIT(&control->paused, NTVDM64_TYPE_FALSE);
-    STD_ATOMIC_INIT(&control->stepRequested, NTVDM64_TYPE_FALSE);
+    STD_MEMSET((C_VOID *)(control), TYPE_ZERO_8, sizeof(*control));
+    STD_ATOMIC_INIT(&control->flagFlip, TYPE_FALSE);
+    STD_ATOMIC_INIT(&control->flagRun, TYPE_FALSE);
+    STD_ATOMIC_INIT(&control->flagReset, TYPE_FALSE);
+    STD_ATOMIC_INIT(&control->pauseRequested, TYPE_FALSE);
+    STD_ATOMIC_INIT(&control->paused, TYPE_FALSE);
+    STD_ATOMIC_INIT(&control->stepRequested, TYPE_FALSE);
     STD_ATOMIC_INIT(&control->pauseReason, VM_SESSION_PAUSE_NONE);
     vm_session_execution_context_initialize(&control->execution_context);
     vm_session_execution_context_bind_session(&control->execution_context,

@@ -162,7 +162,7 @@ static DWORD WINAPI win32app_kernel_thread(LPVOID opaque)
     return 0;
 }
 
-ntvdm64_status vm_platform_win32app_run_handle_start(
+type_status vm_platform_win32app_run_handle_start(
     const vm_platform_run_context *context, vm_platform_run_handle *owner)
 {
     win32app_run_handle *handle;
@@ -170,10 +170,10 @@ ntvdm64_status vm_platform_win32app_run_handle_start(
 
     if (context == STD_NULL || owner == STD_NULL || owner->active ||
         context->execution == STD_NULL || context->keyboard == STD_NULL) {
-        return NTVDM64_STATUS_INVALID_ARGUMENT;
+        return TYPE_STATUS_INVALID_ARGUMENT;
     }
     handle = (win32app_run_handle *)STD_CALLOC(1u, sizeof(*handle));
-    if (handle == STD_NULL) return NTVDM64_STATUS_NO_MEMORY;
+    if (handle == STD_NULL) return TYPE_STATUS_NO_MEMORY;
     handle->owner = owner;
     handle->platform = context;
     handle->initial_flip = vm_platform_execution_get_flip_for(context->execution);
@@ -185,7 +185,7 @@ ntvdm64_status vm_platform_win32app_run_handle_start(
         handle, 0, &thread_id);
     if (handle->display_thread == STD_NULL) {
         vm_platform_win32app_run_handle_finalize(owner);
-        return NTVDM64_STATUS_INVALID_STATE;
+        return TYPE_STATUS_INVALID_STATE;
     }
     for (DWORD waited = 0u;
          !win32app_atomic_read(&handle->display_ready) &&
@@ -198,7 +198,7 @@ ntvdm64_status vm_platform_win32app_run_handle_start(
         vm_platform_win32app_run_handle_request_stop(owner);
         vm_platform_win32app_run_handle_join(owner);
         vm_platform_win32app_run_handle_finalize(owner);
-        return NTVDM64_STATUS_INVALID_STATE;
+        return TYPE_STATUS_INVALID_STATE;
     }
     handle->kernel_thread = CreateThread(STD_NULL, 0, win32app_kernel_thread,
         handle, 0, &thread_id);
@@ -206,9 +206,9 @@ ntvdm64_status vm_platform_win32app_run_handle_start(
         vm_platform_win32app_run_handle_request_stop(owner);
         vm_platform_win32app_run_handle_join(owner);
         vm_platform_win32app_run_handle_finalize(owner);
-        return NTVDM64_STATUS_INVALID_STATE;
+        return TYPE_STATUS_INVALID_STATE;
     }
-    return NTVDM64_STATUS_OK;
+    return TYPE_STATUS_OK;
 }
 
 C_VOID vm_platform_win32app_run_handle_request_stop(vm_platform_run_handle *owner)

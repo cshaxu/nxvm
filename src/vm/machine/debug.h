@@ -1,7 +1,7 @@
 /* Copyright 2012-2014 Neko. */
 
-#ifndef NXVM_VM_MACHINE_DEBUG_H
-#define NXVM_VM_MACHINE_DEBUG_H
+#ifndef VM_MACHINE_DEBUG_H
+#define VM_MACHINE_DEBUG_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -11,7 +11,7 @@ extern "C" {
 #include "core/machine/cpu.h"
 #include "core/machine/cpu_instructions.h"
 
-#define NXVM_DEVICE_DEBUG "Unknown Hardware Debugger"
+#define VM_MACHINE_DEVICE_DEBUG "Unknown Hardware Debugger"
 
 typedef enum vm_machine_debug_pause_reason {
     VM_MACHINE_DEBUG_PAUSE_BREAKPOINT,
@@ -30,12 +30,12 @@ typedef struct {
 } t_debug_connect;
 
 typedef struct {
-    ntvdm64_type_bool flagBreak; /* breakpoint set (1) or not (0) */
-    ntvdm64_type_bool flagBreak32;
-    ntvdm64_type_bool flagTrace; /* tracer set(1) or not (0) */
-    ntvdm64_type_native_unsigned breakCount, traceCount;
-    ntvdm64_type_unsigned_16 breakCS, breakIP;
-    ntvdm64_type_unsigned_32 breakLinear;
+    type_bool flagBreak; /* breakpoint set (1) or not (0) */
+    type_bool flagBreak32;
+    type_bool flagTrace; /* tracer set(1) or not (0) */
+    type_native_unsigned breakCount, traceCount;
+    type_unsigned_16 breakCS, breakIP;
+    type_unsigned_32 breakLinear;
 } t_debug_data;
 
 typedef struct {

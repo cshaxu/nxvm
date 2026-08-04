@@ -31,10 +31,10 @@ C_VOID vm_platform_linux_display_paint(C_INT window, const vm_platform_run_conte
     }
 }
 
-ntvdm64_status vm_platform_linux_run_handle_start(
+type_status vm_platform_linux_run_handle_start(
     const vm_platform_run_context *context, vm_platform_run_handle *handle) {
     if (vm_platform_run_context_get_window_display(context)) {
-        return NTVDM64_STATUS_UNSUPPORTED;
+        return TYPE_STATUS_UNSUPPORTED;
     }
     return vm_platform_linuxcon_run_handle_start(context, handle);
 }

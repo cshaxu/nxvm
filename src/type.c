@@ -65,7 +65,7 @@ C_VOID* STD_MEMCPY(C_VOID *_Dst, const C_VOID *_Src, STD_SIZE_T _Size) { return 
 C_VOID* STD_MEMMOVE(C_VOID *_Dst, const C_VOID *_Src, STD_SIZE_T _Size) { return memmove(_Dst, _Src, _Size); }
 C_INT STD_MEMCMP(const C_VOID *_Buf1, const C_VOID *_Buf2, STD_SIZE_T _Size) { return memcmp(_Buf1, _Buf2, _Size); }
 
-C_VOID ntvdm64_type_string_lower(C_CHAR *str) {
+C_VOID type_string_lower(C_CHAR *str) {
     STD_SIZE_T i = 0;
     if (str[0] == '\'') {
         return;
@@ -80,7 +80,7 @@ C_VOID ntvdm64_type_string_lower(C_CHAR *str) {
     }
 }
 
-static C_VOID printTraceCall(ntvdm64_type_trace_call *rtracecall) {
+static C_VOID printTraceCall(type_trace_call *rtracecall) {
     STD_SIZE_T i;
     STD_PRINTF("%s", rtracecall->callName);
     for (i = 0; i < rtracecall->blockCount; ++i) {
@@ -88,7 +88,7 @@ static C_VOID printTraceCall(ntvdm64_type_trace_call *rtracecall) {
     }
     STD_PRINTF("\n");
 }
-C_VOID ntvdm64_type_trace_print(ntvdm64_type_trace *rtrace) {
+C_VOID type_trace_print(type_trace *rtrace) {
     STD_SIZE_T i;
     if (rtrace->callCount) {
         for (i = 0; i < rtrace->callCount; ++i) {
@@ -96,26 +96,26 @@ C_VOID ntvdm64_type_trace_print(ntvdm64_type_trace *rtrace) {
         }
     }
 }
-C_VOID ntvdm64_type_trace_initialize(ntvdm64_type_trace *rtrace) {
+C_VOID type_trace_initialize(type_trace *rtrace) {
     rtrace->callCount = 0;
     rtrace->flagError = 0;
 }
-C_VOID ntvdm64_type_trace_finalize(ntvdm64_type_trace *rtrace) {
+C_VOID type_trace_finalize(type_trace *rtrace) {
     if (!rtrace->flagError && rtrace->callCount) {
         STD_PRINTF("trace_final: call stack is not balanced. (call: %d, block: %d)\n",
                rtrace->callCount, rtrace->callStack[rtrace->callCount].blockCount);
         rtrace->flagError = 1;
     }
     if (rtrace->flagError) {
-        ntvdm64_type_trace_print(rtrace);
+        type_trace_print(rtrace);
     }
     rtrace->callCount = 0;
     rtrace->flagError = 0;
 }
-C_VOID ntvdm64_type_trace_call_begin(ntvdm64_type_trace *rtrace, C_CHAR *callName) {
+C_VOID type_trace_call_begin(type_trace *rtrace, C_CHAR *callName) {
     if (rtrace->flagError) return;
-    if (rtrace->callCount < NTVDM64_TYPE_TRACE_MAX_STACK) {
-#if NTVDM64_TYPE_TRACE_DEBUG == 1
+    if (rtrace->callCount < TYPE_TRACE_MAX_STACK) {
+#if TYPE_TRACE_DEBUG == 1
         STD_PRINTF("enter call(%d): %s\n", rtrace->callCount, callName);
 #endif
         rtrace->callStack[rtrace->callCount].callName = callName;
@@ -126,11 +126,11 @@ C_VOID ntvdm64_type_trace_call_begin(ntvdm64_type_trace *rtrace, C_CHAR *callNam
         rtrace->flagError = 1;
     }
 }
-C_VOID ntvdm64_type_trace_call_end(ntvdm64_type_trace *rtrace) {
+C_VOID type_trace_call_end(type_trace *rtrace) {
     if (rtrace->flagError) return;
     if (rtrace->callCount) {
         rtrace->callCount--;
-#if NTVDM64_TYPE_TRACE_DEBUG == 1
+#if TYPE_TRACE_DEBUG == 1
         STD_PRINTF("leave call(%d): %s\n", rtrace->callCount,
                rtrace->callStack[rtrace->callCount].callName);
 #endif
@@ -145,10 +145,10 @@ C_VOID ntvdm64_type_trace_call_end(ntvdm64_type_trace *rtrace) {
         rtrace->flagError = 1;
     }
 }
-C_VOID ntvdm64_type_trace_block_begin(ntvdm64_type_trace *rtrace, C_CHAR *blockName) {
+C_VOID type_trace_block_begin(type_trace *rtrace, C_CHAR *blockName) {
     if (rtrace->flagError) return;
-    if (rtrace->callStack[rtrace->callCount - 1].blockCount < NTVDM64_TYPE_TRACE_MAX_STACK) {
-#if NTVDM64_TYPE_TRACE_DEBUG == 1
+    if (rtrace->callStack[rtrace->callCount - 1].blockCount < TYPE_TRACE_MAX_STACK) {
+#if TYPE_TRACE_DEBUG == 1
         STD_PRINTF("enter block(%d): %s\n", rtrace->callStack[rtrace->callCount - 1].blockCount, blockName);
 #endif
         rtrace->callStack[rtrace->callCount - 1].
@@ -158,11 +158,11 @@ C_VOID ntvdm64_type_trace_block_begin(ntvdm64_type_trace *rtrace, C_CHAR *blockN
         rtrace->flagError = 1;
     }
 }
-C_VOID ntvdm64_type_trace_block_end(ntvdm64_type_trace *rtrace) {
+C_VOID type_trace_block_end(type_trace *rtrace) {
     if (rtrace->flagError) return;
     if (rtrace->callStack[rtrace->callCount - 1].blockCount) {
         rtrace->callStack[rtrace->callCount - 1].blockCount--;
-#if NTVDM64_TYPE_TRACE_DEBUG == 1
+#if TYPE_TRACE_DEBUG == 1
         STD_PRINTF("leave block(%d): %s\n",
                rtrace->callStack[rtrace->callCount - 1].blockCount,
                rtrace->callStack[rtrace->callCount - 1].blockStack[rtrace->callStack[rtrace->callCount - 1].blockCount]);

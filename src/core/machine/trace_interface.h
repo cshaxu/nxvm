@@ -1,5 +1,5 @@
-#ifndef NTVDM64_CORE_MACHINE_TRACE_INTERFACE_H
-#define NTVDM64_CORE_MACHINE_TRACE_INTERFACE_H
+#ifndef CORE_MACHINE_TRACE_INTERFACE_H
+#define CORE_MACHINE_TRACE_INTERFACE_H
 
 
 #include "type.h"
@@ -37,7 +37,7 @@ typedef struct core_machine_trace_provider {
     C_VOID *context;
 } core_machine_trace_provider;
 
-ntvdm64_status core_machine_set_trace_provider(
+type_status core_machine_set_trace_provider(
     core_machine *machine,
     const core_machine_trace_provider *provider);
 

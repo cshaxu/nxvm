@@ -23,9 +23,9 @@ C_INT main(C_VOID)
     vm_session_initialize(first);
     vm_session_initialize(second);
     core_machine_keyboard_apply_host_state_to(&first->keyboard_provider,
-        NXVM_KEYBOARD_ASYNC_ALT, 0u);
+        CORE_MACHINE_KEYBOARD_ASYNC_ALT, 0u);
     core_machine_keyboard_apply_host_state_to(&second->keyboard_provider,
-        NXVM_KEYBOARD_ASYNC_CONTROL, 0u);
+        CORE_MACHINE_KEYBOARD_ASYNC_CONTROL, 0u);
 
     if (!core_machine_keyboard_get_modifier_from(&first->keyboard_provider,
             CORE_MACHINE_KEYBOARD_MODIFIER_ALT) ||

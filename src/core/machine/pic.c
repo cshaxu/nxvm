@@ -16,13 +16,13 @@
  * Returns id of highest priority interrupt
  * Returns 0x08 if reg is null
  */
-static ntvdm64_type_unsigned_8 GetRegTopId(t_pic *rpic, ntvdm64_type_unsigned_8 reg) {
-    ntvdm64_type_unsigned_8 id = 0;
-    if (reg == NTVDM64_TYPE_ZERO_8) {
+static type_unsigned_8 GetRegTopId(t_pic *rpic, type_unsigned_8 reg) {
+    type_unsigned_8 id = 0;
+    if (reg == TYPE_ZERO_8) {
         return 0x08;
     }
     reg = (reg << (VPIC_MAX_IRQ_COUNT - (rpic->data.irx))) | (reg>> (rpic->data.irx));
-    while ((id < VPIC_MAX_IRQ_COUNT) && !NTVDM64_TYPE_MASK_UNSIGNED_1(reg >> id)) {
+    while ((id < VPIC_MAX_IRQ_COUNT) && !TYPE_MASK_UNSIGNED_1(reg >> id)) {
         id++;
     }
     return (id + rpic->data.irx) % VPIC_MAX_IRQ_COUNT;
@@ -31,18 +31,18 @@ static ntvdm64_type_unsigned_8 GetRegTopId(t_pic *rpic, ntvdm64_type_unsigned_8 
  * GetRegTopId: Internal function
  * Returns flag of higher priority interrupt
  */
-static ntvdm64_type_bool HasINTR(t_pic *rpic) {
-    ntvdm64_type_unsigned_8 reqId; /* top requested C_INT id in master pic */
-    ntvdm64_type_unsigned_8 svcId; /* top in service C_INT id in master pic */
+static type_bool HasINTR(t_pic *rpic) {
+    type_unsigned_8 reqId; /* top requested C_INT id in master pic */
+    type_unsigned_8 svcId; /* top in service C_INT id in master pic */
     reqId = VPIC_GetIntrTopId(rpic);
     svcId = VPIC_GetIsrTopId(rpic);
     if (reqId == 0x08) {
         /* no interrupt to pick up */
-        return NTVDM64_TYPE_FALSE;
+        return TYPE_FALSE;
     }
     if (svcId == 0x08) {
         /* no interrupt in service */
-        return NTVDM64_TYPE_TRUE;
+        return TYPE_TRUE;
     }
     /*
      * if irid and isid are on the same side of top priority C_INT
@@ -58,7 +58,7 @@ static ntvdm64_type_bool HasINTR(t_pic *rpic) {
     if (svcId < rpic->data.irx) {
         svcId += VPIC_MAX_IRQ_COUNT;
     }
-    if (NTVDM64_TYPE_GET_BIT(rpic->data.icw4, VPIC_ICW4_SFNM)) {
+    if (TYPE_GET_BIT(rpic->data.icw4, VPIC_ICW4_SFNM)) {
         return reqId <= svcId;
     } else {
         return reqId < svcId;
@@ -68,13 +68,13 @@ static ntvdm64_type_bool HasINTR(t_pic *rpic) {
  * RespondINTR: Internal function
  * Adds INTR to IRR and removes it from ISR
  */
-static C_VOID RespondINTR(t_pic *rpic, ntvdm64_type_unsigned_8 id) {
-    NTVDM64_TYPE_SET_BIT(rpic->data.isr, VPIC_ISR_IRQ(id)); /* put C_INT into ISR */
-    NTVDM64_TYPE_CLEAR_BIT(rpic->data.irr, VPIC_IRR_IRQ(id)); /* remove C_INT from  IRR */
-    if (NTVDM64_TYPE_GET_BIT(rpic->data.icw4, VPIC_ICW4_AEOI)) {
+static C_VOID RespondINTR(t_pic *rpic, type_unsigned_8 id) {
+    TYPE_SET_BIT(rpic->data.isr, VPIC_ISR_IRQ(id)); /* put C_INT into ISR */
+    TYPE_CLEAR_BIT(rpic->data.irr, VPIC_IRR_IRQ(id)); /* remove C_INT from  IRR */
+    if (TYPE_GET_BIT(rpic->data.icw4, VPIC_ICW4_AEOI)) {
         /* Auto EOI Mode */
-        NTVDM64_TYPE_CLEAR_BIT(rpic->data.isr, VPIC_ISR_IRQ(id));
-        if (NTVDM64_TYPE_GET_BIT(rpic->data.ocw2, VPIC_OCW2_R)) {
+        TYPE_CLEAR_BIT(rpic->data.isr, VPIC_ISR_IRQ(id));
+        if (TYPE_GET_BIT(rpic->data.ocw2, VPIC_OCW2_R)) {
             /* Rotate Mode */
             rpic->data.irx = (id + 1) % VPIC_MAX_IRQ_COUNT;
         }
@@ -88,11 +88,11 @@ static C_VOID RespondINTR(t_pic *rpic, ntvdm64_type_unsigned_8 id) {
  * Reference: PC.PDF, Page 950
  */
 static C_VOID io_read_00x0(t_pic *rpic, t_port *port) {
-    if (NTVDM64_TYPE_GET_BIT(rpic->data.ocw3, VPIC_OCW3_P)) {
+    if (TYPE_GET_BIT(rpic->data.ocw3, VPIC_OCW3_P)) {
         /* P=1 (Poll Command) */
         if (VPIC_GetIntrTopId(rpic) == 0x08) {
             /* set all bits to 0 if there's no interrupt in queue */
-            port->data.ioByte = NTVDM64_TYPE_ZERO_8;
+            port->data.ioByte = TYPE_ZERO_8;
         } else {
             /* set highest bit to 1 if there's an interrupt in queue */
             port->data.ioByte = VPIC_POLL_I | VPIC_GetIntrTopId(rpic);
@@ -120,35 +120,35 @@ static C_VOID io_read_00x0(t_pic *rpic, t_port *port) {
  * Reference: PC.PDF, Page 950
  */
 static C_VOID io_write_00x0(t_pic *rpic, t_port *port) {
-    ntvdm64_type_unsigned_8 id;
-    if (NTVDM64_TYPE_GET_BIT(port->data.ioByte, VPIC_ICW1_I)) {
+    type_unsigned_8 id;
+    if (TYPE_GET_BIT(port->data.ioByte, VPIC_ICW1_I)) {
         /* ICW1 (D4=1) */
         rpic->data.icw1 = port->data.ioByte;
         rpic->data.status = ICW2;
-        if (NTVDM64_TYPE_GET_BIT(rpic->data.icw1, VPIC_ICW1_IC4)) {
+        if (TYPE_GET_BIT(rpic->data.icw1, VPIC_ICW1_IC4)) {
             /* D0=1, IC4=1 */
         } else {
             /* D0=0, IC4=0 */
-            rpic->data.icw4 = NTVDM64_TYPE_ZERO_8;
+            rpic->data.icw4 = TYPE_ZERO_8;
         }
-        if (NTVDM64_TYPE_GET_BIT(rpic->data.icw1, VPIC_ICW1_SNGL)) {
+        if (TYPE_GET_BIT(rpic->data.icw1, VPIC_ICW1_SNGL)) {
             /* D1=1, SNGL=1, ICW3=0 */
         } else {
             /* D1=0, SNGL=0, ICW3=1 */
         }
-        if (NTVDM64_TYPE_GET_BIT(rpic->data.icw1, VPIC_ICW1_LTIM)) {
+        if (TYPE_GET_BIT(rpic->data.icw1, VPIC_ICW1_LTIM)) {
             /* D3=1, LTIM=1, Level Triggered Mode */
         } else {
             /* D3=0, LTIM=0, Edge  Triggered Mode */
         }
     } else {
         /* OCWs (D4=0) */
-        if (NTVDM64_TYPE_GET_BIT(port->data.ioByte, VPIC_OCW3_I)) {
+        if (TYPE_GET_BIT(port->data.ioByte, VPIC_OCW3_I)) {
             /* OCW3 (D3=1) */
-            if (NTVDM64_TYPE_GET_BIT(port->data.ioByte, VPIC_OCW3_ESMM)) {
+            if (TYPE_GET_BIT(port->data.ioByte, VPIC_OCW3_ESMM)) {
                 /* ESMM=1: Enable Special Mask Mode */
                 rpic->data.ocw3 = port->data.ioByte;
-                if (NTVDM64_TYPE_GET_BIT(rpic->data.ocw3, VPIC_OCW3_SMM)) {
+                if (TYPE_GET_BIT(rpic->data.ocw3, VPIC_OCW3_SMM)) {
                     /* SMM=1: Set Special Mask Mode */
                 } else {
                     /* SMM=0: Clear Sepcial Mask Mode */
@@ -163,13 +163,13 @@ static C_VOID io_write_00x0(t_pic *rpic, t_port *port) {
             /* D7=R, D6=SL, D5=EOI(End Of Interrupt) */
             case 0x80:
                 /* 100: Set (Rotate Priorities in Auto EOI Mode) */
-                if (NTVDM64_TYPE_GET_BIT(rpic->data.icw4, VPIC_ICW4_AEOI)) {
+                if (TYPE_GET_BIT(rpic->data.icw4, VPIC_ICW4_AEOI)) {
                     rpic->data.ocw2 = port->data.ioByte;
                 }
                 break;
             case 0x00:
                 /* 000: Clear (Rotate Priorities in Auto EOI Mode) */
-                if (NTVDM64_TYPE_GET_BIT(rpic->data.icw4, VPIC_ICW4_AEOI)) {
+                if (TYPE_GET_BIT(rpic->data.icw4, VPIC_ICW4_AEOI)) {
                     rpic->data.ocw2 = port->data.ioByte;
                 }
                 /* Bug in easyVM (0x00 ?= 0x20) */
@@ -181,7 +181,7 @@ static C_VOID io_write_00x0(t_pic *rpic, t_port *port) {
                 rpic->data.ocw2 = port->data.ioByte;
                 if (rpic->data.isr) {
                     id = VPIC_GetIsrTopId(rpic);
-                    NTVDM64_TYPE_CLEAR_BIT(rpic->data.isr, VPIC_ISR_IRQ(id));
+                    TYPE_CLEAR_BIT(rpic->data.isr, VPIC_ISR_IRQ(id));
                 }
                 break;
             case 0x60:
@@ -190,7 +190,7 @@ static C_VOID io_write_00x0(t_pic *rpic, t_port *port) {
                 if (rpic->data.isr) {
                     /* Get L2,L1,L0 */
                     id = rpic->data.ocw2 & VPIC_OCW2_L;
-                    NTVDM64_TYPE_CLEAR_BIT(rpic->data.isr, VPIC_ISR_IRQ(id));
+                    TYPE_CLEAR_BIT(rpic->data.isr, VPIC_ISR_IRQ(id));
                 }
                 /* Bug in easyVM: "isr &= (1 << i)" */
                 break;
@@ -199,7 +199,7 @@ static C_VOID io_write_00x0(t_pic *rpic, t_port *port) {
                 rpic->data.ocw2 = port->data.ioByte;
                 if (rpic->data.isr) {
                     id = VPIC_GetIsrTopId(rpic);
-                    NTVDM64_TYPE_CLEAR_BIT(rpic->data.isr, VPIC_ISR_IRQ(id));
+                    TYPE_CLEAR_BIT(rpic->data.isr, VPIC_ISR_IRQ(id));
                     rpic->data.irx = (id + 1) % VPIC_MAX_IRQ_COUNT;
                 }
                 break;
@@ -208,7 +208,7 @@ static C_VOID io_write_00x0(t_pic *rpic, t_port *port) {
                 rpic->data.ocw2 = port->data.ioByte;
                 if (rpic->data.isr) {
                     id = VPIC_GetIsrTopId(rpic);
-                    NTVDM64_TYPE_CLEAR_BIT(rpic->data.isr, VPIC_ISR_IRQ(id));
+                    TYPE_CLEAR_BIT(rpic->data.isr, VPIC_ISR_IRQ(id));
                     rpic->data.irx = ((rpic->data.ocw2 & VPIC_OCW2_L) + 1) % VPIC_MAX_IRQ_COUNT;
                 }
                 break;
@@ -242,10 +242,10 @@ static C_VOID io_write_00x1(t_pic *rpic, t_port *port) {
     switch (rpic->data.status) {
     case ICW2:
         rpic->data.icw2 = port->data.ioByte & VPIC_ICW2_VALID;
-        if (!NTVDM64_TYPE_GET_BIT(rpic->data.icw1, VPIC_ICW1_SNGL)) {
+        if (!TYPE_GET_BIT(rpic->data.icw1, VPIC_ICW1_SNGL)) {
             /* ICW1.SNGL=0, ICW3=1 */
             rpic->data.status = ICW3;
-        } else if (NTVDM64_TYPE_GET_BIT(rpic->data.icw1, VPIC_ICW1_IC4)) {
+        } else if (TYPE_GET_BIT(rpic->data.icw1, VPIC_ICW1_IC4)) {
             /* ICW1.SNGL=1, IC4=1 */
             rpic->data.status = ICW4;
         } else {
@@ -255,7 +255,7 @@ static C_VOID io_write_00x1(t_pic *rpic, t_port *port) {
         break;
     case ICW3:
         rpic->data.icw3 = port->data.ioByte;
-        if (NTVDM64_TYPE_GET_BIT(rpic->data.icw1, VPIC_ICW1_IC4)) {
+        if (TYPE_GET_BIT(rpic->data.icw1, VPIC_ICW1_IC4)) {
             /* ICW1.IC4=1 */
             rpic->data.status = ICW4;
         } else {
@@ -264,19 +264,19 @@ static C_VOID io_write_00x1(t_pic *rpic, t_port *port) {
         break;
     case ICW4:
         rpic->data.icw4 = port->data.ioByte & VPIC_ICW4_VALID;
-        if (NTVDM64_TYPE_GET_BIT(rpic->data.icw4, VPIC_ICW4_uPM)) {
+        if (TYPE_GET_BIT(rpic->data.icw4, VPIC_ICW4_uPM)) {
             /* uPM=1, 16-bit 80x86 */
         } else {
             /* uPM=0, 8-bit 8080/8085 */
         }
-        if (NTVDM64_TYPE_GET_BIT(rpic->data.icw4, VPIC_ICW4_AEOI)) {
+        if (TYPE_GET_BIT(rpic->data.icw4, VPIC_ICW4_AEOI)) {
             /* AEOI=1, Automatic End of Interrupt */
         } else {
             /* AEOI=0, Non-automatic End of Interrupt */
         }
-        if (NTVDM64_TYPE_GET_BIT(rpic->data.icw4, VPIC_ICW4_BUF)) {
+        if (TYPE_GET_BIT(rpic->data.icw4, VPIC_ICW4_BUF)) {
             /* BUF=1, Buffer */
-            if (NTVDM64_TYPE_GET_BIT(rpic->data.icw4, VPIC_ICW4_MS)) {
+            if (TYPE_GET_BIT(rpic->data.icw4, VPIC_ICW4_MS)) {
                 /* M/S=1, Master 8259A */
             } else {
                 /* M/S=0, Slave 8259A */
@@ -284,7 +284,7 @@ static C_VOID io_write_00x1(t_pic *rpic, t_port *port) {
         } else {
             /* BUF=0, Non-buffer */
         }
-        if (NTVDM64_TYPE_GET_BIT(rpic->data.icw4, VPIC_ICW4_SFNM)) {
+        if (TYPE_GET_BIT(rpic->data.icw4, VPIC_ICW4_SFNM)) {
             /* SFNM=1, Special Fully Nested Mode */
         } else {
             /* SFNM=0, Non-special Fully Nested Mode */
@@ -293,7 +293,7 @@ static C_VOID io_write_00x1(t_pic *rpic, t_port *port) {
         break;
     case OCW1:
         rpic->data.ocw1 = port->data.ioByte;
-        if (NTVDM64_TYPE_GET_BIT(rpic->data.ocw3, VPIC_OCW3_SMM)) {
+        if (TYPE_GET_BIT(rpic->data.ocw3, VPIC_OCW3_SMM)) {
             rpic->data.isr &= ~(rpic->data.imr);
         }
         break;
@@ -303,35 +303,35 @@ static C_VOID io_write_00x1(t_pic *rpic, t_port *port) {
 }
 
 /* The provider owner is the composition-owned PIC selected for this port. */
-static C_VOID io_read_0020(t_port *port, ntvdm64_type_unsigned_16 port_id, C_VOID *owner) {
+static C_VOID io_read_0020(t_port *port, type_unsigned_16 port_id, C_VOID *owner) {
     (C_VOID)port_id;
     io_read_00x0((t_pic *)owner, port);
 }
-static C_VOID io_read_0021(t_port *port, ntvdm64_type_unsigned_16 port_id, C_VOID *owner) {
+static C_VOID io_read_0021(t_port *port, type_unsigned_16 port_id, C_VOID *owner) {
     (C_VOID)port_id;
     io_read_00x1((t_pic *)owner, port);
 }
-static C_VOID io_read_00A0(t_port *port, ntvdm64_type_unsigned_16 port_id, C_VOID *owner) {
+static C_VOID io_read_00A0(t_port *port, type_unsigned_16 port_id, C_VOID *owner) {
     (C_VOID)port_id;
     io_read_00x0((t_pic *)owner, port);
 }
-static C_VOID io_read_00A1(t_port *port, ntvdm64_type_unsigned_16 port_id, C_VOID *owner) {
+static C_VOID io_read_00A1(t_port *port, type_unsigned_16 port_id, C_VOID *owner) {
     (C_VOID)port_id;
     io_read_00x1((t_pic *)owner, port);
 }
-static C_VOID io_write_0020(t_port *port, ntvdm64_type_unsigned_16 port_id, C_VOID *owner) {
+static C_VOID io_write_0020(t_port *port, type_unsigned_16 port_id, C_VOID *owner) {
     (C_VOID)port_id;
     io_write_00x0((t_pic *)owner, port);
 }
-static C_VOID io_write_0021(t_port *port, ntvdm64_type_unsigned_16 port_id, C_VOID *owner) {
+static C_VOID io_write_0021(t_port *port, type_unsigned_16 port_id, C_VOID *owner) {
     (C_VOID)port_id;
     io_write_00x1((t_pic *)owner, port);
 }
-static C_VOID io_write_00A0(t_port *port, ntvdm64_type_unsigned_16 port_id, C_VOID *owner) {
+static C_VOID io_write_00A0(t_port *port, type_unsigned_16 port_id, C_VOID *owner) {
     (C_VOID)port_id;
     io_write_00x0((t_pic *)owner, port);
 }
-static C_VOID io_write_00A1(t_port *port, ntvdm64_type_unsigned_16 port_id, C_VOID *owner) {
+static C_VOID io_write_00A1(t_port *port, type_unsigned_16 port_id, C_VOID *owner) {
     (C_VOID)port_id;
     io_write_00x1((t_pic *)owner, port);
 }
@@ -341,7 +341,7 @@ static C_VOID io_write_00A1(t_port *port, ntvdm64_type_unsigned_16 port_id, C_VO
  * Puts C_INT request into IRR
  * Called by C_INT request sender of devices, e.g. vpitIntTick
  */
-C_VOID core_machine_pic_set_irq(t_pic *master, t_pic *slave, ntvdm64_type_unsigned_8 irq_id) {
+C_VOID core_machine_pic_set_irq(t_pic *master, t_pic *slave, type_unsigned_8 irq_id) {
     if (master == STD_NULL) return;
     switch (irq_id) {
     case 0x00:
@@ -351,7 +351,7 @@ C_VOID core_machine_pic_set_irq(t_pic *master, t_pic *slave, ntvdm64_type_unsign
     case 0x05:
     case 0x06:
     case 0x07:
-        NTVDM64_TYPE_SET_BIT(master->data.irr, VPIC_IRR_IRQ(irq_id));
+        TYPE_SET_BIT(master->data.irr, VPIC_IRR_IRQ(irq_id));
         break;
     case 0x08:
     case 0x09:
@@ -362,8 +362,8 @@ C_VOID core_machine_pic_set_irq(t_pic *master, t_pic *slave, ntvdm64_type_unsign
     case 0x0e:
     case 0x0f:
         if (slave == STD_NULL) return;
-        NTVDM64_TYPE_SET_BIT(master->data.irr, VPIC_IRR_IRQ(0x02));
-        NTVDM64_TYPE_SET_BIT(slave->data.irr, VPIC_IRR_IRQ(irq_id - 0x08));
+        TYPE_SET_BIT(master->data.irr, VPIC_IRR_IRQ(0x02));
+        TYPE_SET_BIT(slave->data.irr, VPIC_IRR_IRQ(irq_id - 0x08));
         break;
     case 0x02:
     default:
@@ -375,9 +375,9 @@ C_VOID core_machine_pic_timer_output(C_VOID *owner) {
     core_machine_pic_set_irq((t_pic *)owner, STD_NULL, 0x00);
 }
 
-ntvdm64_type_bool core_machine_pic_scan_interrupt(t_pic *master, t_pic *slave) {
-    ntvdm64_type_bool flagINTR;
-    if (master == STD_NULL || slave == STD_NULL) return NTVDM64_TYPE_FALSE;
+type_bool core_machine_pic_scan_interrupt(t_pic *master, t_pic *slave) {
+    type_bool flagINTR;
+    if (master == STD_NULL || slave == STD_NULL) return TYPE_FALSE;
     flagINTR = HasINTR(master);
     if (flagINTR && (VPIC_GetIntrTopId(master) == 2)) {
         /* check slave pic */
@@ -385,9 +385,9 @@ ntvdm64_type_bool core_machine_pic_scan_interrupt(t_pic *master, t_pic *slave) {
     }
     return flagINTR;
 }
-ntvdm64_type_unsigned_8 core_machine_pic_get_interrupt(t_pic *master, t_pic *slave) {
-    ntvdm64_type_unsigned_8 reqId1; /* top requested C_INT id in master pic */
-    ntvdm64_type_unsigned_8 reqId2; /* top requested C_INT id in slave pic */
+type_unsigned_8 core_machine_pic_get_interrupt(t_pic *master, t_pic *slave) {
+    type_unsigned_8 reqId1; /* top requested C_INT id in master pic */
+    type_unsigned_8 reqId2; /* top requested C_INT id in slave pic */
     if (master == STD_NULL || slave == STD_NULL) return 0;
     reqId1 = VPIC_GetIntrTopId(master);
     RespondINTR(master, reqId1);
@@ -406,8 +406,8 @@ ntvdm64_type_unsigned_8 core_machine_pic_get_interrupt(t_pic *master, t_pic *sla
 C_VOID core_machine_pic_initialize(t_pic *master, t_pic *slave, t_port *port)
 {
     if (master == STD_NULL || slave == STD_NULL || port == STD_NULL) return;
-    STD_MEMSET((C_VOID *)master, NTVDM64_TYPE_ZERO_8, sizeof(*master));
-    STD_MEMSET((C_VOID *)slave, NTVDM64_TYPE_ZERO_8, sizeof(*slave));
+    STD_MEMSET((C_VOID *)master, TYPE_ZERO_8, sizeof(*master));
+    STD_MEMSET((C_VOID *)slave, TYPE_ZERO_8, sizeof(*slave));
     core_machine_port_add_read(port, 0x0020, io_read_0020, master);
     core_machine_port_add_read(port, 0x0021, io_read_0021, master);
     core_machine_port_add_read(port, 0x00a0, io_read_00A0, slave);
@@ -419,8 +419,8 @@ C_VOID core_machine_pic_initialize(t_pic *master, t_pic *slave, t_port *port)
 }
 C_VOID core_machine_pic_reset(t_pic *master, t_pic *slave) {
     if (master == STD_NULL || slave == STD_NULL) return;
-    STD_MEMSET((C_VOID *)(&master->data), NTVDM64_TYPE_ZERO_8, sizeof(t_pic_data));
-    STD_MEMSET((C_VOID *)(&slave->data), NTVDM64_TYPE_ZERO_8, sizeof(t_pic_data));
+    STD_MEMSET((C_VOID *)(&master->data), TYPE_ZERO_8, sizeof(t_pic_data));
+    STD_MEMSET((C_VOID *)(&slave->data), TYPE_ZERO_8, sizeof(t_pic_data));
     master->data.status = slave->data.status = ICW1;
     master->data.ocw3 = slave->data.ocw3 = VPIC_OCW3_RR;
 }
@@ -429,10 +429,10 @@ C_VOID core_machine_pic_refresh(t_pic *master, t_pic *slave) {
     if (slave->data.irr & (~slave->data.imr)) {
         /* if slave pic has requested C_INT, then
          * pass the request into IR2 of master pic */
-        NTVDM64_TYPE_SET_BIT(master->data.irr, VPIC_IRR_IRQ(2));
+        TYPE_SET_BIT(master->data.irr, VPIC_IRR_IRQ(2));
     } else {
         /* remove IR2 from master pic */
-        NTVDM64_TYPE_CLEAR_BIT(master->data.irr, VPIC_IRR_IRQ(2));
+        TYPE_CLEAR_BIT(master->data.irr, VPIC_IRR_IRQ(2));
     }
 }
 C_VOID core_machine_pic_finalize(t_pic *master, t_pic *slave) {

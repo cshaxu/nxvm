@@ -1,6 +1,6 @@
 /* VM-session-owned binding for the retained single-machine execution loop. */
-#ifndef NTVDM64_VM_SESSION_EXECUTION_CONTEXT_H
-#define NTVDM64_VM_SESSION_EXECUTION_CONTEXT_H
+#ifndef VM_SESSION_EXECUTION_CONTEXT_H
+#define VM_SESSION_EXECUTION_CONTEXT_H
 
 
 #include "type.h"

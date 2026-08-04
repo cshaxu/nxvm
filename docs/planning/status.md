@@ -484,6 +484,11 @@ version/formatting state is replaced with product-entry identity macros and the
 shared core-product banner printer. The retained Console lifecycle gate and
 direct `exit` banner/prompt smoke pass. Artifact: `nxvm_0_5_0189.exe`.
 
+**M5 T190 S1 complete: module-owned internal symbols.** Internal source, test,
+and CMake identifiers use `type`, `core`, `vm`, or `vdm` ownership prefixes.
+The retained NXVM identity and direct Console smoke pass. Artifact:
+`nxvm_0_5_0190.exe`.
+
 The completed executor sequence is defined in
 [Facade And Executor Convergence](m5-facade-executor-convergence.md). The
 active session-readiness sequence is defined in

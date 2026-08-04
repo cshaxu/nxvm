@@ -1,7 +1,7 @@
 /* Copyright 2012-2014 Neko. */
 
-#ifndef NTVDM64_VM_PLATFORM_WIN32_TYPES_H
-#define NTVDM64_VM_PLATFORM_WIN32_TYPES_H
+#ifndef VM_PLATFORM_WIN32_TYPES_H
+#define VM_PLATFORM_WIN32_TYPES_H
 
 #include "type.h"
 

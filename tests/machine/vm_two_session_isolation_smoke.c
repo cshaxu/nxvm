@@ -38,21 +38,21 @@ C_INT main(C_VOID)
     failed |= core_machine_configuration_cpu_execution_borrow(second->core_machine)->instructions != core_machine_configuration_cpu_instructions_borrow(second->core_machine);
 
     core_machine_memory_write_physical(core_machine_configuration_memory_borrow(first->core_machine), 0u,
-        (ntvdm64_type_virtual_address)&first_value, 1u);
+        (type_virtual_address)&first_value, 1u);
     core_machine_memory_write_physical(core_machine_configuration_memory_borrow(second->core_machine), 0u,
-        (ntvdm64_type_virtual_address)&second_value, 1u);
+        (type_virtual_address)&second_value, 1u);
     core_machine_memory_read_physical(core_machine_configuration_memory_borrow(first->core_machine), 0u,
-        (ntvdm64_type_virtual_address)&observed, 1u);
+        (type_virtual_address)&observed, 1u);
     failed |= observed != first_value;
     core_machine_memory_read_physical(core_machine_configuration_memory_borrow(second->core_machine), 0u,
-        (ntvdm64_type_virtual_address)&observed, 1u);
+        (type_virtual_address)&observed, 1u);
     failed |= observed != second_value;
 
     core_machine_configuration_cpu_borrow(first->core_machine)->data.eax = 0x11111111u;
     core_machine_configuration_cpu_borrow(second->core_machine)->data.eax = 0x22222222u;
-    core_machine_configuration_cpu_instructions_borrow(first->core_machine)->data.flagWR = NTVDM64_TYPE_TRUE;
+    core_machine_configuration_cpu_instructions_borrow(first->core_machine)->data.flagWR = TYPE_TRUE;
     failed |= core_machine_configuration_cpu_borrow(second->core_machine)->data.eax != 0x22222222u;
-    failed |= core_machine_configuration_cpu_instructions_borrow(second->core_machine)->data.flagWR != NTVDM64_TYPE_FALSE;
+    failed |= core_machine_configuration_cpu_instructions_borrow(second->core_machine)->data.flagWR != TYPE_FALSE;
 
     vm_session_storage_finalize(second);
     vm_session_storage_finalize(first);

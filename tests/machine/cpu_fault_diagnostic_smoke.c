@@ -22,9 +22,9 @@ C_INT main(C_VOID)
     const core_machine_cpu_execution_point *last;
     STD_SIZE_T index;
 
-    if (core_machine_create(&config, &machine) != NTVDM64_STATUS_OK ||
-        core_machine_freeze_execution_providers(machine) != NTVDM64_STATUS_OK ||
-        core_machine_reset(machine) != NTVDM64_STATUS_OK) goto fail;
+    if (core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
+        core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
+        core_machine_reset(machine) != TYPE_STATUS_OK) goto fail;
     cpu = core_machine_debug_cpu_borrow(machine);
     execution = core_machine_debug_cpu_execution_borrow(machine);
     if (core_machine_cpu_execution_load_segment(execution, &cpu->data.cs, 0u) ||
@@ -38,14 +38,14 @@ C_INT main(C_VOID)
     program[CORE_MACHINE_CPU_DIAGNOSTIC_WINDOW_CAPACITY] = 0xd6u;
     program[CORE_MACHINE_CPU_DIAGNOSTIC_WINDOW_CAPACITY + 1u] = 0x90u;
     if (core_machine_memory_write(machine, 0u, program, sizeof(program)) !=
-        NTVDM64_STATUS_OK) goto fail;
+        TYPE_STATUS_OK) goto fail;
     if (
-        core_machine_run(machine, budget, &result) != NTVDM64_STATUS_OK ||
-        core_machine_get_cpu_diagnostic(machine, &diagnostic) != NTVDM64_STATUS_OK) goto fail;
+        core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
+        core_machine_get_cpu_diagnostic(machine, &diagnostic) != TYPE_STATUS_OK) goto fail;
     last = &diagnostic.recent[diagnostic.recent_count - 1u];
     if (diagnostic.recent_count != CORE_MACHINE_CPU_DIAGNOSTIC_WINDOW_CAPACITY ||
         !diagnostic.first_fault.valid ||
-        !NTVDM64_TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
+        !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
             VCPUINS_EXCEPT_UD) ||
         diagnostic.first_fault.point.linear_pc !=
             CORE_MACHINE_CPU_DIAGNOSTIC_WINDOW_CAPACITY ||

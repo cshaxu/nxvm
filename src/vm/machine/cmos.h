@@ -1,7 +1,7 @@
 /* Copyright 2012-2014 Neko. */
 
-#ifndef NXVM_VM_MACHINE_CMOS_H
-#define NXVM_VM_MACHINE_CMOS_H
+#ifndef VM_MACHINE_CMOS_H
+#define VM_MACHINE_CMOS_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -11,16 +11,16 @@ extern "C" {
 #include "core/machine/cpu.h"
 #include "core/machine/port.h"
 
-#define NXVM_DEVICE_CMOS "DS1302"
+#define VM_MACHINE_DEVICE_CMOS "DS1302"
 
 typedef struct {
-    ntvdm64_type_unsigned_8 reg[0x80]; /* cmos registers */
+    type_unsigned_8 reg[0x80]; /* cmos registers */
     t_cpu *cpu;
     STD_TIME_T last_refresh;
 } t_cmos_connect;
 
 typedef struct {
-    ntvdm64_type_unsigned_8 regId; /* id of specified cmos register*/
+    type_unsigned_8 regId; /* id of specified cmos register*/
 } t_cmos_data;
 
 typedef struct {

@@ -14,20 +14,20 @@ C_INT main(C_VOID)
     C_UCHAR byte = 0x5au;
     C_UCHAR nop = 0x90u;
 
-    if (test_core_machine_create_executor(0u, &machine) != NTVDM64_STATUS_OK ||
-        core_machine_debug_read_cpu(machine, &cpu) != NTVDM64_STATUS_INVALID_STATE ||
-        core_machine_freeze_execution_providers(machine) != NTVDM64_STATUS_OK ||
-        core_machine_reset(machine) != NTVDM64_STATUS_OK ||
-        core_machine_memory_write(machine, 0u, &byte, 1u) != NTVDM64_STATUS_OK ||
-        core_machine_memory_write(machine, 0xffff0u, &nop, 1u) != NTVDM64_STATUS_OK ||
-        core_machine_memory_write(machine, 0xffff1u, &nop, 1u) != NTVDM64_STATUS_OK ||
-        core_machine_debug_read_cpu(machine, &cpu) != NTVDM64_STATUS_OK ||
+    if (test_core_machine_create_executor(0u, &machine) != TYPE_STATUS_OK ||
+        core_machine_debug_read_cpu(machine, &cpu) != TYPE_STATUS_INVALID_STATE ||
+        core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
+        core_machine_reset(machine) != TYPE_STATUS_OK ||
+        core_machine_memory_write(machine, 0u, &byte, 1u) != TYPE_STATUS_OK ||
+        core_machine_memory_write(machine, 0xffff0u, &nop, 1u) != TYPE_STATUS_OK ||
+        core_machine_memory_write(machine, 0xffff1u, &nop, 1u) != TYPE_STATUS_OK ||
+        core_machine_debug_read_cpu(machine, &cpu) != TYPE_STATUS_OK ||
         cpu.cs != 0xf000u || cpu.eip != 0xfff0u ||
-        core_machine_debug_read_memory(machine, 0u, &byte, 1u) != NTVDM64_STATUS_OK ||
+        core_machine_debug_read_memory(machine, 0u, &byte, 1u) != TYPE_STATUS_OK ||
         byte != 0x5au ||
-        core_machine_debug_step(machine, &result) != NTVDM64_STATUS_OK ||
+        core_machine_debug_step(machine, &result) != TYPE_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_BUDGET ||
-        core_machine_debug_continue(machine, budget, &result) != NTVDM64_STATUS_OK ||
+        core_machine_debug_continue(machine, budget, &result) != TYPE_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_BUDGET) {
         core_machine_destroy(machine);
         return 1;

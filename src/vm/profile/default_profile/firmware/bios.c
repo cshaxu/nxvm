@@ -17,32 +17,32 @@
 #include "bios.h"
 
 static C_VOID bios_write_byte(t_ram *ram, uint16_t segment, uint16_t offset,
-    ntvdm64_type_unsigned_8 value)
+    type_unsigned_8 value)
 {
     (C_VOID)core_machine_memory_write_real_to(ram, segment, offset, &value,
         sizeof(value));
 }
 
 static C_VOID bios_write_word(t_ram *ram, uint16_t segment, uint16_t offset,
-    ntvdm64_type_unsigned_16 value)
+    type_unsigned_16 value)
 {
     (C_VOID)core_machine_memory_write_real_to(ram, segment, offset, &value,
         sizeof(value));
 }
 
 static C_VOID bios_write_dword(t_ram *ram, uint16_t segment, uint16_t offset,
-    ntvdm64_type_unsigned_32 value)
+    type_unsigned_32 value)
 {
     (C_VOID)core_machine_memory_write_real_to(ram, segment, offset, &value,
         sizeof(value));
 }
 
-static ntvdm64_type_unsigned_32 assemble(t_ram *ram, const ntvdm64_type_string_pointer stmt, ntvdm64_type_unsigned_16 seg,
-    ntvdm64_type_unsigned_16 off) {
-    ntvdm64_type_unsigned_32 len = 0;
-    ntvdm64_type_unsigned_8 *code = STD_NULL;
-    ntvdm64_type_native_unsigned i;
-    ntvdm64_type_native_unsigned insCount = 0; /* the number of instructions to be assembled */
+static type_unsigned_32 assemble(t_ram *ram, const type_string_pointer stmt, type_unsigned_16 seg,
+    type_unsigned_16 off) {
+    type_unsigned_32 len = 0;
+    type_unsigned_8 *code = STD_NULL;
+    type_native_unsigned i;
+    type_native_unsigned insCount = 0; /* the number of instructions to be assembled */
     for (i = 0; i < STD_STRLEN(stmt); ++i) {
         if (stmt[i] == '\n') {
             insCount++;
@@ -50,9 +50,9 @@ static ntvdm64_type_unsigned_32 assemble(t_ram *ram, const ntvdm64_type_string_p
     }
     if (STD_STRLEN(stmt)) insCount++;
     /* 15 is the maximum length of each instruction */
-    code = NTVDM64_TYPE_POINTER_UNSIGNED_8(STD_MALLOC(
-        15 * insCount * sizeof(ntvdm64_type_unsigned_8)));
-    len = core_product_utils_aasm32x(stmt, code, NTVDM64_TYPE_FALSE);
+    code = TYPE_POINTER_UNSIGNED_8(STD_MALLOC(
+        15 * insCount * sizeof(type_unsigned_8)));
+    len = core_product_utils_aasm32x(stmt, code, TYPE_FALSE);
     if (!len) {
         STD_PRINTF("vbios: invalid x86 assembly instruction.\n");
     }
@@ -88,14 +88,14 @@ static C_VOID bios_load_rom_info(t_ram *ram) {
     bios_write_byte(ram, VBIOS_ADDR_START_SEG, VBIOS_ADDR_ROM_INFO + 9, 0u);
 }
 static C_VOID bios_load_interrupts(t_bios *bios, t_ram *ram) {
-    ntvdm64_type_native_unsigned i;
-    bios->data.buildIP += (ntvdm64_type_unsigned_16)assemble(ram, "iret",
+    type_native_unsigned i;
+    bios->data.buildIP += (type_unsigned_16)assemble(ram, "iret",
         VBIOS_ADDR_START_SEG, VBIOS_ADDR_START_OFF);
     for (i = 0; i < 0x100; ++i) {
         if (bios->connect.intTable[i]) {
             bios_write_word(ram, 0u, i * 4 + 0, bios->data.buildIP);
             bios_write_word(ram, 0u, i * 4 + 2, bios->data.buildCS);
-            bios->data.buildIP += (ntvdm64_type_unsigned_16)assemble(ram,
+            bios->data.buildIP += (type_unsigned_16)assemble(ram,
                 bios->connect.intTable[i], bios->data.buildCS,
                 bios->data.buildIP);
         } else {
@@ -105,15 +105,15 @@ static C_VOID bios_load_interrupts(t_bios *bios, t_ram *ram) {
     }
 }
 static C_VOID bios_load_post(t_bios *bios, t_ram *ram) {
-    ntvdm64_type_native_unsigned i;
-    ntvdm64_type_string_buffer stmt;
+    type_native_unsigned i;
+    type_string_buffer stmt;
     STD_SPRINTF(stmt, "jmp %04x:%04x", bios->data.buildCS, bios->data.buildIP);
     assemble(ram, stmt, VBIOS_ADDR_POST_SEG, VBIOS_ADDR_POST_OFF);
     for (i = 0; i < bios->connect.postCount; ++i) {
-        bios->data.buildIP += (ntvdm64_type_unsigned_16)assemble(ram,
+        bios->data.buildIP += (type_unsigned_16)assemble(ram,
             bios->connect.postTable[i], bios->data.buildCS, bios->data.buildIP);
     }
-    bios->data.buildIP += (ntvdm64_type_unsigned_16)assemble(ram, VBIOS_POST_BOOT,
+    bios->data.buildIP += (type_unsigned_16)assemble(ram, VBIOS_POST_BOOT,
         bios->data.buildCS, bios->data.buildIP);
 }
 static C_VOID bios_load_additional(t_ram *ram,
@@ -124,33 +124,33 @@ static C_VOID bios_load_additional(t_ram *ram,
     bios_write_word(ram, 0u, VBIOS_ADDR_HDD_PARAM_OFFSET, VBIOS_ADDR_HDD_PARAM);
     bios_write_word(ram, 0u, VBIOS_ADDR_HDD_PARAM_SEGMENT, VBIOS_ADDR_START_SEG);
     bios_write_word(ram, VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 0, geometry.cylinders);
-    bios_write_byte(ram, VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 2, NTVDM64_TYPE_MASK_UNSIGNED_8(geometry.heads));
+    bios_write_byte(ram, VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 2, TYPE_MASK_UNSIGNED_8(geometry.heads));
     bios_write_byte(ram, VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 3, 0xa0);
-    bios_write_byte(ram, VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 4, NTVDM64_TYPE_MASK_UNSIGNED_8(geometry.sectors));
-    bios_write_word(ram, VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 5, NTVDM64_TYPE_MAX_UNSIGNED_16);
+    bios_write_byte(ram, VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 4, TYPE_MASK_UNSIGNED_8(geometry.sectors));
+    bios_write_word(ram, VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 5, TYPE_MAX_UNSIGNED_16);
     bios_write_byte(ram, VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 7, 0u);
     bios_write_byte(ram, VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 8, 0x08);
     bios_write_word(ram, VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 9, geometry.cylinders);
-    bios_write_byte(ram, VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 11, NTVDM64_TYPE_MASK_UNSIGNED_8(geometry.heads));
+    bios_write_byte(ram, VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 11, TYPE_MASK_UNSIGNED_8(geometry.heads));
     bios_write_word(ram, VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 12, 0u);
-    bios_write_byte(ram, VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 14, NTVDM64_TYPE_MASK_UNSIGNED_8(geometry.sectors));
+    bios_write_byte(ram, VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 14, TYPE_MASK_UNSIGNED_8(geometry.sectors));
     bios_write_byte(ram, VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 15, 0u);
 }
 
-C_VOID vm_profile_default_bios_add_post(t_bios *bios, ntvdm64_type_string_pointer stmt) {
+C_VOID vm_profile_default_bios_add_post(t_bios *bios, type_string_pointer stmt) {
     if (bios == STD_NULL) return;
     bios->connect.postTable[bios->connect.postCount++] = stmt;
 }
-C_VOID vm_profile_default_bios_add_interrupt(t_bios *bios, ntvdm64_type_string_pointer stmt,
-    ntvdm64_type_unsigned_8 intid) {
+C_VOID vm_profile_default_bios_add_interrupt(t_bios *bios, type_string_pointer stmt,
+    type_unsigned_8 intid) {
     if (bios == STD_NULL) return;
     bios->connect.intTable[intid] = stmt;
 }
 C_VOID vm_profile_default_bios_initialize(t_bios *bios) {
     if (bios == STD_NULL) return;
-    STD_MEMSET((C_VOID *)bios, NTVDM64_TYPE_ZERO_8, sizeof(*bios));
-    bios->flagBoot = NTVDM64_TYPE_FALSE;
-    bios->data.buildCS = bios->data.buildIP = NTVDM64_TYPE_ZERO_16;
+    STD_MEMSET((C_VOID *)bios, TYPE_ZERO_8, sizeof(*bios));
+    bios->flagBoot = TYPE_FALSE;
+    bios->data.buildCS = bios->data.buildIP = TYPE_ZERO_16;
     vm_profile_default_bios_add_interrupt(bios, VBIOS_INT_SOFT_MISC_11, 0x11);
     vm_profile_default_bios_add_interrupt(bios, VBIOS_INT_SOFT_MISC_12, 0x12);
     vm_profile_default_bios_add_interrupt(bios, VBIOS_INT_SOFT_MISC_15, 0x15);
@@ -160,7 +160,7 @@ C_VOID vm_profile_default_bios_initialize(t_bios *bios) {
 C_VOID vm_profile_default_bios_reset(t_bios *bios, t_ram *ram,
     const core_machine_block_provider_slot *block_provider) {
     if (bios == STD_NULL || ram == STD_NULL) return;
-    STD_MEMSET((C_VOID *)(&bios->data), NTVDM64_TYPE_ZERO_8, sizeof(t_bios_data));
+    STD_MEMSET((C_VOID *)(&bios->data), TYPE_ZERO_8, sizeof(t_bios_data));
     /* bios area starts at f000:0000 */
     bios->data.buildCS = VBIOS_ADDR_START_SEG;
     bios->data.buildIP = VBIOS_ADDR_START_OFF;

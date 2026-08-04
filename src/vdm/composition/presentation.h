@@ -1,5 +1,5 @@
-#ifndef NXVM_ADAPTERS_DOS_MINIMAL_PRESENTATION_H
-#define NXVM_ADAPTERS_DOS_MINIMAL_PRESENTATION_H
+#ifndef VDM_COMPOSITION_DOS_MINIMAL_PRESENTATION_H
+#define VDM_COMPOSITION_DOS_MINIMAL_PRESENTATION_H
 
 #include "type.h"
 
@@ -18,15 +18,15 @@ typedef struct vdm_presentation_snapshot {
     core_machine_text_snapshot text;
 } vdm_presentation_snapshot;
 
-ntvdm64_status vdm_presentation_create(
+type_status vdm_presentation_create(
     vdm_session *session,
     vdm_presentation **out_presentation);
-ntvdm64_status vdm_presentation_enqueue_input(
+type_status vdm_presentation_enqueue_input(
     vdm_presentation *presentation,
     vdm_composition_input_event event);
-ntvdm64_status vdm_presentation_apply_input(
+type_status vdm_presentation_apply_input(
     vdm_presentation *presentation);
-ntvdm64_status vdm_presentation_capture_text(
+type_status vdm_presentation_capture_text(
     vdm_presentation *presentation,
     uint64_t timestamp,
     vdm_presentation_snapshot *out_snapshot);

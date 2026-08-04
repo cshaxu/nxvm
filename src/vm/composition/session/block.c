@@ -17,13 +17,13 @@ static C_VOID vmBlockGeometry(C_VOID *context, core_machine_block_geometry *out_
     out_geometry->bytes_per_sector = hdd->data.nbyte;
 }
 
-static C_INT vmBlockTransfer(C_VOID *context, ntvdm64_type_unsigned_8 cylinder, ntvdm64_type_unsigned_8 head,
-    ntvdm64_type_unsigned_8 sector, C_VOID *buffer, ntvdm64_type_native_unsigned byte_count, C_INT write)
+static C_INT vmBlockTransfer(C_VOID *context, type_unsigned_8 cylinder, type_unsigned_8 head,
+    type_unsigned_8 sector, C_VOID *buffer, type_native_unsigned byte_count, C_INT write)
 {
     t_hdd *hdd = (t_hdd *)context;
-    if (hdd == STD_NULL || !hdd->connect.flagDiskExist || sector == NTVDM64_TYPE_ZERO_8 ||
+    if (hdd == STD_NULL || !hdd->connect.flagDiskExist || sector == TYPE_ZERO_8 ||
         head >= hdd->data.nhead || sector > hdd->data.nsector ||
-        cylinder >= hdd->data.ncyl || byte_count > hdd->data.nbyte * NTVDM64_TYPE_MAX_UNSIGNED_8) return NTVDM64_TYPE_FALSE;
+        cylinder >= hdd->data.ncyl || byte_count > hdd->data.nbyte * TYPE_MAX_UNSIGNED_8) return TYPE_FALSE;
     hdd->data.cyl = cylinder;
     hdd->data.head = head;
     hdd->data.sector = sector;
@@ -32,19 +32,19 @@ static C_INT vmBlockTransfer(C_VOID *context, ntvdm64_type_unsigned_8 cylinder, 
         hdd->data.nsector + (hdd->data.sector - 1)) * hdd->data.nbyte;
     if (write) STD_MEMCPY((C_VOID *)hdd->connect.pCurrByte, buffer, byte_count);
     else STD_MEMCPY(buffer, (C_VOID *)hdd->connect.pCurrByte, byte_count);
-    return NTVDM64_TYPE_TRUE;
+    return TYPE_TRUE;
 }
 
-static C_INT vmBlockRead(C_VOID *context, ntvdm64_type_unsigned_8 cylinder, ntvdm64_type_unsigned_8 head,
-    ntvdm64_type_unsigned_8 sector, C_VOID *buffer, ntvdm64_type_native_unsigned byte_count)
+static C_INT vmBlockRead(C_VOID *context, type_unsigned_8 cylinder, type_unsigned_8 head,
+    type_unsigned_8 sector, C_VOID *buffer, type_native_unsigned byte_count)
 {
-    return vmBlockTransfer(context, cylinder, head, sector, buffer, byte_count, NTVDM64_TYPE_FALSE);
+    return vmBlockTransfer(context, cylinder, head, sector, buffer, byte_count, TYPE_FALSE);
 }
 
-static C_INT vmBlockWrite(C_VOID *context, ntvdm64_type_unsigned_8 cylinder, ntvdm64_type_unsigned_8 head,
-    ntvdm64_type_unsigned_8 sector, C_VOID *buffer, ntvdm64_type_native_unsigned byte_count)
+static C_INT vmBlockWrite(C_VOID *context, type_unsigned_8 cylinder, type_unsigned_8 head,
+    type_unsigned_8 sector, C_VOID *buffer, type_native_unsigned byte_count)
 {
-    return vmBlockTransfer(context, cylinder, head, sector, buffer, byte_count, NTVDM64_TYPE_TRUE);
+    return vmBlockTransfer(context, cylinder, head, sector, buffer, byte_count, TYPE_TRUE);
 }
 
 C_VOID vm_session_bind_block(vm_session *machine)

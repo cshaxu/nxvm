@@ -1,7 +1,7 @@
 /* Copyright 2012-2014 Neko. */
 
-#ifndef NXVM_QDKEYB_H
-#define NXVM_QDKEYB_H
+#ifndef VM_PROFILE_DEFAULT_QDKEYB_H
+#define VM_PROFILE_DEFAULT_QDKEYB_H
 
 #ifdef __cplusplus
 extern "C" {

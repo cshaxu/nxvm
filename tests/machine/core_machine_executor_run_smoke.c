@@ -10,28 +10,28 @@ C_INT main(C_VOID)
     core_machine_run_budget budget = {1u, 0u};
     core_machine_run_result result;
     core_machine *machine = STD_NULL;
-    ntvdm64_type_unsigned_8 halt = 0xf4u;
+    type_unsigned_8 halt = 0xf4u;
 
-    if (core_machine_create(&config, &machine) != NTVDM64_STATUS_OK) {
+    if (core_machine_create(&config, &machine) != TYPE_STATUS_OK) {
         core_machine_destroy(machine);
         return 1;
     }
     if (core_machine_memory_register_mapping(
             core_machine_configuration_memory_borrow(machine), 0xfffffff0u,
-            0x000ffff0u, 16u) != NTVDM64_STATUS_OK ||
-        core_machine_freeze_execution_providers(machine) != NTVDM64_STATUS_OK ||
-        core_machine_reset(machine) != NTVDM64_STATUS_OK) {
+            0x000ffff0u, 16u) != TYPE_STATUS_OK ||
+        core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
+        core_machine_reset(machine) != TYPE_STATUS_OK) {
         core_machine_destroy(machine);
         return 1;
     }
     if (core_machine_memory_write(machine, 0xfffffff0u, &halt, 1u) !=
-        NTVDM64_STATUS_OK) {
+        TYPE_STATUS_OK) {
         core_machine_destroy(machine);
         return 1;
     }
-    if (core_machine_run(machine, budget, &result) != NTVDM64_STATUS_OK ||
+    if (core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
         result.executed != 1u || result.reason != CORE_MACHINE_STOP_BUDGET ||
-        core_machine_run(machine, budget, &result) != NTVDM64_STATUS_OK ||
+        core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
         core_machine_destroy(machine);
         return 1;

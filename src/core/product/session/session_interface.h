@@ -1,5 +1,5 @@
-#ifndef NTVDM64_CORE_PRODUCT_SESSION_INTERFACE_H
-#define NTVDM64_CORE_PRODUCT_SESSION_INTERFACE_H
+#ifndef CORE_PRODUCT_SESSION_INTERFACE_H
+#define CORE_PRODUCT_SESSION_INTERFACE_H
 
 #include "type.h"
 
@@ -36,27 +36,27 @@ typedef struct core_product_session_snapshot {
 typedef struct core_product_session_manager core_product_session_manager;
 typedef struct core_product_session_provider core_product_session_provider;
 
-ntvdm64_status core_product_session_manager_create(
+type_status core_product_session_manager_create(
     const core_product_session_provider *provider,
     core_product_session_manager **out_manager);
 C_VOID core_product_session_manager_destroy(core_product_session_manager *manager);
-ntvdm64_status core_product_session_manager_open(
+type_status core_product_session_manager_open(
     core_product_session_manager *manager, core_product_session_id *out_id);
-ntvdm64_status core_product_session_manager_open_with_options(
+type_status core_product_session_manager_open_with_options(
     core_product_session_manager *manager,
     const core_product_session_open_options *options,
     core_product_session_id *out_id);
-ntvdm64_status core_product_session_manager_close(
+type_status core_product_session_manager_close(
     core_product_session_manager *manager, core_product_session_id id);
-ntvdm64_status core_product_session_manager_select(
+type_status core_product_session_manager_select(
     core_product_session_manager *manager, core_product_session_id id);
-ntvdm64_status core_product_session_manager_get_selected_id(
+type_status core_product_session_manager_get_selected_id(
     const core_product_session_manager *manager, core_product_session_id *out_id);
-ntvdm64_status core_product_session_manager_get_count(
+type_status core_product_session_manager_get_count(
     const core_product_session_manager *manager, STD_SIZE_T *out_count);
-ntvdm64_status core_product_session_manager_borrow_selected(
+type_status core_product_session_manager_borrow_selected(
     core_product_session_manager *manager, C_VOID **out_session);
-ntvdm64_status core_product_session_manager_list(
+type_status core_product_session_manager_list(
     const core_product_session_manager *manager,
     core_product_session_snapshot *out_snapshots, STD_SIZE_T capacity,
     STD_SIZE_T *out_count);

@@ -466,21 +466,21 @@ C_VOID lnxcDisplayPaint(const vm_platform_run_context *context) {
     lnxcdispPaint((vm_platform_run_context *)context, 1);
 }
 
-ntvdm64_status vm_platform_linuxcon_run_handle_start(
+type_status vm_platform_linuxcon_run_handle_start(
     const vm_platform_run_context *context, vm_platform_run_handle *owner) {
     linuxcon_run_handle *handle;
     C_INT old_flip;
 
     if (context == STD_NULL || owner == STD_NULL || owner->active ||
         context->execution == STD_NULL || context->keyboard == STD_NULL) {
-        return NTVDM64_STATUS_INVALID_ARGUMENT;
+        return TYPE_STATUS_INVALID_ARGUMENT;
     }
     if (core_platform_host_surface_lease_acquire(&linux_terminal_lease,
-            context) != NTVDM64_STATUS_OK) return NTVDM64_STATUS_INVALID_STATE;
+            context) != TYPE_STATUS_OK) return TYPE_STATUS_INVALID_STATE;
     handle = (linuxcon_run_handle *)STD_CALLOC(1u, sizeof(*handle));
     if (handle == STD_NULL) {
         core_platform_host_surface_lease_release(&linux_terminal_lease, context);
-        return NTVDM64_STATUS_NO_MEMORY;
+        return TYPE_STATUS_NO_MEMORY;
     }
     handle->owner = owner;
     handle->platform = context;
@@ -492,7 +492,7 @@ ntvdm64_status vm_platform_linuxcon_run_handle_start(
     if (pthread_create(&handle->kernel_thread, STD_NULL, linuxcon_kernel_thread,
             handle) != 0) {
         vm_platform_linuxcon_run_handle_finalize(owner);
-        return NTVDM64_STATUS_INVALID_STATE;
+        return TYPE_STATUS_INVALID_STATE;
     }
     handle->kernel_started = 1;
     while (old_flip ==
@@ -504,10 +504,10 @@ ntvdm64_status vm_platform_linuxcon_run_handle_start(
         vm_platform_linuxcon_run_handle_request_stop(owner);
         vm_platform_linuxcon_run_handle_join(owner);
         vm_platform_linuxcon_run_handle_finalize(owner);
-        return NTVDM64_STATUS_INVALID_STATE;
+        return TYPE_STATUS_INVALID_STATE;
     }
     handle->display_started = 1;
-    return NTVDM64_STATUS_OK;
+    return TYPE_STATUS_OK;
 }
 
 C_VOID vm_platform_linuxcon_run_handle_request_stop(vm_platform_run_handle *owner) {

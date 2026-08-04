@@ -4,7 +4,7 @@
 C_VOID core_machine_block_provider_slot_initialize(
     core_machine_block_provider_slot *slot)
 {
-    if (slot != STD_NULL) STD_MEMSET(slot, NTVDM64_TYPE_ZERO_8, sizeof(*slot));
+    if (slot != STD_NULL) STD_MEMSET(slot, TYPE_ZERO_8, sizeof(*slot));
 }
 
 C_VOID core_machine_block_provider_slot_bind(
@@ -23,13 +23,13 @@ C_VOID core_machine_block_provider_slot_bind(
 C_VOID core_machine_block_provider_slot_freeze(
     core_machine_block_provider_slot *slot)
 {
-    if (slot != STD_NULL) slot->frozen = NTVDM64_TYPE_TRUE;
+    if (slot != STD_NULL) slot->frozen = TYPE_TRUE;
 }
 
 C_VOID core_machine_block_provider_slot_finalize(
     core_machine_block_provider_slot *slot)
 {
-    if (slot != STD_NULL) STD_MEMSET(slot, NTVDM64_TYPE_ZERO_8, sizeof(*slot));
+    if (slot != STD_NULL) STD_MEMSET(slot, TYPE_ZERO_8, sizeof(*slot));
 }
 
 C_VOID core_machine_block_get_geometry_from(
@@ -37,15 +37,15 @@ C_VOID core_machine_block_get_geometry_from(
     core_machine_block_geometry *out_geometry)
 {
     if (out_geometry == STD_NULL) return;
-    STD_MEMSET(out_geometry, NTVDM64_TYPE_ZERO_8, sizeof(*out_geometry));
+    STD_MEMSET(out_geometry, TYPE_ZERO_8, sizeof(*out_geometry));
     if (slot != STD_NULL && slot->geometry_provider != STD_NULL) {
         slot->geometry_provider(slot->context, out_geometry);
     }
 }
 
 C_INT core_machine_block_read_from(const core_machine_block_provider_slot *slot,
-    ntvdm64_type_unsigned_8 cylinder, ntvdm64_type_unsigned_8 head, ntvdm64_type_unsigned_8 sector, C_VOID *buffer,
-    ntvdm64_type_native_unsigned byte_count)
+    type_unsigned_8 cylinder, type_unsigned_8 head, type_unsigned_8 sector, C_VOID *buffer,
+    type_native_unsigned byte_count)
 {
     return slot != STD_NULL && slot->read_provider != STD_NULL &&
         slot->read_provider(slot->context, cylinder, head, sector, buffer,
@@ -53,8 +53,8 @@ C_INT core_machine_block_read_from(const core_machine_block_provider_slot *slot,
 }
 
 C_INT core_machine_block_write_from(const core_machine_block_provider_slot *slot,
-    ntvdm64_type_unsigned_8 cylinder, ntvdm64_type_unsigned_8 head, ntvdm64_type_unsigned_8 sector, C_VOID *buffer,
-    ntvdm64_type_native_unsigned byte_count)
+    type_unsigned_8 cylinder, type_unsigned_8 head, type_unsigned_8 sector, C_VOID *buffer,
+    type_native_unsigned byte_count)
 {
     return slot != STD_NULL && slot->write_provider != STD_NULL &&
         slot->write_provider(slot->context, cylinder, head, sector, buffer,

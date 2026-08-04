@@ -1,7 +1,7 @@
 /* Copyright 2012-2014 Neko. */
 
-#ifndef NXVM_WIN32_H
-#define NXVM_WIN32_H
+#ifndef VM_PLATFORM_WIN32_H
+#define VM_PLATFORM_WIN32_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -21,7 +21,7 @@ C_VOID vm_platform_win32_display_set_screen(WIN32_BOOL flagWindow,
                            const vm_platform_run_context *context);
 C_VOID vm_platform_win32_display_paint(WIN32_BOOL flagWindow,
                        const vm_platform_run_context *context);
-ntvdm64_status vm_platform_win32_run_handle_start(
+type_status vm_platform_win32_run_handle_start(
     const vm_platform_run_context *context, vm_platform_run_handle *handle);
 C_VOID vm_platform_win32_run_handle_request_stop(vm_platform_run_handle *handle);
 C_VOID vm_platform_win32_run_handle_join(vm_platform_run_handle *handle);

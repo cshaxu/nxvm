@@ -24,12 +24,12 @@
 
 #include "vm/composition/session/session.h"
 
-struct nxvm_cpu_probe {
+struct test_vm_cpu_probe {
     C_INT active;
     vm_session machine;
 };
 
-static C_INT vm_session_cpu_probe_capture_state(const nxvm_cpu_probe *probe,
+static C_INT vm_session_cpu_probe_capture_state(const test_vm_cpu_probe *probe,
     vm_session_cpu_probe_state *state)
 {
     const t_cpu *cpu = probe == STD_NULL ? STD_NULL :
@@ -49,7 +49,7 @@ static C_INT vm_session_cpu_probe_capture_state(const nxvm_cpu_probe *probe,
     return 1;
 }
 
-static C_INT vm_session_cpu_probe_reset(nxvm_cpu_probe *probe)
+static C_INT vm_session_cpu_probe_reset(test_vm_cpu_probe *probe)
 {
     uint32_t eip = 0u;
 
@@ -68,15 +68,15 @@ static C_INT vm_session_cpu_probe_reset(nxvm_cpu_probe *probe)
     return 1;
 }
 
-C_INT vm_session_cpu_probe_create(nxvm_cpu_probe **out_probe)
+C_INT vm_session_cpu_probe_create(test_vm_cpu_probe **out_probe)
 {
-    nxvm_cpu_probe *probe;
+    test_vm_cpu_probe *probe;
 
     if (out_probe == STD_NULL) {
         return 0;
     }
     *out_probe = STD_NULL;
-    probe = (nxvm_cpu_probe *)STD_CALLOC(1u, sizeof(*probe));
+    probe = (test_vm_cpu_probe *)STD_CALLOC(1u, sizeof(*probe));
     if (probe == STD_NULL) return 0;
     vm_session_storage_initialize(&probe->machine);
     vm_session_control_initialize(probe->machine.control, &probe->machine);
@@ -90,13 +90,13 @@ C_INT vm_session_cpu_probe_create(nxvm_cpu_probe **out_probe)
 }
 
 C_INT vm_session_cpu_probe_step(
-    nxvm_cpu_probe *probe,
+    test_vm_cpu_probe *probe,
     const uint8_t *bytes,
     STD_SIZE_T byte_count,
     vm_session_cpu_probe_capture *out_capture)
 {
     if (probe == STD_NULL || !probe->active || bytes == STD_NULL || out_capture == STD_NULL ||
-        byte_count == 0u || byte_count > NXVM_BASELINE_CPU_PROBE_MAX_BYTES ||
+        byte_count == 0u || byte_count > TEST_VM_CPU_PROBE_MAX_BYTES ||
         !vm_session_cpu_probe_reset(probe)) {
         return 0;
     }
@@ -115,7 +115,7 @@ C_INT vm_session_cpu_probe_step(
         core_machine_run_result result;
 
         if (core_machine_run(probe->machine.core_machine, budget, &result) !=
-                NTVDM64_STATUS_OK || result.executed != 1u) {
+                TYPE_STATUS_OK || result.executed != 1u) {
             return 0;
         }
     }
@@ -129,7 +129,7 @@ C_INT vm_session_cpu_probe_step(
     return 1;
 }
 
-C_VOID vm_session_cpu_probe_destroy(nxvm_cpu_probe *probe)
+C_VOID vm_session_cpu_probe_destroy(test_vm_cpu_probe *probe)
 {
     if (probe != STD_NULL && probe->active) {
         vm_session_control_finalize(probe->machine.control, &probe->machine);

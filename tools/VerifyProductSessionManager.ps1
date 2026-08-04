@@ -12,7 +12,7 @@ $failures = @()
 if ($manager -notmatch 'core_product_session_manager_create[\s\S]*core_product_session_manager_open\(manager, STD_NULL\)') {
     $failures += 'manager create does not establish session 0 before success'
 }
-if ($manager -notmatch 'manager->count <= 1u\) return NTVDM64_STATUS_INVALID_STATE') {
+if ($manager -notmatch 'manager->count <= 1u\) return TYPE_STATUS_INVALID_STATE') {
     $failures += 'manager close does not reject the final session'
 }
 if ($manager -match '(?m)^\s*static\s+(?!C_INT\s+core_product_session_manager_find)') {

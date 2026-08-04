@@ -9,20 +9,20 @@
 #include "core/machine/port.h"
 
 /* Allocates memory for virtual machine ram */
-static ntvdm64_type_unsigned_32 core_machine_memory_wrap_a20(const t_ram *ram,
-    ntvdm64_type_unsigned_32 offset)
+static type_unsigned_32 core_machine_memory_wrap_a20(const t_ram *ram,
+    type_unsigned_32 offset)
 {
-    return offset & (ram->data.flagA20 ? NTVDM64_TYPE_MAX_UNSIGNED_32 : ~VRAM_BIT_A20);
+    return offset & (ram->data.flagA20 ? TYPE_MAX_UNSIGNED_32 : ~VRAM_BIT_A20);
 }
 
-static ntvdm64_status core_machine_memory_offset(const t_ram *ram,
-    ntvdm64_type_unsigned_32 physical, STD_SIZE_T size, STD_SIZE_T *out_offset)
+static type_status core_machine_memory_offset(const t_ram *ram,
+    type_unsigned_32 physical, STD_SIZE_T size, STD_SIZE_T *out_offset)
 {
     STD_SIZE_T offset;
-    ntvdm64_type_native_unsigned index;
+    type_native_unsigned index;
 
     if (ram == STD_NULL || out_offset == STD_NULL || ram->connect.backing == 0u) {
-        return NTVDM64_STATUS_INVALID_ARGUMENT;
+        return TYPE_STATUS_INVALID_ARGUMENT;
     }
     offset = (STD_SIZE_T)core_machine_memory_wrap_a20(ram, physical);
     for (index = 0u; index < ram->connect.mapping_count; ++index) {
@@ -36,105 +36,105 @@ static ntvdm64_status core_machine_memory_offset(const t_ram *ram,
     }
     if (offset > ram->connect.installed_bytes ||
         size > ram->connect.installed_bytes - offset) {
-        return NTVDM64_STATUS_FAULT;
+        return TYPE_STATUS_FAULT;
     }
     *out_offset = offset;
-    return NTVDM64_STATUS_OK;
+    return TYPE_STATUS_OK;
 }
 
 /* Allocates one core-owned RAM backing. Callers retain the t_ram, never backing. */
-ntvdm64_status core_machine_memory_allocate_for(t_ram *ram, STD_SIZE_T bytes) {
+type_status core_machine_memory_allocate_for(t_ram *ram, STD_SIZE_T bytes) {
     C_VOID *backing;
 
-    if (ram == STD_NULL || bytes == 0u) return NTVDM64_STATUS_INVALID_ARGUMENT;
+    if (ram == STD_NULL || bytes == 0u) return TYPE_STATUS_INVALID_ARGUMENT;
     backing = STD_CALLOC(1u, bytes);
-    if (backing == STD_NULL) return NTVDM64_STATUS_NO_MEMORY;
+    if (backing == STD_NULL) return TYPE_STATUS_NO_MEMORY;
     STD_FREE((C_VOID *)ram->connect.backing);
-    ram->connect.backing = (ntvdm64_type_virtual_address)backing;
+    ram->connect.backing = (type_virtual_address)backing;
     ram->connect.installed_bytes = bytes;
     ram->connect.backing_capacity = bytes;
-    return NTVDM64_STATUS_OK;
+    return TYPE_STATUS_OK;
 }
 
-ntvdm64_status core_machine_memory_register_mapping(t_ram *ram,
-    ntvdm64_type_unsigned_32 physical_start,
-    ntvdm64_type_unsigned_32 backing_start, STD_SIZE_T bytes)
+type_status core_machine_memory_register_mapping(t_ram *ram,
+    type_unsigned_32 physical_start,
+    type_unsigned_32 backing_start, STD_SIZE_T bytes)
 {
     core_machine_memory_mapping *mapping;
 
     if (ram == STD_NULL || ram->connect.mappings_frozen || bytes == 0u ||
         backing_start > ram->connect.installed_bytes ||
         bytes > ram->connect.installed_bytes - backing_start) {
-        return NTVDM64_STATUS_INVALID_ARGUMENT;
+        return TYPE_STATUS_INVALID_ARGUMENT;
     }
     if (ram->connect.mapping_count >= CORE_MACHINE_MEMORY_MAPPING_CAPACITY) {
-        return NTVDM64_STATUS_NO_MEMORY;
+        return TYPE_STATUS_NO_MEMORY;
     }
     mapping = &ram->connect.mappings[ram->connect.mapping_count++];
     mapping->physical_start = physical_start;
     mapping->backing_start = backing_start;
     mapping->bytes = bytes;
-    return NTVDM64_STATUS_OK;
+    return TYPE_STATUS_OK;
 }
 
 C_VOID core_machine_memory_freeze_mappings(t_ram *ram)
 {
-    if (ram != STD_NULL) ram->connect.mappings_frozen = NTVDM64_TYPE_TRUE;
+    if (ram != STD_NULL) ram->connect.mappings_frozen = TYPE_TRUE;
 }
-static C_VOID core_machine_memory_read_a20(t_port *port, ntvdm64_type_unsigned_16 port_id,
+static C_VOID core_machine_memory_read_a20(t_port *port, type_unsigned_16 port_id,
     C_VOID *owner)
 {
     t_ram *ram = (t_ram *)owner;
 
     (C_VOID)port_id;
     if (ram == STD_NULL) return;
-    port->data.ioByte = ram->data.flagA20 ? VRAM_FLAG_A20 : NTVDM64_TYPE_ZERO_8;
+    port->data.ioByte = ram->data.flagA20 ? VRAM_FLAG_A20 : TYPE_ZERO_8;
 }
-static C_VOID core_machine_memory_write_a20(t_port *port, ntvdm64_type_unsigned_16 port_id,
+static C_VOID core_machine_memory_write_a20(t_port *port, type_unsigned_16 port_id,
     C_VOID *owner)
 {
     t_ram *ram = (t_ram *)owner;
 
     (C_VOID)port_id;
     if (ram == STD_NULL) return;
-    ram->data.flagA20 = NTVDM64_TYPE_GET_BIT(port->data.ioByte, VRAM_FLAG_A20);
+    ram->data.flagA20 = TYPE_GET_BIT(port->data.ioByte, VRAM_FLAG_A20);
 }
 
-ntvdm64_status core_machine_memory_read_physical(t_ram *ram, ntvdm64_type_unsigned_32 physical,
-    ntvdm64_type_virtual_address destination, ntvdm64_type_native_unsigned byte)
+type_status core_machine_memory_read_physical(t_ram *ram, type_unsigned_32 physical,
+    type_virtual_address destination, type_native_unsigned byte)
 {
     STD_SIZE_T offset;
-    ntvdm64_status status = core_machine_memory_offset(ram, physical, byte, &offset);
+    type_status status = core_machine_memory_offset(ram, physical, byte, &offset);
 
-    if (status != NTVDM64_STATUS_OK || destination == 0u) return status;
+    if (status != TYPE_STATUS_OK || destination == 0u) return status;
     STD_MEMCPY((C_VOID *)destination,
         (C_VOID *)(ram->connect.backing + offset), byte);
-    return NTVDM64_STATUS_OK;
+    return TYPE_STATUS_OK;
 }
-ntvdm64_status core_machine_memory_write_physical(t_ram *ram, ntvdm64_type_unsigned_32 physical,
-    ntvdm64_type_virtual_address source, ntvdm64_type_native_unsigned byte)
+type_status core_machine_memory_write_physical(t_ram *ram, type_unsigned_32 physical,
+    type_virtual_address source, type_native_unsigned byte)
 {
     STD_SIZE_T offset;
-    ntvdm64_status status = core_machine_memory_offset(ram, physical, byte, &offset);
+    type_status status = core_machine_memory_offset(ram, physical, byte, &offset);
 
-    if (status != NTVDM64_STATUS_OK || source == 0u) return status;
+    if (status != TYPE_STATUS_OK || source == 0u) return status;
     STD_MEMCPY((C_VOID *)(ram->connect.backing + offset),
         (C_VOID *)source, byte);
-    return NTVDM64_STATUS_OK;
+    return TYPE_STATUS_OK;
 }
 
 C_VOID core_machine_memory_initialize(t_ram *ram)
 {
     if (ram == STD_NULL) return;
-    STD_MEMSET((C_VOID *)ram, NTVDM64_TYPE_ZERO_8, sizeof(*ram));
+    STD_MEMSET((C_VOID *)ram, TYPE_ZERO_8, sizeof(*ram));
     (C_VOID)core_machine_memory_allocate_for(ram, 1u << 24);
 }
 
 C_VOID core_machine_memory_reset(t_ram *ram)
 {
     if (ram == STD_NULL || ram->connect.backing == 0u) return;
-    STD_MEMSET((C_VOID *)&ram->data, NTVDM64_TYPE_ZERO_8, sizeof(ram->data));
-    STD_MEMSET((C_VOID *)ram->connect.backing, NTVDM64_TYPE_ZERO_8,
+    STD_MEMSET((C_VOID *)&ram->data, TYPE_ZERO_8, sizeof(ram->data));
+    STD_MEMSET((C_VOID *)ram->connect.backing, TYPE_ZERO_8,
         ram->connect.backing_capacity);
 }
 
@@ -157,26 +157,26 @@ C_VOID core_machine_memory_register_ports(t_ram *ram, t_port *port)
         core_machine_memory_write_a20, ram);
 }
 
-ntvdm64_status core_machine_memory_read_real_from(t_ram *ram, uint16_t segment,
+type_status core_machine_memory_read_real_from(t_ram *ram, uint16_t segment,
     uint16_t offset, C_VOID *out_data, STD_SIZE_T size)
 {
-    ntvdm64_type_unsigned_32 physical;
+    type_unsigned_32 physical;
 
-    if (ram == STD_NULL || out_data == STD_NULL) return NTVDM64_STATUS_INVALID_ARGUMENT;
+    if (ram == STD_NULL || out_data == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     physical = core_machine_memory_wrap_a20(ram,
-        (NTVDM64_TYPE_MASK_UNSIGNED_16(segment) << 4) + NTVDM64_TYPE_MASK_UNSIGNED_16(offset));
+        (TYPE_MASK_UNSIGNED_16(segment) << 4) + TYPE_MASK_UNSIGNED_16(offset));
     return core_machine_memory_read_physical(ram, physical,
-        (ntvdm64_type_virtual_address)out_data, size);
+        (type_virtual_address)out_data, size);
 }
 
-ntvdm64_status core_machine_memory_write_real_to(t_ram *ram, uint16_t segment,
+type_status core_machine_memory_write_real_to(t_ram *ram, uint16_t segment,
     uint16_t offset, const C_VOID *in_data, STD_SIZE_T size)
 {
-    ntvdm64_type_unsigned_32 physical;
+    type_unsigned_32 physical;
 
-    if (ram == STD_NULL || in_data == STD_NULL) return NTVDM64_STATUS_INVALID_ARGUMENT;
+    if (ram == STD_NULL || in_data == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     physical = core_machine_memory_wrap_a20(ram,
-        (NTVDM64_TYPE_MASK_UNSIGNED_16(segment) << 4) + NTVDM64_TYPE_MASK_UNSIGNED_16(offset));
+        (TYPE_MASK_UNSIGNED_16(segment) << 4) + TYPE_MASK_UNSIGNED_16(offset));
     return core_machine_memory_write_physical(ram, physical,
-        (ntvdm64_type_virtual_address)in_data, size);
+        (type_virtual_address)in_data, size);
 }

@@ -5,7 +5,7 @@
 
 #include "core/machine/memory.h"
 
-ntvdm64_status vm_profile_default_firmware_compose(
+type_status vm_profile_default_firmware_compose(
     core_machine_firmware *firmware, vm_profile_default_firmware_plan *out_plan)
 {
     static const core_machine_firmware_service_descriptor services[] = {
@@ -17,43 +17,43 @@ ntvdm64_status vm_profile_default_firmware_compose(
         { "bios.int1a.clock", CORE_MACHINE_FIRMWARE_SERVICE_INTERRUPT, 60u, 0x1au }
     };
     STD_SIZE_T index;
-    ntvdm64_status status;
+    type_status status;
 
-    if (firmware == STD_NULL || out_plan == STD_NULL) return NTVDM64_STATUS_INVALID_ARGUMENT;
+    if (firmware == STD_NULL || out_plan == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     for (index = 0u; index < sizeof(services) / sizeof(services[0]); ++index) {
         status = core_machine_firmware_register_service(firmware, &services[index]);
-        if (status != NTVDM64_STATUS_OK) return status;
+        if (status != TYPE_STATUS_OK) return status;
     }
     out_plan->reset_segment = 0xf000u;
     out_plan->reset_offset = 0xfff0u;
     out_plan->service_count = (C_UINT)(sizeof(services) / sizeof(services[0]));
-    return NTVDM64_STATUS_OK;
+    return TYPE_STATUS_OK;
 }
 
-ntvdm64_status vm_profile_default_firmware_apply_image(
+type_status vm_profile_default_firmware_apply_image(
     core_machine *machine, C_INT boot_hdd)
 {
     static const uint8_t reset_stub[] = { 0xeau, 0x00u, 0x00u, 0x00u, 0xf0u };
     uint8_t value;
     uint16_t word;
-    ntvdm64_status status;
+    type_status status;
 
-    if (machine == STD_NULL) return NTVDM64_STATUS_INVALID_ARGUMENT;
+    if (machine == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     word = 0x03f8u;
     status = core_machine_memory_write(machine, 0x0400u, &word, sizeof(word));
-    if (status != NTVDM64_STATUS_OK) return status;
+    if (status != TYPE_STATUS_OK) return status;
     word = 0x027fu;
     status = core_machine_memory_write(machine, 0x0413u, &word, sizeof(word));
-    if (status != NTVDM64_STATUS_OK) return status;
+    if (status != TYPE_STATUS_OK) return status;
     value = boot_hdd ? 0x80u : 0u;
     status = core_machine_memory_write(machine, 0x0472u, &value, sizeof(value));
-    if (status != NTVDM64_STATUS_OK) return status;
+    if (status != TYPE_STATUS_OK) return status;
     value = 0x55u;
     status = core_machine_memory_write(machine, 0xf0000u, &value, sizeof(value));
-    if (status != NTVDM64_STATUS_OK) return status;
+    if (status != TYPE_STATUS_OK) return status;
     value = 0xaau;
     status = core_machine_memory_write(machine, 0xf0001u, &value, sizeof(value));
-    if (status != NTVDM64_STATUS_OK) return status;
+    if (status != TYPE_STATUS_OK) return status;
     return core_machine_memory_write(machine, 0xffff0u, reset_stub, sizeof(reset_stub));
 }
 

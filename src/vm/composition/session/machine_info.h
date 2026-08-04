@@ -1,7 +1,7 @@
 /* Copyright 2012-2014 Neko. */
 
-#ifndef NTVDM64_VM_SESSION_MACHINE_INFO_H
-#define NTVDM64_VM_SESSION_MACHINE_INFO_H
+#ifndef VM_SESSION_MACHINE_INFO_H
+#define VM_SESSION_MACHINE_INFO_H
 
 #include "type.h"
 

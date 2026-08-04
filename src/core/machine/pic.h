@@ -1,7 +1,7 @@
 /* Copyright 2012-2014 Neko. */
 
-#ifndef NXVM_CORE_PIC_H
-#define NXVM_CORE_PIC_H
+#ifndef CORE_MACHINE_PIC_H
+#define CORE_MACHINE_PIC_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -10,18 +10,18 @@ extern "C" {
 #include "type.h"
 #include "core/machine/port.h"
 
-#define NXVM_DEVICE_PIC "Intel 8259A"
+#define CORE_MACHINE_DEVICE_PIC "Intel 8259A"
 
 typedef enum {ICW1, ICW2, ICW3, ICW4, OCW1} t_pic_init_status;
 
 #define ocw1 imr
 typedef struct {
-    ntvdm64_type_unsigned_8 irr;  /* Interrupt Request Register */
-    ntvdm64_type_unsigned_8 imr;  /* Interrupt Mask Register */
-    ntvdm64_type_unsigned_8 isr;  /* In Service Register */
-    ntvdm64_type_unsigned_8 icw1, icw2, icw3, icw4, ocw2, ocw3; /* command words */
+    type_unsigned_8 irr;  /* Interrupt Request Register */
+    type_unsigned_8 imr;  /* Interrupt Mask Register */
+    type_unsigned_8 isr;  /* In Service Register */
+    type_unsigned_8 icw1, icw2, icw3, icw4, ocw2, ocw3; /* command words */
     t_pic_init_status status; /* initialization status */
-    ntvdm64_type_unsigned_8 irx; /* id of current top potential ir */
+    type_unsigned_8 irx; /* id of current top potential ir */
 } t_pic_data;
 
 typedef struct t_pic {
@@ -109,10 +109,10 @@ C_VOID core_machine_pic_initialize(t_pic *master, t_pic *slave, t_port *port);
 C_VOID core_machine_pic_reset(t_pic *master, t_pic *slave);
 C_VOID core_machine_pic_refresh(t_pic *master, t_pic *slave);
 C_VOID core_machine_pic_finalize(t_pic *master, t_pic *slave);
-C_VOID core_machine_pic_set_irq(t_pic *master, t_pic *slave, ntvdm64_type_unsigned_8 irq_id);
+C_VOID core_machine_pic_set_irq(t_pic *master, t_pic *slave, type_unsigned_8 irq_id);
 C_VOID core_machine_pic_timer_output(C_VOID *owner);
-ntvdm64_type_bool core_machine_pic_scan_interrupt(t_pic *master, t_pic *slave);
-ntvdm64_type_unsigned_8 core_machine_pic_get_interrupt(t_pic *master, t_pic *slave);
+type_bool core_machine_pic_scan_interrupt(t_pic *master, t_pic *slave);
+type_unsigned_8 core_machine_pic_get_interrupt(t_pic *master, t_pic *slave);
 
 #define VPIC_POST "           \
 ; init pic master           \n\

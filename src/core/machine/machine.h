@@ -1,5 +1,5 @@
-#ifndef NTVDM64_CORE_MACHINE_H
-#define NTVDM64_CORE_MACHINE_H
+#ifndef CORE_MACHINE_H
+#define CORE_MACHINE_H
 
 #include "type.h"
 
@@ -81,7 +81,7 @@ struct core_machine {
     C_INT execution_provider_frozen;
 };
 
-ntvdm64_status core_machine_bus_initialize(core_machine *machine);
+type_status core_machine_bus_initialize(core_machine *machine);
 C_VOID core_machine_bus_finalize(core_machine *machine);
 C_VOID core_machine_trace_initialize(core_machine *machine);
 C_VOID core_machine_trace_finalize(core_machine *machine);

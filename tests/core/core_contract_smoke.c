@@ -12,31 +12,31 @@ C_INT main(C_VOID)
     core_machine_run_result result;
     C_UCHAR halt = 0xf4u;
 
-    if (test_core_machine_create_executor(0u, &machine) != NTVDM64_STATUS_OK) {
+    if (test_core_machine_create_executor(0u, &machine) != TYPE_STATUS_OK) {
         return 1;
     }
 
-    if (core_machine_freeze_execution_providers(machine) != NTVDM64_STATUS_OK ||
-        core_machine_reset(machine) != NTVDM64_STATUS_OK) {
+    if (core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
+        core_machine_reset(machine) != TYPE_STATUS_OK) {
         core_machine_destroy(machine);
         return 2;
     }
 
     if (core_machine_memory_write(machine, 0xffff0u, &halt, 1u) !=
-            NTVDM64_STATUS_OK ||
-        core_machine_run(machine, budget, &result) != NTVDM64_STATUS_OK ||
+            TYPE_STATUS_OK ||
+        core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u) {
         core_machine_destroy(machine);
         return 3;
     }
 
-    if (core_machine_request_stop(machine) != NTVDM64_STATUS_OK) {
+    if (core_machine_request_stop(machine) != TYPE_STATUS_OK) {
         core_machine_destroy(machine);
         return 5;
     }
 
     if (core_machine_run(machine, budget, &result) !=
-        NTVDM64_STATUS_OK) {
+        TYPE_STATUS_OK) {
         core_machine_destroy(machine);
         return 6;
     }

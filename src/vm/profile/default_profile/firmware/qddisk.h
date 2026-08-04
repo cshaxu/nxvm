@@ -1,7 +1,7 @@
 /* Copyright 2012-2014 Neko. */
 
-#ifndef NXVM_QDDISK_H
-#define NXVM_QDDISK_H
+#ifndef VM_PROFILE_DEFAULT_QDDISK_H
+#define VM_PROFILE_DEFAULT_QDDISK_H
 
 
 

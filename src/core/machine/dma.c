@@ -10,43 +10,43 @@
 #include "core/machine/dma.h"
 
 static C_VOID doReset(t_dma *rdma) {
-    STD_MEMSET((C_VOID *)(&rdma->data), NTVDM64_TYPE_ZERO_8, sizeof(t_dma_data));
+    STD_MEMSET((C_VOID *)(&rdma->data), TYPE_ZERO_8, sizeof(t_dma_data));
     rdma->data.mask = VDMA_MASK_VALID;
 }
 
-static C_VOID dma_read_address(t_dma *dma, t_port *port, ntvdm64_type_unsigned_8 channel)
+static C_VOID dma_read_address(t_dma *dma, t_port *port, type_unsigned_8 channel)
 {
     port->data.ioByte = !dma->data.flagMSB ?
-        NTVDM64_TYPE_MASK_UNSIGNED_8(dma->data.currAddr[channel]) :
-        NTVDM64_TYPE_MASK_UNSIGNED_8(dma->data.currAddr[channel] >> 8);
+        TYPE_MASK_UNSIGNED_8(dma->data.currAddr[channel]) :
+        TYPE_MASK_UNSIGNED_8(dma->data.currAddr[channel] >> 8);
     dma->data.flagMSB = !dma->data.flagMSB;
 }
 
-static C_VOID dma_read_count(t_dma *dma, t_port *port, ntvdm64_type_unsigned_8 channel)
+static C_VOID dma_read_count(t_dma *dma, t_port *port, type_unsigned_8 channel)
 {
     port->data.ioByte = !dma->data.flagMSB ?
-        NTVDM64_TYPE_MASK_UNSIGNED_8(dma->data.currCount[channel]) :
-        NTVDM64_TYPE_MASK_UNSIGNED_8(dma->data.currCount[channel] >> 8);
+        TYPE_MASK_UNSIGNED_8(dma->data.currCount[channel]) :
+        TYPE_MASK_UNSIGNED_8(dma->data.currCount[channel] >> 8);
     dma->data.flagMSB = !dma->data.flagMSB;
 }
 
-static C_VOID dma_write_address(t_dma *dma, t_port *port, ntvdm64_type_unsigned_8 channel)
+static C_VOID dma_write_address(t_dma *dma, t_port *port, type_unsigned_8 channel)
 {
     if (!dma->data.flagMSB) {
-        dma->data.baseAddr[channel] = NTVDM64_TYPE_MASK_UNSIGNED_16(port->data.ioByte);
+        dma->data.baseAddr[channel] = TYPE_MASK_UNSIGNED_16(port->data.ioByte);
     } else {
-        dma->data.baseAddr[channel] |= NTVDM64_TYPE_MASK_UNSIGNED_16(port->data.ioByte << 8);
+        dma->data.baseAddr[channel] |= TYPE_MASK_UNSIGNED_16(port->data.ioByte << 8);
     }
     dma->data.currAddr[channel] = dma->data.baseAddr[channel];
     dma->data.flagMSB = !dma->data.flagMSB;
 }
 
-static C_VOID dma_write_count(t_dma *dma, t_port *port, ntvdm64_type_unsigned_8 channel)
+static C_VOID dma_write_count(t_dma *dma, t_port *port, type_unsigned_8 channel)
 {
     if (!dma->data.flagMSB) {
-        dma->data.baseCount[channel] = NTVDM64_TYPE_MASK_UNSIGNED_16(port->data.ioByte);
+        dma->data.baseCount[channel] = TYPE_MASK_UNSIGNED_16(port->data.ioByte);
     } else {
-        dma->data.baseCount[channel] |= NTVDM64_TYPE_MASK_UNSIGNED_16(port->data.ioByte << 8);
+        dma->data.baseCount[channel] |= TYPE_MASK_UNSIGNED_16(port->data.ioByte << 8);
     }
     dma->data.currCount[channel] = dma->data.baseCount[channel];
     dma->data.flagMSB = !dma->data.flagMSB;
@@ -54,24 +54,24 @@ static C_VOID dma_write_count(t_dma *dma, t_port *port, ntvdm64_type_unsigned_8 
 
 static C_VOID dma_write_request(t_dma *dma, t_port *port)
 {
-    NTVDM64_TYPE_MAKE_BIT(dma->data.request,
+    TYPE_MAKE_BIT(dma->data.request,
         VDMA_REQUEST_DRQ(VDMA_GetREQSC_CS(port->data.ioByte)),
-        NTVDM64_TYPE_GET_BIT(port->data.ioByte, VDMA_REQSC_SR));
+        TYPE_GET_BIT(port->data.ioByte, VDMA_REQSC_SR));
 }
 
 static C_VOID dma_write_mask(t_dma *dma, t_port *port)
 {
-    NTVDM64_TYPE_MAKE_BIT(dma->data.mask,
+    TYPE_MAKE_BIT(dma->data.mask,
         VDMA_MASK_DRQ(VDMA_GetMASKSC_CS(port->data.ioByte)),
-        NTVDM64_TYPE_GET_BIT(port->data.ioByte, VDMA_MASKSC_SM));
+        TYPE_GET_BIT(port->data.ioByte, VDMA_MASKSC_SM));
 }
 
-static t_dma *dma_controller(t_dma *primary, ntvdm64_type_unsigned_16 port_id)
+static t_dma *dma_controller(t_dma *primary, type_unsigned_16 port_id)
 {
     return port_id >= 0x00c0u ? primary->connect.peer : primary;
 }
 
-static ntvdm64_type_unsigned_8 dma_page_channel(ntvdm64_type_unsigned_16 port_id)
+static type_unsigned_8 dma_page_channel(type_unsigned_16 port_id)
 {
     switch (port_id) {
     case 0x0081: case 0x0089: return 2u;
@@ -81,22 +81,22 @@ static ntvdm64_type_unsigned_8 dma_page_channel(ntvdm64_type_unsigned_16 port_id
     }
 }
 
-static C_VOID dma_port_read(t_port *port, ntvdm64_type_unsigned_16 port_id, C_VOID *owner)
+static C_VOID dma_port_read(t_port *port, type_unsigned_16 port_id, C_VOID *owner)
 {
     t_dma *primary = (t_dma *)owner;
     t_dma *dma;
-    ntvdm64_type_unsigned_8 channel;
+    type_unsigned_8 channel;
 
     if (primary == STD_NULL) return;
     if (port_id <= 0x0007u) {
-        channel = (ntvdm64_type_unsigned_8)(port_id >> 1);
+        channel = (type_unsigned_8)(port_id >> 1);
         if ((port_id & 1u) == 0u) dma_read_address(primary, port, channel);
         else dma_read_count(primary, port, channel);
         return;
     }
     if (port_id == 0x0008u) {
         port->data.ioByte = primary->data.status;
-        NTVDM64_TYPE_CLEAR_BIT(primary->data.status, VDMA_STATUS_TCS);
+        TYPE_CLEAR_BIT(primary->data.status, VDMA_STATUS_TCS);
         return;
     }
     if (port_id == 0x000du) {
@@ -111,14 +111,14 @@ static C_VOID dma_port_read(t_port *port, ntvdm64_type_unsigned_16 port_id, C_VO
     if (port_id >= 0x00c0u && port_id <= 0x00ceu &&
         (port_id & 1u) == 0u) {
         dma = primary->connect.peer;
-        channel = (ntvdm64_type_unsigned_8)((port_id - 0x00c0u) >> 1);
+        channel = (type_unsigned_8)((port_id - 0x00c0u) >> 1);
         if ((channel & 1u) == 0u) dma_read_address(dma, port, channel >> 1);
         else dma_read_count(dma, port, channel >> 1);
         return;
     }
     if (port_id == 0x00d0u) {
         port->data.ioByte = primary->connect.peer->data.status;
-        NTVDM64_TYPE_CLEAR_BIT(primary->connect.peer->data.status, VDMA_STATUS_TCS);
+        TYPE_CLEAR_BIT(primary->connect.peer->data.status, VDMA_STATUS_TCS);
         return;
     }
     if (port_id == 0x00dau) {
@@ -126,16 +126,16 @@ static C_VOID dma_port_read(t_port *port, ntvdm64_type_unsigned_16 port_id, C_VO
     }
 }
 
-static C_VOID dma_port_write(t_port *port, ntvdm64_type_unsigned_16 port_id, C_VOID *owner)
+static C_VOID dma_port_write(t_port *port, type_unsigned_16 port_id, C_VOID *owner)
 {
     t_dma *primary = (t_dma *)owner;
     t_dma *dma;
-    ntvdm64_type_unsigned_8 channel;
-    ntvdm64_type_unsigned_16 local_port;
+    type_unsigned_8 channel;
+    type_unsigned_16 local_port;
 
     if (primary == STD_NULL) return;
     if (port_id <= 0x0007u) {
-        channel = (ntvdm64_type_unsigned_8)(port_id >> 1);
+        channel = (type_unsigned_8)(port_id >> 1);
         if ((port_id & 1u) == 0u) dma_write_address(primary, port, channel);
         else dma_write_count(primary, port, channel);
         return;
@@ -143,14 +143,14 @@ static C_VOID dma_port_write(t_port *port, ntvdm64_type_unsigned_16 port_id, C_V
     if (port_id >= 0x0081u && port_id <= 0x008fu) {
         dma = dma_controller(primary, port_id);
         dma->data.page[dma_page_channel(port_id)] = port->data.ioByte &
-            (port_id < 0x0089u ? NTVDM64_TYPE_MAX_UNSIGNED_8 : 0xfeu);
+            (port_id < 0x0089u ? TYPE_MAX_UNSIGNED_8 : 0xfeu);
         return;
     }
     dma = port_id >= 0x00c0u ? primary->connect.peer : primary;
     local_port = port_id >= 0x00c0u ? port_id - 0x00c0u : port_id;
     if (port_id >= 0x00c0u && (local_port & 1u) == 0u &&
         local_port <= 0x000eu) {
-        channel = (ntvdm64_type_unsigned_8)(local_port >> 1);
+        channel = (type_unsigned_8)(local_port >> 1);
         if ((channel & 1u) == 0u) dma_write_address(dma, port, channel >> 1);
         else dma_write_count(dma, port, channel >> 1);
         return;
@@ -163,45 +163,45 @@ static C_VOID dma_port_write(t_port *port, ntvdm64_type_unsigned_16 port_id, C_V
     case 0x000b:
         dma->data.mode[VDMA_GetMODE_CS(port->data.ioByte)] = port->data.ioByte;
         break;
-    case 0x000c: dma->data.flagMSB = NTVDM64_TYPE_FALSE; break;
+    case 0x000c: dma->data.flagMSB = TYPE_FALSE; break;
     case 0x000d: doReset(dma); break;
-    case 0x000e: dma->data.mask = NTVDM64_TYPE_ZERO_8; break;
+    case 0x000e: dma->data.mask = TYPE_ZERO_8; break;
     case 0x000f: dma->data.mask = port->data.ioByte & VDMA_MASKAC_VALID; break;
     default: break;
     }
 }
 
-static ntvdm64_type_unsigned_8 GetRegTopId(t_dma *rdma, ntvdm64_type_unsigned_8 reg) {
-    ntvdm64_type_unsigned_8 id = 0;
-    if (reg == NTVDM64_TYPE_ZERO_8) {
+static type_unsigned_8 GetRegTopId(t_dma *rdma, type_unsigned_8 reg) {
+    type_unsigned_8 id = 0;
+    if (reg == TYPE_ZERO_8) {
         return 0x08;
     }
     reg = (reg << (VDMA_CHANNEL_COUNT - (rdma->data.drx))) | (reg >> (rdma->data.drx));
-    while ((id < VDMA_CHANNEL_COUNT) && !NTVDM64_TYPE_MASK_UNSIGNED_1(reg >> id)) {
+    while ((id < VDMA_CHANNEL_COUNT) && !TYPE_MASK_UNSIGNED_1(reg >> id)) {
         id++;
     }
     return (id + rdma->data.drx) % VDMA_CHANNEL_COUNT;
 }
-static C_VOID IncreaseCurrAddr(t_dma *rdma, ntvdm64_type_unsigned_8 id) {
+static C_VOID IncreaseCurrAddr(t_dma *rdma, type_unsigned_8 id) {
     rdma->data.currAddr[id]++;
-    if (rdma->data.currAddr[id] == NTVDM64_TYPE_ZERO_16) {
+    if (rdma->data.currAddr[id] == TYPE_ZERO_16) {
         rdma->data.page[id]++;
     }
 }
-static C_VOID DecreaseCurrAddr(t_dma *rdma, ntvdm64_type_unsigned_8 id) {
+static C_VOID DecreaseCurrAddr(t_dma *rdma, type_unsigned_8 id) {
     rdma->data.currAddr[id]--;
-    if (rdma->data.currAddr[id] == NTVDM64_TYPE_MAX_UNSIGNED_16) {
+    if (rdma->data.currAddr[id] == TYPE_MAX_UNSIGNED_16) {
         rdma->data.page[id]--;
     }
 }
 static C_VOID Transmission(t_dma *rdma, t_latch *latch, t_ram *ram,
-                         ntvdm64_type_unsigned_8 id, ntvdm64_type_bool flagWord) {
+                         type_unsigned_8 id, type_bool flagWord) {
     switch (VDMA_GetMODE_TT(rdma->data.mode[id])) {
     case 0x00:
         /* verify */
         /* do nothing */
         rdma->data.currCount[id]--;
-        if (NTVDM64_TYPE_GET_BIT(rdma->data.mode[id], VDMA_MODE_AIDS)) {
+        if (TYPE_GET_BIT(rdma->data.mode[id], VDMA_MODE_AIDS)) {
             DecreaseCurrAddr(rdma, id);
         } else {
             IncreaseCurrAddr(rdma, id);
@@ -212,19 +212,19 @@ static C_VOID Transmission(t_dma *rdma, t_latch *latch, t_ram *ram,
         if (rdma->connect.read_provider[id] != STD_NULL) {
             rdma->connect.read_provider[id](rdma->connect.device_owner[id], latch);
         } else {
-            NTVDM64_TYPE_EXECUTE_FUNCTION(rdma->connect.fpReadDevice[id]);
+            TYPE_EXECUTE_FUNCTION(rdma->connect.fpReadDevice[id]);
         }
         if (!flagWord) {
             core_machine_memory_write_physical(ram,
                 (rdma->data.page[id] << 16) + rdma->data.currAddr[id],
-                (ntvdm64_type_virtual_address)(&latch->data.byte), 1);
+                (type_virtual_address)(&latch->data.byte), 1);
         } else {
             core_machine_memory_write_physical(ram,
                 (rdma->data.page[id] << 16) + (rdma->data.currAddr[id] << 1),
-                (ntvdm64_type_virtual_address)(&latch->data.word), 2);
+                (type_virtual_address)(&latch->data.word), 2);
         }
         rdma->data.currCount[id]--;
-        if (NTVDM64_TYPE_GET_BIT(rdma->data.mode[id], VDMA_MODE_AIDS)) {
+        if (TYPE_GET_BIT(rdma->data.mode[id], VDMA_MODE_AIDS)) {
             DecreaseCurrAddr(rdma, id);
         } else {
             IncreaseCurrAddr(rdma, id);
@@ -235,19 +235,19 @@ static C_VOID Transmission(t_dma *rdma, t_latch *latch, t_ram *ram,
         if (!flagWord) {
             core_machine_memory_read_physical(ram,
                 (rdma->data.page[id] << 16) + rdma->data.currAddr[id],
-                (ntvdm64_type_virtual_address)(&latch->data.byte), 1);
+                (type_virtual_address)(&latch->data.byte), 1);
         } else {
             core_machine_memory_read_physical(ram,
                 (rdma->data.page[id] << 16) + (rdma->data.currAddr[id] << 1),
-                (ntvdm64_type_virtual_address)(&latch->data.word), 2);
+                (type_virtual_address)(&latch->data.word), 2);
         }
         if (rdma->connect.write_provider[id] != STD_NULL) {
             rdma->connect.write_provider[id](rdma->connect.device_owner[id], latch);
         } else {
-            NTVDM64_TYPE_EXECUTE_FUNCTION(rdma->connect.fpWriteDevice[id]);
+            TYPE_EXECUTE_FUNCTION(rdma->connect.fpWriteDevice[id]);
         }
         rdma->data.currCount[id]--;
-        if (NTVDM64_TYPE_GET_BIT(rdma->data.mode[id], VDMA_MODE_AIDS)) {
+        if (TYPE_GET_BIT(rdma->data.mode[id], VDMA_MODE_AIDS)) {
             DecreaseCurrAddr(rdma, id);
         } else {
             IncreaseCurrAddr(rdma, id);
@@ -261,13 +261,13 @@ static C_VOID Transmission(t_dma *rdma, t_latch *latch, t_ram *ram,
     }
 }
 static C_VOID Execute(t_dma *rdma, t_latch *latch, t_ram *ram,
-                    ntvdm64_type_unsigned_8 id, ntvdm64_type_bool flagWord) {
-    ntvdm64_type_bool flagM2M = ((id == 0) &&
+                    type_unsigned_8 id, type_bool flagWord) {
+    type_bool flagM2M = ((id == 0) &&
                       VDMA_GetREQUEST_DRQ(rdma->data.request, 1) &&
-                      NTVDM64_TYPE_GET_BIT(rdma->data.command, VDMA_COMMAND_M2M));
-    NTVDM64_TYPE_CLEAR_BIT(rdma->data.status, VDMA_STATUS_DRQ(id));
-    NTVDM64_TYPE_CLEAR_BIT(rdma->data.request, VDMA_REQUEST_DRQ(id));
-    if (NTVDM64_TYPE_GET_BIT(rdma->data.command, VDMA_COMMAND_R)) {
+                      TYPE_GET_BIT(rdma->data.command, VDMA_COMMAND_M2M));
+    TYPE_CLEAR_BIT(rdma->data.status, VDMA_STATUS_DRQ(id));
+    TYPE_CLEAR_BIT(rdma->data.request, VDMA_REQUEST_DRQ(id));
+    if (TYPE_GET_BIT(rdma->data.command, VDMA_COMMAND_R)) {
         rdma->data.drx = (id + 1) % VDMA_CHANNEL_COUNT;
     }
     if (flagM2M) {
@@ -275,33 +275,33 @@ static C_VOID Execute(t_dma *rdma, t_latch *latch, t_ram *ram,
         while (rdma->data.currCount[1] != 0xffff && !rdma->data.flagEOP) {
             core_machine_memory_read_physical(ram,
                 (rdma->data.page[0] << 16) + rdma->data.currAddr[0],
-                (ntvdm64_type_virtual_address)(&rdma->data.temp), 1);
+                (type_virtual_address)(&rdma->data.temp), 1);
             core_machine_memory_write_physical(ram,
                 (rdma->data.page[1] << 16) + rdma->data.currAddr[1],
-                (ntvdm64_type_virtual_address)(&rdma->data.temp), 1);
+                (type_virtual_address)(&rdma->data.temp), 1);
             rdma->data.currCount[1]--;
-            if (NTVDM64_TYPE_GET_BIT(rdma->data.mode[id], VDMA_MODE_AIDS)) {
+            if (TYPE_GET_BIT(rdma->data.mode[id], VDMA_MODE_AIDS)) {
                 DecreaseCurrAddr(rdma, 1);
-                if (!NTVDM64_TYPE_GET_BIT(rdma->data.command, VDMA_COMMAND_C0AD)) {
+                if (!TYPE_GET_BIT(rdma->data.command, VDMA_COMMAND_C0AD)) {
                     DecreaseCurrAddr(rdma, 0);
                 }
             } else {
                 IncreaseCurrAddr(rdma, 1);
-                if (!NTVDM64_TYPE_GET_BIT(rdma->data.command, VDMA_COMMAND_C0AD)) {
+                if (!TYPE_GET_BIT(rdma->data.command, VDMA_COMMAND_C0AD)) {
                     IncreaseCurrAddr(rdma, 0);
                 }
             }
         }
-        if (rdma->data.currCount[1] == NTVDM64_TYPE_MAX_UNSIGNED_16) {
-            NTVDM64_TYPE_SET_BIT(rdma->data.status, VDMA_STATUS_TC(0));
-            rdma->data.flagEOP = NTVDM64_TYPE_TRUE;
+        if (rdma->data.currCount[1] == TYPE_MAX_UNSIGNED_16) {
+            TYPE_SET_BIT(rdma->data.status, VDMA_STATUS_TC(0));
+            rdma->data.flagEOP = TYPE_TRUE;
         }
     } else {
         /* select mode and command */
         switch (VDMA_GetMODE_M(rdma->data.mode[id])) {
         case 0x00:
             /* demand */
-            while (rdma->data.currCount[id] != NTVDM64_TYPE_MAX_UNSIGNED_16 && !rdma->data.flagEOP
+            while (rdma->data.currCount[id] != TYPE_MAX_UNSIGNED_16 && !rdma->data.flagEOP
                     && VDMA_GetSTATUS_DRQ(rdma->data.status, id)) {
                 Transmission(rdma, latch, ram, id, flagWord);
             }
@@ -312,69 +312,69 @@ static C_VOID Execute(t_dma *rdma, t_latch *latch, t_ram *ram,
             break;
         case 0x02:
             /* block */
-            while (rdma->data.currCount[id] != NTVDM64_TYPE_MAX_UNSIGNED_16 && !rdma->data.flagEOP) {
+            while (rdma->data.currCount[id] != TYPE_MAX_UNSIGNED_16 && !rdma->data.flagEOP) {
                 Transmission(rdma, latch, ram, id, flagWord);
             }
             break;
         case 0x03:
             /* cascade */
             /* do nothing */
-            rdma->data.flagEOP = NTVDM64_TYPE_TRUE;
+            rdma->data.flagEOP = TYPE_TRUE;
             break;
         default:
             break;
         }
-        if (rdma->data.currCount[id] == NTVDM64_TYPE_MAX_UNSIGNED_16) {
-            NTVDM64_TYPE_SET_BIT(rdma->data.status, VDMA_STATUS_TC(id)); /* set termination count */
-            rdma->data.flagEOP = NTVDM64_TYPE_TRUE;
+        if (rdma->data.currCount[id] == TYPE_MAX_UNSIGNED_16) {
+            TYPE_SET_BIT(rdma->data.status, VDMA_STATUS_TC(id)); /* set termination count */
+            rdma->data.flagEOP = TYPE_TRUE;
         }
     }
     if (rdma->data.flagEOP) {
-        rdma->data.isr = NTVDM64_TYPE_ZERO_8;
+        rdma->data.isr = TYPE_ZERO_8;
         if (rdma->connect.close_provider[id] != STD_NULL) {
             rdma->connect.close_provider[id](rdma->connect.device_owner[id], latch);
         } else {
-            NTVDM64_TYPE_EXECUTE_FUNCTION(rdma->connect.fpCloseDevice[id]);
+            TYPE_EXECUTE_FUNCTION(rdma->connect.fpCloseDevice[id]);
         }
-        if (NTVDM64_TYPE_GET_BIT(rdma->data.mode[id], VDMA_MODE_AI)) {
+        if (TYPE_GET_BIT(rdma->data.mode[id], VDMA_MODE_AI)) {
             rdma->data.currAddr[id] = rdma->data.baseAddr[id];
             rdma->data.currCount[id] = rdma->data.baseCount[id];
-            NTVDM64_TYPE_CLEAR_BIT(rdma->data.mask, VDMA_MASK_DRQ(id));
+            TYPE_CLEAR_BIT(rdma->data.mask, VDMA_MASK_DRQ(id));
         } else {
-            NTVDM64_TYPE_SET_BIT(rdma->data.mask, VDMA_MASK_DRQ(id));
+            TYPE_SET_BIT(rdma->data.mask, VDMA_MASK_DRQ(id));
         }
     }
-    rdma->data.flagEOP = NTVDM64_TYPE_FALSE;
+    rdma->data.flagEOP = TYPE_FALSE;
 }
 
 C_VOID core_machine_dma_set_drq(t_dma *primary, t_dma *secondary,
-                              ntvdm64_type_unsigned_8 drq_id) {
+                              type_unsigned_8 drq_id) {
     if (primary == STD_NULL || secondary == STD_NULL) return;
     switch (drq_id) {
     case 0:
     case 1:
     case 2:
     case 3:
-        NTVDM64_TYPE_SET_BIT(primary->data.status, VDMA_STATUS_DRQ(drq_id));
+        TYPE_SET_BIT(primary->data.status, VDMA_STATUS_DRQ(drq_id));
         break;
     case 5:
     case 6:
     case 7:
-        NTVDM64_TYPE_SET_BIT(secondary->data.status, VDMA_STATUS_DRQ(drq_id - 4));
+        TYPE_SET_BIT(secondary->data.status, VDMA_STATUS_DRQ(drq_id - 4));
         break;
     case 4:
     default:
         break;
     }
     if (primary->data.status & VDMA_STATUS_DRQS) {
-        NTVDM64_TYPE_SET_BIT(secondary->data.status, VDMA_STATUS_DRQ(0));
+        TYPE_SET_BIT(secondary->data.status, VDMA_STATUS_DRQ(0));
     } else {
-        NTVDM64_TYPE_CLEAR_BIT(secondary->data.status, VDMA_STATUS_DRQ(0));
+        TYPE_CLEAR_BIT(secondary->data.status, VDMA_STATUS_DRQ(0));
     }
 }
 C_VOID core_machine_dma_add_device(t_dma *primary, t_dma *secondary,
-    ntvdm64_type_unsigned_8 drq_id, ntvdm64_type_flat_address read_device, ntvdm64_type_flat_address write_device,
-    ntvdm64_type_flat_address close_device) {
+    type_unsigned_8 drq_id, type_flat_address read_device, type_flat_address write_device,
+    type_flat_address close_device) {
     if (primary == STD_NULL || secondary == STD_NULL) return;
     switch (drq_id) {
     case 0:
@@ -399,12 +399,12 @@ C_VOID core_machine_dma_add_device(t_dma *primary, t_dma *secondary,
 }
 
 C_VOID core_machine_dma_bind_device(t_dma *primary, t_dma *secondary,
-    ntvdm64_type_unsigned_8 drq_id, core_machine_dma_device_provider read_provider,
+    type_unsigned_8 drq_id, core_machine_dma_device_provider read_provider,
     core_machine_dma_device_provider write_provider,
     core_machine_dma_device_provider close_provider, C_VOID *owner)
 {
     t_dma *dma;
-    ntvdm64_type_unsigned_8 channel;
+    type_unsigned_8 channel;
 
     if (primary == STD_NULL || secondary == STD_NULL) return;
     if (drq_id <= 3u) {
@@ -425,24 +425,24 @@ C_VOID core_machine_dma_bind_device(t_dma *primary, t_dma *secondary,
 C_VOID core_machine_dma_initialize(t_latch *latch, t_dma *primary,
     t_dma *secondary, t_port *port)
 {
-    static const ntvdm64_type_unsigned_16 primary_reads[] = {
+    static const type_unsigned_16 primary_reads[] = {
         0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007,
         0x0008, 0x000d
     };
-    static const ntvdm64_type_unsigned_16 page_ports[] = {
+    static const type_unsigned_16 page_ports[] = {
         0x0081, 0x0082, 0x0083, 0x0087, 0x0089, 0x008a, 0x008b, 0x008f
     };
-    static const ntvdm64_type_unsigned_16 secondary_reads[] = {
+    static const type_unsigned_16 secondary_reads[] = {
         0x00c0, 0x00c2, 0x00c4, 0x00c6, 0x00c8, 0x00ca, 0x00cc, 0x00ce,
         0x00d0, 0x00da
     };
-    ntvdm64_type_native_unsigned index;
+    type_native_unsigned index;
 
     if (latch == STD_NULL || primary == STD_NULL || secondary == STD_NULL ||
         port == STD_NULL) return;
-    STD_MEMSET((C_VOID *)latch, NTVDM64_TYPE_ZERO_8, sizeof(*latch));
-    STD_MEMSET((C_VOID *)primary, NTVDM64_TYPE_ZERO_8, sizeof(*primary));
-    STD_MEMSET((C_VOID *)secondary, NTVDM64_TYPE_ZERO_8, sizeof(*secondary));
+    STD_MEMSET((C_VOID *)latch, TYPE_ZERO_8, sizeof(*latch));
+    STD_MEMSET((C_VOID *)primary, TYPE_ZERO_8, sizeof(*primary));
+    STD_MEMSET((C_VOID *)secondary, TYPE_ZERO_8, sizeof(*secondary));
     primary->connect.latch = latch;
     primary->connect.peer = secondary;
     secondary->connect.latch = latch;
@@ -453,7 +453,7 @@ C_VOID core_machine_dma_initialize(t_latch *latch, t_dma *primary,
             primary);
     }
     for (index = 0; index < 0x10u; ++index) {
-        core_machine_port_add_write(port, (ntvdm64_type_unsigned_16)index, dma_port_write,
+        core_machine_port_add_write(port, (type_unsigned_16)index, dma_port_write,
             primary);
     }
     for (index = 0; index < sizeof(page_ports) / sizeof(page_ports[0]);
@@ -469,7 +469,7 @@ C_VOID core_machine_dma_initialize(t_latch *latch, t_dma *primary,
             primary);
     }
     for (index = 0; index <= 0x1eu; index += 2u) {
-        core_machine_port_add_write(port, (ntvdm64_type_unsigned_16)(0x00c0u + index),
+        core_machine_port_add_write(port, (type_unsigned_16)(0x00c0u + index),
             dma_port_write, primary);
     }
 }
@@ -477,59 +477,59 @@ C_VOID core_machine_dma_initialize(t_latch *latch, t_dma *primary,
 C_VOID core_machine_dma_reset(t_latch *latch, t_dma *primary,
     t_dma *secondary) {
     if (latch == STD_NULL || primary == STD_NULL || secondary == STD_NULL) return;
-    STD_MEMSET((C_VOID *)(&latch->data), NTVDM64_TYPE_ZERO_8, sizeof(t_latch_data));
+    STD_MEMSET((C_VOID *)(&latch->data), TYPE_ZERO_8, sizeof(t_latch_data));
     doReset(primary);
     doReset(secondary);
 }
 
 C_VOID core_machine_dma_refresh(t_latch *latch, t_dma *primary,
     t_dma *secondary, t_ram *ram) {
-    ntvdm64_type_unsigned_8 id;
-    ntvdm64_type_unsigned_8 realDRQ1, realDRQ2;
+    type_unsigned_8 id;
+    type_unsigned_8 realDRQ1, realDRQ2;
     if (latch == STD_NULL || primary == STD_NULL || secondary == STD_NULL || ram == STD_NULL) return;
-    if (NTVDM64_TYPE_GET_BIT(secondary->data.command, VDMA_COMMAND_CTRL)) {
+    if (TYPE_GET_BIT(secondary->data.command, VDMA_COMMAND_CTRL)) {
         return;
     }
-    if (NTVDM64_TYPE_GET_BIT(secondary->data.isr, VDMA_ISR_IS)) {
+    if (TYPE_GET_BIT(secondary->data.isr, VDMA_ISR_IS)) {
         if (VDMA_GetISR_ISR(secondary->data.isr)) {
-            Execute(secondary, latch, ram, VDMA_GetISR_ISR(secondary->data.isr), NTVDM64_TYPE_TRUE);
-        } else if (NTVDM64_TYPE_GET_BIT(primary->data.isr, VDMA_ISR_IS)) {
-            Execute(primary, latch, ram, VDMA_GetISR_ISR(primary->data.isr), NTVDM64_TYPE_FALSE);
+            Execute(secondary, latch, ram, VDMA_GetISR_ISR(secondary->data.isr), TYPE_TRUE);
+        } else if (TYPE_GET_BIT(primary->data.isr, VDMA_ISR_IS)) {
+            Execute(primary, latch, ram, VDMA_GetISR_ISR(primary->data.isr), TYPE_FALSE);
         }
-        if (!NTVDM64_TYPE_GET_BIT(primary->data.isr, VDMA_ISR_IS)) {
-            secondary->data.isr = NTVDM64_TYPE_ZERO_8;
+        if (!TYPE_GET_BIT(primary->data.isr, VDMA_ISR_IS)) {
+            secondary->data.isr = TYPE_ZERO_8;
         }
     }
-    if (!NTVDM64_TYPE_GET_BIT(secondary->data.isr, VDMA_ISR_IS)) {
+    if (!TYPE_GET_BIT(secondary->data.isr, VDMA_ISR_IS)) {
         realDRQ2 = secondary->data.request | (VDMA_GetSTATUS_DRQS(secondary->data.status) & ~secondary->data.mask);
-        if (realDRQ2 == NTVDM64_TYPE_ZERO_8) {
+        if (realDRQ2 == TYPE_ZERO_8) {
             return;
         }
         id = GetRegTopId(secondary, realDRQ2);
         if (id == 0) {
-            if (NTVDM64_TYPE_GET_BIT(primary->data.command, VDMA_COMMAND_CTRL)) {
+            if (TYPE_GET_BIT(primary->data.command, VDMA_COMMAND_CTRL)) {
                 return;
             }
             realDRQ1 = primary->data.request | (VDMA_GetSTATUS_DRQS(primary->data.status) & ~primary->data.mask);
-            if (realDRQ1 == NTVDM64_TYPE_ZERO_8) {
+            if (realDRQ1 == TYPE_ZERO_8) {
                 return;
             }
             id = GetRegTopId(primary, realDRQ1);
             VDMA_SetISR(secondary->data.isr, 0);
             VDMA_SetISR(primary->data.isr, id);
-            Execute(primary, latch, ram, id, NTVDM64_TYPE_FALSE);
-            if (!NTVDM64_TYPE_GET_BIT(primary->data.isr, VDMA_ISR_IS)) {
-                secondary->data.isr = NTVDM64_TYPE_ZERO_8;
+            Execute(primary, latch, ram, id, TYPE_FALSE);
+            if (!TYPE_GET_BIT(primary->data.isr, VDMA_ISR_IS)) {
+                secondary->data.isr = TYPE_ZERO_8;
             }
             if (!VDMA_GetSTATUS_DRQS(primary->data.status)) {
-                NTVDM64_TYPE_CLEAR_BIT(secondary->data.status, VDMA_STATUS_DRQ(0));
+                TYPE_CLEAR_BIT(secondary->data.status, VDMA_STATUS_DRQ(0));
             }
             if (!primary->data.request) {
-                NTVDM64_TYPE_CLEAR_BIT(secondary->data.request, VDMA_REQUEST_DRQ(0));
+                TYPE_CLEAR_BIT(secondary->data.request, VDMA_REQUEST_DRQ(0));
             }
         } else {
             VDMA_SetISR(secondary->data.isr, id);
-            Execute(secondary, latch, ram, id, NTVDM64_TYPE_TRUE);
+            Execute(secondary, latch, ram, id, TYPE_TRUE);
         }
     }
 }

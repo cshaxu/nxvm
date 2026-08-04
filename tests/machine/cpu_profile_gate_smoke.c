@@ -15,9 +15,9 @@ static C_INT prepare_machine(core_machine_cpu_profile profile,
     core_machine_cpu_execution_context *execution;
     t_cpu *cpu;
 
-    if (core_machine_create(&config, out_machine) != NTVDM64_STATUS_OK ||
-        core_machine_freeze_execution_providers(*out_machine) != NTVDM64_STATUS_OK ||
-        core_machine_reset(*out_machine) != NTVDM64_STATUS_OK) return 1;
+    if (core_machine_create(&config, out_machine) != TYPE_STATUS_OK ||
+        core_machine_freeze_execution_providers(*out_machine) != TYPE_STATUS_OK ||
+        core_machine_reset(*out_machine) != TYPE_STATUS_OK) return 1;
     execution = core_machine_configuration_cpu_execution_borrow(*out_machine);
     cpu = core_machine_configuration_cpu_borrow(*out_machine);
     if (core_machine_cpu_execution_load_segment(execution, &cpu->data.cs, 0u) ||
@@ -42,11 +42,11 @@ static C_INT run_case(core_machine_cpu_profile profile, const C_UCHAR *program,
     if (!failed) {
         core_machine_memory_write_real_to(core_machine_configuration_memory_borrow(machine),
             0u, 0u, program, program_size);
-        failed |= core_machine_run(machine, budget, &result) != NTVDM64_STATUS_OK;
-        failed |= core_machine_get_cpu_diagnostic(machine, &diagnostic) != NTVDM64_STATUS_OK;
+        failed |= core_machine_run(machine, budget, &result) != TYPE_STATUS_OK;
+        failed |= core_machine_get_cpu_diagnostic(machine, &diagnostic) != TYPE_STATUS_OK;
         if (expect_ud) {
             failed |= !diagnostic.first_fault.valid ||
-                !NTVDM64_TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
+                !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
                     VCPUINS_EXCEPT_UD) ||
                 diagnostic.first_fault.point.bytes[0] != program[0];
         } else {
@@ -74,8 +74,8 @@ static C_INT run_pop_cs_8086(C_VOID)
             0u, 0u, program, sizeof(program));
         core_machine_memory_write_real_to(core_machine_configuration_memory_borrow(machine),
             0u, 0x0100u, selector, sizeof(selector));
-        failed |= core_machine_run(machine, budget, &result) != NTVDM64_STATUS_OK;
-        failed |= core_machine_get_cpu_diagnostic(machine, &diagnostic) != NTVDM64_STATUS_OK;
+        failed |= core_machine_run(machine, budget, &result) != TYPE_STATUS_OK;
+        failed |= core_machine_get_cpu_diagnostic(machine, &diagnostic) != TYPE_STATUS_OK;
         failed |= diagnostic.first_fault.valid || cpu->data.cs.selector != 0u ||
             cpu->data.eip != 1u || cpu->data.sp != 0x0102u;
     }

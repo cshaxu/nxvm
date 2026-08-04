@@ -1,5 +1,5 @@
-#ifndef NTVDM64_CORE_MACHINE_FPU_H
-#define NTVDM64_CORE_MACHINE_FPU_H
+#ifndef CORE_MACHINE_FPU_H
+#define CORE_MACHINE_FPU_H
 
 #include "core/machine/fpu_interface.h"
 
