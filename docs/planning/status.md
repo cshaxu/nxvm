@@ -2,7 +2,12 @@
 
 ## Current Work
 
-**Active subtask:** none. **M5 T211 complete:** the default profile's F0
+**Active subtask:** **M5 T212 S1 -- video-portal contract and bounded no-media
+probe.** No guest behavior change is admitted before the probe records the
+default-ROM error-display path and approves the minimal ROM `INT 10h` subset.
+See [the task record](m5-t212-video-portal-retirement.md).
+
+**M5 T211 complete:** the default profile's F0
 boot-failure portal is retired. The ROM reports an acknowledged failure through
 its BDA POST status; the VM session runner consumes it and requests the sole
 core stop. See [the task record](m5-t211-boot-failure-portal-retirement.md).
