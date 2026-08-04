@@ -35,6 +35,7 @@
         "core-machine-lifecycle-contract-smoke",
         "core-machine-ram-port-context-smoke",
         "core-machine-pit-readback-smoke",
+        "core-machine-kbc-controller-smoke",
         "core-machine-stopped-lifecycle-smoke",
         "core-machine-memory-reconfigure-smoke",
         "core-product-wait-smoke",

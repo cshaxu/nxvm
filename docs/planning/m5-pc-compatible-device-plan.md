@@ -172,10 +172,11 @@ platform-normalized host key event
 - `core_machine_keyboard_submit_scan_code` is the one explicit running-machine
   ingress contract. It reaches the core-owned KBC internally and never returns
   a mutable KBC pointer to VM composition or a profile.
-- KBC owns a fixed 16-byte keyboard FIFO. A full FIFO returns a defined busy
-  result to the mapper and drops no already queued byte; the mapper records no
-  second queue or retry thread. S2 probes the result, while S3 keeps current
-  interactive behavior by submitting synchronously at the product boundary.
+- KBC owns a fixed 16-byte keyboard FIFO. A full FIFO returns
+  `NTVDM64_STATUS_INVALID_STATE` to the mapper and drops no already queued
+  byte; the mapper records no second queue or retry thread. S2 probes the
+  result, while S3 keeps current interactive behavior by submitting
+  synchronously at the product boundary.
 - KBC writes IRQ1 directly through the core-owned PIC binding. Its `0xd1`
   output-port operation changes core A20 state and requests a core reset through
   internal machine callbacks. VM supplies neither a PIC nor host reset policy.
@@ -209,8 +210,9 @@ its core-owned queues, ports, status, command state, A20/reset callback, and
 IRQ1 provider.
 
 **Owned surface:** `src/core/machine/kbc.*`, the necessary core-machine
-provider contracts, and focused core port tests. VM supplies only frozen
-callbacks for IRQ/A20/reset effects; it does not own controller state.
+contracts, and focused core port tests. `core_machine` binds its owned
+PIC/RAM/CPU-reset services directly; VM supplies neither callbacks nor
+controller state.
 
 **Acceptance:** owned port vectors establish command/data ordering, status
 bits, output-buffer consumption, command-byte handling, selected tests,

@@ -131,7 +131,9 @@ import. `docs/planning/status.md` remains authoritative for active work.
   QDKEYB handoff (S3). Its first slice is `0x60`/`0x64`, OBF/IBF, command byte,
   `0x20`/`0x60`/`0xAA`/`0xAB`/`0xAD`/`0xAE`/`0xD0`/`0xD1`, and keyboard
   ACK/reset/enable/disable/identify. AUX/IRQ12, translation, scan-code sets,
-  and timing are later admissions. Preserve BIOS keyboard behavior and keep
+  and timing are later admissions. Full FIFO is a defined
+  `NTVDM64_STATUS_INVALID_STATE`, not a second host queue. Preserve BIOS
+  keyboard behavior and keep
   host layout policy in the default profile, outside the core controller.
   See [`m5-pc-compatible-device-plan.md`](docs/planning/m5-pc-compatible-device-plan.md).
 - [ ] **Video-adapter capability (`TODO(Medium)`).** T193 decomposes this into

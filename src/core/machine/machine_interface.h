@@ -104,6 +104,9 @@ type_status core_machine_run(
 
 type_status core_machine_request_stop(core_machine *machine);
 
+type_status core_machine_keyboard_submit_scan_code(core_machine *machine,
+    uint8_t scan_code);
+
 type_status core_machine_report_fault(
     core_machine *machine,
     uint32_t detail);
