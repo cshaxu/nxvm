@@ -463,6 +463,10 @@ longer heap allocated; pause and unified debugger FDD gates pass. Artifact:
 dependency, and session-readiness gates pass alongside retained Console and
 FDD DOS-prompt regressions. Artifact: `nxvm_0_5_0184.exe`.
 
+**M5 T185 S1 complete: empty Console provider lifecycle hooks removed.** The
+provider contract now contains only behavior-bearing selected-session callbacks;
+the retained Console lifecycle gate passes. Artifact: `nxvm_0_5_0185.exe`.
+
 The completed executor sequence is defined in
 [Facade And Executor Convergence](m5-facade-executor-convergence.md). The
 active session-readiness sequence is defined in

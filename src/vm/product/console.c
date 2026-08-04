@@ -423,12 +423,10 @@ static C_VOID execute(nxvm_product_console_context *context) {
 static C_VOID vm_product_console_initialize(nxvm_product_console_context *context) {
     argArray = (C_CHAR **) STD_MALLOC(CONSOLE_MAXNARG * sizeof(C_CHAR *));
     flagExit = 0;
-    machineProvider->initialize(machineProvider->context);
 }
 
 /* Finalizes console */
 static C_VOID vm_product_console_finalize(nxvm_product_console_context *context) {
-    machineProvider->finalize(machineProvider->context);
     if (argArray) {
         STD_FREE((C_VOID *) argArray);
     }

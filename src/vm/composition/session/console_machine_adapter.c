@@ -25,8 +25,6 @@ static vm_session *vm_session_provider_selected(C_VOID *context)
     return (vm_session *)session;
 }
 
-static C_VOID vm_session_machine_initialize(C_VOID *context) { (C_VOID)context; }
-static C_VOID vm_session_machine_finalize(C_VOID *context) { (C_VOID)context; }
 static C_INT vm_session_machine_is_running(C_VOID *context) { vm_session *s = vm_session_provider_selected(context); return s != STD_NULL && vm_session_control_is_running(&s->control); }
 static C_VOID vm_session_machine_print(C_VOID *context) { vm_session *s = vm_session_provider_selected(context); if (s != STD_NULL) vm_session_print_machine(s); }
 static C_INT vm_session_machine_get_window(C_VOID *context) { vm_session *s = vm_session_provider_selected(context); return s != STD_NULL && vm_platform_run_context_get_window_display(&s->platform_run_context); }
@@ -50,7 +48,6 @@ static C_VOID vm_session_machine_stop(C_VOID *context) { vm_session *s = vm_sess
 static C_VOID vm_session_machine_resume(C_VOID *context) { vm_session *s = vm_session_provider_selected(context); if (s != STD_NULL) vm_session_resume(s); }
 
 static const vm_product_console_machine_provider vmSessionMachineProviderTemplate = {
-    vm_session_machine_initialize, vm_session_machine_finalize,
     vm_session_machine_is_running, vm_session_machine_print,
     vm_session_machine_get_window, vm_session_machine_set_window,
     vm_session_machine_print_bios, vm_session_machine_print_status,

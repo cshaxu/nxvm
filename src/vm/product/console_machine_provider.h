@@ -6,8 +6,6 @@
 
 
 typedef struct vm_product_console_machine_provider {
-    C_VOID (*initialize)(C_VOID *context);
-    C_VOID (*finalize)(C_VOID *context);
     C_INT (*is_running)(C_VOID *context);
     C_VOID (*print_machine)(C_VOID *context);
     C_INT (*get_window_display)(C_VOID *context);
