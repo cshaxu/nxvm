@@ -105,7 +105,7 @@ static ntvdm64_status vm_session_provider_describe(C_VOID *context,
             CORE_PRODUCT_SESSION_STATE_PAUSED : CORE_PRODUCT_SESSION_STATE_RUNNING) :
         CORE_PRODUCT_SESSION_STATE_STOPPED;
     snapshot->display = vm_platform_run_context_get_window_display(
-        session->platform_run_context) ? CORE_PRODUCT_SESSION_DISPLAY_WINDOW :
+        &session->platform_run_context) ? CORE_PRODUCT_SESSION_DISPLAY_WINDOW :
         CORE_PRODUCT_SESSION_DISPLAY_CONSOLE;
     STD_SNPRINTF(snapshot->details, sizeof(snapshot->details), "cpu=%s fpu=%s",
         core_machine_cpu_profile_name(session->core_machine_config.cpu_profile),

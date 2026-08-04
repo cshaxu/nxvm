@@ -33,7 +33,7 @@ static C_INT verify(const C_CHAR *fdd, const C_CHAR *hdd, C_INT boot_hdd)
         vm_session_destroy(session);
         return 1;
     }
-    vm_platform_run_context_set_window_display(session->platform_run_context, 0);
+    vm_platform_run_context_set_window_display(&session->platform_run_context, 0);
     vm_session_destroy(session);
     return 0;
 }

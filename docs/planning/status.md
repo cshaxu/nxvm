@@ -430,6 +430,10 @@ T176--T184 one-owner-group migration sequence are fixed in
 transport, and wait-scope aliases are removed; focused mailbox/input/wait
 evidence passed. Artifact: `nxvm_0_5_0176.exe`.
 
+**M5 T177 S1 complete: direct platform run ownership.** Platform run context
+and handle aliases are removed; worker lifecycle and multi-window gates pass.
+Artifact: `nxvm_0_5_0177.exe`.
+
 The completed executor sequence is defined in
 [Facade And Executor Convergence](m5-facade-executor-convergence.md). The
 active session-readiness sequence is defined in
