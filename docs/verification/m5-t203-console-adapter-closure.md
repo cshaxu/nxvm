@@ -3,10 +3,9 @@
 ## Contract
 
 The Console machine-provider vtable remains the VM product/composition
-boundary. `vm_session_borrow_selected()` is the only composition/session source
-that directly borrows the selected session from the core session manager. It
-owns no state. Console callbacks preserve their former null, error, pause, and
-debugger behavior.
+boundary. One typed adapter helper directly borrows the selected session from
+the core session manager. It owns no state. Console callbacks preserve their
+former null, error, pause, and debugger behavior.
 
 ## Evidence
 
