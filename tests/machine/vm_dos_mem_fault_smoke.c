@@ -64,7 +64,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     STD_SIZE_T index;
 
     if (argc != 2 || vm_session_create(STD_NULL, &session) != NTVDM64_STATUS_OK ||
-        vm_machine_fdd_insert_for(session->fdd, argv[1]) != 0) goto fail;
+        vm_machine_fdd_insert_for(&session->fdd, argv[1]) != 0) goto fail;
     thread = CreateThread(STD_NULL, 0u, vm_dos_mem_fault_run_machine, session,
         0u, STD_NULL);
     if (thread == STD_NULL) goto fail;

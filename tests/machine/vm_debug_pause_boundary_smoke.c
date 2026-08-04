@@ -27,7 +27,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     if (session == STD_NULL) return 1;
     vm_session_storage_initialize(session);
     vm_session_control_initialize(session->control, session);
-    if (vm_machine_fdd_insert_for(session->fdd, argv[1]) != 0) {
+    if (vm_machine_fdd_insert_for(&session->fdd, argv[1]) != 0) {
         vm_session_control_finalize(session->control, session);
         vm_session_storage_finalize(session);
         STD_FREE(session);

@@ -76,9 +76,9 @@ typedef struct vm_session {
     core_machine_config core_machine_config;
     core_machine *core_machine;
     t_cmos cmos;
-    t_fdd fdd_storage;
-    t_fdc fdc_storage;
-    t_hdd hdd_storage;
+    t_fdd fdd;
+    t_fdc fdc;
+    t_hdd hdd;
     t_debug debug;
     t_bios default_bios_storage;
     t_qdx default_qdx_storage;
@@ -95,9 +95,6 @@ typedef struct vm_session {
     core_product_debug_context debugger_context;
     uint64_t display_generation;
     core_product_debug_target *debug_target;
-    t_fdd *fdd;
-    t_fdc *fdc;
-    t_hdd *hdd;
     t_bios *default_bios;
     t_qdx *default_qdx;
     vm_profile_default_context *default_profile_context;

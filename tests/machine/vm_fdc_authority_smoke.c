@@ -18,20 +18,14 @@ C_INT main(C_VOID)
     if (session == STD_NULL) return 1;
     vm_session_initialize(session);
     machine = session;
-    if (machine == STD_NULL || machine->fdc == STD_NULL ||
-        machine->fdc->connect.fdd != machine->fdd ||
-        machine->fdc->connect.dma_latch !=
-            core_machine_configuration_shared_dma_latch_borrow(machine->core_machine) ||
-        machine->fdc->connect.dma_primary !=
-            core_machine_configuration_shared_dma_primary_borrow(machine->core_machine) ||
-        machine->fdc->connect.dma_secondary !=
-            core_machine_configuration_shared_dma_secondary_borrow(machine->core_machine) ||
-        machine->fdc->connect.pic_master !=
-            core_machine_configuration_shared_pic_master_borrow(machine->core_machine) ||
-        machine->fdc->connect.pic_slave !=
-            core_machine_configuration_shared_pic_slave_borrow(machine->core_machine) ||
-        machine->fdc->connect.port !=
-            core_machine_configuration_port_borrow(machine->core_machine)) {
+    if (machine == STD_NULL ||
+        machine->fdc.connect.fdd != &machine->fdd ||
+        machine->fdc.connect.dma_latch == STD_NULL ||
+        machine->fdc.connect.dma_primary == STD_NULL ||
+        machine->fdc.connect.dma_secondary == STD_NULL ||
+        machine->fdc.connect.pic_master == STD_NULL ||
+        machine->fdc.connect.pic_slave == STD_NULL ||
+        machine->fdc.connect.port == STD_NULL) {
         vm_session_finalize(session);
         STD_FREE(session);
         return 1;

@@ -443,6 +443,10 @@ FDD debugger gates pass. Artifact: `nxvm_0_5_0178.exe`.
 owners are embedded and their aliases are removed. CMOS and debugger authority
 gates pass. Artifact: `nxvm_0_5_0179.exe`.
 
+**M5 T180 S1 complete: direct media ownership.** FDD, FDC, and HDD are
+embedded; explicit media controls, FDC connection, and FDD DOS prompt evidence
+pass. Artifact: `nxvm_0_5_0180.exe`.
+
 The completed executor sequence is defined in
 [Facade And Executor Convergence](m5-facade-executor-convergence.md). The
 active session-readiness sequence is defined in

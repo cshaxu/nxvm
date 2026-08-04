@@ -15,7 +15,7 @@ C_INT main(C_VOID)
 
     vm_session_initialize(&session);
     machine = (&session);
-    if (machine == STD_NULL || machine->fdd != &machine->fdd_storage) {
+    if (machine == STD_NULL) {
         vm_session_finalize(&session);
         return 1;
     }

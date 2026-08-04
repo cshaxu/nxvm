@@ -26,8 +26,8 @@ static C_INT verify(const C_CHAR *fdd, const C_CHAR *hdd, C_INT boot_hdd)
         return 1;
     }
     vm_session_reset(session);
-    if (vm_machine_fdd_remove_for(session->fdd, STD_NULL) ||
-        vm_machine_hdd_remove(session->hdd, STD_NULL) ||
+    if (vm_machine_fdd_remove_for(&session->fdd, STD_NULL) ||
+        vm_machine_hdd_remove(&session->hdd, STD_NULL) ||
         vm_session_get_reset_vector(session, &vector) != NTVDM64_STATUS_OK ||
         vector.cs != 0xf000u || vector.ip != 0xfff0u) {
         vm_session_destroy(session);
