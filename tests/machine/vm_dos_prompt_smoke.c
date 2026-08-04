@@ -9,7 +9,6 @@
 
 
 #include "core/machine/debug_interface.h"
-#include "core/machine/memory.h"
 #include "core/machine/machine_interface.h"
 
 #include "vm/composition/session/lifecycle.h"
@@ -24,7 +23,7 @@
 #define TEXT_VIDEO_CELLS (80u * 25u)
 #define DOS_PROMPT_TIMEOUT_MILLISECONDS 3000u
 
-static C_INT has_dos_prompt(const t_ram *ram);
+static C_INT has_dos_prompt(const core_machine *machine);
 
 static DWORD WINAPI run_full_pc(C_VOID *opaque)
 {
@@ -71,13 +70,16 @@ C_INT main(C_INT argc, C_CHAR **argv)
     }
     vm_session_control_request_pause(session->control, VM_SESSION_PAUSE_EXPLICIT);
     if (!vm_session_control_wait_for_pause(session->control, 2000u)) goto fail;
-    prompt_seen = has_dos_prompt(core_machine_debug_memory_borrow(
-        session->core_machine));
+    prompt_seen = has_dos_prompt(session->core_machine);
+    if (!prompt_seen) {
+        dump_first_fault(session->core_machine);
+        STD_FPUTS("M5:T70:S2:DOS-PROMPT:TIMEOUT\n", STD_STDERR);
+        goto fail;
+    }
     vm_session_stop(session);
     result = WaitForSingleObject(thread, 2000u);
     CloseHandle(thread);
-    if (result != WAIT_OBJECT_0 || !prompt_seen) {
-        dump_first_fault(session->core_machine);
+    if (result != WAIT_OBJECT_0) {
         STD_FPUTS("M5:T70:S2:DOS-PROMPT:TIMEOUT\n", STD_STDERR);
         goto fail;
     }
@@ -87,19 +89,19 @@ C_INT main(C_INT argc, C_CHAR **argv)
     return 0;
 
 fail:
+    if (session != STD_NULL) dump_first_fault(session->core_machine);
     vm_session_stop(session);
     vm_session_finalize(session);
     STD_FREE(session);
     return 1;
 }
-static C_INT has_dos_prompt(const t_ram *ram)
+static C_INT has_dos_prompt(const core_machine *machine)
 {
-    const C_UCHAR *text;
+    C_UCHAR text[TEXT_VIDEO_CELLS * 2u];
     STD_SIZE_T cell;
 
-    if (ram == STD_NULL || ram->connect.pBase == 0u ||
-        ram->connect.size < TEXT_VIDEO_BASE + TEXT_VIDEO_CELLS * 2u) return 0;
-    text = (const C_UCHAR *)ram->connect.pBase + TEXT_VIDEO_BASE;
+    if (core_machine_debug_read_memory(machine, TEXT_VIDEO_BASE, text,
+            sizeof(text)) != NTVDM64_STATUS_OK) return 0;
     for (cell = 0u; cell + 3u < TEXT_VIDEO_CELLS; ++cell) {
         const C_UCHAR drive = text[cell * 2u];
         if (STD_ISALPHA((C_UCHAR)drive) && text[(cell + 1u) * 2u] == ':' &&

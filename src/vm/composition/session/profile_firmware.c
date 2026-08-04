@@ -17,6 +17,8 @@
 C_VOID vm_session_profile_firmware_initialize(vm_session *session)
 {
     if (session == STD_NULL) return;
+    (C_VOID)core_machine_memory_register_mapping(
+        session->default_profile_context->ram, 0xfffffff0u, 0x000ffff0u, 16u);
     vm_profile_default_bios_initialize(session->default_bios);
     vm_profile_default_bios_add_interrupt(session->default_bios,
         "qdx 10\niret", 0x10);

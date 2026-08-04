@@ -32,10 +32,22 @@ static C_VOID int_13_02_hdd_read_sector(vm_profile_default_context *profile) {
     ntvdm64_type_unsigned_8 head   = cpu->data.dh;
     ntvdm64_type_unsigned_8 cyl    = cpu->data.ch | ((cpu->data.cl & 0xc0) << 8);
     ntvdm64_type_unsigned_8 sector = cpu->data.cl & 0x3f;
+    STD_SIZE_T transfer_bytes;
+    C_VOID *buffer;
+    C_INT failed;
     drive &= 0x7f;
     core_machine_block_geometry geometry;
     core_machine_block_get_geometry_from(profile->block_provider, &geometry);
-    if (drive || !sector || head >= geometry.heads || sector > geometry.sectors || cyl >= geometry.cylinders || !core_machine_block_read_from(profile->block_provider, cyl, head, sector, core_machine_memory_real_address(profile->ram, cpu->data.es.selector, cpu->data.bx), cpu->data.al * geometry.bytes_per_sector)) {
+    transfer_bytes = (STD_SIZE_T)cpu->data.al * geometry.bytes_per_sector;
+    buffer = transfer_bytes == 0u ? STD_NULL : STD_MALLOC(transfer_bytes);
+    failed = drive || !sector || head >= geometry.heads || sector > geometry.sectors ||
+        cyl >= geometry.cylinders || buffer == STD_NULL ||
+        !core_machine_block_read_from(profile->block_provider, cyl, head, sector,
+            buffer, transfer_bytes) ||
+        core_machine_memory_write_real_to(profile->ram, cpu->data.es.selector,
+            cpu->data.bx, buffer, transfer_bytes) != NTVDM64_STATUS_OK;
+    STD_FREE(buffer);
+    if (failed) {
         /* sector not found */
         cpu->data.ah = 0x04;
         NTVDM64_TYPE_SET_BIT(cpu->data.eflags, VCPU_EFLAGS_CF);
@@ -52,10 +64,22 @@ static C_VOID int_13_03_hdd_write_sector(vm_profile_default_context *profile) {
     ntvdm64_type_unsigned_8 head   = cpu->data.dh;
     ntvdm64_type_unsigned_8 cyl    = cpu->data.ch | ((cpu->data.cl & 0xc0) << 8);
     ntvdm64_type_unsigned_8 sector = cpu->data.cl & 0x3f;
+    STD_SIZE_T transfer_bytes;
+    C_VOID *buffer;
+    C_INT failed;
     drive &= 0x7f;
     core_machine_block_geometry geometry;
     core_machine_block_get_geometry_from(profile->block_provider, &geometry);
-    if (drive || !sector || head >= geometry.heads || sector > geometry.sectors || cyl >= geometry.cylinders || !core_machine_block_write_from(profile->block_provider, cyl, head, sector, core_machine_memory_real_address(profile->ram, cpu->data.es.selector, cpu->data.bx), cpu->data.al * geometry.bytes_per_sector)) {
+    transfer_bytes = (STD_SIZE_T)cpu->data.al * geometry.bytes_per_sector;
+    buffer = transfer_bytes == 0u ? STD_NULL : STD_MALLOC(transfer_bytes);
+    failed = drive || !sector || head >= geometry.heads || sector > geometry.sectors ||
+        cyl >= geometry.cylinders || buffer == STD_NULL ||
+        core_machine_memory_read_real_from(profile->ram, cpu->data.es.selector,
+            cpu->data.bx, buffer, transfer_bytes) != NTVDM64_STATUS_OK ||
+        !core_machine_block_write_from(profile->block_provider, cyl, head, sector,
+            buffer, transfer_bytes);
+    STD_FREE(buffer);
+    if (failed) {
         /* sector not found */
         cpu->data.ah = 0x04;
         NTVDM64_TYPE_SET_BIT(cpu->data.eflags, VCPU_EFLAGS_CF);

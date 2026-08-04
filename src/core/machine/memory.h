@@ -18,8 +18,20 @@ typedef struct {
 } t_ram_data;
 
 typedef struct {
-    ntvdm64_type_virtual_address pBase; /* memory base address is 20 bit */
-    ntvdm64_type_native_unsigned size; /* memory size in byte */
+    ntvdm64_type_unsigned_32 physical_start;
+    ntvdm64_type_unsigned_32 backing_start;
+    ntvdm64_type_native_unsigned bytes;
+} core_machine_memory_mapping;
+
+#define CORE_MACHINE_MEMORY_MAPPING_CAPACITY 4u
+
+typedef struct {
+    ntvdm64_type_virtual_address backing;
+    ntvdm64_type_native_unsigned installed_bytes;
+    ntvdm64_type_native_unsigned backing_capacity;
+    core_machine_memory_mapping mappings[CORE_MACHINE_MEMORY_MAPPING_CAPACITY];
+    ntvdm64_type_native_unsigned mapping_count;
+    ntvdm64_type_bool mappings_frozen;
 } t_ram_connect;
 
 typedef struct t_ram {
@@ -31,9 +43,9 @@ typedef struct t_ram {
 #define VRAM_FLAG_A20 0x02
 
 
-C_VOID core_machine_memory_read_physical(t_ram *ram, ntvdm64_type_unsigned_32 physical,
+ntvdm64_status core_machine_memory_read_physical(t_ram *ram, ntvdm64_type_unsigned_32 physical,
     ntvdm64_type_virtual_address destination, ntvdm64_type_native_unsigned size);
-C_VOID core_machine_memory_write_physical(t_ram *ram, ntvdm64_type_unsigned_32 physical,
+ntvdm64_status core_machine_memory_write_physical(t_ram *ram, ntvdm64_type_unsigned_32 physical,
     ntvdm64_type_virtual_address source, ntvdm64_type_native_unsigned size);
 C_VOID core_machine_memory_initialize(t_ram *ram);
 C_VOID core_machine_memory_reset(t_ram *ram);
@@ -41,13 +53,15 @@ C_VOID core_machine_memory_finalize(t_ram *ram);
 C_VOID core_machine_memory_register_ports(t_ram *ram, t_port *port);
 
 
-C_VOID core_machine_memory_allocate_for(t_ram *ram, STD_SIZE_T bytes);
-C_VOID core_machine_memory_read_real_from(t_ram *ram, uint16_t segment,
+ntvdm64_status core_machine_memory_allocate_for(t_ram *ram, STD_SIZE_T bytes);
+ntvdm64_status core_machine_memory_register_mapping(t_ram *ram,
+    ntvdm64_type_unsigned_32 physical_start,
+    ntvdm64_type_unsigned_32 backing_start, STD_SIZE_T bytes);
+C_VOID core_machine_memory_freeze_mappings(t_ram *ram);
+ntvdm64_status core_machine_memory_read_real_from(t_ram *ram, uint16_t segment,
     uint16_t offset, C_VOID *out_data, STD_SIZE_T size);
-C_VOID core_machine_memory_write_real_to(t_ram *ram, uint16_t segment,
+ntvdm64_status core_machine_memory_write_real_to(t_ram *ram, uint16_t segment,
     uint16_t offset, const C_VOID *in_data, STD_SIZE_T size);
-C_VOID *core_machine_memory_real_address(t_ram *ram, uint16_t segment,
-    uint16_t offset);
 
 #ifdef __cplusplus
 }/*_EOCD_*/
