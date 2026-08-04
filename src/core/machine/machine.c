@@ -352,6 +352,9 @@ type_status core_machine_create(
         core_machine_pic_timer_output, &machine->shared_pic_master);
     core_machine_pic_initialize(&machine->shared_pic_master,
         &machine->shared_pic_slave, &machine->executor_port);
+    core_machine_kbc_bind_core_services(&machine->shared_kbc,
+        &machine->shared_pic_master, &machine->shared_pic_slave,
+        &machine->executor_memory, &machine->executor_cpu_execution);
     core_machine_pit_set_output(&machine->shared_pit, 1, STD_NULL, STD_NULL);
 
     *out_machine = machine;
@@ -546,6 +549,16 @@ type_status core_machine_request_stop(core_machine *machine)
 
     STD_ATOMIC_STORE(&machine->stop_requested, 1);
     return TYPE_STATUS_OK;
+}
+
+type_status core_machine_keyboard_submit_scan_code(core_machine *machine,
+    uint8_t scan_code)
+{
+    if (machine == STD_NULL || machine->lifecycle == CORE_MACHINE_INITIALIZED ||
+        machine->lifecycle == CORE_MACHINE_FAULTED) {
+        return TYPE_STATUS_INVALID_STATE;
+    }
+    return core_machine_kbc_submit_scan_code(&machine->shared_kbc, scan_code);
 }
 
 type_status core_machine_report_fault(
