@@ -54,6 +54,11 @@ where `NNNN` is the four-digit decimal task number. For example, T48 is
 `build/output/nxvm_0_5_0048.exe` when T48 completes. Design-only subtasks do
 not create artifacts by themselves.
 
+Standalone documentation tasks use the `M<milestone> Td` identifier and do not
+allocate `NNNN`, change the current task artifact version, or create an
+executable. Design work explicitly attached to an implementation task uses that
+task's subtask identifier and follows its artifact policy.
+
 The bootable product keeps the Virtual Machine identity. After M9 implements
 the non-bootable DOS runner and proves that `ntvdm64.exe` cannot continue into
 standalone disk boot or an implicit guest DOS shell, that product uses:

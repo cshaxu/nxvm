@@ -7,6 +7,25 @@ stop conditions. The rules review names each applicable invariant, its planned
 evidence, and any requested owner-approved exception; a task may mark a rule
 not applicable only with a short reason.
 
+## Work Identifiers
+
+Numeric `T` identifiers are reserved for implementation tasks. A standalone
+governance, roadmap, architecture, audit, or other documentation task is
+identified as `M<milestone> Td`, where `d` literally means documentation. It
+does not allocate a numeric task identifier, advance a task-version artifact,
+or create a runnable-output requirement. A multi-step documentation task may
+use `M<milestone> Td S<subtask>`.
+
+Design or contract work that is an explicit prerequisite of a future
+implementation task belongs to that task's subtask sequence, for example
+`M5 T208 S1`. That use reserves `T208` because a later implementation subtask
+will consume it. Do not allocate a numeric `T` merely to make independent
+documentation work look task-shaped.
+
+Commit subjects are `M<milestone> Td [S<subtask>] P<part>: description` for a
+standalone documentation task, or `M<milestone> T<task> S<subtask> P<part>:
+description` for an implementation task and its task-specific design work.
+
 A design milestone is not complete until it has produced the bounded Task and
 subtask breakdown for its immediate implementation milestone. The breakdown
 maps each task to an approved decision, contract, regression set, acceptance
@@ -22,7 +41,8 @@ tracking, verification, and provenance facts where needed. A later governed
 history-consolidation task may replace completed per-task documents with a
 milestone summary; Git history remains the detailed evidence source.
 Documentation/design tasks apply only the rules relevant to their artifact and
-do not manufacture runtime verification requirements.
+do not manufacture runtime verification requirements. Standalone `Td` work
+does not create a task artifact or change the current artifact version.
 
 ## Milestone Closure Evidence
 
