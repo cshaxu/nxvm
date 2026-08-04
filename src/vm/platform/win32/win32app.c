@@ -13,6 +13,7 @@
 #include "vm/platform/win32/win32app.h"
 
 #define TIMER_PAINT 0
+#define WIN32APP_DISPLAY_READY_TIMEOUT_MILLISECONDS 5000u
 
 typedef struct win32app_run_handle {
     vm_platform_run_handle *owner;
@@ -22,10 +23,15 @@ typedef struct win32app_run_handle {
     HWND window;
     HINSTANCE instance;
     C_INT initial_flip;
-    C_INT display_ready;
-    C_INT display_failed;
-    C_INT stop_requested;
+    volatile LONG display_ready;
+    volatile LONG display_failed;
+    volatile LONG stop_requested;
 } win32app_run_handle;
+
+static C_INT win32app_atomic_read(const volatile LONG *value)
+{
+    return (C_INT)InterlockedCompareExchange((volatile LONG *)value, 0, 0);
+}
 
 static LRESULT CALLBACK win32app_window_procedure(HWND window, UINT message,
     WPARAM wParam, LPARAM lParam)
@@ -127,11 +133,11 @@ static DWORD WINAPI win32app_display_thread(LPVOID opaque)
     w32adispInit((w32adisp_context *)platform->window_renderer, handle->window,
         platform->presentation);
     InterlockedExchange((volatile LONG *)&handle->display_ready, 1);
-    while (!handle->stop_requested && handle->initial_flip ==
+    while (!win32app_atomic_read(&handle->stop_requested) && handle->initial_flip ==
             vm_platform_execution_get_flip_for(handle->platform->execution)) {
         core_product_wait_milliseconds(handle->platform->wait_scope, 100u);
     }
-    if (handle->stop_requested) {
+    if (win32app_atomic_read(&handle->stop_requested)) {
         DestroyWindow(handle->window);
         return 0;
     }
@@ -181,10 +187,14 @@ ntvdm64_status vm_platform_win32app_run_handle_start(
         vm_platform_win32app_run_handle_finalize(owner);
         return NTVDM64_STATUS_INVALID_STATE;
     }
-    while (!handle->display_ready && !handle->display_failed) {
+    for (DWORD waited = 0u;
+         !win32app_atomic_read(&handle->display_ready) &&
+         !win32app_atomic_read(&handle->display_failed) &&
+         waited < WIN32APP_DISPLAY_READY_TIMEOUT_MILLISECONDS;
+         ++waited) {
         core_product_wait_milliseconds(context->wait_scope, 1u);
     }
-    if (!handle->display_ready) {
+    if (!win32app_atomic_read(&handle->display_ready)) {
         vm_platform_win32app_run_handle_request_stop(owner);
         vm_platform_win32app_run_handle_join(owner);
         vm_platform_win32app_run_handle_finalize(owner);
