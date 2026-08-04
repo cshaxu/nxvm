@@ -249,6 +249,13 @@ guest-observable behavior.
   Keep the focused 8086-rejects/80186-accepts probe and retain the FDD run only
   as an expected-negative compatibility diagnostic; it is not a T209 blocker.
 
+- [x] **Keyboard firmware-portal retirement (`TODO(High)`, T210).** Default
+  profile keyboard input now follows core KBC `60h/64h` and IRQ1 through ROM
+  `INT 09h`, BDA buffering, and ROM `INT 16h`; F1/F3 portal registration and
+  C callback handlers are removed. The T210 closure gate, KBC port probe, DOS
+  `ver` regression, Console/debugger, and two-session matrix pass. Rapid
+  typeahead and the broader advanced-KBC protocol remain deferred below.
+
 - [ ] **Remove default-profile firmware shortcuts (`TODO(High)`, M5 core
   closure condition).** Completion of T209 removes the QDX `F1 <command>`
   CPU opcode hack, but does not make the replacement firmware `INT F0h`--`F5h`
@@ -258,7 +265,7 @@ guest-observable behavior.
   (`F4h`/`F5h`). M5 may not claim a fully hardware-owned PC/AT execution path
   while those portals remain. Retire each portal only after its guest-visible
   behavior has a real owner and probe: KBC ports/IRQ1 plus ROM BIOS keyboard
-  service; VADP ports/VRAM plus ROM BIOS video service; and a guest-visible
+  service (completed by T210); VADP ports/VRAM plus ROM BIOS video service; and a guest-visible
   HDD controller with port/IRQ/PIO or DMA behavior plus ROM BIOS disk service.
   Replace the boot-failure stop helper with an explicit product/session
   lifecycle boundary. The final task removes `firmware_portal.*`, private
@@ -293,10 +300,11 @@ guest-observable behavior.
   ACK/reset/enable/disable/identify, IRQ1, A20/reset, and a full-FIFO
   `NTVDM64_STATUS_INVALID_STATE`. Platform input is consumed at the execution
   boundary, mapped by the default profile, delivered through KBC, and consumed
-  by QDKEYB INT 09h before INT 16h reads BDA. See
+  by default-ROM INT 09h before INT 16h reads BDA. See
   the hardware-device verification template.
 - [ ] **8042 advanced keyboard protocol (`TODO(Medium)`).** Admit each of
-  set-1 break bytes and E0/E1 extended sequences, scan-code-set selection,
+  set-1 break bytes and E0/E1 extended sequences, rapid DOS typeahead queue
+  delivery, scan-code-set selection,
   controller translation, LED/typematic commands, AUX mouse/IRQ12, controller
   timing, and error/resend edge cases only with specific port and DOS probes.
   Do not add a second host queue or place host policy in `core/machine`.

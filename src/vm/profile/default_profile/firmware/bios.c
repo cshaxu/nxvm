@@ -37,6 +37,50 @@ static C_VOID bios_write_dword(t_ram *ram, uint16_t segment, uint16_t offset,
         sizeof(value));
 }
 
+static C_VOID bios_load_keyboard_tables(t_ram *ram)
+{
+    static const uint8_t normal[0x59] = {
+        [0x01] = 0x1bu, [0x02] = '1', [0x03] = '2', [0x04] = '3',
+        [0x05] = '4', [0x06] = '5', [0x07] = '6', [0x08] = '7',
+        [0x09] = '8', [0x0a] = '9', [0x0b] = '0', [0x0c] = '-',
+        [0x0d] = '=', [0x0e] = 0x08u, [0x0f] = 0x09u,
+        [0x10] = 'q', [0x11] = 'w', [0x12] = 'e', [0x13] = 'r',
+        [0x14] = 't', [0x15] = 'y', [0x16] = 'u', [0x17] = 'i',
+        [0x18] = 'o', [0x19] = 'p', [0x1a] = '[', [0x1b] = ']',
+        [0x1c] = 0x0du, [0x1e] = 'a', [0x1f] = 's', [0x20] = 'd',
+        [0x21] = 'f', [0x22] = 'g', [0x23] = 'h', [0x24] = 'j',
+        [0x25] = 'k', [0x26] = 'l', [0x27] = ';', [0x28] = '\'',
+        [0x29] = '`', [0x2b] = '\\', [0x2c] = 'z', [0x2d] = 'x',
+        [0x2e] = 'c', [0x2f] = 'v', [0x30] = 'b', [0x31] = 'n',
+        [0x32] = 'm', [0x33] = ',', [0x34] = '.', [0x35] = '/',
+        [0x37] = '*', [0x39] = ' ', [0x4a] = '-', [0x4e] = '+'
+    };
+    static const uint8_t shifted[0x59] = {
+        [0x01] = 0x1bu, [0x02] = '!', [0x03] = '@', [0x04] = '#',
+        [0x05] = '$', [0x06] = '%', [0x07] = '^', [0x08] = '&',
+        [0x09] = '*', [0x0a] = '(', [0x0b] = ')', [0x0c] = '_',
+        [0x0d] = '+', [0x0e] = 0x08u, [0x10] = 'Q', [0x11] = 'W',
+        [0x12] = 'E', [0x13] = 'R', [0x14] = 'T', [0x15] = 'Y',
+        [0x16] = 'U', [0x17] = 'I', [0x18] = 'O', [0x19] = 'P',
+        [0x1a] = '{', [0x1b] = '}', [0x1c] = 0x0du, [0x1e] = 'A',
+        [0x1f] = 'S', [0x20] = 'D', [0x21] = 'F', [0x22] = 'G',
+        [0x23] = 'H', [0x24] = 'J', [0x25] = 'K', [0x26] = 'L',
+        [0x27] = ':', [0x28] = '"', [0x29] = '~', [0x2b] = '|',
+        [0x2c] = 'Z', [0x2d] = 'X', [0x2e] = 'C', [0x2f] = 'V',
+        [0x30] = 'B', [0x31] = 'N', [0x32] = 'M', [0x33] = '<',
+        [0x34] = '>', [0x35] = '?', [0x37] = '*', [0x39] = ' ',
+        [0x4a] = '-', [0x4e] = '+'
+    };
+    STD_SIZE_T index;
+
+    for (index = 0u; index < sizeof(normal); ++index) {
+        bios_write_byte(ram, VBIOS_ADDR_START_SEG,
+            VBIOS_ADDR_KEYB_SCAN_ASCII_NORMAL + (uint16_t)index, normal[index]);
+        bios_write_byte(ram, VBIOS_ADDR_START_SEG,
+            VBIOS_ADDR_KEYB_SCAN_ASCII_SHIFT + (uint16_t)index, shifted[index]);
+    }
+}
+
 static type_unsigned_32 assemble(t_ram *ram, const type_string_pointer stmt, type_unsigned_16 seg,
     type_unsigned_16 off) {
     type_unsigned_32 len = 0;
@@ -165,6 +209,7 @@ C_VOID vm_profile_default_bios_reset(t_bios *bios, t_ram *ram,
     bios->data.buildCS = VBIOS_ADDR_START_SEG;
     bios->data.buildIP = VBIOS_ADDR_START_OFF;
     bios_load_data(bios, ram, block_provider);
+    bios_load_keyboard_tables(ram);
     bios_load_rom_info(ram);
     bios_load_interrupts(bios, ram);
     bios_load_post(bios, ram);

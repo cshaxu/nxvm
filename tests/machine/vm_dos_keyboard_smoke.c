@@ -72,6 +72,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     for (index = 0u; index < sizeof(scan_codes); ++index) {
         vm_platform_win32_keyboard_make_key_for(&session->platform_run_context,
             &session->platform_run_handle, scan_codes[index], virtual_keys[index]);
+        Sleep(50u);
     }
     for (elapsed = 0u; elapsed < 1000u; elapsed += 10u) {
         if (vm_dos_keyboard_has_text(session, "ver")) break;
@@ -82,7 +83,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     CloseHandle(thread);
     vm_session_destroy(session);
     if (elapsed == 1000u) return 1;
-    STD_PRINTF("M5:T151:S2:DOS-KEYBOARD:OK\n");
+    STD_PRINTF("M5:T210:S3:KEYBOARD:DOS:OK\n");
     return 0;
 
 fail:

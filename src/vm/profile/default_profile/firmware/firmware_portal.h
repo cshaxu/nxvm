@@ -13,9 +13,7 @@ extern "C" {
 typedef struct vm_profile_default_context vm_profile_default_context;
 
 #define VM_PROFILE_DEFAULT_PORTAL_STOP            0xf0u
-#define VM_PROFILE_DEFAULT_PORTAL_KEYBOARD_IRQ1   0xf1u
 #define VM_PROFILE_DEFAULT_PORTAL_VIDEO_INT10     0xf2u
-#define VM_PROFILE_DEFAULT_PORTAL_KEYBOARD_INT16  0xf3u
 #define VM_PROFILE_DEFAULT_PORTAL_HDD_READ        0xf4u
 #define VM_PROFILE_DEFAULT_PORTAL_HDD_WRITE       0xf5u
 #define VM_PROFILE_DEFAULT_PORTAL_ORIGIN_LINEAR_START 0x000f0000u
