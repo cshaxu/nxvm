@@ -127,8 +127,6 @@ C_VOID vm_session_storage_initialize(vm_session *machine)
     machine->default_profile_context->display_provider = machine->display_provider;
     vm_platform_presentation_mailbox_initialize(&machine->presentation_mailbox);
     machine->default_profile_context->wait_scope = &machine->wait_scope;
-    machine->platform_run_context = &machine->platform_run_context_storage;
-    machine->platform_run_handle = &machine->platform_run_handle_storage;
     machine->debugger_context = &machine->debugger_context_storage;
     core_product_debug_context_initialize(machine->debugger_context);
     machine->display_generation = 0u;
@@ -155,8 +153,6 @@ C_VOID vm_session_storage_finalize(vm_session *machine)
     machine->keyboard_provider = STD_NULL;
     core_machine_display_provider_slot_finalize(machine->display_provider);
     machine->display_provider = STD_NULL;
-    machine->platform_run_context = STD_NULL;
-    machine->platform_run_handle = STD_NULL;
     machine->debugger_context = STD_NULL;
     STD_FREE(machine->control);
     machine->control = STD_NULL;
@@ -209,7 +205,7 @@ ntvdm64_status vm_session_reconfigure_memory(vm_session *session,
 {
     if (session == STD_NULL || session->control == STD_NULL ||
         vm_session_control_is_running(session->control) ||
-        vm_platform_run_handle_is_active(session->platform_run_handle)) {
+        vm_platform_run_handle_is_active(&session->platform_run_handle)) {
         return NTVDM64_STATUS_INVALID_STATE;
     }
     if (core_machine_reconfigure_memory(session->core_machine, memory_bytes) !=

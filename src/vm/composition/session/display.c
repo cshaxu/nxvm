@@ -66,7 +66,7 @@ static C_VOID vmCompositionDisplayModeChanged(C_VOID *context)
     vm_session *machine = context;
 
     vm_session_publish_display(machine, 1);
-    vm_platform_display_set_screen(machine->platform_run_context);
+    vm_platform_display_set_screen(&machine->platform_run_context);
 }
 
 C_VOID vm_session_bind_display(vm_session *machine)

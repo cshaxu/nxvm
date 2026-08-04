@@ -30,7 +30,7 @@ C_INT main(C_VOID)
         vm_session_destroy(session);
         return 1;
     }
-    vm_platform_win32_keyboard_make_key_for(session->platform_run_context,
+    vm_platform_win32_keyboard_make_key_for(&session->platform_run_context,
         0x1eu, 'A');
     if (!vm_keyboard_host_ingress_read_word(session,
             QDKEYB_VBIOS_ADDR_KEYB_BUF_TAIL, &tail) || tail != 0x0420u ||

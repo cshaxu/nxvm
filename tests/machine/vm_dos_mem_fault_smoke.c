@@ -74,7 +74,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     }
     if (elapsed == DOS_PROMPT_TIMEOUT_MILLISECONDS) goto fail;
     for (index = 0u; index < sizeof(scan_codes); ++index) {
-        vm_platform_win32_keyboard_make_key_for(session->platform_run_context,
+        vm_platform_win32_keyboard_make_key_for(&session->platform_run_context,
             scan_codes[index], virtual_keys[index]);
     }
     result = WaitForSingleObject(thread, MEM_FAULT_TIMEOUT_MILLISECONDS);
