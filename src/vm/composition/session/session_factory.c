@@ -14,17 +14,6 @@
 #include "vm/platform/platform.h"
 #include "vm/profile/default_profile/firmware/bios.h"
 
-static vm_session *vm_session_provider_selected(C_VOID *context)
-{
-    C_VOID *session = STD_NULL;
-
-    if (core_product_session_manager_borrow_selected(
-            (core_product_session_manager *)context, &session) != TYPE_STATUS_OK) {
-        return STD_NULL;
-    }
-    return (vm_session *)session;
-}
-
 static C_INT vm_session_provider_parse_cpu(const C_CHAR *value,
     core_machine_cpu_profile *out_profile)
 {

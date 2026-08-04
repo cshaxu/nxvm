@@ -18,7 +18,11 @@ M5 has preserved the bootable NXVM Console, debugger, boot sequence, and FDD
 fixture behavior while moving the whole-PC execution path into the documented
 `core/` and `vm/` ownership model.
 
-**Current active subtask:** none. **M5 T202 complete:** VM keyboard transport
+**Current active subtask:** none. **M5 T203 complete:** the retained Console
+machine-provider vtable now uses readable callbacks, and one composition helper
+is the sole direct core selected-session borrow point. Console/session semantics
+and debugger ordering are unchanged. Evidence is
+[`M5-T203.md`](../tracking/M5-T203.md). **M5 T202 complete:** VM keyboard transport
 now contains only the real guest keypress route; its test-only modifier-query
 façade and session forwarding switch are removed. Core keyboard provider
 modifier observation is unchanged. Evidence is

@@ -23,6 +23,13 @@ import. `docs/planning/status.md` remains authoritative for active work.
 
 ## Current Architecture Closure
 
+- [x] **Console adapter readability and selected borrow closure (`TODO(Medium)`, T203).**
+  T203 retains the Console machine-provider vtable, expands its callbacks into
+  ordinary functions, and makes `vm_session_borrow_selected()` the sole
+  composition call to the core selected-borrow API. Failed-borrow and debugger
+  pause/wait/context behavior are unchanged; a source gate prevents duplicate
+  direct borrowing and obsolete selected-session wrappers.
+
 - [x] **VM keyboard transport surface closure (`TODO(Medium)`, T202).**
   T202 removed the test-only platform modifier enum/query callback and session
   forwarding switch. Core keyboard-provider modifier observation is retained;
