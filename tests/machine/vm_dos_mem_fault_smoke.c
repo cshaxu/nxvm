@@ -17,7 +17,7 @@
 
 static DWORD WINAPI vm_dos_mem_fault_run_machine(C_VOID *opaque)
 {
-    vm_session_control_start(((vm_session *)opaque)->control);
+    vm_session_control_start(&((vm_session *)opaque)->control);
     return 0u;
 }
 

@@ -21,7 +21,7 @@ static C_INT verify(const C_CHAR *fdd, const C_CHAR *hdd, C_INT boot_hdd)
     vm_session *session = STD_NULL;
 
     if (vm_session_create(&config, &session) != NTVDM64_STATUS_OK ||
-        vm_session_control_is_running(session->control)) {
+        vm_session_control_is_running(&session->control)) {
         vm_session_destroy(session);
         return 1;
     }

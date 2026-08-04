@@ -690,7 +690,9 @@ function(add_nxvm_version_artifact target version)
         message(FATAL_ERROR "Invalid NXVM task artifact version: ${version}")
     endif()
 
-    add_executable(${target} EXCLUDE_FROM_ALL src/vm/main.c)
+    add_executable(${target} EXCLUDE_FROM_ALL
+        src/vm/main.c
+        src/vm/composition/session/machine_info.c)
     target_compile_definitions(${target} PRIVATE "NXVM_BUILD_SUFFIX=\"${version}\"")
     target_include_directories(${target} PRIVATE
         "${CMAKE_SOURCE_DIR}/src")
@@ -870,6 +872,7 @@ add_nxvm_version_artifact(nxvm-0-5-0179 "0.5.0179")
 add_nxvm_version_artifact(nxvm-0-5-0180 "0.5.0180")
 add_nxvm_version_artifact(nxvm-0-5-0181 "0.5.0181")
 add_nxvm_version_artifact(nxvm-0-5-0182 "0.5.0182")
+add_nxvm_version_artifact(nxvm-0-5-0183 "0.5.0183")
 
 option(NTVDM64_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)

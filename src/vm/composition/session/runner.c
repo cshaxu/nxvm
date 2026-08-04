@@ -15,9 +15,8 @@ C_VOID vm_session_runner_run(vm_session *session)
     core_machine_run_result result;
     vm_session_control_state *control;
 
-    if (session == STD_NULL || session->core_machine == STD_NULL ||
-        session->control == STD_NULL) return;
-    control = session->control;
+    if (session == STD_NULL || session->core_machine == STD_NULL) return;
+    control = &session->control;
     while (STD_ATOMIC_LOAD(&control->flagRun)) {
         if (STD_ATOMIC_EXCHANGE(&control->flagReset, NTVDM64_TYPE_FALSE)) {
             vm_session_execution_context_reset(&control->execution_context);
