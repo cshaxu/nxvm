@@ -434,6 +434,11 @@ evidence passed. Artifact: `nxvm_0_5_0176.exe`.
 and handle aliases are removed; worker lifecycle and multi-window gates pass.
 Artifact: `nxvm_0_5_0177.exe`.
 
+**M5 T178 S1 complete: direct debugger-context ownership.** The debugger
+command context is embedded, while the independently allocated lazy target is
+retained with explicit teardown. Debug target, Console lifecycle, and unified
+FDD debugger gates pass. Artifact: `nxvm_0_5_0178.exe`.
+
 The completed executor sequence is defined in
 [Facade And Executor Convergence](m5-facade-executor-convergence.md). The
 active session-readiness sequence is defined in
