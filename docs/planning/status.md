@@ -421,6 +421,11 @@ artifact/version gates are closed. T165 is historical transition evidence only.
 Evidence is [`M5-T174.md`](../tracking/M5-T174.md); artifact
 `nxvm_0_5_0174.exe` is verified.
 
+**M5 T175 S1 complete: VM session owner-alias design.** The direct-owner
+criterion, two retained pointer owners, embedded control decision, and
+T176--T184 one-owner-group migration sequence are fixed in
+[`m5-t175-s1.md`](subtasks/m5-t175-s1.md). No runtime source changed.
+
 The completed executor sequence is defined in
 [Facade And Executor Convergence](m5-facade-executor-convergence.md). The
 active session-readiness sequence is defined in
