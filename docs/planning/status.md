@@ -18,7 +18,11 @@ M5 has preserved the bootable NXVM Console, debugger, boot sequence, and FDD
 fixture behavior while moving the whole-PC execution path into the documented
 `core/` and `vm/` ownership model.
 
-**Current active subtask:** none. **M5 T200 complete:** host modifier/toggle
+**Current active subtask:** none. **M5 T201 complete:** VM keyboard transport
+now carries only modifier reads and guest key presses. Win32 and Linux F9 both
+report `STOP_REQUESTED` through their borrowed live run handle; the runner is
+the only session-control consumer. Historical guest F9 forwarding remains.
+Evidence is [`M5-T201.md`](../tracking/M5-T201.md). **M5 T200 complete:** host modifier/toggle
 snapshots now enter only through session-owned ingress and are consumed only
 at the runner command boundary. Consecutive state snapshots coalesce without
 crossing a queued key press; the direct platform-to-provider callback is gone.

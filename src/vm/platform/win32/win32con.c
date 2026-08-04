@@ -47,8 +47,8 @@ static C_VOID win32con_process_input(const win32con_run_handle *handle)
         scan_code = (UCHAR)input.Event.KeyEvent.wVirtualScanCode;
         virtual_key = (UCHAR)input.Event.KeyEvent.wVirtualKeyCode;
         if (input.Event.KeyEvent.bKeyDown) {
-            vm_platform_win32_keyboard_make_key_for(handle->platform, scan_code,
-                virtual_key);
+            vm_platform_win32_keyboard_make_key_for(handle->platform,
+                handle->owner, scan_code, virtual_key);
         } else {
             vm_platform_win32_keyboard_make_status_for(handle->platform);
         }

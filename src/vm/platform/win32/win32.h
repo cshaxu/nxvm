@@ -14,7 +14,7 @@ extern "C" {
 
 C_VOID vm_platform_win32_keyboard_make_status_for(const vm_platform_run_context *context);
 C_VOID vm_platform_win32_keyboard_make_key_for(const vm_platform_run_context *context,
-                             C_UCHAR scanCode, C_UCHAR virtualKey);
+    vm_platform_run_handle *owner, C_UCHAR scanCode, C_UCHAR virtualKey);
 
 #define vm_platform_win32_sleep Sleep
 C_VOID vm_platform_win32_display_set_screen(WIN32_BOOL flagWindow,

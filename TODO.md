@@ -23,6 +23,17 @@ import. `docs/planning/status.md` remains authoritative for active work.
 
 ## Current Architecture Closure
 
+- [x] **Host cancellation boundary convergence (`TODO(High)`, T201).**
+  Windows F9 formerly reached session stop through keyboard transport, while
+  Linux reported `STOP_REQUESTED` to the live run handle. T201 removed keyboard
+  lifecycle callbacks: every host cancellation producer now reports only
+  through its backend's borrowed run handle and the runner consumes the report. Retain
+  existing guest F9 key forwarding, Console/debugger, window/Console,
+  two-session, and FDD DOS-prompt behavior. Linux native runtime evidence
+  remains deferred; source/CMake parity is verified here. The T201 source gate
+  rejects a return of keyboard lifecycle callbacks or direct platform
+  session/core stop calls.
+
 ### Core Machine And VM Composition
 
 - [x] **Core-owned generic-device lifecycle.** T141 moved CPU/bus/memory and

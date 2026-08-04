@@ -82,7 +82,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     stage = "MEM command completion";
     for (index = 0u; index < sizeof(scan_codes); ++index) {
         vm_platform_win32_keyboard_make_key_for(&session->platform_run_context,
-            scan_codes[index], virtual_keys[index]);
+            &session->platform_run_handle, scan_codes[index], virtual_keys[index]);
     }
     result = WaitForSingleObject(thread, MEM_FAULT_TIMEOUT_MILLISECONDS);
     if (result != WAIT_OBJECT_0 && result != WAIT_TIMEOUT) goto fail;

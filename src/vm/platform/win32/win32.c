@@ -48,13 +48,13 @@ C_VOID vm_platform_win32_keyboard_make_status_for(const vm_platform_run_context 
         asynchronous_keys, toggle_keys);
 }
 C_VOID vm_platform_win32_keyboard_make_key_for(
-    const vm_platform_run_context *context, C_UCHAR scanCode,
-    C_UCHAR virtualKey)
+    const vm_platform_run_context *context, vm_platform_run_handle *owner,
+    C_UCHAR scanCode, C_UCHAR virtualKey)
 {
     vm_platform_win32_keyboard_make_status_for(context);
     if (context == STD_NULL) return;
     if (virtualKey == VK_F9) {
-        vm_platform_keyboard_request_stop_for(context->keyboard);
+        vm_platform_run_handle_report(owner, VM_PLATFORM_RUN_EVENT_STOP_REQUESTED);
     }
     vm_platform_keyboard_receive_key_press_for(context->keyboard, scanCode,
         virtualKey);
