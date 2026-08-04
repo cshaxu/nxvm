@@ -8,6 +8,8 @@ M5 remains open. `M5 Td S2` clarified documentation entry points only; it did
 not close any M5 technical or verification item. The earlier documentation-only
 commit labels `T208` and `T209` are reclassified as `M5 Td S1` and `M5 Td S2`;
 they do not reserve numeric implementation task identifiers.
+`M5 Td S3` records the ROI-ordered NXVM PC/AT workstream in `TODO.md`; it does
+not activate an implementation task or change M5 closure state.
 
 ## Milestone State
 
