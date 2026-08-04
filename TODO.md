@@ -28,13 +28,14 @@ define NXVM completion, and M6 must not begin merely because an NXVM device
 task is pending. This is an ROI-ordered queue, not an activated task breakdown:
 numeric `T` identifiers are assigned only when implementation is admitted.
 
-Every admitted device task has three bounded subtasks: contract and port-level
-probe; implementation at the real CPU/bus/device/firmware/profile owner; and
-a DOS or system-image regression. Bochs 2.6 may supply a bounded differential
-reference with checkpoints and budgets, but never implementation code, a
-runtime dependency, or substitute acceptance evidence. No task may rely on a
-BIOS hack, host shortcut, or application special case for a guest-observable
-behavior.
+Every admitted device task follows the three-subtask
+[hardware-device verification template](docs/compatibility/hardware-device-verification.md):
+contract and port-level probe; implementation at the real
+CPU/bus/device/firmware/profile owner; and DOS or system-image regression.
+Bochs 2.6 may supply bounded differential evidence, but never implementation
+code, a runtime dependency, or substitute acceptance evidence. No task may
+rely on a BIOS hack, host shortcut, or application special case for a
+guest-observable behavior.
 
 1. **Architecture and validation foundation.** Reaffirm NXVM-first M5 scope;
    make the default PC/AT profile declarative for topology, ports, IRQ, DMA,
@@ -235,7 +236,7 @@ behavior.
 
 ## Compatibility And Hardware
 
-- [ ] **Firmware interrupt-portal migration (`TODO(High)`, T209).** Replace
+- [x] **Firmware interrupt-portal migration (`TODO(High)`, T209).** Replace
   default-profile QDX `F1 <command>` with frozen, ROM-origin-checked private
   firmware `INT F0h`--`F5h` providers. Core must retain normal `INT`/IVT
   semantics for every nonmatching call; profile handlers must use existing
@@ -293,7 +294,7 @@ behavior.
   `NTVDM64_STATUS_INVALID_STATE`. Platform input is consumed at the execution
   boundary, mapped by the default profile, delivered through KBC, and consumed
   by QDKEYB INT 09h before INT 16h reads BDA. See
-  [`m5-pc-compatible-device-plan.md`](docs/planning/m5-pc-compatible-device-plan.md).
+  the hardware-device verification template.
 - [ ] **8042 advanced keyboard protocol (`TODO(Medium)`).** Admit each of
   set-1 break bytes and E0/E1 extended sequences, scan-code-set selection,
   controller translation, LED/typematic commands, AUX mouse/IRQ12, controller
@@ -388,8 +389,8 @@ behavior.
 - [x] **8254 PIT read-back command (`TODO(Medium)`).** T191 S2 implements
   active-low counter selection, non-overwriting count/status latches,
   status-before-count reads, RW byte order, and focused port probes while
-  retaining the FDD/HDD session and FDD DOS-prompt baselines. See
-  [`m5-pc-compatible-device-plan.md`](docs/planning/m5-pc-compatible-device-plan.md).
+  retaining the FDD/HDD session and FDD DOS-prompt baselines. Future device
+  work follows the hardware-device verification template.
 - [ ] **8254 PIT waveform and gate semantics (`TODO(Medium)`).** T191 only
   records the existing model's observable OUT state for status read-back. Before
   claiming broader 8254 compatibility, define and probe per-mode OUT pulses,

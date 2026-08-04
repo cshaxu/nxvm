@@ -14,5 +14,8 @@ applicable closure checklist. `architecture/`, `requirements/`, policy files,
 research, references, provenance, and history are supporting material: they
 refine one of the six subjects but do not create a competing daily entry point.
 
+Admitted M5 hardware-device work follows the compact
+[Hardware Device Verification Template](compatibility/hardware-device-verification.md).
+
 `../RULES.md` remains the compact implementation/review checklist, and
 `../TODO.md` is the live ledger referenced by Debt Tracking.
