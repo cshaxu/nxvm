@@ -27,15 +27,6 @@ C_VOID vm_platform_keyboard_transport_initialize(
     transport->context = context;
 }
 
-C_INT vm_platform_keyboard_get_modifier_for(
-    const vm_platform_keyboard_transport *transport,
-    vm_platform_keyboard_modifier modifier)
-{
-    return transport == STD_NULL || transport->sink == STD_NULL ||
-        transport->sink->get_modifier == STD_NULL ? 0 :
-        transport->sink->get_modifier(transport->context, modifier);
-}
-
 C_VOID vm_platform_keyboard_receive_key_press_for(
     const vm_platform_keyboard_transport *transport, uint16_t scan_code,
     uint16_t virtual_key)

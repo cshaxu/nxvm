@@ -21,7 +21,7 @@
     {
       "name": "current-gcc",
       "configurePreset": "mingw-gcc-x64",
-      "targets": ["vm-0-5-0201"]
+      "targets": ["vm-0-5-0202"]
     },
     {
       "name": "current-gates-gcc",
@@ -42,6 +42,7 @@
         "verify-request-transport-closure",
         "verify-keyboard-ingress-boundary",
         "verify-host-cancellation-boundary",
+        "verify-keyboard-transport-surface",
         "vm-session-reconfigure-smoke"
       ]
     },
