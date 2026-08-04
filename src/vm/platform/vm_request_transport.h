@@ -15,7 +15,6 @@ typedef struct vm_platform_request_transport {
     vm_platform_request_consumer consumer;
     C_VOID *consumer_opaque;
     vm_platform_request_bridge ingress;
-    vm_platform_request_bridge egress;
 } vm_platform_request_transport;
 
 C_VOID vm_platform_request_transport_initialize(
@@ -24,12 +23,6 @@ type_status vm_platform_request_transport_enqueue_ingress(
     vm_platform_request_transport *transport,
     const vm_platform_request *request);
 type_status vm_platform_request_transport_dequeue_ingress(
-    vm_platform_request_transport *transport,
-    vm_platform_request *out_request);
-type_status vm_platform_request_transport_enqueue_egress(
-    vm_platform_request_transport *transport,
-    const vm_platform_request *request);
-type_status vm_platform_request_transport_dequeue_egress(
     vm_platform_request_transport *transport,
     vm_platform_request *out_request);
 C_VOID vm_platform_request_transport_close(

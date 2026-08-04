@@ -35,9 +35,6 @@ C_INT main(C_VOID)
     if (vm_platform_request_transport_enqueue_ingress(&transport,
                                                             &request) !=
         TYPE_STATUS_OK ||
-        vm_platform_request_transport_dequeue_egress(&transport,
-                                                            &copy) !=
-        TYPE_STATUS_UNSUPPORTED ||
         vm_platform_request_transport_dequeue_ingress(&transport,
                                                              &copy) !=
         TYPE_STATUS_OK ||
@@ -61,14 +58,15 @@ C_INT main(C_VOID)
                                                              &copy) !=
         TYPE_STATUS_UNSUPPORTED) return 1;
 
-    request.kind = VM_PLATFORM_REQUEST_DISPLAY_MODE;
-    request.data.window_display = 1;
+    request.kind = VM_PLATFORM_REQUEST_KEY_PRESS;
+    request.data.key_press.scan_code = 0x30u;
+    request.data.key_press.virtual_key = 0x42u;
     for (index = 0u; index < VM_PLATFORM_REQUEST_CAPACITY; ++index) {
-        if (vm_platform_request_transport_enqueue_egress(&transport,
+        if (vm_platform_request_transport_enqueue_ingress(&transport,
                                                                &request) !=
             TYPE_STATUS_OK) return 1;
     }
-    if (vm_platform_request_transport_enqueue_egress(&transport,
+    if (vm_platform_request_transport_enqueue_ingress(&transport,
                                                            &request) !=
         TYPE_STATUS_NO_MEMORY) return 1;
 
@@ -76,13 +74,13 @@ C_INT main(C_VOID)
     if (vm_platform_request_transport_enqueue_ingress(&transport,
                                                             &request) !=
         TYPE_STATUS_INVALID_STATE ||
-        vm_platform_request_transport_dequeue_egress(&transport,
+        vm_platform_request_transport_dequeue_ingress(&transport,
                                                             &copy) !=
         TYPE_STATUS_OK ||
-        copy.data.window_display != 1) return 1;
+        copy.data.key_press.scan_code != 0x30u) return 1;
 
     vm_platform_request_transport_discard(&transport);
-    if (vm_platform_request_transport_dequeue_egress(&transport,
+    if (vm_platform_request_transport_dequeue_ingress(&transport,
                                                             &copy) !=
         TYPE_STATUS_UNSUPPORTED) return 1;
 

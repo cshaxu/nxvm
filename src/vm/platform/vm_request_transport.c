@@ -27,7 +27,6 @@ C_VOID vm_platform_request_transport_initialize(
     transport->consumer = STD_NULL;
     transport->consumer_opaque = STD_NULL;
     vm_platform_request_bridge_initialize(&transport->ingress);
-    vm_platform_request_bridge_initialize(&transport->egress);
 }
 
 static type_status vm_platform_request_transport_enqueue(
@@ -82,22 +81,6 @@ type_status vm_platform_request_transport_dequeue_ingress(
         transport, transport != STD_NULL ? &transport->ingress : STD_NULL, out_request);
 }
 
-type_status vm_platform_request_transport_enqueue_egress(
-    vm_platform_request_transport *transport,
-    const vm_platform_request *request)
-{
-    return vm_platform_request_transport_enqueue(
-        transport, transport != STD_NULL ? &transport->egress : STD_NULL, request);
-}
-
-type_status vm_platform_request_transport_dequeue_egress(
-    vm_platform_request_transport *transport,
-    vm_platform_request *out_request)
-{
-    return vm_platform_request_transport_dequeue(
-        transport, transport != STD_NULL ? &transport->egress : STD_NULL, out_request);
-}
-
 C_VOID vm_platform_request_transport_close(
     vm_platform_request_transport *transport)
 {
@@ -116,7 +99,6 @@ C_VOID vm_platform_request_transport_discard(
     vm_platform_request_transport_lock(transport);
     transport->accepting = 0;
     vm_platform_request_bridge_initialize(&transport->ingress);
-    vm_platform_request_bridge_initialize(&transport->egress);
     vm_platform_request_transport_unlock(transport);
 }
 

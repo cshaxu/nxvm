@@ -18,9 +18,9 @@ M5 has preserved the bootable NXVM Console, debugger, boot sequence, and FDD
 fixture behavior while moving the whole-PC execution path into the documented
 `core/` and `vm/` ownership model.
 
-**Current active subtask:** none. T198 closes current smoke execution
-truthfulness: `current-gates-gcc` builds and executes the configured CTest
-smoke set, while static source/inventory checks remain separate gates.
+**Current active subtask:** none. T199 removed the unconsumed request-transport
+egress queue; ingress remains session-owned and worker lifecycle reports remain
+on the run handle. T200 is the separately planned host-state ingress change.
 
 **M5 T150 complete:** NXVM shared product-session management is closed. The
 manager atomically establishes session 0, the final session cannot close, and
