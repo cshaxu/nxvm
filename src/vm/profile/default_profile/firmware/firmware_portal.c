@@ -43,9 +43,6 @@ static C_VOID vm_profile_default_firmware_portal_dispatch(C_VOID *opaque,
 
     if (profile == STD_NULL || execution == STD_NULL) return;
     switch (vector) {
-    case VM_PROFILE_DEFAULT_PORTAL_STOP:
-        core_machine_cpu_execution_request_stop(execution);
-        break;
     case VM_PROFILE_DEFAULT_PORTAL_VIDEO_INT10:
         vm_profile_default_cga_handle_int10(profile);
         vm_profile_default_firmware_portal_copy_flags(execution);
@@ -64,7 +61,6 @@ type_status vm_profile_default_firmware_portal_install(core_machine *machine,
     uint32_t origin_linear_bytes)
 {
     static const uint8_t vectors[] = {
-        VM_PROFILE_DEFAULT_PORTAL_STOP,
         VM_PROFILE_DEFAULT_PORTAL_VIDEO_INT10,
         VM_PROFILE_DEFAULT_PORTAL_HDD_READ,
         VM_PROFILE_DEFAULT_PORTAL_HDD_WRITE

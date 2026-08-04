@@ -8,6 +8,18 @@
 #include "vm/composition/session/control.h"
 #include "vm/composition/session/runner.h"
 #include "vm/machine/debug.h"
+#include "vm/profile/default_profile/firmware/bios.h"
+
+static C_INT vm_session_runner_consume_boot_failure_report(vm_session *session)
+{
+    if (session == STD_NULL ||
+        !vm_profile_default_bios_take_boot_failure_report(
+            vm_profile_default_context_memory(&session->default_profile_context))) {
+        return 0;
+    }
+    vm_session_control_stop(&session->control);
+    return 1;
+}
 
 C_VOID vm_session_runner_run(vm_session *session)
 {
@@ -18,6 +30,9 @@ C_VOID vm_session_runner_run(vm_session *session)
     if (session == STD_NULL || session->core_machine == STD_NULL) return;
     control = &session->control;
     while (STD_ATOMIC_LOAD(&control->flagRun)) {
+        if (vm_session_runner_consume_boot_failure_report(session)) {
+            continue;
+        }
         if (vm_platform_run_handle_take_stop_report(&session->platform_run_handle)) {
             vm_session_control_stop(control);
             continue;

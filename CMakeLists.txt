@@ -595,6 +595,9 @@ target_link_libraries(vm-bios-authority-smoke PRIVATE vm-composition)
 add_executable(vm-firmware-portal-authority-smoke
     tests/machine/vm_firmware_portal_authority_smoke.c)
 target_link_libraries(vm-firmware-portal-authority-smoke PRIVATE vm-composition)
+add_executable(vm-boot-failure-lifecycle-smoke
+    tests/machine/vm_boot_failure_lifecycle_smoke.c)
+target_link_libraries(vm-boot-failure-lifecycle-smoke PRIVATE vm-composition)
 add_executable(vm-qdcga-boundary-smoke tests/machine/vm_qdcga_boundary_smoke.c)
 target_link_libraries(vm-qdcga-boundary-smoke PRIVATE vm-composition)
 add_executable(vm-keyboard-firmware-smoke tests/machine/vm_keyboard_firmware_smoke.c)
@@ -729,6 +732,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-stopped-lifecycle-smoke
     core-machine-memory-reconfigure-smoke
     core-machine-firmware-interrupt-portal-smoke
+    vm-boot-failure-lifecycle-smoke
     vm-request-transport-smoke
     core-product-wait-smoke
     core-product-session-contract-smoke
@@ -841,7 +845,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0210 "0.5.0210")
+add_current_vm_artifact(vm-0-5-0211 "0.5.0211")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 
@@ -1014,6 +1018,13 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMENT "Verifying M5 T210 keyboard portal retirement"
         VERBATIM)
     add_dependencies(run-current-smokes verify-keyboard-portal-closure)
+
+    add_custom_target(verify-boot-failure-portal-closure
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_boot_failure_portal_closure.cmake"
+        COMMENT "Verifying M5 T211 boot-failure portal retirement"
+        VERBATIM)
+    add_dependencies(run-current-smokes verify-boot-failure-portal-closure)
 endif()
 
 if(PROJECT_ENABLE_BOCHX_RESEARCH)

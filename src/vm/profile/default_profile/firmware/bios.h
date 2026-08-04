@@ -150,6 +150,11 @@ typedef struct t_bios {
 #define VBIOS_ADDR_INTRAPP_COMM_AREA  0x04f0
 #define VBIOS_ADDR_POST_WORK_AREA     0x0505
 
+/* Default-profile POST report protocol stored in the BDA work area. The ROM
+ * reports a terminal boot condition; the VM session owns the stop action. */
+#define VBIOS_POST_REPORT_NONE                      0x00u
+#define VBIOS_POST_REPORT_BOOT_FAILURE_ACKNOWLEDGED 0x01u
+
 C_VOID vm_profile_default_bios_add_post(t_bios *bios, type_string_pointer stmt);
 C_VOID vm_profile_default_bios_add_interrupt(t_bios *bios, type_string_pointer stmt,
     type_unsigned_8 intid);
@@ -161,6 +166,7 @@ C_VOID vm_profile_default_bios_finalize(t_bios *bios);
 C_VOID vm_profile_default_bios_print(const t_bios *bios);
 C_VOID vm_profile_default_bios_set_boot_hdd(t_bios *bios, C_INT enabled);
 C_INT vm_profile_default_bios_get_boot_hdd(const t_bios *bios);
+C_INT vm_profile_default_bios_take_boot_failure_report(t_ram *ram);
 
 #define VBIOS_POST_BOOT "             \
 $(label_post_boot_start):           \n\
@@ -240,10 +246,12 @@ pushf   ; if any key pressed,     \n\
 pop ax  ; then stop nxvm          \n\
 test ax, 0040                     \n\
 jnz $(label_post_boot_fail_loop)  \n\
-mov ah, 00                        \n\
-int 16                            \n\
-int f0  ; profile firmware stop   \n\
-jmp near $(label_post_boot_start) \n\
+ mov ah, 00                        \n\
+ int 16                            \n\
+ mov bx, 0040                      \n\
+ mov ds, bx                        \n\
+ mov byte ds:[0505], 01            \n\
+ jmp near $(label_post_boot_start) \n\
 \
 $(label_post_boot_succ):  \n\
 ; start operating system  \n\

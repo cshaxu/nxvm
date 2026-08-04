@@ -256,23 +256,39 @@ guest-observable behavior.
   `ver` regression, Console/debugger, and two-session matrix pass. Rapid
   typeahead and the broader advanced-KBC protocol remain deferred below.
 
+- [x] **Boot-failure firmware-portal retirement (`TODO(High)`, T211).** The
+  default ROM no longer calls `INT F0h`; after its existing key acknowledgement
+  it writes the reset-cleared profile BDA POST report. The session runner clears
+  and consumes that report at an instruction-budget boundary, then owns the
+  sole stop request. No core policy, host callback, queue, fake port, or
+  host-side BDA mutation was introduced. The current matrix passes; the
+  no-media error-display sequence has a separate T212 video-path follow-up.
+
 - [ ] **Remove default-profile firmware shortcuts (`TODO(High)`, M5 core
   closure condition).** Completion of T209 removes the QDX `F1 <command>`
-  CPU opcode hack, but does not make the replacement firmware `INT F0h`--`F5h`
+  CPU opcode hack, but does not make the replacement firmware `INT F2h`, `F4h`,
+  and `F5h`
   portal a completed hardware path. The current default ROM still calls
-  profile-private providers for boot-failure stop (`F0h`), BIOS keyboard IRQ1
-  and `INT 16h` (`F1h`/`F3h`), text `INT 10h` (`F2h`), and HDD read/write
+  profile-private providers for text `INT 10h` (`F2h`) and HDD read/write
   (`F4h`/`F5h`). M5 may not claim a fully hardware-owned PC/AT execution path
   while those portals remain. Retire each portal only after its guest-visible
   behavior has a real owner and probe: KBC ports/IRQ1 plus ROM BIOS keyboard
-  service (completed by T210); VADP ports/VRAM plus ROM BIOS video service; and a guest-visible
+  service (completed by T210); the boot-failure lifecycle boundary (completed
+  by T211); VADP ports/VRAM plus ROM BIOS video service; and a guest-visible
   HDD controller with port/IRQ/PIO or DMA behavior plus ROM BIOS disk service.
   Replace the boot-failure stop helper with an explicit product/session
   lifecycle boundary. The final task removes `firmware_portal.*`, private
   vector registrations, and obsolete QD* C firmware handlers, while preserving
   ordinary guest `INT`/IVT delivery and NXVM Console/debugger/boot behavior.
-  Do not substitute a new host callback, direct BDA/RAM mutation, or BIOS
+  Do not substitute a new host callback, host-side BDA/RAM mutation, or BIOS
   special-case for the removed portal.
+
+- [ ] **No-media boot-failure display regression (`TODO(Medium)`, T212
+  admission).** An exploratory no-media boot reached the existing default-ROM
+  text-video path at `F000:028E` but not the later key wait/report within a
+  bounded run. Treat that as a required regression vector when replacing the
+  F2 video portal; do not reinterpret it as a T211 lifecycle failure or bypass
+  it with direct platform rendering.
 
 - [ ] **CPU correctness / MS-DOS MEM.** Do not claim complete 80386 support:
   the CPU is 8086-plus with partial i386 decode/execution coverage. T152
