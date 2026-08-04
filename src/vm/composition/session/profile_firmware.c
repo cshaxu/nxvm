@@ -18,7 +18,8 @@ C_VOID vm_session_profile_firmware_initialize(vm_session *session)
 {
     if (session == STD_NULL) return;
     (C_VOID)core_machine_memory_register_mapping(
-        session->default_profile_context.ram, 0xfffffff0u, 0x000ffff0u, 16u);
+        vm_profile_default_context_memory(&session->default_profile_context),
+        0xfffffff0u, 0x000ffff0u, 16u);
     vm_profile_default_bios_initialize(&session->default_bios);
     vm_profile_default_bios_add_interrupt(&session->default_bios,
         "qdx 10\niret", 0x10);
@@ -77,7 +78,7 @@ C_VOID vm_session_profile_firmware_initialize_qdx(vm_session *session)
 {
     if (session != STD_NULL) vm_profile_default_qdx_initialize(
         &session->default_profile_context,
-        core_machine_configuration_cpu_execution_borrow(session->core_machine));
+        vm_profile_default_context_execution(&session->default_profile_context));
 }
 
 C_VOID vm_session_profile_firmware_refresh(vm_session *session)
@@ -91,7 +92,7 @@ C_VOID vm_session_profile_firmware_reset(vm_session *session)
 {
     if (session == STD_NULL) return;
     vm_profile_default_bios_reset(&session->default_bios,
-        session->default_profile_context.ram,
+        vm_profile_default_context_memory(&session->default_profile_context),
         &session->block_provider);
     vm_profile_default_qdx_reset(&session->default_profile_context);
 }

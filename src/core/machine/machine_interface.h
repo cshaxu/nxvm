@@ -26,6 +26,10 @@ extern "C" {
 
 typedef struct core_machine core_machine;
 
+typedef struct core_machine_profile_binding {
+    core_machine *machine;
+} core_machine_profile_binding;
+
 #define CORE_MACHINE_DEFAULT_MEMORY_BYTES (16u * 1024u * 1024u)
 #define CORE_MACHINE_MINIMUM_MEMORY_BYTES (2u * 1024u * 1024u)
 #define CORE_MACHINE_MAXIMUM_MEMORY_BYTES (64u * 1024u * 1024u)
@@ -121,6 +125,13 @@ t_dma *core_machine_configuration_shared_dma_primary_borrow(core_machine *machin
 t_dma *core_machine_configuration_shared_dma_secondary_borrow(core_machine *machine);
 t_kbc *core_machine_configuration_shared_kbc_borrow(core_machine *machine);
 t_vadp *core_machine_configuration_shared_vadp_borrow(core_machine *machine);
+
+ntvdm64_status core_machine_profile_binding_initialize(
+    core_machine *machine, core_machine_profile_binding *binding);
+t_ram *core_machine_profile_binding_memory(
+    const core_machine_profile_binding *binding);
+core_machine_cpu_execution_context *core_machine_profile_binding_execution(
+    const core_machine_profile_binding *binding);
 
 ntvdm64_status core_machine_capture_observation(
     const core_machine *machine, core_machine_observation *out_observation);
