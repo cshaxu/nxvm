@@ -124,10 +124,10 @@ if the runnable path changes during S2-S4.
 **Completed:** `verify-default-pc-at-profile-closure` rejects ROM/CMOS/FDC
 route constants outside the descriptor and device configuration boundary. The
 current artifact is `nxvm_0_5_0208.exe`. The T208-focused profile/application
-smokes, current DOS-prompt, Console, debugger, platform, and two-session
-smokes pass. The existing long-run DOS keyboard and MEM probes can still reach
-the separately tracked CPU `#UD` at `F000:0068`; T208 neither masks nor claims
-to resolve that CPU compatibility debt.
+smokes, current DOS-prompt, keyboard, MEM, Console, debugger, platform, and
+two-session smokes pass. The descriptor preserves the pre-T208 default CPU
+selection (`80386`) and `FPU=none`; changing those compatibility defaults is a
+separate CPU-profile admission, not profile cleanup.
 
 ## Admission Rules
 
