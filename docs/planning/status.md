@@ -18,8 +18,8 @@ M5 has preserved the bootable NXVM Console, debugger, boot sequence, and FDD
 fixture behavior while moving the whole-PC execution path into the documented
 `core/` and `vm/` ownership model.
 
-**Current active subtask:** M5 T192 S1, the 8042 controller and keyboard-route
-design. Historical paragraphs below may describe the active state of
+**Current active subtask:** M5 T192 S2, the core 8042 controller slice.
+Historical paragraphs below may describe the active state of
 their own completed sequence; they do not supersede this marker.
 
 **M5 T150 complete:** NXVM shared product-session management is closed. The
@@ -497,9 +497,12 @@ The retained NXVM identity and direct Console smoke pass. Artifact:
 count/status latch, output/null-count boundary, and port matrix; S2 implements
 that contract with one core PIT state, a focused smoke, full current GCC gates,
 retained FDD/HDD session and FDD DOS checks, and `nxvm_0_5_0191.exe`. Remaining
-PIT waveform/gate work is governed in `TODO.md`. **M5 T192 S1 active:** define
-the 8042 controller and one keyboard route. The approved sequence,
-state-owner constraints, implementation exits, and retained regressions are in
+PIT waveform/gate work is governed in `TODO.md`. **M5 T192 S1 complete:** the
+8042 controller, normalized-host-event, profile-mapper, KBC, and QDKEYB route
+is fixed; controller translation and AUX remain excluded. **M5 T192 S2 active:**
+implement the core controller slice without changing the retained direct QDKEYB
+route. The approved sequence, state-owner constraints, implementation exits,
+and retained regressions are in
 [`m5-pc-compatible-device-plan.md`](m5-pc-compatible-device-plan.md).
 
 The completed executor sequence is defined in
