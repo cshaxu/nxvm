@@ -720,6 +720,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-vadp-text-smoke
     core-machine-stopped-lifecycle-smoke
     core-machine-memory-reconfigure-smoke
+    vm-request-transport-smoke
     core-product-wait-smoke
     core-product-session-contract-smoke
     core-product-session-manager-smoke
@@ -829,7 +830,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0198 "0.5.0198")
+add_current_vm_artifact(vm-0-5-0199 "0.5.0199")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 
@@ -933,6 +934,12 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_current_artifact_target.cmake"
         COMMENT "Verifying current artifact target truthfulness"
+        VERBATIM)
+
+    add_custom_target(verify-request-transport-closure
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_request_transport_closure.cmake"
+        COMMENT "Verifying request transport ingress-only closure"
         VERBATIM)
 
     add_custom_target(verify-vm-session-owner-closure
