@@ -2,7 +2,12 @@
 
 ## Current Work
 
-**Active subtask:** none. **M5 T210 complete:** the default profile's F1/F3
+**Active subtask:** none. **M5 T211 complete:** the default profile's F0
+boot-failure portal is retired. The ROM reports an acknowledged failure through
+its BDA POST status; the VM session runner consumes it and requests the sole
+core stop. See [the task record](m5-t211-boot-failure-portal-retirement.md).
+
+**M5 T210 complete:** the default profile's F1/F3
 keyboard portals are retired. The retained input path is KBC -> IRQ1 -> ROM
 `INT 09h` -> BDA -> ROM `INT 16h`; platform input still submits only host
 events. See [the task record](m5-t210-keyboard-portal-retirement.md).
@@ -43,8 +48,8 @@ behavior and produces no artifact.
 
 ## Latest Technical Baseline
 
-M5 T210 retained NXVM behavior while removing the keyboard firmware portals.
-The recorded developer artifact is `nxvm_0_5_0210.exe`; its historical evidence
+M5 T211 retained NXVM behavior while removing the boot-failure firmware portal.
+The recorded developer artifact is `nxvm_0_5_0211.exe`; its historical evidence
 is summarized in [M5 History](../history/m5.md).
 
 ## Operational Reading Order

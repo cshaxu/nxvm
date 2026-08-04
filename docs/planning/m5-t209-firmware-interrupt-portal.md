@@ -34,6 +34,10 @@ extension-context lookup. It may act only through the existing profile
 firmware/device bindings. Core fixes lookup, conflict rejection, origin check,
 freeze, and fall-through semantics; profiles only register handlers.
 
+This table records the T209 completion state. Successor tasks retired F1/F3
+(T210) and F0 (T211); the current default profile retains only F2/F4/F5 pending
+their separately admitted video and HDD work.
+
 ## Breakdown
 
 ### S1: Contract and probes
