@@ -479,6 +479,11 @@ gates pass. Artifact: `nxvm_0_5_0187.exe`.
 firmware no longer retains raw core RAM/execution borrows; BIOS, QDX, QDCGA,
 and FDD DOS-prompt gates pass. Artifact: `nxvm_0_5_0188.exe`.
 
+**M5 T189 S1 complete: product banner simplification.** Runtime
+version/formatting state is replaced with product-entry identity macros and the
+shared core-product banner printer. The retained Console lifecycle gate and
+direct `exit` banner/prompt smoke pass. Artifact: `nxvm_0_5_0189.exe`.
+
 The completed executor sequence is defined in
 [Facade And Executor Convergence](m5-facade-executor-convergence.md). The
 active session-readiness sequence is defined in

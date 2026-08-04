@@ -30,7 +30,7 @@ T14 S2 design evidence; the closed naming plan is archived at
 | T14 S3 | Remove core-to-VM/default-profile dependencies through core contracts bound by VM root composition. | Stop before callback ordering or boot behavior changes. |
 | T14 S4 | Move VM machine/platform/product/profile crossings into VM root composition adapters and dissolve mixed CMake aggregates. | Stop before input, display, media, or Console behavior changes. |
 | T14 S5 | Apply the same provider/root-composition split to the VDM minimal shell without creating a user-facing VDM executable. | Stop before DOS-minimal behavior changes. |
-| T14 S6 | Introduce `src/type.*` and `src/version.*`, then perform the final low-priority type/name migration required by the approved contracts. | Stop if a retained user-visible identity or C type compatibility changes. |
+| T14 S6 | Introduce `src/type.*`, then perform the final low-priority type/name migration required by the approved contracts. T189 later superseded the runtime version helper with product-entry banner macros. | Stop if a retained user-visible identity or C type compatibility changes. |
 | T14 S7 | Verify the full source/target DAG, retained regressions, type/version foundation, and task artifact; decide whether M5 can close. | Stop if any forbidden edge remains. |
 
 No task permits a new interface wrapper merely to satisfy a directory rule. A

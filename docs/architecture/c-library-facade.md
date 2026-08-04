@@ -107,7 +107,7 @@ Outside `type.c`, the complete direct-call set found by the audit is:
 `fclose`, `fread`, `fwrite`, `fseek`, `ftell`, `fflush`, `fgetc`, `fputc`,
 `feof`, `time`, `isspace`, `toupper`, and `snprintf`. They occur in
 `core/machine`, core product debugger/runtime, VM composition/platform/product,
-VDM minimal, CMOS/HDD, and version formatting. The full scan also found C11
+VDM minimal, and CMOS/HDD. The full scan also found C11
 atomics in core-machine, core-platform, VM composition, presentation, and
 request transport.
 

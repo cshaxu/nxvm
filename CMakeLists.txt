@@ -53,7 +53,6 @@ target_include_directories(nxvm-core PUBLIC
 add_executable(nxvm-core-contract-smoke
     tests/core/core_contract_smoke.c
 )
-add_executable(ntvdm64-version-smoke tests/core/version_smoke.c)
 add_executable(nxvm-firmware-smoke tests/firmware/firmware_smoke.c)
 target_link_libraries(nxvm-firmware-smoke PRIVATE nxvm-firmware)
 add_executable(nxvm-default-profile-firmware-smoke tests/firmware/default_profile_smoke.c)
@@ -142,7 +141,6 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(nxvm-product-console-lifecycle-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-product-session-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-core-contract-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(ntvdm64-version-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-core-machine-instance-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-core-machine-configuration-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-core-machine-lifecycle-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -172,10 +170,6 @@ set(NXVM_PRODUCT_CORE_SOURCES
     src/core/product/utils.c
     src/core/product/wait.c
 )
-set(NXVM_FOUNDATION_SOURCES
-    src/version.c
-)
-
 # The ISO C facade is below every product and module layer. Keep it separate
 # from core-machine so platform-only targets never acquire a machine dependency.
 add_library(ntvdm64-c-facade STATIC src/type.c)
@@ -308,7 +302,6 @@ target_include_directories(nxvm-product-core-debug PUBLIC
 target_link_libraries(nxvm-product-core-debug PUBLIC ntvdm64-c-facade)
 
 add_library(nxvm-core-machine STATIC
-    ${NXVM_FOUNDATION_SOURCES}
     ${NXVM_MACHINE_CORE_SOURCES}
 )
 # CPU/RAM/port primitives used by the one runtime target above. The legacy
@@ -319,7 +312,6 @@ target_include_directories(nxvm-core-machine PUBLIC
 )
 target_link_libraries(nxvm-core-machine PUBLIC ntvdm64-c-facade)
 target_link_libraries(nxvm-core PUBLIC nxvm-core-machine)
-target_link_libraries(ntvdm64-version-smoke PRIVATE nxvm-core-machine)
 
 add_library(nxvm-product-core-utils STATIC ${NXVM_PRODUCT_CORE_SOURCES})
 target_include_directories(nxvm-product-core-utils PUBLIC
@@ -878,6 +870,7 @@ add_nxvm_version_artifact(nxvm-0-5-0185 "0.5.0185")
 add_nxvm_version_artifact(nxvm-0-5-0186 "0.5.0186")
 add_nxvm_version_artifact(nxvm-0-5-0187 "0.5.0187")
 add_nxvm_version_artifact(nxvm-0-5-0188 "0.5.0188")
+add_nxvm_version_artifact(nxvm-0-5-0189 "0.5.0189")
 
 option(NTVDM64_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
