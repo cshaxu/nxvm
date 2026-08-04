@@ -2,7 +2,10 @@
 
 ## Current Work
 
-**Active subtask:** none.
+**Active subtask:** none. **M5 T208 S1 complete:** the default PC/AT profile
+declaration contract and S2--S4 migration boundary are recorded in
+[`pc-at-profile.md`](../architecture/pc-at-profile.md). S2 code migration
+requires owner design acceptance before activation.
 
 M5 remains open. `M5 Td S2` clarified documentation entry points only; it did
 not close any M5 technical or verification item. The earlier documentation-only
