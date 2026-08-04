@@ -85,6 +85,7 @@ C_VOID vm_session_storage_initialize(vm_session *machine)
     t_pic *pic_master;
     t_pic *pic_slave;
     t_vadp *vadp;
+    core_machine_profile_binding profile_binding;
 
     if (machine == STD_NULL || machine->core_machine != STD_NULL) return;
     {
@@ -102,12 +103,17 @@ C_VOID vm_session_storage_initialize(vm_session *machine)
     core_machine_cpu_execution_context_bind_pic(execution,
         pic_master, pic_slave);
     vadp = core_machine_configuration_shared_vadp_borrow(machine->core_machine);
+    if (core_machine_profile_binding_initialize(machine->core_machine,
+            &profile_binding) != NTVDM64_STATUS_OK) {
+        core_machine_destroy(machine->core_machine);
+        machine->core_machine = STD_NULL;
+        return;
+    }
     vm_profile_default_context_initialize(&machine->default_profile_context,
-        &machine->default_bios, &machine->default_qdx, memory,
+        &machine->default_bios, &machine->default_qdx, profile_binding,
         vadp, STD_NULL, STD_NULL);
     core_machine_cpu_execution_context_bind_extension(execution,
         &machine->default_profile_context);
-    machine->default_profile_context.execution = execution;
     core_machine_block_provider_slot_initialize(&machine->block_provider);
     machine->default_profile_context.block_provider = &machine->block_provider;
     core_machine_keyboard_provider_slot_initialize(&machine->keyboard_provider);

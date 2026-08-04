@@ -20,7 +20,7 @@ C_INT main(C_VOID)
     machine = session;
     if (machine == STD_NULL ||
         machine->default_profile_context.qdx != &machine->default_qdx ||
-        machine->default_profile_context.execution == STD_NULL) {
+        vm_profile_default_context_execution(&machine->default_profile_context) == STD_NULL) {
         vm_session_finalize(session);
         STD_FREE(session);
         return 1;

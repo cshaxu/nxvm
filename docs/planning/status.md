@@ -475,6 +475,10 @@ Artifact: `nxvm_0_5_0186.exe`.
 interlocked access and display readiness is bounded; run-handle and multi-window
 gates pass. Artifact: `nxvm_0_5_0187.exe`.
 
+**M5 T188 S1 complete: core profile binding capability.** Default-profile
+firmware no longer retains raw core RAM/execution borrows; BIOS, QDX, QDCGA,
+and FDD DOS-prompt gates pass. Artifact: `nxvm_0_5_0188.exe`.
+
 The completed executor sequence is defined in
 [Facade And Executor Convergence](m5-facade-executor-convergence.md). The
 active session-readiness sequence is defined in

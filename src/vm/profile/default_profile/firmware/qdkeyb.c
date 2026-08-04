@@ -25,7 +25,7 @@ static ntvdm64_type_unsigned_8 keyboard_read_byte(vm_profile_default_context *pr
     ntvdm64_type_unsigned_16 offset)
 {
     ntvdm64_type_unsigned_8 value = 0;
-    core_machine_memory_read_real_from(profile->ram, NTVDM64_TYPE_ZERO_16, offset, &value,
+    core_machine_memory_read_real_from(vm_profile_default_context_memory(profile), NTVDM64_TYPE_ZERO_16, offset, &value,
         sizeof(value));
     return value;
 }
@@ -34,7 +34,7 @@ static ntvdm64_type_unsigned_16 keyboard_read_word(vm_profile_default_context *p
     ntvdm64_type_unsigned_16 offset)
 {
     ntvdm64_type_unsigned_16 value = 0;
-    core_machine_memory_read_real_from(profile->ram, NTVDM64_TYPE_ZERO_16, offset, &value,
+    core_machine_memory_read_real_from(vm_profile_default_context_memory(profile), NTVDM64_TYPE_ZERO_16, offset, &value,
         sizeof(value));
     return value;
 }
@@ -42,14 +42,14 @@ static ntvdm64_type_unsigned_16 keyboard_read_word(vm_profile_default_context *p
 static C_VOID keyboard_write_byte(vm_profile_default_context *profile,
     ntvdm64_type_unsigned_16 offset, ntvdm64_type_unsigned_8 value)
 {
-    core_machine_memory_write_real_to(profile->ram, NTVDM64_TYPE_ZERO_16, offset, &value,
+    core_machine_memory_write_real_to(vm_profile_default_context_memory(profile), NTVDM64_TYPE_ZERO_16, offset, &value,
         sizeof(value));
 }
 
 static C_VOID keyboard_write_word(vm_profile_default_context *profile,
     ntvdm64_type_unsigned_16 offset, ntvdm64_type_unsigned_16 value)
 {
-    core_machine_memory_write_real_to(profile->ram, NTVDM64_TYPE_ZERO_16, offset, &value,
+    core_machine_memory_write_real_to(vm_profile_default_context_memory(profile), NTVDM64_TYPE_ZERO_16, offset, &value,
         sizeof(value));
 }
 
@@ -129,13 +129,13 @@ static C_VOID keyboard_set_flag1(vm_profile_default_context *profile,
 
 static C_VOID keyboard_request_irq(vm_profile_default_context *profile)
 {
-    core_machine_pic_set_irq(profile->execution->pic_master,
-        profile->execution->pic_slave, 0x01);
+    core_machine_pic_set_irq(vm_profile_default_context_execution(profile)->pic_master,
+        vm_profile_default_context_execution(profile)->pic_slave, 0x01);
 }
 
 static C_VOID keyboard_read_input(vm_profile_default_context *profile)
 {
-    t_cpu *cpu = profile->execution->cpu;
+    t_cpu *cpu = vm_profile_default_context_execution(profile)->cpu;
     while (keyboard_buffer_empty(profile)) {
         core_product_wait_milliseconds(profile->wait_scope, 10);
     }
@@ -145,7 +145,7 @@ static C_VOID keyboard_read_input(vm_profile_default_context *profile)
 
 static C_VOID keyboard_get_status(vm_profile_default_context *profile)
 {
-    t_cpu *cpu = profile->execution->cpu;
+    t_cpu *cpu = vm_profile_default_context_execution(profile)->cpu;
     ntvdm64_type_unsigned_16 key = keyboard_buffer_peek(profile);
 
     if (keyboard_buffer_empty(profile)) {
@@ -167,12 +167,12 @@ static C_VOID keyboard_get_status(vm_profile_default_context *profile)
 
 static C_VOID keyboard_int_09(vm_profile_default_context *profile)
 {
-    core_machine_port_write(profile->execution->port, 0x0020, 0x20);
+    core_machine_port_write(vm_profile_default_context_execution(profile)->port, 0x0020, 0x20);
 }
 
 static C_VOID keyboard_int_16(vm_profile_default_context *profile)
 {
-    t_cpu *cpu = profile->execution->cpu;
+    t_cpu *cpu = vm_profile_default_context_execution(profile)->cpu;
 
     switch (cpu->data.ah) {
     case 0x00:

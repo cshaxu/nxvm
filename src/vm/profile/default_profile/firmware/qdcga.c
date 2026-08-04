@@ -24,13 +24,13 @@
 #define QDCGA_TEXT_BASE 0x000b8000u
 #define QDCGA_MAX_PAGES 8u
 
-#define profile_cpu (*profile->execution->cpu)
+#define profile_cpu (*vm_profile_default_context_execution(profile)->cpu)
 #define profile_vadp (*profile->vadp)
 
 static uint8_t qdcga_read8(vm_profile_default_context *profile, uint32_t address)
 {
     uint8_t value = 0u;
-    (C_VOID)core_machine_memory_read_physical(profile->ram, address,
+    (C_VOID)core_machine_memory_read_physical(vm_profile_default_context_memory(profile), address,
         (ntvdm64_type_virtual_address)&value, sizeof(value));
     return value;
 }
@@ -38,7 +38,7 @@ static uint8_t qdcga_read8(vm_profile_default_context *profile, uint32_t address
 static uint16_t qdcga_read16(vm_profile_default_context *profile, uint32_t address)
 {
     uint16_t value = 0u;
-    (C_VOID)core_machine_memory_read_physical(profile->ram, address,
+    (C_VOID)core_machine_memory_read_physical(vm_profile_default_context_memory(profile), address,
         (ntvdm64_type_virtual_address)&value, sizeof(value));
     return value;
 }
@@ -46,14 +46,14 @@ static uint16_t qdcga_read16(vm_profile_default_context *profile, uint32_t addre
 static C_VOID qdcga_write8(vm_profile_default_context *profile, uint32_t address,
     uint8_t value)
 {
-    (C_VOID)core_machine_memory_write_physical(profile->ram, address,
+    (C_VOID)core_machine_memory_write_physical(vm_profile_default_context_memory(profile), address,
         (ntvdm64_type_virtual_address)&value, sizeof(value));
 }
 
 static C_VOID qdcga_write16(vm_profile_default_context *profile, uint32_t address,
     uint16_t value)
 {
-    (C_VOID)core_machine_memory_write_physical(profile->ram, address,
+    (C_VOID)core_machine_memory_write_physical(vm_profile_default_context_memory(profile), address,
         (ntvdm64_type_virtual_address)&value, sizeof(value));
 }
 
@@ -112,7 +112,7 @@ static C_INT qdcga_display_buffer_changed(vm_profile_default_context *profile)
     STD_SIZE_T size = (STD_SIZE_T)qdcga_columns(profile) *
         profile_vadp.data.colSize * 2u;
 
-    if (size > sizeof(snapshot) || core_machine_memory_read_physical(profile->ram,
+    if (size > sizeof(snapshot) || core_machine_memory_read_physical(vm_profile_default_context_memory(profile),
             QDCGA_TEXT_BASE, (ntvdm64_type_virtual_address)snapshot, size) !=
             NTVDM64_STATUS_OK) return NTVDM64_TYPE_FALSE;
     if (STD_MEMCMP((C_VOID *)profile_vadp.data.bufcomp, snapshot, size) == 0) {
@@ -278,7 +278,7 @@ static C_VOID qdcga_int10(vm_profile_default_context *profile)
     case 0x13u:
         for (index = 0u; index < profile_cpu.data.cx; ++index) {
             uint8_t value = 0u;
-            (C_VOID)core_machine_memory_read_real_from(profile->ram,
+            (C_VOID)core_machine_memory_read_real_from(vm_profile_default_context_memory(profile),
                 profile_cpu.data.es.selector, (uint16_t)(profile_cpu.data.bp + index),
                 &value, sizeof(value));
             qdcga_put_character(profile, value, profile_cpu.data.bl, page, 1);

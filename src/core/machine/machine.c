@@ -139,6 +139,30 @@ core_machine_cpu_execution_context *core_machine_configuration_cpu_execution_bor
 t_ram *core_machine_configuration_memory_borrow(core_machine *machine)
 { return core_machine_configuration_is_open(machine) ? &machine->executor_memory : STD_NULL; }
 
+ntvdm64_status core_machine_profile_binding_initialize(
+    core_machine *machine, core_machine_profile_binding *binding)
+{
+    if (!core_machine_configuration_is_open(machine) || binding == STD_NULL) {
+        return NTVDM64_STATUS_INVALID_STATE;
+    }
+    binding->machine = machine;
+    return NTVDM64_STATUS_OK;
+}
+
+t_ram *core_machine_profile_binding_memory(
+    const core_machine_profile_binding *binding)
+{
+    return binding == STD_NULL || binding->machine == STD_NULL ? STD_NULL :
+        &binding->machine->executor_memory;
+}
+
+core_machine_cpu_execution_context *core_machine_profile_binding_execution(
+    const core_machine_profile_binding *binding)
+{
+    return binding == STD_NULL || binding->machine == STD_NULL ? STD_NULL :
+        &binding->machine->executor_cpu_execution;
+}
+
 t_port *core_machine_configuration_port_borrow(core_machine *machine)
 { return core_machine_configuration_is_open(machine) ? &machine->executor_port : STD_NULL; }
 
