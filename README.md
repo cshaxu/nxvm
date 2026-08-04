@@ -46,10 +46,13 @@ dependency or delay the distributable DOS product.
 
 ## Current State
 
-M0 through M2 are complete. M1 imported and preserved the NXVM baseline under
+M0 through M4 are complete. M1 imported and preserved the NXVM baseline under
 the root MIT authorization and proved a GCC-built whole-machine baseline. M2
-defines the shared-core architecture. M3 is the next eligible milestone and has
-not started.
+defined the shared-core architecture; M3 established the shared-core source
+shape and VDM profile tests; M4 completed the firmware, profile, CPU, and
+retained NXVM Console design contracts. M5 is the active implementation and
+closure milestone; its current state, active subtask, and verification evidence
+are maintained in [Project Status](docs/planning/status.md).
 
 Read [AGENTS.md](AGENTS.md) before changing the repository. Canonical guidance
 is in the [documentation guide](docs/README.md),
