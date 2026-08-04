@@ -873,6 +873,7 @@ add_nxvm_version_artifact(nxvm-0-5-0180 "0.5.0180")
 add_nxvm_version_artifact(nxvm-0-5-0181 "0.5.0181")
 add_nxvm_version_artifact(nxvm-0-5-0182 "0.5.0182")
 add_nxvm_version_artifact(nxvm-0-5-0183 "0.5.0183")
+add_nxvm_version_artifact(nxvm-0-5-0184 "0.5.0184")
 
 option(NTVDM64_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
@@ -961,6 +962,12 @@ if(NTVDM64_VERIFY_DEPENDENCY_DAG)
         COMMAND "${CMAKE_COMMAND}" -DNTVDM64_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_ram_reconfigure_closure.cmake"
         COMMENT "Verifying M5 RAM cold-reconfiguration closure"
+        VERBATIM)
+
+    add_custom_target(verify-vm-session-owner-closure
+        COMMAND "${CMAKE_COMMAND}" -DNTVDM64_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_vm_session_owner_closure.cmake"
+        COMMENT "Verifying M5 VM session direct ownership closure"
         VERBATIM)
 endif()
 
