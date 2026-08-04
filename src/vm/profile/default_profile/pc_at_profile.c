@@ -38,7 +38,7 @@ default_pc_at_firmware_services[] = {
 static const vm_profile_default_pc_at_descriptor default_pc_at_descriptor = {
     "default-pc-at",
     1u,
-    CORE_MACHINE_CPU_PROFILE_8086,
+    CORE_MACHINE_CPU_PROFILE_80386,
     CORE_MACHINE_FPU_PROFILE_NONE,
     16u * 1024u * 1024u,
     { 0xfffffff0u, 0x000ffff0u, 16u, 0xf000u, 0xfff0u },
