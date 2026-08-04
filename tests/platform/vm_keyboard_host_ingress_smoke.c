@@ -3,7 +3,7 @@
 #include <windows.h>
 
 #include "core/machine/machine_interface.h"
-#include "core/machine/memory.h"
+#include "core/machine/debug_interface.h"
 #include "vm/composition/session/session.h"
 #include "vm/platform/win32/win32.h"
 #include "vm/profile/default_profile/firmware/qdkeyb.h"
@@ -11,10 +11,8 @@
 static C_INT vm_keyboard_host_ingress_read_word(const vm_session *session,
     uint16_t offset, uint16_t *out_value)
 {
-    core_machine_memory_read_real_from(
-        core_machine_configuration_memory_borrow(session->core_machine), 0u, offset,
-        out_value, sizeof(*out_value));
-    return 1;
+    return core_machine_debug_read_memory(session->core_machine, offset,
+        out_value, sizeof(*out_value)) == NTVDM64_STATUS_OK;
 }
 
 C_INT main(C_VOID)

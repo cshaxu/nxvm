@@ -57,13 +57,12 @@ import. `docs/planning/status.md` remains authoritative for active work.
   `DEVICE ram` through a temporary stopped-session reconstruction; T166 removed
   machine-local default media paths. T169 supersedes the reconstruction model
   with a core-owned stopped-only cold RAM reconfiguration.
-- [ ] **Core-owned RAM cold reconfiguration (`TODO(High)`).** T165's working
-  whole-session reconstruction is not the final architecture. Define and
-  implement stopped-only `core_machine_reconfigure_memory`, installed-range
-  checking without modulo foldback, and checked provider RAM access. Preserve
-  the same core machine/session/devices/providers/media/platform/debugger;
-  cold-reset only guest state. CPU/FPU/profile/topology changes require a new
-  session. T169--T174 own this work.
+- [x] **Core-owned RAM cold reconfiguration (`TODO(High)`).** T169--T174
+  replaced T165's temporary whole-session reconstruction with stopped-only
+  `core_machine_reconfigure_memory`: installed-range checking, checked
+  provider access, one retained machine/session/device/provider/media/platform/
+  debugger graph, and a cold guest reset. CPU/FPU/profile/topology changes
+  still require a new session.
 - [x] **Default-session media policy (`TODO(High)`).** The NXVM session
   factory must not commit machine-local image paths or silently select host
   media. Preserve explicit `DEVICE` media commands and define the approved

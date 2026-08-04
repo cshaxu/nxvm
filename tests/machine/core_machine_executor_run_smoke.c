@@ -16,13 +16,19 @@ C_INT main(C_VOID)
         core_machine_destroy(machine);
         return 1;
     }
-    if (core_machine_freeze_execution_providers(machine) != NTVDM64_STATUS_OK ||
+    if (core_machine_memory_register_mapping(
+            core_machine_configuration_memory_borrow(machine), 0xfffffff0u,
+            0x000ffff0u, 16u) != NTVDM64_STATUS_OK ||
+        core_machine_freeze_execution_providers(machine) != NTVDM64_STATUS_OK ||
         core_machine_reset(machine) != NTVDM64_STATUS_OK) {
         core_machine_destroy(machine);
         return 1;
     }
-    core_machine_memory_write_physical(core_machine_configuration_memory_borrow(machine),
-        0xffff0u, (ntvdm64_type_virtual_address)&halt, 1u);
+    if (core_machine_memory_write(machine, 0xfffffff0u, &halt, 1u) !=
+        NTVDM64_STATUS_OK) {
+        core_machine_destroy(machine);
+        return 1;
+    }
     if (core_machine_run(machine, budget, &result) != NTVDM64_STATUS_OK ||
         result.executed != 1u || result.reason != CORE_MACHINE_STOP_BUDGET ||
         core_machine_run(machine, budget, &result) != NTVDM64_STATUS_OK ||

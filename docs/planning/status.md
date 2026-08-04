@@ -409,10 +409,17 @@ topology/object identity, and runs one normal cold reset. Evidence is
 [`M5-T172.md`](../tracking/M5-T172.md); artifact `nxvm_0_5_0172.exe` is
 verified.
 
-**M5 T173 S1 active: session-preserving `DEVICE RAM` closure.** The command
+**M5 T173 S1 complete: session-preserving `DEVICE RAM`.** The command now
 uses core's stopped-only cold reconfiguration and retains the selected session,
-core, mounted media, platform, debugger, and command grammar. Record its
-artifact and retained runtime evidence before T174 begins.
+core, mounted media, platform, debugger, and command grammar. Evidence is
+[`M5-T173.md`](../tracking/M5-T173.md); artifact `nxvm_0_5_0173.exe` is
+verified.
+
+**M5 T174 S1 complete: RAM cold-reconfiguration closure.** Source-shape,
+ownership, lifecycle, session-preservation, retained Console/FDD behavior, and
+artifact/version gates are closed. T165 is historical transition evidence only.
+Evidence is [`M5-T174.md`](../tracking/M5-T174.md); artifact
+`nxvm_0_5_0174.exe` is verified.
 
 The completed executor sequence is defined in
 [Facade And Executor Convergence](m5-facade-executor-convergence.md). The
