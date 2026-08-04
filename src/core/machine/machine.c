@@ -361,6 +361,33 @@ static ntvdm64_status core_machine_cold_reset(core_machine *machine)
     return NTVDM64_STATUS_OK;
 }
 
+ntvdm64_status core_machine_reconfigure_memory(core_machine *machine,
+    STD_SIZE_T memory_bytes)
+{
+    ntvdm64_type_native_unsigned index;
+
+    if (machine == STD_NULL || !machine->execution_provider_frozen ||
+        machine->lifecycle != CORE_MACHINE_STOPPED ||
+        memory_bytes < CORE_MACHINE_MINIMUM_MEMORY_BYTES ||
+        memory_bytes > CORE_MACHINE_MAXIMUM_MEMORY_BYTES) {
+        return NTVDM64_STATUS_INVALID_STATE;
+    }
+    for (index = 0u; index < machine->executor_memory.connect.mapping_count;
+            ++index) {
+        const core_machine_memory_mapping *mapping =
+            &machine->executor_memory.connect.mappings[index];
+        if (mapping->backing_start > memory_bytes ||
+            mapping->bytes > memory_bytes - mapping->backing_start) {
+            return NTVDM64_STATUS_INVALID_ARGUMENT;
+        }
+    }
+    if (core_machine_memory_allocate_for(&machine->executor_memory,
+            memory_bytes) != NTVDM64_STATUS_OK) {
+        return NTVDM64_STATUS_NO_MEMORY;
+    }
+    return core_machine_cold_reset(machine);
+}
+
 ntvdm64_status core_machine_reset(core_machine *machine)
 {
     if (machine == STD_NULL) {
