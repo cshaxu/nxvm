@@ -61,33 +61,45 @@ C_INT main(C_INT argc, C_CHAR **argv)
     const C_UCHAR scan_codes[] = { 0x32u, 0x12u, 0x32u, 0x1cu };
     const C_UCHAR virtual_keys[] = { 'M', 'E', 'M', VK_RETURN };
     core_machine_cpu_diagnostic diagnostic;
+    const C_CHAR *stage = "argument validation";
     STD_SIZE_T index;
 
-    if (argc != 2 || vm_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||
-        vm_machine_fdd_insert_for(&session->fdd, argv[1]) != 0) goto fail;
+    if (argc != 2) goto fail;
+    stage = "session creation";
+    if (vm_session_create(STD_NULL, &session) != TYPE_STATUS_OK) goto fail;
+    stage = "FDD insertion";
+    if (vm_machine_fdd_insert_for(&session->fdd, argv[1]) != 0) goto fail;
+    stage = "machine thread creation";
     thread = CreateThread(STD_NULL, 0u, vm_dos_mem_fault_run_machine, session,
         0u, STD_NULL);
     if (thread == STD_NULL) goto fail;
+    stage = "DOS prompt";
     for (elapsed = 0u; elapsed < DOS_PROMPT_TIMEOUT_MILLISECONDS; elapsed += 10u) {
         if (vm_dos_mem_fault_has_prompt(session)) break;
         Sleep(10u);
     }
     if (elapsed == DOS_PROMPT_TIMEOUT_MILLISECONDS) goto fail;
+    stage = "MEM command completion";
     for (index = 0u; index < sizeof(scan_codes); ++index) {
         vm_platform_win32_keyboard_make_key_for(&session->platform_run_context,
             scan_codes[index], virtual_keys[index]);
     }
     result = WaitForSingleObject(thread, MEM_FAULT_TIMEOUT_MILLISECONDS);
-    if ((result != WAIT_OBJECT_0 && result != WAIT_TIMEOUT) ||
-        core_machine_get_cpu_diagnostic(session->core_machine, &diagnostic) !=
+    if (result != WAIT_OBJECT_0 && result != WAIT_TIMEOUT) goto fail;
+    stage = "FNINIT fault classification";
+    if (result == WAIT_OBJECT_0) {
+        if (core_machine_get_cpu_diagnostic(session->core_machine, &diagnostic) !=
             TYPE_STATUS_OK) goto fail;
-    if (diagnostic.first_fault.valid) {
-        vm_dos_mem_fault_print(&diagnostic);
-        if (TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
-                VCPUINS_EXCEPT_UD) &&
-            diagnostic.first_fault.point.byte_count >= 2u &&
-            diagnostic.first_fault.point.bytes[0] == 0xdbu &&
-            diagnostic.first_fault.point.bytes[1] == 0xe3u) goto fail;
+        if (diagnostic.first_fault.valid) {
+            vm_dos_mem_fault_print(&diagnostic);
+            if (TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
+                    VCPUINS_EXCEPT_UD) &&
+                diagnostic.first_fault.point.byte_count >= 2u &&
+                diagnostic.first_fault.point.bytes[0] == 0xdbu &&
+                diagnostic.first_fault.point.bytes[1] == 0xe3u) goto fail;
+        } else {
+            STD_PRINTF("M5:T156:S1:DOS-MEM-NEXT:STOPPED\n");
+        }
     } else {
         STD_PRINTF("M5:T156:S1:DOS-MEM-NEXT:RUNNING\n");
     }
@@ -99,6 +111,12 @@ C_INT main(C_INT argc, C_CHAR **argv)
     return 0;
 
 fail:
+    STD_FPRINTF(STD_STDERR, "M5:T198:S1:DOS-MEM:FAIL stage=%s\n", stage);
+    if (session != STD_NULL &&
+        core_machine_get_cpu_diagnostic(session->core_machine, &diagnostic) ==
+            TYPE_STATUS_OK && diagnostic.first_fault.valid) {
+        vm_dos_mem_fault_print(&diagnostic);
+    }
     if (session != STD_NULL) vm_session_stop(session);
     if (thread != STD_NULL) {
         WaitForSingleObject(thread, 2000u);

@@ -32,6 +32,13 @@ compile, or a fixture-only smoke cannot close a changed runnable path. M5 uses
 the compact [M5 Closure Checklist](m5-closure-checklist.md) as this mapping
 index; the checklist does not supersede this policy or `RULES.md`.
 
+A configured smoke gate must state whether it builds, executes, or statically
+inspects its subject. A preset presented as a runtime gate must invoke its
+registered CTest cases and fail on their nonzero results; compiling smoke
+executables alone is build coverage, not smoke evidence. Source-shape and
+inventory checks remain explicit static gates rather than being described as
+runtime tests.
+
 Each completed implementation task that changes a runnable path must compile,
 verify, and copy one usable task-level local build output to the ignored
 `build/output/` directory. Beginning with M5 T48, the task number is the patch

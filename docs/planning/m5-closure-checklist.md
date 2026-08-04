@@ -18,7 +18,7 @@ unfinished M5 item as an implicit waiver.
 - [x] The configured GCC preset, CMake target names, task version, and artifact
   name describe the current source graph; stale task targets and fixture-only
   targets are not presented as product evidence.
-- [ ] The full applicable build and focused smoke gates pass from a clean owned
+- [x] The full applicable build and focused smoke gates pass from a clean owned
   build tree. A test proves exactly the runnable path or contract claimed.
 - [ ] Every runnable behavior-changing M5 task has one verified task-level EXE
   in `build/output/`, with SHA-256, source commit, banner/version, and runtime
