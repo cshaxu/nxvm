@@ -98,6 +98,10 @@ C_VOID vm_session_storage_initialize(vm_session *machine)
     core_machine_profile_binding profile_binding;
 
     if (machine == STD_NULL || machine->core_machine != STD_NULL) return;
+    if (machine->profile == STD_NULL) {
+        machine->profile = vm_profile_default_pc_at_descriptor_get();
+    }
+    if (machine->profile == STD_NULL) return;
     {
         if (core_machine_create(&machine->core_machine_config,
                 &machine->core_machine) != TYPE_STATUS_OK) {
@@ -155,11 +159,20 @@ C_INT vm_session_create(const vm_session_config *config, vm_session **out_sessio
     *out_session = STD_NULL;
     session = (vm_session *)STD_CALLOC(1u, sizeof(*session));
     if (session == STD_NULL) return TYPE_STATUS_NO_MEMORY;
+    session->profile = vm_profile_default_pc_at_descriptor_get();
+    if (session->profile == STD_NULL) {
+        STD_FREE(session);
+        return TYPE_STATUS_FAULT;
+    }
     if (config != STD_NULL) {
         session->retained_config = *config;
         session->core_machine_config.memory_bytes = config->memory_bytes;
         session->core_machine_config.cpu_profile = config->cpu_profile;
         session->core_machine_config.fpu_profile = config->fpu_profile;
+    } else {
+        session->core_machine_config.memory_bytes = session->profile->default_memory_bytes;
+        session->core_machine_config.cpu_profile = session->profile->cpu_profile;
+        session->core_machine_config.fpu_profile = session->profile->fpu_profile;
     }
     vm_session_initialize(session);
     if (session->core_machine == STD_NULL) {

@@ -56,15 +56,10 @@ add_library(core-machine-runtime ALIAS core-machine)
 add_library(core-machine-firmware STATIC src/core/machine/firmware.c)
 target_include_directories(core-machine-firmware PUBLIC "${CMAKE_SOURCE_DIR}/src")
 target_link_libraries(core-machine-firmware PUBLIC core-machine)
-add_library(vm-profile-default-firmware STATIC
-    src/vm/profile/default_profile/firmware/default_profile.c)
-target_include_directories(vm-profile-default-firmware PUBLIC
-    "${CMAKE_SOURCE_DIR}/src")
-target_link_libraries(vm-profile-default-firmware PUBLIC core-machine)
 add_library(vm-firmware INTERFACE)
 target_link_libraries(vm-firmware INTERFACE
     core-machine-firmware
-    vm-profile-default-firmware)
+    vm-profile)
 target_include_directories(core-machine PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
@@ -76,6 +71,12 @@ add_executable(vm-firmware-smoke tests/firmware/firmware_smoke.c)
 target_link_libraries(vm-firmware-smoke PRIVATE vm-firmware)
 add_executable(vm-default-profile-firmware-smoke tests/firmware/default_profile_smoke.c)
 target_link_libraries(vm-default-profile-firmware-smoke PRIVATE vm-firmware)
+add_executable(vm-default-pc-at-profile-smoke
+    tests/firmware/default_pc_at_profile_smoke.c)
+target_link_libraries(vm-default-pc-at-profile-smoke PRIVATE vm-profile)
+add_executable(vm-default-pc-at-apply-smoke
+    tests/machine/vm_default_pc_at_apply_smoke.c)
+target_link_libraries(vm-default-pc-at-apply-smoke PRIVATE vm-composition)
 add_executable(vm-product-default-profile-smoke tests/products/nxvm_default_profile_smoke.c)
 target_link_libraries(vm-product-default-profile-smoke PRIVATE vm-composition)
 add_executable(vm-product-console-smoke
@@ -142,9 +143,10 @@ target_link_libraries(core-machine-presentation-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(core-machine PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-firmware PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(vm-profile-default-firmware PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-firmware-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-default-profile-firmware-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(vm-default-pc-at-profile-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(vm-default-pc-at-apply-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-product-default-profile-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-product-console-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-product-console-lifecycle-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -189,7 +191,9 @@ target_include_directories(type-facade PUBLIC
 )
 
 set(VM_PROFILE_SOURCES
+    src/vm/profile/default_profile/pc_at_profile.c
     src/vm/profile/default_profile/keyboard_mapper.c
+    src/vm/profile/default_profile/firmware/default_profile.c
     src/vm/profile/default_profile/firmware/bios.c
     src/vm/profile/default_profile/firmware/qdcga.c
     src/vm/profile/default_profile/firmware/qddisk.c
@@ -400,6 +404,9 @@ add_library(vm-profile STATIC ${VM_PROFILE_SOURCES})
 target_include_directories(vm-profile PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(vm-profile PRIVATE -Wall -Wextra -Wpedantic -Werror)
+endif()
 target_link_libraries(vm-profile PUBLIC
     core-product-utils
 )
@@ -493,7 +500,6 @@ target_link_libraries(vm-composition PUBLIC
     vm-product
     vm-request-transport
     core-machine-firmware
-    vm-profile-default-firmware
     vm-platform
     user32
     gdi32)
@@ -703,6 +709,8 @@ target_link_libraries(vdm-minimal-presentation-smoke PRIVATE
 )
 
 set(PROJECT_CURRENT_SMOKE_TARGETS
+    vm-default-pc-at-profile-smoke
+    vm-default-pc-at-apply-smoke
     vm-two-session-isolation-smoke
     vm-core-executor-storage-smoke
     core-machine-executor-run-smoke
@@ -827,7 +835,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0207 "0.5.0207")
+add_current_vm_artifact(vm-0-5-0208 "0.5.0208")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 
@@ -973,6 +981,12 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_linux_adapter_hygiene.cmake"
         COMMENT "Verifying Linux adapter hygiene"
+        VERBATIM)
+
+    add_custom_target(verify-default-pc-at-profile-closure
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_default_pc_at_profile_closure.cmake"
+        COMMENT "Verifying default PC/AT profile ownership closure"
         VERBATIM)
 
     add_custom_target(verify-vm-session-owner-closure

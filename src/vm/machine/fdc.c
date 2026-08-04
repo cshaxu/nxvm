@@ -20,9 +20,9 @@
 
 C_VOID vm_machine_fdc_connect(t_fdc *fdc, t_fdd *fdd, t_latch *dma_latch,
     t_dma *dma_primary, t_dma *dma_secondary, t_pic *pic_master,
-    t_pic *pic_slave, t_port *port)
+    t_pic *pic_slave, t_port *port, const vm_machine_fdc_config *config)
 {
-    if (fdc == STD_NULL) return;
+    if (fdc == STD_NULL || config == STD_NULL) return;
     fdc->connect.fdd = fdd;
     fdc->connect.dma_latch = dma_latch;
     fdc->connect.dma_primary = dma_primary;
@@ -30,6 +30,7 @@ C_VOID vm_machine_fdc_connect(t_fdc *fdc, t_fdd *fdd, t_latch *dma_latch,
     fdc->connect.pic_master = pic_master;
     fdc->connect.pic_slave = pic_slave;
     fdc->connect.port = port;
+    fdc->connect.config = *config;
 }
 
 #define VFDC_RET_ERROR         0x80 /* Error Code */
@@ -174,7 +175,8 @@ static C_VOID finish_transfer(t_fdc *fdc) {
     fdc->data.ret[5] = TYPE_MASK_UNSIGNED_8(fdc->connect.fdd->data.sector);
     fdc->data.ret[6] = VFDC_GetBPSC(fdc->connect.fdd->data.nbyte);
     if (TYPE_GET_BIT(fdc->data.dor, VFDC_DOR_ENRQ)) {
-        core_machine_pic_set_irq(fdc->connect.pic_master, fdc->connect.pic_slave, 0x06);
+        core_machine_pic_set_irq(fdc->connect.pic_master, fdc->connect.pic_slave,
+            fdc->connect.config.irq);
         fdc->data.flagINTR = TYPE_TRUE;
     }
     SetMSRReadyRead;
@@ -202,7 +204,8 @@ static C_VOID execute_recalibrate(t_fdc *fdc) {
     SetST0;
     TYPE_SET_BIT(fdc->data.st0, VFDC_ST0_SEEK_END);
     if (TYPE_GET_BIT(fdc->data.dor, VFDC_DOR_ENRQ)) {
-        core_machine_pic_set_irq(fdc->connect.pic_master, fdc->connect.pic_slave, 0x06);
+        core_machine_pic_set_irq(fdc->connect.pic_master, fdc->connect.pic_slave,
+            fdc->connect.config.irq);
         fdc->data.flagINTR = TYPE_TRUE;
     }
     SetMSRReadyWrite;
@@ -225,7 +228,8 @@ static C_VOID execute_seek(t_fdc *fdc) {
     SetST0;
     TYPE_SET_BIT(fdc->data.st0, VFDC_ST0_SEEK_END);
     if (TYPE_GET_BIT(fdc->data.dor, VFDC_DOR_ENRQ)) {
-        core_machine_pic_set_irq(fdc->connect.pic_master, fdc->connect.pic_slave, 0x06);
+        core_machine_pic_set_irq(fdc->connect.pic_master, fdc->connect.pic_slave,
+            fdc->connect.config.irq);
         fdc->data.flagINTR = TYPE_TRUE;
     }
     SetMSRReadyWrite;
@@ -263,7 +267,8 @@ static C_VOID execute_format_track(t_fdc *fdc) {
     fdc->data.ret[5] = TYPE_ZERO_8;
     fdc->data.ret[6] = TYPE_ZERO_8;
     if (TYPE_GET_BIT(fdc->data.dor, VFDC_DOR_ENRQ)) {
-        core_machine_pic_set_irq(fdc->connect.pic_master, fdc->connect.pic_slave, 0x06);
+        core_machine_pic_set_irq(fdc->connect.pic_master, fdc->connect.pic_slave,
+            fdc->connect.config.irq);
         fdc->data.flagINTR = TYPE_TRUE;
     }
     SetMSRReadyRead;
@@ -528,14 +533,21 @@ C_VOID vm_machine_fdc_initialize(t_fdc *fdc)
     if (fdc == STD_NULL || fdc->connect.port == STD_NULL) return;
     STD_MEMSET((C_VOID *)&fdc->data, TYPE_ZERO_8, sizeof(fdc->data));
     fdc->data.ccr = VFDC_CCR_DRC;
-    core_machine_port_add_read(fdc->connect.port, 0x03f4, read_03f4, fdc);
-    core_machine_port_add_read(fdc->connect.port, 0x03f5, read_03f5, fdc);
-    core_machine_port_add_read(fdc->connect.port, 0x03f7, read_03f7, fdc);
-    core_machine_port_add_write(fdc->connect.port, 0x03f2, write_03f2, fdc);
-    core_machine_port_add_write(fdc->connect.port, 0x03f5, write_03f5, fdc);
-    core_machine_port_add_write(fdc->connect.port, 0x03f7, write_03f7, fdc);
+    core_machine_port_add_read(fdc->connect.port, fdc->connect.config.status_port,
+        read_03f4, fdc);
+    core_machine_port_add_read(fdc->connect.port, fdc->connect.config.data_port,
+        read_03f5, fdc);
+    core_machine_port_add_read(fdc->connect.port, fdc->connect.config.direction_port,
+        read_03f7, fdc);
+    core_machine_port_add_write(fdc->connect.port, fdc->connect.config.dor_port,
+        write_03f2, fdc);
+    core_machine_port_add_write(fdc->connect.port, fdc->connect.config.data_port,
+        write_03f5, fdc);
+    core_machine_port_add_write(fdc->connect.port, fdc->connect.config.control_port,
+        write_03f7, fdc);
     core_machine_dma_bind_device(fdc->connect.dma_primary,
-        fdc->connect.dma_secondary, 2, dma_read, dma_write, dma_close, fdc);
+        fdc->connect.dma_secondary, fdc->connect.config.dma_channel,
+        dma_read, dma_write, dma_close, fdc);
 }
 
 C_VOID vm_machine_fdc_reset(t_fdc *fdc)

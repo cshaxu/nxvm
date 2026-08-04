@@ -46,6 +46,7 @@
 #include "vm/profile/default_profile/firmware/qdx.h"
 
 #include "vm/profile/default_profile/firmware/context.h"
+#include "vm/profile/default_profile/pc_at_profile.h"
 
 #include "vm/composition/session/control.h"
 
@@ -74,6 +75,7 @@ typedef struct vm_session {
     C_INT active;
     vm_platform_request_transport request_transport;
     core_machine_config core_machine_config;
+    const vm_profile_default_pc_at_descriptor *profile;
     core_machine *core_machine;
     t_cmos cmos;
     t_fdd fdd;

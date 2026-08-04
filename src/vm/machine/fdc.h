@@ -37,6 +37,16 @@ typedef struct {
 } t_fdc_data;
 
 typedef struct {
+    uint16_t dor_port;
+    uint16_t status_port;
+    uint16_t data_port;
+    uint16_t direction_port;
+    uint16_t control_port;
+    uint8_t irq;
+    uint8_t dma_channel;
+} vm_machine_fdc_config;
+
+typedef struct {
     t_fdd *fdd;
     t_latch *dma_latch;
     t_dma *dma_primary;
@@ -44,6 +54,7 @@ typedef struct {
     t_pic *pic_master;
     t_pic *pic_slave;
     t_port *port;
+    vm_machine_fdc_config config;
 } t_fdc_connect;
 
 typedef struct {
@@ -158,7 +169,7 @@ type_unsigned_8 VFDC_GetBPSC(type_unsigned_16 cb); /* convert bps to bps type */
 
 C_VOID vm_machine_fdc_connect(t_fdc *fdc, t_fdd *fdd, t_latch *dma_latch,
     t_dma *dma_primary, t_dma *dma_secondary, t_pic *pic_master,
-    t_pic *pic_slave, t_port *port);
+    t_pic *pic_slave, t_port *port, const vm_machine_fdc_config *config);
 C_VOID vm_machine_fdc_initialize(t_fdc *fdc);
 C_VOID vm_machine_fdc_reset(t_fdc *fdc);
 C_VOID vm_machine_fdc_refresh(t_fdc *fdc);

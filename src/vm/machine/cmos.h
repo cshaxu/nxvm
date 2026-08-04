@@ -28,6 +28,18 @@ typedef struct {
     t_cmos_connect connect;
 } t_cmos;
 
+typedef struct vm_machine_cmos_config {
+    uint16_t index_port;
+    uint16_t data_port;
+} vm_machine_cmos_config;
+
+typedef struct vm_machine_cmos_defaults {
+    uint8_t equipment;
+    uint16_t base_memory_kib;
+    uint8_t floppy_type;
+    uint8_t fixed_disk_type;
+} vm_machine_cmos_defaults;
+
 #define VCMOS_RTC_SECOND       0x00
 #define VCMOS_RTC_SECOND_ALARM 0x01
 #define VCMOS_RTC_MINUTE       0x02
@@ -60,7 +72,10 @@ typedef struct {
 #define VCMOS_RTC_CENTURY      0x32
 #define VCMOS_FLAGS_INFO       0x33
 
-C_VOID vm_machine_cmos_initialize(t_cmos *cmos, t_cpu *cpu, t_port *port);
+C_VOID vm_machine_cmos_initialize(t_cmos *cmos, t_cpu *cpu, t_port *port,
+    const vm_machine_cmos_config *config);
+C_VOID vm_machine_cmos_apply_defaults(t_cmos *cmos,
+    const vm_machine_cmos_defaults *defaults);
 C_VOID vm_machine_cmos_reset(t_cmos *cmos);
 C_VOID vm_machine_cmos_refresh(t_cmos *cmos);
 C_VOID vm_machine_cmos_finalize(t_cmos *cmos);
