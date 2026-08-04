@@ -14,7 +14,6 @@ C_VOID vm_session_profile_firmware_register_dma(vm_session *session);
 C_VOID vm_session_profile_firmware_register_fdc(vm_session *session);
 C_VOID vm_session_profile_firmware_register_hdc(vm_session *session);
 C_VOID vm_session_profile_firmware_register_core_posts(vm_session *session);
-C_VOID vm_session_profile_firmware_initialize_qdx(vm_session *session);
 C_VOID vm_session_profile_firmware_refresh(vm_session *session);
 C_VOID vm_session_profile_firmware_reset(vm_session *session);
 C_VOID vm_session_profile_firmware_finalize(vm_session *session);

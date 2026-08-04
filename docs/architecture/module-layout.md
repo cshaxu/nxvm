@@ -91,9 +91,9 @@ product assembly layer. The completed implementation is summarized in
 
 Approved compact lexical families are also retained: `kbc`, `vadp`,
 `win32app`, `win32con`, `linuxapp`, `linuxcon`, `w32*`, `xasm32`, `aasm`,
-`dasm`, and `debug`. The default-profile QDX firmware hacks remain `qdx`,
-`qdcga`, and `qdkeyb`. Retention of those terms does not exempt their enclosing
-public APIs from their owner prefix.
+`dasm`, and `debug`. The default-profile firmware names `qdcga` and `qdkeyb`
+remain approved compact vocabulary. Retention of those terms does not exempt
+their enclosing public APIs from their owner prefix.
 
 ## Interface Naming
 

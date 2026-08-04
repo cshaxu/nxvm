@@ -7118,18 +7118,6 @@ static C_VOID PREFIX_LOCK(aasm32_context *aasmContext)
         _ser_;
     TYPE_TRACE_CALL_END;
 }
-static C_VOID QDX(aasm32_context *aasmContext)
-{
-    TYPE_TRACE_CALL_BEGIN("PREFIX_LOCK");
-    if (ARG_I8)
-    {
-        _c_setbyte(aasmContext, 0xf1);
-        TYPE_TRACE_CHECK_RETURN(_c_imm8(aasmContext, aopri1.imm8));
-    }
-    else
-        _ser_;
-    TYPE_TRACE_CALL_END;
-}
 static C_VOID PREFIX_REPNZ(aasm32_context *aasmContext)
 {
     TYPE_TRACE_CALL_BEGIN("PREFIX_REPNZ");
@@ -10180,8 +10168,6 @@ static C_VOID exec(aasm32_context *aasmContext)
         BSR(aasmContext);
     else if (!STD_STRCMP(rop, "movsx"))
         MOVSX(aasmContext);
-    else if (!STD_STRCMP(rop, "qdx"))
-        QDX(aasmContext);
     else
         _ser_;
     TYPE_TRACE_CALL_END;

@@ -5,6 +5,7 @@
 #include "core/machine/cpu_interface.h"
 #include "core/machine/fpu_interface.h"
 #include "core/machine/execution_provider.h"
+#include "core/machine/firmware_interrupt_interface.h"
 #include "core/machine/cpu.h"
 #include "core/machine/cpu_instructions.h"
 #include "core/machine/dma.h"
@@ -152,6 +153,8 @@ type_status core_machine_capture_observation(
 
 type_status core_machine_bind_execution_provider(core_machine *machine,
     const core_machine_execution_provider *provider, C_VOID *context);
+type_status core_machine_install_firmware_interrupt_portal(core_machine *machine,
+    const core_machine_firmware_interrupt_portal *portal);
 type_status core_machine_freeze_execution_providers(core_machine *machine);
 
 C_VOID core_machine_destroy(core_machine *machine);

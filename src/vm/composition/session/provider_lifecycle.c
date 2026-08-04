@@ -25,7 +25,6 @@ C_VOID vm_session_provider_lifecycle_initialize(vm_session *session)
     vm_session_profile_firmware_register_fdc(session);
     vm_session_profile_firmware_register_hdc(session);
     vm_session_profile_firmware_register_core_posts(session);
-    vm_session_profile_firmware_initialize_qdx(session);
 }
 
 C_VOID vm_session_provider_lifecycle_refresh(vm_session *session)

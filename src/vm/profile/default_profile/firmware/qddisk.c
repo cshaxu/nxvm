@@ -16,7 +16,6 @@
 
 #include "vm/profile/default_profile/firmware/context.h"
 
-#include "vm/profile/default_profile/firmware/qdx.h"
 
 #include "qddisk.h"
 
@@ -26,7 +25,7 @@ static C_VOID set_hdd_status(vm_profile_default_context *profile, type_unsigned_
         &status, sizeof(status));
 }
 
-static C_VOID int_13_02_hdd_read_sector(vm_profile_default_context *profile) {
+C_VOID vm_profile_default_disk_handle_hdd_read(vm_profile_default_context *profile) {
     t_cpu *cpu = vm_profile_default_context_execution(profile)->cpu;
     type_unsigned_8 drive  = cpu->data.dl;
     type_unsigned_8 head   = cpu->data.dh;
@@ -58,7 +57,7 @@ static C_VOID int_13_02_hdd_read_sector(vm_profile_default_context *profile) {
     set_hdd_status(profile, cpu->data.ah);
 }
 
-static C_VOID int_13_03_hdd_write_sector(vm_profile_default_context *profile) {
+C_VOID vm_profile_default_disk_handle_hdd_write(vm_profile_default_context *profile) {
     t_cpu *cpu = vm_profile_default_context_execution(profile)->cpu;
     type_unsigned_8 drive  = cpu->data.dl;
     type_unsigned_8 head   = cpu->data.dh;
@@ -88,10 +87,4 @@ static C_VOID int_13_03_hdd_write_sector(vm_profile_default_context *profile) {
         TYPE_CLEAR_BIT(cpu->data.eflags, VCPU_EFLAGS_CF);
     }
     set_hdd_status(profile, cpu->data.ah);
-}
-
-C_VOID vm_profile_default_disk_initialize(t_qdx *qdx) {
-    if (qdx == STD_NULL) return;
-    qdx->table[0xa2] = int_13_02_hdd_read_sector;
-    qdx->table[0xa3] = int_13_03_hdd_write_sector;
 }

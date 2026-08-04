@@ -56,12 +56,25 @@ C_INT main(C_INT argc, C_CHAR **argv)
     DWORD elapsed;
     C_INT prompt_seen = 0;
     vm_session *session;
+    C_INT owns_session = 0;
 
-    if (argc != 2) return 1;
-    session = (vm_session *)STD_CALLOC(1u, sizeof(*session));
-    if (session == STD_NULL) return 1;
-    vm_session_initialize(session);
-    if (vm_machine_fdd_insert_for(&session->fdd, argv[1]) != 0) goto fail;
+    if (argc != 2 && argc != 3) return 1;
+    if (argc == 3) {
+        const vm_session_config config = {
+            .fdd_image = argv[1],
+            .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086,
+            .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
+        };
+
+        if (STD_STRCMP(argv[2], "8086") ||
+            vm_session_create(&config, &session) != TYPE_STATUS_OK) return 1;
+        owns_session = 1;
+    } else {
+        session = (vm_session *)STD_CALLOC(1u, sizeof(*session));
+        if (session == STD_NULL) return 1;
+        vm_session_initialize(session);
+        if (vm_machine_fdd_insert_for(&session->fdd, argv[1]) != 0) goto fail;
+    }
     thread = CreateThread(STD_NULL, 0u, run_full_pc, session, 0u, STD_NULL);
     if (thread == STD_NULL) goto fail;
 
@@ -83,16 +96,23 @@ C_INT main(C_INT argc, C_CHAR **argv)
         STD_FPUTS("M5:T70:S2:DOS-PROMPT:TIMEOUT\n", STD_STDERR);
         goto fail;
     }
-    vm_session_finalize(session);
-    STD_FREE(session);
-    puts("M5:T70:S2:DOS-PROMPT:OK");
+    if (owns_session) vm_session_destroy(session);
+    else {
+        vm_session_finalize(session);
+        STD_FREE(session);
+    }
+    puts(argc == 3 ? "M5:T209:S3:DOS-PROMPT-8086:OK" :
+        "M5:T70:S2:DOS-PROMPT:OK");
     return 0;
 
 fail:
     if (session != STD_NULL) dump_first_fault(session->core_machine);
     vm_session_stop(session);
-    vm_session_finalize(session);
-    STD_FREE(session);
+    if (owns_session) vm_session_destroy(session);
+    else {
+        vm_session_finalize(session);
+        STD_FREE(session);
+    }
     return 1;
 }
 static C_INT has_dos_prompt(const core_machine *machine)

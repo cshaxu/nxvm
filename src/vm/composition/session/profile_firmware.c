@@ -12,7 +12,8 @@
 #include "vm/machine/fdc.h"
 #include "vm/profile/default_profile/firmware/bios.h"
 #include "vm/profile/default_profile/firmware/hdc.h"
-#include "vm/profile/default_profile/firmware/qdx.h"
+#include "vm/profile/default_profile/firmware/qdcga.h"
+#include "vm/profile/default_profile/firmware/qdkeyb.h"
 
 static C_VOID vm_session_profile_firmware_apply(
     vm_session *session, vm_profile_default_pc_at_firmware_hook hook,
@@ -22,7 +23,7 @@ static C_VOID vm_session_profile_firmware_apply(
     switch (hook) {
     case VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_VIDEO_INT10:
         vm_profile_default_bios_add_interrupt(&session->default_bios,
-            "qdx 10\niret", vector);
+            "int f2\niret", vector);
         break;
     case VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_CMOS_POST:
         vm_profile_default_bios_add_post(&session->default_bios, VCMOS_POST);
@@ -39,7 +40,7 @@ static C_VOID vm_session_profile_firmware_apply(
     case VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_KEYBOARD_INT16:
         vm_profile_default_bios_add_interrupt(&session->default_bios,
             hook == VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_KEYBOARD_IRQ1 ?
-                "qdx 09\niret" : "qdx 16\niret", vector);
+                "int f1\niret" : "int f3\niret", vector);
         break;
     case VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_DMA_POST:
         vm_profile_default_bios_add_post(&session->default_bios, VDMA_POST);
@@ -145,17 +146,9 @@ C_VOID vm_session_profile_firmware_register_core_posts(vm_session *session)
         VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_PIC_POST);
 }
 
-C_VOID vm_session_profile_firmware_initialize_qdx(vm_session *session)
-{
-    if (session != STD_NULL) vm_profile_default_qdx_initialize(
-        &session->default_profile_context,
-        vm_profile_default_context_execution(&session->default_profile_context));
-}
-
 C_VOID vm_session_profile_firmware_refresh(vm_session *session)
 {
     if (session == STD_NULL) return;
-    vm_profile_default_qdx_refresh(&session->default_profile_context);
     vm_profile_default_bios_refresh(&session->default_bios);
 }
 
@@ -165,12 +158,12 @@ C_VOID vm_session_profile_firmware_reset(vm_session *session)
     vm_profile_default_bios_reset(&session->default_bios,
         vm_profile_default_context_memory(&session->default_profile_context),
         &session->block_provider);
-    vm_profile_default_qdx_reset(&session->default_profile_context);
+    vm_profile_default_keyboard_reset(&session->default_profile_context);
+    vm_profile_default_cga_reset(&session->default_profile_context);
 }
 
 C_VOID vm_session_profile_firmware_finalize(vm_session *session)
 {
     if (session == STD_NULL) return;
-    vm_profile_default_qdx_finalize(&session->default_profile_context);
     vm_profile_default_bios_finalize(&session->default_bios);
 }

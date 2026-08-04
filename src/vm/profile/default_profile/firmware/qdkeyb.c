@@ -11,7 +11,6 @@
 
 #include "vm/profile/default_profile/firmware/context.h"
 
-#include "vm/profile/default_profile/firmware/qdx.h"
 
 #include "qdkeyb.h"
 
@@ -216,7 +215,7 @@ static C_VOID keyboard_get_status(vm_profile_default_context *profile)
     TYPE_CLEAR_BIT(cpu->data.eflags, VCPU_EFLAGS_ZF);
 }
 
-static C_VOID keyboard_int_09(vm_profile_default_context *profile)
+C_VOID vm_profile_default_keyboard_handle_irq1(vm_profile_default_context *profile)
 {
     core_machine_cpu_execution_context *execution =
         vm_profile_default_context_execution(profile);
@@ -237,7 +236,7 @@ static C_VOID keyboard_int_09(vm_profile_default_context *profile)
     core_machine_port_write(execution->port, 0x0020, 0x20);
 }
 
-static C_VOID keyboard_int_16(vm_profile_default_context *profile)
+C_VOID vm_profile_default_keyboard_handle_int16(vm_profile_default_context *profile)
 {
     t_cpu *cpu = vm_profile_default_context_execution(profile)->cpu;
 
@@ -321,13 +320,6 @@ static const core_machine_keyboard_provider keyboard_provider = {
     keyboard_get_modifier,
     keyboard_apply_host_state
 };
-
-C_VOID vm_profile_default_keyboard_initialize(t_qdx *qdx)
-{
-    if (qdx == STD_NULL) return;
-    qdx->table[0x09] = keyboard_int_09;
-    qdx->table[0x16] = keyboard_int_16;
-}
 
 C_VOID vm_profile_default_keyboard_reset(vm_profile_default_context *profile)
 {

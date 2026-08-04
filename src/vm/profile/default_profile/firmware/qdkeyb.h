@@ -36,8 +36,9 @@ extern "C" {
 #define QDKEYB_FLAG1_D_LALT    0x02
 #define QDKEYB_FLAG1_D_LCTRL   0x01
 
-typedef struct t_qdx t_qdx;
-C_VOID vm_profile_default_keyboard_initialize(t_qdx *qdx);
+typedef struct vm_profile_default_context vm_profile_default_context;
+C_VOID vm_profile_default_keyboard_handle_irq1(vm_profile_default_context *profile);
+C_VOID vm_profile_default_keyboard_handle_int16(vm_profile_default_context *profile);
 C_VOID vm_profile_default_keyboard_reset(vm_profile_default_context *profile);
 const core_machine_keyboard_provider *vm_profile_default_keyboard_provider(C_VOID);
 

@@ -9,7 +9,7 @@ if ([string]::IsNullOrWhiteSpace($RepositoryRoot)) {
 $legacyNames = @(
     "vcpu", "vcpuins", "vram", "vport", "vpic1", "vpic2", "vpit",
     "vlatch", "vdma1", "vdma2", "vkbc", "vvadp", "vcmos", "vfdd",
-    "vfdc", "vhdd", "vdebug", "vbios", "qdxTable"
+    "vfdc", "vhdd", "vdebug", "vbios"
 )
 $definition = "^\s*(?:extern\s+)?t_[A-Za-z0-9_\s\*]+\s+({0})\s*(?:\[.*\])?\s*;\s*$" -f
     (($legacyNames | ForEach-Object { [regex]::Escape($_) }) -join "|")

@@ -235,6 +235,37 @@ behavior.
 
 ## Compatibility And Hardware
 
+- [ ] **Firmware interrupt-portal migration (`TODO(High)`, T209).** Replace
+  default-profile QDX `F1 <command>` with frozen, ROM-origin-checked private
+  firmware `INT F0h`--`F5h` providers. Core must retain normal `INT`/IVT
+  semantics for every nonmatching call; profile handlers must use existing
+  firmware/device bindings rather than raw decoder-table mutation or an opaque
+  current-profile extension. Preserve the default `80386 + no FPU` baseline
+  and add explicit `8086 + no FPU` instruction-profile proof before removing
+  QDX. The portal stage passes under 8086. The owner-local full FDD vector
+  reaches runtime `C1 EA 04` (`SHR DX, 4`) at linear `0000:AA98`; this is a
+  real 80186+ immediate-shift form, so strict 8086 correctly raises `#UD`.
+  Keep the focused 8086-rejects/80186-accepts probe and retain the FDD run only
+  as an expected-negative compatibility diagnostic; it is not a T209 blocker.
+
+- [ ] **Remove default-profile firmware shortcuts (`TODO(High)`, M5 core
+  closure condition).** Completion of T209 removes the QDX `F1 <command>`
+  CPU opcode hack, but does not make the replacement firmware `INT F0h`--`F5h`
+  portal a completed hardware path. The current default ROM still calls
+  profile-private providers for boot-failure stop (`F0h`), BIOS keyboard IRQ1
+  and `INT 16h` (`F1h`/`F3h`), text `INT 10h` (`F2h`), and HDD read/write
+  (`F4h`/`F5h`). M5 may not claim a fully hardware-owned PC/AT execution path
+  while those portals remain. Retire each portal only after its guest-visible
+  behavior has a real owner and probe: KBC ports/IRQ1 plus ROM BIOS keyboard
+  service; VADP ports/VRAM plus ROM BIOS video service; and a guest-visible
+  HDD controller with port/IRQ/PIO or DMA behavior plus ROM BIOS disk service.
+  Replace the boot-failure stop helper with an explicit product/session
+  lifecycle boundary. The final task removes `firmware_portal.*`, private
+  vector registrations, and obsolete QD* C firmware handlers, while preserving
+  ordinary guest `INT`/IVT delivery and NXVM Console/debugger/boot behavior.
+  Do not substitute a new host callback, direct BDA/RAM mutation, or BIOS
+  special-case for the removed portal.
+
 - [ ] **CPU correctness / MS-DOS MEM.** Do not claim complete 80386 support:
   the CPU is 8086-plus with partial i386 decode/execution coverage. T152
   historically reproduced `MEM` as FPU `FNINIT` (`DB E3`) reaching the old
@@ -246,6 +277,15 @@ behavior.
   session-creation UX and closure probes; present FPU profiles remain
   unavailable until their state/operations are implemented.
   Protected DOS media stays local.
+
+- [ ] **Preserve CPU-fault evidence at the product boundary (`TODO(Medium)`).**
+  A real-mode `#UD` currently requests the executor stop. The VM runner may
+  start its next quantum, which cold-resets the machine and clears the
+  first-fault diagnostic before a whole-system smoke can inspect it. Define a
+  distinct core fault outcome, preserve the bounded diagnostic window through
+  that returned boundary, and make the session runner stop rather than reset.
+  Keep ordinary profile/provider stop and user cancellation semantics separate;
+  do not add a global trace or a second execution path.
 - [x] **8042 KBC controller and one BIOS route (`TODO(Medium)`).** T192
   completed `0x60`/`0x64`, OBF/IBF, command byte,
   `0x20`/`0x60`/`0xAA`/`0xAB`/`0xAD`/`0xAE`/`0xD0`/`0xD1`, keyboard

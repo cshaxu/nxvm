@@ -70,11 +70,11 @@ clc                         \n\
 jmp near $(label_int_13_end)\n\
 \
 $(label_int_13_02):         \n\
-qdx a2 \n\
+int f4 \n\
 jmp near $(label_int_13_end)\n\
 \
 $(label_int_13_03):         \n\
-qdx a3 \n\
+int f5 \n\
 jmp near $(label_int_13_end)\n\
 \
 $(label_int_13_08):         \n\

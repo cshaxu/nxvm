@@ -240,7 +240,7 @@ test ax, 0040                     \n\
 jnz $(label_post_boot_fail_loop)  \n\
 mov ah, 00                        \n\
 int 16                            \n\
-qdx 00  ; special stop            \n\
+int f0  ; profile firmware stop   \n\
 jmp near $(label_post_boot_start) \n\
 \
 $(label_post_boot_succ):  \n\

@@ -245,12 +245,24 @@ type_status core_machine_bind_execution_provider(core_machine *machine,
     return TYPE_STATUS_OK;
 }
 
+type_status core_machine_install_firmware_interrupt_portal(core_machine *machine,
+    const core_machine_firmware_interrupt_portal *portal)
+{
+    if (!core_machine_configuration_is_open(machine)) {
+        return TYPE_STATUS_INVALID_STATE;
+    }
+    return core_machine_cpu_execution_context_register_firmware_interrupt_portal(
+        &machine->executor_cpu_execution, portal);
+}
+
 type_status core_machine_freeze_execution_providers(core_machine *machine)
 {
     if (!core_machine_configuration_is_open(machine)) {
         return TYPE_STATUS_INVALID_STATE;
     }
     machine->execution_provider_frozen = 1;
+    core_machine_cpu_execution_context_freeze_firmware_interrupt_portals(
+        &machine->executor_cpu_execution);
     core_machine_memory_freeze_mappings(&machine->executor_memory);
     return TYPE_STATUS_OK;
 }
