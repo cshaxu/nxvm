@@ -13,8 +13,8 @@ C_INT main(C_VOID)
         (vm_session *)STD_CALLOC(1u, sizeof(*session));
     if (session == STD_NULL) return 1;
     vm_session_initialize(session);
-    if (session->default_qdx->table[0xa2] == STD_NULL ||
-        session->default_qdx->table[0xa3] == STD_NULL) {
+    if (session->default_qdx.table[0xa2] == STD_NULL ||
+        session->default_qdx.table[0xa3] == STD_NULL) {
         vm_session_finalize(session);
         STD_FREE(session);
         return 1;

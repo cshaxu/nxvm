@@ -19,11 +19,8 @@ C_INT main(C_VOID)
     vm_session_initialize(session);
     machine = session;
     if (machine == STD_NULL ||
-        machine->default_qdx != &machine->default_qdx_storage ||
-        machine->default_profile_context->qdx != machine->default_qdx ||
-        core_machine_cpu_execution_context_extension(
-            core_machine_configuration_cpu_execution_borrow(session->core_machine)) !=
-            machine->default_profile_context) {
+        machine->default_profile_context.qdx != &machine->default_qdx ||
+        machine->default_profile_context.execution == STD_NULL) {
         vm_session_finalize(session);
         STD_FREE(session);
         return 1;

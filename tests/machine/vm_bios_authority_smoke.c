@@ -18,7 +18,7 @@ C_INT main(C_VOID)
     if (session == STD_NULL) return 1;
     vm_session_initialize(session);
     machine = session;
-    if (machine == STD_NULL || machine->default_bios != &machine->default_bios_storage) {
+    if (machine == STD_NULL) {
         vm_session_finalize(session);
         STD_FREE(session);
         return 1;
