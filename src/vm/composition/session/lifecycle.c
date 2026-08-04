@@ -71,15 +71,6 @@ static C_INT vm_session_keyboard_get_modifier(
     return 0;
 }
 
-static C_VOID vm_session_keyboard_apply_host_state(
-    C_VOID *context, uint32_t asynchronous_keys, uint32_t toggle_keys)
-{
-    vm_session *machine =
-        (vm_session *)context;
-    core_machine_keyboard_apply_host_state_to(&machine->keyboard_provider,
-        asynchronous_keys, toggle_keys);
-}
-
 static C_VOID vm_session_keyboard_receive_key_press(C_VOID *context,
     uint16_t scan_code, uint16_t virtual_key)
 {
@@ -126,7 +117,6 @@ C_INT vm_session_bind_execution_provider(vm_session *machine)
 
 static const vm_platform_keyboard_sink vm_session_keyboard_sink = {
     vm_session_keyboard_get_modifier,
-    vm_session_keyboard_apply_host_state,
     vm_session_keyboard_receive_key_press,
     vm_session_keyboard_request_stop
 };

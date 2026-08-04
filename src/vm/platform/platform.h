@@ -55,6 +55,9 @@ C_VOID vm_platform_run_context_initialize(
 C_VOID vm_platform_run_context_bind_keyboard_state(
     vm_platform_run_context *context, vm_platform_keyboard_state_sink sink,
     C_VOID *sink_context);
+C_INT vm_platform_run_context_submit_keyboard_state(
+    const vm_platform_run_context *context, uint32_t asynchronous_keys,
+    uint32_t toggle_keys);
 C_INT vm_platform_run_context_get_window_display(
     const vm_platform_run_context *context);
 C_VOID vm_platform_run_context_set_window_display(

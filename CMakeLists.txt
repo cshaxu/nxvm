@@ -830,7 +830,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0199 "0.5.0199")
+add_current_vm_artifact(vm-0-5-0200 "0.5.0200")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 
@@ -940,6 +940,12 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_request_transport_closure.cmake"
         COMMENT "Verifying request transport ingress-only closure"
+        VERBATIM)
+
+    add_custom_target(verify-keyboard-ingress-boundary
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_keyboard_ingress_boundary.cmake"
+        COMMENT "Verifying VM keyboard-state ingress boundary"
         VERBATIM)
 
     add_custom_target(verify-vm-session-owner-closure
