@@ -23,6 +23,15 @@ task tracking entry is updated in the same commit. Documentation/design tasks
 apply only the rules relevant to their artifact and do not manufacture runtime
 verification requirements.
 
+## Milestone Closure Evidence
+
+Before an implementation milestone closes, its final verification record must
+map the current source graph to the roadmap exit conditions, applicable rules,
+open TODO deferrals, and current evidence. A historical passing task, a clean
+compile, or a fixture-only smoke cannot close a changed runnable path. M5 uses
+the compact [M5 Closure Checklist](m5-closure-checklist.md) as this mapping
+index; the checklist does not supersede this policy or `RULES.md`.
+
 Each completed implementation task that changes a runnable path must compile,
 verify, and copy one usable task-level local build output to the ignored
 `build/output/` directory. Beginning with M5 T48, the task number is the patch

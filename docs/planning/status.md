@@ -94,6 +94,11 @@ historical QDX/approved compact-name exceptions are unchanged.
 
 ## M5 Closure
 
+The [M5 closure checklist](m5-closure-checklist.md) is the single operational
+index for the remaining build, artifact, hygiene, architecture, and retained-
+behavior evidence. It does not replace the roadmap or rules, and no M5 closure
+claim may rely only on historical task results.
+
 **M5 T87--T95 session-readiness closure: complete.** Every implemented module
 now has session-owned, execution-thread-owned, caller-owned, or explicitly
 leased mutable state; the remaining VDM platform/product layers are deliberately
