@@ -367,9 +367,16 @@ access; copied observations and retained Console/FDD evidence are recorded in
 [`M5-T164.md`](../tracking/M5-T164.md). Artifact:
 `build/output/nxvm_0_5_0164.exe`.
 
-**M5 T165 S1 active: transactional VM RAM reconfiguration.** Route retained
-`DEVICE ram` through a stopped-session machine-graph rebuild without creating a
-second session or changing Console grammar.
+**M5 T165 S1 complete:** `DEVICE ram` rebuilds a stopped session with retained
+configuration/media descriptors; `nxvm_0_5_0165.exe` and its focused smoke
+are recorded in [`M5-T165.md`](../tracking/M5-T165.md).
+
+**M5 T166 S1 complete:** default session media is empty; machine-local image
+paths are removed while explicit `DEVICE` media remains. Evidence:
+[`M5-T166.md`](../tracking/M5-T166.md), artifact `nxvm_0_5_0166.exe`.
+
+**M5 T167 S1 active:** split the VM session factory from the Console machine
+adapter without changing grammar or selected-session behavior.
 
 The completed executor sequence is defined in
 [Facade And Executor Convergence](m5-facade-executor-convergence.md). The

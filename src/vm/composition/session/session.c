@@ -43,6 +43,38 @@ static uint16_t vm_session_read_u16(const C_VOID *source)
     return value;
 }
 
+static C_INT vm_session_copy_path(C_CHAR *destination, STD_SIZE_T capacity,
+    const C_CHAR *source)
+{
+    STD_SIZE_T length;
+
+    if (destination == STD_NULL || capacity == 0u) return 0;
+    destination[0] = '\0';
+    if (source == STD_NULL) return 1;
+    length = STD_STRLEN(source);
+    if (length >= capacity) return 0;
+    STD_MEMCPY(destination, source, length + 1u);
+    return 1;
+}
+
+C_INT vm_session_insert_fdd(vm_session *session, const C_CHAR *path)
+{
+    if (session == STD_NULL || !vm_session_copy_path(session->fdd_image_path,
+            sizeof(session->fdd_image_path), path) ||
+        vm_machine_fdd_insert_for(session->fdd, path) != 0) return -1;
+    session->retained_config.fdd_image = session->fdd_image_path;
+    return 0;
+}
+
+C_INT vm_session_insert_hdd(vm_session *session, const C_CHAR *path)
+{
+    if (session == STD_NULL || !vm_session_copy_path(session->hdd_image_path,
+            sizeof(session->hdd_image_path), path) ||
+        vm_machine_hdd_insert(session->hdd, path) != 0) return -1;
+    session->retained_config.hdd_image = session->hdd_image_path;
+    return 0;
+}
+
 
 
 C_VOID vm_session_storage_initialize(vm_session *machine)
@@ -148,6 +180,7 @@ C_INT vm_session_create(const vm_session_config *config, vm_session **out_sessio
     session = (vm_session *)STD_CALLOC(1u, sizeof(*session));
     if (session == STD_NULL) return NTVDM64_STATUS_NO_MEMORY;
     if (config != STD_NULL) {
+        session->retained_config = *config;
         session->core_machine_config.memory_bytes = config->memory_bytes;
         session->core_machine_config.cpu_profile = config->cpu_profile;
         session->core_machine_config.fpu_profile = config->fpu_profile;
@@ -158,9 +191,9 @@ C_INT vm_session_create(const vm_session_config *config, vm_session **out_sessio
         return NTVDM64_STATUS_FAULT;
     }
     if (config != STD_NULL &&
-        ((config->fdd_image != STD_NULL && vm_machine_fdd_insert_for(session->fdd,
+        ((config->fdd_image != STD_NULL && vm_session_insert_fdd(session,
             config->fdd_image)) ||
-         (config->hdd_image != STD_NULL && vm_machine_hdd_insert(session->hdd,
+         (config->hdd_image != STD_NULL && vm_session_insert_hdd(session,
             config->hdd_image)))) {
         vm_session_destroy(session);
         return NTVDM64_STATUS_FAULT;
@@ -175,6 +208,45 @@ C_INT vm_session_create(const vm_session_config *config, vm_session **out_sessio
     }
     vm_session_control_reset(session->control);
     *out_session = session;
+    return NTVDM64_STATUS_OK;
+}
+
+ntvdm64_status vm_session_reconfigure_memory(vm_session *session,
+    STD_SIZE_T memory_bytes)
+{
+    vm_session_config config;
+    C_CHAR fdd_path[1024];
+    C_CHAR hdd_path[1024];
+
+    if (session == STD_NULL || session->control == STD_NULL ||
+        vm_session_control_is_running(session->control) || memory_bytes <
+        CORE_MACHINE_MINIMUM_MEMORY_BYTES || memory_bytes >
+        CORE_MACHINE_MAXIMUM_MEMORY_BYTES) return NTVDM64_STATUS_INVALID_STATE;
+
+    config = session->retained_config;
+    if (!vm_session_copy_path(fdd_path, sizeof(fdd_path), session->fdd_image_path) ||
+        !vm_session_copy_path(hdd_path, sizeof(hdd_path), session->hdd_image_path)) {
+        return NTVDM64_STATUS_INVALID_ARGUMENT;
+    }
+    config.memory_bytes = memory_bytes;
+    config.fdd_image = fdd_path[0] ? fdd_path : STD_NULL;
+    config.hdd_image = hdd_path[0] ? hdd_path : STD_NULL;
+    config.boot_hdd = vm_profile_default_bios_get_boot_hdd(session->default_bios);
+
+    vm_session_finalize(session);
+    STD_MEMSET(session, 0, sizeof(*session));
+    session->retained_config = config;
+    session->core_machine_config.memory_bytes = config.memory_bytes;
+    session->core_machine_config.cpu_profile = config.cpu_profile;
+    session->core_machine_config.fpu_profile = config.fpu_profile;
+    vm_session_initialize(session);
+    if (session->core_machine == STD_NULL ||
+        (config.fdd_image != STD_NULL && vm_session_insert_fdd(session, config.fdd_image)) ||
+        (config.hdd_image != STD_NULL && vm_session_insert_hdd(session, config.hdd_image))) {
+        return NTVDM64_STATUS_FAULT;
+    }
+    vm_profile_default_bios_set_boot_hdd(session->default_bios, config.boot_hdd);
+    vm_session_reset(session);
     return NTVDM64_STATUS_OK;
 }
 

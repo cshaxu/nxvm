@@ -308,6 +308,10 @@ ntvdm64_status core_machine_create(
         return NTVDM64_STATUS_NO_MEMORY;
     }
     core_machine_memory_initialize(&machine->executor_memory);
+    if (config->memory_bytes != 0u) {
+        core_machine_memory_allocate_for(&machine->executor_memory,
+            config->memory_bytes);
+    }
     core_machine_memory_register_ports(&machine->executor_memory,
         &machine->executor_port);
     core_machine_vadp_initialize(&machine->shared_vadp);
