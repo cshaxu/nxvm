@@ -23,6 +23,11 @@ import. `docs/planning/status.md` remains authoritative for active work.
 
 ## Current Architecture Closure
 
+- [x] **Console adapter cohesion closure (`TODO(Low)`, T205).**
+  Keep the typed selected-session borrow as an adapter-private helper, delete
+  its one-consumer source/header split, and make the closure gate validate the
+  unique borrow fact rather than a helper file.
+
 - [x] **CMake media-smoke and Linux adapter hygiene (`TODO(Low)`, T204).**
   Derive media-smoke registration and skipping from one FDD/FDD+HDD list, then
   remove uncalled platform sleep facades and unreachable Linux adapter noise
@@ -30,8 +35,8 @@ import. `docs/planning/status.md` remains authoritative for active work.
 
 - [x] **Console adapter readability and selected borrow closure (`TODO(Medium)`, T203).**
   T203 retains the Console machine-provider vtable, expands its callbacks into
-  ordinary functions, and makes `vm_session_borrow_selected()` the sole
-  composition call to the core selected-borrow API. Failed-borrow and debugger
+  ordinary functions, and makes an adapter-local helper the sole composition
+  call to the core selected-borrow API. Failed-borrow and debugger
   pause/wait/context behavior are unchanged; a source gate prevents duplicate
   direct borrowing and obsolete selected-session wrappers.
 

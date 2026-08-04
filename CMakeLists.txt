@@ -222,7 +222,6 @@ set(CORE_PRODUCT_DEBUG_SOURCES
     src/core/product/debug/xasm32/dasm32.c
 )
 set(VM_COMPOSITION_SOURCES
-    src/vm/composition/session/selected_session.c
     src/vm/composition/session/session_factory.c
     src/vm/composition/session/console_machine_adapter.c
     src/vm/composition/session/debug_target.c
@@ -838,7 +837,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0204 "0.5.0204")
+add_current_vm_artifact(vm-0-5-0205 "0.5.0205")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 
