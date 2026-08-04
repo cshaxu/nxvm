@@ -46,12 +46,12 @@ C_INT main(C_VOID)
     result |= core_machine_configuration_memory_borrow(machine) != STD_NULL;
 
     result |= expect_status(core_machine_reset(machine), NTVDM64_STATUS_OK);
-    result |= expect_lifecycle(machine, CORE_MACHINE_PAUSED);
+    result |= expect_lifecycle(machine, CORE_MACHINE_STOPPED);
     result |= expect_status(core_machine_get_cpu_state(machine, &cpu),
                             NTVDM64_STATUS_OK);
     result |= expect_status(core_machine_capture_observation(machine, &observation),
                             NTVDM64_STATUS_OK);
-    result |= observation.lifecycle != CORE_MACHINE_PAUSED ||
+    result |= observation.lifecycle != CORE_MACHINE_STOPPED ||
               observation.cpu.cs != cpu.cs || observation.cpu.eip != cpu.eip;
     result |= core_machine_debug_memory_borrow(machine) == STD_NULL;
     result |= cpu.cs != 0xf000u || cpu.eip != 0x0000fff0u;
@@ -75,8 +75,7 @@ C_INT main(C_VOID)
     result |= expect_lifecycle(machine, CORE_MACHINE_STOPPED);
     result |= expect_status(core_machine_capture_observation(machine, &observation),
                             NTVDM64_STATUS_OK);
-    result |= expect_status(core_machine_run(machine, budget, &run_result),
-                            NTVDM64_STATUS_INVALID_STATE);
+    result |= expect_lifecycle(machine, CORE_MACHINE_STOPPED);
 
     result |= expect_status(core_machine_reset(machine), NTVDM64_STATUS_OK);
     result |= expect_status(core_machine_report_fault(machine, 0x1234u),

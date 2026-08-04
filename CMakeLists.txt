@@ -99,6 +99,11 @@ add_executable(nxvm-core-machine-lifecycle-smoke
 )
 target_link_libraries(nxvm-core-machine-lifecycle-smoke PRIVATE nxvm-core)
 
+add_executable(nxvm-core-machine-stopped-lifecycle-smoke
+    tests/core/machine_stopped_lifecycle_smoke.c
+)
+target_link_libraries(nxvm-core-machine-stopped-lifecycle-smoke PRIVATE nxvm-core)
+
 add_executable(nxvm-core-machine-configuration-smoke
     tests/core/machine_configuration_smoke.c
 )
@@ -137,6 +142,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(nxvm-core-machine-instance-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-core-machine-configuration-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-core-machine-lifecycle-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(nxvm-core-machine-stopped-lifecycle-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-core-machine-trace-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-core-machine-debug-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(nxvm-core-presentation-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -847,6 +853,7 @@ add_nxvm_version_artifact(nxvm-0-5-0165 "0.5.0165")
 add_nxvm_version_artifact(nxvm-0-5-0166 "0.5.0166")
 add_nxvm_version_artifact(nxvm-0-5-0167 "0.5.0167")
 add_nxvm_version_artifact(nxvm-0-5-0168 "0.5.0168")
+add_nxvm_version_artifact(nxvm-0-5-0170 "0.5.0170")
 
 option(NTVDM64_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)

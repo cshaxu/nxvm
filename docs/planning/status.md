@@ -386,11 +386,20 @@ contract document names actual APIs, and CMake exposes explicit primitive and
 runtime aliases for the one core executor. Evidence:
 [`M5-T168.md`](../tracking/M5-T168.md), artifact `nxvm_0_5_0168.exe`.
 
-**M5 T169 S1 active: RAM cold-reconfiguration and lifecycle design.** Freeze
-the distinction between initial/reset `STOPPED` and execution `PAUSED`, RAM
-installed-range semantics, checked provider access, and T170--T174 before any
-runtime change. The decision record is
+**M5 T169 S1 complete: RAM cold-reconfiguration and lifecycle design.** The
+initial/reset `STOPPED` contract, installed-range semantics, checked provider
+access, and T170--T174 breakdown are fixed in
 [`m5-t169-s1.md`](subtasks/m5-t169-s1.md).
+
+**M5 T170 S1 complete: cold-start lifecycle implementation.** Reset and stop
+states now cold-reset before exposing `STOPPED`; `PAUSED` remains an execution
+boundary. Core, Console, session-manager, and FDD DOS-prompt evidence passed.
+Artifact: `nxvm_0_5_0170.exe`; evidence:
+[`M5-T170.md`](../tracking/M5-T170.md).
+
+**M5 T171 S1 active: checked RAM range and provider access.** Separate
+installed RAM from backing capacity, remove modulo/high-address aliases, and
+migrate profile callers off raw RAM addresses before enabling RAM shrink.
 
 The completed executor sequence is defined in
 [Facade And Executor Convergence](m5-facade-executor-convergence.md). The

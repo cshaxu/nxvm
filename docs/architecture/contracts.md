@@ -226,8 +226,8 @@ semantics supplied by its registered provider. Dynamic CPU address behavior,
 including A20, affects translation to the same frozen map; it never changes
 which provider owns a mapped range.
 
-External memory, port, and A20 operations require the returned `PAUSED`
-execution boundary. Root
+External memory, port, and A20 operations require a returned `PAUSED` boundary
+or a cold-start-ready `STOPPED` boundary. Root
 composition delivers host input and product commands through its own boundary,
 then the relevant provider or core API applies them on the machine execution
 thread. This preserves deterministic guest state without giving platform or

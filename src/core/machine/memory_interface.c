@@ -15,7 +15,8 @@ ntvdm64_status core_machine_memory_read(
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
 
-    if (machine->lifecycle != CORE_MACHINE_PAUSED) {
+    if (machine->lifecycle != CORE_MACHINE_STOPPED &&
+        machine->lifecycle != CORE_MACHINE_PAUSED) {
         return NTVDM64_STATUS_INVALID_STATE;
     }
 
@@ -37,7 +38,8 @@ ntvdm64_status core_machine_memory_write(
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
 
-    if (machine->lifecycle != CORE_MACHINE_PAUSED) {
+    if (machine->lifecycle != CORE_MACHINE_STOPPED &&
+        machine->lifecycle != CORE_MACHINE_PAUSED) {
         return NTVDM64_STATUS_INVALID_STATE;
     }
 
@@ -57,7 +59,8 @@ ntvdm64_status core_machine_set_a20(
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
 
-    if (machine->lifecycle != CORE_MACHINE_PAUSED) {
+    if (machine->lifecycle != CORE_MACHINE_STOPPED &&
+        machine->lifecycle != CORE_MACHINE_PAUSED) {
         return NTVDM64_STATUS_INVALID_STATE;
     }
 
