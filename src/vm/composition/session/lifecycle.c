@@ -217,7 +217,7 @@ C_VOID vm_session_initialize(vm_session *machine) {
         vm_session_wait, STD_NULL);
     vm_session_control_initialize(machine->control, machine);
     core_machine_keyboard_provider_slot_bind(machine->keyboard_provider,
-        machine->default_profile_context,
+        &machine->default_profile_context,
         vm_profile_default_keyboard_provider());
     core_machine_keyboard_provider_slot_freeze(machine->keyboard_provider);
     vm_session_bind_display(machine);

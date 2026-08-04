@@ -447,6 +447,10 @@ gates pass. Artifact: `nxvm_0_5_0179.exe`.
 embedded; explicit media controls, FDC connection, and FDD DOS prompt evidence
 pass. Artifact: `nxvm_0_5_0180.exe`.
 
+**M5 T181 S1 complete: direct default-profile firmware ownership.** BIOS,
+QDX, and profile context are embedded; firmware authority and QDCGA gates pass.
+Artifact: `nxvm_0_5_0181.exe`.
+
 The completed executor sequence is defined in
 [Facade And Executor Convergence](m5-facade-executor-convergence.md). The
 active session-readiness sequence is defined in

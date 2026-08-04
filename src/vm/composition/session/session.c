@@ -102,26 +102,23 @@ C_VOID vm_session_storage_initialize(vm_session *machine)
     core_machine_cpu_execution_context_bind_pic(execution,
         pic_master, pic_slave);
     vadp = core_machine_configuration_shared_vadp_borrow(machine->core_machine);
-    machine->default_bios = &machine->default_bios_storage;
-    machine->default_qdx = &machine->default_qdx_storage;
-    machine->default_profile_context = &machine->default_profile_context_storage;
-    vm_profile_default_context_initialize(machine->default_profile_context,
-        machine->default_bios, machine->default_qdx, memory,
+    vm_profile_default_context_initialize(&machine->default_profile_context,
+        &machine->default_bios, &machine->default_qdx, memory,
         vadp, STD_NULL, STD_NULL);
     core_machine_cpu_execution_context_bind_extension(execution,
-        machine->default_profile_context);
-    machine->default_profile_context->execution = execution;
+        &machine->default_profile_context);
+    machine->default_profile_context.execution = execution;
     machine->block_provider = &machine->block_provider_storage;
     core_machine_block_provider_slot_initialize(machine->block_provider);
-    machine->default_profile_context->block_provider = machine->block_provider;
+    machine->default_profile_context.block_provider = machine->block_provider;
     machine->keyboard_provider = &machine->keyboard_provider_storage;
     core_machine_keyboard_provider_slot_initialize(machine->keyboard_provider);
-    machine->default_profile_context->keyboard_provider = machine->keyboard_provider;
+    machine->default_profile_context.keyboard_provider = machine->keyboard_provider;
     machine->display_provider = &machine->display_provider_storage;
     core_machine_display_provider_slot_initialize(machine->display_provider);
-    machine->default_profile_context->display_provider = machine->display_provider;
+    machine->default_profile_context.display_provider = machine->display_provider;
     vm_platform_presentation_mailbox_initialize(&machine->presentation_mailbox);
-    machine->default_profile_context->wait_scope = &machine->wait_scope;
+    machine->default_profile_context.wait_scope = &machine->wait_scope;
     core_product_debug_context_initialize(&machine->debugger_context);
     machine->display_generation = 0u;
     machine->control = (vm_session_control_state *)STD_CALLOC(1u,
@@ -133,9 +130,6 @@ C_VOID vm_session_storage_finalize(vm_session *machine)
     if (machine == STD_NULL || machine->core_machine == STD_NULL) return;
     core_machine_cpu_execution_context_bind_extension(
         core_machine_configuration_cpu_execution_borrow(machine->core_machine), STD_NULL);
-    machine->default_bios = STD_NULL;
-    machine->default_qdx = STD_NULL;
-    machine->default_profile_context = STD_NULL;
     core_machine_block_provider_slot_finalize(machine->block_provider);
     machine->block_provider = STD_NULL;
     core_machine_keyboard_provider_slot_finalize(machine->keyboard_provider);
@@ -180,7 +174,7 @@ C_INT vm_session_create(const vm_session_config *config, vm_session **out_sessio
         vm_machine_hdd_create(&session->hdd, config->create_hdd_cylinders);
     }
     if (config != STD_NULL) {
-        vm_profile_default_bios_set_boot_hdd(session->default_bios,
+        vm_profile_default_bios_set_boot_hdd(&session->default_bios,
             config->boot_hdd != 0);
     }
     vm_session_control_reset(session->control);
