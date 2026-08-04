@@ -71,6 +71,9 @@ ntvdm64_status core_machine_create(
 
 ntvdm64_status core_machine_reset(core_machine *machine);
 
+ntvdm64_status core_machine_reconfigure_memory(core_machine *machine,
+    STD_SIZE_T memory_bytes);
+
 ntvdm64_status core_machine_get_lifecycle(
     const core_machine *machine,
     core_machine_lifecycle *out_lifecycle);

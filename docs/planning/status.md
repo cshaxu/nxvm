@@ -403,9 +403,15 @@ raw addresses are gone. The default profile explicitly maps only the 80386
 reset vector to its BIOS image. Evidence is [`M5-T171.md`](../tracking/M5-T171.md);
 artifact `nxvm_0_5_0171.exe` is verified.
 
-**M5 T172 S1 active: stopped-only core RAM reconfiguration.** Add
-`core_machine_reconfigure_memory`, retaining core identity, frozen topology,
-and one normal cold-reset/provider sequence.
+**M5 T172 S1 complete: stopped-only core RAM reconfiguration.** The core now
+replaces only its RAM backing at the stopped boundary, preserves frozen
+topology/object identity, and runs one normal cold reset. Evidence is
+[`M5-T172.md`](../tracking/M5-T172.md); artifact `nxvm_0_5_0172.exe` is
+verified.
+
+**M5 T173 S1 active: route `DEVICE RAM` through the core operation.** Delete
+whole-session reconstruction while preserving selected session, media, platform,
+debugger, and command grammar.
 
 The completed executor sequence is defined in
 [Facade And Executor Convergence](m5-facade-executor-convergence.md). The
