@@ -59,6 +59,17 @@
 #include "vm/platform/vm_request_transport.h"
 
 
+typedef struct vm_session_config {
+    STD_SIZE_T memory_bytes;
+    const C_CHAR *fdd_image;
+    const C_CHAR *hdd_image;
+    C_INT create_fdd;
+    uint16_t create_hdd_cylinders;
+    C_INT boot_hdd;
+    core_machine_cpu_profile cpu_profile;
+    core_machine_fpu_profile fpu_profile;
+} vm_session_config;
+
 typedef struct vm_session {
     C_INT active;
     vm_platform_request_transport request_transport;
@@ -103,18 +114,10 @@ typedef struct vm_session {
     vm_platform_run_handle *platform_run_handle;
     core_product_debug_context *debugger_context;
     vm_session_control_state *control;
+    vm_session_config retained_config;
+    C_CHAR fdd_image_path[1024];
+    C_CHAR hdd_image_path[1024];
 } vm_session;
-
-typedef struct vm_session_config {
-    STD_SIZE_T memory_bytes;
-    const C_CHAR *fdd_image;
-    const C_CHAR *hdd_image;
-    C_INT create_fdd;
-    uint16_t create_hdd_cylinders;
-    C_INT boot_hdd;
-    core_machine_cpu_profile cpu_profile;
-    core_machine_fpu_profile fpu_profile;
-} vm_session_config;
 
 typedef struct vm_session_reset_vector {
     uint16_t cs;
@@ -129,6 +132,10 @@ C_VOID vm_session_consume_request(C_VOID *opaque,
     const nxvm_platform_vm_request *request);
 C_INT vm_session_create(const vm_session_config *config, vm_session **out_session);
 C_VOID vm_session_destroy(vm_session *session);
+ntvdm64_status vm_session_reconfigure_memory(vm_session *session,
+    STD_SIZE_T memory_bytes);
+C_INT vm_session_insert_fdd(vm_session *session, const C_CHAR *path);
+C_INT vm_session_insert_hdd(vm_session *session, const C_CHAR *path);
 C_INT vm_session_get_reset_vector(const vm_session *session,
     vm_session_reset_vector *out_vector);
 
