@@ -1,5 +1,6 @@
 #include "type.h"
 
+#include "core/machine/debug_interface.h"
 #include "core/machine/machine_interface.h"
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/session.h"
@@ -33,16 +34,20 @@ C_INT main(C_VOID)
     core_machine_observation observation;
     core_machine_display_snapshot snapshot;
     uint8_t opcode[2];
+    uint8_t functions[256] = {0};
     uint16_t cursor;
     uint64_t instruction;
     C_UINT int10_count = 0u;
     C_UINT f2_count = 0u;
     C_INT key_wait_seen = 0;
     C_INT failed = 0;
+    t_cpu *cpu;
 
     vm_session_initialize(&session);
     if (!session.active || session.core_machine == STD_NULL) goto fail;
     vm_session_reset(&session);
+    cpu = core_machine_debug_cpu_borrow(session.core_machine);
+    if (cpu == STD_NULL) goto fail;
     for (instruction = 0u; instruction < VM_NO_MEDIA_PROBE_INSTRUCTION_BUDGET;
          ++instruction) {
         if (core_machine_capture_observation(session.core_machine,
@@ -53,7 +58,10 @@ C_INT main(C_VOID)
             failed = 1;
             break;
         }
-        if (opcode[0] == 0xcdu && opcode[1] == 0x10u) ++int10_count;
+        if (opcode[0] == 0xcdu && opcode[1] == 0x10u) {
+            ++int10_count;
+            functions[cpu->data.ah] = 1u;
+        }
         if (opcode[0] == 0xcdu && opcode[1] == 0xf2u) ++f2_count;
         if (opcode[0] == 0xb4u && opcode[1] == 0x11u) key_wait_seen = 1;
         if (core_machine_run(session.core_machine, budget, &result) !=
@@ -66,14 +74,18 @@ C_INT main(C_VOID)
     if (core_machine_memory_read(session.core_machine, 0x0450u, &cursor,
             sizeof(cursor)) != TYPE_STATUS_OK ||
         core_machine_capture_display_snapshot(session.core_machine, &snapshot) !=
-            TYPE_STATUS_OK || int10_count == 0u || f2_count == 0u ||
+            TYPE_STATUS_OK || cursor != 0x0600u || int10_count == 0u || f2_count != 0u ||
         !key_wait_seen || !vm_no_media_snapshot_has_text(&snapshot,
             "Invalid boot disk")) {
         failed = 1;
     }
     if (!failed) {
-        STD_PRINTF("M5:T212:S1:VIDEO:PORT:OK INT10=%u F2=%u CURSOR=%04x\n",
+        STD_PRINTF("M5:T212:S2:VIDEO:ROM:OK INT10=%u F2=%u CURSOR=%04x AH=",
             int10_count, f2_count, cursor);
+        for (instruction = 0u; instruction < 256u; ++instruction) {
+            if (functions[instruction]) STD_PRINTF("%02X", (C_UINT)instruction);
+        }
+        STD_PRINTF("\n");
     }
 
 fail:

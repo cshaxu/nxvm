@@ -598,11 +598,12 @@ target_link_libraries(vm-firmware-portal-authority-smoke PRIVATE vm-composition)
 add_executable(vm-boot-failure-lifecycle-smoke
     tests/machine/vm_boot_failure_lifecycle_smoke.c)
 target_link_libraries(vm-boot-failure-lifecycle-smoke PRIVATE vm-composition)
-add_executable(vm-qdcga-boundary-smoke tests/machine/vm_qdcga_boundary_smoke.c)
-target_link_libraries(vm-qdcga-boundary-smoke PRIVATE vm-composition)
 add_executable(vm-no-media-video-port-smoke
     tests/machine/vm_no_media_video_port_smoke.c)
 target_link_libraries(vm-no-media-video-port-smoke PRIVATE vm-composition)
+add_executable(vm-runner-display-cadence-smoke
+    tests/machine/vm_runner_display_cadence_smoke.c)
+target_link_libraries(vm-runner-display-cadence-smoke PRIVATE vm-composition)
 add_executable(vm-dos-video-port-smoke
     tests/machine/vm_dos_video_port_smoke.c)
 target_link_libraries(vm-dos-video-port-smoke PRIVATE vm-composition)
@@ -756,8 +757,8 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     vm-dos-prompt-smoke
     vm-dos-keyboard-smoke
     vm-dos-mem-fault-smoke
-    vm-qdcga-boundary-smoke
     vm-no-media-video-port-smoke
+    vm-runner-display-cadence-smoke
     vm-debug-pause-boundary-smoke
     vm-unified-debug-backend-smoke
     vm-product-console-smoke
@@ -853,7 +854,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0211 "0.5.0211")
+add_current_vm_artifact(vm-0-5-0212 "0.5.0212")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 

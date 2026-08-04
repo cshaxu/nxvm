@@ -56,10 +56,12 @@ C_INT main(C_INT argc, C_CHAR **argv)
             failed = 1;
             break;
         }
-        if (opcode[0] == 0xcdu && opcode[1] == 0x10u) ++int10_count;
+        if (opcode[0] == 0xcdu && opcode[1] == 0x10u) {
+            ++int10_count;
+            functions[cpu->data.ah] = 1u;
+        }
         if (opcode[0] == 0xcdu && opcode[1] == 0xf2u) {
             ++f2_count;
-            functions[cpu->data.ah] = 1u;
         }
         if (core_machine_run(session.core_machine, budget, &result) != TYPE_STATUS_OK ||
             result.reason == CORE_MACHINE_STOP_FAULT) {
@@ -72,8 +74,8 @@ C_INT main(C_INT argc, C_CHAR **argv)
             break;
         }
     }
-    if (failed || !prompt_seen || int10_count == 0u || f2_count == 0u) goto fail;
-    STD_PRINTF("M5:T212:S1:VIDEO:DOS:OK INT10=%u F2=%u AH=", int10_count, f2_count);
+    if (failed || !prompt_seen || int10_count == 0u || f2_count != 0u) goto fail;
+    STD_PRINTF("M5:T212:S2:VIDEO:DOS:OK INT10=%u F2=%u AH=", int10_count, f2_count);
     for (instruction = 0u; instruction < 256u; ++instruction) {
         if (functions[instruction]) STD_PRINTF("%02X", (C_UINT)instruction);
     }
@@ -82,6 +84,9 @@ C_INT main(C_INT argc, C_CHAR **argv)
     return 0;
 
 fail:
+    STD_FPRINTF(STD_STDERR,
+        "M5:T212:S2:VIDEO:DOS:FAIL INT10=%u F2=%u PROMPT=%d STOP=%d\n",
+        int10_count, f2_count, prompt_seen, (C_INT)result.reason);
     vm_session_finalize(&session);
     return 1;
 }

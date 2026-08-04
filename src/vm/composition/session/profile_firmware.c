@@ -23,7 +23,7 @@ static C_VOID vm_session_profile_firmware_apply(
     switch (hook) {
     case VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_VIDEO_INT10:
         vm_profile_default_bios_add_interrupt(&session->default_bios,
-            "int f2\niret", vector);
+            VBIOS_INT_SOFT_VIDEO_10, vector);
         break;
     case VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_CMOS_POST:
         vm_profile_default_bios_add_post(&session->default_bios, VCMOS_POST);
