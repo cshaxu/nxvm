@@ -14,14 +14,14 @@
 C_VOID vm_platform_linux_display_set_screen(C_INT window, const vm_platform_run_context *context) {
     if (window) {
     } else {
-        lnxcDisplaySetScreen(context);
+        vm_platform_linuxcon_display_set_screen(context);
     }
 }
 
 C_VOID vm_platform_linux_display_paint(C_INT window, const vm_platform_run_context *context) {
     if (window) {
     } else {
-        lnxcDisplayPaint(context);
+        vm_platform_linuxcon_display_paint(context);
     }
 }
 

@@ -23,6 +23,11 @@ import. `docs/planning/status.md` remains authoritative for active work.
 
 ## Current Architecture Closure
 
+- [x] **Linux Console private naming cleanup (`TODO(Low)`, T207).**
+  Replace local-dialect helper names and macros with typed
+  `vm_platform_linuxcon_*` private functions without changing input or display
+  behavior.
+
 - [x] **Current-gate graph de-duplication (`TODO(Low)`, T206).**
   Remove redundant preset smoke targets and obsolete custom targets that only
   execute CTest-registered smoke already covered by `run-current-smokes`.

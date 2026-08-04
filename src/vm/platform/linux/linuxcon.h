@@ -13,8 +13,10 @@
 typedef struct vm_platform_run_context vm_platform_run_context;
 typedef struct vm_platform_run_handle vm_platform_run_handle;
 
-C_VOID lnxcDisplaySetScreen(const vm_platform_run_context *context);
-C_VOID lnxcDisplayPaint(const vm_platform_run_context *context);
+C_VOID vm_platform_linuxcon_display_set_screen(
+    const vm_platform_run_context *context);
+C_VOID vm_platform_linuxcon_display_paint(
+    const vm_platform_run_context *context);
 type_status vm_platform_linuxcon_run_handle_start(
     const vm_platform_run_context *context, vm_platform_run_handle *handle);
 C_VOID vm_platform_linuxcon_run_handle_request_stop(vm_platform_run_handle *handle);
