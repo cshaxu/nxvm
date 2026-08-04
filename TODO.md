@@ -23,6 +23,11 @@ import. `docs/planning/status.md` remains authoritative for active work.
 
 ## Current Architecture Closure
 
+- [x] **CMake media-smoke and Linux adapter hygiene (`TODO(Low)`, T204).**
+  Derive media-smoke registration and skipping from one FDD/FDD+HDD list, then
+  remove uncalled platform sleep facades and unreachable Linux adapter noise
+  without changing smoke coverage or platform behavior.
+
 - [x] **Console adapter readability and selected borrow closure (`TODO(Medium)`, T203).**
   T203 retains the Console machine-provider vtable, expands its callbacks into
   ordinary functions, and makes `vm_session_borrow_selected()` the sole

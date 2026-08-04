@@ -757,13 +757,16 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     vdm-minimal-session-smoke
     vdm-minimal-presentation-smoke)
 
-set(PROJECT_CURRENT_MEDIA_SMOKE_TARGETS
+set(PROJECT_CURRENT_FDD_SMOKE_TARGETS
     vm-dos-prompt-smoke
     vm-dos-keyboard-smoke
     vm-dos-mem-fault-smoke
     vm-debug-pause-boundary-smoke
-    vm-unified-debug-backend-smoke
-    vm-product-session-smoke)
+    vm-unified-debug-backend-smoke)
+set(PROJECT_CURRENT_FDD_HDD_SMOKE_TARGET vm-product-session-smoke)
+set(PROJECT_CURRENT_MEDIA_SMOKE_TARGETS
+    ${PROJECT_CURRENT_FDD_SMOKE_TARGETS}
+    ${PROJECT_CURRENT_FDD_HDD_SMOKE_TARGET})
 set(PROJECT_FDD_SMOKE_IMAGE "${CMAKE_SOURCE_DIR}/../fdd.img" CACHE FILEPATH
     "Owner-provided FDD image for current runtime smoke coverage")
 set(PROJECT_HDD_SMOKE_IMAGE "${CMAKE_SOURCE_DIR}/../hdd.img" CACHE FILEPATH
@@ -786,12 +789,10 @@ foreach(target IN LISTS PROJECT_CURRENT_SMOKE_TARGETS)
     endif()
 endforeach()
 
-foreach(target IN ITEMS vm-dos-prompt-smoke vm-dos-keyboard-smoke
-        vm-dos-mem-fault-smoke vm-debug-pause-boundary-smoke
-        vm-unified-debug-backend-smoke)
+foreach(target IN LISTS PROJECT_CURRENT_FDD_SMOKE_TARGETS)
     project_add_current_smoke_test(${target} "${PROJECT_FDD_SMOKE_IMAGE}")
 endforeach()
-project_add_current_smoke_test(vm-product-session-smoke
+project_add_current_smoke_test(${PROJECT_CURRENT_FDD_HDD_SMOKE_TARGET}
     "${PROJECT_FDD_SMOKE_IMAGE}" "${PROJECT_HDD_SMOKE_IMAGE}")
 
 add_custom_target(run-current-smokes
@@ -837,7 +838,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0203 "0.5.0203")
+add_current_vm_artifact(vm-0-5-0204 "0.5.0204")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 
@@ -971,6 +972,18 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_console_adapter_closure.cmake"
         COMMENT "Verifying Console adapter selected-borrow closure"
+        VERBATIM)
+
+    add_custom_target(verify-current-media-smoke-classification
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_current_media_smoke_classification.cmake"
+        COMMENT "Verifying current media smoke classification"
+        VERBATIM)
+
+    add_custom_target(verify-linux-adapter-hygiene
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_linux_adapter_hygiene.cmake"
+        COMMENT "Verifying Linux adapter hygiene"
         VERBATIM)
 
     add_custom_target(verify-vm-session-owner-closure

@@ -11,8 +11,6 @@
 #include <pthread.h>
 
 
-#include "core/product/utils.h"
-
 #include "core/platform/display_frame.h"
 
 #include "vm/platform/platform.h"
@@ -21,17 +19,6 @@
 #include "vm/platform/linux/linuxcon.h"
 
 #define GetMin(x, y) ((x) < (y) ? (x) : (y))
-#define ZERO 0x00
-
-#define COLOR_GRAY         0x08
-#define COLOR_LIGHTBLUE    0x09
-#define COLOR_LIGHTGREEN   0x0a
-#define COLOR_LIGHTCYAN    0x0b
-#define COLOR_LIGHTRED     0x0c
-#define COLOR_LIGHTMAGENTA 0x0d
-#define COLOR_BROWN        0x0e
-#define COLOR_LIGHTGRAY    0x0f
-
 static C_INT lnxcdispInit() {
     STD_SIZE_T i, j;
     if (initscr() == STD_NULL) return 0;
@@ -61,36 +48,20 @@ static uint8_t ReverseColor(uint8_t value) {
     switch (value) {
     case COLOR_BLACK:
         return COLOR_WHITE;
-        break;
     case COLOR_BLUE:
         return COLOR_YELLOW;
-        break;
     case COLOR_GREEN:
         return COLOR_RED;
-        break;
     case COLOR_CYAN:
         return COLOR_MAGENTA;
-        break;
     case COLOR_RED:
         return COLOR_GREEN;
-        break;
     case COLOR_MAGENTA:
         return COLOR_CYAN;
-        break;
     case COLOR_YELLOW:
         return COLOR_BLUE;
-        break;
     case COLOR_WHITE:
         return COLOR_BLACK;
-        break;
-        /* case 0x08: return COLOR_GRAY;        break;
-           case 0x09: return COLOR_LIGHTBLUE;   break;
-           case 0x0a: return COLOR_LIGHTGREEN;  break;
-           case 0x0b: return COLOR_LIGHTCYAN;   break;
-           case 0x0c: return COLOR_LIGHTRED;    break;
-           case 0x0d: return COLOR_LIGHTMAGENTA;break;
-           case 0x0e: return COLOR_YELLOW;      break;
-           case 0x0f: return COLOR_WHITE;       break;*/
     }
     return COLOR_BLACK;
 }
@@ -100,36 +71,20 @@ static uint8_t CharProp2Color(uint8_t value) {
     switch (value) {
     case 0x00:
         return COLOR_BLACK;
-        break;
     case 0x01:
         return COLOR_BLUE;
-        break;
     case 0x02:
         return COLOR_GREEN;
-        break;
     case 0x03:
         return COLOR_CYAN;
-        break;
     case 0x04:
         return COLOR_RED;
-        break;
     case 0x05:
         return COLOR_MAGENTA;
-        break;
     case 0x06:
         return COLOR_YELLOW;
-        break;
     case 0x07:
         return COLOR_WHITE;
-        break;
-        /* case 0x08: return COLOR_GRAY;        break;
-           case 0x09: return COLOR_LIGHTBLUE;   break;
-           case 0x0a: return COLOR_LIGHTGREEN;  break;
-           case 0x0b: return COLOR_LIGHTCYAN;   break;
-           case 0x0c: return COLOR_LIGHTRED;    break;
-           case 0x0d: return COLOR_LIGHTMAGENTA;break;
-           case 0x0e: return COLOR_YELLOW;      break;
-           case 0x0f: return COLOR_WHITE;       break;*/
     }
     return COLOR_BLACK;
 }

@@ -18,7 +18,11 @@ M5 has preserved the bootable NXVM Console, debugger, boot sequence, and FDD
 fixture behavior while moving the whole-PC execution path into the documented
 `core/` and `vm/` ownership model.
 
-**Current active subtask:** none. **M5 T203 complete:** the retained Console
+**Current active subtask:** none. **M5 T204 complete:** current media-smoke
+classification is derived from one FDD/FDD+HDD source, and confirmed uncalled
+Linux/Win32 sleep facades plus Linux Console residue are removed. Smoke coverage
+and runtime behavior are unchanged. Evidence is
+[`M5-T204.md`](../tracking/M5-T204.md). **M5 T203 complete:** the retained Console
 machine-provider vtable now uses readable callbacks, and one composition helper
 is the sole direct core selected-session borrow point. Console/session semantics
 and debugger ordering are unchanged. Evidence is
