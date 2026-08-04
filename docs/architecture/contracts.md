@@ -123,6 +123,7 @@ and process exit.
   callbacks. A topology change is a root-composition reconstruction, not an
   ordinary reset.
 - `core_machine_run` is synchronous and accepts a finite instruction budget.
+  It may begin from `STOPPED` after a completed reset or resume from `PAUSED`.
   Core has no host-time budget; a root composition owns wall-clock limits.
 - `core_machine_run` returns when its budget is exhausted or earlier for a
   pause, stop request, guest/provider stop, or fault. A normal product loop
@@ -159,9 +160,18 @@ CPU and FPU selection use core-owned profile enums, not VM or VDM model names.
 This lets the core evolve its x86 implementation without importing product
 profile semantics.
 
-`core_machine_lifecycle` exposes `INITIALIZED`, `PAUSED`, `RUNNING`, `STOPPED`,
-and `FAULTED`. `INITIALIZED` is the configuration window and is not runnable;
-`RUNNING` exists only while a synchronous `core_machine_run` call is active.
+`core_machine_lifecycle` exposes `INITIALIZED`, `STOPPED`, `RUNNING`,
+`PAUSED`, and `FAULTED`. `INITIALIZED` is the configuration window and is not
+runnable. A completed reset, including the initial reset before first `START`,
+ends in `STOPPED`. `RUNNING` exists only while a synchronous
+`core_machine_run` call is active. `PAUSED` is a returned execution boundary
+after guest execution has deliberately paused or yielded; it is not an
+unstarted or reset machine. `STOPPED` is never a limbo state: its CPU, RAM,
+shared devices, and frozen providers have completed reset, its reset vector is
+valid, and a subsequent run may cold-start without another initialization
+transition. A running stop or reset request performs this cold reset before
+`STOPPED` becomes observable; reset failure must not publish a half-initialized
+stopped state. `FAULTED` requires an explicit reset.
 
 `core_machine_run_result` reports why one quantum returned:
 
@@ -236,10 +246,23 @@ generic executor-borrow names are migration debt and must be replaced by
 purpose-named configuration borrows.
 
 Physical RAM capacity is configuration, not mutable guest state. A product
-request to change it must quiesce its session and transactionally reconstruct
-the machine graph from copied configuration. It retains the concrete session
-identity but discards guest state and resets the replacement. It never grows or
-reallocates the frozen machine's RAM through an escaped implementation pointer.
+request to change it must stop its session and invoke the explicit
+`core_machine_reconfigure_memory` cold-reconfiguration operation. The operation
+keeps the same core machine, CPU, shared devices, frozen provider topology, and
+product session, replaces only the RAM backing allocation, then performs the
+normal core and provider reset sequence. It discards guest RAM and execution
+state but does not recreate VM media, platform handles, debugger state, or
+session identity. CPU/FPU profiles, ROM/profile selection, and port/IRQ
+topology remain frozen and require a new session.
+
+RAM records distinguish installed bytes from backing capacity. Ordinary RAM is
+mapped only in `[0, installed_bytes)`; an out-of-range physical or real-mode
+access fails through the relevant machine access path and never folds modulo
+the installed size. The current core has no alternate ROM or hole mapping
+provider, so it has no implicit high-address alias. Future profile-defined
+regions require an explicit mapped-memory provider contract. Providers retain a
+`t_ram *` only and use checked memory operations; they must not cache or expose
+the backing base address.
 
 ## Core Machine: Provider Scope
 

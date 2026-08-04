@@ -54,8 +54,16 @@ import. `docs/planning/status.md` remains authoritative for active work.
   configuration/reconstruction contract before changing it; also constrain
   direct CPU/diagnostic observation to a copied, synchronized boundary. T164
   closed the generic borrow and observation portions. T165 remains to route
-  `DEVICE ram` through stopped-session reconstruction; T166 removed
-  machine-local default media paths.
+  `DEVICE ram` through a temporary stopped-session reconstruction; T166 removed
+  machine-local default media paths. T169 supersedes the reconstruction model
+  with a core-owned stopped-only cold RAM reconfiguration.
+- [ ] **Core-owned RAM cold reconfiguration (`TODO(High)`).** T165's working
+  whole-session reconstruction is not the final architecture. Define and
+  implement stopped-only `core_machine_reconfigure_memory`, installed-range
+  checking without modulo foldback, and checked provider RAM access. Preserve
+  the same core machine/session/devices/providers/media/platform/debugger;
+  cold-reset only guest state. CPU/FPU/profile/topology changes require a new
+  session. T169--T174 own this work.
 - [x] **Default-session media policy (`TODO(High)`).** The NXVM session
   factory must not commit machine-local image paths or silently select host
   media. Preserve explicit `DEVICE` media commands and define the approved

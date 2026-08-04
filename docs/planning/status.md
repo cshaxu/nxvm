@@ -367,9 +367,10 @@ access; copied observations and retained Console/FDD evidence are recorded in
 [`M5-T164.md`](../tracking/M5-T164.md). Artifact:
 `build/output/nxvm_0_5_0164.exe`.
 
-**M5 T165 S1 complete:** `DEVICE ram` rebuilds a stopped session with retained
-configuration/media descriptors; `nxvm_0_5_0165.exe` and its focused smoke
-are recorded in [`M5-T165.md`](../tracking/M5-T165.md).
+**M5 T165 S1 complete (superseded design):** `DEVICE ram` rebuilds a stopped
+session with retained configuration/media descriptors; its verified transition
+artifact is `nxvm_0_5_0165.exe`. T169 replaces this temporary whole-session
+model with a core-owned cold RAM operation.
 
 **M5 T166 S1 complete:** default session media is empty; machine-local image
 paths are removed while explicit `DEVICE` media remains. Evidence:
@@ -384,6 +385,12 @@ behavior. Evidence: [`M5-T167.md`](../tracking/M5-T167.md), artifact
 contract document names actual APIs, and CMake exposes explicit primitive and
 runtime aliases for the one core executor. Evidence:
 [`M5-T168.md`](../tracking/M5-T168.md), artifact `nxvm_0_5_0168.exe`.
+
+**M5 T169 S1 active: RAM cold-reconfiguration and lifecycle design.** Freeze
+the distinction between initial/reset `STOPPED` and execution `PAUSED`, RAM
+installed-range semantics, checked provider access, and T170--T174 before any
+runtime change. The decision record is
+[`m5-t169-s1.md`](subtasks/m5-t169-s1.md).
 
 The completed executor sequence is defined in
 [Facade And Executor Convergence](m5-facade-executor-convergence.md). The
