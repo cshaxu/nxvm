@@ -132,6 +132,13 @@ T96 repairs the retained Console lifecycle regression found after that closure.
 T97 completes the composition API cleanup, and T98 defines the remaining
 owner-bounded naming sequence without expanding M6 scope.
 
+**M5 RAM/state addendum:** T169--T174 replace T165's verified but temporary
+whole-session `DEVICE RAM` reconstruction with a core-owned stopped-only cold
+RAM reconfiguration. They first separate `STOPPED` from `PAUSED`, then close
+installed-memory mapping and provider pointer escapes, implement the core API,
+route the retained Console command, and run full closure evidence. CPU/FPU,
+ROM/profile, and port/IRQ topology remain frozen and require `SESSION OPEN`.
+
 **Compatibility gate:** M5 must not alter NXVM functionality or user experience.
 Any unavoidable user-visible change requires explicit owner approval before
 implementation and a recorded before/after acceptance plan.

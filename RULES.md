@@ -131,6 +131,21 @@ remove the required owner prefix from public APIs.
   before execution, and reset without changing frozen topology. Provider order,
   failure handling, lifetime, and re-entry constraints are fixed by the owning
   core contract.
+- `INITIALIZED` is configuration-only; a completed initial or explicit reset is
+  `STOPPED`; `PAUSED` is only a post-execution/debug boundary; `RUNNING` exists
+  only inside `core_machine_run`; and `FAULTED` requires reset. A stopped-only
+  cold operation must reject every other lifecycle state. `STOPPED` is always
+  cold-start-ready: CPU, RAM, shared devices, and frozen providers have
+  completed reset, the reset vector is valid, and the next run may begin
+  without an intermediate initialization state. A running stop or reset request
+  must complete that cold reset before exposing `STOPPED`; a failed reset must
+  not expose a half-initialized stopped state.
+- RAM is core-owned. Its installed range is explicit and accesses outside it
+  must fail by the machine mapping contract, never wrap modulo RAM size.
+  Providers may retain `t_ram *` but may not cache or expose a backing pointer.
+  Only `core_machine_reconfigure_memory` may replace RAM backing, only while
+  stopped; it cold-resets the same machine and frozen provider topology. CPU,
+  FPU, profile/ROM, and port/IRQ topology require a new session.
 - CPU architecture and FPU capability are independent frozen per-machine
   configuration. An unavailable instruction form must fault through its
   documented guest path before side effects; a legal FPU escape must not be
