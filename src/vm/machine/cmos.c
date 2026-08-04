@@ -45,15 +45,30 @@ static C_VOID io_read_0071(t_port *port, type_unsigned_16 port_id, C_VOID *owner
     port->data.ioByte = cmos->connect.reg[cmos->data.regId];
 }
 
-C_VOID vm_machine_cmos_initialize(t_cmos *cmos, t_cpu *cpu, t_port *port) {
+C_VOID vm_machine_cmos_initialize(t_cmos *cmos, t_cpu *cpu, t_port *port,
+    const vm_machine_cmos_config *config) {
+    if (cmos == STD_NULL || cpu == STD_NULL || port == STD_NULL ||
+        config == STD_NULL) return;
     STD_MEMSET((C_VOID *)cmos, TYPE_ZERO_8, sizeof(*cmos));
     cmos->connect.cpu = cpu;
-    core_machine_port_add_read(port, 0x0071, io_read_0071, cmos);
-    core_machine_port_add_write(port, 0x0070, io_write_0070, cmos);
-    core_machine_port_add_write(port, 0x0071, io_write_0071, cmos);
+    core_machine_port_add_read(port, config->data_port, io_read_0071, cmos);
+    core_machine_port_add_write(port, config->index_port, io_write_0070, cmos);
+    core_machine_port_add_write(port, config->data_port, io_write_0071, cmos);
 }
 C_VOID vm_machine_cmos_reset(t_cmos *cmos) {
     STD_MEMSET((C_VOID *)(&cmos->data), TYPE_ZERO_8, sizeof(cmos->data));
+}
+C_VOID vm_machine_cmos_apply_defaults(t_cmos *cmos,
+    const vm_machine_cmos_defaults *defaults)
+{
+    if (cmos == STD_NULL || defaults == STD_NULL) return;
+    cmos->connect.reg[VCMOS_TYPE_DISK_FLOPPY] = defaults->floppy_type;
+    cmos->connect.reg[VCMOS_TYPE_DISK_FIXED] = defaults->fixed_disk_type;
+    cmos->connect.reg[VCMOS_EQUIPMENT] = defaults->equipment;
+    cmos->connect.reg[VCMOS_BASEMEM_LSB] =
+        TYPE_MASK_UNSIGNED_8(defaults->base_memory_kib);
+    cmos->connect.reg[VCMOS_BASEMEM_MSB] =
+        TYPE_MASK_UNSIGNED_8(defaults->base_memory_kib >> 8);
 }
 C_VOID vm_machine_cmos_refresh(t_cmos *cmos) {
     STD_TIME_T tCurr;

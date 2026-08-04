@@ -2,10 +2,12 @@
 
 ## Current Work
 
-**Active subtask:** none. **M5 T208 S1 complete:** the default PC/AT profile
-declaration contract and S2--S4 migration boundary are recorded in
-[`pc-at-profile.md`](../architecture/pc-at-profile.md). S2 code migration
-requires owner design acceptance before activation.
+**Active subtask:** none. **M5 T208 complete:** the default PC/AT profile is
+an immutable declaration interpreted by composition. Its ROM mapping, firmware
+service order, CMOS/FDC port configuration, and FDC IRQ/DMA route no longer
+reside in session wiring or VM device implementation. The retained startup,
+Console, debugger, and DOS-prompt paths are unchanged. See
+[`pc-at-profile.md`](../architecture/pc-at-profile.md).
 
 M5 remains open. `M5 Td S2` clarified documentation entry points only; it did
 not close any M5 technical or verification item. The earlier documentation-only
@@ -24,9 +26,9 @@ not activate an implementation task or change M5 closure state.
 
 ## Latest Technical Baseline
 
-M5 T207 retained NXVM behavior while cleaning Linux Console private helper
-naming. The recorded developer artifact is `nxvm_0_5_0207.exe`; its historical
-evidence is summarized in [M5 History](../history/m5.md).
+M5 T208 retained NXVM behavior while making the default PC/AT topology
+declarative. The recorded developer artifact is `nxvm_0_5_0208.exe`; its
+historical evidence is summarized in [M5 History](../history/m5.md).
 
 ## Operational Reading Order
 

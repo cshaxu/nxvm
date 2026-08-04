@@ -94,6 +94,11 @@ values and startup order; composition may read the descriptor but no behavior
 is intentionally changed. Stop for an additional machine/session, profile-to-
 sibling dependency, or changed Console/debugger/boot behavior.
 
+**Completed:** `pc_at_profile.*` owns the immutable default descriptor. Every
+session selects it before storage creation; direct session initialization uses
+the same selection at the storage boundary. Its smoke covers the identity, ROM
+mapping, CMOS defaults, declared ports, and FDC route.
+
 ### S3: Route And Firmware Migration
 
 Move default ROM mapping, CMOS defaults, POST/INT service metadata, and
@@ -102,12 +107,27 @@ descriptor. Composition retains the imperative bindings. Add probes proving
 the descriptor produces the existing reset vector, ports, IRQ/DMA routes, and
 firmware service order.
 
+**Completed:** live ROM mapping and firmware-vector ordering read from the
+descriptor. CMOS and FDC receive descriptor-derived configuration, so their
+implementations no longer own PC/AT ports, FDC IRQ, or DMA channel. CMOS
+defaults are exposed as an explicit device initializer for a later behavior
+admission; this task preserves the legacy reset contents. The application
+smoke verifies the live FDC configuration and the declared CMOS initializer.
+
 ### S4: Closure Audit
 
 Remove superseded PC/AT constants from composition, reject them with a static
 source gate, and retain current GCC smoke, FDD/HDD boot, DOS prompt, Console,
 debugger, and two-session evidence. Produce the task-level T208 artifact only
 if the runnable path changes during S2-S4.
+
+**Completed:** `verify-default-pc-at-profile-closure` rejects ROM/CMOS/FDC
+route constants outside the descriptor and device configuration boundary. The
+current artifact is `nxvm_0_5_0208.exe`. The T208-focused profile/application
+smokes, current DOS-prompt, Console, debugger, platform, and two-session
+smokes pass. The existing long-run DOS keyboard and MEM probes can still reach
+the separately tracked CPU `#UD` at `F000:0068`; T208 neither masks nor claims
+to resolve that CPU compatibility debt.
 
 ## Admission Rules
 
