@@ -21,6 +21,50 @@ import. `docs/planning/status.md` remains authoritative for active work.
   full-PC FDD/HDD boot checkpoints, and task-artifact rules unless an approved
   task explicitly changes them.
 
+## M5 NXVM PC/AT Workstream
+
+M5 remains the NXVM and shared-core workstream. The future VDM product does not
+define NXVM completion, and M6 must not begin merely because an NXVM device
+task is pending. This is an ROI-ordered queue, not an activated task breakdown:
+numeric `T` identifiers are assigned only when implementation is admitted.
+
+Every admitted device task has three bounded subtasks: contract and port-level
+probe; implementation at the real CPU/bus/device/firmware/profile owner; and
+a DOS or system-image regression. Bochs 2.6 may supply a bounded differential
+reference with checkpoints and budgets, but never implementation code, a
+runtime dependency, or substitute acceptance evidence. No task may rely on a
+BIOS hack, host shortcut, or application special case for a guest-observable
+behavior.
+
+1. **Architecture and validation foundation.** Reaffirm NXVM-first M5 scope;
+   make the default PC/AT profile declarative for topology, ports, IRQ, DMA,
+   CMOS defaults, ROM mapping, and firmware hooks; audit that every observable
+   behavior has a CPU, bus, device, firmware, or profile owner; establish the
+   reusable port-probe, DOS-regression, and bounded-differential template.
+   Keep CPU work to a real-mode 8086/80186 trust baseline needed by these
+   devices; do not block this stream on full 286/386 or x87 work.
+2. **Highest-ROI real-mode devices.** Complete PIC IRQ lifecycle, PIT
+   waveform/GATE/count-zero/BCD behavior, and advanced KBC keyboard protocol
+   before broadening device scope. Then admit CGA `320x200x4`, AUX mouse/IRQ12,
+   DMA channel/page/mode behavior, FDC/FDD command/result behavior, and
+   CMOS/RTC interrupts and deterministic-time policy.
+3. **Controllers and display expansion.** Design one explicit HDD controller
+   profile, then implement a minimum real port/IRQ/PIO controller over a file
+   image backend. Expand EGA/VGA in bounded register-family increments:
+   mapping, sequencer, graphics controller, attribute controller, DAC, then
+   planar/latch/raster behavior. BIOS INT 13h or host-backed storage cannot
+   stand in for controller compatibility.
+4. **Long-horizon CPU/FPU track.** After real-mode device work has an adequate
+   baseline, admit 286 descriptors/exceptions/protected transfers; 386 paging,
+   CPL/IOPL, TSS I/O map, and task switching; then x87 state, operations,
+   exceptions, and `FWAIT`. The MS-DOS `MEM`/`FNINIT` workaround remains a
+   regression sample, not a 80386 or FPU correctness claim.
+5. **Compatibility tiers.** First target stable DOS image boot and text
+   software; then interactive PC/AT DOS including graphics/mouse/storage;
+   then EGA/VGA software. Win3.x and especially Win95 remain later corpus
+   goals gated by their required CPU, display, controller, and interrupt
+   evidence, not by a calendar milestone.
+
 ## Current Architecture Closure
 
 - [x] **Linux Console private naming cleanup (`TODO(Low)`, T207).**
