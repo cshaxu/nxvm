@@ -409,9 +409,10 @@ topology/object identity, and runs one normal cold reset. Evidence is
 [`M5-T172.md`](../tracking/M5-T172.md); artifact `nxvm_0_5_0172.exe` is
 verified.
 
-**M5 T173 S1 active: route `DEVICE RAM` through the core operation.** Delete
-whole-session reconstruction while preserving selected session, media, platform,
-debugger, and command grammar.
+**M5 T173 S1 active: session-preserving `DEVICE RAM` closure.** The command
+uses core's stopped-only cold reconfiguration and retains the selected session,
+core, mounted media, platform, debugger, and command grammar. Record its
+artifact and retained runtime evidence before T174 begins.
 
 The completed executor sequence is defined in
 [Facade And Executor Convergence](m5-facade-executor-convergence.md). The
