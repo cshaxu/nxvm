@@ -192,7 +192,8 @@ set(NXVM_PRODUCT_CORE_DEBUG_SOURCES
     src/core/product/debug/xasm32/dasm32.c
 )
 set(NXVM_COMPOSITION_VM_SOURCES
-    src/vm/composition/session/provider.c
+    src/vm/composition/session/session_factory.c
+    src/vm/composition/session/console_machine_adapter.c
     src/vm/composition/session/debug_target.c
     src/vm/composition/session/block.c
     src/vm/composition/session/display.c
@@ -838,6 +839,7 @@ add_nxvm_version_artifact(nxvm-0-5-0161 "0.5.0161")
 add_nxvm_version_artifact(nxvm-0-5-0164 "0.5.0164")
 add_nxvm_version_artifact(nxvm-0-5-0165 "0.5.0165")
 add_nxvm_version_artifact(nxvm-0-5-0166 "0.5.0166")
+add_nxvm_version_artifact(nxvm-0-5-0167 "0.5.0167")
 
 option(NTVDM64_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)

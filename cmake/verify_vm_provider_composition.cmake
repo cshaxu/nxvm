@@ -7,14 +7,18 @@ set(coordinator "${session_dir}/provider_lifecycle.c")
 set(devices "${session_dir}/machine_devices.c")
 set(firmware "${session_dir}/profile_firmware.c")
 set(info "${session_dir}/machine_info.c")
+set(factory "${session_dir}/session_factory.c")
+set(console_adapter "${session_dir}/console_machine_adapter.c")
 
-foreach(file IN ITEMS "${coordinator}" "${devices}" "${firmware}" "${info}")
+foreach(file IN ITEMS "${coordinator}" "${devices}" "${firmware}" "${info}"
+    "${factory}" "${console_adapter}")
     if(NOT EXISTS "${file}")
         message(FATAL_ERROR "M5 T161 missing provider composition source: ${file}")
     endif()
 endforeach()
 
-if(EXISTS "${session_dir}/providers.c" OR EXISTS "${session_dir}/providers.h")
+if(EXISTS "${session_dir}/providers.c" OR EXISTS "${session_dir}/providers.h"
+    OR EXISTS "${session_dir}/provider.c")
     message(FATAL_ERROR "M5 T161 obsolete mixed providers source remains")
 endif()
 
