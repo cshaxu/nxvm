@@ -18,7 +18,7 @@ M5 has preserved the bootable NXVM Console, debugger, boot sequence, and FDD
 fixture behavior while moving the whole-PC execution path into the documented
 `core/` and `vm/` ownership model.
 
-**Current active subtask:** M5 T192 S3, the default-profile KBC/BIOS handoff.
+**Current active subtask:** M5 T193 S1, the VADP CGA text-controller contract.
 Historical paragraphs below may describe the active state of
 their own completed sequence; they do not supersede this marker.
 
@@ -499,12 +499,15 @@ that contract with one core PIT state, a focused smoke, full current GCC gates,
 retained FDD/HDD session and FDD DOS checks, and `nxvm_0_5_0191.exe`. Remaining
 PIT waveform/gate work is governed in `TODO.md`. **M5 T192 S1 complete:** the
 8042 controller, normalized-host-event, profile-mapper, KBC, and QDKEYB route
-is fixed; controller translation and AUX remain excluded. **M5 T192 S2
-complete:** core now owns the bounded controller, FIFO, ports, PIC IRQ1,
-A20/reset binding, and focused smoke without changing the direct QDKEYB route.
-**M5 T192 S3 active:** migrate default-profile input to the single KBC/BIOS
-route while retaining Console/debugger and DOS keyboard behavior. The approved
-sequence, state-owner constraints, implementation exits, and retained regressions are in
+is fixed; controller translation and AUX remain excluded. **M5 T192 complete:**
+core owns the bounded controller, FIFO, ports, PIC IRQ1, A20/reset binding;
+platform events cross the execution boundary, the default profile maps them to
+set-1 make bytes, and QDKEYB INT 09h consumes `0x60` before INT 16h reads BDA.
+The full GCC gate, focused route smoke, retained DOS keyboard, FDD/HDD session,
+two-session, Console, and `nxvm_0_5_0192.exe` evidence passed. Deferred 8042
+and POSIX work is in `TODO.md`. **M5 T193 S1 active:** define the owned CGA
+text-controller contract. The approved device sequence, state-owner constraints,
+implementation exits, and retained regressions are in
 [`m5-pc-compatible-device-plan.md`](m5-pc-compatible-device-plan.md).
 
 The completed executor sequence is defined in

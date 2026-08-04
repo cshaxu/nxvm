@@ -10,6 +10,7 @@
 #include "vm/machine/fdd.h"
 #include "vm/machine/hdd.h"
 #include "vm/profile/default_profile/firmware/bios.h"
+#include "vm/profile/default_profile/keyboard_mapper.h"
 
 C_INT vm_session_enqueue_keyboard_state(
     C_VOID *opaque, uint32_t asynchronous_keys, uint32_t toggle_keys)
@@ -28,11 +29,21 @@ C_VOID vm_session_consume_request(
 {
     vm_session *session = (vm_session *)opaque;
 
-    if (session != STD_NULL && session->active && request != STD_NULL &&
-        request->kind == VM_PLATFORM_REQUEST_KEYBOARD_STATE) {
+    if (session == STD_NULL || !session->active || request == STD_NULL) return;
+    if (request->kind == VM_PLATFORM_REQUEST_KEYBOARD_STATE) {
         core_machine_keyboard_apply_host_state_to(&session->keyboard_provider,
             request->data.keyboard_state.asynchronous_keys,
             request->data.keyboard_state.toggle_keys);
+    } else if (request->kind == VM_PLATFORM_REQUEST_KEY_PRESS) {
+        uint8_t scan_code;
+
+        if (vm_profile_default_keyboard_map_host_key(
+                request->data.key_press.scan_code,
+                request->data.key_press.virtual_key, &scan_code) ==
+            TYPE_STATUS_OK) {
+            (C_VOID)core_machine_keyboard_submit_scan_code(session->core_machine,
+                scan_code);
+        }
     }
 }
 

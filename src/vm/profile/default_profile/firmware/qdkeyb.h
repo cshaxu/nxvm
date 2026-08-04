@@ -38,6 +38,7 @@ extern "C" {
 
 typedef struct t_qdx t_qdx;
 C_VOID vm_profile_default_keyboard_initialize(t_qdx *qdx);
+C_VOID vm_profile_default_keyboard_reset(vm_profile_default_context *profile);
 const core_machine_keyboard_provider *vm_profile_default_keyboard_provider(C_VOID);
 
 #ifdef __cplusplus

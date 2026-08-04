@@ -178,6 +178,7 @@ target_include_directories(type-facade PUBLIC
 )
 
 set(VM_PROFILE_SOURCES
+    src/vm/profile/default_profile/keyboard_mapper.c
     src/vm/profile/default_profile/firmware/bios.c
     src/vm/profile/default_profile/firmware/qdcga.c
     src/vm/profile/default_profile/firmware/qddisk.c
@@ -881,6 +882,7 @@ add_vm_version_artifact(vm-0-5-0188 "0.5.0188")
 add_vm_version_artifact(vm-0-5-0189 "0.5.0189")
 add_vm_version_artifact(vm-0-5-0190 "0.5.0190")
 add_vm_version_artifact(vm-0-5-0191 "0.5.0191")
+add_vm_version_artifact(vm-0-5-0192 "0.5.0192")
 
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)

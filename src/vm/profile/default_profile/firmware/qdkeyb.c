@@ -2,15 +2,9 @@
 
 #include "type.h"
 
-#include "core/product/wait.h"
-
-#include "core/product/utils.h"
-
 #include "core/machine/cpu.h"
 
 #include "core/machine/memory.h"
-
-#include "core/machine/pic.h"
 
 #include "core/machine/port.h"
 
@@ -127,20 +121,77 @@ static C_VOID keyboard_set_flag1(vm_profile_default_context *profile,
     keyboard_write_byte(profile, QDKEYB_VBIOS_ADDR_KEYB_FLAG1, value);
 }
 
-static C_VOID keyboard_request_irq(vm_profile_default_context *profile)
+static uint8_t keyboard_ascii_for_scan(vm_profile_default_context *profile,
+    uint8_t scan_code)
 {
-    core_machine_pic_set_irq(vm_profile_default_context_execution(profile)->pic_master,
-        vm_profile_default_context_execution(profile)->pic_slave, 0x01);
+    static const uint8_t normal[0x59] = {
+        [0x01] = 0x1bu, [0x02] = '1', [0x03] = '2', [0x04] = '3',
+        [0x05] = '4', [0x06] = '5', [0x07] = '6', [0x08] = '7',
+        [0x09] = '8', [0x0a] = '9', [0x0b] = '0', [0x0c] = '-',
+        [0x0d] = '=', [0x0e] = 0x08u, [0x0f] = 0x09u,
+        [0x10] = 'q', [0x11] = 'w', [0x12] = 'e', [0x13] = 'r',
+        [0x14] = 't', [0x15] = 'y', [0x16] = 'u', [0x17] = 'i',
+        [0x18] = 'o', [0x19] = 'p', [0x1a] = '[', [0x1b] = ']',
+        [0x1c] = 0x0du, [0x1e] = 'a', [0x1f] = 's', [0x20] = 'd',
+        [0x21] = 'f', [0x22] = 'g', [0x23] = 'h', [0x24] = 'j',
+        [0x25] = 'k', [0x26] = 'l', [0x27] = ';', [0x28] = '\'',
+        [0x29] = '`', [0x2b] = '\\', [0x2c] = 'z', [0x2d] = 'x',
+        [0x2e] = 'c', [0x2f] = 'v', [0x30] = 'b', [0x31] = 'n',
+        [0x32] = 'm', [0x33] = ',', [0x34] = '.', [0x35] = '/',
+        [0x37] = '*', [0x39] = ' ', [0x4a] = '-', [0x4e] = '+'
+    };
+    static const uint8_t shifted[0x59] = {
+        [0x01] = 0x1bu, [0x02] = '!', [0x03] = '@', [0x04] = '#',
+        [0x05] = '$', [0x06] = '%', [0x07] = '^', [0x08] = '&',
+        [0x09] = '*', [0x0a] = '(', [0x0b] = ')', [0x0c] = '_',
+        [0x0d] = '+', [0x0e] = 0x08u, [0x10] = 'Q', [0x11] = 'W',
+        [0x12] = 'E', [0x13] = 'R', [0x14] = 'T', [0x15] = 'Y',
+        [0x16] = 'U', [0x17] = 'I', [0x18] = 'O', [0x19] = 'P',
+        [0x1a] = '{', [0x1b] = '}', [0x1c] = 0x0du, [0x1e] = 'A',
+        [0x1f] = 'S', [0x20] = 'D', [0x21] = 'F', [0x22] = 'G',
+        [0x23] = 'H', [0x24] = 'J', [0x25] = 'K', [0x26] = 'L',
+        [0x27] = ':', [0x28] = '"', [0x29] = '~', [0x2b] = '|',
+        [0x2c] = 'Z', [0x2d] = 'X', [0x2e] = 'C', [0x2f] = 'V',
+        [0x30] = 'B', [0x31] = 'N', [0x32] = 'M', [0x33] = '<',
+        [0x34] = '>', [0x35] = '?', [0x37] = '*', [0x39] = ' ',
+        [0x4a] = '-', [0x4e] = '+'
+    };
+    uint8_t flags = keyboard_flag0(profile);
+    uint8_t value;
+    type_bool shifted_state;
+
+    if (scan_code >= sizeof(normal)) return 0u;
+    value = normal[scan_code];
+    if ((flags & QDKEYB_FLAG0_D_CTRL) != 0u && value >= 'a' && value <= 'z') {
+        return (uint8_t)(value - 'a' + 1u);
+    }
+    if ((flags & QDKEYB_FLAG0_D_ALT) != 0u) return 0u;
+    shifted_state = ((flags & (QDKEYB_FLAG0_D_LSHIFT | QDKEYB_FLAG0_D_RSHIFT)) != 0u);
+    if (value >= 'a' && value <= 'z') {
+        if (((flags & QDKEYB_FLAG0_A_CAPLCK) != 0u) != shifted_state) {
+            return (uint8_t)(value - 'a' + 'A');
+        }
+        return value;
+    }
+    return shifted_state ? shifted[scan_code] : value;
+}
+
+static uint16_t keyboard_translate_scan(vm_profile_default_context *profile,
+    uint8_t scan_code)
+{
+    return ((uint16_t)scan_code << 8) | keyboard_ascii_for_scan(profile,
+        scan_code);
 }
 
 static C_VOID keyboard_read_input(vm_profile_default_context *profile)
 {
     t_cpu *cpu = vm_profile_default_context_execution(profile)->cpu;
-    while (keyboard_buffer_empty(profile)) {
-        core_product_wait_milliseconds(profile->wait_scope, 10);
+    if (keyboard_buffer_empty(profile)) {
+        profile->keyboard_waiting = TYPE_TRUE;
+        cpu->data.flagHalt = TYPE_TRUE;
+        return;
     }
     cpu->data.ax = keyboard_buffer_pop(profile);
-    keyboard_request_irq(profile);
 }
 
 static C_VOID keyboard_get_status(vm_profile_default_context *profile)
@@ -167,7 +218,23 @@ static C_VOID keyboard_get_status(vm_profile_default_context *profile)
 
 static C_VOID keyboard_int_09(vm_profile_default_context *profile)
 {
-    core_machine_port_write(vm_profile_default_context_execution(profile)->port, 0x0020, 0x20);
+    core_machine_cpu_execution_context *execution =
+        vm_profile_default_context_execution(profile);
+    t_cpu *cpu;
+    uint8_t scan_code;
+
+    if (execution == STD_NULL || execution->cpu == STD_NULL) return;
+    cpu = execution->cpu;
+    scan_code = (uint8_t)core_machine_port_read(execution->port, 0x0060u);
+    if (scan_code != 0u) {
+        (C_VOID)keyboard_buffer_push(profile,
+            keyboard_translate_scan(profile, scan_code));
+    }
+    if (profile->keyboard_waiting && !keyboard_buffer_empty(profile)) {
+        cpu->data.ax = keyboard_buffer_pop(profile);
+        profile->keyboard_waiting = TYPE_FALSE;
+    }
+    core_machine_port_write(execution->port, 0x0020, 0x20);
 }
 
 static C_VOID keyboard_int_16(vm_profile_default_context *profile)
@@ -250,17 +317,9 @@ static C_VOID keyboard_apply_host_state(C_VOID *context,
         (toggle_keys & CORE_MACHINE_KEYBOARD_TOGGLE_PAUSE) != 0u);
 }
 
-static C_VOID keyboard_receive_key_press(C_VOID *context, uint16_t code)
-{
-    vm_profile_default_context *profile = context;
-    (C_VOID)keyboard_buffer_push(profile, code);
-    keyboard_request_irq(profile);
-}
-
 static const core_machine_keyboard_provider keyboard_provider = {
     keyboard_get_modifier,
-    keyboard_apply_host_state,
-    keyboard_receive_key_press
+    keyboard_apply_host_state
 };
 
 C_VOID vm_profile_default_keyboard_initialize(t_qdx *qdx)
@@ -268,6 +327,11 @@ C_VOID vm_profile_default_keyboard_initialize(t_qdx *qdx)
     if (qdx == STD_NULL) return;
     qdx->table[0x09] = keyboard_int_09;
     qdx->table[0x16] = keyboard_int_16;
+}
+
+C_VOID vm_profile_default_keyboard_reset(vm_profile_default_context *profile)
+{
+    if (profile != STD_NULL) profile->keyboard_waiting = TYPE_FALSE;
 }
 
 const core_machine_keyboard_provider *vm_profile_default_keyboard_provider(C_VOID)

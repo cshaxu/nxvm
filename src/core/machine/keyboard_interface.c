@@ -54,12 +54,3 @@ C_VOID core_machine_keyboard_apply_host_state_to(
             toggle_keys);
     }
 }
-
-C_VOID core_machine_keyboard_receive_key_press_to(
-    const core_machine_keyboard_provider_slot *slot, uint16_t code)
-{
-    if (slot != STD_NULL && slot->provider != STD_NULL &&
-        slot->provider->receive_key_press != STD_NULL) {
-        slot->provider->receive_key_press(slot->context, code);
-    }
-}

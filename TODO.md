@@ -126,16 +126,24 @@ import. `docs/planning/status.md` remains authoritative for active work.
   session-creation UX and closure probes; present FPU profiles remain
   unavailable until their state/operations are implemented.
   Protected DOS media stays local.
-- [ ] **8042 KBC compatibility (`TODO(Medium)`).** T192 decomposes this into
-  the controller/input contract (S1), core controller slice (S2), and one-route
-  QDKEYB handoff (S3). Its first slice is `0x60`/`0x64`, OBF/IBF, command byte,
-  `0x20`/`0x60`/`0xAA`/`0xAB`/`0xAD`/`0xAE`/`0xD0`/`0xD1`, and keyboard
-  ACK/reset/enable/disable/identify. AUX/IRQ12, translation, scan-code sets,
-  and timing are later admissions. Full FIFO is a defined
-  `NTVDM64_STATUS_INVALID_STATE`, not a second host queue. Preserve BIOS
-  keyboard behavior and keep
-  host layout policy in the default profile, outside the core controller.
-  See [`m5-pc-compatible-device-plan.md`](docs/planning/m5-pc-compatible-device-plan.md).
+- [x] **8042 KBC controller and one BIOS route (`TODO(Medium)`).** T192
+  completed `0x60`/`0x64`, OBF/IBF, command byte,
+  `0x20`/`0x60`/`0xAA`/`0xAB`/`0xAD`/`0xAE`/`0xD0`/`0xD1`, keyboard
+  ACK/reset/enable/disable/identify, IRQ1, A20/reset, and a full-FIFO
+  `NTVDM64_STATUS_INVALID_STATE`. Platform input is consumed at the execution
+  boundary, mapped by the default profile, delivered through KBC, and consumed
+  by QDKEYB INT 09h before INT 16h reads BDA. See
+  [`m5-pc-compatible-device-plan.md`](docs/planning/m5-pc-compatible-device-plan.md).
+- [ ] **8042 advanced keyboard protocol (`TODO(Medium)`).** Admit each of
+  set-1 break bytes and E0/E1 extended sequences, scan-code-set selection,
+  controller translation, LED/typematic commands, AUX mouse/IRQ12, controller
+  timing, and error/resend edge cases only with specific port and DOS probes.
+  Do not add a second host queue or place host policy in `core/machine`.
+- [ ] **POSIX KBC input runtime verification (`TODO(Medium)`).** The Linux
+  curses path now submits normalized host events and has Windows-side static
+  source parity, but native POSIX compilation and keyboard runtime behavior
+  (especially modifiers and extended keys) need an owned POSIX-environment
+  probe before claiming support.
 - [ ] **Video-adapter capability (`TODO(Medium)`).** T193 decomposes this into
   CGA text-controller design (S1), text migration (S2), and separately admitted
   graphics review (S3). The first slice is CRTC `0x3d4`/`0x3d5`, mode `0x3d8`,
