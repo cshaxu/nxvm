@@ -108,55 +108,14 @@ core/VM/VDM dependency model, and the `vm/` and `vdm/` roots are the only
 composition roots. The legacy `device.h` aggregate is deleted; retained CPU,
 RAM, and port execution has one core-machine state/API authority; and reusable
 Win32/Linux host providers live in `core/platform` rather than `vm/platform`.
-No ntvdm64 DOS runner behavior is required. The early structural and naming
-plans are closed historical evidence under `history/m5/planning/`; the bounded
-active-source follow-up is governed by `planning/m5-naming-remediation.md`.
-
-M5 T64 reopens bounded design work for explicit session ownership and
-context-passing. It must produce the next bounded authority-migration plan
-before M6 may begin; it does not itself authorize a multi-session product
-feature.
-
-M5 T65 through T73 completed that plan, removing selected-session globals one
-authority family at a time. T73 recorded a clean closure scan and compatibility
-evidence. T74 completed non-runtime governance/build cleanup. The remaining
-M5 convergence is explicitly split: T75--T81 removes residual global facades
-from real NXVM paths, and T82--T86 makes `core_machine` the one true guest
-executor while VM retains the outer product loop. The authoritative breakdown
-is [`planning/m5-facade-executor-convergence.md`](m5-facade-executor-convergence.md).
-M5 T87 through T95 close the remaining module-by-module session-readiness
-work under [`planning/m5-session-readiness.md`](m5-session-readiness.md).
-That plan fixes the closure order as core/VM/VDM machine, platform, product,
-then root composition; profiles remain immutable cross-cutting checks.
-T96 repairs the retained Console lifecycle regression found after that closure.
-T97 completes the composition API cleanup, and T98 defines the remaining
-owner-bounded naming sequence without expanding M6 scope.
-
-**PC-compatible device extension:** M5 T191, T192, and T193 respectively own
-8254 PIT read-back, the 8042 KBC path, and VADP text capability. Each task
-begins with its own design subtask rather than creating a design-only task. The
-sequence preserves the one core-device owner, one keyboard ingress route,
-profile-bound firmware, and no-graphics-claim rules. The breakdown and gates
-are in
-[`m5-pc-compatible-device-plan.md`](m5-pc-compatible-device-plan.md).
-
-**M5 RAM/state addendum:** T169--T174 replace T165's verified but temporary
-whole-session `DEVICE RAM` reconstruction with a core-owned stopped-only cold
-RAM reconfiguration. They first separate `STOPPED` from `PAUSED`, then close
-installed-memory mapping and provider pointer escapes, implement the core API,
-route the retained Console command, and run full closure evidence. CPU/FPU,
-ROM/profile, and port/IRQ topology remain frozen and require `SESSION OPEN`.
+No ntvdm64 DOS runner behavior is required. Completed implementation detail is
+summarized in [M5 History](../history/m5.md). M5 remains open until the
+[closure checklist](m5-closure-checklist.md) has current evidence for every
+applicable item.
 
 **Compatibility gate:** M5 must not alter NXVM functionality or user experience.
 Any unavoidable user-visible change requires explicit owner approval before
 implementation and a recorded before/after acceptance plan.
-
-**Owner-approved extension:** M5 T144 defines a shared opaque product-session
-mechanism and its NXVM Console adoption after session-readiness closure. It is
-an intentional user-visible NXVM addition, not a compatibility regression.
-Its core-product mechanism is reusable by VDM, but it neither starts M6 nor
-authorizes VDM runtime behavior. The contract is
-[`m5-product-session-management.md`](m5-product-session-management.md).
 
 ## M6: Design The Owned DOS Module
 

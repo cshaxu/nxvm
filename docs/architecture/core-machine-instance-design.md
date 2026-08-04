@@ -181,5 +181,4 @@ rules, then migrate it without changing user-visible behavior. M6 remains
 deferred until the selected-session globals and the dual machine execution
 paths have a bounded M5 plan.
 
-The approved execution order and per-task deletion gates are recorded in
-[M5 Instance Authority Plan](../history/m5/planning/m5-instance-authority-plan.md).
+The completed migration is summarized in [M5 History](../history/m5.md).
