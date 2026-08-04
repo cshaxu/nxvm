@@ -29,9 +29,19 @@ typedef struct vm_platform_run_context {
     C_VOID *keyboard_state_context;
 } vm_platform_run_context;
 
+typedef enum vm_platform_run_event {
+    VM_PLATFORM_RUN_EVENT_NONE,
+    VM_PLATFORM_RUN_EVENT_STOP_REQUESTED,
+    VM_PLATFORM_RUN_EVENT_KERNEL_COMPLETED,
+    VM_PLATFORM_RUN_EVENT_DISPLAY_COMPLETED,
+    VM_PLATFORM_RUN_EVENT_STARTUP_FAILED
+} vm_platform_run_event;
+
 typedef struct vm_platform_run_handle {
     const vm_platform_run_context *context;
     C_VOID *backend;
+    STD_ATOMIC_INT last_event;
+    STD_ATOMIC_BOOL stop_reported;
     C_INT active;
     C_INT window_display;
 } vm_platform_run_handle;
@@ -53,6 +63,12 @@ C_VOID vm_platform_run_handle_initialize(vm_platform_run_handle *handle);
 C_INT vm_platform_run_handle_is_active(const vm_platform_run_handle *handle);
 C_INT vm_platform_run_handle_is_window_display(
     const vm_platform_run_handle *handle);
+C_VOID vm_platform_run_handle_report(
+    vm_platform_run_handle *handle, vm_platform_run_event event);
+vm_platform_run_event vm_platform_run_handle_get_last_event(
+    const vm_platform_run_handle *handle);
+C_INT vm_platform_run_handle_take_stop_report(
+    vm_platform_run_handle *handle);
 C_VOID vm_platform_run_handle_request_stop(vm_platform_run_handle *handle);
 C_VOID vm_platform_run_handle_join(vm_platform_run_handle *handle);
 C_VOID vm_platform_run_handle_finalize(vm_platform_run_handle *handle);

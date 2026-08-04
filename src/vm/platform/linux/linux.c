@@ -4,7 +4,7 @@
 
 #include "type.h"
 
-#include <unistd.h>
+#include "core/platform/sleep.h"
 
 #include "vm/platform/platform.h"
 
@@ -14,7 +14,7 @@
 #include "vm/platform/linux/linux.h"
 
 C_VOID vm_platform_linux_sleep(uint32_t milisec) {
-    usleep((milisec) * 1000);
+    core_platform_sleep_milliseconds(milisec);
 }
 
 C_VOID vm_platform_linux_display_set_screen(C_INT window, const vm_platform_run_context *context) {

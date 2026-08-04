@@ -5,9 +5,11 @@
 This is the normative M5 design and closure reference for a VM platform run.
 T138 defined the contract; T139 implemented the Win32 shape and T140 aligned
 the Linux Console source shape. The remaining ledger item is not permission to
-introduce another lifecycle model: it requires continuing evidence that every
-current or newly admitted backend obeys this contract. `TODO.md` links here for
-the exact remaining verification scope.
+introduce another lifecycle model. T194--T196 close the current source/evidence
+gap: workers record copied run events on their session-owned handle;
+composition consumes cancellation at its existing execution boundary; the
+session lifecycle remains the unique request-stop, join, and destruction owner.
+`TODO.md` links here for the exact remaining verification scope.
 
 ## Purpose
 
@@ -59,6 +61,45 @@ The initiator determines the product outcome after that sequence:
 No caller may invoke `vm_session_finalize` while a run handle is live. Failed
 thread creation follows the same cleanup order for every successfully created
 worker and renderer resource.
+
+## T194--T196 Convergence
+
+T139/T140 established a handle-owned worker and teardown shape. The current
+follow-up makes its event boundary literal rather than inferred from backend
+calls:
+
+- A backend worker records one of `display-closed`, `display-completed`,
+  `kernel-completed`, or `startup-failed` on its owner handle.
+- Composition consumes a cancellation record at its next execution boundary.
+  Platform code neither includes nor calls machine/control code.
+- Worker completion does not itself finalize a session. Retained NXVM keeps
+  its stopped session available to the Console; the next reset, explicit stop,
+  session close, or finalization follows the one join/finalize path.
+- A window close caused by completed guest execution is completion reporting,
+  not a second cancellation request. A user-initiated close reports
+  cancellation.
+- `request_stop` stays idempotent and belongs to the session lifecycle. It is
+  the only operation that asks guest execution to stop; workers only report.
+
+The event record is diagnostic/lifecycle state owned by the run handle. It is
+not a second session, execution loop, or platform-to-machine control channel.
+
+| Task | Scope | Exit |
+| --- | --- | --- |
+| T194 | Common run-event contract, request-boundary bridge, and state-machine smoke. | No worker directly starts/stops guest execution; cancellation is consumed by composition; common ordering probes pass. |
+| T195 | Win32 Console/window event conversion and failure-path evidence. | Normal close/completion, repeated cancellation, partial startup, and retained Console/DOS gates pass; only backend finalizers release native resources. |
+| T196 | Linux source conversion, CMake parity, and native POSIX verification harness. | Linux follows the same event/owner shape; a native compile/runtime harness is ready. Owner-approved deferral keeps native terminal evidence in `TODO.md`; no Linux support claim follows from this task. |
+
+### T195 Failure-Test Boundary
+
+T195 may compile a dedicated, disposable Windows test build with one numeric
+`NTVDM64_VM_PLATFORM_TEST_FAILURE_STAGE` definition. The default is absent;
+release presets and task artifacts never define it. A stage may only make a
+native create/initialization operation fail at its existing error branch. It
+may not select a session, alter guest execution, bypass joins, or introduce a
+runtime/global test switch. Each stage must prove that the start call returns
+failure, the embedded owner is inactive with a null backend, and its lease or
+native resources can be acquired by a later clean run.
 
 ## Historical T138 Baseline
 

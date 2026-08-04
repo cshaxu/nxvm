@@ -18,9 +18,12 @@ M5 has preserved the bootable NXVM Console, debugger, boot sequence, and FDD
 fixture behavior while moving the whole-PC execution path into the documented
 `core/` and `vm/` ownership model.
 
-**Current active subtask:** none. M5 T191--T193 device slices are complete;
-the next implementation subtask requires explicit activation. Historical
-paragraphs below describe their own completed sequence.
+**Current active subtask:** none. M5 T194--T196 platform run-handle convergence
+is complete: T194 closed the common worker-report boundary, T195 supplied
+Win32 failure evidence, and T196 closed Linux code/CMake parity. Native POSIX
+runtime verification remains an explicit deferred TODO, not a support claim.
+T191--T193 device slices remain complete. Historical paragraphs below describe
+their own completed sequence.
 
 **M5 T150 complete:** NXVM shared product-session management is closed. The
 manager atomically establishes session 0, the final session cannot close, and

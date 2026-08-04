@@ -33,6 +33,16 @@ static C_INT win32app_atomic_read(const volatile LONG *value)
     return (C_INT)InterlockedCompareExchange((volatile LONG *)value, 0, 0);
 }
 
+static C_INT win32app_test_should_fail(C_INT stage)
+{
+#if defined(NTVDM64_VM_PLATFORM_TEST_FAILURE_STAGE)
+    return NTVDM64_VM_PLATFORM_TEST_FAILURE_STAGE == stage;
+#else
+    (C_VOID)stage;
+    return 0;
+#endif
+}
+
 static LRESULT CALLBACK win32app_window_procedure(HWND window, UINT message,
     WPARAM wParam, LPARAM lParam)
 {
@@ -54,7 +64,11 @@ static LRESULT CALLBACK win32app_window_procedure(HWND window, UINT message,
         SetTimer(window, TIMER_PAINT, 50u, STD_NULL);
         return 0;
     case WM_DESTROY:
-        vm_platform_execution_stop_for(handle->platform->execution);
+        vm_platform_run_handle_report(handle->owner,
+            vm_platform_run_handle_get_last_event(handle->owner) ==
+            VM_PLATFORM_RUN_EVENT_KERNEL_COMPLETED ?
+            VM_PLATFORM_RUN_EVENT_DISPLAY_COMPLETED :
+            VM_PLATFORM_RUN_EVENT_STOP_REQUESTED);
         PostQuitMessage(0);
         return 0;
     case WM_TIMER:
@@ -112,22 +126,30 @@ static DWORD WINAPI win32app_display_thread(LPVOID opaque)
         WS_MINIMIZEBOX | WS_MAXIMIZEBOX;
 
     handle->instance = GetModuleHandle(STD_NULL);
-    if (!win32app_register_class(handle)) {
+    if (win32app_test_should_fail(2) || !win32app_register_class(handle)) {
         InterlockedExchange((volatile LONG *)&handle->display_failed, 1);
+        vm_platform_run_handle_report(handle->owner,
+            VM_PLATFORM_RUN_EVENT_STARTUP_FAILED);
         return 1;
     }
-    handle->window = CreateWindow(_T("nxvm"), _T("Neko's x86 Virtual Machine"),
-        style, CW_USEDEFAULT, 0, 888, 484, STD_NULL, STD_NULL, handle->instance,
-        handle);
+    handle->window = win32app_test_should_fail(3) ? STD_NULL :
+        CreateWindow(_T("nxvm"), _T("Neko's x86 Virtual Machine"), style,
+            CW_USEDEFAULT, 0, 888, 484, STD_NULL, STD_NULL, handle->instance,
+            handle);
     if (handle->window == STD_NULL) {
         InterlockedExchange((volatile LONG *)&handle->display_failed, 1);
+        vm_platform_run_handle_report(handle->owner,
+            VM_PLATFORM_RUN_EVENT_STARTUP_FAILED);
         return 1;
     }
     platform->window_surface.native_handle = handle->window;
-    platform->window_renderer = w32adisp_context_create();
+    platform->window_renderer = win32app_test_should_fail(4) ? STD_NULL :
+        w32adisp_context_create();
     if (platform->window_renderer == STD_NULL) {
         DestroyWindow(handle->window);
         InterlockedExchange((volatile LONG *)&handle->display_failed, 1);
+        vm_platform_run_handle_report(handle->owner,
+            VM_PLATFORM_RUN_EVENT_STARTUP_FAILED);
         return 1;
     }
     w32adispInit((w32adisp_context *)platform->window_renderer, handle->window,
@@ -158,6 +180,8 @@ static DWORD WINAPI win32app_kernel_thread(LPVOID opaque)
     win32app_run_handle *handle = opaque;
 
     vm_platform_execution_start_for(handle->platform->execution);
+    vm_platform_run_handle_report(handle->owner,
+        VM_PLATFORM_RUN_EVENT_KERNEL_COMPLETED);
     if (handle->window != STD_NULL) PostMessage(handle->window, WM_CLOSE, 0, 0);
     return 0;
 }
@@ -181,8 +205,8 @@ type_status vm_platform_win32app_run_handle_start(
     owner->backend = handle;
     owner->window_display = 1;
     owner->active = 1;
-    handle->display_thread = CreateThread(STD_NULL, 0, win32app_display_thread,
-        handle, 0, &thread_id);
+    handle->display_thread = win32app_test_should_fail(1) ? STD_NULL :
+        CreateThread(STD_NULL, 0, win32app_display_thread, handle, 0, &thread_id);
     if (handle->display_thread == STD_NULL) {
         vm_platform_win32app_run_handle_finalize(owner);
         return TYPE_STATUS_INVALID_STATE;
@@ -200,8 +224,8 @@ type_status vm_platform_win32app_run_handle_start(
         vm_platform_win32app_run_handle_finalize(owner);
         return TYPE_STATUS_INVALID_STATE;
     }
-    handle->kernel_thread = CreateThread(STD_NULL, 0, win32app_kernel_thread,
-        handle, 0, &thread_id);
+    handle->kernel_thread = win32app_test_should_fail(5) ? STD_NULL :
+        CreateThread(STD_NULL, 0, win32app_kernel_thread, handle, 0, &thread_id);
     if (handle->kernel_thread == STD_NULL) {
         vm_platform_win32app_run_handle_request_stop(owner);
         vm_platform_win32app_run_handle_join(owner);
