@@ -459,6 +459,10 @@ Artifact: `nxvm_0_5_0182.exe`.
 longer heap allocated; pause and unified debugger FDD gates pass. Artifact:
 `nxvm_0_5_0183.exe`.
 
+**M5 T184 S1 complete: VM session owner closure.** Static direct-owner,
+dependency, and session-readiness gates pass alongside retained Console and
+FDD DOS-prompt regressions. Artifact: `nxvm_0_5_0184.exe`.
+
 The completed executor sequence is defined in
 [Facade And Executor Convergence](m5-facade-executor-convergence.md). The
 active session-readiness sequence is defined in
