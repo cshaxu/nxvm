@@ -2,10 +2,12 @@
 
 ## Current Work
 
-**Active subtask:** **M5 T212 S1 -- video-portal contract and bounded no-media
-probe.** No guest behavior change is admitted before the probe records the
-default-ROM error-display path and approves the minimal ROM `INT 10h` subset.
-See [the task record](m5-t212-video-portal-retirement.md).
+**Active subtask:** **M5 T212 S2 -- default-ROM text slice, F2 retirement, and
+bounded runner display cadence.** S1 has recorded both no-media and FDD/DOS
+paths: the admitted `INT 10h` closure is `AH=02h,06h,0Bh,0Eh,0Fh`. S2 must
+replace the F2 portal with ordinary ROM/IVT execution and remove the
+one-instruction full-snapshot runner regression without changing NXVM user
+experience. See [the task record](m5-t212-video-portal-retirement.md).
 
 **M5 T211 complete:** the default profile's F0
 boot-failure portal is retired. The ROM reports an acknowledged failure through

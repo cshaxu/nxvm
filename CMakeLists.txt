@@ -603,6 +603,9 @@ target_link_libraries(vm-qdcga-boundary-smoke PRIVATE vm-composition)
 add_executable(vm-no-media-video-port-smoke
     tests/machine/vm_no_media_video_port_smoke.c)
 target_link_libraries(vm-no-media-video-port-smoke PRIVATE vm-composition)
+add_executable(vm-dos-video-port-smoke
+    tests/machine/vm_dos_video_port_smoke.c)
+target_link_libraries(vm-dos-video-port-smoke PRIVATE vm-composition)
 add_executable(vm-keyboard-firmware-smoke tests/machine/vm_keyboard_firmware_smoke.c)
 target_link_libraries(vm-keyboard-firmware-smoke PRIVATE vm-composition)
 add_executable(vm-keyboard-provider-isolation-smoke
@@ -772,6 +775,7 @@ set(PROJECT_CURRENT_FDD_SMOKE_TARGETS
     vm-dos-prompt-smoke
     vm-dos-keyboard-smoke
     vm-dos-mem-fault-smoke
+    vm-dos-video-port-smoke
     vm-debug-pause-boundary-smoke
     vm-unified-debug-backend-smoke)
 set(PROJECT_CURRENT_FDD_HDD_SMOKE_TARGET vm-product-session-smoke)

@@ -15,11 +15,13 @@ does not inspect or mutate guest video memory. No profile C callback may handle
 `INT F2h` after S2; ordinary guest `INT 10h` must use the IVT and ROM `IRET`
 path.
 
-The initial ROM subset is only `AH=02h` cursor position and `AH=0Eh` teletype
-output, including CR/LF and bounded 80x25 text progression needed by POST and
-the no-media error message. Mode setting, scroll, page, font, graphics, and
-every other `INT 10h` function stay on the existing path until explicitly
-admitted or are defined unsupported. T212 does not claim CGA graphics support.
+The admitted ROM text subset is `AH=02h` cursor position, `AH=06h` scroll-up,
+`AH=0Bh` palette/background compatibility, `AH=0Eh` teletype output, and
+`AH=0Fh` mode query. It includes CR/LF, bounded 80x25 text progression, and
+scrolling needed by POST, the no-media error message, and the retained FDD DOS
+prompt. Mode setting, page selection, font, graphics, and every other `INT
+10h` function are unsupported until explicitly admitted. T212 does not claim
+CGA graphics support.
 
 ## Breakdown
 
@@ -40,9 +42,12 @@ or an unexplained cross-session effect.
 ### S2: ROM Text Slice And F2 Removal
 
 Implement only the approved text subset in default ROM, bind it through the
-normal IVT, remove F2 registration/dispatch and QDCGA service use for that
-subset, and keep state at BDA/`B8000` plus core VADP. Do not make `INT 10h`
-call platform code or add a new firmware portal.
+normal IVT, remove F2 registration/dispatch and QDCGA service use, and keep
+state at BDA/`B8000` plus core VADP. The session runner may use a bounded
+multi-instruction quantum and publish a copied display snapshot only at that
+quantum boundary; command, pause, stop, and debug boundaries remain bounded by
+that same quantum. Do not make `INT 10h` call platform code or add a new
+firmware portal.
 
 ### S3: System-Image Regression
 
@@ -61,6 +66,9 @@ F2/VADP is therefore not the cause of the earlier ten-second observation.
 The exploratory runner was slow because its current one-instruction quantum
 captures and copies a full display snapshot after every instruction. That is a
 separate runner cadence/performance issue, not a reason to add a video
-shortcut. T212 still owns F2 retirement, but S2 must first expand its ROM
-coverage decision beyond the two POST primitives enough to retain the current
-FDD DOS regression.
+shortcut. T212 S2 owns the bounded cadence correction as well as F2 retirement.
+
+The FDD/DOS probe reaches the prompt within 500,000 direct core instruction
+quanta and records `INT 10h=200`, `INT F2h=200`, with `AH=02h,06h,0Bh,0Eh,0Fh`.
+Those five functions are the admitted S2 closure. This probe is in the FDD
+smoke group so it continues to reject an unobserved portal dependency.
