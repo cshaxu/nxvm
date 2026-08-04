@@ -116,8 +116,13 @@ static C_VOID core_machine_kbc_handle_keyboard_command(t_kbc *controller,
 static C_VOID core_machine_kbc_read_data(t_port *port, type_unsigned_16 port_id,
     C_VOID *owner)
 {
+    t_kbc *controller = (t_kbc *)owner;
+
     (C_VOID)port_id;
-    port->data.ioByte = core_machine_kbc_dequeue((t_kbc *)owner);
+    port->data.ioByte = core_machine_kbc_dequeue(controller);
+    if (controller != STD_NULL && controller->data.fifo_count != 0u) {
+        core_machine_kbc_request_irq1(controller);
+    }
 }
 
 static C_VOID core_machine_kbc_read_status(t_port *port, type_unsigned_16 port_id,

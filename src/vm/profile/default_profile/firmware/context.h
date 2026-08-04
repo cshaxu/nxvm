@@ -23,6 +23,7 @@ typedef struct vm_profile_default_context {
     core_machine_keyboard_provider_slot *keyboard_provider;
     core_machine_display_provider_slot *display_provider;
     const core_product_wait_scope *wait_scope;
+    type_bool keyboard_waiting;
 } vm_profile_default_context;
 
 static inline C_VOID vm_profile_default_context_initialize(
@@ -40,6 +41,7 @@ static inline C_VOID vm_profile_default_context_initialize(
     context->keyboard_provider = keyboard_provider;
     context->display_provider = STD_NULL;
     context->wait_scope = STD_NULL;
+    context->keyboard_waiting = TYPE_FALSE;
 }
 
 static inline t_ram *vm_profile_default_context_memory(

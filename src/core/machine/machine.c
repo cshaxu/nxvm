@@ -509,12 +509,6 @@ type_status core_machine_run(
                 result->linear_pc = core_machine_linear_pc(machine);
                 return TYPE_STATUS_OK;
             }
-            if (machine->executor_cpu.data.flagHalt) {
-                machine->lifecycle = CORE_MACHINE_PAUSED;
-                result->reason = CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
-                result->linear_pc = core_machine_linear_pc(machine);
-                return TYPE_STATUS_OK;
-            }
             if (machine->execution_provider != STD_NULL &&
                 machine->execution_provider->refresh != STD_NULL) {
                 machine->execution_provider->refresh(
@@ -529,6 +523,12 @@ type_status core_machine_run(
                 &machine->shared_pic_slave);
             core_machine_pit_refresh(&machine->shared_pit);
             core_machine_cpu_execution_refresh(&machine->executor_cpu_execution);
+            if (machine->executor_cpu.data.flagHalt) {
+                machine->lifecycle = CORE_MACHINE_PAUSED;
+                result->reason = CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
+                result->linear_pc = core_machine_linear_pc(machine);
+                return TYPE_STATUS_OK;
+            }
             ++result->executed;
         }
         machine->lifecycle = CORE_MACHINE_PAUSED;

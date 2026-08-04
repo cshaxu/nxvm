@@ -16,7 +16,6 @@ typedef struct core_machine_keyboard_provider {
     C_INT (*get_modifier)(C_VOID *context, core_machine_keyboard_modifier modifier);
     C_VOID (*apply_host_state)(C_VOID *context, uint32_t asynchronous_keys,
         uint32_t toggle_keys);
-    C_VOID (*receive_key_press)(C_VOID *context, uint16_t code);
 } core_machine_keyboard_provider;
 
 typedef struct core_machine_keyboard_provider_slot {
@@ -55,7 +54,5 @@ C_INT core_machine_keyboard_get_modifier_from(
 C_VOID core_machine_keyboard_apply_host_state_to(
     const core_machine_keyboard_provider_slot *slot,
     uint32_t asynchronous_keys, uint32_t toggle_keys);
-C_VOID core_machine_keyboard_receive_key_press_to(
-    const core_machine_keyboard_provider_slot *slot, uint16_t code);
 
 #endif

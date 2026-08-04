@@ -80,11 +80,19 @@ static C_VOID vm_session_keyboard_apply_host_state(
         asynchronous_keys, toggle_keys);
 }
 
-static C_VOID vm_session_keyboard_receive_key_press(C_VOID *context, uint16_t code)
+static C_VOID vm_session_keyboard_receive_key_press(C_VOID *context,
+    uint16_t scan_code, uint16_t virtual_key)
 {
     vm_session *machine =
         (vm_session *)context;
-    core_machine_keyboard_receive_key_press_to(&machine->keyboard_provider, code);
+    vm_platform_request request;
+
+    if (machine == STD_NULL) return;
+    request.kind = VM_PLATFORM_REQUEST_KEY_PRESS;
+    request.data.key_press.scan_code = scan_code;
+    request.data.key_press.virtual_key = virtual_key;
+    (C_VOID)vm_platform_request_transport_enqueue_ingress(
+        &machine->request_transport, &request);
 }
 
 static C_VOID vm_session_keyboard_request_stop(C_VOID *context)

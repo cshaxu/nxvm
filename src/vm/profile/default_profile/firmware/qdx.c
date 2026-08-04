@@ -111,6 +111,7 @@ C_VOID vm_profile_default_qdx_initialize(vm_profile_default_context *profile,
 
 C_VOID vm_profile_default_qdx_reset(vm_profile_default_context *profile)
 {
+    vm_profile_default_keyboard_reset(profile);
     vm_profile_default_cga_reset(profile);
 }
 

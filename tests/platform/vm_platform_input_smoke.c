@@ -30,9 +30,11 @@ static C_VOID vm_platform_input_smoke_apply_host_state(
     state->toggle_keys = toggle_keys;
 }
 
-static C_VOID vm_platform_input_smoke_receive_key_press(C_VOID *context, uint16_t code)
+static C_VOID vm_platform_input_smoke_receive_key_press(C_VOID *context,
+    uint16_t scan_code, uint16_t virtual_key)
 {
-    ((vm_platform_input_smoke_state *)context)->key_code = code;
+    (C_VOID)virtual_key;
+    ((vm_platform_input_smoke_state *)context)->key_code = scan_code;
 }
 
 static C_VOID vm_platform_input_smoke_request_stop(C_VOID *context)
@@ -57,7 +59,8 @@ C_INT main(C_VOID)
     vm_platform_keyboard_transport_initialize(&second_transport, &sink,
                                               &second_state);
     vm_platform_keyboard_apply_host_state_for(&transport, 0xabu, 0xcdu);
-    vm_platform_keyboard_receive_key_press_for(&second_transport, 0x1234u);
+    vm_platform_keyboard_receive_key_press_for(&second_transport, 0x1234u,
+        0x5678u);
     vm_platform_keyboard_request_stop_for(&second_transport);
     if (state.asynchronous_keys != 0xabu || state.toggle_keys != 0xcdu ||
         second_state.key_code != 0x1234u || second_state.stop_count != 1u) {

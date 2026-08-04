@@ -48,11 +48,13 @@ C_VOID vm_platform_keyboard_apply_host_state_for(
 }
 
 C_VOID vm_platform_keyboard_receive_key_press_for(
-    const vm_platform_keyboard_transport *transport, uint16_t code)
+    const vm_platform_keyboard_transport *transport, uint16_t scan_code,
+    uint16_t virtual_key)
 {
     if (transport != STD_NULL && transport->sink != STD_NULL &&
         transport->sink->receive_key_press != STD_NULL) {
-        transport->sink->receive_key_press(transport->context, code);
+        transport->sink->receive_key_press(transport->context, scan_code,
+            virtual_key);
     }
 }
 
