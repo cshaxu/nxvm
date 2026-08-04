@@ -15,7 +15,7 @@ unfinished M5 item as an implicit waiver.
 
 ## 1. Current Build Graph
 
-- [ ] The configured GCC preset, CMake target names, task version, and artifact
+- [x] The configured GCC preset, CMake target names, task version, and artifact
   name describe the current source graph; stale task targets and fixture-only
   targets are not presented as product evidence.
 - [ ] The full applicable build and focused smoke gates pass from a clean owned
