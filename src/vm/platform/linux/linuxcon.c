@@ -32,19 +32,21 @@
 #define COLOR_BROWN        0x0e
 #define COLOR_LIGHTGRAY    0x0f
 
-static C_VOID lnxcdispInit() {
+static C_INT lnxcdispInit() {
     STD_SIZE_T i, j;
-    initscr();
-    raw();
-    nodelay(stdscr, TRUE);
-    keypad(stdscr, TRUE);
-    noecho();
-    start_color();
+    if (initscr() == STD_NULL) return 0;
+    if (raw() == ERR || nodelay(stdscr, TRUE) == ERR ||
+        keypad(stdscr, TRUE) == ERR || noecho() == ERR) {
+        endwin();
+        return 0;
+    }
+    if (has_colors()) start_color();
     for (i = 0; i < 8; ++i) {
         for (j = 0; j < 8; ++j) {
-            init_pair(i * 8 + j, i, j);
+            if (has_colors()) init_pair(i * 8 + j, i, j);
         }
     }
+    return 1;
 }
 
 static C_VOID lnxcdispFinal() {
@@ -215,7 +217,9 @@ static core_platform_host_surface_lease linux_terminal_lease = {
     ATOMIC_VAR_INIT(0)
 };
 
-static C_VOID lnxckeybProcess(const vm_platform_run_context *context);
+typedef struct linuxcon_run_handle linuxcon_run_handle;
+
+static C_VOID lnxckeybProcess(linuxcon_run_handle *handle);
 
 static C_VOID lnxcdispPaint(vm_platform_run_context *context,
                           uint8_t force) {
@@ -257,7 +261,7 @@ static C_VOID lnxcdispPaint(vm_platform_run_context *context,
     context->terminal_displayed_generation = frame.generation;
 }
 
-typedef struct linuxcon_run_handle {
+struct linuxcon_run_handle {
     vm_platform_run_handle *owner;
     const vm_platform_run_context *platform;
     pthread_t kernel_thread;
@@ -265,18 +269,26 @@ typedef struct linuxcon_run_handle {
     C_INT kernel_started;
     C_INT display_started;
     C_INT terminal_initialized;
-} linuxcon_run_handle;
+    STD_ATOMIC_BOOL display_ready;
+    STD_ATOMIC_BOOL display_failed;
+};
 
 static C_VOID *linuxcon_display_thread(C_VOID *arg) {
     linuxcon_run_handle *handle = arg;
     vm_platform_run_context *context = (vm_platform_run_context *)handle->platform;
 
-    lnxcdispInit();
+    if (!lnxcdispInit()) {
+        STD_ATOMIC_STORE(&handle->display_failed, TYPE_TRUE);
+        vm_platform_run_handle_report(handle->owner,
+            VM_PLATFORM_RUN_EVENT_STARTUP_FAILED);
+        return STD_NULL;
+    }
     handle->terminal_initialized = 1;
+    STD_ATOMIC_STORE(&handle->display_ready, TYPE_TRUE);
     lnxcdispPaint(context, 1);
     while (vm_platform_execution_is_running_for(context->execution)) {
         lnxcdispPaint(context, 0);
-        lnxckeybProcess(context);
+        lnxckeybProcess(handle);
         core_product_wait_milliseconds(context->wait_scope, 20u);
     }
     return 0;
@@ -286,15 +298,20 @@ static C_VOID *linuxcon_kernel_thread(C_VOID *arg) {
     linuxcon_run_handle *handle = arg;
 
     vm_platform_execution_start_for(handle->platform->execution);
+    vm_platform_run_handle_report(handle->owner,
+        VM_PLATFORM_RUN_EVENT_KERNEL_COMPLETED);
     return 0;
 }
 
 #define send(context, scan, key) vm_platform_keyboard_receive_key_press_for(\
     (context)->keyboard, (scan), (key))
-static C_VOID lnxckeybMakeKey(const vm_platform_run_context *context,
-                            C_INT keyvalue) {
+static C_VOID lnxckeybMakeKey(linuxcon_run_handle *handle,
+                             C_INT keyvalue) {
+    const vm_platform_run_context *context = handle->platform;
+
     if (keyvalue == KEY_F(9)) {
-        vm_platform_execution_stop_for(context->execution);
+        vm_platform_run_handle_report(handle->owner,
+            VM_PLATFORM_RUN_EVENT_STOP_REQUESTED);
     }
     if (keyvalue < 0x001b) {
         switch (keyvalue) {
@@ -384,10 +401,10 @@ static C_VOID lnxckeybMakeKey(const vm_platform_run_context *context,
     }
 }
 
-static C_VOID lnxckeybProcess(const vm_platform_run_context *context) {
+static C_VOID lnxckeybProcess(linuxcon_run_handle *handle) {
     C_INT keyvalue = getch();
     if (keyvalue != ERR) {
-        lnxckeybMakeKey(context, keyvalue);
+        lnxckeybMakeKey(handle, keyvalue);
     }
 }
 
@@ -403,6 +420,7 @@ type_status vm_platform_linuxcon_run_handle_start(
     const vm_platform_run_context *context, vm_platform_run_handle *owner) {
     linuxcon_run_handle *handle;
     C_INT old_flip;
+    C_UINT waited;
 
     if (context == STD_NULL || owner == STD_NULL || owner->active ||
         context->execution == STD_NULL || context->keyboard == STD_NULL) {
@@ -417,6 +435,8 @@ type_status vm_platform_linuxcon_run_handle_start(
     }
     handle->owner = owner;
     handle->platform = context;
+    STD_ATOMIC_INIT(&handle->display_ready, TYPE_FALSE);
+    STD_ATOMIC_INIT(&handle->display_failed, TYPE_FALSE);
     owner->context = context;
     owner->backend = handle;
     owner->window_display = 0;
@@ -440,6 +460,16 @@ type_status vm_platform_linuxcon_run_handle_start(
         return TYPE_STATUS_INVALID_STATE;
     }
     handle->display_started = 1;
+    for (waited = 0u; !STD_ATOMIC_LOAD(&handle->display_ready) &&
+         !STD_ATOMIC_LOAD(&handle->display_failed) && waited < 5000u; ++waited) {
+        core_product_wait_milliseconds(context->wait_scope, 1u);
+    }
+    if (!STD_ATOMIC_LOAD(&handle->display_ready)) {
+        vm_platform_linuxcon_run_handle_request_stop(owner);
+        vm_platform_linuxcon_run_handle_join(owner);
+        vm_platform_linuxcon_run_handle_finalize(owner);
+        return TYPE_STATUS_INVALID_STATE;
+    }
     return TYPE_STATUS_OK;
 }
 

@@ -18,6 +18,10 @@ C_VOID vm_session_runner_run(vm_session *session)
     if (session == STD_NULL || session->core_machine == STD_NULL) return;
     control = &session->control;
     while (STD_ATOMIC_LOAD(&control->flagRun)) {
+        if (vm_platform_run_handle_take_stop_report(&session->platform_run_handle)) {
+            vm_session_control_stop(control);
+            continue;
+        }
         if (STD_ATOMIC_EXCHANGE(&control->flagReset, TYPE_FALSE)) {
             vm_session_execution_context_reset(&control->execution_context);
         }

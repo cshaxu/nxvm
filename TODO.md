@@ -85,15 +85,14 @@ import. `docs/planning/status.md` remains authoritative for active work.
 
 ### Platform, Product, And Session Boundaries
 
-- [ ] **Finish the explicit platform run-handle boundary.** The active M5
-  closure requirement is defined by
+- [x] **Finish the explicit platform run-handle boundary.** M5 T194--T196
+  converged a worker-report-only event path, session-owned cancellation/join/
+  teardown, Win32 failure-path verification, and Linux source/CMake parity.
+  The session-owned handle remains the sole owner of worker creation, join,
+  backend destruction, and host-resource release; workers never free shared
+  state or directly control the guest. Native POSIX runtime proof remains the
+  separate deferred item below. See
   [`m5-platform-run-handle-contract.md`](docs/planning/m5-platform-run-handle-contract.md).
-  The session-owned handle is the sole owner of worker creation, stop request,
-  join, backend destruction, and host-resource release. The remaining work is
-  the contract's continuing verification matrix: one idempotent cancellation
-  path; no worker-side release; join before host/context/session release;
-  partial-start and finalization-race failures; retained Win32 lifecycle gates;
-  and native POSIX build/runtime proof before Linux support is claimed.
 - [ ] **Linux verification.** Retained Linux code is a portability asset, not
   validated support. Add native POSIX compile and runtime gates after the
   explicit-handle implementation is stable; preserve the Windows GCC baseline.

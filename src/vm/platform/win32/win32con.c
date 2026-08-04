@@ -23,6 +23,16 @@ static core_platform_host_surface_lease win32_console_lease = {
     ATOMIC_VAR_INIT(0)
 };
 
+static C_INT win32con_test_should_fail(C_INT stage)
+{
+#if defined(NTVDM64_VM_PLATFORM_TEST_FAILURE_STAGE)
+    return NTVDM64_VM_PLATFORM_TEST_FAILURE_STAGE == stage;
+#else
+    (C_VOID)stage;
+    return 0;
+#endif
+}
+
 static C_VOID win32con_process_input(const win32con_run_handle *handle)
 {
     DWORD count;
@@ -71,6 +81,8 @@ static DWORD WINAPI win32con_kernel_thread(LPVOID opaque)
     win32con_run_handle *handle = opaque;
 
     vm_platform_execution_start_for(handle->platform->execution);
+    vm_platform_run_handle_report(handle->owner,
+        VM_PLATFORM_RUN_EVENT_KERNEL_COMPLETED);
     return 0;
 }
 
@@ -103,14 +115,15 @@ type_status vm_platform_win32con_run_handle_start(
     owner->window_display = 0;
     owner->active = 1;
     platform->console_surface.native_handle = handle->output;
-    platform->console_renderer = w32cdisp_context_create();
+    platform->console_renderer = win32con_test_should_fail(6) ? STD_NULL :
+        w32cdisp_context_create();
     if (platform->console_renderer == STD_NULL) {
         vm_platform_win32con_run_handle_finalize(owner);
         return TYPE_STATUS_NO_MEMORY;
     }
     old_flip = vm_platform_execution_get_flip_for(context->execution);
-    handle->kernel_thread = CreateThread(STD_NULL, 0, win32con_kernel_thread,
-        handle, 0, &thread_id);
+    handle->kernel_thread = win32con_test_should_fail(7) ? STD_NULL :
+        CreateThread(STD_NULL, 0, win32con_kernel_thread, handle, 0, &thread_id);
     if (handle->kernel_thread == STD_NULL) {
         vm_platform_win32con_run_handle_finalize(owner);
         return TYPE_STATUS_INVALID_STATE;
@@ -118,8 +131,8 @@ type_status vm_platform_win32con_run_handle_start(
     while (old_flip == vm_platform_execution_get_flip_for(context->execution)) {
         core_product_wait_milliseconds(context->wait_scope, 100u);
     }
-    handle->display_thread = CreateThread(STD_NULL, 0, win32con_display_thread,
-        handle, 0, &thread_id);
+    handle->display_thread = win32con_test_should_fail(8) ? STD_NULL :
+        CreateThread(STD_NULL, 0, win32con_display_thread, handle, 0, &thread_id);
     if (handle->display_thread == STD_NULL) {
         vm_platform_win32con_run_handle_request_stop(owner);
         vm_platform_win32con_run_handle_join(owner);

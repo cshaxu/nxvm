@@ -58,7 +58,11 @@ C_VOID vm_platform_run_context_bind_keyboard_state(
 
 C_VOID vm_platform_run_handle_initialize(vm_platform_run_handle *handle)
 {
-    if (handle != STD_NULL) STD_MEMSET(handle, 0, sizeof(*handle));
+    if (handle != STD_NULL) {
+        STD_MEMSET(handle, 0, sizeof(*handle));
+        STD_ATOMIC_INIT(&handle->last_event, VM_PLATFORM_RUN_EVENT_NONE);
+        STD_ATOMIC_INIT(&handle->stop_reported, TYPE_FALSE);
+    }
 }
 
 C_INT vm_platform_run_handle_is_active(const vm_platform_run_handle *handle)
@@ -70,6 +74,31 @@ C_INT vm_platform_run_handle_is_window_display(
     const vm_platform_run_handle *handle)
 {
     return handle != STD_NULL && handle->window_display;
+}
+
+C_VOID vm_platform_run_handle_report(
+    vm_platform_run_handle *handle, vm_platform_run_event event)
+{
+    if (handle == STD_NULL) return;
+    STD_ATOMIC_STORE(&handle->last_event, event);
+    if (event == VM_PLATFORM_RUN_EVENT_STOP_REQUESTED ||
+        event == VM_PLATFORM_RUN_EVENT_STARTUP_FAILED) {
+        STD_ATOMIC_STORE(&handle->stop_reported, TYPE_TRUE);
+    }
+}
+
+vm_platform_run_event vm_platform_run_handle_get_last_event(
+    const vm_platform_run_handle *handle)
+{
+    return handle == STD_NULL ? VM_PLATFORM_RUN_EVENT_NONE :
+        (vm_platform_run_event)STD_ATOMIC_LOAD(&handle->last_event);
+}
+
+C_INT vm_platform_run_handle_take_stop_report(
+    vm_platform_run_handle *handle)
+{
+    return handle != STD_NULL && STD_ATOMIC_EXCHANGE(&handle->stop_reported,
+        TYPE_FALSE);
 }
 
 #if GLOBAL_PLATFORM == GLOBAL_VAR_WIN32

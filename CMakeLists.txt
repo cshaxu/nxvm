@@ -11,15 +11,29 @@ set(CMAKE_C_EXTENSIONS OFF)
 option(PROJECT_ENABLE_BOCHX_RESEARCH
     "Build the local-only Bochx experiment manifest validator" OFF)
 
+set(PROJECT_VM_PLATFORM_TEST_FAILURE_STAGE "0" CACHE STRING
+    "Test-only Win32 platform startup failure stage (0 disables injection)")
+if(NOT PROJECT_VM_PLATFORM_TEST_FAILURE_STAGE STREQUAL "0")
+    if(NOT WIN32 OR NOT PROJECT_VM_PLATFORM_TEST_FAILURE_STAGE MATCHES "^[1-8]$")
+        message(FATAL_ERROR
+            "PROJECT_VM_PLATFORM_TEST_FAILURE_STAGE must be 0 or 1 through 8 on Win32.")
+    endif()
+    add_compile_definitions(
+        NTVDM64_VM_PLATFORM_TEST_FAILURE_STAGE=${PROJECT_VM_PLATFORM_TEST_FAILURE_STAGE})
+endif()
+
 if(NOT CMAKE_C_COMPILER_ID MATCHES "^(GNU|MSVC|Clang)$")
     message(FATAL_ERROR "ntvdm64 requires GCC, MSVC, or Clang C11 support.")
 endif()
 
 if(NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
-    message(FATAL_ERROR "ntvdm64 requires a 64-bit Windows C toolchain.")
+    message(FATAL_ERROR "ntvdm64 requires a 64-bit C toolchain.")
 endif()
 
-find_program(POWERSHELL_EXECUTABLE NAMES powershell pwsh REQUIRED)
+find_program(POWERSHELL_EXECUTABLE NAMES powershell pwsh)
+if(NOT WIN32)
+    add_compile_definitions(_POSIX_C_SOURCE=200809L _DEFAULT_SOURCE=1)
+endif()
 
 set(PROJECT_PROBE_DIR "${CMAKE_BINARY_DIR}/probes")
 
@@ -151,20 +165,22 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(core-machine-presentation-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 
-add_custom_target(generate-m1-probe
-    COMMAND "${CMAKE_COMMAND}" -E make_directory "${PROJECT_PROBE_DIR}"
-    COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
-        -File "${CMAKE_SOURCE_DIR}/tools/New-DosProbe.ps1"
-        -OutputDirectory "${PROJECT_PROBE_DIR}"
-        -Name "m1-text-exit"
-        -Marker "NTVDM64:M1:TEXT:OK"
-        -ExitCode 42
-    BYPRODUCTS
-        "${PROJECT_PROBE_DIR}/m1-text-exit.com"
-        "${PROJECT_PROBE_DIR}/m1-text-exit.json"
-    COMMENT "Generating deterministic M1 DOS COM probe"
-    VERBATIM
-)
+if(POWERSHELL_EXECUTABLE)
+    add_custom_target(generate-m1-probe
+        COMMAND "${CMAKE_COMMAND}" -E make_directory "${PROJECT_PROBE_DIR}"
+        COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
+            -File "${CMAKE_SOURCE_DIR}/tools/New-DosProbe.ps1"
+            -OutputDirectory "${PROJECT_PROBE_DIR}"
+            -Name "m1-text-exit"
+            -Marker "NTVDM64:M1:TEXT:OK"
+            -ExitCode 42
+        BYPRODUCTS
+            "${PROJECT_PROBE_DIR}/m1-text-exit.com"
+            "${PROJECT_PROBE_DIR}/m1-text-exit.json"
+        COMMENT "Generating deterministic M1 DOS COM probe"
+        VERBATIM
+    )
+endif()
 
 set(CORE_PRODUCT_SOURCES
     src/core/product/utils.c
@@ -261,12 +277,23 @@ set(VM_PLATFORM_SOURCES
     src/vm/platform/presentation_mailbox.c
     src/vm/platform/execution.c
     src/vm/platform/input.c
-    src/vm/platform/win32/win32.c
-    src/vm/platform/win32/w32cdisp.c
-    src/vm/platform/win32/w32adisp.c
-    src/vm/platform/win32/win32con.c
-    src/vm/platform/win32/win32app.c
 )
+if(WIN32)
+    list(APPEND VM_PLATFORM_SOURCES
+        src/vm/platform/win32/win32.c
+        src/vm/platform/win32/w32cdisp.c
+        src/vm/platform/win32/w32adisp.c
+        src/vm/platform/win32/win32con.c
+        src/vm/platform/win32/win32app.c
+    )
+else()
+    list(APPEND VM_PLATFORM_SOURCES
+        src/vm/platform/linux/linux.c
+        src/vm/platform/linux/linuxcon.c
+    )
+    find_package(Curses REQUIRED)
+    find_package(Threads REQUIRED)
+endif()
 add_library(vm-platform-requests STATIC
     src/vm/platform/request_bridge.c
 )
@@ -390,6 +417,10 @@ target_link_libraries(vm-platform PUBLIC
     type-facade
     core-product-utils
     core-platform)
+if(NOT WIN32)
+    target_include_directories(vm-platform PRIVATE ${CURSES_INCLUDE_DIRS})
+    target_link_libraries(vm-platform PUBLIC ${CURSES_LIBRARIES} Threads::Threads)
+endif()
 
 add_executable(vm-platform-input-smoke
     tests/platform/vm_platform_input_smoke.c
@@ -411,6 +442,20 @@ add_executable(vm-platform-run-handle-smoke
 )
 target_link_libraries(vm-platform-run-handle-smoke PRIVATE
     vm-composition)
+if(NOT PROJECT_VM_PLATFORM_TEST_FAILURE_STAGE STREQUAL "0")
+    add_executable(vm-platform-win32-startup-failure-smoke
+        tests/platform/vm_platform_win32_startup_failure_smoke.c
+    )
+    target_link_libraries(vm-platform-win32-startup-failure-smoke PRIVATE
+        vm-composition)
+endif()
+if(NOT WIN32)
+    add_executable(vm-platform-linux-run-handle-smoke
+        tests/platform/vm_platform_linux_run_handle_smoke.c
+    )
+    target_link_libraries(vm-platform-linux-run-handle-smoke PRIVATE
+        vm-composition)
+endif()
 add_executable(vm-multi-window-session-smoke
     tests/platform/vm_multi_window_session_smoke.c
 )
@@ -888,6 +933,9 @@ add_vm_version_artifact(vm-0-5-0190 "0.5.0190")
 add_vm_version_artifact(vm-0-5-0191 "0.5.0191")
 add_vm_version_artifact(vm-0-5-0192 "0.5.0192")
 add_vm_version_artifact(vm-0-5-0193 "0.5.0193")
+add_vm_version_artifact(vm-0-5-0194 "0.5.0194")
+add_vm_version_artifact(vm-0-5-0195 "0.5.0195")
+add_vm_version_artifact(vm-0-5-0196 "0.5.0196")
 
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
@@ -917,6 +965,7 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         project_verify_target_source_owners(${target})
     endforeach()
 
+    if(POWERSHELL_EXECUTABLE)
     add_custom_target(verify-dependency-dag
         COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
             -File "${CMAKE_SOURCE_DIR}/tools/Verify-DependencyDag.ps1"
@@ -965,6 +1014,9 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
             -RepositoryRoot "${CMAKE_SOURCE_DIR}"
         COMMENT "Verifying ISO C header facade ownership"
         VERBATIM)
+    else()
+        message(STATUS "PowerShell verification targets are unavailable on this host.")
+    endif()
 
     add_custom_target(verify-vm-provider-composition
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
@@ -976,6 +1028,12 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_ram_reconfigure_closure.cmake"
         COMMENT "Verifying M5 RAM cold-reconfiguration closure"
+        VERBATIM)
+
+    add_custom_target(verify-linux-platform-contract
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_linux_platform_contract.cmake"
+        COMMENT "Verifying Linux platform source contract"
         VERBATIM)
 
     add_custom_target(verify-vm-session-owner-closure
