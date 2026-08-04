@@ -40,12 +40,11 @@ import. `docs/planning/status.md` remains authoritative for active work.
   provider source into VM-only device lifecycle, default-profile firmware
   lifecycle, a thin order-only coordinator, and a separate machine-information
   adapter. A source-shape gate rejects a return to the mixed file.
-- [ ] **VM session same-object alias matrix (`TODO(High)`).**
+- [x] **VM session same-object alias matrix (`TODO(High)`).**
   `vm_session` embeds VM-only device, provider, platform, and debugger storage
-  but also keeps mutable pointers permanently assigned to those same fields.
-  Remove the `*_storage`/pointer alias pairs or document any unavoidable
-  dynamic ownership; callers must use the embedded owner directly. Preserve
-  the opaque `core_machine` owner, session lifecycle order, multi-session
+  directly; T176--T184 removed the former same-object pointer aliases and
+  retained only the opaque `core_machine` plus the explicitly lazy debug target.
+  The direct-owner closure gate preserves session lifecycle order, multi-session
   isolation, retained Console/debugger behavior, and FDD DOS-prompt evidence.
 - [x] **Frozen-core API bypass (`TODO(High)`).** The public mutable
   `core_machine_executor_*_borrow` surface can bypass the T160 configuration
@@ -72,11 +71,10 @@ import. `docs/planning/status.md` remains authoritative for active work.
   selected-session Console command adapters. Split it into accurately named
   source owners without changing Console grammar or selected-session semantics;
   remove the empty Console-provider initialize/finalize vtable callbacks.
-- [ ] **Legacy wait forwarding alias (`TODO(Low)`).**
-  `core_product_utils_sleep()` only forwards to
-  `core_product_wait_milliseconds()` without conversion or policy. Migrate
-  callers/tests to the actual wait-scope contract, delete the alias, and retain
-  explicit caller-owned wait scopes and their isolation smoke.
+- [x] **Legacy wait forwarding alias (`TODO(Low)`).** T186 migrated callers
+  and tests to `core_product_wait_milliseconds()`, deleted the policy-free
+  `core_product_utils_sleep()` alias, and retained explicit caller-owned wait
+  scopes with their isolation smoke.
 - [x] **Contract and vocabulary drift (`TODO(Medium)`).** Reconcile
   `docs/architecture/contracts.md` with actual lowercase C API names and
   current profile enums. Add the missing `STD_MEMMOVE` facade and remove the
@@ -128,18 +126,41 @@ import. `docs/planning/status.md` remains authoritative for active work.
   session-creation UX and closure probes; present FPU profiles remain
   unavailable until their state/operations are implemented.
   Protected DOS media stays local.
-- [ ] **Hardware compatibility corpus.** Audit and prioritize incomplete KBC,
-  VADP, PIT read-back, HDC/FDC, DMA, PIC, CMOS, timing, and chipset behavior
-  against focused owned probes. Preserve full-PC boot and Console regressions.
+- [ ] **8042 KBC compatibility contract (`TODO(Medium)`).** The current core
+  KBC is not an Intel 8042 implementation; retained BIOS/QDKEYB keyboard input
+  does not establish direct controller compatibility. Before implementing,
+  define the supported command/status/output-buffer, IRQ1, A20, reset, and host
+  input-provider semantics with focused port probes. Preserve the retained
+  BIOS keyboard path and do not let a controller model acquire host policy.
+- [ ] **Video-adapter capability contract (`TODO(Medium)`).** The current core
+  VADP is not a generic CGA/EGA/VGA device; default-profile QDCGA text output
+  is a profile firmware capability, not a graphics-mode compatibility claim.
+  Define the first supported register, memory-window, text snapshot, mode
+  change, and graphics rejection/implementation boundary before adding a
+  device model. Preserve the current text-mode Console/window behavior.
+- [ ] **Hardware compatibility corpus.** Audit unproven PIC, DMA, CMOS,
+  FDC/FDD, HDC/HDD, timing, and chipset behavior with focused owned probes.
+  Promote a concrete incompatibility to its own ledger item only after a
+  reproducible port/device vector exists. Preserve full-PC boot and Console
+  regressions.
 - [ ] **CPU internal naming (`TODO(Low)`).** Rename legacy segment-descriptor
   fields to owner-consistent vocabulary only in a bounded compatibility task;
   preserve layout, CPU behavior, and debugger output.
+- [ ] **Present x87 model (`TODO(Medium)`).** `FPU=none` handles legal escape
+  encodings, but configured `8087`/`80287`/`80387` profiles remain explicitly
+  unavailable. Define the supported FPU state, instructions, exceptions,
+  `FWAIT`, and probe corpus before accepting a present-FPU session; do not
+  claim complete 80386-era floating-point compatibility first.
 - [ ] **Protected-mode I/O permission map (`TODO(High)`).** Implement and test
   the TSS I/O-map permission check used when protected-mode CPL/IOPL rules
   require it. Establish owned probes before changing CPU execution.
-- [ ] **Debugger assembler self-test (`TODO(Medium)`).** Add a bounded owned
-  assembler regression suite and invoke it from a defined test target, rather
-  than from the execution refresh path.
+- [ ] **Debugger assembler `checkop` review (`TODO(Medium)`).** The retained
+  VM debug path can disassemble a guest instruction, reassemble that text, and
+  compare the result as a diagnostic (`checkop`). Keep it out of the per-
+  instruction execution-refresh path and do not create a broad assembler test
+  target now; its corpus and cost are disproportionate to current M5/M6 work.
+  Revisit only when an owned BIOS/debugger assembler defect needs bounded
+  reproduction, then define the smallest focused probe and expected result.
 - [ ] **8254 PIT read-back command (`TODO(Medium)`).** Implement read-back
   status/count latch behavior with focused PIT port probes; preserve the
   existing timer boot behavior.
