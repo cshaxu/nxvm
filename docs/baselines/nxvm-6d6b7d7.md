@@ -12,7 +12,7 @@
 This initial M0 baseline record was read only to identify module vocabulary and
 its stated BIOS/platform/device separation. M1 T2 later copied the complete
 `src/` tree under the recorded authorization; see
-`docs/provenance/m1-nxvm-baseline.md`. The sibling checkout remains read-only.
+`docs/provenance/nxvm-imports.md`. The sibling checkout remains read-only.
 
 NXVM's stated quick-and-dirty and incomplete device areas mean its POST, BIOS,
 DOS, and device behavior is Supporting evidence, not an authority.

@@ -17,11 +17,12 @@ admitted corpus increment before implementation.
 
 A subtask completes only when scoped behavior works, focused tests pass,
 established corpus entries remain valid, applicable `RULES.md` invariants pass
-or have an owner-approved exception recorded, provenance/evidence records are
-updated where needed, `docs/verification/` contains a compact result, and the
-task tracking entry is updated in the same commit. Documentation/design tasks
-apply only the rules relevant to their artifact and do not manufacture runtime
-verification requirements.
+or have an owner-approved exception recorded, and its commit records compact
+tracking, verification, and provenance facts where needed. A later governed
+history-consolidation task may replace completed per-task documents with a
+milestone summary; Git history remains the detailed evidence source.
+Documentation/design tasks apply only the rules relevant to their artifact and
+do not manufacture runtime verification requirements.
 
 ## Milestone Closure Evidence
 

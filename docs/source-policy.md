@@ -17,10 +17,11 @@ authorization.
 
 Each imported or substantially derived unit must record the exact NXVM commit,
 source and destination paths, copyright notices, MIT authorization, changes,
-and verification in `docs/provenance/`. New code must not extend NXVM's global
-state or legacy coupling when a bounded interface is practical. If a selected
-file carries an independent third-party notice or license, stop and record a
-separate review before importing it.
+and verification in its import commit and the compact
+[`provenance/nxvm-imports.md`](provenance/nxvm-imports.md) index. New code must
+not extend NXVM's global state or legacy coupling when a bounded interface is
+practical. If a selected file carries an independent third-party notice or
+license, stop and record a separate review before importing it.
 
 ## Source Vocabulary
 

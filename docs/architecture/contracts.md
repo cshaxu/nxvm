@@ -69,9 +69,8 @@ it does not depend on an NXVM Console or VDM CLI. Product UI may route the
 `SESSION` verb to that facility, but must not cache a selected machine/session
 pointer or selected ID. Workers and guest execution paths receive only their
 own session and never access a manager. `core/composition/` is not a valid
-home for this mechanism. The initial contract and NXVM implementation sequence
-are defined in
-[`planning/m5-product-session-management.md`](../planning/m5-product-session-management.md).
+home for this mechanism. The current contract is defined here; its completed
+NXVM implementation sequence is summarized in [M5 History](../history/m5.md).
 
 ## Contract Sequence
 
