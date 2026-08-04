@@ -14,9 +14,9 @@ static C_INT verify_machine_profiles(core_machine_cpu_profile cpu_profile,
     core_machine *machine = STD_NULL;
     core_machine_cpu_profile observed_cpu;
     core_machine_fpu_profile observed_fpu;
-    C_INT failed = core_machine_create(&config, &machine) != NTVDM64_STATUS_OK ||
-        core_machine_get_cpu_profile(machine, &observed_cpu) != NTVDM64_STATUS_OK ||
-        core_machine_get_fpu_profile(machine, &observed_fpu) != NTVDM64_STATUS_OK ||
+    C_INT failed = core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
+        core_machine_get_cpu_profile(machine, &observed_cpu) != TYPE_STATUS_OK ||
+        core_machine_get_fpu_profile(machine, &observed_fpu) != TYPE_STATUS_OK ||
         observed_cpu != cpu_profile || observed_fpu != fpu_profile;
 
     core_machine_destroy(machine);
@@ -42,10 +42,10 @@ C_INT main(C_VOID)
         CORE_MACHINE_FPU_PROFILE_80287);
     failed |= verify_machine_profiles(CORE_MACHINE_CPU_PROFILE_80386,
         CORE_MACHINE_FPU_PROFILE_80387);
-    failed |= core_machine_create(&default_config, &machine) != NTVDM64_STATUS_OK;
-    failed |= core_machine_get_cpu_profile(machine, &cpu_profile) != NTVDM64_STATUS_OK ||
+    failed |= core_machine_create(&default_config, &machine) != TYPE_STATUS_OK;
+    failed |= core_machine_get_cpu_profile(machine, &cpu_profile) != TYPE_STATUS_OK ||
         cpu_profile != CORE_MACHINE_CPU_PROFILE_80386;
-    failed |= core_machine_get_fpu_profile(machine, &fpu_profile) != NTVDM64_STATUS_OK ||
+    failed |= core_machine_get_fpu_profile(machine, &fpu_profile) != TYPE_STATUS_OK ||
         fpu_profile != CORE_MACHINE_FPU_PROFILE_NONE;
     core_machine_destroy(machine);
 

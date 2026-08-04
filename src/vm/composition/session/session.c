@@ -14,9 +14,9 @@
 C_INT vm_session_enqueue_keyboard_state(
     C_VOID *opaque, uint32_t asynchronous_keys, uint32_t toggle_keys)
 {
-    nxvm_platform_vm_request request;
+    vm_platform_request request;
 
-    request.kind = NXVM_PLATFORM_VM_REQUEST_KEYBOARD_STATE;
+    request.kind = VM_PLATFORM_REQUEST_KEYBOARD_STATE;
     request.data.keyboard_state.asynchronous_keys = asynchronous_keys;
     request.data.keyboard_state.toggle_keys = toggle_keys;
     return vm_platform_request_transport_enqueue_ingress(
@@ -24,12 +24,12 @@ C_INT vm_session_enqueue_keyboard_state(
 }
 
 C_VOID vm_session_consume_request(
-    C_VOID *opaque, const nxvm_platform_vm_request *request)
+    C_VOID *opaque, const vm_platform_request *request)
 {
     vm_session *session = (vm_session *)opaque;
 
     if (session != STD_NULL && session->active && request != STD_NULL &&
-        request->kind == NXVM_PLATFORM_VM_REQUEST_KEYBOARD_STATE) {
+        request->kind == VM_PLATFORM_REQUEST_KEYBOARD_STATE) {
         core_machine_keyboard_apply_host_state_to(&session->keyboard_provider,
             request->data.keyboard_state.asynchronous_keys,
             request->data.keyboard_state.toggle_keys);
@@ -90,7 +90,7 @@ C_VOID vm_session_storage_initialize(vm_session *machine)
     if (machine == STD_NULL || machine->core_machine != STD_NULL) return;
     {
         if (core_machine_create(&machine->core_machine_config,
-                &machine->core_machine) != NTVDM64_STATUS_OK) {
+                &machine->core_machine) != TYPE_STATUS_OK) {
             core_machine_destroy(machine->core_machine);
             machine->core_machine = STD_NULL;
             return;
@@ -104,7 +104,7 @@ C_VOID vm_session_storage_initialize(vm_session *machine)
         pic_master, pic_slave);
     vadp = core_machine_configuration_shared_vadp_borrow(machine->core_machine);
     if (core_machine_profile_binding_initialize(machine->core_machine,
-            &profile_binding) != NTVDM64_STATUS_OK) {
+            &profile_binding) != TYPE_STATUS_OK) {
         core_machine_destroy(machine->core_machine);
         machine->core_machine = STD_NULL;
         return;
@@ -142,10 +142,10 @@ C_INT vm_session_create(const vm_session_config *config, vm_session **out_sessio
 {
     vm_session *session;
 
-    if (out_session == STD_NULL) return NTVDM64_STATUS_INVALID_ARGUMENT;
+    if (out_session == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     *out_session = STD_NULL;
     session = (vm_session *)STD_CALLOC(1u, sizeof(*session));
-    if (session == STD_NULL) return NTVDM64_STATUS_NO_MEMORY;
+    if (session == STD_NULL) return TYPE_STATUS_NO_MEMORY;
     if (config != STD_NULL) {
         session->retained_config = *config;
         session->core_machine_config.memory_bytes = config->memory_bytes;
@@ -155,7 +155,7 @@ C_INT vm_session_create(const vm_session_config *config, vm_session **out_sessio
     vm_session_initialize(session);
     if (session->core_machine == STD_NULL) {
         STD_FREE(session);
-        return NTVDM64_STATUS_FAULT;
+        return TYPE_STATUS_FAULT;
     }
     if (config != STD_NULL &&
         ((config->fdd_image != STD_NULL && vm_session_insert_fdd(session,
@@ -163,7 +163,7 @@ C_INT vm_session_create(const vm_session_config *config, vm_session **out_sessio
          (config->hdd_image != STD_NULL && vm_session_insert_hdd(session,
             config->hdd_image)))) {
         vm_session_destroy(session);
-        return NTVDM64_STATUS_FAULT;
+        return TYPE_STATUS_FAULT;
     }
     if (config != STD_NULL && config->create_fdd) vm_machine_fdd_create_for(&session->fdd);
     if (config != STD_NULL && config->create_hdd_cylinders != 0u) {
@@ -175,24 +175,24 @@ C_INT vm_session_create(const vm_session_config *config, vm_session **out_sessio
     }
     vm_session_control_reset(&session->control);
     *out_session = session;
-    return NTVDM64_STATUS_OK;
+    return TYPE_STATUS_OK;
 }
 
-ntvdm64_status vm_session_reconfigure_memory(vm_session *session,
+type_status vm_session_reconfigure_memory(vm_session *session,
     STD_SIZE_T memory_bytes)
 {
     if (session == STD_NULL ||
         vm_session_control_is_running(&session->control) ||
         vm_platform_run_handle_is_active(&session->platform_run_handle)) {
-        return NTVDM64_STATUS_INVALID_STATE;
+        return TYPE_STATUS_INVALID_STATE;
     }
     if (core_machine_reconfigure_memory(session->core_machine, memory_bytes) !=
-        NTVDM64_STATUS_OK) return NTVDM64_STATUS_INVALID_STATE;
+        TYPE_STATUS_OK) return TYPE_STATUS_INVALID_STATE;
     session->retained_config.memory_bytes = memory_bytes;
     session->core_machine_config.memory_bytes = memory_bytes;
     vm_machine_debug_reset(&session->debug);
     vm_session_publish_display(session, 1);
-    return NTVDM64_STATUS_OK;
+    return TYPE_STATUS_OK;
 }
 
 C_VOID vm_session_destroy(vm_session *session)
@@ -208,10 +208,10 @@ C_INT vm_session_get_reset_vector(const vm_session *session,
     core_machine_observation observation;
 
     if (session == STD_NULL || session->core_machine == STD_NULL ||
-        out_vector == STD_NULL) return NTVDM64_STATUS_INVALID_STATE;
+        out_vector == STD_NULL) return TYPE_STATUS_INVALID_STATE;
     if (core_machine_capture_observation(session->core_machine, &observation) !=
-        NTVDM64_STATUS_OK) return NTVDM64_STATUS_INVALID_STATE;
+        TYPE_STATUS_OK) return TYPE_STATUS_INVALID_STATE;
     out_vector->cs = observation.cpu.cs;
     out_vector->ip = (uint16_t)observation.cpu.eip;
-    return NTVDM64_STATUS_OK;
+    return TYPE_STATUS_OK;
 }

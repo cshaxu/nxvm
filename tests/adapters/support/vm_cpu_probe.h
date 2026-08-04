@@ -1,5 +1,5 @@
-#ifndef NTVDM64_VM_SESSION_CPU_PROBE_H
-#define NTVDM64_VM_SESSION_CPU_PROBE_H
+#ifndef TEST_VM_SESSION_CPU_PROBE_H
+#define TEST_VM_SESSION_CPU_PROBE_H
 
 #include "type.h"
 
@@ -9,7 +9,7 @@
 extern "C" {
 #endif
 
-#define NXVM_BASELINE_CPU_PROBE_MAX_BYTES 15u
+#define TEST_VM_CPU_PROBE_MAX_BYTES 15u
 
 typedef struct vm_session_cpu_probe_state {
     uint16_t cs;
@@ -23,7 +23,7 @@ typedef struct vm_session_cpu_probe_state {
 } vm_session_cpu_probe_state;
 
 typedef struct vm_session_cpu_probe_capture {
-    uint8_t bytes[NXVM_BASELINE_CPU_PROBE_MAX_BYTES];
+    uint8_t bytes[TEST_VM_CPU_PROBE_MAX_BYTES];
     STD_SIZE_T byte_count;
     vm_session_cpu_probe_state before;
     vm_session_cpu_probe_state after;
@@ -31,15 +31,15 @@ typedef struct vm_session_cpu_probe_capture {
     uint32_t exception_code;
 } vm_session_cpu_probe_capture;
 
-typedef struct nxvm_cpu_probe nxvm_cpu_probe;
+typedef struct test_vm_cpu_probe test_vm_cpu_probe;
 
-C_INT vm_session_cpu_probe_create(nxvm_cpu_probe **out_probe);
+C_INT vm_session_cpu_probe_create(test_vm_cpu_probe **out_probe);
 C_INT vm_session_cpu_probe_step(
-    nxvm_cpu_probe *probe,
+    test_vm_cpu_probe *probe,
     const uint8_t *bytes,
     STD_SIZE_T byte_count,
     vm_session_cpu_probe_capture *out_capture);
-C_VOID vm_session_cpu_probe_destroy(nxvm_cpu_probe *probe);
+C_VOID vm_session_cpu_probe_destroy(test_vm_cpu_probe *probe);
 
 #ifdef __cplusplus
 }

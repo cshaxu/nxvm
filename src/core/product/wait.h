@@ -1,5 +1,5 @@
-#ifndef NTVDM64_CORE_PRODUCT_WAIT_H
-#define NTVDM64_CORE_PRODUCT_WAIT_H
+#ifndef CORE_PRODUCT_WAIT_H
+#define CORE_PRODUCT_WAIT_H
 
 #include "type.h"
 #include "core/product/wait_provider.h"

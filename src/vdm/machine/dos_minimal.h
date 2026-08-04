@@ -1,5 +1,5 @@
-#ifndef NXVM_RUNTIME_DOS_MINIMAL_H
-#define NXVM_RUNTIME_DOS_MINIMAL_H
+#ifndef VDM_MACHINE_DOS_MINIMAL_H
+#define VDM_MACHINE_DOS_MINIMAL_H
 
 
 #include "core/machine/presentation_interface.h"
@@ -17,25 +17,25 @@ typedef struct vdm_machine_text_snapshot {
     core_machine_text_snapshot text;
 } vdm_machine_text_snapshot;
 
-ntvdm64_status vdm_machine_dos_minimal_create(
+type_status vdm_machine_dos_minimal_create(
     vdm_machine_dos_minimal **out_session);
-ntvdm64_status vdm_machine_dos_minimal_reset(
+type_status vdm_machine_dos_minimal_reset(
     vdm_machine_dos_minimal *session);
-ntvdm64_status vdm_machine_dos_minimal_tick(
+type_status vdm_machine_dos_minimal_tick(
     vdm_machine_dos_minimal *session,
     uint32_t ticks);
-ntvdm64_status vdm_machine_dos_minimal_inject_key(
+type_status vdm_machine_dos_minimal_inject_key(
     vdm_machine_dos_minimal *session,
     uint8_t scan_code);
-ntvdm64_status vdm_machine_dos_minimal_write_text(
+type_status vdm_machine_dos_minimal_write_text(
     vdm_machine_dos_minimal *session,
     uint16_t cell,
     uint8_t character,
     uint8_t attribute);
-ntvdm64_status vdm_machine_dos_minimal_get_snapshot(
+type_status vdm_machine_dos_minimal_get_snapshot(
     const vdm_machine_dos_minimal *session,
     vdm_machine_text_snapshot *out_snapshot);
-ntvdm64_status vdm_machine_dos_minimal_port_read(
+type_status vdm_machine_dos_minimal_port_read(
     vdm_machine_dos_minimal *session,
     uint16_t port,
     uint32_t *out_value);

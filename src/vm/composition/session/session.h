@@ -1,5 +1,5 @@
-#ifndef NTVDM64_VM_SESSION_H
-#define NTVDM64_VM_SESSION_H
+#ifndef VM_SESSION_H
+#define VM_SESSION_H
 
 #include "type.h"
 
@@ -111,10 +111,10 @@ C_VOID vm_session_storage_finalize(vm_session *machine);
 C_INT vm_session_enqueue_keyboard_state(C_VOID *opaque,
     uint32_t asynchronous_keys, uint32_t toggle_keys);
 C_VOID vm_session_consume_request(C_VOID *opaque,
-    const nxvm_platform_vm_request *request);
+    const vm_platform_request *request);
 C_INT vm_session_create(const vm_session_config *config, vm_session **out_session);
 C_VOID vm_session_destroy(vm_session *session);
-ntvdm64_status vm_session_reconfigure_memory(vm_session *session,
+type_status vm_session_reconfigure_memory(vm_session *session,
     STD_SIZE_T memory_bytes);
 C_INT vm_session_insert_fdd(vm_session *session, const C_CHAR *path);
 C_INT vm_session_insert_hdd(vm_session *session, const C_CHAR *path);

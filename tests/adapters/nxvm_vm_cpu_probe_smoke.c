@@ -27,7 +27,7 @@ C_INT main(C_VOID)
     const uint8_t prefixed_mov[] = { 0x66u, 0xb8u, 0x78u, 0x56u, 0x34u, 0x12u };
     const uint8_t invalid[] = { 0x0fu, 0x0bu };
     vm_session_cpu_probe_capture capture;
-    nxvm_cpu_probe *probe = STD_NULL;
+    test_vm_cpu_probe *probe = STD_NULL;
     C_INT failed = 0;
 
     if (!vm_session_cpu_probe_create(&probe)) {

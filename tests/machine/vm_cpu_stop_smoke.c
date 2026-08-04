@@ -21,13 +21,13 @@ C_INT main(C_VOID)
     if (core_machine_memory_write_real_to(
             core_machine_debug_memory_borrow(session.core_machine), 0xf000u,
             0xfff0u, invalid_instruction, sizeof(invalid_instruction)) !=
-        NTVDM64_STATUS_OK) failed = 1;
+        TYPE_STATUS_OK) failed = 1;
     vm_session_control_start(session.control);
 
-    failed |= vm_session_control_is_running(session.control) != NTVDM64_TYPE_FALSE;
+    failed |= vm_session_control_is_running(session.control) != TYPE_FALSE;
     failed |= core_machine_cpu_execution_consume_stop_request(
         core_machine_debug_cpu_execution_borrow(session.core_machine)) !=
-        NTVDM64_TYPE_FALSE;
+        TYPE_FALSE;
     vm_session_control_finalize(session.control, &session);
     vm_session_storage_finalize(&session);
 

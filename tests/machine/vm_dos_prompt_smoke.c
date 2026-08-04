@@ -38,7 +38,7 @@ static C_VOID dump_first_fault(core_machine *machine)
     STD_SIZE_T index;
 
     if (core_machine_get_cpu_diagnostic(machine, &diagnostic) !=
-        NTVDM64_STATUS_OK || !diagnostic.first_fault.valid) return;
+        TYPE_STATUS_OK || !diagnostic.first_fault.valid) return;
     fault = &diagnostic.first_fault;
     STD_FPRINTF(STD_STDERR,
         "M5:T155:S1:BOOT-FAULT CS:IP=%04X:%08X BYTES=",
@@ -101,7 +101,7 @@ static C_INT has_dos_prompt(const core_machine *machine)
     STD_SIZE_T cell;
 
     if (core_machine_debug_read_memory(machine, TEXT_VIDEO_BASE, text,
-            sizeof(text)) != NTVDM64_STATUS_OK) return 0;
+            sizeof(text)) != TYPE_STATUS_OK) return 0;
     for (cell = 0u; cell + 3u < TEXT_VIDEO_CELLS; ++cell) {
         const C_UCHAR drive = text[cell * 2u];
         if (STD_ISALPHA((C_UCHAR)drive) && text[(cell + 1u) * 2u] == ':' &&

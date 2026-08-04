@@ -20,25 +20,25 @@ static C_VOID trace_callback(C_VOID *context, const core_machine_trace_event *ev
     }
 }
 
-static ntvdm64_status port_read(C_VOID *owner, uint16_t port, uint32_t *out_value)
+static type_status port_read(C_VOID *owner, uint16_t port, uint32_t *out_value)
 {
     trace_fixture *fixture = (trace_fixture *)owner;
 
     (C_VOID)port;
     *out_value = fixture->port_value;
-    return NTVDM64_STATUS_OK;
+    return TYPE_STATUS_OK;
 }
 
-static ntvdm64_status port_write(C_VOID *owner, uint16_t port, uint32_t value)
+static type_status port_write(C_VOID *owner, uint16_t port, uint32_t value)
 {
     trace_fixture *fixture = (trace_fixture *)owner;
 
     (C_VOID)port;
     fixture->port_value = value;
-    return NTVDM64_STATUS_OK;
+    return TYPE_STATUS_OK;
 }
 
-static C_INT expect_status(ntvdm64_status actual, ntvdm64_status expected)
+static C_INT expect_status(type_status actual, type_status expected)
 {
     return actual == expected ? 0 : 1;
 }
@@ -57,24 +57,24 @@ C_INT main(C_VOID)
     sink.callback = trace_callback;
     sink.context = &fixture;
     failed |= expect_status(test_core_machine_create_executor(0u, &machine),
-                            NTVDM64_STATUS_OK);
+                            TYPE_STATUS_OK);
     failed |= expect_status(core_machine_set_trace_provider(machine, &sink),
-                            NTVDM64_STATUS_OK);
+                            TYPE_STATUS_OK);
     failed |= expect_status(core_machine_install_port_provider(
                                 machine, 0x60u, 0x60u, &port_ops, &fixture),
-                            NTVDM64_STATUS_OK);
+                            TYPE_STATUS_OK);
     failed |= expect_status(core_machine_freeze_execution_providers(machine),
-                            NTVDM64_STATUS_OK);
-    failed |= expect_status(core_machine_reset(machine), NTVDM64_STATUS_OK);
+                            TYPE_STATUS_OK);
+    failed |= expect_status(core_machine_reset(machine), TYPE_STATUS_OK);
     failed |= expect_status(core_machine_bus_write(machine, 0x60u, 0x55u),
-                            NTVDM64_STATUS_OK);
+                            TYPE_STATUS_OK);
     failed |= expect_status(core_machine_bus_read(machine, 0x60u, &value),
-                            NTVDM64_STATUS_OK);
+                            TYPE_STATUS_OK);
     failed |= value != 0x55u;
     failed |= expect_status(core_machine_request_stop(machine),
-                            NTVDM64_STATUS_OK);
+                            TYPE_STATUS_OK);
     failed |= expect_status(core_machine_run(machine, budget, &result),
-                            NTVDM64_STATUS_OK);
+                            TYPE_STATUS_OK);
     failed |= result.reason != CORE_MACHINE_STOP_REQUESTED;
     failed |= fixture.count != 5u ||
               fixture.events[0].type != CORE_MACHINE_TRACE_RESET ||
@@ -86,16 +86,16 @@ C_INT main(C_VOID)
               fixture.events[4].type != CORE_MACHINE_TRACE_STOP ||
               fixture.events[4].detail != CORE_MACHINE_STOP_REQUESTED ||
               fixture.events[4].sequence != 4u;
-    failed |= expect_status(core_machine_reset(machine), NTVDM64_STATUS_OK);
+    failed |= expect_status(core_machine_reset(machine), TYPE_STATUS_OK);
     fixture.count = 0u;
     failed |= expect_status(core_machine_report_fault(machine, 0x44u),
-                            NTVDM64_STATUS_OK);
+                            TYPE_STATUS_OK);
     failed |= fixture.count != 1u ||
               fixture.events[0].type != CORE_MACHINE_TRACE_FAULT ||
               fixture.events[0].detail != 0x44u;
     failed |= expect_status(core_machine_set_trace_provider(machine, STD_NULL),
-                            NTVDM64_STATUS_OK);
-    failed |= expect_status(core_machine_reset(machine), NTVDM64_STATUS_OK);
+                            TYPE_STATUS_OK);
+    failed |= expect_status(core_machine_reset(machine), TYPE_STATUS_OK);
     failed |= fixture.count != 1u;
 
     core_machine_destroy(machine);

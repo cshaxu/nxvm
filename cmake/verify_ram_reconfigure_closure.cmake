@@ -1,11 +1,11 @@
-if(NOT DEFINED NTVDM64_SOURCE_DIR)
-    message(FATAL_ERROR "NTVDM64_SOURCE_DIR is required")
+if(NOT DEFINED PROJECT_SOURCE_DIR)
+    message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
-get_filename_component(NTVDM64_SOURCE_DIR "${NTVDM64_SOURCE_DIR}" ABSOLUTE)
+get_filename_component(PROJECT_SOURCE_DIR "${PROJECT_SOURCE_DIR}" ABSOLUTE)
 
-set(machine_source "${NTVDM64_SOURCE_DIR}/src/core/machine/machine.c")
-set(memory_source "${NTVDM64_SOURCE_DIR}/src/core/machine/memory.c")
-set(session_source "${NTVDM64_SOURCE_DIR}/src/vm/composition/session/session.c")
+set(machine_source "${PROJECT_SOURCE_DIR}/src/core/machine/machine.c")
+set(memory_source "${PROJECT_SOURCE_DIR}/src/core/machine/memory.c")
+set(session_source "${PROJECT_SOURCE_DIR}/src/vm/composition/session/session.c")
 
 foreach(file IN ITEMS "${machine_source}" "${memory_source}" "${session_source}")
     if(NOT EXISTS "${file}")
@@ -38,10 +38,10 @@ if(core_route EQUAL -1 OR NOT session_rebuild EQUAL -1)
     message(FATAL_ERROR "M5 T174 session RAM route is not core-owned")
 endif()
 
-file(GLOB_RECURSE source_files "${NTVDM64_SOURCE_DIR}/src/*.c"
-    "${NTVDM64_SOURCE_DIR}/src/*.h")
+file(GLOB_RECURSE source_files "${PROJECT_SOURCE_DIR}/src/*.c"
+    "${PROJECT_SOURCE_DIR}/src/*.h")
 foreach(file IN LISTS source_files)
-    file(RELATIVE_PATH relative "${NTVDM64_SOURCE_DIR}/src/core/machine" "${file}")
+    file(RELATIVE_PATH relative "${PROJECT_SOURCE_DIR}/src/core/machine" "${file}")
     if(NOT relative MATCHES "^\.\./")
         continue()
     endif()

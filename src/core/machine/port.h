@@ -1,7 +1,7 @@
 /* Copyright 2012-2014 Neko. */
 
-#ifndef NXVM_CORE_PORT_H
-#define NXVM_CORE_PORT_H
+#ifndef CORE_MACHINE_PORT_H
+#define CORE_MACHINE_PORT_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -9,28 +9,28 @@ extern "C" {
 
 #include "type.h"
 
-#define NXVM_DEVICE_PORT "Unknown I/O Port"
+#define CORE_MACHINE_DEVICE_PORT "Unknown I/O Port"
 
 #define VPORT_MAX_PORT_COUNT 0x10000
 
 typedef struct t_port t_port;
-typedef C_VOID (*core_machine_port_handler)(t_port *port, ntvdm64_type_unsigned_16 port_id,
+typedef C_VOID (*core_machine_port_handler)(t_port *port, type_unsigned_16 port_id,
     C_VOID *owner);
 
 typedef struct core_machine_port_provider_entry
     core_machine_port_provider_entry;
 
 typedef struct {
-    ntvdm64_type_flat_address legacy_read[VPORT_MAX_PORT_COUNT];
-    ntvdm64_type_flat_address legacy_write[VPORT_MAX_PORT_COUNT];
+    type_flat_address legacy_read[VPORT_MAX_PORT_COUNT];
+    type_flat_address legacy_write[VPORT_MAX_PORT_COUNT];
     core_machine_port_provider_entry *providers;
 } t_port_connect;
 
 typedef struct {
     union {
-        ntvdm64_type_unsigned_8  ioByte;
-        ntvdm64_type_unsigned_16 ioWord;
-        ntvdm64_type_unsigned_32 ioDWord;
+        type_unsigned_8  ioByte;
+        type_unsigned_16 ioWord;
+        type_unsigned_32 ioDWord;
     };
 } t_port_data;
 
@@ -39,11 +39,11 @@ struct t_port {
     t_port_connect connect;
 };
 
-C_VOID core_machine_port_execute_read(t_port *port, ntvdm64_type_unsigned_16 port_id);
-C_VOID core_machine_port_execute_write(t_port *port, ntvdm64_type_unsigned_16 port_id);
-C_VOID core_machine_port_add_read(t_port *port, ntvdm64_type_unsigned_16 port_id,
+C_VOID core_machine_port_execute_read(t_port *port, type_unsigned_16 port_id);
+C_VOID core_machine_port_execute_write(t_port *port, type_unsigned_16 port_id);
+C_VOID core_machine_port_add_read(t_port *port, type_unsigned_16 port_id,
     core_machine_port_handler handler, C_VOID *owner);
-C_VOID core_machine_port_add_write(t_port *port, ntvdm64_type_unsigned_16 port_id,
+C_VOID core_machine_port_add_write(t_port *port, type_unsigned_16 port_id,
     core_machine_port_handler handler, C_VOID *owner);
 uint32_t core_machine_port_read(t_port *port, uint16_t port_id);
 C_VOID core_machine_port_write(t_port *port, uint16_t port_id, uint32_t value);

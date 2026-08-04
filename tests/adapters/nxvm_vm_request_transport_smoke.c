@@ -9,11 +9,11 @@ typedef struct keyboard_state_observer {
 } keyboard_state_observer;
 
 static C_VOID observe_keyboard_state(C_VOID *opaque,
-                                   const nxvm_platform_vm_request *request)
+                                   const vm_platform_request *request)
 {
     keyboard_state_observer *observer = (keyboard_state_observer *)opaque;
 
-    if (request->kind == NXVM_PLATFORM_VM_REQUEST_KEYBOARD_STATE) {
+    if (request->kind == VM_PLATFORM_REQUEST_KEYBOARD_STATE) {
         ++observer->count;
         observer->asynchronous_keys = request->data.keyboard_state.asynchronous_keys;
         observer->toggle_keys = request->data.keyboard_state.toggle_keys;
@@ -23,35 +23,35 @@ static C_VOID observe_keyboard_state(C_VOID *opaque,
 C_INT main(C_VOID)
 {
     vm_platform_request_transport transport;
-    nxvm_platform_vm_request request;
-    nxvm_platform_vm_request copy;
+    vm_platform_request request;
+    vm_platform_request copy;
     keyboard_state_observer observer = {0u, 0u, 0u};
     STD_SIZE_T index;
 
     vm_platform_request_transport_initialize(&transport);
-    request.kind = NXVM_PLATFORM_VM_REQUEST_KEY_PRESS;
+    request.kind = VM_PLATFORM_REQUEST_KEY_PRESS;
     request.data.key_press.scan_code = 0x1eu;
     request.data.key_press.virtual_key = 0x41u;
     if (vm_platform_request_transport_enqueue_ingress(&transport,
                                                             &request) !=
-        NTVDM64_STATUS_OK ||
+        TYPE_STATUS_OK ||
         vm_platform_request_transport_dequeue_egress(&transport,
                                                             &copy) !=
-        NTVDM64_STATUS_UNSUPPORTED ||
+        TYPE_STATUS_UNSUPPORTED ||
         vm_platform_request_transport_dequeue_ingress(&transport,
                                                              &copy) !=
-        NTVDM64_STATUS_OK ||
+        TYPE_STATUS_OK ||
         copy.data.key_press.scan_code != 0x1eu) return 1;
 
     vm_platform_request_transport_bind_consumer(
         &transport, observe_keyboard_state, &observer);
-    request.kind = NXVM_PLATFORM_VM_REQUEST_KEYBOARD_STATE;
+    request.kind = VM_PLATFORM_REQUEST_KEYBOARD_STATE;
     request.data.keyboard_state.asynchronous_keys =
-        NXVM_KEYBOARD_ASYNC_LEFT_SHIFT | NXVM_KEYBOARD_ASYNC_CONTROL;
-    request.data.keyboard_state.toggle_keys = NXVM_KEYBOARD_TOGGLE_CAPS_LOCK;
+        CORE_MACHINE_KEYBOARD_ASYNC_LEFT_SHIFT | CORE_MACHINE_KEYBOARD_ASYNC_CONTROL;
+    request.data.keyboard_state.toggle_keys = CORE_MACHINE_KEYBOARD_TOGGLE_CAPS_LOCK;
     if (vm_platform_request_transport_enqueue_ingress(&transport,
                                                             &request) !=
-        NTVDM64_STATUS_OK) return 1;
+        TYPE_STATUS_OK) return 1;
     vm_platform_request_transport_observe_execution_boundary(&transport);
     if (observer.count != 1u ||
         observer.asynchronous_keys != request.data.keyboard_state.asynchronous_keys ||
@@ -59,32 +59,32 @@ C_INT main(C_VOID)
         vm_platform_request_transport_execution_boundary_count(&transport) != 1u ||
         vm_platform_request_transport_dequeue_ingress(&transport,
                                                              &copy) !=
-        NTVDM64_STATUS_UNSUPPORTED) return 1;
+        TYPE_STATUS_UNSUPPORTED) return 1;
 
-    request.kind = NXVM_PLATFORM_VM_REQUEST_DISPLAY_MODE;
+    request.kind = VM_PLATFORM_REQUEST_DISPLAY_MODE;
     request.data.window_display = 1;
-    for (index = 0u; index < NXVM_PLATFORM_VM_REQUEST_CAPACITY; ++index) {
+    for (index = 0u; index < VM_PLATFORM_REQUEST_CAPACITY; ++index) {
         if (vm_platform_request_transport_enqueue_egress(&transport,
                                                                &request) !=
-            NTVDM64_STATUS_OK) return 1;
+            TYPE_STATUS_OK) return 1;
     }
     if (vm_platform_request_transport_enqueue_egress(&transport,
                                                            &request) !=
-        NTVDM64_STATUS_NO_MEMORY) return 1;
+        TYPE_STATUS_NO_MEMORY) return 1;
 
     vm_platform_request_transport_close(&transport);
     if (vm_platform_request_transport_enqueue_ingress(&transport,
                                                             &request) !=
-        NTVDM64_STATUS_INVALID_STATE ||
+        TYPE_STATUS_INVALID_STATE ||
         vm_platform_request_transport_dequeue_egress(&transport,
                                                             &copy) !=
-        NTVDM64_STATUS_OK ||
+        TYPE_STATUS_OK ||
         copy.data.window_display != 1) return 1;
 
     vm_platform_request_transport_discard(&transport);
     if (vm_platform_request_transport_dequeue_egress(&transport,
                                                             &copy) !=
-        NTVDM64_STATUS_UNSUPPORTED) return 1;
+        TYPE_STATUS_UNSUPPORTED) return 1;
 
     return 0;
 }

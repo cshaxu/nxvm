@@ -1,20 +1,21 @@
 /* Copyright 2012-2014 Neko. */
 
-#ifndef NXVM_UTILS_H
-#define NXVM_UTILS_H
+#ifndef CORE_PRODUCT_UTILS_H
+#define CORE_PRODUCT_UTILS_H
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
 #include "type.h"
-/* NXVM Assembler Library */
-uint8_t core_product_utils_aasm32(const C_CHAR *stmt, uint8_t *rcode, C_INT flag32);
-uint32_t core_product_utils_aasm32x(const C_CHAR *stmt, uint8_t *rcode, C_INT flag32);
-uint8_t core_product_utils_dasm32(C_CHAR *stmt, uint8_t *rcode, C_INT flag32);
+    /* Assembler Library */
+    uint8_t core_product_utils_aasm32(const C_CHAR *stmt, uint8_t *rcode, C_INT flag32);
+    uint32_t core_product_utils_aasm32x(const C_CHAR *stmt, uint8_t *rcode, C_INT flag32);
+    uint8_t core_product_utils_dasm32(C_CHAR *stmt, uint8_t *rcode, C_INT flag32);
 
 #ifdef __cplusplus
-}/*_EOCD_*/
+} /*_EOCD_*/
 #endif
 
 #endif

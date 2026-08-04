@@ -1,7 +1,7 @@
 /* Copyright 2012-2014 Neko. */
 
-#ifndef NXVM_CORE_PIT_H
-#define NXVM_CORE_PIT_H
+#ifndef CORE_MACHINE_PIT_H
+#define CORE_MACHINE_PIT_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -10,7 +10,7 @@ extern "C" {
 #include "type.h"
 #include "core/machine/port.h"
 
-#define NXVM_DEVICE_PIT "Intel 8254"
+#define CORE_MACHINE_DEVICE_PIT "Intel 8254"
 
 typedef enum {
     VPIT_STATUS_RW_READY,
@@ -22,21 +22,21 @@ typedef C_VOID (*core_machine_pit_output_provider)(C_VOID *owner);
 
 typedef struct {
     /* control words[0-2] for counter 0-2, and cw[3] is read-back command */
-    ntvdm64_type_unsigned_8 cw[4];
+    type_unsigned_8 cw[4];
 
-    ntvdm64_type_unsigned_16 init[3];  /* initial counts */
-    ntvdm64_type_unsigned_16 count[3]; /* counter[0-2] */
-    ntvdm64_type_unsigned_16 latch[3]; /* latch counts */
+    type_unsigned_16 init[3];  /* initial counts */
+    type_unsigned_16 count[3]; /* counter[0-2] */
+    type_unsigned_16 latch[3]; /* latch counts */
 
-    ntvdm64_type_bool flagReady[3]; /* flag of ready */
-    ntvdm64_type_bool flagLatch[3]; /* flag of latch status */
+    type_bool flagReady[3]; /* flag of ready */
+    type_bool flagLatch[3]; /* flag of latch status */
 
     t_pit_data_status_rw flagRead[3];  /* flag of low byte read */
     t_pit_data_status_rw flagWrite[3]; /* flag of low byte write */
 } t_pit_data;
 
 typedef struct {
-    ntvdm64_type_bool flagGate[3];  /* enable or disable counter */
+    type_bool flagGate[3];  /* enable or disable counter */
     core_machine_pit_output_provider output[3];
     C_VOID *output_owner[3];
 } t_pit_connect;
@@ -82,7 +82,7 @@ C_VOID core_machine_pit_initialize(t_pit *pit, t_port *port);
 C_VOID core_machine_pit_reset(t_pit *pit);
 C_VOID core_machine_pit_refresh(t_pit *pit);
 C_VOID core_machine_pit_finalize(t_pit *pit);
-C_VOID core_machine_pit_set_output(t_pit *pit, ntvdm64_type_unsigned_8 id,
+C_VOID core_machine_pit_set_output(t_pit *pit, type_unsigned_8 id,
     core_machine_pit_output_provider provider, C_VOID *owner);
 
 #define VPIT_POST "                                 \

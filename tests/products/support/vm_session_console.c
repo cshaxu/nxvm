@@ -63,24 +63,24 @@ vm_product_console_command vm_product_console_parse(const C_CHAR *line)
     return VM_PRODUCT_CONSOLE_INVALID;
 }
 
-ntvdm64_status vm_product_console_dispatch(
+type_status vm_product_console_dispatch(
     vm_product_console *console,
     vm_product_console_command command,
     vm_product_console_operation operation,
     C_VOID *context)
 {
-    ntvdm64_status status;
+    type_status status;
 
     if (console == STD_NULL || operation == STD_NULL ||
         console->state == VM_PRODUCT_CONSOLE_EXITED) {
-        return NTVDM64_STATUS_INVALID_ARGUMENT;
+        return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    if (command == VM_PRODUCT_CONSOLE_INVALID) return NTVDM64_STATUS_UNSUPPORTED;
+    if (command == VM_PRODUCT_CONSOLE_INVALID) return TYPE_STATUS_UNSUPPORTED;
     if (!vm_product_console_allowed(console->state, command)) {
-        return NTVDM64_STATUS_INVALID_STATE;
+        return TYPE_STATUS_INVALID_STATE;
     }
     status = operation(context, command);
-    if (status != NTVDM64_STATUS_OK) return status;
+    if (status != TYPE_STATUS_OK) return status;
     if (command == VM_PRODUCT_CONSOLE_START ||
         command == VM_PRODUCT_CONSOLE_RESUME) {
         console->state = VM_PRODUCT_CONSOLE_RUNNING;
@@ -92,5 +92,5 @@ ntvdm64_status vm_product_console_dispatch(
     } else if (command == VM_PRODUCT_CONSOLE_EXIT) {
         console->state = VM_PRODUCT_CONSOLE_EXITED;
     }
-    return NTVDM64_STATUS_OK;
+    return TYPE_STATUS_OK;
 }

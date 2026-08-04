@@ -139,14 +139,14 @@ core_machine_cpu_execution_context *core_machine_configuration_cpu_execution_bor
 t_ram *core_machine_configuration_memory_borrow(core_machine *machine)
 { return core_machine_configuration_is_open(machine) ? &machine->executor_memory : STD_NULL; }
 
-ntvdm64_status core_machine_profile_binding_initialize(
+type_status core_machine_profile_binding_initialize(
     core_machine *machine, core_machine_profile_binding *binding)
 {
     if (!core_machine_configuration_is_open(machine) || binding == STD_NULL) {
-        return NTVDM64_STATUS_INVALID_STATE;
+        return TYPE_STATUS_INVALID_STATE;
     }
     binding->machine = machine;
-    return NTVDM64_STATUS_OK;
+    return TYPE_STATUS_OK;
 }
 
 t_ram *core_machine_profile_binding_memory(
@@ -183,113 +183,113 @@ t_kbc *core_machine_configuration_shared_kbc_borrow(core_machine *machine)
 t_vadp *core_machine_configuration_shared_vadp_borrow(core_machine *machine)
 { return core_machine_configuration_is_open(machine) ? &machine->shared_vadp : STD_NULL; }
 
-ntvdm64_status core_machine_bind_execution_provider(core_machine *machine,
+type_status core_machine_bind_execution_provider(core_machine *machine,
     const core_machine_execution_provider *provider, C_VOID *context)
 {
     if (!core_machine_configuration_is_open(machine)) {
-        return NTVDM64_STATUS_INVALID_STATE;
+        return TYPE_STATUS_INVALID_STATE;
     }
     if (provider != STD_NULL && provider->reset == STD_NULL &&
         provider->refresh == STD_NULL) {
-        return NTVDM64_STATUS_INVALID_ARGUMENT;
+        return TYPE_STATUS_INVALID_ARGUMENT;
     }
     machine->execution_provider = provider;
     machine->execution_provider_context = context;
-    return NTVDM64_STATUS_OK;
+    return TYPE_STATUS_OK;
 }
 
-ntvdm64_status core_machine_freeze_execution_providers(core_machine *machine)
+type_status core_machine_freeze_execution_providers(core_machine *machine)
 {
     if (!core_machine_configuration_is_open(machine)) {
-        return NTVDM64_STATUS_INVALID_STATE;
+        return TYPE_STATUS_INVALID_STATE;
     }
     machine->execution_provider_frozen = 1;
     core_machine_memory_freeze_mappings(&machine->executor_memory);
-    return NTVDM64_STATUS_OK;
+    return TYPE_STATUS_OK;
 }
 
-ntvdm64_status core_machine_get_cpu_state(
+type_status core_machine_get_cpu_state(
     const core_machine *machine,
     core_machine_cpu_state *out_state)
 {
     if (machine == STD_NULL || out_state == STD_NULL) {
-        return NTVDM64_STATUS_INVALID_ARGUMENT;
+        return TYPE_STATUS_INVALID_ARGUMENT;
     }
 
     if (machine->lifecycle == CORE_MACHINE_INITIALIZED ||
         machine->lifecycle == CORE_MACHINE_RUNNING) {
-        return NTVDM64_STATUS_INVALID_STATE;
+        return TYPE_STATUS_INVALID_STATE;
     }
     out_state->cs = machine->executor_cpu.data.cs.selector;
     out_state->cs_base = machine->executor_cpu.data.cs.base;
     out_state->eip = machine->executor_cpu.data.eip;
     out_state->eflags = machine->executor_cpu.data.eflags;
     out_state->halted = machine->executor_cpu.data.flagHalt;
-    return NTVDM64_STATUS_OK;
+    return TYPE_STATUS_OK;
 }
 
-ntvdm64_status core_machine_get_cpu_profile(
+type_status core_machine_get_cpu_profile(
     const core_machine *machine, core_machine_cpu_profile *out_profile)
 {
     if (machine == STD_NULL || out_profile == STD_NULL) {
-        return NTVDM64_STATUS_INVALID_ARGUMENT;
+        return TYPE_STATUS_INVALID_ARGUMENT;
     }
     *out_profile = machine->cpu_profile;
-    return NTVDM64_STATUS_OK;
+    return TYPE_STATUS_OK;
 }
 
-ntvdm64_status core_machine_get_fpu_profile(
+type_status core_machine_get_fpu_profile(
     const core_machine *machine, core_machine_fpu_profile *out_profile)
 {
     if (machine == STD_NULL || out_profile == STD_NULL) {
-        return NTVDM64_STATUS_INVALID_ARGUMENT;
+        return TYPE_STATUS_INVALID_ARGUMENT;
     }
     *out_profile = machine->fpu.profile;
-    return NTVDM64_STATUS_OK;
+    return TYPE_STATUS_OK;
 }
 
-ntvdm64_status core_machine_get_memory_bytes(
+type_status core_machine_get_memory_bytes(
     const core_machine *machine, STD_SIZE_T *out_memory_bytes)
 {
     if (machine == STD_NULL || out_memory_bytes == STD_NULL) {
-        return NTVDM64_STATUS_INVALID_ARGUMENT;
+        return TYPE_STATUS_INVALID_ARGUMENT;
     }
     *out_memory_bytes = machine->executor_memory.connect.installed_bytes;
-    return NTVDM64_STATUS_OK;
+    return TYPE_STATUS_OK;
 }
 
-ntvdm64_status core_machine_get_cpu_diagnostic(
+type_status core_machine_get_cpu_diagnostic(
     const core_machine *machine, core_machine_cpu_diagnostic *out_diagnostic)
 {
     if (machine == STD_NULL || out_diagnostic == STD_NULL ||
         machine->lifecycle == CORE_MACHINE_INITIALIZED ||
         machine->lifecycle == CORE_MACHINE_RUNNING) {
-        return NTVDM64_STATUS_INVALID_ARGUMENT;
+        return TYPE_STATUS_INVALID_ARGUMENT;
     }
     core_machine_cpu_diagnostic_ordered_copy(&machine->cpu_diagnostic,
         out_diagnostic);
-    return NTVDM64_STATUS_OK;
+    return TYPE_STATUS_OK;
 }
 
-ntvdm64_status core_machine_capture_observation(
+type_status core_machine_capture_observation(
     const core_machine *machine, core_machine_observation *out_observation)
 {
     if (machine == STD_NULL || out_observation == STD_NULL ||
         machine->lifecycle == CORE_MACHINE_INITIALIZED ||
         machine->lifecycle == CORE_MACHINE_RUNNING) {
-        return NTVDM64_STATUS_INVALID_STATE;
+        return TYPE_STATUS_INVALID_STATE;
     }
     out_observation->lifecycle = machine->lifecycle;
     if (core_machine_get_cpu_state(machine, &out_observation->cpu) !=
-            NTVDM64_STATUS_OK) {
-        return NTVDM64_STATUS_INVALID_STATE;
+            TYPE_STATUS_OK) {
+        return TYPE_STATUS_INVALID_STATE;
     }
     core_machine_cpu_diagnostic_ordered_copy(&machine->cpu_diagnostic,
         &out_observation->diagnostic);
-    return NTVDM64_STATUS_OK;
+    return TYPE_STATUS_OK;
 }
 
-ntvdm64_status core_machine_create(
+type_status core_machine_create(
     const core_machine_config *config,
     core_machine **out_machine)
 {
@@ -298,14 +298,14 @@ ntvdm64_status core_machine_create(
         !core_machine_valid_cpu_profile(
             core_machine_resolve_cpu_profile(config->cpu_profile)) ||
         !core_machine_valid_fpu_profile(config->fpu_profile)) {
-        return NTVDM64_STATUS_INVALID_ARGUMENT;
+        return TYPE_STATUS_INVALID_ARGUMENT;
     }
 
     *out_machine = STD_NULL;
 
     machine = (core_machine *)STD_CALLOC(1u, sizeof(*machine));
     if (machine == STD_NULL) {
-        return NTVDM64_STATUS_NO_MEMORY;
+        return TYPE_STATUS_NO_MEMORY;
     }
 
     machine->lifecycle = CORE_MACHINE_INITIALIZED;
@@ -328,16 +328,16 @@ ntvdm64_status core_machine_create(
         machine);
     core_machine_cpu_state_initialize(&machine->executor_cpu_execution);
     core_machine_port_initialize(&machine->executor_port);
-    if (core_machine_bus_initialize(machine) != NTVDM64_STATUS_OK) {
+    if (core_machine_bus_initialize(machine) != TYPE_STATUS_OK) {
         core_machine_destroy(machine);
-        return NTVDM64_STATUS_NO_MEMORY;
+        return TYPE_STATUS_NO_MEMORY;
     }
     core_machine_memory_initialize(&machine->executor_memory);
     if (config->memory_bytes != 0u) {
         if (core_machine_memory_allocate_for(&machine->executor_memory,
-                config->memory_bytes) != NTVDM64_STATUS_OK) {
+                config->memory_bytes) != TYPE_STATUS_OK) {
             core_machine_destroy(machine);
-            return NTVDM64_STATUS_NO_MEMORY;
+            return TYPE_STATUS_NO_MEMORY;
         }
     }
     core_machine_memory_register_ports(&machine->executor_memory,
@@ -356,10 +356,10 @@ ntvdm64_status core_machine_create(
 
     *out_machine = machine;
 
-    return NTVDM64_STATUS_OK;
+    return TYPE_STATUS_OK;
 }
 
-static ntvdm64_status core_machine_cold_reset(core_machine *machine)
+static type_status core_machine_cold_reset(core_machine *machine)
 {
     core_machine_cpu_state_reset(&machine->executor_cpu_execution);
     core_machine_fpu_reset(&machine->fpu);
@@ -382,19 +382,19 @@ static ntvdm64_status core_machine_cold_reset(core_machine *machine)
     }
     machine->lifecycle = CORE_MACHINE_STOPPED;
     core_machine_trace_record(machine, CORE_MACHINE_TRACE_RESET, 0u, 0u, 0u);
-    return NTVDM64_STATUS_OK;
+    return TYPE_STATUS_OK;
 }
 
-ntvdm64_status core_machine_reconfigure_memory(core_machine *machine,
+type_status core_machine_reconfigure_memory(core_machine *machine,
     STD_SIZE_T memory_bytes)
 {
-    ntvdm64_type_native_unsigned index;
+    type_native_unsigned index;
 
     if (machine == STD_NULL || !machine->execution_provider_frozen ||
         machine->lifecycle != CORE_MACHINE_STOPPED ||
         memory_bytes < CORE_MACHINE_MINIMUM_MEMORY_BYTES ||
         memory_bytes > CORE_MACHINE_MAXIMUM_MEMORY_BYTES) {
-        return NTVDM64_STATUS_INVALID_STATE;
+        return TYPE_STATUS_INVALID_STATE;
     }
     for (index = 0u; index < machine->executor_memory.connect.mapping_count;
             ++index) {
@@ -402,49 +402,49 @@ ntvdm64_status core_machine_reconfigure_memory(core_machine *machine,
             &machine->executor_memory.connect.mappings[index];
         if (mapping->backing_start > memory_bytes ||
             mapping->bytes > memory_bytes - mapping->backing_start) {
-            return NTVDM64_STATUS_INVALID_ARGUMENT;
+            return TYPE_STATUS_INVALID_ARGUMENT;
         }
     }
     if (core_machine_memory_allocate_for(&machine->executor_memory,
-            memory_bytes) != NTVDM64_STATUS_OK) {
-        return NTVDM64_STATUS_NO_MEMORY;
+            memory_bytes) != TYPE_STATUS_OK) {
+        return TYPE_STATUS_NO_MEMORY;
     }
     return core_machine_cold_reset(machine);
 }
 
-ntvdm64_status core_machine_reset(core_machine *machine)
+type_status core_machine_reset(core_machine *machine)
 {
     if (machine == STD_NULL) {
-        return NTVDM64_STATUS_INVALID_ARGUMENT;
+        return TYPE_STATUS_INVALID_ARGUMENT;
     }
 
     if (!machine->execution_provider_frozen ||
         machine->lifecycle == CORE_MACHINE_RUNNING) {
-        return NTVDM64_STATUS_INVALID_STATE;
+        return TYPE_STATUS_INVALID_STATE;
     }
 
     return core_machine_cold_reset(machine);
 }
 
-ntvdm64_status core_machine_get_lifecycle(
+type_status core_machine_get_lifecycle(
     const core_machine *machine,
     core_machine_lifecycle *out_lifecycle)
 {
     if (machine == STD_NULL || out_lifecycle == STD_NULL) {
-        return NTVDM64_STATUS_INVALID_ARGUMENT;
+        return TYPE_STATUS_INVALID_ARGUMENT;
     }
 
     *out_lifecycle = machine->lifecycle;
-    return NTVDM64_STATUS_OK;
+    return TYPE_STATUS_OK;
 }
 
-ntvdm64_status core_machine_run(
+type_status core_machine_run(
     core_machine *machine,
     core_machine_run_budget budget,
     core_machine_run_result *result)
 {
     if (machine == STD_NULL || result == STD_NULL) {
-        return NTVDM64_STATUS_INVALID_ARGUMENT;
+        return TYPE_STATUS_INVALID_ARGUMENT;
     }
 
     result->reason = CORE_MACHINE_STOP_NONE;
@@ -455,27 +455,27 @@ ntvdm64_status core_machine_run(
     if (machine->lifecycle == CORE_MACHINE_FAULTED) {
         result->reason = CORE_MACHINE_STOP_FAULT;
         result->detail = machine->fault_detail;
-        return NTVDM64_STATUS_FAULT;
+        return TYPE_STATUS_FAULT;
     }
 
     if (machine->lifecycle != CORE_MACHINE_STOPPED &&
         machine->lifecycle != CORE_MACHINE_PAUSED) {
-        return NTVDM64_STATUS_INVALID_STATE;
+        return TYPE_STATUS_INVALID_STATE;
     }
 
     if (budget.instructions == 0u && budget.ticks == 0u) {
-        return NTVDM64_STATUS_INVALID_ARGUMENT;
+        return TYPE_STATUS_INVALID_ARGUMENT;
     }
 
     if (STD_ATOMIC_LOAD(&machine->stop_requested)) {
-        if (core_machine_cold_reset(machine) != NTVDM64_STATUS_OK) {
-            return NTVDM64_STATUS_FAULT;
+        if (core_machine_cold_reset(machine) != TYPE_STATUS_OK) {
+            return TYPE_STATUS_FAULT;
         }
         result->reason = CORE_MACHINE_STOP_REQUESTED;
         result->linear_pc = core_machine_linear_pc(machine);
         core_machine_trace_record(machine, CORE_MACHINE_TRACE_STOP, 0u, 0u,
                                (uint32_t)result->reason);
-        return NTVDM64_STATUS_OK;
+        return TYPE_STATUS_OK;
     }
 
     machine->lifecycle = CORE_MACHINE_RUNNING;
@@ -487,30 +487,30 @@ ntvdm64_status core_machine_run(
                 core_machine_cpu_execution_consume_stop_request(
                     &machine->executor_cpu_execution)) {
                 machine->lifecycle = CORE_MACHINE_PAUSED;
-                if (core_machine_cold_reset(machine) != NTVDM64_STATUS_OK) {
-                    return NTVDM64_STATUS_FAULT;
+                if (core_machine_cold_reset(machine) != TYPE_STATUS_OK) {
+                    return TYPE_STATUS_FAULT;
                 }
                 result->reason = CORE_MACHINE_STOP_REQUESTED;
                 result->linear_pc = core_machine_linear_pc(machine);
                 core_machine_trace_record(machine, CORE_MACHINE_TRACE_STOP, 0u,
                     0u, (uint32_t)result->reason);
-                return NTVDM64_STATUS_OK;
+                return TYPE_STATUS_OK;
             }
             if (core_machine_cpu_execution_consume_reset_request(
                     &machine->executor_cpu_execution)) {
                 machine->lifecycle = CORE_MACHINE_PAUSED;
-                if (core_machine_cold_reset(machine) != NTVDM64_STATUS_OK) {
-                    return NTVDM64_STATUS_FAULT;
+                if (core_machine_cold_reset(machine) != TYPE_STATUS_OK) {
+                    return TYPE_STATUS_FAULT;
                 }
                 result->reason = CORE_MACHINE_STOP_RESET_REQUESTED;
                 result->linear_pc = core_machine_linear_pc(machine);
-                return NTVDM64_STATUS_OK;
+                return TYPE_STATUS_OK;
             }
             if (machine->executor_cpu.data.flagHalt) {
                 machine->lifecycle = CORE_MACHINE_PAUSED;
                 result->reason = CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
                 result->linear_pc = core_machine_linear_pc(machine);
-                return NTVDM64_STATUS_OK;
+                return TYPE_STATUS_OK;
             }
             if (machine->execution_provider != STD_NULL &&
                 machine->execution_provider->refresh != STD_NULL) {
@@ -534,38 +534,38 @@ ntvdm64_status core_machine_run(
         core_machine_trace_record(machine, CORE_MACHINE_TRACE_RUN_BOUNDARY,
             result->linear_pc, (uint32_t)result->executed,
             (uint32_t)result->reason);
-        return NTVDM64_STATUS_OK;
+        return TYPE_STATUS_OK;
     }
 }
 
-ntvdm64_status core_machine_request_stop(core_machine *machine)
+type_status core_machine_request_stop(core_machine *machine)
 {
     if (machine == STD_NULL) {
-        return NTVDM64_STATUS_INVALID_ARGUMENT;
+        return TYPE_STATUS_INVALID_ARGUMENT;
     }
 
     STD_ATOMIC_STORE(&machine->stop_requested, 1);
-    return NTVDM64_STATUS_OK;
+    return TYPE_STATUS_OK;
 }
 
-ntvdm64_status core_machine_report_fault(
+type_status core_machine_report_fault(
     core_machine *machine,
     uint32_t detail)
 {
     if (machine == STD_NULL) {
-        return NTVDM64_STATUS_INVALID_ARGUMENT;
+        return TYPE_STATUS_INVALID_ARGUMENT;
     }
 
     if (machine->lifecycle != CORE_MACHINE_STOPPED &&
         machine->lifecycle != CORE_MACHINE_PAUSED &&
         machine->lifecycle != CORE_MACHINE_RUNNING) {
-        return NTVDM64_STATUS_INVALID_STATE;
+        return TYPE_STATUS_INVALID_STATE;
     }
 
     machine->fault_detail = detail;
     machine->lifecycle = CORE_MACHINE_FAULTED;
     core_machine_trace_record(machine, CORE_MACHINE_TRACE_FAULT, 0u, 0u, detail);
-    return NTVDM64_STATUS_OK;
+    return TYPE_STATUS_OK;
 }
 
 C_VOID core_machine_destroy(core_machine *machine)

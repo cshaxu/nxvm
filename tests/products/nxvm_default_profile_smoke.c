@@ -20,7 +20,7 @@ static C_INT verify(const C_CHAR *fdd, const C_CHAR *hdd, C_INT boot_hdd)
     vm_session_reset_vector vector;
     vm_session *session = STD_NULL;
 
-    if (vm_session_create(&config, &session) != NTVDM64_STATUS_OK ||
+    if (vm_session_create(&config, &session) != TYPE_STATUS_OK ||
         vm_session_control_is_running(&session->control)) {
         vm_session_destroy(session);
         return 1;
@@ -28,7 +28,7 @@ static C_INT verify(const C_CHAR *fdd, const C_CHAR *hdd, C_INT boot_hdd)
     vm_session_reset(session);
     if (vm_machine_fdd_remove_for(&session->fdd, STD_NULL) ||
         vm_machine_hdd_remove(&session->hdd, STD_NULL) ||
-        vm_session_get_reset_vector(session, &vector) != NTVDM64_STATUS_OK ||
+        vm_session_get_reset_vector(session, &vector) != TYPE_STATUS_OK ||
         vector.cs != 0xf000u || vector.ip != 0xfff0u) {
         vm_session_destroy(session);
         return 1;

@@ -1,5 +1,5 @@
-#ifndef NTVDM64_VM_PLATFORM_INPUT_H
-#define NTVDM64_VM_PLATFORM_INPUT_H
+#ifndef VM_PLATFORM_INPUT_H
+#define VM_PLATFORM_INPUT_H
 
 #include "type.h"
 

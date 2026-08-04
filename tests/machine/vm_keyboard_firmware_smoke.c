@@ -14,7 +14,7 @@ C_INT main(C_VOID)
     if (session == STD_NULL) return 1;
     vm_session_initialize(session);
     core_machine_keyboard_apply_host_state_to(&session->keyboard_provider,
-        NXVM_KEYBOARD_ASYNC_ALT, 0u);
+        CORE_MACHINE_KEYBOARD_ASYNC_ALT, 0u);
     if (!core_machine_keyboard_get_modifier_from(&session->keyboard_provider,
         CORE_MACHINE_KEYBOARD_MODIFIER_ALT)) {
         vm_session_finalize(session);

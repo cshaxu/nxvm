@@ -1,7 +1,7 @@
 /* Copyright 2012-2014 Neko. */
 
-#ifndef NXVM_AASM32_H
-#define NXVM_AASM32_H
+#ifndef CORE_PRODUCT_AASM32_H
+#define CORE_PRODUCT_AASM32_H
 
 #ifdef __cplusplus
 extern "C" {

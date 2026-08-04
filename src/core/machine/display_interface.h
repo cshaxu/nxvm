@@ -1,6 +1,6 @@
 /* Product-neutral display-mode notification and text snapshot contracts. */
-#ifndef NTVDM64_CORE_MACHINE_DISPLAY_INTERFACE_H
-#define NTVDM64_CORE_MACHINE_DISPLAY_INTERFACE_H
+#ifndef CORE_MACHINE_DISPLAY_INTERFACE_H
+#define CORE_MACHINE_DISPLAY_INTERFACE_H
 
 #include "type.h"
 

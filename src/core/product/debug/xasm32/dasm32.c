@@ -1,15 +1,12 @@
-/* This file is a part of NXVM project. */
-
 #include "type.h"
 
 #include "core/product/utils.h"
 
-
 #include "core/product/debug/xasm32/dasm32.h"
 
-#define NTVDM64_TYPE_TRACE_CONTEXT    trace
-#define NTVDM64_TYPE_TRACE_ERROR  flagError
-#define NTVDM64_TYPE_TRACE_SET_ERROR (flagError = 1)
+#define TYPE_TRACE_CONTEXT trace
+#define TYPE_TRACE_ERROR flagError
+#define TYPE_TRACE_SET_ERROR (flagError = 1)
 
 typedef uint8_t t_dasm_prefix;
 
@@ -17,8 +14,9 @@ typedef struct dasm32_context dasm32_context;
 
 typedef C_VOID (*dasm32_handler)(dasm32_context *);
 
-struct dasm32_context {
-    ntvdm64_type_trace trace;
+struct dasm32_context
+{
+    type_trace trace;
     uint8_t defsize;
     uint8_t flagError;
     uint8_t *drcode;
@@ -34,8 +32,6 @@ struct dasm32_context {
     dasm32_handler dtable[0x100], dtable_0f[0x100];
     uint8_t initialized;
 };
-
-
 
 #define trace (dasmContext->trace)
 #define defsize (dasmContext->defsize)
@@ -72,62 +68,75 @@ struct dasm32_context {
 /* get modrm and sib bits */
 #define _GetModRM_MOD(modrm) (((modrm) & 0xc0) >> 6)
 #define _GetModRM_REG(modrm) (((modrm) & 0x38) >> 3)
-#define _GetModRM_RM(modrm)  (((modrm) & 0x07) >> 0)
-#define _GetSIB_SS(sib)      (((sib) & 0xc0) >> 6)
-#define _GetSIB_Index(sib)   (((sib) & 0x38) >> 3)
-#define _GetSIB_Base(sib)    (((sib) & 0x07) >> 0)
+#define _GetModRM_RM(modrm) (((modrm) & 0x07) >> 0)
+#define _GetSIB_SS(sib) (((sib) & 0xc0) >> 6)
+#define _GetSIB_Index(sib) (((sib) & 0x38) >> 3)
+#define _GetSIB_Base(sib) (((sib) & 0x07) >> 0)
 
 #define _comment_
 #define _newins_
 
-static C_VOID SPRINTFSI(dasm32_context *dasmContext, C_CHAR *str, uint32_t imm, uint8_t byte) {
+static C_VOID SPRINTFSI(dasm32_context *dasmContext, C_CHAR *str, uint32_t imm, uint8_t byte)
+{
     C_CHAR sign;
     uint8_t i8u;
     uint16_t i16u;
     uint32_t i32u;
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("SPRINTFSI");
+    TYPE_TRACE_CALL_BEGIN("SPRINTFSI");
     i8u = (uint8_t)(imm);
     i16u = (uint16_t)(imm);
     i32u = (uint32_t)(imm);
-    switch (byte) {
+    switch (byte)
+    {
     case 1:
-        if ((uint8_t)(imm & 0x80)) {
+        if ((uint8_t)(imm & 0x80))
+        {
             sign = '-';
             i8u = ((~i8u) + 0x01);
-        } else {
+        }
+        else
+        {
             sign = '+';
         }
         STD_SPRINTF(str, "%c%02X", sign, i8u);
         break;
     case 2:
-        if ((uint16_t)(imm & 0x8000)) {
+        if ((uint16_t)(imm & 0x8000))
+        {
             sign = '-';
             i16u = ((~i16u) + 0x01);
-        } else {
+        }
+        else
+        {
             sign = '+';
         }
         STD_SPRINTF(str, "%c%04X", sign, i16u);
         break;
     case 4:
-        if ((uint32_t)(imm & 0x80000000)) {
+        if ((uint32_t)(imm & 0x80000000))
+        {
             sign = '-';
             i32u = ((~i32u) + 0x01);
-        } else {
+        }
+        else
+        {
             sign = '+';
         }
         STD_SPRINTF(str, "%c%08X", sign, i32u);
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
 
 /* kernel decoding function */
-static uint8_t _kdf_check_prefix(dasm32_context *dasmContext, uint8_t opcode) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("_kdf_check_prefix");
-    switch (opcode) {
+static uint8_t _kdf_check_prefix(dasm32_context *dasmContext, uint8_t opcode)
+{
+    TYPE_TRACE_CALL_BEGIN("_kdf_check_prefix");
+    switch (opcode)
+    {
     case 0xf0:
     case 0xf2:
     case 0xf3:
@@ -135,39 +144,42 @@ static uint8_t _kdf_check_prefix(dasm32_context *dasmContext, uint8_t opcode) {
     case 0x36:
     case 0x3e:
     case 0x26:
-        NTVDM64_TYPE_TRACE_CALL_END;
+        TYPE_TRACE_CALL_END;
         return 1;
         break;
     case 0x64:
     case 0x65:
     case 0x66:
     case 0x67:
-        NTVDM64_TYPE_TRACE_CALL_END;
+        TYPE_TRACE_CALL_END;
         return 1;
         break;
     default:
-        NTVDM64_TYPE_TRACE_CALL_END;
+        TYPE_TRACE_CALL_END;
         return 0;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
     return 0;
 }
 
-static C_VOID _kdf_skip(dasm32_context *dasmContext, uint8_t byte) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("_kdf_skip");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(iop += byte);
-    NTVDM64_TYPE_TRACE_CALL_END;
+static C_VOID _kdf_skip(dasm32_context *dasmContext, uint8_t byte)
+{
+    TYPE_TRACE_CALL_BEGIN("_kdf_skip");
+    TYPE_TRACE_CHECK_RETURN(iop += byte);
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID _kdf_code(dasm32_context *dasmContext, uint8_t *rdata, uint8_t byte) {
+static C_VOID _kdf_code(dasm32_context *dasmContext, uint8_t *rdata, uint8_t byte)
+{
     STD_SIZE_T i;
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("_kdf_code");
+    TYPE_TRACE_CALL_BEGIN("_kdf_code");
     for (i = 0; i < byte; ++i)
         *(rdata + i) = *(drcode + iop + i);
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_skip(dasmContext, byte));
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CHECK_RETURN(_kdf_skip(dasmContext, byte));
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID _kdf_modrm(dasm32_context *dasmContext, uint8_t regbyte, uint8_t rmbyte) {
+static C_VOID _kdf_modrm(dasm32_context *dasmContext, uint8_t regbyte, uint8_t rmbyte)
+{
     C_CHAR disp8;
     uint16_t disp16;
     uint32_t disp32;
@@ -175,11 +187,12 @@ static C_VOID _kdf_modrm(dasm32_context *dasmContext, uint8_t regbyte, uint8_t r
     uint8_t modrm, sib;
     C_CHAR sign;
     uint8_t disp8u;
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("_kdf_modrm");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_code(dasmContext, &modrm, 1));
+    TYPE_TRACE_CALL_BEGIN("_kdf_modrm");
+    TYPE_TRACE_CHECK_RETURN(_kdf_code(dasmContext, &modrm, 1));
     flagmem = 1;
     drm[0] = dr[0] = dsibindex[0] = 0;
-    switch (rmbyte) {
+    switch (rmbyte)
+    {
     case 1:
         STD_SPRINTF(dptr, "BYTE PTR ");
         break;
@@ -193,13 +206,16 @@ static C_VOID _kdf_modrm(dasm32_context *dasmContext, uint8_t regbyte, uint8_t r
         dptr[0] = 0;
         break;
     }
-    switch (_GetAddressSize) {
+    switch (_GetAddressSize)
+    {
     case 2:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("AddressSize(2)");
-        switch (_GetModRM_MOD(modrm)) {
+        TYPE_TRACE_BLOCK_BEGIN("AddressSize(2)");
+        switch (_GetModRM_MOD(modrm))
+        {
         case 0:
-            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_MOD(0)");
-            switch (_GetModRM_RM(modrm)) {
+            TYPE_TRACE_BLOCK_BEGIN("ModRM_MOD(0)");
+            switch (_GetModRM_RM(modrm))
+            {
             case 0:
                 STD_SPRINTF(drm, "%s:[BX+SI]", doverds);
                 break;
@@ -213,33 +229,34 @@ static C_VOID _kdf_modrm(dasm32_context *dasmContext, uint8_t regbyte, uint8_t r
                 STD_SPRINTF(drm, "%s:[BP+DI]", doverss);
                 break;
             case 4:
-                STD_SPRINTF(drm, "%s:[SI]",    doverds);
+                STD_SPRINTF(drm, "%s:[SI]", doverds);
                 break;
             case 5:
-                STD_SPRINTF(drm, "%s:[DI]",    doverds);
+                STD_SPRINTF(drm, "%s:[DI]", doverds);
                 break;
             case 6:
-                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_RM(6)");
-                NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_code(dasmContext, (uint8_t *)(&disp16), 2));
+                TYPE_TRACE_BLOCK_BEGIN("ModRM_RM(6)");
+                TYPE_TRACE_CHECK_RETURN(_kdf_code(dasmContext, (uint8_t *)(&disp16), 2));
                 STD_SPRINTF(drm, "%s:[%04X]", doverds, disp16);
-                NTVDM64_TYPE_TRACE_BLOCK_END;
+                TYPE_TRACE_BLOCK_END;
                 break;
             case 7:
                 STD_SPRINTF(drm, "%s:[BX]", doverds);
                 break;
             default:
-                NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+                TYPE_TRACE_IMPOSSIBLE_RETURN;
                 break;
             }
 
-            NTVDM64_TYPE_TRACE_BLOCK_END;
+            TYPE_TRACE_BLOCK_END;
             break;
         case 1:
-            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_MOD(1)");
-            NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_code(dasmContext, (uint8_t *)(&disp8), 1));
+            TYPE_TRACE_BLOCK_BEGIN("ModRM_MOD(1)");
+            TYPE_TRACE_CHECK_RETURN(_kdf_code(dasmContext, (uint8_t *)(&disp8), 1));
             sign = (disp8 & 0x80) ? '-' : '+';
             disp8u = (disp8 & 0x80) ? ((~disp8) + 0x01) : disp8;
-            switch (_GetModRM_RM(modrm)) {
+            switch (_GetModRM_RM(modrm))
+            {
             case 0:
                 STD_SPRINTF(drm, "%s:[BX+SI%c%02X]", doverds, sign, disp8u);
                 break;
@@ -253,27 +270,28 @@ static C_VOID _kdf_modrm(dasm32_context *dasmContext, uint8_t regbyte, uint8_t r
                 STD_SPRINTF(drm, "%s:[BP+DI%c%02X]", doverss, sign, disp8u);
                 break;
             case 4:
-                STD_SPRINTF(drm, "%s:[SI%c%02X]",    doverds, sign, disp8u);
+                STD_SPRINTF(drm, "%s:[SI%c%02X]", doverds, sign, disp8u);
                 break;
             case 5:
-                STD_SPRINTF(drm, "%s:[DI%c%02X]",    doverds, sign, disp8u);
+                STD_SPRINTF(drm, "%s:[DI%c%02X]", doverds, sign, disp8u);
                 break;
             case 6:
-                STD_SPRINTF(drm, "%s:[BP%c%02X]",    doverss, sign, disp8u);
+                STD_SPRINTF(drm, "%s:[BP%c%02X]", doverss, sign, disp8u);
                 break;
             case 7:
-                STD_SPRINTF(drm, "%s:[BX%c%02X]",    doverds, sign, disp8u);
+                STD_SPRINTF(drm, "%s:[BX%c%02X]", doverds, sign, disp8u);
                 break;
             default:
-                NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+                TYPE_TRACE_IMPOSSIBLE_RETURN;
                 break;
             }
-            NTVDM64_TYPE_TRACE_BLOCK_END;
+            TYPE_TRACE_BLOCK_END;
             break;
         case 2:
-            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_MOD(2)");
-            NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_code(dasmContext, (uint8_t *)(&disp16), 2));
-            switch (_GetModRM_RM(modrm)) {
+            TYPE_TRACE_BLOCK_BEGIN("ModRM_MOD(2)");
+            TYPE_TRACE_CHECK_RETURN(_kdf_code(dasmContext, (uint8_t *)(&disp16), 2));
+            switch (_GetModRM_RM(modrm))
+            {
             case 0:
                 STD_SPRINTF(drm, "%s:[BX+SI+%04X]", doverds, disp16);
                 break;
@@ -287,37 +305,39 @@ static C_VOID _kdf_modrm(dasm32_context *dasmContext, uint8_t regbyte, uint8_t r
                 STD_SPRINTF(drm, "%s:[BP+DI+%04X]", doverss, disp16);
                 break;
             case 4:
-                STD_SPRINTF(drm, "%s:[SI+%04X]",    doverds, disp16);
+                STD_SPRINTF(drm, "%s:[SI+%04X]", doverds, disp16);
                 break;
             case 5:
-                STD_SPRINTF(drm, "%s:[DI+%04X]",    doverds, disp16);
+                STD_SPRINTF(drm, "%s:[DI+%04X]", doverds, disp16);
                 break;
             case 6:
-                STD_SPRINTF(drm, "%s:[BP+%04X]",    doverss, disp16);
+                STD_SPRINTF(drm, "%s:[BP+%04X]", doverss, disp16);
                 break;
             case 7:
-                STD_SPRINTF(drm, "%s:[BX+%04X]",    doverds, disp16);
+                STD_SPRINTF(drm, "%s:[BX+%04X]", doverds, disp16);
                 break;
             default:
-                NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+                TYPE_TRACE_IMPOSSIBLE_RETURN;
                 break;
             }
-            NTVDM64_TYPE_TRACE_BLOCK_END;
+            TYPE_TRACE_BLOCK_END;
             break;
         case 3:
             break;
         default:
-            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+            TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("AddressSize(4)");
-        if (_GetModRM_MOD(modrm) != 3 && _GetModRM_RM(modrm) == 4) {
-            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_MOD(!3),ModRM_RM(4)");
-            NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_code(dasmContext, (uint8_t *)(&sib), 1));
-            switch (_GetSIB_Index(sib)) {
+        TYPE_TRACE_BLOCK_BEGIN("AddressSize(4)");
+        if (_GetModRM_MOD(modrm) != 3 && _GetModRM_RM(modrm) == 4)
+        {
+            TYPE_TRACE_BLOCK_BEGIN("ModRM_MOD(!3),ModRM_RM(4)");
+            TYPE_TRACE_CHECK_RETURN(_kdf_code(dasmContext, (uint8_t *)(&sib), 1));
+            switch (_GetSIB_Index(sib))
+            {
             case 0:
                 STD_SPRINTF(dsibindex, "+EAX*%02X", (1 << _GetSIB_SS(sib)));
                 break;
@@ -342,14 +362,16 @@ static C_VOID _kdf_modrm(dasm32_context *dasmContext, uint8_t regbyte, uint8_t r
                 STD_SPRINTF(dsibindex, "+EDI*%02X", (1 << _GetSIB_SS(sib)));
                 break;
             default:
-                NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+                TYPE_TRACE_IMPOSSIBLE_RETURN;
                 break;
             }
         }
-        switch (_GetModRM_MOD(modrm)) {
+        switch (_GetModRM_MOD(modrm))
+        {
         case 0:
-            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_MOD(0)");
-            switch (_GetModRM_RM(modrm)) {
+            TYPE_TRACE_BLOCK_BEGIN("ModRM_MOD(0)");
+            switch (_GetModRM_RM(modrm))
+            {
             case 0:
                 STD_SPRINTF(drm, "%s:[EAX]", doverds);
                 break;
@@ -363,8 +385,9 @@ static C_VOID _kdf_modrm(dasm32_context *dasmContext, uint8_t regbyte, uint8_t r
                 STD_SPRINTF(drm, "%s:[EBX]", doverds);
                 break;
             case 4:
-                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_RM(4)");
-                switch (_GetSIB_Base(sib)) {
+                TYPE_TRACE_BLOCK_BEGIN("ModRM_RM(4)");
+                switch (_GetSIB_Base(sib))
+                {
                 case 0:
                     STD_SPRINTF(drm, "%s:[EAX%s]", doverds, dsibindex);
                     break;
@@ -381,10 +404,10 @@ static C_VOID _kdf_modrm(dasm32_context *dasmContext, uint8_t regbyte, uint8_t r
                     STD_SPRINTF(drm, "%s:[ESP%s]", doverss, dsibindex);
                     break;
                 case 5:
-                    NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SIB_Base(5)");
-                    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_code(dasmContext, (uint8_t *)(&disp32), 4));
+                    TYPE_TRACE_BLOCK_BEGIN("SIB_Base(5)");
+                    TYPE_TRACE_CHECK_RETURN(_kdf_code(dasmContext, (uint8_t *)(&disp32), 4));
                     STD_SPRINTF(drm, "%s:[%08X%s]", doverds, disp32, dsibindex);
-                    NTVDM64_TYPE_TRACE_BLOCK_END;
+                    TYPE_TRACE_BLOCK_END;
                     break;
                 case 6:
                     STD_SPRINTF(drm, "%s:[ESI%s]", doverds, dsibindex);
@@ -393,16 +416,16 @@ static C_VOID _kdf_modrm(dasm32_context *dasmContext, uint8_t regbyte, uint8_t r
                     STD_SPRINTF(drm, "%s:[EDI%s]", doverds, dsibindex);
                     break;
                 default:
-                    NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+                    TYPE_TRACE_IMPOSSIBLE_RETURN;
                     break;
                 }
-                NTVDM64_TYPE_TRACE_BLOCK_END;
+                TYPE_TRACE_BLOCK_END;
                 break;
             case 5:
-                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_RM(5)");
-                NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_code(dasmContext, (uint8_t *)(&disp32), 4));
+                TYPE_TRACE_BLOCK_BEGIN("ModRM_RM(5)");
+                TYPE_TRACE_CHECK_RETURN(_kdf_code(dasmContext, (uint8_t *)(&disp32), 4));
                 STD_SPRINTF(drm, "%s:[%08X]", doverds, disp32);
-                NTVDM64_TYPE_TRACE_BLOCK_END;
+                TYPE_TRACE_BLOCK_END;
                 break;
             case 6:
                 STD_SPRINTF(drm, "%s:[ESI]", doverds);
@@ -411,17 +434,18 @@ static C_VOID _kdf_modrm(dasm32_context *dasmContext, uint8_t regbyte, uint8_t r
                 STD_SPRINTF(drm, "%s:[EDI]", doverds);
                 break;
             default:
-                NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+                TYPE_TRACE_IMPOSSIBLE_RETURN;
                 break;
             }
-            NTVDM64_TYPE_TRACE_BLOCK_END;
+            TYPE_TRACE_BLOCK_END;
             break;
         case 1:
-            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_MOD(1)");
-            NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_code(dasmContext, (uint8_t *)(&disp8), 1));
+            TYPE_TRACE_BLOCK_BEGIN("ModRM_MOD(1)");
+            TYPE_TRACE_CHECK_RETURN(_kdf_code(dasmContext, (uint8_t *)(&disp8), 1));
             sign = (disp8 & 0x80) ? '-' : '+';
             disp8u = (disp8 & 0x80) ? ((~disp8) + 0x01) : disp8;
-            switch (_GetModRM_RM(modrm)) {
+            switch (_GetModRM_RM(modrm))
+            {
             case 0:
                 STD_SPRINTF(drm, "%s:[EAX%c%02X]", doverds, sign, disp8u);
                 break;
@@ -435,8 +459,9 @@ static C_VOID _kdf_modrm(dasm32_context *dasmContext, uint8_t regbyte, uint8_t r
                 STD_SPRINTF(drm, "%s:[EBX%c%02X]", doverds, sign, disp8u);
                 break;
             case 4:
-                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_RM(4)");
-                switch (_GetSIB_Base(sib)) {
+                TYPE_TRACE_BLOCK_BEGIN("ModRM_RM(4)");
+                switch (_GetSIB_Base(sib))
+                {
                 case 0:
                     STD_SPRINTF(drm, "%s:[EAX%s%c%02X]", doverds, dsibindex, sign, disp8u);
                     break;
@@ -462,10 +487,10 @@ static C_VOID _kdf_modrm(dasm32_context *dasmContext, uint8_t regbyte, uint8_t r
                     STD_SPRINTF(drm, "%s:[EDI%s%c%02X]", doverds, dsibindex, sign, disp8u);
                     break;
                 default:
-                    NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+                    TYPE_TRACE_IMPOSSIBLE_RETURN;
                     break;
                 }
-                NTVDM64_TYPE_TRACE_BLOCK_END;
+                TYPE_TRACE_BLOCK_END;
                 break;
             case 5:
                 STD_SPRINTF(drm, "%s:[EBP%c%02X]", doverss, sign, disp8u);
@@ -477,15 +502,16 @@ static C_VOID _kdf_modrm(dasm32_context *dasmContext, uint8_t regbyte, uint8_t r
                 STD_SPRINTF(drm, "%s:[EDI%c%02X]", doverds, sign, disp8u);
                 break;
             default:
-                NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+                TYPE_TRACE_IMPOSSIBLE_RETURN;
                 break;
             }
-            NTVDM64_TYPE_TRACE_BLOCK_END;
+            TYPE_TRACE_BLOCK_END;
             break;
         case 2:
-            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_MOD(2)");
-            NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_code(dasmContext, (uint8_t *)(&disp32), 4));
-            switch (_GetModRM_RM(modrm)) {
+            TYPE_TRACE_BLOCK_BEGIN("ModRM_MOD(2)");
+            TYPE_TRACE_CHECK_RETURN(_kdf_code(dasmContext, (uint8_t *)(&disp32), 4));
+            switch (_GetModRM_RM(modrm))
+            {
             case 0:
                 STD_SPRINTF(drm, "%s:[EAX+%08X]", doverds, disp32);
                 break;
@@ -499,8 +525,9 @@ static C_VOID _kdf_modrm(dasm32_context *dasmContext, uint8_t regbyte, uint8_t r
                 STD_SPRINTF(drm, "%s:[EBX+%08X]", doverds, disp32);
                 break;
             case 4:
-                NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_RM(4)");
-                switch (_GetSIB_Base(sib)) {
+                TYPE_TRACE_BLOCK_BEGIN("ModRM_RM(4)");
+                switch (_GetSIB_Base(sib))
+                {
                 case 0:
                     STD_SPRINTF(drm, "%s:[EAX%s+%08X]", doverds, dsibindex, disp32);
                     break;
@@ -526,10 +553,10 @@ static C_VOID _kdf_modrm(dasm32_context *dasmContext, uint8_t regbyte, uint8_t r
                     STD_SPRINTF(drm, "%s:[EDI%s+%08X]", doverds, dsibindex, disp32);
                     break;
                 default:
-                    NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+                    TYPE_TRACE_IMPOSSIBLE_RETURN;
                     break;
                 }
-                NTVDM64_TYPE_TRACE_BLOCK_END;
+                TYPE_TRACE_BLOCK_END;
                 break;
             case 5:
                 STD_SPRINTF(drm, "%s:[EBP+%08X]", doverss, disp32);
@@ -541,29 +568,32 @@ static C_VOID _kdf_modrm(dasm32_context *dasmContext, uint8_t regbyte, uint8_t r
                 STD_SPRINTF(drm, "%s:[EDI+%08X]", doverds, disp32);
                 break;
             default:
-                NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+                TYPE_TRACE_IMPOSSIBLE_RETURN;
                 break;
             }
-            NTVDM64_TYPE_TRACE_BLOCK_END;
+            TYPE_TRACE_BLOCK_END;
             break;
         case 3:
             break;
         default:
-            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+            TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    if (_GetModRM_MOD(modrm) == 3) {
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_MOD(3)");
+    if (_GetModRM_MOD(modrm) == 3)
+    {
+        TYPE_TRACE_BLOCK_BEGIN("ModRM_MOD(3)");
         flagmem = 0;
-        switch (rmbyte) {
+        switch (rmbyte)
+        {
         case 1:
-            switch (_GetModRM_RM(modrm)) {
+            switch (_GetModRM_RM(modrm))
+            {
             case 0:
                 STD_SPRINTF(drm, "AL");
                 break;
@@ -589,12 +619,13 @@ static C_VOID _kdf_modrm(dasm32_context *dasmContext, uint8_t regbyte, uint8_t r
                 STD_SPRINTF(drm, "BH");
                 break;
             default:
-                NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+                TYPE_TRACE_IMPOSSIBLE_RETURN;
                 break;
             }
             break;
         case 2:
-            switch (_GetModRM_RM(modrm)) {
+            switch (_GetModRM_RM(modrm))
+            {
             case 0:
                 STD_SPRINTF(drm, "AX");
                 break;
@@ -620,12 +651,13 @@ static C_VOID _kdf_modrm(dasm32_context *dasmContext, uint8_t regbyte, uint8_t r
                 STD_SPRINTF(drm, "DI");
                 break;
             default:
-                NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+                TYPE_TRACE_IMPOSSIBLE_RETURN;
                 break;
             }
             break;
         case 4:
-            switch (_GetModRM_RM(modrm)) {
+            switch (_GetModRM_RM(modrm))
+            {
             case 0:
                 STD_SPRINTF(drm, "EAX");
                 break;
@@ -651,19 +683,21 @@ static C_VOID _kdf_modrm(dasm32_context *dasmContext, uint8_t regbyte, uint8_t r
                 STD_SPRINTF(drm, "EDI");
                 break;
             default:
-                NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+                TYPE_TRACE_IMPOSSIBLE_RETURN;
                 break;
             }
             break;
         default:
-            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+            TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
     }
-    switch (regbyte) {
+    switch (regbyte)
+    {
     case 0:
-        if (flagmem) {
+        if (flagmem)
+        {
             STD_STRCAT(dptr, drm);
             STD_STRCPY(drm, dptr);
         }
@@ -672,7 +706,8 @@ static C_VOID _kdf_modrm(dasm32_context *dasmContext, uint8_t regbyte, uint8_t r
         cr = _GetModRM_REG(modrm);
         break;
     case 1:
-        switch (_GetModRM_REG(modrm)) {
+        switch (_GetModRM_REG(modrm))
+        {
         case 0:
             STD_SPRINTF(dr, "AL");
             break;
@@ -698,12 +733,13 @@ static C_VOID _kdf_modrm(dasm32_context *dasmContext, uint8_t regbyte, uint8_t r
             STD_SPRINTF(dr, "BH");
             break;
         default:
-            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+            TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
         break;
     case 2:
-        switch (_GetModRM_REG(modrm)) {
+        switch (_GetModRM_REG(modrm))
+        {
         case 0:
             STD_SPRINTF(dr, "AX");
             break;
@@ -729,12 +765,13 @@ static C_VOID _kdf_modrm(dasm32_context *dasmContext, uint8_t regbyte, uint8_t r
             STD_SPRINTF(dr, "DI");
             break;
         default:
-            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+            TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
         break;
     case 4:
-        switch (_GetModRM_REG(modrm)) {
+        switch (_GetModRM_REG(modrm))
+        {
         case 0:
             STD_SPRINTF(dr, "EAX");
             break;
@@ -760,59 +797,66 @@ static C_VOID _kdf_modrm(dasm32_context *dasmContext, uint8_t regbyte, uint8_t r
             STD_SPRINTF(dr, "EDI");
             break;
         default:
-            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+            TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID _d_skip(dasm32_context *dasmContext, uint8_t byte) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("_d_skip");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_skip(dasmContext, byte));
-    NTVDM64_TYPE_TRACE_CALL_END;
+static C_VOID _d_skip(dasm32_context *dasmContext, uint8_t byte)
+{
+    TYPE_TRACE_CALL_BEGIN("_d_skip");
+    TYPE_TRACE_CHECK_RETURN(_kdf_skip(dasmContext, byte));
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID _d_code(dasm32_context *dasmContext, uint8_t *rdata, uint8_t byte) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("_d_code");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_code(dasmContext, rdata, byte));
-    NTVDM64_TYPE_TRACE_CALL_END;
+static C_VOID _d_code(dasm32_context *dasmContext, uint8_t *rdata, uint8_t byte)
+{
+    TYPE_TRACE_CALL_BEGIN("_d_code");
+    TYPE_TRACE_CHECK_RETURN(_kdf_code(dasmContext, rdata, byte));
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID _d_imm(dasm32_context *dasmContext, uint8_t byte) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("_d_imm");
+static C_VOID _d_imm(dasm32_context *dasmContext, uint8_t byte)
+{
+    TYPE_TRACE_CALL_BEGIN("_d_imm");
     cimm = 0;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_code(dasmContext, (uint8_t *)(&cimm), byte));
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CHECK_RETURN(_d_code(dasmContext, (uint8_t *)(&cimm), byte));
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID _d_moffs(dasm32_context *dasmContext, uint8_t byte) {
+static C_VOID _d_moffs(dasm32_context *dasmContext, uint8_t byte)
+{
     uint32_t offset = 0;
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("_d_moffs");
+    TYPE_TRACE_CALL_BEGIN("_d_moffs");
     flagmem = 1;
-    switch (_GetAddressSize) {
+    switch (_GetAddressSize)
+    {
     case 2:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("AddressSize(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_code(dasmContext, (uint8_t *)(&offset), 2));
+        TYPE_TRACE_BLOCK_BEGIN("AddressSize(2)");
+        TYPE_TRACE_CHECK_RETURN(_d_code(dasmContext, (uint8_t *)(&offset), 2));
         STD_SPRINTF(drm, "%s:[%04X]", doverds, (uint16_t)(offset));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("AddressSize(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_code(dasmContext, (uint8_t *)(&offset), 4));
+        TYPE_TRACE_BLOCK_BEGIN("AddressSize(4)");
+        TYPE_TRACE_CHECK_RETURN(_d_code(dasmContext, (uint8_t *)(&offset), 4));
         STD_SPRINTF(drm, "%s:[%08X]", doverds, (uint32_t)(offset));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID _d_modrm_sreg(dasm32_context *dasmContext, uint8_t rmbyte) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("_d_modrm_sreg");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_modrm(dasmContext, 0, rmbyte));
-    switch (cr) {
+static C_VOID _d_modrm_sreg(dasm32_context *dasmContext, uint8_t rmbyte)
+{
+    TYPE_TRACE_CALL_BEGIN("_d_modrm_sreg");
+    TYPE_TRACE_CHECK_RETURN(_kdf_modrm(dasmContext, 0, rmbyte));
+    switch (cr)
+    {
     case 0:
         STD_SPRINTF(dr, "ES");
         break;
@@ -832,662 +876,740 @@ static C_VOID _d_modrm_sreg(dasm32_context *dasmContext, uint8_t rmbyte) {
         STD_SPRINTF(dr, "GS");
         break;
     default:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr");
+        TYPE_TRACE_BLOCK_BEGIN("cr");
         STD_SPRINTF(dr, "<ERROR>");
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID _d_modrm(dasm32_context *dasmContext, uint8_t regbyte, uint8_t rmbyte) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("_d_modrm");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_modrm(dasmContext, regbyte, rmbyte));
-    if (!flagmem && flaglock) {
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("flagmem(0),flaglock(1)");
+static C_VOID _d_modrm(dasm32_context *dasmContext, uint8_t regbyte, uint8_t rmbyte)
+{
+    TYPE_TRACE_CALL_BEGIN("_d_modrm");
+    TYPE_TRACE_CHECK_RETURN(_kdf_modrm(dasmContext, regbyte, rmbyte));
+    if (!flagmem && flaglock)
+    {
+        TYPE_TRACE_BLOCK_BEGIN("flagmem(0),flaglock(1)");
         STD_SPRINTF(drm, "<ERROR>");
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
 
-#define _adv NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_skip(dasmContext, 1))
+#define _adv TYPE_TRACE_CHECK_RETURN(_d_skip(dasmContext, 1))
 
-static C_VOID UndefinedOpcode(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("UndefinedOpcode");
+static C_VOID UndefinedOpcode(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("UndefinedOpcode");
     STD_SPRINTF(dop, "<ERROR>");
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID ADD_RM8_R8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("ADD_RM8_R8");
+static C_VOID ADD_RM8_R8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("ADD_RM8_R8");
     _adv;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 1, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 1, 1));
     STD_SPRINTF(dop, "ADD");
     STD_SPRINTF(dopr, "%s,%s", drm, dr);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID ADD_RM32_R32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("ADD_RM32_R32");
+static C_VOID ADD_RM32_R32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("ADD_RM32_R32");
     _adv;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
     STD_SPRINTF(dop, "ADD");
     STD_SPRINTF(dopr, "%s,%s", drm, dr);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID ADD_R8_RM8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("ADD_R8_RM8");
+static C_VOID ADD_R8_RM8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("ADD_R8_RM8");
     _adv;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 1, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 1, 1));
     STD_SPRINTF(dop, "ADD");
     STD_SPRINTF(dopr, "%s,%s", dr, drm);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID ADD_R32_RM32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("ADD_R32_RM32");
+static C_VOID ADD_R32_RM32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("ADD_R32_RM32");
     _adv;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
     STD_SPRINTF(dop, "ADD");
     STD_SPRINTF(dopr, "%s,%s", dr, drm);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID ADD_AL_I8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("ADD_AL_I8");
+static C_VOID ADD_AL_I8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("ADD_AL_I8");
     _adv;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
     STD_SPRINTF(dop, "ADD");
     STD_SPRINTF(dopr, "AL,%02X", (uint8_t)(cimm));
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID ADD_EAX_I32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("ADD_EAX_I32");
+static C_VOID ADD_EAX_I32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("ADD_EAX_I32");
     _adv;
     STD_SPRINTF(dop, "ADD");
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 2));
+        TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+        TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 2));
         STD_SPRINTF(dopr, "AX,%04X", (uint16_t)(cimm));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 4));
+        TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+        TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 4));
         STD_SPRINTF(dopr, "EAX,%08X", (uint32_t)(cimm));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID PUSH_ES(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_ES");
+static C_VOID PUSH_ES(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("PUSH_ES");
     _adv;
     STD_SPRINTF(dop, "PUSH");
     STD_SPRINTF(dopr, "ES");
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID POP_ES(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_ES");
+static C_VOID POP_ES(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("POP_ES");
     _adv;
     STD_SPRINTF(dop, "POP");
     STD_SPRINTF(dopr, "ES");
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID OR_RM8_R8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("OR_RM8_R8");
+static C_VOID OR_RM8_R8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("OR_RM8_R8");
     _adv;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 1, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 1, 1));
     STD_SPRINTF(dop, "OR");
     STD_SPRINTF(dopr, "%s,%s", drm, dr);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID OR_RM32_R32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("OR_RM32_R32");
+static C_VOID OR_RM32_R32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("OR_RM32_R32");
     _adv;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
     STD_SPRINTF(dop, "OR");
     STD_SPRINTF(dopr, "%s,%s", drm, dr);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID OR_R8_RM8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("OR_R8_RM8");
+static C_VOID OR_R8_RM8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("OR_R8_RM8");
     _adv;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 1, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 1, 1));
     STD_SPRINTF(dop, "OR");
     STD_SPRINTF(dopr, "%s,%s", dr, drm);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID OR_R32_RM32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("OR_R32_RM32");
+static C_VOID OR_R32_RM32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("OR_R32_RM32");
     _adv;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
     STD_SPRINTF(dop, "OR");
     STD_SPRINTF(dopr, "%s,%s", dr, drm);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID OR_AL_I8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("OR_AL_I8");
+static C_VOID OR_AL_I8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("OR_AL_I8");
     _adv;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
     STD_SPRINTF(dop, "OR");
     STD_SPRINTF(dopr, "AL,%02X", (uint8_t)(cimm));
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID OR_EAX_I32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("OR_EAX_I32");
+static C_VOID OR_EAX_I32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("OR_EAX_I32");
     _adv;
     STD_SPRINTF(dop, "OR");
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 2));
+        TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+        TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 2));
         STD_SPRINTF(dopr, "AX,%04X", (uint16_t)(cimm));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 4));
+        TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+        TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 4));
         STD_SPRINTF(dopr, "EAX,%08X", (uint32_t)(cimm));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
 
-static C_VOID PUSH_CS(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_CS");
+static C_VOID PUSH_CS(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("PUSH_CS");
     _adv;
     STD_SPRINTF(dop, "PUSH");
     STD_SPRINTF(dopr, "CS");
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID POP_CS(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_CS");
+static C_VOID POP_CS(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("POP_CS");
     _adv;
     STD_SPRINTF(dop, "POP");
     STD_SPRINTF(dopr, "CS");
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID INS_0F(dasm32_context *dasmContext) {
+static C_VOID INS_0F(dasm32_context *dasmContext)
+{
     uint8_t oldiop;
     uint8_t opcode;
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_0F");
+    TYPE_TRACE_CALL_BEGIN("INS_0F");
     _adv;
     oldiop = iop;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_code(dasmContext, (uint8_t *)(&opcode), 1));
+    TYPE_TRACE_CHECK_RETURN(_d_code(dasmContext, (uint8_t *)(&opcode), 1));
     iop = oldiop;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN((*(dtable_0f[opcode]))(dasmContext));
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CHECK_RETURN((*(dtable_0f[opcode]))(dasmContext));
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID ADC_RM8_R8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("ADC_RM8_R8");
+static C_VOID ADC_RM8_R8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("ADC_RM8_R8");
     _adv;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 1, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 1, 1));
     STD_SPRINTF(dop, "ADC");
     STD_SPRINTF(dopr, "%s,%s", drm, dr);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID ADC_RM32_R32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("ADC_RM32_R32");
+static C_VOID ADC_RM32_R32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("ADC_RM32_R32");
     _adv;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
     STD_SPRINTF(dop, "ADC");
     STD_SPRINTF(dopr, "%s,%s", drm, dr);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID ADC_R8_RM8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("ADC_R8_RM8");
+static C_VOID ADC_R8_RM8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("ADC_R8_RM8");
     _adv;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 1, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 1, 1));
     STD_SPRINTF(dop, "ADC");
     STD_SPRINTF(dopr, "%s,%s", dr, drm);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID ADC_R32_RM32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("ADC_R32_RM32");
+static C_VOID ADC_R32_RM32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("ADC_R32_RM32");
     _adv;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
     STD_SPRINTF(dop, "ADC");
     STD_SPRINTF(dopr, "%s,%s", dr, drm);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID ADC_AL_I8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("ADC_AL_I8");
+static C_VOID ADC_AL_I8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("ADC_AL_I8");
     _adv;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
     STD_SPRINTF(dop, "ADC");
     STD_SPRINTF(dopr, "AL,%02X", (uint8_t)(cimm));
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID ADC_EAX_I32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("ADC_EAX_I32");
+static C_VOID ADC_EAX_I32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("ADC_EAX_I32");
     _adv;
     STD_SPRINTF(dop, "ADC");
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 2));
+        TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+        TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 2));
         STD_SPRINTF(dopr, "AX,%04X", (uint16_t)(cimm));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 4));
+        TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+        TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 4));
         STD_SPRINTF(dopr, "EAX,%08X", (uint32_t)(cimm));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
 
-static C_VOID PUSH_SS(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_SS");
+static C_VOID PUSH_SS(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("PUSH_SS");
     _adv;
     STD_SPRINTF(dop, "PUSH");
     STD_SPRINTF(dopr, "SS");
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID POP_SS(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_SS");
+static C_VOID POP_SS(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("POP_SS");
     _adv;
     STD_SPRINTF(dop, "POP");
     STD_SPRINTF(dopr, "SS");
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID SBB_RM8_R8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("SBB_RM8_R8");
+static C_VOID SBB_RM8_R8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("SBB_RM8_R8");
     _adv;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 1, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 1, 1));
     STD_SPRINTF(dop, "SBB");
     STD_SPRINTF(dopr, "%s,%s", drm, dr);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID SBB_RM32_R32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("SBB_RM32_R32");
+static C_VOID SBB_RM32_R32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("SBB_RM32_R32");
     _adv;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
     STD_SPRINTF(dop, "SBB");
     STD_SPRINTF(dopr, "%s,%s", drm, dr);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID SBB_R8_RM8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("SBB_R8_RM8");
+static C_VOID SBB_R8_RM8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("SBB_R8_RM8");
     _adv;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 1, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 1, 1));
     STD_SPRINTF(dop, "SBB");
     STD_SPRINTF(dopr, "%s,%s", dr, drm);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID SBB_R32_RM32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("SBB_R32_RM32");
+static C_VOID SBB_R32_RM32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("SBB_R32_RM32");
     _adv;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
     STD_SPRINTF(dop, "SBB");
     STD_SPRINTF(dopr, "%s,%s", dr, drm);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID SBB_AL_I8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("SBB_AL_I8");
+static C_VOID SBB_AL_I8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("SBB_AL_I8");
     _adv;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
     STD_SPRINTF(dop, "SBB");
     STD_SPRINTF(dopr, "AL,%02X", (uint8_t)(cimm));
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID SBB_EAX_I32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("SBB_EAX_I32");
+static C_VOID SBB_EAX_I32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("SBB_EAX_I32");
     _adv;
     STD_SPRINTF(dop, "SBB");
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 2));
+        TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+        TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 2));
         STD_SPRINTF(dopr, "AX,%04X", (uint16_t)(cimm));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 4));
+        TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+        TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 4));
         STD_SPRINTF(dopr, "EAX,%08X", (uint32_t)(cimm));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
 
-static C_VOID PUSH_DS(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_DS");
+static C_VOID PUSH_DS(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("PUSH_DS");
     _adv;
     STD_SPRINTF(dop, "PUSH");
     STD_SPRINTF(dopr, "DS");
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID POP_DS(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_DS");
+static C_VOID POP_DS(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("POP_DS");
     _adv;
     STD_SPRINTF(dop, "POP");
     STD_SPRINTF(dopr, "DS");
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID AND_RM8_R8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("AND_RM8_R8");
+static C_VOID AND_RM8_R8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("AND_RM8_R8");
     _adv;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 1, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 1, 1));
     STD_SPRINTF(dop, "AND");
     STD_SPRINTF(dopr, "%s,%s", drm, dr);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID AND_RM32_R32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("AND_RM32_R32");
+static C_VOID AND_RM32_R32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("AND_RM32_R32");
     _adv;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
     STD_SPRINTF(dop, "AND");
     STD_SPRINTF(dopr, "%s,%s", drm, dr);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID AND_R8_RM8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("AND_R8_RM8");
+static C_VOID AND_R8_RM8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("AND_R8_RM8");
     _adv;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 1, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 1, 1));
     STD_SPRINTF(dop, "AND");
     STD_SPRINTF(dopr, "%s,%s", dr, drm);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID AND_R32_RM32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("AND_R32_RM32");
+static C_VOID AND_R32_RM32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("AND_R32_RM32");
     _adv;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
     STD_SPRINTF(dop, "AND");
     STD_SPRINTF(dopr, "%s,%s", dr, drm);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID AND_AL_I8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("AND_AL_I8");
+static C_VOID AND_AL_I8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("AND_AL_I8");
     _adv;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
     STD_SPRINTF(dop, "AND");
     STD_SPRINTF(dopr, "AL,%02X", (uint8_t)(cimm));
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID AND_EAX_I32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("AND_EAX_I32");
+static C_VOID AND_EAX_I32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("AND_EAX_I32");
     _adv;
     STD_SPRINTF(dop, "AND");
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 2));
+        TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+        TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 2));
         STD_SPRINTF(dopr, "AX,%04X", (uint16_t)(cimm));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 4));
+        TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+        TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 4));
         STD_SPRINTF(dopr, "EAX,%08X", (uint32_t)(cimm));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID PREFIX_ES(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_ES");
+static C_VOID PREFIX_ES(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("PREFIX_ES");
     _adv;
     STD_SPRINTF(doverds, "ES");
     STD_SPRINTF(doverss, "ES");
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID DAA(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("DAA");
+static C_VOID DAA(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("DAA");
     _adv;
     STD_SPRINTF(dop, "DAA");
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID SUB_RM8_R8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("SUB_RM8_R8");
+static C_VOID SUB_RM8_R8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("SUB_RM8_R8");
     _adv;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 1, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 1, 1));
     STD_SPRINTF(dop, "SUB");
     STD_SPRINTF(dopr, "%s,%s", drm, dr);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID SUB_RM32_R32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("SUB_RM32_R32");
+static C_VOID SUB_RM32_R32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("SUB_RM32_R32");
     _adv;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
     STD_SPRINTF(dop, "SUB");
     STD_SPRINTF(dopr, "%s,%s", drm, dr);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID SUB_R8_RM8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("SUB_R8_RM8");
+static C_VOID SUB_R8_RM8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("SUB_R8_RM8");
     _adv;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 1, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 1, 1));
     STD_SPRINTF(dop, "SUB");
     STD_SPRINTF(dopr, "%s,%s", dr, drm);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID SUB_R32_RM32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("SUB_R32_RM32");
+static C_VOID SUB_R32_RM32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("SUB_R32_RM32");
     _adv;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
     STD_SPRINTF(dop, "SUB");
     STD_SPRINTF(dopr, "%s,%s", dr, drm);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID SUB_AL_I8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("SUB_AL_I8");
+static C_VOID SUB_AL_I8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("SUB_AL_I8");
     _adv;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
     STD_SPRINTF(dop, "SUB");
     STD_SPRINTF(dopr, "AL,%02X", (uint8_t)(cimm));
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID SUB_EAX_I32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("SUB_EAX_I32");
+static C_VOID SUB_EAX_I32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("SUB_EAX_I32");
     _adv;
     STD_SPRINTF(dop, "SUB");
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 2));
+        TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+        TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 2));
         STD_SPRINTF(dopr, "AX,%04X", (uint16_t)(cimm));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 4));
+        TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+        TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 4));
         STD_SPRINTF(dopr, "EAX,%08X", (uint32_t)(cimm));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID PREFIX_CS(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_CS");
+static C_VOID PREFIX_CS(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("PREFIX_CS");
     _adv;
     STD_SPRINTF(doverds, "CS");
     STD_SPRINTF(doverss, "CS");
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID DAS(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("DAS");
+static C_VOID DAS(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("DAS");
     _adv;
     STD_SPRINTF(dop, "DAS");
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID XOR_RM8_R8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("XOR_RM8_R8");
+static C_VOID XOR_RM8_R8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("XOR_RM8_R8");
     _adv;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 1, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 1, 1));
     STD_SPRINTF(dop, "XOR");
     STD_SPRINTF(dopr, "%s,%s", drm, dr);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID XOR_RM32_R32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("XOR_RM32_R32");
+static C_VOID XOR_RM32_R32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("XOR_RM32_R32");
     _adv;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
     STD_SPRINTF(dop, "XOR");
     STD_SPRINTF(dopr, "%s,%s", drm, dr);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID XOR_R8_RM8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("XOR_R8_RM8");
+static C_VOID XOR_R8_RM8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("XOR_R8_RM8");
     _adv;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 1, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 1, 1));
     STD_SPRINTF(dop, "XOR");
     STD_SPRINTF(dopr, "%s,%s", dr, drm);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID XOR_R32_RM32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("XOR_R32_RM32");
+static C_VOID XOR_R32_RM32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("XOR_R32_RM32");
     _adv;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
     STD_SPRINTF(dop, "XOR");
     STD_SPRINTF(dopr, "%s,%s", dr, drm);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID XOR_AL_I8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("XOR_AL_I8");
+static C_VOID XOR_AL_I8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("XOR_AL_I8");
     _adv;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
     STD_SPRINTF(dop, "XOR");
     STD_SPRINTF(dopr, "AL,%02X", (uint8_t)(cimm));
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID XOR_EAX_I32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("XOR_EAX_I32");
+static C_VOID XOR_EAX_I32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("XOR_EAX_I32");
     _adv;
     STD_SPRINTF(dop, "XOR");
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 2));
+        TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+        TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 2));
         STD_SPRINTF(dopr, "AX,%04X", (uint16_t)(cimm));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 4));
+        TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+        TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 4));
         STD_SPRINTF(dopr, "EAX,%08X", (uint32_t)(cimm));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID PREFIX_SS(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_SS");
+static C_VOID PREFIX_SS(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("PREFIX_SS");
     _adv;
     STD_SPRINTF(doverds, "SS");
     STD_SPRINTF(doverss, "SS");
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID AAA(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("AAA");
+static C_VOID AAA(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("AAA");
     _adv;
     STD_SPRINTF(dop, "AAA");
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID CMP_RM8_R8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("CMP_RM8_R8");
+static C_VOID CMP_RM8_R8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("CMP_RM8_R8");
     _adv;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 1, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 1, 1));
     STD_SPRINTF(dop, "CMP");
     STD_SPRINTF(dopr, "%s,%s", drm, dr);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID CMP_RM32_R32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("CMP_RM32_R32");
+static C_VOID CMP_RM32_R32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("CMP_RM32_R32");
     _adv;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
     STD_SPRINTF(dop, "CMP");
     STD_SPRINTF(dopr, "%s,%s", drm, dr);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID CMP_R8_RM8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("CMP_R8_RM8");
+static C_VOID CMP_R8_RM8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("CMP_R8_RM8");
     _adv;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 1, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 1, 1));
     STD_SPRINTF(dop, "CMP");
     STD_SPRINTF(dopr, "%s,%s", dr, drm);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID CMP_R32_RM32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("CMP_R32_RM32");
+static C_VOID CMP_R32_RM32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("CMP_R32_RM32");
     _adv;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
     STD_SPRINTF(dop, "CMP");
     STD_SPRINTF(dopr, "%s,%s", dr, drm);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID CMP_AL_I8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("CMP_AL_I8");
+static C_VOID CMP_AL_I8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("CMP_AL_I8");
     _adv;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
     STD_SPRINTF(dop, "CMP");
     STD_SPRINTF(dopr, "AL,%02X", (uint8_t)(cimm));
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID CMP_EAX_I32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("CMP_EAX_I32");
+static C_VOID CMP_EAX_I32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("CMP_EAX_I32");
     _adv;
     STD_SPRINTF(dop, "CMP");
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 2));
+        TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+        TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 2));
         STD_SPRINTF(dopr, "AX,%04X", (uint16_t)(cimm));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 4));
+        TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+        TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 4));
         STD_SPRINTF(dopr, "EAX,%08X", (uint32_t)(cimm));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID PREFIX_DS(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_DS");
+static C_VOID PREFIX_DS(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("PREFIX_DS");
     _adv;
     STD_SPRINTF(doverds, "DS");
     STD_SPRINTF(doverss, "DS");
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID AAS(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("AAS");
+static C_VOID AAS(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("AAS");
     _adv;
     STD_SPRINTF(dop, "AAS");
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID INC_EAX(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_EAX");
+static C_VOID INC_EAX(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("INC_EAX");
     _adv;
     STD_SPRINTF(dop, "INC");
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "AX");
         break;
@@ -1495,16 +1617,18 @@ static C_VOID INC_EAX(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "EAX");
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID INC_ECX(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_ECX");
+static C_VOID INC_ECX(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("INC_ECX");
     _adv;
     STD_SPRINTF(dop, "INC");
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "CX");
         break;
@@ -1512,16 +1636,18 @@ static C_VOID INC_ECX(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "ECX");
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID INC_EDX(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_EDX");
+static C_VOID INC_EDX(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("INC_EDX");
     _adv;
     STD_SPRINTF(dop, "INC");
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "DX");
         break;
@@ -1529,16 +1655,18 @@ static C_VOID INC_EDX(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "EDX");
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID INC_EBX(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_EBX");
+static C_VOID INC_EBX(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("INC_EBX");
     _adv;
     STD_SPRINTF(dop, "INC");
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "BX");
         break;
@@ -1546,16 +1674,18 @@ static C_VOID INC_EBX(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "EBX");
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID INC_ESP(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_ESP");
+static C_VOID INC_ESP(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("INC_ESP");
     _adv;
     STD_SPRINTF(dop, "INC");
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "SP");
         break;
@@ -1563,16 +1693,18 @@ static C_VOID INC_ESP(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "ESP");
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID INC_EBP(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_EBP");
+static C_VOID INC_EBP(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("INC_EBP");
     _adv;
     STD_SPRINTF(dop, "INC");
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "BP");
         break;
@@ -1580,16 +1712,18 @@ static C_VOID INC_EBP(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "EBP");
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID INC_ESI(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_ESI");
+static C_VOID INC_ESI(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("INC_ESI");
     _adv;
     STD_SPRINTF(dop, "INC");
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "SI");
         break;
@@ -1597,16 +1731,18 @@ static C_VOID INC_ESI(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "ESI");
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID INC_EDI(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("INC_EDI");
+static C_VOID INC_EDI(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("INC_EDI");
     _adv;
     STD_SPRINTF(dop, "INC");
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "DI");
         break;
@@ -1614,16 +1750,18 @@ static C_VOID INC_EDI(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "EDI");
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID DEC_EAX(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_EAX");
+static C_VOID DEC_EAX(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("DEC_EAX");
     _adv;
     STD_SPRINTF(dop, "DEC");
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "AX");
         break;
@@ -1631,16 +1769,18 @@ static C_VOID DEC_EAX(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "EAX");
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID DEC_ECX(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_ECX");
+static C_VOID DEC_ECX(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("DEC_ECX");
     _adv;
     STD_SPRINTF(dop, "DEC");
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "CX");
         break;
@@ -1648,16 +1788,18 @@ static C_VOID DEC_ECX(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "ECX");
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID DEC_EDX(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_EDX");
+static C_VOID DEC_EDX(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("DEC_EDX");
     _adv;
     STD_SPRINTF(dop, "DEC");
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "DX");
         break;
@@ -1665,16 +1807,18 @@ static C_VOID DEC_EDX(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "EDX");
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID DEC_EBX(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_EBX");
+static C_VOID DEC_EBX(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("DEC_EBX");
     _adv;
     STD_SPRINTF(dop, "DEC");
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "BX");
         break;
@@ -1682,16 +1826,18 @@ static C_VOID DEC_EBX(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "EBX");
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID DEC_ESP(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_ESP");
+static C_VOID DEC_ESP(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("DEC_ESP");
     _adv;
     STD_SPRINTF(dop, "DEC");
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "SP");
         break;
@@ -1699,16 +1845,18 @@ static C_VOID DEC_ESP(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "ESP");
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID DEC_EBP(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_EBP");
+static C_VOID DEC_EBP(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("DEC_EBP");
     _adv;
     STD_SPRINTF(dop, "DEC");
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "BP");
         break;
@@ -1716,16 +1864,18 @@ static C_VOID DEC_EBP(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "EBP");
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID DEC_ESI(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_ESI");
+static C_VOID DEC_ESI(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("DEC_ESI");
     _adv;
     STD_SPRINTF(dop, "DEC");
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "SI");
         break;
@@ -1733,16 +1883,18 @@ static C_VOID DEC_ESI(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "ESI");
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID DEC_EDI(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("DEC_EDI");
+static C_VOID DEC_EDI(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("DEC_EDI");
     _adv;
     STD_SPRINTF(dop, "DEC");
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "DI");
         break;
@@ -1750,16 +1902,18 @@ static C_VOID DEC_EDI(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "EDI");
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID PUSH_EAX(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_EAX");
+static C_VOID PUSH_EAX(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("PUSH_EAX");
     _adv;
     STD_SPRINTF(dop, "PUSH");
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "AX");
         break;
@@ -1767,16 +1921,18 @@ static C_VOID PUSH_EAX(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "EAX");
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID PUSH_ECX(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_ECX");
+static C_VOID PUSH_ECX(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("PUSH_ECX");
     _adv;
     STD_SPRINTF(dop, "PUSH");
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "CX");
         break;
@@ -1784,16 +1940,18 @@ static C_VOID PUSH_ECX(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "ECX");
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID PUSH_EDX(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_EDX");
+static C_VOID PUSH_EDX(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("PUSH_EDX");
     _adv;
     STD_SPRINTF(dop, "PUSH");
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "DX");
         break;
@@ -1801,16 +1959,18 @@ static C_VOID PUSH_EDX(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "EDX");
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID PUSH_EBX(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_EBX");
+static C_VOID PUSH_EBX(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("PUSH_EBX");
     _adv;
     STD_SPRINTF(dop, "PUSH");
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "BX");
         break;
@@ -1818,16 +1978,18 @@ static C_VOID PUSH_EBX(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "EBX");
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID PUSH_ESP(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_ESP");
+static C_VOID PUSH_ESP(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("PUSH_ESP");
     _adv;
     STD_SPRINTF(dop, "PUSH");
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "SP");
         break;
@@ -1835,16 +1997,18 @@ static C_VOID PUSH_ESP(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "ESP");
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID PUSH_EBP(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_EBP");
+static C_VOID PUSH_EBP(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("PUSH_EBP");
     _adv;
     STD_SPRINTF(dop, "PUSH");
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "BP");
         break;
@@ -1852,16 +2016,18 @@ static C_VOID PUSH_EBP(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "EBP");
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID PUSH_ESI(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_ESI");
+static C_VOID PUSH_ESI(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("PUSH_ESI");
     _adv;
     STD_SPRINTF(dop, "PUSH");
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "SI");
         break;
@@ -1869,16 +2035,18 @@ static C_VOID PUSH_ESI(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "ESI");
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID PUSH_EDI(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_EDI");
+static C_VOID PUSH_EDI(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("PUSH_EDI");
     _adv;
     STD_SPRINTF(dop, "PUSH");
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "DI");
         break;
@@ -1886,16 +2054,18 @@ static C_VOID PUSH_EDI(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "EDI");
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID POP_EAX(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_EAX");
+static C_VOID POP_EAX(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("POP_EAX");
     _adv;
     STD_SPRINTF(dop, "POP");
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "AX");
         break;
@@ -1903,16 +2073,18 @@ static C_VOID POP_EAX(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "EAX");
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID POP_ECX(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_ECX");
+static C_VOID POP_ECX(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("POP_ECX");
     _adv;
     STD_SPRINTF(dop, "POP");
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "CX");
         break;
@@ -1920,16 +2092,18 @@ static C_VOID POP_ECX(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "ECX");
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID POP_EDX(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_EDX");
+static C_VOID POP_EDX(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("POP_EDX");
     _adv;
     STD_SPRINTF(dop, "POP");
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "DX");
         break;
@@ -1937,16 +2111,18 @@ static C_VOID POP_EDX(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "EDX");
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID POP_EBX(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_EBX");
+static C_VOID POP_EBX(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("POP_EBX");
     _adv;
     STD_SPRINTF(dop, "POP");
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "BX");
         break;
@@ -1954,16 +2130,18 @@ static C_VOID POP_EBX(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "EBX");
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID POP_ESP(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_ESP");
+static C_VOID POP_ESP(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("POP_ESP");
     _adv;
     STD_SPRINTF(dop, "POP");
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "SP");
         break;
@@ -1971,16 +2149,18 @@ static C_VOID POP_ESP(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "ESP");
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID POP_EBP(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_EBP");
+static C_VOID POP_EBP(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("POP_EBP");
     _adv;
     STD_SPRINTF(dop, "POP");
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "BP");
         break;
@@ -1988,16 +2168,18 @@ static C_VOID POP_EBP(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "EBP");
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID POP_ESI(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_ESI");
+static C_VOID POP_ESI(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("POP_ESI");
     _adv;
     STD_SPRINTF(dop, "POP");
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "SI");
         break;
@@ -2005,16 +2187,18 @@ static C_VOID POP_ESI(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "ESI");
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID POP_EDI(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_EDI");
+static C_VOID POP_EDI(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("POP_EDI");
     _adv;
     STD_SPRINTF(dop, "POP");
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "DI");
         break;
@@ -2022,17 +2206,18 @@ static C_VOID POP_EDI(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "EDI");
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
 
-
-static C_VOID PUSHA(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSHA");
+static C_VOID PUSHA(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("PUSHA");
     _adv;
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dop, "PUSHA");
         break;
@@ -2040,15 +2225,17 @@ static C_VOID PUSHA(dasm32_context *dasmContext) {
         STD_SPRINTF(dop, "PUSHAD");
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID POPA(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("POPA");
+static C_VOID POPA(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("POPA");
     _adv;
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dop, "POPA");
         break;
@@ -2056,63 +2243,74 @@ static C_VOID POPA(dasm32_context *dasmContext) {
         STD_SPRINTF(dop, "POPAD");
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID BOUND_R16_M16_16(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("BOUND_R16_M16_16");
+static C_VOID BOUND_R16_M16_16(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("BOUND_R16_M16_16");
     _adv;
     STD_SPRINTF(dop, "BOUND");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize * 2));
-    if (!flagmem) {
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize * 2));
+    if (!flagmem)
+    {
         STD_SPRINTF(dopr, "<ERROR>");
-    } else {
+    }
+    else
+    {
         STD_SPRINTF(dopr, "%s,%s", dr, drm);
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID ARPL_RM16_R16(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("ARPL_RM16_R16");
+static C_VOID ARPL_RM16_R16(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("ARPL_RM16_R16");
     _adv;
     STD_SPRINTF(dop, "ARPL");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 2, 2));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 2, 2));
     STD_SPRINTF(dopr, "%s,%s", drm, dr);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID PREFIX_FS(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_FS");
+static C_VOID PREFIX_FS(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("PREFIX_FS");
     _adv;
     STD_SPRINTF(doverds, "FS");
     STD_SPRINTF(doverss, "FS");
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID PREFIX_GS(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_GS");
+static C_VOID PREFIX_GS(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("PREFIX_GS");
     _adv;
     STD_SPRINTF(doverds, "GS");
     STD_SPRINTF(doverss, "GS");
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID PREFIX_OprSize(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_OprSize");
+static C_VOID PREFIX_OprSize(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("PREFIX_OprSize");
     _adv;
     prefix_oprsize = 0x01;
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID PREFIX_AddrSize(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_AddrSize");
+static C_VOID PREFIX_AddrSize(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("PREFIX_AddrSize");
     _adv;
     prefix_addrsize = 0x01;
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID PUSH_I32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_I32");
+static C_VOID PUSH_I32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("PUSH_I32");
     _adv;
     STD_SPRINTF(dop, "PUSH");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
-    switch (_GetOperandSize) {
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "%04X", (uint16_t)(cimm));
         break;
@@ -2120,18 +2318,20 @@ static C_VOID PUSH_I32(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "%08X", (uint32_t)(cimm));
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID IMUL_R32_RM32_I32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("IMUL_R32_RM32_I32");
+static C_VOID IMUL_R32_RM32_I32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("IMUL_R32_RM32_I32");
     _adv;
     STD_SPRINTF(dop, "IMUL");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
-    switch (_GetOperandSize) {
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "%s,%s,%04X", dr, drm, (uint16_t)(cimm));
         break;
@@ -2139,35 +2339,39 @@ static C_VOID IMUL_R32_RM32_I32(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "%s,%s,%08X", dr, drm, (uint32_t)(cimm));
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID PUSH_I8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_I8");
+static C_VOID PUSH_I8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("PUSH_I8");
     _adv;
     STD_SPRINTF(dop, "PUSH");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
     STD_SPRINTF(dopr, "%02X", (uint8_t)(cimm));
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID IMUL_R32_RM32_I8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("IMUL_R32_RM32_I8");
+static C_VOID IMUL_R32_RM32_I8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("IMUL_R32_RM32_I8");
     _adv;
     STD_SPRINTF(dop, "IMUL");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
     STD_SPRINTF(dopr, "%s,%s,%02X", dr, drm, (uint8_t)(cimm));
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID INSB(dasm32_context *dasmContext) {
+static C_VOID INSB(dasm32_context *dasmContext)
+{
     C_CHAR dptr[0x100];
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("INSB");
+    TYPE_TRACE_CALL_BEGIN("INSB");
     _adv;
     STD_SPRINTF(dop, "INSB");
     STD_SPRINTF(dptr, "BYTE PTR ");
-    switch (_GetAddressSize) {
+    switch (_GetAddressSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "ES:[DI],DX");
         break;
@@ -2175,16 +2379,18 @@ static C_VOID INSB(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "ES:[EDI],DX");
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID INSW(dasm32_context *dasmContext) {
+static C_VOID INSW(dasm32_context *dasmContext)
+{
     C_CHAR dptr[0x100];
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("INSW");
+    TYPE_TRACE_CALL_BEGIN("INSW");
     _adv;
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dop, "INSW");
         STD_SPRINTF(dptr, "WORD PTR ");
@@ -2194,10 +2400,11 @@ static C_VOID INSW(dasm32_context *dasmContext) {
         STD_SPRINTF(dptr, "DWORD PTR ");
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    switch (_GetAddressSize) {
+    switch (_GetAddressSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "ES:[DI],DX");
         break;
@@ -2205,18 +2412,20 @@ static C_VOID INSW(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "ES:[EDI],DX");
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID OUTSB(dasm32_context *dasmContext) {
+static C_VOID OUTSB(dasm32_context *dasmContext)
+{
     C_CHAR dptr[0x100];
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("OUTSB");
+    TYPE_TRACE_CALL_BEGIN("OUTSB");
     _adv;
     STD_SPRINTF(dop, "OUTSB");
     STD_SPRINTF(dptr, "BYTE PTR ");
-    switch (_GetAddressSize) {
+    switch (_GetAddressSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "DX,%s:[SI]", doverds);
         break;
@@ -2224,16 +2433,18 @@ static C_VOID OUTSB(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "DX,%s:[ESI]", doverds);
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID OUTSW(dasm32_context *dasmContext) {
+static C_VOID OUTSW(dasm32_context *dasmContext)
+{
     C_CHAR dptr[0x100];
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("OUTSW");
+    TYPE_TRACE_CALL_BEGIN("OUTSW");
     _adv;
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dop, "OUTSW");
         STD_SPRINTF(dptr, "WORD PTR ");
@@ -2243,10 +2454,11 @@ static C_VOID OUTSW(dasm32_context *dasmContext) {
         STD_SPRINTF(dptr, "DWORD PTR ");
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    switch (_GetAddressSize) {
+    switch (_GetAddressSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "DX,%s:[SI]", doverds);
         break;
@@ -2254,243 +2466,264 @@ static C_VOID OUTSW(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "DX,%s:[ESI]", doverds);
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID JO_REL8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("JO_REL8");
+static C_VOID JO_REL8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("JO_REL8");
     _adv;
     STD_SPRINTF(dop, "JO");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
     SPRINTFSI(dasmContext, dopr, (uint8_t)(cimm), 1);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID JNO_REL8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("JNO_REL8");
+static C_VOID JNO_REL8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("JNO_REL8");
     _adv;
     STD_SPRINTF(dop, "JNO");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
     SPRINTFSI(dasmContext, dopr, (uint8_t)(cimm), 1);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID JC_REL8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("JC_REL8");
+static C_VOID JC_REL8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("JC_REL8");
     _adv;
     STD_SPRINTF(dop, "JC");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
     SPRINTFSI(dasmContext, dopr, (uint8_t)(cimm), 1);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID JNC_REL8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("JNC_REL8");
+static C_VOID JNC_REL8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("JNC_REL8");
     _adv;
     STD_SPRINTF(dop, "JNC");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
     SPRINTFSI(dasmContext, dopr, (uint8_t)(cimm), 1);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID JZ_REL8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("JZ_REL8");
+static C_VOID JZ_REL8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("JZ_REL8");
     _adv;
     STD_SPRINTF(dop, "JZ");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
     SPRINTFSI(dasmContext, dopr, (uint8_t)(cimm), 1);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID JNZ_REL8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("JNZ_REL8");
+static C_VOID JNZ_REL8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("JNZ_REL8");
     _adv;
     STD_SPRINTF(dop, "JNZ");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
     SPRINTFSI(dasmContext, dopr, (uint8_t)(cimm), 1);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID JNA_REL8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("JNA_REL8");
+static C_VOID JNA_REL8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("JNA_REL8");
     _adv;
     STD_SPRINTF(dop, "JNA");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
     SPRINTFSI(dasmContext, dopr, (uint8_t)(cimm), 1);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID JA_REL8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("JA_REL8");
+static C_VOID JA_REL8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("JA_REL8");
     _adv;
     STD_SPRINTF(dop, "JA");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
     SPRINTFSI(dasmContext, dopr, (uint8_t)(cimm), 1);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID JS_REL8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("JS_REL8");
+static C_VOID JS_REL8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("JS_REL8");
     _adv;
     STD_SPRINTF(dop, "JS");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
     SPRINTFSI(dasmContext, dopr, (uint8_t)(cimm), 1);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID JNS_REL8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("JNS_REL8");
+static C_VOID JNS_REL8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("JNS_REL8");
     _adv;
     STD_SPRINTF(dop, "JNS");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
     SPRINTFSI(dasmContext, dopr, (uint8_t)(cimm), 1);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID JP_REL8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("JP_REL8");
+static C_VOID JP_REL8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("JP_REL8");
     _adv;
     STD_SPRINTF(dop, "JP");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
     SPRINTFSI(dasmContext, dopr, (uint8_t)(cimm), 1);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID JNP_REL8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("JNP_REL8");
+static C_VOID JNP_REL8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("JNP_REL8");
     _adv;
     STD_SPRINTF(dop, "JNP");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
     SPRINTFSI(dasmContext, dopr, (uint8_t)(cimm), 1);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID JL_REL8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("JL_REL8");
+static C_VOID JL_REL8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("JL_REL8");
     _adv;
     STD_SPRINTF(dop, "JL");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
     SPRINTFSI(dasmContext, dopr, (uint8_t)(cimm), 1);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID JNL_REL8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("JNL_REL8");
+static C_VOID JNL_REL8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("JNL_REL8");
     _adv;
     STD_SPRINTF(dop, "JNL");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
     SPRINTFSI(dasmContext, dopr, (uint8_t)(cimm), 1);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID JNG_REL8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("JNG_REL8");
+static C_VOID JNG_REL8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("JNG_REL8");
     _adv;
     STD_SPRINTF(dop, "JNG");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
     SPRINTFSI(dasmContext, dopr, (uint8_t)(cimm), 1);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID JG_REL8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("JG_REL8");
+static C_VOID JG_REL8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("JG_REL8");
     _adv;
     STD_SPRINTF(dop, "JG");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
     SPRINTFSI(dasmContext, dopr, (uint8_t)(cimm), 1);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID INS_80(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_80");
+static C_VOID INS_80(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("INS_80");
     _adv;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 1));
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
-    switch (cr) {
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+    switch (cr)
+    {
     case 0: /* ADD_RM8_I8 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ADD_RM8_I8");
+        TYPE_TRACE_BLOCK_BEGIN("ADD_RM8_I8");
         STD_SPRINTF(dop, "ADD");
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 1: /* OR_RM8_I8 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OR_RM8_I8");
+        TYPE_TRACE_BLOCK_BEGIN("OR_RM8_I8");
         STD_SPRINTF(dop, "OR");
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 2: /* ADC_RM8_I8 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ADC_RM8_I8");
+        TYPE_TRACE_BLOCK_BEGIN("ADC_RM8_I8");
         STD_SPRINTF(dop, "ADC");
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 3: /* SBB_RM8_I8 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SBB_RM8_I8");
+        TYPE_TRACE_BLOCK_BEGIN("SBB_RM8_I8");
         STD_SPRINTF(dop, "SBB");
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 4: /* AND_RM8_I8 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("AND_RM8_I8");
+        TYPE_TRACE_BLOCK_BEGIN("AND_RM8_I8");
         STD_SPRINTF(dop, "AND");
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 5: /* SUB_RM8_I8 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SUB_RM8_I8");
+        TYPE_TRACE_BLOCK_BEGIN("SUB_RM8_I8");
         STD_SPRINTF(dop, "SUB");
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 6: /* XOR_RM8_I8 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("XOR_RM8_I8");
+        TYPE_TRACE_BLOCK_BEGIN("XOR_RM8_I8");
         STD_SPRINTF(dop, "XOR");
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 7: /* CMP_RM8_I8 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("CMP_RM8_I8");
+        TYPE_TRACE_BLOCK_BEGIN("CMP_RM8_I8");
         STD_SPRINTF(dop, "CMP");
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
     STD_SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID INS_81(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_81");
+static C_VOID INS_81(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("INS_81");
     _adv;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, _GetOperandSize));
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
-    switch (cr) {
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, _GetOperandSize));
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
+    switch (cr)
+    {
     case 0: /* ADD_RM32_I32 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ADD_RM32_I32");
+        TYPE_TRACE_BLOCK_BEGIN("ADD_RM32_I32");
         STD_SPRINTF(dop, "ADD");
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 1: /* OR_RM32_I32 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OR_RM32_I32");
+        TYPE_TRACE_BLOCK_BEGIN("OR_RM32_I32");
         STD_SPRINTF(dop, "OR");
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 2: /* ADC_RM32_I32 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ADC_RM32_I32");
+        TYPE_TRACE_BLOCK_BEGIN("ADC_RM32_I32");
         STD_SPRINTF(dop, "ADC");
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 3: /* SBB_RM32_I32 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SBB_RM32_I32");
+        TYPE_TRACE_BLOCK_BEGIN("SBB_RM32_I32");
         STD_SPRINTF(dop, "SBB");
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 4: /* AND_RM32_I32 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("AND_RM32_I32");
+        TYPE_TRACE_BLOCK_BEGIN("AND_RM32_I32");
         STD_SPRINTF(dop, "AND");
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 5: /* SUB_RM32_I32 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SUB_RM32_I32");
+        TYPE_TRACE_BLOCK_BEGIN("SUB_RM32_I32");
         STD_SPRINTF(dop, "SUB");
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 6: /* XOR_RM32_I32 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("XOR_RM32_I32");
+        TYPE_TRACE_BLOCK_BEGIN("XOR_RM32_I32");
         STD_SPRINTF(dop, "XOR");
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 7: /* CMP_RM32_I32 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("CMP_RM32_I32");
+        TYPE_TRACE_BLOCK_BEGIN("CMP_RM32_I32");
         STD_SPRINTF(dop, "CMP");
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "%s,%04X", drm, (uint16_t)(cimm));
         break;
@@ -2498,162 +2731,178 @@ static C_VOID INS_81(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "%s,%08X", drm, (uint32_t)(cimm));
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID INS_83(dasm32_context *dasmContext) {
+static C_VOID INS_83(dasm32_context *dasmContext)
+{
     C_CHAR dsimm[0x100];
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_83");
+    TYPE_TRACE_CALL_BEGIN("INS_83");
     _adv;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, _GetOperandSize));
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
-    switch (cr) {
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, _GetOperandSize));
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+    switch (cr)
+    {
     case 0: /* ADD_RM32_I8 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ADD_RM32_I8");
+        TYPE_TRACE_BLOCK_BEGIN("ADD_RM32_I8");
         STD_SPRINTF(dop, "ADD");
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 1: /* OR_RM32_I8 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OR_RM32_I8");
+        TYPE_TRACE_BLOCK_BEGIN("OR_RM32_I8");
         STD_SPRINTF(dop, "OR");
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 2: /* ADC_RM32_I8 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ADC_RM32_I8");
+        TYPE_TRACE_BLOCK_BEGIN("ADC_RM32_I8");
         STD_SPRINTF(dop, "ADC");
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 3: /* SBB_RM32_I8 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SBB_RM32_I8");
+        TYPE_TRACE_BLOCK_BEGIN("SBB_RM32_I8");
         STD_SPRINTF(dop, "SBB");
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 4: /* AND_RM32_I8 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("AND_RM32_I8");
+        TYPE_TRACE_BLOCK_BEGIN("AND_RM32_I8");
         STD_SPRINTF(dop, "AND");
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 5: /* SUB_RM32_I8 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SUB_RM32_I8");
+        TYPE_TRACE_BLOCK_BEGIN("SUB_RM32_I8");
         STD_SPRINTF(dop, "SUB");
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 6: /* XOR_RM32_I8 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("XOR_RM32_I8");
+        TYPE_TRACE_BLOCK_BEGIN("XOR_RM32_I8");
         STD_SPRINTF(dop, "XOR");
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 7: /* CMP_RM32_I8 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("CMP_RM32_I8");
+        TYPE_TRACE_BLOCK_BEGIN("CMP_RM32_I8");
         STD_SPRINTF(dop, "CMP");
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
     SPRINTFSI(dasmContext, dsimm, (uint8_t)(cimm), 1);
     STD_SPRINTF(dopr, "%s,%s", drm, dsimm);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID TEST_RM8_R8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("TEST_RM8_R8");
+static C_VOID TEST_RM8_R8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("TEST_RM8_R8");
     _adv;
     STD_SPRINTF(dop, "TEST");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 1, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 1, 1));
     STD_SPRINTF(dopr, "%s,%s", drm, dr);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID TEST_RM32_R32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("TEST_RM32_R32");
+static C_VOID TEST_RM32_R32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("TEST_RM32_R32");
     _adv;
     STD_SPRINTF(dop, "TEST");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
     STD_SPRINTF(dopr, "%s,%s", drm, dr);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID XCHG_RM8_R8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_RM8_R8");
+static C_VOID XCHG_RM8_R8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("XCHG_RM8_R8");
     _adv;
     STD_SPRINTF(dop, "XCHG");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 1, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 1, 1));
     STD_SPRINTF(dopr, "%s,%s", drm, dr);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID XCHG_RM32_R32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_RM32_R32");
+static C_VOID XCHG_RM32_R32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("XCHG_RM32_R32");
     _adv;
     STD_SPRINTF(dop, "XCHG");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
     STD_SPRINTF(dopr, "%s,%s", drm, dr);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_RM8_R8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_RM8_R8");
+static C_VOID MOV_RM8_R8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("MOV_RM8_R8");
     _adv;
     STD_SPRINTF(dop, "MOV");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 1, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 1, 1));
     STD_SPRINTF(dopr, "%s,%s", drm, dr);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_RM32_R32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_RM32_R32");
+static C_VOID MOV_RM32_R32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("MOV_RM32_R32");
     _adv;
     STD_SPRINTF(dop, "MOV");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
     STD_SPRINTF(dopr, "%s,%s", drm, dr);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_R8_RM8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_R8_RM8");
+static C_VOID MOV_R8_RM8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("MOV_R8_RM8");
     _adv;
     STD_SPRINTF(dop, "MOV");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 1, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 1, 1));
     STD_SPRINTF(dopr, "%s,%s", dr, drm);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_R32_RM32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_R32_RM32");
+static C_VOID MOV_R32_RM32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("MOV_R32_RM32");
     _adv;
     STD_SPRINTF(dop, "MOV");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
     STD_SPRINTF(dopr, "%s,%s", dr, drm);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_RM16_SREG(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_RM16_SREG");
+static C_VOID MOV_RM16_SREG(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("MOV_RM16_SREG");
     _adv;
     STD_SPRINTF(dop, "MOV");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm_sreg(dasmContext, 2));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm_sreg(dasmContext, 2));
     STD_SPRINTF(dopr, "%s,%s", drm, dr);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID LEA_R32_M32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("LEA_R32_M32");
+static C_VOID LEA_R32_M32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("LEA_R32_M32");
     _adv;
     STD_SPRINTF(dop, "LEA");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
     STD_SPRINTF(dopr, "%s,%s", dr, drm);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_SREG_RM16(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_SREG_RM16");
+static C_VOID MOV_SREG_RM16(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("MOV_SREG_RM16");
     _adv;
     STD_SPRINTF(dop, "MOV");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm_sreg(dasmContext, 2));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm_sreg(dasmContext, 2));
     STD_SPRINTF(dopr, "%s,%s", dr, drm);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID INS_8F(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_8F");
+static C_VOID INS_8F(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("INS_8F");
     _adv;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 9, _GetOperandSize));
-    switch (cr) {
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 9, _GetOperandSize));
+    switch (cr)
+    {
     case 0: /* POP_RM32 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("POP_RM32");
-        switch (_GetOperandSize) {
+        TYPE_TRACE_BLOCK_BEGIN("POP_RM32");
+        switch (_GetOperandSize)
+        {
         case 2:
             STD_SPRINTF(dop, "POP");
             break;
@@ -2661,210 +2910,227 @@ static C_VOID INS_8F(dasm32_context *dasmContext) {
             STD_SPRINTF(dop, "POPD");
             break;
         default:
-            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+            TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
         STD_SPRINTF(dopr, "%s", drm);
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 1:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(1)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_BEGIN("cr(1)");
+        TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
+        TYPE_TRACE_BLOCK_END;
         break;
     case 2:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_BEGIN("cr(2)");
+        TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
+        TYPE_TRACE_BLOCK_END;
         break;
     case 3:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(3)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_BEGIN("cr(3)");
+        TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
+        TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_BEGIN("cr(4)");
+        TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
+        TYPE_TRACE_BLOCK_END;
         break;
     case 5:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(5)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_BEGIN("cr(5)");
+        TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
+        TYPE_TRACE_BLOCK_END;
         break;
     case 6:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(6)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_BEGIN("cr(6)");
+        TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
+        TYPE_TRACE_BLOCK_END;
         break;
     case 7:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(7)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_BEGIN("cr(7)");
+        TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
+        TYPE_TRACE_BLOCK_END;
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID NOP(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("NOP");
+static C_VOID NOP(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("NOP");
     _adv;
     STD_SPRINTF(dop, "NOP");
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID XCHG_ECX_EAX(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_ECX_EAX");
+static C_VOID XCHG_ECX_EAX(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("XCHG_ECX_EAX");
     _adv;
     STD_SPRINTF(dop, "XCHG");
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+        TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
         STD_SPRINTF(dopr, "CX,AX");
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+        TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
         STD_SPRINTF(dopr, "ECX,EAX");
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID XCHG_EDX_EAX(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_EDX_EAX");
+static C_VOID XCHG_EDX_EAX(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("XCHG_EDX_EAX");
     _adv;
     STD_SPRINTF(dop, "XCHG");
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+        TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
         STD_SPRINTF(dopr, "DX,AX");
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+        TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
         STD_SPRINTF(dopr, "EDX,EAX");
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID XCHG_EBX_EAX(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_EBX_EAX");
+static C_VOID XCHG_EBX_EAX(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("XCHG_EBX_EAX");
     _adv;
     STD_SPRINTF(dop, "XCHG");
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+        TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
         STD_SPRINTF(dopr, "BX,AX");
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+        TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
         STD_SPRINTF(dopr, "EBX,EAX");
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID XCHG_ESP_EAX(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_ESP_EAX");
+static C_VOID XCHG_ESP_EAX(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("XCHG_ESP_EAX");
     _adv;
     STD_SPRINTF(dop, "XCHG");
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+        TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
         STD_SPRINTF(dopr, "SP,AX");
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+        TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
         STD_SPRINTF(dopr, "ESP,EAX");
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID XCHG_EBP_EAX(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_EBP_EAX");
+static C_VOID XCHG_EBP_EAX(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("XCHG_EBP_EAX");
     _adv;
     STD_SPRINTF(dop, "XCHG");
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+        TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
         STD_SPRINTF(dopr, "BP,AX");
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+        TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
         STD_SPRINTF(dopr, "EBP,EAX");
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID XCHG_ESI_EAX(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_ESI_EAX");
+static C_VOID XCHG_ESI_EAX(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("XCHG_ESI_EAX");
     _adv;
     STD_SPRINTF(dop, "XCHG");
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+        TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
         STD_SPRINTF(dopr, "SI,AX");
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+        TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
         STD_SPRINTF(dopr, "ESI,EAX");
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID XCHG_EDI_EAX(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("XCHG_EDI_EAX");
+static C_VOID XCHG_EDI_EAX(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("XCHG_EDI_EAX");
     _adv;
     STD_SPRINTF(dop, "XCHG");
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+        TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
         STD_SPRINTF(dopr, "DI,AX");
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+        TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
         STD_SPRINTF(dopr, "EDI,EAX");
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID CBW(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("CBW");
+static C_VOID CBW(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("CBW");
     _adv;
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dop, "CBW");
         break;
@@ -2872,15 +3138,17 @@ static C_VOID CBW(dasm32_context *dasmContext) {
         STD_SPRINTF(dop, "CWDE");
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID CWD(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("CWD");
+static C_VOID CWD(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("CWD");
     _adv;
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dop, "CWD");
         break;
@@ -2888,50 +3156,55 @@ static C_VOID CWD(dasm32_context *dasmContext) {
         STD_SPRINTF(dop, "CDQ");
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID CALL_PTR16_32(dasm32_context *dasmContext) {
+static C_VOID CALL_PTR16_32(dasm32_context *dasmContext)
+{
     uint16_t newcs;
     uint32_t neweip;
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("CALL_PTR16_32");
+    TYPE_TRACE_CALL_BEGIN("CALL_PTR16_32");
     _adv;
     STD_SPRINTF(dop, "CALL");
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 4));
+        TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+        TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 4));
         neweip = (uint16_t)(cimm);
         newcs = (uint16_t)(cimm >> 16);
         STD_SPRINTF(dopr, "%04X:%04X", newcs, (uint16_t)(neweip));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 8));
+        TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+        TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 8));
         neweip = (uint32_t)(cimm);
         newcs = (uint16_t)(cimm >> 32);
         STD_SPRINTF(dopr, "%04X:%08X", newcs, (uint32_t)(neweip));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID WAIT(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("WAIT");
+static C_VOID WAIT(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("WAIT");
     _adv;
     STD_SPRINTF(dop, "WAIT");
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID PUSHF(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSHF");
+static C_VOID PUSHF(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("PUSHF");
     _adv;
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dop, "PUSHF");
         break;
@@ -2939,15 +3212,17 @@ static C_VOID PUSHF(dasm32_context *dasmContext) {
         STD_SPRINTF(dop, "PUSHFD");
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID POPF(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("POPF");
+static C_VOID POPF(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("POPF");
     _adv;
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dop, "POPF");
         break;
@@ -2955,37 +3230,42 @@ static C_VOID POPF(dasm32_context *dasmContext) {
         STD_SPRINTF(dop, "POPFD");
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID SAHF(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("SAHF");
+static C_VOID SAHF(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("SAHF");
     _adv;
     STD_SPRINTF(dop, "SAHF");
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID LAHF(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("LAHF");
+static C_VOID LAHF(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("LAHF");
     _adv;
     STD_SPRINTF(dop, "LAHF");
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_AL_MOFFS8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_AL_MOFFS8");
+static C_VOID MOV_AL_MOFFS8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("MOV_AL_MOFFS8");
     _adv;
     STD_SPRINTF(dop, "MOV");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_moffs(dasmContext, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_moffs(dasmContext, 1));
     STD_SPRINTF(dopr, "AL,%s", drm);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_EAX_MOFFS32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_EAX_MOFFS32");
+static C_VOID MOV_EAX_MOFFS32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("MOV_EAX_MOFFS32");
     _adv;
     STD_SPRINTF(dop, "MOV");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_moffs(dasmContext, _GetOperandSize));
-    switch (_GetOperandSize) {
+    TYPE_TRACE_CHECK_RETURN(_d_moffs(dasmContext, _GetOperandSize));
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "AX,%s", drm);
         break;
@@ -2993,25 +3273,28 @@ static C_VOID MOV_EAX_MOFFS32(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "EAX,%s", drm);
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_MOFFS8_AL(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_MOFFS8_AL");
+static C_VOID MOV_MOFFS8_AL(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("MOV_MOFFS8_AL");
     _adv;
     STD_SPRINTF(dop, "MOV");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_moffs(dasmContext, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_moffs(dasmContext, 1));
     STD_SPRINTF(dopr, "%s,AL", drm);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_MOFFS32_EAX(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_MOFFS32_EAX");
+static C_VOID MOV_MOFFS32_EAX(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("MOV_MOFFS32_EAX");
     _adv;
     STD_SPRINTF(dop, "MOV");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_moffs(dasmContext, _GetOperandSize));
-    switch (_GetOperandSize) {
+    TYPE_TRACE_CHECK_RETURN(_d_moffs(dasmContext, _GetOperandSize));
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "%s,AX", drm);
         break;
@@ -3019,18 +3302,20 @@ static C_VOID MOV_MOFFS32_EAX(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "%s,EAX", drm);
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID MOVSB(dasm32_context *dasmContext) {
+static C_VOID MOVSB(dasm32_context *dasmContext)
+{
     C_CHAR dptr[0x100];
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOVS");
+    TYPE_TRACE_CALL_BEGIN("MOVS");
     _adv;
     STD_SPRINTF(dop, "MOVSB");
     STD_SPRINTF(dptr, "BYTE PTR ");
-    switch (_GetAddressSize) {
+    switch (_GetAddressSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "ES:[DI],%s:[SI]", doverds);
         break;
@@ -3038,16 +3323,18 @@ static C_VOID MOVSB(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "ES:[EDI],%s:[ESI]", doverds);
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID MOVSW(dasm32_context *dasmContext) {
+static C_VOID MOVSW(dasm32_context *dasmContext)
+{
     C_CHAR dptr[0x100];
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOVSW");
+    TYPE_TRACE_CALL_BEGIN("MOVSW");
     _adv;
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dop, "MOVSW");
         STD_SPRINTF(dptr, "WORD PTR ");
@@ -3057,10 +3344,11 @@ static C_VOID MOVSW(dasm32_context *dasmContext) {
         STD_SPRINTF(dptr, "DWORD PTR ");
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    switch (_GetAddressSize) {
+    switch (_GetAddressSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "ES:[DI],%s:[SI]", doverds);
         break;
@@ -3068,18 +3356,20 @@ static C_VOID MOVSW(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "ES:[EDI],%s:[ESI]", doverds);
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID CMPSB(dasm32_context *dasmContext) {
+static C_VOID CMPSB(dasm32_context *dasmContext)
+{
     C_CHAR dptr[0x100];
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("CMPSB");
+    TYPE_TRACE_CALL_BEGIN("CMPSB");
     _adv;
     STD_SPRINTF(dop, "CMPSB");
     STD_SPRINTF(dptr, "BYTE PTR ");
-    switch (_GetAddressSize) {
+    switch (_GetAddressSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "%s:[SI],ES:[DI]", doverds);
         break;
@@ -3087,16 +3377,18 @@ static C_VOID CMPSB(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "%s:[ESI],ES:[EDI]", doverds);
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID CMPSW(dasm32_context *dasmContext) {
+static C_VOID CMPSW(dasm32_context *dasmContext)
+{
     C_CHAR dptr[0x100];
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("CMPSW");
+    TYPE_TRACE_CALL_BEGIN("CMPSW");
     _adv;
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dop, "CMPSW");
         STD_SPRINTF(dptr, "WORD PTR ");
@@ -3106,10 +3398,11 @@ static C_VOID CMPSW(dasm32_context *dasmContext) {
         STD_SPRINTF(dptr, "DWORD PTR ");
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    switch (_GetAddressSize) {
+    switch (_GetAddressSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "%s:[SI],ES:[DI]", doverds);
         break;
@@ -3117,25 +3410,28 @@ static C_VOID CMPSW(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "%s:[ESI],ES:[EDI]", doverds);
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID TEST_AL_I8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("TEST_AL_I8");
+static C_VOID TEST_AL_I8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("TEST_AL_I8");
     _adv;
     STD_SPRINTF(dop, "TEST");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
     STD_SPRINTF(dopr, "AL,%02X", (uint8_t)(cimm));
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID TEST_EAX_I32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("TEST_EAX_I32");
+static C_VOID TEST_EAX_I32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("TEST_EAX_I32");
     _adv;
     STD_SPRINTF(dop, "TEST");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
-    switch (_GetOperandSize) {
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "AX,%04X", (uint16_t)(cimm));
         break;
@@ -3143,18 +3439,20 @@ static C_VOID TEST_EAX_I32(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "EAX,%08X", (uint32_t)(cimm));
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID STOSB(dasm32_context *dasmContext) {
+static C_VOID STOSB(dasm32_context *dasmContext)
+{
     C_CHAR dptr[0x100];
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("STOSB");
+    TYPE_TRACE_CALL_BEGIN("STOSB");
     _adv;
     STD_SPRINTF(dop, "STOSB");
     STD_SPRINTF(dptr, "BYTE PTR ");
-    switch (_GetAddressSize) {
+    switch (_GetAddressSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "ES:[DI]");
         break;
@@ -3162,16 +3460,18 @@ static C_VOID STOSB(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "ES:[EDI]");
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID STOSW(dasm32_context *dasmContext) {
+static C_VOID STOSW(dasm32_context *dasmContext)
+{
     C_CHAR dptr[0x100];
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("STOSW");
+    TYPE_TRACE_CALL_BEGIN("STOSW");
     _adv;
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dop, "STOSW");
         STD_SPRINTF(dptr, "WORD PTR ");
@@ -3181,10 +3481,11 @@ static C_VOID STOSW(dasm32_context *dasmContext) {
         STD_SPRINTF(dptr, "DWORD PTR ");
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    switch (_GetAddressSize) {
+    switch (_GetAddressSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "ES:[DI]");
         break;
@@ -3192,18 +3493,20 @@ static C_VOID STOSW(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "ES:[EDI]");
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID LODSB(dasm32_context *dasmContext) {
+static C_VOID LODSB(dasm32_context *dasmContext)
+{
     C_CHAR dptr[0x100];
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("LODSB");
+    TYPE_TRACE_CALL_BEGIN("LODSB");
     _adv;
     STD_SPRINTF(dop, "LODSB");
     STD_SPRINTF(dptr, "BYTE PTR ");
-    switch (_GetAddressSize) {
+    switch (_GetAddressSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "%s:[SI]", doverds);
         break;
@@ -3211,16 +3514,18 @@ static C_VOID LODSB(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "%s:[ESI]", doverds);
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID LODSW(dasm32_context *dasmContext) {
+static C_VOID LODSW(dasm32_context *dasmContext)
+{
     C_CHAR dptr[0x100];
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("LODSW");
+    TYPE_TRACE_CALL_BEGIN("LODSW");
     _adv;
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dop, "LODSW");
         STD_SPRINTF(dptr, "WORD PTR ");
@@ -3230,10 +3535,11 @@ static C_VOID LODSW(dasm32_context *dasmContext) {
         STD_SPRINTF(dptr, "DWORD PTR ");
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    switch (_GetAddressSize) {
+    switch (_GetAddressSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "%s:[SI]", doverds);
         break;
@@ -3241,18 +3547,20 @@ static C_VOID LODSW(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "%s:[ESI]", doverds);
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID SCASB(dasm32_context *dasmContext) {
+static C_VOID SCASB(dasm32_context *dasmContext)
+{
     C_CHAR dptr[0x100];
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("SCASB");
+    TYPE_TRACE_CALL_BEGIN("SCASB");
     _adv;
     STD_SPRINTF(dop, "SCASB");
     STD_SPRINTF(dptr, "BYTE PTR ");
-    switch (_GetAddressSize) {
+    switch (_GetAddressSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "ES:[DI]");
         break;
@@ -3260,16 +3568,18 @@ static C_VOID SCASB(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "ES:[EDI]");
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID SCASW(dasm32_context *dasmContext) {
+static C_VOID SCASW(dasm32_context *dasmContext)
+{
     C_CHAR dptr[0x100];
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("SCASW");
+    TYPE_TRACE_CALL_BEGIN("SCASW");
     _adv;
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dop, "SCASW");
         STD_SPRINTF(dptr, "WORD PTR ");
@@ -3279,10 +3589,11 @@ static C_VOID SCASW(dasm32_context *dasmContext) {
         STD_SPRINTF(dptr, "DWORD PTR ");
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    switch (_GetAddressSize) {
+    switch (_GetAddressSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "ES:[DI]");
         break;
@@ -3290,81 +3601,91 @@ static C_VOID SCASW(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "ES:[EDI]");
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_AL_I8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_AL_I8");
+static C_VOID MOV_AL_I8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("MOV_AL_I8");
     _adv;
     STD_SPRINTF(dop, "MOV");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
     STD_SPRINTF(dopr, "AL,%02X", (uint8_t)(cimm));
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_CL_I8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_CL_I8");
+static C_VOID MOV_CL_I8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("MOV_CL_I8");
     _adv;
     STD_SPRINTF(dop, "MOV");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
     STD_SPRINTF(dopr, "CL,%02X", (uint8_t)(cimm));
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_DL_I8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_DL_I8");
+static C_VOID MOV_DL_I8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("MOV_DL_I8");
     _adv;
     STD_SPRINTF(dop, "MOV");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
     STD_SPRINTF(dopr, "DL,%02X", (uint8_t)(cimm));
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_BL_I8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_BL_I8");
+static C_VOID MOV_BL_I8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("MOV_BL_I8");
     _adv;
     STD_SPRINTF(dop, "MOV");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
     STD_SPRINTF(dopr, "BL,%02X", (uint8_t)(cimm));
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_AH_I8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_AH_I8");
+static C_VOID MOV_AH_I8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("MOV_AH_I8");
     _adv;
     STD_SPRINTF(dop, "MOV");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
     STD_SPRINTF(dopr, "AH,%02X", (uint8_t)(cimm));
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_CH_I8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_CH_I8");
+static C_VOID MOV_CH_I8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("MOV_CH_I8");
     _adv;
     STD_SPRINTF(dop, "MOV");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
     STD_SPRINTF(dopr, "CH,%02X", (uint8_t)(cimm));
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_DH_I8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_DH_I8");
+static C_VOID MOV_DH_I8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("MOV_DH_I8");
     _adv;
     STD_SPRINTF(dop, "MOV");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
     STD_SPRINTF(dopr, "DH,%02X", (uint8_t)(cimm));
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_BH_I8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_BH_I8");
+static C_VOID MOV_BH_I8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("MOV_BH_I8");
     _adv;
     STD_SPRINTF(dop, "MOV");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
     STD_SPRINTF(dopr, "BH,%02X", (uint8_t)(cimm));
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_EAX_I32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_EAX_I32");
+static C_VOID MOV_EAX_I32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("MOV_EAX_I32");
     _adv;
     STD_SPRINTF(dop, "MOV");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
-    switch (_GetOperandSize) {
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "AX,%04X", (uint16_t)(cimm));
         break;
@@ -3372,17 +3693,19 @@ static C_VOID MOV_EAX_I32(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "EAX,%08X", (uint32_t)(cimm));
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_ECX_I32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_ECX_I32");
+static C_VOID MOV_ECX_I32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("MOV_ECX_I32");
     _adv;
     STD_SPRINTF(dop, "MOV");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
-    switch (_GetOperandSize) {
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "CX,%04X", (uint16_t)(cimm));
         break;
@@ -3390,17 +3713,19 @@ static C_VOID MOV_ECX_I32(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "ECX,%08X", (uint32_t)(cimm));
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_EDX_I32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_EDX_I32");
+static C_VOID MOV_EDX_I32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("MOV_EDX_I32");
     _adv;
     STD_SPRINTF(dop, "MOV");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
-    switch (_GetOperandSize) {
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "DX,%04X", (uint16_t)(cimm));
         break;
@@ -3408,17 +3733,19 @@ static C_VOID MOV_EDX_I32(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "EDX,%08X", (uint32_t)(cimm));
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_EBX_I32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_EBX_I32");
+static C_VOID MOV_EBX_I32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("MOV_EBX_I32");
     _adv;
     STD_SPRINTF(dop, "MOV");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
-    switch (_GetOperandSize) {
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "BX,%04X", (uint16_t)(cimm));
         break;
@@ -3426,17 +3753,19 @@ static C_VOID MOV_EBX_I32(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "EBX,%08X", (uint32_t)(cimm));
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_ESP_I32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_ESP_I32");
+static C_VOID MOV_ESP_I32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("MOV_ESP_I32");
     _adv;
     STD_SPRINTF(dop, "MOV");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
-    switch (_GetOperandSize) {
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "SP,%04X", (uint16_t)(cimm));
         break;
@@ -3444,17 +3773,19 @@ static C_VOID MOV_ESP_I32(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "ESP,%08X", (uint32_t)(cimm));
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_EBP_I32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_EBP_I32");
+static C_VOID MOV_EBP_I32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("MOV_EBP_I32");
     _adv;
     STD_SPRINTF(dop, "MOV");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
-    switch (_GetOperandSize) {
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "BP,%04X", (uint16_t)(cimm));
         break;
@@ -3462,17 +3793,19 @@ static C_VOID MOV_EBP_I32(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "EBP,%08X", (uint32_t)(cimm));
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_ESI_I32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_ESI_I32");
+static C_VOID MOV_ESI_I32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("MOV_ESI_I32");
     _adv;
     STD_SPRINTF(dop, "MOV");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
-    switch (_GetOperandSize) {
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "SI,%04X", (uint16_t)(cimm));
         break;
@@ -3480,17 +3813,19 @@ static C_VOID MOV_ESI_I32(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "ESI,%08X", (uint32_t)(cimm));
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_EDI_I32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_EDI_I32");
+static C_VOID MOV_EDI_I32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("MOV_EDI_I32");
     _adv;
     STD_SPRINTF(dop, "MOV");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
-    switch (_GetOperandSize) {
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "DI,%04X", (uint16_t)(cimm));
         break;
@@ -3498,232 +3833,247 @@ static C_VOID MOV_EDI_I32(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "EDI,%08X", (uint32_t)(cimm));
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID INS_C0(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_C0");
+static C_VOID INS_C0(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("INS_C0");
     _adv;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 1));
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
-    switch (cr) {
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+    switch (cr)
+    {
     case 0: /* ROL_RM8_I8 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ROL_RM8_I8");
+        TYPE_TRACE_BLOCK_BEGIN("ROL_RM8_I8");
         STD_SPRINTF(dop, "ROL");
         STD_SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 1: /* ROR_RM8_I8 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ROR_RM8_I8");
+        TYPE_TRACE_BLOCK_BEGIN("ROR_RM8_I8");
         STD_SPRINTF(dop, "ROL");
         STD_SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 2: /* RCL_RM8_I8 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("RCL_RM8_I8");
+        TYPE_TRACE_BLOCK_BEGIN("RCL_RM8_I8");
         STD_SPRINTF(dop, "RCL");
         STD_SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 3: /* RCR_RM8_I8 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("RCR_RM8_I8");
+        TYPE_TRACE_BLOCK_BEGIN("RCR_RM8_I8");
         STD_SPRINTF(dop, "RCR");
         STD_SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 4: /* SHL_RM8_I8 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SHL_RM8_I8");
+        TYPE_TRACE_BLOCK_BEGIN("SHL_RM8_I8");
         STD_SPRINTF(dop, "SHL");
         STD_SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 5: /* SHR_RM8_I8 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SHR_RM8_I8");
+        TYPE_TRACE_BLOCK_BEGIN("SHR_RM8_I8");
         STD_SPRINTF(dop, "SHR");
         STD_SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 6: /* UndefinedOpcode */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(6)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_BEGIN("cr(6)");
+        TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
+        TYPE_TRACE_BLOCK_END;
         break;
     case 7: /* SAR_RM8_I8 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SAR_RM8_I8");
+        TYPE_TRACE_BLOCK_BEGIN("SAR_RM8_I8");
         STD_SPRINTF(dop, "SAR");
         STD_SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID INS_C1(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_C1");
+static C_VOID INS_C1(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("INS_C1");
     _adv;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, _GetOperandSize));
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
-    switch (cr) {
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, _GetOperandSize));
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+    switch (cr)
+    {
     case 0: /* ROL_RM32_I8 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ROL_RM32_I8");
+        TYPE_TRACE_BLOCK_BEGIN("ROL_RM32_I8");
         STD_SPRINTF(dop, "ROL");
         STD_SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 1: /* ROR_RM32_I8 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ROR_RM32_I8");
+        TYPE_TRACE_BLOCK_BEGIN("ROR_RM32_I8");
         STD_SPRINTF(dop, "ROR");
         STD_SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 2: /* RCL_RM32_I8 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("RCL_RM32_I8");
+        TYPE_TRACE_BLOCK_BEGIN("RCL_RM32_I8");
         STD_SPRINTF(dop, "RCL");
         STD_SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 3: /* RCR_RM32_I8 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("RCR_RM32_I8");
+        TYPE_TRACE_BLOCK_BEGIN("RCR_RM32_I8");
         STD_SPRINTF(dop, "RCR");
         STD_SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 4: /* SHL_RM32_I8 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SHL_RM32_I8");
+        TYPE_TRACE_BLOCK_BEGIN("SHL_RM32_I8");
         STD_SPRINTF(dop, "SHL");
         STD_SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 5: /* SHR_RM32_I8 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SHR_RM32_I8");
+        TYPE_TRACE_BLOCK_BEGIN("SHR_RM32_I8");
         STD_SPRINTF(dop, "SHR");
         STD_SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 6: /* UndefinedOpcode */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(6)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_BEGIN("cr(6)");
+        TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
+        TYPE_TRACE_BLOCK_END;
         break;
     case 7: /* SAR_RM32_I8 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SAR_RM32_I8");
+        TYPE_TRACE_BLOCK_BEGIN("SAR_RM32_I8");
         STD_SPRINTF(dop, "SAR");
         STD_SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID RET_I16(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("RET_I16");
+static C_VOID RET_I16(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("RET_I16");
     _adv;
     STD_SPRINTF(dop, "RET");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 2));
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 2));
     STD_SPRINTF(dopr, "%04X", (uint16_t)(cimm));
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID RET(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("RET");
+static C_VOID RET(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("RET");
     _adv;
     STD_SPRINTF(dop, "RET");
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID LES_R32_M16_32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("LES_R32_M16_32");
+static C_VOID LES_R32_M16_32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("LES_R32_M16_32");
     _adv;
     STD_SPRINTF(dop, "LES");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize + 2));
-    if (!flagmem) {
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("flagmem(0)");
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize + 2));
+    if (!flagmem)
+    {
+        TYPE_TRACE_BLOCK_BEGIN("flagmem(0)");
         STD_SPRINTF(drm, "<ERROR>");
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
     }
     STD_SPRINTF(dopr, "%s,%s", dr, drm);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID LDS_R32_M16_32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("LDS_R32_M16_32");
+static C_VOID LDS_R32_M16_32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("LDS_R32_M16_32");
     _adv;
     STD_SPRINTF(dop, "LDS");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize + 2));
-    if (!flagmem) {
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("flagmem(0)");
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize + 2));
+    if (!flagmem)
+    {
+        TYPE_TRACE_BLOCK_BEGIN("flagmem(0)");
         STD_SPRINTF(drm, "<ERROR>");
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
     }
     STD_SPRINTF(dopr, "%s,%s", dr, drm);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID INS_C6(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_C6");
+static C_VOID INS_C6(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("INS_C6");
     _adv;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 1));
-    switch (cr) {
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 1));
+    switch (cr)
+    {
     case 0: /* MOV_RM8_I8 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("MOV_RM8_I8");
+        TYPE_TRACE_BLOCK_BEGIN("MOV_RM8_I8");
         STD_SPRINTF(dop, "MOV");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+        TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
         STD_SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 1:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(1)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_BEGIN("cr(1)");
+        TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
+        TYPE_TRACE_BLOCK_END;
         break;
     case 2:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_BEGIN("cr(2)");
+        TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
+        TYPE_TRACE_BLOCK_END;
         break;
     case 3:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(3)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_BEGIN("cr(3)");
+        TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
+        TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_BEGIN("cr(4)");
+        TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
+        TYPE_TRACE_BLOCK_END;
         break;
     case 5:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(5)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_BEGIN("cr(5)");
+        TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
+        TYPE_TRACE_BLOCK_END;
         break;
     case 6:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(6)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_BEGIN("cr(6)");
+        TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
+        TYPE_TRACE_BLOCK_END;
         break;
     case 7:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(7)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_BEGIN("cr(7)");
+        TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
+        TYPE_TRACE_BLOCK_END;
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID INS_C7(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_C7");
+static C_VOID INS_C7(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("INS_C7");
     _adv;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, _GetOperandSize));
-    switch (cr) {
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, _GetOperandSize));
+    switch (cr)
+    {
     case 0: /* MOV_RM32_I32 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("MOV_RM32_I32");
+        TYPE_TRACE_BLOCK_BEGIN("MOV_RM32_I32");
         STD_SPRINTF(dop, "MOV");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
-        switch (_GetOperandSize) {
+        TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
+        switch (_GetOperandSize)
+        {
         case 2:
             STD_SPRINTF(dopr, "%s,%04X", drm, (uint16_t)(cimm));
             break;
@@ -3731,108 +4081,117 @@ static C_VOID INS_C7(dasm32_context *dasmContext) {
             STD_SPRINTF(dopr, "%s,%08X", drm, (uint32_t)(cimm));
             break;
         default:
-            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+            TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 1:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(1)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_BEGIN("cr(1)");
+        TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
+        TYPE_TRACE_BLOCK_END;
         break;
     case 2:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_BEGIN("cr(2)");
+        TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
+        TYPE_TRACE_BLOCK_END;
         break;
     case 3:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(3)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_BEGIN("cr(3)");
+        TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
+        TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_BEGIN("cr(4)");
+        TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
+        TYPE_TRACE_BLOCK_END;
         break;
     case 5:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(5)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_BEGIN("cr(5)");
+        TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
+        TYPE_TRACE_BLOCK_END;
         break;
     case 6:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(6)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_BEGIN("cr(6)");
+        TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
+        TYPE_TRACE_BLOCK_END;
         break;
     case 7:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(7)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_BEGIN("cr(7)");
+        TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
+        TYPE_TRACE_BLOCK_END;
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID ENTER(dasm32_context *dasmContext) {
+static C_VOID ENTER(dasm32_context *dasmContext)
+{
     C_CHAR dframesize[0x100], dnestlevel[0x100];
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("ENTER");
+    TYPE_TRACE_CALL_BEGIN("ENTER");
     _adv;
     STD_SPRINTF(dop, "ENTER");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 2));
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 2));
     STD_SPRINTF(dframesize, "%04X", (uint16_t)(cimm));
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
     STD_SPRINTF(dnestlevel, "%02X", (uint8_t)(cimm));
     STD_SPRINTF(dopr, "%s,%s", dframesize, dnestlevel);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID LEAVE(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("LEAVE");
+static C_VOID LEAVE(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("LEAVE");
     _adv;
     STD_SPRINTF(dop, "LEAVE");
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID RETF_I16(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("RETF_I16");
+static C_VOID RETF_I16(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("RETF_I16");
     _adv;
     STD_SPRINTF(dop, "RETF");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 2));
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 2));
     STD_SPRINTF(dopr, "%04X", (uint16_t)(cimm));
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID RETF(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("RETF");
+static C_VOID RETF(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("RETF");
     _adv;
     STD_SPRINTF(dop, "RETF");
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID INT3(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("INT3");
+static C_VOID INT3(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("INT3");
     _adv;
     STD_SPRINTF(dop, "INT3");
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID INT_I8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("INT_I8");
+static C_VOID INT_I8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("INT_I8");
     _adv;
     STD_SPRINTF(dop, "INT");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
     STD_SPRINTF(dopr, "%02X", (uint8_t)(cimm));
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID INTO(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("INTO");
+static C_VOID INTO(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("INTO");
     _adv;
     STD_SPRINTF(dop, "INTO");
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID IRET(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("IRET");
+static C_VOID IRET(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("IRET");
     _adv;
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dop, "IRET");
         break;
@@ -3840,264 +4199,278 @@ static C_VOID IRET(dasm32_context *dasmContext) {
         STD_SPRINTF(dop, "IRETD");
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID INS_D0(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_D0");
+static C_VOID INS_D0(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("INS_D0");
     _adv;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 1));
-    switch (cr) {
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 1));
+    switch (cr)
+    {
     case 0: /* ROL_RM8 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ROL_RM8");
+        TYPE_TRACE_BLOCK_BEGIN("ROL_RM8");
         STD_SPRINTF(dop, "ROL");
         STD_SPRINTF(dopr, "%s,01", drm);
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 1: /* ROR_RM8 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ROR_RM8");
+        TYPE_TRACE_BLOCK_BEGIN("ROR_RM8");
         STD_SPRINTF(dop, "ROR");
         STD_SPRINTF(dopr, "%s,01", drm);
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 2: /* RCL_RM8 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("RCL_RM8");
+        TYPE_TRACE_BLOCK_BEGIN("RCL_RM8");
         STD_SPRINTF(dop, "RCL");
         STD_SPRINTF(dopr, "%s,01", drm);
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 3: /* RCR_RM8 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("RCR_RM8");
+        TYPE_TRACE_BLOCK_BEGIN("RCR_RM8");
         STD_SPRINTF(dop, "RCR");
         STD_SPRINTF(dopr, "%s,01", drm);
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 4: /* SHL_RM8 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SHL_RM8");
+        TYPE_TRACE_BLOCK_BEGIN("SHL_RM8");
         STD_SPRINTF(dop, "SHL");
         STD_SPRINTF(dopr, "%s,01", drm);
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 5: /* SHR_RM8 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SHR_RM8");
+        TYPE_TRACE_BLOCK_BEGIN("SHR_RM8");
         STD_SPRINTF(dop, "SHR");
         STD_SPRINTF(dopr, "%s,01", drm);
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 6: /* UndefinedOpcode */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(6)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_BEGIN("cr(6)");
+        TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
+        TYPE_TRACE_BLOCK_END;
         break;
     case 7: /* SAR_RM8 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SAR_RM8");
+        TYPE_TRACE_BLOCK_BEGIN("SAR_RM8");
         STD_SPRINTF(dop, "SAR");
         STD_SPRINTF(dopr, "%s,01", drm);
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID INS_D1(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_D1");
+static C_VOID INS_D1(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("INS_D1");
     _adv;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, _GetOperandSize));
-    switch (cr) {
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, _GetOperandSize));
+    switch (cr)
+    {
     case 0: /* ROL_RM32 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ROL_RM32");
+        TYPE_TRACE_BLOCK_BEGIN("ROL_RM32");
         STD_SPRINTF(dop, "ROL");
         STD_SPRINTF(dopr, "%s,01", drm);
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 1: /* ROR_RM32 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ROR_RM32");
+        TYPE_TRACE_BLOCK_BEGIN("ROR_RM32");
         STD_SPRINTF(dop, "ROR");
         STD_SPRINTF(dopr, "%s,01", drm);
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 2: /* RCL_RM32 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("RCL_RM32");
+        TYPE_TRACE_BLOCK_BEGIN("RCL_RM32");
         STD_SPRINTF(dop, "RCL");
         STD_SPRINTF(dopr, "%s,01", drm);
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 3: /* RCR_RM32 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("RCR_RM32");
+        TYPE_TRACE_BLOCK_BEGIN("RCR_RM32");
         STD_SPRINTF(dop, "RCR");
         STD_SPRINTF(dopr, "%s,01", drm);
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 4: /* SHL_RM32 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SHL_RM32");
+        TYPE_TRACE_BLOCK_BEGIN("SHL_RM32");
         STD_SPRINTF(dop, "SHL");
         STD_SPRINTF(dopr, "%s,01", drm);
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 5: /* SHR_RM32 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SHR_RM32");
+        TYPE_TRACE_BLOCK_BEGIN("SHR_RM32");
         STD_SPRINTF(dop, "SHR");
         STD_SPRINTF(dopr, "%s,01", drm);
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 6: /* UndefinedOpcode */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(6)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_BEGIN("cr(6)");
+        TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
+        TYPE_TRACE_BLOCK_END;
         break;
     case 7: /* SAR_RM32 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SAR_RM32");
+        TYPE_TRACE_BLOCK_BEGIN("SAR_RM32");
         STD_SPRINTF(dop, "SAR");
         STD_SPRINTF(dopr, "%s,01", drm);
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID INS_D2(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_D2");
+static C_VOID INS_D2(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("INS_D2");
     _adv;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 1));
-    switch (cr) {
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 1));
+    switch (cr)
+    {
     case 0: /* ROL_RM8_CL */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ROL_RM8_CL");
+        TYPE_TRACE_BLOCK_BEGIN("ROL_RM8_CL");
         STD_SPRINTF(dop, "ROL");
         STD_SPRINTF(dopr, "%s,CL", drm);
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 1: /* ROR_RM8_CL */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ROR_RM8_CL");
+        TYPE_TRACE_BLOCK_BEGIN("ROR_RM8_CL");
         STD_SPRINTF(dop, "ROR");
         STD_SPRINTF(dopr, "%s,CL", drm);
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 2: /* RCL_RM8_CL */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("RCL_RM8_CL");
+        TYPE_TRACE_BLOCK_BEGIN("RCL_RM8_CL");
         STD_SPRINTF(dop, "RCL");
         STD_SPRINTF(dopr, "%s,CL", drm);
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 3: /* RCR_RM8_CL */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("RCR_RM8_CL");
+        TYPE_TRACE_BLOCK_BEGIN("RCR_RM8_CL");
         STD_SPRINTF(dop, "RCR");
         STD_SPRINTF(dopr, "%s,CL", drm);
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 4: /* SHL_RM8_CL */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SHL_RM8_CL");
+        TYPE_TRACE_BLOCK_BEGIN("SHL_RM8_CL");
         STD_SPRINTF(dop, "SHL");
         STD_SPRINTF(dopr, "%s,CL", drm);
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 5: /* SHR_RM8_CL */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SHR_RM8_CL");
+        TYPE_TRACE_BLOCK_BEGIN("SHR_RM8_CL");
         STD_SPRINTF(dop, "SHR");
         STD_SPRINTF(dopr, "%s,CL", drm);
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 6: /* UndefinedOpcode */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(6)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_BEGIN("cr(6)");
+        TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
+        TYPE_TRACE_BLOCK_END;
         break;
     case 7: /* SAR_RM8_CL */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SAR_RM8_CL");
+        TYPE_TRACE_BLOCK_BEGIN("SAR_RM8_CL");
         STD_SPRINTF(dop, "SAR");
         STD_SPRINTF(dopr, "%s,CL", drm);
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID INS_D3(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_D3");
+static C_VOID INS_D3(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("INS_D3");
     _adv;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, _GetOperandSize));
-    switch (cr) {
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, _GetOperandSize));
+    switch (cr)
+    {
     case 0: /* ROL_RM32_CL */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ROL_RM32_CL");
+        TYPE_TRACE_BLOCK_BEGIN("ROL_RM32_CL");
         STD_SPRINTF(dop, "ROL");
         STD_SPRINTF(dopr, "%s,CL", drm);
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 1: /* ROR_RM32_CL */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ROR_RM32_CL");
+        TYPE_TRACE_BLOCK_BEGIN("ROR_RM32_CL");
         STD_SPRINTF(dop, "ROR");
         STD_SPRINTF(dopr, "%s,CL", drm);
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 2: /* RCL_RM32_CL */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("RCL_RM32_CL");
+        TYPE_TRACE_BLOCK_BEGIN("RCL_RM32_CL");
         STD_SPRINTF(dop, "RCL");
         STD_SPRINTF(dopr, "%s,CL", drm);
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 3: /* RCR_RM32_CL */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("RCR_RM32_CL");
+        TYPE_TRACE_BLOCK_BEGIN("RCR_RM32_CL");
         STD_SPRINTF(dop, "RCR");
         STD_SPRINTF(dopr, "%s,CL", drm);
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 4: /* SHL_RM32_CL */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SHL_RM32_CL");
+        TYPE_TRACE_BLOCK_BEGIN("SHL_RM32_CL");
         STD_SPRINTF(dop, "SHL");
         STD_SPRINTF(dopr, "%s,CL", drm);
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 5: /* SHR_RM32_CL */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SHR_RM32_CL");
+        TYPE_TRACE_BLOCK_BEGIN("SHR_RM32_CL");
         STD_SPRINTF(dop, "SHR");
         STD_SPRINTF(dopr, "%s,CL", drm);
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 6: /* UndefinedOpcode */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(6)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_BEGIN("cr(6)");
+        TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
+        TYPE_TRACE_BLOCK_END;
         break;
     case 7: /* SAR_RM32_CL */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SAR_RM32_CL");
+        TYPE_TRACE_BLOCK_BEGIN("SAR_RM32_CL");
         STD_SPRINTF(dop, "SAR");
         STD_SPRINTF(dopr, "%s,CL", drm);
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID AAM(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("AAM");
+static C_VOID AAM(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("AAM");
     _adv;
     STD_SPRINTF(dop, "AAM");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
-    if ((uint8_t)(cimm) != 0x0a) STD_SPRINTF(dopr, "%02X", (uint8_t)(cimm));
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+    if ((uint8_t)(cimm) != 0x0a)
+        STD_SPRINTF(dopr, "%02X", (uint8_t)(cimm));
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID AAD(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("AAD");
+static C_VOID AAD(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("AAD");
     _adv;
     STD_SPRINTF(dop, "AAD");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
-    if ((uint8_t)(cimm) != 0x0a) STD_SPRINTF(dopr, "%02X", (uint8_t)(cimm));
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+    if ((uint8_t)(cimm) != 0x0a)
+        STD_SPRINTF(dopr, "%02X", (uint8_t)(cimm));
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID XLAT(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("XLAT");
+static C_VOID XLAT(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("XLAT");
     _adv;
     STD_SPRINTF(dop, "XLATB");
-    switch (_GetAddressSize) {
+    switch (_GetAddressSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "%s:[BX+AL]", doverds);
         break;
@@ -4105,57 +4478,64 @@ static C_VOID XLAT(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "%s:[EBX+AL]", doverds);
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID LOOPNZ_REL8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("LOOPNZ_REL8");
+static C_VOID LOOPNZ_REL8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("LOOPNZ_REL8");
     _adv;
     STD_SPRINTF(dop, "LOOPNZ");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
     SPRINTFSI(dasmContext, dopr, (uint8_t)(cimm), 1);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID LOOPZ_REL8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("LOOPZ_REL8");
+static C_VOID LOOPZ_REL8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("LOOPZ_REL8");
     _adv;
     STD_SPRINTF(dop, "LOOPZ");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
     SPRINTFSI(dasmContext, dopr, (uint8_t)(cimm), 1);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID LOOP_REL8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("LOOP_REL8");
+static C_VOID LOOP_REL8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("LOOP_REL8");
     _adv;
     STD_SPRINTF(dop, "LOOP");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
     SPRINTFSI(dasmContext, dopr, (uint8_t)(cimm), 1);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID JCXZ_REL8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("JCXZ_REL8");
+static C_VOID JCXZ_REL8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("JCXZ_REL8");
     _adv;
     STD_SPRINTF(dop, "JCXZ");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
     SPRINTFSI(dasmContext, dopr, (uint8_t)(cimm), 1);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID IN_AL_I8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("IN_AL_I8");
+static C_VOID IN_AL_I8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("IN_AL_I8");
     _adv;
     STD_SPRINTF(dop, "IN");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
     STD_SPRINTF(dopr, "AL,%02X", (uint8_t)(cimm));
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID IN_EAX_I8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("IN_EAX_I8");
+static C_VOID IN_EAX_I8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("IN_EAX_I8");
     _adv;
     STD_SPRINTF(dop, "IN");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
-    switch (_GetOperandSize) {
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "AX,%02X", (uint8_t)(cimm));
         break;
@@ -4163,25 +4543,28 @@ static C_VOID IN_EAX_I8(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "EAX,%02X", (uint8_t)(cimm));
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID OUT_I8_AL(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("OUT_I8_AL");
+static C_VOID OUT_I8_AL(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("OUT_I8_AL");
     _adv;
     STD_SPRINTF(dop, "OUT");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
     STD_SPRINTF(dopr, "%02X,AL", (uint8_t)(cimm));
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID OUT_I8_EAX(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("OUT_I8_EAX");
+static C_VOID OUT_I8_EAX(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("OUT_I8_EAX");
     _adv;
     STD_SPRINTF(dop, "OUT");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
-    switch (_GetOperandSize) {
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "%02X,AX", (uint8_t)(cimm));
         break;
@@ -4189,17 +4572,19 @@ static C_VOID OUT_I8_EAX(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "%02X,EAX", (uint8_t)(cimm));
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID CALL_REL32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("CALL_REL32");
+static C_VOID CALL_REL32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("CALL_REL32");
     _adv;
     STD_SPRINTF(dop, "CALL");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
-    switch (_GetOperandSize) {
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
+    switch (_GetOperandSize)
+    {
     case 2:
         SPRINTFSI(dasmContext, dopr, (uint16_t)(cimm), 2);
         break;
@@ -4207,17 +4592,19 @@ static C_VOID CALL_REL32(dasm32_context *dasmContext) {
         SPRINTFSI(dasmContext, dopr, (uint32_t)(cimm), 4);
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID JMP_REL32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("JMP_REL32");
+static C_VOID JMP_REL32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("JMP_REL32");
     _adv;
     STD_SPRINTF(dop, "JMP");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
-    switch (_GetOperandSize) {
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
+    switch (_GetOperandSize)
+    {
     case 2:
         SPRINTFSI(dasmContext, dopr, (uint16_t)(cimm), 2);
         break;
@@ -4225,63 +4612,69 @@ static C_VOID JMP_REL32(dasm32_context *dasmContext) {
         SPRINTFSI(dasmContext, dopr, (uint32_t)(cimm), 4);
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID JMP_PTR16_32(dasm32_context *dasmContext) {
+static C_VOID JMP_PTR16_32(dasm32_context *dasmContext)
+{
     uint16_t newcs;
     uint32_t neweip;
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("JMP_PTR16_32");
+    TYPE_TRACE_CALL_BEGIN("JMP_PTR16_32");
     _adv;
     STD_SPRINTF(dop, "JMP");
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 2));
+        TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+        TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 2));
         neweip = (uint16_t)(cimm);
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 2));
+        TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 2));
         newcs = (uint16_t)(cimm);
         STD_SPRINTF(dopr, "%04X:%04X", newcs, (uint16_t)(neweip));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+        TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
         _newins_;
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 4));
+        TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 4));
         neweip = (uint32_t)(cimm);
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 2));
+        TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 2));
         newcs = (uint16_t)(cimm);
         STD_SPRINTF(dopr, "%04X:%08X", newcs, (uint32_t)(neweip));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID JMP_REL8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("JMP_REL8");
+static C_VOID JMP_REL8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("JMP_REL8");
     _adv;
     STD_SPRINTF(dop, "JMP");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
     SPRINTFSI(dasmContext, dopr, (uint8_t)(cimm), 1);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID IN_AL_DX(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("IN_AL_DX");
+static C_VOID IN_AL_DX(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("IN_AL_DX");
     _adv;
     STD_SPRINTF(dop, "IN");
     STD_SPRINTF(dopr, "AL,DX");
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID IN_EAX_DX(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("IN_EAX_DX");
+static C_VOID IN_EAX_DX(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("IN_EAX_DX");
     _adv;
     STD_SPRINTF(dop, "IN");
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "AX,DX");
         break;
@@ -4289,23 +4682,26 @@ static C_VOID IN_EAX_DX(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "EAX,DX");
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID OUT_DX_AL(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("OUT_DX_AL");
+static C_VOID OUT_DX_AL(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("OUT_DX_AL");
     _adv;
     STD_SPRINTF(dop, "OUT");
     STD_SPRINTF(dopr, "DX,AL");
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID OUT_DX_EAX(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("OUT_DX_EAX");
+static C_VOID OUT_DX_EAX(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("OUT_DX_EAX");
     _adv;
     STD_SPRINTF(dop, "OUT");
-    switch (_GetOperandSize) {
+    switch (_GetOperandSize)
+    {
     case 2:
         STD_SPRINTF(dopr, "DX,AX");
         break;
@@ -4313,110 +4709,120 @@ static C_VOID OUT_DX_EAX(dasm32_context *dasmContext) {
         STD_SPRINTF(dopr, "DX,EAX");
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID PREFIX_LOCK(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_LOCK");
+static C_VOID PREFIX_LOCK(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("PREFIX_LOCK");
     _adv;
     STD_SPRINTF(dop, "LOCK:");
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID PREFIX_REPNZ(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_REPNZ");
+static C_VOID PREFIX_REPNZ(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("PREFIX_REPNZ");
     _adv;
     STD_SPRINTF(dop, "REPNZ:");
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID PREFIX_REPZ(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("PREFIX_REPZ");
+static C_VOID PREFIX_REPZ(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("PREFIX_REPZ");
     _adv;
     STD_SPRINTF(dop, "REPZ:");
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID HLT(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("HLT");
+static C_VOID HLT(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("HLT");
     _adv;
     STD_SPRINTF(dop, "HLT");
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID CMC(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("CMC");
+static C_VOID CMC(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("CMC");
     _adv;
     STD_SPRINTF(dop, "CMC");
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID INS_F6(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_F6");
+static C_VOID INS_F6(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("INS_F6");
     _adv;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 1));
-    switch (cr) {
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 1));
+    switch (cr)
+    {
     case 0: /* TEST_RM8_I8 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("TEST_RM8_I8");
+        TYPE_TRACE_BLOCK_BEGIN("TEST_RM8_I8");
         STD_SPRINTF(dop, "TEST");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+        TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
         STD_SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 1: /* UndefinedOpcode */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_REG(1)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_BEGIN("ModRM_REG(1)");
+        TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
+        TYPE_TRACE_BLOCK_END;
         break;
     case 2: /* NOT_RM8 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("NOT_RM8");
+        TYPE_TRACE_BLOCK_BEGIN("NOT_RM8");
         STD_SPRINTF(dop, "NOT");
         STD_SPRINTF(dopr, "%s", drm);
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 3: /* NEG_RM8 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("NEG_RM8");
+        TYPE_TRACE_BLOCK_BEGIN("NEG_RM8");
         STD_SPRINTF(dop, "NEG");
         STD_SPRINTF(dopr, "%s", drm);
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 4: /* MUL_RM8 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("MUL_RM8");
+        TYPE_TRACE_BLOCK_BEGIN("MUL_RM8");
         STD_SPRINTF(dop, "MUL");
         STD_SPRINTF(dopr, "%s", drm);
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 5: /* IMUL_RM8 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("IMUL_RM8");
+        TYPE_TRACE_BLOCK_BEGIN("IMUL_RM8");
         STD_SPRINTF(dop, "IMUL");
         STD_SPRINTF(dopr, "%s", drm);
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 6: /* DIV_RM8 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("DIV_RM8");
+        TYPE_TRACE_BLOCK_BEGIN("DIV_RM8");
         STD_SPRINTF(dop, "DIV");
         STD_SPRINTF(dopr, "%s", drm);
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 7: /* IDIV_RM8 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("IDIV_RM8");
+        TYPE_TRACE_BLOCK_BEGIN("IDIV_RM8");
         STD_SPRINTF(dop, "IDIV");
         STD_SPRINTF(dopr, "%s", drm);
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID INS_F7(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_F7");
+static C_VOID INS_F7(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("INS_F7");
     _adv;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, _GetOperandSize));
-    switch (cr) {
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, _GetOperandSize));
+    switch (cr)
+    {
     case 0: /* TEST_RM32_I32 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("TEST_RM32_I32");
+        TYPE_TRACE_BLOCK_BEGIN("TEST_RM32_I32");
         STD_SPRINTF(dop, "TEST");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
-        switch (_GetOperandSize) {
+        TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
+        switch (_GetOperandSize)
+        {
         case 2:
             STD_SPRINTF(dopr, "%s,%04X", drm, (uint16_t)(cimm));
             break;
@@ -4424,188 +4830,200 @@ static C_VOID INS_F7(dasm32_context *dasmContext) {
             STD_SPRINTF(dopr, "%s,%08X", drm, (uint32_t)(cimm));
             break;
         default:
-            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+            TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 1: /* UndefinedOpcode */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_REG(1)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_BEGIN("ModRM_REG(1)");
+        TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
+        TYPE_TRACE_BLOCK_END;
         break;
     case 2: /* NOT_RM32 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("NOT_RM32");
+        TYPE_TRACE_BLOCK_BEGIN("NOT_RM32");
         STD_SPRINTF(dop, "NOT");
         STD_SPRINTF(dopr, "%s", drm);
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 3: /* NEG_RM32 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("NEG_RM16");
+        TYPE_TRACE_BLOCK_BEGIN("NEG_RM16");
         STD_SPRINTF(dop, "NEG");
         STD_SPRINTF(dopr, "%s", drm);
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 4: /* MUL_RM32 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("MUL_RM32");
+        TYPE_TRACE_BLOCK_BEGIN("MUL_RM32");
         STD_SPRINTF(dop, "MUL");
         STD_SPRINTF(dopr, "%s", drm);
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 5: /* IMUL_RM32 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("IMUL_RM32");
+        TYPE_TRACE_BLOCK_BEGIN("IMUL_RM32");
         STD_SPRINTF(dop, "IMUL");
         STD_SPRINTF(dopr, "%s", drm);
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 6: /* DIV_RM32 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("DIV_RM32");
+        TYPE_TRACE_BLOCK_BEGIN("DIV_RM32");
         STD_SPRINTF(dop, "DIV");
         STD_SPRINTF(dopr, "%s", drm);
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 7: /* IDIV_RM32 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("IDIV_RM32");
+        TYPE_TRACE_BLOCK_BEGIN("IDIV_RM32");
         STD_SPRINTF(dop, "IDIV");
         STD_SPRINTF(dopr, "%s", drm);
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID CLC(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("CLC");
+static C_VOID CLC(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("CLC");
     _adv;
     STD_SPRINTF(dop, "CLC");
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID STC(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("STC");
+static C_VOID STC(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("STC");
     _adv;
     STD_SPRINTF(dop, "STC");
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID CLI(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("CLI");
+static C_VOID CLI(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("CLI");
     _adv;
     STD_SPRINTF(dop, "CLI");
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID STI(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("STI");
+static C_VOID STI(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("STI");
     _adv;
     STD_SPRINTF(dop, "STI");
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID CLD(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("CLD");
+static C_VOID CLD(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("CLD");
     _adv;
     STD_SPRINTF(dop, "CLD");
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID STD(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("STD");
+static C_VOID STD(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("STD");
     _adv;
     STD_SPRINTF(dop, "STD");
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID INS_FE(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_FE");
+static C_VOID INS_FE(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("INS_FE");
     _adv;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 1));
-    switch (cr) {
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 1));
+    switch (cr)
+    {
     case 0: /* INC_RM8 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("INC_RM8");
+        TYPE_TRACE_BLOCK_BEGIN("INC_RM8");
         STD_SPRINTF(dop, "INC");
         STD_SPRINTF(dopr, "%s", drm);
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 1: /* DEC_RM8 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("DEC_RM8");
+        TYPE_TRACE_BLOCK_BEGIN("DEC_RM8");
         STD_SPRINTF(dop, "DEC");
         STD_SPRINTF(dopr, "%s", drm);
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 2:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_BEGIN("cr(2)");
+        TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
+        TYPE_TRACE_BLOCK_END;
         break;
     case 3:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(3)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_BEGIN("cr(3)");
+        TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
+        TYPE_TRACE_BLOCK_END;
         break;
     case 4:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(4)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_BEGIN("cr(4)");
+        TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
+        TYPE_TRACE_BLOCK_END;
         break;
     case 5:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(5)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_BEGIN("cr(5)");
+        TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
+        TYPE_TRACE_BLOCK_END;
         break;
     case 6:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(6)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_BEGIN("cr(6)");
+        TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
+        TYPE_TRACE_BLOCK_END;
         break;
     case 7:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(7)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_BEGIN("cr(7)");
+        TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
+        TYPE_TRACE_BLOCK_END;
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID INS_FF(dasm32_context *dasmContext) {
+static C_VOID INS_FF(dasm32_context *dasmContext)
+{
     C_CHAR dptr[0x100];
     uint8_t oldiop;
     uint8_t modrm;
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_FF");
+    TYPE_TRACE_CALL_BEGIN("INS_FF");
     _adv;
     oldiop = iop;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_code(dasmContext, (uint8_t *)(&modrm), 1));
+    TYPE_TRACE_CHECK_RETURN(_d_code(dasmContext, (uint8_t *)(&modrm), 1));
     iop = oldiop;
-    switch (_GetModRM_REG(modrm)) {
+    switch (_GetModRM_REG(modrm))
+    {
     case 0: /* INC_RM32 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("INC_RM32");
+        TYPE_TRACE_BLOCK_BEGIN("INC_RM32");
         STD_SPRINTF(dop, "INC");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, _GetOperandSize));
+        TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, _GetOperandSize));
         STD_SPRINTF(dopr, "%s", drm);
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 1: /* DEC_RM32 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("DEC_RM32");
+        TYPE_TRACE_BLOCK_BEGIN("DEC_RM32");
         STD_SPRINTF(dop, "DEC");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, _GetOperandSize));
+        TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, _GetOperandSize));
         STD_SPRINTF(dopr, "%s", drm);
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 2: /* CALL_RM32 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("CALL_RM32");
+        TYPE_TRACE_BLOCK_BEGIN("CALL_RM32");
         STD_SPRINTF(dop, "CALL");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, _GetOperandSize));
+        TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, _GetOperandSize));
         STD_SPRINTF(dopr, "%s", drm);
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 3: /* CALL_M16_32 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("CALL_M16_32");
+        TYPE_TRACE_BLOCK_BEGIN("CALL_M16_32");
         STD_SPRINTF(dop, "CALL");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 9, _GetOperandSize + 2));
-        if (!flagmem) {
-            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("flagmem(0)");
+        TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 9, _GetOperandSize + 2));
+        if (!flagmem)
+        {
+            TYPE_TRACE_BLOCK_BEGIN("flagmem(0)");
             STD_SPRINTF(drm, "<ERROR>");
-            NTVDM64_TYPE_TRACE_BLOCK_END;
+            TYPE_TRACE_BLOCK_END;
         }
-        switch (_GetOperandSize) {
+        switch (_GetOperandSize)
+        {
         case 2:
             STD_SPRINTF(dptr, "WORD PTR ");
             break;
@@ -4613,29 +5031,31 @@ static C_VOID INS_FF(dasm32_context *dasmContext) {
             STD_SPRINTF(dptr, "DWORD PTR ");
             break;
         default:
-            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+            TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
         STD_SPRINTF(dopr, "FAR %s%s", dptr, drm);
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 4: /* JMP_RM32 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("JMP_RM32");
+        TYPE_TRACE_BLOCK_BEGIN("JMP_RM32");
         STD_SPRINTF(dop, "JMP");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, _GetOperandSize));
+        TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, _GetOperandSize));
         STD_SPRINTF(dopr, "%s", drm);
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 5: /* JMP_M16_32 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("JMP_M16_32");
+        TYPE_TRACE_BLOCK_BEGIN("JMP_M16_32");
         STD_SPRINTF(dop, "JMP");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 9, _GetOperandSize + 2));
-        if (!flagmem) {
-            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("flagmem(0)");
+        TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 9, _GetOperandSize + 2));
+        if (!flagmem)
+        {
+            TYPE_TRACE_BLOCK_BEGIN("flagmem(0)");
             STD_SPRINTF(drm, "<ERROR>");
-            NTVDM64_TYPE_TRACE_BLOCK_END;
+            TYPE_TRACE_BLOCK_END;
         }
-        switch (_GetOperandSize) {
+        switch (_GetOperandSize)
+        {
         case 2:
             STD_SPRINTF(dptr, "WORD PTR ");
             break;
@@ -4643,40 +5063,43 @@ static C_VOID INS_FF(dasm32_context *dasmContext) {
             STD_SPRINTF(dptr, "DWORD PTR ");
             break;
         default:
-            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+            TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
         STD_SPRINTF(dopr, "FAR %s%s", dptr, drm);
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 6: /* PUSH_RM32 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("PUSH_RM32");
+        TYPE_TRACE_BLOCK_BEGIN("PUSH_RM32");
         STD_SPRINTF(dop, "PUSH");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, _GetOperandSize));
+        TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, _GetOperandSize));
         STD_SPRINTF(dopr, "%s", drm);
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 7: /* UndefinedOpcode */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_REG(7)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_BEGIN("ModRM_REG(7)");
+        TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
+        TYPE_TRACE_BLOCK_END;
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
 
-static C_VOID _d_modrm_creg(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("_d_modrm_creg");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_modrm(dasmContext, 9, 4));
-    if (flagmem) {
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("flagmem(1)");
+static C_VOID _d_modrm_creg(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("_d_modrm_creg");
+    TYPE_TRACE_CHECK_RETURN(_kdf_modrm(dasmContext, 9, 4));
+    if (flagmem)
+    {
+        TYPE_TRACE_BLOCK_BEGIN("flagmem(1)");
         STD_SPRINTF(drm, "<ERROR>");
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
     }
-    switch (cr) {
+    switch (cr)
+    {
     case 0:
         STD_SPRINTF(dr, "CR0");
         break;
@@ -4685,22 +5108,26 @@ static C_VOID _d_modrm_creg(dasm32_context *dasmContext) {
         break;
     case 3:
         STD_SPRINTF(dr, "CR3");
-        break;;
+        break;
+        ;
     default:
         STD_SPRINTF(dr, "<ERROR>");
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID _d_modrm_dreg(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("_d_modrm_dreg");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_modrm(dasmContext, 9, 4));
-    if (flagmem) {
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("flagmem(1)");
+static C_VOID _d_modrm_dreg(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("_d_modrm_dreg");
+    TYPE_TRACE_CHECK_RETURN(_kdf_modrm(dasmContext, 9, 4));
+    if (flagmem)
+    {
+        TYPE_TRACE_BLOCK_BEGIN("flagmem(1)");
         STD_SPRINTF(drm, "<ERROR>");
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
     }
-    switch (cr) {
+    switch (cr)
+    {
     case 0:
         STD_SPRINTF(dr, "DR0");
         break;
@@ -4723,17 +5150,20 @@ static C_VOID _d_modrm_dreg(dasm32_context *dasmContext) {
         STD_SPRINTF(dr, "<ERROR>");
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID _d_modrm_treg(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("_d_modrm_treg");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_kdf_modrm(dasmContext, 9, 4));
-    if (flagmem) {
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("flagmem(1)");
+static C_VOID _d_modrm_treg(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("_d_modrm_treg");
+    TYPE_TRACE_CHECK_RETURN(_kdf_modrm(dasmContext, 9, 4));
+    if (flagmem)
+    {
+        TYPE_TRACE_BLOCK_BEGIN("flagmem(1)");
         STD_SPRINTF(drm, "<ERROR>");
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
     }
-    switch (cr) {
+    switch (cr)
+    {
     case 6:
         STD_SPRINTF(dr, "TR6");
         break;
@@ -4744,93 +5174,99 @@ static C_VOID _d_modrm_treg(dasm32_context *dasmContext) {
         STD_SPRINTF(dr, "<ERROR>");
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
 
-static C_VOID INS_0F_00(dasm32_context *dasmContext) {
+static C_VOID INS_0F_00(dasm32_context *dasmContext)
+{
     uint8_t modrm, oldiop;
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_0F_00");
+    TYPE_TRACE_CALL_BEGIN("INS_0F_00");
     _adv;
     oldiop = iop;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_code(dasmContext, (uint8_t *)(&modrm), 1));
+    TYPE_TRACE_CHECK_RETURN(_d_code(dasmContext, (uint8_t *)(&modrm), 1));
     iop = oldiop;
-    switch (_GetModRM_REG(modrm)) {
+    switch (_GetModRM_REG(modrm))
+    {
     case 0: /* SLDT_RM16 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SLDT_RM16");
+        TYPE_TRACE_BLOCK_BEGIN("SLDT_RM16");
         STD_SPRINTF(dop, "SLDT");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, ((_GetModRM_MOD(modrm) != 3) ? 2 : _GetOperandSize)));
+        TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, ((_GetModRM_MOD(modrm) != 3) ? 2 : _GetOperandSize)));
         STD_SPRINTF(dopr, "%s", drm);
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 1: /* STR_RM16 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("STR_RM16");
+        TYPE_TRACE_BLOCK_BEGIN("STR_RM16");
         STD_SPRINTF(dop, "STR");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, ((_GetModRM_MOD(modrm) != 3) ? 2 : _GetOperandSize)));
+        TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, ((_GetModRM_MOD(modrm) != 3) ? 2 : _GetOperandSize)));
         STD_SPRINTF(dopr, "%s", drm);
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 2: /* LLDT_RM16 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("LLDT_RM16");
+        TYPE_TRACE_BLOCK_BEGIN("LLDT_RM16");
         STD_SPRINTF(dop, "LLDT");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 2));
+        TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 2));
         STD_SPRINTF(dopr, "%s", drm);
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 3: /* LTR_RM16 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("LTR_RM16");
+        TYPE_TRACE_BLOCK_BEGIN("LTR_RM16");
         STD_SPRINTF(dop, "LTR");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 2));
+        TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 2));
         STD_SPRINTF(dopr, "%s", drm);
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 4: /* VERR_RM16 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("VERR_RM16");
+        TYPE_TRACE_BLOCK_BEGIN("VERR_RM16");
         STD_SPRINTF(dop, "VERR");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 2));
+        TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 2));
         STD_SPRINTF(dopr, "%s", drm);
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 5: /* VERW_RM16 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("VERW_RM16");
+        TYPE_TRACE_BLOCK_BEGIN("VERW_RM16");
         STD_SPRINTF(dop, "VERW");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 2));
+        TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 2));
         STD_SPRINTF(dopr, "%s", drm);
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 6:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_REG(6)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_BEGIN("ModRM_REG(6)");
+        TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
+        TYPE_TRACE_BLOCK_END;
         break;
     case 7:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_REG(7)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_BEGIN("ModRM_REG(7)");
+        TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
+        TYPE_TRACE_BLOCK_END;
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID INS_0F_01(dasm32_context *dasmContext) {
+static C_VOID INS_0F_01(dasm32_context *dasmContext)
+{
     uint8_t modrm, oldiop;
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_0F_01");
+    TYPE_TRACE_CALL_BEGIN("INS_0F_01");
     _adv;
     oldiop = iop;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_code(dasmContext, (uint8_t *)(&modrm), 1));
+    TYPE_TRACE_CHECK_RETURN(_d_code(dasmContext, (uint8_t *)(&modrm), 1));
     iop = oldiop;
-    switch (_GetModRM_REG(modrm)) {
+    switch (_GetModRM_REG(modrm))
+    {
     case 0: /* SGDT_M32_16 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SGDT_M32_16");
+        TYPE_TRACE_BLOCK_BEGIN("SGDT_M32_16");
         STD_SPRINTF(dop, "SGDT");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 6));
-        if (!flagmem) {
-            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("flagmem(0)");
+        TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 6));
+        if (!flagmem)
+        {
+            TYPE_TRACE_BLOCK_BEGIN("flagmem(0)");
             STD_SPRINTF(drm, "<ERROR>");
-            NTVDM64_TYPE_TRACE_BLOCK_END;
+            TYPE_TRACE_BLOCK_END;
         }
-        switch (_GetOperandSize) {
+        switch (_GetOperandSize)
+        {
         case 2:
             STD_SPRINTF(dopr, "WORD PTR %s", drm);
             break;
@@ -4838,21 +5274,23 @@ static C_VOID INS_0F_01(dasm32_context *dasmContext) {
             STD_SPRINTF(dopr, "DWORD PTR %s", drm);
             break;
         default:
-            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+            TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 1: /* SIDT_M32_16 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SIDT_M32_16");
+        TYPE_TRACE_BLOCK_BEGIN("SIDT_M32_16");
         STD_SPRINTF(dop, "SIDT");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 6));
-        if (!flagmem) {
-            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("flagmem(0)");
+        TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 6));
+        if (!flagmem)
+        {
+            TYPE_TRACE_BLOCK_BEGIN("flagmem(0)");
             STD_SPRINTF(drm, "<ERROR>");
-            NTVDM64_TYPE_TRACE_BLOCK_END;
+            TYPE_TRACE_BLOCK_END;
         }
-        switch (_GetOperandSize) {
+        switch (_GetOperandSize)
+        {
         case 2:
             STD_SPRINTF(dopr, "WORD PTR %s", drm);
             break;
@@ -4860,21 +5298,23 @@ static C_VOID INS_0F_01(dasm32_context *dasmContext) {
             STD_SPRINTF(dopr, "DWORD PTR %s", drm);
             break;
         default:
-            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+            TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 2: /* LGDT_M32_16 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("LGDT_M32_16");
+        TYPE_TRACE_BLOCK_BEGIN("LGDT_M32_16");
         STD_SPRINTF(dop, "LGDT");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 6));
-        if (!flagmem) {
-            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("flagmem(0)");
+        TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 6));
+        if (!flagmem)
+        {
+            TYPE_TRACE_BLOCK_BEGIN("flagmem(0)");
             STD_SPRINTF(drm, "<ERROR>");
-            NTVDM64_TYPE_TRACE_BLOCK_END;
+            TYPE_TRACE_BLOCK_END;
         }
-        switch (_GetOperandSize) {
+        switch (_GetOperandSize)
+        {
         case 2:
             STD_SPRINTF(dopr, "WORD PTR %s", drm);
             break;
@@ -4882,21 +5322,23 @@ static C_VOID INS_0F_01(dasm32_context *dasmContext) {
             STD_SPRINTF(dopr, "DWORD PTR %s", drm);
             break;
         default:
-            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+            TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 3: /* LIDT_M32_16 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("LIDT_M32_16");
+        TYPE_TRACE_BLOCK_BEGIN("LIDT_M32_16");
         STD_SPRINTF(dop, "LIDT");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 6));
-        if (!flagmem) {
-            NTVDM64_TYPE_TRACE_BLOCK_BEGIN("flagmem(0)");
+        TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 6));
+        if (!flagmem)
+        {
+            TYPE_TRACE_BLOCK_BEGIN("flagmem(0)");
             STD_SPRINTF(drm, "<ERROR>");
-            NTVDM64_TYPE_TRACE_BLOCK_END;
+            TYPE_TRACE_BLOCK_END;
         }
-        switch (_GetOperandSize) {
+        switch (_GetOperandSize)
+        {
         case 2:
             STD_SPRINTF(dopr, "WORD PTR %s", drm);
             break;
@@ -4904,120 +5346,131 @@ static C_VOID INS_0F_01(dasm32_context *dasmContext) {
             STD_SPRINTF(dopr, "DWORD PTR %s", drm);
             break;
         default:
-            NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+            TYPE_TRACE_IMPOSSIBLE_RETURN;
             break;
         }
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 4: /* SMSW_RM16 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("SMSW_RM16");
+        TYPE_TRACE_BLOCK_BEGIN("SMSW_RM16");
         STD_SPRINTF(dop, "SMSW");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, ((_GetModRM_MOD(modrm) == 3) ? _GetOperandSize : 2)));
+        TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, ((_GetModRM_MOD(modrm) == 3) ? _GetOperandSize : 2)));
         STD_SPRINTF(dopr, "%s", drm);
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 5:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_REG(5)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_BEGIN("ModRM_REG(5)");
+        TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
+        TYPE_TRACE_BLOCK_END;
         break;
     case 6: /* LMSW_RM16 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("LMSW_RM16");
+        TYPE_TRACE_BLOCK_BEGIN("LMSW_RM16");
         STD_SPRINTF(dop, "LMSW");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 2));
+        TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 2));
         STD_SPRINTF(dopr, "%s", drm);
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 7:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("ModRM_REG(7)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_BEGIN("ModRM_REG(7)");
+        TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
+        TYPE_TRACE_BLOCK_END;
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID LAR_R32_RM32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("LAR_R32_RM32");
+static C_VOID LAR_R32_RM32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("LAR_R32_RM32");
     _adv;
     STD_SPRINTF(dop, "LAR");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
     STD_SPRINTF(dopr, "%s,%s", dr, drm);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID LSL_R32_RM32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("LSL_R32_RM32");
+static C_VOID LSL_R32_RM32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("LSL_R32_RM32");
     _adv;
     STD_SPRINTF(dop, "LSL");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
     STD_SPRINTF(dopr, "%s,%s", dr, drm);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID CLTS(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("CLTS");
+static C_VOID CLTS(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("CLTS");
     _adv;
     STD_SPRINTF(dop, "CLTS");
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
 static C_VOID WBINVD(dasm32_context *dasmContext) {}
-static C_VOID MOV_R32_CR(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_R32_CR");
+static C_VOID MOV_R32_CR(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("MOV_R32_CR");
     _adv;
     STD_SPRINTF(dop, "MOV");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm_creg(dasmContext));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm_creg(dasmContext));
     STD_SPRINTF(dopr, "%s,%s", drm, dr);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_R32_DR(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_R32_DR");
+static C_VOID MOV_R32_DR(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("MOV_R32_DR");
     _adv;
     STD_SPRINTF(dop, "MOV");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm_dreg(dasmContext));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm_dreg(dasmContext));
     STD_SPRINTF(dopr, "%s,%s", drm, dr);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_CR_R32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_CR_R32");
+static C_VOID MOV_CR_R32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("MOV_CR_R32");
     _adv;
     STD_SPRINTF(dop, "MOV");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm_creg(dasmContext));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm_creg(dasmContext));
     STD_SPRINTF(dopr, "%s,%s", dr, drm);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_DR_R32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_DR_R32");
+static C_VOID MOV_DR_R32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("MOV_DR_R32");
     _adv;
     STD_SPRINTF(dop, "MOV");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm_dreg(dasmContext));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm_dreg(dasmContext));
     STD_SPRINTF(dopr, "%s,%s", dr, drm);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_R32_TR(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_R32_TR");
+static C_VOID MOV_R32_TR(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("MOV_R32_TR");
     _adv;
     STD_SPRINTF(dop, "MOV");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm_treg(dasmContext));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm_treg(dasmContext));
     STD_SPRINTF(dopr, "%s,%s", drm, dr);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_TR_R32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOV_TR_R32");
+static C_VOID MOV_TR_R32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("MOV_TR_R32");
     _adv;
     STD_SPRINTF(dop, "MOV");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm_treg(dasmContext));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm_treg(dasmContext));
     STD_SPRINTF(dopr, "%s,%s", dr, drm);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
 static C_VOID WRMSR(dasm32_context *dasmContext) {}
 static C_VOID RDMSR(dasm32_context *dasmContext) {}
-static C_VOID JO_REL32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("JO_REL32");
+static C_VOID JO_REL32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("JO_REL32");
     _adv;
     STD_SPRINTF(dop, "JO");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
-    switch (_GetOperandSize) {
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
+    switch (_GetOperandSize)
+    {
     case 2:
         SPRINTFSI(dasmContext, dopr, (uint16_t)(cimm), 2);
         break;
@@ -5025,17 +5478,19 @@ static C_VOID JO_REL32(dasm32_context *dasmContext) {
         SPRINTFSI(dasmContext, dopr, (uint32_t)(cimm), 4);
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID JNO_REL32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("JNO_REL32");
+static C_VOID JNO_REL32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("JNO_REL32");
     _adv;
     STD_SPRINTF(dop, "JNO");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
-    switch (_GetOperandSize) {
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
+    switch (_GetOperandSize)
+    {
     case 2:
         SPRINTFSI(dasmContext, dopr, (uint16_t)(cimm), 2);
         break;
@@ -5043,17 +5498,19 @@ static C_VOID JNO_REL32(dasm32_context *dasmContext) {
         SPRINTFSI(dasmContext, dopr, (uint32_t)(cimm), 4);
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID JC_REL32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("JC_REL32");
+static C_VOID JC_REL32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("JC_REL32");
     _adv;
     STD_SPRINTF(dop, "JC");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
-    switch (_GetOperandSize) {
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
+    switch (_GetOperandSize)
+    {
     case 2:
         SPRINTFSI(dasmContext, dopr, (uint16_t)(cimm), 2);
         break;
@@ -5061,17 +5518,19 @@ static C_VOID JC_REL32(dasm32_context *dasmContext) {
         SPRINTFSI(dasmContext, dopr, (uint32_t)(cimm), 4);
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID JNC_REL32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("JNC_REL32");
+static C_VOID JNC_REL32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("JNC_REL32");
     _adv;
     STD_SPRINTF(dop, "JNC");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
-    switch (_GetOperandSize) {
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
+    switch (_GetOperandSize)
+    {
     case 2:
         SPRINTFSI(dasmContext, dopr, (uint16_t)(cimm), 2);
         break;
@@ -5079,17 +5538,19 @@ static C_VOID JNC_REL32(dasm32_context *dasmContext) {
         SPRINTFSI(dasmContext, dopr, (uint32_t)(cimm), 4);
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID JZ_REL32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("JZ_REL32");
+static C_VOID JZ_REL32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("JZ_REL32");
     _adv;
     STD_SPRINTF(dop, "JZ");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
-    switch (_GetOperandSize) {
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
+    switch (_GetOperandSize)
+    {
     case 2:
         SPRINTFSI(dasmContext, dopr, (uint16_t)(cimm), 2);
         break;
@@ -5097,17 +5558,19 @@ static C_VOID JZ_REL32(dasm32_context *dasmContext) {
         SPRINTFSI(dasmContext, dopr, (uint32_t)(cimm), 4);
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID JNZ_REL32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("JNZ_REL32");
+static C_VOID JNZ_REL32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("JNZ_REL32");
     _adv;
     STD_SPRINTF(dop, "JNZ");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
-    switch (_GetOperandSize) {
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
+    switch (_GetOperandSize)
+    {
     case 2:
         SPRINTFSI(dasmContext, dopr, (uint16_t)(cimm), 2);
         break;
@@ -5115,17 +5578,19 @@ static C_VOID JNZ_REL32(dasm32_context *dasmContext) {
         SPRINTFSI(dasmContext, dopr, (uint32_t)(cimm), 4);
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID JNA_REL32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("JNA_REL32");
+static C_VOID JNA_REL32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("JNA_REL32");
     _adv;
     STD_SPRINTF(dop, "JNA");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
-    switch (_GetOperandSize) {
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
+    switch (_GetOperandSize)
+    {
     case 2:
         SPRINTFSI(dasmContext, dopr, (uint16_t)(cimm), 2);
         break;
@@ -5133,17 +5598,19 @@ static C_VOID JNA_REL32(dasm32_context *dasmContext) {
         SPRINTFSI(dasmContext, dopr, (uint32_t)(cimm), 4);
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID JA_REL32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("JA_REL32");
+static C_VOID JA_REL32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("JA_REL32");
     _adv;
     STD_SPRINTF(dop, "JA");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
-    switch (_GetOperandSize) {
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
+    switch (_GetOperandSize)
+    {
     case 2:
         SPRINTFSI(dasmContext, dopr, (uint16_t)(cimm), 2);
         break;
@@ -5151,17 +5618,19 @@ static C_VOID JA_REL32(dasm32_context *dasmContext) {
         SPRINTFSI(dasmContext, dopr, (uint32_t)(cimm), 4);
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID JS_REL32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("JS_REL32");
+static C_VOID JS_REL32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("JS_REL32");
     _adv;
     STD_SPRINTF(dop, "JS");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
-    switch (_GetOperandSize) {
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
+    switch (_GetOperandSize)
+    {
     case 2:
         SPRINTFSI(dasmContext, dopr, (uint16_t)(cimm), 2);
         break;
@@ -5169,17 +5638,19 @@ static C_VOID JS_REL32(dasm32_context *dasmContext) {
         SPRINTFSI(dasmContext, dopr, (uint32_t)(cimm), 4);
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID JNS_REL32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("JNS_REL32");
+static C_VOID JNS_REL32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("JNS_REL32");
     _adv;
     STD_SPRINTF(dop, "JNS");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
-    switch (_GetOperandSize) {
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
+    switch (_GetOperandSize)
+    {
     case 2:
         SPRINTFSI(dasmContext, dopr, (uint16_t)(cimm), 2);
         break;
@@ -5187,17 +5658,19 @@ static C_VOID JNS_REL32(dasm32_context *dasmContext) {
         SPRINTFSI(dasmContext, dopr, (uint32_t)(cimm), 4);
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID JP_REL32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("JP_REL32");
+static C_VOID JP_REL32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("JP_REL32");
     _adv;
     STD_SPRINTF(dop, "JP");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
-    switch (_GetOperandSize) {
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
+    switch (_GetOperandSize)
+    {
     case 2:
         SPRINTFSI(dasmContext, dopr, (uint16_t)(cimm), 2);
         break;
@@ -5205,17 +5678,19 @@ static C_VOID JP_REL32(dasm32_context *dasmContext) {
         SPRINTFSI(dasmContext, dopr, (uint32_t)(cimm), 4);
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID JNP_REL32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("JNP_REL32");
+static C_VOID JNP_REL32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("JNP_REL32");
     _adv;
     STD_SPRINTF(dop, "JNP");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
-    switch (_GetOperandSize) {
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
+    switch (_GetOperandSize)
+    {
     case 2:
         SPRINTFSI(dasmContext, dopr, (uint16_t)(cimm), 2);
         break;
@@ -5223,17 +5698,19 @@ static C_VOID JNP_REL32(dasm32_context *dasmContext) {
         SPRINTFSI(dasmContext, dopr, (uint32_t)(cimm), 4);
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID JL_REL32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("JL_REL32");
+static C_VOID JL_REL32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("JL_REL32");
     _adv;
     STD_SPRINTF(dop, "JL");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
-    switch (_GetOperandSize) {
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
+    switch (_GetOperandSize)
+    {
     case 2:
         SPRINTFSI(dasmContext, dopr, (uint16_t)(cimm), 2);
         break;
@@ -5241,17 +5718,19 @@ static C_VOID JL_REL32(dasm32_context *dasmContext) {
         SPRINTFSI(dasmContext, dopr, (uint32_t)(cimm), 4);
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID JNL_REL32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("JNL_REL32");
+static C_VOID JNL_REL32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("JNL_REL32");
     _adv;
     STD_SPRINTF(dop, "JNL");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
-    switch (_GetOperandSize) {
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
+    switch (_GetOperandSize)
+    {
     case 2:
         SPRINTFSI(dasmContext, dopr, (uint16_t)(cimm), 2);
         break;
@@ -5259,17 +5738,19 @@ static C_VOID JNL_REL32(dasm32_context *dasmContext) {
         SPRINTFSI(dasmContext, dopr, (uint32_t)(cimm), 4);
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID JNG_REL32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("JNG_REL32");
+static C_VOID JNG_REL32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("JNG_REL32");
     _adv;
     STD_SPRINTF(dop, "JNG");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
-    switch (_GetOperandSize) {
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
+    switch (_GetOperandSize)
+    {
     case 2:
         SPRINTFSI(dasmContext, dopr, (uint16_t)(cimm), 2);
         break;
@@ -5277,17 +5758,19 @@ static C_VOID JNG_REL32(dasm32_context *dasmContext) {
         SPRINTFSI(dasmContext, dopr, (uint32_t)(cimm), 4);
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID JG_REL32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("JG_REL32");
+static C_VOID JG_REL32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("JG_REL32");
     _adv;
     STD_SPRINTF(dop, "JG");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
-    switch (_GetOperandSize) {
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, _GetOperandSize));
+    switch (_GetOperandSize)
+    {
     case 2:
         SPRINTFSI(dasmContext, dopr, (uint16_t)(cimm), 2);
         break;
@@ -5295,421 +5778,475 @@ static C_VOID JG_REL32(dasm32_context *dasmContext) {
         SPRINTFSI(dasmContext, dopr, (uint32_t)(cimm), 4);
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID SETO_RM8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("SETO_RM8");
+static C_VOID SETO_RM8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("SETO_RM8");
     _adv;
     STD_SPRINTF(dop, "SETO");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 1));
     STD_SPRINTF(dopr, "%s", drm);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID SETNO_RM8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("SETO_RM8");
+static C_VOID SETNO_RM8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("SETO_RM8");
     _adv;
     STD_SPRINTF(dop, "SETNO");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 1));
     STD_SPRINTF(dopr, "%s", drm);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID SETC_RM8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("SETC_RM8");
+static C_VOID SETC_RM8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("SETC_RM8");
     _adv;
     STD_SPRINTF(dop, "SETC");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 1));
     STD_SPRINTF(dopr, "%s", drm);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID SETNC_RM8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("SETNC_RM8");
+static C_VOID SETNC_RM8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("SETNC_RM8");
     _adv;
     STD_SPRINTF(dop, "SETNC");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 1));
     STD_SPRINTF(dopr, "%s", drm);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID SETZ_RM8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("SETZ_RM8");
+static C_VOID SETZ_RM8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("SETZ_RM8");
     _adv;
     STD_SPRINTF(dop, "SETZ");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 1));
     STD_SPRINTF(dopr, "%s", drm);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID SETNZ_RM8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("SETNZ_RM8");
+static C_VOID SETNZ_RM8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("SETNZ_RM8");
     _adv;
     STD_SPRINTF(dop, "SETNZ");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 1));
     STD_SPRINTF(dopr, "%s", drm);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID SETNA_RM8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("SETNA_RM8");
+static C_VOID SETNA_RM8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("SETNA_RM8");
     _adv;
     STD_SPRINTF(dop, "SETNA");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 1));
     STD_SPRINTF(dopr, "%s", drm);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID SETA_RM8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("SETA_RM8");
+static C_VOID SETA_RM8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("SETA_RM8");
     _adv;
     STD_SPRINTF(dop, "SETA");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 1));
     STD_SPRINTF(dopr, "%s", drm);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID SETS_RM8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("SETS_RM8");
+static C_VOID SETS_RM8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("SETS_RM8");
     _adv;
     STD_SPRINTF(dop, "SETS");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 1));
     STD_SPRINTF(dopr, "%s", drm);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID SETNS_RM8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("SETNS_RM8");
+static C_VOID SETNS_RM8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("SETNS_RM8");
     _adv;
     STD_SPRINTF(dop, "SETNS");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 1));
     STD_SPRINTF(dopr, "%s", drm);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID SETP_RM8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("SETP_RM8");
+static C_VOID SETP_RM8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("SETP_RM8");
     _adv;
     STD_SPRINTF(dop, "SETP");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 1));
     STD_SPRINTF(dopr, "%s", drm);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID SETNP_RM8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("SETNP_RM8");
+static C_VOID SETNP_RM8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("SETNP_RM8");
     _adv;
     STD_SPRINTF(dop, "SETNP");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 1));
     STD_SPRINTF(dopr, "%s", drm);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID SETL_RM8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("SETL_RM8");
+static C_VOID SETL_RM8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("SETL_RM8");
     _adv;
     STD_SPRINTF(dop, "SETL");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 1));
     STD_SPRINTF(dopr, "%s", drm);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID SETNL_RM8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("SETNL_RM8");
+static C_VOID SETNL_RM8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("SETNL_RM8");
     _adv;
     STD_SPRINTF(dop, "SETNL");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 1));
     STD_SPRINTF(dopr, "%s", drm);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID SETNG_RM8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("SETNG_RM8");
+static C_VOID SETNG_RM8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("SETNG_RM8");
     _adv;
     STD_SPRINTF(dop, "SETNG");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 1));
     STD_SPRINTF(dopr, "%s", drm);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID SETG_RM8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("SETG_RM8");
+static C_VOID SETG_RM8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("SETG_RM8");
     _adv;
     STD_SPRINTF(dop, "SETG");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, 1));
     STD_SPRINTF(dopr, "%s", drm);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID PUSH_FS(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_FS");
+static C_VOID PUSH_FS(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("PUSH_FS");
     _adv;
     STD_SPRINTF(dop, "PUSH");
     STD_SPRINTF(dopr, "FS");
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID POP_FS(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_FS");
+static C_VOID POP_FS(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("POP_FS");
     _adv;
     STD_SPRINTF(dop, "POP");
     STD_SPRINTF(dopr, "FS");
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
 static C_VOID CPUID(dasm32_context *dasmContext) {}
-static C_VOID BT_RM32_R32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("BT_RM32_R32");
+static C_VOID BT_RM32_R32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("BT_RM32_R32");
     _adv;
     STD_SPRINTF(dop, "BT");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
     STD_SPRINTF(dopr, "%s,%s", drm, dr);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID SHLD_RM32_R32_I8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("SHLD_RM32_R32_I8");
+static C_VOID SHLD_RM32_R32_I8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("SHLD_RM32_R32_I8");
     _adv;
     STD_SPRINTF(dop, "SHLD");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
     STD_SPRINTF(dopr, "%s,%s,%02X", drm, dr, (uint8_t)(cimm));
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID SHLD_RM32_R32_CL(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("SHLD_RM32_R32_CL");
+static C_VOID SHLD_RM32_R32_CL(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("SHLD_RM32_R32_CL");
     _adv;
     STD_SPRINTF(dop, "SHLD");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
     STD_SPRINTF(dopr, "%s,%s,CL", drm, dr);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID PUSH_GS(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("PUSH_GS");
+static C_VOID PUSH_GS(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("PUSH_GS");
     _adv;
     STD_SPRINTF(dop, "PUSH");
     STD_SPRINTF(dopr, "GS");
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID POP_GS(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("POP_GS");
+static C_VOID POP_GS(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("POP_GS");
     _adv;
     STD_SPRINTF(dop, "POP");
     STD_SPRINTF(dopr, "GS");
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
 static C_VOID RSM(dasm32_context *dasmContext) {}
-static C_VOID BTS_RM32_R32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("BTS_RM32_R32");
+static C_VOID BTS_RM32_R32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("BTS_RM32_R32");
     _adv;
     STD_SPRINTF(dop, "BTS");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
     STD_SPRINTF(dopr, "%s,%s", drm, dr);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID SHRD_RM32_R32_I8(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("SHRD_RM32_R32_I8");
+static C_VOID SHRD_RM32_R32_I8(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("SHRD_RM32_R32_I8");
     _adv;
     STD_SPRINTF(dop, "SHRD");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
     STD_SPRINTF(dopr, "%s,%s,%02X", drm, dr, (uint8_t)(cimm));
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID SHRD_RM32_R32_CL(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("SHRD_RM32_R32_CL");
+static C_VOID SHRD_RM32_R32_CL(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("SHRD_RM32_R32_CL");
     _adv;
     STD_SPRINTF(dop, "SHRD");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
     STD_SPRINTF(dopr, "%s,%s,CL", drm, dr);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID IMUL_R32_RM32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("IMUL_R32_RM32");
+static C_VOID IMUL_R32_RM32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("IMUL_R32_RM32");
     _adv;
     STD_SPRINTF(dop, "IMUL");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
     STD_SPRINTF(dopr, "%s,%s", dr, drm);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID LSS_R32_M16_32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("LSS_R32_M16_32");
+static C_VOID LSS_R32_M16_32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("LSS_R32_M16_32");
     _adv;
     STD_SPRINTF(dop, "LSS");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize + 2));
-    if (!flagmem) {
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("flagmem(0)");
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize + 2));
+    if (!flagmem)
+    {
+        TYPE_TRACE_BLOCK_BEGIN("flagmem(0)");
         STD_SPRINTF(drm, "<ERROR>");
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
     }
     STD_SPRINTF(dopr, "%s,%s", dr, drm);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID BTR_RM32_R32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("BTR_RM32_R32");
+static C_VOID BTR_RM32_R32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("BTR_RM32_R32");
     _adv;
     STD_SPRINTF(dop, "BTR");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
     STD_SPRINTF(dopr, "%s,%s", drm, dr);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID LFS_R32_M16_32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("LFS_R32_M16_32");
+static C_VOID LFS_R32_M16_32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("LFS_R32_M16_32");
     _adv;
     STD_SPRINTF(dop, "LFS");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize + 2));
-    if (!flagmem) {
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("flagmem(0)");
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize + 2));
+    if (!flagmem)
+    {
+        TYPE_TRACE_BLOCK_BEGIN("flagmem(0)");
         STD_SPRINTF(drm, "<ERROR>");
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
     }
     STD_SPRINTF(dopr, "%s,%s", dr, drm);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID LGS_R32_M16_32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("LGS_R32_M16_32");
+static C_VOID LGS_R32_M16_32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("LGS_R32_M16_32");
     _adv;
     STD_SPRINTF(dop, "LGS");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize + 2));
-    if (!flagmem) {
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("flagmem(0)");
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize + 2));
+    if (!flagmem)
+    {
+        TYPE_TRACE_BLOCK_BEGIN("flagmem(0)");
         STD_SPRINTF(drm, "<ERROR>");
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
     }
     STD_SPRINTF(dopr, "%s,%s", dr, drm);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID MOVZX_R32_RM8(dasm32_context *dasmContext) {
+static C_VOID MOVZX_R32_RM8(dasm32_context *dasmContext)
+{
     C_CHAR dptr[0x100];
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOVZX_R32_RM8");
+    TYPE_TRACE_CALL_BEGIN("MOVZX_R32_RM8");
     _adv;
     STD_SPRINTF(dop, "MOVZX");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, 1));
-    if (flagmem) STD_SPRINTF(dptr, "BYTE PTR ");
-    else dptr[0] = 0;
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, 1));
+    if (flagmem)
+        STD_SPRINTF(dptr, "BYTE PTR ");
+    else
+        dptr[0] = 0;
     STD_SPRINTF(dopr, "%s,%s%s", dr, dptr, drm);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID MOVZX_R32_RM16(dasm32_context *dasmContext) {
+static C_VOID MOVZX_R32_RM16(dasm32_context *dasmContext)
+{
     C_CHAR dptr[0x100];
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOVZX_R32_RM16");
+    TYPE_TRACE_CALL_BEGIN("MOVZX_R32_RM16");
     _adv;
     STD_SPRINTF(dop, "MOVZX");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 4, 2));
-    if (flagmem) STD_SPRINTF(dptr, "WORD PTR ");
-    else dptr[0] = 0;
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 4, 2));
+    if (flagmem)
+        STD_SPRINTF(dptr, "WORD PTR ");
+    else
+        dptr[0] = 0;
     STD_SPRINTF(dopr, "%s,%s%s", dr, dptr, drm);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID INS_0F_BA(dasm32_context *dasmContext) {
+static C_VOID INS_0F_BA(dasm32_context *dasmContext)
+{
     uint8_t modrm, oldiop;
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("INS_0F_BA");
+    TYPE_TRACE_CALL_BEGIN("INS_0F_BA");
     _adv;
     oldiop = iop;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_code(dasmContext, (uint8_t *)(&modrm), 1));
+    TYPE_TRACE_CHECK_RETURN(_d_code(dasmContext, (uint8_t *)(&modrm), 1));
     iop = oldiop;
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, _GetOperandSize));
-    switch (cr) {
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, _GetOperandSize));
+    switch (cr)
+    {
     case 0:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(0)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_BEGIN("cr(0)");
+        TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
+        TYPE_TRACE_BLOCK_END;
         break;
     case 1:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(1)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_BEGIN("cr(1)");
+        TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
+        TYPE_TRACE_BLOCK_END;
         break;
     case 2:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(2)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_BEGIN("cr(2)");
+        TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
+        TYPE_TRACE_BLOCK_END;
         break;
     case 3:
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("cr(3)");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_BEGIN("cr(3)");
+        TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(dasmContext));
+        TYPE_TRACE_BLOCK_END;
         break;
     case 4: /* BT_RM32_I8 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("BT_RM32_I8");
+        TYPE_TRACE_BLOCK_BEGIN("BT_RM32_I8");
         STD_SPRINTF(dop, "BT");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+        TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
         STD_SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 5: /* BTS_RM32_I8 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("BTS_RM32_I8");
+        TYPE_TRACE_BLOCK_BEGIN("BTS_RM32_I8");
         STD_SPRINTF(dop, "BTS");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+        TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
         STD_SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 6: /* BTR_RM32_I8 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("BTR_RM32_I8");
+        TYPE_TRACE_BLOCK_BEGIN("BTR_RM32_I8");
         STD_SPRINTF(dop, "BTR");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+        TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
         STD_SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     case 7: /* BTC_RM32_I8 */
-        NTVDM64_TYPE_TRACE_BLOCK_BEGIN("BTC_RM32_I8");
+        TYPE_TRACE_BLOCK_BEGIN("BTC_RM32_I8");
         STD_SPRINTF(dop, "BTC");
-        NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+        TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
         STD_SPRINTF(dopr, "%s,%02X", drm, (uint8_t)(cimm));
-        NTVDM64_TYPE_TRACE_BLOCK_END;
+        TYPE_TRACE_BLOCK_END;
         break;
     default:
-        NTVDM64_TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID BTC_RM32_R32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("BTC_RM32_R32");
+static C_VOID BTC_RM32_R32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("BTC_RM32_R32");
     _adv;
     STD_SPRINTF(dop, "BTC");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
     STD_SPRINTF(dopr, "%s,%s", drm, dr);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID BSF_R32_RM32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("BSF_R32_RM32");
+static C_VOID BSF_R32_RM32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("BSF_R32_RM32");
     _adv;
     STD_SPRINTF(dop, "BSF");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
     STD_SPRINTF(dopr, "%s,%s", dr, drm);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID BSR_R32_RM32(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("BSR_R32_RM32");
+static C_VOID BSR_R32_RM32(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("BSR_R32_RM32");
     _adv;
     STD_SPRINTF(dop, "BSR");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
     STD_SPRINTF(dopr, "%s,%s", dr, drm);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID MOVSX_R32_RM8(dasm32_context *dasmContext) {
+static C_VOID MOVSX_R32_RM8(dasm32_context *dasmContext)
+{
     C_CHAR dptr[0x100];
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOVSX_R32_RM8");
+    TYPE_TRACE_CALL_BEGIN("MOVSX_R32_RM8");
     _adv;
     STD_SPRINTF(dop, "MOVSX");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, 1));
-    if (flagmem) STD_SPRINTF(dptr, "BYTE PTR ");
-    else dptr[0] = 0;
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, 1));
+    if (flagmem)
+        STD_SPRINTF(dptr, "BYTE PTR ");
+    else
+        dptr[0] = 0;
     STD_SPRINTF(dopr, "%s,%s%s", dr, dptr, drm);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID MOVSX_R32_RM16(dasm32_context *dasmContext) {
+static C_VOID MOVSX_R32_RM16(dasm32_context *dasmContext)
+{
     C_CHAR dptr[0x100];
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("MOVSX_R32_RM16");
+    TYPE_TRACE_CALL_BEGIN("MOVSX_R32_RM16");
     _adv;
     STD_SPRINTF(dop, "MOVSX");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 4, 2));
-    if (flagmem) STD_SPRINTF(dptr, "WORD PTR ");
-    else dptr[0] = 0;
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 4, 2));
+    if (flagmem)
+        STD_SPRINTF(dptr, "WORD PTR ");
+    else
+        dptr[0] = 0;
     STD_SPRINTF(dopr, "%s,%s%s", dr, dptr, drm);
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
-static C_VOID QDX(dasm32_context *dasmContext) {
-    NTVDM64_TYPE_TRACE_CALL_BEGIN("QDX");
+static C_VOID QDX(dasm32_context *dasmContext)
+{
+    TYPE_TRACE_CALL_BEGIN("QDX");
     _adv;
     STD_SPRINTF(dop, "QDX");
-    NTVDM64_TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
+    TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
     STD_SPRINTF(dopr, "%02X", (uint8_t)(cimm));
-    NTVDM64_TYPE_TRACE_CALL_END;
+    TYPE_TRACE_CALL_END;
 }
 
-static uint8_t dasm32_execute(dasm32_context *dasmContext, C_CHAR *stmt, uint8_t *rcode, C_INT flag32) {
+static uint8_t dasm32_execute(dasm32_context *dasmContext, C_CHAR *stmt, uint8_t *rcode, C_INT flag32)
+{
     STD_SIZE_T i;
     uint8_t opcode, oldiop;
 #if DASM_TRACE == 1
-    ntvdm64_type_trace_initialize(&trace);
+    type_trace_initialize(&trace);
 #endif
-    if (!dasmContext->initialized) {
+    if (!dasmContext->initialized)
+    {
         dtable[0x00] = ADD_RM8_R8;
         dtable[0x01] = ADD_RM32_R32;
         dtable[0x02] = ADD_R8_RM8;
@@ -6239,34 +6776,39 @@ static uint8_t dasm32_execute(dasm32_context *dasmContext, C_CHAR *stmt, uint8_t
     STD_SPRINTF(doverds, "DS");
     STD_SPRINTF(doverss, "SS");
 
-    do {
-        NTVDM64_TYPE_TRACE_CALL_BEGIN("dasm32");
+    do
+    {
+        TYPE_TRACE_CALL_BEGIN("dasm32");
         dop[0] = 0;
         dopr[0] = 0;
         dstmt[0] = 0;
         oldiop = iop;
-        NTVDM64_TYPE_TRACE_CHECK_BREAK(_d_code(dasmContext, (uint8_t *)(&opcode), 1));
+        TYPE_TRACE_CHECK_BREAK(_d_code(dasmContext, (uint8_t *)(&opcode), 1));
         iop = oldiop;
-        NTVDM64_TYPE_TRACE_CHECK_BREAK((*(dtable[opcode]))(dasmContext));
-        if (STD_STRLEN(dop)) {
+        TYPE_TRACE_CHECK_BREAK((*(dtable[opcode]))(dasmContext));
+        if (STD_STRLEN(dop))
+        {
             STD_STRCAT(dop, " ");
             STD_STRCPY(dstmt, dop);
-            for (i = STD_STRLEN(dop); i < 8; ++i) STD_STRCAT(dstmt, " ");
+            for (i = STD_STRLEN(dop); i < 8; ++i)
+                STD_STRCAT(dstmt, " ");
             STD_STRCAT(dstmt, dopr);
             STD_STRCAT(stmt, dstmt);
         }
-        NTVDM64_TYPE_TRACE_CALL_END;
+        TYPE_TRACE_CALL_END;
     } while (_kdf_check_prefix(dasmContext, opcode));
 #if DASM_TRACE == 1
-    if (trace.callCount || trace.flagError) {
+    if (trace.callCount || trace.flagError)
+    {
         STD_PRINTF("dasm32: bad machine code.\n");
     }
-    ntvdm64_type_trace_finalize(&trace);
+    type_trace_finalize(&trace);
 #endif
     return iop;
 }
 
-uint8_t dasm32(C_CHAR *stmt, uint8_t *rcode, C_INT flag32) {
+uint8_t dasm32(C_CHAR *stmt, uint8_t *rcode, C_INT flag32)
+{
     dasm32_context local_context;
 
     STD_MEMSET(&local_context, 0, sizeof(local_context));

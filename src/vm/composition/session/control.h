@@ -1,5 +1,5 @@
-#ifndef NTVDM64_VM_SESSION_CONTROL_H
-#define NTVDM64_VM_SESSION_CONTROL_H
+#ifndef VM_SESSION_CONTROL_H
+#define VM_SESSION_CONTROL_H
 
 
 #include "type.h"

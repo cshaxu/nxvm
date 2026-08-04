@@ -1,5 +1,5 @@
-#ifndef NTVDM64_CORE_MACHINE_INTERFACE_H
-#define NTVDM64_CORE_MACHINE_INTERFACE_H
+#ifndef CORE_MACHINE_INTERFACE_H
+#define CORE_MACHINE_INTERFACE_H
 
 
 #include "core/machine/cpu_interface.h"
@@ -69,42 +69,42 @@ typedef struct core_machine_observation {
     core_machine_cpu_diagnostic diagnostic;
 } core_machine_observation;
 
-ntvdm64_status core_machine_create(
+type_status core_machine_create(
     const core_machine_config *config,
     core_machine **out_machine);
 
-ntvdm64_status core_machine_reset(core_machine *machine);
+type_status core_machine_reset(core_machine *machine);
 
-ntvdm64_status core_machine_reconfigure_memory(core_machine *machine,
+type_status core_machine_reconfigure_memory(core_machine *machine,
     STD_SIZE_T memory_bytes);
 
-ntvdm64_status core_machine_get_lifecycle(
+type_status core_machine_get_lifecycle(
     const core_machine *machine,
     core_machine_lifecycle *out_lifecycle);
 
-ntvdm64_status core_machine_get_cpu_state(
+type_status core_machine_get_cpu_state(
     const core_machine *machine,
     core_machine_cpu_state *out_state);
 
-ntvdm64_status core_machine_get_cpu_profile(
+type_status core_machine_get_cpu_profile(
     const core_machine *machine, core_machine_cpu_profile *out_profile);
-ntvdm64_status core_machine_get_fpu_profile(
+type_status core_machine_get_fpu_profile(
     const core_machine *machine, core_machine_fpu_profile *out_profile);
-ntvdm64_status core_machine_get_memory_bytes(
+type_status core_machine_get_memory_bytes(
     const core_machine *machine, STD_SIZE_T *out_memory_bytes);
 
-ntvdm64_status core_machine_get_cpu_diagnostic(
+type_status core_machine_get_cpu_diagnostic(
     const core_machine *machine,
     core_machine_cpu_diagnostic *out_diagnostic);
 
-ntvdm64_status core_machine_run(
+type_status core_machine_run(
     core_machine *machine,
     core_machine_run_budget budget,
     core_machine_run_result *result);
 
-ntvdm64_status core_machine_request_stop(core_machine *machine);
+type_status core_machine_request_stop(core_machine *machine);
 
-ntvdm64_status core_machine_report_fault(
+type_status core_machine_report_fault(
     core_machine *machine,
     uint32_t detail);
 
@@ -126,19 +126,19 @@ t_dma *core_machine_configuration_shared_dma_secondary_borrow(core_machine *mach
 t_kbc *core_machine_configuration_shared_kbc_borrow(core_machine *machine);
 t_vadp *core_machine_configuration_shared_vadp_borrow(core_machine *machine);
 
-ntvdm64_status core_machine_profile_binding_initialize(
+type_status core_machine_profile_binding_initialize(
     core_machine *machine, core_machine_profile_binding *binding);
 t_ram *core_machine_profile_binding_memory(
     const core_machine_profile_binding *binding);
 core_machine_cpu_execution_context *core_machine_profile_binding_execution(
     const core_machine_profile_binding *binding);
 
-ntvdm64_status core_machine_capture_observation(
+type_status core_machine_capture_observation(
     const core_machine *machine, core_machine_observation *out_observation);
 
-ntvdm64_status core_machine_bind_execution_provider(core_machine *machine,
+type_status core_machine_bind_execution_provider(core_machine *machine,
     const core_machine_execution_provider *provider, C_VOID *context);
-ntvdm64_status core_machine_freeze_execution_providers(core_machine *machine);
+type_status core_machine_freeze_execution_providers(core_machine *machine);
 
 C_VOID core_machine_destroy(core_machine *machine);
 

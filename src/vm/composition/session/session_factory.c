@@ -19,7 +19,7 @@ static vm_session *vm_session_provider_selected(C_VOID *context)
     C_VOID *session = STD_NULL;
 
     if (core_product_session_manager_borrow_selected(
-            (core_product_session_manager *)context, &session) != NTVDM64_STATUS_OK) {
+            (core_product_session_manager *)context, &session) != TYPE_STATUS_OK) {
         return STD_NULL;
     }
     return (vm_session *)session;
@@ -47,59 +47,59 @@ static C_INT vm_session_provider_parse_fpu(const C_CHAR *value,
     return 1;
 }
 
-static ntvdm64_status vm_session_provider_parse_options(
+static type_status vm_session_provider_parse_options(
     const core_product_session_open_options *options, vm_session_config *config)
 {
     C_INT index;
 
-    if (config == STD_NULL) return NTVDM64_STATUS_INVALID_ARGUMENT;
+    if (config == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     STD_MEMSET(config, 0, sizeof(*config));
     config->cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
     config->fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE;
-    if (options == STD_NULL) return NTVDM64_STATUS_OK;
+    if (options == STD_NULL) return TYPE_STATUS_OK;
     for (index = 0; index < options->argument_count; index += 2) {
         if (index + 1 >= options->argument_count || options->arguments == STD_NULL) {
-            return NTVDM64_STATUS_INVALID_ARGUMENT;
+            return TYPE_STATUS_INVALID_ARGUMENT;
         }
         if (!STD_STRCMP(options->arguments[index], "--cpu")) {
             if (!vm_session_provider_parse_cpu(options->arguments[index + 1],
-                    &config->cpu_profile)) return NTVDM64_STATUS_INVALID_ARGUMENT;
+                    &config->cpu_profile)) return TYPE_STATUS_INVALID_ARGUMENT;
         } else if (!STD_STRCMP(options->arguments[index], "--fpu")) {
             if (!vm_session_provider_parse_fpu(options->arguments[index + 1],
-                    &config->fpu_profile)) return NTVDM64_STATUS_INVALID_ARGUMENT;
+                    &config->fpu_profile)) return TYPE_STATUS_INVALID_ARGUMENT;
         } else {
-            return NTVDM64_STATUS_INVALID_ARGUMENT;
+            return TYPE_STATUS_INVALID_ARGUMENT;
         }
     }
     return config->fpu_profile == CORE_MACHINE_FPU_PROFILE_NONE ?
-        NTVDM64_STATUS_OK : NTVDM64_STATUS_INVALID_STATE;
+        TYPE_STATUS_OK : TYPE_STATUS_INVALID_STATE;
 }
 
-static ntvdm64_status vm_session_provider_open(C_VOID *context,
+static type_status vm_session_provider_open(C_VOID *context,
     core_product_session_id id, const core_product_session_open_options *options,
     C_VOID **out_session)
 {
     vm_session *session;
-    ntvdm64_status status;
+    type_status status;
     vm_session_config config;
 
     (C_VOID)context;
     status = vm_session_provider_parse_options(options, &config);
-    if (status != NTVDM64_STATUS_OK) return status;
+    if (status != TYPE_STATUS_OK) return status;
     status = vm_session_create(&config, &session);
-    if (status != NTVDM64_STATUS_OK) return status;
+    if (status != TYPE_STATUS_OK) return status;
     (C_VOID)id;
     *out_session = session;
-    return NTVDM64_STATUS_OK;
+    return TYPE_STATUS_OK;
 }
 
-static ntvdm64_status vm_session_provider_describe(C_VOID *context,
+static type_status vm_session_provider_describe(C_VOID *context,
     const C_VOID *opaque, core_product_session_snapshot *snapshot)
 {
     const vm_session *session = (const vm_session *)opaque;
 
     (C_VOID)context;
-    if (session == STD_NULL || snapshot == STD_NULL) return NTVDM64_STATUS_INVALID_ARGUMENT;
+    if (session == STD_NULL || snapshot == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     snapshot->state = vm_session_control_is_running(&session->control) ?
         (vm_session_control_is_paused(&session->control) ?
             CORE_PRODUCT_SESSION_STATE_PAUSED : CORE_PRODUCT_SESSION_STATE_RUNNING) :
@@ -110,14 +110,14 @@ static ntvdm64_status vm_session_provider_describe(C_VOID *context,
     STD_SNPRINTF(snapshot->details, sizeof(snapshot->details), "cpu=%s fpu=%s",
         core_machine_cpu_profile_name(session->core_machine_config.cpu_profile),
         core_machine_fpu_profile_name(session->core_machine_config.fpu_profile));
-    return NTVDM64_STATUS_OK;
+    return TYPE_STATUS_OK;
 }
 
-static ntvdm64_status vm_session_provider_close(C_VOID *context, C_VOID *opaque)
+static type_status vm_session_provider_close(C_VOID *context, C_VOID *opaque)
 {
     (C_VOID)context;
     vm_session_destroy((vm_session *)opaque);
-    return NTVDM64_STATUS_OK;
+    return TYPE_STATUS_OK;
 }
 
 C_VOID vm_session_provider_initialize(core_product_session_provider *provider)

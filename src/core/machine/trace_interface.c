@@ -41,28 +41,28 @@ C_VOID core_machine_trace_finalize(core_machine *machine)
     }
 }
 
-ntvdm64_status core_machine_set_trace_provider(
+type_status core_machine_set_trace_provider(
     core_machine *machine,
     const core_machine_trace_provider *provider)
 {
     if (machine == STD_NULL) {
-        return NTVDM64_STATUS_INVALID_ARGUMENT;
+        return TYPE_STATUS_INVALID_ARGUMENT;
     }
 
     if (machine->lifecycle == CORE_MACHINE_RUNNING) {
-        return NTVDM64_STATUS_INVALID_STATE;
+        return TYPE_STATUS_INVALID_STATE;
     }
 
     STD_MEMSET(&machine->trace.provider, 0, sizeof(machine->trace.provider));
     if (provider != STD_NULL) {
         if (provider->callback == STD_NULL) {
-            return NTVDM64_STATUS_INVALID_ARGUMENT;
+            return TYPE_STATUS_INVALID_ARGUMENT;
         }
         machine->trace.provider = *provider;
     }
     machine->trace.count = 0u;
     machine->trace.flushing = 0;
-    return NTVDM64_STATUS_OK;
+    return TYPE_STATUS_OK;
 }
 
 C_VOID core_machine_trace_record(

@@ -1,5 +1,5 @@
-#ifndef NTVDM64_CORE_MACHINE_PRESENTATION_INTERFACE_H
-#define NTVDM64_CORE_MACHINE_PRESENTATION_INTERFACE_H
+#ifndef CORE_MACHINE_PRESENTATION_INTERFACE_H
+#define CORE_MACHINE_PRESENTATION_INTERFACE_H
 
 
 #include "type.h"
@@ -26,15 +26,15 @@ typedef struct core_machine_text_snapshot {
 } core_machine_text_snapshot;
 
 C_VOID core_machine_keyboard_queue_initialize(core_machine_keyboard_queue *queue);
-ntvdm64_status core_machine_keyboard_queue_push(
+type_status core_machine_keyboard_queue_push(
     core_machine_keyboard_queue *queue, uint16_t value);
-ntvdm64_status core_machine_keyboard_queue_pop(
+type_status core_machine_keyboard_queue_pop(
     core_machine_keyboard_queue *queue, uint16_t *out_value);
 C_VOID core_machine_text_snapshot_initialize(core_machine_text_snapshot *snapshot);
-ntvdm64_status core_machine_text_snapshot_write(
+type_status core_machine_text_snapshot_write(
     core_machine_text_snapshot *snapshot, uint16_t x, uint16_t y,
     uint8_t character, uint8_t attribute);
-ntvdm64_status core_machine_text_snapshot_copy(
+type_status core_machine_text_snapshot_copy(
     const core_machine_text_snapshot *source, core_machine_text_snapshot *destination);
 
 #endif

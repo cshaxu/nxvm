@@ -2,17 +2,17 @@
 
 #include "core/machine/machine_interface.h"
 
-static ntvdm64_status machine_configuration_port_read(C_VOID *owner,
+static type_status machine_configuration_port_read(C_VOID *owner,
     uint16_t port, uint32_t *out_value)
 {
     (C_VOID)owner;
     (C_VOID)port;
     *out_value = 0x5au;
-    return NTVDM64_STATUS_OK;
+    return TYPE_STATUS_OK;
 }
 
-static C_INT machine_configuration_expect(ntvdm64_status actual,
-    ntvdm64_status expected)
+static C_INT machine_configuration_expect(type_status actual,
+    type_status expected)
 {
     return actual == expected ? 0 : 1;
 }
@@ -30,28 +30,28 @@ C_INT main(C_VOID)
     C_INT failed = 0;
 
     failed |= machine_configuration_expect(core_machine_create(&config, &machine),
-        NTVDM64_STATUS_OK);
+        TYPE_STATUS_OK);
     failed |= machine_configuration_expect(core_machine_reset(machine),
-        NTVDM64_STATUS_INVALID_STATE);
+        TYPE_STATUS_INVALID_STATE);
     failed |= machine_configuration_expect(core_machine_install_port_provider(
-        machine, 0x300u, 0x300u, &port_provider, STD_NULL), NTVDM64_STATUS_OK);
+        machine, 0x300u, 0x300u, &port_provider, STD_NULL), TYPE_STATUS_OK);
     failed |= machine_configuration_expect(core_machine_freeze_execution_providers(
-        machine), NTVDM64_STATUS_OK);
+        machine), TYPE_STATUS_OK);
     failed |= machine_configuration_expect(core_machine_freeze_execution_providers(
-        machine), NTVDM64_STATUS_INVALID_STATE);
+        machine), TYPE_STATUS_INVALID_STATE);
     failed |= machine_configuration_expect(core_machine_install_port_provider(
         machine, 0x301u, 0x301u, &port_provider, STD_NULL),
-        NTVDM64_STATUS_INVALID_STATE);
+        TYPE_STATUS_INVALID_STATE);
     failed |= machine_configuration_expect(core_machine_bind_execution_provider(
-        machine, STD_NULL, STD_NULL), NTVDM64_STATUS_INVALID_STATE);
+        machine, STD_NULL, STD_NULL), TYPE_STATUS_INVALID_STATE);
     failed |= machine_configuration_expect(core_machine_reset(machine),
-        NTVDM64_STATUS_OK);
+        TYPE_STATUS_OK);
     failed |= machine_configuration_expect(core_machine_memory_write(machine,
-        0xffff0u, &halt, 1u), NTVDM64_STATUS_OK);
+        0xffff0u, &halt, 1u), TYPE_STATUS_OK);
     failed |= machine_configuration_expect(core_machine_run(machine, budget,
-        &run_result), NTVDM64_STATUS_OK);
+        &run_result), TYPE_STATUS_OK);
     failed |= machine_configuration_expect(core_machine_memory_write(machine,
-        0xffff0u, &halt, 1u), NTVDM64_STATUS_OK);
+        0xffff0u, &halt, 1u), TYPE_STATUS_OK);
 
     core_machine_destroy(machine);
     if (failed != 0) return 1;

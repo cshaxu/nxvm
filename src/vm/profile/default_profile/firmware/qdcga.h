@@ -1,7 +1,7 @@
 /* Copyright 2012-2014 Neko. */
 
-#ifndef NXVM_QDCGA_H
-#define NXVM_QDCGA_H
+#ifndef VM_PROFILE_DEFAULT_QDCGA_H
+#define VM_PROFILE_DEFAULT_QDCGA_H
 
 #ifdef __cplusplus
 extern "C" {

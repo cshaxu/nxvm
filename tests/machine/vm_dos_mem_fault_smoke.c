@@ -63,7 +63,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     core_machine_cpu_diagnostic diagnostic;
     STD_SIZE_T index;
 
-    if (argc != 2 || vm_session_create(STD_NULL, &session) != NTVDM64_STATUS_OK ||
+    if (argc != 2 || vm_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||
         vm_machine_fdd_insert_for(&session->fdd, argv[1]) != 0) goto fail;
     thread = CreateThread(STD_NULL, 0u, vm_dos_mem_fault_run_machine, session,
         0u, STD_NULL);
@@ -80,10 +80,10 @@ C_INT main(C_INT argc, C_CHAR **argv)
     result = WaitForSingleObject(thread, MEM_FAULT_TIMEOUT_MILLISECONDS);
     if ((result != WAIT_OBJECT_0 && result != WAIT_TIMEOUT) ||
         core_machine_get_cpu_diagnostic(session->core_machine, &diagnostic) !=
-            NTVDM64_STATUS_OK) goto fail;
+            TYPE_STATUS_OK) goto fail;
     if (diagnostic.first_fault.valid) {
         vm_dos_mem_fault_print(&diagnostic);
-        if (NTVDM64_TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
+        if (TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
                 VCPUINS_EXCEPT_UD) &&
             diagnostic.first_fault.point.byte_count >= 2u &&
             diagnostic.first_fault.point.bytes[0] == 0xdbu &&

@@ -1,7 +1,7 @@
 /* Copyright 2012-2014 Neko. */
 
-#ifndef NXVM_W32ADISP_H
-#define NXVM_W32ADISP_H
+#ifndef VM_PLATFORM_W32ADISP_H
+#define VM_PLATFORM_W32ADISP_H
 
 #ifdef __cplusplus
 extern "C" {

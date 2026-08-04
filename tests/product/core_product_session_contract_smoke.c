@@ -7,7 +7,7 @@ C_INT main(C_VOID)
 {
     core_product_session_snapshot snapshot = {
         .id = 0u,
-        .selected = NTVDM64_TYPE_TRUE,
+        .selected = TYPE_TRUE,
         .state = CORE_PRODUCT_SESSION_STATE_READY,
         .display = CORE_PRODUCT_SESSION_DISPLAY_CONSOLE
     };

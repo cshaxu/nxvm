@@ -1,5 +1,5 @@
-#ifndef NTVDM64_VM_SESSION_RUNNER_H
-#define NTVDM64_VM_SESSION_RUNNER_H
+#ifndef VM_SESSION_RUNNER_H
+#define VM_SESSION_RUNNER_H
 
 #include "type.h"
 

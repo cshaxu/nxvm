@@ -1,12 +1,12 @@
-#ifndef NXVM_BASELINE_VM_REQUEST_TRANSPORT_H
-#define NXVM_BASELINE_VM_REQUEST_TRANSPORT_H
+#ifndef VM_PLATFORM_REQUEST_TRANSPORT_H
+#define VM_PLATFORM_REQUEST_TRANSPORT_H
 
 
 #include "type.h"
 #include "vm/platform/request_bridge.h"
 
 typedef C_VOID (*vm_platform_request_consumer)(
-    C_VOID *opaque, const nxvm_platform_vm_request *request);
+    C_VOID *opaque, const vm_platform_request *request);
 
 typedef struct vm_platform_request_transport {
     STD_ATOMIC_BOOL locked;
@@ -14,24 +14,24 @@ typedef struct vm_platform_request_transport {
     C_UINT execution_boundary_count;
     vm_platform_request_consumer consumer;
     C_VOID *consumer_opaque;
-    nxvm_platform_vm_request_bridge ingress;
-    nxvm_platform_vm_request_bridge egress;
+    vm_platform_request_bridge ingress;
+    vm_platform_request_bridge egress;
 } vm_platform_request_transport;
 
 C_VOID vm_platform_request_transport_initialize(
     vm_platform_request_transport *transport);
-ntvdm64_status vm_platform_request_transport_enqueue_ingress(
+type_status vm_platform_request_transport_enqueue_ingress(
     vm_platform_request_transport *transport,
-    const nxvm_platform_vm_request *request);
-ntvdm64_status vm_platform_request_transport_dequeue_ingress(
+    const vm_platform_request *request);
+type_status vm_platform_request_transport_dequeue_ingress(
     vm_platform_request_transport *transport,
-    nxvm_platform_vm_request *out_request);
-ntvdm64_status vm_platform_request_transport_enqueue_egress(
+    vm_platform_request *out_request);
+type_status vm_platform_request_transport_enqueue_egress(
     vm_platform_request_transport *transport,
-    const nxvm_platform_vm_request *request);
-ntvdm64_status vm_platform_request_transport_dequeue_egress(
+    const vm_platform_request *request);
+type_status vm_platform_request_transport_dequeue_egress(
     vm_platform_request_transport *transport,
-    nxvm_platform_vm_request *out_request);
+    vm_platform_request *out_request);
 C_VOID vm_platform_request_transport_close(
     vm_platform_request_transport *transport);
 C_VOID vm_platform_request_transport_discard(

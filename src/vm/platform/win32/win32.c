@@ -126,14 +126,14 @@ static uint32_t vm_platform_win32_keyboard_get_async_state(C_VOID)
 {
     uint32_t state = 0u;
 
-    if (GetAsyncKeyState(VK_RSHIFT) & 0x8000) state |= NXVM_KEYBOARD_ASYNC_RIGHT_SHIFT;
-    if (GetAsyncKeyState(VK_LSHIFT) & 0x8000) state |= NXVM_KEYBOARD_ASYNC_LEFT_SHIFT;
-    if (GetAsyncKeyState(VK_CONTROL) & 0x8000) state |= NXVM_KEYBOARD_ASYNC_CONTROL;
-    if (GetAsyncKeyState(VK_MENU) & 0x8000) state |= NXVM_KEYBOARD_ASYNC_ALT;
-    if (GetAsyncKeyState(VK_SCROLL) & 0x8000) state |= NXVM_KEYBOARD_ASYNC_SCROLL_LOCK;
-    if (GetAsyncKeyState(VK_NUMLOCK) & 0x8000) state |= NXVM_KEYBOARD_ASYNC_NUM_LOCK;
-    if (GetAsyncKeyState(VK_CAPITAL) & 0x8000) state |= NXVM_KEYBOARD_ASYNC_CAPS_LOCK;
-    if (GetAsyncKeyState(VK_INSERT) & 0x8000) state |= NXVM_KEYBOARD_ASYNC_INSERT;
+    if (GetAsyncKeyState(VK_RSHIFT) & 0x8000) state |= CORE_MACHINE_KEYBOARD_ASYNC_RIGHT_SHIFT;
+    if (GetAsyncKeyState(VK_LSHIFT) & 0x8000) state |= CORE_MACHINE_KEYBOARD_ASYNC_LEFT_SHIFT;
+    if (GetAsyncKeyState(VK_CONTROL) & 0x8000) state |= CORE_MACHINE_KEYBOARD_ASYNC_CONTROL;
+    if (GetAsyncKeyState(VK_MENU) & 0x8000) state |= CORE_MACHINE_KEYBOARD_ASYNC_ALT;
+    if (GetAsyncKeyState(VK_SCROLL) & 0x8000) state |= CORE_MACHINE_KEYBOARD_ASYNC_SCROLL_LOCK;
+    if (GetAsyncKeyState(VK_NUMLOCK) & 0x8000) state |= CORE_MACHINE_KEYBOARD_ASYNC_NUM_LOCK;
+    if (GetAsyncKeyState(VK_CAPITAL) & 0x8000) state |= CORE_MACHINE_KEYBOARD_ASYNC_CAPS_LOCK;
+    if (GetAsyncKeyState(VK_INSERT) & 0x8000) state |= CORE_MACHINE_KEYBOARD_ASYNC_INSERT;
     return state;
 }
 
@@ -141,11 +141,11 @@ static uint32_t vm_platform_win32_keyboard_get_toggle_state(C_VOID)
 {
     uint32_t state = 0u;
 
-    if (GetKeyState(VK_SCROLL) & 0x0001) state |= NXVM_KEYBOARD_TOGGLE_SCROLL_LOCK;
-    if (GetKeyState(VK_NUMLOCK) & 0x0001) state |= NXVM_KEYBOARD_TOGGLE_NUM_LOCK;
-    if (GetKeyState(VK_CAPITAL) & 0x0001) state |= NXVM_KEYBOARD_TOGGLE_CAPS_LOCK;
-    if (GetKeyState(VK_INSERT) & 0x0001) state |= NXVM_KEYBOARD_TOGGLE_INSERT;
-    if (GetKeyState(VK_PAUSE) & 0x0001) state |= NXVM_KEYBOARD_TOGGLE_PAUSE;
+    if (GetKeyState(VK_SCROLL) & 0x0001) state |= CORE_MACHINE_KEYBOARD_TOGGLE_SCROLL_LOCK;
+    if (GetKeyState(VK_NUMLOCK) & 0x0001) state |= CORE_MACHINE_KEYBOARD_TOGGLE_NUM_LOCK;
+    if (GetKeyState(VK_CAPITAL) & 0x0001) state |= CORE_MACHINE_KEYBOARD_TOGGLE_CAPS_LOCK;
+    if (GetKeyState(VK_INSERT) & 0x0001) state |= CORE_MACHINE_KEYBOARD_TOGGLE_INSERT;
+    if (GetKeyState(VK_PAUSE) & 0x0001) state |= CORE_MACHINE_KEYBOARD_TOGGLE_PAUSE;
     return state;
 }
 
@@ -177,7 +177,7 @@ C_VOID vm_platform_win32_keyboard_make_status_for(const vm_platform_run_context 
 
     if (state_sink == STD_NULL || state_sink(state_context, asynchronous_keys,
                                          toggle_keys) !=
-        NTVDM64_STATUS_OK) {
+        TYPE_STATUS_OK) {
         if (context != STD_NULL) {
             vm_platform_keyboard_apply_host_state_for(context->keyboard,
                 asynchronous_keys, toggle_keys);
@@ -294,7 +294,7 @@ C_VOID vm_platform_win32_display_paint(WIN32_BOOL flagWindow,
     }
 }
 
-ntvdm64_status vm_platform_win32_run_handle_start(
+type_status vm_platform_win32_run_handle_start(
     const vm_platform_run_context *context, vm_platform_run_handle *handle) {
     if (vm_platform_run_context_get_window_display(context)) {
         return vm_platform_win32app_run_handle_start(context, handle);

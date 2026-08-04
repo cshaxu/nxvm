@@ -8,15 +8,15 @@
 #include "core/machine/port.h"
 
 struct core_machine_port_provider_entry {
-    ntvdm64_type_unsigned_16 port_id;
-    ntvdm64_type_bool write;
+    type_unsigned_16 port_id;
+    type_bool write;
     core_machine_port_handler handler;
     C_VOID *owner;
     core_machine_port_provider_entry *next;
 };
 
 static core_machine_port_provider_entry *core_machine_port_find_provider(
-    t_port *port, ntvdm64_type_unsigned_16 port_id, ntvdm64_type_bool write)
+    t_port *port, type_unsigned_16 port_id, type_bool write)
 {
     core_machine_port_provider_entry *entry;
 
@@ -27,8 +27,8 @@ static core_machine_port_provider_entry *core_machine_port_find_provider(
     return STD_NULL;
 }
 
-static C_VOID core_machine_port_add_provider(t_port *port, ntvdm64_type_unsigned_16 port_id,
-    ntvdm64_type_bool write, core_machine_port_handler handler, C_VOID *owner)
+static C_VOID core_machine_port_add_provider(t_port *port, type_unsigned_16 port_id,
+    type_bool write, core_machine_port_handler handler, C_VOID *owner)
 {
     core_machine_port_provider_entry *entry =
         core_machine_port_find_provider(port, port_id, write);
@@ -47,42 +47,42 @@ static C_VOID core_machine_port_add_provider(t_port *port, ntvdm64_type_unsigned
 }
 
 
-C_VOID core_machine_port_execute_read(t_port *port, ntvdm64_type_unsigned_16 port_id)
+C_VOID core_machine_port_execute_read(t_port *port, type_unsigned_16 port_id)
 {
     core_machine_port_provider_entry *provider;
 
     if (port == STD_NULL) return;
-    provider = core_machine_port_find_provider(port, port_id, NTVDM64_TYPE_FALSE);
+    provider = core_machine_port_find_provider(port, port_id, TYPE_FALSE);
     if (provider != STD_NULL && provider->handler != STD_NULL) {
         provider->handler(port, port_id, provider->owner);
         return;
     }
-    NTVDM64_TYPE_EXECUTE_FUNCTION(port->connect.legacy_read[port_id]);
+    TYPE_EXECUTE_FUNCTION(port->connect.legacy_read[port_id]);
 }
 
-C_VOID core_machine_port_execute_write(t_port *port, ntvdm64_type_unsigned_16 port_id)
+C_VOID core_machine_port_execute_write(t_port *port, type_unsigned_16 port_id)
 {
     core_machine_port_provider_entry *provider;
 
     if (port == STD_NULL) return;
-    provider = core_machine_port_find_provider(port, port_id, NTVDM64_TYPE_TRUE);
+    provider = core_machine_port_find_provider(port, port_id, TYPE_TRUE);
     if (provider != STD_NULL && provider->handler != STD_NULL) {
         provider->handler(port, port_id, provider->owner);
         return;
     }
-    NTVDM64_TYPE_EXECUTE_FUNCTION(port->connect.legacy_write[port_id]);
+    TYPE_EXECUTE_FUNCTION(port->connect.legacy_write[port_id]);
 }
 
-C_VOID core_machine_port_add_read(t_port *port, ntvdm64_type_unsigned_16 port_id,
+C_VOID core_machine_port_add_read(t_port *port, type_unsigned_16 port_id,
     core_machine_port_handler handler, C_VOID *owner)
 {
-    core_machine_port_add_provider(port, port_id, NTVDM64_TYPE_FALSE, handler, owner);
+    core_machine_port_add_provider(port, port_id, TYPE_FALSE, handler, owner);
 }
 
-C_VOID core_machine_port_add_write(t_port *port, ntvdm64_type_unsigned_16 port_id,
+C_VOID core_machine_port_add_write(t_port *port, type_unsigned_16 port_id,
     core_machine_port_handler handler, C_VOID *owner)
 {
-    core_machine_port_add_provider(port, port_id, NTVDM64_TYPE_TRUE, handler, owner);
+    core_machine_port_add_provider(port, port_id, TYPE_TRUE, handler, owner);
 }
 
 uint32_t core_machine_port_read(t_port *port, uint16_t port_id)
@@ -103,13 +103,13 @@ C_VOID core_machine_port_write(t_port *port, uint16_t port_id, uint32_t value)
 C_VOID core_machine_port_initialize(t_port *port)
 {
     if (port == STD_NULL) return;
-    STD_MEMSET((C_VOID *)port, NTVDM64_TYPE_ZERO_8, sizeof(*port));
+    STD_MEMSET((C_VOID *)port, TYPE_ZERO_8, sizeof(*port));
 }
 
 C_VOID core_machine_port_reset(t_port *port)
 {
     if (port == STD_NULL) return;
-    STD_MEMSET((C_VOID *)&port->data, NTVDM64_TYPE_ZERO_8, sizeof(port->data));
+    STD_MEMSET((C_VOID *)&port->data, TYPE_ZERO_8, sizeof(port->data));
 }
 
 C_VOID core_machine_port_finalize(t_port *port)

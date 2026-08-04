@@ -9,13 +9,13 @@
 C_VOID core_machine_vadp_initialize(t_vadp *adapter)
 {
     if (adapter == STD_NULL) return;
-    STD_MEMSET((C_VOID *)adapter, NTVDM64_TYPE_ZERO_8, sizeof(*adapter));
+    STD_MEMSET((C_VOID *)adapter, TYPE_ZERO_8, sizeof(*adapter));
 }
 
 C_VOID core_machine_vadp_reset(t_vadp *adapter)
 {
     if (adapter == STD_NULL) return;
-    STD_MEMSET((C_VOID *)&adapter->data, NTVDM64_TYPE_ZERO_8, sizeof(adapter->data));
+    STD_MEMSET((C_VOID *)&adapter->data, TYPE_ZERO_8, sizeof(adapter->data));
 }
 
 C_VOID core_machine_vadp_refresh(t_vadp *adapter)

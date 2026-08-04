@@ -1,7 +1,7 @@
 /* Copyright 2012-2014 Neko. */
 
-#ifndef NXVM_CORE_KBC_H
-#define NXVM_CORE_KBC_H
+#ifndef CORE_MACHINE_KBC_H
+#define CORE_MACHINE_KBC_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -10,11 +10,11 @@ extern "C" {
 #include "type.h"
 #include "core/machine/port.h"
 
-#define NXVM_DEVICE_KBC "Intel 8042"
+#define CORE_MACHINE_DEVICE_KBC "Intel 8042"
 
 #define VKBC_STATUS_KE 0x10 /* keyboard enabled(1) or not(0) */
 
-typedef struct { ntvdm64_type_unsigned_8 reserved; } t_kbc;
+typedef struct { type_unsigned_8 reserved; } t_kbc;
 C_VOID core_machine_kbc_register_ports(t_kbc *controller, t_port *port);
 C_VOID core_machine_kbc_initialize(t_kbc *controller, t_port *port);
 C_VOID core_machine_kbc_reset(t_kbc *controller);

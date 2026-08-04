@@ -31,7 +31,7 @@ static uint8_t qdcga_read8(vm_profile_default_context *profile, uint32_t address
 {
     uint8_t value = 0u;
     (C_VOID)core_machine_memory_read_physical(vm_profile_default_context_memory(profile), address,
-        (ntvdm64_type_virtual_address)&value, sizeof(value));
+        (type_virtual_address)&value, sizeof(value));
     return value;
 }
 
@@ -39,7 +39,7 @@ static uint16_t qdcga_read16(vm_profile_default_context *profile, uint32_t addre
 {
     uint16_t value = 0u;
     (C_VOID)core_machine_memory_read_physical(vm_profile_default_context_memory(profile), address,
-        (ntvdm64_type_virtual_address)&value, sizeof(value));
+        (type_virtual_address)&value, sizeof(value));
     return value;
 }
 
@@ -47,14 +47,14 @@ static C_VOID qdcga_write8(vm_profile_default_context *profile, uint32_t address
     uint8_t value)
 {
     (C_VOID)core_machine_memory_write_physical(vm_profile_default_context_memory(profile), address,
-        (ntvdm64_type_virtual_address)&value, sizeof(value));
+        (type_virtual_address)&value, sizeof(value));
 }
 
 static C_VOID qdcga_write16(vm_profile_default_context *profile, uint32_t address,
     uint16_t value)
 {
     (C_VOID)core_machine_memory_write_physical(vm_profile_default_context_memory(profile), address,
-        (ntvdm64_type_virtual_address)&value, sizeof(value));
+        (type_virtual_address)&value, sizeof(value));
 }
 
 static uint16_t qdcga_columns(vm_profile_default_context *profile)
@@ -113,13 +113,13 @@ static C_INT qdcga_display_buffer_changed(vm_profile_default_context *profile)
         profile_vadp.data.colSize * 2u;
 
     if (size > sizeof(snapshot) || core_machine_memory_read_physical(vm_profile_default_context_memory(profile),
-            QDCGA_TEXT_BASE, (ntvdm64_type_virtual_address)snapshot, size) !=
-            NTVDM64_STATUS_OK) return NTVDM64_TYPE_FALSE;
+            QDCGA_TEXT_BASE, (type_virtual_address)snapshot, size) !=
+            TYPE_STATUS_OK) return TYPE_FALSE;
     if (STD_MEMCMP((C_VOID *)profile_vadp.data.bufcomp, snapshot, size) == 0) {
-        return NTVDM64_TYPE_FALSE;
+        return TYPE_FALSE;
     }
     STD_MEMCPY((C_VOID *)profile_vadp.data.bufcomp, snapshot, size);
-    return NTVDM64_TYPE_TRUE;
+    return TYPE_TRUE;
 }
 
 static C_INT qdcga_display_cursor_changed(vm_profile_default_context *profile,
@@ -133,12 +133,12 @@ static C_INT qdcga_display_cursor_changed(vm_profile_default_context *profile,
     if (profile_vadp.data.oldCurPosX == row &&
         profile_vadp.data.oldCurPosY == column &&
         profile_vadp.data.oldCurTop == top &&
-        profile_vadp.data.oldCurBottom == bottom) return NTVDM64_TYPE_FALSE;
+        profile_vadp.data.oldCurBottom == bottom) return TYPE_FALSE;
     profile_vadp.data.oldCurPosX = row;
     profile_vadp.data.oldCurPosY = column;
     profile_vadp.data.oldCurTop = top;
     profile_vadp.data.oldCurBottom = bottom;
-    return NTVDM64_TYPE_TRUE;
+    return TYPE_TRUE;
 }
 
 static C_VOID qdcga_scroll_up(vm_profile_default_context *profile, uint8_t page)
@@ -306,7 +306,7 @@ C_VOID vm_profile_default_cga_initialize(t_qdx *qdx)
 C_VOID vm_profile_default_cga_reset(vm_profile_default_context *profile)
 {
     profile_vadp.data.colSize = 25u;
-    profile_vadp.data.flagColor = NTVDM64_TYPE_TRUE;
+    profile_vadp.data.flagColor = TYPE_TRUE;
     profile_vadp.data.oldCurPosX = 0u;
     profile_vadp.data.oldCurPosY = 0u;
     profile_vadp.data.oldCurTop = 0u;
@@ -328,7 +328,7 @@ C_INT vm_profile_default_display_capture(C_VOID *context,
     uint16_t column;
     uint8_t page;
 
-    if (profile == STD_NULL || out_snapshot == STD_NULL) return NTVDM64_TYPE_FALSE;
+    if (profile == STD_NULL || out_snapshot == STD_NULL) return TYPE_FALSE;
     page = qdcga_read8(profile, QDCGA_BDA_PAGE);
     out_snapshot->columns = qdcga_columns(profile);
     out_snapshot->rows = profile_vadp.data.colSize;
@@ -340,7 +340,7 @@ C_INT vm_profile_default_display_capture(C_VOID *context,
     out_snapshot->buffer_changed = qdcga_display_buffer_changed(profile);
     out_snapshot->cursor_changed = qdcga_display_cursor_changed(profile, page);
     if (!out_snapshot->buffer_changed && !out_snapshot->cursor_changed) {
-        return NTVDM64_TYPE_TRUE;
+        return TYPE_TRUE;
     }
     for (row = 0u; row < out_snapshot->rows; ++row) {
         for (column = 0u; column < out_snapshot->columns; ++column) {
@@ -350,7 +350,7 @@ C_INT vm_profile_default_display_capture(C_VOID *context,
             out_snapshot->attributes[index] = qdcga_read8(profile, address + 1u);
         }
     }
-    return NTVDM64_TYPE_TRUE;
+    return TYPE_TRUE;
 }
 
 #undef profile_cpu

@@ -1,5 +1,5 @@
-#ifndef NTVDM64_CORE_PLATFORM_HOST_SURFACE_INTERFACE_H
-#define NTVDM64_CORE_PLATFORM_HOST_SURFACE_INTERFACE_H
+#ifndef CORE_PLATFORM_HOST_SURFACE_INTERFACE_H
+#define CORE_PLATFORM_HOST_SURFACE_INTERFACE_H
 
 
 #include "type.h"
@@ -24,9 +24,9 @@ C_VOID core_platform_host_surface_context_initialize(
     core_platform_host_surface_kind kind, C_VOID *native_handle);
 C_VOID core_platform_host_surface_lease_initialize(
     core_platform_host_surface_lease *lease);
-ntvdm64_status core_platform_host_surface_lease_acquire(
+type_status core_platform_host_surface_lease_acquire(
     core_platform_host_surface_lease *lease, const C_VOID *owner);
-ntvdm64_status core_platform_host_surface_lease_release(
+type_status core_platform_host_surface_lease_release(
     core_platform_host_surface_lease *lease, const C_VOID *owner);
 C_INT core_platform_host_surface_lease_is_owned_by(
     const core_platform_host_surface_lease *lease, const C_VOID *owner);

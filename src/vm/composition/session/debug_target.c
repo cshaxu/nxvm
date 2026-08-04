@@ -140,13 +140,13 @@ static C_INT vm_debug_read_linear(C_VOID *context, uint32_t address, C_VOID *out
 {
     vm_session *machine = (vm_session *)context;
     return machine == STD_NULL ? 1 : core_machine_cpu_execution_read_linear(
-        vm_debug_execution(machine), address, (ntvdm64_type_virtual_address)out, size);
+        vm_debug_execution(machine), address, (type_virtual_address)out, size);
 }
 static C_INT vm_debug_write_linear(C_VOID *context, uint32_t address, const C_VOID *in, uint8_t size)
 {
     vm_session *machine = (vm_session *)context;
     return machine == STD_NULL ? 1 : core_machine_cpu_execution_write_linear(
-        vm_debug_execution(machine), address, (ntvdm64_type_virtual_address)in, size);
+        vm_debug_execution(machine), address, (type_virtual_address)in, size);
 }
 static C_INT vm_debug_read_real(C_VOID *context, uint16_t seg, uint16_t off, C_VOID *out, STD_SIZE_T size)
 { vm_session *machine = (vm_session *)context; if (machine == STD_NULL) return 1; core_machine_memory_read_real_from(vm_debug_memory(machine), seg, off, out, size); return 0; }
@@ -172,17 +172,17 @@ static C_VOID vm_debug_set_watch(C_VOID *context, core_product_debug_watch_kind 
 {
     vm_session *machine = (vm_session *)context;
     if (machine == STD_NULL) return;
-    if (kind == CORE_PRODUCT_DEBUG_WATCH_READ) { vm_debug_instructions(machine)->data.wrLinear = address; vm_debug_instructions(machine)->data.flagWR = NTVDM64_TYPE_TRUE; }
-    else if (kind == CORE_PRODUCT_DEBUG_WATCH_WRITE) { vm_debug_instructions(machine)->data.wwLinear = address; vm_debug_instructions(machine)->data.flagWW = NTVDM64_TYPE_TRUE; }
-    else { vm_debug_instructions(machine)->data.weLinear = address; vm_debug_instructions(machine)->data.flagWE = NTVDM64_TYPE_TRUE; }
+    if (kind == CORE_PRODUCT_DEBUG_WATCH_READ) { vm_debug_instructions(machine)->data.wrLinear = address; vm_debug_instructions(machine)->data.flagWR = TYPE_TRUE; }
+    else if (kind == CORE_PRODUCT_DEBUG_WATCH_WRITE) { vm_debug_instructions(machine)->data.wwLinear = address; vm_debug_instructions(machine)->data.flagWW = TYPE_TRUE; }
+    else { vm_debug_instructions(machine)->data.weLinear = address; vm_debug_instructions(machine)->data.flagWE = TYPE_TRUE; }
 }
 static C_VOID vm_debug_clear_watch(C_VOID *context, core_product_debug_watch_kind kind)
 {
     vm_session *machine = (vm_session *)context;
     if (machine == STD_NULL) return;
-    if (kind == CORE_PRODUCT_DEBUG_WATCH_READ) vm_debug_instructions(machine)->data.flagWR = NTVDM64_TYPE_FALSE;
-    else if (kind == CORE_PRODUCT_DEBUG_WATCH_WRITE) vm_debug_instructions(machine)->data.flagWW = NTVDM64_TYPE_FALSE;
-    else vm_debug_instructions(machine)->data.flagWE = NTVDM64_TYPE_FALSE;
+    if (kind == CORE_PRODUCT_DEBUG_WATCH_READ) vm_debug_instructions(machine)->data.flagWR = TYPE_FALSE;
+    else if (kind == CORE_PRODUCT_DEBUG_WATCH_WRITE) vm_debug_instructions(machine)->data.flagWW = TYPE_FALSE;
+    else vm_debug_instructions(machine)->data.flagWE = TYPE_FALSE;
 }
 static C_VOID vm_debug_print_registers(C_VOID *context)
 { vm_session *machine = (vm_session *)context; if (machine != STD_NULL) core_machine_cpu_print_registers(vm_debug_execution(machine)); }

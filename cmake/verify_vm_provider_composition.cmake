@@ -1,8 +1,8 @@
-if(NOT DEFINED NTVDM64_SOURCE_DIR)
-    message(FATAL_ERROR "NTVDM64_SOURCE_DIR is required")
+if(NOT DEFINED PROJECT_SOURCE_DIR)
+    message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-set(session_dir "${NTVDM64_SOURCE_DIR}/src/vm/composition/session")
+set(session_dir "${PROJECT_SOURCE_DIR}/src/vm/composition/session")
 set(coordinator "${session_dir}/provider_lifecycle.c")
 set(devices "${session_dir}/machine_devices.c")
 set(firmware "${session_dir}/profile_firmware.c")

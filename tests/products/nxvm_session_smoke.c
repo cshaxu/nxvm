@@ -16,9 +16,9 @@ static C_INT verify(const C_CHAR *fdd, const C_CHAR *hdd, C_INT boot_hdd)
     vm_session_reset_vector vector;
     vm_session *session = STD_NULL;
 
-    if (vm_session_create(&config, &session) != NTVDM64_STATUS_OK ||
+    if (vm_session_create(&config, &session) != TYPE_STATUS_OK ||
         session->core_machine == STD_NULL ||
-        vm_session_get_reset_vector(session, &vector) != NTVDM64_STATUS_OK ||
+        vm_session_get_reset_vector(session, &vector) != TYPE_STATUS_OK ||
         vector.cs != 0xf000u || vector.ip != 0xfff0u) {
         vm_session_destroy(session);
         return 1;
@@ -38,9 +38,9 @@ static C_INT verify_created(C_VOID)
     };
     vm_session *session = STD_NULL;
 
-    if (vm_session_create(&config, &session) != NTVDM64_STATUS_OK ||
-        !session->fdd->connect.flagDiskExist || !session->hdd->connect.flagDiskExist ||
-        session->hdd->data.ncyl != 1u) {
+    if (vm_session_create(&config, &session) != TYPE_STATUS_OK ||
+        !session->fdd.connect.flagDiskExist || !session->hdd.connect.flagDiskExist ||
+        session->hdd.data.ncyl != 1u) {
         vm_session_destroy(session);
         return 1;
     }
@@ -54,7 +54,7 @@ static C_INT verify_initialize_once(C_VOID)
     core_machine *core_machine;
     vm_session_control_state *control;
 
-    if (vm_session_create(STD_NULL, &session) != NTVDM64_STATUS_OK ||
+    if (vm_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||
         session == STD_NULL || !session->active) {
         vm_session_destroy(session);
         return 1;
