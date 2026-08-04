@@ -30,7 +30,7 @@ C_VOID vm_session_consume_request(
 
     if (session != STD_NULL && session->active && request != STD_NULL &&
         request->kind == NXVM_PLATFORM_VM_REQUEST_KEYBOARD_STATE) {
-        core_machine_keyboard_apply_host_state_to(session->keyboard_provider,
+        core_machine_keyboard_apply_host_state_to(&session->keyboard_provider,
             request->data.keyboard_state.asynchronous_keys,
             request->data.keyboard_state.toggle_keys);
     }
@@ -108,15 +108,12 @@ C_VOID vm_session_storage_initialize(vm_session *machine)
     core_machine_cpu_execution_context_bind_extension(execution,
         &machine->default_profile_context);
     machine->default_profile_context.execution = execution;
-    machine->block_provider = &machine->block_provider_storage;
-    core_machine_block_provider_slot_initialize(machine->block_provider);
-    machine->default_profile_context.block_provider = machine->block_provider;
-    machine->keyboard_provider = &machine->keyboard_provider_storage;
-    core_machine_keyboard_provider_slot_initialize(machine->keyboard_provider);
-    machine->default_profile_context.keyboard_provider = machine->keyboard_provider;
-    machine->display_provider = &machine->display_provider_storage;
-    core_machine_display_provider_slot_initialize(machine->display_provider);
-    machine->default_profile_context.display_provider = machine->display_provider;
+    core_machine_block_provider_slot_initialize(&machine->block_provider);
+    machine->default_profile_context.block_provider = &machine->block_provider;
+    core_machine_keyboard_provider_slot_initialize(&machine->keyboard_provider);
+    machine->default_profile_context.keyboard_provider = &machine->keyboard_provider;
+    core_machine_display_provider_slot_initialize(&machine->display_provider);
+    machine->default_profile_context.display_provider = &machine->display_provider;
     vm_platform_presentation_mailbox_initialize(&machine->presentation_mailbox);
     machine->default_profile_context.wait_scope = &machine->wait_scope;
     core_product_debug_context_initialize(&machine->debugger_context);
@@ -130,12 +127,9 @@ C_VOID vm_session_storage_finalize(vm_session *machine)
     if (machine == STD_NULL || machine->core_machine == STD_NULL) return;
     core_machine_cpu_execution_context_bind_extension(
         core_machine_configuration_cpu_execution_borrow(machine->core_machine), STD_NULL);
-    core_machine_block_provider_slot_finalize(machine->block_provider);
-    machine->block_provider = STD_NULL;
-    core_machine_keyboard_provider_slot_finalize(machine->keyboard_provider);
-    machine->keyboard_provider = STD_NULL;
-    core_machine_display_provider_slot_finalize(machine->display_provider);
-    machine->display_provider = STD_NULL;
+    core_machine_block_provider_slot_finalize(&machine->block_provider);
+    core_machine_keyboard_provider_slot_finalize(&machine->keyboard_provider);
+    core_machine_display_provider_slot_finalize(&machine->display_provider);
     STD_FREE(machine->control);
     machine->control = STD_NULL;
     core_machine_destroy(machine->core_machine);

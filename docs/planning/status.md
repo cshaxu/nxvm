@@ -451,6 +451,10 @@ pass. Artifact: `nxvm_0_5_0180.exe`.
 QDX, and profile context are embedded; firmware authority and QDCGA gates pass.
 Artifact: `nxvm_0_5_0181.exe`.
 
+**M5 T182 S1 complete: direct provider-slot ownership.** Block, keyboard, and
+display slots are embedded; firmware, isolation, and presentation gates pass.
+Artifact: `nxvm_0_5_0182.exe`.
+
 The completed executor sequence is defined in
 [Facade And Executor Convergence](m5-facade-executor-convergence.md). The
 active session-readiness sequence is defined in
