@@ -77,3 +77,11 @@ NXVM code into an optional research tool. Bochs source, patches, binaries,
 firmware, guest media, and generated traces are separate local research inputs
 pending their own license review; none enter this repository, default build,
 release, or runtime dependency.
+
+Bochs may inform a bounded device-state or behavior design only after the task
+names its primary hardware/documentation contract and project-owned probes.
+For example, controller queues/register state and the separation of video core
+from host presentation are legitimate design lessons. Its global device
+management, direct GUI integration, C++ plugin architecture, source text, and
+build structure are not ntvdm64 architecture and must not be copied,
+transliterated, or introduced as a dependency.

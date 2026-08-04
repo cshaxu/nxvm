@@ -16,6 +16,39 @@ static C_VOID LoadInit(t_pit *pit, type_unsigned_8 id) {
         pit->data.flagReady[id] = TYPE_TRUE;
     }
 }
+
+static t_pit_data_status_rw core_machine_pit_read_start(const t_pit *pit,
+    type_unsigned_8 id)
+{
+    return VPIT_GetCW_RW(pit->data.cw[id]) == 0x02 ?
+        VPIT_STATUS_RW_MSB : VPIT_STATUS_RW_LSB;
+}
+
+static type_unsigned_8 core_machine_pit_capture_status(const t_pit *pit,
+    type_unsigned_8 id)
+{
+    type_unsigned_8 status = pit->data.cw[id] &
+        (VPIT_SB_BCD | VPIT_SB_M | VPIT_SB_RW);
+
+    if (pit->data.flagOutput[id]) status |= VPIT_SB_OUT;
+    if (!pit->data.flagReady[id]) status |= VPIT_SB_NC;
+    return status;
+}
+
+static C_VOID core_machine_pit_latch_count(t_pit *pit, type_unsigned_8 id)
+{
+    if (pit->data.flagLatch[id]) return;
+    pit->data.latch[id] = pit->data.count[id];
+    pit->data.flagLatch[id] = TYPE_TRUE;
+    pit->data.flagRead[id] = core_machine_pit_read_start(pit, id);
+}
+
+static C_VOID core_machine_pit_latch_status(t_pit *pit, type_unsigned_8 id)
+{
+    if (pit->data.flagStatusLatch[id]) return;
+    pit->data.status_latch[id] = core_machine_pit_capture_status(pit, id);
+    pit->data.flagStatusLatch[id] = TYPE_TRUE;
+}
 /* Decreases count */
 static C_VOID Decrease(t_pit *pit, type_unsigned_8 id) {
     pit->data.count[id]--;
@@ -36,15 +69,36 @@ static C_VOID Decrease(t_pit *pit, type_unsigned_8 id) {
 }
 
 static C_VOID io_read_004x(t_pit *pit, t_port *port, type_unsigned_8 id) {
+    if (pit->data.flagStatusLatch[id]) {
+        port->data.ioByte = pit->data.status_latch[id];
+        pit->data.flagStatusLatch[id] = TYPE_FALSE;
+        return;
+    }
     if (pit->data.flagLatch[id]) {
-        if (pit->data.flagRead[id] == VPIT_STATUS_RW_MSB) {
+        switch (VPIT_GetCW_RW(pit->data.cw[id])) {
+        case 0x01:
+            port->data.ioByte = TYPE_MASK_UNSIGNED_8(pit->data.latch[id]);
+            pit->data.flagRead[id] = VPIT_STATUS_RW_READY;
+            pit->data.flagLatch[id] = TYPE_FALSE;
+            break;
+        case 0x02:
             port->data.ioByte = TYPE_MASK_UNSIGNED_8(pit->data.latch[id] >> 8);
             pit->data.flagRead[id] = VPIT_STATUS_RW_READY;
-            pit->data.flagLatch[id] = TYPE_FALSE; /* finish reading latch */
-        } else {
+            pit->data.flagLatch[id] = TYPE_FALSE;
+            break;
+        case 0x03:
+            if (pit->data.flagRead[id] == VPIT_STATUS_RW_MSB) {
+                port->data.ioByte = TYPE_MASK_UNSIGNED_8(pit->data.latch[id] >> 8);
+                pit->data.flagRead[id] = VPIT_STATUS_RW_READY;
+                pit->data.flagLatch[id] = TYPE_FALSE;
+                break;
+            }
             port->data.ioByte = TYPE_MASK_UNSIGNED_8(pit->data.latch[id]);
             pit->data.flagRead[id] = VPIT_STATUS_RW_MSB;
-            pit->data.flagLatch[id] = TYPE_TRUE; /* latch msb to be read */
+            break;
+        default:
+            pit->data.flagLatch[id] = TYPE_FALSE;
+            break;
         }
     } else {
         switch (VPIT_GetCW_RW(pit->data.cw[id])) {
@@ -163,35 +217,49 @@ static C_VOID io_write_0043(t_port *port, type_unsigned_16 port_id, C_VOID *owne
     type_unsigned_8 id = VPIT_GetCW_SC(port->data.ioByte);
     if (id == (VPIT_CW_SC >> 6)) {
         /* read-back command */
-        pit->data.cw[id] = port->data.ioByte;
-        /* TODO(Medium): Implement 8254 read-back status/count latching. */
+        type_unsigned_8 selected;
+        for (selected = 0u; selected < 3u; ++selected) {
+            if ((port->data.ioByte & VPIT_RB_CNT(selected)) != 0u) continue;
+            if ((port->data.ioByte & VPIT_RB_COUNT) == 0u) {
+                core_machine_pit_latch_count(pit, selected);
+            }
+            if ((port->data.ioByte & VPIT_RB_STATUS) == 0u) {
+                core_machine_pit_latch_status(pit, selected);
+            }
+        }
     } else {
-        pit->data.flagLatch[id] = TYPE_FALSE; /* unlatch when counter is re-programmed */
         switch (VPIT_GetCW_RW(port->data.ioByte)) {
         case 0x00:
             /* latch command */
-            pit->data.flagLatch[id] = TYPE_TRUE;
-            pit->data.latch[id] = pit->data.count[id];
-            pit->data.flagRead[id] = VPIT_STATUS_RW_LSB;
+            core_machine_pit_latch_count(pit, id);
             break;
         case 0x01:
             /* LSB */
+            pit->data.flagLatch[id] = TYPE_FALSE;
+            pit->data.flagStatusLatch[id] = TYPE_FALSE;
             pit->data.cw[id] = port->data.ioByte;
             pit->data.flagReady[id] = TYPE_FALSE;
+            pit->data.flagOutput[id] = VPIT_GetCW_M(port->data.ioByte) != 0u;
             pit->data.flagRead[id] = VPIT_STATUS_RW_LSB;
             pit->data.flagWrite[id] = VPIT_STATUS_RW_LSB;
             break;
         case 0x02:
             /* MSB */
+            pit->data.flagLatch[id] = TYPE_FALSE;
+            pit->data.flagStatusLatch[id] = TYPE_FALSE;
             pit->data.cw[id] = port->data.ioByte;
             pit->data.flagReady[id] = TYPE_FALSE;
+            pit->data.flagOutput[id] = VPIT_GetCW_M(port->data.ioByte) != 0u;
             pit->data.flagRead[id] = VPIT_STATUS_RW_MSB;
             pit->data.flagWrite[id] = VPIT_STATUS_RW_MSB;
             break;
         case 0x03:
             /* 16-bit */
+            pit->data.flagLatch[id] = TYPE_FALSE;
+            pit->data.flagStatusLatch[id] = TYPE_FALSE;
             pit->data.cw[id] = port->data.ioByte;
             pit->data.flagReady[id] = TYPE_FALSE;
+            pit->data.flagOutput[id] = VPIT_GetCW_M(port->data.ioByte) != 0u;
             pit->data.flagRead[id] = VPIT_STATUS_RW_LSB;
             pit->data.flagWrite[id] = VPIT_STATUS_RW_LSB;
             break;
@@ -229,7 +297,8 @@ C_VOID core_machine_pit_reset(t_pit *pit) {
     if (pit == STD_NULL) return;
     STD_MEMSET((C_VOID *)(&pit->data), TYPE_ZERO_8, sizeof(t_pit_data));
     for (i = 0; i < 3; ++i) {
-        pit->data.flagReady[i] = pit->data.flagLatch[i] = TYPE_TRUE;
+        pit->data.flagReady[i] = TYPE_TRUE;
+        pit->data.flagLatch[i] = TYPE_FALSE;
         pit->data.flagRead[i] = pit->data.flagWrite[i] = VPIT_STATUS_RW_READY;
     }
 }
@@ -243,6 +312,7 @@ C_VOID core_machine_pit_refresh(t_pit *pit) {
                 if (pit->connect.flagGate[i]) {
                     Decrease(pit, TYPE_MASK_UNSIGNED_8(i));
                     if (pit->data.count[i] == TYPE_ZERO_16) {
+                        pit->data.flagOutput[i] = TYPE_TRUE;
                         Emit(pit, i);
                         pit->data.flagReady[i] = TYPE_FALSE;
                     }

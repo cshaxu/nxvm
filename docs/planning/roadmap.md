@@ -132,6 +132,14 @@ T96 repairs the retained Console lifecycle regression found after that closure.
 T97 completes the composition API cleanup, and T98 defines the remaining
 owner-bounded naming sequence without expanding M6 scope.
 
+**PC-compatible device extension:** M5 T191, T192, and T193 respectively own
+8254 PIT read-back, the 8042 KBC path, and VADP text capability. Each task
+begins with its own design subtask rather than creating a design-only task. The
+sequence preserves the one core-device owner, one keyboard ingress route,
+profile-bound firmware, and no-graphics-claim rules. The breakdown and gates
+are in
+[`m5-pc-compatible-device-plan.md`](m5-pc-compatible-device-plan.md).
+
 **M5 RAM/state addendum:** T169--T174 replace T165's verified but temporary
 whole-session `DEVICE RAM` reconstruction with a core-owned stopped-only cold
 RAM reconfiguration. They first separate `STOPPED` from `PAUSED`, then close

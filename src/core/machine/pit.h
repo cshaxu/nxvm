@@ -27,9 +27,12 @@ typedef struct {
     type_unsigned_16 init[3];  /* initial counts */
     type_unsigned_16 count[3]; /* counter[0-2] */
     type_unsigned_16 latch[3]; /* latch counts */
+    type_unsigned_8 status_latch[3]; /* read-back status bytes */
 
     type_bool flagReady[3]; /* flag of ready */
     type_bool flagLatch[3]; /* flag of latch status */
+    type_bool flagStatusLatch[3]; /* flag of pending status read-back */
+    type_bool flagOutput[3]; /* retained counter-model OUT state */
 
     t_pit_data_status_rw flagRead[3];  /* flag of low byte read */
     t_pit_data_status_rw flagWrite[3]; /* flag of low byte write */

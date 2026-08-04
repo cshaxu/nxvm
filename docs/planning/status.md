@@ -18,6 +18,10 @@ M5 has preserved the bootable NXVM Console, debugger, boot sequence, and FDD
 fixture behavior while moving the whole-PC execution path into the documented
 `core/` and `vm/` ownership model.
 
+**Current active subtask:** M5 T192 S1, the 8042 controller and keyboard-route
+design. Historical paragraphs below may describe the active state of
+their own completed sequence; they do not supersede this marker.
+
 **M5 T150 complete:** NXVM shared product-session management is closed. The
 manager atomically establishes session 0, the final session cannot close, and
 all shared grammar, multi-window, Console lease, FDD, and structural gates
@@ -488,6 +492,15 @@ direct `exit` banner/prompt smoke pass. Artifact: `nxvm_0_5_0189.exe`.
 and CMake identifiers use `type`, `core`, `vm`, or `vdm` ownership prefixes.
 The retained NXVM identity and direct Console smoke pass. Artifact:
 `nxvm_0_5_0190.exe`.
+
+**M5 T191 complete: 8254 PIT read-back.** S1 fixed the active-low selection,
+count/status latch, output/null-count boundary, and port matrix; S2 implements
+that contract with one core PIT state, a focused smoke, full current GCC gates,
+retained FDD/HDD session and FDD DOS checks, and `nxvm_0_5_0191.exe`. Remaining
+PIT waveform/gate work is governed in `TODO.md`. **M5 T192 S1 active:** define
+the 8042 controller and one keyboard route. The approved sequence,
+state-owner constraints, implementation exits, and retained regressions are in
+[`m5-pc-compatible-device-plan.md`](m5-pc-compatible-device-plan.md).
 
 The completed executor sequence is defined in
 [Facade And Executor Convergence](m5-facade-executor-convergence.md). The

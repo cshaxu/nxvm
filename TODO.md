@@ -126,18 +126,20 @@ import. `docs/planning/status.md` remains authoritative for active work.
   session-creation UX and closure probes; present FPU profiles remain
   unavailable until their state/operations are implemented.
   Protected DOS media stays local.
-- [ ] **8042 KBC compatibility contract (`TODO(Medium)`).** The current core
-  KBC is not an Intel 8042 implementation; retained BIOS/QDKEYB keyboard input
-  does not establish direct controller compatibility. Before implementing,
-  define the supported command/status/output-buffer, IRQ1, A20, reset, and host
-  input-provider semantics with focused port probes. Preserve the retained
-  BIOS keyboard path and do not let a controller model acquire host policy.
-- [ ] **Video-adapter capability contract (`TODO(Medium)`).** The current core
-  VADP is not a generic CGA/EGA/VGA device; default-profile QDCGA text output
-  is a profile firmware capability, not a graphics-mode compatibility claim.
-  Define the first supported register, memory-window, text snapshot, mode
-  change, and graphics rejection/implementation boundary before adding a
-  device model. Preserve the current text-mode Console/window behavior.
+- [ ] **8042 KBC compatibility (`TODO(Medium)`).** T192 decomposes this into
+  the controller/input contract (S1), core controller slice (S2), and one-route
+  QDKEYB handoff (S3). Its first slice is `0x60`/`0x64`, OBF/IBF, command byte,
+  `0x20`/`0x60`/`0xAA`/`0xAB`/`0xAD`/`0xAE`/`0xD0`/`0xD1`, and keyboard
+  ACK/reset/enable/disable/identify. AUX/IRQ12, translation, scan-code sets,
+  and timing are later admissions. Preserve BIOS keyboard behavior and keep
+  host layout policy in the default profile, outside the core controller.
+  See [`m5-pc-compatible-device-plan.md`](docs/planning/m5-pc-compatible-device-plan.md).
+- [ ] **Video-adapter capability (`TODO(Medium)`).** T193 decomposes this into
+  CGA text-controller design (S1), text migration (S2), and separately admitted
+  graphics review (S3). The first slice is CRTC `0x3d4`/`0x3d5`, mode `0x3d8`,
+  color `0x3d9`, status `0x3da`, B8000 mapping, dirty generation, and copied
+  text scanout. QDCGA is firmware, not the controller. CGA `320x200x4` is the
+  first possible graphics admission; EGA/VGA remain separate later work.
 - [ ] **Hardware compatibility corpus.** Audit unproven PIC, DMA, CMOS,
   FDC/FDD, HDC/HDD, timing, and chipset behavior with focused owned probes.
   Promote a concrete incompatibility to its own ledger item only after a
@@ -161,9 +163,16 @@ import. `docs/planning/status.md` remains authoritative for active work.
   target now; its corpus and cost are disproportionate to current M5/M6 work.
   Revisit only when an owned BIOS/debugger assembler defect needs bounded
   reproduction, then define the smallest focused probe and expected result.
-- [ ] **8254 PIT read-back command (`TODO(Medium)`).** Implement read-back
-  status/count latch behavior with focused PIT port probes; preserve the
-  existing timer boot behavior.
+- [x] **8254 PIT read-back command (`TODO(Medium)`).** T191 S2 implements
+  active-low counter selection, non-overwriting count/status latches,
+  status-before-count reads, RW byte order, and focused port probes while
+  retaining the FDD/HDD session and FDD DOS-prompt baselines. See
+  [`m5-pc-compatible-device-plan.md`](docs/planning/m5-pc-compatible-device-plan.md).
+- [ ] **8254 PIT waveform and gate semantics (`TODO(Medium)`).** T191 only
+  records the existing model's observable OUT state for status read-back. Before
+  claiming broader 8254 compatibility, define and probe per-mode OUT pulses,
+  GATE edges, mode 1/4/5 trigger behavior, BCD edge cases, and count-zero
+  semantics without replacing the retained timer model wholesale.
 - [ ] **Bounded differential debugging.** The historical Bochx/Bochs bridge
   may be an optional developer research tool with provenance, comparison
   schema, masks, instruction/time/no-progress/size budgets, and cleanup. It is
