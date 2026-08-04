@@ -18,8 +18,13 @@
 
 #include "vm/platform/linux/linuxcon.h"
 
-#define GetMin(x, y) ((x) < (y) ? (x) : (y))
-static C_INT lnxcdispInit() {
+static C_INT vm_platform_linuxcon_minimum(C_INT left, C_INT right)
+{
+    return left < right ? left : right;
+}
+
+static C_INT vm_platform_linuxcon_terminal_initialize()
+{
     STD_SIZE_T i, j;
     if (initscr() == STD_NULL) return 0;
     if (raw() == ERR || nodelay(stdscr, TRUE) == ERR ||
@@ -36,14 +41,16 @@ static C_INT lnxcdispInit() {
     return 1;
 }
 
-static C_VOID lnxcdispFinal() {
+static C_VOID vm_platform_linuxcon_terminal_finalize()
+{
     noraw();
     nodelay(stdscr, FALSE);
     keypad(stdscr, FALSE);
     endwin();
 }
 
-static uint8_t ReverseColor(uint8_t value) {
+static uint8_t vm_platform_linuxcon_reverse_color(uint8_t value)
+{
     value &= 0x07;
     switch (value) {
     case COLOR_BLACK:
@@ -66,7 +73,8 @@ static uint8_t ReverseColor(uint8_t value) {
     return COLOR_BLACK;
 }
 
-static uint8_t CharProp2Color(uint8_t value) {
+static uint8_t vm_platform_linuxcon_attribute_color(uint8_t value)
+{
     value &= 0x07;
     switch (value) {
     case 0x00:
@@ -89,19 +97,20 @@ static uint8_t CharProp2Color(uint8_t value) {
     return COLOR_BLACK;
 }
 
-static uint8_t GetColorFromProp(uint8_t prop) {
+static uint8_t vm_platform_linuxcon_color_pair(uint8_t prop)
+{
     uint8_t fore0, back0, fore1, back1;
     fore0 = prop & 0x0f;
     back0 = ((prop & 0x70) >> 4);
-    fore1 = CharProp2Color(fore0);
-    back1 = CharProp2Color(back0);
+    fore1 = vm_platform_linuxcon_attribute_color(fore0);
+    back1 = vm_platform_linuxcon_attribute_color(back0);
     if (fore0 != back0 && fore1 == back1) {
-        fore1 = ReverseColor(fore1);
+        fore1 = vm_platform_linuxcon_reverse_color(fore1);
     }
     return (fore1 * 8 + back1);
 }
 
-static const uint8_t Ascii2Print[][2] = {
+static const uint8_t vm_platform_linuxcon_ascii_to_print[][2] = {
     {0x00, ' ' }, {0x01, '*' }, {0x02, '*' }, {0x03, '*' },
     {0x04, '*' }, {0x05, '*' }, {0x06, '*' }, {0x07, 0x07},
     {0x08, 0x08}, {0x09, 0x09}, {0x0a, 0x0a}, {0x0b, 0x0b},
@@ -174,18 +183,19 @@ static core_platform_host_surface_lease linux_terminal_lease = {
 
 typedef struct linuxcon_run_handle linuxcon_run_handle;
 
-static C_VOID lnxckeybProcess(linuxcon_run_handle *handle);
+static C_VOID vm_platform_linuxcon_process_keyboard(linuxcon_run_handle *handle);
 
-static C_VOID lnxcdispPaint(vm_platform_run_context *context,
-                          uint8_t force) {
+static C_VOID vm_platform_linuxcon_paint(vm_platform_run_context *context,
+    uint8_t force)
+{
     C_INT ref;
     uint8_t p, c;
     C_INT i, j, sizeRow, sizeCol, curX, curY;
     core_platform_display_frame frame;
 
     vm_platform_presentation_mailbox_capture(context->presentation, &frame);
-    sizeRow = GetMin(COLS, frame.columns);
-    sizeCol = GetMin(LINES, frame.rows);
+    sizeRow = vm_platform_linuxcon_minimum(COLS, frame.columns);
+    sizeCol = vm_platform_linuxcon_minimum(LINES, frame.rows);
     ref = 0;
     if (force || (frame.generation != context->terminal_displayed_generation && frame.buffer_changed)) {
         clear();
@@ -193,9 +203,9 @@ static C_VOID lnxcdispPaint(vm_platform_run_context *context,
             for (j = 0; j < sizeRow; ++j) {
                 c = frame.characters[i * CORE_PLATFORM_DISPLAY_MAX_COLUMNS + j];
                 p = frame.attributes[i * CORE_PLATFORM_DISPLAY_MAX_COLUMNS + j] & 0x7f;
-                c = Ascii2Print[c][1]; /* curses cannot print ext ascii */
+                c = vm_platform_linuxcon_ascii_to_print[c][1];
                 move(i, j);
-                addch(c | COLOR_PAIR(GetColorFromProp(p)));
+                addch(c | COLOR_PAIR(vm_platform_linuxcon_color_pair(p)));
             }
         }
         ref = 1;
@@ -232,7 +242,7 @@ static C_VOID *linuxcon_display_thread(C_VOID *arg) {
     linuxcon_run_handle *handle = arg;
     vm_platform_run_context *context = (vm_platform_run_context *)handle->platform;
 
-    if (!lnxcdispInit()) {
+    if (!vm_platform_linuxcon_terminal_initialize()) {
         STD_ATOMIC_STORE(&handle->display_failed, TYPE_TRUE);
         vm_platform_run_handle_report(handle->owner,
             VM_PLATFORM_RUN_EVENT_STARTUP_FAILED);
@@ -240,10 +250,10 @@ static C_VOID *linuxcon_display_thread(C_VOID *arg) {
     }
     handle->terminal_initialized = 1;
     STD_ATOMIC_STORE(&handle->display_ready, TYPE_TRUE);
-    lnxcdispPaint(context, 1);
+    vm_platform_linuxcon_paint(context, 1);
     while (vm_platform_execution_is_running_for(context->execution)) {
-        lnxcdispPaint(context, 0);
-        lnxckeybProcess(handle);
+        vm_platform_linuxcon_paint(context, 0);
+        vm_platform_linuxcon_process_keyboard(handle);
         core_product_wait_milliseconds(context->wait_scope, 20u);
     }
     return 0;
@@ -258,10 +268,15 @@ static C_VOID *linuxcon_kernel_thread(C_VOID *arg) {
     return 0;
 }
 
-#define send(context, scan, key) vm_platform_keyboard_receive_key_press_for(\
-    (context)->keyboard, (scan), (key))
-static C_VOID lnxckeybMakeKey(linuxcon_run_handle *handle,
-                             C_INT keyvalue) {
+static C_VOID vm_platform_linuxcon_send_key(
+    const vm_platform_run_context *context, C_UCHAR scan, C_UCHAR key)
+{
+    vm_platform_keyboard_receive_key_press_for(context->keyboard, scan, key);
+}
+
+static C_VOID vm_platform_linuxcon_make_key(linuxcon_run_handle *handle,
+    C_INT keyvalue)
+{
     const vm_platform_run_context *context = handle->platform;
 
     if (keyvalue == KEY_F(9)) {
@@ -272,12 +287,12 @@ static C_VOID lnxckeybMakeKey(linuxcon_run_handle *handle,
         switch (keyvalue) {
         case 0x000a:
             /* ENTER */
-            send(context, 0x1cu, 0x000du);
+            vm_platform_linuxcon_send_key(context, 0x1cu, 0x000du);
             break;
         default:
             /* CTRL + LETTER */
-            send(context, 0x1du, 0u);
-            send(context, 0u, keyvalue + 0x60);
+            vm_platform_linuxcon_send_key(context, 0x1du, 0u);
+            vm_platform_linuxcon_send_key(context, 0u, keyvalue + 0x60);
             break;
         }
     } else if (keyvalue < 0x0020) {
@@ -286,11 +301,11 @@ static C_VOID lnxckeybMakeKey(linuxcon_run_handle *handle,
             keyvalue = getch();
             if (keyvalue == ERR) {
                 /* ESCAPE*/
-                send(context, 0x01u, 0x001bu);
+                vm_platform_linuxcon_send_key(context, 0x01u, 0x001bu);
             } else {
                 /* ALT */
-                send(context, 0x38u, 0u);
-                send(context, 0u, keyvalue);
+                vm_platform_linuxcon_send_key(context, 0x38u, 0u);
+                vm_platform_linuxcon_send_key(context, 0u, keyvalue);
             }
             break;
         default:
@@ -300,55 +315,56 @@ static C_VOID lnxckeybMakeKey(linuxcon_run_handle *handle,
     } else if (keyvalue < 0x0100) {
         switch (keyvalue) {
         default:
-            send(context, 0u, keyvalue);
+            vm_platform_linuxcon_send_key(context, 0u, keyvalue);
             break;
         }
     } else if (keyvalue > KEY_F0 && keyvalue <= KEY_F(12)) {
         switch (keyvalue) {
         default:
-            send(context, keyvalue - KEY_F0 + 0x3a, 0u);
+            vm_platform_linuxcon_send_key(context, keyvalue - KEY_F0 + 0x3a,
+                0u);
             break;
         }
     } else {
         /* get special keys */
         switch (keyvalue) {
         case KEY_DOWN:
-            send(context, 0x50u, 0u);
+            vm_platform_linuxcon_send_key(context, 0x50u, 0u);
             break;
         case KEY_UP:
-            send(context, 0x48u, 0u);
+            vm_platform_linuxcon_send_key(context, 0x48u, 0u);
             break;
         case KEY_LEFT:
-            send(context, 0x4bu, 0u);
+            vm_platform_linuxcon_send_key(context, 0x4bu, 0u);
             break;
         case KEY_RIGHT:
-            send(context, 0x4du, 0u);
+            vm_platform_linuxcon_send_key(context, 0x4du, 0u);
             break;
         case KEY_HOME:
-            send(context, 0x47u, 0u);
+            vm_platform_linuxcon_send_key(context, 0x47u, 0u);
             break;
         case KEY_BACKSPACE:
-            send(context, 0x0eu, 0x0008u);
+            vm_platform_linuxcon_send_key(context, 0x0eu, 0x0008u);
             break;
         case KEY_ENTER:
-            send(context, 0x1cu, 0x000du);
+            vm_platform_linuxcon_send_key(context, 0x1cu, 0x000du);
             break;
         case KEY_NPAGE:
-            send(context, 0x51u, 0u);
+            vm_platform_linuxcon_send_key(context, 0x51u, 0u);
             break;
         case KEY_PPAGE:
-            send(context, 0x49u, 0u);
+            vm_platform_linuxcon_send_key(context, 0x49u, 0u);
             break;
         case KEY_END:
-            send(context, 0x4fu, 0u);
+            vm_platform_linuxcon_send_key(context, 0x4fu, 0u);
             break;
         case 0x014a:
             /* DELETE */
-            send(context, 0x53u, 0u);
+            vm_platform_linuxcon_send_key(context, 0x53u, 0u);
             break;
         case 0x014b:
             /* INSERT */
-            send(context, 0x52u, 0u);
+            vm_platform_linuxcon_send_key(context, 0x52u, 0u);
             break;
         default:
             return;
@@ -356,19 +372,24 @@ static C_VOID lnxckeybMakeKey(linuxcon_run_handle *handle,
     }
 }
 
-static C_VOID lnxckeybProcess(linuxcon_run_handle *handle) {
+static C_VOID vm_platform_linuxcon_process_keyboard(linuxcon_run_handle *handle)
+{
     C_INT keyvalue = getch();
     if (keyvalue != ERR) {
-        lnxckeybMakeKey(handle, keyvalue);
+        vm_platform_linuxcon_make_key(handle, keyvalue);
     }
 }
 
-C_VOID lnxcDisplaySetScreen(const vm_platform_run_context *context) {
+C_VOID vm_platform_linuxcon_display_set_screen(
+    const vm_platform_run_context *context)
+{
     (C_VOID)context;
 }
 
-C_VOID lnxcDisplayPaint(const vm_platform_run_context *context) {
-    lnxcdispPaint((vm_platform_run_context *)context, 1);
+C_VOID vm_platform_linuxcon_display_paint(
+    const vm_platform_run_context *context)
+{
+    vm_platform_linuxcon_paint((vm_platform_run_context *)context, 1);
 }
 
 type_status vm_platform_linuxcon_run_handle_start(
@@ -447,7 +468,7 @@ C_VOID vm_platform_linuxcon_run_handle_finalize(vm_platform_run_handle *owner) {
     linuxcon_run_handle *handle = owner == STD_NULL ? STD_NULL : owner->backend;
 
     if (handle == STD_NULL) return;
-    if (handle->terminal_initialized) lnxcdispFinal();
+    if (handle->terminal_initialized) vm_platform_linuxcon_terminal_finalize();
     core_platform_host_surface_lease_release(&linux_terminal_lease,
         handle->platform);
     STD_FREE(handle);

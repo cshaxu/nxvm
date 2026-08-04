@@ -18,7 +18,10 @@ M5 has preserved the bootable NXVM Console, debugger, boot sequence, and FDD
 fixture behavior while moving the whole-PC execution path into the documented
 `core/` and `vm/` ownership model.
 
-**Current active subtask:** none. **M5 T206 complete:** `current-gates-gcc`
+**Current active subtask:** none. **M5 T207 complete:** Linux Console private
+helpers now use coherent typed `vm_platform_linuxcon_*` names; unsafe local
+macros are gone without changing its behavior. Evidence is
+[`M5-T207.md`](../tracking/M5-T207.md). **M5 T206 complete:** `current-gates-gcc`
 has one smoke execution path and no obsolete CTest-launching custom targets.
 All 42 CTest probes remain under `run-current-smokes`. Evidence is
 [`M5-T206.md`](../tracking/M5-T206.md). **M5 T205 complete:** the Console adapter

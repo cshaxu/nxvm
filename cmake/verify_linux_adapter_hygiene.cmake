@@ -12,7 +12,13 @@ foreach(forbidden
     "vm_platform_linux_sleep"
     "vm_platform_win32_sleep"
     "#define ZERO"
-    "case 0x08: return COLOR_GRAY")
+    "case 0x08: return COLOR_GRAY"
+    "#define GetMin"
+    "#define send(context"
+    "lnxc"
+    "ReverseColor"
+    "CharProp2Color"
+    "GetColorFromProp")
     string(FIND "${adapter_source}" "${forbidden}" position)
     if(NOT position EQUAL -1)
         message(FATAL_ERROR "Linux adapter legacy noise returned: ${forbidden}")
