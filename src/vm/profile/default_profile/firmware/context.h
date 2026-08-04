@@ -9,7 +9,6 @@
 
 typedef struct t_bios t_bios;
 typedef struct t_qdx t_qdx;
-typedef struct t_vadp t_vadp;
 typedef struct core_machine_block_provider_slot core_machine_block_provider_slot;
 typedef struct core_machine_keyboard_provider_slot core_machine_keyboard_provider_slot;
 typedef struct core_machine_display_provider_slot core_machine_display_provider_slot;
@@ -18,7 +17,6 @@ typedef struct vm_profile_default_context {
     t_bios *bios;
     t_qdx *qdx;
     core_machine_profile_binding binding;
-    t_vadp *vadp;
     core_machine_block_provider_slot *block_provider;
     core_machine_keyboard_provider_slot *keyboard_provider;
     core_machine_display_provider_slot *display_provider;
@@ -29,14 +27,13 @@ typedef struct vm_profile_default_context {
 static inline C_VOID vm_profile_default_context_initialize(
     vm_profile_default_context *context, t_bios *bios, t_qdx *qdx,
     core_machine_profile_binding binding,
-    t_vadp *vadp, core_machine_block_provider_slot *block_provider,
+    core_machine_block_provider_slot *block_provider,
     core_machine_keyboard_provider_slot *keyboard_provider)
 {
     if (context == STD_NULL) return;
     context->bios = bios;
     context->qdx = qdx;
     context->binding = binding;
-    context->vadp = vadp;
     context->block_provider = block_provider;
     context->keyboard_provider = keyboard_provider;
     context->display_provider = STD_NULL;

@@ -526,6 +526,10 @@ add_executable(core-machine-kbc-controller-smoke
     tests/machine/core_machine_kbc_controller_smoke.c
 )
 target_link_libraries(core-machine-kbc-controller-smoke PRIVATE core-machine)
+add_executable(core-machine-vadp-text-smoke
+    tests/machine/core_machine_vadp_text_smoke.c
+)
+target_link_libraries(core-machine-vadp-text-smoke PRIVATE core-machine)
 
 add_executable(vm-cmos-authority-smoke tests/machine/vm_cmos_authority_smoke.c)
 target_link_libraries(vm-cmos-authority-smoke PRIVATE vm-composition)
@@ -883,6 +887,7 @@ add_vm_version_artifact(vm-0-5-0189 "0.5.0189")
 add_vm_version_artifact(vm-0-5-0190 "0.5.0190")
 add_vm_version_artifact(vm-0-5-0191 "0.5.0191")
 add_vm_version_artifact(vm-0-5-0192 "0.5.0192")
+add_vm_version_artifact(vm-0-5-0193 "0.5.0193")
 
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)

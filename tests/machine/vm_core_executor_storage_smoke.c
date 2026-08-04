@@ -32,8 +32,7 @@ C_INT main(C_VOID)
             machine->core_machine) ||
         core_machine_configuration_shared_dma_secondary_borrow(machine->core_machine) != core_machine_configuration_shared_dma_secondary_borrow(
             machine->core_machine) ||
-        core_machine_configuration_shared_kbc_borrow(machine->core_machine) != core_machine_configuration_shared_kbc_borrow(machine->core_machine) ||
-        core_machine_configuration_shared_vadp_borrow(machine->core_machine) != core_machine_configuration_shared_vadp_borrow(machine->core_machine)) {
+        core_machine_configuration_shared_kbc_borrow(machine->core_machine) != core_machine_configuration_shared_kbc_borrow(machine->core_machine)) {
         vm_session_storage_finalize(machine);
         STD_FREE(machine);
         return 1;
