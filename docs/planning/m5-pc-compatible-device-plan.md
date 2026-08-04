@@ -152,6 +152,48 @@ the QDKEYB INT 09h handoff. Its first implementation slice is exactly:
 - one default-profile host-key mapper that emits the approved fixed scan-code
   form into the controller.
 
+**Approved S1 topology and ownership:**
+
+```text
+platform-normalized host key event
+  -> vm_profile_default_keyboard_mapper (layout policy -> set-1 byte)
+  -> core_machine_keyboard_submit_scan_code(core_machine, byte)
+  -> core KBC FIFO / OBF / IRQ1 through core PIC
+  -> QDKEYB INT 09h reads port 0x60
+  -> QDKEYB BIOS scan-code translation and BDA buffer
+  -> BIOS INT 16h
+```
+
+- Platform normalizes native events into an owner-neutral event; it does not
+  choose BIOS AX values, guest scan-code set, keyboard layout, or BDA policy.
+- The default profile owns the host-layout-to-fixed-set-1 mapping. T192 admits
+  make bytes only; break-byte, set switching, and controller translation stay
+  deferred.
+- `core_machine_keyboard_submit_scan_code` is the one explicit running-machine
+  ingress contract. It reaches the core-owned KBC internally and never returns
+  a mutable KBC pointer to VM composition or a profile.
+- KBC owns a fixed 16-byte keyboard FIFO. A full FIFO returns a defined busy
+  result to the mapper and drops no already queued byte; the mapper records no
+  second queue or retry thread. S2 probes the result, while S3 keeps current
+  interactive behavior by submitting synchronously at the product boundary.
+- KBC writes IRQ1 directly through the core-owned PIC binding. Its `0xd1`
+  output-port operation changes core A20 state and requests a core reset through
+  internal machine callbacks. VM supplies neither a PIC nor host reset policy.
+- QDKEYB owns only BIOS scan-code-to-AX/BDA behavior. Its INT 09h handler reads
+  the KBC data port, updates the BDA, and acknowledges IRQ1; it never receives
+  a host event or owns controller state.
+
+**Status and command rules:** `OBF` means the FIFO has a byte available;
+`IBF` is asserted only during synchronous command/data processing and is clear
+when the I/O write returns. The first slice returns command-byte `0x05` after
+reset (IRQ1 plus system flag, with translation clear), self test `0x55`,
+interface test `0x00`, and output-port bit 1 as A20.
+For a `0xd1` output-port write, bit 0 clear requests core reset and bit 1 sets
+A20. Keyboard commands return `0xfa` ACK: `0xff` additionally returns `0xaa`,
+`0xf4` enables scanning, `0xf5` disables it, and `0xf2` returns `0xab, 0x83`.
+Unsupported keyboard commands return `0xfe` RESEND. AUX state/IRQ12 never
+appears in the first-slice status byte.
+
 **Non-goals:** PS/2 mouse, USB/HID emulation, vendor-specific 8042 commands,
 controller translation, scan-code-set switching, AUX mouse/IRQ12, controller
 timing emulation, or direct host policy in `core/machine`.
