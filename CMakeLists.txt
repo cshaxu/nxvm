@@ -4,6 +4,11 @@ cmake_minimum_required(VERSION 3.23)
 # M3 later adds the refactored machine target after M2 design approval.
 project(ntvdm64 LANGUAGES C)
 
+# Current runnable smoke coverage is registered with CTest. Build presets use
+# run-current-smokes so a successful gate means the selected smoke programs
+# executed, not merely that they linked.
+enable_testing()
+
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
@@ -702,6 +707,92 @@ target_link_libraries(vdm-minimal-presentation-smoke PRIVATE
     vdm-composition
 )
 
+set(PROJECT_CURRENT_SMOKE_TARGETS
+    vm-two-session-isolation-smoke
+    vm-core-executor-storage-smoke
+    core-machine-executor-run-smoke
+    core-machine-trace-context-smoke
+    core-machine-cpu-fault-diagnostic-smoke
+    core-machine-configuration-smoke
+    core-machine-ram-port-context-smoke
+    core-machine-pit-readback-smoke
+    core-machine-kbc-controller-smoke
+    core-machine-vadp-text-smoke
+    core-machine-stopped-lifecycle-smoke
+    core-machine-memory-reconfigure-smoke
+    core-product-wait-smoke
+    core-product-session-contract-smoke
+    core-product-session-manager-smoke
+    core-product-debug-target-smoke
+    vm-platform-surface-context-smoke
+    vm-platform-execution-smoke
+    vm-platform-run-handle-smoke
+    vm-multi-window-session-smoke
+    vm-platform-input-smoke
+    vm-keyboard-host-ingress-smoke
+    vm-platform-presentation-mailbox-smoke
+    vm-platform-mode-context-smoke
+    vm-dos-prompt-smoke
+    vm-dos-keyboard-smoke
+    vm-dos-mem-fault-smoke
+    vm-qdcga-boundary-smoke
+    vm-debug-pause-boundary-smoke
+    vm-unified-debug-backend-smoke
+    vm-product-console-smoke
+    vm-product-console-lifecycle-smoke
+    vm-debug-target-smoke
+    vm-keyboard-provider-isolation-smoke
+    vm-product-session-smoke
+    vm-session-manager-smoke
+    vm-session-reconfigure-smoke
+    core-platform-host-surface-smoke
+    vdm-minimal-session-smoke
+    vdm-minimal-presentation-smoke)
+
+set(PROJECT_CURRENT_MEDIA_SMOKE_TARGETS
+    vm-dos-prompt-smoke
+    vm-dos-keyboard-smoke
+    vm-dos-mem-fault-smoke
+    vm-debug-pause-boundary-smoke
+    vm-unified-debug-backend-smoke
+    vm-product-session-smoke)
+set(PROJECT_FDD_SMOKE_IMAGE "${CMAKE_SOURCE_DIR}/../fdd.img" CACHE FILEPATH
+    "Owner-provided FDD image for current runtime smoke coverage")
+set(PROJECT_HDD_SMOKE_IMAGE "${CMAKE_SOURCE_DIR}/../hdd.img" CACHE FILEPATH
+    "Owner-provided HDD image for current runtime smoke coverage")
+
+function(project_add_current_smoke_test target)
+    if(NOT TARGET ${target})
+        message(FATAL_ERROR "Current smoke target is missing: ${target}")
+    endif()
+    add_test(NAME "current.${target}" COMMAND "$<TARGET_FILE:${target}>" ${ARGN})
+    set_tests_properties("current.${target}" PROPERTIES
+        LABELS "current-gate;smoke"
+        TIMEOUT 30)
+endfunction()
+
+foreach(target IN LISTS PROJECT_CURRENT_SMOKE_TARGETS)
+    list(FIND PROJECT_CURRENT_MEDIA_SMOKE_TARGETS ${target} media_smoke_index)
+    if(media_smoke_index EQUAL -1)
+        project_add_current_smoke_test(${target})
+    endif()
+endforeach()
+
+foreach(target IN ITEMS vm-dos-prompt-smoke vm-dos-keyboard-smoke
+        vm-dos-mem-fault-smoke vm-debug-pause-boundary-smoke
+        vm-unified-debug-backend-smoke)
+    project_add_current_smoke_test(${target} "${PROJECT_FDD_SMOKE_IMAGE}")
+endforeach()
+project_add_current_smoke_test(vm-product-session-smoke
+    "${PROJECT_FDD_SMOKE_IMAGE}" "${PROJECT_HDD_SMOKE_IMAGE}")
+
+add_custom_target(run-current-smokes
+    COMMAND "${CMAKE_CTEST_COMMAND}" --test-dir "${CMAKE_BINARY_DIR}"
+        --output-on-failure --no-tests=error --label-regex "^current-gate$"
+    DEPENDS ${PROJECT_CURRENT_SMOKE_TARGETS}
+    COMMENT "Building and executing current runnable smoke coverage"
+    VERBATIM)
+
 
 # CMake builds the current source artifact only. Historical task executables are
 # retained evidence under build/output and are never regenerated from newer
@@ -738,7 +829,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0197 "0.5.0197")
+add_current_vm_artifact(vm-0-5-0198 "0.5.0198")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 

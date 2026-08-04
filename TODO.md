@@ -89,6 +89,10 @@ import. `docs/planning/status.md` remains authoritative for active work.
   task/version executable target from CMake. Only the current source artifact
   is buildable; earlier `build/output/` executables remain historical evidence
   and must never be regenerated from current source under their old names.
+- [x] **Current smoke execution truthfulness.** T198 registers the configured
+  runnable set with labeled CTest cases and makes `current-gates-gcc` build and
+  execute all 40 cases. Source/inventory checks remain explicitly static gates;
+  compiling a smoke executable alone is no longer runtime evidence.
 
 - [x] **Finish the explicit platform run-handle boundary.** M5 T194--T196
   converged a worker-report-only event path, session-owned cancellation/join/

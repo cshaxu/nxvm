@@ -9,8 +9,9 @@ C_INT main(C_VOID)
     core_machine_config config = { .memory_bytes = 0u };
     core_machine_run_budget budget = {1u, 0u};
     core_machine_run_result result;
+    type_status status;
     core_machine *machine = STD_NULL;
-    type_unsigned_8 halt = 0xf4u;
+    const type_unsigned_8 program[] = {0x90u, 0xf4u};
 
     if (core_machine_create(&config, &machine) != TYPE_STATUS_OK) {
         core_machine_destroy(machine);
@@ -24,15 +25,28 @@ C_INT main(C_VOID)
         core_machine_destroy(machine);
         return 1;
     }
-    if (core_machine_memory_write(machine, 0xfffffff0u, &halt, 1u) !=
+    if (core_machine_memory_write(machine, 0xfffffff0u, program, sizeof(program)) !=
         TYPE_STATUS_OK) {
         core_machine_destroy(machine);
         return 1;
     }
-    if (core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
-        result.executed != 1u || result.reason != CORE_MACHINE_STOP_BUDGET ||
-        core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
+    status = core_machine_run(machine, budget, &result);
+    if (status != TYPE_STATUS_OK || result.executed != 1u ||
+        result.reason != CORE_MACHINE_STOP_BUDGET) {
+        STD_FPRINTF(STD_STDERR,
+            "M5:T198:S1:CORE-EXECUTOR-RUN:FAIL status=%d executed=%llu reason=%d\n",
+            (C_INT)status,
+            (unsigned long long)result.executed, (C_INT)result.reason);
+        core_machine_destroy(machine);
+        return 1;
+    }
+    status = core_machine_run(machine, budget, &result);
+    if (status != TYPE_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) {
+        STD_FPRINTF(STD_STDERR,
+            "M5:T198:S1:CORE-EXECUTOR-WAIT:FAIL status=%d executed=%llu reason=%d\n",
+            (C_INT)status, (unsigned long long)result.executed,
+            (C_INT)result.reason);
         core_machine_destroy(machine);
         return 1;
     }

@@ -18,10 +18,9 @@ M5 has preserved the bootable NXVM Console, debugger, boot sequence, and FDD
 fixture behavior while moving the whole-PC execution path into the documented
 `core/` and `vm/` ownership model.
 
-**Current active subtask:** none. T197 closed current-artifact build-graph
-truthfulness: CMake has one current product artifact target and cannot
-regenerate historical task/version names from current source. T194--T196
-platform run-handle convergence remains complete.
+**Current active subtask:** none. T198 closes current smoke execution
+truthfulness: `current-gates-gcc` builds and executes the configured CTest
+smoke set, while static source/inventory checks remain separate gates.
 
 **M5 T150 complete:** NXVM shared product-session management is closed. The
 manager atomically establishes session 0, the final session cannot close, and
