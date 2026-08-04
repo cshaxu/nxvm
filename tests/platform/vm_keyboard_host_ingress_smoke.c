@@ -63,7 +63,7 @@ C_INT main(C_VOID)
         vm_platform_request_transport_execution_boundary_count(
             &session->request_transport) != 1u) goto fail;
     vm_platform_win32_keyboard_make_key_for(&session->platform_run_context,
-        0x1eu, 'A');
+        &session->platform_run_handle, 0x1eu, 'A');
     if (!vm_keyboard_host_ingress_read_word(session,
             QDKEYB_VBIOS_ADDR_KEYB_BUF_TAIL, &tail) || tail != head ||
         vm_platform_request_transport_execution_boundary_count(

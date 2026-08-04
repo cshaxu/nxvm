@@ -90,8 +90,8 @@ static LRESULT CALLBACK win32app_window_procedure(HWND window, UINT message,
     case WM_SYSKEYDOWN:
         scan_code = (UCHAR)((lParam >> 16) & 0xff);
         virtual_key = (UCHAR)(wParam & 0xff);
-        vm_platform_win32_keyboard_make_key_for(handle->platform, scan_code,
-            virtual_key);
+        vm_platform_win32_keyboard_make_key_for(handle->platform,
+            handle->owner, scan_code, virtual_key);
         return 0;
     case WM_KEYUP:
     case WM_SYSKEYUP:

@@ -46,12 +46,3 @@ C_VOID vm_platform_keyboard_receive_key_press_for(
             virtual_key);
     }
 }
-
-C_VOID vm_platform_keyboard_request_stop_for(
-    const vm_platform_keyboard_transport *transport)
-{
-    if (transport != STD_NULL && transport->sink != STD_NULL &&
-        transport->sink->request_stop != STD_NULL) {
-        transport->sink->request_stop(transport->context);
-    }
-}

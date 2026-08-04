@@ -86,11 +86,6 @@ static C_VOID vm_session_keyboard_receive_key_press(C_VOID *context,
         &machine->request_transport, &request);
 }
 
-static C_VOID vm_session_keyboard_request_stop(C_VOID *context)
-{
-    vm_session_control_stop(&((vm_session *)context)->control);
-}
-
 static C_VOID vm_session_execution_provider_refresh(C_VOID *context)
 {
     vm_session_provider_lifecycle_refresh((vm_session *)context);
@@ -117,8 +112,7 @@ C_INT vm_session_bind_execution_provider(vm_session *machine)
 
 static const vm_platform_keyboard_sink vm_session_keyboard_sink = {
     vm_session_keyboard_get_modifier,
-    vm_session_keyboard_receive_key_press,
-    vm_session_keyboard_request_stop
+    vm_session_keyboard_receive_key_press
 };
 
 static C_INT vm_session_execution_is_running(C_VOID *context)
