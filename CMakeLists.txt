@@ -841,7 +841,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0209 "0.5.0209")
+add_current_vm_artifact(vm-0-5-0210 "0.5.0210")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 
@@ -1007,6 +1007,13 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMENT "Verifying M5 T209 firmware-interrupt portal closure"
         VERBATIM)
     add_dependencies(run-current-smokes verify-firmware-interrupt-portal-closure)
+
+    add_custom_target(verify-keyboard-portal-closure
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_keyboard_portal_closure.cmake"
+        COMMENT "Verifying M5 T210 keyboard portal retirement"
+        VERBATIM)
+    add_dependencies(run-current-smokes verify-keyboard-portal-closure)
 endif()
 
 if(PROJECT_ENABLE_BOCHX_RESEARCH)

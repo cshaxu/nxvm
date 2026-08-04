@@ -9,7 +9,6 @@
 #include "vm/profile/default_profile/firmware/firmware_portal.h"
 #include "vm/profile/default_profile/firmware/qdcga.h"
 #include "vm/profile/default_profile/firmware/qddisk.h"
-#include "vm/profile/default_profile/firmware/qdkeyb.h"
 
 static C_VOID vm_profile_default_firmware_portal_copy_flags(
     core_machine_cpu_execution_context *execution)
@@ -47,16 +46,8 @@ static C_VOID vm_profile_default_firmware_portal_dispatch(C_VOID *opaque,
     case VM_PROFILE_DEFAULT_PORTAL_STOP:
         core_machine_cpu_execution_request_stop(execution);
         break;
-    case VM_PROFILE_DEFAULT_PORTAL_KEYBOARD_IRQ1:
-        vm_profile_default_keyboard_handle_irq1(profile);
-        vm_profile_default_firmware_portal_copy_flags(execution);
-        break;
     case VM_PROFILE_DEFAULT_PORTAL_VIDEO_INT10:
         vm_profile_default_cga_handle_int10(profile);
-        vm_profile_default_firmware_portal_copy_flags(execution);
-        break;
-    case VM_PROFILE_DEFAULT_PORTAL_KEYBOARD_INT16:
-        vm_profile_default_keyboard_handle_int16(profile);
         vm_profile_default_firmware_portal_copy_flags(execution);
         break;
     case VM_PROFILE_DEFAULT_PORTAL_HDD_READ:
@@ -74,9 +65,7 @@ type_status vm_profile_default_firmware_portal_install(core_machine *machine,
 {
     static const uint8_t vectors[] = {
         VM_PROFILE_DEFAULT_PORTAL_STOP,
-        VM_PROFILE_DEFAULT_PORTAL_KEYBOARD_IRQ1,
         VM_PROFILE_DEFAULT_PORTAL_VIDEO_INT10,
-        VM_PROFILE_DEFAULT_PORTAL_KEYBOARD_INT16,
         VM_PROFILE_DEFAULT_PORTAL_HDD_READ,
         VM_PROFILE_DEFAULT_PORTAL_HDD_WRITE
     };

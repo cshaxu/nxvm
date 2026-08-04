@@ -39,6 +39,8 @@ typedef struct t_bios {
 
 #define VBIOS_ADDR_ROM_INFO  0xe6f5 /* bios rom info offset */
 #define VBIOS_ADDR_HDD_PARAM 0xe431 /* hard disk parameter table offset */
+#define VBIOS_ADDR_KEYB_SCAN_ASCII_NORMAL 0xe000
+#define VBIOS_ADDR_KEYB_SCAN_ASCII_SHIFT  0xe080
 
 #define VBIOS_ADDR_HDD_PARAM_OFFSET   0x0104
 #define VBIOS_ADDR_HDD_PARAM_SEGMENT  0x0106

@@ -2,7 +2,12 @@
 
 ## Current Work
 
-**Active subtask:** none. **M5 T209 complete:** the default profile's QDX
+**Active subtask:** none. **M5 T210 complete:** the default profile's F1/F3
+keyboard portals are retired. The retained input path is KBC -> IRQ1 -> ROM
+`INT 09h` -> BDA -> ROM `INT 16h`; platform input still submits only host
+events. See [the task record](m5-t210-keyboard-portal-retirement.md).
+
+**M5 T209 complete:** the default profile's QDX
 opcode override is replaced with frozen, ROM-origin-limited private `INT`
 portals. Standard `INT`/IVT semantics remain intact outside a matching frozen
 portal. The default machine remains `80386 + no FPU`; its focused strict-8086
@@ -38,9 +43,9 @@ behavior and produces no artifact.
 
 ## Latest Technical Baseline
 
-M5 T209 retained NXVM behavior while replacing the non-architectural QDX
-override with frozen firmware-INT portals. The recorded developer artifact is
-`nxvm_0_5_0209.exe`; its historical evidence is summarized in [M5 History](../history/m5.md).
+M5 T210 retained NXVM behavior while removing the keyboard firmware portals.
+The recorded developer artifact is `nxvm_0_5_0210.exe`; its historical evidence
+is summarized in [M5 History](../history/m5.md).
 
 ## Operational Reading Order
 

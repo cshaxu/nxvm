@@ -37,10 +37,12 @@ static C_VOID vm_session_profile_firmware_apply(
             VCMOS_INT_SOFT_RTC_1A, vector);
         break;
     case VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_KEYBOARD_IRQ1:
+        vm_profile_default_bios_add_interrupt(&session->default_bios,
+            VBIOS_INT_HARD_KEYBOARD_09, vector);
+        break;
     case VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_KEYBOARD_INT16:
         vm_profile_default_bios_add_interrupt(&session->default_bios,
-            hook == VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_KEYBOARD_IRQ1 ?
-                "int f1\niret" : "int f3\niret", vector);
+            VBIOS_INT_SOFT_KEYBOARD_16, vector);
         break;
     case VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_DMA_POST:
         vm_profile_default_bios_add_post(&session->default_bios, VDMA_POST);
