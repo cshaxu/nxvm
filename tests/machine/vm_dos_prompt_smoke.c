@@ -69,11 +69,13 @@ C_INT main(C_INT argc, C_CHAR **argv)
     for (elapsed = 0u; elapsed < DOS_PROMPT_TIMEOUT_MILLISECONDS; elapsed += 10u) {
         Sleep(10u);
     }
+    vm_session_control_request_pause(session->control, VM_SESSION_PAUSE_EXPLICIT);
+    if (!vm_session_control_wait_for_pause(session->control, 2000u)) goto fail;
+    prompt_seen = has_dos_prompt(core_machine_debug_memory_borrow(
+        session->core_machine));
     vm_session_stop(session);
     result = WaitForSingleObject(thread, 2000u);
     CloseHandle(thread);
-    prompt_seen = has_dos_prompt(core_machine_debug_memory_borrow(
-        session->core_machine));
     if (result != WAIT_OBJECT_0 || !prompt_seen) {
         dump_first_fault(session->core_machine);
         STD_FPUTS("M5:T70:S2:DOS-PROMPT:TIMEOUT\n", STD_STDERR);

@@ -76,15 +76,16 @@ C_INT main(C_VOID)
     failed |= expect_status(core_machine_run(machine, budget, &result),
                             NTVDM64_STATUS_OK);
     failed |= result.reason != CORE_MACHINE_STOP_REQUESTED;
-    failed |= fixture.count != 4u ||
+    failed |= fixture.count != 5u ||
               fixture.events[0].type != CORE_MACHINE_TRACE_RESET ||
               fixture.events[1].type != CORE_MACHINE_TRACE_PORT_WRITE ||
               fixture.events[1].address != 0x60u ||
               fixture.events[1].value != 0x55u ||
               fixture.events[2].type != CORE_MACHINE_TRACE_PORT_READ ||
-              fixture.events[3].type != CORE_MACHINE_TRACE_STOP ||
-              fixture.events[3].detail != CORE_MACHINE_STOP_REQUESTED ||
-              fixture.events[3].sequence != 3u;
+              fixture.events[3].type != CORE_MACHINE_TRACE_RESET ||
+              fixture.events[4].type != CORE_MACHINE_TRACE_STOP ||
+              fixture.events[4].detail != CORE_MACHINE_STOP_REQUESTED ||
+              fixture.events[4].sequence != 4u;
     failed |= expect_status(core_machine_reset(machine), NTVDM64_STATUS_OK);
     fixture.count = 0u;
     failed |= expect_status(core_machine_report_fault(machine, 0x44u),

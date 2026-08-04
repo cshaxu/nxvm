@@ -7,6 +7,7 @@
 #include "vm/composition/session/session.h"
 #include "vm/composition/session/control.h"
 #include "vm/composition/session/runner.h"
+#include "vm/machine/debug.h"
 
 C_VOID vm_session_runner_run(vm_session *session)
 {
@@ -38,7 +39,8 @@ C_VOID vm_session_runner_run(vm_session *session)
         }
         vm_session_publish_display(session, NTVDM64_TYPE_FALSE);
         if (result.reason == CORE_MACHINE_STOP_RESET_REQUESTED) {
-            vm_session_control_reset(control);
+            /* core_machine_run completed the one cold reset before returning. */
+            vm_machine_debug_reset(session->debug);
         }
         if (result.reason == CORE_MACHINE_STOP_REQUESTED) {
             vm_session_control_stop(control);
