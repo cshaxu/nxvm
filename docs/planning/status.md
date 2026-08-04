@@ -426,6 +426,10 @@ criterion, two retained pointer owners, embedded control decision, and
 T176--T184 one-owner-group migration sequence are fixed in
 [`m5-t175-s1.md`](subtasks/m5-t175-s1.md). No runtime source changed.
 
+**M5 T176 S1 complete: direct composition state ownership.** Mailbox,
+transport, and wait-scope aliases are removed; focused mailbox/input/wait
+evidence passed. Artifact: `nxvm_0_5_0176.exe`.
+
 The completed executor sequence is defined in
 [Facade And Executor Convergence](m5-facade-executor-convergence.md). The
 active session-readiness sequence is defined in

@@ -26,7 +26,7 @@ static C_INT vm_dos_keyboard_has_text(const vm_session *session,
     STD_SIZE_T character;
     STD_SIZE_T length = STD_STRLEN(text);
 
-    vm_platform_presentation_mailbox_capture(session->presentation_mailbox, &frame);
+    vm_platform_presentation_mailbox_capture(&session->presentation_mailbox, &frame);
     for (cell = 0u; cell + length <= TEXT_VIDEO_CELLS; ++cell) {
         for (character = 0u; character < length; ++character) {
             if (frame.characters[cell + character] != (C_UCHAR)text[character]) break;
@@ -41,7 +41,7 @@ static C_INT vm_dos_keyboard_has_prompt(const vm_session *session)
     core_platform_display_frame frame;
     STD_SIZE_T cell;
 
-    vm_platform_presentation_mailbox_capture(session->presentation_mailbox, &frame);
+    vm_platform_presentation_mailbox_capture(&session->presentation_mailbox, &frame);
     for (cell = 0u; cell + 3u < TEXT_VIDEO_CELLS; ++cell) {
         if (STD_ISALPHA(frame.characters[cell]) &&
             frame.characters[cell + 1u] == ':' &&

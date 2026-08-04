@@ -57,7 +57,7 @@ C_VOID vm_session_publish_display(vm_session *machine,
         }
     }
     frame.generation = ++machine->display_generation;
-    vm_platform_presentation_mailbox_publish(machine->presentation_mailbox,
+    vm_platform_presentation_mailbox_publish(&machine->presentation_mailbox,
                                              &frame);
 }
 
