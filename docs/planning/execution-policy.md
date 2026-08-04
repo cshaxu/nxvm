@@ -39,6 +39,9 @@ version: `T48` is `0.5.0048`, `T49` is `0.5.0049`, and so on. Use
 `nxvm_0_5_NNNN.exe` for the bootable VM product or `ntvdm64_0_5_NNNN.exe` for
 the DOS app-runner product, where `NNNN` is the four-digit decimal task
 number. Earlier historical artifacts retain their recorded names and banners.
+They are evidence files, not CMake build targets: current source must never
+rebuild an old task/version name. The configured current-artifact target is the
+only product artifact target admitted to the active CMake graph.
 Record the artifact SHA-256, source commit, runtime identity/banner, and
 whether it is a baseline/developer artifact or a product artifact in the
 verification record. Smoke-test executables remain build-tree verification
