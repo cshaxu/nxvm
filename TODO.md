@@ -23,6 +23,10 @@ import. `docs/planning/status.md` remains authoritative for active work.
 
 ## Current Architecture Closure
 
+- [x] **Current-gate graph de-duplication (`TODO(Low)`, T206).**
+  Remove redundant preset smoke targets and obsolete custom targets that only
+  execute CTest-registered smoke already covered by `run-current-smokes`.
+
 - [x] **Console adapter cohesion closure (`TODO(Low)`, T205).**
   Keep the typed selected-session borrow as an adapter-private helper, delete
   its one-consumer source/header split, and make the closure gate validate the

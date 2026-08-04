@@ -88,11 +88,6 @@ add_executable(vm-product-console-lifecycle-smoke
     tests/products/nxvm_console_lifecycle_smoke.c)
 target_link_libraries(vm-product-console-lifecycle-smoke PRIVATE
     vm-product vm-composition)
-add_custom_target(vm-product-console-lifecycle-gate
-    COMMAND $<TARGET_FILE:vm-product-console-lifecycle-smoke>
-    DEPENDS vm-product-console-lifecycle-smoke
-    COMMENT "Verifying retained NXVM Console lifecycle"
-    VERBATIM)
 add_executable(vm-product-session-smoke tests/products/nxvm_session_smoke.c)
 target_link_libraries(vm-product-session-smoke PRIVATE vm-composition)
 add_executable(vm-session-manager-smoke
@@ -130,11 +125,6 @@ add_executable(core-machine-configuration-smoke
     tests/core/machine_configuration_smoke.c
 )
 target_link_libraries(core-machine-configuration-smoke PRIVATE core-machine)
-add_custom_target(core-machine-lifecycle-contract-smoke
-    COMMAND $<TARGET_FILE:core-machine-configuration-smoke>
-    DEPENDS core-machine-configuration-smoke
-    COMMENT "Verifying frozen core-machine lifecycle contract"
-    VERBATIM)
 
 add_executable(core-machine-trace-smoke
     tests/core/machine_trace_smoke.c
@@ -837,7 +827,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0205 "0.5.0205")
+add_current_vm_artifact(vm-0-5-0206 "0.5.0206")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 
