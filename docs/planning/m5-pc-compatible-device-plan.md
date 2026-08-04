@@ -2,24 +2,30 @@
 
 ## Purpose
 
-This plan decomposes three retained core devices whose current implementations
-are deliberately incomplete: the 8254 PIT read-back command, the Intel
-8042-compatible keyboard-controller path, and the video-adapter state used by
-the default VM profile. Each design activity is the `S1` subtask of its
-corresponding behavior task; no design-only task number is created. It does
-not add a DOS runner, change the NXVM Console grammar, or claim CGA/EGA/VGA
-compatibility before an owned probe demonstrates it.
+This plan records bounded compatibility slices for three retained core devices:
+8254 PIT read-back, the Intel 8042-compatible keyboard-controller path, and
+the video-adapter state used by the default VM profile. Each design activity
+is the `S1` subtask of its corresponding behavior task; no design-only task
+number is created. It does not add a DOS runner, change the NXVM Console
+grammar, or claim CGA/EGA/VGA compatibility before an owned probe demonstrates
+it.
 
 ## Current Facts
 
-- `core/machine/pit.*` owns the one PIT state and normal counter operation,
-  but does not implement the 8254 read-back command.
-- `core/machine/kbc.*` is an `0x64` status placeholder. Host input currently
-  travels through the VM keyboard transport directly to the default-profile
-  QDKEYB provider; that is BIOS-keyboard behavior, not 8042 compatibility.
-- `core/machine/vadp.*` owns a resettable state container only. Default-profile
-  QDCGA implements INT 10h text services and creates the current text snapshot
-  from BDA and `0xb8000`; it is not a generic hardware video adapter.
+- `core/machine/pit.*` owns the one PIT state and the completed T191 8254
+  read-back slice. Per-mode waveform/GATE/BCD/count-zero compatibility remains
+  explicitly deferred; read-back is not a claim of a cycle-accurate PIT.
+- `core/machine/kbc.*` owns the completed T192 controller subset: `0x60`/
+  `0x64`, OBF/IBF, command byte, bounded byte FIFO, IRQ1, A20/reset, and the
+  approved keyboard-command responses. Host input follows the one normalized
+  platform-event -> default-profile mapper -> KBC -> QDKEYB INT 09h -> BDA ->
+  INT 16h route. Break/extended bytes, scan-set switching, translation, AUX,
+  IRQ12, and timing remain deferred.
+- `core/machine/vadp.*` currently owns resettable shared video state only.
+  Default-profile QDCGA implements INT 10h text services and the current text
+  snapshot derives from BDA and `0xb8000`; it is not yet a hardware CGA text
+  controller. T193 moves that controller truth into VADP without treating a
+  text snapshot as graphics support.
 - `core_machine` remains the sole owner of PIT/KBC/VADP storage and lifecycle.
   VM composition may bind profile providers and host transports, but may not
   create a second device, reset it directly, or retain mutable aliases.
@@ -30,7 +36,8 @@ compatibility before an owned probe demonstrates it.
   owned port or snapshot probes. Bochs 2.6 compatibility sources may be read
   only to compare state-machine decomposition and observable behavior: no
   source, global device manager, GUI callback path, C++ plugin structure, or
-  build/runtime dependency is copied or linked into the product.
+  build/runtime dependency is copied, transliterated, or linked into the
+  product.
 - `core` stays independent of `vm` and `vdm`. A core device exposes a frozen
   provider/callback contract where it needs profile behavior; profile firmware
   supplies the behavior through VM composition.
@@ -47,10 +54,12 @@ compatibility before an owned probe demonstrates it.
 
 ## Reference Model Boundary
 
-Bochs' keyboard device is a useful model for controller command state, input
-and output buffers, IRQ requests, and keyboard-device responses. ntvdm64 keeps
-those as a core KBC state machine but does not adopt Bochs' combined global
-device/GUI/plugin model. Its explicit route is:
+Bochs' keyboard device is a useful model for the separation of controller
+command state, IBF/OBF state, keyboard/AUX byte queues, IRQ requests, and
+keyboard-device responses. T192 adopts only the keyboard/controller subset as
+a core KBC state machine. It does not adopt Bochs' combined global-device,
+GUI, or plugin model; AUX and IRQ12 remain a separately admitted task. Its
+explicit route is:
 
 ```text
 platform host event
@@ -61,12 +70,13 @@ platform host event
   -> BIOS INT 16h
 ```
 
-Bochs' VGA split likewise informs, but does not define, the VADP boundary:
-`core/machine/vadp` owns register state, guest video-memory mapping, dirty
-state, and copied scanout snapshots; VM composition converts a snapshot to a
-platform frame; core/vm platform code owns renderer/window/Console behavior
-and never accesses guest VRAM. QDCGA is BIOS INT 10h firmware, not the video
-controller.
+Bochs' `vgacore`/`vga` separation likewise informs, but does not define, the
+VADP boundary. `core/machine/vadp` owns register state, guest video-memory
+mapping, dirty state, and copied scanout snapshots. VM composition reads one
+immutable/copy snapshot and converts it to a platform frame. Core/VM platform
+code owns renderer/window/Console behavior and never accesses guest VRAM.
+QDCGA is BIOS INT 10h firmware, not the video controller. T193 begins with
+the CGA text subset only; it does not imply VGA register or graphics support.
 
 ## Task Breakdown
 
@@ -106,7 +116,8 @@ and status-only commands; unread-latch preservation; RW byte order; null-count
 before/after loading; and unchanged counter operation after read-back.
 
 **Non-goals:** implementation, a generated executable, or a timing-model
-rewrite.
+rewrite. Bochs is neither a primary specification nor a PIT implementation
+reference for this task.
 
 **Exit:** an implementable `S2` contract with exact `pit.*` source surface,
 probe cases, retained regressions, and stop condition. No executable is
@@ -199,6 +210,12 @@ appears in the first-slice status byte.
 controller translation, scan-code-set switching, AUX mouse/IRQ12, controller
 timing emulation, or direct host policy in `core/machine`.
 
+**Bochs boundary:** Bochs confirms why controller registers, byte queues,
+keyboard-device responses, and IRQ state belong together in the controller
+state machine. It does not authorize a combined controller/host-input/GUI
+device. AUX state and IRQ12 are deliberately absent from this slice and require
+a new task with their own port and DOS probes.
+
 **Exit:** S2 and S3 may start only with an explicit one-route migration plan,
 unsupported-command result, queue-overflow policy, and focused controller/BIOS
 probes. No executable is produced.
@@ -265,6 +282,22 @@ VRAM writes and QDCGA INT 10h mode setup update the one VADP state. QDCGA
 maintains BIOS data-area policy and requests VADP configuration; it is not a
 controller or a second snapshot owner.
 
+**Text-controller scope:** S1 fixes the CRTC text index subset `0x0a`/`0x0b`
+(cursor shape), `0x0c`/`0x0d` (display start address/page), and `0x0e`/`0x0f`
+(cursor location). It fixes the `0x3d8` text-mode bits required by the existing
+mode set, and declares other CRTC indexes and graphics interpretations
+unsupported/inert. `0x3da` returns a documented stable text-slice status; it
+does not claim raster timing. A B8000 text write, CRTC/mode/color register
+write, or QDCGA mode/cursor/page operation advances the same VADP dirty
+generation. Snapshot capture copies that state and visible text cells; it
+cannot retain guest VRAM.
+
+**Boundary:** VADP is a bounded text-only video core, not a renderer.
+Composition alone translates its copied snapshot into a `core_platform` frame.
+QDCGA supplies BIOS INT 10h policy and BDA maintenance, then invokes the VADP
+contract; it never implements port state, VRAM mapping, dirty tracking, or
+scanout copying itself.
+
 **Non-goals:** CGA graphics pixels, palette rasterization, EGA/VGA registers,
 sequencer/graphics/attribute controllers, DAC, planar VRAM/latches, raster
 timing, video BIOS expansion, external ROMs, or a new renderer.
@@ -307,11 +340,12 @@ next implementation task's breakdown; it cannot claim graphics compatibility
 or start a broad CGA/EGA/VGA project.
 
 **Exit:** either a narrowly specified future implementation task for CGA
-`320x200x4` with memory addressing, mode/color register, palette, scanout
-pixel format, frame probes, and regression budget; or a documented deferral
-that preserves the S2 unsupported-graphics result. EGA/VGA admission is a
-separate later decision, split by register family and real-program probe. No
-executable is produced.
+`320x200x4` with B8000 graphics memory addressing, exact mode/color-register
+semantics, palette, scanout pixel format, frame probes, and regression budget;
+or a documented deferral that preserves the S2 unsupported-graphics result.
+EGA/VGA admission is a separate later decision, split by register family and
+real-program probe: mapping windows, sequencer, graphics/attribute controller,
+DAC, then planar/latch behavior. No executable is produced.
 
 ## Execution Order
 
