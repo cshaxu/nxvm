@@ -38,7 +38,7 @@
 static C_VOID vm_session_execution_context_reset_callback(vm_session *machine)
 {
     if (machine == STD_NULL) return;
-    vm_machine_debug_reset(machine->debug);
+    vm_machine_debug_reset(&machine->debug);
     if (core_machine_reset(machine->core_machine) != NTVDM64_STATUS_OK) {
         vm_session_control_stop(machine->control);
     }
@@ -47,7 +47,7 @@ static C_VOID vm_session_execution_context_reset_callback(vm_session *machine)
 static C_VOID vm_session_execution_context_debug_refresh_callback(
     vm_session *machine)
 {
-    vm_machine_debug_refresh(machine == STD_NULL ? STD_NULL : machine->debug);
+    vm_machine_debug_refresh(machine == STD_NULL ? STD_NULL : &machine->debug);
 }
 
 static const vm_session_execution_context_callbacks vm_session_execution_callbacks = {
@@ -178,7 +178,7 @@ C_VOID vm_session_control_initialize(vm_session_control_state *control,
     vm_session_execution_context_bind_callbacks(
         &control->execution_context, &vm_session_execution_callbacks);
     vm_session_execution_context_activate(&control->execution_context);
-    vm_machine_debug_initialize(machine->debug,
+    vm_machine_debug_initialize(&machine->debug,
         core_machine_configuration_cpu_borrow(machine->core_machine),
         core_machine_configuration_cpu_instructions_borrow(machine->core_machine));
     vm_session_provider_lifecycle_initialize(machine);
@@ -192,14 +192,14 @@ C_VOID vm_session_control_finalize(vm_session_control_state *control,
     vm_session *machine) {
     if (control == STD_NULL || machine == STD_NULL) return;
     vm_session_execution_context_deactivate(&control->execution_context);
-    vm_machine_debug_finalize(machine->debug);
+    vm_machine_debug_finalize(&machine->debug);
     vm_session_provider_lifecycle_finalize(machine);
 }
 
 C_VOID vm_session_control_print_status(const vm_session_control_state *control) {
     STD_PRINTF("Recording: %s\n", control != STD_NULL &&
         control->execution_context.session != STD_NULL &&
-        control->execution_context.session->debug->
+        control->execution_context.session->debug.
             connect.recordFile ? "Yes" : "No");
     STD_PRINTF("Running:   %s\n", control != STD_NULL && STD_ATOMIC_LOAD(&control->flagRun) ?
         "Yes" : "No");

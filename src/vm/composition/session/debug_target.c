@@ -157,17 +157,17 @@ static uint32_t vm_debug_read_port(C_VOID *context, uint16_t port)
 static C_VOID vm_debug_write_port(C_VOID *context, uint16_t port, uint32_t value)
 { vm_session *machine = (vm_session *)context; if (machine != STD_NULL) core_machine_port_write(vm_debug_port(machine), port, value); }
 static C_VOID vm_debug_set_break_real(C_VOID *context, uint16_t seg, uint16_t off)
-{ vm_session *machine = (vm_session *)context; if (machine != STD_NULL) vm_machine_debug_set_breakpoint_real(machine->debug, seg, off); }
+{ vm_session *machine = (vm_session *)context; if (machine != STD_NULL) vm_machine_debug_set_breakpoint_real(&machine->debug, seg, off); }
 static C_VOID vm_debug_set_break_linear(C_VOID *context, uint32_t address)
-{ vm_session *machine = (vm_session *)context; if (machine != STD_NULL) vm_machine_debug_set_breakpoint_linear(machine->debug, address); }
+{ vm_session *machine = (vm_session *)context; if (machine != STD_NULL) vm_machine_debug_set_breakpoint_linear(&machine->debug, address); }
 static C_VOID vm_debug_clear_break(C_VOID *context, C_INT linear)
-{ vm_session *machine = (vm_session *)context; if (machine == STD_NULL) return; if (linear) vm_machine_debug_clear_breakpoint_linear(machine->debug); else vm_machine_debug_clear_breakpoint_real(machine->debug); }
+{ vm_session *machine = (vm_session *)context; if (machine == STD_NULL) return; if (linear) vm_machine_debug_clear_breakpoint_linear(&machine->debug); else vm_machine_debug_clear_breakpoint_real(&machine->debug); }
 static C_VOID vm_debug_set_trace(C_VOID *context, STD_SIZE_T count)
-{ vm_session *machine = (vm_session *)context; if (machine != STD_NULL) vm_machine_debug_set_trace(machine->debug, count); }
+{ vm_session *machine = (vm_session *)context; if (machine != STD_NULL) vm_machine_debug_set_trace(&machine->debug, count); }
 static C_VOID vm_debug_clear_trace(C_VOID *context)
-{ vm_session *machine = (vm_session *)context; if (machine != STD_NULL) vm_machine_debug_clear_trace(machine->debug); }
+{ vm_session *machine = (vm_session *)context; if (machine != STD_NULL) vm_machine_debug_clear_trace(&machine->debug); }
 static STD_SIZE_T vm_debug_break_count(C_VOID *context)
-{ vm_session *machine = (vm_session *)context; return machine == STD_NULL ? 0u : vm_machine_debug_get_breakpoint_count(machine->debug); }
+{ vm_session *machine = (vm_session *)context; return machine == STD_NULL ? 0u : vm_machine_debug_get_breakpoint_count(&machine->debug); }
 static C_VOID vm_debug_set_watch(C_VOID *context, core_product_debug_watch_kind kind, uint32_t address)
 {
     vm_session *machine = (vm_session *)context;
