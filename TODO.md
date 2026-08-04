@@ -23,6 +23,12 @@ import. `docs/planning/status.md` remains authoritative for active work.
 
 ## Current Architecture Closure
 
+- [x] **VM keyboard transport surface closure (`TODO(Medium)`, T202).**
+  T202 removed the test-only platform modifier enum/query callback and session
+  forwarding switch. Core keyboard-provider modifier observation is retained;
+  platform transport now carries only discrete guest keypress ingress and its
+  smoke. The T202 source gate prevents the façade from returning.
+
 - [x] **Host cancellation boundary convergence (`TODO(High)`, T201).**
   Windows F9 formerly reached session stop through keyboard transport, while
   Linux reported `STOP_REQUESTED` to the live run handle. T201 removed keyboard

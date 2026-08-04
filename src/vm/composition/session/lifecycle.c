@@ -46,31 +46,6 @@ static C_VOID vm_session_wait(C_VOID *context, uint32_t milliseconds)
     core_platform_sleep_milliseconds(milliseconds);
 }
 
-static C_INT vm_session_keyboard_get_modifier(
-    C_VOID *context, vm_platform_keyboard_modifier modifier)
-{
-    vm_session *machine =
-        (vm_session *)context;
-    switch (modifier) {
-    case VM_PLATFORM_KEYBOARD_MODIFIER_ALT:
-        return core_machine_keyboard_get_modifier_from(&machine->keyboard_provider,
-            CORE_MACHINE_KEYBOARD_MODIFIER_ALT);
-    case VM_PLATFORM_KEYBOARD_MODIFIER_CONTROL:
-        return core_machine_keyboard_get_modifier_from(&machine->keyboard_provider,
-            CORE_MACHINE_KEYBOARD_MODIFIER_CONTROL);
-    case VM_PLATFORM_KEYBOARD_MODIFIER_SHIFT:
-        return core_machine_keyboard_get_modifier_from(&machine->keyboard_provider,
-            CORE_MACHINE_KEYBOARD_MODIFIER_SHIFT);
-    case VM_PLATFORM_KEYBOARD_MODIFIER_CAPS_LOCK:
-        return core_machine_keyboard_get_modifier_from(&machine->keyboard_provider,
-            CORE_MACHINE_KEYBOARD_MODIFIER_CAPS_LOCK);
-    case VM_PLATFORM_KEYBOARD_MODIFIER_NUM_LOCK:
-        return core_machine_keyboard_get_modifier_from(&machine->keyboard_provider,
-            CORE_MACHINE_KEYBOARD_MODIFIER_NUM_LOCK);
-    }
-    return 0;
-}
-
 static C_VOID vm_session_keyboard_receive_key_press(C_VOID *context,
     uint16_t scan_code, uint16_t virtual_key)
 {
@@ -111,7 +86,6 @@ C_INT vm_session_bind_execution_provider(vm_session *machine)
 }
 
 static const vm_platform_keyboard_sink vm_session_keyboard_sink = {
-    vm_session_keyboard_get_modifier,
     vm_session_keyboard_receive_key_press
 };
 
