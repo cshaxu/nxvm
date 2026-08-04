@@ -380,9 +380,10 @@ adaptation are separate sources with retained grammar and selected-session
 behavior. Evidence: [`M5-T167.md`](../tracking/M5-T167.md), artifact
 `nxvm_0_5_0167.exe`.
 
-**M5 T168 S1 active:** close the remaining standard-library vocabulary and
-clarify the CMake relationship between core primitives and the core runtime;
-no product behavior changes.
+**M5 T168 S1 complete:** `STD_MEMMOVE` closes the VDM vocabulary gap, the
+contract document names actual APIs, and CMake exposes explicit primitive and
+runtime aliases for the one core executor. Evidence:
+[`M5-T168.md`](../tracking/M5-T168.md), artifact `nxvm_0_5_0168.exe`.
 
 The completed executor sequence is defined in
 [Facade And Executor Convergence](m5-facade-executor-convergence.md). The

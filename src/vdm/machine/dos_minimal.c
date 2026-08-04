@@ -45,7 +45,7 @@ static ntvdm64_status vdm_machine_dos_minimal_port_read_handler(
             return NTVDM64_STATUS_UNSUPPORTED;
         }
         *out_value = session->key_queue[0];
-        memmove(session->key_queue, session->key_queue + 1u,
+        STD_MEMMOVE(session->key_queue, session->key_queue + 1u,
                 --session->key_count);
         session->snapshot.keyboard_irq_pending =
             session->key_count != 0u;

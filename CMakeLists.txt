@@ -31,6 +31,9 @@ add_library(nxvm-core STATIC
     src/core/machine/presentation_interface.c
     src/core/machine/trace_interface.c
 )
+# This is the complete public core-machine runtime. It extends the primitive
+# storage/executor target below; it is not a second guest executor.
+add_library(ntvdm64-core-machine-runtime ALIAS nxvm-core)
 add_library(nxvm-core-machine-firmware STATIC src/core/machine/firmware.c)
 target_include_directories(nxvm-core-machine-firmware PUBLIC "${CMAKE_SOURCE_DIR}/src")
 target_link_libraries(nxvm-core-machine-firmware PUBLIC nxvm-core)
@@ -297,6 +300,9 @@ add_library(nxvm-core-machine STATIC
     ${NXVM_FOUNDATION_SOURCES}
     ${NXVM_MACHINE_CORE_SOURCES}
 )
+# CPU/RAM/port primitives used by the one runtime target above. The legacy
+# target name stays for existing build scripts; new CMake code uses this alias.
+add_library(ntvdm64-core-machine-primitives ALIAS nxvm-core-machine)
 target_include_directories(nxvm-core-machine PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
@@ -840,6 +846,7 @@ add_nxvm_version_artifact(nxvm-0-5-0164 "0.5.0164")
 add_nxvm_version_artifact(nxvm-0-5-0165 "0.5.0165")
 add_nxvm_version_artifact(nxvm-0-5-0166 "0.5.0166")
 add_nxvm_version_artifact(nxvm-0-5-0167 "0.5.0167")
+add_nxvm_version_artifact(nxvm-0-5-0168 "0.5.0168")
 
 option(NTVDM64_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
