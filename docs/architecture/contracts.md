@@ -9,11 +9,10 @@ observable behavior; planning documents do not define interfaces.
 
 ## Foundation
 
-`src/type.h` is the common system type header. It defines `nxvm_core_status`,
-retained NXVM numeric aliases such as `t_nubit8` and `t_bool`, fixed-width
-compatibility typedefs, common bit/constant helpers, and product-neutral
-legacy C-runtime and trace primitives. `src/type.c` owns their non-inline
-implementations.
+`src/type.h` is the common system type header. It defines `ntvdm64_status`,
+the `C_*` language aliases, `STD_*` C-library vocabulary, retained NXVM numeric
+aliases, common bit/constant helpers, and product-neutral legacy C-runtime and
+trace primitives. `src/type.c` owns their non-inline implementations.
 
 `src/version.h` and `src/version.c` are the only version and build-identity
 source. They provide product banner identity and build-time information. No
@@ -38,7 +37,7 @@ continues to define the semantics of those public contracts.
   only resources owned by that module and accepts `NULL`.
 - Inputs are borrowed unless an API explicitly registers or retains them.
   Outputs are copied into caller-provided storage or copied callback payloads.
-- `nxvm_core_status` distinguishes invalid arguments, invalid state,
+- `ntvdm64_status` distinguishes invalid arguments, invalid state,
   unsupported capability, no memory, and fault. It never carries product
   policy.
 - Callbacks state their thread, synchronization, ownership, and teardown rule.
@@ -199,7 +198,7 @@ such a translation when required, without weakening this boundary.
 CPU and memory mutation occurs only at an execution boundary. A debugger, DOS
 loader, firmware override, or root composition uses these APIs only after the
 current quantum has returned; `core/product` receives an adapted debug target,
-not a `CORE_MACHINE` handle.
+not a `core_machine` handle.
 
 ## Core Machine: Frozen Topology And Mutable Guest State
 
@@ -330,7 +329,7 @@ state remain in their respective product-form machine modules.
 VM or VDM root composition selects the views needed by its product, copies and
 combines them at an execution boundary, and adapts them to a product or
 platform contract. A platform receives only a platform frame and never a
-`CORE_MACHINE` handle, guest-memory pointer, DOS-private state, VM media
+`core_machine` handle, guest-memory pointer, DOS-private state, VM media
 controller state, or window policy. This permits debugger inspection and
 safe presentation refresh without turning core into a whole-product snapshot
 schema.
@@ -345,7 +344,7 @@ preserving the same refresh cycle.
 ## Core Platform: Host-Capability Boundary
 
 `core/platform` defines reusable host-capability, platform-event, and
-presentation-frame contracts. It has no `CORE_MACHINE` dependency and knows no
+presentation-frame contracts. It has no `core_machine` dependency and knows no
 DOS service, VM profile, CLI, debugger policy, product exit status, or window
 ownership decision.
 
@@ -449,7 +448,7 @@ sequence statement-for-statement before any later simplification; device code
 does not infer or alter the order. This is the path for moving lifecycle and
 host-start calls out of `vm/machine` without changing boot behavior.
 
-Composition alone translates `nxvm_core_status` and machine run results into
+Composition alone translates `ntvdm64_status` and machine run results into
 observable product behavior. VM may return to or pause its retained Console;
 VDM may produce a guest exit code, a cancellation result, or a CLI failure.
 Core and peer providers never make either decision.
@@ -488,7 +487,7 @@ composition turns a selected blueprint into a running session.
 ## Cross-Module: Resource, Failure, And Callback Rules
 
 Creation, registration, freeze, and reset failures return a factual
-`nxvm_core_status` synchronously. They leave no half-registered or half-frozen
+`ntvdm64_status` synchronously. They leave no half-registered or half-frozen
 object; callers still destroy every object whose creation succeeded. Runtime
 providers may continue normally, request a safe machine stop, or report a
 machine fault. They never exit a process, close a window, or interpret a

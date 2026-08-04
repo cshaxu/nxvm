@@ -282,6 +282,7 @@ C_VOID* STD_MALLOC(STD_SIZE_T _Size);
 C_VOID STD_FREE(C_VOID *_Memory);
 C_VOID* STD_MEMSET(C_VOID *_Dst, C_INT _Val, STD_SIZE_T _Size);
 C_VOID* STD_MEMCPY(C_VOID *_Dst, const C_VOID *_Src, STD_SIZE_T _Size);
+C_VOID* STD_MEMMOVE(C_VOID *_Dst, const C_VOID *_Src, STD_SIZE_T _Size);
 C_INT STD_MEMCMP(const C_VOID *_Buf1, const C_VOID *_Buf2, STD_SIZE_T _Size);
 C_VOID ntvdm64_type_string_lower(C_CHAR *str);
 

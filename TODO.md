@@ -47,21 +47,21 @@ import. `docs/planning/status.md` remains authoritative for active work.
   dynamic ownership; callers must use the embedded owner directly. Preserve
   the opaque `core_machine` owner, session lifecycle order, multi-session
   isolation, retained Console/debugger behavior, and FDD DOS-prompt evidence.
-- [ ] **Frozen-core API bypass (`TODO(High)`).** The public mutable
+- [x] **Frozen-core API bypass (`TODO(High)`).** The public mutable
   `core_machine_executor_*_borrow` surface can bypass the T160 configuration
   boundary. The retained `DEVICE ram` Console command reaches
   `core_machine_memory_allocate_for` through this route. Define a replacement
   configuration/reconstruction contract before changing it; also constrain
   direct CPU/diagnostic observation to a copied, synchronized boundary. T164
   closed the generic borrow and observation portions. T165 remains to route
-  `DEVICE ram` through stopped-session reconstruction; T166 then removes
+  `DEVICE ram` through stopped-session reconstruction; T166 removed
   machine-local default media paths.
-- [ ] **Default-session media policy (`TODO(High)`).** The NXVM session
+- [x] **Default-session media policy (`TODO(High)`).** The NXVM session
   factory must not commit machine-local image paths or silently select host
   media. Preserve explicit `DEVICE` media commands and define the approved
   no-media/default-fixture policy before removing the current paths.
-- [ ] **VM Console composition adapter (`TODO(Medium)`).**
-  `vm/composition/session/provider.c` combines session-factory callbacks and
+- [x] **VM Console composition adapter (`TODO(Medium)`).**
+  The former mixed provider combines session-factory callbacks and
   selected-session Console command adapters. Split it into accurately named
   source owners without changing Console grammar or selected-session semantics;
   remove the empty Console-provider initialize/finalize vtable callbacks.
@@ -70,11 +70,11 @@ import. `docs/planning/status.md` remains authoritative for active work.
   `core_product_wait_milliseconds()` without conversion or policy. Migrate
   callers/tests to the actual wait-scope contract, delete the alias, and retain
   explicit caller-owned wait scopes and their isolation smoke.
-- [ ] **Contract and vocabulary drift (`TODO(Medium)`).** Reconcile
+- [x] **Contract and vocabulary drift (`TODO(Medium)`).** Reconcile
   `docs/architecture/contracts.md` with actual lowercase C API names and
   current profile enums. Add the missing `STD_MEMMOVE` facade and remove the
   direct VDM `memmove` use in a bounded vocabulary task.
-- [ ] **CMake core target clarity (`TODO(Low)`).** `nxvm-core` and
+- [x] **CMake core target clarity (`TODO(Low)`).** `nxvm-core` and
   `nxvm-core-machine` together form one runtime core, not two guest executors;
   make their target names/dependency roles unambiguous in a build-only task.
 
