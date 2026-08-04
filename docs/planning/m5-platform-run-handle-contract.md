@@ -1,5 +1,14 @@
 # M5 Platform Run-Handle Contract
 
+## Status And Authority
+
+This is the normative M5 design and closure reference for a VM platform run.
+T138 defined the contract; T139 implemented the Win32 shape and T140 aligned
+the Linux Console source shape. The remaining ledger item is not permission to
+introduce another lifecycle model: it requires continuing evidence that every
+current or newly admitted backend obeys this contract. `TODO.md` links here for
+the exact remaining verification scope.
+
 ## Purpose
 
 `win32app`, `win32con`, and their Linux equivalents must not let a kernel or
@@ -51,29 +60,52 @@ No caller may invoke `vm_session_finalize` while a run handle is live. Failed
 thread creation follows the same cleanup order for every successfully created
 worker and renderer resource.
 
-## T138 Current-Owner Map
+## Historical T138 Baseline
 
-| Path | Current creator | Current worker behavior | Current join / destroyer | Required correction |
+The following table records the pre-T139 ownership problems that motivated the
+contract. It is historical evidence, not a description of the permitted
+current implementation.
+
+| Path | T138 creator | T138 worker behavior | T138 join / destroyer | T139/T140 correction |
 | --- | --- | --- | --- | --- |
 | `win32app` | `vm_platform_win32app_start_machine` heap-allocates `win32app_run_context`. | Kernel starts guest; display creates and destroys the window renderer, stops guest, clears the shared run context, and frees the shared run context. | No retained thread handles or outer joiner. | Move both thread handles and all shared state into the session-owned run handle; display only reports close/stop. |
 | `win32con` | `vm_platform_win32con_start_machine` heap-allocates `win32con_run_context`. | Kernel starts guest; display paints until stop. | Backend itself waits, closes thread handles, destroys renderer, frees context, and releases lease. | Let the run handle/lifecycle own join, teardown, and lease release; backend workers only report completion. |
 | `linuxcon` | `lnxcStartMachine` uses the embedded run context directly. | Both pthreads are detached; display finalizes curses and releases terminal lease. | No joiner; partial display-start failure releases the lease while detached kernel can still run. | Add handle-owned joinable pthreads; move curses/lease teardown to the outer destroyer. |
 | `vm_session_finalize` | Console target may call it directly. | It detaches providers and destroys session storage without a platform-run guard. | Session lifecycle is the current finalizer but cannot prove workers stopped. | Require run-handle stop/join/destroy before finalization. |
 
-## T138--T142 Sequence
+## Implemented T138--T142 Sequence
 
 | Task | Scope | Gate |
 | --- | --- | --- |
-| T138 | Approve this run-handle/lifetime contract and map current Win32/Linux owners. | design review; no code or artifact |
-| T139 | Implement Win32 handle creation, request-stop, join, and sole teardown owner. | Console/window lifecycle and FDD DOS-prompt gates |
-| T140 | Give Linux Console the equivalent contract and static-source checks. | source-level parity checks; native POSIX build deferred |
+| T138 | Define this run-handle/lifetime contract and map the former Win32/Linux owners. | Complete: design review; no artifact |
+| T139 | Implement Win32 handle creation, request-stop, join, and sole teardown owner. | Complete: Console/window lifecycle and FDD DOS-prompt gates |
+| T140 | Give Linux Console the equivalent contract and static-source checks. | Complete: source-level parity checks; native POSIX build deferred |
 | T141 | Make core machine own its standard executor and shared-device lifecycle. | core/VM/VDM lifecycle and boot gates |
 | T142 | Replace VM raw core alias maps with bounded composition/debug access. | two-session, debugger, Console, and FDD DOS-prompt gates |
 
 Historical M5 T137 already completed the former generic execution-context
 rename and move into `vm/composition`; it is not repeated in this sequence.
 
-## Task Exit Standards
+## Task Exit Standards And Continuing Closure
+
+The open ledger item is satisfied only when the following checks remain true
+for every supported backend. A future backend must complete this table before
+it is called supported; it may not invent a backend-local teardown sequence.
+
+| Concern | Required rule | Evidence / failure cases |
+| --- | --- | --- |
+| Handle ownership | The session creates one live run handle and is its only destroyer. A failed creation returns no live handle. | Inspect creator/destroyer paths; fail kernel creation, display creation, renderer/window initialization, and host-surface lease acquisition. |
+| Stop request | Console stop/exit, window close, guest completion/fault, and external cancellation reach one idempotent request-stop operation. | Repeat each initiator; a second request must observe the first operation rather than release or restart resources. |
+| Worker boundary | Kernel and display workers only report completion, guest result, or stop request. They never free the context, handle, renderer, lease, or session. | Source scan plus normal completion and close-window tests. |
+| Join barrier | The outer lifecycle waits for every successfully created worker before any shared context, renderer/window, lease, or session object is released. | Exercise partial startup failure, guest stop, window close, Console exit, and race-order completion. |
+| Finalization guard | Session finalize/destroy rejects or first completes a live handle; it cannot detach machine providers while a worker can observe them. | Attempt finalization during a live run and during a failed startup cleanup. |
+| Win32 proof | Win32 Console and window preserve existing NXVM Console, debugger, boot, and DOS-prompt behavior. | Focused lifecycle gates, two-session host-surface contention, and FDD DOS-prompt regression. |
+| Linux proof | Linux Console/window follows the same source shape and receives native POSIX compilation and runtime evidence before support is claimed. | Native compile, modifier/extended-key input probe, normal stop, close/cancel, and partial-start failure probe. |
+
+The current Windows GCC baseline is evidence for the implemented owner shape;
+it is not evidence that Linux runtime behavior has been validated. A failure in
+any row reopens the platform run-handle ledger item and must be repaired before
+new platform lifecycle features are admitted.
 
 ### T138: Run-Handle Design
 

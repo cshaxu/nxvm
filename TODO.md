@@ -86,11 +86,14 @@ import. `docs/planning/status.md` remains authoritative for active work.
 ### Platform, Product, And Session Boundaries
 
 - [ ] **Finish the explicit platform run-handle boundary.** The active M5
-  platform work must prove that the session-owned handle is the sole owner of
-  worker creation, stop request, join, backend destruction, and host-resource
-  release. Workers may report completion but never free session/shared state.
-  Windows Console/window and Linux Console/window variants need equivalent
-  owner maps and failure-path verification.
+  closure requirement is defined by
+  [`m5-platform-run-handle-contract.md`](docs/planning/m5-platform-run-handle-contract.md).
+  The session-owned handle is the sole owner of worker creation, stop request,
+  join, backend destruction, and host-resource release. The remaining work is
+  the contract's continuing verification matrix: one idempotent cancellation
+  path; no worker-side release; join before host/context/session release;
+  partial-start and finalization-race failures; retained Win32 lifecycle gates;
+  and native POSIX build/runtime proof before Linux support is claimed.
 - [ ] **Linux verification.** Retained Linux code is a portability asset, not
   validated support. Add native POSIX compile and runtime gates after the
   explicit-handle implementation is stable; preserve the Windows GCC baseline.
@@ -159,11 +162,54 @@ import. `docs/planning/status.md` remains authoritative for active work.
   with CGA graphics. Admit mapping windows, sequencer, graphics/attribute
   controller, DAC, and planar VRAM/latches as separate bounded work with real
   program probes.
-- [ ] **Hardware compatibility corpus.** Audit unproven PIC, DMA, CMOS,
-  FDC/FDD, HDC/HDD, timing, and chipset behavior with focused owned probes.
-  Promote a concrete incompatibility to its own ledger item only after a
-  reproducible port/device vector exists. Preserve full-PC boot and Console
-  regressions.
+- [ ] **PC/AT hardware completeness baseline.** The current machine is a
+  bootable, deliberately bounded PC/AT subset, not a Bochs-equivalent machine.
+  Bochs 2.6 may be used only as behavior/state-decomposition reference; its
+  source, plugin architecture, and broader device set are not an implementation
+  target or import source. Preserve full-PC boot, Console, debugger, and DOS
+  prompt regressions for every device task.
+
+  - **CPU/FPU:** CPU profiles gate 8086, 80186, 80286, and partial 80386
+    execution. Do not claim complete 80386 compatibility until protected-mode
+    control transfer, task-switch, descriptor, exception, paging, and I/O-map
+    behavior have owned instruction probes. `FPU=none` consumes legal ESC
+    encodings; present FPU profiles remain unavailable until state, operations,
+    exceptions, and `FWAIT` are implemented. The historical MS-DOS `MEM`
+    `FNINIT` `#UD` is bypassed, but `MEM` is not a complete CPU-correctness
+    acceptance claim.
+  - **Memory and I/O bus:** RAM has installed-range faults, A20, frozen mapping
+    registration, and stopped-only cold reconfiguration. Establish an explicit
+    PC memory-map admission before adding ROM/UMA/MMIO mappings. The port bus
+    has provider dispatch but no broad device-width, unmapped-I/O, or bus-timing
+    compatibility claim.
+  - **PIC/DMA:** dual 8259-style PIC and dual 8237-style DMA support the
+    current IRQ/DMA boot path, including FDC DMA channel 2. Audit IRQ
+    deassertion, edge/level behavior, priority/EOI modes, DMA channel modes,
+    masking, page/register edge cases, and memory-to-memory behavior with
+    focused port vectors before relying on them for new hardware.
+  - **PIT:** 8254 counter ports and read-back/status latches are covered.
+    Waveforms, GATE edges, BCD, count-zero, and modes 1/4/5 remain explicitly
+    unimplemented compatibility work.
+  - **KBC:** the bounded 8042 path covers `60h`/`64h`, FIFO, command byte,
+    IRQ1, A20/reset, and fixed set-1 make-code delivery to BIOS. Break bytes,
+    E0/E1 sequences, scan-set selection, translation, LED/typematic, AUX
+    mouse/IRQ12, timing, resend, and error behavior require separate probes.
+  - **Display:** VADP owns CGA-style text `B8000`, bounded CRTC state, text
+    ports, dirty generation, and copied text snapshots. CGA `320x200x4`, then
+    EGA/VGA register families, palettes, raster timing, planar VRAM/latches,
+    and VBE are separate admissions; graphics is currently unsupported.
+  - **CMOS/RTC:** VM CMOS currently supplies indexed `70h`/`71h` access,
+    checksum, BCD host-time refresh, and NMI-mask state. It lacks persistent
+    NVRAM, RTC periodic/update/alarm interrupts, full register semantics, and
+    deterministic time policy.
+  - **FDC/FDD:** the 8272A-style controller, DMA2/IRQ6 route, and in-memory
+    floppy images are sufficient for recorded boot. Validate command/result
+    state, disk-change/motor/data-rate behavior, non-DMA, media formats,
+    transfer timing, and error paths before broad floppy compatibility claims.
+  - **HDD:** the VM has an in-memory CHS image and firmware INT 13h path; it
+    does not implement an ATA/IDE/HDC port controller. Keep that distinction
+    explicit. Admit a real controller only with an approved profile, port/DMA
+    contract, and owned guest probes.
 - [ ] **CPU internal naming (`TODO(Low)`).** Rename legacy segment-descriptor
   fields to owner-consistent vocabulary only in a bounded compatibility task;
   preserve layout, CPU behavior, and debugger output.
@@ -227,6 +273,10 @@ import. `docs/planning/status.md` remains authoritative for active work.
   as bounded follow-ups.
 
 ## Verification, Build, And Governance
+
+The following open requirements use the [M5 closure checklist](docs/planning/m5-closure-checklist.md)
+as their single operational evidence index. `RULES.md` and the execution policy
+remain the rule authorities.
 
 - [ ] **Keep build gates truthful.** CMake presets, target names, smoke gates,
   task versions, artifacts, and verification records must describe the current
