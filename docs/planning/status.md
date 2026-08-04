@@ -471,6 +471,10 @@ the retained Console lifecycle gate passes. Artifact: `nxvm_0_5_0185.exe`.
 wait-scope dispatch API; wait scope and retained Console lifecycle gates pass.
 Artifact: `nxvm_0_5_0186.exe`.
 
+**M5 T187 S1 complete: bounded Win32 window startup.** Startup state uses
+interlocked access and display readiness is bounded; run-handle and multi-window
+gates pass. Artifact: `nxvm_0_5_0187.exe`.
+
 The completed executor sequence is defined in
 [Facade And Executor Convergence](m5-facade-executor-convergence.md). The
 active session-readiness sequence is defined in
