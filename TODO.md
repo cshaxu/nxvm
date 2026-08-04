@@ -144,12 +144,21 @@ import. `docs/planning/status.md` remains authoritative for active work.
   source parity, but native POSIX compilation and keyboard runtime behavior
   (especially modifiers and extended keys) need an owned POSIX-environment
   probe before claiming support.
-- [ ] **Video-adapter capability (`TODO(Medium)`).** T193 decomposes this into
-  CGA text-controller design (S1), text migration (S2), and separately admitted
-  graphics review (S3). The first slice is CRTC `0x3d4`/`0x3d5`, mode `0x3d8`,
-  color `0x3d9`, status `0x3da`, B8000 mapping, dirty generation, and copied
-  text scanout. QDCGA is firmware, not the controller. CGA `320x200x4` is the
-  first possible graphics admission; EGA/VGA remain separate later work.
+- [x] **CGA text-controller slice (`TODO(Medium)`).** T193 moved CRTC
+  `0x3d4`/`0x3d5` text indexes `0x0a`--`0x0f`, `0x3d8` text mode, `0x3d9`
+  color, stable `0x3da`, B8000 visible-window capture, dirty generation, and
+  copied text scanout into core VADP. QDCGA remains INT 10h/BDA firmware; no
+  profile VADP alias or platform guest-memory access remains.
+- [ ] **CGA `320x200x4` graphics admission (`TODO(Medium)`).** T193 S3
+  deliberately defers graphics: define B8000 graphics addressing and scanline
+  layout, exact `0x3d8`/`0x3d9` mode/color/palette behavior, a copied pixel
+  scanout payload, port/memory/frame probes, and one owned DOS graphics
+  fixture before implementation. The current text slice keeps graphics-select
+  writes inert and text configuration rejects graphics modes.
+- [ ] **EGA/VGA register-family admission (`TODO(Medium)`).** Do not merge it
+  with CGA graphics. Admit mapping windows, sequencer, graphics/attribute
+  controller, DAC, and planar VRAM/latches as separate bounded work with real
+  program probes.
 - [ ] **Hardware compatibility corpus.** Audit unproven PIC, DMA, CMOS,
   FDC/FDD, HDC/HDD, timing, and chipset behavior with focused owned probes.
   Promote a concrete incompatibility to its own ledger item only after a

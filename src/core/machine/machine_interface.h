@@ -107,6 +107,9 @@ type_status core_machine_request_stop(core_machine *machine);
 type_status core_machine_keyboard_submit_scan_code(core_machine *machine,
     uint8_t scan_code);
 
+type_status core_machine_capture_display_snapshot(const core_machine *machine,
+    core_machine_display_snapshot *out_snapshot);
+
 type_status core_machine_report_fault(
     core_machine *machine,
     uint32_t detail);
@@ -127,7 +130,6 @@ t_latch *core_machine_configuration_shared_dma_latch_borrow(core_machine *machin
 t_dma *core_machine_configuration_shared_dma_primary_borrow(core_machine *machine);
 t_dma *core_machine_configuration_shared_dma_secondary_borrow(core_machine *machine);
 t_kbc *core_machine_configuration_shared_kbc_borrow(core_machine *machine);
-t_vadp *core_machine_configuration_shared_vadp_borrow(core_machine *machine);
 
 type_status core_machine_profile_binding_initialize(
     core_machine *machine, core_machine_profile_binding *binding);
@@ -135,6 +137,15 @@ t_ram *core_machine_profile_binding_memory(
     const core_machine_profile_binding *binding);
 core_machine_cpu_execution_context *core_machine_profile_binding_execution(
     const core_machine_profile_binding *binding);
+type_status core_machine_profile_binding_configure_text_video(
+    const core_machine_profile_binding *binding, uint8_t mode, uint16_t columns,
+    uint16_t rows, C_INT color_enabled);
+C_VOID core_machine_profile_binding_set_video_cursor_shape(
+    const core_machine_profile_binding *binding, uint8_t top, uint8_t bottom);
+C_VOID core_machine_profile_binding_set_video_cursor_address(
+    const core_machine_profile_binding *binding, uint16_t address);
+C_VOID core_machine_profile_binding_set_video_display_start(
+    const core_machine_profile_binding *binding, uint16_t address);
 
 type_status core_machine_capture_observation(
     const core_machine *machine, core_machine_observation *out_observation);

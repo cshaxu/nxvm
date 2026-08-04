@@ -18,9 +18,9 @@ M5 has preserved the bootable NXVM Console, debugger, boot sequence, and FDD
 fixture behavior while moving the whole-PC execution path into the documented
 `core/` and `vm/` ownership model.
 
-**Current active subtask:** M5 T193 S1, the VADP CGA text-controller contract.
-Historical paragraphs below may describe the active state of
-their own completed sequence; they do not supersede this marker.
+**Current active subtask:** none. M5 T191--T193 device slices are complete;
+the next implementation subtask requires explicit activation. Historical
+paragraphs below describe their own completed sequence.
 
 **M5 T150 complete:** NXVM shared product-session management is closed. The
 manager atomically establishes session 0, the final session cannot close, and
@@ -505,10 +505,15 @@ platform events cross the execution boundary, the default profile maps them to
 set-1 make bytes, and QDKEYB INT 09h consumes `0x60` before INT 16h reads BDA.
 The full GCC gate, focused route smoke, retained DOS keyboard, FDD/HDD session,
 two-session, Console, and `nxvm_0_5_0192.exe` evidence passed. Deferred 8042
-and POSIX work is in `TODO.md`. **M5 T193 S1 active:** define the owned CGA
-text-controller contract. The approved device sequence, state-owner constraints,
-implementation exits, and retained regressions are in
-[`m5-pc-compatible-device-plan.md`](m5-pc-compatible-device-plan.md).
+and POSIX work is in `TODO.md`. **M5 T193 complete:** VADP owns the bounded
+CGA text-controller slice and copied snapshot; QDCGA retains only INT 10h/BDA
+policy; platform remains guest-memory-free. CRTC/mode/color/status/B8000,
+mailbox/mode, retained Console, FDD/HDD session, DOS prompt/keyboard, and
+`nxvm_0_5_0193.exe` checks pass. CGA graphics is explicitly deferred to its
+owned `TODO.md` admission; EGA/VGA remain separate later decisions. The
+sequence and evidence are in
+[`m5-pc-compatible-device-plan.md`](m5-pc-compatible-device-plan.md) and
+[`M5-T193.md`](../tracking/M5-T193.md).
 
 The completed executor sequence is defined in
 [Facade And Executor Convergence](m5-facade-executor-convergence.md). The

@@ -5,9 +5,7 @@
 #include "type.h"
 
 #include "core/machine/cpu.h"
-#include "core/machine/display_interface.h"
 #include "core/machine/memory.h"
-#include "core/machine/vadp.h"
 
 #include "vm/profile/default_profile/firmware/context.h"
 #include "vm/profile/default_profile/firmware/qdcga.h"
@@ -23,9 +21,9 @@
 #define QDCGA_BDA_PAGE 0x0462u
 #define QDCGA_TEXT_BASE 0x000b8000u
 #define QDCGA_MAX_PAGES 8u
+#define QDCGA_TEXT_ROWS 25u
 
 #define profile_cpu (*vm_profile_default_context_execution(profile)->cpu)
-#define profile_vadp (*profile->vadp)
 
 static uint8_t qdcga_read8(vm_profile_default_context *profile, uint32_t address)
 {
@@ -67,6 +65,18 @@ static uint16_t qdcga_page_size(vm_profile_default_context *profile)
     return qdcga_read16(profile, QDCGA_BDA_PAGE_SIZE);
 }
 
+static uint16_t qdcga_rows(C_VOID)
+{
+    return QDCGA_TEXT_ROWS;
+}
+
+static uint16_t qdcga_cursor_address(vm_profile_default_context *profile,
+    uint8_t page, uint8_t row, uint8_t column)
+{
+    return (uint16_t)((uint32_t)page * qdcga_page_size(profile) / 2u +
+        (uint32_t)row * qdcga_columns(profile) + column);
+}
+
 static uint32_t qdcga_cell_address(vm_profile_default_context *profile,
     uint8_t page, uint16_t row, uint16_t column)
 {
@@ -89,6 +99,8 @@ static C_VOID qdcga_set_cursor(vm_profile_default_context *profile, uint8_t page
 {
     qdcga_write8(profile, QDCGA_BDA_CURSOR + (uint32_t)page * 2u, column);
     qdcga_write8(profile, QDCGA_BDA_CURSOR + (uint32_t)page * 2u + 1u, row);
+    core_machine_profile_binding_set_video_cursor_address(&profile->binding,
+        qdcga_cursor_address(profile, page, row, column));
 }
 
 static C_VOID qdcga_clear_page(vm_profile_default_context *profile, uint8_t page)
@@ -96,7 +108,7 @@ static C_VOID qdcga_clear_page(vm_profile_default_context *profile, uint8_t page
     uint16_t row;
     uint16_t column;
 
-    for (row = 0u; row < profile_vadp.data.colSize; ++row) {
+    for (row = 0u; row < qdcga_rows(); ++row) {
         for (column = 0u; column < qdcga_columns(profile); ++column) {
             uint32_t address = qdcga_cell_address(profile, page, row, column);
             qdcga_write8(profile, address, 0u);
@@ -105,48 +117,12 @@ static C_VOID qdcga_clear_page(vm_profile_default_context *profile, uint8_t page
     }
 }
 
-static C_INT qdcga_display_buffer_changed(vm_profile_default_context *profile)
-{
-    C_UCHAR snapshot[CORE_MACHINE_DISPLAY_MAX_COLUMNS *
-        CORE_MACHINE_DISPLAY_MAX_ROWS * 2u];
-    STD_SIZE_T size = (STD_SIZE_T)qdcga_columns(profile) *
-        profile_vadp.data.colSize * 2u;
-
-    if (size > sizeof(snapshot) || core_machine_memory_read_physical(vm_profile_default_context_memory(profile),
-            QDCGA_TEXT_BASE, (type_virtual_address)snapshot, size) !=
-            TYPE_STATUS_OK) return TYPE_FALSE;
-    if (STD_MEMCMP((C_VOID *)profile_vadp.data.bufcomp, snapshot, size) == 0) {
-        return TYPE_FALSE;
-    }
-    STD_MEMCPY((C_VOID *)profile_vadp.data.bufcomp, snapshot, size);
-    return TYPE_TRUE;
-}
-
-static C_INT qdcga_display_cursor_changed(vm_profile_default_context *profile,
-    uint8_t page)
-{
-    uint8_t row = qdcga_cursor_row(profile, page);
-    uint8_t column = qdcga_cursor_column(profile, page);
-    uint8_t top = qdcga_read8(profile, QDCGA_BDA_CURSOR_TOP);
-    uint8_t bottom = qdcga_read8(profile, QDCGA_BDA_CURSOR_BOTTOM);
-
-    if (profile_vadp.data.oldCurPosX == row &&
-        profile_vadp.data.oldCurPosY == column &&
-        profile_vadp.data.oldCurTop == top &&
-        profile_vadp.data.oldCurBottom == bottom) return TYPE_FALSE;
-    profile_vadp.data.oldCurPosX = row;
-    profile_vadp.data.oldCurPosY = column;
-    profile_vadp.data.oldCurTop = top;
-    profile_vadp.data.oldCurBottom = bottom;
-    return TYPE_TRUE;
-}
-
 static C_VOID qdcga_scroll_up(vm_profile_default_context *profile, uint8_t page)
 {
     uint16_t row;
     uint16_t column;
 
-    for (row = 1u; row < profile_vadp.data.colSize; ++row) {
+    for (row = 1u; row < qdcga_rows(); ++row) {
         for (column = 0u; column < qdcga_columns(profile); ++column) {
             uint32_t destination = qdcga_cell_address(profile, page, row - 1u, column);
             uint32_t source = qdcga_cell_address(profile, page, row, column);
@@ -156,7 +132,7 @@ static C_VOID qdcga_scroll_up(vm_profile_default_context *profile, uint8_t page)
     }
     for (column = 0u; column < qdcga_columns(profile); ++column) {
         uint32_t address = qdcga_cell_address(profile, page,
-            profile_vadp.data.colSize - 1u, column);
+            qdcga_rows() - 1u, column);
         qdcga_write8(profile, address, 0u);
         qdcga_write8(profile, address + 1u, 0u);
     }
@@ -177,7 +153,7 @@ static C_VOID qdcga_put_character(vm_profile_default_context *profile, uint8_t v
             column = (uint8_t)(qdcga_columns(profile) - 1u);
         }
     } else if (value == 0x0au) {
-        if (row + 1u < profile_vadp.data.colSize) ++row;
+        if (row + 1u < qdcga_rows()) ++row;
         else qdcga_scroll_up(profile, page);
     } else if (value == 0x0du) {
         column = 0u;
@@ -188,7 +164,7 @@ static C_VOID qdcga_put_character(vm_profile_default_context *profile, uint8_t v
         if (column + 1u < qdcga_columns(profile)) ++column;
         else {
             column = 0u;
-            if (row + 1u < profile_vadp.data.colSize) ++row;
+            if (row + 1u < qdcga_rows()) ++row;
             else qdcga_scroll_up(profile, page);
         }
     }
@@ -201,13 +177,18 @@ static C_VOID qdcga_set_mode(vm_profile_default_context *profile)
     uint8_t mode = profile_cpu.data.al;
     uint16_t columns = mode == 0u || mode == 1u ? 40u : 80u;
 
+    if (core_machine_profile_binding_configure_text_video(&profile->binding,
+            mode, columns, qdcga_rows(), mode != 0u && mode != 2u) !=
+        TYPE_STATUS_OK) {
+        return;
+    }
+
     qdcga_write8(profile, QDCGA_BDA_MODE, mode);
     qdcga_write8(profile, QDCGA_BDA_PAGE, 0u);
     qdcga_write16(profile, QDCGA_BDA_PAGE_OFFSET, 0u);
     qdcga_write16(profile, QDCGA_BDA_COLUMNS, columns);
-    qdcga_write16(profile, QDCGA_BDA_PAGE_SIZE, columns * profile_vadp.data.colSize * 2u);
-    profile_vadp.data.colSize = 25u;
-    profile_vadp.data.flagColor = mode != 0u && mode != 2u && mode != 7u;
+    qdcga_write16(profile, QDCGA_BDA_PAGE_SIZE, columns * qdcga_rows() * 2u);
+    core_machine_profile_binding_set_video_display_start(&profile->binding, 0u);
     qdcga_set_cursor(profile, 0u, 0u, 0u);
     qdcga_clear_page(profile, 0u);
     core_machine_display_notify_mode_changed_to(profile->display_provider);
@@ -223,6 +204,8 @@ static C_VOID qdcga_int10(vm_profile_default_context *profile)
     case 0x01u:
         qdcga_write8(profile, QDCGA_BDA_CURSOR_TOP, profile_cpu.data.ch);
         qdcga_write8(profile, QDCGA_BDA_CURSOR_BOTTOM, profile_cpu.data.cl);
+        core_machine_profile_binding_set_video_cursor_shape(&profile->binding,
+            profile_cpu.data.ch, profile_cpu.data.cl);
         break;
     case 0x02u: qdcga_set_cursor(profile, page, profile_cpu.data.dh, profile_cpu.data.dl); break;
     case 0x03u:
@@ -235,6 +218,8 @@ static C_VOID qdcga_int10(vm_profile_default_context *profile)
         qdcga_write8(profile, QDCGA_BDA_PAGE, profile_cpu.data.al);
         qdcga_write16(profile, QDCGA_BDA_PAGE_OFFSET,
             (uint16_t)(profile_cpu.data.al * qdcga_page_size(profile)));
+        core_machine_profile_binding_set_video_display_start(&profile->binding,
+            (uint16_t)((uint32_t)profile_cpu.data.al * qdcga_page_size(profile) / 2u));
         break;
     case 0x06u:
     case 0x07u:
@@ -267,7 +252,7 @@ static C_VOID qdcga_int10(vm_profile_default_context *profile)
             profile_cpu.data.bp = qdcga_read16(profile, vector);
             profile_cpu.data.es.selector = qdcga_read16(profile, vector + 2u);
             profile_cpu.data.cx = 0x0010u;
-            profile_cpu.data.dl = profile_vadp.data.colSize - 1u;
+            profile_cpu.data.dl = (uint8_t)(qdcga_rows() - 1u);
         }
         break;
     case 0x12u:
@@ -305,53 +290,18 @@ C_VOID vm_profile_default_cga_initialize(t_qdx *qdx)
 
 C_VOID vm_profile_default_cga_reset(vm_profile_default_context *profile)
 {
-    profile_vadp.data.colSize = 25u;
-    profile_vadp.data.flagColor = TYPE_TRUE;
-    profile_vadp.data.oldCurPosX = 0u;
-    profile_vadp.data.oldCurPosY = 0u;
-    profile_vadp.data.oldCurTop = 0u;
-    profile_vadp.data.oldCurBottom = 0u;
+    if (profile == STD_NULL || core_machine_profile_binding_configure_text_video(
+            &profile->binding, 3u, 80u, qdcga_rows(), TYPE_TRUE) != TYPE_STATUS_OK) {
+        return;
+    }
     qdcga_write16(profile, QDCGA_BDA_COLUMNS, 80u);
     qdcga_write16(profile, QDCGA_BDA_PAGE_SIZE, 0x1000u);
     qdcga_write8(profile, QDCGA_BDA_PAGE, 0u);
     qdcga_write8(profile, QDCGA_BDA_MODE, 3u);
     qdcga_write8(profile, QDCGA_BDA_CURSOR_TOP, 6u);
     qdcga_write8(profile, QDCGA_BDA_CURSOR_BOTTOM, 7u);
+    core_machine_profile_binding_set_video_cursor_shape(&profile->binding, 6u, 7u);
+    core_machine_profile_binding_set_video_display_start(&profile->binding, 0u);
     qdcga_set_cursor(profile, 0u, 5u, 0u);
 }
-
-C_INT vm_profile_default_display_capture(C_VOID *context,
-    core_machine_display_snapshot *out_snapshot)
-{
-    vm_profile_default_context *profile = context;
-    uint16_t row;
-    uint16_t column;
-    uint8_t page;
-
-    if (profile == STD_NULL || out_snapshot == STD_NULL) return TYPE_FALSE;
-    page = qdcga_read8(profile, QDCGA_BDA_PAGE);
-    out_snapshot->columns = qdcga_columns(profile);
-    out_snapshot->rows = profile_vadp.data.colSize;
-    out_snapshot->cursor_top = qdcga_read8(profile, QDCGA_BDA_CURSOR_TOP);
-    out_snapshot->cursor_bottom = qdcga_read8(profile, QDCGA_BDA_CURSOR_BOTTOM);
-    out_snapshot->cursor_x = qdcga_cursor_row(profile, page);
-    out_snapshot->cursor_y = qdcga_cursor_column(profile, page);
-    out_snapshot->cursor_visible = out_snapshot->cursor_top < out_snapshot->cursor_bottom;
-    out_snapshot->buffer_changed = qdcga_display_buffer_changed(profile);
-    out_snapshot->cursor_changed = qdcga_display_cursor_changed(profile, page);
-    if (!out_snapshot->buffer_changed && !out_snapshot->cursor_changed) {
-        return TYPE_TRUE;
-    }
-    for (row = 0u; row < out_snapshot->rows; ++row) {
-        for (column = 0u; column < out_snapshot->columns; ++column) {
-            uint16_t index = row * CORE_MACHINE_DISPLAY_MAX_COLUMNS + column;
-            uint32_t address = qdcga_cell_address(profile, page, row, column);
-            out_snapshot->characters[index] = qdcga_read8(profile, address);
-            out_snapshot->attributes[index] = qdcga_read8(profile, address + 1u);
-        }
-    }
-    return TYPE_TRUE;
-}
-
 #undef profile_cpu
-#undef profile_vadp

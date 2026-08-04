@@ -21,11 +21,11 @@ it.
   platform-event -> default-profile mapper -> KBC -> QDKEYB INT 09h -> BDA ->
   INT 16h route. Break/extended bytes, scan-set switching, translation, AUX,
   IRQ12, and timing remain deferred.
-- `core/machine/vadp.*` currently owns resettable shared video state only.
-  Default-profile QDCGA implements INT 10h text services and the current text
-  snapshot derives from BDA and `0xb8000`; it is not yet a hardware CGA text
-  controller. T193 moves that controller truth into VADP without treating a
-  text snapshot as graphics support.
+- `core/machine/vadp.*` owns T193's CGA text slice: CRTC text state, text-mode
+  and color registers, stable no-raster status, B8000 visible-window capture,
+  dirty generation, and copied text snapshots. Default-profile QDCGA owns INT
+  10h/BDA policy only. CGA graphics remains unsupported and separately
+  admitted.
 - `core_machine` remains the sole owner of PIT/KBC/VADP storage and lifecycle.
   VM composition may bind profile providers and host transports, but may not
   create a second device, reset it directly, or retain mutable aliases.
@@ -286,11 +286,11 @@ controller or a second snapshot owner.
 (cursor shape), `0x0c`/`0x0d` (display start address/page), and `0x0e`/`0x0f`
 (cursor location). It fixes the `0x3d8` text-mode bits required by the existing
 mode set, and declares other CRTC indexes and graphics interpretations
-unsupported/inert. `0x3da` returns a documented stable text-slice status; it
-does not claim raster timing. A B8000 text write, CRTC/mode/color register
-write, or QDCGA mode/cursor/page operation advances the same VADP dirty
-generation. Snapshot capture copies that state and visible text cells; it
-cannot retain guest VRAM.
+unsupported/inert. `0x3da` returns stable `0x00`, matching the retained
+no-raster baseline; it does not claim retrace or raster timing. A B8000 text
+write, CRTC/mode/color register write, or QDCGA mode/cursor/page operation
+advances the same VADP dirty generation. Snapshot capture copies that state
+and visible text cells; it cannot retain guest VRAM.
 
 **Boundary:** VADP is a bounded text-only video core, not a renderer.
 Composition alone translates its copied snapshot into a `core_platform` frame.

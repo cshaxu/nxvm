@@ -95,7 +95,6 @@ C_VOID vm_session_storage_initialize(vm_session *machine)
     t_ram *memory;
     t_pic *pic_master;
     t_pic *pic_slave;
-    t_vadp *vadp;
     core_machine_profile_binding profile_binding;
 
     if (machine == STD_NULL || machine->core_machine != STD_NULL) return;
@@ -113,7 +112,6 @@ C_VOID vm_session_storage_initialize(vm_session *machine)
     pic_slave = core_machine_configuration_shared_pic_slave_borrow(machine->core_machine);
     core_machine_cpu_execution_context_bind_pic(execution,
         pic_master, pic_slave);
-    vadp = core_machine_configuration_shared_vadp_borrow(machine->core_machine);
     if (core_machine_profile_binding_initialize(machine->core_machine,
             &profile_binding) != TYPE_STATUS_OK) {
         core_machine_destroy(machine->core_machine);
@@ -122,7 +120,7 @@ C_VOID vm_session_storage_initialize(vm_session *machine)
     }
     vm_profile_default_context_initialize(&machine->default_profile_context,
         &machine->default_bios, &machine->default_qdx, profile_binding,
-        vadp, STD_NULL, STD_NULL);
+        STD_NULL, STD_NULL);
     core_machine_cpu_execution_context_bind_extension(execution,
         &machine->default_profile_context);
     core_machine_block_provider_slot_initialize(&machine->block_provider);

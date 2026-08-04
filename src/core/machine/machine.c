@@ -163,6 +163,56 @@ core_machine_cpu_execution_context *core_machine_profile_binding_execution(
         &binding->machine->executor_cpu_execution;
 }
 
+type_status core_machine_profile_binding_configure_text_video(
+    const core_machine_profile_binding *binding, uint8_t mode, uint16_t columns,
+    uint16_t rows, C_INT color_enabled)
+{
+    return binding == STD_NULL || binding->machine == STD_NULL ?
+        TYPE_STATUS_INVALID_ARGUMENT : core_machine_vadp_configure_text(
+            &binding->machine->shared_vadp, mode, columns, rows, color_enabled);
+}
+
+C_VOID core_machine_profile_binding_set_video_cursor_shape(
+    const core_machine_profile_binding *binding, uint8_t top, uint8_t bottom)
+{
+    if (binding != STD_NULL && binding->machine != STD_NULL) {
+        core_machine_vadp_set_cursor_shape(&binding->machine->shared_vadp, top, bottom);
+    }
+}
+
+C_VOID core_machine_profile_binding_set_video_cursor_address(
+    const core_machine_profile_binding *binding, uint16_t address)
+{
+    if (binding != STD_NULL && binding->machine != STD_NULL) {
+        core_machine_vadp_set_cursor_address(&binding->machine->shared_vadp, address);
+    }
+}
+
+C_VOID core_machine_profile_binding_set_video_display_start(
+    const core_machine_profile_binding *binding, uint16_t address)
+{
+    if (binding != STD_NULL && binding->machine != STD_NULL) {
+        core_machine_vadp_set_display_start(&binding->machine->shared_vadp, address);
+    }
+}
+
+type_status core_machine_capture_display_snapshot(const core_machine *machine,
+    core_machine_display_snapshot *out_snapshot)
+{
+    core_machine *mutable_machine = (core_machine *)machine;
+
+    if (machine == STD_NULL || out_snapshot == STD_NULL) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    if (machine->lifecycle != CORE_MACHINE_STOPPED &&
+        machine->lifecycle != CORE_MACHINE_PAUSED) {
+        return TYPE_STATUS_INVALID_STATE;
+    }
+    return core_machine_vadp_capture_text_snapshot(&mutable_machine->shared_vadp,
+        &mutable_machine->executor_memory, out_snapshot) ? TYPE_STATUS_OK :
+        TYPE_STATUS_UNSUPPORTED;
+}
+
 t_port *core_machine_configuration_port_borrow(core_machine *machine)
 { return core_machine_configuration_is_open(machine) ? &machine->executor_port : STD_NULL; }
 
@@ -180,9 +230,6 @@ t_dma *core_machine_configuration_shared_dma_secondary_borrow(core_machine *mach
 { return core_machine_configuration_is_open(machine) ? &machine->shared_dma_secondary : STD_NULL; }
 t_kbc *core_machine_configuration_shared_kbc_borrow(core_machine *machine)
 { return core_machine_configuration_is_open(machine) ? &machine->shared_kbc : STD_NULL; }
-t_vadp *core_machine_configuration_shared_vadp_borrow(core_machine *machine)
-{ return core_machine_configuration_is_open(machine) ? &machine->shared_vadp : STD_NULL; }
-
 type_status core_machine_bind_execution_provider(core_machine *machine,
     const core_machine_execution_provider *provider, C_VOID *context)
 {
@@ -342,7 +389,7 @@ type_status core_machine_create(
     }
     core_machine_memory_register_ports(&machine->executor_memory,
         &machine->executor_port);
-    core_machine_vadp_initialize(&machine->shared_vadp);
+    core_machine_vadp_initialize(&machine->shared_vadp, &machine->executor_port);
     core_machine_kbc_initialize(&machine->shared_kbc, &machine->executor_port);
     core_machine_dma_initialize(&machine->shared_dma_latch,
         &machine->shared_dma_primary, &machine->shared_dma_secondary,
@@ -515,7 +562,7 @@ type_status core_machine_run(
                     machine->execution_provider_context);
             }
             core_machine_kbc_refresh(&machine->shared_kbc);
-            core_machine_vadp_refresh(&machine->shared_vadp);
+            core_machine_vadp_refresh(&machine->shared_vadp, &machine->executor_memory);
             core_machine_dma_refresh(&machine->shared_dma_latch,
                 &machine->shared_dma_primary, &machine->shared_dma_secondary,
                 &machine->executor_memory);

@@ -10,9 +10,14 @@
 
 #include "vm/composition/session/session.h"
 
-#include "vm/profile/default_profile/firmware/qdcga.h"
+static C_INT vm_session_capture_display_snapshot(C_VOID *context,
+    core_machine_display_snapshot *out_snapshot)
+{
+    vm_session *session = (vm_session *)context;
 
-
+    return session != STD_NULL && core_machine_capture_display_snapshot(
+        session->core_machine, out_snapshot) == TYPE_STATUS_OK;
+}
 
 C_VOID vm_session_publish_display(vm_session *machine,
     C_INT force)
@@ -74,6 +79,6 @@ C_VOID vm_session_bind_display(vm_session *machine)
     if (machine == STD_NULL) return;
     core_machine_display_provider_slot_bind(&machine->display_provider,
         machine, vmCompositionDisplayModeChanged,
-        &machine->default_profile_context, vm_profile_default_display_capture);
+        machine, vm_session_capture_display_snapshot);
     core_machine_display_provider_slot_freeze(&machine->display_provider);
 }
