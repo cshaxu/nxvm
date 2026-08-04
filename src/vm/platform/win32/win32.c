@@ -43,11 +43,8 @@ static uint32_t vm_platform_win32_keyboard_get_toggle_state(C_VOID)
 C_VOID vm_platform_win32_keyboard_make_status_for(const vm_platform_run_context *context) {
     uint32_t asynchronous_keys = vm_platform_win32_keyboard_get_async_state();
     uint32_t toggle_keys = vm_platform_win32_keyboard_get_toggle_state();
-    vm_platform_keyboard_state_sink state_sink = context == STD_NULL ? STD_NULL :
-        context->keyboard_state_sink;
-    C_VOID *state_context = context == STD_NULL ? STD_NULL : context->keyboard_state_context;
 
-    if (state_sink != STD_NULL) (C_VOID)state_sink(state_context,
+    (C_VOID)vm_platform_run_context_submit_keyboard_state(context,
         asynchronous_keys, toggle_keys);
 }
 C_VOID vm_platform_win32_keyboard_make_key_for(

@@ -56,6 +56,17 @@ C_VOID vm_platform_run_context_bind_keyboard_state(
     context->keyboard_state_context = sink_context;
 }
 
+C_INT vm_platform_run_context_submit_keyboard_state(
+    const vm_platform_run_context *context, uint32_t asynchronous_keys,
+    uint32_t toggle_keys)
+{
+    if (context == STD_NULL || context->keyboard_state_sink == STD_NULL) {
+        return TYPE_STATUS_INVALID_STATE;
+    }
+    return context->keyboard_state_sink(context->keyboard_state_context,
+        asynchronous_keys, toggle_keys);
+}
+
 C_VOID vm_platform_run_handle_initialize(vm_platform_run_handle *handle)
 {
     if (handle != STD_NULL) {

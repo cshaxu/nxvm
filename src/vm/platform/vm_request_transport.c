@@ -29,28 +29,41 @@ C_VOID vm_platform_request_transport_initialize(
     vm_platform_request_bridge_initialize(&transport->ingress);
 }
 
-static type_status vm_platform_request_transport_enqueue(
+type_status vm_platform_request_transport_enqueue_ingress(
     vm_platform_request_transport *transport,
-    vm_platform_request_bridge *bridge,
     const vm_platform_request *request)
 {
     type_status status;
+    STD_SIZE_T tail;
 
     if (transport == STD_NULL || request == STD_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-
     vm_platform_request_transport_lock(transport);
-    status = transport->accepting
-        ? vm_platform_request_bridge_enqueue(bridge, request)
-        : TYPE_STATUS_INVALID_STATE;
+    if (!transport->accepting) {
+        status = TYPE_STATUS_INVALID_STATE;
+    } else if (request->kind == VM_PLATFORM_REQUEST_KEYBOARD_STATE &&
+        transport->ingress.count != 0u) {
+        tail = (transport->ingress.head + transport->ingress.count - 1u) %
+            VM_PLATFORM_REQUEST_CAPACITY;
+        if (transport->ingress.entries[tail].kind ==
+            VM_PLATFORM_REQUEST_KEYBOARD_STATE) {
+            transport->ingress.entries[tail] = *request;
+            status = TYPE_STATUS_OK;
+        } else {
+            status = vm_platform_request_bridge_enqueue(&transport->ingress,
+                request);
+        }
+    } else {
+        status = vm_platform_request_bridge_enqueue(&transport->ingress,
+            request);
+    }
     vm_platform_request_transport_unlock(transport);
     return status;
 }
 
-static type_status vm_platform_request_transport_dequeue(
+type_status vm_platform_request_transport_dequeue_ingress(
     vm_platform_request_transport *transport,
-    vm_platform_request_bridge *bridge,
     vm_platform_request *out_request)
 {
     type_status status;
@@ -58,27 +71,11 @@ static type_status vm_platform_request_transport_dequeue(
     if (transport == STD_NULL || out_request == STD_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-
     vm_platform_request_transport_lock(transport);
-    status = vm_platform_request_bridge_dequeue(bridge, out_request);
+    status = vm_platform_request_bridge_dequeue(&transport->ingress,
+        out_request);
     vm_platform_request_transport_unlock(transport);
     return status;
-}
-
-type_status vm_platform_request_transport_enqueue_ingress(
-    vm_platform_request_transport *transport,
-    const vm_platform_request *request)
-{
-    return vm_platform_request_transport_enqueue(
-        transport, transport != STD_NULL ? &transport->ingress : STD_NULL, request);
-}
-
-type_status vm_platform_request_transport_dequeue_ingress(
-    vm_platform_request_transport *transport,
-    vm_platform_request *out_request)
-{
-    return vm_platform_request_transport_dequeue(
-        transport, transport != STD_NULL ? &transport->ingress : STD_NULL, out_request);
 }
 
 C_VOID vm_platform_request_transport_close(

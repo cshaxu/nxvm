@@ -18,9 +18,12 @@ M5 has preserved the bootable NXVM Console, debugger, boot sequence, and FDD
 fixture behavior while moving the whole-PC execution path into the documented
 `core/` and `vm/` ownership model.
 
-**Current active subtask:** none. T199 removed the unconsumed request-transport
-egress queue; ingress remains session-owned and worker lifecycle reports remain
-on the run handle. T200 is the separately planned host-state ingress change.
+**Current active subtask:** none. **M5 T200 complete:** host modifier/toggle
+snapshots now enter only through session-owned ingress and are consumed only
+at the runner command boundary. Consecutive state snapshots coalesce without
+crossing a queued key press; the direct platform-to-provider callback is gone.
+T199 removed the unconsumed egress queue; worker lifecycle reports remain on
+the run handle. Evidence is [`M5-T200.md`](../tracking/M5-T200.md).
 
 **M5 T150 complete:** NXVM shared product-session management is closed. The
 manager atomically establishes session 0, the final session cannot close, and

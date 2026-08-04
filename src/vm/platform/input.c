@@ -36,17 +36,6 @@ C_INT vm_platform_keyboard_get_modifier_for(
         transport->sink->get_modifier(transport->context, modifier);
 }
 
-C_VOID vm_platform_keyboard_apply_host_state_for(
-    const vm_platform_keyboard_transport *transport,
-    uint32_t asynchronous_keys, uint32_t toggle_keys)
-{
-    if (transport != STD_NULL && transport->sink != STD_NULL &&
-        transport->sink->apply_host_state != STD_NULL) {
-        transport->sink->apply_host_state(transport->context, asynchronous_keys,
-                                          toggle_keys);
-    }
-}
-
 C_VOID vm_platform_keyboard_receive_key_press_for(
     const vm_platform_keyboard_transport *transport, uint16_t scan_code,
     uint16_t virtual_key)

@@ -94,25 +94,27 @@ import. `docs/planning/status.md` remains authoritative for active work.
   execute all 40 cases. Source/inventory checks remain explicitly static gates;
   compiling a smoke executable alone is no longer runtime evidence.
 
-- [ ] **VM input and transport boundary convergence (`TODO(High)`, T199--T200).**
+- [x] **VM input and transport boundary convergence (`TODO(High)`, T199--T200).**
   `vm_session` owns both the host-input boundary and its request transport.
   Preserve that ownership while removing a historical outbound queue and
   converging the remaining direct host-state update:
-  - **T199, request-transport egress removal.** Delete the unconsumed egress
+  - [x] **T199, request-transport egress removal.** Deleted the unconsumed egress
     storage, API, and test-only coverage. Correct the historical T194 wording:
     worker lifecycle/cancellation reports use the session-owned run handle,
     whose runner consumer is the only cancellation/join/finalization path.
     Keep ingress unchanged. Add a source gate proving no egress API remains;
     retain run-handle, Console, debugger, two-session, and FDD DOS-prompt
     regressions. Stop for any second cancellation route or user-visible change.
-  - **T200, host keyboard-state ingress.** Route modifier/toggle host-state
+  - [x] **T200, host keyboard-state ingress.** Modifier/toggle host-state
     snapshots through `session.request_transport.ingress`, consuming them only
     at the runner command boundary like discrete key presses. Define bounded
     coalescing for replaceable snapshots so host polling cannot fill the
     command queue. Add a focused proof that platform input cannot mutate the
     keyboard provider before that boundary, then retain KBC, BIOS/DOS `ver`,
     Console/debugger, window/Console, two-session, and FDD DOS-prompt gates.
-    Stop for key-up/focus, modifier/toggle, timing, or retained UX regression.
+     The direct VM platform callback is gone; adjacent snapshots coalesce while
+     a key press remains an ordering barrier. Stop for key-up/focus,
+     modifier/toggle, timing, or retained UX regression.
 
 - [x] **Finish the explicit platform run-handle boundary.** M5 T194--T196
   converged a worker-report-only event path, session-owned cancellation/join/
