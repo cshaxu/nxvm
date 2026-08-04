@@ -213,7 +213,7 @@ C_VOID vm_session_initialize(vm_session *machine) {
     if (machine->active) return;
     vm_session_storage_initialize(machine);
     if (machine->core_machine == STD_NULL) return;
-    core_product_wait_scope_initialize(machine->wait_scope,
+    core_product_wait_scope_initialize(&machine->wait_scope,
         vm_session_wait, STD_NULL);
     vm_session_control_initialize(machine->control, machine);
     core_machine_keyboard_provider_slot_bind(machine->keyboard_provider,
@@ -223,13 +223,13 @@ C_VOID vm_session_initialize(vm_session *machine) {
     vm_session_bind_display(machine);
     vm_machine_debug_bind_pause(machine->debug,
         vm_session_debug_request_pause, STD_NULL);
-    vm_platform_keyboard_transport_initialize(machine->keyboard_transport,
+    vm_platform_keyboard_transport_initialize(&machine->keyboard_transport,
         &vm_session_keyboard_sink, machine);
-    vm_platform_execution_transport_initialize(machine->execution_transport,
+    vm_platform_execution_transport_initialize(&machine->execution_transport,
         &vm_session_execution_sink, machine);
     vm_platform_run_context_initialize(machine->platform_run_context,
-        machine->execution_transport, machine->keyboard_transport,
-        machine->presentation_mailbox, machine->wait_scope);
+        &machine->execution_transport, &machine->keyboard_transport,
+        &machine->presentation_mailbox, &machine->wait_scope);
     vm_platform_run_handle_initialize(machine->platform_run_handle);
     vm_platform_request_transport_initialize(&machine->request_transport);
     vm_platform_request_transport_bind_consumer(&machine->request_transport,

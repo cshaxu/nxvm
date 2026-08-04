@@ -86,10 +86,10 @@ typedef struct vm_session {
     core_machine_block_provider_slot block_provider_storage;
     core_machine_keyboard_provider_slot keyboard_provider_storage;
     core_machine_display_provider_slot display_provider_storage;
-    vm_platform_presentation_mailbox presentation_mailbox_storage;
-    vm_platform_execution_transport execution_transport_storage;
-    vm_platform_keyboard_transport keyboard_transport_storage;
-    core_product_wait_scope wait_scope_storage;
+    vm_platform_presentation_mailbox presentation_mailbox;
+    vm_platform_execution_transport execution_transport;
+    vm_platform_keyboard_transport keyboard_transport;
+    core_product_wait_scope wait_scope;
     vm_platform_run_context platform_run_context_storage;
     vm_platform_run_handle platform_run_handle_storage;
     core_product_debug_context debugger_context_storage;
@@ -106,10 +106,6 @@ typedef struct vm_session {
     core_machine_block_provider_slot *block_provider;
     core_machine_keyboard_provider_slot *keyboard_provider;
     core_machine_display_provider_slot *display_provider;
-    vm_platform_presentation_mailbox *presentation_mailbox;
-    vm_platform_execution_transport *execution_transport;
-    vm_platform_keyboard_transport *keyboard_transport;
-    core_product_wait_scope *wait_scope;
     vm_platform_run_context *platform_run_context;
     vm_platform_run_handle *platform_run_handle;
     core_product_debug_context *debugger_context;

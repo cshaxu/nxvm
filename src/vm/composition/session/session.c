@@ -125,12 +125,8 @@ C_VOID vm_session_storage_initialize(vm_session *machine)
     machine->display_provider = &machine->display_provider_storage;
     core_machine_display_provider_slot_initialize(machine->display_provider);
     machine->default_profile_context->display_provider = machine->display_provider;
-    machine->presentation_mailbox = &machine->presentation_mailbox_storage;
-    vm_platform_presentation_mailbox_initialize(machine->presentation_mailbox);
-    machine->execution_transport = &machine->execution_transport_storage;
-    machine->keyboard_transport = &machine->keyboard_transport_storage;
-    machine->wait_scope = &machine->wait_scope_storage;
-    machine->default_profile_context->wait_scope = machine->wait_scope;
+    vm_platform_presentation_mailbox_initialize(&machine->presentation_mailbox);
+    machine->default_profile_context->wait_scope = &machine->wait_scope;
     machine->platform_run_context = &machine->platform_run_context_storage;
     machine->platform_run_handle = &machine->platform_run_handle_storage;
     machine->debugger_context = &machine->debugger_context_storage;
@@ -159,10 +155,6 @@ C_VOID vm_session_storage_finalize(vm_session *machine)
     machine->keyboard_provider = STD_NULL;
     core_machine_display_provider_slot_finalize(machine->display_provider);
     machine->display_provider = STD_NULL;
-    machine->presentation_mailbox = STD_NULL;
-    machine->execution_transport = STD_NULL;
-    machine->keyboard_transport = STD_NULL;
-    machine->wait_scope = STD_NULL;
     machine->platform_run_context = STD_NULL;
     machine->platform_run_handle = STD_NULL;
     machine->debugger_context = STD_NULL;
