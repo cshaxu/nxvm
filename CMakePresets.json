@@ -21,7 +21,7 @@
     {
       "name": "nxvm-current-gcc",
       "configurePreset": "mingw-gcc-x64",
-      "targets": ["nxvm-0-5-0170"]
+      "targets": ["nxvm-0-5-0171"]
     },
     {
       "name": "nxvm-current-gates-gcc",
@@ -33,6 +33,7 @@
         "nxvm-core-machine-trace-context-smoke",
         "nxvm-core-machine-cpu-fault-diagnostic-smoke",
         "nxvm-core-machine-lifecycle-contract-smoke",
+        "nxvm-core-machine-ram-port-context-smoke",
         "nxvm-core-machine-stopped-lifecycle-smoke",
         "nxvm-core-product-wait-smoke",
         "nxvm-core-product-session-contract-smoke",
@@ -49,6 +50,7 @@
         "nxvm-vm-dos-prompt-smoke",
         "nxvm-vm-dos-keyboard-smoke",
         "nxvm-vm-dos-mem-fault-smoke",
+        "nxvm-vm-qdcga-boundary-smoke",
         "nxvm-vm-debug-pause-boundary-smoke",
         "nxvm-vm-unified-debug-backend-smoke",
         "nxvm-product-console-smoke",

@@ -13,16 +13,15 @@ C_INT main(C_VOID)
 {
     vm_session session = {0};
     const C_UCHAR invalid_instruction[] = { 0x0fu, 0x0bu };
-    C_UCHAR *reset_vector;
     C_INT failed = 0;
 
     vm_session_storage_initialize(&session);
     vm_session_control_initialize(session.control, &session);
     vm_session_control_reset(session.control);
-    reset_vector = (C_UCHAR *)core_machine_memory_real_address(
-        core_machine_debug_memory_borrow(session.core_machine), 0xf000u, 0xfff0u);
-    reset_vector[0] = invalid_instruction[0];
-    reset_vector[1] = invalid_instruction[1];
+    if (core_machine_memory_write_real_to(
+            core_machine_debug_memory_borrow(session.core_machine), 0xf000u,
+            0xfff0u, invalid_instruction, sizeof(invalid_instruction)) !=
+        NTVDM64_STATUS_OK) failed = 1;
     vm_session_control_start(session.control);
 
     failed |= vm_session_control_is_running(session.control) != NTVDM64_TYPE_FALSE;

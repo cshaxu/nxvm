@@ -397,9 +397,15 @@ boundary. Core, Console, session-manager, and FDD DOS-prompt evidence passed.
 Artifact: `nxvm_0_5_0170.exe`; evidence:
 [`M5-T170.md`](../tracking/M5-T170.md).
 
-**M5 T171 S1 active: checked RAM range and provider access.** Separate
-installed RAM from backing capacity, remove modulo/high-address aliases, and
-migrate profile callers off raw RAM addresses before enabling RAM shrink.
+**M5 T171 S1 complete: checked RAM range and provider access.** Installed RAM
+and backing capacity are distinct; modulo/high-address aliases and provider
+raw addresses are gone. The default profile explicitly maps only the 80386
+reset vector to its BIOS image. Evidence is [`M5-T171.md`](../tracking/M5-T171.md);
+artifact `nxvm_0_5_0171.exe` is verified.
+
+**M5 T172 S1 active: stopped-only core RAM reconfiguration.** Add
+`core_machine_reconfigure_memory`, retaining core identity, frozen topology,
+and one normal cold-reset/provider sequence.
 
 The completed executor sequence is defined in
 [Facade And Executor Convergence](m5-facade-executor-convergence.md). The

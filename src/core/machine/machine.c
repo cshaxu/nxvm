@@ -180,6 +180,7 @@ ntvdm64_status core_machine_freeze_execution_providers(core_machine *machine)
         return NTVDM64_STATUS_INVALID_STATE;
     }
     machine->execution_provider_frozen = 1;
+    core_machine_memory_freeze_mappings(&machine->executor_memory);
     return NTVDM64_STATUS_OK;
 }
 
@@ -229,7 +230,7 @@ ntvdm64_status core_machine_get_memory_bytes(
     if (machine == STD_NULL || out_memory_bytes == STD_NULL) {
         return NTVDM64_STATUS_INVALID_ARGUMENT;
     }
-    *out_memory_bytes = machine->executor_memory.connect.size;
+    *out_memory_bytes = machine->executor_memory.connect.installed_bytes;
     return NTVDM64_STATUS_OK;
 }
 
@@ -309,8 +310,11 @@ ntvdm64_status core_machine_create(
     }
     core_machine_memory_initialize(&machine->executor_memory);
     if (config->memory_bytes != 0u) {
-        core_machine_memory_allocate_for(&machine->executor_memory,
-            config->memory_bytes);
+        if (core_machine_memory_allocate_for(&machine->executor_memory,
+                config->memory_bytes) != NTVDM64_STATUS_OK) {
+            core_machine_destroy(machine);
+            return NTVDM64_STATUS_NO_MEMORY;
+        }
     }
     core_machine_memory_register_ports(&machine->executor_memory,
         &machine->executor_port);
