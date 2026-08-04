@@ -222,6 +222,7 @@ set(CORE_PRODUCT_DEBUG_SOURCES
     src/core/product/debug/xasm32/dasm32.c
 )
 set(VM_COMPOSITION_SOURCES
+    src/vm/composition/session/selected_session.c
     src/vm/composition/session/session_factory.c
     src/vm/composition/session/console_machine_adapter.c
     src/vm/composition/session/debug_target.c
@@ -836,7 +837,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0202 "0.5.0202")
+add_current_vm_artifact(vm-0-5-0203 "0.5.0203")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 
@@ -964,6 +965,12 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_keyboard_transport_surface.cmake"
         COMMENT "Verifying VM keyboard transport surface closure"
+        VERBATIM)
+
+    add_custom_target(verify-console-adapter-closure
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_console_adapter_closure.cmake"
+        COMMENT "Verifying Console adapter selected-borrow closure"
         VERBATIM)
 
     add_custom_target(verify-vm-session-owner-closure
