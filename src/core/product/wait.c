@@ -19,9 +19,3 @@ C_VOID core_product_wait_milliseconds(const core_product_wait_scope *scope,
         scope->provider(scope->context, milliseconds);
     }
 }
-
-C_VOID core_product_utils_sleep(const core_product_wait_scope *scope,
-    uint32_t milisec)
-{
-    core_product_wait_milliseconds(scope, milisec);
-}

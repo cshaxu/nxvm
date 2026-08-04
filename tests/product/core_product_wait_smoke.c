@@ -28,21 +28,21 @@ C_INT main(C_VOID)
 
     core_product_wait_scope_initialize(&scope, core_product_wait_smoke_provider,
         &calls);
-    core_product_utils_sleep(&scope, 17u);
+    core_product_wait_milliseconds(&scope, 17u);
     if (calls != 1u || observed_milliseconds != 17u) {
         return 1;
     }
     core_product_wait_scope_initialize(&nested_scope,
         core_product_wait_smoke_provider, &nested_calls);
-    core_product_utils_sleep(&nested_scope, 23u);
+    core_product_wait_milliseconds(&nested_scope, 23u);
     if (calls != 1u || nested_calls != 1u || observed_milliseconds != 23u) {
         return 1;
     }
-    core_product_utils_sleep(&scope, 31u);
+    core_product_wait_milliseconds(&scope, 31u);
     if (calls != 2u || nested_calls != 1u || observed_milliseconds != 31u) {
         return 1;
     }
-    core_product_utils_sleep(STD_NULL, 1u);
+    core_product_wait_milliseconds(STD_NULL, 1u);
     if (calls != 2u) {
         return 1;
     }

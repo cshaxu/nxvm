@@ -4,6 +4,8 @@
 
 #include "type.h"
 
+#include "core/product/wait.h"
+
 #include "core/product/utils.h"
 
 #include "vm/platform/win32/win32.h"
@@ -127,7 +129,7 @@ static DWORD WINAPI win32app_display_thread(LPVOID opaque)
     InterlockedExchange((volatile LONG *)&handle->display_ready, 1);
     while (!handle->stop_requested && handle->initial_flip ==
             vm_platform_execution_get_flip_for(handle->platform->execution)) {
-        core_product_utils_sleep(handle->platform->wait_scope, 100u);
+        core_product_wait_milliseconds(handle->platform->wait_scope, 100u);
     }
     if (handle->stop_requested) {
         DestroyWindow(handle->window);
@@ -180,7 +182,7 @@ ntvdm64_status vm_platform_win32app_run_handle_start(
         return NTVDM64_STATUS_INVALID_STATE;
     }
     while (!handle->display_ready && !handle->display_failed) {
-        core_product_utils_sleep(context->wait_scope, 1u);
+        core_product_wait_milliseconds(context->wait_scope, 1u);
     }
     if (!handle->display_ready) {
         vm_platform_win32app_run_handle_request_stop(owner);
