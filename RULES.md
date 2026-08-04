@@ -21,7 +21,7 @@ under `vm` and `vdm`.
 
 ```text
 src/
-  type.c, type.h, version.c, version.h
+  type.c, type.h
   core/{machine,platform,product}/
   vm/main.c
   vm/composition/
@@ -212,8 +212,10 @@ remove the required owner prefix from public APIs.
 - Add a C/standard/system facade in `type.*` before adopting it at call sites;
   do not introduce raw ISO C headers or direct ISO C calls outside that facade.
   Use conditional compilation in `type.*` for platform-dependent mappings.
-- `src/version.*` is the only version and build-identity source. Module APIs do
-  not carry ABI versions, timestamps, or ad hoc compatibility probes.
+- Each product module defines `PRODUCT_NAME`; `core/product/banner.h` defines
+  the common `PRODUCT_VERSION`, `PRODUCT_COPYRIGHT`, `PRODUCT_BUILD_TIME`, and
+  banner print macro. Module APIs do not carry ABI versions, timestamps, or ad
+  hoc compatibility probes.
 
 ## Scope, Testing, And Governance
 

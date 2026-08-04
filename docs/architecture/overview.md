@@ -82,10 +82,11 @@ VM and VDM composition provide concrete lifecycle callbacks. No
 `core/composition` layer exists or is permitted.
 
 `src/type.h` is the system-wide type, `nxvm_core_status`, retained alias, and
-legacy helper foundation. `src/version.*` is the only source for version and
-build identity. Public symbols use their ownership path, for example
-`core_machine_*`, `vm_product_*`, and `vdm_platform_*`. The detailed registry
-and dependency rules live only in
+legacy helper foundation. Each product module owns its compile-time name; the
+shared `core/product/banner.h` helper supplies the common version, copyright,
+build time, and printing format. Public symbols use their ownership path, for
+example `core_machine_*`, `vm_product_*`, and `vdm_platform_*`. The detailed
+registry and dependency rules live only in
 [Module Layout](module-layout.md) and [Contracts](contracts.md).
 
 `core/machine` session ownership plus provider/registry naming rules are

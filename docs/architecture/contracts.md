@@ -14,8 +14,9 @@ the `C_*` language aliases, `STD_*` C-library vocabulary, retained NXVM numeric
 aliases, common bit/constant helpers, and product-neutral legacy C-runtime and
 trace primitives. `src/type.c` owns their non-inline implementations.
 
-`src/version.h` and `src/version.c` are the only version and build-identity
-source. They provide product banner identity and build-time information. No
+Each product module owns its `PRODUCT_NAME`. The shared core-product banner
+helper defines `PRODUCT_VERSION`, `PRODUCT_COPYRIGHT`, and
+`PRODUCT_BUILD_TIME`; the product entry includes both before printing. No
 module contract contains an ABI version, timestamp, compatibility probe, or
 module-local status type.
 

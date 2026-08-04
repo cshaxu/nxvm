@@ -61,9 +61,9 @@ NXVM vocabulary: `LOCALTIME`, `STRCAT`, `STRCPY`, `STRTOK`, `STRCMP`, `STRLEN`,
 `MALLOC`, `FREE`, `MEMSET`, `MEMCPY`, and `MEMCMP`. They are not legacy aliases
 and are excluded from naming-remediation scans.
 
-`src/version.h` and `src/version.c` are the sole version and build-identity
-source. They provide product Console banner identity and build timestamp data.
-No module contract contains an ABI version, timestamp, or compatibility probe;
+Each product module owns its compile-time `PRODUCT_NAME`; the shared
+core-product banner helper supplies version, copyright, and build time. No
+module contract contains an ABI version, timestamp, or compatibility probe;
 the repository is one synchronously built system.
 
 Public C symbols use their source ownership path: `core_machine_*`,
@@ -278,7 +278,7 @@ for a session context or host lease.
 M5 removed the prior `app`, `adapters`, `dos`, `firmware`, `integration`,
 `machine`, `nxvm-baseline`, `platform`, `product`, `products`, and `runtime`
 source roots. Only `core`, `vm`, and `vdm` directories, plus the root
-foundation units `type.*` and `version.*`, may receive source files.
+foundation units `type.*`, may receive source files.
 
 The source-root, naming, and selected-session-authority plans are complete and
 archived under `history/m5/planning/`. T64 through T73 removed the selected
