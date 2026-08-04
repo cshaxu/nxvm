@@ -22,6 +22,11 @@ commit labels `T208` and `T209` are reclassified as `M5 Td S1` and `M5 Td S2`;
 they do not reserve numeric implementation task identifiers.
 `M5 Td S3` records the ROI-ordered NXVM PC/AT workstream in `TODO.md`; it does
 not activate an implementation task or change M5 closure state.
+`M5 Td S4` establishes the required hardware-device verification template:
+every admitted device task has S1 contract/port probe, S2 owner-local
+implementation, and S3 DOS/system-image regression, with a fixed retained
+NXVM matrix and bounded optional Bochs differential rules. It changes no guest
+behavior and produces no artifact.
 
 ## Milestone State
 
