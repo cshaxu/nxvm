@@ -2,6 +2,8 @@
 
 #include "type.h"
 
+#include "core/product/wait.h"
+
 #include "core/product/utils.h"
 
 #include "vm/platform/win32/win32.h"
@@ -59,7 +61,7 @@ static DWORD WINAPI win32con_display_thread(LPVOID opaque)
         w32cdispPaint((w32cdisp_context *)handle->platform->console_renderer,
             handle->output, handle->platform->presentation, FALSE);
         win32con_process_input(handle);
-        core_product_utils_sleep(handle->platform->wait_scope, 20u);
+        core_product_wait_milliseconds(handle->platform->wait_scope, 20u);
     }
     return 0;
 }
@@ -114,7 +116,7 @@ ntvdm64_status vm_platform_win32con_run_handle_start(
         return NTVDM64_STATUS_INVALID_STATE;
     }
     while (old_flip == vm_platform_execution_get_flip_for(context->execution)) {
-        core_product_utils_sleep(context->wait_scope, 100u);
+        core_product_wait_milliseconds(context->wait_scope, 100u);
     }
     handle->display_thread = CreateThread(STD_NULL, 0, win32con_display_thread,
         handle, 0, &thread_id);

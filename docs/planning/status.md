@@ -467,6 +467,10 @@ FDD DOS-prompt regressions. Artifact: `nxvm_0_5_0184.exe`.
 provider contract now contains only behavior-bearing selected-session callbacks;
 the retained Console lifecycle gate passes. Artifact: `nxvm_0_5_0185.exe`.
 
+**M5 T186 S1 complete: wait sleep alias removed.** All callers use the direct
+wait-scope dispatch API; wait scope and retained Console lifecycle gates pass.
+Artifact: `nxvm_0_5_0186.exe`.
+
 The completed executor sequence is defined in
 [Facade And Executor Convergence](m5-facade-executor-convergence.md). The
 active session-readiness sequence is defined in

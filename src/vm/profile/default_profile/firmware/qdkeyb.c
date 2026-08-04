@@ -2,6 +2,8 @@
 
 #include "type.h"
 
+#include "core/product/wait.h"
+
 #include "core/product/utils.h"
 
 #include "core/machine/cpu.h"
@@ -135,7 +137,7 @@ static C_VOID keyboard_read_input(vm_profile_default_context *profile)
 {
     t_cpu *cpu = profile->execution->cpu;
     while (keyboard_buffer_empty(profile)) {
-        core_product_utils_sleep(profile->wait_scope, 10);
+        core_product_wait_milliseconds(profile->wait_scope, 10);
     }
     cpu->data.ax = keyboard_buffer_pop(profile);
     keyboard_request_irq(profile);

@@ -4,6 +4,8 @@
 
 #include "type.h"
 
+#include "core/product/wait.h"
+
 #include <curses.h>
 
 #include <pthread.h>
@@ -275,7 +277,7 @@ static C_VOID *linuxcon_display_thread(C_VOID *arg) {
     while (vm_platform_execution_is_running_for(context->execution)) {
         lnxcdispPaint(context, 0);
         lnxckeybProcess(context);
-        core_product_utils_sleep(context->wait_scope, 20u);
+        core_product_wait_milliseconds(context->wait_scope, 20u);
     }
     return 0;
 }
@@ -495,7 +497,7 @@ ntvdm64_status vm_platform_linuxcon_run_handle_start(
     handle->kernel_started = 1;
     while (old_flip ==
            vm_platform_execution_get_flip_for(context->execution)) {
-        core_product_utils_sleep(context->wait_scope, 100u);
+        core_product_wait_milliseconds(context->wait_scope, 100u);
     }
     if (pthread_create(&handle->display_thread, STD_NULL, linuxcon_display_thread,
             handle) != 0) {
