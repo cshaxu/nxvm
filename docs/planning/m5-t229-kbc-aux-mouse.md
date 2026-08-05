@@ -140,11 +140,20 @@ new capability-design task, so the defect similar-issue sweep is not applicable.
 
 ## S3: Verification And Closure
 
-**Status:** Pending final matrix and artifact evidence.
+**Status:** Complete.
 
-The focused port probe verifies controller responses, status origin, IRQ12
-cascade, report enable/disable, packet order, and keyboard/IRQ1 independence.
-The generated guest fixture verifies the full route: guest `D4h` and `F4h`,
-IRQ12 -> IVT `74h`, one ACK, one mapped `(+5,+3,left)` packet, and the existing
-session ingress boundary. Final closure records the retained matrix, GCC/CTest
-gates, artifact hash, commit, and similar-issue disposition.
+| Evidence | Result |
+| --- | --- |
+| `core-machine-kbc-aux-port-smoke` | Emits `M5:T229:S3:KBC-AUX:PORT:OK`; verifies controller/AUX origin, `20h`/`A7h`/`A8h`/`A9h`/`D4h`, command replies, packet order, IRQ12 cascade, and retained IRQ1 isolation. |
+| `vm-kbc-aux-guest-smoke` | Emits `M5:T229:S3:AUX:GUEST:OK`; generated boot media enables reporting with `D4h`/`F4h`, installs ordinary IVT `74h`, consumes the AUX ACK and mapped `(+5,+3,left)` packet through `60h`, and confirms session ingress has no effect before its execution boundary. |
+| `verify-aux-mouse-boundary` | Emits `M5:T229:S3:AUX-MOUSE-BOUNDARY:OK`; rejects Win32/profile guest shortcuts and requires platform transport plus session-owned core ingress consumption. |
+| `current-gates-gcc` | Passed with 64/64 current CTest smoke cases, including retained DOS prompt, `EDIT.COM`, Console/debugger, keyboard, FDD, and HDD regressions. Linux source contract passed; no WSL was used. |
+
+The developer artifact is `build/output/nxvm_0_5_0229.exe` with SHA-256
+`62E7AE972C0D4B433A4842A4756E4D88B36D8F1AEAED2D5F22B883E3297B4ADA`.
+Its source implementation commit is `a60b57a`. Its runtime identity is
+`Neko's x86 Virtual Machine [0.5.0229]
+Copyright (c) 2012-2026 Neko.` The capability admission sweep found no existing
+production AUX owner or host-to-DOS shortcut; the new boundary closure gate
+guards the recurring forbidden shortcuts. Wheel/advanced AUX protocol and every
+guest mouse API remain deferred work, not implied support.
