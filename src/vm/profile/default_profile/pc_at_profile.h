@@ -91,6 +91,7 @@ typedef struct vm_profile_default_pc_at_descriptor {
     uint32_t compatibility_revision;
     core_machine_cpu_profile cpu_profile;
     core_machine_fpu_profile fpu_profile;
+    uint32_t ticks_per_instruction;
     STD_SIZE_T default_memory_bytes;
     vm_profile_default_pc_at_rom_mapping rom;
     vm_profile_default_pc_at_cmos_defaults cmos;

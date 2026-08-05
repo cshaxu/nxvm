@@ -2,8 +2,7 @@
 
 ## S1: Contract And Probe Design
 
-**Status:** active. This subtask designs the contract and focused probes only;
-it changes no runtime behavior and produces no executable artifact.
+**Status:** complete.
 
 **Source baseline:** `442879d` (M5 T216 S5 artifact record). The retained
 baseline is the T216 Console/debugger/FDD/HDD matrix, including unpaced FDD
@@ -15,7 +14,7 @@ increasing guest `elapsed_ticks`. A VM profile will provide frozen clock and
 divider parameters; VM composition may bind those parameters and apply host
 pacing, but neither composition nor platform may advance guest time.
 
-### Required Contract Decisions
+### Contract
 
 1. Define the tick scalar, origin, overflow behavior, frozen profile parameters,
    and the relationship between an architectural instruction and coarse ticks.
@@ -26,7 +25,7 @@ pacing, but neither composition nor platform may advance guest time.
 4. Define snapshot/diagnostic observation of elapsed time without exposing a
    mutable clock pointer to platform, profile, Console, or debugger code.
 
-### S1 Probe Plan
+### Implementation And Probes
 
 The focused contract smoke must demonstrate that equal reset-and-run inputs
 produce equal tick results; pause and debugger inspection do not advance time;
@@ -35,18 +34,28 @@ returns to the defined origin; and host wait/pacing has no guest-clock effect.
 The retained FDD/HDD boot, DOS prompt, Console, debugger, and T216 `EDIT.COM`
 regressions remain behavior-protection gates for later implementation subtasks.
 
-Expected design/probe markers are `M5:T217:S1:TIME-CONTRACT:OK` and
-`M5:T217:S1:TIME-PROBE:OK`; their exact command names and source locations are
-part of this S1 design, not pre-committed implementation choices.
+S2 adds `elapsed_ticks` and the resolved frozen `ticks_per_instruction` to the
+sole `core_machine` instance. `core_machine_run()` now observes both optional
+instruction and tick budgets; completed architectural instruction boundaries
+advance the core clock; cold reset returns it to zero. `core_machine_run_result`
+and `core_machine_observation` return copied clock values; running callers
+cannot read a mutable clock reference. The default PC/AT profile supplies the
+frozen one-tick parameter at session creation.
 
-### Later Subtasks
+`core-machine-time-smoke` records `M5:T217:S2:TIME:OK` for reset origin,
+instruction budget, tick budget, and observation behavior. S3 passed the full
+current GCC/CTest matrix: 53/53 tests, including Console, debugger, FDD/HDD,
+DOS prompt, keyboard, video, and T216 `EDIT.COM` regressions. T217 intentionally
+does not alter device refresh order; that move is T219.
 
-S2 may add the one core-owned clock field, frozen profile parameters, and the
-documented observation boundary only after S1 fixes the API and probe shape.
-S3 must execute the focused clock probes plus the current GCC/CTest matrix and
-retained Console/debugger/FDD/HDD regressions, then record the T217 artifact
-hash and source commit. No later device scheduler, raster, or timer waveform
-work is admitted by T217 itself.
+### Artifact
+
+Developer artifact: `build/output/nxvm_0_5_0217.exe`.
+
+SHA-256: `C1C704F396EDDFEAA3BA1839142ABF776FA0B33CD3E8AF23DED34D28518EC290`.
+
+The source commit is recorded with the task implementation commit. No later
+device scheduler, raster, or timer waveform work is admitted by T217 itself.
 
 ### Non-Goals And Stop Conditions
 

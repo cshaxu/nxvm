@@ -40,6 +40,7 @@ static const vm_profile_default_pc_at_descriptor default_pc_at_descriptor = {
     1u,
     CORE_MACHINE_CPU_PROFILE_80386,
     CORE_MACHINE_FPU_PROFILE_NONE,
+    1u,
     16u * 1024u * 1024u,
     { 0xfffffff0u, 0x000ffff0u, 16u, 0xf000u, 0xfff0u },
     { 0x21u, 0x027fu, 0x40u, 0u, 0u, 0x80u },

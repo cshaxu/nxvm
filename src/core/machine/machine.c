@@ -108,6 +108,11 @@ static core_machine_cpu_profile core_machine_resolve_cpu_profile(
         CORE_MACHINE_CPU_PROFILE_80386 : profile;
 }
 
+static uint32_t core_machine_resolve_ticks_per_instruction(uint32_t ticks)
+{
+    return ticks == 0u ? 1u : ticks;
+}
+
 static C_INT core_machine_valid_cpu_profile(core_machine_cpu_profile profile)
 {
     return profile >= CORE_MACHINE_CPU_PROFILE_8086 &&
@@ -306,6 +311,18 @@ type_status core_machine_get_memory_bytes(
     return TYPE_STATUS_OK;
 }
 
+type_status core_machine_get_elapsed_ticks(
+    const core_machine *machine, uint64_t *out_elapsed_ticks)
+{
+    if (machine == STD_NULL || out_elapsed_ticks == STD_NULL ||
+        machine->lifecycle == CORE_MACHINE_INITIALIZED ||
+        machine->lifecycle == CORE_MACHINE_RUNNING) {
+        return TYPE_STATUS_INVALID_STATE;
+    }
+    *out_elapsed_ticks = machine->elapsed_ticks;
+    return TYPE_STATUS_OK;
+}
+
 type_status core_machine_get_cpu_diagnostic(
     const core_machine *machine, core_machine_cpu_diagnostic *out_diagnostic)
 {
@@ -328,6 +345,7 @@ type_status core_machine_capture_observation(
         return TYPE_STATUS_INVALID_STATE;
     }
     out_observation->lifecycle = machine->lifecycle;
+    out_observation->elapsed_ticks = machine->elapsed_ticks;
     if (core_machine_get_cpu_state(machine, &out_observation->cpu) !=
             TYPE_STATUS_OK) {
         return TYPE_STATUS_INVALID_STATE;
@@ -358,6 +376,8 @@ type_status core_machine_create(
 
     machine->lifecycle = CORE_MACHINE_INITIALIZED;
     machine->cpu_profile = core_machine_resolve_cpu_profile(config->cpu_profile);
+    machine->ticks_per_instruction =
+        core_machine_resolve_ticks_per_instruction(config->ticks_per_instruction);
     core_machine_fpu_initialize(&machine->fpu, config->fpu_profile);
     STD_ATOMIC_INIT(&machine->stop_requested, 0);
     core_machine_trace_initialize(machine);
@@ -428,6 +448,7 @@ static type_status core_machine_cold_reset(core_machine *machine)
 
     STD_ATOMIC_STORE(&machine->stop_requested, 0);
     machine->fault_detail = 0u;
+    machine->elapsed_ticks = 0u;
     core_machine_cpu_diagnostic_reset(machine);
     if (machine->execution_provider != STD_NULL &&
         machine->execution_provider->reset != STD_NULL) {
@@ -502,6 +523,8 @@ type_status core_machine_run(
 
     result->reason = CORE_MACHINE_STOP_NONE;
     result->executed = 0u;
+    result->ticks = 0u;
+    result->elapsed_ticks = machine->elapsed_ticks;
     result->linear_pc = core_machine_linear_pc(machine);
     result->detail = 0u;
 
@@ -533,9 +556,9 @@ type_status core_machine_run(
 
     machine->lifecycle = CORE_MACHINE_RUNNING;
     {
-        uint64_t limit = budget.instructions == 0u ? 1u : budget.instructions;
-
-        while (result->executed < limit) {
+        while ((budget.instructions == 0u ||
+                result->executed < budget.instructions) &&
+               (budget.ticks == 0u || result->ticks < budget.ticks)) {
             if (machine->lifecycle == CORE_MACHINE_FAULTED) {
                 result->reason = CORE_MACHINE_STOP_FAULT;
                 result->linear_pc = core_machine_linear_pc(machine);
@@ -578,20 +601,32 @@ type_status core_machine_run(
             core_machine_pic_refresh(&machine->shared_pic_master,
                 &machine->shared_pic_slave);
             core_machine_pit_refresh(&machine->shared_pit);
+            if (budget.ticks != 0u &&
+                machine->ticks_per_instruction > budget.ticks - result->ticks) {
+                machine->lifecycle = CORE_MACHINE_PAUSED;
+                result->reason = CORE_MACHINE_STOP_BUDGET;
+                result->linear_pc = core_machine_linear_pc(machine);
+                result->elapsed_ticks = machine->elapsed_ticks;
+                return TYPE_STATUS_OK;
+            }
             core_machine_cpu_execution_refresh(&machine->executor_cpu_execution);
             if (machine->lifecycle == CORE_MACHINE_FAULTED) {
                 result->reason = CORE_MACHINE_STOP_FAULT;
                 result->linear_pc = core_machine_linear_pc(machine);
                 result->detail = machine->fault_detail;
+                result->elapsed_ticks = machine->elapsed_ticks;
                 return TYPE_STATUS_FAULT;
             }
+            ++result->executed;
+            result->ticks += machine->ticks_per_instruction;
+            machine->elapsed_ticks += machine->ticks_per_instruction;
+            result->elapsed_ticks = machine->elapsed_ticks;
             if (machine->executor_cpu.data.flagHalt) {
                 machine->lifecycle = CORE_MACHINE_PAUSED;
                 result->reason = CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
                 result->linear_pc = core_machine_linear_pc(machine);
                 return TYPE_STATUS_OK;
             }
-            ++result->executed;
         }
         machine->lifecycle = CORE_MACHINE_PAUSED;
         result->reason = CORE_MACHINE_STOP_BUDGET;

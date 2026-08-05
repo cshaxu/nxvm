@@ -58,6 +58,8 @@ struct core_machine {
     core_machine_lifecycle lifecycle;
     STD_ATOMIC_BOOL stop_requested;
     uint32_t fault_detail;
+    uint64_t elapsed_ticks;
+    uint32_t ticks_per_instruction;
     core_machine_port_table port_providers;
     core_machine_trace_state trace;
     core_machine_cpu_diagnostic_state cpu_diagnostic;
