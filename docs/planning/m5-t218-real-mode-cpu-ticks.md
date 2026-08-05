@@ -53,7 +53,7 @@ Developer artifact: `build/output/nxvm_0_5_0218.exe`.
 
 SHA-256: `15C09CB261FF44FECB8584AD26B782C377E5BED786C36111486482198DA4DB83`.
 
-The source commit is recorded with the task implementation commit.
+Source commit: `8930907` (`M5 T218 S3 P1`).
 
 ### Boundaries
 
