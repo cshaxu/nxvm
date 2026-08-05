@@ -46,6 +46,9 @@ typedef struct vm_profile_default_pc_at_hdc_pio {
     uint8_t dma_channel;
     uint8_t data_width_bits;
     uint8_t register_width_bits;
+    type_bool lba28_supported;
+    type_bool slave_present;
+    type_bool secondary_channel_present;
 } vm_profile_default_pc_at_hdc_pio;
 
 typedef struct vm_profile_default_pc_at_rom_mapping {

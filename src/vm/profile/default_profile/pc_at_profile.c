@@ -57,7 +57,7 @@ static const vm_profile_default_pc_at_descriptor default_pc_at_descriptor = {
     sizeof(default_pc_at_routes) / sizeof(default_pc_at_routes[0]),
     { 0x01f0u, 0x01f1u, 0x01f2u, 0x01f3u, 0x01f4u, 0x01f5u, 0x01f6u,
         0x01f7u, 0x03f6u, 14u, VM_PROFILE_DEFAULT_PC_AT_NO_DMA_CHANNEL,
-        16u, 8u },
+        16u, 8u, TYPE_TRUE, TYPE_FALSE, TYPE_FALSE },
     default_pc_at_firmware_services,
     sizeof(default_pc_at_firmware_services) /
         sizeof(default_pc_at_firmware_services[0])
