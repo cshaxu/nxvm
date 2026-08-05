@@ -1,7 +1,12 @@
 # Repository Rules
 
-This file is the compact working reference for source layout, code ownership,
-and engineering governance. It complements, but does not replace,
+This file is the compact working reference for ntvdm64-specific source layout,
+code ownership, and engineering governance. General methods are defined by the
+public [Architecture](https://github.com/cshaxu/skills/blob/main/architecture-governance/SKILL.md),
+[Coding](https://github.com/cshaxu/skills/blob/main/coding-governance/SKILL.md),
+[Documentation](https://github.com/cshaxu/skills/blob/main/documentation-governance/SKILL.md),
+and [Execution](https://github.com/cshaxu/skills/blob/main/execution-governance/SKILL.md)
+governance skills. This file complements, but does not replace,
 `docs/planning/status.md` (active work), `docs/architecture/module-layout.md`
 (layout authority), `docs/architecture/contracts.md` (public contract
 authority), `docs/source-policy.md` (source/license policy), and
@@ -162,13 +167,6 @@ remove the required owner prefix from public APIs.
 - A product outer loop owns host input draining, Console commands, platform
   events, pacing, host waits, cancellation, product exit, and repeated bounded
   calls to `core_machine_run()`. It never executes guest instructions itself.
-- Each mutable datum has one explicit owner: a session, its execution thread,
-  a caller-owned invocation object, or an explicit host-surface lease.
-  Immutable tables and descriptors may be shared.
-- No production path may choose a machine/session through a process global,
-  `_Thread_local`, singleton, or implicit current-object facade. A necessary
-  process-exclusive host resource uses a caller-owned lease with one creator,
-  one releaser, and an explicit failure result for a second claimant.
 - A `core_product_session_manager` keeps one or more live opaque entries and
   exactly one selected entry. The final session is never closable; a close of
   any other selected entry deterministically selects a remaining entry.
@@ -179,29 +177,6 @@ remove the required owner prefix from public APIs.
   product-root composition may translate a machine snapshot to a host-facing
   platform frame. A platform header must never name, embed, or point to a
   machine snapshot type.
-
-## Abstraction And Wrapper Discipline
-
-- Keep an abstraction only when it establishes a real boundary or policy: an
-  ownership/lifetime transition, provider registration and freeze, validation
-  or error/result normalization, data representation conversion, thread or
-  command-boundary synchronization, host-resource lease, or a stable
-  cross-module contract that prevents a forbidden dependency.
-- A wrapper that merely renames an object, forwards one call unchanged, keeps
-  a permanent same-object pointer alias, or exists only because a test still
-  calls it is not an abstraction. Remove it, merge it into its owner, or make
-  the caller use the owner directly.
-- Do not delete a thin adapter merely because its individual callbacks forward.
-  Retain it when the adapter is the one explicit product/composition boundary,
-  selects an opaque session, translates a provider contract, or confines a
-  product-specific implementation behind a core contract.
-- Every retained wrapper/adapter must name its owner and its boundary in the
-  source shape. It must not cache, duplicate, or rebind state owned elsewhere.
-  Same-object aliases are allowed only for a documented temporary migration
-  with a convergence task and removal condition.
-- Review wrapper chains end to end. A chain is valid only when each hop adds
-  one of the above responsibilities; never stack generic facade, context,
-  session, or manager objects that merely relay the same operation.
 
 ## C Vocabulary And Platform Boundaries
 
@@ -233,17 +208,6 @@ remove the required owner prefix from public APIs.
 - Treat test-only models, smoke fixtures, compatibility shims, and historical
   paths as non-production until a real product entry uses them. Do not retain a
   forwarding wrapper solely because a test references it.
-- Keep exactly one active subtask in `docs/planning/status.md`. A task record
-  defines scope, non-goals, source baseline, API surface, commands, expected
-  markers, budgets, assets, and stop conditions before runtime changes.
-- Reserve numeric `T` identifiers for implementation tasks. Standalone
-  governance, roadmap, architecture, audit, and documentation work uses
-  `M<milestone> Td` and does not allocate a task number, task artifact, or
-  artifact version. Design work that belongs to a planned implementation task
-  uses that task's `S` identifier instead.
-- Design closes only after it produces a bounded immediate implementation
-  breakdown. Do not start a later milestone merely because supporting code
-  exists.
 - Preserve the retained NXVM Console, debugger, startup path, full-PC FDD/HDD
   checkpoints, and approved task-artifact behavior during structural work.
   Any user-visible change requires explicit approval and regression evidence.

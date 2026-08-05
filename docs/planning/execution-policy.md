@@ -1,8 +1,11 @@
 # Execution Policy
 
-One subtask is active at a time. Follow the requirement packet and closure
-audit defined by [Execution Workflow](../execution-workflow.md). Before
-implementation, create a subtask record
+The public [Execution Governance skill](https://github.com/cshaxu/skills/blob/main/execution-governance/SKILL.md)
+owns general task intake, confirmation, decomposition, verification, discovery,
+and closure. This policy owns ntvdm64's identifiers, evidence, artifact, and
+milestone gates. One subtask is active at a time. Follow the local requirement
+packet and closure audit defined by [Execution Workflow](../execution-workflow.md).
+Before implementation, create a subtask record
 with objective, non-goals, reference baseline, files/ABI surface, applicable
 `RULES.md` sections, exact test commands, expected markers, asset needs, and
 stop conditions. The rules review names each applicable invariant, its planned

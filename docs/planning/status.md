@@ -11,6 +11,24 @@ documentation entry. Its closure audit verified R1 (entry/navigation), R2
 concise scope). It changes no source, build, artifact, or M5 technical closure
 item.
 
+**M5 Td S8 complete:** external governance-skill adoption. Original request:
+“让 ntvdm64 的文档去引用它，不要丢失自己的细节（比如任务如何编号：MTSP
+规则，比如自己的架构怎么设计的），但是和 skill 重复的部分直接改为 skill
+的引用并在 ntvdm64 本身删掉重复内容；引用的时候，只引用公开的 GitHub
+链接，不引用本地硬编码路径。”
+
+| Requirement | Owner | State | Evidence or decision |
+| --- | --- | --- | --- |
+| R1: use public links only | M5 Td S8 | Verified | All Skill references use public `https://github.com/cshaxu/skills/...` links. |
+| R2: retain local detail | M5 Td S8 | Verified | MTSP, artifact, roadmap, dual-product, module, toolchain, and acceptance decisions remain local authorities. |
+| R3: remove duplicated general rules | M5 Td S8 | Verified | Principal standards and `RULES.md` now cite skills and remove their duplicated generic method text. |
+| R4: close against the original request | M5 Td S8 | Verified | Link, scope, local-detail, duplicate, and working-tree audits pass. |
+
+| Dependency or risk | Decision / trigger | Resolution owner | State |
+| --- | --- | --- | --- |
+| Local detail could be lost during consolidation | Reviewed every changed document against its project-specific authority. | M5 Td S8 | Closed |
+| A local filesystem link could leak in | Final audit rejects every filesystem-local skill reference. | M5 Td S8 | Closed |
+
 **M5 T227 complete:** core KBC owns the bounded controller/keyboard protocol:
 set-1 query/select, observable translation bit, LEDs, typematic, ACK/RESEND,
 and elapsed-tick command-response delay. Set-2/3 conversion and AUX/IRQ12
