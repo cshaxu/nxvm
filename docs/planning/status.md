@@ -8,7 +8,9 @@ bridge; platform never reads guest VRAM. The owner-approved `console`,
 `window`, and `auto` policy is implemented: Console stops clearly at supported
 graphics, Window presents either admitted frame kind, and Auto moves the same
 session once from Console text to Window graphics. The GCC governance gate and
-62/62 current smoke matrix pass; see [the task record](m5-t228-cga-320x200x4.md).
+62/62 current smoke matrix pass. Artifact `nxvm_0_5_0228.exe` is SHA-256
+`B2D78D1B756A4BF5A1EAA1E038CDD7F4DD22C8487B5A3A5BE9EDF4C223047EB8` from
+`d527f23`; see [the task record](m5-t228-cga-320x200x4.md).
 
 **M5 T229 S1 is next:** define the bounded 8042 AUX controller, mouse packet,
 and IRQ12 contract before implementation. Host mouse may enter only through a
