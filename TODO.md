@@ -56,10 +56,10 @@ These are the next owned admissions, not permission to work in parallel.
   subset has owned registers/NVRAM, periodic/update/exact-alarm IRQ8, and
   deterministic elapsed-tick time. Deferred: persistent battery files,
   square-wave output, don't-care alarms, and broader RTC services.
-- [ ] **ATA PIO feature matrix (`TODO(Medium)`, T233).** Extend the admitted
-  primary master controller only through explicit probes for LBA, slave/
-  secondary channel, reset, status, and error timing. Do not admit IDE DMA or
-  let file images substitute for controller behavior.
+- [x] **ATA PIO feature matrix (`TODO(Medium)`, T233).** Primary-master LBA28
+  PIO and count-zero=256 are admitted; slave and secondary remain explicitly
+  absent, with SRST/status/error/IRQ14 behavior probed. Deferred: IDE DMA,
+  ATAPI, LBA48, cache, and host-clock timing.
 - [ ] **Complete digital CGA (`TODO(Medium)`).** Keep it separate from EGA/VGA.
   Admit `640x200x2` and remaining 40/80-column text combinations, then the
   6845-visible start/page address, cursor, scanline geometry, display-enable,
