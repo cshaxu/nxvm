@@ -3,20 +3,19 @@
 #include "type.h"
 
 #include "core/machine/machine_interface.h"
-#include "vm/composition/session/block.h"
 #include "vm/composition/session/machine_devices.h"
 #include "vm/composition/session/session.h"
 #include "vm/machine/cmos.h"
 #include "vm/machine/fdc.h"
 #include "vm/machine/fdd.h"
 #include "vm/machine/hdd.h"
+#include "vm/machine/hdc.h"
 
 C_VOID vm_session_machine_devices_initialize_media(vm_session *session)
 {
     if (session == STD_NULL) return;
     vm_machine_fdd_initialize(&session->fdd);
     vm_machine_hdd_initialize(&session->hdd);
-    vm_session_bind_block(session);
 }
 
 C_VOID vm_session_machine_devices_initialize_cmos(vm_session *session)
@@ -66,6 +65,46 @@ C_VOID vm_session_machine_devices_initialize_fdc(vm_session *session)
     vm_machine_fdc_initialize(&session->fdc);
 }
 
+C_INT vm_session_machine_devices_initialize_hdc(vm_session *session)
+{
+    const vm_profile_default_pc_at_hdc_pio *ports;
+    vm_machine_hdc_config config;
+    const core_machine_port_provider *provider;
+
+    if (session == STD_NULL || session->profile == STD_NULL ||
+        session->core_machine == STD_NULL) return 0;
+    ports = &session->profile->hdc_pio;
+    if (ports->data_port != 0x01f0u || ports->error_features_port != 0x01f1u ||
+        ports->status_command_port != 0x01f7u ||
+        ports->alternate_status_device_control_port != 0x03f6u ||
+        ports->irq != 14u || ports->dma_channel !=
+        VM_PROFILE_DEFAULT_PC_AT_NO_DMA_CHANNEL || ports->data_width_bits != 16u ||
+        ports->register_width_bits != 8u) return 0;
+    config.data_port = ports->data_port;
+    config.error_features_port = ports->error_features_port;
+    config.sector_count_port = ports->sector_count_port;
+    config.sector_number_port = ports->sector_number_port;
+    config.cylinder_low_port = ports->cylinder_low_port;
+    config.cylinder_high_port = ports->cylinder_high_port;
+    config.drive_head_port = ports->drive_head_port;
+    config.status_command_port = ports->status_command_port;
+    config.alternate_status_device_control_port =
+        ports->alternate_status_device_control_port;
+    config.irq = ports->irq;
+    vm_machine_hdc_connect(&session->hdc, &session->hdd,
+        core_machine_configuration_shared_pic_master_borrow(session->core_machine),
+        core_machine_configuration_shared_pic_slave_borrow(session->core_machine),
+        &config);
+    vm_machine_hdc_initialize(&session->hdc);
+    provider = vm_machine_hdc_port_provider();
+    return core_machine_install_port_provider(session->core_machine,
+        ports->data_port, ports->status_command_port, provider, &session->hdc) ==
+        TYPE_STATUS_OK && core_machine_install_port_provider(session->core_machine,
+        ports->alternate_status_device_control_port,
+        ports->alternate_status_device_control_port, provider, &session->hdc) ==
+        TYPE_STATUS_OK;
+}
+
 C_VOID vm_session_machine_devices_reset_cmos(vm_session *session)
 {
     if (session != STD_NULL) vm_machine_cmos_reset(&session->cmos);
@@ -81,6 +120,7 @@ C_VOID vm_session_machine_devices_refresh(vm_session *session)
     if (session == STD_NULL) return;
     vm_machine_fdd_refresh(&session->fdd);
     vm_machine_hdd_refresh(&session->hdd);
+    vm_machine_hdc_refresh(&session->hdc);
     vm_machine_cmos_refresh(&session->cmos);
     vm_machine_fdc_refresh(&session->fdc);
 }
@@ -92,6 +132,7 @@ C_VOID vm_session_machine_devices_reset(vm_session *session)
     vm_machine_fdc_reset(&session->fdc);
     vm_machine_fdd_reset(&session->fdd);
     vm_machine_hdd_reset(&session->hdd);
+    vm_machine_hdc_reset(&session->hdc);
 }
 
 C_VOID vm_session_machine_devices_finalize(vm_session *session)
@@ -99,6 +140,7 @@ C_VOID vm_session_machine_devices_finalize(vm_session *session)
     if (session == STD_NULL) return;
     vm_machine_cmos_finalize(&session->cmos);
     vm_machine_fdc_finalize(&session->fdc);
+    vm_machine_hdc_finalize(&session->hdc);
     vm_machine_fdd_finalize(&session->fdd);
     vm_machine_hdd_finalize(&session->hdd);
 }

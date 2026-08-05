@@ -38,9 +38,9 @@ rely on a BIOS hack, host shortcut, or application special case for a
 guest-observable behavior.
 
 **Active implementation task -- T213: HDD controller profile / port contract.**
-S1 declares and probes the primary ATA PIO contract; S2 admits only the
-declared controller state machine and composition binding; S3 adds a
-guest-visible regression before any F4/F5 portal retirement claim. See
+S1 declares and probes the primary ATA PIO contract; S2 admits the declared
+controller state machine and composition binding; S3 retires the HDD F4/F5
+shortcut and records its real system-image regression. See
 [`M5 T213`](docs/planning/m5-t213-hdd-controller-profile.md).
 
 1. **Architecture and validation foundation.** Reaffirm NXVM-first M5 scope;
@@ -276,23 +276,13 @@ guest-visible regression before any F4/F5 portal retirement claim. See
   host-side BDA mutation was introduced. The current matrix passes; completed
   T212 ROM-video regression now covers the no-media error-display sequence.
 
-- [ ] **Remove default-profile firmware shortcuts (`TODO(High)`, M5 core
-  closure condition).** Completion of T209 removes the QDX `F1 <command>`
-  CPU opcode hack; T212 additionally retires the text `INT F2h` portal through
-  default-ROM `INT 10h` over BDA, `B8000`, and VADP. The remaining HDD
-  read/write portals are `F4h`/`F5h`. M5 may not claim a fully hardware-owned
-  PC/AT execution path while those portals remain. Retire each portal only
-  after its guest-visible
-  behavior has a real owner and probe: KBC ports/IRQ1 plus ROM BIOS keyboard
-  service (completed by T210); the boot-failure lifecycle boundary (completed
-  by T211); VADP ports/VRAM plus ROM BIOS video service; and a guest-visible
-  HDD controller with port/IRQ/PIO or DMA behavior plus ROM BIOS disk service.
-  Replace the boot-failure stop helper with an explicit product/session
-  lifecycle boundary. The final task removes `firmware_portal.*`, private
-  vector registrations, and obsolete QD* C firmware handlers, while preserving
-  ordinary guest `INT`/IVT delivery and NXVM Console/debugger/boot behavior.
-  Do not substitute a new host callback, host-side BDA/RAM mutation, or BIOS
-  special-case for the removed portal.
+- [x] **Retire default-profile firmware shortcuts (`TODO(High)`, T209--T213).**
+  T209 removes the QDX `F1 <command>` CPU opcode hack; T210 retires F1/F3,
+  T211 retires F0, T212 retires F2, and T213 retires F4/F5. The resulting
+  default profile has no private `F0h`--`F5h` registration: keyboard, stop,
+  text display, and CHS disk I/O each have their declared device/ROM/session
+  owner. `firmware_portal.*` and obsolete QD disk helpers are gone; ordinary
+  guest `INT`/IVT delivery and NXVM Console/debugger/boot behavior remain.
 
 - [x] **Runner display cadence (`TODO(Medium)`, T212).** Normal execution now
   uses a 256-instruction quantum and publishes at most one copied display frame
@@ -400,10 +390,11 @@ guest-visible regression before any F4/F5 portal retirement claim. See
     floppy images are sufficient for recorded boot. Validate command/result
     state, disk-change/motor/data-rate behavior, non-DMA, media formats,
     transfer timing, and error paths before broad floppy compatibility claims.
-  - **HDD:** the VM has an in-memory CHS image and firmware INT 13h path; it
-    does not implement an ATA/IDE/HDC port controller. Keep that distinction
-    explicit. Admit a real controller only with an approved profile, port/DMA
-    contract, and owned guest probes.
+  - **HDD:** T213 provides a bounded primary, master-only ATA PIO controller
+    (`1F0h`--`1F7h`, `3F6h`, IRQ14, CHS, no DMA) with a session-owned image
+    backend and ROM `INT 13h` port transactions. Secondary/slave channels,
+    LBA, bus-master DMA, ATAPI, timing, write cache, and host-path policy
+    remain deferred; do not call this full IDE compatibility.
 - [ ] **CPU internal naming (`TODO(Low)`).** Rename legacy segment-descriptor
   fields to owner-consistent vocabulary only in a bounded compatibility task;
   preserve layout, CPU behavior, and debugger output.

@@ -39,6 +39,8 @@
 
 #include "vm/machine/hdd.h"
 
+#include "vm/machine/hdc.h"
+
 #include "vm/machine/debug.h"
 
 #include "vm/profile/default_profile/firmware/bios.h"
@@ -79,6 +81,7 @@ typedef struct vm_session {
     t_fdd fdd;
     t_fdc fdc;
     t_hdd hdd;
+    vm_machine_hdc hdc;
     t_debug debug;
     t_bios default_bios;
     vm_profile_default_context default_profile_context;

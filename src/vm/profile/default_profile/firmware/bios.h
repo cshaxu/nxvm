@@ -170,9 +170,9 @@ C_INT vm_profile_default_bios_take_boot_failure_report(t_ram *ram);
 
 #define VBIOS_POST_BOOT "             \
 $(label_post_boot_start):           \n\
-mov bx, 0050                        \n\
+mov bx, 0040                        \n\
 mov ds, bx                          \n\
-mov dl, ds:[0005] ; select boot disk\n\
+mov dl, ds:[0072] ; select boot disk\n\
 mov dh, 00     ; select head 0      \n\
 mov ch, 00     ; select cylender 0  \n\
 mov cl, 01     ; select sector 1    \n\

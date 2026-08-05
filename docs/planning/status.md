@@ -2,11 +2,17 @@
 
 ## Current Work
 
-**Active subtask:** **M5 T213 S2 -- VM HDC state machine and core binding.**
-S1 has frozen and probed the default PC/AT primary ATA PIO topology. S2 may
-now add only its declared session-owned controller, core port/PIC binding, and
-bounded PIO command subset; HDD boot behavior and F4/F5 portal retirement stay
-outside S2 until the S3 guest-visible regression proves the same owner path.
+**Active subtask:** **M5 T213 S3 -- BIOS boundary, system-image regression,
+and closure.** S1 froze the default PC/AT primary ATA PIO topology; S2 added
+the session-owned controller, core port/PIC binding, and bounded PIO subset.
+S3 has retired the HDD F4/F5 shortcut, passed the retained 50/50 current gate,
+and produced the task artifact; only commit closeout remains.
+
+**M5 T213 complete:** the default profile now owns a primary master-only ATA
+PIO HDC at `1F0h`--`1F7h` and `3F6h` with IRQ14. ROM `INT 13h` performs PIO
+through that controller, not the old F4/F5 helpers; the bounded HDD-image
+smoke reaches the active partition VBR after two reads. See [the task
+record](m5-t213-hdd-controller-profile.md).
 
 **M5 T211 complete:** the default profile's F0
 boot-failure portal is retired. The ROM reports an acknowledged failure through
@@ -57,10 +63,10 @@ changes no source or build output.
 
 ## Latest Technical Baseline
 
-M5 T212 retains NXVM behavior while moving the admitted text `INT 10h` subset
-from the F2 portal into default-ROM firmware and bounding runner display-copy
-cadence. The recorded developer artifact is `nxvm_0_5_0212.exe`; its historical
-evidence is summarized in [M5 History](../history/m5.md).
+M5 T213 retains NXVM behavior while replacing the HDD F4/F5 helpers with the
+declared primary ATA PIO controller and ROM `INT 13h` path. The recorded
+developer artifact is `nxvm_0_5_0213.exe`; its historical evidence is
+summarized in [M5 History](../history/m5.md).
 
 ## Operational Reading Order
 

@@ -17,17 +17,15 @@ foreach(required "VBIOS_INT_HARD_KEYBOARD_09" "VBIOS_INT_SOFT_KEYBOARD_16")
     endif()
 endforeach()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/profile/default_profile/firmware/firmware_portal.c"
-    portal_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/profile/default_profile/firmware/firmware_portal.h"
-    portal_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/profile/default_profile/firmware/qdkeyb.c"
-    keyboard_source)
-foreach(source IN ITEMS "${portal_source}" "${portal_header}" "${keyboard_source}")
+file(GLOB_RECURSE firmware_sources
+    "${PROJECT_SOURCE_DIR}/src/vm/profile/default_profile/firmware/*.c"
+    "${PROJECT_SOURCE_DIR}/src/vm/profile/default_profile/firmware/*.h")
+foreach(source IN LISTS firmware_sources)
+    file(READ "${source}" source_text)
     foreach(forbidden "PORTAL_KEYBOARD" "keyboard_handle_irq1" "keyboard_handle_int16")
-        string(FIND "${source}" "${forbidden}" position)
+        string(FIND "${source_text}" "${forbidden}" position)
         if(NOT position EQUAL -1)
-            message(FATAL_ERROR "T210 retired keyboard callback remains: ${forbidden}")
+            message(FATAL_ERROR "T210 retired keyboard callback remains: ${source}")
         endif()
     endforeach()
 endforeach()

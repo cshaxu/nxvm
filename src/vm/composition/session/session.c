@@ -10,7 +10,6 @@
 #include "vm/machine/fdd.h"
 #include "vm/machine/hdd.h"
 #include "vm/profile/default_profile/firmware/bios.h"
-#include "vm/profile/default_profile/firmware/firmware_portal.h"
 #include "vm/profile/default_profile/keyboard_mapper.h"
 
 C_INT vm_session_enqueue_keyboard_state(
@@ -126,15 +125,6 @@ C_VOID vm_session_storage_initialize(vm_session *machine)
     vm_profile_default_context_initialize(&machine->default_profile_context,
         &machine->default_bios, profile_binding,
         STD_NULL, STD_NULL);
-    if (vm_profile_default_firmware_portal_install(machine->core_machine,
-            &machine->default_profile_context,
-            VM_PROFILE_DEFAULT_PORTAL_ORIGIN_LINEAR_START,
-            VM_PROFILE_DEFAULT_PORTAL_ORIGIN_LINEAR_BYTES) !=
-        TYPE_STATUS_OK) {
-        core_machine_destroy(machine->core_machine);
-        machine->core_machine = STD_NULL;
-        return;
-    }
     core_machine_block_provider_slot_initialize(&machine->block_provider);
     machine->default_profile_context.block_provider = &machine->block_provider;
     core_machine_keyboard_provider_slot_initialize(&machine->keyboard_provider);
