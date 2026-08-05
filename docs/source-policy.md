@@ -23,21 +23,12 @@ not extend NXVM's global state or legacy coupling when a bounded interface is
 practical. If a selected file carries an independent third-party notice or
 license, stop and record a separate review before importing it.
 
-## Source Vocabulary
+## C Vocabulary Boundary
 
-`src/type.h` defines mandatory vocabulary for active project C code: `C_*` for
-C scalar typedefs, `STD_*` for ISO C library types/objects/constants/atomics/
-wrappers, and `WIN32_*` for project-facing Win32 adapter types. Fixed-width
-`int*_t` and `uint*_t` remain unchanged. `type.h` is the sole ISO C header
-boundary; raw ISO C calls/types are allowed only to define or implement its
-facade. Platform SDK calls/types remain implementation-local below the adapter.
-
-Do not introduce `fflush(stdin)`. Input clearing uses a product/provider
-contract bound to an explicit platform capability and must not flush redirected
-input as an interactive Console. Approved compact names (`kbc`, `vadp`,
-`win32app`, `win32con`, `linuxapp`, `linuxcon`, `w32*`, `xasm32`, `aasm`,
-`dasm`, `debug`, and documented `qd*` firmware hacks) remain valid exceptions
-to expansion, not to owner prefixes.
+[C-Library Facade](architecture/c-library-facade.md) is the sole authority for
+the `type.h` vocabulary, ISO C header/call boundary, platform type exposure,
+input-flush safety, and approved compact code names. Imported or derived source
+must comply with that authority; this source policy does not restate it.
 
 ## Other Open Source
 

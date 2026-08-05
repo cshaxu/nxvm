@@ -10,9 +10,10 @@ observable behavior; planning documents do not define interfaces.
 ## Foundation
 
 `src/type.h` is the common system type header. It defines `ntvdm64_status`,
-the `C_*` language aliases, `STD_*` C-library vocabulary, retained NXVM numeric
-aliases, common bit/constant helpers, and product-neutral legacy C-runtime and
-trace primitives. `src/type.c` owns their non-inline implementations.
+retained NXVM numeric aliases, common bit/constant helpers, and product-neutral
+legacy C-runtime and trace primitives. `src/type.c` owns their non-inline
+implementations. [C-Library Facade](c-library-facade.md) is the sole authority
+for its C vocabulary and header boundary.
 
 Each product module owns its `PRODUCT_NAME`. The shared core-product banner
 helper defines `PRODUCT_VERSION`, `PRODUCT_COPYRIGHT`, and

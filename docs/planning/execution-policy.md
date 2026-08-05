@@ -1,10 +1,12 @@
 # Execution Policy
 
-The public [Execution Governance skill](https://github.com/cshaxu/skills/blob/main/execution-governance/SKILL.md)
-owns general task intake, confirmation, decomposition, verification, discovery,
-and closure. This policy owns ntvdm64's identifiers, evidence, artifact, and
-milestone gates. One subtask is active at a time. Follow the local requirement
-packet and closure audit defined by [Execution Workflow](../execution-workflow.md).
+The local [Execution Workflow](../execution-workflow.md) owns the mandatory
+request lifecycle. This policy owns ntvdm64's identifiers, evidence, artifact,
+and milestone gates. The public
+[Execution Governance skill](https://github.com/cshaxu/skills/blob/main/execution-governance/SKILL.md)
+is supplementary reusable guidance, not a prerequisite. One subtask is active
+at a time. Follow the local requirement packet and closure audit defined by the
+Execution Workflow.
 Before implementation, create a subtask record
 with objective, non-goals, reference baseline, files/ABI surface, applicable
 local architecture, coding, source, and execution rules, exact test commands,

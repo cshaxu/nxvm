@@ -19,6 +19,23 @@ or M5 technical closure item changes.
 | R3: avoid unrelated cleanup | Verified | Out-of-scope hits require a recorded deferral or owner-approved scope change. |
 | R4: preserve public-skill division | Verified | Local text names ntvdm64 evidence and gates; general discovery practice remains in the public skill. |
 
+**M5 Td S11 complete:** make governance self-contained and remove duplicated
+type-vocabulary authority. Original request: “Resolve every audit finding and
+make a `Td` commit. This command also follows the governance specifications in
+the project and public Skills.”
+
+| Requirement | Owner | State | Evidence or decision |
+| --- | --- | --- | --- |
+| R1: local execution works without a Skill install | M5 Td S11 | Verified | Execution Workflow now defines the mandatory local lifecycle and closure contract. |
+| R2: make all execution authorities discoverable | M5 Td S11 | Verified | `AGENTS.md` and the documentation guide name the workflow and Execution Policy. |
+| R3: remove overlapping `type.h` rules | M5 Td S11 | Verified | C-Library Facade is the sole detailed authority; other current docs link to it. |
+| R4: close every audit finding | M5 Td S11 | Verified | Link, authority-marker, duplicate-scope, diff, and working-tree audits pass. |
+
+| Dependency or risk | Decision / trigger | Resolution owner | State |
+| --- | --- | --- | --- |
+| Local workflow could again be replaced by a link | Skills are explicitly supplementary; the local lifecycle is mandatory. | M5 Td S11 | Closed |
+| Vocabulary detail could be lost during consolidation | One current facade authority remains; superseded material is non-normative history. | M5 Td S11 | Closed |
+
 **M5 Td S7 complete:** the execution workflow is the seventh principal
 documentation entry. Its closure audit verified R1 (entry/navigation), R2
 (requirement packet, state machine, and closure audit), and R3 (docs-only,

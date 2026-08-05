@@ -11,9 +11,10 @@ Read the seven principal documents first:
 7. [Execution Workflow](execution-workflow.md)
 
 For active work, then read [Project Status](planning/status.md) and the
-applicable closure checklist. `architecture/`, `requirements/`, policy files,
-research, references, provenance, and history are supporting material: they
-refine one of the seven subjects but do not create a competing daily entry point.
+[Execution Policy](planning/execution-policy.md); read the applicable closure
+checklist before claiming a milestone. `architecture/`, `requirements/`,
+research, references, provenance, and history refine one of the seven subjects
+but do not create a competing daily entry point.
 
 The local authorities cite the public [Architecture](https://github.com/cshaxu/skills/blob/main/architecture-governance/SKILL.md),
 [Coding](https://github.com/cshaxu/skills/blob/main/coding-governance/SKILL.md),
@@ -25,7 +26,8 @@ architecture, task identifiers, policies, or evidence.
 Admitted M5 hardware-device work follows the compact
 [Hardware Device Verification Template](compatibility/hardware-device-verification.md).
 
-[Module Layout](architecture/module-layout.md), [Coding Standard](coding-standard.md),
-[Source Policy](source-policy.md), and [Execution Policy](planning/execution-policy.md)
-provide the local implementation and review rules. `../TODO.md` is the live
-ledger referenced by Debt Tracking.
+[Module Layout](architecture/module-layout.md), [Contracts](architecture/contracts.md),
+[Coding Standard](coding-standard.md), [Source Policy](source-policy.md), and
+[Execution Policy](planning/execution-policy.md) provide the local
+implementation and review rules. `../TODO.md` is the live ledger referenced by
+Debt Tracking.
