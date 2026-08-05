@@ -17,6 +17,14 @@ typedef struct t_port t_port;
 
 #define VM_MACHINE_DEVICE_FDC "Intel 8272A"
 
+typedef enum vm_machine_fdc_phase {
+    VM_MACHINE_FDC_PHASE_COMMAND = 0,
+    VM_MACHINE_FDC_PHASE_EXECUTION_READ,
+    VM_MACHINE_FDC_PHASE_EXECUTION_WRITE,
+    VM_MACHINE_FDC_PHASE_EXECUTION_FORMAT,
+    VM_MACHINE_FDC_PHASE_RESULT
+} vm_machine_fdc_phase;
+
 typedef struct {
     type_unsigned_8 dor; /* digital output register */
     type_unsigned_8 msr; /* main status register */
@@ -30,10 +38,25 @@ typedef struct {
     type_bool flagNDMA; /* 0 = dma mode; 1 = non-dma mode */
     type_bool flagINTR; /* 0 = no intr; 1 = has intr */
 
-    type_unsigned_8 rwCount; /* count of io port command/result rw times */
+    vm_machine_fdc_phase phase;
+    type_unsigned_8 command_length;
+    type_unsigned_8 command_index;
+    type_unsigned_8 result_length;
+    type_unsigned_8 result_index;
     type_unsigned_8 cmd[9];
     type_unsigned_8 ret[7];
     type_unsigned_8 st0, st1, st2, st3; /* state registers */
+    type_unsigned_16 cylinder;
+    type_unsigned_16 head;
+    type_unsigned_16 sector;
+    type_unsigned_16 eot;
+    type_unsigned_16 byte_offset;
+    type_unsigned_32 transfer_remaining;
+    type_unsigned_16 format_headers_remaining;
+    type_unsigned_8 format_id[4];
+    type_unsigned_8 format_id_index;
+    type_unsigned_8 selected_drive;
+    uint32_t observed_media_generation;
 } t_fdc_data;
 
 typedef struct {
@@ -98,6 +121,8 @@ typedef struct {
 /* status register 0 bits */
 #define VFDC_ST0_DS       0x03 /* drive select */
 #define VFDC_ST0_SEEK_END 0x20
+#define VM_MACHINE_FDC_ST0_NORMAL 0x20
+#define VM_MACHINE_FDC_ST0_ABNORMAL 0x40
 
 /* status register 2 bits */
 #define VFDC_ST2_SCAN_MATCH    0x04

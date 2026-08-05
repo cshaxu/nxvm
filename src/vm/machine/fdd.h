@@ -29,8 +29,7 @@ typedef struct {
     type_bool flagDiskExist; /* flag of floppy disk existance */
 
     type_virtual_address pImgBase;   /* pointer to disk in ram */
-    type_virtual_address pCurrByte;  /* pointer to current byte */
-    type_unsigned_16 transCount; /* number of transfer bytes */
+    uint32_t media_generation; /* advances on every insert/remove/create */
 } t_fdd_connect;
 
 typedef struct {
@@ -41,10 +40,16 @@ typedef struct {
 #define VFDD_BYTE_PER_MB ((1 << 10) * 1000)
 
 STD_SIZE_T vm_machine_fdd_image_size(const t_fdd *fdd);
-C_VOID vm_machine_fdd_set_pointer(t_fdd *fdd);
-C_VOID vm_machine_fdd_transfer_read(t_fdd *fdd, t_latch *latch);
-C_VOID vm_machine_fdd_transfer_write(t_fdd *fdd, t_latch *latch);
-C_VOID vm_machine_fdd_format_track(t_fdd *fdd, type_unsigned_8 fill_byte);
+C_INT vm_machine_fdd_chs_valid(const t_fdd *fdd, type_unsigned_16 cylinder,
+    type_unsigned_16 head, type_unsigned_16 sector, type_unsigned_16 bytes);
+C_INT vm_machine_fdd_read_byte(const t_fdd *fdd, type_unsigned_16 cylinder,
+    type_unsigned_16 head, type_unsigned_16 sector, type_unsigned_16 offset,
+    type_unsigned_8 *out_byte);
+C_INT vm_machine_fdd_write_byte(t_fdd *fdd, type_unsigned_16 cylinder,
+    type_unsigned_16 head, type_unsigned_16 sector, type_unsigned_16 offset,
+    type_unsigned_8 value);
+C_INT vm_machine_fdd_format_sector(t_fdd *fdd, type_unsigned_16 cylinder,
+    type_unsigned_16 head, type_unsigned_16 sector, type_unsigned_8 fill_byte);
 C_VOID vm_machine_fdd_initialize(t_fdd *fdd);
 C_VOID vm_machine_fdd_reset(t_fdd *fdd);
 C_VOID vm_machine_fdd_refresh(t_fdd *fdd);
