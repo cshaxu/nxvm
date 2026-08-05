@@ -71,34 +71,7 @@ C_VOID vm_machine_cmos_apply_defaults(t_cmos *cmos,
         TYPE_MASK_UNSIGNED_8(defaults->base_memory_kib >> 8);
 }
 C_VOID vm_machine_cmos_refresh(t_cmos *cmos) {
-    STD_TIME_T tCurr;
-    struct tm *ptm;
-    type_unsigned_8 century, year, month, mday, wday, hour, min, sec;
-
-    tCurr = STD_TIME(STD_NULL);
-    if (tCurr == cmos->connect.last_refresh) {
-        return;
-    } else {
-        cmos->connect.last_refresh = tCurr;
-    }
-    ptm = STD_LOCALTIME(&tCurr);
-
-    century = TYPE_MASK_UNSIGNED_8(19 + ptm->tm_year / 100);
-    year    = TYPE_MASK_UNSIGNED_8(ptm->tm_year % 100);
-    month   = TYPE_MASK_UNSIGNED_8(ptm->tm_mon + 1);
-    mday    = TYPE_MASK_UNSIGNED_8(ptm->tm_mday);
-    wday    = TYPE_MASK_UNSIGNED_8(ptm->tm_wday + 1);
-    hour    = TYPE_MASK_UNSIGNED_8(ptm->tm_hour);
-    min     = TYPE_MASK_UNSIGNED_8(ptm->tm_min);
-    sec     = TYPE_MASK_UNSIGNED_8(ptm->tm_sec);
-
-    cmos->connect.reg[VCMOS_RTC_SECOND]    = TYPE_HEX_TO_BCD(sec);
-    cmos->connect.reg[VCMOS_RTC_MINUTE]    = TYPE_HEX_TO_BCD(min);
-    cmos->connect.reg[VCMOS_RTC_HOUR]      = TYPE_HEX_TO_BCD(hour);
-    cmos->connect.reg[VCMOS_RTC_DAY_WEEK]  = TYPE_HEX_TO_BCD(wday);
-    cmos->connect.reg[VCMOS_RTC_DAY_MONTH] = TYPE_HEX_TO_BCD(mday);
-    cmos->connect.reg[VCMOS_RTC_MONTH]     = TYPE_HEX_TO_BCD(month);
-    cmos->connect.reg[VCMOS_RTC_YEAR]      = TYPE_HEX_TO_BCD(year);
-    cmos->connect.reg[VCMOS_RTC_CENTURY]   = TYPE_HEX_TO_BCD(century);
+    /* RTC progression is T229 work. Guest state must not track host time. */
+    (C_VOID)cmos;
 }
 C_VOID vm_machine_cmos_finalize(t_cmos *cmos) { (C_VOID)cmos; }

@@ -18,7 +18,8 @@ type_status vm_profile_default_firmware_compose(
         { "bios.int10.video", CORE_MACHINE_FIRMWARE_SERVICE_INTERRUPT, 30u, 0x10u },
         { "bios.int13.disk", CORE_MACHINE_FIRMWARE_SERVICE_INTERRUPT, 40u, 0x13u },
         { "bios.int16.keyboard", CORE_MACHINE_FIRMWARE_SERVICE_INTERRUPT, 50u, 0x16u },
-        { "bios.int1a.clock", CORE_MACHINE_FIRMWARE_SERVICE_INTERRUPT, 60u, 0x1au }
+        { "bios.irq0.timer", CORE_MACHINE_FIRMWARE_SERVICE_INTERRUPT, 60u, 0x08u },
+        { "bios.int1a.timer", CORE_MACHINE_FIRMWARE_SERVICE_INTERRUPT, 70u, 0x1au }
     };
     STD_SIZE_T index;
     type_status status;

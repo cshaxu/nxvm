@@ -60,6 +60,8 @@ struct core_machine {
     uint32_t fault_detail;
     uint64_t elapsed_ticks;
     uint32_t ticks_per_instruction;
+    uint32_t pit_elapsed_ticks_per_input_tick;
+    uint32_t pit_elapsed_tick_remainder;
     core_machine_port_table port_providers;
     core_machine_trace_state trace;
     core_machine_cpu_diagnostic_state cpu_diagnostic;

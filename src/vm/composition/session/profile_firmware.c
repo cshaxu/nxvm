@@ -28,13 +28,13 @@ static C_VOID vm_session_profile_firmware_apply(
     case VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_CMOS_POST:
         vm_profile_default_bios_add_post(&session->default_bios, VCMOS_POST);
         break;
-    case VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_CMOS_IRQ8:
+    case VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_TIMER_IRQ0:
         vm_profile_default_bios_add_interrupt(&session->default_bios,
-            VCMOS_INT_HARD_RTC_08, vector);
+            VCMOS_INT_HARD_TIMER_08, vector);
         break;
-    case VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_CMOS_INT1A:
+    case VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_TIMER_INT1A:
         vm_profile_default_bios_add_interrupt(&session->default_bios,
-            VCMOS_INT_SOFT_RTC_1A, vector);
+            VCMOS_INT_SOFT_TIMER_1A, vector);
         break;
     case VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_KEYBOARD_IRQ1:
         vm_profile_default_bios_add_interrupt(&session->default_bios,
@@ -107,7 +107,7 @@ C_VOID vm_session_profile_firmware_register_cmos(vm_session *session)
     if (session == STD_NULL) return;
     vm_session_profile_firmware_apply_range(session,
         VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_CMOS_POST,
-        VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_CMOS_INT1A);
+        VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_TIMER_INT1A);
 }
 
 C_VOID vm_session_profile_firmware_register_keyboard(vm_session *session)

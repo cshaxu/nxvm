@@ -113,13 +113,25 @@ static uint32_t core_machine_resolve_ticks_per_instruction(uint32_t ticks)
     return ticks == 0u ? 1u : ticks;
 }
 
+static uint32_t core_machine_resolve_pit_elapsed_ticks_per_input_tick(
+    uint32_t ticks)
+{
+    return ticks == 0u ? 1u : ticks;
+}
+
 static C_VOID core_machine_advance_scheduler(core_machine *machine,
     uint64_t elapsed_ticks)
 {
+    uint64_t pit_ticks;
+
     core_machine_dma_advance(&machine->shared_dma_latch,
         &machine->shared_dma_primary, &machine->shared_dma_secondary,
         &machine->executor_memory, elapsed_ticks);
-    core_machine_pit_advance(&machine->shared_pit, elapsed_ticks);
+    pit_ticks = (uint64_t)machine->pit_elapsed_tick_remainder + elapsed_ticks;
+    machine->pit_elapsed_tick_remainder = (uint32_t)(pit_ticks %
+        machine->pit_elapsed_ticks_per_input_tick);
+    core_machine_pit_advance(&machine->shared_pit, pit_ticks /
+        machine->pit_elapsed_ticks_per_input_tick);
     core_machine_vadp_advance(&machine->shared_vadp, &machine->executor_memory,
         elapsed_ticks);
     core_machine_pic_refresh(&machine->shared_pic_master,
@@ -400,6 +412,9 @@ type_status core_machine_create(
     machine->cpu_profile = core_machine_resolve_cpu_profile(config->cpu_profile);
     machine->ticks_per_instruction =
         core_machine_resolve_ticks_per_instruction(config->ticks_per_instruction);
+    machine->pit_elapsed_ticks_per_input_tick =
+        core_machine_resolve_pit_elapsed_ticks_per_input_tick(
+            config->pit_elapsed_ticks_per_input_tick);
     core_machine_fpu_initialize(&machine->fpu, config->fpu_profile);
     STD_ATOMIC_INIT(&machine->stop_requested, 0);
     core_machine_trace_initialize(machine);
@@ -471,6 +486,7 @@ static type_status core_machine_cold_reset(core_machine *machine)
     STD_ATOMIC_STORE(&machine->stop_requested, 0);
     machine->fault_detail = 0u;
     machine->elapsed_ticks = 0u;
+    machine->pit_elapsed_tick_remainder = 0u;
     core_machine_cpu_diagnostic_reset(machine);
     if (machine->execution_provider != STD_NULL &&
         machine->execution_provider->reset != STD_NULL) {

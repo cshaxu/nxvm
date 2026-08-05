@@ -39,6 +39,7 @@ typedef struct core_machine_config {
     core_machine_cpu_profile cpu_profile;
     core_machine_fpu_profile fpu_profile;
     uint32_t ticks_per_instruction;
+    uint32_t pit_elapsed_ticks_per_input_tick;
 } core_machine_config;
 
 typedef enum core_machine_stop_reason {

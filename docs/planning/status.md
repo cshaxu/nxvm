@@ -2,6 +2,12 @@
 
 ## Current Work
 
+**M5 T225 complete:** core elapsed ticks now pass through a frozen profile
+divider before PIT advancement; ordinary PIT IRQ0 reaches ROM `INT 08h`, BDA,
+and `INT 1Ah/AH=00h` without a host clock path. Focused divider/FDD-system
+probes, the current GCC/CTest gate, and artifact `0.5.0225` are recorded in
+[the task record](m5-t225-time-pit-closure.md). KBC work is deferred to T226.
+
 **M5 T222 complete:** the core PIT owns effective binary/BCD reload, GATE edge
 handling, modes 0--5 waveform state, read-back, and OUT-level delivery to the
 PIC IRQ0 source. The focused waveform/read-back probes and 57/57 current

@@ -21,8 +21,8 @@ static const vm_profile_default_pc_at_firmware_service
 default_pc_at_firmware_services[] = {
     { VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_VIDEO_INT10, 0x10u },
     { VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_CMOS_POST, 0u },
-    { VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_CMOS_IRQ8, 0x08u },
-    { VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_CMOS_INT1A, 0x1au },
+    { VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_TIMER_IRQ0, 0x08u },
+    { VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_TIMER_INT1A, 0x1au },
     { VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_KEYBOARD_IRQ1, 0x09u },
     { VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_KEYBOARD_INT16, 0x16u },
     { VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_DMA_POST, 0u },
@@ -41,6 +41,7 @@ static const vm_profile_default_pc_at_descriptor default_pc_at_descriptor = {
     CORE_MACHINE_CPU_PROFILE_80386,
     CORE_MACHINE_FPU_PROFILE_NONE,
     1u,
+    4u,
     { 48u, 8u, 8u },
     16u * 1024u * 1024u,
     { 0xfffffff0u, 0x000ffff0u, 16u, 0xf000u, 0xfff0u },
