@@ -12,12 +12,15 @@ session once from Console text to Window graphics. The GCC governance gate and
 `B2D78D1B756A4BF5A1EAA1E038CDD7F4DD22C8487B5A3A5BE9EDF4C223047EB8` from
 `d527f23`; see [the task record](m5-t228-cga-320x200x4.md).
 
-**M5 T229 S3 is active:** the bounded 8042 AUX controller now has one tagged
-KBC output owner, PS/2 three-byte packets, and IRQ12; host mouse enters only
-through the profile mapper and existing session ingress. The pending closure
-matrix verifies ordinary guest IVT `74h` consumption, retained NXVM behavior,
-GCC/CTest gates, and the `0.5.0229` artifact. No BIOS/DOS/BDA/guest-memory
-shortcut is admitted; see [the task record](m5-t229-kbc-aux-mouse.md).
+**M5 T229 complete:** the bounded 8042 AUX controller has one tagged KBC output
+owner, PS/2 three-byte packets, and IRQ12; host mouse enters only through the
+profile mapper and existing session ingress. An ordinary guest IVT `74h`
+fixture, the retained NXVM behavior matrix, GCC/CTest gates, and artifact
+`nxvm_0_5_0229.exe` passed. Its SHA-256 is
+`62E7AE972C0D4B433A4842A4756E4D88B36D8F1AEAED2D5F22B883E3297B4ADA` from
+`a60b57a`; see [the task record](m5-t229-kbc-aux-mouse.md). No
+BIOS/DOS/BDA/guest-memory shortcut is admitted. T230 remains planned and is not
+active without a new owner authorization.
 
 **M5 Td S10 complete:** defect and compatibility fixes now have an enforceable
 local similar-issue sweep. The active packet and closure evidence must record
