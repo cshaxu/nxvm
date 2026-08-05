@@ -20,13 +20,16 @@ C_INT main(C_VOID)
 
     config.ticks_per_instruction = 3u;
     failed |= machine_time_expect(core_machine_create(&config, &machine));
+    failed |= core_machine_memory_register_mapping(
+        core_machine_configuration_memory_borrow(machine), 0xfffffff0u,
+        0x000ffff0u, 16u) != TYPE_STATUS_OK;
     failed |= machine_time_expect(core_machine_freeze_execution_providers(machine));
     failed |= machine_time_expect(core_machine_reset(machine));
     failed |= machine_time_expect(core_machine_get_elapsed_ticks(machine, &elapsed));
     failed |= elapsed != 0u;
-    failed |= core_machine_memory_write(machine, 0xffff0u, &nop, sizeof(nop)) !=
+    failed |= core_machine_memory_write(machine, 0xfffffff0u, &nop, sizeof(nop)) !=
         TYPE_STATUS_OK;
-    failed |= core_machine_memory_write(machine, 0xffff1u, &nop, sizeof(nop)) !=
+    failed |= core_machine_memory_write(machine, 0xfffffff1u, &nop, sizeof(nop)) !=
         TYPE_STATUS_OK;
     failed |= core_machine_run(machine, budget, &result) != TYPE_STATUS_OK;
     failed |= result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 2u ||

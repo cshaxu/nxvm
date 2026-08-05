@@ -2,10 +2,7 @@
 
 ## S1: Corpus And Contract
 
-**Status:** active. This subtask inventories the exact real-mode instruction,
-prefix, I/O, fault, and interrupt forms exercised by the retained ROM, DOS
-boot, FDD/HDD, KBC, VADP, PIT, and debugger paths. It does not admit protected
-mode, paging, task switching, or a present FPU.
+**Status:** complete.
 
 T218 turns T217's generic per-completed-instruction coarse tick into a trusted
 real-mode attribution boundary. Prefix bytes are part of one architectural
@@ -23,6 +20,40 @@ execution behavior rather than inferred from a DOS boot alone.
 3. Reproduce and repair only concrete real-mode defects found by that corpus.
 4. Verify equal input/reset/budget sequences produce equal CPU state, stop
    reason, executed count, and elapsed ticks.
+
+### S1 Inventory
+
+The current retained corpus already proves real-mode CPU delivery for MOV and
+arithmetic, relative control transfer, segment prefixes, INT/IVT delivery,
+port I/O, `HLT`, undefined-opcode fault handoff, DOS boot/prompt, FDD/HDD ROM
+paths, KBC IRQ1, PIT IRQ0, FDC IRQ6, HDC IRQ14, and Console/debugger command
+boundaries. `cpu_int_ivt_smoke` covers 8086 and 80386 INT dispatch; the
+retained FDD `MEM` sample remains a system-level regression. Prefix decoding
+is internal to one `ExecIns()` execution call, so no prefix byte is independently
+counted as a T217 completed-instruction boundary.
+
+S2 adds a core-only real-mode tick probe for 8086 MOV, port output, INT, segment
+prefix plus NOP, HLT, and rejected 386 operand-size prefix. It requires a
+successful instruction to advance one configured coarse tick quantum, and a
+fault to advance none.
+
+The probe initially exposed its own incorrect reset-vector mapping rather than
+a CPU defect; it now writes through the documented `FFFFFFF0h -> 000FFFF0h`
+mapping and actually executes every asserted opcode. No new real-mode CPU
+defect was found in this admitted corpus.
+
+### S3 Evidence
+
+`core-machine-real-mode-tick-smoke` reports
+`M5:T218:S2:REAL-MODE-TICKS:OK`. The full current GCC/CTest matrix passes
+54/54 tests, including retained DOS prompt, keyboard, video, FDD/HDD, Console,
+and debugger regressions.
+
+Developer artifact: `build/output/nxvm_0_5_0218.exe`.
+
+SHA-256: `15C09CB261FF44FECB8584AD26B782C377E5BED786C36111486482198DA4DB83`.
+
+The source commit is recorded with the task implementation commit.
 
 ### Boundaries
 
