@@ -116,7 +116,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     if (elapsed == 3000u) goto fail;
     for (index = 0u; index < sizeof(scan_codes); ++index) {
         vm_platform_win32_keyboard_make_key_for(&session->platform_run_context,
-            &session->platform_run_handle, scan_codes[index], virtual_keys[index]);
+            &session->platform_run_handle, scan_codes[index], virtual_keys[index], 1);
     }
     for (elapsed = 0u; elapsed < 5000u; elapsed += 10u) {
         if (vm_dos_keyboard_has_edit_menu(session)) break;

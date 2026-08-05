@@ -30,7 +30,7 @@ foreach(source_text IN ITEMS "${win32_source}" "${win32con_source}" "${win32app_
     endif()
 endforeach()
 
-string(FIND "${win32_source}" "if (virtualKey == VK_F9)" win32_f9_position)
+string(FIND "${win32_source}" "virtualKey == VK_F9" win32_f9_position)
 string(FIND "${linuxcon_source}" "if (keyvalue == KEY_F(9))" linux_f9_position)
 if(win32_f9_position EQUAL -1 OR linux_f9_position EQUAL -1)
     message(FATAL_ERROR "A platform F9 path does not report through the run handle")

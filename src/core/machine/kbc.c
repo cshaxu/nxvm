@@ -20,12 +20,16 @@
 #define CORE_MACHINE_KBC_IDENTIFY_0 0xabu
 #define CORE_MACHINE_KBC_IDENTIFY_1 0x83u
 #define CORE_MACHINE_KBC_RESEND 0xfeu
+#define CORE_MACHINE_KBC_ECHO 0xeeu
+#define CORE_MACHINE_KBC_DEFAULT_TYPEMATIC 0x20u
 
 static C_VOID core_machine_kbc_request_irq1(t_kbc *controller)
 {
     if (controller->connect.irq1_source.master != STD_NULL &&
+        !controller->data.irq1_asserted &&
         (controller->data.command_byte & CORE_MACHINE_KBC_COMMAND_IRQ1) != 0u) {
         core_machine_pic_irq_source_assert(&controller->connect.irq1_source);
+        controller->data.irq1_asserted = TYPE_TRUE;
     }
 }
 
@@ -41,8 +45,68 @@ static type_status core_machine_kbc_enqueue(t_kbc *controller, uint8_t value)
         controller->data.fifo_count) % CORE_MACHINE_KBC_FIFO_CAPACITY);
     controller->data.fifo[tail] = value;
     ++controller->data.fifo_count;
+    controller->data.last_output_byte = value;
     core_machine_kbc_request_irq1(controller);
     return TYPE_STATUS_OK;
+}
+
+static C_VOID core_machine_kbc_schedule_response(t_kbc *controller,
+    const uint8_t *bytes, uint8_t count)
+{
+    uint8_t index;
+
+    if (controller == STD_NULL || bytes == STD_NULL || count == 0u ||
+        count > CORE_MACHINE_KBC_RESPONSE_CAPACITY ||
+        controller->data.delayed_response_count != 0u) return;
+    for (index = 0u; index < count; ++index) {
+        controller->data.delayed_response[index] = bytes[index];
+    }
+    controller->data.delayed_response_count = count;
+    controller->data.delayed_response_index = 0u;
+    controller->data.response_remaining_ticks =
+        controller->data.command_response_ticks;
+
+    /* The response bytes remain KBC-owned until the guest-visible FIFO has
+     * room.  A full rapid-typeahead FIFO must delay a command reply, never
+     * silently discard it.  A zero delay still drains synchronously for
+     * controller commands that are observed in the same I/O sequence. */
+    if (controller->data.command_response_ticks == 0u) {
+        core_machine_kbc_advance(controller, 0u);
+    }
+}
+
+static C_VOID core_machine_kbc_schedule_response_byte(t_kbc *controller,
+    uint8_t value)
+{
+    core_machine_kbc_schedule_response(controller, &value, 1u);
+}
+
+static C_VOID core_machine_kbc_set_typematic(t_kbc *controller, uint8_t value)
+{
+    if (controller == STD_NULL) return;
+    controller->data.typematic = value;
+}
+
+static C_VOID core_machine_kbc_set_defaults(t_kbc *controller)
+{
+    if (controller == STD_NULL) return;
+    controller->data.scan_set = CORE_MACHINE_KBC_SCAN_SET_1;
+    controller->data.led_state = 0u;
+    core_machine_kbc_set_typematic(controller, CORE_MACHINE_KBC_DEFAULT_TYPEMATIC);
+    controller->data.scanning_enabled = TYPE_TRUE;
+    controller->data.typematic_active = TYPE_FALSE;
+    controller->data.typematic_remaining_ticks = 0u;
+}
+
+static type_bool core_machine_kbc_is_typematic_scan_code(uint8_t scan_code)
+{
+    switch (scan_code) {
+    case 0x1du: case 0x2au: case 0x36u: case 0x38u:
+    case 0x3au: case 0x45u: case 0x46u:
+        return TYPE_FALSE;
+    default:
+        return scan_code != 0xe0u && scan_code != 0xe1u;
+    }
 }
 
 static uint8_t core_machine_kbc_dequeue(t_kbc *controller)
@@ -57,6 +121,7 @@ static uint8_t core_machine_kbc_dequeue(t_kbc *controller)
     /* Reading 60h acknowledges the current output byte.  On an edge-triggered
      * PIC, a queued successor needs a fresh low-to-high IRQ1 transition. */
     core_machine_pic_irq_source_deassert(&controller->connect.irq1_source);
+    controller->data.irq1_asserted = TYPE_FALSE;
     if (controller->data.fifo_count != 0u) {
         core_machine_kbc_request_irq1(controller);
     }
@@ -93,27 +158,57 @@ static C_VOID core_machine_kbc_apply_output_port(t_kbc *controller, uint8_t valu
 static C_VOID core_machine_kbc_handle_keyboard_command(t_kbc *controller,
     uint8_t command)
 {
+    static const uint8_t identify[] = {
+        CORE_MACHINE_KBC_ACK, CORE_MACHINE_KBC_IDENTIFY_0,
+        CORE_MACHINE_KBC_IDENTIFY_1
+    };
+    static const uint8_t reset_ok[] = {
+        CORE_MACHINE_KBC_ACK, CORE_MACHINE_KBC_BAT_OK
+    };
+    uint8_t resend;
+
     switch (command) {
     case 0xffu:
-        (C_VOID)core_machine_kbc_enqueue(controller, CORE_MACHINE_KBC_ACK);
-        (C_VOID)core_machine_kbc_enqueue(controller, CORE_MACHINE_KBC_BAT_OK);
-        controller->data.scanning_enabled = TYPE_TRUE;
+        core_machine_kbc_schedule_response(controller, reset_ok, sizeof(reset_ok));
+        core_machine_kbc_set_defaults(controller);
+        break;
+    case 0xedu:
+        core_machine_kbc_schedule_response_byte(controller, CORE_MACHINE_KBC_ACK);
+        controller->data.pending_write = CORE_MACHINE_KBC_PENDING_KEYBOARD_LEDS;
+        break;
+    case 0xeeu:
+        core_machine_kbc_schedule_response_byte(controller, CORE_MACHINE_KBC_ECHO);
+        break;
+    case 0xf0u:
+        core_machine_kbc_schedule_response_byte(controller, CORE_MACHINE_KBC_ACK);
+        controller->data.pending_write = CORE_MACHINE_KBC_PENDING_KEYBOARD_SCAN_SET;
+        break;
+    case 0xf3u:
+        core_machine_kbc_schedule_response_byte(controller, CORE_MACHINE_KBC_ACK);
+        controller->data.pending_write = CORE_MACHINE_KBC_PENDING_KEYBOARD_TYPEMATIC;
         break;
     case 0xf4u:
         controller->data.scanning_enabled = TYPE_TRUE;
-        (C_VOID)core_machine_kbc_enqueue(controller, CORE_MACHINE_KBC_ACK);
+        core_machine_kbc_schedule_response_byte(controller, CORE_MACHINE_KBC_ACK);
         break;
     case 0xf5u:
         controller->data.scanning_enabled = TYPE_FALSE;
-        (C_VOID)core_machine_kbc_enqueue(controller, CORE_MACHINE_KBC_ACK);
+        controller->data.typematic_active = TYPE_FALSE;
+        core_machine_kbc_schedule_response_byte(controller, CORE_MACHINE_KBC_ACK);
+        break;
+    case 0xf6u:
+        core_machine_kbc_set_defaults(controller);
+        core_machine_kbc_schedule_response_byte(controller, CORE_MACHINE_KBC_ACK);
         break;
     case 0xf2u:
-        (C_VOID)core_machine_kbc_enqueue(controller, CORE_MACHINE_KBC_ACK);
-        (C_VOID)core_machine_kbc_enqueue(controller, CORE_MACHINE_KBC_IDENTIFY_0);
-        (C_VOID)core_machine_kbc_enqueue(controller, CORE_MACHINE_KBC_IDENTIFY_1);
+        core_machine_kbc_schedule_response(controller, identify, sizeof(identify));
+        break;
+    case 0xfeu:
+        resend = controller->data.last_output_byte;
+        core_machine_kbc_schedule_response_byte(controller, resend);
         break;
     default:
-        (C_VOID)core_machine_kbc_enqueue(controller, CORE_MACHINE_KBC_RESEND);
+        core_machine_kbc_schedule_response_byte(controller, CORE_MACHINE_KBC_RESEND);
         break;
     }
 }
@@ -155,6 +250,32 @@ static C_VOID core_machine_kbc_write_data(t_port *port, type_unsigned_16 port_id
         core_machine_kbc_apply_output_port(controller, value);
         controller->data.pending_write = CORE_MACHINE_KBC_PENDING_NONE;
         break;
+    case CORE_MACHINE_KBC_PENDING_KEYBOARD_LEDS:
+        controller->data.led_state = value & 0x07u;
+        controller->data.pending_write = CORE_MACHINE_KBC_PENDING_NONE;
+        core_machine_kbc_schedule_response_byte(controller, CORE_MACHINE_KBC_ACK);
+        break;
+    case CORE_MACHINE_KBC_PENDING_KEYBOARD_TYPEMATIC:
+        core_machine_kbc_set_typematic(controller, value);
+        controller->data.pending_write = CORE_MACHINE_KBC_PENDING_NONE;
+        core_machine_kbc_schedule_response_byte(controller, CORE_MACHINE_KBC_ACK);
+        break;
+    case CORE_MACHINE_KBC_PENDING_KEYBOARD_SCAN_SET:
+        controller->data.pending_write = CORE_MACHINE_KBC_PENDING_NONE;
+        if (value == 0u) {
+            uint8_t response[] = { CORE_MACHINE_KBC_ACK,
+                controller->data.scan_set };
+            core_machine_kbc_schedule_response(controller, response,
+                sizeof(response));
+        } else if (value == CORE_MACHINE_KBC_SCAN_SET_1) {
+            controller->data.scan_set = value;
+            core_machine_kbc_schedule_response_byte(controller,
+                CORE_MACHINE_KBC_ACK);
+        } else {
+            core_machine_kbc_schedule_response_byte(controller,
+                CORE_MACHINE_KBC_RESEND);
+        }
+        break;
     default:
         core_machine_kbc_handle_keyboard_command(controller, value);
         break;
@@ -175,17 +296,18 @@ static C_VOID core_machine_kbc_write_command(t_port *port,
     controller->data.last_write_command = TYPE_TRUE;
     switch (command) {
     case 0x20u:
-        (C_VOID)core_machine_kbc_enqueue(controller, controller->data.command_byte);
+        core_machine_kbc_schedule_response_byte(controller,
+            controller->data.command_byte);
         break;
     case 0x60u:
         controller->data.pending_write = CORE_MACHINE_KBC_PENDING_COMMAND_BYTE;
         break;
     case 0xaau:
         controller->data.system_flag = TYPE_TRUE;
-        (C_VOID)core_machine_kbc_enqueue(controller, 0x55u);
+        core_machine_kbc_schedule_response_byte(controller, 0x55u);
         break;
     case 0xabu:
-        (C_VOID)core_machine_kbc_enqueue(controller, 0x00u);
+        core_machine_kbc_schedule_response_byte(controller, 0x00u);
         break;
     case 0xadu:
         controller->data.keyboard_enabled = TYPE_FALSE;
@@ -196,7 +318,8 @@ static C_VOID core_machine_kbc_write_command(t_port *port,
         controller->data.command_byte &= ~CORE_MACHINE_KBC_COMMAND_DISABLE_KEYBOARD;
         break;
     case 0xd0u:
-        (C_VOID)core_machine_kbc_enqueue(controller, controller->data.output_port);
+        core_machine_kbc_schedule_response_byte(controller,
+            controller->data.output_port);
         break;
     case 0xd1u:
         controller->data.pending_write = CORE_MACHINE_KBC_PENDING_OUTPUT_PORT;
@@ -238,25 +361,134 @@ C_VOID core_machine_kbc_bind_core_services(t_kbc *controller, t_pic *pic_master,
 }
 C_VOID core_machine_kbc_reset(t_kbc *controller)
 {
+    uint32_t typematic_initial_ticks;
+    uint32_t typematic_repeat_ticks;
+    uint32_t command_response_ticks;
+
     if (controller == STD_NULL) return;
+    typematic_initial_ticks = controller->data.typematic_initial_ticks;
+    typematic_repeat_ticks = controller->data.typematic_repeat_ticks;
+    command_response_ticks = controller->data.command_response_ticks;
     STD_MEMSET(&controller->data, TYPE_ZERO_8, sizeof(controller->data));
+    controller->data.typematic_initial_ticks = typematic_initial_ticks == 0u ?
+        1u : typematic_initial_ticks;
+    controller->data.typematic_repeat_ticks = typematic_repeat_ticks == 0u ?
+        1u : typematic_repeat_ticks;
+    controller->data.command_response_ticks = command_response_ticks;
     core_machine_pic_irq_source_deassert(&controller->connect.irq1_source);
     controller->data.command_byte = CORE_MACHINE_KBC_COMMAND_IRQ1 |
         CORE_MACHINE_KBC_COMMAND_SYSTEM;
     controller->data.output_port = CORE_MACHINE_KBC_OUTPUT_RESET;
     controller->data.keyboard_enabled = TYPE_TRUE;
-    controller->data.scanning_enabled = TYPE_TRUE;
+    core_machine_kbc_set_defaults(controller);
     controller->data.system_flag = TYPE_TRUE;
     core_machine_kbc_apply_output_port(controller, controller->data.output_port);
 }
 C_VOID core_machine_kbc_refresh(t_kbc *controller) { (C_VOID)controller; }
+
+C_VOID core_machine_kbc_advance(t_kbc *controller, uint64_t elapsed_ticks)
+{
+    if (controller == STD_NULL) return;
+    if (controller->data.delayed_response_count != 0u) {
+        if (elapsed_ticks < controller->data.response_remaining_ticks) {
+            controller->data.response_remaining_ticks -= elapsed_ticks;
+        } else {
+            controller->data.response_remaining_ticks = 0u;
+            while (controller->data.delayed_response_index <
+                    controller->data.delayed_response_count &&
+                core_machine_kbc_enqueue(controller,
+                    controller->data.delayed_response[
+                        controller->data.delayed_response_index]) == TYPE_STATUS_OK) {
+                ++controller->data.delayed_response_index;
+            }
+            if (controller->data.delayed_response_index ==
+                    controller->data.delayed_response_count) {
+                controller->data.delayed_response_count = 0u;
+                controller->data.delayed_response_index = 0u;
+            }
+        }
+    }
+    if (elapsed_ticks == 0u) return;
+    if (!controller->data.typematic_active) return;
+    if (elapsed_ticks < controller->data.typematic_remaining_ticks) {
+        controller->data.typematic_remaining_ticks -= elapsed_ticks;
+        return;
+    }
+    elapsed_ticks -= controller->data.typematic_remaining_ticks;
+    controller->data.typematic_remaining_ticks =
+        controller->data.typematic_repeat_ticks;
+    (C_VOID)core_machine_kbc_enqueue(controller,
+        controller->data.typematic_scan_code);
+    while (controller->data.typematic_repeat_ticks != 0u &&
+        elapsed_ticks >= controller->data.typematic_repeat_ticks) {
+        elapsed_ticks -= controller->data.typematic_repeat_ticks;
+        (C_VOID)core_machine_kbc_enqueue(controller,
+            controller->data.typematic_scan_code);
+    }
+    if (controller->data.typematic_repeat_ticks != 0u) {
+        controller->data.typematic_remaining_ticks -= elapsed_ticks;
+    }
+}
+
+C_VOID core_machine_kbc_set_typematic_timing(t_kbc *controller,
+    uint32_t initial_ticks, uint32_t repeat_ticks)
+{
+    if (controller == STD_NULL) return;
+    controller->data.typematic_initial_ticks = initial_ticks == 0u ? 1u :
+        initial_ticks;
+    controller->data.typematic_repeat_ticks = repeat_ticks == 0u ? 1u :
+        repeat_ticks;
+}
+
+C_VOID core_machine_kbc_set_command_response_timing(t_kbc *controller,
+    uint32_t response_ticks)
+{
+    if (controller == STD_NULL) return;
+    controller->data.command_response_ticks = response_ticks;
+}
 C_VOID core_machine_kbc_finalize(t_kbc *controller)
-{ if (controller != STD_NULL) core_machine_pic_irq_source_deassert(&controller->connect.irq1_source); }
+{
+    if (controller != STD_NULL) {
+        core_machine_pic_irq_source_deassert(&controller->connect.irq1_source);
+        controller->data.irq1_asserted = TYPE_FALSE;
+    }
+}
 type_status core_machine_kbc_submit_scan_code(t_kbc *controller, uint8_t scan_code)
 {
     if (controller == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     if (!controller->data.keyboard_enabled || !controller->data.scanning_enabled) {
         return TYPE_STATUS_INVALID_STATE;
     }
+    if ((scan_code & 0x80u) != 0u &&
+        (scan_code & 0x7fu) == controller->data.typematic_scan_code) {
+        controller->data.typematic_active = TYPE_FALSE;
+    } else if ((scan_code & 0x80u) == 0u &&
+        core_machine_kbc_is_typematic_scan_code(scan_code)) {
+        controller->data.typematic_scan_code = scan_code;
+        controller->data.typematic_remaining_ticks =
+            controller->data.typematic_initial_ticks;
+        controller->data.typematic_active = TYPE_TRUE;
+    }
     return core_machine_kbc_enqueue(controller, scan_code);
+}
+
+type_status core_machine_kbc_submit_scan_codes(t_kbc *controller,
+    const uint8_t *scan_codes, STD_SIZE_T count)
+{
+    STD_SIZE_T index;
+
+    if (controller == STD_NULL || (scan_codes == STD_NULL && count != 0u)) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    if (!controller->data.keyboard_enabled || !controller->data.scanning_enabled) {
+        return TYPE_STATUS_INVALID_STATE;
+    }
+    if (count > CORE_MACHINE_KBC_FIFO_CAPACITY - controller->data.fifo_count) {
+        return TYPE_STATUS_INVALID_STATE;
+    }
+    for (index = 0u; index < count; ++index) {
+        /* Capacity was reserved above; preserve per-byte typematic state. */
+        (C_VOID)core_machine_kbc_submit_scan_code(controller, scan_codes[index]);
+    }
+    return TYPE_STATUS_OK;
 }

@@ -40,6 +40,9 @@ typedef struct core_machine_config {
     core_machine_fpu_profile fpu_profile;
     uint32_t ticks_per_instruction;
     uint32_t pit_elapsed_ticks_per_input_tick;
+    uint32_t kbc_typematic_initial_ticks;
+    uint32_t kbc_typematic_repeat_ticks;
+    uint32_t kbc_command_response_ticks;
 } core_machine_config;
 
 typedef enum core_machine_stop_reason {
@@ -113,6 +116,8 @@ type_status core_machine_request_stop(core_machine *machine);
 
 type_status core_machine_keyboard_submit_scan_code(core_machine *machine,
     uint8_t scan_code);
+type_status core_machine_keyboard_submit_scan_codes(core_machine *machine,
+    const uint8_t *scan_codes, STD_SIZE_T count);
 
 type_status core_machine_capture_display_snapshot(const core_machine *machine,
     core_machine_display_snapshot *out_snapshot);

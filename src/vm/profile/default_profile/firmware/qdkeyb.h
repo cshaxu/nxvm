@@ -9,8 +9,6 @@ extern "C" {
 
 #include "type.h"
 
-#include "core/machine/keyboard_interface.h"
-
 #define QDKEYB_VBIOS_ADDR_KEYB_FLAG0         0x0417
 #define QDKEYB_VBIOS_ADDR_KEYB_FLAG1         0x0418
 #define QDKEYB_VBIOS_ADDR_KEYB_BUF_HEAD      0x041a
@@ -36,10 +34,6 @@ extern "C" {
 #define QDKEYB_FLAG1_D_LALT    0x02
 #define QDKEYB_FLAG1_D_LCTRL   0x01
 
-typedef struct vm_profile_default_context vm_profile_default_context;
-C_VOID vm_profile_default_keyboard_reset(vm_profile_default_context *profile);
-const core_machine_keyboard_provider *vm_profile_default_keyboard_provider(C_VOID);
-
 #define VBIOS_INT_HARD_KEYBOARD_09 "\
 push ax                              \n\
 push bx                              \n\
@@ -50,6 +44,98 @@ mov bl, al                           \n\
 xor bh, bh                           \n\
 mov ax, 0040                         \n\
 mov ds, ax                           \n\
+mov al, ds:[00b9]                    \n\
+or al, al                            \n\
+jz $(keyboard_09_pause_start)        \n\
+dec al                                \n\
+mov ds:[00b9], al                    \n\
+jmp near $(keyboard_09_eoi)          \n\
+$(keyboard_09_pause_start):          \n\
+cmp bx, 00e1                         \n\
+jnz $(keyboard_09_prefix)            \n\
+mov al, 05                            \n\
+mov ds:[00b9], al                    \n\
+jmp near $(keyboard_09_eoi)          \n\
+$(keyboard_09_prefix):               \n\
+cmp bx, 00e0                         \n\
+jnz $(keyboard_09_shift_left_make)   \n\
+mov al, ds:[0018]                    \n\
+or al, 04                             \n\
+mov ds:[0018], al                    \n\
+jmp near $(keyboard_09_eoi)          \n\
+$(keyboard_09_shift_left_make):      \n\
+cmp bx, 002a                         \n\
+jnz $(keyboard_09_shift_right_make)  \n\
+mov al, ds:[0017]                    \n\
+or al, 02                             \n\
+mov ds:[0017], al                    \n\
+jmp near $(keyboard_09_eoi)          \n\
+$(keyboard_09_shift_right_make):     \n\
+cmp bx, 0036                         \n\
+jnz $(keyboard_09_shift_left_break)  \n\
+mov al, ds:[0017]                    \n\
+or al, 01                             \n\
+mov ds:[0017], al                    \n\
+jmp near $(keyboard_09_eoi)          \n\
+$(keyboard_09_shift_left_break):     \n\
+cmp bx, 00aa                         \n\
+jnz $(keyboard_09_shift_right_break) \n\
+mov al, ds:[0017]                    \n\
+and al, fd                            \n\
+mov ds:[0017], al                    \n\
+jmp near $(keyboard_09_eoi)          \n\
+$(keyboard_09_shift_right_break):    \n\
+cmp bx, 00b6                         \n\
+jnz $(keyboard_09_ctrl_make)         \n\
+mov al, ds:[0017]                    \n\
+and al, fe                            \n\
+mov ds:[0017], al                    \n\
+jmp near $(keyboard_09_eoi)          \n\
+$(keyboard_09_ctrl_make):            \n\
+cmp bx, 001d                         \n\
+jnz $(keyboard_09_ctrl_break)        \n\
+mov al, ds:[0017]                    \n\
+or al, 04                             \n\
+mov ds:[0017], al                    \n\
+jmp near $(keyboard_09_eoi)          \n\
+$(keyboard_09_ctrl_break):           \n\
+cmp bx, 009d                         \n\
+jnz $(keyboard_09_alt_make)          \n\
+mov al, ds:[0017]                    \n\
+and al, fb                            \n\
+mov ds:[0017], al                    \n\
+jmp near $(keyboard_09_eoi)          \n\
+$(keyboard_09_alt_make):             \n\
+cmp bx, 0038                         \n\
+jnz $(keyboard_09_alt_break)         \n\
+mov al, ds:[0017]                    \n\
+or al, 08                             \n\
+mov ds:[0017], al                    \n\
+jmp near $(keyboard_09_eoi)          \n\
+$(keyboard_09_alt_break):            \n\
+cmp bx, 00b8                         \n\
+jnz $(keyboard_09_extended)          \n\
+mov al, ds:[0017]                    \n\
+and al, f7                            \n\
+mov ds:[0017], al                    \n\
+jmp near $(keyboard_09_eoi)          \n\
+$(keyboard_09_extended):             \n\
+mov al, ds:[0018]                    \n\
+test al, 04                           \n\
+jz $(keyboard_09_regular)            \n\
+and al, fb                            \n\
+mov ds:[0018], al                    \n\
+cmp bx, 0080                         \n\
+jb $(keyboard_09_extended_make)      \n\
+jmp near $(keyboard_09_eoi)          \n\
+$(keyboard_09_extended_make):        \n\
+xor al, al                           \n\
+jmp near $(keyboard_09_mapped)       \n\
+$(keyboard_09_regular):              \n\
+cmp bx, 0080                         \n\
+jb $(keyboard_09_normal)             \n\
+jmp near $(keyboard_09_eoi)          \n\
+$(keyboard_09_normal):               \n\
 mov al, ds:[0017]                    \n\
 test al, 08                           \n\
 jz $(keyboard_09_not_alt)            \n\

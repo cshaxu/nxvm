@@ -27,13 +27,13 @@ C_VOID vm_platform_keyboard_transport_initialize(
     transport->context = context;
 }
 
-C_VOID vm_platform_keyboard_receive_key_press_for(
+C_VOID vm_platform_keyboard_receive_key_event_for(
     const vm_platform_keyboard_transport *transport, uint16_t scan_code,
-    uint16_t virtual_key)
+    uint16_t virtual_key, C_INT pressed)
 {
     if (transport != STD_NULL && transport->sink != STD_NULL &&
-        transport->sink->receive_key_press != STD_NULL) {
-        transport->sink->receive_key_press(transport->context, scan_code,
-            virtual_key);
+        transport->sink->receive_key_event != STD_NULL) {
+        transport->sink->receive_key_event(transport->context, scan_code,
+            virtual_key, pressed);
     }
 }

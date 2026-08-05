@@ -7,14 +7,13 @@
 extern "C" {
 #endif
 
-#include "core/machine/keyboard_interface.h"
 #include "type.h"
 #include "vm/platform/platform.h"
 #include "vm/platform/win32/win32_types.h"
 
-C_VOID vm_platform_win32_keyboard_make_status_for(const vm_platform_run_context *context);
 C_VOID vm_platform_win32_keyboard_make_key_for(const vm_platform_run_context *context,
-    vm_platform_run_handle *owner, C_UCHAR scanCode, C_UCHAR virtualKey);
+    vm_platform_run_handle *owner, uint16_t scanCode, uint16_t virtualKey,
+    C_INT pressed);
 
 C_VOID vm_platform_win32_display_set_screen(WIN32_BOOL flagWindow,
                            const vm_platform_run_context *context);

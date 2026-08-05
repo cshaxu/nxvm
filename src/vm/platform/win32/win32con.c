@@ -45,16 +45,14 @@ static C_VOID win32con_process_input(const win32con_run_handle *handle)
     switch (input.EventType) {
     case KEY_EVENT:
         scan_code = (UCHAR)input.Event.KeyEvent.wVirtualScanCode;
-        virtual_key = (UCHAR)input.Event.KeyEvent.wVirtualKeyCode;
-        if (input.Event.KeyEvent.bKeyDown) {
-            vm_platform_win32_keyboard_make_key_for(handle->platform,
-                handle->owner, scan_code, virtual_key);
-        } else {
-            vm_platform_win32_keyboard_make_status_for(handle->platform);
+        if ((input.Event.KeyEvent.dwControlKeyState & ENHANCED_KEY) != 0u) {
+            scan_code |= 0x0100u;
         }
+        virtual_key = (UCHAR)input.Event.KeyEvent.wVirtualKeyCode;
+        vm_platform_win32_keyboard_make_key_for(handle->platform, handle->owner,
+            scan_code, virtual_key, input.Event.KeyEvent.bKeyDown != 0);
         break;
     case FOCUS_EVENT:
-        vm_platform_win32_keyboard_make_status_for(handle->platform);
         break;
     default:
         break;

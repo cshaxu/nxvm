@@ -31,8 +31,6 @@ C_VOID vm_platform_run_context_initialize(
     context->window_renderer = STD_NULL;
     context->terminal_displayed_generation = 0u;
     context->window_display = 0;
-    context->keyboard_state_sink = STD_NULL;
-    context->keyboard_state_context = STD_NULL;
 }
 
 C_INT vm_platform_run_context_get_window_display(
@@ -45,26 +43,6 @@ C_VOID vm_platform_run_context_set_window_display(
     vm_platform_run_context *context, C_INT enabled)
 {
     if (context != STD_NULL) context->window_display = enabled != 0;
-}
-
-C_VOID vm_platform_run_context_bind_keyboard_state(
-    vm_platform_run_context *context, vm_platform_keyboard_state_sink sink,
-    C_VOID *sink_context)
-{
-    if (context == STD_NULL) return;
-    context->keyboard_state_sink = sink;
-    context->keyboard_state_context = sink_context;
-}
-
-C_INT vm_platform_run_context_submit_keyboard_state(
-    const vm_platform_run_context *context, uint32_t asynchronous_keys,
-    uint32_t toggle_keys)
-{
-    if (context == STD_NULL || context->keyboard_state_sink == STD_NULL) {
-        return TYPE_STATUS_INVALID_STATE;
-    }
-    return context->keyboard_state_sink(context->keyboard_state_context,
-        asynchronous_keys, toggle_keys);
 }
 
 C_VOID vm_platform_run_handle_initialize(vm_platform_run_handle *handle)

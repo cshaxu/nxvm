@@ -15,7 +15,7 @@ only transports host events and never changes BDA, KBC, or BIOS state.
 
 ## S1: Contract And Probes
 
-**Status:** active.
+**Status:** complete.
 
 - A normal key has one make byte on press and `make | 80h` on release.
 - An extended key has `E0h, make` on press and `E0h, make | 80h` on release.
@@ -35,6 +35,8 @@ and window input paths.
 
 ## S2: Owner-Local Implementation
 
+**Status:** complete.
+
 The platform transport gains an explicit pressed/released event, passed through
 the existing session ingress transport. The profile mapper returns a bounded
 set-1 sequence. The session submits that sequence only to the core machine;
@@ -52,3 +54,17 @@ Run focused port, ROM, mapper, and rapid-typeahead probes; FDD prompt typing;
 the retained `EDIT.COM` keyboard interaction; Console/window input; and the
 current GCC/CTest gate. Record the task artifact/hash and preserve the T225
 time baseline.
+
+**Status:** complete.
+
+Evidence:
+
+- `core-machine-kbc-controller-smoke` locks FIFO order, IRQ1 acknowledgement,
+  and rapid-typeahead capacity; `vm-keyboard-set1-mapper-smoke` locks normal,
+  E0, and Pause sequences.
+- `vm-dos-prompt-smoke` and `vm-dos-keyboard-smoke` pass against the retained
+  FDD image; the retained `EDIT.COM` exercise remains in the current matrix.
+- `cmake --build --preset current-gates-gcc --parallel 4` passes 59/59 CTest
+  smokes and all static ownership/boundary gates.
+- Artifact: `build/output/nxvm_0_5_0226.exe`, SHA-256
+  `2FE4D3833409BC9037FD13CFC7EB4DDC6F14CD83CE8CA75A623FDB7DE050B292`.

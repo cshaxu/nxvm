@@ -34,26 +34,12 @@ type_status vm_platform_request_transport_enqueue_ingress(
     const vm_platform_request *request)
 {
     type_status status;
-    STD_SIZE_T tail;
-
     if (transport == STD_NULL || request == STD_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     vm_platform_request_transport_lock(transport);
     if (!transport->accepting) {
         status = TYPE_STATUS_INVALID_STATE;
-    } else if (request->kind == VM_PLATFORM_REQUEST_KEYBOARD_STATE &&
-        transport->ingress.count != 0u) {
-        tail = (transport->ingress.head + transport->ingress.count - 1u) %
-            VM_PLATFORM_REQUEST_CAPACITY;
-        if (transport->ingress.entries[tail].kind ==
-            VM_PLATFORM_REQUEST_KEYBOARD_STATE) {
-            transport->ingress.entries[tail] = *request;
-            status = TYPE_STATUS_OK;
-        } else {
-            status = vm_platform_request_bridge_enqueue(&transport->ingress,
-                request);
-        }
     } else {
         status = vm_platform_request_bridge_enqueue(&transport->ingress,
             request);

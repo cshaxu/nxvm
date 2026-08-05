@@ -62,6 +62,9 @@ struct core_machine {
     uint32_t ticks_per_instruction;
     uint32_t pit_elapsed_ticks_per_input_tick;
     uint32_t pit_elapsed_tick_remainder;
+    uint32_t kbc_typematic_initial_ticks;
+    uint32_t kbc_typematic_repeat_ticks;
+    uint32_t kbc_command_response_ticks;
     core_machine_port_table port_providers;
     core_machine_trace_state trace;
     core_machine_cpu_diagnostic_state cpu_diagnostic;

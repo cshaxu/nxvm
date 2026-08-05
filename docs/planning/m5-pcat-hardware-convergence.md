@@ -52,8 +52,8 @@ device implementation begins.
 | T223 | T216, T219 | Complete urgent keyboard compatibility repair only. It restored `EDIT.COM` interaction but did not claim either planned KBC protocol phase. |
 | T224 | T223, T219 | Historical completed task identity. Its record remains historical; it is not a license to relabel later planned work. |
 | T225 | T219, T220 | Complete. S7 locks reset-remainder, paused-session, one-step, and repeated-period evidence around the elapsed-tick/PIT/IRQ0 -> ROM -> BDA -> INT 1Ah path. |
-| T226 | T216, T219, T225 | S1 active: set-1 break/E0/E1, FIFO, rapid typeahead, IRQ1, and ROM `INT 09h`/`INT 16h` ordering. Host input remains profile mapping -> KBC ingress. |
-| T227 | T216, T226 | Planned KBC phase 2: scan-set selection, translation, LED, typematic, resend/error, and controller timing. Delays consume core elapsed ticks, never host sleep. |
+| T226 | T216, T219, T225 | Complete: set-1 break/E0/E1, FIFO, rapid typeahead, IRQ1, and ROM `INT 09h`/`INT 16h` ordering. Host input remains profile mapping -> KBC ingress. |
+| T227 | T216, T226 | Complete: bounded set-1 selection/query, translation-bit observation, LED, typematic, ACK/RESEND, and controller timing. Delays consume core elapsed ticks, never host sleep. |
 | T228 | T219, T220 | Implement the bounded CGA `320x200x4` VADP subset: VRAM layout, 3D8h/3D9h mode/color/palette, raster state, and copied pixel snapshot. EGA/VGA remains excluded. |
 | T229 | T216, T226, T227 | Add 8042 AUX mouse packet/controller path and IRQ12 through PIC. Host mouse enters only through profile mapping; it never writes DOS APIs or guest memory directly. |
 | T230 | T216, T219 | Implement 8237 DMA request/mask/mode/page/address/count lifecycle and the channel-2 FDC contract. DMA memory access uses the core memory contract; devices cannot directly copy guest RAM. |

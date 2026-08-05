@@ -28,17 +28,37 @@ static uint8_t vm_profile_default_keyboard_map_ascii(uint16_t value)
 }
 
 type_status vm_profile_default_keyboard_map_host_key(uint16_t host_scan_code,
-    uint16_t host_virtual_key, uint8_t *out_scan_code)
+    uint16_t host_virtual_key, C_INT pressed,
+    vm_profile_default_keyboard_sequence *out_sequence)
 {
     uint8_t scan_code;
 
-    if (out_scan_code == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
-    if (host_scan_code > 0u && host_scan_code <= 0x58u) {
-        *out_scan_code = (uint8_t)host_scan_code;
+    if (out_sequence == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    out_sequence->count = 0u;
+    /* Win32 identifies Pause by virtual key; set-1 has only its make stream. */
+    if (host_virtual_key == 0x13u) {
+        if (!pressed) return TYPE_STATUS_OK;
+        out_sequence->bytes[0] = 0xe1u;
+        out_sequence->bytes[1] = 0x1du;
+        out_sequence->bytes[2] = 0x45u;
+        out_sequence->bytes[3] = 0xe1u;
+        out_sequence->bytes[4] = 0x9du;
+        out_sequence->bytes[5] = 0xc5u;
+        out_sequence->count = 6u;
         return TYPE_STATUS_OK;
     }
-    scan_code = vm_profile_default_keyboard_map_ascii(host_virtual_key);
-    if (scan_code == 0u) return TYPE_STATUS_UNSUPPORTED;
-    *out_scan_code = scan_code;
+    if ((host_scan_code & 0xffu) > 0u &&
+        (host_scan_code & 0xffu) <= 0x58u) {
+        scan_code = (uint8_t)(host_scan_code & 0xffu);
+    } else {
+        scan_code = vm_profile_default_keyboard_map_ascii(host_virtual_key);
+        if (scan_code == 0u) return TYPE_STATUS_UNSUPPORTED;
+    }
+    /* Windows scan-code bit 8 identifies the set-1 E0 prefix. */
+    if ((host_scan_code & 0x0100u) != 0u) {
+        out_sequence->bytes[out_sequence->count++] = 0xe0u;
+    }
+    out_sequence->bytes[out_sequence->count++] = pressed ? scan_code :
+        (uint8_t)(scan_code | 0x80u);
     return TYPE_STATUS_OK;
 }
