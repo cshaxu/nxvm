@@ -5,6 +5,7 @@
 
 #include "core/machine/cpu_interface.h"
 #include "core/machine/fpu_interface.h"
+#include "core/machine/vadp.h"
 
 typedef enum vm_profile_default_pc_at_device_role {
     VM_PROFILE_DEFAULT_PC_AT_DEVICE_PIC,
@@ -92,6 +93,7 @@ typedef struct vm_profile_default_pc_at_descriptor {
     core_machine_cpu_profile cpu_profile;
     core_machine_fpu_profile fpu_profile;
     uint32_t ticks_per_instruction;
+    core_machine_vadp_text_timing cga_text_timing;
     STD_SIZE_T default_memory_bytes;
     vm_profile_default_pc_at_rom_mapping rom;
     vm_profile_default_pc_at_cmos_defaults cmos;

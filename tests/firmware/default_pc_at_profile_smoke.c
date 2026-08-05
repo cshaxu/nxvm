@@ -19,6 +19,9 @@ C_INT main(C_VOID)
         profile->rom.reset_offset != 0xfff0u ||
         profile->cpu_profile != CORE_MACHINE_CPU_PROFILE_80386 ||
         profile->fpu_profile != CORE_MACHINE_FPU_PROFILE_NONE ||
+        profile->cga_text_timing.active_display_ticks != 48u ||
+        profile->cga_text_timing.horizontal_blank_ticks != 8u ||
+        profile->cga_text_timing.vertical_retrace_ticks != 8u ||
         profile->cmos.equipment != 0x21u ||
         profile->cmos.base_memory_kib != 0x027fu ||
         profile->firmware_service_count != 14u) return 1;

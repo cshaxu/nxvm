@@ -2,7 +2,7 @@
 
 ## S1: Contract And Probe Design
 
-**Status:** active. T220 replaces the temporary deterministic `3DAh` phase
+**Status:** S1/S2 complete; S3 artifact recording active. T220 replaces the temporary deterministic `3DAh` phase
 with an owned VADP text-raster observation model. It does not claim CGA
 graphics, EGA, VGA, host pacing, or cycle-accurate CRT timing.
 
@@ -32,6 +32,25 @@ Add port-level probes that sample `3DAh` across one frozen raster period,
 assert deterministic bit-0/bit-3 transitions and reset origin, and verify that
 reads alone do not advance phase. Retain text snapshot, DOS prompt/video-port,
 Console/debugger, FDD, and HDD regression coverage.
+
+### S2 Implementation
+
+The VADP now stores an immutable-on-reset text timing tuple and one raster
+phase. Its default PC/AT tuple is 48 active-display ticks, 8 horizontal-blank
+ticks, and 8 vertical-retrace ticks. Reset begins at the first active-display
+phase. `3DAh` derives bit 0 for active display, bit 3 for vertical retrace,
+and zero for horizontal blank; it retains no independently writable status
+byte. The phase advances only through the T219 core scheduler.
+
+The VADP smoke configures a short six-tick tuple, verifies reset persistence,
+read stability, all three status regions, and periodic repetition. The default
+profile smoke locks the selected 48/8/8 tuple.
+
+### S3 Evidence
+
+Focused VADP, default-profile, and DOS video-port smokes pass. The complete
+55/55 current CTest matrix passes. The remaining closure evidence is the T220
+developer artifact record.
 
 ### Stop Conditions
 

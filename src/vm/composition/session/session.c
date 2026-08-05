@@ -122,6 +122,12 @@ C_VOID vm_session_storage_initialize(vm_session *machine)
         machine->core_machine = STD_NULL;
         return;
     }
+    if (core_machine_profile_binding_configure_text_raster(&profile_binding,
+            &machine->profile->cga_text_timing) != TYPE_STATUS_OK) {
+        core_machine_destroy(machine->core_machine);
+        machine->core_machine = STD_NULL;
+        return;
+    }
     vm_profile_default_context_initialize(&machine->default_profile_context,
         &machine->default_bios, profile_binding,
         STD_NULL, STD_NULL);

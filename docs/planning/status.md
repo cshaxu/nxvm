@@ -2,7 +2,7 @@
 
 ## Current Work
 
-**M5 T220 S1 active:** define a core VADP text-raster contract for `3DAh`
+**M5 T220 S3 active:** record the verified text-raster artifact for `3DAh`
 display-enable and vertical-retrace observations derived only from elapsed
 ticks. See [the task record](m5-t220-cga-text-raster.md) and the authoritative
 [PC/AT hardware queue](m5-pcat-hardware-convergence.md).
