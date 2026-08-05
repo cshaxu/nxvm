@@ -17,6 +17,8 @@ typedef enum vm_profile_default_pc_at_device_role {
     VM_PROFILE_DEFAULT_PC_AT_DEVICE_HDC
 } vm_profile_default_pc_at_device_role;
 
+#define VM_PROFILE_DEFAULT_PC_AT_NO_DMA_CHANNEL 0xffu
+
 typedef struct vm_profile_default_pc_at_port_range {
     vm_profile_default_pc_at_device_role device;
     uint16_t first;
@@ -28,6 +30,22 @@ typedef struct vm_profile_default_pc_at_route {
     uint8_t irq;
     uint8_t dma_channel;
 } vm_profile_default_pc_at_route;
+
+typedef struct vm_profile_default_pc_at_hdc_pio {
+    uint16_t data_port;
+    uint16_t error_features_port;
+    uint16_t sector_count_port;
+    uint16_t sector_number_port;
+    uint16_t cylinder_low_port;
+    uint16_t cylinder_high_port;
+    uint16_t drive_head_port;
+    uint16_t status_command_port;
+    uint16_t alternate_status_device_control_port;
+    uint8_t irq;
+    uint8_t dma_channel;
+    uint8_t data_width_bits;
+    uint8_t register_width_bits;
+} vm_profile_default_pc_at_hdc_pio;
 
 typedef struct vm_profile_default_pc_at_rom_mapping {
     uint32_t linear_start;
@@ -80,6 +98,7 @@ typedef struct vm_profile_default_pc_at_descriptor {
     STD_SIZE_T port_range_count;
     const vm_profile_default_pc_at_route *routes;
     STD_SIZE_T route_count;
+    vm_profile_default_pc_at_hdc_pio hdc_pio;
     const vm_profile_default_pc_at_firmware_service *firmware_services;
     STD_SIZE_T firmware_service_count;
 } vm_profile_default_pc_at_descriptor;

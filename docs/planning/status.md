@@ -2,12 +2,11 @@
 
 ## Current Work
 
-**Latest technical cleanup:** **M5 T210 S4 complete -- obsolete profile
-keyboard state.** `vm_profile_default_context.keyboard_waiting` had no
-producer, consumer, or test contract after T210. The field and initializer are
-removed; the retained KBC -> IRQ1 -> ROM `INT 09h` -> BDA -> ROM `INT 16h`
-path and the 48-current-smoke matrix pass. This dead-state cleanup produces no
-new EXE.
+**Active subtask:** **M5 T213 S2 -- VM HDC state machine and core binding.**
+S1 has frozen and probed the default PC/AT primary ATA PIO topology. S2 may
+now add only its declared session-owned controller, core port/PIC binding, and
+bounded PIO command subset; HDD boot behavior and F4/F5 portal retirement stay
+outside S2 until the S3 guest-visible regression proves the same owner path.
 
 **M5 T211 complete:** the default profile's F0
 boot-failure portal is retired. The ROM reports an acknowledged failure through

@@ -74,6 +74,8 @@ target_link_libraries(vm-default-profile-firmware-smoke PRIVATE vm-firmware)
 add_executable(vm-default-pc-at-profile-smoke
     tests/firmware/default_pc_at_profile_smoke.c)
 target_link_libraries(vm-default-pc-at-profile-smoke PRIVATE vm-profile)
+add_executable(vm-hdc-port-smoke tests/machine/vm_hdc_port_smoke.c)
+target_link_libraries(vm-hdc-port-smoke PRIVATE vm-profile)
 add_executable(vm-default-pc-at-apply-smoke
     tests/machine/vm_default_pc_at_apply_smoke.c)
 target_link_libraries(vm-default-pc-at-apply-smoke PRIVATE vm-composition)
@@ -146,6 +148,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(vm-firmware-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-default-profile-firmware-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-default-pc-at-profile-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(vm-hdc-port-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-default-pc-at-apply-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-product-default-profile-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-product-console-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -725,6 +728,7 @@ target_link_libraries(vdm-minimal-presentation-smoke PRIVATE
 
 set(PROJECT_CURRENT_SMOKE_TARGETS
     vm-default-pc-at-profile-smoke
+    vm-hdc-port-smoke
     vm-default-pc-at-apply-smoke
     vm-two-session-isolation-smoke
     vm-core-executor-storage-smoke
