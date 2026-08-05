@@ -6,7 +6,11 @@
 `vm-platform-requests -> core-machine` and `vm-product -> core-machine` edges;
 the former now depends on `type-facade`, the latter only on its actual product
 tooling. GCC 16.1.0 `current-gates-gcc` passed again with 67/67 smoke tests.
-Session-layout encapsulation remains separate P2 design work.
+
+**M5 T234 S5 design complete:** the approved opaque-session migration keeps the
+complete VM layout composition-private and moves test observation behind narrow
+fixture probes. It deliberately changes no runtime code; see [the design
+record](m5-t234-s5-session-layout-design.md).
 
 **M5 T234 S3 complete:** `core/utils` is now the strict neutral utility/callback
 layer. VM machine/platform/profile no longer import `core/product`; composition
