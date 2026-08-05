@@ -33,6 +33,8 @@ task; it does not change guest-device, BIOS, DOS, or user-visible behavior.
    or descriptors; a temporary adapter, if unavoidable, belongs in composition.
 5. Add a mechanical source and target-DAG gate that rejects peer imports and
    links forbidden by Module Layout. Run the applicable GCC and smoke matrix.
+6. Remove target-only legacy links after source audit; a target names only its
+   actual lowest-level dependency, never a convenient aggregate library.
 
 T234 closes only when no VM/VDM peer imports `core/product` outside its matching
 `*/product` module, no target conceals a forbidden peer edge, and the retained
@@ -50,3 +52,13 @@ product import.
 existing governance gates, and 67/67 current smoke tests passed. The current
 artifact is `build/output/nxvm_0_5_0234.exe`, SHA-256
 `1A94A5D3D9E09FD2302CE71C3DC51434E9AA9915C2F2879BB42589AAE29591E9`.
+
+### S4 Closure
+
+Removed the residual `vm-platform-requests -> core-machine` and
+`vm-product -> core-machine` target-only links. The former now names
+`type-facade`, its actual lowest dependency; the latter retains only
+`core-product-utils`. The previously reported `vm-machine -> vm-profile` edge
+was already removed in S2. GCC 16.1.0 `current-gates-gcc` passed again with
+67/67 current smoke tests. Session-layout encapsulation remains a separate P2
+design item.

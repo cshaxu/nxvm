@@ -50,7 +50,9 @@ file(READ "${PROJECT_SOURCE_DIR}/CMakeLists.txt" cmake_source)
 foreach(forbidden IN ITEMS
     "target_link_libraries(vm-machine PUBLIC\n    core-machine\n    vm-profile)"
     "target_link_libraries(vm-profile PUBLIC\n    core-product-utils)"
-    "core-product-utils\n    core-platform)")
+    "core-product-utils\n    core-platform)"
+    "target_link_libraries(vm-platform-requests PUBLIC core-machine)"
+    "target_link_libraries(vm-product PUBLIC\n    core-product-utils\n    core-machine)")
     string(FIND "${cmake_source}" "${forbidden}" position)
     if(NOT position EQUAL -1)
         message(FATAL_ERROR "M5 T234 forbidden peer target edge remains: ${forbidden}")
