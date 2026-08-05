@@ -16,7 +16,6 @@ extern "C" {
 typedef struct {
     type_unsigned_8 reg[0x80]; /* cmos registers */
     t_cpu *cpu;
-    STD_TIME_T last_refresh;
 } t_cmos_connect;
 
 typedef struct {
@@ -148,7 +147,7 @@ mov ax, cx                    \n\
 mul bx                        \n\
 add ds:[006e], ax             \n"
 
-#define VCMOS_INT_HARD_RTC_08 "             \
+#define VCMOS_INT_HARD_TIMER_08 "           \
 cli                                       \n\
 push ds                                   \n\
 push ax                                   \n\
@@ -157,11 +156,11 @@ mov ax, 0040                              \n\
 mov ds, ax                                \n\
 add word ds:[006c], 01 ; increase tick count \n\
 adc word ds:[006e], 00                       \n\
-cmp word ds:[006c], 00b2 ; test rtc rollover \n\
+cmp word ds:[006c], 00b0 ; test timer rollover \n\
 jnz $(label_int_08_1)                     \n\
 cmp word ds:[006e], 0018                  \n\
 jnz $(label_int_08_1)                     \n\
-mov word ds:[006c], 0000 ; exec rtc rollover \n\
+mov word ds:[006c], 0000 ; execute timer rollover \n\
 mov word ds:[006e], 0000                     \n\
 mov byte ds:[0070], 01                       \n\
 $(label_int_08_1):                        \n\
@@ -179,7 +178,7 @@ pop ax                                    \n\
 sti                                       \n\
 iret                                      \n"
 
-#define VCMOS_INT_SOFT_RTC_1A "\
+#define VCMOS_INT_SOFT_TIMER_1A "\
 push bx                \n\
 push ds                \n\
 mov bx, 0040           \n\

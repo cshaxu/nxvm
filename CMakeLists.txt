@@ -81,6 +81,9 @@ target_link_libraries(vm-hdc-hdd-boot-smoke PRIVATE vm-composition)
 add_executable(vm-default-pc-at-apply-smoke
     tests/machine/vm_default_pc_at_apply_smoke.c)
 target_link_libraries(vm-default-pc-at-apply-smoke PRIVATE vm-composition)
+add_executable(vm-timer-firmware-smoke
+    tests/machine/vm_timer_firmware_smoke.c)
+target_link_libraries(vm-timer-firmware-smoke PRIVATE vm-composition)
 add_executable(vm-product-default-profile-smoke tests/products/nxvm_default_profile_smoke.c)
 target_link_libraries(vm-product-default-profile-smoke PRIVATE vm-composition)
 add_executable(vm-product-console-smoke
@@ -598,6 +601,10 @@ add_executable(core-machine-pit-waveform-smoke
     tests/machine/core_machine_pit_waveform_smoke.c
 )
 target_link_libraries(core-machine-pit-waveform-smoke PRIVATE core-machine)
+add_executable(core-machine-pit-divider-smoke
+    tests/core/machine_pit_divider_smoke.c
+)
+target_link_libraries(core-machine-pit-divider-smoke PRIVATE core-machine)
 add_executable(core-machine-pic-irq-lifecycle-smoke
     tests/machine/core_machine_pic_irq_lifecycle_smoke.c)
 target_link_libraries(core-machine-pic-irq-lifecycle-smoke PRIVATE core-machine)
@@ -766,6 +773,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-ram-port-context-smoke
     core-machine-pit-readback-smoke
     core-machine-pit-waveform-smoke
+    core-machine-pit-divider-smoke
     core-machine-pic-irq-lifecycle-smoke
     core-machine-kbc-controller-smoke
     core-machine-vadp-text-smoke
@@ -809,6 +817,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
 
 set(PROJECT_CURRENT_FDD_SMOKE_TARGETS
     vm-dos-prompt-smoke
+    vm-timer-firmware-smoke
     vm-dos-keyboard-smoke
     vm-dos-mem-fault-smoke
     vm-dos-video-port-smoke
@@ -894,7 +903,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0224 "0.5.0224")
+add_current_vm_artifact(vm-0-5-0225 "0.5.0225")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 

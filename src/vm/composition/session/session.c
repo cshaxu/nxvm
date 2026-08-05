@@ -173,12 +173,16 @@ C_INT vm_session_create(const vm_session_config *config, vm_session **out_sessio
         session->core_machine_config.fpu_profile = config->fpu_profile;
         session->core_machine_config.ticks_per_instruction =
             session->profile->ticks_per_instruction;
+        session->core_machine_config.pit_elapsed_ticks_per_input_tick =
+            session->profile->pit_elapsed_ticks_per_input_tick;
     } else {
         session->core_machine_config.memory_bytes = session->profile->default_memory_bytes;
         session->core_machine_config.cpu_profile = session->profile->cpu_profile;
         session->core_machine_config.fpu_profile = session->profile->fpu_profile;
         session->core_machine_config.ticks_per_instruction =
             session->profile->ticks_per_instruction;
+        session->core_machine_config.pit_elapsed_ticks_per_input_tick =
+            session->profile->pit_elapsed_ticks_per_input_tick;
     }
     vm_session_initialize(session);
     if (session->core_machine == STD_NULL) {

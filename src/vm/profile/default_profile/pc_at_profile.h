@@ -68,8 +68,8 @@ typedef struct vm_profile_default_pc_at_cmos_defaults {
 typedef enum vm_profile_default_pc_at_firmware_hook {
     VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_VIDEO_INT10,
     VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_CMOS_POST,
-    VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_CMOS_IRQ8,
-    VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_CMOS_INT1A,
+    VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_TIMER_IRQ0,
+    VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_TIMER_INT1A,
     VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_KEYBOARD_IRQ1,
     VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_KEYBOARD_INT16,
     VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_DMA_POST,
@@ -93,6 +93,7 @@ typedef struct vm_profile_default_pc_at_descriptor {
     core_machine_cpu_profile cpu_profile;
     core_machine_fpu_profile fpu_profile;
     uint32_t ticks_per_instruction;
+    uint32_t pit_elapsed_ticks_per_input_tick;
     core_machine_vadp_text_timing cga_text_timing;
     STD_SIZE_T default_memory_bytes;
     vm_profile_default_pc_at_rom_mapping rom;

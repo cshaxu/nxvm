@@ -26,6 +26,14 @@ retained Console/debugger/FDD/HDD evidence. Optional Bochs/PCjs comparison is
 bounded differential evidence only, never copied code, a runtime dependency,
 or an acceptance substitute.
 
+## Sequence Correction
+
+T223 was a completed urgent keyboard compatibility repair. T225 is the
+approved time/PIT closure task; the KBC work formerly shown at T224 is deferred
+to T226. This correction does not rewrite pushed historical commits or turn
+T225 into KBC work. The later queue is rebaselined by T225 S6 before any new
+device implementation begins.
+
 ## Time And Real-Mode Foundation
 
 | Task | Dependencies | Deliverable and exit condition |
@@ -40,32 +48,35 @@ or an acceptance substitute.
 
 | Task | Dependencies | Deliverable and exit condition |
 | --- | --- | --- |
-| T222 | T216, T219, T221 | Implement PIT elapsed-tick waveform and GATE semantics: modes 0--5, count zero, BCD, read-back boundaries, and IRQ0 lifecycle. No host timer or one-instruction fake timer behavior remains. |
-| T223 | T216, T219 | Implement KBC phase 1: set-1 break/E0/E1, FIFO, rapid typeahead, IRQ1, and ROM `INT 09h`/`INT 16h` ordering. Host input remains profile mapping -> KBC ingress. |
-| T224 | T223, T219 | Admit and verify KBC phase 2 scan-set selection, translation, LED, typematic, resend/error, and controller timing. Delays consume core elapsed ticks, never host sleep. |
-| T225 | T219, T220 | Implement the bounded CGA `320x200x4` VADP subset: VRAM layout, 3D8h/3D9h mode/color/palette, raster state, and copied pixel snapshot. EGA/VGA remains excluded. |
-| T226 | T216, T223, T224 | Add 8042 AUX mouse packet/controller path and IRQ12 through PIC. Host mouse enters only through profile mapping; it never writes DOS APIs or guest memory directly. |
-| T227 | T216, T219 | Implement 8237 DMA request/mask/mode/page/address/count lifecycle and the channel-2 FDC contract. DMA memory access uses the core memory contract; devices cannot directly copy guest RAM. |
+| T222 | T216, T219, T221 | Complete. PIT elapsed-tick waveform/GATE semantics are recorded under the true T222 identity; its final artifact revision is `0.5.0224`. |
+| T223 | T216, T219 | Complete urgent keyboard compatibility repair only. It restored `EDIT.COM` interaction but did not claim either planned KBC protocol phase. |
+| T224 | T223, T219 | Historical completed task identity. Its record remains historical; it is not a license to relabel later planned work. |
+| T225 | T219, T220 | Complete. Time/PIT closure distinguishes elapsed ticks from frozen PIT clocks and verifies the ordinary IRQ0 -> ROM -> BDA -> INT 1Ah chain. |
+| T226 | T216, T219, T225 | Deferred KBC phase 1: set-1 break/E0/E1, FIFO, rapid typeahead, IRQ1, and ROM `INT 09h`/`INT 16h` ordering. Host input remains profile mapping -> KBC ingress. |
+| T227 | T216, T226 | Deferred KBC phase 2: scan-set selection, translation, LED, typematic, resend/error, and controller timing. Delays consume core elapsed ticks, never host sleep. |
+| T228 | T219, T220 | Implement the bounded CGA `320x200x4` VADP subset: VRAM layout, 3D8h/3D9h mode/color/palette, raster state, and copied pixel snapshot. EGA/VGA remains excluded. |
+| T229 | T216, T226, T227 | Add 8042 AUX mouse packet/controller path and IRQ12 through PIC. Host mouse enters only through profile mapping; it never writes DOS APIs or guest memory directly. |
+| T230 | T216, T219 | Implement 8237 DMA request/mask/mode/page/address/count lifecycle and the channel-2 FDC contract. DMA memory access uses the core memory contract; devices cannot directly copy guest RAM. |
 
 ## Storage And RTC
 
 | Task | Dependencies | Deliverable and exit condition |
 | --- | --- | --- |
-| T228 | T216, T219, T227 | Implement the VM-owned FDC/FDD command/result state machine: media change, motor, rate, errors, non-DMA, format, transfer timing, DMA2, and IRQ6. Image files are backends only; boot alone is insufficient evidence. |
-| T229 | T216, T219 | Define and implement CMOS/RTC register, periodic/update/alarm IRQ8, NVRAM, and deterministic-time semantics. Host time is only a provider and cannot bypass guest register state. |
-| T230 | T213, T216, T219 | Extend the existing VM-owned ATA PIO controller through an explicit feature matrix: LBA, slave/secondary channel, reset and status/error timing. DMA is not admitted; file images never substitute for controller behavior. |
+| T231 | T216, T219, T230 | Implement the VM-owned FDC/FDD command/result state machine: media change, motor, rate, errors, non-DMA, format, transfer timing, DMA2, and IRQ6. Image files are backends only; boot alone is insufficient evidence. |
+| T232 | T216, T219 | Define and implement CMOS/RTC register, periodic/update/alarm IRQ8, NVRAM, and deterministic-time semantics. Host time is only a provider and cannot bypass guest register state. |
+| T233 | T213, T216, T219 | Extend the existing VM-owned ATA PIO controller through an explicit feature matrix: LBA, slave/secondary channel, reset and status/error timing. DMA is not admitted; file images never substitute for controller behavior. |
 
 ## EGA/VGA And Deferred CPU/FPU
 
 | Task | Dependencies | Deliverable and exit condition |
 | --- | --- | --- |
-| T231 | T219, T225 | Add only EGA/VGA memory windows, mapping, and sequencer families with per-family port and memory-map probes. |
-| T232 | T231 | Add admitted graphics- and attribute-controller families with planar-access fixtures; deferred families remain explicitly unsupported. |
-| T233 | T219, T232 | Add bounded DAC, planar VRAM, latch, and raster subfamilies with copied frame snapshots. This is not a single unbounded VGA task. |
-| T234 | Adequate real-mode device baseline | 286 descriptors, exceptions, and protected-mode control transfer, each with instruction probes and bounded differential evidence. |
-| T235 | T234 | 386 paging, CRx, CPL/IOPL, and TSS I/O map with focused probes and bounded differential evidence. |
-| T236 | T235 | Task switching and remaining admitted 286/386 instruction families. |
-| T237 | T234--T236 as applicable | Present FPU state, operations, exceptions, and `FWAIT`. Existing FPU-none ESC consumption is not present-FPU support. |
+| T234 | T219, T228 | Add only EGA/VGA memory windows, mapping, and sequencer families with per-family port and memory-map probes. |
+| T235 | T234 | Add admitted graphics- and attribute-controller families with planar-access fixtures; deferred families remain explicitly unsupported. |
+| T236 | T219, T235 | Add bounded DAC, planar VRAM, latch, and raster subfamilies with copied frame snapshots. This is not a single unbounded VGA task. |
+| T237 | Adequate real-mode device baseline | 286 descriptors, exceptions, and protected-mode control transfer, each with instruction probes and bounded differential evidence. |
+| T238 | T237 | 386 paging, CRx, CPL/IOPL, and TSS I/O map with focused probes and bounded differential evidence. |
+| T239 | T238 | Task switching and remaining admitted 286/386 instruction families. |
+| T240 | T237--T239 as applicable | Present FPU state, operations, exceptions, and `FWAIT`. Existing FPU-none ESC consumption is not present-FPU support. |
 
 CPU/FPU work is intentionally lower ROI than the real-mode hardware route. The
 DOS `MEM`/`FNINIT` history remains a regression sample, not evidence that 80386
