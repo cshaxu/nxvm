@@ -7,6 +7,7 @@
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/provider.h"
 #include "vm/composition/session/session.h"
+#include "tests/support/vm_session_fixture.h"
 
 static C_INT verify_profile(const vm_session *session,
     core_machine_cpu_profile cpu_profile, core_machine_fpu_profile fpu_profile)
@@ -15,9 +16,9 @@ static C_INT verify_profile(const vm_session *session,
     core_machine_fpu_profile observed_fpu;
 
     return session == STD_NULL ||
-        core_machine_get_cpu_profile(session->core_machine, &observed_cpu) !=
+        core_machine_get_cpu_profile(vm_session_fixture_machine(session), &observed_cpu) !=
             TYPE_STATUS_OK ||
-        core_machine_get_fpu_profile(session->core_machine, &observed_fpu) !=
+        core_machine_get_fpu_profile(vm_session_fixture_machine(session), &observed_fpu) !=
             TYPE_STATUS_OK ||
         observed_cpu != cpu_profile || observed_fpu != fpu_profile;
 }

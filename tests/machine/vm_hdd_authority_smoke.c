@@ -3,6 +3,7 @@
 
 
 #include "vm/composition/session/session.h"
+#include "tests/support/vm_session_fixture.h"
 
 #include "vm/composition/session/lifecycle.h"
 
@@ -10,16 +11,16 @@
 
 C_INT main(C_VOID)
 {
-    vm_session session = {0};
+    vm_session *session = STD_NULL;
     const vm_session *machine;
 
-    vm_session_initialize(&session);
-    machine = (&session);
+    if (vm_session_create(STD_NULL, &session) != TYPE_STATUS_OK) return 1;
+    machine = (session);
     if (machine == STD_NULL) {
-        vm_session_finalize(&session);
+        vm_session_destroy(session);
         return 1;
     }
-    vm_session_finalize(&session);
+    vm_session_destroy(session);
     puts("M5:T36:S1:HDD-AUTHORITY:OK");
     return 0;
 }

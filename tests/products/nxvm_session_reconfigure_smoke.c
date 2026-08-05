@@ -2,6 +2,7 @@
 
 #include "core/machine/machine_interface.h"
 #include "vm/composition/session/session.h"
+#include "tests/support/vm_session_fixture.h"
 
 C_INT main(C_VOID)
 {
@@ -18,18 +19,18 @@ C_INT main(C_VOID)
 
     if (vm_session_create(STD_NULL, &session) != TYPE_STATUS_OK) return 1;
     identity = session;
-    core_identity = session->core_machine;
-    fdd_identity = &session->fdd;
-    hdd_identity = &session->hdd;
-    debug_identity = &session->debug;
-    platform_identity = &session->platform_run_context;
+    core_identity = vm_session_fixture_machine(session);
+    fdd_identity = vm_session_fixture_fdd(session);
+    hdd_identity = vm_session_fixture_hdd(session);
+    debug_identity = vm_session_fixture_debug(session);
+    platform_identity = vm_session_fixture_platform_run_context(session);
     failed |= vm_session_reconfigure_memory(session, 32u * 1024u * 1024u) !=
         TYPE_STATUS_OK;
     failed |= session != identity;
-    failed |= session->core_machine != core_identity || &session->fdd != fdd_identity ||
-        &session->hdd != hdd_identity || &session->debug != debug_identity ||
-        &session->platform_run_context != platform_identity;
-    failed |= core_machine_get_memory_bytes(session->core_machine, &bytes) !=
+    failed |= vm_session_fixture_machine(session) != core_identity || vm_session_fixture_fdd(session) != fdd_identity ||
+        vm_session_fixture_hdd(session) != hdd_identity || vm_session_fixture_debug(session) != debug_identity ||
+        vm_session_fixture_platform_run_context(session) != platform_identity;
+    failed |= core_machine_get_memory_bytes(vm_session_fixture_machine(session), &bytes) !=
         TYPE_STATUS_OK || bytes != 32u * 1024u * 1024u;
     failed |= vm_session_get_reset_vector(session, &vector) != TYPE_STATUS_OK ||
         vector.cs != 0xf000u || vector.ip != 0xfff0u;

@@ -4,6 +4,7 @@
 #include "core/machine/machine_interface.h"
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/session.h"
+#include "tests/support/vm_session_fixture.h"
 
 #define VM_NO_MEDIA_PROBE_INSTRUCTION_BUDGET 100000u
 #define VM_NO_MEDIA_TEXT_CELLS (80u * 25u)
@@ -28,7 +29,7 @@ static C_INT vm_no_media_snapshot_has_text(
 
 C_INT main(C_VOID)
 {
-    vm_session session = {0};
+    vm_session *session = STD_NULL;
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
     core_machine_observation observation;
@@ -43,16 +44,16 @@ C_INT main(C_VOID)
     C_INT failed = 0;
     t_cpu *cpu;
 
-    vm_session_initialize(&session);
-    if (!session.active || session.core_machine == STD_NULL) goto fail;
-    vm_session_reset(&session);
-    cpu = core_machine_debug_cpu_borrow(session.core_machine);
+    if (vm_session_create(STD_NULL, &session) != TYPE_STATUS_OK) return 1;
+    if (!vm_session_fixture_is_active(session) || vm_session_fixture_machine(session) == STD_NULL) goto fail;
+    vm_session_reset(session);
+    cpu = core_machine_debug_cpu_borrow(vm_session_fixture_machine(session));
     if (cpu == STD_NULL) goto fail;
     for (instruction = 0u; instruction < VM_NO_MEDIA_PROBE_INSTRUCTION_BUDGET;
          ++instruction) {
-        if (core_machine_capture_observation(session.core_machine,
+        if (core_machine_capture_observation(vm_session_fixture_machine(session),
                 &observation) != TYPE_STATUS_OK ||
-            core_machine_memory_read(session.core_machine,
+            core_machine_memory_read(vm_session_fixture_machine(session),
                 observation.cpu.cs_base + observation.cpu.eip, opcode,
                 sizeof(opcode)) != TYPE_STATUS_OK) {
             failed = 1;
@@ -64,16 +65,16 @@ C_INT main(C_VOID)
         }
         if (opcode[0] == 0xcdu && opcode[1] == 0xf2u) ++f2_count;
         if (opcode[0] == 0xb4u && opcode[1] == 0x11u) key_wait_seen = 1;
-        if (core_machine_run(session.core_machine, budget, &result) !=
+        if (core_machine_run(vm_session_fixture_machine(session), budget, &result) !=
             TYPE_STATUS_OK || result.reason == CORE_MACHINE_STOP_FAULT) {
             failed = 1;
             break;
         }
         if (key_wait_seen) break;
     }
-    if (core_machine_memory_read(session.core_machine, 0x0450u, &cursor,
+    if (core_machine_memory_read(vm_session_fixture_machine(session), 0x0450u, &cursor,
             sizeof(cursor)) != TYPE_STATUS_OK ||
-        core_machine_capture_display_snapshot(session.core_machine, &snapshot) !=
+        core_machine_capture_display_snapshot(vm_session_fixture_machine(session), &snapshot) !=
             TYPE_STATUS_OK || cursor != 0x0600u || int10_count == 0u || f2_count != 0u ||
         !key_wait_seen || !vm_no_media_snapshot_has_text(&snapshot,
             "Invalid boot disk")) {
@@ -89,6 +90,6 @@ C_INT main(C_VOID)
     }
 
 fail:
-    vm_session_finalize(&session);
+    vm_session_destroy(session);
     return failed;
 }

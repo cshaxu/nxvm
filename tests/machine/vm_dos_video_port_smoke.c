@@ -4,6 +4,7 @@
 #include "core/machine/machine_interface.h"
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/session.h"
+#include "tests/support/vm_session_fixture.h"
 #include "vm/machine/fdd.h"
 
 #define VM_DOS_VIDEO_PROBE_INSTRUCTION_BUDGET 500000u
@@ -25,7 +26,7 @@ static C_INT vm_dos_video_has_prompt(const core_machine_display_snapshot *snapsh
 
 C_INT main(C_INT argc, C_CHAR **argv)
 {
-    vm_session session = {0};
+    vm_session *session = STD_NULL;
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
     core_machine_observation observation;
@@ -40,17 +41,17 @@ C_INT main(C_INT argc, C_CHAR **argv)
     C_INT failed = 0;
 
     if (argc != 2) return 1;
-    vm_session_initialize(&session);
-    if (!session.active || vm_machine_fdd_insert_for(&session.fdd, argv[1]) != 0) {
+    if (vm_session_create(STD_NULL, &session) != TYPE_STATUS_OK) return 1;
+    if (!vm_session_fixture_is_active(session) || vm_machine_fdd_insert_for(vm_session_fixture_fdd(session), argv[1]) != 0) {
         goto fail;
     }
-    vm_session_reset(&session);
-    cpu = core_machine_debug_cpu_borrow(session.core_machine);
+    vm_session_reset(session);
+    cpu = core_machine_debug_cpu_borrow(vm_session_fixture_machine(session));
     if (cpu == STD_NULL) goto fail;
     for (instruction = 0u; instruction < VM_DOS_VIDEO_PROBE_INSTRUCTION_BUDGET;
          ++instruction) {
-        if (core_machine_capture_observation(session.core_machine, &observation) !=
-                TYPE_STATUS_OK || core_machine_memory_read(session.core_machine,
+        if (core_machine_capture_observation(vm_session_fixture_machine(session), &observation) !=
+                TYPE_STATUS_OK || core_machine_memory_read(vm_session_fixture_machine(session),
                 observation.cpu.cs_base + observation.cpu.eip, opcode,
                 sizeof(opcode)) != TYPE_STATUS_OK) {
             failed = 1;
@@ -63,12 +64,12 @@ C_INT main(C_INT argc, C_CHAR **argv)
         if (opcode[0] == 0xcdu && opcode[1] == 0xf2u) {
             ++f2_count;
         }
-        if (core_machine_run(session.core_machine, budget, &result) != TYPE_STATUS_OK ||
+        if (core_machine_run(vm_session_fixture_machine(session), budget, &result) != TYPE_STATUS_OK ||
             result.reason == CORE_MACHINE_STOP_FAULT) {
             failed = 1;
             break;
         }
-        if (core_machine_capture_display_snapshot(session.core_machine, &snapshot) ==
+        if (core_machine_capture_display_snapshot(vm_session_fixture_machine(session), &snapshot) ==
                 TYPE_STATUS_OK && vm_dos_video_has_prompt(&snapshot)) {
             prompt_seen = 1;
             break;
@@ -80,13 +81,13 @@ C_INT main(C_INT argc, C_CHAR **argv)
         if (functions[instruction]) STD_PRINTF("%02X", (C_UINT)instruction);
     }
     STD_PRINTF("\n");
-    vm_session_finalize(&session);
+    vm_session_destroy(session);
     return 0;
 
 fail:
     STD_FPRINTF(STD_STDERR,
         "M5:T212:S2:VIDEO:DOS:FAIL INT10=%u F2=%u PROMPT=%d STOP=%d\n",
         int10_count, f2_count, prompt_seen, (C_INT)result.reason);
-    vm_session_finalize(&session);
+    vm_session_destroy(session);
     return 1;
 }

@@ -4,6 +4,7 @@
 
 #include "core/machine/machine_interface.h"
 #include "vm/composition/session/session.h"
+#include "tests/support/vm_session_fixture.h"
 
 #define VM_CGA_GRAPHICS_IMAGE_BYTES (1440u * 1024u)
 #define VM_CGA_GRAPHICS_BOOT_BUDGET 500000u
@@ -75,11 +76,11 @@ C_INT main(C_VOID)
     }
     for (instruction = 0u; instruction < VM_CGA_GRAPHICS_BOOT_BUDGET;
          ++instruction) {
-        if (core_machine_run(session->core_machine, budget, &result) !=
+        if (core_machine_run(vm_session_fixture_machine(session), budget, &result) !=
                 TYPE_STATUS_OK || result.reason == CORE_MACHINE_STOP_FAULT) {
             goto done;
         }
-        if (core_machine_capture_display_snapshot(session->core_machine,
+        if (core_machine_capture_display_snapshot(vm_session_fixture_machine(session),
                 &snapshot) != TYPE_STATUS_OK ||
             snapshot.kind != CORE_MACHINE_DISPLAY_KIND_CGA_320X200X4) {
             continue;

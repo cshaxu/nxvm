@@ -1,5 +1,7 @@
 #include "type.h"
 
+#include "vm/composition/session/session_private.h"
+
 #include "core/machine/block_provider.h"
 
 #include "vm/machine/hdc.h"
