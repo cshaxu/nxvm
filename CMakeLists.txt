@@ -650,6 +650,8 @@ add_executable(vm-fdd-authority-smoke tests/machine/vm_fdd_authority_smoke.c)
 target_link_libraries(vm-fdd-authority-smoke PRIVATE vm-composition)
 add_executable(vm-fdc-authority-smoke tests/machine/vm_fdc_authority_smoke.c)
 target_link_libraries(vm-fdc-authority-smoke PRIVATE vm-composition)
+add_executable(vm-fdc-port-smoke tests/machine/vm_fdc_port_smoke.c)
+target_link_libraries(vm-fdc-port-smoke PRIVATE vm-composition)
 add_executable(vm-hdd-authority-smoke tests/machine/vm_hdd_authority_smoke.c)
 target_link_libraries(vm-hdd-authority-smoke PRIVATE vm-composition)
 add_executable(vm-bios-authority-smoke tests/machine/vm_bios_authority_smoke.c)
@@ -826,6 +828,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     vm-dos-keyboard-smoke
     vm-dos-mem-fault-smoke
     vm-fault-outcome-runner-smoke
+    vm-fdc-port-smoke
     vm-no-media-video-port-smoke
     vm-hdc-hdd-boot-smoke
     vm-runner-display-cadence-smoke
@@ -930,7 +933,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0230 "0.5.0230")
+add_current_vm_artifact(vm-0-5-0231 "0.5.0231")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 
@@ -1058,6 +1061,12 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_dma_fdc_boundary.cmake"
         COMMENT "Verifying core DMA and FDC channel boundary"
+        VERBATIM)
+
+    add_custom_target(verify-fdc-state-machine-boundary
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_fdc_state_machine_boundary.cmake"
+        COMMENT "Verifying VM FDC/FDD state-machine ownership boundary"
         VERBATIM)
 
     add_custom_target(verify-host-cancellation-boundary

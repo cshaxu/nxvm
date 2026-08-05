@@ -18,61 +18,56 @@ STD_SIZE_T vm_machine_fdd_image_size(const t_fdd *fdd)
         fdd->data.ncyl;
 }
 
-C_VOID vm_machine_fdd_set_pointer(t_fdd *fdd)
+static type_virtual_address vm_machine_fdd_byte_address(const t_fdd *fdd,
+    type_unsigned_16 cylinder, type_unsigned_16 head,
+    type_unsigned_16 sector, type_unsigned_16 offset)
 {
-    fdd->connect.pCurrByte = fdd->connect.pImgBase +
-        ((fdd->data.cyl * fdd->data.nhead + fdd->data.head) *
-        fdd->data.nsector + (fdd->data.sector - 1)) * fdd->data.nbyte;
+    return fdd->connect.pImgBase + (((cylinder * fdd->data.nhead + head) *
+        fdd->data.nsector + (sector - 1u)) * fdd->data.nbyte) + offset;
 }
 
-C_VOID vm_machine_fdd_transfer_read(t_fdd *fdd, t_latch *latch)
+C_INT vm_machine_fdd_chs_valid(const t_fdd *fdd, type_unsigned_16 cylinder,
+    type_unsigned_16 head, type_unsigned_16 sector, type_unsigned_16 bytes)
 {
-    if (fdd == STD_NULL || latch == STD_NULL ||
-        (fdd->data.head == 1 && fdd->data.sector >= fdd->data.nsector + 1)) return;
-    latch->data.byte = TYPE_DEREFERENCE_UNSIGNED_8(fdd->connect.pCurrByte);
-    fdd->connect.pCurrByte++;
-    fdd->connect.transCount++;
-    if (!(fdd->connect.transCount % fdd->data.nbyte)) {
-        fdd->data.sector++;
-        if (fdd->data.head == 0 && fdd->data.sector >= fdd->data.nsector + 1) {
-            fdd->data.sector = 1;
-            fdd->data.head = 1;
-        }
-        vm_machine_fdd_set_pointer(fdd);
+    return fdd != STD_NULL && fdd->connect.flagDiskExist &&
+        fdd->connect.pImgBase != (type_virtual_address)STD_NULL &&
+        cylinder < fdd->data.ncyl && head < fdd->data.nhead && sector > 0u &&
+        sector <= fdd->data.nsector && bytes == fdd->data.nbyte;
+}
+
+C_INT vm_machine_fdd_read_byte(const t_fdd *fdd, type_unsigned_16 cylinder,
+    type_unsigned_16 head, type_unsigned_16 sector, type_unsigned_16 offset,
+    type_unsigned_8 *out_byte)
+{
+    if (out_byte == STD_NULL || !vm_machine_fdd_chs_valid(fdd, cylinder, head,
+        sector, fdd != STD_NULL ? fdd->data.nbyte : 0u) ||
+        offset >= fdd->data.nbyte) return TYPE_TRUE;
+    *out_byte = TYPE_DEREFERENCE_UNSIGNED_8(vm_machine_fdd_byte_address(fdd,
+        cylinder, head, sector, offset));
+    return TYPE_FALSE;
+}
+
+C_INT vm_machine_fdd_write_byte(t_fdd *fdd, type_unsigned_16 cylinder,
+    type_unsigned_16 head, type_unsigned_16 sector, type_unsigned_16 offset,
+    type_unsigned_8 value)
+{
+    if (fdd == STD_NULL || fdd->connect.flagReadOnly || !vm_machine_fdd_chs_valid(
+        fdd, cylinder, head, sector, fdd->data.nbyte) || offset >= fdd->data.nbyte) {
+        return TYPE_TRUE;
     }
+    TYPE_DEREFERENCE_UNSIGNED_8(vm_machine_fdd_byte_address(fdd, cylinder, head,
+        sector, offset)) = value;
+    return TYPE_FALSE;
 }
 
-C_VOID vm_machine_fdd_transfer_write(t_fdd *fdd, t_latch *latch)
+C_INT vm_machine_fdd_format_sector(t_fdd *fdd, type_unsigned_16 cylinder,
+    type_unsigned_16 head, type_unsigned_16 sector, type_unsigned_8 fill_byte)
 {
-    if (fdd == STD_NULL || latch == STD_NULL ||
-        (fdd->data.head == 1 && fdd->data.sector >= fdd->data.nsector + 1)) return;
-    TYPE_DEREFERENCE_UNSIGNED_8(fdd->connect.pCurrByte) = latch->data.byte;
-    fdd->connect.pCurrByte++;
-    fdd->connect.transCount++;
-    if (!(fdd->connect.transCount % fdd->data.nbyte)) {
-        fdd->data.sector++;
-        if (fdd->data.head == 0 && fdd->data.sector >= fdd->data.nsector + 1) {
-            fdd->data.sector = 1;
-            fdd->data.head = 1;
-        }
-        vm_machine_fdd_set_pointer(fdd);
-    }
-}
-
-C_VOID vm_machine_fdd_format_track(t_fdd *fdd, type_unsigned_8 fill_byte)
-{
-    if (fdd == STD_NULL || fdd->data.cyl >= fdd->data.ncyl) return;
-    fdd->data.head = 0;
-    fdd->data.sector = 1;
-    vm_machine_fdd_set_pointer(fdd);
-    STD_MEMSET((C_VOID *)fdd->connect.pCurrByte, fill_byte,
-        fdd->data.nsector * fdd->data.nbyte);
-    fdd->data.head = 1;
-    fdd->data.sector = 1;
-    vm_machine_fdd_set_pointer(fdd);
-    STD_MEMSET((C_VOID *)fdd->connect.pCurrByte, fill_byte,
-        fdd->data.nsector * fdd->data.nbyte);
-    fdd->data.sector = fdd->data.nsector;
+    if (fdd == STD_NULL || fdd->connect.flagReadOnly || !vm_machine_fdd_chs_valid(
+        fdd, cylinder, head, sector, fdd->data.nbyte)) return TYPE_TRUE;
+    STD_MEMSET((C_VOID *)vm_machine_fdd_byte_address(fdd, cylinder, head, sector,
+        0u), fill_byte, fdd->data.nbyte);
+    return TYPE_FALSE;
 }
 
 C_VOID vm_machine_fdd_initialize(t_fdd *fdd)
@@ -107,7 +102,10 @@ C_VOID vm_machine_fdd_finalize(t_fdd *fdd)
 
 C_VOID vm_machine_fdd_create_for(t_fdd *fdd)
 {
-    if (fdd != STD_NULL) fdd->connect.flagDiskExist = TYPE_TRUE;
+    if (fdd != STD_NULL) {
+        fdd->connect.flagDiskExist = TYPE_TRUE;
+        fdd->connect.media_generation++;
+    }
 }
 
 C_INT vm_machine_fdd_insert_for(t_fdd *fdd, const C_CHAR *file_name)
@@ -118,6 +116,7 @@ C_INT vm_machine_fdd_insert_for(t_fdd *fdd, const C_CHAR *file_name)
     STD_FREAD((C_VOID *)fdd->connect.pImgBase, sizeof(type_unsigned_8),
         vm_machine_fdd_image_size(fdd), image);
     fdd->connect.flagDiskExist = TYPE_TRUE;
+    fdd->connect.media_generation++;
     STD_FCLOSE(image);
     return TYPE_FALSE;
 }
@@ -134,6 +133,7 @@ C_INT vm_machine_fdd_remove_for(t_fdd *fdd, const C_CHAR *file_name)
         STD_FCLOSE(image);
     }
     fdd->connect.flagDiskExist = TYPE_FALSE;
+    fdd->connect.media_generation++;
     STD_MEMSET((C_VOID *)fdd->connect.pImgBase, TYPE_ZERO_8, vm_machine_fdd_image_size(fdd));
     return TYPE_FALSE;
 }
@@ -148,6 +148,6 @@ C_VOID vm_machine_fdd_print(const t_fdd *fdd) {
            fdd->data.nhead);
     STD_PRINTF("ReadOnly = %x, Exist = %x\n",
            fdd->connect.flagReadOnly, fdd->connect.flagDiskExist);
-    STD_PRINTF("base = %x, curr = %x, count = %x\n",
-           fdd->connect.pImgBase, fdd->connect.pCurrByte, fdd->connect.transCount);
+    STD_PRINTF("base = %x, media generation = %u\n",
+           fdd->connect.pImgBase, fdd->connect.media_generation);
 }
