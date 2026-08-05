@@ -2,7 +2,7 @@
 
 ## S1: Contract And Migration Design
 
-**Status:** S1/S2 complete; S3 artifact recording active. T219 moves time-sensitive core device advancement from the
+**Status:** complete. T219 moves time-sensitive core device advancement from the
 pre-instruction refresh chain into one `core_machine` elapsed-tick scheduler.
 It does not change PIT waveform semantics, CGA raster semantics, DMA protocol,
 or VM-only device behavior; those are separately admitted tasks.
@@ -46,8 +46,14 @@ device-local and no-fault-advance coverage.
 ### S3 Evidence
 
 Focused scheduler, PIT, VADP, and real-mode tick smokes pass. The current
-GCC/CTest matrix passes 55/55 tests. The T219 developer artifact record is the
-remaining closure evidence.
+GCC/CTest matrix passes 55/55 tests, including FDD prompt, keyboard, `MEM`,
+video-port, HDD boot, Console, and debugger coverage.
+
+Developer artifact: `build/output/nxvm_0_5_0219.exe`.
+
+SHA-256: `C4EBA2DF52682B19AC5DA919073AA7385D65F777C45BE5DDAD2C840E02636378`.
+
+Source commits: `cd162f5` (`M5 T219 S2 P1`) and this S3 evidence record.
 
 ### Stop Conditions
 
