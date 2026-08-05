@@ -261,17 +261,16 @@ guest-observable behavior.
   it writes the reset-cleared profile BDA POST report. The session runner clears
   and consumes that report at an instruction-budget boundary, then owns the
   sole stop request. No core policy, host callback, queue, fake port, or
-  host-side BDA mutation was introduced. The current matrix passes; the
-  no-media error-display sequence has a separate T212 video-path follow-up.
+  host-side BDA mutation was introduced. The current matrix passes; completed
+  T212 ROM-video regression now covers the no-media error-display sequence.
 
 - [ ] **Remove default-profile firmware shortcuts (`TODO(High)`, M5 core
   closure condition).** Completion of T209 removes the QDX `F1 <command>`
-  CPU opcode hack, but does not make the replacement firmware `INT F2h`, `F4h`,
-  and `F5h`
-  portal a completed hardware path. The current default ROM still calls
-  profile-private providers for text `INT 10h` (`F2h`) and HDD read/write
-  (`F4h`/`F5h`). M5 may not claim a fully hardware-owned PC/AT execution path
-  while those portals remain. Retire each portal only after its guest-visible
+  CPU opcode hack; T212 additionally retires the text `INT F2h` portal through
+  default-ROM `INT 10h` over BDA, `B8000`, and VADP. The remaining HDD
+  read/write portals are `F4h`/`F5h`. M5 may not claim a fully hardware-owned
+  PC/AT execution path while those portals remain. Retire each portal only
+  after its guest-visible
   behavior has a real owner and probe: KBC ports/IRQ1 plus ROM BIOS keyboard
   service (completed by T210); the boot-failure lifecycle boundary (completed
   by T211); VADP ports/VRAM plus ROM BIOS video service; and a guest-visible
@@ -283,13 +282,11 @@ guest-observable behavior.
   Do not substitute a new host callback, host-side BDA/RAM mutation, or BIOS
   special-case for the removed portal.
 
-- [ ] **Runner display cadence (`TODO(Medium)`, follow T212 S1).** The bounded
-  no-media probe proves the existing F2/VADP path renders `Invalid boot disk`
-  and reaches `INT 16h`; the prior slow wall-clock observation came from the
-  runner's one-instruction quantum publishing a full copied display snapshot
-  after every instruction. Define a bounded batching/cadence policy that keeps
-  debugger pause, input, stop, and display latency explicit. Do not make this a
-  video, platform, or host shortcut.
+- [x] **Runner display cadence (`TODO(Medium)`, T212).** Normal execution now
+  uses a 256-instruction quantum and publishes at most one copied display frame
+  per quantum; command, pause, stop, and debug refresh remain at the same
+  bounded boundary, while single-step remains one instruction. The no-media
+  mailbox smoke rejects a return to per-instruction full-frame copying.
 
 - [ ] **CPU correctness / MS-DOS MEM.** Do not claim complete 80386 support:
   the CPU is 8086-plus with partial i386 decode/execution coverage. T152
