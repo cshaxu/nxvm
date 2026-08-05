@@ -20,9 +20,8 @@ C_INT main(C_VOID)
     machine = session;
     if (machine == STD_NULL ||
         machine->fdc.connect.fdd != &machine->fdd ||
-        machine->fdc.connect.dma_latch == STD_NULL ||
-        machine->fdc.connect.dma_primary == STD_NULL ||
-        machine->fdc.connect.dma_secondary == STD_NULL ||
+        machine->fdc.connect.dma_request.core_owner == STD_NULL ||
+        machine->fdc.connect.dma_request.channel != 2u ||
         machine->fdc.connect.irq_source.master == STD_NULL ||
         machine->fdc.connect.irq_source.slave == STD_NULL ||
         machine->fdc.connect.port == STD_NULL) {
@@ -32,6 +31,6 @@ C_INT main(C_VOID)
     }
     vm_session_finalize(session);
     STD_FREE(session);
-    puts("M5:T70:S1:P5:FDC-CONNECT:OK");
+    puts("M5:T230:S3:FDC-DMA-BINDING:OK");
     return 0;
 }

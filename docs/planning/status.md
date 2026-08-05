@@ -12,6 +12,11 @@ session once from Console text to Window graphics. The GCC governance gate and
 `B2D78D1B756A4BF5A1EAA1E038CDD7F4DD22C8487B5A3A5BE9EDF4C223047EB8` from
 `d527f23`; see [the task record](m5-t228-cga-320x200x4.md).
 
+**M5 T230 S2 is active:** converge the existing dual-8237 core ownership into a
+frozen device-binding contract, then bind the default FDC to channel 2 without
+raw DMA/latch access or direct guest-memory copies. T231 retains full FDC
+command/result and media behavior. See [the task record](m5-t230-dma-fdc-contract.md).
+
 **M5 T229 complete:** the bounded 8042 AUX controller has one tagged KBC output
 owner, PS/2 three-byte packets, and IRQ12; host mouse enters only through the
 profile mapper and existing session ingress. An ordinary guest IVT `74h`

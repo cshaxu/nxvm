@@ -18,15 +18,13 @@
 
 #include "vm/machine/fdc.h"
 
-C_VOID vm_machine_fdc_connect(t_fdc *fdc, t_fdd *fdd, t_latch *dma_latch,
-    t_dma *dma_primary, t_dma *dma_secondary, t_pic *pic_master,
+C_VOID vm_machine_fdc_connect(t_fdc *fdc, t_fdd *fdd,
+    const core_machine_dma_request_binding *dma_request, t_pic *pic_master,
     t_pic *pic_slave, t_port *port, const vm_machine_fdc_config *config)
 {
-    if (fdc == STD_NULL || config == STD_NULL) return;
+    if (fdc == STD_NULL || dma_request == STD_NULL || config == STD_NULL) return;
     fdc->connect.fdd = fdd;
-    fdc->connect.dma_latch = dma_latch;
-    fdc->connect.dma_primary = dma_primary;
-    fdc->connect.dma_secondary = dma_secondary;
+    fdc->connect.dma_request = *dma_request;
     core_machine_pic_irq_source_bind(&fdc->connect.irq_source, pic_master,
         pic_slave, config->irq);
     fdc->connect.port = port;
@@ -165,7 +163,7 @@ static C_VOID begin_transfer(t_fdc *fdc) {
     vm_machine_fdd_set_pointer(fdc->connect.fdd);
     /* send trans request */
     if (!fdc->data.flagNDMA && TYPE_GET_BIT(fdc->data.dor, VFDC_DOR_ENRQ)) {
-        core_machine_dma_set_drq(fdc->connect.dma_primary, fdc->connect.dma_secondary, 2);
+        core_machine_dma_request_assert(&fdc->connect.dma_request);
     }
     SetMSRExecCmd;
 }
@@ -528,6 +526,17 @@ static C_VOID dma_close(C_VOID *owner, t_latch *latch)
     finish_transfer(fdc);
 }
 
+static const core_machine_dma_channel_provider vm_machine_fdc_dma_channel = {
+    dma_read,
+    dma_write,
+    dma_close
+};
+
+const core_machine_dma_channel_provider *vm_machine_fdc_dma_provider(C_VOID)
+{
+    return &vm_machine_fdc_dma_channel;
+}
+
 C_VOID vm_machine_fdc_initialize(t_fdc *fdc)
 {
     if (fdc == STD_NULL || fdc->connect.port == STD_NULL) return;
@@ -545,14 +554,12 @@ C_VOID vm_machine_fdc_initialize(t_fdc *fdc)
         write_03f5, fdc);
     core_machine_port_add_write(fdc->connect.port, fdc->connect.config.control_port,
         write_03f7, fdc);
-    core_machine_dma_bind_device(fdc->connect.dma_primary,
-        fdc->connect.dma_secondary, fdc->connect.config.dma_channel,
-        dma_read, dma_write, dma_close, fdc);
 }
 
 C_VOID vm_machine_fdc_reset(t_fdc *fdc)
 {
     if (fdc != STD_NULL) {
+        core_machine_dma_request_deassert(&fdc->connect.dma_request);
         core_machine_pic_irq_source_deassert(&fdc->connect.irq_source);
         reset_controller(fdc);
     }
@@ -569,7 +576,12 @@ C_VOID vm_machine_fdc_refresh(t_fdc *fdc)
 }
 
 C_VOID vm_machine_fdc_finalize(t_fdc *fdc)
-{ if (fdc != STD_NULL) core_machine_pic_irq_source_deassert(&fdc->connect.irq_source); }
+{
+    if (fdc != STD_NULL) {
+        core_machine_dma_request_deassert(&fdc->connect.dma_request);
+        core_machine_pic_irq_source_deassert(&fdc->connect.irq_source);
+    }
+}
 
 /* Prints FDC status */
 C_VOID vm_machine_fdc_print(const t_fdc *fdc) {

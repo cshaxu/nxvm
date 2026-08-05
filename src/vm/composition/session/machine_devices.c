@@ -38,6 +38,7 @@ C_VOID vm_session_machine_devices_initialize_fdc(vm_session *session)
 {
     const vm_profile_default_pc_at_port_range *ports;
     const vm_profile_default_pc_at_route *route;
+    core_machine_dma_request_binding dma_request = {0};
     vm_machine_fdc_config config;
 
     if (session == STD_NULL) return;
@@ -55,10 +56,13 @@ C_VOID vm_session_machine_devices_initialize_fdc(vm_session *session)
     config.control_port = ports->last;
     config.irq = route->irq;
     config.dma_channel = route->dma_channel;
-    vm_machine_fdc_connect(&session->fdc, &session->fdd,
+    if (core_machine_dma_bind_channel(
         core_machine_configuration_shared_dma_latch_borrow(session->core_machine),
         core_machine_configuration_shared_dma_primary_borrow(session->core_machine),
         core_machine_configuration_shared_dma_secondary_borrow(session->core_machine),
+        config.dma_channel, vm_machine_fdc_dma_provider(), &session->fdc,
+        &dma_request) != TYPE_STATUS_OK) return;
+    vm_machine_fdc_connect(&session->fdc, &session->fdd, &dma_request,
         core_machine_configuration_shared_pic_master_borrow(session->core_machine),
         core_machine_configuration_shared_pic_slave_borrow(session->core_machine),
         core_machine_configuration_port_borrow(session->core_machine), &config);

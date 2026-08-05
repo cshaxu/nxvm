@@ -8,11 +8,10 @@ extern "C" {
 #endif
 
 #include "type.h"
+#include "core/machine/dma.h"
 #include "core/machine/pic.h"
 #include "vm/machine/fdd.h"
 
-typedef struct t_latch t_latch;
-typedef struct t_dma t_dma;
 typedef struct t_pic t_pic;
 typedef struct t_port t_port;
 
@@ -49,9 +48,7 @@ typedef struct {
 
 typedef struct {
     t_fdd *fdd;
-    t_latch *dma_latch;
-    t_dma *dma_primary;
-    t_dma *dma_secondary;
+    core_machine_dma_request_binding dma_request;
     core_machine_pic_irq_source irq_source;
     t_port *port;
     vm_machine_fdc_config config;
@@ -167,9 +164,10 @@ type_unsigned_8 VFDC_GetBPSC(type_unsigned_16 cb); /* convert bps to bps type */
 /* #define VFDC_GetBPS(cbyte)  (0x0080 << (cbyte))  * bytes per sector */
 /* sector size code */
 
-C_VOID vm_machine_fdc_connect(t_fdc *fdc, t_fdd *fdd, t_latch *dma_latch,
-    t_dma *dma_primary, t_dma *dma_secondary, t_pic *pic_master,
+C_VOID vm_machine_fdc_connect(t_fdc *fdc, t_fdd *fdd,
+    const core_machine_dma_request_binding *dma_request, t_pic *pic_master,
     t_pic *pic_slave, t_port *port, const vm_machine_fdc_config *config);
+const core_machine_dma_channel_provider *vm_machine_fdc_dma_provider(C_VOID);
 C_VOID vm_machine_fdc_initialize(t_fdc *fdc);
 C_VOID vm_machine_fdc_reset(t_fdc *fdc);
 C_VOID vm_machine_fdc_refresh(t_fdc *fdc);
