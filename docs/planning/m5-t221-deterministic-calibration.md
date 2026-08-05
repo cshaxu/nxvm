@@ -53,3 +53,12 @@ Developer artifact: `build/output/nxvm_0_5_0221.exe`.
 SHA-256: `527FC2845DBDF46D8A83516755D0A49BE62BBD83C898FE0EAB9332C6EEFEBEF4`.
 
 Source commits: `5455b61` (`M5 T221 S2 P1`) and this S3 evidence record.
+
+### Later T222 PIT Relative-Rate Evidence
+
+T221 deliberately did not claim PIT waveform correctness. T222 records the
+additional deterministic relation without changing T221's 48/8/8 VADP tuple:
+given the same frozen elapsed-tick input, mode 2 reload `N` repeats every `N`
+ticks after its initial low pulse, and mode 3 reload `N` repeats every `N`
+ticks with ceil/floor high/low phases. This is core scheduler evidence, not a
+host-time calibration.

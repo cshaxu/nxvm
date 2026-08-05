@@ -2,6 +2,13 @@
 
 ## Current Work
 
+**M5 T222 complete:** the core PIT owns effective binary/BCD reload, GATE edge
+handling, modes 0--5 waveform state, read-back, and OUT-level delivery to the
+PIC IRQ0 source. The focused waveform/read-back probes and 57/57 current
+CTest matrix pass; the T222 artifact and relative-rate evidence are recorded
+in [the task record](m5-t222-pit-waveform.md). The scheduler remains the sole
+time source; no host timer or VM-side device loop is admitted.
+
 **M5 T223 complete:** default-profile keyboard delivery again preserves BIOS
 extended keys with a zero ASCII byte and consumes one ingress event per guest
 execution boundary. This restores real `EDIT.COM` Alt-menu and arrow behavior
