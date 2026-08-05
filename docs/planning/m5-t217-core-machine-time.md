@@ -54,8 +54,8 @@ Developer artifact: `build/output/nxvm_0_5_0217.exe`.
 
 SHA-256: `C1C704F396EDDFEAA3BA1839142ABF776FA0B33CD3E8AF23DED34D28518EC290`.
 
-The source commit is recorded with the task implementation commit. No later
-device scheduler, raster, or timer waveform work is admitted by T217 itself.
+Source commit: `87ca1e5` (`M5 T217 S3 P1`). No later device scheduler, raster,
+or timer waveform work is admitted by T217 itself.
 
 ### Non-Goals And Stop Conditions
 
