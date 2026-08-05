@@ -7,7 +7,6 @@
 
 #include "type.h"
 
-#include "core/product/utils.h"
 #include "core/product/session/command_interface.h"
 
 #include "vm/product/console.h"

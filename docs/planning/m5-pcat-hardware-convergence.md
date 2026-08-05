@@ -70,13 +70,14 @@ device implementation begins.
 
 | Task | Dependencies | Deliverable and exit condition |
 | --- | --- | --- |
-| T234 | T219, T228 | Add only EGA/VGA memory windows, mapping, and sequencer families with per-family port and memory-map probes. |
-| T235 | T234 | Add admitted graphics- and attribute-controller families with planar-access fixtures; deferred families remain explicitly unsupported. |
-| T236 | T219, T235 | Add bounded DAC, planar VRAM, latch, and raster subfamilies with copied frame snapshots. This is not a single unbounded VGA task. |
-| T237 | Adequate real-mode device baseline | 286 descriptors, exceptions, and protected-mode control transfer, each with instruction probes and bounded differential evidence. |
-| T238 | T237 | 386 paging, CRx, CPL/IOPL, and TSS I/O map with focused probes and bounded differential evidence. |
-| T239 | T238 | Task switching and remaining admitted 286/386 instruction families. |
-| T240 | T237--T239 as applicable | Present FPU state, operations, exceptions, and `FWAIT`. Existing FPU-none ESC consumption is not present-FPU support. |
+| T234 | M5 boundary audit | Establish `core/utils` as the only dependency-neutral utility/callback layer; remove VM peer imports of `core/product`, retire stale utility imports and dead diagnostics, and enforce the source and target DAG. Design the retained BIOS-image migration before changing it. |
+| T235 | T219, T228 | Add only EGA/VGA memory windows, mapping, and sequencer families with per-family port and memory-map probes. |
+| T236 | T235 | Add admitted graphics- and attribute-controller families with planar-access fixtures; deferred families remain explicitly unsupported. |
+| T237 | T219, T236 | Add bounded DAC, planar VRAM, latch, and raster subfamilies with copied frame snapshots. This is not a single unbounded VGA task. |
+| T238 | Adequate real-mode device baseline | 286 descriptors, exceptions, and protected-mode control transfer, each with instruction probes and bounded differential evidence. |
+| T239 | T238 | 386 paging, CRx, CPL/IOPL, and TSS I/O map with focused probes and bounded differential evidence. |
+| T240 | T239 | Task switching and remaining admitted 286/386 instruction families. |
+| T241 | T238--T240 as applicable | Present FPU state, operations, exceptions, and `FWAIT`. Existing FPU-none ESC consumption is not present-FPU support. |
 
 CPU/FPU work is intentionally lower ROI than the real-mode hardware route. The
 DOS `MEM`/`FNINIT` history remains a regression sample, not evidence that 80386

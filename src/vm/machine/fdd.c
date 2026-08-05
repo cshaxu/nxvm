@@ -4,7 +4,6 @@
 
 #include "type.h"
 
-#include "core/product/utils.h"
 
 
 #include "core/machine/dma.h"

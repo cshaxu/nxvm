@@ -44,7 +44,7 @@ are recorded.
 **Goal:** define the architecture that lets `nxvm.exe` and `ntvdm64.exe` share
 one machine core while keeping product policy out of that core.
 
-**Scope:** specify `core/{machine,platform,product}` and
+**Scope:** specify the neutral `core/utils` layer, `core/{machine,platform,product}`, and
 `{vm,vdm}/{machine,platform,product,profile}` ownership; profile/composition,
 device, port/memory, interrupt,
 firmware-service, DOS-service, host-capability, and debug/command registries;

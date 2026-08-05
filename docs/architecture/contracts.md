@@ -382,8 +382,10 @@ global host-services object:
   system events.
 - Presentation sinks consume copied display frames, audio blocks, and, where
   needed, diagnostic output.
-- Clock and wake primitives support composition-owned pacing, waiting, and
-  watchdogs; `core/machine` never reads host time.
+- Host clock capability belongs in `core/platform`; the policy-free injected
+  wait callback used across independent owners belongs in `core/utils`.
+  Composition owns pacing, waiting, and watchdog policy; `core/machine` never
+  reads host time.
 
 Filesystem, drive visibility, serial/parallel policy, and printing do not
 enter `core/platform` merely because they touch the host. VM media attachment

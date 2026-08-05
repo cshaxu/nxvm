@@ -8,8 +8,9 @@ boundary remains [Module Layout](architecture/module-layout.md).
 1. Keep two first-class products: bootable `nxvm.exe` and non-bootable
    `ntvdm64.exe` share one foundation without making either a compatibility
    afterthought.
-2. Keep `core` product-neutral. `core/machine`, `core/platform`, and
-   `core/product` are independent; only VM or VDM composition integrates them.
+2. Keep `core` product-neutral. `core/utils` is a strictly neutral lowest
+   utility layer; `core/machine`, `core/platform`, and `core/product` are
+   independent peers. Only VM or VDM composition integrates product peers.
 3. Put VM/VDM policy at the product boundary. Core models guest mechanics and
    shared capability; profiles describe topology and bounded firmware
    overrides.

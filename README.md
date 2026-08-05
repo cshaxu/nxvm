@@ -20,7 +20,7 @@ visibility controls. See [Runtime CLI Requirements](docs/requirements/ntvdm64-ru
 ## Formal Runtime
 
 ```text
-core/{machine,platform,product}
+core/{utils,machine,platform,product}
   + vm/{machine,platform,product,profile}
   + vdm/{machine,platform,product,profile}
 ```

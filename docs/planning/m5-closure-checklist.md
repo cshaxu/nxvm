@@ -38,7 +38,8 @@ unfinished M5 item as an implicit waiver.
 
 ## 3. Single Owner And Single Runtime Path
 
-- [ ] A current source audit covers every `core/{machine,platform,product}`,
+- [ ] A current source audit covers `core/utils`, every
+  `core/{machine,platform,product}`,
   `vm/{machine,platform,product,profile}`, `vdm/{machine,platform,product,profile}`,
   composition root, target, test, and main entry.
 - [ ] Each mutable runtime datum has one explicit owner. There is one production
@@ -50,6 +51,9 @@ unfinished M5 item as an implicit waiver.
 - [ ] `core` has no VM/VDM dependency; core peer modules remain independent;
   only product-root composition integrates product peers. Platform code does
   not mutate guest state.
+- [ ] `core/utils` depends only on `type-facade` and carries only neutral,
+  explicitly named utility or callback contracts. No VM/VDM peer imports a
+  non-matching `core/*` peer, and the CMake target graph has the same boundary.
 - [ ] Every adapter/wrapper adds a documented boundary responsibility. No
   forwarding-only facade, permanent same-object alias, or test-only historical
   path remains in a formal product route.

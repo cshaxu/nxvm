@@ -42,7 +42,8 @@ Get-ChildItem $sourceRoot -Recurse -File | Where-Object {
             if ($null -eq $targetOwner) { return }
 
             $forbidden =
-                (($sourceOwner -like "core/*") -and ($targetOwner -ne $sourceOwner)) -or
+                (($sourceOwner -like "core/*") -and ($targetOwner -ne $sourceOwner) -and
+                    ($targetOwner -ne "core/utils")) -or
                 (($sourceOwner -match '^(vm|vdm)/') -and
                     ($sourceOwner -notmatch '^(vm|vdm)/composition$') -and
                     ($targetOwner -match '^(vm|vdm)/') -and

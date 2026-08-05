@@ -131,7 +131,6 @@ C_VOID vm_session_storage_initialize(vm_session *machine)
     core_machine_display_provider_slot_initialize(&machine->display_provider);
     machine->default_profile_context.display_provider = &machine->display_provider;
     vm_platform_presentation_mailbox_initialize(&machine->presentation_mailbox);
-    machine->default_profile_context.wait_scope = &machine->wait_scope;
     core_product_debug_context_initialize(&machine->debugger_context);
     machine->display_generation = 0u;
 }

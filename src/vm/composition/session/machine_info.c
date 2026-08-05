@@ -3,7 +3,6 @@
 #include "type.h"
 
 #include "core/machine/machine_interface.h"
-#include "core/product/utils.h"
 #include "vm/composition/session/machine_info.h"
 #include "vm/composition/session/session.h"
 #include "vm/machine/fdd.h"

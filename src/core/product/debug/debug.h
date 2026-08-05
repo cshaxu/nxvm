@@ -10,7 +10,7 @@ extern "C" {
 #include "type.h"
 
 #include "core/product/debug/debug_target.h"
-#include "core/product/wait_provider.h"
+#include "core/utils/wait_provider.h"
 
 typedef struct core_product_debug_input_provider {
     C_VOID (*flush_console_input)(C_VOID *context);
@@ -20,7 +20,7 @@ typedef struct core_product_debug_input_provider {
 typedef struct core_product_debug_context {
     const core_product_debug_target *target;
     const core_product_debug_input_provider *input_provider;
-    const core_product_wait_scope *wait_scope;
+    const core_utils_wait_scope *wait_scope;
     STD_SIZE_T error_position;
     STD_SIZE_T argument_count;
     C_CHAR **arguments;

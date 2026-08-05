@@ -12,9 +12,11 @@ This document records ntvdm64-specific source rules:
 
 The only source roots are `core`, `vm`, and `vdm`.
 
-- `core/{machine,platform,product}` contains behavior shared by VM and VDM.
-  A concrete host implementation belongs under `core/platform/<host>` only
-  when both products can reuse it without product policy.
+- `core/utils` is the lowest neutral utility/callback layer and depends only on
+  `type-facade`. `core/{machine,platform,product}` contains behavior shared by
+  VM and VDM. A concrete host implementation belongs under
+  `core/platform/<host>` only when both products can reuse it without product
+  policy.
 - `vm/{machine,platform,product,profile}` contains bootable whole-machine
   behavior, the retained VM Console/debugger experience, and machine profiles.
 - `vdm/{machine,platform,product,profile}` contains DOS application-runner

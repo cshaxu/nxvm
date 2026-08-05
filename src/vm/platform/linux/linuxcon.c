@@ -4,7 +4,7 @@
 
 #include "type.h"
 
-#include "core/product/wait.h"
+#include "core/utils/wait.h"
 
 #include <curses.h>
 
@@ -255,7 +255,7 @@ static C_VOID *linuxcon_display_thread(C_VOID *arg) {
     while (vm_platform_execution_is_running_for(context->execution)) {
         vm_platform_linuxcon_paint(context, 0);
         vm_platform_linuxcon_process_keyboard(handle);
-        core_product_wait_milliseconds(context->wait_scope, 20u);
+        core_utils_wait_milliseconds(context->wait_scope, 20u);
     }
     return 0;
 }
@@ -427,7 +427,7 @@ type_status vm_platform_linuxcon_run_handle_start(
     handle->kernel_started = 1;
     while (old_flip ==
            vm_platform_execution_get_flip_for(context->execution)) {
-        core_product_wait_milliseconds(context->wait_scope, 100u);
+        core_utils_wait_milliseconds(context->wait_scope, 100u);
     }
     if (pthread_create(&handle->display_thread, STD_NULL, linuxcon_display_thread,
             handle) != 0) {
@@ -439,7 +439,7 @@ type_status vm_platform_linuxcon_run_handle_start(
     handle->display_started = 1;
     for (waited = 0u; !STD_ATOMIC_LOAD(&handle->display_ready) &&
          !STD_ATOMIC_LOAD(&handle->display_failed) && waited < 5000u; ++waited) {
-        core_product_wait_milliseconds(context->wait_scope, 1u);
+        core_utils_wait_milliseconds(context->wait_scope, 1u);
     }
     if (!STD_ATOMIC_LOAD(&handle->display_ready)) {
         vm_platform_linuxcon_run_handle_request_stop(owner);

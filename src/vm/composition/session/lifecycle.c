@@ -12,7 +12,8 @@
 
 #include "core/product/debug/debug_target.h"
 
-#include "core/product/wait_provider.h"
+#include "core/product/utils.h"
+#include "core/utils/wait_provider.h"
 
 #include "core/platform/sleep.h"
 
@@ -43,6 +44,13 @@ static C_VOID vm_session_wait(C_VOID *context, uint32_t milliseconds)
 {
     (C_VOID)context;
     core_platform_sleep_milliseconds(milliseconds);
+}
+
+static uint8_t vm_session_debug_disassemble(C_VOID *context,
+    C_CHAR *statement, uint8_t *code, C_INT flag32)
+{
+    (C_VOID)context;
+    return core_product_utils_dasm32(statement, code, flag32);
 }
 
 static C_VOID vm_session_keyboard_receive_key_event(C_VOID *context,
@@ -210,12 +218,14 @@ C_VOID vm_session_initialize(vm_session *machine) {
     if (machine->active) return;
     vm_session_storage_initialize(machine);
     if (machine->core_machine == STD_NULL) return;
-    core_product_wait_scope_initialize(&machine->wait_scope,
+    core_utils_wait_scope_initialize(&machine->wait_scope,
         vm_session_wait, STD_NULL);
     vm_session_control_initialize(&machine->control, machine);
     vm_session_bind_display(machine);
     vm_machine_debug_bind_pause(&machine->debug,
         vm_session_debug_request_pause, STD_NULL);
+    vm_machine_debug_bind_disassembler(&machine->debug,
+        vm_session_debug_disassemble, STD_NULL);
     vm_platform_keyboard_transport_initialize(&machine->keyboard_transport,
         &vm_session_keyboard_sink, machine);
     vm_platform_mouse_transport_initialize(&machine->mouse_transport,
@@ -250,6 +260,7 @@ C_VOID vm_session_finalize(vm_session *machine) {
     vm_session_control_finalize(&machine->control, machine);
     core_machine_display_provider_slot_finalize(&machine->display_provider);
     vm_machine_debug_bind_pause(&machine->debug, STD_NULL, STD_NULL);
+    vm_machine_debug_bind_disassembler(&machine->debug, STD_NULL, STD_NULL);
     vm_session_debug_target_finalize(machine);
     vm_session_storage_finalize(machine);
 }

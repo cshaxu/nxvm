@@ -7,9 +7,6 @@
 
 #include "type.h"
 
-#include "core/product/utils.h"
-
-
 #include "core/machine/cpu_instructions.h"
 
 
@@ -22,106 +19,6 @@ static C_VOID debug_request_pause(t_debug *debug,
         debug->connect.pauseCallback(debug->connect.pauseContext, reason);
     }
 }
-
-#if 0
-static C_VOID xasm_test(t_debug *debug) {
-    type_native_unsigned total = 0; /* diagnostic-only instruction count */
-    type_bool flagStop = TYPE_TRUE; /* stop the VM if comparison fails */
-    type_native_unsigned i, lenDasm1, lenDasm2, lenAasm;
-    type_string_buffer strDasm1, strDasm2;
-    type_unsigned_8 ins1[15], ins2[15];
-    total++;
-    debug->connect.cpuinsReadLinear(debug->connect.cpu->data.cs.base + debug->connect.cpu->data.eip, (type_virtual_address) ins1, 15);
-    /* ins1[0] = 0x67;
-    ins1[1] = 0xc6;
-    ins1[2] = 0x44;
-    ins1[3] = 0xf2;
-    ins1[4] = 0x05;
-    ins1[5] = 0x8e;
-    ins1[6] = 0x00;*/
-    switch (TYPE_DEREFERENCE_UNSIGNED_8(ins1)) {
-    case 0x88:
-    case 0x89:
-    case 0x8a:
-    case 0x8b:
-    case 0x00:
-    case 0x01:
-    case 0x02:
-    case 0x03:
-    case 0x08:
-    case 0x09:
-    case 0x0a:
-    case 0x0b:
-    case 0x10:
-    case 0x11:
-    case 0x12:
-    case 0x13:
-    case 0x18:
-    case 0x19:
-    case 0x1a:
-    case 0x1b:
-    case 0x20:
-    case 0x21:
-    case 0x22:
-    case 0x23:
-    case 0x28:
-    case 0x29:
-    case 0x2a:
-    case 0x2b:
-    case 0x30:
-    case 0x31:
-    case 0x32:
-    case 0x33:
-    case 0x38:
-    case 0x39:
-    case 0x3a:
-    case 0x3b:
-        flagStop = TYPE_FALSE;
-        break;
-    }
-    switch (TYPE_DEREFERENCE_UNSIGNED_8(ins1+1)) {
-    case 0x90:
-        flagStop = TYPE_FALSE;
-        break;
-    }
-    switch (TYPE_DEREFERENCE_UNSIGNED_16(ins1)) {
-    case 0x2e66:
-        flagStop = TYPE_FALSE;
-        break;
-    }
-    switch (TYPE_MASK_UNSIGNED_24(TYPE_DEREFERENCE_UNSIGNED_24(ins1))) {
-    case 0xb70f66:
-        flagStop = TYPE_FALSE;
-        break;
-    }
-    switch (TYPE_MASK_UNSIGNED_24(TYPE_DEREFERENCE_UNSIGNED_24(ins1+1))) {
-    case 0xb70f66:
-        flagStop = TYPE_FALSE;
-        break;
-    }
-    switch (TYPE_DEREFERENCE_UNSIGNED_32(ins1)) {
-    }
-    lenDasm1 = core_product_utils_dasm32(strDasm1, ins1, debug->connect.cpu->data.cs.seg.exec.defsize);
-    lenAasm  = core_product_utils_aasm32(strDasm1, ins2, debug->connect.cpu->data.cs.seg.exec.defsize);
-    lenDasm2 = core_product_utils_dasm32(strDasm2, ins2, debug->connect.cpu->data.cs.seg.exec.defsize);
-    if ((flagStop && (lenAasm != lenDasm1 || lenAasm != lenDasm2 || lenDasm1 != lenDasm2 ||
-                      STD_MEMCMP((C_VOID *) ins1, (C_VOID *) ins2, lenDasm1))) || STD_STRCMP(strDasm1, strDasm2)) {
-        STD_PRINTF("diff at #%d %04X:%08X(L%08X), len(a=%x,d1=%x,d2=%x), CodeSegDefSize=%d\n",
-               total, debug->connect.cpu->data.cs.selector, debug->connect.cpu->data.eip, debug->connect.cpu->data.cs.base + debug->connect.cpu->data.eip,
-               lenAasm, lenDasm1, lenDasm2, debug->connect.cpu->data.cs.seg.exec.defsize ? 32 : 16);
-        for (i = 0; i < lenDasm1; ++i) {
-            STD_PRINTF("%02X", ins1[i]);
-        }
-        STD_PRINTF("\t%s\n", strDasm1);
-        for (i = 0; i < lenDasm2; ++i) {
-            STD_PRINTF("%02X", ins2[i]);
-        }
-        STD_PRINTF("\t%s\n", strDasm2);
-        debug_request_pause(debug, VM_MACHINE_DEBUG_PAUSE_BREAKPOINT);
-    }
-}
-
-#endif
 
 C_VOID vm_machine_debug_initialize(t_debug *debug, t_cpu *cpu, t_cpuins *cpuins)
 {
@@ -182,7 +79,11 @@ C_VOID vm_machine_debug_refresh(t_debug *debug) {
 
         /* disassemble opcode */
         if (debug->connect.cpuins->data.oplen) {
-            debug->connect.cpuins->data.oplen = core_product_utils_dasm32(stmt, debug->connect.cpuins->data.opcodes, debug->connect.cpu->data.cs.seg.exec.defsize);
+            debug->connect.cpuins->data.oplen = debug->connect.disassembleProvider == STD_NULL ?
+                0u : debug->connect.disassembleProvider(
+                    debug->connect.disassembleContext, stmt,
+                    debug->connect.cpuins->data.opcodes,
+                    debug->connect.cpu->data.cs.seg.exec.defsize);
             for (i = 0; i < STD_STRLEN(stmt); ++i) {
                 if (stmt[i] == '\n') {
                     stmt[i] = ' ';
@@ -224,6 +125,14 @@ C_VOID vm_machine_debug_bind_pause(t_debug *debug,
     if (debug == STD_NULL) return;
     debug->connect.pauseCallback = callback;
     debug->connect.pauseContext = context;
+}
+
+C_VOID vm_machine_debug_bind_disassembler(t_debug *debug,
+    vm_machine_debug_disassemble_provider provider, C_VOID *context)
+{
+    if (debug == STD_NULL) return;
+    debug->connect.disassembleProvider = provider;
+    debug->connect.disassembleContext = context;
 }
 
 C_VOID vm_machine_debug_set_breakpoint_real(t_debug *debug, uint16_t segment,

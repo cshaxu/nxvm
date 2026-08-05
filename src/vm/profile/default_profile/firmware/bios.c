@@ -4,9 +4,6 @@
 
 #include "type.h"
 
-#include "core/product/utils.h"
-
-
 #include "core/machine/memory.h"
 
 #include "core/machine/block_interface.h"
@@ -81,30 +78,14 @@ static C_VOID bios_load_keyboard_tables(t_ram *ram)
     }
 }
 
-static type_unsigned_32 assemble(t_ram *ram, const type_string_pointer stmt, type_unsigned_16 seg,
-    type_unsigned_16 off) {
-    type_unsigned_32 len = 0;
-    type_unsigned_8 *code = STD_NULL;
-    type_native_unsigned i;
-    type_native_unsigned insCount = 0; /* the number of instructions to be assembled */
-    for (i = 0; i < STD_STRLEN(stmt); ++i) {
-        if (stmt[i] == '\n') {
-            insCount++;
-        }
-    }
-    if (STD_STRLEN(stmt)) insCount++;
-    /* 15 is the maximum length of each instruction */
-    code = TYPE_POINTER_UNSIGNED_8(STD_MALLOC(
-        15 * insCount * sizeof(type_unsigned_8)));
-    len = core_product_utils_aasm32x(stmt, code, TYPE_FALSE);
-    if (!len) {
-        STD_PRINTF("vbios: invalid x86 assembly instruction.\n");
-    }
-    (C_VOID)core_machine_memory_write_real_to(ram, seg, off, code, len);
-    if (code) {
-        STD_FREE((C_VOID *) code);
-    }
-    return len;
+static uint16_t bios_write_code(t_ram *ram, uint16_t segment, uint16_t offset,
+    const vm_profile_default_bios_code *code)
+{
+    if (ram == STD_NULL || code == STD_NULL || code->bytes == STD_NULL ||
+        code->length == 0u) return 0u;
+    if (core_machine_memory_write_real_to(ram, segment, offset, code->bytes,
+            code->length) != TYPE_STATUS_OK) return 0u;
+    return code->length;
 }
 
 static C_VOID bios_load_data(t_bios *bios, t_ram *ram,
@@ -133,16 +114,20 @@ static C_VOID bios_load_rom_info(t_ram *ram) {
     bios_write_byte(ram, VBIOS_ADDR_START_SEG, VBIOS_ADDR_ROM_INFO + 9, 0u);
 }
 static C_VOID bios_load_interrupts(t_bios *bios, t_ram *ram) {
+    static const uint8_t iret[] = { 0xcfu };
+    vm_profile_default_bios_code code;
     type_native_unsigned i;
-    bios->data.buildIP += (type_unsigned_16)assemble(ram, "iret",
-        VBIOS_ADDR_START_SEG, VBIOS_ADDR_START_OFF);
+    code.bytes = (uint8_t *)iret;
+    code.length = sizeof(iret);
+    bios->data.buildIP += bios_write_code(ram, VBIOS_ADDR_START_SEG,
+        VBIOS_ADDR_START_OFF, &code);
     for (i = 0; i < 0x100; ++i) {
-        if (bios->connect.intTable[i]) {
+        if (bios->connect.intTable[i].bytes != STD_NULL) {
             bios_write_word(ram, 0u, i * 4 + 0, bios->data.buildIP);
             bios_write_word(ram, 0u, i * 4 + 2, bios->data.buildCS);
-            bios->data.buildIP += (type_unsigned_16)assemble(ram,
-                bios->connect.intTable[i], bios->data.buildCS,
-                bios->data.buildIP);
+            bios->data.buildIP += bios_write_code(ram,
+                bios->data.buildCS, bios->data.buildIP,
+                &bios->connect.intTable[i]);
         } else {
             bios_write_word(ram, 0u, i * 4 + 0, VBIOS_ADDR_START_OFF);
             bios_write_word(ram, 0u, i * 4 + 2, VBIOS_ADDR_START_SEG);
@@ -150,16 +135,20 @@ static C_VOID bios_load_interrupts(t_bios *bios, t_ram *ram) {
     }
 }
 static C_VOID bios_load_post(t_bios *bios, t_ram *ram) {
+    uint8_t jump[] = { 0xeau, 0u, 0u, 0u, 0xf0u };
+    vm_profile_default_bios_code code;
     type_native_unsigned i;
-    type_string_buffer stmt;
-    STD_SPRINTF(stmt, "jmp %04x:%04x", bios->data.buildCS, bios->data.buildIP);
-    assemble(ram, stmt, VBIOS_ADDR_POST_SEG, VBIOS_ADDR_POST_OFF);
+    jump[1] = TYPE_MASK_UNSIGNED_8(bios->data.buildIP);
+    jump[2] = TYPE_MASK_UNSIGNED_8(bios->data.buildIP >> 8);
+    code.bytes = jump;
+    code.length = sizeof(jump);
+    (C_VOID)bios_write_code(ram, VBIOS_ADDR_POST_SEG, VBIOS_ADDR_POST_OFF, &code);
     for (i = 0; i < bios->connect.postCount; ++i) {
-        bios->data.buildIP += (type_unsigned_16)assemble(ram,
-            bios->connect.postTable[i], bios->data.buildCS, bios->data.buildIP);
+        bios->data.buildIP += bios_write_code(ram, bios->data.buildCS,
+            bios->data.buildIP, &bios->connect.postTable[i]);
     }
-    bios->data.buildIP += (type_unsigned_16)assemble(ram, VBIOS_POST_BOOT,
-        bios->data.buildCS, bios->data.buildIP);
+    bios->data.buildIP += bios_write_code(ram, bios->data.buildCS,
+        bios->data.buildIP, &bios->connect.bootCode);
 }
 static C_VOID bios_load_additional(t_ram *ram,
     const core_machine_block_provider_slot *block_provider) {
@@ -182,23 +171,47 @@ static C_VOID bios_load_additional(t_ram *ram,
     bios_write_byte(ram, VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 15, 0u);
 }
 
-C_VOID vm_profile_default_bios_add_post(t_bios *bios, type_string_pointer stmt) {
-    if (bios == STD_NULL) return;
-    bios->connect.postTable[bios->connect.postCount++] = stmt;
+C_VOID vm_profile_default_bios_add_post_code(t_bios *bios, uint8_t *bytes,
+    uint16_t length)
+{
+    if (bios == STD_NULL || bytes == STD_NULL || length == 0u ||
+        bios->connect.postCount >= 0x100u) {
+        STD_FREE(bytes);
+        return;
+    }
+    bios->connect.postTable[bios->connect.postCount].bytes = bytes;
+    bios->connect.postTable[bios->connect.postCount].length = length;
+    bios->connect.postCount++;
 }
-C_VOID vm_profile_default_bios_add_interrupt(t_bios *bios, type_string_pointer stmt,
-    type_unsigned_8 intid) {
-    if (bios == STD_NULL) return;
-    bios->connect.intTable[intid] = stmt;
+
+C_VOID vm_profile_default_bios_add_interrupt_code(t_bios *bios, uint8_t *bytes,
+    uint16_t length, uint8_t intid)
+{
+    if (bios == STD_NULL || bytes == STD_NULL || length == 0u) {
+        STD_FREE(bytes);
+        return;
+    }
+    STD_FREE(bios->connect.intTable[intid].bytes);
+    bios->connect.intTable[intid].bytes = bytes;
+    bios->connect.intTable[intid].length = length;
+}
+
+C_VOID vm_profile_default_bios_set_boot_code(t_bios *bios, uint8_t *bytes,
+    uint16_t length)
+{
+    if (bios == STD_NULL || bytes == STD_NULL || length == 0u) {
+        STD_FREE(bytes);
+        return;
+    }
+    STD_FREE(bios->connect.bootCode.bytes);
+    bios->connect.bootCode.bytes = bytes;
+    bios->connect.bootCode.length = length;
 }
 C_VOID vm_profile_default_bios_initialize(t_bios *bios) {
     if (bios == STD_NULL) return;
     STD_MEMSET((C_VOID *)bios, TYPE_ZERO_8, sizeof(*bios));
     bios->flagBoot = TYPE_FALSE;
     bios->data.buildCS = bios->data.buildIP = TYPE_ZERO_16;
-    vm_profile_default_bios_add_interrupt(bios, VBIOS_INT_SOFT_MISC_11, 0x11);
-    vm_profile_default_bios_add_interrupt(bios, VBIOS_INT_SOFT_MISC_12, 0x12);
-    vm_profile_default_bios_add_interrupt(bios, VBIOS_INT_SOFT_MISC_15, 0x15);
 }
 
 /* Loads bios to ram */
@@ -217,7 +230,19 @@ C_VOID vm_profile_default_bios_reset(t_bios *bios, t_ram *ram,
     bios_load_additional(ram, block_provider);
 }
 C_VOID vm_profile_default_bios_refresh(t_bios *bios) { (C_VOID)bios; }
-C_VOID vm_profile_default_bios_finalize(t_bios *bios) { (C_VOID)bios; }
+C_VOID vm_profile_default_bios_finalize(t_bios *bios)
+{
+    type_native_unsigned index;
+    if (bios == STD_NULL) return;
+    for (index = 0u; index < bios->connect.postCount; ++index) {
+        STD_FREE(bios->connect.postTable[index].bytes);
+    }
+    for (index = 0u; index < 0x100u; ++index) {
+        STD_FREE(bios->connect.intTable[index].bytes);
+    }
+    STD_FREE(bios->connect.bootCode.bytes);
+    STD_MEMSET(&bios->connect, TYPE_ZERO_8, sizeof(bios->connect));
+}
 C_VOID vm_profile_default_bios_print(const t_bios *bios) {
     STD_PRINTF("Boot Disk: %s\n", bios != STD_NULL && bios->flagBoot ? "Hard Drive" : "Floppy");
 }
