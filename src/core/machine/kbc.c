@@ -54,8 +54,11 @@ static uint8_t core_machine_kbc_dequeue(t_kbc *controller)
     controller->data.fifo_head = (type_unsigned_8)((controller->data.fifo_head + 1u) %
         CORE_MACHINE_KBC_FIFO_CAPACITY);
     --controller->data.fifo_count;
-    if (controller->data.fifo_count == 0u) {
-        core_machine_pic_irq_source_deassert(&controller->connect.irq1_source);
+    /* Reading 60h acknowledges the current output byte.  On an edge-triggered
+     * PIC, a queued successor needs a fresh low-to-high IRQ1 transition. */
+    core_machine_pic_irq_source_deassert(&controller->connect.irq1_source);
+    if (controller->data.fifo_count != 0u) {
+        core_machine_kbc_request_irq1(controller);
     }
     return value;
 }
@@ -122,9 +125,6 @@ static C_VOID core_machine_kbc_read_data(t_port *port, type_unsigned_16 port_id,
 
     (C_VOID)port_id;
     port->data.ioByte = core_machine_kbc_dequeue(controller);
-    if (controller != STD_NULL && controller->data.fifo_count != 0u) {
-        core_machine_kbc_request_irq1(controller);
-    }
 }
 
 static C_VOID core_machine_kbc_read_status(t_port *port, type_unsigned_16 port_id,

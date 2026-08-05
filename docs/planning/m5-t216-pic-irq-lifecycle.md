@@ -56,6 +56,40 @@ IRQ6 and master IRQ2 enter ISR, slave then master EOI completes, refresh
 re-presents IRQ14 while its source remains asserted, and deassertion withdraws
 the final request. S4 changes no runtime behavior and produces no artifact.
 
+### S5: KBC Edge Re-arm And Text-Mode Regression
+
+The source migration exposed a device-local edge contract error: KBC IRQ1
+remained asserted while more than one byte was in its FIFO. After `INT 09h`
+read `60h`, an edge-triggered PIC had no new low-to-high transition for the
+next byte. Repair the KBC so every `60h` read deasserts the current source and,
+when a successor is queued, reasserts it. Add a two-byte IRQ1/EOI port probe
+and make the retained DOS `ver` regression unpaced rather than spaced by an
+arbitrary 50 ms delay. Also remove the unconditional legacy `NEW CODE PATH`
+host Console print: it is trace-only diagnostic information and must not
+overlay guest display.
+
+The real `EDIT.COM` regression also exposes the text controller's incorrect
+`3DAh` status contract: its vertical-retrace bit was permanently clear, so
+the guest's CGA polling loop never left its screen-update wait. The text slice
+must expose both display and vertical-retrace phases from the deterministic
+core refresh clock; it must not depend on a renderer or host wall clock. The
+VADP port probe and unpaced FDD `EDIT` launch regression lock that contract;
+the latter recognizes the editor's actual menu, then accepts its normal BIOS
+`HLT` keyboard wait as a successful interactive launch. This subtask changes
+runnable behavior but retains T216's single task-level artifact name and
+version.
+
+The FDD regression submits its ordinary make-code sequence without a test-only
+inter-key delay. Its successful launch proves that queued `INT 09h` input and
+`INT 16h` status/read returns preserve the guest return frame and FIFO order.
+
+Stop for a second keyboard queue/BDA owner, a PIC/CPU shortcut, a change to
+Console/debugger/start behavior, or FDD/HDD boot regression. Required evidence
+is the focused KBC probe, VADP status port probe, unpaced FDD DOS keyboard
+smoke, FDD `EDIT` launch smoke, full current CTest matrix, no literal
+normal-path `STD_PRINTF("NEW CODE PATH")`, and a newly verified replacement
+`build/output/nxvm_0_5_0216.exe` hash.
+
 ## Rules And Stop Conditions
 
 Applicable rules: core owns shared PIC state; VM devices own only their own

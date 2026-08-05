@@ -138,7 +138,7 @@ mov bx, ds:[001a]                    \n\
 cmp bx, ds:[001c]                    \n\
 jnz $(keyboard_16_status_ready)      \n\
 mov bx, sp                           \n\
-or word ss:[bx+04], 0040             \n\
+or word ss:[bx+08], 0040             \n\
 jmp near $(keyboard_16_status_done)  \n\
 $(keyboard_16_status_ready):         \n\
 push ds                              \n\
@@ -147,7 +147,7 @@ mov ds, ax                           \n\
 mov ax, ds:[bx]                      \n\
 pop ds                               \n\
 mov bx, sp                           \n\
-and word ss:[bx+04], ffbf            \n\
+and word ss:[bx+08], ffbf            \n\
 $(keyboard_16_status_done):          \n\
 pop ds                               \n\
 pop bx                               \n\

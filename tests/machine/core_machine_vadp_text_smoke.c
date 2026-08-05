@@ -18,6 +18,9 @@ C_INT main(C_VOID)
     t_vadp vadp;
     core_machine_display_snapshot snapshot;
     uint8_t value;
+    C_INT saw_vertical_retrace = TYPE_FALSE;
+    C_INT saw_display = TYPE_FALSE;
+    STD_SIZE_T refresh;
     C_INT failed = 0;
 
     STD_MEMSET(&memory, 0, sizeof(memory));
@@ -45,6 +48,15 @@ C_INT main(C_VOID)
     core_machine_port_write(&port, 0x03d9u, 0x1eu);
     failed |= core_machine_port_read(&port, 0x03d9u) != 0x1eu;
     failed |= core_machine_port_read(&port, 0x03dau) != 0u;
+    for (refresh = 0u; refresh < 2u * 64u; ++refresh) {
+        core_machine_vadp_refresh(&vadp, &memory);
+        if ((core_machine_port_read(&port, 0x03dau) & 0x08u) != 0u) {
+            saw_vertical_retrace = TYPE_TRUE;
+        } else {
+            saw_display = TYPE_TRUE;
+        }
+    }
+    failed |= !saw_vertical_retrace || !saw_display;
     failed |= !core_machine_vadp_capture_text_snapshot(&vadp, &memory, &snapshot);
     failed |= !snapshot.cursor_changed || snapshot.cursor_x != 0u ||
         snapshot.cursor_y != 1u || snapshot.cursor_top != 2u ||
