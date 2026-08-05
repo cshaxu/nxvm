@@ -1,6 +1,8 @@
 # Execution Policy
 
-One subtask is active at a time. Before implementation, create a subtask record
+One subtask is active at a time. Follow the requirement packet and closure
+audit defined by [Execution Workflow](../execution-workflow.md). Before
+implementation, create a subtask record
 with objective, non-goals, reference baseline, files/ABI surface, applicable
 `RULES.md` sections, exact test commands, expected markers, asset needs, and
 stop conditions. The rules review names each applicable invariant, its planned
