@@ -56,6 +56,7 @@ static C_VOID core_machine_cpu_diagnostic_record_fault(C_VOID *opaque,
     fault->esi = cpu->data.esi;
     fault->edi = cpu->data.edi;
     fault->eflags = cpu->data.eflags;
+    (C_VOID)core_machine_report_fault(machine, fault->exception_mask);
 }
 
 static const core_machine_cpu_execution_diagnostic_provider
@@ -545,6 +546,12 @@ type_status core_machine_run(
         uint64_t limit = budget.instructions == 0u ? 1u : budget.instructions;
 
         while (result->executed < limit) {
+            if (machine->lifecycle == CORE_MACHINE_FAULTED) {
+                result->reason = CORE_MACHINE_STOP_FAULT;
+                result->linear_pc = core_machine_linear_pc(machine);
+                result->detail = machine->fault_detail;
+                return TYPE_STATUS_FAULT;
+            }
             if (STD_ATOMIC_LOAD(&machine->stop_requested) ||
                 core_machine_cpu_execution_consume_stop_request(
                     &machine->executor_cpu_execution)) {
@@ -582,6 +589,12 @@ type_status core_machine_run(
                 &machine->shared_pic_slave);
             core_machine_pit_refresh(&machine->shared_pit);
             core_machine_cpu_execution_refresh(&machine->executor_cpu_execution);
+            if (machine->lifecycle == CORE_MACHINE_FAULTED) {
+                result->reason = CORE_MACHINE_STOP_FAULT;
+                result->linear_pc = core_machine_linear_pc(machine);
+                result->detail = machine->fault_detail;
+                return TYPE_STATUS_FAULT;
+            }
             if (machine->executor_cpu.data.flagHalt) {
                 machine->lifecycle = CORE_MACHINE_PAUSED;
                 result->reason = CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;

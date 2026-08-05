@@ -49,6 +49,7 @@
 #include "vm/profile/default_profile/pc_at_profile.h"
 
 #include "vm/composition/session/control.h"
+#include "vm/composition/session/fault.h"
 
 #include "core/product/debug/debug_target.h"
 
@@ -97,6 +98,7 @@ typedef struct vm_session {
     core_product_debug_context debugger_context;
     uint64_t display_generation;
     core_product_debug_target *debug_target;
+    vm_session_fault_outcome fault_outcome;
     vm_session_control_state control;
     vm_session_config retained_config;
     C_CHAR fdd_image_path[1024];

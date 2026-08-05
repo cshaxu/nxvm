@@ -6,6 +6,7 @@
 
 
 #include "vm/composition/session/lifecycle.h"
+#include "vm/composition/session/fault.h"
 
 #include "vm/composition/session/control.h"
 
@@ -195,6 +196,29 @@ static C_VOID vm_debug_print_memory(C_VOID *context)
 static C_VOID vm_debug_print_watchpoints(C_VOID *context)
 { vm_session *machine = (vm_session *)context; if (machine != STD_NULL) core_machine_cpu_print_watchpoints(vm_debug_execution(machine)); }
 
+static C_INT vm_debug_get_fault_outcome(C_VOID *context,
+    core_product_debug_fault_outcome *out_outcome)
+{
+    vm_session_fault_outcome outcome;
+
+    if (out_outcome == STD_NULL || vm_session_fault_get((vm_session *)context,
+            &outcome) != 0) return 1;
+    STD_MEMSET(out_outcome, 0, sizeof(*out_outcome));
+    if (!outcome.valid) return 0;
+    out_outcome->valid = TYPE_TRUE;
+    out_outcome->detail = outcome.run.detail;
+    out_outcome->linear_pc = outcome.run.linear_pc;
+    out_outcome->executed = outcome.run.executed;
+    if (outcome.diagnostic.first_fault.valid) {
+        out_outcome->diagnostic_valid = TYPE_TRUE;
+        out_outcome->exception_mask = outcome.diagnostic.first_fault.exception_mask;
+        out_outcome->exception_code = outcome.diagnostic.first_fault.exception_code;
+        out_outcome->cs = outcome.diagnostic.first_fault.point.cs;
+        out_outcome->eip = outcome.diagnostic.first_fault.point.eip;
+    }
+    return 0;
+}
+
 static const core_product_debug_target vmDebugTargetTemplate = {
     .is_running = vm_debug_running,
     .resume = vm_debug_resume,
@@ -226,6 +250,7 @@ static const core_product_debug_target vmDebugTargetTemplate = {
     .print_control_registers = vm_debug_print_control_registers,
     .print_memory = vm_debug_print_memory,
     .print_watchpoints = vm_debug_print_watchpoints,
+    .get_fault_outcome = vm_debug_get_fault_outcome,
     .context = STD_NULL
 };
 

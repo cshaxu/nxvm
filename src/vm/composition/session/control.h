@@ -35,6 +35,7 @@ typedef struct vm_session_control_state {
 C_VOID vm_session_control_start(vm_session_control_state *control);
 C_VOID vm_session_control_reset(vm_session_control_state *control);
 C_VOID vm_session_control_stop(vm_session_control_state *control);
+C_VOID vm_session_control_fault(vm_session_control_state *control);
 C_VOID vm_session_control_request_pause(vm_session_control_state *control,
     vm_session_pause_reason reason);
 C_INT vm_session_control_wait_for_pause(vm_session_control_state *control,

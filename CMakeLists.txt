@@ -228,6 +228,7 @@ set(VM_COMPOSITION_SOURCES
     src/vm/composition/session/lifecycle.c
     src/vm/composition/session/session.c
     src/vm/composition/session/control.c
+    src/vm/composition/session/fault.c
     src/vm/composition/session/execution.c
     src/vm/composition/session/runner.c
     src/vm/composition/session/provider_lifecycle.c
@@ -632,6 +633,9 @@ add_executable(vm-dos-mem-fault-smoke
     tests/machine/vm_dos_mem_fault_smoke.c)
 target_link_libraries(vm-dos-mem-fault-smoke PRIVATE
     vm-composition)
+add_executable(vm-fault-outcome-runner-smoke
+    tests/machine/vm_fault_outcome_runner_smoke.c)
+target_link_libraries(vm-fault-outcome-runner-smoke PRIVATE vm-composition)
 add_executable(core-machine-cpu-fpu-profile-smoke
     tests/machine/cpu_fpu_profile_smoke.c)
 target_link_libraries(core-machine-cpu-fpu-profile-smoke PRIVATE
@@ -761,6 +765,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     vm-dos-prompt-smoke
     vm-dos-keyboard-smoke
     vm-dos-mem-fault-smoke
+    vm-fault-outcome-runner-smoke
     vm-no-media-video-port-smoke
     vm-hdc-hdd-boot-smoke
     vm-runner-display-cadence-smoke
@@ -864,7 +869,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0213 "0.5.0213")
+add_current_vm_artifact(vm-0-5-0214 "0.5.0214")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 

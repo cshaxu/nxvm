@@ -15,6 +15,7 @@
 #include "vm/composition/session/provider_lifecycle.h"
 
 #include "vm/composition/session/execution.h"
+#include "vm/composition/session/fault.h"
 
 #include "core/machine/cpu.h"
 
@@ -41,6 +42,8 @@ static C_VOID vm_session_execution_context_reset_callback(vm_session *machine)
     vm_machine_debug_reset(&machine->debug);
     if (core_machine_reset(machine->core_machine) != TYPE_STATUS_OK) {
         vm_session_control_stop(&machine->control);
+    } else {
+        vm_session_fault_clear(machine);
     }
 }
 
@@ -91,6 +94,16 @@ C_VOID vm_session_control_stop(vm_session_control_state *control)  {
     STD_ATOMIC_STORE(&control->flagRun, TYPE_FALSE);
     STD_ATOMIC_STORE(&control->paused, TYPE_FALSE);
     STD_ATOMIC_STORE(&control->pauseRequested, TYPE_FALSE);
+}
+
+C_VOID vm_session_control_fault(vm_session_control_state *control)
+{
+    if (control == STD_NULL) return;
+    STD_ATOMIC_STORE(&control->flagRun, TYPE_FALSE);
+    STD_ATOMIC_STORE(&control->paused, TYPE_FALSE);
+    STD_ATOMIC_STORE(&control->pauseRequested, TYPE_FALSE);
+    STD_ATOMIC_STORE(&control->stepRequested, TYPE_FALSE);
+    STD_ATOMIC_STORE(&control->pauseReason, VM_SESSION_PAUSE_NONE);
 }
 
 C_VOID vm_session_control_request_pause(vm_session_control_state *control,

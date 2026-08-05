@@ -37,11 +37,15 @@ code, a runtime dependency, or substitute acceptance evidence. No task may
 rely on a BIOS hack, host shortcut, or application special case for a
 guest-observable behavior.
 
-**Active implementation task -- T213: HDD controller profile / port contract.**
-S1 declares and probes the primary ATA PIO contract; S2 admits the declared
-controller state machine and composition binding; S3 retires the HDD F4/F5
-shortcut and records its real system-image regression. See
-[`M5 T213`](docs/planning/m5-t213-hdd-controller-profile.md).
+**Completed implementation task -- T213: HDD controller profile / port
+contract.** It declares and probes the primary ATA PIO contract, admits the
+session-owned controller, and retires the HDD F4/F5 shortcut through ROM
+`INT 13h` PIO. See [`M5 T213`](docs/planning/m5-t213-hdd-controller-profile.md).
+
+**Completed implementation task -- T214: CPU fault outcome handoff.** Core
+`STOP_FAULT` and the first CPU diagnostic now pass through one session-owned
+result; retained debugger and Console consume it only after the runner
+boundary. See [`M5 T214`](docs/planning/m5-t214-cpu-fault-outcome.md).
 
 1. **Architecture and validation foundation.** Reaffirm NXVM-first M5 scope;
    make the default PC/AT profile declarative for topology, ports, IRQ, DMA,
