@@ -2,16 +2,20 @@
 
 ## Current Work
 
-**M5 T218 S1 active:** inventory and prove the retained ROM/DOS/device
-real-mode instruction, prefix, I/O, fault, and tick-attribution corpus before
-introducing the elapsed-tick scheduler. See [the task
-record](m5-t218-real-mode-cpu-ticks.md) and the authoritative
+**M5 T219 S1 active:** define and migrate the single core elapsed-tick scheduler
+before evolving PIT, VADP, DMA, or RTC timing behavior. See [the task
+record](m5-t219-elapsed-tick-scheduler.md) and the authoritative
 [PC/AT hardware queue](m5-pcat-hardware-convergence.md).
 
 **M5 T217 complete:** `core_machine` solely owns elapsed guest ticks and the
 frozen per-instruction clock parameter; run budgets, reset origin, result, and
 observation semantics are covered by a focused smoke plus 53/53 current CTest
 coverage. See [the task record](m5-t217-core-machine-time.md).
+
+**M5 T218 complete:** the retained real-mode 8086/80186 CPU corpus now has
+actual reset-vector instruction/tick probes for MOV, port I/O, INT, segment
+prefix, HLT, and rejected 386 prefix behavior; 54/54 current CTest coverage
+passes. See [the task record](m5-t218-real-mode-cpu-ticks.md).
 
 **M5 T216 complete:** PIT, KBC, FDC, and HDC signal IRQs through the core PIC
 source boundary. The PIC alone owns edge/level delivery, IRR/ISR, mask, EOI,

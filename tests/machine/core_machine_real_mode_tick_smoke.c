@@ -1,0 +1,86 @@
+#include "type.h"
+
+#include "core/machine/machine_interface.h"
+
+static C_INT core_machine_real_mode_tick_case(
+    const C_CHAR *name,
+    const uint8_t *program, STD_SIZE_T program_bytes,
+    core_machine_cpu_profile profile, type_status expected_status,
+    core_machine_stop_reason expected_reason, uint64_t expected_executed,
+    uint64_t expected_ticks)
+{
+    const core_machine_config config = {
+        .cpu_profile = profile,
+        .ticks_per_instruction = 2u
+    };
+    core_machine_run_budget budget = { 1u, 0u };
+    core_machine_run_result result;
+    core_machine_observation observation;
+    core_machine_cpu_profile actual_profile;
+    core_machine *machine = STD_NULL;
+    type_status status;
+    C_INT failed = 0;
+
+    failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK;
+    failed |= core_machine_memory_register_mapping(
+        core_machine_configuration_memory_borrow(machine), 0xfffffff0u,
+        0x000ffff0u, 16u) != TYPE_STATUS_OK;
+    failed |= core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK;
+    failed |= core_machine_reset(machine) != TYPE_STATUS_OK;
+    failed |= core_machine_memory_write(machine, 0xfffffff0u, program,
+        program_bytes) != TYPE_STATUS_OK;
+    status = core_machine_run(machine, budget, &result);
+    failed |= status != expected_status || result.reason != expected_reason ||
+        result.executed != expected_executed || result.ticks != expected_ticks ||
+        result.elapsed_ticks != expected_ticks;
+    failed |= core_machine_get_cpu_profile(machine, &actual_profile) !=
+        TYPE_STATUS_OK || actual_profile != profile;
+    failed |= core_machine_capture_observation(machine, &observation) !=
+        TYPE_STATUS_OK || observation.elapsed_ticks != expected_ticks;
+    if (failed) {
+        STD_FPRINTF(STD_STDERR,
+            "M5:T218:S2:REAL-MODE-TICKS:FAIL case=%s status=%d reason=%d "
+            "executed=%llu ticks=%llu elapsed=%llu profile=%d halted=%u fault=%u\n", name, (C_INT)status,
+            (C_INT)result.reason, (unsigned long long)result.executed,
+            (unsigned long long)result.ticks,
+            (unsigned long long)result.elapsed_ticks, (C_INT)actual_profile,
+            observation.cpu.halted, observation.diagnostic.first_fault.exception_mask);
+    }
+    core_machine_destroy(machine);
+    return failed;
+}
+
+C_INT main(C_VOID)
+{
+    static const uint8_t mov_ax[] = { 0xb8u, 0x34u, 0x12u };
+    static const uint8_t out_80[] = { 0xe6u, 0x80u };
+    static const uint8_t int_20[] = { 0xcdu, 0x20u };
+    static const uint8_t prefixed_nop[] = { 0x26u, 0x90u };
+    static const uint8_t halt[] = { 0xf4u };
+    static const uint8_t operand_size_prefix[] = { 0x66u, 0x90u };
+    C_INT failed = 0;
+
+    failed |= core_machine_real_mode_tick_case("mov", mov_ax, sizeof(mov_ax),
+        CORE_MACHINE_CPU_PROFILE_8086, TYPE_STATUS_OK, CORE_MACHINE_STOP_BUDGET,
+        1u, 2u);
+    failed |= core_machine_real_mode_tick_case("out", out_80, sizeof(out_80),
+        CORE_MACHINE_CPU_PROFILE_8086, TYPE_STATUS_OK, CORE_MACHINE_STOP_BUDGET,
+        1u, 2u);
+    failed |= core_machine_real_mode_tick_case("int", int_20, sizeof(int_20),
+        CORE_MACHINE_CPU_PROFILE_8086, TYPE_STATUS_OK, CORE_MACHINE_STOP_BUDGET,
+        1u, 2u);
+    failed |= core_machine_real_mode_tick_case("segment-prefix", prefixed_nop,
+        sizeof(prefixed_nop),
+        CORE_MACHINE_CPU_PROFILE_8086, TYPE_STATUS_OK, CORE_MACHINE_STOP_BUDGET,
+        1u, 2u);
+    failed |= core_machine_real_mode_tick_case("hlt", halt, sizeof(halt),
+        CORE_MACHINE_CPU_PROFILE_8086, TYPE_STATUS_OK,
+        CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT, 1u, 2u);
+    failed |= core_machine_real_mode_tick_case("operand-size-prefix",
+        operand_size_prefix,
+        sizeof(operand_size_prefix), CORE_MACHINE_CPU_PROFILE_8086,
+        TYPE_STATUS_FAULT, CORE_MACHINE_STOP_FAULT, 0u, 0u);
+    if (failed) return 1;
+    STD_PRINTF("M5:T218:S2:REAL-MODE-TICKS:OK\n");
+    return 0;
+}
