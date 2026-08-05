@@ -205,7 +205,6 @@ endif()
 
 set(CORE_PRODUCT_SOURCES
     src/core/product/utils.c
-    src/core/product/wait.c
 )
 # The ISO C facade is below every product and module layer. Keep it separate
 # from core-machine so platform-only targets never acquire a machine dependency.
@@ -213,6 +212,12 @@ add_library(type-facade STATIC src/type.c)
 target_include_directories(type-facade PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
+
+add_library(core-utils STATIC src/core/utils/wait.c)
+target_include_directories(core-utils PUBLIC
+    "${CMAKE_SOURCE_DIR}/src"
+)
+target_link_libraries(core-utils PUBLIC type-facade)
 
 set(VM_PROFILE_SOURCES
     src/vm/profile/default_profile/pc_at_profile.c
@@ -349,7 +354,7 @@ add_library(core-product-debug STATIC ${CORE_PRODUCT_DEBUG_SOURCES})
 target_include_directories(core-product-debug PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
-target_link_libraries(core-product-debug PUBLIC type-facade)
+target_link_libraries(core-product-debug PUBLIC type-facade core-utils)
 
 add_library(core-machine-executor STATIC
     ${CORE_MACHINE_SOURCES}
@@ -378,11 +383,11 @@ target_include_directories(core-product-session PUBLIC
 )
 target_link_libraries(core-product-session PUBLIC type-facade)
 
-add_executable(core-product-wait-smoke
-    tests/product/core_product_wait_smoke.c
+add_executable(core-utils-wait-smoke
+    tests/core/core_utils_wait_smoke.c
 )
-target_link_libraries(core-product-wait-smoke PRIVATE
-    core-product-utils
+target_link_libraries(core-utils-wait-smoke PRIVATE
+    core-utils
 )
 
 add_executable(core-product-session-contract-smoke
@@ -430,9 +435,7 @@ target_include_directories(vm-profile PUBLIC
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(vm-profile PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
-target_link_libraries(vm-profile PUBLIC
-    core-product-utils
-)
+target_link_libraries(vm-profile PUBLIC type-facade)
 
 add_library(vm-platform STATIC ${VM_PLATFORM_SOURCES})
 target_include_directories(vm-platform PUBLIC
@@ -440,7 +443,7 @@ target_include_directories(vm-platform PUBLIC
 )
 target_link_libraries(vm-platform PUBLIC
     type-facade
-    core-product-utils
+    core-utils
     core-platform)
 if(NOT WIN32)
     target_include_directories(vm-platform PRIVATE ${CURSES_INCLUDE_DIRS})
@@ -517,6 +520,7 @@ target_include_directories(vm-composition PUBLIC
 target_link_libraries(vm-composition PUBLIC
     vm-machine
     core-machine
+    core-utils
     core-product-session
     "$<LINK_GROUP:RESCAN,core-product-debug,core-product-utils>"
     vm-profile
@@ -532,8 +536,7 @@ target_include_directories(vm-machine PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
 target_link_libraries(vm-machine PUBLIC
-    core-machine
-    vm-profile)
+    core-machine)
 
 add_library(vm-product STATIC ${VM_PRODUCT_SOURCES})
 target_include_directories(vm-product PUBLIC
@@ -813,7 +816,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-int-ivt-smoke
     vm-boot-failure-lifecycle-smoke
     vm-request-transport-smoke
-    core-product-wait-smoke
+    core-utils-wait-smoke
     core-product-session-contract-smoke
     core-product-session-manager-smoke
     core-product-debug-target-smoke
@@ -936,7 +939,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0233 "0.5.0233")
+add_current_vm_artifact(vm-0-5-0234 "0.5.0234")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 
@@ -1148,6 +1151,13 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMENT "Verifying VM ATA PIO feature ownership boundary"
         VERBATIM)
     add_dependencies(run-current-smokes verify-ata-pio-feature-boundary)
+
+    add_custom_target(verify-core-utils-boundary
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_core_utils_boundary.cmake"
+        COMMENT "Verifying M5 T234 neutral core utility boundary"
+        VERBATIM)
+    add_dependencies(run-current-smokes verify-core-utils-boundary)
 endif()
 
 if(PROJECT_ENABLE_BOCHX_RESEARCH)

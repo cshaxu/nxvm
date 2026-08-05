@@ -4,7 +4,6 @@
 
 #include "type.h"
 
-#include "core/product/utils.h"
 
 
 #include "core/platform/display_frame.h"
@@ -17,7 +16,7 @@ C_VOID vm_platform_run_context_initialize(
     const vm_platform_keyboard_transport *keyboard,
     const vm_platform_mouse_transport *mouse,
     const vm_platform_presentation_mailbox *presentation,
-    const core_product_wait_scope *wait_scope)
+    const core_utils_wait_scope *wait_scope)
 {
     if (context == STD_NULL) return;
     context->execution = execution;

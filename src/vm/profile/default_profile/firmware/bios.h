@@ -14,10 +14,16 @@ typedef struct core_machine_block_provider_slot core_machine_block_provider_slot
 
 #define VM_PROFILE_DEFAULT_DEVICE_BIOS "Unknown BIOS"
 
+typedef struct vm_profile_default_bios_code {
+    uint8_t *bytes;
+    uint16_t length;
+} vm_profile_default_bios_code;
+
 typedef struct {
     type_native_unsigned postCount; /* number of POST routines */
-    type_string_pointer  postTable[0x100]; /* table of POST routine string pointers */
-    type_string_pointer  intTable[0x100];  /* table of INT routine string pointers, null if not defined */
+    vm_profile_default_bios_code postTable[0x100];
+    vm_profile_default_bios_code intTable[0x100];
+    vm_profile_default_bios_code bootCode;
 } t_bios_connect;
 
 typedef struct {
@@ -155,9 +161,12 @@ typedef struct t_bios {
 #define VBIOS_POST_REPORT_NONE                      0x00u
 #define VBIOS_POST_REPORT_BOOT_FAILURE_ACKNOWLEDGED 0x01u
 
-C_VOID vm_profile_default_bios_add_post(t_bios *bios, type_string_pointer stmt);
-C_VOID vm_profile_default_bios_add_interrupt(t_bios *bios, type_string_pointer stmt,
-    type_unsigned_8 intid);
+C_VOID vm_profile_default_bios_add_post_code(t_bios *bios, uint8_t *bytes,
+    uint16_t length);
+C_VOID vm_profile_default_bios_add_interrupt_code(t_bios *bios, uint8_t *bytes,
+    uint16_t length, uint8_t intid);
+C_VOID vm_profile_default_bios_set_boot_code(t_bios *bios, uint8_t *bytes,
+    uint16_t length);
 C_VOID vm_profile_default_bios_initialize(t_bios *bios);
 C_VOID vm_profile_default_bios_reset(t_bios *bios, t_ram *ram,
     const core_machine_block_provider_slot *block_provider);

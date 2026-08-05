@@ -7,9 +7,6 @@
 
 #include "type.h"
 
-#include "core/product/utils.h"
-
-
 #include "vm/machine/debug.h"
 
 #include "vm/composition/session/provider_lifecycle.h"

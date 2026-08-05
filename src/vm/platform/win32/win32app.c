@@ -4,9 +4,7 @@
 
 #include "type.h"
 
-#include "core/product/wait.h"
-
-#include "core/product/utils.h"
+#include "core/utils/wait.h"
 
 #include "vm/platform/win32/win32.h"
 #include "vm/platform/win32/w32adisp.h"
@@ -217,7 +215,7 @@ static DWORD WINAPI win32app_display_thread(LPVOID opaque)
     InterlockedExchange((volatile LONG *)&handle->display_ready, 1);
     while (!win32app_atomic_read(&handle->stop_requested) && handle->initial_flip ==
             vm_platform_execution_get_flip_for(handle->platform->execution)) {
-        core_product_wait_milliseconds(handle->platform->wait_scope, 100u);
+        core_utils_wait_milliseconds(handle->platform->wait_scope, 100u);
     }
     if (win32app_atomic_read(&handle->stop_requested)) {
         DestroyWindow(handle->window);
@@ -276,7 +274,7 @@ type_status vm_platform_win32app_run_handle_start(
          !win32app_atomic_read(&handle->display_failed) &&
          waited < WIN32APP_DISPLAY_READY_TIMEOUT_MILLISECONDS;
          ++waited) {
-        core_product_wait_milliseconds(context->wait_scope, 1u);
+        core_utils_wait_milliseconds(context->wait_scope, 1u);
     }
     if (!win32app_atomic_read(&handle->display_ready)) {
         vm_platform_win32app_run_handle_request_stop(owner);

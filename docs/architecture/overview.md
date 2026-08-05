@@ -84,8 +84,9 @@ encoding through a separate owner-approved release policy.
 
 ## Shared Foundation
 
-The product forms are `core`, `vm`, and `vdm`. The shared foundation has three
-independent modules: `core/machine`, `core/platform`, and `core/product`.
+The product forms are `core`, `vm`, and `vdm`. The shared foundation has a
+strictly neutral `core/utils` layer below three independent modules:
+`core/machine`, `core/platform`, and `core/product`.
 `vm/` and `vdm/` each own product composition, lifecycle, and teardown; their
 `product` modules own user experience rather than system composition.
 Cross-module adaptation, including display and input bridging, occurs only in

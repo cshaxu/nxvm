@@ -3,7 +3,7 @@
 
 #include "type.h"
 
-#include "core/product/wait.h"
+#include "core/utils/wait.h"
 
 #include "core/product/utils.h"
 
@@ -584,7 +584,7 @@ static C_VOID g(core_product_debug_context *debugContext)
     core_product_debug_resume();
     while (core_product_debug_is_running())
     {
-        core_product_wait_milliseconds(debugContext->wait_scope, 10);
+        core_utils_wait_milliseconds(debugContext->wait_scope, 10);
     }
     core_product_debug_clear_break(0);
     rprintregs(debugContext);
@@ -1164,7 +1164,7 @@ static C_VOID t(core_product_debug_context *debugContext)
             core_product_debug_resume();
             while (core_product_debug_is_running())
             {
-                core_product_wait_milliseconds(debugContext->wait_scope, 10);
+                core_utils_wait_milliseconds(debugContext->wait_scope, 10);
             }
             rprintregs(debugContext);
             if (i != count - 1)
@@ -1179,7 +1179,7 @@ static C_VOID t(core_product_debug_context *debugContext)
         core_product_debug_resume();
         while (core_product_debug_is_running())
         {
-            core_product_wait_milliseconds(debugContext->wait_scope, 10);
+            core_utils_wait_milliseconds(debugContext->wait_scope, 10);
         }
         rprintregs(debugContext);
     }
@@ -1713,7 +1713,7 @@ static C_VOID xg(core_product_debug_context *debugContext)
         core_product_debug_resume();
         while (core_product_debug_is_running())
         {
-            core_product_wait_milliseconds(debugContext->wait_scope, 10);
+            core_utils_wait_milliseconds(debugContext->wait_scope, 10);
         }
         STD_PRINTF("%d instructions executed before the break point.\n",
                    core_product_debug_get_break_count());
@@ -1844,7 +1844,7 @@ static C_VOID xt(core_product_debug_context *debugContext)
             core_product_debug_resume();
             while (core_product_debug_is_running())
             {
-                core_product_wait_milliseconds(debugContext->wait_scope, 10);
+                core_utils_wait_milliseconds(debugContext->wait_scope, 10);
             }
             core_product_debug_print_memory();
             xrprintreg(debugContext);
@@ -1860,7 +1860,7 @@ static C_VOID xt(core_product_debug_context *debugContext)
         core_product_debug_resume();
         while (core_product_debug_is_running())
         {
-            core_product_wait_milliseconds(debugContext->wait_scope, 10);
+            core_utils_wait_milliseconds(debugContext->wait_scope, 10);
         }
         core_product_debug_print_memory();
         xrprintreg(debugContext);
@@ -2509,7 +2509,7 @@ C_VOID core_product_debug_main(core_product_debug_context *context,
                                const core_product_debug_target *target,
                                const core_product_debug_input_provider *input_provider)
 {
-    const core_product_wait_scope *wait_scope;
+    const core_utils_wait_scope *wait_scope;
     core_product_debug_context *debugContext = context;
     STD_SIZE_T i;
     core_product_debug_fault_outcome fault;

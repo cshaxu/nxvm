@@ -20,11 +20,15 @@ typedef enum vm_machine_debug_pause_reason {
 
 typedef C_VOID (*vm_machine_debug_pause_callback)(C_VOID *context,
     vm_machine_debug_pause_reason reason);
+typedef uint8_t (*vm_machine_debug_disassemble_provider)(C_VOID *context,
+    C_CHAR *statement, uint8_t *code, C_INT flag32);
 
 typedef struct {
     STD_FILE *recordFile; /* pointer to dump file */
     vm_machine_debug_pause_callback pauseCallback;
     C_VOID *pauseContext;
+    vm_machine_debug_disassemble_provider disassembleProvider;
+    C_VOID *disassembleContext;
     t_cpu *cpu;
     t_cpuins *cpuins;
 } t_debug_connect;
@@ -49,6 +53,8 @@ C_VOID vm_machine_debug_refresh(t_debug *debug);
 C_VOID vm_machine_debug_finalize(t_debug *debug);
 C_VOID vm_machine_debug_bind_pause(t_debug *debug,
     vm_machine_debug_pause_callback callback, C_VOID *context);
+C_VOID vm_machine_debug_bind_disassembler(t_debug *debug,
+    vm_machine_debug_disassemble_provider provider, C_VOID *context);
 C_VOID vm_machine_debug_set_breakpoint_real(t_debug *debug, uint16_t segment,
     uint16_t offset);
 C_VOID vm_machine_debug_clear_breakpoint_real(t_debug *debug);

@@ -5,7 +5,6 @@
 
 #include "core/machine/cpu_instructions.h"
 #include "core/machine/machine_interface.h"
-#include "core/product/wait_provider.h"
 
 typedef struct t_bios t_bios;
 typedef struct core_machine_block_provider_slot core_machine_block_provider_slot;
@@ -16,7 +15,6 @@ typedef struct vm_profile_default_context {
     core_machine_profile_binding binding;
     core_machine_block_provider_slot *block_provider;
     core_machine_display_provider_slot *display_provider;
-    const core_product_wait_scope *wait_scope;
 } vm_profile_default_context;
 
 static inline C_VOID vm_profile_default_context_initialize(
@@ -29,7 +27,6 @@ static inline C_VOID vm_profile_default_context_initialize(
     context->binding = binding;
     context->block_provider = block_provider;
     context->display_provider = STD_NULL;
-    context->wait_scope = STD_NULL;
 }
 
 static inline t_ram *vm_profile_default_context_memory(

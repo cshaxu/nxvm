@@ -17,7 +17,7 @@ above one another.
 
 ```text
 src/
-  core/{machine,platform,product}/
+  core/{utils,machine,platform,product}/
     product/session/
   vm/
     main.c
@@ -54,6 +54,15 @@ their non-inline implementations. All modules may include `type.h`; this is a
 foundation-unit dependency, not a dependency between product forms or modules.
 The detailed C vocabulary and header boundary are defined only by
 [C-Library Facade](c-library-facade.md).
+
+`src/core/utils/` is the sole shared utility module. It contains only small,
+product-neutral facilities and callback contracts that require neither guest
+state nor host policy, such as an injected wait scope. It depends only on
+`type-facade`; it may not include any `core/{machine,platform,product}` or
+`vm/*`/`vdm/*` header. It is not a miscellaneous convenience layer: assembler,
+disassembler, debugger UX, registries, device code, platform implementation,
+and product policy remain with their named owners. Public symbols use the
+`core_utils_*` prefix.
 
 Each product module owns its compile-time `PRODUCT_NAME`; the shared
 core-product banner helper supplies version, copyright, and build time. No
@@ -127,11 +136,9 @@ call.
 host facilities. It never mutates guest state. `core/product` contains generic
 command, debug/trace, registry, result, assembler, and disassembler tooling,
 but no session composition, VM Console, VDM CLI, profile, boot/media, or
-host-policy decision. It may expose a product-neutral provider contract, such
-as the bound wait service used by retained firmware and debugger paths; root
-composition owns the host implementation and its lifetime. Its runtime
-infrastructure lives in `core/product/runtime`; there is no top-level runtime
-module.
+host-policy decision. Product-neutral callback contracts shared by otherwise
+independent owners belong in `core/utils`; root composition owns any concrete
+host implementation and its lifetime.
 
 A `core/platform` host-surface context contains only a surface kind and an
 opaque native handle. A host resource that cannot be shared, such as a process
@@ -159,7 +166,8 @@ DOS-minimal PIT state or pending keyboard IRQ remain in that product's machine
 module and require a separate diagnostic contract if they must be exposed.
 
 Ownership is determined by reuse, not by abstraction level or the source's
-current directory. Any logic used by both products belongs in the matching
+current directory. Small policy-free utilities and callback contracts belong in
+`core/utils`; all other logic used by both products belongs in the matching
 `core/{machine,platform,product}` owner, including concrete host code:
 shared Win32 and Linux providers live in `core/platform/win32` and
 `core/platform/linux`; platform-neutral platform code lives directly in
@@ -202,6 +210,8 @@ and no lower module may depend on a product form. The product-form root
 composition is the only permitted integration point.
 
 ```text
+             core/utils
+                 |
 core/machine      core/platform      core/product
      (independent libraries with public provider contracts)
 
@@ -225,10 +235,10 @@ when required; no platform header may name a machine snapshot type.
 
 `core/product` contains reusable product tooling only: generic command,
 registry, trace, debug, assembler, and disassembler facilities. It may depend
-only on its own public callback contracts; it may not select a product, own a
-product profile, instantiate a VM/VDM session, or include `core/machine`,
-`core/platform`, `vm/*`, or `vdm/*`. A root composition adapts a concrete
-machine or platform provider to a generic product-tool target.
+only on its own public callback contracts and `core/utils`; it may not select a
+product, own a product profile, instantiate a VM/VDM session, or include
+`core/machine`, `core/platform`, `vm/*`, or `vdm/*`. A root composition adapts
+a concrete machine or platform provider to a generic product-tool target.
 
 Within either product form, `machine`, `platform`, `product`, and `profile`
 are peer providers. They may depend on matching core contracts but must not
@@ -243,7 +253,9 @@ creating a `machine <-> platform` dependency. Root composition repeatedly
 drives bounded synchronous machine quanta; it owns host threads, wall-clock
 watchdogs, pacing, and product exit policy.
 
-The three core modules have zero compile-time dependency on one another.
+`core/utils` is below the three independent core modules. The three core
+modules have zero compile-time dependency on one another; each may use the
+strictly neutral `core/utils` contract where needed.
 Cross-domain data is carried through public provider contracts and translated
 by a product-form root composition; a platform never imports a machine snapshot
 type. All guest-state mutation occurs on the machine execution thread at a
