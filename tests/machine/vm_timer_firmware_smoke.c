@@ -27,6 +27,9 @@ C_INT main(C_INT argc, C_CHAR **argv)
     DWORD elapsed;
     uint32_t bda_ticks = 0u;
     uint32_t int1a_ticks;
+    uint64_t paused_elapsed_ticks;
+    uint64_t observed_paused_elapsed_ticks;
+    uint64_t stepped_elapsed_ticks;
     uint32_t rollover_seed = VM_TIMER_DAILY_LIMIT - 1u;
     uint8_t rollover_byte = 0u;
     core_machine_cpu_execution_context *execution;
@@ -57,6 +60,21 @@ C_INT main(C_INT argc, C_CHAR **argv)
     vm_session_control_request_pause(&session->control, VM_SESSION_PAUSE_EXPLICIT);
     if (!vm_session_control_wait_for_pause(&session->control, 2000u)) goto fail;
     stage = 5;
+    if (core_machine_get_elapsed_ticks(session->core_machine,
+            &paused_elapsed_ticks) != TYPE_STATUS_OK) goto fail;
+    /* This is a host-side watchdog observation, never a guest clock source. */
+    Sleep(25u);
+    if (core_machine_get_elapsed_ticks(session->core_machine,
+            &observed_paused_elapsed_ticks) != TYPE_STATUS_OK ||
+        observed_paused_elapsed_ticks != paused_elapsed_ticks) goto fail;
+    if (!vm_session_control_step(&session->control) ||
+        !vm_session_control_wait_for_pause(&session->control, 2000u) ||
+        vm_session_control_get_pause_reason(&session->control) !=
+            VM_SESSION_PAUSE_STEP ||
+        core_machine_get_elapsed_ticks(session->core_machine,
+            &stepped_elapsed_ticks) != TYPE_STATUS_OK ||
+        stepped_elapsed_ticks != paused_elapsed_ticks + 1u) goto fail;
+    stage = 6;
     cpu = core_machine_debug_cpu_borrow(session->core_machine);
     execution = core_machine_debug_cpu_execution_borrow(session->core_machine);
     if (cpu == STD_NULL || execution == STD_NULL ||
@@ -64,17 +82,17 @@ C_INT main(C_INT argc, C_CHAR **argv)
         core_machine_cpu_execution_load_segment(execution, &cpu->data.ds, 0u)) {
         goto fail;
     }
-    stage = 6;
+    stage = 7;
     cpu->data.eip = 0x1000u;
     cpu->data.flagHalt = TYPE_FALSE;
     if (core_machine_memory_write(session->core_machine, 0x1000u, int1a_program,
             sizeof(int1a_program)) != TYPE_STATUS_OK ||
         core_machine_run(session->core_machine, budget, &result) != TYPE_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) goto fail;
-    stage = 7;
+    stage = 8;
     int1a_ticks = ((uint32_t)cpu->data.cx << 16) | cpu->data.dx;
     if (int1a_ticks != bda_ticks || cpu->data.al != 0u) goto fail;
-    stage = 8;
+    stage = 9;
     cpu->data.eip = 0x1100u;
     cpu->data.flagHalt = TYPE_FALSE;
     if (core_machine_memory_write(session->core_machine, VM_TIMER_BDA_TICKS,
@@ -85,7 +103,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
             rollover_program, sizeof(rollover_program)) != TYPE_STATUS_OK ||
         core_machine_run(session->core_machine, budget, &result) != TYPE_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) goto fail;
-    stage = 9;
+    stage = 10;
     int1a_ticks = ((uint32_t)cpu->data.cx << 16) | cpu->data.dx;
     if (int1a_ticks != 0u || cpu->data.al != 1u ||
         core_machine_debug_read_memory(session->core_machine,

@@ -391,6 +391,58 @@ milestone.
     backend and ROM `INT 13h` port transactions. Secondary/slave channels,
     LBA, bus-master DMA, ATAPI, timing, write cache, and host-path policy
     remain deferred; do not call this full IDE compatibility.
+
+### Guest-Time Fidelity Roadmap
+
+The retained T217--T225 baseline is deterministic and host-clock-independent,
+but it is not cycle-exact: `core_machine` advances elapsed ticks at completed
+instruction boundaries and devices consume frozen, accumulated clock ratios.
+These levels are admitted in order only when a profile or a reproducible
+compatibility corpus requires them. They do not block T226 KBC work: KBC must
+consume core-scheduler time and must never derive guest time from host input or
+wall clock.
+
+- [ ] **Frequency-accurate device clocks (`TODO(Medium)`).** Preserve a
+  deterministic master time domain and exact rational conversion into each
+  profile's CPU, PIT, CGA, DMA, and RTC clock domains. Define phase and
+  rounding behavior, reset origin, and event ordering. This is the normal
+  default-profile baseline; it is not an assertion that each CPU instruction
+  consumes its historical number of cycles.
+- [ ] **Instruction-timed execution (`TODO(Medium)`).** Give every admitted
+  CPU instruction a deterministic profile-specific cycle cost, including
+  applicable prefix, branch, and memory/I/O variations; advance devices from
+  that result. Establish bounded instruction and device checkpoint probes
+  before expanding the corpus. This is an incremental compatibility tier, not
+  a claim of bus-cycle accuracy.
+- [ ] **Bus-timed PC/AT operation (`TODO(High)`).** Model memory and I/O wait
+  states, DMA bus ownership, and precise PIC/PIT/VADP visibility boundaries.
+  This requires exposing CPU bus transactions to the core scheduler rather
+  than treating a completed instruction as the sole timing unit. Admit it by
+  controller and profile with port-level evidence; do not broadly rewrite the
+  executor first.
+- [ ] **Cycle-exact CPU and device models (`TODO(High)`).** Where an explicit
+  profile genuinely requires it, model individual clock phases, 8088/8086
+  prefetch and bus behavior, and participating-device microstates. This is a
+  separate profile-capability program, not NXVM's default completion bar, and
+  may require a dedicated executor model rather than silently changing the
+  retained one.
+
+Profiles may declare a minimum timing-fidelity requirement and immutable clock
+parameters, but do not own time progression or scheduler policy. `core_machine`
+remains the only guest-time owner. A core that cannot meet a declared minimum
+must reject the profile or report an explicit degraded mode; it must never
+silently present an approximate model as cycle-exact.
+
+**Bochs comparison.** Bochs is the reference for a mature, deterministic,
+whole-PC emulator architecture: a CPU-driven timer system, configurable
+instruction-rate calibration, and independent device state machines. Its
+normal model is best compared to NXVM's frequency-accurate tier plus selected
+devices with detailed internal behavior. Do not classify it as a blanket
+instruction-cycle-, bus-, or cycle-exact reference: its timer system may
+advance after batches of completed instructions, and its configured IPS is the
+time calibration basis. Use bounded Bochs comparisons only to investigate a
+specific port/status/event sequence; NXVM still needs its own contract and
+owned probe for every acceptance claim.
 - [ ] **CPU internal naming (`TODO(Low)`).** Rename legacy segment-descriptor
   fields to owner-consistent vocabulary only in a bounded compatibility task;
   preserve layout, CPU behavior, and debugger output.
@@ -414,11 +466,12 @@ milestone.
   status-before-count reads, RW byte order, and focused port probes while
   retaining the FDD/HDD session and FDD DOS-prompt baselines. Future device
   work follows the hardware-device verification template.
-- [ ] **8254 PIT waveform and gate semantics (`TODO(Medium)`).** T191 only
-  records the existing model's observable OUT state for status read-back. Before
-  claiming broader 8254 compatibility, define and probe per-mode OUT pulses,
-  GATE edges, mode 1/4/5 trigger behavior, BCD edge cases, and count-zero
-  semantics without replacing the retained timer model wholesale.
+- [x] **8254 PIT waveform and gate semantics (`TODO(Medium)`).** T222 owns the
+  effective binary/BCD reload, count-zero, GATE edge, modes 0--5 OUT, read-back,
+  and PIC IRQ0 behavior; T225 separately closes the elapsed-tick to PIT-clock
+  ratio and BIOS-time evidence. Later timing work must add only newly admitted,
+  specifically probed compatibility, not reopen this completed baseline by
+  relabeling it as the historical T191 read-back slice.
 - [ ] **Bounded differential debugging.** The historical Bochx/Bochs bridge
   may be an optional developer research tool with provenance, comparison
   schema, masks, instruction/time/no-progress/size budgets, and cleanup. It is

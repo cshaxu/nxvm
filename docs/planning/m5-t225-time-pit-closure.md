@@ -28,8 +28,13 @@ core elapsed ticks
 ```
 
 `elapsed_ticks` remains a coarse completed-instruction clock. It is not a PIT
-input clock. A default-profile frozen integer divider converts elapsed ticks to
-PIT input clocks in the core scheduler. Platform host time, renderer cadence,
+input clock. After each completed instruction, core adds its coarse delta to
+`elapsed_ticks`, then converts the accumulated delta plus its retained remainder
+through the frozen integer divider. Only the resulting whole PIT input clocks
+advance the PIT; the remainder stays in `core_machine` and cold reset clears
+it. "No per-instruction fake timer tick" therefore forbids feeding raw CPU
+instruction deltas directly into the PIT. It does not claim cycle accuracy or
+remove the deliberately coarse CPU clock. Platform host time, renderer cadence,
 and debugger inspection are excluded. The PIC is the sole IRQ delivery owner;
 the ROM, not core or platform code, owns BDA mutation.
 
@@ -70,6 +75,16 @@ Run focused probes plus `current-gates-gcc`, record source/task mapping and
 the final developer artifact SHA, and reconcile status/TODO wording so neither
 T222 nor T223 claims unimplemented behavior. T225 owns one new monotonic
 artifact revision.
+
+### S7: Determinism And Lifecycle Closure
+
+Close the remaining evidence gaps without changing device behavior. Lock a cold
+reset's disposal of a partial elapsed-to-PIT conversion; observe that a paused
+session's elapsed time is stable across a bounded host-side watchdog delay; and
+prove that one debugger step advances exactly one completed-instruction coarse
+tick. Repeat the divider period from the reset origin. Reconcile task status,
+the convergence queue, and the retained PIT TODO with the actual T222/T225
+split.
 
 ## Rules And Stop Conditions
 
@@ -113,5 +128,18 @@ S6 completion evidence:
 - `current-gates-gcc` passes after the T225 source/test integration.
 - Developer artifact: `build/output/nxvm_0_5_0225.exe`.
 - SHA-256: `BFDE2250D5BE475EF32C913E167822772875B147168160C3F597BDCA6F5EDBF6`.
+
+S7 closes the remaining lifecycle evidence. `core-machine-pit-divider-smoke`
+first proves the retained four-elapsed-tick divider period, then leaves a
+two-tick partial conversion, cold-resets, and shows that another two ticks do
+not produce a PIT input transition; the next two ticks do. A second cold reset
+reproduces the original divider period. `vm-timer-firmware-smoke` boots the
+real FDD image, pauses through the session boundary, observes identical elapsed
+ticks across a bounded host-side watchdog delay, and proves one debugger step
+advances exactly one coarse tick before continuing its ordinary ROM `INT 1Ah`
+and rollover checks. The host delay observes a paused machine only; it never
+feeds guest time. `current-gates-gcc` passes 59/59 CTest smokes, including
+FDD/HDD boot, DOS prompt, `EDIT.COM`, Console, and debugger coverage. The
+retained `0.5.0225` artifact hash is unchanged and reverified.
 
 **Status:** complete.
