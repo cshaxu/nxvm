@@ -93,6 +93,15 @@ The relative-rate boundary is deterministic: mode 2 reload `N` repeats every
 `N` elapsed ticks with ceil/floor high/low phases. This remains an elapsed-tick
 model, not a host-time or cycle-accuracy claim.
 
-Developer artifact: `build/output/nxvm_0_5_0222.exe`.
+### Artifact Sequence Correction
 
-SHA-256: `74D06692330BFB97807DF8D8F915BAB69F403ABB17D3532C719DA3937CFC904E`.
+T222 is the planned PIT task identity. T223 was an urgent keyboard regression
+task completed first, so this later T222 completion must not move the current
+developer artifact back to `0.5.0222`. Under the monotonic artifact-revision
+rule, the final T222 artifact is `0.5.0224`; the historic local `0.5.0222`
+copy is superseded and is not task evidence. This correction preserves pushed
+history rather than renumbering the already-reserved T224 KBC task.
+
+Developer artifact: `build/output/nxvm_0_5_0224.exe`.
+
+SHA-256: `3922BD6A31CFA1EBE1D794953E67BB8B1F8C74ABBD7E9EEF9AD8EF36A9C36330`.
