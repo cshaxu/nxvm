@@ -67,6 +67,7 @@ static C_VOID vm_dos_keyboard_report_failure(const vm_session *session,
     uint16_t tail = 0u;
     uint8_t video_mode = 0u;
     uint8_t instructions[8] = { 0u };
+    STD_SIZE_T cell;
     STD_SIZE_T index;
 
     if (session == STD_NULL || state == STD_NULL) return;
@@ -80,12 +81,14 @@ static C_VOID vm_dos_keyboard_report_failure(const vm_session *session,
         state->cs_base + state->eip, instructions, sizeof(instructions));
     vm_platform_presentation_mailbox_capture(&session->presentation_mailbox,
         &frame);
-    STD_PRINTF("keyboard smoke timed out: BDA head=%04x tail=%04x text=", head, tail);
-    for (index = 0u; index < 80u; ++index) {
-        C_UCHAR character = frame.characters[index];
-        STD_PRINTF("%c", character == 0u ? ' ' : character);
+    STD_PRINTF("keyboard smoke timed out: BDA head=%04x tail=%04x\n", head, tail);
+    for (cell = 0u; cell < 25u; ++cell) {
+        for (index = 0u; index < 80u; ++index) {
+            C_UCHAR character = frame.characters[cell * 80u + index];
+            STD_PRINTF("%c", character == 0u ? ' ' : character);
+        }
+        STD_PRINTF("\n");
     }
-    STD_PRINTF("\n");
     STD_PRINTF("edit state: mode=%02x BDA head=%04x tail=%04x halt=%u bytes="
         "%02x %02x %02x %02x %02x %02x %02x %02x\n", video_mode, head, tail,
         state->halted, instructions[0], instructions[1], instructions[2],

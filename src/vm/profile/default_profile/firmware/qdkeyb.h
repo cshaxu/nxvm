@@ -51,6 +51,11 @@ xor bh, bh                           \n\
 mov ax, 0040                         \n\
 mov ds, ax                           \n\
 mov al, ds:[0017]                    \n\
+test al, 08                           \n\
+jz $(keyboard_09_not_alt)            \n\
+xor al, al                           \n\
+jmp near $(keyboard_09_mapped)       \n\
+$(keyboard_09_not_alt):              \n\
 and al, 03                           \n\
 jnz $(keyboard_09_shift)             \n\
 mov al, cs:[bx+e000]                 \n\
@@ -58,8 +63,6 @@ jmp near $(keyboard_09_mapped)       \n\
 $(keyboard_09_shift):                \n\
 mov al, cs:[bx+e080]                 \n\
 $(keyboard_09_mapped):               \n\
-or al, al                            \n\
-jz $(keyboard_09_eoi)                \n\
 mov ah, bl                           \n\
 mov bx, ds:[001c]                    \n\
 mov si, bx                           \n\

@@ -74,6 +74,12 @@ C_INT main(C_VOID)
             QDKEYB_VBIOS_ADDR_KEYB_BUF_TAIL, &tail) || tail != head ||
         vm_platform_request_transport_execution_boundary_count(
             &session->request_transport) != 2u) goto fail;
+    vm_platform_request_transport_observe_execution_boundary(
+        &session->request_transport);
+    if (!vm_keyboard_host_ingress_read_word(session,
+            QDKEYB_VBIOS_ADDR_KEYB_BUF_TAIL, &tail) || tail != head ||
+        vm_platform_request_transport_execution_boundary_count(
+            &session->request_transport) != 3u) goto fail;
     vm_session_destroy(session);
     STD_PRINTF("M5:T200:S1:KEYBOARD-STATE-INGRESS:OK\n");
     return 0;

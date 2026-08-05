@@ -70,6 +70,8 @@ C_INT main(C_VOID)
                                                             &request) !=
         TYPE_STATUS_OK) return 1;
     vm_platform_request_transport_observe_execution_boundary(&transport);
+    vm_platform_request_transport_observe_execution_boundary(&transport);
+    vm_platform_request_transport_observe_execution_boundary(&transport);
     if (observer.count != 3u ||
         observer.requests[0].kind != VM_PLATFORM_REQUEST_KEYBOARD_STATE ||
         observer.requests[0].data.keyboard_state.asynchronous_keys !=
@@ -83,7 +85,7 @@ C_INT main(C_VOID)
             CORE_MACHINE_KEYBOARD_ASYNC_RIGHT_SHIFT ||
         observer.requests[2].data.keyboard_state.toggle_keys !=
             CORE_MACHINE_KEYBOARD_TOGGLE_CAPS_LOCK ||
-        vm_platform_request_transport_execution_boundary_count(&transport) != 1u ||
+        vm_platform_request_transport_execution_boundary_count(&transport) != 3u ||
         vm_platform_request_transport_dequeue_ingress(&transport, &copy) !=
             TYPE_STATUS_UNSUPPORTED) return 1;
 
