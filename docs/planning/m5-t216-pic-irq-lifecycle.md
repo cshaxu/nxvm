@@ -119,3 +119,29 @@ enter ISR, slave then master EOI completes, refresh re-presents the still
 asserted source, and source deassertion withdraws the final request. It is a
 regression-only extension; the T216 artifact remains unchanged. The full
 current CTest matrix again passes 52/52.
+
+## S5 Result
+
+S5 repairs three interacting regressions without introducing another input,
+interrupt, or display owner:
+
+- KBC `60h` reads deassert the current IRQ1 source and reassert only for a
+  queued successor, producing a new edge for every queued byte.
+- The default-ROM `INT 16h/AH=01h` status path now changes the saved FLAGS at
+  `SS:[SP+08h]` after its `BX`/`DS` saves; it no longer corrupts the saved
+  return IP at `SS:[SP+04h]`.
+- The core CGA text VADP advances a deterministic `3DAh` display/retrace phase
+  from core refresh. `EDIT.COM` can therefore leave its vertical-retrace poll
+  and render its menu without a host-clock or renderer dependency.
+
+The legacy normal-path `NEW CODE PATH` print is trace-only. The KBC source
+probe, VADP status probe, and unpaced FDD `EDIT.COM` launch smoke pass; the
+last was run three consecutive times against the owner-provided FDD image.
+The registered current matrix passes 52/52. User acceptance also confirmed
+the rebuilt NXVM executable.
+
+Source commit: `f7fd53a` (`M5 T216 S5 P1`). Developer artifact:
+`build/output/nxvm_0_5_0216.exe`, SHA-256
+`B728B1BDCADE8E4A69E2CE4C8EE4EB4FF81EDC757BD0AC2979FA5C2BF6BF1B9D`.
+It remains the T216 `0.5.0216` task-level artifact; S5 does not allocate a new
+task version.
