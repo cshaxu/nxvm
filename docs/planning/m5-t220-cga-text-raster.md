@@ -2,7 +2,7 @@
 
 ## S1: Contract And Probe Design
 
-**Status:** S1/S2 complete; S3 artifact recording active. T220 replaces the temporary deterministic `3DAh` phase
+**Status:** complete. T220 replaces the temporary deterministic `3DAh` phase
 with an owned VADP text-raster observation model. It does not claim CGA
 graphics, EGA, VGA, host pacing, or cycle-accurate CRT timing.
 
@@ -49,8 +49,13 @@ profile smoke locks the selected 48/8/8 tuple.
 ### S3 Evidence
 
 Focused VADP, default-profile, and DOS video-port smokes pass. The complete
-55/55 current CTest matrix passes. The remaining closure evidence is the T220
-developer artifact record.
+55/55 current CTest matrix passes.
+
+Developer artifact: `build/output/nxvm_0_5_0220.exe`.
+
+SHA-256: `0B024A9A97D81635C7E726EEB6FB32538CB002908A59B3C163CDC3337EA42129`.
+
+Source commits: `d733556` (`M5 T220 S2 P1`) and this S3 evidence record.
 
 ### Stop Conditions
 
