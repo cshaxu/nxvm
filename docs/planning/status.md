@@ -2,10 +2,14 @@
 
 ## Current Work
 
-**M5 T220 S3 active:** record the verified text-raster artifact for `3DAh`
-display-enable and vertical-retrace observations derived only from elapsed
-ticks. See [the task record](m5-t220-cga-text-raster.md) and the authoritative
-[PC/AT hardware queue](m5-pcat-hardware-convergence.md).
+**M5 T221 S1 active:** define deterministic core clock and CGA checkpoint
+calibration evidence. See [the task record](m5-t221-deterministic-calibration.md)
+and the authoritative [PC/AT hardware queue](m5-pcat-hardware-convergence.md).
+
+**M5 T220 complete:** VADP owns frozen PC/AT text-raster timing and derives
+`3DAh` display-enable/retrace states only from core elapsed ticks. Focused
+probes and the 55/55 current CTest matrix pass. See [the task
+record](m5-t220-cga-text-raster.md).
 
 **M5 T219 complete:** `core_machine_run()` is the sole elapsed-tick scheduler;
 after each completed instruction it advances DMA, PIT, VADP, then PIC visibility
