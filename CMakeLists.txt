@@ -646,6 +646,8 @@ target_link_libraries(vm-cga-graphics-dos-smoke PRIVATE vm-composition)
 
 add_executable(vm-cmos-authority-smoke tests/machine/vm_cmos_authority_smoke.c)
 target_link_libraries(vm-cmos-authority-smoke PRIVATE vm-composition)
+add_executable(vm-cmos-rtc-port-smoke tests/machine/vm_cmos_rtc_port_smoke.c)
+target_link_libraries(vm-cmos-rtc-port-smoke PRIVATE vm-composition)
 add_executable(vm-fdd-authority-smoke tests/machine/vm_fdd_authority_smoke.c)
 target_link_libraries(vm-fdd-authority-smoke PRIVATE vm-composition)
 add_executable(vm-fdc-authority-smoke tests/machine/vm_fdc_authority_smoke.c)
@@ -828,6 +830,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     vm-dos-keyboard-smoke
     vm-dos-mem-fault-smoke
     vm-fault-outcome-runner-smoke
+    vm-cmos-rtc-port-smoke
     vm-fdc-port-smoke
     vm-no-media-video-port-smoke
     vm-hdc-hdd-boot-smoke
@@ -933,7 +936,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0231 "0.5.0231")
+add_current_vm_artifact(vm-0-5-0232 "0.5.0232")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 
@@ -1131,6 +1134,13 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMENT "Verifying M5 T213 HDC portal retirement"
         VERBATIM)
     add_dependencies(run-current-smokes verify-hdc-portal-closure)
+
+    add_custom_target(verify-cmos-rtc-boundary
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_cmos_rtc_boundary.cmake"
+        COMMENT "Verifying VM CMOS/RTC deterministic-time boundary"
+        VERBATIM)
+    add_dependencies(run-current-smokes verify-cmos-rtc-boundary)
 endif()
 
 if(PROJECT_ENABLE_BOCHX_RESEARCH)

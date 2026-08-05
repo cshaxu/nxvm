@@ -37,6 +37,13 @@ C_VOID vm_session_provider_lifecycle_refresh(vm_session *session)
     vm_session_machine_devices_refresh(session);
 }
 
+C_VOID vm_session_provider_lifecycle_advance(vm_session *session,
+    uint64_t elapsed_ticks)
+{
+    if (session == STD_NULL) return;
+    vm_session_machine_devices_advance(session, elapsed_ticks);
+}
+
 C_VOID vm_session_provider_lifecycle_reset(vm_session *session)
 {
     if (session == STD_NULL) return;
