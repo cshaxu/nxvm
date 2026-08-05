@@ -2,7 +2,7 @@
 
 ## S1: Checkpoint Contract
 
-**Status:** active. T221 makes the T217--T220 coarse timing model auditable;
+**Status:** S1/S2 complete; S3 artifact recording active. T221 makes the T217--T220 coarse timing model auditable;
 it does not claim cycle accuracy or final PIT waveform compatibility.
 
 ### Checkpoint Surface
@@ -31,3 +31,18 @@ period. Retain T218 fault/no-tick behavior and the normal current matrix.
 
 Stop if calibration introduces host pacing, profile mutation after freeze,
 second device timing state, or a Console/debugger/startup behavior change.
+
+### S2 Implementation
+
+`core-machine-timing-checkpoint-smoke` uses 64 reset-vector NOPs and the
+existing paused-boundary debug port borrow. For each one-instruction run it
+records the run result's one tick and elapsed total, then samples `3DAh`.
+It repeats the full reset/program/budget sequence and requires byte-identical
+status checkpoints. The default 48/8/8 tuple is pinned at active display for
+checkpoints 1--47, horizontal blank for 48--55, vertical retrace for 56--63,
+then active display again at checkpoint 64.
+
+### S3 Evidence
+
+The deterministic checkpoint probe passes. The current full GCC/CTest matrix
+and T221 developer artifact record are the remaining closure evidence.

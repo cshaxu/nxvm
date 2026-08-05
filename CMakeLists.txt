@@ -124,6 +124,10 @@ add_executable(core-machine-scheduler-smoke
     tests/core/machine_scheduler_smoke.c)
 target_link_libraries(core-machine-scheduler-smoke PRIVATE core-machine)
 
+add_executable(core-machine-timing-checkpoint-smoke
+    tests/core/machine_timing_checkpoint_smoke.c)
+target_link_libraries(core-machine-timing-checkpoint-smoke PRIVATE core-machine)
+
 add_executable(core-machine-real-mode-tick-smoke
     tests/machine/core_machine_real_mode_tick_smoke.c)
 target_link_libraries(core-machine-real-mode-tick-smoke PRIVATE core-machine)
@@ -750,6 +754,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-executor-run-smoke
     core-machine-time-smoke
     core-machine-scheduler-smoke
+    core-machine-timing-checkpoint-smoke
     core-machine-real-mode-tick-smoke
     core-machine-trace-context-smoke
     core-machine-cpu-fault-diagnostic-smoke
@@ -884,7 +889,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0220 "0.5.0220")
+add_current_vm_artifact(vm-0-5-0221 "0.5.0221")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 
