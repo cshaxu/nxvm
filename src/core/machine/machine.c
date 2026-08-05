@@ -135,6 +135,11 @@ static C_VOID core_machine_advance_scheduler(core_machine *machine,
     core_machine_vadp_advance(&machine->shared_vadp, &machine->executor_memory,
         elapsed_ticks);
     core_machine_kbc_advance(&machine->shared_kbc, elapsed_ticks);
+    if (machine->execution_provider != STD_NULL &&
+        machine->execution_provider->advance != STD_NULL) {
+        machine->execution_provider->advance(machine->execution_provider_context,
+            elapsed_ticks);
+    }
     core_machine_pic_refresh(&machine->shared_pic_master,
         &machine->shared_pic_slave);
 }
@@ -278,7 +283,7 @@ type_status core_machine_bind_execution_provider(core_machine *machine,
         return TYPE_STATUS_INVALID_STATE;
     }
     if (provider != STD_NULL && provider->reset == STD_NULL &&
-        provider->refresh == STD_NULL) {
+        provider->refresh == STD_NULL && provider->advance == STD_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     machine->execution_provider = provider;

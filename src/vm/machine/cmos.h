@@ -9,17 +9,24 @@ extern "C" {
 
 #include "type.h"
 #include "core/machine/cpu.h"
+#include "core/machine/pic.h"
 #include "core/machine/port.h"
 
-#define VM_MACHINE_DEVICE_CMOS "DS1302"
+#define VM_MACHINE_DEVICE_CMOS "MC146818"
 
 typedef struct {
     type_unsigned_8 reg[0x80]; /* cmos registers */
     t_cpu *cpu;
+    core_machine_pic_irq_source irq_source;
+    uint32_t ticks_per_second;
 } t_cmos_connect;
 
 typedef struct {
     type_unsigned_8 regId; /* id of specified cmos register*/
+    type_unsigned_8 second, minute, hour;
+    type_unsigned_8 day_week, day_month, month, year, century;
+    uint64_t second_ticks;
+    uint64_t periodic_ticks;
 } t_cmos_data;
 
 typedef struct {
@@ -30,6 +37,8 @@ typedef struct {
 typedef struct vm_machine_cmos_config {
     uint16_t index_port;
     uint16_t data_port;
+    uint8_t irq;
+    uint32_t ticks_per_second;
 } vm_machine_cmos_config;
 
 typedef struct vm_machine_cmos_defaults {
@@ -53,6 +62,19 @@ typedef struct vm_machine_cmos_defaults {
 #define VCMOS_RTC_REG_B        0x0b
 #define VCMOS_RTC_REG_C        0x0c
 #define VCMOS_RTC_REG_D        0x0d
+
+#define VCMOS_REG_A_UIP 0x80u
+#define VCMOS_REG_B_SET 0x80u
+#define VCMOS_REG_B_PIE 0x40u
+#define VCMOS_REG_B_AIE 0x20u
+#define VCMOS_REG_B_UIE 0x10u
+#define VCMOS_REG_B_DM  0x04u
+#define VCMOS_REG_B_24H 0x02u
+#define VCMOS_REG_C_IRQF 0x80u
+#define VCMOS_REG_C_PF 0x40u
+#define VCMOS_REG_C_AF 0x20u
+#define VCMOS_REG_C_UF 0x10u
+#define VCMOS_REG_D_VRT 0x80u
 #define VCMOS_STATUS_DIAG      0x0e
 #define VCMOS_STATUS_SHUTDOWN  0x0f
 #define VCMOS_TYPE_DISK_FLOPPY 0x10
@@ -71,19 +93,20 @@ typedef struct vm_machine_cmos_defaults {
 #define VCMOS_RTC_CENTURY      0x32
 #define VCMOS_FLAGS_INFO       0x33
 
-C_VOID vm_machine_cmos_initialize(t_cmos *cmos, t_cpu *cpu, t_port *port,
-    const vm_machine_cmos_config *config);
+C_VOID vm_machine_cmos_initialize(t_cmos *cmos, t_cpu *cpu, t_pic *pic_master,
+    t_pic *pic_slave, t_port *port, const vm_machine_cmos_config *config);
 C_VOID vm_machine_cmos_apply_defaults(t_cmos *cmos,
     const vm_machine_cmos_defaults *defaults);
 C_VOID vm_machine_cmos_reset(t_cmos *cmos);
 C_VOID vm_machine_cmos_refresh(t_cmos *cmos);
+C_VOID vm_machine_cmos_advance(t_cmos *cmos, uint64_t elapsed_ticks);
 C_VOID vm_machine_cmos_finalize(t_cmos *cmos);
 
 #define VCMOS_POST "            \
 ; init cmos                   \n\
 mov al, 0b ; select reg b     \n\
 out 70, al                    \n\
-mov al, 01 ; 24 hour mode     \n\
+ mov al, 02 ; 24 hour mode     \n\
 out 71, al                    \n\
 \
 ; init vrtc                   \n\

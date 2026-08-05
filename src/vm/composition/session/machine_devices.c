@@ -21,16 +21,23 @@ C_VOID vm_session_machine_devices_initialize_media(vm_session *session)
 C_VOID vm_session_machine_devices_initialize_cmos(vm_session *session)
 {
     const vm_profile_default_pc_at_port_range *ports;
+    const vm_profile_default_pc_at_route *route;
     vm_machine_cmos_config config;
 
     if (session == STD_NULL) return;
     ports = vm_profile_default_pc_at_port_range_find(session->profile,
         VM_PROFILE_DEFAULT_PC_AT_DEVICE_CMOS);
-    if (ports == STD_NULL || ports->last - ports->first != 1u) return;
+    route = vm_profile_default_pc_at_route_find(session->profile,
+        VM_PROFILE_DEFAULT_PC_AT_DEVICE_CMOS);
+    if (ports == STD_NULL || route == STD_NULL || ports->last - ports->first != 1u) return;
     config.index_port = ports->first;
     config.data_port = ports->last;
+    config.irq = route->irq;
+    config.ticks_per_second = session->profile->rtc_ticks_per_second;
     vm_machine_cmos_initialize(&session->cmos,
         core_machine_configuration_cpu_borrow(session->core_machine),
+        core_machine_configuration_shared_pic_master_borrow(session->core_machine),
+        core_machine_configuration_shared_pic_slave_borrow(session->core_machine),
         core_machine_configuration_port_borrow(session->core_machine), &config);
 }
 
@@ -117,6 +124,12 @@ C_VOID vm_session_machine_devices_reset_cmos(vm_session *session)
 C_VOID vm_session_machine_devices_refresh_cmos(vm_session *session)
 {
     if (session != STD_NULL) vm_machine_cmos_refresh(&session->cmos);
+}
+
+C_VOID vm_session_machine_devices_advance(vm_session *session,
+    uint64_t elapsed_ticks)
+{
+    if (session != STD_NULL) vm_machine_cmos_advance(&session->cmos, elapsed_ticks);
 }
 
 C_VOID vm_session_machine_devices_refresh(vm_session *session)

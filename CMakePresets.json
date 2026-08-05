@@ -21,7 +21,7 @@
     {
       "name": "current-gcc",
       "configurePreset": "mingw-gcc-x64",
-      "targets": ["vm-0-5-0231"]
+      "targets": ["vm-0-5-0232"]
     },
     {
       "name": "current-gates-gcc",
@@ -52,7 +52,8 @@
         "verify-default-pc-at-profile-closure",
         "verify-keyboard-portal-closure",
         "verify-boot-failure-portal-closure",
-        "verify-hdc-portal-closure"
+        "verify-hdc-portal-closure",
+        "verify-cmos-rtc-boundary"
       ]
     },
     {

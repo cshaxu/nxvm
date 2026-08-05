@@ -17,7 +17,8 @@ static C_VOID scheduler_provider_refresh(C_VOID *opaque)
 
 static const core_machine_execution_provider scheduler_provider = {
     STD_NULL,
-    scheduler_provider_refresh
+    scheduler_provider_refresh,
+    STD_NULL
 };
 
 C_INT main(C_VOID)

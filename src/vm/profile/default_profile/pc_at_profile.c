@@ -14,6 +14,7 @@ static const vm_profile_default_pc_at_port_range default_pc_at_port_ranges[] = {
 static const vm_profile_default_pc_at_route default_pc_at_routes[] = {
     { VM_PROFILE_DEFAULT_PC_AT_DEVICE_PIT, 0u, 0u },
     { VM_PROFILE_DEFAULT_PC_AT_DEVICE_KBC, 1u, 0u },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_CMOS, 8u, VM_PROFILE_DEFAULT_PC_AT_NO_DMA_CHANNEL },
     { VM_PROFILE_DEFAULT_PC_AT_DEVICE_FDC, 6u, 2u }
 };
 
@@ -45,6 +46,7 @@ static const vm_profile_default_pc_at_descriptor default_pc_at_descriptor = {
     50000u,
     5000u,
     0u,
+    50000u,
     { 48u, 8u, 8u },
     16u * 1024u * 1024u,
     { 0xfffffff0u, 0x000ffff0u, 16u, 0xf000u, 0xfff0u },

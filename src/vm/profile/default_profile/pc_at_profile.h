@@ -97,6 +97,7 @@ typedef struct vm_profile_default_pc_at_descriptor {
     uint32_t kbc_typematic_initial_ticks;
     uint32_t kbc_typematic_repeat_ticks;
     uint32_t kbc_command_response_ticks;
+    uint32_t rtc_ticks_per_second;
     core_machine_vadp_text_timing cga_text_timing;
     STD_SIZE_T default_memory_bytes;
     vm_profile_default_pc_at_rom_mapping rom;

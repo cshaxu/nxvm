@@ -12,6 +12,13 @@ session once from Console text to Window graphics. The GCC governance gate and
 `B2D78D1B756A4BF5A1EAA1E038CDD7F4DD22C8487B5A3A5BE9EDF4C223047EB8` from
 `d527f23`; see [the task record](m5-t228-cga-320x200x4.md).
 
+**M5 T232 S3 active:** verify VM-owned CMOS/RTC register/NVRAM,
+deterministic elapsed-tick progression, and IRQ8 behavior. Core remains the
+sole guest-time owner; the default profile supplies frozen RTC parameters and
+composition only binds them. The owned implementation and focused port probe
+are complete; current GCC/CTest, system-image, Console, and debugger closure
+remain in [the task record](m5-t232-cmos-rtc.md).
+
 **M5 T231 complete:** the VM-owned default FDC now has explicit command,
 execution, and result phases, a validated fixed-geometry FDD backend, bounded
 non-DMA/format behavior, media-change reporting, rate admission, and the sole
