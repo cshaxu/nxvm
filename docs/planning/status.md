@@ -2,6 +2,12 @@
 
 ## Current Work
 
+**M5 T217 S1 active:** define the core-owned guest-time contract and its
+focused probes before changing any timing-sensitive device behavior. This is
+design only: no runtime change or task artifact is expected. See [the task
+record](m5-t217-core-machine-time.md) and the authoritative
+[PC/AT hardware queue](m5-pcat-hardware-convergence.md).
+
 **M5 T216 complete:** PIT, KBC, FDC, and HDC signal IRQs through the core PIC
 source boundary. The PIC alone owns edge/level delivery, IRR/ISR, mask, EOI,
 priority, and cascade; S4 also locks level-mode IRQ14 re-presentation through
@@ -67,6 +73,9 @@ behavior and produces no artifact.
 `M5 Td S5` closes the T212 governance record and reconciles stale active-work
 and TODO wording with its completed artifact and current-gate evidence. It
 changes no source or build output.
+`M5 Td S6` establishes the authoritative ROI-ordered PC/AT hardware queue,
+corrects the baseline to T216 S5, and reserves T217--T233 for time, devices,
+storage, and display work; deferred CPU/FPU tasks are renumbered T234--T237.
 
 ## Milestone State
 
@@ -79,8 +88,10 @@ changes no source or build output.
 ## Latest Technical Baseline
 
 M5 T216 retains NXVM behavior while making core PIC state the sole owner of
-device IRQ delivery. The recorded developer artifact is `nxvm_0_5_0216.exe`;
-its historical evidence is summarized in [M5 History](../history/m5.md).
+device IRQ delivery. T217 S1 now defines the next design boundary: one
+core-owned guest-time model before device timing evolves. The recorded T216
+developer artifact is `nxvm_0_5_0216.exe`; its historical evidence is
+summarized in [M5 History](../history/m5.md).
 
 ## Operational Reading Order
 

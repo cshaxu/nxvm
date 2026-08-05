@@ -99,7 +99,8 @@ path into `core/*` and `vm/*`; preserve the original NXVM Console and debugger
 behavior;
 retain FDD/HDD boot fixtures; and produce runnable artifacts. External-ROM
 loading and additional machine profiles remain future design work. `nxvm.exe`
-has no new process CLI.
+has no new process CLI. The ROI-ordered post-baseline PC/AT hardware queue is
+defined by [M5 NXVM PC/AT Hardware Convergence](m5-pcat-hardware-convergence.md).
 
 **Exit:** `nxvm.exe` boots the recorded full-PC fixtures through the shared core
 with focused regression evidence. No baseline or adapter source root remains in
