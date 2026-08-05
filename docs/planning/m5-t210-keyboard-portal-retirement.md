@@ -49,6 +49,14 @@ Console lifecycle, debugger pause/unified debugger, two-session isolation, and
 keyboard/VADP coverage. No external reference is needed; optional Bochs work is
 not admitted for this task.
 
+### S4: Dead Profile-State Removal
+
+Remove `vm_profile_default_context.keyboard_waiting` only after confirming it
+has no producer, consumer, or test contract. It must not be replaced with a
+new keyboard/session state field. Re-run the retained T210 keyboard, DOS,
+Console/debugger, and session coverage; this cleanup changes no guest behavior
+and produces no new task artifact.
+
 ## Stop Conditions
 
 Stop for a second keyboard/BDA state owner, direct platform BDA mutation, a
@@ -85,3 +93,12 @@ The DOS regression sends ordinary make codes at bounded 50 ms host intervals.
 Fast typeahead queue-delivery, break/E0/E1, scan-set selection, translation,
 LED/typematic, AUX mouse/IRQ12, timing, resend, and error paths remain the
 separately admitted advanced-KBC work; this task makes no claim about them.
+
+## S4 Result
+
+After removal, `keyboard_waiting` has no source or test reference; no
+replacement profile, session, or KBC state was added. The retained
+`run-current-smokes` target passed all 48 current CTest smokes, including KBC
+controller, host ingress, FDD DOS keyboard, Console lifecycle, debugger,
+keyboard isolation, and two-session coverage. S4 is dead-state cleanup, so it
+retains T210's `0.5.0210` artifact and produces no new EXE.
