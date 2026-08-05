@@ -16,6 +16,12 @@ extern "C" {
 #define CORE_MACHINE_VADP_TEXT_BYTES 0x00004000u
 #define CORE_MACHINE_VADP_CRTC_REGISTER_COUNT 18u
 
+typedef struct core_machine_vadp_text_timing {
+    uint32_t active_display_ticks;
+    uint32_t horizontal_blank_ticks;
+    uint32_t vertical_retrace_ticks;
+} core_machine_vadp_text_timing;
+
 typedef struct t_port t_port;
 typedef struct t_ram t_ram;
 
@@ -24,8 +30,8 @@ typedef struct t_vadp_data {
     uint8_t crtc[CORE_MACHINE_VADP_CRTC_REGISTER_COUNT];
     uint8_t mode_control;
     uint8_t color_select;
-    uint8_t status;
-    uint8_t refresh_phase;
+    core_machine_vadp_text_timing text_timing;
+    uint32_t raster_phase;
     uint16_t columns;
     uint16_t rows;
     C_INT color_enabled;
@@ -57,6 +63,8 @@ C_VOID core_machine_vadp_finalize(t_vadp *adapter);
 
 type_status core_machine_vadp_configure_text(t_vadp *adapter, uint8_t mode,
     uint16_t columns, uint16_t rows, C_INT color_enabled);
+type_status core_machine_vadp_configure_text_timing(t_vadp *adapter,
+    const core_machine_vadp_text_timing *timing);
 C_VOID core_machine_vadp_set_cursor_shape(t_vadp *adapter, uint8_t top,
     uint8_t bottom);
 C_VOID core_machine_vadp_set_cursor_address(t_vadp *adapter, uint16_t address);

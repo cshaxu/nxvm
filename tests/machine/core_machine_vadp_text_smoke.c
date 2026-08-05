@@ -20,6 +20,9 @@ C_INT main(C_VOID)
     uint8_t value;
     C_INT saw_vertical_retrace = TYPE_FALSE;
     C_INT saw_display = TYPE_FALSE;
+    C_INT saw_horizontal_blank = TYPE_FALSE;
+    core_machine_vadp_text_timing timing = { 3u, 2u, 1u };
+    uint8_t status;
     STD_SIZE_T refresh;
     C_INT failed = 0;
 
@@ -27,6 +30,10 @@ C_INT main(C_VOID)
     core_machine_port_initialize(&port);
     core_machine_memory_initialize(&memory);
     core_machine_vadp_initialize(&vadp, &port);
+    failed |= core_machine_vadp_configure_text_timing(&vadp, &timing) !=
+        TYPE_STATUS_OK;
+    core_machine_vadp_reset(&vadp);
+    failed |= core_machine_port_read(&port, 0x03dau) != 0x01u;
     value = 'A';
     failed |= core_machine_memory_write_physical(&memory,
         CORE_MACHINE_VADP_TEXT_BASE, (type_virtual_address)&value,
@@ -47,16 +54,20 @@ C_INT main(C_VOID)
     core_machine_vadp_write_crtc(&port, 0x0bu, 6u);
     core_machine_port_write(&port, 0x03d9u, 0x1eu);
     failed |= core_machine_port_read(&port, 0x03d9u) != 0x1eu;
-    failed |= core_machine_port_read(&port, 0x03dau) != 0u;
-    for (refresh = 0u; refresh < 2u * 64u; ++refresh) {
+    status = core_machine_port_read(&port, 0x03dau);
+    failed |= status != 0x01u || core_machine_port_read(&port, 0x03dau) != status;
+    for (refresh = 0u; refresh < 2u * 6u; ++refresh) {
         core_machine_vadp_advance(&vadp, &memory, 1u);
-        if ((core_machine_port_read(&port, 0x03dau) & 0x08u) != 0u) {
+        status = core_machine_port_read(&port, 0x03dau);
+        if ((status & 0x08u) != 0u) {
             saw_vertical_retrace = TYPE_TRUE;
-        } else {
+        } else if ((status & 0x01u) != 0u) {
             saw_display = TYPE_TRUE;
+        } else {
+            saw_horizontal_blank = TYPE_TRUE;
         }
     }
-    failed |= !saw_vertical_retrace || !saw_display;
+    failed |= !saw_vertical_retrace || !saw_display || !saw_horizontal_blank;
     failed |= !core_machine_vadp_capture_text_snapshot(&vadp, &memory, &snapshot);
     failed |= !snapshot.cursor_changed || snapshot.cursor_x != 0u ||
         snapshot.cursor_y != 1u || snapshot.cursor_top != 2u ||

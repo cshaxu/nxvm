@@ -13,9 +13,11 @@
 #define CORE_MACHINE_VADP_PORT_MODE 0x03d8u
 #define CORE_MACHINE_VADP_PORT_COLOR 0x03d9u
 #define CORE_MACHINE_VADP_PORT_STATUS 0x03dau
-#define CORE_MACHINE_VADP_STATUS_TEXT_READY 0x08u
-#define CORE_MACHINE_VADP_REFRESH_PHASES 64u
-#define CORE_MACHINE_VADP_VERTICAL_RETRACE_PHASES 8u
+#define CORE_MACHINE_VADP_STATUS_DISPLAY_ENABLE 0x01u
+#define CORE_MACHINE_VADP_STATUS_VERTICAL_RETRACE 0x08u
+#define CORE_MACHINE_VADP_DEFAULT_ACTIVE_DISPLAY_TICKS 48u
+#define CORE_MACHINE_VADP_DEFAULT_HORIZONTAL_BLANK_TICKS 8u
+#define CORE_MACHINE_VADP_DEFAULT_VERTICAL_RETRACE_TICKS 8u
 #define CORE_MACHINE_VADP_CRTC_CURSOR_TOP 0x0au
 #define CORE_MACHINE_VADP_CRTC_CURSOR_BOTTOM 0x0bu
 #define CORE_MACHINE_VADP_CRTC_START_HIGH 0x0cu
@@ -39,6 +41,45 @@ static uint16_t core_machine_vadp_crtc_word(const t_vadp *adapter,
 static C_VOID core_machine_vadp_mark_dirty(t_vadp *adapter)
 {
     if (adapter != STD_NULL) ++adapter->data.dirty_generation;
+}
+
+static uint32_t core_machine_vadp_raster_period(
+    const core_machine_vadp_text_timing *timing)
+{
+    return timing->active_display_ticks + timing->horizontal_blank_ticks +
+        timing->vertical_retrace_ticks;
+}
+
+static C_INT core_machine_vadp_valid_text_timing(
+    const core_machine_vadp_text_timing *timing)
+{
+    uint32_t period;
+
+    if (timing == STD_NULL || timing->active_display_ticks == 0u ||
+        timing->vertical_retrace_ticks == 0u) {
+        return TYPE_FALSE;
+    }
+    period = core_machine_vadp_raster_period(timing);
+    return period >= timing->active_display_ticks &&
+        period >= timing->horizontal_blank_ticks &&
+        period >= timing->vertical_retrace_ticks;
+}
+
+static uint8_t core_machine_vadp_status(const t_vadp *adapter)
+{
+    uint32_t vertical_end;
+    uint32_t display_end;
+
+    if (adapter == STD_NULL) return 0u;
+    vertical_end = adapter->data.text_timing.vertical_retrace_ticks;
+    display_end = vertical_end + adapter->data.text_timing.active_display_ticks;
+    if (adapter->data.raster_phase < vertical_end) {
+        return CORE_MACHINE_VADP_STATUS_VERTICAL_RETRACE;
+    }
+    if (adapter->data.raster_phase < display_end) {
+        return CORE_MACHINE_VADP_STATUS_DISPLAY_ENABLE;
+    }
+    return 0u;
 }
 
 static C_VOID core_machine_vadp_read_crtc_index(t_port *port,
@@ -142,7 +183,7 @@ static C_VOID core_machine_vadp_read_status(t_port *port,
 {
     (C_VOID)port_id;
     if (port != STD_NULL && owner != STD_NULL) {
-        port->data.ioByte = ((t_vadp *)owner)->data.status;
+        port->data.ioByte = core_machine_vadp_status((const t_vadp *)owner);
     }
 }
 
@@ -178,10 +219,19 @@ C_VOID core_machine_vadp_initialize(t_vadp *adapter, t_port *port)
 
 C_VOID core_machine_vadp_reset(t_vadp *adapter)
 {
+    core_machine_vadp_text_timing timing;
+
     if (adapter == STD_NULL) return;
+    timing = adapter->data.text_timing;
+    if (!core_machine_vadp_valid_text_timing(&timing)) {
+        timing.active_display_ticks = CORE_MACHINE_VADP_DEFAULT_ACTIVE_DISPLAY_TICKS;
+        timing.horizontal_blank_ticks = CORE_MACHINE_VADP_DEFAULT_HORIZONTAL_BLANK_TICKS;
+        timing.vertical_retrace_ticks = CORE_MACHINE_VADP_DEFAULT_VERTICAL_RETRACE_TICKS;
+    }
     STD_MEMSET(&adapter->data, TYPE_ZERO_8, sizeof(adapter->data));
     adapter->data.mode_control = 0x05u;
-    adapter->data.refresh_phase = CORE_MACHINE_VADP_VERTICAL_RETRACE_PHASES;
+    adapter->data.text_timing = timing;
+    adapter->data.raster_phase = timing.vertical_retrace_ticks;
     adapter->data.columns = 80u;
     adapter->data.rows = 25u;
     adapter->data.color_enabled = TYPE_TRUE;
@@ -195,20 +245,14 @@ C_VOID core_machine_vadp_reset(t_vadp *adapter)
 C_VOID core_machine_vadp_advance(t_vadp *adapter, t_ram *memory,
     uint64_t elapsed_ticks)
 {
-    uint64_t tick;
+    uint32_t period;
+
     (C_VOID)memory;
     if (adapter == STD_NULL) return;
-
-    /* The text slice has no raster renderer or host clock.  Advance a small,
-     * deterministic CGA status phase from the core execution clock so guest
-     * polling loops can observe both display and vertical-retrace states. */
-    for (tick = 0u; tick < elapsed_ticks; ++tick) {
-        adapter->data.refresh_phase = (uint8_t)((adapter->data.refresh_phase + 1u) %
-            CORE_MACHINE_VADP_REFRESH_PHASES);
-    }
-    adapter->data.status = adapter->data.refresh_phase <
-        CORE_MACHINE_VADP_VERTICAL_RETRACE_PHASES ?
-            CORE_MACHINE_VADP_STATUS_TEXT_READY : 0u;
+    period = core_machine_vadp_raster_period(&adapter->data.text_timing);
+    if (period == 0u) return;
+    adapter->data.raster_phase = (uint32_t)((adapter->data.raster_phase +
+        elapsed_ticks % period) % period);
 }
 
 C_VOID core_machine_vadp_finalize(t_vadp *adapter)
@@ -235,6 +279,17 @@ type_status core_machine_vadp_configure_text(t_vadp *adapter, uint8_t mode,
         adapter->data.color_enabled = color_enabled;
         core_machine_vadp_mark_dirty(adapter);
     }
+    return TYPE_STATUS_OK;
+}
+
+type_status core_machine_vadp_configure_text_timing(t_vadp *adapter,
+    const core_machine_vadp_text_timing *timing)
+{
+    if (adapter == STD_NULL || !core_machine_vadp_valid_text_timing(timing)) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    adapter->data.text_timing = *timing;
+    adapter->data.raster_phase = timing->vertical_retrace_ticks;
     return TYPE_STATUS_OK;
 }
 

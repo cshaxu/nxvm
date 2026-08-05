@@ -146,6 +146,9 @@ core_machine_cpu_execution_context *core_machine_profile_binding_execution(
 type_status core_machine_profile_binding_configure_text_video(
     const core_machine_profile_binding *binding, uint8_t mode, uint16_t columns,
     uint16_t rows, C_INT color_enabled);
+type_status core_machine_profile_binding_configure_text_raster(
+    const core_machine_profile_binding *binding,
+    const core_machine_vadp_text_timing *timing);
 C_VOID core_machine_profile_binding_set_video_cursor_shape(
     const core_machine_profile_binding *binding, uint8_t top, uint8_t bottom);
 C_VOID core_machine_profile_binding_set_video_cursor_address(

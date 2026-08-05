@@ -191,6 +191,15 @@ type_status core_machine_profile_binding_configure_text_video(
             &binding->machine->shared_vadp, mode, columns, rows, color_enabled);
 }
 
+type_status core_machine_profile_binding_configure_text_raster(
+    const core_machine_profile_binding *binding,
+    const core_machine_vadp_text_timing *timing)
+{
+    return binding == STD_NULL || binding->machine == STD_NULL ?
+        TYPE_STATUS_INVALID_ARGUMENT : core_machine_vadp_configure_text_timing(
+            &binding->machine->shared_vadp, timing);
+}
+
 C_VOID core_machine_profile_binding_set_video_cursor_shape(
     const core_machine_profile_binding *binding, uint8_t top, uint8_t bottom)
 {
