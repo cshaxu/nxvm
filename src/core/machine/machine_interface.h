@@ -38,6 +38,7 @@ typedef struct core_machine_config {
     STD_SIZE_T memory_bytes;
     core_machine_cpu_profile cpu_profile;
     core_machine_fpu_profile fpu_profile;
+    uint32_t ticks_per_instruction;
 } core_machine_config;
 
 typedef enum core_machine_stop_reason {
@@ -53,18 +54,21 @@ typedef enum core_machine_stop_reason {
 
 typedef struct core_machine_run_budget {
     uint64_t instructions;
-    uint32_t ticks;
+    uint64_t ticks;
 } core_machine_run_budget;
 
 typedef struct core_machine_run_result {
     core_machine_stop_reason reason;
     uint64_t executed;
+    uint64_t ticks;
+    uint64_t elapsed_ticks;
     uint32_t linear_pc;
     uint32_t detail;
 } core_machine_run_result;
 
 typedef struct core_machine_observation {
     core_machine_lifecycle lifecycle;
+    uint64_t elapsed_ticks;
     core_machine_cpu_state cpu;
     core_machine_cpu_diagnostic diagnostic;
 } core_machine_observation;
@@ -92,6 +96,8 @@ type_status core_machine_get_fpu_profile(
     const core_machine *machine, core_machine_fpu_profile *out_profile);
 type_status core_machine_get_memory_bytes(
     const core_machine *machine, STD_SIZE_T *out_memory_bytes);
+type_status core_machine_get_elapsed_ticks(
+    const core_machine *machine, uint64_t *out_elapsed_ticks);
 
 type_status core_machine_get_cpu_diagnostic(
     const core_machine *machine,

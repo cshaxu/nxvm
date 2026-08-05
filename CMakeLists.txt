@@ -117,6 +117,9 @@ add_executable(core-machine-lifecycle-smoke
 )
 target_link_libraries(core-machine-lifecycle-smoke PRIVATE core-machine)
 
+add_executable(core-machine-time-smoke tests/core/machine_time_smoke.c)
+target_link_libraries(core-machine-time-smoke PRIVATE core-machine)
+
 add_executable(core-machine-stopped-lifecycle-smoke
     tests/core/machine_stopped_lifecycle_smoke.c
 )
@@ -737,6 +740,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     vm-two-session-isolation-smoke
     vm-core-executor-storage-smoke
     core-machine-executor-run-smoke
+    core-machine-time-smoke
     core-machine-trace-context-smoke
     core-machine-cpu-fault-diagnostic-smoke
     core-machine-configuration-smoke
@@ -870,7 +874,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0216 "0.5.0216")
+add_current_vm_artifact(vm-0-5-0217 "0.5.0217")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 
