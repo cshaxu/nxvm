@@ -301,13 +301,15 @@ guest-observable behavior.
   Protected DOS media stays local.
 
 - [ ] **Preserve CPU-fault evidence at the product boundary (`TODO(Medium)`).**
-  A real-mode `#UD` currently requests the executor stop. The VM runner may
-  start its next quantum, which cold-resets the machine and clears the
-  first-fault diagnostic before a whole-system smoke can inspect it. Define a
-  distinct core fault outcome, preserve the bounded diagnostic window through
-  that returned boundary, and make the session runner stop rather than reset.
-  Keep ordinary profile/provider stop and user cancellation semantics separate;
-  do not add a global trace or a second execution path.
+  `core_machine` already retains its bounded first-fault snapshot until a cold
+  reset; the problem is not that diagnostic evidence is inherently discarded.
+  A real-mode CPU exception still reaches the VM runner as generic
+  `TYPE_STATUS_FAULT`, which is handled as a generic stop rather than a stable,
+  session/debugger-consumable machine outcome. Define that distinct fault
+  outcome, preserve the diagnostic window at the returned boundary, and make
+  the session runner stop on it without initiating a reset. Keep ordinary
+  profile/provider stop and user cancellation semantics separate; do not add a
+  global trace or a second execution path.
 - [x] **8042 KBC controller and one BIOS route (`TODO(Medium)`).** T192
   completed `0x60`/`0x64`, OBF/IBF, command byte,
   `0x20`/`0x60`/`0xAA`/`0xAB`/`0xAD`/`0xAE`/`0xD0`/`0xD1`, keyboard
