@@ -25,6 +25,15 @@ C_VOID vm_platform_win32_keyboard_make_key_for(
         virtualKey, pressed);
 }
 
+C_VOID vm_platform_win32_mouse_relative_for(
+    const vm_platform_run_context *context, int16_t delta_x, int16_t delta_y,
+    uint8_t buttons)
+{
+    if (context == STD_NULL) return;
+    vm_platform_mouse_receive_relative_event_for(context->mouse, delta_x,
+        delta_y, buttons);
+}
+
 C_VOID vm_platform_win32_display_set_screen(WIN32_BOOL flagWindow,
                            const vm_platform_run_context *context) {
     if (flagWindow) {

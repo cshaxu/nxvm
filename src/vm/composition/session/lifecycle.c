@@ -61,6 +61,21 @@ static C_VOID vm_session_keyboard_receive_key_event(C_VOID *context,
         &machine->request_transport, &request);
 }
 
+static C_VOID vm_session_mouse_receive_relative_event(C_VOID *context,
+    int16_t delta_x, int16_t delta_y, uint8_t buttons)
+{
+    vm_session *machine = (vm_session *)context;
+    vm_platform_request request;
+
+    if (machine == STD_NULL) return;
+    request.kind = VM_PLATFORM_REQUEST_MOUSE_EVENT;
+    request.data.mouse_event.delta_x = delta_x;
+    request.data.mouse_event.delta_y = delta_y;
+    request.data.mouse_event.buttons = buttons;
+    (C_VOID)vm_platform_request_transport_enqueue_ingress(
+        &machine->request_transport, &request);
+}
+
 static C_VOID vm_session_execution_provider_refresh(C_VOID *context)
 {
     vm_session_provider_lifecycle_refresh((vm_session *)context);
@@ -87,6 +102,10 @@ C_INT vm_session_bind_execution_provider(vm_session *machine)
 
 static const vm_platform_keyboard_sink vm_session_keyboard_sink = {
     vm_session_keyboard_receive_key_event
+};
+
+static const vm_platform_mouse_sink vm_session_mouse_sink = {
+    vm_session_mouse_receive_relative_event
 };
 
 static C_INT vm_session_execution_is_running(C_VOID *context)
@@ -192,10 +211,13 @@ C_VOID vm_session_initialize(vm_session *machine) {
         vm_session_debug_request_pause, STD_NULL);
     vm_platform_keyboard_transport_initialize(&machine->keyboard_transport,
         &vm_session_keyboard_sink, machine);
+    vm_platform_mouse_transport_initialize(&machine->mouse_transport,
+        &vm_session_mouse_sink, machine);
     vm_platform_execution_transport_initialize(&machine->execution_transport,
         &vm_session_execution_sink, machine);
     vm_platform_run_context_initialize(&machine->platform_run_context,
         &machine->execution_transport, &machine->keyboard_transport,
+        &machine->mouse_transport,
         &machine->presentation_mailbox, &machine->wait_scope);
     vm_platform_run_handle_initialize(&machine->platform_run_handle);
     vm_platform_request_transport_initialize(&machine->request_transport);

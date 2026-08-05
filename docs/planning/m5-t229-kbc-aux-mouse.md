@@ -15,8 +15,8 @@ GUI coupling is imported.
 
 ## S1: Contract And Fixture Design
 
-**Status:** Active. No production source, test source, artifact, or guest
-behavior changes are permitted until this contract is reviewed as S1 complete.
+**Status:** Complete. The reviewed contract fixes the sole KBC owner and the
+bounded fixture before the S2 implementation.
 
 ### Ownership And Route
 
@@ -65,11 +65,12 @@ host mouse event
   keyboard origin; AUX-device replies have AUX origin.
 - IRQ12 is global IRQ12, therefore slave PIC IRQ4 and master cascade IRQ2.
   Neither KBC nor a mouse mapper writes PIC IRR/ISR or CPU interrupt state.
-- Controller `A7h` disables new host report admission and suppresses IRQ12;
-  `A8h` re-enables it and may present already queued AUX output. Existing
-  device replies are never discarded. `A9h` reports the controller-origin AUX
-  interface-test result `00h`. Command-byte bit 1 enables IRQ12 and bit 5
-  disables AUX.
+- Controller `A7h` disables new host report admission and deasserts the live
+  IRQ12 source; `A8h` re-enables it and may present already queued AUX output.
+  A previously latched edge remains PIC-owned until the guest services it and
+  sends EOI, so `A7h` never rewrites PIC IRR/ISR. Existing device replies are
+  never discarded. `A9h` reports the controller-origin AUX interface-test
+  result `00h`. Command-byte bit 1 enables IRQ12 and bit 5 disables AUX.
 
 ### Admitted Device Protocol
 
@@ -82,10 +83,10 @@ host mouse event
   AUX-origin output sequences.
 - In enabled stream mode, an admitted mapped movement or button transition
   creates one atomic three-byte relative packet. Byte 1 always sets bit 3;
-  bits 0--2 are left/right/middle buttons; bits 4--5 are X/Y signs. Bytes 2--3
-  are signed X/Y deltas. T229 admits only already bounded `-256..255` deltas;
-  mapper splitting/overflow and button/motion coalescing must be explicitly
-  designed before they are claimed.
+  bits 0--2 are left/right/middle buttons; bits 4--5 are X/Y signs; bits 6--7
+  report saturated X/Y overflow. Bytes 2--3 are signed X/Y deltas. One report
+  is bounded to the PS/2 range; this task does not coalesce, split, or retain
+  host motion outside the existing bounded session ingress.
 - Unsupported in T229: wheel/five-button IDs, sample-rate/resolution/scaling,
   remote mode/read-data/status commands, resend/error timing extensions,
   controller timing calibration, set-2/3 keyboard conversion, BIOS mouse
@@ -99,7 +100,7 @@ host mouse event
 | --- | --- |
 | `core-machine-kbc-aux-port-smoke` | `20h`/`60h` command-byte IRQ enables, `A7h`/`A8h`/`A9h`, `D4h` device command route, AUX status bit, ordered `FAh`/identify/reset replies, `F4h`/`F5h`, three-byte packet order, and no IRQ1 cross-delivery. |
 | IRQ12 lifecycle branch | Slave IRQ4 plus master IRQ2 cascade asserts for an AUX current byte, deasserts on `60h` read, and reasserts only for a promoted successor after correct EOI handling. Keyboard IRQ1 and AUX IRQ12 remain independent. |
-| `vm-aux-mouse-route-smoke` | One normalized host event crosses session ingress and the profile mapper to the KBC. It proves platform/profile never alter guest RAM or BDA and do not retain a host-side guest queue. |
+| `vm-kbc-aux-guest-smoke` | One normalized host event crosses session ingress and the profile mapper to the KBC. It proves platform/profile never alter guest RAM or BDA and do not retain a host-side guest queue. |
 | Controlled guest fixture | A generated or temporary-clone fixture installs an ordinary IVT `74h` handler, enables AUX reporting, reads three `60h` bytes, and records them in fixture-owned guest memory. It proves PIC/CPU/IVT delivery without claiming a DOS mouse driver or `INT 33h`. |
 | Retained matrix | KBC keyboard probes, DOS prompt/EDIT.COM, Console/debugger, FDD/HDD boot, two-session, and current GCC/CTest gates remain green. |
 
@@ -121,3 +122,29 @@ The sweep found no existing production AUX owner or host-to-DOS shortcut. The
 current KBC has one keyboard FIFO and IRQ1 source; S2 is therefore a deliberate
 extension of that owner, not an adapter around a second controller. This is a
 new capability-design task, so the defect similar-issue sweep is not applicable.
+
+## S2: Owned Implementation
+
+**Status:** Complete.
+
+- `core/machine/kbc` is the sole owner of the tagged controller/keyboard/AUX
+  output FIFO, `OBF`/AUX status observation, `D4h` command routing, AUX command
+  state, standard packet construction, and IRQ1/IRQ12 source lifecycles.
+- VM platform only normalizes relative Win32 input; the default-profile mapper
+  applies the host-Y convention and button mask; the existing session ingress
+  is the only asynchronous boundary. Its consumer invokes one core-machine
+  relative-report ingress at an execution boundary.
+- No BIOS service, DOS API, BDA mutation, guest-RAM write, host mouse queue,
+  extra KBC, or second IRQ path was introduced. The default ROM remains mouse
+  neutral; a guest handler/driver alone consumes vector `74h`.
+
+## S3: Verification And Closure
+
+**Status:** Pending final matrix and artifact evidence.
+
+The focused port probe verifies controller responses, status origin, IRQ12
+cascade, report enable/disable, packet order, and keyboard/IRQ1 independence.
+The generated guest fixture verifies the full route: guest `D4h` and `F4h`,
+IRQ12 -> IVT `74h`, one ACK, one mapped `(+5,+3,left)` packet, and the existing
+session ingress boundary. Final closure records the retained matrix, GCC/CTest
+gates, artifact hash, commit, and similar-issue disposition.

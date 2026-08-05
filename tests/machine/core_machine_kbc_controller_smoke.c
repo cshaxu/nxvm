@@ -44,7 +44,7 @@ C_INT main(C_VOID)
     failed |= core_machine_kbc_read_byte(&port, 0x0064u) != 0x14u;
     core_machine_port_write(&port, 0x0064u, 0x20u);
     failed |= (core_machine_kbc_read_byte(&port, 0x0064u) & VKBC_STATUS_OBF) == 0u;
-    failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0x05u;
+    failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0x07u;
     core_machine_port_write(&port, 0x0064u, 0x60u);
     core_machine_port_write(&port, 0x0060u, 0x01u);
     core_machine_port_write(&port, 0x0064u, 0x20u);

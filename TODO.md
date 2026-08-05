@@ -32,7 +32,7 @@ in its task record and Git history; the M5 implementation order belongs in
 | NXVM product | One session/composition path, retained Console/debugger, FDD/HDD boot regressions, GCC artifact and CTest gates | Preserve this path while every device evolves; do not quietly start VDM behavior. |
 | CPU | Real-mode 8086-plus executor with selected 80186/286/386 decode; `FPU=none` consumes legal ESC encodings | Not trusted 80386, protected mode, paging, task switching, or present FPU. |
 | Interrupts and time | PIC source lifecycle; deterministic core elapsed ticks; PIT/IRQ0 -> ROM -> BDA -> `INT 1Ah` evidence | Greater timing fidelity only when an explicit corpus requires it. |
-| Keyboard | KBC, IRQ1, ROM `INT 09h`/`INT 16h`, set-1 break/E0/E1, typeahead, selection/query, translation observation, LED, typematic, ACK/RESEND | AUX mouse/IRQ12, set-2/3 conversion, and native POSIX runtime validation. |
+| Keyboard | KBC, IRQ1/IRQ12, ROM `INT 09h`/`INT 16h`, set-1 break/E0/E1, typeahead, selection/query, translation observation, LED, typematic, ACK/RESEND, bounded PS/2 AUX packets | Set-2/3 conversion, wheel/advanced AUX protocol, guest mouse driver/API, and native POSIX runtime validation. |
 | Display | CGA text plus bounded digital `320x200x4`; copied text/indexed frames; `console`/`window`/`auto` selection | Remaining digital CGA modes/CRTC behavior, composite video, EGA/VGA, VBE. |
 | Storage | Bounded ATA PIO and FDD boot paths through declared ROM/device owners | Full FDC state machine, broad DMA behavior, extended IDE, and error/timing compatibility. |
 | VDM | Isolated non-runnable scaffold over the shared core | Owned DOS design, CLI, host-drive policy, and product implementation remain deferred. |
@@ -42,10 +42,11 @@ in its task record and Git history; the M5 implementation order belongs in
 The active task is always the one in [status.md](docs/planning/status.md).
 These are the next owned admissions, not permission to work in parallel.
 
-- [ ] **8042 AUX mouse / IRQ12 (`TODO(High)`, T229).** Define the bounded AUX
-  controller and packet contract, route IRQ12 through the PIC, and admit host
-  mouse only through a profile mapper. It must never write DOS APIs or guest
-  memory directly.
+- [ ] **Advanced 8042 AUX protocol (`TODO(Medium)`).** T229 admits a bounded
+  IRQ12 three-byte relative packet path only. Admit wheel IDs, sample-rate,
+  scaling, remote/read-data/status, resend/error timing, and host capture only
+  as separately probed controller work; do not turn platform input into a DOS
+  API or guest-memory shortcut.
 - [ ] **8237 DMA and FDC contract (`TODO(High)`, T230--T231).** First admit
   DMA request/mask/mode/page/address/count ownership and channel-2 FDC access;
   then implement FDC command/result, media-change, motor, rate, errors,

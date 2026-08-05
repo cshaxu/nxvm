@@ -23,10 +23,47 @@ typedef struct win32app_run_handle {
     HWND window;
     HINSTANCE instance;
     C_INT initial_flip;
+    C_INT mouse_position_valid;
+    int16_t mouse_x;
+    int16_t mouse_y;
     volatile LONG display_ready;
     volatile LONG display_failed;
     volatile LONG stop_requested;
 } win32app_run_handle;
+
+static uint8_t win32app_mouse_buttons(WPARAM w_param)
+{
+    uint8_t buttons = 0u;
+
+    if ((w_param & MK_LBUTTON) != 0u) buttons |= 0x01u;
+    if ((w_param & MK_RBUTTON) != 0u) buttons |= 0x02u;
+    if ((w_param & MK_MBUTTON) != 0u) buttons |= 0x04u;
+    return buttons;
+}
+
+static C_VOID win32app_submit_mouse_event(win32app_run_handle *handle,
+    WPARAM w_param, LPARAM l_param, C_INT force)
+{
+    int16_t x;
+    int16_t y;
+    int16_t delta_x = 0;
+    int16_t delta_y = 0;
+
+    if (handle == STD_NULL) return;
+    x = (int16_t)(short)LOWORD(l_param);
+    y = (int16_t)(short)HIWORD(l_param);
+    if (handle->mouse_position_valid) {
+        delta_x = (int16_t)(x - handle->mouse_x);
+        delta_y = (int16_t)(y - handle->mouse_y);
+    }
+    handle->mouse_x = x;
+    handle->mouse_y = y;
+    handle->mouse_position_valid = 1;
+    if (force || delta_x != 0 || delta_y != 0) {
+        vm_platform_win32_mouse_relative_for(handle->platform, delta_x, delta_y,
+            win32app_mouse_buttons(w_param));
+    }
+}
 
 static C_INT win32app_atomic_read(const volatile LONG *value)
 {
@@ -101,6 +138,19 @@ static LRESULT CALLBACK win32app_window_procedure(HWND window, UINT message,
         virtual_key = (uint16_t)(wParam & 0xffff);
         vm_platform_win32_keyboard_make_key_for(handle->platform,
             handle->owner, scan_code, virtual_key, 0);
+        return 0;
+    case WM_MOUSEMOVE:
+        win32app_submit_mouse_event(handle, wParam, lParam, 0);
+        return 0;
+    case WM_LBUTTONDOWN:
+    case WM_LBUTTONUP:
+    case WM_RBUTTONDOWN:
+    case WM_RBUTTONUP:
+    case WM_MBUTTONDOWN:
+    case WM_MBUTTONUP:
+        /* T229 reports relative motion and buttons only; pointer capture and
+         * absolute host coordinates remain explicitly unsupported. */
+        win32app_submit_mouse_event(handle, wParam, lParam, 1);
         return 0;
     case WM_SYSCHAR:
     case WM_SYSDEADCHAR:

@@ -90,6 +90,7 @@ typedef struct vm_session {
     vm_platform_presentation_mailbox presentation_mailbox;
     vm_platform_execution_transport execution_transport;
     vm_platform_keyboard_transport keyboard_transport;
+    vm_platform_mouse_transport mouse_transport;
     core_product_wait_scope wait_scope;
     vm_platform_run_context platform_run_context;
     vm_platform_run_handle platform_run_handle;
