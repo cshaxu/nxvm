@@ -12,6 +12,13 @@ session once from Console text to Window graphics. The GCC governance gate and
 `B2D78D1B756A4BF5A1EAA1E038CDD7F4DD22C8487B5A3A5BE9EDF4C223047EB8` from
 `d527f23`; see [the task record](m5-t228-cga-320x200x4.md).
 
+**M5 T231 complete:** the VM-owned default FDC now has explicit command,
+execution, and result phases, a validated fixed-geometry FDD backend, bounded
+non-DMA/format behavior, media-change reporting, rate admission, and the sole
+DMA2/IRQ6 completion lifecycle. Core remains the only DMA, PIC, guest-memory,
+and elapsed-tick owner. The focused port smoke, static ownership gate, and
+66/66 current CTest matrix passed; see [the task record](m5-t231-fdc-state-machine.md).
+
 **M5 T230 complete:** core owns the dual-8237 controller state, scheduling,
 and guest-memory transfers; the default FDC retains only a frozen DMA2 binding.
 The DMA2 cascade/port probe, FDC boundary gate, and 65/65 GCC/CTest matrix

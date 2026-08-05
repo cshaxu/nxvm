@@ -62,7 +62,7 @@ device implementation begins.
 
 | Task | Dependencies | Deliverable and exit condition |
 | --- | --- | --- |
-| T231 | T216, T219, T230 | Implement the VM-owned FDC/FDD command/result state machine: media change, motor, rate, errors, non-DMA, format, transfer timing, DMA2, and IRQ6. Image files are backends only; boot alone is insufficient evidence. |
+| T231 | T216, T219, T230 | **Complete.** VM-owned bounded FDC/FDD command/result state machine: media change, DOR motor/select state, 500/250 kbit CCR admission, errors, non-DMA, DMA format IDs, DMA2 byte cadence, and IRQ6/SENSE-INTERRUPT completion. Image files remain validated backends; multi-drive mechanics, rotation latency, deleted/scan/read-track commands, and arbitrary FDC configuration remain deferred. |
 | T232 | T216, T219 | Define and implement CMOS/RTC register, periodic/update/alarm IRQ8, NVRAM, and deterministic-time semantics. Host time is only a provider and cannot bypass guest register state. |
 | T233 | T213, T216, T219 | Extend the existing VM-owned ATA PIO controller through an explicit feature matrix: LBA, slave/secondary channel, reset and status/error timing. DMA is not admitted; file images never substitute for controller behavior. |
 
