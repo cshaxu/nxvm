@@ -13,8 +13,7 @@ static C_VOID vm_machine_hdc_raise_irq(vm_machine_hdc *hdc)
 {
     if (hdc == STD_NULL) return;
     hdc->data.irq_pending = TYPE_TRUE;
-    core_machine_pic_set_irq(hdc->connect.pic_master, hdc->connect.pic_slave,
-        hdc->connect.config.irq);
+    core_machine_pic_irq_source_assert(&hdc->connect.irq_source);
 }
 
 static C_VOID vm_machine_hdc_complete(vm_machine_hdc *hdc)
@@ -263,6 +262,7 @@ static type_status vm_machine_hdc_port_read(C_VOID *opaque, uint16_t port,
     } else if (port == hdc->connect.config.status_command_port) {
         *out_value = hdc->data.status;
         hdc->data.irq_pending = TYPE_FALSE;
+        core_machine_pic_irq_source_deassert(&hdc->connect.irq_source);
     } else if (port == hdc->connect.config.alternate_status_device_control_port) {
         *out_value = hdc->data.status;
     } else {
@@ -325,8 +325,8 @@ C_VOID vm_machine_hdc_connect(vm_machine_hdc *hdc, t_hdd *backend,
 {
     if (hdc == STD_NULL || config == STD_NULL) return;
     hdc->connect.backend = backend;
-    hdc->connect.pic_master = pic_master;
-    hdc->connect.pic_slave = pic_slave;
+    core_machine_pic_irq_source_bind(&hdc->connect.irq_source, pic_master,
+        pic_slave, config->irq);
     hdc->connect.config = *config;
 }
 
@@ -334,6 +334,7 @@ C_VOID vm_machine_hdc_initialize(vm_machine_hdc *hdc)
 {
     if (hdc == STD_NULL) return;
     STD_MEMSET(&hdc->data, 0, sizeof(hdc->data));
+    core_machine_pic_irq_source_deassert(&hdc->connect.irq_source);
     vm_machine_hdc_reset(hdc);
 }
 
@@ -341,6 +342,7 @@ C_VOID vm_machine_hdc_reset(vm_machine_hdc *hdc)
 {
     if (hdc == STD_NULL) return;
     STD_MEMSET(&hdc->data, 0, sizeof(hdc->data));
+    core_machine_pic_irq_source_deassert(&hdc->connect.irq_source);
     hdc->data.status = VM_MACHINE_HDC_STATUS_DRDY | VM_MACHINE_HDC_STATUS_DSC;
 }
 

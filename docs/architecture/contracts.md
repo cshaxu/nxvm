@@ -301,40 +301,26 @@ sector operations without including VM machine code or accessing global device
 state. Core thereby defines the data/command boundary, while VM retains its
 controller and media policy.
 
-## Core Machine: Hardware IRQ And Firmware Service
+## Core Machine: Hardware IRQ
 
 Hardware IRQ delivery and a guest `INT n` instruction are separate mechanisms.
-Device providers such as PIC, PIT, or keyboard use the core hardware-IRQ
-contract to request CPU interrupt delivery. A guest `INT n` instruction remains
-normal CPU semantics: unless a registered firmware service handles it, core
-uses the guest interrupt vector table and transfers to guest code.
+CPU `INT` decoding always uses ordinary guest-IVT transfer; core has no
+firmware-interrupt portal, software-interrupt provider, or profile-private
+decoder bypass.
 
-A firmware service is an optional software-interrupt provider. Before freeze,
-at most one service may register for one interrupt vector; duplicate claims
-are a configuration error. Core dispatches the registered service first, and
-its disposition is exactly one of:
+`core_machine_pic_irq_source` is the only device-facing hardware IRQ boundary.
+A source binds one IRQ during the configuration window and may only assert or
+deassert its own physical signal. It owns neither a CPU pointer nor a vector,
+IRR, ISR, mask, priority, EOI, or cascade state. The core PIC pair owns all of
+those controller-visible states and the CPU consumes the resulting vector only
+through its existing PIC execution binding.
 
-- `HANDLED`: the service completed the interrupt and core resumes guest
-  execution according to the service-return contract.
-- `PASS_TO_GUEST`: core performs the ordinary guest-IVT transfer for that
-  `INT n`; it does not try another firmware provider.
-- `FAULT`: core ends the quantum with defined guest-fault detail.
-
-For example, a PC110 profile firmware override may handle only its private
-`INT 15h` function and return `PASS_TO_GUEST` for all other functions, which
-then execute the ROM BIOS entry recorded in the IVT. A VM that uses only a ROM
-BIOS registers no service for `INT 10h`, so the instruction always follows the
-ordinary IVT path. In VDM, the owned DOS `INT 21h` service is the one handler;
-unsupported DOS functions receive defined DOS error semantics from that
-service and still return `HANDLED`, rather than falling through to an arbitrary
-guest vector.
-
-Profiles provide service metadata and profile-specific override code, but they
-do not set precedence or invent a hidden service chain. When several HLE
-handlers must cooperate, VM or VDM root composition explicitly constructs one
-composite service, defines and tests its internal order, and registers that
-single service with core. This keeps dispatch order, fallback, and fault
-meaning uniform across products.
+ICW1 LTIM defines the source lifecycle: an edge-mode low-to-high transition
+latches an IRR bit until acknowledgement; a level-mode asserted source is
+presented again after EOI until it deasserts. IRQ8--IRQ15 travel through the
+slave PIC and master IRQ2 cascade; device sources may not claim IRQ2 directly.
+Multiple sources on a line are counted by the core PIC, so one deassertion
+cannot withdraw another source's asserted level.
 
 ## Core Machine: Read-Only Observation
 

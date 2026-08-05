@@ -23,8 +23,8 @@ C_INT main(C_VOID)
         machine->fdc.connect.dma_latch == STD_NULL ||
         machine->fdc.connect.dma_primary == STD_NULL ||
         machine->fdc.connect.dma_secondary == STD_NULL ||
-        machine->fdc.connect.pic_master == STD_NULL ||
-        machine->fdc.connect.pic_slave == STD_NULL ||
+        machine->fdc.connect.irq_source.master == STD_NULL ||
+        machine->fdc.connect.irq_source.slave == STD_NULL ||
         machine->fdc.connect.port == STD_NULL) {
         vm_session_finalize(session);
         STD_FREE(session);

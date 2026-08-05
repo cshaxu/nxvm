@@ -8,6 +8,7 @@ extern "C" {
 #endif
 
 #include "type.h"
+#include "core/machine/pic.h"
 #include "core/machine/port.h"
 
 #define CORE_MACHINE_DEVICE_KBC "Intel 8042"
@@ -46,8 +47,7 @@ typedef struct t_kbc_data {
 } t_kbc_data;
 
 typedef struct t_kbc_connect {
-    t_pic *pic_master;
-    t_pic *pic_slave;
+    core_machine_pic_irq_source irq1_source;
     t_ram *memory;
     core_machine_cpu_execution_context *execution;
 } t_kbc_connect;

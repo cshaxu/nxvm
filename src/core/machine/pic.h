@@ -15,6 +15,7 @@ extern "C" {
 typedef enum {ICW1, ICW2, ICW3, ICW4, OCW1} t_pic_init_status;
 
 #define ocw1 imr
+#define VPIC_MAX_IRQ_COUNT 8
 typedef struct {
     type_unsigned_8 irr;  /* Interrupt Request Register */
     type_unsigned_8 imr;  /* Interrupt Mask Register */
@@ -22,13 +23,19 @@ typedef struct {
     type_unsigned_8 icw1, icw2, icw3, icw4, ocw2, ocw3; /* command words */
     t_pic_init_status status; /* initialization status */
     type_unsigned_8 irx; /* id of current top potential ir */
+    type_unsigned_8 asserted[VPIC_MAX_IRQ_COUNT]; /* source levels */
 } t_pic_data;
 
 typedef struct t_pic {
     t_pic_data data;
 } t_pic;
 
-#define VPIC_MAX_IRQ_COUNT 8
+typedef struct core_machine_pic_irq_source {
+    t_pic *master;
+    t_pic *slave;
+    type_unsigned_8 irq;
+    type_bool asserted;
+} core_machine_pic_irq_source;
 
 /*
  * IRR: IRQ7 | IRQ6 | IRQ5 | IRQ4 | IRQ3 | IRQ2 | IRQ1 | IRQ0
@@ -109,7 +116,10 @@ C_VOID core_machine_pic_initialize(t_pic *master, t_pic *slave, t_port *port);
 C_VOID core_machine_pic_reset(t_pic *master, t_pic *slave);
 C_VOID core_machine_pic_refresh(t_pic *master, t_pic *slave);
 C_VOID core_machine_pic_finalize(t_pic *master, t_pic *slave);
-C_VOID core_machine_pic_set_irq(t_pic *master, t_pic *slave, type_unsigned_8 irq_id);
+C_VOID core_machine_pic_irq_source_bind(core_machine_pic_irq_source *source,
+    t_pic *master, t_pic *slave, type_unsigned_8 irq_id);
+C_VOID core_machine_pic_irq_source_assert(core_machine_pic_irq_source *source);
+C_VOID core_machine_pic_irq_source_deassert(core_machine_pic_irq_source *source);
 C_VOID core_machine_pic_timer_output(C_VOID *owner);
 type_bool core_machine_pic_scan_interrupt(t_pic *master, t_pic *slave);
 type_unsigned_8 core_machine_pic_get_interrupt(t_pic *master, t_pic *slave);

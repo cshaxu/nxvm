@@ -4,6 +4,7 @@
 #include "type.h"
 
 #include "core/machine/block_interface.h"
+#include "core/machine/pic.h"
 #include "core/machine/port_interface.h"
 #include "vm/machine/hdd.h"
 
@@ -58,8 +59,7 @@ typedef struct vm_machine_hdc_data {
 
 typedef struct vm_machine_hdc_connection {
     t_hdd *backend;
-    t_pic *pic_master;
-    t_pic *pic_slave;
+    core_machine_pic_irq_source irq_source;
     vm_machine_hdc_config config;
 } vm_machine_hdc_connection;
 

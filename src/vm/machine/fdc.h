@@ -8,6 +8,7 @@ extern "C" {
 #endif
 
 #include "type.h"
+#include "core/machine/pic.h"
 #include "vm/machine/fdd.h"
 
 typedef struct t_latch t_latch;
@@ -51,8 +52,7 @@ typedef struct {
     t_latch *dma_latch;
     t_dma *dma_primary;
     t_dma *dma_secondary;
-    t_pic *pic_master;
-    t_pic *pic_slave;
+    core_machine_pic_irq_source irq_source;
     t_port *port;
     vm_machine_fdc_config config;
 } t_fdc_connect;

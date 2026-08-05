@@ -2,6 +2,11 @@
 
 ## Current Work
 
+**M5 T216 complete:** PIT, KBC, FDC, and HDC now signal IRQs through the core
+PIC source boundary. The PIC alone owns edge/level delivery, IRR/ISR, mask,
+EOI, priority, and cascade; the 52-test current matrix passes. See [the task
+record](m5-t216-pic-irq-lifecycle.md).
+
 **M5 T215 complete:** the unused generic firmware-interrupt portal API,
 executor storage, dispatch branch, portal-only smoke, and closure gate are
 deleted. Ordinary CPU `INT` followed by IVT delivery is the sole interrupt
@@ -69,10 +74,9 @@ changes no source or build output.
 
 ## Latest Technical Baseline
 
-M5 T215 retains NXVM behavior while removing its unused generic
-firmware-interrupt bypass. The recorded developer artifact is
-`nxvm_0_5_0215.exe`; its historical evidence is summarized in
-[M5 History](../history/m5.md).
+M5 T216 retains NXVM behavior while making core PIC state the sole owner of
+device IRQ delivery. The recorded developer artifact is `nxvm_0_5_0216.exe`;
+its historical evidence is summarized in [M5 History](../history/m5.md).
 
 ## Operational Reading Order
 

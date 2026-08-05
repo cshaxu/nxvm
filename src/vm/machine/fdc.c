@@ -27,8 +27,8 @@ C_VOID vm_machine_fdc_connect(t_fdc *fdc, t_fdd *fdd, t_latch *dma_latch,
     fdc->connect.dma_latch = dma_latch;
     fdc->connect.dma_primary = dma_primary;
     fdc->connect.dma_secondary = dma_secondary;
-    fdc->connect.pic_master = pic_master;
-    fdc->connect.pic_slave = pic_slave;
+    core_machine_pic_irq_source_bind(&fdc->connect.irq_source, pic_master,
+        pic_slave, config->irq);
     fdc->connect.port = port;
     fdc->connect.config = *config;
 }
@@ -51,6 +51,13 @@ C_VOID vm_machine_fdc_connect(t_fdc *fdc, t_fdd *fdd, t_latch *dma_latch,
 #define CMD_READ_TRACK         0x42 /* generates irq6 */
 #define CMD_READ_ID            0x4a /* generates irq6 */
 #define CMD_FORMAT_TRACK       0x4d /* generates irq6 */
+
+static C_VOID vm_machine_fdc_raise_irq(t_fdc *fdc)
+{
+    if (fdc == STD_NULL) return;
+    core_machine_pic_irq_source_assert(&fdc->connect.irq_source);
+    fdc->data.flagINTR = TYPE_TRUE;
+}
 #define CMD_WRITE_DATA         0xc5 /* write to the disk */
 #define CMD_READ_DATA_ALL      0xc6 /* read all data, even if deleted */
 #define CMD_WRITE_DELETED_DATA 0xc9
@@ -175,9 +182,7 @@ static C_VOID finish_transfer(t_fdc *fdc) {
     fdc->data.ret[5] = TYPE_MASK_UNSIGNED_8(fdc->connect.fdd->data.sector);
     fdc->data.ret[6] = VFDC_GetBPSC(fdc->connect.fdd->data.nbyte);
     if (TYPE_GET_BIT(fdc->data.dor, VFDC_DOR_ENRQ)) {
-        core_machine_pic_set_irq(fdc->connect.pic_master, fdc->connect.pic_slave,
-            fdc->connect.config.irq);
-        fdc->data.flagINTR = TYPE_TRUE;
+        vm_machine_fdc_raise_irq(fdc);
     }
     SetMSRReadyRead;
 }
@@ -204,9 +209,7 @@ static C_VOID execute_recalibrate(t_fdc *fdc) {
     SetST0;
     TYPE_SET_BIT(fdc->data.st0, VFDC_ST0_SEEK_END);
     if (TYPE_GET_BIT(fdc->data.dor, VFDC_DOR_ENRQ)) {
-        core_machine_pic_set_irq(fdc->connect.pic_master, fdc->connect.pic_slave,
-            fdc->connect.config.irq);
-        fdc->data.flagINTR = TYPE_TRUE;
+        vm_machine_fdc_raise_irq(fdc);
     }
     SetMSRReadyWrite;
 }
@@ -215,6 +218,7 @@ static C_VOID execute_sense_interrupt(t_fdc *fdc) {
         fdc->data.ret[0] = fdc->data.st0;
         fdc->data.ret[1] = (type_unsigned_8)fdc->connect.fdd->data.cyl;
         fdc->data.flagINTR = TYPE_FALSE;
+        core_machine_pic_irq_source_deassert(&fdc->connect.irq_source);
     } else {
         fdc->data.ret[0] = fdc->data.st0 = VFDC_RET_ERROR;
     }
@@ -228,9 +232,7 @@ static C_VOID execute_seek(t_fdc *fdc) {
     SetST0;
     TYPE_SET_BIT(fdc->data.st0, VFDC_ST0_SEEK_END);
     if (TYPE_GET_BIT(fdc->data.dor, VFDC_DOR_ENRQ)) {
-        core_machine_pic_set_irq(fdc->connect.pic_master, fdc->connect.pic_slave,
-            fdc->connect.config.irq);
-        fdc->data.flagINTR = TYPE_TRUE;
+        vm_machine_fdc_raise_irq(fdc);
     }
     SetMSRReadyWrite;
 }
@@ -267,9 +269,7 @@ static C_VOID execute_format_track(t_fdc *fdc) {
     fdc->data.ret[5] = TYPE_ZERO_8;
     fdc->data.ret[6] = TYPE_ZERO_8;
     if (TYPE_GET_BIT(fdc->data.dor, VFDC_DOR_ENRQ)) {
-        core_machine_pic_set_irq(fdc->connect.pic_master, fdc->connect.pic_slave,
-            fdc->connect.config.irq);
-        fdc->data.flagINTR = TYPE_TRUE;
+        vm_machine_fdc_raise_irq(fdc);
     }
     SetMSRReadyRead;
 }
@@ -552,7 +552,10 @@ C_VOID vm_machine_fdc_initialize(t_fdc *fdc)
 
 C_VOID vm_machine_fdc_reset(t_fdc *fdc)
 {
-    if (fdc != STD_NULL) reset_controller(fdc);
+    if (fdc != STD_NULL) {
+        core_machine_pic_irq_source_deassert(&fdc->connect.irq_source);
+        reset_controller(fdc);
+    }
 }
 
 C_VOID vm_machine_fdc_refresh(t_fdc *fdc)
@@ -565,7 +568,8 @@ C_VOID vm_machine_fdc_refresh(t_fdc *fdc)
     }
 }
 
-C_VOID vm_machine_fdc_finalize(t_fdc *fdc) { (C_VOID)fdc; }
+C_VOID vm_machine_fdc_finalize(t_fdc *fdc)
+{ if (fdc != STD_NULL) core_machine_pic_irq_source_deassert(&fdc->connect.irq_source); }
 
 /* Prints FDC status */
 C_VOID vm_machine_fdc_print(const t_fdc *fdc) {

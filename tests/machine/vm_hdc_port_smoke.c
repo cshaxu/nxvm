@@ -96,8 +96,8 @@ C_INT main(C_VOID)
         session->block_provider.geometry_provider == STD_NULL ||
         session->block_provider.read_provider != STD_NULL ||
         session->block_provider.write_provider != STD_NULL ||
-        session->hdc.connect.pic_master == STD_NULL ||
-        session->hdc.connect.pic_slave == STD_NULL ||
+        session->hdc.connect.irq_source.master == STD_NULL ||
+        session->hdc.connect.irq_source.slave == STD_NULL ||
         !vm_hdc_write(session->core_machine, HDC_STATUS_COMMAND_PORT, 0xecu) ||
         !vm_hdc_read(session->core_machine, HDC_ALT_STATUS_CONTROL_PORT, &value) ||
         value != (VM_MACHINE_HDC_STATUS_DRDY | VM_MACHINE_HDC_STATUS_DSC |

@@ -70,6 +70,7 @@ struct core_machine {
     t_port executor_port;
     t_pic shared_pic_master;
     t_pic shared_pic_slave;
+    core_machine_pic_irq_source shared_pit_irq0_source;
     t_pit shared_pit;
     t_latch shared_dma_latch;
     t_dma shared_dma_primary;

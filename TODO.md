@@ -53,6 +53,11 @@ registration, storage, dispatch infrastructure, and portal-only verification
 are deleted. Ordinary CPU `INT`/IVT delivery is now the sole path. See
 [`M5 T215`](docs/planning/m5-t215-remove-firmware-interrupt-portal.md).
 
+**Completed implementation task -- T216: PIC IRQ lifecycle.** Device sources
+now have explicit assert/deassert semantics; the core PIC pair solely owns
+edge/level delivery, cascade, IRR/ISR, mask, EOI, and priority state. See
+[`M5 T216`](docs/planning/m5-t216-pic-irq-lifecycle.md).
+
 1. **Architecture and validation foundation.** Reaffirm NXVM-first M5 scope;
    make the default PC/AT profile declarative for topology, ports, IRQ, DMA,
    CMOS defaults, ROM mapping, and firmware hooks; audit that every observable

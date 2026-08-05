@@ -395,11 +395,13 @@ type_status core_machine_create(
     core_machine_dma_initialize(&machine->shared_dma_latch,
         &machine->shared_dma_primary, &machine->shared_dma_secondary,
         &machine->executor_port);
-    core_machine_pit_initialize(&machine->shared_pit, &machine->executor_port);
-    core_machine_pit_set_output(&machine->shared_pit, 0,
-        core_machine_pic_timer_output, &machine->shared_pic_master);
     core_machine_pic_initialize(&machine->shared_pic_master,
         &machine->shared_pic_slave, &machine->executor_port);
+    core_machine_pic_irq_source_bind(&machine->shared_pit_irq0_source,
+        &machine->shared_pic_master, &machine->shared_pic_slave, 0u);
+    core_machine_pit_initialize(&machine->shared_pit, &machine->executor_port);
+    core_machine_pit_set_output(&machine->shared_pit, 0,
+        core_machine_pic_timer_output, &machine->shared_pit_irq0_source);
     core_machine_kbc_bind_core_services(&machine->shared_kbc,
         &machine->shared_pic_master, &machine->shared_pic_slave,
         &machine->executor_memory, &machine->executor_cpu_execution);
