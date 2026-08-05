@@ -1,7 +1,9 @@
 # Documentation Standard
 
-Documentation exists to make the next correct decision easy, not to preserve a
-separate file for every completed action.
+Use the public [Documentation Governance skill](https://github.com/cshaxu/skills/blob/main/documentation-governance/SKILL.md)
+for authority, structure, link, and history discipline. This repository keeps
+its own current documents because shared skills do not define ntvdm64's product
+decisions, task identifiers, source graph, or acceptance evidence.
 
 ## Principal Documents
 
@@ -18,7 +20,7 @@ The daily governance surface has exactly seven subjects:
 `planning/status.md` and `planning/m5-closure-checklist.md` are operational
 companions, not additional design authorities.
 
-## Rules
+## ntvdm64 Rules
 
 - One topic has one current authority. Link to it; do not copy it into another
   plan, task note, or history document.
@@ -27,11 +29,6 @@ companions, not additional design authorities.
   Git, never beside current planning.
 - A task record is temporary operational scaffolding. On governed completion it
   is summarized or removed; its commit remains the detailed evidence.
-- A completed task cannot be summarized or removed until the execution
-  workflow's requirement-by-requirement closure audit passes.
-- Keep documents short enough to review. Split only when authority or audience
-  differs, not to create a record per subtask.
-- Update direct links whenever a current authority moves or is consolidated.
 - History explains why a decision occurred but cannot override architecture,
   requirements, roadmap, policy, or active status.
 

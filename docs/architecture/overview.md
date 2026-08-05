@@ -27,6 +27,11 @@ Forward source ownership and dependency decisions are defined exclusively by
 [Contracts](contracts.md). Historical records preserve rationale and evidence,
 but cannot redefine a current boundary, interface, or milestone scope.
 
+Use the public [Architecture Governance skill](https://github.com/cshaxu/skills/blob/main/architecture-governance/SKILL.md)
+for reusable layering, ownership, contract, and abstraction method. This
+overview and the local module documents remain the authority for ntvdm64's
+dual-product architecture.
+
 ## Runtime Identity And Versioning
 
 The immutable M1 byte-identical NXVM snapshot retains its imported startup
