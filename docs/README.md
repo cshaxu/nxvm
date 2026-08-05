@@ -1,6 +1,6 @@
 # Documentation Guide
 
-Read the six principal documents first:
+Read the seven principal documents first:
 
 1. [Design Principles](design-principles.md)
 2. [Coding Standard](coding-standard.md)
@@ -8,6 +8,7 @@ Read the six principal documents first:
 4. [System Architecture](architecture/overview.md)
 5. [Roadmap And Milestones](planning/roadmap.md)
 6. [Debt Tracking](debt-tracking.md)
+7. [Execution Workflow](execution-workflow.md)
 
 For active work, then read [Project Status](planning/status.md) and the
 applicable closure checklist. `architecture/`, `requirements/`, policy files,

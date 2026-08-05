@@ -5,6 +5,12 @@
 **No implementation subtask is active.** M5 T227 is complete; the next
 admission remains T228 S1 and requires its own contract before source work.
 
+**M5 Td S7 complete:** the execution workflow is the seventh principal
+documentation entry. Its closure audit verified R1 (entry/navigation), R2
+(requirement packet, state machine, and closure audit), and R3 (docs-only,
+concise scope). It changes no source, build, artifact, or M5 technical closure
+item.
+
 **M5 T227 complete:** core KBC owns the bounded controller/keyboard protocol:
 set-1 query/select, observable translation bit, LEDs, typematic, ACK/RESEND,
 and elapsed-tick command-response delay. Set-2/3 conversion and AUX/IRQ12
