@@ -2,15 +2,17 @@
 
 Read these documents before changing the repository:
 
-1. `docs/planning/status.md`
-2. `docs/planning/roadmap.md`
-3. `docs/architecture/overview.md`
-4. `docs/source-policy.md`
-5. `docs/planning/execution-policy.md`
-6. `docs/architecture/module-layout.md`
-7. `docs/architecture/contracts.md`
-8. `docs/coding-standard.md`
-9. `CONTRIBUTING.md`
+1. `docs/README.md`
+2. `docs/planning/status.md`
+3. `docs/execution-workflow.md`
+4. `docs/planning/execution-policy.md`
+5. `docs/planning/roadmap.md`
+6. `docs/architecture/overview.md`
+7. `docs/architecture/module-layout.md`
+8. `docs/architecture/contracts.md`
+9. `docs/coding-standard.md`
+10. `docs/source-policy.md`
+11. `CONTRIBUTING.md`
 
 ## Boundaries
 

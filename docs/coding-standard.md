@@ -23,17 +23,17 @@ The only source roots are `core`, `vm`, and `vdm`.
 Public headers live beside their implementations. The complete ownership and
 dependency graph remains [Module Layout](architecture/module-layout.md).
 
-- Write C11 with the `src/type.h` vocabulary: `C_*` scalar types, `STD_*`
-  standard-library facade, and platform-prefixed system types.
+- [C-Library Facade](architecture/c-library-facade.md) is the sole detailed
+  authority for `src/type.h`, C/standard-library vocabulary, platform type
+  exposure, and direct ISO C header/call restrictions.
 - The exact `core`, `vm`, and `vdm` dependency graph, public symbol prefixes,
   and composition ownership are defined by
   [Module Layout](architecture/module-layout.md) and
   [Contracts](architecture/contracts.md).
 - A cross-module contract is `*_interface.h`; injected implementations are
   `*_provider`. Public symbols use their source-owner path.
-- Headers stay beside implementations. `src/type.*` is the sole common
-  type/C-library facade; do not introduce module-local scalar aliases or raw
-  ISO C calls outside it.
+- Headers stay beside implementations. Do not introduce module-local scalar
+  aliases or a second C-library facade.
 - Production paths may not select a machine/session through globals, TLS,
   singletons, or implicit current state. Platform code reports through its
   contract; product composition performs machine mutation at its command

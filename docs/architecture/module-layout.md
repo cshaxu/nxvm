@@ -48,18 +48,12 @@ also owns the forward migration away from selected-session globals.
 ## Foundation Units
 
 `src/type.h` is the sole common type header and legacy diagnostic foundation.
-It defines `ntvdm64_status`, retained NXVM numeric aliases such as `t_nubit8`
-and `t_bool`, fixed-width compatibility typedefs, common bit/constant helpers,
-and product-neutral legacy C-runtime and trace primitives needed by more than
-one module. `src/type.c` owns their non-inline implementations. All modules
-may include `type.h`; this is a foundation-unit dependency, not a dependency
-between product forms or modules.
-
-The all-uppercase C-runtime wrappers in `type.*` are intentional retained
-NXVM vocabulary: `LOCALTIME`, `STRCAT`, `STRCPY`, `STRTOK`, `STRCMP`, `STRLEN`,
-`PRINTF`, `FPRINTF`, `SPRINTF`, `FOPEN`, `FCLOSE`, `FREAD`, `FWRITE`, `FGETS`,
-`MALLOC`, `FREE`, `MEMSET`, `MEMCPY`, and `MEMCMP`. They are not legacy aliases
-and are excluded from naming-remediation scans.
+It supplies product-neutral status, retained NXVM numeric aliases, common
+bit/constant helpers, and shared runtime/trace primitives. `src/type.c` owns
+their non-inline implementations. All modules may include `type.h`; this is a
+foundation-unit dependency, not a dependency between product forms or modules.
+The detailed C vocabulary and header boundary are defined only by
+[C-Library Facade](c-library-facade.md).
 
 Each product module owns its compile-time `PRODUCT_NAME`; the shared
 core-product banner helper supplies version, copyright, and build time. No

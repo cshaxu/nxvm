@@ -2,10 +2,11 @@
 
 ## Current Contract
 
-This section supersedes the earlier audit record below. The operative rule is:
-`type.h` owns C language aliases and ISO C vocabulary; `C_*` names scalar
-typedefs, `STD_*` names ISO C types/objects/constants/atomics/wrappers, and
-`WIN32_*` names project-facing Win32 vocabulary only in `platform/win32`.
+This is the sole current authority for `src/type.h`, C language aliases, ISO C
+vocabulary, platform type exposure, direct ISO C header/call restrictions, and
+input-flush safety. `C_*` names scalar typedefs, `STD_*` names ISO C
+types/objects/constants/atomics/wrappers, and `WIN32_*` names project-facing
+Win32 vocabulary only in `platform/win32`.
 
 Native C scalar keywords are permitted only to define the `C_*` typedefs and
 inside external SDK headers. `STD_NULL` expands to `NULL`; fixed-width
@@ -40,6 +41,12 @@ T116 closes the vocabulary sequence. Active code uses the established scalar
 and C-library facade; remaining native-keyword scan matches are comments or
 guest/assembler text, while the only remaining direct `fflush` flushes a test
 temporary output stream rather than stdin.
+
+## Historical Evidence (Non-Normative)
+
+The sections below preserve superseded inventories and migration proposals.
+They are not current rules and cannot override the Current Contract above;
+retrieve their task-specific context from Git history when needed.
 
 ## Decision
 
