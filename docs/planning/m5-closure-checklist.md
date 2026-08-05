@@ -51,7 +51,7 @@ unfinished M5 item as an implicit waiver.
 - [ ] `core` has no VM/VDM dependency; core peer modules remain independent;
   only product-root composition integrates product peers. Platform code does
   not mutate guest state.
-- [ ] `core/utils` depends only on `type-facade` and carries only neutral,
+- [x] `core/utils` depends only on `type-facade` and carries only neutral,
   explicitly named utility or callback contracts. No VM/VDM peer imports a
   non-matching `core/*` peer, and the CMake target graph has the same boundary.
 - [ ] Every adapter/wrapper adds a documented boundary responsibility. No

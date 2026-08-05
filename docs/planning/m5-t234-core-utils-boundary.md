@@ -37,3 +37,16 @@ task; it does not change guest-device, BIOS, DOS, or user-visible behavior.
 T234 closes only when no VM/VDM peer imports `core/product` outside its matching
 `*/product` module, no target conceals a forbidden peer edge, and the retained
 BIOS-image path has one documented compliant owner.
+
+## Completion Evidence
+
+Source commit: `263bf0d` (`M5 T234 S2 P1`). `core/utils` now owns the injected
+wait scope; `core/product` retains assembler/disassembler tooling only. VM
+machine recording receives disassembly through a composition-owned callback,
+and default-profile BIOS writes composition-preassembled code bytes without a
+product import.
+
+`current-gates-gcc` passed with MinGW-w64 GCC 16.1.0: the T234 boundary gate,
+existing governance gates, and 67/67 current smoke tests passed. The current
+artifact is `build/output/nxvm_0_5_0234.exe`, SHA-256
+`1A94A5D3D9E09FD2302CE71C3DC51434E9AA9915C2F2879BB42589AAE29591E9`.
