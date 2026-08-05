@@ -21,11 +21,14 @@ The planned `ntvdm64 run` contract is defined in
 components, invasive integration, and Win16 remain research-only unless a later
 owner-approved Go decision changes that boundary.
 
-`RULES.md` is the compact repository-wide implementation/review checklist.
 Forward source ownership and dependency decisions are defined exclusively by
 [Module Layout](module-layout.md); public interface decisions are defined by
-[Contracts](contracts.md). Historical records preserve rationale and evidence,
-but cannot redefine a current boundary, interface, or milestone scope.
+[Contracts](contracts.md). [Coding Standard](../coding-standard.md),
+[Source Policy](../source-policy.md), and
+[Execution Policy](../planning/execution-policy.md) define the corresponding
+local coding, source, and execution rules. Historical records preserve
+rationale and evidence, but cannot redefine a current boundary, interface, or
+milestone scope.
 
 Use the public [Architecture Governance skill](https://github.com/cshaxu/skills/blob/main/architecture-governance/SKILL.md)
 for reusable layering, ownership, contract, and abstraction method. This

@@ -8,6 +8,21 @@ boundaries, also use the public
 
 This document records ntvdm64-specific source rules:
 
+## Source Layout
+
+The only source roots are `core`, `vm`, and `vdm`.
+
+- `core/{machine,platform,product}` contains behavior shared by VM and VDM.
+  A concrete host implementation belongs under `core/platform/<host>` only
+  when both products can reuse it without product policy.
+- `vm/{machine,platform,product,profile}` contains bootable whole-machine
+  behavior, the retained VM Console/debugger experience, and machine profiles.
+- `vdm/{machine,platform,product,profile}` contains DOS application-runner
+  behavior and DOS execution profiles.
+
+Public headers live beside their implementations. The complete ownership and
+dependency graph remains [Module Layout](architecture/module-layout.md).
+
 - Write C11 with the `src/type.h` vocabulary: `C_*` scalar types, `STD_*`
   standard-library facade, and platform-prefixed system types.
 - The exact `core`, `vm`, and `vdm` dependency graph, public symbol prefixes,

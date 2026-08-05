@@ -509,7 +509,8 @@ owned probe for every acceptance claim.
 ## Verification, Build, And Governance
 
 The following open requirements use the [M5 closure checklist](docs/planning/m5-closure-checklist.md)
-as their single operational evidence index. `RULES.md` and the execution policy
+as their single operational evidence index. The local architecture, coding,
+source, and execution policies
 remain the rule authorities.
 
 - [ ] **Keep build gates truthful.** CMake presets, target names, smoke gates,

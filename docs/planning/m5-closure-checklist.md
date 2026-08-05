@@ -3,8 +3,9 @@
 ## Purpose
 
 This is the single operational index for closing M5. It does not create new
-architecture or execution rules: `roadmap.md`, `RULES.md`, and
-`execution-policy.md` remain authoritative. A checked item requires a compact
+architecture or execution rules: `roadmap.md`, `module-layout.md`,
+`coding-standard.md`, and `execution-policy.md` remain authoritative. A checked
+item requires a compact
 evidence record with commands, result markers, source commit, and any approved
 exception. Historical task evidence is not enough when the current source graph
 has changed.
@@ -85,5 +86,8 @@ unfinished M5 item as an implicit waiver.
 
 - Milestone scope and exit: [Roadmap](roadmap.md)
 - Task, artifact, build-tree, and trace policy: [Execution Policy](execution-policy.md)
-- Dependency, ownership, lifecycle, and wrapper rules: [Repository Rules](../../RULES.md)
+- Dependency and ownership rules: [Module Layout](../architecture/module-layout.md)
+- Lifecycle and public-contract rules: [Contracts](../architecture/contracts.md)
+- Coding and execution rules: [Coding Standard](../coding-standard.md) and
+  [Execution Policy](execution-policy.md)
 - Open work and approved deferrals: [TODO Ledger](../../TODO.md)

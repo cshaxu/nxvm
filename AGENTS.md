@@ -7,8 +7,10 @@ Read these documents before changing the repository:
 3. `docs/architecture/overview.md`
 4. `docs/source-policy.md`
 5. `docs/planning/execution-policy.md`
-6. `RULES.md`
-7. `CONTRIBUTING.md`
+6. `docs/architecture/module-layout.md`
+7. `docs/architecture/contracts.md`
+8. `docs/coding-standard.md`
+9. `CONTRIBUTING.md`
 
 ## Boundaries
 
@@ -23,8 +25,9 @@ Read these documents before changing the repository:
   are an M11 T2 research topic, not a backend. OpenNT and NTVDMx64 are
   historical research only.
 - Use the module boundaries defined in `docs/architecture/module-layout.md`.
-- Apply `RULES.md` to every task; record applicable rules and any
-  owner-approved exception in the task and verification evidence.
+- Apply the applicable local architecture, coding, source, and execution
+  rules to every task; record them and any owner-approved exception in the
+  task and verification evidence.
 - Invasive integration, Microsoft component research, and Win16 are research-
   only. Do not add them to default builds, release dependencies, or automatic
   system changes.

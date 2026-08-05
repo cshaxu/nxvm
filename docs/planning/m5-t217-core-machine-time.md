@@ -65,6 +65,7 @@ if it requires a VM-side device execution loop, direct platform guest mutation,
 a host-wall-clock guest-time shortcut, duplicate time state, or a user-visible
 NXVM behavior change.
 
-Applicable rules: `RULES.md` machine/session ownership, wrapper discipline,
+Applicable rules: the then-current machine/session ownership and wrapper
+discipline rules,
 and scope/testing/governance; the hardware-device verification template; and
 the M5 compatibility gate in `roadmap.md`.
