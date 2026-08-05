@@ -62,3 +62,9 @@ Removed the residual `vm-platform-requests -> core-machine` and
 was already removed in S2. GCC 16.1.0 `current-gates-gcc` passed again with
 67/67 current smoke tests. Session-layout encapsulation remains a separate P2
 design item.
+
+### S5 Design
+
+The approved opaque-session migration is recorded in
+[the S5 session-layout design](m5-t234-s5-session-layout-design.md). It is a
+future implementation subtask: no runtime layout or test route changes in S5.
