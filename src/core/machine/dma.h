@@ -18,6 +18,19 @@ extern "C"
     typedef struct t_ram t_ram;
     typedef C_VOID (*core_machine_dma_device_provider)(C_VOID *owner, t_latch *latch);
 
+    typedef struct core_machine_dma_channel_provider {
+        core_machine_dma_device_provider read_device;
+        core_machine_dma_device_provider write_device;
+        core_machine_dma_device_provider terminal_count;
+    } core_machine_dma_channel_provider;
+
+    /* A device may retain this frozen request handle, but never the controller
+     * registers, DMA latch, or guest-memory capability behind it. */
+    typedef struct core_machine_dma_request_binding {
+        C_VOID *core_owner;
+        uint8_t channel;
+    } core_machine_dma_request_binding;
+
 #define VDMA_CHANNEL_COUNT 4
 
     typedef struct
@@ -45,15 +58,9 @@ extern "C"
 
     typedef struct
     {
-        /* Non-owning links to the same composition-owned DMA pair. */
+        /* Non-owning links to the same core-machine-owned DMA pair. */
         t_latch *latch;
         struct t_dma *peer;
-        /* get data from device to latch */
-        type_flat_address fpReadDevice[VDMA_CHANNEL_COUNT];
-        /* write data to device from latch */
-        type_flat_address fpWriteDevice[VDMA_CHANNEL_COUNT];
-        /* send eop signal to device */
-        type_flat_address fpCloseDevice[VDMA_CHANNEL_COUNT];
         core_machine_dma_device_provider read_provider[VDMA_CHANNEL_COUNT];
         core_machine_dma_device_provider write_provider[VDMA_CHANNEL_COUNT];
         core_machine_dma_device_provider close_provider[VDMA_CHANNEL_COUNT];
@@ -169,15 +176,14 @@ extern "C"
     C_VOID core_machine_dma_advance(t_latch *latch, t_dma *primary,
                                     t_dma *secondary, t_ram *ram,
                                     uint64_t elapsed_ticks);
-    C_VOID core_machine_dma_set_drq(t_dma *primary, t_dma *secondary,
-                                    type_unsigned_8 drq_id);
-    C_VOID core_machine_dma_add_device(t_dma *primary, t_dma *secondary,
-                                       type_unsigned_8 drq_id, type_flat_address read_device, type_flat_address write_device,
-                                       type_flat_address close_device);
-    C_VOID core_machine_dma_bind_device(t_dma *primary, t_dma *secondary,
-                                        type_unsigned_8 drq_id, core_machine_dma_device_provider read_provider,
-                                        core_machine_dma_device_provider write_provider,
-                                        core_machine_dma_device_provider close_provider, C_VOID *owner);
+    type_status core_machine_dma_bind_channel(t_latch *latch, t_dma *primary,
+        t_dma *secondary, uint8_t channel,
+        const core_machine_dma_channel_provider *provider, C_VOID *device_owner,
+        core_machine_dma_request_binding *out_binding);
+    C_VOID core_machine_dma_request_assert(
+        const core_machine_dma_request_binding *binding);
+    C_VOID core_machine_dma_request_deassert(
+        const core_machine_dma_request_binding *binding);
     C_VOID core_machine_dma_finalize(t_latch *latch, t_dma *primary,
                                      t_dma *secondary);
 

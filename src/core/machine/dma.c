@@ -155,7 +155,12 @@ static C_VOID dma_port_write(t_port *port, type_unsigned_16 port_id, C_VOID *own
         else dma_write_count(dma, port, channel >> 1);
         return;
     }
-    if (port_id >= 0x00c0u) local_port -= 0x0008u;
+    if (port_id >= 0x00c0u && local_port >= 0x0010u) {
+        /* The second 8237A occupies every other I/O address. Its D0h--DEh
+         * control family maps to the first controller's 08h--0Fh functions. */
+        local_port = (type_unsigned_16)(0x0008u +
+            ((local_port - 0x0010u) >> 1));
+    }
     switch (local_port) {
     case 0x0008: dma->data.command = port->data.ioByte; break;
     case 0x0009: dma_write_request(dma, port); break;
@@ -211,8 +216,6 @@ static C_VOID Transmission(t_dma *rdma, t_latch *latch, t_ram *ram,
         /* write */
         if (rdma->connect.read_provider[id] != STD_NULL) {
             rdma->connect.read_provider[id](rdma->connect.device_owner[id], latch);
-        } else {
-            TYPE_EXECUTE_FUNCTION(rdma->connect.fpReadDevice[id]);
         }
         if (!flagWord) {
             core_machine_memory_write_physical(ram,
@@ -243,8 +246,6 @@ static C_VOID Transmission(t_dma *rdma, t_latch *latch, t_ram *ram,
         }
         if (rdma->connect.write_provider[id] != STD_NULL) {
             rdma->connect.write_provider[id](rdma->connect.device_owner[id], latch);
-        } else {
-            TYPE_EXECUTE_FUNCTION(rdma->connect.fpWriteDevice[id]);
         }
         rdma->data.currCount[id]--;
         if (TYPE_GET_BIT(rdma->data.mode[id], VDMA_MODE_AIDS)) {
@@ -333,8 +334,6 @@ static C_VOID Execute(t_dma *rdma, t_latch *latch, t_ram *ram,
         rdma->data.isr = TYPE_ZERO_8;
         if (rdma->connect.close_provider[id] != STD_NULL) {
             rdma->connect.close_provider[id](rdma->connect.device_owner[id], latch);
-        } else {
-            TYPE_EXECUTE_FUNCTION(rdma->connect.fpCloseDevice[id]);
         }
         if (TYPE_GET_BIT(rdma->data.mode[id], VDMA_MODE_AI)) {
             rdma->data.currAddr[id] = rdma->data.baseAddr[id];
@@ -347,20 +346,21 @@ static C_VOID Execute(t_dma *rdma, t_latch *latch, t_ram *ram,
     rdma->data.flagEOP = TYPE_FALSE;
 }
 
-C_VOID core_machine_dma_set_drq(t_dma *primary, t_dma *secondary,
-                              type_unsigned_8 drq_id) {
+static C_VOID core_machine_dma_set_drq(t_dma *primary, t_dma *secondary,
+    type_unsigned_8 drq_id, type_bool asserted)
+{
     if (primary == STD_NULL || secondary == STD_NULL) return;
     switch (drq_id) {
     case 0:
     case 1:
     case 2:
     case 3:
-        TYPE_SET_BIT(primary->data.status, VDMA_STATUS_DRQ(drq_id));
+        TYPE_MAKE_BIT(primary->data.status, VDMA_STATUS_DRQ(drq_id), asserted);
         break;
     case 5:
     case 6:
     case 7:
-        TYPE_SET_BIT(secondary->data.status, VDMA_STATUS_DRQ(drq_id - 4));
+        TYPE_MAKE_BIT(secondary->data.status, VDMA_STATUS_DRQ(drq_id - 4), asserted);
         break;
     case 4:
     default:
@@ -372,41 +372,19 @@ C_VOID core_machine_dma_set_drq(t_dma *primary, t_dma *secondary,
         TYPE_CLEAR_BIT(secondary->data.status, VDMA_STATUS_DRQ(0));
     }
 }
-C_VOID core_machine_dma_add_device(t_dma *primary, t_dma *secondary,
-    type_unsigned_8 drq_id, type_flat_address read_device, type_flat_address write_device,
-    type_flat_address close_device) {
-    if (primary == STD_NULL || secondary == STD_NULL) return;
-    switch (drq_id) {
-    case 0:
-    case 1:
-    case 2:
-    case 3:
-        primary->connect.fpReadDevice[drq_id] = read_device;
-        primary->connect.fpWriteDevice[drq_id] = write_device;
-        primary->connect.fpCloseDevice[drq_id] = close_device;
-        break;
-    case 5:
-    case 6:
-    case 7:
-        secondary->connect.fpReadDevice[drq_id - 4] = read_device;
-        secondary->connect.fpWriteDevice[drq_id - 4] = write_device;
-        secondary->connect.fpCloseDevice[drq_id - 4] = close_device;
-        break;
-    case 4:
-    default:
-        break;
-    }
-}
 
-C_VOID core_machine_dma_bind_device(t_dma *primary, t_dma *secondary,
-    type_unsigned_8 drq_id, core_machine_dma_device_provider read_provider,
-    core_machine_dma_device_provider write_provider,
-    core_machine_dma_device_provider close_provider, C_VOID *owner)
+type_status core_machine_dma_bind_channel(t_latch *latch, t_dma *primary,
+    t_dma *secondary, uint8_t drq_id,
+    const core_machine_dma_channel_provider *provider, C_VOID *owner,
+    core_machine_dma_request_binding *out_binding)
 {
     t_dma *dma;
     type_unsigned_8 channel;
 
-    if (primary == STD_NULL || secondary == STD_NULL) return;
+    if (latch == STD_NULL || primary == STD_NULL || secondary == STD_NULL ||
+        provider == STD_NULL || out_binding == STD_NULL) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
     if (drq_id <= 3u) {
         dma = primary;
         channel = drq_id;
@@ -414,12 +392,39 @@ C_VOID core_machine_dma_bind_device(t_dma *primary, t_dma *secondary,
         dma = secondary;
         channel = drq_id - 4u;
     } else {
-        return;
+        return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    dma->connect.read_provider[channel] = read_provider;
-    dma->connect.write_provider[channel] = write_provider;
-    dma->connect.close_provider[channel] = close_provider;
+    if (dma->connect.latch != latch || dma->connect.peer == STD_NULL ||
+        dma->connect.device_owner[channel] != STD_NULL) return TYPE_STATUS_INVALID_STATE;
+    dma->connect.read_provider[channel] = provider->read_device;
+    dma->connect.write_provider[channel] = provider->write_device;
+    dma->connect.close_provider[channel] = provider->terminal_count;
     dma->connect.device_owner[channel] = owner;
+    out_binding->core_owner = primary;
+    out_binding->channel = drq_id;
+    return TYPE_STATUS_OK;
+}
+
+C_VOID core_machine_dma_request_assert(
+    const core_machine_dma_request_binding *binding)
+{
+    t_dma *primary;
+
+    if (binding == STD_NULL || binding->core_owner == STD_NULL) return;
+    primary = (t_dma *)binding->core_owner;
+    core_machine_dma_set_drq(primary, primary->connect.peer,
+        binding->channel, TYPE_TRUE);
+}
+
+C_VOID core_machine_dma_request_deassert(
+    const core_machine_dma_request_binding *binding)
+{
+    t_dma *primary;
+
+    if (binding == STD_NULL || binding->core_owner == STD_NULL) return;
+    primary = (t_dma *)binding->core_owner;
+    core_machine_dma_set_drq(primary, primary->connect.peer,
+        binding->channel, TYPE_FALSE);
 }
 
 C_VOID core_machine_dma_initialize(t_latch *latch, t_dma *primary,
