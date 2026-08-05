@@ -23,10 +23,9 @@
 
 static C_VOID core_machine_kbc_request_irq1(t_kbc *controller)
 {
-    if (controller->connect.pic_master != STD_NULL &&
+    if (controller->connect.irq1_source.master != STD_NULL &&
         (controller->data.command_byte & CORE_MACHINE_KBC_COMMAND_IRQ1) != 0u) {
-        core_machine_pic_set_irq(controller->connect.pic_master,
-            controller->connect.pic_slave, 0x01u);
+        core_machine_pic_irq_source_assert(&controller->connect.irq1_source);
     }
 }
 
@@ -55,6 +54,9 @@ static uint8_t core_machine_kbc_dequeue(t_kbc *controller)
     controller->data.fifo_head = (type_unsigned_8)((controller->data.fifo_head + 1u) %
         CORE_MACHINE_KBC_FIFO_CAPACITY);
     --controller->data.fifo_count;
+    if (controller->data.fifo_count == 0u) {
+        core_machine_pic_irq_source_deassert(&controller->connect.irq1_source);
+    }
     return value;
 }
 
@@ -229,8 +231,8 @@ C_VOID core_machine_kbc_bind_core_services(t_kbc *controller, t_pic *pic_master,
     core_machine_cpu_execution_context *execution)
 {
     if (controller == STD_NULL) return;
-    controller->connect.pic_master = pic_master;
-    controller->connect.pic_slave = pic_slave;
+    core_machine_pic_irq_source_bind(&controller->connect.irq1_source,
+        pic_master, pic_slave, 1u);
     controller->connect.memory = memory;
     controller->connect.execution = execution;
 }
@@ -238,6 +240,7 @@ C_VOID core_machine_kbc_reset(t_kbc *controller)
 {
     if (controller == STD_NULL) return;
     STD_MEMSET(&controller->data, TYPE_ZERO_8, sizeof(controller->data));
+    core_machine_pic_irq_source_deassert(&controller->connect.irq1_source);
     controller->data.command_byte = CORE_MACHINE_KBC_COMMAND_IRQ1 |
         CORE_MACHINE_KBC_COMMAND_SYSTEM;
     controller->data.output_port = CORE_MACHINE_KBC_OUTPUT_RESET;
@@ -247,7 +250,8 @@ C_VOID core_machine_kbc_reset(t_kbc *controller)
     core_machine_kbc_apply_output_port(controller, controller->data.output_port);
 }
 C_VOID core_machine_kbc_refresh(t_kbc *controller) { (C_VOID)controller; }
-C_VOID core_machine_kbc_finalize(t_kbc *controller) { (C_VOID)controller; }
+C_VOID core_machine_kbc_finalize(t_kbc *controller)
+{ if (controller != STD_NULL) core_machine_pic_irq_source_deassert(&controller->connect.irq1_source); }
 type_status core_machine_kbc_submit_scan_code(t_kbc *controller, uint8_t scan_code)
 {
     if (controller == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;

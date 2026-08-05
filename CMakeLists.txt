@@ -579,6 +579,9 @@ add_executable(core-machine-pit-readback-smoke
     tests/machine/core_machine_pit_readback_smoke.c
 )
 target_link_libraries(core-machine-pit-readback-smoke PRIVATE core-machine)
+add_executable(core-machine-pic-irq-lifecycle-smoke
+    tests/machine/core_machine_pic_irq_lifecycle_smoke.c)
+target_link_libraries(core-machine-pic-irq-lifecycle-smoke PRIVATE core-machine)
 add_executable(core-machine-kbc-controller-smoke
     tests/machine/core_machine_kbc_controller_smoke.c
 )
@@ -739,6 +742,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-configuration-smoke
     core-machine-ram-port-context-smoke
     core-machine-pit-readback-smoke
+    core-machine-pic-irq-lifecycle-smoke
     core-machine-kbc-controller-smoke
     core-machine-vadp-text-smoke
     core-machine-stopped-lifecycle-smoke
@@ -866,7 +870,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0215 "0.5.0215")
+add_current_vm_artifact(vm-0-5-0216 "0.5.0216")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 

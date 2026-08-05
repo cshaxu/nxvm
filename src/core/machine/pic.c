@@ -81,6 +81,26 @@ static C_VOID RespondINTR(t_pic *rpic, type_unsigned_8 id) {
     }
 }
 
+static C_INT core_machine_pic_is_level(const t_pic *pic)
+{
+    return pic != STD_NULL && TYPE_GET_BIT(pic->data.icw1, VPIC_ICW1_LTIM);
+}
+
+static t_pic *core_machine_pic_irq_source_controller(
+    core_machine_pic_irq_source *source, type_unsigned_8 *out_line)
+{
+    if (source == STD_NULL || out_line == STD_NULL) return STD_NULL;
+    if (source->irq < 8u) {
+        *out_line = source->irq;
+        return source->master;
+    }
+    if (source->irq < 16u) {
+        *out_line = (type_unsigned_8)(source->irq - 8u);
+        return source->slave;
+    }
+    return STD_NULL;
+}
+
 /*
  * io_read_00x0
  * PIC provide POLL, IRR, ISR based on OCW3
@@ -341,38 +361,48 @@ static C_VOID io_write_00A1(t_port *port, type_unsigned_16 port_id, C_VOID *owne
  * Puts C_INT request into IRR
  * Called by C_INT request sender of devices, e.g. vpitIntTick
  */
-C_VOID core_machine_pic_set_irq(t_pic *master, t_pic *slave, type_unsigned_8 irq_id) {
-    if (master == STD_NULL) return;
-    switch (irq_id) {
-    case 0x00:
-    case 0x01:
-    case 0x03:
-    case 0x04:
-    case 0x05:
-    case 0x06:
-    case 0x07:
-        TYPE_SET_BIT(master->data.irr, VPIC_IRR_IRQ(irq_id));
-        break;
-    case 0x08:
-    case 0x09:
-    case 0x0a:
-    case 0x0b:
-    case 0x0c:
-    case 0x0d:
-    case 0x0e:
-    case 0x0f:
-        if (slave == STD_NULL) return;
-        TYPE_SET_BIT(master->data.irr, VPIC_IRR_IRQ(0x02));
-        TYPE_SET_BIT(slave->data.irr, VPIC_IRR_IRQ(irq_id - 0x08));
-        break;
-    case 0x02:
-    default:
-        break;
+C_VOID core_machine_pic_irq_source_bind(core_machine_pic_irq_source *source,
+    t_pic *master, t_pic *slave, type_unsigned_8 irq_id)
+{
+    if (source == STD_NULL || master == STD_NULL || slave == STD_NULL ||
+        irq_id >= 16u || irq_id == 2u) return;
+    STD_MEMSET(source, TYPE_ZERO_8, sizeof(*source));
+    source->master = master;
+    source->slave = slave;
+    source->irq = irq_id;
+}
+
+C_VOID core_machine_pic_irq_source_assert(core_machine_pic_irq_source *source)
+{
+    t_pic *controller;
+    type_unsigned_8 line;
+
+    if (source == STD_NULL || source->asserted) return;
+    controller = core_machine_pic_irq_source_controller(source, &line);
+    if (controller == STD_NULL) return;
+    source->asserted = TYPE_TRUE;
+    if (controller->data.asserted[line] != 0xffu) ++controller->data.asserted[line];
+    TYPE_SET_BIT(controller->data.irr, VPIC_IRR_IRQ(line));
+}
+
+C_VOID core_machine_pic_irq_source_deassert(core_machine_pic_irq_source *source)
+{
+    t_pic *controller;
+    type_unsigned_8 line;
+
+    if (source == STD_NULL || !source->asserted) return;
+    controller = core_machine_pic_irq_source_controller(source, &line);
+    source->asserted = TYPE_FALSE;
+    if (controller == STD_NULL || controller->data.asserted[line] == 0u) return;
+    --controller->data.asserted[line];
+    if (core_machine_pic_is_level(controller) && controller->data.asserted[line] == 0u) {
+        TYPE_CLEAR_BIT(controller->data.irr, VPIC_IRR_IRQ(line));
     }
 }
 
 C_VOID core_machine_pic_timer_output(C_VOID *owner) {
-    core_machine_pic_set_irq((t_pic *)owner, STD_NULL, 0x00);
+    core_machine_pic_irq_source_assert((core_machine_pic_irq_source *)owner);
+    core_machine_pic_irq_source_deassert((core_machine_pic_irq_source *)owner);
 }
 
 type_bool core_machine_pic_scan_interrupt(t_pic *master, t_pic *slave) {
@@ -425,7 +455,22 @@ C_VOID core_machine_pic_reset(t_pic *master, t_pic *slave) {
     master->data.ocw3 = slave->data.ocw3 = VPIC_OCW3_RR;
 }
 C_VOID core_machine_pic_refresh(t_pic *master, t_pic *slave) {
+    type_unsigned_8 id;
     if (master == STD_NULL || slave == STD_NULL) return;
+    if (core_machine_pic_is_level(master)) {
+        for (id = 0u; id < VPIC_MAX_IRQ_COUNT; ++id) {
+            if (master->data.asserted[id] != 0u) {
+                TYPE_SET_BIT(master->data.irr, VPIC_IRR_IRQ(id));
+            }
+        }
+    }
+    if (core_machine_pic_is_level(slave)) {
+        for (id = 0u; id < VPIC_MAX_IRQ_COUNT; ++id) {
+            if (slave->data.asserted[id] != 0u) {
+                TYPE_SET_BIT(slave->data.irr, VPIC_IRR_IRQ(id));
+            }
+        }
+    }
     if (slave->data.irr & (~slave->data.imr)) {
         /* if slave pic has requested C_INT, then
          * pass the request into IR2 of master pic */
