@@ -87,4 +87,22 @@ normal 70h/71h port client and are regression-protected, not redesigned.
 
 ## S3: Verification And Closure
 
-**Status:** Active.
+**Status:** Complete.
+
+The focused port smoke covers deterministic second progression, BCD/binary and
+12/24-hour conversion, SET freeze, periodic/update/alarm flags, the IRQ8
+slave cascade, read-C acknowledgement, and cold-reset NVRAM retention. The
+boundary gate rejects host-clock calls and requires the elapsed-tick, profile
+binding, and PIC-source route.
+
+`current-gates-gcc` passed with **67/67** current CTest smoke tests, including
+FDD/HDD boot, DOS prompt, timer firmware, keyboard, MEM, CGA, Console, and
+debugger coverage. The retained RAM closure emits its pre-existing CMake dev
+warning for an invalid regular-expression escape but passes; it is outside
+this task's RTC scope.
+
+Artifact: `build/output/nxvm_0_5_0232.exe`
+
+SHA-256: `B3BDABEEA31E4F61063447905259286AD374EB2661CE7492D21030F58EA7E37B`
+
+Source commit: `8f90a92`

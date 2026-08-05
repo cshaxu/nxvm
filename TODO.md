@@ -52,9 +52,10 @@ These are the next owned admissions, not permission to work in parallel.
   files are validated backends, not controller shortcuts. Deferred separately:
   multi-drive mechanics, rotation latency, deleted/scan/read-track commands,
   and arbitrary FDC configuration.
-- [ ] **CMOS/RTC admission (`TODO(Medium)`, T232).** Add owned RTC register,
-  periodic/update/alarm IRQ8, NVRAM, and deterministic-time semantics. Host
-  time may be a provider, never a guest-state shortcut.
+- [x] **CMOS/RTC admission (`TODO(Medium)`, T232).** The admitted MC146818
+  subset has owned registers/NVRAM, periodic/update/exact-alarm IRQ8, and
+  deterministic elapsed-tick time. Deferred: persistent battery files,
+  square-wave output, don't-care alarms, and broader RTC services.
 - [ ] **ATA PIO feature matrix (`TODO(Medium)`, T233).** Extend the admitted
   primary master controller only through explicit probes for LBA, slave/
   secondary channel, reset, status, and error timing. Do not admit IDE DMA or

@@ -63,7 +63,7 @@ device implementation begins.
 | Task | Dependencies | Deliverable and exit condition |
 | --- | --- | --- |
 | T231 | T216, T219, T230 | **Complete.** VM-owned bounded FDC/FDD command/result state machine: media change, DOR motor/select state, 500/250 kbit CCR admission, errors, non-DMA, DMA format IDs, DMA2 byte cadence, and IRQ6/SENSE-INTERRUPT completion. Image files remain validated backends; multi-drive mechanics, rotation latency, deleted/scan/read-track commands, and arbitrary FDC configuration remain deferred. |
-| T232 | T216, T219 | Define and implement CMOS/RTC register, periodic/update/alarm IRQ8, NVRAM, and deterministic-time semantics. Host time is only a provider and cannot bypass guest register state. |
+| T232 | T216, T219 | **Complete.** VM-owned MC146818 RTC/NVRAM subset with profile-bound 70h/71h + IRQ8, deterministic elapsed-tick progression, BCD/binary and 12/24-hour conversion, SET, periodic/update/exact-alarm flags, and read-C acknowledgement. Host time cannot bypass guest register state; persistent battery files, square-wave output, don't-care alarms, and broader RTC services remain deferred. |
 | T233 | T213, T216, T219 | Extend the existing VM-owned ATA PIO controller through an explicit feature matrix: LBA, slave/secondary channel, reset and status/error timing. DMA is not admitted; file images never substitute for controller behavior. |
 
 ## EGA/VGA And Deferred CPU/FPU
