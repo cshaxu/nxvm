@@ -70,11 +70,174 @@ clc                         \n\
 jmp near $(label_int_13_end)\n\
 \
 $(label_int_13_02):         \n\
-int f4 \n\
+; read AL CHS sectors through the primary ATA PIO channel \n\
+or al, al                   \n\
+jz $(label_int_13_02_fail)  \n\
+push ax                     \n\
+push bx                     \n\
+push cx                     \n\
+push dx                     \n\
+push si                     \n\
+push di                     \n\
+push es                     \n\
+mov si, ax                  \n\
+mov di, bx                  \n\
+mov dx, 01f2                \n\
+mov ax, si                  \n\
+out dx, al                  \n\
+inc dx                      \n\
+mov al, cl                  \n\
+and al, 3f                  \n\
+out dx, al                  \n\
+inc dx                      \n\
+mov al, ch                  \n\
+out dx, al                  \n\
+inc dx                      \n\
+mov al, cl                  \n\
+shr al, 01                  \n\
+shr al, 01                  \n\
+shr al, 01                  \n\
+shr al, 01                  \n\
+shr al, 01                  \n\
+shr al, 01                  \n\
+out dx, al                  \n\
+inc dx                      \n\
+mov al, dh                  \n\
+out dx, al                  \n\
+inc dx                      \n\
+mov al, 20                  \n\
+out dx, al                  \n\
+in al, dx                   \n\
+test al, 01                 \n\
+jnz $(label_int_13_02_pop_fail) \n\
+test al, 08                 \n\
+jz $(label_int_13_02_pop_fail) \n\
+mov cx, si                  \n\
+and cx, 00ff                \n\
+shl cx, 01                  \n\
+shl cx, 01                  \n\
+shl cx, 01                  \n\
+shl cx, 01                  \n\
+shl cx, 01                  \n\
+shl cx, 01                  \n\
+shl cx, 01                  \n\
+shl cx, 01                  \n\
+mov dx, 01f0                \n\
+$(label_int_13_02_data):    \n\
+in ax, dx                   \n\
+stosw                       \n\
+loop $(label_int_13_02_data)\n\
+mov dx, 01f7                \n\
+in al, dx                   \n\
+pop es                      \n\
+pop di                      \n\
+pop si                      \n\
+pop dx                      \n\
+pop cx                      \n\
+pop bx                      \n\
+pop ax                      \n\
+mov ah, 00                  \n\
+clc                         \n\
+jmp near $(label_int_13_end)\n\
+$(label_int_13_02_pop_fail):\n\
+pop es                      \n\
+pop di                      \n\
+pop si                      \n\
+pop dx                      \n\
+pop cx                      \n\
+pop bx                      \n\
+pop ax                      \n\
+$(label_int_13_02_fail):    \n\
+mov ah, 04                  \n\
+stc                         \n\
 jmp near $(label_int_13_end)\n\
 \
 $(label_int_13_03):         \n\
-int f5 \n\
+; write AL CHS sectors through the primary ATA PIO channel \n\
+or al, al                   \n\
+jz $(label_int_13_03_fail)  \n\
+push ax                     \n\
+push bx                     \n\
+push cx                     \n\
+push dx                     \n\
+push si                     \n\
+push di                     \n\
+push ds                     \n\
+push es                     \n\
+mov di, ax                  \n\
+mov si, bx                  \n\
+mov ax, es                  \n\
+mov ds, ax                  \n\
+mov dx, 01f2                \n\
+mov ax, di                  \n\
+out dx, al                  \n\
+inc dx                      \n\
+mov al, cl                  \n\
+and al, 3f                  \n\
+out dx, al                  \n\
+inc dx                      \n\
+mov al, ch                  \n\
+out dx, al                  \n\
+inc dx                      \n\
+mov al, cl                  \n\
+shr al, 01                  \n\
+shr al, 01                  \n\
+shr al, 01                  \n\
+shr al, 01                  \n\
+shr al, 01                  \n\
+shr al, 01                  \n\
+out dx, al                  \n\
+inc dx                      \n\
+mov al, dh                  \n\
+out dx, al                  \n\
+inc dx                      \n\
+mov al, 30                  \n\
+out dx, al                  \n\
+in al, dx                   \n\
+test al, 01                 \n\
+jnz $(label_int_13_03_pop_fail) \n\
+test al, 08                 \n\
+jz $(label_int_13_03_pop_fail) \n\
+mov cx, di                  \n\
+and cx, 00ff                \n\
+shl cx, 01                  \n\
+shl cx, 01                  \n\
+shl cx, 01                  \n\
+shl cx, 01                  \n\
+shl cx, 01                  \n\
+shl cx, 01                  \n\
+shl cx, 01                  \n\
+shl cx, 01                  \n\
+mov dx, 01f0                \n\
+$(label_int_13_03_data):    \n\
+lodsw                       \n\
+out dx, ax                  \n\
+loop $(label_int_13_03_data)\n\
+mov dx, 01f7                \n\
+in al, dx                   \n\
+pop es                      \n\
+pop ds                      \n\
+pop di                      \n\
+pop si                      \n\
+pop dx                      \n\
+pop cx                      \n\
+pop bx                      \n\
+pop ax                      \n\
+mov ah, 00                  \n\
+clc                         \n\
+jmp near $(label_int_13_end)\n\
+$(label_int_13_03_pop_fail):\n\
+pop es                      \n\
+pop ds                      \n\
+pop di                      \n\
+pop si                      \n\
+pop dx                      \n\
+pop cx                      \n\
+pop bx                      \n\
+pop ax                      \n\
+$(label_int_13_03_fail):    \n\
+mov ah, 04                  \n\
+stc                         \n\
 jmp near $(label_int_13_end)\n\
 \
 $(label_int_13_08):         \n\

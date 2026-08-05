@@ -1,30 +1,153 @@
 #include "type.h"
 
+#include "core/machine/machine_interface.h"
+#include "vm/composition/session/session.h"
+#include "vm/machine/hdc.h"
 #include "vm/profile/default_profile/pc_at_profile.h"
 
-C_INT main(C_VOID)
+#define HDC_DATA_PORT 0x01f0u
+#define HDC_ERROR_PORT 0x01f1u
+#define HDC_SECTOR_COUNT_PORT 0x01f2u
+#define HDC_SECTOR_NUMBER_PORT 0x01f3u
+#define HDC_CYLINDER_LOW_PORT 0x01f4u
+#define HDC_CYLINDER_HIGH_PORT 0x01f5u
+#define HDC_DRIVE_HEAD_PORT 0x01f6u
+#define HDC_STATUS_COMMAND_PORT 0x01f7u
+#define HDC_ALT_STATUS_CONTROL_PORT 0x03f6u
+
+static C_INT vm_hdc_write(core_machine *machine, uint16_t port, uint32_t value)
+{
+    return core_machine_bus_write(machine, port, value) == TYPE_STATUS_OK;
+}
+
+static C_INT vm_hdc_read(core_machine *machine, uint16_t port, uint32_t *value)
+{
+    return core_machine_bus_read(machine, port, value) == TYPE_STATUS_OK;
+}
+
+static C_INT vm_hdc_program_chs(vm_session *session)
+{
+    return vm_hdc_write(session->core_machine, HDC_SECTOR_COUNT_PORT, 1u) &&
+        vm_hdc_write(session->core_machine, HDC_SECTOR_NUMBER_PORT, 1u) &&
+        vm_hdc_write(session->core_machine, HDC_CYLINDER_LOW_PORT, 0u) &&
+        vm_hdc_write(session->core_machine, HDC_CYLINDER_HIGH_PORT, 0u) &&
+        vm_hdc_write(session->core_machine, HDC_DRIVE_HEAD_PORT, 0u);
+}
+
+static C_INT vm_hdc_drain_data(core_machine *machine, uint16_t *first_word)
+{
+    STD_SIZE_T index;
+    uint32_t value;
+
+    for (index = 0u; index < 256u; ++index) {
+        if (!vm_hdc_read(machine, HDC_DATA_PORT, &value)) return 0;
+        if (index == 0u && first_word != STD_NULL) *first_word = (uint16_t)value;
+    }
+    return 1;
+}
+
+static C_INT vm_hdc_fill_data(core_machine *machine, uint16_t first_word)
+{
+    STD_SIZE_T index;
+
+    for (index = 0u; index < 256u; ++index) {
+        if (!vm_hdc_write(machine, HDC_DATA_PORT,
+                index == 0u ? first_word : 0u)) return 0;
+    }
+    return 1;
+}
+
+static C_INT vm_hdc_profile_contract_is_valid(C_VOID)
 {
     const vm_profile_default_pc_at_descriptor *profile =
         vm_profile_default_pc_at_descriptor_get();
     const vm_profile_default_pc_at_hdc_pio *hdc;
 
-    if (profile == STD_NULL) return 1;
+    if (profile == STD_NULL) return 0;
     hdc = &profile->hdc_pio;
-    if (hdc->data_port != 0x01f0u || hdc->error_features_port != 0x01f1u ||
-        hdc->sector_count_port != 0x01f2u ||
-        hdc->sector_number_port != 0x01f3u ||
-        hdc->cylinder_low_port != 0x01f4u ||
-        hdc->cylinder_high_port != 0x01f5u ||
-        hdc->drive_head_port != 0x01f6u ||
-        hdc->status_command_port != 0x01f7u ||
-        hdc->alternate_status_device_control_port != 0x03f6u ||
-        hdc->irq != 14u ||
-        hdc->dma_channel != VM_PROFILE_DEFAULT_PC_AT_NO_DMA_CHANNEL ||
-        hdc->data_width_bits != 16u || hdc->register_width_bits != 8u) {
-        return 1;
+    return hdc->data_port == HDC_DATA_PORT &&
+        hdc->error_features_port == HDC_ERROR_PORT &&
+        hdc->sector_count_port == HDC_SECTOR_COUNT_PORT &&
+        hdc->sector_number_port == HDC_SECTOR_NUMBER_PORT &&
+        hdc->cylinder_low_port == HDC_CYLINDER_LOW_PORT &&
+        hdc->cylinder_high_port == HDC_CYLINDER_HIGH_PORT &&
+        hdc->drive_head_port == HDC_DRIVE_HEAD_PORT &&
+        hdc->status_command_port == HDC_STATUS_COMMAND_PORT &&
+        hdc->alternate_status_device_control_port == HDC_ALT_STATUS_CONTROL_PORT &&
+        hdc->irq == 14u &&
+        hdc->dma_channel == VM_PROFILE_DEFAULT_PC_AT_NO_DMA_CHANNEL &&
+        hdc->data_width_bits == 16u && hdc->register_width_bits == 8u;
+}
+
+C_INT main(C_VOID)
+{
+    vm_session_config config = {0};
+    vm_session *session = STD_NULL;
+    vm_session *no_media = STD_NULL;
+    uint32_t value;
+    uint16_t word = 0u;
+    C_INT failed = 0;
+
+    config.create_hdd_cylinders = 1u;
+    if (!vm_hdc_profile_contract_is_valid() ||
+        vm_session_create(&config, &session) != TYPE_STATUS_OK ||
+        session == STD_NULL || session->core_machine == STD_NULL) goto fail;
+    if (session->block_provider.context != &session->hdc ||
+        session->block_provider.geometry_provider == STD_NULL ||
+        session->block_provider.read_provider != STD_NULL ||
+        session->block_provider.write_provider != STD_NULL ||
+        session->hdc.connect.pic_master == STD_NULL ||
+        session->hdc.connect.pic_slave == STD_NULL ||
+        !vm_hdc_write(session->core_machine, HDC_STATUS_COMMAND_PORT, 0xecu) ||
+        !vm_hdc_read(session->core_machine, HDC_ALT_STATUS_CONTROL_PORT, &value) ||
+        value != (VM_MACHINE_HDC_STATUS_DRDY | VM_MACHINE_HDC_STATUS_DSC |
+            VM_MACHINE_HDC_STATUS_DRQ) || !vm_machine_hdc_irq_pending(&session->hdc) ||
+        !vm_hdc_read(session->core_machine, HDC_STATUS_COMMAND_PORT, &value) ||
+        vm_machine_hdc_irq_pending(&session->hdc) ||
+        !vm_hdc_drain_data(session->core_machine, &word) || word != 0x0040u ||
+        !vm_hdc_read(session->core_machine, HDC_STATUS_COMMAND_PORT, &value) ||
+        value != (VM_MACHINE_HDC_STATUS_DRDY | VM_MACHINE_HDC_STATUS_DSC) ||
+        !vm_hdc_program_chs(session) ||
+        !vm_hdc_write(session->core_machine, HDC_STATUS_COMMAND_PORT, 0x30u) ||
+        !vm_hdc_read(session->core_machine, HDC_STATUS_COMMAND_PORT, &value) ||
+        value != (VM_MACHINE_HDC_STATUS_DRDY | VM_MACHINE_HDC_STATUS_DSC |
+            VM_MACHINE_HDC_STATUS_DRQ) ||
+        !vm_hdc_fill_data(session->core_machine, 0xa55au) ||
+        !vm_hdc_read(session->core_machine, HDC_STATUS_COMMAND_PORT, &value) ||
+        value != (VM_MACHINE_HDC_STATUS_DRDY | VM_MACHINE_HDC_STATUS_DSC) ||
+        !vm_hdc_program_chs(session) ||
+        !vm_hdc_write(session->core_machine, HDC_STATUS_COMMAND_PORT, 0x20u) ||
+        !vm_hdc_drain_data(session->core_machine, &word) || word != 0xa55au ||
+        !vm_hdc_write(session->core_machine, HDC_STATUS_COMMAND_PORT, 0x99u) ||
+        !vm_hdc_read(session->core_machine, HDC_STATUS_COMMAND_PORT, &value) ||
+        value != (VM_MACHINE_HDC_STATUS_DRDY | VM_MACHINE_HDC_STATUS_ERR) ||
+        !vm_hdc_read(session->core_machine, HDC_ERROR_PORT, &value) ||
+        value != VM_MACHINE_HDC_ERROR_ABORT ||
+        !vm_hdc_write(session->core_machine, HDC_ALT_STATUS_CONTROL_PORT, 0x04u) ||
+        !vm_hdc_read(session->core_machine, HDC_STATUS_COMMAND_PORT, &value) ||
+        value != (VM_MACHINE_HDC_STATUS_DRDY | VM_MACHINE_HDC_STATUS_DSC)) {
+        failed = 1;
     }
-    STD_PRINTF("M5:T213:S1:HDC:PORT:OK data=%04X status=%04X alt=%04X irq=%u dma=none\n",
-        hdc->data_port, hdc->status_command_port,
-        hdc->alternate_status_device_control_port, (C_UINT)hdc->irq);
+    vm_session_destroy(session);
+    session = STD_NULL;
+
+    if (failed || vm_session_create(STD_NULL, &no_media) != TYPE_STATUS_OK ||
+        no_media == STD_NULL || !vm_hdc_program_chs(no_media) ||
+        !vm_hdc_write(no_media->core_machine, HDC_STATUS_COMMAND_PORT, 0x20u) ||
+        !vm_hdc_read(no_media->core_machine, HDC_STATUS_COMMAND_PORT, &value) ||
+        value != (VM_MACHINE_HDC_STATUS_DRDY | VM_MACHINE_HDC_STATUS_ERR) ||
+        !vm_hdc_read(no_media->core_machine, HDC_ERROR_PORT, &value) ||
+        value != VM_MACHINE_HDC_ERROR_ABORT) {
+        failed = 1;
+    }
+    vm_session_destroy(no_media);
+    if (failed) return 1;
+    STD_PRINTF("M5:T213:S2:HDC:PORT:OK identify=%04X pio=%04X irq=14\n",
+        0x0040u, 0xa55au);
     return 0;
+
+fail:
+    vm_session_destroy(session);
+    vm_session_destroy(no_media);
+    return 1;
 }

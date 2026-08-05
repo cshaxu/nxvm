@@ -24,8 +24,6 @@ The default PC/AT profile uses only these internal ROM portals:
 | `INT F1h` | BIOS IRQ1 keyboard translation |
 | `INT F2h` | BIOS `INT 10h` text service |
 | `INT F3h` | BIOS `INT 16h` keyboard service |
-| `INT F4h` | HDD sector read helper |
-| `INT F5h` | HDD sector write helper |
 
 These are not guest APIs, CPU instructions, IVT overrides, host shortcuts, or
 an external-ROM contract. The provider receives the profile-owned context
@@ -35,8 +33,9 @@ firmware/device bindings. Core fixes lookup, conflict rejection, origin check,
 freeze, and fall-through semantics; profiles only register handlers.
 
 This table records the T209 completion state. Successor tasks retired F1/F3
-(T210) and F0 (T211); the current default profile retains only F2/F4/F5 pending
-their separately admitted video and HDD work.
+(T210), F0 (T211), F2 (T212), and F4/F5 (T213). The generic, frozen firmware
+interrupt registry remains a core capability, but the default PC/AT profile no
+longer registers a private `F0h`--`F5h` service.
 
 ## Breakdown
 

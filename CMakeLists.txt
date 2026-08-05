@@ -75,7 +75,9 @@ add_executable(vm-default-pc-at-profile-smoke
     tests/firmware/default_pc_at_profile_smoke.c)
 target_link_libraries(vm-default-pc-at-profile-smoke PRIVATE vm-profile)
 add_executable(vm-hdc-port-smoke tests/machine/vm_hdc_port_smoke.c)
-target_link_libraries(vm-hdc-port-smoke PRIVATE vm-profile)
+target_link_libraries(vm-hdc-port-smoke PRIVATE vm-composition)
+add_executable(vm-hdc-hdd-boot-smoke tests/machine/vm_hdc_hdd_boot_smoke.c)
+target_link_libraries(vm-hdc-hdd-boot-smoke PRIVATE vm-composition)
 add_executable(vm-default-pc-at-apply-smoke
     tests/machine/vm_default_pc_at_apply_smoke.c)
 target_link_libraries(vm-default-pc-at-apply-smoke PRIVATE vm-composition)
@@ -149,6 +151,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(vm-default-profile-firmware-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-default-pc-at-profile-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-hdc-port-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(vm-hdc-hdd-boot-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-default-pc-at-apply-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-product-default-profile-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-product-console-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -199,9 +202,7 @@ set(VM_PROFILE_SOURCES
     src/vm/profile/default_profile/firmware/default_profile.c
     src/vm/profile/default_profile/firmware/bios.c
     src/vm/profile/default_profile/firmware/qdcga.c
-    src/vm/profile/default_profile/firmware/qddisk.c
     src/vm/profile/default_profile/firmware/qdkeyb.c
-    src/vm/profile/default_profile/firmware/firmware_portal.c
 )
 
 set(VM_RUNTIME_SOURCES
@@ -237,6 +238,7 @@ set(VM_COMPOSITION_SOURCES
 set(VM_MACHINE_SOURCES
     src/vm/machine/fdd.c
     src/vm/machine/hdd.c
+    src/vm/machine/hdc.c
     src/vm/machine/fdc.c
     src/vm/machine/cmos.c
     src/vm/machine/debug.c
@@ -616,8 +618,6 @@ add_executable(vm-keyboard-provider-isolation-smoke
     tests/machine/vm_keyboard_provider_isolation_smoke.c)
 target_link_libraries(vm-keyboard-provider-isolation-smoke PRIVATE
     vm-composition)
-add_executable(vm-disk-firmware-smoke tests/machine/vm_disk_firmware_smoke.c)
-target_link_libraries(vm-disk-firmware-smoke PRIVATE vm-composition)
 add_executable(vm-debug-authority-smoke tests/machine/vm_debug_authority_smoke.c)
 target_link_libraries(vm-debug-authority-smoke PRIVATE vm-composition)
 add_executable(vm-dos-prompt-smoke
@@ -762,6 +762,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     vm-dos-keyboard-smoke
     vm-dos-mem-fault-smoke
     vm-no-media-video-port-smoke
+    vm-hdc-hdd-boot-smoke
     vm-runner-display-cadence-smoke
     vm-debug-pause-boundary-smoke
     vm-unified-debug-backend-smoke
@@ -784,8 +785,10 @@ set(PROJECT_CURRENT_FDD_SMOKE_TARGETS
     vm-debug-pause-boundary-smoke
     vm-unified-debug-backend-smoke)
 set(PROJECT_CURRENT_FDD_HDD_SMOKE_TARGET vm-product-session-smoke)
+set(PROJECT_CURRENT_HDD_SMOKE_TARGETS vm-hdc-hdd-boot-smoke)
 set(PROJECT_CURRENT_MEDIA_SMOKE_TARGETS
     ${PROJECT_CURRENT_FDD_SMOKE_TARGETS}
+    ${PROJECT_CURRENT_HDD_SMOKE_TARGETS}
     ${PROJECT_CURRENT_FDD_HDD_SMOKE_TARGET})
 set(PROJECT_FDD_SMOKE_IMAGE "${CMAKE_SOURCE_DIR}/../fdd.img" CACHE FILEPATH
     "Owner-provided FDD image for current runtime smoke coverage")
@@ -811,6 +814,9 @@ endforeach()
 
 foreach(target IN LISTS PROJECT_CURRENT_FDD_SMOKE_TARGETS)
     project_add_current_smoke_test(${target} "${PROJECT_FDD_SMOKE_IMAGE}")
+endforeach()
+foreach(target IN LISTS PROJECT_CURRENT_HDD_SMOKE_TARGETS)
+    project_add_current_smoke_test(${target} "${PROJECT_HDD_SMOKE_IMAGE}")
 endforeach()
 project_add_current_smoke_test(${PROJECT_CURRENT_FDD_HDD_SMOKE_TARGET}
     "${PROJECT_FDD_SMOKE_IMAGE}" "${PROJECT_HDD_SMOKE_IMAGE}")
@@ -858,7 +864,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0212 "0.5.0212")
+add_current_vm_artifact(vm-0-5-0213 "0.5.0213")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 
@@ -1038,6 +1044,13 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMENT "Verifying M5 T211 boot-failure portal retirement"
         VERBATIM)
     add_dependencies(run-current-smokes verify-boot-failure-portal-closure)
+
+    add_custom_target(verify-hdc-portal-closure
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_hdc_portal_closure.cmake"
+        COMMENT "Verifying M5 T213 HDC portal retirement"
+        VERBATIM)
+    add_dependencies(run-current-smokes verify-hdc-portal-closure)
 endif()
 
 if(PROJECT_ENABLE_BOCHX_RESEARCH)

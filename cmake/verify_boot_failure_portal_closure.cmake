@@ -4,18 +4,18 @@ endif()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/profile/default_profile/firmware/bios.h"
     bios_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/profile/default_profile/firmware/firmware_portal.h"
-    portal_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/profile/default_profile/firmware/firmware_portal.c"
-    portal_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/composition/session/runner.c"
     runner_source)
 
-foreach(source IN ITEMS "${bios_header}" "${portal_header}" "${portal_source}")
+file(GLOB_RECURSE firmware_sources
+    "${PROJECT_SOURCE_DIR}/src/vm/profile/default_profile/firmware/*.c"
+    "${PROJECT_SOURCE_DIR}/src/vm/profile/default_profile/firmware/*.h")
+foreach(source IN LISTS firmware_sources)
+    file(READ "${source}" source_text)
     foreach(forbidden "int f0" "PORTAL_STOP")
-        string(FIND "${source}" "${forbidden}" position)
+        string(FIND "${source_text}" "${forbidden}" position)
         if(NOT position EQUAL -1)
-            message(FATAL_ERROR "T211 boot-failure portal residue: ${forbidden}")
+            message(FATAL_ERROR "T211 boot-failure portal residue: ${source}")
         endif()
     endforeach()
 endforeach()
