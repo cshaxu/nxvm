@@ -2,11 +2,16 @@
 
 ## Current Work
 
-**M5 T219 S3 active:** record the verified developer artifact for the single
-core elapsed-tick scheduler before evolving PIT, VADP, DMA, or RTC timing
-behavior. See [the task
-record](m5-t219-elapsed-tick-scheduler.md) and the authoritative
+**M5 T220 S1 active:** define a core VADP text-raster contract for `3DAh`
+display-enable and vertical-retrace observations derived only from elapsed
+ticks. See [the task record](m5-t220-cga-text-raster.md) and the authoritative
 [PC/AT hardware queue](m5-pcat-hardware-convergence.md).
+
+**M5 T219 complete:** `core_machine_run()` is the sole elapsed-tick scheduler;
+after each completed instruction it advances DMA, PIT, VADP, then PIC visibility
+in a fixed order. No budget-exhausted or faulting instruction advances time.
+Focused probes and the 55/55 current CTest matrix pass. See [the task
+record](m5-t219-elapsed-tick-scheduler.md).
 
 **M5 T217 complete:** `core_machine` solely owns elapsed guest ticks and the
 frozen per-instruction clock parameter; run budgets, reset origin, result, and
