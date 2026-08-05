@@ -618,6 +618,18 @@ add_executable(core-machine-vadp-text-smoke
     tests/machine/core_machine_vadp_text_smoke.c
 )
 target_link_libraries(core-machine-vadp-text-smoke PRIVATE core-machine)
+add_executable(core-machine-cga-graphics-port-smoke
+    tests/machine/core_machine_cga_graphics_port_smoke.c
+)
+target_link_libraries(core-machine-cga-graphics-port-smoke PRIVATE core-machine)
+add_executable(vm-cga-graphics-system-smoke
+    tests/machine/vm_cga_graphics_system_smoke.c
+)
+target_link_libraries(vm-cga-graphics-system-smoke PRIVATE vm-composition)
+add_executable(vm-cga-graphics-dos-smoke
+    tests/machine/vm_cga_graphics_dos_smoke.c
+)
+target_link_libraries(vm-cga-graphics-dos-smoke PRIVATE vm-composition)
 
 add_executable(vm-cmos-authority-smoke tests/machine/vm_cmos_authority_smoke.c)
 target_link_libraries(vm-cmos-authority-smoke PRIVATE vm-composition)
@@ -774,6 +786,8 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-kbc-controller-smoke
     vm-keyboard-set1-mapper-smoke
     core-machine-vadp-text-smoke
+    core-machine-cga-graphics-port-smoke
+    vm-cga-graphics-system-smoke
     core-machine-stopped-lifecycle-smoke
     core-machine-memory-reconfigure-smoke
     core-machine-int-ivt-smoke
@@ -817,6 +831,7 @@ set(PROJECT_CURRENT_FDD_SMOKE_TARGETS
     vm-dos-keyboard-smoke
     vm-dos-mem-fault-smoke
     vm-dos-video-port-smoke
+    vm-cga-graphics-dos-smoke
     vm-debug-pause-boundary-smoke
     vm-unified-debug-backend-smoke)
 set(PROJECT_CURRENT_FDD_HDD_SMOKE_TARGET vm-product-session-smoke)
@@ -899,7 +914,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0227 "0.5.0227")
+add_current_vm_artifact(vm-0-5-0228 "0.5.0228")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 

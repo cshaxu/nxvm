@@ -165,12 +165,17 @@ C_VOID vm_session_resume(vm_session *machine) {
     if (vm_session_control_is_paused(&machine->control)) {
         vm_session_control_continue(&machine->control);
     } else {
-        if (vm_platform_start(&machine->platform_run_context,
-                &machine->platform_run_handle) != TYPE_STATUS_OK) return;
-        if (!vm_platform_run_handle_is_window_display(&machine->platform_run_handle)) {
+        do {
+            if (vm_platform_start(&machine->platform_run_context,
+                    &machine->platform_run_handle) != TYPE_STATUS_OK) return;
+            if (vm_platform_run_handle_is_window_display(
+                    &machine->platform_run_handle)) {
+                break;
+            }
             vm_platform_run_handle_join(&machine->platform_run_handle);
             vm_platform_run_handle_finalize(&machine->platform_run_handle);
-        }
+        } while (vm_platform_run_context_take_auto_promotion(
+            &machine->platform_run_context));
     }
 }
 

@@ -332,12 +332,13 @@ milestone.
   color, stable `0x3da`, B8000 visible-window capture, dirty generation, and
   copied text scanout into core VADP. QDCGA remains INT 10h/BDA firmware; no
   profile VADP alias or platform guest-memory access remains.
-- [ ] **CGA `320x200x4` graphics admission (`TODO(Medium)`).** T193 S3
-  deliberately defers graphics: define B8000 graphics addressing and scanline
-  layout, exact `0x3d8`/`0x3d9` mode/color/palette behavior, a copied pixel
-  scanout payload, port/memory/frame probes, and one owned DOS graphics
-  fixture before implementation. The current text slice keeps graphics-select
-  writes inert and text configuration rejects graphics modes.
+- [x] **CGA `320x200x4` graphics admission (`TODO(Medium)`).** M5 T228 owns
+  B8000 odd/even scanline addressing, the admitted `3D8h`/`3D9h` RGBI subset,
+  copied indexed-pixel frames, and Console/window/auto selection. The generated
+  guest system-image fixture exercises BIOS/FDC/CPU/port/VADP without protected
+  media, while the temporary-clone DOS fixture executes `CGAT228.COM` through
+  the retained KBC -> IRQ1 -> ROM -> DOS path. 640x200, composite artifact
+  color, EGA, VGA, and VBE remain out of scope.
 - [ ] **EGA/VGA register-family admission (`TODO(Medium)`).** Do not merge it
   with CGA graphics. Admit mapping windows, sequencer, graphics/attribute
   controller, DAC, and planar VRAM/latches as separate bounded work with real

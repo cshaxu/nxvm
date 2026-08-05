@@ -14,6 +14,12 @@ extern "C" {
 #include "vm/platform/input.h"
 #include "vm/platform/presentation_mailbox.h"
 
+typedef enum vm_platform_display_mode {
+    VM_PLATFORM_DISPLAY_CONSOLE,
+    VM_PLATFORM_DISPLAY_WINDOW,
+    VM_PLATFORM_DISPLAY_AUTO
+} vm_platform_display_mode;
+
 typedef struct vm_platform_run_context {
     const vm_platform_execution_transport *execution;
     const vm_platform_keyboard_transport *keyboard;
@@ -24,7 +30,9 @@ typedef struct vm_platform_run_context {
     C_VOID *console_renderer;
     C_VOID *window_renderer;
     uint64_t terminal_displayed_generation;
-    C_INT window_display;
+    vm_platform_display_mode display_mode;
+    C_INT auto_window_active;
+    C_INT auto_promotion_pending;
 } vm_platform_run_context;
 
 typedef enum vm_platform_run_event {
@@ -52,8 +60,16 @@ C_VOID vm_platform_run_context_initialize(
     const core_product_wait_scope *wait_scope);
 C_INT vm_platform_run_context_get_window_display(
     const vm_platform_run_context *context);
+C_INT vm_platform_run_context_get_display_mode(
+    const vm_platform_run_context *context);
+C_VOID vm_platform_run_context_set_display_mode(
+    vm_platform_run_context *context, vm_platform_display_mode mode);
 C_VOID vm_platform_run_context_set_window_display(
     vm_platform_run_context *context, C_INT enabled);
+C_INT vm_platform_run_context_request_graphics_promotion(
+    vm_platform_run_context *context);
+C_INT vm_platform_run_context_take_auto_promotion(
+    vm_platform_run_context *context);
 C_VOID vm_platform_run_handle_initialize(vm_platform_run_handle *handle);
 C_INT vm_platform_run_handle_is_active(const vm_platform_run_handle *handle);
 C_INT vm_platform_run_handle_is_window_display(

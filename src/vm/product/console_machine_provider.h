@@ -3,13 +3,17 @@
 
 #include "type.h"
 
-
+typedef enum vm_product_console_display_mode {
+    VM_PRODUCT_CONSOLE_DISPLAY_CONSOLE,
+    VM_PRODUCT_CONSOLE_DISPLAY_WINDOW,
+    VM_PRODUCT_CONSOLE_DISPLAY_AUTO
+} vm_product_console_display_mode;
 
 typedef struct vm_product_console_machine_provider {
     C_INT (*is_running)(C_VOID *context);
     C_VOID (*print_machine)(C_VOID *context);
-    C_INT (*get_window_display)(C_VOID *context);
-    C_VOID (*set_window_display)(C_VOID *context, C_INT enabled);
+    vm_product_console_display_mode (*get_display_mode)(C_VOID *context);
+    C_VOID (*set_display_mode)(C_VOID *context, vm_product_console_display_mode mode);
     C_VOID (*print_bios)(C_VOID *context);
     C_VOID (*print_status)(C_VOID *context);
     C_VOID (*debug)(C_VOID *context);

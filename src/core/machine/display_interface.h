@@ -7,10 +7,20 @@
 
 #define CORE_MACHINE_DISPLAY_MAX_COLUMNS 80u
 #define CORE_MACHINE_DISPLAY_MAX_ROWS 25u
+#define CORE_MACHINE_DISPLAY_GRAPHICS_WIDTH 320u
+#define CORE_MACHINE_DISPLAY_GRAPHICS_HEIGHT 200u
+#define CORE_MACHINE_DISPLAY_MAX_PIXELS \
+    (CORE_MACHINE_DISPLAY_GRAPHICS_WIDTH * CORE_MACHINE_DISPLAY_GRAPHICS_HEIGHT)
+
+typedef enum core_machine_display_kind {
+    CORE_MACHINE_DISPLAY_KIND_TEXT,
+    CORE_MACHINE_DISPLAY_KIND_CGA_320X200X4
+} core_machine_display_kind;
 
 typedef C_VOID (*core_machine_display_provider)(C_VOID *context);
 
 typedef struct core_machine_display_snapshot {
+    core_machine_display_kind kind;
     uint16_t columns;
     uint16_t rows;
     uint8_t cursor_top;
@@ -22,6 +32,10 @@ typedef struct core_machine_display_snapshot {
     C_INT cursor_changed;
     uint8_t characters[CORE_MACHINE_DISPLAY_MAX_COLUMNS * CORE_MACHINE_DISPLAY_MAX_ROWS];
     uint8_t attributes[CORE_MACHINE_DISPLAY_MAX_COLUMNS * CORE_MACHINE_DISPLAY_MAX_ROWS];
+    uint16_t pixel_width;
+    uint16_t pixel_height;
+    uint8_t pixels[CORE_MACHINE_DISPLAY_MAX_PIXELS];
+    uint32_t palette_rgb[4];
 } core_machine_display_snapshot;
 
 typedef C_INT (*core_machine_display_snapshot_provider)(C_VOID *context,

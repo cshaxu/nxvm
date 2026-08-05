@@ -24,6 +24,51 @@
 #define CORE_MACHINE_VADP_CRTC_START_LOW 0x0du
 #define CORE_MACHINE_VADP_CRTC_CURSOR_HIGH 0x0eu
 #define CORE_MACHINE_VADP_CRTC_CURSOR_LOW 0x0fu
+#define CORE_MACHINE_VADP_MODE_GRAPHICS 0x02u
+#define CORE_MACHINE_VADP_MODE_VIDEO_ENABLE 0x08u
+#define CORE_MACHINE_VADP_MODE_HIGH_RES 0x10u
+#define CORE_MACHINE_VADP_COLOR_PALETTE_SELECT 0x20u
+#define CORE_MACHINE_VADP_GRAPHICS_BYTES_PER_ROW 80u
+#define CORE_MACHINE_VADP_GRAPHICS_ODD_ROW_OFFSET 0x2000u
+
+static C_INT core_machine_vadp_is_graphics_mode(const t_vadp *adapter)
+{
+    return adapter != STD_NULL &&
+        (adapter->data.mode_control & (CORE_MACHINE_VADP_MODE_GRAPHICS |
+            CORE_MACHINE_VADP_MODE_HIGH_RES)) == CORE_MACHINE_VADP_MODE_GRAPHICS;
+}
+
+static uint32_t core_machine_vadp_rgbi_color(uint8_t index)
+{
+    static const uint32_t colors[16] = {
+        0x000000u, 0x0000aau, 0x00aa00u, 0x00aaaau,
+        0xaa0000u, 0xaa00aau, 0xaa5500u, 0xaaaaaau,
+        0x555555u, 0x5555ffu, 0x55ff55u, 0x55ffffu,
+        0xff5555u, 0xff55ffu, 0xffff55u, 0xffffffu
+    };
+
+    return colors[index & 0x0fu];
+}
+
+static C_VOID core_machine_vadp_graphics_palette(const t_vadp *adapter,
+    uint32_t palette[4])
+{
+    C_INT alternate;
+
+    if (adapter == STD_NULL || palette == STD_NULL) return;
+    alternate = (adapter->data.color_select &
+        CORE_MACHINE_VADP_COLOR_PALETTE_SELECT) != 0u;
+    palette[0] = core_machine_vadp_rgbi_color(adapter->data.color_select);
+    palette[1] = core_machine_vadp_rgbi_color(alternate ? 3u : 2u);
+    palette[2] = core_machine_vadp_rgbi_color(alternate ? 5u : 4u);
+    palette[3] = core_machine_vadp_rgbi_color(alternate ? 7u : 6u);
+    if ((adapter->data.mode_control & CORE_MACHINE_VADP_MODE_VIDEO_ENABLE) == 0u) {
+        palette[0] = 0u;
+        palette[1] = 0u;
+        palette[2] = 0u;
+        palette[3] = 0u;
+    }
+}
 
 static C_INT core_machine_vadp_supported_crtc_index(uint8_t index)
 {
@@ -146,8 +191,12 @@ static C_VOID core_machine_vadp_write_mode(t_port *port, type_unsigned_16 port_i
     (C_VOID)port_id;
     if (port == STD_NULL || adapter == STD_NULL) return;
     value = port->data.ioByte;
-    /* Graphics selection is deliberately inert in the text-only slice. */
-    if ((value & 0x02u) != 0u) return;
+    /* T228 admits only 320x200x4. 640x200 remains explicitly unsupported. */
+    if ((value & (CORE_MACHINE_VADP_MODE_GRAPHICS |
+        CORE_MACHINE_VADP_MODE_HIGH_RES)) ==
+        (CORE_MACHINE_VADP_MODE_GRAPHICS | CORE_MACHINE_VADP_MODE_HIGH_RES)) {
+        return;
+    }
     if (adapter->data.mode_control != value) {
         adapter->data.mode_control = value;
         adapter->data.columns = (value & 0x01u) != 0u ? 80u : 40u;
@@ -339,6 +388,7 @@ C_INT core_machine_vadp_capture_text_snapshot(t_vadp *adapter, t_ram *memory,
     if (adapter == STD_NULL || memory == STD_NULL || out_snapshot == STD_NULL ||
         adapter->data.columns == 0u || adapter->data.rows == 0u) return TYPE_FALSE;
     STD_MEMSET(out_snapshot, 0, sizeof(*out_snapshot));
+    out_snapshot->kind = CORE_MACHINE_DISPLAY_KIND_TEXT;
     start = core_machine_vadp_crtc_word(adapter, CORE_MACHINE_VADP_CRTC_START_HIGH);
     cursor = core_machine_vadp_crtc_word(adapter, CORE_MACHINE_VADP_CRTC_CURSOR_HIGH);
     visible_bytes = (STD_SIZE_T)adapter->data.columns * adapter->data.rows * 2u;
@@ -360,7 +410,8 @@ C_INT core_machine_vadp_capture_text_snapshot(t_vadp *adapter, t_ram *memory,
     out_snapshot->cursor_visible = out_snapshot->cursor_top < out_snapshot->cursor_bottom;
     out_snapshot->cursor_x = (uint8_t)((cursor - start) / adapter->data.columns);
     out_snapshot->cursor_y = (uint8_t)((cursor - start) % adapter->data.columns);
-    buffer_changed = !adapter->data.captured || STD_MEMCMP(adapter->data.text_cells,
+    buffer_changed = !adapter->data.captured || adapter->data.captured_kind !=
+        CORE_MACHINE_DISPLAY_KIND_TEXT || STD_MEMCMP(adapter->data.text_cells,
         cells, visible_bytes) != 0;
     if (buffer_changed) {
         STD_MEMCPY(adapter->data.text_cells, cells, visible_bytes);
@@ -389,7 +440,64 @@ C_INT core_machine_vadp_capture_text_snapshot(t_vadp *adapter, t_ram *memory,
     adapter->data.captured_cursor_bottom = out_snapshot->cursor_bottom;
     adapter->data.captured_cursor_address = cursor;
     adapter->data.captured = TYPE_TRUE;
+    adapter->data.captured_kind = CORE_MACHINE_DISPLAY_KIND_TEXT;
     out_snapshot->buffer_changed = buffer_changed;
     out_snapshot->cursor_changed = cursor_changed;
     return TYPE_TRUE;
+}
+
+static C_INT core_machine_vadp_capture_graphics_snapshot(t_vadp *adapter,
+    t_ram *memory, core_machine_display_snapshot *out_snapshot)
+{
+    uint8_t bytes[CORE_MACHINE_VADP_VIDEO_BYTES];
+    uint16_t y;
+    uint16_t x;
+    C_INT buffer_changed;
+
+    if (adapter == STD_NULL || memory == STD_NULL || out_snapshot == STD_NULL ||
+        !core_machine_vadp_is_graphics_mode(adapter)) {
+        return TYPE_FALSE;
+    }
+    if (core_machine_memory_read_physical(memory, CORE_MACHINE_VADP_VIDEO_BASE,
+            (type_virtual_address)bytes, sizeof(bytes)) != TYPE_STATUS_OK) {
+        return TYPE_FALSE;
+    }
+    buffer_changed = !adapter->data.captured || adapter->data.captured_kind !=
+        CORE_MACHINE_DISPLAY_KIND_CGA_320X200X4 ||
+        adapter->data.captured_mode_control != adapter->data.mode_control ||
+        adapter->data.captured_color_select != adapter->data.color_select || STD_MEMCMP(
+        adapter->data.graphics_bytes, bytes, sizeof(bytes)) != 0;
+    if (buffer_changed) {
+        STD_MEMCPY(adapter->data.graphics_bytes, bytes, sizeof(bytes));
+    }
+    STD_MEMSET(out_snapshot, 0, sizeof(*out_snapshot));
+    out_snapshot->kind = CORE_MACHINE_DISPLAY_KIND_CGA_320X200X4;
+    out_snapshot->pixel_width = CORE_MACHINE_DISPLAY_GRAPHICS_WIDTH;
+    out_snapshot->pixel_height = CORE_MACHINE_DISPLAY_GRAPHICS_HEIGHT;
+    core_machine_vadp_graphics_palette(adapter, out_snapshot->palette_rgb);
+    for (y = 0u; y < CORE_MACHINE_DISPLAY_GRAPHICS_HEIGHT; ++y) {
+        uint32_t row_offset = (uint32_t)(y & 1u) *
+            CORE_MACHINE_VADP_GRAPHICS_ODD_ROW_OFFSET + (uint32_t)(y >> 1) *
+            CORE_MACHINE_VADP_GRAPHICS_BYTES_PER_ROW;
+        for (x = 0u; x < CORE_MACHINE_DISPLAY_GRAPHICS_WIDTH; ++x) {
+            uint8_t byte = bytes[row_offset + (x >> 2)];
+            out_snapshot->pixels[(uint32_t)y * CORE_MACHINE_DISPLAY_GRAPHICS_WIDTH + x] =
+                (uint8_t)((byte >> (6u - 2u * (x & 3u))) & 0x03u);
+        }
+    }
+    adapter->data.captured = TYPE_TRUE;
+    adapter->data.captured_kind = CORE_MACHINE_DISPLAY_KIND_CGA_320X200X4;
+    adapter->data.captured_mode_control = adapter->data.mode_control;
+    adapter->data.captured_color_select = adapter->data.color_select;
+    out_snapshot->buffer_changed = buffer_changed;
+    out_snapshot->cursor_changed = TYPE_FALSE;
+    return TYPE_TRUE;
+}
+
+C_INT core_machine_vadp_capture_snapshot(t_vadp *adapter, t_ram *memory,
+    core_machine_display_snapshot *out_snapshot)
+{
+    return core_machine_vadp_is_graphics_mode(adapter) ?
+        core_machine_vadp_capture_graphics_snapshot(adapter, memory, out_snapshot) :
+        core_machine_vadp_capture_text_snapshot(adapter, memory, out_snapshot);
 }

@@ -447,12 +447,16 @@ C_VOID w32adispSetScreen(w32adisp_context *context, WIN32_HWND window,
                         const vm_platform_presentation_mailbox *mailbox) {
     RECT clientRect,windowRect;
     LONG widthOffset, heightOffset;
+    HBITMAP bufferBitmap;
+    HGDIOBJ previousBitmap;
     core_platform_display_frame frame;
 
     if (context == STD_NULL) return;
     vm_platform_presentation_mailbox_capture(mailbox, &frame);
-    context->rows = frame.columns;
-    context->columns = frame.rows;
+    context->rows = frame.kind == CORE_PLATFORM_DISPLAY_KIND_INDEXED_PIXELS ?
+        frame.pixel_width : frame.columns;
+    context->columns = frame.kind == CORE_PLATFORM_DISPLAY_KIND_INDEXED_PIXELS ?
+        frame.pixel_height : frame.rows;
     GetClientRect(window, &clientRect);
     GetWindowRect(window, &windowRect);
 
@@ -464,9 +468,14 @@ C_VOID w32adispSetScreen(w32adisp_context *context, WIN32_HWND window,
     GetClientRect(window, &clientRect);
     context->client_height = clientRect.bottom - clientRect.top;
     context->client_width  = clientRect.right - clientRect.left;
-    context->buffer_bitmap = CreateCompatibleBitmap(context->window_dc,
+    bufferBitmap = CreateCompatibleBitmap(context->window_dc,
         GetDeviceCaps(context->window_dc, HORZRES), GetDeviceCaps(context->window_dc, VERTRES));
-    SelectObject(context->buffer_dc, context->buffer_bitmap);
+    if (bufferBitmap == STD_NULL) return;
+    previousBitmap = SelectObject(context->buffer_dc, bufferBitmap);
+    if (context->buffer_bitmap != STD_NULL && previousBitmap == context->buffer_bitmap) {
+        DeleteObject(context->buffer_bitmap);
+    }
+    context->buffer_bitmap = bufferBitmap;
     w32adispPaint(context, window, mailbox, TRUE);
 }
 
@@ -494,6 +503,28 @@ static VOID DisplayCursor(w32adisp_context *context,
     DeleteObject(hBrush);
 }
 
+static COLORREF w32adisp_rgb(uint32_t rgb)
+{
+    return RGB((rgb >> 16) & 0xffu, (rgb >> 8) & 0xffu, rgb & 0xffu);
+}
+
+static C_VOID w32adisp_paint_indexed_pixels(w32adisp_context *context,
+    const core_platform_display_frame *frame)
+{
+    uint16_t y;
+    uint16_t x;
+
+    if (context == STD_NULL || frame == STD_NULL ||
+        frame->pixel_width == 0u || frame->pixel_height == 0u) return;
+    for (y = 0u; y < frame->pixel_height; ++y) {
+        for (x = 0u; x < frame->pixel_width; ++x) {
+            uint8_t index = frame->pixels[(uint32_t)y * frame->pixel_width + x];
+            SetPixelV(context->buffer_dc, x, y,
+                w32adisp_rgb(frame->palette_rgb[index & 0x03u]));
+        }
+    }
+}
+
 C_VOID w32adispPaint(w32adisp_context *context, WIN32_HWND window,
                    const vm_platform_presentation_mailbox *mailbox,
                    WIN32_BOOL flagForce) {
@@ -507,32 +538,43 @@ C_VOID w32adispPaint(w32adisp_context *context, WIN32_HWND window,
     context->flash_count = (context->flash_count + 1) % 10;
     changed = flagForce || frame.generation != context->displayed_generation;
     if (changed) {
-        for (i = 0; i < context->columns; ++i) {
-            for (j = 0; j < context->rows; ++j) {
-                index = i * CORE_PLATFORM_DISPLAY_MAX_COLUMNS + j;
-                ch = frame.characters[index];
-                prop = frame.attributes[index]; /* & 0x7f; */
-                if (!context->font_character_exists[ch][prop]) {
-                    CreateBitmapFontChar(context, ch, prop);
+        if (frame.kind == CORE_PLATFORM_DISPLAY_KIND_INDEXED_PIXELS) {
+            w32adisp_paint_indexed_pixels(context, &frame);
+        } else {
+            for (i = 0; i < context->columns; ++i) {
+                for (j = 0; j < context->rows; ++j) {
+                    index = i * CORE_PLATFORM_DISPLAY_MAX_COLUMNS + j;
+                    ch = frame.characters[index];
+                    prop = frame.attributes[index]; /* & 0x7f; */
+                    if (!context->font_character_exists[ch][prop]) {
+                        CreateBitmapFontChar(context, ch, prop);
+                    }
+                    BitBlt(context->buffer_dc, j * FONT_WIDTH, i * FONT_HEIGHT,
+                           FONT_WIDTH, FONT_HEIGHT, context->font_dc,
+                           ch * FONT_WIDTH, prop * FONT_HEIGHT, SRCCOPY);
                 }
-                BitBlt(context->buffer_dc, j * FONT_WIDTH, i * FONT_HEIGHT,
-                       FONT_WIDTH, FONT_HEIGHT, context->font_dc,
-                       ch * FONT_WIDTH, prop * FONT_HEIGHT, SRCCOPY);
             }
         }
         context->displayed_generation = frame.generation;
     }
-    BitBlt(context->window_dc, 0, 0, context->client_width,
-           context->client_height, context->buffer_dc, 0, 0, SRCCOPY);
-    if (frame.cursor_visible && ((context->flash_count % 10) < context->flash_interval)) {
+    if (frame.kind == CORE_PLATFORM_DISPLAY_KIND_INDEXED_PIXELS) {
+        StretchBlt(context->window_dc, 0, 0, context->client_width,
+            context->client_height, context->buffer_dc, 0, 0, frame.pixel_width,
+            frame.pixel_height, SRCCOPY);
+    } else {
+        BitBlt(context->window_dc, 0, 0, context->client_width,
+               context->client_height, context->buffer_dc, 0, 0, SRCCOPY);
+    }
+    if (frame.kind == CORE_PLATFORM_DISPLAY_KIND_TEXT && frame.cursor_visible &&
+        ((context->flash_count % 10) < context->flash_interval)) {
         DisplayCursor(context, &frame);
     }
 }
 
 C_VOID w32adispFinal(w32adisp_context *context) {
     if (context == STD_NULL) return;
-    DeleteObject(context->font_bitmap);
     DeleteDC(context->font_dc);
-    DeleteObject(context->buffer_bitmap);
+    DeleteObject(context->font_bitmap);
     DeleteDC(context->buffer_dc);
+    DeleteObject(context->buffer_bitmap);
 }

@@ -8,8 +8,18 @@
 #define CORE_PLATFORM_DISPLAY_MAX_ROWS 25u
 #define CORE_PLATFORM_DISPLAY_MAX_CELLS \
     (CORE_PLATFORM_DISPLAY_MAX_COLUMNS * CORE_PLATFORM_DISPLAY_MAX_ROWS)
+#define CORE_PLATFORM_DISPLAY_GRAPHICS_WIDTH 320u
+#define CORE_PLATFORM_DISPLAY_GRAPHICS_HEIGHT 200u
+#define CORE_PLATFORM_DISPLAY_MAX_PIXELS \
+    (CORE_PLATFORM_DISPLAY_GRAPHICS_WIDTH * CORE_PLATFORM_DISPLAY_GRAPHICS_HEIGHT)
+
+typedef enum core_platform_display_kind {
+    CORE_PLATFORM_DISPLAY_KIND_TEXT,
+    CORE_PLATFORM_DISPLAY_KIND_INDEXED_PIXELS
+} core_platform_display_kind;
 
 typedef struct core_platform_display_frame {
+    core_platform_display_kind kind;
     uint8_t characters[CORE_PLATFORM_DISPLAY_MAX_CELLS];
     uint8_t attributes[CORE_PLATFORM_DISPLAY_MAX_CELLS];
     uint16_t columns;
@@ -21,6 +31,10 @@ typedef struct core_platform_display_frame {
     C_INT cursor_visible;
     C_INT buffer_changed;
     C_INT cursor_changed;
+    uint16_t pixel_width;
+    uint16_t pixel_height;
+    uint8_t pixels[CORE_PLATFORM_DISPLAY_MAX_PIXELS];
+    uint32_t palette_rgb[4];
     uint64_t generation;
 } core_platform_display_frame;
 

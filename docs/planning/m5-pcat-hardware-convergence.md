@@ -54,7 +54,7 @@ device implementation begins.
 | T225 | T219, T220 | Complete. S7 locks reset-remainder, paused-session, one-step, and repeated-period evidence around the elapsed-tick/PIT/IRQ0 -> ROM -> BDA -> INT 1Ah path. |
 | T226 | T216, T219, T225 | Complete: set-1 break/E0/E1, FIFO, rapid typeahead, IRQ1, and ROM `INT 09h`/`INT 16h` ordering. Host input remains profile mapping -> KBC ingress. |
 | T227 | T216, T226 | Complete: bounded set-1 selection/query, translation-bit observation, LED, typematic, ACK/RESEND, and controller timing. Delays consume core elapsed ticks, never host sleep. |
-| T228 | T219, T220 | Implement the bounded CGA `320x200x4` VADP subset: VRAM layout, 3D8h/3D9h mode/color/palette, raster state, and copied pixel snapshot. EGA/VGA remains excluded. |
+| T228 | T219, T220 | Complete. VADP owns the bounded CGA `320x200x4` B8000h layout, `3D8h`/`3D9h` subset, palette, raster state, and copied indexed snapshot. `console`/`window`/`auto` presentation is composition policy; 62 current smoke cases and GCC gates pass. EGA/VGA remains excluded. |
 | T229 | T216, T226, T227 | Add 8042 AUX mouse packet/controller path and IRQ12 through PIC. Host mouse enters only through profile mapping; it never writes DOS APIs or guest memory directly. |
 | T230 | T216, T219 | Implement 8237 DMA request/mask/mode/page/address/count lifecycle and the channel-2 FDC contract. DMA memory access uses the core memory contract; devices cannot directly copy guest RAM. |
 
