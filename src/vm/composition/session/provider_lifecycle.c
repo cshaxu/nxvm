@@ -4,6 +4,8 @@
 
 #include "type.h"
 
+#include "vm/composition/session/session_private.h"
+
 #include "vm/composition/session/block.h"
 #include "vm/composition/session/machine_devices.h"
 #include "vm/composition/session/profile_firmware.h"

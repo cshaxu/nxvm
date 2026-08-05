@@ -10,6 +10,7 @@
 #include "vm/composition/session/fault.h"
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/session.h"
+#include "tests/support/vm_session_fixture.h"
 
 static C_INT vm_fault_outcome_prepare(vm_session *session)
 {
@@ -17,9 +18,9 @@ static C_INT vm_fault_outcome_prepare(vm_session *session)
     core_machine_cpu_execution_context *execution;
     t_cpu *cpu;
 
-    if (session == STD_NULL || session->core_machine == STD_NULL) return 0;
-    cpu = core_machine_debug_cpu_borrow(session->core_machine);
-    execution = core_machine_debug_cpu_execution_borrow(session->core_machine);
+    if (session == STD_NULL || vm_session_fixture_machine(session) == STD_NULL) return 0;
+    cpu = core_machine_debug_cpu_borrow(vm_session_fixture_machine(session));
+    execution = core_machine_debug_cpu_execution_borrow(vm_session_fixture_machine(session));
     if (cpu == STD_NULL || execution == STD_NULL ||
         core_machine_cpu_execution_load_segment(execution, &cpu->data.cs, 0u) ||
         core_machine_cpu_execution_load_segment(execution, &cpu->data.ds, 0u) ||
@@ -28,7 +29,7 @@ static C_INT vm_fault_outcome_prepare(vm_session *session)
         return 0;
     }
     cpu->data.eip = 0u;
-    return core_machine_memory_write(session->core_machine, 0u, program,
+    return core_machine_memory_write(vm_session_fixture_machine(session), 0u, program,
         sizeof(program)) == TYPE_STATUS_OK;
 }
 
@@ -46,9 +47,9 @@ C_INT main(C_VOID)
 
     if (vm_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||
         !vm_fault_outcome_prepare(session)) goto fail;
-    vm_session_control_start(&session->control);
+    vm_session_control_start(vm_session_fixture_control(session));
     target = vm_session_debug_target(session);
-    failed |= vm_session_control_is_running(&session->control);
+    failed |= vm_session_control_is_running(vm_session_fixture_control(session));
     failed |= vm_session_fault_get(session, &outcome) != 0 || !outcome.valid ||
         outcome.run.reason != CORE_MACHINE_STOP_FAULT ||
         outcome.run.detail != VCPUINS_EXCEPT_UD ||
@@ -59,16 +60,16 @@ C_INT main(C_VOID)
         !debug_outcome.valid || debug_outcome.detail != VCPUINS_EXCEPT_UD ||
         !debug_outcome.diagnostic_valid ||
         !TYPE_GET_BIT(debug_outcome.exception_mask, VCPUINS_EXCEPT_UD);
-    failed |= core_machine_get_lifecycle(session->core_machine, &lifecycle) !=
+    failed |= core_machine_get_lifecycle(vm_session_fixture_machine(session), &lifecycle) !=
         TYPE_STATUS_OK || lifecycle != CORE_MACHINE_FAULTED;
-    failed |= core_machine_run(session->core_machine, budget, &run) !=
+    failed |= core_machine_run(vm_session_fixture_machine(session), budget, &run) !=
         TYPE_STATUS_FAULT || run.reason != CORE_MACHINE_STOP_FAULT ||
         run.detail != VCPUINS_EXCEPT_UD;
     vm_session_reset(session);
     failed |= vm_session_fault_get(session, &outcome) != 0 || outcome.valid;
-    failed |= core_machine_get_lifecycle(session->core_machine, &lifecycle) !=
+    failed |= core_machine_get_lifecycle(vm_session_fixture_machine(session), &lifecycle) !=
         TYPE_STATUS_OK || lifecycle != CORE_MACHINE_STOPPED;
-    failed |= core_machine_get_cpu_diagnostic(session->core_machine, &diagnostic) !=
+    failed |= core_machine_get_cpu_diagnostic(vm_session_fixture_machine(session), &diagnostic) !=
         TYPE_STATUS_OK || diagnostic.first_fault.valid;
     if (failed) goto fail;
     vm_session_destroy(session);

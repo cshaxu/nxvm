@@ -6,6 +6,8 @@
 
 
 #include "vm/composition/session/control.h"
+#include "vm/composition/session/session.h"
+#include "tests/support/vm_session_fixture.h"
 
 #include "vm/machine/fdd.h"
 
@@ -22,45 +24,40 @@ C_INT main(C_INT argc, C_CHAR **argv)
 {
     HANDLE thread;
     DWORD result;
-    vm_session session = {0};
+    vm_session *session = STD_NULL;
 
     if (argc != 2) {
         return 1;
     }
-    vm_session_storage_initialize(&session);
-    vm_session_control_initialize(session.control, &session);
-    if (vm_machine_fdd_insert_for(session.fdd, argv[1]) != 0) {
-        vm_session_control_finalize(session.control, &session);
-    vm_session_storage_finalize(&session);
+    if (vm_session_create(STD_NULL, &session) != TYPE_STATUS_OK) return 1;
+    if (vm_machine_fdd_insert_for(vm_session_fixture_fdd(session), argv[1]) != 0) {
+        vm_session_destroy(session);
         return 1;
     }
-    vm_profile_default_bios_set_boot_hdd(session.default_bios, 0);
-    vm_session_control_reset(session.control);
-    thread = CreateThread(STD_NULL, 0u, run_device, session.control, 0u, STD_NULL);
+    vm_profile_default_bios_set_boot_hdd(vm_session_fixture_default_bios(session), 0);
+    vm_session_control_reset(vm_session_fixture_control(session));
+    thread = CreateThread(STD_NULL, 0u, run_device, vm_session_fixture_control(session), 0u, STD_NULL);
     if (thread == STD_NULL) {
         STD_FPUTS("M5:T10:S4:CONTEXT-LIFECYCLE:THREAD-CREATE-FAILED\n", STD_STDERR);
-        vm_session_control_finalize(session.control, &session);
-    vm_session_storage_finalize(&session);
+        vm_session_destroy(session);
         return 1;
     }
 
     Sleep(10u);
-    if (!vm_session_control_is_running(session.control)) {
+    if (!vm_session_control_is_running(vm_session_fixture_control(session))) {
         STD_FPUTS("M5:T10:S4:CONTEXT-LIFECYCLE:DEVICE-DID-NOT-START\n", STD_STDERR);
-        vm_session_control_stop(session.control);
+        vm_session_control_stop(vm_session_fixture_control(session));
         WaitForSingleObject(thread, 2000u);
         CloseHandle(thread);
-        vm_session_control_finalize(session.control, &session);
-    vm_session_storage_finalize(&session);
+        vm_session_destroy(session);
         return 1;
     }
-    vm_session_control_reset(session.control);
+    vm_session_control_reset(vm_session_fixture_control(session));
     Sleep(10u);
-    vm_session_control_stop(session.control);
+    vm_session_control_stop(vm_session_fixture_control(session));
     result = WaitForSingleObject(thread, 2000u);
     CloseHandle(thread);
-    vm_session_control_finalize(session.control, &session);
-    vm_session_storage_finalize(&session);
+    vm_session_destroy(session);
 
     if (result != WAIT_OBJECT_0) {
         STD_FPRINTF(STD_STDERR,

@@ -4,7 +4,7 @@
 
 #include "core/machine/machine_interface.h"
 #include "vm/composition/session/machine_devices.h"
-#include "vm/composition/session/session.h"
+#include "vm/composition/session/session_private.h"
 #include "vm/machine/cmos.h"
 #include "vm/machine/fdc.h"
 #include "vm/machine/fdd.h"

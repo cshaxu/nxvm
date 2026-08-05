@@ -1,4 +1,5 @@
 #include "type.h"
+#include "tests/support/vm_session_fixture.h"
 
 
 
@@ -16,7 +17,7 @@ C_INT main(C_VOID)
     uint32_t value = 0u;
     uint8_t byte = 0x5au;
 
-    session = (vm_session *)STD_CALLOC(1u, sizeof(*session));
+    session = vm_session_fixture_allocate();
     if (session == STD_NULL) return 1;
     vm_session_initialize(session);
     vm_session_reset(session);
@@ -28,11 +29,11 @@ C_INT main(C_VOID)
         target->read_real(target->context, 0u, 0x500u, &value, 1u) ||
         (uint8_t)value != byte) {
         vm_session_finalize(session);
-        STD_FREE(session);
+        vm_session_fixture_free(session);
         return 1;
     }
     vm_session_finalize(session);
-    STD_FREE(session);
+    vm_session_fixture_free(session);
     puts("M5:T14:S3:VM-DEBUG-TARGET:OK");
     return 0;
 }

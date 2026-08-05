@@ -68,3 +68,11 @@ design item.
 The approved opaque-session migration is recorded in
 [the S5 session-layout design](m5-t234-s5-session-layout-design.md). It is a
 future implementation subtask: no runtime layout or test route changes in S5.
+
+### S6 Implementation
+
+S6 implements that design. `session.h` now exposes opaque `vm_session`, with
+the complete layout in composition-private `session_private.h`. The test-only
+fixture provides named borrows and legacy storage helpers without re-exporting
+the aggregate layout. `verify-session-layout-boundary` rejects private-header
+escapes and direct session-field reads; MinGW GCC passed all 67 current smokes.

@@ -1,7 +1,7 @@
 #include "type.h"
 
 #include "vm/composition/session/fault.h"
-#include "vm/composition/session/session.h"
+#include "vm/composition/session/session_private.h"
 
 C_VOID vm_session_fault_clear(vm_session *session)
 {
