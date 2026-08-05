@@ -25,8 +25,6 @@ typedef struct vm_platform_run_context {
     C_VOID *window_renderer;
     uint64_t terminal_displayed_generation;
     C_INT window_display;
-    vm_platform_keyboard_state_sink keyboard_state_sink;
-    C_VOID *keyboard_state_context;
 } vm_platform_run_context;
 
 typedef enum vm_platform_run_event {
@@ -52,12 +50,6 @@ C_VOID vm_platform_run_context_initialize(
     const vm_platform_keyboard_transport *keyboard,
     const vm_platform_presentation_mailbox *presentation,
     const core_product_wait_scope *wait_scope);
-C_VOID vm_platform_run_context_bind_keyboard_state(
-    vm_platform_run_context *context, vm_platform_keyboard_state_sink sink,
-    C_VOID *sink_context);
-C_INT vm_platform_run_context_submit_keyboard_state(
-    const vm_platform_run_context *context, uint32_t asynchronous_keys,
-    uint32_t toggle_keys);
 C_INT vm_platform_run_context_get_window_display(
     const vm_platform_run_context *context);
 C_VOID vm_platform_run_context_set_window_display(

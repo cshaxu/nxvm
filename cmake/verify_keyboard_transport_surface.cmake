@@ -20,14 +20,14 @@ foreach(source_text IN ITEMS "${input_header}" "${input_source}"
     endforeach()
 endforeach()
 
-string(FIND "${input_header}" "receive_key_press" keypress_surface_position)
-string(FIND "${input_source}" "vm_platform_keyboard_receive_key_press_for"
+string(FIND "${input_header}" "receive_key_event" keypress_surface_position)
+string(FIND "${input_source}" "vm_platform_keyboard_receive_key_event_for"
     keypress_operation_position)
-string(FIND "${lifecycle_source}" "vm_session_keyboard_receive_key_press"
+string(FIND "${lifecycle_source}" "vm_session_keyboard_receive_key_event"
     session_ingress_position)
 if(keypress_surface_position EQUAL -1 OR keypress_operation_position EQUAL -1 OR
    session_ingress_position EQUAL -1)
     message(FATAL_ERROR "VM keyboard transport lost its real keypress path")
 endif()
 
-message("M5:T202:S1:KEYBOARD-TRANSPORT-SURFACE:OK")
+message("M5:T226:S2:KEYBOARD-TRANSPORT-SURFACE:OK")

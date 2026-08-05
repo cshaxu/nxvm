@@ -2,11 +2,24 @@
 
 ## Current Work
 
-**M5 T226 S1 active:** define and probe the only guest input path: host
-key down/up -> profile set-1 mapper -> core KBC FIFO/IRQ1 -> ROM `INT 09h` ->
-BDA -> `INT 16h`. T226 removes profile-side host-state BDA mutation and admits
-normal/E0/E1 make/break and rapid typeahead only; scan-set selection,
-translation, LEDs, typematic, resend/error timing, and AUX remain T227/T229.
+**No implementation subtask is active.** M5 T227 is complete; the next
+admission remains T228 S1 and requires its own contract before source work.
+
+**M5 T227 complete:** core KBC owns the bounded controller/keyboard protocol:
+set-1 query/select, observable translation bit, LEDs, typematic, ACK/RESEND,
+and elapsed-tick command-response delay. Set-2/3 conversion and AUX/IRQ12
+remain explicitly unsupported. Command, timing, DOS keyboard, retained
+Console/debugger, and 59/59 GCC/CTest evidence pass. The `0.5.0227` artifact
+SHA-256 is `9DE95F8E2CC55B554404D5EC9B170526E5F983F85E03A3E4FBFD5F5F39374E65`.
+See [the task record](m5-t227-kbc-controller-protocol-phase2.md).
+
+**M5 T226 complete:** host key down/up now follows the only guest input path:
+platform ingress -> default-profile set-1 mapper -> core KBC FIFO/IRQ1 -> ROM
+`INT 09h` -> BDA -> `INT 16h`. The phase covers normal/E0/E1 make/break and
+rapid typeahead without a host queue or direct BDA mutation. Mapper, KBC,
+prompt and DOS keyboard probes plus the 59/59 current GCC/CTest matrix pass.
+The `0.5.0226` artifact SHA-256 is
+`2FE4D3833409BC9037FD13CFC7EB4DDC6F14CD83CE8CA75A623FDB7DE050B292`.
 See [the task record](m5-t226-kbc-guest-input-phase1.md).
 
 **M5 T225 complete:** the S7 closure locks cold-reset divider-remainder

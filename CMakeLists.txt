@@ -220,7 +220,6 @@ set(VM_PROFILE_SOURCES
     src/vm/profile/default_profile/firmware/default_profile.c
     src/vm/profile/default_profile/firmware/bios.c
     src/vm/profile/default_profile/firmware/qdcga.c
-    src/vm/profile/default_profile/firmware/qdkeyb.c
 )
 
 set(VM_RUNTIME_SOURCES
@@ -265,7 +264,6 @@ set(VM_MACHINE_SOURCES
 set(CORE_MACHINE_SOURCES
     src/core/machine/block.c
     src/core/machine/display.c
-    src/core/machine/keyboard_interface.c
     src/core/machine/vadp.c
     src/core/machine/port.c
     src/core/machine/memory.c
@@ -612,6 +610,10 @@ add_executable(core-machine-kbc-controller-smoke
     tests/machine/core_machine_kbc_controller_smoke.c
 )
 target_link_libraries(core-machine-kbc-controller-smoke PRIVATE core-machine)
+add_executable(vm-keyboard-set1-mapper-smoke
+    tests/machine/vm_keyboard_set1_mapper_smoke.c
+)
+target_link_libraries(vm-keyboard-set1-mapper-smoke PRIVATE vm-profile)
 add_executable(core-machine-vadp-text-smoke
     tests/machine/core_machine_vadp_text_smoke.c
 )
@@ -639,12 +641,6 @@ target_link_libraries(vm-runner-display-cadence-smoke PRIVATE vm-composition)
 add_executable(vm-dos-video-port-smoke
     tests/machine/vm_dos_video_port_smoke.c)
 target_link_libraries(vm-dos-video-port-smoke PRIVATE vm-composition)
-add_executable(vm-keyboard-firmware-smoke tests/machine/vm_keyboard_firmware_smoke.c)
-target_link_libraries(vm-keyboard-firmware-smoke PRIVATE vm-composition)
-add_executable(vm-keyboard-provider-isolation-smoke
-    tests/machine/vm_keyboard_provider_isolation_smoke.c)
-target_link_libraries(vm-keyboard-provider-isolation-smoke PRIVATE
-    vm-composition)
 add_executable(vm-debug-authority-smoke tests/machine/vm_debug_authority_smoke.c)
 target_link_libraries(vm-debug-authority-smoke PRIVATE vm-composition)
 add_executable(vm-dos-prompt-smoke
@@ -776,6 +772,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-pit-divider-smoke
     core-machine-pic-irq-lifecycle-smoke
     core-machine-kbc-controller-smoke
+    vm-keyboard-set1-mapper-smoke
     core-machine-vadp-text-smoke
     core-machine-stopped-lifecycle-smoke
     core-machine-memory-reconfigure-smoke
@@ -807,7 +804,6 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     vm-product-console-smoke
     vm-product-console-lifecycle-smoke
     vm-debug-target-smoke
-    vm-keyboard-provider-isolation-smoke
     vm-product-session-smoke
     vm-session-manager-smoke
     vm-session-reconfigure-smoke
@@ -903,7 +899,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0225 "0.5.0225")
+add_current_vm_artifact(vm-0-5-0227 "0.5.0227")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 

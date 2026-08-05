@@ -271,7 +271,7 @@ static C_VOID *linuxcon_kernel_thread(C_VOID *arg) {
 static C_VOID vm_platform_linuxcon_send_key(
     const vm_platform_run_context *context, C_UCHAR scan, C_UCHAR key)
 {
-    vm_platform_keyboard_receive_key_press_for(context->keyboard, scan, key);
+    vm_platform_keyboard_receive_key_event_for(context->keyboard, scan, key, 1);
 }
 
 static C_VOID vm_platform_linuxcon_make_key(linuxcon_run_handle *handle,

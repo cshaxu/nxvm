@@ -24,7 +24,6 @@
 
 #include "vm/profile/default_profile/firmware/qdkeyb.h"
 
-#include "core/machine/keyboard_interface.h"
 
 #include "core/machine/machine_interface.h"
 
@@ -46,17 +45,18 @@ static C_VOID vm_session_wait(C_VOID *context, uint32_t milliseconds)
     core_platform_sleep_milliseconds(milliseconds);
 }
 
-static C_VOID vm_session_keyboard_receive_key_press(C_VOID *context,
-    uint16_t scan_code, uint16_t virtual_key)
+static C_VOID vm_session_keyboard_receive_key_event(C_VOID *context,
+    uint16_t scan_code, uint16_t virtual_key, C_INT pressed)
 {
     vm_session *machine =
         (vm_session *)context;
     vm_platform_request request;
 
     if (machine == STD_NULL) return;
-    request.kind = VM_PLATFORM_REQUEST_KEY_PRESS;
-    request.data.key_press.scan_code = scan_code;
-    request.data.key_press.virtual_key = virtual_key;
+    request.kind = VM_PLATFORM_REQUEST_KEY_EVENT;
+    request.data.key_event.scan_code = scan_code;
+    request.data.key_event.virtual_key = virtual_key;
+    request.data.key_event.pressed = pressed;
     (C_VOID)vm_platform_request_transport_enqueue_ingress(
         &machine->request_transport, &request);
 }
@@ -86,7 +86,7 @@ C_INT vm_session_bind_execution_provider(vm_session *machine)
 }
 
 static const vm_platform_keyboard_sink vm_session_keyboard_sink = {
-    vm_session_keyboard_receive_key_press
+    vm_session_keyboard_receive_key_event
 };
 
 static C_INT vm_session_execution_is_running(C_VOID *context)
@@ -182,10 +182,6 @@ C_VOID vm_session_initialize(vm_session *machine) {
     core_product_wait_scope_initialize(&machine->wait_scope,
         vm_session_wait, STD_NULL);
     vm_session_control_initialize(&machine->control, machine);
-    core_machine_keyboard_provider_slot_bind(&machine->keyboard_provider,
-        &machine->default_profile_context,
-        vm_profile_default_keyboard_provider());
-    core_machine_keyboard_provider_slot_freeze(&machine->keyboard_provider);
     vm_session_bind_display(machine);
     vm_machine_debug_bind_pause(&machine->debug,
         vm_session_debug_request_pause, STD_NULL);
@@ -200,8 +196,6 @@ C_VOID vm_session_initialize(vm_session *machine) {
     vm_platform_request_transport_initialize(&machine->request_transport);
     vm_platform_request_transport_bind_consumer(&machine->request_transport,
         vm_session_consume_request, machine);
-    vm_platform_run_context_bind_keyboard_state(&machine->platform_run_context,
-        vm_session_enqueue_keyboard_state, &machine->request_transport);
     vm_session_control_bind_command_boundary(&machine->control,
         vm_platform_request_transport_observe_execution_boundary,
         &machine->request_transport);
@@ -215,14 +209,11 @@ C_VOID vm_session_finalize(vm_session *machine) {
         vm_platform_run_handle_join(&machine->platform_run_handle);
         vm_platform_run_handle_finalize(&machine->platform_run_handle);
     }
-    vm_platform_run_context_bind_keyboard_state(&machine->platform_run_context,
-        STD_NULL, STD_NULL);
     vm_session_control_bind_command_boundary(&machine->control, STD_NULL, STD_NULL);
     vm_platform_request_transport_close(&machine->request_transport);
     vm_platform_request_transport_discard(&machine->request_transport);
     machine->active = 0;
     vm_session_control_finalize(&machine->control, machine);
-    core_machine_keyboard_provider_slot_finalize(&machine->keyboard_provider);
     core_machine_display_provider_slot_finalize(&machine->display_provider);
     vm_machine_debug_bind_pause(&machine->debug, STD_NULL, STD_NULL);
     vm_session_debug_target_finalize(machine);

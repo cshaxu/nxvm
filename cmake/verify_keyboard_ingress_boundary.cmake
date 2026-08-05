@@ -15,19 +15,19 @@ foreach(source_text IN ITEMS "${input_header}" "${input_source}" "${lifecycle_so
     endif()
 endforeach()
 
-string(FIND "${win32_source}" "vm_platform_run_context_submit_keyboard_state"
+string(FIND "${win32_source}" "vm_platform_keyboard_receive_key_event_for"
     win32_submit_position)
-string(FIND "${win32_source}" "keyboard_state_sink" win32_direct_position)
+string(FIND "${win32_source}" "GetAsyncKeyState" win32_direct_position)
 if(win32_submit_position EQUAL -1 OR NOT win32_direct_position EQUAL -1)
-    message(FATAL_ERROR "Win32 keyboard host state bypasses the run-context ingress operation")
+    message(FATAL_ERROR "Win32 keyboard events bypass the transport ingress operation")
 endif()
 
-string(FIND "${session_source}" "VM_PLATFORM_REQUEST_KEYBOARD_STATE"
+string(FIND "${session_source}" "VM_PLATFORM_REQUEST_KEY_EVENT"
     request_position)
-string(FIND "${session_source}" "core_machine_keyboard_apply_host_state_to"
+string(FIND "${session_source}" "core_machine_keyboard_submit_scan_codes"
     consume_position)
 if(request_position EQUAL -1 OR consume_position EQUAL -1)
-    message(FATAL_ERROR "Session no longer owns keyboard-state ingress consumption")
+    message(FATAL_ERROR "Session no longer owns keyboard-event ingress consumption")
 endif()
 
-message("M5:T200:S1:KEYBOARD-INGRESS-BOUNDARY:OK")
+message("M5:T226:S2:KEYBOARD-INGRESS-BOUNDARY:OK")

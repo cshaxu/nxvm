@@ -134,6 +134,7 @@ static C_VOID core_machine_advance_scheduler(core_machine *machine,
         machine->pit_elapsed_ticks_per_input_tick);
     core_machine_vadp_advance(&machine->shared_vadp, &machine->executor_memory,
         elapsed_ticks);
+    core_machine_kbc_advance(&machine->shared_kbc, elapsed_ticks);
     core_machine_pic_refresh(&machine->shared_pic_master,
         &machine->shared_pic_slave);
 }
@@ -415,6 +416,11 @@ type_status core_machine_create(
     machine->pit_elapsed_ticks_per_input_tick =
         core_machine_resolve_pit_elapsed_ticks_per_input_tick(
             config->pit_elapsed_ticks_per_input_tick);
+    machine->kbc_typematic_initial_ticks =
+        core_machine_resolve_ticks_per_instruction(config->kbc_typematic_initial_ticks);
+    machine->kbc_typematic_repeat_ticks =
+        core_machine_resolve_ticks_per_instruction(config->kbc_typematic_repeat_ticks);
+    machine->kbc_command_response_ticks = config->kbc_command_response_ticks;
     core_machine_fpu_initialize(&machine->fpu, config->fpu_profile);
     STD_ATOMIC_INIT(&machine->stop_requested, 0);
     core_machine_trace_initialize(machine);
@@ -462,6 +468,11 @@ type_status core_machine_create(
     core_machine_kbc_bind_core_services(&machine->shared_kbc,
         &machine->shared_pic_master, &machine->shared_pic_slave,
         &machine->executor_memory, &machine->executor_cpu_execution);
+    core_machine_kbc_set_typematic_timing(&machine->shared_kbc,
+        machine->kbc_typematic_initial_ticks,
+        machine->kbc_typematic_repeat_ticks);
+    core_machine_kbc_set_command_response_timing(&machine->shared_kbc,
+        machine->kbc_command_response_ticks);
     core_machine_pit_set_output(&machine->shared_pit, 1, STD_NULL, STD_NULL);
 
     *out_machine = machine;
@@ -689,6 +700,17 @@ type_status core_machine_keyboard_submit_scan_code(core_machine *machine,
         return TYPE_STATUS_INVALID_STATE;
     }
     return core_machine_kbc_submit_scan_code(&machine->shared_kbc, scan_code);
+}
+
+type_status core_machine_keyboard_submit_scan_codes(core_machine *machine,
+    const uint8_t *scan_codes, STD_SIZE_T count)
+{
+    if (machine == STD_NULL || machine->lifecycle == CORE_MACHINE_INITIALIZED ||
+        machine->lifecycle == CORE_MACHINE_FAULTED) {
+        return TYPE_STATUS_INVALID_STATE;
+    }
+    return core_machine_kbc_submit_scan_codes(&machine->shared_kbc, scan_codes,
+        count);
 }
 
 type_status core_machine_report_fault(

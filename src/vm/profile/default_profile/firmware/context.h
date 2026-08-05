@@ -9,14 +9,12 @@
 
 typedef struct t_bios t_bios;
 typedef struct core_machine_block_provider_slot core_machine_block_provider_slot;
-typedef struct core_machine_keyboard_provider_slot core_machine_keyboard_provider_slot;
 typedef struct core_machine_display_provider_slot core_machine_display_provider_slot;
 
 typedef struct vm_profile_default_context {
     t_bios *bios;
     core_machine_profile_binding binding;
     core_machine_block_provider_slot *block_provider;
-    core_machine_keyboard_provider_slot *keyboard_provider;
     core_machine_display_provider_slot *display_provider;
     const core_product_wait_scope *wait_scope;
 } vm_profile_default_context;
@@ -24,14 +22,12 @@ typedef struct vm_profile_default_context {
 static inline C_VOID vm_profile_default_context_initialize(
     vm_profile_default_context *context, t_bios *bios,
     core_machine_profile_binding binding,
-    core_machine_block_provider_slot *block_provider,
-    core_machine_keyboard_provider_slot *keyboard_provider)
+    core_machine_block_provider_slot *block_provider)
 {
     if (context == STD_NULL) return;
     context->bios = bios;
     context->binding = binding;
     context->block_provider = block_provider;
-    context->keyboard_provider = keyboard_provider;
     context->display_provider = STD_NULL;
     context->wait_scope = STD_NULL;
 }

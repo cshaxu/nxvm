@@ -3,7 +3,6 @@
 #include "vm/composition/session/session.h"
 
 #include "core/machine/machine_interface.h"
-#include "core/machine/keyboard_interface.h"
 #include "vm/composition/session/control.h"
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/display.h"
@@ -12,37 +11,22 @@
 #include "vm/profile/default_profile/firmware/bios.h"
 #include "vm/profile/default_profile/keyboard_mapper.h"
 
-C_INT vm_session_enqueue_keyboard_state(
-    C_VOID *opaque, uint32_t asynchronous_keys, uint32_t toggle_keys)
-{
-    vm_platform_request request;
-
-    request.kind = VM_PLATFORM_REQUEST_KEYBOARD_STATE;
-    request.data.keyboard_state.asynchronous_keys = asynchronous_keys;
-    request.data.keyboard_state.toggle_keys = toggle_keys;
-    return vm_platform_request_transport_enqueue_ingress(
-        (vm_platform_request_transport *)opaque, &request);
-}
-
 C_VOID vm_session_consume_request(
     C_VOID *opaque, const vm_platform_request *request)
 {
     vm_session *session = (vm_session *)opaque;
 
     if (session == STD_NULL || !session->active || request == STD_NULL) return;
-    if (request->kind == VM_PLATFORM_REQUEST_KEYBOARD_STATE) {
-        core_machine_keyboard_apply_host_state_to(&session->keyboard_provider,
-            request->data.keyboard_state.asynchronous_keys,
-            request->data.keyboard_state.toggle_keys);
-    } else if (request->kind == VM_PLATFORM_REQUEST_KEY_PRESS) {
-        uint8_t scan_code;
+    if (request->kind == VM_PLATFORM_REQUEST_KEY_EVENT) {
+        vm_profile_default_keyboard_sequence sequence;
 
         if (vm_profile_default_keyboard_map_host_key(
-                request->data.key_press.scan_code,
-                request->data.key_press.virtual_key, &scan_code) ==
+                request->data.key_event.scan_code,
+                request->data.key_event.virtual_key,
+                request->data.key_event.pressed, &sequence) ==
             TYPE_STATUS_OK) {
-            (C_VOID)core_machine_keyboard_submit_scan_code(session->core_machine,
-                scan_code);
+            (C_VOID)core_machine_keyboard_submit_scan_codes(session->core_machine,
+                sequence.bytes, sequence.count);
         }
     }
 }
@@ -130,11 +114,9 @@ C_VOID vm_session_storage_initialize(vm_session *machine)
     }
     vm_profile_default_context_initialize(&machine->default_profile_context,
         &machine->default_bios, profile_binding,
-        STD_NULL, STD_NULL);
+        STD_NULL);
     core_machine_block_provider_slot_initialize(&machine->block_provider);
     machine->default_profile_context.block_provider = &machine->block_provider;
-    core_machine_keyboard_provider_slot_initialize(&machine->keyboard_provider);
-    machine->default_profile_context.keyboard_provider = &machine->keyboard_provider;
     core_machine_display_provider_slot_initialize(&machine->display_provider);
     machine->default_profile_context.display_provider = &machine->display_provider;
     vm_platform_presentation_mailbox_initialize(&machine->presentation_mailbox);
@@ -147,7 +129,6 @@ C_VOID vm_session_storage_finalize(vm_session *machine)
 {
     if (machine == STD_NULL || machine->core_machine == STD_NULL) return;
     core_machine_block_provider_slot_finalize(&machine->block_provider);
-    core_machine_keyboard_provider_slot_finalize(&machine->keyboard_provider);
     core_machine_display_provider_slot_finalize(&machine->display_provider);
     core_machine_destroy(machine->core_machine);
     machine->core_machine = STD_NULL;
@@ -175,6 +156,12 @@ C_INT vm_session_create(const vm_session_config *config, vm_session **out_sessio
             session->profile->ticks_per_instruction;
         session->core_machine_config.pit_elapsed_ticks_per_input_tick =
             session->profile->pit_elapsed_ticks_per_input_tick;
+        session->core_machine_config.kbc_typematic_initial_ticks =
+            session->profile->kbc_typematic_initial_ticks;
+        session->core_machine_config.kbc_typematic_repeat_ticks =
+            session->profile->kbc_typematic_repeat_ticks;
+        session->core_machine_config.kbc_command_response_ticks =
+            session->profile->kbc_command_response_ticks;
     } else {
         session->core_machine_config.memory_bytes = session->profile->default_memory_bytes;
         session->core_machine_config.cpu_profile = session->profile->cpu_profile;
@@ -183,6 +170,12 @@ C_INT vm_session_create(const vm_session_config *config, vm_session **out_sessio
             session->profile->ticks_per_instruction;
         session->core_machine_config.pit_elapsed_ticks_per_input_tick =
             session->profile->pit_elapsed_ticks_per_input_tick;
+        session->core_machine_config.kbc_typematic_initial_ticks =
+            session->profile->kbc_typematic_initial_ticks;
+        session->core_machine_config.kbc_typematic_repeat_ticks =
+            session->profile->kbc_typematic_repeat_ticks;
+        session->core_machine_config.kbc_command_response_ticks =
+            session->profile->kbc_command_response_ticks;
     }
     vm_session_initialize(session);
     if (session->core_machine == STD_NULL) {

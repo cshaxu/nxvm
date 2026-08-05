@@ -27,7 +27,6 @@
 
 #include "core/machine/block_provider.h"
 
-#include "core/machine/keyboard_interface.h"
 
 #include "core/machine/display_interface.h"
 
@@ -87,7 +86,6 @@ typedef struct vm_session {
     t_bios default_bios;
     vm_profile_default_context default_profile_context;
     core_machine_block_provider_slot block_provider;
-    core_machine_keyboard_provider_slot keyboard_provider;
     core_machine_display_provider_slot display_provider;
     vm_platform_presentation_mailbox presentation_mailbox;
     vm_platform_execution_transport execution_transport;
@@ -112,8 +110,6 @@ typedef struct vm_session_reset_vector {
 
 C_VOID vm_session_storage_initialize(vm_session *machine);
 C_VOID vm_session_storage_finalize(vm_session *machine);
-C_INT vm_session_enqueue_keyboard_state(C_VOID *opaque,
-    uint32_t asynchronous_keys, uint32_t toggle_keys);
 C_VOID vm_session_consume_request(C_VOID *opaque,
     const vm_platform_request *request);
 C_INT vm_session_create(const vm_session_config *config, vm_session **out_session);
