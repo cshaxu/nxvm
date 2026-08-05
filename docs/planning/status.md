@@ -21,13 +21,33 @@ item.
 | --- | --- | --- | --- |
 | R1: use public links only | M5 Td S8 | Verified | All Skill references use public `https://github.com/cshaxu/skills/...` links. |
 | R2: retain local detail | M5 Td S8 | Verified | MTSP, artifact, roadmap, dual-product, module, toolchain, and acceptance decisions remain local authorities. |
-| R3: remove duplicated general rules | M5 Td S8 | Verified | Principal standards and `RULES.md` now cite skills and remove their duplicated generic method text. |
+| R3: remove duplicated general rules | M5 Td S8 | Verified | Principal local standards cite skills and remove their duplicated generic method text. |
 | R4: close against the original request | M5 Td S8 | Verified | Link, scope, local-detail, duplicate, and working-tree audits pass. |
 
 | Dependency or risk | Decision / trigger | Resolution owner | State |
 | --- | --- | --- | --- |
 | Local detail could be lost during consolidation | Reviewed every changed document against its project-specific authority. | M5 Td S8 | Closed |
 | A local filesystem link could leak in | Final audit rejects every filesystem-local skill reference. | M5 Td S8 | Closed |
+
+**M5 Td S9 complete:** retire root and source-local governance readmes. Original
+request: “The source-local README is no longer retained; move its content into
+the coding standard and repair every reference. Do the same for the root rule
+document:
+fold project-specific rules into architecture, coding, and execution-governance
+documents, and discard material already owned by an external Skill.”
+
+| Requirement | Owner | State | Evidence or decision |
+| --- | --- | --- | --- |
+| R1: retire source-local README | M5 Td S9 | Verified | Its source-layout content is in `docs/coding-standard.md`; the source-local file is deleted. |
+| R2: retire root rule document | M5 Td S9 | Verified | Architecture, coding, source, and execution authorities retain local detail; the root file is deleted. |
+| R3: repair references | M5 Td S9 | Verified | Repository-wide scan finds no reference to either retired filename. |
+| R4: discard Skill-owned duplication | M5 Td S9 | Verified | Generic method text remains in public Skills and was not re-homed. |
+| R5: close against the original request | M5 Td S9 | Verified | Absence, authority coverage, local links, scoped diff, and clean-tree audits pass. |
+
+| Dependency or risk | Decision / trigger | Resolution owner | State |
+| --- | --- | --- | --- |
+| A deleted rule could lose project-specific detail | Covered by architecture, coding, source, execution, and M5 closure authorities. | M5 Td S9 | Closed |
+| Historical records could retain a misleading live reference | Repository-wide scan found none. | M5 Td S9 | Closed |
 
 **M5 T227 complete:** core KBC owns the bounded controller/keyboard protocol:
 set-1 query/select, observable translation bit, LEDs, typematic, ACK/RESEND,

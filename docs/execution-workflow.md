@@ -11,9 +11,10 @@ the ntvdm64-specific execution overlay; it works with the
 
 `docs/planning/status.md` contains the one active task packet and preserves the
 original request. It records its requirement and risk tables, applicable
-`RULES.md` sections, owner-approved exceptions, exact commands, expected
-markers, artifact needs, and stop conditions. The public skill defines the
-workflow; this repository defines the evidence locations and technical gates.
+local architecture, coding, source, and execution rules, owner-approved
+exceptions, exact commands, expected markers, artifact needs, and stop
+conditions. The public skill defines the workflow; this repository defines the
+evidence locations and technical gates.
 
 ## Local Identifiers And Evidence
 

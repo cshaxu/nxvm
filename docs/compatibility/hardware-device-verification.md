@@ -113,6 +113,6 @@ or copied to `build/output/`.
 
 The final task record names the device owner, S1/S2/S3 tests and markers,
 matrix verdicts, evidence level, optional reference identity and budgets,
-remaining unsupported behavior, applicable `RULES.md` items, and the task
+remaining unsupported behavior, applicable local rule items, and the task
 artifact only when the runnable product changed. This template itself is a
 documentation policy and produces no task artifact.

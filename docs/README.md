@@ -25,5 +25,7 @@ architecture, task identifiers, policies, or evidence.
 Admitted M5 hardware-device work follows the compact
 [Hardware Device Verification Template](compatibility/hardware-device-verification.md).
 
-`../RULES.md` remains the compact implementation/review checklist, and
-`../TODO.md` is the live ledger referenced by Debt Tracking.
+[Module Layout](architecture/module-layout.md), [Coding Standard](coding-standard.md),
+[Source Policy](source-policy.md), and [Execution Policy](planning/execution-policy.md)
+provide the local implementation and review rules. `../TODO.md` is the live
+ledger referenced by Debt Tracking.

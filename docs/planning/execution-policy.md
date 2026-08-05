@@ -7,10 +7,10 @@ milestone gates. One subtask is active at a time. Follow the local requirement
 packet and closure audit defined by [Execution Workflow](../execution-workflow.md).
 Before implementation, create a subtask record
 with objective, non-goals, reference baseline, files/ABI surface, applicable
-`RULES.md` sections, exact test commands, expected markers, asset needs, and
-stop conditions. The rules review names each applicable invariant, its planned
-evidence, and any requested owner-approved exception; a task may mark a rule
-not applicable only with a short reason.
+local architecture, coding, source, and execution rules, exact test commands,
+expected markers, asset needs, and stop conditions. The rules review names each
+applicable invariant, its planned evidence, and any requested owner-approved
+exception; a task may mark a rule not applicable only with a short reason.
 
 ## Work Identifiers
 
@@ -40,7 +40,7 @@ gate, not an M0 prediction. M8 instead approves one such breakdown for each
 admitted corpus increment before implementation.
 
 A subtask completes only when scoped behavior works, focused tests pass,
-established corpus entries remain valid, applicable `RULES.md` invariants pass
+established corpus entries remain valid, applicable local rule invariants pass
 or have an owner-approved exception recorded, and its commit records compact
 tracking, verification, and provenance facts where needed. A later governed
 history-consolidation task may replace completed per-task documents with a
@@ -56,7 +56,8 @@ map the current source graph to the roadmap exit conditions, applicable rules,
 open TODO deferrals, and current evidence. A historical passing task, a clean
 compile, or a fixture-only smoke cannot close a changed runnable path. M5 uses
 the compact [M5 Closure Checklist](m5-closure-checklist.md) as this mapping
-index; the checklist does not supersede this policy or `RULES.md`.
+index; the checklist does not supersede this policy or the local architecture,
+coding, source, and execution authorities.
 
 A configured smoke gate must state whether it builds, executes, or statically
 inspects its subject. A preset presented as a runtime gate must invoke its
