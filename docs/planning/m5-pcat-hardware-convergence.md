@@ -56,7 +56,7 @@ device implementation begins.
 | T227 | T216, T226 | Complete: bounded set-1 selection/query, translation-bit observation, LED, typematic, ACK/RESEND, and controller timing. Delays consume core elapsed ticks, never host sleep. |
 | T228 | T219, T220 | Complete. VADP owns the bounded CGA `320x200x4` B8000h layout, `3D8h`/`3D9h` subset, palette, raster state, and copied indexed snapshot. `console`/`window`/`auto` presentation is composition policy; 62 current smoke cases and GCC gates pass. EGA/VGA remains excluded. |
 | T229 | T216, T226, T227 | **Complete.** Bounded 8042 AUX packet/controller path, IRQ12, host -> profile mapper -> KBC ingress, port/IRQ12 probe, and ordinary guest-IVT fixture are verified. Host mouse never writes DOS APIs, BDA, or guest memory directly; advanced AUX and guest mouse API work remain deferred. |
-| T230 | T216, T219 | **S2 active.** Converge 8237 request/mask/mode/page/address/count lifecycle behind a core-owned frozen device binding, then bind the default FDC to channel 2. DMA memory access uses the core memory contract; devices cannot directly copy guest RAM. |
+| T230 | T216, T219 | **Complete.** Core-owned 8237 request/mask/mode/page/address/count lifecycle is exposed through frozen device bindings; the default FDC is bound to DMA2 and cannot directly copy guest RAM. T231 retains FDC behavior expansion. |
 
 ## Storage And RTC
 
