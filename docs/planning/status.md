@@ -2,6 +2,13 @@
 
 ## Current Work
 
+**M5 T226 S1 active:** define and probe the only guest input path: host
+key down/up -> profile set-1 mapper -> core KBC FIFO/IRQ1 -> ROM `INT 09h` ->
+BDA -> `INT 16h`. T226 removes profile-side host-state BDA mutation and admits
+normal/E0/E1 make/break and rapid typeahead only; scan-set selection,
+translation, LEDs, typematic, resend/error timing, and AUX remain T227/T229.
+See [the task record](m5-t226-kbc-guest-input-phase1.md).
+
 **M5 T225 complete:** the S7 closure locks cold-reset divider-remainder
 disposal, paused-session time freeze, one-step elapsed-tick advance, and
 reset-origin period repetition without changing device behavior. The current
