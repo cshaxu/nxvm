@@ -233,24 +233,6 @@ then the relevant provider or core API applies them on the machine execution
 thread. This preserves deterministic guest state without giving platform or
 product modules direct access to the machine.
 
-### Firmware Interrupt Portals
-
-The CPU decoder always owns architectural `INT` decoding and normal IVT
-delivery. A profile may additionally register a bounded firmware-interrupt
-portal while the machine configuration window is open. A portal declares an
-exact vector, a start-plus-byte-count permitted guest-code range, and a callback with an
-explicit provider context. Core owns lookup, conflict handling, origin
-validation, fall-through, and freeze; a profile only supplies the callback.
-
-Core calls a portal only when its vector and instruction origin both match the
-frozen declaration. All other `INT` instructions use ordinary CPU/IVT behavior,
-including guest-installed vector hooks. A portal must be private to profile ROM
-and must not be a substitute for a guest-visible BIOS or DOS API. It cannot
-overwrite CPU decode tables, define a CPU capability, access a host platform
-directly, or mutate registration after freeze. A callback receives its
-profile/provider context directly rather than a process-global or opaque
-"current profile" lookup.
-
 ### Configuration Borrows And Reconfiguration
 
 Composition may borrow mutable executor or shared-device implementation

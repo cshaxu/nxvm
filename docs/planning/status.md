@@ -2,6 +2,12 @@
 
 ## Current Work
 
+**M5 T215 complete:** the unused generic firmware-interrupt portal API,
+executor storage, dispatch branch, portal-only smoke, and closure gate are
+deleted. Ordinary CPU `INT` followed by IVT delivery is the sole interrupt
+path; 8086/80386 focused coverage and all 51 current CTest smokes pass. See
+[the task record](m5-t215-remove-firmware-interrupt-portal.md).
+
 **M5 T214 complete:** CPU/machine faults now return stable `STOP_FAULT` with
 detail and diagnostic before the normal reset path. The VM session owns one
 copied outcome for retained Console/debugger inspection; only explicit reset
@@ -63,10 +69,10 @@ changes no source or build output.
 
 ## Latest Technical Baseline
 
-M5 T214 retains NXVM behavior while making CPU/machine fault data a stable
-session-owned result for Console and debugger inspection. The recorded
-developer artifact is `nxvm_0_5_0214.exe`; its historical evidence is
-summarized in [M5 History](../history/m5.md).
+M5 T215 retains NXVM behavior while removing its unused generic
+firmware-interrupt bypass. The recorded developer artifact is
+`nxvm_0_5_0215.exe`; its historical evidence is summarized in
+[M5 History](../history/m5.md).
 
 ## Operational Reading Order
 

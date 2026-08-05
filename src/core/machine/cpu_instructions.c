@@ -11862,27 +11862,19 @@ static C_VOID INT3(core_machine_cpu_execution_context *context)
 }
 static C_VOID INT_I8(core_machine_cpu_execution_context *context)
 {
-    uint32_t origin_linear = cpu_state.data.cs.base + cpu_state.data.eip;
-
     TYPE_TRACE_CALL_BEGIN("INT_I8");
     if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
     {
         _adv;
         TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
-        if (!core_machine_cpu_execution_context_dispatch_firmware_interrupt_portal(
-                context, origin_linear, (uint8_t)instruction_state.data.cimm)) {
-            TYPE_TRACE_CHECK_RETURN(_e_int_n(context,
-                (type_unsigned_8)instruction_state.data.cimm, _GetOperandSize));
-        }
+        TYPE_TRACE_CHECK_RETURN(_e_int_n(context,
+            (type_unsigned_8)instruction_state.data.cimm, _GetOperandSize));
     }
     else
     {
         cpu_state.data.ip++;
         _d_imm(context, 1);
-        if (!core_machine_cpu_execution_context_dispatch_firmware_interrupt_portal(
-                context, origin_linear, (uint8_t)instruction_state.data.cimm)) {
-            _e_int_n(context, (type_unsigned_8)instruction_state.data.cimm, 2);
-        }
+        _e_int_n(context, (type_unsigned_8)instruction_state.data.cimm, 2);
     }
     TYPE_TRACE_CALL_END;
 }
