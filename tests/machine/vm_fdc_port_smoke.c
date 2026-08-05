@@ -1,5 +1,6 @@
 #include "type.h"
 
+#include "core/machine/pic.h"
 #include "core/machine/port.h"
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/session.h"
@@ -34,6 +35,9 @@ C_INT main(C_VOID)
     static const type_unsigned_8 read_sector[] = {
         0xe6u, 0x00u, 0x00u, 0x00u, 0x01u, 0x02u, 0x01u, 0x1bu, 0xffu
     };
+    static const type_unsigned_8 write_sector[] = {
+        0xc5u, 0x00u, 0x00u, 0x00u, 0x01u, 0x02u, 0x01u, 0x1bu, 0xffu
+    };
     static const type_unsigned_8 format_track[] = {
         0x4du, 0x00u, 0x02u, 0x01u, 0x1bu, 0xa5u
     };
@@ -65,8 +69,25 @@ C_INT main(C_VOID)
     fdc_command(port, specify_non_dma, sizeof(specify_non_dma));
     fdc_command(port, format_track, sizeof(format_track));
     fdc_command(port, format_id, sizeof(format_id));
+    failed |= !core_machine_pic_scan_interrupt(session->fdc.connect.irq_source.master,
+        session->fdc.connect.irq_source.slave);
     failed |= !fdc_read_result(port, result, sizeof(result));
     failed |= result[0] != VM_MACHINE_FDC_ST0_NORMAL;
+    fdc_command(port, (const type_unsigned_8[]){ 0x08u }, 1u);
+    failed |= !fdc_read_result(port, result, 2u);
+
+    session->fdd.connect.flagReadOnly = TYPE_TRUE;
+    fdc_command(port, write_sector, sizeof(write_sector));
+    core_machine_port_write(port, 0x03f5u, 0x5au);
+    failed |= !fdc_read_result(port, result, sizeof(result));
+    failed |= (result[1] & 0x02u) == 0u;
+    session->fdd.connect.flagReadOnly = TYPE_FALSE;
+
+    core_machine_port_write(port, 0x03f7u, 0x01u);
+    fdc_command(port, read_sector, sizeof(read_sector));
+    failed |= !fdc_read_result(port, result, sizeof(result));
+    failed |= (result[1] & 0x04u) == 0u;
+    core_machine_port_write(port, 0x03f7u, 0x02u);
 
     fdc_command(port, read_sector, sizeof(read_sector));
     failed |= (core_machine_port_read(port, 0x03f4u) &
@@ -82,6 +103,6 @@ C_INT main(C_VOID)
     vm_session_finalize(session);
     STD_FREE(session);
     if (failed) return 1;
-    puts("M5:T231:S1:FDC-PORT:OK");
+    puts("M5:T231:S3:FDC-PORT:OK");
     return 0;
 }

@@ -89,7 +89,7 @@ explicitly deferred.
 
 | Evidence | Result |
 | --- | --- |
-| `vm-fdc-port-smoke` | Emits `M5:T231:S1:FDC-PORT:OK`; validates command/result phase, no-media error, media-change acknowledgement, non-DMA format, and non-DMA sector read. |
+| `vm-fdc-port-smoke` | Emits `M5:T231:S3:FDC-PORT:OK`; validates command/result phase, no-media error, media-change acknowledgement, non-DMA format/read, write-protect error, rejected CCR rate, and IRQ6 reachability. |
 | `core-machine-dma-channel-smoke` | Retained core-owned DMA2 register/cascade/terminal-count evidence. |
 | `verify-fdc-state-machine-boundary` | Emits `M5:T231:S3:FDC-STATE-MACHINE-BOUNDARY:OK`; rejects FDC image-pointer/RAM/PIC shortcuts and the retired FDD cursor transfer API. |
 | Current matrix | 66/66 CTest cases pass, including FDD DOS boot, prompt, `EDIT.COM`, Console/debugger, and the new FDC port smoke. Linux remains static-contract-only; no WSL is used. |
