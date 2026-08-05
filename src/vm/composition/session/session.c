@@ -10,6 +10,7 @@
 #include "vm/machine/hdd.h"
 #include "vm/profile/default_profile/firmware/bios.h"
 #include "vm/profile/default_profile/keyboard_mapper.h"
+#include "vm/profile/default_profile/mouse_mapper.h"
 
 C_VOID vm_session_consume_request(
     C_VOID *opaque, const vm_platform_request *request)
@@ -27,6 +28,16 @@ C_VOID vm_session_consume_request(
             TYPE_STATUS_OK) {
             (C_VOID)core_machine_keyboard_submit_scan_codes(session->core_machine,
                 sequence.bytes, sequence.count);
+        }
+    } else if (request->kind == VM_PLATFORM_REQUEST_MOUSE_EVENT) {
+        vm_profile_default_mouse_report report;
+
+        if (vm_profile_default_mouse_map_host_relative(
+                request->data.mouse_event.delta_x,
+                request->data.mouse_event.delta_y,
+                request->data.mouse_event.buttons, &report) == TYPE_STATUS_OK) {
+            (C_VOID)core_machine_mouse_submit_relative(session->core_machine,
+                report.delta_x, report.delta_y, report.buttons);
         }
     }
 }

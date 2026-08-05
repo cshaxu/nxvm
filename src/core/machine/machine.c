@@ -713,6 +713,18 @@ type_status core_machine_keyboard_submit_scan_codes(core_machine *machine,
         count);
 }
 
+type_status core_machine_mouse_submit_relative(core_machine *machine,
+    int16_t delta_x, int16_t delta_y, uint8_t buttons)
+{
+    if (machine == STD_NULL || (machine->lifecycle != CORE_MACHINE_RUNNING &&
+        machine->lifecycle != CORE_MACHINE_PAUSED &&
+        machine->lifecycle != CORE_MACHINE_STOPPED)) {
+        return TYPE_STATUS_INVALID_STATE;
+    }
+    return core_machine_kbc_submit_aux_report(&machine->shared_kbc, delta_x,
+        delta_y, buttons);
+}
+
 type_status core_machine_report_fault(
     core_machine *machine,
     uint32_t detail)

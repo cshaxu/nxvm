@@ -12,11 +12,12 @@ session once from Console text to Window graphics. The GCC governance gate and
 `B2D78D1B756A4BF5A1EAA1E038CDD7F4DD22C8487B5A3A5BE9EDF4C223047EB8` from
 `d527f23`; see [the task record](m5-t228-cga-320x200x4.md).
 
-**M5 T229 S1 is active:** define the bounded 8042 AUX controller, mouse packet,
-IRQ12, controller-command, and fixture contract before implementation. Host
-mouse may enter only through a profile mapper and must never write DOS APIs,
-BDA, or guest memory directly. No production source or task artifact is
-permitted until S1 is complete; see [the task record](m5-t229-kbc-aux-mouse.md).
+**M5 T229 S3 is active:** the bounded 8042 AUX controller now has one tagged
+KBC output owner, PS/2 three-byte packets, and IRQ12; host mouse enters only
+through the profile mapper and existing session ingress. The pending closure
+matrix verifies ordinary guest IVT `74h` consumption, retained NXVM behavior,
+GCC/CTest gates, and the `0.5.0229` artifact. No BIOS/DOS/BDA/guest-memory
+shortcut is admitted; see [the task record](m5-t229-kbc-aux-mouse.md).
 
 **M5 Td S10 complete:** defect and compatibility fixes now have an enforceable
 local similar-issue sweep. The active packet and closure evidence must record

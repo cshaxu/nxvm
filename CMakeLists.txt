@@ -217,6 +217,7 @@ target_include_directories(type-facade PUBLIC
 set(VM_PROFILE_SOURCES
     src/vm/profile/default_profile/pc_at_profile.c
     src/vm/profile/default_profile/keyboard_mapper.c
+    src/vm/profile/default_profile/mouse_mapper.c
     src/vm/profile/default_profile/firmware/default_profile.c
     src/vm/profile/default_profile/firmware/bios.c
     src/vm/profile/default_profile/firmware/qdcga.c
@@ -610,6 +611,14 @@ add_executable(core-machine-kbc-controller-smoke
     tests/machine/core_machine_kbc_controller_smoke.c
 )
 target_link_libraries(core-machine-kbc-controller-smoke PRIVATE core-machine)
+add_executable(core-machine-kbc-aux-port-smoke
+    tests/machine/core_machine_kbc_aux_port_smoke.c
+)
+target_link_libraries(core-machine-kbc-aux-port-smoke PRIVATE core-machine)
+add_executable(vm-kbc-aux-guest-smoke
+    tests/machine/vm_kbc_aux_guest_smoke.c
+)
+target_link_libraries(vm-kbc-aux-guest-smoke PRIVATE vm-composition)
 add_executable(vm-keyboard-set1-mapper-smoke
     tests/machine/vm_keyboard_set1_mapper_smoke.c
 )
@@ -784,6 +793,8 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-pit-divider-smoke
     core-machine-pic-irq-lifecycle-smoke
     core-machine-kbc-controller-smoke
+    core-machine-kbc-aux-port-smoke
+    vm-kbc-aux-guest-smoke
     vm-keyboard-set1-mapper-smoke
     core-machine-vadp-text-smoke
     core-machine-cga-graphics-port-smoke
@@ -914,7 +925,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0228 "0.5.0228")
+add_current_vm_artifact(vm-0-5-0229 "0.5.0229")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 
@@ -1030,6 +1041,12 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_keyboard_ingress_boundary.cmake"
         COMMENT "Verifying VM keyboard-state ingress boundary"
+        VERBATIM)
+
+    add_custom_target(verify-aux-mouse-boundary
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_aux_mouse_boundary.cmake"
+        COMMENT "Verifying VM AUX mouse ingress boundary"
         VERBATIM)
 
     add_custom_target(verify-host-cancellation-boundary

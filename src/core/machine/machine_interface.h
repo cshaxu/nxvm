@@ -118,6 +118,8 @@ type_status core_machine_keyboard_submit_scan_code(core_machine *machine,
     uint8_t scan_code);
 type_status core_machine_keyboard_submit_scan_codes(core_machine *machine,
     const uint8_t *scan_codes, STD_SIZE_T count);
+type_status core_machine_mouse_submit_relative(core_machine *machine,
+    int16_t delta_x, int16_t delta_y, uint8_t buttons);
 
 type_status core_machine_capture_display_snapshot(const core_machine *machine,
     core_machine_display_snapshot *out_snapshot);

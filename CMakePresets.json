@@ -21,7 +21,7 @@
     {
       "name": "current-gcc",
       "configurePreset": "mingw-gcc-x64",
-      "targets": ["vm-0-5-0228"]
+      "targets": ["vm-0-5-0229"]
     },
     {
       "name": "current-gates-gcc",
@@ -41,6 +41,7 @@
         "verify-current-artifact-target",
         "verify-request-transport-closure",
         "verify-keyboard-ingress-boundary",
+        "verify-aux-mouse-boundary",
         "verify-host-cancellation-boundary",
         "verify-keyboard-transport-surface",
         "verify-console-adapter-closure",
