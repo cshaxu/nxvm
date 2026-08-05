@@ -400,9 +400,12 @@ C_VOID core_machine_pic_irq_source_deassert(core_machine_pic_irq_source *source)
     }
 }
 
-C_VOID core_machine_pic_timer_output(C_VOID *owner) {
-    core_machine_pic_irq_source_assert((core_machine_pic_irq_source *)owner);
-    core_machine_pic_irq_source_deassert((core_machine_pic_irq_source *)owner);
+C_VOID core_machine_pic_timer_output(C_VOID *owner, type_bool asserted) {
+    if (asserted) {
+        core_machine_pic_irq_source_assert((core_machine_pic_irq_source *)owner);
+    } else {
+        core_machine_pic_irq_source_deassert((core_machine_pic_irq_source *)owner);
+    }
 }
 
 type_bool core_machine_pic_scan_interrupt(t_pic *master, t_pic *slave) {

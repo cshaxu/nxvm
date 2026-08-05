@@ -18,7 +18,8 @@ typedef enum {
     VPIT_STATUS_RW_MSB
 } t_pit_data_status_rw;
 
-typedef C_VOID (*core_machine_pit_output_provider)(C_VOID *owner);
+typedef C_VOID (*core_machine_pit_output_provider)(C_VOID *owner,
+    type_bool asserted);
 
 typedef struct {
     /* control words[0-2] for counter 0-2, and cw[3] is read-back command */
@@ -33,13 +34,19 @@ typedef struct {
     type_bool flagLatch[3]; /* flag of latch status */
     type_bool flagStatusLatch[3]; /* flag of pending status read-back */
     type_bool flagOutput[3]; /* retained counter-model OUT state */
+    type_bool flagActive[3]; /* a loaded waveform is currently counting */
+    type_bool flagPulseLow[3]; /* one elapsed-tick low strobe is pending */
+
+    uint32_t reload[3]; /* effective binary/BCD reload; zero is never stored */
+    uint32_t remaining[3]; /* effective count exposed through count[] */
+    uint32_t phase[3]; /* remaining high/low phase for mode 3 */
 
     t_pit_data_status_rw flagRead[3];  /* flag of low byte read */
     t_pit_data_status_rw flagWrite[3]; /* flag of low byte write */
 } t_pit_data;
 
 typedef struct {
-    type_bool flagGate[3];  /* enable or disable counter */
+    type_bool flagGate[3];  /* current GATE input level */
     core_machine_pit_output_provider output[3];
     C_VOID *output_owner[3];
 } t_pit_connect;
@@ -87,6 +94,9 @@ C_VOID core_machine_pit_advance(t_pit *pit, uint64_t elapsed_ticks);
 C_VOID core_machine_pit_finalize(t_pit *pit);
 C_VOID core_machine_pit_set_output(t_pit *pit, type_unsigned_8 id,
     core_machine_pit_output_provider provider, C_VOID *owner);
+C_VOID core_machine_pit_set_gate(t_pit *pit, type_unsigned_8 id,
+    type_bool asserted);
+type_bool core_machine_pit_get_output(const t_pit *pit, type_unsigned_8 id);
 
 #define VPIT_POST "                                 \
 ; init pit                                        \n\
