@@ -327,7 +327,7 @@ add_library(vm-platform-requests STATIC
 target_include_directories(vm-platform-requests PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
-target_link_libraries(vm-platform-requests PUBLIC core-machine)
+target_link_libraries(vm-platform-requests PUBLIC type-facade)
 add_executable(vm-platform-request-bridge-smoke
     tests/platform/vm_request_bridge_smoke.c
 )
@@ -543,8 +543,7 @@ target_include_directories(vm-product PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
 target_link_libraries(vm-product PUBLIC
-    core-product-utils
-    core-machine)
+    core-product-utils)
 
 add_executable(vm-cpu-probe-smoke
     tests/adapters/nxvm_vm_cpu_probe_smoke.c

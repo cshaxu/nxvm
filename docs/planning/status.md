@@ -2,7 +2,13 @@
 
 ## Current Work
 
-**M5 T234 complete:** `core/utils` is now the strict neutral utility/callback
+**M5 T234 S4 complete:** removed the remaining target-only
+`vm-platform-requests -> core-machine` and `vm-product -> core-machine` edges;
+the former now depends on `type-facade`, the latter only on its actual product
+tooling. GCC 16.1.0 `current-gates-gcc` passed again with 67/67 smoke tests.
+Session-layout encapsulation remains separate P2 design work.
+
+**M5 T234 S3 complete:** `core/utils` is now the strict neutral utility/callback
 layer. VM machine/platform/profile no longer import `core/product`; composition
 owns both BIOS text-to-bytes assembly and machine-record disassembly binding.
 The source/target boundary gate and GCC 16.1.0 current-gates run passed 67/67
