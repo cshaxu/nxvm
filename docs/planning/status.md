@@ -5,6 +5,20 @@
 **No implementation subtask is active.** M5 T227 is complete; the next
 admission remains T228 S1 and requires its own contract before source work.
 
+**M5 Td S10 complete:** defect and compatibility fixes now have an enforceable
+local similar-issue sweep. The active packet and closure evidence must record
+the original defect, full relevant-repository query, every production-hit
+disposition, focused regression, and a recurring closure gate when mechanical
+detection is possible. This is governance-only: no source, build, artifact,
+or M5 technical closure item changes.
+
+| Requirement | State | Evidence or decision |
+| --- | --- | --- |
+| R1: retain a local enforceable rule | Verified | Execution Policy defines mandatory sweep fields and a no-undocumented-hit closure condition. |
+| R2: make task packets auditable | Verified | Execution Workflow requires the sweep record at intake and at closure. |
+| R3: avoid unrelated cleanup | Verified | Out-of-scope hits require a recorded deferral or owner-approved scope change. |
+| R4: preserve public-skill division | Verified | Local text names ntvdm64 evidence and gates; general discovery practice remains in the public skill. |
+
 **M5 Td S7 complete:** the execution workflow is the seventh principal
 documentation entry. Its closure audit verified R1 (entry/navigation), R2
 (requirement packet, state machine, and closure audit), and R3 (docs-only,

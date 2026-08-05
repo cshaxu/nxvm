@@ -12,6 +12,31 @@ expected markers, asset needs, and stop conditions. The rules review names each
 applicable invariant, its planned evidence, and any requested owner-approved
 exception; a task may mark a rule not applicable only with a short reason.
 
+## Similar-Issue Sweep
+
+Every implementation task that fixes a source, behavioral, compatibility, or
+architecture defect must close the defect class, not only its first observed
+site. Its active task packet and completion evidence must record a
+**similar-issue sweep** containing:
+
+- the defect class and the original reproducer or observation;
+- the repository scope and exact search commands or static queries used. The
+  default scope is all tracked production source, tests, build descriptions,
+  and task/governance records relevant to the defect class; every exclusion
+  needs a short reason;
+- every production-path hit and its disposition: fixed, not applicable with a
+  reason, or deferred into `TODO.md` with priority, owner/boundary, and an
+  admission task or gate; and
+- the post-fix result, including a focused regression. When the defect class
+  is mechanically detectable, add or update a closure/static gate so the same
+  forbidden shape cannot return through another path.
+
+The sweep is not a request for unrelated cleanup: a hit outside the active
+scope is deferred or causes an owner-approved scope change. A task may mark the
+sweep not applicable only for work that cannot correct a defect class, such as
+standalone documentation; it must state that reason. A defect-fix task cannot
+complete with an undocumented production hit or an untracked deferral.
+
 ## Work Identifiers
 
 Numeric `T` identifiers are reserved for implementation tasks. A standalone

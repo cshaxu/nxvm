@@ -42,3 +42,6 @@ dependency graph remains [Module Layout](architecture/module-layout.md).
   dependencies, verify, then move the next bounded source file.
 - Use `TODO(High)`, `TODO(Medium)`, or `TODO(Low)` only with a ledger entry and
   bounded future admission path.
+- Defect and compatibility fixes follow the mandatory similar-issue sweep in
+  [Execution Policy](planning/execution-policy.md); do not apply a local patch
+  while leaving equivalent production paths unclassified.
