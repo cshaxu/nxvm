@@ -49,6 +49,13 @@ DOS prompt, Console, and debugger matrix. Source-scan rejects direct device
 calls to legacy PIC mutation or CPU interrupt state. Only S3 produces
 `build/output/nxvm_0_5_0216.exe`.
 
+### S4: Level Cascade Regression
+
+Extend only the existing PIC port smoke with level-mode IRQ14. Verify slave
+IRQ6 and master IRQ2 enter ISR, slave then master EOI completes, refresh
+re-presents IRQ14 while its source remains asserted, and deassertion withdraws
+the final request. S4 changes no runtime behavior and produces no artifact.
+
 ## Rules And Stop Conditions
 
 Applicable rules: core owns shared PIC state; VM devices own only their own
@@ -72,3 +79,9 @@ re-presentation after EOI. `current-gates-gcc` passes, the current CTest
 matrix passes 52/52 tests, and a source scan finds no legacy direct PIC
 mutation. Developer artifact: `build/output/nxvm_0_5_0216.exe`, SHA-256
 `08466E84D0661BA55B1564563F1A2FE7E03D6927AFBCE55C27B3FEAE0971156B`.
+
+S4 additionally proves level-mode IRQ14 cascade: slave IRQ6 and master IRQ2
+enter ISR, slave then master EOI completes, refresh re-presents the still
+asserted source, and source deassertion withdraws the final request. It is a
+regression-only extension; the T216 artifact remains unchanged. The full
+current CTest matrix again passes 52/52.
