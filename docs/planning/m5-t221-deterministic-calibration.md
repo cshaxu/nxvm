@@ -2,7 +2,7 @@
 
 ## S1: Checkpoint Contract
 
-**Status:** S1/S2 complete; S3 artifact recording active. T221 makes the T217--T220 coarse timing model auditable;
+**Status:** complete. T221 makes the T217--T220 coarse timing model auditable;
 it does not claim cycle accuracy or final PIT waveform compatibility.
 
 ### Checkpoint Surface
@@ -44,5 +44,12 @@ then active display again at checkpoint 64.
 
 ### S3 Evidence
 
-The deterministic checkpoint probe passes. The current full GCC/CTest matrix
-and T221 developer artifact record are the remaining closure evidence.
+The deterministic checkpoint probe passes. The current GCC/CTest matrix passes
+56/56 tests, including FDD prompt, keyboard, `MEM`, video-port, HDD boot,
+Console, debugger, and the retained timing/device probes.
+
+Developer artifact: `build/output/nxvm_0_5_0221.exe`.
+
+SHA-256: `527FC2845DBDF46D8A83516755D0A49BE62BBD83C898FE0EAB9332C6EEFEBEF4`.
+
+Source commits: `5455b61` (`M5 T221 S2 P1`) and this S3 evidence record.

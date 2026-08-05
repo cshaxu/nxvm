@@ -2,9 +2,15 @@
 
 ## Current Work
 
-**M5 T221 S3 active:** record the deterministic core clock/CGA checkpoint
-calibration artifact. See [the task record](m5-t221-deterministic-calibration.md)
-and the authoritative [PC/AT hardware queue](m5-pcat-hardware-convergence.md).
+**M5 T222 S1 active:** define the PIT elapsed-tick waveform/GATE contract and
+port probes before changing timer behavior. See [the task
+record](m5-t222-pit-waveform.md) and the authoritative [PC/AT hardware
+queue](m5-pcat-hardware-convergence.md).
+
+**M5 T221 complete:** deterministic reset-vector checkpoint sequences now lock
+the core tick, run-result, and `3DAh` raster behavior across one default
+period. The 56/56 current CTest matrix passes. See [the task
+record](m5-t221-deterministic-calibration.md).
 
 **M5 T220 complete:** VADP owns frozen PC/AT text-raster timing and derives
 `3DAh` display-enable/retrace states only from core elapsed ticks. Focused
