@@ -2,8 +2,10 @@
 
 #include <windows.h>
 
+#include "core/machine/debug_interface.h"
 #include "core/machine/machine_interface.h"
 #include "vm/composition/session/control.h"
+#include "vm/composition/session/fault.h"
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/session.h"
 #include "vm/machine/fdd.h"
@@ -51,13 +53,53 @@ static C_INT vm_dos_keyboard_has_prompt(const vm_session *session)
     return 0;
 }
 
+static C_INT vm_dos_keyboard_has_edit_menu(const vm_session *session)
+{
+    return vm_dos_keyboard_has_text(session, "File  Edit  Search  Options") &&
+        vm_dos_keyboard_has_text(session, "Help");
+}
+
+static C_VOID vm_dos_keyboard_report_failure(const vm_session *session,
+    const core_machine_cpu_state *state)
+{
+    core_platform_display_frame frame;
+    uint16_t head = 0u;
+    uint16_t tail = 0u;
+    uint8_t video_mode = 0u;
+    uint8_t instructions[8] = { 0u };
+    STD_SIZE_T index;
+
+    if (session == STD_NULL || state == STD_NULL) return;
+    (C_VOID)core_machine_debug_read_memory(session->core_machine, 0x041au,
+        &head, sizeof(head));
+    (C_VOID)core_machine_debug_read_memory(session->core_machine, 0x041cu,
+        &tail, sizeof(tail));
+    (C_VOID)core_machine_debug_read_memory(session->core_machine, 0x0449u,
+        &video_mode, sizeof(video_mode));
+    (C_VOID)core_machine_debug_read_memory(session->core_machine,
+        state->cs_base + state->eip, instructions, sizeof(instructions));
+    vm_platform_presentation_mailbox_capture(&session->presentation_mailbox,
+        &frame);
+    STD_PRINTF("keyboard smoke timed out: BDA head=%04x tail=%04x text=", head, tail);
+    for (index = 0u; index < 80u; ++index) {
+        C_UCHAR character = frame.characters[index];
+        STD_PRINTF("%c", character == 0u ? ' ' : character);
+    }
+    STD_PRINTF("\n");
+    STD_PRINTF("edit state: mode=%02x BDA head=%04x tail=%04x halt=%u bytes="
+        "%02x %02x %02x %02x %02x %02x %02x %02x\n", video_mode, head, tail,
+        state->halted, instructions[0], instructions[1], instructions[2],
+        instructions[3], instructions[4], instructions[5], instructions[6],
+        instructions[7]);
+}
+
 C_INT main(C_INT argc, C_CHAR **argv)
 {
     vm_session *session = STD_NULL;
     HANDLE thread = STD_NULL;
     DWORD elapsed;
-    const C_UCHAR scan_codes[] = { 0x2fu, 0x12u, 0x13u, 0x1cu };
-    const C_UCHAR virtual_keys[] = { 'V', 'E', 'R', VK_RETURN };
+    const C_UCHAR scan_codes[] = { 0x12u, 0x20u, 0x17u, 0x14u, 0x1cu };
+    const C_UCHAR virtual_keys[] = { 'E', 'D', 'I', 'T', VK_RETURN };
     STD_SIZE_T index;
 
     if (argc != 2 || vm_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||
@@ -72,18 +114,41 @@ C_INT main(C_INT argc, C_CHAR **argv)
     for (index = 0u; index < sizeof(scan_codes); ++index) {
         vm_platform_win32_keyboard_make_key_for(&session->platform_run_context,
             &session->platform_run_handle, scan_codes[index], virtual_keys[index]);
-        Sleep(50u);
     }
-    for (elapsed = 0u; elapsed < 1000u; elapsed += 10u) {
-        if (vm_dos_keyboard_has_text(session, "ver")) break;
+    for (elapsed = 0u; elapsed < 5000u; elapsed += 10u) {
+        if (vm_dos_keyboard_has_edit_menu(session)) break;
         Sleep(10u);
+    }
+    if (elapsed == 5000u) {
+        vm_session_fault_outcome outcome;
+        core_machine_cpu_state state;
+
+        vm_session_control_request_pause(&session->control,
+            VM_SESSION_PAUSE_EXPLICIT);
+        if (vm_session_control_wait_for_pause(&session->control, 500u) &&
+            core_machine_debug_read_cpu(session->core_machine, &state) ==
+                TYPE_STATUS_OK) {
+            STD_PRINTF("edit pause: %04x:%08x flags=%08x\n", state.cs,
+                state.eip, state.eflags);
+            vm_dos_keyboard_report_failure(session, &state);
+        }
+
+        if (vm_session_fault_get(session, &outcome) == 0 && outcome.valid) {
+            STD_PRINTF("edit fault: detail=%08x pc=%08x mask=%08x code=%08x\n",
+                outcome.run.detail, outcome.run.linear_pc,
+                outcome.diagnostic.first_fault.exception_mask,
+                outcome.diagnostic.first_fault.exception_code);
+        } else {
+            STD_PRINTF("edit run state: %s\n",
+                vm_session_control_is_running(&session->control) ? "running" : "stopped");
+        }
     }
     vm_session_stop(session);
     WaitForSingleObject(thread, 2000u);
     CloseHandle(thread);
     vm_session_destroy(session);
-    if (elapsed == 1000u) return 1;
-    STD_PRINTF("M5:T210:S3:KEYBOARD:DOS:OK\n");
+    if (elapsed == 5000u) return 1;
+    STD_PRINTF("M5:T216:S5:EDIT:DOS:OK\n");
     return 0;
 
 fail:

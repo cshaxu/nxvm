@@ -15,11 +15,10 @@
 
 /* indicates functions not implemented */
 #define _______todo static C_VOID
-/* prints untested code path */
+/* Records an untested code path only when an explicit trace is active. */
 #define _new_code_path_                       \
     do                                        \
     {                                         \
-        STD_PRINTF("NEW CODE PATH\n");        \
         if (context->trace != STD_NULL)       \
             type_trace_print(context->trace); \
     } while (0)

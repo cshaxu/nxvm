@@ -14,6 +14,8 @@
 #define CORE_MACHINE_VADP_PORT_COLOR 0x03d9u
 #define CORE_MACHINE_VADP_PORT_STATUS 0x03dau
 #define CORE_MACHINE_VADP_STATUS_TEXT_READY 0x08u
+#define CORE_MACHINE_VADP_REFRESH_PHASES 64u
+#define CORE_MACHINE_VADP_VERTICAL_RETRACE_PHASES 8u
 #define CORE_MACHINE_VADP_CRTC_CURSOR_TOP 0x0au
 #define CORE_MACHINE_VADP_CRTC_CURSOR_BOTTOM 0x0bu
 #define CORE_MACHINE_VADP_CRTC_START_HIGH 0x0cu
@@ -139,8 +141,9 @@ static C_VOID core_machine_vadp_read_status(t_port *port,
     type_unsigned_16 port_id, C_VOID *owner)
 {
     (C_VOID)port_id;
-    (C_VOID)owner;
-    if (port != STD_NULL) port->data.ioByte = 0u;
+    if (port != STD_NULL && owner != STD_NULL) {
+        port->data.ioByte = ((t_vadp *)owner)->data.status;
+    }
 }
 
 static C_VOID core_machine_vadp_register_ports(t_vadp *adapter, t_port *port)
@@ -178,6 +181,7 @@ C_VOID core_machine_vadp_reset(t_vadp *adapter)
     if (adapter == STD_NULL) return;
     STD_MEMSET(&adapter->data, TYPE_ZERO_8, sizeof(adapter->data));
     adapter->data.mode_control = 0x05u;
+    adapter->data.refresh_phase = CORE_MACHINE_VADP_VERTICAL_RETRACE_PHASES;
     adapter->data.columns = 80u;
     adapter->data.rows = 25u;
     adapter->data.color_enabled = TYPE_TRUE;
@@ -190,8 +194,17 @@ C_VOID core_machine_vadp_reset(t_vadp *adapter)
 
 C_VOID core_machine_vadp_refresh(t_vadp *adapter, t_ram *memory)
 {
-    (C_VOID)adapter;
     (C_VOID)memory;
+    if (adapter == STD_NULL) return;
+
+    /* The text slice has no raster renderer or host clock.  Advance a small,
+     * deterministic CGA status phase from the core execution clock so guest
+     * polling loops can observe both display and vertical-retrace states. */
+    adapter->data.refresh_phase = (uint8_t)((adapter->data.refresh_phase + 1u) %
+        CORE_MACHINE_VADP_REFRESH_PHASES);
+    adapter->data.status = adapter->data.refresh_phase <
+        CORE_MACHINE_VADP_VERTICAL_RETRACE_PHASES ?
+            CORE_MACHINE_VADP_STATUS_TEXT_READY : 0u;
 }
 
 C_VOID core_machine_vadp_finalize(t_vadp *adapter)

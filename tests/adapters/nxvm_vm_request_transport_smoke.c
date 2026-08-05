@@ -84,9 +84,8 @@ C_INT main(C_VOID)
         observer.requests[2].data.keyboard_state.toggle_keys !=
             CORE_MACHINE_KEYBOARD_TOGGLE_CAPS_LOCK ||
         vm_platform_request_transport_execution_boundary_count(&transport) != 1u ||
-        vm_platform_request_transport_dequeue_ingress(&transport,
-                                                             &copy) !=
-        TYPE_STATUS_UNSUPPORTED) return 1;
+        vm_platform_request_transport_dequeue_ingress(&transport, &copy) !=
+            TYPE_STATUS_UNSUPPORTED) return 1;
 
     request.kind = VM_PLATFORM_REQUEST_KEY_PRESS;
     request.data.key_press.scan_code = 0x30u;

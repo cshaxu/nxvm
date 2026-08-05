@@ -2,6 +2,16 @@
 
 ## Current Work
 
+**M5 T216 S5 active:** repair the T210/T216 keyboard and text-mode integration
+regression. The default profile's ROM `INT 09h` path must drain rapid KBC FIFO
+input through fresh IRQ1 edge transitions; ROM `INT 16h` status must update the
+saved return FLAGS rather than the return IP; and text-mode `3DAh` must expose
+deterministic display/retrace phases so `EDIT.COM` cannot spin with a blank
+screen. Normal NXVM execution must not print the legacy `NEW CODE PATH`
+diagnostic into the guest Console. This is an in-scope correction to T216
+source migration, not a new task identifier or artifact version; it preserves
+the retained Console, debugger, startup, and boot behavior.
+
 **M5 T216 complete:** PIT, KBC, FDC, and HDC signal IRQs through the core PIC
 source boundary. The PIC alone owns edge/level delivery, IRR/ISR, mask, EOI,
 priority, and cascade; S4 also locks level-mode IRQ14 re-presentation through

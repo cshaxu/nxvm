@@ -24,6 +24,8 @@ typedef struct t_vadp_data {
     uint8_t crtc[CORE_MACHINE_VADP_CRTC_REGISTER_COUNT];
     uint8_t mode_control;
     uint8_t color_select;
+    uint8_t status;
+    uint8_t refresh_phase;
     uint16_t columns;
     uint16_t rows;
     C_INT color_enabled;
