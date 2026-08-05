@@ -47,11 +47,11 @@ These are the next owned admissions, not permission to work in parallel.
   scaling, remote/read-data/status, resend/error timing, and host capture only
   as separately probed controller work; do not turn platform input into a DOS
   API or guest-memory shortcut.
-- [ ] **FDC/FDD controller state machine (`TODO(High)`, T231).** T230 locks the
-  core-owned 8237/DMA2 contract. Next implement FDC command/result,
-  media-change, motor, rate, errors, non-DMA, format, transfer-time, DMA2, and
-  IRQ6 semantics. Image files are only backends; successful boot is not
-  sufficient evidence.
+- [x] **FDC/FDD controller state machine (`TODO(High)`, T231).** Core-owned
+  DMA2 now drives the bounded VM FDC/FDD command/result state machine; image
+  files are validated backends, not controller shortcuts. Deferred separately:
+  multi-drive mechanics, rotation latency, deleted/scan/read-track commands,
+  and arbitrary FDC configuration.
 - [ ] **CMOS/RTC admission (`TODO(Medium)`, T232).** Add owned RTC register,
   periodic/update/alarm IRQ8, NVRAM, and deterministic-time semantics. Host
   time may be a provider, never a guest-state shortcut.
