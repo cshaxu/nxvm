@@ -81,6 +81,25 @@ C_INT main(C_VOID)
     core_machine_pic_refresh(&master, &slave);
     failed |= core_machine_pic_scan_interrupt(&master, &slave);
 
+    core_machine_pic_reset(&master, &slave);
+    initialize_pic(&master, &slave, &port, 0x19u);
+    core_machine_pic_irq_source_bind(&irq14, &master, &slave, 14u);
+    core_machine_pic_irq_source_assert(&irq14);
+    core_machine_pic_refresh(&master, &slave);
+    failed |= core_machine_pic_get_interrupt(&master, &slave) != 0x76u;
+    failed |= (master.data.isr & VPIC_ISR_IRQ(2u)) == 0u ||
+        (slave.data.isr & VPIC_ISR_IRQ(6u)) == 0u;
+    core_machine_port_write(&port, 0x00a0u, 0x20u);
+    core_machine_port_write(&port, 0x0020u, 0x20u);
+    core_machine_pic_refresh(&master, &slave);
+    failed |= !core_machine_pic_scan_interrupt(&master, &slave);
+    failed |= core_machine_pic_get_interrupt(&master, &slave) != 0x76u;
+    core_machine_port_write(&port, 0x00a0u, 0x20u);
+    core_machine_port_write(&port, 0x0020u, 0x20u);
+    core_machine_pic_irq_source_deassert(&irq14);
+    core_machine_pic_refresh(&master, &slave);
+    failed |= core_machine_pic_scan_interrupt(&master, &slave);
+
     core_machine_pic_finalize(&master, &slave);
     core_machine_port_finalize(&port);
     if (failed) return 1;

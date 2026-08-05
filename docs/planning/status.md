@@ -2,9 +2,10 @@
 
 ## Current Work
 
-**M5 T216 complete:** PIT, KBC, FDC, and HDC now signal IRQs through the core
-PIC source boundary. The PIC alone owns edge/level delivery, IRR/ISR, mask,
-EOI, priority, and cascade; the 52-test current matrix passes. See [the task
+**M5 T216 complete:** PIT, KBC, FDC, and HDC signal IRQs through the core PIC
+source boundary. The PIC alone owns edge/level delivery, IRR/ISR, mask, EOI,
+priority, and cascade; S4 also locks level-mode IRQ14 re-presentation through
+slave/master double EOI. The 52-test current matrix passes. See [the task
 record](m5-t216-pic-irq-lifecycle.md).
 
 **M5 T215 complete:** the unused generic firmware-interrupt portal API,

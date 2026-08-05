@@ -515,3 +515,22 @@ remain the rule authorities.
 - [ ] Do not change retained NXVM Console, debugger, startup, or boot behavior
   during structural migration without explicit owner approval and regression
   evidence.
+
+
+# Big Goals
+
+If you run out of ideas, these are kind of north-star for us:
+
+## Profile Support
+- Support IBM Palm Top PC 110 (see PC110-EMU repo for real ROMs and hardware logic)
+- Support Compaq DeskPro 386 Profile (see pcjs)
+- Support other profiles supported by Bochs
+
+## OS Support
+- Short term: DOS only + 386 (HIMEM.SYS WORKING)
+- Mid term: Windows 3.x (StandardMode, 386 Enhanced Mode)
+- Long term: Windows 9x
+
+## AI DevBox
+- The vm product exposes capabilities so that AI can help program legacy DOS/Win16/Win32 projects inside of it
+- AI agents can control the machines (via both exposed API to control at lower level, as well as computer-use)
