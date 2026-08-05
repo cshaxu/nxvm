@@ -34,7 +34,7 @@ in its task record and Git history; the M5 implementation order belongs in
 | Interrupts and time | PIC source lifecycle; deterministic core elapsed ticks; PIT/IRQ0 -> ROM -> BDA -> `INT 1Ah` evidence | Greater timing fidelity only when an explicit corpus requires it. |
 | Keyboard | KBC, IRQ1/IRQ12, ROM `INT 09h`/`INT 16h`, set-1 break/E0/E1, typeahead, selection/query, translation observation, LED, typematic, ACK/RESEND, bounded PS/2 AUX packets | Set-2/3 conversion, wheel/advanced AUX protocol, guest mouse driver/API, and native POSIX runtime validation. |
 | Display | CGA text plus bounded digital `320x200x4`; copied text/indexed frames; `console`/`window`/`auto` selection | Remaining digital CGA modes/CRTC behavior, composite video, EGA/VGA, VBE. |
-| Storage | Bounded ATA PIO and FDD boot paths through declared ROM/device owners | Full FDC state machine, broad DMA behavior, extended IDE, and error/timing compatibility. |
+| Storage | Bounded ATA PIO and FDD boot paths through declared ROM/device owners; core-owned 8237 DMA controller baseline with frozen FDC DMA2 binding | Full FDC state machine, broad DMA behavior, extended IDE, and error/timing compatibility. |
 | VDM | Isolated non-runnable scaffold over the shared core | Owned DOS design, CLI, host-drive policy, and product implementation remain deferred. |
 
 ## Current M5 ROI Queue
@@ -47,11 +47,11 @@ These are the next owned admissions, not permission to work in parallel.
   scaling, remote/read-data/status, resend/error timing, and host capture only
   as separately probed controller work; do not turn platform input into a DOS
   API or guest-memory shortcut.
-- [ ] **8237 DMA and FDC contract (`TODO(High)`, T230--T231).** First admit
-  DMA request/mask/mode/page/address/count ownership and channel-2 FDC access;
-  then implement FDC command/result, media-change, motor, rate, errors,
-  non-DMA, format, transfer-time, DMA2, and IRQ6 semantics. Image files are
-  only backends; successful boot is not sufficient evidence.
+- [ ] **FDC/FDD controller state machine (`TODO(High)`, T231).** T230 locks the
+  core-owned 8237/DMA2 contract. Next implement FDC command/result,
+  media-change, motor, rate, errors, non-DMA, format, transfer-time, DMA2, and
+  IRQ6 semantics. Image files are only backends; successful boot is not
+  sufficient evidence.
 - [ ] **CMOS/RTC admission (`TODO(Medium)`, T232).** Add owned RTC register,
   periodic/update/alarm IRQ8, NVRAM, and deterministic-time semantics. Host
   time may be a provider, never a guest-state shortcut.

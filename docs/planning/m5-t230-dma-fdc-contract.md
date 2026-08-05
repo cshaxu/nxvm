@@ -82,8 +82,38 @@ support.
 
 ## S2: Owned Implementation
 
-**Status:** Active.
+**Status:** Complete.
+
+- `core/machine/dma` retains the only two-controller register/state storage and
+  scheduler advance. It now exports a one-channel provider binding plus
+  assert/deassert request handle instead of the legacy raw function-address
+  registration and public numeric DRQ operation.
+- The secondary-controller `D0h`--`DEh` control-port decode is corrected to
+  its interleaved 8237A mapping. DMA2 can therefore traverse the mandatory
+  secondary channel-0 cascade only after both controller masks permit it.
+- VM composition binds the profile-declared FDC DMA2 route exactly once while
+  core configuration is open. `vm/machine/fdc` retains only the resulting
+  request binding and byte callbacks; it has no raw DMA/latch field and no
+  core-memory access.
+- FDC reset/finalize deasserts its request before its own IRQ source is
+  released. Existing FDC command/result behavior remains deliberately intact
+  for T231 rather than being folded into this ownership task.
 
 ## S3: Verification And Closure
 
-**Status:** Pending.
+**Status:** Complete.
+
+| Evidence | Result |
+| --- | --- |
+| `core-machine-dma-channel-smoke` | Emits `M5:T230:S3:DMA-CHANNEL:OK`; port-programs DMA2 through the primary and secondary cascade, checks flip-flop/page/address/count, masked and deasserted requests, terminal count, auto-initialize, and address decrement while only core DMA touches RAM. |
+| `vm-fdc-authority-smoke` | Emits `M5:T230:S3:FDC-DMA-BINDING:OK`; checks that the default FDC has exactly a DMA2 request binding, its FDD/IRQ/port dependencies, and no raw DMA storage fields. |
+| `verify-dma-fdc-boundary` | Emits `M5:T230:S3:DMA-FDC-BOUNDARY:OK`; rejects FDC raw DMA/latch, numeric DRQ, and core-memory access while requiring the composition binding and core-only RAM transfer path. |
+| `current-gates-gcc` | Passed with 65/65 current CTest smoke cases, including FDD/HDD boot, DOS prompt, `EDIT.COM`, Console/debugger, keyboard, and display regressions. Linux static contract passed; no WSL was used. |
+
+The developer artifact is `build/output/nxvm_0_5_0230.exe` with SHA-256
+`512358DD2053FDA21B3B1A4B5BB6E8A29724E9098CCDAFC340423D99917777D0`.
+Its source implementation commit is `c30331e`. Its runtime identity is
+`Neko's x86 Virtual Machine [0.5.0230]
+Copyright (c) 2012-2026 Neko.` The T230 sweep found that the legacy FDC was the
+only production raw-DMA/DRQ consumer; it is now covered by the closure gate.
+T231 remains the only task allowed to broaden FDC device behavior.
