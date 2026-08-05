@@ -70,7 +70,7 @@ device implementation begins.
 
 | Task | Dependencies | Deliverable and exit condition |
 | --- | --- | --- |
-| T234 | M5 boundary audit | Establish `core/utils` as the only dependency-neutral utility/callback layer; remove VM peer imports of `core/product`, retire stale utility imports and dead diagnostics, and enforce the source and target DAG. Design the retained BIOS-image migration before changing it. |
+| T234 | M5 boundary audit | **Complete.** `core/utils` now owns the injected wait scope; VM peers no longer import `core/product`; composition owns BIOS text-to-bytes assembly; and the source/target boundary gate plus GCC smoke matrix pass. |
 | T235 | T219, T228 | Add only EGA/VGA memory windows, mapping, and sequencer families with per-family port and memory-map probes. |
 | T236 | T235 | Add admitted graphics- and attribute-controller families with planar-access fixtures; deferred families remain explicitly unsupported. |
 | T237 | T219, T236 | Add bounded DAC, planar VRAM, latch, and raster subfamilies with copied frame snapshots. This is not a single unbounded VGA task. |

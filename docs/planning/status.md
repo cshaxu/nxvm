@@ -2,6 +2,14 @@
 
 ## Current Work
 
+**M5 T234 complete:** `core/utils` is now the strict neutral utility/callback
+layer. VM machine/platform/profile no longer import `core/product`; composition
+owns both BIOS text-to-bytes assembly and machine-record disassembly binding.
+The source/target boundary gate and GCC 16.1.0 current-gates run passed 67/67
+smokes. Artifact `nxvm_0_5_0234.exe` is SHA-256
+`1A94A5D3D9E09FD2302CE71C3DC51434E9AA9915C2F2879BB42589AAE29591E9` from
+`263bf0d`; see [the task record](m5-t234-core-utils-boundary.md).
+
 **M5 T233 complete:** the default primary-master ATA controller now admits
 LBA28 PIO read/write and count-zero=256, while explicitly rejecting absent
 slave selection and retaining no secondary channel. SRST is BSY on assertion
@@ -260,7 +268,8 @@ and TODO wording with its completed artifact and current-gate evidence. It
 changes no source or build output.
 `M5 Td S6` establishes the authoritative ROI-ordered PC/AT hardware queue,
 corrects the baseline to T216 S5, and reserves T217--T233 for time, devices,
-storage, and display work; deferred CPU/FPU tasks are renumbered T234--T237.
+storage, and display work. T234 was allocated to the boundary closure, which
+is complete; the unstarted EGA/VGA and CPU/FPU work follows as T235--T241.
 
 ## Milestone State
 
