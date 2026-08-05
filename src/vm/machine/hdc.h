@@ -36,6 +36,7 @@ typedef struct vm_machine_hdc_config {
     uint16_t status_command_port;
     uint16_t alternate_status_device_control_port;
     uint8_t irq;
+    type_bool lba28_supported;
 } vm_machine_hdc_config;
 
 typedef struct vm_machine_hdc_data {
@@ -49,8 +50,9 @@ typedef struct vm_machine_hdc_data {
     uint8_t status;
     uint8_t device_control;
     type_bool irq_pending;
+    type_bool reset_asserted;
     uint8_t last_command;
-    uint8_t sectors_remaining;
+    uint16_t sectors_remaining;
     uint32_t command_count;
     vm_machine_hdc_phase phase;
     uint16_t data_index;

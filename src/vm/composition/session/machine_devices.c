@@ -90,7 +90,8 @@ C_INT vm_session_machine_devices_initialize_hdc(vm_session *session)
         ports->alternate_status_device_control_port != 0x03f6u ||
         ports->irq != 14u || ports->dma_channel !=
         VM_PROFILE_DEFAULT_PC_AT_NO_DMA_CHANNEL || ports->data_width_bits != 16u ||
-        ports->register_width_bits != 8u) return 0;
+        ports->register_width_bits != 8u || !ports->lba28_supported ||
+        ports->slave_present || ports->secondary_channel_present) return 0;
     config.data_port = ports->data_port;
     config.error_features_port = ports->error_features_port;
     config.sector_count_port = ports->sector_count_port;
@@ -102,6 +103,7 @@ C_INT vm_session_machine_devices_initialize_hdc(vm_session *session)
     config.alternate_status_device_control_port =
         ports->alternate_status_device_control_port;
     config.irq = ports->irq;
+    config.lba28_supported = ports->lba28_supported;
     vm_machine_hdc_connect(&session->hdc, &session->hdd,
         core_machine_configuration_shared_pic_master_borrow(session->core_machine),
         core_machine_configuration_shared_pic_slave_borrow(session->core_machine),

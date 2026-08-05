@@ -936,7 +936,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0232 "0.5.0232")
+add_current_vm_artifact(vm-0-5-0233 "0.5.0233")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 
@@ -1141,6 +1141,13 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMENT "Verifying VM CMOS/RTC deterministic-time boundary"
         VERBATIM)
     add_dependencies(run-current-smokes verify-cmos-rtc-boundary)
+
+    add_custom_target(verify-ata-pio-feature-boundary
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_ata_pio_feature_boundary.cmake"
+        COMMENT "Verifying VM ATA PIO feature ownership boundary"
+        VERBATIM)
+    add_dependencies(run-current-smokes verify-ata-pio-feature-boundary)
 endif()
 
 if(PROJECT_ENABLE_BOCHX_RESEARCH)

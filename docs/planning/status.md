@@ -2,6 +2,13 @@
 
 ## Current Work
 
+**M5 T233 S3 active:** verify the bounded primary-master ATA PIO
+feature matrix: LBA28, absent slave/secondary behavior, SRST, and
+status/error/IRQ14 semantics. The implementation and focused port probe are
+complete; retained system-image and current-matrix closure remain in the task
+record:
+[m5-t233-ata-pio-feature-matrix.md](m5-t233-ata-pio-feature-matrix.md).
+
 **M5 T228 complete:** VADP now owns the bounded CGA `320x200x4` controller
 subset and copied indexed-pixel snapshot. Composition is the sole frame-copy
 bridge; platform never reads guest VRAM. The owner-approved `console`,
