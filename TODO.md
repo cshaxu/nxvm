@@ -1,570 +1,182 @@
 # Long-Term Review Ledger
 
-This ledger consolidates known risks, deferred work, and recurring review
-failures. It is a planning and verification aid only: it does not authorize a
-new milestone, a new active subtask, a behavior change, or an external-source
-import. `docs/planning/status.md` remains authoritative for active work.
-
-## Review Rules
-
-- Treat a directory name as a claim to verify, not proof of correct ownership.
-- Require one explicit owner for each mutable runtime state and one real run
-  path for each product. Test fixtures and compatibility shims are not product
-  architecture merely because they compile.
-- `core` never depends on `vm` or `vdm`. `core/platform` never mutates guest
-  state. Product-root composition is the only cross-module assembly point.
-- A session is selected only through an explicit object reference. No
-  process-global, `_Thread_local`, or implicit-current-object facade may enter
-  a production path. Host resources that are necessarily process-exclusive use
-  an explicit lease with a documented owner and release sequence.
-- Every structural task must preserve the retained NXVM Console, debugger,
-  full-PC FDD/HDD boot checkpoints, and task-artifact rules unless an approved
-  task explicitly changes them.
-
-## M5 NXVM PC/AT Workstream
-
-M5 remains the NXVM and shared-core workstream. The future VDM product does not
-define NXVM completion, and M6 must not begin merely because an NXVM device
-task is pending. The authoritative ROI-ordered implementation queue is
+This ledger records open work, durable capability boundaries, and long-horizon
+goals. It does not activate a task, allocate a numeric task identifier, or
+override the current work recorded in
+[status.md](docs/planning/status.md). Detailed completed-task evidence belongs
+in its task record and Git history; the M5 implementation order belongs in
 [M5 NXVM PC/AT Hardware Convergence](docs/planning/m5-pcat-hardware-convergence.md).
-This ledger records cross-cutting risks and deferred work; it does not allocate
-parallel task numbers.
 
-Every admitted device task follows the three-subtask
-[hardware-device verification template](docs/compatibility/hardware-device-verification.md):
-contract and port-level probe; implementation at the real
-CPU/bus/device/firmware/profile owner; and DOS or system-image regression.
-Bochs 2.6 may supply bounded differential evidence, but never implementation
-code, a runtime dependency, or substitute acceptance evidence. No task may
-rely on a BIOS hack, host shortcut, or application special case for a
-guest-observable behavior.
+## Operating Rules
 
-**Completed implementation task -- T213: HDD controller profile / port
-contract.** It declares and probes the primary ATA PIO contract, admits the
-session-owned controller, and retires the HDD F4/F5 shortcut through ROM
-`INT 13h` PIO. See [`M5 T213`](docs/planning/m5-t213-hdd-controller-profile.md).
+- `status.md` owns the one active subtask. The M5 convergence plan owns the
+  ordered task queue. This file tracks cross-cutting open risks and deferred
+  admissions only.
+- A device admission follows the
+  [hardware-device verification template](docs/compatibility/hardware-device-verification.md):
+  S1 contract and port probe, S2 implementation at the real owner, and S3
+  DOS/system-image regression.
+- `core` never depends on `vm` or `vdm`; composition is the only cross-module
+  assembly point; platform never mutates guest state. One mutable state has one
+  owner and each product has one real run path.
+- Bochs/PCjs may provide bounded differential observations, never copied code,
+  a runtime dependency, or acceptance evidence in place of owned probes.
+- Completed implementation detail is intentionally not duplicated here. Use
+  task records, the current capability table, and the roadmap when assessing a
+  claim.
 
-**Completed implementation task -- T214: CPU fault outcome handoff.** Core
-`STOP_FAULT` and the first CPU diagnostic now pass through one session-owned
-result; retained debugger and Console consume it only after the runner
-boundary. See [`M5 T214`](docs/planning/m5-t214-cpu-fault-outcome.md).
+## Current Capability Baseline
 
-**Completed implementation task -- T215: remove generic firmware-interrupt
-portal.** No VM, VDM, or profile production consumer existed, so core's
-registration, storage, dispatch infrastructure, and portal-only verification
-are deleted. Ordinary CPU `INT`/IVT delivery is now the sole path. See
-[`M5 T215`](docs/planning/m5-t215-remove-firmware-interrupt-portal.md).
+| Area | Current bounded capability | Open boundary |
+| --- | --- | --- |
+| NXVM product | One session/composition path, retained Console/debugger, FDD/HDD boot regressions, GCC artifact and CTest gates | Preserve this path while every device evolves; do not quietly start VDM behavior. |
+| CPU | Real-mode 8086-plus executor with selected 80186/286/386 decode; `FPU=none` consumes legal ESC encodings | Not trusted 80386, protected mode, paging, task switching, or present FPU. |
+| Interrupts and time | PIC source lifecycle; deterministic core elapsed ticks; PIT/IRQ0 -> ROM -> BDA -> `INT 1Ah` evidence | Greater timing fidelity only when an explicit corpus requires it. |
+| Keyboard | KBC, IRQ1, ROM `INT 09h`/`INT 16h`, set-1 break/E0/E1, typeahead, selection/query, translation observation, LED, typematic, ACK/RESEND | AUX mouse/IRQ12, set-2/3 conversion, and native POSIX runtime validation. |
+| Display | CGA text plus bounded digital `320x200x4`; copied text/indexed frames; `console`/`window`/`auto` selection | Remaining digital CGA modes/CRTC behavior, composite video, EGA/VGA, VBE. |
+| Storage | Bounded ATA PIO and FDD boot paths through declared ROM/device owners | Full FDC state machine, broad DMA behavior, extended IDE, and error/timing compatibility. |
+| VDM | Isolated non-runnable scaffold over the shared core | Owned DOS design, CLI, host-drive policy, and product implementation remain deferred. |
 
-**Completed implementation task -- T216: PIC IRQ lifecycle.** Device sources
-now have explicit assert/deassert semantics; the core PIC pair solely owns
-edge/level delivery, cascade, IRR/ISR, mask, EOI, and priority state. See
-[`M5 T216`](docs/planning/m5-t216-pic-irq-lifecycle.md).
+## Current M5 ROI Queue
 
-Compatibility tiers remain: first stable DOS image boot and text software;
-then interactive PC/AT DOS including graphics/mouse/storage; then EGA/VGA
-software. Win3.x and especially Win95 remain later corpus goals gated by their
-required CPU, display, controller, and interrupt evidence, not by a calendar
-milestone.
+The active task is always the one in [status.md](docs/planning/status.md).
+These are the next owned admissions, not permission to work in parallel.
 
-## Current Architecture Closure
+- [ ] **8042 AUX mouse / IRQ12 (`TODO(High)`, T229).** Define the bounded AUX
+  controller and packet contract, route IRQ12 through the PIC, and admit host
+  mouse only through a profile mapper. It must never write DOS APIs or guest
+  memory directly.
+- [ ] **8237 DMA and FDC contract (`TODO(High)`, T230--T231).** First admit
+  DMA request/mask/mode/page/address/count ownership and channel-2 FDC access;
+  then implement FDC command/result, media-change, motor, rate, errors,
+  non-DMA, format, transfer-time, DMA2, and IRQ6 semantics. Image files are
+  only backends; successful boot is not sufficient evidence.
+- [ ] **CMOS/RTC admission (`TODO(Medium)`, T232).** Add owned RTC register,
+  periodic/update/alarm IRQ8, NVRAM, and deterministic-time semantics. Host
+  time may be a provider, never a guest-state shortcut.
+- [ ] **ATA PIO feature matrix (`TODO(Medium)`, T233).** Extend the admitted
+  primary master controller only through explicit probes for LBA, slave/
+  secondary channel, reset, status, and error timing. Do not admit IDE DMA or
+  let file images substitute for controller behavior.
+- [ ] **Complete digital CGA (`TODO(Medium)`).** Keep it separate from EGA/VGA.
+  Admit `640x200x2` and remaining 40/80-column text combinations, then the
+  6845-visible start/page address, cursor, scanline geometry, display-enable,
+  vertical-retrace, and any light-pen behavior. Every admission retains one
+  VADP owner, B8000h mapping, copied-frame output, and port/memory/frame plus
+  DOS-fixture evidence.
+- [ ] **CGA composite-video fidelity (`TODO(Low)`).** Treat NTSC artifact
+  color, phase, and colorburst as an optional renderer/profile capability only
+  after digital CGA is complete. Do not fold it into VADP digital state or use
+  it to claim EGA/VGA support.
+- [ ] **EGA/VGA staged admission (`TODO(Medium)`, T234--T236).** Admit memory
+  windows/sequencer, then graphics/attribute controllers, then DAC/planar
+  VRAM/latches/raster as separately probed families. Do not make a single
+  unbounded "VGA support" task.
 
-- [x] **Linux Console private naming cleanup (`TODO(Low)`, T207).**
-  Replace local-dialect helper names and macros with typed
-  `vm_platform_linuxcon_*` private functions without changing input or display
-  behavior.
+## CPU, Time, And Debugging Boundaries
 
-- [x] **Current-gate graph de-duplication (`TODO(Low)`, T206).**
-  Remove redundant preset smoke targets and obsolete custom targets that only
-  execute CTest-registered smoke already covered by `run-current-smokes`.
+- [ ] **Real-mode CPU trust corpus (`TODO(High)`).** Fix only reproducible
+  8086/80186 real-mode defects needed by ROM, DOS boot, and admitted device
+  paths. MS-DOS `MEM` is a regression sample, not an 80386-completeness claim.
+- [ ] **286/386 protected-mode program (`TODO(Low)`, T237--T239).** Admit
+  descriptors, exceptions, control transfer, CRx/paging, CPL/IOPL, TSS I/O map,
+  task switching, and remaining instructions as individually probed work. It
+  is lower ROI than the real-mode PC/AT device route.
+- [ ] **Present x87 (`TODO(Low)`, T240).** Define state, operations,
+  exceptions, and `FWAIT` before enabling any 8087/287/387 profile.
+- [ ] **CPU-fault outcome audit (`TODO(Medium)`).** T214 established a
+  session-owned fault result. Revisit only with a reproducible case showing a
+  fault/detail is not available to the retained Console/debugger boundary;
+  preserve first-fault evidence and never add a second run path.
+- [ ] **Debugger assembler `checkop` review (`TODO(Low)`).** Keep runtime
+  disassemble/reassemble comparison out of per-instruction refresh. Add a
+  focused regression only when an owned BIOS/debugger defect requires it.
+- [ ] **Bounded differential debugging (`TODO(Low)`).** A historical
+  Bochx/Bochs bridge may be an optional developer tool with provenance,
+  checkpoint schema, masks, instruction/time/no-progress/trace budgets, and
+  cleanup. It is never a default build or acceptance substitute.
 
-- [x] **Console adapter cohesion closure (`TODO(Low)`, T205).**
-  Keep the typed selected-session borrow as an adapter-private helper, delete
-  its one-consumer source/header split, and make the closure gate validate the
-  unique borrow fact rather than a helper file.
+## Timing-Fidelity Ladder
 
-- [x] **CMake media-smoke and Linux adapter hygiene (`TODO(Low)`, T204).**
-  Derive media-smoke registration and skipping from one FDD/FDD+HDD list, then
-  remove uncalled platform sleep facades and unreachable Linux adapter noise
-  without changing smoke coverage or platform behavior.
+The current core is deterministic and host-clock-independent: completed
+instructions advance core elapsed ticks and devices consume frozen accumulated
+clock ratios. These levels are optional compatibility admissions, not the
+default definition of NXVM completion.
 
-- [x] **Console adapter readability and selected borrow closure (`TODO(Medium)`, T203).**
-  T203 retains the Console machine-provider vtable, expands its callbacks into
-  ordinary functions, and makes an adapter-local helper the sole composition
-  call to the core selected-borrow API. Failed-borrow and debugger
-  pause/wait/context behavior are unchanged; a source gate prevents duplicate
-  direct borrowing and obsolete selected-session wrappers.
+- [ ] **Frequency-accurate device clocks (`TODO(Medium)`).** Define exact
+  rational conversion, phase, rounding, reset origin, and event ordering for
+  CPU, PIT, CGA, DMA, and RTC clocks under each profile.
+- [ ] **Instruction-timed execution (`TODO(Medium)`).** Give each admitted
+  instruction deterministic profile-specific cost, including applicable
+  prefix/branch/memory/I/O variants, before expanding the timing corpus.
+- [ ] **Bus-timed PC/AT operation (`TODO(High)`).** Model memory/I/O wait
+  states, DMA bus ownership, and device visibility at transaction boundaries.
+- [ ] **Cycle-exact profiles (`TODO(High)`).** Only where a profile genuinely
+  requires it, model clock phases, prefetch/bus behavior, and device
+  microstates without silently changing the retained executor.
 
-- [x] **VM keyboard transport surface closure (`TODO(Medium)`, T202).**
-  T202 removed the test-only platform modifier enum/query callback and session
-  forwarding switch. Core keyboard-provider modifier observation is retained;
-  platform transport now carries only discrete guest keypress ingress and its
-  smoke. The T202 source gate prevents the façade from returning.
+## Architecture, Portability, And Product Boundaries
 
-- [x] **Host cancellation boundary convergence (`TODO(High)`, T201).**
-  Windows F9 formerly reached session stop through keyboard transport, while
-  Linux reported `STOP_REQUESTED` to the live run handle. T201 removed keyboard
-  lifecycle callbacks: every host cancellation producer now reports only
-  through its backend's borrowed run handle and the runner consumes the report. Retain
-  existing guest F9 key forwarding, Console/debugger, window/Console,
-  two-session, and FDD DOS-prompt behavior. Linux native runtime evidence
-  remains deferred; source/CMake parity is verified here. The T201 source gate
-  rejects a return of keyboard lifecycle callbacks or direct platform
-  session/core stop calls.
+- [ ] **M5 architecture closure audit (`TODO(High)`).** Before M5 closes,
+  rescan every core/vm/vdm module, composition root, target, test, and entry
+  point for duplicate state, parallel paths, forwarding wrappers, global/TLS
+  selectors, illegal dependencies, and misleading names.
+- [ ] **Linux runtime verification (`TODO(Medium)`).** Linux source is a
+  portability asset, not a support claim. Add native POSIX compile and runtime
+  probes after an approved POSIX environment is available; do not install WSL
+  merely for this item.
+- [ ] **Machine-profile admission (`TODO(Medium)`).** Design external machine
+  profiles and optional user-supplied ROM manifests before PC110, Compaq,
+  Award, or Phoenix behavior. Third-party ROMs are never bundled, downloaded,
+  or committed.
+- [ ] **VDM remains design-gated (`TODO(High)`).** Keep the scaffold
+  non-runnable until its design milestones define the owned DOS module: loader,
+  PSP/environment/DTA, DOS interrupt subset, vectors, fixture filesystem,
+  input/display providers, cancellation, and corpus.
+- [ ] **VDM CLI and host policy (`TODO(High)`).** After the VDM design gate,
+  implement `ntvdm64 run` display/debug/no-program semantics, host-drive
+  whitelist/hide policy with canonicalization and reparse checks, and the
+  Windows 7--11 support matrix. Existing NXVM display selection is not a
+  substitute for that product contract.
 
-### Core Machine And VM Composition
+## Standing Closure Requirements
 
-- [x] **Core-owned generic-device lifecycle.** T141 moved CPU/bus/memory and
-  shared VADP/KBC/DMA/PIT/PIC prepare/reset/refresh/finalize order into
-  `core_machine`. T159 re-audited the current tree, removed misleading
-  composition markers, and added a source gate that rejects any VM/VDM direct
-  generic core-device lifecycle call. Composition only binds VM/VDM-only
-  devices, firmware, and providers.
-- [x] **Public lifecycle hardening.** T160 closes the configuration window
-  explicitly: bind execution/port providers only while `INITIALIZED`, freeze
-  exactly once, then reset/run the frozen topology. Public memory, port, and
-  A20 access require a returned `PAUSED` boundary. The contract smoke rejects
-  reset-before-freeze and topology mutation after freeze.
-- [x] **Composition naming and separation.** T161 splits the former mixed
-  provider source into VM-only device lifecycle, default-profile firmware
-  lifecycle, a thin order-only coordinator, and a separate machine-information
-  adapter. A source-shape gate rejects a return to the mixed file.
-- [x] **VM session same-object alias matrix (`TODO(High)`).**
-  `vm_session` embeds VM-only device, provider, platform, and debugger storage
-  directly; T176--T184 removed the former same-object pointer aliases and
-  retained only the opaque `core_machine` plus the explicitly lazy debug target.
-  The direct-owner closure gate preserves session lifecycle order, multi-session
-  isolation, retained Console/debugger behavior, and FDD DOS-prompt evidence.
-- [x] **Frozen-core API bypass (`TODO(High)`).** The public mutable
-  `core_machine_executor_*_borrow` surface can bypass the T160 configuration
-  boundary. The retained `DEVICE ram` Console command reaches
-  `core_machine_memory_allocate_for` through this route. Define a replacement
-  configuration/reconstruction contract before changing it; also constrain
-  direct CPU/diagnostic observation to a copied, synchronized boundary. T164
-  closed the generic borrow and observation portions. T165 remains to route
-  `DEVICE ram` through a temporary stopped-session reconstruction; T166 removed
-  machine-local default media paths. T169 supersedes the reconstruction model
-  with a core-owned stopped-only cold RAM reconfiguration.
-- [x] **Core-owned RAM cold reconfiguration (`TODO(High)`).** T169--T174
-  replaced T165's temporary whole-session reconstruction with stopped-only
-  `core_machine_reconfigure_memory`: installed-range checking, checked
-  provider access, one retained machine/session/device/provider/media/platform/
-  debugger graph, and a cold guest reset. CPU/FPU/profile/topology changes
-  still require a new session.
-- [x] **Default-session media policy (`TODO(High)`).** The NXVM session
-  factory must not commit machine-local image paths or silently select host
-  media. Preserve explicit `DEVICE` media commands and define the approved
-  no-media/default-fixture policy before removing the current paths.
-- [x] **VM Console composition adapter (`TODO(Medium)`).**
-  The former mixed provider combines session-factory callbacks and
-  selected-session Console command adapters. Split it into accurately named
-  source owners without changing Console grammar or selected-session semantics;
-  remove the empty Console-provider initialize/finalize vtable callbacks.
-- [x] **Legacy wait forwarding alias (`TODO(Low)`).** T186 migrated callers
-  and tests to `core_product_wait_milliseconds()`, deleted the policy-free
-  `core_product_utils_sleep()` alias, and retained explicit caller-owned wait
-  scopes with their isolation smoke.
-- [x] **Contract and vocabulary drift (`TODO(Medium)`).** Reconcile
-  `docs/architecture/contracts.md` with actual lowercase C API names and
-  current profile enums. Add the missing `STD_MEMMOVE` facade and remove the
-  direct VDM `memmove` use in a bounded vocabulary task.
-- [x] **CMake core target clarity (`TODO(Low)`).** `nxvm-core` and
-  `nxvm-core-machine` together form one runtime core, not two guest executors;
-  make their target names/dependency roles unambiguous in a build-only task.
+These are permanent execution requirements, not individually completable
+tickets. The detailed rules live in
+[execution-policy.md](docs/planning/execution-policy.md), the architecture
+documents, and the M5 closure checklist.
 
-### Platform, Product, And Session Boundaries
+- Keep build presets, current artifact target, CTest registrations, task
+  revisions, and evidence truthful to the current source graph.
+- Each behavior-changing implementation task produces one verified ignored
+  artifact in `build/output/`; remove stale owned build trees, logs, traces,
+  and generated binaries after use.
+- Preserve Console, debugger, boot, ownership, and no-global/no-second-machine
+  invariants unless an owner-approved task changes them with regressions.
+- Control trace and differential-debug growth with byte, time, no-progress,
+  process-cleanup, and deletion budgets.
 
-- [x] **Current artifact target truthfulness.** T197 removes every historical
-  task/version executable target from CMake. Only the current source artifact
-  is buildable; earlier `build/output/` executables remain historical evidence
-  and must never be regenerated from current source under their old names.
-- [x] **Current smoke execution truthfulness.** T198 registers the configured
-  runnable set with labeled CTest cases and makes `current-gates-gcc` build and
-  execute all 40 cases. Source/inventory checks remain explicitly static gates;
-  compiling a smoke executable alone is no longer runtime evidence.
+## Long-Horizon Goals
 
-- [x] **VM input and transport boundary convergence (`TODO(High)`, T199--T200).**
-  `vm_session` owns both the host-input boundary and its request transport.
-  Preserve that ownership while removing a historical outbound queue and
-  converging the remaining direct host-state update:
-  - [x] **T199, request-transport egress removal.** Deleted the unconsumed egress
-    storage, API, and test-only coverage. Correct the historical T194 wording:
-    worker lifecycle/cancellation reports use the session-owned run handle,
-    whose runner consumer is the only cancellation/join/finalization path.
-    Keep ingress unchanged. Add a source gate proving no egress API remains;
-    retain run-handle, Console, debugger, two-session, and FDD DOS-prompt
-    regressions. Stop for any second cancellation route or user-visible change.
-  - [x] **T200, host keyboard-state ingress.** Modifier/toggle host-state
-    snapshots through `session.request_transport.ingress`, consuming them only
-    at the runner command boundary like discrete key presses. Define bounded
-    coalescing for replaceable snapshots so host polling cannot fill the
-    command queue. Add a focused proof that platform input cannot mutate the
-    keyboard provider before that boundary, then retain KBC, BIOS/DOS `ver`,
-    Console/debugger, window/Console, two-session, and FDD DOS-prompt gates.
-     The direct VM platform callback is gone; adjacent snapshots coalesce while
-     a key press remains an ordering barrier. Stop for key-up/focus,
-     modifier/toggle, timing, or retained UX regression.
+### Profile Support
 
-- [x] **Finish the explicit platform run-handle boundary.** M5 T194--T196
-  converged a worker-report-only event path, session-owned cancellation/join/
-  teardown, Win32 failure-path verification, and Linux source/CMake parity.
-  The session-owned handle remains the sole owner of worker creation, join,
-  backend destruction, and host-resource release; workers never free shared
-  state or directly control the guest. Native POSIX runtime proof remains the
-  separate deferred item below. See
-  [`m5-platform-run-handle-contract.md`](docs/planning/m5-platform-run-handle-contract.md).
-- [ ] **Linux verification.** Retained Linux code is a portability asset, not
-  validated support. Add native POSIX compile and runtime gates after the
-  explicit-handle implementation is stable; preserve the Windows GCC baseline.
-- [x] **Shared product-session implementation.** `core/product/session` owns
-  the opaque registry and shared command grammar; NXVM implements it in
-  T145--T150, while VDM adopts it only after M6/M8 define its concrete session
-  and debug Console contracts. The approved design is
-  `docs/planning/m5-product-session-management.md`. Do not start an
-  implementation task without explicit activation. NXVM completed T145--T150;
-  VDM adoption remains deferred to its separate design/implementation work.
+- IBM Palm Top PC 110, using a separately admitted profile and user-provided
+  ROM/media workflow where needed.
+- Compaq DeskPro 386 profile, informed by PCjs behavior research.
+- Other clearly manifested machine profiles, never a blanket import of every
+  Bochs machine definition.
 
-### VDM Boundary
+### OS Compatibility
 
-- [ ] **Keep VDM minimal until its design milestone.** The present VDM code is
-  an isolated non-runnable scaffold. It must not quietly acquire a DOS runner,
-  host filesystem, CLI, platform UI, or implicit machine boot path before M6
-  defines those contracts.
-- [ ] **Owned DOS design before implementation.** Specify loader, PSP,
-  environment, DTA, DOS interrupt subset, vector ownership, fixture filesystem,
-  display/input providers, cancellation, and test corpus before M7 changes
-  behavior.
+- Near term: robust real-mode DOS software and the device corpus it requires.
+- Medium term: 386-capable DOS, `HIMEM.SYS`, and Windows 3.x Standard Mode and
+  386 Enhanced Mode, each gated by the required CPU, display, DMA, storage,
+  interrupt, and timing evidence.
+- Long term: Windows 9x, only after the prior compatibility layers are proven.
 
-## Compatibility And Hardware
+### AI DevBox
 
-- [x] **Firmware interrupt-portal migration (`TODO(High)`, T209).** Replace
-  default-profile QDX `F1 <command>` with frozen, ROM-origin-checked private
-  firmware `INT F0h`--`F5h` providers. Core must retain normal `INT`/IVT
-  semantics for every nonmatching call; profile handlers must use existing
-  firmware/device bindings rather than raw decoder-table mutation or an opaque
-  current-profile extension. Preserve the default `80386 + no FPU` baseline
-  and add explicit `8086 + no FPU` instruction-profile proof before removing
-  QDX. The portal stage passes under 8086. The owner-local full FDD vector
-  reaches runtime `C1 EA 04` (`SHR DX, 4`) at linear `0000:AA98`; this is a
-  real 80186+ immediate-shift form, so strict 8086 correctly raises `#UD`.
-  Keep the focused 8086-rejects/80186-accepts probe and retain the FDD run only
-  as an expected-negative compatibility diagnostic; it is not a T209 blocker.
-  T215 subsequently removed this temporary generic portal mechanism after all
-  profile consumers retired; it remains historical context only.
-
-- [x] **Keyboard firmware-portal retirement (`TODO(High)`, T210).** Default
-  profile keyboard input now follows core KBC `60h/64h` and IRQ1 through ROM
-  `INT 09h`, BDA buffering, and ROM `INT 16h`; F1/F3 portal registration and
-  C callback handlers are removed. The T210 closure gate, KBC port probe, DOS
-  `ver` regression, Console/debugger, and two-session matrix pass. Rapid
-  typeahead and the broader advanced-KBC protocol remain deferred below.
-- [ ] **DOS keyboard regression timing stability (`TODO(Low)`).** One T213 S1
-  current-matrix run timed out in `vm-dos-keyboard-smoke`, while its immediate
-  direct rerun and the following complete 49-test matrix passed unchanged.
-  Preserve the existing guest behavior; only investigate after a reproducible
-  failure, with a bounded readiness/host-input timing probe rather than an
-  arbitrary timeout increase.
-
-- [x] **Boot-failure firmware-portal retirement (`TODO(High)`, T211).** The
-  default ROM no longer calls `INT F0h`; after its existing key acknowledgement
-  it writes the reset-cleared profile BDA POST report. The session runner clears
-  and consumes that report at an instruction-budget boundary, then owns the
-  sole stop request. No core policy, host callback, queue, fake port, or
-  host-side BDA mutation was introduced. The current matrix passes; completed
-  T212 ROM-video regression now covers the no-media error-display sequence.
-
-- [x] **Retire default-profile firmware shortcuts (`TODO(High)`, T209--T213).**
-  T209 removes the QDX `F1 <command>` CPU opcode hack; T210 retires F1/F3,
-  T211 retires F0, T212 retires F2, and T213 retires F4/F5. The resulting
-  default profile has no private `F0h`--`F5h` registration: keyboard, stop,
-  text display, and CHS disk I/O each have their declared device/ROM/session
-  owner. `firmware_portal.*` and obsolete QD disk helpers are gone; ordinary
-  guest `INT`/IVT delivery and NXVM Console/debugger/boot behavior remain.
-
-- [x] **Runner display cadence (`TODO(Medium)`, T212).** Normal execution now
-  uses a 256-instruction quantum and publishes at most one copied display frame
-  per quantum; command, pause, stop, and debug refresh remain at the same
-  bounded boundary, while single-step remains one instruction. The no-media
-  mailbox smoke rejects a return to per-instruction full-frame copying.
-
-- [ ] **CPU correctness / MS-DOS MEM.** Do not claim complete 80386 support:
-  the CPU is 8086-plus with partial i386 decode/execution coverage. T152
-  historically reproduced `MEM` as FPU `FNINIT` (`DB E3`) reaching the old
-  direct `#UD` route and added a fixed 32-entry in-memory first-fault capture
-  plus an owner-local fixture smoke. T153--T156 defined frozen
-  `8086`/`80186`/`80286`/`80386` CPU and independent
-  `none`/`8087`/`80287`/`80387` FPU profiles, centralized CPU gating, and made
-  default `FPU=none` consume legal ESC encodings. T157--T158 add
-  session-creation UX and closure probes; present FPU profiles remain
-  unavailable until their state/operations are implemented.
-  Protected DOS media stays local.
-
-- [ ] **Preserve CPU-fault evidence at the product boundary (`TODO(Medium)`).**
-  `core_machine` already retains its bounded first-fault snapshot until a cold
-  reset; the problem is not that diagnostic evidence is inherently discarded.
-  A real-mode CPU exception still reaches the VM runner as generic
-  `TYPE_STATUS_FAULT`, which is handled as a generic stop rather than a stable,
-  session/debugger-consumable machine outcome. Define that distinct fault
-  outcome, preserve the diagnostic window at the returned boundary, and make
-  the session runner stop on it without initiating a reset. Keep ordinary
-  profile/provider stop and user cancellation semantics separate; do not add a
-  global trace or a second execution path.
-- [x] **8042 KBC controller and one BIOS route (`TODO(Medium)`).** T192
-  completed `0x60`/`0x64`, OBF/IBF, command byte,
-  `0x20`/`0x60`/`0xAA`/`0xAB`/`0xAD`/`0xAE`/`0xD0`/`0xD1`, keyboard
-  ACK/reset/enable/disable/identify, IRQ1, A20/reset, and a full-FIFO
-  `NTVDM64_STATUS_INVALID_STATE`. Platform input is consumed at the execution
-  boundary, mapped by the default profile, delivered through KBC, and consumed
-  by default-ROM INT 09h before INT 16h reads BDA. See
-  the hardware-device verification template.
-- [ ] **8042 advanced keyboard protocol (`TODO(Medium)`).** Admit each of
-  set-1 break bytes and E0/E1 extended sequences, rapid DOS typeahead queue
-  delivery, scan-code-set selection,
-  controller translation, LED/typematic commands, AUX mouse/IRQ12, controller
-  timing, and error/resend edge cases only with specific port and DOS probes.
-  Do not add a second host queue or place host policy in `core/machine`.
-- [ ] **POSIX KBC input runtime verification (`TODO(Medium)`).** The Linux
-  curses path now submits normalized host events and has Windows-side static
-  source parity, but native POSIX compilation and keyboard runtime behavior
-  (especially modifiers and extended keys) need an owned POSIX-environment
-  probe before claiming support.
-- [x] **CGA text-controller slice (`TODO(Medium)`).** T193 moved CRTC
-  `0x3d4`/`0x3d5` text indexes `0x0a`--`0x0f`, `0x3d8` text mode, `0x3d9`
-  color, stable `0x3da`, B8000 visible-window capture, dirty generation, and
-  copied text scanout into core VADP. QDCGA remains INT 10h/BDA firmware; no
-  profile VADP alias or platform guest-memory access remains.
-- [x] **CGA `320x200x4` graphics admission (`TODO(Medium)`).** M5 T228 owns
-  B8000 odd/even scanline addressing, the admitted `3D8h`/`3D9h` RGBI subset,
-  copied indexed-pixel frames, and Console/window/auto selection. The generated
-  guest system-image fixture exercises BIOS/FDC/CPU/port/VADP without protected
-  media, while the temporary-clone DOS fixture executes `CGAT228.COM` through
-  the retained KBC -> IRQ1 -> ROM -> DOS path. 640x200, composite artifact
-  color, EGA, VGA, and VBE remain out of scope.
-- [ ] **EGA/VGA register-family admission (`TODO(Medium)`).** Do not merge it
-  with CGA graphics. Admit mapping windows, sequencer, graphics/attribute
-  controller, DAC, and planar VRAM/latches as separate bounded work with real
-  program probes.
-- [ ] **PC/AT hardware completeness baseline.** The current machine is a
-  bootable, deliberately bounded PC/AT subset, not a Bochs-equivalent machine.
-  Bochs 2.6 may be used only as behavior/state-decomposition reference; its
-  source, plugin architecture, and broader device set are not an implementation
-  target or import source. Preserve full-PC boot, Console, debugger, and DOS
-  prompt regressions for every device task.
-
-  - **CPU/FPU:** CPU profiles gate 8086, 80186, 80286, and partial 80386
-    execution. Do not claim complete 80386 compatibility until protected-mode
-    control transfer, task-switch, descriptor, exception, paging, and I/O-map
-    behavior have owned instruction probes. `FPU=none` consumes legal ESC
-    encodings; present FPU profiles remain unavailable until state, operations,
-    exceptions, and `FWAIT` are implemented. The historical MS-DOS `MEM`
-    `FNINIT` `#UD` is bypassed, but `MEM` is not a complete CPU-correctness
-    acceptance claim.
-  - **Memory and I/O bus:** RAM has installed-range faults, A20, frozen mapping
-    registration, and stopped-only cold reconfiguration. Establish an explicit
-    PC memory-map admission before adding ROM/UMA/MMIO mappings. The port bus
-    has provider dispatch but no broad device-width, unmapped-I/O, or bus-timing
-    compatibility claim.
-  - **PIC/DMA:** dual 8259-style PIC and dual 8237-style DMA support the
-    current IRQ/DMA boot path, including FDC DMA channel 2. Audit IRQ
-    deassertion, edge/level behavior, priority/EOI modes, DMA channel modes,
-    masking, page/register edge cases, and memory-to-memory behavior with
-    focused port vectors before relying on them for new hardware.
-  - **PIT:** 8254 counter ports and read-back/status latches are covered.
-    Waveforms, GATE edges, BCD, count-zero, and modes 1/4/5 remain explicitly
-    unimplemented compatibility work.
-  - **KBC:** the bounded 8042 path covers `60h`/`64h`, FIFO, command byte,
-    IRQ1, A20/reset, and fixed set-1 make-code delivery to BIOS. Break bytes,
-    E0/E1 sequences, scan-set selection, translation, LED/typematic, AUX
-    mouse/IRQ12, timing, resend, and error behavior require separate probes.
-  - **Display:** VADP owns CGA-style text `B8000`, bounded CRTC state, text
-    ports, dirty generation, and copied text snapshots. CGA `320x200x4`, then
-    EGA/VGA register families, palettes, raster timing, planar VRAM/latches,
-    and VBE are separate admissions; graphics is currently unsupported.
-  - **CMOS/RTC:** VM CMOS currently supplies indexed `70h`/`71h` access,
-    checksum, BCD host-time refresh, and NMI-mask state. It lacks persistent
-    NVRAM, RTC periodic/update/alarm interrupts, full register semantics, and
-    deterministic time policy.
-  - **FDC/FDD:** the 8272A-style controller, DMA2/IRQ6 route, and in-memory
-    floppy images are sufficient for recorded boot. Validate command/result
-    state, disk-change/motor/data-rate behavior, non-DMA, media formats,
-    transfer timing, and error paths before broad floppy compatibility claims.
-  - **HDD:** T213 provides a bounded primary, master-only ATA PIO controller
-    (`1F0h`--`1F7h`, `3F6h`, IRQ14, CHS, no DMA) with a session-owned image
-    backend and ROM `INT 13h` port transactions. Secondary/slave channels,
-    LBA, bus-master DMA, ATAPI, timing, write cache, and host-path policy
-    remain deferred; do not call this full IDE compatibility.
-
-### Guest-Time Fidelity Roadmap
-
-The retained T217--T225 baseline is deterministic and host-clock-independent,
-but it is not cycle-exact: `core_machine` advances elapsed ticks at completed
-instruction boundaries and devices consume frozen, accumulated clock ratios.
-These levels are admitted in order only when a profile or a reproducible
-compatibility corpus requires them. They do not block T226 KBC work: KBC must
-consume core-scheduler time and must never derive guest time from host input or
-wall clock.
-
-- [ ] **Frequency-accurate device clocks (`TODO(Medium)`).** Preserve a
-  deterministic master time domain and exact rational conversion into each
-  profile's CPU, PIT, CGA, DMA, and RTC clock domains. Define phase and
-  rounding behavior, reset origin, and event ordering. This is the normal
-  default-profile baseline; it is not an assertion that each CPU instruction
-  consumes its historical number of cycles.
-- [ ] **Instruction-timed execution (`TODO(Medium)`).** Give every admitted
-  CPU instruction a deterministic profile-specific cycle cost, including
-  applicable prefix, branch, and memory/I/O variations; advance devices from
-  that result. Establish bounded instruction and device checkpoint probes
-  before expanding the corpus. This is an incremental compatibility tier, not
-  a claim of bus-cycle accuracy.
-- [ ] **Bus-timed PC/AT operation (`TODO(High)`).** Model memory and I/O wait
-  states, DMA bus ownership, and precise PIC/PIT/VADP visibility boundaries.
-  This requires exposing CPU bus transactions to the core scheduler rather
-  than treating a completed instruction as the sole timing unit. Admit it by
-  controller and profile with port-level evidence; do not broadly rewrite the
-  executor first.
-- [ ] **Cycle-exact CPU and device models (`TODO(High)`).** Where an explicit
-  profile genuinely requires it, model individual clock phases, 8088/8086
-  prefetch and bus behavior, and participating-device microstates. This is a
-  separate profile-capability program, not NXVM's default completion bar, and
-  may require a dedicated executor model rather than silently changing the
-  retained one.
-
-Profiles may declare a minimum timing-fidelity requirement and immutable clock
-parameters, but do not own time progression or scheduler policy. `core_machine`
-remains the only guest-time owner. A core that cannot meet a declared minimum
-must reject the profile or report an explicit degraded mode; it must never
-silently present an approximate model as cycle-exact.
-
-**Bochs comparison.** Bochs is the reference for a mature, deterministic,
-whole-PC emulator architecture: a CPU-driven timer system, configurable
-instruction-rate calibration, and independent device state machines. Its
-normal model is best compared to NXVM's frequency-accurate tier plus selected
-devices with detailed internal behavior. Do not classify it as a blanket
-instruction-cycle-, bus-, or cycle-exact reference: its timer system may
-advance after batches of completed instructions, and its configured IPS is the
-time calibration basis. Use bounded Bochs comparisons only to investigate a
-specific port/status/event sequence; NXVM still needs its own contract and
-owned probe for every acceptance claim.
-- [ ] **CPU internal naming (`TODO(Low)`).** Rename legacy segment-descriptor
-  fields to owner-consistent vocabulary only in a bounded compatibility task;
-  preserve layout, CPU behavior, and debugger output.
-- [ ] **Present x87 model (`TODO(Medium)`).** `FPU=none` handles legal escape
-  encodings, but configured `8087`/`80287`/`80387` profiles remain explicitly
-  unavailable. Define the supported FPU state, instructions, exceptions,
-  `FWAIT`, and probe corpus before accepting a present-FPU session; do not
-  claim complete 80386-era floating-point compatibility first.
-- [ ] **Protected-mode I/O permission map (`TODO(High)`).** Implement and test
-  the TSS I/O-map permission check used when protected-mode CPL/IOPL rules
-  require it. Establish owned probes before changing CPU execution.
-- [ ] **Debugger assembler `checkop` review (`TODO(Medium)`).** The retained
-  VM debug path can disassemble a guest instruction, reassemble that text, and
-  compare the result as a diagnostic (`checkop`). Keep it out of the per-
-  instruction execution-refresh path and do not create a broad assembler test
-  target now; its corpus and cost are disproportionate to current M5/M6 work.
-  Revisit only when an owned BIOS/debugger assembler defect needs bounded
-  reproduction, then define the smallest focused probe and expected result.
-- [x] **8254 PIT read-back command (`TODO(Medium)`).** T191 S2 implements
-  active-low counter selection, non-overwriting count/status latches,
-  status-before-count reads, RW byte order, and focused port probes while
-  retaining the FDD/HDD session and FDD DOS-prompt baselines. Future device
-  work follows the hardware-device verification template.
-- [x] **8254 PIT waveform and gate semantics (`TODO(Medium)`).** T222 owns the
-  effective binary/BCD reload, count-zero, GATE edge, modes 0--5 OUT, read-back,
-  and PIC IRQ0 behavior; T225 separately closes the elapsed-tick to PIT-clock
-  ratio and BIOS-time evidence. Later timing work must add only newly admitted,
-  specifically probed compatibility, not reopen this completed baseline by
-  relabeling it as the historical T191 read-back slice.
-- [ ] **Bounded differential debugging.** The historical Bochx/Bochs bridge
-  may be an optional developer research tool with provenance, comparison
-  schema, masks, instruction/time/no-progress/size budgets, and cleanup. It is
-  never a default build, runtime dependency, substitute for owned probes, or
-  source of copied third-party code without review.
-- [ ] **Future machine-profile support.** Design external machine profiles and
-  optional user-supplied ROM manifests before adding PC110/Compaq/Award/Phoenix
-  behavior. Third-party ROMs are never committed, bundled, downloaded, or made
-  a default dependency.
-
-## CLI, Host Integration, And Product Semantics
-
-- [ ] **VDM CLI contract.** Implement only after its design milestone:
-  `ntvdm64 run [--display=auto|console|window] [--debug] [--drive <letter>]...`
-  `[--hide-drive <letter>]... [<program> [args...]]`, with exact no-program,
-  pause-before-first-instruction, cancellation, exit-status, and redirected-
-  handle behavior.
-- [ ] **Display policy.** `auto` begins in Console text mode and switches once
-  to a supported guest-display window; Console mode clearly rejects guest
-  graphics; window mode owns guest display/input; host logs remain separate.
-- [ ] **Host-drive security.** Whitelisted `--drive` options override hides;
-  otherwise hides apply to eligible drives. Canonicalize and reparse-check all
-  operations; deny UNC/device namespaces and escape paths; hidden/unselected
-  drives appear nonexistent.
-- [ ] **Debugger UX.** Window owns guest display/input while Console owns the
-  interactive CPU debugger. Support explicit state/stop reasons, registers,
-  disassembly, memory, execution breakpoints, step, continue, trace, reset,
-  and quit at a synchronized command boundary. No-program debug starts paused
-  at the initial execution point.
-- [ ] **Windows support matrix.** Target Windows 7 through Windows 11. Verify
-  actual divergence during implementation; Windows 11 is the fallback priority
-  if compatibility becomes materially different, with Windows 7 gaps recorded
-  as bounded follow-ups.
-
-## Verification, Build, And Governance
-
-The following open requirements use the [M5 closure checklist](docs/planning/m5-closure-checklist.md)
-as their single operational evidence index. The local architecture, coding,
-source, and execution policies
-remain the rule authorities.
-
-- [ ] **Keep build gates truthful.** CMake presets, target names, smoke gates,
-  task versions, artifacts, and verification records must describe the current
-  source graph. A stale preset or a passing fixture-only test is not evidence
-  of product readiness.
-- [ ] **Artifact and workspace hygiene.** Each runnable behavior-changing task
-  produces one verified task-level executable under `build/output/`; remove
-  stale owned build trees, logs, traces, and generated binaries after use.
-  Never commit guest media, Microsoft binaries, local paths, raw traces, or
-  unreviewed third-party material.
-- [ ] **Architecture documentation.** Maintain concise product assembly and
-  execution diagrams, a unique-state-owner map, module dependency rules, and
-  a current task/evidence index. Reconcile status, roadmap, contracts, and
-  verification documents before claiming a closure.
-- [ ] **Completion audit.** Before closing structural work, scan every
-  `core/{machine,platform,product}`, `vm/{machine,platform,product,profile}`,
-  `vdm/{machine,platform,product,profile}`, composition root, CMake target,
-  test, and entry point for duplicate state, parallel run paths, forwarding
-  wrappers, global/TLS selectors, illegal dependencies, out-of-scope code, and
-  misleading file names.
-
-## Recurring Failure Patterns To Prevent
-
-- [ ] Do not declare a refactor complete based on directory moves, CMake
-  success, or unit smoke tests alone; require retained Console and real boot
-  evidence where the runnable path is affected.
-- [ ] Do not introduce a second executor, machine/session wrapper, cached
-  mirror state, hidden reset sequence, or VM-side instruction loop while
-  repairing an existing path.
-- [ ] Do not solve host interaction with ambient globals or TLS; use explicit
-  provider/context/lease objects with one creator and one destroyer.
-- [ ] Do not let trace, recorder, or differential-debug output grow without
-  byte, time, no-progress, process-cleanup, and deletion controls.
-- [ ] Do not change retained NXVM Console, debugger, startup, or boot behavior
-  during structural migration without explicit owner approval and regression
-  evidence.
-
-
-# Big Goals
-
-If you run out of ideas, these are kind of north-star for us:
-
-## Profile Support
-- Support IBM Palm Top PC 110 (see PC110-EMU repo for real ROMs and hardware logic)
-- Support Compaq DeskPro 386 Profile (see pcjs)
-- Support other profiles supported by Bochs
-
-## OS Support
-- Short term: DOS only + 386 (HIMEM.SYS WORKING)
-- Mid term: Windows 3.x (StandardMode, 386 Enhanced Mode)
-- Long term: Windows 9x
-
-## AI DevBox
-- The vm product exposes capabilities so that AI can help program legacy DOS/Win16/Win32 projects inside of it
-- AI agents can control the machines (via both exposed API to control at lower level, as well as computer-use)
+- Expose controlled machine capabilities so AI agents can program and test
+  legacy DOS, Win16, and Win32 projects inside a VM session.
+- Support both explicit lower-level control APIs and computer-use interaction,
+  with session ownership, host trust boundaries, and reproducible fixtures.
