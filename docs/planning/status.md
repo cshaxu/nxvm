@@ -12,12 +12,15 @@ session once from Console text to Window graphics. The GCC governance gate and
 `B2D78D1B756A4BF5A1EAA1E038CDD7F4DD22C8487B5A3A5BE9EDF4C223047EB8` from
 `d527f23`; see [the task record](m5-t228-cga-320x200x4.md).
 
-**M5 T232 S3 active:** verify VM-owned CMOS/RTC register/NVRAM,
-deterministic elapsed-tick progression, and IRQ8 behavior. Core remains the
-sole guest-time owner; the default profile supplies frozen RTC parameters and
-composition only binds them. The owned implementation and focused port probe
-are complete; current GCC/CTest, system-image, Console, and debugger closure
-remain in [the task record](m5-t232-cmos-rtc.md).
+**M5 T232 complete:** VM-owned MC146818-compatible RTC/NVRAM subset now uses
+only core elapsed ticks, profile-bound 70h/71h + IRQ8, and a PIC source route.
+The admitted register slice covers BCD/binary and 12/24-hour data, SET,
+periodic/update/exact-alarm flags, read-C acknowledgement, and cold-reset
+NVRAM retention; host wall clock cannot mutate guest RTC state. The RTC
+boundary gate and 67/67 current GCC/CTest matrix pass. Artifact
+`nxvm_0_5_0232.exe` is SHA-256
+`B3BDABEEA31E4F61063447905259286AD374EB2661CE7492D21030F58EA7E37B` from
+`8f90a92`; see [the task record](m5-t232-cmos-rtc.md).
 
 **M5 T231 complete:** the VM-owned default FDC now has explicit command,
 execution, and result phases, a validated fixed-geometry FDD backend, bounded
@@ -31,8 +34,7 @@ and guest-memory transfers; the default FDC retains only a frozen DMA2 binding.
 The DMA2 cascade/port probe, FDC boundary gate, and 65/65 GCC/CTest matrix
 passed. Artifact `nxvm_0_5_0230.exe` is SHA-256
 `512358DD2053FDA21B3B1A4B5BB6E8A29724E9098CCDAFC340423D99917777D0` from
-`c30331e`; see [the task record](m5-t230-dma-fdc-contract.md). T231 is planned,
-not active without new owner authorization.
+`c30331e`; see [the task record](m5-t230-dma-fdc-contract.md).
 
 **M5 T229 complete:** the bounded 8042 AUX controller has one tagged KBC output
 owner, PS/2 three-byte packets, and IRQ12; host mouse enters only through the
@@ -41,8 +43,7 @@ fixture, the retained NXVM behavior matrix, GCC/CTest gates, and artifact
 `nxvm_0_5_0229.exe` passed. Its SHA-256 is
 `62E7AE972C0D4B433A4842A4756E4D88B36D8F1AEAED2D5F22B883E3297B4ADA` from
 `a60b57a`; see [the task record](m5-t229-kbc-aux-mouse.md). No
-BIOS/DOS/BDA/guest-memory shortcut is admitted. T230 remains planned and is not
-active without a new owner authorization.
+BIOS/DOS/BDA/guest-memory shortcut is admitted.
 
 **M5 Td S10 complete:** defect and compatibility fixes now have an enforceable
 local similar-issue sweep. The active packet and closure evidence must record
