@@ -2,12 +2,12 @@
 
 ## Current Work
 
-**Active subtask:** **M5 T212 S3 -- system-image and product regression.** S2
-has retired the F2 video portal through the ordinary default-ROM/IVT text
-slice and corrected the per-instruction display-copy performance regression.
-S3 must now pass the retained full matrix, produce the task artifact, and
-record closure evidence without changing NXVM user experience. See [the task
-record](m5-t212-video-portal-retirement.md).
+**Latest governance action:** **M5 Td S5 complete -- T212 closure record.** T212 is complete:
+the default ROM owns the admitted text `INT 10h` slice, the F2 video portal is
+retired, and runner display publication is bounded by a 256-instruction
+quantum. Its task record, historical index, `0.5.0212` artifact hash, and
+48-current-smoke evidence agree. Td S5 changes documentation only and produces
+no EXE.
 
 **M5 T211 complete:** the default profile's F0
 boot-failure portal is retired. The ROM reports an acknowledged failure through
@@ -44,6 +44,9 @@ every admitted device task has S1 contract/port probe, S2 owner-local
 implementation, and S3 DOS/system-image regression, with a fixed retained
 NXVM matrix and bounded optional Bochs differential rules. It changes no guest
 behavior and produces no artifact.
+`M5 Td S5` closes the T212 governance record and reconciles stale active-work
+and TODO wording with its completed artifact and current-gate evidence. It
+changes no source or build output.
 
 ## Milestone State
 

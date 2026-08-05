@@ -36,11 +36,11 @@ coverage. The task has no DMA or optional Bochs differential surface.
 
 ## Known Follow-Up
 
-An exploratory no-media end-to-end run remained at `F000:028E` during the
-existing text-video error display, before it reached the key wait/report
-instruction. This is not evidence against the new report boundary and was not
-introduced by it; it is a T212 video-path regression requirement. T211 does not
-claim end-to-end no-media error-display coverage.
+At T211 completion, an exploratory no-media end-to-end run remained at
+`F000:028E` during the existing text-video error display. This was not evidence
+against the new report boundary or a T211 regression. T212 subsequently retired
+the video portal and added bounded no-media ROM-video coverage through the key
+wait/report checkpoint.
 
 ## Verification Evidence
 
