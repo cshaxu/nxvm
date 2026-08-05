@@ -51,7 +51,8 @@ typedef struct t_vadp {
 
 C_VOID core_machine_vadp_initialize(t_vadp *adapter, t_port *port);
 C_VOID core_machine_vadp_reset(t_vadp *adapter);
-C_VOID core_machine_vadp_refresh(t_vadp *adapter, t_ram *memory);
+C_VOID core_machine_vadp_advance(t_vadp *adapter, t_ram *memory,
+    uint64_t elapsed_ticks);
 C_VOID core_machine_vadp_finalize(t_vadp *adapter);
 
 type_status core_machine_vadp_configure_text(t_vadp *adapter, uint8_t mode,

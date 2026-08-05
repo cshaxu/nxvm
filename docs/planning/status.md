@@ -2,8 +2,9 @@
 
 ## Current Work
 
-**M5 T219 S1 active:** define and migrate the single core elapsed-tick scheduler
-before evolving PIT, VADP, DMA, or RTC timing behavior. See [the task
+**M5 T219 S3 active:** record the verified developer artifact for the single
+core elapsed-tick scheduler before evolving PIT, VADP, DMA, or RTC timing
+behavior. See [the task
 record](m5-t219-elapsed-tick-scheduler.md) and the authoritative
 [PC/AT hardware queue](m5-pcat-hardware-convergence.md).
 

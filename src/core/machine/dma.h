@@ -166,8 +166,9 @@ extern "C"
                                        t_dma *secondary, t_port *port);
     C_VOID core_machine_dma_reset(t_latch *latch, t_dma *primary,
                                   t_dma *secondary);
-    C_VOID core_machine_dma_refresh(t_latch *latch, t_dma *primary,
-                                    t_dma *secondary, t_ram *ram);
+    C_VOID core_machine_dma_advance(t_latch *latch, t_dma *primary,
+                                    t_dma *secondary, t_ram *ram,
+                                    uint64_t elapsed_ticks);
     C_VOID core_machine_dma_set_drq(t_dma *primary, t_dma *secondary,
                                     type_unsigned_8 drq_id);
     C_VOID core_machine_dma_add_device(t_dma *primary, t_dma *secondary,

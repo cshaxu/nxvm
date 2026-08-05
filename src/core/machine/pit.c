@@ -302,9 +302,11 @@ C_VOID core_machine_pit_reset(t_pit *pit) {
         pit->data.flagRead[i] = pit->data.flagWrite[i] = VPIT_STATUS_RW_READY;
     }
 }
-C_VOID core_machine_pit_refresh(t_pit *pit) {
+C_VOID core_machine_pit_advance(t_pit *pit, uint64_t elapsed_ticks) {
     type_native_unsigned i;
+    uint64_t tick;
     if (pit == STD_NULL) return;
+    for (tick = 0u; tick < elapsed_ticks; ++tick) {
     for (i = 0; i < 3; ++i) {
         switch (VPIT_GetCW_M(pit->data.cw[i])) {
         case 0x00:
@@ -375,6 +377,7 @@ C_VOID core_machine_pit_refresh(t_pit *pit) {
         default:
             break;
         }
+    }
     }
 }
 C_VOID core_machine_pit_finalize(t_pit *pit) { (C_VOID)pit; }

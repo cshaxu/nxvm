@@ -482,7 +482,7 @@ C_VOID core_machine_dma_reset(t_latch *latch, t_dma *primary,
     doReset(secondary);
 }
 
-C_VOID core_machine_dma_refresh(t_latch *latch, t_dma *primary,
+static C_VOID core_machine_dma_advance_one(t_latch *latch, t_dma *primary,
     t_dma *secondary, t_ram *ram) {
     type_unsigned_8 id;
     type_unsigned_8 realDRQ1, realDRQ2;
@@ -531,6 +531,16 @@ C_VOID core_machine_dma_refresh(t_latch *latch, t_dma *primary,
             VDMA_SetISR(secondary->data.isr, id);
             Execute(secondary, latch, ram, id, TYPE_TRUE);
         }
+    }
+}
+
+C_VOID core_machine_dma_advance(t_latch *latch, t_dma *primary,
+    t_dma *secondary, t_ram *ram, uint64_t elapsed_ticks)
+{
+    uint64_t tick;
+
+    for (tick = 0u; tick < elapsed_ticks; ++tick) {
+        core_machine_dma_advance_one(latch, primary, secondary, ram);
     }
 }
 

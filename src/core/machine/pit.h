@@ -83,7 +83,7 @@ typedef struct {
 
 C_VOID core_machine_pit_initialize(t_pit *pit, t_port *port);
 C_VOID core_machine_pit_reset(t_pit *pit);
-C_VOID core_machine_pit_refresh(t_pit *pit);
+C_VOID core_machine_pit_advance(t_pit *pit, uint64_t elapsed_ticks);
 C_VOID core_machine_pit_finalize(t_pit *pit);
 C_VOID core_machine_pit_set_output(t_pit *pit, type_unsigned_8 id,
     core_machine_pit_output_provider provider, C_VOID *owner);
