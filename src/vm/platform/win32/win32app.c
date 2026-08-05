@@ -95,6 +95,12 @@ static LRESULT CALLBACK win32app_window_procedure(HWND window, UINT message,
         return 0;
     case WM_KEYUP:
     case WM_SYSKEYUP:
+        vm_platform_win32_keyboard_make_status_for(handle->platform);
+        return 0;
+    case WM_SYSCHAR:
+    case WM_SYSDEADCHAR:
+        /* Guest system-key chords must not fall through to the host menu. */
+        return 0;
     case WM_SETFOCUS:
         vm_platform_win32_keyboard_make_status_for(handle->platform);
         return 0;

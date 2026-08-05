@@ -2,10 +2,12 @@
 
 ## Current Work
 
-**M5 T222 S1 active:** define the PIT elapsed-tick waveform/GATE contract and
-port probes before changing timer behavior. See [the task
-record](m5-t222-pit-waveform.md) and the authoritative [PC/AT hardware
-queue](m5-pcat-hardware-convergence.md).
+**M5 T223 complete:** default-profile keyboard delivery again preserves BIOS
+extended keys with a zero ASCII byte and consumes one ingress event per guest
+execution boundary. This restores real `EDIT.COM` Alt-menu and arrow behavior
+without a QDX opcode, firmware portal, or a second input route. The owner
+confirmed the `fdd.img` interaction; the 56-test current CTest matrix passes.
+See [the task record](m5-t223-keyboard-set1.md).
 
 **M5 T221 complete:** deterministic reset-vector checkpoint sequences now lock
 the core tick, run-result, and `3DAh` raster behavior across one default

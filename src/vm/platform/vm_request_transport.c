@@ -123,19 +123,20 @@ C_VOID vm_platform_request_transport_observe_execution_boundary(C_VOID *opaque)
     vm_platform_request_transport_lock(transport);
     ++transport->execution_boundary_count;
     vm_platform_request_transport_unlock(transport);
-    for (;;) {
-        vm_platform_request_transport_lock(transport);
-        if (vm_platform_request_bridge_dequeue(&transport->ingress,
-                                                    &request) !=
-            TYPE_STATUS_OK) {
-            vm_platform_request_transport_unlock(transport);
-            return;
-        }
-        consumer = transport->consumer;
-        consumer_opaque = transport->consumer_opaque;
+    /* One host event per guest instruction boundary preserves keyboard chord
+     * ordering: an IRQ1 handler can observe Alt before a later host key-up
+     * snapshot is accepted.  Draining the whole ingress queue collapsed a
+     * physical chord into one guest instant. */
+    vm_platform_request_transport_lock(transport);
+    if (vm_platform_request_bridge_dequeue(&transport->ingress, &request) !=
+        TYPE_STATUS_OK) {
         vm_platform_request_transport_unlock(transport);
-        if (consumer != STD_NULL) consumer(consumer_opaque, &request);
+        return;
     }
+    consumer = transport->consumer;
+    consumer_opaque = transport->consumer_opaque;
+    vm_platform_request_transport_unlock(transport);
+    if (consumer != STD_NULL) consumer(consumer_opaque, &request);
 }
 
 C_UINT vm_platform_request_transport_execution_boundary_count(
