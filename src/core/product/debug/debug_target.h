@@ -29,6 +29,18 @@ typedef enum core_product_debug_pause_reason {
     CORE_PRODUCT_DEBUG_PAUSE_STEP
 } core_product_debug_pause_reason;
 
+typedef struct core_product_debug_fault_outcome {
+    C_INT valid;
+    uint32_t detail;
+    uint32_t linear_pc;
+    uint64_t executed;
+    C_INT diagnostic_valid;
+    uint32_t exception_mask;
+    uint32_t exception_code;
+    uint16_t cs;
+    uint32_t eip;
+} core_product_debug_fault_outcome;
+
 typedef struct core_product_debug_target {
     C_INT (*is_running)(C_VOID *context);
     C_VOID (*resume)(C_VOID *context);
@@ -65,6 +77,8 @@ typedef struct core_product_debug_target {
     C_VOID (*print_control_registers)(C_VOID *context);
     C_VOID (*print_memory)(C_VOID *context);
     C_VOID (*print_watchpoints)(C_VOID *context);
+    C_INT (*get_fault_outcome)(C_VOID *context,
+        core_product_debug_fault_outcome *out_outcome);
     C_VOID *context;
 } core_product_debug_target;
 

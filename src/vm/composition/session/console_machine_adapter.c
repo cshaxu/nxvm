@@ -4,6 +4,7 @@
 
 #include "vm/composition/session/control.h"
 #include "vm/composition/session/debug_target.h"
+#include "vm/composition/session/fault.h"
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/machine_info.h"
 #include "core/machine/memory.h"
@@ -71,7 +72,10 @@ static C_VOID vm_session_machine_print_status(C_VOID *context)
 {
     vm_session *session = vm_session_machine_borrow_selected(context);
 
-    if (session != STD_NULL) vm_session_control_print_status(&session->control);
+    if (session != STD_NULL) {
+        vm_session_control_print_status(&session->control);
+        vm_session_fault_print(session);
+    }
 }
 
 static C_VOID vm_session_machine_debug(C_VOID *context)

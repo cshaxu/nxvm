@@ -35,6 +35,8 @@ C_VOID core_product_debug_print_segment_registers(const core_product_debug_targe
 C_VOID core_product_debug_print_control_registers(const core_product_debug_target *target);
 C_VOID core_product_debug_print_memory(const core_product_debug_target *target);
 C_VOID core_product_debug_print_watchpoints(const core_product_debug_target *target);
+C_INT core_product_debug_get_fault_outcome(const core_product_debug_target *target,
+    core_product_debug_fault_outcome *out_outcome);
 
 #endif
 

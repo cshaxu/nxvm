@@ -40,10 +40,12 @@ C_INT main(C_VOID)
     if (core_machine_memory_write(machine, 0u, program, sizeof(program)) !=
         TYPE_STATUS_OK) goto fail;
     if (
-        core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||
+        core_machine_run(machine, budget, &result) != TYPE_STATUS_FAULT ||
         core_machine_get_cpu_diagnostic(machine, &diagnostic) != TYPE_STATUS_OK) goto fail;
     last = &diagnostic.recent[diagnostic.recent_count - 1u];
     if (diagnostic.recent_count != CORE_MACHINE_CPU_DIAGNOSTIC_WINDOW_CAPACITY ||
+        result.reason != CORE_MACHINE_STOP_FAULT ||
+        result.detail != VCPUINS_EXCEPT_UD ||
         !diagnostic.first_fault.valid ||
         !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
             VCPUINS_EXCEPT_UD) ||

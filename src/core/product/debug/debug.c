@@ -2512,6 +2512,7 @@ C_VOID core_product_debug_main(core_product_debug_context *context,
     const core_product_wait_scope *wait_scope;
     core_product_debug_context *debugContext = context;
     STD_SIZE_T i;
+    core_product_debug_fault_outcome fault;
 
     if (context == STD_NULL || target == STD_NULL)
         return;
@@ -2520,6 +2521,14 @@ C_VOID core_product_debug_main(core_product_debug_context *context,
     context->target = target;
     context->input_provider = input_provider;
     context->wait_scope = wait_scope;
+    if (core_product_debug_get_fault_outcome(target, &fault) && fault.valid) {
+        STD_PRINTF("fault: detail=%08X pc=%08X", fault.detail, fault.linear_pc);
+        if (fault.diagnostic_valid) {
+            STD_PRINTF(" exception=%08X code=%08X at %04X:%08X",
+                fault.exception_mask, fault.exception_code, fault.cs, fault.eip);
+        }
+        STD_PRINTF("\n");
+    }
     strFileName[0] = '\0';
     asmSegRec = uasmSegRec = _cs;
     asmPtrRec = uasmPtrRec = _ip;

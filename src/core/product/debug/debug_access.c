@@ -173,3 +173,10 @@ C_VOID core_product_debug_print_watchpoints(const core_product_debug_target *tar
     if (target != STD_NULL && target->print_watchpoints != STD_NULL) target->print_watchpoints(target->context);
 }
 
+C_INT core_product_debug_get_fault_outcome(const core_product_debug_target *target,
+    core_product_debug_fault_outcome *out_outcome)
+{
+    return target != STD_NULL && target->get_fault_outcome != STD_NULL &&
+        target->get_fault_outcome(target->context, out_outcome) == 0;
+}
+

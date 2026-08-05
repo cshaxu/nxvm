@@ -2,11 +2,11 @@
 
 ## Current Work
 
-**Active subtask:** **M5 T213 S3 -- BIOS boundary, system-image regression,
-and closure.** S1 froze the default PC/AT primary ATA PIO topology; S2 added
-the session-owned controller, core port/PIC binding, and bounded PIO subset.
-S3 has retired the HDD F4/F5 shortcut, passed the retained 50/50 current gate,
-and produced the task artifact; only commit closeout remains.
+**M5 T214 complete:** CPU/machine faults now return stable `STOP_FAULT` with
+detail and diagnostic before the normal reset path. The VM session owns one
+copied outcome for retained Console/debugger inspection; only explicit reset
+clears it. The runner-level smoke and all 51 current CTest smokes pass. See
+[the task record](m5-t214-cpu-fault-outcome.md).
 
 **M5 T213 complete:** the default profile now owns a primary master-only ATA
 PIO HDC at `1F0h`--`1F7h` and `3F6h` with IRQ14. ROM `INT 13h` performs PIO
@@ -63,9 +63,9 @@ changes no source or build output.
 
 ## Latest Technical Baseline
 
-M5 T213 retains NXVM behavior while replacing the HDD F4/F5 helpers with the
-declared primary ATA PIO controller and ROM `INT 13h` path. The recorded
-developer artifact is `nxvm_0_5_0213.exe`; its historical evidence is
+M5 T214 retains NXVM behavior while making CPU/machine fault data a stable
+session-owned result for Console and debugger inspection. The recorded
+developer artifact is `nxvm_0_5_0214.exe`; its historical evidence is
 summarized in [M5 History](../history/m5.md).
 
 ## Operational Reading Order

@@ -4,6 +4,7 @@
 #include "core/platform/sleep.h"
 #include "vm/composition/session/execution.h"
 #include "vm/composition/session/display.h"
+#include "vm/composition/session/fault.h"
 #include "vm/composition/session/session.h"
 #include "vm/composition/session/control.h"
 #include "vm/composition/session/runner.h"
@@ -58,9 +59,20 @@ C_VOID vm_session_runner_run(vm_session *session)
         budget.instructions = STD_ATOMIC_LOAD(&control->stepRequested) ? 1u :
             VM_SESSION_RUNNER_QUANTUM_INSTRUCTIONS;
         budget.ticks = 0u;
-        if (core_machine_run(session->core_machine, budget, &result) != TYPE_STATUS_OK) {
-            vm_session_control_stop(control);
-            continue;
+        {
+            type_status run_status = core_machine_run(session->core_machine,
+                budget, &result);
+
+            if (run_status == TYPE_STATUS_FAULT ||
+                result.reason == CORE_MACHINE_STOP_FAULT) {
+                vm_session_fault_capture(session, &result);
+                vm_session_control_fault(control);
+                continue;
+            }
+            if (run_status != TYPE_STATUS_OK) {
+                vm_session_control_stop(control);
+                continue;
+            }
         }
         vm_session_publish_display(session, TYPE_FALSE);
         if (result.reason == CORE_MACHINE_STOP_RESET_REQUESTED) {
