@@ -56,4 +56,22 @@ that LBA28 is present while slave and secondary controller topology are absent.
 
 ## S3: Verification And Closure
 
-**Status:** Active.
+**Status:** Complete.
+
+The focused ATA port smoke verifies LBA28 PIO write/read, 256-sector count
+encoding, LBA bounds, absent-slave ABRT, absent secondary declaration, SRST
+assert/release, and alternate-status versus status IRQ acknowledgement. The
+source gate rejects firmware/image, DMA, host-clock, direct CPU, and raw PIC
+state shortcuts while requiring profile feature binding and the owner-local
+LBA/SRST/IRQ paths.
+
+`current-gates-gcc` passed with **67/67** current CTest smokes, including the
+retained HDD system-image boot, FDD boot, DOS prompt, Console, debugger, and
+device matrix. The pre-existing RAM closure CMake dev warning for an invalid
+regular-expression escape remains outside this task and does not fail its gate.
+
+Artifact: `build/output/nxvm_0_5_0233.exe`
+
+SHA-256: `35CD218379869A05D0B68435E65B70DC7EFD01EA584B4495DD7D327087967324`
+
+Source commit: `46c6b97`

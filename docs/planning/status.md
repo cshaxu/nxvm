@@ -2,12 +2,14 @@
 
 ## Current Work
 
-**M5 T233 S3 active:** verify the bounded primary-master ATA PIO
-feature matrix: LBA28, absent slave/secondary behavior, SRST, and
-status/error/IRQ14 semantics. The implementation and focused port probe are
-complete; retained system-image and current-matrix closure remain in the task
-record:
-[m5-t233-ata-pio-feature-matrix.md](m5-t233-ata-pio-feature-matrix.md).
+**M5 T233 complete:** the default primary-master ATA controller now admits
+LBA28 PIO read/write and count-zero=256, while explicitly rejecting absent
+slave selection and retaining no secondary channel. SRST is BSY on assertion
+and DRDY+DSC on release, without IRQ; status acknowledges IRQ14 while alternate
+status only observes it. The ATA boundary gate and 67/67 current GCC/CTest
+matrix, including HDD system-image boot, pass. Artifact `nxvm_0_5_0233.exe`
+is SHA-256 `35CD218379869A05D0B68435E65B70DC7EFD01EA584B4495DD7D327087967324`
+from `46c6b97`; see [the task record](m5-t233-ata-pio-feature-matrix.md).
 
 **M5 T228 complete:** VADP now owns the bounded CGA `320x200x4` controller
 subset and copied indexed-pixel snapshot. Composition is the sole frame-copy
