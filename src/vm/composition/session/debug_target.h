@@ -5,7 +5,7 @@
 
 #include "core/product/debug/debug_target.h"
 
-#include "vm/composition/session/session.h"
+#include "vm/composition/session/session_interface.h"
 
 const core_product_debug_target *vm_session_debug_target(
     vm_session *machine);

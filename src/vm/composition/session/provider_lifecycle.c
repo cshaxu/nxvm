@@ -4,13 +4,13 @@
 
 #include "type.h"
 
-#include "vm/composition/session/session_private.h"
+#include "vm/composition/session/session.h"
 
 #include "vm/composition/session/block.h"
 #include "vm/composition/session/machine_devices.h"
 #include "vm/composition/session/profile_firmware.h"
 #include "vm/composition/session/provider_lifecycle.h"
-#include "vm/composition/session/session.h"
+#include "vm/composition/session/session_interface.h"
 
 C_VOID vm_session_provider_lifecycle_initialize(vm_session *session)
 {

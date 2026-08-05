@@ -1,6 +1,6 @@
 #include "type.h"
 
-#include "vm/composition/session/session_private.h"
+#include "vm/composition/session/session.h"
 
 #include "core/machine/machine_interface.h"
 #include "vm/composition/session/control.h"

@@ -7,7 +7,7 @@
 #include "core/product/session/session_provider.h"
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/provider.h"
-#include "vm/composition/session/session.h"
+#include "vm/composition/session/session_interface.h"
 #include "vm/platform/platform.h"
 
 C_INT main(C_VOID)

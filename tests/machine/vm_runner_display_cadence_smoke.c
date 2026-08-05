@@ -5,7 +5,7 @@
 #include "core/platform/display_frame.h"
 #include "vm/composition/session/control.h"
 #include "vm/composition/session/lifecycle.h"
-#include "vm/composition/session/session.h"
+#include "vm/composition/session/session_interface.h"
 #include "tests/support/vm_session_fixture.h"
 #include "vm/platform/presentation_mailbox.h"
 

@@ -7,7 +7,7 @@
 #include "vm/composition/session/control.h"
 #include "vm/composition/session/fault.h"
 #include "vm/composition/session/lifecycle.h"
-#include "vm/composition/session/session.h"
+#include "vm/composition/session/session_interface.h"
 #include "tests/support/vm_session_fixture.h"
 #include "vm/machine/fdd.h"
 #include "vm/platform/win32/win32.h"

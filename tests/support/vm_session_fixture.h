@@ -1,7 +1,7 @@
 #ifndef TEST_VM_SESSION_FIXTURE_H
 #define TEST_VM_SESSION_FIXTURE_H
 
-#include "vm/composition/session/session.h"
+#include "vm/composition/session/session_interface.h"
 #include "core/machine/block_provider.h"
 #include "core/machine/machine_interface.h"
 #include "vm/composition/session/control.h"

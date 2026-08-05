@@ -2,7 +2,7 @@
 
 #include "core/machine/debug_interface.h"
 #include "core/machine/machine_interface.h"
-#include "vm/composition/session/session.h"
+#include "vm/composition/session/session_interface.h"
 #include "tests/support/vm_session_fixture.h"
 
 #define VM_HDC_HDD_BOOT_ADDRESS 0x00007c00u

@@ -9,7 +9,7 @@
 #include "vm/composition/session/debug_target.h"
 #include "vm/composition/session/fault.h"
 #include "vm/composition/session/lifecycle.h"
-#include "vm/composition/session/session.h"
+#include "vm/composition/session/session_interface.h"
 #include "tests/support/vm_session_fixture.h"
 
 static C_INT vm_fault_outcome_prepare(vm_session *session)

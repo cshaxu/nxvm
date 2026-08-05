@@ -22,7 +22,7 @@
 
 #include "core/machine/cpu_instructions.h"
 
-#include "vm/composition/session/session.h"
+#include "vm/composition/session/session_interface.h"
 
 struct test_vm_cpu_probe {
     C_INT active;

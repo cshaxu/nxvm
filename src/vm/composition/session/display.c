@@ -8,7 +8,7 @@
 
 #include "vm/platform/platform.h"
 
-#include "vm/composition/session/session_private.h"
+#include "vm/composition/session/session.h"
 
 static C_INT vm_session_capture_display_snapshot(C_VOID *context,
     core_machine_display_snapshot *out_snapshot)

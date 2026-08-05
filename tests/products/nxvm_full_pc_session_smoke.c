@@ -1,6 +1,6 @@
 #include "type.h"
 
-#include "vm/composition/session/session.h"
+#include "vm/composition/session/session_interface.h"
 
 C_INT main(C_INT argc, C_CHAR **argv)
 {

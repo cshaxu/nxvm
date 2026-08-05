@@ -5,7 +5,7 @@
 #include "core/machine/machine_interface.h"
 #include "core/product/utils.h"
 #include "vm/composition/session/profile_firmware.h"
-#include "vm/composition/session/session_private.h"
+#include "vm/composition/session/session.h"
 #include "core/machine/dma.h"
 #include "core/machine/pic.h"
 #include "core/machine/pit.h"
