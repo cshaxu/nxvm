@@ -3,7 +3,7 @@
 #include "core/machine/debug_interface.h"
 #include "core/machine/machine_interface.h"
 #include "vm/composition/session/lifecycle.h"
-#include "vm/composition/session/session.h"
+#include "vm/composition/session/session_interface.h"
 #include "tests/support/vm_session_fixture.h"
 
 #define VM_NO_MEDIA_PROBE_INSTRUCTION_BUDGET 100000u

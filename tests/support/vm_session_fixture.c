@@ -1,6 +1,6 @@
 #include "tests/support/vm_session_fixture.h"
 
-#include "vm/composition/session/session_private.h"
+#include "vm/composition/session/session.h"
 
 C_INT vm_session_fixture_is_active(const vm_session *session)
 { return session != STD_NULL && session->active; }

@@ -1,7 +1,7 @@
 #include "type.h"
 
 #include "core/machine/machine_interface.h"
-#include "vm/composition/session/session.h"
+#include "vm/composition/session/session_interface.h"
 #include "tests/support/vm_session_fixture.h"
 #include "vm/machine/hdc.h"
 #include "vm/profile/default_profile/pc_at_profile.h"

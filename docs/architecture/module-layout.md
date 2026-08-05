@@ -95,7 +95,7 @@ product assembly layer. The completed implementation is summarized in
 A composition session's complete layout is private to its product root. Its
 public header declares an opaque `vm_session` or `vdm_session` handle, stable
 configuration, and lifecycle/operation contracts only. The complete struct and
-construction helpers live in `session_private.h`, included only by that product
+construction helpers live in `session.h`, included only by that product
 composition and a single test-only fixture implementation. Tests use narrow,
 named fixture probes; neither tests nor product peers receive a general raw
 layout or mutable-state escape hatch.

@@ -1,6 +1,6 @@
 #include "type.h"
 
-#include "vm/composition/session/session_private.h"
+#include "vm/composition/session/session.h"
 
 #include "vm/composition/session/debug_target.h"
 

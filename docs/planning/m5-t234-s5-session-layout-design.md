@@ -10,7 +10,7 @@ migration or change runtime behavior.
 
 ## Target Boundary
 
-`vm/composition/session/session.h` becomes the public composition contract:
+`vm/composition/session/session_interface.h` becomes the public composition contract:
 
 - `typedef struct vm_session vm_session;`
 - `vm_session_config`, reset-vector data, create/destroy, reconfiguration,
@@ -18,13 +18,13 @@ migration or change runtime behavior.
 - No complete struct, device type, platform run handle, debugger context, or
   internal construction/control helper.
 
-`vm/composition/session/session_private.h` owns the full struct and internal
+`vm/composition/session/session.h` owns the full struct and internal
 helpers such as storage initialization, request consumption, and direct
 provider binding. Only `src/vm/composition/**` may include it in production.
 
 ## Test Fixture Contract
 
-One test-only fixture implementation may include `session_private.h`. It
+One test-only fixture implementation may include `session.h`. It
 exports focused probes grouped by observable need, for example machine borrow,
 media state, control state, platform-run state, and selected diagnostics. A
 test may request a named observation or test action; it may not borrow the
@@ -42,7 +42,7 @@ production APIs are not added solely to support white-box tests.
 4. Remove direct test layout access and move internal-only declarations out of
    the public header.
 5. Add a static gate: no non-composition production source includes
-   `session_private.h`; only the approved fixture implementation may do so;
+   `session.h`; only the approved fixture implementation may do so;
    `session.h` contains no complete `vm_session` definition.
 6. Run GCC current gates and all relevant session, media, debugger, and
    platform smoke tests. No test-only runtime route, mirror state, or selected
