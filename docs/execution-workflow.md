@@ -16,6 +16,12 @@ exceptions, exact commands, expected markers, artifact needs, and stop
 conditions. The public skill defines the workflow; this repository defines the
 evidence locations and technical gates.
 
+For a defect or compatibility fix, the packet also contains the
+similar-issue-sweep record required by the Execution Policy: defect class,
+repository query, production-hit dispositions, and the planned focused or
+static regression. This makes the public discovery practice locally auditable
+without turning a task into unrelated cleanup.
+
 ## Local Identifiers And Evidence
 
 [Execution Policy](planning/execution-policy.md) owns the
@@ -34,5 +40,7 @@ hardware-device verification template.
 Before a completion commit, re-check the active packet against its original
 request. Close it only when every local requirement has concrete evidence or
 an owner-approved deferral in `TODO.md`; then update its compact history when
-appropriate. Standalone `Td` work has the same closure audit but never creates
-a runnable artifact.
+appropriate. A defect-fix closure also verifies that its similar-issue sweep
+has no undocumented production hit and that its focused regression or closure
+gate is recorded. Standalone `Td` work has the same closure audit but never
+creates a runnable artifact.
