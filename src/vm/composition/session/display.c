@@ -19,7 +19,7 @@ static C_INT vm_session_capture_display_snapshot(C_VOID *context,
         session->core_machine, out_snapshot) == TYPE_STATUS_OK;
 }
 
-C_VOID vm_session_publish_display(vm_session *machine,
+core_machine_display_kind vm_session_publish_display(vm_session *machine,
     C_INT force)
 {
     core_platform_display_frame frame;
@@ -30,15 +30,30 @@ C_VOID vm_session_publish_display(vm_session *machine,
 
     core_machine_display_snapshot snapshot;
 
-    if (machine == STD_NULL) return;
+    if (machine == STD_NULL) return CORE_MACHINE_DISPLAY_KIND_TEXT;
     STD_MEMSET(&snapshot, 0, sizeof(snapshot));
     if (!core_machine_display_capture_snapshot_from(&machine->display_provider,
-        &snapshot)) return;
+        &snapshot)) return CORE_MACHINE_DISPLAY_KIND_TEXT;
     buffer_changed = snapshot.buffer_changed;
     cursor_changed = snapshot.cursor_changed;
-    if (!force && !buffer_changed && !cursor_changed) return;
+    if (!force && !buffer_changed && !cursor_changed) return snapshot.kind;
 
     STD_MEMSET(&frame, 0, sizeof(frame));
+    frame.kind = snapshot.kind == CORE_MACHINE_DISPLAY_KIND_CGA_320X200X4 ?
+        CORE_PLATFORM_DISPLAY_KIND_INDEXED_PIXELS : CORE_PLATFORM_DISPLAY_KIND_TEXT;
+    frame.buffer_changed = buffer_changed;
+    frame.cursor_changed = cursor_changed;
+    if (frame.kind == CORE_PLATFORM_DISPLAY_KIND_INDEXED_PIXELS) {
+        frame.pixel_width = snapshot.pixel_width;
+        frame.pixel_height = snapshot.pixel_height;
+        STD_MEMCPY(frame.pixels, snapshot.pixels, sizeof(frame.pixels));
+        STD_MEMCPY(frame.palette_rgb, snapshot.palette_rgb,
+            sizeof(frame.palette_rgb));
+        frame.generation = ++machine->display_generation;
+        vm_platform_presentation_mailbox_publish(&machine->presentation_mailbox,
+                                                  &frame);
+        return snapshot.kind;
+    }
     frame.columns = snapshot.columns;
     frame.rows = snapshot.rows;
     if (frame.columns > CORE_PLATFORM_DISPLAY_MAX_COLUMNS) {
@@ -52,8 +67,6 @@ C_VOID vm_session_publish_display(vm_session *machine,
     frame.cursor_x = snapshot.cursor_x;
     frame.cursor_y = snapshot.cursor_y;
     frame.cursor_visible = snapshot.cursor_visible;
-    frame.buffer_changed = buffer_changed;
-    frame.cursor_changed = cursor_changed;
     for (row = 0u; row < frame.rows; ++row) {
         for (column = 0u; column < frame.columns; ++column) {
             uint16_t index = row * CORE_PLATFORM_DISPLAY_MAX_COLUMNS + column;
@@ -63,7 +76,8 @@ C_VOID vm_session_publish_display(vm_session *machine,
     }
     frame.generation = ++machine->display_generation;
     vm_platform_presentation_mailbox_publish(&machine->presentation_mailbox,
-                                             &frame);
+                                              &frame);
+    return snapshot.kind;
 }
 
 static C_VOID vmCompositionDisplayModeChanged(C_VOID *context)

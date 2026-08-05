@@ -2,8 +2,17 @@
 
 ## Current Work
 
-**No implementation subtask is active.** M5 T227 is complete; the next
-admission remains T228 S1 and requires its own contract before source work.
+**M5 T228 complete:** VADP now owns the bounded CGA `320x200x4` controller
+subset and copied indexed-pixel snapshot. Composition is the sole frame-copy
+bridge; platform never reads guest VRAM. The owner-approved `console`,
+`window`, and `auto` policy is implemented: Console stops clearly at supported
+graphics, Window presents either admitted frame kind, and Auto moves the same
+session once from Console text to Window graphics. The GCC governance gate and
+62/62 current smoke matrix pass; see [the task record](m5-t228-cga-320x200x4.md).
+
+**M5 T229 S1 is next:** define the bounded 8042 AUX controller, mouse packet,
+and IRQ12 contract before implementation. Host mouse may enter only through a
+profile mapper and must never write DOS APIs or guest memory directly.
 
 **M5 Td S10 complete:** defect and compatibility fixes now have an enforceable
 local similar-issue sweep. The active packet and closure evidence must record

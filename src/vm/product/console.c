@@ -136,7 +136,7 @@ static C_VOID doHelp(vm_product_console_context *context)
             STD_PRINTF("Change VM devices\n");
             STD_PRINTF("\nDEVICE ram <size>\n");
             STD_PRINTF("  change memory size (KB)\n");
-            STD_PRINTF("\nDEVICE display console | window\n");
+            STD_PRINTF("\nDEVICE display console | window | auto\n");
             STD_PRINTF("  change display type\n");
             STD_PRINTF("\nDEVICE fdd create | (insert <file>) | (remove <file>)\n");
             STD_PRINTF("  change floppy drive status:\n");
@@ -250,7 +250,17 @@ static C_VOID doInfo(vm_product_console_context *context)
     STD_PRINTF("\n");
     STD_PRINTF("Platform Info\n");
     STD_PRINTF("==================\n");
-    STD_PRINTF("Display Type: %s\n", machineProvider->get_window_display(machineProvider->context) ? "Window" : "Console");
+    switch (machineProvider->get_display_mode(machineProvider->context)) {
+    case VM_PRODUCT_CONSOLE_DISPLAY_WINDOW:
+        STD_PRINTF("Display Type: Window\n");
+        break;
+    case VM_PRODUCT_CONSOLE_DISPLAY_AUTO:
+        STD_PRINTF("Display Type: Auto\n");
+        break;
+    default:
+        STD_PRINTF("Display Type: Console\n");
+        break;
+    }
     STD_PRINTF("\n");
     STD_PRINTF("BIOS Settings\n");
     STD_PRINTF("==================\n");
@@ -361,11 +371,18 @@ static C_VOID doDevice(vm_product_console_context *context)
         }
         if (!STD_STRCMP(argArray[2], "console"))
         {
-            machineProvider->set_window_display(machineProvider->context, 0);
+            machineProvider->set_display_mode(machineProvider->context,
+                VM_PRODUCT_CONSOLE_DISPLAY_CONSOLE);
         }
         else if (!STD_STRCMP(argArray[2], "window"))
         {
-            machineProvider->set_window_display(machineProvider->context, 1);
+            machineProvider->set_display_mode(machineProvider->context,
+                VM_PRODUCT_CONSOLE_DISPLAY_WINDOW);
+        }
+        else if (!STD_STRCMP(argArray[2], "auto"))
+        {
+            machineProvider->set_display_mode(machineProvider->context,
+                VM_PRODUCT_CONSOLE_DISPLAY_AUTO);
         }
         else
         {
@@ -554,8 +571,14 @@ static C_VOID execute(vm_product_console_context *context)
     {
         if (!machineProvider->is_running(machineProvider->context))
         {
-            machineProvider->set_window_display(machineProvider->context,
-                                                !machineProvider->get_window_display(machineProvider->context));
+            vm_product_console_display_mode mode = machineProvider->get_display_mode(
+                machineProvider->context);
+            machineProvider->set_display_mode(machineProvider->context,
+                mode == VM_PRODUCT_CONSOLE_DISPLAY_CONSOLE ?
+                VM_PRODUCT_CONSOLE_DISPLAY_WINDOW :
+                mode == VM_PRODUCT_CONSOLE_DISPLAY_WINDOW ?
+                VM_PRODUCT_CONSOLE_DISPLAY_AUTO :
+                VM_PRODUCT_CONSOLE_DISPLAY_CONSOLE);
         }
     }
     else if (!STD_STRCMP(argArray[0], "start"))

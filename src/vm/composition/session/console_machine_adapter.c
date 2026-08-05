@@ -43,21 +43,30 @@ static C_VOID vm_session_machine_print(C_VOID *context)
     if (session != STD_NULL) vm_session_print_machine(session);
 }
 
-static C_INT vm_session_machine_get_window(C_VOID *context)
+static vm_product_console_display_mode vm_session_machine_get_display_mode(C_VOID *context)
 {
     vm_session *session = vm_session_machine_borrow_selected(context);
+    C_INT mode;
 
-    return session != STD_NULL && vm_platform_run_context_get_window_display(
-        &session->platform_run_context);
+    if (session == STD_NULL) return VM_PRODUCT_CONSOLE_DISPLAY_CONSOLE;
+    mode = vm_platform_run_context_get_display_mode(&session->platform_run_context);
+    if (mode == VM_PLATFORM_DISPLAY_WINDOW) return VM_PRODUCT_CONSOLE_DISPLAY_WINDOW;
+    if (mode == VM_PLATFORM_DISPLAY_AUTO) return VM_PRODUCT_CONSOLE_DISPLAY_AUTO;
+    return VM_PRODUCT_CONSOLE_DISPLAY_CONSOLE;
 }
 
-static C_VOID vm_session_machine_set_window(C_VOID *context, C_INT value)
+static C_VOID vm_session_machine_set_display_mode(C_VOID *context,
+    vm_product_console_display_mode mode)
 {
     vm_session *session = vm_session_machine_borrow_selected(context);
+    vm_platform_display_mode platformMode;
 
     if (session != STD_NULL) {
-        vm_platform_run_context_set_window_display(&session->platform_run_context,
-            value);
+        platformMode = mode == VM_PRODUCT_CONSOLE_DISPLAY_WINDOW ?
+            VM_PLATFORM_DISPLAY_WINDOW : mode == VM_PRODUCT_CONSOLE_DISPLAY_AUTO ?
+            VM_PLATFORM_DISPLAY_AUTO : VM_PLATFORM_DISPLAY_CONSOLE;
+        vm_platform_run_context_set_display_mode(&session->platform_run_context,
+            platformMode);
     }
 }
 
@@ -202,8 +211,8 @@ static C_VOID vm_session_machine_resume(C_VOID *context)
 static const vm_product_console_machine_provider vmSessionMachineProviderTemplate = {
     vm_session_machine_is_running,
     vm_session_machine_print,
-    vm_session_machine_get_window,
-    vm_session_machine_set_window,
+    vm_session_machine_get_display_mode,
+    vm_session_machine_set_display_mode,
     vm_session_machine_print_bios,
     vm_session_machine_print_status,
     vm_session_machine_debug,

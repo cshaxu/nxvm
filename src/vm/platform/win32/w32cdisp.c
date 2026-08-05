@@ -63,6 +63,7 @@ C_VOID w32cdispSetScreen(w32cdisp_context *context, WIN32_HANDLE output,
 
     if (context == STD_NULL) return;
     vm_platform_presentation_mailbox_capture(mailbox, &frame);
+    if (frame.kind != CORE_PLATFORM_DISPLAY_KIND_TEXT) return;
     context->columns = frame.rows;
     context->rows = frame.columns;
     context->buffer_size.X = context->rows;

@@ -30,19 +30,59 @@ C_VOID vm_platform_run_context_initialize(
     context->console_renderer = STD_NULL;
     context->window_renderer = STD_NULL;
     context->terminal_displayed_generation = 0u;
-    context->window_display = 0;
+    context->display_mode = VM_PLATFORM_DISPLAY_CONSOLE;
+    context->auto_window_active = 0;
+    context->auto_promotion_pending = 0;
 }
 
 C_INT vm_platform_run_context_get_window_display(
     const vm_platform_run_context *context)
 {
-    return context != STD_NULL && context->window_display != 0;
+    return context != STD_NULL && (context->display_mode ==
+        VM_PLATFORM_DISPLAY_WINDOW || (context->display_mode ==
+        VM_PLATFORM_DISPLAY_AUTO && context->auto_window_active));
+}
+
+C_INT vm_platform_run_context_get_display_mode(
+    const vm_platform_run_context *context)
+{
+    return context == STD_NULL ? VM_PLATFORM_DISPLAY_CONSOLE :
+        context->display_mode;
+}
+
+C_VOID vm_platform_run_context_set_display_mode(
+    vm_platform_run_context *context, vm_platform_display_mode mode)
+{
+    if (context == STD_NULL || mode < VM_PLATFORM_DISPLAY_CONSOLE ||
+        mode > VM_PLATFORM_DISPLAY_AUTO) return;
+    context->display_mode = mode;
+    context->auto_window_active = 0;
+    context->auto_promotion_pending = 0;
 }
 
 C_VOID vm_platform_run_context_set_window_display(
     vm_platform_run_context *context, C_INT enabled)
 {
-    if (context != STD_NULL) context->window_display = enabled != 0;
+    vm_platform_run_context_set_display_mode(context, enabled ?
+        VM_PLATFORM_DISPLAY_WINDOW : VM_PLATFORM_DISPLAY_CONSOLE);
+}
+
+C_INT vm_platform_run_context_request_graphics_promotion(
+    vm_platform_run_context *context)
+{
+    if (context == STD_NULL || context->display_mode != VM_PLATFORM_DISPLAY_AUTO ||
+        context->auto_window_active) return TYPE_FALSE;
+    context->auto_window_active = TYPE_TRUE;
+    context->auto_promotion_pending = TYPE_TRUE;
+    return TYPE_TRUE;
+}
+
+C_INT vm_platform_run_context_take_auto_promotion(
+    vm_platform_run_context *context)
+{
+    if (context == STD_NULL || !context->auto_promotion_pending) return TYPE_FALSE;
+    context->auto_promotion_pending = TYPE_FALSE;
+    return TYPE_TRUE;
 }
 
 C_VOID vm_platform_run_handle_initialize(vm_platform_run_handle *handle)

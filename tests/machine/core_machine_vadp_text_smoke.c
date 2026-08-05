@@ -80,7 +80,8 @@ C_INT main(C_VOID)
     failed |= !core_machine_vadp_capture_text_snapshot(&vadp, &memory, &snapshot);
     failed |= !snapshot.buffer_changed || snapshot.characters[1] != 'B';
 
-    core_machine_port_write(&port, 0x03d8u, 0x02u);
+    /* T228 admits 320x200x4; 640x200 remains outside the text controller. */
+    core_machine_port_write(&port, 0x03d8u, 0x12u);
     failed |= core_machine_port_read(&port, 0x03d8u) != 0x05u;
 
     core_machine_vadp_finalize(&vadp);

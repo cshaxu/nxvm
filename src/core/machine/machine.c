@@ -249,7 +249,7 @@ type_status core_machine_capture_display_snapshot(const core_machine *machine,
         machine->lifecycle != CORE_MACHINE_PAUSED) {
         return TYPE_STATUS_INVALID_STATE;
     }
-    return core_machine_vadp_capture_text_snapshot(&mutable_machine->shared_vadp,
+    return core_machine_vadp_capture_snapshot(&mutable_machine->shared_vadp,
         &mutable_machine->executor_memory, out_snapshot) ? TYPE_STATUS_OK :
         TYPE_STATUS_UNSUPPORTED;
 }
