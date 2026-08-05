@@ -47,6 +47,12 @@ session-owned controller, and retires the HDD F4/F5 shortcut through ROM
 result; retained debugger and Console consume it only after the runner
 boundary. See [`M5 T214`](docs/planning/m5-t214-cpu-fault-outcome.md).
 
+**Completed implementation task -- T215: remove generic firmware-interrupt
+portal.** No VM, VDM, or profile production consumer existed, so core's
+registration, storage, dispatch infrastructure, and portal-only verification
+are deleted. Ordinary CPU `INT`/IVT delivery is now the sole path. See
+[`M5 T215`](docs/planning/m5-t215-remove-firmware-interrupt-portal.md).
+
 1. **Architecture and validation foundation.** Reaffirm NXVM-first M5 scope;
    make the default PC/AT profile declarative for topology, ports, IRQ, DMA,
    CMOS defaults, ROM mapping, and firmware hooks; audit that every observable
@@ -258,6 +264,8 @@ boundary. See [`M5 T214`](docs/planning/m5-t214-cpu-fault-outcome.md).
   real 80186+ immediate-shift form, so strict 8086 correctly raises `#UD`.
   Keep the focused 8086-rejects/80186-accepts probe and retain the FDD run only
   as an expected-negative compatibility diagnostic; it is not a T209 blocker.
+  T215 subsequently removed this temporary generic portal mechanism after all
+  profile consumers retired; it remains historical context only.
 
 - [x] **Keyboard firmware-portal retirement (`TODO(High)`, T210).** Default
   profile keyboard input now follows core KBC `60h/64h` and IRQ1 through ROM

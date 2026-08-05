@@ -598,9 +598,6 @@ add_executable(vm-hdd-authority-smoke tests/machine/vm_hdd_authority_smoke.c)
 target_link_libraries(vm-hdd-authority-smoke PRIVATE vm-composition)
 add_executable(vm-bios-authority-smoke tests/machine/vm_bios_authority_smoke.c)
 target_link_libraries(vm-bios-authority-smoke PRIVATE vm-composition)
-add_executable(vm-firmware-portal-authority-smoke
-    tests/machine/vm_firmware_portal_authority_smoke.c)
-target_link_libraries(vm-firmware-portal-authority-smoke PRIVATE vm-composition)
 add_executable(vm-boot-failure-lifecycle-smoke
     tests/machine/vm_boot_failure_lifecycle_smoke.c)
 target_link_libraries(vm-boot-failure-lifecycle-smoke PRIVATE vm-composition)
@@ -647,9 +644,9 @@ target_link_libraries(core-machine-cpu-profile-gate-smoke PRIVATE
 add_executable(core-machine-fpu-escape-smoke
     tests/machine/fpu_escape_smoke.c)
 target_link_libraries(core-machine-fpu-escape-smoke PRIVATE core-machine)
-add_executable(core-machine-firmware-interrupt-portal-smoke
-    tests/machine/firmware_interrupt_portal_smoke.c)
-target_link_libraries(core-machine-firmware-interrupt-portal-smoke PRIVATE
+add_executable(core-machine-int-ivt-smoke
+    tests/machine/cpu_int_ivt_smoke.c)
+target_link_libraries(core-machine-int-ivt-smoke PRIVATE
     core-machine)
 add_executable(core-machine-cpu-fpu-profile-closure-smoke
     tests/machine/cpu_fpu_profile_closure_smoke.c)
@@ -746,7 +743,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-vadp-text-smoke
     core-machine-stopped-lifecycle-smoke
     core-machine-memory-reconfigure-smoke
-    core-machine-firmware-interrupt-portal-smoke
+    core-machine-int-ivt-smoke
     vm-boot-failure-lifecycle-smoke
     vm-request-transport-smoke
     core-product-wait-smoke
@@ -869,7 +866,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0214 "0.5.0214")
+add_current_vm_artifact(vm-0-5-0215 "0.5.0215")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 
@@ -1028,13 +1025,6 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_vm_session_owner_closure.cmake"
         COMMENT "Verifying M5 VM session direct ownership closure"
         VERBATIM)
-
-    add_custom_target(verify-firmware-interrupt-portal-closure
-        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_firmware_interrupt_portal_closure.cmake"
-        COMMENT "Verifying M5 T209 firmware-interrupt portal closure"
-        VERBATIM)
-    add_dependencies(run-current-smokes verify-firmware-interrupt-portal-closure)
 
     add_custom_target(verify-keyboard-portal-closure
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}

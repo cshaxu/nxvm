@@ -35,8 +35,6 @@ C_VOID core_machine_cpu_execution_context_initialize(
     context->cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
     context->fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE;
     context->fpu = STD_NULL;
-    context->firmware_interrupt_portal_count = 0u;
-    context->firmware_interrupt_portals_frozen = 0;
 }
 
 C_VOID core_machine_cpu_execution_context_bind_profiles(
@@ -53,61 +51,6 @@ C_VOID core_machine_cpu_execution_context_bind_fpu(
     core_machine_cpu_execution_context *context, core_machine_fpu *fpu)
 {
     if (context != STD_NULL) context->fpu = fpu;
-}
-
-type_status core_machine_cpu_execution_context_register_firmware_interrupt_portal(
-    core_machine_cpu_execution_context *context,
-    const core_machine_firmware_interrupt_portal *portal)
-{
-    STD_SIZE_T index;
-
-    if (context == STD_NULL || portal == STD_NULL || portal->provider == STD_NULL ||
-        portal->origin_linear_bytes == 0u) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
-    }
-    if (context->firmware_interrupt_portals_frozen) {
-        return TYPE_STATUS_INVALID_STATE;
-    }
-    for (index = 0u; index < context->firmware_interrupt_portal_count; ++index) {
-        if (context->firmware_interrupt_portals[index].vector == portal->vector) {
-            return TYPE_STATUS_UNSUPPORTED;
-        }
-    }
-    if (context->firmware_interrupt_portal_count ==
-        CORE_MACHINE_FIRMWARE_INTERRUPT_PORTAL_CAPACITY) {
-        return TYPE_STATUS_NO_MEMORY;
-    }
-    context->firmware_interrupt_portals[
-        context->firmware_interrupt_portal_count++] = *portal;
-    return TYPE_STATUS_OK;
-}
-
-C_VOID core_machine_cpu_execution_context_freeze_firmware_interrupt_portals(
-    core_machine_cpu_execution_context *context)
-{
-    if (context != STD_NULL) context->firmware_interrupt_portals_frozen = 1;
-}
-
-C_INT core_machine_cpu_execution_context_dispatch_firmware_interrupt_portal(
-    core_machine_cpu_execution_context *context, uint32_t origin_linear,
-    uint8_t vector)
-{
-    STD_SIZE_T index;
-
-    if (context == STD_NULL || !context->firmware_interrupt_portals_frozen) {
-        return 0;
-    }
-    for (index = 0u; index < context->firmware_interrupt_portal_count; ++index) {
-        const core_machine_firmware_interrupt_portal *portal =
-            &context->firmware_interrupt_portals[index];
-        if (portal->vector == vector &&
-            origin_linear - portal->origin_linear_start <
-                portal->origin_linear_bytes) {
-            portal->provider(portal->context, context, vector);
-            return 1;
-        }
-    }
-    return 0;
 }
 
 const C_CHAR *core_machine_cpu_profile_name(core_machine_cpu_profile profile)
