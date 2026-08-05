@@ -49,20 +49,20 @@ C_INT main(C_VOID)
     failed |= core_machine_pit_read_byte(&port, 0x0041u) != 0x56u;
 
     core_machine_port_write(&port, 0x0043u, 0x00ccu);
-    core_machine_pit_refresh(&pit);
+    core_machine_pit_advance(&pit, 1u);
     failed |= core_machine_pit_read_byte(&port, 0x0040u) != 0xb6u;
     failed |= core_machine_pit_read_byte(&port, 0x0040u) != 0x34u;
     failed |= core_machine_pit_read_byte(&port, 0x0040u) != 0x12u;
 
     core_machine_port_write(&port, 0x0043u, 0x00dcu);
-    core_machine_pit_refresh(&pit);
+    core_machine_pit_advance(&pit, 1u);
     core_machine_port_write(&port, 0x0043u, 0x00dcu);
     failed |= core_machine_pit_read_byte(&port, 0x0040u) != 0x33u;
     failed |= core_machine_pit_read_byte(&port, 0x0040u) != 0x12u;
     failed |= core_machine_pit_read_byte(&port, 0x0040u) != 0x32u;
 
     core_machine_port_write(&port, 0x0043u, 0x0000u);
-    core_machine_pit_refresh(&pit);
+    core_machine_pit_advance(&pit, 1u);
     core_machine_port_write(&port, 0x0043u, 0x0000u);
     failed |= core_machine_pit_read_byte(&port, 0x0040u) != 0x32u;
     failed |= core_machine_pit_read_byte(&port, 0x0040u) != 0x12u;

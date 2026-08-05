@@ -192,16 +192,20 @@ C_VOID core_machine_vadp_reset(t_vadp *adapter)
     adapter->data.dirty_generation = 1u;
 }
 
-C_VOID core_machine_vadp_refresh(t_vadp *adapter, t_ram *memory)
+C_VOID core_machine_vadp_advance(t_vadp *adapter, t_ram *memory,
+    uint64_t elapsed_ticks)
 {
+    uint64_t tick;
     (C_VOID)memory;
     if (adapter == STD_NULL) return;
 
     /* The text slice has no raster renderer or host clock.  Advance a small,
      * deterministic CGA status phase from the core execution clock so guest
      * polling loops can observe both display and vertical-retrace states. */
-    adapter->data.refresh_phase = (uint8_t)((adapter->data.refresh_phase + 1u) %
-        CORE_MACHINE_VADP_REFRESH_PHASES);
+    for (tick = 0u; tick < elapsed_ticks; ++tick) {
+        adapter->data.refresh_phase = (uint8_t)((adapter->data.refresh_phase + 1u) %
+            CORE_MACHINE_VADP_REFRESH_PHASES);
+    }
     adapter->data.status = adapter->data.refresh_phase <
         CORE_MACHINE_VADP_VERTICAL_RETRACE_PHASES ?
             CORE_MACHINE_VADP_STATUS_TEXT_READY : 0u;

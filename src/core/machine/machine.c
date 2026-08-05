@@ -113,6 +113,19 @@ static uint32_t core_machine_resolve_ticks_per_instruction(uint32_t ticks)
     return ticks == 0u ? 1u : ticks;
 }
 
+static C_VOID core_machine_advance_scheduler(core_machine *machine,
+    uint64_t elapsed_ticks)
+{
+    core_machine_dma_advance(&machine->shared_dma_latch,
+        &machine->shared_dma_primary, &machine->shared_dma_secondary,
+        &machine->executor_memory, elapsed_ticks);
+    core_machine_pit_advance(&machine->shared_pit, elapsed_ticks);
+    core_machine_vadp_advance(&machine->shared_vadp, &machine->executor_memory,
+        elapsed_ticks);
+    core_machine_pic_refresh(&machine->shared_pic_master,
+        &machine->shared_pic_slave);
+}
+
 static C_INT core_machine_valid_cpu_profile(core_machine_cpu_profile profile)
 {
     return profile >= CORE_MACHINE_CPU_PROFILE_8086 &&
@@ -588,19 +601,6 @@ type_status core_machine_run(
                 result->linear_pc = core_machine_linear_pc(machine);
                 return TYPE_STATUS_OK;
             }
-            if (machine->execution_provider != STD_NULL &&
-                machine->execution_provider->refresh != STD_NULL) {
-                machine->execution_provider->refresh(
-                    machine->execution_provider_context);
-            }
-            core_machine_kbc_refresh(&machine->shared_kbc);
-            core_machine_vadp_refresh(&machine->shared_vadp, &machine->executor_memory);
-            core_machine_dma_refresh(&machine->shared_dma_latch,
-                &machine->shared_dma_primary, &machine->shared_dma_secondary,
-                &machine->executor_memory);
-            core_machine_pic_refresh(&machine->shared_pic_master,
-                &machine->shared_pic_slave);
-            core_machine_pit_refresh(&machine->shared_pit);
             if (budget.ticks != 0u &&
                 machine->ticks_per_instruction > budget.ticks - result->ticks) {
                 machine->lifecycle = CORE_MACHINE_PAUSED;
@@ -609,6 +609,12 @@ type_status core_machine_run(
                 result->elapsed_ticks = machine->elapsed_ticks;
                 return TYPE_STATUS_OK;
             }
+            if (machine->execution_provider != STD_NULL &&
+                machine->execution_provider->refresh != STD_NULL) {
+                machine->execution_provider->refresh(
+                    machine->execution_provider_context);
+            }
+            core_machine_kbc_refresh(&machine->shared_kbc);
             core_machine_cpu_execution_refresh(&machine->executor_cpu_execution);
             if (machine->lifecycle == CORE_MACHINE_FAULTED) {
                 result->reason = CORE_MACHINE_STOP_FAULT;
@@ -621,6 +627,8 @@ type_status core_machine_run(
             result->ticks += machine->ticks_per_instruction;
             machine->elapsed_ticks += machine->ticks_per_instruction;
             result->elapsed_ticks = machine->elapsed_ticks;
+            core_machine_advance_scheduler(machine,
+                machine->ticks_per_instruction);
             if (machine->executor_cpu.data.flagHalt) {
                 machine->lifecycle = CORE_MACHINE_PAUSED;
                 result->reason = CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;

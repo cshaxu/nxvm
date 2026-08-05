@@ -49,7 +49,7 @@ C_INT main(C_VOID)
     failed |= core_machine_port_read(&port, 0x03d9u) != 0x1eu;
     failed |= core_machine_port_read(&port, 0x03dau) != 0u;
     for (refresh = 0u; refresh < 2u * 64u; ++refresh) {
-        core_machine_vadp_refresh(&vadp, &memory);
+        core_machine_vadp_advance(&vadp, &memory, 1u);
         if ((core_machine_port_read(&port, 0x03dau) & 0x08u) != 0u) {
             saw_vertical_retrace = TYPE_TRUE;
         } else {
