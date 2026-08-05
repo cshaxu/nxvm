@@ -37,6 +37,12 @@ code, a runtime dependency, or substitute acceptance evidence. No task may
 rely on a BIOS hack, host shortcut, or application special case for a
 guest-observable behavior.
 
+**Active implementation task -- T213: HDD controller profile / port contract.**
+S1 declares and probes the primary ATA PIO contract; S2 admits only the
+declared controller state machine and composition binding; S3 adds a
+guest-visible regression before any F4/F5 portal retirement claim. See
+[`M5 T213`](docs/planning/m5-t213-hdd-controller-profile.md).
+
 1. **Architecture and validation foundation.** Reaffirm NXVM-first M5 scope;
    make the default PC/AT profile declarative for topology, ports, IRQ, DMA,
    CMOS defaults, ROM mapping, and firmware hooks; audit that every observable
@@ -255,6 +261,12 @@ guest-observable behavior.
   C callback handlers are removed. The T210 closure gate, KBC port probe, DOS
   `ver` regression, Console/debugger, and two-session matrix pass. Rapid
   typeahead and the broader advanced-KBC protocol remain deferred below.
+- [ ] **DOS keyboard regression timing stability (`TODO(Low)`).** One T213 S1
+  current-matrix run timed out in `vm-dos-keyboard-smoke`, while its immediate
+  direct rerun and the following complete 49-test matrix passed unchanged.
+  Preserve the existing guest behavior; only investigate after a reproducible
+  failure, with a bounded readiness/host-input timing probe rather than an
+  arbitrary timeout increase.
 
 - [x] **Boot-failure firmware-portal retirement (`TODO(High)`, T211).** The
   default ROM no longer calls `INT F0h`; after its existing key acknowledgement
