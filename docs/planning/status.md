@@ -2,12 +2,12 @@
 
 ## Current Work
 
-**Latest governance action:** **M5 Td S5 complete -- T212 closure record.** T212 is complete:
-the default ROM owns the admitted text `INT 10h` slice, the F2 video portal is
-retired, and runner display publication is bounded by a 256-instruction
-quantum. Its task record, historical index, `0.5.0212` artifact hash, and
-48-current-smoke evidence agree. Td S5 changes documentation only and produces
-no EXE.
+**Latest technical cleanup:** **M5 T210 S4 complete -- obsolete profile
+keyboard state.** `vm_profile_default_context.keyboard_waiting` had no
+producer, consumer, or test contract after T210. The field and initializer are
+removed; the retained KBC -> IRQ1 -> ROM `INT 09h` -> BDA -> ROM `INT 16h`
+path and the 48-current-smoke matrix pass. This dead-state cleanup produces no
+new EXE.
 
 **M5 T211 complete:** the default profile's F0
 boot-failure portal is retired. The ROM reports an acknowledged failure through
