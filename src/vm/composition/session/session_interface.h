@@ -3,7 +3,8 @@
 
 #include "type.h"
 
-#include "core/machine/cpu.h"
+#include "core/machine/cpu_interface.h"
+#include "core/machine/fpu_interface.h"
 
 
 
