@@ -12,15 +12,36 @@ and boolean/assertion helpers. It must not return `core_machine`, device,
 transport, control, BIOS, platform-run, or other session-owned object pointers.
 It must not cast away `const`.
 
-## Migration Order
+## Subtasks
 
-1. Define typed snapshots and actions for machine execution and observations.
-2. Migrate media, FDC, HDC, CMOS, and debug smoke coverage to assertions and
-   explicit actions.
-3. Migrate platform transport/window and control smoke coverage to actions and
-   snapshots.
-4. Remove raw-borrow and legacy-storage helpers, then extend the static gate to
-   reject raw fixture pointer returns and all casts from const session handles.
+### P2: Machine Contract Design
+
+Inventory every `core_machine` fixture borrow and define the smallest action
+and immutable-observation API needed for execution, memory, display, timing,
+and diagnostics. No test migration occurs in P2.
+
+### P3: Machine Contract Migration
+
+Implement P2 actions/snapshots and migrate every machine-facing smoke test.
+The fixture must no longer return `core_machine *`.
+
+### P4: Device Contract Migration
+
+Replace FDD, FDC, HDD, HDC, CMOS, BIOS, block-provider, and debug raw borrows
+with explicit media/device actions, snapshots, and assertions. This removes all
+device and firmware pointer returns.
+
+### P5: Platform And Control Contract Migration
+
+Replace request/mouse transport, presentation mailbox, run context/handle, and
+control raw borrows with event injection, display-mode, lifecycle, and
+execution-control actions plus immutable snapshots.
+
+### P6: Closure Gate
+
+Remove allocation and legacy storage helpers, delete all remaining raw-borrow
+APIs, and extend the static gate to reject session-owned pointer returns and
+const-removing casts. Run the complete GCC gate.
 
 ## Exit Conditions
 
@@ -28,3 +49,8 @@ It must not cast away `const`.
 - No test includes composition `session.h`.
 - The fixture implementation contains no const-removing cast.
 - The static boundary gate and all current GCC smoke tests pass.
+
+## Active Subtask
+
+**P2 active.** P3--P6 remain pending and may not begin until the P2 machine
+contract is reviewed in this packet.
