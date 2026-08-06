@@ -536,6 +536,33 @@ Profiles exclude machine-local paths, CLI arguments, window/Console choices,
 and other product-session policy. They are reproducible read-only blueprints;
 composition turns a selected blueprint into a running session.
 
+### VM Machine-Profile Admission
+
+A VM machine profile declares only identity; generic CPU/FPU/RAM and clock
+requirements; VM device topology; port/IRQ/DMA bindings; controller defaults;
+CMOS defaults; ROM mapping requirements; firmware-hook metadata; abstract
+media-slot compatibility; and pure host-input mapping tables. It has no live
+machine, controller, session, thread, platform/product handle, mutable media,
+local path, CLI setting, or product UX policy. `core` receives generic
+configuration and providers only: it never learns a PC model, ROM vendor, ROM
+path, media path, or BIOS-service meaning.
+
+VM composition selects and validates one declaration, creates the one core
+machine and VM-only objects, installs all provider/ROM/firmware bindings during
+`INITIALIZED`, freezes the topology, then resets and runs it. Every profile,
+ROM, port/IRQ/DMA route, and frozen clock parameter remains fixed until the
+session is destroyed; RAM alone retains its explicit cold-reconfiguration
+operation. Providers borrow only narrow immutable profile data at registration,
+not a global profile or composition handle.
+
+A future BYOB ROM facility is composition-owned. A profile may declare an
+abstract read-only ROM slot and its permitted address/length/entry constraints;
+a caller manifest may name one local file, size, SHA-256, slot, mapping, and
+provenance statement. Composition validates all of those before it creates the
+machine and reports absence, read, size/hash, overlap, mapping, or entry
+failure factually. It never downloads, enumerates, catalogues, bundles, or
+defaults a vendor ROM. Core sees only an immutable generic mapping provider.
+
 ## Cross-Module: Resource, Failure, And Callback Rules
 
 Creation, registration, freeze, and reset failures return a factual
