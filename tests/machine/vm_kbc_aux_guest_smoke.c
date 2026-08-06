@@ -4,7 +4,7 @@
 
 #include "core/machine/machine_interface.h"
 #include "vm/composition/session/session_interface.h"
-#include "tests/support/vm_session_fixture.h"
+#include "vm/composition/session/session.h"
 #include "vm/platform/input.h"
 #include "vm/platform/vm_request_transport.h"
 
@@ -78,7 +78,7 @@ static C_INT vm_kbc_aux_write_fixture(C_CHAR path[MAX_PATH])
 
 static C_INT vm_kbc_aux_read_count(vm_session *session, uint16_t *out_count)
 {
-    return core_machine_memory_read(vm_session_fixture_machine(session),
+    return core_machine_memory_read(session->core_machine,
         VM_KBC_AUX_COUNT_ADDRESS, out_count, sizeof(*out_count)) == TYPE_STATUS_OK;
 }
 
@@ -91,7 +91,7 @@ static C_INT vm_kbc_aux_run_until_count(vm_session *session, uint16_t expected)
 
     for (instruction = 0u; instruction < VM_KBC_AUX_BOOT_BUDGET;
          ++instruction) {
-        if (core_machine_run(vm_session_fixture_machine(session), budget, &result) !=
+        if (core_machine_run(session->core_machine, budget, &result) !=
                 TYPE_STATUS_OK || result.reason == CORE_MACHINE_STOP_FAULT) {
             return 0;
         }
@@ -122,16 +122,16 @@ C_INT main(C_VOID)
     /* The guest's D4/F4 transaction must reach the AUX device before host input. */
     if (!vm_kbc_aux_run_until_count(session, 1u) ||
         !vm_kbc_aux_read_count(session, &count) || count != 1u ||
-        core_machine_memory_read(vm_session_fixture_machine(session), VM_KBC_AUX_BYTES_ADDRESS,
+        core_machine_memory_read(session->core_machine, VM_KBC_AUX_BYTES_ADDRESS,
             bytes, 1u) != TYPE_STATUS_OK || bytes[0] != 0xfau) goto done;
 
-    vm_platform_mouse_receive_relative_event_for(vm_session_fixture_mouse_transport(session),
+    vm_platform_mouse_receive_relative_event_for(&session->mouse_transport,
         5, 3, 0x01u);
     if (!vm_kbc_aux_read_count(session, &count) || count != 1u) goto done;
     vm_platform_request_transport_observe_execution_boundary(
-        vm_session_fixture_request_transport(session));
+        &session->request_transport);
     if (!vm_kbc_aux_run_until_count(session, 4u) ||
-        core_machine_memory_read(vm_session_fixture_machine(session), VM_KBC_AUX_BYTES_ADDRESS,
+        core_machine_memory_read(session->core_machine, VM_KBC_AUX_BYTES_ADDRESS,
             bytes, sizeof(bytes)) != TYPE_STATUS_OK ||
         bytes[0] != 0xfau || bytes[1] != 0x29u || bytes[2] != 0x05u ||
         bytes[3] != 0xfdu) goto done;

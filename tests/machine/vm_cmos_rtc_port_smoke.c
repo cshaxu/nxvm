@@ -4,7 +4,7 @@
 #include "core/machine/port.h"
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/session_interface.h"
-#include "tests/support/vm_session_fixture.h"
+#include "vm/composition/session/session.h"
 #include "vm/machine/cmos.h"
 
 static C_VOID cmos_write(t_port *port, type_unsigned_8 reg, type_unsigned_8 value)
@@ -40,42 +40,42 @@ static C_VOID advance_cmos(t_cmos *cmos, uint64_t elapsed_ticks)
 
 C_INT main(C_VOID)
 {
-    vm_session *session = vm_session_fixture_allocate();
+    vm_session *session = ((vm_session *)STD_CALLOC(1u, sizeof(vm_session)));
     t_port *port;
     C_INT failed = 0;
 
     if (session == STD_NULL) return 1;
     vm_session_initialize(session);
-    port = vm_session_fixture_cmos(session)->connect.cpu == STD_NULL ? STD_NULL :
-        vm_session_fixture_fdc(session)->connect.port;
-    if (!vm_session_fixture_is_active(session) || port == STD_NULL) failed = 1;
+    port = session->cmos.connect.cpu == STD_NULL ? STD_NULL :
+        session->fdc.connect.port;
+    if (!session->active || port == STD_NULL) failed = 1;
     initialize_pic(port);
 
     if (cmos_read(port, VCMOS_RTC_REG_D) != VCMOS_REG_D_VRT) failed |= 0x0001;
     if (cmos_read(port, VCMOS_RTC_SECOND) != 0x00u) failed |= 0x0002;
-    advance_cmos(vm_session_fixture_cmos(session), 50000u);
+    advance_cmos(&session->cmos, 50000u);
     if (cmos_read(port, VCMOS_RTC_SECOND) != 0x01u) failed |= 0x0004;
 
     cmos_write(port, VCMOS_RTC_REG_B, VCMOS_REG_B_24H | VCMOS_REG_B_UIE);
-    advance_cmos(vm_session_fixture_cmos(session), 50000u);
-    if (!core_machine_pic_scan_interrupt(vm_session_fixture_cmos(session)->connect.irq_source.master,
-        vm_session_fixture_cmos(session)->connect.irq_source.slave)) failed |= 0x0008;
-    if (core_machine_pic_get_interrupt(vm_session_fixture_cmos(session)->connect.irq_source.master,
-        vm_session_fixture_cmos(session)->connect.irq_source.slave) != 0x70u) failed |= 0x0010;
+    advance_cmos(&session->cmos, 50000u);
+    if (!core_machine_pic_scan_interrupt(session->cmos.connect.irq_source.master,
+        session->cmos.connect.irq_source.slave)) failed |= 0x0008;
+    if (core_machine_pic_get_interrupt(session->cmos.connect.irq_source.master,
+        session->cmos.connect.irq_source.slave) != 0x70u) failed |= 0x0010;
     if ((cmos_read(port, VCMOS_RTC_REG_C) &
         (VCMOS_REG_C_IRQF | VCMOS_REG_C_UF)) !=
         (VCMOS_REG_C_IRQF | VCMOS_REG_C_UF)) failed |= 0x0020;
     core_machine_port_write(port, 0x00a0u, 0x20u);
     core_machine_port_write(port, 0x0020u, 0x20u);
-    if (core_machine_pic_scan_interrupt(vm_session_fixture_cmos(session)->connect.irq_source.master,
-        vm_session_fixture_cmos(session)->connect.irq_source.slave)) failed |= 0x0040;
+    if (core_machine_pic_scan_interrupt(session->cmos.connect.irq_source.master,
+        session->cmos.connect.irq_source.slave)) failed |= 0x0040;
 
     cmos_write(port, VCMOS_RTC_REG_B, VCMOS_REG_B_24H | VCMOS_REG_B_PIE);
-    advance_cmos(vm_session_fixture_cmos(session), 50u);
-    if (!core_machine_pic_scan_interrupt(vm_session_fixture_cmos(session)->connect.irq_source.master,
-        vm_session_fixture_cmos(session)->connect.irq_source.slave) ||
-        core_machine_pic_get_interrupt(vm_session_fixture_cmos(session)->connect.irq_source.master,
-            vm_session_fixture_cmos(session)->connect.irq_source.slave) != 0x70u) failed |= 0x0080;
+    advance_cmos(&session->cmos, 50u);
+    if (!core_machine_pic_scan_interrupt(session->cmos.connect.irq_source.master,
+        session->cmos.connect.irq_source.slave) ||
+        core_machine_pic_get_interrupt(session->cmos.connect.irq_source.master,
+            session->cmos.connect.irq_source.slave) != 0x70u) failed |= 0x0080;
     if ((cmos_read(port, VCMOS_RTC_REG_C) &
         (VCMOS_REG_C_IRQF | VCMOS_REG_C_PF)) !=
         (VCMOS_REG_C_IRQF | VCMOS_REG_C_PF)) failed |= 0x0100;
@@ -84,7 +84,7 @@ C_INT main(C_VOID)
 
     cmos_write(port, VCMOS_RTC_REG_B, VCMOS_REG_B_24H | VCMOS_REG_B_SET);
     cmos_write(port, VCMOS_RTC_SECOND, 0x11u);
-    advance_cmos(vm_session_fixture_cmos(session), 100000u);
+    advance_cmos(&session->cmos, 100000u);
     if (cmos_read(port, VCMOS_RTC_SECOND) != 0x11u) failed |= 0x0200;
     cmos_write(port, VCMOS_RTC_REG_B, VCMOS_REG_B_24H);
 
@@ -100,11 +100,11 @@ C_INT main(C_VOID)
     cmos_write(port, VCMOS_RTC_MINUTE_ALARM, 0x00u);
     cmos_write(port, VCMOS_RTC_HOUR_ALARM, 0x00u);
     cmos_write(port, VCMOS_RTC_REG_B, VCMOS_REG_B_24H | VCMOS_REG_B_AIE);
-    advance_cmos(vm_session_fixture_cmos(session), 50000u);
-    if (!core_machine_pic_scan_interrupt(vm_session_fixture_cmos(session)->connect.irq_source.master,
-        vm_session_fixture_cmos(session)->connect.irq_source.slave) ||
-        core_machine_pic_get_interrupt(vm_session_fixture_cmos(session)->connect.irq_source.master,
-            vm_session_fixture_cmos(session)->connect.irq_source.slave) != 0x70u) failed |= 0x0800;
+    advance_cmos(&session->cmos, 50000u);
+    if (!core_machine_pic_scan_interrupt(session->cmos.connect.irq_source.master,
+        session->cmos.connect.irq_source.slave) ||
+        core_machine_pic_get_interrupt(session->cmos.connect.irq_source.master,
+            session->cmos.connect.irq_source.slave) != 0x70u) failed |= 0x0800;
     if ((cmos_read(port, VCMOS_RTC_REG_C) &
         (VCMOS_REG_C_IRQF | VCMOS_REG_C_AF)) !=
         (VCMOS_REG_C_IRQF | VCMOS_REG_C_AF)) failed |= 0x1000;
@@ -112,22 +112,22 @@ C_INT main(C_VOID)
     core_machine_port_write(port, 0x0020u, 0x20u);
 
     cmos_write(port, VCMOS_EQUIPMENT, 0x5au);
-    vm_machine_cmos_reset(vm_session_fixture_cmos(session));
+    vm_machine_cmos_reset(&session->cmos);
     if (cmos_read(port, VCMOS_EQUIPMENT) != 0x5au) failed |= 0x2000;
     if (cmos_read(port, VCMOS_RTC_SECOND) != 0x00u) failed |= 0x4000;
 
     if (failed) {
         STD_PRINTF("RTC probe failed=%04x: second=%u hour=%u C=%02x B=%02x IRR=%02x/%02x ISR=%02x/%02x\n", failed,
-            vm_session_fixture_cmos(session)->data.second, vm_session_fixture_cmos(session)->data.hour,
-            vm_session_fixture_cmos(session)->connect.reg[VCMOS_RTC_REG_C],
-            vm_session_fixture_cmos(session)->connect.reg[VCMOS_RTC_REG_B],
-            vm_session_fixture_cmos(session)->connect.irq_source.master->data.irr,
-            vm_session_fixture_cmos(session)->connect.irq_source.slave->data.irr,
-            vm_session_fixture_cmos(session)->connect.irq_source.master->data.isr,
-            vm_session_fixture_cmos(session)->connect.irq_source.slave->data.isr);
+            session->cmos.data.second, session->cmos.data.hour,
+            session->cmos.connect.reg[VCMOS_RTC_REG_C],
+            session->cmos.connect.reg[VCMOS_RTC_REG_B],
+            session->cmos.connect.irq_source.master->data.irr,
+            session->cmos.connect.irq_source.slave->data.irr,
+            session->cmos.connect.irq_source.master->data.isr,
+            session->cmos.connect.irq_source.slave->data.isr);
     }
     vm_session_finalize(session);
-    vm_session_fixture_free(session);
+    STD_FREE(session);
     if (failed) return 1;
     puts("M5:T232:S1:CMOS-RTC-PORT:OK");
     return 0;

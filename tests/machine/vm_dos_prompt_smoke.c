@@ -16,7 +16,7 @@
 #include "vm/composition/session/control.h"
 
 #include "vm/composition/session/session_interface.h"
-#include "tests/support/vm_session_fixture.h"
+#include "vm/composition/session/session.h"
 
 #include "vm/machine/fdd.h"
 
@@ -71,10 +71,10 @@ C_INT main(C_INT argc, C_CHAR **argv)
             vm_session_create(&config, &session) != TYPE_STATUS_OK) return 1;
         owns_session = 1;
     } else {
-        session = vm_session_fixture_allocate();
+        session = ((vm_session *)STD_CALLOC(1u, sizeof(vm_session)));
         if (session == STD_NULL) return 1;
         vm_session_initialize(session);
-        if (vm_machine_fdd_insert_for(vm_session_fixture_fdd(session), argv[1]) != 0) goto fail;
+        if (vm_machine_fdd_insert_for(&session->fdd, argv[1]) != 0) goto fail;
     }
     thread = CreateThread(STD_NULL, 0u, run_full_pc, session, 0u, STD_NULL);
     if (thread == STD_NULL) goto fail;
@@ -82,11 +82,11 @@ C_INT main(C_INT argc, C_CHAR **argv)
     for (elapsed = 0u; elapsed < DOS_PROMPT_TIMEOUT_MILLISECONDS; elapsed += 10u) {
         Sleep(10u);
     }
-    vm_session_control_request_pause(vm_session_fixture_control(session), VM_SESSION_PAUSE_EXPLICIT);
-    if (!vm_session_control_wait_for_pause(vm_session_fixture_control(session), 2000u)) goto fail;
-    prompt_seen = has_dos_prompt(vm_session_fixture_machine(session));
+    vm_session_control_request_pause(&session->control, VM_SESSION_PAUSE_EXPLICIT);
+    if (!vm_session_control_wait_for_pause(&session->control, 2000u)) goto fail;
+    prompt_seen = has_dos_prompt(session->core_machine);
     if (!prompt_seen) {
-        dump_first_fault(vm_session_fixture_machine(session));
+        dump_first_fault(session->core_machine);
         STD_FPUTS("M5:T70:S2:DOS-PROMPT:TIMEOUT\n", STD_STDERR);
         goto fail;
     }
@@ -100,19 +100,19 @@ C_INT main(C_INT argc, C_CHAR **argv)
     if (owns_session) vm_session_destroy(session);
     else {
         vm_session_finalize(session);
-        vm_session_fixture_free(session);
+        STD_FREE(session);
     }
     puts(argc == 3 ? "M5:T209:S3:DOS-PROMPT-8086:OK" :
         "M5:T70:S2:DOS-PROMPT:OK");
     return 0;
 
 fail:
-    if (session != STD_NULL) dump_first_fault(vm_session_fixture_machine(session));
+    if (session != STD_NULL) dump_first_fault(session->core_machine);
     vm_session_stop(session);
     if (owns_session) vm_session_destroy(session);
     else {
         vm_session_finalize(session);
-        vm_session_fixture_free(session);
+        STD_FREE(session);
     }
     return 1;
 }

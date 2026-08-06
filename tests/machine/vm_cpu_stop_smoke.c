@@ -9,7 +9,7 @@
 
 #include "vm/composition/session/control.h"
 #include "vm/composition/session/session_interface.h"
-#include "tests/support/vm_session_fixture.h"
+#include "vm/composition/session/session.h"
 
 C_INT main(C_VOID)
 {
@@ -18,16 +18,16 @@ C_INT main(C_VOID)
     C_INT failed = 0;
 
     if (vm_session_create(STD_NULL, &session) != TYPE_STATUS_OK) return 1;
-    vm_session_control_reset(vm_session_fixture_control(session));
+    vm_session_control_reset(&session->control);
     if (core_machine_memory_write_real_to(
-            core_machine_debug_memory_borrow(vm_session_fixture_machine(session)), 0xf000u,
+            core_machine_debug_memory_borrow(session->core_machine), 0xf000u,
             0xfff0u, invalid_instruction, sizeof(invalid_instruction)) !=
         TYPE_STATUS_OK) failed = 1;
-    vm_session_control_start(vm_session_fixture_control(session));
+    vm_session_control_start(&session->control);
 
-    failed |= vm_session_control_is_running(vm_session_fixture_control(session)) != TYPE_FALSE;
+    failed |= vm_session_control_is_running(&session->control) != TYPE_FALSE;
     failed |= core_machine_cpu_execution_consume_stop_request(
-        core_machine_debug_cpu_execution_borrow(vm_session_fixture_machine(session))) !=
+        core_machine_debug_cpu_execution_borrow(session->core_machine)) !=
         TYPE_FALSE;
     vm_session_destroy(session);
 

@@ -4,7 +4,7 @@
 #include "core/machine/machine_interface.h"
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/session_interface.h"
-#include "tests/support/vm_session_fixture.h"
+#include "vm/composition/session/session.h"
 #include "vm/machine/fdd.h"
 
 #define VM_DOS_VIDEO_PROBE_INSTRUCTION_BUDGET 500000u
@@ -42,16 +42,16 @@ C_INT main(C_INT argc, C_CHAR **argv)
 
     if (argc != 2) return 1;
     if (vm_session_create(STD_NULL, &session) != TYPE_STATUS_OK) return 1;
-    if (!vm_session_fixture_is_active(session) || vm_machine_fdd_insert_for(vm_session_fixture_fdd(session), argv[1]) != 0) {
+    if (!session->active || vm_machine_fdd_insert_for(&session->fdd, argv[1]) != 0) {
         goto fail;
     }
     vm_session_reset(session);
-    cpu = core_machine_debug_cpu_borrow(vm_session_fixture_machine(session));
+    cpu = core_machine_debug_cpu_borrow(session->core_machine);
     if (cpu == STD_NULL) goto fail;
     for (instruction = 0u; instruction < VM_DOS_VIDEO_PROBE_INSTRUCTION_BUDGET;
          ++instruction) {
-        if (core_machine_capture_observation(vm_session_fixture_machine(session), &observation) !=
-                TYPE_STATUS_OK || core_machine_memory_read(vm_session_fixture_machine(session),
+        if (core_machine_capture_observation(session->core_machine, &observation) !=
+                TYPE_STATUS_OK || core_machine_memory_read(session->core_machine,
                 observation.cpu.cs_base + observation.cpu.eip, opcode,
                 sizeof(opcode)) != TYPE_STATUS_OK) {
             failed = 1;
@@ -64,12 +64,12 @@ C_INT main(C_INT argc, C_CHAR **argv)
         if (opcode[0] == 0xcdu && opcode[1] == 0xf2u) {
             ++f2_count;
         }
-        if (core_machine_run(vm_session_fixture_machine(session), budget, &result) != TYPE_STATUS_OK ||
+        if (core_machine_run(session->core_machine, budget, &result) != TYPE_STATUS_OK ||
             result.reason == CORE_MACHINE_STOP_FAULT) {
             failed = 1;
             break;
         }
-        if (core_machine_capture_display_snapshot(vm_session_fixture_machine(session), &snapshot) ==
+        if (core_machine_capture_display_snapshot(session->core_machine, &snapshot) ==
                 TYPE_STATUS_OK && vm_dos_video_has_prompt(&snapshot)) {
             prompt_seen = 1;
             break;

@@ -1,7 +1,7 @@
 #include "type.h"
 
 #include "vm/composition/session/session_interface.h"
-#include "tests/support/vm_session_fixture.h"
+#include "vm/composition/session/session.h"
 #include "vm/composition/session/control.h"
 #include "vm/composition/session/lifecycle.h"
 
@@ -18,7 +18,7 @@ static C_INT verify(const C_CHAR *fdd, const C_CHAR *hdd, C_INT boot_hdd)
     vm_session *session = STD_NULL;
 
     if (vm_session_create(&config, &session) != TYPE_STATUS_OK ||
-        vm_session_fixture_machine(session) == STD_NULL ||
+        session->core_machine == STD_NULL ||
         vm_session_get_reset_vector(session, &vector) != TYPE_STATUS_OK ||
         vector.cs != 0xf000u || vector.ip != 0xfff0u) {
         vm_session_destroy(session);
@@ -40,8 +40,8 @@ static C_INT verify_created(C_VOID)
     vm_session *session = STD_NULL;
 
     if (vm_session_create(&config, &session) != TYPE_STATUS_OK ||
-        !vm_session_fixture_fdd(session)->connect.flagDiskExist || !vm_session_fixture_hdd(session)->connect.flagDiskExist ||
-        vm_session_fixture_hdd(session)->data.ncyl != 1u) {
+        !session->fdd.connect.flagDiskExist || !session->hdd.connect.flagDiskExist ||
+        session->hdd.data.ncyl != 1u) {
         vm_session_destroy(session);
         return 1;
     }
@@ -56,15 +56,15 @@ static C_INT verify_initialize_once(C_VOID)
     vm_session_control_state *control;
 
     if (vm_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||
-        session == STD_NULL || !vm_session_fixture_is_active(session)) {
+        session == STD_NULL || !session->active) {
         vm_session_destroy(session);
         return 1;
     }
-    core_machine = vm_session_fixture_machine(session);
-    control = vm_session_fixture_control(session);
+    core_machine = session->core_machine;
+    control = &session->control;
     vm_session_initialize(session);
-    if (!vm_session_fixture_is_active(session) || vm_session_fixture_machine(session) != core_machine ||
-        vm_session_fixture_control(session) != control) {
+    if (!session->active || session->core_machine != core_machine ||
+        &session->control != control) {
         vm_session_destroy(session);
         return 1;
     }

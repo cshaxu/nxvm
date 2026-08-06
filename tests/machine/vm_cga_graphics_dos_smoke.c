@@ -4,7 +4,7 @@
 
 #include "core/machine/machine_interface.h"
 #include "vm/composition/session/session_interface.h"
-#include "tests/support/vm_session_fixture.h"
+#include "vm/composition/session/session.h"
 
 #define VM_CGA_DOS_BOOT_BUDGET 800000u
 #define VM_CGA_DOS_RUN_BUDGET 400000u
@@ -174,9 +174,9 @@ static C_INT vm_cga_dos_run_until(vm_session *session, uint32_t limit,
     uint32_t executed = 0u;
 
     while (executed < limit) {
-        if (core_machine_run(vm_session_fixture_machine(session), budget, &result) != TYPE_STATUS_OK ||
+        if (core_machine_run(session->core_machine, budget, &result) != TYPE_STATUS_OK ||
             result.reason == CORE_MACHINE_STOP_FAULT ||
-            core_machine_capture_display_snapshot(vm_session_fixture_machine(session),
+            core_machine_capture_display_snapshot(session->core_machine,
                 &snapshot) != TYPE_STATUS_OK) return 0;
         if (!want_graphics && vm_cga_dos_has_prompt(&snapshot)) return 1;
         if (want_graphics && snapshot.kind == CORE_MACHINE_DISPLAY_KIND_CGA_320X200X4 &&
@@ -209,7 +209,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     if (vm_session_create(&config, &session) != TYPE_STATUS_OK || session == STD_NULL ||
         !vm_cga_dos_run_until(session, VM_CGA_DOS_BOOT_BUDGET, 0)) goto done;
     for (index = 0u; index < sizeof(command); ++index) {
-        if (core_machine_keyboard_submit_scan_code(vm_session_fixture_machine(session),
+        if (core_machine_keyboard_submit_scan_code(session->core_machine,
                 command[index]) != TYPE_STATUS_OK) goto done;
     }
     passed = vm_cga_dos_run_until(session, VM_CGA_DOS_RUN_BUDGET, 1);
