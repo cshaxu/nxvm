@@ -8,6 +8,7 @@ extern "C" {
 #endif
 
 #include "type.h"
+#include "core/machine/memory_interface.h"
 
 typedef struct t_port t_port;
 
@@ -32,6 +33,9 @@ typedef type_status (*core_machine_memory_device_read)(C_VOID *owner,
 typedef type_status (*core_machine_memory_device_write)(C_VOID *owner,
     type_unsigned_32 physical, type_virtual_address source,
     type_native_unsigned bytes);
+typedef type_status (*core_machine_memory_device_query)(C_VOID *owner,
+    type_unsigned_32 physical, type_native_unsigned bytes,
+    core_machine_memory_access access);
 
 typedef struct {
     core_machine_memory_write_observer callback;
@@ -47,6 +51,7 @@ typedef struct {
     type_native_unsigned bytes;
     core_machine_memory_device_read read;
     core_machine_memory_device_write write;
+    core_machine_memory_device_query query;
     C_VOID *owner;
 } core_machine_memory_device_provider;
 
@@ -78,6 +83,9 @@ type_status core_machine_memory_read_physical(t_ram *ram, type_unsigned_32 physi
     type_virtual_address destination, type_native_unsigned size);
 type_status core_machine_memory_write_physical(t_ram *ram, type_unsigned_32 physical,
     type_virtual_address source, type_native_unsigned size);
+type_status core_machine_memory_query_physical(const t_ram *ram,
+    type_unsigned_32 physical, type_native_unsigned size,
+    core_machine_memory_access access, core_machine_memory_route *out_route);
 C_VOID core_machine_memory_initialize(t_ram *ram);
 C_VOID core_machine_memory_reset(t_ram *ram);
 C_VOID core_machine_memory_finalize(t_ram *ram);
@@ -93,7 +101,7 @@ type_status core_machine_memory_register_write_observer(t_ram *ram,
 type_status core_machine_memory_register_device_provider(t_ram *ram,
     type_unsigned_32 physical_start, STD_SIZE_T bytes,
     core_machine_memory_device_read read, core_machine_memory_device_write write,
-    C_VOID *owner);
+    core_machine_memory_device_query query, C_VOID *owner);
 C_VOID core_machine_memory_freeze_mappings(t_ram *ram);
 type_status core_machine_memory_read_real_from(t_ram *ram, uint16_t segment,
     uint16_t offset, C_VOID *out_data, STD_SIZE_T size);

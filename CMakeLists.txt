@@ -148,6 +148,11 @@ add_executable(core-machine-memory-reconfigure-smoke
 )
 target_link_libraries(core-machine-memory-reconfigure-smoke PRIVATE core-machine)
 
+add_executable(core-machine-checked-memory-smoke
+    tests/core/machine_checked_memory_smoke.c
+)
+target_link_libraries(core-machine-checked-memory-smoke PRIVATE core-machine)
+
 add_executable(core-machine-configuration-smoke
     tests/core/machine_configuration_smoke.c
 )
@@ -185,6 +190,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(core-machine-lifecycle-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-stopped-lifecycle-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-memory-reconfigure-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(core-machine-checked-memory-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-trace-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-debug-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-presentation-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -873,6 +879,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     vm-rom-ega-int10-system-smoke
     core-machine-stopped-lifecycle-smoke
     core-machine-memory-reconfigure-smoke
+    core-machine-checked-memory-smoke
     core-machine-int-ivt-smoke
     vm-boot-failure-lifecycle-smoke
     vm-request-transport-smoke
@@ -1004,7 +1011,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0242 "0.5.0242")
+add_current_vm_artifact(vm-0-5-0243 "0.5.0243")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 

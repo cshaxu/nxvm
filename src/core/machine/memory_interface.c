@@ -49,6 +49,29 @@ type_status core_machine_memory_write(
         (type_virtual_address)data, size);
 }
 
+type_status core_machine_memory_query(
+    const core_machine *machine,
+    uint32_t physical,
+    STD_SIZE_T size,
+    core_machine_memory_access access,
+    core_machine_memory_route *out_route)
+{
+    if (machine == STD_NULL || out_route == STD_NULL || size == 0u ||
+        (access != CORE_MACHINE_MEMORY_ACCESS_READ &&
+         access != CORE_MACHINE_MEMORY_ACCESS_WRITE)) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    if (machine->lifecycle != CORE_MACHINE_STOPPED &&
+        machine->lifecycle != CORE_MACHINE_PAUSED) {
+        return TYPE_STATUS_INVALID_STATE;
+    }
+    if (machine->executor_memory.connect.backing == 0u) {
+        return TYPE_STATUS_INVALID_STATE;
+    }
+    return core_machine_memory_query_physical(&machine->executor_memory, physical,
+        size, access, out_route);
+}
+
 type_status core_machine_set_a20(
     core_machine *machine,
     C_INT enabled)
