@@ -2,12 +2,13 @@
 
 ## Current Work
 
-**M5 is idle after T254 S3.**
+**M5 T255 S1 active: audit machine-profile admission boundaries.**
 
-[T254](m5-t254-digital-cga-6845.md) closed the bounded digital-CGA slice:
-VADP owns `640x200x2` decode and copied frames, while default ROM mode `06h`
-and its return to text mode use ordinary video ports and guest memory only.
-No subtask is active until the next task packet is approved.
+[T255](m5-t255-machine-profile-admission.md) is a design/governance task. It
+audits the default PC/AT reference declaration, then freezes an immutable VM
+profile contract, external-ROM admission boundary, fixture corpus, and first
+non-default-profile template. It changes no runtime source, builds no artifact,
+and must not add a profile or external-ROM loader.
 
 | Closure | Evidence |
 | --- | --- |
@@ -16,7 +17,10 @@ No subtask is active until the next task packet is approved.
 | T253 | ATA PIO sector-count progression is controller-owned; artifact `0.5.0252` and 87/87 current CTest pass. |
 | T254 | Bounded digital CGA `640x200x2` is VADP-owned; artifact `0.5.0253` and 89/89 current CTest pass. |
 
-The next task must establish a complete active packet before implementation.
+T255 uses S1 for current-state ownership, S2 for the frozen contract, and S3
+for architecture/source/roadmap closure. Its stop conditions prohibit model or
+ROM-vendor knowledge in core, runtime topology switching, third-party firmware
+assets, and retained NXVM UX changes.
 
 ## Current Technical Baseline
 
