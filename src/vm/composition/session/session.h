@@ -6,6 +6,7 @@
 #include "core/machine/machine_interface.h"
 #include "core/machine/block_provider.h"
 #include "core/machine/display_interface.h"
+#include "core/platform/input_interface.h"
 #include "core/product/debug/debug.h"
 #include "core/product/debug/debug_target.h"
 #include "core/utils/wait_provider.h"
@@ -41,8 +42,7 @@ struct vm_session {
     core_machine_display_provider_slot display_provider;
     vm_platform_presentation_mailbox presentation_mailbox;
     vm_platform_execution_transport execution_transport;
-    vm_platform_keyboard_transport keyboard_transport;
-    vm_platform_mouse_transport mouse_transport;
+    core_platform_input_source input_source;
     core_utils_wait_scope wait_scope;
     vm_platform_run_context platform_run_context;
     vm_platform_run_handle platform_run_handle;

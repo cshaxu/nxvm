@@ -22,7 +22,7 @@
 #include "core/machine/cpu.h"
 
 #include "vm/machine/debug.h"
-#include "vm/platform/input.h"
+#include "vm/platform/input_flush.h"
 
 C_VOID vm_session_debug_flush_console_input(C_VOID *context)
 {

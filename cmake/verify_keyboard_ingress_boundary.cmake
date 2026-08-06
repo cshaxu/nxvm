@@ -2,8 +2,8 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/platform/input.h" input_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/platform/input.c" input_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/platform/input_interface.h" input_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/platform/input.c" input_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/platform/win32/win32.c" win32_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/composition/session/lifecycle.c" lifecycle_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/composition/session/session.c" session_source)
@@ -15,7 +15,7 @@ foreach(source_text IN ITEMS "${input_header}" "${input_source}" "${lifecycle_so
     endif()
 endforeach()
 
-string(FIND "${win32_source}" "vm_platform_keyboard_receive_key_event_for"
+string(FIND "${win32_source}" "core_platform_input_source_submit"
     win32_submit_position)
 string(FIND "${win32_source}" "GetAsyncKeyState" win32_direct_position)
 if(win32_submit_position EQUAL -1 OR NOT win32_direct_position EQUAL -1)
@@ -30,4 +30,4 @@ if(request_position EQUAL -1 OR consume_position EQUAL -1)
     message(FATAL_ERROR "Session no longer owns keyboard-event ingress consumption")
 endif()
 
-message("M5:T226:S2:KEYBOARD-INGRESS-BOUNDARY:OK")
+message("M5:T249:S2:INPUT-INGRESS-BOUNDARY:OK")

@@ -1,6 +1,6 @@
 # M5 T249: Copied Input Source And Composition Ingress
 
-**Status:** S1 active.
+**Status:** S3 active.
 
 ## Goal
 
@@ -63,12 +63,49 @@ existing VM transports to it, and keep the existing composition-owned request
 queue as the sole execution-boundary consumer. Do not add a host queue or
 change keyboard mapping, chord ordering, mouse packets, or product input mode.
 
+#### S2 Implementation Evidence
+
+- `src/vm/platform/input.[ch]` was moved with Git history to
+  `src/core/platform/input.[ch]` and renamed as the public
+  `input_interface.h` contract.
+- `vm_session` now owns one `core_platform_input_source`; its single sink in
+  `lifecycle.c` converts a copied event into the unchanged
+  `vm_platform_request_transport` ingress queue.
+- Win32 Console/window and Linux Console producers submit core input values.
+  The retained F9 run-handle report remains VM product policy. VM-only Console
+  buffer flush moved to `vm/platform/input_flush.[ch]`.
+- The source is initialized only after the request transport consumer is
+  bound, and is synchronously stopped before transport close.
+- `core-platform-input-source-smoke` checks value routing and post-stop
+  rejection. Existing keyboard, AUX mouse, DOS typing, and host-cancellation
+  coverage now uses the same source.
+- `current-gates-gcc` passed with 85/85 CTest cases and updated static markers
+  `M5:T249:S2:INPUT-INGRESS-BOUNDARY:OK`,
+  `M5:T249:S2:INPUT-TRANSPORT-SURFACE:OK`, and
+  `M5:T249:S2:AUX-MOUSE-BOUNDARY:OK`.
+
+#### Similar-Issue Sweep
+
+**Class:** VM-specific keyboard/mouse transport facades crossing a reusable
+host-input boundary. **Scope:** tracked `src`, `tests`, CMake, and relevant
+static gates. Query:
+`rg -n "vm/platform/input\\.h|vm_platform_(keyboard|mouse)_(receive|transport)|keyboard_transport|mouse_transport" src tests cmake CMakeLists.txt`.
+
+All production hits were either migrated to `core_platform_input_source`, kept
+as the VM-only console flush, or were static-gate names. No VM-specific input
+transport remains in a production path; KBC/AUX and request transport remain
+intentionally VM-owned.
+
 ### S3: Verify The Boundary
 
 Add focused copy/lifetime/source-stop coverage for Console and window adapters;
 retain keyboard, mouse AUX/IRQ12, DOS typing, CGA/EGA, FDD/HDD boot,
 Console/debugger, current GCC/CTest, and artifact verification. Produce the
 next developer artifact only if S2 changes runnable source.
+
+S3 allocates developer artifact revision `0.5.0248`, updates the configured
+current artifact target, reruns the full gate, records its SHA-256 and banner,
+then closes T249 without changing product behavior.
 
 ## Risks And Stops
 

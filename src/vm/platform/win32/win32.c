@@ -4,7 +4,7 @@
 
 #include "type.h"
 
-#include "vm/platform/input.h"
+#include "core/platform/input_interface.h"
 
 
 #include "vm/platform/win32/win32con.h"
@@ -17,21 +17,31 @@ C_VOID vm_platform_win32_keyboard_make_key_for(
     const vm_platform_run_context *context, vm_platform_run_handle *owner,
     uint16_t scanCode, uint16_t virtualKey, C_INT pressed)
 {
+    core_platform_input_event event;
+
     if (context == STD_NULL) return;
     if (pressed && virtualKey == VK_F9) {
         vm_platform_run_handle_report(owner, VM_PLATFORM_RUN_EVENT_STOP_REQUESTED);
     }
-    vm_platform_keyboard_receive_key_event_for(context->keyboard, scanCode,
-        virtualKey, pressed);
+    event.kind = CORE_PLATFORM_INPUT_KEY;
+    event.data.key.scan_code = scanCode;
+    event.data.key.virtual_key = virtualKey;
+    event.data.key.pressed = pressed;
+    (C_VOID)core_platform_input_source_submit(context->input_source, &event);
 }
 
 C_VOID vm_platform_win32_mouse_relative_for(
     const vm_platform_run_context *context, int16_t delta_x, int16_t delta_y,
     uint8_t buttons)
 {
+    core_platform_input_event event;
+
     if (context == STD_NULL) return;
-    vm_platform_mouse_receive_relative_event_for(context->mouse, delta_x,
-        delta_y, buttons);
+    event.kind = CORE_PLATFORM_INPUT_RELATIVE_MOUSE;
+    event.data.relative_mouse.delta_x = delta_x;
+    event.data.relative_mouse.delta_y = delta_y;
+    event.data.relative_mouse.buttons = buttons;
+    (C_VOID)core_platform_input_source_submit(context->input_source, &event);
 }
 
 C_VOID vm_platform_win32_display_set_screen(WIN32_BOOL flagWindow,

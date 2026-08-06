@@ -32,7 +32,7 @@
 
 #include "vm/platform/execution.h"
 
-#include "vm/platform/input.h"
+#include "core/platform/input_interface.h"
 
 #include "vm/platform/platform.h"
 
@@ -55,33 +55,26 @@ static uint8_t vm_session_debug_disassemble(C_VOID *context,
     return core_product_utils_dasm32(statement, code, flag32);
 }
 
-static C_VOID vm_session_keyboard_receive_key_event(C_VOID *context,
-    uint16_t scan_code, uint16_t virtual_key, C_INT pressed)
-{
-    vm_session *machine =
-        (vm_session *)context;
-    vm_platform_request request;
-
-    if (machine == STD_NULL) return;
-    request.kind = VM_PLATFORM_REQUEST_KEY_EVENT;
-    request.data.key_event.scan_code = scan_code;
-    request.data.key_event.virtual_key = virtual_key;
-    request.data.key_event.pressed = pressed;
-    (C_VOID)vm_platform_request_transport_enqueue_ingress(
-        &machine->request_transport, &request);
-}
-
-static C_VOID vm_session_mouse_receive_relative_event(C_VOID *context,
-    int16_t delta_x, int16_t delta_y, uint8_t buttons)
+static C_VOID vm_session_input_submit(C_VOID *context,
+    const core_platform_input_event *event)
 {
     vm_session *machine = (vm_session *)context;
     vm_platform_request request;
 
-    if (machine == STD_NULL) return;
-    request.kind = VM_PLATFORM_REQUEST_MOUSE_EVENT;
-    request.data.mouse_event.delta_x = delta_x;
-    request.data.mouse_event.delta_y = delta_y;
-    request.data.mouse_event.buttons = buttons;
+    if (machine == STD_NULL || event == STD_NULL) return;
+    if (event->kind == CORE_PLATFORM_INPUT_KEY) {
+        request.kind = VM_PLATFORM_REQUEST_KEY_EVENT;
+        request.data.key_event.scan_code = event->data.key.scan_code;
+        request.data.key_event.virtual_key = event->data.key.virtual_key;
+        request.data.key_event.pressed = event->data.key.pressed;
+    } else if (event->kind == CORE_PLATFORM_INPUT_RELATIVE_MOUSE) {
+        request.kind = VM_PLATFORM_REQUEST_MOUSE_EVENT;
+        request.data.mouse_event.delta_x = event->data.relative_mouse.delta_x;
+        request.data.mouse_event.delta_y = event->data.relative_mouse.delta_y;
+        request.data.mouse_event.buttons = event->data.relative_mouse.buttons;
+    } else {
+        return;
+    }
     (C_VOID)vm_platform_request_transport_enqueue_ingress(
         &machine->request_transport, &request);
 }
@@ -117,12 +110,8 @@ C_INT vm_session_bind_execution_provider(vm_session *machine)
             TYPE_STATUS_OK;
 }
 
-static const vm_platform_keyboard_sink vm_session_keyboard_sink = {
-    vm_session_keyboard_receive_key_event
-};
-
-static const vm_platform_mouse_sink vm_session_mouse_sink = {
-    vm_session_mouse_receive_relative_event
+static const core_platform_input_sink vm_session_input_sink = {
+    vm_session_input_submit
 };
 
 static C_INT vm_session_execution_is_running(C_VOID *context)
@@ -228,20 +217,17 @@ C_VOID vm_session_initialize(vm_session *machine) {
         vm_session_debug_request_pause, STD_NULL);
     vm_machine_debug_bind_disassembler(&machine->debug,
         vm_session_debug_disassemble, STD_NULL);
-    vm_platform_keyboard_transport_initialize(&machine->keyboard_transport,
-        &vm_session_keyboard_sink, machine);
-    vm_platform_mouse_transport_initialize(&machine->mouse_transport,
-        &vm_session_mouse_sink, machine);
     vm_platform_execution_transport_initialize(&machine->execution_transport,
         &vm_session_execution_sink, machine);
-    vm_platform_run_context_initialize(&machine->platform_run_context,
-        &machine->execution_transport, &machine->keyboard_transport,
-        &machine->mouse_transport,
-        &machine->presentation_mailbox, &machine->wait_scope);
-    vm_platform_run_handle_initialize(&machine->platform_run_handle);
     vm_platform_request_transport_initialize(&machine->request_transport);
     vm_platform_request_transport_bind_consumer(&machine->request_transport,
         vm_session_consume_request, machine);
+    core_platform_input_source_initialize(&machine->input_source,
+        &vm_session_input_sink, machine);
+    vm_platform_run_context_initialize(&machine->platform_run_context,
+        &machine->execution_transport, &machine->input_source,
+        &machine->presentation_mailbox, &machine->wait_scope);
+    vm_platform_run_handle_initialize(&machine->platform_run_handle);
     vm_session_control_bind_command_boundary(&machine->control,
         vm_platform_request_transport_observe_execution_boundary,
         &machine->request_transport);
@@ -256,6 +242,7 @@ C_VOID vm_session_finalize(vm_session *machine) {
         vm_platform_run_handle_finalize(&machine->platform_run_handle);
     }
     vm_session_control_bind_command_boundary(&machine->control, STD_NULL, STD_NULL);
+    core_platform_input_source_stop(&machine->input_source);
     vm_platform_request_transport_close(&machine->request_transport);
     vm_platform_request_transport_discard(&machine->request_transport);
     machine->active = 0;

@@ -10,9 +10,9 @@ C_INT main(C_VOID)
     vm_platform_run_context second;
 
     vm_platform_run_context_initialize(&first, STD_NULL, STD_NULL, STD_NULL,
-        STD_NULL, STD_NULL);
+        STD_NULL);
     vm_platform_run_context_initialize(&second, STD_NULL, STD_NULL, STD_NULL,
-        STD_NULL, STD_NULL);
+        STD_NULL);
     vm_platform_run_context_set_window_display(&first, 1);
     if (!vm_platform_run_context_get_window_display(&first) ||
         vm_platform_run_context_get_window_display(&second)) return 1;
