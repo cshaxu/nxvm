@@ -5,7 +5,7 @@
 #include "core/machine/machine_interface.h"
 #include "vm/composition/session/session_interface.h"
 #include "vm/composition/session/session.h"
-#include "vm/platform/input.h"
+#include "core/platform/input_interface.h"
 #include "vm/platform/vm_request_transport.h"
 
 #define VM_KBC_AUX_IMAGE_BYTES (1440u * 1024u)
@@ -125,8 +125,15 @@ C_INT main(C_VOID)
         core_machine_memory_read(session->core_machine, VM_KBC_AUX_BYTES_ADDRESS,
             bytes, 1u) != TYPE_STATUS_OK || bytes[0] != 0xfau) goto done;
 
-    vm_platform_mouse_receive_relative_event_for(&session->mouse_transport,
-        5, 3, 0x01u);
+    {
+        core_platform_input_event event = {0};
+        event.kind = CORE_PLATFORM_INPUT_RELATIVE_MOUSE;
+        event.data.relative_mouse.delta_x = 5;
+        event.data.relative_mouse.delta_y = 3;
+        event.data.relative_mouse.buttons = 0x01u;
+        if (core_platform_input_source_submit(&session->input_source, &event) !=
+            TYPE_STATUS_OK) goto done;
+    }
     if (!vm_kbc_aux_read_count(session, &count) || count != 1u) goto done;
     vm_platform_request_transport_observe_execution_boundary(
         &session->request_transport);

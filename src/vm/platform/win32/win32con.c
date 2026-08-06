@@ -99,7 +99,7 @@ type_status vm_platform_win32con_run_handle_start(
     vm_platform_run_context *platform;
 
     if (context == STD_NULL || owner == STD_NULL || owner->active ||
-        context->execution == STD_NULL || context->keyboard == STD_NULL) {
+        context->execution == STD_NULL || context->input_source == STD_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     if (core_platform_host_surface_lease_acquire(&win32_console_lease,

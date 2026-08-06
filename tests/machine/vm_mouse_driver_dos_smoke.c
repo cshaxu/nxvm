@@ -5,7 +5,7 @@
 #include "core/machine/machine_interface.h"
 #include "vm/composition/session/session_interface.h"
 #include "vm/composition/session/session.h"
-#include "vm/platform/input.h"
+#include "core/platform/input_interface.h"
 #include "vm/platform/vm_request_transport.h"
 
 #define VM_MOUSE_DOS_BOOT_BUDGET 800000u
@@ -365,7 +365,15 @@ C_INT main(C_INT argc, C_CHAR **argv)
         TYPE_STATUS_OK) goto done;
     bytes_address = ((uint32_t)observation.cpu.cs << 4) + bytes_offset;
     stage = 5;
-    vm_platform_mouse_receive_relative_event_for(&session->mouse_transport, 5, 3, 0x01u);
+    {
+        core_platform_input_event event = {0};
+        event.kind = CORE_PLATFORM_INPUT_RELATIVE_MOUSE;
+        event.data.relative_mouse.delta_x = 5;
+        event.data.relative_mouse.delta_y = 3;
+        event.data.relative_mouse.buttons = 0x01u;
+        if (core_platform_input_source_submit(&session->input_source, &event) !=
+            TYPE_STATUS_OK) goto done;
+    }
     vm_platform_request_transport_observe_execution_boundary(&session->request_transport);
     if (!vm_mouse_dos_run_until_packet(session, bytes_address, expected) ||
         core_machine_capture_display_snapshot(session->core_machine, &snapshot) !=

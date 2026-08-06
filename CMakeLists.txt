@@ -312,7 +312,8 @@ set(CORE_MACHINE_SOURCES
     src/core/machine/kbc.c
 )
 add_library(core-platform STATIC
-    src/core/platform/host_surface_interface.c)
+    src/core/platform/host_surface_interface.c
+    src/core/platform/input.c)
 if(WIN32)
     target_sources(core-platform PRIVATE
         src/core/platform/win32/sleep.c)
@@ -333,7 +334,7 @@ set(VM_PLATFORM_SOURCES
     src/vm/platform/platform.c
     src/vm/platform/presentation_mailbox.c
     src/vm/platform/execution.c
-    src/vm/platform/input.c
+    src/vm/platform/input_flush.c
 )
 if(WIN32)
     list(APPEND VM_PLATFORM_SOURCES
@@ -480,10 +481,10 @@ if(NOT WIN32)
     target_link_libraries(vm-platform PUBLIC ${CURSES_LIBRARIES} Threads::Threads)
 endif()
 
-add_executable(vm-platform-input-smoke
-    tests/platform/vm_platform_input_smoke.c
+add_executable(core-platform-input-source-smoke
+    tests/platform/core_platform_input_source_smoke.c
 )
-target_link_libraries(vm-platform-input-smoke PRIVATE vm-platform)
+target_link_libraries(core-platform-input-source-smoke PRIVATE core-platform)
 
 add_executable(vm-keyboard-host-ingress-smoke
     tests/platform/vm_keyboard_host_ingress_smoke.c
@@ -920,7 +921,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     vm-platform-execution-smoke
     vm-platform-run-handle-smoke
     vm-multi-window-session-smoke
-    vm-platform-input-smoke
+    core-platform-input-source-smoke
     vm-keyboard-host-ingress-smoke
     vm-host-cancellation-smoke
     vm-platform-presentation-mailbox-smoke
@@ -1314,6 +1315,7 @@ endif()
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(core-platform PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-platform-host-surface-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(core-platform-input-source-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-full-pc-session-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-core-executor-storage-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-executor-run-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)

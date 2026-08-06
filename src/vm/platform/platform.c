@@ -13,15 +13,13 @@
 C_VOID vm_platform_run_context_initialize(
     vm_platform_run_context *context,
     const vm_platform_execution_transport *execution,
-    const vm_platform_keyboard_transport *keyboard,
-    const vm_platform_mouse_transport *mouse,
+    core_platform_input_source *input_source,
     const vm_platform_presentation_mailbox *presentation,
     const core_utils_wait_scope *wait_scope)
 {
     if (context == STD_NULL) return;
     context->execution = execution;
-    context->keyboard = keyboard;
-    context->mouse = mouse;
+    context->input_source = input_source;
     context->presentation = presentation;
     context->wait_scope = wait_scope;
     core_platform_host_surface_context_initialize(&context->console_surface,

@@ -2,27 +2,26 @@
 
 ## Current Work
 
-**M5 T249 S2 active: move copied input vocabulary without changing ingress.**
+**M5 T249 S3 active: verify the copied input boundary and artifact.**
 
 Original request: execute the first admitted T248 migration without changing
 NXVM input behavior. S1 fixed the copied neutral input value, producer and
-consumer inventory, and the synchronous source-stop rule. S2 now moves only
-that vocabulary; the existing composition ingress remains the only
-execution-boundary queue.
+consumer inventory, and the synchronous source-stop rule. S2 moved the neutral
+contract to `core/platform` while retaining the existing composition ingress.
+S3 now verifies all paths and allocates artifact revision `0.5.0248`.
 
-| Requirement | S2 evidence |
+| Requirement | S3 evidence |
 | --- | --- |
-| Source relocation | Move the neutral value/source/sink contract to `core/platform`; leave VM input flush and all product input policy in VM. |
-| Ingress ownership | Bind one composition sink that only converts a copied core event to the existing `vm_platform_request` queue. |
-| Lifecycle | Initialize transport before source binding; synchronously stop source before closing transport; preserve all host adapters and F9 behavior. |
+| Focused boundary | Exercise copied key/mouse routing and source-stop rejection; confirm all adapters use the same source and no old VM transport remains. |
+| Full regression | Run current GCC/CTest and retained Console/window, keyboard/AUX, DOS, graphics, FDD/HDD regressions. |
+| Artifact | Build `nxvm_0_5_0248.exe`, record SHA/banner/source commit, then close T249. |
 
 Applicable rules: module layout, contracts, coding/source policy, execution
 workflow, and one active subtask. Planned commands:
-`rg -n "vm_platform_(keyboard|mouse)|core_platform_input|request_transport" src tests`
-and the focused input/source-stop smoke. Expected marker:
-`M5:T249:S2:INPUT-MIGRATED:OK`. Stop for owner direction if a candidate
-requires host capture policy, direct guest mutation, raw guest memory,
-scan-code/layout policy, or a second queue/run loop.
+`rg -n "vm/platform/input\\.h|vm_platform_(keyboard|mouse)_(receive|transport)|keyboard_transport|mouse_transport" src tests cmake CMakeLists.txt`, the focused input/source-stop smoke, and `current-gates-gcc`.
+Expected marker: `M5:T249:S3:INPUT-BOUNDARY-CLOSED:OK`. Stop for owner
+direction if a candidate requires host capture policy, direct guest mutation,
+raw guest memory, scan-code/layout policy, or a second queue/run loop.
 
 T248 is closed: it established the evidence-backed T249--T252 migration queue
 and deferred raw host-clock observation. T249 now starts with its own S1
