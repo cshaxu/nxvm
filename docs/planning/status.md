@@ -2,27 +2,27 @@
 
 ## Current Work
 
-**M5 T249 S1 active: copied input-source and composition-ingress contract.**
+**M5 T249 S2 active: move copied input vocabulary without changing ingress.**
 
 Original request: execute the first admitted T248 migration without changing
-NXVM input behavior. Define the copied neutral input value and source/sink
-contract, then inventory every Console/window producer and composition
-consumer before moving source. The current composition ingress remains the
-only execution-boundary queue.
+NXVM input behavior. S1 fixed the copied neutral input value, producer and
+consumer inventory, and the synchronous source-stop rule. S2 now moves only
+that vocabulary; the existing composition ingress remains the only
+execution-boundary queue.
 
-| Requirement | S1 evidence |
+| Requirement | S2 evidence |
 | --- | --- |
-| Contract | One copied core/platform input value plus source/sink call boundary; composition remains sole owner of enqueue/dequeue order. |
-| Inventory | Account for Win32 and Linux Console/window producers and their current VM composition consumer. |
-| Preserve products | No S1 source/build/runtime change; no host-thread guest mutation, raw guest pointer, new host queue, or altered input UX. |
+| Source relocation | Move the neutral value/source/sink contract to `core/platform`; leave VM input flush and all product input policy in VM. |
+| Ingress ownership | Bind one composition sink that only converts a copied core event to the existing `vm_platform_request` queue. |
+| Lifecycle | Initialize transport before source binding; synchronously stop source before closing transport; preserve all host adapters and F9 behavior. |
 
 Applicable rules: module layout, contracts, coding/source policy, execution
 workflow, and one active subtask. Planned commands:
-`rg -n "keyboard_transport|mouse_transport|receive_.*event|request_transport" src/vm tests`
-and `git diff --check`. Expected marker: `M5:T249:S1:INPUT-CONTRACT:OK`.
-Stop for owner direction if a candidate requires host capture policy, direct
-guest mutation, raw guest memory, scan-code/layout policy, or a second
-queue/run loop.
+`rg -n "vm_platform_(keyboard|mouse)|core_platform_input|request_transport" src tests`
+and the focused input/source-stop smoke. Expected marker:
+`M5:T249:S2:INPUT-MIGRATED:OK`. Stop for owner direction if a candidate
+requires host capture policy, direct guest mutation, raw guest memory,
+scan-code/layout policy, or a second queue/run loop.
 
 T248 is closed: it established the evidence-backed T249--T252 migration queue
 and deferred raw host-clock observation. T249 now starts with its own S1
