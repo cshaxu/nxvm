@@ -94,6 +94,7 @@ struct core_machine {
     core_machine_immutable_rom_mapping
         immutable_rom_mappings[CORE_MACHINE_IMMUTABLE_ROM_MAPPING_CAPACITY];
     STD_SIZE_T immutable_rom_mapping_count;
+    type_bool entry_plan_applied;
     core_machine_cpu_profile cpu_profile;
     core_machine_fpu fpu;
     t_cpu executor_cpu;

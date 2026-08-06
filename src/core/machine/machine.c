@@ -591,6 +591,7 @@ static type_status core_machine_cold_reset(core_machine *machine)
     machine->fault_detail = 0u;
     machine->elapsed_ticks = 0u;
     machine->pit_elapsed_tick_remainder = 0u;
+    machine->entry_plan_applied = TYPE_FALSE;
     core_machine_cpu_diagnostic_reset(machine);
     if (machine->execution_provider != STD_NULL &&
         machine->execution_provider->reset != STD_NULL) {
