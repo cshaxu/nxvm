@@ -35,17 +35,16 @@ static C_VOID win32con_process_input(const win32con_run_handle *handle)
 {
     DWORD count;
     INPUT_RECORD input;
-    UCHAR scan_code;
+    uint16_t scan_code;
     UCHAR virtual_key;
 
     GetNumberOfConsoleInputEvents(handle->input, &count);
     if (count == 0u || !ReadConsoleInput(handle->input, &input, 1u, &count)) return;
     switch (input.EventType) {
     case KEY_EVENT:
-        scan_code = (UCHAR)input.Event.KeyEvent.wVirtualScanCode;
-        if ((input.Event.KeyEvent.dwControlKeyState & ENHANCED_KEY) != 0u) {
-            scan_code |= 0x0100u;
-        }
+        scan_code = vm_platform_win32con_decode_scan_code(
+            input.Event.KeyEvent.wVirtualScanCode,
+            input.Event.KeyEvent.dwControlKeyState);
         virtual_key = (UCHAR)input.Event.KeyEvent.wVirtualKeyCode;
         vm_platform_win32_keyboard_make_key_for(handle->platform, handle->owner,
             scan_code, virtual_key, input.Event.KeyEvent.bKeyDown != 0);
@@ -55,6 +54,13 @@ static C_VOID win32con_process_input(const win32con_run_handle *handle)
     default:
         break;
     }
+}
+
+uint16_t vm_platform_win32con_decode_scan_code(uint16_t raw_scan_code,
+    DWORD control_key_state)
+{
+    if ((control_key_state & ENHANCED_KEY) != 0u) raw_scan_code |= 0x0100u;
+    return raw_scan_code;
 }
 
 static DWORD WINAPI win32con_display_thread(LPVOID opaque)
@@ -76,7 +82,9 @@ static DWORD WINAPI win32con_kernel_thread(LPVOID opaque)
 {
     win32con_run_handle *handle = opaque;
 
-    vm_platform_execution_start_for(handle->platform->execution);
+    if (!win32con_test_should_fail(9)) {
+        vm_platform_execution_start_for(handle->platform->execution);
+    }
     vm_platform_run_handle_report(handle->owner,
         VM_PLATFORM_RUN_EVENT_KERNEL_COMPLETED);
     return 0;
@@ -124,8 +132,12 @@ type_status vm_platform_win32con_run_handle_start(
         vm_platform_win32con_run_handle_finalize(owner);
         return TYPE_STATUS_INVALID_STATE;
     }
-    while (old_flip == vm_platform_execution_get_flip_for(context->execution)) {
-        core_utils_wait_milliseconds(context->wait_scope, 100u);
+    if (!vm_platform_execution_wait_for_flip_for(context->execution, old_flip,
+            context->wait_scope, VM_PLATFORM_EXECUTION_FLIP_TIMEOUT_MILLISECONDS)) {
+        vm_platform_win32con_run_handle_request_stop(owner);
+        vm_platform_win32con_run_handle_join(owner);
+        vm_platform_win32con_run_handle_finalize(owner);
+        return TYPE_STATUS_INVALID_STATE;
     }
     handle->display_thread = win32con_test_should_fail(8) ? STD_NULL :
         CreateThread(STD_NULL, 0, win32con_display_thread, handle, 0, &thread_id);

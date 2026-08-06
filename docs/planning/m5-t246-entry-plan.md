@@ -23,9 +23,11 @@ consumer is not implemented here.
 * The plan is call-scoped and copied only during application. It may contain a
   bounded real-mode CPU state, one entry physical address plus its expected
   neutral route class, and a bounded array of copied preload sources.
-* All preloads must be nonempty, have nonnull source bytes, and preflight as
-  writable `ORDINARY_RAM` through T243. A plan may read its entry from ordinary
-  RAM or a provider (including T245 ROM), but cannot preload provider memory.
+* All preloads must be nonempty, have nonnull source bytes, be pairwise
+  non-overlapping, and preflight as writable `ORDINARY_RAM` through T243. A
+  plan may read its entry from ordinary RAM or a provider (including T245 ROM),
+  but cannot preload provider memory. Overlap is invalid rather than a
+  caller-order overwrite rule.
 * Before any CPU/RAM change, core validates lifecycle, plan bounds, real-mode
   entry `CS:IP` physical equality, allowed flag mask, every preload range, and
   entry route class. It builds/validates a private candidate CPU state first.
@@ -44,7 +46,7 @@ logic. Focused smoke must prove traditional reset remains unchanged; a ROM- or
 RAM-backed direct plan reaches its entry through the existing run path; invalid
 range/route/source/state plans fail atomically; repeated apply fails until
 reset; and reset restores standard behavior. It must also prove an ordinary
-RAM preload cannot be redirected to a provider.
+RAM preload cannot be redirected to a provider or overlap another preload.
 
 S3 runs current GCC/CTest gates and records
 `build/output/nxvm_0_5_0246.exe` plus SHA-256.

@@ -19,9 +19,9 @@ option(PROJECT_ENABLE_BOCHX_RESEARCH
 set(PROJECT_VM_PLATFORM_TEST_FAILURE_STAGE "0" CACHE STRING
     "Test-only Win32 platform startup failure stage (0 disables injection)")
 if(NOT PROJECT_VM_PLATFORM_TEST_FAILURE_STAGE STREQUAL "0")
-    if(NOT WIN32 OR NOT PROJECT_VM_PLATFORM_TEST_FAILURE_STAGE MATCHES "^[1-8]$")
+    if(NOT WIN32 OR NOT PROJECT_VM_PLATFORM_TEST_FAILURE_STAGE MATCHES "^[1-9]$")
         message(FATAL_ERROR
-            "PROJECT_VM_PLATFORM_TEST_FAILURE_STAGE must be 0 or 1 through 8 on Win32.")
+            "PROJECT_VM_PLATFORM_TEST_FAILURE_STAGE must be 0 or 1 through 9 on Win32.")
     endif()
     add_compile_definitions(
         NTVDM64_VM_PLATFORM_TEST_FAILURE_STAGE=${PROJECT_VM_PLATFORM_TEST_FAILURE_STAGE})
@@ -490,6 +490,12 @@ add_executable(vm-keyboard-host-ingress-smoke
 )
 target_link_libraries(vm-keyboard-host-ingress-smoke PRIVATE
     vm-composition)
+if(WIN32)
+    add_executable(vm-platform-win32-keyboard-scan-smoke
+        tests/platform/vm_platform_win32_keyboard_scan_smoke.c)
+    target_link_libraries(vm-platform-win32-keyboard-scan-smoke PRIVATE
+        vm-platform)
+endif()
 add_executable(vm-host-cancellation-smoke
     tests/platform/vm_host_cancellation_smoke.c
 )
@@ -941,6 +947,11 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     vdm-minimal-session-smoke
     vdm-minimal-presentation-smoke)
 
+if(WIN32)
+    list(APPEND PROJECT_CURRENT_SMOKE_TARGETS
+        vm-platform-win32-keyboard-scan-smoke)
+endif()
+
 set(PROJECT_CURRENT_FDD_SMOKE_TARGETS
     vm-dos-prompt-smoke
     vm-timer-firmware-smoke
@@ -1020,7 +1031,7 @@ function(add_current_vm_artifact target version)
         vm-composition)
 
     if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
-        target_compile_options(${target} PRIVATE -Wall -Wextra -Wpedantic)
+        target_compile_options(${target} PRIVATE -Wall -Wextra -Wpedantic -Werror)
     endif()
 
     add_custom_command(TARGET ${target} POST_BUILD
@@ -1034,7 +1045,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0246 "0.5.0246")
+add_current_vm_artifact(vm-0-5-0247 "0.5.0247")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 

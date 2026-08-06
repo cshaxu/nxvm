@@ -88,11 +88,11 @@ These are the next owned admissions, not permission to work in parallel.
   ROM/DOS/device path to uncovered 8086 families such as arithmetic/FLAGS,
   conditional control transfer, stack edge cases, and string compare/scan.
   MS-DOS `MEM` remains a regression sample, not an 80386-completeness claim.
-- [ ] **286/386 protected-mode program (`TODO(Low)`, T252--T254).** Admit
+- [ ] **286/386 protected-mode program (`TODO(Low)`, T253--T255).** Admit
   descriptors, exceptions, control transfer, CRx/paging, CPL/IOPL, TSS I/O map,
   task switching, and remaining instructions as individually probed work. It
   is lower ROI than the real-mode PC/AT device route.
-- [ ] **Present x87 (`TODO(Low)`, T255).** Define state, operations,
+- [ ] **Present x87 (`TODO(Low)`, T256).** Define state, operations,
   exceptions, and `FWAIT` before enabling any 8087/287/387 profile.
 - [ ] **CPU-fault outcome audit (`TODO(Medium)`).** T214 established a
   session-owned fault result. Revisit only with a reproducible case showing a
@@ -263,11 +263,11 @@ default definition of NXVM completion.
   copies may not use A20/translation or configure protected-mode state,
   descriptor caches, or CRx. This supports reset-state plus mapped image and
   direct prepared state without a second core boot mode.
-- [ ] **M5 T247: narrow host-capability admission (`TODO(Medium)`).** Design
+- [ ] **M5 T248: narrow host-capability admission (`TODO(Medium)`).** Design
   copied event/presentation/wait contracts only after T246 validates the shared
   machine start boundary. Admit each provider only with demonstrated policy-free
   reuse; generic file/directory and DOS namespace remain outside core/platform.
-  Before T246, T247 may collect evidence but must not introduce a platform
+  Before T246, T248 may collect evidence but must not introduce a platform
   contract or provider implementation.
 
 - [ ] **M5 architecture closure audit (`TODO(High)`).** Before M5 closes,
