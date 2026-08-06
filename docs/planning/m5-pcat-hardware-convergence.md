@@ -72,7 +72,7 @@ device implementation begins.
 | --- | --- | --- |
 | T234 | M5 boundary audit | **Complete.** `core/utils` now owns the injected wait scope; VM peers no longer import `core/product`; composition owns BIOS text-to-bytes assembly; and the source/target boundary gate plus GCC smoke matrix pass. |
 | T235 | T219, T228 | **Complete.** Core VADP owns the profile-bound A0000h aperture semantics and bounded `3C4h`/`3C5h` sequencer subset; core RAM remains the one byte backing. Port and frozen-session probes plus 69/69 current gates pass. No EGA/VGA frame or BIOS-mode claim is made. |
-| T236 | T235 | **Complete.** Core VADP owns bounded graphics/attribute register families, status-reset flip-flop, and A0000h/B0000h/B8000h map-select classification with explicit untransformed planar-access fixtures. 71/71 current gates pass. Planar/latch/DAC/raster/frame behavior remains T237-only. |
+| T236 | T235 | **Complete.** Core VADP owns bounded graphics/attribute register families, status-reset flip-flop, and A0000h/B0000h/B8000h map-select classification with explicit untransformed planar-access fixtures. Profile reset values are normalized through the same masks as port writes. 71/71 current gates pass. Planar/latch/DAC/raster/frame behavior remains T237-only. |
 | T237 | T219, T236 | Add bounded DAC, planar VRAM, latch, and raster subfamilies with copied frame snapshots. This is not a single unbounded VGA task. |
 | T238 | Adequate real-mode device baseline | 286 descriptors, exceptions, and protected-mode control transfer, each with instruction probes and bounded differential evidence. |
 | T239 | T238 | 386 paging, CRx, CPL/IOPL, and TSS I/O map with focused probes and bounded differential evidence. |

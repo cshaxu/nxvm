@@ -197,6 +197,20 @@ static C_VOID core_machine_vadp_reset_ega_controllers(t_vadp *adapter)
     adapter->data.attribute_display_enabled = TYPE_TRUE;
 }
 
+static C_VOID core_machine_vadp_normalize_ega_controllers(
+    core_machine_vadp_ega_controller_config *config)
+{
+    uint8_t index;
+
+    if (config == STD_NULL) return;
+    for (index = 0u; index < CORE_MACHINE_VADP_GRAPHICS_REGISTER_COUNT; ++index) {
+        config->graphics[index] &= core_machine_vadp_graphics_mask(index);
+    }
+    for (index = 0u; index < CORE_MACHINE_VADP_ATTRIBUTE_REGISTER_COUNT; ++index) {
+        config->attribute[index] &= core_machine_vadp_attribute_mask(index);
+    }
+}
+
 static C_VOID core_machine_vadp_ega_write_observer(C_VOID *owner,
     type_unsigned_32 physical, type_native_unsigned bytes)
 {
@@ -693,6 +707,7 @@ type_status core_machine_vadp_configure_ega_controllers(t_vadp *adapter,
     }
     if (adapter->data.ega_controller_configured) return TYPE_STATUS_INVALID_STATE;
     adapter->data.ega_controller = *config;
+    core_machine_vadp_normalize_ega_controllers(&adapter->data.ega_controller);
     adapter->data.ega_controller_configured = TYPE_TRUE;
     core_machine_vadp_reset_ega_controllers(adapter);
     return TYPE_STATUS_OK;

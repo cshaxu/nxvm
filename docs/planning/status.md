@@ -2,15 +2,13 @@
 
 ## Current Work
 
-**M5 T236 complete:** core VADP owns graphics-controller `3CEh`/`3CFh`,
-attribute-controller `3C0h`/`3C1h`, status-reset flip-flop behavior, and the
-four map-select window classifications. RAM remains the one byte backing; no
-planar, latch, DAC, raster, BIOS-mode, or platform rendering behavior was
-claimed. GCC 16.1.0 current gates passed 71/71 smokes. Artifact
-`nxvm_0_5_0236.exe` is SHA-256
-`B54BB58564D064F3E0B0661F522B86317D72BAEF7455CF03E0A6AA41D79EB7E9`; see [the
-task record](m5-t236-ega-graphics-attribute.md). T237 owns planar/raster/frame
-behavior.
+**Idle after M5 T236:** no implementation subtask is active. T236 S4 closed
+the post-completion audit findings: profile-supplied EGA controller reset values
+now pass through the same masks as port writes, the invalid-config probe passes,
+and the RAM-closure gate is warning-free. The task's runnable artifact remains
+`nxvm_0_5_0236.exe`; its refreshed SHA-256 is recorded in [the task
+record](m5-t236-ega-graphics-attribute.md). T237 S1 is the next candidate, but
+has not been admitted.
 
 **M5 T234 S4 complete:** removed the remaining target-only
 `vm-platform-requests -> core-machine` and `vm-product -> core-machine` edges;

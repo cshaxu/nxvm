@@ -28,6 +28,10 @@ It works with the
    focused evidence or an owner-approved deferral; record the retrospective and
    update local standards when a reusable rule is discovered.
 
+Between a closed task and the admission of the next task, `status.md` must say
+**Idle** and no task record may retain an `Active` heading. Idle is not an
+active subtask and may not be used to conceal incomplete implementation work.
+
 ## Local Task Record
 
 `docs/planning/status.md` contains the one active task packet and preserves the

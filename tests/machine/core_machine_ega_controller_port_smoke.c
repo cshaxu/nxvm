@@ -25,8 +25,8 @@ C_INT main(C_VOID)
         0x03u, 0x00u, 0x0fu, 0x02u
     };
     const core_machine_vadp_ega_controller_config controllers = {
-        { 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x05u, 0x00u, 0xffu },
-        { 0x00u, 0x01u, 0x02u, 0x03u, 0x04u, 0x05u, 0x06u, 0x07u,
+        { 0xf0u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0xf5u, 0x00u, 0xffu },
+        { 0xffu, 0x01u, 0x02u, 0x03u, 0x04u, 0x05u, 0x06u, 0x07u,
             0x08u, 0x09u, 0x0au, 0x0bu, 0x0cu, 0x0du, 0x0eu, 0x0fu,
             0x01u, 0x00u, 0x0fu, 0x00u, 0x00u }
     };
@@ -50,6 +50,9 @@ C_INT main(C_VOID)
     failed |= core_machine_port_read(&port, 0x03cfu) != 0u;
     core_machine_port_write(&port, 0x03ceu, 6u);
     failed |= core_machine_port_read(&port, 0x03cfu) != 0x05u;
+    core_machine_port_write(&port, 0x03ceu, 0u);
+    failed |= core_machine_port_read(&port, 0x03cfu) != 0u;
+    core_machine_port_write(&port, 0x03ceu, 6u);
     core_machine_port_write(&port, 0x03cfu, 0xffu);
     failed |= core_machine_port_read(&port, 0x03cfu) != 0x0fu;
     core_machine_port_write(&port, 0x03ceu, 31u);
@@ -87,6 +90,9 @@ C_INT main(C_VOID)
     failed |= core_machine_port_read(&port, 0x03c1u) != 0x3fu ||
         !vadp.data.attribute_display_enabled;
     (C_VOID)core_machine_port_read(&port, 0x03dau);
+    core_machine_port_write(&port, 0x03c0u, 0x00u);
+    failed |= core_machine_port_read(&port, 0x03c1u) != 0x3fu;
+    (C_VOID)core_machine_port_read(&port, 0x03dau);
     core_machine_port_write(&port, 0x03c0u, 0x12u);
     core_machine_port_write(&port, 0x03c0u, 0xf5u);
     failed |= core_machine_port_read(&port, 0x03c1u) != 0x05u;
@@ -112,10 +118,19 @@ C_INT main(C_VOID)
     failed |= core_machine_port_read(&port, 0x03ceu) != 0u ||
         core_machine_port_read(&port, 0x03cfu) != 0u;
 
+    if (failed) {
+        STD_FPRINTF(STD_STDERR,
+            "M5:T236:S1:EGA-CONTROLLER:FAIL graphics=%02x,%02x attr=%02x phase=%d\n",
+            vadp.data.graphics[0], vadp.data.graphics[6], vadp.data.attribute[0],
+            vadp.data.attribute_data_phase);
+        core_machine_vadp_finalize(&vadp);
+        core_machine_memory_finalize(&memory);
+        core_machine_port_finalize(&port);
+        return 1;
+    }
     core_machine_vadp_finalize(&vadp);
     core_machine_memory_finalize(&memory);
     core_machine_port_finalize(&port);
-    if (failed) return 1;
     STD_PRINTF("M5:T236:S1:EGA-CONTROLLER:PORT:OK\n");
     return 0;
 }
