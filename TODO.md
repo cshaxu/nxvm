@@ -240,9 +240,11 @@ default definition of NXVM completion.
   validated immutable plan after clean core reset, supporting reset-state plus
   mapped image and direct prepared state without a second core boot mode.
 - [ ] **M5 T247: narrow host-capability admission (`TODO(Medium)`).** Design
-  copied event/presentation/wait contracts first. Admit each provider only with
-  demonstrated policy-free reuse; generic file/directory and DOS namespace
-  remain outside core/platform.
+  copied event/presentation/wait contracts only after T246 validates the shared
+  machine start boundary. Admit each provider only with demonstrated policy-free
+  reuse; generic file/directory and DOS namespace remain outside core/platform.
+  Before T246, T247 may collect evidence but must not introduce a platform
+  contract or provider implementation.
 
 - [ ] **M5 architecture closure audit (`TODO(High)`).** Before M5 closes,
   rescan every core/vm/vdm module, composition root, target, test, and entry

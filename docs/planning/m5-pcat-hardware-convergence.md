@@ -82,7 +82,7 @@ device implementation begins.
 | T244 | T243 | Registered undefined-instruction transition facility with consumer-owned pattern semantics and no default NXVM registration. |
 | T245 | T243 | Generic immutable ROM/read-only mapping contract; firmware generation and image contents remain VM profile policy. |
 | T246 | T243, T245 | Validated post-reset initial-state/entry-plan for reset-state plus mapped image or direct prepared state. |
-| T247 | T242 baseline | Narrow shared host-capability design/admission; each provider requires policy-free reuse evidence. |
+| T247 | T246 | Narrow shared host-capability design/admission after the shared machine-start boundary is validated; each provider requires policy-free reuse evidence. Before T246, evidence collection only: no platform contract or provider implementation. |
 | T248 | T213, T233 | Extend ATA/IDE only through a declared feature matrix and failing corpus: selected channel/device topology, timing/error behavior, or other admitted PIO features. IDE DMA, ATAPI, LBA48, and cache remain separate admissions. |
 | T249 | T219, T220, T228 | Complete digital CGA through bounded `640x200x2`, remaining text modes, and 6845-visible start/page/cursor/scanline behavior. Composite artifact color remains an optional renderer/profile capability. |
 | T250 | M5 profile boundary | Define machine-profile admission: immutable topology/capability declarations, optional user-provided ROM manifests, clock/port/IRQ/DMA/media contracts, fixture corpus, and provenance policy before PC110, DeskPro, Award, or Phoenix profiles. |
