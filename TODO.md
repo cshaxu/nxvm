@@ -70,10 +70,11 @@ These are the next owned admissions, not permission to work in parallel.
   color, phase, and colorburst as an optional renderer/profile capability only
   after digital CGA is complete. Do not fold it into VADP digital state or use
   it to claim EGA/VGA support.
-- [ ] **EGA/VGA staged admission (`TODO(Medium)`, T235--T237).** T235 completes
+- [ ] **EGA/VGA staged admission (`TODO(Medium)`, T235--T238).** T235 completes
   the profile-bound A0000h aperture/sequencer subset and T236 the graphics/
   attribute registers plus map-select classification. T237 admits DAC/planar
-  VRAM/latches/raster as separately probed families. Do not make a single
+  VRAM/latches/raster as separately probed families; T238 admits only matching
+  ROM `INT 10h` mode services through the real VADP state. Do not make a single
   unbounded "VGA support" task.
 
 ## CPU, Time, And Debugging Boundaries
@@ -81,11 +82,11 @@ These are the next owned admissions, not permission to work in parallel.
 - [ ] **Real-mode CPU trust corpus (`TODO(High)`).** Fix only reproducible
   8086/80186 real-mode defects needed by ROM, DOS boot, and admitted device
   paths. MS-DOS `MEM` is a regression sample, not an 80386-completeness claim.
-- [ ] **286/386 protected-mode program (`TODO(Low)`, T238--T240).** Admit
+- [ ] **286/386 protected-mode program (`TODO(Low)`, T246--T248).** Admit
   descriptors, exceptions, control transfer, CRx/paging, CPL/IOPL, TSS I/O map,
   task switching, and remaining instructions as individually probed work. It
   is lower ROI than the real-mode PC/AT device route.
-- [ ] **Present x87 (`TODO(Low)`, T241).** Define state, operations,
+- [ ] **Present x87 (`TODO(Low)`, T249).** Define state, operations,
   exceptions, and `FWAIT` before enabling any 8087/287/387 profile.
 - [ ] **CPU-fault outcome audit (`TODO(Medium)`).** T214 established a
   session-owned fault result. Revisit only with a reproducible case showing a
