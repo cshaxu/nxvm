@@ -370,6 +370,9 @@ artifact-version collision. Owner-prioritized core-boundary work now occupies
 T243--T247. The remaining unstarted hardware route is T238--T242, then
 T248--T251 for ATA, graphics, profiles, and timing, followed by T252--T255
 for protected-mode CPU and present-FPU work.
+`M5 Td S14` restricts the planned T244 transition contract to core-owned
+invalid-instruction handling: no handler-owned mode change or arbitrary IP,
+and only atomic bounded state/memory patches at a defined instruction boundary.
 
 ## Milestone State
 
