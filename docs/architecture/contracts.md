@@ -265,6 +265,22 @@ regions require an explicit mapped-memory provider contract. Providers retain a
 `t_ram *` only and use checked memory operations; they must not cache or expose
 the backing base address.
 
+### Frozen Device-Memory Routing
+
+An admitted core device may own guest-visible device memory without turning it
+into a RAM mirror. During `INITIALIZED`, `core/machine/memory` may register one
+or more non-overlapping checked device-memory providers for exact physical
+ranges, then freezes that routing with the rest of the machine topology. Every
+physical read and write, including CPU, debugger, and firmware access, first
+uses that frozen route and otherwise retains ordinary RAM semantics. A provider
+owns its device storage and may expose only copied read/write results; it never
+returns a backing pointer, mutates registration after freeze, or delegates its
+state to platform/profile/product code.
+
+T238 S2 will use this contract for VADP-owned planar VRAM. It is a single real
+device owner, not a second core machine, synchronised RAM shadow, or host
+framebuffer.
+
 ## Core Machine: Provider Scope
 
 A provider is an optional or configured machine behavior registered through a

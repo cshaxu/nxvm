@@ -2,22 +2,27 @@
 
 ## Current Work
 
+**M5 T238 S1 complete:** fixed the sole bounded future EGA planar contract:
+direct-port `EGA-320x200x16-direct`, core-routed VADP-owned non-mirrored VRAM
+and latches, copied 16-entry fixed RGBI frame, exact register subset, and
+focused baseline probe. It changes no guest EGA/VGA behavior and produces no
+artifact. T238 S2 is not active until separately admitted.
+
 **M5 Td S13 complete: correct unstarted task identifiers after artifact audit.**
 `0.5.0237` is the completed T227 S4 artifact revision, so unstarted work does
 not reuse T237. The forward queue begins at T238; committed history and artifact
 identities remain immutable. This documentation-only correction has no source,
 build, artifact, or runtime behavior effect.
 
-**Latest technical baseline -- idle after M5 T227 S4:** no implementation
-subtask is active. The default
-PC/AT profile now disables uncalibrated core typematic instead of turning
-instruction ticks into human repeat time. Explicit nonzero profile deadlines
-retain bounded KBC repeat; host key down/up -> mapper -> KBC -> IRQ1 -> ROM is
-unchanged. The focused disabled/enabled probes and GCC 16.1.0 current matrix
-passed 71/71. The truthful current artifact is `nxvm_0_5_0237.exe`, SHA-256
+**Latest technical baseline -- idle after M5 T238 S1:** no implementation
+subtask is active. T238 S1 adds the focused EGA planar control-baseline probe;
+it introduces no planar storage, device-memory router, raster, copied graphics
+frame, or BIOS mode. The truthful runnable artifact remains
+`nxvm_0_5_0237.exe`, SHA-256
 `53D0FED1072840A8D0021B4EE0F4BB32414A25515E9CC4FBF47FAD315B40F743`; see
-[the T227 record](m5-t227-kbc-controller-protocol-phase2.md). T238 S1 remains
-the next candidate, but has not been admitted.
+[the T227 record](m5-t227-kbc-controller-protocol-phase2.md). T238 S2 requires
+fresh admission before implementation. GCC 16.1.0 `current-gates-gcc` passed
+32 static/boundary gates and 72/72 current CTest smokes for this S1 closure.
 
 **M5 T234 S4 complete:** removed the remaining target-only
 `vm-platform-requests -> core-machine` and `vm-product -> core-machine` edges;

@@ -645,6 +645,10 @@ add_executable(core-machine-ega-controller-port-smoke
     tests/machine/core_machine_ega_controller_port_smoke.c
 )
 target_link_libraries(core-machine-ega-controller-port-smoke PRIVATE core-machine)
+add_executable(core-machine-ega-planar-port-smoke
+    tests/machine/core_machine_ega_planar_port_smoke.c
+)
+target_link_libraries(core-machine-ega-planar-port-smoke PRIVATE core-machine)
 add_executable(vm-ega-controller-system-smoke
     tests/machine/vm_ega_controller_system_smoke.c
 )
@@ -827,6 +831,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-cga-graphics-port-smoke
     core-machine-ega-sequencer-port-smoke
     core-machine-ega-controller-port-smoke
+    core-machine-ega-planar-port-smoke
     vm-cga-graphics-system-smoke
     vm-ega-sequencer-system-smoke
     vm-ega-controller-system-smoke
