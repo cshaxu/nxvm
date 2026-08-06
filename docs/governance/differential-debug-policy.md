@@ -9,17 +9,17 @@ backend, runtime dependency, or release feature.
 ## Boundary
 
 ntvdm64 builds a project-owned optional trace interface. Machine and DOS code
-emit normalized events to a null-by-default trace sink. A reference adapter,
-including one that drives a locally installed NTVDMx64 debugger, runs out of
-process under `tools/research/differential/` and is never linked into ntvdm64.
+emit normalized events to a null-by-default trace sink. A reference adapter
+that drives an approved external debugger runs out of process under
+`tools/research/differential/` and is never linked into ntvdm64.
 The optional Bochx/Bochs paired-step CPU bridge is a distinct local research
 tool under `tools/research/bochx/`: its coupling exists only inside a separate
 developer reference build and never in an ntvdm64 or nxvm product process.
 
-NTVDMx64 can provide evidence for bounded COM and DOS ABI probes. Bochx/Bochs
-can provide evidence for bounded CPU instruction/state probes. Neither is an
-oracle for NXVM POST, BIOS, virtual disk boot, PIC/PIT, device initialization,
-or platform behavior. Those M1 behaviors compare against the preserved NXVM
+An external VDM can provide evidence for bounded COM and DOS ABI probes.
+Bochx/Bochs can provide evidence for bounded CPU instruction/state probes. No
+reference is an oracle for NXVM POST, BIOS, virtual disk boot, PIC/PIT, device
+initialization, or platform behavior. Those M1 behaviors compare against the preserved NXVM
 baseline and focused project-owned observations.
 
 ## Required Trace Contract

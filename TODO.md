@@ -127,25 +127,28 @@ default definition of NXVM completion.
 
 ## Architecture, Portability, And Product Boundaries
 
-- [ ] **Core/mantle product naming and external VDM boundary (`TODO(High)`).**
-  Treat the following names as the forward product definitions and reconcile
-  legacy `ntvdm64.exe` terminology, CMake target names, requirements, and
-  release documents in one approved migration before any runnable VDM work:
+- [ ] **Core/mantle/DOS product boundary (`TODO(High)`).** The following is the
+  sole forward product definition. Implementation tasks must reconcile source
+  layout, CMake targets, requirements, and release documents before runnable
+  VDM work:
   - **Core / `core.dll`:** the releasable generic machine, platform, and
     product-tool foundation rooted at `src/core`. It has no DOS-runtime,
     Microsoft-specific, or PC/AT product policy.
   - **NXVM / `nxvm.exe`:** the bootable whole-machine product rooted at
     `src/vm`. It owns its PC/AT profile, synthesized BIOS contents, boot/media
     policy, and product UI.
-  - **Mantle / `mantle.dll`:** a releasable VDM host layer rooted at the future
-    `src/mantle`. It may contain only mechanism demonstrably shared by NXVDM
-    and an external wrapper, such as a VDM runtime envelope over core. It has
-    no external-runtime-specific ABI, selector, manifest, DOS namespace, or
+  - **Mantle / `mantle.dll`:** a future VDM composition component rooted at
+    `src/mantle`. It contains only mechanism shared by NXVDM and an admitted
+    external NTVDM implementation, such as a VDM runtime envelope over core.
+    It has no runtime-specific ABI, selector, manifest, DOS namespace, or
     protected guest asset.
-  - **NXVDM / `nxvdm.exe`:** the independently implemented DOS VDM product
-    rooted at `src/vdm` and built over mantle/core. It contains no Microsoft-
-    specific guest ABI, BOP/SVC contract, or Microsoft guest asset. Its optional
-    debug Console is a project-owned product experience.
+  - **DOS / `dos.dll`:** the independent owned DOS implementation rooted at
+    `src/dos`. It depends on no other component and owns the DOS loader,
+    services, and program lifecycle.
+  - **NXVDM / `nxvdm.exe`:** the non-invasive DOS VDM product rooted at
+    `src/vdm` and built over mantle/dos. It contains no Microsoft-specific
+    guest ABI, BOP/SVC contract, or Microsoft guest asset. Its optional debug
+    Console is a project-owned product experience.
   - **External `ntvdm.exe`:** a future program in a separate local research
     project. It builds over mantle/core and locally combines a user-supplied
     runtime. It is neither an ntvdm64 product nor a default build, runtime,
@@ -157,24 +160,25 @@ default definition of NXVM completion.
   src/core/       -> core.dll
   src/vm/         -> nxvm.exe       -> core.dll
   src/mantle/     -> mantle.dll     -> core.dll
-  src/vdm/        -> nxvdm.exe      -> mantle.dll -> core.dll
+  src/dos/        -> dos.dll
+  src/vdm/        -> nxvdm.exe      -> mantle.dll + dos.dll
   external wrapper -> ntvdm.exe     -> mantle.dll -> core.dll
   ```
 
   Keep all-product-neutral tooling in `core/product`; keep NXVM composition and
-  UX in `src/vm`, NXVDM composition and UX in `src/vdm`, and external-runtime
-  composition outside this repository. Mantle admission requires two real
+  UX in `src/vm`, reusable VDM composition in `src/mantle`, owned DOS behavior
+  in `src/dos`, and NXVDM UX/policy in `src/vdm`. Mantle admission requires two real
   consumers and a contract without product, DOS-namespace, or runtime-specific
   policy. VM multi-session run/pause/reset/stop control remains VM-owned unless a future shared
   requirement is demonstrated. The existing generic debug-target contract is
-  reused by NXVDM through a product composition binding; do not add a debug-
+  reused by NXVDM through a mantle composition binding; do not add a debug-
   event contract without an observed need. Retained NXVM Console and NXVDM
   debug UX remain product-owned. First make this a clean source-level boundary
   under the existing single-executable build; do not create `src/mantle`, DLL,
   or SDK packaging before an admitted shared mantle mechanism exists. The
   shared machine start contract is one validated
   `initial-state`/entry-plan: NXVM supplies the conventional x86 reset-state
-  plus its mapped BIOS image, while NXVDM and an external wrapper may supply
+  plus its mapped BIOS image, while mantle may supply
   direct prepared state. Existing core reset returns only to a clean machine
   baseline; composition then applies the selected initial state. A reset vector
   is therefore a VM profile choice, not a separate core boot mode.

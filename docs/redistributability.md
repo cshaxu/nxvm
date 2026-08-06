@@ -2,7 +2,7 @@
 
 The default products are independently buildable and distributable. `nxvm.exe`
 may require owner-provided guest media to boot an external OS image, but the
-repository and release must not package protected media. `ntvdm64.exe` does not
+repository and release must not package protected media. `nxvdm.exe` does not
 require Microsoft DOS, BIOS media, NTVDM guest files, WineVDM, system patching,
 global injection, or registry modification to run its supported DOS feature set.
 

@@ -1,10 +1,12 @@
 # Project Constitution
 
 1. This repository is the canonical successor to NXVM.
-2. `nxvm.exe` and `ntvdm64.exe` are first-class products over one shared core.
-3. NXVM whole-machine boot ability remains supported, not legacy-only.
-4. The independent DOS runtime is the default ntvdm64 compatibility path.
-5. Non-invasive execution is the primary ntvdm64 product path.
+2. `nxvm.exe` and `nxvdm.exe` are first-class executable products.
+3. `core` is their shared foundation; `mantle` is the future shared VDM
+   composition component; `dos` is the independent owned DOS backend.
+4. NXVM whole-machine boot ability remains supported, not legacy-only.
+5. The independent DOS runtime is the default NXVDM compatibility path.
+6. Non-invasive execution is the primary NXVDM product path.
 6. The default release must not depend on Microsoft NTVDM binaries.
 7. Real-program compatibility has priority over speculative private-ABI work.
 8. Invasive Windows integration remains isolated until explicitly approved.

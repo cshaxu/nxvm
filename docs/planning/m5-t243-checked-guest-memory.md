@@ -38,7 +38,8 @@ that mutates guest memory.
 * M5 T242 is the current verified NXVM device baseline.
 * `src/core/machine/memory_interface.h` and the execution/memory contracts are
   the current core boundary to inspect.
-* `src/vm/composition/session/*` and `src/vdm/{composition,machine}/*` are the
+* `src/vm/composition/session/*`, planned `src/mantle/composition/*`, and
+  planned `src/vdm/{machine,platform,product,profile}/*` are the
   product/composition callers to classify.
 * `TODO.md` records T243 through T247 and the source-level future topology.
 
@@ -123,8 +124,8 @@ similar-issue sweep before implementation.
 ## Planned Queries And Verification
 
 ```powershell
-rg -n "core_machine_.*(read|write|memory|linear|real|map)" src/core src/vm src/vdm tests
-rg -n "memory_interface|execution_provider|memory_read|memory_write" src/core src/vm src/vdm tests
+rg -n "core_machine_.*(read|write|memory|linear|real|map)" src/core src/vm src/mantle src/dos src/vdm tests
+rg -n "memory_interface|execution_provider|memory_read|memory_write" src/core src/vm src/mantle src/dos src/vdm tests
 rg -n "core/machine|core/platform|core/product|vm/|vdm/" CMakeLists.txt src docs/architecture
 git diff --check
 ```

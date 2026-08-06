@@ -10,7 +10,7 @@ This document records ntvdm64-specific source rules:
 
 ## Source Layout
 
-The only source roots are `core`, `vm`, and `vdm`.
+The only permitted source roots are `core`, `vm`, `mantle`, `dos`, and `vdm`.
 
 - `core/utils` is the lowest neutral utility/callback layer and depends only on
   `type-facade`. `core/{machine,platform,product}` contains behavior shared by
@@ -19,8 +19,12 @@ The only source roots are `core`, `vm`, and `vdm`.
   policy.
 - `vm/{machine,platform,product,profile}` contains bootable whole-machine
   behavior, the retained VM Console/debugger experience, and machine profiles.
-- `vdm/{machine,platform,product,profile}` contains DOS application-runner
-  behavior and DOS execution profiles.
+- `mantle/{machine,platform,product}` contains only policy-free VDM composition
+  mechanism shared by NXVDM and an admitted external implementation.
+- `dos/{machine,platform,product,profile}` contains the owned DOS backend and
+  depends on no other product component.
+- `vdm/{machine,platform,product,profile}` contains NXVDM application-runner
+  behavior over mantle and dos.
 
 Public headers live beside their implementations. The complete ownership and
 dependency graph remains [Module Layout](architecture/module-layout.md).
@@ -28,7 +32,7 @@ dependency graph remains [Module Layout](architecture/module-layout.md).
 - [C-Library Facade](architecture/c-library-facade.md) is the sole detailed
   authority for `src/type.h`, C/standard-library vocabulary, platform type
   exposure, and direct ISO C header/call restrictions.
-- The exact `core`, `vm`, and `vdm` dependency graph, public symbol prefixes,
+- The exact component dependency graph, public symbol prefixes,
   and composition ownership are defined by
   [Module Layout](architecture/module-layout.md) and
   [Contracts](architecture/contracts.md).

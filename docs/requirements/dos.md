@@ -77,7 +77,7 @@ rejected otherwise. After success, it remains paused before the first program
 instruction; only a reset returns to the loadable state. The load path must pass
 the selected image into the COM loader; it must not inject bytes at an arbitrary
 CPU address or bypass PSP/environment/loader semantics. It does not implement
-the `ntvdm64 run` product path, host-drive mapping, or product command-line
+the `nxvdm run` product path, host-drive mapping, or product command-line
 parsing. Its host path is a developer/test input only; DOS sees only the
 fixture filesystem and cannot enumerate or open that host path.
 

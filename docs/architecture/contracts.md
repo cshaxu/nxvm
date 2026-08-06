@@ -23,8 +23,9 @@ module-local status type.
 
 Public symbols use source-path ownership: `core_machine_*`,
 `core_platform_*`, `core_product_*`, `vm_machine_*`, `vm_platform_*`,
-`vm_product_*`, `vm_profile_*`, and VDM counterparts. Root composition uses
-`vm_session_*` and `vdm_session_*` for its concrete session contracts.
+`vm_product_*`, `vm_profile_*`, `mantle_*`, `dos_*`, and `vdm_*`. Root
+composition uses `vm_session_*` and `mantle_session_*` for its concrete
+session contracts.
 
 The precise distinction among private machine implementation, exposed
 interface, injected provider, and session-owned registry is defined in
@@ -51,7 +52,7 @@ continues to define the semantics of those public contracts.
 `core_product_session_manager` owns the opaque entry table, numerical IDs,
 selection, copied snapshots, and generic `SESSION` grammar. It may retain an
 opaque concrete-session handle only to return it to its provider; it never
-constructs, mutates, runs, or interprets a VM/VDM session.
+constructs, mutates, runs, or interprets a VM or mantle session.
 
 The manager has a nonempty-table invariant: after initial creation it always
 contains at least one live entry and exactly one selected entry. `close` on the
@@ -84,7 +85,7 @@ corresponding runtime path:
    contracts, with no machine type dependency.
 3. `core/product`: generic command, debug, trace, and registry target
    contracts, with no machine or platform type dependency.
-4. Root composition: VM/VDM adapters for machine snapshots, platform events,
+4. Root composition: VM/mantle adapters for machine snapshots, platform events,
    product targets, callback binding, and teardown.
 5. Profile override: ROM assets, declarative metadata, and limited firmware
    callbacks against public core contracts.
@@ -100,7 +101,7 @@ machine-private diagnostics. The product platform module owns its frame and
 its submit or sink contract; the frame carries host-facing copies only and
 must not embed, reference, or name a machine snapshot type.
 
-Only `vm` or `vdm` root composition may include both contracts. At its defined
+Only `vm` or `mantle` composition may include both contracts. At its defined
 execution boundary it maps a machine snapshot to a platform frame and submits
 the frame. Neither `core/platform` nor a product platform module may include a
 machine header. A presentation probe injects a platform-sink spy through the
@@ -141,16 +142,16 @@ publish output, then run another quantum. A debugger step uses the same path
 with a budget of one. This prevents an unbounded guest loop from owning the
 host control flow while preserving one execution implementation.
 
-VM and VDM root compositions may share a `core/product` queue, wake, and drain
+VM and mantle composition may share a `core/product` queue, wake, and drain
 primitive only after both loops have a demonstrated identical mechanism. Such
 a primitive knows no machine or platform type and never decides scheduling,
 display policy, cancellation, boot continuation, or program exit. Those remain
-VM/VDM root-composition policy.
+VM/mantle root-composition policy.
 
 ## Core Machine: Configuration, State, And Run Result
 
 `core_machine_config` contains static core-machine capability: RAM capacity and
-the frozen CPU/FPU profile selections. VM/VDM root composition translates a
+the frozen CPU/FPU profile selections. VM/mantle composition translates a
 selected profile into this configuration.
 
 It contains no profile identifier, ROM/BIOS/CMOS data, storage device, host
@@ -298,8 +299,8 @@ can reuse it:
   `core/machine` and registered with a profile-selected configuration.
 - A full-PC-only FDC or HDC belongs in `vm/machine` and registers through the
   same core port, IRQ, DMA, and reset contracts.
-- A DOS service such as an INT 21h handler belongs in `vdm/machine`; it is not
-  a core DOS implementation.
+- A DOS service such as an INT 21h handler belongs in `dos/machine`; it is not
+  a core or mantle implementation.
 - A PC-specific BIOS interrupt handler or ROM behavior belongs to its VM
   profile as a restricted firmware override provider.
 
@@ -307,7 +308,7 @@ For example, VM composition reads a profile, creates a reusable core PIC with
 that profile's port and IRQ configuration, then registers it before freeze. A
 CPU test can instead register a small fake port or interrupt provider and run
 without booting a full PC. The provider boundary therefore keeps core usable
-for focused instruction tests and lets VM/VDM profiles differ without teaching
+for focused instruction tests and lets VM/DOS profiles differ without teaching
 core about PC/AT, DOS, Windows, or a host OS.
 
 A generic block capability is a core-machine provider contract, not an HDC
@@ -351,7 +352,7 @@ attributes, geometry, cursor, and generation; a PIC provider may report IRQ
 diagnostics. VM-only storage-controller detail and VDM-only DOS diagnostic
 state remain in their respective product-form machine modules.
 
-VM or VDM root composition selects the views needed by its product, copies and
+VM or mantle composition selects the views needed by its session, copies and
 combines them at an execution boundary, and adapts them to a product or
 platform contract. A platform receives only a platform frame and never a
 `core_machine` handle, guest-memory pointer, DOS-private state, VM media
@@ -375,7 +376,7 @@ ownership decision.
 
 A platform provider may produce copied, normalized host events on a host
 thread and may consume copied presentation, audio, or log frames. It may not
-mutate guest state. VM or VDM root composition is the sole bridge: it accepts
+mutate guest state. VM or mantle composition is the sole bridge: it accepts
 platform events into its product-owned queue, consumes them at a machine
 execution boundary, and translates machine/provider views into platform frames
 before submission.
@@ -448,7 +449,7 @@ events are structured, filterable, and capacity-bounded. Their collection,
 clearing, and export remain composition and product-UX policy; an unbounded
 raw instruction recorder is not a core-product facility.
 
-NXVM Console commands, ntvdm64 CLI parsing, display/Console ownership, and
+NXVM Console commands, NXVDM CLI parsing, display/Console ownership, and
 product-specific debug interaction belong in `vm/product` or `vdm/product`.
 Assembler/disassembler code whose inputs and outputs are pure data belongs in
 core product because it accesses neither a machine, a platform provider, nor a
@@ -457,10 +458,11 @@ global session.
 ## Root Composition: Product Integration
 
 `vm/main.c` is the current thin `nxvm.exe` entry point. `vdm/main.c` is the
-future thin `ntvdm64.exe` entry point and must enter only VDM root composition
-when introduced. `vm_session` and the future `vdm_session` are the sole
-integration owners: they may include the applicable core contracts and all peer
-modules of their own product form. No peer module receives this privilege.
+future thin `nxvdm.exe` entry point and binds mantle to dos when introduced.
+`vm_session` and `mantle_session` are the sole integration owners: they may
+include the applicable core contracts and all peer modules of their own
+component. VDM selects product policy only; no peer module receives this
+privilege.
 
 Composition selects a profile; creates core machine state and product-form
 machine, platform, and product providers; translates profile descriptions into
@@ -475,16 +477,16 @@ sequence statement-for-statement before any later simplification; device code
 does not infer or alter the order. This is the path for moving lifecycle and
 host-start calls out of `vm/machine` without changing boot behavior.
 
-Composition alone translates `ntvdm64_status` and machine run results into
-observable product behavior. VM may return to or pause its retained Console;
-VDM may produce a guest exit code, a cancellation result, or a CLI failure.
-Core and peer providers never make either decision.
+Composition reports factual results; VM or VDM product policy translates them
+into observable behavior. VM may return to or pause its retained Console;
+NXVDM may produce a guest exit code, a cancellation result, or a CLI failure.
+Core, mantle, DOS, and peer providers never make either decision.
 
 Composition shuts down in reverse dependency order: stop platform event
 sources, close ingress, request and observe a machine stop at an execution
 boundary, then detach and destroy providers, platform objects, product UI, and
-core machine state. VM and VDM may have similar loops, but sharing a mechanism
-must never import VM boot behavior or VDM program-run semantics into core.
+core machine state. VM and mantle may have similar loops, but sharing a
+mechanism must never import VM boot behavior or NXVDM program-run semantics into core.
 
 ## Profile: Immutable Blueprint And Firmware Assets
 
@@ -504,8 +506,8 @@ A profile-specific firmware override may own private provider context and use
 only public `core/machine` service and provider contracts to affect guest
 state. It may not access platform, product, composition, host resources, or
 peer modules directly. VM profiles describe machine models and firmware;
-VDM profiles describe DOS memory, service, and device policy. They share this
-discipline but have no universal all-product profile object.
+DOS profiles describe DOS memory, service, and device policy. They share this
+discipline but have no universal all-component profile object.
 
 Profiles exclude machine-local paths, CLI arguments, window/Console choices,
 and other product-session policy. They are reproducible read-only blueprints;
