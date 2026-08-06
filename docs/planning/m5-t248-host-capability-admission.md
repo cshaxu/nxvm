@@ -118,6 +118,7 @@ static dependency review, and `git diff --check`.
 
 **Closure marker:** `M5:T248:S3:BOUNDARY-CLOSURE:OK`.
 
-The next active work is T249 S1. It must validate the exact copied input event
-contract before moving `vm/platform/input.[ch]`; it may not start source work
-from this queue alone.
+Task scheduling is intentionally not recorded here. See
+[Project Status](status.md) for the current active state and the next
+approval-required work; this completed T248 record does not authorize source
+work on its own.

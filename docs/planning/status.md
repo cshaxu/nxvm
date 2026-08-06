@@ -47,6 +47,9 @@ authorities.
   ticks and generic PIT/PIC/DMA mechanics; VM owns PC/AT CMOS/RTC and BIOS time
   semantics; composition owns the bounded product pump and host pacing. This
   documentation task changes no runtime behavior or active-task scope.
+- **M5 Td S25:** reconciled completed M5 baseline references to T252 S3 and
+  removed stale task scheduling from the completed T248 record. This
+  documentation task changes no runtime behavior or active-task scope.
 
 ## Milestone State
 
