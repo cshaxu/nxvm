@@ -7,7 +7,7 @@ fault, prefix/addressing, register/FLAGS, and side-effect probes have passed.
 | Capability | Current verdict | M5 T1 S1 evidence | Remaining gate |
 | --- | --- | --- | --- |
 | `x86.real_mode_8086` | partial evidence; not yet profile-claimable | one-step immediate MOV, immediate ADD, relative jump, segment-prefix NOP, and `#UD` capture on the retained baseline | broaden instruction, memory, stack, interrupt, FLAGS, and side-effect matrix; cross-check applicable cases |
-| `x86.protected_mode_286` | unknown | none | dedicated mode, descriptor, fault, and interrupt matrix |
+| `x86.protected_mode_286` | bounded partial evidence; not profile-claimable beyond the admitted subset | T257: GDT-only CPL0 16-bit `LGDT`/`LMSW`, selector loads, same-CPL far transfer, and diagnostic `#GP`/`#NP`/`#SS`; PE-state IDT and interrupts stop as `#UD` | privilege transitions, protected IDT delivery, LDT/TSS, task switching, 32-bit semantics, and broader descriptor/fault corpus |
 | `x86.i386_decode` | partial evidence; not yet profile-claimable | operand-size-prefixed immediate MOV | broader `0F` and prefix/decode matrix with positive and negative cases |
 | `x86.i386_real_mode` | unknown | none | evidence-backed 32-bit real-mode execution matrix |
 | `x86.i386_protected_mode` | unknown | none | evidence-backed protected-mode execution matrix |

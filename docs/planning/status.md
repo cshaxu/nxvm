@@ -18,16 +18,16 @@ semantics, and Windows claims remain deferred. See [T257 admission closure](m5-t
 | T254 | Bounded digital CGA `640x200x2` is VADP-owned; artifact `0.5.0253` and 89/89 current CTest pass. |
 | T255 | Machine-profile admission contract is closed; design/governance only, no artifact. |
 | T256 | Core-owned Level 1 rational device clocks are closed; artifact `0.5.0254` and 90/90 current CTest pass. |
-| T257 | Bounded 80286 GDT/CPL0 protected-mode baseline is closed; artifact `0.5.0256` and 91/91 current CTest pass. |
+| T257 | Bounded 80286 GDT/CPL0 protected-mode baseline is closed; artifact `0.5.0257` and 91/91 current CTest pass. |
 
 The next task must establish a complete active packet before implementation.
 
 ## Current Technical Baseline
 
-- **T257 S7:** `current-gcc` and `verify-current-artifact-target` select
-  `vm-0-5-0256`; static/ownership checks and 91/91 CTest cases passed.
-  Artifact `nxvm_0_5_0256.exe` SHA-256:
-  `09E0C96D2D6AF6B180013344FDEC63B1D7DF66102620D1E107C47946E21D9CB8`.
+- **T257 artifact identity correction:** `current-gcc` and
+  `verify-current-artifact-target` select `vm-0-5-0257`; static/ownership
+  checks and 91/91 CTest cases passed. Artifact `nxvm_0_5_0257.exe` SHA-256:
+  `E69FC24A8E1113E4A7AED552F9C5B944372F4FCF73FFB0D669CC14B6C375A1F1`.
 - **T243--T246:** core owns checked physical memory, bounded `#UD`
   transitions, immutable ROM mapping, and atomic real-mode entry plans. T247
   verifies the current artifact target and full gate over that boundary.
@@ -62,6 +62,9 @@ authorities.
 - **M5 Td S27:** compacted completed T248--T257 task records into M5 history,
   removed the completed T248 ledger entry, and clarified idle-state authority.
   This documentation task changes no runtime behavior or active-task scope.
+- **M5 Td S28:** replaced independent artifact revisions with task-identity
+  revisions. The T257 current artifact is reissued as `0.5.0257`; future
+  numeric task artifacts must use their task number exactly.
 
 ## Milestone State
 
