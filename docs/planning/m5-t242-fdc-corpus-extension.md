@@ -106,4 +106,21 @@ otherwise identical non-MFM `02h` command. The marker is
 
 ## S3: DOS Corpus And Closure
 
-**Status:** active.
+**Status:** complete.
+
+`vm-fdc-read-track-dos-smoke` makes a temporary clone of the owner-provided
+FDD image, injects a small `FDC242.COM` by ordinary FAT12 metadata, and lets
+the retained DOS prompt load it through the keyboard path. The guest program
+programs DMA channel 2, sends `SPECIFY` and the admitted `42h` command, waits
+in guest execution while the core scheduler moves the track, consumes the
+seven-byte result FIFO, displays its success marker, and exits through DOS.
+The host only compares the copied clone's first 9,216 bytes against the
+core-owned DMA destination after guest completion. It neither writes guest RAM
+nor invokes a BIOS/DOS disk shortcut.
+
+Focused S2 and DOS S3 smokes, plus the 34 static/ownership gates and 80/80
+current CTest smokes, pass. The retained FDD/HDD boot, prompt, keyboard,
+CGA/EGA, Console, and debugger cases remain in that matrix.
+
+Artifact: `build/output/nxvm_0_5_0242.exe`, SHA-256
+`14532F8A23653B0787B3854BA39A5594075F53CDF5C24FD823E786F10E14247D`.
