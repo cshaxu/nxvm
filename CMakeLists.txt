@@ -673,6 +673,16 @@ add_executable(vm-ega-planar-dos-smoke
     tests/machine/vm_ega_planar_dos_smoke.c
 )
 target_link_libraries(vm-ega-planar-dos-smoke PRIVATE vm-composition)
+add_executable(vm-rom-ega-int10-system-smoke
+    tests/machine/vm_rom_ega_int10_system_smoke.c
+)
+target_link_libraries(vm-rom-ega-int10-system-smoke PRIVATE vm-composition)
+add_executable(vm-rom-ega-int10-dos-smoke
+    tests/machine/vm_ega_planar_dos_smoke.c
+)
+target_compile_definitions(vm-rom-ega-int10-dos-smoke PRIVATE
+    VM_EGA_PLANAR_ROM_INT10_SMOKE=1)
+target_link_libraries(vm-rom-ega-int10-dos-smoke PRIVATE vm-composition)
 
 add_executable(vm-cmos-authority-smoke tests/machine/vm_cmos_authority_smoke.c)
 target_link_libraries(vm-cmos-authority-smoke PRIVATE vm-composition)
@@ -844,6 +854,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     vm-ega-sequencer-system-smoke
     vm-ega-controller-system-smoke
     vm-ega-planar-system-smoke
+    vm-rom-ega-int10-system-smoke
     core-machine-stopped-lifecycle-smoke
     core-machine-memory-reconfigure-smoke
     core-machine-int-ivt-smoke
@@ -891,6 +902,7 @@ set(PROJECT_CURRENT_FDD_SMOKE_TARGETS
     vm-dos-video-port-smoke
     vm-cga-graphics-dos-smoke
     vm-ega-planar-dos-smoke
+    vm-rom-ega-int10-dos-smoke
     vm-debug-pause-boundary-smoke
     vm-unified-debug-backend-smoke)
 set(PROJECT_CURRENT_FDD_HDD_SMOKE_TARGET vm-product-session-smoke)
@@ -973,7 +985,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0238 "0.5.0238")
+add_current_vm_artifact(vm-0-5-0239 "0.5.0239")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 
@@ -1165,6 +1177,13 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMENT "Verifying M5 T238 EGA planar ownership boundary"
         VERBATIM)
     add_dependencies(run-current-smokes verify-ega-planar-boundary)
+
+    add_custom_target(verify-rom-ega-int10-boundary
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_rom_ega_int10_boundary.cmake"
+        COMMENT "Verifying M5 T239 ROM EGA INT 10h boundary"
+        VERBATIM)
+    add_dependencies(run-current-smokes verify-rom-ega-int10-boundary)
 
     add_custom_target(verify-vm-session-owner-closure
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}

@@ -270,9 +270,13 @@ xor dx, dx                \n\
 mov sp, fffe              \n\
  jmp 0000:7c00             \n"
 
-/* Default-ROM text INT 10h subset. It intentionally owns only guest BDA,
- * B8000 text memory, and CRTC cursor ports; VADP observes those real writes. */
+/* Default-ROM INT 10h subset. It owns guest BDA/text memory and emits video
+ * controller port transactions; VADP observes those real guest writes. */
 #define VBIOS_INT_SOFT_VIDEO_10 "      \
+cmp ah, 00                        \n\
+jnz $(label_int_10_cmp_02)        \n\
+jmp near $(label_int_10_set_mode) \n\
+$(label_int_10_cmp_02):           \n\
 cmp ah, 02                        \n\
 jnz $(label_int_10_cmp_06)        \n\
 jmp near $(label_int_10_cursor)   \n\
@@ -293,6 +297,70 @@ cmp ah, 0f                        \n\
 jnz $(label_int_10_ret)           \n\
 jmp near $(label_int_10_mode)     \n\
 $(label_int_10_ret):              \n\
+iret                              \n\
+\
+$(label_int_10_set_mode):         \n\
+cmp al, 0d                        \n\
+jz $(label_int_10_set_ega_0d)     \n\
+cmp al, 03                        \n\
+jz $(label_int_10_set_text_03)    \n\
+iret                              \n\
+$(label_int_10_set_ega_0d):       \n\
+push ax                           \n\
+push bx                           \n\
+push dx                           \n\
+push ds                           \n\
+mov bx, 0040                      \n\
+mov ds, bx                        \n\
+mov byte ds:[0049], 0d            \n\
+pop ds                            \n\
+mov dx, 03c4                      \n\
+mov al, 02                        \n\
+out dx, al                        \n\
+inc dx                            \n\
+mov al, 0f                        \n\
+out dx, al                        \n\
+mov dx, 03ce                      \n\
+mov al, 05                        \n\
+out dx, al                        \n\
+inc dx                            \n\
+xor al, al                        \n\
+out dx, al                        \n\
+dec dx                            \n\
+mov al, 06                        \n\
+out dx, al                        \n\
+inc dx                            \n\
+mov al, 05                        \n\
+out dx, al                        \n\
+mov dx, 03da                      \n\
+in al, dx                         \n\
+mov dx, 03c0                      \n\
+mov al, 30                        \n\
+out dx, al                        \n\
+mov al, 01                        \n\
+out dx, al                        \n\
+pop dx                            \n\
+pop bx                            \n\
+pop ax                            \n\
+iret                              \n\
+$(label_int_10_set_text_03):      \n\
+push ax                           \n\
+push bx                           \n\
+push dx                           \n\
+push ds                           \n\
+mov bx, 0040                      \n\
+mov ds, bx                        \n\
+mov byte ds:[0049], 03            \n\
+pop ds                            \n\
+mov dx, 03ce                      \n\
+mov al, 06                        \n\
+out dx, al                        \n\
+inc dx                            \n\
+mov al, 09                        \n\
+out dx, al                        \n\
+pop dx                            \n\
+pop bx                            \n\
+pop ax                            \n\
 iret                              \n\
 \
 $(label_int_10_cursor):           \n\

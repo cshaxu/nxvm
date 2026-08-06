@@ -2,6 +2,19 @@
 
 ## Current Work
 
+**M5 T239 complete:** default-PC/AT ROM now admits only `INT 10h` mode
+`AH=00h, AL=0Dh` for the T238 direct EGA surface and retained `AL=03h` to exit
+back to text.  The executable ROM writes only real video ports and BDA `40:49`
+for the existing `AH=0Fh` query; VADP remains the sole register/VRAM/frame
+owner.  System and DOS fixtures, direct EGA/CGA, Console/debugger, FDD/HDD
+boot, and GCC/CTest `76/76` pass.  Artifact `nxvm_0_5_0239.exe` SHA-256:
+`4C4FDC4DCEB1CE0003A71E54C3DFFA19101AC048E8E7B62919596E6E126123DA`.
+
+**Latest technical baseline -- idle after M5 T239:** no implementation
+subtask is active.  The only admitted ROM EGA service is `AH=00h, AL=0Dh`,
+with `AL=03h` as its text exit; DAC, VBE, and other EGA/VGA families remain
+deferred.  See [the T239 record](m5-t239-rom-ega-int10.md).
+
 **M5 T238 complete:** the sole bounded EGA planar path is
 direct-port `EGA-320x200x16-direct`, core-routed VADP-owned non-mirrored VRAM
 and latches, copied 16-entry fixed RGBI frame, exact register subset, and
@@ -16,15 +29,6 @@ change is admitted.
 not reuse T237. The forward queue begins at T238; committed history and artifact
 identities remain immutable. This documentation-only correction has no source,
 build, artifact, or runtime behavior effect.
-
-**Latest technical baseline -- idle after M5 T238:** no implementation subtask
-is active. T238 adds only the bounded direct-port EGA planar path; ordinary DOS
-boot remains text until its explicit port sequence arms that path. The truthful
-runnable artifact is `nxvm_0_5_0238.exe`, SHA-256
-`35F661BBA004DA71BB77F5081A6AF009EE3EEFB82489D182BF77C634914419A5`; see
-[the T238 record](m5-t238-ega-planar-frame.md). GCC 16.1.0
-`current-gates-gcc` passed 35 static/boundary gates and 74/74 current CTest
-smokes.
 
 **M5 T234 S4 complete:** removed the remaining target-only
 `vm-platform-requests -> core-machine` and `vm-product -> core-machine` edges;

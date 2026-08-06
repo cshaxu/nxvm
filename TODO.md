@@ -33,7 +33,7 @@ in its task record and Git history; the M5 implementation order belongs in
 | CPU | Real-mode 8086-plus executor with selected 80186/286/386 decode; `FPU=none` consumes legal ESC encodings | Not trusted 80386, protected mode, paging, task switching, or present FPU. |
 | Interrupts and time | PIC source lifecycle; deterministic core elapsed ticks; PIT/IRQ0 -> ROM -> BDA -> `INT 1Ah` evidence | Greater timing fidelity only when an explicit corpus requires it. |
 | Keyboard | KBC, IRQ1/IRQ12, ROM `INT 09h`/`INT 16h`, set-1 break/E0/E1, typeahead, selection/query, translation observation, LED, command-state typematic, ACK/RESEND, bounded PS/2 AUX packets | Default core auto-repeat stays disabled until a profile-clock calibration defines human typematic time; set-2/3 conversion, wheel/advanced AUX protocol, guest mouse driver/API, and native POSIX runtime validation remain deferred. |
-| Display | CGA text plus bounded digital `320x200x4`; copied text/indexed frames; `console`/`window`/`auto` selection | Remaining digital CGA modes/CRTC behavior, composite video, EGA/VGA, VBE. |
+| Display | CGA text plus bounded digital `320x200x4` and ROM-selectable `EGA-320x200x16-direct`; copied text/indexed frames; `console`/`window`/`auto` selection | Remaining digital CGA modes/CRTC behavior, composite video, broader EGA/VGA, VBE. |
 | Storage | Bounded ATA PIO and FDD boot paths through declared ROM/device owners; core-owned 8237 DMA controller baseline with frozen FDC DMA2 binding | Full FDC state machine, broad DMA behavior, extended IDE, and error/timing compatibility. |
 | VDM | Isolated non-runnable scaffold over the shared core | Owned DOS design, CLI, host-drive policy, and product implementation remain deferred. |
 
@@ -70,14 +70,15 @@ These are the next owned admissions, not permission to work in parallel.
   color, phase, and colorburst as an optional renderer/profile capability only
   after digital CGA is complete. Do not fold it into VADP digital state or use
   it to claim EGA/VGA support.
-- [ ] **EGA/VGA staged admission (`TODO(Medium)`, T235--T239).** T235 completes
+- [x] **Bounded EGA direct-mode admission (`TODO(Medium)`, T235--T239).** T235 completes
   the profile-bound A0000h aperture/sequencer subset and T236 the graphics/
   attribute registers plus map-select classification. T238 completes one
   direct-port `EGA-320x200x16-direct` path: VADP-owned planar VRAM/latches,
   frozen core memory routing, and a copied 16-entry fixed RGBI frame, with no
   DAC. T239 admits only matching
-  ROM `INT 10h` mode services through the real VADP state. Do not make a single
-  unbounded "VGA support" task.
+  ROM `INT 10h` mode `0Dh` selection and `03h` exit through real VADP port
+  state. Deferred work remains separate; do not make a single unbounded
+  "VGA support" task.
 
 ## CPU, Time, And Debugging Boundaries
 
