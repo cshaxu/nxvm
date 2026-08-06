@@ -676,6 +676,13 @@ add_executable(vm-fdc-read-track-dos-smoke
     tests/machine/vm_fdc_read_track_dos_smoke.c
 )
 target_link_libraries(vm-fdc-read-track-dos-smoke PRIVATE vm-composition)
+add_executable(vm-ata-pio-dos-smoke
+    tests/machine/vm_ata_pio_dos_smoke.c
+)
+target_link_libraries(vm-ata-pio-dos-smoke PRIVATE vm-composition)
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(vm-ata-pio-dos-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+endif()
 add_executable(vm-keyboard-set1-mapper-smoke
     tests/machine/vm_keyboard_set1_mapper_smoke.c
 )
@@ -973,12 +980,14 @@ set(PROJECT_CURRENT_FDD_SMOKE_TARGETS
     vm-fdc-read-track-dos-smoke
     vm-debug-pause-boundary-smoke
     vm-unified-debug-backend-smoke)
-set(PROJECT_CURRENT_FDD_HDD_SMOKE_TARGET vm-product-session-smoke)
+set(PROJECT_CURRENT_FDD_HDD_SMOKE_TARGETS
+    vm-product-session-smoke
+    vm-ata-pio-dos-smoke)
 set(PROJECT_CURRENT_HDD_SMOKE_TARGETS vm-hdc-hdd-boot-smoke)
 set(PROJECT_CURRENT_MEDIA_SMOKE_TARGETS
     ${PROJECT_CURRENT_FDD_SMOKE_TARGETS}
     ${PROJECT_CURRENT_HDD_SMOKE_TARGETS}
-    ${PROJECT_CURRENT_FDD_HDD_SMOKE_TARGET})
+    ${PROJECT_CURRENT_FDD_HDD_SMOKE_TARGETS})
 set(PROJECT_FDD_SMOKE_IMAGE "${CMAKE_SOURCE_DIR}/../fdd.img" CACHE FILEPATH
     "Owner-provided FDD image for current runtime smoke coverage")
 set(PROJECT_HDD_SMOKE_IMAGE "${CMAKE_SOURCE_DIR}/../hdd.img" CACHE FILEPATH
@@ -1007,8 +1016,10 @@ endforeach()
 foreach(target IN LISTS PROJECT_CURRENT_HDD_SMOKE_TARGETS)
     project_add_current_smoke_test(${target} "${PROJECT_HDD_SMOKE_IMAGE}")
 endforeach()
-project_add_current_smoke_test(${PROJECT_CURRENT_FDD_HDD_SMOKE_TARGET}
-    "${PROJECT_FDD_SMOKE_IMAGE}" "${PROJECT_HDD_SMOKE_IMAGE}")
+foreach(target IN LISTS PROJECT_CURRENT_FDD_HDD_SMOKE_TARGETS)
+    project_add_current_smoke_test(${target} "${PROJECT_FDD_SMOKE_IMAGE}"
+        "${PROJECT_HDD_SMOKE_IMAGE}")
+endforeach()
 
 add_custom_target(run-current-smokes
     COMMAND "${CMAKE_CTEST_COMMAND}" --test-dir "${CMAKE_BINARY_DIR}"
@@ -1053,7 +1064,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0251 "0.5.0251")
+add_current_vm_artifact(vm-0-5-0252 "0.5.0252")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 

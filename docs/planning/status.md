@@ -2,27 +2,28 @@
 
 ## Current Work
 
-**M5 T253 S3 active: verify ATA PIO task-file progress.**
+**M5 idle after T253 S3: next task awaits an approved packet.**
 
-T249--T252 complete the admitted T248 migration queue without changing guest
-time, NXVM lifecycle behavior, or product interaction. T253 now admits only
-multi-sector ATA task-file progress; no other IDE feature is in scope.
+T253 closes only multi-sector ATA PIO task-file count progression. IDE DMA,
+ATAPI, LBA48, cache, secondary channels, slave devices, extra topology, and
+host-clock timing remain separate admissions.
 
 | Closure | Evidence |
 | --- | --- |
 | T249--T251 | Copied input, presentation, and cancellable wait contracts are closed with artifacts `0.5.0248`--`0.5.0250`. |
 | T252 | Composition owns the sole run-handle teardown sequence; artifact `0.5.0251` and 86/86 current CTest pass. |
+| T253 | ATA PIO sector-count progression is controller-owned; artifact `0.5.0252` and 87/87 current CTest pass. |
 
 This explicit idle state is permitted only after a completed task closes and
 before a new task packet is approved. Existing unstarted hardware work begins
-at T253; completed task identities and artifact revisions do not change.
+at T254; completed task identities and artifact revisions do not change.
 
 ## Current Technical Baseline
 
-- **T252 S3:** `current-gcc` and `verify-current-artifact-target` select
-  `vm-0-5-0251`; static/ownership checks and 86/86 CTest cases passed.
-  Artifact `nxvm_0_5_0251.exe` SHA-256:
-  `5D390E10FFBB229539D3921B22B30085FA482CD88036A1208F76A60443847B49`.
+- **T253 S3:** `current-gcc` and `verify-current-artifact-target` select
+  `vm-0-5-0252`; static/ownership checks and 87/87 CTest cases passed.
+  Artifact `nxvm_0_5_0252.exe` SHA-256:
+  `B565B73D1C1E5EB77C04549944AB28EA2CF6DE59AB2FD2B087D957CAEB020A87`.
 - **T243--T246:** core owns checked physical memory, bounded `#UD`
   transitions, immutable ROM mapping, and atomic real-mode entry plans. T247
   verifies the current artifact target and full gate over that boundary.
