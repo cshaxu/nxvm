@@ -2,13 +2,15 @@
 
 ## Current Work
 
-**Idle. No implementation subtask is active.**
+**M5 T257 S5 active: close protected-mode admission.**
 
-T257 is complete. It admits the bounded
-GDT-only, ring-0, 16-bit 80286 protected-mode path and preserves protected
-validation faults as core diagnostics rather than IDT-gate delivery. Paging,
+Original request: repair the audit finding that left IDT table forms and
+protected interrupt delivery reachable despite T257's GDT-only contract.
+S5 defines the closure; S6 may reject only those PE-state paths and add its
+focused corpus; S7 alone closes the gate and artifact record. The admitted
+path remains GDT-only, ring-0, 16-bit, and diagnostic-stop based. Paging,
 privilege transitions, LDT/TSS/gates, 32-bit semantics, and Windows claims
-remain deferred.
+remain deferred. See [T257 admission closure](m5-t257-protected-mode-admission-closure.md).
 
 | Closure | Evidence |
 | --- | --- |
