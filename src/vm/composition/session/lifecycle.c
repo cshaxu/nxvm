@@ -152,6 +152,25 @@ static C_VOID vm_session_debug_request_pause(C_VOID *context,
         VM_SESSION_PAUSE_TRACE : VM_SESSION_PAUSE_BREAKPOINT);
 }
 
+/* Composition is the only owner allowed to tear down its live run handle. */
+static C_VOID vm_session_platform_join_and_finalize(vm_session *machine)
+{
+    if (machine == STD_NULL || !vm_platform_run_handle_is_active(
+            &machine->platform_run_handle)) return;
+    vm_platform_run_handle_join(&machine->platform_run_handle);
+    vm_platform_run_handle_finalize(&machine->platform_run_handle);
+}
+
+static C_VOID vm_session_platform_request_stop(vm_session *machine)
+{
+    if (machine == STD_NULL) return;
+    if (!vm_platform_run_handle_is_active(&machine->platform_run_handle)) {
+        vm_session_control_stop(&machine->control);
+        return;
+    }
+    vm_platform_run_handle_request_stop(&machine->platform_run_handle);
+}
+
 C_VOID vm_session_start(vm_session *machine) {
     vm_session_reset(machine);
     vm_session_resume(machine);
@@ -161,8 +180,7 @@ C_VOID vm_session_reset(vm_session *machine) {
     if (machine == STD_NULL) return;
     if (vm_platform_run_handle_is_active(&machine->platform_run_handle) &&
         !vm_session_control_is_running(&machine->control)) {
-        vm_platform_run_handle_join(&machine->platform_run_handle);
-        vm_platform_run_handle_finalize(&machine->platform_run_handle);
+        vm_session_platform_join_and_finalize(machine);
     }
     vm_session_control_reset(&machine->control);
     if (!vm_session_control_is_running(&machine->control)) {
@@ -172,16 +190,11 @@ C_VOID vm_session_reset(vm_session *machine) {
 
 C_VOID vm_session_stop(vm_session *machine) {
     if (machine == STD_NULL) return;
-    if (!vm_platform_run_handle_is_active(&machine->platform_run_handle)) {
-        vm_session_control_stop(&machine->control);
-        return;
-    }
-    vm_platform_run_handle_request_stop(&machine->platform_run_handle);
+    vm_session_platform_request_stop(machine);
     /* Console runs synchronously in vm_session_resume(), which remains its
      * sole joiner. Window runs return here and need their async teardown. */
     if (vm_platform_run_handle_is_window_display(&machine->platform_run_handle)) {
-        vm_platform_run_handle_join(&machine->platform_run_handle);
-        vm_platform_run_handle_finalize(&machine->platform_run_handle);
+        vm_session_platform_join_and_finalize(machine);
     }
 }
 
@@ -197,8 +210,7 @@ C_VOID vm_session_resume(vm_session *machine) {
                     &machine->platform_run_handle)) {
                 break;
             }
-            vm_platform_run_handle_join(&machine->platform_run_handle);
-            vm_platform_run_handle_finalize(&machine->platform_run_handle);
+            vm_session_platform_join_and_finalize(machine);
         } while (vm_platform_run_context_take_auto_promotion(
             &machine->platform_run_context));
     }
@@ -236,11 +248,8 @@ C_VOID vm_session_initialize(vm_session *machine) {
 
 C_VOID vm_session_finalize(vm_session *machine) {
     if (machine == STD_NULL || machine->core_machine == STD_NULL) return;
-    if (vm_platform_run_handle_is_active(&machine->platform_run_handle)) {
-        vm_platform_run_handle_request_stop(&machine->platform_run_handle);
-        vm_platform_run_handle_join(&machine->platform_run_handle);
-        vm_platform_run_handle_finalize(&machine->platform_run_handle);
-    }
+    vm_session_platform_request_stop(machine);
+    vm_session_platform_join_and_finalize(machine);
     vm_session_control_bind_command_boundary(&machine->control, STD_NULL, STD_NULL);
     core_platform_input_source_stop(&machine->input_source);
     vm_platform_request_transport_close(&machine->request_transport);
