@@ -2,12 +2,11 @@
 
 ## Current Work
 
-**M5 Td S12 complete: rebase unstarted hardware task identifiers.** Committed
-task history and existing artifact identifiers remain immutable. The forward
-queue now retains T237 for graphics data-path work; T238--T245 cover real-mode
-graphics firmware, compatibility, device, profile, and timing admissions; and
-T246--T249 defer protected-mode CPU/FPU work. This documentation-only change
-has no source, build, artifact, or runtime behavior effect.
+**M5 Td S13 complete: correct unstarted task identifiers after artifact audit.**
+`0.5.0237` is the completed T227 S4 artifact revision, so unstarted work does
+not reuse T237. The forward queue begins at T238; committed history and artifact
+identities remain immutable. This documentation-only correction has no source,
+build, artifact, or runtime behavior effect.
 
 **Latest technical baseline -- idle after M5 T227 S4:** no implementation
 subtask is active. The default
@@ -17,7 +16,7 @@ retain bounded KBC repeat; host key down/up -> mapper -> KBC -> IRQ1 -> ROM is
 unchanged. The focused disabled/enabled probes and GCC 16.1.0 current matrix
 passed 71/71. The truthful current artifact is `nxvm_0_5_0237.exe`, SHA-256
 `53D0FED1072840A8D0021B4EE0F4BB32414A25515E9CC4FBF47FAD315B40F743`; see
-[the T227 record](m5-t227-kbc-controller-protocol-phase2.md). T237 S1 remains
+[the T227 record](m5-t227-kbc-controller-protocol-phase2.md). T238 S1 remains
 the next candidate, but has not been admitted.
 
 **M5 T234 S4 complete:** removed the remaining target-only
@@ -305,10 +304,10 @@ changes no source or build output.
 `M5 Td S6` establishes the authoritative ROI-ordered PC/AT hardware queue,
 corrects the baseline to T216 S5, and reserves T217--T233 for time, devices,
 storage, and display work. T234 was allocated to the boundary closure, which
-is complete. `M5 Td S12` preserves the completed T235--T236 records and
-rebases the unstarted route: T237--T245 cover graphics, firmware, real-mode
-compatibility, devices, profiles, and timing; T246--T249 cover protected-mode
-CPU and present-FPU work.
+is complete. `M5 Td S12` initially rebased the route; `M5 Td S13` corrects its
+artifact-version collision. The unstarted route is T238--T246 for graphics,
+firmware, real-mode compatibility, devices, profiles, and timing, followed by
+T247--T250 for protected-mode CPU and present-FPU work.
 
 ## Milestone State
 

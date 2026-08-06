@@ -40,7 +40,7 @@ backing, or direct platform mutation is admitted.
 
 The existing sequencer map mask and graphics registers are observable control
 state only. A map-select write does not hide ordinary system RAM nor transform
-plane bytes in T236: doing so needs T237's sole planar/latch data path. The
+plane bytes in T236: doing so needs T238's sole planar/latch data path. The
 focused planar-access fixture will prove this explicitly rather than infer a
 fake implementation from raw RAM reads.
 
@@ -68,7 +68,7 @@ Add `tests/machine/core_machine_ega_controller_port_smoke.c` and
    registers remain stored state and direct RAM bytes remain untransformed.
 
 S3 adds `vm_ega_controller_system_smoke.c` against an ordinary frozen session.
-No DOS EGA/VGA fixture is applicable until T237 creates a copied frame path.
+No DOS EGA/VGA fixture is applicable until T238 creates a copied frame path.
 
 ### Required Matrix And Stop Conditions
 
@@ -107,7 +107,7 @@ overlay, hides ordinary RAM, transforms planes, or produces a frame.
 | Profile/composition integration | `vm-ega-controller-system-smoke` passed with `M5:T236:S3:EGA-CONTROLLER:SYSTEM:OK`. It uses an ordinary frozen VM session to verify profile-reset controller ports, attribute protocol, and B0000h backing. |
 | Owner/dependency shape | `verify-ega-controller-boundary` passed with `M5:T236:EGA-CONTROLLER:BOUNDARY:OK`; it rejects VM/platform imports from VADP and controller policy in RAM. |
 | Retained machine/product behavior | GCC 16.1.0 `current-gates-gcc` passed 71/71 current CTest smokes, including CGA text/graphics, DOS prompt/keyboard/video, Console/debugger, session isolation, and FDD/HDD boot. |
-| DOS EGA/VGA fixture | Not applicable. T236 has no EGA/VGA raster, copied snapshot, or BIOS mode. T237 must add the first guest-visible EGA/VGA fixture. |
+| DOS EGA/VGA fixture | Not applicable. T236 has no EGA/VGA raster, copied snapshot, or BIOS mode. T238 must add the first guest-visible EGA/VGA fixture. |
 
 Commands: `cmake --build --preset current-gates-gcc` and
 `cmake --build --preset current-gcc`. The current runnable artifact is
@@ -127,7 +127,7 @@ deferred.
 
 ### Remaining Deferrals
 
-T237 alone may implement planar/latch access, DAC, raster state, copied EGA/VGA
+T238 alone may implement planar/latch access, DAC, raster state, copied EGA/VGA
 snapshots, and a guest-visible DOS graphics fixture. T236 makes no claim that
 an EGA/VGA program can yet display output correctly.
 

@@ -60,7 +60,7 @@ they do not alias the aperture.
 - Attribute controller, input-status flip-flop, and palette behavior belong to
   T236.
 - DAC, planar/latch access semantics, raster scanout, EGA/VGA text rendering,
-  and copied EGA/VGA frames belong to T237.
+  and copied EGA/VGA frames belong to T238.
 - EGA/VGA BIOS INT 10h modes, external ROMs, VBE, IRQ/DMA behavior, and host
   presentation changes are out of scope.
 - Existing CGA B8000h text and `320x200x4` behavior remain unchanged. B0000h
@@ -89,7 +89,7 @@ S1 is complete when this probe passes with the documented reset and negative
 cases. It is updated for every admitted S2 branch. S3 adds
 `vm_ega_sequencer_system_smoke.c`, which creates the ordinary frozen VM session
 and verifies the profile-bound ports and A0000h backing. A DOS fixture is
-explicitly not applicable until T237 produces a guest-visible EGA/VGA frame
+explicitly not applicable until T238 produces a guest-visible EGA/VGA frame
 path.
 
 ### Required Regression Matrix
@@ -139,7 +139,7 @@ or changes CGA behavior.
 | Profile/composition integration | `vm-ega-sequencer-system-smoke` passed with `M5:T235:S3:EGA-SEQUENCER:SYSTEM:OK`. It creates the ordinary frozen VM session and checks the bound port and backing path. |
 | Owner/dependency shape | `verify-ega-sequencer-boundary`, dependency DAG, live-machine, facade, executor, session-readiness, and C-facade gates passed. |
 | FDD/HDD, DOS prompt, Console/debugger, isolation | Covered by `current-gates-gcc`: 69/69 current CTest smokes passed, including FDD/HDD boot, DOS prompt, keyboard, CGA graphics DOS, Console lifecycle, debugger, and two-session tests. |
-| DOS EGA/VGA fixture | Not applicable: T235 has no EGA/VGA scanout or BIOS mode. T237 must add the first guest-visible graphics fixture after copied frames exist. |
+| DOS EGA/VGA fixture | Not applicable: T235 has no EGA/VGA scanout or BIOS mode. T238 must add the first guest-visible graphics fixture after copied frames exist. |
 
 Commands: `cmake --build --preset current-gates-gcc` and
 `cmake --build --preset current-gcc`, using the configured GCC 16.1.0 toolchain.
@@ -159,6 +159,6 @@ product/platform imports and RAM video policy. No production hit was deferred.
 ### Remaining Deferrals
 
 T236 owns graphics-controller map select and attribute-controller behavior.
-T237 owns DAC, planar/latch access, raster scanout, copied EGA/VGA snapshots,
+T238 owns DAC, planar/latch access, raster scanout, copied EGA/VGA snapshots,
 and the first EGA/VGA DOS fixture. This task makes no EGA/VGA presentation or
 compatibility claim beyond the admitted sequencer/memory-window surface.
