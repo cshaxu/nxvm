@@ -4,32 +4,31 @@
 
 **M5 T248 S1 active: narrow host-capability admission evidence inventory.**
 
-**M5 T247 S3 complete: post-boundary correctness closure.** Corrected four
-proven defects without changing NXVM
-Console, debugger, boot, or guest-visible compatibility behavior: preserve the
-Win32 E0 scan-code bit in both host adapters; bound Console/Linux execution-flip
-startup waits and prove cleanup on a no-flip injected path; reject overlapping
-entry-plan preloads during preflight; and make the current runnable artifact
-use the GCC warning-as-error policy.
+### Active Packet
 
-| Requirement | Owner and focused evidence |
+Original request: inventory policy-free shared host capabilities after T246's
+machine-start boundary. Determine whether copied normalized input, copied
+presentation sink, and host wait/monotonic-clock facilities each have distinct
+NXVM and future external/VDM reuse evidence. Do not implement a provider in S1.
+
+| Requirement | S1 evidence |
 | --- | --- |
-| Win32 E0 capture | S1 complete: `vm/platform/win32` retains the 16-bit adapter value; a Window/Console adapter conversion smoke asserts `0x0148`. |
-| Bounded flip wait | S2 complete: `vm/platform` owns the shared wait helper; Console and Linux clean up after its timeout; Win32 failure stage 9 proves the no-flip cleanup path. |
-| Atomic entry plans | S3 complete: `core/machine` rejects every overlapping preload pair before CPU/RAM mutation; the entry-plan smoke proves it. |
-| Truthful artifact strictness | S3 complete: the current GCC artifact uses `-Werror`, matching the current gate. |
+| Consumer/owner inventory | Map each candidate to present owners, threads, lifetime, and concrete consumers. |
+| Admission decision | Record reuse proof or reject/defer the capability. File/path, drive, CLI, window, exit, and DOS policy stay outside core. |
+| Preserve products | No source/build/runtime change; no host-thread guest mutation, raw guest pointer, or second execution path. |
 
-Applicable rules: one active subtask; no second session/machine or host shortcut;
-similar-issue sweep records every matching production input/wait/preload/artifact
-path; build and focused smoke evidence precede closure. T247 S3 is complete;
-T248 S1 remains the sole active design subtask.
+Risks: admitting product policy into core, hidden cross-thread guest mutation,
+or treating a planned VDM consumer as proof. Applicable rules: module layout,
+contracts, coding/source policy, execution workflow, and one active subtask.
+Planned commands: `rg -n "host|presentation|input|wait|clock" src/core src/vm
+src/vdm docs/architecture`; `git diff --check`. Expected marker:
+`M5:T248:S1:HOST-CAPABILITY-INVENTORY:OK`. Stop for owner direction if any
+candidate requires filesystem/path policy, direct guest mutation, or a new
+runtime provider.
 
-**M5 T247 S3 complete:** Window and Console Win32 adapters preserve the `E0`
-scan-code bit; Console/Linux execution-flip waits time out through the shared
-100ms-poll / 5000ms-budget helper and finalize safely; entry-plan preloads are
-pairwise non-overlapping; and the runnable GCC artifact now uses `-Werror`.
-Focused adapter and entry-plan smoke plus stage-9 no-flip cleanup passed. The
-full current gate passed 85/85 CTest cases. Artifact
+**M5 T247 S4 complete:** `current-gcc` and
+`verify-current-artifact-target` select `vm-0-5-0247`; the corrected full gate
+passed all 34 static/ownership checks and 85/85 CTest cases. Artifact
 `nxvm_0_5_0247.exe` SHA-256:
 `51D45A24C6C41E3D43D5E53E00CF0C3862FF01250F007D1D33787F09C86FECF4`.
 
@@ -67,37 +66,6 @@ Verification: JSON parse of the manifest template; repository-wide checks for
 the obsolete DOS artifact name and required notice/release files; local
 Markdown-link check; `git diff --check`; and working-tree review. Similar-issue
 sweep is not applicable because this is standalone documentation remediation.
-T248 S1 remains the sole active subtask.
-
-Original request: establish the source-level core boundary required for a
-future direct-entry VDM path, preserving the recorded NXVM baseline. T243 and
-T244 through T247 are closed. T248 is the next design-only admission review;
-it must preserve the one core run loop and the frozen memory route.
-
-| Requirement | S1 evidence and boundary |
-| --- | --- |
-| Map the current boundary | Inventory `core/machine` memory/execution interfaces and every VM/VDM caller that would require checked copying or mapping queries. |
-| Define minimum contract | Specify only checked read/write/copy/mapping-query behavior, failure results, lifetime, and execution-thread ownership. |
-| Preserve products | No source/runtime change in S1; no DOS, external-runtime, PC/AT policy, raw RAM pointer, or host callback enters the proposed contract. |
-| T243 S2/S3 | Added the bounded physical range query, shared route resolver, provider metadata query, focused core smoke, full current GCC/CTest evidence, and `0.5.0243` artifact. |
-| T244 | Defined and implemented the frozen copied-state `#UD` transition registry with no NXVM consumer; full gates and the `0.5.0244` artifact passed. |
-| T245 S1 | Define immutable byte-image mapping over the existing route before runtime implementation. |
-| T245 S2/S3 | Implemented immutable core ROM mapping; full gates and the `0.5.0245` artifact passed. |
-| T246 | Defined and implemented an atomic entry plan; full gates and the `0.5.0246` artifact passed. |
-| T248 S1 | Inventory evidence for narrow, policy-free host capability admission; no provider implementation yet. |
-
-Applicable rules: `core/machine` remains the sole mutable guest-state owner;
-`core/platform` never mutates guest state; product composition is the only
-integration owner; no protected assets or external-runtime dependency; one
-active subtask only. Similar-issue sweep is not applicable to S1 because this
-is a documentation/contract design subtask with no defect fix or source change.
-
-S1 verification: reviewed the cited source/contracts; ran the recorded static
-queries; verified task/TODO/plan/status references; and ran `git diff --check`.
-The proposal does not require raw guest pointers, platform mutation,
-DOS/external-runtime semantics, or a second execution path. M5 T248 S1 is the
-sole active subtask.
-
 **M5 T245 complete:** immutable byte images are core-owned copies mapped only
 through the existing frozen device-memory route. Reads/fetches use that route,
 writes fault, and cold reset preserves image storage. The 34 static/ownership

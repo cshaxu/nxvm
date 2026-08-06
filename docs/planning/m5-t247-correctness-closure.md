@@ -2,7 +2,7 @@
 
 ## Status
 
-**Complete.** The next planned admission task is renumbered to T248.
+**Complete.** T248 S1 is the sole active subtask.
 
 ## Scope
 
@@ -43,6 +43,7 @@ Windows GCC executes the no-flip injection.
   avoiding inflated `Sleep(1)` waits. Linux uses the same helper.
 * S3: `core-machine-entry-plan-smoke` rejects overlapping RAM preloads before
   CPU/RAM mutation; the current artifact target compiles with `-Werror`.
-* The full current GCC/CTest gate passed 85/85 cases. Artifact
-  `build/output/nxvm_0_5_0247.exe` SHA-256 is
+* S4: `current-gcc` and `verify-current-artifact-target` select
+  `vm-0-5-0247`. The corrected full gate passed all 34 static/ownership checks
+  and 85/85 CTest cases. Artifact `build/output/nxvm_0_5_0247.exe` SHA-256 is
   `51D45A24C6C41E3D43D5E53E00CF0C3862FF01250F007D1D33787F09C86FECF4`.
