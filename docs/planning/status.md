@@ -2,39 +2,40 @@
 
 ## Current Work
 
-**M5 T249 S3 active: verify the copied input boundary and artifact.**
+**M5 T250 S1 active: copied presentation-mailbox contract.**
 
-Original request: execute the first admitted T248 migration without changing
-NXVM input behavior. S1 fixed the copied neutral input value, producer and
-consumer inventory, and the synchronous source-stop rule. S2 moved the neutral
-contract to `core/platform` while retaining the existing composition ingress.
-S3 now verifies all paths and allocates artifact revision `0.5.0248`.
+Original request: execute the second admitted T248 migration without changing
+NXVM display behavior. Define the copied mailbox's owner, lifecycle,
+producer/consumer inventory, and shutdown rule before moving source. The
+current snapshot route and VM renderer policy remain intact.
 
-| Requirement | S3 evidence |
+| Requirement | S1 evidence |
 | --- | --- |
-| Focused boundary | Exercise copied key/mouse routing and source-stop rejection; confirm all adapters use the same source and no old VM transport remains. |
-| Full regression | Run current GCC/CTest and retained Console/window, keyboard/AUX, DOS, graphics, FDD/HDD regressions. |
-| Artifact | Build `nxvm_0_5_0248.exe`, record SHA/banner/source commit, then close T249. |
+| Contract | One synchronized copied `core_platform_display_frame` mailbox with explicit lifecycle and no renderer or guest-state access. |
+| Inventory | Map composition producer plus Win32/Linux Console/window consumers and the required stop/join/finalize order. |
+| Preserve products | No S1 source/build/runtime change; no guest VRAM borrow, new frame queue, renderer change, or display policy change. |
 
 Applicable rules: module layout, contracts, coding/source policy, execution
 workflow, and one active subtask. Planned commands:
-`rg -n "vm/platform/input\\.h|vm_platform_(keyboard|mouse)_(receive|transport)|keyboard_transport|mouse_transport" src tests cmake CMakeLists.txt`, the focused input/source-stop smoke, and `current-gates-gcc`.
-Expected marker: `M5:T249:S3:INPUT-BOUNDARY-CLOSED:OK`. Stop for owner
-direction if a candidate requires host capture policy, direct guest mutation,
-raw guest memory, scan-code/layout policy, or a second queue/run loop.
+`rg -n "presentation_mailbox|display_frame|capture_display_snapshot|renderer" src/vm src/core tests`
+and `git diff --check`. Expected marker:
+`M5:T250:S1:PRESENTATION-CONTRACT:OK`. Stop for owner direction if the
+contract requires guest VRAM, renderer ownership, display policy, or a second
+presentation path.
 
 T248 is closed: it established the evidence-backed T249--T252 migration queue
-and deferred raw host-clock observation. T249 now starts with its own S1
-contract in [its task record](m5-t249-copied-input-ingress.md). Existing
-unstarted hardware work begins at T253; completed task identities and artifact
-revisions do not change.
+and deferred raw host-clock observation. T249 is closed with artifact
+`0.5.0248`; T250 now starts with its own S1 contract in
+[its task record](m5-t250-presentation-mailbox.md). Existing unstarted
+hardware work begins at T253; completed task identities and artifact revisions
+do not change.
 
 ## Current Technical Baseline
 
-- **T247 S4:** `current-gcc` and `verify-current-artifact-target` select
-  `vm-0-5-0247`; 34 static/ownership checks and 85/85 CTest cases passed.
-  Artifact `nxvm_0_5_0247.exe` SHA-256:
-  `51D45A24C6C41E3D43D5E53E00CF0C3862FF01250F007D1D33787F09C86FECF4`.
+- **T249 S3:** `current-gcc` and `verify-current-artifact-target` select
+  `vm-0-5-0248`; static/ownership checks and 85/85 CTest cases passed.
+  Artifact `nxvm_0_5_0248.exe` SHA-256:
+  `6B0CAD6A3DB97D794963E052E3A70C08C2080614047AB7AC5355CCE6E07E8F35`.
 - **T243--T246:** core owns checked physical memory, bounded `#UD`
   transitions, immutable ROM mapping, and atomic real-mode entry plans. T247
   verifies the current artifact target and full gate over that boundary.
