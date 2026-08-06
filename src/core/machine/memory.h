@@ -23,7 +23,16 @@ typedef struct {
     type_native_unsigned bytes;
 } core_machine_memory_mapping;
 
+typedef C_VOID (*core_machine_memory_write_observer)(C_VOID *owner,
+    type_unsigned_32 physical, type_native_unsigned bytes);
+
+typedef struct {
+    core_machine_memory_write_observer callback;
+    C_VOID *owner;
+} core_machine_memory_write_observer_slot;
+
 #define CORE_MACHINE_MEMORY_MAPPING_CAPACITY 4u
+#define CORE_MACHINE_MEMORY_WRITE_OBSERVER_CAPACITY 4u
 
 typedef struct {
     type_virtual_address backing;
@@ -31,6 +40,9 @@ typedef struct {
     type_native_unsigned backing_capacity;
     core_machine_memory_mapping mappings[CORE_MACHINE_MEMORY_MAPPING_CAPACITY];
     type_native_unsigned mapping_count;
+    core_machine_memory_write_observer_slot
+        write_observers[CORE_MACHINE_MEMORY_WRITE_OBSERVER_CAPACITY];
+    type_native_unsigned write_observer_count;
     type_bool mappings_frozen;
 } t_ram_connect;
 
@@ -57,6 +69,8 @@ type_status core_machine_memory_allocate_for(t_ram *ram, STD_SIZE_T bytes);
 type_status core_machine_memory_register_mapping(t_ram *ram,
     type_unsigned_32 physical_start,
     type_unsigned_32 backing_start, STD_SIZE_T bytes);
+type_status core_machine_memory_register_write_observer(t_ram *ram,
+    core_machine_memory_write_observer callback, C_VOID *owner);
 C_VOID core_machine_memory_freeze_mappings(t_ram *ram);
 type_status core_machine_memory_read_real_from(t_ram *ram, uint16_t segment,
     uint16_t offset, C_VOID *out_data, STD_SIZE_T size);

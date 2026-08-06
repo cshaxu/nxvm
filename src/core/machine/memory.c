@@ -77,6 +77,25 @@ type_status core_machine_memory_register_mapping(t_ram *ram,
     return TYPE_STATUS_OK;
 }
 
+type_status core_machine_memory_register_write_observer(t_ram *ram,
+    core_machine_memory_write_observer callback, C_VOID *owner)
+{
+    core_machine_memory_write_observer_slot *slot;
+
+    if (ram == STD_NULL || callback == STD_NULL || owner == STD_NULL ||
+        ram->connect.mappings_frozen) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    if (ram->connect.write_observer_count >=
+        CORE_MACHINE_MEMORY_WRITE_OBSERVER_CAPACITY) {
+        return TYPE_STATUS_NO_MEMORY;
+    }
+    slot = &ram->connect.write_observers[ram->connect.write_observer_count++];
+    slot->callback = callback;
+    slot->owner = owner;
+    return TYPE_STATUS_OK;
+}
+
 C_VOID core_machine_memory_freeze_mappings(t_ram *ram)
 {
     if (ram != STD_NULL) ram->connect.mappings_frozen = TYPE_TRUE;
@@ -115,11 +134,17 @@ type_status core_machine_memory_write_physical(t_ram *ram, type_unsigned_32 phys
     type_virtual_address source, type_native_unsigned byte)
 {
     STD_SIZE_T offset;
+    type_native_unsigned index;
     type_status status = core_machine_memory_offset(ram, physical, byte, &offset);
 
     if (status != TYPE_STATUS_OK || source == 0u) return status;
     STD_MEMCPY((C_VOID *)(ram->connect.backing + offset),
         (C_VOID *)source, byte);
+    for (index = 0u; index < ram->connect.write_observer_count; ++index) {
+        core_machine_memory_write_observer_slot *slot =
+            &ram->connect.write_observers[index];
+        slot->callback(slot->owner, physical, byte);
+    }
     return TYPE_STATUS_OK;
 }
 

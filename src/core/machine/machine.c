@@ -218,6 +218,16 @@ type_status core_machine_profile_binding_configure_text_raster(
             &binding->machine->shared_vadp, timing);
 }
 
+type_status core_machine_profile_binding_configure_ega_sequencer(
+    const core_machine_profile_binding *binding,
+    const core_machine_vadp_ega_sequencer_config *config)
+{
+    return binding == STD_NULL || binding->machine == STD_NULL ?
+        TYPE_STATUS_INVALID_ARGUMENT : core_machine_vadp_configure_ega_sequencer(
+            &binding->machine->shared_vadp, &binding->machine->executor_memory,
+            config);
+}
+
 C_VOID core_machine_profile_binding_set_video_cursor_shape(
     const core_machine_profile_binding *binding, uint8_t top, uint8_t bottom)
 {

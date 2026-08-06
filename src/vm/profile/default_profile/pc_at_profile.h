@@ -13,6 +13,7 @@ typedef enum vm_profile_default_pc_at_device_role {
     VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA,
     VM_PROFILE_DEFAULT_PC_AT_DEVICE_KBC,
     VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP,
+    VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP_SEQUENCER,
     VM_PROFILE_DEFAULT_PC_AT_DEVICE_CMOS,
     VM_PROFILE_DEFAULT_PC_AT_DEVICE_FDC,
     VM_PROFILE_DEFAULT_PC_AT_DEVICE_HDC
@@ -102,6 +103,7 @@ typedef struct vm_profile_default_pc_at_descriptor {
     uint32_t kbc_command_response_ticks;
     uint32_t rtc_ticks_per_second;
     core_machine_vadp_text_timing cga_text_timing;
+    core_machine_vadp_ega_sequencer_config ega_sequencer;
     STD_SIZE_T default_memory_bytes;
     vm_profile_default_pc_at_rom_mapping rom;
     vm_profile_default_pc_at_cmos_defaults cmos;

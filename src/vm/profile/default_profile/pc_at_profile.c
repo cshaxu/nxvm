@@ -6,6 +6,7 @@ static const vm_profile_default_pc_at_port_range default_pc_at_port_ranges[] = {
     { VM_PROFILE_DEFAULT_PC_AT_DEVICE_PIT, 0x0040u, 0x0043u },
     { VM_PROFILE_DEFAULT_PC_AT_DEVICE_DMA, 0x0000u, 0x000fu },
     { VM_PROFILE_DEFAULT_PC_AT_DEVICE_KBC, 0x0060u, 0x0064u },
+    { VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP_SEQUENCER, 0x03c4u, 0x03c5u },
     { VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP, 0x03d4u, 0x03dau },
     { VM_PROFILE_DEFAULT_PC_AT_DEVICE_CMOS, 0x0070u, 0x0071u },
     { VM_PROFILE_DEFAULT_PC_AT_DEVICE_FDC, 0x03f2u, 0x03f7u }
@@ -48,6 +49,8 @@ static const vm_profile_default_pc_at_descriptor default_pc_at_descriptor = {
     0u,
     50000u,
     { 48u, 8u, 8u },
+    { CORE_MACHINE_VADP_EGA_APERTURE_BASE, CORE_MACHINE_VADP_EGA_APERTURE_BYTES,
+        0x03u, 0x00u, 0x0fu, 0x02u },
     16u * 1024u * 1024u,
     { 0xfffffff0u, 0x000ffff0u, 16u, 0xf000u, 0xfff0u },
     { 0x21u, 0x027fu, 0x40u, 0u, 0u, 0x80u },

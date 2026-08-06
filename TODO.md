@@ -70,10 +70,11 @@ These are the next owned admissions, not permission to work in parallel.
   color, phase, and colorburst as an optional renderer/profile capability only
   after digital CGA is complete. Do not fold it into VADP digital state or use
   it to claim EGA/VGA support.
-- [ ] **EGA/VGA staged admission (`TODO(Medium)`, T235--T237).** Admit memory
-  windows/sequencer, then graphics/attribute controllers, then DAC/planar
-  VRAM/latches/raster as separately probed families. Do not make a single
-  unbounded "VGA support" task.
+- [ ] **EGA/VGA staged admission (`TODO(Medium)`, T235--T237).** T235 completes
+  the profile-bound A0000h aperture and sequencer register subset; T236 admits
+  graphics/attribute controllers, then T237 DAC/planar VRAM/latches/raster as
+  separately probed families. Do not make a single unbounded "VGA support"
+  task.
 
 ## CPU, Time, And Debugging Boundaries
 

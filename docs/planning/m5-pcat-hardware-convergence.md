@@ -71,7 +71,7 @@ device implementation begins.
 | Task | Dependencies | Deliverable and exit condition |
 | --- | --- | --- |
 | T234 | M5 boundary audit | **Complete.** `core/utils` now owns the injected wait scope; VM peers no longer import `core/product`; composition owns BIOS text-to-bytes assembly; and the source/target boundary gate plus GCC smoke matrix pass. |
-| T235 | T219, T228 | Add only EGA/VGA memory windows, mapping, and sequencer families with per-family port and memory-map probes. |
+| T235 | T219, T228 | **Complete.** Core VADP owns the profile-bound A0000h aperture semantics and bounded `3C4h`/`3C5h` sequencer subset; core RAM remains the one byte backing. Port and frozen-session probes plus 69/69 current gates pass. No EGA/VGA frame or BIOS-mode claim is made. |
 | T236 | T235 | Add admitted graphics- and attribute-controller families with planar-access fixtures; deferred families remain explicitly unsupported. |
 | T237 | T219, T236 | Add bounded DAC, planar VRAM, latch, and raster subfamilies with copied frame snapshots. This is not a single unbounded VGA task. |
 | T238 | Adequate real-mode device baseline | 286 descriptors, exceptions, and protected-mode control transfer, each with instruction probes and bounded differential evidence. |

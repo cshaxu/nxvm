@@ -637,6 +637,14 @@ add_executable(core-machine-cga-graphics-port-smoke
     tests/machine/core_machine_cga_graphics_port_smoke.c
 )
 target_link_libraries(core-machine-cga-graphics-port-smoke PRIVATE core-machine)
+add_executable(core-machine-ega-sequencer-port-smoke
+    tests/machine/core_machine_ega_sequencer_port_smoke.c
+)
+target_link_libraries(core-machine-ega-sequencer-port-smoke PRIVATE core-machine)
+add_executable(vm-ega-sequencer-system-smoke
+    tests/machine/vm_ega_sequencer_system_smoke.c
+)
+target_link_libraries(vm-ega-sequencer-system-smoke PRIVATE vm-composition)
 add_executable(vm-cga-graphics-system-smoke
     tests/machine/vm_cga_graphics_system_smoke.c
 )
@@ -809,7 +817,9 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     vm-keyboard-set1-mapper-smoke
     core-machine-vadp-text-smoke
     core-machine-cga-graphics-port-smoke
+    core-machine-ega-sequencer-port-smoke
     vm-cga-graphics-system-smoke
+    vm-ega-sequencer-system-smoke
     core-machine-stopped-lifecycle-smoke
     core-machine-memory-reconfigure-smoke
     core-machine-int-ivt-smoke
@@ -938,7 +948,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0234 "0.5.0234")
+add_current_vm_artifact(vm-0-5-0235 "0.5.0235")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 
@@ -1109,6 +1119,13 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_default_pc_at_profile_closure.cmake"
         COMMENT "Verifying default PC/AT profile ownership closure"
         VERBATIM)
+
+    add_custom_target(verify-ega-sequencer-boundary
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_ega_sequencer_boundary.cmake"
+        COMMENT "Verifying M5 T235 EGA sequencer ownership boundary"
+        VERBATIM)
+    add_dependencies(run-current-smokes verify-ega-sequencer-boundary)
 
     add_custom_target(verify-vm-session-owner-closure
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
