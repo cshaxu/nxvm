@@ -2,6 +2,14 @@
 
 ## Current Work
 
+**M5 T235 S1 active:** define the bounded EGA/VGA sequencer and memory-window
+contract, then add the focused pre-implementation port/memory probe. Scope is
+limited to core VADP ownership, `3C4h`/`3C5h`, a profile-selected A0000h
+aperture, and explicit deferral of graphics-controller map select, attribute,
+DAC, planar/latch, scanout, BIOS modes, and platform presentation. No device
+implementation or guest-visible behavior change is authorized before S1 exits.
+See [the active task record](m5-t235-ega-memory-sequencer.md).
+
 **M5 T234 S4 complete:** removed the remaining target-only
 `vm-platform-requests -> core-machine` and `vm-product -> core-machine` edges;
 the former now depends on `type-facade`, the latter only on its actual product
