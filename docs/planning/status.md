@@ -2,24 +2,25 @@
 
 ## Current Work
 
-**M5 T251 S1 active: cancellable host-wait contract.**
+**M5 T251 S2 active: implement bounded cancellable lifecycle waits.**
 
 Original request: execute the third admitted T248 migration without changing
-guest time or NXVM lifecycle behavior. Define the host-only cancellable wait
-contract and inventory all lifecycle/product wait sites before source changes.
-Raw host-clock observation remains deferred.
+guest time or NXVM lifecycle behavior. S1 fixed the host-only cancellation
+contract and classified every existing wait site. S2 now implements the neutral
+primitive and adopts it only at lifecycle waits with existing cancellation
+facts. Raw host-clock observation remains deferred.
 
-| Requirement | S1 evidence |
+| Requirement | S2 evidence |
 | --- | --- |
-| Contract | One bounded completed/cancelled core/platform wait contract with no guest-time or raw-clock exposure. |
-| Inventory | Classify runner, session control, run-handle startup, and debugger waits by owner and cancellation fact. |
-| Preserve products | No S1 source/build/runtime change; no new thread, watchdog, guest mutation, product policy, or lifecycle path. |
+| Primitive | Add one bounded core/platform completed/cancelled wait with no guest-time or raw-clock exposure. |
+| Adoption | Convert composition and VM lifecycle waits only; retain `core/utils` debugger wait scopes. |
+| Preserve products | No new thread, watchdog, guest mutation, product policy, or lifecycle path. |
 
 Applicable rules: module layout, contracts, coding/source policy, execution
 workflow, and one active subtask. Planned commands:
-`rg -n "core_platform_sleep|core_utils_wait|wait_for_flip|wait_for_pause|waited" src/core src/vm tests`
-and `git diff --check`. Expected marker:
-`M5:T251:S1:CANCELLABLE-WAIT-CONTRACT:OK`. Stop for owner direction if a site
+`rg -n "core_platform_sleep|core_platform_wait|core_utils_wait|wait_for_flip|wait_for_pause" src/core src/vm tests`
+and focused wait/run-handle smoke. Expected marker:
+`M5:T251:S2:CANCELLABLE-WAIT-MIGRATED:OK`. Stop for owner direction if a site
 requires guest time, raw host clock, unbounded waiting, display/exit policy,
 or a second lifecycle path.
 
