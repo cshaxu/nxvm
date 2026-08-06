@@ -2,15 +2,14 @@
 
 ## Current Work
 
-**M5 T256 complete. No implementation subtask is active.**
+**M5 T257 S2 active: implement the constrained 80286 protected-mode baseline.**
 
-[T256](m5-t256-rational-device-clocks.md) has replaced the PIT-only divider
-with core-owned, profile-bound integer rational domains for core devices and the
-frozen VM provider. It preserves coarse instruction ticks as the input unit,
-proves deterministic checkpoints across run quanta and cold reset, and records
-artifact `0.5.0254`. It does not claim host-clock guest timing, instruction
-cycle accuracy, bus timing, or a VM-side scheduler. The next task must create a
-complete active packet before implementation begins.
+[T257](m5-t257-80286-protected-mode.md) has classified the retained executor
+and found two bounded CPU-profile gate defects around `LMSW` and pre-286 `0F`.
+S2 now corrects those gates, retains the GDT-only ring-0 16-bit path, and keeps
+protected validation faults as core diagnostics rather than IDT-gate delivery.
+Paging, privilege transitions, LDT/TSS/gates, and 32-bit semantics remain
+deferred. T257 allocates artifact revision `0.5.0255` at S4.
 
 | Closure | Evidence |
 | --- | --- |
