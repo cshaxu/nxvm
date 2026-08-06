@@ -641,6 +641,14 @@ add_executable(core-machine-ega-sequencer-port-smoke
     tests/machine/core_machine_ega_sequencer_port_smoke.c
 )
 target_link_libraries(core-machine-ega-sequencer-port-smoke PRIVATE core-machine)
+add_executable(core-machine-ega-controller-port-smoke
+    tests/machine/core_machine_ega_controller_port_smoke.c
+)
+target_link_libraries(core-machine-ega-controller-port-smoke PRIVATE core-machine)
+add_executable(vm-ega-controller-system-smoke
+    tests/machine/vm_ega_controller_system_smoke.c
+)
+target_link_libraries(vm-ega-controller-system-smoke PRIVATE vm-composition)
 add_executable(vm-ega-sequencer-system-smoke
     tests/machine/vm_ega_sequencer_system_smoke.c
 )
@@ -818,8 +826,10 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-vadp-text-smoke
     core-machine-cga-graphics-port-smoke
     core-machine-ega-sequencer-port-smoke
+    core-machine-ega-controller-port-smoke
     vm-cga-graphics-system-smoke
     vm-ega-sequencer-system-smoke
+    vm-ega-controller-system-smoke
     core-machine-stopped-lifecycle-smoke
     core-machine-memory-reconfigure-smoke
     core-machine-int-ivt-smoke
@@ -948,7 +958,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0235 "0.5.0235")
+add_current_vm_artifact(vm-0-5-0236 "0.5.0236")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 
@@ -1126,6 +1136,13 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMENT "Verifying M5 T235 EGA sequencer ownership boundary"
         VERBATIM)
     add_dependencies(run-current-smokes verify-ega-sequencer-boundary)
+
+    add_custom_target(verify-ega-controller-boundary
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_ega_controller_boundary.cmake"
+        COMMENT "Verifying M5 T236 EGA controller ownership boundary"
+        VERBATIM)
+    add_dependencies(run-current-smokes verify-ega-controller-boundary)
 
     add_custom_target(verify-vm-session-owner-closure
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
