@@ -50,6 +50,10 @@ authorities.
 - **M5 Td S23:** compacted completed M5 records into history, corrected the
   historical baseline, clarified notice provenance, and removed an untracked
   temporary error file. This documentation task changes no runtime behavior.
+- **M5 Td S24:** fixed the time/device ownership vocabulary: core owns guest
+  ticks and generic PIT/PIC/DMA mechanics; VM owns PC/AT CMOS/RTC and BIOS time
+  semantics; composition owns the bounded product pump and host pacing. This
+  documentation task changes no runtime behavior or active-task scope.
 
 ## Milestone State
 

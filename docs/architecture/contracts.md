@@ -212,6 +212,26 @@ loader, firmware override, or root composition uses these APIs only after the
 current quantum has returned; `core/product` receives an adapted debug target,
 not a `core_machine` handle.
 
+## Time And Clock Ownership
+
+Time is not one device category. Each layer owns only its own observable
+meaning:
+
+| Concern | Owner | Boundary |
+| --- | --- | --- |
+| Deterministic `elapsed_ticks`, run budget, and core scheduler order | `core/machine` | `core_machine_run` advances only guest time; it never reads host time. |
+| Generic PIT counter/GATE/OUT behavior and its IRQ0 source | `core/machine` | A profile binds the output route; core does not update BIOS data or calendar state. |
+| PC/AT CMOS/RTC ports, NVRAM, calendar, periodic/alarm semantics, and IRQ8 | `vm/machine` | It consumes an explicit core elapsed-tick delta through VM composition; it is not a core device. |
+| BIOS `INT 08h`, BDA tick, and `INT 1Ah` services | VM profile firmware | Firmware consumes normal CPU/PIC delivery; neither core nor platform writes BDA time. |
+| Host clock, sleep, pacing, watchdog, and window cadence | root composition/platform | Host time may bound or pace a product loop but never advances guest time directly. |
+| DOS date/time APIs | `dos` | DOS maps its own service semantics onto admitted bindings; it does not own a second machine clock. |
+
+VM composition receives factual core run results, then advances only VM-owned
+devices with the reported tick delta in its declared product ordering. It does
+not re-run core devices, alter `elapsed_ticks`, or create a second scheduler.
+Mantle follows the same rule for a future runtime, but it does not acquire
+PC/AT CMOS/RTC or BIOS behavior.
+
 ## Core Machine: Frozen Topology And Mutable Guest State
 
 `core_machine_freeze_execution_providers` closes the machine configuration
@@ -295,8 +315,11 @@ those core mechanics. The core contract provides deterministic registration
 and dispatch; a provider implementation belongs to the narrowest owner that
 can reuse it:
 
-- A reusable PIC, PIT, DMA, CMOS, or generic video model may be implemented in
+- A reusable PIC, PIT, DMA, or generic video model may be implemented in
   `core/machine` and registered with a profile-selected configuration.
+- PC/AT CMOS/RTC calendar, NVRAM, ports, and IRQ8 semantics belong in
+  `vm/machine`; core supplies only the elapsed-tick and PIC/port contracts it
+  consumes.
 - A full-PC-only FDC or HDC belongs in `vm/machine` and registers through the
   same core port, IRQ, DMA, and reset contracts.
 - A DOS service such as an INT 21h handler belongs in `dos/machine`; it is not
