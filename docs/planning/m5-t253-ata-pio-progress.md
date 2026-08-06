@@ -1,6 +1,6 @@
 # M5 T253: ATA/IDE PIO Compatibility Extension
 
-**Status:** S1 active.
+**Status:** complete.
 
 ## Goal
 
@@ -59,8 +59,23 @@ acknowledgement, and data round-trip.
 
 ## S3: Verify
 
-Add the DOS/system-image fixture, retain Console/debugger, FDD/HDD boot and
-current GCC/CTest coverage, then produce `nxvm_0_5_0252.exe` and its SHA-256.
+`vm-ata-pio-dos-smoke` clones both owner-provided system images, installs an
+owner-built `ATA253.COM` into the temporary FDD, boots DOS normally, submits the
+command through KBC ingress, and lets the guest perform the two-sector PIO
+write/read round-trip through `1F0h`--`1F7h`. The COM fixture compares both
+guest-read words and writes its own text-mode success marker; it receives no
+host RAM, BIOS, or firmware shortcut. The source HDD image is never modified.
+
+The current media classification now models all dual-image smokes as one list,
+so this fixture is registered once with FDD and HDD arguments. The retained
+HDC port smoke covers the controller-level count/IRQ progression and existing
+failure paths. `current-gates-gcc` passed all static gates and **87/87** CTest
+cases, including FDD/HDD boot, Console/debugger regressions, and the new DOS
+fixture. `current-gcc` produced `build/output/nxvm_0_5_0252.exe`, SHA-256:
+
+`B565B73D1C1E5EB77C04549944AB28EA2CF6DE59AB2FD2B087D957CAEB020A87`.
+
+**S3 marker:** `M5:T253:S3:ATA-PIO:DOS:OK`.
 
 ## Stop Conditions
 

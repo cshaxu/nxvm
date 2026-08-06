@@ -6,7 +6,7 @@ file(READ "${PROJECT_SOURCE_DIR}/CMakeLists.txt" cmake_source)
 
 foreach(required
     "set(PROJECT_CURRENT_FDD_SMOKE_TARGETS"
-    "set(PROJECT_CURRENT_FDD_HDD_SMOKE_TARGET vm-product-session-smoke)"
+    "set(PROJECT_CURRENT_FDD_HDD_SMOKE_TARGETS"
     "set(PROJECT_CURRENT_MEDIA_SMOKE_TARGETS"
     "foreach(target IN LISTS PROJECT_CURRENT_FDD_SMOKE_TARGETS)")
     string(FIND "${cmake_source}" "${required}" position)
@@ -17,8 +17,8 @@ endforeach()
 
 foreach(required
     [=[${PROJECT_CURRENT_FDD_SMOKE_TARGETS}]=]
-    [=[${PROJECT_CURRENT_FDD_HDD_SMOKE_TARGET}]=]
-    [=[project_add_current_smoke_test(${PROJECT_CURRENT_FDD_HDD_SMOKE_TARGET}]=])
+    [=[${PROJECT_CURRENT_FDD_HDD_SMOKE_TARGETS}]=]
+    [=[foreach(target IN LISTS PROJECT_CURRENT_FDD_HDD_SMOKE_TARGETS)]=])
     string(FIND "${cmake_source}" "${required}" position)
     if(position EQUAL -1)
         message(FATAL_ERROR "Current media smoke registration is not derived: ${required}")
