@@ -5532,7 +5532,7 @@ core_machine_cpu_instruction_metadata core_machine_cpu_instruction_metadata_get(
         else if (opcode == 0x01u)
         {
             metadata.minimum_cpu = CORE_MACHINE_CPU_PROFILE_80286;
-            metadata.valid = ((modrm >> 3u) & 7u) <= 5u;
+            metadata.valid = ((modrm >> 3u) & 7u) <= 6u;
         }
         else if (opcode == 0x02u || opcode == 0x03u)
         {
@@ -5977,8 +5977,10 @@ static C_VOID INS_0F(core_machine_cpu_execution_context *context)
         }
         TYPE_TRACE_CHECK_RETURN(ExecCpuInstruction(instruction_state.connect.insTable_0f[opcode]));
     }
-    else
+    else if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_8086)
         POP_CS(context);
+    else
+        UndefinedOpcode(context);
     TYPE_TRACE_CALL_END;
 }
 static C_VOID ADC_RM8_R8(core_machine_cpu_execution_context *context)
@@ -15414,7 +15416,11 @@ static C_VOID ExecFinal(core_machine_cpu_execution_context *context)
                                                        &instruction_state.data.oldcpu, &instruction_state);
         }
         cpu_state = instruction_state.data.oldcpu;
-        if (TYPE_GET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_GP))
+        /* The retained real-mode #GP path may use the IVT. T257 deliberately
+         * does not admit protected IDT-gate delivery: retain the original
+         * fault snapshot and stop at the core boundary instead. */
+        if (TYPE_GET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_GP) &&
+            !TYPE_GET_BIT(cpu_state.data.cr0, VCPU_CR0_PE))
         {
             ExecInit(context);
             TYPE_CLEAR_BIT(instruction_state.data.except, VCPUINS_EXCEPT_GP);

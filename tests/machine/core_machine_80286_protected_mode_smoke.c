@@ -1,0 +1,334 @@
+#include "type.h"
+
+#include "core/machine/cpu.h"
+#include "core/machine/cpu_instructions.h"
+#include "core/machine/machine_interface.h"
+
+#define TEST_GDT_ADDRESS 0x0300u
+#define TEST_GDT_POINTER_ADDRESS 0x0100u
+#define TEST_CODE_ADDRESS 0x2000u
+#define TEST_DATA_ADDRESS 0x3000u
+#define TEST_CODE_SELECTOR 0x0008u
+#define TEST_DATA_SELECTOR 0x0010u
+
+typedef struct protected_mode_machine {
+    core_machine *machine;
+    t_cpu *cpu;
+    core_machine_cpu_execution_context *execution;
+} protected_mode_machine;
+
+static C_VOID protected_mode_reset(C_VOID *opaque)
+{
+    protected_mode_machine *state = (protected_mode_machine *)opaque;
+
+    if (state == STD_NULL || state->cpu == STD_NULL ||
+        state->execution == STD_NULL) return;
+    (C_VOID)core_machine_cpu_execution_load_segment(state->execution,
+        &state->cpu->data.cs, 0u);
+    (C_VOID)core_machine_cpu_execution_load_segment(state->execution,
+        &state->cpu->data.ds, 0u);
+    (C_VOID)core_machine_cpu_execution_load_segment(state->execution,
+        &state->cpu->data.es, 0u);
+    (C_VOID)core_machine_cpu_execution_load_segment(state->execution,
+        &state->cpu->data.ss, 0u);
+    state->cpu->data.eip = 0u;
+}
+
+static const core_machine_execution_provider protected_mode_provider = {
+    protected_mode_reset,
+    STD_NULL,
+    STD_NULL
+};
+
+static C_INT protected_mode_prepare(protected_mode_machine *state,
+    core_machine_cpu_profile profile)
+{
+    const core_machine_config config = {
+        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .cpu_profile = profile,
+        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
+    };
+
+    if (state == STD_NULL) return 0;
+    STD_MEMSET(state, 0, sizeof(*state));
+    if (core_machine_create(&config, &state->machine) != TYPE_STATUS_OK) return 0;
+    state->cpu = core_machine_configuration_cpu_borrow(state->machine);
+    state->execution = core_machine_configuration_cpu_execution_borrow(state->machine);
+    if (state->cpu == STD_NULL || state->execution == STD_NULL ||
+        core_machine_bind_execution_provider(state->machine,
+            &protected_mode_provider, state) != TYPE_STATUS_OK ||
+        core_machine_freeze_execution_providers(state->machine) != TYPE_STATUS_OK ||
+        core_machine_reset(state->machine) != TYPE_STATUS_OK) {
+        core_machine_destroy(state->machine);
+        state->machine = STD_NULL;
+        return 0;
+    }
+    return 1;
+}
+
+static C_INT protected_mode_install_gdt(core_machine *machine,
+    uint8_t code_access, uint8_t data_access)
+{
+    static const uint8_t gdt_pointer[] = {
+        0x17u, 0x00u, 0x00u, 0x03u, 0x00u, 0x00u
+    };
+    uint8_t gdt[] = {
+        0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
+        0xffu, 0xffu, 0x00u, 0x20u, 0x00u, 0x9au, 0x00u, 0x00u,
+        0xffu, 0xffu, 0x00u, 0x30u, 0x00u, 0x92u, 0x00u, 0x00u
+    };
+
+    if (code_access != 0u) gdt[13u] = code_access;
+    if (data_access != 0u) gdt[21u] = data_access;
+    return core_machine_memory_write(machine, TEST_GDT_POINTER_ADDRESS,
+        gdt_pointer, sizeof(gdt_pointer)) == TYPE_STATUS_OK &&
+        core_machine_memory_write(machine, TEST_GDT_ADDRESS, gdt,
+            sizeof(gdt)) == TYPE_STATUS_OK;
+}
+
+static C_INT protected_mode_run(core_machine *machine,
+    const uint8_t *real_code, STD_SIZE_T real_code_size,
+    const uint8_t *protected_code, STD_SIZE_T protected_code_size,
+    uint8_t code_access, uint8_t data_access,
+    C_INT expect_fault,
+    core_machine_run_result *out_result,
+    core_machine_cpu_diagnostic *out_diagnostic)
+{
+    core_machine_run_budget budget = { 64u, 0u };
+
+    if (machine == STD_NULL || out_result == STD_NULL ||
+        out_diagnostic == STD_NULL || !protected_mode_install_gdt(machine,
+            code_access, data_access) ||
+        core_machine_memory_write(machine, 0u, real_code, real_code_size) !=
+            TYPE_STATUS_OK ||
+        core_machine_memory_write(machine, TEST_CODE_ADDRESS, protected_code,
+            protected_code_size) != TYPE_STATUS_OK) return 0;
+    if (core_machine_run(machine, budget, out_result) !=
+            (expect_fault ? TYPE_STATUS_FAULT : TYPE_STATUS_OK) ||
+        out_result->reason != (expect_fault ? CORE_MACHINE_STOP_FAULT :
+            CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) ||
+        core_machine_get_cpu_diagnostic(machine, out_diagnostic) !=
+            TYPE_STATUS_OK) return 0;
+    return 1;
+}
+
+static C_INT protected_mode_test_positive(C_VOID)
+{
+    static const uint8_t real_code[] = {
+        0x0fu, 0x01u, 0x16u, 0x00u, 0x01u,
+        0xb8u, 0x01u, 0x00u,
+        0x0fu, 0x01u, 0xf0u,
+        0xb8u, 0x10u, 0x00u,
+        0x8eu, 0xd8u,
+        0x8eu, 0xd0u,
+        0xeau, 0x00u, 0x00u, 0x08u, 0x00u
+    };
+    static const uint8_t protected_code[] = {
+        0xb8u, 0x34u, 0x12u,
+        0xbbu, 0x00u, 0x00u,
+        0x89u, 0x07u,
+        0x9au, 0x16u, 0x00u, 0x08u, 0x00u,
+        0xb8u, 0x78u, 0x56u,
+        0xbbu, 0x02u, 0x00u,
+        0x89u, 0x07u,
+        0xf4u,
+        0xb8u, 0xefu, 0xbeu,
+        0xcbu
+    };
+    protected_mode_machine state;
+    core_machine_run_result result;
+    core_machine_cpu_diagnostic diagnostic;
+    core_machine_cpu_state cpu;
+    uint16_t first = 0u;
+    uint16_t second = 0u;
+    C_INT failed = !protected_mode_prepare(&state,
+        CORE_MACHINE_CPU_PROFILE_80286);
+
+    if (!failed) {
+        C_INT ran = protected_mode_run(state.machine, real_code, sizeof(real_code),
+            protected_code, sizeof(protected_code), 0u, 0u, 0, &result,
+            &diagnostic);
+        C_INT got_cpu;
+
+        failed |= !ran;
+        failed |= diagnostic.first_fault.valid;
+        failed |= core_machine_memory_read(state.machine, TEST_DATA_ADDRESS,
+            &first, sizeof(first)) != TYPE_STATUS_OK || first != 0x1234u;
+        failed |= core_machine_memory_read(state.machine, TEST_DATA_ADDRESS + 2u,
+            &second, sizeof(second)) != TYPE_STATUS_OK || second != 0x5678u;
+        got_cpu = core_machine_get_cpu_state(state.machine, &cpu) == TYPE_STATUS_OK;
+        failed |= !got_cpu || cpu.cs != TEST_CODE_SELECTOR ||
+            cpu.cs_base != TEST_CODE_ADDRESS;
+        if (failed) {
+            STD_FPRINTF(STD_STDERR,
+                "T257 positive ran=%d fault=%u/%08x at=%04x:%08x eax=%08x first=%04x second=%04x ds=%04x/%08x ss=%04x/%08x cpu=%d %04x/%08x\n",
+                ran, diagnostic.first_fault.valid,
+                diagnostic.first_fault.exception_mask,
+                diagnostic.first_fault.point.cs, diagnostic.first_fault.point.eip,
+                diagnostic.first_fault.eax, first, second,
+                state.cpu->data.ds.selector, state.cpu->data.ds.base,
+                state.cpu->data.ss.selector, state.cpu->data.ss.base, got_cpu,
+                cpu.cs, cpu.cs_base);
+        }
+    }
+    core_machine_destroy(state.machine);
+    return failed;
+}
+
+static C_INT protected_mode_test_invalid_selector(C_VOID)
+{
+    static const uint8_t real_code[] = {
+        0x0fu, 0x01u, 0x16u, 0x00u, 0x01u,
+        0xb8u, 0x01u, 0x00u,
+        0x0fu, 0x01u, 0xf0u,
+        0xeau, 0x00u, 0x00u, 0x18u, 0x00u
+    };
+    static const uint8_t protected_code[] = { 0x90u };
+    protected_mode_machine state;
+    core_machine_run_result result;
+    core_machine_cpu_diagnostic diagnostic;
+    C_INT failed = !protected_mode_prepare(&state,
+        CORE_MACHINE_CPU_PROFILE_80286);
+
+    if (!failed) {
+        failed |= !protected_mode_run(state.machine, real_code, sizeof(real_code),
+            protected_code, sizeof(protected_code), 0u, 0u, 1, &result,
+            &diagnostic);
+        failed |= !diagnostic.first_fault.valid ||
+            !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
+                VCPUINS_EXCEPT_GP) || diagnostic.first_fault.exception_code !=
+                0x18u;
+        failed |= state.cpu->data.cs.selector != 0u ||
+            state.cpu->data.cs.base != 0u || state.cpu->data.eip != 0x000bu;
+    }
+    core_machine_destroy(state.machine);
+    return failed;
+}
+
+static C_INT protected_mode_test_nonpresent_code(C_VOID)
+{
+    static const uint8_t real_code[] = {
+        0x0fu, 0x01u, 0x16u, 0x00u, 0x01u,
+        0xb8u, 0x01u, 0x00u,
+        0x0fu, 0x01u, 0xf0u,
+        0xeau, 0x00u, 0x00u, 0x08u, 0x00u
+    };
+    static const uint8_t protected_code[] = { 0x90u };
+    protected_mode_machine state;
+    core_machine_run_result result;
+    core_machine_cpu_diagnostic diagnostic;
+    C_INT failed = !protected_mode_prepare(&state,
+        CORE_MACHINE_CPU_PROFILE_80286);
+
+    if (!failed) {
+        failed |= !protected_mode_run(state.machine, real_code, sizeof(real_code),
+            protected_code, sizeof(protected_code), 0x1au, 0u, 1, &result,
+            &diagnostic);
+        failed |= !diagnostic.first_fault.valid ||
+            !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
+                VCPUINS_EXCEPT_NP) || diagnostic.first_fault.exception_code !=
+                TEST_CODE_SELECTOR;
+    }
+    core_machine_destroy(state.machine);
+    return failed;
+}
+
+static C_INT protected_mode_test_nonpresent_stack(C_VOID)
+{
+    static const uint8_t real_code[] = {
+        0x0fu, 0x01u, 0x16u, 0x00u, 0x01u,
+        0xb8u, 0x01u, 0x00u,
+        0x0fu, 0x01u, 0xf0u,
+        0xb8u, 0x10u, 0x00u,
+        0x8eu, 0xd0u
+    };
+    static const uint8_t protected_code[] = { 0x90u };
+    protected_mode_machine state;
+    core_machine_run_result result;
+    core_machine_cpu_diagnostic diagnostic;
+    C_INT failed = !protected_mode_prepare(&state,
+        CORE_MACHINE_CPU_PROFILE_80286);
+
+    if (!failed) {
+        failed |= !protected_mode_run(state.machine, real_code, sizeof(real_code),
+            protected_code, sizeof(protected_code), 0u, 0x12u, 1, &result,
+            &diagnostic);
+        failed |= !diagnostic.first_fault.valid ||
+            !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
+                VCPUINS_EXCEPT_SS) || diagnostic.first_fault.exception_code !=
+                TEST_DATA_SELECTOR;
+    }
+    core_machine_destroy(state.machine);
+    return failed;
+}
+
+static C_INT protected_mode_test_80186_gate(C_VOID)
+{
+    static const uint8_t real_code[] = { 0x0fu, 0x01u, 0x16u, 0x00u, 0x01u };
+    static const uint8_t protected_code[] = { 0x90u };
+    protected_mode_machine state;
+    core_machine_run_result result;
+    core_machine_cpu_diagnostic diagnostic;
+    C_INT failed = !protected_mode_prepare(&state,
+        CORE_MACHINE_CPU_PROFILE_80186);
+
+    if (!failed) {
+        failed |= !protected_mode_run(state.machine, real_code, sizeof(real_code),
+            protected_code, sizeof(protected_code), 0u, 0u, 1, &result,
+            &diagnostic);
+        failed |= !diagnostic.first_fault.valid ||
+            !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
+                VCPUINS_EXCEPT_UD);
+    }
+    core_machine_destroy(state.machine);
+    return failed;
+}
+
+static C_INT protected_mode_test_80286_rejects_386(C_VOID)
+{
+    static const uint8_t real_code[] = { 0x0fu, 0x20u, 0xc0u };
+    static const uint8_t protected_code[] = { 0x90u };
+    protected_mode_machine state;
+    core_machine_run_result result;
+    core_machine_cpu_diagnostic diagnostic;
+    C_INT failed = !protected_mode_prepare(&state,
+        CORE_MACHINE_CPU_PROFILE_80286);
+
+    if (!failed) {
+        failed |= !protected_mode_run(state.machine, real_code, sizeof(real_code),
+            protected_code, sizeof(protected_code), 0u, 0u, 1, &result,
+            &diagnostic);
+        failed |= !diagnostic.first_fault.valid ||
+            !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
+                VCPUINS_EXCEPT_UD);
+    }
+    core_machine_destroy(state.machine);
+    return failed;
+}
+
+C_INT main(C_VOID)
+{
+    C_INT positive;
+    C_INT invalid_selector;
+    C_INT nonpresent_code;
+    C_INT nonpresent_stack;
+    C_INT profile_gate;
+    C_INT rejects_386;
+
+    positive = protected_mode_test_positive();
+    invalid_selector = protected_mode_test_invalid_selector();
+    nonpresent_code = protected_mode_test_nonpresent_code();
+    nonpresent_stack = protected_mode_test_nonpresent_stack();
+    profile_gate = protected_mode_test_80186_gate();
+    rejects_386 = protected_mode_test_80286_rejects_386();
+    if (positive || invalid_selector || nonpresent_code || nonpresent_stack ||
+        profile_gate || rejects_386) {
+        STD_FPRINTF(STD_STDERR,
+            "M5:T257:S2:80286-PROTECTED-MODE:FAIL positive=%d selector=%d npcode=%d npstack=%d profile=%d i386=%d\n",
+            positive, invalid_selector, nonpresent_code, nonpresent_stack,
+            profile_gate, rejects_386);
+        return 1;
+    }
+    STD_PRINTF("M5:T257:S2:80286-PROTECTED-MODE:OK\n");
+    return 0;
+}
