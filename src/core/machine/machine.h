@@ -32,6 +32,7 @@
 
 #define CORE_MACHINE_TRACE_CAPACITY 32u
 #define CORE_MACHINE_UNDEFINED_INSTRUCTION_TRANSITION_CAPACITY 8u
+#define CORE_MACHINE_IMMUTABLE_ROM_MAPPING_CAPACITY 4u
 
 typedef struct core_machine_port_slot {
     core_machine_port_provider provider;
@@ -69,6 +70,12 @@ typedef struct core_machine_undefined_instruction_registry {
     type_bool frozen;
 } core_machine_undefined_instruction_registry;
 
+typedef struct core_machine_immutable_rom_mapping {
+    uint32_t physical_start;
+    STD_SIZE_T bytes;
+    uint8_t *image;
+} core_machine_immutable_rom_mapping;
+
 struct core_machine {
     core_machine_lifecycle lifecycle;
     STD_ATOMIC_BOOL stop_requested;
@@ -84,6 +91,9 @@ struct core_machine {
     core_machine_trace_state trace;
     core_machine_cpu_diagnostic_state cpu_diagnostic;
     core_machine_undefined_instruction_registry undefined_instruction_registry;
+    core_machine_immutable_rom_mapping
+        immutable_rom_mappings[CORE_MACHINE_IMMUTABLE_ROM_MAPPING_CAPACITY];
+    STD_SIZE_T immutable_rom_mapping_count;
     core_machine_cpu_profile cpu_profile;
     core_machine_fpu fpu;
     t_cpu executor_cpu;

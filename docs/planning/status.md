@@ -2,11 +2,12 @@
 
 ## Current Work
 
-**M5 T245 S1 active: generic immutable ROM mapping contract.**
+**M5 T246 S1 active: validated initial-state / entry-plan contract.**
 
 Original request: establish the source-level core boundary required for a
 future direct-entry VDM path, preserving the recorded NXVM baseline. T243 and
-T244 are closed; T245 S1 is design-only and preserves the frozen memory route.
+T244 and T245 are closed; T246 S1 is design-only and must preserve the one
+core run loop and the frozen memory route.
 
 | Requirement | S1 evidence and boundary |
 | --- | --- |
@@ -16,6 +17,8 @@ T244 are closed; T245 S1 is design-only and preserves the frozen memory route.
 | T243 S2/S3 | Added the bounded physical range query, shared route resolver, provider metadata query, focused core smoke, full current GCC/CTest evidence, and `0.5.0243` artifact. |
 | T244 | Defined and implemented the frozen copied-state `#UD` transition registry with no NXVM consumer; full gates and the `0.5.0244` artifact passed. |
 | T245 S1 | Define immutable byte-image mapping over the existing route before runtime implementation. |
+| T245 S2/S3 | Implemented immutable core ROM mapping; full gates and the `0.5.0245` artifact passed. |
+| T246 S1 | Define an atomic initial-state / entry-plan contract before runtime implementation. |
 
 Applicable rules: `core/machine` remains the sole mutable guest-state owner;
 `core/platform` never mutates guest state; product composition is the only
@@ -26,8 +29,14 @@ is a documentation/contract design subtask with no defect fix or source change.
 S1 verification: reviewed the cited source/contracts; ran the recorded static
 queries; verified task/TODO/plan/status references; and ran `git diff --check`.
 The proposal does not require raw guest pointers, platform mutation,
-DOS/external-runtime semantics, or a second execution path. M5 T245 S1 is the
+DOS/external-runtime semantics, or a second execution path. M5 T246 S1 is the
 sole active subtask.
+
+**M5 T245 complete:** immutable byte images are core-owned copies mapped only
+through the existing frozen device-memory route. Reads/fetches use that route,
+writes fault, and cold reset preserves image storage. The 34 static/ownership
+checks and 83/83 CTest smokes passed. Artifact `nxvm_0_5_0245.exe` SHA-256:
+`FF71485DDE18B3DC4851332B2479DB1801BA99B7A5FB65FFCCDE1A0C3EEEBF4C`.
 
 **M5 T244 complete:** a consumer may register only a frozen, exact 1--15 byte
 real-mode `#UD` pattern; it gets copied state and may return only the bounded

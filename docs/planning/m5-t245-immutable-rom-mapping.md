@@ -2,9 +2,8 @@
 
 ## Status
 
-**S1 active.** This subtask defines the mapping contract only. It introduces
-no PC/AT address, BIOS byte image, ROM file path, media policy, or NXVM startup
-change.
+**Complete.** The mapping contract, focused core implementation, current-matrix
+evidence, and developer artifact are complete.
 
 ## Objective
 
@@ -47,3 +46,21 @@ S3 runs the current GCC/CTest matrix and records
 Stop for owner direction if implementation needs a second CPU/debugger memory
 path, a ROM pointer returned to profile/product, a file/path policy in core,
 or a BIOS/POST/startup behavior change.
+
+## S2 Implementation
+
+`core_machine_register_immutable_rom_mapping()` copies bytes into private
+core-owned storage and registers a normal device-memory provider. Its read,
+write, and metadata-query callbacks are the only ROM behavior: reads/fetches
+copy bytes, writes fault, and reset never clears the private image. The public
+API has no PC/AT constants, filename, provider callback, or image borrow.
+
+`core-machine-immutable-rom-mapping-smoke` proves route classification,
+read/fetch, write rejection, overlap/freeze rejection, and reset persistence.
+Existing default ROM loading remains unchanged.
+
+## S3 Evidence And Closure
+
+The full current GCC gate passed all 34 static/ownership checks and 83/83 CTest
+smokes. `build/output/nxvm_0_5_0245.exe` SHA-256 is
+`FF71485DDE18B3DC4851332B2479DB1801BA99B7A5FB65FFCCDE1A0C3EEEBF4C`.
