@@ -31,6 +31,7 @@
 #include "core/machine/vadp.h"
 
 #define CORE_MACHINE_TRACE_CAPACITY 32u
+#define CORE_MACHINE_UNDEFINED_INSTRUCTION_TRANSITION_CAPACITY 8u
 
 typedef struct core_machine_port_slot {
     core_machine_port_provider provider;
@@ -54,6 +55,20 @@ typedef struct core_machine_cpu_diagnostic_state {
     STD_SIZE_T next_index;
 } core_machine_cpu_diagnostic_state;
 
+typedef struct core_machine_undefined_instruction_transition {
+    uint8_t pattern[CORE_MACHINE_UNDEFINED_INSTRUCTION_MAX_BYTES];
+    uint8_t length;
+    core_machine_undefined_instruction_consumer consumer;
+    C_VOID *owner;
+} core_machine_undefined_instruction_transition;
+
+typedef struct core_machine_undefined_instruction_registry {
+    core_machine_undefined_instruction_transition
+        entries[CORE_MACHINE_UNDEFINED_INSTRUCTION_TRANSITION_CAPACITY];
+    STD_SIZE_T count;
+    type_bool frozen;
+} core_machine_undefined_instruction_registry;
+
 struct core_machine {
     core_machine_lifecycle lifecycle;
     STD_ATOMIC_BOOL stop_requested;
@@ -68,6 +83,7 @@ struct core_machine {
     core_machine_port_table port_providers;
     core_machine_trace_state trace;
     core_machine_cpu_diagnostic_state cpu_diagnostic;
+    core_machine_undefined_instruction_registry undefined_instruction_registry;
     core_machine_cpu_profile cpu_profile;
     core_machine_fpu fpu;
     t_cpu executor_cpu;

@@ -5586,7 +5586,6 @@ static C_VOID UndefinedOpcode(core_machine_cpu_execution_context *context)
     if (!_GetCR0_PE)
     {
         STD_PRINTF("CPU has encountered an illegal instruction at L%08X.\n", cpu_state.data.cs.base + cpu_state.data.eip);
-        core_machine_cpu_execution_request_stop(context);
     }
     TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
     TYPE_TRACE_CALL_END;
@@ -15354,6 +15353,60 @@ static C_VOID ExecFinal(core_machine_cpu_execution_context *context)
 #endif
     if (instruction_state.data.except)
     {
+        core_machine_undefined_instruction_response response;
+        core_machine_undefined_instruction_input input;
+
+        STD_MEMSET(&response, 0, sizeof(response));
+        response.outcome = CORE_MACHINE_UNDEFINED_INSTRUCTION_UNHANDLED;
+        STD_MEMSET(&input, 0, sizeof(input));
+        if (instruction_state.data.except == VCPUINS_EXCEPT_UD &&
+            context->undefined_instruction_dispatch != STD_NULL &&
+            !TYPE_GET_BIT(instruction_state.data.oldcpu.data.cr0, VCPU_CR0_PE) &&
+            core_machine_memory_read_physical(context->memory,
+                instruction_state.data.oldcpu.data.cs.base +
+                    instruction_state.data.oldcpu.data.eip,
+                (type_virtual_address)input.bytes,
+                CORE_MACHINE_UNDEFINED_INSTRUCTION_MAX_BYTES) == TYPE_STATUS_OK)
+        {
+            input.cs = instruction_state.data.oldcpu.data.cs.selector;
+            input.eip = instruction_state.data.oldcpu.data.eip;
+            input.byte_count = CORE_MACHINE_UNDEFINED_INSTRUCTION_MAX_BYTES;
+            input.eax = instruction_state.data.oldcpu.data.eax;
+            input.ebx = instruction_state.data.oldcpu.data.ebx;
+            input.ecx = instruction_state.data.oldcpu.data.ecx;
+            input.edx = instruction_state.data.oldcpu.data.edx;
+            input.esi = instruction_state.data.oldcpu.data.esi;
+            input.edi = instruction_state.data.oldcpu.data.edi;
+            input.ebp = instruction_state.data.oldcpu.data.ebp;
+            input.eflags = instruction_state.data.oldcpu.data.eflags;
+            context->undefined_instruction_dispatch(
+                context->undefined_instruction_context, &input, &response);
+        }
+        if (response.outcome == CORE_MACHINE_UNDEFINED_INSTRUCTION_HANDLED_RESUME) {
+            const uint32_t mutable_flags = VCPU_EFLAGS_CF | VCPU_EFLAGS_PF |
+                VCPU_EFLAGS_AF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_SF | VCPU_EFLAGS_OF;
+
+            cpu_state = instruction_state.data.oldcpu;
+            cpu_state.data.eip += response.consumed_bytes;
+            cpu_state.data.eax = response.patch.eax;
+            cpu_state.data.ebx = response.patch.ebx;
+            cpu_state.data.ecx = response.patch.ecx;
+            cpu_state.data.edx = response.patch.edx;
+            cpu_state.data.esi = response.patch.esi;
+            cpu_state.data.edi = response.patch.edi;
+            cpu_state.data.ebp = response.patch.ebp;
+            cpu_state.data.eflags = (cpu_state.data.eflags & ~mutable_flags) |
+                (response.patch.eflags & mutable_flags);
+            instruction_state.data.except = 0u;
+            return;
+        }
+        if (response.outcome == CORE_MACHINE_UNDEFINED_INSTRUCTION_STOP ||
+            response.outcome == CORE_MACHINE_UNDEFINED_INSTRUCTION_FAULT) {
+            cpu_state = instruction_state.data.oldcpu;
+            instruction_state.data.except = 0u;
+            core_machine_cpu_execution_request_stop(context);
+            return;
+        }
         if (context->diagnostic_provider != STD_NULL &&
             context->diagnostic_provider->record_fault != STD_NULL)
         {
