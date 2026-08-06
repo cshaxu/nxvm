@@ -1,6 +1,6 @@
 # M5 T256: Level 1 Rational Device Clocks
 
-**Status:** S3 active.
+**Status:** S4 active.
 
 ## Original Request
 
@@ -106,3 +106,18 @@ VM RTC delivery remains behind the registered execution-provider callback;
 composition no longer advances VM-owned time consumers. The focused profile,
 rational-clock, retained PIT divider, core time, scheduler, timing checkpoint,
 and CMOS/RTC probes pass.
+
+## S3 Scope
+
+S3 records identical frozen-provider event deltas for the same four completed
+instructions when executed in one quantum, two budget quanta, or four separate
+quanta, then repeats the two-quantum case after cold reset. Retained PIT and
+CGA timing probes cover the adjacent core-device checkpoints. The full current
+matrix must additionally prove that VM RTC delivery remains behind the frozen
+provider boundary and that reset, Console, debugger, FDD/HDD, CGA/EGA, and ATA
+behavior remain unchanged.
+
+**S3 result:** the rational-clock probe records the same `2, 1, 2, 1`
+provider-tick sequence for one four-instruction quantum, two two-instruction
+quanta, four one-instruction quanta, and a cold-reset replay. The full
+`current-gates-gcc` matrix passes **90/90**.
