@@ -2,11 +2,11 @@
 
 ## Current Work
 
-**M5 idle: T249--T252 are closed; no subtask is active.**
+**M5 T253 S1 active: define ATA PIO task-file progress contract.**
 
 T249--T252 complete the admitted T248 migration queue without changing guest
-time, NXVM lifecycle behavior, or product interaction. The next work requires
-a newly approved task packet; hardware work remains queued from T253.
+time, NXVM lifecycle behavior, or product interaction. T253 now admits only
+multi-sector ATA task-file progress; no other IDE feature is in scope.
 
 | Closure | Evidence |
 | --- | --- |
