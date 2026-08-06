@@ -2,40 +2,40 @@
 
 ## Current Work
 
-**M5 T250 S3 active: verify copied presentation and artifact.**
+**M5 T251 S1 active: cancellable host-wait contract.**
 
-Original request: execute the second admitted T248 migration without changing
-NXVM display behavior. S1 fixed the copied mailbox contract, producer/consumer
-inventory, and shutdown rule. S2 moved only the copy container to
-`core/platform`; the snapshot route and VM renderer policy remain intact. S3
-now verifies all paths and allocates artifact revision `0.5.0249`.
+Original request: execute the third admitted T248 migration without changing
+guest time or NXVM lifecycle behavior. Define the host-only cancellable wait
+contract and inventory all lifecycle/product wait sites before source changes.
+Raw host-clock observation remains deferred.
 
-| Requirement | S3 evidence |
+| Requirement | S1 evidence |
 | --- | --- |
-| Focused boundary | Exercise independent frame copies and post-finalize rejection; verify producers/consumers only see copied data. |
-| Full regression | Run current GCC/CTest and retained Console/window, text/CGA/EGA, DOS, debugger, FDD/HDD regressions. |
-| Artifact | Build `nxvm_0_5_0249.exe`, record SHA/banner/source commit, then close T250. |
+| Contract | One bounded completed/cancelled core/platform wait contract with no guest-time or raw-clock exposure. |
+| Inventory | Classify runner, session control, run-handle startup, and debugger waits by owner and cancellation fact. |
+| Preserve products | No S1 source/build/runtime change; no new thread, watchdog, guest mutation, product policy, or lifecycle path. |
 
 Applicable rules: module layout, contracts, coding/source policy, execution
 workflow, and one active subtask. Planned commands:
-`rg -n "vm_platform_presentation_mailbox|vm/platform/presentation_mailbox|presentation_mailbox\\.c|vm-platform-presentation-mailbox" src tests cmake CMakeLists.txt`, the focused mailbox smoke, and `current-gates-gcc`.
-Expected marker: `M5:T250:S3:PRESENTATION-BOUNDARY-CLOSED:OK`. Stop for owner
-direction if the contract requires guest VRAM, renderer ownership, display
-policy, or a second presentation path.
+`rg -n "core_platform_sleep|core_utils_wait|wait_for_flip|wait_for_pause|waited" src/core src/vm tests`
+and `git diff --check`. Expected marker:
+`M5:T251:S1:CANCELLABLE-WAIT-CONTRACT:OK`. Stop for owner direction if a site
+requires guest time, raw host clock, unbounded waiting, display/exit policy,
+or a second lifecycle path.
 
 T248 is closed: it established the evidence-backed T249--T252 migration queue
-and deferred raw host-clock observation. T249 is closed with artifact
-`0.5.0248`; T250 now starts with its own S1 contract in
-[its task record](m5-t250-presentation-mailbox.md). Existing unstarted
+and deferred raw host-clock observation. T249 and T250 are closed with
+artifacts `0.5.0248` and `0.5.0249`; T251 now starts with its own S1 contract
+in [its task record](m5-t251-cancellable-host-wait.md). Existing unstarted
 hardware work begins at T253; completed task identities and artifact revisions
 do not change.
 
 ## Current Technical Baseline
 
-- **T249 S3:** `current-gcc` and `verify-current-artifact-target` select
-  `vm-0-5-0248`; static/ownership checks and 85/85 CTest cases passed.
-  Artifact `nxvm_0_5_0248.exe` SHA-256:
-  `6B0CAD6A3DB97D794963E052E3A70C08C2080614047AB7AC5355CCE6E07E8F35`.
+- **T250 S3:** `current-gcc` and `verify-current-artifact-target` select
+  `vm-0-5-0249`; static/ownership checks and 85/85 CTest cases passed.
+  Artifact `nxvm_0_5_0249.exe` SHA-256:
+  `E6EA5C35F1C6EDFD130E3BCCC5A6EBD1BF92442B85E715505E4B3FF5CCF34079`.
 - **T243--T246:** core owns checked physical memory, bounded `#UD`
   transitions, immutable ROM mapping, and atomic real-mode entry plans. T247
   verifies the current artifact target and full gate over that boundary.

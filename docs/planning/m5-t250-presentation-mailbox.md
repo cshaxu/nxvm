@@ -1,6 +1,6 @@
 # M5 T250: Copied Presentation Mailbox
 
-**Status:** S3 active.
+**Status:** Complete.
 
 ## Goal
 
@@ -92,6 +92,23 @@ next developer artifact only if runnable source changes.
 
 S3 allocates developer artifact revision `0.5.0249`, updates the configured
 artifact target, records SHA-256/banner, and closes T250 after the full gate.
+
+#### S3 Closure Evidence
+
+- `vm-0-5-0249` builds the current source with GCC `-Werror` and copies
+  `build/output/nxvm_0_5_0249.exe`.
+- SHA-256:
+  `E6EA5C35F1C6EDFD130E3BCCC5A6EBD1BF92442B85E715505E4B3FF5CCF34079`.
+- The configured NXVM banner is version `0.5.0249`; Console, debugger, boot,
+  display cadence, and display-mode policy retain their existing behavior.
+- `current-gates-gcc` passed against `vm-0-5-0249`: all static ownership gates
+  passed and 85/85 CTest cases passed, including Console/window, text/CGA/EGA,
+  DOS, debugger, FDD/HDD, and product-session coverage.
+- The S2 similar-issue query has no remaining VM mailbox implementation or
+  VM mailbox type in production source. Core platform now explicitly links the
+  lowest `type-facade` it uses rather than depending on a transitive link.
+
+**Closure marker:** `M5:T250:S3:PRESENTATION-BOUNDARY-CLOSED:OK`.
 
 ## Stop Conditions
 
