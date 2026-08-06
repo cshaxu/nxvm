@@ -152,14 +152,6 @@ default definition of NXVM completion.
   mantle: DOS owns loader/services/program state; VDM owns CLI, containment,
   presentation, debug UX, cancellation, and exit policy.
 
-- [ ] **M5 T248: host-capability admission and migration queue (`TODO(Medium)`).**
-  Inventory copied input, presentation, host-clock observation, and cancellable
-  wait after T246; then reserve conditional T249--T252 migration tasks before
-  any source move. Admit each provider only with a concrete NXVM need and a
-  stable trusted-research requirement; generic file/directory and DOS namespace
-  remain outside core/platform. See
-  [the T248 record](docs/planning/m5-t248-host-capability-admission.md).
-
 - [ ] **M5 architecture closure audit (`TODO(High)`).** Before M5 closes,
   rescan every core/vm/vdm module, composition root, target, test, and entry
   point for duplicate state, parallel paths, forwarding wrappers, global/TLS

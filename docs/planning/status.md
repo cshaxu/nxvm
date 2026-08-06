@@ -4,7 +4,7 @@
 
 **Idle. No implementation subtask is active.**
 
-[T257](m5-t257-80286-protected-mode.md) is complete. It admits the bounded
+T257 is complete. It admits the bounded
 GDT-only, ring-0, 16-bit 80286 protected-mode path and preserves protected
 validation faults as core diagnostics rather than IDT-gate delivery. Paging,
 privilege transitions, LDT/TSS/gates, 32-bit semantics, and Windows claims
@@ -36,8 +36,8 @@ The next task must establish a complete active packet before implementation.
   current runtime or release products.
 
 Completed implementation detail, artifact history, and rationale are in
-[M5 History](../history/m5.md) and Git history. The active task packet above,
-the roadmap, and the M5 closure checklist are the only current operational
+[M5 History](../history/m5.md) and Git history. When a task is active, its
+packet, the roadmap, and the M5 closure checklist are the current operational
 authorities.
 
 ## Recent Governance Updates
@@ -58,6 +58,9 @@ authorities.
 - **M5 Td S26:** split the unstarted 80386 route so T258 is CPL0 paging only;
   protected privilege/IDT delivery, TSS I/O permissions, task switching, FPU,
   and remaining instruction families now have independent admission tasks.
+  This documentation task changes no runtime behavior or active-task scope.
+- **M5 Td S27:** compacted completed T248--T257 task records into M5 history,
+  removed the completed T248 ledger entry, and clarified idle-state authority.
   This documentation task changes no runtime behavior or active-task scope.
 
 ## Milestone State
