@@ -2,24 +2,24 @@
 
 ## Current Work
 
-**M5 T250 S1 active: copied presentation-mailbox contract.**
+**M5 T250 S2 active: move the copied presentation mailbox.**
 
 Original request: execute the second admitted T248 migration without changing
-NXVM display behavior. Define the copied mailbox's owner, lifecycle,
-producer/consumer inventory, and shutdown rule before moving source. The
-current snapshot route and VM renderer policy remain intact.
+NXVM display behavior. S1 fixed the copied mailbox contract, producer/consumer
+inventory, and shutdown rule. S2 now moves only the copy container to
+`core/platform`; the snapshot route and VM renderer policy remain intact.
 
-| Requirement | S1 evidence |
+| Requirement | S2 evidence |
 | --- | --- |
-| Contract | One synchronized copied `core_platform_display_frame` mailbox with explicit lifecycle and no renderer or guest-state access. |
-| Inventory | Map composition producer plus Win32/Linux Console/window consumers and the required stop/join/finalize order. |
-| Preserve products | No S1 source/build/runtime change; no guest VRAM borrow, new frame queue, renderer change, or display policy change. |
+| Source relocation | Move only mailbox storage/copy operations to `core/platform`; no VADP, renderer, or policy move. |
+| Lifecycle | Add explicit inactive rejection and finalize after run-handle join but before display-provider/core teardown. |
+| Preserve products | No guest VRAM borrow, new frame queue, renderer change, display cadence, or display policy change. |
 
 Applicable rules: module layout, contracts, coding/source policy, execution
 workflow, and one active subtask. Planned commands:
-`rg -n "presentation_mailbox|display_frame|capture_display_snapshot|renderer" src/vm src/core tests`
-and `git diff --check`. Expected marker:
-`M5:T250:S1:PRESENTATION-CONTRACT:OK`. Stop for owner direction if the
+`rg -n "vm_platform_presentation_mailbox|core_platform_presentation_mailbox|capture_display_snapshot|renderer" src tests cmake CMakeLists.txt`
+and the focused mailbox smoke. Expected marker:
+`M5:T250:S2:PRESENTATION-MIGRATED:OK`. Stop for owner direction if the
 contract requires guest VRAM, renderer ownership, display policy, or a second
 presentation path.
 
