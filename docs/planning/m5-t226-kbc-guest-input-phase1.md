@@ -66,5 +66,8 @@ Evidence:
   FDD image; the retained `EDIT.COM` exercise remains in the current matrix.
 - `cmake --build --preset current-gates-gcc --parallel 4` passes 59/59 CTest
   smokes and all static ownership/boundary gates.
-- Artifact: `build/output/nxvm_0_5_0226.exe`, SHA-256
-  `2FE4D3833409BC9037FD13CFC7EB4DDC6F14CD83CE8CA75A623FDB7DE050B292`.
+- Historical artifact withdrawal: `nxvm_0_5_0226.exe` was created from a
+  worktree that was not the docs-only `934a3cb` task commit. Its SHA-256
+  `2FE4D3833409BC9037FD13CFC7EB4DDC6F14CD83CE8CA75A623FDB7DE050B292` is kept
+  only to identify the reported repeated-key regression; it is not reproducible
+  T226 completion evidence and must not be used as a baseline.

@@ -106,6 +106,12 @@ C_INT main(C_VOID)
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xfau ||
         kbc.data.typematic != 0x1fu;
 
+    core_machine_kbc_set_typematic_timing(&kbc, 0u, 0u);
+    failed |= core_machine_kbc_submit_scan_code(&kbc, 0x1eu) != TYPE_STATUS_OK;
+    failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0x1eu;
+    core_machine_kbc_advance(&kbc, 1000000u);
+    failed |= (core_machine_kbc_read_byte(&port, 0x0064u) & VKBC_STATUS_OBF) != 0u;
+
     core_machine_kbc_set_typematic_timing(&kbc, 3u, 2u);
     failed |= core_machine_kbc_submit_scan_code(&kbc, 0x1eu) != TYPE_STATUS_OK;
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0x1eu;
