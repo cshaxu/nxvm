@@ -1,6 +1,6 @@
 # M5 T236: EGA/VGA Graphics And Attribute Controllers
 
-## S1 Complete, S2 Active
+## S1--S4 Complete
 
 ### Objective
 
@@ -112,7 +112,7 @@ overlay, hides ordinary RAM, transforms planes, or produces a frame.
 Commands: `cmake --build --preset current-gates-gcc` and
 `cmake --build --preset current-gcc`. The current runnable artifact is
 `build/output/nxvm_0_5_0236.exe`, SHA-256
-`B54BB58564D064F3E0B0661F522B86317D72BAEF7455CF03E0A6AA41D79EB7E9`.
+`738F17139BEB898B75EE9C397F49CE6163DE419252D867F995082CB8B98589CE`.
 
 ### Similar-Issue Sweep
 
@@ -130,3 +130,16 @@ deferred.
 T237 alone may implement planar/latch access, DAC, raster state, copied EGA/VGA
 snapshots, and a guest-visible DOS graphics fixture. T236 makes no claim that
 an EGA/VGA program can yet display output correctly.
+
+### S4 Audit Closure
+
+S4 normalizes every profile-supplied graphics and attribute reset value through
+the same per-register masks used by port writes. The focused controller probe
+now supplies deliberately invalid reset bytes and proves that the reset
+readback equals the port-admissible value. The RAM-closure gate now uses an
+unambiguous prefix check, so it emits no CMake developer warning.
+
+The full GCC/CTest matrix and focused probes pass after S4. This is a T236
+source correction, so the task artifact is rebuilt under its existing task
+identity; its refreshed SHA-256 is
+`738F17139BEB898B75EE9C397F49CE6163DE419252D867F995082CB8B98589CE`.

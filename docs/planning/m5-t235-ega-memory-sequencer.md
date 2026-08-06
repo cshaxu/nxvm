@@ -1,6 +1,6 @@
 # M5 T235: EGA/VGA Memory Window And Sequencer
 
-## S1 Complete, S2 Active
+## S1--S3 Complete
 
 ### Objective
 
