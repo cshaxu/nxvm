@@ -2,14 +2,15 @@
 
 ## Current Work
 
-**M5 T256 S3 active: verify rational-clock determinism.**
+**M5 T256 S4 active: build rational-clock artifact and close evidence.**
 
 [T256](m5-t256-rational-device-clocks.md) has replaced the PIT-only divider
 with core-owned, profile-bound integer rational domains for core devices and the
-frozen VM provider. S3 now proves deterministic checkpoints across different
-run quanta and cold reset while preserving coarse instruction ticks as the input
-unit. It must not add host-clock guest timing, cycle-accuracy claims, or a
-VM-side scheduler. T256 allocates behavior artifact revision `0.5.0254` at S4.
+frozen VM provider. S3 proved deterministic checkpoints across different run
+quanta and cold reset while preserving coarse instruction ticks as the input
+unit. S4 now builds `0.5.0254`, records its hash and closes the matrix. T256
+must not add host-clock guest timing, cycle-accuracy claims, or a VM-side
+scheduler.
 
 | Closure | Evidence |
 | --- | --- |

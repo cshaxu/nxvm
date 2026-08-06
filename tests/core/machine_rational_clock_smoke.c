@@ -62,6 +62,17 @@ static C_INT rational_clock_prepare(core_machine **out_machine,
     return 1;
 }
 
+static C_INT rational_clock_restart(core_machine *machine)
+{
+    const uint8_t program[RATIONAL_CLOCK_STEPS] = {
+        0x90u, 0x90u, 0x90u, 0x90u
+    };
+
+    return core_machine_reset(machine) == TYPE_STATUS_OK &&
+        core_machine_memory_write(machine, 0xfffffff0u, program,
+            sizeof(program)) == TYPE_STATUS_OK;
+}
+
 static C_INT rational_clock_run(core_machine *machine, uint32_t quantum)
 {
     core_machine_run_budget budget = { quantum, 0u };
@@ -85,6 +96,7 @@ C_INT main(C_VOID)
     core_machine_clock_ratio invalid_zero = { 1u, 0u, 0u };
     core_machine_clock_ratio identity = { 0u, 0u, 0u };
     rational_clock_probe single = { { 0u }, 0u };
+    rational_clock_probe reset = { { 0u }, 0u };
     rational_clock_probe split = { { 0u }, 0u };
     core_machine *machine = STD_NULL;
     C_INT failed = 0;
@@ -105,6 +117,9 @@ C_INT main(C_VOID)
 
     if (!failed && rational_clock_prepare(&machine, &single)) {
         failed |= !rational_clock_run(machine, RATIONAL_CLOCK_STEPS);
+        reset = single;
+        failed |= !rational_clock_restart(machine);
+        failed |= !rational_clock_run(machine, 2u);
         core_machine_destroy(machine);
         machine = STD_NULL;
     } else {
@@ -118,13 +133,15 @@ C_INT main(C_VOID)
         failed = 1;
     }
     failed |= single.count != RATIONAL_CLOCK_STEPS ||
+        reset.count != RATIONAL_CLOCK_STEPS ||
         split.count != RATIONAL_CLOCK_STEPS ||
         single.ticks[0] != 2u || single.ticks[1] != 1u ||
         single.ticks[2] != 2u || single.ticks[3] != 1u ||
-        STD_MEMCMP(single.ticks, split.ticks, sizeof(single.ticks)) != 0;
+        STD_MEMCMP(reset.ticks, single.ticks, sizeof(single.ticks)) != 0 ||
+        STD_MEMCMP(reset.ticks, split.ticks, sizeof(single.ticks)) != 0;
 
     core_machine_destroy(machine);
     if (failed) return 1;
-    STD_PRINTF("M5:T256:S2:RATIONAL-CLOCK:OK\n");
+    STD_PRINTF("M5:T256:S3:RATIONAL-CLOCK:OK\n");
     return 0;
 }
