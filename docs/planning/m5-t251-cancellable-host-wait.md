@@ -1,6 +1,6 @@
 # M5 T251: Cancellable Host Wait Boundary
 
-**Status:** S1 active.
+**Status:** S3 active.
 
 ## Goal
 
@@ -59,6 +59,14 @@ poll increments. Adapt only lifecycle waits whose cancellation condition is
 already a VM composition fact. Preserve existing execution-flip timeout,
 run-handle join, Console/window, and debugger behavior; do not introduce a
 new thread, watchdog policy, or timer source.
+
+**S2 result:** `core/platform` now owns bounded copied-predicate waiting.
+Win32/Linux run-handle startup, readiness, and display cadence use it. The
+execution-flip predicate observes only the flip: treating pre-start
+`is_running` as cancellation was a startup race. Guest runner pacing remains
+its existing execution concern.
+
+**S2 marker:** `M5:T251:S2:CANCELLABLE-WAIT-MIGRATED:OK`.
 
 ### S3: Verify The Boundary
 

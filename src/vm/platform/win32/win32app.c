@@ -4,7 +4,7 @@
 
 #include "type.h"
 
-#include "core/utils/wait.h"
+#include "core/platform/wait_interface.h"
 
 #include "vm/platform/win32/win32.h"
 #include "vm/platform/win32/w32adisp.h"
@@ -66,6 +66,23 @@ static C_VOID win32app_submit_mouse_event(win32app_run_handle *handle,
 static C_INT win32app_atomic_read(const volatile LONG *value)
 {
     return (C_INT)InterlockedCompareExchange((volatile LONG *)value, 0, 0);
+}
+
+static C_INT win32app_start_wait_cancelled(C_VOID *context)
+{
+    const win32app_run_handle *handle = context;
+
+    return handle == STD_NULL || win32app_atomic_read(&handle->stop_requested) ||
+        handle->initial_flip != vm_platform_execution_get_flip_for(
+            handle->platform->execution);
+}
+
+static C_INT win32app_display_ready_wait_cancelled(C_VOID *context)
+{
+    const win32app_run_handle *handle = context;
+
+    return handle == STD_NULL || win32app_atomic_read(&handle->display_ready) ||
+        win32app_atomic_read(&handle->display_failed);
 }
 
 static C_INT win32app_test_should_fail(C_INT stage)
@@ -221,7 +238,8 @@ static DWORD WINAPI win32app_display_thread(LPVOID opaque)
     InterlockedExchange((volatile LONG *)&handle->display_ready, 1);
     while (!win32app_atomic_read(&handle->stop_requested) && handle->initial_flip ==
             vm_platform_execution_get_flip_for(handle->platform->execution)) {
-        core_utils_wait_milliseconds(handle->platform->wait_scope, 100u);
+        (C_VOID)core_platform_wait_milliseconds(100u,
+            win32app_start_wait_cancelled, handle);
     }
     if (win32app_atomic_read(&handle->stop_requested)) {
         DestroyWindow(handle->window);
@@ -275,13 +293,9 @@ type_status vm_platform_win32app_run_handle_start(
         vm_platform_win32app_run_handle_finalize(owner);
         return TYPE_STATUS_INVALID_STATE;
     }
-    for (DWORD waited = 0u;
-         !win32app_atomic_read(&handle->display_ready) &&
-         !win32app_atomic_read(&handle->display_failed) &&
-         waited < WIN32APP_DISPLAY_READY_TIMEOUT_MILLISECONDS;
-         ++waited) {
-        core_utils_wait_milliseconds(context->wait_scope, 1u);
-    }
+    (C_VOID)core_platform_wait_milliseconds(
+        WIN32APP_DISPLAY_READY_TIMEOUT_MILLISECONDS,
+        win32app_display_ready_wait_cancelled, handle);
     if (!win32app_atomic_read(&handle->display_ready)) {
         vm_platform_win32app_run_handle_request_stop(owner);
         vm_platform_win32app_run_handle_join(owner);
