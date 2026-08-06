@@ -2,8 +2,8 @@
 
 ## Status
 
-**S5 active.** S6 implements the bounded closure; S7 verifies it and records
-the next developer artifact revision.
+**S6 active.** S5 defined the closure; S6 implements its bounded decoder gate
+and corpus; S7 verifies it and records the next developer artifact revision.
 
 ## Original Request
 
