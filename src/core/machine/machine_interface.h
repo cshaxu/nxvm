@@ -160,6 +160,9 @@ type_status core_machine_profile_binding_configure_text_raster(
 type_status core_machine_profile_binding_configure_ega_sequencer(
     const core_machine_profile_binding *binding,
     const core_machine_vadp_ega_sequencer_config *config);
+type_status core_machine_profile_binding_configure_ega_controllers(
+    const core_machine_profile_binding *binding,
+    const core_machine_vadp_ega_controller_config *config);
 C_VOID core_machine_profile_binding_set_video_cursor_shape(
     const core_machine_profile_binding *binding, uint8_t top, uint8_t bottom);
 C_VOID core_machine_profile_binding_set_video_cursor_address(

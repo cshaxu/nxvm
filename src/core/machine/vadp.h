@@ -20,6 +20,8 @@ extern "C" {
 #define CORE_MACHINE_VADP_EGA_APERTURE_BASE 0x000a0000u
 #define CORE_MACHINE_VADP_EGA_APERTURE_BYTES 0x00010000u
 #define CORE_MACHINE_VADP_SEQUENCER_REGISTER_COUNT 5u
+#define CORE_MACHINE_VADP_GRAPHICS_REGISTER_COUNT 9u
+#define CORE_MACHINE_VADP_ATTRIBUTE_REGISTER_COUNT 21u
 
 typedef struct core_machine_vadp_text_timing {
     uint32_t active_display_ticks;
@@ -36,6 +38,11 @@ typedef struct core_machine_vadp_ega_sequencer_config {
     uint8_t memory_mode;
 } core_machine_vadp_ega_sequencer_config;
 
+typedef struct core_machine_vadp_ega_controller_config {
+    uint8_t graphics[CORE_MACHINE_VADP_GRAPHICS_REGISTER_COUNT];
+    uint8_t attribute[CORE_MACHINE_VADP_ATTRIBUTE_REGISTER_COUNT];
+} core_machine_vadp_ega_controller_config;
+
 typedef struct t_port t_port;
 typedef struct t_ram t_ram;
 
@@ -48,6 +55,14 @@ typedef struct t_vadp_data {
     uint8_t sequencer_index;
     uint8_t sequencer[CORE_MACHINE_VADP_SEQUENCER_REGISTER_COUNT];
     type_bool ega_sequencer_configured;
+    core_machine_vadp_ega_controller_config ega_controller;
+    uint8_t graphics_index;
+    uint8_t graphics[CORE_MACHINE_VADP_GRAPHICS_REGISTER_COUNT];
+    uint8_t attribute_index;
+    uint8_t attribute[CORE_MACHINE_VADP_ATTRIBUTE_REGISTER_COUNT];
+    type_bool attribute_data_phase;
+    type_bool attribute_display_enabled;
+    type_bool ega_controller_configured;
     core_machine_vadp_text_timing text_timing;
     uint32_t raster_phase;
     uint16_t columns;
@@ -89,6 +104,8 @@ type_status core_machine_vadp_configure_text_timing(t_vadp *adapter,
     const core_machine_vadp_text_timing *timing);
 type_status core_machine_vadp_configure_ega_sequencer(t_vadp *adapter,
     t_ram *memory, const core_machine_vadp_ega_sequencer_config *config);
+type_status core_machine_vadp_configure_ega_controllers(t_vadp *adapter,
+    const core_machine_vadp_ega_controller_config *config);
 C_INT core_machine_vadp_ega_aperture_contains(const t_vadp *adapter,
     uint32_t physical, STD_SIZE_T bytes);
 C_VOID core_machine_vadp_set_cursor_shape(t_vadp *adapter, uint8_t top,

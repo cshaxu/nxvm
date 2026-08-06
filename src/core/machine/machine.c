@@ -228,6 +228,15 @@ type_status core_machine_profile_binding_configure_ega_sequencer(
             config);
 }
 
+type_status core_machine_profile_binding_configure_ega_controllers(
+    const core_machine_profile_binding *binding,
+    const core_machine_vadp_ega_controller_config *config)
+{
+    return binding == STD_NULL || binding->machine == STD_NULL ?
+        TYPE_STATUS_INVALID_ARGUMENT : core_machine_vadp_configure_ega_controllers(
+            &binding->machine->shared_vadp, config);
+}
+
 C_VOID core_machine_profile_binding_set_video_cursor_shape(
     const core_machine_profile_binding *binding, uint8_t top, uint8_t bottom)
 {
