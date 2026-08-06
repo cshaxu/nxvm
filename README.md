@@ -1,35 +1,39 @@
 # ntvdm64
 
 ntvdm64 is the successor repository for NXVM. It evolves the existing PC
-emulator into a shared core with two first-class products:
+emulator into a modular runtime with two executable products and three planned
+shared libraries:
 
 ```text
 nxvm.exe      bootable whole-machine VM
-ntvdm64.exe   non-bootable DOS application runner
+nxvdm.exe     non-invasive DOS application runner
 ```
 
-The planned ntvdm64 product path is:
+The planned NXVDM product path is:
 
 ```text
-ntvdm64 run [options] [<program> [args...]]
+nxvdm run [options] [<program> [args...]]
 ```
 
 The planned `run` command has explicit display selection and host-drive
-visibility controls. See [Runtime CLI Requirements](docs/requirements/ntvdm64-runtime.md).
+visibility controls. See [Runtime CLI Requirements](docs/requirements/nxvdm-runtime.md).
 
 ## Formal Runtime
 
 ```text
-core/{utils,machine,platform,product}
-  + vm/{machine,platform,product,profile}
-  + vdm/{machine,platform,product,profile}
+core/{utils,machine,platform,product}   shared foundation; future core.dll
+vm/{machine,platform,product,profile}   nxvm.exe composition and product
+mantle/{machine,platform,product}        future shared VDM composition; future mantle.dll
+dos/{machine,platform,product,profile}   independent owned DOS backend; future dos.dll
+vdm/{machine,platform,product,profile}   nxvdm.exe product shell over mantle + dos
 ```
 
 NXVM is the formal machine foundation and remains a supported product surface
 through `nxvm.exe`. Its copyright holder authorizes NXVM code imported into this
 repository under the root MIT License, with recorded source provenance and
-preserved copyright notices. The owned DOS runtime is the default ntvdm64
-compatibility path.
+preserved copyright notices. The owned DOS runtime is the default NXVDM
+compatibility path. `core.dll`, `mantle.dll`, and `dos.dll` are medium-term
+build targets, not current independent artifacts.
 
 The default products are buildable without Microsoft binaries, WineVDM, host
 injection, loader replacement, registry changes, or administrator rights.

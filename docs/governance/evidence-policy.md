@@ -10,7 +10,7 @@ plausibility or a reference project's shortcut.
 2. Intel manuals, Microsoft DOS documentation, RBIL, and original vendor
    documentation for the exact ABI boundary.
 3. Generated conformance probes and independently reproduced behavior.
-4. Existing emulator behavior, including NXVM, DOSBox, vDos, and NTVDMx64.
+4. Existing emulator behavior, including NXVM, DOSBox, vDos, and external VDMs.
 5. Comments, issue reports, or unverified source reading.
 
 Production behavior needs level 1, 2, or 3 evidence. Levels 4 and 5 can choose

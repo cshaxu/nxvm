@@ -2,8 +2,8 @@
 
 ## Product Shape
 
-ntvdm64 is the canonical dual-product successor to the NXVM machine codebase.
-It builds two first-class executables over one shared foundation:
+ntvdm64 is the canonical successor to the NXVM machine codebase. It plans two
+executable products and three independently buildable components:
 
 ```text
 nxvm.exe
@@ -11,13 +11,25 @@ nxvm.exe
   interactive NXVM Console, and whole-machine debugging behavior. It has no
   new process CLI.
 
-ntvdm64.exe
+nxvdm.exe
   non-bootable DOS application runner with an owned DOS backend and
   non-invasive host integration.
+
+core.dll
+  shared machine, platform, and product-tool foundation.
+
+mantle.dll
+  shared VDM composition mechanism for NXVDM and an admitted external NTVDM
+  implementation.
+
+dos.dll
+  independent owned DOS implementation with no dependency on core, mantle,
+  VM, or VDM.
 ```
 
-The planned `ntvdm64 run` contract is defined in
-[Runtime CLI Requirements](../requirements/ntvdm64-runtime.md). Microsoft NTVDM
+`core.dll`, `mantle.dll`, and `dos.dll` are medium-term targets, not current
+independent artifacts. The planned `nxvdm run` contract is defined in
+[Runtime CLI Requirements](../requirements/nxvdm-runtime.md). Microsoft NTVDM
 components, invasive integration, and Win16 remain research-only unless a later
 owner-approved Go decision changes that boundary.
 
@@ -71,7 +83,7 @@ executable. Design work explicitly attached to an implementation task uses that
 task's subtask identifier and follows its artifact policy.
 
 The bootable product keeps the Virtual Machine identity. After M9 implements
-the non-bootable DOS runner and proves that `ntvdm64.exe` cannot continue into
+the non-bootable DOS runner and proves that `nxvdm.exe` cannot continue into
 standalone disk boot or an implicit guest DOS shell, that product uses:
 
 ```text
@@ -84,25 +96,27 @@ encoding through a separate owner-approved release policy.
 
 ## Shared Foundation
 
-The product forms are `core`, `vm`, and `vdm`. The shared foundation has a
-strictly neutral `core/utils` layer below three independent modules:
-`core/machine`, `core/platform`, and `core/product`.
-`vm/` and `vdm/` each own product composition, lifecycle, and teardown; their
-`product` modules own user experience rather than system composition.
+The source components are `core`, `vm`, `mantle`, `dos`, and `vdm`. `core` has
+a strictly neutral `core/utils` layer below `core/machine`, `core/platform`,
+and `core/product`. `vm/` owns NXVM composition, lifecycle, and teardown.
+`mantle/` owns the reusable VDM composition mechanism over core. `dos/` is an
+independent DOS implementation. `vdm/` is the NXVDM product shell over mantle
+and dos; its `product` module owns user experience rather than composition.
 Cross-module adaptation, including display and input bridging, occurs only in
 the relevant product root composition. Peer machine and platform modules do
 not adapt each other's contracts directly.
 
 `core/product/session` is a shared opaque registry and command facility for
 product sessions. It owns neither a concrete VM/VDM session nor composition;
-VM and VDM composition provide concrete lifecycle callbacks. No
+VM and mantle composition provide concrete lifecycle callbacks. No
 `core/composition` layer exists or is permitted.
 
 `src/type.h` is the system-wide type, `nxvm_core_status`, retained alias, and
 legacy helper foundation. Each product module owns its compile-time name; the
 shared `core/product/banner.h` helper supplies the common version, copyright,
 build time, and printing format. Public symbols use their ownership path, for
-example `core_machine_*`, `vm_product_*`, and `vdm_platform_*`. The detailed
+example `core_machine_*`, `vm_product_*`, `mantle_product_*`, `dos_machine_*`,
+and `vdm_platform_*`. The detailed
 registry and dependency rules live only in
 [Module Layout](module-layout.md) and [Contracts](contracts.md).
 

@@ -12,10 +12,11 @@
   them at exit or records an owner-approved exception.
 - Follow the visible module boundaries in `src/`. `core/machine` has no VM/VDM
   policy, concrete product UI, profile, or host OS dependency; `core/platform`
-  never mutates guest state. `vm/*` and `vdm/*` contain only their own product
-  behavior. `core/product` is shared infrastructure, while `vm/product` and
-  `vdm/product` contain user experience. The `vm/` and `vdm/` roots own
-  product-form composition.
+  never mutates guest state. `vm/*`, `mantle/*`, `dos/*`, and `vdm/*` contain
+  only their own component behavior. `dos/*` is independent of all other
+  components. `core/product` is shared infrastructure; `vm/product` and
+  `vdm/product` contain user experience; `mantle/` owns reusable VDM
+  composition. The `vm/` and `mantle/` roots own composition.
 - One subtask is active at a time. Define its scope, non-goals, source baseline,
   applicable local rules, verification commands, and acceptance evidence before
   changing runtime code.
@@ -33,8 +34,8 @@ interfaces.
 
 ## References And Guest Components
 
-Other open-source projects require a license review before copying. OpenNT and
-NTVDMx64 are historical research sources only. Microsoft binaries are never
+Other open-source projects require a license review before copying. Historical
+third-party NTVDM implementations are research sources only. Microsoft binaries are never
 committed. Microsoft NTVDM research belongs under `docs/research/` or approved
 `tools/research/`; it cannot create a default runtime dependency or block the
 owned DOS backend.

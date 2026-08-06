@@ -8,10 +8,11 @@ or independently rewritten NXVM implementations are prohibited.
 
 ## Terms
 
-A **product form** is one of `core`, `vm`, or `vdm`. A **module** is one of
-`machine`, `platform`, `product`, or `profile`. `core` has no profile module:
-it is the shared foundation. `vm` and `vdm` are separate products, not layers
-above one another.
+A **component** is one of `core`, `vm`, `mantle`, `dos`, or `vdm`. A **module**
+is one of `machine`, `platform`, `product`, or `profile`. `core` has no profile
+module: it is the shared foundation. `dos` has no dependency on another
+component. `vm` is the NXVM product; `mantle` is shared VDM composition; `vdm`
+is the NXVDM product shell over mantle and dos.
 
 ## Topology
 
@@ -24,8 +25,12 @@ src/
     composition/session/
     {machine,platform,product,profile}/
     profile/default_profile/firmware/
-  vdm/
+  mantle/
     composition/session/
+    {machine,platform,product}/
+  dos/
+    {machine,platform,product,profile}/
+  vdm/
     {machine,platform,product,profile}/
     profile/dos_minimal_profile/
 ```
@@ -37,8 +42,9 @@ helpers. `machine.h`, for example, is private to `core/machine`; its public
 handle contract is `machine_interface.h`. Device models are flat files unless
 they become real multi-file subsystems.
 `vm/main.c` is the current `nxvm.exe` entry point. `vdm/main.c` is the future
-`ntvdm64.exe` entry point and must remain thin when introduced; until then,
-VDM code is limited to design and smoke-test composition.
+`nxvdm.exe` entry point and remains thin: it selects NXVDM product UX and binds
+mantle to dos. `mantle` owns reusable VDM session composition; `dos` remains
+independent and does not include mantle or core headers.
 
 The concrete rules for distinguishing a private implementation, an exposed
 interface, an injected provider, and a session-owned registry are defined in
@@ -71,20 +77,20 @@ the repository is one synchronously built system.
 
 Public C symbols use their source ownership path: `core_machine_*`,
 `core_platform_*`, `core_product_*`, `vm_machine_*`, `vm_platform_*`,
-`vm_product_*`, `vm_profile_*`, and their VDM counterparts. Root composition
-exports its concrete session as `vm_session_*` or `vdm_session_*`. Internal
-composition helpers remain private to their product root.
+`vm_product_*`, `vm_profile_*`, `mantle_*`, `dos_*`, and `vdm_*`. Root
+composition exports its concrete session as `vm_session_*` or
+`mantle_session_*`. Internal composition helpers remain private to their
+component root.
 
 Composition implementation and private headers live under
-`vm/composition/` or `vdm/composition/`. The product root owns that directory;
+`vm/composition/` or `mantle/composition/`. The component root owns that directory;
 it is not a fourth module and does not relax the directed module dependency
-rules. Product entry points remain directly under `vm/main.c` and, when added,
-`vdm/main.c`.
+rules. Product entry points remain directly under `vm/main.c` and `vdm/main.c`.
 
 Common product-session tooling belongs in `core/product/session/`: opaque
 entry registration, selection, copied snapshots, shared commands, and explicit
 provider contracts. It never creates or understands a concrete VM/VDM session.
-VM and VDM root composition own their concrete session construction, provider
+VM and mantle composition own their concrete session construction, provider
 implementation, selected-item adaptation, and teardown under
 `composition/session/`. Product UI receives copied snapshots and calls the
 core-product contract; it never owns or caches a selected session pointer or
@@ -93,7 +99,7 @@ product assembly layer. The completed implementation is summarized in
 [M5 History](../history/m5.md).
 
 A composition session's complete layout is private to its product root. Its
-public header declares an opaque `vm_session` or `vdm_session` handle, stable
+public header declares an opaque `vm_session` or `mantle_session` handle, stable
 configuration, and lifecycle/operation contracts only. The complete struct and
 construction helpers live in `session.h`, included only by that product
 composition. Product peers receive only the opaque public contract. Tests may
@@ -155,12 +161,12 @@ opaque native handle. A host resource that cannot be shared, such as a process
 terminal, is represented by a caller-owned `core_platform_host_surface_lease`.
 It atomically names one explicit composition owner; acquire by a second owner
 fails, and only that owner can release it. The contract has no guest state,
-renderer state, process singleton, or product policy. VM and VDM composition
+renderer state, process singleton, or product policy. VM and mantle composition
 choose whether to create a context, acquire a lease, or reject a request.
 
 The retained hardware debugger command language, prompt, help, and text
 presentation are shared product UX and belong in `core/product/debug`. Its
-core-owned debug target declares the machine effects it needs; VM and VDM root
+core-owned debug target declares the machine effects it needs; VM and mantle
 composition bind that target to their respective machines. Product forms may
 add capability-specific commands, but they do not fork the common debugger UI.
 
@@ -169,7 +175,7 @@ snapshot may contain text cells, attributes, geometry, cursor, generation, and
 machine-private diagnostics, and may embed a core text snapshot; it remains a
 machine type. A product-platform frame contains only copied host-facing
 presentation data and must not embed, point at, or name a machine snapshot
-type. The corresponding VM or VDM root composition is the sole source that may
+type. The corresponding VM or mantle composition is the sole source that may
 include both contracts: at a defined execution boundary it converts the
 snapshot to a frame and submits it. Product-private diagnostics such as
 DOS-minimal PIT state or pending keyboard IRQ remain in that product's machine
@@ -182,7 +188,8 @@ current directory. Small policy-free utilities and callback contracts belong in
 shared Win32 and Linux providers live in `core/platform/win32` and
 `core/platform/linux`; platform-neutral platform code lives directly in
 `core/platform`. A product-only implementation belongs under its `vm/*` or
-`vdm/*` counterpart. The same rule applies to machine and product code.
+`mantle/*`, `dos/*`, or `vdm/*` counterpart. The same rule applies to machine
+and product code.
 
 `vm/machine` owns boot/reset sequencing, execution-loop glue, and VM-only
 controllers such as FDC/HDC/FDD/HDD. `vm/platform` owns only full-machine
@@ -198,17 +205,26 @@ Profile-specific firmware code is allowed
 only as an override provider against a public core contract; it does not create
 the machine or call a sibling module directly.
 
-`vdm/machine` owns the DOS loader, PSP, environment, DTA, handles, paths, DOS
-devices/services, errors, and program exit. `vdm/platform` owns app-runner
-host providers for parent-Console protection, cancellation, filesystem
-containment, and presentation/input. `vdm/product` owns `ntvdm64 run`, launch
-parameters, VDM debugging UX, display/Console policy, and cancellation UX.
-`vdm/profile` owns declarative DOS memory/service/device policy and any
-firmware-service subset. The `vdm/` root composition selects that profile and
-binds machine, platform, product, and teardown.
+`mantle/machine`, `mantle/platform`, and `mantle/product` supply only reusable
+VDM composition mechanism over core. They know no DOS ABI, external-runtime
+ABI, CLI grammar, path policy, protected asset, or product exit policy.
+`mantle/` root composition constructs the session and binds an admitted
+DOS-runtime provider to core at defined execution boundaries.
+
+`dos/machine` owns the independent DOS loader, PSP, environment, DTA, handles,
+paths, DOS devices/services, errors, and program exit. `dos/platform`,
+`dos/product`, and `dos/profile` may support that backend but cannot include
+core, VM, mantle, or VDM headers.
+
+`vdm/platform` owns NXVDM host policy for parent-Console protection,
+cancellation, filesystem containment, and presentation/input. `vdm/product`
+owns `nxvdm run`, launch parameters, debugging UX, display/Console policy, and
+cancellation UX. `vdm/machine` and `vdm/profile` are product adapters and
+declarative policy only; they do not reimplement DOS or own composition.
+`vdm/main.c` binds mantle to dos and applies NXVDM product policy.
 
 Temporary adapters are classified by their actual owner and live under `core`,
-`vm`, or `vdm`; no top-level adapter root remains. The imported
+`vm`, `mantle`, `dos`, or `vdm`; no top-level adapter root remains. The imported
 `nxvm-baseline` tree was fully migrated and deleted. Git history and the
 recorded M1 snapshot preserve provenance; it is not a source root.
 
@@ -216,8 +232,8 @@ recorded M1 snapshot preserve provenance; it is not a source root.
 
 The required architecture is a directed acyclic graph, not a collection of
 mutually aware subsystems. No module may reach sideways to a sibling module
-and no lower module may depend on a product form. The product-form root
-composition is the only permitted integration point.
+and no lower component may depend on a higher component. VM and mantle
+composition are the only permitted integration points.
 
 ```text
              core/utils
@@ -225,20 +241,19 @@ composition is the only permitted integration point.
 core/machine      core/platform      core/product
      (independent libraries with public provider contracts)
 
-vm/machine   -> core/machine          vdm/machine   -> core/machine
-vm/platform  -> core/platform         vdm/platform  -> core/platform
-vm/product   -> core/product          vdm/product   -> core/product
-vm/profile   -> core contracts        vdm/profile   -> core contracts
-       \       |       /                       \       |       /
-        +------v------+                         +------v------+
-             vm/compose                              vdm/compose
+vm/{machine,platform,product,profile} -> core contracts -> vm/compose -> nxvm.exe
+mantle/{machine,platform,product}      -> core contracts -> mantle/compose
+dos/{machine,platform,product,profile} -> no component dependency -> dos.dll
+mantle.dll + dos.dll + vdm/{machine,platform,product,profile} -> nxvdm.exe
 ```
 
 `core/machine` is the leaf for mutable guest state and guest-domain contracts.
-It must not include `core/platform`, `core/product`, `vm/*`, or `vdm/*`.
+It must not include `core/platform`, `core/product`, `vm/*`, `mantle/*`,
+`dos/*`, or `vdm/*`.
 `core/platform` is the leaf for host-capability contracts and shared host
 providers. It must not mutate guest state or include `core/product`, `vm/*`,
-or `vdm/*`; it also does not include `core/machine` or `core/product`.
+`mantle/*`, `dos/*`, or `vdm/*`; it also does not include `core/machine` or
+`core/product`.
 Platform-facing frames and events are platform contracts. Only the relevant
 product root composition translates a machine-owned snapshot into such a frame
 when required; no platform header may name a machine snapshot type.
@@ -246,18 +261,18 @@ when required; no platform header may name a machine snapshot type.
 `core/product` contains reusable product tooling only: generic command,
 registry, trace, debug, assembler, and disassembler facilities. It may depend
 only on its own public callback contracts and `core/utils`; it may not select a
-product, own a product profile, instantiate a VM/VDM session, or include
-`core/machine`, `core/platform`, `vm/*`, or `vdm/*`. A root composition adapts
+product, own a product profile, instantiate a VM/mantle session, or include
+`core/machine`, `core/platform`, `vm/*`, `mantle/*`, `dos/*`, or `vdm/*`. A
+root composition adapts
 a concrete machine or platform provider to a generic product-tool target.
 
-Within either product form, `machine`, `platform`, `product`, and `profile`
+Within VM, DOS, or VDM, `machine`, `platform`, `product`, and `profile`
 are peer providers. They may depend on matching core contracts but must not
 include one another. A profile is declarative data and provider metadata, not
 a machine constructor. It may contain a profile-specific ROM or firmware
-override only through a public core callback contract. The `vm/` or `vdm/`
-root composition may depend on all four modules and on `core/*`; it chooses a
-profile, creates the machine, binds platform capabilities and product UX, and
-owns execution-loop policy and teardown. Adapters which translate input,
+override only through a public core callback contract. VM composition may
+depend on its four modules and core; mantle composition may depend on its three
+modules and core; VDM binds mantle to dos. Adapters which translate input,
 display snapshots, or callbacks belong to that root composition, rather than
 creating a `machine <-> platform` dependency. Root composition repeatedly
 drives bounded synchronous machine quanta; it owns host threads, wall-clock
@@ -271,8 +286,9 @@ by a product-form root composition; a platform never imports a machine snapshot
 type. All guest-state mutation occurs on the machine execution thread at a
 command boundary.
 
-Forbidden dependencies are any core-to-VM/VDM path, any VM-to-VDM or
-VDM-to-VM path, sibling module includes within `vm` or `vdm`, profile-to-product
+Forbidden dependencies are any core-to-VM/mantle/dos/VDM path, any VM-to-mantle,
+DOS, or VDM path, any mantle-to-DOS or VDM path except its declared provider
+contract, all DOS-to-component paths, sibling module includes, profile-to-product
 construction, platform-to-guest-state mutation, and all dependency cycles.
 The build-target graph follows the same rules: a target may not conceal a
 forbidden source edge through an aggregate library.
@@ -290,14 +306,14 @@ for a session context or host lease.
 
 ## M5 Convergence
 
-M5 removed the prior `app`, `adapters`, `dos`, `firmware`, `integration`,
-`machine`, `nxvm-baseline`, `platform`, `product`, `products`, and `runtime`
-source roots. Only `core`, `vm`, and `vdm` directories, plus the root
-foundation units `type.*`, may receive source files.
+M5 converges on `core`, `vm`, `mantle`, `dos`, and `vdm`, plus the root
+foundation units `type.*`. `mantle/` and `dos/` remain architecture-only until
+their respective admission milestones; they do not enter the current NXVM
+build graph.
 
 The completed migration rationale is summarized in
 [M5 History](../history/m5.md). Current work must meet this document's
 ownership and dependency rules directly; completed plans cannot create an
 exception. Shared concrete Win32/Linux host providers move to `core/platform`
-only when proven mechanism-only; VM and VDM policies remain bound by root
-composition.
+only when proven mechanism-only; VM policy remains in VM composition, reusable
+VDM composition remains in mantle, and NXVDM policy remains in VDM.

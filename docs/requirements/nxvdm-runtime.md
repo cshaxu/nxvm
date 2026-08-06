@@ -1,7 +1,7 @@
 # Runtime CLI Requirements
 
 This document defines the user-visible contract for the non-invasive
-`ntvdm64 run` product path. It is a requirements record; it does not claim that
+`nxvdm run` product path. It is a requirements record; it does not claim that
 the options are implemented before their scheduled milestone.
 
 It does not define NXVM Console commands: `nxvm.exe` retains its interactive
@@ -24,7 +24,7 @@ constrained `load` state machine is defined below.
 ## Command Shape
 
 ```text
-ntvdm64 run [--display=auto|console|window]
+nxvdm run [--display=auto|console|window]
             [--debug]
             [--drive <letter>]... [--hide-drive <letter>]...
             [<program> [args...]]
@@ -81,7 +81,7 @@ It also supports the constrained `load` command defined below. The debugger
 controls guest execution through a synchronized command boundary; it must not
 concurrently mutate CPU state from the Console or window thread.
 
-`ntvdm64 run --debug` without `<program>` is valid. It creates a reset machine
+`nxvdm run --debug` without `<program>` is valid. It creates a reset machine
 and stops at its initial execution point without loading a DOS program or an
 implicit command interpreter. The debugger reports that no program is loaded.
 
@@ -156,34 +156,34 @@ access.
 
 ## Acceptance Cases
 
-1. `ntvdm64 run --display=console text.com` uses the calling Console for a
+1. `nxvdm run --display=console text.com` uses the calling Console for a
    supported text-mode program.
-2. `ntvdm64 run --display=window text.com` opens a dedicated application
+2. `nxvdm run --display=window text.com` opens a dedicated application
    window for the same program.
-3. `ntvdm64 run --display=auto graphics.com` starts in the Console only until
+3. `nxvdm run --display=auto graphics.com` starts in the Console only until
    the supported graphics-mode transition, then keeps rendering in one window.
-4. `ntvdm64 run --drive D program.com` makes only `D:` available; `C:` and all
+4. `nxvdm run --drive D program.com` makes only `D:` available; `C:` and all
    other drives fail to open as nonexistent from the guest.
-5. `ntvdm64 run --hide-drive C program.com` exposes eligible drives except
+5. `nxvdm run --hide-drive C program.com` exposes eligible drives except
    `C:`.
-6. `ntvdm64 run --drive D --hide-drive D program.com` exposes `D:` because the
+6. `nxvdm run --drive D --hide-drive D program.com` exposes `D:` because the
    selection rule has precedence.
-7. `ntvdm64 run --display=console graphics.com` fails clearly before graphics
+7. `nxvdm run --display=console graphics.com` fails clearly before graphics
    output is discarded when `graphics.com` requests an unsupported graphics
    mode.
-8. `ntvdm64 run --debug` creates a reset, paused machine with no DOS program
+8. `nxvdm run --debug` creates a reset, paused machine with no DOS program
    loaded; `load program.com` then uses the normal DOS loader and remains paused
-   at its first guest instruction. `ntvdm64 run --debug program.com` also stops
+   at its first guest instruction. `nxvdm run --debug program.com` also stops
    before its first guest instruction.
-9. `ntvdm64 run --debug --display=console program.com` fails before guest
-   execution; `ntvdm64 run --debug program.com` uses the dedicated guest window
+9. `nxvdm run --debug --display=console program.com` fails before guest
+   execution; `nxvdm run --debug program.com` uses the dedicated guest window
    and an interactive debugger Console.
 10. A path that reaches a hidden drive or a device/UNC namespace through a
     reparse point fails as nonexistent to the guest.
 11. Closing a windowed guest returns the defined cancellation result only after
     guest resources and any inherited Console state are restored.
-12. `ntvdm64 run` without a program and without `--debug` returns a usage error;
-    `ntvdm64 run --debug` pauses with no program, and `continue` returns to the
+12. `nxvdm run` without a program and without `--debug` returns a usage error;
+    `nxvdm run --debug` pauses with no program, and `continue` returns to the
     host Console without loading an image.
 13. During a windowed guest run, `Ctrl+C` in the inherited Console follows normal
     Windows Console behavior and does not control the guest; guest `Ctrl+C` is

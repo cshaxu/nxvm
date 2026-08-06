@@ -39,12 +39,12 @@ probe, documentation source, or reproducible reference test validates it.
 
 ## Historical NTVDM Research
 
-OpenNT and NTVDMx64 are historical architecture and problem-location sources.
-They may inform research leads, component inventory, startup hypotheses, and
-test design. They are not copied, transliterated, or treated as the ntvdm64
-specification. They do not authorize a formal Microsoft backend design before
-M11 T1 and T2. Research conclusions require binary behavior, experiments, or tests
-where feasible. Published product code is organized and maintained here.
+Historical third-party NTVDM implementations may inform research leads,
+component inventory, startup hypotheses, and test design. They are not copied,
+transliterated, or treated as the ntvdm64 specification. They do not authorize
+a formal Microsoft backend design before M11 T1 and T2. Research conclusions
+require binary behavior, experiments, or tests where feasible. Published
+product code is organized and maintained here.
 
 ## Microsoft Binaries
 

@@ -4,6 +4,23 @@
 
 **M5 T247 S1 active: narrow host-capability admission evidence inventory.**
 
+**M5 Td S20 complete: align the forward component architecture.** The current
+architecture now has five component roots: shared `core`, bootable `vm`, future
+shared VDM-composition `mantle`, independent owned `dos`, and NXVDM product
+shell `vdm`. `nxvm.exe` and `nxvdm.exe` are executable products; `core.dll`,
+`mantle.dll`, and `dos.dll` are medium-term targets only. This documentation
+task changes no source, build target, runtime behavior, or T247 scope.
+
+| Requirement | Evidence |
+| --- | --- |
+| R1: one forward architecture | Architecture, module layout, coding rules, roadmap, debt ledger, and contributor rules agree on the five components and their dependency direction. |
+| R2: DOS independence | `dos` has no component dependency; mantle receives an abstract DOS-runtime provider and VDM binds mantle to dos. |
+| R3: remove prohibited research names | Repository-wide Markdown scan has no occurrence of the three prohibited names; the obsolete reference document was renamed to a neutral name. |
+| R4: retain active work | T247 S1 remains the sole active subtask; no active implementation scope or acceptance evidence changed. |
+
+Verification: repository-wide prohibited-name scan, stale executable/topology
+scan, local Markdown-link check, `git diff --check`, and working-tree review.
+
 Original request: establish the source-level core boundary required for a
 future direct-entry VDM path, preserving the recorded NXVM baseline. T243 and
 T244 through T246 are closed. T247 is the next design-only admission review;

@@ -16,7 +16,7 @@ policy, and regression plan.
 
 A VDM profile declares the owned DOS capability set: memory and service policy,
 optional firmware-service subset, device policy, and required host
-capabilities. Its identifier uses `ntvdm64.execution.<name>`. It never implies
+capabilities. Its identifier uses `nxvdm.execution.<name>`. It never implies
 POST, a boot ROM chain, or a whole-machine topology.
 
 ## ROM And Firmware Overrides

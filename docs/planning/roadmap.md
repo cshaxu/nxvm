@@ -2,12 +2,12 @@
 
 Each milestone requires recorded evidence, focused tests or review vectors, and
 preservation of established baselines. The repository is a dual-product
-successor to NXVM: `nxvm.exe` remains a bootable whole-machine VM and
-`ntvdm64.exe` becomes the non-bootable DOS application runner. Both products
-share the same core.
+successor to NXVM: `nxvm.exe` remains a bootable whole-machine VM; `nxvdm.exe`
+becomes the non-invasive DOS application runner. `core`, `mantle`, and `dos`
+are the planned shared-component targets.
 
 Before M9, DOS program testing uses developer/debugger entry points only. The
-final user-facing `ntvdm64 run` CLI is designed in M8 and implemented in M9.
+final user-facing `nxvdm run` CLI is designed in M8 and implemented in M9.
 
 ## M0: Governance Reset
 
@@ -16,7 +16,7 @@ NXVM.
 
 **Scope:** project boundaries, MIT source policy, artifact/version policy,
 documentation ownership, milestone gates, and the shared-core direction for
-`nxvm.exe` and `ntvdm64.exe`.
+`nxvm.exe`, `nxvdm.exe`, and the core/mantle/dos component boundaries.
 
 **Exit:** governance documents are concise, non-conflicting, and identify M1
 through M2 as completed baselines before M3 begins.
@@ -41,11 +41,14 @@ are recorded.
 
 ## M2: Design The Shared Core Architecture
 
-**Goal:** define the architecture that lets `nxvm.exe` and `ntvdm64.exe` share
-one machine core while keeping product policy out of that core.
+**Goal:** define the architecture that keeps core product-neutral, separates an
+independent DOS component, and gives VM and shared VDM composition explicit
+ownership.
 
 **Scope:** specify the neutral `core/utils` layer, `core/{machine,platform,product}`, and
-`{vm,vdm}/{machine,platform,product,profile}` ownership; profile/composition,
+`vm/{machine,platform,product,profile}`, `mantle/{machine,platform,product}`,
+`dos/{machine,platform,product,profile}`, and
+`vdm/{machine,platform,product,profile}` ownership; profile/composition,
 device, port/memory, interrupt,
 firmware-service, DOS-service, host-capability, and debug/command registries;
 machine lifecycle, threading, trace boundaries, host-service trust boundaries,
@@ -68,14 +71,14 @@ regression through the `nxvm.full_pc` profile. No owned DOS backend or product
 CLI enters M3.
 
 **Exit:** the shared core builds with GCC, `nxvm.full_pc` reproduces M1
-checkpoints, `ntvdm64.dos_minimal` has deterministic no-media profile tests,
+checkpoints, the planned DOS profile has deterministic no-media tests,
 forbidden dependencies are absent, and M3 produces the M4 breakdown.
 
 ## M4: Design Firmware And The nxvm Product Surface
 
 **Goal:** specify the bootable VM product before implementation.
 
-**Scope:** BIOS/POST/ROM and BIOS interrupt-service ownership under VM/VDM
+**Scope:** BIOS/POST/ROM and BIOS interrupt-service ownership under VM and DOS
 profiles; machine-profile and DOS-profile composition;
 disk-image and removable-media policy; retained interactive NXVM Console grammar
 and behavior; debugger entry points; display/input expectations; artifact
@@ -105,11 +108,10 @@ defined by [M5 NXVM PC/AT Hardware Convergence](m5-pcat-hardware-convergence.md)
 **Exit:** `nxvm.exe` boots the recorded full-PC fixtures through the shared core
 with focused regression evidence. No baseline or adapter source root remains in
 the formal build graph. The source and CMake target graphs obey the directed
-core/VM/VDM dependency model, and the `vm/` and `vdm/` roots are the only
-composition roots. The legacy `device.h` aggregate is deleted; retained CPU,
+component dependency model. The legacy `device.h` aggregate is deleted; retained CPU,
 RAM, and port execution has one core-machine state/API authority; and reusable
 Win32/Linux host providers live in `core/platform` rather than `vm/platform`.
-No ntvdm64 DOS runner behavior is required. Completed implementation detail is
+No NXVDM, mantle, or DOS behavior is required. Completed implementation detail is
 summarized in [M5 History](../history/m5.md). M5 remains open until the
 [closure checklist](m5-closure-checklist.md) has current evidence for every
 applicable item.
@@ -120,12 +122,12 @@ implementation and a recorded before/after acceptance plan.
 
 ## M6: Design The Owned DOS Module
 
-**Goal:** specify the bounded ntvdm64 DOS backend before implementation.
+**Goal:** specify the bounded independent DOS backend before implementation.
 
-**Scope:** define `vdm/machine` COM load state, PSP/environment/DTA layout, initial CPU state, DOS
+**Scope:** define `dos/machine` COM load state, PSP/environment/DTA layout, initial CPU state, DOS
 interrupt dispatch, register preservation, handle and fixture-filesystem
-semantics, deterministic input-blocked protocol, error table, VDM concrete
-session-provider requirements, and M7 probes.
+semantics, deterministic input-blocked protocol, error table, DOS-provider
+contract requirements, and M7 probes.
 
 **Exit:** DOS ABI specification and test vectors plus the bounded M7 breakdown.
 **Non-goal:** DOS implementation.
@@ -134,7 +136,7 @@ session-provider requirements, and M7 probes.
 
 **Goal:** run simple DOS programs without booting a guest DOS image.
 
-**Scope:** implement bounded `vdm/machine` loader, PSP, environment, `INT 20h`, approved `INT 21h`
+**Scope:** implement bounded `dos/machine` loader, PSP, environment, `INT 20h`, approved `INT 21h`
 subset, deterministic text/keyboard I/O, guest exit, in-memory fixture
 filesystem, and developer/debugger loading through the owned DOS loader.
 
@@ -148,11 +150,11 @@ and exit through the shared core.
 
 **Goal:** specify non-invasive host integration before product implementation.
 
-**Scope:** `ntvdm64 run` grammar, separation from the retained NXVM Console,
+**Scope:** `nxvdm run` grammar, mantle-to-dos provider binding, separation from the retained NXVM Console,
 program-path mapping, exit-status table, filesystem containment, Windows 7
 through Windows 11 matrix, Console/window state machine, graphics capability
 table, debugger grammar, Ctrl+C/Ctrl+Break ownership, cleanup, and error
-behavior. A windowed ntvdm64 session retains a product control Console for
+behavior. A windowed NXVDM session retains a product control Console for
 online debugging; its exact lifetime and ownership are M8 decisions. Define
 the VDM debug-mode adoption of the shared `core/product/session` manager,
 including how an opened VDM session receives a workload.
@@ -160,9 +162,9 @@ including how an opened VDM session receives a workload.
 **Exit:** approved Platform/CLI specification, security matrix, and bounded M9
 breakdown. **Non-goal:** production platform implementation.
 
-## M9: Implement ntvdm64.exe
+## M9: Implement nxvdm.exe
 
-**Goal:** make the DOS app runner usable through `ntvdm64 run` on a clean
+**Goal:** make the DOS app runner usable through `nxvdm run` on a clean
 64-bit Windows system.
 
 **Scope:** CLI, arguments, current directory, environment, host filesystem,
@@ -174,7 +176,7 @@ Console; debug mode adopts the approved shared session manager and Console.
 **Non-goals:** global file association, loader replacement, injection, drivers,
 or registry-dependent operation.
 
-**Exit:** `ntvdm64 run hello.com` and an argument-bearing DOS program work
+**Exit:** `nxvdm run hello.com` and an argument-bearing DOS program work
 without system changes, and the approved M8 path, I/O, containment, cleanup,
 and exit-status tests pass.
 
@@ -197,7 +199,7 @@ increments.
 components, and Win16 routing without blocking the two default products.
 
 - T1: invasive Windows integration research.
-- T2: Microsoft NTVDM, NTVDMx64, and OpenNT component research.
+- T2: Microsoft NTVDM component research.
 - T3: Win16 route comparison, including WineVDM feasibility.
 
 **Exit:** each task records evidence and a recommendation; M11 closes only on
