@@ -2,36 +2,33 @@
 
 ## Current Work
 
-**M5 T248 S3 active: close the admitted host-capability boundary.**
+**M5 T249 S1 active: copied input-source and composition-ingress contract.**
 
-Original request: execute the core/platform versus VM/platform boundary
-admission after T246's machine-start boundary. S1 established that copied
-normalized input, a copied presentation mailbox, and cancellable host wait
-have concrete NXVM and trusted-research needs; raw monotonic-clock observation
-is deferred. S2 froze T249--T252 with a smallest-contract and owner rule. S3
-now checks that task numbering, queue references, and exclusions have one
-meaning before source migration begins.
+Original request: execute the first admitted T248 migration without changing
+NXVM input behavior. Define the copied neutral input value and source/sink
+contract, then inventory every Console/window producer and composition
+consumer before moving source. The current composition ingress remains the
+only execution-boundary queue.
 
-| Requirement | S3 evidence |
+| Requirement | S1 evidence |
 | --- | --- |
-| Frozen implementation tasks | T249 input/source ingress, T250 copied presentation mailbox, T251 cancellable wait, and T252 VM composition lifecycle closure each have a narrow contract and stop condition. |
-| Exclusions | Raw host monotonic clock, file/path, drive, CLI, window, exit, DOS policy, guest mutation, and VM run-handle/display policy stay outside core/platform. |
-| Preserve products | No source/build/runtime change in T248; no host-thread guest mutation, raw guest pointer, or second execution path. |
+| Contract | One copied core/platform input value plus source/sink call boundary; composition remains sole owner of enqueue/dequeue order. |
+| Inventory | Account for Win32 and Linux Console/window producers and their current VM composition consumer. |
+| Preserve products | No S1 source/build/runtime change; no host-thread guest mutation, raw guest pointer, new host queue, or altered input UX. |
 
 Applicable rules: module layout, contracts, coding/source policy, execution
 workflow, and one active subtask. Planned commands:
-`rg -n "host|presentation|input|wait|clock" src/core src/vm src/vdm docs/architecture`
-and `git diff --check`. Expected marker:
-`M5:T248:S3:BOUNDARY-CLOSURE:OK`. Stop for owner direction if a frozen
-contract requires filesystem/path policy, direct guest mutation, raw guest
-memory, product display/exit policy, a raw host-clock contract, or a second
+`rg -n "keyboard_transport|mouse_transport|receive_.*event|request_transport" src/vm tests`
+and `git diff --check`. Expected marker: `M5:T249:S1:INPUT-CONTRACT:OK`.
+Stop for owner direction if a candidate requires host capture policy, direct
+guest mutation, raw guest memory, scan-code/layout policy, or a second
 queue/run loop.
 
-T248 is an execution task, not a terminal design note: S2 freezes the
-conditional T249--T252 migration queue in
-[the T248 record](m5-t248-host-capability-admission.md) before any platform
-source move. Existing unstarted hardware work begins at T253; completed task
-identities and artifact revisions do not change.
+T248 is closed: it established the evidence-backed T249--T252 migration queue
+and deferred raw host-clock observation. T249 now starts with its own S1
+contract in [its task record](m5-t249-copied-input-ingress.md). Existing
+unstarted hardware work begins at T253; completed task identities and artifact
+revisions do not change.
 
 ## Current Technical Baseline
 

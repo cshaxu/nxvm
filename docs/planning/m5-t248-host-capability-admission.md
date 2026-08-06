@@ -1,6 +1,6 @@
 # M5 T248: Host-Capability Admission And Migration Queue
 
-**Status:** S2 active.
+**Status:** Complete.
 
 ## Goal
 
@@ -100,3 +100,24 @@ policy, and the M5 closure checklist. Any behavior-changing follow-on task
 must use its own S1 contract, focused regression, current GCC/CTest gate, and
 task artifact. T248 closure records the inventory, decision table, task queue,
 static dependency review, and `git diff --check`.
+
+#### S3 Closure Evidence
+
+- S1 records the current owner, copy rule, lifecycle boundary, NXVM consumer,
+  and trusted-research requirement for every candidate.
+- S2 gives each admitted capability exactly one bounded implementation task
+  (`T249`--`T252`) and moves the unstarted hardware queue to `T253`--`T260`.
+- The task records one deliberate deferral: a raw host monotonic-clock API has
+  no current NXVM consumer and must not affect `core_machine.elapsed_ticks`.
+- The frozen contracts prohibit a core-to-VM dependency, guest-memory borrow,
+  host-thread guest mutation, product policy, and a second session/run loop.
+- Static search of `src/core`, `src/vm`, `src/vdm`, and architecture/planning
+  records confirms the admitted state is copied at every cross-thread edge;
+  `git diff --check` passes. T248 changes no runtime source, build target, or
+  artifact.
+
+**Closure marker:** `M5:T248:S3:BOUNDARY-CLOSURE:OK`.
+
+The next active work is T249 S1. It must validate the exact copied input event
+contract before moving `vm/platform/input.[ch]`; it may not start source work
+from this queue alone.

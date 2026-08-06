@@ -17,7 +17,7 @@ baseline.
 
 | Task | Dependency | Deliverable and stop condition |
 | --- | --- | --- |
-| T248 | T246 | Active host-capability admission and migration-queue task. S1 inventories; S2 fixes conditional T249--T252; no provider exists before its admission. |
+| T248 | T246 | Complete host-capability admission and migration queue. S1 inventories; S2 fixes conditional T249--T252; S3 closes the boundary before implementation starts. |
 | T249 | T248 S2 `ADMIT` | Extract copied normalized input source and composition ingress only if admitted. |
 | T250 | T248 S2 `ADMIT` | Extract copied presentation sink/frame only if admitted. |
 | T251 | T248 S2 `ADMIT` | Extract cancellable host wait only if admitted; raw host-clock observation remains deferred. |
