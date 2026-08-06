@@ -183,6 +183,23 @@ static type_status core_machine_vadp_ega_planar_write(C_VOID *owner,
     return TYPE_STATUS_OK;
 }
 
+static type_status core_machine_vadp_ega_planar_query(C_VOID *owner,
+    type_unsigned_32 physical, type_native_unsigned bytes,
+    core_machine_memory_access access)
+{
+    t_vadp *adapter = (t_vadp *)owner;
+
+    if (adapter == STD_NULL || !core_machine_vadp_ega_planar_active(adapter) ||
+        (access != CORE_MACHINE_MEMORY_ACCESS_READ &&
+         access != CORE_MACHINE_MEMORY_ACCESS_WRITE) ||
+        physical < CORE_MACHINE_VADP_EGA_APERTURE_BASE ||
+        (uint64_t)physical - CORE_MACHINE_VADP_EGA_APERTURE_BASE + bytes >
+            CORE_MACHINE_VADP_EGA_APERTURE_BYTES) {
+        return TYPE_STATUS_UNSUPPORTED;
+    }
+    return TYPE_STATUS_OK;
+}
+
 static C_INT core_machine_vadp_supported_crtc_index(uint8_t index)
 {
     return index >= CORE_MACHINE_VADP_CRTC_CURSOR_TOP &&
@@ -827,7 +844,7 @@ type_status core_machine_vadp_configure_ega_sequencer(t_vadp *adapter,
             CORE_MACHINE_VADP_EGA_APERTURE_BASE,
             CORE_MACHINE_VADP_EGA_APERTURE_BYTES,
             core_machine_vadp_ega_planar_read, core_machine_vadp_ega_planar_write,
-            adapter);
+            core_machine_vadp_ega_planar_query, adapter);
         if (status != TYPE_STATUS_OK) {
             STD_FREE((C_VOID *)adapter->data.ega_planar_vram);
             adapter->data.ega_planar_vram = 0u;

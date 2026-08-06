@@ -50,7 +50,8 @@ C_INT main(C_INT argc, C_CHAR **argv)
     thread = CreateThread(STD_NULL, 0u, vm_timer_run, session, 0u, STD_NULL);
     if (thread == STD_NULL) goto fail;
     stage = 3;
-    for (elapsed = 0u; elapsed < 3000u; elapsed += 10u) {
+    /* Host time is only a bounded startup watchdog; guest time remains core-owned. */
+    for (elapsed = 0u; elapsed < 10000u; elapsed += 10u) {
         Sleep(10u);
         if (core_machine_debug_read_memory(session->core_machine,
                 VM_TIMER_BDA_TICKS, &bda_ticks, sizeof(bda_ticks)) ==

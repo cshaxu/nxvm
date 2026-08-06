@@ -2,18 +2,19 @@
 
 ## Current Work
 
-**M5 T243 S2 active: checked guest-memory contract extension.**
+**M5 T244 S1 active: registered undefined-instruction transition contract.**
 
 Original request: establish the source-level core boundary required for a
-future direct-entry VDM path, beginning with the checked guest-memory contract
-and preserving the recorded NXVM baseline.
+future direct-entry VDM path, preserving the recorded NXVM baseline. T243 is
+closed; T244 S1 is design-only and must not change runtime source.
 
 | Requirement | S1 evidence and boundary |
 | --- | --- |
 | Map the current boundary | Inventory `core/machine` memory/execution interfaces and every VM/VDM caller that would require checked copying or mapping queries. |
 | Define minimum contract | Specify only checked read/write/copy/mapping-query behavior, failure results, lifetime, and execution-thread ownership. |
 | Preserve products | No source/runtime change in S1; no DOS, external-runtime, PC/AT policy, raw RAM pointer, or host callback enters the proposed contract. |
-| Prepare S2 | Recorded exact files, focused test cases, full current gate, artifact requirement, and stop conditions in [the T243 record](m5-t243-checked-guest-memory.md). |
+| T243 S2/S3 | Added the bounded physical range query, shared route resolver, provider metadata query, focused core smoke, full current GCC/CTest evidence, and `0.5.0243` artifact. |
+| T244 S1 | Define the frozen, consumer-registered `#UD` transition contract before runtime implementation. |
 
 Applicable rules: `core/machine` remains the sole mutable guest-state owner;
 `core/platform` never mutates guest state; product composition is the only
@@ -24,8 +25,14 @@ is a documentation/contract design subtask with no defect fix or source change.
 S1 verification: reviewed the cited source/contracts; ran the recorded static
 queries; verified task/TODO/plan/status references; and ran `git diff --check`.
 The proposal does not require raw guest pointers, platform mutation,
-DOS/external-runtime semantics, or a second execution path. M5 T243 S2 is the
-sole active source-changing subtask; no source changes have begun yet.
+DOS/external-runtime semantics, or a second execution path. M5 T244 S1 is the
+sole active subtask.
+
+**M5 T243 complete:** checked physical read/write/query now uses one frozen
+core resolver with neutral ordinary-RAM/provider classification and no raw
+storage or data callback exposure. The 34 static/ownership checks and 81/81
+CTest smokes passed. Artifact `nxvm_0_5_0243.exe` SHA-256:
+`982485420BA4325A1B9A83F1DE54DA68F0CE638C244A6F96F6C037FD1935C076`.
 
 **M5 T242 complete:** the bounded drive-0 MFM `READ TRACK 42h` slice uses the
 existing FDC -> DMA2 -> core RAM -> IRQ6 route. Its focused port probe and

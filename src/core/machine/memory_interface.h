@@ -10,6 +10,16 @@ extern "C" {
 
 typedef struct core_machine core_machine;
 
+typedef enum core_machine_memory_access {
+    CORE_MACHINE_MEMORY_ACCESS_READ = 0,
+    CORE_MACHINE_MEMORY_ACCESS_WRITE
+} core_machine_memory_access;
+
+typedef enum core_machine_memory_route {
+    CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM = 0,
+    CORE_MACHINE_MEMORY_ROUTE_PROVIDER
+} core_machine_memory_route;
+
 type_status core_machine_memory_read(
     const core_machine *machine,
     uint32_t physical,
@@ -21,6 +31,15 @@ type_status core_machine_memory_write(
     uint32_t physical,
     const C_VOID *data,
     STD_SIZE_T size);
+
+/* Queries one complete physical range without exposing storage or invoking a
+ * provider data callback. It is valid only at a stopped or paused boundary. */
+type_status core_machine_memory_query(
+    const core_machine *machine,
+    uint32_t physical,
+    STD_SIZE_T size,
+    core_machine_memory_access access,
+    core_machine_memory_route *out_route);
 
 type_status core_machine_set_a20(
     core_machine *machine,

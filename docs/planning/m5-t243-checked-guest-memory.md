@@ -2,10 +2,9 @@
 
 ## Status
 
-**S1 complete; S2 active.** S1 changed planning documentation only; it did not
-modify runtime code, public headers, build targets, artifacts, or product
-behavior. S2 is the next source-changing packet and is limited to the contract
-defined here.
+**Complete.** S1 changed planning documentation only. S2 implemented the
+bounded public query and its focused smoke. S3 closed the current matrix and
+the required developer artifact.
 
 ## Original Request
 
@@ -47,7 +46,7 @@ that mutates guest memory.
 
 | Owner and file | Existing operation | Current guard | T243 disposition |
 | --- | --- | --- | --- |
-| `core/machine/memory_interface.h` and `.c` | `core_machine_memory_read` and `_write` copy physical ranges in or out. | Rejects null/zero input and permits only `STOPPED` or `PAUSED`; delegates range/fault behavior to RAM. | Retain as the only product-facing physical copy surface. |
+| `core/machine/memory_interface.h` and `.c` | `core_machine_memory_read`, `_write`, and `_query` copy or classify physical ranges. | Rejects null/zero input and permits only `STOPPED` or `PAUSED`; delegates a shared route/fault decision to RAM. | Retain as the only product-facing physical copy surface. |
 | `core/machine/memory.h` and `.c` | RAM backing, A20 wrapping, physical and real-mode helpers, mapping/device-provider registration, write observers. | Raw `t_ram` capabilities are available during configuration; mapping/provider registration freezes when the machine starts. | Keep as core implementation/configuration machinery. Do not expose it to a future composition or wrapper boundary. |
 | `core/machine/machine_interface.h` | Configuration borrows expose `t_ram`, CPU, and `core_machine_cpu_execution_context`; profile binding exposes RAM and execution context. | Documented for composition while `INITIALIZED`; providers can retain child references through core teardown. | This is the principal boundary gap. It remains an internal composition facility for now, but T243 S2 must ensure new callers do not require it merely to copy or validate guest memory. |
 | `core/machine/cpu_instructions.h` | Checked linear reads/writes exist on `core_machine_cpu_execution_context`. | Available only to holders of the borrowed internal execution context. | Leave unchanged in T243. T244 will decide the narrow execution-view needed for transition handlers. |
@@ -133,6 +132,33 @@ git diff --check
 S1 result: the inventory and contract proposal above, with no source or build
 changes. S2 will add focused range/mapping tests and run the current GCC/CTest
 gate before producing its required developer artifact.
+
+## S2 Implementation
+
+`core_machine_memory_query()` accepts only `READ` or `WRITE`, returns the
+neutral `ORDINARY_RAM` or `PROVIDER` route class, and exposes no storage,
+mapping, owner, or provider data. `memory.c` now has one private resolver used
+by copied reads, copied writes, and queries. Device providers supply a narrow
+query callback so classification never invokes a data callback; an unsupported
+provider query falls back through the existing RAM route. The existing EGA
+provider was updated to report its active aperture through that callback.
+
+`core-machine-checked-memory-smoke` proves the stopped-boundary guard, A20
+route selection, RAM and provider classification, callback non-invocation,
+zero length, invalid access, 32-bit overflow, and RAM-end fault behavior.
+No product, firmware, DOS, host callback, CPU execution borrow, or new memory
+path was added.
+
+## S3 Evidence And Closure
+
+The current GCC gate passed all 34 static/ownership checks and 81/81 CTest
+smokes. `build/output/nxvm_0_5_0243.exe` SHA-256 is
+`982485420BA4325A1B9A83F1DE54DA68F0CE638C244A6F96F6C037FD1935C076`.
+
+The gate also exposed an existing flaky `vm-timer-firmware-smoke` startup
+watchdog: three isolated runs produced two passes and one 3-second timeout.
+The test-only host observation limit is now 10 seconds, still below the CTest
+30-second limit and still not a guest-clock input. The final full run passed.
 
 ## Stop Conditions
 
