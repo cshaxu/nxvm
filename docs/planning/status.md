@@ -2,10 +2,9 @@
 
 ## Current Work
 
-**M5 T242 S1 complete:** the FDC/FDD feature matrix admits only fixed-geometry
-drive-0 `READ TRACK` for S2 investigation. The new owner probe records current
-`42h -> 80h` invalid-command behavior without DMA2/IRQ6; 34 static gates and
-79/79 current CTest smokes pass. Multi-drive and rotation remain separate
+**M5 T242 S3 active:** the bounded drive-0 `READ TRACK` controller slice now
+uses the existing FDC -> DMA2 -> core RAM -> IRQ6 route. S3 is closing it with
+an owner-built DOS/system-image corpus; multi-drive and rotation remain separate
 profile/time admissions. See [the T242 record](m5-t242-fdc-corpus-extension.md).
 
 **M5 T241 complete:** the owner-built DOS `MOUSE241.COM` fixture boots through
@@ -33,10 +32,10 @@ owner.  System and DOS fixtures, direct EGA/CGA, Console/debugger, FDD/HDD
 boot, and GCC/CTest `76/76` pass.  Artifact `nxvm_0_5_0239.exe` SHA-256:
 `4C4FDC4DCEB1CE0003A71E54C3DFFA19101AC048E8E7B62919596E6E126123DA`.
 
-**Latest technical baseline -- idle after M5 T242 S1:** no implementation
-subtask is active. The only admitted ROM EGA service is `AH=00h, AL=0Dh`,
-with `AL=03h` as its text exit; DAC, VBE, and other EGA/VGA families remain
-deferred.  See [the T239 record](m5-t239-rom-ega-int10.md).
+**Latest technical baseline:** T242 S3 is the single active implementation
+subtask. The only admitted ROM EGA service is `AH=00h, AL=0Dh`, with `AL=03h`
+as its text exit; DAC, VBE, and other EGA/VGA families remain deferred. See
+[the T239 record](m5-t239-rom-ega-int10.md).
 
 **M5 T238 complete:** the sole bounded EGA planar path is
 direct-port `EGA-320x200x16-direct`, core-routed VADP-owned non-mirrored VRAM
