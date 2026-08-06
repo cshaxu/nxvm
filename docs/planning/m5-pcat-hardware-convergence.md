@@ -7,9 +7,9 @@ redefine the roadmap, start a later milestone, or define NXVDM completion.
 Completed M5 evidence is summarized in [M5 History](../history/m5.md); this
 document contains only the current baseline and remaining queue.
 
-The retained baseline is **T257 S4**: `nxvm.exe` preserves its full-PC boot,
+The retained baseline is **T257 S7**: `nxvm.exe` preserves its full-PC boot,
 Console, debugger, and current GCC/CTest gate. The current target is
-`vm-0-5-0255`, with static/ownership checks and 91/91 CTest cases passing.
+`vm-0-5-0256`, with static/ownership checks and 91/91 CTest cases passing.
 Checked memory, immutable ROM mapping, atomic entry plans, and the sole VM
 composition lifecycle remain owned boundaries. Each admitted task follows the
 hardware-device verification template and must preserve that baseline.

@@ -2,8 +2,8 @@
 
 ## Status
 
-**S6 active.** S5 defined the closure; S6 implements its bounded decoder gate
-and corpus; S7 verifies it and records the next developer artifact revision.
+**Complete.** S5 defined the closure, S6 implemented the bounded decoder gate
+and corpus, and S7 verified artifact `0.5.0256`.
 
 ## Original Request
 
@@ -30,3 +30,13 @@ transfer, or a profile-specific exception mechanism.
 S6 may edit only the protected-mode decoder gate, the T257 corpus, task/status
 tracking, and necessary CMake registration. S7 runs the current GCC gate,
 records the next unused artifact revision and SHA-256, then closes the task.
+
+## S7 Evidence
+
+`current-gcc` built `nxvm_0_5_0256.exe`; `current-gates-gcc` passed all 37
+static/ownership checks and 91/91 CTest cases. The artifact SHA-256 is
+`09E0C96D2D6AF6B180013344FDEC63B1D7DF66102620D1E107C47946E21D9CB8`.
+
+The S6 corpus proves PE-state `LIDT` stops as `#UD`, and a real-mode configured
+IDT still cannot transfer a protected-mode `INT3` to its handler. Real-mode
+interrupt and table behavior remains on the retained path.
