@@ -6,6 +6,8 @@
 
 #define TEST_GDT_ADDRESS 0x0300u
 #define TEST_GDT_POINTER_ADDRESS 0x0100u
+#define TEST_IDT_ADDRESS 0x0400u
+#define TEST_IDT_POINTER_ADDRESS 0x0110u
 #define TEST_CODE_ADDRESS 0x2000u
 #define TEST_DATA_ADDRESS 0x3000u
 #define TEST_CODE_SELECTOR 0x0008u
@@ -84,6 +86,22 @@ static C_INT protected_mode_install_gdt(core_machine *machine,
         gdt_pointer, sizeof(gdt_pointer)) == TYPE_STATUS_OK &&
         core_machine_memory_write(machine, TEST_GDT_ADDRESS, gdt,
             sizeof(gdt)) == TYPE_STATUS_OK;
+}
+
+static C_INT protected_mode_install_idt(core_machine *machine)
+{
+    static const uint8_t idt_pointer[] = {
+        0x1fu, 0x00u, 0x00u, 0x04u, 0x00u, 0x00u
+    };
+    uint8_t idt[32] = {0};
+
+    idt[24u] = 0x10u;
+    idt[26u] = 0x08u;
+    idt[29u] = 0x86u;
+    return core_machine_memory_write(machine, TEST_IDT_POINTER_ADDRESS,
+        idt_pointer, sizeof(idt_pointer)) == TYPE_STATUS_OK &&
+        core_machine_memory_write(machine, TEST_IDT_ADDRESS, idt,
+            sizeof(idt)) == TYPE_STATUS_OK;
 }
 
 static C_INT protected_mode_run(core_machine *machine,
@@ -262,6 +280,70 @@ static C_INT protected_mode_test_nonpresent_stack(C_VOID)
     return failed;
 }
 
+static C_INT protected_mode_test_protected_lidt_deferred(C_VOID)
+{
+    static const uint8_t real_code[] = {
+        0x0fu, 0x01u, 0x16u, 0x00u, 0x01u,
+        0xb8u, 0x01u, 0x00u,
+        0x0fu, 0x01u, 0xf0u,
+        0x0fu, 0x01u, 0x1eu, 0x10u, 0x01u
+    };
+    static const uint8_t protected_code[] = { 0x90u };
+    protected_mode_machine state;
+    core_machine_run_result result;
+    core_machine_cpu_diagnostic diagnostic;
+    C_INT failed = !protected_mode_prepare(&state,
+        CORE_MACHINE_CPU_PROFILE_80286);
+
+    if (!failed) {
+        failed |= !protected_mode_run(state.machine, real_code, sizeof(real_code),
+            protected_code, sizeof(protected_code), 0u, 0u, 1, &result,
+            &diagnostic);
+        failed |= !diagnostic.first_fault.valid ||
+            !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
+                VCPUINS_EXCEPT_UD);
+    }
+    core_machine_destroy(state.machine);
+    return failed;
+}
+
+static C_INT protected_mode_test_configured_idt_cannot_interrupt(C_VOID)
+{
+    static const uint8_t real_code[] = {
+        0x0fu, 0x01u, 0x16u, 0x00u, 0x01u,
+        0x0fu, 0x01u, 0x1eu, 0x10u, 0x01u,
+        0xb8u, 0x01u, 0x00u,
+        0x0fu, 0x01u, 0xf0u,
+        0xb8u, 0x10u, 0x00u,
+        0x8eu, 0xd8u,
+        0x8eu, 0xd0u,
+        0xeau, 0x00u, 0x00u, 0x08u, 0x00u
+    };
+    static const uint8_t protected_code[] = {
+        0xccu, 0x90u, 0x90u, 0x90u, 0x90u, 0x90u, 0x90u, 0x90u,
+        0x90u, 0x90u, 0x90u, 0x90u, 0x90u, 0x90u, 0x90u, 0x90u,
+        0xf4u
+    };
+    protected_mode_machine state;
+    core_machine_run_result result;
+    core_machine_cpu_diagnostic diagnostic;
+    C_INT failed = !protected_mode_prepare(&state,
+        CORE_MACHINE_CPU_PROFILE_80286);
+
+    if (!failed) {
+        failed |= !protected_mode_install_idt(state.machine);
+        failed |= !protected_mode_run(state.machine, real_code, sizeof(real_code),
+            protected_code, sizeof(protected_code), 0u, 0u, 1, &result,
+            &diagnostic);
+        failed |= !diagnostic.first_fault.valid ||
+            !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
+                VCPUINS_EXCEPT_UD) || diagnostic.first_fault.point.cs !=
+                TEST_CODE_SELECTOR || diagnostic.first_fault.point.eip != 0u;
+    }
+    core_machine_destroy(state.machine);
+    return failed;
+}
+
 static C_INT protected_mode_test_80186_gate(C_VOID)
 {
     static const uint8_t real_code[] = { 0x0fu, 0x01u, 0x16u, 0x00u, 0x01u };
@@ -312,6 +394,8 @@ C_INT main(C_VOID)
     C_INT invalid_selector;
     C_INT nonpresent_code;
     C_INT nonpresent_stack;
+    C_INT protected_lidt;
+    C_INT configured_idt;
     C_INT profile_gate;
     C_INT rejects_386;
 
@@ -319,16 +403,18 @@ C_INT main(C_VOID)
     invalid_selector = protected_mode_test_invalid_selector();
     nonpresent_code = protected_mode_test_nonpresent_code();
     nonpresent_stack = protected_mode_test_nonpresent_stack();
+    protected_lidt = protected_mode_test_protected_lidt_deferred();
+    configured_idt = protected_mode_test_configured_idt_cannot_interrupt();
     profile_gate = protected_mode_test_80186_gate();
     rejects_386 = protected_mode_test_80286_rejects_386();
     if (positive || invalid_selector || nonpresent_code || nonpresent_stack ||
-        profile_gate || rejects_386) {
+        protected_lidt || configured_idt || profile_gate || rejects_386) {
         STD_FPRINTF(STD_STDERR,
-            "M5:T257:S2:80286-PROTECTED-MODE:FAIL positive=%d selector=%d npcode=%d npstack=%d profile=%d i386=%d\n",
+            "M5:T257:S6:80286-PROTECTED-MODE:FAIL positive=%d selector=%d npcode=%d npstack=%d lidt=%d idt=%d profile=%d i386=%d\n",
             positive, invalid_selector, nonpresent_code, nonpresent_stack,
-            profile_gate, rejects_386);
+            protected_lidt, configured_idt, profile_gate, rejects_386);
         return 1;
     }
-    STD_PRINTF("M5:T257:S2:80286-PROTECTED-MODE:OK\n");
+    STD_PRINTF("M5:T257:S6:80286-PROTECTED-MODE:OK\n");
     return 0;
 }

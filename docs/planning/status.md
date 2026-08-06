@@ -2,11 +2,11 @@
 
 ## Current Work
 
-**M5 T257 S5 active: close protected-mode admission.**
+**M5 T257 S6 active: close protected-mode admission.**
 
 Original request: repair the audit finding that left IDT table forms and
 protected interrupt delivery reachable despite T257's GDT-only contract.
-S5 defines the closure; S6 may reject only those PE-state paths and add its
+S5 defined the closure; S6 rejects only those PE-state paths and adds its
 focused corpus; S7 alone closes the gate and artifact record. The admitted
 path remains GDT-only, ring-0, 16-bit, and diagnostic-stop based. Paging,
 privilege transitions, LDT/TSS/gates, 32-bit semantics, and Windows claims

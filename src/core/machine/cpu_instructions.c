@@ -3130,7 +3130,7 @@ _______todo _e_int3(core_machine_cpu_execution_context *context, type_unsigned_8
     else
     {
         TYPE_TRACE_BLOCK_BEGIN("!Real");
-        TYPE_TRACE_CHECK_RETURN(_ser_int_protected(context, 0x03, byte, 0));
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
         TYPE_TRACE_BLOCK_END;
     }
     TYPE_TRACE_CALL_END;
@@ -3150,7 +3150,7 @@ _______todo _e_into(core_machine_cpu_execution_context *context, type_unsigned_8
         else
         {
             TYPE_TRACE_BLOCK_BEGIN("!Real");
-            TYPE_TRACE_CHECK_RETURN(_ser_int_protected(context, 0x04, byte, 0));
+            TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
             TYPE_TRACE_BLOCK_END;
         }
         TYPE_TRACE_BLOCK_END;
@@ -3178,7 +3178,7 @@ _______todo _e_int_n(core_machine_cpu_execution_context *context, type_unsigned_
         else
         {
             TYPE_TRACE_BLOCK_BEGIN("EFLAGS_VM(0)/IOPL(3)");
-            TYPE_TRACE_CHECK_RETURN(_ser_int_protected(context, intid, byte, 0));
+            TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
             TYPE_TRACE_BLOCK_END;
         }
         TYPE_TRACE_BLOCK_END;
@@ -3197,7 +3197,7 @@ _______todo _e_intr_n(core_machine_cpu_execution_context *context, type_unsigned
     else
     {
         TYPE_TRACE_BLOCK_BEGIN("!Real");
-        TYPE_TRACE_CHECK_RETURN(_ser_int_protected(context, intid, byte, 1));
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
         TYPE_TRACE_BLOCK_END;
     }
     TYPE_TRACE_CALL_END;
@@ -14188,6 +14188,12 @@ static C_VOID INS_0F_01(core_machine_cpu_execution_context *context)
         break;
     case 1: /* SIDT_M32_16 */
         TYPE_TRACE_BLOCK_BEGIN("SIDT_M32_16");
+        if (_GetCR0_PE)
+        {
+            TYPE_TRACE_BLOCK_BEGIN("Protected(1)");
+            TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+            TYPE_TRACE_BLOCK_END;
+        }
         TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 6));
         if (!instruction_state.data.flagMem)
         {
@@ -14245,6 +14251,12 @@ static C_VOID INS_0F_01(core_machine_cpu_execution_context *context)
         break;
     case 3: /* LIDT_M32_16 */
         TYPE_TRACE_BLOCK_BEGIN("LIDT_M32_16");
+        if (_GetCR0_PE)
+        {
+            TYPE_TRACE_BLOCK_BEGIN("Protected(1)");
+            TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+            TYPE_TRACE_BLOCK_END;
+        }
         TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 6));
         if (!instruction_state.data.flagMem)
         {
