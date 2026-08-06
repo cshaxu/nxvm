@@ -83,7 +83,7 @@ static LRESULT CALLBACK win32app_window_procedure(HWND window, UINT message,
 {
     win32app_run_handle *handle;
     PAINTSTRUCT paint;
-    UCHAR scan_code;
+    uint16_t scan_code;
     UCHAR virtual_key;
 
     if (message == WM_NCCREATE) {
@@ -123,16 +123,14 @@ static LRESULT CALLBACK win32app_window_procedure(HWND window, UINT message,
         return 0;
     case WM_KEYDOWN:
     case WM_SYSKEYDOWN:
-        scan_code = (uint16_t)((lParam >> 16) & 0xff);
-        if ((lParam & (1L << 24)) != 0) scan_code |= 0x0100u;
+        scan_code = vm_platform_win32app_decode_scan_code(lParam);
         virtual_key = (uint16_t)(wParam & 0xffff);
         vm_platform_win32_keyboard_make_key_for(handle->platform,
             handle->owner, scan_code, virtual_key, 1);
         return 0;
     case WM_KEYUP:
     case WM_SYSKEYUP:
-        scan_code = (uint16_t)((lParam >> 16) & 0xff);
-        if ((lParam & (1L << 24)) != 0) scan_code |= 0x0100u;
+        scan_code = vm_platform_win32app_decode_scan_code(lParam);
         virtual_key = (uint16_t)(wParam & 0xffff);
         vm_platform_win32_keyboard_make_key_for(handle->platform,
             handle->owner, scan_code, virtual_key, 0);
@@ -159,6 +157,14 @@ static LRESULT CALLBACK win32app_window_procedure(HWND window, UINT message,
     default:
         return DefWindowProc(window, message, wParam, lParam);
     }
+}
+
+uint16_t vm_platform_win32app_decode_scan_code(LPARAM l_param)
+{
+    uint16_t scan_code = (uint16_t)((l_param >> 16) & 0xff);
+
+    if ((l_param & (1L << 24)) != 0) scan_code |= 0x0100u;
+    return scan_code;
 }
 
 static C_INT win32app_register_class(const win32app_run_handle *handle)

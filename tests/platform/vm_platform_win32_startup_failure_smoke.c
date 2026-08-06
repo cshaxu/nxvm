@@ -45,6 +45,6 @@ done:
     vm_session_finalize(session);
     STD_FREE(session);
     if (!passed) return 1;
-    STD_PRINTF("M5:T195:S3:WIN32-STARTUP-FAILURE:%d:OK\n", stage);
+    STD_PRINTF("M5:T247:S2:WIN32-STARTUP-FAILURE:%d:OK\n", stage);
     return 0;
 }

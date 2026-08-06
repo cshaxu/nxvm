@@ -69,12 +69,23 @@ type_status core_machine_apply_entry_plan(core_machine *machine,
     }
     for (index = 0u; index < plan->preload_count; ++index) {
         const core_machine_entry_plan_preload *preload = &plan->preloads[index];
+        STD_SIZE_T prior;
 
         if (preload->bytes == STD_NULL || preload->byte_count == 0u ||
             core_machine_memory_query(machine, preload->physical,
                 preload->byte_count, CORE_MACHINE_MEMORY_ACCESS_WRITE, &route) !=
                 TYPE_STATUS_OK || route != CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM) {
             return TYPE_STATUS_INVALID_ARGUMENT;
+        }
+        for (prior = 0u; prior < index; ++prior) {
+            const core_machine_entry_plan_preload *other = &plan->preloads[prior];
+            uint64_t preload_end = (uint64_t)preload->physical + preload->byte_count;
+            uint64_t other_end = (uint64_t)other->physical + other->byte_count;
+
+            if ((uint64_t)preload->physical < other_end &&
+                (uint64_t)other->physical < preload_end) {
+                return TYPE_STATUS_INVALID_ARGUMENT;
+            }
         }
     }
     machine->executor_cpu = candidate;

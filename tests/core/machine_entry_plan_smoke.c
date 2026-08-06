@@ -56,6 +56,9 @@ C_INT main(C_VOID)
     core_machine_entry_plan_preload invalid_preloads[2] = {
         { 0x0200u, halt, sizeof(halt) }, { 0x1000u, halt, sizeof(halt) }
     };
+    core_machine_entry_plan_preload overlapping_preloads[2] = {
+        { 0x0200u, halt, sizeof(halt) }, { 0x0200u, halt, sizeof(halt) }
+    };
     core_machine_entry_plan plan;
     uint8_t observed = 0xffu;
     C_INT failed = prepare_machine(&machine);
@@ -73,6 +76,14 @@ C_INT main(C_VOID)
 
         plan = make_plan(0u, 0x1000u, 0x1000u,
             CORE_MACHINE_MEMORY_ROUTE_PROVIDER, invalid_preloads, 2u);
+        failed |= core_machine_apply_entry_plan(machine, &plan) != TYPE_STATUS_INVALID_ARGUMENT;
+        failed |= core_machine_memory_read(machine, 0x0200u, &observed,
+            sizeof(observed)) != TYPE_STATUS_OK || observed != 0u;
+        failed |= core_machine_get_cpu_state(machine, &state) != TYPE_STATUS_OK ||
+            state.cs != 0xf000u || state.eip != 0x0000fff0u;
+
+        plan = make_plan(0u, 0x0200u, 0x0200u,
+            CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM, overlapping_preloads, 2u);
         failed |= core_machine_apply_entry_plan(machine, &plan) != TYPE_STATUS_INVALID_ARGUMENT;
         failed |= core_machine_memory_read(machine, 0x0200u, &observed,
             sizeof(observed)) != TYPE_STATUS_OK || observed != 0u;

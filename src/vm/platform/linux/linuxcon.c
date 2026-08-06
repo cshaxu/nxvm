@@ -397,7 +397,6 @@ type_status vm_platform_linuxcon_run_handle_start(
     const vm_platform_run_context *context, vm_platform_run_handle *owner) {
     linuxcon_run_handle *handle;
     C_INT old_flip;
-    C_UINT waited;
 
     if (context == STD_NULL || owner == STD_NULL || owner->active ||
         context->execution == STD_NULL || context->keyboard == STD_NULL) {
@@ -425,9 +424,12 @@ type_status vm_platform_linuxcon_run_handle_start(
         return TYPE_STATUS_INVALID_STATE;
     }
     handle->kernel_started = 1;
-    while (old_flip ==
-           vm_platform_execution_get_flip_for(context->execution)) {
-        core_utils_wait_milliseconds(context->wait_scope, 100u);
+    if (!vm_platform_execution_wait_for_flip_for(context->execution, old_flip,
+            context->wait_scope, VM_PLATFORM_EXECUTION_FLIP_TIMEOUT_MILLISECONDS)) {
+        vm_platform_linuxcon_run_handle_request_stop(owner);
+        vm_platform_linuxcon_run_handle_join(owner);
+        vm_platform_linuxcon_run_handle_finalize(owner);
+        return TYPE_STATUS_INVALID_STATE;
     }
     if (pthread_create(&handle->display_thread, STD_NULL, linuxcon_display_thread,
             handle) != 0) {
@@ -437,7 +439,7 @@ type_status vm_platform_linuxcon_run_handle_start(
         return TYPE_STATUS_INVALID_STATE;
     }
     handle->display_started = 1;
-    for (waited = 0u; !STD_ATOMIC_LOAD(&handle->display_ready) &&
+    for (C_UINT waited = 0u; !STD_ATOMIC_LOAD(&handle->display_ready) &&
          !STD_ATOMIC_LOAD(&handle->display_failed) && waited < 5000u; ++waited) {
         core_utils_wait_milliseconds(context->wait_scope, 1u);
     }

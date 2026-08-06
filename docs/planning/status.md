@@ -2,21 +2,50 @@
 
 ## Current Work
 
-**M5 T247 S1 active: narrow host-capability admission evidence inventory.**
+**M5 T248 S1 active: narrow host-capability admission evidence inventory.**
+
+**M5 T247 S3 complete: post-boundary correctness closure.** Corrected four
+proven defects without changing NXVM
+Console, debugger, boot, or guest-visible compatibility behavior: preserve the
+Win32 E0 scan-code bit in both host adapters; bound Console/Linux execution-flip
+startup waits and prove cleanup on a no-flip injected path; reject overlapping
+entry-plan preloads during preflight; and make the current runnable artifact
+use the GCC warning-as-error policy.
+
+| Requirement | Owner and focused evidence |
+| --- | --- |
+| Win32 E0 capture | S1 complete: `vm/platform/win32` retains the 16-bit adapter value; a Window/Console adapter conversion smoke asserts `0x0148`. |
+| Bounded flip wait | S2 complete: `vm/platform` owns the shared wait helper; Console and Linux clean up after its timeout; Win32 failure stage 9 proves the no-flip cleanup path. |
+| Atomic entry plans | S3 complete: `core/machine` rejects every overlapping preload pair before CPU/RAM mutation; the entry-plan smoke proves it. |
+| Truthful artifact strictness | S3 complete: the current GCC artifact uses `-Werror`, matching the current gate. |
+
+Applicable rules: one active subtask; no second session/machine or host shortcut;
+similar-issue sweep records every matching production input/wait/preload/artifact
+path; build and focused smoke evidence precede closure. T247 S3 is complete;
+T248 S1 remains the sole active design subtask.
+
+**M5 T247 S3 complete:** Window and Console Win32 adapters preserve the `E0`
+scan-code bit; Console/Linux execution-flip waits time out through the shared
+100ms-poll / 5000ms-budget helper and finalize safely; entry-plan preloads are
+pairwise non-overlapping; and the runnable GCC artifact now uses `-Werror`.
+Focused adapter and entry-plan smoke plus stage-9 no-flip cleanup passed. The
+full current gate passed 85/85 CTest cases. Artifact
+`nxvm_0_5_0247.exe` SHA-256:
+`51D45A24C6C41E3D43D5E53E00CF0C3862FF01250F007D1D33787F09C86FECF4`.
 
 **M5 Td S20 complete: align the forward component architecture.** The current
 architecture now has five component roots: shared `core`, bootable `vm`, future
 shared VDM-composition `mantle`, independent owned `dos`, and NXVDM product
 shell `vdm`. `nxvm.exe` and `nxvdm.exe` are executable products; `core.dll`,
 `mantle.dll`, and `dos.dll` are medium-term targets only. This documentation
-task changes no source, build target, runtime behavior, or T247 scope.
+task changes no source, build target, runtime behavior, or T248 scope.
 
 | Requirement | Evidence |
 | --- | --- |
 | R1: one forward architecture | Architecture, module layout, coding rules, roadmap, debt ledger, and contributor rules agree on the five components and their dependency direction. |
 | R2: DOS independence | `dos` has no component dependency; mantle receives an abstract DOS-runtime provider and VDM binds mantle to dos. |
 | R3: remove prohibited research names | Repository-wide Markdown scan has no occurrence of the three prohibited names; the obsolete reference document was renamed to a neutral name. |
-| R4: retain active work | T247 S1 remains the sole active subtask; no active implementation scope or acceptance evidence changed. |
+| R4: retain active work | T248 S1 remains the sole active subtask; no active implementation scope or acceptance evidence changed. |
 
 Verification: repository-wide prohibited-name scan, stale executable/topology
 scan, local Markdown-link check, `git diff --check`, and working-tree review.
@@ -25,7 +54,7 @@ scan, local Markdown-link check, `git diff --check`, and working-tree review.
 audit the project's distribution-compliance documentation, then remediate and
 commit the findings. This task adds the current source-distribution notices and
 release-record templates; it changes no source, build target, runtime behavior,
-or T247 scope.
+or T248 scope.
 
 | Requirement | Evidence |
 | --- | --- |
@@ -38,11 +67,11 @@ Verification: JSON parse of the manifest template; repository-wide checks for
 the obsolete DOS artifact name and required notice/release files; local
 Markdown-link check; `git diff --check`; and working-tree review. Similar-issue
 sweep is not applicable because this is standalone documentation remediation.
-T247 S1 remains the sole active subtask.
+T248 S1 remains the sole active subtask.
 
 Original request: establish the source-level core boundary required for a
 future direct-entry VDM path, preserving the recorded NXVM baseline. T243 and
-T244 through T246 are closed. T247 is the next design-only admission review;
+T244 through T247 are closed. T248 is the next design-only admission review;
 it must preserve the one core run loop and the frozen memory route.
 
 | Requirement | S1 evidence and boundary |
@@ -55,7 +84,7 @@ it must preserve the one core run loop and the frozen memory route.
 | T245 S1 | Define immutable byte-image mapping over the existing route before runtime implementation. |
 | T245 S2/S3 | Implemented immutable core ROM mapping; full gates and the `0.5.0245` artifact passed. |
 | T246 | Defined and implemented an atomic entry plan; full gates and the `0.5.0246` artifact passed. |
-| T247 S1 | Inventory evidence for narrow, policy-free host capability admission; no provider implementation yet. |
+| T248 S1 | Inventory evidence for narrow, policy-free host capability admission; no provider implementation yet. |
 
 Applicable rules: `core/machine` remains the sole mutable guest-state owner;
 `core/platform` never mutates guest state; product composition is the only
@@ -66,7 +95,7 @@ is a documentation/contract design subtask with no defect fix or source change.
 S1 verification: reviewed the cited source/contracts; ran the recorded static
 queries; verified task/TODO/plan/status references; and ran `git diff --check`.
 The proposal does not require raw guest pointers, platform mutation,
-DOS/external-runtime semantics, or a second execution path. M5 T247 S1 is the
+DOS/external-runtime semantics, or a second execution path. M5 T248 S1 is the
 sole active subtask.
 
 **M5 T245 complete:** immutable byte images are core-owned copies mapped only
@@ -90,9 +119,9 @@ CTest smokes passed. Artifact `nxvm_0_5_0244.exe` SHA-256:
 
 **M5 T243 complete:** checked physical read/write/query now uses one frozen
 core resolver with neutral ordinary-RAM/provider classification and no raw
-storage or data callback exposure. The 34 static/ownership checks and 81/81
-CTest smokes passed. Artifact `nxvm_0_5_0243.exe` SHA-256:
-`982485420BA4325A1B9A83F1DE54DA68F0CE638C244A6F96F6C037FD1935C076`.
+storage or data callback exposure. Its S2/S3 34-check/81-smoke evidence remains
+recorded in the task file. S4 is the current artifact revision and supersedes
+the earlier `nxvm_0_5_0243.exe` hash above.
 
 **M5 T242 complete:** the bounded drive-0 MFM `READ TRACK 42h` slice uses the
 existing FDC -> DMA2 -> core RAM -> IRQ6 route. Its focused port probe and
@@ -434,15 +463,15 @@ corrects the baseline to T216 S5, and reserves T217--T233 for time, devices,
 storage, and display work. T234 was allocated to the boundary closure, which
 is complete. `M5 Td S12` initially rebased the route; `M5 Td S13` corrects its
 artifact-version collision. Owner-prioritized core-boundary work now occupies
-T243--T247. The remaining unstarted hardware route is T238--T242, then
-T248--T251 for ATA, graphics, profiles, and timing, followed by T252--T255
+T243--T248. The remaining unstarted hardware route is T238--T242, then
+T249--T252 for ATA, graphics, profiles, and timing, followed by T253--T256
 for protected-mode CPU and present-FPU work.
 `M5 Td S14` restricts the planned T244 transition contract to core-owned
 invalid-instruction handling: no handler-owned mode change or arbitrary IP,
 and only atomic bounded CPU-state patches at a defined instruction boundary.
 `M5 Td S15` fixes the initial writable state set and excludes transition-owned
 guest-memory writes pending a separately admitted transactional contract.
-`M5 Td S16` makes T247 depend on T246: before the shared machine-start boundary
+`M5 Td S16` makes T248 depend on T246: before the shared machine-start boundary
 is validated, host-capability work is evidence collection only, with no new
 platform contract or provider implementation.
 `M5 Td S18` freezes the pre-implementation contracts for T243--T246: shared

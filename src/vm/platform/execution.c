@@ -1,5 +1,6 @@
 #include "type.h"
 
+#include "core/utils/wait.h"
 #include "vm/platform/execution.h"
 
 
@@ -45,4 +46,23 @@ C_VOID vm_platform_execution_stop_for(
         transport->sink->stop != STD_NULL) {
         transport->sink->stop(transport->context);
     }
+}
+
+C_INT vm_platform_execution_wait_for_flip_for(
+    const vm_platform_execution_transport *transport, C_INT initial_flip,
+    const core_utils_wait_scope *wait_scope, uint32_t timeout_milliseconds)
+{
+    uint32_t waited;
+
+    for (waited = 0u; waited < timeout_milliseconds; ) {
+        uint32_t interval = timeout_milliseconds - waited;
+
+        if (vm_platform_execution_get_flip_for(transport) != initial_flip) {
+            return TYPE_TRUE;
+        }
+        if (interval > 100u) interval = 100u;
+        core_utils_wait_milliseconds(wait_scope, interval);
+        waited += interval;
+    }
+    return vm_platform_execution_get_flip_for(transport) != initial_flip;
 }

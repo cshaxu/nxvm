@@ -14,6 +14,7 @@ typedef struct core_machine core_machine;
 #define CORE_MACHINE_ENTRY_PLAN_PRELOAD_CAPACITY 16u
 
 typedef struct core_machine_entry_plan_preload {
+    /* Preload ranges must be nonempty and pairwise non-overlapping. */
     uint32_t physical;
     const uint8_t *bytes;
     STD_SIZE_T byte_count;

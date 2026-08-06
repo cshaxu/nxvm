@@ -41,7 +41,7 @@ that mutates guest memory.
 * `src/vm/composition/session/*`, planned `src/mantle/composition/*`, and
   planned `src/vdm/{machine,platform,product,profile}/*` are the
   product/composition callers to classify.
-* `TODO.md` records T243 through T247 and the source-level future topology.
+* `TODO.md` records T243 through T248 and the source-level future topology.
 
 ## S1 Inventory And Findings
 
