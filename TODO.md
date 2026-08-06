@@ -82,9 +82,12 @@ These are the next owned admissions, not permission to work in parallel.
 
 ## CPU, Time, And Debugging Boundaries
 
-- [ ] **Real-mode CPU trust corpus (`TODO(High)`).** Fix only reproducible
-  8086/80186 real-mode defects needed by ROM, DOS boot, and admitted device
-  paths. MS-DOS `MEM` is a regression sample, not an 80386-completeness claim.
+- [ ] **Broaden real-mode 8086 corpus (`TODO(High)`).** T240 established a
+  reset-vector baseline for segment override, `REP`/direction strings,
+  `INT`/`IRET`, port I/O, and fault retention.  Extend only through a failing
+  ROM/DOS/device path to uncovered 8086 families such as arithmetic/FLAGS,
+  conditional control transfer, stack edge cases, and string compare/scan.
+  MS-DOS `MEM` remains a regression sample, not an 80386-completeness claim.
 - [ ] **286/386 protected-mode program (`TODO(Low)`, T247--T249).** Admit
   descriptors, exceptions, control transfer, CRx/paging, CPL/IOPL, TSS I/O map,
   task switching, and remaining instructions as individually probed work. It
