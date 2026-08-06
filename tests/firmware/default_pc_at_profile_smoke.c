@@ -19,8 +19,8 @@ C_INT main(C_VOID)
         profile->rom.reset_offset != 0xfff0u ||
         profile->cpu_profile != CORE_MACHINE_CPU_PROFILE_80386 ||
         profile->fpu_profile != CORE_MACHINE_FPU_PROFILE_NONE ||
-        profile->kbc_typematic_initial_ticks != 50000u ||
-        profile->kbc_typematic_repeat_ticks != 5000u ||
+        profile->kbc_typematic_initial_ticks != 0u ||
+        profile->kbc_typematic_repeat_ticks != 0u ||
         profile->kbc_command_response_ticks != 0u ||
         profile->cga_text_timing.active_display_ticks != 48u ||
         profile->cga_text_timing.horizontal_blank_ticks != 8u ||

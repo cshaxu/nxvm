@@ -2,13 +2,15 @@
 
 ## Current Work
 
-**Idle after M5 T236:** no implementation subtask is active. T236 S4 closed
-the post-completion audit findings: profile-supplied EGA controller reset values
-now pass through the same masks as port writes, the invalid-config probe passes,
-and the RAM-closure gate is warning-free. The task's runnable artifact remains
-`nxvm_0_5_0236.exe`; its refreshed SHA-256 is recorded in [the task
-record](m5-t236-ega-graphics-attribute.md). T237 S1 is the next candidate, but
-has not been admitted.
+**Idle after M5 T227 S4:** no implementation subtask is active. The default
+PC/AT profile now disables uncalibrated core typematic instead of turning
+instruction ticks into human repeat time. Explicit nonzero profile deadlines
+retain bounded KBC repeat; host key down/up -> mapper -> KBC -> IRQ1 -> ROM is
+unchanged. The focused disabled/enabled probes and GCC 16.1.0 current matrix
+passed 71/71. The truthful current artifact is `nxvm_0_5_0237.exe`, SHA-256
+`53D0FED1072840A8D0021B4EE0F4BB32414A25515E9CC4FBF47FAD315B40F743`; see
+[the T227 record](m5-t227-kbc-controller-protocol-phase2.md). T237 S1 remains
+the next candidate, but has not been admitted.
 
 **M5 T234 S4 complete:** removed the remaining target-only
 `vm-platform-requests -> core-machine` and `vm-product -> core-machine` edges;
@@ -162,11 +164,13 @@ documents, and discard material already owned by an external Skill.”
 | Historical records could retain a misleading live reference | Repository-wide scan found none. | M5 Td S9 | Closed |
 
 **M5 T227 complete:** core KBC owns the bounded controller/keyboard protocol:
-set-1 query/select, observable translation bit, LEDs, typematic, ACK/RESEND,
-and elapsed-tick command-response delay. Set-2/3 conversion and AUX/IRQ12
-remain explicitly unsupported. Command, timing, DOS keyboard, retained
-Console/debugger, and 59/59 GCC/CTest evidence pass. The `0.5.0227` artifact
-SHA-256 is `9DE95F8E2CC55B554404D5EC9B170526E5F983F85E03A3E4FBFD5F5F39374E65`.
+set-1 query/select, observable translation bit, LEDs, command-state typematic,
+ACK/RESEND, and elapsed-tick command-response delay. S4 disables uncalibrated
+default-profile auto-repeat while retaining explicit nonzero profile deadlines.
+Set-2/3 conversion and advanced protocol remain deferred. Command, timing,
+DOS keyboard, retained Console/debugger, and 71/71 GCC/CTest evidence pass.
+The task's final developer artifact revision is `0.5.0237`, SHA-256
+`53D0FED1072840A8D0021B4EE0F4BB32414A25515E9CC4FBF47FAD315B40F743`.
 See [the task record](m5-t227-kbc-controller-protocol-phase2.md).
 
 **M5 T226 complete:** host key down/up now follows the only guest input path:

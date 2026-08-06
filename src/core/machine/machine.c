@@ -440,10 +440,10 @@ type_status core_machine_create(
     machine->pit_elapsed_ticks_per_input_tick =
         core_machine_resolve_pit_elapsed_ticks_per_input_tick(
             config->pit_elapsed_ticks_per_input_tick);
-    machine->kbc_typematic_initial_ticks =
-        core_machine_resolve_ticks_per_instruction(config->kbc_typematic_initial_ticks);
-    machine->kbc_typematic_repeat_ticks =
-        core_machine_resolve_ticks_per_instruction(config->kbc_typematic_repeat_ticks);
+    /* Zero is an explicit profile choice: without a calibrated guest-time
+     * mapping, core-generated keyboard repeat must remain disabled. */
+    machine->kbc_typematic_initial_ticks = config->kbc_typematic_initial_ticks;
+    machine->kbc_typematic_repeat_ticks = config->kbc_typematic_repeat_ticks;
     machine->kbc_command_response_ticks = config->kbc_command_response_ticks;
     core_machine_fpu_initialize(&machine->fpu, config->fpu_profile);
     STD_ATOMIC_INIT(&machine->stop_requested, 0);

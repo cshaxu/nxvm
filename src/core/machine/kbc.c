@@ -505,10 +505,8 @@ C_VOID core_machine_kbc_reset(t_kbc *controller)
     typematic_repeat_ticks = controller->data.typematic_repeat_ticks;
     command_response_ticks = controller->data.command_response_ticks;
     STD_MEMSET(&controller->data, TYPE_ZERO_8, sizeof(controller->data));
-    controller->data.typematic_initial_ticks = typematic_initial_ticks == 0u ?
-        1u : typematic_initial_ticks;
-    controller->data.typematic_repeat_ticks = typematic_repeat_ticks == 0u ?
-        1u : typematic_repeat_ticks;
+    controller->data.typematic_initial_ticks = typematic_initial_ticks;
+    controller->data.typematic_repeat_ticks = typematic_repeat_ticks;
     controller->data.command_response_ticks = command_response_ticks;
     core_machine_pic_irq_source_deassert(&controller->connect.irq1_source);
     core_machine_pic_irq_source_deassert(&controller->connect.irq12_source);
@@ -574,10 +572,8 @@ C_VOID core_machine_kbc_set_typematic_timing(t_kbc *controller,
     uint32_t initial_ticks, uint32_t repeat_ticks)
 {
     if (controller == STD_NULL) return;
-    controller->data.typematic_initial_ticks = initial_ticks == 0u ? 1u :
-        initial_ticks;
-    controller->data.typematic_repeat_ticks = repeat_ticks == 0u ? 1u :
-        repeat_ticks;
+    controller->data.typematic_initial_ticks = initial_ticks;
+    controller->data.typematic_repeat_ticks = repeat_ticks;
 }
 
 C_VOID core_machine_kbc_set_command_response_timing(t_kbc *controller,
@@ -604,7 +600,9 @@ type_status core_machine_kbc_submit_scan_code(t_kbc *controller, uint8_t scan_co
     if ((scan_code & 0x80u) != 0u &&
         (scan_code & 0x7fu) == controller->data.typematic_scan_code) {
         controller->data.typematic_active = TYPE_FALSE;
-    } else if ((scan_code & 0x80u) == 0u &&
+    } else if (controller->data.typematic_initial_ticks != 0u &&
+        controller->data.typematic_repeat_ticks != 0u &&
+        (scan_code & 0x80u) == 0u &&
         core_machine_kbc_is_typematic_scan_code(scan_code)) {
         controller->data.typematic_scan_code = scan_code;
         controller->data.typematic_remaining_ticks =
