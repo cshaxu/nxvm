@@ -65,6 +65,71 @@ static const core_machine_cpu_execution_diagnostic_provider
         core_machine_cpu_diagnostic_record_fault
     };
 
+static C_VOID core_machine_undefined_instruction_dispatch(C_VOID *opaque,
+    const core_machine_undefined_instruction_input *input,
+    core_machine_undefined_instruction_response *out_response)
+{
+    core_machine *machine = (core_machine *)opaque;
+    STD_SIZE_T index;
+
+    if (machine == STD_NULL || input == STD_NULL || out_response == STD_NULL) return;
+    out_response->outcome = CORE_MACHINE_UNDEFINED_INSTRUCTION_UNHANDLED;
+    for (index = 0u; index < machine->undefined_instruction_registry.count; ++index) {
+        const core_machine_undefined_instruction_transition *entry =
+            &machine->undefined_instruction_registry.entries[index];
+        if (input->byte_count < entry->length ||
+            STD_MEMCMP(input->bytes, entry->pattern, entry->length) != 0) {
+            continue;
+        }
+        entry->consumer(entry->owner, input, out_response);
+        out_response->consumed_bytes = entry->length;
+        if (out_response->outcome == CORE_MACHINE_UNDEFINED_INSTRUCTION_FAULT &&
+            out_response->fault_detail != 0u) {
+            (C_VOID)core_machine_report_fault(machine, out_response->fault_detail);
+        } else if (out_response->outcome > CORE_MACHINE_UNDEFINED_INSTRUCTION_FAULT ||
+                   (out_response->outcome == CORE_MACHINE_UNDEFINED_INSTRUCTION_FAULT &&
+                    out_response->fault_detail == 0u)) {
+            out_response->outcome = CORE_MACHINE_UNDEFINED_INSTRUCTION_UNHANDLED;
+        }
+        return;
+    }
+}
+
+type_status core_machine_register_undefined_instruction_transition(
+    core_machine *machine, const uint8_t *pattern, uint8_t length,
+    core_machine_undefined_instruction_consumer consumer, C_VOID *owner)
+{
+    core_machine_undefined_instruction_registry *registry;
+    STD_SIZE_T index;
+
+    if (machine == STD_NULL || pattern == STD_NULL || length == 0u ||
+        length > CORE_MACHINE_UNDEFINED_INSTRUCTION_MAX_BYTES ||
+        consumer == STD_NULL || owner == STD_NULL) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    if (!core_machine_configuration_is_open(machine)) return TYPE_STATUS_INVALID_STATE;
+    registry = &machine->undefined_instruction_registry;
+    if (registry->frozen) return TYPE_STATUS_INVALID_STATE;
+    if (registry->count >= CORE_MACHINE_UNDEFINED_INSTRUCTION_TRANSITION_CAPACITY) {
+        return TYPE_STATUS_NO_MEMORY;
+    }
+    for (index = 0u; index < registry->count; ++index) {
+        const core_machine_undefined_instruction_transition *existing =
+            &registry->entries[index];
+        uint8_t common = length < existing->length ? length : existing->length;
+
+        if (STD_MEMCMP(pattern, existing->pattern, common) == 0) {
+            return TYPE_STATUS_INVALID_ARGUMENT;
+        }
+    }
+    STD_MEMCPY(registry->entries[registry->count].pattern, pattern, length);
+    registry->entries[registry->count].length = length;
+    registry->entries[registry->count].consumer = consumer;
+    registry->entries[registry->count].owner = owner;
+    ++registry->count;
+    return TYPE_STATUS_OK;
+}
+
 static C_VOID core_machine_cpu_diagnostic_ordered_copy(
     const core_machine_cpu_diagnostic_state *state,
     core_machine_cpu_diagnostic *out_diagnostic)
@@ -316,6 +381,7 @@ type_status core_machine_freeze_execution_providers(core_machine *machine)
         return TYPE_STATUS_INVALID_STATE;
     }
     machine->execution_provider_frozen = 1;
+    machine->undefined_instruction_registry.frozen = TYPE_TRUE;
     core_machine_memory_freeze_mappings(&machine->executor_memory);
     return TYPE_STATUS_OK;
 }
@@ -460,6 +526,9 @@ type_status core_machine_create(
         &machine->executor_cpu_execution, &machine->fpu);
     core_machine_cpu_execution_context_bind_diagnostic_provider(
         &machine->executor_cpu_execution, &core_machine_cpu_diagnostic_provider,
+        machine);
+    core_machine_cpu_execution_context_bind_undefined_instruction_dispatch(
+        &machine->executor_cpu_execution, core_machine_undefined_instruction_dispatch,
         machine);
     core_machine_cpu_state_initialize(&machine->executor_cpu_execution);
     core_machine_port_initialize(&machine->executor_port);

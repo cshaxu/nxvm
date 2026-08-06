@@ -18,6 +18,7 @@
 #include "core/machine/port_interface.h"
 #include "type.h"
 #include "core/machine/trace_interface.h"
+#include "core/machine/undefined_instruction_transition_interface.h"
 #include "core/machine/vadp.h"
 
 #ifdef __cplusplus

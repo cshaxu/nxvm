@@ -2,8 +2,8 @@
 
 ## Status
 
-**S1 active.** This subtask is contract design only. It must not add a guest
-service ABI, an NXVM default registration, or source/runtime behavior.
+**Complete.** The contract, focused core implementation, current-matrix
+evidence, and developer artifact are complete.
 
 ## Objective
 
@@ -68,6 +68,27 @@ S2 must add a focused core smoke proving:
 
 S3 closes the task with the full current matrix and
 `build/output/nxvm_0_5_0244.exe` plus SHA-256.
+
+## S2 Implementation
+
+The registry is private `core_machine` state and is bound to the existing CPU
+completion path. Only real-mode `#UD` presently qualifies: core re-reads the
+15-byte candidate through the physical-memory route before matching, so a
+protected/paged fault cannot be matched from a guessed linear window.
+`HANDLED_RESUME` advances `EIP` only by the core-written matched length and
+masks the patch to the six admitted status flags. No NXVM profile registers a
+consumer.
+
+`core-machine-undefined-instruction-transition-smoke` proves retained
+unregistered `#UD`, duplicate/prefix rejection, frozen registration rejection,
+exact one-byte consumption, flag masking, and STOP/FAULT handoff. It uses only
+the core registry and a copied response; it adds no guest service convention.
+
+## S3 Evidence And Closure
+
+The full current GCC gate passed all 34 static/ownership checks and 82/82 CTest
+smokes. `build/output/nxvm_0_5_0244.exe` SHA-256 is
+`B859AEE01A0561BD5C70777F47A48335923E8D056E028A8CE3E15ABCFFA8BA52`.
 
 ## Stop Conditions
 

@@ -84,6 +84,16 @@ C_VOID core_machine_cpu_execution_context_bind_diagnostic_provider(
     context->diagnostic_context = provider_context;
 }
 
+C_VOID core_machine_cpu_execution_context_bind_undefined_instruction_dispatch(
+    core_machine_cpu_execution_context *context,
+    core_machine_cpu_undefined_instruction_dispatch dispatch,
+    C_VOID *dispatch_context)
+{
+    if (context == STD_NULL) return;
+    context->undefined_instruction_dispatch = dispatch;
+    context->undefined_instruction_context = dispatch_context;
+}
+
 C_VOID core_machine_cpu_state_initialize(
     core_machine_cpu_execution_context *context) {
     if (context == STD_NULL || context->cpu == STD_NULL ||

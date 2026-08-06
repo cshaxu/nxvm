@@ -2,11 +2,11 @@
 
 ## Current Work
 
-**M5 T244 S1 active: registered undefined-instruction transition contract.**
+**M5 T245 S1 active: generic immutable ROM mapping contract.**
 
 Original request: establish the source-level core boundary required for a
-future direct-entry VDM path, preserving the recorded NXVM baseline. T243 is
-closed; T244 S1 is design-only and must not change runtime source.
+future direct-entry VDM path, preserving the recorded NXVM baseline. T243 and
+T244 are closed; T245 S1 is design-only and preserves the frozen memory route.
 
 | Requirement | S1 evidence and boundary |
 | --- | --- |
@@ -14,7 +14,8 @@ closed; T244 S1 is design-only and must not change runtime source.
 | Define minimum contract | Specify only checked read/write/copy/mapping-query behavior, failure results, lifetime, and execution-thread ownership. |
 | Preserve products | No source/runtime change in S1; no DOS, external-runtime, PC/AT policy, raw RAM pointer, or host callback enters the proposed contract. |
 | T243 S2/S3 | Added the bounded physical range query, shared route resolver, provider metadata query, focused core smoke, full current GCC/CTest evidence, and `0.5.0243` artifact. |
-| T244 S1 | Define the frozen, consumer-registered `#UD` transition contract before runtime implementation; see [the T244 record](m5-t244-undefined-instruction-transition.md). |
+| T244 | Defined and implemented the frozen copied-state `#UD` transition registry with no NXVM consumer; full gates and the `0.5.0244` artifact passed. |
+| T245 S1 | Define immutable byte-image mapping over the existing route before runtime implementation. |
 
 Applicable rules: `core/machine` remains the sole mutable guest-state owner;
 `core/platform` never mutates guest state; product composition is the only
@@ -25,8 +26,14 @@ is a documentation/contract design subtask with no defect fix or source change.
 S1 verification: reviewed the cited source/contracts; ran the recorded static
 queries; verified task/TODO/plan/status references; and ran `git diff --check`.
 The proposal does not require raw guest pointers, platform mutation,
-DOS/external-runtime semantics, or a second execution path. M5 T244 S1 is the
+DOS/external-runtime semantics, or a second execution path. M5 T245 S1 is the
 sole active subtask.
+
+**M5 T244 complete:** a consumer may register only a frozen, exact 1--15 byte
+real-mode `#UD` pattern; it gets copied state and may return only the bounded
+outcomes. NXVM registers no consumer. The 34 static/ownership checks and 82/82
+CTest smokes passed. Artifact `nxvm_0_5_0244.exe` SHA-256:
+`B859AEE01A0561BD5C70777F47A48335923E8D056E028A8CE3E15ABCFFA8BA52`.
 
 **M5 T243 complete:** checked physical read/write/query now uses one frozen
 core resolver with neutral ordinary-RAM/provider classification and no raw
