@@ -34,6 +34,17 @@ dependency graph remains [Module Layout](architecture/module-layout.md).
   [Contracts](architecture/contracts.md).
 - A cross-module contract is `*_interface.h`; injected implementations are
   `*_provider`. Public symbols use their source-owner path.
+- Prefer the smallest existing boundary. Do not add getters, setters,
+  snapshots, adapters, or test-only contracts solely to hide a pointer that
+  the owning production implementation already exposes and may legitimately
+  use. A test may include and directly exercise that implementation boundary
+  when it tests the same module, uses no mirror state or alternate runtime
+  route, and remains readable as a real behavior test. Promote a capability to
+  `*_interface.h` only when an independent production owner needs the
+  capability; test convenience is not sufficient reason.
+- Test helpers are justified only when they remove repeated setup, make a
+  behavior assertion clearer, or protect a genuinely separate production
+  boundary. They must not become a second facade over ordinary module state.
 - Headers stay beside implementations. Do not introduce module-local scalar
   aliases or a second C-library facade.
 - Production paths may not select a machine/session through globals, TLS,
