@@ -12,6 +12,9 @@
 #define VM_FDC242_MARKER_CELL 1920u
 #define VM_FDC242_DMA_ADDRESS 0x00080000u
 #define VM_FDC242_TRACK_BYTES (18u * 512u)
+#define VM_FDC242_HANDLER_OFFSET 0x0280u
+#define VM_FDC242_IRQ_COUNT_OFFSET 0x02a0u
+#define VM_FDC242_RESULT_OFFSET 0x02a1u
 
 static uint16_t vm_fdc242_fat_get(const uint8_t *fat, uint16_t cluster)
 {
@@ -65,6 +68,8 @@ fail:
 static C_INT vm_fdc242_install(uint8_t *image, DWORD size, const C_CHAR *path)
 {
     static const uint8_t program[] = {
+        0x1e,0x31,0xc0,0x8e,0xd8,0xb8,0x80,0x02,0xa3,0x38,0x00,
+        0x0e,0x58,0xa3,0x3a,0x00,0x1f, 0xe4,0x21,0x24,0xbf,0xe6,0x21,0xfb,
         0x30,0xc0,0xe6,0x0c, 0xe6,0x04, 0xb0,0x00,0xe6,0x04,
         0xb0,0xff,0xe6,0x05, 0xb0,0x23,0xe6,0x05, 0xb0,0x08,0xe6,0x81,
         0xb0,0x86,0xe6,0x0b, 0xb0,0x02,0xe6,0x0a,
@@ -73,10 +78,16 @@ static C_INT vm_fdc242_install(uint8_t *image, DWORD size, const C_CHAR *path)
         0xb0,0x42,0xee, 0xb0,0x00,0xee, 0xb0,0x00,0xee,
         0xb0,0x00,0xee, 0xb0,0x01,0xee, 0xb0,0x02,0xee,
         0xb0,0x12,0xee, 0xb0,0x1b,0xee, 0xb0,0xff,0xee,
-        0xb9,0xff,0xff, 0xe2,0xfe,
-        0xec,0xec,0xec,0xec,0xec,0xec,0xec,
+        0x80,0x3e,0xa0,0x02,0x00,0x74,0xf9,
+        0xec,0xa2,0xa1,0x02, 0xec,0xa2,0xa2,0x02, 0xec,0xa2,0xa3,0x02,
+        0xec,0xa2,0xa4,0x02, 0xec,0xa2,0xa5,0x02, 0xec,0xa2,0xa6,0x02,
+        0xec,0xa2,0xa7,0x02,
+        0xb0,0x08,0xee, 0xec,0xa2,0xa8,0x02, 0xec,0xa2,0xa9,0x02,
+        0xb0,0x20,0xe6,0x20,
         0xb8,0x00,0xb8, 0x8e,0xc0, 0x26,0xc7,0x06,0x00,0x0f,0x4f,0x07,
-        0xb8,0x00,0x4c, 0xcd,0x21
+        0xb8,0x00,0x4c, 0xcd,0x21,
+        [0x180] = 0x50,0x1e,0x0e,0x1f,0xfe,0x06,0xa0,0x02,
+        0xe4,0x21,0x0c,0x40,0xe6,0x21,0x1f,0x58,0xcf
     };
     uint32_t bps, spc, reserved, fats, roots, spf, root_start, root_bytes,
         data_start, clusters, cluster, root;
@@ -148,6 +159,8 @@ C_INT main(C_INT argc, C_CHAR **argv)
     static const uint8_t command[] = {0x21u,0x20u,0x2eu,0x03u,0x05u,0x03u,0x1cu};
     vm_session_config config = {0}; vm_session *session = STD_NULL; uint8_t *image = STD_NULL;
     uint8_t expected[VM_FDC242_TRACK_BYTES], actual[VM_FDC242_TRACK_BYTES];
+    uint8_t guest_result[10];
+    uint16_t program_cs = 0u;
     DWORD size = 0u; C_CHAR path[MAX_PATH] = {0}; STD_SIZE_T index; C_INT passed = 0;
     if (argc != 2 || !vm_fdc242_clone(argv[1], path, &image, &size) ||
         !vm_fdc242_install(image, size, path)) goto done;
@@ -159,8 +172,23 @@ C_INT main(C_INT argc, C_CHAR **argv)
         session->core_machine, command[index]) != TYPE_STATUS_OK) goto done;
     passed = vm_fdc242_run_until(session, VM_FDC242_RUN_BUDGET, 'O') &&
         core_machine_memory_read(session->core_machine, VM_FDC242_DMA_ADDRESS, actual,
-        sizeof(actual)) == TYPE_STATUS_OK && STD_MEMCMP(expected, actual, sizeof(actual)) == 0;
+        sizeof(actual)) == TYPE_STATUS_OK && STD_MEMCMP(expected, actual, sizeof(actual)) == 0 &&
+        core_machine_memory_read(session->core_machine, 0x003au, &program_cs,
+        sizeof(program_cs)) == TYPE_STATUS_OK && core_machine_memory_read(session->core_machine,
+        ((uint32_t)program_cs << 4u) +
+        VM_FDC242_IRQ_COUNT_OFFSET, guest_result, sizeof(guest_result)) == TYPE_STATUS_OK &&
+        guest_result[0] != 0u && guest_result[1] == 0x20u && guest_result[2] == 0u &&
+        guest_result[3] == 0u && guest_result[4] == 0u && guest_result[5] == 0u &&
+        guest_result[6] == 0x13u && guest_result[7] == 0x02u &&
+        guest_result[8] == 0x20u && guest_result[9] == 0u;
 done:
     vm_session_destroy(session); if (path[0]) DeleteFileA(path); STD_FREE(image);
-    if (!passed) return 1; STD_PRINTF("M5:T242:S3:FDC:DOS:OK\n"); return 0;
+    if (!passed) {
+        STD_FPRINTF(STD_STDERR, "M5:T242:S4:FDC:DOS:FAIL result=%02x %02x %02x %02x %02x %02x %02x %02x %02x %02x cs=%04x\n",
+            guest_result[0], guest_result[1], guest_result[2], guest_result[3],
+            guest_result[4], guest_result[5], guest_result[6], guest_result[7],
+            guest_result[8], guest_result[9], program_cs);
+        return 1;
+    }
+    STD_PRINTF("M5:T242:S4:FDC:DOS:OK\n"); return 0;
 }
