@@ -2,6 +2,15 @@
 
 ## Current Work
 
+**M5 T240 S1 complete -- awaiting owner approval of the next corpus slice:**
+the bounded 8086 real-mode trust map now names the primary Intel authority,
+existing evidence, required probe gaps, and strict profile boundary.  Local
+Bochs 2.6 inspection was diagnostic-only; no source, trace, or dependency was
+imported.  The known DOS-image `C1 /5 ib` instruction is an expected
+strict-8086 `#UD`, not an 8086 defect; it remains a separate 80186+ profile
+gate while the default-80386 DOS product matrix remains intact.  S1 changed no
+guest behavior and creates no task artifact.  See [the T240 record](m5-t240-real-mode-cpu-trust.md).
+
 **M5 T239 complete:** default-PC/AT ROM now admits only `INT 10h` mode
 `AH=00h, AL=0Dh` for the T238 direct EGA surface and retained `AL=03h` to exit
 back to text.  The executable ROM writes only real video ports and BDA `40:49`
@@ -10,7 +19,7 @@ owner.  System and DOS fixtures, direct EGA/CGA, Console/debugger, FDD/HDD
 boot, and GCC/CTest `76/76` pass.  Artifact `nxvm_0_5_0239.exe` SHA-256:
 `4C4FDC4DCEB1CE0003A71E54C3DFFA19101AC048E8E7B62919596E6E126123DA`.
 
-**Latest technical baseline -- idle after M5 T239:** no implementation
+**Latest technical baseline -- idle after M5 T240 S1:** no implementation
 subtask is active.  The only admitted ROM EGA service is `AH=00h, AL=0Dh`,
 with `AL=03h` as its text exit; DAC, VBE, and other EGA/VGA families remain
 deferred.  See [the T239 record](m5-t239-rom-ega-int10.md).
