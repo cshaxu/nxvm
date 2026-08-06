@@ -14,7 +14,7 @@ closed; T244 S1 is design-only and must not change runtime source.
 | Define minimum contract | Specify only checked read/write/copy/mapping-query behavior, failure results, lifetime, and execution-thread ownership. |
 | Preserve products | No source/runtime change in S1; no DOS, external-runtime, PC/AT policy, raw RAM pointer, or host callback enters the proposed contract. |
 | T243 S2/S3 | Added the bounded physical range query, shared route resolver, provider metadata query, focused core smoke, full current GCC/CTest evidence, and `0.5.0243` artifact. |
-| T244 S1 | Define the frozen, consumer-registered `#UD` transition contract before runtime implementation. |
+| T244 S1 | Define the frozen, consumer-registered `#UD` transition contract before runtime implementation; see [the T244 record](m5-t244-undefined-instruction-transition.md). |
 
 Applicable rules: `core/machine` remains the sole mutable guest-state owner;
 `core/platform` never mutates guest state; product composition is the only
