@@ -90,7 +90,9 @@ without source movement or artifact and does not repurpose that identifier.
 
 The former unstarted T249--T256 tasks follow the reserved boundary work:
 T253 ATA/IDE, T254 digital CGA, T255 profile admission, T256 timing fidelity,
-T257 protected mode, T258 paging, T259 task switching, and T260 present FPU.
+T257 80286 protected mode, T258 CPL0 paging, T259 protected privilege/IDT,
+T260 TSS I/O map, T261 task switching, T262 present FPU, and T263
+corpus-specific remaining instruction families.
 Completed history and developer-artifact revisions are immutable.
 
 ## Applicable Rules And Evidence
@@ -106,7 +108,7 @@ static dependency review, and `git diff --check`.
 - S1 records the current owner, copy rule, lifecycle boundary, NXVM consumer,
   and trusted-research requirement for every candidate.
 - S2 gives each admitted capability exactly one bounded implementation task
-  (`T249`--`T252`) and moves the unstarted hardware queue to `T253`--`T260`.
+  (`T249`--`T252`) and moves the unstarted hardware queue to `T253`--`T263`.
 - The task records one deliberate deferral: a raw host monotonic-clock API has
   no current NXVM consumer and must not affect `core_machine.elapsed_ticks`.
 - The frozen contracts prohibit a core-to-VM dependency, guest-memory borrow,

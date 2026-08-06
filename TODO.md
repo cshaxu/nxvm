@@ -88,12 +88,16 @@ These are the next owned admissions, not permission to work in parallel.
   ROM/DOS/device path to uncovered 8086 families such as arithmetic/FLAGS,
   conditional control transfer, stack edge cases, and string compare/scan.
   MS-DOS `MEM` remains a regression sample, not an 80386-completeness claim.
-- [ ] **286/386 protected-mode program (`TODO(Low)`, T258--T259).** T257 has
-  admitted only GDT/CPL0 16-bit entry, selector loads, same-CPL far transfer,
-  and diagnostic validation faults. Admit paging, privilege, TSS I/O map,
-  task switching, and remaining instructions only as individually probed work.
-  It remains lower ROI than the real-mode PC/AT device route.
-- [ ] **Present x87 (`TODO(Low)`, T260).** Define state, operations,
+- [ ] **286/386 protected-mode program (`TODO(Low)`, T258--T261, T263).**
+  T257 admits only GDT/CPL0 16-bit entry, selector loads, same-CPL far
+  transfer, and diagnostic validation faults. T258 is CPL0 4 KiB paging plus
+  narrowed CR0/CR2/CR3 forms and core diagnostic `#PF`; it deliberately does
+  not create a false CPL3/TSS I/O test path. T259 first admits protected
+  privilege and IDT delivery, T260 then admits TSS I/O-map behavior through a
+  real CPL3 corpus, T261 admits task switching, and T263 keeps remaining
+  instruction families corpus-specific. This remains lower ROI than the
+  real-mode PC/AT device route.
+- [ ] **Present x87 (`TODO(Low)`, T262).** Define state, operations,
   exceptions, and `FWAIT` before enabling any 8087/287/387 profile.
 - [ ] **CPU-fault outcome audit (`TODO(Medium)`).** T214 established a
   session-owned fault result. Revisit only with a reproducible case showing a

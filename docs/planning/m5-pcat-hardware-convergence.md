@@ -18,9 +18,12 @@ hardware-device verification template and must preserve that baseline.
 
 | Task | Dependency | Deliverable and stop condition |
 | --- | --- | --- |
-| T258 | T257 | Add bounded 386 paging, CRx, CPL/IOPL, and TSS I/O-map behavior with focused probes. |
-| T259 | T258 | Add task switching and remaining admitted 286/386 instruction families. |
-| T260 | T257--T259 as applicable | Add present-FPU state, operations, exceptions, and `FWAIT`; FPU-none escape handling is not FPU support. |
+| T258 | T257 | Add only bounded 80386 CPL0 4 KiB paging and narrowed `CR0`/`CR2`/`CR3` forms. `#PF` remains a core diagnostic stop; CPL3, IDT delivery, and TSS I/O are deferred. |
+| T259 | T258 | Add the bounded protected-privilege and exception-delivery prerequisite: admitted CPL/RPL/DPL rules, an outer-privilege entry/return corpus, and minimal protected IDT-gate delivery. No task switch. |
+| T260 | T259 | Add TSS I/O-permission-map behavior only through the real CPL3 corpus. It validates TSS/bitmap bounds and I/O allow/deny; it does not switch tasks. |
+| T261 | T260 | Add bounded hardware task switching, task-state save/restore, and busy-state behavior through a separate corpus. |
+| T262 | T257 | Add present-FPU state, operations, exceptions, and `FWAIT`; FPU-none escape handling is not present-FPU support. |
+| T263 | Corpus-specific 286/386 gap | Admit each remaining 286/386 instruction family only through a separate failing corpus; do not attach it to task-switch work. |
 
 ## Constraints
 

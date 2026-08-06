@@ -55,6 +55,10 @@ authorities.
 - **M5 Td S25:** reconciled completed M5 baseline references to T252 S3 and
   removed stale task scheduling from the completed T248 record. This
   documentation task changes no runtime behavior or active-task scope.
+- **M5 Td S26:** split the unstarted 80386 route so T258 is CPL0 paging only;
+  protected privilege/IDT delivery, TSS I/O permissions, task switching, FPU,
+  and remaining instruction families now have independent admission tasks.
+  This documentation task changes no runtime behavior or active-task scope.
 
 ## Milestone State
 
