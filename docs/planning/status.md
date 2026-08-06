@@ -2,15 +2,17 @@
 
 ## Current Work
 
-**M5 T248 S2 active: freeze the admitted host-capability migration queue.**
+**M5 T248 S3 active: close the admitted host-capability boundary.**
 
 Original request: execute the core/platform versus VM/platform boundary
 admission after T246's machine-start boundary. S1 established that copied
 normalized input, a copied presentation mailbox, and cancellable host wait
 have concrete NXVM and trusted-research needs; raw monotonic-clock observation
-is deferred. S2 now freezes their implementation queue before any source move.
+is deferred. S2 froze T249--T252 with a smallest-contract and owner rule. S3
+now checks that task numbering, queue references, and exclusions have one
+meaning before source migration begins.
 
-| Requirement | S2 evidence |
+| Requirement | S3 evidence |
 | --- | --- |
 | Frozen implementation tasks | T249 input/source ingress, T250 copied presentation mailbox, T251 cancellable wait, and T252 VM composition lifecycle closure each have a narrow contract and stop condition. |
 | Exclusions | Raw host monotonic clock, file/path, drive, CLI, window, exit, DOS policy, guest mutation, and VM run-handle/display policy stay outside core/platform. |
@@ -20,9 +22,10 @@ Applicable rules: module layout, contracts, coding/source policy, execution
 workflow, and one active subtask. Planned commands:
 `rg -n "host|presentation|input|wait|clock" src/core src/vm src/vdm docs/architecture`
 and `git diff --check`. Expected marker:
-`M5:T248:S2:MIGRATION-QUEUE-FROZEN:OK`. Stop for owner direction if a frozen
+`M5:T248:S3:BOUNDARY-CLOSURE:OK`. Stop for owner direction if a frozen
 contract requires filesystem/path policy, direct guest mutation, raw guest
-memory, product display/exit policy, or a second queue/run loop.
+memory, product display/exit policy, a raw host-clock contract, or a second
+queue/run loop.
 
 T248 is an execution task, not a terminal design note: S2 freezes the
 conditional T249--T252 migration queue in

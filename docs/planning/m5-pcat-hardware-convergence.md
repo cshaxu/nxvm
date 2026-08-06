@@ -20,7 +20,7 @@ baseline.
 | T248 | T246 | Active host-capability admission and migration-queue task. S1 inventories; S2 fixes conditional T249--T252; no provider exists before its admission. |
 | T249 | T248 S2 `ADMIT` | Extract copied normalized input source and composition ingress only if admitted. |
 | T250 | T248 S2 `ADMIT` | Extract copied presentation sink/frame only if admitted. |
-| T251 | T248 S2 `ADMIT` | Extract host-clock observation/cancellable wait only if admitted. |
+| T251 | T248 S2 `ADMIT` | Extract cancellable host wait only if admitted; raw host-clock observation remains deferred. |
 | T252 | T248 and admitted T249--T251 | Close the VM composition lifecycle and platform-run boundary after the admitted moves. |
 | T253 | T233 | Extend ATA/IDE only through a declared feature matrix and failing corpus. IDE DMA, ATAPI, LBA48, and cache remain separate admissions. |
 | T254 | T219, T220, T228 | Complete digital CGA only through bounded modes and 6845-visible behavior required by a declared corpus. Composite rendering remains optional. |

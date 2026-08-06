@@ -80,7 +80,7 @@ unless a separately approved runtime change is made within T248.
 | --- | --- | --- |
 | T249 | Copied normalized input source and composition ingress boundary. | Source-stop/thread/ownership probes, retained keyboard/mouse/Console regression. Stop if an event requires direct guest mutation or VM UX policy. |
 | T250 | Copied presentation sink/frame boundary. | Copy/lifetime/teardown probes and retained text/CGA/EGA presentation regression. Stop if the contract needs guest VRAM, renderer ownership, or display policy. |
-| T251 | Host monotonic-clock observation and cancellable-wait boundary. | Thread/teardown/no-guest-time-mutation probes and run-handle regression. Stop if the candidate changes product pacing, watchdog, or guest elapsed ticks. |
+| T251 | Cancellable host-wait boundary; raw monotonic-clock observation remains deferred. | Thread/teardown/no-guest-time-mutation probes and run-handle regression. Stop if the candidate changes product pacing, watchdog, or guest elapsed ticks. |
 | T252 | VM composition lifecycle closure after admitted platform moves. | One create/configure/freeze/run/stop/destroy sequence; provider order, tick-delta, run-handle, Console/debugger, FDD/HDD regressions. Stop on a second scheduler, session, or machine path. |
 
 Reserved tasks are conditional: a `KEEP_VM` or `DEFER` result closes its slot
