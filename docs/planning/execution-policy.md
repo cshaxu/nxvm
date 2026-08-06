@@ -95,13 +95,14 @@ runtime tests.
 
 Each completed implementation task that changes a runnable path must compile,
 verify, and copy one usable task-level local build output to the ignored
-`build/output/` directory. Beginning with M5 T48, task artifacts use an
-independent, monotonically increasing four-digit developer-artifact revision:
-`0.5.NNNN`. When planned tasks complete in order, the revision may equal the
-task number, but this is not an identity rule. An urgent task may complete out
-of planned order; in that case its task identifier remains its roadmap scope
-and the next unused artifact revision is allocated at verified completion.
-The revision must never regress or be reused for changed source.
+`build/output/` directory. Effective with the T257 artifact-identity
+correction, every numeric implementation task uses its task identifier as the
+four-digit developer-artifact revision:
+`M5 T258` produces `0.5.0258`. This is an identity rule, not a sequence rule.
+All implementation subtasks rebuild their task-level artifact under that same
+revision; the source commit and recorded SHA-256 identify the exact build.
+Task numbers are never reused, so a completed task artifact version cannot
+collide with another task's version.
 
 Use `nxvm_0_5_NNNN.exe` for the bootable VM product or
 `nxvdm_0_5_NNNN.exe` for the DOS app-runner product. Every task record maps

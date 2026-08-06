@@ -3,7 +3,8 @@
 ## Status
 
 **Complete.** S5 defined the closure, S6 implemented the bounded decoder gate
-and corpus, and S7 verified artifact `0.5.0256`.
+and corpus. M5 Td S28 reissued the current T257 artifact as `0.5.0257` under
+the task-identity artifact rule.
 
 ## Original Request
 
@@ -28,14 +29,16 @@ owner direction if the closure requires an IDT contract, a guest handler
 transfer, or a profile-specific exception mechanism.
 
 S6 may edit only the protected-mode decoder gate, the T257 corpus, task/status
-tracking, and necessary CMake registration. S7 runs the current GCC gate,
-records the next unused artifact revision and SHA-256, then closes the task.
+tracking, and necessary CMake registration. S7 runs the current GCC gate and
+records the task-identity artifact revision and SHA-256 before closing the task.
 
 ## S7 Evidence
 
-`current-gcc` built `nxvm_0_5_0256.exe`; `current-gates-gcc` passed all 37
-static/ownership checks and 91/91 CTest cases. The artifact SHA-256 is
-`09E0C96D2D6AF6B180013344FDEC63B1D7DF66102620D1E107C47946E21D9CB8`.
+The original S7 run used the former independent-revision name
+`nxvm_0_5_0256.exe` and passed all 37 static/ownership checks and 91/91 CTest
+cases. M5 Td S28 supersedes that current-artifact name with task-identity
+`nxvm_0_5_0257.exe`, SHA-256
+`E69FC24A8E1113E4A7AED552F9C5B944372F4FCF73FFB0D669CC14B6C375A1F1`.
 
 The S6 corpus proves PE-state `LIDT` stops as `#UD`, and a real-mode configured
 IDT still cannot transfer a protected-mode `INT3` to its handler. Real-mode
