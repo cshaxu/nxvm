@@ -2,27 +2,27 @@
 
 ## Current Work
 
-**M5 T248 S1 active: narrow host-capability admission evidence inventory.**
+**M5 T248 S2 active: freeze the admitted host-capability migration queue.**
 
-Original request: inventory policy-free shared host capabilities after T246's
-machine-start boundary. Determine whether copied normalized input, copied
-presentation sink, and host wait/monotonic-clock facilities have a concrete
-NXVM need and a stable trusted-research requirement. Do not implement a
-provider in S1.
+Original request: execute the core/platform versus VM/platform boundary
+admission after T246's machine-start boundary. S1 established that copied
+normalized input, a copied presentation mailbox, and cancellable host wait
+have concrete NXVM and trusted-research needs; raw monotonic-clock observation
+is deferred. S2 now freezes their implementation queue before any source move.
 
-| Requirement | S1 evidence |
+| Requirement | S2 evidence |
 | --- | --- |
-| Consumer/owner inventory | Map each candidate to present owners, threads, lifetime, and concrete consumers. |
-| Admission decision | Record present owner, NXVM need, trusted-research requirement, or reject/defer the capability. File/path, drive, CLI, window, exit, and DOS policy stay outside core. |
-| Preserve products | No source/build/runtime change; no host-thread guest mutation, raw guest pointer, or second execution path. |
+| Frozen implementation tasks | T249 input/source ingress, T250 copied presentation mailbox, T251 cancellable wait, and T252 VM composition lifecycle closure each have a narrow contract and stop condition. |
+| Exclusions | Raw host monotonic clock, file/path, drive, CLI, window, exit, DOS policy, guest mutation, and VM run-handle/display policy stay outside core/platform. |
+| Preserve products | No source/build/runtime change in T248; no host-thread guest mutation, raw guest pointer, or second execution path. |
 
 Applicable rules: module layout, contracts, coding/source policy, execution
 workflow, and one active subtask. Planned commands:
 `rg -n "host|presentation|input|wait|clock" src/core src/vm src/vdm docs/architecture`
 and `git diff --check`. Expected marker:
-`M5:T248:S1:HOST-CAPABILITY-INVENTORY:OK`. Stop for owner direction if a
-candidate requires filesystem/path policy, direct guest mutation, or a runtime
-provider.
+`M5:T248:S2:MIGRATION-QUEUE-FROZEN:OK`. Stop for owner direction if a frozen
+contract requires filesystem/path policy, direct guest mutation, raw guest
+memory, product display/exit policy, or a second queue/run loop.
 
 T248 is an execution task, not a terminal design note: S2 freezes the
 conditional T249--T252 migration queue in

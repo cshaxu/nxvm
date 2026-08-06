@@ -1,6 +1,6 @@
 # M5 T248: Host-Capability Admission And Migration Queue
 
-**Status:** S1 active.
+**Status:** S2 active.
 
 ## Goal
 
@@ -32,11 +32,40 @@ and trusted-research requirement. Record one of `ADMIT`, `KEEP_VM`, or `DEFER`
 for each candidate. Stop if a candidate needs path policy, direct guest
 mutation, or product exit/display policy.
 
+#### S1 Evidence And Decisions
+
+| Candidate | Current implementation and real owner | Thread, copy, and shutdown evidence | NXVM and trusted-research need | Decision |
+| --- | --- | --- | --- | --- |
+| Normalized host input | `vm/platform/input.[ch]` defines keyboard/mouse callback transports; `vm/composition/session/lifecycle.c` binds them to session callbacks, which create copied `vm_platform_request` values and enqueue them in the session-owned ingress transport. | Win32/Linux adapters call the transport; the callback must not mutate the guest and currently only enqueues a scalar copy. `vm_platform_request_transport_close()` closes ingress before session storage is finalized. | NXVM needs one ordered host-to-session boundary for Console and window input. The trusted VDM research requires the same copied, non-guest-mutating boundary. | `ADMIT`: extract only neutral copied event value/sink vocabulary to `core/platform`. The queue, event ordering, mapper, and KBC/AUX delivery remain composition/VM policy. |
+| Copied presentation frame | `core/platform/display_frame.h` already owns the copied frame value. `vm/platform/presentation_mailbox.[ch]` owns a VM-local lock and one copied latest-frame slot; `vm/composition/session/display.c` copies the core snapshot into it. | VM backends capture a copy from the mailbox; they do not borrow guest VRAM. The mailbox lives in `vm_session` and is finalized only after the run handle stops and joins. | NXVM needs identical Console/window consumption without renderer access to guest state. Trusted research requires a copied frame sink usable by a future mantle consumer. | `ADMIT`: promote only the policy-free snapshot/mailbox contract to `core/platform`; keep frame capture, graphics promotion, renderers, and display choice in VM/composition. |
+| Host wait and cancellation | `core/platform/sleep.[ch]` supplies platform sleep. `core/utils/wait*` supplies a callback scope. VM uses it in execution-flip polling and debugger waits; runner/control currently call sleep directly. | The wait scope has no guest state, but it is not cancellable and has no explicit teardown/result contract. Guest `elapsed_ticks` are owned exclusively by `core_machine`; host waiting only paces host threads. | NXVM needs bounded start/stop waiting and debugger polling. Trusted research requires cancellable wait, while explicitly forbidding host-clock mutation of guest time. | `ADMIT` for a bounded cancellable wait contract. `DEFER` raw monotonic-clock observation: no current NXVM consumer needs it, and admitting it now risks conflating wall time with guest time. |
+
+The inventory confirms that no candidate authorizes a `core -> vm` dependency,
+host-thread guest mutation, raw guest pointer, filesystem/path policy, or a
+second execution path. `vm_platform_run_context`, `vm_platform_run_handle`,
+renderers, display-mode selection, and PC/AT input mapping remain VM-owned
+because they contain NXVM product policy and platform-thread lifecycle.
+
 ### S2: Freeze The Migration Queue
 
 For every `ADMIT` decision, define the smallest public contract and assign its
 follow-on task below. For every `KEEP_VM` or `DEFER` decision, record why no
 source move is authorized. Update the task queue before any migration begins.
+
+#### S2 Frozen Migration Contracts
+
+| Follow-on task | Frozen smallest contract | Owner after task | Explicitly remains outside the contract |
+| --- | --- | --- | --- |
+| T249 | `core_platform_input_event` value plus a copied source/sink call boundary. A composition-owned ingress queue accepts the value and consumes it only at the existing execution boundary. | `core/platform` owns the value vocabulary; mantle/VM composition owns queue, ordering, and consumer. | Keyboard layout, scan-code mapping, KBC/AUX, BIOS/BDA, host capture mode, Console/window policy. |
+| T250 | `core_platform_presentation_mailbox` owns one synchronized copied `core_platform_display_frame` snapshot with initialize/publish/capture/finalize lifecycle. | `core/platform` owns the copy container; composition owns snapshot production and VM platform owns renderer consumption. | Guest VRAM, VADP capture, frame cadence, auto promotion, renderer/window/Console ownership. |
+| T251 | `core_platform_wait` accepts a bounded interval and explicit cancellation predicate/result. It is host-thread only and cannot observe or advance guest time. | `core/platform` owns the neutral wait primitive; VM composition owns stop policy and calls it. | `elapsed_ticks`, CPU/PIT scheduling, pacing policy, watchdogs, host monotonic-clock API, or session exit policy. |
+| T252 | One VM composition lifecycle sequence binds the admitted contracts: create -> configure -> freeze -> start -> request stop -> join -> finalize -> destroy. | VM composition owns this sequence and its run handle. | A second scheduler/session/machine, new product loop, or changes to NXVM Console/debugger/boot behavior. |
+
+`T249`--`T252` are therefore implementation tasks, not optional labels. A task
+may close without a source move only if its S1 proves the frozen contract has
+no real consumer or would violate the stated boundary; it must record that
+proof. The former unstarted hardware tasks start at `T253` and retain the
+renumbering below.
 
 ### S3: Close The Admission Boundary
 
