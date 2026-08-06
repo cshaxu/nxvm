@@ -1,6 +1,6 @@
 # M5 T257: Constrained 80286 Protected-Mode Baseline
 
-**Status:** S2 active.
+**Status:** S3 active.
 
 ## Original Request
 
@@ -104,3 +104,16 @@ the 80286 profile, and the `0F` decoder treated every pre-286 profile as 8086
 `POP CS`, thereby accepting a 286 system byte sequence on 80186. S2 corrects
 those gates, makes protected validation faults diagnostic-only, and expands the
 corpus with non-present/stack and 386-negative cases.
+
+## S2 Result
+
+The focused `core-machine-80286-protected-mode-smoke` passes with one real
+GDT-only protected path: `LGDT`, `LMSW`, `DS`/`SS` loads, code fetch through
+the protected segment cache, data writes, and same-CPL far CALL/RET. It also
+proves `#GP(0018)`, `#NP(0008)`, and `#SS(0010)` diagnostics without protected
+IDT delivery. `80186` rejects `0F 01`, while `80286` rejects 386-only
+`MOV CR0`; true 8086 `0F` remains `POP CS`.
+
+The corpus is registered in `PROJECT_CURRENT_SMOKE_TARGETS`. S3 now runs the
+full retained GCC/CTest matrix and records the exact result before the artifact
+revision is advanced.
