@@ -69,6 +69,13 @@ fail:
 static C_INT vm_ega_dos_install_program(uint8_t *image, DWORD image_size,
     const C_CHAR *path)
 {
+#if defined(VM_EGA_PLANAR_ROM_INT10_SMOKE)
+    static const uint8_t program[] = {
+        0xb8u, 0x0du, 0x00u, 0xcdu, 0x10u,
+        0xb8u, 0x00u, 0xa0u, 0x8eu, 0xc0u, 0x31u, 0xffu,
+        0xb0u, 0xa5u, 0xaau, 0xb8u, 0x00u, 0x4cu, 0xcdu, 0x21u
+    };
+#else
     static const uint8_t program[] = {
         0xb8u, 0x00u, 0xa0u, 0x8eu, 0xc0u,
         0xbau, 0xc4u, 0x03u, 0xb0u, 0x02u, 0xeeu, 0x42u, 0xb0u, 0x0fu, 0xeeu,
@@ -78,6 +85,7 @@ static C_INT vm_ega_dos_install_program(uint8_t *image, DWORD image_size,
         0xb0u, 0x01u, 0xeeu, 0x31u, 0xffu, 0xb0u, 0xa5u, 0xaau,
         0xb8u, 0x00u, 0x4cu, 0xcdu, 0x21u
     };
+#endif
     uint32_t bytes_per_sector;
     uint32_t sectors_per_cluster;
     uint32_t reserved_sectors;
@@ -124,7 +132,11 @@ static C_INT vm_ega_dos_install_program(uint8_t *image, DWORD image_size,
     if (cluster >= clusters + 2u || sizeof(program) >
         bytes_per_sector * sectors_per_cluster) return 0;
     STD_MEMSET(entry, 0, 32u);
+#if defined(VM_EGA_PLANAR_ROM_INT10_SMOKE)
+    STD_MEMCPY(entry, "EGAT239 COM", 11u);
+#else
     STD_MEMCPY(entry, "EGAT238 COM", 11u);
+#endif
     entry[11u] = 0x20u;
     entry[26u] = (uint8_t)cluster;
     entry[27u] = (uint8_t)(cluster >> 8);
@@ -190,8 +202,13 @@ static C_INT vm_ega_dos_run_until(vm_session *session, uint32_t limit,
 
 C_INT main(C_INT argc, C_CHAR **argv)
 {
+#if defined(VM_EGA_PLANAR_ROM_INT10_SMOKE)
+    static const uint8_t command[] = { 0x12u, 0x22u, 0x1eu, 0x14u, 0x03u,
+        0x04u, 0x0au, 0x1cu };
+#else
     static const uint8_t command[] = { 0x12u, 0x22u, 0x1eu, 0x14u, 0x03u,
         0x04u, 0x09u, 0x1cu };
+#endif
     vm_session_config config = {0};
     vm_session *session = STD_NULL;
     uint8_t *image = STD_NULL;
@@ -218,6 +235,10 @@ done:
     if (path[0] != '\0') DeleteFileA(path);
     STD_FREE(image);
     if (!passed) return 1;
+#if defined(VM_EGA_PLANAR_ROM_INT10_SMOKE)
+    STD_PRINTF("M5:T239:S3:ROM-EGA-INT10:DOS:OK\n");
+#else
     STD_PRINTF("M5:T238:S3:EGA-PLANAR:DOS:OK\n");
+#endif
     return 0;
 }
