@@ -105,6 +105,9 @@ developer artifacts. Core may admit only policy-free contracts with a concrete
 NXVM need and a stable, trusted research requirement; no external ABI or
 runtime dependency enters core. `nxvm.exe` has no new process CLI. The detailed
 queue remains [M5 NXVM PC/AT Hardware Convergence](m5-pcat-hardware-convergence.md).
+T255 freezes machine-profile admission as an immutable VM declaration and
+composition-owned construction boundary; it does not implement a new profile,
+selector, or external-ROM loader.
 
 **Exit:** `nxvm.exe` boots the recorded full-PC fixtures through the shared core
 with focused regression evidence; the core/VM boundary has no duplicate state
@@ -141,7 +144,9 @@ bounded integration plan.
 media and device configuration, and profile-specific corpus. Implement the
 default PC/AT profile as the reference, then admit Compaq DeskPro 386 and IBM
 PC 110 profiles only through individually reproducible evidence and legal
-asset boundaries.
+asset boundaries. M5 T255 is the governing admission contract; each profile
+implementation must instantiate its template rather than extend core or copy
+the default-PC/AT assembly path.
 
 **Non-goals:** bundled third-party ROMs, profile-specific hacks in core, and
 VDM/DOS product policy.

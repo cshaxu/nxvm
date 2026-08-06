@@ -1,6 +1,6 @@
 # M5 T251: Cancellable Host Wait Boundary
 
-**Status:** S3 active.
+**Status:** complete.
 
 ## Goal
 
