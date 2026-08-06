@@ -288,10 +288,17 @@ static C_INT vm_machine_hdc_advance_sector(vm_machine_hdc *hdc)
         vm_machine_hdc_advance_chs(hdc);
 }
 
+static C_VOID vm_machine_hdc_complete_data_sector(vm_machine_hdc *hdc)
+{
+    if (hdc == STD_NULL || hdc->data.sectors_remaining == 0u) return;
+    --hdc->data.sectors_remaining;
+    --hdc->data.sector_count;
+}
+
 static C_VOID vm_machine_hdc_next_read_sector(vm_machine_hdc *hdc)
 {
     if (hdc == STD_NULL) return;
-    if (hdc->data.sectors_remaining > 0u) --hdc->data.sectors_remaining;
+    vm_machine_hdc_complete_data_sector(hdc);
     if (hdc->data.sectors_remaining == 0u) {
         vm_machine_hdc_complete(hdc);
         return;
@@ -307,7 +314,7 @@ static C_VOID vm_machine_hdc_next_write_sector(vm_machine_hdc *hdc)
 {
     if (hdc == STD_NULL) return;
     if (!vm_machine_hdc_store_sector(hdc)) return;
-    if (hdc->data.sectors_remaining > 0u) --hdc->data.sectors_remaining;
+    vm_machine_hdc_complete_data_sector(hdc);
     if (hdc->data.sectors_remaining == 0u) {
         vm_machine_hdc_complete(hdc);
         return;

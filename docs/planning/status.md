@@ -2,7 +2,7 @@
 
 ## Current Work
 
-**M5 T253 S1 active: define ATA PIO task-file progress contract.**
+**M5 T253 S3 active: verify ATA PIO task-file progress.**
 
 T249--T252 complete the admitted T248 migration queue without changing guest
 time, NXVM lifecycle behavior, or product interaction. T253 now admits only

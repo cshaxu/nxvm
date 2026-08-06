@@ -97,6 +97,37 @@ static C_INT vm_hdc_profile_contract_is_valid(C_VOID)
         !hdc->secondary_channel_present;
 }
 
+static C_INT vm_hdc_progress_probe(vm_session *session)
+{
+    uint32_t value;
+    uint16_t word;
+
+    if (!vm_hdc_program_lba(session, 0u, 2u) ||
+        !vm_hdc_write(session->core_machine, HDC_STATUS_COMMAND_PORT, 0x20u) ||
+        !vm_hdc_drain_data(session->core_machine, &word) ||
+        !vm_hdc_read(session->core_machine, HDC_SECTOR_COUNT_PORT, &value) ||
+        value != 1u || !vm_hdc_read(session->core_machine,
+            HDC_SECTOR_NUMBER_PORT, &value) || value != 1u ||
+        !vm_machine_hdc_irq_pending(&session->hdc) ||
+        !vm_hdc_read(session->core_machine, HDC_STATUS_COMMAND_PORT, &value) ||
+        vm_machine_hdc_irq_pending(&session->hdc) ||
+        !vm_hdc_drain_data(session->core_machine, &word) ||
+        !vm_hdc_read(session->core_machine, HDC_SECTOR_COUNT_PORT, &value) ||
+        value != 0u || !vm_hdc_read(session->core_machine,
+            HDC_SECTOR_NUMBER_PORT, &value) || value != 1u) return 0;
+    if (!vm_hdc_program_lba(session, 3u, 2u) ||
+        !vm_hdc_write(session->core_machine, HDC_STATUS_COMMAND_PORT, 0x30u) ||
+        !vm_hdc_fill_data(session->core_machine, 0x1357u) ||
+        !vm_hdc_read(session->core_machine, HDC_SECTOR_COUNT_PORT, &value) ||
+        value != 1u || !vm_hdc_fill_data(session->core_machine, 0x2468u) ||
+        !vm_hdc_read(session->core_machine, HDC_SECTOR_COUNT_PORT, &value) ||
+        value != 0u || !vm_hdc_program_lba(session, 3u, 2u) ||
+        !vm_hdc_write(session->core_machine, HDC_STATUS_COMMAND_PORT, 0x20u) ||
+        !vm_hdc_drain_data(session->core_machine, &word) || word != 0x1357u ||
+        !vm_hdc_drain_data(session->core_machine, &word) || word != 0x2468u) return 0;
+    return 1;
+}
+
 C_INT main(C_VOID)
 {
     vm_session_config config = {0};
@@ -188,6 +219,7 @@ C_INT main(C_VOID)
         value != (VM_MACHINE_HDC_STATUS_DRDY | VM_MACHINE_HDC_STATUS_DSC)) {
         failed = 1;
     }
+    if (!failed && !vm_hdc_progress_probe(session)) failed = 1;
     vm_session_destroy(session);
     session = STD_NULL;
 
@@ -202,7 +234,8 @@ C_INT main(C_VOID)
     }
     vm_session_destroy(no_media);
     if (failed) return 1;
-    STD_PRINTF("M5:T233:S2:ATA-PIO:PORT:OK lba=%04X irq=14\n", 0x5aa5u);
+    STD_PRINTF("M5:T253:S2:ATA-PIO-PROGRESS:PORT:OK lba=%04X irq=14\n",
+        0x5aa5u);
     return 0;
 
 fail:

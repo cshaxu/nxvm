@@ -31,6 +31,9 @@ each successfully completed sector, including the final transition to zero.
   shortcut.
 - On each completed 512-byte PIO sector, decrement both controller-private
   remaining count and visible sector-count register exactly once.
+- The existing final-address behavior remains unchanged: after the last sector,
+  task-file address fields identify the final loaded sector rather than a new
+  next-sector address.
 - A failed next-sector load/store retains the count representing unfinished
   work, reports the existing error/status/IRQ behavior, and does not advance a
   second time.
@@ -45,6 +48,14 @@ each successfully completed sector, including the final transition to zero.
 
 Implement this task-file progression solely in the controller owner and add the
 focused port probe. Do not admit any other command or transport.
+
+**S2 result:** `vm_machine_hdc_complete_data_sector()` is the sole completed-
+sector transition. It decrements both private and visible counts after a
+successful PIO read or write sector. The retained port smoke verifies LBA
+two-sector read/write progression, count zero, intermediate IRQ14, status
+acknowledgement, and data round-trip.
+
+**S2 marker:** `M5:T253:S2:ATA-PIO-PROGRESS:PORT:OK`.
 
 ## S3: Verify
 
