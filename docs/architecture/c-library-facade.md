@@ -192,5 +192,5 @@ for example `WIN32_BOOL`, `WIN32_DWORD`, `WIN32_HANDLE`, `WIN32_HWND`, and
 5. Replace debugger input flushing with a platform capability, add a direct
    ISO-header include guard, and run full GCC/FDD/Console gates per task.
 
-This is a new phased adoption plan. It does not reopen M5 or start M6 without
-an owner-approved task breakdown.
+This is a new phased adoption plan. It does not reopen the active M5 task or
+advance a later milestone without an owner-approved task breakdown.

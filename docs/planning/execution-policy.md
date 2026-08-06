@@ -63,8 +63,8 @@ subtask breakdown for its immediate implementation milestone. The breakdown
 maps each task to an approved decision, contract, regression set, acceptance
 result, and stop condition. Do not pre-create or activate implementation tasks
 from an earlier milestone: their shape is an output of the preceding design
-gate, not an M0 prediction. M8 instead approves one such breakdown for each
-admitted corpus increment before implementation.
+gate, not an M0 prediction. M9-and-later research instead approves one such
+breakdown for each admitted implementation increment.
 
 A subtask completes only when scoped behavior works, focused tests pass,
 established corpus entries remain valid, applicable local rule invariants pass
@@ -175,9 +175,9 @@ owns milestone goal, scope, and exit conditions; its active subtask owns exact
 commands, expected markers, budgets, and stop conditions. `breakdown.md` is an
 index only and cannot close a milestone.
 When a release cadence is established, implementation milestones M1, M3, M5,
-M7, M9, and M10 create immutable snapshot branches from verified `main` commits
-before the next milestone begins. M2, M4, M6, and M8 are design milestones; M11
-is a research milestone with one active task at a time. Design and research
+M6, M7, and M8 create immutable snapshot branches from verified `main` commits
+before the next milestone begins. M2 and M4 are design milestones; M9 and later
+are research milestones with one active task at a time. Design and research
 work has no default snapshot obligation, though the owner may require one for a
 specific approved deliverable.
 

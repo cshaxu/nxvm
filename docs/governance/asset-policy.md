@@ -13,7 +13,8 @@ components, and third-party executables whose redistribution status is unclear.
 - A release must separately list included and required external components in
   the completed manifest and gate defined by `docs/release/`.
 - Any future Microsoft research input remains local and never enters the
-  repository. A BYOB/profile proposal requires an M11 Go decision.
+  repository. A BYOB/profile proposal requires a separately approved research
+  decision.
 
 ## M1 Local Fixtures
 

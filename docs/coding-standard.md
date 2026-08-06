@@ -20,7 +20,8 @@ The only permitted source roots are `core`, `vm`, `mantle`, `dos`, and `vdm`.
 - `vm/{machine,platform,product,profile}` contains bootable whole-machine
   behavior, the retained VM Console/debugger experience, and machine profiles.
 - `mantle/{machine,platform,product}` contains only policy-free VDM composition
-  mechanism shared by NXVDM and an admitted external implementation.
+  mechanism. Trusted external research may justify a neutral requirement but
+  is not an implementation consumer or dependency.
 - `dos/{machine,platform,product,profile}` contains the owned DOS backend and
   depends on no other product component.
 - `vdm/{machine,platform,product,profile}` contains NXVDM application-runner

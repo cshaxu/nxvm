@@ -177,8 +177,7 @@ itself and all legacy accessors still select one process-wide live machine.
 M5 T64 establishes the naming rule and the ownership ledger above. It is
 design-only. Subsequent implementation tasks must first map the exact legacy
 callers for one family, define its context-passing API and freeze/lifetime
-rules, then migrate it without changing user-visible behavior. M6 remains
-deferred until the selected-session globals and the dual machine execution
-paths have a bounded M5 plan.
+rules, then migrate it without changing user-visible behavior. Later mantle
+work depends on completed M5 single-session and single-execution-path evidence.
 
 The completed migration is summarized in [M5 History](../history/m5.md).

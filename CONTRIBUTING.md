@@ -34,11 +34,12 @@ interfaces.
 
 ## References And Guest Components
 
-Other open-source projects require a license review before copying. Historical
-third-party NTVDM implementations are research sources only. Microsoft binaries are never
-committed. Microsoft NTVDM research belongs under `docs/research/` or approved
-`tools/research/`; it cannot create a default runtime dependency or block the
-owned DOS backend.
+Other open-source projects require a license review before copying. Trusted
+external VDM/DOS research may inform neutral requirements, but cannot create a
+shared ABI, source import, default runtime dependency, or substitute for owned
+product evidence. Microsoft binaries are never committed. Microsoft research
+belongs under `docs/research/` or approved `tools/research/`; it cannot block
+the owned DOS backend.
 
 ## Pull Request Record
 

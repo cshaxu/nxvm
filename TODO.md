@@ -127,146 +127,27 @@ default definition of NXVM completion.
 
 ## Architecture, Portability, And Product Boundaries
 
-- [ ] **Core/mantle/DOS product boundary (`TODO(High)`).** The following is the
-  sole forward product definition. Implementation tasks must reconcile source
-  layout, CMake targets, requirements, and release documents before runnable
-  VDM work:
-  - **Core / `core.dll`:** the releasable generic machine, platform, and
-    product-tool foundation rooted at `src/core`. It has no DOS-runtime,
-    Microsoft-specific, or PC/AT product policy.
-  - **NXVM / `nxvm.exe`:** the bootable whole-machine product rooted at
-    `src/vm`. It owns its PC/AT profile, synthesized BIOS contents, boot/media
-    policy, and product UI.
-  - **Mantle / `mantle.dll`:** a future VDM composition component rooted at
-    `src/mantle`. It contains only mechanism shared by NXVDM and an admitted
-    external NTVDM implementation, such as a VDM runtime envelope over core.
-    It has no runtime-specific ABI, selector, manifest, DOS namespace, or
-    protected guest asset.
-  - **DOS / `dos.dll`:** the independent owned DOS implementation rooted at
-    `src/dos`. It depends on no other component and owns the DOS loader,
-    services, and program lifecycle.
-  - **NXVDM / `nxvdm.exe`:** the non-invasive DOS VDM product rooted at
-    `src/vdm` and built over mantle/dos. It contains no Microsoft-specific
-    guest ABI, BOP/SVC contract, or Microsoft guest asset. Its optional debug
-    Console is a project-owned product experience.
-  - **External `ntvdm.exe`:** a future program in a separate local research
-    project. It builds over mantle/core and locally combines a user-supplied
-    runtime. It is neither an ntvdm64 product nor a default build, runtime,
-    dependency, release artifact, or promised workflow.
+- [ ] **M5 core/VM convergence (`TODO(High)`).** Close the actual boundary:
+  core owns only neutral guest mechanics and policy-free capabilities; VM owns
+  PC/AT controllers, firmware, boot/media, and retained UX. A trusted external
+  research report may prove a neutral requirement, but is never a core ABI,
+  runtime consumer, or dependency. Complete the single-owner audit and the
+  Windows 3.x startup prerequisite corpus before M5 closure.
+- [ ] **M6 mantle session envelope (`TODO(High)`).** Build only the neutral
+  lifecycle, execution pump, runtime bindings, transition gateway, and factual
+  diagnostics over core. No DOS ABI, external ABI, host path policy, or UI.
+- [ ] **M7 machine-profile system (`TODO(High)`).** Make PC/AT, Compaq
+  DeskPro 386, and IBM PC 110 profiles reproducible declarations with legal
+  firmware/media boundaries; do not move profile quirks into core.
+- [ ] **M8 owned DOS and NXVDM (`TODO(High)`).** Build `dos` and `vdm` over
+  mantle: DOS owns loader/services/program state; VDM owns CLI, containment,
+  presentation, debug UX, cancellation, and exit policy.
 
-  The future physical artifact and dependency shape is:
-
-  ```text
-  src/core/       -> core.dll
-  src/vm/         -> nxvm.exe       -> core.dll
-  src/mantle/     -> mantle.dll     -> core.dll
-  src/dos/        -> dos.dll
-  src/vdm/        -> nxvdm.exe      -> mantle.dll + dos.dll
-  external wrapper -> ntvdm.exe     -> mantle.dll -> core.dll
-  ```
-
-  Keep all-product-neutral tooling in `core/product`; keep NXVM composition and
-  UX in `src/vm`, reusable VDM composition in `src/mantle`, owned DOS behavior
-  in `src/dos`, and NXVDM UX/policy in `src/vdm`. Mantle admission requires two real
-  consumers and a contract without product, DOS-namespace, or runtime-specific
-  policy. VM multi-session run/pause/reset/stop control remains VM-owned unless a future shared
-  requirement is demonstrated. The existing generic debug-target contract is
-  reused by NXVDM through a mantle composition binding; do not add a debug-
-  event contract without an observed need. Retained NXVM Console and NXVDM
-  debug UX remain product-owned. First make this a clean source-level boundary
-  under the existing single-executable build; do not create `src/mantle`, DLL,
-  or SDK packaging before an admitted shared mantle mechanism exists. The
-  shared machine start contract is one validated
-  `initial-state`/entry-plan: NXVM supplies the conventional x86 reset-state
-  plus its mapped BIOS image, while mantle may supply
-  direct prepared state. Existing core reset returns only to a clean machine
-  baseline; composition then applies the selected initial state. A reset vector
-  is therefore a VM profile choice, not a separate core boot mode.
-
-  The core-boundary delta must classify every item as unchanged, `VM -> core`,
-  `core -> VM`, core extension, or new capability. Present findings identify
-  no `core -> VM` migration. Candidate `VM -> core` mechanism extractions are
-  CMOS/RTC, reusable FDC/HDC controller mechanics, and policy-free shared host
-  providers; image-file backends, media selection, PC/AT defaults, firmware
-  generation, and UX remain in VM. Mantle is not a presumed extraction target:
-  no source moves there until its two-consumer, policy-free contract is proven.
-  Core extensions/new work include checked
-  guest-memory access, externally observable A20/HMA semantics,
-  protected-mode/V86/exception/IRET correctness, generic ROM mapping, generic
-  initial-state application, generic guest transitions, and narrow policy-free
-  host capability contracts. Core
-  platform admission begins with copied normalized host events, presentation
-  sinks, wait/monotonic-host-clock support that never sets guest time, and an
-  optional byte-stream contract when NXVM and NXVDM prove identical use.
-  An opened random-access media/backend contract is conditional on shared
-  controller use; mount paths, geometry, eject policy, and media selection stay
-  in VM. Generic file/directory, drive-visibility, DOS-path, and DOS-namespace
-  contracts are not admitted merely because a VDM or external wrapper uses
-  host files. Core machine/product may later emit copied, classified diagnostic
-  and trace facts; core platform only supplies an optional host-facing sink.
-  Composition, product, or an external wrapper owns redaction, display, and
-  export policy. This observability contract is not a prerequisite for
-  initial-state or transition admission. Microsoft selector meanings, SVC
-  details, guest communication-block layouts, BYOB validation, DOS namespace
-  policy, and guest files remain external-wrapper concerns. A transition
-  facility matches only consumer-registered undefined-instruction patterns;
-  core defines no fixed opcode sequence, selector namespace, or guest-service
-  semantics.
-
-- [ ] **M5 T243: checked guest-memory contract (`TODO(High)`).** S1 maps the
-  current memory/execution boundary and specifies the minimum checked
-  read/write/copy/mapping-query contract. S2 implements it with focused fault
-  tests and preserved NXVM regressions. `size == 0` is invalid; overflow or a
-  range outside its selected physical route is inaccessible and never wraps.
-  Query accepts only `READ`/`WRITE` and shares physical read/write routing,
-  including registered providers; it must not infer from RAM capacity or add a
-  fetch permission. It returns only neutral `ORDINARY_RAM`/`PROVIDER` route
-  classification, never a pointer or provider identity. It must not expose raw
-  RAM pointers, DOS structures, or host-policy callbacks.
-- [ ] **M5 T244: registered undefined-instruction transition (`TODO(High)`).**
-  After T243 S2, add a consumer-registered, mode-restricted transition facility
-  with checked state access and constrained outcomes. A match occurs at the
-  architected invalid-instruction boundary before default fault delivery; core
-  alone owns matching-byte IP consumption. The only dispositions are
-  `unhandled` (normal invalid-instruction path), `handled-resume` (core applies
-  a validated CPU-state patch, then consumes the registered pattern length),
-  `stop`, and `fault`. The initial patch may alter only `EAX`, `EBX`, `ECX`,
-  `EDX`, `ESI`, `EDI`, `EBP`, and arithmetic-status `CF`, `PF`, `AF`, `ZF`,
-  `SF`, `OF`; it cannot alter `EIP`, `ESP`, other FLAGS, segments, descriptor
-  caches, control/debug registers, FPU state, or guest memory. Handler-visible
-  state is a copy. Core validates and commits the complete permitted patch and
-  fixed IP advance atomically, or commits none of it. A later task must admit
-  guest-buffer writes through its own bounded transactional contract before any
-  transition service needs them. Any CPU mode transition remains exclusively in
-  the core CPU's formally supported
-  instruction/exception/IRET semantics. It defines no fixed instruction bytes,
-  selector namespace, or guest-service ABI. Patterns are 1--15 bytes and match
-  the core-captured physical instruction bytes at the faulting fetch, never a
-  consumer-supplied linear address. Registration is `INITIALIZED`-only and
-  freezes with execution providers; identical or prefix-overlapping patterns
-  are rejected, so matching has no priority rule. NXVM registers none by
-  default.
-- [ ] **M5 T245: generic ROM mapping (`TODO(High)`).** Add immutable byte-image
-  storage as a checked device-memory provider on the existing single frozen
-  physical route, not as a second ROM mapping or fetch API. Register only while
-  `INITIALIZED`; reject all provider/image/RAM conflicts at registration; reads
-  use the existing route and writes fault. Reset preserves image bytes while
-  resetting CPU/device state. The VM profile remains the first consumer; image
-  contents and firmware services stay outside core.
-- [ ] **M5 T246: validated initial-state/entry-plan (`TODO(High)`).** Apply a
-  validated immutable plan in two phases: image/provider topology registers
-  only while `INITIALIZED` and then freezes; after a clean `STOPPED` reset,
-  validate every plan field and atomically apply the real-mode register state
-  plus checked ordinary-RAM copies. Before commit, T243 query must prove every
-  preload range is writable `ORDINARY_RAM`, not a provider/ROM route; any
-  failure leaves reset CPU state, RAM, and frozen mapping unchanged. Preload
-  copies may not use A20/translation or configure protected-mode state,
-  descriptor caches, or CRx. This supports reset-state plus mapped image and
-  direct prepared state without a second core boot mode.
 - [ ] **M5 T248: narrow host-capability admission (`TODO(Medium)`).** Design
   copied event/presentation/wait contracts only after T246 validates the shared
-  machine start boundary. Admit each provider only with demonstrated policy-free
-  reuse; generic file/directory and DOS namespace remain outside core/platform.
+  machine start boundary. Admit each provider only with a concrete NXVM need
+  and a stable trusted-research requirement; generic file/directory and DOS
+  namespace remain outside core/platform.
   Before T246, T248 may collect evidence but must not introduce a platform
   contract or provider implementation.
 
@@ -282,16 +163,11 @@ default definition of NXVM completion.
   profiles and optional user-supplied ROM manifests before PC110, Compaq,
   Award, or Phoenix behavior. Third-party ROMs are never bundled, downloaded,
   or committed.
-- [ ] **VDM remains design-gated (`TODO(High)`).** Keep the scaffold
-  non-runnable until its design milestones define the owned DOS module: loader,
-  PSP/environment/DTA, DOS interrupt subset, vectors, fixture filesystem,
-  input/display providers, cancellation, and corpus.
-- [ ] **NXVDM CLI and host policy (`TODO(High)`).** After the VDM design gate
-  and the shared-core product-naming migration, implement `nxvdm run`
-  display/debug/no-program semantics, host-drive
-  whitelist/hide policy with canonicalization and reparse checks, and the
-  Windows 7--11 support matrix. Existing NXVM display selection is not a
-  substitute for that product contract.
+- [ ] **M8 VDM/DOS product admission (`TODO(High)`).** Keep mantle, DOS, and
+  VDM non-runnable until their M6/M8 contracts exist. M8 must implement the
+  approved `nxvdm run` display/debug/no-program semantics, host-drive
+  containment, Windows 7--11 matrix, and exit/cancellation policy; NXVM
+  display selection is not a substitute.
 
 ## Standing Closure Requirements
 

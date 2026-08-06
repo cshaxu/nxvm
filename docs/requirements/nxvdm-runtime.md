@@ -9,14 +9,14 @@ whole-machine Console and has no process CLI. In window mode, ntvdm64 retains a
 product control Console for online debugging; M8 fixes its detailed lifecycle
 and input ownership.
 
-## M8 Design Gate
+## M8 Delivery Gate
 
-Before M9 implementation, this document is completed with the program-path to
+Before M8 implementation, this document is completed with the program-path to
 guest-drive mapping, exact guest/host/cancellation exit-status table, option
 error table, handle-based filesystem-containment algorithm, DOS normalization,
 dot/reparse/UNC/device/race rules, Windows 7 through Windows 11 matrix,
 Console/window state machine, display-mode table, debugger grammar, input
-routing, and restoration behavior. M7 introduces project-owned developer/test
+routing, and restoration behavior. M8 introduces project-owned developer/test
 loading through the owned DOS loader; M1 through M7 do not implement this
 product CLI. That workflow is distinct from the product debugger, whose
 constrained `load` state machine is defined below.

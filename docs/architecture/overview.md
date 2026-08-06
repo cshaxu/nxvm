@@ -19,8 +19,9 @@ core.dll
   shared machine, platform, and product-tool foundation.
 
 mantle.dll
-  shared VDM composition mechanism for NXVDM and an admitted external NTVDM
-  implementation.
+  shared, policy-free VDM composition mechanism. Trusted external research
+  may validate its capability requirements, but does not become a consumer,
+  ABI, or runtime dependency.
 
 dos.dll
   independent owned DOS implementation with no dependency on core, mantle,
@@ -82,7 +83,7 @@ allocate `NNNN`, change the current task artifact version, or create an
 executable. Design work explicitly attached to an implementation task uses that
 task's subtask identifier and follows its artifact policy.
 
-The bootable product keeps the Virtual Machine identity. After M9 implements
+The bootable product keeps the Virtual Machine identity. After M8 implements
 the non-bootable DOS runner and proves that `nxvdm.exe` cannot continue into
 standalone disk boot or an implicit guest DOS shell, that product uses:
 
@@ -123,12 +124,19 @@ registry and dependency rules live only in
 `core/machine` session ownership plus provider/registry naming rules are
 defined in [Core Machine Instance Design](core-machine-instance-design.md).
 
-## Research Boundary
+## External Research Boundary
 
-Microsoft component work is not a runtime module or committed backend. It
-belongs under `docs/research/` and owner-approved `tools/research/` utilities.
-It cannot create a BOP framework, component loader, default dependency, or
-release requirement before M11 research and an owner-approved Go decision.
+Trusted external VDM/DOS research reports are admissible requirements and
+boundary references. They may demonstrate that a neutral capability is worth
+designing, but never supply an ABI, source import, binary, runtime consumer,
+or acceptance substitute. Core and mantle contracts describe only the neutral
+capability; external selectors, service numbers, file sets, layouts, and host
+policy remain outside this repository.
+
+Microsoft component work remains research-only and is not a runtime module or
+committed backend. It may not create a BOP framework, component loader,
+default dependency, or release requirement without a separately approved
+implementation decision.
 
 ## Baseline Record
 

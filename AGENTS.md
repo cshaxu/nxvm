@@ -26,8 +26,10 @@ Read these documents before changing the repository:
 - NXVM is the formal machine foundation and continuing bootable-VM product
   surface. Copyright-holder-authorized imports use the root MIT License and
   require exact provenance, preserved copyright notices, and focused tests.
-- The owned DOS backend is the default NXVDM path. Microsoft NTVDM components
-  are an M11 T2 research topic, not a backend.
+- The owned DOS backend is the default NXVDM path. Trusted external VDM/DOS
+  research reports may inform neutral requirements, but never become a shared
+  ABI, backend, default dependency, or release input. Microsoft components
+  remain research-only, not a backend.
 - Use the module boundaries defined in `docs/architecture/module-layout.md`.
 - Apply the applicable local architecture, coding, source, and execution
   rules to every task; record them and any owner-approved exception in the

@@ -11,8 +11,8 @@ exception. Historical task evidence is not enough when the current source graph
 has changed.
 
 M5 remains open until every applicable item is evidenced or an owner-approved
-deferral is recorded in `TODO.md` with its target milestone. M6 must not use an
-unfinished M5 item as an implicit waiver.
+deferral is recorded in `TODO.md` with its target milestone. M6 mantle work
+must not use an unfinished M5 boundary or corpus item as an implicit waiver.
 
 ## 1. Current Build Graph
 
@@ -74,6 +74,9 @@ unfinished M5 item as an implicit waiver.
 - [ ] Applicable FDD/HDD boot, DOS prompt, keyboard/display, pause/debug, and
   multi-session isolation baselines pass. A changed path has before/after
   acceptance evidence rather than a directory or compile-only claim.
+- [ ] The selected Windows 3.x startup corpus either reaches its declared
+  checkpoint or records every unmet CPU/device/profile prerequisite as a
+  bounded deferral. A boot attempt alone is not compatibility proof.
 - [ ] Core lifecycle, configuration freeze, provider order, memory mapping, and
   cold RAM reconfiguration contracts retain their documented boundary tests.
 
@@ -83,8 +86,8 @@ unfinished M5 item as an implicit waiver.
   task tracking, and verification records agree on the current implementation,
   active subtask, artifact identity, and M5 scope.
 - [ ] Every remaining compatibility, hardware, platform, or product gap is
-  classified in `TODO.md` as a bounded deferred item. VDM remains a deliberately
-  non-runnable skeleton until M6 approves its DOS contracts.
+  classified in `TODO.md` as a bounded deferred item. Mantle, DOS, and VDM
+  remain non-runnable until their respective M6/M8 admission work begins.
 - [ ] The final M5 verification record links this checklist item-by-item to
   commands and evidence, states every approved deferral, and explicitly says
   whether M5 may close. Only then may `TODO.md`, `status.md`, and `roadmap.md`

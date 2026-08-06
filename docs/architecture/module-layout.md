@@ -206,8 +206,9 @@ only as an override provider against a public core contract; it does not create
 the machine or call a sibling module directly.
 
 `mantle/machine`, `mantle/platform`, and `mantle/product` supply only reusable
-VDM composition mechanism over core. They know no DOS ABI, external-runtime
-ABI, CLI grammar, path policy, protected asset, or product exit policy.
+VDM composition mechanism over core. Trusted external research may inform a
+neutral mantle requirement, but mantle knows no DOS ABI, external-runtime ABI,
+CLI grammar, path policy, protected asset, or product exit policy.
 `mantle/` root composition constructs the session and binds an admitted
 DOS-runtime provider to core at defined execution boundaries.
 
