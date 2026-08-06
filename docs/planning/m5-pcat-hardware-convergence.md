@@ -7,9 +7,9 @@ redefine the roadmap, start a later milestone, or define NXVDM completion.
 Completed M5 evidence is summarized in [M5 History](../history/m5.md); this
 document contains only the current baseline and remaining queue.
 
-The retained baseline is **T253 S3**: `nxvm.exe` preserves its full-PC boot,
+The retained baseline is **T254 S3**: `nxvm.exe` preserves its full-PC boot,
 Console, debugger, and current GCC/CTest gate. The current target is
-`vm-0-5-0252`, with static/ownership checks and 87/87 CTest cases passing.
+`vm-0-5-0253`, with static/ownership checks and 89/89 CTest cases passing.
 Checked memory, immutable ROM mapping, atomic entry plans, and the sole VM
 composition lifecycle remain owned boundaries. Each admitted task follows the
 hardware-device verification template and must preserve that baseline.
@@ -18,7 +18,6 @@ hardware-device verification template and must preserve that baseline.
 
 | Task | Dependency | Deliverable and stop condition |
 | --- | --- | --- |
-| T254 | T219, T220, T228 | Complete digital CGA only through bounded modes and 6845-visible behavior required by a declared corpus. Composite rendering remains optional. |
 | T255 | M5 profile boundary | Define machine-profile admission, optional user-provided ROM manifests, topology/capability contracts, fixture corpus, and provenance before additional machine profiles. |
 | T256 | T217--T225 evidence | Admit a higher timing-fidelity level only when a real corpus requires it. Instruction, bus, and cycle timing remain separate work. |
 | T257 | Real-mode device baseline | Add bounded 286 protected-mode descriptors, exceptions, and control transfer with focused probes. |

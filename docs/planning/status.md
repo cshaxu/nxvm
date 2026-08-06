@@ -2,32 +2,28 @@
 
 ## Current Work
 
-**M5 T254 S3 active: verify the digital-CGA slice through DOS.**
+**M5 is idle after T254 S3.**
 
-Original request: admit a bounded `640x200x2` digital CGA slice plus only the
-corpus-required 6845-visible behavior, with VADP as sole owner and no platform,
-BIOS, host-clock, or second-state shortcut. The active packet is
-[T254](m5-t254-digital-cga-6845.md): S1 recorded current ports/memory/snapshot
-state and its negative-control baseline probe. S2 admitted only VADP decode,
-the copied indexed-frame capacity, and normal ROM mode `06h`; S3 now adds the
-owner-built DOS/system-image fixture and closure evidence.
+[T254](m5-t254-digital-cga-6845.md) closed the bounded digital-CGA slice:
+VADP owns `640x200x2` decode and copied frames, while default ROM mode `06h`
+and its return to text mode use ordinary video ports and guest memory only.
+No subtask is active until the next task packet is approved.
 
 | Closure | Evidence |
 | --- | --- |
 | T249--T251 | Copied input, presentation, and cancellable wait contracts are closed with artifacts `0.5.0248`--`0.5.0250`. |
 | T252 | Composition owns the sole run-handle teardown sequence; artifact `0.5.0251` and 86/86 current CTest pass. |
 | T253 | ATA PIO sector-count progression is controller-owned; artifact `0.5.0252` and 87/87 current CTest pass. |
+| T254 | Bounded digital CGA `640x200x2` is VADP-owned; artifact `0.5.0253` and 89/89 current CTest pass. |
 
-T254 allocates artifact revision `0.5.0253` only at behavior-changing S3
-closure. Its stop conditions prohibit a platform VRAM path, VM VADP shadow,
-host-time raster, undefined mode, or retained UX regression.
+The next task must establish a complete active packet before implementation.
 
 ## Current Technical Baseline
 
-- **T253 S3:** `current-gcc` and `verify-current-artifact-target` select
-  `vm-0-5-0252`; static/ownership checks and 87/87 CTest cases passed.
-  Artifact `nxvm_0_5_0252.exe` SHA-256:
-  `B565B73D1C1E5EB77C04549944AB28EA2CF6DE59AB2FD2B087D957CAEB020A87`.
+- **T254 S3:** `current-gcc` and `verify-current-artifact-target` select
+  `vm-0-5-0253`; static/ownership checks and 89/89 CTest cases passed.
+  Artifact `nxvm_0_5_0253.exe` SHA-256:
+  `B26167320D7679FD02F3ECF1EE1F8C7CD6BEF97752447CA75A87FC6765366526`.
 - **T243--T246:** core owns checked physical memory, bounded `#UD`
   transitions, immutable ROM mapping, and atomic real-mode entry plans. T247
   verifies the current artifact target and full gate over that boundary.

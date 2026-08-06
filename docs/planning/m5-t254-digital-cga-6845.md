@@ -1,6 +1,6 @@
 # M5 T254: Digital CGA And 6845 Visible Behavior
 
-**Status:** S3 active.
+**Status:** complete.
 
 ## Original Request
 
@@ -47,10 +47,11 @@ copies snapshots, and platform only renders copied payloads.
 2. **S2 port/frame probe:** will assert `1Ah` selection, interleaved bank
    addressing, MSB-first bit packing, color-select foreground, text fallback,
    and the admitted CRTC fields.
-3. **S3 DOS fixture:** a temporary FDD image will receive an owner-built COM
-   program, boot DOS, execute it through normal KBC ingress, select the mode
-   through guest ports, write `B8000h`, and prove the copied frame. It will
-   retain CGA text/`320x200x4`, EGA, Console/debugger, FDD/HDD boot coverage.
+3. **S3 system-image fixture:** an owner-built temporary boot image will use
+   normal CPU reset, IVT, default ROM `INT 10h`, and `B8000h` writes to enter
+   mode `06h`, prove the copied frame, then return to mode `03h`. It isolates
+   the admitted ROM/port/memory route while retained DOS, media, Console, and
+   debugger regressions cover the surrounding product surface.
 
 ### Deferred
 
@@ -108,3 +109,19 @@ ROM `INT 10h/AH=00h/AL=06h` records BDA mode `06h` then drives that mode through
 ordinary `3D8h/3D9h` writes. Retained 320x200x4 and EGA ROM system probes pass.
 
 **S2 marker:** `M5:T254:S2:CGA-640:PORT:OK`.
+
+## S3 Result
+
+The owner-built `vm-cga-640-system-smoke` boots a temporary image on the
+8086 profile. Its guest code enters default-ROM `INT 10h` mode `06h`, writes
+the even and odd CGA banks through the normal `B8000h` mapping, observes the
+copied `CGA_640X200X2` frame, then returns through ROM mode `03h` and observes
+the copied text frame. It therefore covers the admitted ROM, port, memory,
+and snapshot route without a host-side framebuffer or DOS-shell shortcut.
+
+Focused T254 and retained CGA/EGA system probes passed. `current-gates-gcc`
+passed all static/ownership gates and **89/89** CTest cases. `current-gcc`
+produced `build/output/nxvm_0_5_0253.exe`, SHA-256:
+`B26167320D7679FD02F3ECF1EE1F8C7CD6BEF97752447CA75A87FC6765366526`.
+
+**S3 marker:** `M5:T254:S3:CGA-640:SYSTEM:OK`.

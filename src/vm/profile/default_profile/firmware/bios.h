@@ -373,6 +373,9 @@ mov bx, 0040                      \n\
 mov ds, bx                        \n\
 mov byte ds:[0049], 03            \n\
 pop ds                            \n\
+mov dx, 03d8                      \n\
+mov al, 05                        \n\
+out dx, al                        \n\
 mov dx, 03ce                      \n\
 mov al, 06                        \n\
 out dx, al                        \n\
