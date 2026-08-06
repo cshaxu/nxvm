@@ -10,9 +10,9 @@ extern "C" {
 #include "type.h"
 #include "core/platform/host_surface_interface.h"
 #include "core/platform/input_interface.h"
+#include "core/platform/presentation_mailbox_interface.h"
 #include "core/utils/wait_provider.h"
 #include "vm/platform/execution.h"
-#include "vm/platform/presentation_mailbox.h"
 
 typedef enum vm_platform_display_mode {
     VM_PLATFORM_DISPLAY_CONSOLE,
@@ -23,7 +23,7 @@ typedef enum vm_platform_display_mode {
 typedef struct vm_platform_run_context {
     const vm_platform_execution_transport *execution;
     core_platform_input_source *input_source;
-    const vm_platform_presentation_mailbox *presentation;
+    const core_platform_presentation_mailbox *presentation;
     const core_utils_wait_scope *wait_scope;
     core_platform_host_surface_context console_surface;
     core_platform_host_surface_context window_surface;
@@ -56,7 +56,7 @@ C_VOID vm_platform_run_context_initialize(
     vm_platform_run_context *context,
     const vm_platform_execution_transport *execution,
     core_platform_input_source *input_source,
-    const vm_platform_presentation_mailbox *presentation,
+    const core_platform_presentation_mailbox *presentation,
     const core_utils_wait_scope *wait_scope);
 C_INT vm_platform_run_context_get_window_display(
     const vm_platform_run_context *context);

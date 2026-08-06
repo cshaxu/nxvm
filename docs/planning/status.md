@@ -2,26 +2,26 @@
 
 ## Current Work
 
-**M5 T250 S2 active: move the copied presentation mailbox.**
+**M5 T250 S3 active: verify copied presentation and artifact.**
 
 Original request: execute the second admitted T248 migration without changing
 NXVM display behavior. S1 fixed the copied mailbox contract, producer/consumer
-inventory, and shutdown rule. S2 now moves only the copy container to
-`core/platform`; the snapshot route and VM renderer policy remain intact.
+inventory, and shutdown rule. S2 moved only the copy container to
+`core/platform`; the snapshot route and VM renderer policy remain intact. S3
+now verifies all paths and allocates artifact revision `0.5.0249`.
 
-| Requirement | S2 evidence |
+| Requirement | S3 evidence |
 | --- | --- |
-| Source relocation | Move only mailbox storage/copy operations to `core/platform`; no VADP, renderer, or policy move. |
-| Lifecycle | Add explicit inactive rejection and finalize after run-handle join but before display-provider/core teardown. |
-| Preserve products | No guest VRAM borrow, new frame queue, renderer change, display cadence, or display policy change. |
+| Focused boundary | Exercise independent frame copies and post-finalize rejection; verify producers/consumers only see copied data. |
+| Full regression | Run current GCC/CTest and retained Console/window, text/CGA/EGA, DOS, debugger, FDD/HDD regressions. |
+| Artifact | Build `nxvm_0_5_0249.exe`, record SHA/banner/source commit, then close T250. |
 
 Applicable rules: module layout, contracts, coding/source policy, execution
 workflow, and one active subtask. Planned commands:
-`rg -n "vm_platform_presentation_mailbox|core_platform_presentation_mailbox|capture_display_snapshot|renderer" src tests cmake CMakeLists.txt`
-and the focused mailbox smoke. Expected marker:
-`M5:T250:S2:PRESENTATION-MIGRATED:OK`. Stop for owner direction if the
-contract requires guest VRAM, renderer ownership, display policy, or a second
-presentation path.
+`rg -n "vm_platform_presentation_mailbox|vm/platform/presentation_mailbox|presentation_mailbox\\.c|vm-platform-presentation-mailbox" src tests cmake CMakeLists.txt`, the focused mailbox smoke, and `current-gates-gcc`.
+Expected marker: `M5:T250:S3:PRESENTATION-BOUNDARY-CLOSED:OK`. Stop for owner
+direction if the contract requires guest VRAM, renderer ownership, display
+policy, or a second presentation path.
 
 T248 is closed: it established the evidence-backed T249--T252 migration queue
 and deferred raw host-clock observation. T249 is closed with artifact

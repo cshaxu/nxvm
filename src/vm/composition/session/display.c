@@ -50,7 +50,7 @@ core_machine_display_kind vm_session_publish_display(vm_session *machine,
         STD_MEMCPY(frame.palette_rgb, snapshot.palette_rgb,
             sizeof(frame.palette_rgb));
         frame.generation = ++machine->display_generation;
-        vm_platform_presentation_mailbox_publish(&machine->presentation_mailbox,
+        (C_VOID)core_platform_presentation_mailbox_publish(&machine->presentation_mailbox,
                                                   &frame);
         return snapshot.kind;
     }
@@ -75,7 +75,7 @@ core_machine_display_kind vm_session_publish_display(vm_session *machine,
         }
     }
     frame.generation = ++machine->display_generation;
-    vm_platform_presentation_mailbox_publish(&machine->presentation_mailbox,
+    (C_VOID)core_platform_presentation_mailbox_publish(&machine->presentation_mailbox,
                                               &frame);
     return snapshot.kind;
 }
