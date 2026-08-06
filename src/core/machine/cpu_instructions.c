@@ -1379,7 +1379,7 @@ static C_VOID _s_test_esp(core_machine_cpu_execution_context *context)
 /* kernel portid accessing */
 _______todo _kpa_test_iomap(core_machine_cpu_execution_context *context, type_unsigned_16 portid, type_unsigned_8 byte)
 {
-    /* TODO(High): Add protected-mode I/O-map permission checks with owned probes. */
+    /* TODO(Low, T260): Add I/O-map checks only with the admitted CPL3 corpus. */
     TYPE_TRACE_CALL_BEGIN("_kpa_test_iomap");
     TYPE_TRACE_CALL_END;
 }

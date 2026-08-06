@@ -50,8 +50,8 @@ C_VOID core_machine_cpu_execution_context_bind_profiles(
 
 #define CORE_MACHINE_DEVICE_CPU "Intel 8086+"
 
-/* TODO(Low): Rename internal segment-descriptor fields in the ledgered CPU
- * vocabulary task without changing layout or debugger-visible behavior. */
+/* TODO(Low, T263): Rename internal segment-descriptor fields only in the
+ * ledgered CPU vocabulary task, without changing layout or debugger behavior. */
 
 typedef enum {
     SREG_DATA,
