@@ -2,8 +2,7 @@
 
 ## S1: Contract And Evidence Map
 
-**Status:** S1 complete; later implementation awaits owner-approved corpus
-slice.
+**Status:** complete.
 
 T240 verifies the existing 8086 executor before it admits any repair.  Its
 scope is the 8086 real-mode instruction behavior actually needed by the
@@ -109,5 +108,56 @@ considering any repair:
 | S2c: port transaction semantics | Immediate and DX `IN`/`OUT` through a test-only provider | Exact provider transaction sequence and current matrix |
 | S2d: corpus closure | Run focused probes against default product regressions and classify any defect | Full current matrix and compact T240 evidence update |
 
-Each slice stays in T240, uses the same `S` sequence selected by the owner,
-and performs the mandatory similar-issue sweep if it repairs a defect.
+The owner approved a single S2 core corpus smoke that combines these three
+focused slices under one reset-vector fixture.  It performs no CPU behavior
+change; a reproducible defect is admitted only as a later S3 repair, including
+the mandatory similar-issue sweep.
+
+### S2 Evidence
+
+`core-machine-real-mode-corpus-smoke` now reports
+`M5:T240:S2:8086-CORPUS:OK`.  Its single bounded reset-vector fixture executes
+a far jump to a low-memory test image, avoiding a reset-vector address-wrap
+artifact while retaining the real reset entry path.  It proves:
+
+- `CS:` segment override reads the expected byte;
+- `REP MOVSB` copies three bytes, and two `STD`-governed `STOSB` operations
+  write backwards;
+- `INT 60h` dispatches through the IVT and `IRET` restores the caller's stack
+  and carry flag; and
+- immediate and DX `IN`/`OUT` invoke the test-only provider in the exact
+  expected transaction order.
+
+The probe also retains a strict-8086 `66h` undefined-opcode checkpoint for
+the segment, interrupt, and port cases.  The initial string-case failure was a
+test-fixture observation error: public memory reads correctly reject the
+`FAULTED` lifecycle, leaving the caller buffer unchanged.  A temporary
+core-owned write observer showed that `REP MOVSB` had written the expected
+guest addresses.  The final test observes string state after `HLT`, when the
+machine is `PAUSED`; it imports no observer, diagnostic shortcut, or CPU code
+change.  No reproducible 8086 execution defect was found, so the
+similar-issue sweep is not applicable to S2.
+
+### S3 Closure Plan
+
+Run `current-gates-gcc`, which builds and executes all current CTest smoke
+cases.  The closure evidence must name the resulting count and retain the
+default-80386 FDD/HDD boot, DOS prompt/`MEM`, CGA/EGA, keyboard, Console, and
+debugger coverage.  Because T240 adds verification only and makes no runnable
+product behavior change, it produces no task artifact.
+
+### S3 Evidence And Closure
+
+`cmake --build --preset current-gates-gcc --parallel 4` passed all 34 static
+and ownership gates, then built and executed 77/77 current CTest smokes.  The
+matrix includes the new corpus smoke and retained default-80386 FDD/HDD boot,
+DOS prompt, `MEM`, keyboard, CGA/EGA, Console, debugger, session, and fault
+handoff coverage.  No executor source changed because S2 found no reproducible
+8086 defect.
+
+T240 is therefore complete as a bounded real-mode 8086 trust baseline.  It
+does not prove all 8086 opcode families, all arithmetic/condition-code edge
+cases, or all later CPU profiles.  Those require a future failing real-path
+corpus admission; they are not silently implied by this result.  There is no
+`nxvm_0_5_0240.exe`: this task changes verification sources and CTest
+registration only, not the runnable NXVM product path.

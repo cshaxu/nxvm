@@ -135,6 +135,10 @@ add_executable(core-machine-real-mode-tick-smoke
     tests/machine/core_machine_real_mode_tick_smoke.c)
 target_link_libraries(core-machine-real-mode-tick-smoke PRIVATE core-machine)
 
+add_executable(core-machine-real-mode-corpus-smoke
+    tests/machine/core_machine_real_mode_corpus_smoke.c)
+target_link_libraries(core-machine-real-mode-corpus-smoke PRIVATE core-machine)
+
 add_executable(core-machine-stopped-lifecycle-smoke
     tests/core/machine_stopped_lifecycle_smoke.c
 )
@@ -832,6 +836,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-scheduler-smoke
     core-machine-timing-checkpoint-smoke
     core-machine-real-mode-tick-smoke
+    core-machine-real-mode-corpus-smoke
     core-machine-trace-context-smoke
     core-machine-cpu-fault-diagnostic-smoke
     core-machine-configuration-smoke
