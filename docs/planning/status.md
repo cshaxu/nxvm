@@ -2,7 +2,15 @@
 
 ## Current Work
 
-**Idle after M5 T227 S4:** no implementation subtask is active. The default
+**M5 Td S12 complete: rebase unstarted hardware task identifiers.** Committed
+task history and existing artifact identifiers remain immutable. The forward
+queue now retains T237 for graphics data-path work; T238--T245 cover real-mode
+graphics firmware, compatibility, device, profile, and timing admissions; and
+T246--T249 defer protected-mode CPU/FPU work. This documentation-only change
+has no source, build, artifact, or runtime behavior effect.
+
+**Latest technical baseline -- idle after M5 T227 S4:** no implementation
+subtask is active. The default
 PC/AT profile now disables uncalibrated core typematic instead of turning
 instruction ticks into human repeat time. Explicit nonzero profile deadlines
 retain bounded KBC repeat; host key down/up -> mapper -> KBC -> IRQ1 -> ROM is
@@ -297,7 +305,10 @@ changes no source or build output.
 `M5 Td S6` establishes the authoritative ROI-ordered PC/AT hardware queue,
 corrects the baseline to T216 S5, and reserves T217--T233 for time, devices,
 storage, and display work. T234 was allocated to the boundary closure, which
-is complete; the unstarted EGA/VGA and CPU/FPU work follows as T235--T241.
+is complete. `M5 Td S12` preserves the completed T235--T236 records and
+rebases the unstarted route: T237--T245 cover graphics, firmware, real-mode
+compatibility, devices, profiles, and timing; T246--T249 cover protected-mode
+CPU and present-FPU work.
 
 ## Milestone State
 
