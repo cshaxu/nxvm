@@ -191,9 +191,11 @@ shared Win32 and Linux providers live in `core/platform/win32` and
 `mantle/*`, `dos/*`, or `vdm/*` counterpart. The same rule applies to machine
 and product code.
 
-`vm/machine` owns boot/reset sequencing, execution-loop glue, and VM-only
-controllers such as FDC/HDC/FDD/HDD. `vm/platform` owns only full-machine
-policy adapters; concrete host facilities shared with VDM belong in
+`vm/machine` owns VM-only controllers and their device-local behavior, such as
+CMOS/RTC, FDC/HDC/FDD/HDD. The `vm/` root composition owns profile-selected
+boot/reset ordering, the bounded product execution pump, and provider
+lifetime; it never duplicates the core scheduler. `vm/platform` owns only
+full-machine policy adapters; concrete host facilities shared with VDM belong in
 `core/platform/{win32,linux}`. `vm/product` owns retained NXVM user experience: Console, hardware
 debugger UX, media commands, and presentation policy. `vm/profile` owns VM
 topology, boot policy, ROM assets, and declarative firmware-provider metadata.

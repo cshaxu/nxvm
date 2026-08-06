@@ -129,7 +129,9 @@ default definition of NXVM completion.
 
 - [ ] **M5 core/VM convergence (`TODO(High)`).** Close the actual boundary:
   core owns only neutral guest mechanics and policy-free capabilities; VM owns
-  PC/AT controllers, firmware, boot/media, and retained UX. A trusted external
+  PC/AT CMOS/RTC, storage controllers, firmware, boot/media, and retained UX.
+  Core retains deterministic guest ticks and generic PIT/PIC/DMA mechanics; a
+  trusted external
   research report may prove a neutral requirement, but is never a core ABI,
   runtime consumer, or dependency. Complete the single-owner audit and the
   Windows 3.x startup prerequisite corpus before M5 closure.
