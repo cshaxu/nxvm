@@ -5,7 +5,8 @@
 **M5 T242 complete:** the bounded drive-0 MFM `READ TRACK 42h` slice uses the
 existing FDC -> DMA2 -> core RAM -> IRQ6 route. Its focused port probe and
 owner-built DOS `FDC242.COM` system-image corpus both prove the 9,216-byte
-transfer with no BIOS or host shortcut. The current GCC gate passed 34 static
+transfer, guest-visible IRQ6 arrival, normal result and `SENSE INTERRUPT`
+release with no BIOS or host shortcut. The current GCC gate passed 34 static
 and ownership checks plus 80/80 CTest smokes. See [the T242 record](m5-t242-fdc-corpus-extension.md).
 Artifact `nxvm_0_5_0242.exe` SHA-256:
 `14532F8A23653B0787B3854BA39A5594075F53CDF5C24FD823E786F10E14247D`.

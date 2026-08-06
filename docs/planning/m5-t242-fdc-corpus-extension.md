@@ -124,3 +124,17 @@ CGA/EGA, Console, and debugger cases remain in that matrix.
 
 Artifact: `build/output/nxvm_0_5_0242.exe`, SHA-256
 `14532F8A23653B0787B3854BA39A5594075F53CDF5C24FD823E786F10E14247D`.
+
+## S4: Guest IRQ6 And Result Evidence
+
+**Status:** complete.
+
+`FDC242.COM` installs an ordinary IVT `0Eh` handler before issuing `42h`. The
+handler records at least one guest-visible IRQ6 arrival and masks IRQ6 until
+the main path consumes the normal seven-byte result, issues `SENSE INTERRUPT`,
+records its two-byte result, then sends EOI. The test reads that COM-owned
+buffer through the installed IVT segment and requires a nonzero IRQ count,
+`20 00 00 00 00 13 02`, and `20 00`; it also retains the 9,216-byte DMA data
+comparison. This deliberately does not assert a one-delivery count: the
+current asserted source may be presented repeatedly until `SENSE INTERRUPT`
+releases it. Marker: `M5:T242:S4:FDC:DOS:OK`.
