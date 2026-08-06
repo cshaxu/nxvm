@@ -633,6 +633,10 @@ add_executable(vm-mouse-driver-dos-smoke
     tests/machine/vm_mouse_driver_dos_smoke.c
 )
 target_link_libraries(vm-mouse-driver-dos-smoke PRIVATE vm-composition)
+add_executable(vm-fdc-read-track-dos-smoke
+    tests/machine/vm_fdc_read_track_dos_smoke.c
+)
+target_link_libraries(vm-fdc-read-track-dos-smoke PRIVATE vm-composition)
 add_executable(vm-keyboard-set1-mapper-smoke
     tests/machine/vm_keyboard_set1_mapper_smoke.c
 )
@@ -917,6 +921,7 @@ set(PROJECT_CURRENT_FDD_SMOKE_TARGETS
     vm-ega-planar-dos-smoke
     vm-rom-ega-int10-dos-smoke
     vm-mouse-driver-dos-smoke
+    vm-fdc-read-track-dos-smoke
     vm-debug-pause-boundary-smoke
     vm-unified-debug-backend-smoke)
 set(PROJECT_CURRENT_FDD_HDD_SMOKE_TARGET vm-product-session-smoke)
@@ -999,7 +1004,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0241 "0.5.0241")
+add_current_vm_artifact(vm-0-5-0242 "0.5.0242")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 
