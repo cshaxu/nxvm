@@ -314,7 +314,8 @@ set(CORE_MACHINE_SOURCES
 add_library(core-platform STATIC
     src/core/platform/host_surface_interface.c
     src/core/platform/input.c
-    src/core/platform/presentation_mailbox.c)
+    src/core/platform/presentation_mailbox.c
+    src/core/platform/wait.c)
 if(WIN32)
     target_sources(core-platform PRIVATE
         src/core/platform/win32/sleep.c)
@@ -486,6 +487,10 @@ add_executable(core-platform-input-source-smoke
     tests/platform/core_platform_input_source_smoke.c
 )
 target_link_libraries(core-platform-input-source-smoke PRIVATE core-platform)
+add_executable(core-platform-wait-smoke
+    tests/platform/core_platform_wait_smoke.c
+)
+target_link_libraries(core-platform-wait-smoke PRIVATE core-platform)
 
 add_executable(vm-keyboard-host-ingress-smoke
     tests/platform/vm_keyboard_host_ingress_smoke.c
@@ -923,6 +928,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     vm-platform-run-handle-smoke
     vm-multi-window-session-smoke
     core-platform-input-source-smoke
+    core-platform-wait-smoke
     vm-keyboard-host-ingress-smoke
     vm-host-cancellation-smoke
     core-platform-presentation-mailbox-smoke
@@ -1301,6 +1307,13 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMENT "Verifying VM session private-layout boundary"
         VERBATIM)
     add_dependencies(run-current-smokes verify-session-layout-boundary)
+
+    add_custom_target(verify-cancellable-wait-boundary
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_cancellable_wait_boundary.cmake"
+        COMMENT "Verifying cancellable host-wait boundary"
+        VERBATIM)
+    add_dependencies(run-current-smokes verify-cancellable-wait-boundary)
 endif()
 
 if(PROJECT_ENABLE_BOCHX_RESEARCH)
@@ -1318,6 +1331,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(core-platform-host-surface-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-platform-input-source-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-platform-presentation-mailbox-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(core-platform-wait-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-platform-presentation-mailbox-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-full-pc-session-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-core-executor-storage-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)

@@ -3,7 +3,6 @@
 
 
 #include "type.h"
-#include "core/utils/wait_provider.h"
 
 #define VM_PLATFORM_EXECUTION_FLIP_TIMEOUT_MILLISECONDS 5000u
 typedef struct vm_platform_execution_sink {
@@ -31,6 +30,6 @@ C_VOID vm_platform_execution_stop_for(
     const vm_platform_execution_transport *transport);
 C_INT vm_platform_execution_wait_for_flip_for(
     const vm_platform_execution_transport *transport, C_INT initial_flip,
-    const core_utils_wait_scope *wait_scope, uint32_t timeout_milliseconds);
+    uint32_t timeout_milliseconds);
 
 #endif

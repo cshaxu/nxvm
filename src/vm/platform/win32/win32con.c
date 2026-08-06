@@ -2,7 +2,7 @@
 
 #include "type.h"
 
-#include "core/utils/wait.h"
+#include "core/platform/wait_interface.h"
 
 #include "vm/platform/win32/win32.h"
 #include "vm/platform/win32/w32cdisp.h"
@@ -29,6 +29,14 @@ static C_INT win32con_test_should_fail(C_INT stage)
     (C_VOID)stage;
     return 0;
 #endif
+}
+
+static C_INT win32con_display_wait_cancelled(C_VOID *context)
+{
+    const win32con_run_handle *handle = context;
+
+    return handle == STD_NULL || !vm_platform_execution_is_running_for(
+        handle->platform->execution);
 }
 
 static C_VOID win32con_process_input(const win32con_run_handle *handle)
@@ -73,7 +81,8 @@ static DWORD WINAPI win32con_display_thread(LPVOID opaque)
         w32cdispPaint((w32cdisp_context *)handle->platform->console_renderer,
             handle->output, handle->platform->presentation, FALSE);
         win32con_process_input(handle);
-        core_utils_wait_milliseconds(handle->platform->wait_scope, 20u);
+        (C_VOID)core_platform_wait_milliseconds(20u,
+            win32con_display_wait_cancelled, handle);
     }
     return 0;
 }
@@ -133,7 +142,7 @@ type_status vm_platform_win32con_run_handle_start(
         return TYPE_STATUS_INVALID_STATE;
     }
     if (!vm_platform_execution_wait_for_flip_for(context->execution, old_flip,
-            context->wait_scope, VM_PLATFORM_EXECUTION_FLIP_TIMEOUT_MILLISECONDS)) {
+            VM_PLATFORM_EXECUTION_FLIP_TIMEOUT_MILLISECONDS)) {
         vm_platform_win32con_run_handle_request_stop(owner);
         vm_platform_win32con_run_handle_join(owner);
         vm_platform_win32con_run_handle_finalize(owner);

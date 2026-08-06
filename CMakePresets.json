@@ -57,7 +57,8 @@
         "verify-hdc-portal-closure",
         "verify-cmos-rtc-boundary",
         "verify-ata-pio-feature-boundary",
-        "verify-core-utils-boundary"
+        "verify-core-utils-boundary",
+        "verify-cancellable-wait-boundary"
       ]
     },
     {

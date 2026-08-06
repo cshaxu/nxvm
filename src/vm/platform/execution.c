@@ -1,6 +1,6 @@
 #include "type.h"
 
-#include "core/utils/wait.h"
+#include "core/platform/wait_interface.h"
 #include "vm/platform/execution.h"
 
 
@@ -48,21 +48,27 @@ C_VOID vm_platform_execution_stop_for(
     }
 }
 
+typedef struct vm_platform_execution_flip_wait {
+    const vm_platform_execution_transport *transport;
+    C_INT initial_flip;
+} vm_platform_execution_flip_wait;
+
+static C_INT vm_platform_execution_flip_wait_cancelled(C_VOID *context)
+{
+    const vm_platform_execution_flip_wait *wait = context;
+
+    return wait == STD_NULL || vm_platform_execution_get_flip_for(
+        wait->transport) != wait->initial_flip;
+}
+
 C_INT vm_platform_execution_wait_for_flip_for(
     const vm_platform_execution_transport *transport, C_INT initial_flip,
-    const core_utils_wait_scope *wait_scope, uint32_t timeout_milliseconds)
+    uint32_t timeout_milliseconds)
 {
-    uint32_t waited;
+    vm_platform_execution_flip_wait wait = { transport, initial_flip };
 
-    for (waited = 0u; waited < timeout_milliseconds; ) {
-        uint32_t interval = timeout_milliseconds - waited;
-
-        if (vm_platform_execution_get_flip_for(transport) != initial_flip) {
-            return TYPE_TRUE;
-        }
-        if (interval > 100u) interval = 100u;
-        core_utils_wait_milliseconds(wait_scope, interval);
-        waited += interval;
-    }
+    if (transport == STD_NULL) return TYPE_FALSE;
+    (C_VOID)core_platform_wait_milliseconds(timeout_milliseconds,
+        vm_platform_execution_flip_wait_cancelled, &wait);
     return vm_platform_execution_get_flip_for(transport) != initial_flip;
 }

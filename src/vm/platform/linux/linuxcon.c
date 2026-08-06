@@ -4,7 +4,7 @@
 
 #include "type.h"
 
-#include "core/utils/wait.h"
+#include "core/platform/wait_interface.h"
 
 #include <curses.h>
 
@@ -240,6 +240,22 @@ struct linuxcon_run_handle {
     STD_ATOMIC_BOOL display_failed;
 };
 
+static C_INT linuxcon_display_wait_cancelled(C_VOID *context)
+{
+    const linuxcon_run_handle *handle = context;
+
+    return handle == STD_NULL || !vm_platform_execution_is_running_for(
+        handle->platform->execution);
+}
+
+static C_INT linuxcon_display_ready_wait_cancelled(C_VOID *context)
+{
+    const linuxcon_run_handle *handle = context;
+
+    return handle == STD_NULL || STD_ATOMIC_LOAD(&handle->display_ready) ||
+        STD_ATOMIC_LOAD(&handle->display_failed);
+}
+
 static C_VOID *linuxcon_display_thread(C_VOID *arg) {
     linuxcon_run_handle *handle = arg;
     vm_platform_run_context *context = (vm_platform_run_context *)handle->platform;
@@ -256,7 +272,8 @@ static C_VOID *linuxcon_display_thread(C_VOID *arg) {
     while (vm_platform_execution_is_running_for(context->execution)) {
         vm_platform_linuxcon_paint(context, 0);
         vm_platform_linuxcon_process_keyboard(handle);
-        core_utils_wait_milliseconds(context->wait_scope, 20u);
+        (C_VOID)core_platform_wait_milliseconds(20u,
+            linuxcon_display_wait_cancelled, handle);
     }
     return 0;
 }
@@ -433,7 +450,7 @@ type_status vm_platform_linuxcon_run_handle_start(
     }
     handle->kernel_started = 1;
     if (!vm_platform_execution_wait_for_flip_for(context->execution, old_flip,
-            context->wait_scope, VM_PLATFORM_EXECUTION_FLIP_TIMEOUT_MILLISECONDS)) {
+            VM_PLATFORM_EXECUTION_FLIP_TIMEOUT_MILLISECONDS)) {
         vm_platform_linuxcon_run_handle_request_stop(owner);
         vm_platform_linuxcon_run_handle_join(owner);
         vm_platform_linuxcon_run_handle_finalize(owner);
@@ -447,10 +464,8 @@ type_status vm_platform_linuxcon_run_handle_start(
         return TYPE_STATUS_INVALID_STATE;
     }
     handle->display_started = 1;
-    for (C_UINT waited = 0u; !STD_ATOMIC_LOAD(&handle->display_ready) &&
-         !STD_ATOMIC_LOAD(&handle->display_failed) && waited < 5000u; ++waited) {
-        core_utils_wait_milliseconds(context->wait_scope, 1u);
-    }
+    (C_VOID)core_platform_wait_milliseconds(5000u,
+        linuxcon_display_ready_wait_cancelled, handle);
     if (!STD_ATOMIC_LOAD(&handle->display_ready)) {
         vm_platform_linuxcon_run_handle_request_stop(owner);
         vm_platform_linuxcon_run_handle_join(owner);

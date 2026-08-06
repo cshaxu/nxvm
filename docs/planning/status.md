@@ -2,25 +2,25 @@
 
 ## Current Work
 
-**M5 T251 S2 active: implement bounded cancellable lifecycle waits.**
+**M5 T251 S3 active: verify bounded cancellable lifecycle waits.**
 
 Original request: execute the third admitted T248 migration without changing
 guest time or NXVM lifecycle behavior. S1 fixed the host-only cancellation
-contract and classified every existing wait site. S2 now implements the neutral
-primitive and adopts it only at lifecycle waits with existing cancellation
-facts. Raw host-clock observation remains deferred.
+contract and classified every existing wait site. S2 implemented the neutral
+primitive for run-handle lifecycle waits. S3 now closes it with artifact and
+full regression evidence. Raw host-clock observation remains deferred.
 
-| Requirement | S2 evidence |
+| Requirement | S3 evidence |
 | --- | --- |
 | Primitive | Add one bounded core/platform completed/cancelled wait with no guest-time or raw-clock exposure. |
-| Adoption | Convert composition and VM lifecycle waits only; retain `core/utils` debugger wait scopes. |
+| Adoption | Run-handle lifecycle waits use core/platform; runner pacing and debugger wait scopes remain separate. |
 | Preserve products | No new thread, watchdog, guest mutation, product policy, or lifecycle path. |
 
 Applicable rules: module layout, contracts, coding/source policy, execution
 workflow, and one active subtask. Planned commands:
 `rg -n "core_platform_sleep|core_platform_wait|core_utils_wait|wait_for_flip|wait_for_pause" src/core src/vm tests`
 and focused wait/run-handle smoke. Expected marker:
-`M5:T251:S2:CANCELLABLE-WAIT-MIGRATED:OK`. Stop for owner direction if a site
+`M5:T251:S3:CANCELLABLE-WAIT-VERIFIED:OK`. Stop for owner direction if a site
 requires guest time, raw host clock, unbounded waiting, display/exit policy,
 or a second lifecycle path.
 
