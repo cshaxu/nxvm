@@ -2,7 +2,7 @@
 
 ## Current Work
 
-**M5 T252 S1 active: define VM composition lifecycle closure.**
+**M5 T252 S3 active: verify VM composition lifecycle closure.**
 
 Original request: execute the third admitted T248 migration without changing
 guest time or NXVM lifecycle behavior. S1 fixed the host-only cancellation

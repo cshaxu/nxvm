@@ -35,6 +35,16 @@ Factor only the existing composition-owned stop/join/finalize sequence into
 explicit helpers. Preserve Console's synchronous join and window's asynchronous
 stop behavior while routing both through the same run-handle ownership rule.
 
+**S2 result:** `lifecycle.c` owns the two private operations
+`vm_session_platform_request_stop()` and
+`vm_session_platform_join_and_finalize()`. Reset joins a stopped handle;
+window stop requests, joins, and finalizes; Console resume remains the
+synchronous joiner; session finalization requests stop then joins/finalizes.
+No platform backend, Console, debugger, or test acquired a direct teardown
+path.
+
+**S2 marker:** `M5:T252:S2:COMPOSITION-LIFECYCLE-MIGRATED:OK`.
+
 ### S3: Verify Closure
 
 Add focused lifecycle ordering coverage; run current GCC/CTest, Console,
