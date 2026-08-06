@@ -851,6 +851,10 @@ C_VOID core_machine_destroy(core_machine *machine)
         core_machine_cpu_execution_finalize(&machine->executor_cpu_execution);
         core_machine_port_finalize(&machine->executor_port);
         core_machine_memory_finalize(&machine->executor_memory);
+        for (STD_SIZE_T index = 0u; index < machine->immutable_rom_mapping_count;
+                ++index) {
+            STD_FREE(machine->immutable_rom_mappings[index].image);
+        }
     }
     core_machine_trace_finalize(machine);
     core_machine_bus_finalize(machine);
