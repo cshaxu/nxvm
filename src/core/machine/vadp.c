@@ -46,6 +46,11 @@ static C_INT core_machine_vadp_is_graphics_mode(const t_vadp *adapter)
             CORE_MACHINE_VADP_MODE_HIGH_RES)) == CORE_MACHINE_VADP_MODE_GRAPHICS;
 }
 
+static C_INT core_machine_vadp_is_high_res_graphics_mode(const t_vadp *adapter)
+{
+    return adapter != STD_NULL && adapter->data.mode_control == 0x1au;
+}
+
 static uint32_t core_machine_vadp_rgbi_color(uint8_t index)
 {
     static const uint32_t colors[16] = {
@@ -75,6 +80,17 @@ static C_VOID core_machine_vadp_graphics_palette(const t_vadp *adapter,
         palette[1] = 0u;
         palette[2] = 0u;
         palette[3] = 0u;
+    }
+}
+
+static C_VOID core_machine_vadp_high_res_palette(const t_vadp *adapter,
+    uint32_t palette[CORE_MACHINE_DISPLAY_PALETTE_ENTRIES])
+{
+    if (adapter == STD_NULL || palette == STD_NULL) return;
+    palette[0] = 0u;
+    palette[1] = core_machine_vadp_rgbi_color(adapter->data.color_select);
+    if ((adapter->data.mode_control & CORE_MACHINE_VADP_MODE_VIDEO_ENABLE) == 0u) {
+        palette[1] = 0u;
     }
 }
 
@@ -462,10 +478,11 @@ static C_VOID core_machine_vadp_write_mode(t_port *port, type_unsigned_16 port_i
     (C_VOID)port_id;
     if (port == STD_NULL || adapter == STD_NULL) return;
     value = port->data.ioByte;
-    /* T228 admits only 320x200x4. 640x200 remains explicitly unsupported. */
+    /* T254 admits exactly 1Ah for the digital 640x200x2 CGA slice. */
     if ((value & (CORE_MACHINE_VADP_MODE_GRAPHICS |
         CORE_MACHINE_VADP_MODE_HIGH_RES)) ==
-        (CORE_MACHINE_VADP_MODE_GRAPHICS | CORE_MACHINE_VADP_MODE_HIGH_RES)) {
+        (CORE_MACHINE_VADP_MODE_GRAPHICS | CORE_MACHINE_VADP_MODE_HIGH_RES) &&
+        value != 0x1au) {
         return;
     }
     if (adapter->data.mode_control != value) {
@@ -1045,6 +1062,52 @@ static C_INT core_machine_vadp_capture_graphics_snapshot(t_vadp *adapter,
     return TYPE_TRUE;
 }
 
+static C_INT core_machine_vadp_capture_high_res_graphics_snapshot(t_vadp *adapter,
+    t_ram *memory, core_machine_display_snapshot *out_snapshot)
+{
+    uint8_t bytes[CORE_MACHINE_VADP_VIDEO_BYTES];
+    uint16_t y;
+    uint16_t x;
+    C_INT buffer_changed;
+
+    if (adapter == STD_NULL || memory == STD_NULL || out_snapshot == STD_NULL ||
+        !core_machine_vadp_is_high_res_graphics_mode(adapter)) return TYPE_FALSE;
+    if (core_machine_memory_read_physical(memory, CORE_MACHINE_VADP_VIDEO_BASE,
+            (type_virtual_address)bytes, sizeof(bytes)) != TYPE_STATUS_OK) {
+        return TYPE_FALSE;
+    }
+    buffer_changed = !adapter->data.captured || adapter->data.captured_kind !=
+        CORE_MACHINE_DISPLAY_KIND_CGA_640X200X2 ||
+        adapter->data.captured_mode_control != adapter->data.mode_control ||
+        adapter->data.captured_color_select != adapter->data.color_select ||
+        STD_MEMCMP(adapter->data.graphics_bytes, bytes, sizeof(bytes)) != 0;
+    if (buffer_changed) STD_MEMCPY(adapter->data.graphics_bytes, bytes, sizeof(bytes));
+    STD_MEMSET(out_snapshot, 0, sizeof(*out_snapshot));
+    out_snapshot->kind = CORE_MACHINE_DISPLAY_KIND_CGA_640X200X2;
+    out_snapshot->pixel_width = CORE_MACHINE_DISPLAY_CGA_HIGH_RES_WIDTH;
+    out_snapshot->pixel_height = CORE_MACHINE_DISPLAY_GRAPHICS_HEIGHT;
+    core_machine_vadp_high_res_palette(adapter, out_snapshot->palette_rgb);
+    for (y = 0u; y < CORE_MACHINE_DISPLAY_GRAPHICS_HEIGHT; ++y) {
+        uint32_t row_offset = (uint32_t)(y & 1u) *
+            CORE_MACHINE_VADP_GRAPHICS_ODD_ROW_OFFSET + (uint32_t)(y >> 1) *
+            CORE_MACHINE_VADP_GRAPHICS_BYTES_PER_ROW;
+
+        for (x = 0u; x < CORE_MACHINE_DISPLAY_CGA_HIGH_RES_WIDTH; ++x) {
+            uint8_t byte = bytes[row_offset + (x >> 3u)];
+
+            out_snapshot->pixels[(uint32_t)y * CORE_MACHINE_DISPLAY_CGA_HIGH_RES_WIDTH + x] =
+                (uint8_t)((byte >> (7u - (x & 7u))) & 0x01u);
+        }
+    }
+    adapter->data.captured = TYPE_TRUE;
+    adapter->data.captured_kind = CORE_MACHINE_DISPLAY_KIND_CGA_640X200X2;
+    adapter->data.captured_mode_control = adapter->data.mode_control;
+    adapter->data.captured_color_select = adapter->data.color_select;
+    out_snapshot->buffer_changed = buffer_changed;
+    out_snapshot->cursor_changed = TYPE_FALSE;
+    return TYPE_TRUE;
+}
+
 static C_INT core_machine_vadp_capture_ega_planar_snapshot(t_vadp *adapter,
     core_machine_display_snapshot *out_snapshot)
 {
@@ -1097,6 +1160,10 @@ C_INT core_machine_vadp_capture_snapshot(t_vadp *adapter, t_ram *memory,
 {
     if (core_machine_vadp_ega_planar_active(adapter)) {
         return core_machine_vadp_capture_ega_planar_snapshot(adapter, out_snapshot);
+    }
+    if (core_machine_vadp_is_high_res_graphics_mode(adapter)) {
+        return core_machine_vadp_capture_high_res_graphics_snapshot(adapter, memory,
+            out_snapshot);
     }
     return core_machine_vadp_is_graphics_mode(adapter) ?
         core_machine_vadp_capture_graphics_snapshot(adapter, memory, out_snapshot) :

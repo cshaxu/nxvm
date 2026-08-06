@@ -2,13 +2,15 @@
 
 ## Current Work
 
-**M5 T254 S1 active: define digital CGA and 6845-visible contract.**
+**M5 T254 S3 active: verify the digital-CGA slice through DOS.**
 
 Original request: admit a bounded `640x200x2` digital CGA slice plus only the
 corpus-required 6845-visible behavior, with VADP as sole owner and no platform,
 BIOS, host-clock, or second-state shortcut. The active packet is
-[T254](m5-t254-digital-cga-6845.md): S1 records current ports/memory/snapshot
-state and adds only its negative-control baseline probe. S2/S3 remain pending.
+[T254](m5-t254-digital-cga-6845.md): S1 recorded current ports/memory/snapshot
+state and its negative-control baseline probe. S2 admitted only VADP decode,
+the copied indexed-frame capacity, and normal ROM mode `06h`; S3 now adds the
+owner-built DOS/system-image fixture and closure evidence.
 
 | Closure | Evidence |
 | --- | --- |

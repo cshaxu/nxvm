@@ -300,6 +300,8 @@ $(label_int_10_ret):              \n\
 iret                              \n\
 \
 $(label_int_10_set_mode):         \n\
+cmp al, 06                        \n\
+jz $(label_int_10_set_cga_06)     \n\
 cmp al, 0d                        \n\
 jz $(label_int_10_set_ega_0d)     \n\
 cmp al, 03                        \n\
@@ -338,6 +340,25 @@ mov dx, 03c0                      \n\
 mov al, 30                        \n\
 out dx, al                        \n\
 mov al, 01                        \n\
+out dx, al                        \n\
+pop dx                            \n\
+pop bx                            \n\
+pop ax                            \n\
+iret                              \n\
+$(label_int_10_set_cga_06):       \n\
+push ax                           \n\
+push bx                           \n\
+push dx                           \n\
+push ds                           \n\
+mov bx, 0040                      \n\
+mov ds, bx                        \n\
+mov byte ds:[0049], 06            \n\
+pop ds                            \n\
+mov dx, 03d8                      \n\
+mov al, 1a                        \n\
+out dx, al                        \n\
+inc dx                            \n\
+mov al, 0f                        \n\
 out dx, al                        \n\
 pop dx                            \n\
 pop bx                            \n\
