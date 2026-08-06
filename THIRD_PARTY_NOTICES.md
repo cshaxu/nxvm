@@ -20,7 +20,9 @@ The NXVM copyright holder authorizes the NXVM-derived source imported into this
 repository under the root MIT License. The initial foundation is NXVM commit
 `6d6b7d70ab6ed83ab973d27aeea6db88f4e87e4f`; its M1 import covered 75 `src/`
 files. Later moves and adaptations remain traceable through the provenance
-index and Git history. Existing source copyright notices remain preserved.
+index and Git history. The historical source attribution below is retained as
+an NXVM provenance record; it is not a claim that each current file has an
+identical source header.
 
 ```text
 Copyright (c) 2012-2014 Neko
