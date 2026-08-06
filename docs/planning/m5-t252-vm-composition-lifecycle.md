@@ -17,6 +17,18 @@ Map every create/reset/resume/stop/finalize/destroy caller and name the unique
 creator, stop requester, joiner, and finalizer. Reject any second session,
 machine, scheduler, or direct backend teardown path.
 
+**S1 inventory:** `vm_session_create()` allocates the one `vm_session` and
+`vm_session_storage_initialize()` creates its one `core_machine`.
+`vm_session_destroy()` is the sole public destructor. Only
+`vm_session_resume()` starts a platform run handle. The remaining historical
+duplication is local to `lifecycle.c`: reset, window stop, synchronous Console
+resume, and finalization each spell some portion of join/finalize. T252 S2
+will make composition-private request-stop and join/finalize helpers the only
+backend teardown calls. Platform backend code only finalizes a handle when
+composition calls the generic operation.
+
+**S1 marker:** `M5:T252:S1:COMPOSITION-LIFECYCLE-CONTRACT:OK`.
+
 ### S2: Consolidate Lifecycle Ownership
 
 Factor only the existing composition-owned stop/join/finalize sequence into
