@@ -21,6 +21,37 @@ wait, Win32/Linux display readiness, and debugger polling. Keep injected
 `core/utils` wait scopes where they are generic product-tool test seams; do
 not mistake that utility for guest timing.
 
+#### S1 Contract
+
+`core/platform/wait_interface.h` will define a cancellation predicate and a
+three-way result: completed bounded interval, cancelled, or invalid argument.
+The caller supplies a finite millisecond budget and an explicit predicate;
+the primitive checks the predicate before and after bounded sleep increments.
+It neither reads host wall-clock values nor exposes them, and it never calls
+into `core/machine` or changes guest state. Its only host operation is the
+existing platform sleep implementation.
+
+The predicate is invoked synchronously on the waiting caller's thread and may
+only observe its caller-owned state. It may not invoke a mutable operation on
+the waiting run handle/session, block, or recursively wait.
+
+#### S1 Wait-Site Inventory
+
+| Site | Existing owner and condition | T251 disposition |
+| --- | --- | --- |
+| `vm/composition/session/control.c` pause wait | Composition waits for `paused` or `flagRun` clearing. | Adopt cancellable wait; predicate only observes control atomics. |
+| `vm/composition/session/runner.c` paused/HLT waits | Composition runner waits while guest execution is paused or halted. | Adopt cancellable wait so stop/resume/pause state ends the host sleep promptly; guest ticks remain unchanged. |
+| `vm/platform/execution.c` execution-flip wait | VM platform waits for a changed flip or stopped execution during startup. | Adopt cancellable wait; keep existing 5-second budget and result semantics. |
+| Win32/Linux run-handle display-ready waits | VM platform waits for ready/failed state while creating display resources. | Adopt cancellable wait with the existing finite 5-second budget; retain stop/join/finalize cleanup. |
+| Win32/Linux display paint loops | VM platform waits between UI paints while execution is running. | Adopt cancellation predicate only where it observes existing execution state; retain paint cadence as VM policy. |
+| `core/product/debug` polling | Core product debug uses an injected `core_utils_wait_scope`. | Keep: this is a generic testable product-tool utility, not a platform lifecycle wait or guest timer. |
+
+No inventoried site needs a raw host-clock API, guest-time mutation, or a
+second lifecycle loop. The current finite counters become explicit bounded
+wait contracts; their existing cleanup owners remain unchanged.
+
+**S1 marker:** `M5:T251:S1:CANCELLABLE-WAIT-CONTRACT:OK`.
+
 ### S2: Implement And Adopt Lifecycle Wait
 
 Implement the neutral core/platform primitive over platform sleep in bounded
