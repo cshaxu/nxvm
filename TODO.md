@@ -88,11 +88,11 @@ These are the next owned admissions, not permission to work in parallel.
   ROM/DOS/device path to uncovered 8086 families such as arithmetic/FLAGS,
   conditional control transfer, stack edge cases, and string compare/scan.
   MS-DOS `MEM` remains a regression sample, not an 80386-completeness claim.
-- [ ] **286/386 protected-mode program (`TODO(Low)`, T247--T249).** Admit
+- [ ] **286/386 protected-mode program (`TODO(Low)`, T252--T254).** Admit
   descriptors, exceptions, control transfer, CRx/paging, CPL/IOPL, TSS I/O map,
   task switching, and remaining instructions as individually probed work. It
   is lower ROI than the real-mode PC/AT device route.
-- [ ] **Present x87 (`TODO(Low)`, T250).** Define state, operations,
+- [ ] **Present x87 (`TODO(Low)`, T255).** Define state, operations,
   exceptions, and `FWAIT` before enabling any 8087/287/387 profile.
 - [ ] **CPU-fault outcome audit (`TODO(Medium)`).** T214 established a
   session-owned fault result. Revisit only with a reproducible case showing a
@@ -127,6 +127,110 @@ default definition of NXVM completion.
 
 ## Architecture, Portability, And Product Boundaries
 
+- [ ] **Core/mantle product naming and external VDM boundary (`TODO(High)`).**
+  Treat the following names as the forward product definitions and reconcile
+  legacy `ntvdm64.exe` terminology, CMake target names, requirements, and
+  release documents in one approved migration before any runnable VDM work:
+  - **Core / `core.dll`:** the releasable generic machine, platform, and
+    product-tool foundation rooted at `src/core`. It has no DOS-runtime,
+    Microsoft-specific, or PC/AT product policy.
+  - **NXVM / `nxvm.exe`:** the bootable whole-machine product rooted at
+    `src/vm`. It owns its PC/AT profile, synthesized BIOS contents, boot/media
+    policy, and product UI.
+  - **Mantle / `mantle.dll`:** a releasable VDM host layer rooted at the future
+    `src/mantle`. It may contain only mechanism demonstrably shared by NXVDM
+    and an external wrapper, such as a VDM runtime envelope over core. It has
+    no external-runtime-specific ABI, selector, manifest, DOS namespace, or
+    protected guest asset.
+  - **NXVDM / `nxvdm.exe`:** the independently implemented DOS VDM product
+    rooted at `src/vdm` and built over mantle/core. It contains no Microsoft-
+    specific guest ABI, BOP/SVC contract, or Microsoft guest asset. Its optional
+    debug Console is a project-owned product experience.
+  - **External `ntvdm.exe`:** a future program in a separate local research
+    project. It builds over mantle/core and locally combines a user-supplied
+    runtime. It is neither an ntvdm64 product nor a default build, runtime,
+    dependency, release artifact, or promised workflow.
+
+  The future physical artifact and dependency shape is:
+
+  ```text
+  src/core/       -> core.dll
+  src/vm/         -> nxvm.exe       -> core.dll
+  src/mantle/     -> mantle.dll     -> core.dll
+  src/vdm/        -> nxvdm.exe      -> mantle.dll -> core.dll
+  external wrapper -> ntvdm.exe     -> mantle.dll -> core.dll
+  ```
+
+  Keep all-product-neutral tooling in `core/product`; keep NXVM composition and
+  UX in `src/vm`, NXVDM composition and UX in `src/vdm`, and external-runtime
+  composition outside this repository. Mantle admission requires two real
+  consumers and a contract without product, DOS-namespace, or runtime-specific
+  policy. VM multi-session run/pause/reset/stop control remains VM-owned unless a future shared
+  requirement is demonstrated. The existing generic debug-target contract is
+  reused by NXVDM through a product composition binding; do not add a debug-
+  event contract without an observed need. Retained NXVM Console and NXVDM
+  debug UX remain product-owned. First make this a clean source-level boundary
+  under the existing single-executable build; do not create `src/mantle`, DLL,
+  or SDK packaging before an admitted shared mantle mechanism exists. The
+  shared machine start contract is one validated
+  `initial-state`/entry-plan: NXVM supplies the conventional x86 reset-state
+  plus its mapped BIOS image, while NXVDM and an external wrapper may supply
+  direct prepared state. Existing core reset returns only to a clean machine
+  baseline; composition then applies the selected initial state. A reset vector
+  is therefore a VM profile choice, not a separate core boot mode.
+
+  The core-boundary delta must classify every item as unchanged, `VM -> core`,
+  `core -> VM`, core extension, or new capability. Present findings identify
+  no `core -> VM` migration. Candidate `VM -> core` mechanism extractions are
+  CMOS/RTC, reusable FDC/HDC controller mechanics, and policy-free shared host
+  providers; image-file backends, media selection, PC/AT defaults, firmware
+  generation, and UX remain in VM. Mantle is not a presumed extraction target:
+  no source moves there until its two-consumer, policy-free contract is proven.
+  Core extensions/new work include checked
+  guest-memory access, externally observable A20/HMA semantics,
+  protected-mode/V86/exception/IRET correctness, generic ROM mapping, generic
+  initial-state application, generic guest transitions, and narrow policy-free
+  host capability contracts. Core
+  platform admission begins with copied normalized host events, presentation
+  sinks, wait/monotonic-host-clock support that never sets guest time, and an
+  optional byte-stream contract when NXVM and NXVDM prove identical use.
+  An opened random-access media/backend contract is conditional on shared
+  controller use; mount paths, geometry, eject policy, and media selection stay
+  in VM. Generic file/directory, drive-visibility, DOS-path, and DOS-namespace
+  contracts are not admitted merely because a VDM or external wrapper uses
+  host files. Core machine/product may later emit copied, classified diagnostic
+  and trace facts; core platform only supplies an optional host-facing sink.
+  Composition, product, or an external wrapper owns redaction, display, and
+  export policy. This observability contract is not a prerequisite for
+  initial-state or transition admission. Microsoft selector meanings, SVC
+  details, guest communication-block layouts, BYOB validation, DOS namespace
+  policy, and guest files remain external-wrapper concerns. A transition
+  facility matches only consumer-registered undefined-instruction patterns;
+  core defines no fixed opcode sequence, selector namespace, or guest-service
+  semantics.
+
+- [ ] **M5 T243: checked guest-memory contract (`TODO(High)`).** S1 maps the
+  current memory/execution boundary and specifies the minimum checked
+  read/write/copy/mapping-query contract. S2 implements it with focused fault
+  tests and preserved NXVM regressions. It must not expose raw RAM pointers,
+  DOS structures, or host-policy callbacks.
+- [ ] **M5 T244: registered undefined-instruction transition (`TODO(High)`).**
+  After T243 S2, add a consumer-registered, mode-restricted transition facility
+  with checked state access and constrained outcomes. It defines no fixed
+  instruction bytes, selector namespace, or guest-service ABI; NXVM registers
+  none by default.
+- [ ] **M5 T245: generic ROM mapping (`TODO(High)`).** Separate immutable
+  read-only image mapping from VM firmware generation and boot policy. The VM
+  profile remains the first consumer; image contents and firmware services stay
+  outside core.
+- [ ] **M5 T246: validated initial-state/entry-plan (`TODO(High)`).** Apply a
+  validated immutable plan after clean core reset, supporting reset-state plus
+  mapped image and direct prepared state without a second core boot mode.
+- [ ] **M5 T247: narrow host-capability admission (`TODO(Medium)`).** Design
+  copied event/presentation/wait contracts first. Admit each provider only with
+  demonstrated policy-free reuse; generic file/directory and DOS namespace
+  remain outside core/platform.
+
 - [ ] **M5 architecture closure audit (`TODO(High)`).** Before M5 closes,
   rescan every core/vm/vdm module, composition root, target, test, and entry
   point for duplicate state, parallel paths, forwarding wrappers, global/TLS
@@ -143,8 +247,9 @@ default definition of NXVM completion.
   non-runnable until its design milestones define the owned DOS module: loader,
   PSP/environment/DTA, DOS interrupt subset, vectors, fixture filesystem,
   input/display providers, cancellation, and corpus.
-- [ ] **VDM CLI and host policy (`TODO(High)`).** After the VDM design gate,
-  implement `ntvdm64 run` display/debug/no-program semantics, host-drive
+- [ ] **NXVDM CLI and host policy (`TODO(High)`).** After the VDM design gate
+  and the shared-core product-naming migration, implement `nxvdm run`
+  display/debug/no-program semantics, host-drive
   whitelist/hide policy with canonicalization and reparse checks, and the
   Windows 7--11 support matrix. Existing NXVM display selection is not a
   substitute for that product contract.

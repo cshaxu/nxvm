@@ -78,14 +78,19 @@ device implementation begins.
 | T240 | T216--T239 | **Complete.** Established a bounded real-mode **8086** trust baseline: reset-vector entry, segment override, `REP`/direction strings, `INT`/IVT/`IRET`, immediate/DX I/O transactions, and retained `#UD` outcome. Existing 80186+ forms remain profile boundaries; 77/77 current CTest cases passed. This is not an exhaustive opcode-completeness claim. See [T240 record](m5-t240-real-mode-cpu-trust.md). |
 | T241 | T229, T226, T227 | **Complete.** Owner-built `MOUSE241.COM` boots through DOS, installs IVT `74h`, consumes AUX initialization and one mapped packet through IRQ12, and publishes a guest application result. S4 reads the live COM buffer before its success marker and asserts `FA AA 00 FA 00 FA 29 05 FD`; host input never writes DOS APIs or guest memory. 78/78 current CTest cases passed; see [T241 record](m5-t241-guest-mouse-driver.md). |
 | T242 | T230, T231 | **Complete.** Admits only MFM `READ TRACK 42h` for fixed drive 0, 80x2x18, 512-byte DMA2 transfer. FDC owns command/result/DRQ/IRQ6; core owns DMA/RAM/PIC. Port and owner-built DOS `FDC242.COM` corpus prove 9,216-byte transfer without BIOS or host shortcuts. Multi-drive, rotation, formats, and other commands remain separate corpus admissions. |
-| T243 | T213, T233 | Extend ATA/IDE only through a declared feature matrix and failing corpus: selected channel/device topology, timing/error behavior, or other admitted PIO features. IDE DMA, ATAPI, LBA48, and cache remain separate admissions. |
-| T244 | T219, T220, T228 | Complete digital CGA through bounded `640x200x2`, remaining text modes, and 6845-visible start/page/cursor/scanline behavior. Composite artifact color remains an optional renderer/profile capability. |
-| T245 | M5 profile boundary | Define machine-profile admission: immutable topology/capability declarations, optional user-provided ROM manifests, clock/port/IRQ/DMA/media contracts, fixture corpus, and provenance policy before PC110, DeskPro, Award, or Phoenix profiles. |
-| T246 | T217--T225 | Admit the next timing-fidelity level only when a real corpus requires it: profile-bound rational frequency/phase/rounding/event ordering for CPU, PIT, CGA, DMA, and RTC. Instruction, bus, and cycle timing remain separate work. |
-| T247 | Adequate real-mode device baseline | Add 286 descriptors, exceptions, and protected-mode control transfer with instruction probes and bounded differential evidence. |
-| T248 | T247 | Add 386 paging, CRx, CPL/IOPL, and TSS I/O map with focused probes and bounded differential evidence. |
-| T249 | T248 | Add task switching and remaining admitted 286/386 instruction families. |
-| T250 | T247--T249 as applicable | Add present FPU state, operations, exceptions, and `FWAIT`. Existing FPU-none ESC consumption is not present-FPU support. |
+| T243 | T242 baseline; owner-approved core-boundary work order | **Active S1.** Define the minimum checked guest-memory contract required by direct-entry and registered-transition work. This owner-prioritized boundary task runs before the deferred hardware corpus; it must preserve the full T242 NXVM baseline. |
+| T244 | T243 | Registered undefined-instruction transition facility with consumer-owned pattern semantics and no default NXVM registration. |
+| T245 | T243 | Generic immutable ROM/read-only mapping contract; firmware generation and image contents remain VM profile policy. |
+| T246 | T243, T245 | Validated post-reset initial-state/entry-plan for reset-state plus mapped image or direct prepared state. |
+| T247 | T242 baseline | Narrow shared host-capability design/admission; each provider requires policy-free reuse evidence. |
+| T248 | T213, T233 | Extend ATA/IDE only through a declared feature matrix and failing corpus: selected channel/device topology, timing/error behavior, or other admitted PIO features. IDE DMA, ATAPI, LBA48, and cache remain separate admissions. |
+| T249 | T219, T220, T228 | Complete digital CGA through bounded `640x200x2`, remaining text modes, and 6845-visible start/page/cursor/scanline behavior. Composite artifact color remains an optional renderer/profile capability. |
+| T250 | M5 profile boundary | Define machine-profile admission: immutable topology/capability declarations, optional user-provided ROM manifests, clock/port/IRQ/DMA/media contracts, fixture corpus, and provenance policy before PC110, DeskPro, Award, or Phoenix profiles. |
+| T251 | T217--T225 | Admit the next timing-fidelity level only when a real corpus requires it: profile-bound rational frequency/phase/rounding/event ordering for CPU, PIT, CGA, DMA, and RTC. Instruction, bus, and cycle timing remain separate work. |
+| T252 | Adequate real-mode device baseline | Add 286 descriptors, exceptions, and protected-mode control transfer with instruction probes and bounded differential evidence. |
+| T253 | T252 | Add 386 paging, CRx, CPL/IOPL, and TSS I/O map with focused probes and bounded differential evidence. |
+| T254 | T253 | Add task switching and remaining admitted 286/386 instruction families. |
+| T255 | T252--T254 as applicable | Add present FPU state, operations, exceptions, and `FWAIT`. Existing FPU-none ESC consumption is not present-FPU support. |
 
 CPU/FPU work is intentionally lower ROI than the real-mode hardware, firmware,
 profile, and timing route. The

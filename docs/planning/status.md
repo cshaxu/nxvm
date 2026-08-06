@@ -2,6 +2,31 @@
 
 ## Current Work
 
+**M5 T243 S2 active: checked guest-memory contract extension.**
+
+Original request: establish the source-level core boundary required for a
+future direct-entry VDM path, beginning with the checked guest-memory contract
+and preserving the recorded NXVM baseline.
+
+| Requirement | S1 evidence and boundary |
+| --- | --- |
+| Map the current boundary | Inventory `core/machine` memory/execution interfaces and every VM/VDM caller that would require checked copying or mapping queries. |
+| Define minimum contract | Specify only checked read/write/copy/mapping-query behavior, failure results, lifetime, and execution-thread ownership. |
+| Preserve products | No source/runtime change in S1; no DOS, external-runtime, PC/AT policy, raw RAM pointer, or host callback enters the proposed contract. |
+| Prepare S2 | Recorded exact files, focused test cases, full current gate, artifact requirement, and stop conditions in [the T243 record](m5-t243-checked-guest-memory.md). |
+
+Applicable rules: `core/machine` remains the sole mutable guest-state owner;
+`core/platform` never mutates guest state; product composition is the only
+integration owner; no protected assets or external-runtime dependency; one
+active subtask only. Similar-issue sweep is not applicable to S1 because this
+is a documentation/contract design subtask with no defect fix or source change.
+
+S1 verification: reviewed the cited source/contracts; ran the recorded static
+queries; verified task/TODO/plan/status references; and ran `git diff --check`.
+The proposal does not require raw guest pointers, platform mutation,
+DOS/external-runtime semantics, or a second execution path. M5 T243 S2 is the
+sole active source-changing subtask; no source changes have begun yet.
+
 **M5 T242 complete:** the bounded drive-0 MFM `READ TRACK 42h` slice uses the
 existing FDC -> DMA2 -> core RAM -> IRQ6 route. Its focused port probe and
 owner-built DOS `FDC242.COM` system-image corpus both prove the 9,216-byte
@@ -36,8 +61,7 @@ owner.  System and DOS fixtures, direct EGA/CGA, Console/debugger, FDD/HDD
 boot, and GCC/CTest `76/76` pass.  Artifact `nxvm_0_5_0239.exe` SHA-256:
 `4C4FDC4DCEB1CE0003A71E54C3DFFA19101AC048E8E7B62919596E6E126123DA`.
 
-**Latest technical baseline -- idle after M5 T242:** no implementation
-subtask is active. The only admitted ROM EGA service is `AH=00h, AL=0Dh`, with
+**Latest technical baseline before M5 T243 S1:** the only admitted ROM EGA service is `AH=00h, AL=0Dh`, with
 `AL=03h` as its text exit; DAC, VBE, and other EGA/VGA families remain deferred.
 See [the T239 record](m5-t239-rom-ega-int10.md).
 
@@ -342,9 +366,10 @@ changes no source or build output.
 corrects the baseline to T216 S5, and reserves T217--T233 for time, devices,
 storage, and display work. T234 was allocated to the boundary closure, which
 is complete. `M5 Td S12` initially rebased the route; `M5 Td S13` corrects its
-artifact-version collision. The unstarted route is T238--T246 for graphics,
-firmware, real-mode compatibility, devices, profiles, and timing, followed by
-T247--T250 for protected-mode CPU and present-FPU work.
+artifact-version collision. Owner-prioritized core-boundary work now occupies
+T243--T247. The remaining unstarted hardware route is T238--T242, then
+T248--T251 for ATA, graphics, profiles, and timing, followed by T252--T255
+for protected-mode CPU and present-FPU work.
 
 ## Milestone State
 
