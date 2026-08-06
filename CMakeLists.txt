@@ -44,6 +44,7 @@ set(PROJECT_PROBE_DIR "${CMAKE_BINARY_DIR}/probes")
 
 add_library(core-machine STATIC
     src/core/machine/debug.c
+    src/core/machine/entry_plan_interface.c
     src/core/machine/machine.c
     src/core/machine/memory_interface.c
     src/core/machine/port_interface.c
@@ -164,6 +165,11 @@ add_executable(core-machine-immutable-rom-mapping-smoke
 )
 target_link_libraries(core-machine-immutable-rom-mapping-smoke PRIVATE core-machine)
 
+add_executable(core-machine-entry-plan-smoke
+    tests/core/machine_entry_plan_smoke.c
+)
+target_link_libraries(core-machine-entry-plan-smoke PRIVATE core-machine)
+
 add_executable(core-machine-configuration-smoke
     tests/core/machine_configuration_smoke.c
 )
@@ -204,6 +210,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(core-machine-checked-memory-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-undefined-instruction-transition-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-immutable-rom-mapping-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(core-machine-entry-plan-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-trace-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-debug-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-presentation-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -895,6 +902,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-checked-memory-smoke
     core-machine-undefined-instruction-transition-smoke
     core-machine-immutable-rom-mapping-smoke
+    core-machine-entry-plan-smoke
     core-machine-int-ivt-smoke
     vm-boot-failure-lifecycle-smoke
     vm-request-transport-smoke
@@ -1026,7 +1034,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0245 "0.5.0245")
+add_current_vm_artifact(vm-0-5-0246 "0.5.0246")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 

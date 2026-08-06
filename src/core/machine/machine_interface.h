@@ -19,6 +19,7 @@
 #include "type.h"
 #include "core/machine/trace_interface.h"
 #include "core/machine/rom_mapping_interface.h"
+#include "core/machine/entry_plan_interface.h"
 #include "core/machine/undefined_instruction_transition_interface.h"
 #include "core/machine/vadp.h"
 

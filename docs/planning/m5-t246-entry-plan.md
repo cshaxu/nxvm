@@ -2,9 +2,8 @@
 
 ## Status
 
-**S1 active.** This subtask is contract design only. It does not add a DOS
-loader, external wrapper, Microsoft ABI/assets, host file/path policy, or a
-second execution loop.
+**Complete.** The contract, focused core implementation, current-matrix
+evidence, and developer artifact are complete.
 
 ## Objective
 
@@ -55,3 +54,22 @@ S3 runs current GCC/CTest gates and records
 Stop for owner direction if a requirement needs a second machine/session,
 loader loop, raw memory pointer, direct VDM implementation, provider mutation
 after freeze, or any NXVM Console/debugger/start/boot behavior change.
+
+## S2 Implementation
+
+`core_machine_apply_entry_plan()` retains no plan pointer. At the stopped
+boundary it validates the real-mode candidate CPU state, declared entry route,
+and every preload through the public checked query before changing guest state.
+Only writable ordinary-RAM preloads are admitted. The core then commits its
+candidate CPU and copied preload bytes without a provider callback or a second
+run path; an applied marker prevents a second plan until cold reset.
+
+`core-machine-entry-plan-smoke` proves default reset state, provider-backed
+entry, ordinary-RAM preload entry, rejected provider preload without RAM/CPU
+mutation, repeated-apply rejection, and reset restoration.
+
+## S3 Evidence And Closure
+
+The full current GCC gate passed all 34 static/ownership checks and 84/84 CTest
+smokes. `build/output/nxvm_0_5_0246.exe` SHA-256 is
+`083984E12F7BC5989C68F61E68577BAAC46691F5CF899A4E2205984298F43F1D`.
