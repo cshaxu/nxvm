@@ -1,6 +1,6 @@
 # M5 T255: Machine-Profile Admission Design
 
-**Status:** S1 active.
+**Status:** S2 active.
 
 ## Original Request
 
@@ -57,3 +57,87 @@ S1 is complete when the table above remains consistent with the referenced
 source, and the S2 contract distinguishes declaration, construction, firmware,
 and caller policy. The S1 review records no core dependency on PC/AT, ROM
 vendor, image path, or BIOS-service semantics.
+
+## S2: Frozen VM Profile Contract
+
+T255 defines a source-level architecture contract, not a versioned SDK, common
+descriptor type, runtime selector, or loader implementation. A future VM
+profile declaration is immutable and contains only these categories:
+
+| Declaration category | Permitted content | Owner that consumes it |
+| --- | --- | --- |
+| Identity and capabilities | project-owned profile identity; CPU/FPU/RAM requirements; frozen clock ratios and admitted generic-core configuration | VM composition translates the generic values into `core_machine_config` and configuration-window bindings. |
+| VM topology | VM device roster; port ranges; IRQ/DMA routes; controller-specific configuration; CMOS defaults | VM composition creates VM-only devices, then binds them through public core provider contracts. |
+| Firmware | project-owned ROM bytes or an abstract ROM slot; mapping requirements; reset entry; firmware-hook metadata and immutable callback data | VM composition maps/binds it before freeze; profile firmware runs only through public machine contracts. |
+| Media compatibility | abstract slots, supported geometry/type, boot ordering, and controller compatibility | Caller/product supplies a local path or creates media after composition has created the declared controller. |
+| Pure mapping tables | host-key or host-pointer normalization tables that carry no host handle, queue, or session state | Composition selects and applies them at its input boundary. |
+
+The declaration must not contain a live `core_machine`, VM controller, session,
+thread, run handle, platform handle, debugger, mutable media object, local path,
+CLI setting, Console/window policy, or product exit decision. A profile cannot
+change topology, ROM, clock parameters, provider routes, or IRQ/DMA mapping
+after construction begins.
+
+### Construction, Freeze, And Teardown
+
+1. VM composition selects one immutable profile and validates all declaration
+   references before it creates a running session.
+2. It creates one `core_machine` with the profile's generic capability values;
+   during `INITIALIZED`, it translates allowed core configuration and creates
+   VM-only devices and profile-firmware contexts.
+3. It registers every provider, ROM mapping, port/IRQ/DMA binding, and firmware
+   hook through the public core route, then freezes the machine exactly once.
+4. It resets and runs the one frozen machine. Reconfiguration of RAM follows
+   the existing explicit cold operation; profile selection and every other
+   topology field require a new session.
+5. On teardown, composition stops execution, finalizes profile/VM providers in
+   reverse dependency order, destroys the core machine, then releases the
+   profile declaration and its immutable assets.
+
+No profile callback may reorder the above phases. No provider receives a global
+profile or composition handle; it retains only the narrow immutable data and
+public child references supplied at registration.
+
+### Future External-ROM Manifest Boundary
+
+An external ROM is not part of the profile declaration. A future profile may
+declare a named abstract ROM slot with allowed mapping address, length, entry,
+and read-only requirements. A separately approved VM-composition feature may
+then accept a caller-owned manifest containing: profile identity and slot;
+explicit local path; exact size; caller-provided SHA-256; requested mapping;
+and a provenance statement that identifies the user's local source without
+copying it into repository evidence.
+
+Before core creation, that feature must open only the explicit local file,
+verify size/digest/mapping against the profile slot, copy or retain immutable
+bytes under the VM provider lifetime, and return a factual failure on absence,
+read error, size/hash mismatch, illegal overlap, or invalid entry. It must not
+download, search, enumerate, catalogue, persist, bundle, or make the ROM a
+default. `core` receives only a generic immutable mapping provider and never a
+vendor name, file path, manifest, or firmware-service meaning.
+
+### Required Corpus For An Admitted Profile
+
+Every profile must provide focused evidence for reset/boot, its declared
+ports/IRQ/DMA routes, ROM mapping read/fetch/write protection, declared media
+slot/controller behavior, and one guest-visible regression beyond POST. The
+corpus must also retain the NXVM Console/debugger and relevant default-profile
+media regressions. A successful POST alone is insufficient; unsupported ROM or
+media must produce defined factual failure rather than a fallback profile.
+
+## First Non-Default Profile Admission Template
+
+| Required record | Admission requirement |
+| --- | --- |
+| Owner and source | Identify the `vm/profile/<name>` declaration, VM-only controller/provider code, composition binding site, and all profile-local assets. |
+| Configuration source | State every frozen value and its authoritative source. Local media and BYOB ROM paths remain caller configuration, not source-controlled profile data. |
+| Firmware legality/provenance | State whether firmware is project-owned or user supplied. For BYOB, record only manifest validation facts; never submit the ROM, a download URL, or a project hash catalogue. |
+| Forbidden dependencies | Demonstrate no core model/vendor dependency, no profile-to-composition/platform/product include, no second machine/boot path, and no host shortcut into guest state. |
+| Verification matrix | Include reset/boot, port/IRQ/DMA, ROM map, media, guest-visible fixture, retained Console/debugger, and current GCC/CTest gates. |
+| Exit | Record declared/deferred behavior, artifact revision for behavior work, source/provenance evidence, and an owner-approved stop if a required capability crosses the contract. |
+
+## S2 Evidence And Exit
+
+S2 is complete when the architecture contracts, module layout, and source
+policy state the same immutable declaration, composition-only construction,
+and BYOB boundary as this record. It creates no runnable artifact.

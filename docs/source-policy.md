@@ -66,6 +66,14 @@ gate defines its manifest, validation, mapping, and legal boundary. A local
 manifest hash validates the owner's supplied file; it does not make a ROM
 redistributable or authorize copying vendor code.
 
+The approved profile-admission boundary requires a future BYOB manifest to
+name an explicit local path, profile ROM slot, exact size, SHA-256, requested
+read-only mapping, and user provenance statement. It is consumed only by a
+separately admitted VM-composition implementation before machine creation.
+The repository must not retain the path, ROM bytes, a vendor catalogue, or a
+download/discovery mechanism. A profile declares only an abstract ROM-slot
+constraint; `core` receives only a generic immutable mapping provider.
+
 ## Bochx And Bochs Research
 
 The historical NXVM Bochx bridge may be imported only as provenance-recorded

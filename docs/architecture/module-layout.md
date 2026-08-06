@@ -207,6 +207,15 @@ Profile-specific firmware code is allowed
 only as an override provider against a public core contract; it does not create
 the machine or call a sibling module directly.
 
+VM profile declarations may describe only immutable capabilities, topology,
+port/IRQ/DMA routes, controller/CMOS defaults, ROM-slot constraints,
+firmware-hook metadata, media compatibility, and pure input mappings. They do
+not own local media/ROM paths, a session, a machine/controller instance, a
+thread, a platform/product handle, or a runtime selector. VM composition is
+the sole constructor and translates one selected declaration into providers
+before core freeze. An external-ROM manifest is future composition input; it
+cannot become a profile asset or core contract.
+
 `mantle/machine`, `mantle/platform`, and `mantle/product` supply only reusable
 VDM composition mechanism over core. Trusted external research may inform a
 neutral mantle requirement, but mantle knows no DOS ABI, external-runtime ABI,
