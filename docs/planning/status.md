@@ -2,13 +2,14 @@
 
 ## Current Work
 
-**M5 is idle after T255 S3.**
+**M5 T256 S2 active: implement core rational device-clock domains.**
 
-[T255](m5-t255-machine-profile-admission.md) closed the machine-profile
-admission design: profiles are immutable VM declarations, composition is their
-sole constructor and lifecycle owner, and any future BYOB ROM manifest remains
-a separately admitted composition input. It adds no profile, loader, artifact,
-or NXVM behavior change. No subtask is active until the next packet is approved.
+[T256](m5-t256-rational-device-clocks.md) has frozen its timing contract and
+retained baseline corpus. S2 now replaces the PIT-only divider with core-owned,
+profile-bound integer rational domains for core devices and the frozen VM
+provider. It preserves coarse instruction ticks as the input unit; it must not
+add host-clock guest timing, cycle-accuracy claims, or a VM-side scheduler.
+T256 allocates behavior artifact revision `0.5.0254` at S4.
 
 | Closure | Evidence |
 | --- | --- |

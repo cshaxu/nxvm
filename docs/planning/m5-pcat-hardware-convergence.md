@@ -7,7 +7,7 @@ redefine the roadmap, start a later milestone, or define NXVDM completion.
 Completed M5 evidence is summarized in [M5 History](../history/m5.md); this
 document contains only the current baseline and remaining queue.
 
-The retained baseline is **T254 S3**: `nxvm.exe` preserves its full-PC boot,
+The retained baseline is **T255 S3**: `nxvm.exe` preserves its full-PC boot,
 Console, debugger, and current GCC/CTest gate. The current target is
 `vm-0-5-0253`, with static/ownership checks and 89/89 CTest cases passing.
 Checked memory, immutable ROM mapping, atomic entry plans, and the sole VM
@@ -18,8 +18,7 @@ hardware-device verification template and must preserve that baseline.
 
 | Task | Dependency | Deliverable and stop condition |
 | --- | --- | --- |
-| T255 | M5 profile boundary | Define machine-profile admission, optional user-provided ROM manifests, topology/capability contracts, fixture corpus, and provenance before additional machine profiles. |
-| T256 | T217--T225 evidence | Admit a higher timing-fidelity level only when a real corpus requires it. Instruction, bus, and cycle timing remain separate work. |
+| T256 | T217--T225 evidence; T255 clock declaration | Implement deterministic integer rational device clocks with one core scheduler and a profile-bound corpus. Instruction, bus, and cycle timing remain separate work. |
 | T257 | Real-mode device baseline | Add bounded 286 protected-mode descriptors, exceptions, and control transfer with focused probes. |
 | T258 | T257 | Add bounded 386 paging, CRx, CPL/IOPL, and TSS I/O-map behavior with focused probes. |
 | T259 | T258 | Add task switching and remaining admitted 286/386 instruction families. |
