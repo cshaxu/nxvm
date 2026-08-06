@@ -1,6 +1,6 @@
 # M5 T235: EGA/VGA Memory Window And Sequencer
 
-## S1 Active Contract
+## S1 Complete, S2 Active
 
 ### Objective
 
@@ -22,7 +22,8 @@ when an S2/S3 behavior change has passed its evidence.
 
 | Concern | Owner | Rule |
 | --- | --- | --- |
-| Sequencer register state, EGA/VGA aperture state, guest VRAM, dirty generation, and later scanout | `core/machine/vadp` | One VADP object is the only guest-video state owner. |
+| Sequencer register state, EGA/VGA aperture state, dirty generation, and later scanout | `core/machine/vadp` | One VADP object is the only guest-video controller-state owner. |
+| Guest RAM bytes, including the admitted aperture backing | `core/machine/memory` | One RAM backing stores bytes. VADP observes configured aperture writes; it never creates a shadow buffer. |
 | Default adapter topology, aperture admission, reset register values, and ROM assets | `vm/profile/default_profile` | Frozen description only; it does not map memory or mutate registers. |
 | Provider binding and profile-to-core configuration | `vm/composition` | Performed only during the core configuration window, then frozen. |
 | Frames, renderers, Console/window/auto selection | composition plus platform | Consume copied snapshots only; never guest VRAM or VADP internals. |
@@ -38,15 +39,18 @@ S2 may admit only these controller surfaces:
 - sequencer index/data ports `3C4h` and `3C5h`, with a declared reset state,
   supported-index mask, index/data readback, and deterministic unsupported
   index behavior;
-- a profile-selected, VADP-owned A0000h aperture with a declared byte range
-  and checked bus-memory behavior; and
+- a profile-selected A0000h aperture with a declared byte range and checked
+  bus-memory behavior. VADP owns its mapping semantics while core RAM retains
+  the only byte backing; and
 - a single VADP dirty generation shared with current CGA state.
 
 The initial sequencer subset is register state only: reset, clocking mode, map
 mask, and memory mode. Its values are stored and probed but do not yet claim
 planar write behavior, character-map fetch, display timing, or presentation.
 The aperture is not a second frame buffer and must not create a platform- or
-firmware-owned shadow copy.
+firmware-owned shadow copy. Until T236 admits graphics-controller map-select,
+addresses outside the configured aperture retain their ordinary RAM semantics;
+they do not alias the aperture.
 
 ### Explicit Deferrals
 
@@ -81,10 +85,12 @@ The probe will establish the exact S2 acceptance sequence:
    generation without affecting CGA B8000h state; and
 5. no IRQ, DMA, firmware call, host event, or platform frame is required.
 
-The initial probe is source-only verification scaffolding; it changes no
-guest-visible device behavior and must be updated with each admitted S2
-branch. S3 adds a bounded DOS/system-image fixture only after T237 produces a
-guest-visible EGA/VGA frame path.
+S1 is complete when this probe passes with the documented reset and negative
+cases. It is updated for every admitted S2 branch. S3 adds
+`vm_ega_sequencer_system_smoke.c`, which creates the ordinary frozen VM session
+and verifies the profile-bound ports and A0000h backing. A DOS fixture is
+explicitly not applicable until T237 produces a guest-visible EGA/VGA frame
+path.
 
 ### Required Regression Matrix
 
@@ -108,3 +114,51 @@ rules; profile immutability; composition-only assembly; no host-clock guest
 shortcut; no second session, executor, or machine; retained NXVM
 Console/debugger/boot behavior; and the T235-focused similar-issue sweep for
 all existing video port/memory mappings.
+
+## Completion Record
+
+### S2 Implementation
+
+`core/machine/vadp` now owns one profile-configured sequencer state with index
+and data ports `3C4h`/`3C5h`. The admitted register slice is index 0 (reset),
+1 (clocking mode), 2 (map mask), and 4 (memory mode); index 3 and every other
+index read as `FFh` and ignore data writes. Masked readback is deterministic.
+
+The default PC/AT profile declares `3C4h`--`3C5h`, A0000h--AFFFFh, and reset
+values. During the existing INITIALIZED-only profile binding, composition
+registers the VADP with the core RAM write-observer list. RAM remains the only
+byte storage. A successful write overlapping the admitted aperture advances
+the one VADP dirty generation; it never creates a new buffer, maps a renderer,
+or changes CGA behavior.
+
+### S3 Evidence And Matrix
+
+| Surface | Evidence |
+| --- | --- |
+| Focused contract | `core-machine-ega-sequencer-port-smoke` passed with `M5:T235:S1:EGA-SEQUENCER:PORT:OK`. It checks reset, masks, unsupported index, A0000h read/write, dirty generation, B8000h isolation, and aperture boundary. |
+| Profile/composition integration | `vm-ega-sequencer-system-smoke` passed with `M5:T235:S3:EGA-SEQUENCER:SYSTEM:OK`. It creates the ordinary frozen VM session and checks the bound port and backing path. |
+| Owner/dependency shape | `verify-ega-sequencer-boundary`, dependency DAG, live-machine, facade, executor, session-readiness, and C-facade gates passed. |
+| FDD/HDD, DOS prompt, Console/debugger, isolation | Covered by `current-gates-gcc`: 69/69 current CTest smokes passed, including FDD/HDD boot, DOS prompt, keyboard, CGA graphics DOS, Console lifecycle, debugger, and two-session tests. |
+| DOS EGA/VGA fixture | Not applicable: T235 has no EGA/VGA scanout or BIOS mode. T237 must add the first guest-visible graphics fixture after copied frames exist. |
+
+Commands: `cmake --build --preset current-gates-gcc` and
+`cmake --build --preset current-gcc`, using the configured GCC 16.1.0 toolchain.
+The current runnable artifact is `build/output/nxvm_0_5_0235.exe`, SHA-256
+`6A74104435FB12321B142697AFA02628E2B2DDA03073CF323125A3BC8C429B52`.
+
+### Similar-Issue Sweep
+
+The defect class was a potential second EGA aperture/VRAM state or a
+profile/platform shortcut. The closure query was
+`rg -n '0x0*3c[45]u|0x0*a0000u|EGA_APERTURE|ega_sequencer|write_observer' src tests CMakeLists.txt cmake docs TODO.md`.
+Every production hit is classified: VADP owns controller state, RAM owns the
+only backing plus generic observer dispatch, the default profile declares
+topology, and VM composition binds once. The boundary gate rejects core VADP
+product/platform imports and RAM video policy. No production hit was deferred.
+
+### Remaining Deferrals
+
+T236 owns graphics-controller map select and attribute-controller behavior.
+T237 owns DAC, planar/latch access, raster scanout, copied EGA/VGA snapshots,
+and the first EGA/VGA DOS fixture. This task makes no EGA/VGA presentation or
+compatibility claim beyond the admitted sequencer/memory-window surface.

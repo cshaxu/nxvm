@@ -2,13 +2,14 @@
 
 ## Current Work
 
-**M5 T235 S1 active:** define the bounded EGA/VGA sequencer and memory-window
-contract, then add the focused pre-implementation port/memory probe. Scope is
-limited to core VADP ownership, `3C4h`/`3C5h`, a profile-selected A0000h
-aperture, and explicit deferral of graphics-controller map select, attribute,
-DAC, planar/latch, scanout, BIOS modes, and platform presentation. No device
-implementation or guest-visible behavior change is authorized before S1 exits.
-See [the active task record](m5-t235-ega-memory-sequencer.md).
+**M5 T235 complete:** core VADP now owns the bounded `3C4h`/`3C5h` sequencer
+register subset and A0000h aperture semantics, while core RAM remains the only
+byte backing. The profile binds once during composition; no host/platform,
+firmware, IRQ, DMA, or frame path was added. GCC 16.1.0 current gates passed
+69/69 smokes. Artifact `nxvm_0_5_0235.exe` is SHA-256
+`6A74104435FB12321B142697AFA02628E2B2DDA03073CF323125A3BC8C429B52`; see [the
+task record](m5-t235-ega-memory-sequencer.md). T236 owns graphics/attribute
+controllers; T237 owns planar/raster/frame behavior.
 
 **M5 T234 S4 complete:** removed the remaining target-only
 `vm-platform-requests -> core-machine` and `vm-product -> core-machine` edges;

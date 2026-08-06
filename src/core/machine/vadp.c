@@ -13,6 +13,8 @@
 #define CORE_MACHINE_VADP_PORT_MODE 0x03d8u
 #define CORE_MACHINE_VADP_PORT_COLOR 0x03d9u
 #define CORE_MACHINE_VADP_PORT_STATUS 0x03dau
+#define CORE_MACHINE_VADP_PORT_SEQUENCER_INDEX 0x03c4u
+#define CORE_MACHINE_VADP_PORT_SEQUENCER_DATA 0x03c5u
 #define CORE_MACHINE_VADP_STATUS_DISPLAY_ENABLE 0x01u
 #define CORE_MACHINE_VADP_STATUS_VERTICAL_RETRACE 0x08u
 #define CORE_MACHINE_VADP_DEFAULT_ACTIVE_DISPLAY_TICKS 48u
@@ -86,6 +88,50 @@ static uint16_t core_machine_vadp_crtc_word(const t_vadp *adapter,
 static C_VOID core_machine_vadp_mark_dirty(t_vadp *adapter)
 {
     if (adapter != STD_NULL) ++adapter->data.dirty_generation;
+}
+
+static C_INT core_machine_vadp_sequencer_index_supported(uint8_t index)
+{
+    return index == 0u || index == 1u || index == 2u || index == 4u;
+}
+
+static uint8_t core_machine_vadp_sequencer_mask(uint8_t index)
+{
+    switch (index) {
+    case 0u: return 0x03u;
+    case 1u: return 0x3du;
+    case 2u: return 0x0fu;
+    case 4u: return 0x0eu;
+    default: return 0u;
+    }
+}
+
+static C_VOID core_machine_vadp_reset_sequencer(t_vadp *adapter)
+{
+    if (adapter == STD_NULL || !adapter->data.ega_sequencer_configured) return;
+    adapter->data.sequencer_index = 0u;
+    adapter->data.sequencer[0] = adapter->data.ega_sequencer.reset & 0x03u;
+    adapter->data.sequencer[1] = adapter->data.ega_sequencer.clocking_mode & 0x3du;
+    adapter->data.sequencer[2] = adapter->data.ega_sequencer.map_mask & 0x0fu;
+    adapter->data.sequencer[4] = adapter->data.ega_sequencer.memory_mode & 0x0eu;
+}
+
+static C_VOID core_machine_vadp_ega_write_observer(C_VOID *owner,
+    type_unsigned_32 physical, type_native_unsigned bytes)
+{
+    t_vadp *adapter = (t_vadp *)owner;
+    uint64_t write_end;
+    uint64_t aperture_end;
+
+    if (adapter == STD_NULL || !adapter->data.ega_sequencer_configured ||
+        bytes == 0u) return;
+    write_end = (uint64_t)physical + bytes;
+    aperture_end = (uint64_t)adapter->data.ega_sequencer.aperture_base +
+        adapter->data.ega_sequencer.aperture_bytes;
+    if ((uint64_t)physical < aperture_end &&
+        (uint64_t)adapter->data.ega_sequencer.aperture_base < write_end) {
+        core_machine_vadp_mark_dirty(adapter);
+    }
 }
 
 static uint32_t core_machine_vadp_raster_period(
@@ -236,8 +282,71 @@ static C_VOID core_machine_vadp_read_status(t_port *port,
     }
 }
 
+static C_VOID core_machine_vadp_read_sequencer_index(t_port *port,
+    type_unsigned_16 port_id, C_VOID *owner)
+{
+    const t_vadp *adapter = (const t_vadp *)owner;
+
+    (C_VOID)port_id;
+    if (port != STD_NULL && adapter != STD_NULL) {
+        port->data.ioByte = adapter->data.ega_sequencer_configured ?
+            adapter->data.sequencer_index : 0xffu;
+    }
+}
+
+static C_VOID core_machine_vadp_write_sequencer_index(t_port *port,
+    type_unsigned_16 port_id, C_VOID *owner)
+{
+    t_vadp *adapter = (t_vadp *)owner;
+
+    (C_VOID)port_id;
+    if (port != STD_NULL && adapter != STD_NULL &&
+        adapter->data.ega_sequencer_configured) {
+        adapter->data.sequencer_index = port->data.ioByte;
+    }
+}
+
+static C_VOID core_machine_vadp_read_sequencer_data(t_port *port,
+    type_unsigned_16 port_id, C_VOID *owner)
+{
+    const t_vadp *adapter = (const t_vadp *)owner;
+
+    (C_VOID)port_id;
+    if (port == STD_NULL || adapter == STD_NULL) return;
+    port->data.ioByte = adapter->data.ega_sequencer_configured &&
+        core_machine_vadp_sequencer_index_supported(adapter->data.sequencer_index) ?
+        adapter->data.sequencer[adapter->data.sequencer_index] : 0xffu;
+}
+
+static C_VOID core_machine_vadp_write_sequencer_data(t_port *port,
+    type_unsigned_16 port_id, C_VOID *owner)
+{
+    t_vadp *adapter = (t_vadp *)owner;
+    uint8_t index;
+    uint8_t value;
+
+    (C_VOID)port_id;
+    if (port == STD_NULL || adapter == STD_NULL ||
+        !adapter->data.ega_sequencer_configured) return;
+    index = adapter->data.sequencer_index;
+    if (!core_machine_vadp_sequencer_index_supported(index)) return;
+    value = port->data.ioByte & core_machine_vadp_sequencer_mask(index);
+    if (adapter->data.sequencer[index] != value) {
+        adapter->data.sequencer[index] = value;
+        core_machine_vadp_mark_dirty(adapter);
+    }
+}
+
 static C_VOID core_machine_vadp_register_ports(t_vadp *adapter, t_port *port)
 {
+    core_machine_port_add_read(port, CORE_MACHINE_VADP_PORT_SEQUENCER_INDEX,
+        core_machine_vadp_read_sequencer_index, adapter);
+    core_machine_port_add_write(port, CORE_MACHINE_VADP_PORT_SEQUENCER_INDEX,
+        core_machine_vadp_write_sequencer_index, adapter);
+    core_machine_port_add_read(port, CORE_MACHINE_VADP_PORT_SEQUENCER_DATA,
+        core_machine_vadp_read_sequencer_data, adapter);
+    core_machine_port_add_write(port, CORE_MACHINE_VADP_PORT_SEQUENCER_DATA,
+        core_machine_vadp_write_sequencer_data, adapter);
     core_machine_port_add_read(port, CORE_MACHINE_VADP_PORT_CRTC_INDEX,
         core_machine_vadp_read_crtc_index, adapter);
     core_machine_port_add_write(port, CORE_MACHINE_VADP_PORT_CRTC_INDEX,
@@ -269,6 +378,8 @@ C_VOID core_machine_vadp_initialize(t_vadp *adapter, t_port *port)
 C_VOID core_machine_vadp_reset(t_vadp *adapter)
 {
     core_machine_vadp_text_timing timing;
+    core_machine_vadp_ega_sequencer_config ega_sequencer;
+    type_bool ega_sequencer_configured;
 
     if (adapter == STD_NULL) return;
     timing = adapter->data.text_timing;
@@ -277,6 +388,8 @@ C_VOID core_machine_vadp_reset(t_vadp *adapter)
         timing.horizontal_blank_ticks = CORE_MACHINE_VADP_DEFAULT_HORIZONTAL_BLANK_TICKS;
         timing.vertical_retrace_ticks = CORE_MACHINE_VADP_DEFAULT_VERTICAL_RETRACE_TICKS;
     }
+    ega_sequencer = adapter->data.ega_sequencer;
+    ega_sequencer_configured = adapter->data.ega_sequencer_configured;
     STD_MEMSET(&adapter->data, TYPE_ZERO_8, sizeof(adapter->data));
     adapter->data.mode_control = 0x05u;
     adapter->data.text_timing = timing;
@@ -288,6 +401,9 @@ C_VOID core_machine_vadp_reset(t_vadp *adapter)
     adapter->data.cursor_bottom = 7u;
     adapter->data.crtc[CORE_MACHINE_VADP_CRTC_CURSOR_TOP] = 6u;
     adapter->data.crtc[CORE_MACHINE_VADP_CRTC_CURSOR_BOTTOM] = 7u;
+    adapter->data.ega_sequencer = ega_sequencer;
+    adapter->data.ega_sequencer_configured = ega_sequencer_configured;
+    core_machine_vadp_reset_sequencer(adapter);
     adapter->data.dirty_generation = 1u;
 }
 
@@ -340,6 +456,41 @@ type_status core_machine_vadp_configure_text_timing(t_vadp *adapter,
     adapter->data.text_timing = *timing;
     adapter->data.raster_phase = timing->vertical_retrace_ticks;
     return TYPE_STATUS_OK;
+}
+
+type_status core_machine_vadp_configure_ega_sequencer(t_vadp *adapter,
+    t_ram *memory, const core_machine_vadp_ega_sequencer_config *config)
+{
+    type_status status;
+
+    if (adapter == STD_NULL || memory == STD_NULL || config == STD_NULL ||
+        config->aperture_base != CORE_MACHINE_VADP_EGA_APERTURE_BASE ||
+        config->aperture_bytes != CORE_MACHINE_VADP_EGA_APERTURE_BYTES) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    if (adapter->data.ega_sequencer_configured) return TYPE_STATUS_INVALID_STATE;
+    status = core_machine_memory_register_write_observer(memory,
+        core_machine_vadp_ega_write_observer, adapter);
+    if (status != TYPE_STATUS_OK) return status;
+    adapter->data.ega_sequencer = *config;
+    adapter->data.ega_sequencer_configured = TYPE_TRUE;
+    core_machine_vadp_reset_sequencer(adapter);
+    return TYPE_STATUS_OK;
+}
+
+C_INT core_machine_vadp_ega_aperture_contains(const t_vadp *adapter,
+    uint32_t physical, STD_SIZE_T bytes)
+{
+    uint64_t aperture_end;
+    uint64_t request_end;
+
+    if (adapter == STD_NULL || !adapter->data.ega_sequencer_configured ||
+        bytes == 0u) return TYPE_FALSE;
+    aperture_end = (uint64_t)adapter->data.ega_sequencer.aperture_base +
+        adapter->data.ega_sequencer.aperture_bytes;
+    request_end = (uint64_t)physical + bytes;
+    return physical >= adapter->data.ega_sequencer.aperture_base &&
+        request_end <= aperture_end;
 }
 
 C_VOID core_machine_vadp_set_cursor_shape(t_vadp *adapter, uint8_t top,

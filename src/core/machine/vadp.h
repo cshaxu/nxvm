@@ -17,12 +17,24 @@ extern "C" {
 #define CORE_MACHINE_VADP_TEXT_BASE CORE_MACHINE_VADP_VIDEO_BASE
 #define CORE_MACHINE_VADP_TEXT_BYTES CORE_MACHINE_VADP_VIDEO_BYTES
 #define CORE_MACHINE_VADP_CRTC_REGISTER_COUNT 18u
+#define CORE_MACHINE_VADP_EGA_APERTURE_BASE 0x000a0000u
+#define CORE_MACHINE_VADP_EGA_APERTURE_BYTES 0x00010000u
+#define CORE_MACHINE_VADP_SEQUENCER_REGISTER_COUNT 5u
 
 typedef struct core_machine_vadp_text_timing {
     uint32_t active_display_ticks;
     uint32_t horizontal_blank_ticks;
     uint32_t vertical_retrace_ticks;
 } core_machine_vadp_text_timing;
+
+typedef struct core_machine_vadp_ega_sequencer_config {
+    uint32_t aperture_base;
+    uint32_t aperture_bytes;
+    uint8_t reset;
+    uint8_t clocking_mode;
+    uint8_t map_mask;
+    uint8_t memory_mode;
+} core_machine_vadp_ega_sequencer_config;
 
 typedef struct t_port t_port;
 typedef struct t_ram t_ram;
@@ -32,6 +44,10 @@ typedef struct t_vadp_data {
     uint8_t crtc[CORE_MACHINE_VADP_CRTC_REGISTER_COUNT];
     uint8_t mode_control;
     uint8_t color_select;
+    core_machine_vadp_ega_sequencer_config ega_sequencer;
+    uint8_t sequencer_index;
+    uint8_t sequencer[CORE_MACHINE_VADP_SEQUENCER_REGISTER_COUNT];
+    type_bool ega_sequencer_configured;
     core_machine_vadp_text_timing text_timing;
     uint32_t raster_phase;
     uint16_t columns;
@@ -71,6 +87,10 @@ type_status core_machine_vadp_configure_text(t_vadp *adapter, uint8_t mode,
     uint16_t columns, uint16_t rows, C_INT color_enabled);
 type_status core_machine_vadp_configure_text_timing(t_vadp *adapter,
     const core_machine_vadp_text_timing *timing);
+type_status core_machine_vadp_configure_ega_sequencer(t_vadp *adapter,
+    t_ram *memory, const core_machine_vadp_ega_sequencer_config *config);
+C_INT core_machine_vadp_ega_aperture_contains(const t_vadp *adapter,
+    uint32_t physical, STD_SIZE_T bytes);
 C_VOID core_machine_vadp_set_cursor_shape(t_vadp *adapter, uint8_t top,
     uint8_t bottom);
 C_VOID core_machine_vadp_set_cursor_address(t_vadp *adapter, uint16_t address);

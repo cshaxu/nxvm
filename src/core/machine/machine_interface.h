@@ -157,6 +157,9 @@ type_status core_machine_profile_binding_configure_text_video(
 type_status core_machine_profile_binding_configure_text_raster(
     const core_machine_profile_binding *binding,
     const core_machine_vadp_text_timing *timing);
+type_status core_machine_profile_binding_configure_ega_sequencer(
+    const core_machine_profile_binding *binding,
+    const core_machine_vadp_ega_sequencer_config *config);
 C_VOID core_machine_profile_binding_set_video_cursor_shape(
     const core_machine_profile_binding *binding, uint8_t top, uint8_t bottom);
 C_VOID core_machine_profile_binding_set_video_cursor_address(
