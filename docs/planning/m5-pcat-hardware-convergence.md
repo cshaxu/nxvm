@@ -17,15 +17,19 @@ baseline.
 
 | Task | Dependency | Deliverable and stop condition |
 | --- | --- | --- |
-| T248 | T246 | Active design-only host-capability admission. Prove policy-free reuse before any core platform contract or provider exists. |
-| T249 | T233 | Extend ATA/IDE only through a declared feature matrix and failing corpus. IDE DMA, ATAPI, LBA48, and cache remain separate admissions. |
-| T250 | T219, T220, T228 | Complete digital CGA only through bounded modes and 6845-visible behavior required by a declared corpus. Composite rendering remains optional. |
-| T251 | M5 profile boundary | Define machine-profile admission, optional user-provided ROM manifests, topology/capability contracts, fixture corpus, and provenance before additional machine profiles. |
-| T252 | T217--T225 evidence | Admit a higher timing-fidelity level only when a real corpus requires it. Instruction, bus, and cycle timing remain separate work. |
-| T253 | Real-mode device baseline | Add bounded 286 protected-mode descriptors, exceptions, and control transfer with focused probes. |
-| T254 | T253 | Add bounded 386 paging, CRx, CPL/IOPL, and TSS I/O-map behavior with focused probes. |
-| T255 | T254 | Add task switching and remaining admitted 286/386 instruction families. |
-| T256 | T253--T255 as applicable | Add present-FPU state, operations, exceptions, and `FWAIT`; FPU-none escape handling is not FPU support. |
+| T248 | T246 | Active host-capability admission and migration-queue task. S1 inventories; S2 fixes conditional T249--T252; no provider exists before its admission. |
+| T249 | T248 S2 `ADMIT` | Extract copied normalized input source and composition ingress only if admitted. |
+| T250 | T248 S2 `ADMIT` | Extract copied presentation sink/frame only if admitted. |
+| T251 | T248 S2 `ADMIT` | Extract host-clock observation/cancellable wait only if admitted. |
+| T252 | T248 and admitted T249--T251 | Close the VM composition lifecycle and platform-run boundary after the admitted moves. |
+| T253 | T233 | Extend ATA/IDE only through a declared feature matrix and failing corpus. IDE DMA, ATAPI, LBA48, and cache remain separate admissions. |
+| T254 | T219, T220, T228 | Complete digital CGA only through bounded modes and 6845-visible behavior required by a declared corpus. Composite rendering remains optional. |
+| T255 | M5 profile boundary | Define machine-profile admission, optional user-provided ROM manifests, topology/capability contracts, fixture corpus, and provenance before additional machine profiles. |
+| T256 | T217--T225 evidence | Admit a higher timing-fidelity level only when a real corpus requires it. Instruction, bus, and cycle timing remain separate work. |
+| T257 | Real-mode device baseline | Add bounded 286 protected-mode descriptors, exceptions, and control transfer with focused probes. |
+| T258 | T257 | Add bounded 386 paging, CRx, CPL/IOPL, and TSS I/O-map behavior with focused probes. |
+| T259 | T258 | Add task switching and remaining admitted 286/386 instruction families. |
+| T260 | T257--T259 as applicable | Add present-FPU state, operations, exceptions, and `FWAIT`; FPU-none escape handling is not FPU support. |
 
 ## Constraints
 

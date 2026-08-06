@@ -24,6 +24,12 @@ and `git diff --check`. Expected marker:
 candidate requires filesystem/path policy, direct guest mutation, or a runtime
 provider.
 
+T248 is an execution task, not a terminal design note: S2 freezes the
+conditional T249--T252 migration queue in
+[the T248 record](m5-t248-host-capability-admission.md) before any platform
+source move. Existing unstarted hardware work begins at T253; completed task
+identities and artifact revisions do not change.
+
 ## Current Technical Baseline
 
 - **T247 S4:** `current-gcc` and `verify-current-artifact-target` select
