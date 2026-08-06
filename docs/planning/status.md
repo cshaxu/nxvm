@@ -2,15 +2,13 @@
 
 ## Current Work
 
-**M5 T257 S4 active: produce the bounded 80286 protected-mode artifact.**
+**Idle. No implementation subtask is active.**
 
-[T257](m5-t257-80286-protected-mode.md) has classified the retained executor
-and corrected two bounded CPU-profile gate defects around `LMSW` and pre-286
-`0F`. The focused corpus now proves the GDT-only ring-0 16-bit path and keeps
-protected validation faults as core diagnostics rather than IDT-gate delivery.
-S3 has passed 91/91 current CTest cases. S4 advances the truthful current
-artifact to `0.5.0255`, records its SHA-256, and closes T257. Paging, privilege
-transitions, LDT/TSS/gates, and 32-bit semantics remain deferred.
+[T257](m5-t257-80286-protected-mode.md) is complete. It admits the bounded
+GDT-only, ring-0, 16-bit 80286 protected-mode path and preserves protected
+validation faults as core diagnostics rather than IDT-gate delivery. Paging,
+privilege transitions, LDT/TSS/gates, 32-bit semantics, and Windows claims
+remain deferred.
 
 | Closure | Evidence |
 | --- | --- |
@@ -20,15 +18,16 @@ transitions, LDT/TSS/gates, and 32-bit semantics remain deferred.
 | T254 | Bounded digital CGA `640x200x2` is VADP-owned; artifact `0.5.0253` and 89/89 current CTest pass. |
 | T255 | Machine-profile admission contract is closed; design/governance only, no artifact. |
 | T256 | Core-owned Level 1 rational device clocks are closed; artifact `0.5.0254` and 90/90 current CTest pass. |
+| T257 | Bounded 80286 GDT/CPL0 protected-mode baseline is closed; artifact `0.5.0255` and 91/91 current CTest pass. |
 
 The next task must establish a complete active packet before implementation.
 
 ## Current Technical Baseline
 
-- **T256 S4:** `current-gcc` and `verify-current-artifact-target` select
-  `vm-0-5-0254`; static/ownership checks and 90/90 CTest cases passed.
-  Artifact `nxvm_0_5_0254.exe` SHA-256:
-  `28DAB2D09B4839F79F6BCF03ED09E8CBEE64FBDD5BCDF1F4C43CC9F61B684074`.
+- **T257 S4:** `current-gcc` and `verify-current-artifact-target` select
+  `vm-0-5-0255`; static/ownership checks and 91/91 CTest cases passed.
+  Artifact `nxvm_0_5_0255.exe` SHA-256:
+  `33961D87C54911DCFD018E4E16022EA3CD51D90A3786ABE2D0E20B06B98EBE03`.
 - **T243--T246:** core owns checked physical memory, bounded `#UD`
   transitions, immutable ROM mapping, and atomic real-mode entry plans. T247
   verifies the current artifact target and full gate over that boundary.

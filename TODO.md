@@ -30,7 +30,7 @@ in its task record and Git history; the M5 implementation order belongs in
 | Area | Current bounded capability | Open boundary |
 | --- | --- | --- |
 | NXVM product | One session/composition path, retained Console/debugger, FDD/HDD boot regressions, GCC artifact and CTest gates | Preserve this path while every device evolves; do not quietly start VDM behavior. |
-| CPU | Real-mode 8086-plus executor with selected 80186/286/386 decode; `FPU=none` consumes legal ESC encodings | Not trusted 80386, protected mode, paging, task switching, or present FPU. |
+| CPU | Real-mode 8086-plus executor plus a bounded 80286 GDT/CPL0 16-bit protected-mode corpus; `FPU=none` consumes legal ESC encodings | Not trusted 80386, general protected mode, paging, task switching, or present FPU. |
 | Interrupts and time | PIC source lifecycle; deterministic core elapsed ticks; PIT/IRQ0 -> ROM -> BDA -> `INT 1Ah` evidence | Greater timing fidelity only when an explicit corpus requires it. |
 | Keyboard | KBC, IRQ1/IRQ12, ROM `INT 09h`/`INT 16h`, set-1 break/E0/E1, typeahead, selection/query, translation observation, LED, command-state typematic, ACK/RESEND, bounded PS/2 AUX packets, and one DOS guest-driver corpus | Default core auto-repeat stays disabled until a profile-clock calibration defines human typematic time; set-2/3 conversion, wheel/advanced AUX protocol, broad guest mouse API compatibility, and native POSIX runtime validation remain deferred. |
 | Display | CGA text plus bounded digital `320x200x4` and ROM-selectable `EGA-320x200x16-direct`; copied text/indexed frames; `console`/`window`/`auto` selection | Remaining digital CGA modes/CRTC behavior, composite video, broader EGA/VGA, VBE. |
@@ -88,10 +88,11 @@ These are the next owned admissions, not permission to work in parallel.
   ROM/DOS/device path to uncovered 8086 families such as arithmetic/FLAGS,
   conditional control transfer, stack edge cases, and string compare/scan.
   MS-DOS `MEM` remains a regression sample, not an 80386-completeness claim.
-- [ ] **286/386 protected-mode program (`TODO(Low)`, T257--T259).** Admit
-  descriptors, exceptions, control transfer, CRx/paging, CPL/IOPL, TSS I/O map,
-  task switching, and remaining instructions as individually probed work. It
-  is lower ROI than the real-mode PC/AT device route.
+- [ ] **286/386 protected-mode program (`TODO(Low)`, T258--T259).** T257 has
+  admitted only GDT/CPL0 16-bit entry, selector loads, same-CPL far transfer,
+  and diagnostic validation faults. Admit paging, privilege, TSS I/O map,
+  task switching, and remaining instructions only as individually probed work.
+  It remains lower ROI than the real-mode PC/AT device route.
 - [ ] **Present x87 (`TODO(Low)`, T260).** Define state, operations,
   exceptions, and `FWAIT` before enabling any 8087/287/387 profile.
 - [ ] **CPU-fault outcome audit (`TODO(Medium)`).** T214 established a
