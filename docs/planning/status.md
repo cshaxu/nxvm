@@ -375,6 +375,9 @@ invalid-instruction handling: no handler-owned mode change or arbitrary IP,
 and only atomic bounded CPU-state patches at a defined instruction boundary.
 `M5 Td S15` fixes the initial writable state set and excludes transition-owned
 guest-memory writes pending a separately admitted transactional contract.
+`M5 Td S16` makes T247 depend on T246: before the shared machine-start boundary
+is validated, host-capability work is evidence collection only, with no new
+platform contract or provider implementation.
 
 ## Milestone State
 
