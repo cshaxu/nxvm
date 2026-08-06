@@ -49,7 +49,7 @@ C_INT main(C_VOID)
         snapshot.palette_rgb[3] != 0xaaaaaau || !snapshot.buffer_changed;
 
     core_machine_port_write(&port, 0x03d8u, 0x1au);
-    failed |= core_machine_port_read(&port, 0x03d8u) != 0x0au;
+    failed |= core_machine_port_read(&port, 0x03d8u) != 0x1au;
     core_machine_port_write(&port, 0x03d8u, 0x0du);
     failed |= !core_machine_vadp_capture_snapshot(&vadp, &memory, &snapshot);
     failed |= snapshot.kind != CORE_MACHINE_DISPLAY_KIND_TEXT;

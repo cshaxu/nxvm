@@ -1,6 +1,6 @@
 # M5 T254: Digital CGA And 6845 Visible Behavior
 
-**Status:** S1 active.
+**Status:** S3 active.
 
 ## Original Request
 
@@ -91,3 +91,20 @@ forbidden platform/core shape.
 Stop and split if a requirement needs platform VRAM access/mutation, VM-owned
 VADP state, host-time raster progression, undefined mode semantics, or a
 Console/debugger/boot experience change.
+
+## S2 Scope
+
+S2 changes only VADP mode selection/decoding, the platform-neutral copied
+indexed-frame capacity needed for a 640-pixel row, and default-ROM `INT 10h`
+mode `06h`. The ROM service writes BDA mode state and emits normal `3D8h/3D9h`
+transactions; it does not access VADP internals or guest framebuffer backing.
+S2 adds no renderer mode switch, platform VRAM access, or CRTC geometry
+behavior.
+
+**S2 result:** `1Ah` is the sole admitted high-resolution CGA mode. VADP
+decodes the existing `B8000h` aperture as interleaved 80-byte scanlines with
+MSB-first one-bit pixels and emits a copied `CGA_640X200X2` snapshot. Default
+ROM `INT 10h/AH=00h/AL=06h` records BDA mode `06h` then drives that mode through
+ordinary `3D8h/3D9h` writes. Retained 320x200x4 and EGA ROM system probes pass.
+
+**S2 marker:** `M5:T254:S2:CGA-640:PORT:OK`.
