@@ -702,6 +702,9 @@ add_executable(vm-fdc-authority-smoke tests/machine/vm_fdc_authority_smoke.c)
 target_link_libraries(vm-fdc-authority-smoke PRIVATE vm-composition)
 add_executable(vm-fdc-port-smoke tests/machine/vm_fdc_port_smoke.c)
 target_link_libraries(vm-fdc-port-smoke PRIVATE vm-composition)
+add_executable(vm-fdc-t242-corpus-port-smoke
+    tests/machine/vm_fdc_t242_corpus_port_smoke.c)
+target_link_libraries(vm-fdc-t242-corpus-port-smoke PRIVATE vm-composition)
 add_executable(vm-hdd-authority-smoke tests/machine/vm_hdd_authority_smoke.c)
 target_link_libraries(vm-hdd-authority-smoke PRIVATE vm-composition)
 add_executable(vm-bios-authority-smoke tests/machine/vm_bios_authority_smoke.c)
@@ -888,6 +891,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     vm-fault-outcome-runner-smoke
     vm-cmos-rtc-port-smoke
     vm-fdc-port-smoke
+    vm-fdc-t242-corpus-port-smoke
     vm-no-media-video-port-smoke
     vm-hdc-hdd-boot-smoke
     vm-runner-display-cadence-smoke
