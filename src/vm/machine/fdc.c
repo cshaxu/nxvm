@@ -21,6 +21,7 @@
 #define VM_MACHINE_FDC_CMD_WRITE_DATA 0x05u
 #define VM_MACHINE_FDC_CMD_READ_DATA 0x06u
 #define VM_MACHINE_FDC_CMD_FORMAT_TRACK 0x0du
+#define VM_MACHINE_FDC_CMD_READ_TRACK 0x02u
 
 #define VM_MACHINE_FDC_ST1_NO_DATA 0x04u
 #define VM_MACHINE_FDC_ST1_NOT_WRITABLE 0x02u
@@ -246,7 +247,8 @@ static type_unsigned_8 vm_machine_fdc_command_length(type_unsigned_8 opcode)
     case VM_MACHINE_FDC_CMD_VERSION: return 1u;
     case VM_MACHINE_FDC_CMD_READ_ID: return 2u;
     case VM_MACHINE_FDC_CMD_WRITE_DATA:
-    case VM_MACHINE_FDC_CMD_READ_DATA: return 9u;
+    case VM_MACHINE_FDC_CMD_READ_DATA:
+    case VM_MACHINE_FDC_CMD_READ_TRACK: return 9u;
     case VM_MACHINE_FDC_CMD_FORMAT_TRACK: return 6u;
     default: return 1u;
     }
@@ -273,6 +275,33 @@ static C_VOID vm_machine_fdc_start_transfer(t_fdc *fdc, C_INT write_to_media)
     fdc->data.phase = write_to_media ? VM_MACHINE_FDC_PHASE_EXECUTION_WRITE :
         VM_MACHINE_FDC_PHASE_EXECUTION_READ;
     if (!fdc->data.flagNDMA && (fdc->data.dor & VFDC_DOR_ENRQ) != 0u) {
+        core_machine_dma_request_assert(&fdc->connect.dma_request);
+    }
+}
+
+static C_VOID vm_machine_fdc_start_read_track(t_fdc *fdc)
+{
+    fdc->data.selected_drive = fdc->data.cmd[1] & 0x03u;
+    fdc->data.cylinder = fdc->data.cmd[2];
+    fdc->data.head = fdc->data.cmd[3];
+    fdc->data.sector = fdc->data.cmd[4];
+    fdc->data.eot = fdc->data.cmd[6];
+    fdc->data.byte_offset = 0u;
+    if (fdc->data.cmd[0] != 0x42u || fdc->data.flagNDMA ||
+        vm_machine_fdc_sector_size(fdc->data.cmd[5]) != 2u ||
+        (fdc->data.ccr != 0u && fdc->data.ccr != VFDC_CCR_DRC) ||
+        !vm_machine_fdc_drive_ready(fdc) || fdc->data.selected_drive != 0u ||
+        fdc->data.head >= fdc->connect.fdd->data.nhead ||
+        fdc->data.cylinder >= fdc->connect.fdd->data.ncyl ||
+        fdc->data.sector != 1u ||
+        fdc->data.eot != fdc->connect.fdd->data.nsector) {
+        vm_machine_fdc_complete_transfer(fdc, VM_MACHINE_FDC_ST1_NO_DATA);
+        return;
+    }
+    fdc->data.transfer_remaining = (type_unsigned_32)
+        fdc->connect.fdd->data.nsector * 512u;
+    fdc->data.phase = VM_MACHINE_FDC_PHASE_EXECUTION_READ;
+    if ((fdc->data.dor & VFDC_DOR_ENRQ) != 0u) {
         core_machine_dma_request_assert(&fdc->connect.dma_request);
     }
 }
@@ -352,6 +381,9 @@ static C_VOID vm_machine_fdc_execute(t_fdc *fdc)
         break;
     case VM_MACHINE_FDC_CMD_READ_DATA:
         vm_machine_fdc_start_transfer(fdc, TYPE_FALSE);
+        break;
+    case VM_MACHINE_FDC_CMD_READ_TRACK:
+        vm_machine_fdc_start_read_track(fdc);
         break;
     case VM_MACHINE_FDC_CMD_WRITE_DATA:
         vm_machine_fdc_start_transfer(fdc, TYPE_TRUE);

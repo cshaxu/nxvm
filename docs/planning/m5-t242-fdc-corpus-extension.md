@@ -78,8 +78,32 @@ is implicitly authorized.
 
 ## S2: Owner-Local Read-Track Slice
 
-**Status:** pending.
+**Status:** complete.
+
+S2 admits exactly the MFM `READ TRACK` command byte `42h`. Its complete
+nine-byte command is `42h, DH=00h, C, H, R=01h, N=02h, EOT=12h, GPL, DTL`.
+The only accepted transfer is drive 0, either valid fixed-image cylinder,
+head 0 or 1, sector 1 through sector 18, 512-byte sectors, and DMA mode set by
+the existing `SPECIFY` command. `MT`, `SK`, non-MFM opcode variants, nonzero
+drive, a non-1 start sector, an EOT other than 18, non-512-byte `N`, unsupported
+CCR, non-DMA mode, and unavailable media do not widen the slice; they retain
+the controller's normal invalid-command or no-data result semantics.
+
+The FDC owns command decoding, transfer position, result FIFO, DRQ and IRQ6.
+It starts the existing channel-2 provider request and the core scheduler moves
+each byte into core-owned RAM. After 9,216 bytes, the existing completion path
+returns `ST0=00h, ST1=00h, ST2=00h, C, H, R=13h, N=02h`, asserts IRQ6, and the
+ordinary `SENSE INTERRUPT` command releases that source. No FDC code reads or
+writes RAM directly.
+
+`vm-fdc-t242-corpus-port-smoke` creates a temporary boot-loop FDD image so the
+core scheduler remains active, fills its first track through the FDD owner API,
+programs ordinary DMA2 ports, and submits `SPECIFY` plus `42h`. It proves all
+9,216 guest-RAM bytes, the seven-byte normal result, assertion then
+`SENSE INTERRUPT` release of the FDC IRQ6 source, and no-data rejection of the
+otherwise identical non-MFM `02h` command. The marker is
+`M5:T242:S2:FDC:READ-TRACK:OK`.
 
 ## S3: DOS Corpus And Closure
 
-**Status:** pending.
+**Status:** active.
