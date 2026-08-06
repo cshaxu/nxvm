@@ -2,17 +2,14 @@
 
 ## Current Work
 
-**M5 T241 complete:** S4 reads the running COM-owned IRQ12 buffer before its
-guest success marker and asserts `FA AA 00 FA 00 FA 29 05 FD` across the full
-host -> mapper -> KBC AUX -> PIC -> IVT route. This remains observation only;
-the host has no RAM/BDA/DOS shortcut. The full current matrix passed 78/78.
-
-**M5 T241 initial closure:** the owner-built DOS `MOUSE241.COM` fixture boots through
+**M5 T241 complete:** the owner-built DOS `MOUSE241.COM` fixture boots through
 the retained prompt, installs an ordinary IVT `74h` handler, consumes AUX
 reset/identify/enable plus one mapped relative packet through IRQ12, and emits
-a guest-visible application result. Exact controller bytes remain covered by
-the T229 port probe; host input has no DOS/BDA/RAM shortcut. GCC gates passed
-with 78/78 current CTest smokes. Artifact `nxvm_0_5_0241.exe` SHA-256:
+a guest-visible application result. S4 reads its running COM-owned IRQ12
+buffer before the guest success marker and asserts `FA AA 00 FA 00 FA 29 05 FD`
+across the complete host -> mapper -> KBC AUX -> PIC -> IVT route. This remains
+observation only; the host has no DOS/BDA/RAM shortcut. The full current matrix
+passed 78/78. Artifact `nxvm_0_5_0241.exe` SHA-256:
 `5E0D6F1D5600503937F831E87709A055EAB35F5815C2BE2484450DB50B396E1B`.
 
 **M5 T240 complete:** the bounded strict-8086 corpus now covers reset-vector

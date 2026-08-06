@@ -81,8 +81,6 @@ adds corpus evidence only and changes no guest-device implementation.
 
 ## S4: Guest Buffer Assertion
 
-**Status:** active.
-
 The original corpus asserted only that the guest handler had accepted nine
 IRQ12 bytes. That does not exclude a byte reorder or corruption between the
 core KBC and the DOS handler. S4 exposes the fixture's own COM buffer offset
