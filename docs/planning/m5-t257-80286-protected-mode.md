@@ -1,6 +1,6 @@
 # M5 T257: Constrained 80286 Protected-Mode Baseline
 
-**Status:** S4 active.
+**Status:** Complete.
 
 ## Original Request
 
@@ -125,3 +125,13 @@ the T257 corpus, retained real-mode corpus, DOS prompt and `MEM` samples,
 FDD/HDD boot, keyboard and mouse paths, CGA/EGA paths, ATA, RTC, and retained
 Console/debugger coverage. S4 may now advance the truthful current artifact to
 `0.5.0255`, record its SHA-256, and close the task.
+
+## S4 Result
+
+The truthful current target is now `vm-0-5-0255`; `current-gcc` produced
+`build/output/nxvm_0_5_0255.exe` with SHA-256
+`33961D87C54911DCFD018E4E16022EA3CD51D90A3786ABE2D0E20B06B98EBE03`.
+The final current gate passed **91/91** CTest cases and verified the matching
+artifact target. T257 is complete: it admits only the documented GDT-only,
+ring-0, 16-bit 80286 path and makes no Windows, 80386, or general protected-mode
+compatibility claim.
