@@ -68,8 +68,17 @@ physical-copy interface:
 
 * checked physical read and write remain copied-buffer operations owned by
   `core_machine`;
-* a checked physical-range/mapping query may report whether the entire range is
-  accessible for the requested operation, without returning a RAM pointer,
+* `size == 0` is `TYPE_STATUS_INVALID_ARGUMENT` for read, write, and query;
+* a physical address plus size that overflows or extends outside the selected
+  route is `TYPE_STATUS_FAULT`, never a wrapping or modulo range;
+* a checked physical-range query takes only a `READ` or `WRITE` access enum.
+  It introduces neither a fetch permission nor a future ROM-specific access
+  class;
+* read, write, and query use one shared frozen physical-route resolver: the
+  same device-provider selection and ordinary-RAM fallback used by physical
+  reads/writes. A query must not infer accessibility from RAM capacity alone,
+  bypass a registered provider, or invoke a provider's data callback;
+* the query reports route/access eligibility without returning a RAM pointer,
   mapping internals, device-provider owner, or product data;
 * all operations remain valid only at a defined non-running machine boundary;
 * invalid arguments, invalid lifecycle, and inaccessible ranges remain distinct
@@ -90,7 +99,7 @@ view rather than re-exporting `core_machine_cpu_execution_context`.
 | Gap classification | Completed: physical copies are usable; range/mapping query is missing; borrowed RAM/CPU internals remain composition-private. |
 | Contract proposal | Completed in the approved S2 contract boundary above. |
 | Dependency audit | Completed by the S1 query sweep; no prohibited core implementation edge was found. |
-| S2 packet | `memory_interface.h/.c`, focused `tests/core/machine_memory_reconfigure_smoke.c` or a new core-memory contract smoke, current GCC gate, full CTest matrix, and the required developer artifact. |
+| S2 packet | `memory_interface.h/.c` plus the shared physical-route resolver, focused zero-length, overflow, RAM, and registered-provider query tests in `tests/core/machine_memory_reconfigure_smoke.c` or a new core-memory contract smoke, current GCC gate, full CTest matrix, and the required developer artifact. |
 
 ## Applicable Rules
 

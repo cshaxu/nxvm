@@ -378,6 +378,10 @@ guest-memory writes pending a separately admitted transactional contract.
 `M5 Td S16` makes T247 depend on T246: before the shared machine-start boundary
 is validated, host-capability work is evidence collection only, with no new
 platform contract or provider implementation.
+`M5 Td S18` freezes the pre-implementation contracts for T243--T246: shared
+physical routing and range semantics, bounded transition matching/commit,
+immutable images on the existing device-memory route, and two-phase real-mode
+entry application.
 
 ## Milestone State
 

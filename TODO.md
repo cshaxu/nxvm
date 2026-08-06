@@ -212,8 +212,12 @@ default definition of NXVM completion.
 - [ ] **M5 T243: checked guest-memory contract (`TODO(High)`).** S1 maps the
   current memory/execution boundary and specifies the minimum checked
   read/write/copy/mapping-query contract. S2 implements it with focused fault
-  tests and preserved NXVM regressions. It must not expose raw RAM pointers,
-  DOS structures, or host-policy callbacks.
+  tests and preserved NXVM regressions. `size == 0` is invalid; overflow or a
+  range outside its selected physical route is inaccessible and never wraps.
+  Query accepts only `READ`/`WRITE` and shares physical read/write routing,
+  including registered providers; it must not infer from RAM capacity or add a
+  fetch permission. It must not expose raw RAM pointers, DOS structures, or
+  host-policy callbacks.
 - [ ] **M5 T244: registered undefined-instruction transition (`TODO(High)`).**
   After T243 S2, add a consumer-registered, mode-restricted transition facility
   with checked state access and constrained outcomes. A match occurs at the
@@ -231,14 +235,27 @@ default definition of NXVM completion.
   transition service needs them. Any CPU mode transition remains exclusively in
   the core CPU's formally supported
   instruction/exception/IRET semantics. It defines no fixed instruction bytes,
-  selector namespace, or guest-service ABI; NXVM registers none by default.
-- [ ] **M5 T245: generic ROM mapping (`TODO(High)`).** Separate immutable
-  read-only image mapping from VM firmware generation and boot policy. The VM
-  profile remains the first consumer; image contents and firmware services stay
-  outside core.
+  selector namespace, or guest-service ABI. Patterns are 1--15 bytes and match
+  the core-captured physical instruction bytes at the faulting fetch, never a
+  consumer-supplied linear address. Registration is `INITIALIZED`-only and
+  freezes with execution providers; identical or prefix-overlapping patterns
+  are rejected, so matching has no priority rule. NXVM registers none by
+  default.
+- [ ] **M5 T245: generic ROM mapping (`TODO(High)`).** Add immutable byte-image
+  storage as a checked device-memory provider on the existing single frozen
+  physical route, not as a second ROM mapping or fetch API. Register only while
+  `INITIALIZED`; reject all provider/image/RAM conflicts at registration; reads
+  use the existing route and writes fault. Reset preserves image bytes while
+  resetting CPU/device state. The VM profile remains the first consumer; image
+  contents and firmware services stay outside core.
 - [ ] **M5 T246: validated initial-state/entry-plan (`TODO(High)`).** Apply a
-  validated immutable plan after clean core reset, supporting reset-state plus
-  mapped image and direct prepared state without a second core boot mode.
+  validated immutable plan in two phases: image/provider topology registers
+  only while `INITIALIZED` and then freezes; after a clean `STOPPED` reset,
+  validate every plan field and atomically apply the real-mode register state
+  plus checked ordinary-RAM copies. Preload copies may not target device/ROM
+  routes, use A20/translation, or configure protected-mode state, descriptor
+  caches, or CRx. This supports reset-state plus mapped image and direct
+  prepared state without a second core boot mode.
 - [ ] **M5 T247: narrow host-capability admission (`TODO(Medium)`).** Design
   copied event/presentation/wait contracts only after T246 validates the shared
   machine start boundary. Admit each provider only with demonstrated policy-free
