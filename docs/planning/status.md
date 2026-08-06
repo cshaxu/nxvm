@@ -2,6 +2,12 @@
 
 ## Current Work
 
+**M5 T242 S1 complete:** the FDC/FDD feature matrix admits only fixed-geometry
+drive-0 `READ TRACK` for S2 investigation. The new owner probe records current
+`42h -> 80h` invalid-command behavior without DMA2/IRQ6; 34 static gates and
+79/79 current CTest smokes pass. Multi-drive and rotation remain separate
+profile/time admissions. See [the T242 record](m5-t242-fdc-corpus-extension.md).
+
 **M5 T241 complete:** the owner-built DOS `MOUSE241.COM` fixture boots through
 the retained prompt, installs an ordinary IVT `74h` handler, consumes AUX
 reset/identify/enable plus one mapped relative packet through IRQ12, and emits
@@ -27,8 +33,8 @@ owner.  System and DOS fixtures, direct EGA/CGA, Console/debugger, FDD/HDD
 boot, and GCC/CTest `76/76` pass.  Artifact `nxvm_0_5_0239.exe` SHA-256:
 `4C4FDC4DCEB1CE0003A71E54C3DFFA19101AC048E8E7B62919596E6E126123DA`.
 
-**Latest technical baseline -- idle after M5 T241 S4:** no implementation subtask
-is active. The only admitted ROM EGA service is `AH=00h, AL=0Dh`,
+**Latest technical baseline -- idle after M5 T242 S1:** no implementation
+subtask is active. The only admitted ROM EGA service is `AH=00h, AL=0Dh`,
 with `AL=03h` as its text exit; DAC, VBE, and other EGA/VGA families remain
 deferred.  See [the T239 record](m5-t239-rom-ega-int10.md).
 
