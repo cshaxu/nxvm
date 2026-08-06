@@ -75,10 +75,15 @@ failure coverage. Run current GCC/CTest, Console/window, DOS, graphics,
 FDD/HDD, debugger, and artifact verification. Allocate the next developer
 artifact if runnable source changes.
 
+**S3 result:** `current-gates-gcc` passed all 86 current CTest cases with the
+cancellable-wait boundary gate. `current-gcc` produced
+`build/output/nxvm_0_5_0250.exe`; SHA-256 is
+`99985EB76F335178304D444FE0F0A085573D6B650E5445627725E0B9F10D8DA9`.
+
+**S3 marker:** `M5:T251:S3:CANCELLABLE-WAIT-VERIFIED:OK`.
+
 ## Stop Conditions
 
 Stop for owner direction if any caller needs guest time, host-clock observation,
 an unbounded wait, display/exit policy, host-thread guest mutation, or a
 second lifecycle path.
-
-**S1 marker:** `M5:T251:S1:CANCELLABLE-WAIT-CONTRACT:OK`.

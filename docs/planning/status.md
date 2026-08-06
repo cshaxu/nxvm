@@ -2,7 +2,7 @@
 
 ## Current Work
 
-**M5 T251 S3 active: verify bounded cancellable lifecycle waits.**
+**M5 T252 S1 active: define VM composition lifecycle closure.**
 
 Original request: execute the third admitted T248 migration without changing
 guest time or NXVM lifecycle behavior. S1 fixed the host-only cancellation
@@ -25,18 +25,17 @@ requires guest time, raw host clock, unbounded waiting, display/exit policy,
 or a second lifecycle path.
 
 T248 is closed: it established the evidence-backed T249--T252 migration queue
-and deferred raw host-clock observation. T249 and T250 are closed with
-artifacts `0.5.0248` and `0.5.0249`; T251 now starts with its own S1 contract
-in [its task record](m5-t251-cancellable-host-wait.md). Existing unstarted
-hardware work begins at T253; completed task identities and artifact revisions
-do not change.
+and deferred raw host-clock observation. T249--T251 are closed with artifacts
+`0.5.0248`--`0.5.0250`; T252 now defines the final composition lifecycle
+closure. Existing unstarted hardware work begins at T253; completed task
+identities and artifact revisions do not change.
 
 ## Current Technical Baseline
 
-- **T250 S3:** `current-gcc` and `verify-current-artifact-target` select
-  `vm-0-5-0249`; static/ownership checks and 85/85 CTest cases passed.
-  Artifact `nxvm_0_5_0249.exe` SHA-256:
-  `E6EA5C35F1C6EDFD130E3BCCC5A6EBD1BF92442B85E715505E4B3FF5CCF34079`.
+- **T251 S3:** `current-gcc` and `verify-current-artifact-target` select
+  `vm-0-5-0250`; static/ownership checks and 86/86 CTest cases passed.
+  Artifact `nxvm_0_5_0250.exe` SHA-256:
+  `99985EB76F335178304D444FE0F0A085573D6B650E5445627725E0B9F10D8DA9`.
 - **T243--T246:** core owns checked physical memory, bounded `#UD`
   transitions, immutable ROM mapping, and atomic real-mode entry plans. T247
   verifies the current artifact target and full gate over that boundary.
