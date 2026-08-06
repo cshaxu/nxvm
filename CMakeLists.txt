@@ -731,6 +731,13 @@ add_executable(vm-cga-graphics-dos-smoke
     tests/machine/vm_cga_graphics_dos_smoke.c
 )
 target_link_libraries(vm-cga-graphics-dos-smoke PRIVATE vm-composition)
+add_executable(vm-cga-640-system-smoke
+    tests/machine/vm_cga_640_system_smoke.c
+)
+target_link_libraries(vm-cga-640-system-smoke PRIVATE vm-composition)
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(vm-cga-640-system-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+endif()
 add_executable(vm-ega-planar-dos-smoke
     tests/machine/vm_ega_planar_dos_smoke.c
 )
@@ -918,6 +925,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-ega-controller-port-smoke
     core-machine-ega-planar-port-smoke
     vm-cga-graphics-system-smoke
+    vm-cga-640-system-smoke
     vm-ega-sequencer-system-smoke
     vm-ega-controller-system-smoke
     vm-ega-planar-system-smoke
@@ -1069,7 +1077,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0252 "0.5.0252")
+add_current_vm_artifact(vm-0-5-0253 "0.5.0253")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 
