@@ -1,6 +1,6 @@
 # M5 T257: Constrained 80286 Protected-Mode Baseline
 
-**Status:** S3 active.
+**Status:** S4 active.
 
 ## Original Request
 
@@ -117,3 +117,11 @@ IDT delivery. `80186` rejects `0F 01`, while `80286` rejects 386-only
 The corpus is registered in `PROJECT_CURRENT_SMOKE_TARGETS`. S3 now runs the
 full retained GCC/CTest matrix and records the exact result before the artifact
 revision is advanced.
+
+## S3 Result
+
+`current-gates-gcc` passed with **91/91** current CTest cases. This includes
+the T257 corpus, retained real-mode corpus, DOS prompt and `MEM` samples,
+FDD/HDD boot, keyboard and mouse paths, CGA/EGA paths, ATA, RTC, and retained
+Console/debugger coverage. S4 may now advance the truthful current artifact to
+`0.5.0255`, record its SHA-256, and close the task.

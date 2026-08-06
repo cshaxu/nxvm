@@ -2,15 +2,15 @@
 
 ## Current Work
 
-**M5 T257 S3 active: verify the constrained 80286 protected-mode baseline.**
+**M5 T257 S4 active: produce the bounded 80286 protected-mode artifact.**
 
 [T257](m5-t257-80286-protected-mode.md) has classified the retained executor
 and corrected two bounded CPU-profile gate defects around `LMSW` and pre-286
 `0F`. The focused corpus now proves the GDT-only ring-0 16-bit path and keeps
 protected validation faults as core diagnostics rather than IDT-gate delivery.
-S3 is the retained full GCC/CTest verification step; paging, privilege
-transitions, LDT/TSS/gates, and 32-bit semantics remain deferred. T257
-allocates artifact revision `0.5.0255` at S4.
+S3 has passed 91/91 current CTest cases. S4 advances the truthful current
+artifact to `0.5.0255`, records its SHA-256, and closes T257. Paging, privilege
+transitions, LDT/TSS/gates, and 32-bit semantics remain deferred.
 
 | Closure | Evidence |
 | --- | --- |
