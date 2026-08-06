@@ -2,15 +2,15 @@
 
 ## Current Work
 
-**M5 T256 S4 active: build rational-clock artifact and close evidence.**
+**M5 T256 complete. No implementation subtask is active.**
 
 [T256](m5-t256-rational-device-clocks.md) has replaced the PIT-only divider
 with core-owned, profile-bound integer rational domains for core devices and the
-frozen VM provider. S3 proved deterministic checkpoints across different run
-quanta and cold reset while preserving coarse instruction ticks as the input
-unit. S4 now builds `0.5.0254`, records its hash and closes the matrix. T256
-must not add host-clock guest timing, cycle-accuracy claims, or a VM-side
-scheduler.
+frozen VM provider. It preserves coarse instruction ticks as the input unit,
+proves deterministic checkpoints across run quanta and cold reset, and records
+artifact `0.5.0254`. It does not claim host-clock guest timing, instruction
+cycle accuracy, bus timing, or a VM-side scheduler. The next task must create a
+complete active packet before implementation begins.
 
 | Closure | Evidence |
 | --- | --- |
@@ -19,15 +19,16 @@ scheduler.
 | T253 | ATA PIO sector-count progression is controller-owned; artifact `0.5.0252` and 87/87 current CTest pass. |
 | T254 | Bounded digital CGA `640x200x2` is VADP-owned; artifact `0.5.0253` and 89/89 current CTest pass. |
 | T255 | Machine-profile admission contract is closed; design/governance only, no artifact. |
+| T256 | Core-owned Level 1 rational device clocks are closed; artifact `0.5.0254` and 90/90 current CTest pass. |
 
 The next task must establish a complete active packet before implementation.
 
 ## Current Technical Baseline
 
-- **T254 S3:** `current-gcc` and `verify-current-artifact-target` select
-  `vm-0-5-0253`; static/ownership checks and 89/89 CTest cases passed.
-  Artifact `nxvm_0_5_0253.exe` SHA-256:
-  `B26167320D7679FD02F3ECF1EE1F8C7CD6BEF97752447CA75A87FC6765366526`.
+- **T256 S4:** `current-gcc` and `verify-current-artifact-target` select
+  `vm-0-5-0254`; static/ownership checks and 90/90 CTest cases passed.
+  Artifact `nxvm_0_5_0254.exe` SHA-256:
+  `28DAB2D09B4839F79F6BCF03ED09E8CBEE64FBDD5BCDF1F4C43CC9F61B684074`.
 - **T243--T246:** core owns checked physical memory, bounded `#UD`
   transitions, immutable ROM mapping, and atomic real-mode entry plans. T247
   verifies the current artifact target and full gate over that boundary.

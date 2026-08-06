@@ -113,9 +113,10 @@ instructions advance core elapsed ticks and devices consume frozen accumulated
 clock ratios. These levels are optional compatibility admissions, not the
 default definition of NXVM completion.
 
-- [ ] **Frequency-accurate device clocks (`TODO(Medium)`).** Define exact
-  rational conversion, phase, rounding, reset origin, and event ordering for
-  CPU, PIT, CGA, DMA, and RTC clocks under each profile.
+- [x] **Level 1 rational device clocks (T256).** Frozen profile ratios, phase,
+  rounding, reset origin, and dispatch order now deterministically relate core
+  DMA/PIT/VADP/KBC and VM-provider clocks to coarse instruction ticks. This
+  does not claim real CPU-cycle attribution.
 - [ ] **Instruction-timed execution (`TODO(Medium)`).** Give each admitted
   instruction deterministic profile-specific cost, including applicable
   prefix/branch/memory/I/O variants, before expanding the timing corpus.

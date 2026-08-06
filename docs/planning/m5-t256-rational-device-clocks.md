@@ -1,6 +1,6 @@
 # M5 T256: Level 1 Rational Device Clocks
 
-**Status:** S4 active.
+**Status:** Complete.
 
 ## Original Request
 
@@ -121,3 +121,12 @@ behavior remain unchanged.
 provider-tick sequence for one four-instruction quantum, two two-instruction
 quanta, four one-instruction quanta, and a cold-reset replay. The full
 `current-gates-gcc` matrix passes **90/90**.
+
+## S4 Evidence
+
+`current-gcc` builds `build/output/nxvm_0_5_0254.exe`. SHA-256:
+`28DAB2D09B4839F79F6BCF03ED09E8CBEE64FBDD5BCDF1F4C43CC9F61B684074`.
+The updated `current-gates-gcc` target passes all static ownership checks and
+**90/90** CTest cases against that artifact selection. T256 closes Level 1
+relative device-clock infrastructure only; real per-instruction timing,
+bus-timing, and cycle-exact profiles remain deferred.
