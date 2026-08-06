@@ -216,8 +216,9 @@ default definition of NXVM completion.
   range outside its selected physical route is inaccessible and never wraps.
   Query accepts only `READ`/`WRITE` and shares physical read/write routing,
   including registered providers; it must not infer from RAM capacity or add a
-  fetch permission. It must not expose raw RAM pointers, DOS structures, or
-  host-policy callbacks.
+  fetch permission. It returns only neutral `ORDINARY_RAM`/`PROVIDER` route
+  classification, never a pointer or provider identity. It must not expose raw
+  RAM pointers, DOS structures, or host-policy callbacks.
 - [ ] **M5 T244: registered undefined-instruction transition (`TODO(High)`).**
   After T243 S2, add a consumer-registered, mode-restricted transition facility
   with checked state access and constrained outcomes. A match occurs at the
@@ -252,10 +253,12 @@ default definition of NXVM completion.
   validated immutable plan in two phases: image/provider topology registers
   only while `INITIALIZED` and then freezes; after a clean `STOPPED` reset,
   validate every plan field and atomically apply the real-mode register state
-  plus checked ordinary-RAM copies. Preload copies may not target device/ROM
-  routes, use A20/translation, or configure protected-mode state, descriptor
-  caches, or CRx. This supports reset-state plus mapped image and direct
-  prepared state without a second core boot mode.
+  plus checked ordinary-RAM copies. Before commit, T243 query must prove every
+  preload range is writable `ORDINARY_RAM`, not a provider/ROM route; any
+  failure leaves reset CPU state, RAM, and frozen mapping unchanged. Preload
+  copies may not use A20/translation or configure protected-mode state,
+  descriptor caches, or CRx. This supports reset-state plus mapped image and
+  direct prepared state without a second core boot mode.
 - [ ] **M5 T247: narrow host-capability admission (`TODO(Medium)`).** Design
   copied event/presentation/wait contracts only after T246 validates the shared
   machine start boundary. Admit each provider only with demonstrated policy-free

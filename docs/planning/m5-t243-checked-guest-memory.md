@@ -78,8 +78,9 @@ physical-copy interface:
   same device-provider selection and ordinary-RAM fallback used by physical
   reads/writes. A query must not infer accessibility from RAM capacity alone,
   bypass a registered provider, or invoke a provider's data callback;
-* the query reports route/access eligibility without returning a RAM pointer,
-  mapping internals, device-provider owner, or product data;
+* the query reports route/access eligibility and only the neutral route class
+  `ORDINARY_RAM` or `PROVIDER`; it returns no RAM pointer, mapping internals,
+  device-provider owner, or product data;
 * all operations remain valid only at a defined non-running machine boundary;
 * invalid arguments, invalid lifecycle, and inaccessible ranges remain distinct
   deterministic `type_status` results; and

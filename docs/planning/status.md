@@ -61,7 +61,7 @@ owner.  System and DOS fixtures, direct EGA/CGA, Console/debugger, FDD/HDD
 boot, and GCC/CTest `76/76` pass.  Artifact `nxvm_0_5_0239.exe` SHA-256:
 `4C4FDC4DCEB1CE0003A71E54C3DFFA19101AC048E8E7B62919596E6E126123DA`.
 
-**Latest technical baseline before M5 T243 S1:** the only admitted ROM EGA service is `AH=00h, AL=0Dh`, with
+**Latest technical baseline at M5 T243 S2:** the only admitted ROM EGA service is `AH=00h, AL=0Dh`, with
 `AL=03h` as its text exit; DAC, VBE, and other EGA/VGA families remain deferred.
 See [the T239 record](m5-t239-rom-ega-int10.md).
 
@@ -382,6 +382,10 @@ platform contract or provider implementation.
 physical routing and range semantics, bounded transition matching/commit,
 immutable images on the existing device-memory route, and two-phase real-mode
 entry application.
+`M5 Td S19` makes T246's atomic preload proof explicit: T243 must classify all
+preloads as writable ordinary RAM before commit; validation failure preserves
+the reset CPU/RAM/mapping state. It also aligns the technical-baseline label
+with the active T243 S2 subtask.
 
 ## Milestone State
 
