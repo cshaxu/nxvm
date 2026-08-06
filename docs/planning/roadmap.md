@@ -6,8 +6,10 @@ successor to NXVM: `nxvm.exe` remains a bootable whole-machine VM; `nxvdm.exe`
 becomes the non-invasive DOS application runner. `core`, `mantle`, and `dos`
 are the planned shared-component targets.
 
-Before M9, DOS program testing uses developer/debugger entry points only. The
-final user-facing `nxvdm run` CLI is designed in M8 and implemented in M9.
+M5 is the current NXVM/shared-core convergence milestone. M6 through M8 build
+the future VDM stack in dependency order: mantle, VM profiles, then the owned
+DOS and NXVDM product. M9 onward is a research queue; it does not schedule an
+external VDM or external DOS backend in this repository.
 
 ## M0: Governance Reset
 
@@ -90,29 +92,26 @@ process CLI. Its source entry is `vm/main.c`; the future VDM entry is
 **Exit:** versioned firmware and `nxvm.exe` product specifications plus the
 bounded M5 breakdown. **Non-goal:** implementation.
 
-## M5: Implement Firmware And nxvm.exe
+## M5: Converge Core And NXVM
 
-**Goal:** make the bootable VM product a first-class output whose actual
-full-PC execution path runs on the shared core.
+**Goal:** finish a clean core/VM boundary and make `nxvm.exe` a credible PC/AT
+foundation for Windows 3.x startup research.
 
-**Scope:** establish CPU capability claims and optional Bochx/Bochs differential
-verification; implement only `vm/profile/default_profile`; migrate the actual
-CPU execution, machine lifecycle, BIOS/POST/ROM, boot devices, and presentation
-path into `core/*` and `vm/*`; preserve the original NXVM Console and debugger
-behavior;
-retain FDD/HDD boot fixtures; and produce runnable artifacts. External-ROM
-loading and additional machine profiles remain future design work. `nxvm.exe`
-has no new process CLI. The ROI-ordered post-baseline PC/AT hardware queue is
-defined by [M5 NXVM PC/AT Hardware Convergence](m5-pcat-hardware-convergence.md).
+**Scope:** complete the admitted `core` versus `vm` boundary migration and its
+single-owner/single-path audit; retain `vm/profile/default_profile`; strengthen
+the hardware and CPU corpus needed by real DOS and Windows 3.x startup
+experiments; preserve the retained NXVM Console/debugger, FDD/HDD boot, and
+developer artifacts. Core may admit only policy-free contracts with a concrete
+NXVM need and a stable, trusted research requirement; no external ABI or
+runtime dependency enters core. `nxvm.exe` has no new process CLI. The detailed
+queue remains [M5 NXVM PC/AT Hardware Convergence](m5-pcat-hardware-convergence.md).
 
 **Exit:** `nxvm.exe` boots the recorded full-PC fixtures through the shared core
-with focused regression evidence. No baseline or adapter source root remains in
-the formal build graph. The source and CMake target graphs obey the directed
-component dependency model. The legacy `device.h` aggregate is deleted; retained CPU,
-RAM, and port execution has one core-machine state/API authority; and reusable
-Win32/Linux host providers live in `core/platform` rather than `vm/platform`.
-No NXVDM, mantle, or DOS behavior is required. Completed implementation detail is
-summarized in [M5 History](../history/m5.md). M5 remains open until the
+with focused regression evidence; the core/VM boundary has no duplicate state
+or execution route; the admitted hardware corpus covers the selected Windows
+3.x startup prerequisites or records each bounded deferral; and the source and
+CMake graphs obey the directed component model. No NXVDM, mantle, or DOS
+runtime is required. M5 remains open until the
 [closure checklist](m5-closure-checklist.md) has current evidence for every
 applicable item.
 
@@ -120,88 +119,62 @@ applicable item.
 Any unavoidable user-visible change requires explicit owner approval before
 implementation and a recorded before/after acceptance plan.
 
-## M6: Design The Owned DOS Module
+## M6: Build Mantle
 
-**Goal:** specify the bounded independent DOS backend before implementation.
+**Goal:** implement the minimum policy-free VDM session envelope over core.
 
-**Scope:** define `dos/machine` COM load state, PSP/environment/DTA layout, initial CPU state, DOS
-interrupt dispatch, register preservation, handle and fixture-filesystem
-semantics, deterministic input-blocked protocol, error table, DOS-provider
-contract requirements, and M7 probes.
+**Scope:** create mantle only around an approved core contract: session
+lifecycle, bounded execution pump, neutral runtime bindings, transition
+gateway, and structured stop/fault diagnostics. Trusted external research may
+validate capability requirements, but mantle never contains an external ABI,
+runtime file set, loader, selector, service table, or host policy.
 
-**Exit:** DOS ABI specification and test vectors plus the bounded M7 breakdown.
-**Non-goal:** DOS implementation.
+**Exit:** one minimal owned-runtime-facing mantle session is exercised through
+core contracts with explicit lifetime and failure probes; M7 profile work has a
+bounded integration plan.
 
-## M7: Implement The Owned DOS Backend
+## M7: Implement VM Profiles
 
-**Goal:** run simple DOS programs without booting a guest DOS image.
+**Goal:** make NXVM machine models declarative and reproducibly composable.
 
-**Scope:** implement bounded `dos/machine` loader, PSP, environment, `INT 20h`, approved `INT 21h`
-subset, deterministic text/keyboard I/O, guest exit, in-memory fixture
-filesystem, and developer/debugger loading through the owned DOS loader.
+**Scope:** formalize profile topology, ROM/provider manifests, firmware hooks,
+media and device configuration, and profile-specific corpus. Implement the
+default PC/AT profile as the reference, then admit Compaq DeskPro 386 and IBM
+PC 110 profiles only through individually reproducible evidence and legal
+asset boundaries.
 
-**Non-goals:** complete DOS API, MZ/EXEC, dynamic MCB memory, host-drive
-mapping, shell integration, or final product CLI behavior.
+**Non-goals:** bundled third-party ROMs, profile-specific hacks in core, and
+VDM/DOS product policy.
 
-**Exit:** approved COM probes print, read fixture files, handle defined errors,
-and exit through the shared core.
+**Exit:** NXVM can select and boot each admitted profile without duplicating
+machine state, boot policy, or firmware ownership.
 
-## M8: Design Platform And Product CLI
+## M8: Build Owned DOS And NXVDM
 
-**Goal:** specify non-invasive host integration before product implementation.
+**Goal:** deliver the owned DOS runtime and non-invasive `nxvdm.exe` product
+over mantle.
 
-**Scope:** `nxvdm run` grammar, mantle-to-dos provider binding, separation from the retained NXVM Console,
-program-path mapping, exit-status table, filesystem containment, Windows 7
-through Windows 11 matrix, Console/window state machine, graphics capability
-table, debugger grammar, Ctrl+C/Ctrl+Break ownership, cleanup, and error
-behavior. A windowed NXVDM session retains a product control Console for
-online debugging; its exact lifetime and ownership are M8 decisions. Define
-the VDM debug-mode adoption of the shared `core/product/session` manager,
-including how an opened VDM session receives a workload.
+**Scope:** build the bounded owned DOS loader/services and the NXVDM product
+shell together with the already approved CLI, containment, display, debugger,
+cancellation, and exit-policy requirements. `vdm` owns product policy;
+`dos` owns DOS semantics; mantle owns only neutral composition.
 
-**Exit:** approved Platform/CLI specification, security matrix, and bounded M9
-breakdown. **Non-goal:** production platform implementation.
+**Exit:** `nxvdm run` executes the admitted owned-DOS corpus without system
+changes and proves its path, input/output, cleanup, containment, and exit
+semantics on the approved Windows matrix.
 
-## M9: Implement nxvdm.exe
+## M9 And Later: Research Queue
 
-**Goal:** make the DOS app runner usable through `nxvdm run` on a clean
-64-bit Windows system.
+**Goal:** conduct bounded research that proposes future corpus or architecture
+admissions without silently changing a shipped product.
 
-**Scope:** CLI, arguments, current directory, environment, host filesystem,
-keyboard/mouse, text and basic graphics paths, exit codes, logging, debug mode,
-configuration, Ctrl+C, cancellation, and adapted shared-core input/display
-components. Non-debug creates/runs/closes session `0` without a management
-Console; debug mode adopts the approved shared session manager and Console.
+**Scope:** research tasks may cover compatibility corpora, Win16/Windows 3.x
+and Windows 9x requirements, CPU/timing fidelity, external-ROM legality and
+profile evidence, AI-assisted validation, and optional Windows integration.
+External VDM/DOS work is tracked outside this roadmap; its trustworthy reports
+may be requirements references but are never this repository's backend,
+default build, or release dependency.
 
-**Non-goals:** global file association, loader replacement, injection, drivers,
-or registry-dependent operation.
-
-**Exit:** `nxvdm run hello.com` and an argument-bearing DOS program work
-without system changes, and the approved M8 path, I/O, containment, cleanup,
-and exit-status tests pass.
-
-## M10: Compatibility And Extended Devices
-
-**Goal:** grow from probes to representative DOS utilities and real programs.
-
-**Scope:** admit features only through a declared corpus requirement: MZ
-loading, EXEC, MCB, FCB, wildcard and 8.3 semantics, attributes, date/time,
-device names, selected XMS/EMS, graphics, mouse, sound, serial, parallel, and
-printing.
-
-**Exit:** each corpus entry records legal basis, identity, required feature,
-verdict, and regression evidence. Scope expands only by owner-approved corpus
-increments.
-
-## M11: Optional Integration Research
-
-**Goal:** investigate optional Windows integration, historical Microsoft NTVDM
-components, and Win16 routing without blocking the two default products.
-
-- T1: invasive Windows integration research.
-- T2: Microsoft NTVDM component research.
-- T3: Win16 route comparison, including WineVDM feasibility.
-
-**Exit:** each task records evidence and a recommendation; M11 closes only on
-an owner-approved consolidated Go/No-go report. Research never becomes a
-default runtime or release dependency.
+**Exit:** each research task records evidence, non-goals, and an owner decision
+about whether it creates a later implementation task. No research conclusion
+changes a core contract or product dependency without that separate task.

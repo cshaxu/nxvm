@@ -8,17 +8,19 @@
 
 Original request: inventory policy-free shared host capabilities after T246's
 machine-start boundary. Determine whether copied normalized input, copied
-presentation sink, and host wait/monotonic-clock facilities each have distinct
-NXVM and future external/VDM reuse evidence. Do not implement a provider in S1.
+presentation sink, and host wait/monotonic-clock facilities have a concrete
+NXVM need and a stable trusted-research requirement. Do not implement a
+provider in S1.
 
 | Requirement | S1 evidence |
 | --- | --- |
 | Consumer/owner inventory | Map each candidate to present owners, threads, lifetime, and concrete consumers. |
-| Admission decision | Record reuse proof or reject/defer the capability. File/path, drive, CLI, window, exit, and DOS policy stay outside core. |
+| Admission decision | Record present owner, NXVM need, trusted-research requirement, or reject/defer the capability. File/path, drive, CLI, window, exit, and DOS policy stay outside core. |
 | Preserve products | No source/build/runtime change; no host-thread guest mutation, raw guest pointer, or second execution path. |
 
 Risks: admitting product policy into core, hidden cross-thread guest mutation,
-or treating a planned VDM consumer as proof. Applicable rules: module layout,
+or encoding an external ABI in core. Trusted research is scope evidence, not a
+runtime consumer. Applicable rules: module layout,
 contracts, coding/source policy, execution workflow, and one active subtask.
 Planned commands: `rg -n "host|presentation|input|wait|clock" src/core src/vm
 src/vdm docs/architecture`; `git diff --check`. Expected marker:
@@ -66,6 +68,18 @@ Verification: JSON parse of the manifest template; repository-wide checks for
 the obsolete DOS artifact name and required notice/release files; local
 Markdown-link check; `git diff --check`; and working-tree review. Similar-issue
 sweep is not applicable because this is standalone documentation remediation.
+
+**M5 Td S22 complete: align the roadmap with trusted external research.**
+External VDM/DOS reports are stable requirements references, never shared ABI,
+runtime consumer, default dependency, or acceptance substitute. The forward
+milestones are M5 core/VM convergence and Windows 3.x startup prerequisites;
+M6 mantle; M7 VM profiles; M8 owned DOS plus NXVDM; and M9 onward bounded
+research. This documentation work preserves T248 S1 as the sole active
+subtask and changes no source, build, runtime behavior, or artifact.
+
+Verification: stale-milestone and external-consumer scan, active-subtask count,
+focused authority review, `git diff --check`, and working-tree review.
+
 **M5 T245 complete:** immutable byte images are core-owned copies mapped only
 through the existing frozen device-memory route. Reads/fetches use that route,
 writes fault, and cold reset preserves image storage. The 34 static/ownership
@@ -457,7 +471,8 @@ with the active T243 S2 subtask.
 | --- | --- | --- |
 | M0--M4 | Closed | [Roadmap](roadmap.md) and [history](../history/README.md) |
 | M5 | Open | [M5 closure checklist](m5-closure-checklist.md) |
-| M6--M11 | Not started | [Roadmap](roadmap.md) |
+| M6--M8 | Not started | [Roadmap](roadmap.md) |
+| M9 onward | Research queue | [Roadmap](roadmap.md) |
 
 ## Latest Technical Baseline
 

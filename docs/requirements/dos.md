@@ -1,11 +1,11 @@
 # DOS Backend Requirements
 
-M7 delivers a deliberately small, project-owned DOS profile. It is not an
+M8 delivers a deliberately small, project-owned DOS profile. It is not an
 MS-DOS version claim and it does not promise behavior outside this document.
 
-## M6 Design Gate
+## M8 Delivery Gate
 
-Before M7 implementation, this profile is completed as a testable ABI: COM load
+Before M8 implementation, this profile is completed as a testable ABI: COM load
 segment and image limits; PSP, environment, DTA, stack, and initial registers;
 `INT 20h`/`INT 21h` entry and return; register/FLAGS and memory effects;
 handle allocation; read, seek, EOF, pathname, input-blocked, error, and exit
@@ -23,7 +23,7 @@ are specified here, never inferred from implementation.
 
 ## Approved INT 21h Subset
 
-| AH | Service | M7 behavior |
+| AH | Service | M8 behavior |
 | --- | --- | --- |
 | `02h` | Write character | Append `DL` to deterministic standard output. |
 | `09h` | Write `$` string | Append `DS:DX` bytes through `$` to standard output. |
@@ -40,37 +40,38 @@ For approved file services, defined failures use DOS-style `AX` values: missing
 file `0002h`, invalid handle `0006h`, and invalid drive `000Fh`. Each service
 records register preservation and success/failure state in its focused test.
 An `AH=3Dh` access mode other than read-only fails with `CF=1`, `AX=0005h`.
-For `AH=42h`, M7 supports `AL=00h` (offset from file start) only; a requested
+For `AH=42h`, M8 supports `AL=00h` (offset from file start) only; a requested
 position outside the fixture file or another origin fails with `CF=1`,
 `AX=0001h`.
 
 ## Memory Boundary
 
-M7 provides fixed loader, PSP, stack, environment, DTA, and COM image memory
+M8 provides fixed loader, PSP, stack, environment, DTA, and COM image memory
 only. It does not implement `INT 21h/AH=48h`, `49h`, or `4Ah`; therefore it
 does not create an MCB chain. Dynamic DOS memory, MCB behavior, MZ loading, and
-`EXEC` belong to M10 unless a later owner-approved requirement changes the plan.
+`EXEC` belong to a later research-derived implementation task unless an
+owner-approved requirement changes the plan.
 
 ## Filesystem Boundary
 
-M7 uses a host-independent in-memory fixture filesystem with one `C:` root
+M8 uses a host-independent in-memory fixture filesystem with one `C:` root
 volume and uppercase 8.3 file names. It accepts `C:\\NAME.EXT` and
 `NAME.EXT`; any other drive is invalid. It has no directories,
 current-directory changes, wildcards, FCB, device names, long file names, or
 host paths. Fixture contents are created by project-owned tests; no host
 filesystem API may be called from `dos/`.
 
-M9 replaces the fixture adapter with a Platform-owned host filesystem adapter.
-The M9 adapter, not M7, enforces `--drive`, `--hide-drive`, canonicalization,
+The M8 product adapter replaces the fixture adapter with a Platform-owned host filesystem adapter.
+That adapter, not the DOS runtime, enforces `--drive`, `--hide-drive`, canonicalization,
 reparse-point handling, and UNC/device-namespace denial.
 
 ## Console Boundary
 
-M7 Console input and output are deterministic harness queues and buffers. They
+M8 DOS-runtime harness input and output are deterministic queues and buffers. They
 have no Win32 Console, GUI window, pipe, Ctrl+C, mouse, or host-redirection
-semantics. Those are Platform product behavior in M9.
+semantics. Those are NXVDM product behavior in M8.
 
-M7 test execution uses a project-owned developer/debugger load path and a
+M8 test execution uses a project-owned developer/debugger load path and a
 project-owned fixture adapter. Loading is accepted only while the machine is
 paused, debug mode is enabled, and no program has been selected or loaded; it is
 rejected otherwise. After success, it remains paused before the first program
@@ -95,6 +96,7 @@ fixture filesystem and cannot enumerate or open that host path.
 ## Stop Rule
 
 An unlisted DOS service, pathname feature, device behavior, memory API, or host
-integration request does not enter M7 as an incidental fix. Record evidence and
-route it to M9/M10 or propose an explicit owner-approved DOS-profile amendment
+integration request does not enter M8 as an incidental fix. Record evidence and
+route it to a later research-derived implementation task or propose an
+explicit owner-approved DOS-profile amendment
 with a new acceptance probe.

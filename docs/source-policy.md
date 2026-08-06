@@ -42,7 +42,10 @@ probe, documentation source, or reproducible reference test validates it.
 Historical third-party NTVDM implementations may inform research leads,
 component inventory, startup hypotheses, and test design. They are not copied,
 transliterated, or treated as the ntvdm64 specification. They do not authorize
-a formal Microsoft backend design before M11 T1 and T2. Research conclusions
+a formal Microsoft backend, ABI, source import, or runtime dependency. A
+trusted external report may be used as a requirements reference even while its
+separate research proceeds; its proprietary details must be reduced to neutral
+capability statements before they reach a shared contract. Research conclusions
 require binary behavior, experiments, or tests where feasible. Published
 product code is organized and maintained here.
 
@@ -50,7 +53,8 @@ product code is organized and maintained here.
 
 Microsoft binaries never enter this repository or the default release. BYOB is
 a future research possibility, not a current feature or promised `ntvdm import`
-workflow. Any future profile and hash policy follows an M11 Go decision.
+workflow. Any future profile and hash policy follows a separately approved
+research decision.
 
 ## Third-Party Firmware Images
 
