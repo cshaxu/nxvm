@@ -1,6 +1,6 @@
 # M5 T250: Copied Presentation Mailbox
 
-**Status:** S1 active.
+**Status:** S3 active.
 
 ## Goal
 
@@ -56,11 +56,42 @@ composition and Win32/Linux renderers to the new contract, and preserve the
 current production path. No new frame queue, renderer thread, guest snapshot
 route, or display scheduler is permitted.
 
+#### S2 Implementation Evidence
+
+- `src/vm/platform/presentation_mailbox.[ch]` moved with Git history to
+  `src/core/platform/presentation_mailbox.[ch]` and now exposes the public
+  `presentation_mailbox_interface.h` contract.
+- The core mailbox owns only its lock, active flag, and copied frame.
+  `publish()`/`capture()` return status; `finalize()` rejects later operations
+  after synchronizing with the active copy operation.
+- `vm_session` remains the mailbox storage owner. Its display composition
+  copies the VADP snapshot into the mailbox; Win32 Console/window and Linux
+  Console renderers capture only the copied frame.
+- Session storage finalizes the mailbox after run-handle join and before
+  display-provider/core-machine teardown. No renderer, VADP, guest VRAM,
+  display-generation, or auto-promotion logic moved into core.
+- `core-platform-presentation-mailbox-smoke` covers independent copies and
+  post-finalize rejection. `current-gates-gcc` passed with 85/85 CTest cases.
+
+#### Similar-Issue Sweep
+
+**Class:** VM-owned copied-frame mailbox facade. **Scope:** tracked source,
+tests, CMake, and static-gate records. Query:
+`rg -n "vm_platform_presentation_mailbox|vm/platform/presentation_mailbox|presentation_mailbox\\.c|vm-platform-presentation-mailbox" src tests cmake CMakeLists.txt`.
+
+There is no remaining production VM mailbox implementation or VM mailbox type.
+The retained composition member is intentionally a `core_platform_*` value;
+the renderer names remain VM-specific because they own product UI and native
+handles.
+
 ### S3: Verify The Boundary
 
 Add copy/lifetime/stop coverage and rerun Console/window, text/CGA/EGA, DOS,
 debugger, FDD/HDD, current GCC/CTest, and artifact verification. Allocate the
 next developer artifact only if runnable source changes.
+
+S3 allocates developer artifact revision `0.5.0249`, updates the configured
+artifact target, records SHA-256/banner, and closes T250 after the full gate.
 
 ## Stop Conditions
 

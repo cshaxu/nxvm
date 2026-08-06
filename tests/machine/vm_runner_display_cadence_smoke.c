@@ -7,7 +7,7 @@
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/session_interface.h"
 #include "vm/composition/session/session.h"
-#include "vm/platform/presentation_mailbox.h"
+#include "core/platform/presentation_mailbox_interface.h"
 
 #define VM_RUNNER_DISPLAY_CADENCE_TIMEOUT_MILLISECONDS 1000u
 
@@ -52,7 +52,8 @@ C_INT main(C_VOID)
     if (thread == STD_NULL) goto fail;
     for (elapsed = 0u; elapsed < VM_RUNNER_DISPLAY_CADENCE_TIMEOUT_MILLISECONDS;
          ++elapsed) {
-        vm_platform_presentation_mailbox_capture(&session->presentation_mailbox, &frame);
+        (C_VOID)core_platform_presentation_mailbox_capture(
+            &session->presentation_mailbox, &frame);
         if (vm_runner_display_cadence_contains(&frame, "Invalid boot disk")) {
             seen = 1;
             break;

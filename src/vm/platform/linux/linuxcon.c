@@ -193,7 +193,8 @@ static C_VOID vm_platform_linuxcon_paint(vm_platform_run_context *context,
     C_INT i, j, sizeRow, sizeCol, curX, curY;
     core_platform_display_frame frame;
 
-    vm_platform_presentation_mailbox_capture(context->presentation, &frame);
+    (C_VOID)core_platform_presentation_mailbox_capture(context->presentation,
+        &frame);
     if (frame.kind != CORE_PLATFORM_DISPLAY_KIND_TEXT) return;
     sizeRow = vm_platform_linuxcon_minimum(COLS, frame.columns);
     sizeCol = vm_platform_linuxcon_minimum(LINES, frame.rows);

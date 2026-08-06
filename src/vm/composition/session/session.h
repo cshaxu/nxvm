@@ -7,6 +7,7 @@
 #include "core/machine/block_provider.h"
 #include "core/machine/display_interface.h"
 #include "core/platform/input_interface.h"
+#include "core/platform/presentation_mailbox_interface.h"
 #include "core/product/debug/debug.h"
 #include "core/product/debug/debug_target.h"
 #include "core/utils/wait_provider.h"
@@ -40,7 +41,7 @@ struct vm_session {
     vm_profile_default_context default_profile_context;
     core_machine_block_provider_slot block_provider;
     core_machine_display_provider_slot display_provider;
-    vm_platform_presentation_mailbox presentation_mailbox;
+    core_platform_presentation_mailbox presentation_mailbox;
     vm_platform_execution_transport execution_transport;
     core_platform_input_source input_source;
     core_utils_wait_scope wait_scope;

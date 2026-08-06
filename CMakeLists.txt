@@ -313,7 +313,8 @@ set(CORE_MACHINE_SOURCES
 )
 add_library(core-platform STATIC
     src/core/platform/host_surface_interface.c
-    src/core/platform/input.c)
+    src/core/platform/input.c
+    src/core/platform/presentation_mailbox.c)
 if(WIN32)
     target_sources(core-platform PRIVATE
         src/core/platform/win32/sleep.c)
@@ -324,6 +325,7 @@ endif()
 target_include_directories(core-platform PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
+target_link_libraries(core-platform PUBLIC type-facade)
 add_executable(core-platform-host-surface-smoke
     tests/platform/core_platform_host_surface_smoke.c
 )
@@ -332,7 +334,6 @@ target_link_libraries(core-platform-host-surface-smoke PRIVATE
 )
 set(VM_PLATFORM_SOURCES
     src/vm/platform/platform.c
-    src/vm/platform/presentation_mailbox.c
     src/vm/platform/execution.c
     src/vm/platform/input_flush.c
 )
@@ -532,11 +533,11 @@ add_executable(vm-multi-window-session-smoke
 target_link_libraries(vm-multi-window-session-smoke PRIVATE
     vm-composition)
 
-add_executable(vm-platform-presentation-mailbox-smoke
-    tests/platform/vm_platform_presentation_mailbox_smoke.c
+add_executable(core-platform-presentation-mailbox-smoke
+    tests/platform/core_platform_presentation_mailbox_smoke.c
 )
-target_link_libraries(vm-platform-presentation-mailbox-smoke PRIVATE
-    vm-platform)
+target_link_libraries(core-platform-presentation-mailbox-smoke PRIVATE
+    core-platform)
 
 add_executable(vm-platform-surface-context-smoke
     tests/platform/vm_platform_surface_context_smoke.c
@@ -924,7 +925,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-platform-input-source-smoke
     vm-keyboard-host-ingress-smoke
     vm-host-cancellation-smoke
-    vm-platform-presentation-mailbox-smoke
+    core-platform-presentation-mailbox-smoke
     vm-platform-mode-context-smoke
     vm-dos-prompt-smoke
     vm-dos-keyboard-smoke
@@ -1316,6 +1317,8 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(core-platform PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-platform-host-surface-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-platform-input-source-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(core-platform-presentation-mailbox-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(core-platform-presentation-mailbox-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-full-pc-session-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-core-executor-storage-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-executor-run-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)

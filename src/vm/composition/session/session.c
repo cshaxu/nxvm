@@ -142,7 +142,7 @@ C_VOID vm_session_storage_initialize(vm_session *machine)
     machine->default_profile_context.block_provider = &machine->block_provider;
     core_machine_display_provider_slot_initialize(&machine->display_provider);
     machine->default_profile_context.display_provider = &machine->display_provider;
-    vm_platform_presentation_mailbox_initialize(&machine->presentation_mailbox);
+    core_platform_presentation_mailbox_initialize(&machine->presentation_mailbox);
     core_product_debug_context_initialize(&machine->debugger_context);
     machine->display_generation = 0u;
 }
@@ -150,6 +150,7 @@ C_VOID vm_session_storage_initialize(vm_session *machine)
 C_VOID vm_session_storage_finalize(vm_session *machine)
 {
     if (machine == STD_NULL || machine->core_machine == STD_NULL) return;
+    core_platform_presentation_mailbox_finalize(&machine->presentation_mailbox);
     core_machine_block_provider_slot_finalize(&machine->block_provider);
     core_machine_display_provider_slot_finalize(&machine->display_provider);
     core_machine_destroy(machine->core_machine);

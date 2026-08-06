@@ -5,7 +5,7 @@
 
 #include "type.h"
 #include "core/platform/display_frame.h"
-#include "vm/platform/presentation_mailbox.h"
+#include "core/platform/presentation_mailbox_interface.h"
 
 #include "vm/platform/win32/win32app.h"
 #include "vm/platform/win32/w32adisp.h"
@@ -420,7 +420,7 @@ uint64_t w32adisp_context_generation(const w32adisp_context *context) {
 }
 
 C_VOID w32adispInit(w32adisp_context *context, WIN32_HWND window,
-                  const vm_platform_presentation_mailbox *mailbox) {
+                  const core_platform_presentation_mailbox *mailbox) {
     UINT i, j;
     if (context == STD_NULL) return;
     context->window_dc = GetDC(window);
@@ -444,7 +444,7 @@ C_VOID w32adispInit(w32adisp_context *context, WIN32_HWND window,
 }
 
 C_VOID w32adispSetScreen(w32adisp_context *context, WIN32_HWND window,
-                        const vm_platform_presentation_mailbox *mailbox) {
+                        const core_platform_presentation_mailbox *mailbox) {
     RECT clientRect,windowRect;
     LONG widthOffset, heightOffset;
     HBITMAP bufferBitmap;
@@ -452,7 +452,7 @@ C_VOID w32adispSetScreen(w32adisp_context *context, WIN32_HWND window,
     core_platform_display_frame frame;
 
     if (context == STD_NULL) return;
-    vm_platform_presentation_mailbox_capture(mailbox, &frame);
+    (C_VOID)core_platform_presentation_mailbox_capture(mailbox, &frame);
     context->rows = frame.kind == CORE_PLATFORM_DISPLAY_KIND_INDEXED_PIXELS ?
         frame.pixel_width : frame.columns;
     context->columns = frame.kind == CORE_PLATFORM_DISPLAY_KIND_INDEXED_PIXELS ?
@@ -526,7 +526,7 @@ static C_VOID w32adisp_paint_indexed_pixels(w32adisp_context *context,
 }
 
 C_VOID w32adispPaint(w32adisp_context *context, WIN32_HWND window,
-                   const vm_platform_presentation_mailbox *mailbox,
+                   const core_platform_presentation_mailbox *mailbox,
                    WIN32_BOOL flagForce) {
     UCHAR i, j, ch, prop;
     USHORT index;
@@ -534,7 +534,7 @@ C_VOID w32adispPaint(w32adisp_context *context, WIN32_HWND window,
     core_platform_display_frame frame;
 
     if (context == STD_NULL) return;
-    vm_platform_presentation_mailbox_capture(mailbox, &frame);
+    (C_VOID)core_platform_presentation_mailbox_capture(mailbox, &frame);
     context->flash_count = (context->flash_count + 1) % 10;
     changed = flagForce || frame.generation != context->displayed_generation;
     if (changed) {

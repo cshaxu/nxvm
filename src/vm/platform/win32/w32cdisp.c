@@ -10,7 +10,7 @@
 
 #include "core/platform/display_frame.h"
 
-#include "vm/platform/presentation_mailbox.h"
+#include "core/platform/presentation_mailbox_interface.h"
 
 
 #include "vm/platform/win32/win32con.h"
@@ -45,7 +45,7 @@ uint64_t w32cdisp_context_generation(const w32cdisp_context *context) {
 }
 
 C_VOID w32cdispInit(w32cdisp_context *context, WIN32_HANDLE output,
-                  const vm_platform_presentation_mailbox *mailbox) {
+                  const core_platform_presentation_mailbox *mailbox) {
     if (context == STD_NULL) return;
     /* Cursor information is retained only for the owned output handle. */
     GetConsoleScreenBufferInfo(output, &context->default_buffer);
@@ -57,11 +57,11 @@ C_VOID w32cdispInit(w32cdisp_context *context, WIN32_HANDLE output,
 }
 
 C_VOID w32cdispSetScreen(w32cdisp_context *context, WIN32_HANDLE output,
-                       const vm_platform_presentation_mailbox *mailbox) {
+                       const core_platform_presentation_mailbox *mailbox) {
     core_platform_display_frame frame;
 
     if (context == STD_NULL) return;
-    vm_platform_presentation_mailbox_capture(mailbox, &frame);
+    (C_VOID)core_platform_presentation_mailbox_capture(mailbox, &frame);
     if (frame.kind != CORE_PLATFORM_DISPLAY_KIND_TEXT) return;
     context->columns = frame.rows;
     context->rows = frame.columns;
@@ -83,7 +83,7 @@ C_VOID w32cdispSetScreen(w32cdisp_context *context, WIN32_HANDLE output,
 }
 
 C_VOID w32cdispPaint(w32cdisp_context *context, WIN32_HANDLE output,
-                   const vm_platform_presentation_mailbox *mailbox,
+                   const core_platform_presentation_mailbox *mailbox,
                    WIN32_BOOL flagForce) {
     core_platform_display_frame frame;
     UCHAR ansiChar;
@@ -93,7 +93,7 @@ C_VOID w32cdispPaint(w32cdisp_context *context, WIN32_HANDLE output,
     COORD curPos;
     CONSOLE_CURSOR_INFO curInfo;
     BOOL changed;
-    vm_platform_presentation_mailbox_capture(mailbox, &frame);
+    (C_VOID)core_platform_presentation_mailbox_capture(mailbox, &frame);
     if (context == STD_NULL || !context->char_buffer) {
         return;
     }

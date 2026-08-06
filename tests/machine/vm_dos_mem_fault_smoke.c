@@ -27,7 +27,8 @@ static C_INT vm_dos_mem_fault_has_prompt(const vm_session *session)
     core_platform_display_frame frame;
     STD_SIZE_T cell;
 
-    vm_platform_presentation_mailbox_capture(&session->presentation_mailbox, &frame);
+    (C_VOID)core_platform_presentation_mailbox_capture(
+        &session->presentation_mailbox, &frame);
     for (cell = 0u; cell + 3u < TEXT_VIDEO_CELLS; ++cell) {
         if (STD_ISALPHA(frame.characters[cell]) &&
             frame.characters[cell + 1u] == ':' &&

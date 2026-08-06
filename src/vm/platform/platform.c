@@ -14,7 +14,7 @@ C_VOID vm_platform_run_context_initialize(
     vm_platform_run_context *context,
     const vm_platform_execution_transport *execution,
     core_platform_input_source *input_source,
-    const vm_platform_presentation_mailbox *presentation,
+    const core_platform_presentation_mailbox *presentation,
     const core_utils_wait_scope *wait_scope)
 {
     if (context == STD_NULL) return;
