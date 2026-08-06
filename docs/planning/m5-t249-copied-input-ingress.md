@@ -1,6 +1,6 @@
 # M5 T249: Copied Input Source And Composition Ingress
 
-**Status:** S3 active.
+**Status:** Complete.
 
 ## Goal
 
@@ -106,6 +106,24 @@ next developer artifact only if S2 changes runnable source.
 S3 allocates developer artifact revision `0.5.0248`, updates the configured
 current artifact target, reruns the full gate, records its SHA-256 and banner,
 then closes T249 without changing product behavior.
+
+#### S3 Closure Evidence
+
+- `vm-0-5-0248` builds the current source with GCC `-Werror` and copies
+  `build/output/nxvm_0_5_0248.exe`.
+- SHA-256:
+  `6B0CAD6A3DB97D794963E052E3A70C08C2080614047AB7AC5355CCE6E07E8F35`.
+- Runtime identity is the configured NXVM developer banner for version
+  `0.5.0248`; no Console, debugger, boot, keyboard, or mouse UX policy changed.
+- `current-gates-gcc` passed against `vm-0-5-0248`: all static ownership gates
+  passed and 85/85 CTest cases passed, including Console/window adapter,
+  KBC/AUX, DOS prompt, graphics, FDD/HDD, debugger, and product-session
+  coverage.
+- The S2 similar-issue query has no production occurrence of the retired
+  VM keyboard/mouse transport API. The remaining VM input code is the explicit
+  Console flush policy and does not cross into core.
+
+**Closure marker:** `M5:T249:S3:INPUT-BOUNDARY-CLOSED:OK`.
 
 ## Risks And Stops
 
