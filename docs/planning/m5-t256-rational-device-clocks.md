@@ -1,6 +1,6 @@
 # M5 T256: Level 1 Rational Device Clocks
 
-**Status:** S2 active.
+**Status:** S3 active.
 
 ## Original Request
 
@@ -94,3 +94,15 @@ It changes no guest behavior and creates no artifact.
 `vm-cmos-rtc-port` probes pass with their recorded markers. Their current
 outputs establish the pre-conversion behavior that S2 must preserve at identity
 ratios and at the retained default PC/AT PIT ratio.
+
+## S2 Result
+
+`core_machine` now owns five per-machine rational domains: DMA, PIT, VADP, KBC,
+and the frozen execution provider. The default PC/AT profile declares identity
+ratios except for its retained PIT `1/4` input ratio. Core resets every domain
+to its frozen phase, advances all domains with integer quotient/remainder
+arithmetic after a completed instruction, and dispatches them in the S1 order.
+VM RTC delivery remains behind the registered execution-provider callback;
+composition no longer advances VM-owned time consumers. The focused profile,
+rational-clock, retained PIT divider, core time, scheduler, timing checkpoint,
+and CMOS/RTC probes pass.

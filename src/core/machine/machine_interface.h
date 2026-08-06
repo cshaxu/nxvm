@@ -37,12 +37,29 @@ typedef struct core_machine_profile_binding {
 #define CORE_MACHINE_MINIMUM_MEMORY_BYTES (2u * 1024u * 1024u)
 #define CORE_MACHINE_MAXIMUM_MEMORY_BYTES (64u * 1024u * 1024u)
 
+/* A domain receives floor((phase + elapsed * numerator) / denominator)
+ * ticks. All-zero is retained configuration shorthand for identity 1/1. */
+typedef struct core_machine_clock_ratio {
+    uint32_t numerator;
+    uint32_t denominator;
+    uint32_t reset_phase;
+} core_machine_clock_ratio;
+
+/* Ratios are relative to core_machine elapsed ticks, not host time. */
+typedef struct core_machine_clock_plan {
+    core_machine_clock_ratio dma;
+    core_machine_clock_ratio pit;
+    core_machine_clock_ratio vadp;
+    core_machine_clock_ratio kbc;
+    core_machine_clock_ratio provider;
+} core_machine_clock_plan;
+
 typedef struct core_machine_config {
     STD_SIZE_T memory_bytes;
     core_machine_cpu_profile cpu_profile;
     core_machine_fpu_profile fpu_profile;
     uint32_t ticks_per_instruction;
-    uint32_t pit_elapsed_ticks_per_input_tick;
+    core_machine_clock_plan clock_plan;
     uint32_t kbc_typematic_initial_ticks;
     uint32_t kbc_typematic_repeat_ticks;
     uint32_t kbc_command_response_ticks;

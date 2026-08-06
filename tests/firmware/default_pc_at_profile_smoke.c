@@ -19,6 +19,16 @@ C_INT main(C_VOID)
         profile->rom.reset_offset != 0xfff0u ||
         profile->cpu_profile != CORE_MACHINE_CPU_PROFILE_80386 ||
         profile->fpu_profile != CORE_MACHINE_FPU_PROFILE_NONE ||
+        profile->clock_plan.dma.numerator != 1u ||
+        profile->clock_plan.dma.denominator != 1u ||
+        profile->clock_plan.pit.numerator != 1u ||
+        profile->clock_plan.pit.denominator != 4u ||
+        profile->clock_plan.vadp.numerator != 1u ||
+        profile->clock_plan.vadp.denominator != 1u ||
+        profile->clock_plan.kbc.numerator != 1u ||
+        profile->clock_plan.kbc.denominator != 1u ||
+        profile->clock_plan.provider.numerator != 1u ||
+        profile->clock_plan.provider.denominator != 1u ||
         profile->kbc_typematic_initial_ticks != 0u ||
         profile->kbc_typematic_repeat_ticks != 0u ||
         profile->kbc_command_response_ticks != 0u ||

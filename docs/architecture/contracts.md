@@ -221,16 +221,19 @@ meaning:
 | --- | --- | --- |
 | Deterministic `elapsed_ticks`, run budget, and core scheduler order | `core/machine` | `core_machine_run` advances only guest time; it never reads host time. |
 | Generic PIT counter/GATE/OUT behavior and its IRQ0 source | `core/machine` | A profile binds the output route; core does not update BIOS data or calendar state. |
-| PC/AT CMOS/RTC ports, NVRAM, calendar, periodic/alarm semantics, and IRQ8 | `vm/machine` | It consumes an explicit core elapsed-tick delta through VM composition; it is not a core device. |
+| PC/AT CMOS/RTC ports, NVRAM, calendar, periodic/alarm semantics, and IRQ8 | `vm/machine` | It consumes the frozen execution-provider rational clock delta dispatched by core; it is not a core device. |
 | BIOS `INT 08h`, BDA tick, and `INT 1Ah` services | VM profile firmware | Firmware consumes normal CPU/PIC delivery; neither core nor platform writes BDA time. |
 | Host clock, sleep, pacing, watchdog, and window cadence | root composition/platform | Host time may bound or pace a product loop but never advances guest time directly. |
 | DOS date/time APIs | `dos` | DOS maps its own service semantics onto admitted bindings; it does not own a second machine clock. |
 
-VM composition receives factual core run results, then advances only VM-owned
-devices with the reported tick delta in its declared product ordering. It does
-not re-run core devices, alter `elapsed_ticks`, or create a second scheduler.
-Mantle follows the same rule for a future runtime, but it does not acquire
-PC/AT CMOS/RTC or BIOS behavior.
+At configuration time, VM composition binds a frozen `core_machine_clock_plan`
+from its selected profile and registers its execution provider. After freeze,
+`core_machine` alone converts its monotonic `elapsed_ticks` into each rational
+domain and dispatches DMA, PIT, VADP, KBC, the execution provider, then PIC
+visibility in that fixed order. VM composition may pace the host loop and
+consume factual run results, but it does not advance VM-owned devices, alter
+`elapsed_ticks`, or create a second scheduler. Mantle follows the same rule for
+a future runtime, but it does not acquire PC/AT CMOS/RTC or BIOS behavior.
 
 ## Core Machine: Frozen Topology And Mutable Guest State
 

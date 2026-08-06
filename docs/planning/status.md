@@ -2,14 +2,14 @@
 
 ## Current Work
 
-**M5 T256 S2 active: implement core rational device-clock domains.**
+**M5 T256 S3 active: verify rational-clock determinism.**
 
-[T256](m5-t256-rational-device-clocks.md) has frozen its timing contract and
-retained baseline corpus. S2 now replaces the PIT-only divider with core-owned,
-profile-bound integer rational domains for core devices and the frozen VM
-provider. It preserves coarse instruction ticks as the input unit; it must not
-add host-clock guest timing, cycle-accuracy claims, or a VM-side scheduler.
-T256 allocates behavior artifact revision `0.5.0254` at S4.
+[T256](m5-t256-rational-device-clocks.md) has replaced the PIT-only divider
+with core-owned, profile-bound integer rational domains for core devices and the
+frozen VM provider. S3 now proves deterministic checkpoints across different
+run quanta and cold reset while preserving coarse instruction ticks as the input
+unit. It must not add host-clock guest timing, cycle-accuracy claims, or a
+VM-side scheduler. T256 allocates behavior artifact revision `0.5.0254` at S4.
 
 | Closure | Evidence |
 | --- | --- |
