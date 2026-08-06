@@ -26,6 +26,13 @@ typedef struct {
 typedef C_VOID (*core_machine_memory_write_observer)(C_VOID *owner,
     type_unsigned_32 physical, type_native_unsigned bytes);
 
+typedef type_status (*core_machine_memory_device_read)(C_VOID *owner,
+    type_unsigned_32 physical, type_virtual_address destination,
+    type_native_unsigned bytes);
+typedef type_status (*core_machine_memory_device_write)(C_VOID *owner,
+    type_unsigned_32 physical, type_virtual_address source,
+    type_native_unsigned bytes);
+
 typedef struct {
     core_machine_memory_write_observer callback;
     C_VOID *owner;
@@ -33,6 +40,15 @@ typedef struct {
 
 #define CORE_MACHINE_MEMORY_MAPPING_CAPACITY 4u
 #define CORE_MACHINE_MEMORY_WRITE_OBSERVER_CAPACITY 4u
+#define CORE_MACHINE_MEMORY_DEVICE_PROVIDER_CAPACITY 4u
+
+typedef struct {
+    type_unsigned_32 physical_start;
+    type_native_unsigned bytes;
+    core_machine_memory_device_read read;
+    core_machine_memory_device_write write;
+    C_VOID *owner;
+} core_machine_memory_device_provider;
 
 typedef struct {
     type_virtual_address backing;
@@ -43,6 +59,9 @@ typedef struct {
     core_machine_memory_write_observer_slot
         write_observers[CORE_MACHINE_MEMORY_WRITE_OBSERVER_CAPACITY];
     type_native_unsigned write_observer_count;
+    core_machine_memory_device_provider
+        device_providers[CORE_MACHINE_MEMORY_DEVICE_PROVIDER_CAPACITY];
+    type_native_unsigned device_provider_count;
     type_bool mappings_frozen;
 } t_ram_connect;
 
@@ -71,6 +90,10 @@ type_status core_machine_memory_register_mapping(t_ram *ram,
     type_unsigned_32 backing_start, STD_SIZE_T bytes);
 type_status core_machine_memory_register_write_observer(t_ram *ram,
     core_machine_memory_write_observer callback, C_VOID *owner);
+type_status core_machine_memory_register_device_provider(t_ram *ram,
+    type_unsigned_32 physical_start, STD_SIZE_T bytes,
+    core_machine_memory_device_read read, core_machine_memory_device_write write,
+    C_VOID *owner);
 C_VOID core_machine_memory_freeze_mappings(t_ram *ram);
 type_status core_machine_memory_read_real_from(t_ram *ram, uint16_t segment,
     uint16_t offset, C_VOID *out_data, STD_SIZE_T size);

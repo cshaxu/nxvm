@@ -11,10 +11,12 @@
 #define CORE_MACHINE_DISPLAY_GRAPHICS_HEIGHT 200u
 #define CORE_MACHINE_DISPLAY_MAX_PIXELS \
     (CORE_MACHINE_DISPLAY_GRAPHICS_WIDTH * CORE_MACHINE_DISPLAY_GRAPHICS_HEIGHT)
+#define CORE_MACHINE_DISPLAY_PALETTE_ENTRIES 16u
 
 typedef enum core_machine_display_kind {
     CORE_MACHINE_DISPLAY_KIND_TEXT,
-    CORE_MACHINE_DISPLAY_KIND_CGA_320X200X4
+    CORE_MACHINE_DISPLAY_KIND_CGA_320X200X4,
+    CORE_MACHINE_DISPLAY_KIND_EGA_320X200X16
 } core_machine_display_kind;
 
 typedef C_VOID (*core_machine_display_provider)(C_VOID *context);
@@ -35,7 +37,7 @@ typedef struct core_machine_display_snapshot {
     uint16_t pixel_width;
     uint16_t pixel_height;
     uint8_t pixels[CORE_MACHINE_DISPLAY_MAX_PIXELS];
-    uint32_t palette_rgb[4];
+    uint32_t palette_rgb[CORE_MACHINE_DISPLAY_PALETTE_ENTRIES];
 } core_machine_display_snapshot;
 
 typedef C_INT (*core_machine_display_snapshot_provider)(C_VOID *context,

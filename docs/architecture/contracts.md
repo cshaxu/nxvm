@@ -277,9 +277,8 @@ owns its device storage and may expose only copied read/write results; it never
 returns a backing pointer, mutates registration after freeze, or delegates its
 state to platform/profile/product code.
 
-T238 S2 will use this contract for VADP-owned planar VRAM. It is a single real
-device owner, not a second core machine, synchronised RAM shadow, or host
-framebuffer.
+T238 uses this contract for VADP-owned planar VRAM. It is a single real device
+owner, not a second core machine, synchronised RAM shadow, or host framebuffer.
 
 ## Core Machine: Provider Scope
 

@@ -37,6 +37,8 @@
 #define CORE_MACHINE_VADP_GRAPHICS_BYTES_PER_ROW 80u
 #define CORE_MACHINE_VADP_GRAPHICS_ODD_ROW_OFFSET 0x2000u
 
+static C_VOID core_machine_vadp_mark_dirty(t_vadp *adapter);
+
 static C_INT core_machine_vadp_is_graphics_mode(const t_vadp *adapter)
 {
     return adapter != STD_NULL &&
@@ -74,6 +76,111 @@ static C_VOID core_machine_vadp_graphics_palette(const t_vadp *adapter,
         palette[2] = 0u;
         palette[3] = 0u;
     }
+}
+
+static C_INT core_machine_vadp_ega_planar_active(const t_vadp *adapter)
+{
+    return adapter != STD_NULL && adapter->data.ega_planar_enabled &&
+        adapter->data.ega_planar_armed &&
+        adapter->data.ega_planar_vram != 0u &&
+        adapter->data.ega_sequencer_configured &&
+        adapter->data.ega_controller_configured &&
+        (adapter->data.graphics[6] & 0x0cu) == 0x04u &&
+        (adapter->data.graphics[5] & 0x0bu) == 0u &&
+        (adapter->data.attribute[16] & 0x01u) != 0u &&
+        adapter->data.attribute_display_enabled;
+}
+
+static uint8_t core_machine_vadp_rotate_right(uint8_t value, uint8_t count)
+{
+    count &= 7u;
+    return count == 0u ? value : (uint8_t)((value >> count) |
+        (value << (8u - count)));
+}
+
+static uint8_t core_machine_vadp_logical_operation(uint8_t operation,
+    uint8_t source, uint8_t latch)
+{
+    switch (operation & 0x03u) {
+    case 1u: return source & latch;
+    case 2u: return source | latch;
+    case 3u: return source ^ latch;
+    default: return source;
+    }
+}
+
+static type_status core_machine_vadp_ega_planar_read(C_VOID *owner,
+    type_unsigned_32 physical, type_virtual_address destination,
+    type_native_unsigned bytes)
+{
+    t_vadp *adapter = (t_vadp *)owner;
+    type_native_unsigned index;
+    uint8_t *out = (uint8_t *)destination;
+
+    if (adapter == STD_NULL || destination == 0u ||
+        !core_machine_vadp_ega_planar_active(adapter)) {
+        return TYPE_STATUS_UNSUPPORTED;
+    }
+    if (physical < CORE_MACHINE_VADP_EGA_APERTURE_BASE ||
+        (uint64_t)physical - CORE_MACHINE_VADP_EGA_APERTURE_BASE + bytes >
+            CORE_MACHINE_VADP_EGA_APERTURE_BYTES) {
+        return TYPE_STATUS_UNSUPPORTED;
+    }
+    for (index = 0u; index < bytes; ++index) {
+        uint32_t offset = physical - CORE_MACHINE_VADP_EGA_APERTURE_BASE + index;
+        uint8_t plane;
+
+        for (plane = 0u; plane < CORE_MACHINE_VADP_EGA_PLANES; ++plane) {
+            adapter->data.ega_latches[plane] = ((uint8_t *)adapter->data.ega_planar_vram)
+                [(STD_SIZE_T)plane * CORE_MACHINE_VADP_EGA_PLANE_BYTES + offset];
+        }
+        out[index] = adapter->data.ega_latches[adapter->data.graphics[4] & 0x03u];
+    }
+    return TYPE_STATUS_OK;
+}
+
+static type_status core_machine_vadp_ega_planar_write(C_VOID *owner,
+    type_unsigned_32 physical, type_virtual_address source,
+    type_native_unsigned bytes)
+{
+    t_vadp *adapter = (t_vadp *)owner;
+    const uint8_t *input = (const uint8_t *)source;
+    type_native_unsigned index;
+
+    if (adapter == STD_NULL || source == 0u ||
+        !core_machine_vadp_ega_planar_active(adapter)) {
+        return TYPE_STATUS_UNSUPPORTED;
+    }
+    if (physical < CORE_MACHINE_VADP_EGA_APERTURE_BASE ||
+        (uint64_t)physical - CORE_MACHINE_VADP_EGA_APERTURE_BASE + bytes >
+            CORE_MACHINE_VADP_EGA_APERTURE_BYTES) {
+        return TYPE_STATUS_UNSUPPORTED;
+    }
+    for (index = 0u; index < bytes; ++index) {
+        uint32_t offset = physical - CORE_MACHINE_VADP_EGA_APERTURE_BASE + index;
+        uint8_t rotated = core_machine_vadp_rotate_right(input[index],
+            adapter->data.graphics[3]);
+        uint8_t plane;
+
+        for (plane = 0u; plane < CORE_MACHINE_VADP_EGA_PLANES; ++plane) {
+            uint8_t *target = (uint8_t *)adapter->data.ega_planar_vram +
+                (STD_SIZE_T)plane * CORE_MACHINE_VADP_EGA_PLANE_BYTES + offset;
+            uint8_t source_byte = (adapter->data.graphics[1] & (1u << plane)) != 0u ?
+                (adapter->data.graphics[0] & (1u << plane)) != 0u ? 0xffu : 0u :
+                rotated;
+            uint8_t merged = core_machine_vadp_logical_operation(
+                adapter->data.graphics[3] >> 3, source_byte,
+                adapter->data.ega_latches[plane]);
+
+            if ((adapter->data.sequencer[2] & (1u << plane)) != 0u) {
+                *target = (uint8_t)((merged & adapter->data.graphics[8]) |
+                    (adapter->data.ega_latches[plane] &
+                    (uint8_t)~adapter->data.graphics[8]));
+            }
+        }
+    }
+    core_machine_vadp_mark_dirty(adapter);
+    return TYPE_STATUS_OK;
 }
 
 static C_INT core_machine_vadp_supported_crtc_index(uint8_t index)
@@ -437,6 +544,14 @@ static C_VOID core_machine_vadp_write_graphics_data(t_port *port,
     index = adapter->data.graphics_index;
     if (!core_machine_vadp_graphics_index_supported(index)) return;
     value = port->data.ioByte & core_machine_vadp_graphics_mask(index);
+    if (index == 6u && adapter->data.ega_planar_enabled) {
+        type_bool armed = (value & 0x0cu) == 0x04u;
+
+        if (adapter->data.ega_planar_armed != armed) {
+            adapter->data.ega_planar_armed = armed;
+            core_machine_vadp_mark_dirty(adapter);
+        }
+    }
     if (adapter->data.graphics[index] != value) {
         adapter->data.graphics[index] = value;
         core_machine_vadp_mark_dirty(adapter);
@@ -595,6 +710,8 @@ C_VOID core_machine_vadp_reset(t_vadp *adapter)
     core_machine_vadp_ega_controller_config ega_controller;
     type_bool ega_sequencer_configured;
     type_bool ega_controller_configured;
+    type_bool ega_planar_enabled;
+    type_virtual_address ega_planar_vram;
 
     if (adapter == STD_NULL) return;
     timing = adapter->data.text_timing;
@@ -607,6 +724,12 @@ C_VOID core_machine_vadp_reset(t_vadp *adapter)
     ega_sequencer_configured = adapter->data.ega_sequencer_configured;
     ega_controller = adapter->data.ega_controller;
     ega_controller_configured = adapter->data.ega_controller_configured;
+    ega_planar_enabled = adapter->data.ega_planar_enabled;
+    ega_planar_vram = adapter->data.ega_planar_vram;
+    if (ega_planar_vram != 0u) {
+        STD_MEMSET((C_VOID *)ega_planar_vram, 0,
+            CORE_MACHINE_VADP_EGA_PLANES * CORE_MACHINE_VADP_EGA_PLANE_BYTES);
+    }
     STD_MEMSET(&adapter->data, TYPE_ZERO_8, sizeof(adapter->data));
     adapter->data.mode_control = 0x05u;
     adapter->data.text_timing = timing;
@@ -624,6 +747,8 @@ C_VOID core_machine_vadp_reset(t_vadp *adapter)
     adapter->data.ega_controller = ega_controller;
     adapter->data.ega_controller_configured = ega_controller_configured;
     core_machine_vadp_reset_ega_controllers(adapter);
+    adapter->data.ega_planar_enabled = ega_planar_enabled;
+    adapter->data.ega_planar_vram = ega_planar_vram;
     adapter->data.dirty_generation = 1u;
 }
 
@@ -642,7 +767,9 @@ C_VOID core_machine_vadp_advance(t_vadp *adapter, t_ram *memory,
 
 C_VOID core_machine_vadp_finalize(t_vadp *adapter)
 {
-    (C_VOID)adapter;
+    if (adapter == STD_NULL) return;
+    STD_FREE((C_VOID *)adapter->data.ega_planar_vram);
+    adapter->data.ega_planar_vram = 0u;
 }
 
 type_status core_machine_vadp_configure_text(t_vadp *adapter, uint8_t mode,
@@ -692,8 +819,24 @@ type_status core_machine_vadp_configure_ega_sequencer(t_vadp *adapter,
     status = core_machine_memory_register_write_observer(memory,
         core_machine_vadp_ega_write_observer, adapter);
     if (status != TYPE_STATUS_OK) return status;
+    if (config->planar_320x200x16) {
+        adapter->data.ega_planar_vram = (type_virtual_address)STD_CALLOC(1u,
+            CORE_MACHINE_VADP_EGA_PLANES * CORE_MACHINE_VADP_EGA_PLANE_BYTES);
+        if (adapter->data.ega_planar_vram == 0u) return TYPE_STATUS_NO_MEMORY;
+        status = core_machine_memory_register_device_provider(memory,
+            CORE_MACHINE_VADP_EGA_APERTURE_BASE,
+            CORE_MACHINE_VADP_EGA_APERTURE_BYTES,
+            core_machine_vadp_ega_planar_read, core_machine_vadp_ega_planar_write,
+            adapter);
+        if (status != TYPE_STATUS_OK) {
+            STD_FREE((C_VOID *)adapter->data.ega_planar_vram);
+            adapter->data.ega_planar_vram = 0u;
+            return status;
+        }
+    }
     adapter->data.ega_sequencer = *config;
     adapter->data.ega_sequencer_configured = TYPE_TRUE;
+    adapter->data.ega_planar_enabled = config->planar_320x200x16;
     core_machine_vadp_reset_sequencer(adapter);
     return TYPE_STATUS_OK;
 }
@@ -885,9 +1028,59 @@ static C_INT core_machine_vadp_capture_graphics_snapshot(t_vadp *adapter,
     return TYPE_TRUE;
 }
 
+static C_INT core_machine_vadp_capture_ega_planar_snapshot(t_vadp *adapter,
+    core_machine_display_snapshot *out_snapshot)
+{
+    uint16_t y;
+    uint16_t x;
+    C_INT buffer_changed;
+
+    if (adapter == STD_NULL || out_snapshot == STD_NULL ||
+        !core_machine_vadp_ega_planar_active(adapter)) {
+        return TYPE_FALSE;
+    }
+    buffer_changed = !adapter->data.captured || adapter->data.captured_kind !=
+        CORE_MACHINE_DISPLAY_KIND_EGA_320X200X16 ||
+        adapter->data.captured_ega_dirty_generation != adapter->data.dirty_generation;
+    STD_MEMSET(out_snapshot, 0, sizeof(*out_snapshot));
+    out_snapshot->kind = CORE_MACHINE_DISPLAY_KIND_EGA_320X200X16;
+    out_snapshot->pixel_width = CORE_MACHINE_DISPLAY_GRAPHICS_WIDTH;
+    out_snapshot->pixel_height = CORE_MACHINE_DISPLAY_GRAPHICS_HEIGHT;
+    for (x = 0u; x < CORE_MACHINE_DISPLAY_PALETTE_ENTRIES; ++x) {
+        uint8_t enabled_index = (uint8_t)(x & adapter->data.attribute[18]);
+        out_snapshot->palette_rgb[x] = core_machine_vadp_rgbi_color(
+            adapter->data.attribute[enabled_index] & 0x0fu);
+    }
+    for (y = 0u; y < CORE_MACHINE_DISPLAY_GRAPHICS_HEIGHT; ++y) {
+        for (x = 0u; x < CORE_MACHINE_DISPLAY_GRAPHICS_WIDTH; ++x) {
+            uint32_t offset = (uint32_t)y * 40u + (x >> 3);
+            uint8_t bit = (uint8_t)(0x80u >> (x & 7u));
+            uint8_t plane;
+            uint8_t pixel = 0u;
+
+            for (plane = 0u; plane < CORE_MACHINE_VADP_EGA_PLANES; ++plane) {
+                const uint8_t *source = (const uint8_t *)adapter->data.ega_planar_vram +
+                    (STD_SIZE_T)plane * CORE_MACHINE_VADP_EGA_PLANE_BYTES;
+                if ((source[offset] & bit) != 0u) pixel |= (uint8_t)(1u << plane);
+            }
+            out_snapshot->pixels[(uint32_t)y * CORE_MACHINE_DISPLAY_GRAPHICS_WIDTH + x] =
+                pixel;
+        }
+    }
+    adapter->data.captured = TYPE_TRUE;
+    adapter->data.captured_kind = CORE_MACHINE_DISPLAY_KIND_EGA_320X200X16;
+    adapter->data.captured_ega_dirty_generation = adapter->data.dirty_generation;
+    out_snapshot->buffer_changed = buffer_changed;
+    out_snapshot->cursor_changed = TYPE_FALSE;
+    return TYPE_TRUE;
+}
+
 C_INT core_machine_vadp_capture_snapshot(t_vadp *adapter, t_ram *memory,
     core_machine_display_snapshot *out_snapshot)
 {
+    if (core_machine_vadp_ega_planar_active(adapter)) {
+        return core_machine_vadp_capture_ega_planar_snapshot(adapter, out_snapshot);
+    }
     return core_machine_vadp_is_graphics_mode(adapter) ?
         core_machine_vadp_capture_graphics_snapshot(adapter, memory, out_snapshot) :
         core_machine_vadp_capture_text_snapshot(adapter, memory, out_snapshot);

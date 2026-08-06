@@ -520,7 +520,7 @@ static C_VOID w32adisp_paint_indexed_pixels(w32adisp_context *context,
         for (x = 0u; x < frame->pixel_width; ++x) {
             uint8_t index = frame->pixels[(uint32_t)y * frame->pixel_width + x];
             SetPixelV(context->buffer_dc, x, y,
-                w32adisp_rgb(frame->palette_rgb[index & 0x03u]));
+                w32adisp_rgb(frame->palette_rgb[index & 0x0fu]));
         }
     }
 }

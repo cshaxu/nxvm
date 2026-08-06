@@ -93,7 +93,7 @@ S1 it locks the pre-implementation control baseline: profile-style reset,
 selected sequencer/graphics/attribute readback, A0000h aperture boundaries,
 and the absence of synthetic planar rendering. S2 evolves the same probe with
 plane/latch transaction assertions rather than introducing a parallel test
-path. Its success marker is `M5:T238:S1:EGA-PLANAR:PORT:OK`.
+path. Its S2 success marker is `M5:T238:S2:EGA-PLANAR:PORT:OK`.
 
 The similar-issue sweep is:
 
@@ -137,3 +137,40 @@ complete CTest matrix passed 72/72, including the new probe, retained CGA text
 and graphics, DOS prompt/keyboard, `EDIT.COM`, Console/debugger, session
 isolation, and FDD/HDD boot. No task artifact is valid for S1: `0.5.0238`
 remains reserved for T238 S3 only.
+
+## S2 Implementation And S3 Closure
+
+`core/machine/memory` now owns frozen provider dispatch before ordinary RAM.
+Only a provider's exact non-overlapping range may consume a transaction; an
+unsupported provider result retains ordinary RAM semantics. `core/machine/vadp`
+registers the only T238 provider for A0000h--AFFFFh and owns four 64 KiB planes,
+four latches, reset, and finalization. No provider exposes its backing storage.
+
+The admitted read mode 0 loads all latches and returns graphics read-map data.
+Write mode 0 applies data rotate, optional set/reset, logical operation, map
+mask, and bit mask to VADP-owned planes. A guest must explicitly write graphics
+map-select A0000h 64 KiB to arm this direct path; profile reset values alone do
+not turn a normal DOS text boot into graphics. Unsupported read/write modes,
+DAC, chain/odd-even, panning, text fetch, and all other EGA/VGA modes remain
+inert or ordinary-RAM behavior as specified above.
+
+The copied machine/platform palette is now sixteen entries. VADP generates the
+320 by 200 indexed frame from its planes, maps it through attribute palette and
+colour-plane enable, and composition copies it to the platform frame. The Win32
+renderer consumes that copy with a 4-bit palette index. No platform code reads
+guest VRAM.
+
+| Evidence | Result |
+| --- | --- |
+| Core port/provider probe | `core-machine-ega-planar-port-smoke` passed with `M5:T238:S2:EGA-PLANAR:PORT:OK`; it covers activation, non-mirrored fallback, plane map/read/latch behavior, set/reset, and copied pixels/palette. |
+| Ownership gate | `verify-ega-planar-boundary` passed with `M5:T238:EGA-PLANAR:BOUNDARY:OK`; it rejects video policy in RAM and product/platform imports or direct VADP access. |
+| Direct system fixture | `vm-ega-planar-system-smoke` passed with `M5:T238:S3:EGA-PLANAR:SYSTEM:OK`; a generated 8086 boot image writes the admitted ports and A0000h path. |
+| DOS fixture | `vm-ega-planar-dos-smoke ../fdd.img` passed with `M5:T238:S3:EGA-PLANAR:DOS:OK`; it temporarily copies the owner-supplied DOS image, installs `EGAT238.COM`, boots DOS, types the command through KBC/ROM/DOS, and observes the copied frame. No guest media enters the repository. |
+| Retained behavior | GCC 16.1.0 `current-gates-gcc` passed 35 static/boundary gates and 74/74 CTest smokes, including CGA text/graphics, DOS prompt, `EDIT.COM`, Console/debugger, session isolation, and FDD/HDD boot. |
+| Artifact | `build/output/nxvm_0_5_0238.exe`, SHA-256 `35F661BBA004DA71BB77F5081A6AF009EE3EEFB82489D182BF77C634914419A5`, built by `current-gcc`. |
+
+The source-policy and hardware-verification rules apply: no third-party source
+or firmware was imported, no protected guest media was tracked, and the system
+fixture is generated in a temporary file. T239 alone may add a matching ROM
+`INT 10h` service; this task does not claim a BIOS EGA mode, VGA support, VBE,
+or a programmable DAC.

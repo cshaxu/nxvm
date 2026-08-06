@@ -159,6 +159,7 @@ product/platform imports and RAM video policy. No production hit was deferred.
 ### Remaining Deferrals
 
 T236 owns graphics-controller map select and attribute-controller behavior.
-T238 owns DAC, planar/latch access, raster scanout, copied EGA/VGA snapshots,
-and the first EGA/VGA DOS fixture. This task makes no EGA/VGA presentation or
-compatibility claim beyond the admitted sequencer/memory-window surface.
+T238 owns the bounded planar/latch access, raster scanout, copied fixed-RGBI
+frame, and first EGA DOS fixture. Programmable DAC behavior remains deferred.
+This task makes no EGA/VGA presentation or compatibility claim beyond the
+admitted sequencer/memory-window surface.

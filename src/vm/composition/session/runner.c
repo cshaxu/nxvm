@@ -74,8 +74,8 @@ C_VOID vm_session_runner_run(vm_session *session)
                 continue;
             }
         }
-        if (vm_session_publish_display(session, TYPE_FALSE) ==
-            CORE_MACHINE_DISPLAY_KIND_CGA_320X200X4 &&
+        if (vm_session_publish_display(session, TYPE_FALSE) !=
+            CORE_MACHINE_DISPLAY_KIND_TEXT &&
             !vm_platform_run_context_get_window_display(
                 &session->platform_run_context)) {
             if (vm_platform_run_context_request_graphics_promotion(
@@ -84,7 +84,7 @@ C_VOID vm_session_runner_run(vm_session *session)
                 continue;
             }
             STD_FPRINTF(STD_STDERR,
-                "CGA graphics requires DEVICE display window or auto.\n");
+                "Guest graphics requires DEVICE display window or auto.\n");
             vm_session_control_yield_for_display_transition(&session->control);
             continue;
         }

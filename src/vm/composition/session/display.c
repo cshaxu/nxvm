@@ -39,7 +39,7 @@ core_machine_display_kind vm_session_publish_display(vm_session *machine,
     if (!force && !buffer_changed && !cursor_changed) return snapshot.kind;
 
     STD_MEMSET(&frame, 0, sizeof(frame));
-    frame.kind = snapshot.kind == CORE_MACHINE_DISPLAY_KIND_CGA_320X200X4 ?
+    frame.kind = snapshot.kind != CORE_MACHINE_DISPLAY_KIND_TEXT ?
         CORE_PLATFORM_DISPLAY_KIND_INDEXED_PIXELS : CORE_PLATFORM_DISPLAY_KIND_TEXT;
     frame.buffer_changed = buffer_changed;
     frame.cursor_changed = cursor_changed;

@@ -2,11 +2,14 @@
 
 ## Current Work
 
-**M5 T238 S1 complete:** fixed the sole bounded future EGA planar contract:
+**M5 T238 complete:** the sole bounded EGA planar path is
 direct-port `EGA-320x200x16-direct`, core-routed VADP-owned non-mirrored VRAM
 and latches, copied 16-entry fixed RGBI frame, exact register subset, and
-focused baseline probe. It changes no guest EGA/VGA behavior and produces no
-artifact. T238 S2 is not active until separately admitted.
+focused plane/latch probe. Direct 8086 boot and DOS fixtures, the full matrix,
+and `nxvm_0_5_0238.exe` passed. Its SHA-256 is
+`35F661BBA004DA71BB77F5081A6AF009EE3EEFB82489D182BF77C634914419A5`.
+No BIOS mode service, DAC, extra mode family, or Console/debugger/start/boot
+change is admitted.
 
 **M5 Td S13 complete: correct unstarted task identifiers after artifact audit.**
 `0.5.0237` is the completed T227 S4 artifact revision, so unstarted work does
@@ -14,15 +17,14 @@ not reuse T237. The forward queue begins at T238; committed history and artifact
 identities remain immutable. This documentation-only correction has no source,
 build, artifact, or runtime behavior effect.
 
-**Latest technical baseline -- idle after M5 T238 S1:** no implementation
-subtask is active. T238 S1 adds the focused EGA planar control-baseline probe;
-it introduces no planar storage, device-memory router, raster, copied graphics
-frame, or BIOS mode. The truthful runnable artifact remains
-`nxvm_0_5_0237.exe`, SHA-256
-`53D0FED1072840A8D0021B4EE0F4BB32414A25515E9CC4FBF47FAD315B40F743`; see
-[the T227 record](m5-t227-kbc-controller-protocol-phase2.md). T238 S2 requires
-fresh admission before implementation. GCC 16.1.0 `current-gates-gcc` passed
-32 static/boundary gates and 72/72 current CTest smokes for this S1 closure.
+**Latest technical baseline -- idle after M5 T238:** no implementation subtask
+is active. T238 adds only the bounded direct-port EGA planar path; ordinary DOS
+boot remains text until its explicit port sequence arms that path. The truthful
+runnable artifact is `nxvm_0_5_0238.exe`, SHA-256
+`35F661BBA004DA71BB77F5081A6AF009EE3EEFB82489D182BF77C634914419A5`; see
+[the T238 record](m5-t238-ega-planar-frame.md). GCC 16.1.0
+`current-gates-gcc` passed 35 static/boundary gates and 74/74 current CTest
+smokes.
 
 **M5 T234 S4 complete:** removed the remaining target-only
 `vm-platform-requests -> core-machine` and `vm-product -> core-machine` edges;
