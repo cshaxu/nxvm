@@ -216,9 +216,18 @@ default definition of NXVM completion.
   DOS structures, or host-policy callbacks.
 - [ ] **M5 T244: registered undefined-instruction transition (`TODO(High)`).**
   After T243 S2, add a consumer-registered, mode-restricted transition facility
-  with checked state access and constrained outcomes. It defines no fixed
-  instruction bytes, selector namespace, or guest-service ABI; NXVM registers
-  none by default.
+  with checked state access and constrained outcomes. A match occurs at the
+  architected invalid-instruction boundary before default fault delivery; core
+  alone owns matching-byte IP consumption. The only dispositions are
+  `unhandled` (normal invalid-instruction path), `handled-resume` (core applies
+  a validated bounded register/FLAGS and staged-memory patch, then consumes the
+  registered pattern length), `stop`, and `fault`. Handler-visible state is a
+  copy; no handler may set arbitrary IP, alter segments/control registers,
+  change real/protected/V86 mode, or mutate core memory directly. Core validates
+  and commits a handled patch atomically, or commits none of it. Any CPU mode
+  transition remains exclusively in the core CPU's formally supported
+  instruction/exception/IRET semantics. It defines no fixed instruction bytes,
+  selector namespace, or guest-service ABI; NXVM registers none by default.
 - [ ] **M5 T245: generic ROM mapping (`TODO(High)`).** Separate immutable
   read-only image mapping from VM firmware generation and boot policy. The VM
   profile remains the first consumer; image contents and firmware services stay
