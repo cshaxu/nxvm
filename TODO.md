@@ -220,12 +220,16 @@ default definition of NXVM completion.
   architected invalid-instruction boundary before default fault delivery; core
   alone owns matching-byte IP consumption. The only dispositions are
   `unhandled` (normal invalid-instruction path), `handled-resume` (core applies
-  a validated bounded register/FLAGS and staged-memory patch, then consumes the
-  registered pattern length), `stop`, and `fault`. Handler-visible state is a
-  copy; no handler may set arbitrary IP, alter segments/control registers,
-  change real/protected/V86 mode, or mutate core memory directly. Core validates
-  and commits a handled patch atomically, or commits none of it. Any CPU mode
-  transition remains exclusively in the core CPU's formally supported
+  a validated CPU-state patch, then consumes the registered pattern length),
+  `stop`, and `fault`. The initial patch may alter only `EAX`, `EBX`, `ECX`,
+  `EDX`, `ESI`, `EDI`, `EBP`, and arithmetic-status `CF`, `PF`, `AF`, `ZF`,
+  `SF`, `OF`; it cannot alter `EIP`, `ESP`, other FLAGS, segments, descriptor
+  caches, control/debug registers, FPU state, or guest memory. Handler-visible
+  state is a copy. Core validates and commits the complete permitted patch and
+  fixed IP advance atomically, or commits none of it. A later task must admit
+  guest-buffer writes through its own bounded transactional contract before any
+  transition service needs them. Any CPU mode transition remains exclusively in
+  the core CPU's formally supported
   instruction/exception/IRET semantics. It defines no fixed instruction bytes,
   selector namespace, or guest-service ABI; NXVM registers none by default.
 - [ ] **M5 T245: generic ROM mapping (`TODO(High)`).** Separate immutable
