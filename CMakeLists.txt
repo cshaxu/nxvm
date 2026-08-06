@@ -1053,7 +1053,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0250 "0.5.0250")
+add_current_vm_artifact(vm-0-5-0251 "0.5.0251")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 
@@ -1314,6 +1314,13 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMENT "Verifying cancellable host-wait boundary"
         VERBATIM)
     add_dependencies(run-current-smokes verify-cancellable-wait-boundary)
+
+    add_custom_target(verify-vm-composition-lifecycle
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_vm_composition_lifecycle.cmake"
+        COMMENT "Verifying VM composition lifecycle closure"
+        VERBATIM)
+    add_dependencies(run-current-smokes verify-vm-composition-lifecycle)
 endif()
 
 if(PROJECT_ENABLE_BOCHX_RESEARCH)

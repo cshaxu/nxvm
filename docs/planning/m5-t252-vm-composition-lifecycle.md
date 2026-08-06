@@ -51,6 +51,15 @@ Add focused lifecycle ordering coverage; run current GCC/CTest, Console,
 debugger, DOS, FDD/HDD, graphics, and artifact verification. Produce the next
 runnable artifact.
 
+**S3 result:** `verify-vm-composition-lifecycle` locks one backend
+`request_stop`, `join`, and `finalize` call in composition. The full current
+GCC gate passed 86/86 CTest cases, including Console/debugger, DOS, graphics,
+FDD, and HDD coverage. `current-gcc` produced
+`build/output/nxvm_0_5_0251.exe`; SHA-256 is
+`5D390E10FFBB229539D3921B22B30085FA482CD88036A1208F76A60443847B49`.
+
+**S3 marker:** `M5:T252:S3:COMPOSITION-LIFECYCLE-VERIFIED:OK`.
+
 ## Stop Conditions
 
 Stop for owner direction if a change needs a new run loop, second machine or

@@ -2,40 +2,27 @@
 
 ## Current Work
 
-**M5 T252 S3 active: verify VM composition lifecycle closure.**
+**M5 idle: T249--T252 are closed; no subtask is active.**
 
-Original request: execute the third admitted T248 migration without changing
-guest time or NXVM lifecycle behavior. S1 fixed the host-only cancellation
-contract and classified every existing wait site. S2 implemented the neutral
-primitive for run-handle lifecycle waits. S3 now closes it with artifact and
-full regression evidence. Raw host-clock observation remains deferred.
+T249--T252 complete the admitted T248 migration queue without changing guest
+time, NXVM lifecycle behavior, or product interaction. The next work requires
+a newly approved task packet; hardware work remains queued from T253.
 
-| Requirement | S3 evidence |
+| Closure | Evidence |
 | --- | --- |
-| Primitive | Add one bounded core/platform completed/cancelled wait with no guest-time or raw-clock exposure. |
-| Adoption | Run-handle lifecycle waits use core/platform; runner pacing and debugger wait scopes remain separate. |
-| Preserve products | No new thread, watchdog, guest mutation, product policy, or lifecycle path. |
+| T249--T251 | Copied input, presentation, and cancellable wait contracts are closed with artifacts `0.5.0248`--`0.5.0250`. |
+| T252 | Composition owns the sole run-handle teardown sequence; artifact `0.5.0251` and 86/86 current CTest pass. |
 
-Applicable rules: module layout, contracts, coding/source policy, execution
-workflow, and one active subtask. Planned commands:
-`rg -n "core_platform_sleep|core_platform_wait|core_utils_wait|wait_for_flip|wait_for_pause" src/core src/vm tests`
-and focused wait/run-handle smoke. Expected marker:
-`M5:T251:S3:CANCELLABLE-WAIT-VERIFIED:OK`. Stop for owner direction if a site
-requires guest time, raw host clock, unbounded waiting, display/exit policy,
-or a second lifecycle path.
-
-T248 is closed: it established the evidence-backed T249--T252 migration queue
-and deferred raw host-clock observation. T249--T251 are closed with artifacts
-`0.5.0248`--`0.5.0250`; T252 now defines the final composition lifecycle
-closure. Existing unstarted hardware work begins at T253; completed task
-identities and artifact revisions do not change.
+This explicit idle state is permitted only after a completed task closes and
+before a new task packet is approved. Existing unstarted hardware work begins
+at T253; completed task identities and artifact revisions do not change.
 
 ## Current Technical Baseline
 
-- **T251 S3:** `current-gcc` and `verify-current-artifact-target` select
-  `vm-0-5-0250`; static/ownership checks and 86/86 CTest cases passed.
-  Artifact `nxvm_0_5_0250.exe` SHA-256:
-  `99985EB76F335178304D444FE0F0A085573D6B650E5445627725E0B9F10D8DA9`.
+- **T252 S3:** `current-gcc` and `verify-current-artifact-target` select
+  `vm-0-5-0251`; static/ownership checks and 86/86 CTest cases passed.
+  Artifact `nxvm_0_5_0251.exe` SHA-256:
+  `5D390E10FFBB229539D3921B22B30085FA482CD88036A1208F76A60443847B49`.
 - **T243--T246:** core owns checked physical memory, bounded `#UD`
   transitions, immutable ROM mapping, and atomic real-mode entry plans. T247
   verifies the current artifact target and full gate over that boundary.
