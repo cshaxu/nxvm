@@ -21,7 +21,7 @@
     {
       "name": "current-gcc",
       "configurePreset": "mingw-gcc-x64",
-      "targets": ["vm-0-5-0250"]
+      "targets": ["vm-0-5-0251"]
     },
     {
       "name": "current-gates-gcc",
@@ -58,7 +58,8 @@
         "verify-cmos-rtc-boundary",
         "verify-ata-pio-feature-boundary",
         "verify-core-utils-boundary",
-        "verify-cancellable-wait-boundary"
+        "verify-cancellable-wait-boundary",
+        "verify-vm-composition-lifecycle"
       ]
     },
     {
