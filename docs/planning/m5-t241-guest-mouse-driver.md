@@ -63,7 +63,7 @@ guest-visible application result. The byte-exact controller proof remains
 mapped `29 05 FD` ordering. The system and port probes cover distinct boundaries
 over the same KBC/PIC owner.
 
-## S3: Matrix And Closure
+## S3: Matrix And Initial Closure
 
 **Status:** complete.
 
@@ -78,3 +78,28 @@ passed; no WSL or POSIX runtime was introduced.
 `5E0D6F1D5600503937F831E87709A055EAB35F5815C2BE2484450DB50B396E1B`.
 The artifact has the normal retained NXVM Console/debugger/boot behavior; T241
 adds corpus evidence only and changes no guest-device implementation.
+
+## S4: Guest Buffer Assertion
+
+**Status:** active.
+
+The original corpus asserted only that the guest handler had accepted nine
+IRQ12 bytes. That does not exclude a byte reorder or corruption between the
+core KBC and the DOS handler. S4 exposes the fixture's own COM buffer offset
+to the test harness, captures the running COM segment after its guest-ready
+marker, then advances the core one completed instruction at a time after the
+host event. It reads only that COM-owned guest storage and requires the exact
+sequence `FA AA 00 FA 00 FA 29 05 FD` before allowing the guest program to
+continue to its `O` marker. This is observation only: the host still never
+writes guest RAM, BDA, DOS state, KBC, or PIC state.
+
+**Evidence:** `vm-mouse-driver-dos-smoke` captures the COM segment at its
+guest-ready marker, advances one completed instruction per run call after the
+mapped event, and reads the fixture buffer before the program can write `O`.
+It observed exactly `FA AA 00 FA 00 FA 29 05 FD`, then continued to the normal
+guest-success marker. `current-gates-gcc` passed 34 static/ownership gates and
+78/78 CTest smokes. The product binary is unchanged by this test-only S4, so
+the verified T241 artifact remains `nxvm_0_5_0241.exe`, SHA-256
+`5E0D6F1D5600503937F831E87709A055EAB35F5815C2BE2484450DB50B396E1B`.
+
+**Status:** complete.

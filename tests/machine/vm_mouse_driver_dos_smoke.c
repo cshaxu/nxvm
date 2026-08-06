@@ -95,7 +95,8 @@ fail:
     return 0;
 }
 
-static C_INT vm_mouse_dos_build_program(vm_mouse_dos_program *program)
+static C_INT vm_mouse_dos_build_program(vm_mouse_dos_program *program,
+    uint16_t *out_bytes_offset)
 {
     uint16_t handler_patch;
     uint16_t count_patch[4];
@@ -107,7 +108,7 @@ static C_INT vm_mouse_dos_build_program(vm_mouse_dos_program *program)
     uint16_t bytes;
     uint16_t index;
 
-    if (program == STD_NULL) return 0;
+    if (program == STD_NULL || out_bytes_offset == STD_NULL) return 0;
     STD_MEMSET(program, 0, sizeof(*program));
     /* COM entry: install ordinary IRQ12 handler, unmask PIC, then issue
      * AUX reset, identify, and enable-reporting requests. */
@@ -196,11 +197,12 @@ static C_INT vm_mouse_dos_build_program(vm_mouse_dos_program *program)
     for (index = 0u; index < 4u; ++index) vm_mouse_dos_patch_word(program,
         count_patch[index], count);
     vm_mouse_dos_patch_word(program, bytes_patch, bytes);
+    *out_bytes_offset = bytes;
     return 1;
 }
 
 static C_INT vm_mouse_dos_install_program(uint8_t *image, DWORD image_size,
-    const C_CHAR *path)
+    const C_CHAR *path, uint16_t *out_bytes_offset)
 {
     vm_mouse_dos_program program;
     uint32_t bytes_per_sector;
@@ -219,8 +221,8 @@ static C_INT vm_mouse_dos_install_program(uint8_t *image, DWORD image_size,
     HANDLE output;
     DWORD written;
 
-    if (!vm_mouse_dos_build_program(&program) || image == STD_NULL ||
-        image_size < 512u || path == STD_NULL) return 0;
+    if (!vm_mouse_dos_build_program(&program, out_bytes_offset) ||
+        image == STD_NULL || image_size < 512u || path == STD_NULL) return 0;
     bytes_per_sector = image[11u] | ((uint32_t)image[12u] << 8);
     sectors_per_cluster = image[13u];
     reserved_sectors = image[14u] | ((uint32_t)image[15u] << 8);
@@ -305,6 +307,25 @@ static C_INT vm_mouse_dos_run_until(vm_session *session, uint32_t limit,
     return 0;
 }
 
+static C_INT vm_mouse_dos_run_until_packet(vm_session *session,
+    uint32_t buffer_address, const uint8_t expected[9])
+{
+    core_machine_run_budget budget = { 1u, 0u };
+    core_machine_run_result result;
+    uint8_t actual[9];
+    uint32_t executed;
+
+    if (session == STD_NULL || expected == STD_NULL) return 0;
+    for (executed = 0u; executed < VM_MOUSE_DOS_RUN_BUDGET; ++executed) {
+        if (core_machine_run(session->core_machine, budget, &result) != TYPE_STATUS_OK ||
+            result.reason == CORE_MACHINE_STOP_FAULT ||
+            core_machine_memory_read(session->core_machine, buffer_address,
+                actual, sizeof(actual)) != TYPE_STATUS_OK) return 0;
+        if (STD_MEMCMP(actual, expected, sizeof(actual)) == 0) return 1;
+    }
+    return 0;
+}
+
 C_INT main(C_INT argc, C_CHAR **argv)
 {
     static const uint8_t command[] = { 0x32u, 0x18u, 0x16u, 0x1fu, 0x12u,
@@ -314,13 +335,19 @@ C_INT main(C_INT argc, C_CHAR **argv)
     uint8_t *image = STD_NULL;
     DWORD image_size = 0u;
     C_CHAR path[MAX_PATH] = {0};
+    core_machine_observation observation;
+    core_machine_display_snapshot snapshot;
+    static const uint8_t expected[] = { 0xfau, 0xaau, 0x00u, 0xfau, 0x00u,
+        0xfau, 0x29u, 0x05u, 0xfdu };
+    uint16_t bytes_offset = 0u;
+    uint32_t bytes_address;
     STD_SIZE_T index;
     C_INT passed = 0;
     C_INT stage = 0;
 
     stage = 1;
     if (argc != 2 || !vm_mouse_dos_copy_image(argv[1], path, &image, &image_size) ||
-        !vm_mouse_dos_install_program(image, image_size, path)) goto done;
+        !vm_mouse_dos_install_program(image, image_size, path, &bytes_offset)) goto done;
     stage = 2;
     config.fdd_image = path;
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
@@ -334,9 +361,17 @@ C_INT main(C_INT argc, C_CHAR **argv)
                 command[index]) != TYPE_STATUS_OK) goto done;
     }
     if (!vm_mouse_dos_run_until(session, VM_MOUSE_DOS_RUN_BUDGET, 'S')) goto done;
+    if (core_machine_capture_observation(session->core_machine, &observation) !=
+        TYPE_STATUS_OK) goto done;
+    bytes_address = ((uint32_t)observation.cpu.cs << 4) + bytes_offset;
     stage = 5;
     vm_platform_mouse_receive_relative_event_for(&session->mouse_transport, 5, 3, 0x01u);
     vm_platform_request_transport_observe_execution_boundary(&session->request_transport);
+    if (!vm_mouse_dos_run_until_packet(session, bytes_address, expected) ||
+        core_machine_capture_display_snapshot(session->core_machine, &snapshot) !=
+            TYPE_STATUS_OK || snapshot.kind != CORE_MACHINE_DISPLAY_KIND_TEXT ||
+        snapshot.characters[VM_MOUSE_DOS_MARKER_CELL] == 'O') goto done;
+    stage = 6;
     passed = vm_mouse_dos_run_until(session, VM_MOUSE_DOS_RUN_BUDGET, 'O');
     if (!passed && session != STD_NULL) {
         core_machine_display_snapshot snapshot;

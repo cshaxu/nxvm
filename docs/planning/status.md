@@ -2,7 +2,12 @@
 
 ## Current Work
 
-**M5 T241 complete:** the owner-built DOS `MOUSE241.COM` fixture boots through
+**M5 T241 complete:** S4 reads the running COM-owned IRQ12 buffer before its
+guest success marker and asserts `FA AA 00 FA 00 FA 29 05 FD` across the full
+host -> mapper -> KBC AUX -> PIC -> IVT route. This remains observation only;
+the host has no RAM/BDA/DOS shortcut. The full current matrix passed 78/78.
+
+**M5 T241 initial closure:** the owner-built DOS `MOUSE241.COM` fixture boots through
 the retained prompt, installs an ordinary IVT `74h` handler, consumes AUX
 reset/identify/enable plus one mapped relative packet through IRQ12, and emits
 a guest-visible application result. Exact controller bytes remain covered by
@@ -25,7 +30,7 @@ owner.  System and DOS fixtures, direct EGA/CGA, Console/debugger, FDD/HDD
 boot, and GCC/CTest `76/76` pass.  Artifact `nxvm_0_5_0239.exe` SHA-256:
 `4C4FDC4DCEB1CE0003A71E54C3DFFA19101AC048E8E7B62919596E6E126123DA`.
 
-**Latest technical baseline -- idle after M5 T241:** no implementation subtask
+**Latest technical baseline -- idle after M5 T241 S4:** no implementation subtask
 is active. The only admitted ROM EGA service is `AH=00h, AL=0Dh`,
 with `AL=03h` as its text exit; DAC, VBE, and other EGA/VGA families remain
 deferred.  See [the T239 record](m5-t239-rom-ega-int10.md).
