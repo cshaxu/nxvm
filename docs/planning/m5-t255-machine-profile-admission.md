@@ -1,6 +1,6 @@
 # M5 T255: Machine-Profile Admission Design
 
-**Status:** S2 active.
+**Status:** complete.
 
 ## Original Request
 
@@ -141,3 +141,21 @@ media must produce defined factual failure rather than a fallback profile.
 S2 is complete when the architecture contracts, module layout, and source
 policy state the same immutable declaration, composition-only construction,
 and BYOB boundary as this record. It creates no runnable artifact.
+
+## S3 Result And Deferred Work
+
+T255 aligned the architecture contracts, module layout, source policy, roadmap,
+and TODO ledger to one profile-admission vocabulary. The existing default PC/AT
+descriptor remains the single reference implementation; no source migration,
+new machine selector, external-ROM reader, asset, or `nxvm.exe` behavior was
+introduced. The S3 commands verified every internal `docs/**/*.md` link, ran
+`rg` for forbidden `core -> vm/mantle/dos/vdm` includes and profile-to-
+composition/platform/product includes, and found no PC110/DeskPro/Award/Phoenix
+identity in `src/core`. `git diff --check` passed.
+
+Deferred to the first admitted M7 profile implementation: a concrete generic
+VM-profile declaration API, profile selection UX, PC110/DeskPro source and
+fixture evidence, and an external-ROM manifest reader if a corpus requires it.
+Those tasks must instantiate the admission template above and allocate their
+own behavior artifact revisions. No external ROM capability is implied by this
+design closure.

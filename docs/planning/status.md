@@ -2,13 +2,13 @@
 
 ## Current Work
 
-**M5 T255 S1 active: audit machine-profile admission boundaries.**
+**M5 is idle after T255 S3.**
 
-[T255](m5-t255-machine-profile-admission.md) is a design/governance task. It
-audits the default PC/AT reference declaration, then freezes an immutable VM
-profile contract, external-ROM admission boundary, fixture corpus, and first
-non-default-profile template. It changes no runtime source, builds no artifact,
-and must not add a profile or external-ROM loader.
+[T255](m5-t255-machine-profile-admission.md) closed the machine-profile
+admission design: profiles are immutable VM declarations, composition is their
+sole constructor and lifecycle owner, and any future BYOB ROM manifest remains
+a separately admitted composition input. It adds no profile, loader, artifact,
+or NXVM behavior change. No subtask is active until the next packet is approved.
 
 | Closure | Evidence |
 | --- | --- |
@@ -16,11 +16,9 @@ and must not add a profile or external-ROM loader.
 | T252 | Composition owns the sole run-handle teardown sequence; artifact `0.5.0251` and 86/86 current CTest pass. |
 | T253 | ATA PIO sector-count progression is controller-owned; artifact `0.5.0252` and 87/87 current CTest pass. |
 | T254 | Bounded digital CGA `640x200x2` is VADP-owned; artifact `0.5.0253` and 89/89 current CTest pass. |
+| T255 | Machine-profile admission contract is closed; design/governance only, no artifact. |
 
-T255 uses S1 for current-state ownership, S2 for the frozen contract, and S3
-for architecture/source/roadmap closure. Its stop conditions prohibit model or
-ROM-vendor knowledge in core, runtime topology switching, third-party firmware
-assets, and retained NXVM UX changes.
+The next task must establish a complete active packet before implementation.
 
 ## Current Technical Baseline
 

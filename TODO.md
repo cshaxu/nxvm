@@ -138,9 +138,10 @@ default definition of NXVM completion.
 - [ ] **M6 mantle session envelope (`TODO(High)`).** Build only the neutral
   lifecycle, execution pump, runtime bindings, transition gateway, and factual
   diagnostics over core. No DOS ABI, external ABI, host path policy, or UI.
-- [ ] **M7 machine-profile system (`TODO(High)`).** Make PC/AT, Compaq
-  DeskPro 386, and IBM PC 110 profiles reproducible declarations with legal
-  firmware/media boundaries; do not move profile quirks into core.
+- [ ] **M7 machine-profile system (`TODO(High)`).** Implement the T255
+  admission contract for reproducible PC/AT, Compaq DeskPro 386, and IBM PC
+  110 declarations with legal firmware/media boundaries; do not move profile
+  quirks into core.
 - [ ] **M8 owned DOS and NXVDM (`TODO(High)`).** Build `dos` and `vdm` over
   mantle: DOS owns loader/services/program state; VDM owns CLI, containment,
   presentation, debug UX, cancellation, and exit policy.
@@ -161,10 +162,10 @@ default definition of NXVM completion.
   portability asset, not a support claim. Add native POSIX compile and runtime
   probes after an approved POSIX environment is available; do not install WSL
   merely for this item.
-- [ ] **Machine-profile admission (`TODO(Medium)`).** Design external machine
-  profiles and optional user-supplied ROM manifests before PC110, Compaq,
-  Award, or Phoenix behavior. Third-party ROMs are never bundled, downloaded,
-  or committed.
+- [x] **Machine-profile admission (T255).** Immutable profile declarations and
+  future BYOB ROM-manifest boundaries are defined before PC110, Compaq, Award,
+  or Phoenix behavior. Third-party ROMs remain never bundled, downloaded, or
+  committed; implementation is deferred to individually admitted M7 tasks.
 - [ ] **M8 VDM/DOS product admission (`TODO(High)`).** Keep mantle, DOS, and
   VDM non-runnable until their M6/M8 contracts exist. M8 must implement the
   approved `nxvdm run` display/debug/no-program semantics, host-drive

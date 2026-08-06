@@ -1,6 +1,6 @@
 # M5 T252: VM Composition Lifecycle Closure
 
-**Status:** S1 active.
+**Status:** complete.
 
 ## Goal
 
