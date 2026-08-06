@@ -10,7 +10,8 @@ components, and third-party executables whose redistribution status is unclear.
 - Prefer generated COM/MZ probes and redistributable fixtures in tests.
 - Never commit absolute paths, credentials, registry exports, or a captured
   user's application data.
-- A release must separately list included and required external components.
+- A release must separately list included and required external components in
+  the completed manifest and gate defined by `docs/release/`.
 - Any future Microsoft research input remains local and never enters the
   repository. A BYOB/profile proposal requires an M11 Go decision.
 

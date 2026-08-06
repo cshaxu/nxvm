@@ -104,7 +104,7 @@ and the next unused artifact revision is allocated at verified completion.
 The revision must never regress or be reused for changed source.
 
 Use `nxvm_0_5_NNNN.exe` for the bootable VM product or
-`ntvdm64_0_5_NNNN.exe` for the DOS app-runner product. Every task record maps
+`nxvdm_0_5_NNNN.exe` for the DOS app-runner product. Every task record maps
 its task identifier to its allocated artifact revision. Earlier historical
 artifacts retain their recorded names and banners. They are evidence files, not
 CMake build targets: current source must never rebuild an old task/version

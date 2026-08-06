@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "status": "template-not-a-release-record",
+  "release": {
+    "product": "nxvm.exe",
+    "version": "REPLACE_AT_RELEASE",
+    "source_commit": "REPLACE_AT_RELEASE",
+    "sha256": "REPLACE_AT_RELEASE"
+  },
+  "included_components": [],
+  "required_external_components": [],
+  "excluded_inputs": [
+    "protected guest media",
+    "Microsoft binaries",
+    "third-party firmware images",
+    "local research tools and traces"
+  ],
+  "notices": [
+    "LICENSE",
+    "THIRD_PARTY_NOTICES.md"
+  ]
+}

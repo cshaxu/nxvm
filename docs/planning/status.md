@@ -21,6 +21,25 @@ task changes no source, build target, runtime behavior, or T247 scope.
 Verification: repository-wide prohibited-name scan, stale executable/topology
 scan, local Markdown-link check, `git diff --check`, and working-tree review.
 
+**M5 Td S21 complete: close the distribution-record gaps.** Original request:
+audit the project's distribution-compliance documentation, then remediate and
+commit the findings. This task adds the current source-distribution notices and
+release-record templates; it changes no source, build target, runtime behavior,
+or T247 scope.
+
+| Requirement | Evidence |
+| --- | --- |
+| R1: current notices | Root `THIRD_PARTY_NOTICES.md` records project-owned and NXVM-derived material, provenance link, copyright notices, and the absence of approved shipped third-party components. |
+| R2: truthful product status | Redistributability names `nxvm.exe` as the sole current product candidate and marks NXVDM/component artifacts as future. |
+| R3: release evidence | `docs/release/` supplies a machine-readable manifest template and an owner release gate; neither is presented as a completed release record. |
+| R4: consistent gates | Artifact naming uses `nxvdm`; asset policy, provenance, and M5 source-audit scope point to the release record and five-component topology. |
+
+Verification: JSON parse of the manifest template; repository-wide checks for
+the obsolete DOS artifact name and required notice/release files; local
+Markdown-link check; `git diff --check`; and working-tree review. Similar-issue
+sweep is not applicable because this is standalone documentation remediation.
+T247 S1 remains the sole active subtask.
+
 Original request: establish the source-level core boundary required for a
 future direct-entry VDM path, preserving the recorded NXVM baseline. T243 and
 T244 through T246 are closed. T247 is the next design-only admission review;

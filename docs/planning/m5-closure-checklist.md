@@ -40,20 +40,24 @@ unfinished M5 item as an implicit waiver.
 
 - [ ] A current source audit covers `core/utils`, every
   `core/{machine,platform,product}`,
-  `vm/{machine,platform,product,profile}`, `vdm/{machine,platform,product,profile}`,
-  composition root, target, test, and main entry.
+  `vm/{machine,platform,product,profile}`, and every implemented
+  `mantle/{machine,platform,product}`, `dos/{machine,platform,product,profile}`,
+  and `vdm/{machine,platform,product,profile}` root, plus each composition
+  root, target, test, and main entry. A planned component is recorded as not
+  applicable until its admission task creates it.
 - [ ] Each mutable runtime datum has one explicit owner. There is one production
   core executor, one NXVM session/execution path, and no duplicate machine,
   session, reset, or VM-side instruction loop.
 - [ ] Production code has no process-global, `_Thread_local`, singleton, or
   implicit current-object session/machine selector. Process-exclusive host
   resources use explicit leases.
-- [ ] `core` has no VM/VDM dependency; core peer modules remain independent;
-  only product-root composition integrates product peers. Platform code does
-  not mutate guest state.
+- [ ] `core` has no VM, mantle, DOS, or VDM dependency; core peer modules
+  remain independent; VM and mantle composition are the only integration
+  owners. Platform code does not mutate guest state.
 - [x] `core/utils` depends only on `type-facade` and carries only neutral,
-  explicitly named utility or callback contracts. No VM/VDM peer imports a
-  non-matching `core/*` peer, and the CMake target graph has the same boundary.
+  explicitly named utility or callback contracts. No VM, mantle, DOS, or VDM
+  peer imports a non-matching `core/*` peer, and the CMake target graph has the
+  same boundary.
 - [ ] Every adapter/wrapper adds a documented boundary responsibility. No
   forwarding-only facade, permanent same-object alias, or test-only historical
   path remains in a formal product route.
