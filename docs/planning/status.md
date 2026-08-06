@@ -2,6 +2,14 @@
 
 ## Current Work
 
+**M5 T241 complete:** the owner-built DOS `MOUSE241.COM` fixture boots through
+the retained prompt, installs an ordinary IVT `74h` handler, consumes AUX
+reset/identify/enable plus one mapped relative packet through IRQ12, and emits
+a guest-visible application result. Exact controller bytes remain covered by
+the T229 port probe; host input has no DOS/BDA/RAM shortcut. GCC gates passed
+with 78/78 current CTest smokes. Artifact `nxvm_0_5_0241.exe` SHA-256:
+`5E0D6F1D5600503937F831E87709A055EAB35F5815C2BE2484450DB50B396E1B`.
+
 **M5 T240 complete:** the bounded strict-8086 corpus now covers reset-vector
 entry, segment override, `REP`/direction strings, `INT` -> IVT -> `IRET`,
 immediate/DX port provider transactions, and retained `#UD` outcomes.  The
@@ -17,8 +25,8 @@ owner.  System and DOS fixtures, direct EGA/CGA, Console/debugger, FDD/HDD
 boot, and GCC/CTest `76/76` pass.  Artifact `nxvm_0_5_0239.exe` SHA-256:
 `4C4FDC4DCEB1CE0003A71E54C3DFFA19101AC048E8E7B62919596E6E126123DA`.
 
-**Latest technical baseline -- idle after M5 T240:** no implementation
-subtask is active.  The only admitted ROM EGA service is `AH=00h, AL=0Dh`,
+**Latest technical baseline -- idle after M5 T241:** no implementation subtask
+is active. The only admitted ROM EGA service is `AH=00h, AL=0Dh`,
 with `AL=03h` as its text exit; DAC, VBE, and other EGA/VGA families remain
 deferred.  See [the T239 record](m5-t239-rom-ega-int10.md).
 
