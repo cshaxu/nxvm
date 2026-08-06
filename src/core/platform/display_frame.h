@@ -12,6 +12,7 @@
 #define CORE_PLATFORM_DISPLAY_GRAPHICS_HEIGHT 200u
 #define CORE_PLATFORM_DISPLAY_MAX_PIXELS \
     (CORE_PLATFORM_DISPLAY_GRAPHICS_WIDTH * CORE_PLATFORM_DISPLAY_GRAPHICS_HEIGHT)
+#define CORE_PLATFORM_DISPLAY_PALETTE_ENTRIES 16u
 
 typedef enum core_platform_display_kind {
     CORE_PLATFORM_DISPLAY_KIND_TEXT,
@@ -34,7 +35,7 @@ typedef struct core_platform_display_frame {
     uint16_t pixel_width;
     uint16_t pixel_height;
     uint8_t pixels[CORE_PLATFORM_DISPLAY_MAX_PIXELS];
-    uint32_t palette_rgb[4];
+    uint32_t palette_rgb[CORE_PLATFORM_DISPLAY_PALETTE_ENTRIES];
     uint64_t generation;
 } core_platform_display_frame;
 

@@ -653,6 +653,10 @@ add_executable(vm-ega-controller-system-smoke
     tests/machine/vm_ega_controller_system_smoke.c
 )
 target_link_libraries(vm-ega-controller-system-smoke PRIVATE vm-composition)
+add_executable(vm-ega-planar-system-smoke
+    tests/machine/vm_ega_planar_system_smoke.c
+)
+target_link_libraries(vm-ega-planar-system-smoke PRIVATE vm-composition)
 add_executable(vm-ega-sequencer-system-smoke
     tests/machine/vm_ega_sequencer_system_smoke.c
 )
@@ -665,6 +669,10 @@ add_executable(vm-cga-graphics-dos-smoke
     tests/machine/vm_cga_graphics_dos_smoke.c
 )
 target_link_libraries(vm-cga-graphics-dos-smoke PRIVATE vm-composition)
+add_executable(vm-ega-planar-dos-smoke
+    tests/machine/vm_ega_planar_dos_smoke.c
+)
+target_link_libraries(vm-ega-planar-dos-smoke PRIVATE vm-composition)
 
 add_executable(vm-cmos-authority-smoke tests/machine/vm_cmos_authority_smoke.c)
 target_link_libraries(vm-cmos-authority-smoke PRIVATE vm-composition)
@@ -835,6 +843,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     vm-cga-graphics-system-smoke
     vm-ega-sequencer-system-smoke
     vm-ega-controller-system-smoke
+    vm-ega-planar-system-smoke
     core-machine-stopped-lifecycle-smoke
     core-machine-memory-reconfigure-smoke
     core-machine-int-ivt-smoke
@@ -881,6 +890,7 @@ set(PROJECT_CURRENT_FDD_SMOKE_TARGETS
     vm-dos-mem-fault-smoke
     vm-dos-video-port-smoke
     vm-cga-graphics-dos-smoke
+    vm-ega-planar-dos-smoke
     vm-debug-pause-boundary-smoke
     vm-unified-debug-backend-smoke)
 set(PROJECT_CURRENT_FDD_HDD_SMOKE_TARGET vm-product-session-smoke)
@@ -963,7 +973,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0237 "0.5.0237")
+add_current_vm_artifact(vm-0-5-0238 "0.5.0238")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 
@@ -1148,6 +1158,13 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMENT "Verifying M5 T236 EGA controller ownership boundary"
         VERBATIM)
     add_dependencies(run-current-smokes verify-ega-controller-boundary)
+
+    add_custom_target(verify-ega-planar-boundary
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_ega_planar_boundary.cmake"
+        COMMENT "Verifying M5 T238 EGA planar ownership boundary"
+        VERBATIM)
+    add_dependencies(run-current-smokes verify-ega-planar-boundary)
 
     add_custom_target(verify-vm-session-owner-closure
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}

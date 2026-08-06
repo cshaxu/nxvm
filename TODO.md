@@ -72,10 +72,10 @@ These are the next owned admissions, not permission to work in parallel.
   it to claim EGA/VGA support.
 - [ ] **EGA/VGA staged admission (`TODO(Medium)`, T235--T239).** T235 completes
   the profile-bound A0000h aperture/sequencer subset and T236 the graphics/
-  attribute registers plus map-select classification. T238 S1 fixes one
-  direct-port `EGA-320x200x16-direct` contract: VADP-owned planar VRAM/latches,
-  frozen core memory routing, a copied 16-entry fixed RGBI frame, and no DAC.
-  T238 S2/S3 must implement and verify only that path. T239 admits only matching
+  attribute registers plus map-select classification. T238 completes one
+  direct-port `EGA-320x200x16-direct` path: VADP-owned planar VRAM/latches,
+  frozen core memory routing, and a copied 16-entry fixed RGBI frame, with no
+  DAC. T239 admits only matching
   ROM `INT 10h` mode services through the real VADP state. Do not make a single
   unbounded "VGA support" task.
 

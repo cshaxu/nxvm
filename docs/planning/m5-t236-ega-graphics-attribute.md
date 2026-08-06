@@ -127,9 +127,10 @@ deferred.
 
 ### Remaining Deferrals
 
-T238 alone may implement planar/latch access, DAC, raster state, copied EGA/VGA
-snapshots, and a guest-visible DOS graphics fixture. T236 makes no claim that
-an EGA/VGA program can yet display output correctly.
+T238 alone may implement the bounded planar/latch path, raster state, copied
+fixed-RGBI frame, and a guest-visible DOS graphics fixture. Programmable DAC
+behavior remains deferred. T236 makes no claim that an EGA/VGA program can yet
+display output correctly.
 
 ### S4 Audit Closure
 
