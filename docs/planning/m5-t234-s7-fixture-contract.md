@@ -29,5 +29,6 @@ standard's explicit justification rule.
 
 ## Closure
 
-**P2 complete; S7 closed by decision.** No code migration or new test interface
-is warranted.
+**P2 complete; S7 closed by decision.** The existing fixture facade is removed;
+same-module tests directly include `session.h`. No new test interface is
+warranted.

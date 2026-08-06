@@ -6,14 +6,14 @@
 #include "vm/composition/session/control.h"
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/session_interface.h"
-#include "tests/support/vm_session_fixture.h"
+#include "vm/composition/session/session.h"
 #include "vm/platform/presentation_mailbox.h"
 
 #define VM_RUNNER_DISPLAY_CADENCE_TIMEOUT_MILLISECONDS 1000u
 
 static DWORD WINAPI vm_runner_display_cadence_run(C_VOID *opaque)
 {
-    vm_session_control_start(vm_session_fixture_control((vm_session *)opaque));
+    vm_session_control_start(&((vm_session *)opaque)->control);
     return 0u;
 }
 
@@ -45,21 +45,21 @@ C_INT main(C_VOID)
     C_INT seen = 0;
 
     if (vm_session_create(STD_NULL, &session) != TYPE_STATUS_OK) return 1;
-    if (!vm_session_fixture_is_active(session)) return 1;
-    vm_session_control_reset(vm_session_fixture_control(session));
+    if (!session->active) return 1;
+    vm_session_control_reset(&session->control);
     thread = CreateThread(STD_NULL, 0u, vm_runner_display_cadence_run, session,
         0u, STD_NULL);
     if (thread == STD_NULL) goto fail;
     for (elapsed = 0u; elapsed < VM_RUNNER_DISPLAY_CADENCE_TIMEOUT_MILLISECONDS;
          ++elapsed) {
-        vm_platform_presentation_mailbox_capture(vm_session_fixture_presentation_mailbox(session), &frame);
+        vm_platform_presentation_mailbox_capture(&session->presentation_mailbox, &frame);
         if (vm_runner_display_cadence_contains(&frame, "Invalid boot disk")) {
             seen = 1;
             break;
         }
         Sleep(1u);
     }
-    vm_session_control_stop(vm_session_fixture_control(session));
+    vm_session_control_stop(&session->control);
     if (WaitForSingleObject(thread, 2000u) != WAIT_OBJECT_0) goto fail;
     CloseHandle(thread);
     vm_session_destroy(session);
@@ -68,7 +68,7 @@ C_INT main(C_VOID)
     return 0;
 
 fail:
-    vm_session_control_stop(vm_session_fixture_control(session));
+    vm_session_control_stop(&session->control);
     if (thread != STD_NULL) {
         WaitForSingleObject(thread, 2000u);
         CloseHandle(thread);

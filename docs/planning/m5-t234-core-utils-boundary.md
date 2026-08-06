@@ -72,7 +72,7 @@ future implementation subtask: no runtime layout or test route changes in S5.
 ### S6 Implementation
 
 S6 exposes opaque `vm_session` from `session_interface.h`, with the complete
-layout retained by composition-private `session.h`. S7 is the active follow-up
-that replaces the overly broad test fixture borrows with behavior-level test
-operations. `verify-session-layout-boundary` rejects private-header escapes
-and direct session-field reads.
+layout retained by composition-private `session.h`. S7 review confirmed that a
+test-only fixture facade would be overbuilt; same-module tests now use the
+existing implementation header directly. `verify-session-layout-boundary`
+rejects private-header escapes from production peers.

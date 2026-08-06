@@ -3,7 +3,7 @@
 
 
 #include "vm/composition/session/session_interface.h"
-#include "tests/support/vm_session_fixture.h"
+#include "vm/composition/session/session.h"
 
 #include "vm/composition/session/lifecycle.h"
 

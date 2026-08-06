@@ -7,7 +7,7 @@
 #include "vm/composition/session/control.h"
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/session_interface.h"
-#include "tests/support/vm_session_fixture.h"
+#include "vm/composition/session/session.h"
 #include "vm/machine/fdd.h"
 #include "vm/platform/win32/win32.h"
 
@@ -18,7 +18,7 @@
 
 static DWORD WINAPI vm_dos_mem_fault_run_machine(C_VOID *opaque)
 {
-    vm_session_control_start(vm_session_fixture_control((vm_session *)opaque));
+    vm_session_control_start(&((vm_session *)opaque)->control);
     return 0u;
 }
 
@@ -27,7 +27,7 @@ static C_INT vm_dos_mem_fault_has_prompt(const vm_session *session)
     core_platform_display_frame frame;
     STD_SIZE_T cell;
 
-    vm_platform_presentation_mailbox_capture(vm_session_fixture_presentation_mailbox(session), &frame);
+    vm_platform_presentation_mailbox_capture(&session->presentation_mailbox, &frame);
     for (cell = 0u; cell + 3u < TEXT_VIDEO_CELLS; ++cell) {
         if (STD_ISALPHA(frame.characters[cell]) &&
             frame.characters[cell + 1u] == ':' &&
@@ -69,7 +69,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     stage = "session creation";
     if (vm_session_create(STD_NULL, &session) != TYPE_STATUS_OK) goto fail;
     stage = "FDD insertion";
-    if (vm_machine_fdd_insert_for(vm_session_fixture_fdd(session), argv[1]) != 0) goto fail;
+    if (vm_machine_fdd_insert_for(&session->fdd, argv[1]) != 0) goto fail;
     stage = "machine thread creation";
     thread = CreateThread(STD_NULL, 0u, vm_dos_mem_fault_run_machine, session,
         0u, STD_NULL);
@@ -82,14 +82,14 @@ C_INT main(C_INT argc, C_CHAR **argv)
     if (elapsed == DOS_PROMPT_TIMEOUT_MILLISECONDS) goto fail;
     stage = "MEM command completion";
     for (index = 0u; index < sizeof(scan_codes); ++index) {
-        vm_platform_win32_keyboard_make_key_for(vm_session_fixture_platform_run_context(session),
-            vm_session_fixture_platform_run_handle(session), scan_codes[index], virtual_keys[index], 1);
+        vm_platform_win32_keyboard_make_key_for(&session->platform_run_context,
+            &session->platform_run_handle, scan_codes[index], virtual_keys[index], 1);
     }
     result = WaitForSingleObject(thread, MEM_FAULT_TIMEOUT_MILLISECONDS);
     if (result != WAIT_OBJECT_0 && result != WAIT_TIMEOUT) goto fail;
     stage = "FNINIT fault classification";
     if (result == WAIT_OBJECT_0) {
-        if (core_machine_get_cpu_diagnostic(vm_session_fixture_machine(session), &diagnostic) !=
+        if (core_machine_get_cpu_diagnostic(session->core_machine, &diagnostic) !=
             TYPE_STATUS_OK) goto fail;
         if (diagnostic.first_fault.valid) {
             vm_dos_mem_fault_print(&diagnostic);
@@ -114,7 +114,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
 fail:
     STD_FPRINTF(STD_STDERR, "M5:T198:S1:DOS-MEM:FAIL stage=%s\n", stage);
     if (session != STD_NULL &&
-        core_machine_get_cpu_diagnostic(vm_session_fixture_machine(session), &diagnostic) ==
+        core_machine_get_cpu_diagnostic(session->core_machine, &diagnostic) ==
             TYPE_STATUS_OK && diagnostic.first_fault.valid) {
         vm_dos_mem_fault_print(&diagnostic);
     }

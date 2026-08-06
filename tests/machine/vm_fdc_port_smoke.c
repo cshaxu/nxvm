@@ -4,7 +4,7 @@
 #include "core/machine/port.h"
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/session_interface.h"
-#include "tests/support/vm_session_fixture.h"
+#include "vm/composition/session/session.h"
 #include "vm/machine/fdc.h"
 #include "vm/machine/fdd.h"
 
@@ -45,11 +45,11 @@ C_INT main(C_VOID)
     type_unsigned_8 format_id[] = { 0x00u, 0x00u, 0x01u, 0x02u };
     C_INT failed = 0;
 
-    session = vm_session_fixture_allocate();
+    session = ((vm_session *)STD_CALLOC(1u, sizeof(vm_session)));
     if (session == STD_NULL) return 1;
     vm_session_initialize(session);
-    port = vm_session_fixture_fdc(session)->connect.port;
-    if (!vm_session_fixture_is_active(session) || port == STD_NULL) failed = 1;
+    port = session->fdc.connect.port;
+    if (!session->active || port == STD_NULL) failed = 1;
     core_machine_port_write(port, 0x03f2u, 0x0cu);
 
     /* No image is an FDC result, not a host or BIOS shortcut. */
@@ -58,31 +58,31 @@ C_INT main(C_VOID)
     failed |= !fdc_read_result(port, result, sizeof(result));
     failed |= (result[0] & VM_MACHINE_FDC_ST0_ABNORMAL) == 0u;
 
-    vm_machine_fdd_create_for(vm_session_fixture_fdd(session));
-    vm_machine_fdc_refresh(vm_session_fixture_fdc(session));
+    vm_machine_fdd_create_for(&session->fdd);
+    vm_machine_fdc_refresh(&session->fdc);
     failed |= (core_machine_port_read(port, 0x03f7u) & VFDC_DIR_DC) == 0u;
     fdc_command(port, (const type_unsigned_8[]){ 0x0fu, 0x00u, 0x00u }, 3u);
     fdc_command(port, (const type_unsigned_8[]){ 0x08u }, 1u);
     failed |= !fdc_read_result(port, result, 2u);
-    vm_machine_fdc_refresh(vm_session_fixture_fdc(session));
+    vm_machine_fdc_refresh(&session->fdc);
     failed |= (core_machine_port_read(port, 0x03f7u) & VFDC_DIR_DC) != 0u;
 
     fdc_command(port, specify_non_dma, sizeof(specify_non_dma));
     fdc_command(port, format_track, sizeof(format_track));
     fdc_command(port, format_id, sizeof(format_id));
-    failed |= !core_machine_pic_scan_interrupt(vm_session_fixture_fdc(session)->connect.irq_source.master,
-        vm_session_fixture_fdc(session)->connect.irq_source.slave);
+    failed |= !core_machine_pic_scan_interrupt(session->fdc.connect.irq_source.master,
+        session->fdc.connect.irq_source.slave);
     failed |= !fdc_read_result(port, result, sizeof(result));
     failed |= result[0] != VM_MACHINE_FDC_ST0_NORMAL;
     fdc_command(port, (const type_unsigned_8[]){ 0x08u }, 1u);
     failed |= !fdc_read_result(port, result, 2u);
 
-    vm_session_fixture_fdd(session)->connect.flagReadOnly = TYPE_TRUE;
+    session->fdd.connect.flagReadOnly = TYPE_TRUE;
     fdc_command(port, write_sector, sizeof(write_sector));
     core_machine_port_write(port, 0x03f5u, 0x5au);
     failed |= !fdc_read_result(port, result, sizeof(result));
     failed |= (result[1] & 0x02u) == 0u;
-    vm_session_fixture_fdd(session)->connect.flagReadOnly = TYPE_FALSE;
+    session->fdd.connect.flagReadOnly = TYPE_FALSE;
 
     core_machine_port_write(port, 0x03f7u, 0x01u);
     fdc_command(port, read_sector, sizeof(read_sector));
@@ -102,7 +102,7 @@ C_INT main(C_VOID)
     failed |= result[0] != VM_MACHINE_FDC_ST0_NORMAL;
 
     vm_session_finalize(session);
-    vm_session_fixture_free(session);
+    STD_FREE(session);
     if (failed) return 1;
     puts("M5:T231:S3:FDC-PORT:OK");
     return 0;

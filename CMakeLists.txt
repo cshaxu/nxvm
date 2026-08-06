@@ -531,51 +531,6 @@ target_link_libraries(vm-composition PUBLIC
     user32
     gdi32)
 
-# This is test-only visibility into the composition aggregate. Production
-# targets must remain independent of it.
-add_library(vm-session-test-fixture STATIC tests/support/vm_session_fixture.c)
-target_include_directories(vm-session-test-fixture PUBLIC
-    "${CMAKE_SOURCE_DIR}")
-target_link_libraries(vm-session-test-fixture PUBLIC vm-composition)
-
-set(VM_SESSION_FIXTURE_SMOKE_TARGETS
-    vm-hdc-port-smoke
-    vm-hdc-hdd-boot-smoke
-    vm-default-pc-at-apply-smoke
-    vm-timer-firmware-smoke
-    vm-product-default-profile-smoke
-    vm-product-session-smoke
-    vm-session-profile-smoke
-    vm-session-reconfigure-smoke
-    vm-platform-win32-startup-failure-smoke
-    vm-platform-run-handle-smoke
-    vm-platform-linux-run-handle-smoke
-    vm-multi-window-session-smoke
-    vm-host-cancellation-smoke
-    vm-keyboard-host-ingress-smoke
-    vm-cga-graphics-system-smoke
-    vm-cga-graphics-dos-smoke
-    vm-boot-failure-lifecycle-smoke
-    vm-cmos-rtc-port-smoke
-    vm-cmos-authority-smoke
-    vm-debug-pause-boundary-smoke
-    vm-dos-keyboard-smoke
-    vm-dos-mem-fault-smoke
-    vm-dos-video-port-smoke
-    vm-dos-prompt-smoke
-    vm-fault-outcome-runner-smoke
-    vm-fdc-port-smoke
-    vm-fdc-authority-smoke
-    vm-fdd-authority-smoke
-    vm-hdd-authority-smoke
-    vm-kbc-aux-guest-smoke
-    vm-no-media-video-port-smoke
-    vm-runner-display-cadence-smoke
-    vm-cpu-stop-smoke
-    vm-execution-context-smoke
-    vm-core-executor-storage-smoke
-    vm-unified-debug-backend-smoke)
-
 add_library(vm-machine STATIC ${VM_MACHINE_SOURCES})
 target_include_directories(vm-machine PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
@@ -828,12 +783,6 @@ target_link_libraries(vdm-minimal-presentation-smoke PRIVATE
     vdm-composition
 )
 
-foreach(target IN LISTS VM_SESSION_FIXTURE_SMOKE_TARGETS)
-    if(TARGET ${target})
-        target_link_libraries(${target} PRIVATE vm-session-test-fixture)
-    endif()
-endforeach()
-
 set(PROJECT_CURRENT_SMOKE_TARGETS
     vm-default-pc-at-profile-smoke
     vm-hdc-port-smoke
@@ -899,12 +848,6 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-platform-host-surface-smoke
     vdm-minimal-session-smoke
     vdm-minimal-presentation-smoke)
-
-foreach(target IN LISTS PROJECT_CURRENT_SMOKE_TARGETS)
-    if(TARGET ${target})
-        target_link_libraries(${target} PRIVATE vm-session-test-fixture)
-    endif()
-endforeach()
 
 set(PROJECT_CURRENT_FDD_SMOKE_TARGETS
     vm-dos-prompt-smoke

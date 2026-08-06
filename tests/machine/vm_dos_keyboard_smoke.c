@@ -8,7 +8,7 @@
 #include "vm/composition/session/fault.h"
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/session_interface.h"
-#include "tests/support/vm_session_fixture.h"
+#include "vm/composition/session/session.h"
 #include "vm/machine/fdd.h"
 #include "vm/platform/win32/win32.h"
 
@@ -17,7 +17,7 @@
 
 static DWORD WINAPI run_machine(C_VOID *opaque)
 {
-    vm_session_control_start(vm_session_fixture_control((vm_session *)opaque));
+    vm_session_control_start(&((vm_session *)opaque)->control);
     return 0u;
 }
 
@@ -29,7 +29,7 @@ static C_INT vm_dos_keyboard_has_text(const vm_session *session,
     STD_SIZE_T character;
     STD_SIZE_T length = STD_STRLEN(text);
 
-    vm_platform_presentation_mailbox_capture(vm_session_fixture_presentation_mailbox(session), &frame);
+    vm_platform_presentation_mailbox_capture(&session->presentation_mailbox, &frame);
     for (cell = 0u; cell + length <= TEXT_VIDEO_CELLS; ++cell) {
         for (character = 0u; character < length; ++character) {
             if (frame.characters[cell + character] != (C_UCHAR)text[character]) break;
@@ -44,7 +44,7 @@ static C_INT vm_dos_keyboard_has_prompt(const vm_session *session)
     core_platform_display_frame frame;
     STD_SIZE_T cell;
 
-    vm_platform_presentation_mailbox_capture(vm_session_fixture_presentation_mailbox(session), &frame);
+    vm_platform_presentation_mailbox_capture(&session->presentation_mailbox, &frame);
     for (cell = 0u; cell + 3u < TEXT_VIDEO_CELLS; ++cell) {
         if (STD_ISALPHA(frame.characters[cell]) &&
             frame.characters[cell + 1u] == ':' &&
@@ -72,15 +72,15 @@ static C_VOID vm_dos_keyboard_report_failure(const vm_session *session,
     STD_SIZE_T index;
 
     if (session == STD_NULL || state == STD_NULL) return;
-    (C_VOID)core_machine_debug_read_memory(vm_session_fixture_machine(session), 0x041au,
+    (C_VOID)core_machine_debug_read_memory(session->core_machine, 0x041au,
         &head, sizeof(head));
-    (C_VOID)core_machine_debug_read_memory(vm_session_fixture_machine(session), 0x041cu,
+    (C_VOID)core_machine_debug_read_memory(session->core_machine, 0x041cu,
         &tail, sizeof(tail));
-    (C_VOID)core_machine_debug_read_memory(vm_session_fixture_machine(session), 0x0449u,
+    (C_VOID)core_machine_debug_read_memory(session->core_machine, 0x0449u,
         &video_mode, sizeof(video_mode));
-    (C_VOID)core_machine_debug_read_memory(vm_session_fixture_machine(session),
+    (C_VOID)core_machine_debug_read_memory(session->core_machine,
         state->cs_base + state->eip, instructions, sizeof(instructions));
-    vm_platform_presentation_mailbox_capture(vm_session_fixture_presentation_mailbox(session),
+    vm_platform_presentation_mailbox_capture(&session->presentation_mailbox,
         &frame);
     STD_PRINTF("keyboard smoke timed out: BDA head=%04x tail=%04x\n", head, tail);
     for (cell = 0u; cell < 25u; ++cell) {
@@ -107,7 +107,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     STD_SIZE_T index;
 
     if (argc != 2 || vm_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||
-        vm_machine_fdd_insert_for(vm_session_fixture_fdd(session), argv[1]) != 0) goto fail;
+        vm_machine_fdd_insert_for(&session->fdd, argv[1]) != 0) goto fail;
     thread = CreateThread(STD_NULL, 0u, run_machine, session, 0u, STD_NULL);
     if (thread == STD_NULL) goto fail;
     for (elapsed = 0u; elapsed < 3000u; elapsed += 10u) {
@@ -116,8 +116,8 @@ C_INT main(C_INT argc, C_CHAR **argv)
     }
     if (elapsed == 3000u) goto fail;
     for (index = 0u; index < sizeof(scan_codes); ++index) {
-        vm_platform_win32_keyboard_make_key_for(vm_session_fixture_platform_run_context(session),
-            vm_session_fixture_platform_run_handle(session), scan_codes[index], virtual_keys[index], 1);
+        vm_platform_win32_keyboard_make_key_for(&session->platform_run_context,
+            &session->platform_run_handle, scan_codes[index], virtual_keys[index], 1);
     }
     for (elapsed = 0u; elapsed < 5000u; elapsed += 10u) {
         if (vm_dos_keyboard_has_edit_menu(session)) break;
@@ -127,10 +127,10 @@ C_INT main(C_INT argc, C_CHAR **argv)
         vm_session_fault_outcome outcome;
         core_machine_cpu_state state;
 
-        vm_session_control_request_pause(vm_session_fixture_control(session),
+        vm_session_control_request_pause(&session->control,
             VM_SESSION_PAUSE_EXPLICIT);
-        if (vm_session_control_wait_for_pause(vm_session_fixture_control(session), 500u) &&
-            core_machine_debug_read_cpu(vm_session_fixture_machine(session), &state) ==
+        if (vm_session_control_wait_for_pause(&session->control, 500u) &&
+            core_machine_debug_read_cpu(session->core_machine, &state) ==
                 TYPE_STATUS_OK) {
             STD_PRINTF("edit pause: %04x:%08x flags=%08x\n", state.cs,
                 state.eip, state.eflags);
@@ -144,7 +144,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
                 outcome.diagnostic.first_fault.exception_code);
         } else {
             STD_PRINTF("edit run state: %s\n",
-                vm_session_control_is_running(vm_session_fixture_control(session)) ? "running" : "stopped");
+                vm_session_control_is_running(&session->control) ? "running" : "stopped");
         }
     }
     vm_session_stop(session);
