@@ -24,12 +24,11 @@ provider binding. Only `src/vm/composition/**` may include it in production.
 
 ## Test Fixture Contract
 
-One test-only fixture implementation may include `session.h`. It
-exports focused probes grouped by observable need, for example machine borrow,
-media state, control state, platform-run state, and selected diagnostics. A
-test may request a named observation or test action; it may not borrow the
-whole `vm_session`, its raw device structs, or a generic field selector. New
-production APIs are not added solely to support white-box tests.
+Tests may include `session.h` when they test composition implementation state
+directly and do not create mirror state or an alternate runtime route. A helper
+is optional, not a required facade: it is admitted only when it removes
+repeated setup or makes a behavior assertion clearer. New production APIs are
+not added solely to support white-box tests.
 
 ## Migration Order
 
@@ -37,13 +36,11 @@ production APIs are not added solely to support white-box tests.
    ownership or changing session initialization.
 2. Move all composition implementation files to the private header; retain the
    existing public lifecycle contracts.
-3. Add the test fixture target and migrate tests by capability family: core
-   machine, media/device, control/debug, then platform/run-handle observations.
-4. Remove direct test layout access and move internal-only declarations out of
-   the public header.
+3. Add a test helper only where it removes repeated setup or clarifies a real
+   behavior assertion; direct implementation access remains valid otherwise.
+4. Move internal-only declarations out of the public header.
 5. Add a static gate: no non-composition production source includes
-   `session.h`; only the approved fixture implementation may do so;
-   `session.h` contains no complete `vm_session` definition.
+   `session.h`; `session.h` contains the complete `vm_session` definition.
 6. Run GCC current gates and all relevant session, media, debugger, and
    platform smoke tests. No test-only runtime route, mirror state, or selected
    session global is permitted.
@@ -51,5 +48,5 @@ production APIs are not added solely to support white-box tests.
 ## Exit
 
 The public API is opaque, production composition remains the sole owner of the
-complete layout, every former direct test field access has a narrow fixture
-replacement, and the mechanical gate plus GCC smoke matrix pass.
+complete layout, tests use direct implementation access or a justified compact
+helper, and the mechanical gate plus GCC smoke matrix pass.

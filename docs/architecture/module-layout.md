@@ -96,9 +96,11 @@ A composition session's complete layout is private to its product root. Its
 public header declares an opaque `vm_session` or `vdm_session` handle, stable
 configuration, and lifecycle/operation contracts only. The complete struct and
 construction helpers live in `session.h`, included only by that product
-composition and a single test-only fixture implementation. Tests use narrow,
-named fixture probes; neither tests nor product peers receive a general raw
-layout or mutable-state escape hatch.
+composition. Product peers receive only the opaque public contract. Tests may
+include an implementation header and directly use its existing state when they
+test that same module and introduce neither mirror state nor an alternate
+runtime route; test-only facades are not required merely to hide an already
+legitimate implementation pointer.
 
 Approved compact lexical families are also retained: `kbc`, `vadp`,
 `win32app`, `win32con`, `linuxapp`, `linuxcon`, `w32*`, `xasm32`, `aasm`,

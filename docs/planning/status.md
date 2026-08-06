@@ -12,13 +12,11 @@ complete VM layout composition-private and moves test observation behind narrow
 fixture probes. It deliberately changes no runtime code; see [the design
 record](m5-t234-s5-session-layout-design.md).
 
-**M5 T234 S7 P2 active:** S6 made `vm_session` opaque in
-`session_interface.h`, but its test fixture still exposes raw mutable device
-borrows. S7 replaces those borrows with behavior-level actions, snapshots, and
-assertions; no task may close until the fixture has no raw session/device
-pointer return path. P2 designs the machine-facing contract before P3 migrates
-it; P4--P6 then close device, platform/control, and gate work. See [the S7
-packet](m5-t234-s7-fixture-contract.md).
+**M5 T234 S7 closed by P2 review:** replacing direct implementation access with
+hundreds of test-only fixture wrappers would be overbuilt. Tests may directly
+use existing implementation state when they test the same module and introduce
+neither mirror state nor alternate runtime behavior. See [the S7
+record](m5-t234-s7-fixture-contract.md).
 
 **M5 T234 S3 complete:** `core/utils` is now the strict neutral utility/callback
 layer. VM machine/platform/profile no longer import `core/product`; composition

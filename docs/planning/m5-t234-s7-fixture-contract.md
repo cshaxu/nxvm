@@ -1,56 +1,33 @@
-# M5 T234 S7: Fixture Contract Closure
+# M5 T234 S7: Fixture Contract Review
 
 ## Objective
 
-Remove raw mutable session and device borrows from the test fixture without
-weakening the existing system and device smoke coverage.
+Review whether raw mutable session and device borrows require a new test
+contract.
 
 ## Contract
 
-The fixture may expose only behavior-level operations, immutable snapshots,
-and boolean/assertion helpers. It must not return `core_machine`, device,
-transport, control, BIOS, platform-run, or other session-owned object pointers.
-It must not cast away `const`.
+**Decision: do not implement P3--P6.** The proposed fixture facade would add
+test-only APIs solely to conceal implementation pointers already legitimately
+used inside the same production module. That violates the repository's
+minimalism rule. Tests may directly use existing implementation state when they
+exercise the same module without mirror state or an alternate runtime route.
 
 ## Subtasks
 
-### P2: Machine Contract Design
+### P2: Minimalism Review
 
-Inventory every `core_machine` fixture borrow and define the smallest action
-and immutable-observation API needed for execution, memory, display, timing,
-and diagnostics. No test migration occurs in P2.
+Audit found the proposed contract would replace roughly 458 existing direct
+uses with test-only wrappers while adding no production behavior or isolation.
+P2 closes with the above decision and the coding-standard rule.
 
-### P3: Machine Contract Migration
+### P3--P6: Not Admitted
 
-Implement P2 actions/snapshots and migrate every machine-facing smoke test.
-The fixture must no longer return `core_machine *`.
+The machine, device, platform/control, and closure-facade migrations are
+rejected as overbuilt. Future changes may add a helper only under the coding
+standard's explicit justification rule.
 
-### P4: Device Contract Migration
+## Closure
 
-Replace FDD, FDC, HDD, HDC, CMOS, BIOS, block-provider, and debug raw borrows
-with explicit media/device actions, snapshots, and assertions. This removes all
-device and firmware pointer returns.
-
-### P5: Platform And Control Contract Migration
-
-Replace request/mouse transport, presentation mailbox, run context/handle, and
-control raw borrows with event injection, display-mode, lifecycle, and
-execution-control actions plus immutable snapshots.
-
-### P6: Closure Gate
-
-Remove allocation and legacy storage helpers, delete all remaining raw-borrow
-APIs, and extend the static gate to reject session-owned pointer returns and
-const-removing casts. Run the complete GCC gate.
-
-## Exit Conditions
-
-- `vm_session_fixture.h` contains no raw session-owned object pointer return.
-- No test includes composition `session.h`.
-- The fixture implementation contains no const-removing cast.
-- The static boundary gate and all current GCC smoke tests pass.
-
-## Active Subtask
-
-**P2 active.** P3--P6 remain pending and may not begin until the P2 machine
-contract is reviewed in this packet.
+**P2 complete; S7 closed by decision.** No code migration or new test interface
+is warranted.
