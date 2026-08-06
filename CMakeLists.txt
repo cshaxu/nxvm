@@ -695,6 +695,10 @@ add_executable(core-machine-cga-graphics-port-smoke
     tests/machine/core_machine_cga_graphics_port_smoke.c
 )
 target_link_libraries(core-machine-cga-graphics-port-smoke PRIVATE core-machine)
+add_executable(core-machine-cga-640-port-smoke
+    tests/machine/core_machine_cga_640_port_smoke.c
+)
+target_link_libraries(core-machine-cga-640-port-smoke PRIVATE core-machine)
 add_executable(core-machine-ega-sequencer-port-smoke
     tests/machine/core_machine_ega_sequencer_port_smoke.c
 )
@@ -909,6 +913,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     vm-keyboard-set1-mapper-smoke
     core-machine-vadp-text-smoke
     core-machine-cga-graphics-port-smoke
+    core-machine-cga-640-port-smoke
     core-machine-ega-sequencer-port-smoke
     core-machine-ega-controller-port-smoke
     core-machine-ega-planar-port-smoke

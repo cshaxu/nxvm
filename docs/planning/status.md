@@ -2,11 +2,13 @@
 
 ## Current Work
 
-**M5 idle after T253 S3: next task awaits an approved packet.**
+**M5 T254 S1 active: define digital CGA and 6845-visible contract.**
 
-T253 closes only multi-sector ATA PIO task-file count progression. IDE DMA,
-ATAPI, LBA48, cache, secondary channels, slave devices, extra topology, and
-host-clock timing remain separate admissions.
+Original request: admit a bounded `640x200x2` digital CGA slice plus only the
+corpus-required 6845-visible behavior, with VADP as sole owner and no platform,
+BIOS, host-clock, or second-state shortcut. The active packet is
+[T254](m5-t254-digital-cga-6845.md): S1 records current ports/memory/snapshot
+state and adds only its negative-control baseline probe. S2/S3 remain pending.
 
 | Closure | Evidence |
 | --- | --- |
@@ -14,9 +16,9 @@ host-clock timing remain separate admissions.
 | T252 | Composition owns the sole run-handle teardown sequence; artifact `0.5.0251` and 86/86 current CTest pass. |
 | T253 | ATA PIO sector-count progression is controller-owned; artifact `0.5.0252` and 87/87 current CTest pass. |
 
-This explicit idle state is permitted only after a completed task closes and
-before a new task packet is approved. Existing unstarted hardware work begins
-at T254; completed task identities and artifact revisions do not change.
+T254 allocates artifact revision `0.5.0253` only at behavior-changing S3
+closure. Its stop conditions prohibit a platform VRAM path, VM VADP shadow,
+host-time raster, undefined mode, or retained UX regression.
 
 ## Current Technical Baseline
 
