@@ -43,6 +43,7 @@ endif()
 set(PROJECT_PROBE_DIR "${CMAKE_BINARY_DIR}/probes")
 
 add_library(core-machine STATIC
+    src/core/machine/clock.c
     src/core/machine/debug.c
     src/core/machine/entry_plan_interface.c
     src/core/machine/machine.c
@@ -132,6 +133,10 @@ target_link_libraries(core-machine-scheduler-smoke PRIVATE core-machine)
 add_executable(core-machine-timing-checkpoint-smoke
     tests/core/machine_timing_checkpoint_smoke.c)
 target_link_libraries(core-machine-timing-checkpoint-smoke PRIVATE core-machine)
+
+add_executable(core-machine-rational-clock-smoke
+    tests/core/machine_rational_clock_smoke.c)
+target_link_libraries(core-machine-rational-clock-smoke PRIVATE core-machine)
 
 add_executable(core-machine-real-mode-tick-smoke
     tests/machine/core_machine_real_mode_tick_smoke.c)
@@ -903,6 +908,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-time-smoke
     core-machine-scheduler-smoke
     core-machine-timing-checkpoint-smoke
+    core-machine-rational-clock-smoke
     core-machine-real-mode-tick-smoke
     core-machine-real-mode-corpus-smoke
     core-machine-trace-context-smoke
@@ -1310,6 +1316,13 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMENT "Verifying VM CMOS/RTC deterministic-time boundary"
         VERBATIM)
     add_dependencies(run-current-smokes verify-cmos-rtc-boundary)
+
+    add_custom_target(verify-rational-clock-boundary
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_rational_clock_boundary.cmake"
+        COMMENT "Verifying core rational device-clock boundary"
+        VERBATIM)
+    add_dependencies(run-current-smokes verify-rational-clock-boundary)
 
     add_custom_target(verify-ata-pio-feature-boundary
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}

@@ -31,7 +31,8 @@ C_INT main(C_VOID)
     C_INT failed = 0;
 
     config.ticks_per_instruction = 1u;
-    config.pit_elapsed_ticks_per_input_tick = 4u;
+    config.clock_plan.pit.numerator = 1u;
+    config.clock_plan.pit.denominator = 4u;
     failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK;
     port = core_machine_configuration_port_borrow(machine);
     pit = core_machine_configuration_shared_pit_borrow(machine);

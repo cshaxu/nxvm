@@ -177,8 +177,7 @@ C_INT vm_session_create(const vm_session_config *config, vm_session **out_sessio
         session->core_machine_config.fpu_profile = config->fpu_profile;
         session->core_machine_config.ticks_per_instruction =
             session->profile->ticks_per_instruction;
-        session->core_machine_config.pit_elapsed_ticks_per_input_tick =
-            session->profile->pit_elapsed_ticks_per_input_tick;
+        session->core_machine_config.clock_plan = session->profile->clock_plan;
         session->core_machine_config.kbc_typematic_initial_ticks =
             session->profile->kbc_typematic_initial_ticks;
         session->core_machine_config.kbc_typematic_repeat_ticks =
@@ -191,8 +190,7 @@ C_INT vm_session_create(const vm_session_config *config, vm_session **out_sessio
         session->core_machine_config.fpu_profile = session->profile->fpu_profile;
         session->core_machine_config.ticks_per_instruction =
             session->profile->ticks_per_instruction;
-        session->core_machine_config.pit_elapsed_ticks_per_input_tick =
-            session->profile->pit_elapsed_ticks_per_input_tick;
+        session->core_machine_config.clock_plan = session->profile->clock_plan;
         session->core_machine_config.kbc_typematic_initial_ticks =
             session->profile->kbc_typematic_initial_ticks;
         session->core_machine_config.kbc_typematic_repeat_ticks =

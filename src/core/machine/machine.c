@@ -178,32 +178,47 @@ static uint32_t core_machine_resolve_ticks_per_instruction(uint32_t ticks)
     return ticks == 0u ? 1u : ticks;
 }
 
-static uint32_t core_machine_resolve_pit_elapsed_ticks_per_input_tick(
-    uint32_t ticks)
+static C_INT core_machine_clock_plan_is_valid(
+    const core_machine_clock_plan *plan)
 {
-    return ticks == 0u ? 1u : ticks;
+    return plan != STD_NULL &&
+        core_machine_clock_ratio_is_valid(&plan->dma) &&
+        core_machine_clock_ratio_is_valid(&plan->pit) &&
+        core_machine_clock_ratio_is_valid(&plan->vadp) &&
+        core_machine_clock_ratio_is_valid(&plan->kbc) &&
+        core_machine_clock_ratio_is_valid(&plan->provider);
 }
 
 static C_VOID core_machine_advance_scheduler(core_machine *machine,
     uint64_t elapsed_ticks)
 {
+    uint64_t dma_ticks;
     uint64_t pit_ticks;
+    uint64_t vadp_ticks;
+    uint64_t kbc_ticks;
+    uint64_t provider_ticks;
 
+    dma_ticks = core_machine_clock_domain_advance(&machine->dma_clock,
+        elapsed_ticks);
+    pit_ticks = core_machine_clock_domain_advance(&machine->pit_clock,
+        elapsed_ticks);
+    vadp_ticks = core_machine_clock_domain_advance(&machine->vadp_clock,
+        elapsed_ticks);
+    kbc_ticks = core_machine_clock_domain_advance(&machine->kbc_clock,
+        elapsed_ticks);
+    provider_ticks = core_machine_clock_domain_advance(&machine->provider_clock,
+        elapsed_ticks);
     core_machine_dma_advance(&machine->shared_dma_latch,
         &machine->shared_dma_primary, &machine->shared_dma_secondary,
-        &machine->executor_memory, elapsed_ticks);
-    pit_ticks = (uint64_t)machine->pit_elapsed_tick_remainder + elapsed_ticks;
-    machine->pit_elapsed_tick_remainder = (uint32_t)(pit_ticks %
-        machine->pit_elapsed_ticks_per_input_tick);
-    core_machine_pit_advance(&machine->shared_pit, pit_ticks /
-        machine->pit_elapsed_ticks_per_input_tick);
+        &machine->executor_memory, dma_ticks);
+    core_machine_pit_advance(&machine->shared_pit, pit_ticks);
     core_machine_vadp_advance(&machine->shared_vadp, &machine->executor_memory,
-        elapsed_ticks);
-    core_machine_kbc_advance(&machine->shared_kbc, elapsed_ticks);
+        vadp_ticks);
+    core_machine_kbc_advance(&machine->shared_kbc, kbc_ticks);
     if (machine->execution_provider != STD_NULL &&
-        machine->execution_provider->advance != STD_NULL) {
-        machine->execution_provider->advance(machine->execution_provider_context,
-            elapsed_ticks);
+        machine->execution_provider->advance_time != STD_NULL) {
+        machine->execution_provider->advance_time(
+            machine->execution_provider_context, provider_ticks);
     }
     core_machine_pic_refresh(&machine->shared_pic_master,
         &machine->shared_pic_slave);
@@ -367,7 +382,7 @@ type_status core_machine_bind_execution_provider(core_machine *machine,
         return TYPE_STATUS_INVALID_STATE;
     }
     if (provider != STD_NULL && provider->reset == STD_NULL &&
-        provider->refresh == STD_NULL && provider->advance == STD_NULL) {
+        provider->refresh == STD_NULL && provider->advance_time == STD_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     machine->execution_provider = provider;
@@ -488,7 +503,8 @@ type_status core_machine_create(
     if (config == STD_NULL || out_machine == STD_NULL ||
         !core_machine_valid_cpu_profile(
             core_machine_resolve_cpu_profile(config->cpu_profile)) ||
-        !core_machine_valid_fpu_profile(config->fpu_profile)) {
+        !core_machine_valid_fpu_profile(config->fpu_profile) ||
+        !core_machine_clock_plan_is_valid(&config->clock_plan)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
 
@@ -503,9 +519,19 @@ type_status core_machine_create(
     machine->cpu_profile = core_machine_resolve_cpu_profile(config->cpu_profile);
     machine->ticks_per_instruction =
         core_machine_resolve_ticks_per_instruction(config->ticks_per_instruction);
-    machine->pit_elapsed_ticks_per_input_tick =
-        core_machine_resolve_pit_elapsed_ticks_per_input_tick(
-            config->pit_elapsed_ticks_per_input_tick);
+    if (core_machine_clock_domain_initialize(&machine->dma_clock,
+            &config->clock_plan.dma) != TYPE_STATUS_OK ||
+        core_machine_clock_domain_initialize(&machine->pit_clock,
+            &config->clock_plan.pit) != TYPE_STATUS_OK ||
+        core_machine_clock_domain_initialize(&machine->vadp_clock,
+            &config->clock_plan.vadp) != TYPE_STATUS_OK ||
+        core_machine_clock_domain_initialize(&machine->kbc_clock,
+            &config->clock_plan.kbc) != TYPE_STATUS_OK ||
+        core_machine_clock_domain_initialize(&machine->provider_clock,
+            &config->clock_plan.provider) != TYPE_STATUS_OK) {
+        STD_FREE(machine);
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
     /* Zero is an explicit profile choice: without a calibrated guest-time
      * mapping, core-generated keyboard repeat must remain disabled. */
     machine->kbc_typematic_initial_ticks = config->kbc_typematic_initial_ticks;
@@ -590,7 +616,11 @@ static type_status core_machine_cold_reset(core_machine *machine)
     STD_ATOMIC_STORE(&machine->stop_requested, 0);
     machine->fault_detail = 0u;
     machine->elapsed_ticks = 0u;
-    machine->pit_elapsed_tick_remainder = 0u;
+    core_machine_clock_domain_reset(&machine->dma_clock);
+    core_machine_clock_domain_reset(&machine->pit_clock);
+    core_machine_clock_domain_reset(&machine->vadp_clock);
+    core_machine_clock_domain_reset(&machine->kbc_clock);
+    core_machine_clock_domain_reset(&machine->provider_clock);
     machine->entry_plan_applied = TYPE_FALSE;
     core_machine_cpu_diagnostic_reset(machine);
     if (machine->execution_provider != STD_NULL &&
