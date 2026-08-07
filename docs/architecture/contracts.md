@@ -396,16 +396,34 @@ without booting a full PC. The provider boundary therefore keeps core usable
 for focused instruction tests and lets VM/DOS profiles differ without teaching
 core about PC/AT, DOS, Windows, or a host OS.
 
-T270 will replace the retained transitional single-slot block boundary with a
-frozen multi-device core media-provider contract. That contract will report
-device identity, capabilities, generation, geometry, logical-sector I/O, and
-typed media failure; it is neither a controller nor a host-filesystem
-interface. T271 will add the distinct `core/platform` host capability surface:
-opaque file, directory, stream, sampled-clock, copied-input, cancellation, and
-typed-result primitives. Composition adapts a host resource obtained through
-that platform surface into a device-level media provider. Paths, mounts,
-persistence, drive letters, DOS namespace, wildcard semantics, and sandbox
-policy remain above core.
+### Frozen Core Media Contract (T270)
+
+T270 replaces the retained transitional single-slot block boundary with a
+frozen multi-device `core/machine` media-provider contract. A media provider
+has a stable opaque device identity; copied capability/status view
+(`present`, `removable`, `read-only`, `flushable`, `geometry-known`, and
+`change-detectable`); a monotonic generation at the exact mount, eject, or
+media-change boundary; copied byte-range and logical-sector I/O; optional
+CHS/LBA geometry; format; flush; and typed `absent`, `changed`, `read-only`,
+`invalid-range`, `transient`, and `permanent` failures. All byte counts,
+alignment, sector sizes, ranges, and generation observations are explicit.
+
+The provider owns its backing state and remains alive through the frozen
+machine configuration. Controllers may own a real transfer buffer, but never
+a private media cache, geometry copy, or fallback path that compensates for a
+contract omission. The provider is neither a controller nor a host-filesystem
+interface: it knows no path, handle, mount UI, drive letter, DOS namespace,
+persistence policy, or PC/AT topology. The transitional one-slot block API is
+retained only until T272 removes its consumers; it must not become a forwarding
+facade.
+
+T271 admits only the distinct `core/platform` opaque backing resource needed
+for the media adapter: copied byte-range read/write, size, flush, close, typed
+result, and ownership. Existing copied input, wait, and cancellation contracts
+are reused rather than duplicated. Composition selects a host path or other
+product policy before constructing that opaque resource, then adapts it into a
+device-level media provider. Paths, mounts, persistence, drive letters, DOS
+namespace, wildcard semantics, and sandbox policy remain above core.
 
 ## Core Machine: Hardware IRQ
 
