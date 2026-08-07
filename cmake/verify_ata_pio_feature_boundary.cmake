@@ -17,7 +17,7 @@ endif()
 if(core_fixture MATCHES "#include[ \t]+\"vm/")
     message(FATAL_ERROR "Core ATA fixture retains VM vocabulary")
 endif()
-foreach(required IN ITEMS "core_machine_configuration_shared_hdc_borrow"
+foreach(required IN ITEMS "core_machine_configuration_hdc_borrow"
     "core_machine_hdc_connect" "M5:T278:S3:CORE-HDC:OK")
     string(FIND "${core_fixture}" "${required}" fixture_position)
     if(fixture_position EQUAL -1)

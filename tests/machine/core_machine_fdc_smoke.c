@@ -52,7 +52,7 @@ C_INT main(C_VOID)
     core_machine_media_registry_initialize(&media);
     if (core_machine_create(&config, &machine) != TYPE_STATUS_OK) failed |= 0x01;
     if (!failed) {
-        fdc = core_machine_configuration_shared_fdc_borrow(machine);
+        fdc = core_machine_configuration_fdc_borrow(machine);
         port = core_machine_configuration_port_borrow(machine);
         if (fdc == STD_NULL || port == STD_NULL ||
             core_machine_media_registry_bind(&media, 1u, &media,

@@ -49,7 +49,7 @@ C_INT main(C_VOID)
     session = ((vm_session *)STD_CALLOC(1u, sizeof(vm_session)));
     if (session == STD_NULL) return 1;
     vm_session_initialize(session);
-    port = session->core_machine->shared_fdc.connect.port;
+    port = session->core_machine->fdc.connect.port;
     if (!session->active || port == STD_NULL) failed = 1;
     core_machine_port_write(port, 0x03f2u, 0x1cu);
 
@@ -60,20 +60,20 @@ C_INT main(C_VOID)
     failed |= (result[0] & core_machine_fdc_ST0_ABNORMAL) == 0u;
 
     vm_machine_fdd_create_for(&session->fdd);
-    core_machine_fdc_refresh(&session->core_machine->shared_fdc);
+    core_machine_fdc_refresh(&session->core_machine->fdc);
     failed |= (core_machine_port_read(port, 0x03f7u) & VFDC_DIR_DC) == 0u;
     fdc_command(port, (const type_unsigned_8[]){ 0x0fu, 0x00u, 0x00u }, 3u);
     fdc_command(port, (const type_unsigned_8[]){ 0x08u }, 1u);
     failed |= !fdc_read_result(port, result, 2u);
-    core_machine_fdc_refresh(&session->core_machine->shared_fdc);
+    core_machine_fdc_refresh(&session->core_machine->fdc);
     failed |= (core_machine_port_read(port, 0x03f7u) & VFDC_DIR_DC) != 0u;
 
     fdc_command(port, specify_non_dma, sizeof(specify_non_dma));
     fdc_command(port, format_track, sizeof(format_track));
     fdc_command(port, format_id, sizeof(format_id));
     failed |= !core_machine_pic_scan_interrupt(
-        session->core_machine->shared_fdc.connect.irq_source.master,
-        session->core_machine->shared_fdc.connect.irq_source.slave);
+        session->core_machine->fdc.connect.irq_source.master,
+        session->core_machine->fdc.connect.irq_source.slave);
     failed |= !fdc_read_result(port, result, sizeof(result));
     failed |= result[0] != core_machine_fdc_ST0_NORMAL;
     fdc_command(port, (const type_unsigned_8[]){ 0x08u }, 1u);

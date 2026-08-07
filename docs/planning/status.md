@@ -2,14 +2,14 @@
 
 ## Current Work
 
-**M5 T281 S1: Core FDC/HDC Naming Contract -- active.**
+**M5 T281 S2: Core FDC/HDC Naming Migration -- active.**
 
 - **Original request:** rename `core_machine.shared_fdc/shared_hdc` and their
   borrow APIs to `fdc/hdc`, without changing controller lifecycle, port route,
   media behavior, composition, Console, or boot behavior.
-- **S1 deliverable:** inventory every production, test, static-gate, and
-  current-contract use; freeze a source-only rename map and confirm that no
-  second storage object or compatibility alias is permitted.
+- **S1 closed:** all live uses are field/API references to the single core
+  controller objects, their configuration-window borrows, focused smoke, or
+  static boundary checks. No alias or second storage object is admitted.
 - **S2 deliverable:** perform the complete field/API/call-site rename in the
   same core owner; remove all production old-name references without aliases.
 - **S3 deliverable:** run focused FDC/HDC smoke plus current GCC/CTest gates,

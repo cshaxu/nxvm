@@ -12,12 +12,12 @@ C_INT main(C_VOID)
 
     if (vm_session_create(STD_NULL, &session) != TYPE_STATUS_OK) return 1;
     if (!session->active || session->profile == STD_NULL ||
-        session->core_machine->shared_fdc.connect.config.dor_port != 0x03f2u ||
-        session->core_machine->shared_fdc.connect.config.status_port != 0x03f4u ||
-        session->core_machine->shared_fdc.connect.config.data_port != 0x03f5u ||
-        session->core_machine->shared_fdc.connect.config.direction_port != 0x03f7u ||
-        session->core_machine->shared_fdc.connect.config.irq != 6u ||
-        session->core_machine->shared_fdc.connect.config.dma_channel != 2u) {
+        session->core_machine->fdc.connect.config.dor_port != 0x03f2u ||
+        session->core_machine->fdc.connect.config.status_port != 0x03f4u ||
+        session->core_machine->fdc.connect.config.data_port != 0x03f5u ||
+        session->core_machine->fdc.connect.config.direction_port != 0x03f7u ||
+        session->core_machine->fdc.connect.config.irq != 6u ||
+        session->core_machine->fdc.connect.config.dma_channel != 2u) {
         vm_session_destroy(session);
         return 1;
     }

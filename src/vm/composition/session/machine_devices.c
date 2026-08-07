@@ -112,7 +112,7 @@ C_VOID vm_session_machine_devices_initialize_fdc(vm_session *session)
     core_machine_fdc *fdc;
 
     if (session == STD_NULL) return;
-    fdc = core_machine_configuration_shared_fdc_borrow(session->core_machine);
+    fdc = core_machine_configuration_fdc_borrow(session->core_machine);
     if (fdc == STD_NULL) return;
     ports = vm_profile_default_pc_at_port_range_find(session->profile,
         VM_PROFILE_DEFAULT_PC_AT_DEVICE_FDC);
@@ -151,7 +151,7 @@ C_INT vm_session_machine_devices_initialize_hdc(vm_session *session)
 
     if (session == STD_NULL || session->profile == STD_NULL ||
         session->core_machine == STD_NULL) return 0;
-    hdc = core_machine_configuration_shared_hdc_borrow(session->core_machine);
+    hdc = core_machine_configuration_hdc_borrow(session->core_machine);
     if (hdc == STD_NULL) return 0;
     ports = &session->profile->hdc_pio;
     if (ports->data_port != 0x01f0u || ports->error_features_port != 0x01f1u ||
