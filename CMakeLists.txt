@@ -694,6 +694,8 @@ add_executable(core-machine-media-provider-smoke
 target_link_libraries(core-machine-media-provider-smoke PRIVATE core-machine)
 add_executable(core-machine-rtc-smoke tests/machine/core_machine_rtc_smoke.c)
 target_link_libraries(core-machine-rtc-smoke PRIVATE core-machine)
+add_executable(core-mantle-shape-smoke tests/machine/core_mantle_shape_smoke.c)
+target_link_libraries(core-mantle-shape-smoke PRIVATE core-machine core-platform)
 add_executable(vm-kbc-aux-guest-smoke
     tests/machine/vm_kbc_aux_guest_smoke.c
 )
@@ -970,6 +972,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-dma-channel-smoke
     core-machine-media-provider-smoke
     core-machine-rtc-smoke
+    core-mantle-shape-smoke
     vm-kbc-aux-guest-smoke
     vm-keyboard-set1-mapper-smoke
     core-machine-vadp-text-smoke
