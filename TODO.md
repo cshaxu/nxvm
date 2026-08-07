@@ -97,6 +97,13 @@ These are the next owned admissions, not permission to work in parallel.
   real CPL3 corpus, T261 admits task switching, and T263 keeps remaining
   instruction families corpus-specific. This remains lower ROI than the
   real-mode PC/AT device route.
+- [ ] **Core debug control-register mutation contract (`TODO(Medium)`).**
+  `vm/composition/session/debug_target.c` still directly writes `CR0`--`CR4`
+  through the debugger borrow. This is not a guest execution path, but it can
+  construct paging/control state that guest `MOV CRx` may not. Admit a
+  core-owned debug mutation contract only after preserving retained debugger
+  UX and defining lifecycle, validation, raw-override policy, and focused
+  regression; do not let VM composition acquire paging semantics.
 - [ ] **Present x87 (`TODO(Low)`, T262).** Define state, operations,
   exceptions, and `FWAIT` before enabling any 8087/287/387 profile.
 - [ ] **CPU-fault outcome audit (`TODO(Medium)`).** T214 established a

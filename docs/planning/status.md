@@ -2,8 +2,8 @@
 
 ## Current Work
 
-**M5 T258 S1 active: freeze the 80386 CPL0 paging contract and audit the
-retained executor.**
+**M5 T258 S2 active: implement the bounded core-only 80386 CPL0 paging
+baseline.**
 
 ### Original Request
 
@@ -28,6 +28,16 @@ core diagnostic `#PF`. The target artifact is `nxvm_0_5_0258.exe`.
 part of this CPU. T258 proves that supervisor behavior rather than fabricating
 a write-protect `#PF`; actual user write protection waits for T259's CPL3
 corpus.
+
+### S1 Result
+
+S1 is complete. The retained executor already had one core-owned two-level
+4 KiB walker, but its generic control-register decoder allowed guest writes
+outside T258's contract and fault rollback discarded a newly recorded `CR2`.
+T258 therefore keeps the single walker and executor, narrows `MOV CRx`, and
+retains page-fault `CR2` in the copied core diagnostic. The similar-issue
+sweep also found VM debugger raw control-register mutation; it is a separate
+debug-boundary debt recorded in `TODO.md`, not a second paging path.
 
 ### S1 Audit And Requirement Map
 

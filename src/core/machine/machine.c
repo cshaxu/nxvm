@@ -51,6 +51,7 @@ static C_VOID core_machine_cpu_diagnostic_record_fault(C_VOID *opaque,
     fault->ebx = cpu->data.ebx;
     fault->ecx = cpu->data.ecx;
     fault->edx = cpu->data.edx;
+    fault->cr2 = cpu->data.cr2;
     fault->esp = cpu->data.esp;
     fault->ebp = cpu->data.ebp;
     fault->esi = cpu->data.esi;

@@ -42,6 +42,7 @@ typedef struct core_machine_cpu_fault_snapshot {
     uint32_t ebx;
     uint32_t ecx;
     uint32_t edx;
+    uint32_t cr2;
     uint32_t esp;
     uint32_t ebp;
     uint32_t esi;

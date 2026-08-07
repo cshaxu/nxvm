@@ -150,6 +150,10 @@ add_executable(core-machine-80286-protected-mode-smoke
     tests/machine/core_machine_80286_protected_mode_smoke.c)
 target_link_libraries(core-machine-80286-protected-mode-smoke PRIVATE core-machine)
 
+add_executable(core-machine-80386-paging-smoke
+    tests/machine/core_machine_80386_paging_smoke.c)
+target_link_libraries(core-machine-80386-paging-smoke PRIVATE core-machine)
+
 add_executable(core-machine-stopped-lifecycle-smoke
     tests/core/machine_stopped_lifecycle_smoke.c
 )
@@ -916,6 +920,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-real-mode-tick-smoke
     core-machine-real-mode-corpus-smoke
     core-machine-80286-protected-mode-smoke
+    core-machine-80386-paging-smoke
     core-machine-trace-context-smoke
     core-machine-cpu-fault-diagnostic-smoke
     core-machine-configuration-smoke
