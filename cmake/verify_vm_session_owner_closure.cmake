@@ -2,9 +2,9 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/composition/session/session_interface.h" session_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/composition/session/session.h" session_header)
 foreach(forbidden IN ITEMS
-    "t_cmos *cmos;"
+    "core_machine_rtc *rtc;"
     "t_fdd *fdd;"
     "t_fdc *fdc;"
     "t_hdd *hdd;"

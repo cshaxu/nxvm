@@ -38,7 +38,7 @@ string(FIND "${lifecycle_source}" "vm_session_execution_provider_advance_time"
     lifecycle_position)
 string(FIND "${provider_lifecycle_source}" "vm_session_machine_devices_advance"
     provider_lifecycle_position)
-string(FIND "${devices_source}" "vm_machine_cmos_advance" cmos_position)
+string(FIND "${devices_source}" "core_machine_rtc_advance" cmos_position)
 string(FIND "${profile_header}" "core_machine_clock_plan" profile_position)
 if(provider_position EQUAL -1 OR lifecycle_position EQUAL -1 OR
     provider_lifecycle_position EQUAL -1 OR cmos_position EQUAL -1 OR

@@ -2,36 +2,30 @@
 
 ## Current Work
 
-**M5 T273 S2: Neutral MC146818 Mechanism Migration -- active.**
+**M5 T274 S1: Core-Only Mantle-Shape Fixture -- active.**
 
-- **Original request:** move the register/calendar/tick/IRQ-output mechanism
-  into `core/machine`; retain VM-only NMI policy, defaults, ROM firmware, and
-  PC/AT route selection.
-- **Audit:** the mutable controller currently combines neutral MC146818 state
-  with one VM callback: port 70h bit 7 calls `core_machine_set_nmi_mask`.
-  Its `VCMOS_POST`/INT assembly strings are default-ROM firmware, not device
-  mechanism, and must stay under the VM profile.
-- **S1 complete:** froze `core_machine_rtc` state/config contract, VM NMI
-  adapter, profile defaults/NVRAM boundary, and the retained RTC port corpus.
-- **S2 deliverable:** move the neutral mechanism with `git mv`, split default
-  ROM assembly strings into profile firmware, bind the PC/AT 70h/71h provider
-  from composition, and add a core-only RTC probe. Keep the session lifecycle
-  and sole CPU executor unchanged.
-- **Rules:** core does not know PC/AT port defaults, NMI, BDA, BIOS, host time,
-  or firmware. VM may extract port 70h bit 7 then delegate only index/data;
-  it may not mirror RTC register/calendar/IRQ state.
-- **Evidence:** current CMOS source/test inventory plus documentation
-  governance. S2 uses `git mv`, splits ROM strings from device code, and keeps
-  the current session lifecycle/run path intact.
-- **Stop:** stop and split if migration needs a core -> VM dependency, a
-  second RTC state object, profile-specific controller default, or host clock.
+- **Original request:** add a core-only mantle-shape fixture that creates a
+  machine, binds neutral machine/platform providers, freezes, resets, applies
+  an entry plan, runs bounded slices, and reports typed outcomes without VM,
+  firmware, UI, DOS, or external-runtime vocabulary.
+- **S1 deliverable:** audit the existing core create/bind/freeze/reset/entry
+  contracts and freeze a minimal fixture sequence, provider ownership, typed
+  result checks, and explicit non-goals.
+- **Rules:** this is a test fixture, not `src/mantle`; it may not introduce a
+  second executor, session, host filesystem policy, VM include, firmware, or
+  product-facing behavior.
+- **Evidence:** T270 media, T271 backing-resource, and T273 RTC contracts are
+  the admitted core surfaces. The fixture must prove only their composition
+  shape, not a future VDM ABI.
+- **Stop:** stop and split if any required operation needs VM/profile state,
+  direct host handles, global/TLS current object, or a new boot/run path.
 
 ## Current Technical Baseline
 
-- **T272 artifact identity:** `current-gcc` and
-  `verify-current-artifact-target` select `vm-0-5-0272`; static/ownership
-  checks and 105/105 CTest cases passed. Artifact `nxvm_0_5_0272.exe` SHA-256:
-  `3E4CF6782886C043E797EBECA4D6A4EB61399660E3F13291673B8696B679F99E`.
+- **T273 artifact identity:** `current-gcc` and
+  `verify-current-artifact-target` select `vm-0-5-0273`; static/ownership
+  checks and 106/106 CTest cases passed. Artifact `nxvm_0_5_0273.exe` SHA-256:
+  `5144E277818E960380AA31B92DD1D66659ADE75F18197FE068098A0081D3E5D6`.
 - **Core boundary:** T243--T246 retain checked physical memory, bounded `#UD`
   transitions, immutable ROM mapping, and atomic real-mode entry plans.
 - **Product boundary:** `nxvm.exe` is the retained runnable product. `mantle`,
@@ -51,6 +45,7 @@
 | T270 | Added the frozen multi-device core media contract and fake-provider corpus; retained the old single block slot only as T272's explicitly bounded migration source. |
 | T271 | Added a synchronous opaque core/platform backing resource with one close owner; existing copied input and cancellation contracts remain the only such facilities. |
 | T272 | Replaced the old single-slot block bridge with frozen FDD/HDD media providers and copied ROM geometry; FDC/HDC direct backing use remains explicitly deferred to T275/T277. |
+| T273 | Moved the neutral MC146818 register/calendar/tick/IRQ mechanism into core; VM retains profile NVRAM defaults and the PC/AT 70h bit-7 NMI/71h port adapter. |
 
 Detailed contracts, commands, artifact provenance, and prior closures are in
 [M5 History](../history/m5.md) and Git history. The [M5 convergence queue]
