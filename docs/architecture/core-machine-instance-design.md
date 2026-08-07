@@ -89,8 +89,8 @@ platform callback never mutates a machine.
 | --- | --- | --- |
 | machine, CPU, memory, ports, PIC/PIT/DMA/KBC/VADP | `core_machine` | One session-owned executor and device graph; composition configures it before freeze and drives bounded `core_machine_run`. |
 | RTC/CMOS controller | `core/machine/rtc.*` | T273 moved the neutral MC146818 mechanism to core; VM retains PC/AT defaults, NMI glue, host-time policy, and firmware. |
-| FDC controller | `core/machine/fdc.*` | The current `core_machine.shared_fdc` owns the neutral controller; T281 renames it `fdc` without changing ownership. |
-| ATA PIO controller | `core/machine/hdc.*` | The current `core_machine.shared_hdc` owns the neutral controller; T281 renames it `hdc` without changing ownership. |
+| FDC controller | `core/machine/fdc.*` | `core_machine.fdc` owns the neutral controller. |
+| ATA PIO controller | `core/machine/hdc.*` | `core_machine.hdc` owns the neutral controller. |
 | FDD/HDD backing, paths, mount/eject, persistence | VM composition and `vm/machine` backing objects | T270 exposes device-level media operations; T271 supplies only opaque host primitives. Paths and product policy remain in composition. |
 | firmware and profile declaration | `vm/profile/default_profile` plus VM composition | Profile content stays VM-owned; it binds only public core contracts. |
 | trace/debug/presentation | core state with VM product/platform adapters | Adapters observe or command an explicit session; no selected-machine facade is permitted. |

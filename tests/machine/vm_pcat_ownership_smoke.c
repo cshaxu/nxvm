@@ -15,7 +15,7 @@ C_INT main(C_VOID)
 
     if (session == STD_NULL) return 1;
     vm_session_initialize(session);
-    port = session->core_machine->shared_fdc.connect.port;
+    port = session->core_machine->fdc.connect.port;
     if (!session->active || session->core_machine == STD_NULL ||
         port == STD_NULL) {
         failed = 1;

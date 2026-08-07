@@ -77,7 +77,7 @@ C_INT main(C_VOID)
     core_machine_media_registry_initialize(&registry);
     if (core_machine_create(&config, &machine) != TYPE_STATUS_OK) failed |= 0x01;
     if (!failed) {
-        hdc = core_machine_configuration_shared_hdc_borrow(machine);
+        hdc = core_machine_configuration_hdc_borrow(machine);
         ports = core_machine_hdc_port_provider();
         if (hdc == STD_NULL || ports == STD_NULL ||
             core_machine_media_registry_bind(&registry, 1u, &media,
@@ -106,12 +106,12 @@ C_INT main(C_VOID)
                     TYPE_STATUS_OK ||
                 status != (CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_DSC |
                     CORE_MACHINE_HDC_STATUS_DRQ) ||
-                !core_machine_hdc_irq_pending(&machine->shared_hdc) ||
+                !core_machine_hdc_irq_pending(&machine->hdc) ||
                 core_machine_bus_read(machine, hdc_config.data_port, &word) !=
                     TYPE_STATUS_OK || word != 0x0040u ||
                 core_machine_bus_read(machine, hdc_config.status_command_port,
                     &status) != TYPE_STATUS_OK ||
-                core_machine_hdc_irq_pending(&machine->shared_hdc)) {
+                core_machine_hdc_irq_pending(&machine->hdc)) {
                 failed |= 0x04;
             }
         }

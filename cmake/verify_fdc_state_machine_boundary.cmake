@@ -27,7 +27,7 @@ foreach(source_text IN ITEMS "${fdc_source}" "${fdc_header}" "${core_fixture}")
     endif()
 endforeach()
 
-foreach(required IN ITEMS "core_machine_configuration_shared_fdc_borrow"
+foreach(required IN ITEMS "core_machine_configuration_fdc_borrow"
     "core_machine_fdc_connect" "M5:T276:S3:CORE-FDC:OK")
     string(FIND "${core_fixture}" "${required}" position)
     if(position EQUAL -1)
@@ -41,7 +41,7 @@ foreach(source_text IN ITEMS "${fdc_source}" "${fdc_header}" "${core_fixture}")
     endif()
 endforeach()
 
-foreach(required IN ITEMS "core_machine_configuration_shared_fdc_borrow"
+foreach(required IN ITEMS "core_machine_configuration_fdc_borrow"
     "core_machine_fdc_connect" "M5:T276:S3:CORE-FDC:OK")
     string(FIND "${core_fixture}" "${required}" position)
     if(position EQUAL -1)

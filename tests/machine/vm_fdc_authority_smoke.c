@@ -23,14 +23,14 @@ C_INT main(C_VOID)
     vm_session_initialize(session);
     machine = session;
     if (machine == STD_NULL ||
-        machine->core_machine->shared_fdc.connect.media_registry !=
+        machine->core_machine->fdc.connect.media_registry !=
             &machine->media_registry ||
-        machine->core_machine->shared_fdc.connect.media_id != VM_SESSION_MEDIA_FDD_ID ||
-        machine->core_machine->shared_fdc.connect.dma_request.core_owner == STD_NULL ||
-        machine->core_machine->shared_fdc.connect.dma_request.channel != 2u ||
-        machine->core_machine->shared_fdc.connect.irq_source.master == STD_NULL ||
-        machine->core_machine->shared_fdc.connect.irq_source.slave == STD_NULL ||
-        machine->core_machine->shared_fdc.connect.port == STD_NULL) {
+        machine->core_machine->fdc.connect.media_id != VM_SESSION_MEDIA_FDD_ID ||
+        machine->core_machine->fdc.connect.dma_request.core_owner == STD_NULL ||
+        machine->core_machine->fdc.connect.dma_request.channel != 2u ||
+        machine->core_machine->fdc.connect.irq_source.master == STD_NULL ||
+        machine->core_machine->fdc.connect.irq_source.slave == STD_NULL ||
+        machine->core_machine->fdc.connect.port == STD_NULL) {
         vm_session_finalize(session);
         STD_FREE(session);
         return 1;
