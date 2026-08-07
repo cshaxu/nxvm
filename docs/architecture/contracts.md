@@ -485,8 +485,8 @@ leaves the old bytes, geometry, read-only state, cursor, presence, and
 generation published; it must not leave a half-commit. Explicit persistence
 (`remove/save`) writes and closes the requested output before it changes any
 published media field, so write/close failure retains the mounted medium. FDD
-retains its admitted fixed geometry. HDD
-accepts arbitrary raw byte length; its guest-visible virtual capacity is
+retains its admitted fixed geometry. HDD accepts any **non-sector-aligned raw
+length within the admitted in-memory and LBA28 capacity**; its guest-visible virtual capacity is
 `ceil(raw_bytes / 512) * 512`, tail reads zero-fill, and a write into virtual
 padding makes the next successful persistence output a complete final sector.
 That complete length then becomes the backing truth. ATA range checks use the
@@ -494,6 +494,8 @@ virtual capacity, bounded only by the admitted LBA28 sector limit and available
 candidate allocation; CHS is only a compatibility mapping, never HDD admission
 policy. File-backed replacement uses the C facade's 64-bit seek/tell route, so
 Windows `long` width cannot truncate a valid raw-image length before admission.
+Large or sparse file-backed media needs a separate provider/lifecycle admission;
+it is not supplied by this resident-image implementation.
 
 ### Existing Host-Surface Boundary (T282)
 

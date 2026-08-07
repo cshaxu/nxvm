@@ -2,7 +2,25 @@
 
 ## Current Work
 
-**Idle.** T283 is closed; admit T284 only through a new approved packet.
+**M5 T283 S4: HDD Contract And Legacy Cleanup -- active.**
+
+- **Original request:** assess the raw-HDD capacity claim, unused CHS transfer
+  API, temporary NTDOS64 build-tree hygiene, and duplicate bounded-formatting
+  branches; repair valid in-scope defects under the current T283 identity.
+- **Scope:** correct the raw-HDD contract to its actual admitted capability
+  (arbitrary byte alignment within LBA28 and allocated in-memory capacity),
+  record sparse/file-backed large-media backing as a separate future admission,
+  remove the uncalled legacy CHS pointer/transfer/format API, remove duplicate
+  error-clearing blocks, and ignore disposable `build-ntdos64-*` probe trees.
+- **Rules:** no media-provider redesign, sparse backend, ATA command expansion,
+  topology change, VM/firmware shortcut, or NXVM UX change. The existing
+  provider remains the only HDD I/O path.
+- **Evidence:** repository-wide caller sweep for every deleted HDD API;
+  formatting corpus; FDD/HDD boot, controller media smokes, full current GCC/
+  CTest/static gates, and rebuilt `nxvm_0_5_0283.exe` with updated SHA.
+- **Stop:** stop and defer if large-media support requires backing-resource
+  lifecycle, persistence, ATA visibility, or host-I/O policy changes beyond
+  the current in-memory provider.
 
 ## Current Technical Baseline
 

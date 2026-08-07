@@ -6,9 +6,6 @@
 
 
 
-#include "core/machine/dma.h"
-
-
 #include "vm/machine/hdd.h"
 
 static core_machine_media_result vm_machine_hdd_media_query(C_VOID *context,
@@ -109,23 +106,8 @@ const core_machine_media_provider *vm_machine_hdd_media_provider(C_VOID)
     return &provider;
 }
 
-static C_INT vm_machine_hdd_track_end(const t_hdd *hdd) {
-    return hdd->data.sector >= hdd->data.nsector + 1;
-}
-
-static C_INT vm_machine_hdd_cylinder_end(const t_hdd *hdd) {
-    return hdd->data.head == hdd->data.nhead - 1 &&
-        vm_machine_hdd_track_end(hdd);
-}
-
 STD_SIZE_T vm_machine_hdd_image_size(const t_hdd *hdd) {
     return hdd == STD_NULL ? 0u : hdd->connect.virtual_byte_count;
-}
-
-C_VOID vm_machine_hdd_set_pointer(t_hdd *hdd) {
-    hdd->connect.pCurrByte = hdd->connect.pImgBase +
-        ((hdd->data.cyl * hdd->data.nhead + hdd->data.head) *
-        hdd->data.nsector + (hdd->data.sector - 1)) * hdd->data.nbyte;
 }
 
 static C_INT vm_machine_hdd_capacity_from_raw(STD_SIZE_T raw_byte_count,
@@ -176,7 +158,6 @@ static C_VOID vm_machine_hdd_commit_candidate(t_hdd *hdd,
     type_virtual_address old_image = hdd->connect.pImgBase;
 
     hdd->connect.pImgBase = candidate;
-    hdd->connect.pCurrByte = candidate;
     hdd->connect.raw_byte_count = raw_byte_count;
     hdd->connect.virtual_byte_count = virtual_byte_count;
     hdd->connect.flagPaddingWritten = TYPE_FALSE;
@@ -184,64 +165,11 @@ static C_VOID vm_machine_hdd_commit_candidate(t_hdd *hdd,
     hdd->data.cyl = 0u;
     hdd->data.head = 0u;
     hdd->data.sector = 1u;
-    hdd->connect.transCount = 0u;
     hdd->connect.flagDiskExist = TYPE_TRUE;
     ++hdd->connect.media_generation;
     if (old_image != (type_virtual_address)STD_NULL) {
         STD_FREE((C_VOID *)old_image);
     }
-}
-
-C_VOID vm_machine_hdd_transfer_read(t_hdd *hdd, t_latch *latch) {
-    if (hdd == STD_NULL || latch == STD_NULL || vm_machine_hdd_cylinder_end(hdd)) {
-        return;
-    }
-    latch->data.byte = TYPE_DEREFERENCE_UNSIGNED_8(hdd->connect.pCurrByte);
-    hdd->connect.pCurrByte++;
-    hdd->connect.transCount++;
-    if (!(hdd->connect.transCount % hdd->data.nbyte)) {
-        hdd->data.sector++;
-        if (vm_machine_hdd_track_end(hdd)) {
-            hdd->data.sector = 1;
-            hdd->data.head++;
-        }
-        vm_machine_hdd_set_pointer(hdd);
-    }
-}
-C_VOID vm_machine_hdd_transfer_write(t_hdd *hdd, t_latch *latch) {
-    if (hdd == STD_NULL || latch == STD_NULL || vm_machine_hdd_cylinder_end(hdd)) {
-        return;
-    }
-    TYPE_DEREFERENCE_UNSIGNED_8(hdd->connect.pCurrByte) = latch->data.byte;
-    if ((STD_SIZE_T)(hdd->connect.pCurrByte - hdd->connect.pImgBase) >=
-        hdd->connect.raw_byte_count) {
-        hdd->connect.flagPaddingWritten = TYPE_TRUE;
-    }
-    hdd->connect.pCurrByte++;
-    hdd->connect.transCount++;
-    if (!(hdd->connect.transCount % hdd->data.nbyte)) {
-        hdd->data.sector++;
-        if (vm_machine_hdd_track_end(hdd)) {
-            hdd->data.sector = 1;
-            hdd->data.head++;
-        }
-        vm_machine_hdd_set_pointer(hdd);
-    }
-}
-C_VOID vm_machine_hdd_format_track(t_hdd *hdd, type_unsigned_8 fill_byte) {
-    type_native_unsigned i;
-    if (hdd == STD_NULL || hdd->data.cyl >= hdd->data.ncyl) {
-        return;
-    }
-    for (i = 0; i < hdd->data.nhead; ++i) {
-        hdd->data.head = TYPE_MASK_UNSIGNED_16(i);
-        hdd->data.sector = 1;
-        vm_machine_hdd_set_pointer(hdd);
-        STD_MEMSET((C_VOID *)hdd->connect.pCurrByte, fill_byte,
-            hdd->data.nsector * hdd->data.nbyte);
-        hdd->data.sector = hdd->data.nsector;
-    }
-    ++hdd->connect.media_generation;
 }
 
 C_VOID vm_machine_hdd_initialize(t_hdd *hdd) {
@@ -270,7 +198,6 @@ C_VOID vm_machine_hdd_finalize(t_hdd *hdd) {
     }
     if (hdd != STD_NULL) {
         hdd->connect.pImgBase = (type_virtual_address)STD_NULL;
-        hdd->connect.pCurrByte = (type_virtual_address)STD_NULL;
         hdd->connect.raw_byte_count = 0u;
         hdd->connect.virtual_byte_count = 0u;
         hdd->connect.flagPaddingWritten = TYPE_FALSE;
