@@ -254,7 +254,7 @@ meaning:
 | --- | --- | --- |
 | Deterministic `elapsed_ticks`, run budget, and core scheduler order | `core/machine` | `core_machine_run` advances only guest time; it never reads host time. |
 | Generic PIT counter/GATE/OUT behavior and its IRQ0 source | `core/machine` | A profile binds the output route; core does not update BIOS data or calendar state. |
-| MC146818-compatible register/calendar/event mechanism | planned optional `core/machine` device (T272) | It will consume a frozen clock binding and emit one configured IRQ source; no PC/AT defaults, NMI policy, BIOS, or host-time policy enter core. Until T272, the retained controller is VM-owned. |
+| MC146818-compatible register/calendar/event mechanism | planned optional `core/machine` device (T273) | It will consume a frozen clock binding and emit one configured IRQ source; no PC/AT defaults, NMI policy, BIOS, or host-time policy enter core. Until T273, the retained controller is VM-owned. |
 | PC/AT CMOS defaults, `70h/71h`/NMI glue, IRQ8 route, BIOS/POST and host-time policy | VM profile/composition | It selects and wires the optional core device without turning those choices into core defaults. |
 | BIOS `INT 08h`, BDA tick, and `INT 1Ah` services | VM profile firmware | Firmware consumes normal CPU/PIC delivery; neither core nor platform writes BDA time. |
 | Host clock, sleep, pacing, watchdog, and window cadence | root composition/platform | Host time may bound or pace a product loop but never advances guest time directly. |
@@ -379,7 +379,7 @@ can reuse it:
 
 - A reusable PIC, PIT, DMA, or generic video model may be implemented in
   `core/machine` and registered with a profile-selected configuration.
-- T272/T275/T277 may move optional MC146818, FDC, and ATA controller
+- T273/T276/T278 may move optional MC146818, FDC, and ATA controller
   mechanisms into `core/machine` only when their configuration is neutral and
   explicit. Until each migration completes, its retained implementation stays
   VM-owned. VM retains PC/AT wiring/defaults, firmware, media policy, backing
@@ -400,9 +400,12 @@ T270 will replace the retained transitional single-slot block boundary with a
 frozen multi-device core media-provider contract. That contract will report
 device identity, capabilities, generation, geometry, logical-sector I/O, and
 typed media failure; it is neither a controller nor a host-filesystem
-interface. VM composition will adapt its FDD/HDD backing objects to that
-device-level boundary. Paths, mounts, persistence, drive letters, and DOS
-namespace remain above core.
+interface. T271 will add the distinct `core/platform` host capability surface:
+opaque file, directory, stream, sampled-clock, copied-input, cancellation, and
+typed-result primitives. Composition adapts a host resource obtained through
+that platform surface into a device-level media provider. Paths, mounts,
+persistence, drive letters, DOS namespace, wildcard semantics, and sandbox
+policy remain above core.
 
 ## Core Machine: Hardware IRQ
 
@@ -495,13 +498,13 @@ global host-services object:
   Composition owns pacing, waiting, and watchdog policy; `core/machine` never
   reads host time.
 
-Filesystem, drive visibility, serial/parallel policy, and printing do not
-enter `core/platform` merely because they touch the host. VM media attachment
-and VDM path containment have distinct product and security meaning, so they
-remain in `vm/platform` and `vdm/platform` until both products demonstrate an
-identical, policy-free byte-stream capability worth promoting to core. A core
-media provider is not evidence for promoting host file/directory/stream APIs:
-composition adapts host resources to device-level media results.
+Filesystem product policy, drive visibility, serial/parallel policy, and
+printing do not enter `core/platform` merely because they touch the host. T271
+admits only the underlying opaque file/directory/stream primitives because the
+known external-consumer evidence establishes reuse. It exposes no DOS path,
+drive-letter, wildcard, sandbox, sharing, lock, mount, or UI policy. VM media
+attachment and VDM containment remain composition/product decisions;
+composition adapts a core/platform resource into a core/machine media result.
 
 ## Core Platform: Event, Frame, And Teardown Ownership
 

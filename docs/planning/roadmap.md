@@ -98,9 +98,10 @@ bounded M5 breakdown. **Non-goal:** implementation.
 foundation for Windows 3.x startup research and the later profile program.
 
 **Scope:** complete the admitted `core` versus `vm` boundary migration and its
-single-owner/single-path audit, including profile-neutral media contracts and
-optional RTC/FDC/ATA controller mechanisms with VM-owned PC/AT wiring and
-media policy; retain `vm/profile/default_profile`; strengthen
+single-owner/single-path audit, including profile-neutral media contracts,
+policy-free core/platform host capabilities, and optional RTC/FDC/ATA controller
+mechanisms with VM-owned PC/AT wiring and media policy; retain
+`vm/profile/default_profile`; strengthen
 the hardware and CPU corpus needed by real DOS and Windows 3.x startup
 experiments; preserve the retained NXVM Console/debugger, FDD/HDD boot, and
 developer artifacts. Core may admit only policy-free contracts with a concrete
@@ -124,7 +125,9 @@ applicable item.
 to Level 3 timing path, display/input/storage controller evidence, and the
 CPU/FPU subsets specifically required by a reproducible Windows 3.x checkpoint.
 M5 may use a core-only mantle-shape fixture to prove neutral configuration, but
-does not implement mantle or promote host filesystem/path policy into core.
+does not implement mantle. It admits only opaque policy-free host capability
+contracts into `core/platform`; host filesystem/path, mount, and DOS policy
+remain above core.
 It does not promise Windows 3.x or Windows 95 compatibility by itself; broad
 80386/486, profile-specific, and operating-system work remains evidence-led.
 

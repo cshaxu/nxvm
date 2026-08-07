@@ -41,9 +41,11 @@ active packet becomes an operational authority only after approval.
 - **M5 Td S31:** made `status.md` the sole current-baseline authority, retired
   completed T264--T266 records, and added a documentation-governance gate.
   This task changes no runtime behavior or active-task scope.
-- **M5 Td S32:** admitted the second core/composition migration T270--T277,
-  shifted the former forward queue to T278--T286, and kept host filesystem/path
-  policy outside core.
+- **M5 Td S32:** admitted the original second core/composition migration.
+- **M5 Td S33:** corrected it using the external-consumer boundary evidence:
+  T271 admits only opaque policy-free host capabilities in `core/platform`,
+  extends the migration through T278, and shifts the former forward queue to
+  T279--T287. Filesystem, path, mount, and DOS policy remain above core.
 
 ## Milestone State
 
