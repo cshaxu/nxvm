@@ -19,7 +19,7 @@ typedef struct core_machine_cpu_execution_context
     core_machine_cpu_execution_context;
 
 #define CORE_MACHINE_KBC_FIFO_CAPACITY 64u
-#define CORE_MACHINE_KBC_RESPONSE_CAPACITY 3u
+#define CORE_MACHINE_KBC_RESPONSE_CAPACITY 4u
 #define CORE_MACHINE_KBC_SCAN_SET_1 1u
 
 #define CORE_MACHINE_KBC_COMMAND_TRANSLATION 0x40u
@@ -49,6 +49,12 @@ typedef enum core_machine_kbc_pending_write {
     CORE_MACHINE_KBC_PENDING_AUX_DEVICE
 } core_machine_kbc_pending_write;
 
+typedef enum core_machine_kbc_aux_pending_parameter {
+    CORE_MACHINE_KBC_AUX_PENDING_NONE,
+    CORE_MACHINE_KBC_AUX_PENDING_SAMPLE_RATE,
+    CORE_MACHINE_KBC_AUX_PENDING_RESOLUTION
+} core_machine_kbc_aux_pending_parameter;
+
 typedef struct t_kbc_data {
     type_unsigned_8 command_byte;
     type_unsigned_8 output_port;
@@ -57,6 +63,7 @@ typedef struct t_kbc_data {
     type_unsigned_8 fifo_head;
     type_unsigned_8 fifo_count;
     core_machine_kbc_pending_write pending_write;
+    core_machine_kbc_aux_pending_parameter aux_pending_parameter;
     type_bool keyboard_enabled;
     type_bool scanning_enabled;
     type_bool system_flag;
@@ -66,7 +73,10 @@ typedef struct t_kbc_data {
     type_bool irq12_asserted;
     type_bool aux_enabled;
     type_bool aux_reporting_enabled;
+    type_bool aux_scaling_2_to_1;
     type_unsigned_8 aux_button_state;
+    type_unsigned_8 aux_resolution;
+    type_unsigned_8 aux_sample_rate;
     type_unsigned_8 scan_set;
     type_unsigned_8 led_state;
     type_unsigned_8 typematic;
