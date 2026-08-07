@@ -46,6 +46,7 @@ add_library(core-machine STATIC
     src/core/machine/clock.c
     src/core/machine/debug.c
     src/core/machine/entry_plan_interface.c
+    src/core/machine/fdc.c
     src/core/machine/machine.c
     src/core/machine/memory_interface.c
     src/core/machine/media_interface.c
@@ -329,7 +330,6 @@ set(CORE_MACHINE_SOURCES
     src/core/machine/dma.c
     src/core/machine/kbc.c
     src/core/machine/rtc.c
-    src/core/machine/fdc.c
 )
 add_library(core-platform STATIC
     src/core/platform/backing_resource_interface.c
@@ -694,6 +694,8 @@ add_executable(core-machine-media-provider-smoke
 target_link_libraries(core-machine-media-provider-smoke PRIVATE core-machine)
 add_executable(core-machine-rtc-smoke tests/machine/core_machine_rtc_smoke.c)
 target_link_libraries(core-machine-rtc-smoke PRIVATE core-machine)
+add_executable(core-machine-fdc-smoke tests/machine/core_machine_fdc_smoke.c)
+target_link_libraries(core-machine-fdc-smoke PRIVATE core-machine)
 add_executable(core-mantle-shape-smoke tests/machine/core_mantle_shape_smoke.c)
 target_link_libraries(core-mantle-shape-smoke PRIVATE core-machine core-platform)
 add_executable(vm-kbc-aux-guest-smoke
@@ -972,6 +974,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-dma-channel-smoke
     core-machine-media-provider-smoke
     core-machine-rtc-smoke
+    core-machine-fdc-smoke
     core-mantle-shape-smoke
     vm-kbc-aux-guest-smoke
     vm-keyboard-set1-mapper-smoke
@@ -1141,7 +1144,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0275 "0.5.0275")
+add_current_vm_artifact(vm-0-5-0276 "0.5.0276")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 

@@ -2,32 +2,26 @@
 
 ## Current Work
 
-**M5 T276 S2: Neutral FDC Mechanism Migration -- active.**
+**M5 T277 S1: Neutral ATA Media-Provider Decoupling -- active.**
 
-- **Original request:** move the now-neutral FDC state machine into
-  `core/machine` by `git mv`; VM retains only PC/AT topology, media identity,
-  port/IRQ/DMA bindings, profile firmware, and product behavior.
-- **S2 deliverable:** move the controller as one `git mv` unit into
-  `core/machine`, rebind the retained composition to its core contract, and
-  retain FDD/DOS regression behavior without a VM controller mirror.
-- **S1 complete:** `fdc.c` now depends only on core DMA/PIC/port/media APIs.
-  The neutral controller state/config and port handlers may move together;
-  `VFDC_POST` and BIOS INT 0Eh/40h assembly are default-ROM firmware and must
-  split into VM profile firmware before the move. The core config takes only
-  media registry/id, DMA binding, PIC route, and explicit port range; it has no
-  PC/AT default, image path, firmware, product, or host policy.
-- **Rules:** core owns DOR and all mutable controller state; VM must not retain
-  a controller mirror. Do not add multi-drive topology, host I/O, a second DMA
-  loop, or profile defaults in core.
-- **Stop:** stop and split if moving the controller needs a core -> VM include,
-  direct VM backing object, PC/AT default port/IRQ, or a changed boot/UI path.
+- **Original request:** decouple the retained ATA/HDC controller from direct
+  `t_hdd` storage through the frozen core media registry; retain VM-only
+  topology, image policy, firmware, and product behavior.
+- **S1 deliverable:** inventory every ATA/HDC direct backing access, freeze the
+  provider/config surface, and define the core and DOS regressions required
+  before any behavior change.
+- **Rules:** core continues to own RAM/PIC/time; VM machine owns ATA protocol
+  until T278. Do not add ATA DMA, host I/O, new commands, or a second media
+  route.
+- **Stop:** stop and split if decoupling requires a core -> VM include, a BIOS
+  shortcut, a changed boot/UI path, or undefined guest-visible timing.
 
 ## Current Technical Baseline
 
-- **T275 artifact identity:** `current-gcc` and
-  `verify-current-artifact-target` select `vm-0-5-0275`; static/ownership
-  checks and 107/107 CTest cases passed. Artifact `nxvm_0_5_0275.exe` SHA-256:
-  `0E79279BD1F981D8C573AEEE90AF8744042EE38B919A4B38866AD215CF4F7475`.
+- **T276 artifact identity:** `current-gcc` and
+  `verify-current-artifact-target` select `vm-0-5-0276`; static/ownership
+  checks and 108/108 CTest cases passed. Artifact `nxvm_0_5_0276.exe` SHA-256:
+  `D939FEB5F590996B94A47E4C08520D2662693BE8448AB4A333F2C462A261D50D`.
 - **Core boundary:** T243--T246 retain checked physical memory, bounded `#UD`
   transitions, immutable ROM mapping, and atomic real-mode entry plans.
 - **Product boundary:** `nxvm.exe` is the retained runnable product. `mantle`,
@@ -50,6 +44,7 @@
 | T273 | Moved the neutral MC146818 register/calendar/tick/IRQ mechanism into core; VM retains profile NVRAM defaults and the PC/AT 70h bit-7 NMI/71h port adapter. |
 | T274 | Added a core-only fixture proving one machine can bind neutral RTC/media/backing providers, freeze, reset, apply an entry plan, and run a bounded slice without VM vocabulary. |
 | T275 | Decoupled the retained FDC controller from `t_fdd`; it now consumes only frozen media provider operations while retaining its single DMA2/IRQ6 state machine. |
+| T276 | Moved the neutral FDC into `core_machine.shared_fdc`; composition only binds frozen PC/AT routes/media, while core owns controller lifecycle and the core-only FDC fixture. |
 
 Detailed contracts, commands, artifact provenance, and prior closures are in
 [M5 History](../history/m5.md) and Git history. The [M5 convergence queue]
