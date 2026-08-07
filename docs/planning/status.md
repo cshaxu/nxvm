@@ -79,6 +79,24 @@ as primary architectural reference and the local Bochs 2.6 checkout only to
 cross-check the 16-bit TSS limit and non-nested far-JMP busy/NT model; neither
 source is imported or a runtime dependency.
 
+### S2 Result
+
+S2 is complete. The old `_s_write_tss` stub now uses the one checked core
+logical-memory route. `_ser_jmp_far_tss()` is the only admitted task-switch
+owner: it prevalidates the current busy 16-bit TSS, target available 16-bit
+TSS, GDT write access, TSS read/write ranges, B's null LDTR requirement, and
+B's CPL0 code/data selectors before it changes state. It then saves A's
+dynamic 16-bit state, clears A busy, sets B busy, installs B's segment/TR
+caches and register state, clears FS/GS for the retained 16-bit layout, and
+sets CR0.TS. The TSS LDTR field is consumed only as a required null selector;
+hardware LDT switching is explicitly deferred rather than being approximated.
+
+The upgraded core-only fixture proves A -> B under both profiles: A writes
+back its post-far-JMP IP and AX, B restores AX and writes a guest marker, the
+two descriptor busy values exchange, TR becomes B, and the 80386 profile
+widens a 16-bit-TSS general register to `FFFF2222h`. No VM, firmware,
+platform, product, or host context participates.
+
 ## T260 Admission Packet
 
 ### Original Request

@@ -94,41 +94,71 @@ static C_INT task_switch_install(task_switch_fixture *fixture)
     static const uint8_t kernel_code[] = {
         0xb8,0x11,0x11,0xea,0x00,0x00,0x30,0x00
     };
+    static const uint8_t task_b_state[] = {
+        0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0,0,
+        0x00,0x01, 0x02,0x00, 0x22,0x22, 0,0, 0,0, 0,0,
+        0x00,0x80, 0,0, 0,0, 0,0,
+        0x10,0x00, 0x08,0x00, 0x10,0x00, 0x10,0x00, 0,0
+    };
+    static const uint8_t task_b_code[] = {
+        0xb8,0x22,0x22,0xa3,0x00,0x00,0xf4
+    };
 
     return write_bytes(fixture->machine, GDT_POINTER, gdt_pointer,
             sizeof(gdt_pointer)) &&
         write_bytes(fixture->machine, GDT_BASE, gdt, sizeof(gdt)) &&
         write_bytes(fixture->machine, TASK_A_BASE, (const uint8_t[44]){0}, 44u) &&
-        write_bytes(fixture->machine, TASK_B_BASE, (const uint8_t[44]){0}, 44u) &&
+        write_bytes(fixture->machine, TASK_B_BASE, task_b_state,
+            sizeof(task_b_state)) &&
         write_bytes(fixture->machine, 0u, real_code, sizeof(real_code)) &&
         write_bytes(fixture->machine, KERNEL_BASE, kernel_code,
-            sizeof(kernel_code));
+            sizeof(kernel_code)) &&
+        write_bytes(fixture->machine, KERNEL_BASE + 0x100u, task_b_code,
+            sizeof(task_b_code));
 }
 
-static C_INT task_switch_expect_baseline(core_machine_cpu_profile profile)
+static C_INT task_switch_expect_switch(core_machine_cpu_profile profile)
 {
     task_switch_fixture fixture;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
+    uint16_t marker = 0u;
+    uint16_t saved_ip = 0u;
+    uint16_t saved_ax = 0u;
+    uint8_t access[2] = {0u, 0u};
     const core_machine_run_budget budget = { 128u, 0u };
     C_INT failed = !task_switch_prepare(&fixture, profile);
 
     if (!failed) {
         failed |= !task_switch_install(&fixture);
         failed |= core_machine_run(fixture.machine, budget, &result) !=
-            TYPE_STATUS_FAULT || result.reason != CORE_MACHINE_STOP_FAULT;
+            TYPE_STATUS_OK || result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         failed |= core_machine_get_cpu_diagnostic(fixture.machine, &diagnostic) !=
-            TYPE_STATUS_OK || !diagnostic.first_fault.valid ||
-            !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
-                VCPUINS_EXCEPT_CE);
+            TYPE_STATUS_OK || diagnostic.first_fault.valid ||
+            diagnostic.last_delivered_exception.valid;
+        failed |= core_machine_memory_read(fixture.machine, 0x3000u, &marker,
+            sizeof(marker)) != TYPE_STATUS_OK || marker != 0x2222u;
+        failed |= core_machine_memory_read(fixture.machine, TASK_A_BASE + 0x0eu,
+            &saved_ip, sizeof(saved_ip)) != TYPE_STATUS_OK || saved_ip != 0x0008u;
+        failed |= core_machine_memory_read(fixture.machine, TASK_A_BASE + 0x12u,
+            &saved_ax, sizeof(saved_ax)) != TYPE_STATUS_OK || saved_ax != 0x1111u;
+        failed |= core_machine_memory_read(fixture.machine, GDT_BASE + 0x2du,
+            &access[0], 1u) != TYPE_STATUS_OK || access[0] != 0x81u;
+        failed |= core_machine_memory_read(fixture.machine, GDT_BASE + 0x35u,
+            &access[1], 1u) != TYPE_STATUS_OK || access[1] != 0x83u;
         failed |= !fixture.cpu->data.tr.flagValid ||
-            fixture.cpu->data.tr.selector != 0x0028u;
+            fixture.cpu->data.tr.selector != 0x0030u ||
+            fixture.cpu->data.ax != 0x2222u || !TYPE_GET_BIT(
+                fixture.cpu->data.cr0, VCPU_CR0_TS);
+        if (profile == CORE_MACHINE_CPU_PROFILE_80386) {
+            failed |= fixture.cpu->data.eax != 0xffff2222u;
+        }
         if (failed) {
             STD_FPRINTF(STD_STDERR,
-                "T261 baseline=%u result=%u fault=%x tr=%04x\n",
+                "T261 switch=%u result=%u marker=%04x ip=%04x ax=%04x access=%02x/%02x tr=%04x eax=%08x\n",
                 (unsigned)profile, (unsigned)result.reason,
-                (unsigned)diagnostic.first_fault.exception_mask,
-                fixture.cpu->data.tr.selector);
+                marker, saved_ip, saved_ax, access[0], access[1],
+                fixture.cpu->data.tr.selector, fixture.cpu->data.eax);
         }
     }
     core_machine_destroy(fixture.machine);
@@ -139,9 +169,9 @@ int main(void)
 {
     C_INT failed = 0;
 
-    failed |= task_switch_expect_baseline(CORE_MACHINE_CPU_PROFILE_80286);
-    failed |= task_switch_expect_baseline(CORE_MACHINE_CPU_PROFILE_80386);
+    failed |= task_switch_expect_switch(CORE_MACHINE_CPU_PROFILE_80286);
+    failed |= task_switch_expect_switch(CORE_MACHINE_CPU_PROFILE_80386);
     if (failed) return 1;
-    STD_PRINTF("M5:T261:S1:TASK-SWITCH:BASELINE:OK\n");
+    STD_PRINTF("M5:T261:S2:TASK-SWITCH:OK\n");
     return 0;
 }

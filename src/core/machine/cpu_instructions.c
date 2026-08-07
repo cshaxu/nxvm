@@ -1097,7 +1097,8 @@ static C_VOID _s_write_xdt(core_machine_cpu_execution_context *context, type_uns
 static C_VOID _s_write_tss(core_machine_cpu_execution_context *context, type_unsigned_32 offset, type_virtual_address rdata, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_s_write_tss");
-    TYPE_TRACE_IMPOSSIBLE_RETURN;
+    TYPE_TRACE_CHECK_RETURN(_kma_write_logical(context, &cpu_state.data.tr,
+        offset, rdata, byte, 0, 1));
     TYPE_TRACE_CALL_END;
 }
 static C_VOID _s_write_es(core_machine_cpu_execution_context *context, type_unsigned_32 offset, type_virtual_address rdata, type_unsigned_8 byte)
@@ -3222,16 +3223,234 @@ _______todo _ser_jmp_far_task_gate(core_machine_cpu_execution_context *context, 
     TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(0));
     TYPE_TRACE_CALL_END;
 }
-_______todo _ser_jmp_far_tss(core_machine_cpu_execution_context *context, type_unsigned_16 newcs)
+typedef struct task_switch_state_16 {
+    type_unsigned_16 ip;
+    type_unsigned_16 flags;
+    type_unsigned_16 ax;
+    type_unsigned_16 cx;
+    type_unsigned_16 dx;
+    type_unsigned_16 bx;
+    type_unsigned_16 sp;
+    type_unsigned_16 bp;
+    type_unsigned_16 si;
+    type_unsigned_16 di;
+    type_unsigned_16 es;
+    type_unsigned_16 cs;
+    type_unsigned_16 ss;
+    type_unsigned_16 ds;
+    type_unsigned_16 ldtr;
+} task_switch_state_16;
+
+static C_VOID _s_task_cache_descriptor(t_cpu_data_sreg *cache,
+    type_unsigned_16 selector, type_unsigned_64 descriptor,
+    t_cpu_data_sreg_type sregtype)
+{
+    TYPE_TRACE_CALL_BEGIN("_s_task_cache_descriptor");
+    STD_MEMSET(cache, 0, sizeof(*cache));
+    cache->flagValid = TYPE_TRUE;
+    cache->selector = selector;
+    cache->sregtype = sregtype;
+    cache->base = (type_unsigned_32)_GetDescSeg_Base(descriptor);
+    cache->limit = (type_unsigned_32)(_IsDescSegGranularLarge(descriptor) ?
+        (_GetDescSeg_Limit(descriptor) << 12u | 0x0fffu) :
+        _GetDescSeg_Limit(descriptor));
+    cache->dpl = (type_unsigned_4)_GetDesc_DPL(descriptor);
+    if (sregtype == SREG_TR) {
+        cache->sys.type = (type_unsigned_4)_GetDesc_Type(descriptor);
+    } else if (_IsDescCode(descriptor)) {
+        cache->seg.accessed = (type_bool)_IsDescUserAccessed(descriptor);
+        cache->seg.executable = TYPE_TRUE;
+        cache->seg.exec.defsize = (type_bool)_IsDescCode32(descriptor);
+        cache->seg.exec.conform = (type_bool)_IsDescCodeConform(descriptor);
+        cache->seg.exec.readable = (type_bool)_IsDescCodeReadable(descriptor);
+    } else {
+        cache->seg.accessed = (type_bool)_IsDescUserAccessed(descriptor);
+        cache->seg.executable = TYPE_FALSE;
+        cache->seg.data.big = (type_bool)_IsDescDataBig(descriptor);
+        cache->seg.data.expdown = (type_bool)_IsDescDataExpDown(descriptor);
+        cache->seg.data.writable = (type_bool)_IsDescDataWritable(descriptor);
+    }
+    TYPE_TRACE_CALL_END;
+}
+
+static C_VOID _s_task_validate_data_selector(
+    core_machine_cpu_execution_context *context, type_unsigned_16 selector,
+    t_cpu_data_sreg *out_cache)
 {
     type_unsigned_64 descriptor;
+
+    TYPE_TRACE_CALL_BEGIN("_s_task_validate_data_selector");
+    if (_IsSelectorNull(selector) || _GetSelector_TI(selector) ||
+        _GetSelector_RPL(selector) != 0u) {
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(selector & 0xfffcu));
+    }
+    TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, selector,
+        TYPE_REFERENCE_OF(descriptor)));
+    if (!_IsDescDataWritable(descriptor) || _GetDesc_DPL(descriptor) != 0u) {
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(selector & 0xfffcu));
+    }
+    if (!_IsDescPresent(descriptor)) {
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_NP(selector & 0xfffcu));
+    }
+    _s_task_cache_descriptor(out_cache, selector, descriptor, SREG_DATA);
+    TYPE_TRACE_CALL_END;
+}
+
+static C_VOID _s_task_validate_code_selector(
+    core_machine_cpu_execution_context *context, type_unsigned_16 selector,
+    type_unsigned_16 ip, t_cpu_data_sreg *out_cache)
+{
+    type_unsigned_64 descriptor;
+
+    TYPE_TRACE_CALL_BEGIN("_s_task_validate_code_selector");
+    if (_IsSelectorNull(selector) || _GetSelector_TI(selector) ||
+        _GetSelector_RPL(selector) != 0u) {
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(selector & 0xfffcu));
+    }
+    TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, selector,
+        TYPE_REFERENCE_OF(descriptor)));
+    if (!_IsDescCodeNonConform(descriptor) || _GetDesc_DPL(descriptor) != 0u) {
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(selector & 0xfffcu));
+    }
+    if (!_IsDescPresent(descriptor)) {
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_NP(selector & 0xfffcu));
+    }
+    _s_task_cache_descriptor(out_cache, selector, descriptor, SREG_CODE);
+    TYPE_TRACE_CHECK_RETURN(_kma_test_access(context, out_cache, ip, 1u,
+        TYPE_FALSE, 0u, TYPE_TRUE));
+    TYPE_TRACE_CALL_END;
+}
+
+static C_VOID _ser_jmp_far_tss(core_machine_cpu_execution_context *context, type_unsigned_16 newcs)
+{
+    type_unsigned_64 old_descriptor;
+    type_unsigned_64 new_descriptor;
+    t_cpu_data_sreg newtr;
+    t_cpu_data_sreg newcs_cache;
+    t_cpu_data_sreg newss_cache;
+    t_cpu_data_sreg newds_cache;
+    t_cpu_data_sreg newes_cache;
+    task_switch_state_16 state;
+
     TYPE_TRACE_CALL_BEGIN("_ser_jmp_far_tss");
     if (!_IsProtected)
         TYPE_TRACE_IMPOSSIBLE_RETURN;
-    TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, newcs, TYPE_REFERENCE_OF(descriptor)));
-    if (!_IsDescTSS(descriptor))
-        TYPE_TRACE_IMPOSSIBLE_RETURN;
-    TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(0));
+    if (_GetCPL || _GetSelector_TI(newcs) || _GetSelector_RPL(newcs) != 0u) {
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(newcs & 0xfffcu));
+    }
+    if (!cpu_state.data.tr.flagValid || _GetSelector_TI(cpu_state.data.tr.selector)) {
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(0));
+    }
+    TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, cpu_state.data.tr.selector,
+        TYPE_REFERENCE_OF(old_descriptor)));
+    if (!_IsDescTSS16Busy(old_descriptor) || !_IsDescPresent(old_descriptor)) {
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(cpu_state.data.tr.selector & 0xfffcu));
+    }
+    if (cpu_state.data.tr.limit < 0x29u) {
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(cpu_state.data.tr.selector & 0xfffcu));
+    }
+    TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, newcs,
+        TYPE_REFERENCE_OF(new_descriptor)));
+    if (_IsDescTSS16Busy(new_descriptor) || !_IsDescTSS16Avl(new_descriptor) ||
+        _GetDesc_DPL(new_descriptor) != 0u) {
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(newcs & 0xfffcu));
+    }
+    if (!_IsDescPresent(new_descriptor)) {
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_NP(newcs & 0xfffcu));
+    }
+    _s_task_cache_descriptor(&newtr, newcs, new_descriptor, SREG_TR);
+    if (newtr.limit < 0x2bu) {
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(newcs & 0xfffcu));
+    }
+    TYPE_TRACE_CHECK_RETURN(_kma_test_access(context, &cpu_state.data.tr,
+        0x0eu, 0x1cu, TYPE_TRUE, 0u, TYPE_TRUE));
+    TYPE_TRACE_CHECK_RETURN(_kma_test_access(context, &newtr, 0x0eu, 0x1eu,
+        TYPE_FALSE, 0u, TYPE_TRUE));
+    TYPE_TRACE_CHECK_RETURN(_kma_test_access(context, &cpu_state.data.gdtr,
+        _GetSelector_Offset(cpu_state.data.tr.selector), 8u, TYPE_TRUE, 0u,
+        TYPE_TRUE));
+    TYPE_TRACE_CHECK_RETURN(_kma_test_access(context, &cpu_state.data.gdtr,
+        _GetSelector_Offset(newcs), 8u, TYPE_TRUE, 0u, TYPE_TRUE));
+    TYPE_TRACE_CHECK_RETURN(_kma_read_logical(context, &newtr, 0x0eu,
+        TYPE_REFERENCE_OF(state), sizeof(state), 0u, TYPE_TRUE));
+    if (state.ldtr) {
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(state.ldtr & 0xfffcu));
+    }
+    TYPE_TRACE_CHECK_RETURN(_s_task_validate_code_selector(context, state.cs,
+        state.ip, &newcs_cache));
+    TYPE_TRACE_CHECK_RETURN(_s_task_validate_data_selector(context, state.ss,
+        &newss_cache));
+    TYPE_TRACE_CHECK_RETURN(_s_task_validate_data_selector(context, state.ds,
+        &newds_cache));
+    TYPE_TRACE_CHECK_RETURN(_s_task_validate_data_selector(context, state.es,
+        &newes_cache));
+
+    _ClrDescTSSBusy(old_descriptor);
+    _SetDescTSSBusy(new_descriptor);
+    TYPE_TRACE_CHECK_RETURN(_s_write_tss(context, 0x0eu,
+        TYPE_REFERENCE_OF(cpu_state.data.ip), 2u));
+    TYPE_TRACE_CHECK_RETURN(_s_write_tss(context, 0x10u,
+        TYPE_REFERENCE_OF(cpu_state.data.flags), 2u));
+    TYPE_TRACE_CHECK_RETURN(_s_write_tss(context, 0x12u,
+        TYPE_REFERENCE_OF(cpu_state.data.ax), 2u));
+    TYPE_TRACE_CHECK_RETURN(_s_write_tss(context, 0x14u,
+        TYPE_REFERENCE_OF(cpu_state.data.cx), 2u));
+    TYPE_TRACE_CHECK_RETURN(_s_write_tss(context, 0x16u,
+        TYPE_REFERENCE_OF(cpu_state.data.dx), 2u));
+    TYPE_TRACE_CHECK_RETURN(_s_write_tss(context, 0x18u,
+        TYPE_REFERENCE_OF(cpu_state.data.bx), 2u));
+    TYPE_TRACE_CHECK_RETURN(_s_write_tss(context, 0x1au,
+        TYPE_REFERENCE_OF(cpu_state.data.sp), 2u));
+    TYPE_TRACE_CHECK_RETURN(_s_write_tss(context, 0x1cu,
+        TYPE_REFERENCE_OF(cpu_state.data.bp), 2u));
+    TYPE_TRACE_CHECK_RETURN(_s_write_tss(context, 0x1eu,
+        TYPE_REFERENCE_OF(cpu_state.data.si), 2u));
+    TYPE_TRACE_CHECK_RETURN(_s_write_tss(context, 0x20u,
+        TYPE_REFERENCE_OF(cpu_state.data.di), 2u));
+    TYPE_TRACE_CHECK_RETURN(_s_write_tss(context, 0x22u,
+        TYPE_REFERENCE_OF(cpu_state.data.es.selector), 2u));
+    TYPE_TRACE_CHECK_RETURN(_s_write_tss(context, 0x24u,
+        TYPE_REFERENCE_OF(cpu_state.data.cs.selector), 2u));
+    TYPE_TRACE_CHECK_RETURN(_s_write_tss(context, 0x26u,
+        TYPE_REFERENCE_OF(cpu_state.data.ss.selector), 2u));
+    TYPE_TRACE_CHECK_RETURN(_s_write_tss(context, 0x28u,
+        TYPE_REFERENCE_OF(cpu_state.data.ds.selector), 2u));
+    TYPE_TRACE_CHECK_RETURN(_s_write_xdt(context, cpu_state.data.tr.selector,
+        TYPE_REFERENCE_OF(old_descriptor)));
+    TYPE_TRACE_CHECK_RETURN(_s_write_xdt(context, newcs,
+        TYPE_REFERENCE_OF(new_descriptor)));
+
+    cpu_state.data.eax = context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386 ?
+        0xffff0000u | state.ax : state.ax;
+    cpu_state.data.ecx = context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386 ?
+        0xffff0000u | state.cx : state.cx;
+    cpu_state.data.edx = context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386 ?
+        0xffff0000u | state.dx : state.dx;
+    cpu_state.data.ebx = context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386 ?
+        0xffff0000u | state.bx : state.bx;
+    cpu_state.data.esp = context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386 ?
+        0xffff0000u | state.sp : state.sp;
+    cpu_state.data.ebp = context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386 ?
+        0xffff0000u | state.bp : state.bp;
+    cpu_state.data.esi = context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386 ?
+        0xffff0000u | state.si : state.si;
+    cpu_state.data.edi = context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386 ?
+        0xffff0000u | state.di : state.di;
+    cpu_state.data.eip = state.ip;
+    cpu_state.data.eflags = state.flags;
+    cpu_state.data.es = newes_cache;
+    cpu_state.data.cs = newcs_cache;
+    cpu_state.data.ss = newss_cache;
+    cpu_state.data.ds = newds_cache;
+    STD_MEMSET(&cpu_state.data.ldtr, 0, sizeof(cpu_state.data.ldtr));
+    cpu_state.data.ldtr.sregtype = SREG_LDTR;
+    STD_MEMSET(&cpu_state.data.fs, 0, sizeof(cpu_state.data.fs));
+    cpu_state.data.fs.sregtype = SREG_DATA;
+    STD_MEMSET(&cpu_state.data.gs, 0, sizeof(cpu_state.data.gs));
+    cpu_state.data.gs.sregtype = SREG_DATA;
+    newtr.sys.type = VCPU_DESC_SYS_TYPE_TSS_16_BUSY;
+    cpu_state.data.tr = newtr;
+    _SetCR0_TS;
     TYPE_TRACE_CALL_END;
 }
 /* regular execute control */
