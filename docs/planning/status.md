@@ -2,7 +2,27 @@
 
 ## Current Work
 
-**Idle.** T280 is closed; admit T281 only through a new approved packet.
+**M5 T281 S1: Core FDC/HDC Naming Contract -- active.**
+
+- **Original request:** rename `core_machine.shared_fdc/shared_hdc` and their
+  borrow APIs to `fdc/hdc`, without changing controller lifecycle, port route,
+  media behavior, composition, Console, or boot behavior.
+- **S1 deliverable:** inventory every production, test, static-gate, and
+  current-contract use; freeze a source-only rename map and confirm that no
+  second storage object or compatibility alias is permitted.
+- **S2 deliverable:** perform the complete field/API/call-site rename in the
+  same core owner; remove all production old-name references without aliases.
+- **S3 deliverable:** run focused FDC/HDC smoke plus current GCC/CTest gates,
+  rebuild `build/output/nxvm_0_5_0281.exe`, record its SHA-256, and close.
+- **Rules:** `core_machine` continues to own both controller objects. VM
+  composition can borrow them only while configuration is open; no lifecycle,
+  route, media, or CMake target change is in scope.
+- **Similar-issue sweep:** search all tracked sources, tests, static gates, and
+  current architecture documents for `shared_fdc`, `shared_hdc`, and the two
+  historical borrow APIs. Historical records may retain exact former names;
+  all current production references must migrate.
+- **Stop:** stop if a rename reveals a second mutable controller, needs an API
+  alias, changes a caller's lifecycle window, or alters FDD/HDD behavior.
 
 ## Current Technical Baseline
 
