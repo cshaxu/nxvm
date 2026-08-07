@@ -2,6 +2,7 @@
 
 #include "core/machine/debug_interface.h"
 #include "core/machine/machine_interface.h"
+#include "core/machine/machine.h"
 #include "vm/composition/session/session_interface.h"
 #include "vm/composition/session/session.h"
 
@@ -89,13 +90,13 @@ C_INT main(C_INT argc, C_CHAR **argv)
                 STD_FPRINTF(STD_STDERR,
                     "M5:T213:S3:HDC:SYSTEM-STOP reason=%u status=%u count=%u\n",
                     (C_UINT)result.reason, (C_UINT)run_status,
-                    session->hdc.data.command_count);
+                    session->core_machine->shared_hdc.data.command_count);
             }
             goto fail;
         }
         executed += VM_HDC_HDD_BOOT_QUANTUM;
-        if (session->hdc.data.command_count >= 2u &&
-            session->hdc.data.last_command == 0x20u &&
+        if (session->core_machine->shared_hdc.data.command_count >= 2u &&
+            session->core_machine->shared_hdc.data.last_command == 0x20u &&
             vm_hdc_hdd_boot_matches_partition_vbr(session)) {
             loaded = 1;
             break;
@@ -108,7 +109,8 @@ C_INT main(C_INT argc, C_CHAR **argv)
             VM_HDC_HDD_BOOT_ADDRESS, bytes, sizeof(bytes));
         STD_FPRINTF(STD_STDERR,
             "M5:T213:S3:HDC:SYSTEM-NO-HANDOFF count=%u command=%02X memory=%02X%02X%02X%02X expected=%02X%02X%02X%02X\n",
-            session->hdc.data.command_count, session->hdc.data.last_command,
+            session->core_machine->shared_hdc.data.command_count,
+            session->core_machine->shared_hdc.data.last_command,
             bytes[0], bytes[1], bytes[2], bytes[3],
             TYPE_DEREFERENCE_UNSIGNED_8(session->hdd.connect.pImgBase +
                 (STD_SIZE_T)vm_hdc_hdd_boot_partition_lba(session) * VM_HDC_HDD_BOOT_BYTES),
@@ -121,7 +123,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
         goto fail;
     }
     STD_PRINTF("M5:T213:S3:HDC:SYSTEM:OK command=20 reads=%u instructions=%u\n",
-        session->hdc.data.command_count, executed);
+        session->core_machine->shared_hdc.data.command_count, executed);
     vm_session_destroy(session);
     return 0;
 

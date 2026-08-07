@@ -335,6 +335,7 @@ static C_VOID core_machine_advance_scheduler(core_machine *machine,
         &machine->shared_dma_primary, &machine->shared_dma_secondary,
         &machine->executor_memory, dma_ticks);
     core_machine_fdc_refresh(&machine->shared_fdc);
+    core_machine_hdc_refresh(&machine->shared_hdc);
     core_machine_pit_advance(&machine->shared_pit, pit_ticks);
     core_machine_vadp_advance(&machine->shared_vadp, &machine->executor_memory,
         vadp_ticks);
@@ -494,6 +495,8 @@ t_dma *core_machine_configuration_shared_dma_secondary_borrow(core_machine *mach
 { return core_machine_configuration_is_open(machine) ? &machine->shared_dma_secondary : STD_NULL; }
 core_machine_fdc *core_machine_configuration_shared_fdc_borrow(core_machine *machine)
 { return core_machine_configuration_is_open(machine) ? &machine->shared_fdc : STD_NULL; }
+core_machine_hdc *core_machine_configuration_shared_hdc_borrow(core_machine *machine)
+{ return core_machine_configuration_is_open(machine) ? &machine->shared_hdc : STD_NULL; }
 t_kbc *core_machine_configuration_shared_kbc_borrow(core_machine *machine)
 { return core_machine_configuration_is_open(machine) ? &machine->shared_kbc : STD_NULL; }
 type_status core_machine_bind_execution_provider(core_machine *machine,
@@ -740,6 +743,7 @@ static type_status core_machine_cold_reset(core_machine *machine)
     core_machine_dma_reset(&machine->shared_dma_latch,
         &machine->shared_dma_primary, &machine->shared_dma_secondary);
     core_machine_fdc_reset(&machine->shared_fdc);
+    core_machine_hdc_reset(&machine->shared_hdc);
     core_machine_pic_reset(&machine->shared_pic_master,
         &machine->shared_pic_slave);
     core_machine_pit_reset(&machine->shared_pit);
@@ -1036,6 +1040,7 @@ type_status core_machine_report_fault(
 C_VOID core_machine_destroy(core_machine *machine)
 {
     if (machine != STD_NULL) {
+        core_machine_hdc_finalize(&machine->shared_hdc);
         core_machine_fdc_finalize(&machine->shared_fdc);
         core_machine_dma_finalize(&machine->shared_dma_latch,
             &machine->shared_dma_primary, &machine->shared_dma_secondary);

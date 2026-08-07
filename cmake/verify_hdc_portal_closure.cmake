@@ -17,7 +17,7 @@ endforeach()
 
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/composition/session/machine_devices.c"
     machine_devices)
-foreach(required "vm_machine_hdc_port_provider" "vm_machine_hdc_connect")
+foreach(required "core_machine_hdc_port_provider" "core_machine_hdc_connect")
     string(FIND "${machine_devices}" "${required}" position)
     if(position EQUAL -1)
         message(FATAL_ERROR "T213 HDC composition binding missing: ${required}")

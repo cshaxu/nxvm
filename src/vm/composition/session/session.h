@@ -17,7 +17,7 @@
 #include "vm/machine/debug.h"
 #include "core/machine/fdc.h"
 #include "vm/machine/fdd.h"
-#include "vm/machine/hdc.h"
+#include "core/machine/hdc.h"
 #include "vm/machine/hdd.h"
 #include "vm/platform/platform.h"
 #include "vm/platform/vm_request_transport.h"
@@ -34,7 +34,6 @@ struct vm_session {
     core_machine_rtc rtc;
     t_fdd fdd;
     t_hdd hdd;
-    vm_machine_hdc hdc;
     t_debug debug;
     t_bios default_bios;
     vm_profile_default_context default_profile_context;
