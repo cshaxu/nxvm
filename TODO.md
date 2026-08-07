@@ -25,6 +25,19 @@ in its task record and Git history; the M5 implementation order belongs in
   task records, the current capability table, and the roadmap when assessing a
   claim.
 
+## Product Goals
+
+These goals define direction, not an active task or a compatibility claim.
+The roadmap assigns each goal to a milestone; the M5 convergence plan assigns
+only the near-term NXVM tasks.
+
+| Goal | Target outcome | Governing route | Current limiting gaps |
+| --- | --- | --- | --- |
+| NXVM operating-system compatibility | Reach evidence-based Windows 3.x Standard- and 386 Enhanced-mode checkpoints, then pursue Windows 95 only as a later long-horizon program. | M5 hardware convergence, M7 profile implementation, then M9-and-later research/admission. | Complete VGA/EGA, mouse, controller fidelity, instruction/bus timing, broad 286/386/FPU semantics, and approved user-supplied system corpus. |
+| Owned NXVDM | Build `mantle`, `dos`, and `vdm` into a self-owned `nxvdm.exe` that runs the admitted DOS corpus with the approved CLI, containment, display, debug, and cancellation contracts. | M6 mantle, M8 owned DOS and NXVDM. | Mantle is not implemented; owned DOS, VDM CLI, containment, and Windows matrix are deferred. External VDM/DOS work remains opt-in research, never a shared ABI, default backend, or release dependency. |
+| NXVM machine profiles | Select and boot default PC/AT, then reproducible Compaq DeskPro 386 and IBM Palm Top PC 110 profiles without profile quirks leaking into core. | M5 profile boundary, M7 profile implementation. | The immutable admission contract exists; profile descriptors, selection, legal user-supplied ROM/media manifests, DeskPro 386 evidence, and PC 110/486 prerequisites remain unimplemented. |
+| Hardware fidelity | Progress from deterministic Level 1 clocks to bounded instruction timing, bus timing, and profile-specific cycle work while completing guest-visible PC/AT devices. | M5 hardware convergence; later profile-specific admissions. | L2 instruction costs, L3 bus ownership/wait states, CGA/EGA/VGA breadth, advanced mouse, FDC/ATA fidelity, and profile-specific timing corpora remain open. |
+
 ## Current Capability Baseline
 
 | Area | Current bounded capability | Open boundary |
@@ -37,10 +50,13 @@ in its task record and Git history; the M5 implementation order belongs in
 | Storage | Bounded ATA PIO and FDD boot paths through declared ROM/device owners; core-owned 8237 DMA controller baseline with frozen FDC DMA2 binding | Full FDC state machine, broad DMA behavior, extended IDE, and error/timing compatibility. |
 | VDM | Isolated non-runnable scaffold over the shared core | Owned DOS design, CLI, host-drive policy, and product implementation remain deferred. |
 
-## Current M5 ROI Queue
+## M5 Capability And Debt Ledger
 
 The active task is always the one in [status.md](docs/planning/status.md).
-These are the next owned admissions, not permission to work in parallel.
+The ordered implementation queue is maintained in
+[M5 NXVM PC/AT Hardware Convergence](docs/planning/m5-pcat-hardware-convergence.md).
+The entries below are durable gaps and must not be mistaken for an independently
+active task.
 
 - [ ] **Advanced 8042 AUX protocol (`TODO(Medium)`).** T229 admits a bounded
   IRQ12 three-byte relative packet path only. Admit wheel IDs, sample-rate,

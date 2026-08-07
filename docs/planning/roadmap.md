@@ -95,7 +95,7 @@ bounded M5 breakdown. **Non-goal:** implementation.
 ## M5: Converge Core And NXVM
 
 **Goal:** finish a clean core/VM boundary and make `nxvm.exe` a credible PC/AT
-foundation for Windows 3.x startup research.
+foundation for Windows 3.x startup research and the later profile program.
 
 **Scope:** complete the admitted `core` versus `vm` boundary migration and its
 single-owner/single-path audit; retain `vm/profile/default_profile`; strengthen
@@ -117,6 +117,12 @@ CMake graphs obey the directed component model. No NXVDM, mantle, or DOS
 runtime is required. M5 remains open until the
 [closure checklist](m5-closure-checklist.md) has current evidence for every
 applicable item.
+
+**Goal map:** M5 owns the common machine and PC/AT fidelity work: the Level 1
+to Level 3 timing path, display/input/storage controller evidence, and the
+CPU/FPU subsets specifically required by a reproducible Windows 3.x checkpoint.
+It does not promise Windows 3.x or Windows 95 compatibility by itself; broad
+80386/486, profile-specific, and operating-system work remains evidence-led.
 
 **Compatibility gate:** M5 must not alter NXVM functionality or user experience.
 Any unavoidable user-visible change requires explicit owner approval before
@@ -154,6 +160,10 @@ VDM/DOS product policy.
 **Exit:** NXVM can select and boot each admitted profile without duplicating
 machine state, boot policy, or firmware ownership.
 
+Compaq DeskPro 386 and IBM Palm Top PC 110 are explicit M7 targets. Their
+respective PCjs and PC110-EMU work may inform bounded requirements, but their
+code, ROMs, and media do not enter default builds or the repository.
+
 ## M8: Build Owned DOS And NXVDM
 
 **Goal:** deliver the owned DOS runtime and non-invasive `nxvdm.exe` product
@@ -168,13 +178,17 @@ cancellation, and exit-policy requirements. `vdm` owns product policy;
 changes and proves its path, input/output, cleanup, containment, and exit
 semantics on the approved Windows matrix.
 
+External VDM/DOS binaries may be studied or used in isolated, user-supplied
+research environments, but they are never the owned product backend, a shared
+ABI, a default dependency, or release input.
+
 ## M9 And Later: Research Queue
 
 **Goal:** conduct bounded research that proposes future corpus or architecture
 admissions without silently changing a shipped product.
 
 **Scope:** research tasks may cover compatibility corpora, Win16/Windows 3.x
-and Windows 9x requirements, CPU/timing fidelity, external-ROM legality and
+and Windows 9x requirements, 486 and later CPU/timing fidelity, external-ROM legality and
 profile evidence, AI-assisted validation, and optional Windows integration.
 External VDM/DOS work is tracked outside this roadmap; its trustworthy reports
 may be requirements references but are never this repository's backend,
