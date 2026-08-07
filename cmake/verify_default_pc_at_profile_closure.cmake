@@ -8,7 +8,7 @@ file(READ "${PROJECT_SOURCE_DIR}/src/vm/composition/session/profile_firmware.c"
     firmware_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/composition/session/machine_devices.c"
     devices_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/cmos.c" cmos_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/rtc.c" rtc_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/fdc.c" fdc_source)
 
 foreach(required IN ITEMS
@@ -35,7 +35,7 @@ foreach(source_text IN ITEMS "${firmware_source}" "${devices_source}")
     endforeach()
 endforeach()
 
-foreach(source_text IN ITEMS "${cmos_source}" "${fdc_source}")
+foreach(source_text IN ITEMS "${rtc_source}" "${fdc_source}")
     foreach(forbidden IN ITEMS "0x0070" "0x0071" "0x03f2" "0x03f4"
         "0x03f5" "0x03f7")
         string(FIND "${source_text}" "${forbidden}" position)
