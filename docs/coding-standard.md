@@ -15,8 +15,8 @@ The only permitted source roots are `core`, `vm`, `mantle`, `dos`, and `vdm`.
 - `core/utils` is the lowest neutral utility/callback layer and depends only on
   `type-facade`. `core/{machine,platform,product}` contains behavior shared by
   VM and VDM. A concrete host implementation belongs under
-  `core/platform/<host>` only when both products can reuse it without product
-  policy.
+  `core/platform/<host>` when independent consumer evidence establishes reuse
+  without product policy; the contract must remain opaque and policy-free.
 - `vm/{machine,platform,product,profile}` contains bootable whole-machine
   behavior, the retained VM Console/debugger experience, and machine profiles.
 - `mantle/{machine,platform,product}` contains only policy-free VDM composition

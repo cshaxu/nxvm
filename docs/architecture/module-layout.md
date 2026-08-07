@@ -199,9 +199,11 @@ media backing objects and PC/AT-only glue; it does not retain a second copy of
 a controller after that controller moves to core. The `vm/` root composition
 owns profile-selected boot/reset ordering, the bounded product execution pump,
 provider lifetime, and all wiring; it never duplicates the core scheduler.
-`vm/platform` owns only
-full-machine policy adapters; concrete host facilities shared with VDM belong in
-`core/platform/{win32,linux}`. `vm/product` owns retained NXVM user experience: Console, hardware
+`core/platform` owns policy-free opaque host capability contracts and shared
+Win32/Linux implementations: file, directory, stream, sampled clock, copied
+input, cancellation, and typed results. `vm/platform` owns only full-machine
+policy adapters: image selection, mount/persistence, Console/window behavior,
+and PC/AT host choices. `vm/product` owns retained NXVM user experience: Console, hardware
 debugger UX, media commands, and presentation policy. `vm/profile` owns VM
 topology, boot policy, ROM assets, and declarative firmware-provider metadata.
 The `vm/` root composition selects that profile, creates the providers, and

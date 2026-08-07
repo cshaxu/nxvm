@@ -43,7 +43,7 @@ Every mutable core guest object belongs to exactly one `core_machine` session.
 The session owns CPU/executor state, RAM/A20, port routing, PIC, PIT, DMA, KBC,
 video-adapter state, trace state, and session-local registries. A device can own
 private child state, but its lifetime remains bounded by its parent session. No
-process-global variable may select the active session. T272 may add an optional
+process-global variable may select the active session. T273 may add an optional
 core-owned RTC controller; until then RTC state remains VM-owned.
 
 Immutable tables may be process-global only when they contain no guest state,
@@ -67,7 +67,8 @@ host event loops, pacing, teardown, and product exit policy.
 | Interrupt devices | PIC/PIT/DMA/KBC/VADP mutable models | profile/device configuration only | device-specific interfaces when externally needed |
 | Trace | event buffer, ordering, flush guard | trace observer | `trace_interface.h`, `trace_provider.h` |
 | Firmware | service registry, ordering, vector-conflict and dispatch rules | profile firmware services and callbacks | `firmware_registry_interface.h`, `firmware_provider.h` |
-| Media I/O | frozen device registry and request validation | VM image or VDM-contained media provider | T270 `media_provider` contract; it is not a host-filesystem API |
+| Media I/O | frozen device registry and request validation | composition-owned media provider | T270 `media_provider` contract; it is not a host-filesystem API |
+| Host capabilities | no guest or product policy | opaque file/directory/stream/clock/input/cancellation providers | T271 `core/platform` contracts; composition adapts them to product or media policy |
 | Keyboard ingress | guest-side routing and queue/state | profile/device keyboard route provider | `keyboard_interface.h`, `keyboard_provider.h` |
 | Display egress | guest display state/snapshot contract | profile/device video snapshot provider | `display_interface.h`, `display_provider.h` |
 
@@ -87,10 +88,10 @@ platform callback never mutates a machine.
 | Subject | Current owner | Boundary and next action |
 | --- | --- | --- |
 | machine, CPU, memory, ports, PIC/PIT/DMA/KBC/VADP | `core_machine` | One session-owned executor and device graph; composition configures it before freeze and drives bounded `core_machine_run`. |
-| RTC/CMOS controller | `vm/machine/cmos.*` | T272 moves only the neutral MC146818 mechanism to core; VM retains PC/AT defaults, NMI glue, host-time policy, and firmware. |
-| FDC controller | `vm/machine/fdc.*` | T274 decouples its FDD backing, then T275 moves the neutral controller to core. |
-| ATA PIO controller | `vm/machine/hdc.*` | T276 decouples its HDD backing, then T277 moves the neutral controller to core. |
-| FDD/HDD backing, paths, mount/eject, persistence | VM composition and `vm/machine` backing objects | T270--T271 expose only frozen device-level media operations. Host filesystem and product policy do not enter core. |
+| RTC/CMOS controller | `vm/machine/cmos.*` | T273 moves only the neutral MC146818 mechanism to core; VM retains PC/AT defaults, NMI glue, host-time policy, and firmware. |
+| FDC controller | `vm/machine/fdc.*` | T275 decouples its FDD backing, then T276 moves the neutral controller to core. |
+| ATA PIO controller | `vm/machine/hdc.*` | T277 decouples its HDD backing, then T278 moves the neutral controller to core. |
+| FDD/HDD backing, paths, mount/eject, persistence | VM composition and `vm/machine` backing objects | T270 exposes device-level media operations; T271 supplies only opaque host primitives. Paths and product policy remain in composition. |
 | firmware and profile declaration | `vm/profile/default_profile` plus VM composition | Profile content stays VM-owned; it binds only public core contracts. |
 | trace/debug/presentation | core state with VM product/platform adapters | Adapters observe or command an explicit session; no selected-machine facade is permitted. |
 
@@ -116,7 +117,7 @@ The executor migration is complete: CPU, memory, port routing, shared devices,
 and run results use the explicit `core_machine` instance in the retained NXVM
 route. The remaining second-boundary work is not a selected-session-global
 cleanup. It is the narrower controller/media ownership correction recorded in
-T270--T277. The retained fixed block slot is transitional because it represents
+T270--T278. The retained fixed block slot is transitional because it represents
 only one CHS device and cannot be the shared FDC/ATA boundary; T270 replaces it
 rather than layering a forwarding facade over it.
 

@@ -47,7 +47,7 @@ only the near-term NXVM tasks.
 | Interrupts and time | PIC source lifecycle; deterministic core elapsed ticks; PIT/IRQ0 -> ROM -> BDA -> `INT 1Ah` evidence | Greater timing fidelity only when an explicit corpus requires it. |
 | Keyboard | KBC, IRQ1/IRQ12, ROM `INT 09h`/`INT 16h`, set-1 break/E0/E1, typeahead, selection/query, translation observation, LED, command-state typematic, ACK/RESEND, bounded PS/2 AUX packets, and one DOS guest-driver corpus | Default core auto-repeat stays disabled until a profile-clock calibration defines human typematic time; set-2/3 conversion, wheel/advanced AUX protocol, broad guest mouse API compatibility, and native POSIX runtime validation remain deferred. |
 | Display | CGA text plus bounded digital `320x200x4` and ROM-selectable `EGA-320x200x16-direct`; copied text/indexed frames; `console`/`window`/`auto` selection | Remaining digital CGA modes/CRTC behavior, composite video, broader EGA/VGA, VBE. |
-| Storage | Bounded ATA PIO and FDD boot paths through declared ROM/device owners; core-owned 8237 DMA grants one unit at a time through the frozen FDC DMA2 binding | T270--T277 must move neutral media/controller mechanisms into core while retaining VM backing/topology; full FDC state machine, generic bus wait states, broad DMA behavior, extended IDE, and error/timing compatibility remain open. |
+| Storage | Bounded ATA PIO and FDD boot paths through declared ROM/device owners; core-owned 8237 DMA grants one unit at a time through the frozen FDC DMA2 binding | T270--T278 must move neutral media/controller mechanisms into core and add policy-free host media primitives while retaining VM backing/topology; full FDC state machine, generic bus wait states, broad DMA behavior, extended IDE, and error/timing compatibility remain open. |
 | VDM | Isolated non-runnable scaffold over the shared core | Owned DOS design, CLI, host-drive policy, and product implementation remain deferred. |
 
 ## M5 Capability And Debt Ledger
@@ -181,12 +181,13 @@ default definition of NXVM completion.
 
 ## Architecture, Portability, And Product Boundaries
 
-- [ ] **M5 second core/composition migration (`TODO(High)`, T270--T277).**
-  Move only neutral multi-device media and optional MC146818/FDC/ATA controller
-  mechanisms into core. VM retains PC/AT topology/defaults/NMI glue, backing
-  objects, paths, mount/persistence, firmware, boot/media and retained UX.
-  A core-only mantle-shape fixture proves configuration without implementing
-  mantle. Host filesystem/path policy remains outside core/platform. A trusted external
+- [ ] **M5 second core/composition migration (`TODO(High)`, T270--T278).**
+  Move neutral multi-device media and optional MC146818/FDC/ATA controller
+  mechanisms into core, and add only policy-free opaque host capability
+  contracts to `core/platform`. VM retains PC/AT topology/defaults/NMI glue,
+  backing objects, image/path and mount/persistence policy, firmware,
+  boot/media and retained UX. A core-only mantle-shape fixture proves
+  configuration without implementing mantle. A trusted external
   research report may prove a neutral requirement, but is never a core ABI,
   runtime consumer, or dependency. Complete the single-owner audit and the
   Windows 3.x startup prerequisite corpus before M5 closure.
