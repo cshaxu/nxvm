@@ -7,7 +7,7 @@
 #include "vm/composition/session/session.h"
 #include "vm/machine/fdd.h"
 
-#define VM_DOS_VIDEO_PROBE_INSTRUCTION_BUDGET 500000u
+#define VM_DOS_VIDEO_PROBE_INSTRUCTION_BUDGET 1500000u
 #define VM_DOS_VIDEO_TEXT_CELLS (80u * 25u)
 
 static C_INT vm_dos_video_has_prompt(const core_machine_display_snapshot *snapshot)

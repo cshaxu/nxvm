@@ -1032,6 +1032,10 @@ set(PROJECT_CURRENT_MEDIA_SMOKE_TARGETS
     ${PROJECT_CURRENT_FDD_SMOKE_TARGETS}
     ${PROJECT_CURRENT_HDD_SMOKE_TARGETS}
     ${PROJECT_CURRENT_FDD_HDD_SMOKE_TARGETS})
+set(PROJECT_CURRENT_ALL_SMOKE_TARGETS
+    ${PROJECT_CURRENT_SMOKE_TARGETS}
+    ${PROJECT_CURRENT_MEDIA_SMOKE_TARGETS})
+list(REMOVE_DUPLICATES PROJECT_CURRENT_ALL_SMOKE_TARGETS)
 set(PROJECT_FDD_SMOKE_IMAGE "${CMAKE_SOURCE_DIR}/../fdd.img" CACHE FILEPATH
     "Owner-provided FDD image for current runtime smoke coverage")
 set(PROJECT_HDD_SMOKE_IMAGE "${CMAKE_SOURCE_DIR}/../hdd.img" CACHE FILEPATH
@@ -1047,7 +1051,7 @@ function(project_add_current_smoke_test target)
         TIMEOUT 30)
 endfunction()
 
-foreach(target IN LISTS PROJECT_CURRENT_SMOKE_TARGETS)
+foreach(target IN LISTS PROJECT_CURRENT_ALL_SMOKE_TARGETS)
     list(FIND PROJECT_CURRENT_MEDIA_SMOKE_TARGETS ${target} media_smoke_index)
     if(media_smoke_index EQUAL -1)
         project_add_current_smoke_test(${target})
@@ -1068,7 +1072,7 @@ endforeach()
 add_custom_target(run-current-smokes
     COMMAND "${CMAKE_CTEST_COMMAND}" --test-dir "${CMAKE_BINARY_DIR}"
         --output-on-failure --no-tests=error --label-regex "^current-gate$"
-    DEPENDS ${PROJECT_CURRENT_SMOKE_TARGETS}
+    DEPENDS ${PROJECT_CURRENT_ALL_SMOKE_TARGETS}
     COMMENT "Building and executing current runnable smoke coverage"
     VERBATIM)
 
