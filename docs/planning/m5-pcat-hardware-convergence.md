@@ -21,7 +21,7 @@ baseline.
 
 | Task | Dependency | Deliverable and stop condition |
 | --- | --- | --- |
-| T263 | Corpus-specific 286/386 gap | Admit each remaining 286/386 instruction family only through a separate failing corpus; do not attach it to task-switch work. |
+| T263 | Corpus-specific 286/386 gap | **S1 active:** the first admitted family is 80286 protected-mode `ARPL r/m16,r16`, selected because its metadata says 80286 while the executor currently faults it below 80386. Complete its focused corpus before admitting another family; do not attach it to task-switch work. |
 
 ## Constraints
 
