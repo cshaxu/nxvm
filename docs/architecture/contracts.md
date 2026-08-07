@@ -477,11 +477,15 @@ firmware may cache media geometry to bridge its removal.
 ### Atomic VM Media Replacement And Raw HDD Capacity (T280)
 
 T280 keeps FDD and HDD backing ownership in VM but makes replacement atomic:
-inspect, validate, allocate a candidate, completely read it, finalize the old
-published media, then publish exactly one new state. Any allocation, host-I/O,
-or old-media finalization failure discards the candidate and leaves the old
-bytes, geometry, read-only state, cursor, presence, and generation published;
-it must not leave a half-commit. FDD retains its admitted fixed geometry. HDD
+inspect, validate, allocate, and completely populate a candidate, then publish
+exactly one new in-memory backing state and release the retired byte buffer.
+The current backing object has no separately closeable old-media resource. Any
+candidate allocation or host-read/close failure discards the candidate and
+leaves the old bytes, geometry, read-only state, cursor, presence, and
+generation published; it must not leave a half-commit. Explicit persistence
+(`remove/save`) writes and closes the requested output before it changes any
+published media field, so write/close failure retains the mounted medium. FDD
+retains its admitted fixed geometry. HDD
 accepts arbitrary raw byte length; its guest-visible virtual capacity is
 `ceil(raw_bytes / 512) * 512`, tail reads zero-fill, and a write into virtual
 padding makes the next successful persistence output a complete final sector.
