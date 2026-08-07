@@ -449,6 +449,21 @@ callback. Composition owns cancellation and may reuse the existing copied
 input/cancellable-wait facilities around bounded resource work; resource I/O
 does not create a second cancellation protocol or mutate guest state.
 
+### VM Media Adapter Boundary (T272)
+
+T272 keeps the VM FDD and HDD backing objects as the sole owners of their
+media bytes, geometry, read-only state, insertion state, and generation. Each
+implements the frozen core media-provider contract; composition binds those
+providers under stable floppy/HDD identities and supplies an already-selected
+opaque backing resource only at mount/eject/persistence boundaries. Firmware
+may query copied geometry through the media registry but cannot read media
+bytes. FDC and ATA/HDC retain their direct backing-object use until T275 and
+T277 respectively; this is a stated transition boundary, not a second route.
+
+The legacy single-slot block API is removed in T272 after the ROM geometry
+consumer is rebound. It must not survive as an adapter, and no controller or
+firmware may cache media geometry to bridge its removal.
+
 ## Core Machine: Hardware IRQ
 
 Hardware IRQ delivery and a guest `INT n` instruction are separate mechanisms.
