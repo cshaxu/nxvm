@@ -114,7 +114,7 @@ explicit deferred stubs. The deferred set remains 32-bit TSS switching,
 paging-time task-switch atomicity, LDT loading, task gates, far CALL, and
 nested/IRET task return.
 
-### S4 Closure
+### S4 Initial Closure
 
 T261 is closed. The official current artifact target is `vm-0-5-0261`; its
 developer artifact is `build/output/nxvm_0_5_0261.exe`, SHA-256
@@ -123,6 +123,46 @@ developer artifact is `build/output/nxvm_0_5_0261.exe`, SHA-256
 static gates plus 95/95 CTest cases. The retained DOS/FDD/HDD, Console,
 debugger, CGA/EGA, ATA, RTC, T257--T260, and focused task-switch paths are
 therefore verified against the same source revision.
+
+### S5 Corrective Scope
+
+Post-closure review found that the admitted task-B SS selector was validated
+as writable data but materialized with `SREG_DATA`. That is a real core CPU
+state-classification defect: stack operations can lose their existing distinct
+`#SS` limit path. S5 changes only the task-switch cache classification and its
+core-only corpus. It must retain the same descriptor validation, TSS memory
+route, busy-state transition, one executor, and all product behavior.
+
+The focused corpus must assert task B's live `SS.sregtype == SREG_STACK` and
+execute a bounded task-B `POP` across an SS limit to retain `#SS(0)`. The
+similar-issue sweep covers all task-switch segment-cache assignments and
+existing stack cache producers; direct segment-load paths are not rewritten
+unless they exhibit the same incorrect classification. Rebuild the same T261
+artifact identity, run retained protected-mode and current GCC gates, record a
+replacement SHA-256, then return status to Idle. T262 remains unstarted.
+
+### S5 Corrective Closure
+
+S5 is complete. The shared task selector validator still applies the one
+writable-data selector contract, but now receives the target segment class:
+task B's SS cache is materialized as `SREG_STACK`; DS and ES remain
+`SREG_DATA`. The 80286 and 80386 cases each switch successfully to B, then B's
+`POP` crosses the isolated zero-limit SS descriptor and records `#SS(0)` while
+TR remains B. The focused marker is `M5:T261:S5:SS-CACHE:OK`.
+
+The similar-issue query was
+`rg -n "_s_task_cache_descriptor\\(|_s_task_validate_data_selector\\(|data\\.ss\\s*=|&cpu_state\\.data\\.ss|\\.ss\\.sregtype|sregtype\\s*=\\s*SREG_DATA" src tests CMakeLists.txt docs TODO.md`.
+Its production hits are the corrected task-switch assignments, the existing
+`SREG_STACK` CPU initialization and direct SS loaders, normal stack access
+helpers, and intentional FS/GS data classifications. No second misclassified
+SS cache producer remains.
+
+The retained protection CTests passed 5/5. `current-gcc` rebuilt the official
+artifact and `current-gates-gcc` passed all static gates plus 95/95 CTest
+cases. The replacement T261 artifact remains
+`build/output/nxvm_0_5_0261.exe`, SHA-256
+`B01EAC25B34B4ACC9250AFDF8DB0290D004138F004CC41753578F351516D6792`.
+T262 remains unstarted.
 
 ## T260 Admission Packet
 
@@ -418,7 +458,7 @@ The next task must establish a complete active packet before implementation.
 - **T261 artifact identity:** `current-gcc` and
   `verify-current-artifact-target` select `vm-0-5-0261`; static/ownership
   checks and 95/95 CTest cases passed. Artifact `nxvm_0_5_0261.exe` SHA-256:
-  `05DBCEA9B0CF7D025715A334E17D43C8DBE57CFE61C27230B2A50D0A8E531132`.
+  `B01EAC25B34B4ACC9250AFDF8DB0290D004138F004CC41753578F351516D6792`.
 - **T243--T246:** core owns checked physical memory, bounded `#UD`
   transitions, immutable ROM mapping, and atomic real-mode entry plans. T247
   verifies the current artifact target and full gate over that boundary.

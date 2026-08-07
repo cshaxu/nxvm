@@ -3275,7 +3275,7 @@ static C_VOID _s_task_cache_descriptor(t_cpu_data_sreg *cache,
 
 static C_VOID _s_task_validate_data_selector(
     core_machine_cpu_execution_context *context, type_unsigned_16 selector,
-    t_cpu_data_sreg *out_cache)
+    t_cpu_data_sreg_type sregtype, t_cpu_data_sreg *out_cache)
 {
     type_unsigned_64 descriptor;
 
@@ -3292,7 +3292,7 @@ static C_VOID _s_task_validate_data_selector(
     if (!_IsDescPresent(descriptor)) {
         TYPE_TRACE_CHECK_RETURN(_SetExcept_NP(selector & 0xfffcu));
     }
-    _s_task_cache_descriptor(out_cache, selector, descriptor, SREG_DATA);
+    _s_task_cache_descriptor(out_cache, selector, descriptor, sregtype);
     TYPE_TRACE_CALL_END;
 }
 
@@ -3379,11 +3379,11 @@ static C_VOID _ser_jmp_far_tss(core_machine_cpu_execution_context *context, type
     TYPE_TRACE_CHECK_RETURN(_s_task_validate_code_selector(context, state.cs,
         state.ip, &newcs_cache));
     TYPE_TRACE_CHECK_RETURN(_s_task_validate_data_selector(context, state.ss,
-        &newss_cache));
+        SREG_STACK, &newss_cache));
     TYPE_TRACE_CHECK_RETURN(_s_task_validate_data_selector(context, state.ds,
-        &newds_cache));
+        SREG_DATA, &newds_cache));
     TYPE_TRACE_CHECK_RETURN(_s_task_validate_data_selector(context, state.es,
-        &newes_cache));
+        SREG_DATA, &newes_cache));
 
     _ClrDescTSSBusy(old_descriptor);
     _SetDescTSSBusy(new_descriptor);

@@ -7,7 +7,7 @@ redefine the roadmap, start a later milestone, or define NXVDM completion.
 Completed M5 evidence is summarized in [M5 History](../history/m5.md); this
 document contains only the current baseline and remaining queue.
 
-The retained baseline is **T261 S4**: `nxvm.exe` preserves its full-PC boot,
+The retained baseline is **T261 S5**: `nxvm.exe` preserves its full-PC boot,
 Console, debugger, and current GCC/CTest gate. The current target is
 `vm-0-5-0261`. Checked memory, immutable ROM mapping, bounded 80386 paging,
 bounded 16-bit protected privilege/IDT delivery, bounded 16-bit far-JMP task
