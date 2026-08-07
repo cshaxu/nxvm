@@ -16,6 +16,14 @@ typedef struct task_switch_fixture {
     core_machine_cpu_execution_context *execution;
 } task_switch_fixture;
 
+typedef enum task_switch_case {
+    TASK_SWITCH_CASE_SUCCESS = 0,
+    TASK_SWITCH_CASE_INVALID_SELECTOR,
+    TASK_SWITCH_CASE_NOT_PRESENT,
+    TASK_SWITCH_CASE_BUSY,
+    TASK_SWITCH_CASE_SHORT_TSS
+} task_switch_case;
+
 static C_VOID task_switch_reset(C_VOID *opaque)
 {
     task_switch_fixture *fixture = (task_switch_fixture *)opaque;
@@ -71,10 +79,11 @@ static C_INT task_switch_prepare(task_switch_fixture *fixture,
     return 1;
 }
 
-static C_INT task_switch_install(task_switch_fixture *fixture)
+static C_INT task_switch_install(task_switch_fixture *fixture,
+    task_switch_case test_case)
 {
     static const uint8_t gdt_pointer[] = { 0x3fu,0,0x00u,0x03u,0,0 };
-    static const uint8_t gdt[] = {
+    uint8_t gdt[] = {
         0,0,0,0,0,0,0,0,
         0xff,0xff,0,0x20,0,0x9a,0,0,
         0xff,0xff,0,0x30,0,0x92,0,0,
@@ -91,7 +100,7 @@ static C_INT task_switch_install(task_switch_fixture *fixture)
         0xb8,0x10,0x00,0x8e,0xd0,0xbc,0x00,0x80,
         0xea,0x00,0x00,0x08,0x00
     };
-    static const uint8_t kernel_code[] = {
+    uint8_t kernel_code[] = {
         0xb8,0x11,0x11,0xea,0x00,0x00,0x30,0x00
     };
     static const uint8_t task_b_state[] = {
@@ -103,6 +112,23 @@ static C_INT task_switch_install(task_switch_fixture *fixture)
     static const uint8_t task_b_code[] = {
         0xb8,0x22,0x22,0xa3,0x00,0x00,0xf4
     };
+
+    switch (test_case) {
+    case TASK_SWITCH_CASE_INVALID_SELECTOR:
+        kernel_code[6] = 0x38u;
+        break;
+    case TASK_SWITCH_CASE_NOT_PRESENT:
+        gdt[53] = 0x01u;
+        break;
+    case TASK_SWITCH_CASE_BUSY:
+        gdt[53] = 0x83u;
+        break;
+    case TASK_SWITCH_CASE_SHORT_TSS:
+        gdt[48] = 0x2au;
+        break;
+    default:
+        break;
+    }
 
     return write_bytes(fixture->machine, GDT_POINTER, gdt_pointer,
             sizeof(gdt_pointer)) &&
@@ -130,7 +156,7 @@ static C_INT task_switch_expect_switch(core_machine_cpu_profile profile)
     C_INT failed = !task_switch_prepare(&fixture, profile);
 
     if (!failed) {
-        failed |= !task_switch_install(&fixture);
+        failed |= !task_switch_install(&fixture, TASK_SWITCH_CASE_SUCCESS);
         failed |= core_machine_run(fixture.machine, budget, &result) !=
             TYPE_STATUS_OK || result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         failed |= core_machine_get_cpu_diagnostic(fixture.machine, &diagnostic) !=
@@ -165,13 +191,54 @@ static C_INT task_switch_expect_switch(core_machine_cpu_profile profile)
     return failed;
 }
 
+static C_INT task_switch_expect_fault(core_machine_cpu_profile profile,
+    task_switch_case test_case, uint32_t expected_mask, uint16_t expected_code)
+{
+    task_switch_fixture fixture;
+    core_machine_run_result result;
+    core_machine_cpu_diagnostic diagnostic;
+    const core_machine_run_budget budget = { 128u, 0u };
+    C_INT failed = !task_switch_prepare(&fixture, profile);
+
+    if (!failed) {
+        failed |= !task_switch_install(&fixture, test_case);
+        failed |= core_machine_run(fixture.machine, budget, &result) !=
+            TYPE_STATUS_FAULT || result.reason != CORE_MACHINE_STOP_FAULT;
+        failed |= core_machine_get_cpu_diagnostic(fixture.machine, &diagnostic) !=
+            TYPE_STATUS_OK || !diagnostic.first_fault.valid ||
+            !TYPE_GET_BIT(diagnostic.first_fault.exception_mask, expected_mask) ||
+            diagnostic.first_fault.exception_code != expected_code ||
+            diagnostic.last_delivered_exception.valid ||
+            !fixture.cpu->data.tr.flagValid ||
+            fixture.cpu->data.tr.selector != 0x0028u;
+        if (failed) {
+            STD_FPRINTF(STD_STDERR,
+                "T261 fault=%u/%u result=%u mask=%x code=%04x tr=%04x\n",
+                (unsigned)profile, (unsigned)test_case, (unsigned)result.reason,
+                (unsigned)diagnostic.first_fault.exception_mask,
+                diagnostic.first_fault.exception_code, fixture.cpu->data.tr.selector);
+        }
+    }
+    core_machine_destroy(fixture.machine);
+    return failed;
+}
+
 int main(void)
 {
     C_INT failed = 0;
 
     failed |= task_switch_expect_switch(CORE_MACHINE_CPU_PROFILE_80286);
     failed |= task_switch_expect_switch(CORE_MACHINE_CPU_PROFILE_80386);
+    failed |= task_switch_expect_fault(CORE_MACHINE_CPU_PROFILE_80286,
+        TASK_SWITCH_CASE_INVALID_SELECTOR, VCPUINS_EXCEPT_GP, 0x0038u);
+    failed |= task_switch_expect_fault(CORE_MACHINE_CPU_PROFILE_80286,
+        TASK_SWITCH_CASE_NOT_PRESENT, VCPUINS_EXCEPT_NP, 0x0030u);
+    failed |= task_switch_expect_fault(CORE_MACHINE_CPU_PROFILE_80386,
+        TASK_SWITCH_CASE_BUSY, VCPUINS_EXCEPT_GP, 0x0030u);
+    failed |= task_switch_expect_fault(CORE_MACHINE_CPU_PROFILE_80386,
+        TASK_SWITCH_CASE_SHORT_TSS, VCPUINS_EXCEPT_TS, 0x0030u);
     if (failed) return 1;
     STD_PRINTF("M5:T261:S2:TASK-SWITCH:OK\n");
+    STD_PRINTF("M5:T261:S3:TASK-SWITCH:CORPUS:OK\n");
     return 0;
 }
