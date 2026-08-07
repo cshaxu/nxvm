@@ -2,7 +2,7 @@
 
 ## Current Work
 
-**M5 T260 S4 active: close the TSS I/O-permission baseline.**
+**Idle: T260 is closed; establish the next task packet before implementation.**
 
 ## T260 Admission Packet
 
@@ -50,6 +50,17 @@ T259 stack-source helper needed for a 32-bit TSS. S3 adds a core-only port/TSS
 corpus and retains T257--T259, paging, DOS boot, FDD/HDD, Console, debugger,
 and current gates. The expected focused marker is
 `M5:T260:S3:TSS-IOMAP:CORPUS:OK`.
+
+### S4 Closure
+
+S4 is complete. `current-gcc` selects `vm-0-5-0260` and generated
+`build/output/nxvm_0_5_0260.exe`, SHA-256
+`D04F3F90E74F1CA3B47158C7E85F8981FCD53BD69E652ED17134FFDABEDA5D08`.
+`current-gates-gcc` passed its static/ownership checks and **94/94** current
+CTest cases. T260 admits only the tested 80386 32-bit-TSS I/O-map behavior
+plus the retained 80286/IOPL deterministic cases; task switching, generic
+protected interrupt delivery, LDT, 32-bit frames/gates, CPL1/2, V86, and
+broader 386 compatibility remain deferred.
 
 Stop and split if the corpus needs task/busy-TSS switching, LDT, call/task/trap
 gates, a 32-bit frame/gate, CPL1/2, V86 semantics, a VM/firmware/host port
@@ -277,15 +288,16 @@ SHA-256 before closure.
 | T256 | Core-owned Level 1 rational device clocks are closed; artifact `0.5.0254` and 90/90 current CTest pass. |
 | T258 | Bounded 80386 CPL0 paging baseline is closed; artifact `0.5.0258` and 92/92 current CTest pass. |
 | T259 | Bounded 16-bit protected privilege and `#GP` IDT delivery are closed; artifact `0.5.0259` and 93/93 current CTest pass. |
+| T260 | 80386 32-bit-TSS I/O-map allow/deny is closed through the real CPL3 corpus; artifact `0.5.0260` and 94/94 current CTest pass. |
 
 The next task must establish a complete active packet before implementation.
 
 ## Current Technical Baseline
 
-- **T259 artifact identity:** `current-gcc` and
-  `verify-current-artifact-target` select `vm-0-5-0259`; static/ownership
-  checks and 93/93 CTest cases passed. Artifact `nxvm_0_5_0259.exe` SHA-256:
-  `61FEF63CD57ED1FD46D1B5A2B49C24538830FCAF3EDF0D35EF5D09CAE8FC283A`.
+- **T260 artifact identity:** `current-gcc` and
+  `verify-current-artifact-target` select `vm-0-5-0260`; static/ownership
+  checks and 94/94 CTest cases passed. Artifact `nxvm_0_5_0260.exe` SHA-256:
+  `D04F3F90E74F1CA3B47158C7E85F8981FCD53BD69E652ED17134FFDABEDA5D08`.
 - **T243--T246:** core owns checked physical memory, bounded `#UD`
   transitions, immutable ROM mapping, and atomic real-mode entry plans. T247
   verifies the current artifact target and full gate over that boundary.
