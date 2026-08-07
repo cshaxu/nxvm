@@ -6,9 +6,6 @@ file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/fdc.c" fdc_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/fdc.h" fdc_header)
 file(READ "${PROJECT_SOURCE_DIR}/tests/machine/core_machine_fdc_smoke.c"
     core_fixture)
-file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/fdc.h" fdc_header)
-file(READ "${PROJECT_SOURCE_DIR}/tests/machine/core_machine_fdc_smoke.c"
-    core_fixture)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/fdd.h" fdd_header)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/fdd.c" fdd_source)
 
@@ -28,21 +25,7 @@ foreach(source_text IN ITEMS "${fdc_source}" "${fdc_header}" "${core_fixture}")
 endforeach()
 
 foreach(required IN ITEMS "core_machine_configuration_fdc_borrow"
-    "core_machine_fdc_connect" "M5:T276:S3:CORE-FDC:OK")
-    string(FIND "${core_fixture}" "${required}" position)
-    if(position EQUAL -1)
-        message(FATAL_ERROR "Core FDC fixture is incomplete: ${required}")
-    endif()
-endforeach()
-
-foreach(source_text IN ITEMS "${fdc_source}" "${fdc_header}" "${core_fixture}")
-    if(source_text MATCHES "#include[ \t]+\"vm/")
-        message(FATAL_ERROR "Core FDC migration retains a VM include")
-    endif()
-endforeach()
-
-foreach(required IN ITEMS "core_machine_configuration_fdc_borrow"
-    "core_machine_fdc_connect" "M5:T276:S3:CORE-FDC:OK")
+    "core_machine_fdc_connect" "M5:T283:S2:CORE-FDC-MEDIA:OK")
     string(FIND "${core_fixture}" "${required}" position)
     if(position EQUAL -1)
         message(FATAL_ERROR "Core FDC fixture is incomplete: ${required}")

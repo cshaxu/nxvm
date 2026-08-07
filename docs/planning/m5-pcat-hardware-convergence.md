@@ -41,7 +41,6 @@ identifiers.
 
 | Task | Owner and purpose | Dependency and stop condition |
 | --- | --- | --- |
-| T283 | Extend VM-free core FDC/ATA fixtures to execute provider media I/O and typed-failure mapping, including registry freeze/rebind rejection and generation observation. | T280--T281. T282's host-boundary conclusion constrains this work but is not an implementation blocker. No new controller command family, dynamic topology, or test-only runtime route. |
 
 ### C. Windows 3.x Display And Storage Prerequisites
 
