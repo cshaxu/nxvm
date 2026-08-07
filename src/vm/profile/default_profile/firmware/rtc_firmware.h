@@ -1,108 +1,12 @@
 /* Copyright 2012-2014 Neko. */
 
-#ifndef VM_MACHINE_CMOS_H
-#define VM_MACHINE_CMOS_H
+#ifndef VM_PROFILE_DEFAULT_RTC_FIRMWARE_H
+#define VM_PROFILE_DEFAULT_RTC_FIRMWARE_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include "type.h"
-#include "core/machine/pic.h"
-#include "core/machine/port.h"
-
-#define VM_MACHINE_DEVICE_CMOS "MC146818"
-
-typedef struct {
-    type_unsigned_8 reg[0x80]; /* cmos registers */
-    core_machine_pic_irq_source irq_source;
-    uint32_t ticks_per_second;
-    C_VOID (*set_nmi_mask)(C_VOID *context, C_INT masked);
-    C_VOID *nmi_mask_context;
-} t_cmos_connect;
-
-typedef struct {
-    type_unsigned_8 regId; /* id of specified cmos register*/
-    type_unsigned_8 second, minute, hour;
-    type_unsigned_8 day_week, day_month, month, year, century;
-    uint64_t second_ticks;
-    uint64_t periodic_ticks;
-} t_cmos_data;
-
-typedef struct {
-    t_cmos_data data;
-    t_cmos_connect connect;
-} t_cmos;
-
-typedef struct vm_machine_cmos_config {
-    uint16_t index_port;
-    uint16_t data_port;
-    uint8_t irq;
-    uint32_t ticks_per_second;
-    C_VOID (*set_nmi_mask)(C_VOID *context, C_INT masked);
-    C_VOID *nmi_mask_context;
-} vm_machine_cmos_config;
-
-typedef struct vm_machine_cmos_defaults {
-    uint8_t equipment;
-    uint16_t base_memory_kib;
-    uint8_t floppy_type;
-    uint8_t fixed_disk_type;
-} vm_machine_cmos_defaults;
-
-#define VCMOS_RTC_SECOND       0x00
-#define VCMOS_RTC_SECOND_ALARM 0x01
-#define VCMOS_RTC_MINUTE       0x02
-#define VCMOS_RTC_MINUTE_ALARM 0x03
-#define VCMOS_RTC_HOUR         0x04
-#define VCMOS_RTC_HOUR_ALARM   0x05
-#define VCMOS_RTC_DAY_WEEK     0x06
-#define VCMOS_RTC_DAY_MONTH    0x07
-#define VCMOS_RTC_MONTH        0x08
-#define VCMOS_RTC_YEAR         0x09
-#define VCMOS_RTC_REG_A        0x0a
-#define VCMOS_RTC_REG_B        0x0b
-#define VCMOS_RTC_REG_C        0x0c
-#define VCMOS_RTC_REG_D        0x0d
-
-#define VCMOS_REG_A_UIP 0x80u
-#define VCMOS_REG_B_SET 0x80u
-#define VCMOS_REG_B_PIE 0x40u
-#define VCMOS_REG_B_AIE 0x20u
-#define VCMOS_REG_B_UIE 0x10u
-#define VCMOS_REG_B_DM  0x04u
-#define VCMOS_REG_B_24H 0x02u
-#define VCMOS_REG_C_IRQF 0x80u
-#define VCMOS_REG_C_PF 0x40u
-#define VCMOS_REG_C_AF 0x20u
-#define VCMOS_REG_C_UF 0x10u
-#define VCMOS_REG_D_VRT 0x80u
-#define VCMOS_STATUS_DIAG      0x0e
-#define VCMOS_STATUS_SHUTDOWN  0x0f
-#define VCMOS_TYPE_DISK_FLOPPY 0x10
-#define VCMOS_TYPE_DISK_FIXED  0x12
-#define VCMOS_EQUIPMENT        0x14
-#define VCMOS_BASEMEM_LSB      0x15
-#define VCMOS_BASEMEM_MSB      0x16
-#define VCMOS_EXTMEM_LSB       0x17
-#define VCMOS_EXTMEM_MSB       0x18
-#define VCMOS_DRIVE_C          0x19
-#define VCMOS_DRIVE_D          0x1a
-#define VCMOS_CHECKSUM_MSB     0x2e
-#define VCMOS_CHECKSUM_LSB     0x2f
-#define VCMOS_EXTMEM1MB_LSB    0x30
-#define VCMOS_EXTMEM1MB_MSB    0x31
-#define VCMOS_RTC_CENTURY      0x32
-#define VCMOS_FLAGS_INFO       0x33
-
-C_VOID vm_machine_cmos_initialize(t_cmos *cmos, t_pic *pic_master,
-    t_pic *pic_slave, t_port *port, const vm_machine_cmos_config *config);
-C_VOID vm_machine_cmos_apply_defaults(t_cmos *cmos,
-    const vm_machine_cmos_defaults *defaults);
-C_VOID vm_machine_cmos_reset(t_cmos *cmos);
-C_VOID vm_machine_cmos_refresh(t_cmos *cmos);
-C_VOID vm_machine_cmos_advance(t_cmos *cmos, uint64_t elapsed_ticks);
-C_VOID vm_machine_cmos_finalize(t_cmos *cmos);
 
 #define VCMOS_POST "            \
 ; init cmos                   \n\

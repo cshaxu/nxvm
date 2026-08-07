@@ -315,7 +315,6 @@ set(VM_MACHINE_SOURCES
     src/vm/machine/hdd.c
     src/vm/machine/hdc.c
     src/vm/machine/fdc.c
-    src/vm/machine/cmos.c
     src/vm/machine/debug.c
 )
 set(CORE_MACHINE_SOURCES
@@ -330,6 +329,7 @@ set(CORE_MACHINE_SOURCES
     src/core/machine/pit.c
     src/core/machine/dma.c
     src/core/machine/kbc.c
+    src/core/machine/rtc.c
 )
 add_library(core-platform STATIC
     src/core/platform/backing_resource_interface.c
@@ -692,6 +692,8 @@ add_executable(core-machine-media-provider-smoke
     tests/machine/core_machine_media_provider_smoke.c
 )
 target_link_libraries(core-machine-media-provider-smoke PRIVATE core-machine)
+add_executable(core-machine-rtc-smoke tests/machine/core_machine_rtc_smoke.c)
+target_link_libraries(core-machine-rtc-smoke PRIVATE core-machine)
 add_executable(vm-kbc-aux-guest-smoke
     tests/machine/vm_kbc_aux_guest_smoke.c
 )
@@ -967,6 +969,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-kbc-aux-port-smoke
     core-machine-dma-channel-smoke
     core-machine-media-provider-smoke
+    core-machine-rtc-smoke
     vm-kbc-aux-guest-smoke
     vm-keyboard-set1-mapper-smoke
     core-machine-vadp-text-smoke

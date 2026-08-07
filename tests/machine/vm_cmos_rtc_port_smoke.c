@@ -5,7 +5,7 @@
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/session_interface.h"
 #include "vm/composition/session/session.h"
-#include "vm/machine/cmos.h"
+#include "core/machine/rtc.h"
 
 static C_VOID cmos_write(t_port *port, type_unsigned_8 reg, type_unsigned_8 value)
 {
@@ -31,11 +31,11 @@ static C_VOID initialize_pic(t_port *port)
     core_machine_port_write(port, 0x00a1u, 0x01u);
 }
 
-static C_VOID advance_cmos(t_cmos *cmos, uint64_t elapsed_ticks)
+static C_VOID advance_cmos(core_machine_rtc *cmos, uint64_t elapsed_ticks)
 {
-    vm_machine_cmos_advance(cmos, elapsed_ticks);
-    core_machine_pic_refresh(cmos->connect.irq_source.master,
-        cmos->connect.irq_source.slave);
+    core_machine_rtc_advance(cmos, elapsed_ticks);
+    core_machine_pic_refresh(cmos->irq_source.master,
+        cmos->irq_source.slave);
 }
 
 C_INT main(C_VOID)
@@ -50,80 +50,80 @@ C_INT main(C_VOID)
     if (!session->active || port == STD_NULL) failed = 1;
     initialize_pic(port);
 
-    if (cmos_read(port, VCMOS_RTC_REG_D) != VCMOS_REG_D_VRT) failed |= 0x0001;
-    if (cmos_read(port, VCMOS_RTC_SECOND) != 0x00u) failed |= 0x0002;
-    advance_cmos(&session->cmos, 50000u);
-    if (cmos_read(port, VCMOS_RTC_SECOND) != 0x01u) failed |= 0x0004;
+    if (cmos_read(port, CORE_MACHINE_RTC_REG_D) != CORE_MACHINE_RTC_REG_D_VRT) failed |= 0x0001;
+    if (cmos_read(port, CORE_MACHINE_RTC_SECOND) != 0x00u) failed |= 0x0002;
+    advance_cmos(&session->rtc, 50000u);
+    if (cmos_read(port, CORE_MACHINE_RTC_SECOND) != 0x01u) failed |= 0x0004;
 
-    cmos_write(port, VCMOS_RTC_REG_B, VCMOS_REG_B_24H | VCMOS_REG_B_UIE);
-    advance_cmos(&session->cmos, 50000u);
-    if (!core_machine_pic_scan_interrupt(session->cmos.connect.irq_source.master,
-        session->cmos.connect.irq_source.slave)) failed |= 0x0008;
-    if (core_machine_pic_get_interrupt(session->cmos.connect.irq_source.master,
-        session->cmos.connect.irq_source.slave) != 0x70u) failed |= 0x0010;
-    if ((cmos_read(port, VCMOS_RTC_REG_C) &
-        (VCMOS_REG_C_IRQF | VCMOS_REG_C_UF)) !=
-        (VCMOS_REG_C_IRQF | VCMOS_REG_C_UF)) failed |= 0x0020;
+    cmos_write(port, CORE_MACHINE_RTC_REG_B, CORE_MACHINE_RTC_REG_B_24H | CORE_MACHINE_RTC_REG_B_UIE);
+    advance_cmos(&session->rtc, 50000u);
+    if (!core_machine_pic_scan_interrupt(session->rtc.irq_source.master,
+        session->rtc.irq_source.slave)) failed |= 0x0008;
+    if (core_machine_pic_get_interrupt(session->rtc.irq_source.master,
+        session->rtc.irq_source.slave) != 0x70u) failed |= 0x0010;
+    if ((cmos_read(port, CORE_MACHINE_RTC_REG_C) &
+        (CORE_MACHINE_RTC_REG_C_IRQF | CORE_MACHINE_RTC_REG_C_UF)) !=
+        (CORE_MACHINE_RTC_REG_C_IRQF | CORE_MACHINE_RTC_REG_C_UF)) failed |= 0x0020;
     core_machine_port_write(port, 0x00a0u, 0x20u);
     core_machine_port_write(port, 0x0020u, 0x20u);
-    if (core_machine_pic_scan_interrupt(session->cmos.connect.irq_source.master,
-        session->cmos.connect.irq_source.slave)) failed |= 0x0040;
+    if (core_machine_pic_scan_interrupt(session->rtc.irq_source.master,
+        session->rtc.irq_source.slave)) failed |= 0x0040;
 
-    cmos_write(port, VCMOS_RTC_REG_B, VCMOS_REG_B_24H | VCMOS_REG_B_PIE);
-    advance_cmos(&session->cmos, 50u);
-    if (!core_machine_pic_scan_interrupt(session->cmos.connect.irq_source.master,
-        session->cmos.connect.irq_source.slave) ||
-        core_machine_pic_get_interrupt(session->cmos.connect.irq_source.master,
-            session->cmos.connect.irq_source.slave) != 0x70u) failed |= 0x0080;
-    if ((cmos_read(port, VCMOS_RTC_REG_C) &
-        (VCMOS_REG_C_IRQF | VCMOS_REG_C_PF)) !=
-        (VCMOS_REG_C_IRQF | VCMOS_REG_C_PF)) failed |= 0x0100;
-    core_machine_port_write(port, 0x00a0u, 0x20u);
-    core_machine_port_write(port, 0x0020u, 0x20u);
-
-    cmos_write(port, VCMOS_RTC_REG_B, VCMOS_REG_B_24H | VCMOS_REG_B_SET);
-    cmos_write(port, VCMOS_RTC_SECOND, 0x11u);
-    advance_cmos(&session->cmos, 100000u);
-    if (cmos_read(port, VCMOS_RTC_SECOND) != 0x11u) failed |= 0x0200;
-    cmos_write(port, VCMOS_RTC_REG_B, VCMOS_REG_B_24H);
-
-    cmos_write(port, VCMOS_RTC_REG_B, VCMOS_REG_B_DM);
-    cmos_write(port, VCMOS_RTC_HOUR, 0x81u);
-    if (cmos_read(port, VCMOS_RTC_HOUR) != 0x81u) failed |= 0x0400;
-
-    cmos_write(port, VCMOS_RTC_REG_B, VCMOS_REG_B_24H | VCMOS_REG_B_SET);
-    cmos_write(port, VCMOS_RTC_SECOND, 0x58u);
-    cmos_write(port, VCMOS_RTC_MINUTE, 0x00u);
-    cmos_write(port, VCMOS_RTC_HOUR, 0x00u);
-    cmos_write(port, VCMOS_RTC_SECOND_ALARM, 0x59u);
-    cmos_write(port, VCMOS_RTC_MINUTE_ALARM, 0x00u);
-    cmos_write(port, VCMOS_RTC_HOUR_ALARM, 0x00u);
-    cmos_write(port, VCMOS_RTC_REG_B, VCMOS_REG_B_24H | VCMOS_REG_B_AIE);
-    advance_cmos(&session->cmos, 50000u);
-    if (!core_machine_pic_scan_interrupt(session->cmos.connect.irq_source.master,
-        session->cmos.connect.irq_source.slave) ||
-        core_machine_pic_get_interrupt(session->cmos.connect.irq_source.master,
-            session->cmos.connect.irq_source.slave) != 0x70u) failed |= 0x0800;
-    if ((cmos_read(port, VCMOS_RTC_REG_C) &
-        (VCMOS_REG_C_IRQF | VCMOS_REG_C_AF)) !=
-        (VCMOS_REG_C_IRQF | VCMOS_REG_C_AF)) failed |= 0x1000;
+    cmos_write(port, CORE_MACHINE_RTC_REG_B, CORE_MACHINE_RTC_REG_B_24H | CORE_MACHINE_RTC_REG_B_PIE);
+    advance_cmos(&session->rtc, 50u);
+    if (!core_machine_pic_scan_interrupt(session->rtc.irq_source.master,
+        session->rtc.irq_source.slave) ||
+        core_machine_pic_get_interrupt(session->rtc.irq_source.master,
+            session->rtc.irq_source.slave) != 0x70u) failed |= 0x0080;
+    if ((cmos_read(port, CORE_MACHINE_RTC_REG_C) &
+        (CORE_MACHINE_RTC_REG_C_IRQF | CORE_MACHINE_RTC_REG_C_PF)) !=
+        (CORE_MACHINE_RTC_REG_C_IRQF | CORE_MACHINE_RTC_REG_C_PF)) failed |= 0x0100;
     core_machine_port_write(port, 0x00a0u, 0x20u);
     core_machine_port_write(port, 0x0020u, 0x20u);
 
-    cmos_write(port, VCMOS_EQUIPMENT, 0x5au);
-    vm_machine_cmos_reset(&session->cmos);
-    if (cmos_read(port, VCMOS_EQUIPMENT) != 0x5au) failed |= 0x2000;
-    if (cmos_read(port, VCMOS_RTC_SECOND) != 0x00u) failed |= 0x4000;
+    cmos_write(port, CORE_MACHINE_RTC_REG_B, CORE_MACHINE_RTC_REG_B_24H | CORE_MACHINE_RTC_REG_B_SET);
+    cmos_write(port, CORE_MACHINE_RTC_SECOND, 0x11u);
+    advance_cmos(&session->rtc, 100000u);
+    if (cmos_read(port, CORE_MACHINE_RTC_SECOND) != 0x11u) failed |= 0x0200;
+    cmos_write(port, CORE_MACHINE_RTC_REG_B, CORE_MACHINE_RTC_REG_B_24H);
+
+    cmos_write(port, CORE_MACHINE_RTC_REG_B, CORE_MACHINE_RTC_REG_B_DM);
+    cmos_write(port, CORE_MACHINE_RTC_HOUR, 0x81u);
+    if (cmos_read(port, CORE_MACHINE_RTC_HOUR) != 0x81u) failed |= 0x0400;
+
+    cmos_write(port, CORE_MACHINE_RTC_REG_B, CORE_MACHINE_RTC_REG_B_24H | CORE_MACHINE_RTC_REG_B_SET);
+    cmos_write(port, CORE_MACHINE_RTC_SECOND, 0x58u);
+    cmos_write(port, CORE_MACHINE_RTC_MINUTE, 0x00u);
+    cmos_write(port, CORE_MACHINE_RTC_HOUR, 0x00u);
+    cmos_write(port, CORE_MACHINE_RTC_SECOND_ALARM, 0x59u);
+    cmos_write(port, CORE_MACHINE_RTC_MINUTE_ALARM, 0x00u);
+    cmos_write(port, CORE_MACHINE_RTC_HOUR_ALARM, 0x00u);
+    cmos_write(port, CORE_MACHINE_RTC_REG_B, CORE_MACHINE_RTC_REG_B_24H | CORE_MACHINE_RTC_REG_B_AIE);
+    advance_cmos(&session->rtc, 50000u);
+    if (!core_machine_pic_scan_interrupt(session->rtc.irq_source.master,
+        session->rtc.irq_source.slave) ||
+        core_machine_pic_get_interrupt(session->rtc.irq_source.master,
+            session->rtc.irq_source.slave) != 0x70u) failed |= 0x0800;
+    if ((cmos_read(port, CORE_MACHINE_RTC_REG_C) &
+        (CORE_MACHINE_RTC_REG_C_IRQF | CORE_MACHINE_RTC_REG_C_AF)) !=
+        (CORE_MACHINE_RTC_REG_C_IRQF | CORE_MACHINE_RTC_REG_C_AF)) failed |= 0x1000;
+    core_machine_port_write(port, 0x00a0u, 0x20u);
+    core_machine_port_write(port, 0x0020u, 0x20u);
+
+    cmos_write(port, CORE_MACHINE_RTC_EQUIPMENT, 0x5au);
+    core_machine_rtc_reset(&session->rtc);
+    if (cmos_read(port, CORE_MACHINE_RTC_EQUIPMENT) != 0x5au) failed |= 0x2000;
+    if (cmos_read(port, CORE_MACHINE_RTC_SECOND) != 0x00u) failed |= 0x4000;
 
     if (failed) {
         STD_PRINTF("RTC probe failed=%04x: second=%u hour=%u C=%02x B=%02x IRR=%02x/%02x ISR=%02x/%02x\n", failed,
-            session->cmos.data.second, session->cmos.data.hour,
-            session->cmos.connect.reg[VCMOS_RTC_REG_C],
-            session->cmos.connect.reg[VCMOS_RTC_REG_B],
-            session->cmos.connect.irq_source.master->data.irr,
-            session->cmos.connect.irq_source.slave->data.irr,
-            session->cmos.connect.irq_source.master->data.isr,
-            session->cmos.connect.irq_source.slave->data.isr);
+            session->rtc.calendar.second, session->rtc.calendar.hour,
+            session->rtc.registers[CORE_MACHINE_RTC_REG_C],
+            session->rtc.registers[CORE_MACHINE_RTC_REG_B],
+            session->rtc.irq_source.master->data.irr,
+            session->rtc.irq_source.slave->data.irr,
+            session->rtc.irq_source.master->data.isr,
+            session->rtc.irq_source.slave->data.isr);
     }
     vm_session_finalize(session);
     STD_FREE(session);

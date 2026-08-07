@@ -16,8 +16,7 @@ C_INT main(C_VOID)
     vm_session_initialize(session);
     port = session->fdc.connect.port;
     if (!session->active || session->core_machine == STD_NULL ||
-        port == STD_NULL || session->cmos.connect.nmi_mask_context != session ||
-        session->cmos.connect.set_nmi_mask == STD_NULL) {
+        port == STD_NULL) {
         failed = 1;
     }
     core_machine_port_write(port, 0x0070u, 0x80u);

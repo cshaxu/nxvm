@@ -14,6 +14,7 @@
 #include "core/machine/memory_interface.h"
 #include "core/machine/pic.h"
 #include "core/machine/pit.h"
+#include "core/machine/rtc.h"
 #include "core/machine/port.h"
 #include "core/machine/port_interface.h"
 #include "type.h"

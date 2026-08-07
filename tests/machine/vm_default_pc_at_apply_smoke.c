@@ -3,12 +3,11 @@
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/session_interface.h"
 #include "vm/composition/session/session.h"
-#include "vm/machine/cmos.h"
+#include "core/machine/rtc.h"
 
 C_INT main(C_VOID)
 {
     vm_session *session = STD_NULL;
-    vm_machine_cmos_defaults defaults;
 
     if (vm_session_create(STD_NULL, &session) != TYPE_STATUS_OK) return 1;
     if (!session->active || session->profile == STD_NULL ||
@@ -21,14 +20,9 @@ C_INT main(C_VOID)
         vm_session_destroy(session);
         return 1;
     }
-    defaults.equipment = session->profile->cmos.equipment;
-    defaults.base_memory_kib = session->profile->cmos.base_memory_kib;
-    defaults.floppy_type = session->profile->cmos.floppy_type;
-    defaults.fixed_disk_type = session->profile->cmos.fixed_disk_type;
-    vm_machine_cmos_apply_defaults(&session->cmos, &defaults);
-    if (session->cmos.connect.reg[VCMOS_EQUIPMENT] != 0x21u ||
-        session->cmos.connect.reg[VCMOS_BASEMEM_LSB] != 0x7fu ||
-        session->cmos.connect.reg[VCMOS_BASEMEM_MSB] != 0x02u) {
+    if (session->rtc.registers[CORE_MACHINE_RTC_EQUIPMENT] != 0x21u ||
+        session->rtc.registers[CORE_MACHINE_RTC_BASEMEM_LSB] != 0x7fu ||
+        session->rtc.registers[CORE_MACHINE_RTC_BASEMEM_MSB] != 0x02u) {
         vm_session_destroy(session);
         return 1;
     }

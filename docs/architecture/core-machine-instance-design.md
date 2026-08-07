@@ -88,7 +88,7 @@ platform callback never mutates a machine.
 | Subject | Current owner | Boundary and next action |
 | --- | --- | --- |
 | machine, CPU, memory, ports, PIC/PIT/DMA/KBC/VADP | `core_machine` | One session-owned executor and device graph; composition configures it before freeze and drives bounded `core_machine_run`. |
-| RTC/CMOS controller | `vm/machine/cmos.*` | T273 moves only the neutral MC146818 mechanism to core; VM retains PC/AT defaults, NMI glue, host-time policy, and firmware. |
+| RTC/CMOS controller | `core/machine/rtc.*` | T273 moved the neutral MC146818 mechanism to core; VM retains PC/AT defaults, NMI glue, host-time policy, and firmware. |
 | FDC controller | `vm/machine/fdc.*` | T275 decouples its FDD backing, then T276 moves the neutral controller to core. |
 | ATA PIO controller | `vm/machine/hdc.*` | T277 decouples its HDD backing, then T278 moves the neutral controller to core. |
 | FDD/HDD backing, paths, mount/eject, persistence | VM composition and `vm/machine` backing objects | T270 exposes device-level media operations; T271 supplies only opaque host primitives. Paths and product policy remain in composition. |
