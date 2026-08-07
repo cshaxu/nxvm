@@ -20,7 +20,7 @@ numeric task identifier as its artifact revision when it completes.
 
 | Task | Owner and purpose | Dependency and stop condition |
 | --- | --- | --- |
-| T267 | Advanced 8042 AUX protocol. Add only corpus-selected wheel/sample/scaling/status or error behavior through KBC, IRQ12 and the guest driver route. | T266 independent. No host-to-DOS API shortcut or generic mouse API claim. |
+| T267 | Standard PS/2 AUX configuration/status protocol. Add sample-rate, resolution, and `E9h` status only through KBC, IRQ12, and the guest-driver route. | T266 independent. Wheel, remote mode, scaling effect, resend/error timing, host-to-DOS shortcuts, and generic mouse-API claims remain deferred. |
 | T268 | FDC/FDD fidelity increment. Choose one observed controller gap such as rotation/motor timing, disk-change, multi-drive mechanics, or a deferred command family and prove it through ports, DMA and DOS media. | Requires T265 when the selected behavior is timing-sensitive. No broad controller rewrite. |
 | T269 | Level 3 bus-timing contract and first PC/AT transaction corpus: memory/I/O wait states, DMA bus ownership, and device visibility order. | Builds on T265; no prefetch or cycle-exact profile claim. Stop if a device requires an unbounded microstate model. |
 
