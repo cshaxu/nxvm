@@ -2,8 +2,8 @@
 
 ## Current Work
 
-**M5 T263 S1 is active: freeze one corpus-proven 286/386 instruction-family
-admission before any CPU implementation changes.**
+**M5 T263 S2 is active: align the admitted 80286 `ARPL r/m16,r16` executor
+gate with its frozen CPU-profile metadata.**
 
 ## T263 Admission Packet
 
@@ -87,6 +87,16 @@ execution at 80386.  `tests/machine/cpu_profile_gate_smoke.c:145-157` covers
 only the 80186 negative case.  Existing T257 protected-mode code already
 provides the GDT/selector route needed to make an owned 80286 ARPL corpus;
 it does not need new VM integration.
+
+### S1 Closure / S2 Active Scope
+
+S1 is complete: it selected one reproducible mismatch, recorded the owner,
+scope, corpus requirements, similar-issue sweep, and stop conditions.  S2
+changes only `ARPL_RM16_R16()` so its minimum CPU gate matches the existing
+80286 metadata.  It does not change ARPL's RPL/ZF algorithm, selector access,
+the metadata table, or any other instruction handler.  S3 remains required
+before T263 can close: no existing retained smoke exercises the 80286 positive
+ARPL behavior.
 
 ## T262 Admission Packet
 

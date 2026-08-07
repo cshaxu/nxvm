@@ -8644,7 +8644,7 @@ static C_VOID BOUND_R16_M16_16(core_machine_cpu_execution_context *context)
 static C_VOID ARPL_RM16_R16(core_machine_cpu_execution_context *context)
 {
     TYPE_TRACE_CALL_BEGIN("ARPL_RM16_R16");
-    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80286)
     {
         if (_IsProtected)
         {
