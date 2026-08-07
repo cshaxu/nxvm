@@ -216,5 +216,6 @@ int main(void)
     failed |= privilege_test_fault_delivery(CORE_MACHINE_CPU_PROFILE_80386);
     if (failed) return 1;
     STD_PRINTF("M5:T259:S2:PROTECTED-PRIVILEGE:OK\n");
+    STD_PRINTF("M5:T259:S3:PROTECTED-PRIVILEGE:CORPUS:OK\n");
     return 0;
 }
