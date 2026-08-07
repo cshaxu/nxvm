@@ -2,7 +2,50 @@
 
 ## Current Work
 
-**Idle. M5 T258 is closed; no next task packet is active.**
+**M5 T259 S1 active: freeze the bounded protected-privilege and IDT delivery
+contract.**
+
+## T259 S1 Admission Packet
+
+T259 admits only a common 80286/80386 **16-bit** protected-mode subset:
+CPL3 software `INT imm8` through a DPL-permitted 16-bit interrupt gate into
+CPL0, a read-only 16-bit TSS `SS0:SP0` stack switch after `LTR`, and the paired
+outer `IRET` back to CPL3. TSS here is only a stack-field source: task switch,
+I/O bitmap, LDT, call/task/trap gates, 32-bit frames, CPL1/2, V86, hardware
+INTR/NMI delivery, and double/triple-fault machinery remain forbidden.
+
+`core/machine` remains the sole owner of CPU, descriptor, IDT, TR, stack, and
+diagnostic state; `core_machine_run()` remains the only executor. Every
+delivered exception must leave a copied core diagnostic event before its gate
+transfer. An invalid or unhandled delivery remains the existing terminal
+`STOP_FAULT` with first-fault diagnostic. Firmware, VM composition, platform,
+and product code may not emulate or consume either path.
+
+The S1 corpus is one CPL0 -> CPL3 -> CPL0 -> CPL3 round trip: CPL0 configures
+GDT, 16-bit IDT, and 16-bit TSS; outer `IRET` enters CPL3; CPL3 executes
+`INT 30h`; the gate switches to `SS0:SP0`; CPL0 marks guest memory and `IRET`s
+back; CPL3 marks guest memory and halts. Separate negative cases cover gate
+DPL/selector failures and require an observable core diagnostic plus
+`STOP_FAULT`. Existing code establishes the precise gaps: `_ksa_load_sreg`
+omits code-segment privilege checks, `_ser_ret_far_outer` is a stub, protected
+`INT`/exception delivery stop as `#UD`, and PE-state `LIDT` is rejected.
+
+| S1 concern | Required T259 result |
+| --- | --- |
+| Selector rules | Nonconforming code transition validates `CPL`, `RPL`, `DPL`, Present, and limit before mutable CPU state changes. |
+| IDT gate | Accept only present 16-bit interrupt gates; software INT checks gate DPL, CPU faults do not. |
+| Privilege stack | Validate TSS/`SS0:SP0` and target stack before committing an outer-to-inner frame. |
+| IRET | Support only the paired 16-bit inner-to-outer frame; invalid frames fault without partial segment/stack mutation. |
+| Diagnostics | Retain first terminal fault and add a copied delivered-exception observation/count for successful gate delivery. |
+| Evidence | New core-only target emits `M5:T259:S2:PROTECTED-PRIVILEGE:OK` and `M5:T259:S3:PROTECTED-PRIVILEGE:CORPUS:OK`; S4 runs current gates and records the 0.5.0259 SHA. |
+
+S2 stops and requests a split if this corpus requires a 32-bit frame/gate,
+generic hardware interrupt delivery, call/task/trap gates, task switch, TSS
+I/O bitmap, LDT, a second executor, host/firmware mutation, or a Console,
+debugger, or boot UX change. The artifact identity is fixed now:
+`nxvm_0_5_0259.exe`.
+
+## T258 Closure Record
 
 ### Original Request
 
