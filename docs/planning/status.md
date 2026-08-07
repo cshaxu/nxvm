@@ -2,34 +2,15 @@
 
 ## Current Work
 
-**M5 T281 S2: Core FDC/HDC Naming Migration -- active.**
-
-- **Original request:** rename `core_machine.shared_fdc/shared_hdc` and their
-  borrow APIs to `fdc/hdc`, without changing controller lifecycle, port route,
-  media behavior, composition, Console, or boot behavior.
-- **S1 closed:** all live uses are field/API references to the single core
-  controller objects, their configuration-window borrows, focused smoke, or
-  static boundary checks. No alias or second storage object is admitted.
-- **S2 deliverable:** perform the complete field/API/call-site rename in the
-  same core owner; remove all production old-name references without aliases.
-- **S3 deliverable:** run focused FDC/HDC smoke plus current GCC/CTest gates,
-  rebuild `build/output/nxvm_0_5_0281.exe`, record its SHA-256, and close.
-- **Rules:** `core_machine` continues to own both controller objects. VM
-  composition can borrow them only while configuration is open; no lifecycle,
-  route, media, or CMake target change is in scope.
-- **Similar-issue sweep:** search all tracked sources, tests, static gates, and
-  current architecture documents for `shared_fdc`, `shared_hdc`, and the two
-  historical borrow APIs. Historical records may retain exact former names;
-  all current production references must migrate.
-- **Stop:** stop if a rename reveals a second mutable controller, needs an API
-  alias, changes a caller's lifecycle window, or alters FDD/HDD behavior.
+**Idle.** T281 is closed; admit T282 only through a new approved packet.
 
 ## Current Technical Baseline
 
-- **T280 artifact identity:** `current-gcc` and
-  `verify-current-artifact-target` select `vm-0-5-0280`; 41 static/governance
-  gates and 110/110 CTest cases passed. Artifact `nxvm_0_5_0280.exe` SHA-256:
-  `28E5FEBFD4A5AD8C766C789D22FCFCF83890344E588694BBC8D6D9C8D6776AFA`.
+- **T281 artifact identity:** `current-gcc` and
+  `verify-current-artifact-target` select `vm-0-5-0281`; focused FDC/HDC
+  probes and the full gate are retained closure evidence. Artifact
+  `nxvm_0_5_0281.exe` SHA-256:
+  `F9C767B877824E51FB82362B4B02C62C031BF5F200247EB00DA413461C0F8686`.
 - **Core boundary:** T243--T246 retain checked physical memory, bounded `#UD`
   transitions, immutable ROM mapping, and atomic real-mode entry plans.
 - **Product boundary:** `nxvm.exe` is the retained runnable product. `mantle`,
@@ -57,6 +38,7 @@
 | T278 | Moved neutral ATA PIO into `core_machine.shared_hdc`; composition only binds frozen PC/AT routes/media, while the VM-free fixture proves IDENTIFY, DRQ, and IRQ14 acknowledgement. |
 | T279 | Retired unbounded C formatting; source gate and corpus now enforce bounded output and explicit append capacity. |
 | T280 | Made FDD/HDD candidate replacement atomic; HDD now preserves arbitrary raw byte length through virtual sector capacity, zero tail reads, and padded-tail persistence. |
+| T281 | Renamed the sole core controller owners and configuration borrows from historical `shared_*` names to `fdc/hdc`, with no alias or behavior change. |
 
 Detailed contracts, commands, artifact provenance, and prior closures are in
 [M5 History](../history/m5.md) and Git history. The [M5 convergence queue]
