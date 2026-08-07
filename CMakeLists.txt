@@ -48,6 +48,7 @@ add_library(core-machine STATIC
     src/core/machine/entry_plan_interface.c
     src/core/machine/machine.c
     src/core/machine/memory_interface.c
+    src/core/machine/media_interface.c
     src/core/machine/port_interface.c
     src/core/machine/presentation_interface.c
     src/core/machine/rom_mapping_interface.c
@@ -681,6 +682,10 @@ add_executable(core-machine-dma-channel-smoke
     tests/machine/core_machine_dma_channel_smoke.c
 )
 target_link_libraries(core-machine-dma-channel-smoke PRIVATE core-machine)
+add_executable(core-machine-media-provider-smoke
+    tests/machine/core_machine_media_provider_smoke.c
+)
+target_link_libraries(core-machine-media-provider-smoke PRIVATE core-machine)
 add_executable(vm-kbc-aux-guest-smoke
     tests/machine/vm_kbc_aux_guest_smoke.c
 )
@@ -954,6 +959,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-kbc-controller-smoke
     core-machine-kbc-aux-port-smoke
     core-machine-dma-channel-smoke
+    core-machine-media-provider-smoke
     vm-kbc-aux-guest-smoke
     vm-keyboard-set1-mapper-smoke
     core-machine-vadp-text-smoke
