@@ -98,6 +98,7 @@ debugger, and session regressions. The rebuilt
 `build/output/nxvm_0_5_0266.exe` SHA-256 is
 `4A9BADD8FFD8F26F4EC2DAA2D576C7D24D0AEA0072F6A5AD2D5ABCC15960928A`.
 It embeds the developer identity `Neko's x86 Virtual Machine [0.5.0266]`.
+The source commit is `81864ae`.
 
 The post-fix similar-issue sweep found no remaining production consumer of the
 removed VADP setter APIs and no remaining inverted cursor coordinate consumer.
