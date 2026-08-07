@@ -118,6 +118,8 @@ type_status core_machine_get_cpu_profile(
     const core_machine *machine, core_machine_cpu_profile *out_profile);
 type_status core_machine_get_fpu_profile(
     const core_machine *machine, core_machine_fpu_profile *out_profile);
+type_status core_machine_get_fpu_state(
+    const core_machine *machine, core_machine_fpu_state *out_state);
 type_status core_machine_get_memory_bytes(
     const core_machine *machine, STD_SIZE_T *out_memory_bytes);
 type_status core_machine_get_elapsed_ticks(
