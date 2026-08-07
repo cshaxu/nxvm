@@ -2,7 +2,7 @@
 
 ## Current Work
 
-**Idle. M5 T263 S4 is closed. The next planned implementation is T264, the
+**Idle. M5 T263 S5 is closed. The next planned implementation is T264, the
 core/VM PC/AT ownership closure. Further CPU instruction-family admissions
 require a separate failing corpus and approved packet; they are not the default
 queue.**
@@ -10,6 +10,54 @@ queue.**
 No subtask is active. Before T264 source work begins, create one complete
 packet with the original request, owner, non-goals, applicable rules, focused
 evidence, stop conditions, and artifact decision.
+
+## T263 S5 Packet
+
+### Original Request
+
+Correct the protected IDT path so a valid but not-present IDT gate or target
+code descriptor reports `#NP` with its architected IDT/selector error code,
+while malformed types remain `#GP`. Make the T259 privilege-stack transition
+prevalidate the TSS result, target SS cache, target entry, descriptor writes,
+and every frame write before it changes CPL, SS, SP, CS, FLAGS, or guest stack
+contents. Add negative corpus coverage for both failure classes and for a
+failed outer-stack frame leaving the pre-transition privilege state intact.
+
+### Scope, Rules, And Stop Conditions
+
+The sole owner is the existing `core_machine` CPU executor. The patch may
+touch its 16-bit protected interrupt-gate helpers, the owned core corpus, and
+the T263 evidence. It must not add an executor, firmware/platform shortcut,
+or second CPU state. It must not admit 32-bit gates, task gates, or IDT
+delivery beyond the retained `#GP` and requested `#NP` routes, or alter NXVM
+Console, debugger, or boot behavior.
+
+The preflight may build copied candidate CS/SS caches and test the same core
+memory route that commit will use. It must not mutate CPU state or target stack
+before all checks succeed. Stop and split if the correction requires 32-bit
+frames, general exception delivery, task switching, or a new memory path.
+
+### Evidence And Artifact Decision
+
+The focused `core-machine-protected-privilege-smoke` must prove a not-present
+gate, a not-present target code segment, and a deliberately too-small TSS
+stack. The latter must retain user CPL/CS/SS/SP. Then run current GCC/CTest
+gates, rebuild
+`nxvm_0_5_0263.exe`, record its new SHA-256, and close S5 before T264 starts.
+
+### S5 Closure
+
+The 16-bit path now distinguishes malformed gates/target code (`#GP`) from
+valid not-present gates/target code (`#NP`) with the IDT or selector error
+code. The retained bounded protected exception handoff now delivers `#NP` as
+well as `#GP`, still in the sole core executor. A privilege transition first
+prepares candidate CS/SS caches, validates descriptor writes, target fetch,
+and each frame word through core memory; only then does it commit CPL, SS/SP,
+the frame, and CS. The owned corpus covers both `#NP` paths and a short TSS
+stack retaining the original CPL3 CS/SS/SP. Focused smoke and current GCC
+gates passed 99/99 CTest. The clean-rebuilt artifact
+`nxvm_0_5_0263.exe` SHA-256 is
+`D274A5C40D2045E4B88D0ABC3FDCD1C88C520864A12588E553B9FDB57EB68F9D`.
 
 ## T263 S4 Packet
 
@@ -54,7 +102,7 @@ does not change a runnable path.
 - **T263 artifact identity:** `current-gcc` and
   `verify-current-artifact-target` select `vm-0-5-0263`; static/ownership
   checks and 99/99 CTest cases passed. Artifact `nxvm_0_5_0263.exe` SHA-256:
-  `CDECA028180652317C2EDC9C872B8BDB0F49A5465C506A6921BC2A00DB0CAF02`.
+  `D274A5C40D2045E4B88D0ABC3FDCD1C88C520864A12588E553B9FDB57EB68F9D`.
 - **Core boundary:** T243--T246 retain checked physical memory, bounded `#UD`
   transitions, immutable ROM mapping, and atomic real-mode entry plans.
 - **Product boundary:** `nxvm.exe` is the retained runnable product. `mantle`,
