@@ -563,11 +563,31 @@ and boot policy. Core contains no PC/AT default, image path, host I/O,
 firmware, or product state. The migration preserves one PIO route and does
 not admit ATA DMA, new commands, or another controller.
 
-T283 extends the VM-free FDC and ATA fixtures to execute provider query,
-read/write, and applicable format/flush paths, and to verify typed media
-failure mapping, frozen-registry rebind rejection, and observable generation.
-Those fixtures remain core-only and do not introduce dynamic topology or a
-second controller route.
+### Core Controller Media-I/O Evidence (T283)
+
+T283 closes the remaining evidence gap without changing either controller's
+command set.  The VM-free FDC fixture must drive its existing non-DMA command
+and result phases through a frozen media registry and exercise provider query,
+read, write, and format callbacks.  The VM-free ATA fixture must drive its
+existing PIO read and write phases through the same kind of registry.  Each
+fixture records copied callback data, typed results, and generation observations;
+it never borrows a VM backing object or adds a test-only execution route.
+
+The media contract has no partial-success or `short read` result: a provider
+either completes the requested byte range or returns a typed failure.  A short
+or out-of-range request is represented by `invalid-range`; absent, read-only,
+transient, and permanent failures retain their existing typed meanings.  FDC
+maps read/write/format failures to its established result bytes, while ATA
+maps an invalid range to ID-not-found and the other admitted provider failures
+to abort.  Generation is observed from copied query results at controller
+command boundaries; neither controller keeps a private media cache.
+
+`flush` remains a registry/provider operation, not an admitted FDC or ATA
+command in this task.  Its direct core-contract corpus verifies its typed
+route; a future controller protocol that owns a flush command must add its own
+controller-level evidence.  Registry rebind rejection after freeze is likewise
+a registry invariant proved by the direct media-provider corpus, while the
+FDC/HDC fixtures prove their frozen bindings are the only controller I/O route.
 
 ### Core-Only Mantle-Shape Fixture (T274)
 
