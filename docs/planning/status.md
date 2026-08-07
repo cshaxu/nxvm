@@ -2,12 +2,13 @@
 
 ## Current Work
 
-**M5 T259 S1 active: freeze the bounded protected-privilege and IDT delivery
-contract.**
+**M5 T259 S2 active: implement the bounded protected-privilege and IDT
+delivery path.**
 
 ## T259 S1 Admission Packet
 
-T259 admits only a common 80286/80386 **16-bit** protected-mode subset:
+S1 is complete. T259 admits only a common 80286/80386 **16-bit**
+protected-mode subset:
 CPL3 software `INT imm8` through a DPL-permitted 16-bit interrupt gate into
 CPL0, a read-only 16-bit TSS `SS0:SP0` stack switch after `LTR`, and the paired
 outer `IRET` back to CPL3. TSS here is only a stack-field source: task switch,
@@ -24,11 +25,13 @@ and product code may not emulate or consume either path.
 The S1 corpus is one CPL0 -> CPL3 -> CPL0 -> CPL3 round trip: CPL0 configures
 GDT, 16-bit IDT, and 16-bit TSS; outer `IRET` enters CPL3; CPL3 executes
 `INT 30h`; the gate switches to `SS0:SP0`; CPL0 marks guest memory and `IRET`s
-back; CPL3 marks guest memory and halts. Separate negative cases cover gate
-DPL/selector failures and require an observable core diagnostic plus
-`STOP_FAULT`. Existing code establishes the precise gaps: `_ksa_load_sreg`
-omits code-segment privilege checks, `_ser_ret_far_outer` is a stub, protected
-`INT`/exception delivery stop as `#UD`, and PE-state `LIDT` is rejected.
+back; CPL3 marks guest memory, then returns through another DPL3 gate to a
+CPL0 `HLT`. A DPL-rejected CPL3 software interrupt must enter the configured
+`#GP` gate, leave a copied core diagnostic, and then stop in CPL0. An absent
+or invalid exception gate remains terminal `STOP_FAULT` with the original
+first-fault diagnostic. Existing code establishes the precise gaps:
+`_ksa_load_sreg` omits code-segment privilege checks and `_ser_ret_far_outer`
+is a stub; no VM, firmware, or host shortcut is admitted.
 
 | S1 concern | Required T259 result |
 | --- | --- |
@@ -44,6 +47,16 @@ generic hardware interrupt delivery, call/task/trap gates, task switch, TSS
 I/O bitmap, LDT, a second executor, host/firmware mutation, or a Console,
 debugger, or boot UX change. The artifact identity is fixed now:
 `nxvm_0_5_0259.exe`.
+
+### S2 Progress
+
+`core/machine` now owns the admitted 16-bit gate transfer, TSS `SS0:SP0`
+stack switch, outer `IRET`, and `#GP` delivery attempt. A successful delivery
+records a copied `last_delivered_exception` plus count; a delivery failure
+restores and reports the original fault rather than replacing it with a
+secondary gate fault. The new `core-machine-protected-privilege-smoke` covers
+the round trip and a DPL-rejected `INT 32h` delivered through `#GP` for both
+80286 and 80386 profiles. It is now part of the current CTest matrix.
 
 ## T258 Closure Record
 

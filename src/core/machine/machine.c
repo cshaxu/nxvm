@@ -60,9 +60,37 @@ static C_VOID core_machine_cpu_diagnostic_record_fault(C_VOID *opaque,
     (C_VOID)core_machine_report_fault(machine, fault->exception_mask);
 }
 
+static C_VOID core_machine_cpu_diagnostic_record_delivered_exception(
+    C_VOID *opaque, const C_VOID *opaque_cpu, const t_cpuins *instructions)
+{
+    core_machine *machine = (core_machine *)opaque;
+    const t_cpu *cpu = (const t_cpu *)opaque_cpu;
+    core_machine_cpu_fault_snapshot *exception;
+
+    if (machine == STD_NULL || cpu == STD_NULL || instructions == STD_NULL) return;
+    exception = &machine->cpu_diagnostic.snapshot.last_delivered_exception;
+    STD_MEMSET(exception, 0, sizeof(*exception));
+    exception->valid = 1;
+    exception->exception_mask = instructions->data.except;
+    exception->exception_code = instructions->data.excode;
+    core_machine_cpu_diagnostic_copy_point(&exception->point, cpu, instructions);
+    exception->eax = cpu->data.eax;
+    exception->ebx = cpu->data.ebx;
+    exception->ecx = cpu->data.ecx;
+    exception->edx = cpu->data.edx;
+    exception->cr2 = cpu->data.cr2;
+    exception->esp = cpu->data.esp;
+    exception->ebp = cpu->data.ebp;
+    exception->esi = cpu->data.esi;
+    exception->edi = cpu->data.edi;
+    exception->eflags = cpu->data.eflags;
+    machine->cpu_diagnostic.snapshot.delivered_exception_count++;
+}
+
 static const core_machine_cpu_execution_diagnostic_provider
     core_machine_cpu_diagnostic_provider = {
         core_machine_cpu_diagnostic_record_instruction,
+        core_machine_cpu_diagnostic_record_delivered_exception,
         core_machine_cpu_diagnostic_record_fault
     };
 

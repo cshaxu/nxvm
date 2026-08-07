@@ -2726,6 +2726,91 @@ static C_VOID _ser_int_real(core_machine_cpu_execution_context *context, type_un
     TYPE_TRACE_CHECK_RETURN(_s_load_cs(context, TYPE_MASK_UNSIGNED_16(vector >> 16)));
     TYPE_TRACE_CALL_END;
 }
+static C_VOID _ser_int_protected_16(core_machine_cpu_execution_context *context,
+    type_unsigned_8 intid, type_bool is_exception)
+{
+    type_unsigned_64 gate_desc;
+    type_unsigned_64 code_desc;
+    type_unsigned_16 newcs;
+    type_unsigned_16 newss;
+    type_unsigned_16 newsp;
+    type_unsigned_16 oldss;
+    type_unsigned_16 oldsp;
+    type_unsigned_16 oldcs;
+    type_unsigned_16 oldip;
+    type_unsigned_16 oldflags;
+    type_unsigned_16 error_code;
+    type_unsigned_8 oldcpl;
+    type_unsigned_8 target_cpl;
+
+    TYPE_TRACE_CALL_BEGIN("_ser_int_protected_16");
+    if (!_IsProtected || TYPE_MASK_UNSIGNED_16(intid * 8u + 7u) >
+        TYPE_MASK_UNSIGNED_16(cpu_state.data.idtr.limit)) {
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(intid * 8u + 2u +
+            !!is_exception));
+    }
+    TYPE_TRACE_CHECK_RETURN(_s_read_idt(context, intid,
+        TYPE_REFERENCE_OF(gate_desc)));
+    if (_GetDesc_Type(gate_desc) != VCPU_DESC_SYS_TYPE_INTGATE_16 ||
+        !_IsDescPresent(gate_desc)) {
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(intid * 8u + 2u +
+            !!is_exception));
+    }
+    oldcpl = _GetCPL;
+    if (!is_exception && _GetDesc_DPL(gate_desc) < oldcpl) {
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(intid * 8u + 2u));
+    }
+    newcs = TYPE_MASK_UNSIGNED_16(_GetDescGate_Selector(gate_desc));
+    if (_IsSelectorNull(newcs) || _GetSelector_TI(newcs)) {
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(newcs & 0xfffcu));
+    }
+    TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, newcs,
+        TYPE_REFERENCE_OF(code_desc)));
+    if (!_IsDescCodeNonConform(code_desc) || !_IsDescPresent(code_desc)) {
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(newcs & 0xfffcu));
+    }
+    target_cpl = (type_unsigned_8)_GetDesc_DPL(code_desc);
+    if (target_cpl > oldcpl) {
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(newcs & 0xfffcu));
+    }
+
+    oldss = cpu_state.data.ss.selector;
+    oldsp = cpu_state.data.sp;
+    oldcs = cpu_state.data.cs.selector;
+    oldip = cpu_state.data.ip;
+    oldflags = cpu_state.data.flags;
+    error_code = TYPE_MASK_UNSIGNED_16(instruction_state.data.excode);
+    if (target_cpl < oldcpl) {
+        if (!cpu_state.data.tr.flagValid ||
+            cpu_state.data.tr.sys.type != VCPU_DESC_SYS_TYPE_TSS_16_BUSY) {
+            TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(0));
+        }
+        TYPE_TRACE_CHECK_RETURN(_s_read_tss(context, 2u,
+            TYPE_REFERENCE_OF(newsp), 2u));
+        TYPE_TRACE_CHECK_RETURN(_s_read_tss(context, 4u,
+            TYPE_REFERENCE_OF(newss), 2u));
+        if (_IsSelectorNull(newss) || _GetSelector_TI(newss) ||
+            _GetSelector_RPL(newss) != target_cpl) {
+            TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(newss & 0xfffcu));
+        }
+        _MakeCPL(target_cpl);
+        TYPE_TRACE_CHECK_RETURN(_s_load_ss(context, newss));
+        cpu_state.data.sp = newsp;
+        TYPE_TRACE_CHECK_RETURN(_kec_push(context, TYPE_REFERENCE_OF(oldss), 2u));
+        TYPE_TRACE_CHECK_RETURN(_kec_push(context, TYPE_REFERENCE_OF(oldsp), 2u));
+    }
+    TYPE_TRACE_CHECK_RETURN(_kec_push(context, TYPE_REFERENCE_OF(oldflags), 2u));
+    TYPE_TRACE_CHECK_RETURN(_kec_push(context, TYPE_REFERENCE_OF(oldcs), 2u));
+    TYPE_TRACE_CHECK_RETURN(_kec_push(context, TYPE_REFERENCE_OF(oldip), 2u));
+    if (is_exception) {
+        TYPE_TRACE_CHECK_RETURN(_kec_push(context, TYPE_REFERENCE_OF(error_code),
+            2u));
+    }
+    TYPE_TRACE_CHECK_RETURN(_s_load_cs(context, newcs));
+    cpu_state.data.ip = TYPE_MASK_UNSIGNED_16(_GetDescGate_Offset(gate_desc));
+    _ClrEFLAGS_IF;
+    TYPE_TRACE_CALL_END;
+}
 _______todo _ser_int_protected(core_machine_cpu_execution_context *context, type_unsigned_8 intid, type_unsigned_8 byte, type_bool flagext)
 {
     type_unsigned_16 oldss;
@@ -2736,6 +2821,12 @@ _______todo _ser_int_protected(core_machine_cpu_execution_context *context, type
     TYPE_TRACE_CALL_BEGIN("_ser_int_protected");
     if (!_GetCR0_PE)
         TYPE_TRACE_IMPOSSIBLE_RETURN;
+    if (byte == 2u) {
+        TYPE_TRACE_CHECK_RETURN(_ser_int_protected_16(context, intid,
+            flagext));
+        TYPE_TRACE_CALL_END;
+        return;
+    }
     if (TYPE_MASK_UNSIGNED_16(intid * 8 + 7) > TYPE_MASK_UNSIGNED_16(cpu_state.data.idtr.limit))
     {
         TYPE_TRACE_BLOCK_BEGIN("intid(>idtr.limit)");
@@ -3164,7 +3255,8 @@ _______todo _e_int3(core_machine_cpu_execution_context *context, type_unsigned_8
     else
     {
         TYPE_TRACE_BLOCK_BEGIN("!Real");
-        TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
+        TYPE_TRACE_CHECK_RETURN(_ser_int_protected(context, 0x03u, byte,
+            TYPE_FALSE));
         TYPE_TRACE_BLOCK_END;
     }
     TYPE_TRACE_CALL_END;
@@ -3204,17 +3296,10 @@ _______todo _e_int_n(core_machine_cpu_execution_context *context, type_unsigned_
     {
         TYPE_TRACE_BLOCK_BEGIN("!Real");
         if (_GetEFLAGS_VM && _GetEFLAGS_IOPL < 3)
-        {
-            TYPE_TRACE_BLOCK_BEGIN("EFLAGAS_VM(1),IOPL(<3)");
             TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(0));
-            TYPE_TRACE_BLOCK_END;
-        }
         else
-        {
-            TYPE_TRACE_BLOCK_BEGIN("EFLAGS_VM(0)/IOPL(3)");
-            TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
-            TYPE_TRACE_BLOCK_END;
-        }
+            TYPE_TRACE_CHECK_RETURN(_ser_int_protected(context, intid, byte,
+                TYPE_FALSE));
         TYPE_TRACE_BLOCK_END;
     }
     TYPE_TRACE_CALL_END;
@@ -3249,14 +3334,62 @@ _______todo _e_except_n(core_machine_cpu_execution_context *context, type_unsign
     else
     {
         TYPE_TRACE_BLOCK_BEGIN("!Real");
-        TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
+        TYPE_TRACE_CHECK_RETURN(_ser_int_protected(context, exid, byte,
+            TYPE_TRUE));
         TYPE_TRACE_BLOCK_END;
     }
+    TYPE_TRACE_CALL_END;
+}
+static C_VOID _ser_iret_protected_outer_16(
+    core_machine_cpu_execution_context *context)
+{
+    type_unsigned_16 newip;
+    type_unsigned_16 newcs;
+    type_unsigned_16 newss;
+    type_unsigned_16 newsp;
+    type_unsigned_16 newflags;
+    type_unsigned_32 selector;
+    type_unsigned_64 descriptor;
+    type_unsigned_8 oldcpl;
+    type_unsigned_8 newcpl;
+
+    TYPE_TRACE_CALL_BEGIN("_ser_iret_protected_outer_16");
+    oldcpl = _GetCPL;
+    TYPE_TRACE_CHECK_RETURN(_kec_pop(context, TYPE_REFERENCE_OF(newip), 2u));
+    TYPE_TRACE_CHECK_RETURN(_kec_pop(context, TYPE_REFERENCE_OF(selector), 2u));
+    newcs = TYPE_MASK_UNSIGNED_16(selector);
+    TYPE_TRACE_CHECK_RETURN(_kec_pop(context, TYPE_REFERENCE_OF(newflags), 2u));
+    if (_IsSelectorNull(newcs) || _GetSelector_TI(newcs)) {
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(newcs & 0xfffcu));
+    }
+    TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, newcs,
+        TYPE_REFERENCE_OF(descriptor)));
+    if (!_IsDescCodeNonConform(descriptor) || !_IsDescPresent(descriptor)) {
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(newcs & 0xfffcu));
+    }
+    newcpl = (type_unsigned_8)_GetSelector_RPL(newcs);
+    if (newcpl <= oldcpl || newcpl != _GetDesc_DPL(descriptor)) {
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(newcs & 0xfffcu));
+    }
+    TYPE_TRACE_CHECK_RETURN(_kec_pop(context, TYPE_REFERENCE_OF(newsp), 2u));
+    TYPE_TRACE_CHECK_RETURN(_kec_pop(context, TYPE_REFERENCE_OF(selector), 2u));
+    newss = TYPE_MASK_UNSIGNED_16(selector);
+    if (_IsSelectorNull(newss) || _GetSelector_TI(newss) ||
+        _GetSelector_RPL(newss) != newcpl) {
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(newss & 0xfffcu));
+    }
+    TYPE_TRACE_CHECK_RETURN(_s_load_cs(context, newcs));
+    TYPE_TRACE_CHECK_RETURN(_s_load_ss(context, newss));
+    cpu_state.data.sp = newsp;
+    cpu_state.data.ip = newip;
+    cpu_state.data.eflags = (cpu_state.data.eflags & VCPU_EFLAGS_RESERVED) |
+        (newflags & ~VCPU_EFLAGS_RESERVED);
     TYPE_TRACE_CALL_END;
 }
 _______todo _e_iret(core_machine_cpu_execution_context *context, type_unsigned_8 byte)
 {
     type_unsigned_16 newcs, newss, newds, newes, newfs, newgs;
+    type_unsigned_16 return_cs;
     type_unsigned_32 neweip = TYPE_ZERO_32, newesp, neweflags = TYPE_ZERO_32;
     type_unsigned_32 xs_sel;
     type_unsigned_32 mask = VCPU_EFLAGS_RESERVED;
@@ -3303,6 +3436,16 @@ _______todo _e_iret(core_machine_cpu_execution_context *context, type_unsigned_8
     else
     {
         TYPE_TRACE_BLOCK_BEGIN("!Real");
+        if (!_GetEFLAGS_VM && !_GetEFLAGS_NT && byte == 2u) {
+            TYPE_TRACE_CHECK_RETURN(_kma_read_logical(context, &cpu_state.data.ss,
+                cpu_state.data.sp + 2u, TYPE_REFERENCE_OF(return_cs), 2u,
+                0x00, 0));
+            if (_GetSelector_RPL(return_cs) > _GetCPL) {
+                TYPE_TRACE_CHECK_RETURN(_ser_iret_protected_outer_16(context));
+                TYPE_TRACE_CALL_END;
+                return;
+            }
+        }
         if (_GetEFLAGS_VM)
         {
             TYPE_TRACE_BLOCK_BEGIN("V86");
@@ -14285,12 +14428,6 @@ static C_VOID INS_0F_01(core_machine_cpu_execution_context *context)
         break;
     case 3: /* LIDT_M32_16 */
         TYPE_TRACE_BLOCK_BEGIN("LIDT_M32_16");
-        if (_GetCR0_PE)
-        {
-            TYPE_TRACE_BLOCK_BEGIN("Protected(1)");
-            TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
-            TYPE_TRACE_BLOCK_END;
-        }
         TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 6));
         if (!instruction_state.data.flagMem)
         {
@@ -15406,6 +15543,8 @@ static C_VOID ExecInit(core_machine_cpu_execution_context *context)
 static C_VOID ExecFinal(core_machine_cpu_execution_context *context)
 {
     t_cpu fault_cpu;
+    type_unsigned_32 original_except;
+    type_unsigned_32 original_excode;
     if (instruction_state.data.flagInsLoop)
     {
         cpu_state.data.cs = instruction_state.data.oldcpu.data.cs;
@@ -15422,6 +15561,35 @@ static C_VOID ExecFinal(core_machine_cpu_execution_context *context)
     {
         core_machine_undefined_instruction_response response;
         core_machine_undefined_instruction_input input;
+
+        fault_cpu = instruction_state.data.oldcpu;
+        if (TYPE_GET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_PF))
+        {
+            fault_cpu.data.cr2 = cpu_state.data.cr2;
+        }
+        if (TYPE_GET_BIT(fault_cpu.data.cr0, VCPU_CR0_PE) &&
+            instruction_state.data.except == VCPUINS_EXCEPT_GP) {
+            original_except = instruction_state.data.except;
+            original_excode = instruction_state.data.excode;
+            cpu_state = fault_cpu;
+            _e_except_n(context, 0x0du, _GetOperandSize);
+            if (!instruction_state.data.except) {
+                if (context->diagnostic_provider != STD_NULL &&
+                    context->diagnostic_provider->record_delivered_exception !=
+                        STD_NULL) {
+                    instruction_state.data.except = original_except;
+                    instruction_state.data.excode = original_excode;
+                    context->diagnostic_provider->record_delivered_exception(
+                        context->diagnostic_context, &fault_cpu,
+                        &instruction_state);
+                    instruction_state.data.except = 0u;
+                }
+                return;
+            }
+            cpu_state = fault_cpu;
+            instruction_state.data.except = original_except;
+            instruction_state.data.excode = original_excode;
+        }
 
         STD_MEMSET(&response, 0, sizeof(response));
         response.outcome = CORE_MACHINE_UNDEFINED_INSTRUCTION_UNHANDLED;
@@ -15473,11 +15641,6 @@ static C_VOID ExecFinal(core_machine_cpu_execution_context *context)
             instruction_state.data.except = 0u;
             core_machine_cpu_execution_request_stop(context);
             return;
-        }
-        fault_cpu = instruction_state.data.oldcpu;
-        if (TYPE_GET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_PF))
-        {
-            fault_cpu.data.cr2 = cpu_state.data.cr2;
         }
         if (context->diagnostic_provider != STD_NULL &&
             context->diagnostic_provider->record_fault != STD_NULL)
