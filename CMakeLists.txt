@@ -56,13 +56,6 @@ add_library(core-machine STATIC
 # This is the complete public core-machine runtime. It extends the primitive
 # storage/executor target below; it is not a second guest executor.
 add_library(core-machine-runtime ALIAS core-machine)
-add_library(core-machine-firmware STATIC src/core/machine/firmware.c)
-target_include_directories(core-machine-firmware PUBLIC "${CMAKE_SOURCE_DIR}/src")
-target_link_libraries(core-machine-firmware PUBLIC core-machine)
-add_library(vm-firmware INTERFACE)
-target_link_libraries(vm-firmware INTERFACE
-    core-machine-firmware
-    vm-profile)
 target_include_directories(core-machine PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
@@ -70,10 +63,6 @@ target_include_directories(core-machine PUBLIC
 add_executable(core-machine-contract-smoke
     tests/core/core_contract_smoke.c
 )
-add_executable(vm-firmware-smoke tests/firmware/firmware_smoke.c)
-target_link_libraries(vm-firmware-smoke PRIVATE vm-firmware)
-add_executable(vm-default-profile-firmware-smoke tests/firmware/default_profile_smoke.c)
-target_link_libraries(vm-default-profile-firmware-smoke PRIVATE vm-firmware)
 add_executable(vm-default-pc-at-profile-smoke
     tests/firmware/default_pc_at_profile_smoke.c)
 target_link_libraries(vm-default-pc-at-profile-smoke PRIVATE vm-profile)
@@ -219,9 +208,6 @@ target_link_libraries(core-machine-presentation-smoke PRIVATE core-machine)
 
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(core-machine PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(core-machine-firmware PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(vm-firmware-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(vm-default-profile-firmware-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-default-pc-at-profile-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-hdc-port-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-hdc-hdd-boot-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -282,7 +268,6 @@ set(VM_PROFILE_SOURCES
     src/vm/profile/default_profile/pc_at_profile.c
     src/vm/profile/default_profile/keyboard_mapper.c
     src/vm/profile/default_profile/mouse_mapper.c
-    src/vm/profile/default_profile/firmware/default_profile.c
     src/vm/profile/default_profile/firmware/bios.c
     src/vm/profile/default_profile/firmware/qdcga.c
 )
@@ -598,7 +583,6 @@ target_link_libraries(vm-composition PUBLIC
     vm-profile
     vm-product
     vm-request-transport
-    core-machine-firmware
     vm-platform
     user32
     gdi32)
@@ -786,6 +770,8 @@ add_executable(vm-cmos-authority-smoke tests/machine/vm_cmos_authority_smoke.c)
 target_link_libraries(vm-cmos-authority-smoke PRIVATE vm-composition)
 add_executable(vm-cmos-rtc-port-smoke tests/machine/vm_cmos_rtc_port_smoke.c)
 target_link_libraries(vm-cmos-rtc-port-smoke PRIVATE vm-composition)
+add_executable(vm-pcat-ownership-smoke tests/machine/vm_pcat_ownership_smoke.c)
+target_link_libraries(vm-pcat-ownership-smoke PRIVATE vm-composition)
 add_executable(vm-fdd-authority-smoke tests/machine/vm_fdd_authority_smoke.c)
 target_link_libraries(vm-fdd-authority-smoke PRIVATE vm-composition)
 add_executable(vm-fdc-authority-smoke tests/machine/vm_fdc_authority_smoke.c)
@@ -1000,6 +986,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     vm-dos-mem-fault-smoke
     vm-fault-outcome-runner-smoke
     vm-cmos-rtc-port-smoke
+    vm-pcat-ownership-smoke
     vm-fdc-port-smoke
     vm-fdc-t242-corpus-port-smoke
     vm-no-media-video-port-smoke
@@ -1123,7 +1110,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0263 "0.5.0263")
+add_current_vm_artifact(vm-0-5-0264 "0.5.0264")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 
@@ -1294,6 +1281,13 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_default_pc_at_profile_closure.cmake"
         COMMENT "Verifying default PC/AT profile ownership closure"
         VERBATIM)
+
+    add_custom_target(verify-t264-core-vm-pcat-ownership
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_t264_core_vm_ownership.cmake"
+        COMMENT "Verifying M5 T264 core/VM PC/AT ownership closure"
+        VERBATIM)
+    add_dependencies(run-current-smokes verify-t264-core-vm-pcat-ownership)
 
     add_custom_target(verify-ega-sequencer-boundary
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}

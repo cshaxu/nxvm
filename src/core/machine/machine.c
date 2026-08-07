@@ -309,13 +309,32 @@ core_machine_cpu_execution_context *core_machine_profile_binding_execution(
         &binding->machine->executor_cpu_execution;
 }
 
-type_status core_machine_profile_binding_configure_text_video(
-    const core_machine_profile_binding *binding, uint8_t mode, uint16_t columns,
-    uint16_t rows, C_INT color_enabled)
+type_status core_machine_profile_binding_read_real(
+    const core_machine_profile_binding *binding, uint16_t segment,
+    uint16_t offset, C_VOID *out_data, STD_SIZE_T size)
 {
     return binding == STD_NULL || binding->machine == STD_NULL ?
-        TYPE_STATUS_INVALID_ARGUMENT : core_machine_vadp_configure_text(
-            &binding->machine->shared_vadp, mode, columns, rows, color_enabled);
+        TYPE_STATUS_INVALID_ARGUMENT : core_machine_memory_read_real_from(
+            &binding->machine->executor_memory, segment, offset, out_data, size);
+}
+
+type_status core_machine_profile_binding_write_real(
+    const core_machine_profile_binding *binding, uint16_t segment,
+    uint16_t offset, const C_VOID *data, STD_SIZE_T size)
+{
+    return binding == STD_NULL || binding->machine == STD_NULL ?
+        TYPE_STATUS_INVALID_ARGUMENT : core_machine_memory_write_real_to(
+            &binding->machine->executor_memory, segment, offset, data, size);
+}
+
+type_status core_machine_profile_binding_write_port(
+    const core_machine_profile_binding *binding, uint16_t port, uint32_t value)
+{
+    if (binding == STD_NULL || binding->machine == STD_NULL) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    core_machine_port_write(&binding->machine->executor_port, port, value);
+    return TYPE_STATUS_OK;
 }
 
 type_status core_machine_profile_binding_configure_text_raster(
@@ -344,30 +363,6 @@ type_status core_machine_profile_binding_configure_ega_controllers(
     return binding == STD_NULL || binding->machine == STD_NULL ?
         TYPE_STATUS_INVALID_ARGUMENT : core_machine_vadp_configure_ega_controllers(
             &binding->machine->shared_vadp, config);
-}
-
-C_VOID core_machine_profile_binding_set_video_cursor_shape(
-    const core_machine_profile_binding *binding, uint8_t top, uint8_t bottom)
-{
-    if (binding != STD_NULL && binding->machine != STD_NULL) {
-        core_machine_vadp_set_cursor_shape(&binding->machine->shared_vadp, top, bottom);
-    }
-}
-
-C_VOID core_machine_profile_binding_set_video_cursor_address(
-    const core_machine_profile_binding *binding, uint16_t address)
-{
-    if (binding != STD_NULL && binding->machine != STD_NULL) {
-        core_machine_vadp_set_cursor_address(&binding->machine->shared_vadp, address);
-    }
-}
-
-C_VOID core_machine_profile_binding_set_video_display_start(
-    const core_machine_profile_binding *binding, uint16_t address)
-{
-    if (binding != STD_NULL && binding->machine != STD_NULL) {
-        core_machine_vadp_set_display_start(&binding->machine->shared_vadp, address);
-    }
 }
 
 type_status core_machine_capture_display_snapshot(const core_machine *machine,
@@ -850,6 +845,25 @@ type_status core_machine_request_stop(core_machine *machine)
     }
 
     STD_ATOMIC_STORE(&machine->stop_requested, 1);
+    return TYPE_STATUS_OK;
+}
+
+type_status core_machine_set_nmi_mask(core_machine *machine, C_INT masked)
+{
+    if (machine == STD_NULL) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    machine->executor_cpu.data.flagMaskNMI = masked ? TYPE_TRUE : TYPE_FALSE;
+    return TYPE_STATUS_OK;
+}
+
+type_status core_machine_get_nmi_mask(const core_machine *machine,
+    C_INT *out_masked)
+{
+    if (machine == STD_NULL || out_masked == STD_NULL) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    *out_masked = machine->executor_cpu.data.flagMaskNMI ? TYPE_TRUE : TYPE_FALSE;
     return TYPE_STATUS_OK;
 }
 

@@ -11,6 +11,16 @@
 #include "vm/machine/hdd.h"
 #include "vm/machine/hdc.h"
 
+static C_VOID vm_session_machine_devices_set_nmi_mask(C_VOID *context,
+    C_INT masked)
+{
+    vm_session *session = (vm_session *)context;
+
+    if (session != STD_NULL) {
+        (C_VOID)core_machine_set_nmi_mask(session->core_machine, masked);
+    }
+}
+
 C_VOID vm_session_machine_devices_initialize_media(vm_session *session)
 {
     if (session == STD_NULL) return;
@@ -34,8 +44,9 @@ C_VOID vm_session_machine_devices_initialize_cmos(vm_session *session)
     config.data_port = ports->last;
     config.irq = route->irq;
     config.ticks_per_second = session->profile->rtc_ticks_per_second;
+    config.set_nmi_mask = vm_session_machine_devices_set_nmi_mask;
+    config.nmi_mask_context = session;
     vm_machine_cmos_initialize(&session->cmos,
-        core_machine_configuration_cpu_borrow(session->core_machine),
         core_machine_configuration_shared_pic_master_borrow(session->core_machine),
         core_machine_configuration_shared_pic_slave_borrow(session->core_machine),
         core_machine_configuration_port_borrow(session->core_machine), &config);

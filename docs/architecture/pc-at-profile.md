@@ -35,9 +35,9 @@ The following behavior is currently real but dispersed:
 
 | Concern | Current location | Intended owner |
 | --- | --- | --- |
-| Reset vector and ROM/BDA image bytes | `vm/profile/default_profile/firmware/default_profile.c` and `vm/composition/session/profile_firmware.c` | profile ROM and firmware declaration |
-| Firmware service ordering and INT/POST wiring | `default_profile.c`, `profile_firmware.c` | profile firmware declaration |
-| CMOS defaults and boot drive | `default_profile.c`, `vm/machine/cmos.*`, session device setup | profile declares defaults; `vm/machine` owns mutable PC/AT CMOS/RTC state |
+| Reset vector and ROM/BDA image bytes | `vm/composition/session/profile_firmware.c` and `vm/profile/default_profile/firmware/bios.c` | profile ROM and firmware declaration |
+| Firmware service ordering and INT/POST wiring | `pc_at_profile.c`, `profile_firmware.c` | profile firmware declaration |
+| CMOS defaults and boot drive | `pc_at_profile.c`, `vm/machine/cmos.*`, session device setup | profile declares defaults; `vm/machine` owns mutable PC/AT CMOS/RTC state |
 | FDC port and route arguments | `vm/composition/session/machine_devices.c` | profile controller-route declaration interpreted by composition; core retains PIC/DMA state and contracts |
 | FDD/HDD media storage and image selection | `vm_session` and `machine_devices.c` | remains composition/session policy, not profile data |
 | qd* BIOS handlers | `vm/profile/default_profile/firmware/*` | retained as profile-specific temporary firmware providers |

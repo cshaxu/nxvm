@@ -8,7 +8,6 @@ extern "C" {
 #endif
 
 #include "type.h"
-#include "core/machine/cpu.h"
 #include "core/machine/pic.h"
 #include "core/machine/port.h"
 
@@ -16,9 +15,10 @@ extern "C" {
 
 typedef struct {
     type_unsigned_8 reg[0x80]; /* cmos registers */
-    t_cpu *cpu;
     core_machine_pic_irq_source irq_source;
     uint32_t ticks_per_second;
+    C_VOID (*set_nmi_mask)(C_VOID *context, C_INT masked);
+    C_VOID *nmi_mask_context;
 } t_cmos_connect;
 
 typedef struct {
@@ -39,6 +39,8 @@ typedef struct vm_machine_cmos_config {
     uint16_t data_port;
     uint8_t irq;
     uint32_t ticks_per_second;
+    C_VOID (*set_nmi_mask)(C_VOID *context, C_INT masked);
+    C_VOID *nmi_mask_context;
 } vm_machine_cmos_config;
 
 typedef struct vm_machine_cmos_defaults {
@@ -93,7 +95,7 @@ typedef struct vm_machine_cmos_defaults {
 #define VCMOS_RTC_CENTURY      0x32
 #define VCMOS_FLAGS_INFO       0x33
 
-C_VOID vm_machine_cmos_initialize(t_cmos *cmos, t_cpu *cpu, t_pic *pic_master,
+C_VOID vm_machine_cmos_initialize(t_cmos *cmos, t_pic *pic_master,
     t_pic *pic_slave, t_port *port, const vm_machine_cmos_config *config);
 C_VOID vm_machine_cmos_apply_defaults(t_cmos *cmos,
     const vm_machine_cmos_defaults *defaults);

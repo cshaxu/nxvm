@@ -155,8 +155,10 @@ static C_VOID io_write_0070(t_port *port, type_unsigned_16 port_id, C_VOID *owne
     t_cmos *cmos = owner;
     (C_VOID)port_id;
     cmos->data.regId = port->data.ioByte & 0x7fu;
-    cmos->connect.cpu->data.flagMaskNMI = TYPE_GET_MSB_8(port->data.ioByte) ?
-        TYPE_TRUE : TYPE_FALSE;
+    if (cmos->connect.set_nmi_mask != STD_NULL) {
+        cmos->connect.set_nmi_mask(cmos->connect.nmi_mask_context,
+            TYPE_GET_MSB_8(port->data.ioByte) ? TYPE_TRUE : TYPE_FALSE);
+    }
 }
 
 static C_VOID io_write_0071(t_port *port, type_unsigned_16 port_id, C_VOID *owner)
@@ -173,14 +175,15 @@ static C_VOID io_read_0071(t_port *port, type_unsigned_16 port_id, C_VOID *owner
         ((t_cmos *)owner)->data.regId);
 }
 
-C_VOID vm_machine_cmos_initialize(t_cmos *cmos, t_cpu *cpu, t_pic *pic_master,
+C_VOID vm_machine_cmos_initialize(t_cmos *cmos, t_pic *pic_master,
     t_pic *pic_slave, t_port *port, const vm_machine_cmos_config *config)
 {
-    if (cmos == STD_NULL || cpu == STD_NULL || port == STD_NULL || config == STD_NULL) return;
+    if (cmos == STD_NULL || port == STD_NULL || config == STD_NULL) return;
     STD_MEMSET(cmos, TYPE_ZERO_8, sizeof(*cmos));
-    cmos->connect.cpu = cpu;
     cmos->connect.ticks_per_second = config->ticks_per_second == 0u ? 1u :
         config->ticks_per_second;
+    cmos->connect.set_nmi_mask = config->set_nmi_mask;
+    cmos->connect.nmi_mask_context = config->nmi_mask_context;
     core_machine_pic_irq_source_bind(&cmos->connect.irq_source, pic_master,
         pic_slave, config->irq);
     core_machine_port_add_read(port, config->data_port, io_read_0071, cmos);
