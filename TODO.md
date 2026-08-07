@@ -47,7 +47,7 @@ only the near-term NXVM tasks.
 | Interrupts and time | PIC source lifecycle; deterministic core elapsed ticks; PIT/IRQ0 -> ROM -> BDA -> `INT 1Ah` evidence | Greater timing fidelity only when an explicit corpus requires it. |
 | Keyboard | KBC, IRQ1/IRQ12, ROM `INT 09h`/`INT 16h`, set-1 break/E0/E1, typeahead, selection/query, translation observation, LED, command-state typematic, ACK/RESEND, bounded PS/2 AUX packets, and one DOS guest-driver corpus | Default core auto-repeat stays disabled until a profile-clock calibration defines human typematic time; set-2/3 conversion, wheel/advanced AUX protocol, broad guest mouse API compatibility, and native POSIX runtime validation remain deferred. |
 | Display | CGA text plus bounded digital `320x200x4` and ROM-selectable `EGA-320x200x16-direct`; copied text/indexed frames; `console`/`window`/`auto` selection | Remaining digital CGA modes/CRTC behavior, composite video, broader EGA/VGA, VBE. |
-| Storage | Bounded ATA PIO and FDD boot paths through declared ROM/device owners; core-owned 8237 DMA controller baseline with frozen FDC DMA2 binding | Full FDC state machine, broad DMA behavior, extended IDE, and error/timing compatibility. |
+| Storage | Bounded ATA PIO and FDD boot paths through declared ROM/device owners; core-owned 8237 DMA grants one unit at a time through the frozen FDC DMA2 binding | Full FDC state machine, generic bus wait states, broad DMA behavior, extended IDE, and error/timing compatibility. |
 | VDM | Isolated non-runnable scaffold over the shared core | Owned DOS design, CLI, host-drive policy, and product implementation remain deferred. |
 
 ## M5 Capability And Debt Ledger
@@ -171,8 +171,10 @@ default definition of NXVM completion.
 - [ ] **Instruction-timed execution (`TODO(Medium)`).** Give each admitted
   instruction deterministic profile-specific cost, including applicable
   prefix/branch/memory/I/O variants, before expanding the timing corpus.
-- [ ] **Bus-timed PC/AT operation (`TODO(High)`).** Model memory/I/O wait
-  states, DMA bus ownership, and device visibility at transaction boundaries.
+- [ ] **Bus-timed PC/AT operation (`TODO(High)`).** T269 admits deterministic
+  one-unit DMA grant pacing and its fixed visibility boundary. Model remaining
+  memory/I/O wait states, CPU bus ownership, and device-specific timing only
+  through later corpus-driven admissions.
 - [ ] **Cycle-exact profiles (`TODO(High)`).** Only where a profile genuinely
   requires it, model clock phases, prefetch/bus behavior, and device
   microstates without silently changing the retained executor.
