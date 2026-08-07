@@ -2,7 +2,7 @@
 
 ## Current Work
 
-**M5 T271 S1: Opaque Core Platform Backing Resource -- active.**
+**M5 T271 S2: Opaque Core Platform Backing Resource -- active.**
 
 - **Original request:** admit only the policy-free host backing primitive T272
   needs: copied byte-range read/write, size, flush, close, typed result, and
@@ -10,14 +10,16 @@
 - **Audit:** `core/platform` already provides copied input, cancellable wait,
   presentation, and lease contracts. It has no backing-resource API, so T271
   adds one narrow injected provider rather than duplicating those facilities.
-- **S1 deliverable:** freeze resource lifecycle, copied I/O and size semantics,
-  short-I/O/failure rules, synchronous close, and ownership; classify existing
-  wait/cancellation as reused composition infrastructure, not resource state.
+- **S1 closed:** resource lifecycle, copied I/O and size semantics, short-I/O/
+  failure rules, synchronous close, ownership, and reuse of existing wait/
+  cancellation infrastructure are frozen in the contracts.
+- **S2 deliverable:** implement the neutral resource and fake fixture without
+  adding a host-I/O implementation or a second cancellation protocol.
 - **Rules:** no paths, directory or generic file API, mount policy, native
   handle exposure, host callback, guest time, controller code, or VM/VDM
   dependency. Composition selects a local path before constructing a resource.
-- **Evidence:** source inventory and documentation governance. S2 may only add
-  the platform-neutral contract and fake fixture; it must not add host I/O.
+- **Evidence:** S1 inventory and documentation governance passed. S2 requires
+  focused short-I/O, typed-failure, flush, close, and post-close evidence.
 - **Stop:** stop and split if a proposed operation needs a path grammar,
   wildcard/sandbox policy, product cancellation UX, or async host behavior.
 
