@@ -11,7 +11,7 @@ fault, prefix/addressing, register/FLAGS, and side-effect probes have passed.
 | `x86.i386_decode` | partial evidence; not yet profile-claimable | operand-size-prefixed immediate MOV | broader `0F` and prefix/decode matrix with positive and negative cases |
 | `x86.i386_real_mode` | unknown | none | evidence-backed 32-bit real-mode execution matrix |
 | `x86.i386_protected_mode` | unknown | none | evidence-backed protected-mode execution matrix |
-| `x86.i386_paging` | unknown | none | paging translation, permission, and fault matrix |
+| `x86.i386_paging` | bounded CPL0 partial evidence; not profile-claimable beyond the admitted path | T258: 4 KiB PDE/PTE walk through core physical memory; fetch/data/stack mapping; A/D updates; non-present `#PF` with CR2; narrowed CR0/CR2/CR3 forms | CPL3 P/W/U faults, protected IDT delivery, TLB behavior, PSE/PAE, TSS, task switching, and broader 32-bit corpus |
 | `fpu.esc` | unavailable; contract design active | `MEM` reaches `FNINIT` (`DB E3`) but current escape dispatch raises `#UD` | T153--T158 define per-machine FPU profiles, then verify ESC consumption and CR0 `EM`/`TS`/`MP` behavior |
 
 The baseline probe harness records an instruction window of at most 15 bytes,
