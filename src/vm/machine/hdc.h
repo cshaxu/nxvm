@@ -3,7 +3,6 @@
 
 #include "type.h"
 
-#include "core/machine/block_interface.h"
 #include "core/machine/pic.h"
 #include "core/machine/port_interface.h"
 #include "vm/machine/hdd.h"
@@ -76,8 +75,6 @@ C_VOID vm_machine_hdc_initialize(vm_machine_hdc *hdc);
 C_VOID vm_machine_hdc_reset(vm_machine_hdc *hdc);
 C_VOID vm_machine_hdc_refresh(vm_machine_hdc *hdc);
 C_VOID vm_machine_hdc_finalize(vm_machine_hdc *hdc);
-C_VOID vm_machine_hdc_get_geometry(const vm_machine_hdc *hdc,
-    core_machine_block_geometry *out_geometry);
 const core_machine_port_provider *vm_machine_hdc_port_provider(C_VOID);
 type_bool vm_machine_hdc_irq_pending(const vm_machine_hdc *hdc);
 

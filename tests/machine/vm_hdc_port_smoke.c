@@ -1,6 +1,7 @@
 #include "type.h"
 
 #include "core/machine/machine_interface.h"
+#include "vm/composition/session/media.h"
 #include "vm/composition/session/session_interface.h"
 #include "vm/composition/session/session.h"
 #include "vm/machine/hdc.h"
@@ -144,10 +145,11 @@ C_INT main(C_VOID)
         session == STD_NULL || session->core_machine == STD_NULL) goto fail;
     invalid_lba = (uint32_t)session->hdd.data.ncyl * session->hdd.data.nhead *
         session->hdd.data.nsector;
-    if (session->block_provider.context != &session->hdc ||
-        session->block_provider.geometry_provider == STD_NULL ||
-        session->block_provider.read_provider != STD_NULL ||
-        session->block_provider.write_provider != STD_NULL ||
+    if (!session->media_registry.frozen || session->media_registry.binding_count != 2u ||
+        session->media_registry.bindings[VM_SESSION_MEDIA_HDD_ID - 1u].context !=
+            &session->hdd ||
+        session->media_registry.bindings[VM_SESSION_MEDIA_HDD_ID - 1u].provider !=
+            vm_machine_hdd_media_provider() ||
         session->hdc.connect.irq_source.master == STD_NULL ||
         session->hdc.connect.irq_source.slave == STD_NULL ||
         !vm_hdc_write(session->core_machine, HDC_STATUS_COMMAND_PORT, 0xecu) ||

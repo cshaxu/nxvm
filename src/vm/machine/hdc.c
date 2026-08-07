@@ -516,22 +516,6 @@ C_VOID vm_machine_hdc_finalize(vm_machine_hdc *hdc)
     STD_MEMSET(&hdc->connect, 0, sizeof(hdc->connect));
 }
 
-C_VOID vm_machine_hdc_get_geometry(const vm_machine_hdc *hdc,
-    core_machine_block_geometry *out_geometry)
-{
-    const t_hdd *backend;
-
-    if (out_geometry == STD_NULL) return;
-    STD_MEMSET(out_geometry, 0, sizeof(*out_geometry));
-    if (hdc == STD_NULL || hdc->connect.backend == STD_NULL) return;
-    backend = hdc->connect.backend;
-    out_geometry->present = backend->connect.flagDiskExist;
-    out_geometry->cylinders = backend->data.ncyl;
-    out_geometry->heads = (uint8_t)backend->data.nhead;
-    out_geometry->sectors = (uint8_t)backend->data.nsector;
-    out_geometry->bytes_per_sector = backend->data.nbyte;
-}
-
 const core_machine_port_provider *vm_machine_hdc_port_provider(C_VOID)
 {
     return &vm_machine_hdc_ports;

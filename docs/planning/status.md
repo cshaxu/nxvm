@@ -2,7 +2,7 @@
 
 ## Current Work
 
-**M5 T272 S2: VM Media Adapter And Legacy Block Removal -- active.**
+**M5 T272 S3: VM Media Adapter And Legacy Block Removal -- active.**
 
 - **Original request:** make the retained VM FDD/HDD backing owners implement
   T270 media providers, rebind default-ROM geometry, and remove the fixed
@@ -14,14 +14,18 @@
 - **S1 closed:** provider identities/lifetimes, resource-adapter ownership,
   geometry/generation/flush mapping, legacy bridge removal order, and retained
   controller boundary are frozen in the contracts.
-- **S2 deliverable:** add FDD/HDD provider implementations and focused
-  two-device evidence before rebinding firmware or deleting the legacy bridge.
+- **S2 closed:** FDD/HDD now implement frozen providers; composition binds the
+  two identities, default ROM receives only copied HDD geometry, and the old
+  single-slot block source/API is deleted. FDC/HDC remain intentionally direct
+  consumers pending T275/T277.
+- **S3 deliverable:** run FDD/HDD boot, retained controller probes, complete
+  current gates, documentation governance, and task artifact closure.
 - **Rules:** composition alone selects paths/mount/eject/persistence; FDD/HDD
   retain their bytes; no controller rewrite, media copy/cache, host shortcut,
   second stateful wrapper, or Console/boot behavior change.
-- **Evidence:** S1 governance passed. S2 requires a frozen two-device registry
-  probe and retained FDC/HDC evidence; S3 will rebind firmware, remove the
-  bridge, then run FDD/HDD boot and the complete current matrix.
+- **Evidence:** S1 governance plus S2 two-device/FDC/HDC probes passed. S3
+  requires full current gates and artifact evidence; the final sweep must show
+  no legacy block API, forwarding wrapper, or cached firmware geometry.
 - **Stop:** stop and split if rebinding requires direct host I/O in core,
   firmware access to media bytes, or a second controller path.
 

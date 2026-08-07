@@ -6,7 +6,7 @@
 
 #include "vm/composition/session/session.h"
 
-#include "vm/composition/session/block.h"
+#include "vm/composition/session/media.h"
 #include "vm/composition/session/machine_devices.h"
 #include "vm/composition/session/profile_firmware.h"
 #include "vm/composition/session/provider_lifecycle.h"
@@ -26,7 +26,7 @@ C_VOID vm_session_provider_lifecycle_initialize(vm_session *session)
     vm_session_profile_firmware_register_dma(session);
     vm_session_machine_devices_initialize_fdc(session);
     if (!vm_session_machine_devices_initialize_hdc(session)) return;
-    vm_session_bind_block(session);
+    vm_session_bind_media(session);
     vm_session_profile_firmware_register_fdc(session);
     vm_session_profile_firmware_register_hdc(session);
     vm_session_profile_firmware_register_core_posts(session);

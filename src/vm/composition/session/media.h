@@ -1,9 +1,12 @@
-#ifndef VM_SESSION_BLOCK_PROVIDER_H
-#define VM_SESSION_BLOCK_PROVIDER_H
+#ifndef VM_SESSION_MEDIA_H
+#define VM_SESSION_MEDIA_H
 
 
 #include "type.h"
 struct vm_session;
-C_VOID vm_session_bind_block(struct vm_session *machine);
+#define VM_SESSION_MEDIA_FDD_ID 1u
+#define VM_SESSION_MEDIA_HDD_ID 2u
+
+C_VOID vm_session_bind_media(struct vm_session *machine);
 
 #endif
