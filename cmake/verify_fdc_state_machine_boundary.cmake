@@ -2,7 +2,7 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/fdc.c" fdc_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/fdc.c" fdc_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/fdd.h" fdd_header)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/fdd.c" fdd_source)
 
@@ -15,8 +15,8 @@ foreach(forbidden IN ITEMS "pImgBase" "pCurrByte" "transCount"
     endif()
 endforeach()
 
-foreach(required IN ITEMS "VM_MACHINE_FDC_PHASE_COMMAND"
-    "VM_MACHINE_FDC_PHASE_RESULT" "core_machine_media_query"
+foreach(required IN ITEMS "core_machine_fdc_PHASE_COMMAND"
+    "core_machine_fdc_PHASE_RESULT" "core_machine_media_query"
     "core_machine_media_read_bytes" "core_machine_media_write_bytes"
     "core_machine_media_format_sectors" "core_machine_dma_request_assert"
     "core_machine_pic_irq_source_assert")

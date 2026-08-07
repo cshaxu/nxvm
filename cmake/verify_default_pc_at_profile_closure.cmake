@@ -9,7 +9,7 @@ file(READ "${PROJECT_SOURCE_DIR}/src/vm/composition/session/profile_firmware.c"
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/composition/session/machine_devices.c"
     devices_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/rtc.c" rtc_source)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/fdc.c" fdc_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/fdc.c" fdc_source)
 
 foreach(required IN ITEMS
     "default-pc-at"

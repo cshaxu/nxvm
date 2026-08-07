@@ -15,6 +15,7 @@
 #include "core/machine/pic.h"
 #include "core/machine/pit.h"
 #include "core/machine/rtc.h"
+#include "core/machine/fdc.h"
 #include "core/machine/port.h"
 #include "core/machine/port_interface.h"
 #include "type.h"
@@ -185,6 +186,7 @@ t_pit *core_machine_configuration_shared_pit_borrow(core_machine *machine);
 t_latch *core_machine_configuration_shared_dma_latch_borrow(core_machine *machine);
 t_dma *core_machine_configuration_shared_dma_primary_borrow(core_machine *machine);
 t_dma *core_machine_configuration_shared_dma_secondary_borrow(core_machine *machine);
+core_machine_fdc *core_machine_configuration_shared_fdc_borrow(core_machine *machine);
 t_kbc *core_machine_configuration_shared_kbc_borrow(core_machine *machine);
 
 type_status core_machine_profile_binding_initialize(

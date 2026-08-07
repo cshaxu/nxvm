@@ -457,8 +457,9 @@ implements the frozen core media-provider contract; composition binds those
 providers under stable floppy/HDD identities and supplies an already-selected
 opaque backing resource only at mount/eject/persistence boundaries. Firmware
 may query copied geometry through the media registry but cannot read media
-bytes. FDC and ATA/HDC retain their direct backing-object use until T275 and
-T277 respectively; this is a stated transition boundary, not a second route.
+bytes. ATA/HDC retains its direct backing-object use until T277. The FDC is
+rebound to the registry in T275 and moves as a neutral controller in T276;
+neither transition creates a second media route.
 
 The legacy single-slot block API is removed in T272 after the ROM geometry
 consumer is rebound. It must not survive as an adapter, and no controller or
@@ -480,6 +481,21 @@ policy, then delegates only the lower seven-bit index; 71h delegates data
 access to core. It does not copy RTC register, calendar, flag, or IRQ state.
 Default-ROM POST and INT assembly are VM profile firmware, never part of the
 core controller.
+
+### Neutral FDC Boundary (T276)
+
+`core/machine` owns one per-machine 8272A-compatible controller: command and
+result phases, DOR/CCR/MSR/DIR state, transfer cursor, media-generation
+observation, DMA request lifecycle, and IRQ6 source lifecycle. Its frozen
+configuration is limited to an already-selected media registry identity, a
+DMA request binding, a PIC source route, and explicit port addresses. It has
+no PC/AT defaults, drive-image path, firmware, host I/O, or product policy.
+
+VM composition selects the default-profile FDC port range, IRQ/DMA route, and
+FDD media identity while the machine is configurable, then binds the one core
+controller before freeze. Default-ROM POST and INT 0Eh/40h assembly remain
+profile firmware. No VM object mirrors controller state or accesses FDC media
+bytes through a side channel.
 
 ### Core-Only Mantle-Shape Fixture (T274)
 

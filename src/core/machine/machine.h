@@ -28,6 +28,8 @@
 
 #include "core/machine/dma.h"
 
+#include "core/machine/fdc.h"
+
 #include "core/machine/kbc.h"
 
 #include "core/machine/vadp.h"
@@ -115,6 +117,7 @@ struct core_machine {
     t_latch shared_dma_latch;
     t_dma shared_dma_primary;
     t_dma shared_dma_secondary;
+    core_machine_fdc shared_fdc;
     t_kbc shared_kbc;
     t_vadp shared_vadp;
     const core_machine_execution_provider *execution_provider;

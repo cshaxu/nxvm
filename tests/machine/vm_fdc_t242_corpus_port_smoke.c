@@ -3,11 +3,12 @@
 #include <windows.h>
 
 #include "core/machine/machine_interface.h"
+#include "core/machine/machine.h"
 #include "core/machine/memory_interface.h"
 #include "core/machine/port.h"
 #include "vm/composition/session/session_interface.h"
 #include "vm/composition/session/session.h"
-#include "vm/machine/fdc.h"
+#include "core/machine/fdc.h"
 #include "vm/machine/fdd.h"
 
 #define VM_FDC_T242_IMAGE_BYTES (1440u * 1024u)
@@ -101,7 +102,7 @@ C_INT main(C_VOID)
             TYPE_STATUS_OK || run.reason == CORE_MACHINE_STOP_FAULT) {
         goto done;
     }
-    port = session->fdc.connect.port;
+    port = session->core_machine->shared_fdc.connect.port;
     stage = '3';
     if (port == STD_NULL) goto done;
     for (index = 0u; index < sizeof(expected); ++index) {
@@ -119,29 +120,29 @@ C_INT main(C_VOID)
     vm_fdc_t242_write_dma2(port);
     vm_fdc_t242_command(port, specify_dma, sizeof(specify_dma));
     vm_fdc_t242_command(port, read_track, sizeof(read_track));
-    failed |= !session->fdc.data.flagINTR;
+    failed |= !session->core_machine->shared_fdc.data.flagINTR;
     for (index = 0u; index < sizeof(result); ++index) {
         result[index] = (type_unsigned_8)core_machine_port_read(port, 0x03f5u);
     }
-    failed |= result[0] != VM_MACHINE_FDC_ST0_ABNORMAL || result[1] != 0x04u;
+    failed |= result[0] != core_machine_fdc_ST0_ABNORMAL || result[1] != 0x04u;
     failed |= core_machine_memory_read(session->core_machine, 0x0500u, actual,
         sizeof(actual)) != TYPE_STATUS_OK || STD_MEMCMP(actual, untouched,
         sizeof(actual)) != 0;
     vm_fdc_t242_command(port, (const type_unsigned_8[]){0x08u}, 1u);
     (C_VOID)core_machine_port_read(port, 0x03f5u);
     (C_VOID)core_machine_port_read(port, 0x03f5u);
-    failed |= session->fdc.data.flagINTR;
+    failed |= session->core_machine->shared_fdc.data.flagINTR;
     core_machine_port_write(port, 0x03f2u, 0x2cu);
     vm_fdc_t242_command(port, read_track, sizeof(read_track));
-    failed |= !session->fdc.data.flagINTR;
+    failed |= !session->core_machine->shared_fdc.data.flagINTR;
     for (index = 0u; index < sizeof(result); ++index) {
         result[index] = (type_unsigned_8)core_machine_port_read(port, 0x03f5u);
     }
-    failed |= result[0] != VM_MACHINE_FDC_ST0_ABNORMAL || result[1] != 0x04u;
+    failed |= result[0] != core_machine_fdc_ST0_ABNORMAL || result[1] != 0x04u;
     vm_fdc_t242_command(port, (const type_unsigned_8[]){0x08u}, 1u);
     (C_VOID)core_machine_port_read(port, 0x03f5u);
     (C_VOID)core_machine_port_read(port, 0x03f5u);
-    failed |= session->fdc.data.flagINTR;
+    failed |= session->core_machine->shared_fdc.data.flagINTR;
     core_machine_port_write(port, 0x03f2u, 0x1cu);
     vm_fdc_t242_write_dma2(port);
     vm_fdc_t242_command(port, read_track, sizeof(read_track));
@@ -154,17 +155,17 @@ C_INT main(C_VOID)
     }
     failed |= STD_MEMCMP(expected, actual, sizeof(expected)) != 0;
     stage = '6';
-    failed |= !session->fdc.data.flagINTR;
+    failed |= !session->core_machine->shared_fdc.data.flagINTR;
     for (index = 0u; index < sizeof(result); ++index) {
         result[index] = (type_unsigned_8)core_machine_port_read(port, 0x03f5u);
     }
-    failed |= result[0] != VM_MACHINE_FDC_ST0_NORMAL || result[1] != 0u ||
+    failed |= result[0] != core_machine_fdc_ST0_NORMAL || result[1] != 0u ||
         result[2] != 0u || result[3] != 0u || result[4] != 0u ||
         result[5] != 0x13u || result[6] != 0x02u;
     vm_fdc_t242_command(port, (const type_unsigned_8[]){0x08u}, 1u);
     (C_VOID)core_machine_port_read(port, 0x03f5u);
     (C_VOID)core_machine_port_read(port, 0x03f5u);
-    failed |= session->fdc.data.flagINTR;
+    failed |= session->core_machine->shared_fdc.data.flagINTR;
     stage = '7';
 
     /* Non-MFM stays an owner-local no-data result, not a second command form. */
@@ -174,17 +175,17 @@ C_INT main(C_VOID)
     for (index = 0u; index < sizeof(result); ++index) {
         result[index] = (type_unsigned_8)core_machine_port_read(port, 0x03f5u);
     }
-    failed |= result[0] != VM_MACHINE_FDC_ST0_ABNORMAL ||
+    failed |= result[0] != core_machine_fdc_ST0_ABNORMAL ||
         result[1] != 0x04u;
     vm_fdc_t242_command(port, (const type_unsigned_8[]){0x08u}, 1u);
     (C_VOID)core_machine_port_read(port, 0x03f5u);
     (C_VOID)core_machine_port_read(port, 0x03f5u);
-    failed |= session->fdc.data.flagINTR;
+    failed |= session->core_machine->shared_fdc.data.flagINTR;
 
 done:
     if (session != STD_NULL) {
-        final_intr = session->fdc.data.flagINTR;
-        final_phase = session->fdc.data.phase;
+        final_intr = session->core_machine->shared_fdc.data.flagINTR;
+        final_phase = session->core_machine->shared_fdc.data.phase;
     }
     vm_session_destroy(session);
     if (path[0] != '\0') DeleteFileA(path);

@@ -2,6 +2,7 @@
 
 #include "core/machine/pic.h"
 #include "core/machine/port.h"
+#include "core/machine/machine.h"
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/session_interface.h"
 #include "vm/composition/session/session.h"
@@ -46,7 +47,7 @@ C_INT main(C_VOID)
 
     if (session == STD_NULL) return 1;
     vm_session_initialize(session);
-    port = session->fdc.connect.port;
+    port = session->core_machine->shared_fdc.connect.port;
     if (!session->active || port == STD_NULL) failed = 1;
     initialize_pic(port);
 

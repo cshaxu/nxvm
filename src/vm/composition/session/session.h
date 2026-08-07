@@ -15,7 +15,7 @@
 #include "vm/composition/session/control.h"
 #include "vm/composition/session/fault.h"
 #include "vm/machine/debug.h"
-#include "vm/machine/fdc.h"
+#include "core/machine/fdc.h"
 #include "vm/machine/fdd.h"
 #include "vm/machine/hdc.h"
 #include "vm/machine/hdd.h"
@@ -33,7 +33,6 @@ struct vm_session {
     core_machine *core_machine;
     core_machine_rtc rtc;
     t_fdd fdd;
-    t_fdc fdc;
     t_hdd hdd;
     vm_machine_hdc hdc;
     t_debug debug;

@@ -1,6 +1,7 @@
 #include "type.h"
 
 #include "core/machine/machine_interface.h"
+#include "core/machine/machine.h"
 #include "core/machine/port.h"
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/session.h"
@@ -14,7 +15,7 @@ C_INT main(C_VOID)
 
     if (session == STD_NULL) return 1;
     vm_session_initialize(session);
-    port = session->fdc.connect.port;
+    port = session->core_machine->shared_fdc.connect.port;
     if (!session->active || session->core_machine == STD_NULL ||
         port == STD_NULL) {
         failed = 1;

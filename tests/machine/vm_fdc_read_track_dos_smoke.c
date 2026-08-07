@@ -224,9 +224,9 @@ C_INT main(C_INT argc, C_CHAR **argv)
         one_instruction.result[4] == 0u && one_instruction.result[5] == 0u &&
         one_instruction.result[6] == 0x13u && one_instruction.result[7] == 0x02u &&
         one_instruction.result[8] == 0x20u && one_instruction.result[9] == 0u &&
-        one_instruction.off_result[0] == VM_MACHINE_FDC_ST0_ABNORMAL &&
+        one_instruction.off_result[0] == core_machine_fdc_ST0_ABNORMAL &&
         one_instruction.off_result[1] == 0x04u && one_instruction.off_result[7] ==
-        VM_MACHINE_FDC_ST0_ABNORMAL;
+        core_machine_fdc_ST0_ABNORMAL;
 done:
     if (!passed) {
         STD_FPRINTF(STD_STDERR, "M5:T242:S4:FDC:DOS:FAIL\n");
