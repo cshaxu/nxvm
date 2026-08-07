@@ -79,6 +79,7 @@ C_INT main(C_VOID)
     core_machine_run_result run = {0};
     type_unsigned_8 expected[512u * 18u];
     type_unsigned_8 actual[sizeof(expected)] = {0};
+    type_unsigned_8 untouched[sizeof(actual)] = {0};
     type_unsigned_8 result[7] = {0};
     C_CHAR path[MAX_PATH] = {0};
     STD_SIZE_T index;
@@ -111,10 +112,38 @@ C_INT main(C_VOID)
             goto done;
         }
     }
+    /* DOR NRS/ENRQ without selected-drive ME0 must fail before DMA can touch
+     * RAM. ME1 does not make selected drive 0 ready either. */
     core_machine_port_write(port, 0x03f2u, 0x0cu);
     stage = '4';
     vm_fdc_t242_write_dma2(port);
     vm_fdc_t242_command(port, specify_dma, sizeof(specify_dma));
+    vm_fdc_t242_command(port, read_track, sizeof(read_track));
+    failed |= !session->fdc.data.flagINTR;
+    for (index = 0u; index < sizeof(result); ++index) {
+        result[index] = (type_unsigned_8)core_machine_port_read(port, 0x03f5u);
+    }
+    failed |= result[0] != VM_MACHINE_FDC_ST0_ABNORMAL || result[1] != 0x04u;
+    failed |= core_machine_memory_read(session->core_machine, 0x0500u, actual,
+        sizeof(actual)) != TYPE_STATUS_OK || STD_MEMCMP(actual, untouched,
+        sizeof(actual)) != 0;
+    vm_fdc_t242_command(port, (const type_unsigned_8[]){0x08u}, 1u);
+    (C_VOID)core_machine_port_read(port, 0x03f5u);
+    (C_VOID)core_machine_port_read(port, 0x03f5u);
+    failed |= session->fdc.data.flagINTR;
+    core_machine_port_write(port, 0x03f2u, 0x2cu);
+    vm_fdc_t242_command(port, read_track, sizeof(read_track));
+    failed |= !session->fdc.data.flagINTR;
+    for (index = 0u; index < sizeof(result); ++index) {
+        result[index] = (type_unsigned_8)core_machine_port_read(port, 0x03f5u);
+    }
+    failed |= result[0] != VM_MACHINE_FDC_ST0_ABNORMAL || result[1] != 0x04u;
+    vm_fdc_t242_command(port, (const type_unsigned_8[]){0x08u}, 1u);
+    (C_VOID)core_machine_port_read(port, 0x03f5u);
+    (C_VOID)core_machine_port_read(port, 0x03f5u);
+    failed |= session->fdc.data.flagINTR;
+    core_machine_port_write(port, 0x03f2u, 0x1cu);
+    vm_fdc_t242_write_dma2(port);
     vm_fdc_t242_command(port, read_track, sizeof(read_track));
     stage = '5';
     if (core_machine_run(session->core_machine, transfer_budget, &run) !=
@@ -167,6 +196,7 @@ done:
             result[5], result[6], final_intr, final_phase);
         return 1;
     }
+    STD_PRINTF("M5:T268:S1:FDC-MOTOR:PORT:OK\n");
     STD_PRINTF("M5:T242:S2:FDC:READ-TRACK:OK\n");
     return 0;
 }
