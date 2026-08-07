@@ -159,13 +159,15 @@ All existing wrappers are renamed by a dedicated compatibility task to
 `STD_FOPEN`, `STD_FCLOSE`, `STD_FREAD`, `STD_FWRITE`, `STD_FGETS`,
 `STD_MALLOC`, `STD_FREE`, `STD_MEMSET`, `STD_MEMCPY`, and `STD_MEMCMP`.
 
-`STD_SPRINTF` is legacy vocabulary only. T279 first defines the project-level
-contract for zero capacity, truncation, NUL termination, and formatting errors,
-then removes its unbounded `vsprintf` implementation and all production
-callers. New code must use bounded formatting with an owned destination
-capacity. A caller that appends through a pointer into a buffer must carry and
-update an explicit remaining-capacity value; it must not invent a fixed bound
-for that sub-pointer.
+`STD_SPRINTF` is forbidden legacy vocabulary. `STD_SNPRINTF` accepts a null
+destination only when its capacity is zero; otherwise it requires an owned
+destination and always NUL-terminates it. A nonnegative result is the complete
+character count, while a result greater than or equal to capacity means the
+output was truncated. An invalid format input or underlying formatting failure
+returns a negative result and clears a nonzero-capacity destination. A caller
+that appends through a pointer into a buffer uses `STD_SNPRINTF_APPEND` with an
+explicit cursor and remaining capacity; it advances neither on truncation nor
+on failure and must not invent a bound for the sub-pointer.
 
 The direct-call inventory requires new `STD_CALLOC`, `STD_FSEEK`, `STD_FTELL`,
 `STD_FGETC`, `STD_FPUTC`, `STD_FEOF`, `STD_SNPRINTF`, `STD_TIME`,

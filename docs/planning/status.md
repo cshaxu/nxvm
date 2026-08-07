@@ -2,8 +2,34 @@
 
 ## Current Work
 
-**Idle.** T278 is closed. M5 Td S35 records the approved T279--T283 queue;
-T279 has not yet been admitted, so this ledger contains no active task packet.
+**M5 T279 S1: Bounded Formatting Contract -- active.**
+
+- **Original request:** retire the unbounded `STD_SPRINTF`/`vsprintf` path.
+  Every production formatting call must use an owned destination capacity; an
+  append through an interior pointer must carry its remaining capacity.
+- **S1 contract:** `STD_SNPRINTF` accepts a null destination only with zero
+  capacity; with nonzero capacity it always NUL-terminates on ordinary success
+  or truncation. A nonnegative result is the untruncated character count;
+  a result greater than or equal to capacity means truncation. Invalid format
+  input or underlying formatting failure returns a negative result and leaves a
+  nonzero-capacity destination as an empty string. An append helper advances
+  both cursor and remaining capacity only after a non-truncated result.
+- **Scope and owners:** `type.[ch]` owns the C facade contract. Core debugger,
+  xasm/dasm, and VM debug callers own their buffers and must carry capacity at
+  each formatting boundary. This task neither changes debugger grammar nor
+  adds a product/session interface.
+- **Similar-issue sweep:** `rg -n "STD_SPRINTF|vsprintf\\(|\\bsprintf\\(" src`
+  found `type.[ch]`, core debug/xasm/dasm, and VM debug. Every production hit
+  is in scope; tests and generated build output are excluded because they do
+  not create the runtime facade path.
+- **Evidence:** add boundary/truncation/zero-capacity/failure corpus; static
+  gate rejects production `STD_SPRINTF`, `vsprintf`, and `sprintf`; retain
+  debugger, Console, DOS boot, and current GCC/CTest gates. Artifact:
+  `build/output/nxvm_0_5_0279.exe`.
+- **Rules:** no guessed sub-buffer size, no raw C formatter outside `type.c`,
+  no change to Console/debugger text except preventing an existing overflow.
+- **Stop:** stop if a production caller cannot state an owned capacity without
+  changing its output contract or public ABI.
 
 ## Current Technical Baseline
 
