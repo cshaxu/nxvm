@@ -37,7 +37,6 @@ original identifiers.
 
 | Task | Owner and purpose | Dependency and stop condition |
 | --- | --- | --- |
-| T275 | Decouple the existing FDC controller from `t_fdd` while it remains in place: consume only the frozen T270 media provider and explicit port/IRQ/DMA wiring. | T270--T272. Preserve the one existing FDC state machine and all retained DOS/FDC regressions; no duplicate controller or multi-drive topology. |
 | T276 | Move the now-neutral FDC implementation into `core/machine` and rewire the default PC/AT composition/profile adapter to own only static topology, port/IRQ/DMA bindings, media policy, and firmware. | T275. Use `git mv`; core owns DOR and all mutable controller state. Remove VM controller code and prove a core-only fixture plus retained FDD/DOS boot. |
 | T277 | Decouple the existing ATA/HDC controller from `t_hdd`: use the T270 media provider for present/read-only/range/failure behavior and make all port/IRQ/master-slave choices explicit configuration. | T270--T272. Do not add ATA DMA, new commands, host I/O, or profile defaults in core. |
 | T278 | Move the now-neutral ATA PIO controller into `core/machine` and rewire the default PC/AT composition/profile adapter to retain IDE topology, image policy, boot/firmware policy, and UI only. | T277. Use `git mv`; preserve ATA PIO and HDD boot corpus, and add a core-only fixture. |
