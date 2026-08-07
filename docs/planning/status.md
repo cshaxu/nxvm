@@ -9,6 +9,12 @@
   port/IRQ/DMA bindings, profile firmware, and product behavior.
 - **S1 deliverable:** freeze the core FDC config/provider surface, audit every
   remaining VM-specific identifier, and define a core-only controller fixture.
+- **S1 complete:** `fdc.c` now depends only on core DMA/PIC/port/media APIs.
+  The neutral controller state/config and port handlers may move together;
+  `VFDC_POST` and BIOS INT 0Eh/40h assembly are default-ROM firmware and must
+  split into VM profile firmware before the move. The core config takes only
+  media registry/id, DMA binding, PIC route, and explicit port range; it has no
+  PC/AT default, image path, firmware, product, or host policy.
 - **Rules:** core owns DOR and all mutable controller state; VM must not retain
   a controller mirror. Do not add multi-drive topology, host I/O, a second DMA
   loop, or profile defaults in core.
