@@ -9,6 +9,18 @@
   firmware, boot policy, and product behavior.
 - **S1 deliverable:** freeze the core ATA configuration/provider surface,
   audit VM-specific identifiers, and define a core-only ATA fixture.
+- **S1 complete:** after T277, `hdc.c` depends only on core media/PIC/port
+  contracts. Its mutable task-file, PIO buffer, phase, reset, IRQ14 and copied
+  geometry behavior may move together. The default profile retains the
+  primary-master ports/IRQ/LBA28 declaration, selected HDD identity, and ROM
+  INT 13h firmware. The core connection takes only registry/id, PIC route and
+  explicit ATA port/config fields; it has no PC/AT default or host policy.
+- **S2 admission:** move `hdc.[ch]` as one unit, store the controller in
+  `core_machine`, bind it only during configuration, and have core own reset,
+  refresh and teardown. All retained VM tests must use the one core instance.
+- **S3 evidence:** a VM-free ATA fixture must bind fake media/PIC/ports and
+  prove IDENTIFY or one bounded PIO transaction; retain ATA port, DOS and HDD
+  boot corpus plus current gates.
 - **Rules:** core owns the one controller state, IRQ14 source lifecycle, and
   port protocol after migration. Do not add ATA DMA, new commands, host I/O,
   a second controller, or profile defaults in core.

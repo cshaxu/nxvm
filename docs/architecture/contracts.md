@@ -512,7 +512,18 @@ result path. It never receives a backing pointer, image path, host handle, or
 media policy. Composition alone selects the HDD provider, binds it before
 registry freeze, and supplies the PC/AT port/IRQ/topology declaration. T277
 does not add ATA DMA, commands, timing, a BIOS shortcut, or a second media
-route; T278 is the separate controller-location migration.
+route.
+
+### Neutral ATA PIO Boundary (T278)
+
+T278 moves the neutral ATA PIO task-file, PIO buffer, command phases, SRST,
+and IRQ source into one `core_machine`-owned controller. Its configuration is
+only frozen media registry/id, PIC route, and explicit port/feature fields.
+VM composition reads primary-master topology from the profile and binds the
+core object during the initialized window; profile firmware retains INT 13h
+and boot policy. Core contains no PC/AT default, image path, host I/O,
+firmware, or product state. The migration preserves one PIO route and does
+not admit ATA DMA, new commands, or another controller.
 
 ### Core-Only Mantle-Shape Fixture (T274)
 
