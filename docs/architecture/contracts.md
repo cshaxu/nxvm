@@ -464,6 +464,21 @@ The legacy single-slot block API is removed in T272 after the ROM geometry
 consumer is rebound. It must not survive as an adapter, and no controller or
 firmware may cache media geometry to bridge its removal.
 
+### Neutral RTC Boundary (T273)
+
+`core/machine` owns one per-machine MC146818-compatible device: register
+state, date/calendar encoding, elapsed-tick advancement, periodic/alarm/update
+flags, index/data access, and its PIC IRQ source. Its configuration contains
+only an explicit index port, data port, IRQ binding, frozen tick ratio, and
+profile-supplied initial NVRAM bytes. It has no PC/AT default, NMI policy,
+BDA/BIOS service, host wall clock, or firmware source.
+
+VM composition selects the PC/AT ports/IRQ/tick ratio and owns the tiny port
+70h adapter that extracts bit 7 into the existing VM NMI policy. It passes the
+remaining seven-bit index and port 71h data operations to the core RTC; it
+does not copy RTC register, calendar, flag, or IRQ state. Default-ROM POST and
+INT assembly are VM profile firmware, never part of the core controller.
+
 ## Core Machine: Hardware IRQ
 
 Hardware IRQ delivery and a guest `INT n` instruction are separate mechanisms.
