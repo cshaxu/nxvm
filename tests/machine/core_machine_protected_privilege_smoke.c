@@ -18,6 +18,13 @@ typedef struct privilege_machine {
     core_machine_cpu_execution_context *execution;
 } privilege_machine;
 
+typedef enum privilege_negative_case {
+    PRIVILEGE_NEGATIVE_NONE,
+    PRIVILEGE_NEGATIVE_GATE_NOT_PRESENT,
+    PRIVILEGE_NEGATIVE_CODE_NOT_PRESENT,
+    PRIVILEGE_NEGATIVE_STACK_ATOMICITY
+} privilege_negative_case;
+
 static C_VOID privilege_reset(C_VOID *opaque)
 {
     privilege_machine *state = (privilege_machine *)opaque;
@@ -72,9 +79,10 @@ static C_INT write_bytes(core_machine *machine, uint32_t address,
         TYPE_STATUS_OK;
 }
 
-static C_INT privilege_install(privilege_machine *state, C_INT fault_delivery)
+static C_INT privilege_install(privilege_machine *state, C_INT fault_delivery,
+    privilege_negative_case negative_case)
 {
-    static const uint8_t gdt_pointer[] = { 0x2fu, 0x00u, 0x00u, 0x03u, 0x00u, 0x00u };
+    static const uint8_t gdt_pointer[] = { 0x37u, 0x00u, 0x00u, 0x03u, 0x00u, 0x00u };
     static const uint8_t idt_pointer[] = { 0x97u, 0x01u, 0x00u, 0x04u, 0x00u, 0x00u };
     static const uint8_t gdt[] = {
         0,0,0,0,0,0,0,0,
@@ -82,7 +90,8 @@ static C_INT privilege_install(privilege_machine *state, C_INT fault_delivery)
         0xff,0xff,0,0x30,0,0x92,0,0,
         0xff,0xff,0,0x40,0,0xfa,0,0,
         0xff,0xff,0,0x50,0,0xf2,0,0,
-        0x2b,0,0,0x06,0,0x81,0,0
+        0x2b,0,0,0x06,0,0x81,0,0,
+        0xff,0xff,0,0x20,0,0x1a,0,0
     };
     uint8_t idt[0x198u] = {0};
     static const uint8_t real_code[] = {
@@ -114,6 +123,10 @@ static C_INT privilege_install(privilege_machine *state, C_INT fault_delivery)
         0xcd,0x30,0xb8,0x22,0x22,0xa3,0x02,0x00,0xcd,0x31
     };
     static const uint8_t user_fault_code[] = { 0xcd,0x32 };
+    static const uint8_t user_gate_not_present[] = { 0xcd,0x30 };
+    static const uint8_t user_code_not_present[] = { 0xcd,0x31 };
+    const uint8_t *user_program = user_code;
+    STD_SIZE_T user_program_size = sizeof(user_code);
     uint16_t sp0 = 0x9000u;
     uint16_t ss0 = 0x0010u;
 
@@ -125,7 +138,22 @@ static C_INT privilege_install(privilege_machine *state, C_INT fault_delivery)
     idt[0x189u] = 0x01u;
     idt[0x18au] = 0x08u;
     idt[0x18du] = 0xe6u;
+    if (negative_case == PRIVILEGE_NEGATIVE_GATE_NOT_PRESENT) {
+        idt[0x185u] = 0x66u;
+        user_program = user_gate_not_present;
+        user_program_size = sizeof(user_gate_not_present);
+    } else if (negative_case == PRIVILEGE_NEGATIVE_CODE_NOT_PRESENT) {
+        idt[0x18au] = 0x30u;
+        user_program = user_code_not_present;
+        user_program_size = sizeof(user_code_not_present);
+    } else if (negative_case == PRIVILEGE_NEGATIVE_STACK_ATOMICITY) {
+        sp0 = 0x0009u;
+    }
     if (fault_delivery) {
+        idt[0x58u] = 0x20u;
+        idt[0x59u] = 0x01u;
+        idt[0x5au] = 0x08u;
+        idt[0x5du] = 0x86u;
         idt[0x68u] = 0x20u;
         idt[0x69u] = 0x01u;
         idt[0x6au] = 0x08u;
@@ -150,8 +178,10 @@ static C_INT privilege_install(privilege_machine *state, C_INT fault_delivery)
         write_bytes(state->machine, KERNEL_BASE + 0x120u, kernel_fault,
             sizeof(kernel_fault)) &&
         write_bytes(state->machine, USER_CODE_BASE,
-            fault_delivery ? user_fault_code : user_code,
-            fault_delivery ? sizeof(user_fault_code) : sizeof(user_code));
+            fault_delivery && negative_case == PRIVILEGE_NEGATIVE_NONE ?
+                user_fault_code : user_program,
+            fault_delivery && negative_case == PRIVILEGE_NEGATIVE_NONE ?
+                sizeof(user_fault_code) : user_program_size);
 }
 
 static C_INT privilege_test_fault_delivery(core_machine_cpu_profile profile)
@@ -164,7 +194,7 @@ static C_INT privilege_test_fault_delivery(core_machine_cpu_profile profile)
     C_INT failed = !privilege_prepare(&state, profile);
 
     if (!failed) {
-        failed |= !privilege_install(&state, 1);
+        failed |= !privilege_install(&state, 1, PRIVILEGE_NEGATIVE_NONE);
         failed |= core_machine_run(state.machine, budget, &result) != TYPE_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         failed |= core_machine_memory_read(state.machine, USER_DATA_BASE + 4u,
@@ -181,6 +211,71 @@ static C_INT privilege_test_fault_delivery(core_machine_cpu_profile profile)
     return failed;
 }
 
+static C_INT privilege_test_not_present(core_machine_cpu_profile profile,
+    privilege_negative_case negative_case, uint16_t expected_code)
+{
+    privilege_machine state;
+    core_machine_run_result result;
+    core_machine_cpu_diagnostic diagnostic;
+    uint16_t marker = 0u;
+    const core_machine_run_budget budget = { 1024u, 0u };
+    C_INT failed = !privilege_prepare(&state, profile);
+
+    if (!failed) {
+        failed |= !privilege_install(&state, 1, negative_case);
+        failed |= core_machine_run(state.machine, budget, &result) != TYPE_STATUS_OK ||
+            result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
+        failed |= core_machine_memory_read(state.machine, USER_DATA_BASE + 4u,
+            &marker, sizeof(marker)) != TYPE_STATUS_OK || marker != 0x3333u;
+        failed |= core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
+            TYPE_STATUS_OK || diagnostic.first_fault.valid ||
+            !diagnostic.last_delivered_exception.valid ||
+            diagnostic.delivered_exception_count != 1u ||
+            !TYPE_GET_BIT(diagnostic.last_delivered_exception.exception_mask,
+                VCPUINS_EXCEPT_NP) ||
+            diagnostic.last_delivered_exception.exception_code != expected_code;
+        if (failed) {
+            STD_FPRINTF(STD_STDERR,
+                "T263 S5 np result=%u first=%d delivered=%x/%x count=%u marker=%04x\n",
+                (unsigned)result.reason, diagnostic.first_fault.valid,
+                diagnostic.last_delivered_exception.exception_mask,
+                diagnostic.last_delivered_exception.exception_code,
+                diagnostic.delivered_exception_count, marker);
+        }
+    }
+    core_machine_destroy(state.machine);
+    return failed;
+}
+
+static C_INT privilege_test_stack_atomicity(C_VOID)
+{
+    privilege_machine state;
+    core_machine_run_result result;
+    type_status run_status;
+    const core_machine_run_budget budget = { 1024u, 0u };
+    C_INT failed = !privilege_prepare(&state, CORE_MACHINE_CPU_PROFILE_80286);
+
+    if (!failed) {
+        failed |= !privilege_install(&state, 0,
+            PRIVILEGE_NEGATIVE_STACK_ATOMICITY);
+        run_status = core_machine_run(state.machine, budget, &result);
+        failed |= run_status != TYPE_STATUS_FAULT ||
+            result.reason != CORE_MACHINE_STOP_FAULT;
+        failed |= state.cpu->data.cs.selector != 0x001bu ||
+            state.cpu->data.cs.dpl != 3u || state.cpu->data.ss.selector != 0x0023u ||
+            state.cpu->data.sp != 0xa000u;
+        if (failed) {
+            STD_FPRINTF(STD_STDERR,
+                "T263 S5 atomic status=%u result=%u cs=%04x/%u ss=%04x sp=%04x\n",
+                (unsigned)run_status, (unsigned)result.reason, state.cpu->data.cs.selector,
+                state.cpu->data.cs.dpl, state.cpu->data.ss.selector,
+                state.cpu->data.sp);
+        }
+    }
+    core_machine_destroy(state.machine);
+    return failed;
+}
+
 int main(void)
 {
     privilege_machine state;
@@ -191,7 +286,7 @@ int main(void)
     C_INT failed = !privilege_prepare(&state, CORE_MACHINE_CPU_PROFILE_80286);
 
     if (!failed) {
-        failed |= !privilege_install(&state, 0);
+        failed |= !privilege_install(&state, 0, PRIVILEGE_NEGATIVE_NONE);
         failed |= core_machine_run(state.machine, budget, &result) != TYPE_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         failed |= core_machine_memory_read(state.machine, USER_DATA_BASE, markers,
@@ -214,8 +309,14 @@ int main(void)
     core_machine_destroy(state.machine);
     failed |= privilege_test_fault_delivery(CORE_MACHINE_CPU_PROFILE_80286);
     failed |= privilege_test_fault_delivery(CORE_MACHINE_CPU_PROFILE_80386);
+    failed |= privilege_test_not_present(CORE_MACHINE_CPU_PROFILE_80286,
+        PRIVILEGE_NEGATIVE_GATE_NOT_PRESENT, 0x0182u);
+    failed |= privilege_test_not_present(CORE_MACHINE_CPU_PROFILE_80286,
+        PRIVILEGE_NEGATIVE_CODE_NOT_PRESENT, 0x0030u);
+    failed |= privilege_test_stack_atomicity();
     if (failed) return 1;
     STD_PRINTF("M5:T259:S2:PROTECTED-PRIVILEGE:OK\n");
     STD_PRINTF("M5:T259:S3:PROTECTED-PRIVILEGE:CORPUS:OK\n");
+    STD_PRINTF("M5:T263:S5:PROTECTED-IDT-ATOMICITY:OK\n");
     return 0;
 }

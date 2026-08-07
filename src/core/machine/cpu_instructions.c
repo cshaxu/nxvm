@@ -713,6 +713,93 @@ static C_VOID _ksa_write_xdt(core_machine_cpu_execution_context *context, type_u
     }
     TYPE_TRACE_CALL_END;
 }
+static C_VOID _ksa_test_write_xdt(core_machine_cpu_execution_context *context,
+    type_unsigned_16 selector)
+{
+    TYPE_TRACE_CALL_BEGIN("_ksa_test_write_xdt");
+    if (!_GetCR0_PE)
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
+    if (_GetSelector_TI(selector))
+    {
+        if (TYPE_MASK_UNSIGNED_16(_GetSelector_Offset(selector) + 7) >
+            TYPE_MASK_UNSIGNED_16(cpu_state.data.ldtr.limit))
+            TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_CHECK_RETURN(_kma_test_access(context, &cpu_state.data.ldtr,
+            _GetSelector_Offset(selector), 8, 1, 0x00, 1));
+    }
+    else
+    {
+        if (TYPE_MASK_UNSIGNED_16(_GetSelector_Offset(selector) + 7) >
+            TYPE_MASK_UNSIGNED_16(cpu_state.data.gdtr.limit))
+            TYPE_TRACE_IMPOSSIBLE_RETURN;
+        TYPE_TRACE_CHECK_RETURN(_kma_test_access(context, &cpu_state.data.gdtr,
+            _GetSelector_Offset(selector), 8, 1, 0x00, 1));
+    }
+    TYPE_TRACE_CALL_END;
+}
+static C_VOID _ksa_prepare_code_sreg(core_machine_cpu_execution_context *context,
+    type_unsigned_16 selector, type_unsigned_8 cpl, t_cpu_data_sreg *rsreg,
+    type_unsigned_64 *rdescriptor)
+{
+    type_unsigned_64 descriptor;
+
+    TYPE_TRACE_CALL_BEGIN("_ksa_prepare_code_sreg");
+    TYPE_TRACE_CHECK_RETURN(_ksa_read_xdt(context, selector,
+        TYPE_REFERENCE_OF(descriptor)));
+    if (!_IsDescCodeNonConform(descriptor))
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(selector & 0xfffcu));
+    if (!_IsDescPresent(descriptor))
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_NP(selector & 0xfffcu));
+    _SetDescUserAccessed(descriptor);
+    TYPE_TRACE_CHECK_RETURN(_ksa_test_write_xdt(context, selector));
+    rsreg->flagValid = TYPE_TRUE;
+    rsreg->selector = (selector & ~VCPU_SELECTOR_RPL) | cpl;
+    rsreg->sregtype = SREG_CODE;
+    rsreg->base = (type_unsigned_32)_GetDescSeg_Base(descriptor);
+    rsreg->dpl = (type_unsigned_4)_GetDesc_DPL(descriptor);
+    rsreg->limit = (type_unsigned_32)(_IsDescSegGranularLarge(descriptor) ?
+        ((_GetDescSeg_Limit(descriptor) << 12) | 0x0fff) :
+        _GetDescSeg_Limit(descriptor));
+    rsreg->seg.accessed = (type_bool)_IsDescUserAccessed(descriptor);
+    rsreg->seg.executable = (type_bool)_IsDescUserExecutable(descriptor);
+    rsreg->seg.exec.defsize = (type_bool)_IsDescCode32(descriptor);
+    rsreg->seg.exec.conform = (type_bool)_IsDescCodeConform(descriptor);
+    rsreg->seg.exec.readable = (type_bool)_IsDescCodeReadable(descriptor);
+    *rdescriptor = descriptor;
+    TYPE_TRACE_CALL_END;
+}
+static C_VOID _ksa_prepare_stack_sreg(core_machine_cpu_execution_context *context,
+    type_unsigned_16 selector, type_unsigned_8 cpl, t_cpu_data_sreg *rsreg,
+    type_unsigned_64 *rdescriptor)
+{
+    type_unsigned_64 descriptor;
+
+    TYPE_TRACE_CALL_BEGIN("_ksa_prepare_stack_sreg");
+    TYPE_TRACE_CHECK_RETURN(_ksa_read_xdt(context, selector,
+        TYPE_REFERENCE_OF(descriptor)));
+    if (!_IsDescDataWritable(descriptor) || _GetSelector_RPL(selector) != cpl ||
+        _GetDesc_DPL(descriptor) != cpl)
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(selector & 0xfffcu));
+    if (!_IsDescPresent(descriptor))
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_SS(selector & 0xfffcu));
+    _SetDescUserAccessed(descriptor);
+    TYPE_TRACE_CHECK_RETURN(_ksa_test_write_xdt(context, selector));
+    rsreg->flagValid = TYPE_TRUE;
+    rsreg->selector = selector;
+    rsreg->sregtype = SREG_STACK;
+    rsreg->base = (type_unsigned_32)_GetDescSeg_Base(descriptor);
+    rsreg->dpl = (type_unsigned_4)_GetDesc_DPL(descriptor);
+    rsreg->limit = (type_unsigned_32)(_IsDescSegGranularLarge(descriptor) ?
+        ((_GetDescSeg_Limit(descriptor) << 12) | 0x0fff) :
+        _GetDescSeg_Limit(descriptor));
+    rsreg->seg.accessed = (type_bool)_IsDescUserAccessed(descriptor);
+    rsreg->seg.executable = TYPE_FALSE;
+    rsreg->seg.data.big = (type_bool)_IsDescDataBig(descriptor);
+    rsreg->seg.data.expdown = (type_bool)_IsDescDataExpDown(descriptor);
+    rsreg->seg.data.writable = (type_bool)_IsDescDataWritable(descriptor);
+    *rdescriptor = descriptor;
+    TYPE_TRACE_CALL_END;
+}
 static C_VOID _ksa_load_sreg(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, type_unsigned_16 selector)
 {
     type_unsigned_64 descriptor;
@@ -1173,6 +1260,23 @@ static C_VOID _s_test_ss_push(core_machine_cpu_execution_context *context, type_
     default:
         TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
+    }
+    TYPE_TRACE_CALL_END;
+}
+static C_VOID _s_test_stack_frame_16(core_machine_cpu_execution_context *context,
+    t_cpu_data_sreg *stack, type_unsigned_16 sp, type_unsigned_8 words,
+    type_unsigned_8 cpl)
+{
+    type_unsigned_8 index;
+
+    TYPE_TRACE_CALL_BEGIN("_s_test_stack_frame_16");
+    for (index = 0; index < words; ++index)
+    {
+        if (sp && sp < 2u)
+            TYPE_TRACE_CHECK_RETURN(_SetExcept_SS(0));
+        sp = TYPE_MASK_UNSIGNED_16(sp - 2u);
+        TYPE_TRACE_CHECK_RETURN(_kma_test_access(context, stack, sp, 2u, 1,
+            cpl, 1));
     }
     TYPE_TRACE_CALL_END;
 }
@@ -2766,6 +2870,7 @@ static C_VOID _ser_int_protected_16(core_machine_cpu_execution_context *context,
 {
     type_unsigned_64 gate_desc;
     type_unsigned_64 code_desc;
+    type_unsigned_64 ss_desc;
     type_unsigned_16 newcs;
     type_unsigned_16 newss;
     type_unsigned_16 newsp;
@@ -2778,6 +2883,9 @@ static C_VOID _ser_int_protected_16(core_machine_cpu_execution_context *context,
     type_unsigned_16 error_code;
     type_unsigned_8 oldcpl;
     type_unsigned_8 target_cpl;
+    type_unsigned_8 frame_words;
+    t_cpu_data_sreg newcs_cache;
+    t_cpu_data_sreg newss_cache;
 
     TYPE_TRACE_CALL_BEGIN("_ser_int_protected_16");
     if (!_IsProtected || TYPE_MASK_UNSIGNED_16(intid * 8u + 7u) >
@@ -2787,9 +2895,12 @@ static C_VOID _ser_int_protected_16(core_machine_cpu_execution_context *context,
     }
     TYPE_TRACE_CHECK_RETURN(_s_read_idt(context, intid,
         TYPE_REFERENCE_OF(gate_desc)));
-    if (_GetDesc_Type(gate_desc) != VCPU_DESC_SYS_TYPE_INTGATE_16 ||
-        !_IsDescPresent(gate_desc)) {
+    if (_GetDesc_Type(gate_desc) != VCPU_DESC_SYS_TYPE_INTGATE_16) {
         TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(intid * 8u + 2u +
+            !!is_exception));
+    }
+    if (!_IsDescPresent(gate_desc)) {
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_NP(intid * 8u + 2u +
             !!is_exception));
     }
     oldcpl = _GetCPL;
@@ -2802,9 +2913,10 @@ static C_VOID _ser_int_protected_16(core_machine_cpu_execution_context *context,
     }
     TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, newcs,
         TYPE_REFERENCE_OF(code_desc)));
-    if (!_IsDescCodeNonConform(code_desc) || !_IsDescPresent(code_desc)) {
+    if (!_IsDescCodeNonConform(code_desc))
         TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(newcs & 0xfffcu));
-    }
+    if (!_IsDescPresent(code_desc))
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_NP(newcs & 0xfffcu));
     target_cpl = (type_unsigned_8)_GetDesc_DPL(code_desc);
     if (target_cpl > oldcpl) {
         TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(newcs & 0xfffcu));
@@ -2816,6 +2928,13 @@ static C_VOID _ser_int_protected_16(core_machine_cpu_execution_context *context,
     oldip = cpu_state.data.ip;
     oldflags = cpu_state.data.flags;
     error_code = TYPE_MASK_UNSIGNED_16(instruction_state.data.excode);
+    newcs_cache = cpu_state.data.cs;
+    TYPE_TRACE_CHECK_RETURN(_ksa_prepare_code_sreg(context, newcs, target_cpl,
+        &newcs_cache, &code_desc));
+    TYPE_TRACE_CHECK_RETURN(_kma_test_access(context, &newcs_cache,
+        TYPE_MASK_UNSIGNED_16(_GetDescGate_Offset(gate_desc)), 1u, 0,
+        target_cpl, 1));
+    frame_words = (type_unsigned_8)(3u + (is_exception ? 1u : 0u));
     if (target_cpl < oldcpl) {
         if (!cpu_state.data.tr.flagValid) {
             TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(0));
@@ -2845,11 +2964,28 @@ static C_VOID _ser_int_protected_16(core_machine_cpu_execution_context *context,
             _GetSelector_RPL(newss) != target_cpl) {
             TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(newss & 0xfffcu));
         }
-        _MakeCPL(target_cpl);
-        TYPE_TRACE_CHECK_RETURN(_s_load_ss(context, newss));
+        newss_cache = cpu_state.data.ss;
+        TYPE_TRACE_CHECK_RETURN(_ksa_prepare_stack_sreg(context, newss,
+            target_cpl, &newss_cache, &ss_desc));
+        TYPE_TRACE_CHECK_RETURN(_s_test_stack_frame_16(context, &newss_cache,
+            newsp, (type_unsigned_8)(frame_words + 2u), target_cpl));
+
+        /* All faulting reads and writes are preflighted before CPU mutation. */
+        TYPE_TRACE_CHECK_RETURN(_s_write_xdt(context, newss,
+            TYPE_REFERENCE_OF(ss_desc)));
+        TYPE_TRACE_CHECK_RETURN(_s_write_xdt(context, newcs,
+            TYPE_REFERENCE_OF(code_desc)));
+        cpu_state.data.ss = newss_cache;
         cpu_state.data.sp = newsp;
+        _MakeCPL(target_cpl);
         TYPE_TRACE_CHECK_RETURN(_kec_push(context, TYPE_REFERENCE_OF(oldss), 2u));
         TYPE_TRACE_CHECK_RETURN(_kec_push(context, TYPE_REFERENCE_OF(oldsp), 2u));
+    }
+    else {
+        TYPE_TRACE_CHECK_RETURN(_s_test_ss_push(context,
+            (type_unsigned_8)(frame_words * 2u)));
+        TYPE_TRACE_CHECK_RETURN(_s_write_xdt(context, newcs,
+            TYPE_REFERENCE_OF(code_desc)));
     }
     TYPE_TRACE_CHECK_RETURN(_kec_push(context, TYPE_REFERENCE_OF(oldflags), 2u));
     TYPE_TRACE_CHECK_RETURN(_kec_push(context, TYPE_REFERENCE_OF(oldcs), 2u));
@@ -2858,7 +2994,7 @@ static C_VOID _ser_int_protected_16(core_machine_cpu_execution_context *context,
         TYPE_TRACE_CHECK_RETURN(_kec_push(context, TYPE_REFERENCE_OF(error_code),
             2u));
     }
-    TYPE_TRACE_CHECK_RETURN(_s_load_cs(context, newcs));
+    cpu_state.data.cs = newcs_cache;
     cpu_state.data.ip = TYPE_MASK_UNSIGNED_16(_GetDescGate_Offset(gate_desc));
     _ClrEFLAGS_IF;
     TYPE_TRACE_CALL_END;
@@ -15865,6 +16001,7 @@ static C_VOID ExecFinal(core_machine_cpu_execution_context *context)
     t_cpu fault_cpu;
     type_unsigned_32 original_except;
     type_unsigned_32 original_excode;
+    type_unsigned_8 exception_vector;
     if (instruction_state.data.flagInsLoop)
     {
         cpu_state.data.cs = instruction_state.data.oldcpu.data.cs;
@@ -15887,12 +16024,17 @@ static C_VOID ExecFinal(core_machine_cpu_execution_context *context)
         {
             fault_cpu.data.cr2 = cpu_state.data.cr2;
         }
+        exception_vector = 0u;
+        if (instruction_state.data.except == VCPUINS_EXCEPT_GP)
+            exception_vector = 0x0du;
+        else if (instruction_state.data.except == VCPUINS_EXCEPT_NP)
+            exception_vector = 0x0bu;
         if (TYPE_GET_BIT(fault_cpu.data.cr0, VCPU_CR0_PE) &&
-            instruction_state.data.except == VCPUINS_EXCEPT_GP) {
+            exception_vector != 0u) {
             original_except = instruction_state.data.except;
             original_excode = instruction_state.data.excode;
             cpu_state = fault_cpu;
-            _e_except_n(context, 0x0du, _GetOperandSize);
+            _e_except_n(context, exception_vector, _GetOperandSize);
             if (!instruction_state.data.except) {
                 if (context->diagnostic_provider != STD_NULL &&
                     context->diagnostic_provider->record_delivered_exception !=

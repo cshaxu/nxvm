@@ -375,8 +375,8 @@ controller and media policy.
 Hardware IRQ delivery and a guest `INT n` instruction are separate mechanisms.
 Both software-interrupt routes remain inside the one core CPU executor: real
 mode uses ordinary guest-IVT transfer, while the currently admitted protected
-mode subset uses a 16-bit IDT interrupt-gate transfer. The latter is limited to
-the protected-mode forms explicitly covered by the CPU corpus; it is not a
+mode subset uses a 16-bit IDT interrupt-gate transfer. Its admitted exception
+handoff is limited to the corpus-proven `#GP` and `#NP` routes; it is not a
 claim of generic protected-mode exception or hardware-interrupt delivery.
 Core has no firmware-interrupt portal, software-interrupt provider, or
 profile-private decoder bypass.
