@@ -11,6 +11,91 @@
 
 #include "vm/machine/fdd.h"
 
+static core_machine_media_result vm_machine_fdd_media_query(C_VOID *context,
+    core_machine_media_info *out_info)
+{
+    const t_fdd *fdd = (const t_fdd *)context;
+
+    if (fdd == STD_NULL || out_info == STD_NULL) return CORE_MACHINE_MEDIA_RESULT_PERMANENT;
+    out_info->generation = fdd->connect.media_generation;
+    out_info->capabilities = CORE_MACHINE_MEDIA_CAPABILITY_REMOVABLE |
+        CORE_MACHINE_MEDIA_CAPABILITY_GEOMETRY_KNOWN |
+        CORE_MACHINE_MEDIA_CAPABILITY_CHANGE_DETECTABLE |
+        CORE_MACHINE_MEDIA_CAPABILITY_FORMATTABLE;
+    if (fdd->connect.flagReadOnly)
+        out_info->capabilities |= CORE_MACHINE_MEDIA_CAPABILITY_READ_ONLY;
+    out_info->present = fdd->connect.flagDiskExist;
+    out_info->geometry.logical_sector_count = (uint64_t)fdd->data.ncyl *
+        fdd->data.nhead * fdd->data.nsector;
+    out_info->geometry.bytes_per_sector = fdd->data.nbyte;
+    out_info->geometry.cylinders = fdd->data.ncyl;
+    out_info->geometry.heads = fdd->data.nhead;
+    out_info->geometry.sectors_per_track = fdd->data.nsector;
+    return out_info->present ? CORE_MACHINE_MEDIA_RESULT_OK :
+        CORE_MACHINE_MEDIA_RESULT_ABSENT;
+}
+
+static core_machine_media_result vm_machine_fdd_media_read(C_VOID *context,
+    uint64_t offset, C_VOID *buffer, uint32_t byte_count)
+{
+    const t_fdd *fdd = (const t_fdd *)context;
+    STD_SIZE_T image_size;
+
+    if (fdd == STD_NULL || !fdd->connect.flagDiskExist)
+        return CORE_MACHINE_MEDIA_RESULT_ABSENT;
+    image_size = vm_machine_fdd_image_size(fdd);
+    if (offset > image_size || byte_count > image_size - offset)
+        return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
+    STD_MEMCPY(buffer, (const C_VOID *)(fdd->connect.pImgBase + offset), byte_count);
+    return CORE_MACHINE_MEDIA_RESULT_OK;
+}
+
+static core_machine_media_result vm_machine_fdd_media_write(C_VOID *context,
+    uint64_t offset, const C_VOID *buffer, uint32_t byte_count)
+{
+    t_fdd *fdd = (t_fdd *)context;
+    STD_SIZE_T image_size;
+
+    if (fdd == STD_NULL || !fdd->connect.flagDiskExist)
+        return CORE_MACHINE_MEDIA_RESULT_ABSENT;
+    if (fdd->connect.flagReadOnly) return CORE_MACHINE_MEDIA_RESULT_READ_ONLY;
+    image_size = vm_machine_fdd_image_size(fdd);
+    if (offset > image_size || byte_count > image_size - offset)
+        return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
+    STD_MEMCPY((C_VOID *)(fdd->connect.pImgBase + offset), buffer, byte_count);
+    return CORE_MACHINE_MEDIA_RESULT_OK;
+}
+
+static core_machine_media_result vm_machine_fdd_media_format(C_VOID *context,
+    uint64_t logical_sector, uint32_t sector_count, uint8_t fill)
+{
+    t_fdd *fdd = (t_fdd *)context;
+    uint64_t sector_total;
+
+    if (fdd == STD_NULL || !fdd->connect.flagDiskExist)
+        return CORE_MACHINE_MEDIA_RESULT_ABSENT;
+    if (fdd->connect.flagReadOnly) return CORE_MACHINE_MEDIA_RESULT_READ_ONLY;
+    sector_total = (uint64_t)fdd->data.ncyl * fdd->data.nhead * fdd->data.nsector;
+    if (logical_sector >= sector_total || sector_count > sector_total - logical_sector)
+        return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
+    STD_MEMSET((C_VOID *)(fdd->connect.pImgBase + logical_sector * fdd->data.nbyte),
+        fill, sector_count * fdd->data.nbyte);
+    ++fdd->connect.media_generation;
+    return CORE_MACHINE_MEDIA_RESULT_OK;
+}
+
+const core_machine_media_provider *vm_machine_fdd_media_provider(C_VOID)
+{
+    static const core_machine_media_provider provider = {
+        vm_machine_fdd_media_query,
+        vm_machine_fdd_media_read,
+        vm_machine_fdd_media_write,
+        vm_machine_fdd_media_format,
+        STD_NULL
+    };
+    return &provider;
+}
+
 STD_SIZE_T vm_machine_fdd_image_size(const t_fdd *fdd)
 {
     return (STD_SIZE_T)fdd->data.nbyte * fdd->data.nsector * fdd->data.nhead *
@@ -66,6 +151,7 @@ C_INT vm_machine_fdd_format_sector(t_fdd *fdd, type_unsigned_16 cylinder,
         fdd, cylinder, head, sector, fdd->data.nbyte)) return TYPE_TRUE;
     STD_MEMSET((C_VOID *)vm_machine_fdd_byte_address(fdd, cylinder, head, sector,
         0u), fill_byte, fdd->data.nbyte);
+    ++fdd->connect.media_generation;
     return TYPE_FALSE;
 }
 

@@ -8,6 +8,7 @@ extern "C" {
 #endif
 
 #include "type.h"
+#include "core/machine/media_interface.h"
 
 typedef struct t_latch t_latch;
 
@@ -59,6 +60,7 @@ C_INT vm_machine_fdd_insert_for(t_fdd *fdd, const C_CHAR *file_name);
 C_INT vm_machine_fdd_remove_for(t_fdd *fdd, const C_CHAR *file_name);
 
 C_VOID vm_machine_fdd_print(const t_fdd *fdd);
+const core_machine_media_provider *vm_machine_fdd_media_provider(C_VOID);
 
 #ifdef __cplusplus
 }/*_EOCD_*/

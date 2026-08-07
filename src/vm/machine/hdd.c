@@ -11,6 +11,91 @@
 
 #include "vm/machine/hdd.h"
 
+static core_machine_media_result vm_machine_hdd_media_query(C_VOID *context,
+    core_machine_media_info *out_info)
+{
+    const t_hdd *hdd = (const t_hdd *)context;
+
+    if (hdd == STD_NULL || out_info == STD_NULL) return CORE_MACHINE_MEDIA_RESULT_PERMANENT;
+    out_info->generation = hdd->connect.media_generation;
+    out_info->capabilities = CORE_MACHINE_MEDIA_CAPABILITY_REMOVABLE |
+        CORE_MACHINE_MEDIA_CAPABILITY_GEOMETRY_KNOWN |
+        CORE_MACHINE_MEDIA_CAPABILITY_CHANGE_DETECTABLE |
+        CORE_MACHINE_MEDIA_CAPABILITY_FORMATTABLE;
+    if (hdd->connect.flagReadOnly)
+        out_info->capabilities |= CORE_MACHINE_MEDIA_CAPABILITY_READ_ONLY;
+    out_info->present = hdd->connect.flagDiskExist;
+    out_info->geometry.logical_sector_count = (uint64_t)hdd->data.ncyl *
+        hdd->data.nhead * hdd->data.nsector;
+    out_info->geometry.bytes_per_sector = hdd->data.nbyte;
+    out_info->geometry.cylinders = hdd->data.ncyl;
+    out_info->geometry.heads = hdd->data.nhead;
+    out_info->geometry.sectors_per_track = hdd->data.nsector;
+    return out_info->present ? CORE_MACHINE_MEDIA_RESULT_OK :
+        CORE_MACHINE_MEDIA_RESULT_ABSENT;
+}
+
+static core_machine_media_result vm_machine_hdd_media_read(C_VOID *context,
+    uint64_t offset, C_VOID *buffer, uint32_t byte_count)
+{
+    const t_hdd *hdd = (const t_hdd *)context;
+    STD_SIZE_T image_size;
+
+    if (hdd == STD_NULL || !hdd->connect.flagDiskExist)
+        return CORE_MACHINE_MEDIA_RESULT_ABSENT;
+    image_size = vm_machine_hdd_image_size(hdd);
+    if (offset > image_size || byte_count > image_size - offset)
+        return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
+    STD_MEMCPY(buffer, (const C_VOID *)(hdd->connect.pImgBase + offset), byte_count);
+    return CORE_MACHINE_MEDIA_RESULT_OK;
+}
+
+static core_machine_media_result vm_machine_hdd_media_write(C_VOID *context,
+    uint64_t offset, const C_VOID *buffer, uint32_t byte_count)
+{
+    t_hdd *hdd = (t_hdd *)context;
+    STD_SIZE_T image_size;
+
+    if (hdd == STD_NULL || !hdd->connect.flagDiskExist)
+        return CORE_MACHINE_MEDIA_RESULT_ABSENT;
+    if (hdd->connect.flagReadOnly) return CORE_MACHINE_MEDIA_RESULT_READ_ONLY;
+    image_size = vm_machine_hdd_image_size(hdd);
+    if (offset > image_size || byte_count > image_size - offset)
+        return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
+    STD_MEMCPY((C_VOID *)(hdd->connect.pImgBase + offset), buffer, byte_count);
+    return CORE_MACHINE_MEDIA_RESULT_OK;
+}
+
+static core_machine_media_result vm_machine_hdd_media_format(C_VOID *context,
+    uint64_t logical_sector, uint32_t sector_count, uint8_t fill)
+{
+    t_hdd *hdd = (t_hdd *)context;
+    uint64_t sector_total;
+
+    if (hdd == STD_NULL || !hdd->connect.flagDiskExist)
+        return CORE_MACHINE_MEDIA_RESULT_ABSENT;
+    if (hdd->connect.flagReadOnly) return CORE_MACHINE_MEDIA_RESULT_READ_ONLY;
+    sector_total = (uint64_t)hdd->data.ncyl * hdd->data.nhead * hdd->data.nsector;
+    if (logical_sector >= sector_total || sector_count > sector_total - logical_sector)
+        return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
+    STD_MEMSET((C_VOID *)(hdd->connect.pImgBase + logical_sector * hdd->data.nbyte),
+        fill, sector_count * hdd->data.nbyte);
+    ++hdd->connect.media_generation;
+    return CORE_MACHINE_MEDIA_RESULT_OK;
+}
+
+const core_machine_media_provider *vm_machine_hdd_media_provider(C_VOID)
+{
+    static const core_machine_media_provider provider = {
+        vm_machine_hdd_media_query,
+        vm_machine_hdd_media_read,
+        vm_machine_hdd_media_write,
+        vm_machine_hdd_media_format,
+        STD_NULL
+    };
+    return &provider;
+}
+
 static C_INT vm_machine_hdd_track_end(const t_hdd *hdd) {
     return hdd->data.sector >= hdd->data.nsector + 1;
 }
@@ -85,6 +170,7 @@ C_VOID vm_machine_hdd_format_track(t_hdd *hdd, type_unsigned_8 fill_byte) {
             hdd->data.nsector * hdd->data.nbyte);
         hdd->data.sector = hdd->data.nsector;
     }
+    ++hdd->connect.media_generation;
 }
 
 C_VOID vm_machine_hdd_initialize(t_hdd *hdd) {
@@ -118,6 +204,7 @@ C_VOID vm_machine_hdd_create(t_hdd *hdd, uint16_t cylinders) {
     hdd->data.ncyl = cylinders;
     vm_machine_hdd_allocate(hdd);
     hdd->connect.flagDiskExist = TYPE_TRUE;
+    ++hdd->connect.media_generation;
 }
 C_INT vm_machine_hdd_insert(t_hdd *hdd, const C_CHAR *file_name) {
     type_native_unsigned count;
@@ -132,6 +219,7 @@ C_INT vm_machine_hdd_insert(t_hdd *hdd, const C_CHAR *file_name) {
         count = STD_FREAD((C_VOID *)hdd->connect.pImgBase, sizeof(type_unsigned_8),
             vm_machine_hdd_image_size(hdd), image);
         hdd->connect.flagDiskExist = TYPE_TRUE;
+        ++hdd->connect.media_generation;
         STD_FCLOSE(image);
         return TYPE_FALSE;
     } else {
@@ -155,6 +243,7 @@ C_INT vm_machine_hdd_remove(t_hdd *hdd, const C_CHAR *file_name) {
         }
     }
     hdd->connect.flagDiskExist = TYPE_FALSE;
+    ++hdd->connect.media_generation;
     STD_MEMSET((C_VOID *)hdd->connect.pImgBase, TYPE_ZERO_8, vm_machine_hdd_image_size(hdd));
     return TYPE_FALSE;
 }
