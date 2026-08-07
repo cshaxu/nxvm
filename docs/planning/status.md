@@ -2,13 +2,64 @@
 
 ## Current Work
 
-**Idle. No implementation subtask is active.**
+**M5 T258 S1 active: freeze the 80386 CPL0 paging contract and audit the
+retained executor.**
 
-T257 S7 closed the audit finding: PE-state `SIDT`/`LIDT` and software/hardware
-interrupt delivery now stop as `#UD`; real-mode table and interrupt behavior is
-unchanged. The admitted path remains GDT-only, ring-0, 16-bit, and
-diagnostic-stop based. Paging, privilege transitions, LDT/TSS/gates, 32-bit
-semantics, and Windows claims remain deferred. See [T257 admission closure](m5-t257-protected-mode-admission-closure.md).
+### Original Request
+
+On top of T257's GDT-only, 16-bit CPL0 protected-mode path, admit one real,
+verifiable 80386 CPL0 4 KiB paging path. It includes only page-directory/page-
+table walks, `MOV r32,CR0`, `MOV r32,CR2`, `MOV CR0,r32`, `MOV CR3,r32`, and
+core diagnostic `#PF`. The target artifact is `nxvm_0_5_0258.exe`.
+
+### Frozen Scope
+
+| Concern | T258 admission | Deferred / forbidden |
+| --- | --- | --- |
+| Owner and path | `core/machine` CPU, segment translation, physical memory route, and diagnostics; existing `core_machine_run()` only | VM/profile/firmware/platform paging or fault shortcuts; second executor |
+| Address translation | logical -> T257 segment cache -> linear -> two-level 4 KiB page walk -> core physical route | host MMU, RAM pointers, PSE/PAE/V86/long mode, TLB cache |
+| Control forms | 80386 CPL0 `MOV r32,CR0`, `MOV r32,CR2`, `MOV CR0,r32`, `MOV CR3,r32`; `CR2` is fault-written only | guest write `CR2`, all other CR forms, 80286/80186 forms |
+| CR0 / CR3 | only PE and PG may be changed by T258; PG requires PE; CR3 must be page-directory aligned | opening MP/EM/TS/ET semantics, silent CR3 normalization |
+| Page checks | Present, 4 KiB address, core-routed A/D updates, CR2 and P/W/U `#PF` diagnostic | CPL3 user/supervisor faults, supervisor write-protect fault, protected IDT delivery |
+| CPL0 semantics | CPL0 may access supervisor and read-only mappings as 80386 permits; non-present fetch/read/write faults are proven | treating `RW=0` or `US=0` as a CPL0 fault; general privilege model |
+| Fault result | copied `STOP_FAULT` / first-fault diagnostic at the original instruction | guest `#PF` handler, IDT/task/call gate, double/triple fault |
+
+`RW=0` is **not** a CPL0 write-protect failure on the 80386: `CR0.WP` is not
+part of this CPU. T258 proves that supervisor behavior rather than fabricating
+a write-protect `#PF`; actual user write protection waits for T259's CPL3
+corpus.
+
+### S1 Audit And Requirement Map
+
+| Requirement | Current evidence | S1 disposition / planned evidence |
+| --- | --- | --- |
+| Page walk | `_kma_physical_linear` already reads PDE/PTE through core physical memory, sets A/D, and records `CR2`/`#PF` | Narrow and prove it with `core-machine-80386-paging-smoke`. |
+| `CR0` / `CR3` writes | `_d_modrm_creg` exposes CR0/2/3 and `MOV_CR_R32` writes the selected storage directly | Replace with explicit form-specific validation: CR2 write `#UD`; CR0 mask and PE-before-PG; aligned CR3 only. |
+| Profile gate | 0F `20h`--`26h` are metadata-gated at 80386 | Corpus proves 80386 positive and 80286/80186 `#UD` negatives. |
+| Fault boundary | `ExecFinal` records a first fault then stops; T257 has separately disabled protected IDT delivery | Prove `#PF` retains original point, CR2, P/W/U code, and `STOP_FAULT`. |
+| Reset | CPU cold reset zeroes CR0/CR2/CR3 before retained reset-vector setup | Corpus proves PG and CR3 clear after cold reset. |
+
+The similar-issue sweep covers all tracked production references to
+`_kma_physical_linear`, `_d_modrm_creg`, `MOV_R32_CR`, `MOV_CR_R32`,
+`VCPU_CR0_PG`, `cr2`, `cr3`, and `VCPUINS_EXCEPT_PF`; each hit is either the
+single owner path, an explicit negative gate, or deferred to T259--T261.
+
+### S1 Rules, Verification, And Stop Conditions
+
+Applicable rules: `core` has no VM dependency; no global/TLS current object;
+all page-table accesses use the checked core physical route; profile selection
+is frozen before reset; platform never mutates guest state; no protected media
+or external runtime dependency. The planned focused target is
+`core-machine-80386-paging-smoke`, with S2 marker
+`M5:T258:S2:I386-PAGING:OK` and S3 marker
+`M5:T258:S3:I386-PAGING:CORPUS:OK`.
+
+S2 stops and requests a split if the corpus needs CPL3, protected IDT delivery,
+TSS, task switch, a second executor, VM/firmware mutation, host-side page-table
+access, or a Console/debugger/boot UX change. S3 must run the focused corpus,
+T257 and real-mode corpora, FDD/HDD/DOS, Console/debugger, CGA/EGA, ATA, RTC,
+and `current-gates-gcc`. S4 records the T258-to-`0.5.0258` artifact mapping and
+SHA-256 before closure.
 
 | Closure | Evidence |
 | --- | --- |
