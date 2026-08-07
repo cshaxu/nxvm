@@ -191,10 +191,15 @@ shared Win32 and Linux providers live in `core/platform/win32` and
 `mantle/*`, `dos/*`, or `vdm/*` counterpart. The same rule applies to machine
 and product code.
 
-`vm/machine` owns VM-only controllers and their device-local behavior, such as
-CMOS/RTC, FDC/HDC/FDD/HDD. The `vm/` root composition owns profile-selected
-boot/reset ordering, the bounded product execution pump, and provider
-lifetime; it never duplicates the core scheduler. `vm/platform` owns only
+`core/machine` may provide optional profile-neutral controller mechanisms,
+including MC146818-compatible RTC, FDC, and ATA PIO models, through explicit
+port/IRQ/DMA/clock/media bindings. It never chooses PC/AT defaults, media
+paths, boot policy, firmware bytes, or host policy. `vm/machine` owns the VM
+media backing objects and PC/AT-only glue; it does not retain a second copy of
+a controller after that controller moves to core. The `vm/` root composition
+owns profile-selected boot/reset ordering, the bounded product execution pump,
+provider lifetime, and all wiring; it never duplicates the core scheduler.
+`vm/platform` owns only
 full-machine policy adapters; concrete host facilities shared with VDM belong in
 `core/platform/{win32,linux}`. `vm/product` owns retained NXVM user experience: Console, hardware
 debugger UX, media commands, and presentation policy. `vm/profile` owns VM
@@ -216,10 +221,12 @@ the sole constructor and translates one selected declaration into providers
 before core freeze. An external-ROM manifest is future composition input; it
 cannot become a profile asset or core contract.
 
-`mantle/machine`, `mantle/platform`, and `mantle/product` supply only reusable
-VDM composition mechanism over core. Trusted external research may inform a
-neutral mantle requirement, but mantle knows no DOS ABI, external-runtime ABI,
-CLI grammar, path policy, protected asset, or product exit policy.
+`mantle/machine`, `mantle/platform`, and `mantle/product` are future reusable
+VDM composition mechanism over core. A core-only mantle-shape fixture may
+prove an admitted contract during M5, but it is not mantle implementation.
+Trusted external research may inform a neutral mantle requirement, but mantle
+knows no DOS ABI, external-runtime ABI, CLI grammar, path policy, protected
+asset, or product exit policy.
 `mantle/` root composition constructs the session and binds an admitted
 DOS-runtime provider to core at defined execution boundaries.
 

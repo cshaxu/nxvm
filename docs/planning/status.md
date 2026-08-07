@@ -2,8 +2,8 @@
 
 ## Current Work
 
-No implementation subtask is active. T270 begins only after an approved
-packet is recorded here.
+No implementation subtask is active. T270 begins the second core/composition
+boundary migration only after an approved packet is recorded here.
 
 ## Current Technical Baseline
 
@@ -37,10 +37,13 @@ active packet becomes an operational authority only after approval.
 ## Recent Governance
 
 - **M5 Td S30:** compacted completed M5 planning records and formalized the
-  T264--T278 forward queue.
+  then-current T264--T278 forward queue.
 - **M5 Td S31:** made `status.md` the sole current-baseline authority, retired
   completed T264--T266 records, and added a documentation-governance gate.
   This task changes no runtime behavior or active-task scope.
+- **M5 Td S32:** admitted the second core/composition migration T270--T277,
+  shifted the former forward queue to T278--T286, and kept host filesystem/path
+  policy outside core.
 
 ## Milestone State
 
