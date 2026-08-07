@@ -47,6 +47,7 @@ add_library(core-machine STATIC
     src/core/machine/debug.c
     src/core/machine/entry_plan_interface.c
     src/core/machine/fdc.c
+    src/core/machine/hdc.c
     src/core/machine/machine.c
     src/core/machine/memory_interface.c
     src/core/machine/media_interface.c
@@ -314,7 +315,6 @@ set(VM_COMPOSITION_SOURCES
 set(VM_MACHINE_SOURCES
     src/vm/machine/fdd.c
     src/vm/machine/hdd.c
-    src/vm/machine/hdc.c
     src/vm/machine/debug.c
 )
 set(CORE_MACHINE_SOURCES

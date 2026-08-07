@@ -2,37 +2,37 @@
 
 #include "core/machine/media_interface.h"
 #include "core/machine/pic.h"
-#include "vm/machine/hdc.h"
+#include "core/machine/hdc.h"
 
-#define VM_MACHINE_HDC_COMMAND_READ_SECTORS 0x20u
-#define VM_MACHINE_HDC_COMMAND_WRITE_SECTORS 0x30u
-#define VM_MACHINE_HDC_COMMAND_IDENTIFY_DEVICE 0xecu
-#define VM_MACHINE_HDC_DEVICE_CONTROL_SRST 0x04u
+#define CORE_MACHINE_HDC_COMMAND_READ_SECTORS 0x20u
+#define CORE_MACHINE_HDC_COMMAND_WRITE_SECTORS 0x30u
+#define CORE_MACHINE_HDC_COMMAND_IDENTIFY_DEVICE 0xecu
+#define CORE_MACHINE_HDC_DEVICE_CONTROL_SRST 0x04u
 
-static C_INT vm_machine_hdc_selected_master(const vm_machine_hdc *hdc)
+static C_INT core_machine_hdc_selected_master(const core_machine_hdc *hdc)
 { return hdc != STD_NULL && (hdc->data.drive_head & 0x10u) == 0u; }
 
-static C_INT vm_machine_hdc_lba_mode(const vm_machine_hdc *hdc)
+static C_INT core_machine_hdc_lba_mode(const core_machine_hdc *hdc)
 {
     return hdc != STD_NULL && hdc->connect.config.lba28_supported &&
         (hdc->data.drive_head & 0x40u) != 0u;
 }
 
-static C_VOID vm_machine_hdc_clear_irq(vm_machine_hdc *hdc)
+static C_VOID core_machine_hdc_clear_irq(core_machine_hdc *hdc)
 {
     if (hdc == STD_NULL) return;
     hdc->data.irq_pending = TYPE_FALSE;
     core_machine_pic_irq_source_deassert(&hdc->connect.irq_source);
 }
 
-static C_VOID vm_machine_hdc_raise_irq(vm_machine_hdc *hdc)
+static C_VOID core_machine_hdc_raise_irq(core_machine_hdc *hdc)
 {
     if (hdc == STD_NULL) return;
     hdc->data.irq_pending = TYPE_TRUE;
     core_machine_pic_irq_source_assert(&hdc->connect.irq_source);
 }
 
-static uint32_t vm_machine_hdc_lba(const vm_machine_hdc *hdc)
+static uint32_t core_machine_hdc_lba(const core_machine_hdc *hdc)
 {
     return (uint32_t)hdc->data.sector_number |
         ((uint32_t)hdc->data.cylinder_low << 8u) |
@@ -40,7 +40,7 @@ static uint32_t vm_machine_hdc_lba(const vm_machine_hdc *hdc)
         ((uint32_t)(hdc->data.drive_head & 0x0fu) << 24u);
 }
 
-static C_INT vm_machine_hdc_media_info(const vm_machine_hdc *hdc,
+static C_INT core_machine_hdc_media_info(const core_machine_hdc *hdc,
     core_machine_media_info *out_info, core_machine_media_result *out_result)
 {
     return hdc != STD_NULL && hdc->connect.media_registry != STD_NULL &&
@@ -49,33 +49,33 @@ static C_INT vm_machine_hdc_media_info(const vm_machine_hdc *hdc,
         *out_result == CORE_MACHINE_MEDIA_RESULT_OK;
 }
 
-static STD_SIZE_T vm_machine_hdc_sector_capacity(
+static STD_SIZE_T core_machine_hdc_sector_capacity(
     const core_machine_media_info *info)
 {
     return info == STD_NULL || info->geometry.bytes_per_sector == 0u ? 0u :
         (STD_SIZE_T)info->geometry.logical_sector_count;
 }
 
-static C_VOID vm_machine_hdc_complete(vm_machine_hdc *hdc)
+static C_VOID core_machine_hdc_complete(core_machine_hdc *hdc)
 {
     if (hdc == STD_NULL) return;
-    hdc->data.phase = VM_MACHINE_HDC_PHASE_IDLE;
+    hdc->data.phase = CORE_MACHINE_HDC_PHASE_IDLE;
     hdc->data.data_index = 0u;
-    hdc->data.status = VM_MACHINE_HDC_STATUS_DRDY | VM_MACHINE_HDC_STATUS_DSC;
-    vm_machine_hdc_raise_irq(hdc);
+    hdc->data.status = CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_DSC;
+    core_machine_hdc_raise_irq(hdc);
 }
 
-static C_VOID vm_machine_hdc_fail(vm_machine_hdc *hdc, uint8_t error)
+static C_VOID core_machine_hdc_fail(core_machine_hdc *hdc, uint8_t error)
 {
     if (hdc == STD_NULL) return;
     hdc->data.error = error;
-    hdc->data.phase = VM_MACHINE_HDC_PHASE_IDLE;
+    hdc->data.phase = CORE_MACHINE_HDC_PHASE_IDLE;
     hdc->data.data_index = 0u;
-    hdc->data.status = VM_MACHINE_HDC_STATUS_DRDY | VM_MACHINE_HDC_STATUS_ERR;
-    vm_machine_hdc_raise_irq(hdc);
+    hdc->data.status = CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_ERR;
+    core_machine_hdc_raise_irq(hdc);
 }
 
-static C_INT vm_machine_hdc_load_chs_sector(vm_machine_hdc *hdc)
+static C_INT core_machine_hdc_load_chs_sector(core_machine_hdc *hdc)
 {
     core_machine_media_info info;
     core_machine_media_result media_result;
@@ -84,20 +84,20 @@ static C_INT vm_machine_hdc_load_chs_sector(vm_machine_hdc *hdc)
     uint8_t sector;
     STD_SIZE_T offset;
 
-    if (hdc == STD_NULL || !vm_machine_hdc_media_info(hdc, &info, &media_result) ||
+    if (hdc == STD_NULL || !core_machine_hdc_media_info(hdc, &info, &media_result) ||
         !info.present) {
-        vm_machine_hdc_fail(hdc, VM_MACHINE_HDC_ERROR_ABORT);
+        core_machine_hdc_fail(hdc, CORE_MACHINE_HDC_ERROR_ABORT);
         return 0;
     }
     cylinder = (uint16_t)hdc->data.cylinder_low |
         ((uint16_t)hdc->data.cylinder_high << 8u);
     head = hdc->data.drive_head & 0x0fu;
     sector = hdc->data.sector_number;
-    if (!vm_machine_hdc_selected_master(hdc) || vm_machine_hdc_lba_mode(hdc) ||
+    if (!core_machine_hdc_selected_master(hdc) || core_machine_hdc_lba_mode(hdc) ||
         sector == 0u || cylinder >= info.geometry.cylinders ||
         head >= info.geometry.heads || sector > info.geometry.sectors_per_track ||
         info.geometry.bytes_per_sector != sizeof(hdc->data.data)) {
-        vm_machine_hdc_fail(hdc, VM_MACHINE_HDC_ERROR_ID_NOT_FOUND);
+        core_machine_hdc_fail(hdc, CORE_MACHINE_HDC_ERROR_ID_NOT_FOUND);
         return 0;
     }
     offset = (((STD_SIZE_T)cylinder * info.geometry.heads + head) *
@@ -106,30 +106,30 @@ static C_INT vm_machine_hdc_load_chs_sector(vm_machine_hdc *hdc)
             hdc->connect.media_id, offset, hdc->data.data, sizeof(hdc->data.data),
             &media_result) != TYPE_STATUS_OK ||
         media_result != CORE_MACHINE_MEDIA_RESULT_OK) {
-        vm_machine_hdc_fail(hdc, media_result == CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE ?
-            VM_MACHINE_HDC_ERROR_ID_NOT_FOUND : VM_MACHINE_HDC_ERROR_ABORT);
+        core_machine_hdc_fail(hdc, media_result == CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE ?
+            CORE_MACHINE_HDC_ERROR_ID_NOT_FOUND : CORE_MACHINE_HDC_ERROR_ABORT);
         return 0;
     }
     return 1;
 }
 
-static C_INT vm_machine_hdc_load_lba_sector(vm_machine_hdc *hdc)
+static C_INT core_machine_hdc_load_lba_sector(core_machine_hdc *hdc)
 {
     core_machine_media_info info;
     core_machine_media_result media_result;
     uint32_t lba;
     STD_SIZE_T offset;
 
-    if (hdc == STD_NULL || !vm_machine_hdc_media_info(hdc, &info, &media_result) ||
+    if (hdc == STD_NULL || !core_machine_hdc_media_info(hdc, &info, &media_result) ||
         !info.present) {
-        vm_machine_hdc_fail(hdc, VM_MACHINE_HDC_ERROR_ABORT);
+        core_machine_hdc_fail(hdc, CORE_MACHINE_HDC_ERROR_ABORT);
         return 0;
     }
-    lba = vm_machine_hdc_lba(hdc);
-    if (!vm_machine_hdc_selected_master(hdc) || !vm_machine_hdc_lba_mode(hdc) ||
-        (STD_SIZE_T)lba >= vm_machine_hdc_sector_capacity(&info) ||
+    lba = core_machine_hdc_lba(hdc);
+    if (!core_machine_hdc_selected_master(hdc) || !core_machine_hdc_lba_mode(hdc) ||
+        (STD_SIZE_T)lba >= core_machine_hdc_sector_capacity(&info) ||
         info.geometry.bytes_per_sector != sizeof(hdc->data.data)) {
-        vm_machine_hdc_fail(hdc, VM_MACHINE_HDC_ERROR_ID_NOT_FOUND);
+        core_machine_hdc_fail(hdc, CORE_MACHINE_HDC_ERROR_ID_NOT_FOUND);
         return 0;
     }
     offset = (STD_SIZE_T)lba * info.geometry.bytes_per_sector;
@@ -137,20 +137,20 @@ static C_INT vm_machine_hdc_load_lba_sector(vm_machine_hdc *hdc)
             hdc->connect.media_id, offset, hdc->data.data, sizeof(hdc->data.data),
             &media_result) != TYPE_STATUS_OK ||
         media_result != CORE_MACHINE_MEDIA_RESULT_OK) {
-        vm_machine_hdc_fail(hdc, media_result == CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE ?
-            VM_MACHINE_HDC_ERROR_ID_NOT_FOUND : VM_MACHINE_HDC_ERROR_ABORT);
+        core_machine_hdc_fail(hdc, media_result == CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE ?
+            CORE_MACHINE_HDC_ERROR_ID_NOT_FOUND : CORE_MACHINE_HDC_ERROR_ABORT);
         return 0;
     }
     return 1;
 }
 
-static C_INT vm_machine_hdc_load_sector(vm_machine_hdc *hdc)
+static C_INT core_machine_hdc_load_sector(core_machine_hdc *hdc)
 {
-    return vm_machine_hdc_lba_mode(hdc) ? vm_machine_hdc_load_lba_sector(hdc) :
-        vm_machine_hdc_load_chs_sector(hdc);
+    return core_machine_hdc_lba_mode(hdc) ? core_machine_hdc_load_lba_sector(hdc) :
+        core_machine_hdc_load_chs_sector(hdc);
 }
 
-static C_INT vm_machine_hdc_store_chs_sector(vm_machine_hdc *hdc)
+static C_INT core_machine_hdc_store_chs_sector(core_machine_hdc *hdc)
 {
     core_machine_media_info info;
     core_machine_media_result media_result;
@@ -159,20 +159,20 @@ static C_INT vm_machine_hdc_store_chs_sector(vm_machine_hdc *hdc)
     uint8_t sector;
     STD_SIZE_T offset;
 
-    if (hdc == STD_NULL || !vm_machine_hdc_media_info(hdc, &info, &media_result) ||
+    if (hdc == STD_NULL || !core_machine_hdc_media_info(hdc, &info, &media_result) ||
         !info.present || (info.capabilities & CORE_MACHINE_MEDIA_CAPABILITY_READ_ONLY) != 0u) {
-        vm_machine_hdc_fail(hdc, VM_MACHINE_HDC_ERROR_ABORT);
+        core_machine_hdc_fail(hdc, CORE_MACHINE_HDC_ERROR_ABORT);
         return 0;
     }
     cylinder = (uint16_t)hdc->data.cylinder_low |
         ((uint16_t)hdc->data.cylinder_high << 8u);
     head = hdc->data.drive_head & 0x0fu;
     sector = hdc->data.sector_number;
-    if (!vm_machine_hdc_selected_master(hdc) || vm_machine_hdc_lba_mode(hdc) ||
+    if (!core_machine_hdc_selected_master(hdc) || core_machine_hdc_lba_mode(hdc) ||
         sector == 0u || cylinder >= info.geometry.cylinders ||
         head >= info.geometry.heads || sector > info.geometry.sectors_per_track ||
         info.geometry.bytes_per_sector != sizeof(hdc->data.data)) {
-        vm_machine_hdc_fail(hdc, VM_MACHINE_HDC_ERROR_ID_NOT_FOUND);
+        core_machine_hdc_fail(hdc, CORE_MACHINE_HDC_ERROR_ID_NOT_FOUND);
         return 0;
     }
     offset = (((STD_SIZE_T)cylinder * info.geometry.heads + head) *
@@ -181,30 +181,30 @@ static C_INT vm_machine_hdc_store_chs_sector(vm_machine_hdc *hdc)
             hdc->connect.media_id, offset, hdc->data.data, sizeof(hdc->data.data),
             &media_result) != TYPE_STATUS_OK ||
         media_result != CORE_MACHINE_MEDIA_RESULT_OK) {
-        vm_machine_hdc_fail(hdc, media_result == CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE ?
-            VM_MACHINE_HDC_ERROR_ID_NOT_FOUND : VM_MACHINE_HDC_ERROR_ABORT);
+        core_machine_hdc_fail(hdc, media_result == CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE ?
+            CORE_MACHINE_HDC_ERROR_ID_NOT_FOUND : CORE_MACHINE_HDC_ERROR_ABORT);
         return 0;
     }
     return 1;
 }
 
-static C_INT vm_machine_hdc_store_lba_sector(vm_machine_hdc *hdc)
+static C_INT core_machine_hdc_store_lba_sector(core_machine_hdc *hdc)
 {
     core_machine_media_info info;
     core_machine_media_result media_result;
     uint32_t lba;
     STD_SIZE_T offset;
 
-    if (hdc == STD_NULL || !vm_machine_hdc_media_info(hdc, &info, &media_result) ||
+    if (hdc == STD_NULL || !core_machine_hdc_media_info(hdc, &info, &media_result) ||
         !info.present || (info.capabilities & CORE_MACHINE_MEDIA_CAPABILITY_READ_ONLY) != 0u) {
-        vm_machine_hdc_fail(hdc, VM_MACHINE_HDC_ERROR_ABORT);
+        core_machine_hdc_fail(hdc, CORE_MACHINE_HDC_ERROR_ABORT);
         return 0;
     }
-    lba = vm_machine_hdc_lba(hdc);
-    if (!vm_machine_hdc_selected_master(hdc) || !vm_machine_hdc_lba_mode(hdc) ||
-        (STD_SIZE_T)lba >= vm_machine_hdc_sector_capacity(&info) ||
+    lba = core_machine_hdc_lba(hdc);
+    if (!core_machine_hdc_selected_master(hdc) || !core_machine_hdc_lba_mode(hdc) ||
+        (STD_SIZE_T)lba >= core_machine_hdc_sector_capacity(&info) ||
         info.geometry.bytes_per_sector != sizeof(hdc->data.data)) {
-        vm_machine_hdc_fail(hdc, VM_MACHINE_HDC_ERROR_ID_NOT_FOUND);
+        core_machine_hdc_fail(hdc, CORE_MACHINE_HDC_ERROR_ID_NOT_FOUND);
         return 0;
     }
     offset = (STD_SIZE_T)lba * info.geometry.bytes_per_sector;
@@ -212,29 +212,29 @@ static C_INT vm_machine_hdc_store_lba_sector(vm_machine_hdc *hdc)
             hdc->connect.media_id, offset, hdc->data.data, sizeof(hdc->data.data),
             &media_result) != TYPE_STATUS_OK ||
         media_result != CORE_MACHINE_MEDIA_RESULT_OK) {
-        vm_machine_hdc_fail(hdc, media_result == CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE ?
-            VM_MACHINE_HDC_ERROR_ID_NOT_FOUND : VM_MACHINE_HDC_ERROR_ABORT);
+        core_machine_hdc_fail(hdc, media_result == CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE ?
+            CORE_MACHINE_HDC_ERROR_ID_NOT_FOUND : CORE_MACHINE_HDC_ERROR_ABORT);
         return 0;
     }
     return 1;
 }
 
-static C_INT vm_machine_hdc_store_sector(vm_machine_hdc *hdc)
+static C_INT core_machine_hdc_store_sector(core_machine_hdc *hdc)
 {
-    return vm_machine_hdc_lba_mode(hdc) ? vm_machine_hdc_store_lba_sector(hdc) :
-        vm_machine_hdc_store_chs_sector(hdc);
+    return core_machine_hdc_lba_mode(hdc) ? core_machine_hdc_store_lba_sector(hdc) :
+        core_machine_hdc_store_chs_sector(hdc);
 }
 
-static C_VOID vm_machine_hdc_identify(vm_machine_hdc *hdc)
+static C_VOID core_machine_hdc_identify(core_machine_hdc *hdc)
 {
     core_machine_media_info info;
     core_machine_media_result media_result;
     uint16_t word;
 
-    if (hdc == STD_NULL || !vm_machine_hdc_media_info(hdc, &info, &media_result) ||
-        !vm_machine_hdc_selected_master(hdc) ||
+    if (hdc == STD_NULL || !core_machine_hdc_media_info(hdc, &info, &media_result) ||
+        !core_machine_hdc_selected_master(hdc) ||
         !info.present || info.geometry.bytes_per_sector != sizeof(hdc->data.data)) {
-        vm_machine_hdc_fail(hdc, VM_MACHINE_HDC_ERROR_ABORT);
+        core_machine_hdc_fail(hdc, CORE_MACHINE_HDC_ERROR_ABORT);
         return;
     }
     STD_MEMSET(hdc->data.data, 0, sizeof(hdc->data.data));
@@ -248,19 +248,19 @@ static C_VOID vm_machine_hdc_identify(vm_machine_hdc *hdc)
     STD_MEMCPY(&hdc->data.data[12], &word, sizeof(word));
     word = 0x0200u;
     STD_MEMCPY(&hdc->data.data[98], &word, sizeof(word));
-    word = (uint16_t)vm_machine_hdc_sector_capacity(&info);
+    word = (uint16_t)core_machine_hdc_sector_capacity(&info);
     STD_MEMCPY(&hdc->data.data[120], &word, sizeof(word));
-    word = (uint16_t)(vm_machine_hdc_sector_capacity(&info) >> 16u);
+    word = (uint16_t)(core_machine_hdc_sector_capacity(&info) >> 16u);
     STD_MEMCPY(&hdc->data.data[122], &word, sizeof(word));
-    hdc->data.phase = VM_MACHINE_HDC_PHASE_DATA_READ;
+    hdc->data.phase = CORE_MACHINE_HDC_PHASE_DATA_READ;
     hdc->data.data_index = 0u;
     hdc->data.error = 0u;
-    hdc->data.status = VM_MACHINE_HDC_STATUS_DRDY | VM_MACHINE_HDC_STATUS_DSC |
-        VM_MACHINE_HDC_STATUS_DRQ;
-    vm_machine_hdc_raise_irq(hdc);
+    hdc->data.status = CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_DSC |
+        CORE_MACHINE_HDC_STATUS_DRQ;
+    core_machine_hdc_raise_irq(hdc);
 }
 
-static C_INT vm_machine_hdc_advance_chs(vm_machine_hdc *hdc)
+static C_INT core_machine_hdc_advance_chs(core_machine_hdc *hdc)
 {
     core_machine_media_info info;
     core_machine_media_result media_result;
@@ -268,9 +268,9 @@ static C_INT vm_machine_hdc_advance_chs(vm_machine_hdc *hdc)
     uint8_t head;
     uint8_t sector;
 
-    if (hdc == STD_NULL || !vm_machine_hdc_media_info(hdc, &info, &media_result) ||
+    if (hdc == STD_NULL || !core_machine_hdc_media_info(hdc, &info, &media_result) ||
         !info.present) {
-        vm_machine_hdc_fail(hdc, VM_MACHINE_HDC_ERROR_ABORT);
+        core_machine_hdc_fail(hdc, CORE_MACHINE_HDC_ERROR_ABORT);
         return 0;
     }
     cylinder = (uint16_t)hdc->data.cylinder_low |
@@ -286,7 +286,7 @@ static C_INT vm_machine_hdc_advance_chs(vm_machine_hdc *hdc)
         }
     }
     if (cylinder >= info.geometry.cylinders) {
-        vm_machine_hdc_fail(hdc, VM_MACHINE_HDC_ERROR_ID_NOT_FOUND);
+        core_machine_hdc_fail(hdc, CORE_MACHINE_HDC_ERROR_ID_NOT_FOUND);
         return 0;
     }
     hdc->data.sector_number = sector;
@@ -296,20 +296,20 @@ static C_INT vm_machine_hdc_advance_chs(vm_machine_hdc *hdc)
     return 1;
 }
 
-static C_INT vm_machine_hdc_advance_lba(vm_machine_hdc *hdc)
+static C_INT core_machine_hdc_advance_lba(core_machine_hdc *hdc)
 {
     core_machine_media_info info;
     core_machine_media_result media_result;
     uint32_t lba;
 
-    if (hdc == STD_NULL || !vm_machine_hdc_media_info(hdc, &info, &media_result) ||
+    if (hdc == STD_NULL || !core_machine_hdc_media_info(hdc, &info, &media_result) ||
         !info.present) {
-        vm_machine_hdc_fail(hdc, VM_MACHINE_HDC_ERROR_ABORT);
+        core_machine_hdc_fail(hdc, CORE_MACHINE_HDC_ERROR_ABORT);
         return 0;
     }
-    lba = vm_machine_hdc_lba(hdc) + 1u;
-    if ((STD_SIZE_T)lba >= vm_machine_hdc_sector_capacity(&info)) {
-        vm_machine_hdc_fail(hdc, VM_MACHINE_HDC_ERROR_ID_NOT_FOUND);
+    lba = core_machine_hdc_lba(hdc) + 1u;
+    if ((STD_SIZE_T)lba >= core_machine_hdc_sector_capacity(&info)) {
+        core_machine_hdc_fail(hdc, CORE_MACHINE_HDC_ERROR_ID_NOT_FOUND);
         return 0;
     }
     hdc->data.sector_number = (uint8_t)lba;
@@ -320,106 +320,106 @@ static C_INT vm_machine_hdc_advance_lba(vm_machine_hdc *hdc)
     return 1;
 }
 
-static C_INT vm_machine_hdc_advance_sector(vm_machine_hdc *hdc)
+static C_INT core_machine_hdc_advance_sector(core_machine_hdc *hdc)
 {
-    return vm_machine_hdc_lba_mode(hdc) ? vm_machine_hdc_advance_lba(hdc) :
-        vm_machine_hdc_advance_chs(hdc);
+    return core_machine_hdc_lba_mode(hdc) ? core_machine_hdc_advance_lba(hdc) :
+        core_machine_hdc_advance_chs(hdc);
 }
 
-static C_VOID vm_machine_hdc_complete_data_sector(vm_machine_hdc *hdc)
+static C_VOID core_machine_hdc_complete_data_sector(core_machine_hdc *hdc)
 {
     if (hdc == STD_NULL || hdc->data.sectors_remaining == 0u) return;
     --hdc->data.sectors_remaining;
     --hdc->data.sector_count;
 }
 
-static C_VOID vm_machine_hdc_next_read_sector(vm_machine_hdc *hdc)
+static C_VOID core_machine_hdc_next_read_sector(core_machine_hdc *hdc)
 {
     if (hdc == STD_NULL) return;
-    vm_machine_hdc_complete_data_sector(hdc);
+    core_machine_hdc_complete_data_sector(hdc);
     if (hdc->data.sectors_remaining == 0u) {
-        vm_machine_hdc_complete(hdc);
+        core_machine_hdc_complete(hdc);
         return;
     }
-    if (!vm_machine_hdc_advance_sector(hdc) || !vm_machine_hdc_load_sector(hdc)) {
+    if (!core_machine_hdc_advance_sector(hdc) || !core_machine_hdc_load_sector(hdc)) {
         return;
     }
     hdc->data.data_index = 0u;
-    vm_machine_hdc_raise_irq(hdc);
+    core_machine_hdc_raise_irq(hdc);
 }
 
-static C_VOID vm_machine_hdc_next_write_sector(vm_machine_hdc *hdc)
+static C_VOID core_machine_hdc_next_write_sector(core_machine_hdc *hdc)
 {
     if (hdc == STD_NULL) return;
-    if (!vm_machine_hdc_store_sector(hdc)) return;
-    vm_machine_hdc_complete_data_sector(hdc);
+    if (!core_machine_hdc_store_sector(hdc)) return;
+    core_machine_hdc_complete_data_sector(hdc);
     if (hdc->data.sectors_remaining == 0u) {
-        vm_machine_hdc_complete(hdc);
+        core_machine_hdc_complete(hdc);
         return;
     }
-    if (!vm_machine_hdc_advance_sector(hdc)) return;
+    if (!core_machine_hdc_advance_sector(hdc)) return;
     hdc->data.data_index = 0u;
     STD_MEMSET(hdc->data.data, 0, sizeof(hdc->data.data));
-    vm_machine_hdc_raise_irq(hdc);
+    core_machine_hdc_raise_irq(hdc);
 }
 
-static C_VOID vm_machine_hdc_execute_command(vm_machine_hdc *hdc, uint8_t command)
+static C_VOID core_machine_hdc_execute_command(core_machine_hdc *hdc, uint8_t command)
 {
     if (hdc == STD_NULL) return;
     hdc->data.last_command = command;
     ++hdc->data.command_count;
     hdc->data.error = 0u;
-    vm_machine_hdc_clear_irq(hdc);
+    core_machine_hdc_clear_irq(hdc);
     if (hdc->data.reset_asserted) return;
-    if (!vm_machine_hdc_selected_master(hdc)) {
-        vm_machine_hdc_fail(hdc, VM_MACHINE_HDC_ERROR_ABORT);
+    if (!core_machine_hdc_selected_master(hdc)) {
+        core_machine_hdc_fail(hdc, CORE_MACHINE_HDC_ERROR_ABORT);
         return;
     }
     if ((hdc->data.drive_head & 0x40u) != 0u &&
         !hdc->connect.config.lba28_supported) {
-        vm_machine_hdc_fail(hdc, VM_MACHINE_HDC_ERROR_ABORT);
+        core_machine_hdc_fail(hdc, CORE_MACHINE_HDC_ERROR_ABORT);
         return;
     }
     switch (command) {
-    case VM_MACHINE_HDC_COMMAND_IDENTIFY_DEVICE:
-        vm_machine_hdc_identify(hdc);
+    case CORE_MACHINE_HDC_COMMAND_IDENTIFY_DEVICE:
+        core_machine_hdc_identify(hdc);
         break;
-    case VM_MACHINE_HDC_COMMAND_READ_SECTORS:
-        if (!vm_machine_hdc_load_sector(hdc)) break;
-        hdc->data.phase = VM_MACHINE_HDC_PHASE_DATA_READ;
+    case CORE_MACHINE_HDC_COMMAND_READ_SECTORS:
+        if (!core_machine_hdc_load_sector(hdc)) break;
+        hdc->data.phase = CORE_MACHINE_HDC_PHASE_DATA_READ;
         hdc->data.sectors_remaining = hdc->data.sector_count == 0u ? 256u :
             hdc->data.sector_count;
         hdc->data.data_index = 0u;
-        hdc->data.status = VM_MACHINE_HDC_STATUS_DRDY | VM_MACHINE_HDC_STATUS_DSC |
-            VM_MACHINE_HDC_STATUS_DRQ;
-        vm_machine_hdc_raise_irq(hdc);
+        hdc->data.status = CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_DSC |
+            CORE_MACHINE_HDC_STATUS_DRQ;
+        core_machine_hdc_raise_irq(hdc);
         break;
-    case VM_MACHINE_HDC_COMMAND_WRITE_SECTORS:
-        if (!vm_machine_hdc_load_sector(hdc)) break;
-        hdc->data.phase = VM_MACHINE_HDC_PHASE_DATA_WRITE;
+    case CORE_MACHINE_HDC_COMMAND_WRITE_SECTORS:
+        if (!core_machine_hdc_load_sector(hdc)) break;
+        hdc->data.phase = CORE_MACHINE_HDC_PHASE_DATA_WRITE;
         hdc->data.sectors_remaining = hdc->data.sector_count == 0u ? 256u :
             hdc->data.sector_count;
         hdc->data.data_index = 0u;
-        hdc->data.status = VM_MACHINE_HDC_STATUS_DRDY | VM_MACHINE_HDC_STATUS_DSC |
-            VM_MACHINE_HDC_STATUS_DRQ;
-        vm_machine_hdc_raise_irq(hdc);
+        hdc->data.status = CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_DSC |
+            CORE_MACHINE_HDC_STATUS_DRQ;
+        core_machine_hdc_raise_irq(hdc);
         break;
     default:
-        vm_machine_hdc_fail(hdc, VM_MACHINE_HDC_ERROR_ABORT);
+        core_machine_hdc_fail(hdc, CORE_MACHINE_HDC_ERROR_ABORT);
         break;
     }
 }
 
-static type_status vm_machine_hdc_port_read(C_VOID *opaque, uint16_t port,
+static type_status core_machine_hdc_port_read(C_VOID *opaque, uint16_t port,
     uint32_t *out_value)
 {
-    vm_machine_hdc *hdc = (vm_machine_hdc *)opaque;
+    core_machine_hdc *hdc = (core_machine_hdc *)opaque;
     uint16_t word;
 
     if (hdc == STD_NULL || out_value == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     *out_value = 0u;
     if (port == hdc->connect.config.data_port) {
-        if (hdc->data.phase != VM_MACHINE_HDC_PHASE_DATA_READ ||
+        if (hdc->data.phase != CORE_MACHINE_HDC_PHASE_DATA_READ ||
             hdc->data.data_index >= sizeof(hdc->data.data)) {
             return TYPE_STATUS_OK;
         }
@@ -427,7 +427,7 @@ static type_status vm_machine_hdc_port_read(C_VOID *opaque, uint16_t port,
         *out_value = word;
         hdc->data.data_index = (uint16_t)(hdc->data.data_index + sizeof(word));
         if (hdc->data.data_index == sizeof(hdc->data.data)) {
-            vm_machine_hdc_next_read_sector(hdc);
+            core_machine_hdc_next_read_sector(hdc);
         }
         return TYPE_STATUS_OK;
     }
@@ -445,7 +445,7 @@ static type_status vm_machine_hdc_port_read(C_VOID *opaque, uint16_t port,
         *out_value = hdc->data.drive_head;
     } else if (port == hdc->connect.config.status_command_port) {
         *out_value = hdc->data.status;
-        vm_machine_hdc_clear_irq(hdc);
+        core_machine_hdc_clear_irq(hdc);
     } else if (port == hdc->connect.config.alternate_status_device_control_port) {
         *out_value = hdc->data.status;
     } else {
@@ -454,22 +454,22 @@ static type_status vm_machine_hdc_port_read(C_VOID *opaque, uint16_t port,
     return TYPE_STATUS_OK;
 }
 
-static type_status vm_machine_hdc_port_write(C_VOID *opaque, uint16_t port,
+static type_status core_machine_hdc_port_write(C_VOID *opaque, uint16_t port,
     uint32_t value)
 {
-    vm_machine_hdc *hdc = (vm_machine_hdc *)opaque;
+    core_machine_hdc *hdc = (core_machine_hdc *)opaque;
 
     if (hdc == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     if (port == hdc->connect.config.data_port) {
         uint16_t word = (uint16_t)value;
-        if (hdc->data.phase != VM_MACHINE_HDC_PHASE_DATA_WRITE ||
+        if (hdc->data.phase != CORE_MACHINE_HDC_PHASE_DATA_WRITE ||
             hdc->data.data_index >= sizeof(hdc->data.data)) {
             return TYPE_STATUS_OK;
         }
         STD_MEMCPY(&hdc->data.data[hdc->data.data_index], &word, sizeof(word));
         hdc->data.data_index = (uint16_t)(hdc->data.data_index + sizeof(word));
         if (hdc->data.data_index == sizeof(hdc->data.data)) {
-            vm_machine_hdc_next_write_sector(hdc);
+            core_machine_hdc_next_write_sector(hdc);
         }
         return TYPE_STATUS_OK;
     }
@@ -486,23 +486,23 @@ static type_status vm_machine_hdc_port_write(C_VOID *opaque, uint16_t port,
     } else if (port == hdc->connect.config.drive_head_port) {
         hdc->data.drive_head = (uint8_t)value;
     } else if (port == hdc->connect.config.status_command_port) {
-        vm_machine_hdc_execute_command(hdc, (uint8_t)value);
+        core_machine_hdc_execute_command(hdc, (uint8_t)value);
     } else if (port == hdc->connect.config.alternate_status_device_control_port) {
         uint8_t device_control = (uint8_t)value;
         type_bool reset_asserted = (device_control &
-            VM_MACHINE_HDC_DEVICE_CONTROL_SRST) != 0u;
+            CORE_MACHINE_HDC_DEVICE_CONTROL_SRST) != 0u;
 
         hdc->data.device_control = device_control;
         if (reset_asserted && !hdc->data.reset_asserted) {
             hdc->data.reset_asserted = TYPE_TRUE;
-            hdc->data.phase = VM_MACHINE_HDC_PHASE_IDLE;
+            hdc->data.phase = CORE_MACHINE_HDC_PHASE_IDLE;
             hdc->data.data_index = 0u;
             hdc->data.sectors_remaining = 0u;
             hdc->data.error = 0u;
-            hdc->data.status = VM_MACHINE_HDC_STATUS_BSY;
-            vm_machine_hdc_clear_irq(hdc);
+            hdc->data.status = CORE_MACHINE_HDC_STATUS_BSY;
+            core_machine_hdc_clear_irq(hdc);
         } else if (!reset_asserted && hdc->data.reset_asserted) {
-            vm_machine_hdc_reset(hdc);
+            core_machine_hdc_reset(hdc);
             hdc->data.device_control = device_control;
         }
     } else {
@@ -511,15 +511,15 @@ static type_status vm_machine_hdc_port_write(C_VOID *opaque, uint16_t port,
     return TYPE_STATUS_OK;
 }
 
-static const core_machine_port_provider vm_machine_hdc_ports = {
-    vm_machine_hdc_port_read,
-    vm_machine_hdc_port_write
+static const core_machine_port_provider core_machine_hdc_ports = {
+    core_machine_hdc_port_read,
+    core_machine_hdc_port_write
 };
 
-C_VOID vm_machine_hdc_connect(vm_machine_hdc *hdc,
+C_VOID core_machine_hdc_connect(core_machine_hdc *hdc,
     const core_machine_media_registry *media_registry,
     core_machine_media_id media_id,
-    t_pic *pic_master, t_pic *pic_slave, const vm_machine_hdc_config *config)
+    t_pic *pic_master, t_pic *pic_slave, const core_machine_hdc_config *config)
 {
     if (hdc == STD_NULL || config == STD_NULL) return;
     hdc->connect.media_registry = media_registry;
@@ -529,40 +529,40 @@ C_VOID vm_machine_hdc_connect(vm_machine_hdc *hdc,
     hdc->connect.config = *config;
 }
 
-C_VOID vm_machine_hdc_initialize(vm_machine_hdc *hdc)
+C_VOID core_machine_hdc_initialize(core_machine_hdc *hdc)
 {
     if (hdc == STD_NULL) return;
     STD_MEMSET(&hdc->data, 0, sizeof(hdc->data));
     core_machine_pic_irq_source_deassert(&hdc->connect.irq_source);
-    vm_machine_hdc_reset(hdc);
+    core_machine_hdc_reset(hdc);
 }
 
-C_VOID vm_machine_hdc_reset(vm_machine_hdc *hdc)
+C_VOID core_machine_hdc_reset(core_machine_hdc *hdc)
 {
     if (hdc == STD_NULL) return;
     STD_MEMSET(&hdc->data, 0, sizeof(hdc->data));
-    vm_machine_hdc_clear_irq(hdc);
-    hdc->data.status = VM_MACHINE_HDC_STATUS_DRDY | VM_MACHINE_HDC_STATUS_DSC;
+    core_machine_hdc_clear_irq(hdc);
+    hdc->data.status = CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_DSC;
 }
 
-C_VOID vm_machine_hdc_refresh(vm_machine_hdc *hdc)
+C_VOID core_machine_hdc_refresh(core_machine_hdc *hdc)
 {
     (C_VOID)hdc;
 }
 
-C_VOID vm_machine_hdc_finalize(vm_machine_hdc *hdc)
+C_VOID core_machine_hdc_finalize(core_machine_hdc *hdc)
 {
     if (hdc == STD_NULL) return;
     STD_MEMSET(&hdc->data, 0, sizeof(hdc->data));
     STD_MEMSET(&hdc->connect, 0, sizeof(hdc->connect));
 }
 
-const core_machine_port_provider *vm_machine_hdc_port_provider(C_VOID)
+const core_machine_port_provider *core_machine_hdc_port_provider(C_VOID)
 {
-    return &vm_machine_hdc_ports;
+    return &core_machine_hdc_ports;
 }
 
-type_bool vm_machine_hdc_irq_pending(const vm_machine_hdc *hdc)
+type_bool core_machine_hdc_irq_pending(const core_machine_hdc *hdc)
 {
     return hdc != STD_NULL && hdc->data.irq_pending;
 }

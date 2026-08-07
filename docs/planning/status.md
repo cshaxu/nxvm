@@ -2,7 +2,7 @@
 
 ## Current Work
 
-**M5 T278 S1: Neutral ATA PIO Controller Migration -- active.**
+**M5 T278 S2: Neutral ATA PIO Controller Migration -- active.**
 
 - **Original request:** move the now-neutral ATA PIO controller into
   `core/machine`; VM retains only PC/AT topology, frozen media policy, profile
@@ -18,6 +18,9 @@
 - **S2 admission:** move `hdc.[ch]` as one unit, store the controller in
   `core_machine`, bind it only during configuration, and have core own reset,
   refresh and teardown. All retained VM tests must use the one core instance.
+- **S2 complete:** `core_machine.shared_hdc` now holds the single ATA PIO
+  instance; composition borrows it only to bind frozen HDD media, profile
+  ports and IRQ14. Core owns its reset, scheduler refresh and destruction.
 - **S3 evidence:** a VM-free ATA fixture must bind fake media/PIC/ports and
   prove IDENTIFY or one bounded PIO transaction; retain ATA port, DOS and HDD
   boot corpus plus current gates.

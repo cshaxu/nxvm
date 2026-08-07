@@ -2,11 +2,15 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/hdc.c" hdc_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/hdc.c" hdc_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/profile/default_profile/pc_at_profile.h"
     profile_header)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/composition/session/machine_devices.c"
     devices_source)
+
+if(hdc_source MATCHES "#include[ \t]+\"vm/")
+    message(FATAL_ERROR "Core ATA PIO controller retains a VM include")
+endif()
 
 foreach(forbidden IN ITEMS "core_machine_memory_" "vm_profile_default_firmware"
     "STD_TIME(" "STD_LOCALTIME(" "GetTickCount" "QueryPerformanceCounter"
@@ -18,9 +22,9 @@ foreach(forbidden IN ITEMS "core_machine_memory_" "vm_profile_default_firmware"
     endif()
 endforeach()
 
-foreach(required IN ITEMS "vm_machine_hdc_load_lba_sector"
-    "vm_machine_hdc_store_lba_sector" "vm_machine_hdc_selected_master"
-    "VM_MACHINE_HDC_DEVICE_CONTROL_SRST" "vm_machine_hdc_clear_irq"
+foreach(required IN ITEMS "core_machine_hdc_load_lba_sector"
+    "core_machine_hdc_store_lba_sector" "core_machine_hdc_selected_master"
+    "CORE_MACHINE_HDC_DEVICE_CONTROL_SRST" "core_machine_hdc_clear_irq"
     "core_machine_pic_irq_source_assert" "core_machine_media_query"
     "core_machine_media_read_bytes" "core_machine_media_write_bytes")
     string(FIND "${hdc_source}" "${required}" position)

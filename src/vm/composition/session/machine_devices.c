@@ -10,7 +10,7 @@
 #include "core/machine/fdc.h"
 #include "vm/machine/fdd.h"
 #include "vm/machine/hdd.h"
-#include "vm/machine/hdc.h"
+#include "core/machine/hdc.h"
 
 static type_status vm_session_machine_devices_rtc_read(C_VOID *owner,
     uint16_t port, uint32_t *out_value)
@@ -145,11 +145,14 @@ C_VOID vm_session_machine_devices_initialize_fdc(vm_session *session)
 C_INT vm_session_machine_devices_initialize_hdc(vm_session *session)
 {
     const vm_profile_default_pc_at_hdc_pio *ports;
-    vm_machine_hdc_config config;
+    core_machine_hdc_config config;
+    core_machine_hdc *hdc;
     const core_machine_port_provider *provider;
 
     if (session == STD_NULL || session->profile == STD_NULL ||
         session->core_machine == STD_NULL) return 0;
+    hdc = core_machine_configuration_shared_hdc_borrow(session->core_machine);
+    if (hdc == STD_NULL) return 0;
     ports = &session->profile->hdc_pio;
     if (ports->data_port != 0x01f0u || ports->error_features_port != 0x01f1u ||
         ports->status_command_port != 0x01f7u ||
@@ -170,18 +173,18 @@ C_INT vm_session_machine_devices_initialize_hdc(vm_session *session)
         ports->alternate_status_device_control_port;
     config.irq = ports->irq;
     config.lba28_supported = ports->lba28_supported;
-    vm_machine_hdc_connect(&session->hdc, &session->media_registry,
+    core_machine_hdc_connect(hdc, &session->media_registry,
         VM_SESSION_MEDIA_HDD_ID,
         core_machine_configuration_shared_pic_master_borrow(session->core_machine),
         core_machine_configuration_shared_pic_slave_borrow(session->core_machine),
         &config);
-    vm_machine_hdc_initialize(&session->hdc);
-    provider = vm_machine_hdc_port_provider();
+    core_machine_hdc_initialize(hdc);
+    provider = core_machine_hdc_port_provider();
     return core_machine_install_port_provider(session->core_machine,
-        ports->data_port, ports->status_command_port, provider, &session->hdc) ==
+        ports->data_port, ports->status_command_port, provider, hdc) ==
         TYPE_STATUS_OK && core_machine_install_port_provider(session->core_machine,
         ports->alternate_status_device_control_port,
-        ports->alternate_status_device_control_port, provider, &session->hdc) ==
+        ports->alternate_status_device_control_port, provider, hdc) ==
         TYPE_STATUS_OK;
 }
 
@@ -201,7 +204,6 @@ C_VOID vm_session_machine_devices_refresh(vm_session *session)
     if (session == STD_NULL) return;
     vm_machine_fdd_refresh(&session->fdd);
     vm_machine_hdd_refresh(&session->hdd);
-    vm_machine_hdc_refresh(&session->hdc);
 }
 
 C_VOID vm_session_machine_devices_reset(vm_session *session)
@@ -210,14 +212,12 @@ C_VOID vm_session_machine_devices_reset(vm_session *session)
     vm_session_machine_devices_reset_cmos(session);
     vm_machine_fdd_reset(&session->fdd);
     vm_machine_hdd_reset(&session->hdd);
-    vm_machine_hdc_reset(&session->hdc);
 }
 
 C_VOID vm_session_machine_devices_finalize(vm_session *session)
 {
     if (session == STD_NULL) return;
     core_machine_rtc_finalize(&session->rtc);
-    vm_machine_hdc_finalize(&session->hdc);
     vm_machine_fdd_finalize(&session->fdd);
     vm_machine_hdd_finalize(&session->hdd);
 }

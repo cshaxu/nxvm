@@ -7,6 +7,7 @@ foreach(forbidden IN ITEMS
     "core_machine_rtc *rtc;"
     "t_fdd *fdd;"
     "core_machine_fdc fdc;"
+    "core_machine_hdc hdc;"
     "t_hdd *hdd;"
     "t_debug *debug;"
     "t_bios *default_bios;"
