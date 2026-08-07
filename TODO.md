@@ -116,6 +116,11 @@ active task.
   r/m16,r16` profile-gate mismatch; every remaining instruction family remains
   corpus-specific. This remains lower ROI than the real-mode PC/AT device
   route.
+- [ ] **Internal descriptor vocabulary cleanup (`TODO(Low)`).** Rename the
+  internal segment-descriptor field vocabulary only through a future
+  source-structure admission with an explicit caller inventory. Preserve data
+  layout, debugger-visible behavior, and CPU execution semantics; this is not
+  an instruction-family or compatibility claim.
 - [ ] **Core debug control-register mutation contract (`TODO(Medium)`).**
   `vm/composition/session/debug_target.c` still directly writes `CR0`--`CR4`
   through the debugger borrow. This is not a guest execution path, but it can
