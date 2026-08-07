@@ -32,4 +32,23 @@ companions, not additional design authorities.
 - History explains why a decision occurred but cannot override architecture,
   requirements, roadmap, policy, or active status.
 
+## Current-State And Closure Discipline
+
+`planning/status.md` is the sole authority for the current active state,
+current technical baseline, selected artifact target, artifact hash, and test
+count. History records closure-time facts only; it must label them as archived
+and link to status rather than claim to be current. The M5 queue contains only
+unstarted tasks, and `TODO.md` contains only open debt or long-horizon gaps.
+
+An active task packet lives only in `status.md`. A closed task packet is
+removed in its closure commit after a compact history summary is recorded; the
+Git commit remains its detailed evidence. `docs/planning/m5-t*.md` is not a
+permanent record location.
+
+Every closure, including standalone `Td` work, runs
+`tools/Verify-DocumentationGovernance.ps1`. The checker enforces the single
+status baseline, idle-state packet exclusion, retired M5 task-record absence,
+queue/history vocabulary boundaries, current CMake artifact-target agreement,
+and mojibake rejection.
+
 See [Historical Summaries](history/README.md) for retrieval of retired detail.
