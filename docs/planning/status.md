@@ -2,7 +2,29 @@
 
 ## Current Work
 
-**Idle.** T282 is closed; admit T283 only through a new approved packet.
+**M5 T283 S1: Core Controller Media-I/O Corpus Contract -- active.**
+
+- **Original request:** extend VM-free core FDC/ATA fixtures so they execute
+  real provider query/read/write and applicable format/flush operations;
+  verify typed absent/short/read-only/read-write failures, generation change,
+  and frozen-registry rebind rejection without new controller commands or
+  test-only runtime paths.
+- **S1 deliverable:** inventory current core FDC/HDC fixture provider usage and
+  controller-visible result mapping; freeze a compact fake provider corpus with
+  real callback counters/data and each required typed failure. **Complete:**
+  FDC currently proves only `SPECIFY`; HDC proves only `IDENTIFY` plus one
+  read callback.  The media contract is all-or-typed-failure, so “short I/O”
+  means the existing `invalid-range` rejection, not a new partial-transfer API.
+- **S2/S3:** add only owner-built fixture evidence, run focused and retained DOS
+  regressions, then build `nxvm_0_5_0283.exe`, record SHA-256, and close.
+- **Rules:** core controllers continue through frozen `core_machine_media`
+  bindings only. No VM/firmware shortcut, topology change, new ATA/FDC command,
+  or second media route is in scope.
+- **Similar-issue sweep:** inspect all FDC/HDC provider calls and existing core
+  fixtures for fake success paths, ignored result kinds, generation caching, or
+  mutable registry rebinds.
+- **Stop:** stop if a needed assertion requires VM media backing, a controller
+  command-family expansion, dynamic topology, or a test-only execution loop.
 
 ## Current Technical Baseline
 
