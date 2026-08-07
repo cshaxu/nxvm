@@ -39,6 +39,7 @@
 #define _SetExcept_BR(n) (TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_BR), instruction_state.data.excode = (n), STD_PRINTF("#BR(%x) - boundary\n", instruction_state.data.excode))
 #define _SetExcept_TS(n) (TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_TS), instruction_state.data.excode = (n), STD_PRINTF("#TS(%x) - task state\n", instruction_state.data.excode))
 #define _SetExcept_NM(n) (TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_NM), instruction_state.data.excode = (n), STD_PRINTF("#NM(%x) - coprocessor not available\n", instruction_state.data.excode))
+#define _SetExcept_MF(n) (TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_MF), instruction_state.data.excode = (n), STD_PRINTF("#MF(%x) - x87 floating point error\n", instruction_state.data.excode))
 #define _SetExcept_FPU_UNSUPPORTED(n) (TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_FPU_UNSUPPORTED), instruction_state.data.excode = (n), STD_PRINTF("FPU(%x) - configured model is not implemented\n", instruction_state.data.excode))
 #define _SetExcept_CE(n) (TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_CE), instruction_state.data.excode = (n), STD_PRINTF("#CE(%x) - internal error\n", instruction_state.data.excode))
 
@@ -6039,9 +6040,12 @@ static C_VOID UndefinedOpcode(core_machine_cpu_execution_context *context)
 static C_VOID FPU_ESCAPE(core_machine_cpu_execution_context *context)
 {
     core_machine_fpu_escape_action action;
+    core_machine_fpu_execute_result result;
     core_machine_cpu_instruction_metadata metadata;
+    core_machine_fpu_operation_metadata fpu_metadata;
     type_unsigned_8 escape_opcode;
     type_unsigned_8 modrm;
+    uint32_t fpu_m32;
 
     TYPE_TRACE_CALL_BEGIN("FPU_ESCAPE");
     TYPE_TRACE_CHECK_RETURN(_s_read_cs(context, cpu_state.data.eip,
@@ -6066,6 +6070,47 @@ static C_VOID FPU_ESCAPE(core_machine_cpu_execution_context *context)
         if (action == CORE_MACHINE_FPU_ESCAPE_UNSUPPORTED)
         {
             TYPE_TRACE_CHECK_RETURN(_SetExcept_FPU_UNSUPPORTED(0));
+        }
+        else if (context->fpu != STD_NULL &&
+            context->fpu->profile == CORE_MACHINE_FPU_PROFILE_8087)
+        {
+            fpu_metadata = core_machine_fpu_operation_metadata_get(escape_opcode, modrm);
+            result = CORE_MACHINE_FPU_EXECUTE_COMPLETED;
+            switch (fpu_metadata.operation)
+            {
+            case CORE_MACHINE_FPU_OPERATION_FNINIT:
+                core_machine_fpu_reset(context->fpu);
+                break;
+            case CORE_MACHINE_FPU_OPERATION_FLD_M32:
+                TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 4));
+                result = core_machine_fpu_load_m32(context->fpu,
+                    TYPE_MASK_UNSIGNED_32(instruction_state.data.crm));
+                break;
+            case CORE_MACHINE_FPU_OPERATION_FSTP_M32:
+                result = core_machine_fpu_store_m32(context->fpu, &fpu_m32);
+                if (result == CORE_MACHINE_FPU_EXECUTE_COMPLETED) {
+                    instruction_state.data.crm = fpu_m32;
+                    TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 4));
+                }
+                break;
+            case CORE_MACHINE_FPU_OPERATION_FLDCW_M16:
+                TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+                core_machine_fpu_load_control_word(context->fpu,
+                    TYPE_MASK_UNSIGNED_16(instruction_state.data.crm));
+                break;
+            case CORE_MACHINE_FPU_OPERATION_FADD_ST0_STI:
+            case CORE_MACHINE_FPU_OPERATION_FMUL_ST0_STI:
+            case CORE_MACHINE_FPU_OPERATION_FSUB_ST0_STI:
+            case CORE_MACHINE_FPU_OPERATION_FDIV_ST0_STI:
+                result = core_machine_fpu_binary_st0_sti(context->fpu,
+                    fpu_metadata.operation, (uint8_t)(modrm & 7u));
+                break;
+            default:
+                result = CORE_MACHINE_FPU_EXECUTE_UNSUPPORTED;
+                break;
+            }
+            if (result == CORE_MACHINE_FPU_EXECUTE_UNSUPPORTED)
+                TYPE_TRACE_CHECK_RETURN(_SetExcept_FPU_UNSUPPORTED(0));
         }
     }
     TYPE_TRACE_CALL_END;
@@ -10261,6 +10306,12 @@ static C_VOID WAIT(core_machine_cpu_execution_context *context)
     {
         TYPE_TRACE_BLOCK_BEGIN("CR0_TS_AND_MP(1)");
         TYPE_TRACE_CHECK_RETURN(_SetExcept_NM(0));
+        TYPE_TRACE_BLOCK_END;
+    }
+    else if (core_machine_fpu_wait_pending(context->fpu))
+    {
+        TYPE_TRACE_BLOCK_BEGIN("FPU_PENDING(1)");
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_MF(0));
         TYPE_TRACE_BLOCK_END;
     }
     TYPE_TRACE_CALL_END;

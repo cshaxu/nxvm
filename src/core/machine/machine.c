@@ -470,6 +470,14 @@ type_status core_machine_get_fpu_profile(
     return TYPE_STATUS_OK;
 }
 
+type_status core_machine_get_fpu_state(
+    const core_machine *machine, core_machine_fpu_state *out_state)
+{
+    if (machine == STD_NULL || out_state == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    core_machine_fpu_get_state(&machine->fpu, out_state);
+    return TYPE_STATUS_OK;
+}
+
 type_status core_machine_get_memory_bytes(
     const core_machine *machine, STD_SIZE_T *out_memory_bytes)
 {
