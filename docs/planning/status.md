@@ -10,6 +10,17 @@
 - **S1 deliverable:** inventory every ATA/HDC direct backing access, freeze the
   provider/config surface, and define the core and DOS regressions required
   before any behavior change.
+- **S1 complete:** `vm_machine_hdc` directly dereferences `t_hdd` only for
+  CHS/LBA capacity, present/read-only checks, copied sector reads/writes, and
+  IDENTIFY geometry. T277 replaces those with frozen registry query/read/write
+  operations under the HDD identity; error/result/IRQ14 behavior remains the
+  retained controller behavior. HDC stays VM-owned until T278.
+- **S2 admission:** add registry/id to the HDC connection, remove `t_hdd`
+  includes and direct storage access, and preserve the current CHS, LBA28,
+  count-zero, SRST, status-read acknowledgement, and PIO data paths.
+- **S3 evidence:** core media-provider negative cases plus retained HDC port,
+  ATA DOS read/write, HDD boot, and current gates. The static gate must reject
+  a direct `t_hdd` dependency in HDC.
 - **Rules:** core continues to own RAM/PIC/time; VM machine owns ATA protocol
   until T278. Do not add ATA DMA, host I/O, new commands, or a second media
   route.
