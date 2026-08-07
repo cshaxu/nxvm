@@ -54,11 +54,24 @@ typedef struct core_machine_clock_plan {
     core_machine_clock_ratio provider;
 } core_machine_clock_plan;
 
+/* Level 2 costs are relative to one completed executor refresh. Zero keeps the
+ * legacy ticks_per_instruction base and disables the corresponding surcharge. */
+typedef struct core_machine_instruction_timing {
+    uint32_t base_ticks;
+    uint32_t prefix_surcharge;
+    uint32_t taken_branch_surcharge;
+    uint32_t data_memory_surcharge;
+    uint32_t io_surcharge;
+    uint32_t rep_iteration_surcharge;
+} core_machine_instruction_timing;
+
 typedef struct core_machine_config {
     STD_SIZE_T memory_bytes;
     core_machine_cpu_profile cpu_profile;
     core_machine_fpu_profile fpu_profile;
+    /* Compatibility base-cost shorthand when instruction_timing.base_ticks is 0. */
     uint32_t ticks_per_instruction;
+    core_machine_instruction_timing instruction_timing;
     core_machine_clock_plan clock_plan;
     uint32_t kbc_typematic_initial_ticks;
     uint32_t kbc_typematic_repeat_ticks;

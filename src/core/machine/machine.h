@@ -83,7 +83,8 @@ struct core_machine {
     STD_ATOMIC_BOOL stop_requested;
     uint32_t fault_detail;
     uint64_t elapsed_ticks;
-    uint32_t ticks_per_instruction;
+    core_machine_instruction_timing instruction_timing;
+    uint64_t maximum_instruction_ticks;
     core_machine_clock_domain dma_clock;
     core_machine_clock_domain pit_clock;
     core_machine_clock_domain vadp_clock;
