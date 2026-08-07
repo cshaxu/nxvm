@@ -61,6 +61,7 @@
         "verify-cmos-rtc-boundary",
         "verify-rational-clock-boundary",
         "verify-ata-pio-feature-boundary",
+        "verify-hdd-legacy-api-closure",
         "verify-core-utils-boundary",
         "verify-cancellable-wait-boundary",
         "verify-vm-composition-lifecycle"

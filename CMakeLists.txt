@@ -1422,6 +1422,13 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         VERBATIM)
     add_dependencies(run-current-smokes verify-ata-pio-feature-boundary)
 
+    add_custom_target(verify-hdd-legacy-api-closure
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_hdd_legacy_api_closure.cmake"
+        COMMENT "Verifying obsolete HDD transfer API closure"
+        VERBATIM)
+    add_dependencies(run-current-smokes verify-hdd-legacy-api-closure)
+
     add_custom_target(verify-core-utils-boundary
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_core_utils_boundary.cmake"

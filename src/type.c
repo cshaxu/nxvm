@@ -33,9 +33,6 @@ C_INT STD_SNPRINTF(C_CHAR *_Dest, STD_SIZE_T _Size, const C_CHAR *_Format, ...) 
         if (_Dest != STD_NULL && _Size != 0u) {
             _Dest[0] = '\0';
         }
-        if (_Dest != STD_NULL && _Size != 0u) {
-            _Dest[0] = '\0';
-        }
         return -1;
     }
     va_start(arg_ptr, _Format);
@@ -56,10 +53,6 @@ C_INT STD_SNPRINTF_APPEND(C_CHAR **_Cursor, STD_SIZE_T *_Remaining,
     STD_VA_LIST arg_ptr;
     if (_Cursor == STD_NULL || _Remaining == STD_NULL || _Format == STD_NULL ||
         (*_Remaining != 0u && *_Cursor == STD_NULL)) {
-        if (_Cursor != STD_NULL && _Remaining != STD_NULL && *_Cursor != STD_NULL &&
-            *_Remaining != 0u) {
-            (*_Cursor)[0] = '\0';
-        }
         if (_Cursor != STD_NULL && _Remaining != STD_NULL && *_Cursor != STD_NULL &&
             *_Remaining != 0u) {
             (*_Cursor)[0] = '\0';

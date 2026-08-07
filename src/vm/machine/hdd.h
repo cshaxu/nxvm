@@ -10,8 +10,6 @@ extern "C" {
 #include "type.h"
 #include "core/machine/media_interface.h"
 
-typedef struct t_latch t_latch;
-
 #define VM_MACHINE_DEVICE_HDD "Unknown Hard Disk Drive"
 
 typedef struct {
@@ -30,8 +28,6 @@ typedef struct {
     type_bool flagDiskExist; /* flag of floppy disk existance */
 
     type_virtual_address pImgBase;   /* pointer to disk in ram */
-    type_virtual_address pCurrByte;  /* pointer to current byte */
-    type_unsigned_16 transCount; /* number of transfer bytes */
     STD_SIZE_T raw_byte_count; /* exact bytes read from the backing image */
     STD_SIZE_T virtual_byte_count; /* guest-visible rounded sector capacity */
     type_bool flagPaddingWritten; /* persistence must materialize tail padding */
@@ -46,10 +42,6 @@ typedef struct {
 #define VHDD_BYTE_PER_MB (1 << 20)
 
 STD_SIZE_T vm_machine_hdd_image_size(const t_hdd *hdd);
-C_VOID vm_machine_hdd_set_pointer(t_hdd *hdd);
-C_VOID vm_machine_hdd_transfer_read(t_hdd *hdd, t_latch *latch);
-C_VOID vm_machine_hdd_transfer_write(t_hdd *hdd, t_latch *latch);
-C_VOID vm_machine_hdd_format_track(t_hdd *hdd, type_unsigned_8 fill_byte);
 C_VOID vm_machine_hdd_initialize(t_hdd *hdd);
 C_VOID vm_machine_hdd_reset(t_hdd *hdd);
 C_VOID vm_machine_hdd_refresh(t_hdd *hdd);
