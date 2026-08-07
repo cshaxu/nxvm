@@ -268,6 +268,7 @@ typedef type_signed_32 type_native_signed;
     C_INT STD_SNPRINTF_APPEND(C_CHAR **_Cursor, STD_SIZE_T *_Remaining,
         const C_CHAR *_Format, ...);
     STD_FILE *STD_FOPEN(const C_CHAR *_Filename, const C_CHAR *_Mode);
+    STD_FILE *STD_FOPEN_EXCLUSIVE_WRITE(const C_CHAR *_Filename);
     C_INT STD_FCLOSE(STD_FILE *_File);
     STD_SIZE_T STD_FREAD(C_VOID *_DstBuf, STD_SIZE_T _ElementSize, STD_SIZE_T _Count, STD_FILE *_File);
     STD_SIZE_T STD_FWRITE(const C_VOID *_Buffer, STD_SIZE_T _Size, STD_SIZE_T _Count, STD_FILE *_File);
@@ -281,6 +282,7 @@ typedef type_signed_32 type_native_signed;
     C_INT STD_FPUTS(const C_CHAR *_String, STD_FILE *_File);
     C_INT STD_FEOF(STD_FILE *_File);
     C_INT STD_REMOVE(const C_CHAR *_Filename);
+    C_INT STD_RENAME_REPLACE(const C_CHAR *_Source, const C_CHAR *_Destination);
     C_INT STD_ATOI(const C_CHAR *_String);
     STD_TIME_T STD_TIME(STD_TIME_T *_Time);
     C_VOID *STD_CALLOC(STD_SIZE_T _Count, STD_SIZE_T _Size);

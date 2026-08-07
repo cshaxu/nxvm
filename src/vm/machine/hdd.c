@@ -7,6 +7,7 @@
 
 
 #include "vm/machine/hdd.h"
+#include "vm/machine/media_save.h"
 
 static core_machine_media_result vm_machine_hdd_media_query(C_VOID *context,
     core_machine_media_info *out_info)
@@ -284,22 +285,13 @@ C_INT vm_machine_hdd_insert(t_hdd *hdd, const C_CHAR *file_name) {
 }
 C_INT vm_machine_hdd_remove(t_hdd *hdd, const C_CHAR *file_name) {
     STD_SIZE_T persistence_byte_count;
-    STD_FILE *image;
     if (hdd == STD_NULL) return TYPE_TRUE;
     if (file_name) {
-        image = STD_FOPEN(file_name, "wb");
-        if (image == STD_NULL) {
-            return TYPE_TRUE;
-        }
         persistence_byte_count = hdd->connect.flagPaddingWritten ?
             hdd->connect.virtual_byte_count : hdd->connect.raw_byte_count;
-        if (!hdd->connect.flagReadOnly &&
-            STD_FWRITE((C_VOID *)hdd->connect.pImgBase, sizeof(type_unsigned_8),
-                persistence_byte_count, image) != persistence_byte_count) {
-            (C_VOID)STD_FCLOSE(image);
-            return TYPE_TRUE;
-        }
-        if (STD_FCLOSE(image) != 0) {
+        if (!hdd->connect.flagReadOnly && vm_machine_media_save_atomically(file_name,
+                (const C_VOID *)hdd->connect.pImgBase,
+                persistence_byte_count) != TYPE_FALSE) {
             return TYPE_TRUE;
         }
         if (hdd->connect.flagPaddingWritten) {

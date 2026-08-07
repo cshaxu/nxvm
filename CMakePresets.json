@@ -62,6 +62,7 @@
         "verify-rational-clock-boundary",
         "verify-ata-pio-feature-boundary",
         "verify-hdd-legacy-api-closure",
+        "verify-vm-media-atomic-save",
         "verify-core-utils-boundary",
         "verify-cancellable-wait-boundary",
         "verify-vm-composition-lifecycle"

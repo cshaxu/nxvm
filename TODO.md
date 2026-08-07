@@ -85,7 +85,8 @@ active task.
   later M5 admission may add an opaque paged file/sparse backend for native
   files, OPFS, IndexedDB, or an already-populated WASM cache, with atomic
   persistence, generation/error mapping, cache ownership, and ATA's visible
-  LBA28 subset. The current media-provider callback is synchronous: an HTTP
+  LBA28 subset; guest access beyond that subset also requires separately
+  admitted LBA48. The current media-provider callback is synchronous: an HTTP
   Range cache miss must not block or mutate guest state from a host callback;
   it requires a separately admitted pending-I/O/controller-ready/IRQ timing
   model. Do not add an unconsumed generic filesystem API.

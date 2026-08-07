@@ -484,7 +484,10 @@ candidate allocation or host-read/close failure discards the candidate and
 leaves the old bytes, geometry, read-only state, cursor, presence, and
 generation published; it must not leave a half-commit. Explicit persistence
 (`remove/save`) writes and closes the requested output before it changes any
-published media field, so write/close failure retains the mounted medium. FDD
+published media field, so write/close failure retains the mounted medium.
+Persistence creates one uniquely named, exclusively created temporary sibling;
+it never truncates or removes an existing temporary candidate it did not create.
+FDD
 retains its admitted fixed geometry. HDD accepts any **non-sector-aligned raw
 length within the admitted in-memory and LBA28 capacity**; its guest-visible virtual capacity is
 `ceil(raw_bytes / 512) * 512`, tail reads zero-fill, and a write into virtual

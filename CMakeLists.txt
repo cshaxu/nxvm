@@ -315,6 +315,7 @@ set(VM_COMPOSITION_SOURCES
 set(VM_MACHINE_SOURCES
     src/vm/machine/fdd.c
     src/vm/machine/hdd.c
+    src/vm/machine/media_save.c
     src/vm/machine/debug.c
 )
 set(CORE_MACHINE_SOURCES
@@ -1428,6 +1429,13 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMENT "Verifying obsolete HDD transfer API closure"
         VERBATIM)
     add_dependencies(run-current-smokes verify-hdd-legacy-api-closure)
+
+    add_custom_target(verify-vm-media-atomic-save
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_vm_media_atomic_save.cmake"
+        COMMENT "Verifying VM media save failure preservation"
+        VERBATIM)
+    add_dependencies(run-current-smokes verify-vm-media-atomic-save)
 
     add_custom_target(verify-core-utils-boundary
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}

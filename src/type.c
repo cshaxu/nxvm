@@ -2,6 +2,16 @@
 
 #include "type.h"
 
+#ifdef _WIN32
+#include <windows.h>
+#include <fcntl.h>
+#include <io.h>
+#include <sys/stat.h>
+#else
+#include <fcntl.h>
+#include <unistd.h>
+#endif
+
 struct tm* STD_LOCALTIME(const STD_TIME_T *_Time) { return localtime(_Time); }
 C_CHAR* STD_STRCAT(C_CHAR *_Dest, const C_CHAR *_Source) { return strcat(_Dest, _Source); }
 C_CHAR* STD_STRCPY(C_CHAR *_Dest, const C_CHAR *_Source) { return strcpy(_Dest, _Source); }
@@ -77,6 +87,29 @@ C_INT STD_SNPRINTF_APPEND(C_CHAR **_Cursor, STD_SIZE_T *_Remaining,
 }
 
 STD_FILE* STD_FOPEN(const C_CHAR *_Filename, const C_CHAR *_Mode) { return fopen(_Filename, _Mode); }
+STD_FILE* STD_FOPEN_EXCLUSIVE_WRITE(const C_CHAR *_Filename) {
+    STD_FILE *file;
+    C_INT descriptor;
+    if (_Filename == STD_NULL) return STD_NULL;
+#ifdef _WIN32
+    descriptor = _open(_Filename, _O_WRONLY | _O_CREAT | _O_EXCL | _O_BINARY,
+        _S_IREAD | _S_IWRITE);
+    if (descriptor < 0) return STD_NULL;
+    file = _fdopen(descriptor, "wb");
+#else
+    descriptor = open(_Filename, O_WRONLY | O_CREAT | O_EXCL, 0600);
+    if (descriptor < 0) return STD_NULL;
+    file = fdopen(descriptor, "wb");
+#endif
+    if (file != STD_NULL) return file;
+#ifdef _WIN32
+    (C_VOID)_close(descriptor);
+#else
+    (C_VOID)close(descriptor);
+#endif
+    (C_VOID)remove(_Filename);
+    return STD_NULL;
+}
 C_INT STD_FCLOSE(STD_FILE *_File) { return fclose(_File); }
 STD_SIZE_T STD_FREAD(C_VOID *_DstBuf, STD_SIZE_T _ElementSize, STD_SIZE_T _Count, STD_FILE *_File) { return fread(_DstBuf, _ElementSize, _Count, _File); }
 STD_SIZE_T STD_FWRITE(const C_VOID *_Buffer, STD_SIZE_T _Size, STD_SIZE_T _Count, STD_FILE *_File) { return fwrite(_Buffer, _Size, _Count, _File); }
@@ -102,6 +135,15 @@ C_INT STD_FPUTC(C_INT _Character, STD_FILE *_File) { return fputc(_Character, _F
 C_INT STD_FPUTS(const C_CHAR *_String, STD_FILE *_File) { return fputs(_String, _File); }
 C_INT STD_FEOF(STD_FILE *_File) { return feof(_File); }
 C_INT STD_REMOVE(const C_CHAR *_Filename) { return remove(_Filename); }
+C_INT STD_RENAME_REPLACE(const C_CHAR *_Source, const C_CHAR *_Destination) {
+    if (_Source == STD_NULL || _Destination == STD_NULL) return -1;
+#ifdef _WIN32
+    return MoveFileExA(_Source, _Destination,
+        MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH) ? 0 : -1;
+#else
+    return rename(_Source, _Destination);
+#endif
+}
 C_INT STD_ATOI(const C_CHAR *_String) { return atoi(_String); }
 STD_TIME_T STD_TIME(STD_TIME_T *_Time) { return time(_Time); }
 C_VOID* STD_CALLOC(STD_SIZE_T _Count, STD_SIZE_T _Size) { return calloc(_Count, _Size); }

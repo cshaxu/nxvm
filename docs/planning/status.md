@@ -2,16 +2,16 @@
 
 ## Current Work
 
-**Idle.** M5 Td S36 recorded the WASM media-backing admission boundary; admit
-T284 only through a new approved packet.
+**Idle.** T283 is closed; admit T284 only through a new approved packet.
 
 ## Current Technical Baseline
 
 - **T283 artifact identity:** `current-gcc` and
-  `verify-current-artifact-target` select `vm-0-5-0283`. S2 media evidence and
-  S4 HDD legacy-API closure passed; 42 static/governance gates and 110/110
-  CTest passed. Artifact `nxvm_0_5_0283.exe` SHA-256:
-  `A52B045DFF09CE37989267023D5AFDA43CA9CEDBED7AB0DDCD4DA32E370CEA17`.
+  `verify-current-artifact-target` select `vm-0-5-0283`. S2 media evidence,
+  S4 HDD legacy-API closure, and S6 atomic-save preservation passed; 42
+  static/governance gates and 110/110 CTest passed. Artifact
+  `nxvm_0_5_0283.exe` SHA-256:
+  `81CF4D6646C2B38A781F0D58B3FBAB29505D8EFE919A6375D35FA53DA83F9736`.
 - **Core boundary:** T243--T246 retain checked physical memory, bounded `#UD`
   transitions, immutable ROM mapping, and atomic real-mode entry plans.
 - **Product boundary:** `nxvm.exe` is the retained runnable product. `mantle`,
@@ -29,7 +29,7 @@ T284 only through a new approved packet.
 | T280 | Made FDD/HDD candidate replacement atomic; HDD now preserves arbitrary raw byte length through virtual sector capacity, zero tail reads, and padded-tail persistence. |
 | T281 | Renamed the sole core controller owners and configuration borrows from historical `shared_*` names to `fdc/hdc`, with no alias or behavior change. |
 | T282 | Moved native window/console handle ownership from core to VM platform while preserving copied core input, presentation, and wait contracts. |
-| T283 | Extended VM-free controller media evidence, then removed unused unsafe HDD CHS transfer state, corrected its capacity contract, and closed the regression class with a static gate. |
+| T283 | Extended VM-free controller media evidence, removed unsafe HDD CHS transfer state, and made FDD/HDD persistence collision-safe and failure-preserving. |
 
 Detailed contracts, commands, artifact provenance, and prior closures are in
 [M5 History](../history/m5.md) and Git history. The [M5 convergence queue]
