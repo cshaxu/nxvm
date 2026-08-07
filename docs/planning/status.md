@@ -2,42 +2,16 @@
 
 ## Current Work
 
-**M5 T283 S2: Core Controller Media-I/O Fixture Evidence -- active.**
-
-- **Original request:** extend VM-free core FDC/ATA fixtures so they execute
-  real provider query/read/write and applicable format/flush operations;
-  verify typed absent/short/read-only/read-write failures, generation change,
-  and frozen-registry rebind rejection without new controller commands or
-  test-only runtime paths.
-- **S1 deliverable:** inventory current core FDC/HDC fixture provider usage and
-  controller-visible result mapping; freeze a compact fake provider corpus with
-  real callback counters/data and each required typed failure. **Complete:**
-  FDC currently proves only `SPECIFY`; HDC proves only `IDENTIFY` plus one
-  read callback.  The media contract is all-or-typed-failure, so “short I/O”
-  means the existing `invalid-range` rejection, not a new partial-transfer API.
-- **S2 deliverable:** extend only the existing VM-free FDC/HDC smokes.  FDC
-  now drives non-DMA read/write/format through its frozen provider; HDC now
-  drives PIO read/write.  Both record copied callback data, typed failures,
-  generation observation, and post-freeze rebind rejection. **Complete:** the
-  focused markers `M5:T283:S2:CORE-FDC-MEDIA:OK` and
-  `M5:T283:S2:CORE-HDC-MEDIA:OK` pass.
-- **S3:** run focused and retained DOS regressions, then build
-  `nxvm_0_5_0283.exe`, record SHA-256, and close.
-- **Rules:** core controllers continue through frozen `core_machine_media`
-  bindings only. No VM/firmware shortcut, topology change, new ATA/FDC command,
-  or second media route is in scope.
-- **Similar-issue sweep:** inspect all FDC/HDC provider calls and existing core
-  fixtures for fake success paths, ignored result kinds, generation caching, or
-  mutable registry rebinds.
-- **Stop:** stop if a needed assertion requires VM media backing, a controller
-  command-family expansion, dynamic topology, or a test-only execution loop.
+**Idle.** T283 is closed; admit T284 only through a new approved packet.
 
 ## Current Technical Baseline
 
-- **T282 artifact identity:** `current-gcc` and
-  `verify-current-artifact-target` select `vm-0-5-0282`; focused host-surface
-  and full gate evidence are retained. Artifact `nxvm_0_5_0282.exe` SHA-256:
-  `F967C5E2766000200BD8E40A220E448D6CBE0E1E6756403A06892955240632F4`.
+- **T283 artifact identity:** `current-gcc` and
+  `verify-current-artifact-target` select `vm-0-5-0283`. Focused markers
+  `M5:T283:S2:CORE-FDC-MEDIA:OK` and `M5:T283:S2:CORE-HDC-MEDIA:OK`, 41
+  static/governance gates, and 110/110 CTest passed. Artifact
+  `nxvm_0_5_0283.exe` SHA-256:
+  `7C2968397F2AB853FDC32198803A0E4B166B6FAE864DCA8BBF2174F322A376E6`.
 - **Core boundary:** T243--T246 retain checked physical memory, bounded `#UD`
   transitions, immutable ROM mapping, and atomic real-mode entry plans.
 - **Product boundary:** `nxvm.exe` is the retained runnable product. `mantle`,
@@ -66,6 +40,8 @@
 | T279 | Retired unbounded C formatting; source gate and corpus now enforce bounded output and explicit append capacity. |
 | T280 | Made FDD/HDD candidate replacement atomic; HDD now preserves arbitrary raw byte length through virtual sector capacity, zero tail reads, and padded-tail persistence. |
 | T281 | Renamed the sole core controller owners and configuration borrows from historical `shared_*` names to `fdc/hdc`, with no alias or behavior change. |
+| T282 | Moved native window/console handle ownership from core to VM platform while preserving copied core input, presentation, and wait contracts. |
+| T283 | Extended only VM-free controller fixtures: FDC now proves non-DMA read/write/format and ATA proves PIO read/write, typed failures, frozen binding, and generation observation. |
 
 Detailed contracts, commands, artifact provenance, and prior closures are in
 [M5 History](../history/m5.md) and Git history. The [M5 convergence queue]

@@ -79,10 +79,6 @@ active task.
 - [x] **T279 bounded C formatting.** `STD_SPRINTF`/`vsprintf` are retired;
   owned capacities and cursor/remaining append semantics are enforced by a
   source gate and corpus without changing debugger or Console text.
-- [ ] **M5 reliability evidence (`TODO(High)`, T283).** T280 closed atomic
-  media replacement, T281 normalized controller owner names, and T282 moved
-  native host-surface ownership into VM platform. Make VM-free controller
-  fixtures execute real media I/O/failure paths before T284 EGA/VGA work.
 - [ ] **Complete digital CGA (`TODO(Medium)`).** Keep it separate from EGA/VGA.
   T254 admitted `640x200x2`; T266 closes the bounded 6845 text subset:
   display-start/page, cursor address/shape/hidden state, and deterministic
