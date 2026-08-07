@@ -37,7 +37,6 @@ original identifiers.
 
 | Task | Owner and purpose | Dependency and stop condition |
 | --- | --- | --- |
-| T277 | Decouple the existing ATA/HDC controller from `t_hdd`: use the T270 media provider for present/read-only/range/failure behavior and make all port/IRQ/master-slave choices explicit configuration. | T270--T272. Do not add ATA DMA, new commands, host I/O, or profile defaults in core. |
 | T278 | Move the now-neutral ATA PIO controller into `core/machine` and rewire the default PC/AT composition/profile adapter to retain IDE topology, image policy, boot/firmware policy, and UI only. | T277. Use `git mv`; preserve ATA PIO and HDD boot corpus, and add a core-only fixture. |
 
 ### B. Machine Foundation And Hardware Timing

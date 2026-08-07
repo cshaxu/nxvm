@@ -150,6 +150,8 @@ C_INT main(C_VOID)
             &session->hdd ||
         session->media_registry.bindings[VM_SESSION_MEDIA_HDD_ID - 1u].provider !=
             vm_machine_hdd_media_provider() ||
+        session->hdc.connect.media_registry != &session->media_registry ||
+        session->hdc.connect.media_id != VM_SESSION_MEDIA_HDD_ID ||
         session->hdc.connect.irq_source.master == STD_NULL ||
         session->hdc.connect.irq_source.slave == STD_NULL ||
         !vm_hdc_write(session->core_machine, HDC_STATUS_COMMAND_PORT, 0xecu) ||
