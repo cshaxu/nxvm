@@ -31,37 +31,45 @@ understood; `T274` waited for T270, T271, and T273. Task-created registered
 temporary media, traces, and logs may be cleaned by their task; generic build
 trees, `build/output`, and user files are never cleanup targets.
 
-The already-planned queue is renumbered, not discarded: former T270--T278 are
-now T279--T287 respectively. Historical completed task records retain their
-original identifiers.
+The boundary migration consumed T270--T278. The pre-migration future queue
+that formerly began at T270 was first displaced to T279--T287; this approved
+reliability and interface package consumes T279--T283, so that older queue now
+begins at T284. Historical completed task records retain their original
+identifiers.
+
+### B. Reliability And Contract Evidence
 
 | Task | Owner and purpose | Dependency and stop condition |
 | --- | --- | --- |
-### B. Machine Foundation And Hardware Timing
+| T279 | Retire unbounded `STD_SPRINTF`/`vsprintf`: audit all formatter callers, use length-aware `STD_SNPRINTF`, and freeze truncation/NUL/error behavior. | No text/UX change except preventing a pre-existing overflow. Stop if a caller lacks an owned buffer capacity. |
+| T280 | Make FDD/HDD media replacement atomic and admit arbitrary-length raw HDD images. HDD virtual capacity is `ceil(raw_bytes / 512) * 512`; tail reads zero-fill and tail writes persist a complete sector. | Preserve old media on all failure. FDD retains its admitted fixed geometry. No ATA command expansion or hidden truncation. |
+| T281 | Rename `core_machine.shared_fdc/shared_hdc` and their borrow APIs to session-owned `fdc/hdc` names. | Naming only: no lifecycle, route, controller, or media behavior change. |
+| T282 | Admit the canonical policy-free `core/platform` file/directory/stream/sampled-clock/input interface family, reusing T271 backing-resource, input, and wait/cancellation surfaces rather than creating parallel facilities. | Contracts/fake providers only where no concrete provider is required. No DOS path, mount, UI, guest-time, or native-handle API. |
+| T283 | Extend VM-free core FDC/ATA fixtures to execute provider media I/O and typed-failure mapping, including registry freeze/rebind rejection and generation observation. | T280--T282. No new controller command family, dynamic topology, or test-only runtime route. |
 
 ### C. Windows 3.x Display And Storage Prerequisites
 
 | Task | Owner and purpose | Dependency and stop condition |
 | --- | --- | --- |
-| T279 | EGA/VGA admission map and failing corpus. Freeze the first Windows-facing mode/register family, its memory map, ROM service boundary, and user-supplied fixture evidence. | Design/probe within the task; do not implement a generic "VGA" layer or bundle guest assets. |
-| T280 | First selected EGA/VGA register-family implementation, following T279's corpus; retain VADP as the sole video-state owner and copied platform frames. | T279. Split before DAC, planar/latch, raster, or VBE if not selected by the corpus. |
-| T281 | ATA/FDC Windows-startup storage gap selected by a reproducible fixture: controller status/error/reset/timing or a missing transfer form. | T268--T278 as applicable. Image files remain backends, never controller substitutes. |
-| T282 | Windows 3.x Standard-mode readiness corpus and gap map using lawful, user-supplied media. Record the exact boot/checkpoint result and convert each unmet prerequisite into a bounded later admission. | T264--T281. This is evidence collection, not a support claim or committed guest asset. |
+| T284 | EGA/VGA admission map and failing corpus. Freeze the first Windows-facing mode/register family, its memory map, ROM service boundary, and user-supplied fixture evidence. | T279--T283. Design/probe within the task; do not implement a generic "VGA" layer or bundle guest assets. |
+| T285 | First selected EGA/VGA register-family implementation, following T284's corpus; retain VADP as the sole video-state owner and copied platform frames. | T284. Split before DAC, planar/latch, raster, or VBE if not selected by the corpus. |
+| T286 | ATA/FDC Windows-startup storage gap selected by a reproducible fixture: controller status/error/reset/timing or a missing transfer form. | T268--T283 as applicable. Image files remain backends, never controller substitutes. |
+| T287 | Windows 3.x Standard-mode readiness corpus and gap map using lawful, user-supplied media. Record the exact boot/checkpoint result and convert each unmet prerequisite into a bounded later admission. | T264--T286. This is evidence collection, not a support claim or committed guest asset. |
 
 ### D. Protected-Mode And FPU Work Triggered By Evidence
 
 | Task | Owner and purpose | Dependency and stop condition |
 | --- | --- | --- |
-| T283 | First corpus-proven 286/386 compatibility gap from T282 or another owned reproducer. | T282 preferred. One instruction/system family only; no speculative opcode sweep. |
-| T284 | 80386 Enhanced-mode prerequisite selected by corpus, such as CPL3 paging permissions, 32-bit segmentation/control transfer, or 32-bit TSS behavior. | T282 plus a failing prepared-state or system corpus. No broad 386-complete claim. |
-| T285 | Present-FPU extension selected by corpus: 80287/80387 profile state, format, environment, or exception delivery. | T282 or another owned reproducer. No host floating-point shortcut or blanket FPU claim. |
-| T286 | Windows 3.x Enhanced-mode readiness corpus and bounded deferral map. | T280--T285 as dictated by T282. No Windows 95 claim. |
+| T288 | First corpus-proven 286/386 compatibility gap from T287 or another owned reproducer. | T287 preferred. One instruction/system family only; no speculative opcode sweep. |
+| T289 | 80386 Enhanced-mode prerequisite selected by corpus, such as CPL3 paging permissions, 32-bit segmentation/control transfer, or 32-bit TSS behavior. | T287 plus a failing prepared-state or system corpus. No broad 386-complete claim. |
+| T290 | Present-FPU extension selected by corpus: 80287/80387 profile state, format, environment, or exception delivery. | T287 or another owned reproducer. No host floating-point shortcut or blanket FPU claim. |
+| T291 | Windows 3.x Enhanced-mode readiness corpus and bounded deferral map. | T285--T290 as dictated by T287. No Windows 95 claim. |
 
 ### E. M5 Closure And Handoff
 
 | Task | Owner and purpose | Dependency and stop condition |
 | --- | --- | --- |
-| T287 | Current-source M5 closure audit against the closure checklist, including single-owner/path, CMake graph, retained NXVM UX, Windows checkpoint evidence, and all remaining deferrals. | T264--T286. M5 may close only if the checklist, roadmap and TODO agree; otherwise this task records the next bounded M5 queue rather than declaring closure. |
+| T292 | Current-source M5 closure audit against the closure checklist, including single-owner/path, CMake graph, retained NXVM UX, Windows checkpoint evidence, and all remaining deferrals. | T264--T291. M5 may close only if the checklist, roadmap and TODO agree; otherwise this task records the next bounded M5 queue rather than declaring closure. |
 
 ## Later-Milestone Handoff
 

@@ -76,6 +76,13 @@ active task.
   PIO and count-zero=256 are admitted; slave and secondary remain explicitly
   absent, with SRST/status/error/IRQ14 behavior probed. Deferred: IDE DMA,
   ATAPI, LBA48, cache, and host-clock timing.
+- [ ] **M5 reliability and boundary evidence (`TODO(High)`, T279--T283).**
+  Retire unbounded C formatting; make FDD/HDD replacement atomic; admit
+  arbitrary-length raw HDD virtual capacity without truncation; normalize core
+  FDC/HDC ownership names; freeze the full core-platform capability interface
+  family; and make VM-free controller fixtures execute real media I/O/failure
+  paths. These tasks preserve retained NXVM behavior and precede T284 EGA/VGA
+  work.
 - [ ] **Complete digital CGA (`TODO(Medium)`).** Keep it separate from EGA/VGA.
   T254 admitted `640x200x2`; T266 closes the bounded 6845 text subset:
   display-start/page, cursor address/shape/hidden state, and deterministic

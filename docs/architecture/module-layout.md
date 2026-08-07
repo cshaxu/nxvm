@@ -200,8 +200,10 @@ a controller after that controller moves to core. The `vm/` root composition
 owns profile-selected boot/reset ordering, the bounded product execution pump,
 provider lifetime, and all wiring; it never duplicates the core scheduler.
 `core/platform` owns policy-free opaque host capability contracts and shared
-Win32/Linux implementations: file, directory, stream, sampled clock, copied
-input, cancellation, and typed results. `vm/platform` owns only full-machine
+Win32/Linux implementations. T271 currently supplies backing-resource, copied
+input, and wait/cancellation surfaces; T282 admits the canonical file,
+directory, stream, sampled-clock, and input interface family without creating
+product policy. `vm/platform` owns only full-machine
 policy adapters: image selection, mount/persistence, Console/window behavior,
 and PC/AT host choices. `vm/product` owns retained NXVM user experience: Console, hardware
 debugger UX, media commands, and presentation policy. `vm/profile` owns VM

@@ -2,8 +2,8 @@
 
 ## Current Work
 
-**Idle.** T278 is closed. T279 has not yet been admitted, so this ledger
-contains no active task packet.
+**Idle.** T278 is closed. M5 Td S34 records the approved T279--T283 queue;
+T279 has not yet been admitted, so this ledger contains no active task packet.
 
 ## Current Technical Baseline
 
@@ -55,6 +55,9 @@ active packet becomes an operational authority only after approval.
   T271 admits only opaque policy-free host capabilities in `core/platform`,
   extends the migration through T278, and shifts the former forward queue to
   T279--T287. Filesystem, path, mount, and DOS policy remain above core.
+- **M5 Td S34:** repaired the historical queue wording, inserted the approved
+  T279--T283 reliability/interface package, and shifted the older future queue
+  to T284--T292. This task changes no runtime behavior.
 
 ## Milestone State
 

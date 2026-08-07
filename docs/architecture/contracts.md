@@ -448,6 +448,13 @@ callback. Composition owns cancellation and may reuse the existing copied
 input/cancellable-wait facilities around bounded resource work; resource I/O
 does not create a second cancellation protocol or mutate guest state.
 
+T282 will make the larger interface family explicit: opaque file, directory,
+stream, sampled-host-clock, and copied-input provider contracts. It reuses the
+T271 backing resource and existing input/wait/cancellation behavior where they
+already meet that contract; it does not create generic path opening, directory
+policy, shell redirection, guest-time advancement, or a second cancellation
+subsystem.
+
 ### VM Media Adapter Boundary (T272)
 
 T272 keeps the VM FDD and HDD backing objects as the sole owners of their
@@ -463,6 +470,18 @@ neither transition creates a second media route.
 The legacy single-slot block API is removed in T272 after the ROM geometry
 consumer is rebound. It must not survive as an adapter, and no controller or
 firmware may cache media geometry to bridge its removal.
+
+### Atomic VM Media Replacement And Raw HDD Capacity (T280)
+
+T280 keeps FDD and HDD backing ownership in VM but makes replacement atomic:
+inspect, validate, allocate a candidate, completely read it, then commit one
+new media state. Any allocation or host-I/O failure leaves the old bytes,
+geometry, read-only state, cursor, presence, and generation intact. FDD retains
+its admitted fixed geometry. HDD accepts arbitrary raw byte length; its
+guest-visible virtual capacity is `ceil(raw_bytes / 512) * 512`, tail reads
+zero-fill, and a write into virtual padding makes later persistence output a
+complete final sector. ATA range checks use that virtual capacity; CHS is only
+a compatibility mapping, never HDD admission policy.
 
 ### Neutral RTC Boundary (T273)
 
@@ -521,6 +540,12 @@ core object during the initialized window; profile firmware retains INT 13h
 and boot policy. Core contains no PC/AT default, image path, host I/O,
 firmware, or product state. The migration preserves one PIO route and does
 not admit ATA DMA, new commands, or another controller.
+
+T283 extends the VM-free FDC and ATA fixtures to execute provider query,
+read/write, and applicable format/flush paths, and to verify typed media
+failure mapping, frozen-registry rebind rejection, and observable generation.
+Those fixtures remain core-only and do not introduce dynamic topology or a
+second controller route.
 
 ### Core-Only Mantle-Shape Fixture (T274)
 
