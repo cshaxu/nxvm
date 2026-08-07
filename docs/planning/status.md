@@ -2,8 +2,27 @@
 
 ## Current Work
 
-No implementation subtask is active. T270 begins the second core/composition
-boundary migration only after an approved packet is recorded here.
+**M5 T270 S1: Lossless Core Media Contract -- active.**
+
+- **Original request:** replace the retained fixed single-slot block boundary
+  with a frozen, multi-device, profile-neutral core media contract before any
+  FDC/ATA controller migration.
+- **Observed source baseline:** `core_machine_block_provider_slot` is a single
+  HDD-geometry callback used by default-profile firmware; FDC directly owns
+  `t_fdd` byte/CHS calls and HDC directly owns `t_hdd` bytes, geometry, and
+  transfer cursor. Those are migration inputs, not alternate production paths.
+- **S1 deliverable:** freeze identity, capability, generation, copied byte and
+  logical-sector I/O, geometry, format, flush, and typed-failure semantics;
+  record the retained legacy slot's T272 removal boundary and a core-only fake
+  provider fixture plan.
+- **Rules:** no host paths, handles, DOS namespaces, topology defaults,
+  controller migration, forwarding facade, private controller cache, or second
+  media state. A provider is composition-owned and freezes before reset/run.
+- **Evidence:** source inventory plus documentation-governance gate. S2 may
+  begin only after this contract names every state owner, lifecycle edge, and
+  failure result; it will add the public core contract and fake-provider probe.
+- **Stop:** stop and split if an operation needs mount/eject UI, persistence,
+  path selection, firmware policy, or any host-filesystem policy.
 
 ## Current Technical Baseline
 

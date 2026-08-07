@@ -18,13 +18,18 @@ numeric task identifier as its artifact revision when it completes.
 
 ### A. Second Core/Composition Boundary Migration
 
-This phase implements only profile-neutral machine mechanisms. It does not
-implement `mantle`, an external runtime adapter, DOS services, host path
-policy, or a host-filesystem product layer. `M5 Td S33` admits narrow
-policy-free host capability contracts into `core/platform`: opaque file,
-directory, stream, clock, input, cancellation, and typed-result primitives.
-Composition alone translates those primitives into media backing or product
-policy.
+This phase implements only profile-neutral machine mechanisms and policy-free
+host backing primitives. It does not implement `mantle`, an external runtime
+adapter, DOS services, host path policy, or a host-filesystem product layer.
+Composition alone selects an opaque host resource and adapts it into guest
+media; VM retains mount/eject, persistence, media paths, PC/AT topology,
+firmware, boot policy, and Console/UI behavior.
+
+The migration order is `T270 -> T271 -> T272 -> T275 -> T276` and
+`T272 -> T277 -> T278`. `T273` is independent after the media baseline is
+understood; `T274` waits for T270, T271, and T273. Task-created registered
+temporary media, traces, and logs may be cleaned by their task; generic build
+trees, `build/output`, and user files are never cleanup targets.
 
 The already-planned queue is renumbered, not discarded: former T270--T278 are
 now T279--T287 respectively. Historical completed task records retain their
@@ -32,13 +37,13 @@ original identifiers.
 
 | Task | Owner and purpose | Dependency and stop condition |
 | --- | --- | --- |
-| T270 | Replace the fixed single-slot block boundary with a frozen multi-device core media-provider contract: identity, capabilities, logical-sector I/O, geometry, generation, and typed failure. Add a core-only provider fixture. | No host path, file handle, DOS namespace, topology default, or controller moves. Stop if a contract needs product policy. |
-| T271 | Add policy-free `core/platform` host capability contracts for opaque file, directory, stream, sampled clock, copied input, cancellation, ownership and typed result. Add platform-neutral contract fixtures only. | No DOS path, wildcard, sandbox root, drive letter, mount UI, console grammar, guest timing, native-handle leakage, or controller code. Stop if a proposed operation needs product policy. |
+| T270 | Replace the fixed single-slot block boundary with a frozen multi-device core media-provider contract: stable opaque identity; present/removable/read-only/flushable/geometry-known/change-detectable capabilities; monotonic generation; copied byte-range and logical-sector I/O; CHS/LBA geometry; format/flush; and typed absent/changed/read-only/range/transient/permanent failures. Add a multi-device core-only fake-provider fixture. | No host path, file handle, DOS namespace, topology default, controller move, private controller cache, or forwarding facade. The legacy slot remains only until T272. |
+| T271 | Add only the policy-free `core/platform` opaque backing-resource primitive required by T272: copied byte-range read/write, size, flush, close, typed result, and ownership. Reuse existing copied input/wait/cancellation contracts rather than duplicating them. | No directory or generic file policy, path grammar, wildcard, sandbox root, drive letter, mount UI, guest timing, native-handle leakage, or controller code. Composition selects local paths before resource construction. |
 | T272 | Make VM FDD/HDD backing objects implement T270's media provider using T271 host capabilities where a host resource is needed; rebind the existing firmware geometry consumer and remove the fixed block slot rather than retaining a forwarding facade. | T270--T271. FDD/HDD allocation, mount/eject, image selection, persistence policy, and Console commands stay in VM. |
-| T273 | Move the MC146818-compatible controller mechanism to `core/machine` with explicit optional-device configuration and profile-supplied NVRAM image, port/IRQ wiring, clock ratio, and sideband address-line output. | T270/T271 are not required. PC/AT NMI routing, defaults, wall-clock policy, BIOS/POST and BDA services stay in VM profile/composition. Stop if the controller requires a PC/AT default. |
+| T273 | Use `git mv` to move the MC146818-compatible register/calendar/tick/IRQ-output mechanism to `core/machine`, with optional neutral configuration and a profile-supplied NVRAM image. | VM glue extracts port 70h bit 7 NMI policy and delegates only the low seven-bit index/data path to core; core owns no NMI, BDA, BIOS, wall-clock, or PC/AT default. |
 | T274 | Add a core-only mantle-shape configuration fixture: create, bind neutral machine and platform providers, freeze, reset, apply an entry plan, run bounded slices, and report typed outcomes without any VM header, firmware, UI, DOS path, or external-runtime vocabulary. | T270, T271, and T273. This is a fixture, not `src/mantle` implementation; M6 still owns mantle. |
 | T275 | Decouple the existing FDC controller from `t_fdd` while it remains in place: consume only the frozen T270 media provider and explicit port/IRQ/DMA wiring. | T270--T272. Preserve the one existing FDC state machine and all retained DOS/FDC regressions; no duplicate controller or multi-drive topology. |
-| T276 | Move the now-neutral FDC implementation into `core/machine` and rewire the default PC/AT composition/profile adapter to own only topology, DOR/NMI glue, IRQ6/DMA2 route, media policy, and firmware. | T275. Use `git mv`; remove VM controller code and prove a core-only fixture plus retained FDD/DOS boot. |
+| T276 | Move the now-neutral FDC implementation into `core/machine` and rewire the default PC/AT composition/profile adapter to own only static topology, port/IRQ/DMA bindings, media policy, and firmware. | T275. Use `git mv`; core owns DOR and all mutable controller state. Remove VM controller code and prove a core-only fixture plus retained FDD/DOS boot. |
 | T277 | Decouple the existing ATA/HDC controller from `t_hdd`: use the T270 media provider for present/read-only/range/failure behavior and make all port/IRQ/master-slave choices explicit configuration. | T270--T272. Do not add ATA DMA, new commands, host I/O, or profile defaults in core. |
 | T278 | Move the now-neutral ATA PIO controller into `core/machine` and rewire the default PC/AT composition/profile adapter to retain IDE topology, image policy, boot/firmware policy, and UI only. | T277. Use `git mv`; preserve ATA PIO and HDD boot corpus, and add a core-only fixture. |
 
