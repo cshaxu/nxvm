@@ -432,6 +432,23 @@ product policy before constructing that opaque resource, then adapts it into a
 device-level media provider. Paths, mounts, persistence, drive letters, DOS
 namespace, wildcard semantics, and sandbox policy remain above core.
 
+### Opaque Core Platform Backing Resource (T271)
+
+The T271 backing resource is a synchronous, composition-created provider with
+copied byte-range `read`/`write`, copied `size`, `flush`, and one synchronous
+`close`. It returns a typed resource outcome independently of the core API
+lifecycle status: short transfer, read-only, invalid range, transient failure,
+permanent failure, unsupported operation, and closed state are explicit.
+`close` is the unique transition to closed and guarantees no later provider
+call; resource state is then released by its creator. Calls return copied bytes
+only, never a native handle or provider-owned buffer.
+
+The resource has no path, directory, stream grammar, mount/eject, sharing,
+drive, sandbox, or DOS policy. It creates no thread and invokes no host
+callback. Composition owns cancellation and may reuse the existing copied
+input/cancellable-wait facilities around bounded resource work; resource I/O
+does not create a second cancellation protocol or mutate guest state.
+
 ## Core Machine: Hardware IRQ
 
 Hardware IRQ delivery and a guest `INT n` instruction are separate mechanisms.
