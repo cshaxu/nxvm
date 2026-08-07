@@ -37,7 +37,7 @@ The following behavior is currently real but dispersed:
 | --- | --- | --- |
 | Reset vector and ROM/BDA image bytes | `vm/composition/session/profile_firmware.c` and `vm/profile/default_profile/firmware/bios.c` | profile ROM and firmware declaration |
 | Firmware service ordering and INT/POST wiring | `pc_at_profile.c`, `profile_firmware.c` | profile firmware declaration |
-| CMOS defaults and boot drive | `pc_at_profile.c`, `vm/machine/cmos.*`, session device setup | profile declares defaults; retained mutable controller is VM-owned until T273, then core owns only its neutral mechanism |
+| CMOS defaults and boot drive | `pc_at_profile.c`, `core/machine/rtc.*`, session device setup | profile declares defaults; core owns the neutral mutable mechanism while VM owns PC/AT ports and NMI policy |
 | FDC port and route arguments | `vm/composition/session/machine_devices.c` | profile controller-route declaration interpreted by composition; core retains PIC/DMA state and contracts |
 | FDD/HDD media storage and image selection | `vm_session` and `machine_devices.c` | remains composition/session policy, not profile data; T270--T278 may move only neutral media/controller mechanisms to core |
 | qd* BIOS handlers | `vm/profile/default_profile/firmware/*` | retained as profile-specific temporary firmware providers |

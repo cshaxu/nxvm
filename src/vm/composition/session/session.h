@@ -5,6 +5,7 @@
 
 #include "core/machine/machine_interface.h"
 #include "core/machine/media_interface.h"
+#include "core/machine/rtc.h"
 #include "core/machine/display_interface.h"
 #include "core/platform/input_interface.h"
 #include "core/platform/presentation_mailbox_interface.h"
@@ -13,7 +14,6 @@
 #include "core/utils/wait_provider.h"
 #include "vm/composition/session/control.h"
 #include "vm/composition/session/fault.h"
-#include "vm/machine/cmos.h"
 #include "vm/machine/debug.h"
 #include "vm/machine/fdc.h"
 #include "vm/machine/fdd.h"
@@ -31,7 +31,7 @@ struct vm_session {
     core_machine_config core_machine_config;
     const vm_profile_default_pc_at_descriptor *profile;
     core_machine *core_machine;
-    t_cmos cmos;
+    core_machine_rtc rtc;
     t_fdd fdd;
     t_fdc fdc;
     t_hdd hdd;

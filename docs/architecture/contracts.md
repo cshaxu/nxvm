@@ -254,7 +254,7 @@ meaning:
 | --- | --- | --- |
 | Deterministic `elapsed_ticks`, run budget, and core scheduler order | `core/machine` | `core_machine_run` advances only guest time; it never reads host time. |
 | Generic PIT counter/GATE/OUT behavior and its IRQ0 source | `core/machine` | A profile binds the output route; core does not update BIOS data or calendar state. |
-| MC146818-compatible register/calendar/event mechanism | planned optional `core/machine` device (T273) | It will consume a frozen clock binding and emit one configured IRQ source; no PC/AT defaults, NMI policy, BIOS, or host-time policy enter core. Until T273, the retained controller is VM-owned. |
+| MC146818-compatible register/calendar/event mechanism | `core/machine/rtc.*` | It consumes a frozen tick ratio and emits one configured IRQ source; PC/AT defaults, NMI policy, BIOS, and host-time policy remain outside core. |
 | PC/AT CMOS defaults, `70h/71h`/NMI glue, IRQ8 route, BIOS/POST and host-time policy | VM profile/composition | It selects and wires the optional core device without turning those choices into core defaults. |
 | BIOS `INT 08h`, BDA tick, and `INT 1Ah` services | VM profile firmware | Firmware consumes normal CPU/PIC delivery; neither core nor platform writes BDA time. |
 | Host clock, sleep, pacing, watchdog, and window cadence | root composition/platform | Host time may bound or pace a product loop but never advances guest time directly. |
@@ -468,16 +468,18 @@ firmware may cache media geometry to bridge its removal.
 
 `core/machine` owns one per-machine MC146818-compatible device: register
 state, date/calendar encoding, elapsed-tick advancement, periodic/alarm/update
-flags, index/data access, and its PIC IRQ source. Its configuration contains
-only an explicit index port, data port, IRQ binding, frozen tick ratio, and
-profile-supplied initial NVRAM bytes. It has no PC/AT default, NMI policy,
-BDA/BIOS service, host wall clock, or firmware source.
+flags, selected-register/data access, and its PIC IRQ source. Its configuration
+contains only an IRQ binding and frozen tick ratio. A profile may populate
+neutral NVRAM bytes during composition, but core contains no PC/AT default,
+port selection, NMI policy, BDA/BIOS service, host wall clock, or firmware
+source.
 
-VM composition selects the PC/AT ports/IRQ/tick ratio and owns the tiny port
-70h adapter that extracts bit 7 into the existing VM NMI policy. It passes the
-remaining seven-bit index and port 71h data operations to the core RTC; it
-does not copy RTC register, calendar, flag, or IRQ state. Default-ROM POST and
-INT assembly are VM profile firmware, never part of the core controller.
+VM composition selects the PC/AT ports/IRQ/tick ratio and owns the tiny
+70h/71h port provider. Its 70h write extracts bit 7 into the existing VM NMI
+policy, then delegates only the lower seven-bit index; 71h delegates data
+access to core. It does not copy RTC register, calendar, flag, or IRQ state.
+Default-ROM POST and INT assembly are VM profile firmware, never part of the
+core controller.
 
 ## Core Machine: Hardware IRQ
 

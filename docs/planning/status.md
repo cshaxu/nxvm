@@ -2,7 +2,7 @@
 
 ## Current Work
 
-**M5 T273 S1: Neutral MC146818 Mechanism Migration -- active.**
+**M5 T273 S2: Neutral MC146818 Mechanism Migration -- active.**
 
 - **Original request:** move the register/calendar/tick/IRQ-output mechanism
   into `core/machine`; retain VM-only NMI policy, defaults, ROM firmware, and
@@ -11,9 +11,12 @@
   with one VM callback: port 70h bit 7 calls `core_machine_set_nmi_mask`.
   Its `VCMOS_POST`/INT assembly strings are default-ROM firmware, not device
   mechanism, and must stay under the VM profile.
-- **S1 deliverable:** freeze `core_machine_rtc` state/config/public port
-  contract, VM NMI adapter, profile defaults/NVRAM boundary, and the retained
-  RTC port corpus. No source move begins until these owners are explicit.
+- **S1 complete:** froze `core_machine_rtc` state/config contract, VM NMI
+  adapter, profile defaults/NVRAM boundary, and the retained RTC port corpus.
+- **S2 deliverable:** move the neutral mechanism with `git mv`, split default
+  ROM assembly strings into profile firmware, bind the PC/AT 70h/71h provider
+  from composition, and add a core-only RTC probe. Keep the session lifecycle
+  and sole CPU executor unchanged.
 - **Rules:** core does not know PC/AT port defaults, NMI, BDA, BIOS, host time,
   or firmware. VM may extract port 70h bit 7 then delegate only index/data;
   it may not mirror RTC register/calendar/IRQ state.

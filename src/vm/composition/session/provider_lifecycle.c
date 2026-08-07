@@ -21,7 +21,6 @@ C_VOID vm_session_provider_lifecycle_initialize(vm_session *session)
     vm_session_machine_devices_initialize_cmos(session);
     vm_session_profile_firmware_register_cmos(session);
     vm_session_machine_devices_reset_cmos(session);
-    vm_session_machine_devices_refresh_cmos(session);
     vm_session_profile_firmware_register_keyboard(session);
     vm_session_profile_firmware_register_dma(session);
     vm_session_machine_devices_initialize_fdc(session);

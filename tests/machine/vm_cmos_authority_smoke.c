@@ -7,7 +7,7 @@
 
 #include "vm/composition/session/lifecycle.h"
 
-#include "vm/machine/cmos.h"
+#include "core/machine/rtc.h"
 
 C_INT main(C_VOID)
 {

@@ -3,22 +3,74 @@
 #include "type.h"
 
 #include "core/machine/machine_interface.h"
+#include "core/machine/rtc.h"
 #include "vm/composition/session/machine_devices.h"
 #include "vm/composition/session/session.h"
-#include "vm/machine/cmos.h"
 #include "vm/machine/fdc.h"
 #include "vm/machine/fdd.h"
 #include "vm/machine/hdd.h"
 #include "vm/machine/hdc.h"
 
-static C_VOID vm_session_machine_devices_set_nmi_mask(C_VOID *context,
-    C_INT masked)
+static type_status vm_session_machine_devices_rtc_read(C_VOID *owner,
+    uint16_t port, uint32_t *out_value)
 {
-    vm_session *session = (vm_session *)context;
+    vm_session *session = (vm_session *)owner;
+    const vm_profile_default_pc_at_port_range *ports;
 
-    if (session != STD_NULL) {
-        (C_VOID)core_machine_set_nmi_mask(session->core_machine, masked);
+    if (session == STD_NULL || out_value == STD_NULL) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
     }
+    ports = vm_profile_default_pc_at_port_range_find(session->profile,
+        VM_PROFILE_DEFAULT_PC_AT_DEVICE_CMOS);
+    if (ports == STD_NULL || port != ports->last) return TYPE_STATUS_INVALID_ARGUMENT;
+    *out_value = core_machine_rtc_read_selected(&session->rtc);
+    return TYPE_STATUS_OK;
+}
+
+static type_status vm_session_machine_devices_rtc_write(C_VOID *owner,
+    uint16_t port, uint32_t value)
+{
+    vm_session *session = (vm_session *)owner;
+    const vm_profile_default_pc_at_port_range *ports;
+
+    if (session == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    ports = vm_profile_default_pc_at_port_range_find(session->profile,
+        VM_PROFILE_DEFAULT_PC_AT_DEVICE_CMOS);
+    if (ports == STD_NULL) return TYPE_STATUS_INVALID_STATE;
+    if (port == ports->first) {
+        (C_VOID)core_machine_set_nmi_mask(session->core_machine,
+            (value & 0x80u) != 0u ? TYPE_TRUE : TYPE_FALSE);
+        core_machine_rtc_select_register(&session->rtc, (uint8_t)value);
+        return TYPE_STATUS_OK;
+    }
+    if (port == ports->last) {
+        core_machine_rtc_write_selected(&session->rtc, (uint8_t)value);
+        return TYPE_STATUS_OK;
+    }
+    return TYPE_STATUS_INVALID_ARGUMENT;
+}
+
+static const core_machine_port_provider vm_session_machine_devices_rtc_provider = {
+    vm_session_machine_devices_rtc_read,
+    vm_session_machine_devices_rtc_write
+};
+
+static C_VOID vm_session_machine_devices_apply_rtc_defaults(vm_session *session)
+{
+    const vm_profile_default_pc_at_cmos_defaults *defaults;
+
+    if (session == STD_NULL || session->profile == STD_NULL) return;
+    defaults = &session->profile->cmos;
+    core_machine_rtc_write_nvram(&session->rtc, CORE_MACHINE_RTC_TYPE_DISK_FLOPPY,
+        defaults->floppy_type);
+    core_machine_rtc_write_nvram(&session->rtc, CORE_MACHINE_RTC_TYPE_DISK_FIXED,
+        defaults->fixed_disk_type);
+    core_machine_rtc_write_nvram(&session->rtc, CORE_MACHINE_RTC_EQUIPMENT,
+        defaults->equipment);
+    core_machine_rtc_write_nvram(&session->rtc, CORE_MACHINE_RTC_BASEMEM_LSB,
+        TYPE_MASK_UNSIGNED_8(defaults->base_memory_kib));
+    core_machine_rtc_write_nvram(&session->rtc, CORE_MACHINE_RTC_BASEMEM_MSB,
+        TYPE_MASK_UNSIGNED_8(defaults->base_memory_kib >> 8));
 }
 
 C_VOID vm_session_machine_devices_initialize_media(vm_session *session)
@@ -32,7 +84,7 @@ C_VOID vm_session_machine_devices_initialize_cmos(vm_session *session)
 {
     const vm_profile_default_pc_at_port_range *ports;
     const vm_profile_default_pc_at_route *route;
-    vm_machine_cmos_config config;
+    core_machine_rtc_config config;
 
     if (session == STD_NULL) return;
     ports = vm_profile_default_pc_at_port_range_find(session->profile,
@@ -40,16 +92,14 @@ C_VOID vm_session_machine_devices_initialize_cmos(vm_session *session)
     route = vm_profile_default_pc_at_route_find(session->profile,
         VM_PROFILE_DEFAULT_PC_AT_DEVICE_CMOS);
     if (ports == STD_NULL || route == STD_NULL || ports->last - ports->first != 1u) return;
-    config.index_port = ports->first;
-    config.data_port = ports->last;
     config.irq = route->irq;
     config.ticks_per_second = session->profile->rtc_ticks_per_second;
-    config.set_nmi_mask = vm_session_machine_devices_set_nmi_mask;
-    config.nmi_mask_context = session;
-    vm_machine_cmos_initialize(&session->cmos,
+    core_machine_rtc_initialize(&session->rtc,
         core_machine_configuration_shared_pic_master_borrow(session->core_machine),
-        core_machine_configuration_shared_pic_slave_borrow(session->core_machine),
-        core_machine_configuration_port_borrow(session->core_machine), &config);
+        core_machine_configuration_shared_pic_slave_borrow(session->core_machine), &config);
+    vm_session_machine_devices_apply_rtc_defaults(session);
+    (C_VOID)core_machine_install_port_provider(session->core_machine, ports->first,
+        ports->last, &vm_session_machine_devices_rtc_provider, session);
 }
 
 C_VOID vm_session_machine_devices_initialize_fdc(vm_session *session)
@@ -131,18 +181,13 @@ C_INT vm_session_machine_devices_initialize_hdc(vm_session *session)
 
 C_VOID vm_session_machine_devices_reset_cmos(vm_session *session)
 {
-    if (session != STD_NULL) vm_machine_cmos_reset(&session->cmos);
-}
-
-C_VOID vm_session_machine_devices_refresh_cmos(vm_session *session)
-{
-    if (session != STD_NULL) vm_machine_cmos_refresh(&session->cmos);
+    if (session != STD_NULL) core_machine_rtc_reset(&session->rtc);
 }
 
 C_VOID vm_session_machine_devices_advance(vm_session *session,
     uint64_t elapsed_ticks)
 {
-    if (session != STD_NULL) vm_machine_cmos_advance(&session->cmos, elapsed_ticks);
+    if (session != STD_NULL) core_machine_rtc_advance(&session->rtc, elapsed_ticks);
 }
 
 C_VOID vm_session_machine_devices_refresh(vm_session *session)
@@ -151,7 +196,6 @@ C_VOID vm_session_machine_devices_refresh(vm_session *session)
     vm_machine_fdd_refresh(&session->fdd);
     vm_machine_hdd_refresh(&session->hdd);
     vm_machine_hdc_refresh(&session->hdc);
-    vm_machine_cmos_refresh(&session->cmos);
     vm_machine_fdc_refresh(&session->fdc);
 }
 
@@ -168,7 +212,7 @@ C_VOID vm_session_machine_devices_reset(vm_session *session)
 C_VOID vm_session_machine_devices_finalize(vm_session *session)
 {
     if (session == STD_NULL) return;
-    vm_machine_cmos_finalize(&session->cmos);
+    core_machine_rtc_finalize(&session->rtc);
     vm_machine_fdc_finalize(&session->fdc);
     vm_machine_hdc_finalize(&session->hdc);
     vm_machine_fdd_finalize(&session->fdd);
