@@ -20,7 +20,7 @@ baseline.
 
 | Task | Dependency | Deliverable and stop condition |
 | --- | --- | --- |
-| T262 | T257 | Add present-FPU state, operations, exceptions, and `FWAIT`; FPU-none escape handling is not present-FPU support. |
+| T262 | T261 | Add the exact-8087 present-FPU state, admitted operations, exceptions, and `FWAIT`; FPU-none escape handling is not present-FPU support, and 80287/80387 remain deferred. |
 | T263 | Corpus-specific 286/386 gap | Admit each remaining 286/386 instruction family only through a separate failing corpus; do not attach it to task-switch work. |
 
 ## Constraints

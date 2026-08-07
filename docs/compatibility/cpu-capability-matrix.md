@@ -12,7 +12,7 @@ fault, prefix/addressing, register/FLAGS, and side-effect probes have passed.
 | `x86.i386_real_mode` | unknown | none | evidence-backed 32-bit real-mode execution matrix |
 | `x86.i386_protected_mode` | bounded partial evidence; not profile-claimable beyond the admitted 16-bit subset | T259 runs the 16-bit CPL3 gate/outer-`IRET`/delivered-`#GP` corpus; T260 adds 32-bit-TSS I/O-map allow/deny and bounds checks; T261 adds the same bounded 16-bit-TSS far-JMP switch path as 80286 | 32-bit frames/gates, CPL3 paging, generic IDT/hardware delivery, 32-bit TSS switching, task gate/far-CALL/nested task return, and broader corpus |
 | `x86.i386_paging` | bounded CPL0 partial evidence; not profile-claimable beyond the admitted path | T258: 4 KiB PDE/PTE walk through core physical memory; fetch/data/stack mapping; A/D updates; non-present `#PF` with CR2; narrowed CR0/CR2/CR3 forms | CPL3 P/W/U faults, broader protected IDT delivery, TLB behavior, PSE/PAE, and task switching under paging |
-| `fpu.esc` | unavailable; contract design active | `MEM` reaches `FNINIT` (`DB E3`) but current escape dispatch raises `#UD` | T153--T158 define per-machine FPU profiles, then verify ESC consumption and CR0 `EM`/`TS`/`MP` behavior |
+| `fpu.esc` | `FPU=none` consumes legal ESC encodings; no present profile is yet executable | T153--T158 prove per-machine profile selection, ESC consumption, and CR0 `EM`/`TS`/`MP` behavior | T262 admits only an exact-8087 finite `m32real`/basic-arithmetic subset; 80287/80387, broad formats, and complete x87 semantics remain deferred |
 
 The baseline probe harness records an instruction window of at most 15 bytes,
 CS:IP and linear PC, EAX/EBX/ECX/EDX, FLAGS, and exception mask/code. It has no
