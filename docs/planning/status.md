@@ -2,8 +2,66 @@
 
 ## Current Work
 
-**Idle.** T259 is closed; the next implementation task must establish its own
-complete admission packet before source work begins.
+**M5 T260 S1 active: freeze the TSS I/O-permission-map contract and core-only
+port corpus.**
+
+## T260 Admission Packet
+
+### Original Request
+
+Implement TSS I/O permission checking only in `core/machine`, on the T259
+16-bit CPL3-to-CPL0 gate/outer-`IRET` path. When `CPL > IOPL`, guest IN/OUT
+access must use the loaded TSS map, apply the result to every byte of the port
+span, and turn denial into observable `#GP(0)` through T259's protected-IDT
+delivery or original-fault retention. CPL0 and `CPL <= IOPL` retain their
+current direct port behavior. The task excludes task switching, LDT, all
+32-bit frames/gates, CPL1/2, V86, host/firmware port shortcuts, and another
+executor. Its artifact is fixed as `nxvm_0_5_0260.exe`.
+
+### S1 Contract
+
+The shared 16-bit protected execution path remains common to 80286 and 80386,
+but the I/O bitmap itself is an **80386 32-bit TSS** facility. This is a
+hardware distinction, not a scope expansion:
+
+| Concern | T260 admission | Deferred / deterministic result |
+| --- | --- | --- |
+| Owner/path | `_kpa_test_mode` -> `_kpa_test_iomap` before the one existing port executor; `core_machine_run()` only | VM/profile/firmware/host port bypass or second executor |
+| 80286 / 16-bit TSS | `CPL <= IOPL` retains existing access; `CPL > IOPL` receives `#GP(0)` because no I/O-map exists | no invented 80286 bitmap |
+| 80386 TSS | A loaded busy 32-bit TSS is a read-only `ESP0`/`SS0` source for the already-admitted 16-bit gate and an I/O-map source | no task switch, context save, I/O bitmap mutation, or 32-bit gate/frame |
+| Stack bridge | For the retained 16-bit gate, `ESP0` must fit in 16 bits and `SS0` must be valid; otherwise `#TS` before a frame is committed | 32-bit stack/frame semantics |
+| Bitmap | Read the 16-bit map base at TSS offset `0x66`; bit `0` allows and bit `1` denies. Every bit for port `port..port + width - 1` must be readable and clear. A missing, truncated, or overflowing span denies with `#GP(0)` | V86 and unbounded map interpretation |
+| I/O forms | Existing immediate/DX IN/OUT and string I/O reach the same width-aware check | new I/O opcodes or host APIs |
+| Fault | A denied access does not reach the port provider; it is a `#GP(0)`, then uses T259's one protected delivery attempt and copied diagnostic. Failed delivery retains the original terminal fault | firmware/product fault consumption |
+
+T260 S1 uses a core-owned test port provider and one 80386 prepared state with
+a 32-bit TSS, 16-bit CPL3 code/data segments, and the existing IDT `#GP` gate.
+The corpus must prove allowed IN and OUT reach that provider, denied IN and OUT
+do not, denied access reaches the `#GP` handler and produces a copied
+diagnostic, a one-byte map truncation denies a word span, and 80286/IOPL bypass
+cases retain their stated behavior.
+
+### Rules, Evidence, And Stop Conditions
+
+Applicable rules: core owns CPU/TR/TSS/ports/diagnostics; core does not depend
+on VM/VDM; no global/TLS current state; providers are frozen before reset;
+platform never mutates guest state; no protected media or external runtime
+dependency. S2 may change only the core CPU privilege/port boundary and the
+T259 stack-source helper needed for a 32-bit TSS. S3 adds a core-only port/TSS
+corpus and retains T257--T259, paging, DOS boot, FDD/HDD, Console, debugger,
+and current gates. The expected focused marker is
+`M5:T260:S3:TSS-IOMAP:CORPUS:OK`.
+
+Stop and split if the corpus needs task/busy-TSS switching, LDT, call/task/trap
+gates, a 32-bit frame/gate, CPL1/2, V86 semantics, a VM/firmware/host port
+shortcut, a second executor, or a Console/debugger/boot UX change.
+
+**Similar-issue sweep plan.** The defect class is a protected low-privilege
+port operation that bypasses a single permission decision. Before closure,
+search all `_p_input`, `_p_output`, `_p_ins`, `_p_outs`, and direct
+`core_machine_port_execute_*` production references. Every hit must be the
+single core guard or be explicitly outside guest execution; the focused corpus
+must show both provider-reached and provider-not-reached outcomes.
 
 ## T259 S1 Admission Packet
 
