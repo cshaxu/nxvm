@@ -56,6 +56,8 @@ C_VOID vm_machine_fdd_reset(t_fdd *fdd);
 C_VOID vm_machine_fdd_refresh(t_fdd *fdd);
 C_VOID vm_machine_fdd_finalize(t_fdd *fdd);
 C_VOID vm_machine_fdd_create_for(t_fdd *fdd);
+C_INT vm_machine_fdd_replace_bytes(t_fdd *fdd, const C_VOID *bytes,
+    STD_SIZE_T byte_count);
 C_INT vm_machine_fdd_insert_for(t_fdd *fdd, const C_CHAR *file_name);
 C_INT vm_machine_fdd_remove_for(t_fdd *fdd, const C_CHAR *file_name);
 
