@@ -4,29 +4,55 @@
 #include "core/machine/machine_interface.h"
 #include "core/machine/memory.h"
 
+typedef struct fpu_escape_machine {
+    core_machine *machine;
+    t_cpu *cpu;
+    core_machine_cpu_execution_context *execution;
+} fpu_escape_machine;
+
+static C_VOID fpu_escape_reset(C_VOID *opaque)
+{
+    fpu_escape_machine *state = (fpu_escape_machine *)opaque;
+
+    if (state == STD_NULL || state->execution == STD_NULL || state->cpu == STD_NULL) return;
+    (C_VOID)core_machine_cpu_execution_load_segment(state->execution,
+        &state->cpu->data.cs, 0u);
+    (C_VOID)core_machine_cpu_execution_load_segment(state->execution,
+        &state->cpu->data.ds, 0u);
+    (C_VOID)core_machine_cpu_execution_load_segment(state->execution,
+        &state->cpu->data.es, 0u);
+    (C_VOID)core_machine_cpu_execution_load_segment(state->execution,
+        &state->cpu->data.ss, 0u);
+    state->cpu->data.eip = 0u;
+}
+
+static const core_machine_execution_provider fpu_escape_provider = {
+    fpu_escape_reset, STD_NULL, STD_NULL
+};
+
 static C_INT prepare_machine(core_machine_fpu_profile fpu_profile,
-    uint32_t cr0, core_machine **out_machine, t_cpu **out_cpu)
+    uint32_t cr0, fpu_escape_machine *state)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
         .fpu_profile = fpu_profile
     };
-    core_machine_cpu_execution_context *execution;
-    t_cpu *cpu;
-
-    if (core_machine_create(&config, out_machine) != TYPE_STATUS_OK ||
-        core_machine_freeze_execution_providers(*out_machine) != TYPE_STATUS_OK ||
-        core_machine_reset(*out_machine) != TYPE_STATUS_OK) return 1;
-    execution = core_machine_configuration_cpu_execution_borrow(*out_machine);
-    cpu = core_machine_configuration_cpu_borrow(*out_machine);
-    if (core_machine_cpu_execution_load_segment(execution, &cpu->data.cs, 0u) ||
-        core_machine_cpu_execution_load_segment(execution, &cpu->data.ds, 0u) ||
-        core_machine_cpu_execution_load_segment(execution, &cpu->data.es, 0u) ||
-        core_machine_cpu_execution_load_segment(execution, &cpu->data.ss, 0u)) return 1;
-    cpu->data.eip = 0u;
-    cpu->data.cr0 = cr0;
-    *out_cpu = cpu;
+    if (state == STD_NULL) return 1;
+    STD_MEMSET(state, 0, sizeof(*state));
+    if (core_machine_create(&config, &state->machine) != TYPE_STATUS_OK) return 1;
+    state->execution = core_machine_configuration_cpu_execution_borrow(state->machine);
+    state->cpu = core_machine_configuration_cpu_borrow(state->machine);
+    if (state->execution == STD_NULL || state->cpu == STD_NULL ||
+        core_machine_bind_execution_provider(state->machine, &fpu_escape_provider,
+            state) != TYPE_STATUS_OK ||
+        core_machine_freeze_execution_providers(state->machine) != TYPE_STATUS_OK ||
+        core_machine_reset(state->machine) != TYPE_STATUS_OK) {
+        core_machine_destroy(state->machine);
+        state->machine = STD_NULL;
+        return 1;
+    }
+    state->cpu->data.cr0 = cr0;
     return 0;
 }
 
@@ -34,19 +60,21 @@ static C_INT run_case(const C_UCHAR *program, STD_SIZE_T program_size,
     core_machine_fpu_profile fpu_profile, uint32_t cr0, uint32_t expected_exception,
     uint32_t expected_eip)
 {
-    core_machine *machine = STD_NULL;
-    t_cpu *cpu = STD_NULL;
+    fpu_escape_machine state;
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
-    C_INT failed = prepare_machine(fpu_profile, cr0, &machine, &cpu);
+    C_INT failed = prepare_machine(fpu_profile, cr0, &state);
 
     if (!failed) {
-        core_machine_memory_write_real_to(
-            core_machine_configuration_memory_borrow(machine), 0u, 0u, program,
-            program_size);
-        failed |= core_machine_run(machine, budget, &result) != TYPE_STATUS_OK;
-        failed |= core_machine_get_cpu_diagnostic(machine, &diagnostic) !=
+        failed |= core_machine_memory_write(state.machine, 0u, program,
+            program_size) != TYPE_STATUS_OK;
+        if (expected_exception != 0u) {
+            failed |= core_machine_run(state.machine, budget, &result) != TYPE_STATUS_FAULT;
+        } else {
+            failed |= core_machine_run(state.machine, budget, &result) != TYPE_STATUS_OK;
+        }
+        failed |= core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
             TYPE_STATUS_OK;
         if (expected_exception != 0u) {
             failed |= !diagnostic.first_fault.valid ||
@@ -55,10 +83,10 @@ static C_INT run_case(const C_UCHAR *program, STD_SIZE_T program_size,
                 TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
                     VCPUINS_EXCEPT_UD);
         } else {
-            failed |= diagnostic.first_fault.valid || cpu->data.eip != expected_eip;
+            failed |= diagnostic.first_fault.valid || state.cpu->data.eip != expected_eip;
         }
     }
-    core_machine_destroy(machine);
+    core_machine_destroy(state.machine);
     return failed;
 }
 
@@ -80,7 +108,7 @@ C_INT main(C_VOID)
     failed |= run_case(fwait, sizeof(fwait), CORE_MACHINE_FPU_PROFILE_NONE,
         VCPU_CR0_TS | VCPU_CR0_MP, VCPUINS_EXCEPT_NM, 0u);
     failed |= run_case(fninit, sizeof(fninit), CORE_MACHINE_FPU_PROFILE_8087,
-        0u, VCPUINS_EXCEPT_FPU_UNSUPPORTED, 0u);
+        0u, 0u, 2u);
     if (failed) return 1;
     STD_PRINTF("M5:T156:S1:FPU-ESC:OK\n");
     return 0;

@@ -30,7 +30,7 @@ in its task record and Git history; the M5 implementation order belongs in
 | Area | Current bounded capability | Open boundary |
 | --- | --- | --- |
 | NXVM product | One session/composition path, retained Console/debugger, FDD/HDD boot regressions, GCC artifact and CTest gates | Preserve this path while every device evolves; do not quietly start VDM behavior. |
-| CPU | Real-mode 8086-plus executor; bounded 80286/80386 16-bit protected privilege/IDT subset with CPL0 16-bit-TSS far-JMP switching; bounded 80386 CPL0 4 KiB paging and TSS I/O map; `FPU=none` consumes legal ESC encodings | Not trusted general 80386, CPL3 paging permissions, task gates/CALL/nested or 32-bit TSS switching, or present FPU. |
+| CPU | Real-mode 8086-plus executor; bounded 80286/80386 16-bit protected privilege/IDT subset with CPL0 16-bit-TSS far-JMP switching; bounded 80386 CPL0 4 KiB paging and TSS I/O map; `FPU=none` ESC consumption plus the exact-8087 finite baseline | Not trusted general 80386, CPL3 paging permissions, task gates/CALL/nested or 32-bit TSS switching, or broad present x87 compatibility. |
 | Interrupts and time | PIC source lifecycle; deterministic core elapsed ticks; PIT/IRQ0 -> ROM -> BDA -> `INT 1Ah` evidence | Greater timing fidelity only when an explicit corpus requires it. |
 | Keyboard | KBC, IRQ1/IRQ12, ROM `INT 09h`/`INT 16h`, set-1 break/E0/E1, typeahead, selection/query, translation observation, LED, command-state typematic, ACK/RESEND, bounded PS/2 AUX packets, and one DOS guest-driver corpus | Default core auto-repeat stays disabled until a profile-clock calibration defines human typematic time; set-2/3 conversion, wheel/advanced AUX protocol, broad guest mouse API compatibility, and native POSIX runtime validation remain deferred. |
 | Display | CGA text plus bounded digital `320x200x4` and ROM-selectable `EGA-320x200x16-direct`; copied text/indexed frames; `console`/`window`/`auto` selection | Remaining digital CGA modes/CRTC behavior, composite video, broader EGA/VGA, VBE. |
@@ -106,10 +106,11 @@ These are the next owned admissions, not permission to work in parallel.
   core-owned debug mutation contract only after preserving retained debugger
   UX and defining lifecycle, validation, raw-override policy, and focused
   regression; do not let VM composition acquire paging semantics.
-- [ ] **Present x87 (`TODO(Low)`, T262).** T262 S1 admits only the 8087
+- [ ] **Broaden present x87 (`TODO(Low)`).** T262 closes only the exact-8087
   finite-`m32real`/basic-arithmetic baseline with owned state, exceptions, and
-  `FWAIT`; 80287/80387, broad formats, and complete x87 behavior remain
-  separately deferred.
+  `FWAIT`. 80287/80387, broad formats, complete IEEE behavior, environment
+  save/restore, and protected-mode FPU delivery each require new corpus-based
+  admission.
 - [ ] **CPU-fault outcome audit (`TODO(Medium)`).** T214 established a
   session-owned fault result. Revisit only with a reproducible case showing a
   fault/detail is not available to the retained Console/debugger boundary;

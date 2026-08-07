@@ -2,7 +2,7 @@
 
 ## Current Work
 
-**M5 T262 S1 active: freeze the present-FPU baseline and its core-only corpus.**
+**Idle. M5 T262 is closed; the next task requires a separately admitted packet.**
 
 ## T262 Admission Packet
 
@@ -59,17 +59,38 @@ environment save/restore, protected-mode FPU delivery, or any second CPU/FPU
 execution path.  T262 produces `build/output/nxvm_0_5_0262.exe` only after
 the implementation and closure subtasks complete.
 
-### S1 Evidence And Next Steps
+### S1 Evidence
 
-The audited implementation has one per-machine `core_machine_fpu` skeleton
+The pre-S2 audited implementation had one per-machine `core_machine_fpu` skeleton
 bound into the CPU execution context, one `FPU_ESCAPE` decoder for `D8h`--
 `DFh`, existing `FPU=none` consumption, and existing `EM`/`TS`/`MP` smoke
-coverage.  Present profiles currently all return FPU-unsupported; no old FPU
-operation, host shortcut, or duplicate execution path exists.  S2 may now
-implement the frozen 8087 state and forms above; S3 performs the corpus and
-full retained matrix.
+coverage.  Present profiles then all returned FPU-unsupported; no old FPU
+operation, host shortcut, or duplicate execution path existed.
 
-## T261 Admission Packet
+### S2/S3 Closure
+
+S2 replaced that skeleton with the exact-8087 state owner: control/status
+words, tagged eight-entry stack, TOP, pending unmasked exception, and finite
+`m32real` conversion/arithmetic all live in `core/machine/fpu.*`.  CPU retains
+ESC decoding and guest-memory access; it invokes the FPU only after the
+existing `EM`/`TS` gate.  `FWAIT` now reports retained `#MF` for a pending
+unmasked exception.  No `float`, `double`, TLS/current-object state, VM
+provider, firmware shortcut, or second execution path was introduced.
+
+S3 adds `core-machine-fpu-8087-smoke`, proving load/add/store, stack
+overflow plus `FNINIT` reset, unmasked divide-by-zero plus `FWAIT`, exact
+profile gates, and deterministic unsupported outcomes.  The retained ESC
+smoke proves FPU=none consumption and `EM`/`TS`/`MP` behavior.  `current-gates-gcc`
+passed **97/97** current CTest cases, all static/ownership gates, FDD/HDD
+boot, DOS prompt/`MEM`, Console, and debugger regression.  The artifact is
+`build/output/nxvm_0_5_0262.exe`, SHA-256
+`95AD517F6E045E9E936595FE5F7FBADBEC0CD1AED8531233D755F01F32331899`.
+
+## Historical T261 Admission Packet
+
+This retained record describes the T261 closure point. References below to a
+then-current artifact or to T262 being unstarted are historical evidence, not
+the current project state.
 
 ### Original Request
 
@@ -181,7 +202,7 @@ nested/IRET task return.
 
 ### S4 Initial Closure
 
-T261 is closed. The official current artifact target is `vm-0-5-0261`; its
+T261 is closed. At that closure point the official artifact target was `vm-0-5-0261`; its
 developer artifact is `build/output/nxvm_0_5_0261.exe`, SHA-256
 `05DBCEA9B0CF7D025715A334E17D43C8DBE57CFE61C27230B2A50D0A8E531132`.
 `current-gcc` built that target with GCC, and `current-gates-gcc` passed all
@@ -547,15 +568,16 @@ SHA-256 before closure.
 | T259 | Bounded 16-bit protected privilege and `#GP` IDT delivery are closed; artifact `0.5.0259` and 93/93 current CTest pass. |
 | T260 | 80386 32-bit-TSS I/O-map allow/deny is closed through the real CPL3 corpus; artifact `0.5.0260` and 94/94 current CTest pass. |
 | T261 | Bounded 16-bit-TSS far-JMP task switching is closed through the core-only positive and fault corpus; artifact `0.5.0261` and 95/95 current CTest pass. |
+| T262 | Exact-8087 finite `m32real` load/store/arithmetic, status/stack state, and pending-exception `FWAIT` are closed through a core-only corpus; artifact `0.5.0262` and 97/97 current CTest pass. |
 
 The next task must establish a complete active packet before implementation.
 
 ## Current Technical Baseline
 
-- **T261 artifact identity:** `current-gcc` and
-  `verify-current-artifact-target` select `vm-0-5-0261`; static/ownership
-  checks and 95/95 CTest cases passed. Artifact `nxvm_0_5_0261.exe` SHA-256:
-  `5EBC07BF8F5FABB21F7DB1901D05778F2EC27CE9FF9AC1F3222EE583E440CE58`.
+- **T262 artifact identity:** `current-gcc` and
+  `verify-current-artifact-target` select `vm-0-5-0262`; static/ownership
+  checks and 97/97 CTest cases passed. Artifact `nxvm_0_5_0262.exe` SHA-256:
+  `95AD517F6E045E9E936595FE5F7FBADBEC0CD1AED8531233D755F01F32331899`.
 - **T243--T246:** core owns checked physical memory, bounded `#UD`
   transitions, immutable ROM mapping, and atomic real-mode entry plans. T247
   verifies the current artifact target and full gate over that boundary.
