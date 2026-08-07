@@ -161,8 +161,40 @@ The retained protection CTests passed 5/5. `current-gcc` rebuilt the official
 artifact and `current-gates-gcc` passed all static gates plus 95/95 CTest
 cases. The replacement T261 artifact remains
 `build/output/nxvm_0_5_0261.exe`, SHA-256
-`B01EAC25B34B4ACC9250AFDF8DB0290D004138F004CC41753578F351516D6792`.
+`5EBC07BF8F5FABB21F7DB1901D05778F2EC27CE9FF9AC1F3222EE583E440CE58`.
 T262 remains unstarted.
+
+### S5 P2 Evidence Correction
+
+The prior S5 closure recorded a stale build: the source and artifact timestamps
+prove that neither the focused smoke nor `nxvm_0_5_0261.exe` incorporated the
+S5 marker and SS-cache correction. P2 changes no runtime source. It must
+force a fresh build of `core-machine-task-switch-smoke` and `vm-0-5-0261`, run
+the focused smoke with S2/S3/S5 markers visible, run `current-gates-gcc`,
+replace the same task artifact, and record its new SHA-256 before T261 may
+return to Idle.
+
+The clean rebuild also exposed a gate-only omission: eight media-backed CTest
+entries were registered but absent from `run-current-smokes` dependencies.
+P2 corrects that one CMake list relationship so every registered current smoke
+is built before CTest executes it; it does not change guest runtime behavior.
+
+### S5 P2 Closure
+
+P2 is complete. A clean-first build rebuilt both
+`core-machine-task-switch-smoke` and `vm-0-5-0261` from current S5 source; the
+focused executable emitted all three required markers: S2, S3, and
+`M5:T261:S5:SS-CACHE:OK`. The rebuilt executable and developer artifact have
+later timestamps than the S5 source and the artifact SHA-256 is now
+`5EBC07BF8F5FABB21F7DB1901D05778F2EC27CE9FF9AC1F3222EE583E440CE58`.
+
+`PROJECT_CURRENT_ALL_SMOKE_TARGETS` now derives one de-duplicated current
+build dependency list from base and media smoke lists, so registered media
+CTest entries cannot be Not Run after a clean build. The clean gate exposed
+the DOS video fixture's inadequate 500,000-instruction bound; its deterministic
+probe budget is now 1,500,000 and it reaches `INT10=200`, `F2=0`, and the DOS
+prompt without any runtime change. The corrected `current-gates-gcc` passed
+all static gates and 95/95 CTest cases. T262 remains unstarted.
 
 ## T260 Admission Packet
 
@@ -458,7 +490,7 @@ The next task must establish a complete active packet before implementation.
 - **T261 artifact identity:** `current-gcc` and
   `verify-current-artifact-target` select `vm-0-5-0261`; static/ownership
   checks and 95/95 CTest cases passed. Artifact `nxvm_0_5_0261.exe` SHA-256:
-  `B01EAC25B34B4ACC9250AFDF8DB0290D004138F004CC41753578F351516D6792`.
+  `5EBC07BF8F5FABB21F7DB1901D05778F2EC27CE9FF9AC1F3222EE583E440CE58`.
 - **T243--T246:** core owns checked physical memory, bounded `#UD`
   transitions, immutable ROM mapping, and atomic real-mode entry plans. T247
   verifies the current artifact target and full gate over that boundary.
