@@ -1413,8 +1413,41 @@ static C_VOID _s_test_esp(core_machine_cpu_execution_context *context)
 /* kernel portid accessing */
 _______todo _kpa_test_iomap(core_machine_cpu_execution_context *context, type_unsigned_16 portid, type_unsigned_8 byte)
 {
-    /* TODO(Low, T260): Add I/O-map checks only with the admitted CPL3 corpus. */
+    type_unsigned_16 iomap_base;
+    type_unsigned_32 bitmap_offset;
+    type_unsigned_32 checked_port;
+    type_unsigned_8 bitmap_byte;
+
     TYPE_TRACE_CALL_BEGIN("_kpa_test_iomap");
+    if (byte != 1u && byte != 2u && byte != 4u) {
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(byte));
+    }
+    if (_GetEFLAGS_VM || context->cpu_profile < CORE_MACHINE_CPU_PROFILE_80386 ||
+        !cpu_state.data.tr.flagValid ||
+        cpu_state.data.tr.sys.type != VCPU_DESC_SYS_TYPE_TSS_32_BUSY) {
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(0));
+    }
+    if (TYPE_MASK_UNSIGNED_32(portid) + byte > VPORT_MAX_PORT_COUNT) {
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(0));
+    }
+    if (cpu_state.data.tr.limit < 0x67u) {
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(0));
+    }
+    TYPE_TRACE_CHECK_RETURN(_s_read_tss(context, 0x66u,
+        TYPE_REFERENCE_OF(iomap_base), 2u));
+    for (checked_port = portid; checked_port < TYPE_MASK_UNSIGNED_32(portid) +
+            byte; ++checked_port) {
+        bitmap_offset = TYPE_MASK_UNSIGNED_32(iomap_base) +
+            (checked_port >> 3u);
+        if (bitmap_offset > cpu_state.data.tr.limit) {
+            TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(0));
+        }
+        TYPE_TRACE_CHECK_RETURN(_s_read_tss(context, bitmap_offset,
+            TYPE_REFERENCE_OF(bitmap_byte), 1u));
+        if (TYPE_GET_BIT(bitmap_byte, 1u << (checked_port & 7u))) {
+            TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(0));
+        }
+    }
     TYPE_TRACE_CALL_END;
 }
 static C_VOID _kpa_test_mode(core_machine_cpu_execution_context *context, type_unsigned_16 portid, type_unsigned_8 byte)
@@ -2734,6 +2767,7 @@ static C_VOID _ser_int_protected_16(core_machine_cpu_execution_context *context,
     type_unsigned_16 newcs;
     type_unsigned_16 newss;
     type_unsigned_16 newsp;
+    type_unsigned_32 newesp;
     type_unsigned_16 oldss;
     type_unsigned_16 oldsp;
     type_unsigned_16 oldcs;
@@ -2781,14 +2815,30 @@ static C_VOID _ser_int_protected_16(core_machine_cpu_execution_context *context,
     oldflags = cpu_state.data.flags;
     error_code = TYPE_MASK_UNSIGNED_16(instruction_state.data.excode);
     if (target_cpl < oldcpl) {
-        if (!cpu_state.data.tr.flagValid ||
-            cpu_state.data.tr.sys.type != VCPU_DESC_SYS_TYPE_TSS_16_BUSY) {
+        if (!cpu_state.data.tr.flagValid) {
             TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(0));
         }
-        TYPE_TRACE_CHECK_RETURN(_s_read_tss(context, 2u,
-            TYPE_REFERENCE_OF(newsp), 2u));
-        TYPE_TRACE_CHECK_RETURN(_s_read_tss(context, 4u,
-            TYPE_REFERENCE_OF(newss), 2u));
+        switch (cpu_state.data.tr.sys.type) {
+        case VCPU_DESC_SYS_TYPE_TSS_16_BUSY:
+            TYPE_TRACE_CHECK_RETURN(_s_read_tss(context, 2u,
+                TYPE_REFERENCE_OF(newsp), 2u));
+            TYPE_TRACE_CHECK_RETURN(_s_read_tss(context, 4u,
+                TYPE_REFERENCE_OF(newss), 2u));
+            break;
+        case VCPU_DESC_SYS_TYPE_TSS_32_BUSY:
+            TYPE_TRACE_CHECK_RETURN(_s_read_tss(context, 4u,
+                TYPE_REFERENCE_OF(newesp), 4u));
+            TYPE_TRACE_CHECK_RETURN(_s_read_tss(context, 8u,
+                TYPE_REFERENCE_OF(newss), 2u));
+            if (newesp > 0xffffu) {
+                TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(0));
+            }
+            newsp = TYPE_MASK_UNSIGNED_16(newesp);
+            break;
+        default:
+            TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(0));
+            break;
+        }
         if (_IsSelectorNull(newss) || _GetSelector_TI(newss) ||
             _GetSelector_RPL(newss) != target_cpl) {
             TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(newss & 0xfffcu));
