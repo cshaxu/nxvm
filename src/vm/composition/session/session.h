@@ -4,7 +4,7 @@
 #include "vm/composition/session/session_interface.h"
 
 #include "core/machine/machine_interface.h"
-#include "core/machine/block_provider.h"
+#include "core/machine/media_interface.h"
 #include "core/machine/display_interface.h"
 #include "core/platform/input_interface.h"
 #include "core/platform/presentation_mailbox_interface.h"
@@ -39,7 +39,7 @@ struct vm_session {
     t_debug debug;
     t_bios default_bios;
     vm_profile_default_context default_profile_context;
-    core_machine_block_provider_slot block_provider;
+    core_machine_media_registry media_registry;
     core_machine_display_provider_slot display_provider;
     core_platform_presentation_mailbox presentation_mailbox;
     vm_platform_execution_transport execution_transport;

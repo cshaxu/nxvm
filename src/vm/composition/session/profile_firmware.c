@@ -227,7 +227,8 @@ C_VOID vm_session_profile_firmware_reset(vm_session *session)
     if (session == STD_NULL) return;
     vm_profile_default_bios_reset(&session->default_bios,
         vm_profile_default_context_memory(&session->default_profile_context),
-        &session->block_provider);
+        session->default_profile_context.media_registry,
+        session->default_profile_context.hdd_media_id);
     vm_profile_default_cga_reset(&session->default_profile_context);
 }
 

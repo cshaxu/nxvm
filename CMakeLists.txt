@@ -297,7 +297,7 @@ set(VM_COMPOSITION_SOURCES
     src/vm/composition/session/session_factory.c
     src/vm/composition/session/console_machine_adapter.c
     src/vm/composition/session/debug_target.c
-    src/vm/composition/session/block.c
+    src/vm/composition/session/media.c
     src/vm/composition/session/display.c
     src/vm/composition/session/lifecycle.c
     src/vm/composition/session/session.c
@@ -319,7 +319,6 @@ set(VM_MACHINE_SOURCES
     src/vm/machine/debug.c
 )
 set(CORE_MACHINE_SOURCES
-    src/core/machine/block.c
     src/core/machine/display.c
     src/core/machine/vadp.c
     src/core/machine/port.c

@@ -6,9 +6,7 @@
 
 #include "core/machine/memory.h"
 
-#include "core/machine/block_interface.h"
-
-#include "core/machine/block_provider.h"
+#include "core/machine/media_interface.h"
 
 
 #include "bios.h"
@@ -88,10 +86,22 @@ static uint16_t bios_write_code(t_ram *ram, uint16_t segment, uint16_t offset,
     return code->length;
 }
 
+static core_machine_media_info bios_media_info(
+    const core_machine_media_registry *media_registry, core_machine_media_id hdd_media_id)
+{
+    core_machine_media_info info = {0};
+    core_machine_media_result result;
+
+    if (core_machine_media_query(media_registry, hdd_media_id, &info, &result) !=
+            TYPE_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_OK) {
+        STD_MEMSET(&info, TYPE_ZERO_8, sizeof(info));
+    }
+    return info;
+}
+
 static C_VOID bios_load_data(t_bios *bios, t_ram *ram,
-    const core_machine_block_provider_slot *block_provider) {
-    core_machine_block_geometry geometry;
-    core_machine_block_get_geometry_from(block_provider, &geometry);
+    const core_machine_media_registry *media_registry, core_machine_media_id hdd_media_id) {
+    core_machine_media_info media = bios_media_info(media_registry, hdd_media_id);
     (C_VOID)bios;
     C_UCHAR zeroes[0x100] = { 0 };
     (C_VOID)core_machine_memory_write_real_to(ram, 0x0040, 0u, zeroes, sizeof(zeroes));
@@ -99,7 +109,7 @@ static C_VOID bios_load_data(t_bios *bios, t_ram *ram,
     bios_write_byte(ram, 0u, VBIOS_ADDR_KEYB_FLAG0, 0x20); bios_write_word(ram, 0u, VBIOS_ADDR_KEYB_BUF_HEAD, 0x041e); bios_write_word(ram, 0u, VBIOS_ADDR_KEYB_BUF_TAIL, 0x041e); bios_write_byte(ram, 0u, VBIOS_ADDR_SOFT_RESET_FLAG, bios->flagBoot ? 0x80u : 0u);
     bios_write_byte(ram, 0u, VBIOS_ADDR_FDD_CALI_FLAG, 0x01); bios_write_byte(ram, 0u, VBIOS_ADDR_FDD_MOTOR_TIMEOUT, 0x25); bios_write_byte(ram, 0u, VBIOS_ADDR_FDD_STATUS, 0x09); bios_write_byte(ram, 0u, VBIOS_ADDR_FDC_CYLINDER, 0x01); bios_write_byte(ram, 0u, VBIOS_ADDR_FDC_SECTOR, 0x01); bios_write_byte(ram, 0u, VBIOS_ADDR_FDC_BYTE_COUNT, 0x02);
     bios_write_byte(ram, 0u, VBIOS_ADDR_VGA_VIDEO_MODE, 0x03); bios_write_word(ram, 0u, VBIOS_ADDR_VGA_COLUMN, 0x0050); bios_write_word(ram, 0u, VBIOS_ADDR_VGA_PAGE_SIZE, 0x1000); bios_write_word(ram, 0u, VBIOS_ADDR_VGA_CURSOR_P0, 0x0500); bios_write_byte(ram, 0u, VBIOS_ADDR_VGA_CURSOR_BOTTOM, 0x0e); bios_write_byte(ram, 0u, VBIOS_ADDR_VGA_CURSOR_TOP, 0x0d); bios_write_word(ram, 0u, VBIOS_ADDR_VGA_ACT_ADPT_PORT, 0x03d4); bios_write_byte(ram, 0u, VBIOS_ADDR_VGA_MODE_REGISTER, 0x29); bios_write_byte(ram, 0u, VBIOS_ADDR_VGA_COLOR_PALETTE, 0x30);
-    bios_write_byte(ram, 0u, VBIOS_ADDR_HDD_LST_OP_STATUS, 0x01); bios_write_byte(ram, 0u, VBIOS_ADDR_HDD_NUMBER, geometry.present ? 0x01 : 0u); bios_write_byte(ram, 0u, VBIOS_ADDR_HDD_CONTROL, 0xc0); bios_write_byte(ram, 0u, VBIOS_ADDR_PARA_TIMEOUT_LPT1, 0x14); bios_write_byte(ram, 0u, VBIOS_ADDR_SERI_TIMEOUT_COM1, 0x0a); bios_write_word(ram, 0u, VBIOS_ADDR_KEYB_BUFFER_START, 0x041e); bios_write_word(ram, 0u, VBIOS_ADDR_KEYB_BUFFER_END, 0x043d);
+    bios_write_byte(ram, 0u, VBIOS_ADDR_HDD_LST_OP_STATUS, 0x01); bios_write_byte(ram, 0u, VBIOS_ADDR_HDD_NUMBER, media.present ? 0x01 : 0u); bios_write_byte(ram, 0u, VBIOS_ADDR_HDD_CONTROL, 0xc0); bios_write_byte(ram, 0u, VBIOS_ADDR_PARA_TIMEOUT_LPT1, 0x14); bios_write_byte(ram, 0u, VBIOS_ADDR_SERI_TIMEOUT_COM1, 0x0a); bios_write_word(ram, 0u, VBIOS_ADDR_KEYB_BUFFER_START, 0x041e); bios_write_word(ram, 0u, VBIOS_ADDR_KEYB_BUFFER_END, 0x043d);
     bios_write_byte(ram, 0u, VBIOS_ADDR_VGA_ROW_NUMBER, 0x18); bios_write_word(ram, 0u, VBIOS_ADDR_VGA_CHAR_HEIGHT, 0x0010); bios_write_byte(ram, 0u, VBIOS_ADDR_VGA_MODE_OPTIONS1, 0x60); bios_write_byte(ram, 0u, VBIOS_ADDR_VGA_MODE_OPTIONS2, 0x09); bios_write_byte(ram, 0u, VBIOS_ADDR_VGA_DISPLAY_DATA, 0x11); bios_write_byte(ram, 0u, VBIOS_ADDR_VGA_DCC_INDEX, 0x0b); bios_write_byte(ram, 0u, VBIOS_ADDR_DRV_SAME_FLAG, 0x77); bios_write_byte(ram, 0u, VBIOS_ADDR_DRV_MEDIA_STATE_D0, 0x17); bios_write_byte(ram, 0u, VBIOS_ADDR_KEYB_MODE_TYPE, 0x10); bios_write_byte(ram, 0u, VBIOS_ADDR_KEYB_LED_FLAG, 0x02); bios_write_dword(ram, 0u, VBIOS_ADDR_VGA_VIDEO_TAB_PTR, 0xc0005d3a); bios_write_byte(ram, 0u, VBIOS_ADDR_POST_WORK_AREA, VBIOS_POST_REPORT_NONE);
 }
 static C_VOID bios_load_rom_info(t_ram *ram) {
@@ -151,23 +161,22 @@ static C_VOID bios_load_post(t_bios *bios, t_ram *ram) {
         bios->data.buildIP, &bios->connect.bootCode);
 }
 static C_VOID bios_load_additional(t_ram *ram,
-    const core_machine_block_provider_slot *block_provider) {
-    core_machine_block_geometry geometry;
-    core_machine_block_get_geometry_from(block_provider, &geometry);
+    const core_machine_media_registry *media_registry, core_machine_media_id hdd_media_id) {
+    core_machine_media_info media = bios_media_info(media_registry, hdd_media_id);
     /* hard disk param table */
     bios_write_word(ram, 0u, VBIOS_ADDR_HDD_PARAM_OFFSET, VBIOS_ADDR_HDD_PARAM);
     bios_write_word(ram, 0u, VBIOS_ADDR_HDD_PARAM_SEGMENT, VBIOS_ADDR_START_SEG);
-    bios_write_word(ram, VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 0, geometry.cylinders);
-    bios_write_byte(ram, VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 2, TYPE_MASK_UNSIGNED_8(geometry.heads));
+    bios_write_word(ram, VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 0, TYPE_MASK_UNSIGNED_16(media.geometry.cylinders));
+    bios_write_byte(ram, VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 2, TYPE_MASK_UNSIGNED_8(media.geometry.heads));
     bios_write_byte(ram, VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 3, 0xa0);
-    bios_write_byte(ram, VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 4, TYPE_MASK_UNSIGNED_8(geometry.sectors));
+    bios_write_byte(ram, VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 4, TYPE_MASK_UNSIGNED_8(media.geometry.sectors_per_track));
     bios_write_word(ram, VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 5, TYPE_MAX_UNSIGNED_16);
     bios_write_byte(ram, VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 7, 0u);
     bios_write_byte(ram, VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 8, 0x08);
-    bios_write_word(ram, VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 9, geometry.cylinders);
-    bios_write_byte(ram, VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 11, TYPE_MASK_UNSIGNED_8(geometry.heads));
+    bios_write_word(ram, VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 9, TYPE_MASK_UNSIGNED_16(media.geometry.cylinders));
+    bios_write_byte(ram, VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 11, TYPE_MASK_UNSIGNED_8(media.geometry.heads));
     bios_write_word(ram, VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 12, 0u);
-    bios_write_byte(ram, VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 14, TYPE_MASK_UNSIGNED_8(geometry.sectors));
+    bios_write_byte(ram, VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 14, TYPE_MASK_UNSIGNED_8(media.geometry.sectors_per_track));
     bios_write_byte(ram, VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 15, 0u);
 }
 
@@ -216,18 +225,19 @@ C_VOID vm_profile_default_bios_initialize(t_bios *bios) {
 
 /* Loads bios to ram */
 C_VOID vm_profile_default_bios_reset(t_bios *bios, t_ram *ram,
-    const core_machine_block_provider_slot *block_provider) {
+    const core_machine_media_registry *media_registry,
+    core_machine_media_id hdd_media_id) {
     if (bios == STD_NULL || ram == STD_NULL) return;
     STD_MEMSET((C_VOID *)(&bios->data), TYPE_ZERO_8, sizeof(t_bios_data));
     /* bios area starts at f000:0000 */
     bios->data.buildCS = VBIOS_ADDR_START_SEG;
     bios->data.buildIP = VBIOS_ADDR_START_OFF;
-    bios_load_data(bios, ram, block_provider);
+    bios_load_data(bios, ram, media_registry, hdd_media_id);
     bios_load_keyboard_tables(ram);
     bios_load_rom_info(ram);
     bios_load_interrupts(bios, ram);
     bios_load_post(bios, ram);
-    bios_load_additional(ram, block_provider);
+    bios_load_additional(ram, media_registry, hdd_media_id);
 }
 C_VOID vm_profile_default_bios_refresh(t_bios *bios) { (C_VOID)bios; }
 C_VOID vm_profile_default_bios_finalize(t_bios *bios)

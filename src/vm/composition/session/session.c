@@ -6,6 +6,7 @@
 #include "vm/composition/session/control.h"
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/display.h"
+#include "vm/composition/session/media.h"
 #include "vm/machine/fdd.h"
 #include "vm/machine/hdd.h"
 #include "vm/profile/default_profile/firmware/bios.h"
@@ -137,9 +138,9 @@ C_VOID vm_session_storage_initialize(vm_session *machine)
     }
     vm_profile_default_context_initialize(&machine->default_profile_context,
         &machine->default_bios, profile_binding,
-        STD_NULL);
-    core_machine_block_provider_slot_initialize(&machine->block_provider);
-    machine->default_profile_context.block_provider = &machine->block_provider;
+        STD_NULL, VM_SESSION_MEDIA_HDD_ID);
+    core_machine_media_registry_initialize(&machine->media_registry);
+    machine->default_profile_context.media_registry = &machine->media_registry;
     core_machine_display_provider_slot_initialize(&machine->display_provider);
     machine->default_profile_context.display_provider = &machine->display_provider;
     core_platform_presentation_mailbox_initialize(&machine->presentation_mailbox);
@@ -151,7 +152,7 @@ C_VOID vm_session_storage_finalize(vm_session *machine)
 {
     if (machine == STD_NULL || machine->core_machine == STD_NULL) return;
     core_platform_presentation_mailbox_finalize(&machine->presentation_mailbox);
-    core_machine_block_provider_slot_finalize(&machine->block_provider);
+    core_machine_media_registry_finalize(&machine->media_registry);
     core_machine_display_provider_slot_finalize(&machine->display_provider);
     core_machine_destroy(machine->core_machine);
     machine->core_machine = STD_NULL;
