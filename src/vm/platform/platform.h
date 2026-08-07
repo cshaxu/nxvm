@@ -8,7 +8,7 @@ extern "C" {
 #endif
 
 #include "type.h"
-#include "core/platform/host_surface_interface.h"
+#include "vm/platform/host_surface.h"
 #include "core/platform/input_interface.h"
 #include "core/platform/presentation_mailbox_interface.h"
 #include "core/utils/wait_provider.h"
@@ -25,8 +25,8 @@ typedef struct vm_platform_run_context {
     core_platform_input_source *input_source;
     const core_platform_presentation_mailbox *presentation;
     const core_utils_wait_scope *wait_scope;
-    core_platform_host_surface_context console_surface;
-    core_platform_host_surface_context window_surface;
+    vm_platform_host_surface_context console_surface;
+    vm_platform_host_surface_context window_surface;
     C_VOID *console_renderer;
     C_VOID *window_renderer;
     uint64_t terminal_displayed_generation;

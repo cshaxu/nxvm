@@ -2,7 +2,7 @@
 
 ## Current Work
 
-**M5 T282 S1: Existing Host-Surface Admission Audit -- active.**
+**M5 T282 S2: Host-Surface Boundary Migration -- active.**
 
 - **Original request:** audit only copied input, wait/cancellation,
   presentation/host-surface lease, and the neutral backing resource. Decide
@@ -15,6 +15,9 @@
   `vm/platform` rather than preserve a core facade. Backing resource has only
   its focused test and remains a deferred neutral facility with no production
   VM consumer; no host filesystem API is admitted.
+- **S2 deliverable:** move the native-handle context and lease into
+  `vm/platform`, rename its public symbols `vm_platform_host_surface_*`, and
+  prove no core source or target retains the native-handle surface.
 - **S2/S3:** implement only an S1-approved boundary correction, then run its
   focused probes and current gates. A pure audit produces no artifact.
 - **Rules:** core may own only policy-free opaque/copy contracts. VM owns host

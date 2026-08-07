@@ -22,10 +22,10 @@ C_VOID vm_platform_run_context_initialize(
     context->input_source = input_source;
     context->presentation = presentation;
     context->wait_scope = wait_scope;
-    core_platform_host_surface_context_initialize(&context->console_surface,
-        CORE_PLATFORM_HOST_SURFACE_CONSOLE, STD_NULL);
-    core_platform_host_surface_context_initialize(&context->window_surface,
-        CORE_PLATFORM_HOST_SURFACE_WINDOW, STD_NULL);
+    vm_platform_host_surface_context_initialize(&context->console_surface,
+        VM_PLATFORM_HOST_SURFACE_CONSOLE, STD_NULL);
+    vm_platform_host_surface_context_initialize(&context->window_surface,
+        VM_PLATFORM_HOST_SURFACE_WINDOW, STD_NULL);
     context->console_renderer = STD_NULL;
     context->window_renderer = STD_NULL;
     context->terminal_displayed_generation = 0u;

@@ -17,7 +17,7 @@ typedef struct win32con_run_handle {
     HANDLE display_thread;
 } win32con_run_handle;
 
-static core_platform_host_surface_lease win32_console_lease = {
+static vm_platform_host_surface_lease win32_console_lease = {
     ATOMIC_VAR_INIT(0)
 };
 
@@ -111,11 +111,11 @@ type_status vm_platform_win32con_run_handle_start(
         context->execution == STD_NULL || context->input_source == STD_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    if (core_platform_host_surface_lease_acquire(&win32_console_lease,
+    if (vm_platform_host_surface_lease_acquire(&win32_console_lease,
             context) != TYPE_STATUS_OK) return TYPE_STATUS_INVALID_STATE;
     handle = (win32con_run_handle *)STD_CALLOC(1u, sizeof(*handle));
     if (handle == STD_NULL) {
-        core_platform_host_surface_lease_release(&win32_console_lease, context);
+        vm_platform_host_surface_lease_release(&win32_console_lease, context);
         return TYPE_STATUS_NO_MEMORY;
     }
     handle->owner = owner;
@@ -192,7 +192,7 @@ C_VOID vm_platform_win32con_run_handle_finalize(vm_platform_run_handle *owner)
     }
     platform->console_renderer = STD_NULL;
     platform->console_surface.native_handle = STD_NULL;
-    core_platform_host_surface_lease_release(&win32_console_lease, handle->platform);
+    vm_platform_host_surface_lease_release(&win32_console_lease, handle->platform);
     STD_FREE(handle);
     vm_platform_run_handle_initialize(owner);
 }
