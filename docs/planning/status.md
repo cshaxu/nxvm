@@ -2,7 +2,82 @@
 
 ## Current Work
 
-**Idle: T260 is closed; establish the next task packet before implementation.**
+**M5 T261 S2 active: implement the bounded core-owned far-JMP task switch.**
+
+## T261 Admission Packet
+
+### Original Request
+
+Implement the smallest real hardware task-switch closure only in
+`core/machine`: save task A, load task B, transition busy descriptors, and
+preserve observable faults. The one existing `core_machine_run()` executor
+remains the only guest path. VM, firmware, platform, and product code must not
+participate. The task produces `nxvm_0_5_0261.exe` only after the completed
+task closure.
+
+### S1 Contract
+
+T261 admits exactly one entry: a CPL0, 16-bit far `JMP` to a GDT-resident,
+present, **available 16-bit TSS**. This applies to the 80286 profile and to
+the 80386 profile while it executes the same 16-bit TSS layout. A task gate,
+far `CALL`, `IRET` task return, nested tasks, backlink changes, and `NT`
+changes are not admitted.
+
+| Concern | T261 admission | Deferred / deterministic result |
+| --- | --- | --- |
+| State owner/path | CPU/TR/descriptors/TSS memory in `core/machine`; far-JMP decoder -> one task-switch helper -> existing executor | VM/firmware/host context, a second executor, or a task-specific loop |
+| Source/target | Current TR is a valid busy 16-bit TSS; target is GDT, RPL 0, DPL 0, present, available 16-bit TSS | null/LDT selector, wrong type, privilege mismatch, not-present or busy target faults before task-state mutation |
+| Layout | 16-bit TSS offsets through `0x2b`: IP, FLAGS, AX/CX/DX/BX/SP/BP/SI/DI, ES/CS/SS/DS, and LDTR selector | 32-bit TSS/CR3, FS/GS, I/O map, task switch under paging, LDT loading |
+| Save/load | Save task A's admitted 16-bit state to its TSS; load task B's state through normal selector validation. The 80386 profile follows its architected 16-bit-TSS register widening rule, explicitly asserted by the corpus. | 32-bit task state or an implicit host snapshot |
+| Busy/flags | Far-JMP clears old A busy, sets B busy, leaves B link and `NT` unchanged, and sets CR0.TS | CALL/INT/IRET busy/link/NT semantics |
+| Atomicity/fault | Validate both descriptors, both TSS bounds, and target selectors before any save, descriptor busy write, or CPU/TR commit. A pre-commit fault retains its original copied diagnostic and leaves A live. | mid-switch paging/segment-load recovery; these require another admission |
+| Faults | invalid selector/type/DPL/RPL/busy -> `#GP(selector)`; not present -> `#NP(selector)`; insufficient old or target TSS -> `#TS(selector)` | protected-IDT delivery beyond the retained T259 route |
+
+The project-owned `core-machine-task-switch-smoke` begins as a pre-S2
+baseline: it establishes protected mode, `LTR` task A, then attempts the
+admitted far-JMP form under both profiles and proves the current intentional
+unsupported disposition while TR remains task A. S2 turns that same fixture
+into the task-A -> task-B positive corpus, then adds the admitted fault cases.
+Its focused markers are
+`M5:T261:S1:TASK-SWITCH:BASELINE:OK`,
+`M5:T261:S2:TASK-SWITCH:OK`, and
+`M5:T261:S3:TASK-SWITCH:CORPUS:OK`.
+
+### Rules, Evidence, And Stop Conditions
+
+Applicable rules: core has no VM/VDM dependency; state remains single-owner;
+all descriptor and TSS access uses the existing checked core memory route; no
+global/TLS current object; provider topology is frozen before reset; platform
+does not mutate guest state; no third-party source import, runtime dependency,
+or protected guest asset. S1 examines Intel's system-programming task model and
+the local Bochs 2.6 compatibility checkout only as a behavioral reference; it
+does not import or transliterate either implementation.
+
+S2 may change only the core far-JMP/TSS path and existing descriptor/TSS
+helpers. S3 runs the focused corpus, T257--T260, paging, retained DOS/FDD/HDD,
+Console/debugger, and current gates. Stop and split for 32-bit TSS state,
+paging-time atomicity, task gates, far CALL, nested/IRET task return, LDT,
+CPL1/2, V86, any VM/firmware/host shortcut, another executor, or a retained
+NXVM UX change.
+
+**Similar-issue sweep plan.** The defect class is a system-segment control
+transfer reaching a stub or a bypassed TSS state transition. Before closure,
+search all `_ser_*_tss`, `_ser_*_task_gate`, `_s_read_tss`, `_s_write_tss`,
+`_s_load_tr`, `_IsDescTSS*`, and descriptor write sites in tracked source,
+tests, CMake, and task records. Every production hit must be the shared T261
+owner path, explicitly deferred, or recorded in `TODO.md` with an admission.
+
+### S1 Result
+
+S1 is complete. `core-machine-task-switch-smoke` establishes protected mode,
+loads task A through `LTR`, and executes the selected far-JMP-to-TSS form under
+both 80286 and 80386 profiles. Before S2 it deterministically reaches the
+existing `#CE` stub while TR remains A; its marker is
+`M5:T261:S1:TASK-SWITCH:BASELINE:OK`. The focused target and retained T259/T260
+protection smokes pass. The task used the Intel system-programming task model
+as primary architectural reference and the local Bochs 2.6 checkout only to
+cross-check the 16-bit TSS limit and non-nested far-JMP busy/NT model; neither
+source is imported or a runtime dependency.
 
 ## T260 Admission Packet
 
