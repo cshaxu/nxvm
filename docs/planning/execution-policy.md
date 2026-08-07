@@ -89,8 +89,9 @@ is available. It verifies that `status.md` is the sole current-baseline
 authority, an Idle status has no retained packet, no completed `m5-t*.md`
 record remains in planning, the queue contains no completed row, history makes
 no current-baseline claim, status matches the configured current artifact
-target, and no known mojibake is present. A failure blocks closure until the
-documents are made internally consistent.
+target, no known mojibake is present, and the status closure table remains at
+eight rows or fewer. A failure blocks closure until the documents are made
+internally consistent.
 
 ## Milestone Closure Evidence
 

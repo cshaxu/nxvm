@@ -1,6 +1,7 @@
 [CmdletBinding()]
 param(
-    [string]$RepositoryRoot
+    [string]$RepositoryRoot,
+    [switch]$SelfTest
 )
 
 $ErrorActionPreference = "Stop"
@@ -12,6 +13,19 @@ function Require([bool]$condition, [string]$message) {
     if (-not $condition) {
         throw $message
     }
+}
+
+function Test-Mojibake([string]$text) {
+    return $text -match '\u00E2|\u00C3|\uFFFD'
+}
+
+if ($SelfTest) {
+    Require (Test-Mojibake (([char]0x00E2).ToString() + "quoted")) `
+        "Mojibake detector did not reject the controlled negative sample."
+    Require (-not (Test-Mojibake "ASCII only")) `
+        "Mojibake detector rejected an ASCII control sample."
+    Write-Output "Documentation governance mojibake self-test passed."
+    exit 0
 }
 
 $docsRoot = Join-Path $RepositoryRoot "docs"
@@ -45,6 +59,11 @@ Require (-not ($queue -match '(?im)^The retained baseline is')) `
 Require (-not ($queue -match '(?m)^\| T\d+ \| \*\*Completed\.')) `
     "The M5 queue must not retain completed task rows."
 
+$closureSection = [regex]::Match($status, '(?ms)^## Recent M5 Closures\r?\n(?<body>.*?)(?=^## |\z)')
+Require ($closureSection.Success) "status.md must contain a Recent M5 Closures section."
+$closureCount = ([regex]::Matches($closureSection.Groups['body'].Value, '(?m)^\| T\d+ \|')).Count
+Require ($closureCount -le 8) "status.md must retain at most eight recent M5 closure rows."
+
 $presets = Get-Content -Raw -LiteralPath $presetPath | ConvertFrom-Json
 $currentPreset = @($presets.buildPresets | Where-Object { $_.name -eq "current-gcc" })
 Require ($currentPreset.Count -eq 1) "CMakePresets.json must define exactly one current-gcc preset."
@@ -60,7 +79,7 @@ Require ($statusArtifacts.Count -eq 1 -and $statusArtifacts[0] -eq $expectedArti
     "status.md current artifact must match CMakePresets.json ($expectedArtifact)."
 
 $mojibake = Get-ChildItem -LiteralPath $docsRoot -Recurse -File -Filter "*.md" |
-    Select-String -Pattern 'â|Ã|�'
-Require ($null -eq $mojibake) "Documentation contains mojibake: $($mojibake.Path -join ', ')"
+    Where-Object { Test-Mojibake (Get-Content -Raw -LiteralPath $_.FullName) }
+Require ($null -eq $mojibake) "Documentation contains mojibake: $($mojibake.FullName -join ', ')"
 
 Write-Output "Documentation governance checks passed for $currentTarget."

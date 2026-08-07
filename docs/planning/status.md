@@ -22,18 +22,6 @@ T284 only through a new approved packet.
 
 | Task | Compact result |
 | --- | --- |
-| T264 | Closed PC/AT ownership debt without changing retained NXVM behavior. |
-| T265 | Added bounded Level 2 instruction-cost attribution with zero default-PC/AT surcharges pending calibration evidence. |
-| T266 | Closed bounded VADP CRTC cursor/page/status behavior and copied column/row coordinates. |
-| T267 | Added bounded standard PS/2 AUX sample-rate, resolution, and status commands through the core KBC and IRQ12 guest path. |
-| T268 | Required DOR.ME0 for FDC drive-0 readiness while retaining FDC/DMA2/IRQ6 ownership and the boot path. |
-| T269 | Directly closed block, demand, single, and M2M one-grant semantics; two run quantums replay the same FDC DMA2 DOS result. |
-| T270 | Added the frozen multi-device core media contract and fake-provider corpus; retained the old single block slot only as T272's explicitly bounded migration source. |
-| T271 | Added a synchronous opaque core/platform backing resource with one close owner; existing copied input and cancellation contracts remain the only such facilities. |
-| T272 | Replaced the old single-slot block bridge with frozen FDD/HDD media providers and copied ROM geometry; FDC/HDC direct backing use remains explicitly deferred to T275/T277. |
-| T273 | Moved the neutral MC146818 register/calendar/tick/IRQ mechanism into core; VM retains profile NVRAM defaults and the PC/AT 70h bit-7 NMI/71h port adapter. |
-| T274 | Added a core-only fixture proving one machine can bind neutral RTC/media/backing providers, freeze, reset, apply an entry plan, and run a bounded slice without VM vocabulary. |
-| T275 | Decoupled the retained FDC controller from `t_fdd`; it now consumes only frozen media provider operations while retaining its single DMA2/IRQ6 state machine. |
 | T276 | Moved the neutral FDC into `core_machine.shared_fdc`; composition only binds frozen PC/AT routes/media, while core owns controller lifecycle and the core-only FDC fixture. |
 | T277 | Removed ATA PIO's direct `t_hdd` dependency and supplied the frozen media-registry boundary later consumed by T278. |
 | T278 | Moved neutral ATA PIO into `core_machine.shared_hdc`; composition only binds frozen PC/AT routes/media, while the VM-free fixture proves IDENTIFY, DRQ, and IRQ14 acknowledgement. |
@@ -67,6 +55,11 @@ active packet becomes an operational authority only after approval.
 - **M5 Td S35:** tightened T279 bounded-format semantics, T280 raw-HDD commit
   truth, T282's existing-consumer-only host-surface audit, and T283's direct
   dependencies. This task changes no runtime behavior.
+- **M5 Td S36:** recorded the WASM media-backing admission boundary without a
+  runtime, API, artifact, or task-number change.
+- **M5 Td S37:** made M5 history static, capped the status closure summary,
+  and hardened the mojibake governance check. This task changes no runtime
+  behavior or active-task scope.
 
 ## Milestone State
 
