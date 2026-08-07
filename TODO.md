@@ -58,11 +58,11 @@ The ordered implementation queue is maintained in
 The entries below are durable gaps and must not be mistaken for an independently
 active task.
 
-- [ ] **Advanced 8042 AUX protocol (`TODO(Medium)`).** T229 admits a bounded
-  IRQ12 three-byte relative packet path only. Admit wheel IDs, sample-rate,
-  scaling, remote/read-data/status, resend/error timing, and host capture only
-  as separately probed controller work; do not turn platform input into a DOS
-  API or guest-memory shortcut.
+- [ ] **Advanced 8042 AUX protocol (`TODO(Medium)`).** T267 adds bounded
+  sample-rate, resolution, and `E9h` status through the existing IRQ12 path.
+  Defer wheel IDs/sample-rate handshake, scaling effect, remote/read-data,
+  resend/error timing, and host capture to separately probed controller work;
+  do not turn platform input into a DOS API or guest-memory shortcut.
 - [x] **FDC/FDD controller state machine (`TODO(High)`, T231).** Core-owned
   DMA2 now drives the bounded VM FDC/FDD command/result state machine; image
   files are validated backends, not controller shortcuts. Deferred separately:

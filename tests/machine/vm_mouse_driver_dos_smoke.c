@@ -111,7 +111,7 @@ static C_INT vm_mouse_dos_build_program(vm_mouse_dos_program *program,
     if (program == STD_NULL || out_bytes_offset == STD_NULL) return 0;
     STD_MEMSET(program, 0, sizeof(*program));
     /* COM entry: install ordinary IRQ12 handler, unmask PIC, then issue
-     * AUX reset, identify, and enable-reporting requests. */
+     * AUX reset, identify, reporting, configuration, and status requests. */
     if (!vm_mouse_dos_put(program, 0x0eu) || !vm_mouse_dos_put(program, 0x1fu) ||
         !vm_mouse_dos_put(program, 0xfau) || !vm_mouse_dos_put(program, 0x31u) ||
         !vm_mouse_dos_put(program, 0xc0u) || !vm_mouse_dos_put(program, 0x8eu) ||
@@ -127,8 +127,10 @@ static C_INT vm_mouse_dos_build_program(vm_mouse_dos_program *program,
         !vm_mouse_dos_put(program, 0xb0u) || !vm_mouse_dos_put(program, 0xefu) ||
         !vm_mouse_dos_put(program, 0xe6u) || !vm_mouse_dos_put(program, 0xa1u) ||
         !vm_mouse_dos_put(program, 0xfbu)) return 0;
-    for (index = 0u; index < 3u; ++index) {
-        static const uint8_t command[] = { 0xffu, 0xf2u, 0xf4u };
+    for (index = 0u; index < 8u; ++index) {
+        static const uint8_t command[] = {
+            0xffu, 0xf2u, 0xf4u, 0xf3u, 200u, 0xe8u, 0x03u, 0xe9u
+        };
         if (!vm_mouse_dos_put(program, 0xb0u) || !vm_mouse_dos_put(program, 0xd4u) ||
             !vm_mouse_dos_put(program, 0xe6u) || !vm_mouse_dos_put(program, 0x64u) ||
             !vm_mouse_dos_put(program, 0xb0u) ||
@@ -146,7 +148,7 @@ static C_INT vm_mouse_dos_build_program(vm_mouse_dos_program *program,
     wait_setup = program->length;
     if (!vm_mouse_dos_put(program, 0x83u) || !vm_mouse_dos_put(program, 0x3eu)) return 0;
     count_patch[0] = program->length;
-    if (!vm_mouse_dos_word(program, 0u) || !vm_mouse_dos_put(program, 0x06u) ||
+    if (!vm_mouse_dos_word(program, 0u) || !vm_mouse_dos_put(program, 0x0eu) ||
         !vm_mouse_dos_put(program, 0x72u) || !vm_mouse_dos_put(program,
             (uint8_t)(wait_setup - program->length - 1u))) return 0;
     /* The guest has consumed reset/identify/enable replies and is now ready
@@ -159,7 +161,7 @@ static C_INT vm_mouse_dos_build_program(vm_mouse_dos_program *program,
     wait_packet = program->length;
     if (!vm_mouse_dos_put(program, 0x83u) || !vm_mouse_dos_put(program, 0x3eu)) return 0;
     count_patch[1] = program->length;
-    if (!vm_mouse_dos_word(program, 0u) || !vm_mouse_dos_put(program, 0x09u) ||
+    if (!vm_mouse_dos_word(program, 0u) || !vm_mouse_dos_put(program, 0x11u) ||
         !vm_mouse_dos_put(program, 0x72u) || !vm_mouse_dos_put(program,
             (uint8_t)(wait_packet - program->length - 1u))) return 0;
     if (!vm_mouse_dos_put(program, 0xb8u) || !vm_mouse_dos_word(program, 0xb800u) ||
@@ -193,7 +195,7 @@ static C_INT vm_mouse_dos_build_program(vm_mouse_dos_program *program,
     count = (uint16_t)(0x0100u + program->length);
     if (!vm_mouse_dos_word(program, 0u)) return 0;
     bytes = (uint16_t)(0x0100u + program->length);
-    for (index = 0u; index < 9u; ++index) if (!vm_mouse_dos_put(program, 0u)) return 0;
+    for (index = 0u; index < 17u; ++index) if (!vm_mouse_dos_put(program, 0u)) return 0;
     for (index = 0u; index < 4u; ++index) vm_mouse_dos_patch_word(program,
         count_patch[index], count);
     vm_mouse_dos_patch_word(program, bytes_patch, bytes);
@@ -308,11 +310,11 @@ static C_INT vm_mouse_dos_run_until(vm_session *session, uint32_t limit,
 }
 
 static C_INT vm_mouse_dos_run_until_packet(vm_session *session,
-    uint32_t buffer_address, const uint8_t expected[9])
+    uint32_t buffer_address, const uint8_t expected[17])
 {
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
-    uint8_t actual[9];
+    uint8_t actual[17];
     uint32_t executed;
 
     if (session == STD_NULL || expected == STD_NULL) return 0;
@@ -337,8 +339,11 @@ C_INT main(C_INT argc, C_CHAR **argv)
     C_CHAR path[MAX_PATH] = {0};
     core_machine_observation observation;
     core_machine_display_snapshot snapshot;
-    static const uint8_t expected[] = { 0xfau, 0xaau, 0x00u, 0xfau, 0x00u,
-        0xfau, 0x29u, 0x05u, 0xfdu };
+    static const uint8_t expected[] = {
+        0xfau, 0xaau, 0x00u, 0xfau, 0x00u, 0xfau,
+        0xfau, 0xfau, 0xfau, 0xfau, 0xfau, 0x20u, 0x03u, 200u,
+        0x29u, 0x05u, 0xfdu
+    };
     uint16_t bytes_offset = 0u;
     uint32_t bytes_address;
     STD_SIZE_T index;
@@ -400,6 +405,6 @@ done:
         STD_FPRINTF(STD_STDERR, "M5:T241:MOUSE-DRIVER:DOS:FAIL:STAGE=%d\n", stage);
         return 1;
     }
-    STD_PRINTF("M5:T241:S2:MOUSE-DRIVER:DOS:OK\n");
+    STD_PRINTF("M5:T267:S3:AUX:DOS:OK\n");
     return 0;
 }
