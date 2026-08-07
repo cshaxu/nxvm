@@ -95,7 +95,7 @@ These are the next owned admissions, not permission to work in parallel.
   not create a false CPL3/TSS I/O test path. T259 closes the first 16-bit
   CPL3-to-CPL0 software-gate, TSS-stack-source, outer-`IRET`, and `#GP`
   delivery subset; it does not prove CPL3 paging permissions or generic IDT
-  delivery. T260 then admits TSS I/O-map behavior through a real CPL3 corpus,
+  delivery. T260 closes TSS I/O-map behavior through a real CPL3 corpus,
   T261 admits task switching, and T263 keeps remaining instruction families
   corpus-specific. This remains lower ROI than the real-mode PC/AT device
   route.

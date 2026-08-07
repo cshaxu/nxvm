@@ -221,9 +221,11 @@ aligned. Other guest control-register writes stop with `#UD`.
 The paging path itself remains ring 0 only. Non-present fetch/read/write faults
 retain their original instruction point, `CR2`, and P/W/U diagnostic bits as a
 copied core `FAULT` result. T259 separately admits a 16-bit CPL3 software-INT
-gate and `#GP` delivery subset; it does not prove CPL3 paging permission,
-CR0.WP write protection, TLB behavior, TSS I/O permission, task switching, or
-host-assisted recovery.
+gate and `#GP` delivery subset. T260 additionally admits the 80386
+32-bit-TSS I/O-map decision for the retained CPL3 path: every byte of an
+IN/OUT span must be present and clear before the port provider is reached;
+denial is `#GP(0)`. This does not prove CPL3 paging permission, CR0.WP write
+protection, TLB behavior, task switching, or host-assisted recovery.
 
 CPU and memory mutation occurs only at an execution boundary. A debugger, DOS
 loader, firmware override, or root composition uses these APIs only after the

@@ -297,6 +297,8 @@ int main(void)
         IOMAP_CASE_IOPL_BYPASS);
     failed |= iomap_run_case(CORE_MACHINE_CPU_PROFILE_80286,
         IOMAP_CASE_IOPL_BYPASS);
+    failed |= iomap_run_case(CORE_MACHINE_CPU_PROFILE_80286,
+        IOMAP_CASE_DENY_IN);
     if (failed) return 1;
     STD_PRINTF("M5:T260:S3:TSS-IOMAP:CORPUS:OK\n");
     return 0;
