@@ -69,6 +69,8 @@ add_executable(vm-default-pc-at-profile-smoke
 target_link_libraries(vm-default-pc-at-profile-smoke PRIVATE vm-profile)
 add_executable(vm-hdc-port-smoke tests/machine/vm_hdc_port_smoke.c)
 target_link_libraries(vm-hdc-port-smoke PRIVATE vm-composition)
+add_executable(vm-media-provider-smoke tests/machine/vm_media_provider_smoke.c)
+target_link_libraries(vm-media-provider-smoke PRIVATE vm-machine core-machine)
 add_executable(vm-hdc-hdd-boot-smoke tests/machine/vm_hdc_hdd_boot_smoke.c)
 target_link_libraries(vm-hdc-hdd-boot-smoke PRIVATE vm-composition)
 add_executable(vm-default-pc-at-apply-smoke
@@ -933,6 +935,7 @@ target_link_libraries(vdm-minimal-presentation-smoke PRIVATE
 set(PROJECT_CURRENT_SMOKE_TARGETS
     vm-default-pc-at-profile-smoke
     vm-hdc-port-smoke
+    vm-media-provider-smoke
     vm-default-pc-at-apply-smoke
     vm-two-session-isolation-smoke
     vm-core-executor-storage-smoke

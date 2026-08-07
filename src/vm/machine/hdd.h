@@ -8,6 +8,7 @@ extern "C" {
 #endif
 
 #include "type.h"
+#include "core/machine/media_interface.h"
 
 typedef struct t_latch t_latch;
 
@@ -31,6 +32,7 @@ typedef struct {
     type_virtual_address pImgBase;   /* pointer to disk in ram */
     type_virtual_address pCurrByte;  /* pointer to current byte */
     type_unsigned_16 transCount; /* number of transfer bytes */
+    uint32_t media_generation; /* advances on create, insert, remove, format */
 } t_hdd_connect;
 
 typedef struct {
@@ -52,6 +54,7 @@ C_VOID vm_machine_hdd_finalize(t_hdd *hdd);
 C_VOID vm_machine_hdd_create(t_hdd *hdd, uint16_t cylinders);
 C_INT vm_machine_hdd_insert(t_hdd *hdd, const C_CHAR *file_name);
 C_INT vm_machine_hdd_remove(t_hdd *hdd, const C_CHAR *file_name);
+const core_machine_media_provider *vm_machine_hdd_media_provider(C_VOID);
 
 #ifdef __cplusplus
 }/*_EOCD_*/
