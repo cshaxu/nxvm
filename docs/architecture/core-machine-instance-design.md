@@ -39,11 +39,12 @@ implementation debt and must never appear in a new cross-module contract.
 
 ## Session Ownership
 
-Every mutable guest object belongs to exactly one `core_machine` session. The
-session owns CPU/executor state, RAM/A20, port routing, PIC, PIT, DMA, CMOS,
-KBC, video-adapter state, trace state, and session-local registries. A device can
-own private child state, but its lifetime remains bounded by its parent
-session. No process-global variable may select the active session.
+Every mutable core guest object belongs to exactly one `core_machine` session.
+The session owns CPU/executor state, RAM/A20, port routing, PIC, PIT, DMA, KBC,
+video-adapter state, trace state, and session-local registries. A device can own
+private child state, but its lifetime remains bounded by its parent session. No
+process-global variable may select the active session. T272 may add an optional
+core-owned RTC controller; until then RTC state remains VM-owned.
 
 Immutable tables may be process-global only when they contain no guest state,
 provider context, profile selection, host handle, trace cursor, or resettable
@@ -66,7 +67,7 @@ host event loops, pacing, teardown, and product exit policy.
 | Interrupt devices | PIC/PIT/DMA/KBC/VADP mutable models | profile/device configuration only | device-specific interfaces when externally needed |
 | Trace | event buffer, ordering, flush guard | trace observer | `trace_interface.h`, `trace_provider.h` |
 | Firmware | service registry, ordering, vector-conflict and dispatch rules | profile firmware services and callbacks | `firmware_registry_interface.h`, `firmware_provider.h` |
-| Block I/O | drive registry, drive identity, request validation | VM image or VDM contained-filesystem provider | `block_registry_interface.h`, `block_provider.h` |
+| Media I/O | frozen device registry and request validation | VM image or VDM-contained media provider | T270 `media_provider` contract; it is not a host-filesystem API |
 | Keyboard ingress | guest-side routing and queue/state | profile/device keyboard route provider | `keyboard_interface.h`, `keyboard_provider.h` |
 | Display egress | guest display state/snapshot contract | profile/device video snapshot provider | `display_interface.h`, `display_provider.h` |
 
@@ -81,23 +82,17 @@ a copied display snapshot through `display_interface.h`, converts it to a
 platform frame, and submits it. Core never calls a platform UI callback, and a
 platform callback never mutates a machine.
 
-## Object Ownership Ledger
+## Current Ownership Ledger
 
-| Subject | Private state and implementation | Exposed capability | Injected provider | Current gap |
-| --- | --- | --- | --- | --- |
-| machine | session lifecycle, run result, stop flag, child ownership | create, freeze, reset, run, stop, destroy | none | current minimal `core_machine` is not the retained full-PC executor |
-| CPU/executor | registers, decoder scratch, instruction helpers | copied state, bounded run, controlled debug | none | `vcpu` and `vcpuins` choose one global live object |
-| memory | RAM allocation, A20 and physical translation | copied physical read/write, A20 control | mapped-memory provider only if a future profile needs one | legacy real-mode helpers use `vram` |
-| port bus | port map, conflict/width/fault rules | port install/read/write | port device provider | legacy `vport` remains selected globally |
-| PIC/PIT/DMA | controller registers and IRQ/DMA state | device diagnostics only when a consumer needs them | profile device configuration, not replacement dispatch rules | all use global live aliases |
-| CMOS | RTC/NVRAM state and reset policy | optional diagnostic/configuration view | profile CMOS initialization provider | current mutable model remains VM-private |
-| KBC | controller state and guest ingress queue | guest input injection and optional diagnostics | profile keyboard-route provider | `vkbc` is a global live alias |
-| VADP | guest video state and dirty/generation state | copied text/graphics snapshot | profile video snapshot provider | `vvadp` and global display callbacks select one session |
-| firmware | frozen service registry and dispatch bookkeeping | register/freeze/query/dispatch | profile firmware provider | descriptor registry is external and has no callbacks |
-| block | mounted-drive registry and request validation | geometry/read/write by explicit drive id | VM image or VDM filesystem block provider | one global, drive-zero-only CHS provider |
-| trace | event buffer, sequence, flush guard | copied trace/event subscription | trace observer | close to target; provider is already session-bound |
-| debug | paused-state inspection and bounded control | read CPU/RAM, step, continue | none; product debugger adapts it | blocked by executor's global context |
-| presentation data | copied text snapshot and keyboard queue helpers | pure value operations | none | already independent; do not turn it into UI ownership |
+| Subject | Current owner | Boundary and next action |
+| --- | --- | --- |
+| machine, CPU, memory, ports, PIC/PIT/DMA/KBC/VADP | `core_machine` | One session-owned executor and device graph; composition configures it before freeze and drives bounded `core_machine_run`. |
+| RTC/CMOS controller | `vm/machine/cmos.*` | T272 moves only the neutral MC146818 mechanism to core; VM retains PC/AT defaults, NMI glue, host-time policy, and firmware. |
+| FDC controller | `vm/machine/fdc.*` | T274 decouples its FDD backing, then T275 moves the neutral controller to core. |
+| ATA PIO controller | `vm/machine/hdc.*` | T276 decouples its HDD backing, then T277 moves the neutral controller to core. |
+| FDD/HDD backing, paths, mount/eject, persistence | VM composition and `vm/machine` backing objects | T270--T271 expose only frozen device-level media operations. Host filesystem and product policy do not enter core. |
+| firmware and profile declaration | `vm/profile/default_profile` plus VM composition | Profile content stays VM-owned; it binds only public core contracts. |
+| trace/debug/presentation | core state with VM product/platform adapters | Adapters observe or command an explicit session; no selected-machine facade is permitted. |
 
 The ledger deliberately distinguishes profile configuration from a provider.
 For example, a PC/AT profile may configure two PICs and their ports, but it
@@ -117,32 +112,13 @@ second registry beside the ordinary IVT/ROM path.
 
 ## Current-State Audit
 
-The following units already use a `core_machine *` instance correctly or are
-close enough to retain their direction:
-
-- `machine_interface`, `memory_interface`, `port_interface`,
-  `trace_interface`, and `debug_interface` use or are designed around an
-  explicit machine handle.
-- memory, port routing, and trace buffering are stored in the current minimal
-  `core_machine` object.
-- `presentation_interface` contains standalone copied text/queue data and has
-  no selected-machine global.
-
-The following units currently violate the target because they retain a
-process-global live pointer or provider binding:
-
-| Unit | Current transitional form | Required outcome |
-| --- | --- | --- |
-| CPU and instruction executor | `core_machine_cpu_current()` and `vcpu`/`vcpuins` aliases | executor functions receive the owning machine/execution context |
-| RAM, port, PIC, PIT, DMA, KBC, VADP | `*_bind_live()` plus `vram`, `vport`, `vpic*`, `vpit`, `vdma*`, `vkbc`, `vvadp` aliases | state becomes a child of one `core_machine`; temporary aliases are removed only after callers pass context |
-| block | one static geometry/read/write provider and no drive identity | session block registry with multiple drive/provider entries |
-| keyboard | one static provider/context pair | session keyboard provider slot or registry |
-| display | two static provider/context pairs | session display observer and snapshot contracts |
-| firmware | external descriptor object, no provider contract | session firmware registry plus profile provider bindings |
-
-The existing VM live-machine carrier proves that retained objects have only one
-storage location. It does not yet solve selected-session globals: the carrier
-itself and all legacy accessors still select one process-wide live machine.
+The executor migration is complete: CPU, memory, port routing, shared devices,
+and run results use the explicit `core_machine` instance in the retained NXVM
+route. The remaining second-boundary work is not a selected-session-global
+cleanup. It is the narrower controller/media ownership correction recorded in
+T270--T277. The retained fixed block slot is transitional because it represents
+only one CHS device and cannot be the shared FDC/ATA boundary; T270 replaces it
+rather than layering a forwarding facade over it.
 
 ## Migration Invariants
 

@@ -254,7 +254,8 @@ meaning:
 | --- | --- | --- |
 | Deterministic `elapsed_ticks`, run budget, and core scheduler order | `core/machine` | `core_machine_run` advances only guest time; it never reads host time. |
 | Generic PIT counter/GATE/OUT behavior and its IRQ0 source | `core/machine` | A profile binds the output route; core does not update BIOS data or calendar state. |
-| PC/AT CMOS/RTC ports, NVRAM, calendar, periodic/alarm semantics, and IRQ8 | `vm/machine` | It consumes the frozen execution-provider rational clock delta dispatched by core; it is not a core device. |
+| MC146818-compatible register/calendar/event mechanism | planned optional `core/machine` device (T272) | It will consume a frozen clock binding and emit one configured IRQ source; no PC/AT defaults, NMI policy, BIOS, or host-time policy enter core. Until T272, the retained controller is VM-owned. |
+| PC/AT CMOS defaults, `70h/71h`/NMI glue, IRQ8 route, BIOS/POST and host-time policy | VM profile/composition | It selects and wires the optional core device without turning those choices into core defaults. |
 | BIOS `INT 08h`, BDA tick, and `INT 1Ah` services | VM profile firmware | Firmware consumes normal CPU/PIC delivery; neither core nor platform writes BDA time. |
 | Host clock, sleep, pacing, watchdog, and window cadence | root composition/platform | Host time may bound or pace a product loop but never advances guest time directly. |
 | DOS date/time APIs | `dos` | DOS maps its own service semantics onto admitted bindings; it does not own a second machine clock. |
@@ -266,7 +267,8 @@ domain and dispatches DMA, PIT, VADP, KBC, the execution provider, then PIC
 visibility in that fixed order. VM composition may pace the host loop and
 consume factual run results, but it does not advance VM-owned devices, alter
 `elapsed_ticks`, or create a second scheduler. Mantle follows the same rule for
-a future runtime, but it does not acquire PC/AT CMOS/RTC or BIOS behavior.
+a future runtime; it may bind an admitted optional core RTC but does not
+acquire PC/AT defaults, NMI policy, or BIOS behavior.
 
 ### Level 2 Instruction Costs
 
@@ -377,11 +379,11 @@ can reuse it:
 
 - A reusable PIC, PIT, DMA, or generic video model may be implemented in
   `core/machine` and registered with a profile-selected configuration.
-- PC/AT CMOS/RTC calendar, NVRAM, ports, and IRQ8 semantics belong in
-  `vm/machine`; core supplies only the elapsed-tick and PIC/port contracts it
-  consumes.
-- A full-PC-only FDC or HDC belongs in `vm/machine` and registers through the
-  same core port, IRQ, DMA, and reset contracts.
+- T272/T275/T277 may move optional MC146818, FDC, and ATA controller
+  mechanisms into `core/machine` only when their configuration is neutral and
+  explicit. Until each migration completes, its retained implementation stays
+  VM-owned. VM retains PC/AT wiring/defaults, firmware, media policy, backing
+  objects, and UI.
 - A DOS service such as an INT 21h handler belongs in `dos/machine`; it is not
   a core or mantle implementation.
 - A PC-specific BIOS interrupt handler or ROM behavior belongs to its VM
@@ -394,12 +396,13 @@ without booting a full PC. The provider boundary therefore keeps core usable
 for focused instruction tests and lets VM/DOS profiles differ without teaching
 core about PC/AT, DOS, Windows, or a host OS.
 
-A generic block capability is a core-machine provider contract, not an HDC
-implementation. VM composition may bind its VM HDC to that capability so a
-profile firmware handler can read immutable reset-time geometry and perform
-sector operations without including VM machine code or accessing global device
-state. Core thereby defines the data/command boundary, while VM retains its
-controller and media policy.
+T270 will replace the retained transitional single-slot block boundary with a
+frozen multi-device core media-provider contract. That contract will report
+device identity, capabilities, generation, geometry, logical-sector I/O, and
+typed media failure; it is neither a controller nor a host-filesystem
+interface. VM composition will adapt its FDD/HDD backing objects to that
+device-level boundary. Paths, mounts, persistence, drive letters, and DOS
+namespace remain above core.
 
 ## Core Machine: Hardware IRQ
 
@@ -496,7 +499,9 @@ Filesystem, drive visibility, serial/parallel policy, and printing do not
 enter `core/platform` merely because they touch the host. VM media attachment
 and VDM path containment have distinct product and security meaning, so they
 remain in `vm/platform` and `vdm/platform` until both products demonstrate an
-identical, policy-free byte-stream capability worth promoting to core.
+identical, policy-free byte-stream capability worth promoting to core. A core
+media provider is not evidence for promoting host file/directory/stream APIs:
+composition adapts host resources to device-level media results.
 
 ## Core Platform: Event, Frame, And Teardown Ownership
 
