@@ -448,12 +448,15 @@ callback. Composition owns cancellation and may reuse the existing copied
 input/cancellable-wait facilities around bounded resource work; resource I/O
 does not create a second cancellation protocol or mutate guest state.
 
-T282 will make the larger interface family explicit: opaque file, directory,
-stream, sampled-host-clock, and copied-input provider contracts. It reuses the
-T271 backing resource and existing input/wait/cancellation behavior where they
-already meet that contract; it does not create generic path opening, directory
-policy, shell redirection, guest-time advancement, or a second cancellation
-subsystem.
+T282 audits and normalizes only existing host-surface contracts with real NXVM
+consumers: copied input, wait/cancellation, and presentation/host-surface
+leasing. It also records the T271 backing resource as a neutral facility that
+does not yet have a production VM consumer. `file`, `directory`, `stream`, and
+sampled-host-clock APIs are not admitted merely for symmetry; each needs a real
+consumer before a later task may define it. The audit must either make the
+public host-surface context opaque to core, or relocate that VM-specific
+surface below `vm/platform`; core may manage a lease but never interpret or
+operate a native handle.
 
 ### VM Media Adapter Boundary (T272)
 
@@ -474,14 +477,17 @@ firmware may cache media geometry to bridge its removal.
 ### Atomic VM Media Replacement And Raw HDD Capacity (T280)
 
 T280 keeps FDD and HDD backing ownership in VM but makes replacement atomic:
-inspect, validate, allocate a candidate, completely read it, then commit one
-new media state. Any allocation or host-I/O failure leaves the old bytes,
-geometry, read-only state, cursor, presence, and generation intact. FDD retains
-its admitted fixed geometry. HDD accepts arbitrary raw byte length; its
-guest-visible virtual capacity is `ceil(raw_bytes / 512) * 512`, tail reads
-zero-fill, and a write into virtual padding makes later persistence output a
-complete final sector. ATA range checks use that virtual capacity; CHS is only
-a compatibility mapping, never HDD admission policy.
+inspect, validate, allocate a candidate, completely read it, finalize the old
+published media, then publish exactly one new state. Any allocation, host-I/O,
+or old-media finalization failure discards the candidate and leaves the old
+bytes, geometry, read-only state, cursor, presence, and generation published;
+it must not leave a half-commit. FDD retains its admitted fixed geometry. HDD
+accepts arbitrary raw byte length; its guest-visible virtual capacity is
+`ceil(raw_bytes / 512) * 512`, tail reads zero-fill, and a write into virtual
+padding makes the next successful persistence output a complete final sector.
+That complete length then becomes the backing truth. ATA range checks use the
+virtual capacity; CHS is only a compatibility mapping, never HDD admission
+policy.
 
 ### Neutral RTC Boundary (T273)
 

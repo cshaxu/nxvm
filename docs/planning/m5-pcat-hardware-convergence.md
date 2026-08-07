@@ -12,8 +12,8 @@ hardware-device verification template and must preserve that baseline.
 ## ROI-Ordered Queue
 
 This queue advances the four product goals recorded in [TODO](../../TODO.md).
-Tasks are sequential; each begins with its own S1 contract and may split when
-its bounded stop condition is reached. A runnable implementation task uses its
+Tasks are ROI-ordered, subject to their stated dependencies; a task begins with
+its own S1 contract and may split when its bounded stop condition is reached. A runnable implementation task uses its
 numeric task identifier as its artifact revision when it completes.
 
 ### A. Second Core/Composition Boundary Migration
@@ -41,19 +41,19 @@ identifiers.
 
 | Task | Owner and purpose | Dependency and stop condition |
 | --- | --- | --- |
-| T279 | Retire unbounded `STD_SPRINTF`/`vsprintf`: audit all formatter callers, use length-aware `STD_SNPRINTF`, and freeze truncation/NUL/error behavior. | No text/UX change except preventing a pre-existing overflow. Stop if a caller lacks an owned buffer capacity. |
-| T280 | Make FDD/HDD media replacement atomic and admit arbitrary-length raw HDD images. HDD virtual capacity is `ceil(raw_bytes / 512) * 512`; tail reads zero-fill and tail writes persist a complete sector. | Preserve old media on all failure. FDD retains its admitted fixed geometry. No ATA command expansion or hidden truncation. |
+| T279 | Retire unbounded `STD_SPRINTF`/`vsprintf`: first freeze project-owned zero-length, truncation, NUL, and formatting-error semantics for bounded formatting; then audit every caller. An append helper is permitted only with an explicit remaining-capacity argument and result, never a guessed capacity for a sub-buffer pointer. | No text/UX change except preventing a pre-existing overflow. Stop if a caller lacks an owned buffer capacity or cannot propagate a bounded-format result. |
+| T280 | Make FDD/HDD media replacement atomic and admit arbitrary-length raw HDD images. HDD virtual capacity is `ceil(raw_bytes / 512) * 512`; tail reads zero-fill and tail writes persist a complete sector. The first successful persistence after padding is written expands the backing truth to that complete virtual capacity. | Validate/read a candidate before publication; if candidate preparation or old-media finalization fails, discard the candidate and retain the old published media without a half-commit. FDD retains its admitted fixed geometry. No ATA command expansion or hidden truncation. |
 | T281 | Rename `core_machine.shared_fdc/shared_hdc` and their borrow APIs to session-owned `fdc/hdc` names. | Naming only: no lifecycle, route, controller, or media behavior change. |
-| T282 | Admit the canonical policy-free `core/platform` file/directory/stream/sampled-clock/input interface family, reusing T271 backing-resource, input, and wait/cancellation surfaces rather than creating parallel facilities. | Contracts/fake providers only where no concrete provider is required. No DOS path, mount, UI, guest-time, or native-handle API. |
-| T283 | Extend VM-free core FDC/ATA fixtures to execute provider media I/O and typed-failure mapping, including registry freeze/rebind rejection and generation observation. | T280--T282. No new controller command family, dynamic topology, or test-only runtime route. |
+| T282 | Audit and normalize only existing NXVM host-surface contracts: copied input, wait/cancellation, and presentation/host-surface lease have production consumers; the T271 backing resource is audited as a neutral non-production facility. `file`, `directory`, `stream`, and sampled-clock APIs are deferred until a real consumer exists. | Decide whether `host_surface_interface` becomes an opaque core lease/context that core never interprets, or moves to `vm/platform`; record that backing resource has no current production VM consumer. No new generic host API, DOS path, mount, UI policy, guest-time, or core-native-handle operation. |
+| T283 | Extend VM-free core FDC/ATA fixtures to execute provider media I/O and typed-failure mapping, including registry freeze/rebind rejection and generation observation. | T280--T281. T282's host-boundary conclusion constrains this work but is not an implementation blocker. No new controller command family, dynamic topology, or test-only runtime route. |
 
 ### C. Windows 3.x Display And Storage Prerequisites
 
 | Task | Owner and purpose | Dependency and stop condition |
 | --- | --- | --- |
-| T284 | EGA/VGA admission map and failing corpus. Freeze the first Windows-facing mode/register family, its memory map, ROM service boundary, and user-supplied fixture evidence. | T279--T283. Design/probe within the task; do not implement a generic "VGA" layer or bundle guest assets. |
+| T284 | EGA/VGA admission map and failing corpus. Freeze the first Windows-facing mode/register family, its memory map, ROM service boundary, and user-supplied fixture evidence. | T279--T281 and T283. T282's accepted host-boundary conclusion applies but is not a blocker. Design/probe within the task; do not implement a generic "VGA" layer or bundle guest assets. |
 | T285 | First selected EGA/VGA register-family implementation, following T284's corpus; retain VADP as the sole video-state owner and copied platform frames. | T284. Split before DAC, planar/latch, raster, or VBE if not selected by the corpus. |
-| T286 | ATA/FDC Windows-startup storage gap selected by a reproducible fixture: controller status/error/reset/timing or a missing transfer form. | T268--T283 as applicable. Image files remain backends, never controller substitutes. |
+| T286 | ATA/FDC Windows-startup storage gap selected by a reproducible fixture: controller status/error/reset/timing or a missing transfer form. | T268--T281 and T283 as applicable. Image files remain backends, never controller substitutes. |
 | T287 | Windows 3.x Standard-mode readiness corpus and gap map using lawful, user-supplied media. Record the exact boot/checkpoint result and convert each unmet prerequisite into a bounded later admission. | T264--T286. This is evidence collection, not a support claim or committed guest asset. |
 
 ### D. Protected-Mode And FPU Work Triggered By Evidence

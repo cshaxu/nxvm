@@ -131,7 +131,9 @@ remain above core.
 Before its next display admission, M5 also closes the bounded reliability and
 evidence package: safe C formatting, atomic FDD/HDD replacement with arbitrary
 raw-HDD capacity semantics, precise core-device ownership names, canonical
-core-platform interfaces, and VM-free FDC/ATA media-I/O corpus.
+existing core-platform host-surface ownership, and VM-free FDC/ATA media-I/O
+corpus. It does not pre-admit generic host file, directory, stream, or clock
+interfaces without a demonstrated consumer.
 It does not promise Windows 3.x or Windows 95 compatibility by itself; broad
 80386/486, profile-specific, and operating-system work remains evidence-led.
 

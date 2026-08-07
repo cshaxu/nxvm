@@ -2,7 +2,7 @@
 
 ## Current Work
 
-**Idle.** T278 is closed. M5 Td S34 records the approved T279--T283 queue;
+**Idle.** T278 is closed. M5 Td S35 records the approved T279--T283 queue;
 T279 has not yet been admitted, so this ledger contains no active task packet.
 
 ## Current Technical Baseline
@@ -58,6 +58,9 @@ active packet becomes an operational authority only after approval.
 - **M5 Td S34:** repaired the historical queue wording, inserted the approved
   T279--T283 reliability/interface package, and shifted the older future queue
   to T284--T292. This task changes no runtime behavior.
+- **M5 Td S35:** tightened T279 bounded-format semantics, T280 raw-HDD commit
+  truth, T282's existing-consumer-only host-surface audit, and T283's direct
+  dependencies. This task changes no runtime behavior.
 
 ## Milestone State
 
