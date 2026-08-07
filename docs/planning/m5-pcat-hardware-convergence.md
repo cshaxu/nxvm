@@ -18,11 +18,67 @@ cases passed. Each admitted task
 follows the hardware-device verification template and must preserve that
 baseline.
 
-## Remaining Queue
+## Completed Queue Boundary
 
-| Task | Dependency | Deliverable and stop condition |
+T263 closed the first corpus-proven 286/386 mismatch: 80286 protected-mode
+`ARPL r/m16,r16`. Further instruction-family work is not the default next
+step; it requires a new failing corpus and an approved packet.
+
+## ROI-Ordered Queue
+
+This queue advances the four product goals recorded in [TODO](../../TODO.md).
+Tasks are sequential; each begins with its own S1 contract and may split when
+its bounded stop condition is reached. A runnable implementation task uses its
+numeric task identifier as its artifact revision when it completes.
+
+### A. Machine Foundation And Hardware Timing
+
+| Task | Owner and purpose | Dependency and stop condition |
 | --- | --- | --- |
-| T263 | Corpus-specific 286/386 gap | Closed the first family: 80286 protected-mode `ARPL r/m16,r16` metadata/executor mismatch, with owned register/memory/profile corpus. Any later instruction family requires a new failing corpus and packet. |
+| T264 | `core`/`vm` PC/AT ownership closure. Audit the default-profile topology, provider bindings, firmware/device routes, and remaining BIOS or host shortcuts; correct only confirmed owner/path violations and add a closure gate. | Retain T263 behavior. Stop and split for a new device feature, profile selector, or UX change. |
+| T265 | Level 2 instruction-timing contract. Add deterministic, profile-owned instruction-cost attribution for a bounded corpus, with prefixes, branch and memory/I/O variants where the corpus observes them. | Builds on L1 rational clocks. No new instruction semantics, host-clock use, wait states, or cycle-exact claim. |
+| T266 | Digital CGA/6845 text-and-status completion. Admit start/page address, cursor, scanline geometry, display-enable and vertical-retrace observables through VADP. | Builds on T265 only where timing observations require it. No composite rendering or VGA expansion. |
+| T267 | Advanced 8042 AUX protocol. Add only corpus-selected wheel/sample/scaling/status or error behavior through KBC, IRQ12 and the guest driver route. | T266 independent. No host-to-DOS API shortcut or generic mouse API claim. |
+| T268 | FDC/FDD fidelity increment. Choose one observed controller gap such as rotation/motor timing, disk-change, multi-drive mechanics, or a deferred command family and prove it through ports, DMA and DOS media. | Requires T265 when the selected behavior is timing-sensitive. No broad controller rewrite. |
+| T269 | Level 3 bus-timing contract and first PC/AT transaction corpus: memory/I/O wait states, DMA bus ownership, and device visibility order. | Builds on T265; no prefetch or cycle-exact profile claim. Stop if a device requires an unbounded microstate model. |
+
+### B. Windows 3.x Display And Storage Prerequisites
+
+| Task | Owner and purpose | Dependency and stop condition |
+| --- | --- | --- |
+| T270 | EGA/VGA admission map and failing corpus. Freeze the first Windows-facing mode/register family, its memory map, ROM service boundary, and user-supplied fixture evidence. | Design/probe within the task; do not implement a generic "VGA" layer or bundle guest assets. |
+| T271 | First selected EGA/VGA register-family implementation, following T270's corpus; retain VADP as the sole video-state owner and copied platform frames. | T270. Split before DAC, planar/latch, raster, or VBE if not selected by the corpus. |
+| T272 | ATA/FDC Windows-startup storage gap selected by a reproducible fixture: controller status/error/reset/timing or a missing transfer form. | T268/T269 as applicable. Image files remain backends, never controller substitutes. |
+| T273 | Windows 3.x Standard-mode readiness corpus and gap map using lawful, user-supplied media. Record the exact boot/checkpoint result and convert each unmet prerequisite into a bounded later admission. | T264--T272. This is evidence collection, not a support claim or committed guest asset. |
+
+### C. Protected-Mode And FPU Work Triggered By Evidence
+
+| Task | Owner and purpose | Dependency and stop condition |
+| --- | --- | --- |
+| T274 | First corpus-proven 286/386 compatibility gap from T273 or another owned reproducer. | T273 preferred. One instruction/system family only; no speculative opcode sweep. |
+| T275 | 80386 Enhanced-mode prerequisite selected by corpus, such as CPL3 paging permissions, 32-bit segmentation/control transfer, or 32-bit TSS behavior. | T273 plus a failing prepared-state or system corpus. No broad 386-complete claim. |
+| T276 | Present-FPU extension selected by corpus: 80287/80387 profile state, format, environment, or exception delivery. | T273 or another owned reproducer. No host floating-point shortcut or blanket FPU claim. |
+| T277 | Windows 3.x Enhanced-mode readiness corpus and bounded deferral map. | T271--T276 as dictated by T273. No Windows 95 claim. |
+
+### D. M5 Closure And Handoff
+
+| Task | Owner and purpose | Dependency and stop condition |
+| --- | --- | --- |
+| T278 | Current-source M5 closure audit against the closure checklist, including single-owner/path, CMake graph, retained NXVM UX, Windows checkpoint evidence, and all remaining deferrals. | T264--T277. M5 may close only if the checklist, roadmap and TODO agree; otherwise this task records the next bounded M5 queue rather than declaring closure. |
+
+## Later-Milestone Handoff
+
+- **M6:** implement the neutral `mantle` session envelope only after M5 has a
+  stable core boundary; no DOS policy or external VDM backend enters it.
+- **M7:** implement default PC/AT, Compaq DeskPro 386, and IBM PC 110 profiles
+  from the frozen admission contract, with user-supplied legal ROM/media
+  manifests and profile-specific corpus. PC 110's 486 requirements become
+  separate evidence-led admissions.
+- **M8:** implement owned `dos` and `vdm` into `nxvdm.exe`, including the
+  approved CLI, containment, display, debugger, cancellation and exit policy.
+  External VDM/DOS remains isolated research, not a product dependency.
+- **M9 and later:** decide Windows 95/486 and cycle-exact profile work only
+  from prior corpus evidence; neither is an implied M5 exit.
 
 ## Constraints
 
