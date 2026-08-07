@@ -79,12 +79,16 @@ active task.
 - [x] **T279 bounded C formatting.** `STD_SPRINTF`/`vsprintf` are retired;
   owned capacities and cursor/remaining append semantics are enforced by a
   source gate and corpus without changing debugger or Console text.
-- [ ] **Large/sparse raw HDD backing (`TODO(High)`).** The current VM provider
-  accepts non-512-aligned images only within LBA28 and resident allocation
-  limits. A later M5 admission must define an opaque file/sparse backing
-  lifecycle, atomic persistence, generation/error mapping, and ATA's visible
-  LBA28 subset before it replaces the resident-image provider; do not add an
-  unconsumed generic filesystem API.
+- [ ] **Large/sparse and WASM raw HDD backing (`TODO(High)`).** The current VM
+  provider accepts non-512-aligned images only within LBA28 and resident
+  allocation limits. Keep that resident backend for small/offline images. A
+  later M5 admission may add an opaque paged file/sparse backend for native
+  files, OPFS, IndexedDB, or an already-populated WASM cache, with atomic
+  persistence, generation/error mapping, cache ownership, and ATA's visible
+  LBA28 subset. The current media-provider callback is synchronous: an HTTP
+  Range cache miss must not block or mutate guest state from a host callback;
+  it requires a separately admitted pending-I/O/controller-ready/IRQ timing
+  model. Do not add an unconsumed generic filesystem API.
 - [ ] **Complete digital CGA (`TODO(Medium)`).** Keep it separate from EGA/VGA.
   T254 admitted `640x200x2`; T266 closes the bounded 6845 text subset:
   display-start/page, cursor address/shape/hidden state, and deterministic

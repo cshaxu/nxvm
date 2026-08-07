@@ -2,8 +2,8 @@
 
 ## Current Work
 
-**Idle.** T283 corrective closure is complete; admit T284 only through a new
-approved packet.
+**Idle.** M5 Td S36 recorded the WASM media-backing admission boundary; admit
+T284 only through a new approved packet.
 
 ## Current Technical Baseline
 
