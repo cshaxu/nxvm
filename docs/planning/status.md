@@ -153,6 +153,9 @@ authorities.
 - **M5 Td S28:** replaced independent artifact revisions with task-identity
   revisions. The T257 current artifact is reissued as `0.5.0257`; future
   numeric task artifacts must use their task number exactly.
+- **M5 Td S29:** aligned the architecture overview with the task-identity
+  artifact rule. This documentation task changes no runtime behavior or
+  active-task scope.
 
 ## Milestone State
 

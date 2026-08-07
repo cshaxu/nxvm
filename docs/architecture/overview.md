@@ -70,12 +70,11 @@ executable, for example `0.4.015d.m3t1`. Subtask-specific executables are not
 developer artifacts.
 
 Beginning with M5 T48, task artifacts use the NXVM lineage `0.5.NNNN` form,
-where `NNNN` is the four-digit monotonic developer-artifact revision allocated
-when a runnable task completes. It normally matched the task number while
-tasks completed in order, but task IDs remain roadmap identities and artifact
-revisions never regress when urgent work completes out of order. For example,
-the early T48 artifact was `0.5.0048`; each task record states its final
-task-to-revision mapping. Design-only subtasks do not create artifacts by
+where `NNNN` is exactly the four-digit numeric implementation task identifier.
+This is an identity rule, not a completion-order sequence rule: T258 produces
+`0.5.0258` even if work completes out of order. Numeric task identifiers are
+never reused, so artifact versions cannot collide. For example, the early T48
+artifact was `0.5.0048`. Design-only subtasks do not create artifacts by
 themselves.
 
 Standalone documentation tasks use the `M<milestone> Td` identifier and do not
