@@ -2,7 +2,7 @@
 
 ## Current Work
 
-**Idle. M5 T263 S5 is closed. The next planned implementation is T264, the
+**Idle. M5 T263 S6 is closed. The next planned implementation is T264, the
 core/VM PC/AT ownership closure. Further CPU instruction-family admissions
 require a separate failing corpus and approved packet; they are not the default
 queue.**
@@ -10,6 +10,36 @@ queue.**
 No subtask is active. Before T264 source work begins, create one complete
 packet with the original request, owner, non-goals, applicable rules, focused
 evidence, stop conditions, and artifact decision.
+
+## T263 S6 Packet
+
+### Original Request And Scope
+
+Correct the protected 16-bit IDT error code so synchronous CPU exceptions do
+not set the external-event (`EXT`) bit merely because `is_exception` is true.
+The sole core CPU executor retains original-fault diagnostics when an exception
+delivery attempt itself fails; this subtask does not add double-fault handling
+or a second diagnostic channel. It extracts one IDT error-code helper used by
+all synchronous gate-validation failures and adds a valid-but-not-present
+vector-13 gate corpus expecting `#NP(0x006a)`.
+
+No hardware IRQ delivery, 32-bit gate, generic exception-delivery, firmware,
+platform, Console, debugger, or boot behavior may change. Stop if correct
+coverage requires changing original-fault retention, double-fault behavior, or
+an additional executor. Rebuild the same T263 artifact only after focused and
+current GCC/CTest gates pass.
+
+### S6 Closure
+
+`_ser_idt_error_code()` now encodes every admitted IDT validation failure as a
+synchronous CPU event with `EXT=0`; `is_exception` no longer alters the code.
+The owned corpus uses a valid but not-present vector-13 gate and proves
+`#NP(0x006a)`. An internal `#GP` whose gate cannot be entered still retains
+the original terminal fault by existing contract, so the test locks the shared
+helper rather than falsely reporting an undelivered nested `#NP`. Focused
+smoke and current GCC gates passed 99/99 CTest. The clean-rebuilt
+`nxvm_0_5_0263.exe` SHA-256 is
+`5DA40651469CA7FFA4A2C38A060F458D4528274EBBDFBFAC74AA58DAEA766B82`.
 
 ## T263 S5 Packet
 
@@ -102,7 +132,7 @@ does not change a runnable path.
 - **T263 artifact identity:** `current-gcc` and
   `verify-current-artifact-target` select `vm-0-5-0263`; static/ownership
   checks and 99/99 CTest cases passed. Artifact `nxvm_0_5_0263.exe` SHA-256:
-  `D274A5C40D2045E4B88D0ABC3FDCD1C88C520864A12588E553B9FDB57EB68F9D`.
+  `5DA40651469CA7FFA4A2C38A060F458D4528274EBBDFBFAC74AA58DAEA766B82`.
 - **Core boundary:** T243--T246 retain checked physical memory, bounded `#UD`
   transitions, immutable ROM mapping, and atomic real-mode entry plans.
 - **Product boundary:** `nxvm.exe` is the retained runnable product. `mantle`,
