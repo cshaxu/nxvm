@@ -136,6 +136,12 @@ type_status core_machine_run(
 
 type_status core_machine_request_stop(core_machine *machine);
 
+/* VM devices may request the architected NMI mask through this operation;
+ * they never borrow CPU storage to change it. */
+type_status core_machine_set_nmi_mask(core_machine *machine, C_INT masked);
+type_status core_machine_get_nmi_mask(const core_machine *machine,
+    C_INT *out_masked);
+
 type_status core_machine_keyboard_submit_scan_code(core_machine *machine,
     uint8_t scan_code);
 type_status core_machine_keyboard_submit_scan_codes(core_machine *machine,
@@ -173,9 +179,14 @@ t_ram *core_machine_profile_binding_memory(
     const core_machine_profile_binding *binding);
 core_machine_cpu_execution_context *core_machine_profile_binding_execution(
     const core_machine_profile_binding *binding);
-type_status core_machine_profile_binding_configure_text_video(
-    const core_machine_profile_binding *binding, uint8_t mode, uint16_t columns,
-    uint16_t rows, C_INT color_enabled);
+type_status core_machine_profile_binding_read_real(
+    const core_machine_profile_binding *binding, uint16_t segment,
+    uint16_t offset, C_VOID *out_data, STD_SIZE_T size);
+type_status core_machine_profile_binding_write_real(
+    const core_machine_profile_binding *binding, uint16_t segment,
+    uint16_t offset, const C_VOID *data, STD_SIZE_T size);
+type_status core_machine_profile_binding_write_port(
+    const core_machine_profile_binding *binding, uint16_t port, uint32_t value);
 type_status core_machine_profile_binding_configure_text_raster(
     const core_machine_profile_binding *binding,
     const core_machine_vadp_text_timing *timing);
@@ -185,12 +196,6 @@ type_status core_machine_profile_binding_configure_ega_sequencer(
 type_status core_machine_profile_binding_configure_ega_controllers(
     const core_machine_profile_binding *binding,
     const core_machine_vadp_ega_controller_config *config);
-C_VOID core_machine_profile_binding_set_video_cursor_shape(
-    const core_machine_profile_binding *binding, uint8_t top, uint8_t bottom);
-C_VOID core_machine_profile_binding_set_video_cursor_address(
-    const core_machine_profile_binding *binding, uint16_t address);
-C_VOID core_machine_profile_binding_set_video_display_start(
-    const core_machine_profile_binding *binding, uint16_t address);
 
 type_status core_machine_capture_observation(
     const core_machine *machine, core_machine_observation *out_observation);

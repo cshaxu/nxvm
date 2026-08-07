@@ -2,14 +2,13 @@
 
 ## Current Work
 
-**Idle. M5 T263 S6 is closed. The next planned implementation is T264, the
-core/VM PC/AT ownership closure. Further CPU instruction-family admissions
-require a separate failing corpus and approved packet; they are not the default
-queue.**
+**Idle. M5 T264 is closed. Its owner/path audit, narrow repairs, static closure
+gate, 100/100 current GCC/CTest evidence, and `nxvm_0_5_0264.exe` SHA-256 are
+recorded in [M5 T264](m5-t264-core-vm-pcat-ownership.md). The next planned
+implementation is T265, a bounded Level 2 instruction-timing contract.**
 
-No subtask is active. Before T264 source work begins, create one complete
-packet with the original request, owner, non-goals, applicable rules, focused
-evidence, stop conditions, and artifact decision.
+No subtask is active. T265 needs its own approved packet and corpus before any
+source change.
 
 ## T263 S6 Packet
 

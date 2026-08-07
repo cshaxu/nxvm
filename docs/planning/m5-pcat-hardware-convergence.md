@@ -35,7 +35,7 @@ numeric task identifier as its artifact revision when it completes.
 
 | Task | Owner and purpose | Dependency and stop condition |
 | --- | --- | --- |
-| T264 | `core`/`vm` PC/AT ownership closure. Audit the default-profile topology, provider bindings, firmware/device routes, and remaining BIOS or host shortcuts; correct only confirmed owner/path violations and add a closure gate. | Retain T263 behavior. Stop and split for a new device feature, profile selector, or UX change. |
+| T264 | **Completed.** `core`/`vm` PC/AT ownership closure: audited the default-profile topology, repaired confirmed CMOS/QDCGA/registry boundary debt, and added the closure gate. | Retained T263 behavior and NXVM UX; deferred generated-ROM materialization and debug-borrow retirement are in `TODO.md`. |
 | T265 | Level 2 instruction-timing contract. Add deterministic, profile-owned instruction-cost attribution for a bounded corpus, with prefixes, branch and memory/I/O variants where the corpus observes them. | Builds on L1 rational clocks. No new instruction semantics, host-clock use, wait states, or cycle-exact claim. |
 | T266 | Digital CGA/6845 text-and-status completion. Admit start/page address, cursor, scanline geometry, display-enable and vertical-retrace observables through VADP. | Builds on T265 only where timing observations require it. No composite rendering or VGA expansion. |
 | T267 | Advanced 8042 AUX protocol. Add only corpus-selected wheel/sample/scaling/status or error behavior through KBC, IRQ12 and the guest driver route. | T266 independent. No host-to-DOS API shortcut or generic mouse API claim. |

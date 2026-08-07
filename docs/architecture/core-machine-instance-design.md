@@ -108,23 +108,12 @@ provide port callbacks, but it cannot create a second port bus.
 
 Firmware has two separate roles and therefore two separate contracts.
 
-`firmware_registry_interface.h` is a core-owned, session-owned registry for
-POST, ROM, and interrupt services. It defines registration order, duplicate
-service and vector rejection, freeze, lookup, interrupt dispatch order, chain
-transfer, and failure result. It stores service descriptors and provider
-bindings, not product-specific BIOS code.
-
-`firmware_provider.h` is supplied by a VM or VDM profile. It provides explicit
-callbacks such as service composition, ROM image installation, reset/POST, and
-interrupt handling. The provider context belongs to the same session and must
-remain valid through teardown. Default PC/AT BIOS code stays under
-`vm/profile/default_profile/firmware`; future DOS-minimal firmware stays under
-`vdm/profile`.
-
-The existing `firmware_interface.h` is an incomplete registry contract: it
-describes services but exposes no callable provider. It is a transition target
-for the two-file split above, not a file to rename blindly into
-`firmware_provider.h`.
+Firmware remains profile-owned content and provider bindings. The obsolete
+generic core firmware registry was removed because it had no production
+consumer; the default PC/AT path is assembled from the profile descriptor and
+`vm/composition/session/profile_firmware.c`. Future profile firmware contracts
+must expose only the provider bindings actually consumed by composition, not a
+second registry beside the ordinary IVT/ROM path.
 
 ## Current-State Audit
 

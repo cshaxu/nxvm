@@ -121,6 +121,18 @@ active task.
   source-structure admission with an explicit caller inventory. Preserve data
   layout, debugger-visible behavior, and CPU execution semantics; this is not
   an instruction-family or compatibility claim.
+- [ ] **Default PC/AT generated-ROM materialization (`TODO(Medium)`).** The
+  default BIOS still constructs ROM code and BDA state during reset through the
+  one profile firmware path. Split immutable ROM-image construction from BDA
+  reset writes, then bind the image through the existing core immutable-ROM
+  mapping contract. Do not call the current generated BIOS an immutable ROM,
+  add a second boot route, or change the retained boot UX.
+- [ ] **Paused-boundary debug borrow retirement (`TODO(Medium)`).**
+  `core_machine_debug_*_borrow()` remains a transitional adapter used only
+  after a returned command boundary; it is not a second owner or executor.
+  Replace it only with copied or operation-specific core debug access that
+  preserves the retained Console/debugger semantics and multi-session
+  isolation.
 - [ ] **Core debug control-register mutation contract (`TODO(Medium)`).**
   `vm/composition/session/debug_target.c` still directly writes `CR0`--`CR4`
   through the debugger borrow. This is not a guest execution path, but it can
