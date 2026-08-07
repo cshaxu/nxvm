@@ -38,7 +38,7 @@ The following behavior is currently real but dispersed:
 | Reset vector and ROM/BDA image bytes | `vm/composition/session/profile_firmware.c` and `vm/profile/default_profile/firmware/bios.c` | profile ROM and firmware declaration |
 | Firmware service ordering and INT/POST wiring | `pc_at_profile.c`, `profile_firmware.c` | profile firmware declaration |
 | CMOS defaults and boot drive | `pc_at_profile.c`, `core/machine/rtc.*`, session device setup | profile declares defaults; core owns the neutral mutable mechanism while VM owns PC/AT ports and NMI policy |
-| FDC port and route arguments | `vm/composition/session/machine_devices.c` | profile controller-route declaration interpreted by composition; core retains PIC/DMA state and contracts |
+| FDC port and route arguments | `vm/composition/session/machine_devices.c` | profile controller-route declaration interpreted by composition; core owns the FDC and PIC/DMA contracts |
 | FDD/HDD media storage and image selection | `vm_session` and `machine_devices.c` | remains composition/session policy, not profile data; T270--T278 may move only neutral media/controller mechanisms to core |
 | qd* BIOS handlers | `vm/profile/default_profile/firmware/*` | retained as profile-specific temporary firmware providers |
 
@@ -69,17 +69,17 @@ Composition owns the only imperative sequence:
 1. choose the immutable default PC/AT descriptor;
 2. create `core_machine` and VM-only session storage once;
 3. initialize generic core state through `core_machine` lifecycle only;
-4. initialize VM backing/debug storage and any not-yet-migrated VM controller
-   storage once;
+4. initialize VM backing/debug storage and bind any admitted neutral core
+   controller once;
 5. apply the descriptor's mappings, routes, defaults, and firmware metadata;
 6. bind profile firmware/provider callbacks, freeze configuration, then reset;
 7. refresh and finalize in the existing owner-defined order.
 
 `core_machine` continues to own generic shared-device lifecycle. The profile
 may declare a route such as "FDC uses DMA channel 2 and IRQ 6", but composition
-performs the binding against the actual session-owned FDC and core-owned DMA/
-PIC objects. T273/T276/T278 may instead bind a core-owned neutral controller
-to descriptor-declared routes. No descriptor application may duplicate
+performs the binding against the core-owned FDC, DMA, and PIC objects. T273
+and T276 already use this path; T278 may do so for ATA. No descriptor
+application may duplicate
 storage, reset a device a second time, or bypass the frozen configuration
 boundary.
 

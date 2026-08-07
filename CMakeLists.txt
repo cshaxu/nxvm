@@ -314,7 +314,6 @@ set(VM_MACHINE_SOURCES
     src/vm/machine/fdd.c
     src/vm/machine/hdd.c
     src/vm/machine/hdc.c
-    src/vm/machine/fdc.c
     src/vm/machine/debug.c
 )
 set(CORE_MACHINE_SOURCES
@@ -330,6 +329,7 @@ set(CORE_MACHINE_SOURCES
     src/core/machine/dma.c
     src/core/machine/kbc.c
     src/core/machine/rtc.c
+    src/core/machine/fdc.c
 )
 add_library(core-platform STATIC
     src/core/platform/backing_resource_interface.c

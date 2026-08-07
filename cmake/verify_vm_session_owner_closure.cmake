@@ -6,7 +6,7 @@ file(READ "${PROJECT_SOURCE_DIR}/src/vm/composition/session/session.h" session_h
 foreach(forbidden IN ITEMS
     "core_machine_rtc *rtc;"
     "t_fdd *fdd;"
-    "t_fdc *fdc;"
+    "core_machine_fdc fdc;"
     "t_hdd *hdd;"
     "t_debug *debug;"
     "t_bios *default_bios;"

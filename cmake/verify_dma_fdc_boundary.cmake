@@ -2,8 +2,8 @@ if(NOT DEFINED PROJECT_SOURCE_DIR)
     message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
 endif()
 
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/fdc.h" fdc_header)
-file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/fdc.c" fdc_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/fdc.h" fdc_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/fdc.c" fdc_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/composition/session/machine_devices.c" devices_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/dma.c" dma_source)
 

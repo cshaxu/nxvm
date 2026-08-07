@@ -2,13 +2,14 @@
 
 ## Current Work
 
-**M5 T276 S1: Neutral FDC Mechanism Migration -- active.**
+**M5 T276 S2: Neutral FDC Mechanism Migration -- active.**
 
 - **Original request:** move the now-neutral FDC state machine into
   `core/machine` by `git mv`; VM retains only PC/AT topology, media identity,
   port/IRQ/DMA bindings, profile firmware, and product behavior.
-- **S1 deliverable:** freeze the core FDC config/provider surface, audit every
-  remaining VM-specific identifier, and define a core-only controller fixture.
+- **S2 deliverable:** move the controller as one `git mv` unit into
+  `core/machine`, rebind the retained composition to its core contract, and
+  retain FDD/DOS regression behavior without a VM controller mirror.
 - **S1 complete:** `fdc.c` now depends only on core DMA/PIC/port/media APIs.
   The neutral controller state/config and port handlers may move together;
   `VFDC_POST` and BIOS INT 0Eh/40h assembly are default-ROM firmware and must

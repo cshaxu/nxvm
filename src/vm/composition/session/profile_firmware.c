@@ -10,7 +10,7 @@
 #include "core/machine/pic.h"
 #include "core/machine/pit.h"
 #include "vm/profile/default_profile/firmware/rtc_firmware.h"
-#include "vm/machine/fdc.h"
+#include "vm/profile/default_profile/firmware/fdc_firmware.h"
 #include "vm/profile/default_profile/firmware/bios.h"
 #include "vm/profile/default_profile/firmware/hdc.h"
 #include "vm/profile/default_profile/firmware/qdcga.h"
