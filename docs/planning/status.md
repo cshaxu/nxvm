@@ -2,7 +2,91 @@
 
 ## Current Work
 
-**Idle. M5 T262 is closed; the next task requires a separately admitted packet.**
+**M5 T263 S1 is active: freeze one corpus-proven 286/386 instruction-family
+admission before any CPU implementation changes.**
+
+## T263 Admission Packet
+
+### Original Request
+
+Admit remaining 286/386 instruction families only one family at a time, from
+a reproducible failing corpus.  Each family must complete a contract,
+core-only implementation, and project-owned corpus before the shared T263
+artifact is rebuilt.  This task must not become a claim of complete 286 or
+386 support.
+
+### S1 Gap Audit And First Admission
+
+The first admitted family is the **80286 `ARPL r/m16,r16` form** (`63 /r`),
+not the broader 0F opcode map.  It is a concrete present defect:
+
+| Evidence | Current result | Required result |
+| --- | --- | --- |
+| `core_machine_cpu_instruction_metadata_get(PRIMARY, 63h, /r)` | Declares `minimum_cpu = 80286` | Metadata and execution gate agree |
+| `ARPL_RM16_R16()` | Enters only for `cpu_profile >= 80386`; 80286 falls through to `#UD` | 80286 protected mode executes the same admitted 16-bit form |
+| Existing profile smoke | Proves only 80186 rejection; no 80286 positive case | New corpus proves 80286 positive and lower-profile `#UD` negative cases |
+
+S2 may change only the CPU decoder/executor path and its metadata if needed.
+It admits protected-mode 16-bit register and memory `r/m16,r16` forms, with
+the architectural RPL comparison/update and `ZF` result.  Real-mode use,
+32-bit operands/addressing, VM/firmware handling, debugger bypasses, and any
+other descriptor/control-transfer family remain deferred.  The existing
+protected-mode selector/memory route remains the sole state owner and
+execution route.
+
+S3 must add a project-owned core corpus covering a 80286 positive register
+case, a memory destination case, both `ZF` outcomes, 80186 and 8086 `#UD`
+gates, an admitted prefix/ModR/M boundary, and no partial destination mutation
+on rejected execution.  It must retain T257--T261 protected-mode/paging/TSS
+corpora and the existing DOS, FDD/HDD, Console, debugger, and current GCC/
+CTest matrix.  A behavior-changing closure rebuilds only
+`build/output/nxvm_0_5_0263.exe` and records its source commit and SHA-256.
+
+### Requirements And Owners
+
+| Requirement | Owner | Evidence / completion condition |
+| --- | --- | --- |
+| One admitted family | `core/machine` CPU | `63 /r` only; no 0F-table expansion |
+| Correct profile gate | CPU instruction metadata and executor | 80286 positive; 80186/8086 `#UD` |
+| Correct side effects | CPU register/memory/FLAGS route | RPL replacement only when source RPL is higher; `ZF` exact |
+| No second path | `core_machine_run()` | No VM, firmware, platform, host, or debugger involvement |
+| Retained behavior | Existing products and devices | Focused corpus plus current-gates regression |
+
+### Similar-Issue Sweep
+
+Defect class: metadata says an instruction is admitted for a CPU profile while
+the executor imposes a stricter, undocumented profile threshold.  S1 searched
+the tracked primary/0F metadata table, corresponding opcode handlers, and
+the profile/protected-mode corpora using `rg` for `minimum_cpu`, profile gates,
+and `UndefinedOpcode`.  The confirmed production hit is `ARPL`; the many
+other unimplemented 0F, gate, task-return, and 32-bit forms are already
+explicitly deferred by T257--T262 or require a distinct failing corpus.
+S2/S3 must repeat the query after the fix and record every new production hit
+as fixed, not applicable, or deferred in `TODO.md`.
+
+### Rules, Commands, And Stop Conditions
+
+Applicable: local module boundaries; core owns CPU state and the sole guest
+executor; CPU-profile metadata must match decoder/executor behavior; no global
+or TLS current object; task artifact revision equals task number; one active
+subtask; and the execution-policy similar-issue sweep.
+
+Planned focused commands are `cmake --preset mingw-gcc-x64`, the focused
+ARPL smoke target, and `cmake --build --preset current-gates-gcc -j 4`.
+Expected closure markers are `M5:T263:S2:ARPL:OK` and
+`M5:T263:S3:ARPL:CORPUS:OK`.  Stop and split if correct ARPL behavior requires
+CPL transition, IDT delivery, LDT, task switching, a second executor, or a
+VM/firmware/host shortcut.
+
+### S1 Evidence
+
+The evidence above is source-reproducible: the instruction metadata at
+`src/core/machine/cpu_instructions.c:5959-5962` assigns 80286, while
+`ARPL_RM16_R16()` at `src/core/machine/cpu_instructions.c:8644-8670` gates
+execution at 80386.  `tests/machine/cpu_profile_gate_smoke.c:145-157` covers
+only the 80186 negative case.  Existing T257 protected-mode code already
+provides the GDT/selector route needed to make an owned 80286 ARPL corpus;
+it does not need new VM integration.
 
 ## T262 Admission Packet
 
