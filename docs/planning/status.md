@@ -2,40 +2,14 @@
 
 ## Current Work
 
-**M5 T282 S2: Host-Surface Boundary Migration -- active.**
-
-- **Original request:** audit only copied input, wait/cancellation,
-  presentation/host-surface lease, and the neutral backing resource. Decide
-  whether `host_surface_interface` remains an opaque core lease or belongs in
-  VM; do not introduce file, directory, stream, sampled-clock, DOS-path,
-  mount, UI-policy, or guest-time APIs.
-- **S1 closed:** copied input, copied presentation mailbox, and cancellable wait
-  remain policy-free core contracts. `host_surface_interface` has only VM
-  consumers and exposes a native handle, so S2 must migrate it into
-  `vm/platform` rather than preserve a core facade. Backing resource has only
-  its focused test and remains a deferred neutral facility with no production
-  VM consumer; no host filesystem API is admitted.
-- **S2 deliverable:** move the native-handle context and lease into
-  `vm/platform`, rename its public symbols `vm_platform_host_surface_*`, and
-  prove no core source or target retains the native-handle surface.
-- **S2/S3:** implement only an S1-approved boundary correction, then run its
-  focused probes and current gates. A pure audit produces no artifact.
-- **Rules:** core may own only policy-free opaque/copy contracts. VM owns host
-  platform policy and must not use a core surface to mutate guest state from a
-  host thread.
-- **Similar-issue sweep:** inspect all `core/platform` interfaces and every
-  VM/platform caller for native-handle leakage, unowned teardown, or a hidden
-  duplicate host boundary; classify no-consumer APIs as defer/remove candidates.
-- **Stop:** stop if a conclusion requires a speculative consumer, generic host
-  file service, guest-time source, DOS namespace rule, or a new product policy.
+**Idle.** T282 is closed; admit T283 only through a new approved packet.
 
 ## Current Technical Baseline
 
-- **T281 artifact identity:** `current-gcc` and
-  `verify-current-artifact-target` select `vm-0-5-0281`; focused FDC/HDC
-  probes and the full gate are retained closure evidence. Artifact
-  `nxvm_0_5_0281.exe` SHA-256:
-  `F9C767B877824E51FB82362B4B02C62C031BF5F200247EB00DA413461C0F8686`.
+- **T282 artifact identity:** `current-gcc` and
+  `verify-current-artifact-target` select `vm-0-5-0282`; focused host-surface
+  and full gate evidence are retained. Artifact `nxvm_0_5_0282.exe` SHA-256:
+  `F967C5E2766000200BD8E40A220E448D6CBE0E1E6756403A06892955240632F4`.
 - **Core boundary:** T243--T246 retain checked physical memory, bounded `#UD`
   transitions, immutable ROM mapping, and atomic real-mode entry plans.
 - **Product boundary:** `nxvm.exe` is the retained runnable product. `mantle`,
