@@ -2,7 +2,7 @@
 
 ## Current Work
 
-**M5 T260 S3 active: verify the core-owned TSS I/O-permission corpus.**
+**M5 T260 S4 active: close the TSS I/O-permission baseline.**
 
 ## T260 Admission Packet
 
@@ -70,6 +70,17 @@ as a read-only `ESP0`/`SS0` source. `ESP0` must fit the admitted 16-bit stack
 frame; otherwise it returns `#TS(0)` before changing the frame. The existing
 16-bit TSS path is unchanged. No VM, firmware, platform, or product source was
 changed.
+
+### S3 Corpus Result
+
+S3 is complete. `core-machine-tss-iomap-port-smoke` is a core-only prepared
+state corpus, registered in `PROJECT_CURRENT_SMOKE_TARGETS`. It proves an
+80386 CPL3 program can perform an allowed byte `IN` and `OUT`, while bitmap
+denied `IN`, bitmap denied `OUT`, and a word operation crossing a truncated
+bitmap boundary enter the T259 `#GP(0)` gate without reaching the port
+provider. It also proves `CPL <= IOPL` bypasses the bitmap under both the 80386
+and 80286 profiles. The target emits
+`M5:T260:S3:TSS-IOMAP:CORPUS:OK`.
 
 **Similar-issue sweep plan.** The defect class is a protected low-privilege
 port operation that bypasses a single permission decision. Before closure,
