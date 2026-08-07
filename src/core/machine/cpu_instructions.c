@@ -1313,6 +1313,40 @@ static C_VOID _s_load_cr0_msw(core_machine_cpu_execution_context *context, type_
     }
     TYPE_TRACE_CALL_END;
 }
+static C_VOID _s_write_cr0_80386(core_machine_cpu_execution_context *context,
+    type_unsigned_32 value)
+{
+    const type_unsigned_32 mutable_mask = VCPU_CR0_PE | VCPU_CR0_PG;
+    const type_unsigned_32 retained_mask = ~mutable_mask;
+
+    TYPE_TRACE_CALL_BEGIN("_s_write_cr0_80386");
+    if ((value & retained_mask) != (cpu_state.data.cr0 & retained_mask))
+    {
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
+    }
+    if (!_GetCR0_PE && TYPE_GET_BIT(value, VCPU_CR0_PG) &&
+        !TYPE_GET_BIT(value, VCPU_CR0_PE))
+    {
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
+    }
+    if (_GetCR0_PE && !TYPE_GET_BIT(value, VCPU_CR0_PE))
+    {
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
+    }
+    cpu_state.data.cr0 = value;
+    TYPE_TRACE_CALL_END;
+}
+static C_VOID _s_write_cr3_80386(core_machine_cpu_execution_context *context,
+    type_unsigned_32 value)
+{
+    TYPE_TRACE_CALL_BEGIN("_s_write_cr3_80386");
+    if (value & ~VCPU_CR3_BASE)
+    {
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
+    }
+    cpu_state.data.cr3 = value;
+    TYPE_TRACE_CALL_END;
+}
 static C_VOID _s_load_cs(core_machine_cpu_execution_context *context, type_unsigned_16 newcs)
 {
     TYPE_TRACE_CALL_BEGIN("_s_load_cs");
@@ -14523,6 +14557,11 @@ static C_VOID MOV_R32_CR(core_machine_cpu_execution_context *context)
         TYPE_TRACE_BLOCK_END;
     }
     TYPE_TRACE_CHECK_RETURN(_d_modrm_creg(context));
+    if (instruction_state.data.rr != (type_virtual_address)&cpu_state.data.cr0 &&
+        instruction_state.data.rr != (type_virtual_address)&cpu_state.data.cr2)
+    {
+        TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+    }
     TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rrm, TYPE_REFERENCE_OF(instruction_state.data.cr), 4));
     TYPE_TRACE_CALL_END;
 }
@@ -14552,7 +14591,20 @@ static C_VOID MOV_CR_R32(core_machine_cpu_execution_context *context)
         TYPE_TRACE_BLOCK_END;
     }
     TYPE_TRACE_CHECK_RETURN(_d_modrm_creg(context));
-    TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, TYPE_REFERENCE_OF(instruction_state.data.crm), 4));
+    if (instruction_state.data.rr == (type_virtual_address)&cpu_state.data.cr0)
+    {
+        TYPE_TRACE_CHECK_RETURN(_s_write_cr0_80386(context,
+            instruction_state.data.crm));
+    }
+    else if (instruction_state.data.rr == (type_virtual_address)&cpu_state.data.cr3)
+    {
+        TYPE_TRACE_CHECK_RETURN(_s_write_cr3_80386(context,
+            instruction_state.data.crm));
+    }
+    else
+    {
+        TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+    }
     /* if (instruction_state.data.rr == (type_virtual_address)&cpu_state.data.cr0) {
         STD_PRINTF("MOV_CR_R32: executed at L%08X, CR0=%08X\n", instruction_state.data.linear, cpu_state.data.cr0);
     }
@@ -15353,6 +15405,7 @@ static C_VOID ExecInit(core_machine_cpu_execution_context *context)
 }
 static C_VOID ExecFinal(core_machine_cpu_execution_context *context)
 {
+    t_cpu fault_cpu;
     if (instruction_state.data.flagInsLoop)
     {
         cpu_state.data.cs = instruction_state.data.oldcpu.data.cs;
@@ -15421,13 +15474,18 @@ static C_VOID ExecFinal(core_machine_cpu_execution_context *context)
             core_machine_cpu_execution_request_stop(context);
             return;
         }
+        fault_cpu = instruction_state.data.oldcpu;
+        if (TYPE_GET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_PF))
+        {
+            fault_cpu.data.cr2 = cpu_state.data.cr2;
+        }
         if (context->diagnostic_provider != STD_NULL &&
             context->diagnostic_provider->record_fault != STD_NULL)
         {
             context->diagnostic_provider->record_fault(context->diagnostic_context,
-                                                       &instruction_state.data.oldcpu, &instruction_state);
+                                                       &fault_cpu, &instruction_state);
         }
-        cpu_state = instruction_state.data.oldcpu;
+        cpu_state = fault_cpu;
         /* The retained real-mode #GP path may use the IVT. T257 deliberately
          * does not admit protected IDT-gate delivery: retain the original
          * fault snapshot and stop at the core boundary instead. */
