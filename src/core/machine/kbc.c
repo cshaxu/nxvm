@@ -22,6 +22,10 @@
 #define CORE_MACHINE_KBC_RESEND 0xfeu
 #define CORE_MACHINE_KBC_ECHO 0xeeu
 #define CORE_MACHINE_KBC_DEFAULT_TYPEMATIC 0x20u
+#define CORE_MACHINE_KBC_AUX_DEFAULT_RESOLUTION 2u
+#define CORE_MACHINE_KBC_AUX_DEFAULT_SAMPLE_RATE 100u
+#define CORE_MACHINE_KBC_AUX_STATUS_REPORTING 0x20u
+#define CORE_MACHINE_KBC_AUX_STATUS_SCALING_2_TO_1 0x10u
 
 static C_VOID core_machine_kbc_deassert_irq1(t_kbc *controller)
 {
@@ -272,7 +276,36 @@ static C_VOID core_machine_kbc_set_aux_defaults(t_kbc *controller)
 {
     if (controller == STD_NULL) return;
     controller->data.aux_reporting_enabled = TYPE_FALSE;
+    controller->data.aux_scaling_2_to_1 = TYPE_FALSE;
     controller->data.aux_button_state = 0u;
+    controller->data.aux_resolution = CORE_MACHINE_KBC_AUX_DEFAULT_RESOLUTION;
+    controller->data.aux_sample_rate = CORE_MACHINE_KBC_AUX_DEFAULT_SAMPLE_RATE;
+    controller->data.aux_pending_parameter = CORE_MACHINE_KBC_AUX_PENDING_NONE;
+}
+
+static type_bool core_machine_kbc_is_aux_sample_rate(uint8_t value)
+{
+    switch (value) {
+    case 10u: case 20u: case 40u: case 60u: case 80u: case 100u: case 200u:
+        return TYPE_TRUE;
+    default:
+        return TYPE_FALSE;
+    }
+}
+
+static uint8_t core_machine_kbc_aux_status(const t_kbc *controller)
+{
+    uint8_t status;
+
+    if (controller == STD_NULL) return 0u;
+    status = controller->data.aux_button_state & 0x07u;
+    if (controller->data.aux_reporting_enabled) {
+        status |= CORE_MACHINE_KBC_AUX_STATUS_REPORTING;
+    }
+    if (controller->data.aux_scaling_2_to_1) {
+        status |= CORE_MACHINE_KBC_AUX_STATUS_SCALING_2_TO_1;
+    }
+    return status;
 }
 
 static C_VOID core_machine_kbc_handle_aux_command(t_kbc *controller,
@@ -282,8 +315,35 @@ static C_VOID core_machine_kbc_handle_aux_command(t_kbc *controller,
     static const uint8_t reset_ok[] = {
         CORE_MACHINE_KBC_ACK, CORE_MACHINE_KBC_BAT_OK, 0x00u
     };
+    uint8_t status_reply[4];
 
     if (controller == STD_NULL) return;
+    if (controller->data.aux_pending_parameter ==
+        CORE_MACHINE_KBC_AUX_PENDING_SAMPLE_RATE) {
+        controller->data.aux_pending_parameter = CORE_MACHINE_KBC_AUX_PENDING_NONE;
+        if (core_machine_kbc_is_aux_sample_rate(command)) {
+            controller->data.aux_sample_rate = command;
+            core_machine_kbc_schedule_response_byte(controller, CORE_MACHINE_KBC_ACK,
+                CORE_MACHINE_KBC_OUTPUT_AUX);
+        } else {
+            core_machine_kbc_schedule_response_byte(controller, CORE_MACHINE_KBC_RESEND,
+                CORE_MACHINE_KBC_OUTPUT_AUX);
+        }
+        return;
+    }
+    if (controller->data.aux_pending_parameter ==
+        CORE_MACHINE_KBC_AUX_PENDING_RESOLUTION) {
+        controller->data.aux_pending_parameter = CORE_MACHINE_KBC_AUX_PENDING_NONE;
+        if (command <= 3u) {
+            controller->data.aux_resolution = command;
+            core_machine_kbc_schedule_response_byte(controller, CORE_MACHINE_KBC_ACK,
+                CORE_MACHINE_KBC_OUTPUT_AUX);
+        } else {
+            core_machine_kbc_schedule_response_byte(controller, CORE_MACHINE_KBC_RESEND,
+                CORE_MACHINE_KBC_OUTPUT_AUX);
+        }
+        return;
+    }
     switch (command) {
     case 0xffu:
         core_machine_kbc_set_aux_defaults(controller);
@@ -308,6 +368,26 @@ static C_VOID core_machine_kbc_handle_aux_command(t_kbc *controller,
     case 0xf2u:
         core_machine_kbc_schedule_response(controller, identify, sizeof(identify),
             CORE_MACHINE_KBC_OUTPUT_AUX);
+        break;
+    case 0xf3u:
+        core_machine_kbc_schedule_response_byte(controller, CORE_MACHINE_KBC_ACK,
+            CORE_MACHINE_KBC_OUTPUT_AUX);
+        controller->data.aux_pending_parameter =
+            CORE_MACHINE_KBC_AUX_PENDING_SAMPLE_RATE;
+        break;
+    case 0xe8u:
+        core_machine_kbc_schedule_response_byte(controller, CORE_MACHINE_KBC_ACK,
+            CORE_MACHINE_KBC_OUTPUT_AUX);
+        controller->data.aux_pending_parameter =
+            CORE_MACHINE_KBC_AUX_PENDING_RESOLUTION;
+        break;
+    case 0xe9u:
+        status_reply[0] = CORE_MACHINE_KBC_ACK;
+        status_reply[1] = core_machine_kbc_aux_status(controller);
+        status_reply[2] = controller->data.aux_resolution;
+        status_reply[3] = controller->data.aux_sample_rate;
+        core_machine_kbc_schedule_response(controller, status_reply,
+            sizeof(status_reply), CORE_MACHINE_KBC_OUTPUT_AUX);
         break;
     default:
         core_machine_kbc_schedule_response_byte(controller, CORE_MACHINE_KBC_RESEND,
