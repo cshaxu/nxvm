@@ -10,6 +10,7 @@
 
 
 #include "vm/machine/fdd.h"
+#include "vm/machine/media_save.h"
 
 static core_machine_media_result vm_machine_fdd_media_query(C_VOID *context,
     core_machine_media_info *out_info)
@@ -255,19 +256,11 @@ C_INT vm_machine_fdd_insert_for(t_fdd *fdd, const C_CHAR *file_name)
 
 C_INT vm_machine_fdd_remove_for(t_fdd *fdd, const C_CHAR *file_name)
 {
-    STD_FILE *image;
     if (fdd == STD_NULL) return TYPE_TRUE;
-    if (file_name != STD_NULL) {
-        image = STD_FOPEN(file_name, "wb");
-        if (image == STD_NULL) return TYPE_TRUE;
-        if (!fdd->connect.flagReadOnly &&
-            STD_FWRITE((C_VOID *)fdd->connect.pImgBase, sizeof(type_unsigned_8),
-                vm_machine_fdd_image_size(fdd), image) != vm_machine_fdd_image_size(fdd)) {
-            (C_VOID)STD_FCLOSE(image);
-            return TYPE_TRUE;
-        }
-        if (STD_FCLOSE(image) != 0) return TYPE_TRUE;
-    }
+    if (file_name != STD_NULL && !fdd->connect.flagReadOnly &&
+        vm_machine_media_save_atomically(file_name,
+            (const C_VOID *)fdd->connect.pImgBase,
+            vm_machine_fdd_image_size(fdd)) != TYPE_FALSE) return TYPE_TRUE;
     fdd->connect.flagDiskExist = TYPE_FALSE;
     fdd->connect.media_generation++;
     if (fdd->connect.pImgBase != (type_virtual_address)STD_NULL) {
