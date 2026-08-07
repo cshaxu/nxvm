@@ -444,6 +444,11 @@ target_link_libraries(core-utils-wait-smoke PRIVATE
     core-utils
 )
 
+add_executable(std-snprintf-smoke
+    tests/core/std_snprintf_smoke.c
+)
+target_link_libraries(std-snprintf-smoke PRIVATE type-facade)
+
 add_executable(core-product-session-contract-smoke
     tests/product/core_product_session_contract_smoke.c
 )
@@ -1004,6 +1009,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     vm-boot-failure-lifecycle-smoke
     vm-request-transport-smoke
     core-utils-wait-smoke
+    std-snprintf-smoke
     core-product-session-contract-smoke
     core-product-session-manager-smoke
     core-product-debug-target-smoke
@@ -1147,7 +1153,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0278 "0.5.0278")
+add_current_vm_artifact(vm-0-5-0279 "0.5.0279")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 
@@ -1225,6 +1231,13 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
             -RepositoryRoot "${CMAKE_SOURCE_DIR}"
         COMMENT "Verifying ISO C header facade ownership"
         VERBATIM)
+
+    add_custom_target(verify-bounded-formatting
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_bounded_formatting.cmake"
+        COMMENT "Verifying bounded formatting facade closure"
+        VERBATIM)
+    add_dependencies(run-current-smokes verify-bounded-formatting)
 
     add_custom_target(verify-documentation-governance
         COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass

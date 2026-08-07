@@ -2,44 +2,15 @@
 
 ## Current Work
 
-**M5 T279 S2: Bounded Formatting Migration -- active.**
-
-- **Original request:** retire the unbounded `STD_SPRINTF`/`vsprintf` path.
-  Every production formatting call must use an owned destination capacity; an
-  append through an interior pointer must carry its remaining capacity.
-- **S1 contract:** `STD_SNPRINTF` accepts a null destination only with zero
-  capacity; with nonzero capacity it always NUL-terminates on ordinary success
-  or truncation. A nonnegative result is the untruncated character count;
-  a result greater than or equal to capacity means truncation. Invalid format
-  input or underlying formatting failure returns a negative result and leaves a
-  nonzero-capacity destination as an empty string. An append helper advances
-  both cursor and remaining capacity only after a non-truncated result.
-- **S1 complete:** the facade contract, in-scope production inventory, and
-  focused corpus design are recorded. The remaining work is to implement the
-  bounded facade, migrate every caller, and enforce the source-shape closure.
-- **Scope and owners:** `type.[ch]` owns the C facade contract. Core debugger,
-  xasm/dasm, and VM debug callers own their buffers and must carry capacity at
-  each formatting boundary. This task neither changes debugger grammar nor
-  adds a product/session interface.
-- **Similar-issue sweep:** `rg -n "STD_SPRINTF|vsprintf\\(|\\bsprintf\\(" src`
-  found `type.[ch]`, core debug/xasm/dasm, and VM debug. Every production hit
-  is in scope; tests and generated build output are excluded because they do
-  not create the runtime facade path.
-- **Evidence:** add boundary/truncation/zero-capacity/failure corpus; static
-  gate rejects production `STD_SPRINTF`, `vsprintf`, and `sprintf`; retain
-  debugger, Console, DOS boot, and current GCC/CTest gates. Artifact:
-  `build/output/nxvm_0_5_0279.exe`.
-- **Rules:** no guessed sub-buffer size, no raw C formatter outside `type.c`,
-  no change to Console/debugger text except preventing an existing overflow.
-- **Stop:** stop if a production caller cannot state an owned capacity without
-  changing its output contract or public ABI.
+**Idle.** T279 is closed. T280 has not yet been admitted, so this ledger
+contains no active task packet.
 
 ## Current Technical Baseline
 
-- **T278 artifact identity:** `current-gcc` and
-  `verify-current-artifact-target` select `vm-0-5-0278`; static/ownership
-  checks and 109/109 CTest cases passed. Artifact `nxvm_0_5_0278.exe` SHA-256:
-  `FA90EE14D7CA4F6F9F2BCAB907C99B24834A47E9D7694B2ED699FC40CBC72195`.
+- **T279 artifact identity:** `current-gcc` and
+  `verify-current-artifact-target` select `vm-0-5-0279`; static/ownership
+  checks and 110/110 CTest cases passed. Artifact `nxvm_0_5_0279.exe` SHA-256:
+  `F39286FEA7A6F339711BCD5206C958D9B79D195C595CA367FDC355AD48A56AC0`.
 - **Core boundary:** T243--T246 retain checked physical memory, bounded `#UD`
   transitions, immutable ROM mapping, and atomic real-mode entry plans.
 - **Product boundary:** `nxvm.exe` is the retained runnable product. `mantle`,
@@ -65,6 +36,7 @@
 | T276 | Moved the neutral FDC into `core_machine.shared_fdc`; composition only binds frozen PC/AT routes/media, while core owns controller lifecycle and the core-only FDC fixture. |
 | T277 | Removed ATA PIO's direct `t_hdd` dependency and supplied the frozen media-registry boundary later consumed by T278. |
 | T278 | Moved neutral ATA PIO into `core_machine.shared_hdc`; composition only binds frozen PC/AT routes/media, while the VM-free fixture proves IDENTIFY, DRQ, and IRQ14 acknowledgement. |
+| T279 | Retired unbounded C formatting; source gate and corpus now enforce bounded output and explicit append capacity. |
 
 Detailed contracts, commands, artifact provenance, and prior closures are in
 [M5 History](../history/m5.md) and Git history. The [M5 convergence queue]

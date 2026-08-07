@@ -76,9 +76,11 @@ active task.
   PIO and count-zero=256 are admitted; slave and secondary remain explicitly
   absent, with SRST/status/error/IRQ14 behavior probed. Deferred: IDE DMA,
   ATAPI, LBA48, cache, and host-clock timing.
-- [ ] **M5 reliability and boundary evidence (`TODO(High)`, T279--T283).**
-  Retire unbounded C formatting with explicit bounded/append semantics; make
-  FDD/HDD replacement atomic and admit arbitrary-length raw HDD virtual
+- [x] **T279 bounded C formatting.** `STD_SPRINTF`/`vsprintf` are retired;
+  owned capacities and cursor/remaining append semantics are enforced by a
+  source gate and corpus without changing debugger or Console text.
+- [ ] **M5 reliability and boundary evidence (`TODO(High)`, T280--T283).**
+  Make FDD/HDD replacement atomic and admit arbitrary-length raw HDD virtual
   capacity without truncation; normalize core FDC/HDC ownership names; audit
   only existing core-platform host surfaces; and make VM-free controller
   fixtures execute real media I/O/failure paths. These tasks preserve retained

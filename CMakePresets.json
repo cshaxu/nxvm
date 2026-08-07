@@ -21,7 +21,7 @@
     {
       "name": "current-gcc",
       "configurePreset": "mingw-gcc-x64",
-      "targets": ["vm-0-5-0278"]
+      "targets": ["vm-0-5-0279"]
     },
     {
       "name": "current-gates-gcc",
@@ -36,6 +36,7 @@
         "verify-session-readiness",
         "verify-product-session-manager",
         "verify-c-facade-headers",
+        "verify-bounded-formatting",
         "verify-vm-provider-composition",
         "verify-ram-reconfigure-closure",
         "verify-linux-platform-contract",
