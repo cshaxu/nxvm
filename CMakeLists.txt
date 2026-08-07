@@ -835,6 +835,9 @@ target_link_libraries(core-machine-cpu-profile-gate-smoke PRIVATE
 add_executable(core-machine-fpu-escape-smoke
     tests/machine/fpu_escape_smoke.c)
 target_link_libraries(core-machine-fpu-escape-smoke PRIVATE core-machine)
+add_executable(core-machine-fpu-8087-smoke
+    tests/machine/core_machine_fpu_8087_smoke.c)
+target_link_libraries(core-machine-fpu-8087-smoke PRIVATE core-machine)
 add_executable(core-machine-int-ivt-smoke
     tests/machine/cpu_int_ivt_smoke.c)
 target_link_libraries(core-machine-int-ivt-smoke PRIVATE
@@ -936,6 +939,8 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-tss-iomap-port-smoke
     core-machine-task-switch-smoke
     core-machine-80386-paging-smoke
+    core-machine-fpu-escape-smoke
+    core-machine-fpu-8087-smoke
     core-machine-trace-context-smoke
     core-machine-cpu-fault-diagnostic-smoke
     core-machine-configuration-smoke
@@ -1112,7 +1117,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0261 "0.5.0261")
+add_current_vm_artifact(vm-0-5-0262 "0.5.0262")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 
@@ -1387,6 +1392,13 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMENT "Verifying VM composition lifecycle closure"
         VERBATIM)
     add_dependencies(run-current-smokes verify-vm-composition-lifecycle)
+
+    add_custom_target(verify-fpu-boundary
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_fpu_boundary.cmake"
+        COMMENT "Verifying T262 core-owned FPU boundary"
+        VERBATIM)
+    add_dependencies(run-current-smokes verify-fpu-boundary)
 endif()
 
 if(PROJECT_ENABLE_BOCHX_RESEARCH)
