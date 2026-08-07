@@ -15649,9 +15649,9 @@ static C_VOID ExecFinal(core_machine_cpu_execution_context *context)
                                                        &fault_cpu, &instruction_state);
         }
         cpu_state = fault_cpu;
-        /* The retained real-mode #GP path may use the IVT. T257 deliberately
-         * does not admit protected IDT-gate delivery: retain the original
-         * fault snapshot and stop at the core boundary instead. */
+        /* A protected #GP has already had its one bounded IDT-delivery
+         * attempt above. This remaining path preserves the original terminal
+         * fault; real mode retains its IVT delivery behavior. */
         if (TYPE_GET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_GP) &&
             !TYPE_GET_BIT(cpu_state.data.cr0, VCPU_CR0_PE))
         {

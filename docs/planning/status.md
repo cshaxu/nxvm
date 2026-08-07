@@ -2,8 +2,8 @@
 
 ## Current Work
 
-**M5 T259 S2 active: implement the bounded protected-privilege and IDT
-delivery path.**
+**M5 T259 S3 active: verify the bounded protected-privilege and IDT delivery
+corpus.**
 
 ## T259 S1 Admission Packet
 
@@ -48,7 +48,7 @@ I/O bitmap, LDT, a second executor, host/firmware mutation, or a Console,
 debugger, or boot UX change. The artifact identity is fixed now:
 `nxvm_0_5_0259.exe`.
 
-### S2 Progress
+### S2 Result
 
 `core/machine` now owns the admitted 16-bit gate transfer, TSS `SS0:SP0`
 stack switch, outer `IRET`, and `#GP` delivery attempt. A successful delivery
@@ -57,6 +57,25 @@ restores and reports the original fault rather than replacing it with a
 secondary gate fault. The new `core-machine-protected-privilege-smoke` covers
 the round trip and a DPL-rejected `INT 32h` delivered through `#GP` for both
 80286 and 80386 profiles. It is now part of the current CTest matrix.
+
+### S3 Verification Plan
+
+The focused target must emit both `M5:T259:S2:PROTECTED-PRIVILEGE:OK` and
+`M5:T259:S3:PROTECTED-PRIVILEGE:CORPUS:OK`. It proves one 80286 outer-ring
+round trip, then runs the DPL-rejection / delivered-`#GP` case under both 80286
+and 80386 profiles. The retained T257 corpus supplies adjacent invalid-selector,
+non-present code/stack, same-CPL `IRET`, protected `LIDT`, configured-gate, and
+pre-286/386 profile-rejection coverage. S3 must preserve those results without
+a firmware, VM, platform, or host-memory shortcut.
+
+**Similar-issue sweep.** The defect class is a protected `#GP` losing its
+original diagnostic when a bounded IDT-delivery attempt fails. The S3 query is
+`rg -n "_e_except_n\\(|_ser_int_protected\\(|record_delivered_exception|VCPUINS_EXCEPT_GP" src tests CMakeLists.txt`.
+Its only production delivery site is `ExecFinal`; the remaining real-mode IVT
+path is explicitly not a protected delivery route. The focused T259 smoke and
+retained T257 negative cases lock the two dispositions: successful protected
+delivery records an event, and unavailable delivery preserves the original
+terminal fault.
 
 ## T258 Closure Record
 
