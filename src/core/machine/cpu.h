@@ -358,6 +358,7 @@ typedef struct {
 #define _GetDescSys_Type_E(descriptor)   (TYPE_GET_BIT((descriptor), VCPU_DESC_TSS_TYPE_E))
 #define _GetDescTSS_Type_B(descriptor)   (TYPE_GET_BIT((descriptor), VCPU_DESC_TSS_TYPE_B))
 #define _SetDescTSS_Type_B(descriptor)   (TYPE_SET_BIT((descriptor), VCPU_DESC_TSS_TYPE_B))
+#define _ClrDescTSS_Type_B(descriptor)   (TYPE_CLEAR_BIT((descriptor), VCPU_DESC_TSS_TYPE_B))
 
 #define _IsDescSys32(descriptor)      (_IsDescSys(descriptor) && _GetDescSys_Type_E(descriptor))
 #define _IsDescLDT(descriptor)        (_IsDescSys(descriptor) && (_GetDesc_Type(descriptor) == VCPU_DESC_SYS_TYPE_LDT))
@@ -366,6 +367,7 @@ typedef struct {
 #define _IsDescTSSAvl(descriptor)     (_IsDescSys(descriptor) && ((_GetDesc_Type(descriptor) & 0x07) == 0x01))
 #define _IsDescTSSBusy(descriptor)    (_IsDescSys(descriptor) && ((_GetDesc_Type(descriptor) & 0x07) == 0x03))
 #define _SetDescTSSBusy(descriptor)   (_SetDescTSS_Type_B(descriptor))
+#define _ClrDescTSSBusy(descriptor)   (_ClrDescTSS_Type_B(descriptor))
 #define _IsDescTSS32(descriptor)      (_IsDescSys(descriptor) && ((_GetDesc_Type(descriptor) & 0x0d) == 0x09))
 #define _IsDescTSS16Avl(descriptor)   (_IsDescSys(descriptor) && (_GetDesc_Type(descriptor) == VCPU_DESC_SYS_TYPE_TSS_16_AVL))
 #define _IsDescTSS16Busy(descriptor)  (_IsDescSys(descriptor) && (_GetDesc_Type(descriptor) == VCPU_DESC_SYS_TYPE_TSS_16_BUSY))
