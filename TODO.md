@@ -79,12 +79,12 @@ active task.
 - [x] **T279 bounded C formatting.** `STD_SPRINTF`/`vsprintf` are retired;
   owned capacities and cursor/remaining append semantics are enforced by a
   source gate and corpus without changing debugger or Console text.
-- [ ] **M5 reliability and boundary evidence (`TODO(High)`, T280--T283).**
-  Make FDD/HDD replacement atomic and admit arbitrary-length raw HDD virtual
-  capacity without truncation; normalize core FDC/HDC ownership names; audit
-  only existing core-platform host surfaces; and make VM-free controller
-  fixtures execute real media I/O/failure paths. These tasks preserve retained
-  NXVM behavior and precede T284 EGA/VGA work.
+- [ ] **M5 reliability and boundary evidence (`TODO(High)`, T281--T283).**
+  T280 closed atomic FDD/HDD replacement and arbitrary-length raw HDD virtual
+  capacity. Normalize core FDC/HDC ownership names; audit only existing
+  core-platform host surfaces; and make VM-free controller fixtures execute
+  real media I/O/failure paths. These tasks preserve retained NXVM behavior and
+  precede T284 EGA/VGA work.
 - [ ] **Complete digital CGA (`TODO(Medium)`).** Keep it separate from EGA/VGA.
   T254 admitted `640x200x2`; T266 closes the bounded 6845 text subset:
   display-start/page, cursor address/shape/hidden state, and deterministic
