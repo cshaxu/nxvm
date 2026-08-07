@@ -65,12 +65,15 @@ static C_INT run_case(core_machine_cpu_profile profile, const C_UCHAR *program,
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
+    type_status run_status;
     C_INT failed = prepare_machine(profile, &state);
 
     if (!failed) {
         failed |= core_machine_memory_write(state.machine, 0u, program,
             program_size) != TYPE_STATUS_OK;
-        failed |= core_machine_run(state.machine, budget, &result) != TYPE_STATUS_OK;
+        run_status = core_machine_run(state.machine, budget, &result);
+        failed |= run_status != (expect_ud ? TYPE_STATUS_FAULT : TYPE_STATUS_OK);
+        failed |= expect_ud && result.reason != CORE_MACHINE_STOP_FAULT;
         failed |= core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != TYPE_STATUS_OK;
         if (expect_ud) {
             failed |= !diagnostic.first_fault.valid ||

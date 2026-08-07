@@ -96,8 +96,8 @@ These are the next owned admissions, not permission to work in parallel.
   CPL3-to-CPL0 software-gate, TSS-stack-source, outer-`IRET`, and `#GP`
   delivery subset; it does not prove CPL3 paging permissions or generic IDT
   delivery. T260 closes TSS I/O-map behavior through a real CPL3 corpus,
-  T261 admits task switching. T263 begins with the corpus-proven 80286 `ARPL
-  r/m16,r16` profile-gate mismatch and keeps every later instruction family
+  T261 admits task switching. T263 closes the corpus-proven 80286 `ARPL
+  r/m16,r16` profile-gate mismatch; every remaining instruction family remains
   corpus-specific. This remains lower ROI than the real-mode PC/AT device
   route.
 - [ ] **Core debug control-register mutation contract (`TODO(Medium)`).**
