@@ -2,33 +2,27 @@
 
 ## Current Work
 
-**M5 T274 S2: Core-Only Mantle-Shape Fixture -- active.**
+**M5 T275 S1: FDC Media-Provider Decoupling -- active.**
 
-- **Original request:** add a core-only mantle-shape fixture that creates a
-  machine, binds neutral machine/platform providers, freezes, resets, applies
-  an entry plan, runs bounded slices, and reports typed outcomes without VM,
-  firmware, UI, DOS, or external-runtime vocabulary.
-- **S1 complete:** audited the existing core create/bind/freeze/reset/entry
-  contracts and froze a minimal fixture sequence, provider ownership, typed
-  result checks, and explicit non-goals.
-- **S2 deliverable:** implement the core-only fixture with fixture-owned RTC,
-  media, and backing-resource providers. It must exercise the frozen sequence
-  and remain free of VM/profile/product vocabulary.
-- **Rules:** this is a test fixture, not `src/mantle`; it may not introduce a
-  second executor, session, host filesystem policy, VM include, firmware, or
-  product-facing behavior.
-- **Evidence:** T270 media, T271 backing-resource, and T273 RTC contracts are
-  the admitted core surfaces. The fixture must prove only their composition
-  shape, not a future VDM ABI.
-- **Stop:** stop and split if any required operation needs VM/profile state,
-  direct host handles, global/TLS current object, or a new boot/run path.
+- **Original request:** decouple the retained FDC state machine from `t_fdd`.
+  It must use only the frozen T270 media provider and explicit port/IRQ/DMA
+  configuration while remaining in `vm/machine` for this task.
+- **S1 deliverable:** inventory every direct `t_fdd` access and freeze the
+  provider operations, error mapping, generation/format behavior, probe plan,
+  and stop conditions before changing FDC source.
+- **Rules:** retain one FDC state machine and the existing DMA2/IRQ6 route; do
+  not add a second controller, multi-drive topology, host I/O shortcut, or
+  change Console/debugger/boot behavior.
+- **Stop:** stop and split if the media contract lacks a required observable
+  operation, or the change requires VM-side guest-memory access, a duplicate
+  FDD state owner, or undefined guest-visible timing.
 
 ## Current Technical Baseline
 
-- **T273 artifact identity:** `current-gcc` and
-  `verify-current-artifact-target` select `vm-0-5-0273`; static/ownership
-  checks and 106/106 CTest cases passed. Artifact `nxvm_0_5_0273.exe` SHA-256:
-  `5144E277818E960380AA31B92DD1D66659ADE75F18197FE068098A0081D3E5D6`.
+- **T274 artifact identity:** `current-gcc` and
+  `verify-current-artifact-target` select `vm-0-5-0274`; static/ownership
+  checks and 107/107 CTest cases passed. Artifact `nxvm_0_5_0274.exe` SHA-256:
+  `8E6E3CA707FD9FC9CBA9CE2E1AA1E00436F4BA616583F239FC18C289BFD28D05`.
 - **Core boundary:** T243--T246 retain checked physical memory, bounded `#UD`
   transitions, immutable ROM mapping, and atomic real-mode entry plans.
 - **Product boundary:** `nxvm.exe` is the retained runnable product. `mantle`,
@@ -49,6 +43,7 @@
 | T271 | Added a synchronous opaque core/platform backing resource with one close owner; existing copied input and cancellation contracts remain the only such facilities. |
 | T272 | Replaced the old single-slot block bridge with frozen FDD/HDD media providers and copied ROM geometry; FDC/HDC direct backing use remains explicitly deferred to T275/T277. |
 | T273 | Moved the neutral MC146818 register/calendar/tick/IRQ mechanism into core; VM retains profile NVRAM defaults and the PC/AT 70h bit-7 NMI/71h port adapter. |
+| T274 | Added a core-only fixture proving one machine can bind neutral RTC/media/backing providers, freeze, reset, apply an entry plan, and run a bounded slice without VM vocabulary. |
 
 Detailed contracts, commands, artifact provenance, and prior closures are in
 [M5 History](../history/m5.md) and Git history. The [M5 convergence queue]
