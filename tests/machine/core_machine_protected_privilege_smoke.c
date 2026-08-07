@@ -21,6 +21,7 @@ typedef struct privilege_machine {
 typedef enum privilege_negative_case {
     PRIVILEGE_NEGATIVE_NONE,
     PRIVILEGE_NEGATIVE_GATE_NOT_PRESENT,
+    PRIVILEGE_NEGATIVE_GP_GATE_NOT_PRESENT,
     PRIVILEGE_NEGATIVE_CODE_NOT_PRESENT,
     PRIVILEGE_NEGATIVE_STACK_ATOMICITY
 } privilege_negative_case;
@@ -124,6 +125,7 @@ static C_INT privilege_install(privilege_machine *state, C_INT fault_delivery,
     };
     static const uint8_t user_fault_code[] = { 0xcd,0x32 };
     static const uint8_t user_gate_not_present[] = { 0xcd,0x30 };
+    static const uint8_t user_gp_gate_not_present[] = { 0xcd,0x0d };
     static const uint8_t user_code_not_present[] = { 0xcd,0x31 };
     const uint8_t *user_program = user_code;
     STD_SIZE_T user_program_size = sizeof(user_code);
@@ -142,6 +144,9 @@ static C_INT privilege_install(privilege_machine *state, C_INT fault_delivery,
         idt[0x185u] = 0x66u;
         user_program = user_gate_not_present;
         user_program_size = sizeof(user_gate_not_present);
+    } else if (negative_case == PRIVILEGE_NEGATIVE_GP_GATE_NOT_PRESENT) {
+        user_program = user_gp_gate_not_present;
+        user_program_size = sizeof(user_gp_gate_not_present);
     } else if (negative_case == PRIVILEGE_NEGATIVE_CODE_NOT_PRESENT) {
         idt[0x18au] = 0x30u;
         user_program = user_code_not_present;
@@ -162,6 +167,12 @@ static C_INT privilege_install(privilege_machine *state, C_INT fault_delivery,
         idt[0x191u] = 0x01u;
         idt[0x192u] = 0x08u;
         idt[0x195u] = 0x86u;
+    }
+    if (negative_case == PRIVILEGE_NEGATIVE_GP_GATE_NOT_PRESENT) {
+        idt[0x68u] = 0x20u;
+        idt[0x69u] = 0x01u;
+        idt[0x6au] = 0x08u;
+        idt[0x6du] = 0x06u;
     }
     return write_bytes(state->machine, GDT_PTR, gdt_pointer, sizeof(gdt_pointer)) &&
         write_bytes(state->machine, IDT_PTR, idt_pointer, sizeof(idt_pointer)) &&
@@ -312,11 +323,15 @@ int main(void)
     failed |= privilege_test_not_present(CORE_MACHINE_CPU_PROFILE_80286,
         PRIVILEGE_NEGATIVE_GATE_NOT_PRESENT, 0x0182u);
     failed |= privilege_test_not_present(CORE_MACHINE_CPU_PROFILE_80286,
+        PRIVILEGE_NEGATIVE_GP_GATE_NOT_PRESENT, 0x006au);
+    failed |= privilege_test_not_present(CORE_MACHINE_CPU_PROFILE_80286,
         PRIVILEGE_NEGATIVE_CODE_NOT_PRESENT, 0x0030u);
     failed |= privilege_test_stack_atomicity();
     if (failed) return 1;
     STD_PRINTF("M5:T259:S2:PROTECTED-PRIVILEGE:OK\n");
     STD_PRINTF("M5:T259:S3:PROTECTED-PRIVILEGE:CORPUS:OK\n");
     STD_PRINTF("M5:T263:S5:PROTECTED-IDT-ATOMICITY:OK\n");
+    STD_PRINTF("M5:T263:S6:SYNC-IDT-ERROR-CODE:OK\n");
+    STD_PRINTF("M5:T263:S6:SYNC-IDT-ERROR-CODE:OK\n");
     return 0;
 }

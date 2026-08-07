@@ -378,6 +378,8 @@ mode uses ordinary guest-IVT transfer, while the currently admitted protected
 mode subset uses a 16-bit IDT interrupt-gate transfer. Its admitted exception
 handoff is limited to the corpus-proven `#GP` and `#NP` routes; it is not a
 claim of generic protected-mode exception or hardware-interrupt delivery.
+The admitted IDT validation error code uses `EXT=0`, because these routes are
+synchronous CPU events; external interrupt delivery remains outside this scope.
 Core has no firmware-interrupt portal, software-interrupt provider, or
 profile-private decoder bypass.
 

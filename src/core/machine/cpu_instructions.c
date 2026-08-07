@@ -2865,6 +2865,11 @@ static C_VOID _ser_int_real(core_machine_cpu_execution_context *context, type_un
     TYPE_TRACE_CHECK_RETURN(_s_load_cs(context, TYPE_MASK_UNSIGNED_16(vector >> 16)));
     TYPE_TRACE_CALL_END;
 }
+static type_unsigned_16 _ser_idt_error_code(type_unsigned_8 intid)
+{
+    /* All currently admitted IDT validation is a synchronous CPU event. */
+    return TYPE_MASK_UNSIGNED_16(intid * 8u + 2u);
+}
 static C_VOID _ser_int_protected_16(core_machine_cpu_execution_context *context,
     type_unsigned_8 intid, type_bool is_exception)
 {
@@ -2890,22 +2895,19 @@ static C_VOID _ser_int_protected_16(core_machine_cpu_execution_context *context,
     TYPE_TRACE_CALL_BEGIN("_ser_int_protected_16");
     if (!_IsProtected || TYPE_MASK_UNSIGNED_16(intid * 8u + 7u) >
         TYPE_MASK_UNSIGNED_16(cpu_state.data.idtr.limit)) {
-        TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(intid * 8u + 2u +
-            !!is_exception));
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(_ser_idt_error_code(intid)));
     }
     TYPE_TRACE_CHECK_RETURN(_s_read_idt(context, intid,
         TYPE_REFERENCE_OF(gate_desc)));
     if (_GetDesc_Type(gate_desc) != VCPU_DESC_SYS_TYPE_INTGATE_16) {
-        TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(intid * 8u + 2u +
-            !!is_exception));
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(_ser_idt_error_code(intid)));
     }
     if (!_IsDescPresent(gate_desc)) {
-        TYPE_TRACE_CHECK_RETURN(_SetExcept_NP(intid * 8u + 2u +
-            !!is_exception));
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_NP(_ser_idt_error_code(intid)));
     }
     oldcpl = _GetCPL;
     if (!is_exception && _GetDesc_DPL(gate_desc) < oldcpl) {
-        TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(intid * 8u + 2u));
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(_ser_idt_error_code(intid)));
     }
     newcs = TYPE_MASK_UNSIGNED_16(_GetDescGate_Selector(gate_desc));
     if (_IsSelectorNull(newcs) || _GetSelector_TI(newcs)) {
