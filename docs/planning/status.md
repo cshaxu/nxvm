@@ -2,8 +2,26 @@
 
 ## Current Work
 
-No implementation subtask is active. T272 may begin only with its own approved
-VM media-adapter/rebinding packet.
+**M5 T272 S1: VM Media Adapter And Legacy Block Removal -- active.**
+
+- **Original request:** make the retained VM FDD/HDD backing owners implement
+  T270 media providers, rebind default-ROM geometry, and remove the fixed
+  single-slot block bridge without changing controller behavior.
+- **Audit:** FDD uniquely owns floppy bytes/CHS/read-only/generation; HDD
+  uniquely owns HDD bytes/CHS/cursor. FDC and HDC still directly consume those
+  owners, which is intentional until T275/T277. The only block-slot consumer
+  is default-ROM HDD geometry through `session/block.c` and firmware context.
+- **S1 deliverable:** freeze the two provider identities/lifetimes, resource
+  adapter ownership, geometry/generation/flush mapping, legacy bridge removal
+  order, and retained controller boundary.
+- **Rules:** composition alone selects paths/mount/eject/persistence; FDD/HDD
+  retain their bytes; no controller rewrite, media copy/cache, host shortcut,
+  second stateful wrapper, or Console/boot behavior change.
+- **Evidence:** source inventory and documentation governance. S2 must add
+  providers/rebind firmware before deleting the legacy bridge; S3 requires FDD
+  and HDD boot plus retained FDC/ATA/current-gate evidence.
+- **Stop:** stop and split if rebinding requires direct host I/O in core,
+  firmware access to media bytes, or a second controller path.
 
 ## Current Technical Baseline
 
