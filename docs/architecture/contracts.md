@@ -497,6 +497,23 @@ controller before freeze. Default-ROM POST and INT 0Eh/40h assembly remain
 profile firmware. No VM object mirrors controller state or accesses FDC media
 bytes through a side channel.
 
+### VM ATA Media Boundary (T277)
+
+Until T278 moves its neutral mechanism, `vm/machine` owns the ATA PIO
+controller state, primary-master topology, ATA port provider, IRQ14 source,
+and PIO command/result sequencing. T277 removes only the controller's direct
+`t_hdd` dependency. Its frozen connection carries the core media registry and
+the selected HDD identity; all present/read-only/geometry observation and
+copied sector read/write use the T270 contract.
+
+The controller derives CHS capacity and IDENTIFY words from copied media
+geometry, and maps provider failure into its retained ATA abort or ID-not-found
+result path. It never receives a backing pointer, image path, host handle, or
+media policy. Composition alone selects the HDD provider, binds it before
+registry freeze, and supplies the PC/AT port/IRQ/topology declaration. T277
+does not add ATA DMA, commands, timing, a BIOS shortcut, or a second media
+route; T278 is the separate controller-location migration.
+
 ### Core-Only Mantle-Shape Fixture (T274)
 
 T274 is a test-only consumer of existing core contracts, not a new runtime
