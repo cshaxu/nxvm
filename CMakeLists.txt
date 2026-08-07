@@ -333,7 +333,6 @@ set(CORE_MACHINE_SOURCES
 )
 add_library(core-platform STATIC
     src/core/platform/backing_resource_interface.c
-    src/core/platform/host_surface_interface.c
     src/core/platform/input.c
     src/core/platform/presentation_mailbox.c
     src/core/platform/wait.c)
@@ -348,14 +347,15 @@ target_include_directories(core-platform PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
 target_link_libraries(core-platform PUBLIC type-facade)
-add_executable(core-platform-host-surface-smoke
-    tests/platform/core_platform_host_surface_smoke.c
+add_executable(vm-platform-host-surface-smoke
+    tests/platform/vm_platform_host_surface_smoke.c
 )
-target_link_libraries(core-platform-host-surface-smoke PRIVATE
-    core-platform
+target_link_libraries(vm-platform-host-surface-smoke PRIVATE
+    vm-platform
 )
 set(VM_PLATFORM_SOURCES
     src/vm/platform/platform.c
+    src/vm/platform/host_surface.c
     src/vm/platform/execution.c
     src/vm/platform/input_flush.c
 )
@@ -1043,7 +1043,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     vm-product-session-smoke
     vm-session-manager-smoke
     vm-session-reconfigure-smoke
-    core-platform-host-surface-smoke
+    vm-platform-host-surface-smoke
     vdm-minimal-session-smoke
     vdm-minimal-presentation-smoke)
 
@@ -1470,7 +1470,7 @@ endif()
 
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(core-platform PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(core-platform-host-surface-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(vm-platform-host-surface-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-platform-input-source-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-platform-presentation-mailbox-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-platform-wait-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)

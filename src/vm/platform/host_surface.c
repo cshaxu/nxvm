@@ -1,24 +1,24 @@
 #include "type.h"
 
-#include "core/platform/host_surface_interface.h"
+#include "vm/platform/host_surface.h"
 
-C_VOID core_platform_host_surface_context_initialize(
-    core_platform_host_surface_context *context,
-    core_platform_host_surface_kind kind, C_VOID *native_handle)
+C_VOID vm_platform_host_surface_context_initialize(
+    vm_platform_host_surface_context *context,
+    vm_platform_host_surface_kind kind, C_VOID *native_handle)
 {
     if (context == STD_NULL) return;
     context->kind = kind;
     context->native_handle = native_handle;
 }
 
-C_VOID core_platform_host_surface_lease_initialize(
-    core_platform_host_surface_lease *lease)
+C_VOID vm_platform_host_surface_lease_initialize(
+    vm_platform_host_surface_lease *lease)
 {
     if (lease != STD_NULL) STD_ATOMIC_INIT(&lease->owner, (uintptr_t)0u);
 }
 
-type_status core_platform_host_surface_lease_acquire(
-    core_platform_host_surface_lease *lease, const C_VOID *owner)
+type_status vm_platform_host_surface_lease_acquire(
+    vm_platform_host_surface_lease *lease, const C_VOID *owner)
 {
     uintptr_t expected = (uintptr_t)0u;
     uintptr_t token = (uintptr_t)owner;
@@ -31,8 +31,8 @@ type_status core_platform_host_surface_lease_acquire(
         TYPE_STATUS_UNSUPPORTED;
 }
 
-type_status core_platform_host_surface_lease_release(
-    core_platform_host_surface_lease *lease, const C_VOID *owner)
+type_status vm_platform_host_surface_lease_release(
+    vm_platform_host_surface_lease *lease, const C_VOID *owner)
 {
     uintptr_t expected = (uintptr_t)owner;
 
@@ -41,8 +41,8 @@ type_status core_platform_host_surface_lease_release(
         (uintptr_t)0u) ? TYPE_STATUS_OK : TYPE_STATUS_INVALID_STATE;
 }
 
-C_INT core_platform_host_surface_lease_is_owned_by(
-    const core_platform_host_surface_lease *lease, const C_VOID *owner)
+C_INT vm_platform_host_surface_lease_is_owned_by(
+    const vm_platform_host_surface_lease *lease, const C_VOID *owner)
 {
     return lease != STD_NULL && owner != STD_NULL &&
         STD_ATOMIC_LOAD(&lease->owner) == (uintptr_t)owner;

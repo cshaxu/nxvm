@@ -177,7 +177,7 @@ static const uint8_t vm_platform_linuxcon_ascii_to_print[][2] = {
     {0xfc, 'n'}, {0xfd, '2'}, {0xfe, '#'}, {0xff, ' '}
 };
 
-static core_platform_host_surface_lease linux_terminal_lease = {
+static vm_platform_host_surface_lease linux_terminal_lease = {
     ATOMIC_VAR_INIT(0)
 };
 
@@ -427,11 +427,11 @@ type_status vm_platform_linuxcon_run_handle_start(
         context->execution == STD_NULL || context->input_source == STD_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    if (core_platform_host_surface_lease_acquire(&linux_terminal_lease,
+    if (vm_platform_host_surface_lease_acquire(&linux_terminal_lease,
             context) != TYPE_STATUS_OK) return TYPE_STATUS_INVALID_STATE;
     handle = (linuxcon_run_handle *)STD_CALLOC(1u, sizeof(*handle));
     if (handle == STD_NULL) {
-        core_platform_host_surface_lease_release(&linux_terminal_lease, context);
+        vm_platform_host_surface_lease_release(&linux_terminal_lease, context);
         return TYPE_STATUS_NO_MEMORY;
     }
     handle->owner = owner;
@@ -495,7 +495,7 @@ C_VOID vm_platform_linuxcon_run_handle_finalize(vm_platform_run_handle *owner) {
 
     if (handle == STD_NULL) return;
     if (handle->terminal_initialized) vm_platform_linuxcon_terminal_finalize();
-    core_platform_host_surface_lease_release(&linux_terminal_lease,
+    vm_platform_host_surface_lease_release(&linux_terminal_lease,
         handle->platform);
     STD_FREE(handle);
     vm_platform_run_handle_initialize(owner);
