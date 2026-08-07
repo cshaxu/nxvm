@@ -2,7 +2,7 @@
 
 ## Current Work
 
-**M5 T275 S1: FDC Media-Provider Decoupling -- active.**
+**M5 T275 S2: FDC Media-Provider Decoupling -- active.**
 
 - **Original request:** decouple the retained FDC state machine from `t_fdd`.
   It must use only the frozen T270 media provider and explicit port/IRQ/DMA
@@ -17,6 +17,10 @@
   C/H/R fields, so the old FDD cursor writes are a removable duplicate, not a
   missing media capability. S2 may replace only these paths and must map typed
   absent/read-only/range/change results to the retained FDC result behavior.
+- **S2 deliverable:** replace direct FDD storage/geometry access with the
+  frozen registry and FDD identity; remove the FDD position mirror while
+  retaining the single FDC controller, DMA2 binding, IRQ6 ownership, and port
+  surface.
 - **Rules:** retain one FDC state machine and the existing DMA2/IRQ6 route; do
   not add a second controller, multi-drive topology, host I/O shortcut, or
   change Console/debugger/boot behavior.
