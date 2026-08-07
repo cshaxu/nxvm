@@ -2,7 +2,72 @@
 
 ## Current Work
 
-**Idle. M5 T261 is closed; the next task requires a separately admitted packet.**
+**M5 T262 S1 active: freeze the present-FPU baseline and its core-only corpus.**
+
+## T262 Admission Packet
+
+### Original Request
+
+Establish a real but deliberately bounded present-FPU path in `core/machine`.
+The FPU is per-machine state; the existing CPU ESC decoder is its only entry.
+The default remains CPU `80386`, FPU `none`.  `none` continues to consume legal
+`D8h`--`DFh` encodings, while `CR0.EM`/`CR0.TS` report `#NM` and `FWAIT`
+reports `#NM` only for `TS && MP`.  A present but unadmitted form stops with
+the explicit internal FPU-unsupported diagnostic, never `#UD`.
+
+### S1 Contract
+
+T262 admits **only `CORE_MACHINE_FPU_PROFILE_8087`** as the first present
+profile.  The existing `80287` and `80387` enum values remain valid frozen
+configuration values, but they gain no execution claim in this task: they
+continue to return the explicit FPU-unsupported outcome until a later
+profile-specific admission.  This avoids falsely calling an 8087 subset a
+387 implementation merely because the default CPU profile is 80386.
+
+`core_machine_fpu` is the sole state owner.  S2 adds a resettable control
+word, status word, eight tagged stack registers, TOP, and pending-unmasked-
+exception state.  The value representation and every arithmetic operation
+remain owned C data/algorithms: host floating-point state, a VM/firmware
+helper, TLS/current-object state, or a second executor are forbidden.
+
+| Concern | T262 admission | Deferred / deterministic result |
+| --- | --- | --- |
+| CPU entry | Existing `D8h`--`DFh` ESC dispatch plus `FWAIT` | No alternate decoder or VM path |
+| Present profile | Exact 8087 selection, CPU minimum 8086 | 80287/80387 remain explicit FPU-unsupported; FPU=none consumes legal ESC |
+| Initial state | `FNINIT`/`FINIT` reset control/status/tag/TOP/pending state | Environment save/restore, 287/387 environment differences |
+| Data forms | Finite normalized `m32real` load/store through the core memory route | 64/80-bit, integer, BCD, denormal, NaN, infinity, and memory-format breadth |
+| Arithmetic | Register `FADD`, `FSUB`, `FMUL`, `FDIV` on the admitted stack forms | Transcendentals, remainder, compare, and unadmitted ModR/M forms |
+| Exceptions | Stack underflow/overflow and divide-by-zero set owned FPU status; a deliberately unmasked pending exception is observed by `FWAIT` as retained `#MF` | Full x87 exception delivery, precision/rounding breadth, and host FP exception use |
+| Control | `FLDCW m16` is admitted only to make the unmasked-exception/FWAIT corpus guest-visible | Arbitrary control/environment manipulation |
+
+Every admitted form has metadata declaring minimum CPU (`8086`) and minimum
+FPU (`8087`), plus an exact-8087 dispatch gate.  S2 must reject an unsupported
+present form without consuming a second path, and must preserve the existing
+`EM`/`TS` precedence before FPU dispatch.  S3's core-only corpus covers
+FPU=none ESC consumption, `EM`/`TS`/`MP` `#NM`, `FNINIT`, stack
+load/arithmetic/store, `FWAIT`, a stack fault, an unmasked divide-by-zero
+outcome, and CPU/FPU profile gates.  The retained `DOS MEM` regression proves
+that `DB E3` no longer becomes `#UD`.
+
+### Constraints And Stop Conditions
+
+T262 changes only `core/machine` and its project-owned probes.  It may not
+modify VM firmware, platform, Console, debugger, boot flow, or the default
+FPU=none profile.  Stop and split the work if the corpus requires host
+floating-point state, 287/387-specific behavior, complete IEEE handling,
+environment save/restore, protected-mode FPU delivery, or any second CPU/FPU
+execution path.  T262 produces `build/output/nxvm_0_5_0262.exe` only after
+the implementation and closure subtasks complete.
+
+### S1 Evidence And Next Steps
+
+The audited implementation has one per-machine `core_machine_fpu` skeleton
+bound into the CPU execution context, one `FPU_ESCAPE` decoder for `D8h`--
+`DFh`, existing `FPU=none` consumption, and existing `EM`/`TS`/`MP` smoke
+coverage.  Present profiles currently all return FPU-unsupported; no old FPU
+operation, host shortcut, or duplicate execution path exists.  S2 may now
+implement the frozen 8087 state and forms above; S3 performs the corpus and
+full retained matrix.
 
 ## T261 Admission Packet
 

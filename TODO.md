@@ -106,8 +106,10 @@ These are the next owned admissions, not permission to work in parallel.
   core-owned debug mutation contract only after preserving retained debugger
   UX and defining lifecycle, validation, raw-override policy, and focused
   regression; do not let VM composition acquire paging semantics.
-- [ ] **Present x87 (`TODO(Low)`, T262).** Define state, operations,
-  exceptions, and `FWAIT` before enabling any 8087/287/387 profile.
+- [ ] **Present x87 (`TODO(Low)`, T262).** T262 S1 admits only the 8087
+  finite-`m32real`/basic-arithmetic baseline with owned state, exceptions, and
+  `FWAIT`; 80287/80387, broad formats, and complete x87 behavior remain
+  separately deferred.
 - [ ] **CPU-fault outcome audit (`TODO(Medium)`).** T214 established a
   session-owned fault result. Revisit only with a reproducible case showing a
   fault/detail is not available to the retained Console/debugger boundary;
