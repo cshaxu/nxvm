@@ -90,7 +90,7 @@ C_VOID vm_machine_debug_refresh(t_debug *debug) {
                 }
             }
         } else {
-            STD_SPRINTF(stmt, "<ERROR>");
+            (C_VOID)STD_SNPRINTF(stmt, sizeof(stmt), "<ERROR>");
         }
 
         /* print opcode, at least print 8 bytes */

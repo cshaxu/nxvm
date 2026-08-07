@@ -10717,7 +10717,7 @@ static uint32_t aasm32x_execute(aasm32_context *aasmContext, const C_CHAR *stmt,
                             STD_STRCAT(instr[j].stmt, " short ");
                             if (offset < 0x80)
                             {
-                                STD_SPRINTF(imm, "+%02x", (uint8_t)offset);
+                                STD_SNPRINTF(imm, sizeof(imm), "+%02x", (uint8_t)offset);
                             }
                             else
                             {
@@ -10732,7 +10732,7 @@ static uint32_t aasm32x_execute(aasm32_context *aasmContext, const C_CHAR *stmt,
                             case 2:
                                 if (offset < 0x8000)
                                 {
-                                    STD_SPRINTF(imm, "+%04x", (uint16_t)offset);
+                                    STD_SNPRINTF(imm, sizeof(imm), "+%04x", (uint16_t)offset);
                                 }
                                 else
                                 {
@@ -10743,7 +10743,7 @@ static uint32_t aasm32x_execute(aasm32_context *aasmContext, const C_CHAR *stmt,
                             case 4:
                                 if (offset < 0x80000000)
                                 {
-                                    STD_SPRINTF(imm, "+%08x", (uint32_t)offset);
+                                    STD_SNPRINTF(imm, sizeof(imm), "+%08x", (uint32_t)offset);
                                 }
                                 else
                                 {
@@ -10797,7 +10797,7 @@ static uint32_t aasm32x_execute(aasm32_context *aasmContext, const C_CHAR *stmt,
                             STD_STRCAT(instr[j].stmt, " short ");
                             if (offset < 0x80)
                             {
-                                STD_SPRINTF(imm, "-%02x", (uint8_t)offset);
+                                STD_SNPRINTF(imm, sizeof(imm), "-%02x", (uint8_t)offset);
                             }
                             else
                             {
@@ -10812,7 +10812,7 @@ static uint32_t aasm32x_execute(aasm32_context *aasmContext, const C_CHAR *stmt,
                             case 2:
                                 if (offset < 0x8000)
                                 {
-                                    STD_SPRINTF(imm, "-%04x", (uint16_t)offset);
+                                    STD_SNPRINTF(imm, sizeof(imm), "-%04x", (uint16_t)offset);
                                 }
                                 else
                                 {
@@ -10823,7 +10823,7 @@ static uint32_t aasm32x_execute(aasm32_context *aasmContext, const C_CHAR *stmt,
                             case 4:
                                 if (offset < 0x80000000)
                                 {
-                                    STD_SPRINTF(imm, "-%08x", (uint32_t)offset);
+                                    STD_SNPRINTF(imm, sizeof(imm), "-%08x", (uint32_t)offset);
                                 }
                                 else
                                 {
