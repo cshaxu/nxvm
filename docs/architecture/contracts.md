@@ -218,10 +218,11 @@ MMU, or raw-RAM path participates. T258 admits only `MOV r32,CR0`,
 CR0 changes only PE/PG and cannot set PG before PE, and CR3 must be 4 KiB
 aligned. Other guest control-register writes stop with `#UD`.
 
-The admitted path is ring 0 only. Non-present fetch/read/write faults retain
-their original instruction point, `CR2`, and P/W/U diagnostic bits as a copied
-core `FAULT` result. It deliberately has no guest protected-IDT delivery,
-CPL3 permission claim, CR0.WP write-protect claim, TLB, TSS, task switch, or
+The paging path itself remains ring 0 only. Non-present fetch/read/write faults
+retain their original instruction point, `CR2`, and P/W/U diagnostic bits as a
+copied core `FAULT` result. T259 separately admits a 16-bit CPL3 software-INT
+gate and `#GP` delivery subset; it does not prove CPL3 paging permission,
+CR0.WP write protection, TLB behavior, TSS I/O permission, task switching, or
 host-assisted recovery.
 
 CPU and memory mutation occurs only at an execution boundary. A debugger, DOS

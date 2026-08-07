@@ -2,8 +2,8 @@
 
 ## Current Work
 
-**M5 T259 S3 active: verify the bounded protected-privilege and IDT delivery
-corpus.**
+**Idle.** T259 is closed; the next implementation task must establish its own
+complete admission packet before source work begins.
 
 ## T259 S1 Admission Packet
 
@@ -58,15 +58,16 @@ secondary gate fault. The new `core-machine-protected-privilege-smoke` covers
 the round trip and a DPL-rejected `INT 32h` delivered through `#GP` for both
 80286 and 80386 profiles. It is now part of the current CTest matrix.
 
-### S3 Verification Plan
+### S3 Result
 
 The focused target must emit both `M5:T259:S2:PROTECTED-PRIVILEGE:OK` and
 `M5:T259:S3:PROTECTED-PRIVILEGE:CORPUS:OK`. It proves one 80286 outer-ring
 round trip, then runs the DPL-rejection / delivered-`#GP` case under both 80286
 and 80386 profiles. The retained T257 corpus supplies adjacent invalid-selector,
 non-present code/stack, same-CPL `IRET`, protected `LIDT`, configured-gate, and
-pre-286/386 profile-rejection coverage. S3 must preserve those results without
-a firmware, VM, platform, or host-memory shortcut.
+pre-286/386 profile-rejection coverage. Both focused CTest entries passed; the
+new corpus emits its S2/S3 markers and no firmware, VM, platform, or host-memory
+shortcut is present.
 
 **Similar-issue sweep.** The defect class is a protected `#GP` losing its
 original diagnostic when a bounded IDT-delivery attempt fails. The S3 query is
@@ -76,6 +77,15 @@ path is explicitly not a protected delivery route. The focused T259 smoke and
 retained T257 negative cases lock the two dispositions: successful protected
 delivery records an event, and unavailable delivery preserves the original
 terminal fault.
+
+### S4 Closure
+
+`current-gates-gcc` passed all 93/93 CTest cases and its static ownership,
+artifact-truthfulness, and dependency gates. `current-gcc` built the current
+target `vm-0-5-0259` and copied
+`build/output/nxvm_0_5_0259.exe`; SHA-256 is
+`61FEF63CD57ED1FD46D1B5A2B49C24538830FCAF3EDF0D35EF5D09CAE8FC283A`.
+The next task is required to preserve this baseline.
 
 ## T258 Closure Record
 
@@ -182,15 +192,16 @@ SHA-256 before closure.
 | T255 | Machine-profile admission contract is closed; design/governance only, no artifact. |
 | T256 | Core-owned Level 1 rational device clocks are closed; artifact `0.5.0254` and 90/90 current CTest pass. |
 | T258 | Bounded 80386 CPL0 paging baseline is closed; artifact `0.5.0258` and 92/92 current CTest pass. |
+| T259 | Bounded 16-bit protected privilege and `#GP` IDT delivery are closed; artifact `0.5.0259` and 93/93 current CTest pass. |
 
 The next task must establish a complete active packet before implementation.
 
 ## Current Technical Baseline
 
-- **T258 artifact identity:** `current-gcc` and
-  `verify-current-artifact-target` select `vm-0-5-0258`; static/ownership
-  checks and 92/92 CTest cases passed. Artifact `nxvm_0_5_0258.exe` SHA-256:
-  `51AAF534434F0943AE3BCBB4AA4A56C3ED1A815B79C47BC4FEC4B6DD02B8F62C`.
+- **T259 artifact identity:** `current-gcc` and
+  `verify-current-artifact-target` select `vm-0-5-0259`; static/ownership
+  checks and 93/93 CTest cases passed. Artifact `nxvm_0_5_0259.exe` SHA-256:
+  `61FEF63CD57ED1FD46D1B5A2B49C24538830FCAF3EDF0D35EF5D09CAE8FC283A`.
 - **T243--T246:** core owns checked physical memory, bounded `#UD`
   transitions, immutable ROM mapping, and atomic real-mode entry plans. T247
   verifies the current artifact target and full gate over that boundary.
