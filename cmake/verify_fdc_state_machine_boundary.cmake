@@ -7,7 +7,8 @@ file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/fdd.h" fdd_header)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/machine/fdd.c" fdd_source)
 
 foreach(forbidden IN ITEMS "pImgBase" "pCurrByte" "transCount"
-    "core_machine_memory_" "core_machine_pic_set_irq")
+    "core_machine_memory_" "core_machine_pic_set_irq" "t_fdd"
+    "connect.fdd" "vm_machine_fdd_")
     string(FIND "${fdc_source}" "${forbidden}" position)
     if(NOT position EQUAL -1)
         message(FATAL_ERROR "FDC crosses its controller/backend boundary: ${forbidden}")
@@ -15,8 +16,9 @@ foreach(forbidden IN ITEMS "pImgBase" "pCurrByte" "transCount"
 endforeach()
 
 foreach(required IN ITEMS "VM_MACHINE_FDC_PHASE_COMMAND"
-    "VM_MACHINE_FDC_PHASE_RESULT" "vm_machine_fdd_read_byte"
-    "vm_machine_fdd_write_byte" "core_machine_dma_request_assert"
+    "VM_MACHINE_FDC_PHASE_RESULT" "core_machine_media_query"
+    "core_machine_media_read_bytes" "core_machine_media_write_bytes"
+    "core_machine_media_format_sectors" "core_machine_dma_request_assert"
     "core_machine_pic_irq_source_assert")
     string(FIND "${fdc_source}" "${required}" position)
     if(position EQUAL -1)

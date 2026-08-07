@@ -2,38 +2,25 @@
 
 ## Current Work
 
-**M5 T275 S2: FDC Media-Provider Decoupling -- active.**
+**M5 T276 S1: Neutral FDC Mechanism Migration -- active.**
 
-- **Original request:** decouple the retained FDC state machine from `t_fdd`.
-  It must use only the frozen T270 media provider and explicit port/IRQ/DMA
-  configuration while remaining in `vm/machine` for this task.
-- **S1 deliverable:** inventory every direct `t_fdd` access and freeze the
-  provider operations, error mapping, generation/format behavior, probe plan,
-  and stop conditions before changing FDC source.
-- **S1 complete:** direct accesses reduce to presence/read-only/generation,
-  geometry, byte read/write, format, and two obsolete FDD position mirrors.
-  T270 query supplies presence, flags, generation, and geometry; byte and
-  format operations supply the transfer path. FDC already owns the command
-  C/H/R fields, so the old FDD cursor writes are a removable duplicate, not a
-  missing media capability. S2 may replace only these paths and must map typed
-  absent/read-only/range/change results to the retained FDC result behavior.
-- **S2 deliverable:** replace direct FDD storage/geometry access with the
-  frozen registry and FDD identity; remove the FDD position mirror while
-  retaining the single FDC controller, DMA2 binding, IRQ6 ownership, and port
-  surface.
-- **Rules:** retain one FDC state machine and the existing DMA2/IRQ6 route; do
-  not add a second controller, multi-drive topology, host I/O shortcut, or
-  change Console/debugger/boot behavior.
-- **Stop:** stop and split if the media contract lacks a required observable
-  operation, or the change requires VM-side guest-memory access, a duplicate
-  FDD state owner, or undefined guest-visible timing.
+- **Original request:** move the now-neutral FDC state machine into
+  `core/machine` by `git mv`; VM retains only PC/AT topology, media identity,
+  port/IRQ/DMA bindings, profile firmware, and product behavior.
+- **S1 deliverable:** freeze the core FDC config/provider surface, audit every
+  remaining VM-specific identifier, and define a core-only controller fixture.
+- **Rules:** core owns DOR and all mutable controller state; VM must not retain
+  a controller mirror. Do not add multi-drive topology, host I/O, a second DMA
+  loop, or profile defaults in core.
+- **Stop:** stop and split if moving the controller needs a core -> VM include,
+  direct VM backing object, PC/AT default port/IRQ, or a changed boot/UI path.
 
 ## Current Technical Baseline
 
-- **T274 artifact identity:** `current-gcc` and
-  `verify-current-artifact-target` select `vm-0-5-0274`; static/ownership
-  checks and 107/107 CTest cases passed. Artifact `nxvm_0_5_0274.exe` SHA-256:
-  `8E6E3CA707FD9FC9CBA9CE2E1AA1E00436F4BA616583F239FC18C289BFD28D05`.
+- **T275 artifact identity:** `current-gcc` and
+  `verify-current-artifact-target` select `vm-0-5-0275`; static/ownership
+  checks and 107/107 CTest cases passed. Artifact `nxvm_0_5_0275.exe` SHA-256:
+  `0E79279BD1F981D8C573AEEE90AF8744042EE38B919A4B38866AD215CF4F7475`.
 - **Core boundary:** T243--T246 retain checked physical memory, bounded `#UD`
   transitions, immutable ROM mapping, and atomic real-mode entry plans.
 - **Product boundary:** `nxvm.exe` is the retained runnable product. `mantle`,
@@ -55,6 +42,7 @@
 | T272 | Replaced the old single-slot block bridge with frozen FDD/HDD media providers and copied ROM geometry; FDC/HDC direct backing use remains explicitly deferred to T275/T277. |
 | T273 | Moved the neutral MC146818 register/calendar/tick/IRQ mechanism into core; VM retains profile NVRAM defaults and the PC/AT 70h bit-7 NMI/71h port adapter. |
 | T274 | Added a core-only fixture proving one machine can bind neutral RTC/media/backing providers, freeze, reset, apply an entry plan, and run a bounded slice without VM vocabulary. |
+| T275 | Decoupled the retained FDC controller from `t_fdd`; it now consumes only frozen media provider operations while retaining its single DMA2/IRQ6 state machine. |
 
 Detailed contracts, commands, artifact provenance, and prior closures are in
 [M5 History](../history/m5.md) and Git history. The [M5 convergence queue]
