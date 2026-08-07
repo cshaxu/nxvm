@@ -76,6 +76,22 @@ Documentation/design tasks apply only the rules relevant to their artifact and
 do not manufacture runtime verification requirements. Standalone `Td` work
 does not create a task artifact or change the current artifact version.
 
+## Documentation Governance Gate
+
+Every task closure and standalone `Td` closure runs:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/Verify-DocumentationGovernance.ps1 -RepositoryRoot .
+```
+
+The configured `current-gates-gcc` target also runs this check when PowerShell
+is available. It verifies that `status.md` is the sole current-baseline
+authority, an Idle status has no retained packet, no completed `m5-t*.md`
+record remains in planning, the queue contains no completed row, history makes
+no current-baseline claim, status matches the configured current artifact
+target, and no known mojibake is present. A failure blocks closure until the
+documents are made internally consistent.
+
 ## Milestone Closure Evidence
 
 Before an implementation milestone closes, its final verification record must

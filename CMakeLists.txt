@@ -1199,6 +1199,13 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
             -RepositoryRoot "${CMAKE_SOURCE_DIR}"
         COMMENT "Verifying ISO C header facade ownership"
         VERBATIM)
+
+    add_custom_target(verify-documentation-governance
+        COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
+            -File "${CMAKE_SOURCE_DIR}/tools/Verify-DocumentationGovernance.ps1"
+            -RepositoryRoot "${CMAKE_SOURCE_DIR}"
+        COMMENT "Verifying documentation governance closure"
+        VERBATIM)
     else()
         message(STATUS "PowerShell verification targets are unavailable on this host.")
     endif()

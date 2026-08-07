@@ -28,6 +28,7 @@
       "configurePreset": "mingw-gcc-x64",
       "targets": [
         "run-current-smokes",
+        "verify-documentation-governance",
         "verify-dependency-dag",
         "verify-live-machine-authority",
         "verify-facade-ownership",

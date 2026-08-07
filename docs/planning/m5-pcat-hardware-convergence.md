@@ -4,25 +4,10 @@
 
 This is the ROI-ordered queue for remaining M5 NXVM PC/AT work. It does not
 redefine the roadmap, start a later milestone, or define NXVDM completion.
-Completed M5 evidence is summarized in [M5 History](../history/m5.md); this
-document contains only the current baseline and remaining queue.
-
-The retained baseline is **T263**: `nxvm.exe` preserves its full-PC boot,
-Console, debugger, and current GCC/CTest gate. The current target is
-`vm-0-5-0263`. Checked memory, immutable ROM mapping, bounded 80386 paging,
-bounded 16-bit protected privilege/IDT delivery, bounded 16-bit far-JMP task
-switching, the exact-8087 finite baseline, the admitted 80286 `ARPL` form,
-and the sole VM composition lifecycle remain owned boundaries. Static/ownership
-checks and 99/99 CTest
-cases passed. Each admitted task
-follows the hardware-device verification template and must preserve that
-baseline.
-
-## Completed Queue Boundary
-
-T263 closed the first corpus-proven 286/386 mismatch: 80286 protected-mode
-`ARPL r/m16,r16`. Further instruction-family work is not the default next
-step; it requires a new failing corpus and an approved packet.
+Completed M5 evidence is summarized in [M5 History](../history/m5.md). The
+current baseline lives only in [Project Status](status.md); this document
+contains only the unstarted queue. Each admitted task follows the
+hardware-device verification template and must preserve that baseline.
 
 ## ROI-Ordered Queue
 
@@ -35,9 +20,6 @@ numeric task identifier as its artifact revision when it completes.
 
 | Task | Owner and purpose | Dependency and stop condition |
 | --- | --- | --- |
-| T264 | **Completed.** `core`/`vm` PC/AT ownership closure: audited the default-profile topology, repaired confirmed CMOS/QDCGA/registry boundary debt, and added the closure gate. | Retained T263 behavior and NXVM UX; deferred generated-ROM materialization and debug-borrow retirement are in `TODO.md`. |
-| T265 | **Completed.** Level 2 instruction timing is core-owned and profile-frozen; default PC/AT remains base-only pending a calibrated timing corpus. | Builds on L1 rational clocks. No new instruction semantics, host-clock use, wait states, or cycle-exact claim. |
-| T266 | **Completed.** Digital CGA/6845 text-and-status closure: bounded cursor/page/status semantics through VADP and copied frames. | Builds on T265 only where timing observations require it. No composite rendering or VGA expansion. |
 | T267 | Advanced 8042 AUX protocol. Add only corpus-selected wheel/sample/scaling/status or error behavior through KBC, IRQ12 and the guest driver route. | T266 independent. No host-to-DOS API shortcut or generic mouse API claim. |
 | T268 | FDC/FDD fidelity increment. Choose one observed controller gap such as rotation/motor timing, disk-change, multi-drive mechanics, or a deferred command family and prove it through ports, DMA and DOS media. | Requires T265 when the selected behavior is timing-sensitive. No broad controller rewrite. |
 | T269 | Level 3 bus-timing contract and first PC/AT transaction corpus: memory/I/O wait states, DMA bus ownership, and device visibility order. | Builds on T265; no prefetch or cycle-exact profile claim. Stop if a device requires an unbounded microstate model. |

@@ -29,8 +29,8 @@ It works with the
    update local standards when a reusable rule is discovered.
 
 Between a closed task and the admission of the next task, `status.md` must say
-**Idle** and no task record may retain an `Active` heading. Idle is not an
-active subtask and may not be used to conceal incomplete implementation work.
+**Idle** and contain no task packet. Idle is not an active subtask and may not
+be used to conceal incomplete implementation work.
 
 ## Local Task Record
 
@@ -64,8 +64,11 @@ hardware-device verification template.
 
 Before a completion commit, re-check the active packet against its original
 request. Close it only when every local requirement has concrete evidence or
-an owner-approved deferral in `TODO.md`; then update its compact history when
-appropriate. A defect-fix closure also verifies that its similar-issue sweep
-has no undocumented production hit and that its focused regression or closure
-gate is recorded. Standalone `Td` work has the same closure audit but never
-creates a runnable artifact.
+an owner-approved deferral in `TODO.md`. The closure commit atomically records
+the compact history summary, updates the sole status baseline, removes the
+closed packet, removes completed queue rows and stale TODO implementation
+items, and runs `tools/Verify-DocumentationGovernance.ps1`. A defect-fix
+closure also verifies that its similar-issue sweep has no undocumented
+production hit and that its focused regression or closure gate is recorded.
+Standalone `Td` work has the same closure audit but never creates a runnable
+artifact.
