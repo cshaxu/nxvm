@@ -69,8 +69,8 @@ C_INT main(C_VOID)
     }
     failed |= !saw_vertical_retrace || !saw_display || !saw_horizontal_blank;
     failed |= !core_machine_vadp_capture_text_snapshot(&vadp, &memory, &snapshot);
-    failed |= !snapshot.cursor_changed || snapshot.cursor_x != 0u ||
-        snapshot.cursor_y != 1u || snapshot.cursor_top != 2u ||
+    failed |= !snapshot.cursor_changed || snapshot.cursor_x != 1u ||
+        snapshot.cursor_y != 0u || snapshot.cursor_top != 2u ||
         snapshot.cursor_bottom != 6u;
 
     value = 'B';

@@ -216,7 +216,7 @@ static C_VOID vm_platform_linuxcon_paint(vm_platform_run_context *context,
         curX = frame.cursor_x;
         curY = frame.cursor_y;
         if (curX < sizeCol && curY < sizeRow) {
-            move(frame.cursor_x, frame.cursor_y);
+            move(frame.cursor_y, frame.cursor_x);
         } else {
             move(0, 0);
         }

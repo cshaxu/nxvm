@@ -75,7 +75,9 @@ C_INT main(C_VOID)
     if (core_machine_memory_read(session->core_machine, 0x0450u, &cursor,
             sizeof(cursor)) != TYPE_STATUS_OK ||
         core_machine_capture_display_snapshot(session->core_machine, &snapshot) !=
-            TYPE_STATUS_OK || cursor != 0x0600u || int10_count == 0u || f2_count != 0u ||
+            TYPE_STATUS_OK || cursor != 0x0600u || !snapshot.cursor_visible ||
+        snapshot.cursor_x != 0u || snapshot.cursor_y != 6u ||
+        int10_count == 0u || f2_count != 0u ||
         !key_wait_seen || !vm_no_media_snapshot_has_text(&snapshot,
             "Invalid boot disk")) {
         failed = 1;

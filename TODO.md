@@ -77,11 +77,11 @@ active task.
   absent, with SRST/status/error/IRQ14 behavior probed. Deferred: IDE DMA,
   ATAPI, LBA48, cache, and host-clock timing.
 - [ ] **Complete digital CGA (`TODO(Medium)`).** Keep it separate from EGA/VGA.
-  Admit `640x200x2` and remaining 40/80-column text combinations, then the
-  6845-visible start/page address, cursor, scanline geometry, display-enable,
-  vertical-retrace, and any light-pen behavior. Every admission retains one
-  VADP owner, B8000h mapping, copied-frame output, and port/memory/frame plus
-  DOS-fixture evidence.
+  T254 admitted `640x200x2`; T266 closes the bounded 6845 text subset:
+  display-start/page, cursor address/shape/hidden state, and deterministic
+  display-enable/vertical-retrace. Deferred: additional 40/80-column geometry
+  breadth and light pen. Every admission retains one VADP owner, B8000h
+  mapping, copied-frame output, and port/memory/frame plus DOS-fixture evidence.
 - [ ] **CGA composite-video fidelity (`TODO(Low)`).** Treat NTSC artifact
   color, phase, and colorburst as an optional renderer/profile capability only
   after digital CGA is complete. Do not fold it into VADP digital state or use

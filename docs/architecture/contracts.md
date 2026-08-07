@@ -109,6 +109,13 @@ platform contract and verifies copied cells, attributes, geometry, cursor,
 generation, and boundary timing; a dependency gate rejects machine-to-platform
 or platform-to-machine sibling includes.
 
+For text payloads, cursor coordinates are copied facts with
+`cursor_x=column` and `cursor_y=row`, relative to the CRTC display-start
+address. VADP derives visibility from the CRTC cursor address and inclusive
+scanline shape; an off-page or disabled cursor is not wrapped into the visible
+frame. Platform consumers may only render those copied facts and cannot infer
+or modify guest VRAM, CRTC state, or raster phase.
+
 ## Core Machine: Lifecycle And Cooperative Execution
 
 `core/machine` owns no host thread and exposes no `start` function or internal

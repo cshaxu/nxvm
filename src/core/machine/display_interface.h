@@ -29,6 +29,7 @@ typedef struct core_machine_display_snapshot {
     uint16_t rows;
     uint8_t cursor_top;
     uint8_t cursor_bottom;
+    /* Text coordinates are column then row, relative to display start. */
     uint8_t cursor_x;
     uint8_t cursor_y;
     C_INT cursor_visible;

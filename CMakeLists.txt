@@ -708,6 +708,11 @@ add_executable(core-machine-vadp-text-smoke
     tests/machine/core_machine_vadp_text_smoke.c
 )
 target_link_libraries(core-machine-vadp-text-smoke PRIVATE core-machine)
+
+add_executable(core-machine-vadp-text-status-smoke
+    tests/machine/core_machine_vadp_text_status_smoke.c
+)
+target_link_libraries(core-machine-vadp-text-status-smoke PRIVATE core-machine)
 add_executable(core-machine-cga-graphics-port-smoke
     tests/machine/core_machine_cga_graphics_port_smoke.c
 )
@@ -952,6 +957,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     vm-kbc-aux-guest-smoke
     vm-keyboard-set1-mapper-smoke
     core-machine-vadp-text-smoke
+    core-machine-vadp-text-status-smoke
     core-machine-cga-graphics-port-smoke
     core-machine-cga-640-port-smoke
     core-machine-ega-sequencer-port-smoke
@@ -1115,7 +1121,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0265 "0.5.0265")
+add_current_vm_artifact(vm-0-5-0266 "0.5.0266")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 
