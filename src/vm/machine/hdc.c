@@ -1,7 +1,7 @@
 #include "type.h"
 
+#include "core/machine/media_interface.h"
 #include "core/machine/pic.h"
-#include "vm/machine/hdd.h"
 #include "vm/machine/hdc.h"
 
 #define VM_MACHINE_HDC_COMMAND_READ_SECTORS 0x20u
@@ -40,11 +40,20 @@ static uint32_t vm_machine_hdc_lba(const vm_machine_hdc *hdc)
         ((uint32_t)(hdc->data.drive_head & 0x0fu) << 24u);
 }
 
-static STD_SIZE_T vm_machine_hdc_sector_capacity(const t_hdd *backend)
+static C_INT vm_machine_hdc_media_info(const vm_machine_hdc *hdc,
+    core_machine_media_info *out_info, core_machine_media_result *out_result)
 {
-    if (backend == STD_NULL || backend->data.nbyte == 0u) return 0u;
-    return (STD_SIZE_T)backend->data.ncyl * backend->data.nhead *
-        backend->data.nsector;
+    return hdc != STD_NULL && hdc->connect.media_registry != STD_NULL &&
+        core_machine_media_query(hdc->connect.media_registry, hdc->connect.media_id,
+            out_info, out_result) == TYPE_STATUS_OK &&
+        *out_result == CORE_MACHINE_MEDIA_RESULT_OK;
+}
+
+static STD_SIZE_T vm_machine_hdc_sector_capacity(
+    const core_machine_media_info *info)
+{
+    return info == STD_NULL || info->geometry.bytes_per_sector == 0u ? 0u :
+        (STD_SIZE_T)info->geometry.logical_sector_count;
 }
 
 static C_VOID vm_machine_hdc_complete(vm_machine_hdc *hdc)
@@ -68,59 +77,70 @@ static C_VOID vm_machine_hdc_fail(vm_machine_hdc *hdc, uint8_t error)
 
 static C_INT vm_machine_hdc_load_chs_sector(vm_machine_hdc *hdc)
 {
-    t_hdd *backend;
+    core_machine_media_info info;
+    core_machine_media_result media_result;
     uint16_t cylinder;
     uint8_t head;
     uint8_t sector;
     STD_SIZE_T offset;
 
-    if (hdc == STD_NULL || hdc->connect.backend == STD_NULL) return 0;
-    backend = hdc->connect.backend;
+    if (hdc == STD_NULL || !vm_machine_hdc_media_info(hdc, &info, &media_result) ||
+        !info.present) {
+        vm_machine_hdc_fail(hdc, VM_MACHINE_HDC_ERROR_ABORT);
+        return 0;
+    }
     cylinder = (uint16_t)hdc->data.cylinder_low |
         ((uint16_t)hdc->data.cylinder_high << 8u);
     head = hdc->data.drive_head & 0x0fu;
     sector = hdc->data.sector_number;
-    if (!backend->connect.flagDiskExist || backend->connect.pImgBase == 0u) {
-        vm_machine_hdc_fail(hdc, VM_MACHINE_HDC_ERROR_ABORT);
-        return 0;
-    }
     if (!vm_machine_hdc_selected_master(hdc) || vm_machine_hdc_lba_mode(hdc) ||
-        sector == 0u || cylinder >= backend->data.ncyl ||
-        head >= backend->data.nhead || sector > backend->data.nsector ||
-        backend->data.nbyte != sizeof(hdc->data.data)) {
+        sector == 0u || cylinder >= info.geometry.cylinders ||
+        head >= info.geometry.heads || sector > info.geometry.sectors_per_track ||
+        info.geometry.bytes_per_sector != sizeof(hdc->data.data)) {
         vm_machine_hdc_fail(hdc, VM_MACHINE_HDC_ERROR_ID_NOT_FOUND);
         return 0;
     }
-    offset = (((STD_SIZE_T)cylinder * backend->data.nhead + head) *
-        backend->data.nsector + (sector - 1u)) * backend->data.nbyte;
-    STD_MEMCPY(hdc->data.data,
-        (const C_VOID *)(backend->connect.pImgBase + offset),
-        sizeof(hdc->data.data));
+    offset = (((STD_SIZE_T)cylinder * info.geometry.heads + head) *
+        info.geometry.sectors_per_track + (sector - 1u)) * info.geometry.bytes_per_sector;
+    if (core_machine_media_read_bytes(hdc->connect.media_registry,
+            hdc->connect.media_id, offset, hdc->data.data, sizeof(hdc->data.data),
+            &media_result) != TYPE_STATUS_OK ||
+        media_result != CORE_MACHINE_MEDIA_RESULT_OK) {
+        vm_machine_hdc_fail(hdc, media_result == CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE ?
+            VM_MACHINE_HDC_ERROR_ID_NOT_FOUND : VM_MACHINE_HDC_ERROR_ABORT);
+        return 0;
+    }
     return 1;
 }
 
 static C_INT vm_machine_hdc_load_lba_sector(vm_machine_hdc *hdc)
 {
-    t_hdd *backend;
+    core_machine_media_info info;
+    core_machine_media_result media_result;
     uint32_t lba;
     STD_SIZE_T offset;
 
-    if (hdc == STD_NULL || hdc->connect.backend == STD_NULL) return 0;
-    backend = hdc->connect.backend;
-    if (!backend->connect.flagDiskExist || backend->connect.pImgBase == 0u) {
+    if (hdc == STD_NULL || !vm_machine_hdc_media_info(hdc, &info, &media_result) ||
+        !info.present) {
         vm_machine_hdc_fail(hdc, VM_MACHINE_HDC_ERROR_ABORT);
         return 0;
     }
     lba = vm_machine_hdc_lba(hdc);
     if (!vm_machine_hdc_selected_master(hdc) || !vm_machine_hdc_lba_mode(hdc) ||
-        (STD_SIZE_T)lba >= vm_machine_hdc_sector_capacity(backend) ||
-        backend->data.nbyte != sizeof(hdc->data.data)) {
+        (STD_SIZE_T)lba >= vm_machine_hdc_sector_capacity(&info) ||
+        info.geometry.bytes_per_sector != sizeof(hdc->data.data)) {
         vm_machine_hdc_fail(hdc, VM_MACHINE_HDC_ERROR_ID_NOT_FOUND);
         return 0;
     }
-    offset = (STD_SIZE_T)lba * backend->data.nbyte;
-    STD_MEMCPY(hdc->data.data, (const C_VOID *)(backend->connect.pImgBase + offset),
-        sizeof(hdc->data.data));
+    offset = (STD_SIZE_T)lba * info.geometry.bytes_per_sector;
+    if (core_machine_media_read_bytes(hdc->connect.media_registry,
+            hdc->connect.media_id, offset, hdc->data.data, sizeof(hdc->data.data),
+            &media_result) != TYPE_STATUS_OK ||
+        media_result != CORE_MACHINE_MEDIA_RESULT_OK) {
+        vm_machine_hdc_fail(hdc, media_result == CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE ?
+            VM_MACHINE_HDC_ERROR_ID_NOT_FOUND : VM_MACHINE_HDC_ERROR_ABORT);
+        return 0;
+    }
     return 1;
 }
 
@@ -132,60 +152,70 @@ static C_INT vm_machine_hdc_load_sector(vm_machine_hdc *hdc)
 
 static C_INT vm_machine_hdc_store_chs_sector(vm_machine_hdc *hdc)
 {
-    t_hdd *backend;
+    core_machine_media_info info;
+    core_machine_media_result media_result;
     uint16_t cylinder;
     uint8_t head;
     uint8_t sector;
     STD_SIZE_T offset;
 
-    if (hdc == STD_NULL || hdc->connect.backend == STD_NULL) return 0;
-    backend = hdc->connect.backend;
+    if (hdc == STD_NULL || !vm_machine_hdc_media_info(hdc, &info, &media_result) ||
+        !info.present || (info.capabilities & CORE_MACHINE_MEDIA_CAPABILITY_READ_ONLY) != 0u) {
+        vm_machine_hdc_fail(hdc, VM_MACHINE_HDC_ERROR_ABORT);
+        return 0;
+    }
     cylinder = (uint16_t)hdc->data.cylinder_low |
         ((uint16_t)hdc->data.cylinder_high << 8u);
     head = hdc->data.drive_head & 0x0fu;
     sector = hdc->data.sector_number;
-    if (!backend->connect.flagDiskExist || backend->connect.flagReadOnly ||
-        backend->connect.pImgBase == 0u) {
-        vm_machine_hdc_fail(hdc, VM_MACHINE_HDC_ERROR_ABORT);
-        return 0;
-    }
     if (!vm_machine_hdc_selected_master(hdc) || vm_machine_hdc_lba_mode(hdc) ||
-        sector == 0u || cylinder >= backend->data.ncyl ||
-        head >= backend->data.nhead || sector > backend->data.nsector ||
-        backend->data.nbyte != sizeof(hdc->data.data)) {
+        sector == 0u || cylinder >= info.geometry.cylinders ||
+        head >= info.geometry.heads || sector > info.geometry.sectors_per_track ||
+        info.geometry.bytes_per_sector != sizeof(hdc->data.data)) {
         vm_machine_hdc_fail(hdc, VM_MACHINE_HDC_ERROR_ID_NOT_FOUND);
         return 0;
     }
-    offset = (((STD_SIZE_T)cylinder * backend->data.nhead + head) *
-        backend->data.nsector + (sector - 1u)) * backend->data.nbyte;
-    STD_MEMCPY((C_VOID *)(backend->connect.pImgBase + offset), hdc->data.data,
-        sizeof(hdc->data.data));
+    offset = (((STD_SIZE_T)cylinder * info.geometry.heads + head) *
+        info.geometry.sectors_per_track + (sector - 1u)) * info.geometry.bytes_per_sector;
+    if (core_machine_media_write_bytes(hdc->connect.media_registry,
+            hdc->connect.media_id, offset, hdc->data.data, sizeof(hdc->data.data),
+            &media_result) != TYPE_STATUS_OK ||
+        media_result != CORE_MACHINE_MEDIA_RESULT_OK) {
+        vm_machine_hdc_fail(hdc, media_result == CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE ?
+            VM_MACHINE_HDC_ERROR_ID_NOT_FOUND : VM_MACHINE_HDC_ERROR_ABORT);
+        return 0;
+    }
     return 1;
 }
 
 static C_INT vm_machine_hdc_store_lba_sector(vm_machine_hdc *hdc)
 {
-    t_hdd *backend;
+    core_machine_media_info info;
+    core_machine_media_result media_result;
     uint32_t lba;
     STD_SIZE_T offset;
 
-    if (hdc == STD_NULL || hdc->connect.backend == STD_NULL) return 0;
-    backend = hdc->connect.backend;
-    if (!backend->connect.flagDiskExist || backend->connect.flagReadOnly ||
-        backend->connect.pImgBase == 0u) {
+    if (hdc == STD_NULL || !vm_machine_hdc_media_info(hdc, &info, &media_result) ||
+        !info.present || (info.capabilities & CORE_MACHINE_MEDIA_CAPABILITY_READ_ONLY) != 0u) {
         vm_machine_hdc_fail(hdc, VM_MACHINE_HDC_ERROR_ABORT);
         return 0;
     }
     lba = vm_machine_hdc_lba(hdc);
     if (!vm_machine_hdc_selected_master(hdc) || !vm_machine_hdc_lba_mode(hdc) ||
-        (STD_SIZE_T)lba >= vm_machine_hdc_sector_capacity(backend) ||
-        backend->data.nbyte != sizeof(hdc->data.data)) {
+        (STD_SIZE_T)lba >= vm_machine_hdc_sector_capacity(&info) ||
+        info.geometry.bytes_per_sector != sizeof(hdc->data.data)) {
         vm_machine_hdc_fail(hdc, VM_MACHINE_HDC_ERROR_ID_NOT_FOUND);
         return 0;
     }
-    offset = (STD_SIZE_T)lba * backend->data.nbyte;
-    STD_MEMCPY((C_VOID *)(backend->connect.pImgBase + offset), hdc->data.data,
-        sizeof(hdc->data.data));
+    offset = (STD_SIZE_T)lba * info.geometry.bytes_per_sector;
+    if (core_machine_media_write_bytes(hdc->connect.media_registry,
+            hdc->connect.media_id, offset, hdc->data.data, sizeof(hdc->data.data),
+            &media_result) != TYPE_STATUS_OK ||
+        media_result != CORE_MACHINE_MEDIA_RESULT_OK) {
+        vm_machine_hdc_fail(hdc, media_result == CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE ?
+            VM_MACHINE_HDC_ERROR_ID_NOT_FOUND : VM_MACHINE_HDC_ERROR_ABORT);
+        return 0;
+    }
     return 1;
 }
 
@@ -197,30 +227,30 @@ static C_INT vm_machine_hdc_store_sector(vm_machine_hdc *hdc)
 
 static C_VOID vm_machine_hdc_identify(vm_machine_hdc *hdc)
 {
-    t_hdd *backend;
+    core_machine_media_info info;
+    core_machine_media_result media_result;
     uint16_t word;
 
-    if (hdc == STD_NULL || hdc->connect.backend == STD_NULL ||
+    if (hdc == STD_NULL || !vm_machine_hdc_media_info(hdc, &info, &media_result) ||
         !vm_machine_hdc_selected_master(hdc) ||
-        !hdc->connect.backend->connect.flagDiskExist) {
+        !info.present || info.geometry.bytes_per_sector != sizeof(hdc->data.data)) {
         vm_machine_hdc_fail(hdc, VM_MACHINE_HDC_ERROR_ABORT);
         return;
     }
-    backend = hdc->connect.backend;
     STD_MEMSET(hdc->data.data, 0, sizeof(hdc->data.data));
     word = 0x0040u;
     STD_MEMCPY(&hdc->data.data[0], &word, sizeof(word));
-    word = backend->data.ncyl;
+    word = info.geometry.cylinders;
     STD_MEMCPY(&hdc->data.data[2], &word, sizeof(word));
-    word = backend->data.nhead;
+    word = info.geometry.heads;
     STD_MEMCPY(&hdc->data.data[6], &word, sizeof(word));
-    word = backend->data.nsector;
+    word = info.geometry.sectors_per_track;
     STD_MEMCPY(&hdc->data.data[12], &word, sizeof(word));
     word = 0x0200u;
     STD_MEMCPY(&hdc->data.data[98], &word, sizeof(word));
-    word = (uint16_t)vm_machine_hdc_sector_capacity(backend);
+    word = (uint16_t)vm_machine_hdc_sector_capacity(&info);
     STD_MEMCPY(&hdc->data.data[120], &word, sizeof(word));
-    word = (uint16_t)(vm_machine_hdc_sector_capacity(backend) >> 16u);
+    word = (uint16_t)(vm_machine_hdc_sector_capacity(&info) >> 16u);
     STD_MEMCPY(&hdc->data.data[122], &word, sizeof(word));
     hdc->data.phase = VM_MACHINE_HDC_PHASE_DATA_READ;
     hdc->data.data_index = 0u;
@@ -232,26 +262,30 @@ static C_VOID vm_machine_hdc_identify(vm_machine_hdc *hdc)
 
 static C_INT vm_machine_hdc_advance_chs(vm_machine_hdc *hdc)
 {
-    t_hdd *backend;
+    core_machine_media_info info;
+    core_machine_media_result media_result;
     uint16_t cylinder;
     uint8_t head;
     uint8_t sector;
 
-    if (hdc == STD_NULL || hdc->connect.backend == STD_NULL) return 0;
-    backend = hdc->connect.backend;
+    if (hdc == STD_NULL || !vm_machine_hdc_media_info(hdc, &info, &media_result) ||
+        !info.present) {
+        vm_machine_hdc_fail(hdc, VM_MACHINE_HDC_ERROR_ABORT);
+        return 0;
+    }
     cylinder = (uint16_t)hdc->data.cylinder_low |
         ((uint16_t)hdc->data.cylinder_high << 8u);
     head = hdc->data.drive_head & 0x0fu;
     sector = (uint8_t)(hdc->data.sector_number + 1u);
-    if (sector > backend->data.nsector) {
+    if (sector > info.geometry.sectors_per_track) {
         sector = 1u;
         ++head;
-        if (head >= backend->data.nhead) {
+        if (head >= info.geometry.heads) {
             head = 0u;
             ++cylinder;
         }
     }
-    if (cylinder >= backend->data.ncyl) {
+    if (cylinder >= info.geometry.cylinders) {
         vm_machine_hdc_fail(hdc, VM_MACHINE_HDC_ERROR_ID_NOT_FOUND);
         return 0;
     }
@@ -264,13 +298,17 @@ static C_INT vm_machine_hdc_advance_chs(vm_machine_hdc *hdc)
 
 static C_INT vm_machine_hdc_advance_lba(vm_machine_hdc *hdc)
 {
-    t_hdd *backend;
+    core_machine_media_info info;
+    core_machine_media_result media_result;
     uint32_t lba;
 
-    if (hdc == STD_NULL || hdc->connect.backend == STD_NULL) return 0;
-    backend = hdc->connect.backend;
+    if (hdc == STD_NULL || !vm_machine_hdc_media_info(hdc, &info, &media_result) ||
+        !info.present) {
+        vm_machine_hdc_fail(hdc, VM_MACHINE_HDC_ERROR_ABORT);
+        return 0;
+    }
     lba = vm_machine_hdc_lba(hdc) + 1u;
-    if ((STD_SIZE_T)lba >= vm_machine_hdc_sector_capacity(backend)) {
+    if ((STD_SIZE_T)lba >= vm_machine_hdc_sector_capacity(&info)) {
         vm_machine_hdc_fail(hdc, VM_MACHINE_HDC_ERROR_ID_NOT_FOUND);
         return 0;
     }
@@ -478,11 +516,14 @@ static const core_machine_port_provider vm_machine_hdc_ports = {
     vm_machine_hdc_port_write
 };
 
-C_VOID vm_machine_hdc_connect(vm_machine_hdc *hdc, t_hdd *backend,
+C_VOID vm_machine_hdc_connect(vm_machine_hdc *hdc,
+    const core_machine_media_registry *media_registry,
+    core_machine_media_id media_id,
     t_pic *pic_master, t_pic *pic_slave, const vm_machine_hdc_config *config)
 {
     if (hdc == STD_NULL || config == STD_NULL) return;
-    hdc->connect.backend = backend;
+    hdc->connect.media_registry = media_registry;
+    hdc->connect.media_id = media_id;
     core_machine_pic_irq_source_bind(&hdc->connect.irq_source, pic_master,
         pic_slave, config->irq);
     hdc->connect.config = *config;

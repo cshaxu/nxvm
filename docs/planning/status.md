@@ -2,7 +2,7 @@
 
 ## Current Work
 
-**M5 T277 S1: Neutral ATA Media-Provider Decoupling -- active.**
+**M5 T277 S2: Neutral ATA Media-Provider Decoupling -- active.**
 
 - **Original request:** decouple the retained ATA/HDC controller from direct
   `t_hdd` storage through the frozen core media registry; retain VM-only
