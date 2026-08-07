@@ -495,6 +495,16 @@ candidate allocation; CHS is only a compatibility mapping, never HDD admission
 policy. File-backed replacement uses the C facade's 64-bit seek/tell route, so
 Windows `long` width cannot truncate a valid raw-image length before admission.
 
+### Existing Host-Surface Boundary (T282)
+
+`core/platform` retains only policy-free copied input, copied presentation, and
+cancellable host-wait contracts. A native window, console, or terminal handle
+is VM platform policy: its kind, handle storage, and exclusive lease belong in
+`vm/platform`, where platform teardown owns release. Core never interprets or
+stores a native handle. The generic backing-resource facility has no production
+VM consumer and remains a neutral deferred facility; this decision admits no
+file, directory, stream, sampled-clock, DOS-path, mount, or guest-time API.
+
 ### Neutral RTC Boundary (T273)
 
 `core/machine` owns one per-machine MC146818-compatible device: register
