@@ -150,6 +150,10 @@ add_executable(core-machine-80286-protected-mode-smoke
     tests/machine/core_machine_80286_protected_mode_smoke.c)
 target_link_libraries(core-machine-80286-protected-mode-smoke PRIVATE core-machine)
 
+add_executable(core-machine-arpl-smoke
+    tests/machine/core_machine_arpl_smoke.c)
+target_link_libraries(core-machine-arpl-smoke PRIVATE core-machine)
+
 add_executable(core-machine-80386-paging-smoke
     tests/machine/core_machine_80386_paging_smoke.c)
 target_link_libraries(core-machine-80386-paging-smoke PRIVATE core-machine)
@@ -935,6 +939,8 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-real-mode-tick-smoke
     core-machine-real-mode-corpus-smoke
     core-machine-80286-protected-mode-smoke
+    core-machine-arpl-smoke
+    core-machine-cpu-profile-gate-smoke
     core-machine-protected-privilege-smoke
     core-machine-tss-iomap-port-smoke
     core-machine-task-switch-smoke
@@ -1117,7 +1123,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0262 "0.5.0262")
+add_current_vm_artifact(vm-0-5-0263 "0.5.0263")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 

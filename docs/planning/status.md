@@ -2,8 +2,8 @@
 
 ## Current Work
 
-**M5 T263 S2 is active: align the admitted 80286 `ARPL r/m16,r16` executor
-gate with its frozen CPU-profile metadata.**
+**Idle. M5 T263 is closed; the next instruction-family admission requires a
+separate failing corpus and packet.**
 
 ## T263 Admission Packet
 
@@ -88,15 +88,35 @@ only the 80186 negative case.  Existing T257 protected-mode code already
 provides the GDT/selector route needed to make an owned 80286 ARPL corpus;
 it does not need new VM integration.
 
-### S1 Closure / S2 Active Scope
+### S1/S2 Closure
 
-S1 is complete: it selected one reproducible mismatch, recorded the owner,
-scope, corpus requirements, similar-issue sweep, and stop conditions.  S2
-changes only `ARPL_RM16_R16()` so its minimum CPU gate matches the existing
-80286 metadata.  It does not change ARPL's RPL/ZF algorithm, selector access,
-the metadata table, or any other instruction handler.  S3 remains required
-before T263 can close: no existing retained smoke exercises the 80286 positive
-ARPL behavior.
+S1 selected one reproducible mismatch, recorded the owner, scope, corpus
+requirements, similar-issue sweep, and stop conditions.  S2 changed only
+`ARPL_RM16_R16()` so its minimum CPU gate matches the existing 80286 metadata.
+It did not change ARPL's RPL/ZF algorithm, selector access, the metadata table,
+or another instruction handler.
+
+### S3 Closure
+
+`core-machine-arpl-smoke` now proves the admitted 80286 protected-mode
+register and ES-prefixed memory forms, both `ZF` outcomes, 8086/80186 profile
+rejection, real-mode rejection without an AX mutation, and the frozen metadata
+minimum.  The historical CPU-profile gate also had a stale expected-fault
+assertion: it required `TYPE_STATUS_OK` for intentional `#UD`.  It now checks
+the established `TYPE_STATUS_FAULT`/`CORE_MACHINE_STOP_FAULT` outcome and is
+registered in the current matrix, preserving its existing 8086/80186/80286
+negative gates without adding instruction behavior.
+
+The similar-issue sweep repeated the exact `63h` metadata/handler query across
+tracked production CPU source and profile corpus: the only `ARPL` execution
+gate is now `>= 80286`, matching metadata.  Other 286/386 candidates remain
+separate, explicitly unadmitted T263 families and require their own failing
+corpus; they were not altered or implicitly enabled.
+
+`current-gates-gcc` passed **99/99** CTest cases, all static/ownership gates,
+FDD/HDD boot, DOS prompt/`MEM`, Console, and debugger regression.  The current
+artifact is `build/output/nxvm_0_5_0263.exe`, SHA-256
+`CDECA028180652317C2EDC9C872B8BDB0F49A5465C506A6921BC2A00DB0CAF02`.
 
 ## T262 Admission Packet
 
@@ -663,15 +683,16 @@ SHA-256 before closure.
 | T260 | 80386 32-bit-TSS I/O-map allow/deny is closed through the real CPL3 corpus; artifact `0.5.0260` and 94/94 current CTest pass. |
 | T261 | Bounded 16-bit-TSS far-JMP task switching is closed through the core-only positive and fault corpus; artifact `0.5.0261` and 95/95 current CTest pass. |
 | T262 | Exact-8087 finite `m32real` load/store/arithmetic, status/stack state, and pending-exception `FWAIT` are closed through a core-only corpus; artifact `0.5.0262` and 97/97 current CTest pass. |
+| T263 | 80286 protected-mode `ARPL r/m16,r16` now matches its frozen metadata and is covered by register, ES-memory, profile-gate, and rejection-atomicity corpus; artifact `0.5.0263` and 99/99 current CTest pass. |
 
-The next task must establish a complete active packet before implementation.
+The next instruction family must establish a complete active packet before implementation.
 
 ## Current Technical Baseline
 
-- **T262 artifact identity:** `current-gcc` and
-  `verify-current-artifact-target` select `vm-0-5-0262`; static/ownership
-  checks and 97/97 CTest cases passed. Artifact `nxvm_0_5_0262.exe` SHA-256:
-  `95AD517F6E045E9E936595FE5F7FBADBEC0CD1AED8531233D755F01F32331899`.
+- **T263 artifact identity:** `current-gcc` and
+  `verify-current-artifact-target` select `vm-0-5-0263`; static/ownership
+  checks and 99/99 CTest cases passed. Artifact `nxvm_0_5_0263.exe` SHA-256:
+  `CDECA028180652317C2EDC9C872B8BDB0F49A5465C506A6921BC2A00DB0CAF02`.
 - **T243--T246:** core owns checked physical memory, bounded `#UD`
   transitions, immutable ROM mapping, and atomic real-mode entry plans. T247
   verifies the current artifact target and full gate over that boundary.
