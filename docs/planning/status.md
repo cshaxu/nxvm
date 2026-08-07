@@ -2,34 +2,16 @@
 
 ## Current Work
 
-**M5 T283 S4: HDD Contract And Legacy Cleanup -- active.**
-
-- **Original request:** assess the raw-HDD capacity claim, unused CHS transfer
-  API, temporary NTDOS64 build-tree hygiene, and duplicate bounded-formatting
-  branches; repair valid in-scope defects under the current T283 identity.
-- **Scope:** correct the raw-HDD contract to its actual admitted capability
-  (arbitrary byte alignment within LBA28 and allocated in-memory capacity),
-  record sparse/file-backed large-media backing as a separate future admission,
-  remove the uncalled legacy CHS pointer/transfer/format API, remove duplicate
-  error-clearing blocks, and ignore disposable `build-ntdos64-*` probe trees.
-- **Rules:** no media-provider redesign, sparse backend, ATA command expansion,
-  topology change, VM/firmware shortcut, or NXVM UX change. The existing
-  provider remains the only HDD I/O path.
-- **Evidence:** repository-wide caller sweep for every deleted HDD API;
-  formatting corpus; FDD/HDD boot, controller media smokes, full current GCC/
-  CTest/static gates, and rebuilt `nxvm_0_5_0283.exe` with updated SHA.
-- **Stop:** stop and defer if large-media support requires backing-resource
-  lifecycle, persistence, ATA visibility, or host-I/O policy changes beyond
-  the current in-memory provider.
+**Idle.** T283 corrective closure is complete; admit T284 only through a new
+approved packet.
 
 ## Current Technical Baseline
 
 - **T283 artifact identity:** `current-gcc` and
-  `verify-current-artifact-target` select `vm-0-5-0283`. Focused markers
-  `M5:T283:S2:CORE-FDC-MEDIA:OK` and `M5:T283:S2:CORE-HDC-MEDIA:OK`, 41
-  static/governance gates, and 110/110 CTest passed. Artifact
-  `nxvm_0_5_0283.exe` SHA-256:
-  `7C2968397F2AB853FDC32198803A0E4B166B6FAE864DCA8BBF2174F322A376E6`.
+  `verify-current-artifact-target` select `vm-0-5-0283`. S2 media evidence and
+  S4 HDD legacy-API closure passed; 42 static/governance gates and 110/110
+  CTest passed. Artifact `nxvm_0_5_0283.exe` SHA-256:
+  `A52B045DFF09CE37989267023D5AFDA43CA9CEDBED7AB0DDCD4DA32E370CEA17`.
 - **Core boundary:** T243--T246 retain checked physical memory, bounded `#UD`
   transitions, immutable ROM mapping, and atomic real-mode entry plans.
 - **Product boundary:** `nxvm.exe` is the retained runnable product. `mantle`,
@@ -59,7 +41,7 @@
 | T280 | Made FDD/HDD candidate replacement atomic; HDD now preserves arbitrary raw byte length through virtual sector capacity, zero tail reads, and padded-tail persistence. |
 | T281 | Renamed the sole core controller owners and configuration borrows from historical `shared_*` names to `fdc/hdc`, with no alias or behavior change. |
 | T282 | Moved native window/console handle ownership from core to VM platform while preserving copied core input, presentation, and wait contracts. |
-| T283 | Extended only VM-free controller fixtures: FDC now proves non-DMA read/write/format and ATA proves PIO read/write, typed failures, frozen binding, and generation observation. |
+| T283 | Extended VM-free controller media evidence, then removed unused unsafe HDD CHS transfer state, corrected its capacity contract, and closed the regression class with a static gate. |
 
 Detailed contracts, commands, artifact provenance, and prior closures are in
 [M5 History](../history/m5.md) and Git history. The [M5 convergence queue]
