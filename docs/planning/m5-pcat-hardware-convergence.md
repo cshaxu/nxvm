@@ -20,7 +20,6 @@ numeric task identifier as its artifact revision when it completes.
 
 | Task | Owner and purpose | Dependency and stop condition |
 | --- | --- | --- |
-| T269 | Level 3 bus-timing contract and first PC/AT transaction corpus: memory/I/O wait states, DMA bus ownership, and device visibility order. | Builds on T265; no prefetch or cycle-exact profile claim. Stop if a device requires an unbounded microstate model. |
 
 ### B. Windows 3.x Display And Storage Prerequisites
 

@@ -266,6 +266,7 @@ static C_VOID Execute(t_dma *rdma, t_latch *latch, t_ram *ram,
     type_bool flagM2M = ((id == 0) &&
                       VDMA_GetREQUEST_DRQ(rdma->data.request, 1) &&
                       TYPE_GET_BIT(rdma->data.command, VDMA_COMMAND_M2M));
+    type_bool request_asserted = VDMA_GetSTATUS_DRQ(rdma->data.status, id);
     TYPE_CLEAR_BIT(rdma->data.status, VDMA_STATUS_DRQ(id));
     TYPE_CLEAR_BIT(rdma->data.request, VDMA_REQUEST_DRQ(id));
     if (TYPE_GET_BIT(rdma->data.command, VDMA_COMMAND_R)) {
@@ -273,7 +274,7 @@ static C_VOID Execute(t_dma *rdma, t_latch *latch, t_ram *ram,
     }
     if (flagM2M) {
         /* memory-to-memory */
-        while (rdma->data.currCount[1] != 0xffff && !rdma->data.flagEOP) {
+        if (rdma->data.currCount[1] != 0xffff && !rdma->data.flagEOP) {
             core_machine_memory_read_physical(ram,
                 (rdma->data.page[0] << 16) + rdma->data.currAddr[0],
                 (type_virtual_address)(&rdma->data.temp), 1);
@@ -302,18 +303,21 @@ static C_VOID Execute(t_dma *rdma, t_latch *latch, t_ram *ram,
         switch (VDMA_GetMODE_M(rdma->data.mode[id])) {
         case 0x00:
             /* demand */
-            while (rdma->data.currCount[id] != TYPE_MAX_UNSIGNED_16 && !rdma->data.flagEOP
-                    && VDMA_GetSTATUS_DRQ(rdma->data.status, id)) {
+            if (request_asserted && rdma->data.currCount[id] !=
+                TYPE_MAX_UNSIGNED_16 && !rdma->data.flagEOP) {
                 Transmission(rdma, latch, ram, id, flagWord);
             }
+            if (!rdma->data.flagEOP) rdma->data.isr = TYPE_ZERO_8;
             break;
         case 0x01:
             /* single */
             Transmission(rdma, latch, ram, id, flagWord);
+            if (!rdma->data.flagEOP) rdma->data.isr = TYPE_ZERO_8;
             break;
         case 0x02:
             /* block */
-            while (rdma->data.currCount[id] != TYPE_MAX_UNSIGNED_16 && !rdma->data.flagEOP) {
+            if (rdma->data.currCount[id] != TYPE_MAX_UNSIGNED_16 &&
+                !rdma->data.flagEOP) {
                 Transmission(rdma, latch, ram, id, flagWord);
             }
             break;
@@ -504,6 +508,11 @@ static C_VOID core_machine_dma_advance_one(t_latch *latch, t_dma *primary,
         if (!TYPE_GET_BIT(primary->data.isr, VDMA_ISR_IS)) {
             secondary->data.isr = TYPE_ZERO_8;
         }
+        return;
+    }
+    if (TYPE_GET_BIT(primary->data.isr, VDMA_ISR_IS)) {
+        Execute(primary, latch, ram, VDMA_GetISR_ISR(primary->data.isr), TYPE_FALSE);
+        return;
     }
     if (!TYPE_GET_BIT(secondary->data.isr, VDMA_ISR_IS)) {
         realDRQ2 = secondary->data.request | (VDMA_GetSTATUS_DRQS(secondary->data.status) & ~secondary->data.mask);

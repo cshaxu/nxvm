@@ -73,11 +73,25 @@ C_INT main(C_VOID)
         goto done;
     }
 
-    /* Block-mode device -> RAM: count is inclusive, so one means two bytes. */
+    /* Block-mode device -> RAM: count is inclusive, but each core DMA grant
+     * may expose only one byte. */
     core_machine_dma_write_channel2(&port, 0x1234u, 0x01u, 1u, 0x86u);
     core_machine_port_write(&port, 0x000au, 0x02u);
     core_machine_dma_request_assert(&binding);
     core_machine_port_write(&port, 0x00d4u, 0x00u);
+    core_machine_dma_advance(&latch, &primary, &secondary, &memory, 1u);
+    if (core_machine_memory_read_physical(&memory, 0x11234u,
+            (type_virtual_address)bytes, sizeof(bytes)) != TYPE_STATUS_OK ||
+        bytes[0] != 0xa5u || bytes[1] != 0u || fixture.terminal_count != 0u ||
+        (primary.data.status & VDMA_STATUS_TC(2u)) != 0u ||
+        (primary.data.mask & VDMA_MASK_DRQ(2u)) != 0u) {
+        STD_FPRINTF(STD_STDERR,
+            "DMA first: %02x %02x tc=%u status=%02x mask=%02x req=%02x slave=%02x/%02x\n",
+            bytes[0], bytes[1], fixture.terminal_count, primary.data.status,
+            primary.data.mask, primary.data.request, secondary.data.status,
+            secondary.data.mask);
+        failed = 1;
+    }
     core_machine_dma_advance(&latch, &primary, &secondary, &memory, 1u);
     if (core_machine_memory_read_physical(&memory, 0x11234u,
             (type_virtual_address)bytes, sizeof(bytes)) != TYPE_STATUS_OK ||
@@ -86,10 +100,9 @@ C_INT main(C_VOID)
         (primary.data.status & VDMA_STATUS_TC(2u)) == 0u ||
         (primary.data.mask & VDMA_MASK_DRQ(2u)) == 0u) {
         STD_FPRINTF(STD_STDERR,
-            "DMA first: %02x %02x tc=%u status=%02x mask=%02x req=%02x slave=%02x/%02x\n",
+            "DMA second: %02x %02x tc=%u status=%02x mask=%02x\n",
             bytes[0], bytes[1], fixture.terminal_count, primary.data.status,
-            primary.data.mask, primary.data.request, secondary.data.status,
-            secondary.data.mask);
+            primary.data.mask);
         failed = 1;
     }
 
@@ -165,6 +178,7 @@ done:
     core_machine_memory_finalize(&memory);
     core_machine_port_finalize(&port);
     if (failed) return 1;
+    STD_PRINTF("M5:T269:S1:DMA-GRANT:PORT:OK\n");
     STD_PRINTF("M5:T230:S3:DMA-CHANNEL:OK\n");
     return 0;
 }
