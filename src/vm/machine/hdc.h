@@ -3,9 +3,9 @@
 
 #include "type.h"
 
+#include "core/machine/media_interface.h"
 #include "core/machine/pic.h"
 #include "core/machine/port_interface.h"
-#include "vm/machine/hdd.h"
 
 typedef struct t_pic t_pic;
 
@@ -59,7 +59,8 @@ typedef struct vm_machine_hdc_data {
 } vm_machine_hdc_data;
 
 typedef struct vm_machine_hdc_connection {
-    t_hdd *backend;
+    const core_machine_media_registry *media_registry;
+    core_machine_media_id media_id;
     core_machine_pic_irq_source irq_source;
     vm_machine_hdc_config config;
 } vm_machine_hdc_connection;
@@ -69,7 +70,9 @@ typedef struct vm_machine_hdc {
     vm_machine_hdc_connection connect;
 } vm_machine_hdc;
 
-C_VOID vm_machine_hdc_connect(vm_machine_hdc *hdc, t_hdd *backend,
+C_VOID vm_machine_hdc_connect(vm_machine_hdc *hdc,
+    const core_machine_media_registry *media_registry,
+    core_machine_media_id media_id,
     t_pic *pic_master, t_pic *pic_slave, const vm_machine_hdc_config *config);
 C_VOID vm_machine_hdc_initialize(vm_machine_hdc *hdc);
 C_VOID vm_machine_hdc_reset(vm_machine_hdc *hdc);

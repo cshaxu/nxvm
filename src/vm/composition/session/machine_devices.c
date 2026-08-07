@@ -170,7 +170,8 @@ C_INT vm_session_machine_devices_initialize_hdc(vm_session *session)
         ports->alternate_status_device_control_port;
     config.irq = ports->irq;
     config.lba28_supported = ports->lba28_supported;
-    vm_machine_hdc_connect(&session->hdc, &session->hdd,
+    vm_machine_hdc_connect(&session->hdc, &session->media_registry,
+        VM_SESSION_MEDIA_HDD_ID,
         core_machine_configuration_shared_pic_master_borrow(session->core_machine),
         core_machine_configuration_shared_pic_slave_borrow(session->core_machine),
         &config);
