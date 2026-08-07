@@ -10,7 +10,7 @@ packet is recorded here.
 - **T269 artifact identity:** `current-gcc` and
   `verify-current-artifact-target` select `vm-0-5-0269`; static/ownership
   checks and 102/102 CTest cases passed. Artifact `nxvm_0_5_0269.exe` SHA-256:
-  `5FBE4BD5BB081904DC786C8FC53BD37B1ADC1FD6AAA9EE61E9547E4848B6C2EB`.
+  `D7AF67A4D1E48D2065A246996487AFC1763E760354CD54F4712B2E88752BB80F`.
 - **Core boundary:** T243--T246 retain checked physical memory, bounded `#UD`
   transitions, immutable ROM mapping, and atomic real-mode entry plans.
 - **Product boundary:** `nxvm.exe` is the retained runnable product. `mantle`,
@@ -26,7 +26,7 @@ packet is recorded here.
 | T266 | Closed bounded VADP CRTC cursor/page/status behavior and copied column/row coordinates. |
 | T267 | Added bounded standard PS/2 AUX sample-rate, resolution, and status commands through the core KBC and IRQ12 guest path. |
 | T268 | Required DOR.ME0 for FDC drive-0 readiness while retaining FDC/DMA2/IRQ6 ownership and the boot path. |
-| T269 | Limited every admitted DMA mode to one transfer per core grant; two run quantums now replay the same FDC DMA2 DOS result. |
+| T269 | Directly closed block, demand, single, and M2M one-grant semantics; two run quantums replay the same FDC DMA2 DOS result. |
 
 Detailed contracts, commands, artifact provenance, and prior closures are in
 [M5 History](../history/m5.md) and Git history. The [M5 convergence queue]
