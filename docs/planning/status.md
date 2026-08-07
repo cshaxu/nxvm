@@ -2,7 +2,7 @@
 
 ## Current Work
 
-**M5 T261 S2 active: implement the bounded core-owned far-JMP task switch.**
+**M5 T261 S3 active: verify the bounded core-owned far-JMP task-switch corpus.**
 
 ## T261 Admission Packet
 
@@ -96,6 +96,23 @@ back its post-far-JMP IP and AX, B restores AX and writes a guest marker, the
 two descriptor busy values exchange, TR becomes B, and the 80386 profile
 widens a 16-bit-TSS general register to `FFFF2222h`. No VM, firmware,
 platform, product, or host context participates.
+
+### S3 Result
+
+S3 is complete. The core-only corpus now proves that an invalid target
+selector retains `#GP(selector)`, a not-present target retains
+`#NP(selector)`, a busy target retains `#GP(selector)`, and a target whose
+16-bit TSS limit ends before `0x2b` retains `#TS(selector)`. Each case leaves
+the live TR on task A. The current retained protected-IDT mechanism may make a
+subsequent failed delivery observable in trace output, but the checked
+first-fault diagnostic remains the original task-switch fault.
+
+The required similar-issue sweep found no second production task-switch path:
+far-JMP-to-TSS is the sole admitted owner; `LTR` and the T260 I/O-map reader
+remain their own existing contracts; task-gate and far-CALL-to-TSS helpers are
+explicit deferred stubs. The deferred set remains 32-bit TSS switching,
+paging-time task-switch atomicity, LDT loading, task gates, far CALL, and
+nested/IRET task return.
 
 ## T260 Admission Packet
 
