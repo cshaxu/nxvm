@@ -2,15 +2,18 @@
 
 ## Current Work
 
-**M5 T274 S1: Core-Only Mantle-Shape Fixture -- active.**
+**M5 T274 S2: Core-Only Mantle-Shape Fixture -- active.**
 
 - **Original request:** add a core-only mantle-shape fixture that creates a
   machine, binds neutral machine/platform providers, freezes, resets, applies
   an entry plan, runs bounded slices, and reports typed outcomes without VM,
   firmware, UI, DOS, or external-runtime vocabulary.
-- **S1 deliverable:** audit the existing core create/bind/freeze/reset/entry
-  contracts and freeze a minimal fixture sequence, provider ownership, typed
+- **S1 complete:** audited the existing core create/bind/freeze/reset/entry
+  contracts and froze a minimal fixture sequence, provider ownership, typed
   result checks, and explicit non-goals.
+- **S2 deliverable:** implement the core-only fixture with fixture-owned RTC,
+  media, and backing-resource providers. It must exercise the frozen sequence
+  and remain free of VM/profile/product vocabulary.
 - **Rules:** this is a test fixture, not `src/mantle`; it may not introduce a
   second executor, session, host filesystem policy, VM include, firmware, or
   product-facing behavior.
