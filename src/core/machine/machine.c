@@ -207,6 +207,100 @@ static uint32_t core_machine_resolve_ticks_per_instruction(uint32_t ticks)
     return ticks == 0u ? 1u : ticks;
 }
 
+static C_VOID core_machine_resolve_instruction_timing(
+    core_machine_instruction_timing *out_timing,
+    const core_machine_instruction_timing *timing, uint32_t legacy_base)
+{
+    *out_timing = *timing;
+    if (out_timing->base_ticks == 0u) {
+        out_timing->base_ticks = core_machine_resolve_ticks_per_instruction(
+            legacy_base);
+    }
+}
+
+static C_INT core_machine_add_ticks(uint64_t *value, uint64_t delta)
+{
+    if (value == STD_NULL || UINT64_MAX - *value < delta) return 0;
+    *value += delta;
+    return 1;
+}
+
+static C_INT core_machine_instruction_is_prefix(uint8_t opcode)
+{
+    switch (opcode) {
+    case 0xf0u: case 0xf2u: case 0xf3u: case 0x2eu: case 0x36u:
+    case 0x3eu: case 0x26u: case 0x64u: case 0x65u: case 0x66u:
+    case 0x67u:
+        return 1;
+    default:
+        return 0;
+    }
+}
+
+static uint32_t core_machine_instruction_prefix_count(const t_cpuins_data *data)
+{
+    uint32_t count = 0u;
+
+    while (count < sizeof(data->opcodes) &&
+        core_machine_instruction_is_prefix(data->opcodes[count])) {
+        ++count;
+    }
+    return count;
+}
+
+static uint64_t core_machine_instruction_maximum_ticks(
+    const core_machine_instruction_timing *timing)
+{
+    return (uint64_t)timing->base_ticks +
+        (uint64_t)timing->prefix_surcharge * 15u +
+        timing->taken_branch_surcharge + timing->data_memory_surcharge +
+        timing->io_surcharge + timing->rep_iteration_surcharge;
+}
+
+static C_INT core_machine_instruction_cost(core_machine *machine,
+    uint64_t *out_ticks)
+{
+    const t_cpuins_data *data = &machine->executor_cpu_instructions.data;
+    const core_machine_instruction_timing *timing =
+        &machine->instruction_timing;
+    uint32_t prefixes = core_machine_instruction_prefix_count(data);
+    uint8_t opcode;
+    uint64_t ticks = timing->base_ticks;
+    uint32_t fallthrough;
+    type_bool code32;
+
+    if (prefixes >= sizeof(data->opcodes)) return 0;
+    opcode = data->opcodes[prefixes];
+    if (data->prefix_rep != PREFIX_REP_NONE && opcode == 0xa4u) {
+        if (!core_machine_add_ticks(&ticks, timing->rep_iteration_surcharge)) {
+            return 0;
+        }
+    } else if (!core_machine_add_ticks(&ticks,
+            (uint64_t)prefixes * timing->prefix_surcharge)) {
+        return 0;
+    }
+    if (opcode >= 0x70u && opcode <= 0x7fu) {
+        code32 = data->oldcpu.data.cs.seg.exec.defsize;
+        fallthrough = data->oldcpu.data.eip + prefixes + 2u;
+        if (!code32) fallthrough &= 0xffffu;
+        if (machine->executor_cpu.data.eip != fallthrough &&
+            !core_machine_add_ticks(&ticks, timing->taken_branch_surcharge)) {
+            return 0;
+        }
+    }
+    if (opcode >= 0xa0u && opcode <= 0xa3u &&
+        !core_machine_add_ticks(&ticks, timing->data_memory_surcharge)) {
+        return 0;
+    }
+    if (((opcode >= 0xe4u && opcode <= 0xe7u) ||
+         (opcode >= 0xecu && opcode <= 0xefu)) &&
+        !core_machine_add_ticks(&ticks, timing->io_surcharge)) {
+        return 0;
+    }
+    *out_ticks = ticks;
+    return 1;
+}
+
 static C_INT core_machine_clock_plan_is_valid(
     const core_machine_clock_plan *plan)
 {
@@ -549,8 +643,10 @@ type_status core_machine_create(
 
     machine->lifecycle = CORE_MACHINE_INITIALIZED;
     machine->cpu_profile = core_machine_resolve_cpu_profile(config->cpu_profile);
-    machine->ticks_per_instruction =
-        core_machine_resolve_ticks_per_instruction(config->ticks_per_instruction);
+    core_machine_resolve_instruction_timing(&machine->instruction_timing,
+        &config->instruction_timing, config->ticks_per_instruction);
+    machine->maximum_instruction_ticks = core_machine_instruction_maximum_ticks(
+        &machine->instruction_timing);
     if (core_machine_clock_domain_initialize(&machine->dma_clock,
             &config->clock_plan.dma) != TYPE_STATUS_OK ||
         core_machine_clock_domain_initialize(&machine->pit_clock,
@@ -793,8 +889,8 @@ type_status core_machine_run(
                 result->linear_pc = core_machine_linear_pc(machine);
                 return TYPE_STATUS_OK;
             }
-            if (budget.ticks != 0u &&
-                machine->ticks_per_instruction > budget.ticks - result->ticks) {
+            if (budget.ticks != 0u && machine->maximum_instruction_ticks >
+                budget.ticks - result->ticks) {
                 machine->lifecycle = CORE_MACHINE_PAUSED;
                 result->reason = CORE_MACHINE_STOP_BUDGET;
                 result->linear_pc = core_machine_linear_pc(machine);
@@ -815,12 +911,25 @@ type_status core_machine_run(
                 result->elapsed_ticks = machine->elapsed_ticks;
                 return TYPE_STATUS_FAULT;
             }
-            ++result->executed;
-            result->ticks += machine->ticks_per_instruction;
-            machine->elapsed_ticks += machine->ticks_per_instruction;
-            result->elapsed_ticks = machine->elapsed_ticks;
-            core_machine_advance_scheduler(machine,
-                machine->ticks_per_instruction);
+            {
+                uint64_t instruction_ticks;
+
+                if (!core_machine_instruction_cost(machine, &instruction_ticks) ||
+                    UINT64_MAX - result->ticks < instruction_ticks ||
+                    UINT64_MAX - machine->elapsed_ticks < instruction_ticks) {
+                    (C_VOID)core_machine_report_fault(machine, 0x54494d45u);
+                    result->reason = CORE_MACHINE_STOP_FAULT;
+                    result->linear_pc = core_machine_linear_pc(machine);
+                    result->detail = machine->fault_detail;
+                    result->elapsed_ticks = machine->elapsed_ticks;
+                    return TYPE_STATUS_FAULT;
+                }
+                ++result->executed;
+                result->ticks += instruction_ticks;
+                machine->elapsed_ticks += instruction_ticks;
+                result->elapsed_ticks = machine->elapsed_ticks;
+                core_machine_advance_scheduler(machine, instruction_ticks);
+            }
             if (machine->executor_cpu.data.flagHalt) {
                 machine->lifecycle = CORE_MACHINE_PAUSED;
                 result->reason = CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;

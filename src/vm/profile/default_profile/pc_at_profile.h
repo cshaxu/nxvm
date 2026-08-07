@@ -100,6 +100,7 @@ typedef struct vm_profile_default_pc_at_descriptor {
     core_machine_cpu_profile cpu_profile;
     core_machine_fpu_profile fpu_profile;
     uint32_t ticks_per_instruction;
+    core_machine_instruction_timing instruction_timing;
     core_machine_clock_plan clock_plan;
     uint32_t kbc_typematic_initial_ticks;
     uint32_t kbc_typematic_repeat_ticks;

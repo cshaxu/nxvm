@@ -2,13 +2,14 @@
 
 ## Current Work
 
-**Idle. M5 T264 is closed. Its owner/path audit, narrow repairs, static closure
-gate, 100/100 current GCC/CTest evidence, and `nxvm_0_5_0264.exe` SHA-256 are
-recorded in [M5 T264](m5-t264-core-vm-pcat-ownership.md). The next planned
-implementation is T265, a bounded Level 2 instruction-timing contract.**
+**Idle. M5 T265 is closed.** Its Level 2 timing table is frozen per core
+machine, the unique executor owns all admitted cost attribution, and the
+default PC/AT remains intentionally base-only pending a calibrated profile
+corpus. The task record contains the focused evidence, 101/101 current
+GCC/CTest result, and `nxvm_0_5_0265.exe` SHA-256; see
+[M5 T265](m5-t265-instruction-timing.md).
 
-No subtask is active. T265 needs its own approved packet and corpus before any
-source change.
+No subtask is active. The next implementation needs its own approved packet.
 
 ## T263 S6 Packet
 

@@ -261,6 +261,30 @@ consume factual run results, but it does not advance VM-owned devices, alter
 `elapsed_ticks`, or create a second scheduler. Mantle follows the same rule for
 a future runtime, but it does not acquire PC/AT CMOS/RTC or BIOS behavior.
 
+### Level 2 Instruction Costs
+
+Level 2 refines the input to that same scheduler; it does not create a second
+clock. A frozen core-machine timing table supplies a base cost and bounded
+additive surcharges for admitted instruction observations. `core_machine_run()`
+is the only component that attributes and commits a completed instruction cost,
+then advances `elapsed_ticks` and the existing rational domains once. VM
+profiles declare the table during configuration; composition, firmware, and
+platform cannot add guest ticks.
+
+The initial admitted observations are prefix bytes, a taken short conditional
+branch, one selected data-memory MOV form, one IN/OUT operation, and REP MOVSB
+iteration count. Instruction fetch, unadmitted forms, bus wait states, DMA
+arbitration, prefetch, and host calibration remain outside this contract. The
+current executor advances REP once per refresh, so each admitted REP MOVSB
+iteration uses `base + rep_iteration_surcharge`; it does not silently obtain a
+generic per-memory-access model. A faulted,
+stopped, paused, or reset instruction commits no new timing cost. Before an
+instruction begins, the executor uses its bounded maximum cost for tick-budget
+admission; this may pause conservatively, but never creates different guest
+event ordering. Cost or elapsed-tick overflow stops deterministically rather
+than wrapping. The legacy `ticks_per_instruction` configuration member remains
+only as the zero-surcharge base-cost shorthand for existing consumers.
+
 ## Core Machine: Frozen Topology And Mutable Guest State
 
 `core_machine_freeze_execution_providers` closes the machine configuration
