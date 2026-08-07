@@ -162,6 +162,10 @@ add_executable(core-machine-tss-iomap-port-smoke
     tests/machine/core_machine_tss_iomap_port_smoke.c)
 target_link_libraries(core-machine-tss-iomap-port-smoke PRIVATE core-machine)
 
+add_executable(core-machine-task-switch-smoke
+    tests/machine/core_machine_task_switch_smoke.c)
+target_link_libraries(core-machine-task-switch-smoke PRIVATE core-machine)
+
 add_executable(core-machine-stopped-lifecycle-smoke
     tests/core/machine_stopped_lifecycle_smoke.c
 )
@@ -930,6 +934,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-80286-protected-mode-smoke
     core-machine-protected-privilege-smoke
     core-machine-tss-iomap-port-smoke
+    core-machine-task-switch-smoke
     core-machine-80386-paging-smoke
     core-machine-trace-context-smoke
     core-machine-cpu-fault-diagnostic-smoke
