@@ -2,7 +2,7 @@
 
 ## Current Work
 
-**M5 T270 S1: Lossless Core Media Contract -- active.**
+**M5 T270 S3: Lossless Core Media Contract -- active.**
 
 - **Original request:** replace the retained fixed single-slot block boundary
   with a frozen, multi-device, profile-neutral core media contract before any
@@ -11,16 +11,23 @@
   HDD-geometry callback used by default-profile firmware; FDC directly owns
   `t_fdd` byte/CHS calls and HDC directly owns `t_hdd` bytes, geometry, and
   transfer cursor. Those are migration inputs, not alternate production paths.
-- **S1 deliverable:** freeze identity, capability, generation, copied byte and
-  logical-sector I/O, geometry, format, flush, and typed-failure semantics;
-  record the retained legacy slot's T272 removal boundary and a core-only fake
-  provider fixture plan.
+- **S1 closed:** identity, capability, generation, copied byte and logical-
+  sector I/O, geometry, format, flush, typed-failure semantics, legacy-slot
+  removal, and the fake-provider fixture were frozen in the contracts.
+- **S2 closed:** the frozen registry and core-only fake-provider fixture now
+  prove multi-device binding, freeze, generation, byte/sector I/O, format,
+  flush, absent/read-only/range/transient/permanent results, without rebinding
+  production FDD/HDD paths.
+- **S3 deliverable:** run the focused provider probe and retained NXVM matrix,
+  add it to the current smoke set, then rebuild the T270 artifact and record
+  source/verification/SHA evidence.
 - **Rules:** no host paths, handles, DOS namespaces, topology defaults,
   controller migration, forwarding facade, private controller cache, or second
   media state. A provider is composition-owned and freezes before reset/run.
-- **Evidence:** source inventory plus documentation-governance gate. S2 may
-  begin only after this contract names every state owner, lifecycle edge, and
-  failure result; it will add the public core contract and fake-provider probe.
+- **Evidence:** S1 governance and S2 GCC probe passed. S3 requires the full
+  `current-gates-gcc` and CTest matrix, documentation governance, artifact SHA,
+  and a final direct-source sweep confirming that the legacy block slot has
+  neither gained a forwarding API nor a second media owner.
 - **Stop:** stop and split if an operation needs mount/eject UI, persistence,
   path selection, firmware policy, or any host-filesystem policy.
 

@@ -417,6 +417,13 @@ persistence policy, or PC/AT topology. The transitional one-slot block API is
 retained only until T272 removes its consumers; it must not become a forwarding
 facade.
 
+The public surface is `core_machine_media_registry_*` plus copied `query`,
+byte-range, logical-sector, format, and flush operations. Registry binding is
+permitted only before freeze; all query and I/O operations require the frozen
+registry and return a core lifecycle status separately from the typed media
+result. The registry owns no provider backing bytes and never returns a
+provider-owned pointer.
+
 T271 admits only the distinct `core/platform` opaque backing resource needed
 for the media adapter: copied byte-range read/write, size, flush, close, typed
 result, and ownership. Existing copied input, wait, and cancellation contracts
