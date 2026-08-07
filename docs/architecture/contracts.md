@@ -490,8 +490,10 @@ accepts arbitrary raw byte length; its guest-visible virtual capacity is
 `ceil(raw_bytes / 512) * 512`, tail reads zero-fill, and a write into virtual
 padding makes the next successful persistence output a complete final sector.
 That complete length then becomes the backing truth. ATA range checks use the
-virtual capacity; CHS is only a compatibility mapping, never HDD admission
-policy.
+virtual capacity, bounded only by the admitted LBA28 sector limit and available
+candidate allocation; CHS is only a compatibility mapping, never HDD admission
+policy. File-backed replacement uses the C facade's 64-bit seek/tell route, so
+Windows `long` width cannot truncate a valid raw-image length before admission.
 
 ### Neutral RTC Boundary (T273)
 

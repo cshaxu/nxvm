@@ -102,6 +102,36 @@ STD_SIZE_T vm_machine_fdd_image_size(const t_fdd *fdd)
         fdd->data.ncyl;
 }
 
+static C_VOID vm_machine_fdd_commit_candidate(t_fdd *fdd,
+    type_virtual_address candidate)
+{
+    type_virtual_address old_image = fdd->connect.pImgBase;
+
+    fdd->connect.pImgBase = candidate;
+    fdd->connect.flagDiskExist = TYPE_TRUE;
+    ++fdd->connect.media_generation;
+    if (old_image != (type_virtual_address)STD_NULL) {
+        STD_FREE((C_VOID *)old_image);
+    }
+}
+
+C_INT vm_machine_fdd_replace_bytes(t_fdd *fdd, const C_VOID *bytes,
+    STD_SIZE_T byte_count)
+{
+    STD_SIZE_T image_size;
+    type_virtual_address candidate;
+
+    if (fdd == STD_NULL || bytes == STD_NULL ||
+        byte_count != (image_size = vm_machine_fdd_image_size(fdd)) ||
+        (candidate = (type_virtual_address)STD_MALLOC(image_size)) ==
+            (type_virtual_address)STD_NULL) {
+        return TYPE_TRUE;
+    }
+    STD_MEMCPY((C_VOID *)candidate, bytes, image_size);
+    vm_machine_fdd_commit_candidate(fdd, candidate);
+    return TYPE_FALSE;
+}
+
 static type_virtual_address vm_machine_fdd_byte_address(const t_fdd *fdd,
     type_unsigned_16 cylinder, type_unsigned_16 head,
     type_unsigned_16 sector, type_unsigned_16 offset)
@@ -164,7 +194,10 @@ C_VOID vm_machine_fdd_initialize(t_fdd *fdd)
     fdd->data.nsector = 0x0012;
     fdd->data.nbyte = 0x0200;
     fdd->connect.pImgBase = (type_virtual_address)STD_MALLOC(vm_machine_fdd_image_size(fdd));
-    STD_MEMSET((C_VOID *)fdd->connect.pImgBase, TYPE_ZERO_8, vm_machine_fdd_image_size(fdd));
+    if (fdd->connect.pImgBase != (type_virtual_address)STD_NULL) {
+        STD_MEMSET((C_VOID *)fdd->connect.pImgBase, TYPE_ZERO_8,
+            vm_machine_fdd_image_size(fdd));
+    }
 }
 
 C_VOID vm_machine_fdd_reset(t_fdd *fdd)
@@ -195,14 +228,28 @@ C_VOID vm_machine_fdd_create_for(t_fdd *fdd)
 
 C_INT vm_machine_fdd_insert_for(t_fdd *fdd, const C_CHAR *file_name)
 {
-    STD_FILE *image = STD_FOPEN(file_name, "rb");
-    if (fdd == STD_NULL || image == STD_NULL ||
-        fdd->connect.pImgBase == (type_virtual_address)STD_NULL) return TYPE_TRUE;
-    STD_FREAD((C_VOID *)fdd->connect.pImgBase, sizeof(type_unsigned_8),
-        vm_machine_fdd_image_size(fdd), image);
-    fdd->connect.flagDiskExist = TYPE_TRUE;
-    fdd->connect.media_generation++;
-    STD_FCLOSE(image);
+    int64_t image_length;
+    STD_SIZE_T image_size;
+    type_virtual_address candidate;
+    STD_FILE *image;
+
+    if (fdd == STD_NULL || file_name == STD_NULL ||
+        (image = STD_FOPEN(file_name, "rb")) == STD_NULL) return TYPE_TRUE;
+    image_size = vm_machine_fdd_image_size(fdd);
+    if (STD_FSEEK_64(image, 0, STD_SEEK_END) != 0 ||
+        (image_length = STD_FTELL_64(image)) < 0 || (STD_SIZE_T)image_length != image_size ||
+        STD_FSEEK_64(image, 0, STD_SEEK_SET) != 0 ||
+        (candidate = (type_virtual_address)STD_MALLOC(image_size)) ==
+            (type_virtual_address)STD_NULL) {
+        (C_VOID)STD_FCLOSE(image);
+        return TYPE_TRUE;
+    }
+    if (STD_FREAD((C_VOID *)candidate, sizeof(type_unsigned_8), image_size, image) !=
+            image_size || STD_FCLOSE(image) != 0) {
+        STD_FREE((C_VOID *)candidate);
+        return TYPE_TRUE;
+    }
+    vm_machine_fdd_commit_candidate(fdd, candidate);
     return TYPE_FALSE;
 }
 
@@ -213,13 +260,20 @@ C_INT vm_machine_fdd_remove_for(t_fdd *fdd, const C_CHAR *file_name)
     if (file_name != STD_NULL) {
         image = STD_FOPEN(file_name, "wb");
         if (image == STD_NULL) return TYPE_TRUE;
-        if (!fdd->connect.flagReadOnly) STD_FWRITE((C_VOID *)fdd->connect.pImgBase,
-            sizeof(type_unsigned_8), vm_machine_fdd_image_size(fdd), image);
-        STD_FCLOSE(image);
+        if (!fdd->connect.flagReadOnly &&
+            STD_FWRITE((C_VOID *)fdd->connect.pImgBase, sizeof(type_unsigned_8),
+                vm_machine_fdd_image_size(fdd), image) != vm_machine_fdd_image_size(fdd)) {
+            (C_VOID)STD_FCLOSE(image);
+            return TYPE_TRUE;
+        }
+        if (STD_FCLOSE(image) != 0) return TYPE_TRUE;
     }
     fdd->connect.flagDiskExist = TYPE_FALSE;
     fdd->connect.media_generation++;
-    STD_MEMSET((C_VOID *)fdd->connect.pImgBase, TYPE_ZERO_8, vm_machine_fdd_image_size(fdd));
+    if (fdd->connect.pImgBase != (type_virtual_address)STD_NULL) {
+        STD_MEMSET((C_VOID *)fdd->connect.pImgBase, TYPE_ZERO_8,
+            vm_machine_fdd_image_size(fdd));
+    }
     return TYPE_FALSE;
 }
 
