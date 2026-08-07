@@ -129,6 +129,8 @@ typedef struct {
 typedef struct core_machine_cpu_execution_diagnostic_provider {
     C_VOID (*record_instruction)(C_VOID *context, const C_VOID *cpu,
         const t_cpuins *instructions);
+    C_VOID (*record_delivered_exception)(C_VOID *context, const C_VOID *cpu,
+        const t_cpuins *instructions);
     C_VOID (*record_fault)(C_VOID *context, const C_VOID *cpu,
         const t_cpuins *instructions);
 } core_machine_cpu_execution_diagnostic_provider;
