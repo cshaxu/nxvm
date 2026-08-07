@@ -379,11 +379,10 @@ can reuse it:
 
 - A reusable PIC, PIT, DMA, or generic video model may be implemented in
   `core/machine` and registered with a profile-selected configuration.
-- T273/T276/T278 may move optional MC146818, FDC, and ATA controller
-  mechanisms into `core/machine` only when their configuration is neutral and
-  explicit. Until each migration completes, its retained implementation stays
-  VM-owned. VM retains PC/AT wiring/defaults, firmware, media policy, backing
-  objects, and UI.
+- T273, T276, and T278 moved the optional MC146818, FDC, and ATA controller
+  mechanisms into `core/machine` with neutral, explicit configuration. VM
+  retains PC/AT wiring/defaults, firmware, media policy, backing objects, and
+  UI.
 - A DOS service such as an INT 21h handler belongs in `dos/machine`; it is not
   a core or mantle implementation.
 - A PC-specific BIOS interrupt handler or ROM behavior belongs to its VM
@@ -497,26 +496,24 @@ controller before freeze. Default-ROM POST and INT 0Eh/40h assembly remain
 profile firmware. No VM object mirrors controller state or accesses FDC media
 bytes through a side channel.
 
-### VM ATA Media Boundary (T277)
+### ATA Media and Controller Boundary (T277--T278)
 
-Until T278 moves its neutral mechanism, `vm/machine` owns the ATA PIO
-controller state, primary-master topology, ATA port provider, IRQ14 source,
-and PIO command/result sequencing. T277 removes only the controller's direct
-`t_hdd` dependency. Its frozen connection carries the core media registry and
-the selected HDD identity; all present/read-only/geometry observation and
-copied sector read/write use the T270 contract.
+T277 removed ATA PIO's direct `t_hdd` dependency. `core/machine` now owns the
+one ATA PIO controller state, primary-master task-file/port protocol, IRQ14
+source lifecycle, PIO command/result sequencing, and frozen connection to the
+core media registry and selected HDD identity. Present/read-only/geometry
+observation and copied sector read/write use the T270 contract.
 
 The controller derives CHS capacity and IDENTIFY words from copied media
 geometry, and maps provider failure into its retained ATA abort or ID-not-found
 result path. It never receives a backing pointer, image path, host handle, or
-media policy. Composition alone selects the HDD provider, binds it before
-registry freeze, and supplies the PC/AT port/IRQ/topology declaration. T277
-does not add ATA DMA, commands, timing, a BIOS shortcut, or a second media
-route.
+media policy. Composition alone selects the HDD provider and binds the PC/AT
+port/IRQ/topology declaration before freeze. T277--T278 do not add ATA DMA,
+commands, timing, a BIOS shortcut, or a second media route.
 
 ### Neutral ATA PIO Boundary (T278)
 
-T278 moves the neutral ATA PIO task-file, PIO buffer, command phases, SRST,
+T278 moved the neutral ATA PIO task-file, PIO buffer, command phases, SRST,
 and IRQ source into one `core_machine`-owned controller. Its configuration is
 only frozen media registry/id, PIC route, and explicit port/feature fields.
 VM composition reads primary-master topology from the profile and binds the

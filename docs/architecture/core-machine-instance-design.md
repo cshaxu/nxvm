@@ -89,8 +89,8 @@ platform callback never mutates a machine.
 | --- | --- | --- |
 | machine, CPU, memory, ports, PIC/PIT/DMA/KBC/VADP | `core_machine` | One session-owned executor and device graph; composition configures it before freeze and drives bounded `core_machine_run`. |
 | RTC/CMOS controller | `core/machine/rtc.*` | T273 moved the neutral MC146818 mechanism to core; VM retains PC/AT defaults, NMI glue, host-time policy, and firmware. |
-| FDC controller | `vm/machine/fdc.*` | T275 decouples its FDD backing, then T276 moves the neutral controller to core. |
-| ATA PIO controller | `vm/machine/hdc.*` | T277 decouples its HDD backing, then T278 moves the neutral controller to core. |
+| FDC controller | `core/machine/fdc.*` | `core_machine.shared_fdc` owns the neutral controller; composition binds frozen PC/AT routes and media. |
+| ATA PIO controller | `core/machine/hdc.*` | `core_machine.shared_hdc` owns the neutral controller; composition binds frozen PC/AT routes and media. |
 | FDD/HDD backing, paths, mount/eject, persistence | VM composition and `vm/machine` backing objects | T270 exposes device-level media operations; T271 supplies only opaque host primitives. Paths and product policy remain in composition. |
 | firmware and profile declaration | `vm/profile/default_profile` plus VM composition | Profile content stays VM-owned; it binds only public core contracts. |
 | trace/debug/presentation | core state with VM product/platform adapters | Adapters observe or command an explicit session; no selected-machine facade is permitted. |
@@ -117,9 +117,9 @@ The executor migration is complete: CPU, memory, port routing, shared devices,
 and run results use the explicit `core_machine` instance in the retained NXVM
 route. The remaining second-boundary work is not a selected-session-global
 cleanup. It is the narrower controller/media ownership correction recorded in
-T270--T278. The retained fixed block slot is transitional because it represents
-only one CHS device and cannot be the shared FDC/ATA boundary; T270 replaces it
-rather than layering a forwarding facade over it.
+T270--T278. The retained fixed block slot was removed because it represented
+only one CHS device and could not be the shared FDC/ATA boundary; T270 replaced
+it rather than layering a forwarding facade over it.
 
 ## Migration Invariants
 
