@@ -2,7 +2,7 @@
 
 ## Current Work
 
-**M5 T279 S1: Bounded Formatting Contract -- active.**
+**M5 T279 S2: Bounded Formatting Migration -- active.**
 
 - **Original request:** retire the unbounded `STD_SPRINTF`/`vsprintf` path.
   Every production formatting call must use an owned destination capacity; an
@@ -14,6 +14,9 @@
   input or underlying formatting failure returns a negative result and leaves a
   nonzero-capacity destination as an empty string. An append helper advances
   both cursor and remaining capacity only after a non-truncated result.
+- **S1 complete:** the facade contract, in-scope production inventory, and
+  focused corpus design are recorded. The remaining work is to implement the
+  bounded facade, migrate every caller, and enforce the source-shape closure.
 - **Scope and owners:** `type.[ch]` owns the C facade contract. Core debugger,
   xasm/dasm, and VM debug callers own their buffers and must carry capacity at
   each formatting boundary. This task neither changes debugger grammar nor

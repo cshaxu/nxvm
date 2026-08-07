@@ -26,21 +26,60 @@ C_INT STD_FPRINTF(STD_FILE *_File, const C_CHAR *_Format, ...) {
     va_end(arg_ptr);
     return nWrittenBytes;
 }
-C_INT STD_SPRINTF(C_CHAR *_Dest, const C_CHAR *_Format, ...) {
+C_INT STD_SNPRINTF(C_CHAR *_Dest, STD_SIZE_T _Size, const C_CHAR *_Format, ...) {
     C_INT nWrittenBytes;
     STD_VA_LIST arg_ptr;
-    va_start(arg_ptr, _Format);
-    nWrittenBytes = vsprintf(_Dest, _Format, arg_ptr);
-    va_end(arg_ptr);
-    return nWrittenBytes;
-}
-
- C_INT STD_SNPRINTF(C_CHAR *_Dest, STD_SIZE_T _Size, const C_CHAR *_Format, ...) {
-    C_INT nWrittenBytes;
-    STD_VA_LIST arg_ptr;
+    if (_Format == STD_NULL || (_Size != 0u && _Dest == STD_NULL)) {
+        if (_Dest != STD_NULL && _Size != 0u) {
+            _Dest[0] = '\0';
+        }
+        if (_Dest != STD_NULL && _Size != 0u) {
+            _Dest[0] = '\0';
+        }
+        return -1;
+    }
     va_start(arg_ptr, _Format);
     nWrittenBytes = vsnprintf(_Dest, _Size, _Format, arg_ptr);
     va_end(arg_ptr);
+    if (_Size != 0u) {
+        _Dest[_Size - 1u] = '\0';
+        if (nWrittenBytes < 0) {
+            _Dest[0] = '\0';
+        }
+    }
+    return nWrittenBytes;
+}
+
+C_INT STD_SNPRINTF_APPEND(C_CHAR **_Cursor, STD_SIZE_T *_Remaining,
+    const C_CHAR *_Format, ...) {
+    C_INT nWrittenBytes;
+    STD_VA_LIST arg_ptr;
+    if (_Cursor == STD_NULL || _Remaining == STD_NULL || _Format == STD_NULL ||
+        (*_Remaining != 0u && *_Cursor == STD_NULL)) {
+        if (_Cursor != STD_NULL && _Remaining != STD_NULL && *_Cursor != STD_NULL &&
+            *_Remaining != 0u) {
+            (*_Cursor)[0] = '\0';
+        }
+        if (_Cursor != STD_NULL && _Remaining != STD_NULL && *_Cursor != STD_NULL &&
+            *_Remaining != 0u) {
+            (*_Cursor)[0] = '\0';
+        }
+        return -1;
+    }
+    va_start(arg_ptr, _Format);
+    nWrittenBytes = vsnprintf(*_Cursor, *_Remaining, _Format, arg_ptr);
+    va_end(arg_ptr);
+    if (*_Remaining != 0u) {
+        (*_Cursor)[*_Remaining - 1u] = '\0';
+        if (nWrittenBytes < 0) {
+            (*_Cursor)[0] = '\0';
+        }
+    }
+    if (nWrittenBytes < 0 || (STD_SIZE_T)nWrittenBytes >= *_Remaining) {
+        return nWrittenBytes;
+    }
+    *_Cursor += nWrittenBytes;
+    *_Remaining -= (STD_SIZE_T)nWrittenBytes;
     return nWrittenBytes;
 }
 

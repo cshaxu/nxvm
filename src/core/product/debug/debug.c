@@ -743,23 +743,40 @@ static C_VOID q(core_product_debug_context *debugContext)
 static uint8_t uprintins(core_product_debug_context *debugContext, uint16_t segment, uint16_t off)
 {
     STD_SIZE_T i;
+    STD_SIZE_T sbin_remaining;
+    C_INT binary_failed = TYPE_FALSE;
+    C_INT format_result;
     uint8_t len;
     uint8_t ucode[15];
     C_CHAR str[0x100], stmt[0x100], sbin[0x100];
+    C_CHAR *sbin_cursor;
     if (core_product_debug_read_linear((segment << 4) + off, (C_VOID *)ucode, 15))
     {
         len = 0;
-        STD_SPRINTF(str, "%04X:%04X <ERROR>", segment, off);
+        (C_VOID)STD_SNPRINTF(str, sizeof(str), "%04X:%04X <ERROR>", segment, off);
     }
     else
     {
         len = core_product_utils_dasm32(stmt, ucode, core_product_debug_get_code_default_size());
         sbin[0] = 0;
+        sbin_cursor = sbin;
+        sbin_remaining = sizeof(sbin);
         for (i = 0; i < len; ++i)
         {
-            STD_SPRINTF(sbin, "%s%02X", sbin, (uint8_t)ucode[i]);
+            format_result = STD_SNPRINTF_APPEND(&sbin_cursor, &sbin_remaining,
+                "%02X", (uint8_t)ucode[i]);
+            if (format_result < 0 || (STD_SIZE_T)format_result >= sbin_remaining) {
+                binary_failed = TYPE_TRUE;
+                len = 0;
+                (C_VOID)STD_SNPRINTF(str, sizeof(str), "%04X:%04X <ERROR>",
+                    segment, off);
+                break;
+            }
         }
-        STD_SPRINTF(str, "%04X:%04X %s", segment, off, sbin);
+        if (!binary_failed) {
+            (C_VOID)STD_SNPRINTF(str, sizeof(str), "%04X:%04X %s", segment, off,
+                sbin);
+        }
         for (i = STD_STRLEN(str); i < 24; ++i)
         {
             STD_STRCAT(str, " ");
@@ -1339,23 +1356,38 @@ uint32_t xulin;
 static uint8_t xuprintins(core_product_debug_context *debugContext, uint32_t linear)
 {
     STD_SIZE_T i;
+    STD_SIZE_T sbin_remaining;
+    C_INT binary_failed = TYPE_FALSE;
+    C_INT format_result;
     uint8_t len;
     uint8_t ucode[15];
     C_CHAR str[0x100], stmt[0x100], sbin[0x100];
+    C_CHAR *sbin_cursor;
     if (core_product_debug_read_linear(linear, (C_VOID *)ucode, 15))
     {
         len = 0;
-        STD_SPRINTF(str, "L%08X <ERROR>", linear);
+        (C_VOID)STD_SNPRINTF(str, sizeof(str), "L%08X <ERROR>", linear);
     }
     else
     {
         len = core_product_utils_dasm32(stmt, ucode, core_product_debug_get_code_default_size());
         sbin[0] = 0;
+        sbin_cursor = sbin;
+        sbin_remaining = sizeof(sbin);
         for (i = 0; i < len; ++i)
         {
-            STD_SPRINTF(sbin, "%s%02X", sbin, (uint8_t)ucode[i]);
+            format_result = STD_SNPRINTF_APPEND(&sbin_cursor, &sbin_remaining,
+                "%02X", (uint8_t)ucode[i]);
+            if (format_result < 0 || (STD_SIZE_T)format_result >= sbin_remaining) {
+                binary_failed = TYPE_TRUE;
+                len = 0;
+                (C_VOID)STD_SNPRINTF(str, sizeof(str), "L%08X <ERROR>", linear);
+                break;
+            }
         }
-        STD_SPRINTF(str, "L%08X %s ", linear, sbin);
+        if (!binary_failed) {
+            (C_VOID)STD_SNPRINTF(str, sizeof(str), "L%08X %s ", linear, sbin);
+        }
         for (i = STD_STRLEN(str); i < 24; ++i)
         {
             STD_STRCAT(str, " ");
