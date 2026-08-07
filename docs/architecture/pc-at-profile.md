@@ -39,7 +39,7 @@ The following behavior is currently real but dispersed:
 | Firmware service ordering and INT/POST wiring | `pc_at_profile.c`, `profile_firmware.c` | profile firmware declaration |
 | CMOS defaults and boot drive | `pc_at_profile.c`, `core/machine/rtc.*`, session device setup | profile declares defaults; core owns the neutral mutable mechanism while VM owns PC/AT ports and NMI policy |
 | FDC port and route arguments | `vm/composition/session/machine_devices.c` | profile controller-route declaration interpreted by composition; core owns the FDC and PIC/DMA contracts |
-| FDD/HDD media storage and image selection | `vm_session` and `machine_devices.c` | remains composition/session policy, not profile data; T270--T278 may move only neutral media/controller mechanisms to core |
+| FDD/HDD media storage and image selection | `vm_session` and `machine_devices.c` | remains composition/session policy, not profile data; T270--T278 moved only neutral media/controller mechanisms to core |
 | qd* BIOS handlers | `vm/profile/default_profile/firmware/*` | retained as profile-specific temporary firmware providers |
 
 ## Descriptor Surface
@@ -78,7 +78,7 @@ Composition owns the only imperative sequence:
 `core_machine` continues to own generic shared-device lifecycle. The profile
 may declare a route such as "FDC uses DMA channel 2 and IRQ 6", but composition
 performs the binding against the core-owned FDC, DMA, and PIC objects. T273
-and T276 already use this path; T278 may do so for ATA. No descriptor
+and T276/T278 already use this path. No descriptor
 application may duplicate
 storage, reset a device a second time, or bypass the frozen configuration
 boundary.

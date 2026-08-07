@@ -25,9 +25,9 @@ Composition alone selects an opaque host resource and adapts it into guest
 media; VM retains mount/eject, persistence, media paths, PC/AT topology,
 firmware, boot policy, and Console/UI behavior.
 
-The migration order is `T270 -> T271 -> T272 -> T275 -> T276` and
-`T272 -> T277 -> T278`. `T273` is independent after the media baseline is
-understood; `T274` waits for T270, T271, and T273. Task-created registered
+The completed migration order was `T270 -> T271 -> T272 -> T275 -> T276` and
+`T272 -> T277 -> T278`. `T273` was independent after the media baseline was
+understood; `T274` waited for T270, T271, and T273. Task-created registered
 temporary media, traces, and logs may be cleaned by their task; generic build
 trees, `build/output`, and user files are never cleanup targets.
 
@@ -37,8 +37,6 @@ original identifiers.
 
 | Task | Owner and purpose | Dependency and stop condition |
 | --- | --- | --- |
-| T278 | Move the now-neutral ATA PIO controller into `core/machine` and rewire the default PC/AT composition/profile adapter to retain IDE topology, image policy, boot/firmware policy, and UI only. | T277. Use `git mv`; preserve ATA PIO and HDD boot corpus, and add a core-only fixture. |
-
 ### B. Machine Foundation And Hardware Timing
 
 ### C. Windows 3.x Display And Storage Prerequisites

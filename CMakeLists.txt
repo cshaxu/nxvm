@@ -696,6 +696,8 @@ add_executable(core-machine-rtc-smoke tests/machine/core_machine_rtc_smoke.c)
 target_link_libraries(core-machine-rtc-smoke PRIVATE core-machine)
 add_executable(core-machine-fdc-smoke tests/machine/core_machine_fdc_smoke.c)
 target_link_libraries(core-machine-fdc-smoke PRIVATE core-machine)
+add_executable(core-machine-hdc-smoke tests/machine/core_machine_hdc_smoke.c)
+target_link_libraries(core-machine-hdc-smoke PRIVATE core-machine)
 add_executable(core-mantle-shape-smoke tests/machine/core_mantle_shape_smoke.c)
 target_link_libraries(core-mantle-shape-smoke PRIVATE core-machine core-platform)
 add_executable(vm-kbc-aux-guest-smoke
@@ -975,6 +977,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-media-provider-smoke
     core-machine-rtc-smoke
     core-machine-fdc-smoke
+    core-machine-hdc-smoke
     core-mantle-shape-smoke
     vm-kbc-aux-guest-smoke
     vm-keyboard-set1-mapper-smoke
@@ -1144,7 +1147,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0277 "0.5.0277")
+add_current_vm_artifact(vm-0-5-0278 "0.5.0278")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 

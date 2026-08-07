@@ -7,10 +7,23 @@ file(READ "${PROJECT_SOURCE_DIR}/src/vm/profile/default_profile/pc_at_profile.h"
     profile_header)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/composition/session/machine_devices.c"
     devices_source)
+file(READ "${PROJECT_SOURCE_DIR}/tests/machine/core_machine_hdc_smoke.c"
+    core_fixture)
 
 if(hdc_source MATCHES "#include[ \t]+\"vm/")
     message(FATAL_ERROR "Core ATA PIO controller retains a VM include")
 endif()
+
+if(core_fixture MATCHES "#include[ \t]+\"vm/")
+    message(FATAL_ERROR "Core ATA fixture retains VM vocabulary")
+endif()
+foreach(required IN ITEMS "core_machine_configuration_shared_hdc_borrow"
+    "core_machine_hdc_connect" "M5:T278:S3:CORE-HDC:OK")
+    string(FIND "${core_fixture}" "${required}" fixture_position)
+    if(fixture_position EQUAL -1)
+        message(FATAL_ERROR "Core ATA fixture is incomplete: ${required}")
+    endif()
+endforeach()
 
 foreach(forbidden IN ITEMS "core_machine_memory_" "vm_profile_default_firmware"
     "STD_TIME(" "STD_LOCALTIME(" "GetTickCount" "QueryPerformanceCounter"

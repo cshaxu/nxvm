@@ -2,40 +2,15 @@
 
 ## Current Work
 
-**M5 T278 S2: Neutral ATA PIO Controller Migration -- active.**
-
-- **Original request:** move the now-neutral ATA PIO controller into
-  `core/machine`; VM retains only PC/AT topology, frozen media policy, profile
-  firmware, boot policy, and product behavior.
-- **S1 deliverable:** freeze the core ATA configuration/provider surface,
-  audit VM-specific identifiers, and define a core-only ATA fixture.
-- **S1 complete:** after T277, `hdc.c` depends only on core media/PIC/port
-  contracts. Its mutable task-file, PIO buffer, phase, reset, IRQ14 and copied
-  geometry behavior may move together. The default profile retains the
-  primary-master ports/IRQ/LBA28 declaration, selected HDD identity, and ROM
-  INT 13h firmware. The core connection takes only registry/id, PIC route and
-  explicit ATA port/config fields; it has no PC/AT default or host policy.
-- **S2 admission:** move `hdc.[ch]` as one unit, store the controller in
-  `core_machine`, bind it only during configuration, and have core own reset,
-  refresh and teardown. All retained VM tests must use the one core instance.
-- **S2 complete:** `core_machine.shared_hdc` now holds the single ATA PIO
-  instance; composition borrows it only to bind frozen HDD media, profile
-  ports and IRQ14. Core owns its reset, scheduler refresh and destruction.
-- **S3 evidence:** a VM-free ATA fixture must bind fake media/PIC/ports and
-  prove IDENTIFY or one bounded PIO transaction; retain ATA port, DOS and HDD
-  boot corpus plus current gates.
-- **Rules:** core owns the one controller state, IRQ14 source lifecycle, and
-  port protocol after migration. Do not add ATA DMA, new commands, host I/O,
-  a second controller, or profile defaults in core.
-- **Stop:** stop and split if the move needs a core -> VM include, a direct
-  backing object, PC/AT default, firmware shortcut, or changed boot/UI path.
+**Idle.** T278 is closed. T279 has not yet been admitted, so this ledger
+contains no active task packet.
 
 ## Current Technical Baseline
 
-- **T277 artifact identity:** `current-gcc` and
-  `verify-current-artifact-target` select `vm-0-5-0277`; static/ownership
-  checks and 108/108 CTest cases passed. Artifact `nxvm_0_5_0277.exe` SHA-256:
-  `EA52F19ED01338A46BAEF1A3F20432136605A30F64C7EDC2B0CC4E47FB00E0CE`.
+- **T278 artifact identity:** `current-gcc` and
+  `verify-current-artifact-target` select `vm-0-5-0278`; static/ownership
+  checks and 109/109 CTest cases passed. Artifact `nxvm_0_5_0278.exe` SHA-256:
+  `FA90EE14D7CA4F6F9F2BCAB907C99B24834A47E9D7694B2ED699FC40CBC72195`.
 - **Core boundary:** T243--T246 retain checked physical memory, bounded `#UD`
   transitions, immutable ROM mapping, and atomic real-mode entry plans.
 - **Product boundary:** `nxvm.exe` is the retained runnable product. `mantle`,
@@ -59,7 +34,8 @@
 | T274 | Added a core-only fixture proving one machine can bind neutral RTC/media/backing providers, freeze, reset, apply an entry plan, and run a bounded slice without VM vocabulary. |
 | T275 | Decoupled the retained FDC controller from `t_fdd`; it now consumes only frozen media provider operations while retaining its single DMA2/IRQ6 state machine. |
 | T276 | Moved the neutral FDC into `core_machine.shared_fdc`; composition only binds frozen PC/AT routes/media, while core owns controller lifecycle and the core-only FDC fixture. |
-| T277 | Removed ATA PIO's direct `t_hdd` dependency; it now consumes frozen HDD media registry query/read/write data while retaining its VM controller location until T278. |
+| T277 | Removed ATA PIO's direct `t_hdd` dependency and supplied the frozen media-registry boundary later consumed by T278. |
+| T278 | Moved neutral ATA PIO into `core_machine.shared_hdc`; composition only binds frozen PC/AT routes/media, while the VM-free fixture proves IDENTIFY, DRQ, and IRQ14 acknowledgement. |
 
 Detailed contracts, commands, artifact provenance, and prior closures are in
 [M5 History](../history/m5.md) and Git history. The [M5 convergence queue]
