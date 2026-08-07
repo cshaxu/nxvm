@@ -222,6 +222,21 @@ static C_INT core_machine_vadp_supported_crtc_index(uint8_t index)
         index <= CORE_MACHINE_VADP_CRTC_CURSOR_LOW;
 }
 
+static uint8_t core_machine_vadp_crtc_mask(uint8_t index)
+{
+    switch (index) {
+    case CORE_MACHINE_VADP_CRTC_CURSOR_TOP:
+        return 0x3fu;
+    case CORE_MACHINE_VADP_CRTC_CURSOR_BOTTOM:
+        return 0x1fu;
+    case CORE_MACHINE_VADP_CRTC_START_HIGH:
+    case CORE_MACHINE_VADP_CRTC_CURSOR_HIGH:
+        return 0x3fu;
+    default:
+        return 0xffu;
+    }
+}
+
 static uint16_t core_machine_vadp_crtc_word(const t_vadp *adapter,
     uint8_t high_index)
 {
@@ -454,8 +469,12 @@ static C_VOID core_machine_vadp_write_crtc_data(t_port *port,
         !core_machine_vadp_supported_crtc_index(adapter->data.crtc_index)) {
         return;
     }
-    if (adapter->data.crtc[adapter->data.crtc_index] != port->data.ioByte) {
-        adapter->data.crtc[adapter->data.crtc_index] = port->data.ioByte;
+    {
+        uint8_t value = port->data.ioByte &
+            core_machine_vadp_crtc_mask(adapter->data.crtc_index);
+
+        if (adapter->data.crtc[adapter->data.crtc_index] == value) return;
+        adapter->data.crtc[adapter->data.crtc_index] = value;
         core_machine_vadp_mark_dirty(adapter);
     }
 }
@@ -771,8 +790,6 @@ C_VOID core_machine_vadp_reset(t_vadp *adapter)
     adapter->data.columns = 80u;
     adapter->data.rows = 25u;
     adapter->data.color_enabled = TYPE_TRUE;
-    adapter->data.cursor_top = 6u;
-    adapter->data.cursor_bottom = 7u;
     adapter->data.crtc[CORE_MACHINE_VADP_CRTC_CURSOR_TOP] = 6u;
     adapter->data.crtc[CORE_MACHINE_VADP_CRTC_CURSOR_BOTTOM] = 7u;
     adapter->data.ega_sequencer = ega_sequencer;
@@ -910,34 +927,6 @@ C_INT core_machine_vadp_ega_aperture_contains(const t_vadp *adapter,
     }
 }
 
-C_VOID core_machine_vadp_set_cursor_shape(t_vadp *adapter, uint8_t top,
-    uint8_t bottom)
-{
-    if (adapter == STD_NULL) return;
-    adapter->data.crtc[CORE_MACHINE_VADP_CRTC_CURSOR_TOP] = top;
-    adapter->data.crtc[CORE_MACHINE_VADP_CRTC_CURSOR_BOTTOM] = bottom;
-    adapter->data.cursor_top = top;
-    adapter->data.cursor_bottom = bottom;
-    core_machine_vadp_mark_dirty(adapter);
-}
-
-C_VOID core_machine_vadp_set_cursor_address(t_vadp *adapter, uint16_t address)
-{
-    if (adapter == STD_NULL) return;
-    adapter->data.crtc[CORE_MACHINE_VADP_CRTC_CURSOR_HIGH] = (uint8_t)(address >> 8);
-    adapter->data.crtc[CORE_MACHINE_VADP_CRTC_CURSOR_LOW] = (uint8_t)address;
-    adapter->data.cursor_address = address;
-    core_machine_vadp_mark_dirty(adapter);
-}
-
-C_VOID core_machine_vadp_set_display_start(t_vadp *adapter, uint16_t address)
-{
-    if (adapter == STD_NULL) return;
-    adapter->data.crtc[CORE_MACHINE_VADP_CRTC_START_HIGH] = (uint8_t)(address >> 8);
-    adapter->data.crtc[CORE_MACHINE_VADP_CRTC_START_LOW] = (uint8_t)address;
-    core_machine_vadp_mark_dirty(adapter);
-}
-
 C_INT core_machine_vadp_capture_text_snapshot(t_vadp *adapter, t_ram *memory,
     core_machine_display_snapshot *out_snapshot)
 {
@@ -945,6 +934,7 @@ C_INT core_machine_vadp_capture_text_snapshot(t_vadp *adapter, t_ram *memory,
     uint16_t column;
     uint16_t start;
     uint16_t cursor;
+    uint16_t relative_cursor;
     uint16_t start_byte;
     STD_SIZE_T visible_bytes;
     STD_SIZE_T first_bytes;
@@ -952,6 +942,7 @@ C_INT core_machine_vadp_capture_text_snapshot(t_vadp *adapter, t_ram *memory,
         CORE_MACHINE_DISPLAY_MAX_ROWS * 2u];
     C_INT buffer_changed = TYPE_FALSE;
     C_INT cursor_changed;
+    C_INT cursor_visible;
 
     if (adapter == STD_NULL || memory == STD_NULL || out_snapshot == STD_NULL ||
         adapter->data.columns == 0u || adapter->data.rows == 0u) return TYPE_FALSE;
@@ -973,11 +964,20 @@ C_INT core_machine_vadp_capture_text_snapshot(t_vadp *adapter, t_ram *memory,
     }
     out_snapshot->columns = adapter->data.columns;
     out_snapshot->rows = adapter->data.rows;
-    out_snapshot->cursor_top = adapter->data.crtc[CORE_MACHINE_VADP_CRTC_CURSOR_TOP];
-    out_snapshot->cursor_bottom = adapter->data.crtc[CORE_MACHINE_VADP_CRTC_CURSOR_BOTTOM];
-    out_snapshot->cursor_visible = out_snapshot->cursor_top < out_snapshot->cursor_bottom;
-    out_snapshot->cursor_x = (uint8_t)((cursor - start) / adapter->data.columns);
-    out_snapshot->cursor_y = (uint8_t)((cursor - start) % adapter->data.columns);
+    out_snapshot->cursor_top = adapter->data.crtc[
+        CORE_MACHINE_VADP_CRTC_CURSOR_TOP] & 0x1fu;
+    out_snapshot->cursor_bottom = adapter->data.crtc[
+        CORE_MACHINE_VADP_CRTC_CURSOR_BOTTOM] & 0x1fu;
+    relative_cursor = (uint16_t)((cursor - start) %
+        (CORE_MACHINE_VADP_TEXT_BYTES / 2u));
+    cursor_visible = (adapter->data.crtc[CORE_MACHINE_VADP_CRTC_CURSOR_TOP] &
+        0x20u) == 0u && out_snapshot->cursor_top <= out_snapshot->cursor_bottom &&
+        relative_cursor < adapter->data.columns * adapter->data.rows;
+    out_snapshot->cursor_visible = cursor_visible;
+    if (cursor_visible) {
+        out_snapshot->cursor_x = (uint8_t)(relative_cursor % adapter->data.columns);
+        out_snapshot->cursor_y = (uint8_t)(relative_cursor / adapter->data.columns);
+    }
     buffer_changed = !adapter->data.captured || adapter->data.captured_kind !=
         CORE_MACHINE_DISPLAY_KIND_TEXT || STD_MEMCMP(adapter->data.text_cells,
         cells, visible_bytes) != 0;
@@ -999,14 +999,17 @@ C_INT core_machine_vadp_capture_text_snapshot(t_vadp *adapter, t_ram *memory,
     cursor_changed = !adapter->data.captured ||
         adapter->data.captured_cursor_top != out_snapshot->cursor_top ||
         adapter->data.captured_cursor_bottom != out_snapshot->cursor_bottom ||
-        adapter->data.captured_cursor_address != cursor;
+        adapter->data.captured_cursor_address != cursor ||
+        adapter->data.captured_cursor_x != out_snapshot->cursor_x ||
+        adapter->data.captured_cursor_y != out_snapshot->cursor_y ||
+        adapter->data.captured_cursor_visible != out_snapshot->cursor_visible;
     if (buffer_changed || cursor_changed) core_machine_vadp_mark_dirty(adapter);
-    adapter->data.cursor_top = out_snapshot->cursor_top;
-    adapter->data.cursor_bottom = out_snapshot->cursor_bottom;
-    adapter->data.cursor_address = cursor;
     adapter->data.captured_cursor_top = out_snapshot->cursor_top;
     adapter->data.captured_cursor_bottom = out_snapshot->cursor_bottom;
     adapter->data.captured_cursor_address = cursor;
+    adapter->data.captured_cursor_x = out_snapshot->cursor_x;
+    adapter->data.captured_cursor_y = out_snapshot->cursor_y;
+    adapter->data.captured_cursor_visible = out_snapshot->cursor_visible;
     adapter->data.captured = TYPE_TRUE;
     adapter->data.captured_kind = CORE_MACHINE_DISPLAY_KIND_TEXT;
     out_snapshot->buffer_changed = buffer_changed;

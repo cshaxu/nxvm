@@ -88,12 +88,12 @@ typedef struct t_vadp_data {
         CORE_MACHINE_DISPLAY_MAX_ROWS];
     uint8_t attributes[CORE_MACHINE_DISPLAY_MAX_COLUMNS *
         CORE_MACHINE_DISPLAY_MAX_ROWS];
-    uint8_t cursor_top;
-    uint8_t cursor_bottom;
-    uint16_t cursor_address;
     uint8_t captured_cursor_top;
     uint8_t captured_cursor_bottom;
     uint16_t captured_cursor_address;
+    uint8_t captured_cursor_x;
+    uint8_t captured_cursor_y;
+    C_INT captured_cursor_visible;
 } t_vadp_data;
 
 typedef struct t_vadp {
@@ -116,10 +116,6 @@ type_status core_machine_vadp_configure_ega_controllers(t_vadp *adapter,
     const core_machine_vadp_ega_controller_config *config);
 C_INT core_machine_vadp_ega_aperture_contains(const t_vadp *adapter,
     uint32_t physical, STD_SIZE_T bytes);
-C_VOID core_machine_vadp_set_cursor_shape(t_vadp *adapter, uint8_t top,
-    uint8_t bottom);
-C_VOID core_machine_vadp_set_cursor_address(t_vadp *adapter, uint16_t address);
-C_VOID core_machine_vadp_set_display_start(t_vadp *adapter, uint16_t address);
 C_INT core_machine_vadp_capture_text_snapshot(t_vadp *adapter, t_ram *memory,
     core_machine_display_snapshot *out_snapshot);
 C_INT core_machine_vadp_capture_snapshot(t_vadp *adapter, t_ram *memory,

@@ -485,13 +485,13 @@ static VOID DisplayCursor(w32adisp_context *context,
     HGDIOBJ hOldGdiObj;
     RECT rect;
     INT x1_cursor, y1_cursor, x2_cursor, y2_cursor;
-    x1_cursor = x2_cursor = frame->cursor_x * FONT_HEIGHT; /* + FONT_HEIGHT / 2 */;
+    x1_cursor = x2_cursor = frame->cursor_y * FONT_HEIGHT; /* + FONT_HEIGHT / 2 */;
     context->cursor_top = frame->cursor_top;
     context->cursor_bottom = frame->cursor_bottom;
     x1_cursor += (context->cursor_top % 8) * FONT_HEIGHT / 8;
     x2_cursor += (context->cursor_bottom % 8) * FONT_HEIGHT / 8;
-    y1_cursor = (frame->cursor_y + 0) * FONT_WIDTH;
-    y2_cursor = (frame->cursor_y + 1) * FONT_WIDTH;
+    y1_cursor = (frame->cursor_x + 0) * FONT_WIDTH;
+    y2_cursor = (frame->cursor_x + 1) * FONT_WIDTH;
     rect.left = y1_cursor;
     rect.top = x1_cursor;
     rect.right = y2_cursor;

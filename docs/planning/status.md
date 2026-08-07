@@ -2,12 +2,12 @@
 
 ## Current Work
 
-**Idle. M5 T265 is closed.** Its Level 2 timing table is frozen per core
-machine, the unique executor owns all admitted cost attribution, and the
-default PC/AT remains intentionally base-only pending a calibrated profile
-corpus. The task record contains the focused evidence, 101/101 current
-GCC/CTest result, and `nxvm_0_5_0265.exe` SHA-256; see
-[M5 T265](m5-t265-instruction-timing.md).
+**Idle. M5 T266 is closed.** VADP now owns the bounded CRTC cursor/page/status
+facts, copied coordinates are column/row across their consumers, and the
+unmeasured 6845 geometry/light-pen breadth remains deferred. The task record
+contains focused evidence, 102/102 current GCC/CTest evidence, and the
+`nxvm_0_5_0266.exe` SHA-256; see
+[M5 T266](m5-t266-cga-6845-text-status.md).
 
 No subtask is active. The next implementation needs its own approved packet.
 

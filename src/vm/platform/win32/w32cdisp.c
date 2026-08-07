@@ -119,8 +119,8 @@ C_VOID w32cdispPaint(w32cdisp_context *context, WIN32_HANDLE output,
         curInfo.bVisible = frame.cursor_visible;
         curInfo.dwSize = (DWORD)(((frame.cursor_bottom - frame.cursor_top) % 8 + 1) * 100. / 8.);
         SetConsoleCursorInfo(output, &curInfo);
-        curPos.X = frame.cursor_y;
-        curPos.Y = frame.cursor_x;
+        curPos.X = frame.cursor_x;
+        curPos.Y = frame.cursor_y;
         SetConsoleCursorPosition(output, curPos);
     }
 }

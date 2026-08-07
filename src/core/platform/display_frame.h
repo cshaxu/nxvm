@@ -28,6 +28,7 @@ typedef struct core_platform_display_frame {
     uint16_t rows;
     uint8_t cursor_top;
     uint8_t cursor_bottom;
+    /* Copied text coordinates are column then row. */
     uint8_t cursor_x;
     uint8_t cursor_y;
     C_INT cursor_visible;
