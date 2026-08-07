@@ -37,7 +37,6 @@ original identifiers.
 
 | Task | Owner and purpose | Dependency and stop condition |
 | --- | --- | --- |
-| T272 | Make VM FDD/HDD backing objects implement T270's media provider using T271 host capabilities where a host resource is needed; rebind the existing firmware geometry consumer and remove the fixed block slot rather than retaining a forwarding facade. | T270--T271. FDD/HDD allocation, mount/eject, image selection, persistence policy, and Console commands stay in VM. |
 | T273 | Use `git mv` to move the MC146818-compatible register/calendar/tick/IRQ-output mechanism to `core/machine`, with optional neutral configuration and a profile-supplied NVRAM image. | VM glue extracts port 70h bit 7 NMI policy and delegates only the low seven-bit index/data path to core; core owns no NMI, BDA, BIOS, wall-clock, or PC/AT default. |
 | T274 | Add a core-only mantle-shape configuration fixture: create, bind neutral machine and platform providers, freeze, reset, apply an entry plan, run bounded slices, and report typed outcomes without any VM header, firmware, UI, DOS path, or external-runtime vocabulary. | T270, T271, and T273. This is a fixture, not `src/mantle` implementation; M6 still owns mantle. |
 | T275 | Decouple the existing FDC controller from `t_fdd` while it remains in place: consume only the frozen T270 media provider and explicit port/IRQ/DMA wiring. | T270--T272. Preserve the one existing FDC state machine and all retained DOS/FDC regressions; no duplicate controller or multi-drive topology. |

@@ -2,39 +2,15 @@
 
 ## Current Work
 
-**M5 T272 S3: VM Media Adapter And Legacy Block Removal -- active.**
-
-- **Original request:** make the retained VM FDD/HDD backing owners implement
-  T270 media providers, rebind default-ROM geometry, and remove the fixed
-  single-slot block bridge without changing controller behavior.
-- **Audit:** FDD uniquely owns floppy bytes/CHS/read-only/generation; HDD
-  uniquely owns HDD bytes/CHS/cursor. FDC and HDC still directly consume those
-  owners, which is intentional until T275/T277. The only block-slot consumer
-  is default-ROM HDD geometry through `session/block.c` and firmware context.
-- **S1 closed:** provider identities/lifetimes, resource-adapter ownership,
-  geometry/generation/flush mapping, legacy bridge removal order, and retained
-  controller boundary are frozen in the contracts.
-- **S2 closed:** FDD/HDD now implement frozen providers; composition binds the
-  two identities, default ROM receives only copied HDD geometry, and the old
-  single-slot block source/API is deleted. FDC/HDC remain intentionally direct
-  consumers pending T275/T277.
-- **S3 deliverable:** run FDD/HDD boot, retained controller probes, complete
-  current gates, documentation governance, and task artifact closure.
-- **Rules:** composition alone selects paths/mount/eject/persistence; FDD/HDD
-  retain their bytes; no controller rewrite, media copy/cache, host shortcut,
-  second stateful wrapper, or Console/boot behavior change.
-- **Evidence:** S1 governance plus S2 two-device/FDC/HDC probes passed. S3
-  requires full current gates and artifact evidence; the final sweep must show
-  no legacy block API, forwarding wrapper, or cached firmware geometry.
-- **Stop:** stop and split if rebinding requires direct host I/O in core,
-  firmware access to media bytes, or a second controller path.
+No implementation subtask is active. T273 may begin independently with its
+own MC146818 mechanism-migration packet, or T275 after an approved FDC packet.
 
 ## Current Technical Baseline
 
-- **T271 artifact identity:** `current-gcc` and
-  `verify-current-artifact-target` select `vm-0-5-0271`; static/ownership
-  checks and 104/104 CTest cases passed. Artifact `nxvm_0_5_0271.exe` SHA-256:
-  `9B743CEB1B88D02835BD36C8B09D5EA7436B2110ED71EA2E9D806F14D23DDA1C`.
+- **T272 artifact identity:** `current-gcc` and
+  `verify-current-artifact-target` select `vm-0-5-0272`; static/ownership
+  checks and 105/105 CTest cases passed. Artifact `nxvm_0_5_0272.exe` SHA-256:
+  `3E4CF6782886C043E797EBECA4D6A4EB61399660E3F13291673B8696B679F99E`.
 - **Core boundary:** T243--T246 retain checked physical memory, bounded `#UD`
   transitions, immutable ROM mapping, and atomic real-mode entry plans.
 - **Product boundary:** `nxvm.exe` is the retained runnable product. `mantle`,
@@ -53,6 +29,7 @@
 | T269 | Directly closed block, demand, single, and M2M one-grant semantics; two run quantums replay the same FDC DMA2 DOS result. |
 | T270 | Added the frozen multi-device core media contract and fake-provider corpus; retained the old single block slot only as T272's explicitly bounded migration source. |
 | T271 | Added a synchronous opaque core/platform backing resource with one close owner; existing copied input and cancellation contracts remain the only such facilities. |
+| T272 | Replaced the old single-slot block bridge with frozen FDD/HDD media providers and copied ROM geometry; FDC/HDC direct backing use remains explicitly deferred to T275/T277. |
 
 Detailed contracts, commands, artifact provenance, and prior closures are in
 [M5 History](../history/m5.md) and Git history. The [M5 convergence queue]
