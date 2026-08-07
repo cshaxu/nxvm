@@ -2,37 +2,25 @@
 
 ## Current Work
 
-**M5 T277 S2: Neutral ATA Media-Provider Decoupling -- active.**
+**M5 T278 S1: Neutral ATA PIO Controller Migration -- active.**
 
-- **Original request:** decouple the retained ATA/HDC controller from direct
-  `t_hdd` storage through the frozen core media registry; retain VM-only
-  topology, image policy, firmware, and product behavior.
-- **S1 deliverable:** inventory every ATA/HDC direct backing access, freeze the
-  provider/config surface, and define the core and DOS regressions required
-  before any behavior change.
-- **S1 complete:** `vm_machine_hdc` directly dereferences `t_hdd` only for
-  CHS/LBA capacity, present/read-only checks, copied sector reads/writes, and
-  IDENTIFY geometry. T277 replaces those with frozen registry query/read/write
-  operations under the HDD identity; error/result/IRQ14 behavior remains the
-  retained controller behavior. HDC stays VM-owned until T278.
-- **S2 admission:** add registry/id to the HDC connection, remove `t_hdd`
-  includes and direct storage access, and preserve the current CHS, LBA28,
-  count-zero, SRST, status-read acknowledgement, and PIO data paths.
-- **S3 evidence:** core media-provider negative cases plus retained HDC port,
-  ATA DOS read/write, HDD boot, and current gates. The static gate must reject
-  a direct `t_hdd` dependency in HDC.
-- **Rules:** core continues to own RAM/PIC/time; VM machine owns ATA protocol
-  until T278. Do not add ATA DMA, host I/O, new commands, or a second media
-  route.
-- **Stop:** stop and split if decoupling requires a core -> VM include, a BIOS
-  shortcut, a changed boot/UI path, or undefined guest-visible timing.
+- **Original request:** move the now-neutral ATA PIO controller into
+  `core/machine`; VM retains only PC/AT topology, frozen media policy, profile
+  firmware, boot policy, and product behavior.
+- **S1 deliverable:** freeze the core ATA configuration/provider surface,
+  audit VM-specific identifiers, and define a core-only ATA fixture.
+- **Rules:** core owns the one controller state, IRQ14 source lifecycle, and
+  port protocol after migration. Do not add ATA DMA, new commands, host I/O,
+  a second controller, or profile defaults in core.
+- **Stop:** stop and split if the move needs a core -> VM include, a direct
+  backing object, PC/AT default, firmware shortcut, or changed boot/UI path.
 
 ## Current Technical Baseline
 
-- **T276 artifact identity:** `current-gcc` and
-  `verify-current-artifact-target` select `vm-0-5-0276`; static/ownership
-  checks and 108/108 CTest cases passed. Artifact `nxvm_0_5_0276.exe` SHA-256:
-  `D939FEB5F590996B94A47E4C08520D2662693BE8448AB4A333F2C462A261D50D`.
+- **T277 artifact identity:** `current-gcc` and
+  `verify-current-artifact-target` select `vm-0-5-0277`; static/ownership
+  checks and 108/108 CTest cases passed. Artifact `nxvm_0_5_0277.exe` SHA-256:
+  `EA52F19ED01338A46BAEF1A3F20432136605A30F64C7EDC2B0CC4E47FB00E0CE`.
 - **Core boundary:** T243--T246 retain checked physical memory, bounded `#UD`
   transitions, immutable ROM mapping, and atomic real-mode entry plans.
 - **Product boundary:** `nxvm.exe` is the retained runnable product. `mantle`,
@@ -56,6 +44,7 @@
 | T274 | Added a core-only fixture proving one machine can bind neutral RTC/media/backing providers, freeze, reset, apply an entry plan, and run a bounded slice without VM vocabulary. |
 | T275 | Decoupled the retained FDC controller from `t_fdd`; it now consumes only frozen media provider operations while retaining its single DMA2/IRQ6 state machine. |
 | T276 | Moved the neutral FDC into `core_machine.shared_fdc`; composition only binds frozen PC/AT routes/media, while core owns controller lifecycle and the core-only FDC fixture. |
+| T277 | Removed ATA PIO's direct `t_hdd` dependency; it now consumes frozen HDD media registry query/read/write data while retaining its VM controller location until T278. |
 
 Detailed contracts, commands, artifact provenance, and prior closures are in
 [M5 History](../history/m5.md) and Git history. The [M5 convergence queue]
