@@ -2,7 +2,7 @@
 
 ## Current Work
 
-**Idle. M5 T263 is closed. The next planned implementation is T264, the
+**Idle. M5 T263 S4 is closed. The next planned implementation is T264, the
 core/VM PC/AT ownership closure. Further CPU instruction-family admissions
 require a separate failing corpus and approved packet; they are not the default
 queue.**
@@ -10,6 +10,44 @@ queue.**
 No subtask is active. Before T264 source work begins, create one complete
 packet with the original request, owner, non-goals, applicable rules, focused
 evidence, stop conditions, and artifact decision.
+
+## T263 S4 Packet
+
+### Original Request
+
+Correct the architecture contract so it matches the retained real-mode IVT and
+bounded protected-mode 16-bit IDT execution paths. Move the stale
+`TODO(Low, T263)` descriptor-vocabulary note out of `cpu.h` into the durable
+TODO ledger with no false task identity.
+
+### Scope, Evidence, And Stop Conditions
+
+This is documentation and source-comment governance only: no CPU, firmware,
+platform, build, test, artifact, or user-visible behavior may change. The
+contract must say that both software-interrupt routes remain inside the one
+core executor, while hardware IRQ delivery remains a separate PIC path. The
+ledger entry must state that a future vocabulary-only admission preserves
+layout and debugger behavior.
+
+The similar-issue sweep searches tracked `docs`, `src`, and `TODO.md` for the
+obsolete “always guest-IVT” claim and `TODO(... T263)` vocabulary marker.
+Expected closure is one corrected contract, no stale marker, one ledger owner,
+`git diff --check`, and no artifact because no runnable path changes. Stop if
+the correction reveals a second interrupt executor, firmware shortcut, or a
+need to change runtime semantics; those require a separately approved task.
+
+### S4 Closure
+
+`contracts.md` now states the real-mode IVT route and the bounded protected
+16-bit IDT interrupt-gate route without conflating either with hardware IRQ
+delivery. Source inspection confirms the latter remains in the core executor's
+`_ser_int_protected_16()` path; no provider, firmware portal, or second
+executor was found or changed. The stale `cpu.h` marker is deleted and the
+descriptor-vocabulary cleanup is now a durable `TODO(Low)` entry with its
+layout/debugger preservation condition. The required repository searches found
+no remaining obsolete contract claim or inline vocabulary marker. `git diff
+--check` passes. No executable or artifact was produced because this subtask
+does not change a runnable path.
 
 ## Current Technical Baseline
 
