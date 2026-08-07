@@ -155,9 +155,13 @@ does not enter project-neutral code.
 
 All existing wrappers are renamed by a dedicated compatibility task to
 `STD_*`: `STD_LOCALTIME`, `STD_STRCAT`, `STD_STRCPY`, `STD_STRTOK`,
-`STD_STRCMP`, `STD_STRLEN`, `STD_PRINTF`, `STD_FPRINTF`, `STD_SPRINTF`,
+`STD_STRCMP`, `STD_STRLEN`, `STD_PRINTF`, `STD_FPRINTF`,
 `STD_FOPEN`, `STD_FCLOSE`, `STD_FREAD`, `STD_FWRITE`, `STD_FGETS`,
 `STD_MALLOC`, `STD_FREE`, `STD_MEMSET`, `STD_MEMCPY`, and `STD_MEMCMP`.
+
+`STD_SPRINTF` is legacy vocabulary only. T279 removes its unbounded
+`vsprintf` implementation and all production callers; new code must use
+length-aware `STD_SNPRINTF` with an owned destination capacity.
 
 The direct-call inventory requires new `STD_CALLOC`, `STD_FSEEK`, `STD_FTELL`,
 `STD_FGETC`, `STD_FPUTC`, `STD_FEOF`, `STD_SNPRINTF`, `STD_TIME`,

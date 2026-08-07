@@ -128,6 +128,10 @@ M5 may use a core-only mantle-shape fixture to prove neutral configuration, but
 does not implement mantle. It admits only opaque policy-free host capability
 contracts into `core/platform`; host filesystem/path, mount, and DOS policy
 remain above core.
+Before its next display admission, M5 also closes the bounded reliability and
+evidence package: safe C formatting, atomic FDD/HDD replacement with arbitrary
+raw-HDD capacity semantics, precise core-device ownership names, canonical
+core-platform interfaces, and VM-free FDC/ATA media-I/O corpus.
 It does not promise Windows 3.x or Windows 95 compatibility by itself; broad
 80386/486, profile-specific, and operating-system work remains evidence-led.
 
