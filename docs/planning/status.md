@@ -2,8 +2,31 @@
 
 ## Current Work
 
-**Idle.** T279 is closed. T280 has not yet been admitted, so this ledger
-contains no active task packet.
+**M5 T280 S2: Atomic Media Implementation -- active.**
+
+- **Original request:** make FDD/HDD replacement atomic and admit arbitrary
+  raw-HDD byte lengths. A failed candidate must leave every old-media field
+  published and unchanged; HDD virtual capacity is `ceil(raw_bytes / 512) *
+  512`, with a zero-filled partial tail sector.
+- **S1 closed:** the inventory confirms `vm/machine/fdd` and `vm/machine/hdd`
+  own their backing bytes and replacement state; core FDC/HDC only retain
+  frozen provider bindings. Candidate population precedes the one state
+  publish; backing bytes have no separately closeable old-media handle, while
+  explicit persistence must write and close before it changes the mount.
+- **S2 deliverable:** implement the frozen candidate/commit/rollback boundary,
+  raw-versus-virtual HDD capacity, tail persistence, and the focused corpus.
+- **Rules:** VM backing objects retain path, mount, persistence, and geometry
+  policy; controllers continue through frozen media providers only. No ATA
+  command expansion, DMA, dynamic topology, FDD geometry broadening, or host
+  shortcut is in scope.
+- **Similar-issue sweep:** inspect all FDD/HDD load/save, allocation, file I/O,
+  provider query/read/write/flush, and replacement/reset paths. Classify every
+  production failure path as fixed, safe, or deferred.
+- **Evidence:** focused 0/1/511/512/513-byte HDD and failed-replacement
+  corpus; retained FDD/HDD boot, ATA PIO, FDC READ TRACK, Console/debugger,
+  current GCC/CTest gates; artifact `build/output/nxvm_0_5_0280.exe`.
+- **Stop:** stop if atomic replacement needs a second media/controller state,
+  host-clock behavior, FDD geometry expansion, or a VM bypass of core media.
 
 ## Current Technical Baseline
 
