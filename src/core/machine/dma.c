@@ -336,6 +336,10 @@ static C_VOID Execute(t_dma *rdma, t_latch *latch, t_ram *ram,
     }
     if (rdma->data.flagEOP) {
         rdma->data.isr = TYPE_ZERO_8;
+        if (flagM2M) {
+            TYPE_CLEAR_BIT(rdma->data.request, VDMA_REQUEST_DRQ(0));
+            TYPE_CLEAR_BIT(rdma->data.request, VDMA_REQUEST_DRQ(1));
+        }
         if (rdma->connect.close_provider[id] != STD_NULL) {
             rdma->connect.close_provider[id](rdma->connect.device_owner[id], latch);
         }

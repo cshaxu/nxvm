@@ -38,6 +38,19 @@ static C_VOID core_machine_dma_write_channel2(t_port *port, uint16_t address,
     core_machine_port_write(port, 0x000bu, mode);
 }
 
+static C_VOID core_machine_dma_write_primary_channel(t_port *port,
+    uint8_t channel, uint16_t address, uint16_t count, uint8_t mode)
+{
+    uint16_t address_port = (uint16_t)(channel * 2u);
+
+    core_machine_port_write(port, 0x000cu, 0u);
+    core_machine_port_write(port, address_port, address & 0xffu);
+    core_machine_port_write(port, address_port, address >> 8u);
+    core_machine_port_write(port, (uint16_t)(address_port + 1u), count & 0xffu);
+    core_machine_port_write(port, (uint16_t)(address_port + 1u), count >> 8u);
+    core_machine_port_write(port, 0x000bu, mode);
+}
+
 C_INT main(C_VOID)
 {
     static const core_machine_dma_channel_provider provider = {
@@ -173,12 +186,114 @@ C_INT main(C_VOID)
         failed = 1;
     }
 
+    /* Demand and single modes consume one request per grant. A second byte
+     * requires a fresh device request, never an implicit block continuation. */
+    fixture.bytes[0] = 0x11u;
+    fixture.bytes[1] = 0x22u;
+    fixture.next = 0u;
+    fixture.terminal_count = 0u;
+    core_machine_dma_reset(&latch, &primary, &secondary);
+    core_machine_dma_write_channel2(&port, 0x1240u, 0x01u, 1u, 0x06u);
+    core_machine_port_write(&port, 0x000au, 0x02u);
+    core_machine_port_write(&port, 0x00d4u, 0x00u);
+    core_machine_dma_request_assert(&binding);
+    core_machine_dma_advance(&latch, &primary, &secondary, &memory, 1u);
+    core_machine_dma_advance(&latch, &primary, &secondary, &memory, 1u);
+    if (core_machine_memory_read_physical(&memory, 0x11240u,
+            (type_virtual_address)bytes, sizeof(bytes)) != TYPE_STATUS_OK ||
+        bytes[0] != 0x11u || bytes[1] != 0u || fixture.terminal_count != 0u) {
+        STD_FPRINTF(STD_STDERR, "DMA demand first: %02x %02x tc=%u\n",
+            bytes[0], bytes[1], fixture.terminal_count);
+        failed = 1;
+    }
+    core_machine_dma_request_assert(&binding);
+    core_machine_dma_advance(&latch, &primary, &secondary, &memory, 1u);
+    if (core_machine_memory_read_physical(&memory, 0x11240u,
+            (type_virtual_address)bytes, sizeof(bytes)) != TYPE_STATUS_OK ||
+        bytes[1] != 0x22u || fixture.terminal_count != 1u ||
+        (primary.data.mask & VDMA_MASK_DRQ(2u)) == 0u) {
+        STD_FPRINTF(STD_STDERR, "DMA demand second: %02x %02x tc=%u mask=%02x\n",
+            bytes[0], bytes[1], fixture.terminal_count, primary.data.mask);
+        failed = 1;
+    }
+
+    fixture.bytes[0] = 0x33u;
+    fixture.bytes[1] = 0x44u;
+    fixture.next = 0u;
+    fixture.terminal_count = 0u;
+    core_machine_dma_reset(&latch, &primary, &secondary);
+    core_machine_dma_write_channel2(&port, 0x1242u, 0x01u, 1u, 0x46u);
+    core_machine_port_write(&port, 0x000au, 0x02u);
+    core_machine_port_write(&port, 0x00d4u, 0x00u);
+    core_machine_dma_request_assert(&binding);
+    core_machine_dma_advance(&latch, &primary, &secondary, &memory, 1u);
+    core_machine_dma_advance(&latch, &primary, &secondary, &memory, 1u);
+    if (core_machine_memory_read_physical(&memory, 0x11242u,
+            (type_virtual_address)bytes, sizeof(bytes)) != TYPE_STATUS_OK ||
+        bytes[0] != 0x33u || bytes[1] != 0u || fixture.terminal_count != 0u) {
+        STD_FPRINTF(STD_STDERR, "DMA single first: %02x %02x tc=%u\n",
+            bytes[0], bytes[1], fixture.terminal_count);
+        failed = 1;
+    }
+    core_machine_dma_request_assert(&binding);
+    core_machine_dma_advance(&latch, &primary, &secondary, &memory, 1u);
+    if (core_machine_memory_read_physical(&memory, 0x11242u,
+            (type_virtual_address)bytes, sizeof(bytes)) != TYPE_STATUS_OK ||
+        bytes[1] != 0x44u || fixture.terminal_count != 1u ||
+        (primary.data.mask & VDMA_MASK_DRQ(2u)) == 0u) {
+        STD_FPRINTF(STD_STDERR, "DMA single second: %02x %02x tc=%u mask=%02x\n",
+            bytes[0], bytes[1], fixture.terminal_count, primary.data.mask);
+        failed = 1;
+    }
+
+    /* Memory-to-memory uses the same grant boundary. Channel 0 is the
+     * source request and channel 1 supplies the destination count. */
+    bytes[0] = 0x55u;
+    bytes[1] = 0x66u;
+    if (core_machine_memory_write_physical(&memory, 0x0200u,
+            (type_virtual_address)bytes, sizeof(bytes)) != TYPE_STATUS_OK ||
+        core_machine_memory_write_physical(&memory, 0x0300u,
+            (type_virtual_address)zeroes, sizeof(zeroes)) != TYPE_STATUS_OK) {
+        failed = 1;
+        goto done;
+    }
+    core_machine_dma_reset(&latch, &primary, &secondary);
+    core_machine_dma_write_primary_channel(&port, 0u, 0x0200u, 1u, 0x80u);
+    core_machine_dma_write_primary_channel(&port, 1u, 0x0300u, 1u, 0x81u);
+    core_machine_port_write(&port, 0x0008u, VDMA_COMMAND_M2M);
+    core_machine_port_write(&port, 0x000eu, 0u);
+    core_machine_port_write(&port, 0x00d4u, 0u);
+    core_machine_port_write(&port, 0x0009u, 0x04u);
+    core_machine_port_write(&port, 0x0009u, 0x05u);
+    core_machine_port_write(&port, 0x00d2u, 0x04u);
+    core_machine_dma_advance(&latch, &primary, &secondary, &memory, 1u);
+    if (core_machine_memory_read_physical(&memory, 0x0300u,
+            (type_virtual_address)bytes, sizeof(bytes)) != TYPE_STATUS_OK ||
+        bytes[0] != 0x55u || bytes[1] != 0u ||
+        (primary.data.status & VDMA_STATUS_TC(0u)) != 0u) {
+        STD_FPRINTF(STD_STDERR, "DMA m2m first: %02x %02x status=%02x\n",
+            bytes[0], bytes[1], primary.data.status);
+        failed = 1;
+    }
+    core_machine_dma_advance(&latch, &primary, &secondary, &memory, 1u);
+    if (core_machine_memory_read_physical(&memory, 0x0300u,
+            (type_virtual_address)bytes, sizeof(bytes)) != TYPE_STATUS_OK ||
+        bytes[0] != 0x55u || bytes[1] != 0x66u ||
+        (primary.data.status & VDMA_STATUS_TC(0u)) == 0u ||
+        primary.data.request != 0u || primary.data.isr != 0u) {
+        STD_FPRINTF(STD_STDERR, "DMA m2m second: %02x %02x status=%02x req=%02x isr=%02x\n",
+            bytes[0], bytes[1], primary.data.status, primary.data.request,
+            primary.data.isr);
+        failed = 1;
+    }
+
 done:
     core_machine_dma_finalize(&latch, &primary, &secondary);
     core_machine_memory_finalize(&memory);
     core_machine_port_finalize(&port);
     if (failed) return 1;
     STD_PRINTF("M5:T269:S1:DMA-GRANT:PORT:OK\n");
+    STD_PRINTF("M5:T269:S4:DMA-MODES:OK\n");
     STD_PRINTF("M5:T230:S3:DMA-CHANNEL:OK\n");
     return 0;
 }
