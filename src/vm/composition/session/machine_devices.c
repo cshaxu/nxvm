@@ -4,6 +4,7 @@
 
 #include "core/machine/machine_interface.h"
 #include "core/machine/rtc.h"
+#include "vm/composition/session/media.h"
 #include "vm/composition/session/machine_devices.h"
 #include "vm/composition/session/session.h"
 #include "vm/machine/fdc.h"
@@ -130,7 +131,8 @@ C_VOID vm_session_machine_devices_initialize_fdc(vm_session *session)
         core_machine_configuration_shared_dma_secondary_borrow(session->core_machine),
         config.dma_channel, vm_machine_fdc_dma_provider(), &session->fdc,
         &dma_request) != TYPE_STATUS_OK) return;
-    vm_machine_fdc_connect(&session->fdc, &session->fdd, &dma_request,
+    vm_machine_fdc_connect(&session->fdc, &session->media_registry,
+        VM_SESSION_MEDIA_FDD_ID, &dma_request,
         core_machine_configuration_shared_pic_master_borrow(session->core_machine),
         core_machine_configuration_shared_pic_slave_borrow(session->core_machine),
         core_machine_configuration_port_borrow(session->core_machine), &config);

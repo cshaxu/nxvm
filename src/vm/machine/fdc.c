@@ -6,9 +6,9 @@
 #include "type.h"
 
 #include "core/machine/dma.h"
+#include "core/machine/media_interface.h"
 #include "core/machine/pic.h"
 #include "core/machine/port.h"
-#include "vm/machine/fdd.h"
 #include "vm/machine/fdc.h"
 
 #define VM_MACHINE_FDC_CMD_SPECIFY 0x03u
@@ -49,13 +49,31 @@ static type_unsigned_8 vm_machine_fdc_msr(const t_fdc *fdc)
     }
 }
 
-static C_VOID vm_machine_fdc_sync_position(t_fdc *fdc)
+static C_INT vm_machine_fdc_media_info(const t_fdc *fdc,
+    core_machine_media_info *out_info, core_machine_media_result *out_result)
 {
-    t_fdd *fdd = fdc->connect.fdd;
-    if (fdd == STD_NULL) return;
-    fdd->data.cyl = fdc->data.cylinder;
-    fdd->data.head = fdc->data.head;
-    fdd->data.sector = fdc->data.sector;
+    return fdc != STD_NULL && fdc->connect.media_registry != STD_NULL &&
+        core_machine_media_query(fdc->connect.media_registry,
+            fdc->connect.media_id, out_info, out_result) == TYPE_STATUS_OK &&
+        *out_result == CORE_MACHINE_MEDIA_RESULT_OK;
+}
+
+static C_INT vm_machine_fdc_media_offset(const t_fdc *fdc,
+    const core_machine_media_info *info, uint64_t *out_offset)
+{
+    uint64_t sector;
+
+    if (fdc == STD_NULL || info == STD_NULL || out_offset == STD_NULL ||
+        fdc->data.head >= info->geometry.heads ||
+        fdc->data.cylinder >= info->geometry.cylinders ||
+        fdc->data.sector == 0u ||
+        fdc->data.sector > info->geometry.sectors_per_track ||
+        info->geometry.bytes_per_sector != 512u) return TYPE_FALSE;
+    sector = ((uint64_t)fdc->data.cylinder * info->geometry.heads +
+        fdc->data.head) * info->geometry.sectors_per_track +
+        (fdc->data.sector - 1u);
+    *out_offset = sector * info->geometry.bytes_per_sector + fdc->data.byte_offset;
+    return TYPE_TRUE;
 }
 
 static C_VOID vm_machine_fdc_deassert_dma(t_fdc *fdc)
@@ -113,7 +131,6 @@ static C_VOID vm_machine_fdc_set_result(t_fdc *fdc, type_unsigned_8 st0,
 static C_VOID vm_machine_fdc_complete_transfer(t_fdc *fdc,
     type_unsigned_8 st1)
 {
-    vm_machine_fdc_sync_position(fdc);
     vm_machine_fdc_set_result(fdc, st1 == 0u ? VM_MACHINE_FDC_ST0_NORMAL :
         VM_MACHINE_FDC_ST0_ABNORMAL, st1, 0u);
     vm_machine_fdc_result_phase(fdc, 7u);
@@ -131,10 +148,13 @@ static C_VOID vm_machine_fdc_complete_simple(t_fdc *fdc, type_unsigned_8 st0,
 
 static C_INT vm_machine_fdc_drive_ready(const t_fdc *fdc)
 {
-    return fdc->connect.fdd != STD_NULL && fdc->data.selected_drive == 0u &&
+    core_machine_media_info info;
+    core_machine_media_result result;
+
+    return fdc->data.selected_drive == 0u &&
         (fdc->data.dor & VFDC_DOR_NRS) != 0u &&
         (fdc->data.dor & VFDC_DOR_ME(fdc->data.selected_drive)) != 0u &&
-        fdc->connect.fdd->connect.flagDiskExist;
+        vm_machine_fdc_media_info(fdc, &info, &result) && info.present;
 }
 
 static C_VOID vm_machine_fdc_advance_position(t_fdc *fdc)
@@ -149,25 +169,31 @@ static C_INT vm_machine_fdc_transfer_byte(t_fdc *fdc, t_latch *latch,
     C_INT write_to_media)
 {
     type_unsigned_8 byte;
+    core_machine_media_info info;
+    core_machine_media_result result;
+    uint64_t offset;
     if (fdc->data.transfer_remaining == 0u || !vm_machine_fdc_drive_ready(fdc)) {
         vm_machine_fdc_complete_transfer(fdc, VM_MACHINE_FDC_ST1_NO_DATA);
         return TYPE_TRUE;
     }
-    if (fdc->data.sector > fdc->data.eot || fdc->data.sector >
-        fdc->connect.fdd->data.nsector) {
+    if (!vm_machine_fdc_media_info(fdc, &info, &result) ||
+        fdc->data.sector > fdc->data.eot ||
+        !vm_machine_fdc_media_offset(fdc, &info, &offset)) {
         vm_machine_fdc_complete_transfer(fdc, VM_MACHINE_FDC_ST1_END_OF_CYLINDER);
         return TYPE_TRUE;
     }
     if (write_to_media) {
-        if (vm_machine_fdd_write_byte(fdc->connect.fdd, fdc->data.cylinder,
-            fdc->data.head, fdc->data.sector, fdc->data.byte_offset,
-            latch->data.byte)) {
-            vm_machine_fdc_complete_transfer(fdc, fdc->connect.fdd->connect.flagReadOnly ?
+        if (core_machine_media_write_bytes(fdc->connect.media_registry,
+            fdc->connect.media_id, offset, &latch->data.byte, 1u, &result) !=
+            TYPE_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_OK) {
+            vm_machine_fdc_complete_transfer(fdc,
+                result == CORE_MACHINE_MEDIA_RESULT_READ_ONLY ?
                 VM_MACHINE_FDC_ST1_NOT_WRITABLE : VM_MACHINE_FDC_ST1_NO_DATA);
             return TYPE_TRUE;
         }
-    } else if (vm_machine_fdd_read_byte(fdc->connect.fdd, fdc->data.cylinder,
-        fdc->data.head, fdc->data.sector, fdc->data.byte_offset, &byte)) {
+    } else if (core_machine_media_read_bytes(fdc->connect.media_registry,
+        fdc->connect.media_id, offset, &byte, 1u, &result) != TYPE_STATUS_OK ||
+        result != CORE_MACHINE_MEDIA_RESULT_OK) {
         vm_machine_fdc_complete_transfer(fdc, VM_MACHINE_FDC_ST1_NO_DATA);
         return TYPE_TRUE;
     } else {
@@ -181,16 +207,30 @@ static C_INT vm_machine_fdc_transfer_byte(t_fdc *fdc, t_latch *latch,
 
 static C_VOID vm_machine_fdc_format_byte(t_fdc *fdc, type_unsigned_8 byte)
 {
+    core_machine_media_info info;
+    core_machine_media_result result;
+    uint64_t logical_sector;
     if (fdc->data.format_headers_remaining == 0u) return;
     fdc->data.format_id[fdc->data.format_id_index++] = byte;
     if (fdc->data.format_id_index != 4u) return;
     fdc->data.format_id_index = 0u;
     if (fdc->data.format_id[0] != fdc->data.cylinder ||
         fdc->data.format_id[1] != fdc->data.head ||
-        fdc->data.format_id[3] != 2u || vm_machine_fdd_format_sector(
-        fdc->connect.fdd, fdc->data.cylinder, fdc->data.head,
-        fdc->data.format_id[2], fdc->data.cmd[5])) {
-        vm_machine_fdc_complete_transfer(fdc, fdc->connect.fdd->connect.flagReadOnly ?
+        fdc->data.format_id[3] != 2u ||
+        !vm_machine_fdc_media_info(fdc, &info, &result) ||
+        fdc->data.format_id[2] == 0u ||
+        fdc->data.format_id[2] > info.geometry.sectors_per_track) {
+        vm_machine_fdc_complete_transfer(fdc, VM_MACHINE_FDC_ST1_NO_DATA);
+        return;
+    }
+    logical_sector = ((uint64_t)fdc->data.cylinder * info.geometry.heads +
+        fdc->data.head) * info.geometry.sectors_per_track +
+        fdc->data.format_id[2] - 1u;
+    if (core_machine_media_format_sectors(fdc->connect.media_registry,
+        fdc->connect.media_id, logical_sector, 1u, fdc->data.cmd[5], &result) !=
+        TYPE_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_OK) {
+        vm_machine_fdc_complete_transfer(fdc,
+            result == CORE_MACHINE_MEDIA_RESULT_READ_ONLY ?
             VM_MACHINE_FDC_ST1_NOT_WRITABLE : VM_MACHINE_FDC_ST1_NO_DATA);
         return;
     }
@@ -258,6 +298,8 @@ static type_unsigned_8 vm_machine_fdc_command_length(type_unsigned_8 opcode)
 static C_VOID vm_machine_fdc_start_transfer(t_fdc *fdc, C_INT write_to_media)
 {
     type_unsigned_8 size = vm_machine_fdc_sector_size(fdc->data.cmd[5]);
+    core_machine_media_info info;
+    core_machine_media_result result;
     fdc->data.selected_drive = fdc->data.cmd[1] & 0x03u;
     fdc->data.cylinder = fdc->data.cmd[2];
     fdc->data.head = fdc->data.cmd[3];
@@ -266,8 +308,9 @@ static C_VOID vm_machine_fdc_start_transfer(t_fdc *fdc, C_INT write_to_media)
     fdc->data.byte_offset = 0u;
     if (size != 2u || (fdc->data.ccr != 0u && fdc->data.ccr != VFDC_CCR_DRC) ||
         !vm_machine_fdc_drive_ready(fdc) ||
-        fdc->data.head >= fdc->connect.fdd->data.nhead || fdc->data.sector == 0u ||
-        fdc->data.sector > fdc->data.eot || fdc->data.eot > fdc->connect.fdd->data.nsector) {
+        !vm_machine_fdc_media_info(fdc, &info, &result) ||
+        fdc->data.head >= info.geometry.heads || fdc->data.sector == 0u ||
+        fdc->data.sector > fdc->data.eot || fdc->data.eot > info.geometry.sectors_per_track) {
         vm_machine_fdc_complete_transfer(fdc, VM_MACHINE_FDC_ST1_NO_DATA);
         return;
     }
@@ -282,6 +325,8 @@ static C_VOID vm_machine_fdc_start_transfer(t_fdc *fdc, C_INT write_to_media)
 
 static C_VOID vm_machine_fdc_start_read_track(t_fdc *fdc)
 {
+    core_machine_media_info info;
+    core_machine_media_result result;
     fdc->data.selected_drive = fdc->data.cmd[1] & 0x03u;
     fdc->data.cylinder = fdc->data.cmd[2];
     fdc->data.head = fdc->data.cmd[3];
@@ -292,15 +337,16 @@ static C_VOID vm_machine_fdc_start_read_track(t_fdc *fdc)
         vm_machine_fdc_sector_size(fdc->data.cmd[5]) != 2u ||
         (fdc->data.ccr != 0u && fdc->data.ccr != VFDC_CCR_DRC) ||
         !vm_machine_fdc_drive_ready(fdc) || fdc->data.selected_drive != 0u ||
-        fdc->data.head >= fdc->connect.fdd->data.nhead ||
-        fdc->data.cylinder >= fdc->connect.fdd->data.ncyl ||
+        !vm_machine_fdc_media_info(fdc, &info, &result) ||
+        fdc->data.head >= info.geometry.heads ||
+        fdc->data.cylinder >= info.geometry.cylinders ||
         fdc->data.sector != 1u ||
-        fdc->data.eot != fdc->connect.fdd->data.nsector) {
+        fdc->data.eot != info.geometry.sectors_per_track) {
         vm_machine_fdc_complete_transfer(fdc, VM_MACHINE_FDC_ST1_NO_DATA);
         return;
     }
     fdc->data.transfer_remaining = (type_unsigned_32)
-        fdc->connect.fdd->data.nsector * 512u;
+        info.geometry.sectors_per_track * 512u;
     fdc->data.phase = VM_MACHINE_FDC_PHASE_EXECUTION_READ;
     if ((fdc->data.dor & VFDC_DOR_ENRQ) != 0u) {
         core_machine_dma_request_assert(&fdc->connect.dma_request);
@@ -310,7 +356,9 @@ static C_VOID vm_machine_fdc_start_read_track(t_fdc *fdc)
 static C_VOID vm_machine_fdc_execute(t_fdc *fdc)
 {
     type_unsigned_8 opcode = fdc->data.cmd[0] & 0x1fu;
-    t_fdd *fdd = fdc->connect.fdd;
+    core_machine_media_info info;
+    core_machine_media_result media_result;
+    C_INT media_ok = vm_machine_fdc_media_info(fdc, &info, &media_result);
     switch (opcode) {
     case VM_MACHINE_FDC_CMD_SPECIFY:
         fdc->data.hut = fdc->data.cmd[1] & 0x0fu;
@@ -323,8 +371,8 @@ static C_VOID vm_machine_fdc_execute(t_fdc *fdc)
         fdc->data.selected_drive = fdc->data.cmd[1] & 0x03u;
         fdc->data.head = (fdc->data.cmd[1] >> 2u) & 1u;
         fdc->data.st3 = (fdc->data.selected_drive & 3u) |
-            (fdc->data.head << 2u) | (fdd != STD_NULL &&
-            fdd->connect.flagReadOnly ? 0x40u : 0u) | (vm_machine_fdc_drive_ready(fdc) ?
+            (fdc->data.head << 2u) | (media_ok &&
+            (info.capabilities & CORE_MACHINE_MEDIA_CAPABILITY_READ_ONLY) != 0u ? 0x40u : 0u) | (vm_machine_fdc_drive_ready(fdc) ?
             0x20u : 0u) | (fdc->data.cylinder == 0u ? 0x10u : 0u);
         fdc->data.ret[0] = fdc->data.st3;
         vm_machine_fdc_result_phase(fdc, 1u);
@@ -332,8 +380,7 @@ static C_VOID vm_machine_fdc_execute(t_fdc *fdc)
     case VM_MACHINE_FDC_CMD_RECALIBRATE:
         fdc->data.selected_drive = fdc->data.cmd[1] & 0x03u;
         fdc->data.cylinder = 0u; fdc->data.head = 0u; fdc->data.sector = 1u;
-        fdc->data.observed_media_generation = fdd != STD_NULL ?
-            fdd->connect.media_generation : 0u;
+        fdc->data.observed_media_generation = media_ok ? info.generation : 0u;
         vm_machine_fdc_complete_simple(fdc, VM_MACHINE_FDC_ST0_NORMAL |
             VFDC_ST0_SEEK_END | fdc->data.selected_drive, 0u);
         vm_machine_fdc_raise_irq(fdc);
@@ -355,10 +402,9 @@ static C_VOID vm_machine_fdc_execute(t_fdc *fdc)
         fdc->data.selected_drive = fdc->data.cmd[1] & 0x03u;
         fdc->data.head = (fdc->data.cmd[1] >> 2u) & 1u;
         fdc->data.cylinder = fdc->data.cmd[2]; fdc->data.sector = 1u;
-        fdc->data.observed_media_generation = fdd != STD_NULL ?
-            fdd->connect.media_generation : 0u;
+        fdc->data.observed_media_generation = media_ok ? info.generation : 0u;
         vm_machine_fdc_complete_simple(fdc, (vm_machine_fdc_drive_ready(fdc) &&
-            fdc->data.cylinder < fdd->data.ncyl ? VM_MACHINE_FDC_ST0_NORMAL :
+            media_ok && fdc->data.cylinder < info.geometry.cylinders ? VM_MACHINE_FDC_ST0_NORMAL :
             VM_MACHINE_FDC_ST0_ABNORMAL) | VFDC_ST0_SEEK_END |
             fdc->data.selected_drive, (type_unsigned_8)fdc->data.cylinder);
         vm_machine_fdc_raise_irq(fdc);
@@ -399,7 +445,7 @@ static C_VOID vm_machine_fdc_execute(t_fdc *fdc)
         if (vm_machine_fdc_sector_size(fdc->data.cmd[2]) != 2u ||
             (fdc->data.ccr != 0u && fdc->data.ccr != VFDC_CCR_DRC) ||
             !vm_machine_fdc_drive_ready(fdc) || fdc->data.eot == 0u ||
-            fdc->data.eot > fdd->data.nsector) {
+            !media_ok || fdc->data.eot > info.geometry.sectors_per_track) {
             vm_machine_fdc_complete_transfer(fdc, VM_MACHINE_FDC_ST1_NO_DATA);
         } else {
             fdc->data.phase = VM_MACHINE_FDC_PHASE_EXECUTION_FORMAT;
@@ -501,12 +547,15 @@ static C_VOID vm_machine_fdc_write_control(t_port *port, type_unsigned_16 id,
     fdc->data.ccr = fdc->connect.port->data.ioByte & 0x03u;
 }
 
-C_VOID vm_machine_fdc_connect(t_fdc *fdc, t_fdd *fdd,
+C_VOID vm_machine_fdc_connect(t_fdc *fdc,
+    const core_machine_media_registry *media_registry,
+    core_machine_media_id media_id,
     const core_machine_dma_request_binding *dma_request, t_pic *pic_master,
     t_pic *pic_slave, t_port *port, const vm_machine_fdc_config *config)
 {
     if (fdc == STD_NULL || dma_request == STD_NULL || config == STD_NULL) return;
-    fdc->connect.fdd = fdd;
+    fdc->connect.media_registry = media_registry;
+    fdc->connect.media_id = media_id;
     fdc->connect.dma_request = *dma_request;
     core_machine_pic_irq_source_bind(&fdc->connect.irq_source, pic_master,
         pic_slave, config->irq);
@@ -544,9 +593,12 @@ C_VOID vm_machine_fdc_reset(t_fdc *fdc)
 
 C_VOID vm_machine_fdc_refresh(t_fdc *fdc)
 {
-    if (fdc == STD_NULL || fdc->connect.fdd == STD_NULL) return;
-    if (fdc->data.observed_media_generation !=
-        fdc->connect.fdd->connect.media_generation) {
+    core_machine_media_info info;
+    core_machine_media_result result;
+
+    if (fdc == STD_NULL || !vm_machine_fdc_media_info(fdc, &info, &result) ||
+        !info.present) return;
+    if (fdc->data.observed_media_generation != info.generation) {
         fdc->data.dir |= VFDC_DIR_DC;
     } else {
         fdc->data.dir &= (type_unsigned_8)~VFDC_DIR_DC;
