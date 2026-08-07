@@ -2,38 +2,14 @@
 
 ## Current Work
 
-**M5 T280 S2: Atomic Media Implementation -- active.**
-
-- **Original request:** make FDD/HDD replacement atomic and admit arbitrary
-  raw-HDD byte lengths. A failed candidate must leave every old-media field
-  published and unchanged; HDD virtual capacity is `ceil(raw_bytes / 512) *
-  512`, with a zero-filled partial tail sector.
-- **S1 closed:** the inventory confirms `vm/machine/fdd` and `vm/machine/hdd`
-  own their backing bytes and replacement state; core FDC/HDC only retain
-  frozen provider bindings. Candidate population precedes the one state
-  publish; backing bytes have no separately closeable old-media handle, while
-  explicit persistence must write and close before it changes the mount.
-- **S2 deliverable:** implement the frozen candidate/commit/rollback boundary,
-  raw-versus-virtual HDD capacity, tail persistence, and the focused corpus.
-- **Rules:** VM backing objects retain path, mount, persistence, and geometry
-  policy; controllers continue through frozen media providers only. No ATA
-  command expansion, DMA, dynamic topology, FDD geometry broadening, or host
-  shortcut is in scope.
-- **Similar-issue sweep:** inspect all FDD/HDD load/save, allocation, file I/O,
-  provider query/read/write/flush, and replacement/reset paths. Classify every
-  production failure path as fixed, safe, or deferred.
-- **Evidence:** focused 0/1/511/512/513-byte HDD and failed-replacement
-  corpus; retained FDD/HDD boot, ATA PIO, FDC READ TRACK, Console/debugger,
-  current GCC/CTest gates; artifact `build/output/nxvm_0_5_0280.exe`.
-- **Stop:** stop if atomic replacement needs a second media/controller state,
-  host-clock behavior, FDD geometry expansion, or a VM bypass of core media.
+**Idle.** T280 is closed; admit T281 only through a new approved packet.
 
 ## Current Technical Baseline
 
-- **T279 artifact identity:** `current-gcc` and
-  `verify-current-artifact-target` select `vm-0-5-0279`; static/ownership
-  checks and 110/110 CTest cases passed. Artifact `nxvm_0_5_0279.exe` SHA-256:
-  `F39286FEA7A6F339711BCD5206C958D9B79D195C595CA367FDC355AD48A56AC0`.
+- **T280 artifact identity:** `current-gcc` and
+  `verify-current-artifact-target` select `vm-0-5-0280`; 41 static/governance
+  gates and 110/110 CTest cases passed. Artifact `nxvm_0_5_0280.exe` SHA-256:
+  `28E5FEBFD4A5AD8C766C789D22FCFCF83890344E588694BBC8D6D9C8D6776AFA`.
 - **Core boundary:** T243--T246 retain checked physical memory, bounded `#UD`
   transitions, immutable ROM mapping, and atomic real-mode entry plans.
 - **Product boundary:** `nxvm.exe` is the retained runnable product. `mantle`,
@@ -60,6 +36,7 @@
 | T277 | Removed ATA PIO's direct `t_hdd` dependency and supplied the frozen media-registry boundary later consumed by T278. |
 | T278 | Moved neutral ATA PIO into `core_machine.shared_hdc`; composition only binds frozen PC/AT routes/media, while the VM-free fixture proves IDENTIFY, DRQ, and IRQ14 acknowledgement. |
 | T279 | Retired unbounded C formatting; source gate and corpus now enforce bounded output and explicit append capacity. |
+| T280 | Made FDD/HDD candidate replacement atomic; HDD now preserves arbitrary raw byte length through virtual sector capacity, zero tail reads, and padded-tail persistence. |
 
 Detailed contracts, commands, artifact provenance, and prior closures are in
 [M5 History](../history/m5.md) and Git history. The [M5 convergence queue]
