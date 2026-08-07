@@ -10,6 +10,13 @@
 - **S1 deliverable:** inventory every direct `t_fdd` access and freeze the
   provider operations, error mapping, generation/format behavior, probe plan,
   and stop conditions before changing FDC source.
+- **S1 complete:** direct accesses reduce to presence/read-only/generation,
+  geometry, byte read/write, format, and two obsolete FDD position mirrors.
+  T270 query supplies presence, flags, generation, and geometry; byte and
+  format operations supply the transfer path. FDC already owns the command
+  C/H/R fields, so the old FDD cursor writes are a removable duplicate, not a
+  missing media capability. S2 may replace only these paths and must map typed
+  absent/read-only/range/change results to the retained FDC result behavior.
 - **Rules:** retain one FDC state machine and the existing DMA2/IRQ6 route; do
   not add a second controller, multi-drive topology, host I/O shortcut, or
   change Console/debugger/boot behavior.
