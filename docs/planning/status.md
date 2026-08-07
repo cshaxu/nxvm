@@ -2,8 +2,7 @@
 
 ## Current Work
 
-**M5 T260 S1 active: freeze the TSS I/O-permission-map contract and core-only
-port corpus.**
+**M5 T260 S3 active: verify the core-owned TSS I/O-permission corpus.**
 
 ## T260 Admission Packet
 
@@ -55,6 +54,22 @@ and current gates. The expected focused marker is
 Stop and split if the corpus needs task/busy-TSS switching, LDT, call/task/trap
 gates, a 32-bit frame/gate, CPL1/2, V86 semantics, a VM/firmware/host port
 shortcut, a second executor, or a Console/debugger/boot UX change.
+
+### S2 Implementation Result
+
+S2 is complete. `_kpa_test_iomap()` now owns the one bitmap decision before
+the retained port executor. It rejects unsupported width, V86, non-80386
+profiles, absent/non-32-bit busy TR, overflowing port spans, a truncated TSS
+map-base field, missing bitmap bytes, and any set bit with `#GP(0)`. It reads
+the TSS only through the existing core descriptor/memory route. `_p_input`,
+`_p_output`, `_p_ins`, and `_p_outs` still share `_kpa_test_mode()`, so no I/O
+form gained a bypass.
+
+The retained 16-bit gate stack transition now accepts a loaded 32-bit busy TSS
+as a read-only `ESP0`/`SS0` source. `ESP0` must fit the admitted 16-bit stack
+frame; otherwise it returns `#TS(0)` before changing the frame. The existing
+16-bit TSS path is unchanged. No VM, firmware, platform, or product source was
+changed.
 
 **Similar-issue sweep plan.** The defect class is a protected low-privilege
 port operation that bypasses a single permission decision. Before closure,
