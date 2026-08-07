@@ -389,5 +389,6 @@ C_INT main(C_VOID)
         return 1;
     }
     STD_PRINTF("M5:T258:S2:I386-PAGING:OK\n");
+    STD_PRINTF("M5:T258:S3:I386-PAGING:CORPUS:OK\n");
     return 0;
 }

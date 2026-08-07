@@ -2,8 +2,8 @@
 
 ## Current Work
 
-**M5 T258 S2 active: implement the bounded core-only 80386 CPL0 paging
-baseline.**
+**M5 T258 S3 active: verify the project-owned 80386 CPL0 paging corpus and
+retained NXVM regressions.**
 
 ### Original Request
 
@@ -38,6 +38,16 @@ T258 therefore keeps the single walker and executor, narrows `MOV CRx`, and
 retains page-fault `CR2` in the copied core diagnostic. The similar-issue
 sweep also found VM debugger raw control-register mutation; it is a separate
 debug-boundary debt recorded in `TODO.md`, not a second paging path.
+
+### S2 Result
+
+S2 is complete. `MOV r32,CR0` now permits only CR0/CR2 reads, while guest
+writes permit only CR0 and aligned CR3. CR0 changes are limited to PE/PG, PG
+cannot be set before PE, and guest CR2 writes reject as `#UD`. The existing
+page walker remains the sole logical-to-physical path. `ExecFinal` now copies
+the fault-written CR2 into the retained first-fault snapshot before rollback.
+The focused target passed its valid mapping, fetch/data/stack, A/D, page-fault,
+control-form, CPU-profile, and reset checks.
 
 ### S1 Audit And Requirement Map
 
