@@ -207,6 +207,23 @@ mode interpretation are core CPU semantics. They are not alternate forms of
 the generic physical-memory API. A future explicit CPU debug helper may expose
 such a translation when required, without weakening this boundary.
 
+### Bounded 80386 CPL0 Paging
+
+When a frozen 80386 profile has enabled both PE and PG, the one core executor
+uses `logical -> segment cache -> linear -> 4 KiB PDE/PTE walk -> physical
+memory route`. Page-table reads and Accessed/Dirty updates use the same checked
+core physical-memory route as ordinary guest accesses; no VM, firmware, host
+MMU, or raw-RAM path participates. T258 admits only `MOV r32,CR0`,
+`MOV r32,CR2`, `MOV CR0,r32`, and `MOV CR3,r32`: CR2 is fault-written only,
+CR0 changes only PE/PG and cannot set PG before PE, and CR3 must be 4 KiB
+aligned. Other guest control-register writes stop with `#UD`.
+
+The admitted path is ring 0 only. Non-present fetch/read/write faults retain
+their original instruction point, `CR2`, and P/W/U diagnostic bits as a copied
+core `FAULT` result. It deliberately has no guest protected-IDT delivery,
+CPL3 permission claim, CR0.WP write-protect claim, TLB, TSS, task switch, or
+host-assisted recovery.
+
 CPU and memory mutation occurs only at an execution boundary. A debugger, DOS
 loader, firmware override, or root composition uses these APIs only after the
 current quantum has returned; `core/product` receives an adapted debug target,

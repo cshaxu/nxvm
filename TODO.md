@@ -30,7 +30,7 @@ in its task record and Git history; the M5 implementation order belongs in
 | Area | Current bounded capability | Open boundary |
 | --- | --- | --- |
 | NXVM product | One session/composition path, retained Console/debugger, FDD/HDD boot regressions, GCC artifact and CTest gates | Preserve this path while every device evolves; do not quietly start VDM behavior. |
-| CPU | Real-mode 8086-plus executor plus a bounded 80286 GDT/CPL0 16-bit protected-mode corpus; `FPU=none` consumes legal ESC encodings | Not trusted 80386, general protected mode, paging, task switching, or present FPU. |
+| CPU | Real-mode 8086-plus executor, bounded 80286 GDT/CPL0 16-bit protected mode, and bounded 80386 CPL0 4 KiB paging; `FPU=none` consumes legal ESC encodings | Not trusted general 80386, CPL3/IDT delivery, TSS/task switching, or present FPU. |
 | Interrupts and time | PIC source lifecycle; deterministic core elapsed ticks; PIT/IRQ0 -> ROM -> BDA -> `INT 1Ah` evidence | Greater timing fidelity only when an explicit corpus requires it. |
 | Keyboard | KBC, IRQ1/IRQ12, ROM `INT 09h`/`INT 16h`, set-1 break/E0/E1, typeahead, selection/query, translation observation, LED, command-state typematic, ACK/RESEND, bounded PS/2 AUX packets, and one DOS guest-driver corpus | Default core auto-repeat stays disabled until a profile-clock calibration defines human typematic time; set-2/3 conversion, wheel/advanced AUX protocol, broad guest mouse API compatibility, and native POSIX runtime validation remain deferred. |
 | Display | CGA text plus bounded digital `320x200x4` and ROM-selectable `EGA-320x200x16-direct`; copied text/indexed frames; `console`/`window`/`auto` selection | Remaining digital CGA modes/CRTC behavior, composite video, broader EGA/VGA, VBE. |
@@ -90,8 +90,8 @@ These are the next owned admissions, not permission to work in parallel.
   MS-DOS `MEM` remains a regression sample, not an 80386-completeness claim.
 - [ ] **286/386 protected-mode program (`TODO(Low)`, T258--T261, T263).**
   T257 admits only GDT/CPL0 16-bit entry, selector loads, same-CPL far
-  transfer, and diagnostic validation faults. T258 is CPL0 4 KiB paging plus
-  narrowed CR0/CR2/CR3 forms and core diagnostic `#PF`; it deliberately does
+  transfer, and diagnostic validation faults. T258 closes CPL0 4 KiB paging,
+  narrowed CR0/CR2/CR3 forms, and core diagnostic `#PF`; it deliberately does
   not create a false CPL3/TSS I/O test path. T259 first admits protected
   privilege and IDT delivery, T260 then admits TSS I/O-map behavior through a
   real CPL3 corpus, T261 admits task switching, and T263 keeps remaining

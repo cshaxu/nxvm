@@ -2,8 +2,7 @@
 
 ## Current Work
 
-**M5 T258 S3 active: verify the project-owned 80386 CPL0 paging corpus and
-retained NXVM regressions.**
+**Idle. M5 T258 is closed; no next task packet is active.**
 
 ### Original Request
 
@@ -49,6 +48,24 @@ the fault-written CR2 into the retained first-fault snapshot before rollback.
 The focused target passed its valid mapping, fetch/data/stack, A/D, page-fault,
 control-form, CPU-profile, and reset checks.
 
+### S3 Result
+
+S3 is complete. `core-machine-80386-paging-smoke` emits both the S2 and S3
+markers after proving valid code/data/stack mappings, PDE/PTE A/D updates,
+non-present fetch/read/write faults with retained CR2 and original point,
+control-form rejection, profile gates, and cold-reset clearing. The final
+`current-gates-gcc` run passed all 92 CTest cases, including retained DOS,
+FDD/HDD, input, video, Console, and debugger coverage.
+
+### S4 Result
+
+T258 maps exactly to artifact version `0.5.0258`. The current target is
+`vm-0-5-0258`; `build/output/nxvm_0_5_0258.exe` SHA-256 is
+`51AAF534434F0943AE3BCBB4AA4A56C3ED1A815B79C47BC4FEC4B6DD02B8F62C`.
+The runtime implementation was verified from source commit `2a6442e`; the
+artifact-target configuration and this closure record are the following S4
+commit. The next task must establish a new complete packet before source work.
+
 ### S1 Audit And Requirement Map
 
 | Requirement | Current evidence | S1 disposition / planned evidence |
@@ -89,16 +106,16 @@ SHA-256 before closure.
 | T254 | Bounded digital CGA `640x200x2` is VADP-owned; artifact `0.5.0253` and 89/89 current CTest pass. |
 | T255 | Machine-profile admission contract is closed; design/governance only, no artifact. |
 | T256 | Core-owned Level 1 rational device clocks are closed; artifact `0.5.0254` and 90/90 current CTest pass. |
-| T257 | Bounded 80286 GDT/CPL0 protected-mode baseline is closed; artifact `0.5.0257` and 91/91 current CTest pass. |
+| T258 | Bounded 80386 CPL0 paging baseline is closed; artifact `0.5.0258` and 92/92 current CTest pass. |
 
 The next task must establish a complete active packet before implementation.
 
 ## Current Technical Baseline
 
-- **T257 artifact identity correction:** `current-gcc` and
-  `verify-current-artifact-target` select `vm-0-5-0257`; static/ownership
-  checks and 91/91 CTest cases passed. Artifact `nxvm_0_5_0257.exe` SHA-256:
-  `E69FC24A8E1113E4A7AED552F9C5B944372F4FCF73FFB0D669CC14B6C375A1F1`.
+- **T258 artifact identity:** `current-gcc` and
+  `verify-current-artifact-target` select `vm-0-5-0258`; static/ownership
+  checks and 92/92 CTest cases passed. Artifact `nxvm_0_5_0258.exe` SHA-256:
+  `51AAF534434F0943AE3BCBB4AA4A56C3ED1A815B79C47BC4FEC4B6DD02B8F62C`.
 - **T243--T246:** core owns checked physical memory, bounded `#UD`
   transitions, immutable ROM mapping, and atomic real-mode entry plans. T247
   verifies the current artifact target and full gate over that boundary.
