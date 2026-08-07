@@ -133,6 +133,7 @@ static C_INT vm_machine_fdc_drive_ready(const t_fdc *fdc)
 {
     return fdc->connect.fdd != STD_NULL && fdc->data.selected_drive == 0u &&
         (fdc->data.dor & VFDC_DOR_NRS) != 0u &&
+        (fdc->data.dor & VFDC_DOR_ME(fdc->data.selected_drive)) != 0u &&
         fdc->connect.fdd->connect.flagDiskExist;
 }
 

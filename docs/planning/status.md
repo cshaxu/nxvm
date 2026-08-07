@@ -2,15 +2,15 @@
 
 ## Current Work
 
-**Idle. M5 T267 is closed.** The next implementation needs its own approved
-packet. T268 remains the next pending M5 queue entry.
+**Idle. M5 T268 is closed.** The next implementation needs its own approved
+packet. T269 remains the next pending M5 queue entry.
 
 ## Current Technical Baseline
 
-- **T267 artifact identity:** `current-gcc` and
-  `verify-current-artifact-target` select `vm-0-5-0267`; static/ownership
-  checks and 102/102 CTest cases passed. Artifact `nxvm_0_5_0267.exe` SHA-256:
-  `6D305FB4297D3896781C7ACF03EAE9ADC38EF9CA823AD00DF641759CEEFD8481`.
+- **T268 artifact identity:** `current-gcc` and
+  `verify-current-artifact-target` select `vm-0-5-0268`; static/ownership
+  checks and 102/102 CTest cases passed. Artifact `nxvm_0_5_0268.exe` SHA-256:
+  `9D4BBC7A3A5684FA1D5CDD2778F03D32040879740ADD6474F9CB08623455AEE1`.
 - **Core boundary:** T243--T246 retain checked physical memory, bounded `#UD`
   transitions, immutable ROM mapping, and atomic real-mode entry plans.
 - **Product boundary:** `nxvm.exe` is the retained runnable product. `mantle`,
@@ -25,6 +25,7 @@ packet. T268 remains the next pending M5 queue entry.
 | T265 | Added bounded Level 2 instruction-cost attribution with zero default-PC/AT surcharges pending calibration evidence. |
 | T266 | Closed bounded VADP CRTC cursor/page/status behavior and copied column/row coordinates. |
 | T267 | Added bounded standard PS/2 AUX sample-rate, resolution, and status commands through the core KBC and IRQ12 guest path. |
+| T268 | Required DOR.ME0 for FDC drive-0 readiness while retaining FDC/DMA2/IRQ6 ownership and the boot path. |
 
 Detailed contracts, commands, artifact provenance, and prior closures are in
 [M5 History](../history/m5.md) and Git history. The [M5 convergence queue]

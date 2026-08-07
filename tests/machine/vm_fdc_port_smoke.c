@@ -50,7 +50,7 @@ C_INT main(C_VOID)
     vm_session_initialize(session);
     port = session->fdc.connect.port;
     if (!session->active || port == STD_NULL) failed = 1;
-    core_machine_port_write(port, 0x03f2u, 0x0cu);
+    core_machine_port_write(port, 0x03f2u, 0x1cu);
 
     /* No image is an FDC result, not a host or BIOS shortcut. */
     fdc_command(port, read_sector, sizeof(read_sector));

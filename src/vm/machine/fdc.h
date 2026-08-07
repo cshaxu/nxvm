@@ -204,7 +204,7 @@ C_VOID vm_machine_fdc_print(const t_fdc *fdc);
 mov al, 00                  \n\
 mov dx, 03f2                \n\
 out dx, al                  \n\
-mov al, 0c                  \n\
+mov al, 1c                  \n\
 mov dx, 03f2                \n\
 out dx, al                  \n\
 mov al, 03                  \n\
