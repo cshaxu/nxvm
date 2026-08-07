@@ -41,7 +41,6 @@ identifiers.
 
 | Task | Owner and purpose | Dependency and stop condition |
 | --- | --- | --- |
-| T281 | Rename `core_machine.shared_fdc/shared_hdc` and their borrow APIs to the owner-accurate `fdc/hdc` names. | Naming only: no lifecycle, route, controller, or media behavior change. |
 | T282 | Audit and normalize only existing NXVM host-surface contracts: copied input, wait/cancellation, and presentation/host-surface lease have production consumers; the T271 backing resource is audited as a neutral non-production facility. `file`, `directory`, `stream`, and sampled-clock APIs are deferred until a real consumer exists. | Decide whether `host_surface_interface` becomes an opaque core lease/context that core never interprets, or moves to `vm/platform`; record that backing resource has no current production VM consumer. No new generic host API, DOS path, mount, UI policy, guest-time, or core-native-handle operation. |
 | T283 | Extend VM-free core FDC/ATA fixtures to execute provider media I/O and typed-failure mapping, including registry freeze/rebind rejection and generation observation. | T280--T281. T282's host-boundary conclusion constrains this work but is not an implementation blocker. No new controller command family, dynamic topology, or test-only runtime route. |
 
