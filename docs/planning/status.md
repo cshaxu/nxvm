@@ -2,7 +2,29 @@
 
 ## Current Work
 
-**Idle.** T281 is closed; admit T282 only through a new approved packet.
+**M5 T282 S1: Existing Host-Surface Admission Audit -- active.**
+
+- **Original request:** audit only copied input, wait/cancellation,
+  presentation/host-surface lease, and the neutral backing resource. Decide
+  whether `host_surface_interface` remains an opaque core lease or belongs in
+  VM; do not introduce file, directory, stream, sampled-clock, DOS-path,
+  mount, UI-policy, or guest-time APIs.
+- **S1 closed:** copied input, copied presentation mailbox, and cancellable wait
+  remain policy-free core contracts. `host_surface_interface` has only VM
+  consumers and exposes a native handle, so S2 must migrate it into
+  `vm/platform` rather than preserve a core facade. Backing resource has only
+  its focused test and remains a deferred neutral facility with no production
+  VM consumer; no host filesystem API is admitted.
+- **S2/S3:** implement only an S1-approved boundary correction, then run its
+  focused probes and current gates. A pure audit produces no artifact.
+- **Rules:** core may own only policy-free opaque/copy contracts. VM owns host
+  platform policy and must not use a core surface to mutate guest state from a
+  host thread.
+- **Similar-issue sweep:** inspect all `core/platform` interfaces and every
+  VM/platform caller for native-handle leakage, unowned teardown, or a hidden
+  duplicate host boundary; classify no-consumer APIs as defer/remove candidates.
+- **Stop:** stop if a conclusion requires a speculative consumer, generic host
+  file service, guest-time source, DOS namespace rule, or a new product policy.
 
 ## Current Technical Baseline
 
