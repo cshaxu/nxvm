@@ -481,6 +481,23 @@ access to core. It does not copy RTC register, calendar, flag, or IRQ state.
 Default-ROM POST and INT assembly are VM profile firmware, never part of the
 core controller.
 
+### Core-Only Mantle-Shape Fixture (T274)
+
+T274 is a test-only consumer of existing core contracts, not a new runtime
+layer. Its permitted sequence is: create one `core_machine`; borrow only during
+the initialized configuration window; bind one fixture-owned execution provider
+that advances a fixture-owned `core_machine_rtc`; bind and freeze a
+fixture-owned `core_machine_media_registry`; initialize an independent opaque
+`core_platform_backing_resource`; freeze the machine; reset; atomically apply
+one copied entry plan; then run bounded slices through `core_machine_run`.
+
+The fixture owns every fake provider/context and destroys them only after the
+machine has stopped and been destroyed. It asserts typed lifecycle/run results
+and copied state only. It includes no VM header, PC/AT port/IRQ default,
+firmware, UI, DOS vocabulary, host path/handle, session manager, or second
+executor. The backing resource is observed through its synchronous copied API;
+it is not connected to a new host I/O path.
+
 ## Core Machine: Hardware IRQ
 
 Hardware IRQ delivery and a guest `INT n` instruction are separate mechanisms.
