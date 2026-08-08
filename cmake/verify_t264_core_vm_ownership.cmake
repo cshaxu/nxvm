@@ -51,16 +51,10 @@ foreach(required IN ITEMS "core_machine_set_nmi_mask"
         message(FATAL_ERROR "T264 core RTC adapter is incomplete: ${required}")
     endif()
 endforeach()
-string(FIND "${machine_devices_source}" "C_INT vm_session_machine_devices_initialize_hdc"
-    hdc_position)
-if(hdc_position EQUAL -1)
-    message(FATAL_ERROR "T264 cannot isolate the deferred S4 HDC section")
-endif()
-string(SUBSTRING "${machine_devices_source}" 0 ${hdc_position} rtc_devices_source)
 foreach(forbidden IN ITEMS "core_machine_rtc_initialize" "core_machine_rtc_reset"
     "core_machine_rtc_advance" "core_machine_rtc_finalize"
     "core_machine_set_nmi_mask" "core_machine_install_port_provider")
-    string(FIND "${rtc_devices_source}" "${forbidden}" position)
+    string(FIND "${machine_devices_source}" "${forbidden}" position)
     if(NOT position EQUAL -1)
         message(FATAL_ERROR "T264 VM RTC adapter retains core state access: ${forbidden}")
     endif()

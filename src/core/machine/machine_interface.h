@@ -124,6 +124,21 @@ typedef struct core_machine_dma_wiring {
     uint8_t fdc_channel;
 } core_machine_dma_wiring;
 
+/* Composition retains the media provider policy, while core copies this
+ * neutral controller topology and owns the connected controller state. */
+typedef struct core_machine_fdc_topology {
+    const core_machine_media_registry *media_registry;
+    core_machine_fdc_drive_bindings drives;
+    core_machine_dma_request_binding dma_request;
+    core_machine_fdc_config config;
+} core_machine_fdc_topology;
+
+typedef struct core_machine_hdc_topology {
+    const core_machine_media_registry *media_registry;
+    core_machine_media_id media_id;
+    core_machine_hdc_config config;
+} core_machine_hdc_topology;
+
 typedef enum core_machine_stop_reason {
     CORE_MACHINE_STOP_NONE = 0,
     CORE_MACHINE_STOP_BUDGET,
@@ -218,6 +233,10 @@ type_status core_machine_configure_dma(core_machine *machine,
     core_machine_dma_request_binding *out_fdc_request);
 type_status core_machine_configure_rtc_cmos(core_machine *machine,
     const core_machine_rtc_cmos_config *config);
+type_status core_machine_configure_fdc(core_machine *machine,
+    const core_machine_fdc_topology *topology);
+type_status core_machine_configure_hdc(core_machine *machine,
+    const core_machine_hdc_topology *topology);
 
 type_status core_machine_report_fault(
     core_machine *machine,
@@ -238,8 +257,6 @@ t_pit *core_machine_configuration_shared_pit_borrow(core_machine *machine);
 t_latch *core_machine_configuration_shared_dma_latch_borrow(core_machine *machine);
 t_dma *core_machine_configuration_shared_dma_primary_borrow(core_machine *machine);
 t_dma *core_machine_configuration_shared_dma_secondary_borrow(core_machine *machine);
-core_machine_fdc *core_machine_configuration_fdc_borrow(core_machine *machine);
-core_machine_hdc *core_machine_configuration_hdc_borrow(core_machine *machine);
 t_kbc *core_machine_configuration_shared_kbc_borrow(core_machine *machine);
 
 type_status core_machine_profile_binding_initialize(

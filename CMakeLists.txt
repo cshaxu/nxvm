@@ -733,6 +733,9 @@ add_executable(core-machine-fdc-media-change-port-smoke
 target_link_libraries(core-machine-fdc-media-change-port-smoke PRIVATE core-machine)
 add_executable(core-machine-hdc-smoke tests/machine/core_machine_hdc_smoke.c)
 target_link_libraries(core-machine-hdc-smoke PRIVATE core-machine)
+add_executable(core-machine-controller-authority-smoke
+    tests/machine/core_machine_controller_authority_smoke.c)
+target_link_libraries(core-machine-controller-authority-smoke PRIVATE core-machine)
 add_executable(core-mantle-shape-smoke tests/machine/core_mantle_shape_smoke.c)
 target_link_libraries(core-mantle-shape-smoke PRIVATE core-machine core-platform)
 add_executable(vm-kbc-aux-guest-smoke
@@ -1079,6 +1082,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-fdc-topology-port-smoke
     core-machine-fdc-media-change-port-smoke
     core-machine-hdc-smoke
+    core-machine-controller-authority-smoke
     core-mantle-shape-smoke
     vm-kbc-aux-guest-smoke
     vm-keyboard-set1-mapper-smoke
@@ -1258,7 +1262,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0295 "0.5.0295")
+add_current_vm_artifact(vm-0-5-0296 "0.5.0296")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 
@@ -1607,6 +1611,13 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMENT "Verifying T296 core-owned DMA and RTC/CMOS/NMI authority"
         VERBATIM)
     add_dependencies(run-current-smokes verify-core-dma-rtc-authority)
+
+    add_custom_target(verify-core-controller-authority
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_core_controller_authority.cmake"
+        COMMENT "Verifying T296 core-owned FDC/HDC controller authority"
+        VERBATIM)
+    add_dependencies(run-current-smokes verify-core-controller-authority)
 endif()
 
 if(PROJECT_ENABLE_BOCHX_RESEARCH)

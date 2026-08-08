@@ -551,6 +551,157 @@ type_status core_machine_configure_rtc_cmos(core_machine *machine,
     return TYPE_STATUS_OK;
 }
 
+static C_INT core_machine_fdc_topology_is_valid(
+    const core_machine_fdc_topology *topology)
+{
+    STD_SIZE_T first;
+    STD_SIZE_T second;
+
+    if (topology == STD_NULL || topology->media_registry == STD_NULL ||
+        topology->config.dma_channel != topology->dma_request.channel) {
+        return 0;
+    }
+    for (first = 0u; first < CORE_MACHINE_FDC_DRIVE_COUNT; ++first) {
+        if (topology->drives.media_id[first] == CORE_MACHINE_MEDIA_ID_INVALID) {
+            continue;
+        }
+        for (second = first + 1u; second < CORE_MACHINE_FDC_DRIVE_COUNT; ++second) {
+            if (topology->drives.media_id[first] == topology->drives.media_id[second]) {
+                return 0;
+            }
+        }
+    }
+    return 1;
+}
+
+static C_INT core_machine_hdc_topology_is_valid(
+    const core_machine_hdc_topology *topology)
+{
+    const core_machine_hdc_config *config;
+    const uint16_t ports[] = {
+        topology == STD_NULL ? 0u : topology->config.data_port,
+        topology == STD_NULL ? 0u : topology->config.error_features_port,
+        topology == STD_NULL ? 0u : topology->config.sector_count_port,
+        topology == STD_NULL ? 0u : topology->config.sector_number_port,
+        topology == STD_NULL ? 0u : topology->config.cylinder_low_port,
+        topology == STD_NULL ? 0u : topology->config.cylinder_high_port,
+        topology == STD_NULL ? 0u : topology->config.drive_head_port,
+        topology == STD_NULL ? 0u : topology->config.status_command_port,
+        topology == STD_NULL ? 0u :
+            topology->config.alternate_status_device_control_port
+    };
+    STD_SIZE_T first;
+    STD_SIZE_T second;
+
+    if (topology == STD_NULL || topology->media_registry == STD_NULL ||
+        topology->media_id == CORE_MACHINE_MEDIA_ID_INVALID) return 0;
+    config = &topology->config;
+    if (config->lba28_supported != TYPE_FALSE && config->lba28_supported != TYPE_TRUE) {
+        return 0;
+    }
+    for (first = 0u; first < sizeof(ports) / sizeof(ports[0]); ++first) {
+        for (second = first + 1u; second < sizeof(ports) / sizeof(ports[0]); ++second) {
+            if (ports[first] == ports[second]) return 0;
+        }
+    }
+    return 1;
+}
+
+static C_INT core_machine_controller_ports_are_available(
+    const core_machine *machine, const uint16_t *ports, STD_SIZE_T count)
+{
+    STD_SIZE_T index;
+
+    if (machine == STD_NULL || ports == STD_NULL ||
+        machine->port_providers.slots == STD_NULL) return 0;
+    for (index = 0u; index < count; ++index) {
+        const core_machine_port_slot *slot = &machine->port_providers.slots[ports[index]];
+
+        if (slot->provider.read != STD_NULL || slot->provider.write != STD_NULL) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+type_status core_machine_configure_fdc(core_machine *machine,
+    const core_machine_fdc_topology *topology)
+{
+    const uint16_t ports[] = {
+        topology == STD_NULL ? 0u : topology->config.dor_port,
+        topology == STD_NULL ? 0u : topology->config.status_port,
+        topology == STD_NULL ? 0u : topology->config.data_port,
+        topology == STD_NULL ? 0u : topology->config.direction_port,
+        topology == STD_NULL ? 0u : topology->config.control_port
+    };
+
+    if (!core_machine_configuration_is_open(machine) || !machine->dma_configured ||
+        machine->fdc_configured) {
+        return TYPE_STATUS_INVALID_STATE;
+    }
+    if (!core_machine_fdc_topology_is_valid(topology) ||
+        topology->dma_request.core_owner != machine->fdc_dma_request.core_owner ||
+        topology->dma_request.channel != machine->fdc_dma_request.channel ||
+        !core_machine_controller_ports_are_available(machine, ports,
+            sizeof(ports) / sizeof(ports[0]))) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    machine->fdc_topology = *topology;
+    core_machine_fdc_connect(&machine->fdc, machine->fdc_topology.media_registry,
+        &machine->fdc_topology.drives, &machine->fdc_topology.dma_request,
+        &machine->shared_pic_master, &machine->shared_pic_slave,
+        &machine->executor_port, &machine->fdc_topology.config);
+    core_machine_fdc_initialize(&machine->fdc);
+    machine->fdc_configured = TYPE_TRUE;
+    return TYPE_STATUS_OK;
+}
+
+type_status core_machine_configure_hdc(core_machine *machine,
+    const core_machine_hdc_topology *topology)
+{
+    const core_machine_port_provider *provider;
+    const uint16_t ports[] = {
+        topology == STD_NULL ? 0u : topology->config.data_port,
+        topology == STD_NULL ? 0u : topology->config.error_features_port,
+        topology == STD_NULL ? 0u : topology->config.sector_count_port,
+        topology == STD_NULL ? 0u : topology->config.sector_number_port,
+        topology == STD_NULL ? 0u : topology->config.cylinder_low_port,
+        topology == STD_NULL ? 0u : topology->config.cylinder_high_port,
+        topology == STD_NULL ? 0u : topology->config.drive_head_port,
+        topology == STD_NULL ? 0u : topology->config.status_command_port,
+        topology == STD_NULL ? 0u :
+            topology->config.alternate_status_device_control_port
+    };
+    type_status status;
+
+    if (!core_machine_configuration_is_open(machine) || machine->hdc_configured) {
+        return TYPE_STATUS_INVALID_STATE;
+    }
+    if (!core_machine_hdc_topology_is_valid(topology) ||
+        !core_machine_controller_ports_are_available(machine, ports,
+            sizeof(ports) / sizeof(ports[0]))) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    provider = core_machine_hdc_port_provider();
+    if (provider == STD_NULL) return TYPE_STATUS_FAULT;
+    machine->hdc_topology = *topology;
+    core_machine_hdc_connect(&machine->hdc, machine->hdc_topology.media_registry,
+        machine->hdc_topology.media_id, &machine->shared_pic_master,
+        &machine->shared_pic_slave, &machine->hdc_topology.config);
+    core_machine_hdc_initialize(&machine->hdc);
+    status = core_machine_install_port_provider(machine,
+        machine->hdc_topology.config.data_port,
+        machine->hdc_topology.config.status_command_port, provider, &machine->hdc);
+    if (status != TYPE_STATUS_OK) return status;
+    status = core_machine_install_port_provider(machine,
+        machine->hdc_topology.config.alternate_status_device_control_port,
+        machine->hdc_topology.config.alternate_status_device_control_port,
+        provider, &machine->hdc);
+    if (status != TYPE_STATUS_OK) return status;
+    machine->hdc_configured = TYPE_TRUE;
+    return TYPE_STATUS_OK;
+}
+
 t_port *core_machine_configuration_port_borrow(core_machine *machine)
 { return core_machine_configuration_is_open(machine) ? &machine->executor_port : STD_NULL; }
 
@@ -566,10 +717,6 @@ t_dma *core_machine_configuration_shared_dma_primary_borrow(core_machine *machin
 { return core_machine_configuration_is_open(machine) ? &machine->shared_dma_primary : STD_NULL; }
 t_dma *core_machine_configuration_shared_dma_secondary_borrow(core_machine *machine)
 { return core_machine_configuration_is_open(machine) ? &machine->shared_dma_secondary : STD_NULL; }
-core_machine_fdc *core_machine_configuration_fdc_borrow(core_machine *machine)
-{ return core_machine_configuration_is_open(machine) ? &machine->fdc : STD_NULL; }
-core_machine_hdc *core_machine_configuration_hdc_borrow(core_machine *machine)
-{ return core_machine_configuration_is_open(machine) ? &machine->hdc : STD_NULL; }
 t_kbc *core_machine_configuration_shared_kbc_borrow(core_machine *machine)
 { return core_machine_configuration_is_open(machine) ? &machine->shared_kbc : STD_NULL; }
 type_status core_machine_bind_execution_provider(core_machine *machine,

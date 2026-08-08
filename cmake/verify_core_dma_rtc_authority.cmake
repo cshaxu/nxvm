@@ -47,12 +47,6 @@ foreach(vm_source IN ITEMS "${session_source}" "${provider_lifecycle_source}"
     endforeach()
 endforeach()
 
-string(FIND "${devices_source}" "C_INT vm_session_machine_devices_initialize_hdc"
-    hdc_position)
-if(hdc_position EQUAL -1)
-    message(FATAL_ERROR "T296 S3 cannot isolate the deferred S4 HDC section")
-endif()
-string(SUBSTRING "${devices_source}" 0 ${hdc_position} b_source)
 foreach(forbidden IN ITEMS "core_machine_configuration_shared_dma_"
     "core_machine_dma_bind_channel" "core_machine_rtc_initialize"
     "core_machine_rtc_reset" "core_machine_rtc_advance"
@@ -60,9 +54,9 @@ foreach(forbidden IN ITEMS "core_machine_configuration_shared_dma_"
     "core_machine_rtc_read_selected" "core_machine_rtc_write_selected"
     "core_machine_rtc_write_nvram"
     "core_machine_set_nmi_mask" "core_machine_install_port_provider")
-    string(FIND "${b_source}" "${forbidden}" position)
+    string(FIND "${devices_source}" "${forbidden}" position)
     if(NOT position EQUAL -1)
-        message(FATAL_ERROR "T296 S3 B section retains DMA/RTC authority: ${forbidden}")
+        message(FATAL_ERROR "T296 S3 device composition retains DMA/RTC authority: ${forbidden}")
     endif()
 endforeach()
 
