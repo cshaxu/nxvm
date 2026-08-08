@@ -302,11 +302,21 @@ iret                              \n\
 \
 $(label_int_10_set_mode):         \n\
 cmp al, 06                        \n\
-jz $(label_int_10_set_cga_06)     \n\
+jz $(label_int_10_set_cga_06_jump) \n\
 cmp al, 0d                        \n\
-jz $(label_int_10_set_ega_0d)     \n\
+jz $(label_int_10_set_ega_0d_jump) \n\
+cmp al, 10                        \n\
+jz $(label_int_10_set_ega_10_jump) \n\
 cmp al, 03                        \n\
-jz $(label_int_10_set_text_03)    \n\
+jnz $(label_int_10_set_mode_ret)  \n\
+jmp near $(label_int_10_set_text_03) \n\
+$(label_int_10_set_cga_06_jump):  \n\
+jmp near $(label_int_10_set_cga_06) \n\
+$(label_int_10_set_ega_0d_jump):  \n\
+jmp near $(label_int_10_set_ega_0d) \n\
+$(label_int_10_set_ega_10_jump):  \n\
+jmp near $(label_int_10_set_ega_10) \n\
+$(label_int_10_set_mode_ret):     \n\
 iret                              \n\
 $(label_int_10_set_ega_0d):       \n\
 push ax                           \n\
@@ -334,6 +344,68 @@ mov al, 06                        \n\
 out dx, al                        \n\
 inc dx                            \n\
 mov al, 05                        \n\
+out dx, al                        \n\
+mov dx, 03d4                      \n\
+mov al, 13                        \n\
+out dx, al                        \n\
+inc dx                            \n\
+xor al, al                        \n\
+out dx, al                        \n\
+mov dx, 03da                      \n\
+in al, dx                         \n\
+mov dx, 03c0                      \n\
+mov al, 30                        \n\
+out dx, al                        \n\
+mov al, 01                        \n\
+out dx, al                        \n\
+pop dx                            \n\
+pop bx                            \n\
+pop ax                            \n\
+iret                              \n\
+$(label_int_10_set_ega_10):       \n\
+push ax                           \n\
+push bx                           \n\
+push dx                           \n\
+push ds                           \n\
+mov bx, 0040                      \n\
+mov ds, bx                        \n\
+mov byte ds:[0049], 10            \n\
+pop ds                            \n\
+mov dx, 03c4                      \n\
+mov al, 02                        \n\
+out dx, al                        \n\
+inc dx                            \n\
+mov al, 0f                        \n\
+out dx, al                        \n\
+mov dx, 03ce                      \n\
+mov al, 05                        \n\
+out dx, al                        \n\
+inc dx                            \n\
+xor al, al                        \n\
+out dx, al                        \n\
+dec dx                            \n\
+mov al, 06                        \n\
+out dx, al                        \n\
+inc dx                            \n\
+mov al, 05                        \n\
+out dx, al                        \n\
+mov dx, 03d4                      \n\
+mov al, 0c                        \n\
+out dx, al                        \n\
+inc dx                            \n\
+xor al, al                        \n\
+out dx, al                        \n\
+dec dx                            \n\
+mov al, 0d                        \n\
+out dx, al                        \n\
+inc dx                            \n\
+xor al, al                        \n\
+out dx, al                        \n\
+dec dx                            \n\
+mov al, 13                        \n\
+out dx, al                        \n\
+inc dx                            \n\
+mov al, 28                        \n\
 out dx, al                        \n\
 mov dx, 03da                      \n\
 in al, dx                         \n\
@@ -382,6 +454,12 @@ mov al, 06                        \n\
 out dx, al                        \n\
 inc dx                            \n\
 mov al, 09                        \n\
+out dx, al                        \n\
+mov dx, 03d4                      \n\
+mov al, 13                        \n\
+out dx, al                        \n\
+inc dx                            \n\
+xor al, al                        \n\
 out dx, al                        \n\
 pop dx                            \n\
 pop bx                            \n\

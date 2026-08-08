@@ -46,7 +46,7 @@ only the near-term NXVM tasks.
 | CPU | Real-mode 8086-plus executor; bounded 80286/80386 16-bit protected privilege/IDT subset with CPL0 16-bit-TSS far-JMP switching; bounded 80386 CPL0 4 KiB paging and TSS I/O map; `FPU=none` ESC consumption plus the exact-8087 finite baseline | Not trusted general 80386, CPL3 paging permissions, task gates/CALL/nested or 32-bit TSS switching, or broad present x87 compatibility. |
 | Interrupts and time | PIC source lifecycle; deterministic core elapsed ticks; PIT/IRQ0 -> ROM -> BDA -> `INT 1Ah` evidence | Greater timing fidelity only when an explicit corpus requires it. |
 | Keyboard | KBC, IRQ1/IRQ12, ROM `INT 09h`/`INT 16h`, set-1 break/E0/E1, typeahead, selection/query, translation observation, LED, command-state typematic, ACK/RESEND, bounded PS/2 AUX packets, and one DOS guest-driver corpus | Default core auto-repeat stays disabled until a profile-clock calibration defines human typematic time; set-2/3 conversion, wheel/advanced AUX protocol, broad guest mouse API compatibility, and native POSIX runtime validation remain deferred. |
-| Display | CGA text plus bounded digital `320x200x4` and ROM-selectable `EGA-320x200x16-direct`; T284 freezes the expected-failing `EGA-640x350x16` mode-10h contract; copied text/indexed frames; `console`/`window`/`auto` selection | Implement mode 10h in T285, remaining digital CGA modes/CRTC behavior, composite video, broader EGA/VGA, VBE. |
+| Display | CGA text plus bounded digital `320x200x4`, ROM-selectable `EGA-320x200x16-direct`, and `EGA-640x350x16-direct` mode 10h; copied text/indexed frames; `console`/`window`/`auto` selection | Remaining digital CGA modes/CRTC behavior, composite video, broader EGA/VGA, VBE. |
 | Storage | Bounded ATA PIO and FDD boot paths through declared ROM/device owners; neutral media/controller mechanisms now live in core while VM retains backing/topology policy; core-owned 8237 DMA grants one unit at a time through the frozen FDC DMA2 binding | Full FDC state machine, generic bus wait states, broad DMA behavior, extended IDE, and error/timing compatibility remain open. |
 | VDM | Isolated non-runnable scaffold over the shared core | Owned DOS design, CLI, host-drive policy, and product implementation remain deferred. |
 
@@ -109,13 +109,10 @@ active task.
   ROM `INT 10h` mode `0Dh` selection and `03h` exit through real VADP port
   state. Deferred work remains separate; do not make a single unbounded
   "VGA support" task.
-- [x] **EGA mode 10h admission map (`TODO(Medium)`, T284).** T284 freezes the
-  minimal `INT 10h` mode `10h` / `640x350x16` planar-direct contract and the
-  expected-failing core and VM boot corpus. It proves the current gap is
-  snapshot capacity, mode-derived geometry/stride/display-start, and ROM mode
-  10h transaction coverage, not a host renderer or generic VGA problem.
-  Implementation remains T285; no VGA DAC, VBE, 256-color, or arbitrary EGA
-  mode support is admitted here.
+- [x] **EGA mode 10h direct (`TODO(Medium)`, T284/T285).** T285 implements the
+  bounded `INT 10h` mode `10h` / `640x350x16` planar-direct contract through
+  VADP-owned state and copied frames. VGA DAC, VBE, 256-color, and arbitrary
+  EGA modes remain deferred.
 
 ## CPU, Time, And Debugging Boundaries
 

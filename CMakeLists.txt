@@ -758,10 +758,10 @@ add_executable(core-machine-ega-planar-port-smoke
     tests/machine/core_machine_ega_planar_port_smoke.c
 )
 target_link_libraries(core-machine-ega-planar-port-smoke PRIVATE core-machine)
-add_executable(core-machine-ega-mode10-contract-fail
-    tests/machine/core_machine_ega_mode10_contract_fail.c
+add_executable(core-machine-ega-mode10-contract-smoke
+    tests/machine/core_machine_ega_mode10_contract_smoke.c
 )
-target_link_libraries(core-machine-ega-mode10-contract-fail PRIVATE core-machine)
+target_link_libraries(core-machine-ega-mode10-contract-smoke PRIVATE core-machine)
 add_executable(vm-ega-controller-system-smoke
     tests/machine/vm_ega_controller_system_smoke.c
 )
@@ -797,10 +797,10 @@ add_executable(vm-rom-ega-int10-system-smoke
     tests/machine/vm_rom_ega_int10_system_smoke.c
 )
 target_link_libraries(vm-rom-ega-int10-system-smoke PRIVATE vm-composition)
-add_executable(vm-ega-mode10-boot-fail
-    tests/machine/vm_ega_mode10_boot_fail.c
+add_executable(vm-ega-mode10-boot-smoke
+    tests/machine/vm_ega_mode10_boot_smoke.c
 )
-target_link_libraries(vm-ega-mode10-boot-fail PRIVATE vm-composition)
+target_link_libraries(vm-ega-mode10-boot-smoke PRIVATE vm-composition)
 add_executable(vm-rom-ega-int10-dos-smoke
     tests/machine/vm_ega_planar_dos_smoke.c
 )
@@ -1002,12 +1002,14 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-ega-sequencer-port-smoke
     core-machine-ega-controller-port-smoke
     core-machine-ega-planar-port-smoke
+    core-machine-ega-mode10-contract-smoke
     vm-cga-graphics-system-smoke
     vm-cga-640-system-smoke
     vm-ega-sequencer-system-smoke
     vm-ega-controller-system-smoke
     vm-ega-planar-system-smoke
     vm-rom-ega-int10-system-smoke
+    vm-ega-mode10-boot-smoke
     core-machine-stopped-lifecycle-smoke
     core-machine-memory-reconfigure-smoke
     core-machine-checked-memory-smoke
@@ -1162,7 +1164,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0283 "0.5.0283")
+add_current_vm_artifact(vm-0-5-0285 "0.5.0285")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 
@@ -1383,16 +1385,16 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         VERBATIM)
     add_dependencies(run-current-smokes verify-rom-ega-int10-boundary)
 
-    add_custom_target(verify-t284-ega-mode10-admission
+    add_custom_target(verify-t285-ega-mode10
         COMMAND "${CMAKE_COMMAND}"
             -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -DCORE_EXPECT_FAIL_EXE:FILEPATH=$<TARGET_FILE:core-machine-ega-mode10-contract-fail>
-            -DVM_EXPECT_FAIL_EXE:FILEPATH=$<TARGET_FILE:vm-ega-mode10-boot-fail>
-            -P "${CMAKE_SOURCE_DIR}/cmake/verify_t284_ega_mode10_admission.cmake"
-        DEPENDS core-machine-ega-mode10-contract-fail vm-ega-mode10-boot-fail
-        COMMENT "Verifying M5 T284 EGA mode 10h expected-failing admission corpus"
+            -DCORE_SMOKE_EXE:FILEPATH=$<TARGET_FILE:core-machine-ega-mode10-contract-smoke>
+            -DVM_SMOKE_EXE:FILEPATH=$<TARGET_FILE:vm-ega-mode10-boot-smoke>
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_t285_ega_mode10.cmake"
+        DEPENDS core-machine-ega-mode10-contract-smoke vm-ega-mode10-boot-smoke
+        COMMENT "Verifying M5 T285 EGA mode 10h direct corpus"
         VERBATIM)
-    add_dependencies(run-current-smokes verify-t284-ega-mode10-admission)
+    add_dependencies(run-current-smokes verify-t285-ega-mode10)
 
     add_custom_target(verify-vm-session-owner-closure
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}

@@ -30,12 +30,16 @@
 #define CORE_MACHINE_VADP_CRTC_START_LOW 0x0du
 #define CORE_MACHINE_VADP_CRTC_CURSOR_HIGH 0x0eu
 #define CORE_MACHINE_VADP_CRTC_CURSOR_LOW 0x0fu
+#define CORE_MACHINE_VADP_CRTC_OFFSET 0x13u
 #define CORE_MACHINE_VADP_MODE_GRAPHICS 0x02u
 #define CORE_MACHINE_VADP_MODE_VIDEO_ENABLE 0x08u
 #define CORE_MACHINE_VADP_MODE_HIGH_RES 0x10u
 #define CORE_MACHINE_VADP_COLOR_PALETTE_SELECT 0x20u
 #define CORE_MACHINE_VADP_GRAPHICS_BYTES_PER_ROW 80u
 #define CORE_MACHINE_VADP_GRAPHICS_ODD_ROW_OFFSET 0x2000u
+#define CORE_MACHINE_VADP_EGA_320X200_ROW_BYTES 40u
+#define CORE_MACHINE_VADP_EGA_640X350_ROW_BYTES 80u
+#define CORE_MACHINE_VADP_EGA_640X350_CRTC_OFFSET 40u
 
 static C_VOID core_machine_vadp_mark_dirty(t_vadp *adapter);
 
@@ -218,8 +222,9 @@ static type_status core_machine_vadp_ega_planar_query(C_VOID *owner,
 
 static C_INT core_machine_vadp_supported_crtc_index(uint8_t index)
 {
-    return index >= CORE_MACHINE_VADP_CRTC_CURSOR_TOP &&
-        index <= CORE_MACHINE_VADP_CRTC_CURSOR_LOW;
+    return (index >= CORE_MACHINE_VADP_CRTC_CURSOR_TOP &&
+        index <= CORE_MACHINE_VADP_CRTC_CURSOR_LOW) ||
+        index == CORE_MACHINE_VADP_CRTC_OFFSET;
 }
 
 static uint8_t core_machine_vadp_crtc_mask(uint8_t index)
@@ -242,6 +247,15 @@ static uint16_t core_machine_vadp_crtc_word(const t_vadp *adapter,
 {
     return (uint16_t)(((uint16_t)adapter->data.crtc[high_index] << 8) |
         adapter->data.crtc[high_index + 1u]);
+}
+
+static core_machine_display_kind core_machine_vadp_ega_display_kind(
+    const t_vadp *adapter)
+{
+    return adapter != STD_NULL && adapter->data.crtc[CORE_MACHINE_VADP_CRTC_OFFSET] ==
+        CORE_MACHINE_VADP_EGA_640X350_CRTC_OFFSET ?
+        CORE_MACHINE_DISPLAY_KIND_EGA_640X350X16 :
+        CORE_MACHINE_DISPLAY_KIND_EGA_320X200X16;
 }
 
 static C_VOID core_machine_vadp_mark_dirty(t_vadp *adapter)
@@ -870,7 +884,7 @@ type_status core_machine_vadp_configure_ega_sequencer(t_vadp *adapter,
     status = core_machine_memory_register_write_observer(memory,
         core_machine_vadp_ega_write_observer, adapter);
     if (status != TYPE_STATUS_OK) return status;
-    if (config->planar_320x200x16) {
+    if (config->planar_ega) {
         adapter->data.ega_planar_vram = (type_virtual_address)STD_CALLOC(1u,
             CORE_MACHINE_VADP_EGA_PLANES * CORE_MACHINE_VADP_EGA_PLANE_BYTES);
         if (adapter->data.ega_planar_vram == 0u) return TYPE_STATUS_NO_MEMORY;
@@ -887,7 +901,7 @@ type_status core_machine_vadp_configure_ega_sequencer(t_vadp *adapter,
     }
     adapter->data.ega_sequencer = *config;
     adapter->data.ega_sequencer_configured = TYPE_TRUE;
-    adapter->data.ega_planar_enabled = config->planar_320x200x16;
+    adapter->data.ega_planar_enabled = config->planar_ega;
     core_machine_vadp_reset_sequencer(adapter);
     return TYPE_STATUS_OK;
 }
@@ -1114,6 +1128,11 @@ static C_INT core_machine_vadp_capture_high_res_graphics_snapshot(t_vadp *adapte
 static C_INT core_machine_vadp_capture_ega_planar_snapshot(t_vadp *adapter,
     core_machine_display_snapshot *out_snapshot)
 {
+    core_machine_display_kind kind;
+    uint16_t width;
+    uint16_t height;
+    uint16_t row_bytes;
+    uint32_t start_byte;
     uint16_t y;
     uint16_t x;
     C_INT buffer_changed;
@@ -1122,21 +1141,34 @@ static C_INT core_machine_vadp_capture_ega_planar_snapshot(t_vadp *adapter,
         !core_machine_vadp_ega_planar_active(adapter)) {
         return TYPE_FALSE;
     }
-    buffer_changed = !adapter->data.captured || adapter->data.captured_kind !=
-        CORE_MACHINE_DISPLAY_KIND_EGA_320X200X16 ||
+    kind = core_machine_vadp_ega_display_kind(adapter);
+    width = kind == CORE_MACHINE_DISPLAY_KIND_EGA_640X350X16 ?
+        CORE_MACHINE_DISPLAY_CGA_HIGH_RES_WIDTH : CORE_MACHINE_DISPLAY_GRAPHICS_WIDTH;
+    height = kind == CORE_MACHINE_DISPLAY_KIND_EGA_640X350X16 ?
+        CORE_MACHINE_DISPLAY_EGA_HIGH_RES_HEIGHT : CORE_MACHINE_DISPLAY_GRAPHICS_HEIGHT;
+    row_bytes = kind == CORE_MACHINE_DISPLAY_KIND_EGA_640X350X16 ?
+        CORE_MACHINE_VADP_EGA_640X350_ROW_BYTES :
+        CORE_MACHINE_VADP_EGA_320X200_ROW_BYTES;
+    /* EGA CRTC start is a word address; 64 KiB plane addressing wraps. */
+    start_byte = kind == CORE_MACHINE_DISPLAY_KIND_EGA_640X350X16 ?
+        ((uint32_t)core_machine_vadp_crtc_word(adapter,
+            CORE_MACHINE_VADP_CRTC_START_HIGH) * 2u) &
+            (CORE_MACHINE_VADP_EGA_PLANE_BYTES - 1u) : 0u;
+    buffer_changed = !adapter->data.captured || adapter->data.captured_kind != kind ||
         adapter->data.captured_ega_dirty_generation != adapter->data.dirty_generation;
     STD_MEMSET(out_snapshot, 0, sizeof(*out_snapshot));
-    out_snapshot->kind = CORE_MACHINE_DISPLAY_KIND_EGA_320X200X16;
-    out_snapshot->pixel_width = CORE_MACHINE_DISPLAY_GRAPHICS_WIDTH;
-    out_snapshot->pixel_height = CORE_MACHINE_DISPLAY_GRAPHICS_HEIGHT;
+    out_snapshot->kind = kind;
+    out_snapshot->pixel_width = width;
+    out_snapshot->pixel_height = height;
     for (x = 0u; x < CORE_MACHINE_DISPLAY_PALETTE_ENTRIES; ++x) {
         uint8_t enabled_index = (uint8_t)(x & adapter->data.attribute[18]);
         out_snapshot->palette_rgb[x] = core_machine_vadp_rgbi_color(
             adapter->data.attribute[enabled_index] & 0x0fu);
     }
-    for (y = 0u; y < CORE_MACHINE_DISPLAY_GRAPHICS_HEIGHT; ++y) {
-        for (x = 0u; x < CORE_MACHINE_DISPLAY_GRAPHICS_WIDTH; ++x) {
-            uint32_t offset = (uint32_t)y * 40u + (x >> 3);
+    for (y = 0u; y < height; ++y) {
+        for (x = 0u; x < width; ++x) {
+            uint32_t offset = (start_byte + (uint32_t)y * row_bytes +
+                (x >> 3)) & (CORE_MACHINE_VADP_EGA_PLANE_BYTES - 1u);
             uint8_t bit = (uint8_t)(0x80u >> (x & 7u));
             uint8_t plane;
             uint8_t pixel = 0u;
@@ -1146,12 +1178,11 @@ static C_INT core_machine_vadp_capture_ega_planar_snapshot(t_vadp *adapter,
                     (STD_SIZE_T)plane * CORE_MACHINE_VADP_EGA_PLANE_BYTES;
                 if ((source[offset] & bit) != 0u) pixel |= (uint8_t)(1u << plane);
             }
-            out_snapshot->pixels[(uint32_t)y * CORE_MACHINE_DISPLAY_GRAPHICS_WIDTH + x] =
-                pixel;
+            out_snapshot->pixels[(uint32_t)y * width + x] = pixel;
         }
     }
     adapter->data.captured = TYPE_TRUE;
-    adapter->data.captured_kind = CORE_MACHINE_DISPLAY_KIND_EGA_320X200X16;
+    adapter->data.captured_kind = kind;
     adapter->data.captured_ega_dirty_generation = adapter->data.dirty_generation;
     out_snapshot->buffer_changed = buffer_changed;
     out_snapshot->cursor_changed = TYPE_FALSE;
