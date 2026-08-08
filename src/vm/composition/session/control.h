@@ -47,7 +47,7 @@ vm_session_pause_reason vm_session_control_get_pause_reason(
     const vm_session_control_state *control);
 C_VOID vm_session_control_continue(vm_session_control_state *control);
 C_INT vm_session_control_step(vm_session_control_state *control);
-C_VOID vm_session_control_initialize(vm_session_control_state *control,
+type_status vm_session_control_initialize(vm_session_control_state *control,
     vm_session *machine);
 C_VOID vm_session_control_finalize(vm_session_control_state *control,
     vm_session *machine);

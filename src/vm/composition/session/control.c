@@ -180,10 +180,13 @@ C_VOID vm_session_control_bind_command_boundary(
 }
 
 /* Initializes devices */
-C_VOID vm_session_control_initialize(vm_session_control_state *control,
+type_status vm_session_control_initialize(vm_session_control_state *control,
     vm_session *machine) {
+    type_status status;
 
-    if (control == STD_NULL || machine == STD_NULL) return;
+    if (control == STD_NULL || machine == STD_NULL) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
     STD_MEMSET((C_VOID *)(control), TYPE_ZERO_8, sizeof(*control));
     STD_ATOMIC_INIT(&control->flagFlip, TYPE_FALSE);
     STD_ATOMIC_INIT(&control->flagRun, TYPE_FALSE);
@@ -199,10 +202,14 @@ C_VOID vm_session_control_initialize(vm_session_control_state *control,
         &control->execution_context, &vm_session_execution_callbacks);
     vm_session_execution_context_activate(&control->execution_context);
     vm_machine_debug_initialize(&machine->debug);
-    vm_session_provider_lifecycle_initialize(machine);
-    if (!vm_session_bind_execution_provider(machine)) {
+    status = vm_session_provider_lifecycle_initialize(machine);
+    if (status == TYPE_STATUS_OK) {
+        status = vm_session_bind_execution_provider(machine);
+    }
+    if (status != TYPE_STATUS_OK) {
         vm_session_control_stop(control);
     }
+    return status;
 }
 
 /* Finalizes devices */
@@ -210,8 +217,8 @@ C_VOID vm_session_control_finalize(vm_session_control_state *control,
     vm_session *machine) {
     if (control == STD_NULL || machine == STD_NULL) return;
     vm_session_execution_context_deactivate(&control->execution_context);
-    vm_machine_debug_finalize(&machine->debug);
     vm_session_provider_lifecycle_finalize(machine);
+    vm_machine_debug_finalize(&machine->debug);
 }
 
 C_VOID vm_session_control_print_status(const vm_session_control_state *control) {

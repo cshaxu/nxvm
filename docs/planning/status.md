@@ -2,46 +2,42 @@
 
 ## Current Work
 
-**M5 T300 S2: Typed port-provider failure propagation -- active.**
+**M5 T300 S3: VM session initialization failure atomicity -- active.**
 
 | Requirement | Acceptance evidence |
 | --- | --- |
-| Public bus preserves a typed provider failure. | Read/write return the exact provider `type_status`; failed reads leave output and trace behavior explicit and no state is fabricated. |
-| Guest I/O fails deterministically on that same binding. | CPU `IN`/`OUT` maps a bound typed-provider failure to the existing core fault diagnostic without adding an exception class or a second I/O path. |
-| Recovery and product paths remain intact. | A failure followed by a successful provider call is observable; retained Console, DOS, boot, controller and display regressions pass. |
+| Session creation returns the first exact failure. | Profile, core, provider, firmware and controller setup preserve the originating `type_status`. |
+| Failed creation is unobservable as a session. | Reverse teardown leaves no active session, platform/input/request transport, bound media/firmware/provider or core machine. |
+| Recovery is deterministic. | A following valid create succeeds with retained Console/window and FDD/HDD boot behavior. |
 
-- **Original request:** S2 preserves typed provider failures which S1's legacy
-  callback adapter deliberately retained but did not surface.
-- **Scope:** the existing single core port dispatch, public bus result/output/
-  trace behavior, guest CPU I/O diagnostic mapping, and focused recovery probes.
-- **Non-goals:** VM session failure atomicity (S3), public-header ABI cleanup
-  (S4), a pre-decode transition
+- **Original request:** make VM session construction all-or-nothing after all
+  composition-owned core/profile/provider/controller setup has succeeded.
+- **Scope:** session factory/lifecycle construction chain, exact status return,
+  reverse teardown, failure injection and next-create recovery probes.
+- **Non-goals:** public-header ABI cleanup (S4), a pre-decode transition
   registry, a generic device framework, a second I/O path, a fake DOS
   controller, or any Console/debugger/boot/DOS UX change.
-- **Risk:** an error can be swallowed, fabricate a read value, or make CPU and
-  public bus diverge. The mapping must use the S1 registry entry only and a
-  retained diagnostic result, then prove the following successful access works.
-- **Similar-issue sweep:** inventory all typed provider calls, public bus
-  trace recording, CPU I/O helpers and fault diagnostics; do not change legacy
-  core-device callbacks or add an exception model.
+- **Frozen S3 ownership:** the allocated session owns the core first, then its
+  display/media/profile/debug storage, controller and firmware/provider
+  bindings, control state, request/input transports and finally the active
+  publication. A non-OK stage returns its first exact `type_status`; reverse
+  teardown runs provider/control before storage/core and never publishes an
+  active session.
+- **Failure evidence:** owner-built profile copies inject an invalid firmware
+  service and an invalid FDC port range. Both must preserve
+  `TYPE_STATUS_INVALID_ARGUMENT`, leave no core or active run handle, and be
+  followed by a successful default session creation.
 - **Rules:** architecture overview, module layout, contracts, coding standard,
   source policy, execution workflow, and execution policy apply. The T300
   admission is owner-approved. No exception is requested.
-- **Verification:** run focused provider-failure/recovery plus retained CPU I/O,
+- **Verification:** run focused session failure/recovery plus retained
   Console/DOS/boot probes, `git diff --check`, documentation/static gates and
-  full current gates. T300 stays active; no S2 artifact identity is final.
-- **Current S2 evidence:** `core-machine-port-ownership-smoke` proves public
-  failure/recovery and guest `OUT` to the retained `#CE(00E0)` diagnostic;
-  `core-machine-trace-smoke` proves failure detail and unchanged caller output.
-  Firmware-capability and debugger port probes prove the same exact failure and
-  recovery contract through their public capability interfaces.
-  Unbound guest directions retain legacy no-op behavior. `current-gates-gcc`
-  passed 51/51 static/governance targets and 127/127 CTests on T299 baseline.
-- **S1 carry-forward:** c42ca2f and 1f4b100 froze the single directional
-  registry and its conflict behavior; 51/51 gates and 127/127 CTests passed.
-- **Stop condition:** public bus returns exact typed failures without fabricated
-  read output or success trace, guest I/O emits a deterministic existing fault
-  diagnostic, the next successful access works, and all use one dispatch path.
+  full current gates. T300 stays active; no artifact identity changes in S3.
+- **Carry-forward:** S1 retains one directional port registry, and S2 retains
+  exact typed-provider errors through public, firmware/debugger and guest I/O.
+- **Stop condition:** storage, firmware/provider and controller failures retain
+  their first status, roll back without a reachable session, and a subsequent
+  default session succeeds.
 
 ## Current Technical Baseline
 
