@@ -8,7 +8,8 @@ authority; the ledger never starts a task or changes product behavior.
 Add debt only when it has a concrete risk, missing capability, or repeated
 failure pattern. Each item must state its priority (`High`, `Medium`, or
 `Low`), owner/boundary, evidence or trigger, and the milestone or design gate
-that may admit it. Mark it complete only with a current verification reference.
+that may admit it. On completion, remove it in the closure commit; its
+verification reference belongs in milestone history and Git.
 
 Use the [M5 closure checklist](planning/m5-closure-checklist.md) for M5
 closure evidence. Use [Roadmap And Milestones](planning/roadmap.md) to decide
