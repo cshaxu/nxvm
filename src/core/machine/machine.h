@@ -151,4 +151,7 @@ C_VOID core_machine_cpu_diagnostic_initialize(core_machine *machine);
 C_VOID core_machine_cpu_diagnostic_reset(core_machine *machine);
 C_INT core_machine_configuration_is_open(const core_machine *machine);
 C_INT core_machine_mutable_operation_is_allowed(const core_machine *machine);
+type_status core_machine_register_immutable_rom_mapping_from_firmware(
+    core_machine *machine, uint32_t physical_start, const uint8_t *image,
+    STD_SIZE_T bytes);
 #endif

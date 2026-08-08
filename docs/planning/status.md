@@ -2,7 +2,7 @@
 
 ## Current Work
 
-**M5 T297 S1 active — opaque core-invoked firmware capability.**
+**M5 T297 S1 active - opaque core-invoked firmware capability.**
 
 T296 is the reference baseline. S1 freezes and implements the firmware
 operation whitelist, lifecycle, failure/atomicity, and re-entry contract;
@@ -34,8 +34,7 @@ artifact. Do not admit T298 or later work, close this task, merge, or push.
   core-invoked firmware services. Preserve the current ROM map, boot, Console,
   debugger, display, and BIOS behavior; neither the VM session nor profile
   calls firmware callbacks directly after freeze.
-- **Reference baseline:** T296, `vm-0-5-0296`, developer artifact
-  `nxvm_0_5_0296.exe` SHA-256
+- **Reference baseline:** T296, developer artifact revision `0.5.0296`, SHA-256
   `28DBFE1A57EA2A1D53276CA9CED5D9E3A8B742F557C9A13076274AE2067EA02A`.
 - **In scope:** the core firmware capability/provider and service boundary;
   default-profile BIOS/QDCGA migration; public contract/architecture updates;
@@ -67,11 +66,21 @@ artifact. Do not admit T298 or later work, close this task, merge, or push.
   Every production hit must be migrated, rejected by the new static gate, or
   documented as an explicit out-of-scope future task; test-only fixtures must
   use the capability contract rather than a mirror route.
-- **Planned evidence:** targeted firmware lifecycle/re-entry smoke and default
-  profile/ROM/Console/debugger probes; a static provider/whitelist gate;
-  `cmake --build --preset current-gates-gcc`; documentation governance;
-  `git diff --check`; and a rebuilt `build/output/nxvm_0_5_0297.exe` with
-  SHA-256, source commit, and runtime identity recorded before completion.
+- **S3 evidence:** `core-machine-firmware-capability-smoke` proves capability
+  configure/reset/after-run invocation, configuration freeze, expired-context
+  rejection, rejected nested `core_machine_reset`/`request_stop`, completed
+  cold reset, and a subsequent run boundary (`M5:T297:S3:FIRMWARE-CAPABILITY:OK`).
+  `verify-firmware-capability` rejects raw binding and requires only the
+  checked firmware-memory/port and stop operations
+  (`M5:T297:S3:FIRMWARE-CAPABILITY-STATIC:OK`). T264 now requires QDCGA's
+  firmware-capability memory/port path and forbids direct port/raw binding;
+  T211 requires core-invoked capability report consume/request-stop and
+  forbids runner direct access. `current-gates-gcc` passed 49 static/build/docs
+  gates and 126/126 CTest cases using untracked owner-provided media cache;
+  documentation governance and `git diff --check` passed. The rebuilt local
+  developer artifact is `build/output/nxvm_0_5_0297.exe`, 2,685,736 bytes,
+  SHA-256 `86748E4CC13C28934F3BA3399DBD807B07B3251E44B996E42E9693FCB151D393`,
+  produced by the current target with runtime build version `0.5.0297`.
 - **Stop conditions:** stop for any need to broaden the whitelist, expose a
   raw pointer, encode BIOS/DOS policy in core, retain a callback borrow beyond
   its call, alter retained product behavior, or begin T298+; record the issue
@@ -81,10 +90,10 @@ artifact. Do not admit T298 or later work, close this task, merge, or push.
 
 - **T297 active artifact identity:** `current-gcc` and
   `verify-current-artifact-target` select `vm-0-5-0297`. The T296 baseline
-  artifact remains `nxvm_0_5_0296.exe`, 2,682,261 bytes, SHA-256
+  developer artifact was 2,682,261 bytes, SHA-256
   `28DBFE1A57EA2A1D53276CA9CED5D9E3A8B742F557C9A13076274AE2067EA02A`, built
-  from `fa18847d0aed685554f786c89ba0f5908e539fb7`; T297's artifact and final
-  verification are pending S3.
+  from `fa18847d0aed685554f786c89ba0f5908e539fb7`; T297's local developer
+  artifact is recorded in the active packet and awaits coordinator review.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.

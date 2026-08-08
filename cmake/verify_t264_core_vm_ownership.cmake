@@ -62,20 +62,24 @@ endforeach()
 
 file(READ "${qdcga}" qdcga_source)
 foreach(forbidden IN ITEMS "profile_binding_set_video"
-    "profile_binding_configure_text_video" "profile_binding_memory")
+    "profile_binding_configure_text_video" "profile_binding_memory"
+    "core_machine_profile_binding" "core_machine_port_write"
+    "core_machine_port_read" "core_machine_configuration_")
     string(FIND "${qdcga_source}" "${forbidden}" position)
     if(NOT position EQUAL -1)
         message(FATAL_ERROR "T264 QDCGA retains direct VADP shortcut: ${forbidden}")
     endif()
 endforeach()
-string(FIND "${qdcga_source}" "core_machine_profile_binding_write_port" position)
-if(position EQUAL -1)
-    message(FATAL_ERROR "T264 QDCGA does not use the core port boundary")
-endif()
+foreach(required IN ITEMS "core_machine_firmware_port_write"
+    "core_machine_firmware_memory_read" "core_machine_firmware_memory_write")
+    string(FIND "${qdcga_source}" "${required}" position)
+    if(position EQUAL -1)
+        message(FATAL_ERROR "T264 QDCGA capability boundary is incomplete: ${required}")
+    endif()
+endforeach()
 
 foreach(removed IN ITEMS
     "src/core/machine/firmware.c"
-    "src/core/machine/firmware_interface.h"
     "src/vm/profile/default_profile/firmware/default_profile.c"
     "src/vm/profile/default_profile/firmware/default_profile.h")
     if(EXISTS "${PROJECT_SOURCE_DIR}/${removed}")
@@ -83,7 +87,7 @@ foreach(removed IN ITEMS
     endif()
 endforeach()
 file(READ "${cmake_source}" cmake_text)
-foreach(forbidden IN ITEMS "core-machine-firmware" "vm-firmware-smoke"
+foreach(forbidden IN ITEMS "add_library(core-machine-firmware" "vm-firmware-smoke"
     "vm-default-profile-firmware-smoke")
     string(FIND "${cmake_text}" "${forbidden}" position)
     if(NOT position EQUAL -1)

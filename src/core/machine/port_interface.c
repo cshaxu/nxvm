@@ -39,7 +39,7 @@ static C_VOID core_machine_executor_port_write_dispatch(t_port *port,
 
 type_status core_machine_bus_initialize(core_machine *machine)
 {
-    if (machine == STD_NULL) {
+    if (machine == STD_NULL || !core_machine_mutable_operation_is_allowed(machine)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
 

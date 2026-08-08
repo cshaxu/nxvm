@@ -33,7 +33,8 @@ type_status core_machine_memory_write(
     const C_VOID *data,
     STD_SIZE_T size)
 {
-    if (machine == STD_NULL || data == STD_NULL || size == 0u) {
+    if (machine == STD_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
+        data == STD_NULL || size == 0u) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
 
@@ -76,7 +77,7 @@ type_status core_machine_set_a20(
     core_machine *machine,
     C_INT enabled)
 {
-    if (machine == STD_NULL) {
+    if (machine == STD_NULL || !core_machine_mutable_operation_is_allowed(machine)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
 

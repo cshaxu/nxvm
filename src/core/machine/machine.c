@@ -381,7 +381,7 @@ type_status core_machine_firmware_register_immutable_rom(
     if (!core_machine_firmware_context_is_active(firmware, 1)) {
         return TYPE_STATUS_INVALID_STATE;
     }
-    return core_machine_register_immutable_rom_mapping(firmware->machine,
+    return core_machine_register_immutable_rom_mapping_from_firmware(firmware->machine,
         physical_start, image, bytes);
 }
 
@@ -803,6 +803,7 @@ type_status core_machine_freeze_execution_providers(core_machine *machine)
         return TYPE_STATUS_INVALID_STATE;
     }
     machine->execution_provider_frozen = 1;
+    machine->firmware_provider_frozen = 1;
     core_machine_memory_freeze_mappings(&machine->executor_memory);
     return TYPE_STATUS_OK;
 }
@@ -1259,9 +1260,10 @@ type_status core_machine_run(
 
 type_status core_machine_request_stop(core_machine *machine)
 {
-    if (machine == STD_NULL || !core_machine_mutable_operation_is_allowed(machine)) {
+    if (machine == STD_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
+    if (!core_machine_mutable_operation_is_allowed(machine)) return TYPE_STATUS_INVALID_STATE;
 
     STD_ATOMIC_STORE(&machine->stop_requested, 1);
     return TYPE_STATUS_OK;
@@ -1345,6 +1347,10 @@ type_status core_machine_report_fault(
 C_VOID core_machine_destroy(core_machine *machine)
 {
     if (machine != STD_NULL) {
+        machine->firmware_context.active = 0;
+        machine->firmware_context.machine = STD_NULL;
+        machine->firmware_provider = STD_NULL;
+        machine->firmware_provider_context = STD_NULL;
         core_machine_hdc_finalize(&machine->hdc);
         core_machine_fdc_finalize(&machine->fdc);
         core_machine_dma_finalize(&machine->shared_dma_latch,
