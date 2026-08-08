@@ -38,7 +38,7 @@ C_INT main(C_VOID)
         profile->cmos.equipment != 0x21u ||
         profile->cmos.base_memory_kib != 0x027fu ||
         profile->cmos.fixed_disk_type != 0xf0u ||
-        profile->cmos.fixed_disk_type_extended_0 != 0x47u ||
+        profile->cmos.fixed_disk_type_extended_0 != 0x2fu ||
         profile->firmware_service_count != 14u) return 1;
 
     cmos_ports = vm_profile_default_pc_at_port_range_find(profile,

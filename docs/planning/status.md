@@ -2,7 +2,7 @@
 
 ## Current Work
 
-**M5 T287 S16 in progress: DOS fixed-disk allocation trace.**
+**M5 T287 S16 in progress: correct the fixed-disk type encoding, then resume DOS allocation trace.**
 
 T287 used a lawful, repository-external DOS 6.22 boot floppy and HDD with an
 ignored local manifest. The real Console transaction mounted both media and
@@ -39,16 +39,13 @@ BDA last-status byte instead of recording AH=15's successful type value `03h`;
 errors retain their AH result and carry flag. The ROM corpus verifies a
 successful AH=01 immediately after AH=15 and the unsupported AH=41 error path.
 
-S15 corrects the user-defined disk type itself: CMOS `12h=F0h` selects the
-extended first-disk type stored at `19h`, which must be `47h` for the AT
-user-defined geometry table. AH=08 now returns the same `BL=47h` identity.
-The former `2Fh` declaration was internally consistent but not a valid
-user-defined AT disk type and could cause DOS to reject the enumerated fixed
-disk before assigning `C:`. The focused profile and ROM gates pass with
-`M5:T287:S15:ROM-INT13-HDD-TYPE47:OK`; the external DOS checkpoint still
-reports `c-drive-absent`. `run-current-smokes`, all 113 current CTest cases,
-and `verify-current-artifact-target` pass; the remaining allocation blocker is
-now S16's diagnosis boundary.
+S15 was superseded by S16: the conventional AT label “Type 47” is decimal 47,
+encoded as `2Fh`, not hexadecimal `47h`. CMOS `12h=F0h` therefore selects
+CMOS `19h=2Fh`, and AH=08 returns the matching `BL=2Fh`. S16 restores that
+encoding and rejects the prior `47h` interpretation. The temporary local trace
+also proves DOS called AH=08 and observed the expected `AL=3Fh`,
+`CH/CL=63/3Fh`, `DH/DL=0F/01h`, `BL=2Fh`, and `ES:DI=F000:E431h`; it did not
+borrow media or bypass the ATA/FDC controller path.
 
 The external copied-frame checkpoint still reports the same `C:` failure after
 S3--S9. Its paused copied-frame observation retains BDA fixed-disk bytes
@@ -62,7 +59,7 @@ is considered.
 - **T287 artifact identity:** `current-gcc` and
   `verify-current-artifact-target` select `vm-0-5-0287`. The active T287
   subtask has not closed. Artifact `nxvm_0_5_0287.exe` SHA-256:
-  `A3DF0E0B97FA5929112ADD9E26785325B9F64D25AB816AF0473A3B5C3D230DF7`.
+  `1A4AFB9407429D137C36E25DB4F4159758F97BC14A8D9DE4E06C7291EF50A371`.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
