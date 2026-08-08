@@ -319,6 +319,11 @@ static type_unsigned_32 _kma_linear_logical(core_machine_cpu_execution_context *
     default:
         TYPE_TRACE_IMPOSSIBLE_RETURN_ZERO;
     }
+    /* Real-address data accesses may use 32-bit offsets on an 80386. */
+    if (!_IsProtected && rsreg->sregtype == SREG_DATA && byte != 0u) {
+        lower = 0x00000000;
+        upper = 0xffffffff;
+    }
     linear = rsreg->base + offset;
     if (offset < lower || offset > upper - (byte - 1))
     {

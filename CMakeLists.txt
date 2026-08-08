@@ -144,6 +144,10 @@ add_executable(core-machine-real-mode-corpus-smoke
     tests/machine/core_machine_real_mode_corpus_smoke.c)
 target_link_libraries(core-machine-real-mode-corpus-smoke PRIVATE core-machine)
 
+add_executable(core-machine-real-mode-386-address-smoke
+    tests/machine/core_machine_real_mode_386_address_smoke.c)
+target_link_libraries(core-machine-real-mode-386-address-smoke PRIVATE core-machine)
+
 add_executable(core-machine-80286-protected-mode-smoke
     tests/machine/core_machine_80286_protected_mode_smoke.c)
 target_link_libraries(core-machine-80286-protected-mode-smoke PRIVATE core-machine)
@@ -735,6 +739,13 @@ target_link_libraries(vm-windows31-checkpoint PRIVATE vm-composition)
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(vm-windows31-checkpoint PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
+add_executable(vm-windows31-setup-probe
+    tests/machine/vm_windows31_setup_probe.c
+)
+target_link_libraries(vm-windows31-setup-probe PRIVATE vm-composition)
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(vm-windows31-setup-probe PRIVATE -Wall -Wextra -Wpedantic -Werror)
+endif()
 add_executable(vm-windows31-int13-trace-probe
     tests/machine/vm_windows31_int13_trace_probe.c
 )
@@ -1007,6 +1018,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-real-mode-tick-smoke
     core-machine-instruction-timing-smoke
     core-machine-real-mode-corpus-smoke
+    core-machine-real-mode-386-address-smoke
     core-machine-80286-protected-mode-smoke
     core-machine-arpl-smoke
     core-machine-cpu-profile-gate-smoke
