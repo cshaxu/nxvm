@@ -247,9 +247,6 @@ static DWORD WINAPI win32app_display_thread(LPVOID opaque)
     }
     ShowWindow(handle->window, SW_SHOW);
     UpdateWindow(handle->window);
-    /* A Window session owns its guest input immediately after it becomes visible. */
-    SetForegroundWindow(handle->window);
-    SetFocus(handle->window);
     while (GetMessage(&message, STD_NULL, 0, 0) > 0) {
         TranslateMessage(&message);
         DispatchMessage(&message);

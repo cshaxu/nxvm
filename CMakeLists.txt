@@ -533,6 +533,9 @@ if(WIN32)
         tests/platform/vm_platform_win32_keyboard_scan_smoke.c)
     target_link_libraries(vm-platform-win32-keyboard-scan-smoke PRIVATE
         vm-platform)
+    add_executable(vm-w32-text-palette-smoke
+        tests/platform/vm_w32_text_palette_smoke.c)
+    target_link_libraries(vm-w32-text-palette-smoke PRIVATE vm-platform)
 endif()
 add_executable(vm-host-cancellation-smoke
     tests/platform/vm_host_cancellation_smoke.c
@@ -731,6 +734,13 @@ add_executable(vm-windows31-checkpoint
 target_link_libraries(vm-windows31-checkpoint PRIVATE vm-composition)
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(vm-windows31-checkpoint PRIVATE -Wall -Wextra -Wpedantic -Werror)
+endif()
+add_executable(vm-windows31-int13-trace-probe
+    tests/machine/vm_windows31_int13_trace_probe.c
+)
+target_link_libraries(vm-windows31-int13-trace-probe PRIVATE vm-composition)
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(vm-windows31-int13-trace-probe PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 add_executable(vm-windows31-hdd-admission-probe
     tests/machine/vm_windows31_hdd_admission_probe.c
@@ -1076,6 +1086,9 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     vm-platform-host-surface-smoke
     vdm-minimal-session-smoke
     vdm-minimal-presentation-smoke)
+if(WIN32)
+    list(APPEND PROJECT_CURRENT_SMOKE_TARGETS vm-w32-text-palette-smoke)
+endif()
 
 if(WIN32)
     list(APPEND PROJECT_CURRENT_SMOKE_TARGETS

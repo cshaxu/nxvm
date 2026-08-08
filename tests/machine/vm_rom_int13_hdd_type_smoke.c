@@ -42,6 +42,10 @@ static C_INT vm_int13_hdd_write_fixture(C_CHAR fdd_path[MAX_PATH],
         0xa3u, 0x12u, 0x05u,                  /* mov [0512h],ax */
         0xb4u, 0x08u,                         /* mov ah,08h */
         0xb2u, 0x80u,                         /* mov dl,80h */
+        0xb8u, 0x34u, 0x12u,                  /* mov ax,1234h */
+        0x8eu, 0xc0u,                         /* mov es,ax */
+        0xbfu, 0x78u, 0x56u,                  /* mov di,5678h */
+        0xb4u, 0x08u,                         /* restore ah=08h */
         0xcdu, 0x13u,                         /* int 13h */
         0xa3u, 0x1au, 0x05u,                  /* mov [051Ah],ax */
         0x88u, 0x1eu, 0x0du, 0x05u,            /* mov [050Dh],bl */
@@ -75,7 +79,9 @@ static C_INT vm_int13_hdd_write_fixture(C_CHAR fdd_path[MAX_PATH],
         0xb8u, 0x01u, 0x02u,                  /* AH=02, AL=01 */
         0xb9u, 0x01u, 0x00u,                  /* CHS 0/0/1 */
         0xbau, 0x80u, 0x00u,                  /* DH=0, DL=80 */
+        0xfdu,                                 /* std: INT 13h must not depend on DF */
         0xcdu, 0x13u,                         /* int 13h */
+        0xfcu,                                 /* cld */
         0xa3u, 0x26u, 0x05u,                  /* mov [0526h],ax */
         0x9cu, 0x58u, 0xa3u, 0x28u, 0x05u,      /* pushf; pop [0528h] */
         0xa1u, 0x00u, 0x08u,                  /* mov ax,[0800h] */
@@ -222,8 +228,8 @@ C_INT main(C_VOID)
         passed = (result_ax & 0xff00u) == 0x0300u && (flags & 1u) == 0u &&
             sectors_high == 0u &&
             sectors_low == 1008u &&
-            parameter_segment == VBIOS_ADDR_START_SEG &&
-            parameter_offset == VBIOS_ADDR_HDD_PARAM && sectors_per_track == 63u &&
+            parameter_segment == 0x1234u && parameter_offset == 0x5678u &&
+            sectors_per_track == 63u &&
             cmos_fixed_disk_type == 0xf0u && drive_type == 0x2fu &&
             cmos_extended_disk_type == 0x2fu &&
             parameters_ax == 0x003fu &&

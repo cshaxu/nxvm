@@ -78,7 +78,9 @@ jmp near $(label_int_13_end)\n\
 $(label_int_13_02):         \n\
 ; read AL CHS sectors through the primary ATA PIO channel \n\
 or al, al                   \n\
-jz $(label_int_13_02_fail)  \n\
+jnz $(label_int_13_02_nonzero) \n\
+jmp near $(label_int_13_02_fail) \n\
+$(label_int_13_02_nonzero): \n\
 push ax                     \n\
 push bx                     \n\
 push cx                     \n\
@@ -134,7 +136,8 @@ shl cx, 01                  \n\
 mov dx, 01f0                \n\
 $(label_int_13_02_data):    \n\
 in ax, dx                   \n\
-stosw                       \n\
+mov es:[di], ax             \n\
+add di, 02                  \n\
 loop $(label_int_13_02_data)\n\
 mov dx, 01f7                \n\
 in al, dx                   \n\
@@ -164,7 +167,9 @@ jmp near $(label_int_13_end)\n\
 $(label_int_13_03):         \n\
 ; write AL CHS sectors through the primary ATA PIO channel \n\
 or al, al                   \n\
-jz $(label_int_13_03_fail)  \n\
+jnz $(label_int_13_03_nonzero) \n\
+jmp near $(label_int_13_03_fail) \n\
+$(label_int_13_03_nonzero): \n\
 push ax                     \n\
 push bx                     \n\
 push cx                     \n\
@@ -222,7 +227,8 @@ shl cx, 01                  \n\
 shl cx, 01                  \n\
 mov dx, 01f0                \n\
 $(label_int_13_03_data):    \n\
-lodsw                       \n\
+mov ax, ds:[si]             \n\
+add si, 02                  \n\
 out dx, ax                  \n\
 loop $(label_int_13_03_data)\n\
 mov dx, 01f7                \n\
@@ -262,9 +268,6 @@ mov ds, ax                  \n\
 mov bx, ds:[0104]           \n\
 mov ax, ds:[0106]           \n\
 mov ds, ax                  \n\
-push ds                      \n\
-pop es                       \n\
-mov di, bx                   \n\
 mov cx, ds:[bx+00]          \n\
 dec cx          ; ncyl - 1  \n\
 xchg ch, cl                 \n\
