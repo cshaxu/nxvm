@@ -59,15 +59,19 @@ active for coordinator review. Do not admit T297 or later work.
   `rg -n "core_machine_(configuration_(fdc|hdc|shared_pic|port)_borrow|fdc_(connect|initialize|reset|refresh|finalize)|hdc_(connect|initialize|reset|refresh|finalize|port_provider)|install_port_provider)" src/vm/composition --glob '*.[ch]'`.
   Every production hit must become core topology submission or be an explicit
   T297+ exclusion; no FDD/HDD/path or firmware/debugger source may be changed.
-- **S4 evidence commands and expected result:** focused
-  `core-machine-controller-authority-smoke` plus
-  `verify-core-controller-authority`; retained FDC/ATA/no-media/boot/DOS,
-  Console/debugger, and two-session checks; then the managed absolute CMake
-  `current-gates-gcc` command. Preserve only the resulting
-  `build/output/nxvm_0_5_0296.exe`, record source commit and SHA-256, and run
-  `powershell -NoProfile -ExecutionPolicy Bypass -File tools/Verify-DocumentationGovernance.ps1 -RepositoryRoot .` and `git diff --check`.
-  Existing owner-provided FDD/HDD fixtures may be selected only through
-  untracked cache settings; no fixture may be copied, changed, or tracked.
+- **S4 evidence and result:**
+  `core-machine-controller-authority-smoke` emitted
+  `M5:T296:S4:CONTROLLER-AUTHORITY:OK`; its owner gate and retained FDC/ATA,
+  no-media, boot/DOS, Console/debugger, and two-session checks passed. The
+  managed absolute `current-gates-gcc` command passed all 49 static/build/docs
+  gates and 125/125 current-gate tests. Its untracked cache selected only the
+  owner-provided read-only fixtures; neither fixture was copied, modified, or
+  staged. `powershell -NoProfile -ExecutionPolicy Bypass -File tools/Verify-DocumentationGovernance.ps1 -RepositoryRoot .` and `git diff --check` pass.
+  The ignored developer artifact is `build/output/nxvm_0_5_0296.exe`
+  (2,682,261 bytes), SHA-256
+  `28DBFE1A57EA2A1D53276CA9CED5D9E3A8B742F557C9A13076274AE2067EA02A`,
+  built from source commit
+  `fa18847d0aed685554f786c89ba0f5908e539fb7`.
 - **Deferred edge and risk:** FDC/HDC controller topology/lifecycle is the
   final T296 stage, but media backing/path policy and the single existing
   registry route remain VM-owned. T297--T299 remain deferred. The S2 VADP EGA
@@ -78,7 +82,7 @@ active for coordinator review. Do not admit T297 or later work.
 
 - **T296 artifact identity:** `current-gcc` and
   `verify-current-artifact-target` select `vm-0-5-0296`. The S4 verification
-  record will retain only `nxvm_0_5_0296.exe` under ignored `build/output/`.
+  record retains only `nxvm_0_5_0296.exe` under ignored `build/output/`.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.

@@ -97,12 +97,11 @@ Evidence: `core-machine-dma-rtc-authority-smoke` proves validation/freeze,
 DMA channel binding, CMOS defaults across reset, port-70h NMI routing, and
 RTC clock/IRQ delivery from the core scheduler
 (`M5:T296:S3:DMA-RTC-AUTHORITY:OK`). The S3 gate rejects VM DMA controller
-borrows/binds and direct RTC/CMOS/NMI lifecycle or port installation, while
-deliberately isolating deferred S4 HDC source. The managed GCC run passed 47
-static/build gates and all 124 current-gate tests, including timer/IRQ, boot,
-Console/debugger, DOS, and two-session isolation. It used only existing
-owner-provided fixtures selected in the untracked build cache. S4 is the next
-possible stage; no `0296` artifact is produced until all T296 stages complete.
+borrows/binds and direct RTC/CMOS/NMI lifecycle or port installation. The S3
+managed GCC run passed 47 static/build gates and all 124 current-gate tests,
+including timer/IRQ, boot, Console/debugger, DOS, and two-session isolation.
+It used only existing owner-provided fixtures selected in the untracked build
+cache. S4 subsequently consumes the remaining FDC/HDC edges.
 
 ## S4 / C Implementation Evidence (Pending Coordinator Review)
 
@@ -131,8 +130,10 @@ composition sources for controller/PIC/DMA/port borrows and direct lifecycle
 or registration calls. The existing two-session isolation smoke also asserts
 distinct core FDC/HDC storage. Retained FDC topology/media-change, ATA PIO,
 FDD/HDD/DOS, boot, Console, and debugger regressions remain in the full gate.
-The final artifact and full-gate SHA evidence are recorded in the active task
-packet; the task remains active for coordinator review and T297--T299 remain
+The final managed GCC run passed 49 static/build/docs gates and 125/125
+current-gate tests. `nxvm_0_5_0296.exe` is retained only under ignored
+`build/output/`, with its source commit and SHA-256 recorded in the active
+task packet; T296 remains active for coordinator review and T297--T299 remain
 deferred.
 
 ## Preserved Ordering and Deferred Edges
