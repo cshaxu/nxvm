@@ -17,7 +17,10 @@ its own S1 contract and may split when its bounded stop condition is reached. A 
 numeric task identifier as its artifact revision when it completes.
 
 T270--T292 are closed and archived in [M5 History](../history/m5.md). The
-unstarted queue begins at T293.
+unstarted new-task queue begins at T293. A corrective subtask of a closed task
+is admitted only through the sole active packet in `status.md`; M5 T291 S4 is
+the current protected-return fault-atomicity correction and does not reorder
+this queue.
 
 ### A. Core Public-Surface Closure And Mantle Prerequisites
 
