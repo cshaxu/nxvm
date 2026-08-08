@@ -583,10 +583,14 @@ type_status core_machine_configure_rtc_cmos(core_machine *machine,
     if (!core_machine_rtc_cmos_config_is_valid(config)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    if (machine->port_providers.slots[config->index_port].provider.read != STD_NULL ||
-        machine->port_providers.slots[config->index_port].provider.write != STD_NULL ||
-        machine->port_providers.slots[config->data_port].provider.read != STD_NULL ||
-        machine->port_providers.slots[config->data_port].provider.write != STD_NULL) {
+    if (core_machine_port_has_read(&machine->executor_port,
+            config->index_port) ||
+        core_machine_port_has_write(&machine->executor_port,
+            config->index_port) ||
+        core_machine_port_has_read(&machine->executor_port,
+            config->data_port) ||
+        core_machine_port_has_write(&machine->executor_port,
+            config->data_port)) {
         return TYPE_STATUS_INVALID_STATE;
     }
     rtc_config.irq = config->irq;
@@ -666,12 +670,10 @@ static C_INT core_machine_controller_ports_are_available(
 {
     STD_SIZE_T index;
 
-    if (machine == STD_NULL || ports == STD_NULL ||
-        machine->port_providers.slots == STD_NULL) return 0;
+    if (machine == STD_NULL || ports == STD_NULL) return 0;
     for (index = 0u; index < count; ++index) {
-        const core_machine_port_slot *slot = &machine->port_providers.slots[ports[index]];
-
-        if (slot->provider.read != STD_NULL || slot->provider.write != STD_NULL) {
+        if (core_machine_port_has_read(&machine->executor_port, ports[index]) ||
+            core_machine_port_has_write(&machine->executor_port, ports[index])) {
             return 0;
         }
     }
@@ -695,11 +697,11 @@ type_status core_machine_configure_fdc(core_machine *machine,
     }
     if (!core_machine_fdc_topology_is_valid(topology) ||
         topology->dma_request.core_owner != machine->fdc_dma_request.core_owner ||
-        topology->dma_request.channel != machine->fdc_dma_request.channel ||
-        !core_machine_controller_ports_are_available(machine, ports,
-            sizeof(ports) / sizeof(ports[0]))) {
+        topology->dma_request.channel != machine->fdc_dma_request.channel) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
+    if (!core_machine_controller_ports_are_available(machine, ports,
+            sizeof(ports) / sizeof(ports[0]))) return TYPE_STATUS_INVALID_STATE;
     machine->fdc_topology = *topology;
     core_machine_fdc_connect(&machine->fdc, machine->fdc_topology.media_registry,
         &machine->fdc_topology.drives, &machine->fdc_topology.dma_request,
@@ -731,11 +733,11 @@ type_status core_machine_configure_hdc(core_machine *machine,
     if (!core_machine_configuration_is_open(machine) || machine->hdc_configured) {
         return TYPE_STATUS_INVALID_STATE;
     }
-    if (!core_machine_hdc_topology_is_valid(topology) ||
-        !core_machine_controller_ports_are_available(machine, ports,
-            sizeof(ports) / sizeof(ports[0]))) {
+    if (!core_machine_hdc_topology_is_valid(topology)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
+    if (!core_machine_controller_ports_are_available(machine, ports,
+            sizeof(ports) / sizeof(ports[0]))) return TYPE_STATUS_INVALID_STATE;
     provider = core_machine_hdc_port_provider();
     if (provider == STD_NULL) return TYPE_STATUS_FAULT;
     machine->hdc_topology = *topology;

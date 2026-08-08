@@ -225,6 +225,11 @@ add_executable(core-machine-configuration-smoke
 )
 target_link_libraries(core-machine-configuration-smoke PRIVATE core-machine)
 
+add_executable(core-machine-port-ownership-smoke
+    tests/machine/core_machine_port_ownership_smoke.c
+)
+target_link_libraries(core-machine-port-ownership-smoke PRIVATE core-machine)
+
 add_executable(core-machine-trace-smoke
     tests/core/machine_trace_smoke.c
 )
@@ -251,6 +256,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(core-machine-contract-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-instance-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-configuration-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(core-machine-port-ownership-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-lifecycle-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-firmware-capability-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-stopped-lifecycle-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -1073,6 +1079,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-trace-context-smoke
     core-machine-cpu-fault-diagnostic-smoke
     core-machine-configuration-smoke
+    core-machine-port-ownership-smoke
     core-machine-firmware-capability-smoke
     core-machine-ram-port-context-smoke
     core-machine-pit-readback-smoke

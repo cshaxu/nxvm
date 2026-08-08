@@ -2,8 +2,48 @@
 
 ## Current Work
 
-**Idle - M5 Td S44 closed.** T300 remains conditional on an approved
-first-party consumer; no numeric task is active.
+**M5 T300 S1: Core port ownership and conflict contract -- active.**
+
+| Requirement | Acceptance evidence |
+| --- | --- |
+| One core-owned port registration and dispatch truth source. | PIC, PIT, KBC, DMA, VADP, FDC, HDC, memory-port, and injected providers are composed through one frozen core registry; CPU guest I/O and public `core_machine_bus_read/write` reach the same registered handler. |
+| Reject duplicate directional bindings without mutation. | A focused core probe proves a second `(port, direction)` registration returns a defined failure and leaves the first provider active. It exercises PIC, PIT, KBC, and FDC ownership conflicts. |
+| Preserve machine lifecycle and product paths. | The registry's configure/freeze/reset semantics are explicit; retained boot, Console/debugger, and normal core-device I/O regressions pass. VDM minimal cannot bind retained PC/AT controller ports under the new contract. |
+
+- **Original request:** admit the prior conditional T300 to repair confirmed
+  core/VM/VDM boundary defects. S1 removes the two observable port-handler
+  truth sources and freezes ownership, conflict, lifecycle, and CPU/public-bus
+  dispatch semantics.
+- **Scope:** core port registration/dispatch and its narrow public contract,
+  the affected core/VM/VDM composition wiring, focused conflict and same-path
+  probes, and compact S1 tracking evidence.
+- **Non-goals:** provider failure-result propagation (S2), VM session failure
+  atomicity (S3), public-header ABI cleanup (S4), a pre-decode transition
+  registry, a generic device framework, a second I/O path, a fake DOS
+  controller, or any Console/debugger/boot/DOS UX change.
+- **Risk:** merging two I/O paths can silently alter device ordering or leave
+  a bypass. Every retained device keeps its existing entity and C-style
+  callback; configuration rejects duplicate direction bindings before state
+  mutation, and CPU/public bus probes use the same live registration.
+- **Similar-issue sweep:** inventory all production port registration and
+  dispatch sites in `src/core`, `src/vm`, and `src/vdm`, plus their CMake and
+  focused tests. Classify each as migrated, single-route retained, or deferred
+  to S2--S4; do not expand into provider status propagation.
+- **Rules:** architecture overview, module layout, contracts, coding standard,
+  source policy, execution workflow, and execution policy apply. The T300
+  admission is owner-approved. No exception is requested.
+- **Verification:** run new focused core/VM/VDM probes, retained device and
+  CPU I/O regressions, `git diff --check`, and applicable documentation/static
+  gates. An S1 build does not advance the current artifact identity; T300
+  remains active and no artifact is final until the task closes.
+- **Current S1 evidence:** `core-machine-port-ownership-smoke` proves the
+  retained owner after duplicate, PIC/PIT/KBC/FDC conflict rejection, and
+  public-bus plus guest-`IN`/`OUT` dispatch. `current-gates-gcc` passed all 51
+  static/governance targets and 127/127 CTests on the T299 artifact baseline.
+- **Stop condition:** one registry/dispatch path owns every configured port;
+  duplicate directional registration is non-mutating and observable; CPU and
+  public bus reach that same owner; no VDM minimal PC/AT overwrite remains;
+  S2 failure propagation remains explicitly deferred.
 
 ## Current Technical Baseline
 
