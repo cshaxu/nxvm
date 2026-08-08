@@ -1268,7 +1268,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0297 "0.5.0297")
+add_current_vm_artifact(vm-0-5-0298 "0.5.0298")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 
@@ -1394,6 +1394,13 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMENT "Verifying M5 T297 firmware capability closure"
         VERBATIM)
     add_dependencies(run-current-smokes verify-firmware-capability)
+
+    add_custom_target(verify-debugger-capability
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_debugger_capability.cmake"
+        COMMENT "Verifying M5 T298 debugger capability closure"
+        VERBATIM)
+    add_dependencies(run-current-smokes verify-debugger-capability)
 
     add_custom_target(verify-request-transport-closure
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}

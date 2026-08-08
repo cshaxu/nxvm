@@ -8,8 +8,7 @@ extern "C" {
 #endif
 
 #include "type.h"
-#include "core/machine/cpu.h"
-#include "core/machine/cpu_instructions.h"
+#include "core/machine/debug_interface.h"
 
 #define VM_MACHINE_DEVICE_DEBUG "Unknown Hardware Debugger"
 
@@ -29,8 +28,8 @@ typedef struct {
     C_VOID *pauseContext;
     vm_machine_debug_disassemble_provider disassembleProvider;
     C_VOID *disassembleContext;
-    t_cpu *cpu;
-    t_cpuins *cpuins;
+    core_machine_debug_instruction_observation observation;
+    type_bool observation_valid;
 } t_debug_connect;
 
 typedef struct {
@@ -47,9 +46,10 @@ typedef struct {
     t_debug_connect connect;
 } t_debug;
 
-C_VOID vm_machine_debug_initialize(t_debug *debug, t_cpu *cpu, t_cpuins *cpuins);
+C_VOID vm_machine_debug_initialize(t_debug *debug);
 C_VOID vm_machine_debug_reset(t_debug *debug);
-C_VOID vm_machine_debug_refresh(t_debug *debug);
+C_VOID vm_machine_debug_refresh(t_debug *debug,
+    const core_machine_debug_instruction_observation *observation);
 C_VOID vm_machine_debug_finalize(t_debug *debug);
 C_VOID vm_machine_debug_bind_pause(t_debug *debug,
     vm_machine_debug_pause_callback callback, C_VOID *context);
