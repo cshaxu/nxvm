@@ -68,6 +68,7 @@ typedef struct vm_profile_default_pc_at_cmos_defaults {
     uint16_t base_memory_kib;
     uint8_t floppy_type;
     uint8_t fixed_disk_type;
+    uint8_t fixed_disk_type_extended_0;
     uint8_t boot_floppy_drive;
     uint8_t boot_hard_disk_drive;
 } vm_profile_default_pc_at_cmos_defaults;

@@ -66,6 +66,9 @@ static C_VOID vm_session_machine_devices_apply_rtc_defaults(vm_session *session)
         defaults->floppy_type);
     core_machine_rtc_write_nvram(&session->rtc, CORE_MACHINE_RTC_TYPE_DISK_FIXED,
         defaults->fixed_disk_type);
+    core_machine_rtc_write_nvram(&session->rtc,
+        CORE_MACHINE_RTC_TYPE_DISK_FIXED_EXTENDED_0,
+        defaults->fixed_disk_type_extended_0);
     core_machine_rtc_write_nvram(&session->rtc, CORE_MACHINE_RTC_EQUIPMENT,
         defaults->equipment);
     core_machine_rtc_write_nvram(&session->rtc, CORE_MACHINE_RTC_BASEMEM_LSB,
