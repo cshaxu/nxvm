@@ -15,10 +15,11 @@ foreach(source IN LISTS core_sources)
 endforeach()
 
 set(rtc "${PROJECT_SOURCE_DIR}/src/core/machine/rtc.c")
+set(machine "${PROJECT_SOURCE_DIR}/src/core/machine/machine.c")
 set(qdcga "${PROJECT_SOURCE_DIR}/src/vm/profile/default_profile/firmware/qdcga.c")
 set(machine_devices "${PROJECT_SOURCE_DIR}/src/vm/composition/session/machine_devices.c")
 set(cmake_source "${PROJECT_SOURCE_DIR}/CMakeLists.txt")
-foreach(source IN ITEMS "${rtc}" "${qdcga}" "${machine_devices}" "${cmake_source}")
+foreach(source IN ITEMS "${rtc}" "${machine}" "${qdcga}" "${machine_devices}" "${cmake_source}")
     if(NOT EXISTS "${source}")
         message(FATAL_ERROR "T264 ownership source missing: ${source}")
     endif()
@@ -27,6 +28,7 @@ foreach(source IN ITEMS "${rtc}" "${qdcga}" "${machine_devices}" "${cmake_source
 endforeach()
 
 file(READ "${rtc}" rtc_source)
+file(READ "${machine}" machine_source)
 file(READ "${machine_devices}" machine_devices_source)
 foreach(forbidden IN ITEMS "t_cpu" "flagMaskNMI" "set_nmi_mask")
     string(FIND "${rtc_source}" "${forbidden}" position)
@@ -42,16 +44,27 @@ foreach(required IN ITEMS "core_machine_rtc_advance"
     endif()
 endforeach()
 foreach(required IN ITEMS "core_machine_set_nmi_mask"
-    "core_machine_install_port_provider" "core_machine_rtc_select_register")
-    string(FIND "${machine_devices_source}" "${required}" position)
+    "core_machine_install_port_provider" "core_machine_rtc_select_register"
+    "core_machine_configure_rtc_cmos")
+    string(FIND "${machine_source}" "${required}" position)
     if(position EQUAL -1)
-        message(FATAL_ERROR "T264 VM RTC adapter is incomplete: ${required}")
+        message(FATAL_ERROR "T264 core RTC adapter is incomplete: ${required}")
     endif()
 endforeach()
-string(FIND "${machine_devices_source}" "->rtc.registers" position)
-if(NOT position EQUAL -1)
-    message(FATAL_ERROR "T264 VM RTC adapter mirrors core state")
+string(FIND "${machine_devices_source}" "C_INT vm_session_machine_devices_initialize_hdc"
+    hdc_position)
+if(hdc_position EQUAL -1)
+    message(FATAL_ERROR "T264 cannot isolate the deferred S4 HDC section")
 endif()
+string(SUBSTRING "${machine_devices_source}" 0 ${hdc_position} rtc_devices_source)
+foreach(forbidden IN ITEMS "core_machine_rtc_initialize" "core_machine_rtc_reset"
+    "core_machine_rtc_advance" "core_machine_rtc_finalize"
+    "core_machine_set_nmi_mask" "core_machine_install_port_provider")
+    string(FIND "${rtc_devices_source}" "${forbidden}" position)
+    if(NOT position EQUAL -1)
+        message(FATAL_ERROR "T264 VM RTC adapter retains core state access: ${forbidden}")
+    endif()
+endforeach()
 
 file(READ "${qdcga}" qdcga_source)
 foreach(forbidden IN ITEMS "profile_binding_set_video"

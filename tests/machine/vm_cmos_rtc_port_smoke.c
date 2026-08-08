@@ -53,29 +53,29 @@ C_INT main(C_VOID)
 
     if (cmos_read(port, CORE_MACHINE_RTC_REG_D) != CORE_MACHINE_RTC_REG_D_VRT) failed |= 0x0001;
     if (cmos_read(port, CORE_MACHINE_RTC_SECOND) != 0x00u) failed |= 0x0002;
-    advance_cmos(&session->rtc, 50000u);
+    advance_cmos(&session->core_machine->shared_rtc, 50000u);
     if (cmos_read(port, CORE_MACHINE_RTC_SECOND) != 0x01u) failed |= 0x0004;
 
     cmos_write(port, CORE_MACHINE_RTC_REG_B, CORE_MACHINE_RTC_REG_B_24H | CORE_MACHINE_RTC_REG_B_UIE);
-    advance_cmos(&session->rtc, 50000u);
-    if (!core_machine_pic_scan_interrupt(session->rtc.irq_source.master,
-        session->rtc.irq_source.slave)) failed |= 0x0008;
-    if (core_machine_pic_get_interrupt(session->rtc.irq_source.master,
-        session->rtc.irq_source.slave) != 0x70u) failed |= 0x0010;
+    advance_cmos(&session->core_machine->shared_rtc, 50000u);
+    if (!core_machine_pic_scan_interrupt(session->core_machine->shared_rtc.irq_source.master,
+        session->core_machine->shared_rtc.irq_source.slave)) failed |= 0x0008;
+    if (core_machine_pic_get_interrupt(session->core_machine->shared_rtc.irq_source.master,
+        session->core_machine->shared_rtc.irq_source.slave) != 0x70u) failed |= 0x0010;
     if ((cmos_read(port, CORE_MACHINE_RTC_REG_C) &
         (CORE_MACHINE_RTC_REG_C_IRQF | CORE_MACHINE_RTC_REG_C_UF)) !=
         (CORE_MACHINE_RTC_REG_C_IRQF | CORE_MACHINE_RTC_REG_C_UF)) failed |= 0x0020;
     core_machine_port_write(port, 0x00a0u, 0x20u);
     core_machine_port_write(port, 0x0020u, 0x20u);
-    if (core_machine_pic_scan_interrupt(session->rtc.irq_source.master,
-        session->rtc.irq_source.slave)) failed |= 0x0040;
+    if (core_machine_pic_scan_interrupt(session->core_machine->shared_rtc.irq_source.master,
+        session->core_machine->shared_rtc.irq_source.slave)) failed |= 0x0040;
 
     cmos_write(port, CORE_MACHINE_RTC_REG_B, CORE_MACHINE_RTC_REG_B_24H | CORE_MACHINE_RTC_REG_B_PIE);
-    advance_cmos(&session->rtc, 50u);
-    if (!core_machine_pic_scan_interrupt(session->rtc.irq_source.master,
-        session->rtc.irq_source.slave) ||
-        core_machine_pic_get_interrupt(session->rtc.irq_source.master,
-            session->rtc.irq_source.slave) != 0x70u) failed |= 0x0080;
+    advance_cmos(&session->core_machine->shared_rtc, 50u);
+    if (!core_machine_pic_scan_interrupt(session->core_machine->shared_rtc.irq_source.master,
+        session->core_machine->shared_rtc.irq_source.slave) ||
+        core_machine_pic_get_interrupt(session->core_machine->shared_rtc.irq_source.master,
+            session->core_machine->shared_rtc.irq_source.slave) != 0x70u) failed |= 0x0080;
     if ((cmos_read(port, CORE_MACHINE_RTC_REG_C) &
         (CORE_MACHINE_RTC_REG_C_IRQF | CORE_MACHINE_RTC_REG_C_PF)) !=
         (CORE_MACHINE_RTC_REG_C_IRQF | CORE_MACHINE_RTC_REG_C_PF)) failed |= 0x0100;
@@ -84,7 +84,7 @@ C_INT main(C_VOID)
 
     cmos_write(port, CORE_MACHINE_RTC_REG_B, CORE_MACHINE_RTC_REG_B_24H | CORE_MACHINE_RTC_REG_B_SET);
     cmos_write(port, CORE_MACHINE_RTC_SECOND, 0x11u);
-    advance_cmos(&session->rtc, 100000u);
+    advance_cmos(&session->core_machine->shared_rtc, 100000u);
     if (cmos_read(port, CORE_MACHINE_RTC_SECOND) != 0x11u) failed |= 0x0200;
     cmos_write(port, CORE_MACHINE_RTC_REG_B, CORE_MACHINE_RTC_REG_B_24H);
 
@@ -100,11 +100,11 @@ C_INT main(C_VOID)
     cmos_write(port, CORE_MACHINE_RTC_MINUTE_ALARM, 0x00u);
     cmos_write(port, CORE_MACHINE_RTC_HOUR_ALARM, 0x00u);
     cmos_write(port, CORE_MACHINE_RTC_REG_B, CORE_MACHINE_RTC_REG_B_24H | CORE_MACHINE_RTC_REG_B_AIE);
-    advance_cmos(&session->rtc, 50000u);
-    if (!core_machine_pic_scan_interrupt(session->rtc.irq_source.master,
-        session->rtc.irq_source.slave) ||
-        core_machine_pic_get_interrupt(session->rtc.irq_source.master,
-            session->rtc.irq_source.slave) != 0x70u) failed |= 0x0800;
+    advance_cmos(&session->core_machine->shared_rtc, 50000u);
+    if (!core_machine_pic_scan_interrupt(session->core_machine->shared_rtc.irq_source.master,
+        session->core_machine->shared_rtc.irq_source.slave) ||
+        core_machine_pic_get_interrupt(session->core_machine->shared_rtc.irq_source.master,
+            session->core_machine->shared_rtc.irq_source.slave) != 0x70u) failed |= 0x0800;
     if ((cmos_read(port, CORE_MACHINE_RTC_REG_C) &
         (CORE_MACHINE_RTC_REG_C_IRQF | CORE_MACHINE_RTC_REG_C_AF)) !=
         (CORE_MACHINE_RTC_REG_C_IRQF | CORE_MACHINE_RTC_REG_C_AF)) failed |= 0x1000;
@@ -112,19 +112,20 @@ C_INT main(C_VOID)
     core_machine_port_write(port, 0x0020u, 0x20u);
 
     cmos_write(port, CORE_MACHINE_RTC_EQUIPMENT, 0x5au);
-    core_machine_rtc_reset(&session->rtc);
+    core_machine_rtc_reset(&session->core_machine->shared_rtc);
     if (cmos_read(port, CORE_MACHINE_RTC_EQUIPMENT) != 0x5au) failed |= 0x2000;
     if (cmos_read(port, CORE_MACHINE_RTC_SECOND) != 0x00u) failed |= 0x4000;
 
     if (failed) {
         STD_PRINTF("RTC probe failed=%04x: second=%u hour=%u C=%02x B=%02x IRR=%02x/%02x ISR=%02x/%02x\n", failed,
-            session->rtc.calendar.second, session->rtc.calendar.hour,
-            session->rtc.registers[CORE_MACHINE_RTC_REG_C],
-            session->rtc.registers[CORE_MACHINE_RTC_REG_B],
-            session->rtc.irq_source.master->data.irr,
-            session->rtc.irq_source.slave->data.irr,
-            session->rtc.irq_source.master->data.isr,
-            session->rtc.irq_source.slave->data.isr);
+            session->core_machine->shared_rtc.calendar.second,
+            session->core_machine->shared_rtc.calendar.hour,
+            session->core_machine->shared_rtc.registers[CORE_MACHINE_RTC_REG_C],
+            session->core_machine->shared_rtc.registers[CORE_MACHINE_RTC_REG_B],
+            session->core_machine->shared_rtc.irq_source.master->data.irr,
+            session->core_machine->shared_rtc.irq_source.slave->data.irr,
+            session->core_machine->shared_rtc.irq_source.master->data.isr,
+            session->core_machine->shared_rtc.irq_source.slave->data.isr);
     }
     vm_session_finalize(session);
     STD_FREE(session);

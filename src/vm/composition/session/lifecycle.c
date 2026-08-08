@@ -90,16 +90,10 @@ static C_VOID vm_session_execution_provider_reset(C_VOID *context)
     vm_session_provider_lifecycle_reset((vm_session *)context);
 }
 
-static C_VOID vm_session_execution_provider_advance_time(C_VOID *context,
-    uint64_t elapsed_ticks)
-{
-    vm_session_provider_lifecycle_advance((vm_session *)context, elapsed_ticks);
-}
-
 static const core_machine_execution_provider vm_session_execution_provider = {
     vm_session_execution_provider_reset,
     vm_session_execution_provider_refresh,
-    vm_session_execution_provider_advance_time
+    STD_NULL
 };
 
 C_INT vm_session_bind_execution_provider(vm_session *machine)

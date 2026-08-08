@@ -5,6 +5,7 @@
 
 
 #include "core/machine/memory.h"
+#include "core/machine/machine.h"
 
 #include "vm/composition/session/session_interface.h"
 
@@ -33,6 +34,8 @@ C_INT main(C_VOID)
     failed |= core_machine_configuration_cpu_execution_borrow(first->core_machine) == core_machine_configuration_cpu_execution_borrow(second->core_machine);
     failed |= core_machine_configuration_memory_borrow(first->core_machine) == core_machine_configuration_memory_borrow(second->core_machine);
     failed |= core_machine_configuration_port_borrow(first->core_machine) == core_machine_configuration_port_borrow(second->core_machine);
+    failed |= &first->core_machine->shared_rtc == &second->core_machine->shared_rtc;
+    failed |= first->fdc_dma_request.core_owner == second->fdc_dma_request.core_owner;
     failed |= core_machine_configuration_cpu_execution_borrow(first->core_machine)->cpu != core_machine_configuration_cpu_borrow(first->core_machine);
     failed |= core_machine_configuration_cpu_execution_borrow(second->core_machine)->cpu != core_machine_configuration_cpu_borrow(second->core_machine);
     failed |= core_machine_configuration_cpu_execution_borrow(first->core_machine)->instructions != core_machine_configuration_cpu_instructions_borrow(first->core_machine);

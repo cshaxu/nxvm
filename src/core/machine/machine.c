@@ -275,6 +275,9 @@ static C_VOID core_machine_advance_scheduler(core_machine *machine,
     core_machine_vadp_advance(&machine->shared_vadp, &machine->executor_memory,
         vadp_ticks);
     core_machine_kbc_advance(&machine->shared_kbc, kbc_ticks);
+    if (machine->rtc_cmos_configured) {
+        core_machine_rtc_advance(&machine->shared_rtc, provider_ticks);
+    }
     if (machine->execution_provider != STD_NULL &&
         machine->execution_provider->advance_time != STD_NULL) {
         machine->execution_provider->advance_time(
@@ -424,6 +427,127 @@ type_status core_machine_configure_display(core_machine *machine,
     if (config->provider != STD_NULL) {
         core_machine_display_provider_slot_freeze(config->provider);
     }
+    return TYPE_STATUS_OK;
+}
+
+static C_INT core_machine_rtc_cmos_config_is_valid(
+    const core_machine_rtc_cmos_config *config)
+{
+    STD_SIZE_T index;
+
+    if (config == STD_NULL || config->data_port !=
+        (uint16_t)(config->index_port + 1u) || config->nmi_mask_bit == 0u ||
+        config->default_count > CORE_MACHINE_RTC_DEFAULT_COUNT) {
+        return TYPE_FALSE;
+    }
+    for (index = 0u; index < config->default_count; ++index) {
+        uint8_t register_index = config->defaults[index].index;
+
+        if (register_index >= CORE_MACHINE_RTC_REGISTER_COUNT ||
+            register_index == CORE_MACHINE_RTC_REG_A ||
+            register_index == CORE_MACHINE_RTC_REG_B ||
+            register_index == CORE_MACHINE_RTC_REG_C ||
+            register_index == CORE_MACHINE_RTC_REG_D) {
+            return TYPE_FALSE;
+        }
+    }
+    return TYPE_TRUE;
+}
+
+static type_status core_machine_rtc_cmos_port_read(C_VOID *owner,
+    uint16_t port, uint32_t *out_value)
+{
+    core_machine *machine = (core_machine *)owner;
+
+    if (machine == STD_NULL || out_value == STD_NULL ||
+        port != machine->rtc_cmos_config.data_port) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    *out_value = core_machine_rtc_read_selected(&machine->shared_rtc);
+    return TYPE_STATUS_OK;
+}
+
+static type_status core_machine_rtc_cmos_port_write(C_VOID *owner,
+    uint16_t port, uint32_t value)
+{
+    core_machine *machine = (core_machine *)owner;
+
+    if (machine == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (port == machine->rtc_cmos_config.index_port) {
+        (C_VOID)core_machine_set_nmi_mask(machine,
+            (value & machine->rtc_cmos_config.nmi_mask_bit) != 0u ?
+            TYPE_TRUE : TYPE_FALSE);
+        core_machine_rtc_select_register(&machine->shared_rtc, (uint8_t)value);
+        return TYPE_STATUS_OK;
+    }
+    if (port == machine->rtc_cmos_config.data_port) {
+        core_machine_rtc_write_selected(&machine->shared_rtc, (uint8_t)value);
+        return TYPE_STATUS_OK;
+    }
+    return TYPE_STATUS_INVALID_ARGUMENT;
+}
+
+static const core_machine_port_provider core_machine_rtc_cmos_port_provider = {
+    core_machine_rtc_cmos_port_read,
+    core_machine_rtc_cmos_port_write
+};
+
+type_status core_machine_configure_dma(core_machine *machine,
+    const core_machine_dma_wiring *wiring,
+    core_machine_dma_request_binding *out_fdc_request)
+{
+    type_status status;
+
+    if (!core_machine_configuration_is_open(machine) || machine->dma_configured) {
+        return TYPE_STATUS_INVALID_STATE;
+    }
+    if (wiring == STD_NULL || out_fdc_request == STD_NULL) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    status = core_machine_dma_bind_channel(&machine->shared_dma_latch,
+        &machine->shared_dma_primary, &machine->shared_dma_secondary,
+        wiring->fdc_channel, core_machine_fdc_dma_provider(), &machine->fdc,
+        &machine->fdc_dma_request);
+    if (status != TYPE_STATUS_OK) return status;
+    machine->dma_wiring = *wiring;
+    machine->dma_configured = TYPE_TRUE;
+    *out_fdc_request = machine->fdc_dma_request;
+    return TYPE_STATUS_OK;
+}
+
+type_status core_machine_configure_rtc_cmos(core_machine *machine,
+    const core_machine_rtc_cmos_config *config)
+{
+    core_machine_rtc_config rtc_config;
+    type_status status;
+    STD_SIZE_T index;
+
+    if (!core_machine_configuration_is_open(machine) ||
+        machine->rtc_cmos_configured) {
+        return TYPE_STATUS_INVALID_STATE;
+    }
+    if (!core_machine_rtc_cmos_config_is_valid(config)) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    if (machine->port_providers.slots[config->index_port].provider.read != STD_NULL ||
+        machine->port_providers.slots[config->index_port].provider.write != STD_NULL ||
+        machine->port_providers.slots[config->data_port].provider.read != STD_NULL ||
+        machine->port_providers.slots[config->data_port].provider.write != STD_NULL) {
+        return TYPE_STATUS_INVALID_STATE;
+    }
+    rtc_config.irq = config->irq;
+    rtc_config.ticks_per_second = config->ticks_per_second;
+    core_machine_rtc_initialize(&machine->shared_rtc, &machine->shared_pic_master,
+        &machine->shared_pic_slave, &rtc_config);
+    for (index = 0u; index < config->default_count; ++index) {
+        core_machine_rtc_write_nvram(&machine->shared_rtc,
+            config->defaults[index].index, config->defaults[index].value);
+    }
+    status = core_machine_install_port_provider(machine, config->index_port,
+        config->data_port, &core_machine_rtc_cmos_port_provider, machine);
+    if (status != TYPE_STATUS_OK) return status;
+    machine->rtc_cmos_config = *config;
+    machine->rtc_cmos_configured = TYPE_TRUE;
     return TYPE_STATUS_OK;
 }
 
@@ -689,6 +813,7 @@ static type_status core_machine_cold_reset(core_machine *machine)
     core_machine_kbc_reset(&machine->shared_kbc);
     core_machine_dma_reset(&machine->shared_dma_latch,
         &machine->shared_dma_primary, &machine->shared_dma_secondary);
+    if (machine->rtc_cmos_configured) core_machine_rtc_reset(&machine->shared_rtc);
     core_machine_fdc_reset(&machine->fdc);
     core_machine_hdc_reset(&machine->hdc);
     core_machine_pic_reset(&machine->shared_pic_master,
@@ -991,6 +1116,7 @@ C_VOID core_machine_destroy(core_machine *machine)
         core_machine_fdc_finalize(&machine->fdc);
         core_machine_dma_finalize(&machine->shared_dma_latch,
             &machine->shared_dma_primary, &machine->shared_dma_secondary);
+        core_machine_rtc_finalize(&machine->shared_rtc);
         core_machine_kbc_finalize(&machine->shared_kbc);
         core_machine_pic_finalize(&machine->shared_pic_master,
             &machine->shared_pic_slave);

@@ -18,9 +18,7 @@ C_VOID vm_session_provider_lifecycle_initialize(vm_session *session)
 
     vm_session_machine_devices_initialize_media(session);
     vm_session_profile_firmware_initialize(session);
-    vm_session_machine_devices_initialize_cmos(session);
     vm_session_profile_firmware_register_cmos(session);
-    vm_session_machine_devices_reset_cmos(session);
     vm_session_profile_firmware_register_keyboard(session);
     vm_session_profile_firmware_register_dma(session);
     vm_session_machine_devices_initialize_fdc(session);
@@ -36,13 +34,6 @@ C_VOID vm_session_provider_lifecycle_refresh(vm_session *session)
     if (session == STD_NULL) return;
     vm_session_profile_firmware_refresh(session);
     vm_session_machine_devices_refresh(session);
-}
-
-C_VOID vm_session_provider_lifecycle_advance(vm_session *session,
-    uint64_t elapsed_ticks)
-{
-    if (session == STD_NULL) return;
-    vm_session_machine_devices_advance(session, elapsed_ticks);
 }
 
 C_VOID vm_session_provider_lifecycle_reset(vm_session *session)

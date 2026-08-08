@@ -21,9 +21,11 @@ C_INT main(C_VOID)
         vm_session_destroy(session);
         return 1;
     }
-    if (session->rtc.registers[CORE_MACHINE_RTC_EQUIPMENT] != 0x21u ||
-        session->rtc.registers[CORE_MACHINE_RTC_BASEMEM_LSB] != 0x7fu ||
-        session->rtc.registers[CORE_MACHINE_RTC_BASEMEM_MSB] != 0x02u) {
+    if (session->core_machine->shared_rtc.registers[CORE_MACHINE_RTC_EQUIPMENT] !=
+            0x21u || session->core_machine->shared_rtc.registers[
+            CORE_MACHINE_RTC_BASEMEM_LSB] != 0x7fu ||
+        session->core_machine->shared_rtc.registers[
+            CORE_MACHINE_RTC_BASEMEM_MSB] != 0x02u) {
         vm_session_destroy(session);
         return 1;
     }
