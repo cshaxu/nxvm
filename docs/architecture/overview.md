@@ -96,12 +96,15 @@ encoding through a separate owner-approved release policy.
 
 ## Shared Foundation
 
-The source components are `core`, `vm`, `mantle`, `dos`, and `vdm`. `core` has
-a strictly neutral `core/utils` layer below `core/machine`, `core/platform`,
-and `core/product`. `vm/` owns NXVM composition, lifecycle, and teardown.
-`mantle/` owns the reusable VDM composition mechanism over core. `dos/` is an
-independent DOS implementation. `vdm/` is the NXVDM product shell over mantle
-and dos; its `product` module owns user experience rather than composition.
+The target component topology is `core`, `vm`, `mantle`, `dos`, and `vdm`.
+The current tracked source tree contains `core/`, `vm/`, and a non-runnable M3
+`vdm/` skeleton only; `mantle/` and `dos/` remain architecture-only until their
+admission milestones. `core` has a strictly neutral `core/utils` layer below
+`core/machine`, `core/platform`, and `core/product`. `vm/` owns NXVM
+composition, lifecycle, and teardown. `mantle/` will own the reusable VDM
+composition mechanism over core. `dos/` will be an independent DOS
+implementation. The eventual `vdm/` is the NXVDM product shell over mantle and
+dos; its `product` module owns user experience rather than composition.
 Cross-module adaptation, including display and input bridging, occurs only in
 the relevant product root composition. Peer machine and platform modules do
 not adapt each other's contracts directly.

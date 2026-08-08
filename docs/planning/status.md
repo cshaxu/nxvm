@@ -4,6 +4,12 @@
 
 **Idle.**
 
+M5 Td S39 reconciled the documented current source tree with its target
+component topology and corrected the T288 evidence boundary. The current
+external Setup checkpoint completes file copy, then stops at internal `#CE(0)`
+while Setup attempts to load Windows. Any T288 working-media clone is
+task-local and ignored; its path and hash never enter tracked evidence.
+
 M5 Td S38 reordered the evidence-led queue: T288 remains the post-copy Setup
 admission; T289--T292 cover ROM materialization, focused FDC topology and
 media-change work, and selected real-mode 80386 conformance; the former
@@ -14,9 +20,10 @@ M5 T287 S24 repaired the corpus-proven 80386 real-mode address-size defect.
 `_kma_linear_logical` now admits actual `SREG_DATA` reads and writes with
 32-bit offsets in real mode while retaining the existing code and stack
 boundaries. The core corpus proves `REP 67h 66h A5h` copies beyond `FFFFh`
-without a fault. The external Setup probe now passes `Reading SETUP.INF...` and
-reaches its Welcome page through real DOS, ATA PIO, ROM, keyboard, and copied
-presentation. This records one removed CPU blocker only: T287 has not reached
+without a fault. The earlier external Setup probe passes `Reading SETUP.INF...`
+and reaches its Welcome page through real DOS, ATA PIO, ROM, keyboard, and
+copied presentation. The later post-copy checkpoint is the current T288
+admission. This records one removed CPU blocker only: T287 has not reached
 Windows Standard mode and makes no Windows-support claim.
 
 M5 T287 S23 used the repository-external Windows Setup corpus through the real

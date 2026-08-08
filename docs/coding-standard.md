@@ -10,7 +10,10 @@ This document records ntvdm64-specific source rules:
 
 ## Source Layout
 
-The only permitted source roots are `core`, `vm`, `mantle`, `dos`, and `vdm`.
+The target source roots are `core`, `vm`, `mantle`, `dos`, and `vdm`. During
+M5, only `core/`, `vm/`, and the non-runnable M3 `vdm/` skeleton are tracked;
+`mantle/` and `dos/` are not placeholder directories. The authoritative
+current-versus-target inventory is [Module Layout](architecture/module-layout.md).
 
 - `core/utils` is the lowest neutral utility/callback layer and depends only on
   `type-facade`. `core/{machine,platform,product}` contains behavior shared by
@@ -63,3 +66,16 @@ dependency graph remains [Module Layout](architecture/module-layout.md).
 - Defect and compatibility fixes follow the mandatory similar-issue sweep in
   [Execution Policy](planning/execution-policy.md); do not apply a local patch
   while leaving equivalent production paths unclassified.
+
+## Test Layout
+
+- `tests/core`, `tests/machine`, `tests/platform`, and `tests/firmware` prove
+  their named technical boundary.
+- `tests/product` contains isolated shared `core/product` contract tests;
+  `tests/products` contains runnable product/session behavior tests. The
+  singular/plural distinction is intentional and must not be mixed.
+- `tests/adapters` proves explicit bridge code; `tests/support` and
+  `*/support` contain setup helpers only, never alternate production routes.
+
+New tests use an existing category or add a documented category before they
+create a new top-level `tests/` directory.

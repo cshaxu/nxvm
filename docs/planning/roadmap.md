@@ -69,8 +69,9 @@ M0 through M2 are closed and M3 remains inactive until explicitly started.
 **Scope:** create the documented Machine contract; instance CPU/RAM/bus,
 port, memory, interrupt, device, trace, and debug state in `core/machine`;
 isolate platform presentation; and preserve the M1 full-PC boot
-regression through the `nxvm.full_pc` profile. No owned DOS backend or product
-CLI enters M3.
+regression through the `nxvm.full_pc` profile. The retained `vdm/` code is a
+deterministic non-runnable contract fixture, not an NXVDM path. No owned DOS
+backend or product CLI enters M3.
 
 **Exit:** the shared core builds with GCC, `nxvm.full_pc` reproduces M1
 checkpoints, the planned DOS profile has deterministic no-media tests,

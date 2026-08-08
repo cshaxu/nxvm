@@ -18,7 +18,7 @@ nxvdm run [options] [<program> [args...]]
 The planned `run` command has explicit display selection and host-drive
 visibility controls. See [Runtime CLI Requirements](docs/requirements/nxvdm-runtime.md).
 
-## Formal Runtime
+## Target Component Topology
 
 ```text
 core/{utils,machine,platform,product}   shared foundation; future core.dll
@@ -34,6 +34,11 @@ repository under the root MIT License, with recorded source provenance and
 preserved copyright notices. The owned DOS runtime is the default NXVDM
 compatibility path. `core.dll`, `mantle.dll`, and `dos.dll` are medium-term
 build targets, not current independent artifacts.
+
+The current tracked source tree contains `core/`, `vm/`, and a non-runnable
+`vdm/` skeleton only. `mantle/` and `dos/` are planned roots and do not yet
+exist; the skeleton is not `nxvdm.exe` or an owned DOS backend. The authoritative
+current-versus-target inventory is [Module Layout](docs/architecture/module-layout.md).
 
 The default products are buildable without Microsoft binaries, WineVDM, host
 injection, loader replacement, registry changes, or administrator rights.
