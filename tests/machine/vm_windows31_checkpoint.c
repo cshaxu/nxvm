@@ -47,6 +47,9 @@ static C_INT vm_t287_wait_for_text(const vm_session *session, const C_CHAR *text
 
     for (elapsed = 0u; elapsed < timeout; elapsed += 10u) {
         if (vm_t287_has_text(session, text)) return 1;
+        if (elapsed >= 500u && !vm_session_control_is_running(&session->control)) {
+            return 0;
+        }
         Sleep(10u);
     }
     return 0;
@@ -83,12 +86,13 @@ static C_VOID vm_t287_report(const vm_session *session, const C_CHAR *stage)
         STD_SIZE_T index;
 
         STD_PRINTF("M5:T287:S17:FAULT cs=%04X ip=%08X opcode=%02X%02X%02X "
-            "eax=%08X ebx=%08X ecx=%08X edx=%08X\n",
+            "eax=%08X ebx=%08X ecx=%08X edx=%08X esi=%08X edi=%08X\n",
             diagnostic.first_fault.point.cs, diagnostic.first_fault.point.eip,
             diagnostic.first_fault.point.bytes[0], diagnostic.first_fault.point.bytes[1],
             diagnostic.first_fault.point.bytes[2], diagnostic.first_fault.eax,
             diagnostic.first_fault.ebx, diagnostic.first_fault.ecx,
-            diagnostic.first_fault.edx);
+            diagnostic.first_fault.edx, diagnostic.first_fault.esi,
+            diagnostic.first_fault.edi);
         for (index = 0u; index < diagnostic.recent_count; ++index) {
             STD_PRINTF("M5:T287:S17:RECENT cs=%04X ip=%08X opcode=%02X%02X%02X\n",
                 diagnostic.recent[index].cs, diagnostic.recent[index].eip,

@@ -2,7 +2,24 @@
 
 ## Current Work
 
-**Idle. M5 T287 is closed; no task is active.**
+**Idle.**
+
+M5 T287 S18 repaired the real post-T209 default-ROM compatibility regression:
+`INT 13h AH=08h` returned valid geometry but incorrectly overwrote the caller's
+`ES:DI` while locating the DPT. DOS consequently wrote its fixed-drive BDS
+geometry to the wrong location and divided by zero before registering `C:`.
+The ROM now preserves the caller pointer. The external FDD/HDD checkpoint
+reaches the date/time prompts, `A:\>`, and `C:\>` through the real FDC, ATA
+PIO, ROM, IRQ, DMA/PIO, and copied-frame paths. The ROM fixture also locks
+the caller-pointer boundary and direction-flag-independent PIO transfers.
+
+The reported EDIT colors were not a regression: both T209 and current use
+attribute `14h` (blue background, red foreground) for the observed text.
+The guest text memory, VADP copied frame, and Win32 GDI pixel output agree.
+S18 adds a non-activating GDI palette probe and removes automatic foreground
+and focus acquisition by a newly shown display window. It does not add a
+renderer-side VRAM copy, host media shortcut, CPU admission, or Windows
+support claim.
 
 T287 used lawful, repository-external DOS and Windows-install media through
 the real FDC, ATA PIO, ROM, IRQ, DMA/PIO, and copied-frame paths. No guest
@@ -22,28 +39,16 @@ and reports `M5:T287:S16:HDD-ADMISSION:OK`.
 The retained ROM regression also writes CHS `0/0/1` through `AH=03h` to a
 temporary HDD and reads its `5AA5h` word back through `AH=02h`.
 
-The corrected external checkpoint advances past the previous missing-`C:`
-result and stops before the DOS date prompt after four ATA reads: `#DE` at
-`0070:2218` (`DIV CX`, `CX=0`) in the DOS fixed-drive BDS geometry path. The
-VBR comparison and BPB values remain valid (`63` sectors/track and `16`
-heads). The same external pair reaches the equivalent divide point at T209, so
-this evidence does not support a T210 regression claim. It is a bounded
-default-ROM/DOS fixed-drive initialization compatibility gap, not proof of a
-CPU or ATA-controller defect and not a Windows support result. `TODO.md`
-records the owner and admission conditions for a later hardware task;
-T288/T289 are not entered without their own CPU/protected-mode corpus.
-
-The retained ATA PIO DOS smoke now deliberately zeroes its temporary HDD
-backing before boot. It continues to prove ATA PIO through the guest path
-without accidentally coupling the T286 controller regression to T287's
-separately deferred bootable-fixed-drive BDS behavior.
+The retained ATA PIO DOS smoke deliberately zeroes its temporary HDD backing
+before boot. It continues to prove ATA PIO through the guest path without
+coupling the controller regression to external bootable-media state.
 
 ## Current Technical Baseline
 
 - **T287 artifact identity:** `current-gcc` and
   `verify-current-artifact-target` select `vm-0-5-0287`. Artifact
   `nxvm_0_5_0287.exe` SHA-256:
-  `1BD373A0BA9805C406E15DE937D90F2E4A818115FC730C672BB3223C471A2021`.
+  `226F4BCB4AF842923C3A490307E72629FBAB7C8A56E1D0A2DF5987BF582E7DE3`.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
@@ -64,7 +69,7 @@ separately deferred bootable-fixed-drive BDS behavior.
 | T284 | Froze the first Windows-facing display admission contract for EGA mode 10h and added expected-failing core/VM corpus without changing runtime behavior. |
 | T285 | Implemented bounded EGA mode 10h direct, turned the T284 core/VM corpus into normal success coverage, and emitted the 0.5.0285 developer artifact. |
 | T286 | Fixed the corpus-proven ATA device-control `nIEN` IRQ14 visibility gap through core-owned controller state, with core, VM-port, and guest fixture success evidence; no DMA, timing, or command expansion. |
-| T287 | Fixed the ROM CHS device/head selection defect and recorded the first reproducible external fixed-drive BDS geometry failure without claiming Windows support. |
+| T287 | Fixed bounded ROM CHS device/head and AH=08h caller-pointer defects; external DOS now registers C: while the Standard-mode checkpoint remains a research result, not a Windows support claim. |
 
 Detailed contracts, commands, artifact provenance, and prior closures are in
 [M5 History](../history/m5.md) and Git history. The [M5 convergence queue]
