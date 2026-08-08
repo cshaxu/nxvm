@@ -56,6 +56,13 @@ static C_INT vm_int13_hdd_write_fixture(C_CHAR fdd_path[MAX_PATH],
         0xa3u, 0x02u, 0x05u,                  /* mov [0502h],ax */
         0x89u, 0x0eu, 0x04u, 0x05u,            /* mov [0504h],cx */
         0x89u, 0x16u, 0x06u, 0x05u,            /* mov [0506h],dx */
+        0xb4u, 0x01u,                         /* mov ah,01h */
+        0xb2u, 0x80u,                         /* mov dl,80h */
+        0xcdu, 0x13u,                         /* int 13h */
+        0xa3u, 0x1cu, 0x05u,                  /* mov [051Ch],ax */
+        0x9cu, 0x58u,                         /* pushf; pop ax */
+        0xa3u, 0x1eu, 0x05u,                  /* mov [051Eh],ax */
+        0xc7u, 0x06u, 0x20u, 0x05u, 0x5au, 0xa5u, /* mov word [0520h],A55Ah */
         0xf4u, 0xebu, 0xfeu                   /* hlt; jmp $ */
     };
     uint8_t hdd_sector[512] = {0};
@@ -125,6 +132,9 @@ C_INT main(C_VOID)
     uint16_t initial_status_ax = 0u;
     uint16_t initial_status_flags = 0u;
     uint16_t parameters_ax = 0u;
+    uint16_t post_type_status_ax = 0u;
+    uint16_t post_type_status_flags = 0u;
+    uint16_t completed = 0u;
     uint32_t instruction;
     C_INT passed = 0;
 
@@ -169,9 +179,15 @@ C_INT main(C_VOID)
                 sizeof(cmos_extended_disk_type)) != TYPE_STATUS_OK || core_machine_memory_read(
                 session->core_machine, 0x051au, &parameters_ax,
                 sizeof(parameters_ax)) != TYPE_STATUS_OK || core_machine_memory_read(
+                session->core_machine, 0x051cu, &post_type_status_ax,
+                sizeof(post_type_status_ax)) != TYPE_STATUS_OK || core_machine_memory_read(
+                session->core_machine, 0x051eu, &post_type_status_flags,
+                sizeof(post_type_status_flags)) != TYPE_STATUS_OK || core_machine_memory_read(
+                session->core_machine, 0x0520u, &completed,
+                sizeof(completed)) != TYPE_STATUS_OK || core_machine_memory_read(
                 session->core_machine, 0x0475u, &hdd_count, sizeof(hdd_count)) !=
                 TYPE_STATUS_OK) goto done;
-        if (sectors_high == 0u && sectors_low == 0u) continue;
+        if (completed != 0xa55au) continue;
         passed = (result_ax & 0xff00u) == 0x0300u && (flags & 1u) == 0u &&
             sectors_high == 0u &&
             sectors_low == 1008u &&
@@ -180,9 +196,12 @@ C_INT main(C_VOID)
             cmos_fixed_disk_type == 0xf0u && drive_type == 0x2fu &&
             cmos_extended_disk_type == 0x2fu &&
             parameters_ax == 0x003fu &&
+            (post_type_status_ax & 0xff00u) == 0u &&
+            (post_type_status_flags & 1u) == 0u &&
             (extension_ax & 0xff00u) == 0x0100u && extension_bx == 0x55aau &&
             (extension_flags & 1u) != 0u &&
-            initial_status_ax == 0u && (initial_status_flags & 1u) == 0u &&
+            (initial_status_ax & 0xff00u) == 0u &&
+            (initial_status_flags & 1u) == 0u &&
             hdd_count == 1u;
         break;
     }
@@ -193,14 +212,15 @@ done:
     if (hdd_path[0] != '\0') DeleteFileA(hdd_path);
     if (!passed) {
         STD_FPRINTF(STD_STDERR,
-            "M5:T287:S13:ROM-INT13-HDD-PARAMETERS:FAIL ax=%04X flags=%04X sectors=%04X:%04X dpt=%04X:%04X spt=%02X cmos=%02X/%02X type=%02X params=%04X ext=%04X/%04X/%04X status=%04X/%04X hdd=%u\n",
-            result_ax, flags, sectors_high, sectors_low, parameter_segment,
+            "M5:T287:S14:ROM-INT13-HDD-STATUS:FAIL complete=%04X ax=%04X flags=%04X sectors=%04X:%04X dpt=%04X:%04X spt=%02X cmos=%02X/%02X type=%02X params=%04X ext=%04X/%04X/%04X status=%04X/%04X post=%04X/%04X hdd=%u\n",
+            completed, result_ax, flags, sectors_high, sectors_low, parameter_segment,
             parameter_offset, sectors_per_track, cmos_fixed_disk_type, cmos_extended_disk_type,
             drive_type, parameters_ax, extension_ax,
             extension_bx, extension_flags, initial_status_ax,
-            initial_status_flags, hdd_count);
+            initial_status_flags, post_type_status_ax, post_type_status_flags,
+            hdd_count);
         return 1;
     }
-    STD_PRINTF("M5:T287:S13:ROM-INT13-HDD-PARAMETERS:OK\n");
+    STD_PRINTF("M5:T287:S14:ROM-INT13-HDD-STATUS:OK\n");
     return 0;
 }

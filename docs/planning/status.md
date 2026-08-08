@@ -34,6 +34,11 @@ the CH/CL geometry encoding. The ROM regression asserts AX=`003Fh` for the
 fixture geometry. This ABI correction also preserves the external DOS `C:`
 failure for further diagnosis.
 
+S14 corrects the shared INT 13h status write: successful calls now clear the
+BDA last-status byte instead of recording AH=15's successful type value `03h`;
+errors retain their AH result and carry flag. The ROM corpus verifies a
+successful AH=01 immediately after AH=15 and the unsupported AH=41 error path.
+
 The external copied-frame checkpoint still reports the same `C:` failure after
 S3--S9. Its paused copied-frame observation retains BDA fixed-disk bytes
 `00/01/C0/00` for status, drive count, control, and port offset respectively;
@@ -46,7 +51,7 @@ is considered.
 - **T287 artifact identity:** `current-gcc` and
   `verify-current-artifact-target` select `vm-0-5-0287`. The active T287
   subtask has not closed. Artifact `nxvm_0_5_0287.exe` SHA-256:
-  `B6612D7C1EFD2864DE777CAA2DB4A3441B7AC00128C61EA29AB6B52B5F321847`.
+  `510A2ADF7CD25DF18EEE493AE99A0189F4BC05373154F0D6849963828AB8275C`.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
