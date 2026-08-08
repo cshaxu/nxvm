@@ -56,6 +56,9 @@ Every closure, including standalone `Td` work, runs
 status baseline, idle-state packet exclusion, retired M5 task-record absence,
 queue/history vocabulary boundaries, current CMake artifact-target agreement,
 mojibake rejection, tracked local-path rejection, open-only TODO entries, and
-the current-status capacity limits.
+the current-status capacity limits. Identifier allocation itself is owned by
+the [Execution Policy](planning/execution-policy.md); task notes link to that
+authority, while history may record only closed numbering outcomes or an
+irreversible historical exception.
 
 See [Historical Summaries](history/README.md) for retrieval of retired detail.

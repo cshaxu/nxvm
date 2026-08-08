@@ -2,8 +2,8 @@
 
 ## Current Work
 
-**Idle - M5 T299 closed.** T300 remains conditional on an approved first-party
-consumer; no numeric task is active.
+**Idle - M5 Td S44 closed.** T300 remains conditional on an approved
+first-party consumer; no numeric task is active.
 
 ## Current Technical Baseline
 
@@ -45,8 +45,6 @@ active packet becomes an operational authority only after approval.
 
 ## Recent Governance
 
-- **M5 Td S33:** corrected the external-consumer boundary and shifted the
-  former forward queue to T279--T287.
 - **M5 Td S34:** repaired queue wording and inserted the approved T279--T283
   reliability/interface package.
 - **M5 Td S35:** tightened T279, T280, T282, and T283 task contracts.
@@ -59,8 +57,11 @@ active packet becomes an operational authority only after approval.
   tracked local-path samples, and added recurrence gates for those boundaries.
 - **M5 Td S43:** superseded the unimplemented T291 S4 admission by merging its
   protected-return fault-atomicity scope into active T293 S1, which retains its
-  original post-`#UD` transition-removal scope. T291 remains closed FDC history;
-  the unstarted continuation remains T294--T308.
+  original post-`#UD` transition-removal scope. T291 remains closed FDC history.
+- **M5 Td S44:** made queue-order allocation, closed-subtask finality, and the
+  no-active-task corrective exception explicit; added a contiguous-queue
+  governance gate. The pre-policy S43/S42 discontinuity is archival only, so
+  `S42` remains unavailable and the next governance allocation follows S44.
 
 ## Milestone State
 

@@ -23,6 +23,20 @@ function Test-MachineLocalPath([string]$text) {
     return $text -match '(?i)[a-z]:(?:\\){2}(?:users|home)(?:\\){2}'
 }
 
+function Test-ContiguousTaskIds([int[]]$identifiers) {
+    if ($identifiers.Count -eq 0) {
+        return $true
+    }
+
+    for ($index = 1; $index -lt $identifiers.Count; $index++) {
+        if ($identifiers[$index] -ne ($identifiers[$index - 1] + 1)) {
+            return $false
+        }
+    }
+
+    return $true
+}
+
 if ($SelfTest) {
     Require (Test-Mojibake (([char]0x00E2).ToString() + "quoted")) `
         "Mojibake detector did not reject the controlled negative sample."
@@ -32,7 +46,11 @@ if ($SelfTest) {
         "Machine-local path detector did not reject the controlled negative sample."
     Require (-not (Test-MachineLocalPath 'C:\\NAME.EXT')) `
         "Machine-local path detector rejected a guest DOS path control sample."
-    Write-Output "Documentation governance mojibake self-test passed."
+    Require (Test-ContiguousTaskIds @(300, 301, 302)) `
+        "Linear task identifier checker rejected a contiguous control sample."
+    Require (-not (Test-ContiguousTaskIds @(300, 302))) `
+        "Linear task identifier checker accepted a skipped control sample."
+    Write-Output "Documentation governance self-tests passed."
     exit 0
 }
 
@@ -81,6 +99,13 @@ Require (-not ($queue -match '(?im)^The completed migration order')) `
     "The M5 queue must not retain completed migration narrative."
 Require (-not ($todo -match '(?m)^[-*] \[x\]')) `
     "TODO.md must contain only open debt entries."
+
+$queueTaskIds = @(
+    [regex]::Matches($queue, '(?m)^\| T(?<id>\d+) \|') |
+    ForEach-Object { [int]$_.Groups['id'].Value }
+)
+Require (Test-ContiguousTaskIds $queueTaskIds) `
+    "The M5 queue must allocate numeric task identifiers in one contiguous ascending sequence."
 
 $closureSection = [regex]::Match($status, '(?ms)^## Recent M5 Closures\r?\n(?<body>.*?)(?=^## |\z)')
 Require ($closureSection.Success) "status.md must contain a Recent M5 Closures section."

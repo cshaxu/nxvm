@@ -17,7 +17,8 @@ It works with the
 2. Before implementation, split the request into requirements with an owner,
    completion condition, verification method, risks, and explicit non-goals.
    Obtain owner confirmation before changing runtime behavior; an approved goal
-   or task packet is that confirmation.
+   or task packet is that confirmation. Allocate any task identifier through
+   the linear rule in the Execution Policy before creating the packet.
 3. Keep exactly one subtask active in `status.md`. Execute only its approved
    scope, record commands and evidence, and use the similar-issue sweep when it
    corrects a defect or compatibility class.
@@ -52,7 +53,8 @@ without turning a task into unrelated cleanup.
 [Execution Policy](planning/execution-policy.md) owns the
 `M<milestone> T<task> S<subtask> P<part>` MTSP form, its standalone `Td`
 variant, commit subjects, artifact revision allocation, and runnable-output
-rules. [Project Status](planning/status.md) is the active ledger;
+rules, including the strict linear allocation rule and its sole corrective
+exception. [Project Status](planning/status.md) is the active ledger;
 [Debt Tracking](debt-tracking.md) is the deferred-work ledger.
 
 Each ntvdm64 task packet maps original requirements to evidence and records

@@ -43,6 +43,9 @@ Read these documents before changing the repository:
 ## Execution
 
 - Keep exactly one active subtask in `docs/planning/status.md`.
+- Allocate numeric tasks and subtask/governance identifiers only in the linear
+  order defined by `docs/planning/execution-policy.md`; never skip, reopen, or
+  reuse a closed identifier.
 - Record evidence, provenance, verification, and task tracking when affected.
 - Preserve unrelated changes and avoid destructive Git operations.
 - Commit subjects use `M<milestone> T<task> S<subtask> P<part>: description`

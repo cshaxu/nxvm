@@ -58,6 +58,30 @@ Commit subjects are `M<milestone> Td [S<subtask>] P<part>: description` for a
 standalone documentation task, or `M<milestone> T<task> S<subtask> P<part>:
 description` for an implementation task and its task-specific design work.
 
+## Linear Identifier Allocation
+
+Allocate every numeric task identifier from the approved milestone queue in
+strict ascending order. A reserved conditional task still occupies its place:
+do not begin a later task while it remains in the queue. Resolve it first by
+admitting it, withdrawing it with an owner-approved governance change, or
+replacing the remaining queue as a governed decision. Never skip an identifier
+and never reopen a closed task or subtask identifier.
+
+Allocate implementation subtask (`S`) and standalone documentation (`Td S`)
+identifiers strictly after the latest closed identifier in their own sequence.
+Historical records do not become reusable capacity. The existing pre-policy
+`M5 Td S43` record is an archival discontinuity: `S42` is permanently
+unavailable, `S44` closes that transition, and the next M5 governance
+allocation is `S45`.
+
+The only corrective exception is narrow: when there is no active task, the
+most recently closed **numeric** task may receive its next unused subtask for
+an in-scope corrective repair. It must preserve that task's scope, run its
+normal evidence, update that task's developer artifact and SHA-256 record, and
+close again before a new task is admitted. It cannot reuse a closed `S`, fill a
+missing identifier, add unrelated work, or bypass a queued task. Standalone
+`Td` work and older numeric tasks have no such exception.
+
 A design milestone is not complete until it has produced the bounded Task and
 subtask breakdown for its immediate implementation milestone. The breakdown
 maps each task to an approved decision, contract, regression set, acceptance
@@ -119,7 +143,8 @@ four-digit developer-artifact revision:
 All implementation subtasks rebuild their task-level artifact under that same
 revision; the source commit and recorded SHA-256 identify the exact build.
 Task numbers are never reused, so a completed task artifact version cannot
-collide with another task's version.
+collide with another task's version. The linear allocation rule above also
+prohibits creating task identifiers out of queue order.
 
 Use `nxvm_0_5_NNNN.exe` for the bootable VM product or
 `nxvdm_0_5_NNNN.exe` for the DOS app-runner product. Every task record maps

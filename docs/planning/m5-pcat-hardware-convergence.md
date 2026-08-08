@@ -14,7 +14,9 @@ hardware-device verification template and must preserve that baseline.
 This queue advances the four product goals recorded in [TODO](../../TODO.md).
 Tasks are ROI-ordered, subject to their stated dependencies; a task begins with
 its own S1 contract and may split when its bounded stop condition is reached. A runnable implementation task uses its
-numeric task identifier as its artifact revision when it completes.
+numeric task identifier as its artifact revision when it completes. Task
+identifiers are allocated linearly: this table is the reservation order, and a
+conditional row must be resolved before any later row may begin.
 
 T270--T299 are closed and archived in [M5 History](../history/m5.md). T300 is
 conditional and is not active until an approved first-party consumer exists.

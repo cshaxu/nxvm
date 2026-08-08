@@ -71,9 +71,9 @@ developer artifacts.
 
 Beginning with M5 T48, task artifacts use the NXVM lineage `0.5.NNNN` form,
 where `NNNN` is exactly the four-digit numeric implementation task identifier.
-This is an identity rule, not a completion-order sequence rule: T258 produces
-`0.5.0258` even if work completes out of order. Numeric task identifiers are
-never reused, so artifact versions cannot collide. For example, the early T48
+This is an identity rule: T258 produces `0.5.0258`. Numeric task identifiers
+are allocated in strict queue order and are never reused, so artifact versions
+cannot collide. For example, the early T48
 artifact was `0.5.0048`. Design-only subtasks do not create artifacts by
 themselves.
 

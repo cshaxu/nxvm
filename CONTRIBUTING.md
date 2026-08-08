@@ -63,6 +63,8 @@ documentation/governance task; `Td` does not allocate a numeric `T` identifier
 or require an executable artifact. Keep records appropriate to the work,
 preserve all established baselines, and follow
 `docs/planning/execution-policy.md` for the authoritative identifier rules.
+Identifiers are allocated strictly in queue order; closed identifiers are never
+skipped backward, reopened, or reused.
 
 When a completed subtask produces a runnable Windows executable, place its
 verified local copy in ignored `build/output/` using the product-specific
