@@ -38,8 +38,10 @@
   remains active and no artifact is final until the task closes.
 - **Current S1 evidence:** `core-machine-port-ownership-smoke` proves the
   retained owner after duplicate, PIC/PIT/KBC/FDC conflict rejection, and
-  public-bus plus guest-`IN`/`OUT` dispatch. `current-gates-gcc` passed all 51
-  static/governance targets and 127/127 CTests on the T299 artifact baseline.
+  public-bus plus guest-`IN`/`OUT` dispatch. It also proves FDC `3F2h` accepts
+  a prebound read provider while retaining FDC's write owner, and rejects a
+  prebound write provider without replacement. `current-gates-gcc` passed all
+  51 static/governance targets and 127/127 CTests on the T299 artifact baseline.
 - **Stop condition:** one registry/dispatch path owns every configured port;
   duplicate directional registration is non-mutating and observable; CPU and
   public bus reach that same owner; no VDM minimal PC/AT overwrite remains;
