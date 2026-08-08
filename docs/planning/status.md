@@ -2,7 +2,52 @@
 
 ## Current Work
 
-**Idle.**
+**M5 T296 S1 active - shared-device initialization authority migration matrix.**
+
+The approved task is limited to the design and source-call inventory in
+[the T296 migration matrix](../architecture/core-machine-shared-device-migration.md).
+It records the current implementation, typed replacement boundary, lifecycle
+entry points, regression gates, and independent stop condition for S2 (display
+and port), S3 (DMA plus RTC/CMOS/NMI), and S4 (FDC/HDC). S1 changes no runtime
+source, CMake graph, test behavior, artifact, guest media, or local-path
+policy. The task remains active for coordinator review after S1; do not admit
+T297 or later work.
+
+### Task Packet
+
+- **Original request:** Move remaining shared-device initialization, binding,
+  reset, and finalization authority to `core_machine` in three fixed stages.
+  VM composition/profile may submit only frozen typed topology, configuration,
+  and provider/media policy; it must not borrow or bind controller, PIC, or
+  port storage.
+- **S1 objective and completion condition:** Audit every real A/B/C lifecycle
+  call, storage owner, raw VM borrow, typed replacement, core entry point, and
+  regression gate; freeze each next-stage acceptance and stop condition.
+  Completion is the reviewed matrix plus the static source-query record below.
+- **Reference baseline:** T295; `vm-0-5-0295`,
+  `nxvm_0_5_0295.exe` SHA-256
+  `52B291B1E1100D945BD44B7B1F88A622F7B2B7D3468BC78997ED90732BCA179A`.
+- **In scope:** Documentation in this packet and the linked architecture
+  matrix. The matrix covers only VADP/port; DMA/RTC/CMOS/NMI; and FDC/HDC.
+- **Non-goals:** No runtime/API/CMake/test change; no scheduler, second
+  machine, storage mirror, host shortcut, media/path policy migration, or
+  Console/debugger/boot experience change. T297 firmware capability, T298
+  debugger capability, and T299 raw-borrow deletion remain deferred.
+- **Applicable rules:** `core/machine` owns neutral mutable guest state and
+  lifecycle order; VM/profile owns immutable PC/AT topology, defaults, ROM and
+  provider/media policy. Core receives no PC/AT/default-profile/ROM-vendor,
+  BIOS/DOS, local-path, or product-policy meaning. Preserve the single media
+  route and owner-provided read-only test media rule. No source import or
+  license/provenance action is involved.
+- **S1 evidence commands:**
+  `rg -n "core_machine_(configuration|profile_binding|debug)_" src tests --glob '*.[ch]'`;
+  `rg -n "(vadp|dma|rtc|cmos|nmi|fdc|hdc|port).*(_initialize|_reset|_finalize|bind|install)" src/core src/vm --glob '*.[ch]'`;
+  `powershell -NoProfile -ExecutionPolicy Bypass -File tools/Verify-DocumentationGovernance.ps1 -RepositoryRoot .`;
+  `git diff --check`.
+- **S1 stop condition:** Stop and return to the coordinator on any required
+  runtime change, unresolved owner contradiction, required T297+ capability,
+  or B/C dependency while evaluating A (and C dependency while evaluating B).
+  Do not close the packet or advance to S2 without review.
 
 ## Current Technical Baseline
 
