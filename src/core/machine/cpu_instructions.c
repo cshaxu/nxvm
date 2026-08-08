@@ -3952,8 +3952,11 @@ static C_VOID _ser_iret_protected_outer_16(
     }
     TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, newcs,
         TYPE_REFERENCE_OF(code_desc)));
-    if (!_IsDescCodeNonConform(code_desc) || !_IsDescPresent(code_desc)) {
+    if (!_IsDescCodeNonConform(code_desc)) {
         TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(newcs & 0xfffcu));
+    }
+    if (!_IsDescPresent(code_desc)) {
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_NP(newcs & 0xfffcu));
     }
     newcpl = (type_unsigned_8)_GetSelector_RPL(newcs);
     if (newcpl <= oldcpl || newcpl != _GetDesc_DPL(code_desc)) {
@@ -4363,13 +4366,13 @@ static C_VOID _e_ret_far(core_machine_cpu_execution_context *context, type_unsig
         if (!_IsDescCode(descriptor))
         {
             TYPE_TRACE_BLOCK_BEGIN("!DescCode");
-            TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(newcs));
+            TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(newcs & 0xfffcu));
             TYPE_TRACE_BLOCK_END;
         }
         if (_GetSelector_RPL(newcs) < _GetCPL)
         {
             TYPE_TRACE_BLOCK_BEGIN("RPL(<CPL)");
-            TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(newcs));
+            TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(newcs & 0xfffcu));
             TYPE_TRACE_BLOCK_END;
         }
         if (_IsDescCodeConform(descriptor))
@@ -4378,7 +4381,7 @@ static C_VOID _e_ret_far(core_machine_cpu_execution_context *context, type_unsig
             if (_GetDesc_DPL(descriptor) > _GetSelector_RPL(newcs))
             {
                 TYPE_TRACE_BLOCK_BEGIN("DPL(>RPL)");
-                TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(newcs));
+                TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(newcs & 0xfffcu));
                 TYPE_TRACE_BLOCK_END;
             }
             TYPE_TRACE_BLOCK_END;
@@ -4386,7 +4389,7 @@ static C_VOID _e_ret_far(core_machine_cpu_execution_context *context, type_unsig
         if (!_IsDescPresent(descriptor))
         {
             TYPE_TRACE_BLOCK_BEGIN("!DescPresent");
-            TYPE_TRACE_CHECK_RETURN(_SetExcept_NP(newcs));
+            TYPE_TRACE_CHECK_RETURN(_SetExcept_NP(newcs & 0xfffcu));
             TYPE_TRACE_BLOCK_END;
         }
         if (_GetSelector_RPL(newcs) > _GetCPL)

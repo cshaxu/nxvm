@@ -9,7 +9,7 @@
 - **T293 artifact identity:** `current-gcc` and
   `verify-current-artifact-target` select `vm-0-5-0293`. Artifact
   `nxvm_0_5_0293.exe` SHA-256:
-  `72AFD6F1ECB5798F84D928B714DDC1585B1ECC7BCD678CA51357A6B7A99FF24F`.
+  `8EA2A81A4EB99F1C541CE9D6CDE3805BBD292A5AFD3A9334A39ED840AE45267E`.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
@@ -31,7 +31,7 @@
 | T290 | Replaced the FDC single-media binding with frozen drive slots and exact DOR/unit selection, proven through core ports, VM composition, and DOS FDD0 regression without broadening FDC behavior. |
 | T291 | Made FDC generation, disk-change and motor/DMA cancellation per frozen drive slot, with core port and DOS FDD0 evidence while leaving timing, UI, and commands deferred. |
 | T292 | Added prepared-state evidence that selected 67h REP comparison, scan, and segment-override forms already conform; no CPU behavior or artifact changed. |
-| T293 | Removed the unused post-`#UD` transition surface and made protected outer `RETF`/`IRET` frame validation non-mutating until commit. The new focused corpus plus retained native `#UD`, privilege, and call-gate regressions pass; `nxvm_0_5_0293.exe` is recorded above. |
+| T293 | Removed the unused post-`#UD` transition surface, made protected outer `RETF`/`IRET` frame validation non-mutating until commit, and completed its exception/atomicity matrix: non-present returned `CS` is `#NP`, non-present `SS` is the retained terminal `#SS`, and invalid entries are `#GP`; all six `RETF`/outer-`IRET` cases preserve the defined pre-commit boundary. |
 
 Detailed contracts, commands, artifact provenance, and prior closures are in
 [M5 History](../history/m5.md) and Git history. The [M5 convergence queue]
