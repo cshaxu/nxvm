@@ -742,6 +742,13 @@ target_link_libraries(vm-windows31-int13-trace-probe PRIVATE vm-composition)
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(vm-windows31-int13-trace-probe PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
+add_executable(vm-dos-fdisk-probe
+    tests/machine/vm_dos_fdisk_probe.c
+)
+target_link_libraries(vm-dos-fdisk-probe PRIVATE vm-composition)
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(vm-dos-fdisk-probe PRIVATE -Wall -Wextra -Wpedantic -Werror)
+endif()
 add_executable(vm-windows31-hdd-admission-probe
     tests/machine/vm_windows31_hdd_admission_probe.c
 )
@@ -821,6 +828,10 @@ add_executable(vm-rom-ega-int10-system-smoke
     tests/machine/vm_rom_ega_int10_system_smoke.c
 )
 target_link_libraries(vm-rom-ega-int10-system-smoke PRIVATE vm-composition)
+add_executable(vm-rom-text-write-char-smoke
+    tests/machine/vm_rom_text_write_char_smoke.c
+)
+target_link_libraries(vm-rom-text-write-char-smoke PRIVATE vm-composition)
 add_executable(vm-rom-int13-hdd-type-smoke
     tests/machine/vm_rom_int13_hdd_type_smoke.c
 )
@@ -1037,6 +1048,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     vm-ega-controller-system-smoke
     vm-ega-planar-system-smoke
     vm-rom-ega-int10-system-smoke
+    vm-rom-text-write-char-smoke
     vm-rom-int13-hdd-type-smoke
     vm-ega-mode10-boot-smoke
     core-machine-stopped-lifecycle-smoke

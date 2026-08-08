@@ -4,6 +4,18 @@
 
 **Idle.**
 
+M5 T287 S19 reproduced the external `A:\FDISK` blank display through the real
+FDC, ATA PIO, ROM, keyboard, and copied-presentation paths. The program had
+cleared B800 text memory, then invoked `INT 10h AH=05h`, `AH=08h`, and `AH=09h`;
+the default ROM had silently ignored the latter three services, so no renderer
+or VADP defect existed. The bounded repair admits text-mode active page zero,
+current-cell read, and repeated character/attribute writes without moving the
+cursor. An owner-built ROM fixture proves BDA, B800, and copied-frame results;
+the parameterized external probe reports `M5:T287:S19:FDISK:EXTERNAL:OK` only
+after the copied frame contains the FDISK partition text. No guest media,
+machine-local path, raw trace, host shortcut, or Windows support claim enters
+the repository.
+
 M5 T287 S18 repaired the real post-T209 default-ROM compatibility regression:
 `INT 13h AH=08h` returned valid geometry but incorrectly overwrote the caller's
 `ES:DI` while locating the DPT. DOS consequently wrote its fixed-drive BDS
@@ -47,7 +59,7 @@ coupling the controller regression to external bootable-media state.
 - **T287 artifact identity:** `current-gcc` and
   `verify-current-artifact-target` select `vm-0-5-0287`. Artifact
   `nxvm_0_5_0287.exe` SHA-256:
-  `5E3BCEDD0DE39A7FAE846547BEA3BC6FF64A109C9724808632822E76F0F03A82`.
+  `6D24D1785B7125005969E55F990A23185D56C46FF5BBDF489467974489C26259`.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
@@ -68,7 +80,7 @@ coupling the controller regression to external bootable-media state.
 | T284 | Froze the first Windows-facing display admission contract for EGA mode 10h and added expected-failing core/VM corpus without changing runtime behavior. |
 | T285 | Implemented bounded EGA mode 10h direct, turned the T284 core/VM corpus into normal success coverage, and emitted the 0.5.0285 developer artifact. |
 | T286 | Fixed the corpus-proven ATA device-control `nIEN` IRQ14 visibility gap through core-owned controller state, with core, VM-port, and guest fixture success evidence; no DMA, timing, or command expansion. |
-| T287 | Fixed bounded ROM CHS device/head and AH=08h caller-pointer defects; external DOS now registers C: while the Standard-mode checkpoint remains a research result, not a Windows support claim. |
+| T287 | Fixed bounded ROM CHS device/head, AH=08h caller-pointer, and FDISK text-service defects; external DOS registers C: and presents FDISK through the copied frame, while the Standard-mode checkpoint remains a research result, not a Windows support claim. |
 
 Detailed contracts, commands, artifact provenance, and prior closures are in
 [M5 History](../history/m5.md) and Git history. The [M5 convergence queue]
