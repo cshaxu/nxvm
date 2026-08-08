@@ -57,7 +57,8 @@ typedef struct {
     type_unsigned_8 format_id[4];
     type_unsigned_8 format_id_index;
     type_unsigned_8 selected_drive;
-    uint32_t observed_media_generation;
+    uint64_t observed_media_generation[CORE_MACHINE_FDC_DRIVE_COUNT];
+    type_bool media_changed[CORE_MACHINE_FDC_DRIVE_COUNT];
 } core_machine_fdc_data;
 
 typedef struct {

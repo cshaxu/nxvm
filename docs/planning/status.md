@@ -2,8 +2,15 @@
 
 ## Current Work
 
-**Idle -- M5 T290 closed: FDC drive bindings and DOR selection are frozen at
-composition.**
+**Idle -- M5 T291 closed: FDC motor, media generation, and DIR are per-drive.**
+
+T291 adds per-slot generation observations and disk-change latches to the
+frozen FDC topology. Refresh observes all slots while DIR reports the
+DOR-selected slot. DOR loss of readiness cancels an active DMA execution; a
+new valid command re-requests DMA. Reset retains its IRQ6/DRQ cancellation.
+The core port corpus proves nonselected changes, no-media, motor-off, re-request
+and reset; the DOS FDD0 regression remains green. No timing, UI, command, or
+topology expansion was added. Full gates passed 120/120 CTests.
 
 T290 replaces the FDC's single media identity with four core-owned frozen drive
 slots. A command unit must agree with the DOR-selected drive; ready, media I/O,
@@ -131,10 +138,10 @@ coupling the controller regression to external bootable-media state.
 
 ## Current Technical Baseline
 
-- **T290 artifact identity:** `current-gcc` and
-  `verify-current-artifact-target` select `vm-0-5-0290`. Artifact
-  `nxvm_0_5_0290.exe` SHA-256:
-  `664ECD7CFA5DE4724D0798BDCCCF2ABA1D378DEB760480E0B55E4DB471A1ECBF`.
+- **T291 artifact identity:** `current-gcc` and
+  `verify-current-artifact-target` select `vm-0-5-0291`. Artifact
+  `nxvm_0_5_0291.exe` SHA-256:
+  `9CD9912B27D9B3FB199480788E5E21E6A490904C9C4C751FE31D2224961E878A`.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
@@ -148,7 +155,6 @@ coupling the controller regression to external bootable-media state.
 
 | Task | Compact result |
 | --- | --- |
-| T283 | Extended VM-free controller media evidence, removed unsafe HDD CHS transfer state, and made FDD/HDD persistence collision-safe and failure-preserving. |
 | T284 | Froze the first Windows-facing display admission contract for EGA mode 10h and added expected-failing core/VM corpus without changing runtime behavior. |
 | T285 | Implemented bounded EGA mode 10h direct, turned the T284 core/VM corpus into normal success coverage, and emitted the 0.5.0285 developer artifact. |
 | T286 | Fixed the corpus-proven ATA device-control `nIEN` IRQ14 visibility gap through core-owned controller state, with core, VM-port, and guest fixture success evidence; no DMA, timing, or command expansion. |
@@ -156,6 +162,7 @@ coupling the controller regression to external bootable-media state.
 | T288 | Resolved the external Setup post-copy `#CE` with the bounded 16-bit protected-mode call-gate and outer-`RETF` path; core and real replay now reach the next `MOV CR0,EAX` `#UD` checkpoint without claiming Windows support. |
 | T289 | Materialized the default PC/AT ROM image before provider freeze, including its A20 reset alias, while reset restores only IVT/BDA and mutable device tables; ROM, boot, Console, debugger, and display regressions pass. |
 | T290 | Replaced the FDC single-media binding with frozen drive slots and exact DOR/unit selection, proven through core ports, VM composition, and DOS FDD0 regression without broadening FDC behavior. |
+| T291 | Made FDC generation, disk-change and motor/DMA cancellation per frozen drive slot, with core port and DOS FDD0 evidence while leaving timing, UI, and commands deferred. |
 
 Detailed contracts, commands, artifact provenance, and prior closures are in
 [M5 History](../history/m5.md) and Git history. The [M5 convergence queue]
