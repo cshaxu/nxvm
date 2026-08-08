@@ -38,7 +38,8 @@ typedef struct core_machine_vadp_ega_sequencer_config {
     uint8_t clocking_mode;
     uint8_t map_mask;
     uint8_t memory_mode;
-    type_bool planar_320x200x16;
+    /* Profile capability; the ROM selects the bounded runtime EGA mode. */
+    type_bool planar_ega;
 } core_machine_vadp_ega_sequencer_config;
 
 typedef struct core_machine_vadp_ega_controller_config {
