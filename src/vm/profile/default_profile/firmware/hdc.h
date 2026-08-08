@@ -279,7 +279,7 @@ mov dl, ds:[0075]           \n\
 pop ds                      \n\
 pop bx                      \n\
 pop ax                      \n\
-mov bl, 2f                  \n\
+mov bl, 47                  \n\
 mov al, cl                  \n\
 and al, 3f                  \n\
 mov ah, 00                  \n\

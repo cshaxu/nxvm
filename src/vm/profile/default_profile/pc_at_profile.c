@@ -61,7 +61,7 @@ static const vm_profile_default_pc_at_descriptor default_pc_at_descriptor = {
             0x01u, 0x00u, 0x0fu, 0x00u, 0x00u } },
     16u * 1024u * 1024u,
     { 0xfffffff0u, 0x000ffff0u, 16u, 0xf000u, 0xfff0u },
-    { 0x21u, 0x027fu, 0x40u, 0xf0u, 0x2fu, 0u, 0x80u },
+    { 0x21u, 0x027fu, 0x40u, 0xf0u, 0x47u, 0u, 0x80u },
     default_pc_at_port_ranges,
     sizeof(default_pc_at_port_ranges) / sizeof(default_pc_at_port_ranges[0]),
     default_pc_at_routes,
