@@ -16,9 +16,9 @@ Required `key=value` fields are:
 
 ```text
 schema=ntvdm64.bochx-experiment.v1
-bochs_source_root=D:\\home\\repos.hobby\\bochs-2.6-compat\\bochs-2.6
+bochs_source_root=<absolute local Bochs 2.6 source root>
 bochs_archive_sha256=<64 lowercase hexadecimal characters>
-bochx_patch_path=D:\\home\\repos.hobby\\nxvm\\bochx\\patch-bochs-2.6-msvc-src.zip
+bochx_patch_path=<absolute local Bochx patch ZIP>
 bochx_patch_sha256=<64 lowercase hexadecimal characters>
 nxvm_commit=<40 lowercase hexadecimal characters>
 probe_id=<project-owned probe id>

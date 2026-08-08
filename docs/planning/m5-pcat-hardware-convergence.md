@@ -16,31 +16,10 @@ Tasks are ROI-ordered, subject to their stated dependencies; a task begins with
 its own S1 contract and may split when its bounded stop condition is reached. A runnable implementation task uses its
 numeric task identifier as its artifact revision when it completes.
 
-### A. Second Core/Composition Boundary Migration
+T270--T292 are closed and archived in [M5 History](../history/m5.md). The
+unstarted queue begins at T293.
 
-This phase implements only profile-neutral machine mechanisms and policy-free
-host backing primitives. It does not implement `mantle`, an external runtime
-adapter, DOS services, host path policy, or a host-filesystem product layer.
-Composition alone selects an opaque host resource and adapts it into guest
-media; VM retains mount/eject, persistence, media paths, PC/AT topology,
-firmware, boot policy, and Console/UI behavior.
-
-The completed migration order was `T270 -> T271 -> T272 -> T275 -> T276` and
-`T272 -> T277 -> T278`. `T273` was independent after the media baseline was
-understood; `T274` waited for T270, T271, and T273. Task-created registered
-temporary media, traces, and logs may be cleaned by their task; generic build
-trees, `build/output`, and user files are never cleanup targets.
-
-The boundary migration consumed T270--T278. The pre-migration future queue
-that formerly began at T270 was first displaced to T279--T287; this approved
-reliability and interface package consumes T279--T283. T284/T285 then froze
-and implemented the mode-10h EGA direct path; T286 closed the single
-corpus-proven ATA `nIEN` IRQ-visibility gap; and T287 has recorded external
-fixed-drive initialization plus one real-mode 80386 address-size CPU gap. The
-remaining queue now begins with the second core public-surface closure.
-Historical completed task records retain their original identifiers.
-
-### B. Core Public-Surface Closure And Mantle Prerequisites
+### A. Core Public-Surface Closure And Mantle Prerequisites
 
 | Task | Owner and purpose | Dependency and stop condition |
 | --- | --- | --- |
@@ -56,21 +35,7 @@ Historical completed task records retain their original identifiers.
 | T302 | Add a transition-local combined commit only if a real consumer requires it: checked staged RAM plus an allowed decoded-transition CPU patch at one execution boundary. | Depends on T300--T301 and a concrete consumer. Otherwise it remains deferred. |
 | T303 | Prove second-consumer readiness with a first-party core-only fixture and current NXVM regressions. | Depends on T293--T301, plus T302 only if admitted. It does not create a `mantle` runtime. |
 
-### C. Windows 3.x Display And Storage Prerequisites
-
-T287 remains a bounded external readiness corpus. Its fixed-drive BDS geometry
-and real-mode 80386 address-size failures are closed as individual admissions.
-The current external checkpoint crosses the former post-copy call-gate `#CE`
-and stops at `#UD(0)` on `MOV CR0,EAX` while Setup attempts to load Windows.
-That next stop remains a separate CPU admission; it does not establish a
-Standard-mode checkpoint or pre-admit broad CPU, FPU, or FDC work.
-
-### D. Windows Checkpoint, Firmware, FDC, And CPU Evidence
-
-| Task | Owner and purpose | Dependency and stop condition |
-| --- | --- | --- |
-
-### E. Later CPU, FPU, And Readiness Work
+### B. Later CPU, FPU, And Readiness Work
 
 | Task | Owner and purpose | Dependency and stop condition |
 | --- | --- | --- |
@@ -79,7 +44,7 @@ Standard-mode checkpoint or pre-admit broad CPU, FPU, or FDC work.
 | T306 | Present-FPU extension selected by corpus: 80287/80387 profile state, format, environment, or exception delivery. | An owned reproducer is required. No host floating-point shortcut or blanket FPU claim. |
 | T307 | Windows 3.x Enhanced-mode readiness corpus and bounded deferral map. | T285, T304--T306 as dictated by the external checkpoint. No Windows 95 claim. |
 
-### F. M5 Closure And Handoff
+### C. M5 Closure And Handoff
 
 | Task | Owner and purpose | Dependency and stop condition |
 | --- | --- | --- |

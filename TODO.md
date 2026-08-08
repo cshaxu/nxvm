@@ -63,30 +63,6 @@ active task.
   Defer wheel IDs/sample-rate handshake, scaling effect, remote/read-data,
   resend/error timing, and host capture to separately probed controller work;
   do not turn platform input into a DOS API or guest-memory shortcut.
-- [x] **FDC/FDD controller state machine (`TODO(High)`, T231).** Core-owned
-  DMA2 now drives the bounded VM FDC/FDD command/result state machine; image
-  files are validated backends, not controller shortcuts. Deferred separately:
-  multi-drive mechanics, rotation latency, deleted/scan/read-track commands,
-  and arbitrary FDC configuration.
-- [x] **CMOS/RTC admission (`TODO(Medium)`, T232).** The admitted MC146818
-  subset has owned registers/NVRAM, periodic/update/exact-alarm IRQ8, and
-  deterministic elapsed-tick time. Deferred: persistent battery files,
-  square-wave output, don't-care alarms, and broader RTC services.
-- [x] **ATA PIO feature matrix (`TODO(Medium)`, T233).** Primary-master LBA28
-  PIO and count-zero=256 are admitted; slave and secondary remain explicitly
-  absent, with SRST/status/error/IRQ14 and device-control `nIEN` visibility
-  probed. Deferred: IDE DMA,
-  ATAPI, LBA48, cache, and host-clock timing.
-- [x] **Default-ROM fixed-drive BDS initialization (`TODO(High)`, T287 S18).**
-  `AH=08h` must return its geometry without modifying the caller's `ES:DI`.
-  The former DPT-pointer overwrite sent DOS fixed-drive BDS geometry writes to
-  the wrong location and caused a divide fault before `C:` registration.
-  The real FDD/HDD external checkpoint now reaches `C:\>` through normal
-  `AH=08h` and CHS MBR/VBR reads; this remains DOS evidence, not a Windows
-  compatibility claim.
-- [x] **T279 bounded C formatting.** `STD_SPRINTF`/`vsprintf` are retired;
-  owned capacities and cursor/remaining append semantics are enforced by a
-  source gate and corpus without changing debugger or Console text.
 - [ ] **Large/sparse and WASM raw HDD backing (`TODO(High)`).** The current VM
   provider accepts non-512-aligned images only within LBA28 and resident
   allocation limits. Keep that resident backend for small/offline images. A
@@ -108,19 +84,6 @@ active task.
   color, phase, and colorburst as an optional renderer/profile capability only
   after digital CGA is complete. Do not fold it into VADP digital state or use
   it to claim EGA/VGA support.
-- [x] **Bounded EGA direct-mode admission (`TODO(Medium)`, T235--T239).** T235 completes
-  the profile-bound A0000h aperture/sequencer subset and T236 the graphics/
-  attribute registers plus map-select classification. T238 completes one
-  direct-port `EGA-320x200x16-direct` path: VADP-owned planar VRAM/latches,
-  frozen core memory routing, and a copied 16-entry fixed RGBI frame, with no
-  DAC. T239 admits only matching
-  ROM `INT 10h` mode `0Dh` selection and `03h` exit through real VADP port
-  state. Deferred work remains separate; do not make a single unbounded
-  "VGA support" task.
-- [x] **EGA mode 10h direct (`TODO(Medium)`, T284/T285).** T285 implements the
-  bounded `INT 10h` mode `10h` / `640x350x16` planar-direct contract through
-  VADP-owned state and copied frames. VGA DAC, VBE, 256-color, and arbitrary
-  EGA modes remain deferred.
 
 ## CPU, Time, And Debugging Boundaries
 
@@ -190,10 +153,6 @@ instructions advance core elapsed ticks and devices consume frozen accumulated
 clock ratios. These levels are optional compatibility admissions, not the
 default definition of NXVM completion.
 
-- [x] **Level 1 rational device clocks (T256).** Frozen profile ratios, phase,
-  rounding, reset origin, and dispatch order now deterministically relate core
-  DMA/PIT/VADP/KBC and VM-provider clocks to coarse instruction ticks. This
-  does not claim real CPU-cycle attribution.
 - [ ] **Instruction-timed execution (`TODO(Medium)`).** Give each admitted
   instruction deterministic profile-specific cost, including applicable
   prefix/branch/memory/I/O variants, before expanding the timing corpus.
@@ -207,14 +166,6 @@ default definition of NXVM completion.
 
 ## Architecture, Portability, And Product Boundaries
 
-- [x] **M5 second core/composition migration (T270--T278).** Neutral
-  multi-device media and MC146818/FDC/ATA controller mechanisms now live in
-  core; `core/platform` contains only the policy-free opaque backing-resource
-  contract. VM retains PC/AT topology/defaults/NMI glue, backing objects,
-  image/path and mount/persistence policy, firmware, boot/media, and retained
-  UX. The core-only mantle-shape fixture proves configuration without
-  implementing mantle. The remaining M5 closure work is the single-owner audit
-  and Windows 3.x startup prerequisite corpus.
 - [ ] **M5 core public-surface closure (`TODO(High)`, T293--T303).** Remove
   the unused post-`#UD` transition; replace VM raw configuration/profile
   borrows with typed core-owned initialization, controller, firmware, and
@@ -242,10 +193,6 @@ default definition of NXVM completion.
   portability asset, not a support claim. Add native POSIX compile and runtime
   probes after an approved POSIX environment is available; do not install WSL
   merely for this item.
-- [x] **Machine-profile admission (T255).** Immutable profile declarations and
-  future BYOB ROM-manifest boundaries are defined before PC110, Compaq, Award,
-  or Phoenix behavior. Third-party ROMs remain never bundled, downloaded, or
-  committed; implementation is deferred to individually admitted M7 tasks.
 - [ ] **M8 VDM/DOS product admission (`TODO(High)`).** Keep mantle, DOS, and
   VDM non-runnable until their M6/M8 contracts exist. M8 must implement the
   approved `nxvdm run` display/debug/no-program semantics, host-drive

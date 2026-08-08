@@ -45,14 +45,17 @@ removed in its closure commit after a compact history summary is recorded; the
 Git commit remains its detailed evidence. `docs/planning/m5-t*.md` is not a
 permanent record location.
 
-`status.md` retains at most eight newest compact M5 closure rows. Older closure
-summaries belong in milestone history and Git, never in the current-status
-entry point.
+`status.md` retains at most eight newest compact M5 closure rows and eight
+newest compact governance rows. Older summaries belong in milestone history and
+Git, never in the current-status entry point. When status is Idle, its current
+work section contains only the idle summary before the technical baseline;
+completed task narrative belongs in history.
 
 Every closure, including standalone `Td` work, runs
 `tools/Verify-DocumentationGovernance.ps1`. The checker enforces the single
 status baseline, idle-state packet exclusion, retired M5 task-record absence,
 queue/history vocabulary boundaries, current CMake artifact-target agreement,
-mojibake rejection, and the closure-row capacity limit.
+mojibake rejection, tracked local-path rejection, open-only TODO entries, and
+the current-status capacity limits.
 
 See [Historical Summaries](history/README.md) for retrieval of retired detail.
