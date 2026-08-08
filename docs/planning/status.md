@@ -4,6 +4,14 @@
 
 **Idle.**
 
+M5 T287 S20 reproduced FDISK Options `4` through the retained external corpus.
+The selected menu clears while FDISK accepts the digit and then polls
+`INT 16h AH=11h` for the required Enter confirmation; no subsequent video,
+storage, or fault condition occurred. Enter reaches the normal `Display
+Partition Information` copied-frame checkpoint. S20 therefore adds the
+parameterized option-4/Enter checkpoint but changes no product behavior,
+artifact, hardware contract, or Windows support claim.
+
 M5 T287 S19 reproduced the external `A:\FDISK` blank display through the real
 FDC, ATA PIO, ROM, keyboard, and copied-presentation paths. The program had
 cleared B800 text memory, then invoked `INT 10h AH=05h`, `AH=08h`, and `AH=09h`;
