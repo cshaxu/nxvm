@@ -1,6 +1,7 @@
 #include "type.h"
 
 #include "core/machine/machine_interface.h"
+#include "../support/core_machine_cpu_fixture.h"
 
 typedef struct pit_divider_probe {
     C_UINT low_transitions;
@@ -25,8 +26,6 @@ C_INT main(C_VOID)
     core_machine_run_budget two_instruction_budget = { 2u, 0u };
     core_machine_run_result result;
     core_machine *machine = STD_NULL;
-    t_port *port;
-    t_pit *pit;
     pit_divider_probe probe = { 0u, 0u };
     C_INT failed = 0;
 
@@ -34,20 +33,14 @@ C_INT main(C_VOID)
     config.clock_plan.pit.numerator = 1u;
     config.clock_plan.pit.denominator = 4u;
     failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK;
-    port = core_machine_configuration_port_borrow(machine);
-    pit = core_machine_configuration_shared_pit_borrow(machine);
-    failed |= port == STD_NULL || pit == STD_NULL;
     if (!failed) {
-        failed |= core_machine_memory_register_mapping(
-            core_machine_configuration_memory_borrow(machine), 0xfffffff0u,
+        failed |= test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
             0x000ffff0u, sizeof(program)) != TYPE_STATUS_OK;
         failed |= core_machine_freeze_execution_providers(machine) !=
             TYPE_STATUS_OK;
         failed |= core_machine_reset(machine) != TYPE_STATUS_OK;
-        core_machine_pit_set_output(pit, 0u, pit_divider_output, &probe);
-        core_machine_port_write(port, 0x0043u, 0x34u);
-        core_machine_port_write(port, 0x0040u, 0x02u);
-        core_machine_port_write(port, 0x0040u, 0x00u);
+        test_core_machine_fixture_program_pit_divider(machine, 0x34u, 2u,
+            pit_divider_output, &probe);
         failed |= core_machine_memory_write(machine, 0xfffffff0u, program,
             sizeof(program)) != TYPE_STATUS_OK;
         failed |= core_machine_run(machine, four_instruction_budget, &result) !=
@@ -61,10 +54,8 @@ C_INT main(C_VOID)
         failed |= core_machine_reset(machine) != TYPE_STATUS_OK;
         probe.low_transitions = 0u;
         probe.high_transitions = 0u;
-        core_machine_pit_set_output(pit, 0u, pit_divider_output, &probe);
-        core_machine_port_write(port, 0x0043u, 0x30u);
-        core_machine_port_write(port, 0x0040u, 0x01u);
-        core_machine_port_write(port, 0x0040u, 0x00u);
+        test_core_machine_fixture_program_pit_divider(machine, 0x30u, 1u,
+            pit_divider_output, &probe);
         failed |= core_machine_memory_write(machine, 0xfffffff0u, program,
             sizeof(program)) != TYPE_STATUS_OK;
         failed |= core_machine_run(machine, two_instruction_budget, &result) !=
@@ -78,10 +69,8 @@ C_INT main(C_VOID)
         failed |= core_machine_reset(machine) != TYPE_STATUS_OK;
         probe.low_transitions = 0u;
         probe.high_transitions = 0u;
-        core_machine_pit_set_output(pit, 0u, pit_divider_output, &probe);
-        core_machine_port_write(port, 0x0043u, 0x34u);
-        core_machine_port_write(port, 0x0040u, 0x02u);
-        core_machine_port_write(port, 0x0040u, 0x00u);
+        test_core_machine_fixture_program_pit_divider(machine, 0x34u, 2u,
+            pit_divider_output, &probe);
         failed |= core_machine_memory_write(machine, 0xfffffff0u, program,
             sizeof(program)) != TYPE_STATUS_OK;
         failed |= core_machine_run(machine, four_instruction_budget, &result) !=

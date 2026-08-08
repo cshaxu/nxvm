@@ -1268,7 +1268,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0298 "0.5.0298")
+add_current_vm_artifact(vm-0-5-0299 "0.5.0299")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 
@@ -1325,6 +1325,14 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
             -RepositoryRoot "${CMAKE_SOURCE_DIR}"
         COMMENT "Verifying M5 single executor closure"
         VERBATIM)
+
+    add_custom_target(verify-public-raw-borrow-closure
+        COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
+            -File "${CMAKE_SOURCE_DIR}/tools/VerifyPublicRawBorrowClosure.ps1"
+            -RepositoryRoot "${CMAKE_SOURCE_DIR}"
+        COMMENT "Verifying M5 public raw-borrow closure"
+        VERBATIM)
+    add_dependencies(run-current-smokes verify-public-raw-borrow-closure)
 
     add_custom_target(verify-session-readiness
         COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass

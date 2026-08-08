@@ -239,23 +239,6 @@ type_status core_machine_report_fault(
     core_machine *machine,
     uint32_t detail);
 
-/* Composition may borrow these core-owned objects only while INITIALIZED to
- * bind providers/profile firmware. A registered provider may retain its child
- * reference through core-controlled teardown; no product command may borrow. */
-t_cpu *core_machine_configuration_cpu_borrow(core_machine *machine);
-t_cpuins *core_machine_configuration_cpu_instructions_borrow(core_machine *machine);
-core_machine_cpu_execution_context *core_machine_configuration_cpu_execution_borrow(
-    core_machine *machine);
-t_ram *core_machine_configuration_memory_borrow(core_machine *machine);
-t_port *core_machine_configuration_port_borrow(core_machine *machine);
-t_pic *core_machine_configuration_shared_pic_master_borrow(core_machine *machine);
-t_pic *core_machine_configuration_shared_pic_slave_borrow(core_machine *machine);
-t_pit *core_machine_configuration_shared_pit_borrow(core_machine *machine);
-t_latch *core_machine_configuration_shared_dma_latch_borrow(core_machine *machine);
-t_dma *core_machine_configuration_shared_dma_primary_borrow(core_machine *machine);
-t_dma *core_machine_configuration_shared_dma_secondary_borrow(core_machine *machine);
-t_kbc *core_machine_configuration_shared_kbc_borrow(core_machine *machine);
-
 type_status core_machine_capture_observation(
     const core_machine *machine, core_machine_observation *out_observation);
 

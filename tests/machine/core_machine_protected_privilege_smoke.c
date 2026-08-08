@@ -2,6 +2,7 @@
 
 #include "core/machine/cpu.h"
 #include "core/machine/machine_interface.h"
+#include "../support/core_machine_cpu_fixture.h"
 
 #define GDT_PTR 0x0100u
 #define IDT_PTR 0x0110u
@@ -14,8 +15,6 @@
 
 typedef struct privilege_machine {
     core_machine *machine;
-    t_cpu *cpu;
-    core_machine_cpu_execution_context *execution;
 } privilege_machine;
 
 typedef enum privilege_negative_case {
@@ -30,17 +29,8 @@ static C_VOID privilege_reset(C_VOID *opaque)
 {
     privilege_machine *state = (privilege_machine *)opaque;
 
-    if (state == STD_NULL || state->cpu == STD_NULL ||
-        state->execution == STD_NULL) return;
-    (C_VOID)core_machine_cpu_execution_load_segment(state->execution,
-        &state->cpu->data.cs, 0u);
-    (C_VOID)core_machine_cpu_execution_load_segment(state->execution,
-        &state->cpu->data.ds, 0u);
-    (C_VOID)core_machine_cpu_execution_load_segment(state->execution,
-        &state->cpu->data.es, 0u);
-    (C_VOID)core_machine_cpu_execution_load_segment(state->execution,
-        &state->cpu->data.ss, 0u);
-    state->cpu->data.eip = 0u;
+    if (state != STD_NULL) (C_VOID)test_core_machine_fixture_reset_real_mode(
+        state->machine);
 }
 
 static const core_machine_execution_provider privilege_provider = {
@@ -59,10 +49,7 @@ static C_INT privilege_prepare(privilege_machine *state,
     if (state == STD_NULL) return 0;
     STD_MEMSET(state, 0, sizeof(*state));
     if (core_machine_create(&config, &state->machine) != TYPE_STATUS_OK) return 0;
-    state->cpu = core_machine_configuration_cpu_borrow(state->machine);
-    state->execution = core_machine_configuration_cpu_execution_borrow(state->machine);
-    if (state->cpu == STD_NULL || state->execution == STD_NULL ||
-        core_machine_bind_execution_provider(state->machine, &privilege_provider,
+    if (core_machine_bind_execution_provider(state->machine, &privilege_provider,
             state) != TYPE_STATUS_OK ||
         core_machine_freeze_execution_providers(state->machine) != TYPE_STATUS_OK ||
         core_machine_reset(state->machine) != TYPE_STATUS_OK) {
@@ -263,6 +250,7 @@ static C_INT privilege_test_stack_atomicity(C_VOID)
     privilege_machine state;
     core_machine_run_result result;
     type_status run_status;
+    t_cpu cpu;
     const core_machine_run_budget budget = { 1024u, 0u };
     C_INT failed = !privilege_prepare(&state, CORE_MACHINE_CPU_PROFILE_80286);
 
@@ -270,17 +258,16 @@ static C_INT privilege_test_stack_atomicity(C_VOID)
         failed |= !privilege_install(&state, 0,
             PRIVILEGE_NEGATIVE_STACK_ATOMICITY);
         run_status = core_machine_run(state.machine, budget, &result);
+        cpu = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= run_status != TYPE_STATUS_FAULT ||
             result.reason != CORE_MACHINE_STOP_FAULT;
-        failed |= state.cpu->data.cs.selector != 0x001bu ||
-            state.cpu->data.cs.dpl != 3u || state.cpu->data.ss.selector != 0x0023u ||
-            state.cpu->data.sp != 0xa000u;
+        failed |= cpu.data.cs.selector != 0x001bu || cpu.data.cs.dpl != 3u ||
+            cpu.data.ss.selector != 0x0023u || cpu.data.sp != 0xa000u;
         if (failed) {
             STD_FPRINTF(STD_STDERR,
                 "T263 S5 atomic status=%u result=%u cs=%04x/%u ss=%04x sp=%04x\n",
-                (unsigned)run_status, (unsigned)result.reason, state.cpu->data.cs.selector,
-                state.cpu->data.cs.dpl, state.cpu->data.ss.selector,
-                state.cpu->data.sp);
+                (unsigned)run_status, (unsigned)result.reason, cpu.data.cs.selector,
+                cpu.data.cs.dpl, cpu.data.ss.selector, cpu.data.sp);
         }
     }
     core_machine_destroy(state.machine);
@@ -292,6 +279,7 @@ int main(void)
     privilege_machine state;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
+    t_cpu cpu;
     uint16_t markers[2] = {0u, 0u};
     const core_machine_run_budget budget = { 1024u, 0u };
     C_INT failed = !privilege_prepare(&state, CORE_MACHINE_CPU_PROFILE_80286);
@@ -307,14 +295,15 @@ int main(void)
             TYPE_STATUS_OK || diagnostic.first_fault.valid ||
             diagnostic.last_delivered_exception.valid ||
             diagnostic.delivered_exception_count != 0u;
+        cpu = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         if (failed) {
             STD_FPRINTF(STD_STDERR,
                 "T259 result=%u markers=%04x/%04x fault=%d delivered=%d/%u cs=%04x sp=%04x\n",
                 (unsigned)result.reason, markers[0], markers[1],
                 diagnostic.first_fault.valid,
                 diagnostic.last_delivered_exception.valid,
-                diagnostic.delivered_exception_count, state.cpu->data.cs.selector,
-                state.cpu->data.sp);
+                diagnostic.delivered_exception_count, cpu.data.cs.selector,
+                cpu.data.sp);
         }
     }
     core_machine_destroy(state.machine);

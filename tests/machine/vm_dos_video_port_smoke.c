@@ -6,6 +6,7 @@
 #include "vm/composition/session/session_interface.h"
 #include "vm/composition/session/session.h"
 #include "vm/machine/fdd.h"
+#include "../support/core_machine_cpu_fixture.h"
 
 #define VM_DOS_VIDEO_PROBE_INSTRUCTION_BUDGET 1500000u
 #define VM_DOS_VIDEO_TEXT_CELLS (80u * 25u)
@@ -31,7 +32,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     core_machine_run_result result;
     core_machine_observation observation;
     core_machine_display_snapshot snapshot;
-    t_cpu *cpu;
+    t_cpu cpu;
     uint8_t opcode[2];
     uint8_t functions[256] = {0};
     uint64_t instruction;
@@ -46,8 +47,6 @@ C_INT main(C_INT argc, C_CHAR **argv)
         goto fail;
     }
     vm_session_reset(session);
-    cpu = core_machine_debug_cpu_borrow(session->core_machine);
-    if (cpu == STD_NULL) goto fail;
     for (instruction = 0u; instruction < VM_DOS_VIDEO_PROBE_INSTRUCTION_BUDGET;
          ++instruction) {
         if (core_machine_capture_observation(session->core_machine, &observation) !=
@@ -59,7 +58,9 @@ C_INT main(C_INT argc, C_CHAR **argv)
         }
         if (opcode[0] == 0xcdu && opcode[1] == 0x10u) {
             ++int10_count;
-            functions[cpu->data.ah] = 1u;
+            cpu = test_core_machine_fixture_capture_cpu_after_run(
+                session->core_machine);
+            functions[cpu.data.ah] = 1u;
         }
         if (opcode[0] == 0xcdu && opcode[1] == 0xf2u) {
             ++f2_count;

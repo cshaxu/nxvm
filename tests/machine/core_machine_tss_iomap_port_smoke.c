@@ -2,6 +2,7 @@
 
 #include "core/machine/cpu.h"
 #include "core/machine/machine_interface.h"
+#include "../support/core_machine_cpu_fixture.h"
 #include "core/machine/memory_interface.h"
 #include "core/machine/port_interface.h"
 
@@ -30,8 +31,6 @@ typedef struct iomap_port_state {
 
 typedef struct iomap_machine {
     core_machine *machine;
-    t_cpu *cpu;
-    core_machine_cpu_execution_context *execution;
     iomap_port_state port;
 } iomap_machine;
 
@@ -39,17 +38,8 @@ static C_VOID iomap_reset(C_VOID *opaque)
 {
     iomap_machine *state = (iomap_machine *)opaque;
 
-    if (state == STD_NULL || state->cpu == STD_NULL ||
-        state->execution == STD_NULL) return;
-    (C_VOID)core_machine_cpu_execution_load_segment(state->execution,
-        &state->cpu->data.cs, 0u);
-    (C_VOID)core_machine_cpu_execution_load_segment(state->execution,
-        &state->cpu->data.ds, 0u);
-    (C_VOID)core_machine_cpu_execution_load_segment(state->execution,
-        &state->cpu->data.es, 0u);
-    (C_VOID)core_machine_cpu_execution_load_segment(state->execution,
-        &state->cpu->data.ss, 0u);
-    state->cpu->data.eip = 0u;
+    if (state != STD_NULL) (C_VOID)test_core_machine_fixture_reset_real_mode(
+        state->machine);
 }
 
 static type_status iomap_port_read(C_VOID *opaque, uint16_t port,
@@ -101,10 +91,7 @@ static C_INT iomap_prepare(iomap_machine *state, core_machine_cpu_profile profil
     if (state == STD_NULL) return 0;
     STD_MEMSET(state, 0, sizeof(*state));
     if (core_machine_create(&config, &state->machine) != TYPE_STATUS_OK) return 0;
-    state->cpu = core_machine_configuration_cpu_borrow(state->machine);
-    state->execution = core_machine_configuration_cpu_execution_borrow(state->machine);
-    if (state->cpu == STD_NULL || state->execution == STD_NULL ||
-        core_machine_install_port_provider(state->machine, 0x0007u, 0x0008u,
+    if (core_machine_install_port_provider(state->machine, 0x0007u, 0x0008u,
             &iomap_port_provider, &state->port) != TYPE_STATUS_OK ||
         core_machine_install_port_provider(state->machine, 0x00e0u, 0x00e0u,
             &iomap_port_provider, &state->port) != TYPE_STATUS_OK ||

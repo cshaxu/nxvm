@@ -5,6 +5,7 @@
 #include "core/machine/machine.h"
 #include "core/machine/machine_interface.h"
 #include "core/machine/memory_interface.h"
+#include "../support/core_machine_cpu_fixture.h"
 
 #define T292_RESET_LINEAR 0xfffffff0u
 #define T292_RESET_PHYSICAL 0x000ffff0u
@@ -24,8 +25,8 @@ static C_INT t292_prepare(core_machine_cpu_profile profile, core_machine **out_m
     core_machine *machine = STD_NULL;
 
     if (out_machine == STD_NULL || core_machine_create(&config, &machine) !=
-            TYPE_STATUS_OK || core_machine_memory_register_mapping(
-            core_machine_configuration_memory_borrow(machine), T292_RESET_LINEAR,
+            TYPE_STATUS_OK || test_core_machine_fixture_register_reset_mapping(
+            machine, T292_RESET_LINEAR,
             T292_RESET_PHYSICAL, T292_RESET_WINDOW) != TYPE_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
         core_machine_reset(machine) != TYPE_STATUS_OK ||

@@ -1,6 +1,7 @@
 #include "type.h"
 
 #include "core/machine/machine.h"
+#include "../support/core_machine_cpu_fixture.h"
 
 static C_VOID core_machine_dma_rtc_initialize_pic(core_machine *machine)
 {
@@ -64,8 +65,7 @@ int main(C_VOID)
         fdc_request.core_owner == STD_NULL || fdc_request.channel != 2u ||
         core_machine_configure_dma(machine, &dma_wiring, &fdc_request) !=
             TYPE_STATUS_INVALID_STATE ||
-        core_machine_memory_register_mapping(
-            core_machine_configuration_memory_borrow(machine), 0xfffffff0u,
+        test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
             0x000ffff0u, 64u) != TYPE_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
         core_machine_reset(machine) != TYPE_STATUS_OK ||

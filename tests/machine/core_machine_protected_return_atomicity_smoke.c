@@ -2,6 +2,7 @@
 
 #include "core/machine/cpu.h"
 #include "core/machine/machine_interface.h"
+#include "../support/core_machine_cpu_fixture.h"
 
 #define ATOMIC_GDT_POINTER 0x0100u
 #define ATOMIC_IDT_POINTER 0x0110u
@@ -16,8 +17,6 @@
 
 typedef struct atomic_machine {
     core_machine *machine;
-    t_cpu *cpu;
-    core_machine_cpu_execution_context *execution;
 } atomic_machine;
 
 typedef struct atomic_return_case {
@@ -33,16 +32,8 @@ static C_VOID atomic_reset(C_VOID *opaque)
 {
     atomic_machine *state = (atomic_machine *)opaque;
 
-    if (state == STD_NULL || state->cpu == STD_NULL || state->execution == STD_NULL) return;
-    (C_VOID)core_machine_cpu_execution_load_segment(state->execution,
-        &state->cpu->data.cs, 0u);
-    (C_VOID)core_machine_cpu_execution_load_segment(state->execution,
-        &state->cpu->data.ds, 0u);
-    (C_VOID)core_machine_cpu_execution_load_segment(state->execution,
-        &state->cpu->data.es, 0u);
-    (C_VOID)core_machine_cpu_execution_load_segment(state->execution,
-        &state->cpu->data.ss, 0u);
-    state->cpu->data.eip = 0u;
+    if (state != STD_NULL) (C_VOID)test_core_machine_fixture_reset_real_mode(
+        state->machine);
 }
 
 static const core_machine_execution_provider atomic_provider = {
@@ -60,10 +51,7 @@ static C_INT atomic_prepare(atomic_machine *state)
     if (state == STD_NULL) return 0;
     STD_MEMSET(state, 0, sizeof(*state));
     if (core_machine_create(&config, &state->machine) != TYPE_STATUS_OK) return 0;
-    state->cpu = core_machine_configuration_cpu_borrow(state->machine);
-    state->execution = core_machine_configuration_cpu_execution_borrow(state->machine);
-    if (state->cpu == STD_NULL || state->execution == STD_NULL ||
-        core_machine_bind_execution_provider(state->machine, &atomic_provider, state) !=
+    if (core_machine_bind_execution_provider(state->machine, &atomic_provider, state) !=
             TYPE_STATUS_OK ||
         core_machine_freeze_execution_providers(state->machine) != TYPE_STATUS_OK ||
         core_machine_reset(state->machine) != TYPE_STATUS_OK) {
@@ -184,6 +172,7 @@ static C_INT atomic_test_outer_return(const atomic_return_case *test, C_INT use_
     core_machine_run_result result = {0};
     const core_machine_run_budget budget = { 128u, 0u };
     t_cpu_data before;
+    t_cpu cpu;
     uint8_t code[21u];
     uint8_t access[sizeof(access_addresses) / sizeof(access_addresses[0])];
     uint16_t frame[4u] = {0};
@@ -202,9 +191,9 @@ static C_INT atomic_test_outer_return(const atomic_return_case *test, C_INT use_
         boot_failed = core_machine_run(state.machine, budget, &result) != TYPE_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         failed |= install_failed || boot_failed;
-        state.cpu->data.flagHalt = TYPE_FALSE;
-        state.cpu->data.eip = 0u;
-        before = state.cpu->data;
+        test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
+        cpu = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        before = cpu.data;
         failed |= !atomic_write(&state, ATOMIC_KERNEL_BASE, code,
             atomic_return_code(code, use_iret, test));
         if (test->delivered) {
@@ -217,27 +206,28 @@ static C_INT atomic_test_outer_return(const atomic_return_case *test, C_INT use_
         }
         failed |= run_failed;
         for (index = 0u; index < sizeof(access); ++index) {
-            access_failed |= core_machine_cpu_execution_read_linear(state.execution,
+            access_failed |= !test_core_machine_fixture_read_linear(state.machine,
                 access_addresses[index], TYPE_REFERENCE_OF(access[index]),
                 sizeof(access[index])) ||
                 access[index] != expected_access[index];
         }
         failed |= access_failed;
+        cpu = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         if (test->delivered) {
             state_failed = core_machine_memory_read(state.machine,
                 ATOMIC_KERNEL_STACK_BASE + expected_sp, frame, sizeof(frame)) != TYPE_STATUS_OK;
-            state_failed |= state.cpu->data.eip != atomic_fault_stop_ip(test->vector) ||
-                state.cpu->data.sp != expected_sp ||
-                STD_MEMCMP(&state.cpu->data.cs, &before.cs, sizeof(before.cs)) != 0 ||
-                STD_MEMCMP(&state.cpu->data.ss, &before.ss, sizeof(before.ss)) != 0 ||
+            state_failed |= cpu.data.eip != atomic_fault_stop_ip(test->vector) ||
+                cpu.data.sp != expected_sp ||
+                STD_MEMCMP(&cpu.data.cs, &before.cs, sizeof(before.cs)) != 0 ||
+                STD_MEMCMP(&cpu.data.ss, &before.ss, sizeof(before.ss)) != 0 ||
                 frame[0u] != test->error_code || frame[1u] != expected_return_ip ||
                 frame[2u] != before.cs.selector || frame[3u] != before.flags;
         } else {
-            state_failed = state.cpu->data.eip != expected_return_ip ||
-                state.cpu->data.sp != (use_iret ? 0x7ff6u : 0x7ff8u) ||
-                state.cpu->data.flags != before.flags ||
-                STD_MEMCMP(&state.cpu->data.cs, &before.cs, sizeof(before.cs)) != 0 ||
-                STD_MEMCMP(&state.cpu->data.ss, &before.ss, sizeof(before.ss)) != 0;
+            state_failed = cpu.data.eip != expected_return_ip ||
+                cpu.data.sp != (use_iret ? 0x7ff6u : 0x7ff8u) ||
+                cpu.data.flags != before.flags ||
+                STD_MEMCMP(&cpu.data.cs, &before.cs, sizeof(before.cs)) != 0 ||
+                STD_MEMCMP(&cpu.data.ss, &before.ss, sizeof(before.ss)) != 0;
         }
         failed |= state_failed;
         if (failed) {
@@ -245,10 +235,9 @@ static C_INT atomic_test_outer_return(const atomic_return_case *test, C_INT use_
                 "T293 %s return=%s fail=%d/%d/%d/%d/%d ip=%04x sp=%04x flags=%04x/%04x cs=%d ss=%d access=%02x/%02x/%02x/%02x frame=%04x/%04x/%04x/%04x\n",
                 test->name, use_iret ? "iret" : "retf", install_failed, boot_failed,
                 run_failed, access_failed, state_failed,
-                state.cpu->data.ip, state.cpu->data.sp,
-                state.cpu->data.flags, before.flags,
-                STD_MEMCMP(&state.cpu->data.cs, &before.cs, sizeof(before.cs)),
-                STD_MEMCMP(&state.cpu->data.ss, &before.ss, sizeof(before.ss)),
+                cpu.data.ip, cpu.data.sp, cpu.data.flags, before.flags,
+                STD_MEMCMP(&cpu.data.cs, &before.cs, sizeof(before.cs)),
+                STD_MEMCMP(&cpu.data.ss, &before.ss, sizeof(before.ss)),
                 access[0u], access[1u], access[2u], access[3u],
                 frame[0u], frame[1u], frame[2u], frame[3u]);
         }

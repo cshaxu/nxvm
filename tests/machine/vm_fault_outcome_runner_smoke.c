@@ -11,25 +11,15 @@
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/session_interface.h"
 #include "vm/composition/session/session.h"
+#include "../support/core_machine_cpu_fixture.h"
 
 static C_INT vm_fault_outcome_prepare(vm_session *session)
 {
     const uint8_t program[] = { 0xd6u };
-    core_machine_cpu_execution_context *execution;
-    t_cpu *cpu;
 
     if (session == STD_NULL || session->core_machine == STD_NULL) return 0;
-    cpu = core_machine_debug_cpu_borrow(session->core_machine);
-    execution = core_machine_debug_cpu_execution_borrow(session->core_machine);
-    if (cpu == STD_NULL || execution == STD_NULL ||
-        core_machine_cpu_execution_load_segment(execution, &cpu->data.cs, 0u) ||
-        core_machine_cpu_execution_load_segment(execution, &cpu->data.ds, 0u) ||
-        core_machine_cpu_execution_load_segment(execution, &cpu->data.es, 0u) ||
-        core_machine_cpu_execution_load_segment(execution, &cpu->data.ss, 0u)) {
-        return 0;
-    }
-    cpu->data.eip = 0u;
-    return core_machine_memory_write(session->core_machine, 0u, program,
+    return test_core_machine_fixture_prepare_real_mode_execution(
+            session->core_machine, 0u) && core_machine_memory_write(session->core_machine, 0u, program,
         sizeof(program)) == TYPE_STATUS_OK;
 }
 

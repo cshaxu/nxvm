@@ -1,6 +1,7 @@
 #include "type.h"
 
 #include "core/machine/machine_interface.h"
+#include "../support/core_machine_cpu_fixture.h"
 
 #define RESET_LINEAR 0xfffffff0u
 #define RESET_PHYSICAL 0x000ffff0u
@@ -26,8 +27,7 @@ C_INT main(C_VOID)
     failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK;
     failed |= machine == STD_NULL;
     if (!failed) {
-        failed |= core_machine_memory_register_mapping(
-            core_machine_configuration_memory_borrow(machine), RESET_LINEAR,
+        failed |= test_core_machine_fixture_register_reset_mapping(machine, RESET_LINEAR,
             RESET_PHYSICAL, 16u) != TYPE_STATUS_OK;
         failed |= core_machine_register_immutable_rom_mapping(machine, 0x1000u,
             image, sizeof(image)) != TYPE_STATUS_OK;

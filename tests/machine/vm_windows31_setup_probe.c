@@ -13,6 +13,7 @@
 #include "vm/composition/session/session_interface.h"
 #include "vm/composition/session/session.h"
 #include "vm/platform/win32/win32.h"
+#include "../support/core_machine_cpu_fixture.h"
 
 #define VM_T287_TEXT_CELLS (80u * 25u)
 #define VM_T287_BOOT_TIMEOUT_MILLISECONDS 60000u
@@ -162,7 +163,7 @@ static C_VOID vm_t287_print_frame(const vm_session *session)
 static C_VOID vm_t287_report_fault(vm_session *session, const C_CHAR *stage)
 {
     core_machine_cpu_diagnostic diagnostic = {0};
-    t_cpu *cpu;
+    t_cpu cpu;
     STD_SIZE_T index;
 
     if (session == STD_NULL) return;
@@ -196,16 +197,16 @@ static C_VOID vm_t287_report_fault(vm_session *session, const C_CHAR *stage)
                 point->bytes[2]);
         }
     }
-    cpu = core_machine_debug_cpu_borrow(session->core_machine);
-    if (cpu != STD_NULL) {
+    cpu = test_core_machine_fixture_capture_cpu_after_run(session->core_machine);
+    if (session->core_machine != STD_NULL) {
         STD_PRINTF("M5:T287:S23:WINDOWS31:CPU cr0=%08X cr2=%08X cr3=%08X "
             "gdtr=%08X/%04X idtr=%08X/%04X cs=%04X:%08X/%08X ds=%04X:%08X/%08X "
-            "ss=%04X:%08X/%08X\n", cpu->data.cr0, cpu->data.cr2, cpu->data.cr3,
-            cpu->data.gdtr.base, cpu->data.gdtr.limit, cpu->data.idtr.base,
-            cpu->data.idtr.limit, cpu->data.cs.selector, cpu->data.cs.base,
-            cpu->data.cs.limit, cpu->data.ds.selector, cpu->data.ds.base,
-            cpu->data.ds.limit, cpu->data.ss.selector, cpu->data.ss.base,
-            cpu->data.ss.limit);
+            "ss=%04X:%08X/%08X\n", cpu.data.cr0, cpu.data.cr2, cpu.data.cr3,
+            cpu.data.gdtr.base, cpu.data.gdtr.limit, cpu.data.idtr.base,
+            cpu.data.idtr.limit, cpu.data.cs.selector, cpu.data.cs.base,
+            cpu.data.cs.limit, cpu.data.ds.selector, cpu.data.ds.base,
+            cpu.data.ds.limit, cpu.data.ss.selector, cpu.data.ss.base,
+            cpu.data.ss.limit);
     }
     vm_t287_print_frame(session);
 }

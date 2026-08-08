@@ -311,19 +311,6 @@ C_INT core_machine_mutable_operation_is_allowed(const core_machine *machine)
     return machine != STD_NULL && !machine->firmware_operation_active;
 }
 
-t_cpu *core_machine_configuration_cpu_borrow(core_machine *machine)
-{ return core_machine_configuration_is_open(machine) ? &machine->executor_cpu : STD_NULL; }
-
-t_cpuins *core_machine_configuration_cpu_instructions_borrow(core_machine *machine)
-{ return core_machine_configuration_is_open(machine) ? &machine->executor_cpu_instructions : STD_NULL; }
-
-core_machine_cpu_execution_context *core_machine_configuration_cpu_execution_borrow(
-    core_machine *machine)
-{ return core_machine_configuration_is_open(machine) ? &machine->executor_cpu_execution : STD_NULL; }
-
-t_ram *core_machine_configuration_memory_borrow(core_machine *machine)
-{ return core_machine_configuration_is_open(machine) ? &machine->executor_memory : STD_NULL; }
-
 static type_status core_machine_firmware_invoke(core_machine *machine,
     C_INT configuring, type_status (*callback)(C_VOID *,
     core_machine_firmware_context *))
@@ -769,23 +756,6 @@ type_status core_machine_configure_hdc(core_machine *machine,
     return TYPE_STATUS_OK;
 }
 
-t_port *core_machine_configuration_port_borrow(core_machine *machine)
-{ return core_machine_configuration_is_open(machine) ? &machine->executor_port : STD_NULL; }
-
-t_pic *core_machine_configuration_shared_pic_master_borrow(core_machine *machine)
-{ return core_machine_configuration_is_open(machine) ? &machine->shared_pic_master : STD_NULL; }
-t_pic *core_machine_configuration_shared_pic_slave_borrow(core_machine *machine)
-{ return core_machine_configuration_is_open(machine) ? &machine->shared_pic_slave : STD_NULL; }
-t_pit *core_machine_configuration_shared_pit_borrow(core_machine *machine)
-{ return core_machine_configuration_is_open(machine) ? &machine->shared_pit : STD_NULL; }
-t_latch *core_machine_configuration_shared_dma_latch_borrow(core_machine *machine)
-{ return core_machine_configuration_is_open(machine) ? &machine->shared_dma_latch : STD_NULL; }
-t_dma *core_machine_configuration_shared_dma_primary_borrow(core_machine *machine)
-{ return core_machine_configuration_is_open(machine) ? &machine->shared_dma_primary : STD_NULL; }
-t_dma *core_machine_configuration_shared_dma_secondary_borrow(core_machine *machine)
-{ return core_machine_configuration_is_open(machine) ? &machine->shared_dma_secondary : STD_NULL; }
-t_kbc *core_machine_configuration_shared_kbc_borrow(core_machine *machine)
-{ return core_machine_configuration_is_open(machine) ? &machine->shared_kbc : STD_NULL; }
 type_status core_machine_bind_execution_provider(core_machine *machine,
     const core_machine_execution_provider *provider, C_VOID *context)
 {
