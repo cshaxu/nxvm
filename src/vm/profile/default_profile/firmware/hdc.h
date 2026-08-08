@@ -42,7 +42,8 @@ cmp ah, 15                  \n\
 jnz $(label_int_13_cmp_def) \n\
 jmp near $(label_int_13_15) \n\
 $(label_int_13_cmp_def):    \n\
-clc                         \n\
+mov ah, 01                  \n\
+stc                         \n\
 jmp near $(label_int_13_end)\n\
 \
 $(label_int_13_00):         \n\
@@ -66,7 +67,12 @@ mov ds, bx                  \n\
 mov ah, ds:[0074]           \n\
 pop ds                      \n\
 pop bx                      \n\
+or ah, ah                   \n\
+jnz $(label_int_13_01_fail) \n\
 clc                         \n\
+jmp near $(label_int_13_end)\n\
+$(label_int_13_01_fail):    \n\
+stc                         \n\
 jmp near $(label_int_13_end)\n\
 \
 $(label_int_13_02):         \n\
@@ -250,6 +256,9 @@ mov ds, ax                  \n\
 mov bx, ds:[0104]           \n\
 mov ax, ds:[0106]           \n\
 mov ds, ax                  \n\
+push ds                      \n\
+pop es                       \n\
+mov di, bx                   \n\
 mov cx, ds:[bx+00]          \n\
 dec cx          ; ncyl - 1  \n\
 xchg ch, cl                 \n\
@@ -270,6 +279,7 @@ mov dl, ds:[0075]           \n\
 pop ds                      \n\
 pop bx                      \n\
 pop ax                      \n\
+mov bl, 2f                  \n\
 mov ah, 00                  \n\
 clc                         \n\
 jmp near $(label_int_13_end)\n\
@@ -285,7 +295,6 @@ mov bx, ds:[0104]           \n\
 mov ax, ds:[0106]           \n\
 mov ds, ax                  \n\
 mov cx, ds:[bx+00]          \n\
-dec cx          ; ncyl - 1  \n\
 mov al, ds:[bx+04] ; nsector\n\
 mov dh, ds:[bx+02] ; nhead  \n\
 mov ah, 00                  \n\
@@ -295,7 +304,7 @@ mov cx, dx ; size high 16   \n\
 mov dx, ax ; size low  16   \n\
 pop ds                      \n\
 pop bx                      \n\
-mov ax, 0003                \n\
+mov ah, 03                  \n\
 clc                         \n\
 jmp near $(label_int_13_end)\n\
 \

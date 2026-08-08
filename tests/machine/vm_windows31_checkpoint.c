@@ -1,0 +1,183 @@
+#include "type.h"
+
+#include <windows.h>
+
+#include "core/machine/debug_interface.h"
+#include "core/machine/machine_interface.h"
+#include "core/machine/machine.h"
+#include "core/platform/presentation_mailbox_interface.h"
+#include "vm/composition/session/control.h"
+#include "vm/composition/session/lifecycle.h"
+#include "vm/composition/session/session_interface.h"
+#include "vm/composition/session/session.h"
+
+#define VM_T287_TEXT_CELLS (80u * 25u)
+#define VM_T287_BOOT_TIMEOUT_MILLISECONDS 60000u
+#define VM_T287_COMMAND_TIMEOUT_MILLISECONDS 5000u
+
+static DWORD WINAPI vm_t287_run_machine(C_VOID *opaque)
+{
+    vm_session_control_start(&((vm_session *)opaque)->control);
+    return 0u;
+}
+
+static C_INT vm_t287_has_text(const vm_session *session, const C_CHAR *text)
+{
+    core_platform_display_frame frame;
+    STD_SIZE_T cell;
+    STD_SIZE_T character;
+    STD_SIZE_T length = STD_STRLEN(text);
+
+    if (session == STD_NULL || text == STD_NULL || length == 0u ||
+        core_platform_presentation_mailbox_capture(&session->presentation_mailbox,
+            &frame) != TYPE_STATUS_OK) return 0;
+    for (cell = 0u; cell + length <= VM_T287_TEXT_CELLS; ++cell) {
+        for (character = 0u; character < length; ++character) {
+            if (frame.characters[cell + character] != (C_UCHAR)text[character]) break;
+        }
+        if (character == length) return 1;
+    }
+    return 0;
+}
+
+static C_INT vm_t287_wait_for_text(const vm_session *session, const C_CHAR *text,
+    DWORD timeout)
+{
+    DWORD elapsed;
+
+    for (elapsed = 0u; elapsed < timeout; elapsed += 10u) {
+        if (vm_t287_has_text(session, text)) return 1;
+        Sleep(10u);
+    }
+    return 0;
+}
+
+static C_INT vm_t287_submit(const vm_session *session, const uint8_t *codes,
+    STD_SIZE_T count)
+{
+    STD_SIZE_T index;
+
+    if (session == STD_NULL || codes == STD_NULL) return 0;
+    for (index = 0u; index < count; ++index) {
+        if (core_machine_keyboard_submit_scan_code(session->core_machine,
+                codes[index]) != TYPE_STATUS_OK) return 0;
+    }
+    return 1;
+}
+
+static C_VOID vm_t287_report(const vm_session *session, const C_CHAR *stage)
+{
+    core_platform_display_frame frame;
+    STD_SIZE_T row;
+    STD_SIZE_T column;
+
+    if (session == STD_NULL) return;
+    STD_PRINTF("M5:T287:S2:WINDOWS31:CHECKPOINT:FAIL stage=%s running=%d "
+        "ata_commands=%u last_command=%02X\n", stage,
+        vm_session_control_is_running(&session->control),
+        session->core_machine->hdc.data.command_count,
+        session->core_machine->hdc.data.last_command);
+    if (core_platform_presentation_mailbox_capture(&session->presentation_mailbox,
+            &frame) != TYPE_STATUS_OK) return;
+    for (row = 0u; row < 25u; ++row) {
+        for (column = 0u; column < 80u; ++column) {
+            C_UCHAR character = frame.characters[row * 80u + column];
+            STD_PRINTF("%c", character == 0u ? ' ' : character);
+        }
+        STD_PRINTF("\n");
+    }
+}
+
+static C_VOID vm_t287_report_frame(const vm_session *session)
+{
+    core_platform_display_frame frame;
+    STD_SIZE_T row;
+    STD_SIZE_T column;
+
+    if (session == STD_NULL || core_platform_presentation_mailbox_capture(
+            &session->presentation_mailbox, &frame) != TYPE_STATUS_OK) return;
+    for (row = 0u; row < 25u; ++row) {
+        for (column = 0u; column < 80u; ++column) {
+            C_UCHAR character = frame.characters[row * 80u + column];
+            STD_PRINTF("%c", character == 0u ? ' ' : character);
+        }
+        STD_PRINTF("\n");
+    }
+}
+
+C_INT main(C_INT argc, C_CHAR **argv)
+{
+    const vm_session_config config = {
+        .fdd_image = argc == 3 ? argv[1] : STD_NULL,
+        .hdd_image = argc == 3 ? argv[2] : STD_NULL,
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
+    };
+    const uint8_t enter[] = {0x1cu};
+    const uint8_t select_c[] = {0x2eu, 0x2au, 0x27u, 0xaau, 0x1cu};
+    HANDLE thread = STD_NULL;
+    vm_session *session = STD_NULL;
+    uint8_t hdd_count = 0u;
+    C_UINT ata_commands = 0u;
+    uint8_t last_command = 0u;
+    C_INT c_present;
+    C_INT c_absent;
+    const C_CHAR *stage = "create";
+
+    if (argc != 3 || vm_session_create(&config, &session) != TYPE_STATUS_OK ||
+        session == STD_NULL) goto fail;
+    thread = CreateThread(STD_NULL, 0u, vm_t287_run_machine, session, 0u, STD_NULL);
+    if (thread == STD_NULL) goto fail;
+    stage = "date";
+    if (!vm_t287_wait_for_text(session, "Enter new date", VM_T287_BOOT_TIMEOUT_MILLISECONDS) ||
+        !vm_t287_submit(session, enter, sizeof(enter))) goto fail;
+    stage = "time";
+    if (!vm_t287_wait_for_text(session, "Enter new time", VM_T287_BOOT_TIMEOUT_MILLISECONDS) ||
+        !vm_t287_submit(session, enter, sizeof(enter))) goto fail;
+    stage = "prompt";
+    if (!vm_t287_wait_for_text(session, "A:\\>", VM_T287_BOOT_TIMEOUT_MILLISECONDS)) {
+        goto fail;
+    }
+    stage = "bda-hdd-count";
+    vm_session_control_request_pause(&session->control, VM_SESSION_PAUSE_EXPLICIT);
+    if (!vm_session_control_wait_for_pause(&session->control, 2000u) ||
+        core_machine_debug_read_memory(session->core_machine, 0x0475u, &hdd_count,
+            sizeof(hdd_count)) != TYPE_STATUS_OK) goto fail;
+    vm_session_control_continue(&session->control);
+    stage = "c-command";
+    if (!vm_t287_submit(session, select_c, sizeof(select_c))) goto fail;
+    stage = "c-drive";
+    c_present = vm_t287_wait_for_text(session, "C:\\>", VM_T287_COMMAND_TIMEOUT_MILLISECONDS);
+    c_absent = vm_t287_wait_for_text(session, "Invalid drive specification",
+        VM_T287_COMMAND_TIMEOUT_MILLISECONDS);
+    vm_t287_report_frame(session);
+    ata_commands = session->core_machine->hdc.data.command_count;
+    last_command = session->core_machine->hdc.data.last_command;
+    vm_session_stop(session);
+    WaitForSingleObject(thread, 2000u);
+    CloseHandle(thread);
+    if (c_present) {
+        STD_PRINTF("M5:T287:S2:WINDOWS31:CHECKPOINT:OK result=c-drive-present "
+            "bda_hdd_count=%u ata_commands=%u\n", hdd_count,
+            ata_commands);
+        vm_session_destroy(session);
+        return 0;
+    }
+    if (c_absent) {
+        STD_PRINTF("M5:T287:S2:WINDOWS31:CHECKPOINT:OK result=c-drive-absent "
+            "category=bios-firmware bda_hdd_count=%u ata_commands=%u last_command=%02X\n",
+            hdd_count, ata_commands, last_command);
+        vm_session_destroy(session);
+        return 0;
+    }
+
+fail:
+    vm_t287_report(session, stage);
+    if (session != STD_NULL) vm_session_stop(session);
+    if (thread != STD_NULL) {
+        WaitForSingleObject(thread, 2000u);
+        CloseHandle(thread);
+    }
+    vm_session_destroy(session);
+    return 1;
+}

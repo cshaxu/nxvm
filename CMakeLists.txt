@@ -725,6 +725,13 @@ target_link_libraries(vm-ata-pio-dos-smoke PRIVATE vm-composition)
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(vm-ata-pio-dos-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
+add_executable(vm-windows31-checkpoint
+    tests/machine/vm_windows31_checkpoint.c
+)
+target_link_libraries(vm-windows31-checkpoint PRIVATE vm-composition)
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(vm-windows31-checkpoint PRIVATE -Wall -Wextra -Wpedantic -Werror)
+endif()
 add_executable(vm-keyboard-set1-mapper-smoke
     tests/machine/vm_keyboard_set1_mapper_smoke.c
 )
@@ -797,6 +804,10 @@ add_executable(vm-rom-ega-int10-system-smoke
     tests/machine/vm_rom_ega_int10_system_smoke.c
 )
 target_link_libraries(vm-rom-ega-int10-system-smoke PRIVATE vm-composition)
+add_executable(vm-rom-int13-hdd-type-smoke
+    tests/machine/vm_rom_int13_hdd_type_smoke.c
+)
+target_link_libraries(vm-rom-int13-hdd-type-smoke PRIVATE vm-composition)
 add_executable(vm-ega-mode10-boot-smoke
     tests/machine/vm_ega_mode10_boot_smoke.c
 )
@@ -1009,6 +1020,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     vm-ega-controller-system-smoke
     vm-ega-planar-system-smoke
     vm-rom-ega-int10-system-smoke
+    vm-rom-int13-hdd-type-smoke
     vm-ega-mode10-boot-smoke
     core-machine-stopped-lifecycle-smoke
     core-machine-memory-reconfigure-smoke
@@ -1164,7 +1176,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0286 "0.5.0286")
+add_current_vm_artifact(vm-0-5-0287 "0.5.0287")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 

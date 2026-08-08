@@ -2,25 +2,37 @@
 
 ## Current Work
 
-**Idle. M5 T286 is closed; T287 is not admitted.**
+**M5 T287 S10 in progress: DOS fixed-disk allocation trace.**
 
-T286's owner-built primary-master route drives real `1F0h`--`1F7h` task-file,
-`3F6h` device-control, IRQ14/PIC, PIO data, and VM media-provider paths. Its
-S1 failure established that bit 1 (`nIEN`) was ignored. S2 now suppresses an
-already-visible or later completion IRQ while preserving the PIO command/data
-phase; clearing it restores later IRQ14 delivery. The core port probe, VM port
-probe, and DOS guest fixture carry the `M5:T286` success markers.
+T287 used a lawful, repository-external DOS 6.22 boot floppy and HDD with an
+ignored local manifest. The real Console transaction mounted both media and
+selected `DEVICE display window`; the separate parameterized checkpoint tool
+read only the session's copied presentation mailbox. It reached `A:\>` after
+the DOS date/time inputs, observed BDA fixed-disk count `1` and three ATA
+`READ SECTORS (20h)` commands, then reproducibly received `Invalid drive
+specification` for `C:`. The tool marker is
+`M5:T287:S2:WINDOWS31:CHECKPOINT:OK result=c-drive-absent
+category=bios-firmware bda_hdd_count=1 ata_commands=3 last_command=20`.
 
-T287 remains unadmitted: this workspace has no lawful, user-provided,
-repository-external Windows 3.x Standard-mode medium and accompanying local
-manifest. It must not substitute sibling or repository media.
+S3--S9 repaired the bounded default-ROM fixed-disk discovery contract: AH=15
+now returns type `03h` in AH and the full geometry sector count; AH=08 returns
+the parameter-table pointer and user-defined drive type; unsupported calls
+return an error; AH=01 observes a clear initial status; and CMOS 12h/19h
+declare the matching user-defined type. The owner-built ROM regression carries
+the `M5:T287:S9:ROM-INT13-HDD-CMOS:OK` marker. These changes preserve the
+existing ATA PIO controller boundary and do not add commands, DMA, display
+breadth, CPU behavior, or a Windows support claim.
+
+The external copied-frame checkpoint still reports the same `C:` failure after
+S3--S9. S10 will add only the trace needed to identify the DOS allocation
+decision before another controller or firmware change is considered.
 
 ## Current Technical Baseline
 
-- **T286 artifact identity:** `current-gcc` and
-  `verify-current-artifact-target` select `vm-0-5-0286`. T286 passed 44
-  static/governance gates and 112/112 CTest. Artifact `nxvm_0_5_0286.exe`
-  SHA-256: `1407F6131419DD4F8AA2470E42E39E348672C6B3ACF44AD82281890C4AE42039`.
+- **T287 artifact identity:** `current-gcc` and
+  `verify-current-artifact-target` select `vm-0-5-0287`. The active T287
+  subtask has not closed. Artifact `nxvm_0_5_0287.exe` SHA-256:
+  `C6FC2713B339C5116AC10D63788A014677EC4DC9DA456173F4CD66D68DD005A4`.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
@@ -34,7 +46,6 @@ manifest. It must not substitute sibling or repository media.
 
 | Task | Compact result |
 | --- | --- |
-| T279 | Retired unbounded C formatting; source gate and corpus now enforce bounded output and explicit append capacity. |
 | T280 | Made FDD/HDD candidate replacement atomic; HDD now preserves arbitrary raw byte length through virtual sector capacity, zero tail reads, and padded-tail persistence. |
 | T281 | Renamed the sole core controller owners and configuration borrows from historical `shared_*` names to `fdc/hdc`, with no alias or behavior change. |
 | T282 | Moved native window/console handle ownership from core to VM platform while preserving copied core input, presentation, and wait contracts. |
@@ -42,6 +53,7 @@ manifest. It must not substitute sibling or repository media.
 | T284 | Froze the first Windows-facing display admission contract for EGA mode 10h and added expected-failing core/VM corpus without changing runtime behavior. |
 | T285 | Implemented bounded EGA mode 10h direct, turned the T284 core/VM corpus into normal success coverage, and emitted the 0.5.0285 developer artifact. |
 | T286 | Fixed the corpus-proven ATA device-control `nIEN` IRQ14 visibility gap through core-owned controller state, with core, VM-port, and guest fixture success evidence; no DMA, timing, or command expansion. |
+| T287 | Reached the external DOS checkpoint and isolated the first Windows-install prerequisite failure to default-ROM `INT 13h/AH=15h` fixed-disk type reporting; no Windows support claim or artifact. |
 
 Detailed contracts, commands, artifact provenance, and prior closures are in
 [M5 History](../history/m5.md) and Git history. The [M5 convergence queue]
