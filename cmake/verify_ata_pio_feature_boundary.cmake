@@ -37,7 +37,8 @@ endforeach()
 
 foreach(required IN ITEMS "core_machine_hdc_load_lba_sector"
     "core_machine_hdc_store_lba_sector" "core_machine_hdc_selected_master"
-    "CORE_MACHINE_HDC_DEVICE_CONTROL_SRST" "core_machine_hdc_clear_irq"
+    "CORE_MACHINE_HDC_DEVICE_CONTROL_NIEN" "CORE_MACHINE_HDC_DEVICE_CONTROL_SRST"
+    "core_machine_hdc_clear_irq"
     "core_machine_pic_irq_source_assert" "core_machine_media_query"
     "core_machine_media_read_bytes" "core_machine_media_write_bytes")
     string(FIND "${hdc_source}" "${required}" position)

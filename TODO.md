@@ -47,7 +47,7 @@ only the near-term NXVM tasks.
 | Interrupts and time | PIC source lifecycle; deterministic core elapsed ticks; PIT/IRQ0 -> ROM -> BDA -> `INT 1Ah` evidence | Greater timing fidelity only when an explicit corpus requires it. |
 | Keyboard | KBC, IRQ1/IRQ12, ROM `INT 09h`/`INT 16h`, set-1 break/E0/E1, typeahead, selection/query, translation observation, LED, command-state typematic, ACK/RESEND, bounded PS/2 AUX packets, and one DOS guest-driver corpus | Default core auto-repeat stays disabled until a profile-clock calibration defines human typematic time; set-2/3 conversion, wheel/advanced AUX protocol, broad guest mouse API compatibility, and native POSIX runtime validation remain deferred. |
 | Display | CGA text plus bounded digital `320x200x4`, ROM-selectable `EGA-320x200x16-direct`, and `EGA-640x350x16-direct` mode 10h; copied text/indexed frames; `console`/`window`/`auto` selection | Remaining digital CGA modes/CRTC behavior, composite video, broader EGA/VGA, VBE. |
-| Storage | Bounded ATA PIO and FDD boot paths through declared ROM/device owners; neutral media/controller mechanisms now live in core while VM retains backing/topology policy; core-owned 8237 DMA grants one unit at a time through the frozen FDC DMA2 binding | Full FDC state machine, generic bus wait states, broad DMA behavior, extended IDE, and error/timing compatibility remain open. |
+| Storage | Bounded ATA PIO and FDD boot paths through declared ROM/device owners; ATA device-control `nIEN` now suppresses PIC-visible IRQ14 while retaining PIO status/data; neutral media/controller mechanisms live in core while VM retains backing/topology policy; core-owned 8237 DMA grants one unit at a time through the frozen FDC DMA2 binding | Full FDC state machine, generic bus wait states, broad DMA behavior, extended IDE, and error/timing compatibility remain open. |
 | VDM | Isolated non-runnable scaffold over the shared core | Owned DOS design, CLI, host-drive policy, and product implementation remain deferred. |
 
 ## M5 Capability And Debt Ledger
@@ -74,7 +74,8 @@ active task.
   square-wave output, don't-care alarms, and broader RTC services.
 - [x] **ATA PIO feature matrix (`TODO(Medium)`, T233).** Primary-master LBA28
   PIO and count-zero=256 are admitted; slave and secondary remain explicitly
-  absent, with SRST/status/error/IRQ14 behavior probed. Deferred: IDE DMA,
+  absent, with SRST/status/error/IRQ14 and device-control `nIEN` visibility
+  probed. Deferred: IDE DMA,
   ATAPI, LBA48, cache, and host-clock timing.
 - [x] **T279 bounded C formatting.** `STD_SPRINTF`/`vsprintf` are retired;
   owned capacities and cursor/remaining append semantics are enforced by a

@@ -223,7 +223,20 @@ C_INT main(C_VOID)
         value != CORE_MACHINE_HDC_STATUS_BSY ||
         !vm_hdc_write(session->core_machine, HDC_ALT_STATUS_CONTROL_PORT, 0x00u) ||
         !vm_hdc_read(session->core_machine, HDC_STATUS_COMMAND_PORT, &value) ||
-        value != (CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_DSC)) {
+        value != (CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_DSC) ||
+        !vm_hdc_write(session->core_machine, HDC_ALT_STATUS_CONTROL_PORT,
+            CORE_MACHINE_HDC_DEVICE_CONTROL_NIEN) ||
+        !vm_hdc_write(session->core_machine, HDC_STATUS_COMMAND_PORT, 0xecu) ||
+        !vm_hdc_read(session->core_machine, HDC_ALT_STATUS_CONTROL_PORT, &value) ||
+        value != (CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_DSC |
+            CORE_MACHINE_HDC_STATUS_DRQ) || core_machine_hdc_irq_pending(
+                &session->core_machine->hdc) ||
+        !vm_hdc_drain_data(session->core_machine, &word) ||
+        !vm_hdc_write(session->core_machine, HDC_ALT_STATUS_CONTROL_PORT, 0x00u) ||
+        !vm_hdc_write(session->core_machine, HDC_STATUS_COMMAND_PORT, 0xecu) ||
+        !core_machine_hdc_irq_pending(&session->core_machine->hdc) ||
+        !vm_hdc_read(session->core_machine, HDC_STATUS_COMMAND_PORT, &value) ||
+        !vm_hdc_drain_data(session->core_machine, &word)) {
         failed = 1;
     }
     if (!failed && !vm_hdc_progress_probe(session)) failed = 1;
@@ -241,6 +254,7 @@ C_INT main(C_VOID)
     }
     vm_session_destroy(no_media);
     if (failed) return 1;
+    STD_PRINTF("M5:T286:S3:ATA-NIEN:VM-PORT:OK\n");
     STD_PRINTF("M5:T253:S2:ATA-PIO-PROGRESS:PORT:OK lba=%04X irq=14\n",
         0x5aa5u);
     return 0;

@@ -34,8 +34,9 @@ trees, `build/output`, and user files are never cleanup targets.
 The boundary migration consumed T270--T278. The pre-migration future queue
 that formerly began at T270 was first displaced to T279--T287; this approved
 reliability and interface package consumes T279--T283. T284/T285 then froze
-and implemented the mode-10h EGA direct path, so the remaining queue begins at
-T286. Historical completed task records retain their original identifiers.
+and implemented the mode-10h EGA direct path; T286 closed the single
+corpus-proven ATA `nIEN` IRQ-visibility gap. The remaining queue begins at
+T287. Historical completed task records retain their original identifiers.
 
 ### B. Reliability And Contract Evidence
 
@@ -46,7 +47,6 @@ T286. Historical completed task records retain their original identifiers.
 
 | Task | Owner and purpose | Dependency and stop condition |
 | --- | --- | --- |
-| T286 | ATA/FDC Windows-startup storage gap selected by a reproducible fixture: controller status/error/reset/timing or a missing transfer form. | T268--T281 and T283 as applicable. Image files remain backends, never controller substitutes. |
 | T287 | Windows 3.x Standard-mode readiness corpus and gap map using lawful, user-supplied media. Record the exact boot/checkpoint result and convert each unmet prerequisite into a bounded later admission. | T264--T286. This is evidence collection, not a support claim or committed guest asset. |
 
 ### D. Protected-Mode And FPU Work Triggered By Evidence

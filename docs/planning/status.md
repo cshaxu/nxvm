@@ -2,14 +2,25 @@
 
 ## Current Work
 
-**Idle.** T285 is closed; admit T286 only through a new approved packet.
+**Idle. M5 T286 is closed; T287 is not admitted.**
+
+T286's owner-built primary-master route drives real `1F0h`--`1F7h` task-file,
+`3F6h` device-control, IRQ14/PIC, PIO data, and VM media-provider paths. Its
+S1 failure established that bit 1 (`nIEN`) was ignored. S2 now suppresses an
+already-visible or later completion IRQ while preserving the PIO command/data
+phase; clearing it restores later IRQ14 delivery. The core port probe, VM port
+probe, and DOS guest fixture carry the `M5:T286` success markers.
+
+T287 remains unadmitted: this workspace has no lawful, user-provided,
+repository-external Windows 3.x Standard-mode medium and accompanying local
+manifest. It must not substitute sibling or repository media.
 
 ## Current Technical Baseline
 
-- **T285 artifact identity:** `current-gcc` and
-  `verify-current-artifact-target` select `vm-0-5-0285`. T285 passed 44
-  static/governance gates and 112/112 CTest. Artifact `nxvm_0_5_0285.exe`
-  SHA-256: `192B921557B2BED20FE8B78ADCC2ABDD66122CF9CB308B3CAB395DEA49C9CD62`.
+- **T286 artifact identity:** `current-gcc` and
+  `verify-current-artifact-target` select `vm-0-5-0286`. T286 passed 44
+  static/governance gates and 112/112 CTest. Artifact `nxvm_0_5_0286.exe`
+  SHA-256: `1407F6131419DD4F8AA2470E42E39E348672C6B3ACF44AD82281890C4AE42039`.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
@@ -23,7 +34,6 @@
 
 | Task | Compact result |
 | --- | --- |
-| T278 | Moved neutral ATA PIO into `core_machine.shared_hdc`; composition only binds frozen PC/AT routes/media, while the VM-free fixture proves IDENTIFY, DRQ, and IRQ14 acknowledgement. |
 | T279 | Retired unbounded C formatting; source gate and corpus now enforce bounded output and explicit append capacity. |
 | T280 | Made FDD/HDD candidate replacement atomic; HDD now preserves arbitrary raw byte length through virtual sector capacity, zero tail reads, and padded-tail persistence. |
 | T281 | Renamed the sole core controller owners and configuration borrows from historical `shared_*` names to `fdc/hdc`, with no alias or behavior change. |
@@ -31,6 +41,7 @@
 | T283 | Extended VM-free controller media evidence, removed unsafe HDD CHS transfer state, and made FDD/HDD persistence collision-safe and failure-preserving. |
 | T284 | Froze the first Windows-facing display admission contract for EGA mode 10h and added expected-failing core/VM corpus without changing runtime behavior. |
 | T285 | Implemented bounded EGA mode 10h direct, turned the T284 core/VM corpus into normal success coverage, and emitted the 0.5.0285 developer artifact. |
+| T286 | Fixed the corpus-proven ATA device-control `nIEN` IRQ14 visibility gap through core-owned controller state, with core, VM-port, and guest fixture success evidence; no DMA, timing, or command expansion. |
 
 Detailed contracts, commands, artifact provenance, and prior closures are in
 [M5 History](../history/m5.md) and Git history. The [M5 convergence queue]

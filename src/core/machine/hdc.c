@@ -7,8 +7,6 @@
 #define CORE_MACHINE_HDC_COMMAND_READ_SECTORS 0x20u
 #define CORE_MACHINE_HDC_COMMAND_WRITE_SECTORS 0x30u
 #define CORE_MACHINE_HDC_COMMAND_IDENTIFY_DEVICE 0xecu
-#define CORE_MACHINE_HDC_DEVICE_CONTROL_SRST 0x04u
-
 static C_INT core_machine_hdc_selected_master(const core_machine_hdc *hdc)
 { return hdc != STD_NULL && (hdc->data.drive_head & 0x10u) == 0u; }
 
@@ -28,6 +26,11 @@ static C_VOID core_machine_hdc_clear_irq(core_machine_hdc *hdc)
 static C_VOID core_machine_hdc_raise_irq(core_machine_hdc *hdc)
 {
     if (hdc == STD_NULL) return;
+    if ((hdc->data.device_control & CORE_MACHINE_HDC_DEVICE_CONTROL_NIEN) != 0u) {
+        hdc->data.irq_pending = TYPE_FALSE;
+        core_machine_pic_irq_source_deassert(&hdc->connect.irq_source);
+        return;
+    }
     hdc->data.irq_pending = TYPE_TRUE;
     core_machine_pic_irq_source_assert(&hdc->connect.irq_source);
 }
@@ -493,6 +496,9 @@ static type_status core_machine_hdc_port_write(C_VOID *opaque, uint16_t port,
             CORE_MACHINE_HDC_DEVICE_CONTROL_SRST) != 0u;
 
         hdc->data.device_control = device_control;
+        if ((device_control & CORE_MACHINE_HDC_DEVICE_CONTROL_NIEN) != 0u) {
+            core_machine_hdc_clear_irq(hdc);
+        }
         if (reset_asserted && !hdc->data.reset_asserted) {
             hdc->data.reset_asserted = TYPE_TRUE;
             hdc->data.phase = CORE_MACHINE_HDC_PHASE_IDLE;
