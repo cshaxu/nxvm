@@ -3,28 +3,18 @@
 
 
 #include "core/machine/cpu_interface.h"
+#include "core/machine/controller_interface.h"
+#include "core/machine/display_interface.h"
 #include "core/machine/fpu_interface.h"
 #include "core/machine/execution_provider.h"
 #include "core/machine/firmware_interface.h"
-#include "core/machine/cpu.h"
-#include "core/machine/cpu_instructions.h"
-#include "core/machine/dma.h"
-#include "core/machine/kbc.h"
 #include "core/machine/lifecycle_interface.h"
-#include "core/machine/memory.h"
 #include "core/machine/memory_interface.h"
-#include "core/machine/pic.h"
-#include "core/machine/pit.h"
-#include "core/machine/rtc.h"
-#include "core/machine/fdc.h"
-#include "core/machine/hdc.h"
-#include "core/machine/port.h"
 #include "core/machine/port_interface.h"
 #include "type.h"
 #include "core/machine/trace_interface.h"
 #include "core/machine/rom_mapping_interface.h"
 #include "core/machine/entry_plan_interface.h"
-#include "core/machine/vadp.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -35,6 +25,12 @@ typedef struct core_machine core_machine;
 #define CORE_MACHINE_DEFAULT_MEMORY_BYTES (16u * 1024u * 1024u)
 #define CORE_MACHINE_MINIMUM_MEMORY_BYTES (2u * 1024u * 1024u)
 #define CORE_MACHINE_MAXIMUM_MEMORY_BYTES (64u * 1024u * 1024u)
+#define CORE_MACHINE_RTC_TYPE_DISK_FLOPPY 0x10u
+#define CORE_MACHINE_RTC_TYPE_DISK_FIXED 0x12u
+#define CORE_MACHINE_RTC_EQUIPMENT 0x14u
+#define CORE_MACHINE_RTC_BASEMEM_LSB 0x15u
+#define CORE_MACHINE_RTC_BASEMEM_MSB 0x16u
+#define CORE_MACHINE_RTC_TYPE_DISK_FIXED_EXTENDED_0 0x19u
 
 /* A domain receives floor((phase + elapsed * numerator) / denominator)
  * ticks. All-zero is retained configuration shorthand for identity 1/1. */

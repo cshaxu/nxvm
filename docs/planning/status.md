@@ -2,52 +2,56 @@
 
 ## Current Work
 
-**M5 T300 S3: VM session initialization failure atomicity -- active.**
+**M5 T300 S4: Public interface boundary and recurrence gate -- active.**
 
 | Requirement | Acceptance evidence |
 | --- | --- |
-| Session creation returns the first exact failure. | Profile, core, provider, firmware and controller setup preserve the originating `type_status`. |
-| Failed creation is unobservable as a session. | Reverse teardown leaves no active session, platform/input/request transport, bound media/firmware/provider or core machine. |
-| Recovery is deterministic. | A following valid create succeeds with retained Console/window and FDD/HDD boot behavior. |
+| Public interfaces carry no private implementation layout. | `machine_interface.h` uses only copyable display/controller configuration contracts; public headers do not include private core-machine headers. |
+| Debugger observation is explicit and copied. | The record names retained debugger CPU/instruction/memory fields without `t_cpu`, `t_cpuins`, executor, RAM, or port layout. |
+| The boundary cannot silently regress. | The strengthened raw-borrow gate rejects private public-header includes/layouts, raw borrows, profile bindings, and `src` use of `tests/support`. |
 
-- **Original request:** make VM session construction all-or-nothing after all
-  composition-owned core/profile/provider/controller setup has succeeded.
-- **Scope:** session factory/lifecycle construction chain, exact status return,
-  reverse teardown, failure injection and next-create recovery probes.
-- **Non-goals:** public-header ABI cleanup (S4), a pre-decode transition
-  registry, a generic device framework, a second I/O path, a fake DOS
-  controller, or any Console/debugger/boot/DOS UX change.
-- **Frozen S3 ownership:** the allocated session owns the core first, then its
-  display/media/profile/debug storage, controller and firmware/provider
-  bindings, control state, request/input transports and finally the active
-  publication. A non-OK stage returns its first exact `type_status`; reverse
-  teardown runs provider/control before storage/core and never publishes an
-  active session.
-- **Failure evidence:** owner-built profile copies inject an invalid firmware
-  service and an invalid FDC port range. Both must preserve
-  `TYPE_STATUS_INVALID_ARGUMENT`, leave no core or active run handle, and be
-  followed by a successful default session creation.
+- **Original request:** eliminate private device/CPU layouts from public core
+  interfaces, retain only necessary narrow copied configuration, and make the
+  debugger instruction observation an explicit copied contract.
+- **Scope:** core public interface headers, retained VM debugger consumer,
+  focused debugger evidence, and the T299 recurrence gate.
+- **Non-goals:** any new device framework, CPU/executor mutation contract,
+  pre-decode registry, T301 work, host shortcut, second video owner, or
+  Console/debugger/boot/DOS UX change.
+- **Frozen S4 contract:** `controller_interface.h` is the sole shared narrow
+  declaration for frozen DMA request, FDC drive/config, and HDC config values;
+  `display_interface.h` owns copied display capability configuration. Public
+  machine/debug interfaces expose no private device header or complete
+  CPU/instruction layout. The debugger record is copied and limited to fields
+  used by breakpoints, recorder/disassembly, and memory-access output.
+- **Similar-issue sweep:** `rg -n -g '*_interface.h'` scanned private
+  core-machine includes and raw layout names across `src`; there are no
+  production hits. Two core tests retain direct private includes only for
+  same-module test constants (`cpu.h` entry-plan flags and `vadp.h` display
+  topology); neither is a public or product route.
 - **Rules:** architecture overview, module layout, contracts, coding standard,
   source policy, execution workflow, and execution policy apply. The T300
   admission is owner-approved. No exception is requested.
-- **Verification:** run focused session failure/recovery plus retained
-  Console/DOS/boot probes, `git diff --check`, documentation/static gates and
-  full current gates. T300 stays active; no artifact identity changes in S3.
-- **Carry-forward:** S1 retains one directional port registry, and S2 retains
-  exact typed-provider errors through public, firmware/debugger and guest I/O.
-- **Stop condition:** storage, firmware/provider and controller failures retain
-  their first status, roll back without a reachable session, and a subsequent
-  default session succeeds.
+- **Verification:** focused core debugger observation and public-interface
+  gate; retained Console/DOS/FDD/HDD boot probes; `git diff --check`,
+  documentation governance, and full `current-gates-gcc`. The active S4
+  artifact is `nxvm_0_5_0300.exe` (2,588,088 bytes, SHA-256
+  `396B005EBAAC8134C0278FDBA87C22B9610D008B52B8FC9089E59E9D5A1DBBCA`).
+- **Carry-forward:** S1's directional ownership, S2's exact provider failure
+  propagation, and S3's session failure atomicity remain unchanged.
+- **Stop condition:** every public header passes the source-shape gate, the
+  copied debugger observation retains its consumer behavior, and all retained
+  product regressions and the 0.5.0300 artifact evidence pass. T300 remains
+  active pending coordinator final review.
 
 ## Current Technical Baseline
 
-- **T299 artifact identity:** `current-gcc` and
-  `verify-current-artifact-target` select `vm-0-5-0299` / `nxvm_0_5_0299.exe`.
-  Closure evidence: the focused raw-borrow corpus passed 27/27; the S3 static
-  gate emitted `M5:T299:S3:PUBLIC-RAW-BORROW-CLOSURE:OK`; and the owner-provided
-  cache-media `current-gates-gcc` run passed all 51 static/governance targets
-  and 126/126 CTests. The local developer artifact is 2,696,377 bytes with
-  SHA-256 `4736BA1A74F9C1C3268BC7D13D9F5D53FF823718F4F1EC3975766188DAA76438`.
+- **T300 artifact identity:** `current-gcc` and
+  `verify-current-artifact-target` select `vm-0-5-0300` / `nxvm_0_5_0300.exe`.
+  S4 active evidence: the strengthened source-shape gate emits
+  `M5:T300:S4:PUBLIC-INTERFACE-BOUNDARY:OK`; the focused debugger snapshot
+  probe and the active artifact build passed. Final closure remains coordinator
+  owned.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.

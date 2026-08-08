@@ -408,7 +408,7 @@ type_status core_machine_dma_bind_channel(t_latch *latch, t_dma *primary,
     dma->connect.write_provider[channel] = provider->write_device;
     dma->connect.close_provider[channel] = provider->terminal_count;
     dma->connect.device_owner[channel] = owner;
-    out_binding->core_owner = primary;
+    out_binding->core_token = (type_native_unsigned)(uintptr_t)primary;
     out_binding->channel = drq_id;
     return TYPE_STATUS_OK;
 }
@@ -418,8 +418,8 @@ C_VOID core_machine_dma_request_assert(
 {
     t_dma *primary;
 
-    if (binding == STD_NULL || binding->core_owner == STD_NULL) return;
-    primary = (t_dma *)binding->core_owner;
+    if (binding == STD_NULL || binding->core_token == 0u) return;
+    primary = (t_dma *)(uintptr_t)binding->core_token;
     core_machine_dma_set_drq(primary, primary->connect.peer,
         binding->channel, TYPE_TRUE);
 }
@@ -429,8 +429,8 @@ C_VOID core_machine_dma_request_deassert(
 {
     t_dma *primary;
 
-    if (binding == STD_NULL || binding->core_owner == STD_NULL) return;
-    primary = (t_dma *)binding->core_owner;
+    if (binding == STD_NULL || binding->core_token == 0u) return;
+    primary = (t_dma *)(uintptr_t)binding->core_token;
     core_machine_dma_set_drq(primary, primary->connect.peer,
         binding->channel, TYPE_FALSE);
 }

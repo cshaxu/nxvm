@@ -1,6 +1,7 @@
 #include "type.h"
 
 #include "core/machine/machine_interface.h"
+#include "core/machine/cpu.h"
 
 static C_INT prepare_machine(core_machine **out_machine)
 {

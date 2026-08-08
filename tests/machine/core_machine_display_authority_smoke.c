@@ -2,6 +2,7 @@
 
 #include "core/machine/machine_interface.h"
 #include "core/machine/memory_interface.h"
+#include "core/machine/vadp.h"
 
 static C_VOID core_machine_display_authority_mode_changed(C_VOID *context)
 {

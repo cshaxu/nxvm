@@ -62,7 +62,7 @@ int main(C_VOID)
         core_machine_configure_dma(machine, &dma_wiring, &fdc_request) !=
             TYPE_STATUS_OK ||
         core_machine_configure_rtc_cmos(machine, &rtc_config) != TYPE_STATUS_OK ||
-        fdc_request.core_owner == STD_NULL || fdc_request.channel != 2u ||
+        fdc_request.core_token == 0u || fdc_request.channel != 2u ||
         core_machine_configure_dma(machine, &dma_wiring, &fdc_request) !=
             TYPE_STATUS_INVALID_STATE ||
         test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,

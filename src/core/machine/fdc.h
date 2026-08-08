@@ -8,6 +8,7 @@ extern "C" {
 #endif
 
 #include "type.h"
+#include "core/machine/controller_interface.h"
 #include "core/machine/dma.h"
 #include "core/machine/media_interface.h"
 #include "core/machine/pic.h"
@@ -16,7 +17,6 @@ typedef struct t_pic t_pic;
 typedef struct t_port t_port;
 
 #define CORE_MACHINE_DEVICE_FDC "Intel 8272A"
-#define CORE_MACHINE_FDC_DRIVE_COUNT 4u
 
 typedef enum core_machine_fdc_phase {
     core_machine_fdc_PHASE_COMMAND = 0,
@@ -60,20 +60,6 @@ typedef struct {
     uint64_t observed_media_generation[CORE_MACHINE_FDC_DRIVE_COUNT];
     type_bool media_changed[CORE_MACHINE_FDC_DRIVE_COUNT];
 } core_machine_fdc_data;
-
-typedef struct {
-    uint16_t dor_port;
-    uint16_t status_port;
-    uint16_t data_port;
-    uint16_t direction_port;
-    uint16_t control_port;
-    uint8_t irq;
-    uint8_t dma_channel;
-} core_machine_fdc_config;
-
-typedef struct {
-    core_machine_media_id media_id[CORE_MACHINE_FDC_DRIVE_COUNT];
-} core_machine_fdc_drive_bindings;
 
 typedef struct {
     const core_machine_media_registry *media_registry;

@@ -7,9 +7,6 @@
 
 #include "type.h"
 
-#include "core/machine/cpu_instructions.h"
-
-
 #include "vm/machine/debug.h"
 
 static C_VOID debug_request_pause(t_debug *debug,
@@ -38,8 +35,11 @@ C_VOID vm_machine_debug_refresh(t_debug *debug,
     if (debug == STD_NULL || observation == STD_NULL) return;
     debug->connect.observation = *observation;
     debug->connect.observation_valid = TYPE_TRUE;
-    if ((debug->data.flagBreak && debug->connect.observation.cpu.data.cs.selector == debug->data.breakCS && debug->connect.observation.cpu.data.ip == debug->data.breakIP) ||
-            (debug->data.flagBreak32 && debug->data.breakCount && (debug->connect.observation.cpu.data.cs.base + debug->connect.observation.cpu.data.eip == debug->data.breakLinear))) {
+    if ((debug->data.flagBreak && debug->connect.observation.cs ==
+            debug->data.breakCS && debug->connect.observation.eip ==
+            debug->data.breakIP) || (debug->data.flagBreak32 &&
+            debug->data.breakCount && (debug->connect.observation.cs_base +
+            debug->connect.observation.eip == debug->data.breakLinear))) {
         debug_request_pause(debug, VM_MACHINE_DEBUG_PAUSE_BREAKPOINT);
     }
     debug->data.breakCount++;
@@ -56,34 +56,39 @@ C_VOID vm_machine_debug_refresh(t_debug *debug,
         type_native_unsigned i;
         type_string_buffer stmt;
         STD_FPRINTF(debug->connect.recordFile, _expression,
-                debug->connect.observation.cpu.data.cs.selector, debug->connect.observation.cpu.data.eip, debug->connect.observation.cpu.data.cs.base + debug->connect.observation.cpu.data.eip,
-                debug->connect.observation.cpu.data.ss.selector, debug->connect.observation.cpu.data.esp, debug->connect.observation.cpu.data.ss.base + debug->connect.observation.cpu.data.esp,
-                debug->connect.observation.cpu.data.eax, debug->connect.observation.cpu.data.ecx, debug->connect.observation.cpu.data.edx, debug->connect.observation.cpu.data.ebx,
-                debug->connect.observation.cpu.data.ebp, debug->connect.observation.cpu.data.esi, debug->connect.observation.cpu.data.edi,
-                debug->connect.observation.cpu.data.ds.selector, debug->connect.observation.cpu.data.es.selector,
-                debug->connect.observation.cpu.data.fs.selector, debug->connect.observation.cpu.data.gs.selector,
-                debug->connect.observation.cpu.data.eflags,
-                TYPE_GET_BIT(debug->connect.observation.cpu.data.eflags, VCPU_EFLAGS_OF) ? "OF" : "of",
-                TYPE_GET_BIT(debug->connect.observation.cpu.data.eflags, VCPU_EFLAGS_SF) ? "SF" : "sf",
-                TYPE_GET_BIT(debug->connect.observation.cpu.data.eflags, VCPU_EFLAGS_ZF) ? "ZF" : "zf",
-                TYPE_GET_BIT(debug->connect.observation.cpu.data.eflags, VCPU_EFLAGS_CF) ? "CF" : "cf",
-                TYPE_GET_BIT(debug->connect.observation.cpu.data.eflags, VCPU_EFLAGS_AF) ? "AF" : "af",
-                TYPE_GET_BIT(debug->connect.observation.cpu.data.eflags, VCPU_EFLAGS_PF) ? "PF" : "pf",
-                TYPE_GET_BIT(debug->connect.observation.cpu.data.eflags, VCPU_EFLAGS_DF) ? "DF" : "df",
-                TYPE_GET_BIT(debug->connect.observation.cpu.data.eflags, VCPU_EFLAGS_IF) ? "IF" : "if",
-                TYPE_GET_BIT(debug->connect.observation.cpu.data.eflags, VCPU_EFLAGS_TF) ? "TF" : "tf",
-                TYPE_GET_BIT(debug->connect.observation.cpu.data.eflags, VCPU_EFLAGS_VM) ? "VM" : "vm",
-                TYPE_GET_BIT(debug->connect.observation.cpu.data.eflags, VCPU_EFLAGS_RF) ? "RF" : "rf",
-                TYPE_GET_BIT(debug->connect.observation.cpu.data.eflags, VCPU_EFLAGS_NT) ? "NT" : "nt",
-                debug->connect.observation.instructions.data.reccs, debug->connect.observation.instructions.data.receip, debug->connect.observation.instructions.data.linear);
+                debug->connect.observation.cs, debug->connect.observation.eip,
+                debug->connect.observation.cs_base + debug->connect.observation.eip,
+                debug->connect.observation.ss, debug->connect.observation.esp,
+                debug->connect.observation.ss_base + debug->connect.observation.esp,
+                debug->connect.observation.eax, debug->connect.observation.ecx,
+                debug->connect.observation.edx, debug->connect.observation.ebx,
+                debug->connect.observation.ebp, debug->connect.observation.esi,
+                debug->connect.observation.edi, debug->connect.observation.ds,
+                debug->connect.observation.es, debug->connect.observation.fs,
+                debug->connect.observation.gs, debug->connect.observation.eflags,
+                (debug->connect.observation.eflags & CORE_MACHINE_DEBUG_EFLAGS_OF) ? "OF" : "of",
+                (debug->connect.observation.eflags & CORE_MACHINE_DEBUG_EFLAGS_SF) ? "SF" : "sf",
+                (debug->connect.observation.eflags & CORE_MACHINE_DEBUG_EFLAGS_ZF) ? "ZF" : "zf",
+                (debug->connect.observation.eflags & CORE_MACHINE_DEBUG_EFLAGS_CF) ? "CF" : "cf",
+                (debug->connect.observation.eflags & CORE_MACHINE_DEBUG_EFLAGS_AF) ? "AF" : "af",
+                (debug->connect.observation.eflags & CORE_MACHINE_DEBUG_EFLAGS_PF) ? "PF" : "pf",
+                (debug->connect.observation.eflags & CORE_MACHINE_DEBUG_EFLAGS_DF) ? "DF" : "df",
+                (debug->connect.observation.eflags & CORE_MACHINE_DEBUG_EFLAGS_IF) ? "IF" : "if",
+                (debug->connect.observation.eflags & CORE_MACHINE_DEBUG_EFLAGS_TF) ? "TF" : "tf",
+                (debug->connect.observation.eflags & CORE_MACHINE_DEBUG_EFLAGS_VM) ? "VM" : "vm",
+                (debug->connect.observation.eflags & CORE_MACHINE_DEBUG_EFLAGS_RF) ? "RF" : "rf",
+                (debug->connect.observation.eflags & CORE_MACHINE_DEBUG_EFLAGS_NT) ? "NT" : "nt",
+                debug->connect.observation.instruction_cs,
+                debug->connect.observation.instruction_eip,
+                debug->connect.observation.instruction_linear);
 
         /* disassemble opcode */
-        if (debug->connect.observation.instructions.data.oplen) {
-            debug->connect.observation.instructions.data.oplen = debug->connect.disassembleProvider == STD_NULL ?
+        if (debug->connect.observation.instruction_byte_count) {
+            debug->connect.observation.instruction_byte_count = debug->connect.disassembleProvider == STD_NULL ?
                 0u : debug->connect.disassembleProvider(
                     debug->connect.disassembleContext, stmt,
-                    debug->connect.observation.instructions.data.opcodes,
-                    debug->connect.observation.cpu.data.cs.seg.exec.defsize);
+                    debug->connect.observation.instruction_bytes,
+                    debug->connect.observation.code_default_size);
             for (i = 0; i < STD_STRLEN(stmt); ++i) {
                 if (stmt[i] == '\n') {
                     stmt[i] = ' ';
@@ -94,10 +99,10 @@ C_VOID vm_machine_debug_refresh(t_debug *debug,
         }
 
         /* print opcode, at least print 8 bytes */
-        for (i = 0; i < debug->connect.observation.instructions.data.oplen; ++i) {
-            STD_FPRINTF(debug->connect.recordFile, "%02X", debug->connect.observation.instructions.data.opcodes[i]);
+        for (i = 0; i < debug->connect.observation.instruction_byte_count; ++i) {
+            STD_FPRINTF(debug->connect.recordFile, "%02X", debug->connect.observation.instruction_bytes[i]);
         }
-        for (i = debug->connect.observation.instructions.data.oplen; i < 8; ++i) {
+        for (i = debug->connect.observation.instruction_byte_count; i < 8; ++i) {
             STD_FPRINTF(debug->connect.recordFile, "  ");
         }
 
@@ -108,10 +113,12 @@ C_VOID vm_machine_debug_refresh(t_debug *debug,
         }
 
         /* print memory usage */
-        for (i = 0; i < debug->connect.observation.instructions.data.msize; ++i) {
+        for (i = 0; i < debug->connect.observation.memory_access_count; ++i) {
             STD_FPRINTF(debug->connect.recordFile, "[%c:L%08x/%1d/%016llx] ",
-                    debug->connect.observation.instructions.data.mem[i].flagWrite ? 'W' : 'R', debug->connect.observation.instructions.data.mem[i].linear,
-                    debug->connect.observation.instructions.data.mem[i].byte, debug->connect.observation.instructions.data.mem[i].data);
+                    debug->connect.observation.memory_accesses[i].write ? 'W' : 'R',
+                    debug->connect.observation.memory_accesses[i].linear,
+                    debug->connect.observation.memory_accesses[i].bytes,
+                    debug->connect.observation.memory_accesses[i].data);
         }
 
         STD_FPRINTF(debug->connect.recordFile, "\n");

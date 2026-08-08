@@ -11,6 +11,8 @@ typedef enum core_machine_cpu_profile {
     CORE_MACHINE_CPU_PROFILE_80386
 } core_machine_cpu_profile;
 
+#define CORE_MACHINE_CPU_DEVICE_NAME "Intel 8086+"
+
 const C_CHAR *core_machine_cpu_profile_name(core_machine_cpu_profile profile);
 
 typedef struct core_machine_cpu_state {

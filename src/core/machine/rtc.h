@@ -4,6 +4,7 @@
 #define CORE_MACHINE_RTC_H
 
 #include "type.h"
+#include "core/machine/machine_interface.h"
 #include "core/machine/pic.h"
 
 #define CORE_MACHINE_RTC_REGISTER_COUNT 0x80u
@@ -22,12 +23,6 @@
 #define CORE_MACHINE_RTC_REG_B        0x0bu
 #define CORE_MACHINE_RTC_REG_C        0x0cu
 #define CORE_MACHINE_RTC_REG_D        0x0du
-#define CORE_MACHINE_RTC_TYPE_DISK_FLOPPY 0x10u
-#define CORE_MACHINE_RTC_TYPE_DISK_FIXED  0x12u
-#define CORE_MACHINE_RTC_TYPE_DISK_FIXED_EXTENDED_0 0x19u
-#define CORE_MACHINE_RTC_EQUIPMENT        0x14u
-#define CORE_MACHINE_RTC_BASEMEM_LSB      0x15u
-#define CORE_MACHINE_RTC_BASEMEM_MSB      0x16u
 #define CORE_MACHINE_RTC_CENTURY      0x32u
 
 #define CORE_MACHINE_RTC_REG_A_UIP 0x80u
