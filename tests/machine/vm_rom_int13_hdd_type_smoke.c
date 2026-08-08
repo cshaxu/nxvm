@@ -193,8 +193,8 @@ C_INT main(C_VOID)
             sectors_low == 1008u &&
             parameter_segment == VBIOS_ADDR_START_SEG &&
             parameter_offset == VBIOS_ADDR_HDD_PARAM && sectors_per_track == 63u &&
-            cmos_fixed_disk_type == 0xf0u && drive_type == 0x47u &&
-            cmos_extended_disk_type == 0x47u &&
+            cmos_fixed_disk_type == 0xf0u && drive_type == 0x2fu &&
+            cmos_extended_disk_type == 0x2fu &&
             parameters_ax == 0x003fu &&
             (post_type_status_ax & 0xff00u) == 0u &&
             (post_type_status_flags & 1u) == 0u &&
@@ -212,7 +212,7 @@ done:
     if (hdd_path[0] != '\0') DeleteFileA(hdd_path);
     if (!passed) {
         STD_FPRINTF(STD_STDERR,
-            "M5:T287:S15:ROM-INT13-HDD-TYPE47:FAIL complete=%04X ax=%04X flags=%04X sectors=%04X:%04X dpt=%04X:%04X spt=%02X cmos=%02X/%02X type=%02X params=%04X ext=%04X/%04X/%04X status=%04X/%04X post=%04X/%04X hdd=%u\n",
+            "M5:T287:S16:ROM-INT13-HDD-TYPE47:FAIL complete=%04X ax=%04X flags=%04X sectors=%04X:%04X dpt=%04X:%04X spt=%02X cmos=%02X/%02X type=%02X params=%04X ext=%04X/%04X/%04X status=%04X/%04X post=%04X/%04X hdd=%u\n",
             completed, result_ax, flags, sectors_high, sectors_low, parameter_segment,
             parameter_offset, sectors_per_track, cmos_fixed_disk_type, cmos_extended_disk_type,
             drive_type, parameters_ax, extension_ax,
@@ -221,6 +221,6 @@ done:
             hdd_count);
         return 1;
     }
-    STD_PRINTF("M5:T287:S15:ROM-INT13-HDD-TYPE47:OK\n");
+    STD_PRINTF("M5:T287:S16:ROM-INT13-HDD-TYPE47:OK\n");
     return 0;
 }
