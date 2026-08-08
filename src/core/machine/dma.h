@@ -9,6 +9,7 @@ extern "C"
 #endif
 
 #include "type.h"
+#include "core/machine/controller_interface.h"
 #include "core/machine/port.h"
 
 #define CORE_MACHINE_DEVICE_DMA "Intel 8237A"
@@ -23,13 +24,6 @@ extern "C"
         core_machine_dma_device_provider write_device;
         core_machine_dma_device_provider terminal_count;
     } core_machine_dma_channel_provider;
-
-    /* A device may retain this frozen request handle, but never the controller
-     * registers, DMA latch, or guest-memory capability behind it. */
-    typedef struct core_machine_dma_request_binding {
-        C_VOID *core_owner;
-        uint8_t channel;
-    } core_machine_dma_request_binding;
 
 #define VDMA_CHANNEL_COUNT 4
 

@@ -3,6 +3,7 @@
 
 #include "type.h"
 
+#include "core/machine/controller_interface.h"
 #include "core/machine/media_interface.h"
 #include "core/machine/pic.h"
 #include "core/machine/port_interface.h"
@@ -26,20 +27,6 @@ typedef enum core_machine_hdc_phase {
     CORE_MACHINE_HDC_PHASE_DATA_READ,
     CORE_MACHINE_HDC_PHASE_DATA_WRITE
 } core_machine_hdc_phase;
-
-typedef struct core_machine_hdc_config {
-    uint16_t data_port;
-    uint16_t error_features_port;
-    uint16_t sector_count_port;
-    uint16_t sector_number_port;
-    uint16_t cylinder_low_port;
-    uint16_t cylinder_high_port;
-    uint16_t drive_head_port;
-    uint16_t status_command_port;
-    uint16_t alternate_status_device_control_port;
-    uint8_t irq;
-    type_bool lba28_supported;
-} core_machine_hdc_config;
 
 typedef struct core_machine_hdc_data {
     uint8_t features;

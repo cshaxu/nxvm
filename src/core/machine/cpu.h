@@ -48,7 +48,7 @@ C_VOID core_machine_cpu_execution_context_bind_profiles(
 
 #include "type.h"
 
-#define CORE_MACHINE_DEVICE_CPU "Intel 8086+"
+#define CORE_MACHINE_DEVICE_CPU CORE_MACHINE_CPU_DEVICE_NAME
 
 typedef enum {
     SREG_DATA,

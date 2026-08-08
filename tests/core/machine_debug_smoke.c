@@ -41,7 +41,12 @@ C_INT main(C_VOID)
         core_machine_debug_read_memory(machine, 0u, &byte, 1u) != TYPE_STATUS_OK ||
         byte != 0x5au ||
         core_machine_debug_capture_instruction_observation(machine,
-            &observation) != TYPE_STATUS_OK ||
+            &observation) != TYPE_STATUS_OK || observation.cs != 0xf000u ||
+        observation.cs_base != 0xf0000u || observation.eip != 0xfff0u ||
+        observation.instruction_byte_count >
+            CORE_MACHINE_DEBUG_INSTRUCTION_BYTES ||
+        observation.memory_access_count >
+            CORE_MACHINE_DEBUG_MEMORY_ACCESS_CAPACITY ||
         core_machine_debug_step(machine, &result) != TYPE_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_BUDGET ||
         core_machine_debug_continue(machine, budget, &result) != TYPE_STATUS_OK ||

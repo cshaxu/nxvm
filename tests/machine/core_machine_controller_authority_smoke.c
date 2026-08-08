@@ -130,8 +130,8 @@ C_INT main(C_VOID)
             failed |= 0x04;
         } else {
             port = &machine->executor_port;
-            failed |= machine->fdc.connect.dma_request.core_owner !=
-                    dma_request.core_owner ||
+            failed |= machine->fdc.connect.dma_request.core_token !=
+                    dma_request.core_token ||
                 machine->fdc.connect.irq_source.irq != fdc_config.irq ||
                 machine->hdc.connect.irq_source.irq != hdc_config.irq ||
                 machine->hdc.connect.media_id != hdc_topology.media_id;

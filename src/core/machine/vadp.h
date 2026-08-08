@@ -20,8 +20,10 @@ extern "C" {
 #define CORE_MACHINE_VADP_EGA_APERTURE_BASE 0x000a0000u
 #define CORE_MACHINE_VADP_EGA_APERTURE_BYTES 0x00010000u
 #define CORE_MACHINE_VADP_SEQUENCER_REGISTER_COUNT 5u
-#define CORE_MACHINE_VADP_GRAPHICS_REGISTER_COUNT 9u
-#define CORE_MACHINE_VADP_ATTRIBUTE_REGISTER_COUNT 21u
+#define CORE_MACHINE_VADP_GRAPHICS_REGISTER_COUNT \
+    CORE_MACHINE_DISPLAY_EGA_GRAPHICS_REGISTER_COUNT
+#define CORE_MACHINE_VADP_ATTRIBUTE_REGISTER_COUNT \
+    CORE_MACHINE_DISPLAY_EGA_ATTRIBUTE_REGISTER_COUNT
 #define CORE_MACHINE_VADP_EGA_PLANES 4u
 #define CORE_MACHINE_VADP_EGA_PLANE_BYTES CORE_MACHINE_VADP_EGA_APERTURE_BYTES
 #define CORE_MACHINE_VADP_PORT_ATTRIBUTE 0x03c0u
@@ -35,28 +37,6 @@ extern "C" {
 #define CORE_MACHINE_VADP_PORT_MODE 0x03d8u
 #define CORE_MACHINE_VADP_PORT_COLOR 0x03d9u
 #define CORE_MACHINE_VADP_PORT_STATUS 0x03dau
-
-typedef struct core_machine_vadp_text_timing {
-    uint32_t active_display_ticks;
-    uint32_t horizontal_blank_ticks;
-    uint32_t vertical_retrace_ticks;
-} core_machine_vadp_text_timing;
-
-typedef struct core_machine_vadp_ega_sequencer_config {
-    uint32_t aperture_base;
-    uint32_t aperture_bytes;
-    uint8_t reset;
-    uint8_t clocking_mode;
-    uint8_t map_mask;
-    uint8_t memory_mode;
-    /* Profile capability; the ROM selects the bounded runtime EGA mode. */
-    type_bool planar_ega;
-} core_machine_vadp_ega_sequencer_config;
-
-typedef struct core_machine_vadp_ega_controller_config {
-    uint8_t graphics[CORE_MACHINE_VADP_GRAPHICS_REGISTER_COUNT];
-    uint8_t attribute[CORE_MACHINE_VADP_ATTRIBUTE_REGISTER_COUNT];
-} core_machine_vadp_ega_controller_config;
 
 typedef struct t_port t_port;
 typedef struct t_ram t_ram;

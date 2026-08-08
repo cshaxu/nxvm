@@ -25,7 +25,7 @@ C_INT main(C_VOID)
     vm_session_storage_initialize(first);
     vm_session_storage_initialize(second);
 
-    failed |= first->fdc_dma_request.core_owner == second->fdc_dma_request.core_owner;
+    failed |= first->fdc_dma_request.core_token == second->fdc_dma_request.core_token;
     failed |= !test_core_machine_fixture_sessions_are_isolated(
         first->core_machine, second->core_machine);
 

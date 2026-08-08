@@ -5,8 +5,6 @@
 
 
 
-#include "core/machine/cpu_interface.h"
-
 #include "core/machine/machine_interface.h"
 
 #ifdef __cplusplus
@@ -29,11 +27,58 @@ type_status core_machine_debug_continue(
     core_machine_run_budget budget,
     core_machine_run_result *out_result);
 
-/* These operations are deliberately debugger-shaped: each is available only
- * at a stopped or paused command boundary and never exposes core storage. */
+#define CORE_MACHINE_DEBUG_INSTRUCTION_BYTES 15u
+#define CORE_MACHINE_DEBUG_MEMORY_ACCESS_CAPACITY 32u
+#define CORE_MACHINE_DEBUG_EFLAGS_CF 0x00000001u
+#define CORE_MACHINE_DEBUG_EFLAGS_PF 0x00000004u
+#define CORE_MACHINE_DEBUG_EFLAGS_AF 0x00000010u
+#define CORE_MACHINE_DEBUG_EFLAGS_ZF 0x00000040u
+#define CORE_MACHINE_DEBUG_EFLAGS_SF 0x00000080u
+#define CORE_MACHINE_DEBUG_EFLAGS_TF 0x00000100u
+#define CORE_MACHINE_DEBUG_EFLAGS_IF 0x00000200u
+#define CORE_MACHINE_DEBUG_EFLAGS_DF 0x00000400u
+#define CORE_MACHINE_DEBUG_EFLAGS_OF 0x00000800u
+#define CORE_MACHINE_DEBUG_EFLAGS_NT 0x00004000u
+#define CORE_MACHINE_DEBUG_EFLAGS_RF 0x00010000u
+#define CORE_MACHINE_DEBUG_EFLAGS_VM 0x00020000u
+
+typedef struct core_machine_debug_memory_access {
+    C_INT write;
+    uint32_t linear;
+    uint8_t bytes;
+    uint64_t data;
+} core_machine_debug_memory_access;
+
+/* A copied debugger record names only the fields consumed by the retained
+ * debugger. It is not a CPU, decoder, or executor layout. */
 typedef struct core_machine_debug_instruction_observation {
-    t_cpu cpu;
-    t_cpuins instructions;
+    uint16_t cs;
+    uint16_t ss;
+    uint16_t ds;
+    uint16_t es;
+    uint16_t fs;
+    uint16_t gs;
+    uint32_t cs_base;
+    uint32_t ss_base;
+    uint32_t eip;
+    uint32_t esp;
+    uint32_t eax;
+    uint32_t ecx;
+    uint32_t edx;
+    uint32_t ebx;
+    uint32_t ebp;
+    uint32_t esi;
+    uint32_t edi;
+    uint32_t eflags;
+    C_INT code_default_size;
+    uint16_t instruction_cs;
+    uint32_t instruction_eip;
+    uint32_t instruction_linear;
+    uint8_t instruction_bytes[CORE_MACHINE_DEBUG_INSTRUCTION_BYTES];
+    uint8_t instruction_byte_count;
+    core_machine_debug_memory_access
+        memory_accesses[CORE_MACHINE_DEBUG_MEMORY_ACCESS_CAPACITY];
+    uint8_t memory_access_count;
 } core_machine_debug_instruction_observation;
 
 typedef enum core_machine_debug_register {

@@ -29,7 +29,7 @@ C_INT main(C_VOID)
             VM_SESSION_MEDIA_FDD_ID ||
         machine->core_machine->fdc.connect.drives.media_id[1] !=
             CORE_MACHINE_MEDIA_ID_INVALID ||
-        machine->core_machine->fdc.connect.dma_request.core_owner == STD_NULL ||
+        machine->core_machine->fdc.connect.dma_request.core_token == 0u ||
         machine->core_machine->fdc.connect.dma_request.channel != 2u ||
         machine->core_machine->fdc.connect.irq_source.master == STD_NULL ||
         machine->core_machine->fdc.connect.irq_source.slave == STD_NULL ||

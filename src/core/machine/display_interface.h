@@ -15,6 +15,29 @@
     (CORE_MACHINE_DISPLAY_CGA_HIGH_RES_WIDTH * \
         CORE_MACHINE_DISPLAY_EGA_HIGH_RES_HEIGHT)
 #define CORE_MACHINE_DISPLAY_PALETTE_ENTRIES 16u
+#define CORE_MACHINE_DISPLAY_EGA_GRAPHICS_REGISTER_COUNT 9u
+#define CORE_MACHINE_DISPLAY_EGA_ATTRIBUTE_REGISTER_COUNT 21u
+
+typedef struct core_machine_vadp_text_timing {
+    uint32_t active_display_ticks;
+    uint32_t horizontal_blank_ticks;
+    uint32_t vertical_retrace_ticks;
+} core_machine_vadp_text_timing;
+
+typedef struct core_machine_vadp_ega_sequencer_config {
+    uint32_t aperture_base;
+    uint32_t aperture_bytes;
+    uint8_t reset;
+    uint8_t clocking_mode;
+    uint8_t map_mask;
+    uint8_t memory_mode;
+    type_bool planar_ega;
+} core_machine_vadp_ega_sequencer_config;
+
+typedef struct core_machine_vadp_ega_controller_config {
+    uint8_t graphics[CORE_MACHINE_DISPLAY_EGA_GRAPHICS_REGISTER_COUNT];
+    uint8_t attribute[CORE_MACHINE_DISPLAY_EGA_ATTRIBUTE_REGISTER_COUNT];
+} core_machine_vadp_ega_controller_config;
 
 typedef enum core_machine_display_kind {
     CORE_MACHINE_DISPLAY_KIND_TEXT,

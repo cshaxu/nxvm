@@ -68,11 +68,51 @@ type_status core_machine_debug_capture_instruction_observation(
     core_machine_debug_instruction_observation *out_observation)
 {
     type_status status = core_machine_debug_require_boundary(machine);
+    const t_cpu *cpu;
+    const t_cpuins_data *instructions;
+    STD_SIZE_T index;
 
     if (status != TYPE_STATUS_OK || out_observation == STD_NULL) return
         status == TYPE_STATUS_OK ? TYPE_STATUS_INVALID_ARGUMENT : status;
-    out_observation->cpu = machine->executor_cpu;
-    out_observation->instructions = machine->executor_cpu_instructions;
+    cpu = &machine->executor_cpu;
+    instructions = &machine->executor_cpu_instructions.data;
+    STD_MEMSET(out_observation, 0, sizeof(*out_observation));
+    out_observation->cs = cpu->data.cs.selector;
+    out_observation->ss = cpu->data.ss.selector;
+    out_observation->ds = cpu->data.ds.selector;
+    out_observation->es = cpu->data.es.selector;
+    out_observation->fs = cpu->data.fs.selector;
+    out_observation->gs = cpu->data.gs.selector;
+    out_observation->cs_base = cpu->data.cs.base;
+    out_observation->ss_base = cpu->data.ss.base;
+    out_observation->eip = cpu->data.eip;
+    out_observation->esp = cpu->data.esp;
+    out_observation->eax = cpu->data.eax;
+    out_observation->ecx = cpu->data.ecx;
+    out_observation->edx = cpu->data.edx;
+    out_observation->ebx = cpu->data.ebx;
+    out_observation->ebp = cpu->data.ebp;
+    out_observation->esi = cpu->data.esi;
+    out_observation->edi = cpu->data.edi;
+    out_observation->eflags = cpu->data.eflags;
+    out_observation->code_default_size = cpu->data.cs.seg.exec.defsize;
+    out_observation->instruction_cs = instructions->reccs;
+    out_observation->instruction_eip = instructions->receip;
+    out_observation->instruction_linear = instructions->linear;
+    out_observation->instruction_byte_count = instructions->oplen;
+    STD_MEMCPY(out_observation->instruction_bytes, instructions->opcodes,
+        sizeof(out_observation->instruction_bytes));
+    out_observation->memory_access_count = instructions->msize;
+    for (index = 0u; index < out_observation->memory_access_count; ++index) {
+        out_observation->memory_accesses[index].write =
+            instructions->mem[index].flagWrite;
+        out_observation->memory_accesses[index].linear =
+            instructions->mem[index].linear;
+        out_observation->memory_accesses[index].bytes =
+            instructions->mem[index].byte;
+        out_observation->memory_accesses[index].data =
+            instructions->mem[index].data;
+    }
     return TYPE_STATUS_OK;
 }
 

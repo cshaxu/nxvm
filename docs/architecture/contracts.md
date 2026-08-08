@@ -369,6 +369,23 @@ rather than becoming a partially bound VM. This contract neither changes core
 machine lifecycle nor introduces a host recovery path; Console/window,
 debugger, and FDD/HDD boot observe only fully constructed sessions.
 
+### Public Machine And Debugger Interfaces
+
+Public core-machine interfaces include only other public contracts and stable
+copyable values. `controller_interface.h` carries the frozen DMA request token
+and FDC/HDC topology values that composition genuinely submits; it carries no
+controller storage or lifecycle entry. `display_interface.h` carries copied
+display capability configuration. Private CPU, decoder, RAM, port, controller,
+and VADP layouts remain implementation-only.
+
+`core_machine_debug_instruction_observation` is a copied debugger record, not
+a `t_cpu` or `t_cpuins` copy. It names only the registers, segment bases,
+instruction location/bytes, code-default-size, and bounded memory accesses
+used by the retained VM breakpoint, recorder, and disassembly paths. The core
+captures it only at the existing debugger boundary. A source-shape recurrence
+gate rejects private core-machine includes or complete private layouts in any
+`*_interface.h`, alongside the existing raw-borrow and test-support checks.
+
 ## Time And Clock Ownership
 
 Time is not one device category. Each layer owns only its own observable

@@ -45,3 +45,11 @@ rg -n "core_machine_(configuration|debug)_.*borrow|profile.*(borrow|binding)" sr
 The S3 gate scans all `src/**/*.h` and `src/**/*.c`: it rejects a public raw
 CPU/RAM/port/controller/executor accessor or profile binding, rejects raw
 borrow names in `src`, and rejects `tests/support` includes from `src`.
+
+## T300 S4 Interface-Shape Recurrence
+
+T300 S4 extends that gate to every `*_interface.h`. It rejects direct private
+core-machine implementation headers and complete private CPU, decoder, RAM,
+port, controller, or VADP layout names. The retained public values are only
+the copied display/controller configuration needed by composition and the
+explicit copied debugger observation consumed by the VM debugger.

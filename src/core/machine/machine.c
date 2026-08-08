@@ -732,7 +732,7 @@ type_status core_machine_configure_fdc(core_machine *machine,
         return TYPE_STATUS_INVALID_STATE;
     }
     if (!core_machine_fdc_topology_is_valid(topology) ||
-        topology->dma_request.core_owner != machine->fdc_dma_request.core_owner ||
+        topology->dma_request.core_token != machine->fdc_dma_request.core_token ||
         topology->dma_request.channel != machine->fdc_dma_request.channel) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
