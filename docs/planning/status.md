@@ -2,16 +2,16 @@
 
 ## Current Work
 
-**M5 T298 S1 active - debugger raw-borrow capability convergence.**
+**Idle - M5 T298 closed; T299 is the next linear task.**
 
 T297 is the reference baseline. T298 replaces the retained NXVM debugger's
 production raw CPU, instruction, execution-context, RAM, and port borrows
 with copied observations and named core debug operations, without changing
 Console commands, text, prompt, startup, step, breakpoint, trace, reset, or
-quit behavior. T298 remains active pending coordinator review; do not admit
-T299+, close this task, merge, or push.
+quit behavior. T298 is closed after coordinator review: the formal debugger
+path now uses named core operations and copied observations only.
 
-### Task Packet
+### T298 Closure Evidence
 
 - **Original request:** Remove the formal NXVM debugger path's raw core CPU,
   instruction metadata, execution-context, RAM, and port borrows. Preserve
@@ -132,6 +132,7 @@ debugger commands, prompt, and startup behavior.
 | T295 | Moved CPU execution-to-shared-PIC binding into `core_machine_create`; VM session no longer borrows or binds that path. CPU/PIC lifecycle evidence and all current gates passed; RTC/FDC/HDC/DMA remain T296 and debugger raw borrows remain T298/T299. |
 | T296 | Completed A VADP/ports, B DMA/RTC/CMOS/NMI, and C FDC/HDC ownership migration through frozen typed core submissions. S2 `e84199e`, S3 `a02a0f0`, and S4 `fa18847d0aed685554f786c89ba0f5908e539fb7` passed focused owner/lifecycle evidence and the final 49-gate, 125-test verification; T298--T299 remained deferred at this closure. |
 | T297 | Replaced default firmware raw profile binding with an opaque core-invoked capability for checked memory/port I/O and stop requests. Configure-time immutable ROM registration now rolls back atomically on callback failure; default BIOS/QDCGA, boot failure, 49 gates, and 126/126 CTests are closed without product UX change. |
+| T298 | Replaced formal debugger raw CPU/instruction/execution/RAM/port borrows with paused-or-stopped named core operations and copied observations. The retained Console/debugger UX passed focused checks and the 126-test regression suite without a global target or second execution path. |
 
 Detailed contracts, commands, artifact provenance, and prior closures are in
 [M5 History](../history/m5.md) and Git history. The [M5 convergence queue]
