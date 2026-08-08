@@ -2,54 +2,14 @@
 
 ## Current Work
 
-**M5 T299 S1 active - public raw-borrow closure.**
-
-### Task Packet
-
-- **Original request:** Delete public configuration borrows, profile-binding
-  raw accessors, and debug borrows left without production callers after T298.
-  Product headers must expose no raw CPU, RAM, port, controller, or executor
-  pointer. Core retains all storage; production uses typed config/providers,
-  checked interfaces, copied observations, and the T297/T298 capabilities.
-- **S1 objective:** Freeze the final declaration/call/owner/lifetime map in
-  `docs/architecture/core-machine-public-borrow-closure.md`, including every
-  production and test consumer and its replacement. The approved test seam is
-  a narrow `tests/support` fixture adapter: each fixture operation receives a
-  `core_machine *`, has no global/TLS or mirror state, may include private core
-  implementation headers, and is never included by `src/` or VM/VDM
-  composition.
-- **S2 objective:** Migrate each test to an existing checked/capability API or
-  that fixture adapter, then delete all public configuration/debug raw-borrow
-  declarations and definitions. Stop for any production consumer or requested
-  new core capability.
-- **S3 objective:** Add a source-shape gate covering every public header and
-  `src/`; it rejects raw accessor/profile binding exports and any `src` include
-  of `tests/support`. Run focused lifecycle/config/provider/capability corpus,
-  full current gates, and create `nxvm_0_5_0299.exe` with SHA evidence.
-- **Reference baseline:** T298 developer artifact, SHA-256
-  `6A9AA9D2C3691F780426C6A78C2AE1C149BB9CC2A84AE835A9AEC10B5313254B`.
-- **Non-goals:** Console/debugger/start/boot/DOS behavior, ROM/profile/media,
-  VM outer loop, a new core capability, a second machine/executor/state
-  mirror, global/TLS selection, source imports, or T300+ work.
-- **Applicable rules:** `core/machine` owns storage and checked operations;
-  composition supplies only typed configuration/providers; product code sees
-  copied observation or named capability. Tests may use the approved external
-  fixture seam only. Module-layout, contracts, coding, source, and execution
-  policies apply; no exception is approved.
-- **Similar-issue sweep:** the defect class is any public raw state accessor or
-  profile-binding raw accessor. S1 command:
-  `rg -n "core_machine_(configuration|debug)_.*borrow|profile.*(borrow|binding)" src tests --glob '*.[ch]'`.
-  Every `src` hit must be removed; each test hit is mapped to a typed API or
-  the approved fixture operation. The S3 static gate is the recurrence check.
-- **Stop conditions:** a production raw consumer, a test need outside the
-  approved fixture boundary, a new core capability, changed product behavior,
-  raw export remaining in a public header, or any requirement to start T300+.
+**Idle - M5 T299 closed.** T300 remains conditional on an approved first-party
+consumer; no numeric task is active.
 
 ## Current Technical Baseline
 
-- **T299 active artifact identity:** `current-gcc` and
+- **T299 artifact identity:** `current-gcc` and
   `verify-current-artifact-target` select `vm-0-5-0299` / `nxvm_0_5_0299.exe`.
-  Active evidence: the focused raw-borrow corpus passed 27/27; the S3 static
+  Closure evidence: the focused raw-borrow corpus passed 27/27; the S3 static
   gate emitted `M5:T299:S3:PUBLIC-RAW-BORROW-CLOSURE:OK`; and the owner-provided
   cache-media `current-gates-gcc` run passed all 51 static/governance targets
   and 126/126 CTests. The local developer artifact is 2,696,377 bytes with
@@ -68,7 +28,6 @@
 
 | Task | Compact result |
 | --- | --- |
-| T291 | Made FDC generation, disk-change and motor/DMA cancellation per frozen drive slot, with core port and DOS FDD0 evidence while leaving timing, UI, and commands deferred. |
 | T292 | Added prepared-state evidence that selected 67h REP comparison, scan, and segment-override forms already conform; no CPU behavior or artifact changed. |
 | T293 | Removed the unused post-`#UD` transition surface, made protected outer `RETF`/`IRET` frame validation non-mutating until commit, and completed its exception/atomicity matrix: non-present returned `CS` is `#NP`, non-present `SS` is the retained terminal `#SS`, and invalid entries are `#GP`; all six `RETF`/outer-`IRET` cases preserve the defined pre-commit boundary. |
 | T294 | Completed the codebase-driven public-surface/raw-borrow matrix, fixed T296's three stages and T297's future firmware-capability lifecycle precondition, and left T300/T302 conditional; no runtime behavior, CMake graph, or artifact changed. |
@@ -76,6 +35,7 @@
 | T296 | Completed A VADP/ports, B DMA/RTC/CMOS/NMI, and C FDC/HDC ownership migration through frozen typed core submissions. S2 `e84199e`, S3 `a02a0f0`, and S4 `fa18847d0aed685554f786c89ba0f5908e539fb7` passed focused owner/lifecycle evidence and the final 49-gate, 125-test verification; T298--T299 remained deferred at this closure. |
 | T297 | Replaced default firmware raw profile binding with an opaque core-invoked capability for checked memory/port I/O and stop requests. Configure-time immutable ROM registration now rolls back atomically on callback failure; default BIOS/QDCGA, boot failure, 49 gates, and 126/126 CTests are closed without product UX change. |
 | T298 | Replaced formal debugger raw CPU/instruction/execution/RAM/port borrows with paused-or-stopped named core operations and copied observations. The retained Console/debugger UX passed focused checks and the 126-test regression suite without a global target or second execution path. |
+| T299 | Removed the remaining public configuration/debug raw borrows and profile raw binding. Production uses typed/copying interfaces; purpose-named test fixtures alone may include private core state. The recurrence gate, 51 current static/governance targets, and 126 CTests passed without product behavior changes. |
 
 Detailed contracts, commands, artifact provenance, and prior closures are in
 [M5 History](../history/m5.md) and Git history. The [M5 convergence queue]
