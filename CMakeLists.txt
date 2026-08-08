@@ -722,6 +722,9 @@ target_link_libraries(core-machine-fdc-smoke PRIVATE core-machine)
 add_executable(core-machine-fdc-topology-port-smoke
     tests/machine/core_machine_fdc_topology_port_smoke.c)
 target_link_libraries(core-machine-fdc-topology-port-smoke PRIVATE core-machine)
+add_executable(core-machine-fdc-media-change-port-smoke
+    tests/machine/core_machine_fdc_media_change_port_smoke.c)
+target_link_libraries(core-machine-fdc-media-change-port-smoke PRIVATE core-machine)
 add_executable(core-machine-hdc-smoke tests/machine/core_machine_hdc_smoke.c)
 target_link_libraries(core-machine-hdc-smoke PRIVATE core-machine)
 add_executable(core-mantle-shape-smoke tests/machine/core_mantle_shape_smoke.c)
@@ -1058,6 +1061,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-rtc-smoke
     core-machine-fdc-smoke
     core-machine-fdc-topology-port-smoke
+    core-machine-fdc-media-change-port-smoke
     core-machine-hdc-smoke
     core-mantle-shape-smoke
     vm-kbc-aux-guest-smoke
@@ -1236,7 +1240,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0290 "0.5.0290")
+add_current_vm_artifact(vm-0-5-0291 "0.5.0291")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 

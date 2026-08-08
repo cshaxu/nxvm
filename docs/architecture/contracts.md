@@ -588,6 +588,14 @@ slot produces the established no-data result and cannot fall through to a
 different drive. It has no PC/AT defaults, drive-image path, firmware, host
 I/O, or product policy.
 
+Each slot retains its own observed media generation and disk-change latch.
+Refresh observes every frozen slot, while DIR reports the DOR-selected slot.
+Seek/recalibrate acknowledges that selected slot's current generation. A DOR
+write that makes an active transfer unready cancels its DMA request and returns
+the controller to command phase; a later valid command may request DMA again.
+FDC reset retains the established IRQ6 and DMA cancellation route. This is not
+rotation timing, a host-clock delay, or a media-topology mutation.
+
 VM composition selects the default-profile FDC port range, IRQ/DMA route, and
 drive-0 FDD media identity while the machine is configurable, then supplies
 that topology to the one core controller before freeze. The remaining default

@@ -49,22 +49,73 @@ static type_unsigned_8 core_machine_fdc_msr(const core_machine_fdc *fdc)
     }
 }
 
+static core_machine_media_id core_machine_fdc_drive_media_id(
+    const core_machine_fdc *fdc, type_unsigned_8 drive)
+{
+    return fdc == STD_NULL || drive >= CORE_MACHINE_FDC_DRIVE_COUNT ?
+        CORE_MACHINE_MEDIA_ID_INVALID :
+        fdc->connect.drives.media_id[drive];
+}
+
 static core_machine_media_id core_machine_fdc_selected_media_id(
     const core_machine_fdc *fdc)
 {
-    return fdc == STD_NULL || fdc->data.selected_drive >= CORE_MACHINE_FDC_DRIVE_COUNT ?
-        CORE_MACHINE_MEDIA_ID_INVALID :
-        fdc->connect.drives.media_id[fdc->data.selected_drive];
+    return fdc == STD_NULL ? CORE_MACHINE_MEDIA_ID_INVALID :
+        core_machine_fdc_drive_media_id(fdc, fdc->data.selected_drive);
+}
+
+static C_INT core_machine_fdc_drive_media_query(const core_machine_fdc *fdc,
+    type_unsigned_8 drive, core_machine_media_info *out_info,
+    core_machine_media_result *out_result)
+{
+    core_machine_media_id media_id = core_machine_fdc_drive_media_id(fdc, drive);
+
+    return fdc != STD_NULL && fdc->connect.media_registry != STD_NULL &&
+        media_id != CORE_MACHINE_MEDIA_ID_INVALID &&
+        core_machine_media_query(fdc->connect.media_registry, media_id, out_info,
+            out_result) == TYPE_STATUS_OK;
 }
 
 static C_INT core_machine_fdc_media_info(const core_machine_fdc *fdc,
     core_machine_media_info *out_info, core_machine_media_result *out_result)
 {
-    return fdc != STD_NULL && fdc->connect.media_registry != STD_NULL &&
-        core_machine_fdc_selected_media_id(fdc) != CORE_MACHINE_MEDIA_ID_INVALID &&
-        core_machine_media_query(fdc->connect.media_registry,
-            core_machine_fdc_selected_media_id(fdc), out_info, out_result) == TYPE_STATUS_OK &&
+    return core_machine_fdc_drive_media_query(fdc, fdc->data.selected_drive,
+        out_info, out_result) &&
         *out_result == CORE_MACHINE_MEDIA_RESULT_OK;
+}
+
+static C_VOID core_machine_fdc_update_dir(core_machine_fdc *fdc)
+{
+    type_unsigned_8 drive;
+
+    if (fdc == STD_NULL) return;
+    drive = fdc->data.dor & VFDC_DOR_DS;
+    if (fdc->data.media_changed[drive]) {
+        fdc->data.dir |= VFDC_DIR_DC;
+    } else {
+        fdc->data.dir &= (type_unsigned_8)~VFDC_DIR_DC;
+    }
+}
+
+static C_VOID core_machine_fdc_observe_drive(core_machine_fdc *fdc,
+    type_unsigned_8 drive)
+{
+    core_machine_media_info info;
+    core_machine_media_result result;
+
+    if (!core_machine_fdc_drive_media_query(fdc, drive, &info, &result)) return;
+    fdc->data.observed_media_generation[drive] = info.generation;
+    fdc->data.media_changed[drive] = TYPE_FALSE;
+    core_machine_fdc_update_dir(fdc);
+}
+
+static C_VOID core_machine_fdc_observe_all_drives(core_machine_fdc *fdc)
+{
+    type_unsigned_8 drive;
+
+    for (drive = 0u; drive < CORE_MACHINE_FDC_DRIVE_COUNT; ++drive) {
+        core_machine_fdc_observe_drive(fdc, drive);
+    }
 }
 
 static C_INT core_machine_fdc_media_offset(const core_machine_fdc *fdc,
@@ -103,6 +154,13 @@ static C_VOID core_machine_fdc_cancel_execution(core_machine_fdc *fdc)
     fdc->data.transfer_remaining = 0u;
     fdc->data.byte_offset = 0u;
     fdc->data.format_headers_remaining = 0u;
+}
+
+static C_INT core_machine_fdc_execution_active(const core_machine_fdc *fdc)
+{
+    return fdc != STD_NULL && (fdc->data.phase == core_machine_fdc_PHASE_EXECUTION_READ ||
+        fdc->data.phase == core_machine_fdc_PHASE_EXECUTION_WRITE ||
+        fdc->data.phase == core_machine_fdc_PHASE_EXECUTION_FORMAT);
 }
 
 static C_VOID core_machine_fdc_command_phase(core_machine_fdc *fdc)
@@ -395,7 +453,7 @@ static C_VOID core_machine_fdc_execute(core_machine_fdc *fdc)
         fdc->data.selected_drive = fdc->data.cmd[1] & 0x03u;
         fdc->data.cylinder = 0u; fdc->data.head = 0u; fdc->data.sector = 1u;
         media_ok = core_machine_fdc_media_info(fdc, &info, &media_result);
-        fdc->data.observed_media_generation = media_ok ? info.generation : 0u;
+        core_machine_fdc_observe_drive(fdc, fdc->data.selected_drive);
         core_machine_fdc_complete_simple(fdc, core_machine_fdc_ST0_NORMAL |
             VFDC_ST0_SEEK_END | fdc->data.selected_drive, 0u);
         core_machine_fdc_raise_irq(fdc);
@@ -418,7 +476,7 @@ static C_VOID core_machine_fdc_execute(core_machine_fdc *fdc)
         fdc->data.head = (fdc->data.cmd[1] >> 2u) & 1u;
         fdc->data.cylinder = fdc->data.cmd[2]; fdc->data.sector = 1u;
         media_ok = core_machine_fdc_media_info(fdc, &info, &media_result);
-        fdc->data.observed_media_generation = media_ok ? info.generation : 0u;
+        core_machine_fdc_observe_drive(fdc, fdc->data.selected_drive);
         core_machine_fdc_complete_simple(fdc, (core_machine_fdc_drive_ready(fdc) &&
             media_ok && fdc->data.cylinder < info.geometry.cylinders ? core_machine_fdc_ST0_NORMAL :
             core_machine_fdc_ST0_ABNORMAL) | VFDC_ST0_SEEK_END |
@@ -482,11 +540,14 @@ static C_VOID core_machine_fdc_execute(core_machine_fdc *fdc)
 static C_VOID core_machine_fdc_reset_controller(core_machine_fdc *fdc)
 {
     type_unsigned_8 ccr = fdc->data.ccr;
-    uint32_t observed_media_generation = fdc->data.observed_media_generation;
+    uint64_t observed_media_generation[CORE_MACHINE_FDC_DRIVE_COUNT];
+    STD_MEMCPY(observed_media_generation, fdc->data.observed_media_generation,
+        sizeof(observed_media_generation));
     core_machine_fdc_cancel_execution(fdc);
     STD_MEMSET(&fdc->data, TYPE_ZERO_8, sizeof(fdc->data));
     fdc->data.ccr = ccr;
-    fdc->data.observed_media_generation = observed_media_generation;
+    STD_MEMCPY(fdc->data.observed_media_generation, observed_media_generation,
+        sizeof(observed_media_generation));
     core_machine_fdc_command_phase(fdc);
 }
 
@@ -532,6 +593,12 @@ static C_VOID core_machine_fdc_write_dor(t_port *port, type_unsigned_16 id,
         core_machine_fdc_reset_controller(fdc);
     }
     fdc->data.dor = dor;
+    core_machine_fdc_update_dir(fdc);
+    if ((dor & VFDC_DOR_NRS) != 0u && core_machine_fdc_execution_active(fdc) &&
+        !core_machine_fdc_drive_ready(fdc)) {
+        core_machine_fdc_cancel_execution(fdc);
+        core_machine_fdc_command_phase(fdc);
+    }
 }
 
 static C_VOID core_machine_fdc_write_data(t_port *port, type_unsigned_16 id,
@@ -586,6 +653,8 @@ C_VOID core_machine_fdc_initialize(core_machine_fdc *fdc)
     if (fdc == STD_NULL || fdc->connect.port == STD_NULL) return;
     STD_MEMSET(&fdc->data, TYPE_ZERO_8, sizeof(fdc->data));
     fdc->data.ccr = VFDC_CCR_DRC;
+    core_machine_fdc_observe_all_drives(fdc);
+    core_machine_fdc_update_dir(fdc);
     core_machine_fdc_command_phase(fdc);
     core_machine_port_add_read(fdc->connect.port, fdc->connect.config.status_port,
         core_machine_fdc_read_status, fdc);
@@ -613,14 +682,16 @@ C_VOID core_machine_fdc_refresh(core_machine_fdc *fdc)
 {
     core_machine_media_info info;
     core_machine_media_result result;
+    type_unsigned_8 drive;
 
-    if (fdc == STD_NULL || !core_machine_fdc_media_info(fdc, &info, &result) ||
-        !info.present) return;
-    if (fdc->data.observed_media_generation != info.generation) {
-        fdc->data.dir |= VFDC_DIR_DC;
-    } else {
-        fdc->data.dir &= (type_unsigned_8)~VFDC_DIR_DC;
+    if (fdc == STD_NULL) return;
+    for (drive = 0u; drive < CORE_MACHINE_FDC_DRIVE_COUNT; ++drive) {
+        if (core_machine_fdc_drive_media_query(fdc, drive, &info, &result) &&
+            fdc->data.observed_media_generation[drive] != info.generation) {
+            fdc->data.media_changed[drive] = TYPE_TRUE;
+        }
     }
+    core_machine_fdc_update_dir(fdc);
 }
 
 C_VOID core_machine_fdc_finalize(core_machine_fdc *fdc)
