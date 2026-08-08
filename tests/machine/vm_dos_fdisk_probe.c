@@ -72,6 +72,8 @@ C_INT main(C_INT argc, C_CHAR **argv)
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
     const uint8_t enter[] = {0x1cu};
+    const uint8_t four_make[] = {0x05u};
+    const uint8_t four_break[] = {0x85u};
     const uint8_t fdisk[] = {0x21u, 0xa1u, 0x20u, 0xa0u, 0x17u, 0x97u,
         0x1fu, 0x9fu, 0x25u, 0xa5u, 0x1cu};
     HANDLE thread = STD_NULL;
@@ -88,6 +90,13 @@ C_INT main(C_INT argc, C_CHAR **argv)
         !vm_t287_fdisk_wait(session, "A:\\>", 60000u) ||
         !vm_t287_fdisk_submit(session, fdisk, sizeof(fdisk)) ||
         !vm_t287_fdisk_wait(session, "FDISK Options", 60000u)) goto done;
+    Sleep(3000u);
+    if (!vm_t287_fdisk_submit(session, four_make, sizeof(four_make))) goto done;
+    Sleep(100u);
+    if (!vm_t287_fdisk_submit(session, four_break, sizeof(four_break))) goto done;
+    Sleep(100u);
+    if (!vm_t287_fdisk_submit(session, enter, sizeof(enter))) goto done;
+    if (!vm_t287_fdisk_wait(session, "Display Partition Information", 60000u)) goto done;
     passed = 1;
 
 done:
@@ -98,6 +107,6 @@ done:
     }
     vm_session_destroy(session);
     if (!passed) return 1;
-    STD_PRINTF("M5:T287:S19:FDISK:EXTERNAL:OK\n");
+    STD_PRINTF("M5:T287:S20:FDISK:OPTION4:EXTERNAL:OK\n");
     return 0;
 }
