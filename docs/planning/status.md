@@ -4,6 +4,15 @@
 
 **Idle.**
 
+M5 T287 S22 reproduced the external HDD-only failure before the ATA controller
+received any command: the default false `boot_hdd` bit selected an absent FDD.
+Composition now retains an `auto` boot preference that selects HDD only when no
+FDD is present, while `SET BOOT fdd|hdd` remains a persistent explicit
+override. The existing HDD boot smoke now supplies only the external HDD and
+proves MBR/VBR handoff through ATA PIO; it also proves both explicit overrides.
+No ATA, ROM boot-sector, media backend, guest content, or Windows-support
+behavior changed.
+
 M5 T287 S20 reproduced FDISK Options `4` through the retained external corpus,
 but its transient-frame assertion was incomplete. S21 traced the subsequent
 `INT 10h AH=06h, AL=00h` request for only row 24 and proved that the ROM cleared
@@ -70,7 +79,7 @@ coupling the controller regression to external bootable-media state.
 - **T287 artifact identity:** `current-gcc` and
   `verify-current-artifact-target` select `vm-0-5-0287`. Artifact
   `nxvm_0_5_0287.exe` SHA-256:
-  `F4A6953F5DB47E4A22964411A57D52B6C5664F4FEDAD528D18FB49FD63572B0D`.
+  `B35103B1DD1B933D77B39DA7BD134CD8812A42AE2A80CE6CF5C1391BCF03B2E3`.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
@@ -91,7 +100,7 @@ coupling the controller regression to external bootable-media state.
 | T284 | Froze the first Windows-facing display admission contract for EGA mode 10h and added expected-failing core/VM corpus without changing runtime behavior. |
 | T285 | Implemented bounded EGA mode 10h direct, turned the T284 core/VM corpus into normal success coverage, and emitted the 0.5.0285 developer artifact. |
 | T286 | Fixed the corpus-proven ATA device-control `nIEN` IRQ14 visibility gap through core-owned controller state, with core, VM-port, and guest fixture success evidence; no DMA, timing, or command expansion. |
-| T287 | Fixed bounded ROM CHS device/head, AH=08h caller-pointer, FDISK text-service, and text-window-clear defects; external DOS registers C: and presents stable FDISK copied frames, while the Standard-mode checkpoint remains a research result, not a Windows support claim. |
+| T287 | Fixed bounded ROM CHS device/head, AH=08h caller-pointer, FDISK text-service/window-clear, and HDD-only boot-selection defects; external DOS registers C:, presents stable FDISK copied frames, and hands off from HDD-only ATA boot, while the Standard-mode checkpoint remains a research result, not a Windows support claim. |
 
 Detailed contracts, commands, artifact provenance, and prior closures are in
 [M5 History](../history/m5.md) and Git history. The [M5 convergence queue]

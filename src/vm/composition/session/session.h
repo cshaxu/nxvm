@@ -25,6 +25,12 @@
 #include "vm/profile/default_profile/firmware/context.h"
 #include "vm/profile/default_profile/pc_at_profile.h"
 
+typedef enum vm_session_boot_preference {
+    VM_SESSION_BOOT_PREFERENCE_AUTO,
+    VM_SESSION_BOOT_PREFERENCE_FDD,
+    VM_SESSION_BOOT_PREFERENCE_HDD
+} vm_session_boot_preference;
+
 struct vm_session {
     C_INT active;
     vm_platform_request_transport request_transport;
@@ -51,12 +57,15 @@ struct vm_session {
     vm_session_fault_outcome fault_outcome;
     vm_session_control_state control;
     vm_session_config retained_config;
+    vm_session_boot_preference boot_preference;
     C_CHAR fdd_image_path[1024];
     C_CHAR hdd_image_path[1024];
 };
 
 C_VOID vm_session_storage_initialize(vm_session *machine);
 C_VOID vm_session_storage_finalize(vm_session *machine);
+C_VOID vm_session_apply_boot_preference(vm_session *session);
+C_VOID vm_session_set_boot_hdd(vm_session *session, C_INT enabled);
 C_VOID vm_session_consume_request(C_VOID *opaque,
     const vm_platform_request *request);
 
