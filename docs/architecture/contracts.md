@@ -293,6 +293,28 @@ loader, firmware override, or root composition uses these APIs only after the
 current quantum has returned; `core/product` receives an adapted debug target,
 not a `core_machine` handle.
 
+### Core Configuration And Provider Boundary
+
+`core_machine` owns CPU, RAM, port bus, shared controller storage, and their
+initialization, reset, and finalization order. During the one configuration-open
+window, a product composition may submit only typed configuration and provider
+bindings. It may not retain or receive a raw CPU, RAM, port, controller, or
+executor pointer. After core validates and freezes those bindings, composition
+owns outer scheduling and provider lifetime while `core_machine_run()` remains
+the only guest execution loop.
+
+An override firmware provider is core-invoked only at an explicit machine
+service boundary. Its future opaque capability may expose checked guest-memory
+and port operations plus separately admitted copied CPU-state observation or
+patching; it never exposes storage pointers, arbitrary instruction-pointer,
+segment, control-register, mode, device, or scheduler mutation. A profile
+declares metadata and provider inputs, not a machine constructor.
+
+M5 T293--T303 migrate the current VM construction path to this boundary before
+M6 creates a mantle runtime. Until those tasks close, historical raw
+configuration/profile borrows are transitional implementation detail, not a
+new consumer contract or mantle API.
+
 ## Time And Clock Ownership
 
 Time is not one device category. Each layer owns only its own observable

@@ -48,6 +48,10 @@ must not use an unfinished M5 boundary or corpus item as an implicit waiver.
 - [ ] Each mutable runtime datum has one explicit owner. There is one production
   core executor, one NXVM session/execution path, and no duplicate machine,
   session, reset, or VM-side instruction loop.
+- [ ] Product-visible core contracts export no raw CPU, RAM, port, controller,
+  or executor pointer. VM composition binds typed frozen configuration and
+  providers; the core-only second-consumer fixture proves that boundary before
+  M6 may construct mantle.
 - [ ] Production code has no process-global, `_Thread_local`, singleton, or
   implicit current-object session/machine selector. Process-exclusive host
   resources use explicit leases.
