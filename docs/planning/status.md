@@ -2,7 +2,13 @@
 
 ## Current Work
 
-**Idle.**
+**M5 Td S38 in progress: reorder the evidence-led M5 queue without runtime
+changes.**
+
+S38 retains T288, inserts T289--T292 for the ROM, FDC, and selected 80386
+corpus work, and shifts the former T289--T292 to T293--T296. It must update
+only the queue and historical task record, retain exactly one active subtask,
+and leave unrelated user-owned documentation edits untouched.
 
 M5 T287 S24 repaired the corpus-proven 80386 real-mode address-size defect.
 `_kma_linear_logical` now admits actual `SREG_DATA` reads and writes with
