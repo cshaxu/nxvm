@@ -4,6 +4,7 @@
 #include "core/machine/cpu_instructions.h"
 #include "core/machine/fpu_interface.h"
 #include "core/machine/machine_interface.h"
+#include "../support/core_machine_cpu_fixture.h"
 
 #define FPU_TEST_ONE 0x00000100u
 #define FPU_TEST_ZERO 0x00000104u
@@ -12,25 +13,14 @@
 
 typedef struct fpu_test_machine {
     core_machine *machine;
-    t_cpu *cpu;
-    core_machine_cpu_execution_context *execution;
 } fpu_test_machine;
 
 static C_VOID fpu_test_reset(C_VOID *opaque)
 {
     fpu_test_machine *state = (fpu_test_machine *)opaque;
 
-    if (state == STD_NULL || state->cpu == STD_NULL ||
-        state->execution == STD_NULL) return;
-    (C_VOID)core_machine_cpu_execution_load_segment(state->execution,
-        &state->cpu->data.cs, 0u);
-    (C_VOID)core_machine_cpu_execution_load_segment(state->execution,
-        &state->cpu->data.ds, 0u);
-    (C_VOID)core_machine_cpu_execution_load_segment(state->execution,
-        &state->cpu->data.es, 0u);
-    (C_VOID)core_machine_cpu_execution_load_segment(state->execution,
-        &state->cpu->data.ss, 0u);
-    state->cpu->data.eip = 0u;
+    if (state != STD_NULL) (C_VOID)test_core_machine_fixture_reset_real_mode(
+        state->machine);
 }
 
 static const core_machine_execution_provider fpu_test_provider = {
@@ -48,10 +38,7 @@ static C_INT fpu_test_prepare(fpu_test_machine *state,
 
     STD_MEMSET(state, 0, sizeof(*state));
     if (core_machine_create(&config, &state->machine) != TYPE_STATUS_OK) return 0;
-    state->cpu = core_machine_configuration_cpu_borrow(state->machine);
-    state->execution = core_machine_configuration_cpu_execution_borrow(state->machine);
-    if (state->cpu == STD_NULL || state->execution == STD_NULL ||
-        core_machine_bind_execution_provider(state->machine, &fpu_test_provider,
+    if (core_machine_bind_execution_provider(state->machine, &fpu_test_provider,
             state) != TYPE_STATUS_OK ||
         core_machine_freeze_execution_providers(state->machine) != TYPE_STATUS_OK ||
         core_machine_reset(state->machine) != TYPE_STATUS_OK) {

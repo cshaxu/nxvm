@@ -1,6 +1,7 @@
 #include "type.h"
 
 #include "core/machine/machine_interface.h"
+#include "../support/core_machine_cpu_fixture.h"
 
 static C_INT machine_time_expect(type_status status)
 {
@@ -20,8 +21,7 @@ C_INT main(C_VOID)
 
     config.ticks_per_instruction = 3u;
     failed |= machine_time_expect(core_machine_create(&config, &machine));
-    failed |= core_machine_memory_register_mapping(
-        core_machine_configuration_memory_borrow(machine), 0xfffffff0u,
+    failed |= test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
         0x000ffff0u, 16u) != TYPE_STATUS_OK;
     failed |= machine_time_expect(core_machine_freeze_execution_providers(machine));
     failed |= machine_time_expect(core_machine_reset(machine));

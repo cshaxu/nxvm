@@ -1,6 +1,7 @@
 #include "type.h"
 
 #include "core/machine/machine_interface.h"
+#include "../support/core_machine_cpu_fixture.h"
 
 #define TIMING_RESET_LINEAR 0xfffffff0u
 #define TIMING_RESET_PHYSICAL 0x000ffff0u
@@ -53,8 +54,7 @@ static C_INT timing_prepare(core_machine **out_machine,
 
     if (out_machine == STD_NULL || core_machine_create(&config, &machine) !=
             TYPE_STATUS_OK ||
-        core_machine_memory_register_mapping(
-            core_machine_configuration_memory_borrow(machine),
+        test_core_machine_fixture_register_reset_mapping(machine,
             TIMING_RESET_LINEAR, TIMING_RESET_PHYSICAL, TIMING_WINDOW_BYTES) !=
             TYPE_STATUS_OK ||
         core_machine_install_port_provider(machine, 0x0080u, 0x0080u,

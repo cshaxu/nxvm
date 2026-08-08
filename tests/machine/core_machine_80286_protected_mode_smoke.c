@@ -3,6 +3,7 @@
 #include "core/machine/cpu.h"
 #include "core/machine/cpu_instructions.h"
 #include "core/machine/machine_interface.h"
+#include "../support/core_machine_cpu_fixture.h"
 
 #define TEST_GDT_ADDRESS 0x0300u
 #define TEST_GDT_POINTER_ADDRESS 0x0100u
@@ -15,25 +16,14 @@
 
 typedef struct protected_mode_machine {
     core_machine *machine;
-    t_cpu *cpu;
-    core_machine_cpu_execution_context *execution;
 } protected_mode_machine;
 
 static C_VOID protected_mode_reset(C_VOID *opaque)
 {
     protected_mode_machine *state = (protected_mode_machine *)opaque;
 
-    if (state == STD_NULL || state->cpu == STD_NULL ||
-        state->execution == STD_NULL) return;
-    (C_VOID)core_machine_cpu_execution_load_segment(state->execution,
-        &state->cpu->data.cs, 0u);
-    (C_VOID)core_machine_cpu_execution_load_segment(state->execution,
-        &state->cpu->data.ds, 0u);
-    (C_VOID)core_machine_cpu_execution_load_segment(state->execution,
-        &state->cpu->data.es, 0u);
-    (C_VOID)core_machine_cpu_execution_load_segment(state->execution,
-        &state->cpu->data.ss, 0u);
-    state->cpu->data.eip = 0u;
+    if (state != STD_NULL) (C_VOID)test_core_machine_fixture_reset_real_mode(
+        state->machine);
 }
 
 static const core_machine_execution_provider protected_mode_provider = {
@@ -54,10 +44,7 @@ static C_INT protected_mode_prepare(protected_mode_machine *state,
     if (state == STD_NULL) return 0;
     STD_MEMSET(state, 0, sizeof(*state));
     if (core_machine_create(&config, &state->machine) != TYPE_STATUS_OK) return 0;
-    state->cpu = core_machine_configuration_cpu_borrow(state->machine);
-    state->execution = core_machine_configuration_cpu_execution_borrow(state->machine);
-    if (state->cpu == STD_NULL || state->execution == STD_NULL ||
-        core_machine_bind_execution_provider(state->machine,
+    if (core_machine_bind_execution_provider(state->machine,
             &protected_mode_provider, state) != TYPE_STATUS_OK ||
         core_machine_freeze_execution_providers(state->machine) != TYPE_STATUS_OK ||
         core_machine_reset(state->machine) != TYPE_STATUS_OK) {
@@ -184,8 +171,10 @@ static C_INT protected_mode_test_positive(C_VOID)
                 diagnostic.first_fault.exception_mask,
                 diagnostic.first_fault.point.cs, diagnostic.first_fault.point.eip,
                 diagnostic.first_fault.eax, first, second,
-                state.cpu->data.ds.selector, state.cpu->data.ds.base,
-                state.cpu->data.ss.selector, state.cpu->data.ss.base, got_cpu,
+                test_core_machine_fixture_capture_cpu_after_run(state.machine).data.ds.selector,
+                test_core_machine_fixture_capture_cpu_after_run(state.machine).data.ds.base,
+                test_core_machine_fixture_capture_cpu_after_run(state.machine).data.ss.selector,
+                test_core_machine_fixture_capture_cpu_after_run(state.machine).data.ss.base, got_cpu,
                 cpu.cs, cpu.cs_base);
         }
     }
@@ -216,8 +205,12 @@ static C_INT protected_mode_test_invalid_selector(C_VOID)
             !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
                 VCPUINS_EXCEPT_GP) || diagnostic.first_fault.exception_code !=
                 0x18u;
-        failed |= state.cpu->data.cs.selector != 0u ||
-            state.cpu->data.cs.base != 0u || state.cpu->data.eip != 0x000bu;
+        failed |= test_core_machine_fixture_capture_cpu_after_run(
+            state.machine).data.cs.selector != 0u ||
+            test_core_machine_fixture_capture_cpu_after_run(
+            state.machine).data.cs.base != 0u ||
+            test_core_machine_fixture_capture_cpu_after_run(
+            state.machine).data.eip != 0x000bu;
     }
     core_machine_destroy(state.machine);
     return failed;

@@ -2,107 +2,48 @@
 
 ## Current Work
 
-**Idle - M5 T298 closed; T299 is the next linear task.**
+**M5 T299 S1 active - public raw-borrow closure.**
 
-T297 is the reference baseline. T298 replaces the retained NXVM debugger's
-production raw CPU, instruction, execution-context, RAM, and port borrows
-with copied observations and named core debug operations, without changing
-Console commands, text, prompt, startup, step, breakpoint, trace, reset, or
-quit behavior. T298 is closed after coordinator review: the formal debugger
-path now uses named core operations and copied observations only.
+### Task Packet
 
-### T298 Closure Evidence
-
-- **Original request:** Remove the formal NXVM debugger path's raw core CPU,
-  instruction metadata, execution-context, RAM, and port borrows. Preserve
-  retained Console/debugger UX and startup flow through copied observations
-  and the smallest operation-specific core debug capability.
-- **S1 frozen production matrix:** `vm_debug_cpu` supplies register reads,
-  register patches, and code-segment metadata; `vm_debug_execution` supplies
-  segment validation/patching, linear reads/writes, and diagnostic printing;
-  `vm_debug_memory` supplies real-memory reads/writes; `vm_debug_port`
-  supplies port reads/writes; and `vm_debug_instructions` supplies the three
-  watchpoint configurations. `vm_session_control_initialize` also supplies
-  CPU/instruction borrows to the VM-owned breakpoint/trace recorder. The
-  admitted replacements are copied CPU/segment/control/diagnostic observation;
-  validated field-mask register/segment patch; checked physical/linear/real memory
-  read/write; checked port read/write; named code-default-size/code-base and
-  execution-point queries; and named watchpoint/breakpoint/trace operations.
-  No current-object getter, whole-machine snapshot, executor pointer, mutable
-  pointer, global, TLS target, or second execution route is admitted.
-- **Owner and boundary contract:** core owns all guest CPU, instruction,
-  execution, RAM, and port state and performs every admitted core operation.
-  VM owns Console policy, the session-bound adapter, and existing breakpoint/
-  trace UI instrumentation. The capability is usable only at a synchronized
-  paused command boundary or `STOPPED`; `RUNNING`, unbound, expired/destroyed,
-  and cross-session calls fail deterministically. A call returns copied data
-  only; no operation retains a borrow. Register/segment patches validate before
-  commit and fail atomically. Memory/port use their existing checked machine
-  paths. Reset preserves defined VM breakpoint/trace semantics; destroy closes
-  the target/capability; no callback re-entry or cross-thread mutation route is
-  introduced.
-- **Reference baseline:** T297, developer artifact revision `0.5.0297`, SHA-256
-  `7ED04D9014F084154C250601C7BFBD186DF2DD4B5652F4D7B4E4CB9CCE327FA5`.
-- **In scope:** S1 contract/matrix and inventory update; S2 core debug
-  operations plus VM adapter/recorder migration; focused lifecycle, UX,
-  isolation, and source-shape gates; retained product regressions, full GCC
-  gates, and the `0.5.0298` developer artifact.
-- **Non-goals:** T299 public raw-borrow deletion or test migration; any new
-  debugger command, Console wording/prompt/startup policy, VM outer loop,
-  ROM/profile/firmware capability, media/controller behavior, DOS/BIOS policy,
-  core dependency on VM, global/TLS target, or alternate executor.
-- **Applicable rules:** `core/machine` owns generic state, validation,
-  lifecycle, and checked operations; `vm/composition` binds the session-scoped
-  product adapter; `vm/machine` owns retained debug UX instrumentation. All
-  cross-module data are copied or named operations. No source import,
-  third-party material, guest media, Microsoft research, or license/provenance
-  change is involved.
-- **Similar-issue sweep:** defect class is a debugger production route that
-  borrows or stores raw CPU, instruction, RAM, port, or executor state. Query:
-  `rg -n "core_machine_debug_.*_borrow|core_machine_configuration_(cpu|cpu_instructions)_borrow|t_cpu \*|t_cpuins \*|t_ram \*|t_port \*|core_machine_cpu_execution_context \*" src/vm/composition/session src/vm/machine`.
-  Every production hit is migrated in T298 or explicitly left for T299 only
-  when it is non-debug configuration/test scope; the focused static gate names
-  this distinction.
-- **S3 evidence:** focused capability and retained UX corpus covers register,
-  disassembly, memory, execution control, breakpoint/trace, out-of-window
-  rejection, and two-session non-crossing; a source gate rejects all formal
-  debugger raw borrows from `src/`; retained Console/debugger, FDD boot, DOS
-  prompt, Windows setup probe, and full GCC gates pass. The rebuilt artifact
-  is `build/output/nxvm_0_5_0298.exe` with recorded SHA-256.
-- **Active evidence (not closure):** GCC build of `vm-0-5-0298`, focused
-  debugger smoke targets, and `verify-debugger-capability` passed; the static
-  marker was `M5:T298:S3:DEBUGGER-CAPABILITY-STATIC:OK`. The focused core
-  probe verifies copied observation outside/inside the eligible lifecycle,
-  a multi-register field-mask commit, and rejected invalid-mask patch without
-  partial CPU mutation. With the untracked
-  owner-provided FDD/HDD paths configured only in this worktree's CMake cache,
-  `run-current-smokes` passed all 126/126 cases, including DOS prompt, timer,
-  FDD boot, debugger pause/unified backend, and HDD/DOS coverage. The complete
-  current GCC gate set, documentation governance, and `git diff --check` also
-  passed. The produced active artifact is
-  `build/output/nxvm_0_5_0298.exe`, 2,701,319 bytes, SHA-256
+- **Original request:** Delete public configuration borrows, profile-binding
+  raw accessors, and debug borrows left without production callers after T298.
+  Product headers must expose no raw CPU, RAM, port, controller, or executor
+  pointer. Core retains all storage; production uses typed config/providers,
+  checked interfaces, copied observations, and the T297/T298 capabilities.
+- **S1 objective:** Freeze the final declaration/call/owner/lifetime map in
+  `docs/architecture/core-machine-public-borrow-closure.md`, including every
+  production and test consumer and its replacement. The approved test seam is
+  a narrow `tests/support` fixture adapter: each fixture operation receives a
+  `core_machine *`, has no global/TLS or mirror state, may include private core
+  implementation headers, and is never included by `src/` or VM/VDM
+  composition.
+- **S2 objective:** Migrate each test to an existing checked/capability API or
+  that fixture adapter, then delete all public configuration/debug raw-borrow
+  declarations and definitions. Stop for any production consumer or requested
+  new core capability.
+- **S3 objective:** Add a source-shape gate covering every public header and
+  `src/`; it rejects raw accessor/profile binding exports and any `src` include
+  of `tests/support`. Run focused lifecycle/config/provider/capability corpus,
+  full current gates, and create `nxvm_0_5_0299.exe` with SHA evidence.
+- **Reference baseline:** T298, `nxvm_0_5_0298.exe`, SHA-256
   `6A9AA9D2C3691F780426C6A78C2AE1C149BB9CC2A84AE835A9AEC10B5313254B`.
-- **Stop conditions:** stop and request direction for any unlisted capability,
-  command/text/prompt/startup change, global/TLS/current target, core-to-VM
-  dependency, discovered non-debug production borrow, or requirement to start
-  T299+.
-
-T297 replaced the default-profile firmware's long-lived raw core binding with
-one core-invoked opaque capability. Its runtime whitelist is checked physical
-memory and port I/O plus a stop request; no copied CPU-state API was admitted
-because no consumer justified it. Configure-time ROM registration is copied
-and atomic: a failed callback rolls back only its later ROM routes and owned
-copies, retaining earlier mappings and permitting a valid rebind. The callback
-borrow ends synchronously; freeze is immutable, reset retains the provider,
-and destroy invalidates its context. Default BIOS/QDCGA and boot-failure
-handling now use that boundary, with no Console or startup behavior change.
-
-T297 verification and developer-artifact evidence are retained in M5 history;
-T298's active packet below is the sole current artifact authority.
-
-T298 is active. It replaces debugger raw borrows with copied or
-operation-specific core debug capability while preserving the NXVM Console,
-debugger commands, prompt, and startup behavior.
+- **Non-goals:** Console/debugger/start/boot/DOS behavior, ROM/profile/media,
+  VM outer loop, a new core capability, a second machine/executor/state
+  mirror, global/TLS selection, source imports, or T300+ work.
+- **Applicable rules:** `core/machine` owns storage and checked operations;
+  composition supplies only typed configuration/providers; product code sees
+  copied observation or named capability. Tests may use the approved external
+  fixture seam only. Module-layout, contracts, coding, source, and execution
+  policies apply; no exception is approved.
+- **Similar-issue sweep:** the defect class is any public raw state accessor or
+  profile-binding raw accessor. S1 command:
+  `rg -n "core_machine_(configuration|debug)_.*borrow|profile.*(borrow|binding)" src tests --glob '*.[ch]'`.
+  Every `src` hit must be removed; each test hit is mapped to a typed API or
+  the approved fixture operation. The S3 static gate is the recurrence check.
+- **Stop conditions:** a production raw consumer, a test need outside the
+  approved fixture boundary, a new core capability, changed product behavior,
+  raw export remaining in a public header, or any requirement to start T300+.
 
 ## Current Technical Baseline
 
