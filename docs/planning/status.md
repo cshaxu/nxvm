@@ -2,14 +2,70 @@
 
 ## Current Work
 
-**Idle.**
+### M5 T295 S1 -- core-owned CPU/PIC/lifecycle initialization
+
+**Objective:** move the retained NXVM CPU execution-to-shared-PIC initialization
+and lifecycle authority fully into `core_machine`; VM composition may submit
+typed configuration/providers only and must not borrow CPU execution or PIC
+storage to initialize or bind that path.
+
+| Requirement | Completion condition | Evidence / risk boundary |
+| --- | --- | --- |
+| Core owner | `core_machine_create`, freeze, reset, and destroy own the CPU/instruction/execution/PIC initialization, binding, reset, and finalization order. | Focused owner/lifecycle regression plus CPU/PIC corpus. |
+| VM composition | `vm_session_storage_initialize` no longer borrows CPU execution or PIC storage and performs no direct PIC binding. | Production source sweep/static gate. |
+| Retained behavior | Run/stop/reset, Console/debugger, FDD/HDD boot behavior remain unchanged. | Existing focused product corpus; debugger raw borrows remain T298/T299. |
+| Exclusions | No VADP, DMA, RTC/CMOS/NMI, FDC/HDC migration (T296); no debugger UX/raw-borrow replacement (T298/T299); no scheduler, VM mirror, or profile policy in core. | Source review and deferred-hit record below. |
+| Artifact | Build `nxvm_0_5_0295.exe`, copy it to `build/output/`, record SHA-256 and source commit. | `current-gates-gcc` and artifact verification. |
+
+**Frozen order:** create initializes CPU/instructions/execution, then core port/bus,
+RAM, shared PIC pair, and binds the execution context to that owned pair before
+the configuration window is exposed. Freeze freezes provider/memory topology;
+reset resets CPU/FPU, port/RAM/devices, PIC, then clocks/provider and reaches
+`STOPPED`; destroy finalizes controllers, PIC, execution, port, RAM, bus, and
+trace in the existing core-owned order. The typed execution provider remains an
+external time/service provider and is not a scheduler.
+
+**Applicable rules:** `module-layout.md` keeps CPU/PIC/execution in
+`core/machine`; `contracts.md` permits only typed configuration/provider
+bindings during configuration and one `core_machine_run` loop; coding standard
+requires narrow C changes and tests; source policy permits only existing
+first-party NXVM code; execution policy requires a source sweep, focused
+regression, developer artifact, and full current gates. No exception requested.
+
+**Source sweep (before):**
+
+| Query / production hit | Disposition |
+| --- | --- |
+| `core_machine_cpu_execution_context_bind_pic` | `src/vm/composition/session/session.c:135` is T295's direct wiring; move into core create. |
+| `core_machine_configuration_cpu_execution_borrow`, `core_machine_configuration_shared_pic_*_borrow` | `session.c:132-134` are T295 direct init borrows; remove. `machine_devices.c` RTC/FDC/HDC PIC hits are T296 deferred. Tests/debug hits are test-only or T298/T299 deferred. |
+| CPU/instruction configuration borrows | `session/control.c:204-205` feed retained debugger initialization; T298/T299 deferred unless removal becomes unavoidable (not planned). |
+
+**Planned verification:** focused owner/lifecycle CPU/PIC reset regression and
+static product-source check; retained CPU/protected-mode/IRQ/PIC,
+Console/debugger, and FDD/HDD boot corpus; `git diff --check`, documentation
+governance, `current-gates-gcc`. Stop for any necessary T296/T298/T299 scope
+change, new scheduler/machine, profile-policy move, media change, or failed
+retained behavior.
+
+**Implementation evidence (in progress):** core create initializes the shared
+PIC pair and immediately binds the owned CPU execution context; VM storage no
+longer performs that borrow/bind. `core-machine-cpu-pic-lifecycle-smoke` emits
+`M5:T295:S3:CORE-CPU-PIC-LIFECYCLE:OK`; the narrow static gate emits
+`M5 T295 CPU/PIC lifecycle authority: OK`. The post-change sweep leaves no
+CPU/PIC initialization/bind borrow in `session.c`; the three remaining
+`machine_devices.c` PIC routes are RTC/FDC/HDC and remain deferred to T296;
+the control/debugger CPU borrows remain deferred to T298/T299. With the
+owner-provided FDD/HDD images supplied read-only as CMake cache inputs,
+`current-gates-gcc` passed all 122 current smoke tests and all configured
+static/documentation gates. `git diff --check` passed. The developer artifact
+below will be rehashed after its source commit is recorded.
 
 ## Current Technical Baseline
 
-- **T293 artifact identity:** `current-gcc` and
-  `verify-current-artifact-target` select `vm-0-5-0293`. Artifact
-  `nxvm_0_5_0293.exe` SHA-256:
-  `8EA2A81A4EB99F1C541CE9D6CDE3805BBD292A5AFD3A9334A39ED840AE45267E`.
+- **T295 artifact identity:** `current-gcc` and
+  `verify-current-artifact-target` select `vm-0-5-0295`. Artifact
+  `nxvm_0_5_0295.exe` SHA-256:
+  `52B291B1E1100D945BD44B7B1F88A622F7B2B7D3468BC78997ED90732BCA179A`.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.

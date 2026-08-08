@@ -109,10 +109,6 @@ C_VOID vm_session_set_boot_hdd(vm_session *session, C_INT enabled)
 
 C_VOID vm_session_storage_initialize(vm_session *machine)
 {
-    core_machine_cpu_execution_context *execution;
-    t_ram *memory;
-    t_pic *pic_master;
-    t_pic *pic_slave;
     core_machine_profile_binding profile_binding;
 
     if (machine == STD_NULL || machine->core_machine != STD_NULL) return;
@@ -128,12 +124,6 @@ C_VOID vm_session_storage_initialize(vm_session *machine)
             return;
         }
     }
-    memory = core_machine_configuration_memory_borrow(machine->core_machine);
-    execution = core_machine_configuration_cpu_execution_borrow(machine->core_machine);
-    pic_master = core_machine_configuration_shared_pic_master_borrow(machine->core_machine);
-    pic_slave = core_machine_configuration_shared_pic_slave_borrow(machine->core_machine);
-    core_machine_cpu_execution_context_bind_pic(execution,
-        pic_master, pic_slave);
     if (core_machine_profile_binding_initialize(machine->core_machine,
             &profile_binding) != TYPE_STATUS_OK) {
         core_machine_destroy(machine->core_machine);

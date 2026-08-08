@@ -644,6 +644,8 @@ type_status core_machine_create(
         &machine->executor_port);
     core_machine_pic_initialize(&machine->shared_pic_master,
         &machine->shared_pic_slave, &machine->executor_port);
+    core_machine_cpu_execution_context_bind_pic(&machine->executor_cpu_execution,
+        &machine->shared_pic_master, &machine->shared_pic_slave);
     core_machine_pic_irq_source_bind(&machine->shared_pit_irq0_source,
         &machine->shared_pic_master, &machine->shared_pic_slave, 0u);
     core_machine_pit_initialize(&machine->shared_pit, &machine->executor_port);
