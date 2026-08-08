@@ -70,18 +70,25 @@ artifact. Do not admit T298 or later work, close this task, merge, or push.
   configure/reset/after-run invocation, configuration freeze, expired-context
   rejection, rejected nested `core_machine_reset`/`request_stop`, completed
   cold reset, and a subsequent run boundary (`M5:T297:S3:FIRMWARE-CAPABILITY:OK`).
-  `verify-firmware-capability` rejects raw binding and requires only the
-  checked firmware-memory/port and stop operations
+  S3 P3 additionally proves configure atomicity: an already registered ROM
+  remains routed after a provider registers a new immutable ROM and returns
+  failure; that new mapping is absent, its callback context is expired, and a
+  distinct valid provider can reuse the range then bind/freeze/reset/run.
+  Core records the immutable-ROM mapping boundary before configure and, on
+  failure, removes only later device routes and owned copies before clearing
+  the provider/context; the obsolete write-only firmware-frozen field is
+  absent. `verify-firmware-capability` asserts that rollback contract, rejects
+  raw binding, and requires only the checked firmware-memory/port and stop
+  operations
   (`M5:T297:S3:FIRMWARE-CAPABILITY-STATIC:OK`). T264 now requires QDCGA's
   firmware-capability memory/port path and forbids direct port/raw binding;
   T211 requires core-invoked capability report consume/request-stop and
   forbids runner direct access. `current-gates-gcc` passed 49 static/build/docs
   gates and 126/126 CTest cases using untracked owner-provided media cache;
   documentation governance and `git diff --check` passed. The rebuilt local
-  developer artifact is `build/output/nxvm_0_5_0297.exe`, 2,685,736 bytes,
-  SHA-256 `86748E4CC13C28934F3BA3399DBD807B07B3251E44B996E42E9693FCB151D393`,
-  produced by the current target with runtime build version `0.5.0297`; its
-  executable source is committed as `5d2f1bd1304edcb1dbaa45d4787c4ed57b3c4a69`.
+  developer artifact is `build/output/nxvm_0_5_0297.exe`, 2,686,329 bytes,
+  SHA-256 `7ED04D9014F084154C250601C7BFBD186DF2DD4B5652F4D7B4E4CB9CCE327FA5`,
+  produced by the current target with runtime build version `0.5.0297`.
 - **Stop conditions:** stop for any need to broaden the whitelist, expose a
   raw pointer, encode BIOS/DOS policy in core, retain a callback borrow beyond
   its call, alter retained product behavior, or begin T298+; record the issue
