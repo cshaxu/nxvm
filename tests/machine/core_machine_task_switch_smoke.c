@@ -3,6 +3,7 @@
 #include "core/machine/cpu.h"
 #include "core/machine/machine_interface.h"
 #include "core/machine/memory_interface.h"
+#include "../support/core_machine_cpu_fixture.h"
 
 #define GDT_POINTER 0x0100u
 #define GDT_BASE 0x0300u
@@ -12,8 +13,6 @@
 
 typedef struct task_switch_fixture {
     core_machine *machine;
-    t_cpu *cpu;
-    core_machine_cpu_execution_context *execution;
 } task_switch_fixture;
 
 typedef enum task_switch_case {
@@ -29,17 +28,8 @@ static C_VOID task_switch_reset(C_VOID *opaque)
 {
     task_switch_fixture *fixture = (task_switch_fixture *)opaque;
 
-    if (fixture == STD_NULL || fixture->cpu == STD_NULL ||
-        fixture->execution == STD_NULL) return;
-    (C_VOID)core_machine_cpu_execution_load_segment(fixture->execution,
-        &fixture->cpu->data.cs, 0u);
-    (C_VOID)core_machine_cpu_execution_load_segment(fixture->execution,
-        &fixture->cpu->data.ds, 0u);
-    (C_VOID)core_machine_cpu_execution_load_segment(fixture->execution,
-        &fixture->cpu->data.es, 0u);
-    (C_VOID)core_machine_cpu_execution_load_segment(fixture->execution,
-        &fixture->cpu->data.ss, 0u);
-    fixture->cpu->data.eip = 0u;
+    if (fixture != STD_NULL) (C_VOID)test_core_machine_fixture_reset_real_mode(
+        fixture->machine);
 }
 
 static const core_machine_execution_provider task_switch_provider = {
@@ -65,11 +55,7 @@ static C_INT task_switch_prepare(task_switch_fixture *fixture,
     if (fixture == STD_NULL) return 0;
     STD_MEMSET(fixture, 0, sizeof(*fixture));
     if (core_machine_create(&config, &fixture->machine) != TYPE_STATUS_OK) return 0;
-    fixture->cpu = core_machine_configuration_cpu_borrow(fixture->machine);
-    fixture->execution = core_machine_configuration_cpu_execution_borrow(
-        fixture->machine);
-    if (fixture->cpu == STD_NULL || fixture->execution == STD_NULL ||
-        core_machine_bind_execution_provider(fixture->machine,
+    if (core_machine_bind_execution_provider(fixture->machine,
             &task_switch_provider, fixture) != TYPE_STATUS_OK ||
         core_machine_freeze_execution_providers(fixture->machine) != TYPE_STATUS_OK ||
         core_machine_reset(fixture->machine) != TYPE_STATUS_OK) {
@@ -162,6 +148,7 @@ static C_INT task_switch_expect_switch(core_machine_cpu_profile profile)
     uint16_t saved_ip = 0u;
     uint16_t saved_ax = 0u;
     uint8_t access[2] = {0u, 0u};
+    t_cpu cpu;
     const core_machine_run_budget budget = { 128u, 0u };
     C_INT failed = !task_switch_prepare(&fixture, profile);
 
@@ -169,6 +156,7 @@ static C_INT task_switch_expect_switch(core_machine_cpu_profile profile)
         failed |= !task_switch_install(&fixture, TASK_SWITCH_CASE_SUCCESS);
         failed |= core_machine_run(fixture.machine, budget, &result) !=
             TYPE_STATUS_OK || result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
+        cpu = test_core_machine_fixture_capture_cpu_after_run(fixture.machine);
         failed |= core_machine_get_cpu_diagnostic(fixture.machine, &diagnostic) !=
             TYPE_STATUS_OK || diagnostic.first_fault.valid ||
             diagnostic.last_delivered_exception.valid;
@@ -182,20 +170,18 @@ static C_INT task_switch_expect_switch(core_machine_cpu_profile profile)
             &access[0], 1u) != TYPE_STATUS_OK || access[0] != 0x81u;
         failed |= core_machine_memory_read(fixture.machine, GDT_BASE + 0x35u,
             &access[1], 1u) != TYPE_STATUS_OK || access[1] != 0x83u;
-        failed |= !fixture.cpu->data.tr.flagValid ||
-            fixture.cpu->data.tr.selector != 0x0030u ||
-            fixture.cpu->data.ax != 0x2222u ||
-            fixture.cpu->data.ss.sregtype != SREG_STACK || !TYPE_GET_BIT(
-                fixture.cpu->data.cr0, VCPU_CR0_TS);
+        failed |= !cpu.data.tr.flagValid || cpu.data.tr.selector != 0x0030u ||
+            cpu.data.ax != 0x2222u || cpu.data.ss.sregtype != SREG_STACK ||
+            !TYPE_GET_BIT(cpu.data.cr0, VCPU_CR0_TS);
         if (profile == CORE_MACHINE_CPU_PROFILE_80386) {
-            failed |= fixture.cpu->data.eax != 0xffff2222u;
+            failed |= cpu.data.eax != 0xffff2222u;
         }
         if (failed) {
             STD_FPRINTF(STD_STDERR,
                 "T261 switch=%u result=%u marker=%04x ip=%04x ax=%04x access=%02x/%02x tr=%04x eax=%08x\n",
                 (unsigned)profile, (unsigned)result.reason,
                 marker, saved_ip, saved_ax, access[0], access[1],
-                fixture.cpu->data.tr.selector, fixture.cpu->data.eax);
+                cpu.data.tr.selector, cpu.data.eax);
         }
     }
     core_machine_destroy(fixture.machine);
@@ -207,6 +193,7 @@ static C_INT task_switch_expect_stack_fault(core_machine_cpu_profile profile)
     task_switch_fixture fixture;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
+    t_cpu cpu;
     const core_machine_run_budget budget = { 128u, 0u };
     C_INT failed = !task_switch_prepare(&fixture, profile);
 
@@ -214,22 +201,21 @@ static C_INT task_switch_expect_stack_fault(core_machine_cpu_profile profile)
         failed |= !task_switch_install(&fixture, TASK_SWITCH_CASE_STACK_LIMIT);
         failed |= core_machine_run(fixture.machine, budget, &result) !=
             TYPE_STATUS_FAULT || result.reason != CORE_MACHINE_STOP_FAULT;
+        cpu = test_core_machine_fixture_capture_cpu_after_run(fixture.machine);
         failed |= core_machine_get_cpu_diagnostic(fixture.machine, &diagnostic) !=
             TYPE_STATUS_OK || !diagnostic.first_fault.valid ||
             !TYPE_GET_BIT(diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_SS) ||
             diagnostic.first_fault.exception_code != 0u ||
             diagnostic.last_delivered_exception.valid ||
-            fixture.cpu->data.ss.sregtype != SREG_STACK ||
-            !fixture.cpu->data.tr.flagValid ||
-            fixture.cpu->data.tr.selector != 0x0030u;
+            cpu.data.ss.sregtype != SREG_STACK || !cpu.data.tr.flagValid ||
+            cpu.data.tr.selector != 0x0030u;
         if (failed) {
             STD_FPRINTF(STD_STDERR,
                 "T261 stack=%u result=%u mask=%x code=%04x ss=%u tr=%04x\n",
                 (unsigned)profile, (unsigned)result.reason,
                 (unsigned)diagnostic.first_fault.exception_mask,
                 diagnostic.first_fault.exception_code,
-                (unsigned)fixture.cpu->data.ss.sregtype,
-                fixture.cpu->data.tr.selector);
+                (unsigned)cpu.data.ss.sregtype, cpu.data.tr.selector);
         }
     }
     core_machine_destroy(fixture.machine);
@@ -242,6 +228,7 @@ static C_INT task_switch_expect_fault(core_machine_cpu_profile profile,
     task_switch_fixture fixture;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
+    t_cpu cpu;
     const core_machine_run_budget budget = { 128u, 0u };
     C_INT failed = !task_switch_prepare(&fixture, profile);
 
@@ -249,19 +236,19 @@ static C_INT task_switch_expect_fault(core_machine_cpu_profile profile,
         failed |= !task_switch_install(&fixture, test_case);
         failed |= core_machine_run(fixture.machine, budget, &result) !=
             TYPE_STATUS_FAULT || result.reason != CORE_MACHINE_STOP_FAULT;
+        cpu = test_core_machine_fixture_capture_cpu_after_run(fixture.machine);
         failed |= core_machine_get_cpu_diagnostic(fixture.machine, &diagnostic) !=
             TYPE_STATUS_OK || !diagnostic.first_fault.valid ||
             !TYPE_GET_BIT(diagnostic.first_fault.exception_mask, expected_mask) ||
             diagnostic.first_fault.exception_code != expected_code ||
             diagnostic.last_delivered_exception.valid ||
-            !fixture.cpu->data.tr.flagValid ||
-            fixture.cpu->data.tr.selector != 0x0028u;
+            !cpu.data.tr.flagValid || cpu.data.tr.selector != 0x0028u;
         if (failed) {
             STD_FPRINTF(STD_STDERR,
                 "T261 fault=%u/%u result=%u mask=%x code=%04x tr=%04x\n",
                 (unsigned)profile, (unsigned)test_case, (unsigned)result.reason,
                 (unsigned)diagnostic.first_fault.exception_mask,
-                diagnostic.first_fault.exception_code, fixture.cpu->data.tr.selector);
+                diagnostic.first_fault.exception_code, cpu.data.tr.selector);
         }
     }
     core_machine_destroy(fixture.machine);

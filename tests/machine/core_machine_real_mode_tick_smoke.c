@@ -1,6 +1,7 @@
 #include "type.h"
 
 #include "core/machine/machine_interface.h"
+#include "../support/core_machine_cpu_fixture.h"
 
 static C_INT core_machine_real_mode_tick_case(
     const C_CHAR *name,
@@ -22,9 +23,8 @@ static C_INT core_machine_real_mode_tick_case(
     C_INT failed = 0;
 
     failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK;
-    failed |= core_machine_memory_register_mapping(
-        core_machine_configuration_memory_borrow(machine), 0xfffffff0u,
-        0x000ffff0u, 16u) != TYPE_STATUS_OK;
+    failed |= test_core_machine_fixture_register_reset_mapping(machine,
+        0xfffffff0u, 0x000ffff0u, 16u) != TYPE_STATUS_OK;
     failed |= core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK;
     failed |= core_machine_reset(machine) != TYPE_STATUS_OK;
     failed |= core_machine_memory_write(machine, 0xfffffff0u, program,

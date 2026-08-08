@@ -3,6 +3,7 @@
 #include "core/machine/cpu.h"
 #include "core/machine/cpu_instructions.h"
 #include "core/machine/machine_interface.h"
+#include "../support/core_machine_cpu_fixture.h"
 
 #define TEST_GDT_POINTER 0x0100u
 #define TEST_GDT_ADDRESS 0x0300u
@@ -21,25 +22,14 @@
 
 typedef struct paging_machine {
     core_machine *machine;
-    t_cpu *cpu;
-    core_machine_cpu_execution_context *execution;
 } paging_machine;
 
 static C_VOID paging_reset(C_VOID *opaque)
 {
     paging_machine *state = (paging_machine *)opaque;
 
-    if (state == STD_NULL || state->cpu == STD_NULL ||
-        state->execution == STD_NULL) return;
-    (C_VOID)core_machine_cpu_execution_load_segment(state->execution,
-        &state->cpu->data.cs, 0u);
-    (C_VOID)core_machine_cpu_execution_load_segment(state->execution,
-        &state->cpu->data.ds, 0u);
-    (C_VOID)core_machine_cpu_execution_load_segment(state->execution,
-        &state->cpu->data.es, 0u);
-    (C_VOID)core_machine_cpu_execution_load_segment(state->execution,
-        &state->cpu->data.ss, 0u);
-    state->cpu->data.eip = 0u;
+    if (state != STD_NULL) (C_VOID)test_core_machine_fixture_reset_real_mode(
+        state->machine);
 }
 
 static const core_machine_execution_provider paging_provider = {
@@ -60,10 +50,7 @@ static C_INT paging_prepare(paging_machine *state,
     if (state == STD_NULL) return 0;
     STD_MEMSET(state, 0, sizeof(*state));
     if (core_machine_create(&config, &state->machine) != TYPE_STATUS_OK) return 0;
-    state->cpu = core_machine_configuration_cpu_borrow(state->machine);
-    state->execution = core_machine_configuration_cpu_execution_borrow(state->machine);
-    if (state->cpu == STD_NULL || state->execution == STD_NULL ||
-        core_machine_bind_execution_provider(state->machine, &paging_provider,
+    if (core_machine_bind_execution_provider(state->machine, &paging_provider,
             state) != TYPE_STATUS_OK ||
         core_machine_freeze_execution_providers(state->machine) != TYPE_STATUS_OK ||
         core_machine_reset(state->machine) != TYPE_STATUS_OK) {
@@ -193,6 +180,7 @@ static C_INT paging_test_valid_path(C_VOID)
     uint32_t pre_cr3 = 0u;
     uint32_t pre_ecx = 0u;
     uint32_t pre_edx = 0u;
+    t_cpu cpu;
     C_INT ran;
     C_INT registers;
     C_INT data_ok;
@@ -207,11 +195,12 @@ static C_INT paging_test_valid_path(C_VOID)
         failed |= !paging_write_bootstrap(state.machine, protected_code,
             sizeof(protected_code));
         ran = paging_run(state.machine, 0, &result, &diagnostic);
-        pre_cr0 = state.cpu->data.cr0;
-        pre_cr2 = state.cpu->data.cr2;
-        pre_cr3 = state.cpu->data.cr3;
-        pre_ecx = state.cpu->data.ecx;
-        pre_edx = state.cpu->data.edx;
+        cpu = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        pre_cr0 = cpu.data.cr0;
+        pre_cr2 = cpu.data.cr2;
+        pre_cr3 = cpu.data.cr3;
+        pre_ecx = cpu.data.ecx;
+        pre_edx = cpu.data.edx;
         registers = !diagnostic.first_fault.valid &&
             pre_cr0 == (VCPU_CR0_PE | VCPU_CR0_PG) && pre_cr2 == 0u &&
             pre_cr3 == TEST_PAGE_DIRECTORY && pre_ecx ==
@@ -230,8 +219,8 @@ static C_INT paging_test_valid_path(C_VOID)
             (pte_stack & (TEST_PAGE_ACCESSED | TEST_PAGE_DIRTY)) ==
                 (TEST_PAGE_ACCESSED | TEST_PAGE_DIRTY);
         reset_ok = core_machine_reset(state.machine) == TYPE_STATUS_OK &&
-            state.cpu->data.cr0 == 0u && state.cpu->data.cr2 == 0u &&
-            state.cpu->data.cr3 == 0u;
+            ((cpu = test_core_machine_fixture_capture_cpu_after_run(state.machine)),
+            cpu.data.cr0 == 0u && cpu.data.cr2 == 0u && cpu.data.cr3 == 0u);
         failed |= !ran || !registers || !data_ok || !entries_read ||
             !entries_ok || !reset_ok;
         if (failed) {
@@ -258,6 +247,7 @@ static C_INT paging_test_fault(uint32_t code_entry, uint32_t data_entry,
     paging_machine state;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
+    t_cpu cpu;
     C_INT failed = !paging_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
 
     if (!failed) {
@@ -266,9 +256,10 @@ static C_INT paging_test_fault(uint32_t code_entry, uint32_t data_entry,
         failed |= !paging_write_bootstrap(state.machine, protected_code,
             protected_code_size);
         failed |= !paging_run(state.machine, 1, &result, &diagnostic);
+        cpu = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !paging_expect_fault(&diagnostic, VCPUINS_EXCEPT_PF,
             expected_code, expected_point);
-        failed |= state.cpu->data.cr2 != expected_cr2 ||
+        failed |= cpu.data.cr2 != expected_cr2 ||
             diagnostic.first_fault.cr2 != expected_cr2;
         if (failed) {
             STD_FPRINTF(STD_STDERR,
@@ -277,7 +268,7 @@ static C_INT paging_test_fault(uint32_t code_entry, uint32_t data_entry,
                 diagnostic.first_fault.exception_mask,
                 diagnostic.first_fault.exception_code,
                 diagnostic.first_fault.point.cs,
-                diagnostic.first_fault.point.linear_pc, state.cpu->data.cr2,
+                diagnostic.first_fault.point.linear_pc, cpu.data.cr2,
                 expected_point, expected_cr2);
         }
     }
