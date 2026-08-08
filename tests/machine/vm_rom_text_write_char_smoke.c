@@ -24,6 +24,9 @@ static C_INT vm_rom_text_write_fixture(C_CHAR path[MAX_PATH])
         0xa3u, 0x00u, 0x05u,                    /* store AX from AH=08h */
         0xb4u, 0x05u, 0xb7u, 0x00u, 0xcdu, 0x10u,
         0xa0u, 0x62u, 0x04u, 0xa2u, 0x02u, 0x05u,
+        0xb4u, 0x06u, 0xb0u, 0x00u, 0xb7u, 0x2du,
+        0xb5u, 0x01u, 0xb1u, 0x03u, 0xb6u, 0x01u,
+        0xb2u, 0x03u, 0xcdu, 0x10u,
         0xf4u, 0xebu, 0xfeu
     };
     STD_FILE *file;
@@ -83,9 +86,9 @@ C_INT main(C_VOID)
             core_machine_capture_display_snapshot(session->core_machine,
                 &snapshot) != TYPE_STATUS_OK) continue;
         if (snapshot.kind == CORE_MACHINE_DISPLAY_KIND_TEXT &&
-            snapshot.characters[82u] == 'X' && snapshot.characters[83u] == 'X' &&
+            snapshot.characters[82u] == 'X' && snapshot.characters[83u] == 0u &&
             snapshot.characters[84u] == 'X' && snapshot.attributes[82u] == 0x1eu &&
-            snapshot.attributes[83u] == 0x1eu && snapshot.attributes[84u] == 0x1eu &&
+            snapshot.attributes[83u] == 0x2du && snapshot.attributes[84u] == 0x1eu &&
             snapshot.cursor_x == 2u && snapshot.cursor_y == 1u) {
             passed = 1;
             break;

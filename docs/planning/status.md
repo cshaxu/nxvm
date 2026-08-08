@@ -4,13 +4,16 @@
 
 **Idle.**
 
-M5 T287 S20 reproduced FDISK Options `4` through the retained external corpus.
-The selected menu clears while FDISK accepts the digit and then polls
-`INT 16h AH=11h` for the required Enter confirmation; no subsequent video,
-storage, or fault condition occurred. Enter reaches the normal `Display
-Partition Information` copied-frame checkpoint. S20 therefore adds the
-parameterized option-4/Enter checkpoint but changes no product behavior,
-artifact, hardware contract, or Windows support claim.
+M5 T287 S20 reproduced FDISK Options `4` through the retained external corpus,
+but its transient-frame assertion was incomplete. S21 traced the subsequent
+`INT 10h AH=06h, AL=00h` request for only row 24 and proved that the ROM cleared
+the full 80x25 text page instead of the requested inclusive window. The bounded
+repair implements valid text-mode `AL=00h` windows with the requested blank
+attribute, retains the legacy nonzero-AL behavior, and leaves scrolling
+deferred. The owner-built ROM fixture proves a one-cell clear preserves adjacent
+text; external FDISK Options `2`, `3`, and `4` now retain their post-Enter
+copied frames. No guest media, host shortcut, second video owner, or Windows
+support claim enters the repository.
 
 M5 T287 S19 reproduced the external `A:\FDISK` blank display through the real
 FDC, ATA PIO, ROM, keyboard, and copied-presentation paths. The program had
@@ -67,7 +70,7 @@ coupling the controller regression to external bootable-media state.
 - **T287 artifact identity:** `current-gcc` and
   `verify-current-artifact-target` select `vm-0-5-0287`. Artifact
   `nxvm_0_5_0287.exe` SHA-256:
-  `6D24D1785B7125005969E55F990A23185D56C46FF5BBDF489467974489C26259`.
+  `F4A6953F5DB47E4A22964411A57D52B6C5664F4FEDAD528D18FB49FD63572B0D`.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
@@ -88,7 +91,7 @@ coupling the controller regression to external bootable-media state.
 | T284 | Froze the first Windows-facing display admission contract for EGA mode 10h and added expected-failing core/VM corpus without changing runtime behavior. |
 | T285 | Implemented bounded EGA mode 10h direct, turned the T284 core/VM corpus into normal success coverage, and emitted the 0.5.0285 developer artifact. |
 | T286 | Fixed the corpus-proven ATA device-control `nIEN` IRQ14 visibility gap through core-owned controller state, with core, VM-port, and guest fixture success evidence; no DMA, timing, or command expansion. |
-| T287 | Fixed bounded ROM CHS device/head, AH=08h caller-pointer, and FDISK text-service defects; external DOS registers C: and presents FDISK through the copied frame, while the Standard-mode checkpoint remains a research result, not a Windows support claim. |
+| T287 | Fixed bounded ROM CHS device/head, AH=08h caller-pointer, FDISK text-service, and text-window-clear defects; external DOS registers C: and presents stable FDISK copied frames, while the Standard-mode checkpoint remains a research result, not a Windows support claim. |
 
 Detailed contracts, commands, artifact provenance, and prior closures are in
 [M5 History](../history/m5.md) and Git history. The [M5 convergence queue]
