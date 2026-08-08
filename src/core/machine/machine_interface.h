@@ -101,6 +101,29 @@ typedef struct core_machine_display_config {
     core_machine_display_provider_slot *provider;
 } core_machine_display_config;
 
+#define CORE_MACHINE_RTC_DEFAULT_COUNT 6u
+
+typedef struct core_machine_rtc_default_byte {
+    uint8_t index;
+    uint8_t value;
+} core_machine_rtc_default_byte;
+
+typedef struct core_machine_rtc_cmos_config {
+    uint16_t index_port;
+    uint16_t data_port;
+    uint8_t irq;
+    uint8_t nmi_mask_bit;
+    uint32_t ticks_per_second;
+    core_machine_rtc_default_byte defaults[CORE_MACHINE_RTC_DEFAULT_COUNT];
+    STD_SIZE_T default_count;
+} core_machine_rtc_cmos_config;
+
+/* The current DMA consumer is embedded core FDC storage; composition receives
+ * only the resulting frozen request binding, never DMA controller storage. */
+typedef struct core_machine_dma_wiring {
+    uint8_t fdc_channel;
+} core_machine_dma_wiring;
+
 typedef enum core_machine_stop_reason {
     CORE_MACHINE_STOP_NONE = 0,
     CORE_MACHINE_STOP_BUDGET,
@@ -190,6 +213,11 @@ type_status core_machine_capture_display_snapshot(const core_machine *machine,
 
 type_status core_machine_configure_display(core_machine *machine,
     const core_machine_display_config *config);
+type_status core_machine_configure_dma(core_machine *machine,
+    const core_machine_dma_wiring *wiring,
+    core_machine_dma_request_binding *out_fdc_request);
+type_status core_machine_configure_rtc_cmos(core_machine *machine,
+    const core_machine_rtc_cmos_config *config);
 
 type_status core_machine_report_fault(
     core_machine *machine,

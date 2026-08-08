@@ -2,13 +2,13 @@
 
 ## Current Work
 
-**M5 T296 S2 active - core-owned VADP/display-port configuration authority.**
+**M5 T296 S3 active - core-owned DMA and RTC/CMOS/NMI authority.**
 
 S1 is committed as `56433a9` and remains recorded in [the T296 migration
-matrix](../architecture/core-machine-shared-device-migration.md). S2 alone
-moves the display declaration authority into `core_machine`; the task remains
-active for coordinator review. Do not admit S3 (DMA/RTC/CMOS/NMI), S4
-(FDC/HDC), or T297 and later work.
+matrix](../architecture/core-machine-shared-device-migration.md). S2 is
+committed as `e84199e`; S3 alone moves DMA and RTC/CMOS/NMI authority into
+`core_machine`. The task remains active for coordinator review. Do not admit
+S4 (FDC/HDC) or T297 and later work.
 
 ### Task Packet
 
@@ -17,65 +17,65 @@ active for coordinator review. Do not admit S3 (DMA/RTC/CMOS/NMI), S4
   VM composition/profile may submit only frozen typed topology, configuration,
   and provider/media policy; it must not borrow or bind controller, PIC, or
   port storage.
-- **S2 objective and completion condition:** VM composition submits one typed,
-  exact VADP display declaration while `INITIALIZED`: neutral text timing, EGA
-  sequencer/controller configuration, declared VADP port groups, and a typed
-  display-provider slot. `core_machine_configure_display` validates and copies
-  the declaration, configures core-owned VADP/RAM state, freezes the provider,
-  and rejects subsequent submission. Core retains the existing VADP/port
-  create, reset, and finalize order. Completion is the focused owner gate,
-  lifecycle smoke, and full current GCC gate below; this packet stays active
-  pending coordinator review.
+- **S3 objective and completion condition:** VM composition submits frozen
+  typed DMA wiring and RTC/CMOS/NMI declaration while `INITIALIZED`: DMA
+  channel, RTC IRQ/tick rate, CMOS default bytes, CMOS port pair, and NMI
+  index-port wiring. Core validates, copies, and applies those declarations;
+  it owns embedded RTC storage, CMOS port callbacks, DMA binding, reset,
+  advance, and finalization. The existing core scheduler is the sole RTC time
+  path. Completion requires an S3 owner gate, focused lifecycle smoke, and the
+  retained/full GCC gates; this packet stays active pending coordinator review.
 - **Reference baseline:** T295; `vm-0-5-0295`,
   `nxvm_0_5_0295.exe` SHA-256
   `52B291B1E1100D945BD44B7B1F88A622F7B2B7D3468BC78997ED90732BCA179A`.
-- **In scope:** `core_machine` display configuration API and retained
-  VADP/port lifecycle; VM composition's typed profile declaration/provider;
-  an S2 static owner gate and lifecycle smoke. The copied display snapshot
-  boundary is unchanged.
-- **Non-goals:** DMA; RTC/CMOS/NMI; FDC/HDC; scheduler; second machine;
-  storage mirror; host shortcut; media/path policy migration; and any
-  Console/debugger/boot experience change. T297 firmware capability, T298
-  debugger capability, and T299 raw-borrow deletion remain deferred.
+- **In scope:** `core_machine` DMA and RTC/CMOS/NMI typed configuration,
+  embedded RTC storage/port provider, lifecycle and scheduler advance; VM
+  profile declaration; an S3 static owner gate and lifecycle smoke.
+- **Non-goals:** FDC/HDC connection, lifecycle, ports, drive topology, media
+  registry/backing/path policy; scheduler or second machine; storage mirror;
+  host shortcut; and Console/debugger/boot experience change. T297 firmware
+  capability, T298 debugger capability, and T299 raw-borrow deletion remain
+  deferred.
 - **Applicable rules:** `core/machine` owns neutral mutable guest state and
   lifecycle order; VM/profile owns immutable PC/AT topology, defaults, ROM and
   provider/media policy. Core receives no PC/AT/default-profile/ROM-vendor,
   BIOS/DOS, local-path, or product-policy meaning. Preserve the single media
   route and owner-provided read-only test media rule. No source import or
   license/provenance action is involved.
-- **Implementation and call chain:** `vm_session_storage_initialize` binds its
-  typed provider slot, submits immutable profile timing/EGA values and declared
-  VADP port ranges to `core_machine_configure_display`, then creates the
-  retained profile binding. The core entry applies VADP text/EGA state against
-  embedded executor RAM, records the exact topology, and freezes the slot.
-  The existing `core_machine_create`, `core_machine_reset`, and
-  `core_machine_destroy` continue to initialize, reset, and finalize embedded
-  VADP and port storage. The three VADP profile-binding configurators are
-  removed; no VM display source configures VADP, RAM, or port storage directly.
-- **Similar-issue sweep:** The defect class is VM composition directly using
-  profile-binding VADP configurators or display-port installation. Query:
-  `rg -n "core_machine_(profile_binding_configure_|vadp_configure_|install_port_provider)" src/vm --glob '*.[ch]'`.
-  The three display configurator hits in `session.c` are replaced. Remaining
-  RTC and HDC port-install hits are recorded S3/S4 edges in the migration
-  matrix and are excluded from S2; the S2 static gate covers only the two
-  display-composition sources so it cannot mask those deferred owners.
-- **S2 evidence commands and result:**
-  `cmake --build --preset current-gates-gcc --target core-machine-display-authority-smoke verify-core-display-authority`;
-  `build/mingw-gcc-x64/core-machine-display-authority-smoke.exe` (marker
-  `M5:T296:S2:DISPLAY-AUTHORITY:OK`);
-  `cmake --build --preset current-gates-gcc` (46/46 static/build gates and
-  123/123 CTest current-gate tests passed, including VADP text/status,
-  CGA/EGA, ROM-video, Console, and two-session isolation). The GCC CMake cache
-  used existing owner-provided FDD/HDD fixtures through untracked FILEPATH
-  overrides only; no fixture was copied, changed, or tracked.
+- **Implementation and call chain:** `vm_session_storage_initialize` submits
+  profile-derived DMA wiring and a neutral RTC/CMOS declaration (port pair,
+  IRQ/ticks, NMI bit, and six default register bytes) to
+  `core_machine_configure_dma` and `core_machine_configure_rtc_cmos` before
+  profile binding. Core copies the declarations, owns embedded RTC state and
+  the CMOS port callbacks, binds the embedded FDC DMA endpoint, and returns
+  only the frozen `core_machine_dma_request_binding` needed by the still-S4
+  FDC connect. `core_machine_cold_reset` resets embedded DMA/RTC; its existing
+  scheduler advances RTC from the existing provider clock tick before PIC
+  refresh. VM's execution provider no longer advances guest time.
+- **Similar-issue sweep:** The defect class is VM composition directly
+  borrowing/binding DMA or directly initializing, resetting, advancing,
+  finalizing, or installing the RTC/CMOS/NMI path. Query:
+  `rg -n "core_machine_(configuration_shared_dma_|dma_bind_channel|rtc_initialize|rtc_reset|rtc_advance|rtc_finalize|rtc_select_register|rtc_read_selected|rtc_write_selected|rtc_write_nvram|set_nmi_mask)" src/vm --glob '*.[ch]'`.
+  It has no production hits after S3. The remaining HDC port installation and
+  FDC/PIC/port connection calls are explicit S4 edges; the S3 gate scans the
+  DMA/RTC section separately so they are neither changed nor hidden.
+- **S3 evidence commands and result:**
+  `cmake --build --preset current-gates-gcc --target core-machine-dma-rtc-authority-smoke verify-core-dma-rtc-authority verify-cmos-rtc-boundary`;
+  `build/mingw-gcc-x64/core-machine-dma-rtc-authority-smoke.exe` (marker
+  `M5:T296:S3:DMA-RTC-AUTHORITY:OK`);
+  `cmake --build --preset current-gates-gcc` (47/47 static/build gates and
+  124/124 CTest current-gate tests passed, including retained DMA,
+  RTC/CMOS/NMI, timer/IRQ, boot, Console/debugger, and two-session isolation).
+  Existing owner-provided FDD/HDD fixtures were selected by untracked cache
+  settings only; no fixture was copied, changed, or tracked.
   `powershell -NoProfile -ExecutionPolicy Bypass -File tools/Verify-DocumentationGovernance.ps1 -RepositoryRoot .`;
   `git diff --check`.
-- **Deferred edge and risk:** The S2 LLVM syntax check exposes a pre-existing
-  VADP EGA CRTC index-`13h` storage-bound warning. It is deferred as
-  `TODO(High)` with its required focused admission gate; this authority-only
-  subtask does not alter it. RTC and HDC direct port installation likewise
-  remain untouched for S3/S4. Do not close this packet, build T296's final
-  artifact, or advance beyond S2 without coordinator review.
+- **Deferred edge and risk:** S4 alone may migrate FDC/HDC connection,
+  controller/port lifecycle, drive topology, and media policy; S3 preserves
+  the single media route and leaves those VM calls intact. T297--T299 remain
+  deferred. The S2 VADP EGA CRTC index-`13h` storage-bound warning remains
+  `TODO(High)`. Do not close this packet, build T296's final `0296` artifact,
+  or advance beyond S3 without coordinator review.
 
 ## Current Technical Baseline
 

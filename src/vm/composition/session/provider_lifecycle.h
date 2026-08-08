@@ -9,8 +9,6 @@ typedef struct vm_session vm_session;
 
 C_VOID vm_session_provider_lifecycle_initialize(vm_session *session);
 C_VOID vm_session_provider_lifecycle_refresh(vm_session *session);
-C_VOID vm_session_provider_lifecycle_advance(vm_session *session,
-    uint64_t elapsed_ticks);
 C_VOID vm_session_provider_lifecycle_reset(vm_session *session);
 C_VOID vm_session_provider_lifecycle_finalize(vm_session *session);
 

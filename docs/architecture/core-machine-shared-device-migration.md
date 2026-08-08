@@ -74,6 +74,36 @@ warning about the pre-existing VADP EGA CRTC index-`13h` storage bound is
 tracked as `TODO(High)` for a future focused VADP admission; it is not changed
 by S2.
 
+## S3 / B Implementation Evidence (Pending Coordinator Review)
+
+`core_machine_dma_wiring` and `core_machine_rtc_cmos_config` are the S3 typed
+submissions. The latter contains only a port pair, IRQ/tick values, NMI index
+bit, and indexed default bytes; it carries no PC/AT, firmware, host-time, or
+path meaning. `core_machine_configure_dma` binds the embedded FDC endpoint and
+returns the existing opaque DMA request handle. `core_machine_configure_rtc_cmos`
+initializes embedded RTC state, applies default bytes, and installs core-owned
+CMOS callbacks. The callbacks alone select/read/write RTC registers and route
+the NMI mask through core state. A second submission is rejected.
+
+VM storage composition now only converts immutable profile values into those
+typed submissions. `vm_session` no longer owns RTC storage, and VM lifecycle
+no longer initializes, resets, advances, or finalizes RTC. The core scheduler
+advances configured RTC state using its retained provider-clock ticks before
+PIC refresh; the VM execution provider has no `advance_time` callback. FDC
+still receives the frozen request binding but retains all of its S4 connection,
+port/PIC, drive, registry, and media-policy work. HDC remains unchanged.
+
+Evidence: `core-machine-dma-rtc-authority-smoke` proves validation/freeze,
+DMA channel binding, CMOS defaults across reset, port-70h NMI routing, and
+RTC clock/IRQ delivery from the core scheduler
+(`M5:T296:S3:DMA-RTC-AUTHORITY:OK`). The S3 gate rejects VM DMA controller
+borrows/binds and direct RTC/CMOS/NMI lifecycle or port installation, while
+deliberately isolating deferred S4 HDC source. The managed GCC run passed 47
+static/build gates and all 124 current-gate tests, including timer/IRQ, boot,
+Console/debugger, DOS, and two-session isolation. It used only existing
+owner-provided fixtures selected in the untracked build cache. S4 is the next
+possible stage; no `0296` artifact is produced until all T296 stages complete.
+
 ## Preserved Ordering and Deferred Edges
 
 The current VM sequence is recorded, not yet moved: media objects, profile

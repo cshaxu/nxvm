@@ -806,6 +806,10 @@ add_executable(core-machine-display-authority-smoke
     tests/machine/core_machine_display_authority_smoke.c
 )
 target_link_libraries(core-machine-display-authority-smoke PRIVATE core-machine)
+add_executable(core-machine-dma-rtc-authority-smoke
+    tests/machine/core_machine_dma_rtc_authority_smoke.c
+)
+target_link_libraries(core-machine-dma-rtc-authority-smoke PRIVATE core-machine)
 add_executable(core-machine-cga-graphics-port-smoke
     tests/machine/core_machine_cga_graphics_port_smoke.c
 )
@@ -1081,6 +1085,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-vadp-text-smoke
     core-machine-vadp-text-status-smoke
     core-machine-display-authority-smoke
+    core-machine-dma-rtc-authority-smoke
     core-machine-cga-graphics-port-smoke
     core-machine-cga-640-port-smoke
     core-machine-ega-sequencer-port-smoke
@@ -1595,6 +1600,13 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMENT "Verifying T296 core-owned display and port authority"
         VERBATIM)
     add_dependencies(run-current-smokes verify-core-display-authority)
+
+    add_custom_target(verify-core-dma-rtc-authority
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_core_dma_rtc_authority.cmake"
+        COMMENT "Verifying T296 core-owned DMA and RTC/CMOS/NMI authority"
+        VERBATIM)
+    add_dependencies(run-current-smokes verify-core-dma-rtc-authority)
 endif()
 
 if(PROJECT_ENABLE_BOCHX_RESEARCH)

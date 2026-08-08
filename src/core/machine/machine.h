@@ -28,6 +28,8 @@
 
 #include "core/machine/dma.h"
 
+#include "core/machine/rtc.h"
+
 #include "core/machine/fdc.h"
 
 #include "core/machine/hdc.h"
@@ -84,6 +86,11 @@ struct core_machine {
     uint32_t kbc_command_response_ticks;
     core_machine_display_port_topology display_ports;
     type_bool display_configured;
+    core_machine_dma_wiring dma_wiring;
+    core_machine_dma_request_binding fdc_dma_request;
+    type_bool dma_configured;
+    core_machine_rtc_cmos_config rtc_cmos_config;
+    type_bool rtc_cmos_configured;
     core_machine_port_table port_providers;
     core_machine_trace_state trace;
     core_machine_cpu_diagnostic_state cpu_diagnostic;
@@ -105,6 +112,7 @@ struct core_machine {
     t_latch shared_dma_latch;
     t_dma shared_dma_primary;
     t_dma shared_dma_secondary;
+    core_machine_rtc shared_rtc;
     core_machine_fdc fdc;
     core_machine_hdc hdc;
     t_kbc shared_kbc;
