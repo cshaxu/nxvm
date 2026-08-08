@@ -3,6 +3,7 @@
 #include "core/machine/cpu.h"
 #include "core/machine/cpu_instructions.h"
 #include "core/machine/machine_interface.h"
+#include "../support/core_machine_cpu_fixture.h"
 
 #define ARPL_GDT_POINTER_ADDRESS 0x0100u
 #define ARPL_GDT_ADDRESS 0x0300u
@@ -11,25 +12,14 @@
 
 typedef struct arpl_machine {
     core_machine *machine;
-    t_cpu *cpu;
-    core_machine_cpu_execution_context *execution;
 } arpl_machine;
 
 static C_VOID arpl_reset(C_VOID *opaque)
 {
     arpl_machine *state = (arpl_machine *)opaque;
 
-    if (state == STD_NULL || state->cpu == STD_NULL ||
-        state->execution == STD_NULL) return;
-    (C_VOID)core_machine_cpu_execution_load_segment(state->execution,
-        &state->cpu->data.cs, 0u);
-    (C_VOID)core_machine_cpu_execution_load_segment(state->execution,
-        &state->cpu->data.ds, 0u);
-    (C_VOID)core_machine_cpu_execution_load_segment(state->execution,
-        &state->cpu->data.es, 0u);
-    (C_VOID)core_machine_cpu_execution_load_segment(state->execution,
-        &state->cpu->data.ss, 0u);
-    state->cpu->data.eip = 0u;
+    if (state != STD_NULL) (C_VOID)test_core_machine_fixture_reset_real_mode(
+        state->machine);
 }
 
 static const core_machine_execution_provider arpl_execution_provider = {
@@ -50,11 +40,7 @@ static C_INT arpl_prepare(arpl_machine *state,
     if (state == STD_NULL) return 0;
     STD_MEMSET(state, 0, sizeof(*state));
     if (core_machine_create(&config, &state->machine) != TYPE_STATUS_OK) return 0;
-    state->cpu = core_machine_configuration_cpu_borrow(state->machine);
-    state->execution = core_machine_configuration_cpu_execution_borrow(
-        state->machine);
-    if (state->cpu == STD_NULL || state->execution == STD_NULL ||
-        core_machine_bind_execution_provider(state->machine,
+    if (core_machine_bind_execution_provider(state->machine,
             &arpl_execution_provider, state) != TYPE_STATUS_OK ||
         core_machine_freeze_execution_providers(state->machine) != TYPE_STATUS_OK ||
         core_machine_reset(state->machine) != TYPE_STATUS_OK) {
@@ -84,7 +70,7 @@ static C_INT arpl_install_gdt(core_machine *machine)
 
 static C_INT arpl_run_protected(arpl_machine *state,
     const uint8_t *protected_code, STD_SIZE_T protected_code_size,
-    core_machine_cpu_state *out_cpu)
+    t_cpu *out_cpu)
 {
     static const uint8_t real_code[] = {
         0x0fu, 0x01u, 0x16u, 0x00u, 0x01u,
@@ -116,7 +102,8 @@ static C_INT arpl_run_protected(arpl_machine *state,
             (unsigned long long)result.executed);
         return 0;
     }
-    return core_machine_get_cpu_state(state->machine, out_cpu) == TYPE_STATUS_OK;
+    *out_cpu = test_core_machine_fixture_capture_cpu_after_run(state->machine);
+    return 1;
 }
 
 static C_INT arpl_test_register_forms(C_VOID)
@@ -134,20 +121,19 @@ static C_INT arpl_test_register_forms(C_VOID)
         0xf4u
     };
     arpl_machine state;
-    core_machine_cpu_state cpu;
+    t_cpu cpu;
     C_INT failed = !arpl_prepare(&state, CORE_MACHINE_CPU_PROFILE_80286);
 
     if (!failed) {
         C_INT ran = arpl_run_protected(&state, adjust_code, sizeof(adjust_code),
             &cpu);
         failed |= !ran;
-        failed |= (state.cpu->data.eax & 0xffffu) != 0x0003u ||
-            !TYPE_GET_BIT(cpu.eflags, VCPU_EFLAGS_ZF);
+        failed |= (cpu.data.eax & 0xffffu) != 0x0003u ||
+            !TYPE_GET_BIT(cpu.data.eflags, VCPU_EFLAGS_ZF);
         if (!ran) {
             STD_FPRINTF(STD_STDERR,
                 "M5:T263:S3:ARPL register-adjust stopped ip=%08x ax=%04x flags=%08x\n",
-                state.cpu->data.eip, state.cpu->data.eax & 0xffffu,
-                state.cpu->data.eflags);
+                cpu.data.eip, cpu.data.eax & 0xffffu, cpu.data.eflags);
         }
     }
     core_machine_destroy(state.machine);
@@ -157,13 +143,12 @@ static C_INT arpl_test_register_forms(C_VOID)
         C_INT ran = arpl_run_protected(&state, retain_code, sizeof(retain_code),
             &cpu);
         failed |= !ran;
-        failed |= (state.cpu->data.eax & 0xffffu) != 0x0003u ||
-            TYPE_GET_BIT(cpu.eflags, VCPU_EFLAGS_ZF);
+        failed |= (cpu.data.eax & 0xffffu) != 0x0003u ||
+            TYPE_GET_BIT(cpu.data.eflags, VCPU_EFLAGS_ZF);
         if (!ran) {
             STD_FPRINTF(STD_STDERR,
                 "M5:T263:S3:ARPL register-retain stopped ip=%08x ax=%04x flags=%08x\n",
-                state.cpu->data.eip, state.cpu->data.eax & 0xffffu,
-                state.cpu->data.eflags);
+                cpu.data.eip, cpu.data.eax & 0xffffu, cpu.data.eflags);
         }
     }
     core_machine_destroy(state.machine);
@@ -178,7 +163,7 @@ static C_INT arpl_test_memory_prefix_form(C_VOID)
         0xf4u
     };
     uint16_t selector = 0x0001u;
-    core_machine_cpu_state cpu;
+    t_cpu cpu;
     arpl_machine state;
     C_INT failed = !arpl_prepare(&state, CORE_MACHINE_CPU_PROFILE_80286);
 
@@ -193,11 +178,11 @@ static C_INT arpl_test_memory_prefix_form(C_VOID)
             ARPL_DATA_ADDRESS + 0x0400u, &selector, sizeof(selector)) !=
             TYPE_STATUS_OK;
         failed |= selector != 0x0003u ||
-            !TYPE_GET_BIT(cpu.eflags, VCPU_EFLAGS_ZF);
+            !TYPE_GET_BIT(cpu.data.eflags, VCPU_EFLAGS_ZF);
         if (!ran) {
             STD_FPRINTF(STD_STDERR,
                 "M5:T263:S3:ARPL memory-prefix stopped ip=%08x value=%04x flags=%08x\n",
-                state.cpu->data.eip, selector, state.cpu->data.eflags);
+                cpu.data.eip, selector, cpu.data.eflags);
         }
     }
     core_machine_destroy(state.machine);
@@ -223,7 +208,7 @@ static C_INT arpl_test_rejected_forms(C_VOID)
     for (index = 0u; index < sizeof(profiles) / sizeof(profiles[0]); ++index) {
         core_machine_run_result result;
         core_machine_cpu_diagnostic diagnostic;
-        core_machine_cpu_state cpu;
+        t_cpu cpu;
         arpl_machine state;
 
         if (!arpl_prepare(&state, profiles[index])) {
@@ -239,8 +224,8 @@ static C_INT arpl_test_rejected_forms(C_VOID)
             !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
                 VCPUINS_EXCEPT_UD) || diagnostic.first_fault.point.bytes[0] !=
             0x63u;
-        failed |= core_machine_get_cpu_state(state.machine, &cpu) !=
-            TYPE_STATUS_OK || (state.cpu->data.eax & 0xffffu) != 0x0001u;
+        cpu = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        failed |= (cpu.data.eax & 0xffffu) != 0x0001u;
         core_machine_destroy(state.machine);
     }
     return failed;

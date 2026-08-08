@@ -2,7 +2,8 @@
 
 
 
-#include "core/machine/machine.h"
+#include "core/machine/machine_interface.h"
+#include "../support/core_machine_cpu_fixture.h"
 
 C_INT main(C_VOID)
 {
@@ -17,8 +18,7 @@ C_INT main(C_VOID)
         core_machine_destroy(machine);
         return 1;
     }
-    if (core_machine_memory_register_mapping(
-            core_machine_configuration_memory_borrow(machine), 0xfffffff0u,
+    if (test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
             0x000ffff0u, 16u) != TYPE_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
         core_machine_reset(machine) != TYPE_STATUS_OK) {

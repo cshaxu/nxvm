@@ -1,10 +1,10 @@
 #include "type.h"
 
 #include "core/machine/firmware_interface.h"
-#include "core/machine/machine.h"
 #include "core/machine/machine_interface.h"
 #include "core/machine/rom_mapping_interface.h"
 #include "../support/core_machine_executor_fixture.h"
+#include "../support/core_machine_cpu_fixture.h"
 
 typedef struct firmware_probe {
     core_machine *machine;
@@ -121,23 +121,20 @@ C_INT main(C_VOID)
     C_INT failed = 0;
     type_status run_status;
     core_machine_lifecycle lifecycle = CORE_MACHINE_INITIALIZED;
-    STD_SIZE_T prior_mapping_count;
 
     failed |= test_core_machine_create_executor(
         CORE_MACHINE_MINIMUM_MEMORY_BYTES, &machine) != TYPE_STATUS_OK;
     failed |= core_machine_register_immutable_rom_mapping(machine, 0xd0000u,
         &prior_rom, sizeof(prior_rom)) != TYPE_STATUS_OK;
-    prior_mapping_count = machine->immutable_rom_mapping_count;
     failed |= core_machine_bind_firmware_provider(machine,
         &firmware_failed_probe_provider, &failed_probe) != TYPE_STATUS_FAULT;
-    failed |= failed_probe.configure_calls != 1 ||
-        machine->immutable_rom_mapping_count != prior_mapping_count;
-    failed |= core_machine_memory_query_physical(
-        core_machine_configuration_memory_borrow(machine), 0xd0000u, sizeof(prior_rom),
+    failed |= failed_probe.configure_calls != 1;
+    failed |= test_core_machine_fixture_query_configuration_memory_route(machine,
+        0xd0000u, sizeof(prior_rom),
         CORE_MACHINE_MEMORY_ACCESS_READ, &route) != TYPE_STATUS_OK ||
         route != CORE_MACHINE_MEMORY_ROUTE_PROVIDER;
-    failed |= core_machine_memory_query_physical(
-        core_machine_configuration_memory_borrow(machine), 0xe0000u, sizeof(prior_rom),
+    failed |= test_core_machine_fixture_query_configuration_memory_route(machine,
+        0xe0000u, sizeof(prior_rom),
         CORE_MACHINE_MEMORY_ACCESS_READ, &route) != TYPE_STATUS_OK ||
         route != CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM;
     failed |= core_machine_firmware_memory_read(failed_probe.expired, 0xe0000u,

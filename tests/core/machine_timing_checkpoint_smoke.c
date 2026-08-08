@@ -1,8 +1,7 @@
 #include "type.h"
 
-#include "core/machine/debug_interface.h"
 #include "core/machine/machine_interface.h"
-#include "core/machine/port.h"
+#include "../support/core_machine_cpu_fixture.h"
 
 #define CHECKPOINTS 64u
 
@@ -11,7 +10,6 @@ static C_INT timing_checkpoint_run(core_machine *machine,
 {
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
-    t_port *port;
     uint32_t index;
 
     if (core_machine_reset(machine) != TYPE_STATUS_OK ||
@@ -31,12 +29,7 @@ static C_INT timing_checkpoint_run(core_machine *machine,
                 (unsigned long long)result.elapsed_ticks);
             return 1;
         }
-        port = core_machine_debug_port_borrow(machine);
-        if (port == STD_NULL) {
-            STD_FPRINTF(STD_STDERR, "T221 port failed index=%u\n", index);
-            return 1;
-        }
-        statuses[index] = core_machine_port_read(port, 0x03dau);
+        statuses[index] = test_core_machine_fixture_read_port(machine, 0x03dau);
     }
     return 0;
 }
@@ -52,8 +45,7 @@ C_INT main(C_VOID)
 
     STD_MEMSET(program, 0x90, sizeof(program));
     failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK;
-    failed |= core_machine_memory_register_mapping(
-        core_machine_configuration_memory_borrow(machine), 0xfffffff0u,
+    failed |= test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
         0x000ffff0u, CHECKPOINTS) != TYPE_STATUS_OK;
     failed |= core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK;
     failed |= timing_checkpoint_run(machine, program, first);

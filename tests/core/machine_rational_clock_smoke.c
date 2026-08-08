@@ -2,6 +2,7 @@
 
 #include "core/machine/clock.h"
 #include "core/machine/machine_interface.h"
+#include "../support/core_machine_cpu_fixture.h"
 
 #define RATIONAL_CLOCK_STEPS 4u
 
@@ -46,8 +47,7 @@ static C_INT rational_clock_prepare(core_machine **out_machine,
     config.clock_plan.provider.denominator = 2u;
     config.clock_plan.provider.reset_phase = 1u;
     if (core_machine_create(&config, out_machine) != TYPE_STATUS_OK ||
-        core_machine_memory_register_mapping(
-            core_machine_configuration_memory_borrow(*out_machine), 0xfffffff0u,
+        test_core_machine_fixture_register_reset_mapping(*out_machine, 0xfffffff0u,
             0x000ffff0u, sizeof(program)) != TYPE_STATUS_OK ||
         core_machine_bind_execution_provider(*out_machine, &rational_clock_provider,
             probe) != TYPE_STATUS_OK ||

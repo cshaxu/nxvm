@@ -1,6 +1,7 @@
 #include "type.h"
 
 #include "adapters/support/vm_cpu_probe.h"
+#include "../../support/core_machine_cpu_fixture.h"
 
 
 
@@ -32,40 +33,27 @@ struct test_vm_cpu_probe {
 static C_INT vm_session_cpu_probe_capture_state(const test_vm_cpu_probe *probe,
     vm_session_cpu_probe_state *state)
 {
-    const t_cpu *cpu = probe == STD_NULL ? STD_NULL :
-        core_machine_configuration_cpu_borrow(probe->machine.core_machine);
+    t_cpu cpu;
 
-    if (cpu == STD_NULL) {
+    if (probe == STD_NULL) {
         return 0;
     }
-    state->cs = cpu->data.cs.selector;
-    state->ip = cpu->data.ip;
-    state->linear_pc = cpu->data.cs.base + cpu->data.eip;
-    state->eax = cpu->data.eax;
-    state->ebx = cpu->data.ebx;
-    state->ecx = cpu->data.ecx;
-    state->edx = cpu->data.edx;
-    state->eflags = cpu->data.eflags;
+    cpu = test_core_machine_fixture_capture_cpu_after_run(probe->machine.core_machine);
+    state->cs = cpu.data.cs.selector;
+    state->ip = cpu.data.ip;
+    state->linear_pc = cpu.data.cs.base + cpu.data.eip;
+    state->eax = cpu.data.eax;
+    state->ebx = cpu.data.ebx;
+    state->ecx = cpu.data.ecx;
+    state->edx = cpu.data.edx;
+    state->eflags = cpu.data.eflags;
     return 1;
 }
 
 static C_INT vm_session_cpu_probe_reset(test_vm_cpu_probe *probe)
 {
-    uint32_t eip = 0u;
-
     vm_session_control_reset(probe->machine.control);
-    t_cpu *cpu = core_machine_configuration_cpu_borrow(probe->machine.core_machine);
-    core_machine_cpu_execution_context *execution =
-        core_machine_configuration_cpu_execution_borrow(probe->machine.core_machine);
-
-    if (core_machine_cpu_execution_load_segment(execution, &cpu->data.cs, 0u) ||
-        core_machine_cpu_execution_load_segment(execution, &cpu->data.ds, 0u) ||
-        core_machine_cpu_execution_load_segment(execution, &cpu->data.es, 0u) ||
-        core_machine_cpu_execution_load_segment(execution, &cpu->data.ss, 0u)) {
-        return 0;
-    }
-    STD_MEMCPY(&cpu->data.eip, &eip, sizeof(eip));
-    return 1;
+    return test_core_machine_fixture_reset_real_mode(probe->machine.core_machine);
 }
 
 C_INT vm_session_cpu_probe_create(test_vm_cpu_probe **out_probe)
@@ -104,9 +92,8 @@ C_INT vm_session_cpu_probe_step(
     STD_MEMSET(out_capture, 0, sizeof(*out_capture));
     STD_MEMCPY(out_capture->bytes, bytes, byte_count);
     out_capture->byte_count = byte_count;
-    core_machine_memory_write_real_to(
-        core_machine_configuration_memory_borrow(probe->machine.core_machine), 0u, 0u, bytes,
-        byte_count);
+    if (core_machine_memory_write(probe->machine.core_machine, 0u, bytes,
+            byte_count) != TYPE_STATUS_OK) return 0;
     if (!vm_session_cpu_probe_capture_state(probe, &out_capture->before)) {
         return 0;
     }
@@ -122,11 +109,9 @@ C_INT vm_session_cpu_probe_step(
     if (!vm_session_cpu_probe_capture_state(probe, &out_capture->after)) {
         return 0;
     }
-    out_capture->exception_mask =
-        core_machine_configuration_cpu_instructions_borrow(probe->machine.core_machine)->data.except;
-    out_capture->exception_code =
-        core_machine_configuration_cpu_instructions_borrow(probe->machine.core_machine)->data.excode;
-    return 1;
+    return test_core_machine_fixture_capture_instruction_exception(
+        probe->machine.core_machine, &out_capture->exception_mask,
+        &out_capture->exception_code);
 }
 
 C_VOID vm_session_cpu_probe_destroy(test_vm_cpu_probe *probe)

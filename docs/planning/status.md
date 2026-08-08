@@ -26,7 +26,7 @@
   `src/`; it rejects raw accessor/profile binding exports and any `src` include
   of `tests/support`. Run focused lifecycle/config/provider/capability corpus,
   full current gates, and create `nxvm_0_5_0299.exe` with SHA evidence.
-- **Reference baseline:** T298, `nxvm_0_5_0298.exe`, SHA-256
+- **Reference baseline:** T298 developer artifact, SHA-256
   `6A9AA9D2C3691F780426C6A78C2AE1C149BB9CC2A84AE835A9AEC10B5313254B`.
 - **Non-goals:** Console/debugger/start/boot/DOS behavior, ROM/profile/media,
   VM outer loop, a new core capability, a second machine/executor/state
@@ -47,10 +47,13 @@
 
 ## Current Technical Baseline
 
-- **T298 active artifact identity:** `current-gcc` and
-  `verify-current-artifact-target` select `vm-0-5-0298` / `nxvm_0_5_0298.exe`.
-  Its local developer artifact awaits the active task's focused and full-gate
-  evidence.
+- **T299 active artifact identity:** `current-gcc` and
+  `verify-current-artifact-target` select `vm-0-5-0299` / `nxvm_0_5_0299.exe`.
+  Active evidence: the focused raw-borrow corpus passed 27/27; the S3 static
+  gate emitted `M5:T299:S3:PUBLIC-RAW-BORROW-CLOSURE:OK`; and the owner-provided
+  cache-media `current-gates-gcc` run passed all 51 static/governance targets
+  and 126/126 CTests. The local developer artifact is 2,696,377 bytes with
+  SHA-256 `4736BA1A74F9C1C3268BC7D13D9F5D53FF823718F4F1EC3975766188DAA76438`.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.

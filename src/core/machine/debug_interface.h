@@ -100,15 +100,6 @@ type_status core_machine_debug_print_control_registers(core_machine *machine);
 type_status core_machine_debug_print_memory_accesses(core_machine *machine);
 type_status core_machine_debug_print_watchpoints(core_machine *machine);
 
-/* Transitional composition-debug adapter access. These borrows are valid
- * only after the execution thread has returned a paused boundary. */
-t_cpu *core_machine_debug_cpu_borrow(core_machine *machine);
-t_cpuins *core_machine_debug_cpu_instructions_borrow(core_machine *machine);
-core_machine_cpu_execution_context *core_machine_debug_cpu_execution_borrow(
-    core_machine *machine);
-t_ram *core_machine_debug_memory_borrow(core_machine *machine);
-t_port *core_machine_debug_port_borrow(core_machine *machine);
-
 #ifdef __cplusplus
 }
 #endif

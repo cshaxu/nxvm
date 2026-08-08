@@ -4,6 +4,7 @@
 #include "core/machine/debug_interface.h"
 #include "core/machine/machine_interface.h"
 #include "core/machine/memory_interface.h"
+#include "../support/core_machine_cpu_fixture.h"
 
 #define TEST_RESET_LINEAR 0xfffffff0u
 #define TEST_RESET_PHYSICAL 0x000ffff0u
@@ -23,8 +24,8 @@ static C_INT real_mode_386_prepare(core_machine **out_machine)
     core_machine *machine = STD_NULL;
 
     if (out_machine == STD_NULL || core_machine_create(&config, &machine) !=
-            TYPE_STATUS_OK || core_machine_memory_register_mapping(
-            core_machine_configuration_memory_borrow(machine), TEST_RESET_LINEAR,
+            TYPE_STATUS_OK || test_core_machine_fixture_register_reset_mapping(
+            machine, TEST_RESET_LINEAR,
             TEST_RESET_PHYSICAL, TEST_RESET_WINDOW) != TYPE_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
         core_machine_reset(machine) != TYPE_STATUS_OK ||

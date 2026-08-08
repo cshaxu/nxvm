@@ -3,27 +3,18 @@
 #include "core/machine/cpu.h"
 #include "core/machine/machine_interface.h"
 #include "core/machine/memory.h"
+#include "../support/core_machine_cpu_fixture.h"
 
 typedef struct fpu_escape_machine {
     core_machine *machine;
-    t_cpu *cpu;
-    core_machine_cpu_execution_context *execution;
 } fpu_escape_machine;
 
 static C_VOID fpu_escape_reset(C_VOID *opaque)
 {
     fpu_escape_machine *state = (fpu_escape_machine *)opaque;
 
-    if (state == STD_NULL || state->execution == STD_NULL || state->cpu == STD_NULL) return;
-    (C_VOID)core_machine_cpu_execution_load_segment(state->execution,
-        &state->cpu->data.cs, 0u);
-    (C_VOID)core_machine_cpu_execution_load_segment(state->execution,
-        &state->cpu->data.ds, 0u);
-    (C_VOID)core_machine_cpu_execution_load_segment(state->execution,
-        &state->cpu->data.es, 0u);
-    (C_VOID)core_machine_cpu_execution_load_segment(state->execution,
-        &state->cpu->data.ss, 0u);
-    state->cpu->data.eip = 0u;
+    if (state != STD_NULL) (C_VOID)test_core_machine_fixture_reset_real_mode(
+        state->machine);
 }
 
 static const core_machine_execution_provider fpu_escape_provider = {
@@ -41,10 +32,7 @@ static C_INT prepare_machine(core_machine_fpu_profile fpu_profile,
     if (state == STD_NULL) return 1;
     STD_MEMSET(state, 0, sizeof(*state));
     if (core_machine_create(&config, &state->machine) != TYPE_STATUS_OK) return 1;
-    state->execution = core_machine_configuration_cpu_execution_borrow(state->machine);
-    state->cpu = core_machine_configuration_cpu_borrow(state->machine);
-    if (state->execution == STD_NULL || state->cpu == STD_NULL ||
-        core_machine_bind_execution_provider(state->machine, &fpu_escape_provider,
+    if (core_machine_bind_execution_provider(state->machine, &fpu_escape_provider,
             state) != TYPE_STATUS_OK ||
         core_machine_freeze_execution_providers(state->machine) != TYPE_STATUS_OK ||
         core_machine_reset(state->machine) != TYPE_STATUS_OK) {
@@ -52,7 +40,7 @@ static C_INT prepare_machine(core_machine_fpu_profile fpu_profile,
         state->machine = STD_NULL;
         return 1;
     }
-    state->cpu->data.cr0 = cr0;
+    (C_VOID)test_core_machine_fixture_set_control_zero(state->machine, cr0);
     return 0;
 }
 
@@ -64,6 +52,7 @@ static C_INT run_case(const C_UCHAR *program, STD_SIZE_T program_size,
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
+    core_machine_cpu_state cpu;
     C_INT failed = prepare_machine(fpu_profile, cr0, &state);
 
     if (!failed) {
@@ -76,6 +65,7 @@ static C_INT run_case(const C_UCHAR *program, STD_SIZE_T program_size,
         }
         failed |= core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
             TYPE_STATUS_OK;
+        failed |= core_machine_get_cpu_state(state.machine, &cpu) != TYPE_STATUS_OK;
         if (expected_exception != 0u) {
             failed |= !diagnostic.first_fault.valid ||
                 !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
@@ -83,7 +73,7 @@ static C_INT run_case(const C_UCHAR *program, STD_SIZE_T program_size,
                 TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
                     VCPUINS_EXCEPT_UD);
         } else {
-            failed |= diagnostic.first_fault.valid || state.cpu->data.eip != expected_eip;
+            failed |= diagnostic.first_fault.valid || cpu.eip != expected_eip;
         }
     }
     core_machine_destroy(state.machine);

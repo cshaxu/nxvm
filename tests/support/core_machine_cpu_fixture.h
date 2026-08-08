@@ -4,7 +4,7 @@
 /* Private prepared-state operations for CPU execution corpus fixtures. */
 #include "core/machine/machine.h"
 
-static C_INT test_core_machine_fixture_reset_real_mode(core_machine *machine)
+static inline C_INT test_core_machine_fixture_reset_real_mode(core_machine *machine)
 {
     t_cpu *cpu;
     core_machine_cpu_execution_context *execution;
@@ -19,7 +19,7 @@ static C_INT test_core_machine_fixture_reset_real_mode(core_machine *machine)
         ((cpu->data.eip = 0u), 1);
 }
 
-static C_INT test_core_machine_fixture_set_control_zero(
+static inline C_INT test_core_machine_fixture_set_control_zero(
     core_machine *machine, uint32_t value)
 {
     if (machine == STD_NULL) return 0;
@@ -27,7 +27,7 @@ static C_INT test_core_machine_fixture_set_control_zero(
     return 1;
 }
 
-static t_cpu test_core_machine_fixture_capture_cpu_after_run(
+static inline t_cpu test_core_machine_fixture_capture_cpu_after_run(
     core_machine *machine)
 {
     t_cpu observation = {0};
@@ -36,13 +36,135 @@ static t_cpu test_core_machine_fixture_capture_cpu_after_run(
     return observation;
 }
 
-static type_status test_core_machine_fixture_register_reset_mapping(
+static inline type_status test_core_machine_fixture_register_reset_mapping(
     core_machine *machine, uint32_t linear, uint32_t physical,
     STD_SIZE_T bytes)
 {
     return machine == STD_NULL ? TYPE_STATUS_INVALID_ARGUMENT :
         core_machine_memory_register_mapping(&machine->executor_memory, linear,
             physical, bytes);
+}
+
+static inline type_status test_core_machine_fixture_register_memory_device_provider(
+    core_machine *machine, uint32_t physical, STD_SIZE_T bytes,
+    core_machine_memory_device_read read,
+    core_machine_memory_device_write write,
+    core_machine_memory_device_query query, C_VOID *owner)
+{
+    return machine == STD_NULL ? TYPE_STATUS_INVALID_ARGUMENT :
+        core_machine_memory_register_device_provider(&machine->executor_memory,
+            physical, bytes, read, write, query, owner);
+}
+
+static inline C_VOID test_core_machine_fixture_program_pit_divider(
+    core_machine *machine, uint8_t control, uint16_t divisor,
+    core_machine_pit_output_provider output, C_VOID *owner)
+{
+    if (machine == STD_NULL) return;
+    core_machine_pit_set_output(&machine->shared_pit, 0u, output, owner);
+    core_machine_port_write(&machine->executor_port, 0x0043u, control);
+    core_machine_port_write(&machine->executor_port, 0x0040u, divisor & 0xffu);
+    core_machine_port_write(&machine->executor_port, 0x0040u, divisor >> 8u);
+}
+
+static inline uint8_t test_core_machine_fixture_read_port(
+    const core_machine *machine, uint16_t address)
+{
+    return machine == STD_NULL ? 0u : core_machine_port_read(
+        (t_port *)&machine->executor_port, address);
+}
+
+static inline C_INT test_core_machine_fixture_capture_instruction_exception(
+    const core_machine *machine, uint32_t *out_mask, uint32_t *out_code)
+{
+    if (machine == STD_NULL || out_mask == STD_NULL || out_code == STD_NULL) return 0;
+    *out_mask = machine->executor_cpu_instructions.data.except;
+    *out_code = machine->executor_cpu_instructions.data.excode;
+    return 1;
+}
+
+static inline C_INT test_core_machine_fixture_prepare_real_mode_execution(
+    core_machine *machine, uint32_t eip)
+{
+    if (!test_core_machine_fixture_reset_real_mode(machine)) return 0;
+    machine->executor_cpu.data.eip = eip;
+    machine->executor_cpu.data.flagHalt = TYPE_FALSE;
+    return 1;
+}
+
+static inline C_VOID test_core_machine_fixture_resume_after_halt_at(
+    core_machine *machine, uint32_t eip)
+{
+    if (machine == STD_NULL) return;
+    machine->executor_cpu.data.flagHalt = TYPE_FALSE;
+    machine->executor_cpu.data.eip = eip;
+}
+
+static inline C_INT test_core_machine_fixture_read_linear(
+    core_machine *machine, uint32_t address, type_virtual_address destination,
+    STD_SIZE_T bytes)
+{
+    return machine != STD_NULL && core_machine_cpu_execution_read_linear(
+        &machine->executor_cpu_execution, address, destination, bytes) == 0;
+}
+
+static inline type_status test_core_machine_fixture_query_configuration_memory_route(
+    const core_machine *machine, uint32_t physical, STD_SIZE_T bytes,
+    core_machine_memory_access access, core_machine_memory_route *out_route)
+{
+    return machine == STD_NULL ? TYPE_STATUS_INVALID_ARGUMENT :
+        core_machine_memory_query_physical(&machine->executor_memory, physical,
+            bytes, access, out_route);
+}
+
+static inline C_VOID test_core_machine_fixture_initialize_rtc_with_shared_pic(
+    core_machine *machine, core_machine_rtc *rtc,
+    const core_machine_rtc_config *config)
+{
+    if (machine != STD_NULL && rtc != STD_NULL && config != STD_NULL) {
+        core_machine_rtc_initialize(rtc, &machine->shared_pic_master,
+            &machine->shared_pic_slave, config);
+    }
+}
+
+static inline C_INT test_core_machine_fixture_executor_storage_is_coherent(
+    const core_machine *machine)
+{
+    return machine != STD_NULL && machine->executor_cpu_execution.cpu ==
+        &machine->executor_cpu && machine->executor_cpu_execution.instructions ==
+        &machine->executor_cpu_instructions;
+}
+
+static inline C_INT test_core_machine_fixture_sessions_are_isolated(
+    core_machine *first, core_machine *second)
+{
+    uint8_t first_value = 0x11u;
+    uint8_t second_value = 0x22u;
+    uint8_t observed = 0u;
+
+    if (first == STD_NULL || second == STD_NULL || first == second ||
+        &first->executor_cpu == &second->executor_cpu ||
+        &first->executor_memory == &second->executor_memory ||
+        &first->executor_port == &second->executor_port ||
+        &first->shared_rtc == &second->shared_rtc || &first->fdc == &second->fdc ||
+        &first->hdc == &second->hdc ||
+        !test_core_machine_fixture_executor_storage_is_coherent(first) ||
+        !test_core_machine_fixture_executor_storage_is_coherent(second)) return 0;
+    core_machine_memory_write_physical(&first->executor_memory, 0u,
+        (type_virtual_address)&first_value, 1u);
+    core_machine_memory_write_physical(&second->executor_memory, 0u,
+        (type_virtual_address)&second_value, 1u);
+    core_machine_memory_read_physical(&first->executor_memory, 0u,
+        (type_virtual_address)&observed, 1u);
+    if (observed != first_value) return 0;
+    core_machine_memory_read_physical(&second->executor_memory, 0u,
+        (type_virtual_address)&observed, 1u);
+    if (observed != second_value) return 0;
+    first->executor_cpu.data.eax = 0x11111111u;
+    second->executor_cpu.data.eax = 0x22222222u;
+    first->executor_cpu_instructions.data.flagWR = TYPE_TRUE;
+    return second->executor_cpu.data.eax == 0x22222222u &&
+        second->executor_cpu_instructions.data.flagWR == TYPE_FALSE;
 }
 
 #endif

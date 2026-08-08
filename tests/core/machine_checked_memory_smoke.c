@@ -2,6 +2,7 @@
 
 #include "core/machine/machine_interface.h"
 #include "../support/core_machine_executor_fixture.h"
+#include "../support/core_machine_cpu_fixture.h"
 
 typedef struct checked_memory_provider {
     C_UINT read_count;
@@ -60,7 +61,6 @@ C_INT main(C_VOID)
     core_machine *machine = STD_NULL;
     checked_memory_provider provider = { 0u, 0u, 0u, 0x5au };
     core_machine_memory_route route;
-    t_ram *memory;
     C_UCHAR value = 0u;
     C_INT failed = 0;
 
@@ -70,9 +70,7 @@ C_INT main(C_VOID)
 
     failed |= expect_status(core_machine_memory_query(machine, 0u, 1u,
         CORE_MACHINE_MEMORY_ACCESS_READ, &route), TYPE_STATUS_INVALID_STATE);
-    memory = core_machine_configuration_memory_borrow(machine);
-    failed |= memory == STD_NULL;
-    failed |= expect_status(core_machine_memory_register_device_provider(memory,
+    failed |= expect_status(test_core_machine_fixture_register_memory_device_provider(machine,
         0x00180000u, 1u, checked_memory_read, checked_memory_write,
         checked_memory_query, &provider), TYPE_STATUS_OK);
     failed |= expect_status(core_machine_freeze_execution_providers(machine),

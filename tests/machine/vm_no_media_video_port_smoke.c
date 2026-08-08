@@ -5,6 +5,7 @@
 #include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/session_interface.h"
 #include "vm/composition/session/session.h"
+#include "../support/core_machine_cpu_fixture.h"
 
 #define VM_NO_MEDIA_PROBE_INSTRUCTION_BUDGET 100000u
 #define VM_NO_MEDIA_TEXT_CELLS (80u * 25u)
@@ -42,13 +43,11 @@ C_INT main(C_VOID)
     C_UINT f2_count = 0u;
     C_INT key_wait_seen = 0;
     C_INT failed = 0;
-    t_cpu *cpu;
+    t_cpu cpu;
 
     if (vm_session_create(STD_NULL, &session) != TYPE_STATUS_OK) return 1;
     if (!session->active || session->core_machine == STD_NULL) goto fail;
     vm_session_reset(session);
-    cpu = core_machine_debug_cpu_borrow(session->core_machine);
-    if (cpu == STD_NULL) goto fail;
     for (instruction = 0u; instruction < VM_NO_MEDIA_PROBE_INSTRUCTION_BUDGET;
          ++instruction) {
         if (core_machine_capture_observation(session->core_machine,
@@ -61,7 +60,9 @@ C_INT main(C_VOID)
         }
         if (opcode[0] == 0xcdu && opcode[1] == 0x10u) {
             ++int10_count;
-            functions[cpu->data.ah] = 1u;
+            cpu = test_core_machine_fixture_capture_cpu_after_run(
+                session->core_machine);
+            functions[cpu.data.ah] = 1u;
         }
         if (opcode[0] == 0xcdu && opcode[1] == 0xf2u) ++f2_count;
         if (opcode[0] == 0xb4u && opcode[1] == 0x11u) key_wait_seen = 1;

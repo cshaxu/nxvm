@@ -5,6 +5,7 @@
 #include "core/machine/media_interface.h"
 #include "core/machine/rtc.h"
 #include "core/platform/backing_resource_interface.h"
+#include "../support/core_machine_cpu_fixture.h"
 
 typedef struct mantle_fixture {
     core_machine_rtc rtc;
@@ -123,9 +124,8 @@ C_INT main(C_VOID)
         &fixture_backing_provider);
     if (core_machine_create(&config, &machine) != TYPE_STATUS_OK) failed |= 0x01;
     if (!failed) {
-        core_machine_rtc_initialize(&fixture.rtc,
-            core_machine_configuration_shared_pic_master_borrow(machine),
-            core_machine_configuration_shared_pic_slave_borrow(machine), &rtc_config);
+        test_core_machine_fixture_initialize_rtc_with_shared_pic(machine,
+            &fixture.rtc, &rtc_config);
         if (core_machine_bind_execution_provider(machine,
             &fixture_execution_provider, &fixture) != TYPE_STATUS_OK) failed |= 0x02;
         if (core_machine_media_registry_bind(&fixture.media, 1u,

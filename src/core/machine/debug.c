@@ -18,37 +18,6 @@ static type_status core_machine_debug_require_boundary(
                                                 TYPE_STATUS_INVALID_STATE;
 }
 
-t_cpu *core_machine_debug_cpu_borrow(core_machine *machine)
-{
-    return core_machine_debug_require_boundary(machine) == TYPE_STATUS_OK ?
-        &machine->executor_cpu : STD_NULL;
-}
-
-t_cpuins *core_machine_debug_cpu_instructions_borrow(core_machine *machine)
-{
-    return core_machine_debug_require_boundary(machine) == TYPE_STATUS_OK ?
-        &machine->executor_cpu_instructions : STD_NULL;
-}
-
-core_machine_cpu_execution_context *core_machine_debug_cpu_execution_borrow(
-    core_machine *machine)
-{
-    return core_machine_debug_require_boundary(machine) == TYPE_STATUS_OK ?
-        &machine->executor_cpu_execution : STD_NULL;
-}
-
-t_ram *core_machine_debug_memory_borrow(core_machine *machine)
-{
-    return core_machine_debug_require_boundary(machine) == TYPE_STATUS_OK ?
-        &machine->executor_memory : STD_NULL;
-}
-
-t_port *core_machine_debug_port_borrow(core_machine *machine)
-{
-    return core_machine_debug_require_boundary(machine) == TYPE_STATUS_OK ?
-        &machine->executor_port : STD_NULL;
-}
-
 type_status core_machine_debug_read_cpu(
     const core_machine *machine,
     core_machine_cpu_state *out_state)

@@ -3,7 +3,6 @@
 
 
 #include "core/machine/machine_interface.h"
-#include "core/machine/debug_interface.h"
 #include "../support/core_machine_executor_fixture.h"
 
 static C_INT expect_status(type_status actual, type_status expected)
@@ -37,13 +36,11 @@ C_INT main(C_VOID)
     result |= expect_status(test_core_machine_create_executor(0u, &machine),
                             TYPE_STATUS_OK);
     result |= expect_lifecycle(machine, CORE_MACHINE_INITIALIZED);
-    result |= core_machine_configuration_memory_borrow(machine) == STD_NULL;
     result |= expect_status(core_machine_run(machine, budget, &run_result),
                             TYPE_STATUS_INVALID_STATE);
 
     result |= expect_status(core_machine_freeze_execution_providers(machine),
                             TYPE_STATUS_OK);
-    result |= core_machine_configuration_memory_borrow(machine) != STD_NULL;
 
     result |= expect_status(core_machine_reset(machine), TYPE_STATUS_OK);
     result |= expect_lifecycle(machine, CORE_MACHINE_STOPPED);
@@ -53,7 +50,6 @@ C_INT main(C_VOID)
                             TYPE_STATUS_OK);
     result |= observation.lifecycle != CORE_MACHINE_STOPPED ||
               observation.cpu.cs != cpu.cs || observation.cpu.eip != cpu.eip;
-    result |= core_machine_debug_memory_borrow(machine) == STD_NULL;
     result |= cpu.cs != 0xf000u || cpu.eip != 0x0000fff0u;
     result |= expect_status(core_machine_memory_write(machine, 0xffff0u, &halt, 1u),
                             TYPE_STATUS_OK);

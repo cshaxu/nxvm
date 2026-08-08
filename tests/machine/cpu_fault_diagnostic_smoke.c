@@ -4,6 +4,7 @@
 #include "core/machine/debug_interface.h"
 #include "core/machine/machine_interface.h"
 #include "core/machine/memory.h"
+#include "../support/core_machine_cpu_fixture.h"
 
 C_INT main(C_VOID)
 {
@@ -12,8 +13,6 @@ C_INT main(C_VOID)
     };
     C_UCHAR program[CORE_MACHINE_CPU_DIAGNOSTIC_WINDOW_CAPACITY + 2u];
     core_machine *machine = STD_NULL;
-    core_machine_cpu_execution_context *execution;
-    t_cpu *cpu;
     core_machine_run_budget budget = {
         CORE_MACHINE_CPU_DIAGNOSTIC_WINDOW_CAPACITY + 1u, 0u
     };
@@ -25,13 +24,7 @@ C_INT main(C_VOID)
     if (core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
         core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
         core_machine_reset(machine) != TYPE_STATUS_OK) goto fail;
-    cpu = core_machine_debug_cpu_borrow(machine);
-    execution = core_machine_debug_cpu_execution_borrow(machine);
-    if (core_machine_cpu_execution_load_segment(execution, &cpu->data.cs, 0u) ||
-        core_machine_cpu_execution_load_segment(execution, &cpu->data.ds, 0u) ||
-        core_machine_cpu_execution_load_segment(execution, &cpu->data.es, 0u) ||
-        core_machine_cpu_execution_load_segment(execution, &cpu->data.ss, 0u)) goto fail;
-    cpu->data.eip = 0u;
+    if (!test_core_machine_fixture_prepare_real_mode_execution(machine, 0u)) goto fail;
     for (index = 0u; index < CORE_MACHINE_CPU_DIAGNOSTIC_WINDOW_CAPACITY; ++index) {
         program[index] = 0x90u;
     }
