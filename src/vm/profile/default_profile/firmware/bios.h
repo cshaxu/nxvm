@@ -640,19 +640,74 @@ iret                                   \n\
 \
 $(label_int_10_clear):            \n\
 push ax                           \n\
+push bx                           \n\
 push cx                           \n\
+push dx                           \n\
+push si                           \n\
 push di                           \n\
 push es                           \n\
+or al, al                         \n\
+jnz $(label_int_10_clear_legacy)  \n\
+cmp dh, ch                        \n\
+jb $(label_int_10_clear_done)     \n\
+cmp dl, cl                        \n\
+jb $(label_int_10_clear_done)     \n\
+cmp dh, 18                        \n\
+ja $(label_int_10_clear_done)     \n\
+cmp dl, 4f                        \n\
+ja $(label_int_10_clear_done)     \n\
+push dx                           \n\
+push cx                           \n\
+mov dl, cl                        \n\
+mov al, ch                        \n\
+xor ah, ah                        \n\
+mov cl, 50                        \n\
+mul cl                            \n\
+xor dh, dh                        \n\
+add ax, dx                        \n\
+shl ax, 01                        \n\
+mov di, ax                        \n\
+pop cx                            \n\
+pop dx                            \n\
+mov bl, dl                        \n\
+sub bl, cl                        \n\
+inc bl                            \n\
+mov ah, bh                        \n\
+xor al, al                        \n\
+mov bh, dh                        \n\
+sub bh, ch                        \n\
+inc bh                            \n\
+mov dx, b800                      \n\
+mov es, dx                        \n\
+cld                               \n\
+$(label_int_10_clear_row):        \n\
+xor ch, ch                        \n\
+mov cl, bl                        \n\
+rep:                              \n\
+stosw                              \n\
+dec bh                            \n\
+jz $(label_int_10_clear_done)    \n\
+mov cx, 0050                      \n\
+sub cl, bl                        \n\
+shl cx, 01                        \n\
+add di, cx                        \n\
+jmp near $(label_int_10_clear_row) \n\
+$(label_int_10_clear_legacy):     \n\
 mov ax, b800                      \n\
 mov es, ax                        \n\
 xor di, di                        \n\
 xor ax, ax                        \n\
 mov cx, 07d0                      \n\
+cld                               \n\
 rep:                              \n\
 stosw                              \n\
+$(label_int_10_clear_done):       \n\
 pop es                            \n\
 pop di                            \n\
+pop si                            \n\
+pop dx                            \n\
 pop cx                            \n\
+pop bx                            \n\
 pop ax                            \n\
 iret                              \n\
 \

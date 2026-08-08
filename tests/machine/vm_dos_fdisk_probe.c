@@ -97,6 +97,9 @@ C_INT main(C_INT argc, C_CHAR **argv)
     Sleep(100u);
     if (!vm_t287_fdisk_submit(session, enter, sizeof(enter))) goto done;
     if (!vm_t287_fdisk_wait(session, "Display Partition Information", 60000u)) goto done;
+    Sleep(1000u);
+    if (!vm_t287_fdisk_has_text(session, "Display Partition Information") ||
+        !vm_t287_fdisk_has_text(session, "Press Esc to continue")) goto done;
     passed = 1;
 
 done:
@@ -107,6 +110,6 @@ done:
     }
     vm_session_destroy(session);
     if (!passed) return 1;
-    STD_PRINTF("M5:T287:S20:FDISK:OPTION4:EXTERNAL:OK\n");
+    STD_PRINTF("M5:T287:S21:FDISK:OPTION4:EXTERNAL:OK\n");
     return 0;
 }
