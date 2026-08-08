@@ -58,7 +58,9 @@ the control/debugger CPU borrows remain deferred to T298/T299. With the
 owner-provided FDD/HDD images supplied read-only as CMake cache inputs,
 `current-gates-gcc` passed all 122 current smoke tests and all configured
 static/documentation gates. `git diff --check` passed. The developer artifact
-below will be rehashed after its source commit is recorded.
+was built from source commit `e59616038fe88cb7da0fd1bc86f27fda5acbe4b1`;
+its SHA-256 is recorded in the current baseline. T295 remains active pending
+owner review; no queue row has moved and no later task has been started.
 
 ## Current Technical Baseline
 
