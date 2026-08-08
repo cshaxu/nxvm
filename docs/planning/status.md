@@ -2,7 +2,7 @@
 
 ## Current Work
 
-**M5 T287 S10 in progress: DOS fixed-disk allocation trace.**
+**M5 T287 S16 in progress: DOS fixed-disk allocation trace.**
 
 T287 used a lawful, repository-external DOS 6.22 boot floppy and HDD with an
 ignored local manifest. The real Console transaction mounted both media and
@@ -39,6 +39,17 @@ BDA last-status byte instead of recording AH=15's successful type value `03h`;
 errors retain their AH result and carry flag. The ROM corpus verifies a
 successful AH=01 immediately after AH=15 and the unsupported AH=41 error path.
 
+S15 corrects the user-defined disk type itself: CMOS `12h=F0h` selects the
+extended first-disk type stored at `19h`, which must be `47h` for the AT
+user-defined geometry table. AH=08 now returns the same `BL=47h` identity.
+The former `2Fh` declaration was internally consistent but not a valid
+user-defined AT disk type and could cause DOS to reject the enumerated fixed
+disk before assigning `C:`. The focused profile and ROM gates pass with
+`M5:T287:S15:ROM-INT13-HDD-TYPE47:OK`; the external DOS checkpoint still
+reports `c-drive-absent`. `run-current-smokes`, all 113 current CTest cases,
+and `verify-current-artifact-target` pass; the remaining allocation blocker is
+now S16's diagnosis boundary.
+
 The external copied-frame checkpoint still reports the same `C:` failure after
 S3--S9. Its paused copied-frame observation retains BDA fixed-disk bytes
 `00/01/C0/00` for status, drive count, control, and port offset respectively;
@@ -51,7 +62,7 @@ is considered.
 - **T287 artifact identity:** `current-gcc` and
   `verify-current-artifact-target` select `vm-0-5-0287`. The active T287
   subtask has not closed. Artifact `nxvm_0_5_0287.exe` SHA-256:
-  `510A2ADF7CD25DF18EEE493AE99A0189F4BC05373154F0D6849963828AB8275C`.
+  `A3DF0E0B97FA5929112ADD9E26785325B9F64D25AB816AF0473A3B5C3D230DF7`.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
