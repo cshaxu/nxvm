@@ -45,6 +45,10 @@ is the retained non-runnable fixture and is not a second product path.
 
 | Surface (definition) | Production consumers; test consumers | Owner/lifetime and raw exposure | T295--T299 disposition; core responsibility | Regression / gate |
 | --- | --- | --- | --- | --- |
+| CPU profile, copied state, execution point, and fault diagnostic: `cpu_interface.h` | Production: `vm/composition/session/session_factory.c` formats the CPU profile; `vm/composition/session/fault.c` consumes copied diagnostics. Tests: lifecycle/instance/entry-plan corpus plus CPU, protected-mode, real-mode, and fault diagnostic smokes use copied state/diagnostics. | Core owns CPU and diagnostic-ring storage for the machine lifetime. `core_machine_cpu_state`, execution points, and diagnostics are copied values returned through machine operations; no CPU pointer is exposed by this header. | **Keep.** T295 preserves the profile and copied observation boundary while moving initialization authority into core. T298 may consume these copied values for debugger replacement. | Retain machine-instance/lifecycle/entry-plan, CPU fault diagnostic, and protected/real-mode corpus gates. |
+| FPU profile, operation metadata, and copied FPU state: `fpu_interface.h` | Production: `session_factory.c` formats FPU profile; CPU instruction implementation consumes operation metadata. Tests: `core_machine_fpu_8087_smoke` and FPU/profile corpus validate metadata and copied FPU state. | Core owns FPU state for the machine lifetime; metadata is immutable value data and state is copied through `core_machine_get_fpu_state`. No raw FPU storage is exported. | **Keep.** No T295--T299 replacement is required; T295 preserves profile configuration, and T299's raw-borrow closure must not mistake this copied contract for a borrow. | Retain FPU profile/escape/8087 smoke and CPU profile gate. |
+| Lifecycle enumeration: `lifecycle_interface.h` | Production: core debug implementation and VM session/control/fault paths interpret lifecycle results. Tests: core lifecycle/stopped-lifecycle and VM fault-outcome corpus. | `core_machine` owns lifecycle transitions from create through destroy; the enum is a copied status value. | **Keep.** T295 retains core lifecycle authority; no raw-state replacement or deferred work. | Retain lifecycle, stopped-lifecycle, boot-failure, and fault-outcome smokes. |
+| Value presentation helpers: keyboard queue and text snapshot: `presentation_interface.h` | Production: retained non-runnable `src/vdm/machine/dos_minimal.c` initializes its own text snapshot. Tests: `tests/core/presentation_smoke.c`. | Caller owns queue/snapshot value storage; helpers neither name a machine nor borrow guest state. | **Keep.** Outside the T295--T299 raw-borrow migration; no deferred runtime work. | Retain presentation smoke and VDM fixture build coverage. |
 | Machine lifecycle/configuration: `core_machine_create/reset/reconfigure_memory/run/request_stop/destroy`, observations and copied CPU/FPU/memory-size/time/diagnostic state (`machine_interface.h`, `machine.c`) | VM session/control/lifecycle/runner/fault/machine-info and VDM fixture; `tests/core/*machine*`, `tests/machine/core_machine_*`, `tests/products/nxvm_session_*` | Core owns all guest state from create to destroy. Only copied states and bounded run results cross. | **Keep.** T295 moves CPU/PIC initialization behind this surface; cold RAM reconfigure remains the explicit exception. | Retain lifecycle, instance, scheduler, timing, stopped-lifecycle, reconfigure, and core-contract smokes. |
 | Checked memory and A20: `memory_interface.h` (`read/write/query/set_a20`) | VM session/debug target/fault; entry-plan/ROM and core corpus | Core-owned RAM/mappings; no pointer exposed. Mutating writes are execution-boundary operations. | **Keep.** T297 may whitelist checked real/physical guest memory operation only; no universal RAM accessor. | Retain checked-memory, immutable-ROM, entry-plan and A20 corpus; T299 static gate forbids public `t_ram *`. |
 | Entry plan and immutable ROM mapping: `entry_plan_interface.h`, `rom_mapping_interface.h` | VM profile BIOS materialization; core entry-plan/ROM tests | Core copies/prevalidates plan and owns mappings; ROM bytes are immutable borrowed input during registration. | **Keep.** Composition supplies profile asset/mapping before freeze; core owns validation/materialization order. | Retain entry-plan and immutable-ROM smokes. |
@@ -60,6 +64,30 @@ is the retained non-runnable fixture and is not a second product path.
 | Debug copied operations (`debug_read_cpu`, `debug_read_memory`, `debug_step`, `debug_continue`) | VM debug target; CPU diagnostic and NXVM/DOS/video/timer/Windows probes | Core owns execution/RAM; results are copied or bounded run results. | **Keep.** T298 verifies they satisfy retained Console/debugger UX without prompt/startup change. | Retain debug smoke and debugger/product acceptance corpus. |
 | Debug raw borrows: CPU, instructions, execution, RAM, port (`debug_interface.h`; `debug.c`) | **Production:** `vm/composition/session/debug_target.c`: `vm_debug_cpu` (35), `vm_debug_instructions` (39), `vm_debug_execution` (44), `vm_debug_memory` (48), and `vm_debug_port` (52). These are the VM composition debugger-adapter helpers. Tests: `cpu_fault_diagnostic`, `vm_cpu_stop`, `vm_dos_video_port`, `vm_ega_*`, `vm_fault_outcome_runner`, `vm_no_media_video_port`, `vm_timer_firmware`, `vm_windows31_setup_probe`. | Core owns the storage; debug borrow definitions permit it only after the execution thread returns a paused boundary. VM composition owns the adapter/session lifetime and currently passes these pointers into retained debugger paths. | **Replace/remove in T298/T299.** T298 replaces each helper with copied CPU/instruction/memory/port observation or a named operation-specific debug capability; no general snapshot/getter and no Console/debugger UX change. | Preserve the named debugger adapter behavior and all listed test intent; T299 grep rejects public debug raw borrows. |
 | Test-only probe/seam: `tests/support/core_machine_executor_fixture.h`, adapter `vm_cpu_probe`, and direct private-header tests | Test-only, including core CPU/protected-mode corpus and mantle-shape fixture | Test-owned setup may directly exercise same-module implementation, but cannot become a product route or mirror mutable state. | **Deferred to T299 test migration.** Retain a narrow test-only adapter only where a public corpus cannot set an already-owned CPU state; it must be outside product headers and never be used by `src/`. | Add static closure: no `tests/support` seam included from `src/`; focused corpus names its ownership proof. |
+
+### Public-interface coverage index
+
+This index makes the `src/core/machine/*_interface.h` audit mechanically
+checkable. `cpu.h`, `fpu.h`, and device implementation headers are private
+implementation headers, not public product contracts; they enter T299 only
+when a listed raw-borrow surface exposes one of their storage types.
+
+| Header | Matrix coverage |
+| --- | --- |
+| `cpu_interface.h` | CPU profile, copied state, execution point, and fault diagnostic |
+| `debug_interface.h` | Debug copied operations; Debug raw borrows |
+| `display_interface.h` | Display snapshot and presentation helpers |
+| `entry_plan_interface.h` | Entry plan and immutable ROM mapping |
+| `fpu_interface.h` | FPU profile, operation metadata, and copied FPU state |
+| `lifecycle_interface.h` | Lifecycle enumeration |
+| `machine_interface.h` | Machine lifecycle/configuration; Keyboard/mouse/NMI/fault; Configuration raw borrows; Profile binding; Execution provider registration/freeze |
+| `media_interface.h` | Media registry/provider |
+| `memory_interface.h` | Checked memory and A20 |
+| `port_interface.h` | Port providers and bus operations |
+| `presentation_interface.h` | Value presentation helpers: keyboard queue and text snapshot |
+| `rom_mapping_interface.h` | Entry plan and immutable ROM mapping |
+| `trace_interface.h` | Trace provider |
+| `execution_provider.h` (public non-interface provider header) | Execution provider registration/freeze |
 
 ### Product-path raw-borrow call map
 
@@ -132,6 +160,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools/Verify-DocumentationGo
 ```
 
 Its actual marker was `Documentation governance checks passed for vm-0-5-0293.`
+The subsequent public-interface completeness pass re-ran the same two commands
+and produced the same marker.
 No build graph changed, so this documentation-only correction did not require a
 build gate.
 
