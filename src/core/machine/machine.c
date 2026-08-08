@@ -401,7 +401,13 @@ type_status core_machine_firmware_port_read(
 {
     if (!core_machine_firmware_context_is_active(firmware, 0) ||
         out_value == STD_NULL) return TYPE_STATUS_INVALID_STATE;
-    *out_value = core_machine_port_read(&firmware->machine->executor_port, port);
+    {
+        type_status status = core_machine_port_execute_read(
+            &firmware->machine->executor_port, port);
+
+        if (status != TYPE_STATUS_OK) return status;
+    }
+    *out_value = firmware->machine->executor_port.data.ioDWord;
     return TYPE_STATUS_OK;
 }
 
@@ -411,8 +417,18 @@ type_status core_machine_firmware_port_write(
     if (!core_machine_firmware_context_is_active(firmware, 0)) {
         return TYPE_STATUS_INVALID_STATE;
     }
-    core_machine_port_write(&firmware->machine->executor_port, port, value);
-    return TYPE_STATUS_OK;
+    {
+        uint32_t prior_value = firmware->machine->executor_port.data.ioDWord;
+        type_status status;
+
+        firmware->machine->executor_port.data.ioDWord = value;
+        status = core_machine_port_execute_write(&firmware->machine->executor_port,
+            port);
+        if (status != TYPE_STATUS_OK) {
+            firmware->machine->executor_port.data.ioDWord = prior_value;
+        }
+        return status;
+    }
 }
 
 type_status core_machine_firmware_request_stop(

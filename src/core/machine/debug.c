@@ -262,7 +262,9 @@ type_status core_machine_debug_read_port(core_machine *machine, uint16_t port,
     type_status status = core_machine_debug_require_boundary(machine);
     if (status != TYPE_STATUS_OK || out_value == STD_NULL) return
         status == TYPE_STATUS_OK ? TYPE_STATUS_INVALID_ARGUMENT : status;
-    *out_value = core_machine_port_read(&machine->executor_port, port);
+    status = core_machine_port_execute_read(&machine->executor_port, port);
+    if (status != TYPE_STATUS_OK) return status;
+    *out_value = machine->executor_port.data.ioDWord;
     return TYPE_STATUS_OK;
 }
 
@@ -271,8 +273,15 @@ type_status core_machine_debug_write_port(core_machine *machine, uint16_t port,
 {
     type_status status = core_machine_debug_require_boundary(machine);
     if (status != TYPE_STATUS_OK) return status;
-    core_machine_port_write(&machine->executor_port, port, value);
-    return TYPE_STATUS_OK;
+    {
+        uint32_t prior_value = machine->executor_port.data.ioDWord;
+
+        machine->executor_port.data.ioDWord = value;
+        status = core_machine_port_execute_write(&machine->executor_port, port);
+        if (status != TYPE_STATUS_OK) machine->executor_port.data.ioDWord =
+            prior_value;
+    }
+    return status;
 }
 
 type_status core_machine_debug_set_watchpoint(core_machine *machine,
