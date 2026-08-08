@@ -94,5 +94,4 @@ C_VOID vm_session_bind_display(vm_session *machine)
     core_machine_display_provider_slot_bind(&machine->display_provider,
         machine, vmCompositionDisplayModeChanged,
         machine, vm_session_capture_display_snapshot);
-    core_machine_display_provider_slot_freeze(&machine->display_provider);
 }

@@ -226,7 +226,6 @@ C_VOID vm_session_initialize(vm_session *machine) {
     core_utils_wait_scope_initialize(&machine->wait_scope,
         vm_session_wait, STD_NULL);
     vm_session_control_initialize(&machine->control, machine);
-    vm_session_bind_display(machine);
     vm_machine_debug_bind_pause(&machine->debug,
         vm_session_debug_request_pause, STD_NULL);
     vm_machine_debug_bind_disassembler(&machine->debug,

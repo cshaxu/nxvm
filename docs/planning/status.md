@@ -2,16 +2,13 @@
 
 ## Current Work
 
-**M5 T296 S1 active - shared-device initialization authority migration matrix.**
+**M5 T296 S2 active - core-owned VADP/display-port configuration authority.**
 
-The approved task is limited to the design and source-call inventory in
-[the T296 migration matrix](../architecture/core-machine-shared-device-migration.md).
-It records the current implementation, typed replacement boundary, lifecycle
-entry points, regression gates, and independent stop condition for S2 (display
-and port), S3 (DMA plus RTC/CMOS/NMI), and S4 (FDC/HDC). S1 changes no runtime
-source, CMake graph, test behavior, artifact, guest media, or local-path
-policy. The task remains active for coordinator review after S1; do not admit
-T297 or later work.
+S1 is committed as `56433a9` and remains recorded in [the T296 migration
+matrix](../architecture/core-machine-shared-device-migration.md). S2 alone
+moves the display declaration authority into `core_machine`; the task remains
+active for coordinator review. Do not admit S3 (DMA/RTC/CMOS/NMI), S4
+(FDC/HDC), or T297 and later work.
 
 ### Task Packet
 
@@ -20,17 +17,24 @@ T297 or later work.
   VM composition/profile may submit only frozen typed topology, configuration,
   and provider/media policy; it must not borrow or bind controller, PIC, or
   port storage.
-- **S1 objective and completion condition:** Audit every real A/B/C lifecycle
-  call, storage owner, raw VM borrow, typed replacement, core entry point, and
-  regression gate; freeze each next-stage acceptance and stop condition.
-  Completion is the reviewed matrix plus the static source-query record below.
+- **S2 objective and completion condition:** VM composition submits one typed,
+  exact VADP display declaration while `INITIALIZED`: neutral text timing, EGA
+  sequencer/controller configuration, declared VADP port groups, and a typed
+  display-provider slot. `core_machine_configure_display` validates and copies
+  the declaration, configures core-owned VADP/RAM state, freezes the provider,
+  and rejects subsequent submission. Core retains the existing VADP/port
+  create, reset, and finalize order. Completion is the focused owner gate,
+  lifecycle smoke, and full current GCC gate below; this packet stays active
+  pending coordinator review.
 - **Reference baseline:** T295; `vm-0-5-0295`,
   `nxvm_0_5_0295.exe` SHA-256
   `52B291B1E1100D945BD44B7B1F88A622F7B2B7D3468BC78997ED90732BCA179A`.
-- **In scope:** Documentation in this packet and the linked architecture
-  matrix. The matrix covers only VADP/port; DMA/RTC/CMOS/NMI; and FDC/HDC.
-- **Non-goals:** No runtime/API/CMake/test change; no scheduler, second
-  machine, storage mirror, host shortcut, media/path policy migration, or
+- **In scope:** `core_machine` display configuration API and retained
+  VADP/port lifecycle; VM composition's typed profile declaration/provider;
+  an S2 static owner gate and lifecycle smoke. The copied display snapshot
+  boundary is unchanged.
+- **Non-goals:** DMA; RTC/CMOS/NMI; FDC/HDC; scheduler; second machine;
+  storage mirror; host shortcut; media/path policy migration; and any
   Console/debugger/boot experience change. T297 firmware capability, T298
   debugger capability, and T299 raw-borrow deletion remain deferred.
 - **Applicable rules:** `core/machine` owns neutral mutable guest state and
@@ -39,15 +43,39 @@ T297 or later work.
   BIOS/DOS, local-path, or product-policy meaning. Preserve the single media
   route and owner-provided read-only test media rule. No source import or
   license/provenance action is involved.
-- **S1 evidence commands:**
-  `rg -n "core_machine_(configuration|profile_binding|debug)_" src tests --glob '*.[ch]'`;
-  `rg -n "(vadp|dma|rtc|cmos|nmi|fdc|hdc|port).*(_initialize|_reset|_finalize|bind|install)" src/core src/vm --glob '*.[ch]'`;
+- **Implementation and call chain:** `vm_session_storage_initialize` binds its
+  typed provider slot, submits immutable profile timing/EGA values and declared
+  VADP port ranges to `core_machine_configure_display`, then creates the
+  retained profile binding. The core entry applies VADP text/EGA state against
+  embedded executor RAM, records the exact topology, and freezes the slot.
+  The existing `core_machine_create`, `core_machine_reset`, and
+  `core_machine_destroy` continue to initialize, reset, and finalize embedded
+  VADP and port storage. The three VADP profile-binding configurators are
+  removed; no VM display source configures VADP, RAM, or port storage directly.
+- **Similar-issue sweep:** The defect class is VM composition directly using
+  profile-binding VADP configurators or display-port installation. Query:
+  `rg -n "core_machine_(profile_binding_configure_|vadp_configure_|install_port_provider)" src/vm --glob '*.[ch]'`.
+  The three display configurator hits in `session.c` are replaced. Remaining
+  RTC and HDC port-install hits are recorded S3/S4 edges in the migration
+  matrix and are excluded from S2; the S2 static gate covers only the two
+  display-composition sources so it cannot mask those deferred owners.
+- **S2 evidence commands and result:**
+  `cmake --build --preset current-gates-gcc --target core-machine-display-authority-smoke verify-core-display-authority`;
+  `build/mingw-gcc-x64/core-machine-display-authority-smoke.exe` (marker
+  `M5:T296:S2:DISPLAY-AUTHORITY:OK`);
+  `cmake --build --preset current-gates-gcc` (46/46 static/build gates and
+  123/123 CTest current-gate tests passed, including VADP text/status,
+  CGA/EGA, ROM-video, Console, and two-session isolation). The GCC CMake cache
+  used existing owner-provided FDD/HDD fixtures through untracked FILEPATH
+  overrides only; no fixture was copied, changed, or tracked.
   `powershell -NoProfile -ExecutionPolicy Bypass -File tools/Verify-DocumentationGovernance.ps1 -RepositoryRoot .`;
   `git diff --check`.
-- **S1 stop condition:** Stop and return to the coordinator on any required
-  runtime change, unresolved owner contradiction, required T297+ capability,
-  or B/C dependency while evaluating A (and C dependency while evaluating B).
-  Do not close the packet or advance to S2 without review.
+- **Deferred edge and risk:** The S2 LLVM syntax check exposes a pre-existing
+  VADP EGA CRTC index-`13h` storage-bound warning. It is deferred as
+  `TODO(High)` with its required focused admission gate; this authority-only
+  subtask does not alter it. RTC and HDC direct port installation likewise
+  remain untouched for S3/S4. Do not close this packet, build T296's final
+  artifact, or advance beyond S2 without coordinator review.
 
 ## Current Technical Baseline
 

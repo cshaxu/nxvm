@@ -21,8 +21,8 @@ foreach(required IN ITEMS
     "0x03c4u"
     "0x03c5u"
     "CORE_MACHINE_VADP_EGA_APERTURE_BASE"
-    "core_machine_profile_binding_configure_ega_sequencer")
-    if(required STREQUAL "core_machine_profile_binding_configure_ega_sequencer")
+    "core_machine_configure_display")
+    if(required STREQUAL "core_machine_configure_display")
         set(source_text "${session_source}")
     else()
         set(source_text "${profile_source}")

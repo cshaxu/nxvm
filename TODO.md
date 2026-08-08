@@ -80,6 +80,12 @@ active task.
   display-enable/vertical-retrace. Deferred: additional 40/80-column geometry
   breadth and light pen. Every admission retains one VADP owner, B8000h
   mapping, copied-frame output, and port/memory/frame plus DOS-fixture evidence.
+- [ ] **EGA CRTC offset storage bound (`TODO(High)`).** The T296 S2 LLVM
+  syntax check reports that the VADP accepts and reads CRTC index `13h` while
+  `CORE_MACHINE_VADP_CRTC_REGISTER_COUNT` is 18. Owner: a future VADP EGA
+  CRTC behavior admission. Admission requires a focused bounds/source gate and
+  the retained EGA direct corpus; it must not change the current display
+  topology, copied-frame boundary, or firmware contract as incidental cleanup.
 - [ ] **CGA composite-video fidelity (`TODO(Low)`).** Treat NTSC artifact
   color, phase, and colorburst as an optional renderer/profile capability only
   after digital CGA is complete. Do not fold it into VADP digital state or use

@@ -23,8 +23,8 @@ foreach(required IN ITEMS
     "0x03cfu"
     "0x03c0u"
     "0x03c1u"
-    "core_machine_profile_binding_configure_ega_controllers")
-    if(required STREQUAL "core_machine_profile_binding_configure_ega_controllers")
+    "core_machine_configure_display")
+    if(required STREQUAL "core_machine_configure_display")
         set(source_text "${session_source}")
     else()
         set(source_text "${profile_source}")
