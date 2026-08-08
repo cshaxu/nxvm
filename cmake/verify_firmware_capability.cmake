@@ -32,4 +32,26 @@ foreach(forbidden "t_cpu" "t_ram" "execution_context" "set_cr" "set_mode")
     endif()
 endforeach()
 
+file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/machine.c" firmware_machine)
+foreach(required "rom_mapping_boundary" "core_machine_rollback_immutable_rom_mappings"
+        "STD_MEMSET(&machine->firmware_context")
+    string(FIND "${firmware_machine}" "${required}" found)
+    if(found EQUAL -1)
+        message(FATAL_ERROR "Firmware bind failure rollback is missing ${required}")
+    endif()
+endforeach()
+string(FIND "${firmware_machine}" "firmware_provider_frozen" found)
+if(NOT found EQUAL -1)
+    message(FATAL_ERROR "Firmware bind retains write-only frozen state")
+endif()
+
+file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/rom_mapping_interface.c" rom_mapping)
+foreach(required "core_machine_rollback_immutable_rom_mappings"
+        "STD_FREE(mapping->image)" "device_provider_count")
+    string(FIND "${rom_mapping}" "${required}" found)
+    if(found EQUAL -1)
+        message(FATAL_ERROR "Firmware ROM rollback is missing ${required}")
+    endif()
+endforeach()
+
 message("M5:T297:S3:FIRMWARE-CAPABILITY-STATIC:OK")

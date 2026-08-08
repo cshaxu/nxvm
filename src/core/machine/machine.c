@@ -357,18 +357,22 @@ type_status core_machine_bind_firmware_provider(core_machine *machine,
     const core_machine_firmware_provider *provider, C_VOID *provider_context)
 {
     type_status status;
+    STD_SIZE_T rom_mapping_boundary;
 
     if (!core_machine_configuration_is_open(machine) ||
         machine->firmware_provider != STD_NULL || provider == STD_NULL ||
         provider->configure == STD_NULL || provider->reset == STD_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
+    rom_mapping_boundary = machine->immutable_rom_mapping_count;
     machine->firmware_provider = provider;
     machine->firmware_provider_context = provider_context;
     status = core_machine_firmware_invoke(machine, 1, provider->configure);
     if (status != TYPE_STATUS_OK) {
+        core_machine_rollback_immutable_rom_mappings(machine, rom_mapping_boundary);
         machine->firmware_provider = STD_NULL;
         machine->firmware_provider_context = STD_NULL;
+        STD_MEMSET(&machine->firmware_context, 0, sizeof(machine->firmware_context));
         return status;
     }
     return TYPE_STATUS_OK;
@@ -803,7 +807,6 @@ type_status core_machine_freeze_execution_providers(core_machine *machine)
         return TYPE_STATUS_INVALID_STATE;
     }
     machine->execution_provider_frozen = 1;
-    machine->firmware_provider_frozen = 1;
     core_machine_memory_freeze_mappings(&machine->executor_memory);
     return TYPE_STATUS_OK;
 }

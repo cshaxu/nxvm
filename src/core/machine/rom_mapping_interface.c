@@ -103,3 +103,42 @@ type_status core_machine_register_immutable_rom_mapping_from_firmware(
     return core_machine_register_immutable_rom_mapping_internal(machine,
         physical_start, image, bytes, 1);
 }
+
+C_VOID core_machine_rollback_immutable_rom_mappings(core_machine *machine,
+    STD_SIZE_T mapping_count)
+{
+    STD_SIZE_T mapping_index;
+
+    if (machine == STD_NULL || mapping_count > machine->immutable_rom_mapping_count) {
+        return;
+    }
+    for (mapping_index = machine->immutable_rom_mapping_count;
+            mapping_index > mapping_count; --mapping_index) {
+        core_machine_immutable_rom_mapping *mapping =
+            &machine->immutable_rom_mappings[mapping_index - 1u];
+        type_native_unsigned provider_index;
+
+        for (provider_index = machine->executor_memory.connect.device_provider_count;
+                provider_index > 0u; --provider_index) {
+            core_machine_memory_device_provider *provider =
+                &machine->executor_memory.connect.device_providers[provider_index - 1u];
+
+            if (provider->owner == mapping) {
+                const type_native_unsigned tail =
+                    machine->executor_memory.connect.device_provider_count - 1u;
+
+                if (provider_index - 1u != tail) {
+                    machine->executor_memory.connect.device_providers[provider_index - 1u] =
+                        machine->executor_memory.connect.device_providers[tail];
+                }
+                STD_MEMSET(&machine->executor_memory.connect.device_providers[tail], 0,
+                    sizeof(machine->executor_memory.connect.device_providers[tail]));
+                --machine->executor_memory.connect.device_provider_count;
+                break;
+            }
+        }
+        STD_FREE(mapping->image);
+        STD_MEMSET(mapping, 0, sizeof(*mapping));
+    }
+    machine->immutable_rom_mapping_count = mapping_count;
+}

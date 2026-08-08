@@ -130,7 +130,6 @@ struct core_machine {
     const core_machine_firmware_provider *firmware_provider;
     C_VOID *firmware_provider_context;
     core_machine_firmware_context firmware_context;
-    C_INT firmware_provider_frozen;
     C_INT firmware_operation_active;
     const core_machine_execution_provider *execution_provider;
     C_VOID *execution_provider_context;
@@ -154,4 +153,6 @@ C_INT core_machine_mutable_operation_is_allowed(const core_machine *machine);
 type_status core_machine_register_immutable_rom_mapping_from_firmware(
     core_machine *machine, uint32_t physical_start, const uint8_t *image,
     STD_SIZE_T bytes);
+C_VOID core_machine_rollback_immutable_rom_mappings(core_machine *machine,
+    STD_SIZE_T mapping_count);
 #endif
