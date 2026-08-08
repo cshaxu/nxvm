@@ -121,6 +121,10 @@ add_executable(core-machine-lifecycle-smoke
 )
 target_link_libraries(core-machine-lifecycle-smoke PRIVATE core-machine)
 
+add_executable(core-machine-firmware-capability-smoke
+    tests/core/machine_firmware_capability_smoke.c)
+target_link_libraries(core-machine-firmware-capability-smoke PRIVATE core-machine)
+
 add_executable(core-machine-time-smoke tests/core/machine_time_smoke.c)
 target_link_libraries(core-machine-time-smoke PRIVATE core-machine)
 
@@ -248,6 +252,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(core-machine-instance-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-configuration-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-lifecycle-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(core-machine-firmware-capability-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-stopped-lifecycle-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-memory-reconfigure-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-checked-memory-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -1068,6 +1073,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-trace-context-smoke
     core-machine-cpu-fault-diagnostic-smoke
     core-machine-configuration-smoke
+    core-machine-firmware-capability-smoke
     core-machine-ram-port-context-smoke
     core-machine-pit-readback-smoke
     core-machine-pit-waveform-smoke
@@ -1381,6 +1387,13 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_current_artifact_target.cmake"
         COMMENT "Verifying current artifact target truthfulness"
         VERBATIM)
+
+    add_custom_target(verify-firmware-capability
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_firmware_capability.cmake"
+        COMMENT "Verifying M5 T297 firmware capability closure"
+        VERBATIM)
+    add_dependencies(run-current-smokes verify-firmware-capability)
 
     add_custom_target(verify-request-transport-closure
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}

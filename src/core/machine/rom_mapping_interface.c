@@ -49,9 +49,9 @@ static type_status core_machine_rom_mapping_query(C_VOID *owner,
         TYPE_STATUS_FAULT;
 }
 
-type_status core_machine_register_immutable_rom_mapping(
+static type_status core_machine_register_immutable_rom_mapping_internal(
     core_machine *machine, uint32_t physical_start, const uint8_t *image,
-    STD_SIZE_T bytes)
+    STD_SIZE_T bytes, C_INT firmware_call)
 {
     core_machine_immutable_rom_mapping *mapping;
     uint8_t *copy;
@@ -61,9 +61,11 @@ type_status core_machine_register_immutable_rom_mapping(
         (uint64_t)physical_start + bytes > (uint64_t)TYPE_MAX_UNSIGNED_32 + 1u) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    if (!core_machine_configuration_is_open(machine) &&
-        !(machine->firmware_operation_active && machine->firmware_context.active &&
-          machine->firmware_context.configuring)) return TYPE_STATUS_INVALID_STATE;
+    if ((!firmware_call && !core_machine_configuration_is_open(machine)) ||
+        (firmware_call && !(machine->firmware_operation_active &&
+          machine->firmware_context.active && machine->firmware_context.configuring))) {
+        return TYPE_STATUS_INVALID_STATE;
+    }
     if (machine->immutable_rom_mapping_count >=
         CORE_MACHINE_IMMUTABLE_ROM_MAPPING_CAPACITY) return TYPE_STATUS_NO_MEMORY;
 
@@ -84,4 +86,20 @@ type_status core_machine_register_immutable_rom_mapping(
     }
     ++machine->immutable_rom_mapping_count;
     return TYPE_STATUS_OK;
+}
+
+type_status core_machine_register_immutable_rom_mapping(
+    core_machine *machine, uint32_t physical_start, const uint8_t *image,
+    STD_SIZE_T bytes)
+{
+    return core_machine_register_immutable_rom_mapping_internal(machine,
+        physical_start, image, bytes, 0);
+}
+
+type_status core_machine_register_immutable_rom_mapping_from_firmware(
+    core_machine *machine, uint32_t physical_start, const uint8_t *image,
+    STD_SIZE_T bytes)
+{
+    return core_machine_register_immutable_rom_mapping_internal(machine,
+        physical_start, image, bytes, 1);
 }
