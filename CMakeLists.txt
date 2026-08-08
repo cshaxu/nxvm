@@ -78,6 +78,10 @@ target_link_libraries(vm-hdc-hdd-boot-smoke PRIVATE vm-composition)
 add_executable(vm-default-pc-at-apply-smoke
     tests/machine/vm_default_pc_at_apply_smoke.c)
 target_link_libraries(vm-default-pc-at-apply-smoke PRIVATE vm-composition)
+
+add_executable(vm-default-pc-at-rom-materialization-smoke
+    tests/machine/vm_default_pc_at_rom_materialization_smoke.c)
+target_link_libraries(vm-default-pc-at-rom-materialization-smoke PRIVATE vm-composition)
 add_executable(vm-timer-firmware-smoke
     tests/machine/vm_timer_firmware_smoke.c)
 target_link_libraries(vm-timer-firmware-smoke PRIVATE vm-composition)
@@ -503,7 +507,9 @@ target_include_directories(vm-profile PUBLIC
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(vm-profile PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
-target_link_libraries(vm-profile PUBLIC type-facade)
+target_link_libraries(vm-profile PUBLIC
+    core-machine
+    type-facade)
 
 add_library(vm-platform STATIC ${VM_PLATFORM_SOURCES})
 target_include_directories(vm-platform PUBLIC
@@ -1012,6 +1018,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     vm-hdc-port-smoke
     vm-media-provider-smoke
     vm-default-pc-at-apply-smoke
+    vm-default-pc-at-rom-materialization-smoke
     vm-two-session-isolation-smoke
     vm-core-executor-storage-smoke
     core-machine-executor-run-smoke
@@ -1225,7 +1232,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0288 "0.5.0288")
+add_current_vm_artifact(vm-0-5-0289 "0.5.0289")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 

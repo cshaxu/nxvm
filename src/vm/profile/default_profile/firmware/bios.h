@@ -35,7 +35,9 @@ typedef struct {
 typedef struct t_bios {
     t_bios_data data;
     t_bios_connect connect;
+    uint8_t reset_ivt[0x400];
     type_bool flagBoot;
+    type_bool rom_materialized;
 } t_bios;
 
 #define VBIOS_ADDR_START_SEG 0xf000
@@ -168,6 +170,7 @@ C_VOID vm_profile_default_bios_add_interrupt_code(t_bios *bios, uint8_t *bytes,
 C_VOID vm_profile_default_bios_set_boot_code(t_bios *bios, uint8_t *bytes,
     uint16_t length);
 C_VOID vm_profile_default_bios_initialize(t_bios *bios);
+C_INT vm_profile_default_bios_materialize(t_bios *bios, core_machine *machine);
 C_VOID vm_profile_default_bios_reset(t_bios *bios, t_ram *ram,
     const core_machine_media_registry *media_registry,
     core_machine_media_id hdd_media_id);

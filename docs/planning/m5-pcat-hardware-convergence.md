@@ -49,10 +49,10 @@ original identifiers.
 
 T287 remains a bounded external readiness corpus. Its fixed-drive BDS geometry
 and real-mode 80386 address-size failures are closed as individual admissions.
-The current external checkpoint completes Setup file copy and stops at an
-internal `#CE` while Setup attempts to load Windows. That stop admits T288
-only; it does not establish a Standard-mode checkpoint or pre-admit broad CPU,
-FPU, or FDC work.
+The current external checkpoint crosses the former post-copy call-gate `#CE`
+and stops at `#UD(0)` on `MOV CR0,EAX` while Setup attempts to load Windows.
+That next stop remains a separate CPU admission; it does not establish a
+Standard-mode checkpoint or pre-admit broad CPU, FPU, or FDC work.
 
 ### D. Windows Checkpoint, Firmware, FDC, And CPU Evidence
 
