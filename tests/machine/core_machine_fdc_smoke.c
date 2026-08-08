@@ -160,6 +160,7 @@ C_INT main(C_VOID)
         {1u, CORE_MACHINE_MEDIA_ID_INVALID, CORE_MACHINE_MEDIA_ID_INVALID,
             CORE_MACHINE_MEDIA_ID_INVALID}
     };
+    const core_machine_dma_wiring dma_wiring = {.fdc_channel = 2u};
     core_machine_fdc_fixture_media fixture = {
         .generation = 1u, .present = TYPE_TRUE,
         .forced_read_result = CORE_MACHINE_MEDIA_RESULT_OK,
@@ -168,6 +169,7 @@ C_INT main(C_VOID)
     };
     core_machine_media_registry media = {0};
     core_machine_dma_request_binding dma_request = {0};
+    core_machine_fdc_topology topology = {0};
     core_machine *machine = STD_NULL;
     core_machine_fdc *fdc;
     t_port *port;
@@ -178,28 +180,24 @@ C_INT main(C_VOID)
     core_machine_media_registry_initialize(&media);
     if (core_machine_create(&config, &machine) != TYPE_STATUS_OK) failed |= 0x01;
     if (!failed) {
-        fdc = core_machine_configuration_fdc_borrow(machine);
-        port = core_machine_configuration_port_borrow(machine);
+        fdc = &machine->fdc;
+        port = &machine->executor_port;
         if (fdc == STD_NULL || port == STD_NULL ||
             core_machine_media_registry_bind(&media, 1u, &fixture,
                 &core_machine_fdc_fixture_provider) != TYPE_STATUS_OK ||
             core_machine_media_registry_freeze(&media) != TYPE_STATUS_OK ||
             core_machine_media_registry_bind(&media, 2u, &fixture,
                 &core_machine_fdc_fixture_provider) != TYPE_STATUS_INVALID_STATE ||
-            core_machine_dma_bind_channel(
-                core_machine_configuration_shared_dma_latch_borrow(machine),
-                core_machine_configuration_shared_dma_primary_borrow(machine),
-                core_machine_configuration_shared_dma_secondary_borrow(machine),
-                fdc_config.dma_channel, core_machine_fdc_dma_provider(), fdc,
-                &dma_request) != TYPE_STATUS_OK) {
+            core_machine_configure_dma(machine, &dma_wiring, &dma_request) !=
+                TYPE_STATUS_OK) {
             failed |= 0x02;
         } else {
-            core_machine_fdc_connect(fdc, &media, &drives, &dma_request,
-                core_machine_configuration_shared_pic_master_borrow(machine),
-                core_machine_configuration_shared_pic_slave_borrow(machine), port,
-                &fdc_config);
-            core_machine_fdc_initialize(fdc);
-            if (core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
+            topology.media_registry = &media;
+            topology.drives = drives;
+            topology.dma_request = dma_request;
+            topology.config = fdc_config;
+            if (core_machine_configure_fdc(machine, &topology) != TYPE_STATUS_OK ||
+                core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
                 core_machine_reset(machine) != TYPE_STATUS_OK) {
                 failed |= 0x04;
             } else {

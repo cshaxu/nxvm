@@ -91,6 +91,10 @@ struct core_machine {
     type_bool dma_configured;
     core_machine_rtc_cmos_config rtc_cmos_config;
     type_bool rtc_cmos_configured;
+    core_machine_fdc_topology fdc_topology;
+    type_bool fdc_configured;
+    core_machine_hdc_topology hdc_topology;
+    type_bool hdc_configured;
     core_machine_port_table port_providers;
     core_machine_trace_state trace;
     core_machine_cpu_diagnostic_state cpu_diagnostic;

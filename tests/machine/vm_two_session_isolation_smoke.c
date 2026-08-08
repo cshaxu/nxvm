@@ -35,6 +35,8 @@ C_INT main(C_VOID)
     failed |= core_machine_configuration_memory_borrow(first->core_machine) == core_machine_configuration_memory_borrow(second->core_machine);
     failed |= core_machine_configuration_port_borrow(first->core_machine) == core_machine_configuration_port_borrow(second->core_machine);
     failed |= &first->core_machine->shared_rtc == &second->core_machine->shared_rtc;
+    failed |= &first->core_machine->fdc == &second->core_machine->fdc;
+    failed |= &first->core_machine->hdc == &second->core_machine->hdc;
     failed |= first->fdc_dma_request.core_owner == second->fdc_dma_request.core_owner;
     failed |= core_machine_configuration_cpu_execution_borrow(first->core_machine)->cpu != core_machine_configuration_cpu_borrow(first->core_machine);
     failed |= core_machine_configuration_cpu_execution_borrow(second->core_machine)->cpu != core_machine_configuration_cpu_borrow(second->core_machine);

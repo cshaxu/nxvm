@@ -104,6 +104,37 @@ Console/debugger, DOS, and two-session isolation. It used only existing
 owner-provided fixtures selected in the untracked build cache. S4 is the next
 possible stage; no `0296` artifact is produced until all T296 stages complete.
 
+## S4 / C Implementation Evidence (Pending Coordinator Review)
+
+`core_machine_fdc_topology` and `core_machine_hdc_topology` are the final
+neutral copied submissions. They contain only controller register topology,
+IRQ/DMA wiring, drive/media IDs, the opaque DMA request binding, and the
+existing typed media-registry provider route. They contain neither a PC/AT
+identity nor firmware, BIOS/DOS, host-time, local-path, or backing-policy
+meaning. Core validates and copies each topology while configuration is open,
+connects embedded FDC/HDC using embedded PIC/port state, initializes the
+controllers, installs ATA providers, and retains reset/refresh/finalize order.
+
+VM composition now translates profile topology in
+`vm_session_machine_devices_configure_controllers`; it only submits the two
+typed values. It no longer borrows FDC/HDC/PIC/DMA/port storage or directly
+connects, initializes, registers, resets, refreshes, or finalizes either
+controller. VM continues to create, reset, refresh, and finalize FDD/HDD host
+objects and binds the same media registry before freezing it. There is no
+second registry, backing route, storage mirror, or path policy in core.
+
+Evidence: `core-machine-controller-authority-smoke` proves topology order and
+freeze rejection, FDC no-media read/write status, ATA no-media error mapping,
+controller reset, and copied IRQ/DMA/ATA-port wiring
+(`M5:T296:S4:CONTROLLER-AUTHORITY:OK`). The S4 static gate scans all VM
+composition sources for controller/PIC/DMA/port borrows and direct lifecycle
+or registration calls. The existing two-session isolation smoke also asserts
+distinct core FDC/HDC storage. Retained FDC topology/media-change, ATA PIO,
+FDD/HDD/DOS, boot, Console, and debugger regressions remain in the full gate.
+The final artifact and full-gate SHA evidence are recorded in the active task
+packet; the task remains active for coordinator review and T297--T299 remain
+deferred.
+
 ## Preserved Ordering and Deferred Edges
 
 The current VM sequence is recorded, not yet moved: media objects, profile

@@ -152,7 +152,7 @@ C_INT main(C_VOID)
         .forced_write_result = CORE_MACHINE_MEDIA_RESULT_OK
     };
     core_machine_media_registry registry = {0};
-    const core_machine_port_provider *ports;
+    core_machine_hdc_topology topology = {0};
     core_machine *machine = STD_NULL;
     core_machine_hdc *hdc;
     uint32_t status = 0u;
@@ -166,9 +166,8 @@ C_INT main(C_VOID)
     core_machine_media_registry_initialize(&registry);
     if (core_machine_create(&config, &machine) != TYPE_STATUS_OK) failed |= 0x01;
     if (!failed) {
-        hdc = core_machine_configuration_hdc_borrow(machine);
-        ports = core_machine_hdc_port_provider();
-        if (hdc == STD_NULL || ports == STD_NULL ||
+        hdc = &machine->hdc;
+        if (hdc == STD_NULL ||
             core_machine_media_registry_bind(&registry, 1u, &media,
                 &core_machine_hdc_fixture_provider) != TYPE_STATUS_OK ||
             core_machine_media_registry_freeze(&registry) != TYPE_STATUS_OK ||
@@ -176,17 +175,10 @@ C_INT main(C_VOID)
                 &core_machine_hdc_fixture_provider) != TYPE_STATUS_INVALID_STATE) {
             failed |= 0x02;
         } else {
-            core_machine_hdc_connect(hdc, &registry, 1u,
-                core_machine_configuration_shared_pic_master_borrow(machine),
-                core_machine_configuration_shared_pic_slave_borrow(machine),
-                &hdc_config);
-            core_machine_hdc_initialize(hdc);
-            if (core_machine_install_port_provider(machine, hdc_config.data_port,
-                    hdc_config.status_command_port, ports, hdc) != TYPE_STATUS_OK ||
-                core_machine_install_port_provider(machine,
-                    hdc_config.alternate_status_device_control_port,
-                    hdc_config.alternate_status_device_control_port, ports, hdc) !=
-                    TYPE_STATUS_OK ||
+            topology.media_registry = &registry;
+            topology.media_id = 1u;
+            topology.config = hdc_config;
+            if (core_machine_configure_hdc(machine, &topology) != TYPE_STATUS_OK ||
                 core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
                 core_machine_reset(machine) != TYPE_STATUS_OK) {
                 failed |= 0x04;

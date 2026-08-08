@@ -2,13 +2,13 @@
 
 ## Current Work
 
-**M5 T296 S3 active - core-owned DMA and RTC/CMOS/NMI authority.**
+**M5 T296 S4 active - core-owned FDC/HDC controller authority.**
 
-S1 is committed as `56433a9` and remains recorded in [the T296 migration
-matrix](../architecture/core-machine-shared-device-migration.md). S2 is
-committed as `e84199e`; S3 alone moves DMA and RTC/CMOS/NMI authority into
-`core_machine`. The task remains active for coordinator review. Do not admit
-S4 (FDC/HDC) or T297 and later work.
+S1 is committed as `56433a9`, S2 as `e84199e`, and S3 as `a02a0f0`; their
+evidence remains recorded in [the T296 migration
+matrix](../architecture/core-machine-shared-device-migration.md). S4 alone
+moves FDC/HDC controller authority into `core_machine`. The task remains
+active for coordinator review. Do not admit T297 or later work.
 
 ### Task Packet
 
@@ -17,24 +17,26 @@ S4 (FDC/HDC) or T297 and later work.
   VM composition/profile may submit only frozen typed topology, configuration,
   and provider/media policy; it must not borrow or bind controller, PIC, or
   port storage.
-- **S3 objective and completion condition:** VM composition submits frozen
-  typed DMA wiring and RTC/CMOS/NMI declaration while `INITIALIZED`: DMA
-  channel, RTC IRQ/tick rate, CMOS default bytes, CMOS port pair, and NMI
-  index-port wiring. Core validates, copies, and applies those declarations;
-  it owns embedded RTC storage, CMOS port callbacks, DMA binding, reset,
-  advance, and finalization. The existing core scheduler is the sole RTC time
-  path. Completion requires an S3 owner gate, focused lifecycle smoke, and the
-  retained/full GCC gates; this packet stays active pending coordinator review.
-- **Reference baseline:** T295; `vm-0-5-0295`,
-  `nxvm_0_5_0295.exe` SHA-256
-  `52B291B1E1100D945BD44B7B1F88A622F7B2B7D3468BC78997ED90732BCA179A`.
-- **In scope:** `core_machine` DMA and RTC/CMOS/NMI typed configuration,
-  embedded RTC storage/port provider, lifecycle and scheduler advance; VM
-  profile declaration; an S3 static owner gate and lifecycle smoke.
-- **Non-goals:** FDC/HDC connection, lifecycle, ports, drive topology, media
-  registry/backing/path policy; scheduler or second machine; storage mirror;
-  host shortcut; and Console/debugger/boot experience change. T297 firmware
-  capability, T298 debugger capability, and T299 raw-borrow deletion remain
+- **S4 objective and completion condition:** VM composition submits frozen,
+  neutral FDC and ATA topology while `INITIALIZED`: declared controller ports,
+  IRQ/DMA wiring, opaque DMA request binding, drive-slot IDs, and the existing
+  typed media-registry provider route. Core validates and copies topology,
+  connects and initializes embedded controllers, registers their ports, and is
+  their sole reset/refresh/finalize owner. VM keeps FDD/HDD backing and path
+  policy. Completion requires a full-composition S4 owner gate, focused
+  lifecycle smoke, the retained/full GCC gates, and the final `0296` artifact;
+  this packet stays active pending coordinator review.
+- **Reference baseline:** T295 historical behavior and its recorded artifact
+  provenance remain in Git history. S4 advances only the current developer
+  artifact identity; it does not alter product behavior or import media.
+- **In scope:** `core_machine` FDC/HDC typed topology configuration, embedded
+  controller connection/initialization/port registration/lifecycle; VM profile
+  declaration and existing typed media-registry provider policy; an S4 static
+  owner gate and lifecycle smoke.
+- **Non-goals:** FDD/HDD backing or local-path policy; media registry routes;
+  scheduler or second machine; storage mirror; host shortcut; and
+  Console/debugger/boot experience change. T297 firmware capability, T298
+  debugger capability, and the remaining T299 raw-borrow deletion remain
   deferred.
 - **Applicable rules:** `core/machine` owns neutral mutable guest state and
   lifecycle order; VM/profile owns immutable PC/AT topology, defaults, ROM and
@@ -42,47 +44,41 @@ S4 (FDC/HDC) or T297 and later work.
   BIOS/DOS, local-path, or product-policy meaning. Preserve the single media
   route and owner-provided read-only test media rule. No source import or
   license/provenance action is involved.
-- **Implementation and call chain:** `vm_session_storage_initialize` submits
-  profile-derived DMA wiring and a neutral RTC/CMOS declaration (port pair,
-  IRQ/ticks, NMI bit, and six default register bytes) to
-  `core_machine_configure_dma` and `core_machine_configure_rtc_cmos` before
-  profile binding. Core copies the declarations, owns embedded RTC state and
-  the CMOS port callbacks, binds the embedded FDC DMA endpoint, and returns
-  only the frozen `core_machine_dma_request_binding` needed by the still-S4
-  FDC connect. `core_machine_cold_reset` resets embedded DMA/RTC; its existing
-  scheduler advances RTC from the existing provider clock tick before PIC
-  refresh. VM's execution provider no longer advances guest time.
-- **Similar-issue sweep:** The defect class is VM composition directly
-  borrowing/binding DMA or directly initializing, resetting, advancing,
-  finalizing, or installing the RTC/CMOS/NMI path. Query:
-  `rg -n "core_machine_(configuration_shared_dma_|dma_bind_channel|rtc_initialize|rtc_reset|rtc_advance|rtc_finalize|rtc_select_register|rtc_read_selected|rtc_write_selected|rtc_write_nvram|set_nmi_mask)" src/vm --glob '*.[ch]'`.
-  It has no production hits after S3. The remaining HDC port installation and
-  FDC/PIC/port connection calls are explicit S4 edges; the S3 gate scans the
-  DMA/RTC section separately so they are neither changed nor hidden.
-- **S3 evidence commands and result:**
-  `cmake --build --preset current-gates-gcc --target core-machine-dma-rtc-authority-smoke verify-core-dma-rtc-authority verify-cmos-rtc-boundary`;
-  `build/mingw-gcc-x64/core-machine-dma-rtc-authority-smoke.exe` (marker
-  `M5:T296:S3:DMA-RTC-AUTHORITY:OK`);
-  `cmake --build --preset current-gates-gcc` (47/47 static/build gates and
-  124/124 CTest current-gate tests passed, including retained DMA,
-  RTC/CMOS/NMI, timer/IRQ, boot, Console/debugger, and two-session isolation).
-  Existing owner-provided FDD/HDD fixtures were selected by untracked cache
-  settings only; no fixture was copied, changed, or tracked.
-  `powershell -NoProfile -ExecutionPolicy Bypass -File tools/Verify-DocumentationGovernance.ps1 -RepositoryRoot .`;
-  `git diff --check`.
-- **Deferred edge and risk:** S4 alone may migrate FDC/HDC connection,
-  controller/port lifecycle, drive topology, and media policy; S3 preserves
-  the single media route and leaves those VM calls intact. T297--T299 remain
-  deferred. The S2 VADP EGA CRTC index-`13h` storage-bound warning remains
-  `TODO(High)`. Do not close this packet, build T296's final `0296` artifact,
-  or advance beyond S3 without coordinator review.
+- **Implementation and call chain:** `vm_session_storage_initialize` creates
+  the existing VM-owned media registry, translates the immutable profile into
+  neutral FDC/ATA topology, and submits it through core configuration before
+  profile binding. Core copies the topology, consumes only the typed registry
+  and opaque DMA request handle, and connects/initializes/registers embedded
+  FDC/HDC using its own PIC and port storage. VM later binds and freezes the
+  unchanged registry around VM-owned FDD/HDD objects; it no longer borrows or
+  directly drives either controller. Core cold reset, scheduler refresh, and
+  destruction retain the sole controller lifecycle order.
+- **Similar-issue sweep:** The defect class is a VM composition source directly
+  borrowing FDC/HDC/PIC/port storage or connecting, initializing, registering,
+  resetting, refreshing, or finalizing controller state. Query:
+  `rg -n "core_machine_(configuration_(fdc|hdc|shared_pic|port)_borrow|fdc_(connect|initialize|reset|refresh|finalize)|hdc_(connect|initialize|reset|refresh|finalize|port_provider)|install_port_provider)" src/vm/composition --glob '*.[ch]'`.
+  Every production hit must become core topology submission or be an explicit
+  T297+ exclusion; no FDD/HDD/path or firmware/debugger source may be changed.
+- **S4 evidence commands and expected result:** focused
+  `core-machine-controller-authority-smoke` plus
+  `verify-core-controller-authority`; retained FDC/ATA/no-media/boot/DOS,
+  Console/debugger, and two-session checks; then the managed absolute CMake
+  `current-gates-gcc` command. Preserve only the resulting
+  `build/output/nxvm_0_5_0296.exe`, record source commit and SHA-256, and run
+  `powershell -NoProfile -ExecutionPolicy Bypass -File tools/Verify-DocumentationGovernance.ps1 -RepositoryRoot .` and `git diff --check`.
+  Existing owner-provided FDD/HDD fixtures may be selected only through
+  untracked cache settings; no fixture may be copied, changed, or tracked.
+- **Deferred edge and risk:** FDC/HDC controller topology/lifecycle is the
+  final T296 stage, but media backing/path policy and the single existing
+  registry route remain VM-owned. T297--T299 remain deferred. The S2 VADP EGA
+  CRTC index-`13h` storage-bound warning remains `TODO(High)`. Do not close
+  this packet or begin later work without coordinator review after S4.
 
 ## Current Technical Baseline
 
-- **T295 artifact identity:** `current-gcc` and
-  `verify-current-artifact-target` select `vm-0-5-0295`. Artifact
-  `nxvm_0_5_0295.exe` SHA-256:
-  `52B291B1E1100D945BD44B7B1F88A622F7B2B7D3468BC78997ED90732BCA179A`.
+- **T296 artifact identity:** `current-gcc` and
+  `verify-current-artifact-target` select `vm-0-5-0296`. The S4 verification
+  record will retain only `nxvm_0_5_0296.exe` under ignored `build/output/`.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
