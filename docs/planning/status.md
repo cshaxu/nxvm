@@ -2,8 +2,42 @@
 
 ## Current Work
 
-**Idle.** M5 Td S41 restored one-current-authority discipline; admit T293
-only through a new approved packet.
+**M5 T291 S4: Protected-return fault atomicity -- active.**
+
+| Requirement | Acceptance evidence |
+| --- | --- |
+| Preserve the architectural state of a faulting protected-mode far return. | A focused core corpus proves invalid or non-present return `CS`/`SS` and an inaccessible return entry deliver the required fault without a partial `SP`, `CS`, `SS`, `IP`, `CPL`, segment-cache, or flags commit. |
+| Close the equivalent protected-mode `RETF` and `IRET` defect class within the current implementation. | The similar-issue sweep records every relevant pop-before-validation path in `cpu_instructions.c`, fixes each in scope or records a bounded deferral with owner approval. |
+| Retain successful privilege-return behavior. | Existing protected privilege and call-gate corpora pass alongside the new negative corpus; full `current-gates-gcc` passes. |
+
+- **Original request:** append a tracked subtask to repair the audit finding
+  that protected `RETF`/`IRET` may advance the guest stack before all
+  return-frame validation succeeds. The owner corrected the initial T287
+  allocation to the current T291 sequence; this is S4.
+- **Scope:** the protected-mode far-return and outer-privilege `IRET` paths,
+  their smallest shared non-mutating frame-read/preflight support if needed,
+  and focused core tests/CMake registration.
+- **Non-goals:** new instruction families, 32-bit protected-return completion,
+  task switching, new Windows compatibility claims, or a broad CPU refactor.
+- **Risk:** the current path is live in call-gate and protected-privilege
+  handling; changing its ordering can regress valid returns or fault delivery.
+  Keep the commit boundary small and verify both valid and failing frames.
+- **Similar-issue sweep:** before changing code, inspect all protected return
+  paths reached through `_e_ret_far`, `_ser_ret_far_outer`,
+  `_ser_iret_protected_outer_16`, and their direct helpers. Record each
+  production hit as fixed, not applicable with a reason, or deferred in
+  `TODO.md`; do not broaden the task to unrelated ordinary `POP` operations.
+- **Rules:** Architecture overview, module layout, contracts, coding standard,
+  source policy, execution workflow, and execution policy apply. No exception
+  is requested.
+- **Verification:** run the new focused corpus, retained
+  `current.core-machine-protected-privilege-smoke` and
+  `current.core-machine-call-gate-smoke`, then `current-gates-gcc`. On closure,
+  record the sweep, commands, exact markers, commit, and the task's rebuilt
+  `0.5.0291` developer artifact identity as required by the task-ID policy.
+- **Stop condition:** all stated failure cases are atomic at the defined guest
+  boundary, successful returns remain covered, and no in-scope production hit
+  lacks a recorded disposition.
 
 ## Current Technical Baseline
 
