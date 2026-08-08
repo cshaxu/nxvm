@@ -48,24 +48,35 @@ original identifiers.
 ### C. Windows 3.x Display And Storage Prerequisites
 
 T287 remains a bounded external readiness corpus. Its fixed-drive BDS geometry
-and real-mode 80386 address-size failures are closed as individual admissions;
-the current external checkpoint reaches Windows Setup's Welcome page. This does
-not itself establish a Standard-mode checkpoint or pre-admit T288/T289.
+and real-mode 80386 address-size failures are closed as individual admissions.
+The current external checkpoint completes Setup file copy and stops at an
+internal `#CE` before its graphics transition. That stop admits T288 only; it
+does not establish a Standard-mode checkpoint or pre-admit broad CPU, FPU, or
+FDC work.
 
-### D. Protected-Mode And FPU Work Triggered By Evidence
-
-| Task | Owner and purpose | Dependency and stop condition |
-| --- | --- | --- |
-| T288 | First corpus-proven 286/386 compatibility gap from an owned reproducer. | One prepared-state or system corpus must identify one instruction/system family; T287 did not supply a CPU admission. No speculative opcode sweep. |
-| T289 | 80386 Enhanced-mode prerequisite selected by corpus, such as CPL3 paging permissions, 32-bit segmentation/control transfer, or 32-bit TSS behavior. | A failing prepared-state or system corpus is required. No broad 386-complete claim. |
-| T290 | Present-FPU extension selected by corpus: 80287/80387 profile state, format, environment, or exception delivery. | T287 or another owned reproducer. No host floating-point shortcut or blanket FPU claim. |
-| T291 | Windows 3.x Enhanced-mode readiness corpus and bounded deferral map. | T285--T290 as dictated by T287. No Windows 95 claim. |
-
-### E. M5 Closure And Handoff
+### D. Windows Checkpoint, Firmware, FDC, And CPU Evidence
 
 | Task | Owner and purpose | Dependency and stop condition |
 | --- | --- | --- |
-| T292 | Current-source M5 closure audit against the closure checklist, including single-owner/path, CMake graph, retained NXVM UX, Windows checkpoint evidence, and all remaining deferrals. | T264--T291. M5 may close only if the checklist, roadmap and TODO agree; otherwise this task records the next bounded M5 queue rather than declaring closure. |
+| T288 | Windows Setup fast replay and first post-copy fault repair. Capture a complete structured internal-`#CE` diagnostic from the long external run; use an ignored, hash-recorded post-copy working media clone only for local replay; derive a millisecond prepared-state corpus; repair exactly one demonstrated CPU, exception, FPU, firmware, or device family. | The fault must include opcode, exception code, execution point, mode, and a bounded recent window. The clone is never committed and the source media is never modified. Full Setup verifies only before/after checkpoints. |
+| T289 | Materialize the immutable default PC/AT ROM instruction image separately from reset-time BDA and device state. | Preserve one firmware/boot/ROM-service path and verify ROM mapping, FDD/HDD/no-media boot, Console, and debugger. |
+| T290 | Freeze FDC drive-to-media topology and DOR selection semantics. | Require a focused FDC corpus. Core owns frozen drive bindings and selection; VM/profile declares them before composition freeze. Cover drive 0/1 presence, SENSE DRIVE STATUS, and selected-absent rejection. No motor, DIR, second-drive UI, rotation, or extra commands. |
+| T291 | Add FDC per-drive DOR motor, media generation, and DIR disk-change semantics. | Requires T290 and a focused media-change corpus. Cover nonselected drive, no-media, reset, DMA/IRQ6 cancellation/re-request, and DOS FDD0 boot. No Console insertion, rotation delay, deleted-data, or scan commands. |
+| T292 | 80386 real-mode high-frequency semantic conformance selected from T288's admission map. | Prepared-state corpus first, with only demonstrated failing forms from a non-overlapping set of `66h`/`67h`, REP variants, segment overrides, address-size stack behavior, or one far-transfer form. No broad 386 claim, paging, LDT, task gate, 32-bit TSS, or FPU work. |
+
+### E. Later CPU, FPU, And Readiness Work
+
+| Task | Owner and purpose | Dependency and stop condition |
+| --- | --- | --- |
+| T293 | 80386 Enhanced-mode prerequisite selected by corpus, such as CPL3 paging permissions, 32-bit segmentation/control transfer, or 32-bit TSS behavior. | A failing prepared-state or system corpus is required. No broad 386-complete claim. |
+| T294 | Present-FPU extension selected by corpus: 80287/80387 profile state, format, environment, or exception delivery. | T288 or another owned reproducer. No host floating-point shortcut or blanket FPU claim. |
+| T295 | Windows 3.x Enhanced-mode readiness corpus and bounded deferral map. | T285--T294 as dictated by T287. No Windows 95 claim. |
+
+### F. M5 Closure And Handoff
+
+| Task | Owner and purpose | Dependency and stop condition |
+| --- | --- | --- |
+| T296 | Current-source M5 closure audit against the closure checklist, including single-owner/path, CMake graph, retained NXVM UX, Windows checkpoint evidence, and all remaining deferrals. | T264--T295. M5 may close only if the checklist, roadmap and TODO agree; otherwise this task records the next bounded M5 queue rather than declaring closure. |
 
 ## Later-Milestone Handoff
 
