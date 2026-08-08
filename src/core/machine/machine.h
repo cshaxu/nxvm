@@ -69,6 +69,12 @@ typedef struct core_machine_immutable_rom_mapping {
     uint8_t *image;
 } core_machine_immutable_rom_mapping;
 
+struct core_machine_firmware_context {
+    core_machine *machine;
+    C_INT active;
+    C_INT configuring;
+};
+
 struct core_machine {
     core_machine_lifecycle lifecycle;
     STD_ATOMIC_BOOL stop_requested;
@@ -121,6 +127,11 @@ struct core_machine {
     core_machine_hdc hdc;
     t_kbc shared_kbc;
     t_vadp shared_vadp;
+    const core_machine_firmware_provider *firmware_provider;
+    C_VOID *firmware_provider_context;
+    core_machine_firmware_context firmware_context;
+    C_INT firmware_provider_frozen;
+    C_INT firmware_operation_active;
     const core_machine_execution_provider *execution_provider;
     C_VOID *execution_provider_context;
     C_INT execution_provider_frozen;
@@ -139,4 +150,5 @@ C_VOID core_machine_trace_record(
 C_VOID core_machine_cpu_diagnostic_initialize(core_machine *machine);
 C_VOID core_machine_cpu_diagnostic_reset(core_machine *machine);
 C_INT core_machine_configuration_is_open(const core_machine *machine);
+C_INT core_machine_mutable_operation_is_allowed(const core_machine *machine);
 #endif

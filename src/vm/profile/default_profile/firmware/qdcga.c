@@ -19,90 +19,89 @@
 #define QDCGA_MAX_PAGES 8u
 #define QDCGA_TEXT_ROWS 25u
 
-static uint16_t qdcga_read16(vm_profile_default_context *profile, uint32_t address)
+static uint16_t qdcga_read16(core_machine_firmware_context *firmware,
+    uint32_t address)
 {
     uint16_t value = 0u;
-    (C_VOID)core_machine_profile_binding_read_real(&profile->binding,
-        (uint16_t)(address >> 4), (uint16_t)(address & 0x0fu), &value,
+    (C_VOID)core_machine_firmware_memory_read(firmware, address, &value,
         sizeof(value));
     return value;
 }
 
-static C_VOID qdcga_write8(vm_profile_default_context *profile, uint32_t address,
+static C_VOID qdcga_write8(core_machine_firmware_context *firmware, uint32_t address,
     uint8_t value)
 {
-    (C_VOID)core_machine_profile_binding_write_real(&profile->binding,
-        (uint16_t)(address >> 4), (uint16_t)(address & 0x0fu), &value,
+    (C_VOID)core_machine_firmware_memory_write(firmware, address, &value,
         sizeof(value));
 }
 
-static C_VOID qdcga_write16(vm_profile_default_context *profile, uint32_t address,
+static C_VOID qdcga_write16(core_machine_firmware_context *firmware, uint32_t address,
     uint16_t value)
 {
-    (C_VOID)core_machine_profile_binding_write_real(&profile->binding,
-        (uint16_t)(address >> 4), (uint16_t)(address & 0x0fu), &value,
+    (C_VOID)core_machine_firmware_memory_write(firmware, address, &value,
         sizeof(value));
 }
 
-static uint16_t qdcga_columns(vm_profile_default_context *profile)
+static uint16_t qdcga_columns(core_machine_firmware_context *firmware)
 {
-    return qdcga_read16(profile, QDCGA_BDA_COLUMNS);
+    return qdcga_read16(firmware, QDCGA_BDA_COLUMNS);
 }
 
-static uint16_t qdcga_page_size(vm_profile_default_context *profile)
+static uint16_t qdcga_page_size(core_machine_firmware_context *firmware)
 {
-    return qdcga_read16(profile, QDCGA_BDA_PAGE_SIZE);
+    return qdcga_read16(firmware, QDCGA_BDA_PAGE_SIZE);
 }
 
-static uint16_t qdcga_cursor_address(vm_profile_default_context *profile,
+static uint16_t qdcga_cursor_address(core_machine_firmware_context *firmware,
     uint8_t page, uint8_t row, uint8_t column)
 {
-    return (uint16_t)((uint32_t)page * qdcga_page_size(profile) / 2u +
-        (uint32_t)row * qdcga_columns(profile) + column);
+    return (uint16_t)((uint32_t)page * qdcga_page_size(firmware) / 2u +
+        (uint32_t)row * qdcga_columns(firmware) + column);
 }
 
-static C_VOID qdcga_set_cursor(vm_profile_default_context *profile, uint8_t page,
+static C_VOID qdcga_set_cursor(core_machine_firmware_context *firmware, uint8_t page,
     uint8_t row, uint8_t column)
 {
-    qdcga_write8(profile, QDCGA_BDA_CURSOR + (uint32_t)page * 2u, column);
-    qdcga_write8(profile, QDCGA_BDA_CURSOR + (uint32_t)page * 2u + 1u, row);
-    uint16_t address = qdcga_cursor_address(profile, page, row, column);
-    (C_VOID)core_machine_profile_binding_write_port(&profile->binding, 0x03d4u,
+    qdcga_write8(firmware, QDCGA_BDA_CURSOR + (uint32_t)page * 2u, column);
+    qdcga_write8(firmware, QDCGA_BDA_CURSOR + (uint32_t)page * 2u + 1u, row);
+    uint16_t address = qdcga_cursor_address(firmware, page, row, column);
+    (C_VOID)core_machine_firmware_port_write(firmware, 0x03d4u,
         0x0eu);
-    (C_VOID)core_machine_profile_binding_write_port(&profile->binding, 0x03d5u,
+    (C_VOID)core_machine_firmware_port_write(firmware, 0x03d5u,
         address >> 8);
-    (C_VOID)core_machine_profile_binding_write_port(&profile->binding, 0x03d4u,
+    (C_VOID)core_machine_firmware_port_write(firmware, 0x03d4u,
         0x0fu);
-    (C_VOID)core_machine_profile_binding_write_port(&profile->binding, 0x03d5u,
+    (C_VOID)core_machine_firmware_port_write(firmware, 0x03d5u,
         address & 0xffu);
 }
 
-C_VOID vm_profile_default_cga_reset(vm_profile_default_context *profile)
+C_VOID vm_profile_default_cga_reset(vm_profile_default_context *profile,
+    core_machine_firmware_context *firmware)
 {
     if (profile == STD_NULL) return;
-    (C_VOID)core_machine_profile_binding_write_port(&profile->binding, 0x03d8u,
+    (C_VOID)core_machine_firmware_port_write(firmware, 0x03d8u,
         0x05u);
-    qdcga_write16(profile, QDCGA_BDA_COLUMNS, 80u);
-    qdcga_write16(profile, QDCGA_BDA_PAGE_SIZE, 0x1000u);
-    qdcga_write8(profile, QDCGA_BDA_PAGE, 0u);
-    qdcga_write8(profile, QDCGA_BDA_MODE, 3u);
-    qdcga_write8(profile, QDCGA_BDA_CURSOR_TOP, 6u);
-    qdcga_write8(profile, QDCGA_BDA_CURSOR_BOTTOM, 7u);
-    (C_VOID)core_machine_profile_binding_write_port(&profile->binding, 0x03d4u,
+    qdcga_write16(firmware, QDCGA_BDA_COLUMNS, 80u);
+    qdcga_write16(firmware, QDCGA_BDA_PAGE_SIZE, 0x1000u);
+    qdcga_write8(firmware, QDCGA_BDA_PAGE, 0u);
+    qdcga_write8(firmware, QDCGA_BDA_MODE, 3u);
+    qdcga_write8(firmware, QDCGA_BDA_CURSOR_TOP, 6u);
+    qdcga_write8(firmware, QDCGA_BDA_CURSOR_BOTTOM, 7u);
+    (C_VOID)core_machine_firmware_port_write(firmware, 0x03d4u,
         0x0au);
-    (C_VOID)core_machine_profile_binding_write_port(&profile->binding, 0x03d5u,
+    (C_VOID)core_machine_firmware_port_write(firmware, 0x03d5u,
         6u);
-    (C_VOID)core_machine_profile_binding_write_port(&profile->binding, 0x03d4u,
+    (C_VOID)core_machine_firmware_port_write(firmware, 0x03d4u,
         0x0bu);
-    (C_VOID)core_machine_profile_binding_write_port(&profile->binding, 0x03d5u,
+    (C_VOID)core_machine_firmware_port_write(firmware, 0x03d5u,
         7u);
-    (C_VOID)core_machine_profile_binding_write_port(&profile->binding, 0x03d4u,
+    (C_VOID)core_machine_firmware_port_write(firmware, 0x03d4u,
         0x0cu);
-    (C_VOID)core_machine_profile_binding_write_port(&profile->binding, 0x03d5u,
+    (C_VOID)core_machine_firmware_port_write(firmware, 0x03d5u,
         0u);
-    (C_VOID)core_machine_profile_binding_write_port(&profile->binding, 0x03d4u,
+    (C_VOID)core_machine_firmware_port_write(firmware, 0x03d4u,
         0x0du);
-    (C_VOID)core_machine_profile_binding_write_port(&profile->binding, 0x03d5u,
+    (C_VOID)core_machine_firmware_port_write(firmware, 0x03d5u,
         0u);
-    qdcga_set_cursor(profile, 0u, 5u, 0u);
+    qdcga_set_cursor(firmware, 0u, 5u, 0u);
 }

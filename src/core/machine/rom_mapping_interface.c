@@ -61,7 +61,9 @@ type_status core_machine_register_immutable_rom_mapping(
         (uint64_t)physical_start + bytes > (uint64_t)TYPE_MAX_UNSIGNED_32 + 1u) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    if (!core_machine_configuration_is_open(machine)) return TYPE_STATUS_INVALID_STATE;
+    if (!core_machine_configuration_is_open(machine) &&
+        !(machine->firmware_operation_active && machine->firmware_context.active &&
+          machine->firmware_context.configuring)) return TYPE_STATUS_INVALID_STATE;
     if (machine->immutable_rom_mapping_count >=
         CORE_MACHINE_IMMUTABLE_ROM_MAPPING_CAPACITY) return TYPE_STATUS_NO_MEMORY;
 

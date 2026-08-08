@@ -9,8 +9,8 @@ extern "C" {
 
 #include "type.h"
 
-typedef struct t_ram t_ram;
 typedef struct core_machine_media_registry core_machine_media_registry;
+typedef struct core_machine_firmware_context core_machine_firmware_context;
 
 #define VM_PROFILE_DEFAULT_DEVICE_BIOS "Unknown BIOS"
 
@@ -170,8 +170,10 @@ C_VOID vm_profile_default_bios_add_interrupt_code(t_bios *bios, uint8_t *bytes,
 C_VOID vm_profile_default_bios_set_boot_code(t_bios *bios, uint8_t *bytes,
     uint16_t length);
 C_VOID vm_profile_default_bios_initialize(t_bios *bios);
-C_INT vm_profile_default_bios_materialize(t_bios *bios, core_machine *machine);
-C_VOID vm_profile_default_bios_reset(t_bios *bios, t_ram *ram,
+C_INT vm_profile_default_bios_materialize(t_bios *bios,
+    core_machine_firmware_context *firmware);
+C_VOID vm_profile_default_bios_reset(t_bios *bios,
+    core_machine_firmware_context *firmware,
     const core_machine_media_registry *media_registry,
     core_machine_media_id hdd_media_id);
 C_VOID vm_profile_default_bios_refresh(t_bios *bios);
@@ -179,7 +181,8 @@ C_VOID vm_profile_default_bios_finalize(t_bios *bios);
 C_VOID vm_profile_default_bios_print(const t_bios *bios);
 C_VOID vm_profile_default_bios_set_boot_hdd(t_bios *bios, C_INT enabled);
 C_INT vm_profile_default_bios_get_boot_hdd(const t_bios *bios);
-C_INT vm_profile_default_bios_take_boot_failure_report(t_ram *ram);
+C_INT vm_profile_default_bios_take_boot_failure_report(
+    core_machine_firmware_context *firmware);
 
 #define VBIOS_POST_BOOT "             \
 $(label_post_boot_start):           \n\

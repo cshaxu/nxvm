@@ -12,8 +12,10 @@ extern "C" {
 #include "core/machine/display_interface.h"
 
 typedef struct vm_profile_default_context vm_profile_default_context;
+typedef struct core_machine_firmware_context core_machine_firmware_context;
 
-C_VOID vm_profile_default_cga_reset(vm_profile_default_context *profile);
+C_VOID vm_profile_default_cga_reset(vm_profile_default_context *profile,
+    core_machine_firmware_context *firmware);
 
 #ifdef __cplusplus
 }/*_EOCD_*/

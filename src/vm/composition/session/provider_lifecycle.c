@@ -30,16 +30,13 @@ C_VOID vm_session_provider_lifecycle_initialize(vm_session *session)
 
 C_VOID vm_session_provider_lifecycle_refresh(vm_session *session)
 {
-    if (session == STD_NULL) return;
-    vm_session_profile_firmware_refresh(session);
-    vm_session_machine_devices_refresh(session);
+    if (session != STD_NULL) vm_session_machine_devices_refresh(session);
 }
 
 C_VOID vm_session_provider_lifecycle_reset(vm_session *session)
 {
     if (session == STD_NULL) return;
     vm_session_machine_devices_reset(session);
-    vm_session_profile_firmware_reset(session);
 }
 
 C_VOID vm_session_provider_lifecycle_finalize(vm_session *session)
