@@ -2,87 +2,17 @@
 
 ## Current Work
 
-**M5 T296 S4 active - core-owned FDC/HDC controller authority.**
-
-S1 is committed as `56433a9`, S2 as `e84199e`, and S3 as `a02a0f0`; their
-evidence remains recorded in [the T296 migration
-matrix](../architecture/core-machine-shared-device-migration.md). S4 alone
-moves FDC/HDC controller authority into `core_machine`. The task remains
-active for coordinator review. Do not admit T297 or later work.
-
-### Task Packet
-
-- **Original request:** Move remaining shared-device initialization, binding,
-  reset, and finalization authority to `core_machine` in three fixed stages.
-  VM composition/profile may submit only frozen typed topology, configuration,
-  and provider/media policy; it must not borrow or bind controller, PIC, or
-  port storage.
-- **S4 objective and completion condition:** VM composition submits frozen,
-  neutral FDC and ATA topology while `INITIALIZED`: declared controller ports,
-  IRQ/DMA wiring, opaque DMA request binding, drive-slot IDs, and the existing
-  typed media-registry provider route. Core validates and copies topology,
-  connects and initializes embedded controllers, registers their ports, and is
-  their sole reset/refresh/finalize owner. VM keeps FDD/HDD backing and path
-  policy. Completion requires a full-composition S4 owner gate, focused
-  lifecycle smoke, the retained/full GCC gates, and the final `0296` artifact;
-  this packet stays active pending coordinator review.
-- **Reference baseline:** T295 historical behavior and its recorded artifact
-  provenance remain in Git history. S4 advances only the current developer
-  artifact identity; it does not alter product behavior or import media.
-- **In scope:** `core_machine` FDC/HDC typed topology configuration, embedded
-  controller connection/initialization/port registration/lifecycle; VM profile
-  declaration and existing typed media-registry provider policy; an S4 static
-  owner gate and lifecycle smoke.
-- **Non-goals:** FDD/HDD backing or local-path policy; media registry routes;
-  scheduler or second machine; storage mirror; host shortcut; and
-  Console/debugger/boot experience change. T297 firmware capability, T298
-  debugger capability, and the remaining T299 raw-borrow deletion remain
-  deferred.
-- **Applicable rules:** `core/machine` owns neutral mutable guest state and
-  lifecycle order; VM/profile owns immutable PC/AT topology, defaults, ROM and
-  provider/media policy. Core receives no PC/AT/default-profile/ROM-vendor,
-  BIOS/DOS, local-path, or product-policy meaning. Preserve the single media
-  route and owner-provided read-only test media rule. No source import or
-  license/provenance action is involved.
-- **Implementation and call chain:** `vm_session_storage_initialize` creates
-  the existing VM-owned media registry, translates the immutable profile into
-  neutral FDC/ATA topology, and submits it through core configuration before
-  profile binding. Core copies the topology, consumes only the typed registry
-  and opaque DMA request handle, and connects/initializes/registers embedded
-  FDC/HDC using its own PIC and port storage. VM later binds and freezes the
-  unchanged registry around VM-owned FDD/HDD objects; it no longer borrows or
-  directly drives either controller. Core cold reset, scheduler refresh, and
-  destruction retain the sole controller lifecycle order.
-- **Similar-issue sweep:** The defect class is a VM composition source directly
-  borrowing FDC/HDC/PIC/port storage or connecting, initializing, registering,
-  resetting, refreshing, or finalizing controller state. Query:
-  `rg -n "core_machine_(configuration_(fdc|hdc|shared_pic|port)_borrow|fdc_(connect|initialize|reset|refresh|finalize)|hdc_(connect|initialize|reset|refresh|finalize|port_provider)|install_port_provider)" src/vm/composition --glob '*.[ch]'`.
-  Every production hit must become core topology submission or be an explicit
-  T297+ exclusion; no FDD/HDD/path or firmware/debugger source may be changed.
-- **S4 evidence and result:**
-  `core-machine-controller-authority-smoke` emitted
-  `M5:T296:S4:CONTROLLER-AUTHORITY:OK`; its owner gate and retained FDC/ATA,
-  no-media, boot/DOS, Console/debugger, and two-session checks passed. The
-  managed absolute `current-gates-gcc` command passed all 49 static/build/docs
-  gates and 125/125 current-gate tests. Its untracked cache selected only the
-  owner-provided read-only fixtures; neither fixture was copied, modified, or
-  staged. `powershell -NoProfile -ExecutionPolicy Bypass -File tools/Verify-DocumentationGovernance.ps1 -RepositoryRoot .` and `git diff --check` pass.
-  The ignored developer artifact is `build/output/nxvm_0_5_0296.exe`
-  (2,682,261 bytes), SHA-256
-  `28DBFE1A57EA2A1D53276CA9CED5D9E3A8B742F557C9A13076274AE2067EA02A`,
-  built from source commit
-  `fa18847d0aed685554f786c89ba0f5908e539fb7`.
-- **Deferred edge and risk:** FDC/HDC controller topology/lifecycle is the
-  final T296 stage, but media backing/path policy and the single existing
-  registry route remain VM-owned. T297--T299 remain deferred. The S2 VADP EGA
-  CRTC index-`13h` storage-bound warning remains `TODO(High)`. Do not close
-  this packet or begin later work without coordinator review after S4.
+**Idle.** M5 T296 is closed in [M5 History](../history/m5.md); the unstarted
+queue head is T297 and remains unadmitted.
 
 ## Current Technical Baseline
 
-- **T296 artifact identity:** `current-gcc` and
-  `verify-current-artifact-target` select `vm-0-5-0296`. The S4 verification
-  record retains only `nxvm_0_5_0296.exe` under ignored `build/output/`.
+- **T296 closure artifact identity:** `current-gcc` and
+  `verify-current-artifact-target` select `vm-0-5-0296`. The ignored developer
+  artifact `nxvm_0_5_0296.exe` is 2,682,261 bytes with SHA-256
+  `28DBFE1A57EA2A1D53276CA9CED5D9E3A8B742F557C9A13076274AE2067EA02A`,
+  built from `fa18847d0aed685554f786c89ba0f5908e539fb7`; its final managed GCC
+  verification passed 49 static/build/docs gates and 125/125 tests.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
@@ -97,7 +27,6 @@ active for coordinator review. Do not admit T297 or later work.
 
 | Task | Compact result |
 | --- | --- |
-| T288 | Resolved the external Setup post-copy `#CE` with the bounded 16-bit protected-mode call-gate and outer-`RETF` path; core and real replay now reach the next `MOV CR0,EAX` `#UD` checkpoint without claiming Windows support. |
 | T289 | Materialized the default PC/AT ROM image before provider freeze, including its A20 reset alias, while reset restores only IVT/BDA and mutable device tables; ROM, boot, Console, debugger, and display regressions pass. |
 | T290 | Replaced the FDC single-media binding with frozen drive slots and exact DOR/unit selection, proven through core ports, VM composition, and DOS FDD0 regression without broadening FDC behavior. |
 | T291 | Made FDC generation, disk-change and motor/DMA cancellation per frozen drive slot, with core port and DOS FDD0 evidence while leaving timing, UI, and commands deferred. |
@@ -105,6 +34,7 @@ active for coordinator review. Do not admit T297 or later work.
 | T293 | Removed the unused post-`#UD` transition surface, made protected outer `RETF`/`IRET` frame validation non-mutating until commit, and completed its exception/atomicity matrix: non-present returned `CS` is `#NP`, non-present `SS` is the retained terminal `#SS`, and invalid entries are `#GP`; all six `RETF`/outer-`IRET` cases preserve the defined pre-commit boundary. |
 | T294 | Completed the codebase-driven public-surface/raw-borrow matrix, fixed T296's three stages and T297's future firmware-capability lifecycle precondition, and left T300/T302 conditional; no runtime behavior, CMake graph, or artifact changed. |
 | T295 | Moved CPU execution-to-shared-PIC binding into `core_machine_create`; VM session no longer borrows or binds that path. CPU/PIC lifecycle evidence and all current gates passed; RTC/FDC/HDC/DMA remain T296 and debugger raw borrows remain T298/T299. |
+| T296 | Completed A VADP/ports, B DMA/RTC/CMOS/NMI, and C FDC/HDC ownership migration through frozen typed core submissions. S2 `e84199e`, S3 `a02a0f0`, and S4 `fa18847d0aed685554f786c89ba0f5908e539fb7` passed focused owner/lifecycle evidence and the final 49-gate, 125-test verification; T297--T299 remain deferred. |
 
 Detailed contracts, commands, artifact provenance, and prior closures are in
 [M5 History](../history/m5.md) and Git history. The [M5 convergence queue]

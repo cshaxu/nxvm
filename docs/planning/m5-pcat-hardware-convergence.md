@@ -16,14 +16,13 @@ Tasks are ROI-ordered, subject to their stated dependencies; a task begins with
 its own S1 contract and may split when its bounded stop condition is reached. A runnable implementation task uses its
 numeric task identifier as its artifact revision when it completes.
 
-T270--T295 are closed and archived in [M5 History](../history/m5.md). The
-unstarted numbered queue begins at T296.
+T270--T296 are closed and archived in [M5 History](../history/m5.md). The
+unstarted numbered queue begins at T297.
 
 ### A. Core Public-Surface Closure And Mantle Prerequisites
 
 | Task | Owner and purpose | Dependency and stop condition |
 | --- | --- | --- |
-| T296 | Move remaining shared-device initialization authority into core through mandatory stages: S1 migration matrix; S2 VADP and port setup; S3 DMA plus RTC/CMOS/NMI setup; S4 FDC/HDC setup. VM/profile supplies frozen topology, ports, IRQ/DMA routes, defaults, and media/provider policy only. | Depends on T295. Each stage needs its own focused display/port, DMA/clock/IRQ, or FDC/ATA regression and stops before the next stage on any lifecycle or owner regression. No controller storage mirror, PC/AT default in core, or media/path policy migration. |
 | T297 | Replace raw profile binding with an opaque core-invoked firmware capability. S1 freezes its operation enum, lifecycle, failure/atomicity, re-entry, and nested-call rules before implementation. Only the S1-approved checked guest-memory, port, and copied CPU-state operations may cross defined service boundaries. | Depends on T296. No `t_cpu *`, `t_ram *`, port/device pointer, executor access, DOS/BIOS meaning, or mode/CRx setter crosses the boundary. |
 | T298 | Replace debugger CPU/instruction borrows with copied or operation-specific core debug capability while retaining the NXVM Console/debugger UX. | Depends on T295 and T297. No debugger command, prompt, or startup behavior change. |
 | T299 | Remove public configuration borrows and raw profile-binding accessors. Migrate required tests to public corpus or a clearly test-only adapter. | Depends on T295--T298. Product headers export no raw CPU, RAM, port, controller, or executor pointer. |

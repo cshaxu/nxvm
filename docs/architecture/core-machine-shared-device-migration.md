@@ -43,7 +43,7 @@ composition-owned and do not move into core.
 | **C - FDC.** `vm_session_machine_devices_initialize_fdc` borrows core FDC, DMA, PIC, and port storage; it binds DMA, calls `core_machine_fdc_connect`, then `core_machine_fdc_initialize`. Core cold reset/destroy already call `core_machine_fdc_reset/finalize`. | `core_machine.fdc` is embedded core storage; VM raw borrows compose it. VM-created media registry remains the only provider route; frozen drive-slot IDs are already typed. | S4 replaces borrows with a frozen FDC topology: ports, IRQ/DMA wiring, typed drive slots, and registry/provider binding. Core performs DMA bind, FDC connect/initialize/reset/finalize, and port registration. VM retains backing/media policy. | S4 static gate rejects VM FDC/PIC/DMA/port borrows and direct lifecycle calls; run core media-I/O and FDC ports plus FDD/DOS, boot, Console/debugger, and isolation regressions. Stop on a second media route or backing/path migration. |
 | **C - HDC.** `vm_session_machine_devices_initialize_hdc` borrows core HDC and PIC storage, calls `core_machine_hdc_connect/initialize`, then installs its port provider. Core cold reset/destroy already call `core_machine_hdc_reset/finalize`. | `core_machine.hdc` is embedded core storage; VM borrows HDC/PIC and registers ATA port ranges. `vm_session.hdd` and its backing stay VM-owned and use the existing media registry. | S4 replaces borrows with frozen typed ATA topology: PIO ranges/features, IRQ, abstract drive slot, and media/provider policy. Core validates neutral topology, connects/initializes/registers/resets/finalizes HDC, and receives no local path, PC/AT identity, or BIOS/DOS meaning. | S4 static gate rejects VM HDC/PIC/port lifecycle wiring; run core media-I/O, ATA/FDC port, HDD/FDD/DOS, boot, Console/debugger, and isolation regressions. Stop if policy enters core or a raw firmware/debug capability is required. |
 
-## S2 / A Implementation Evidence (Pending Coordinator Review)
+## S2 / A Implementation Evidence (Completed)
 
 `core_machine_display_config` is the sole S2 typed submission: neutral text
 timing, EGA sequencer/controller configuration, exact VADP port groups, and a
@@ -74,7 +74,7 @@ warning about the pre-existing VADP EGA CRTC index-`13h` storage bound is
 tracked as `TODO(High)` for a future focused VADP admission; it is not changed
 by S2.
 
-## S3 / B Implementation Evidence (Pending Coordinator Review)
+## S3 / B Implementation Evidence (Completed)
 
 `core_machine_dma_wiring` and `core_machine_rtc_cmos_config` are the S3 typed
 submissions. The latter contains only a port pair, IRQ/tick values, NMI index
@@ -103,7 +103,7 @@ including timer/IRQ, boot, Console/debugger, DOS, and two-session isolation.
 It used only existing owner-provided fixtures selected in the untracked build
 cache. S4 subsequently consumes the remaining FDC/HDC edges.
 
-## S4 / C Implementation Evidence (Pending Coordinator Review)
+## S4 / C Implementation Evidence (Completed)
 
 `core_machine_fdc_topology` and `core_machine_hdc_topology` are the final
 neutral copied submissions. They contain only controller register topology,
@@ -132,9 +132,8 @@ distinct core FDC/HDC storage. Retained FDC topology/media-change, ATA PIO,
 FDD/HDD/DOS, boot, Console, and debugger regressions remain in the full gate.
 The final managed GCC run passed 49 static/build/docs gates and 125/125
 current-gate tests. `nxvm_0_5_0296.exe` is retained only under ignored
-`build/output/`, with its source commit and SHA-256 recorded in the active
-task packet; T296 remains active for coordinator review and T297--T299 remain
-deferred.
+`build/output/`, with its source commit and SHA-256 recorded in the T296
+closure record. T296 is closed; T297--T299 remain deferred.
 
 ## Preserved Ordering and Deferred Edges
 
