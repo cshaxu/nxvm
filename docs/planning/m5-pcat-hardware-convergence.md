@@ -33,9 +33,10 @@ trees, `build/output`, and user files are never cleanup targets.
 
 The boundary migration consumed T270--T278. The pre-migration future queue
 that formerly began at T270 was first displaced to T279--T287; this approved
-reliability and interface package consumes T279--T283, so that older queue now
-begins at T284. Historical completed task records retain their original
-identifiers.
+reliability and interface package consumes T279--T283. T284 then froze the
+mode-10h EGA admission map and expected-failing corpus, so the unstarted
+display implementation queue begins at T285. Historical completed task records
+retain their original identifiers.
 
 ### B. Reliability And Contract Evidence
 
@@ -46,8 +47,7 @@ identifiers.
 
 | Task | Owner and purpose | Dependency and stop condition |
 | --- | --- | --- |
-| T284 | EGA/VGA admission map and failing corpus. Freeze the first Windows-facing mode/register family, its memory map, ROM service boundary, and user-supplied fixture evidence. | T279--T281 and T283. T282's accepted host-boundary conclusion applies but is not a blocker. Design/probe within the task; do not implement a generic "VGA" layer or bundle guest assets. |
-| T285 | First selected EGA/VGA register-family implementation, following T284's corpus; retain VADP as the sole video-state owner and copied platform frames. | T284. Split before DAC, planar/latch, raster, or VBE if not selected by the corpus. |
+| T285 | Implement the T284 `INT 10h` mode `10h` / `EGA-640x350x16-direct` contract and turn its expected-failing corpus green; retain VADP as the sole video-state owner and copied platform frames. | T284. Split before DAC, VGA, arbitrary EGA modes, raster timing, or VBE. |
 | T286 | ATA/FDC Windows-startup storage gap selected by a reproducible fixture: controller status/error/reset/timing or a missing transfer form. | T268--T281 and T283 as applicable. Image files remain backends, never controller substitutes. |
 | T287 | Windows 3.x Standard-mode readiness corpus and gap map using lawful, user-supplied media. Record the exact boot/checkpoint result and convert each unmet prerequisite into a bounded later admission. | T264--T286. This is evidence collection, not a support claim or committed guest asset. |
 

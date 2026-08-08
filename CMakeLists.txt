@@ -758,6 +758,10 @@ add_executable(core-machine-ega-planar-port-smoke
     tests/machine/core_machine_ega_planar_port_smoke.c
 )
 target_link_libraries(core-machine-ega-planar-port-smoke PRIVATE core-machine)
+add_executable(core-machine-ega-mode10-contract-fail
+    tests/machine/core_machine_ega_mode10_contract_fail.c
+)
+target_link_libraries(core-machine-ega-mode10-contract-fail PRIVATE core-machine)
 add_executable(vm-ega-controller-system-smoke
     tests/machine/vm_ega_controller_system_smoke.c
 )
@@ -793,6 +797,10 @@ add_executable(vm-rom-ega-int10-system-smoke
     tests/machine/vm_rom_ega_int10_system_smoke.c
 )
 target_link_libraries(vm-rom-ega-int10-system-smoke PRIVATE vm-composition)
+add_executable(vm-ega-mode10-boot-fail
+    tests/machine/vm_ega_mode10_boot_fail.c
+)
+target_link_libraries(vm-ega-mode10-boot-fail PRIVATE vm-composition)
 add_executable(vm-rom-ega-int10-dos-smoke
     tests/machine/vm_ega_planar_dos_smoke.c
 )
@@ -1374,6 +1382,17 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMENT "Verifying M5 T239 ROM EGA INT 10h boundary"
         VERBATIM)
     add_dependencies(run-current-smokes verify-rom-ega-int10-boundary)
+
+    add_custom_target(verify-t284-ega-mode10-admission
+        COMMAND "${CMAKE_COMMAND}"
+            -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -DCORE_EXPECT_FAIL_EXE:FILEPATH=$<TARGET_FILE:core-machine-ega-mode10-contract-fail>
+            -DVM_EXPECT_FAIL_EXE:FILEPATH=$<TARGET_FILE:vm-ega-mode10-boot-fail>
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_t284_ega_mode10_admission.cmake"
+        DEPENDS core-machine-ega-mode10-contract-fail vm-ega-mode10-boot-fail
+        COMMENT "Verifying M5 T284 EGA mode 10h expected-failing admission corpus"
+        VERBATIM)
+    add_dependencies(run-current-smokes verify-t284-ega-mode10-admission)
 
     add_custom_target(verify-vm-session-owner-closure
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}

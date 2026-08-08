@@ -116,6 +116,59 @@ scanline shape; an off-page or disabled cursor is not wrapped into the visible
 frame. Platform consumers may only render those copied facts and cannot infer
 or modify guest VRAM, CRTC state, or raster phase.
 
+### EGA Mode 10h Admission Contract (T284)
+
+T284 admits only the contract and expected-failing corpus for the first
+Windows-facing graphics target: BIOS `INT 10h` set mode `10h`, EGA
+`640x350x16` planar direct. It does not implement the mode and does not change
+the current runnable path, artifact version, Console/debugger UX, or existing
+text, CGA, or EGA `0Dh` behavior.
+
+The state owner remains `core/machine` VADP. VADP is the only owner of video
+registers, CRTC-derived display geometry, four-plane EGA VRAM, latches, dirty
+generation, and copied display snapshots. The default PC/AT profile may bind
+only ports, address windows, initial device configuration, and ROM bytes. The
+default ROM may request mode changes only by guest-visible port/memory
+transactions. Platform code consumes copied snapshots only; it never borrows
+guest VRAM, interprets EGA registers, or owns a renderer-side video state
+shadow.
+
+The minimal future T285 implementation input is:
+
+- keep the A0000h `64 KiB` per-plane aperture and existing planar/latch read
+  and write semantics;
+- add a mode-10h geometry decision for `640x350`, `16` indexed colors, `80`
+  bytes per scanline per plane, and plane-to-pixel composition from bits
+  0--3;
+- admit only the CRTC fields needed for geometry, stride, display-start, and
+  cursor/text restoration; unsupported CRTC fields remain deferred;
+- expose a copied indexed frame that can hold `640 * 350` pixels and the
+  fixed 16-entry EGA RGBI palette selected through the existing attribute
+  palette registers;
+- add the ROM boundary for `INT 10h AH=00h AL=10h` and the required return to
+  mode `03h`, with BDA mode/query state consistent with the retained INT 10h
+  query service.
+
+This contract does not admit VGA, DAC programming, VBE, 256-color modes, VGA
+font/text-plane behavior, composite video, light pen, arbitrary EGA modes, a
+CRTC rewrite, a VM-side VRAM shadow, a host shortcut, or a profile callback
+that bypasses VADP. Existing `EGA-320x200x16-direct` behavior remains frozen:
+its planar aperture, latch semantics, `320x200` copied frame, RGBI palette,
+ROM `0Dh` selection, and mode `03h` restoration must not change merely because
+mode `10h` is designed.
+
+T284's corpus is intentionally expected-failing before T285. The core corpus
+must prove the current gap is the missing `640x350` mode contract: snapshot
+capacity remains `640x200`, CRTC stride/geometry fields are not yet admitted,
+and the existing planar aperture can still receive tail-row bytes without
+turning that into a valid frame. The VM corpus must boot an owner-built
+fixture, request `INT 10h` mode `10h`, write all four planes, attempt to
+capture a `640x350` frame, and return to text mode; its accepted failure is the
+missing ROM/VADP mode-10h contract, not a generic VGA, renderer, host, or
+guest-media failure. No Windows media is committed; a lawful user-supplied
+Windows fixture can only become extra observation evidence under a later
+admission.
+
 ## Core Machine: Lifecycle And Cooperative Execution
 
 `core/machine` owns no host thread and exposes no `start` function or internal
