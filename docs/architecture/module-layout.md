@@ -14,7 +14,34 @@ module: it is the shared foundation. `dos` has no dependency on another
 component. `vm` is the NXVM product; `mantle` is shared VDM composition; `vdm`
 is the NXVDM product shell over mantle and dos.
 
-## Topology
+## Current And Target Topology
+
+The current tracked tree and the target component topology are deliberately
+separate. The target diagram is an architecture contract, not an inventory of
+directories that a fresh clone must contain.
+
+### Current Tracked Source Tree (M5)
+
+```text
+src/
+  type.*
+  core/{utils,machine,platform,product}/
+  vm/
+    main.c
+    composition/session/
+    {machine,platform,product,profile}/
+    profile/default_profile/firmware/
+  vdm/
+    composition/
+    machine/
+```
+
+`vdm/` is the retained M3 non-runnable skeleton and smoke-fixture source. It
+does not define `nxvdm.exe`, an NXVDM CLI, mantle, or the owned DOS backend.
+`src/mantle/`, `src/dos/`, `src/vdm/main.c`, and the remaining VDM modules do
+not yet exist in the tracked tree.
+
+### Target Component Topology (M6--M8)
 
 ```text
 src/
@@ -31,6 +58,7 @@ src/
   dos/
     {machine,platform,product,profile}/
   vdm/
+    main.c
     {machine,platform,product,profile}/
     profile/dos_minimal_profile/
 ```
@@ -240,6 +268,12 @@ paths, DOS devices/services, errors, and program exit. `dos/platform`,
 `dos/product`, and `dos/profile` may support that backend but cannot include
 core, VM, mantle, or VDM headers.
 
+The retained M3 `vdm/` skeleton directly uses core only to prove deterministic
+machine and presentation contracts without guest media. It is a non-product
+test fixture, never an alternative mantle/DOS path or an NXVDM executable.
+M6/M8 admission must either replace it with the approved mantle-plus-DOS path
+or retire it with its focused coverage moved to the owning component.
+
 `vdm/platform` owns NXVDM host policy for parent-Console protection,
 cancellation, filesystem containment, and presentation/input. `vdm/product`
 owns `nxvdm run`, launch parameters, debugging UX, display/Console policy, and
@@ -330,10 +364,10 @@ for a session context or host lease.
 
 ## M5 Convergence
 
-M5 converges on `core`, `vm`, `mantle`, `dos`, and `vdm`, plus the root
-foundation units `type.*`. `mantle/` and `dos/` remain architecture-only until
-their respective admission milestones; they do not enter the current NXVM
-build graph.
+M5 converges the implemented `core` and `vm` roots, retains only the bounded
+non-runnable VDM skeleton, and keeps the root foundation units `type.*`.
+`mantle/` and `dos/` remain architecture-only until their respective admission
+milestones; they do not enter the current NXVM build graph.
 
 The completed migration rationale is summarized in
 [M5 History](../history/m5.md). Current work must meet this document's

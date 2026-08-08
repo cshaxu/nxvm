@@ -50,15 +50,15 @@ original identifiers.
 T287 remains a bounded external readiness corpus. Its fixed-drive BDS geometry
 and real-mode 80386 address-size failures are closed as individual admissions.
 The current external checkpoint completes Setup file copy and stops at an
-internal `#CE` before its graphics transition. That stop admits T288 only; it
-does not establish a Standard-mode checkpoint or pre-admit broad CPU, FPU, or
-FDC work.
+internal `#CE` while Setup attempts to load Windows. That stop admits T288
+only; it does not establish a Standard-mode checkpoint or pre-admit broad CPU,
+FPU, or FDC work.
 
 ### D. Windows Checkpoint, Firmware, FDC, And CPU Evidence
 
 | Task | Owner and purpose | Dependency and stop condition |
 | --- | --- | --- |
-| T288 | Windows Setup fast replay and first post-copy fault repair. Capture a complete structured internal-`#CE` diagnostic from the long external run; use an ignored, hash-recorded post-copy working media clone only for local replay; derive a millisecond prepared-state corpus; repair exactly one demonstrated CPU, exception, FPU, firmware, or device family. | The fault must include opcode, exception code, execution point, mode, and a bounded recent window. The clone is never committed and the source media is never modified. Full Setup verifies only before/after checkpoints. |
+| T288 | Windows Setup fast replay and first post-copy fault repair. Capture a complete structured internal-`#CE` diagnostic from the long external run; use an ignored task-local post-copy working-media clone only for local replay; derive a millisecond prepared-state corpus; repair exactly one demonstrated CPU, exception, FPU, firmware, or device family. | The fault must include opcode, exception code, execution point, mode, and a bounded recent window. The clone, its path, and its hash are never committed; the source media is never modified. Full Setup verifies only before/after checkpoints. |
 | T289 | Materialize the immutable default PC/AT ROM instruction image separately from reset-time BDA and device state. | Preserve one firmware/boot/ROM-service path and verify ROM mapping, FDD/HDD/no-media boot, Console, and debugger. |
 | T290 | Freeze FDC drive-to-media topology and DOR selection semantics. | Require a focused FDC corpus. Core owns frozen drive bindings and selection; VM/profile declares them before composition freeze. Cover drive 0/1 presence, SENSE DRIVE STATUS, and selected-absent rejection. No motor, DIR, second-drive UI, rotation, or extra commands. |
 | T291 | Add FDC per-drive DOR motor, media generation, and DIR disk-change semantics. | Requires T290 and a focused media-change corpus. Cover nonselected drive, no-media, reset, DMA/IRQ6 cancellation/re-request, and DOS FDD0 boot. No Console insertion, rotation delay, deleted-data, or scan commands. |
