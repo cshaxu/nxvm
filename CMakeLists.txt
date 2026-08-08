@@ -191,6 +191,10 @@ add_executable(core-machine-stopped-lifecycle-smoke
     tests/core/machine_stopped_lifecycle_smoke.c
 )
 target_link_libraries(core-machine-stopped-lifecycle-smoke PRIVATE core-machine)
+add_executable(core-machine-cpu-pic-lifecycle-smoke
+    tests/core/machine_cpu_pic_lifecycle_smoke.c
+)
+target_link_libraries(core-machine-cpu-pic-lifecycle-smoke PRIVATE core-machine)
 add_executable(core-machine-memory-reconfigure-smoke
     tests/core/machine_memory_reconfigure_smoke.c
 )
@@ -1088,6 +1092,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     vm-rom-int13-hdd-type-smoke
     vm-ega-mode10-boot-smoke
     core-machine-stopped-lifecycle-smoke
+    core-machine-cpu-pic-lifecycle-smoke
     core-machine-memory-reconfigure-smoke
     core-machine-checked-memory-smoke
     core-machine-immutable-rom-mapping-smoke
@@ -1243,7 +1248,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0293 "0.5.0293")
+add_current_vm_artifact(vm-0-5-0295 "0.5.0295")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 
@@ -1571,6 +1576,13 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMENT "Verifying T262 core-owned FPU boundary"
         VERBATIM)
     add_dependencies(run-current-smokes verify-fpu-boundary)
+
+    add_custom_target(verify-core-cpu-pic-authority
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_core_cpu_pic_authority.cmake"
+        COMMENT "Verifying T295 core-owned CPU/PIC lifecycle authority"
+        VERBATIM)
+    add_dependencies(run-current-smokes verify-core-cpu-pic-authority)
 endif()
 
 if(PROJECT_ENABLE_BOCHX_RESEARCH)
@@ -1594,6 +1606,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(vm-full-pc-session-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-core-executor-storage-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-executor-run-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(core-machine-cpu-pic-lifecycle-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vdm-machine PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vdm-composition PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vdm-minimal-session-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
