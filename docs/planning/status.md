@@ -2,64 +2,48 @@
 
 ## Current Work
 
-**M5 T287 S16 in progress: correct the fixed-disk type encoding, then resume DOS allocation trace.**
+**Idle. M5 T287 is closed; no task is active.**
 
-T287 used a lawful, repository-external DOS 6.22 boot floppy and HDD with an
-ignored local manifest. The real Console transaction mounted both media and
-selected `DEVICE display window`; the separate parameterized checkpoint tool
-read only the session's copied presentation mailbox. It reached `A:\>` after
-the DOS date/time inputs, observed BDA fixed-disk count `1` and three ATA
-`READ SECTORS (20h)` commands, then reproducibly received `Invalid drive
-specification` for `C:`. The tool marker is
-`M5:T287:S2:WINDOWS31:CHECKPOINT:OK result=c-drive-absent
-category=bios-firmware bda_hdd_count=1 ata_commands=3 last_command=20`.
+T287 used lawful, repository-external DOS and Windows-install media through
+the real FDC, ATA PIO, ROM, IRQ, DMA/PIO, and copied-frame paths. No guest
+media, binary, machine-local path, or raw trace is tracked. The real Console
+observation selected `DEVICE display window`; the headless checkpoint consumes
+only the copied presentation mailbox.
 
-S3--S9 repaired the bounded default-ROM fixed-disk discovery contract: AH=15
-now returns type `03h` in AH and the full geometry sector count; AH=08 returns
-the parameter-table pointer and user-defined drive type; unsupported calls
-return an error; AH=01 observes a clear initial status; and CMOS 12h/19h
-declare the matching user-defined type. The owner-built ROM regression carries
-the `M5:T287:S9:ROM-INT13-HDD-CMOS:OK` marker. These changes preserve the
-existing ATA PIO controller boundary and do not add commands, DMA, display
-breadth, CPU behavior, or a Windows support claim.
+Earlier T287 work corrected the bounded default-ROM fixed-disk discovery
+contract, including `AH=15h`, `AH=08h`, DPT sectors-per-track placement,
+status handling, and CMOS Type 47 encoding. The closing work found and fixed a
+separate ROM defect in `AH=02h` and `AH=03h`: after reusing `DX` for an ATA
+port, the ROM had formed device/head from the port high byte rather than the
+caller's `DH`. It now preserves the caller head and writes `A0h | head`.
+The owner-built, parameterized admission probe enters through real `INT 13h`,
+uses nonzero `ES:BX`, byte-compares the MBR and VBR against the external image,
+and reports `M5:T287:S16:HDD-ADMISSION:OK`.
+The retained ROM regression also writes CHS `0/0/1` through `AH=03h` to a
+temporary HDD and reads its `5AA5h` word back through `AH=02h`.
 
-S11 isolated the fixed-disk parameter-table offset disagreement; S12 corrects
-the 16-byte AT table interpretation. The standard sectors-per-track byte is
-DPT `+0Eh`; AH=08/AH=15 and the ROM corpus now use that slot, while `+08h`
-retains its control-byte value. This corrected contract does not yet change the
-external DOS `C:` result.
+The corrected external checkpoint advances past the previous missing-`C:`
+result and stops before the DOS date prompt after four ATA reads: `#DE` at
+`0070:2218` (`DIV CX`, `CX=0`) in the DOS fixed-drive BDS geometry path. The
+VBR comparison and BPB values remain valid (`63` sectors/track and `16`
+heads). The same external pair reaches the equivalent divide point at T209, so
+this evidence does not support a T210 regression claim. It is a bounded
+default-ROM/DOS fixed-drive initialization compatibility gap, not proof of a
+CPU or ATA-controller defect and not a Windows support result. `TODO.md`
+records the owner and admission conditions for a later hardware task;
+T288/T289 are not entered without their own CPU/protected-mode corpus.
 
-S13 makes INT 13h/AH=08 return the sectors-per-track value in AL as well as
-the CH/CL geometry encoding. The ROM regression asserts AX=`003Fh` for the
-fixture geometry. This ABI correction also preserves the external DOS `C:`
-failure for further diagnosis.
-
-S14 corrects the shared INT 13h status write: successful calls now clear the
-BDA last-status byte instead of recording AH=15's successful type value `03h`;
-errors retain their AH result and carry flag. The ROM corpus verifies a
-successful AH=01 immediately after AH=15 and the unsupported AH=41 error path.
-
-S15 was superseded by S16: the conventional AT label “Type 47” is decimal 47,
-encoded as `2Fh`, not hexadecimal `47h`. CMOS `12h=F0h` therefore selects
-CMOS `19h=2Fh`, and AH=08 returns the matching `BL=2Fh`. S16 restores that
-encoding and rejects the prior `47h` interpretation. The temporary local trace
-also proves DOS called AH=08 and observed the expected `AL=3Fh`,
-`CH/CL=63/3Fh`, `DH/DL=0F/01h`, `BL=2Fh`, and `ES:DI=F000:E431h`; it did not
-borrow media or bypass the ATA/FDC controller path.
-
-The external copied-frame checkpoint still reports the same `C:` failure after
-S3--S9. Its paused copied-frame observation retains BDA fixed-disk bytes
-`00/01/C0/00` for status, drive count, control, and port offset respectively;
-DOS has not overwritten the BIOS declaration. S10 records only this
-non-invasive allocation evidence before another controller or firmware change
-is considered.
+The retained ATA PIO DOS smoke now deliberately zeroes its temporary HDD
+backing before boot. It continues to prove ATA PIO through the guest path
+without accidentally coupling the T286 controller regression to T287's
+separately deferred bootable-fixed-drive BDS behavior.
 
 ## Current Technical Baseline
 
 - **T287 artifact identity:** `current-gcc` and
-  `verify-current-artifact-target` select `vm-0-5-0287`. The active T287
-  subtask has not closed. Artifact `nxvm_0_5_0287.exe` SHA-256:
-  `1A4AFB9407429D137C36E25DB4F4159758F97BC14A8D9DE4E06C7291EF50A371`.
+  `verify-current-artifact-target` select `vm-0-5-0287`. Artifact
+  `nxvm_0_5_0287.exe` SHA-256:
+  `1BD373A0BA9805C406E15DE937D90F2E4A818115FC730C672BB3223C471A2021`.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
@@ -80,7 +64,7 @@ is considered.
 | T284 | Froze the first Windows-facing display admission contract for EGA mode 10h and added expected-failing core/VM corpus without changing runtime behavior. |
 | T285 | Implemented bounded EGA mode 10h direct, turned the T284 core/VM corpus into normal success coverage, and emitted the 0.5.0285 developer artifact. |
 | T286 | Fixed the corpus-proven ATA device-control `nIEN` IRQ14 visibility gap through core-owned controller state, with core, VM-port, and guest fixture success evidence; no DMA, timing, or command expansion. |
-| T287 | Reached the external DOS checkpoint and isolated the first Windows-install prerequisite failure to default-ROM `INT 13h/AH=15h` fixed-disk type reporting; no Windows support claim or artifact. |
+| T287 | Fixed the ROM CHS device/head selection defect and recorded the first reproducible external fixed-drive BDS geometry failure without claiming Windows support. |
 
 Detailed contracts, commands, artifact provenance, and prior closures are in
 [M5 History](../history/m5.md) and Git history. The [M5 convergence queue]

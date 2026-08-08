@@ -182,6 +182,25 @@ fail:
     return 0;
 }
 
+static C_INT vm_ata253_zero_image(uint8_t *image, DWORD image_size,
+    const C_CHAR *path)
+{
+    HANDLE output;
+    DWORD written;
+
+    if (image == STD_NULL || image_size == 0u || path == STD_NULL) return 0;
+    STD_MEMSET(image, 0, image_size);
+    output = CreateFileA(path, GENERIC_WRITE, 0u, STD_NULL, CREATE_ALWAYS,
+        FILE_ATTRIBUTE_TEMPORARY, STD_NULL);
+    if (output == INVALID_HANDLE_VALUE || !WriteFile(output, image, image_size,
+            &written, STD_NULL) || written != image_size) {
+        if (output != INVALID_HANDLE_VALUE) CloseHandle(output);
+        return 0;
+    }
+    CloseHandle(output);
+    return 1;
+}
+
 static C_INT vm_ata253_install(uint8_t *image, DWORD image_size,
     const C_CHAR *path)
 {
@@ -308,7 +327,8 @@ C_INT main(C_INT argc, C_CHAR **argv)
 
     if (argc != 3 || !vm_ata253_clone(argv[1], fdd_path, &fdd_image, &fdd_size) ||
         !vm_ata253_install(fdd_image, fdd_size, fdd_path) ||
-        !vm_ata253_clone(argv[2], hdd_path, &hdd_image, &hdd_size)) goto done;
+        !vm_ata253_clone(argv[2], hdd_path, &hdd_image, &hdd_size) ||
+        !vm_ata253_zero_image(hdd_image, hdd_size, hdd_path)) goto done;
     config.fdd_image = fdd_path;
     config.hdd_image = hdd_path;
     config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;

@@ -68,6 +68,7 @@ static C_INT vm_t287_submit(const vm_session *session, const uint8_t *codes,
 static C_VOID vm_t287_report(const vm_session *session, const C_CHAR *stage)
 {
     core_platform_display_frame frame;
+    core_machine_cpu_diagnostic diagnostic = {0};
     STD_SIZE_T row;
     STD_SIZE_T column;
 
@@ -77,6 +78,24 @@ static C_VOID vm_t287_report(const vm_session *session, const C_CHAR *stage)
         vm_session_control_is_running(&session->control),
         session->core_machine->hdc.data.command_count,
         session->core_machine->hdc.data.last_command);
+    if (core_machine_get_cpu_diagnostic(session->core_machine, &diagnostic) ==
+            TYPE_STATUS_OK && diagnostic.first_fault.valid) {
+        STD_SIZE_T index;
+
+        STD_PRINTF("M5:T287:S17:FAULT cs=%04X ip=%08X opcode=%02X%02X%02X "
+            "eax=%08X ebx=%08X ecx=%08X edx=%08X\n",
+            diagnostic.first_fault.point.cs, diagnostic.first_fault.point.eip,
+            diagnostic.first_fault.point.bytes[0], diagnostic.first_fault.point.bytes[1],
+            diagnostic.first_fault.point.bytes[2], diagnostic.first_fault.eax,
+            diagnostic.first_fault.ebx, diagnostic.first_fault.ecx,
+            diagnostic.first_fault.edx);
+        for (index = 0u; index < diagnostic.recent_count; ++index) {
+            STD_PRINTF("M5:T287:S17:RECENT cs=%04X ip=%08X opcode=%02X%02X%02X\n",
+                diagnostic.recent[index].cs, diagnostic.recent[index].eip,
+                diagnostic.recent[index].bytes[0], diagnostic.recent[index].bytes[1],
+                diagnostic.recent[index].bytes[2]);
+        }
+    }
     if (core_platform_presentation_mailbox_capture(&session->presentation_mailbox,
             &frame) != TYPE_STATUS_OK) return;
     for (row = 0u; row < 25u; ++row) {

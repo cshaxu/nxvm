@@ -62,6 +62,24 @@ static C_INT vm_int13_hdd_write_fixture(C_CHAR fdd_path[MAX_PATH],
         0xa3u, 0x1cu, 0x05u,                  /* mov [051Ch],ax */
         0x9cu, 0x58u,                         /* pushf; pop ax */
         0xa3u, 0x1eu, 0x05u,                  /* mov [051Eh],ax */
+        0xb8u, 0x00u, 0x00u, 0x8eu, 0xc0u,    /* ES=0000 */
+        0xc7u, 0x06u, 0x00u, 0x06u, 0xa5u, 0x5au, /* [0600]=5AA5 */
+        0xbbu, 0x00u, 0x06u,                  /* BX=0600 */
+        0xb8u, 0x01u, 0x03u,                  /* AH=03, AL=01 */
+        0xb9u, 0x01u, 0x00u,                  /* CHS 0/0/1 */
+        0xbau, 0x80u, 0x00u,                  /* DH=0, DL=80 */
+        0xcdu, 0x13u,                         /* int 13h */
+        0xa3u, 0x22u, 0x05u,                  /* mov [0522h],ax */
+        0x9cu, 0x58u, 0xa3u, 0x24u, 0x05u,      /* pushf; pop [0524h] */
+        0xbbu, 0x00u, 0x08u,                  /* BX=0800 */
+        0xb8u, 0x01u, 0x02u,                  /* AH=02, AL=01 */
+        0xb9u, 0x01u, 0x00u,                  /* CHS 0/0/1 */
+        0xbau, 0x80u, 0x00u,                  /* DH=0, DL=80 */
+        0xcdu, 0x13u,                         /* int 13h */
+        0xa3u, 0x26u, 0x05u,                  /* mov [0526h],ax */
+        0x9cu, 0x58u, 0xa3u, 0x28u, 0x05u,      /* pushf; pop [0528h] */
+        0xa1u, 0x00u, 0x08u,                  /* mov ax,[0800h] */
+        0xa3u, 0x2au, 0x05u,                  /* mov [052Ah],ax */
         0xc7u, 0x06u, 0x20u, 0x05u, 0x5au, 0xa5u, /* mov word [0520h],A55Ah */
         0xf4u, 0xebu, 0xfeu                   /* hlt; jmp $ */
     };
@@ -134,6 +152,11 @@ C_INT main(C_VOID)
     uint16_t parameters_ax = 0u;
     uint16_t post_type_status_ax = 0u;
     uint16_t post_type_status_flags = 0u;
+    uint16_t write_ax = 0u;
+    uint16_t write_flags = 0u;
+    uint16_t read_ax = 0u;
+    uint16_t read_flags = 0u;
+    uint16_t read_word = 0u;
     uint16_t completed = 0u;
     uint32_t instruction;
     C_INT passed = 0;
@@ -183,7 +206,15 @@ C_INT main(C_VOID)
                 sizeof(post_type_status_ax)) != TYPE_STATUS_OK || core_machine_memory_read(
                 session->core_machine, 0x051eu, &post_type_status_flags,
                 sizeof(post_type_status_flags)) != TYPE_STATUS_OK || core_machine_memory_read(
-                session->core_machine, 0x0520u, &completed,
+                session->core_machine, 0x0522u, &write_ax, sizeof(write_ax)) !=
+                TYPE_STATUS_OK || core_machine_memory_read(session->core_machine,
+                0x0524u, &write_flags, sizeof(write_flags)) != TYPE_STATUS_OK ||
+            core_machine_memory_read(session->core_machine, 0x0526u, &read_ax,
+                sizeof(read_ax)) != TYPE_STATUS_OK || core_machine_memory_read(
+                session->core_machine, 0x0528u, &read_flags, sizeof(read_flags)) !=
+                TYPE_STATUS_OK || core_machine_memory_read(session->core_machine,
+                0x052au, &read_word, sizeof(read_word)) != TYPE_STATUS_OK ||
+            core_machine_memory_read(session->core_machine, 0x0520u, &completed,
                 sizeof(completed)) != TYPE_STATUS_OK || core_machine_memory_read(
                 session->core_machine, 0x0475u, &hdd_count, sizeof(hdd_count)) !=
                 TYPE_STATUS_OK) goto done;
@@ -202,6 +233,9 @@ C_INT main(C_VOID)
             (extension_flags & 1u) != 0u &&
             (initial_status_ax & 0xff00u) == 0u &&
             (initial_status_flags & 1u) == 0u &&
+            (write_ax & 0xff00u) == 0u && (write_flags & 1u) == 0u &&
+            (read_ax & 0xff00u) == 0u && (read_flags & 1u) == 0u &&
+            read_word == 0x5aa5u &&
             hdd_count == 1u;
         break;
     }
@@ -212,12 +246,13 @@ done:
     if (hdd_path[0] != '\0') DeleteFileA(hdd_path);
     if (!passed) {
         STD_FPRINTF(STD_STDERR,
-            "M5:T287:S16:ROM-INT13-HDD-TYPE47:FAIL complete=%04X ax=%04X flags=%04X sectors=%04X:%04X dpt=%04X:%04X spt=%02X cmos=%02X/%02X type=%02X params=%04X ext=%04X/%04X/%04X status=%04X/%04X post=%04X/%04X hdd=%u\n",
+            "M5:T287:S16:ROM-INT13-HDD-TYPE47:FAIL complete=%04X ax=%04X flags=%04X sectors=%04X:%04X dpt=%04X:%04X spt=%02X cmos=%02X/%02X type=%02X params=%04X ext=%04X/%04X/%04X status=%04X/%04X post=%04X/%04X rw=%04X/%04X/%04X/%04X/%04X hdd=%u\n",
             completed, result_ax, flags, sectors_high, sectors_low, parameter_segment,
             parameter_offset, sectors_per_track, cmos_fixed_disk_type, cmos_extended_disk_type,
             drive_type, parameters_ax, extension_ax,
             extension_bx, extension_flags, initial_status_ax,
-            initial_status_flags, post_type_status_ax, post_type_status_flags,
+            initial_status_flags, post_type_status_ax, post_type_status_flags, write_ax,
+            write_flags, read_ax, read_flags, read_word,
             hdd_count);
         return 1;
     }

@@ -732,6 +732,13 @@ target_link_libraries(vm-windows31-checkpoint PRIVATE vm-composition)
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(vm-windows31-checkpoint PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
+add_executable(vm-windows31-hdd-admission-probe
+    tests/machine/vm_windows31_hdd_admission_probe.c
+)
+target_link_libraries(vm-windows31-hdd-admission-probe PRIVATE vm-composition)
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(vm-windows31-hdd-admission-probe PRIVATE -Wall -Wextra -Wpedantic -Werror)
+endif()
 add_executable(vm-keyboard-set1-mapper-smoke
     tests/machine/vm_keyboard_set1_mapper_smoke.c
 )

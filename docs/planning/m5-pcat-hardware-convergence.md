@@ -35,8 +35,9 @@ The boundary migration consumed T270--T278. The pre-migration future queue
 that formerly began at T270 was first displaced to T279--T287; this approved
 reliability and interface package consumes T279--T283. T284/T285 then froze
 and implemented the mode-10h EGA direct path; T286 closed the single
-corpus-proven ATA `nIEN` IRQ-visibility gap. The remaining queue begins at
-T287. Historical completed task records retain their original identifiers.
+corpus-proven ATA `nIEN` IRQ-visibility gap; and T287 recorded the first
+external fixed-drive initialization gap. The remaining queue begins at T288.
+Historical completed task records retain their original identifiers.
 
 ### B. Reliability And Contract Evidence
 
@@ -45,16 +46,16 @@ T287. Historical completed task records retain their original identifiers.
 
 ### C. Windows 3.x Display And Storage Prerequisites
 
-| Task | Owner and purpose | Dependency and stop condition |
-| --- | --- | --- |
-| T287 | Windows 3.x Standard-mode readiness corpus and gap map using lawful, user-supplied media. Record the exact boot/checkpoint result and convert each unmet prerequisite into a bounded later admission. | T264--T286. This is evidence collection, not a support claim or committed guest asset. |
+T287 is closed. Its external fixed-drive BDS geometry failure is a separately
+deferred default-ROM/DOS fixed-drive initialization admission; it does not by
+itself admit the CPU-specific T288 or protected-mode T289 work.
 
 ### D. Protected-Mode And FPU Work Triggered By Evidence
 
 | Task | Owner and purpose | Dependency and stop condition |
 | --- | --- | --- |
-| T288 | First corpus-proven 286/386 compatibility gap from T287 or another owned reproducer. | T287 preferred. One instruction/system family only; no speculative opcode sweep. |
-| T289 | 80386 Enhanced-mode prerequisite selected by corpus, such as CPL3 paging permissions, 32-bit segmentation/control transfer, or 32-bit TSS behavior. | T287 plus a failing prepared-state or system corpus. No broad 386-complete claim. |
+| T288 | First corpus-proven 286/386 compatibility gap from an owned reproducer. | One prepared-state or system corpus must identify one instruction/system family; T287 did not supply a CPU admission. No speculative opcode sweep. |
+| T289 | 80386 Enhanced-mode prerequisite selected by corpus, such as CPL3 paging permissions, 32-bit segmentation/control transfer, or 32-bit TSS behavior. | A failing prepared-state or system corpus is required. No broad 386-complete claim. |
 | T290 | Present-FPU extension selected by corpus: 80287/80387 profile state, format, environment, or exception delivery. | T287 or another owned reproducer. No host floating-point shortcut or blanket FPU claim. |
 | T291 | Windows 3.x Enhanced-mode readiness corpus and bounded deferral map. | T285--T290 as dictated by T287. No Windows 95 claim. |
 

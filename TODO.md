@@ -77,6 +77,18 @@ active task.
   absent, with SRST/status/error/IRQ14 and device-control `nIEN` visibility
   probed. Deferred: IDE DMA,
   ATAPI, LBA48, cache, and host-clock timing.
+- [ ] **Default-ROM fixed-drive BDS initialization (`TODO(High)`).** T287's
+  lawful external DOS checkpoint passes real `AH=08h`, CHS MBR, and VBR reads
+  after the ROM ATA-head repair, but reaches a reproducible `#DE` while DOS
+  uses a fixed-drive BDS with zero geometry fields. The same external pair
+  reaches the equivalent point at T209, so do not characterize this as a T210
+  regression or a CPU failure. Initial owner is
+  `vm/profile/default_profile/firmware`; S1 must use an owner-built real INT
+  13/BDS trace to prove the first missing or overwritten field and either keep
+  that owner or explicitly reassign the work to core CPU execution. S2 admits
+  only that demonstrated contract, and S3 reruns the external checkpoint plus
+  FDD/HDD, ATA PIO, DMA, PIC, Console, and debugger regressions. Do not add a
+  host callback, BIOS media shortcut, or a Windows compatibility claim.
 - [x] **T279 bounded C formatting.** `STD_SPRINTF`/`vsprintf` are retired;
   owned capacities and cursor/remaining append semantics are enforced by a
   source gate and corpus without changing debugger or Console text.
