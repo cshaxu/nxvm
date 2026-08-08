@@ -18,6 +18,7 @@
 #define VM_T287_BOOT_TIMEOUT_MILLISECONDS 60000u
 #define VM_T287_SETUP_TIMEOUT_MILLISECONDS 20000u
 #define VM_T287_FAULT_OBSERVATION_MILLISECONDS 60000u
+#define VM_T288_POST_COPY_TIMEOUT_MILLISECONDS 720000u
 
 static DWORD WINAPI vm_t287_run_machine(C_VOID *opaque)
 {
@@ -118,6 +119,28 @@ static C_INT vm_t287_type_setup(vm_session *session)
     return 1;
 }
 
+static C_INT vm_t288_type_windows(vm_session *session)
+{
+    static const uint8_t scan_codes[] = {
+        0x11u, 0x17u, 0x31u, 0x20u, 0x18u, 0x11u, 0x1fu, 0x1cu
+    };
+    static const uint8_t virtual_keys[] = {
+        'W', 'I', 'N', 'D', 'O', 'W', 'S', VK_RETURN
+    };
+    STD_SIZE_T index;
+
+    if (session == STD_NULL) return 0;
+    for (index = 0u; index < sizeof(scan_codes); ++index) {
+        vm_platform_win32_keyboard_make_key_for(&session->platform_run_context,
+            &session->platform_run_handle, scan_codes[index], virtual_keys[index], 1);
+        Sleep(25u);
+        vm_platform_win32_keyboard_make_key_for(&session->platform_run_context,
+            &session->platform_run_handle, scan_codes[index], virtual_keys[index], 0);
+        Sleep(25u);
+    }
+    return 1;
+}
+
 static C_VOID vm_t287_print_frame(const vm_session *session)
 {
     core_platform_display_frame frame;
@@ -140,6 +163,7 @@ static C_VOID vm_t287_report_fault(vm_session *session, const C_CHAR *stage)
 {
     core_machine_cpu_diagnostic diagnostic = {0};
     t_cpu *cpu;
+    STD_SIZE_T index;
 
     if (session == STD_NULL) return;
     (C_VOID)core_machine_get_cpu_diagnostic(session->core_machine, &diagnostic);
@@ -151,15 +175,26 @@ static C_VOID vm_t287_report_fault(vm_session *session, const C_CHAR *stage)
     if (diagnostic.first_fault.valid) {
         const core_machine_cpu_fault_snapshot *fault = &diagnostic.first_fault;
 
-        STD_PRINTF("M5:T287:S23:WINDOWS31:FAULT mask=%08X code=%08X "
-            "cs=%04X ip=%08X linear=%08X opcode=%02X%02X%02X "
-            "eax=%08X ebx=%08X ecx=%08X edx=%08X esp=%08X ebp=%08X "
-            "esi=%08X edi=%08X flags=%08X\n", fault->exception_mask,
+        STD_PRINTF("M5:T288:S1:WINDOWS31:FAULT mask=%08X code=%08X "
+            "cs=%04X ip=%08X linear=%08X opcode=", fault->exception_mask,
             fault->exception_code, fault->point.cs, fault->point.eip,
-            fault->point.linear_pc, fault->point.bytes[0], fault->point.bytes[1],
-            fault->point.bytes[2], fault->eax, fault->ebx, fault->ecx,
-            fault->edx, fault->esp, fault->ebp, fault->esi, fault->edi,
-            fault->eflags);
+            fault->point.linear_pc);
+        for (index = 0u; index < fault->point.byte_count; ++index) {
+            STD_PRINTF("%02X", fault->point.bytes[index]);
+        }
+        STD_PRINTF(" eax=%08X ebx=%08X ecx=%08X edx=%08X esp=%08X ebp=%08X "
+            "esi=%08X edi=%08X flags=%08X\n",
+            fault->eax, fault->ebx, fault->ecx, fault->edx, fault->esp,
+            fault->ebp, fault->esi, fault->edi, fault->eflags);
+        for (index = 0u; index < diagnostic.recent_count; ++index) {
+            const core_machine_cpu_execution_point *point =
+                &diagnostic.recent[index];
+
+            STD_PRINTF("M5:T288:S1:WINDOWS31:RECENT cs=%04X ip=%08X "
+                "linear=%08X opcode=%02X%02X%02X\n", point->cs, point->eip,
+                point->linear_pc, point->bytes[0], point->bytes[1],
+                point->bytes[2]);
+        }
     }
     cpu = core_machine_debug_cpu_borrow(session->core_machine);
     if (cpu != STD_NULL) {
@@ -178,7 +213,7 @@ static C_VOID vm_t287_report_fault(vm_session *session, const C_CHAR *stage)
 C_INT main(C_INT argc, C_CHAR **argv)
 {
     const vm_session_config config = {
-        .hdd_image = argc == 2 ? argv[1] : STD_NULL,
+        .hdd_image = argc >= 2 ? argv[1] : STD_NULL,
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
@@ -188,10 +223,11 @@ C_INT main(C_INT argc, C_CHAR **argv)
     const C_CHAR *stage = "create";
     C_INT observed_setup_inf = 0;
     C_INT passed = 0;
+    C_INT advance_steps = argc == 3 ? argv[2][0] - '0' : 0;
     C_INT date_prompt = 0;
     DWORD elapsed;
 
-    if (argc != 2 || vm_session_create(&config, &session) != TYPE_STATUS_OK ||
+    if ((argc != 2 && argc != 3) || vm_session_create(&config, &session) != TYPE_STATUS_OK ||
         session == STD_NULL) goto fail;
     thread = CreateThread(STD_NULL, 0u, vm_t287_run_machine, session, 0u, STD_NULL);
     if (thread == STD_NULL) goto fail;
@@ -227,6 +263,29 @@ C_INT main(C_INT argc, C_CHAR **argv)
         }
         if (vm_t287_has_text(session, "Welcome to Setup.")) {
             stage = "welcome";
+            if (advance_steps != 0) {
+                if (!vm_t287_submit(session, enter, sizeof(enter))) goto fail;
+                Sleep(3000u);
+                if (advance_steps >= 2) {
+                    if (!vm_t287_submit(session, enter, sizeof(enter))) goto fail;
+                    Sleep(3000u);
+                }
+                if (advance_steps >= 3) {
+                    if (!vm_t288_type_windows(session)) goto fail;
+                    if (advance_steps == 3) Sleep(30000u);
+                    if (advance_steps >= 4) {
+                        stage = "post-copy";
+                        for (elapsed = 0u;
+                                elapsed < VM_T288_POST_COPY_TIMEOUT_MILLISECONDS;
+                                elapsed += 100u) {
+                            if (!vm_session_control_is_running(&session->control)) break;
+                            Sleep(100u);
+                        }
+                    }
+                }
+                vm_t287_report_fault(session, "after-welcome-enter");
+                goto done;
+            }
             passed = 1;
             STD_PRINTF("M5:T287:S24:WINDOWS31:SETUP:OK result=welcome\n");
             vm_t287_print_frame(session);

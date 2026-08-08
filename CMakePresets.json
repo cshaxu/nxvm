@@ -21,7 +21,7 @@
     {
       "name": "current-gcc",
       "configurePreset": "mingw-gcc-x64",
-      "targets": ["vm-0-5-0287"]
+      "targets": ["vm-0-5-0288"]
     },
     {
       "name": "current-gates-gcc",

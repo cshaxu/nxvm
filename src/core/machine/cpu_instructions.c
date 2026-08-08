@@ -2785,16 +2785,126 @@ _______todo _ser_call_far_cs_nonc(core_machine_cpu_execution_context *context, t
     TYPE_TRACE_CHECK_RETURN(_kec_call_far(context, newcs, neweip, byte));
     TYPE_TRACE_CALL_END;
 }
-_______todo _ser_call_far_call_gate(core_machine_cpu_execution_context *context, type_unsigned_16 newcs)
+static C_VOID _ser_call_far_call_gate(core_machine_cpu_execution_context *context,
+    type_unsigned_16 gate_selector, type_unsigned_8 byte)
 {
-    type_unsigned_64 descriptor;
+    type_unsigned_64 gate_desc;
+    type_unsigned_64 code_desc;
+    type_unsigned_64 ss_desc;
+    type_unsigned_16 newcs;
+    type_unsigned_16 newss;
+    type_unsigned_16 newsp;
+    type_unsigned_32 newesp = 0;
+    type_unsigned_16 oldss;
+    type_unsigned_16 oldsp;
+    type_unsigned_16 oldcs;
+    type_unsigned_16 oldip;
+    type_unsigned_8 oldcpl;
+    type_unsigned_8 target_cpl;
+    t_cpu_data_sreg newcs_cache;
+    t_cpu_data_sreg newss_cache;
+
     TYPE_TRACE_CALL_BEGIN("_ser_call_far_call_gate");
     if (!_IsProtected)
         TYPE_TRACE_IMPOSSIBLE_RETURN;
-    TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, newcs, TYPE_REFERENCE_OF(descriptor)));
-    if (!_IsDescCallGate(descriptor))
+    if (byte != 2u)
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(byte));
+    TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, gate_selector,
+        TYPE_REFERENCE_OF(gate_desc)));
+    if (!_IsDescCallGate(gate_desc))
         TYPE_TRACE_IMPOSSIBLE_RETURN;
-    TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(0));
+    oldcpl = _GetCPL;
+    if (_GetDesc_DPL(gate_desc) < oldcpl ||
+        _GetDesc_DPL(gate_desc) < _GetSelector_RPL(gate_selector)) {
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(gate_selector & 0xfffcu));
+    }
+    if (!_IsDescPresent(gate_desc)) {
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_NP(gate_selector & 0xfffcu));
+    }
+    if (_GetDescCall_Count(gate_desc) != 0u) {
+        /* Parameter-copying gates remain outside the T288 admission. */
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(_GetDescCall_Count(gate_desc)));
+    }
+    newcs = TYPE_MASK_UNSIGNED_16(_GetDescGate_Selector(gate_desc));
+    if (_IsSelectorNull(newcs) || _GetSelector_TI(newcs)) {
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(newcs & 0xfffcu));
+    }
+    TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, newcs,
+        TYPE_REFERENCE_OF(code_desc)));
+    if (!_IsDescCodeNonConform(code_desc)) {
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(newcs & 0xfffcu));
+    }
+    if (!_IsDescPresent(code_desc)) {
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_NP(newcs & 0xfffcu));
+    }
+    target_cpl = (type_unsigned_8)_GetDesc_DPL(code_desc);
+    if (target_cpl > oldcpl) {
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(newcs & 0xfffcu));
+    }
+    oldss = cpu_state.data.ss.selector;
+    oldsp = cpu_state.data.sp;
+    oldcs = cpu_state.data.cs.selector;
+    oldip = cpu_state.data.ip;
+    newcs_cache = cpu_state.data.cs;
+    TYPE_TRACE_CHECK_RETURN(_ksa_prepare_code_sreg(context, newcs, target_cpl,
+        &newcs_cache, &code_desc));
+    TYPE_TRACE_CHECK_RETURN(_kma_test_access(context, &newcs_cache,
+        TYPE_MASK_UNSIGNED_16(_GetDescGate_Offset(gate_desc)), 1u, 0,
+        target_cpl, 1));
+    if (target_cpl < oldcpl) {
+        if (!cpu_state.data.tr.flagValid) {
+            TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(0));
+        }
+        switch (cpu_state.data.tr.sys.type) {
+        case VCPU_DESC_SYS_TYPE_TSS_16_BUSY:
+            TYPE_TRACE_CHECK_RETURN(_s_read_tss(context, 2u,
+                TYPE_REFERENCE_OF(newsp), 2u));
+            TYPE_TRACE_CHECK_RETURN(_s_read_tss(context, 4u,
+                TYPE_REFERENCE_OF(newss), 2u));
+            break;
+        case VCPU_DESC_SYS_TYPE_TSS_32_BUSY:
+            TYPE_TRACE_CHECK_RETURN(_s_read_tss(context, 4u,
+                TYPE_REFERENCE_OF(newesp), 4u));
+            TYPE_TRACE_CHECK_RETURN(_s_read_tss(context, 8u,
+                TYPE_REFERENCE_OF(newss), 2u));
+            if (newesp > 0xffffu) {
+                TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(0));
+            }
+            newsp = TYPE_MASK_UNSIGNED_16(newesp);
+            break;
+        default:
+            TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(0));
+            break;
+        }
+        if (_IsSelectorNull(newss) || _GetSelector_TI(newss) ||
+            _GetSelector_RPL(newss) != target_cpl) {
+            TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(newss & 0xfffcu));
+        }
+        newss_cache = cpu_state.data.ss;
+        TYPE_TRACE_CHECK_RETURN(_ksa_prepare_stack_sreg(context, newss,
+            target_cpl, &newss_cache, &ss_desc));
+        TYPE_TRACE_CHECK_RETURN(_s_test_stack_frame_16(context, &newss_cache,
+            newsp, 4u, target_cpl));
+
+        TYPE_TRACE_CHECK_RETURN(_s_write_xdt(context, newss,
+            TYPE_REFERENCE_OF(ss_desc)));
+        TYPE_TRACE_CHECK_RETURN(_s_write_xdt(context, newcs,
+            TYPE_REFERENCE_OF(code_desc)));
+        cpu_state.data.ss = newss_cache;
+        cpu_state.data.sp = newsp;
+        _MakeCPL(target_cpl);
+        TYPE_TRACE_CHECK_RETURN(_kec_push(context, TYPE_REFERENCE_OF(oldss), 2u));
+        TYPE_TRACE_CHECK_RETURN(_kec_push(context, TYPE_REFERENCE_OF(oldsp), 2u));
+    }
+    else {
+        TYPE_TRACE_CHECK_RETURN(_s_test_ss_push(context, 4u));
+        TYPE_TRACE_CHECK_RETURN(_s_write_xdt(context, newcs,
+            TYPE_REFERENCE_OF(code_desc)));
+    }
+    TYPE_TRACE_CHECK_RETURN(_kec_push(context, TYPE_REFERENCE_OF(oldcs), 2u));
+    TYPE_TRACE_CHECK_RETURN(_kec_push(context, TYPE_REFERENCE_OF(oldip), 2u));
+    cpu_state.data.cs = newcs_cache;
+    cpu_state.data.ip = TYPE_MASK_UNSIGNED_16(_GetDescGate_Offset(gate_desc));
     TYPE_TRACE_CALL_END;
 }
 _______todo _ser_call_far_task_gate(core_machine_cpu_execution_context *context, type_unsigned_16 newcs)
@@ -3278,12 +3388,50 @@ static C_VOID _ser_ret_far_same(core_machine_cpu_execution_context *context, typ
     TYPE_TRACE_CHECK_RETURN(_kec_ret_far(context, newcs, neweip, parambyte, byte));
     TYPE_TRACE_CALL_END;
 }
-_______todo _ser_ret_far_outer(core_machine_cpu_execution_context *context, type_unsigned_16 newcs, type_unsigned_32 neweip, type_unsigned_16 parambyte, type_unsigned_16 byte)
+static C_VOID _ser_ret_far_outer(core_machine_cpu_execution_context *context,
+    type_unsigned_16 newcs, type_unsigned_32 neweip, type_unsigned_16 parambyte,
+    type_unsigned_16 byte)
 {
+    type_unsigned_64 code_desc;
+    type_unsigned_64 ss_desc;
+    type_unsigned_16 newss;
+    type_unsigned_16 newsp;
+    type_unsigned_32 xs_sel;
+    t_cpu_data_sreg newcs_cache;
+    t_cpu_data_sreg newss_cache;
+    type_unsigned_8 target_cpl;
+
     TYPE_TRACE_CALL_BEGIN("_ser_ret_far_outer");
     if (!_IsProtected)
         TYPE_TRACE_IMPOSSIBLE_RETURN;
-    TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(0));
+    if (byte != 2u)
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(byte));
+    target_cpl = (type_unsigned_8)_GetSelector_RPL(newcs);
+    TYPE_TRACE_CHECK_RETURN(_s_test_ss_pop(context, 4u));
+    TYPE_TRACE_CHECK_RETURN(_kec_pop(context, TYPE_REFERENCE_OF(newsp), 2u));
+    TYPE_TRACE_CHECK_RETURN(_kec_pop(context, TYPE_REFERENCE_OF(xs_sel), 2u));
+    newss = TYPE_MASK_UNSIGNED_16(xs_sel);
+    if (_IsSelectorNull(newss) || _GetSelector_TI(newss) ||
+        _GetSelector_RPL(newss) != target_cpl) {
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(newss & 0xfffcu));
+    }
+    newss_cache = cpu_state.data.ss;
+    TYPE_TRACE_CHECK_RETURN(_ksa_prepare_stack_sreg(context, newss, target_cpl,
+        &newss_cache, &ss_desc));
+    newcs_cache = cpu_state.data.cs;
+    TYPE_TRACE_CHECK_RETURN(_ksa_prepare_code_sreg(context, newcs, target_cpl,
+        &newcs_cache, &code_desc));
+    TYPE_TRACE_CHECK_RETURN(_kma_test_access(context, &newcs_cache,
+        TYPE_MASK_UNSIGNED_16(neweip), 1u, 0, target_cpl, 1));
+    TYPE_TRACE_CHECK_RETURN(_s_write_xdt(context, newss,
+        TYPE_REFERENCE_OF(ss_desc)));
+    TYPE_TRACE_CHECK_RETURN(_s_write_xdt(context, newcs,
+        TYPE_REFERENCE_OF(code_desc)));
+    cpu_state.data.ss = newss_cache;
+    cpu_state.data.sp = TYPE_MASK_UNSIGNED_16(newsp + parambyte);
+    _MakeCPL(target_cpl);
+    cpu_state.data.cs = newcs_cache;
+    cpu_state.data.ip = TYPE_MASK_UNSIGNED_16(neweip);
     TYPE_TRACE_CALL_END;
 }
 static C_VOID _ser_jmp_far_real(core_machine_cpu_execution_context *context, type_unsigned_16 newcs, type_unsigned_32 neweip, type_unsigned_8 byte)
@@ -3635,7 +3783,7 @@ static C_VOID _e_call_far(core_machine_cpu_execution_context *context, type_unsi
         else if (_IsDescCodeNonConform(descriptor))
             TYPE_TRACE_CHECK_RETURN(_ser_call_far_cs_nonc(context, newcs, neweip, byte));
         else if (_IsDescCallGate(descriptor))
-            TYPE_TRACE_CHECK_RETURN(_ser_call_far_call_gate(context, newcs));
+            TYPE_TRACE_CHECK_RETURN(_ser_call_far_call_gate(context, newcs, byte));
         else if (_IsDescTaskGate(descriptor))
             TYPE_TRACE_CHECK_RETURN(_ser_call_far_task_gate(context, newcs));
         else if (_IsDescTSS(descriptor))
