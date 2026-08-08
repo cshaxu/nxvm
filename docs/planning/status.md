@@ -24,8 +24,11 @@ existing ATA PIO controller boundary and do not add commands, DMA, display
 breadth, CPU behavior, or a Windows support claim.
 
 The external copied-frame checkpoint still reports the same `C:` failure after
-S3--S9. S10 will add only the trace needed to identify the DOS allocation
-decision before another controller or firmware change is considered.
+S3--S9. Its paused copied-frame observation retains BDA fixed-disk bytes
+`00/01/C0/00` for status, drive count, control, and port offset respectively;
+DOS has not overwritten the BIOS declaration. S10 records only this
+non-invasive allocation evidence before another controller or firmware change
+is considered.
 
 ## Current Technical Baseline
 

@@ -118,6 +118,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     HANDLE thread = STD_NULL;
     vm_session *session = STD_NULL;
     uint8_t hdd_count = 0u;
+    uint8_t hdd_bda[4] = {0};
     C_UINT ata_commands = 0u;
     uint8_t last_command = 0u;
     C_INT c_present;
@@ -141,8 +142,9 @@ C_INT main(C_INT argc, C_CHAR **argv)
     stage = "bda-hdd-count";
     vm_session_control_request_pause(&session->control, VM_SESSION_PAUSE_EXPLICIT);
     if (!vm_session_control_wait_for_pause(&session->control, 2000u) ||
-        core_machine_debug_read_memory(session->core_machine, 0x0475u, &hdd_count,
-            sizeof(hdd_count)) != TYPE_STATUS_OK) goto fail;
+        core_machine_debug_read_memory(session->core_machine, 0x0474u, hdd_bda,
+            sizeof(hdd_bda)) != TYPE_STATUS_OK) goto fail;
+    hdd_count = hdd_bda[1];
     vm_session_control_continue(&session->control);
     stage = "c-command";
     if (!vm_t287_submit(session, select_c, sizeof(select_c))) goto fail;
@@ -165,8 +167,9 @@ C_INT main(C_INT argc, C_CHAR **argv)
     }
     if (c_absent) {
         STD_PRINTF("M5:T287:S2:WINDOWS31:CHECKPOINT:OK result=c-drive-absent "
-            "category=bios-firmware bda_hdd_count=%u ata_commands=%u last_command=%02X\n",
-            hdd_count, ata_commands, last_command);
+            "category=bios-firmware bda_hdd=%02X/%02X/%02X/%02X ata_commands=%u last_command=%02X\n",
+            hdd_bda[0], hdd_count, hdd_bda[2], hdd_bda[3], ata_commands,
+            last_command);
         vm_session_destroy(session);
         return 0;
     }
