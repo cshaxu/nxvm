@@ -41,15 +41,6 @@
 #define CORE_MACHINE_TRACE_CAPACITY 32u
 #define CORE_MACHINE_IMMUTABLE_ROM_MAPPING_CAPACITY 4u
 
-typedef struct core_machine_port_slot {
-    core_machine_port_provider provider;
-    C_VOID *owner;
-} core_machine_port_slot;
-
-typedef struct core_machine_port_table {
-    core_machine_port_slot *slots;
-} core_machine_port_table;
-
 typedef struct core_machine_trace_state {
     core_machine_trace_provider provider;
     core_machine_trace_event events[CORE_MACHINE_TRACE_CAPACITY];
@@ -101,7 +92,6 @@ struct core_machine {
     type_bool fdc_configured;
     core_machine_hdc_topology hdc_topology;
     type_bool hdc_configured;
-    core_machine_port_table port_providers;
     core_machine_trace_state trace;
     core_machine_cpu_diagnostic_state cpu_diagnostic;
     core_machine_immutable_rom_mapping

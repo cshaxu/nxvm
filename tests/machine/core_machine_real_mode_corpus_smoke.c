@@ -39,7 +39,7 @@ static C_INT corpus_prepare_machine(core_machine **out_machine,
             CORPUS_RESET_LINEAR, CORPUS_RESET_PHYSICAL,
             CORPUS_RESET_WINDOW) != TYPE_STATUS_OK ||
         (port_provider != STD_NULL && core_machine_install_port_provider(
-            machine, 0x0080u, 0x0081u, port_provider, port_owner) !=
+            machine, 0x00e0u, 0x00e1u, port_provider, port_owner) !=
             TYPE_STATUS_OK) ||
         core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK ||
         core_machine_reset(machine) != TYPE_STATUS_OK) {
@@ -206,7 +206,7 @@ static type_status corpus_port_read(C_VOID *owner, uint16_t port,
     }
     state->events[state->event_count].write = 0;
     state->events[state->event_count].port = port;
-    state->events[state->event_count].value = port == 0x0080u ? 0x11u : 0x22u;
+    state->events[state->event_count].value = port == 0x00e0u ? 0x11u : 0x22u;
     *out_value = state->events[state->event_count].value;
     ++state->event_count;
     return TYPE_STATUS_OK;
@@ -232,10 +232,10 @@ static C_INT corpus_test_port_transactions(C_VOID)
 {
     static const uint8_t program[] = {
         0xb0u, 0x5au,
-        0xe6u, 0x80u,
-        0xbau, 0x81u, 0x00u,
+        0xe6u, 0xe0u,
+        0xbau, 0xe1u, 0x00u,
         0xeeu,
-        0xe4u, 0x80u,
+        0xe4u, 0xe0u,
         0xecu,
         0x66u
     };
@@ -252,13 +252,13 @@ static C_INT corpus_test_port_transactions(C_VOID)
         failed |= corpus_run_to_ud(machine, program, sizeof(program), &fault);
         failed |= port_state.event_count !=
             sizeof(port_state.events) / sizeof(port_state.events[0]);
-        failed |= !port_state.events[0].write || port_state.events[0].port != 0x0080u ||
+        failed |= !port_state.events[0].write || port_state.events[0].port != 0x00e0u ||
             port_state.events[0].value != 0x5au;
-        failed |= !port_state.events[1].write || port_state.events[1].port != 0x0081u ||
+        failed |= !port_state.events[1].write || port_state.events[1].port != 0x00e1u ||
             port_state.events[1].value != 0x5au;
-        failed |= port_state.events[2].write || port_state.events[2].port != 0x0080u ||
+        failed |= port_state.events[2].write || port_state.events[2].port != 0x00e0u ||
             port_state.events[2].value != 0x11u;
-        failed |= port_state.events[3].write || port_state.events[3].port != 0x0081u ||
+        failed |= port_state.events[3].write || port_state.events[3].port != 0x00e1u ||
             port_state.events[3].value != 0x22u;
         failed |= (fault.eax & 0xffu) != 0x22u;
     }

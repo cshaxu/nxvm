@@ -313,11 +313,33 @@ mode, device, or scheduler mutation. A profile declares metadata and provider
 inputs, not a machine constructor.
 
 M5 T294--T303 migrate the current VM construction path to this boundary before
-M6 creates a mantle runtime. The optional pre-decode transition requires a
-recorded first-party non-VM use case; second-consumer readiness does not depend
-on it when that admission is absent. Until those tasks close, historical raw
-configuration/profile borrows are transitional implementation detail, not a
-new consumer contract or mantle API.
+M6 creates a mantle runtime. No pre-decode transition registry is part of the
+admitted M5 work. Until those tasks close, historical raw configuration/profile
+borrows are transitional implementation detail, not a new consumer contract or
+mantle API.
+
+### Core Port Ownership And Dispatch
+
+`core_machine` owns one frozen port-binding registry. Every core device and
+typed composition provider registers its read and write bindings in that
+registry during configuration; the registry is also the only dispatch path for
+guest CPU `IN`/`OUT` and public `core_machine_bus_read/write`. A port's read
+and write directions are independent, but each `(port, direction)` has exactly
+one binding. A second registration returns `TYPE_STATUS_INVALID_STATE` without
+changing the retained binding or its owner.
+
+Core controller configuration validates that all required directions are free
+before it binds FDC, HDC, or RTC ports. Reset clears guest-visible port data but
+retains the frozen topology; only destruction releases bindings. Public bus
+operations remain stopped/paused boundary operations, while guest I/O is part
+of normal execution and reaches the same binding. VDM minimal does not install
+substitute PIC, PIT, or KBC handlers: host input enters through the existing
+core keyboard submission API and its port observations remain core-owned.
+
+S1 deliberately preserves the legacy callback execution result for a bound
+typed provider. Exact propagation of a provider's `type_status` to public bus,
+guest execution, trace, and output state is a separate S2 contract; this rule
+does not create a fallback or a second port path.
 
 ## Time And Clock Ownership
 

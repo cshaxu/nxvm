@@ -58,8 +58,9 @@ static type_status iomap_port_write(C_VOID *opaque, uint16_t port,
 {
     iomap_port_state *state = (iomap_port_state *)opaque;
 
-    if (state == STD_NULL || (port != 0x0007u && port != 0x0008u &&
-        port != 0x00e0u)) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (state == STD_NULL || (port != 0x00e0u && port != 0x00e1u)) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
     ++state->writes;
     state->last_write = value;
     return TYPE_STATUS_OK;
@@ -91,9 +92,7 @@ static C_INT iomap_prepare(iomap_machine *state, core_machine_cpu_profile profil
     if (state == STD_NULL) return 0;
     STD_MEMSET(state, 0, sizeof(*state));
     if (core_machine_create(&config, &state->machine) != TYPE_STATUS_OK) return 0;
-    if (core_machine_install_port_provider(state->machine, 0x0007u, 0x0008u,
-            &iomap_port_provider, &state->port) != TYPE_STATUS_OK ||
-        core_machine_install_port_provider(state->machine, 0x00e0u, 0x00e0u,
+    if (core_machine_install_port_provider(state->machine, 0x00e0u, 0x00e1u,
             &iomap_port_provider, &state->port) != TYPE_STATUS_OK ||
         core_machine_bind_execution_provider(state->machine,
             &iomap_execution_provider, state) != TYPE_STATUS_OK ||
@@ -146,7 +145,7 @@ static C_INT iomap_install(iomap_machine *state, core_machine_cpu_profile profil
     };
     static const uint8_t user_deny_in[] = { 0xe4,0xe0 };
     static const uint8_t user_deny_out[] = { 0xb0,0x5a,0xe6,0xe0 };
-    static const uint8_t user_truncated_word[] = { 0xe5,0x07 };
+    static const uint8_t user_truncated_word[] = { 0xe5,0xe1 };
     uint8_t idt[0x198u] = {0};
     uint8_t iomap_byte = 0u;
     uint16_t iomap_base = 0x0080u;

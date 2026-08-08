@@ -19,13 +19,14 @@ identifiers are allocated linearly: this table is the reservation order, and a
 conditional row must be resolved before any later row may begin.
 
 T270--T299 are closed and archived in [M5 History](../history/m5.md). T300 is
-conditional and is not active until an approved first-party consumer exists.
+the admitted active queue head; its four bounded subtasks repair confirmed
+core/VM/VDM ownership and public-boundary defects before later work begins.
 
 ### A. Core Public-Surface Closure And Mantle Prerequisites
 
 | Task | Owner and purpose | Dependency and stop condition |
 | --- | --- | --- |
-| T300 | If T294 records an approved first-party non-VM use case, add a frozen pre-decode configured transition registry, separate from the deleted post-`#UD` interface. It observes actual instruction fetch before decoding and returns only unhandled, fixed-length resume, preserving-state stop, or structured fault. | Depends on T299 and the recorded use case. Otherwise it remains deferred. No profile/DOS/BOP meaning, raw state, arbitrary IP/segment/CRx/mode mutation, or second decoder. |
+| T300 | Converge the core port bus, initialization, and public interface boundary in four bounded subtasks: S1 creates one core-owned port registration/dispatch registry with non-mutating directional conflict rejection; S2 propagates typed-provider failures through public and guest I/O; S3 makes VM session construction failure-atomic; S4 removes public private-layout leakage and adds a recurrence gate. | Depends on T299. It keeps existing core devices and product UX, creates no generic device framework or second I/O path, gives VDM no fake PC/AT controller, and does not add a pre-decode transition registry. Each S has focused probes; T300 closes only after current gates and `nxvm_0_5_0300.exe` evidence. |
 | T301 | Add a stopped/paused, copied-value, prevalidated multi-span ordinary-RAM transaction. | Depends on T299. It uses the existing checked route, rejects non-RAM/overlap/overflow, guarantees zero writes on preflight failure, and does not claim concurrent or cycle atomicity or create a second memory route. |
 | T302 | Add a transition-local combined commit only if a real consumer requires it: checked staged RAM plus an allowed decoded-transition CPU patch at one execution boundary. | Depends on T300--T301 and a concrete consumer. Otherwise it remains deferred. |
 | T303 | Prove second-consumer readiness with a first-party core-only fixture and current NXVM regressions. | Depends on T294--T299 and T301, plus T300/T302 only if each was evidence-admitted. It does not create a `mantle` runtime. |
