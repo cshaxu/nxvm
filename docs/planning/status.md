@@ -23,11 +23,11 @@ the `M5:T287:S9:ROM-INT13-HDD-CMOS:OK` marker. These changes preserve the
 existing ATA PIO controller boundary and do not add commands, DMA, display
 breadth, CPU behavior, or a Windows support claim.
 
-S11 repaired a separate fixed-disk parameter-table defect: the guest-visible
-standard sectors-per-track byte at DPT `+8` had been `08h` while the ROM's own
-INT 13h paths used a non-standard `+4` byte. The ROM corpus now asserts DPT
-`+8=63`, AH=08, and AH=15 from one source of geometry. This corrected contract
-does not yet change the external DOS `C:` result.
+S11 isolated the fixed-disk parameter-table offset disagreement; S12 corrects
+the 16-byte AT table interpretation. The standard sectors-per-track byte is
+DPT `+0Eh`; AH=08/AH=15 and the ROM corpus now use that slot, while `+08h`
+retains its control-byte value. This corrected contract does not yet change the
+external DOS `C:` result.
 
 The external copied-frame checkpoint still reports the same `C:` failure after
 S3--S9. Its paused copied-frame observation retains BDA fixed-disk bytes
@@ -41,7 +41,7 @@ is considered.
 - **T287 artifact identity:** `current-gcc` and
   `verify-current-artifact-target` select `vm-0-5-0287`. The active T287
   subtask has not closed. Artifact `nxvm_0_5_0287.exe` SHA-256:
-  `0338BE173D190AEE0DFD59E4BFD53711573F09D040BB4844881A71CF013C3C67`.
+  `F8B975A1D183A9ED04F2047FACBAFB3E5BAE26870E690C8EEE9EB73810EBB00C`.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.

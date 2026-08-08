@@ -147,7 +147,7 @@ C_INT main(C_VOID)
                 session->core_machine, 0x050au, &parameter_offset,
                 sizeof(parameter_offset)) != TYPE_STATUS_OK || core_machine_memory_read(
                 session->core_machine, (uint32_t)VBIOS_ADDR_START_SEG * 16u +
-                VBIOS_ADDR_HDD_PARAM + 8u, &sectors_per_track,
+                VBIOS_ADDR_HDD_PARAM + 14u, &sectors_per_track,
                 sizeof(sectors_per_track)) != TYPE_STATUS_OK || core_machine_memory_read(
                 session->core_machine, 0x050cu, &cmos_fixed_disk_type,
                 sizeof(cmos_fixed_disk_type)) != TYPE_STATUS_OK || core_machine_memory_read(

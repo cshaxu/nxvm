@@ -172,7 +172,7 @@ static C_VOID bios_load_additional(t_ram *ram,
     bios_write_byte(ram, VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 4, TYPE_MASK_UNSIGNED_8(media.geometry.sectors_per_track));
     bios_write_word(ram, VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 5, TYPE_MAX_UNSIGNED_16);
     bios_write_byte(ram, VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 7, 0u);
-    bios_write_byte(ram, VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 8, TYPE_MASK_UNSIGNED_8(media.geometry.sectors_per_track));
+    bios_write_byte(ram, VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 8, 0x08);
     bios_write_word(ram, VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 9, TYPE_MASK_UNSIGNED_16(media.geometry.cylinders));
     bios_write_byte(ram, VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 11, TYPE_MASK_UNSIGNED_8(media.geometry.heads));
     bios_write_word(ram, VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 12, 0u);
