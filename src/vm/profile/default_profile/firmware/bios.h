@@ -279,12 +279,24 @@ jnz $(label_int_10_cmp_02)        \n\
 jmp near $(label_int_10_set_mode) \n\
 $(label_int_10_cmp_02):           \n\
 cmp ah, 02                        \n\
-jnz $(label_int_10_cmp_06)        \n\
+jnz $(label_int_10_cmp_05)        \n\
 jmp near $(label_int_10_cursor)   \n\
+$(label_int_10_cmp_05):           \n\
+cmp ah, 05                        \n\
+jnz $(label_int_10_cmp_06)        \n\
+jmp near $(label_int_10_page)     \n\
 $(label_int_10_cmp_06):           \n\
 cmp ah, 06                        \n\
-jnz $(label_int_10_cmp_0b)        \n\
+jnz $(label_int_10_cmp_08)        \n\
 jmp near $(label_int_10_clear)    \n\
+$(label_int_10_cmp_08):           \n\
+cmp ah, 08                        \n\
+jnz $(label_int_10_cmp_09)        \n\
+jmp near $(label_int_10_read_char) \n\
+$(label_int_10_cmp_09):           \n\
+cmp ah, 09                        \n\
+jnz $(label_int_10_cmp_0b)        \n\
+jmp near $(label_int_10_write_char) \n\
 $(label_int_10_cmp_0b):           \n\
 cmp ah, 0b                        \n\
 jnz $(label_int_10_cmp_0e)        \n\
@@ -501,6 +513,130 @@ pop cx                             \n\
 pop bx                             \n\
 pop ax                             \n\
 iret                               \n\
+\
+$(label_int_10_page):             \n\
+push ax                            \n\
+push bx                            \n\
+push cx                            \n\
+push dx                            \n\
+push ds                            \n\
+cmp bh, 00                         \n\
+jnz $(label_int_10_page_done)      \n\
+mov bx, 0040                       \n\
+mov ds, bx                         \n\
+mov byte ds:[0062], 00             \n\
+mov word ds:[004e], 0000           \n\
+mov dx, ds:[0050]                  \n\
+mov al, dh                          \n\
+xor ah, ah                          \n\
+mov cl, 50                          \n\
+mul cl                              \n\
+xor dh, dh                          \n\
+add ax, dx                          \n\
+mov cx, ax                          \n\
+mov dx, 03d4                        \n\
+mov al, 0e                          \n\
+out dx, al                          \n\
+inc dx                              \n\
+mov al, ch                          \n\
+out dx, al                          \n\
+dec dx                              \n\
+mov al, 0f                          \n\
+out dx, al                          \n\
+inc dx                              \n\
+mov al, cl                          \n\
+out dx, al                          \n\
+$(label_int_10_page_done):         \n\
+pop ds                              \n\
+pop dx                              \n\
+pop cx                              \n\
+pop bx                              \n\
+pop ax                              \n\
+iret                                \n\
+\
+$(label_int_10_read_char):         \n\
+push bx                             \n\
+push cx                             \n\
+push dx                             \n\
+push si                             \n\
+push di                             \n\
+push ds                             \n\
+push es                             \n\
+mov si, bx                          \n\
+mov bx, 0040                        \n\
+mov ds, bx                          \n\
+mov ax, si                          \n\
+cmp ah, ds:[0062]                   \n\
+jnz $(label_int_10_read_char_done)  \n\
+mov dx, ds:[0050]                   \n\
+mov al, dh                           \n\
+xor ah, ah                           \n\
+mov cl, 50                           \n\
+mul cl                               \n\
+xor dh, dh                           \n\
+add ax, dx                           \n\
+shl ax, 01                           \n\
+add ax, ds:[004e]                   \n\
+mov di, ax                           \n\
+mov ax, b800                         \n\
+mov es, ax                           \n\
+mov ax, es:[di]                      \n\
+$(label_int_10_read_char_done):      \n\
+pop es                               \n\
+pop ds                               \n\
+pop di                               \n\
+pop si                               \n\
+pop dx                               \n\
+pop cx                               \n\
+pop bx                               \n\
+iret                                 \n\
+\
+$(label_int_10_write_char):         \n\
+push ax                              \n\
+push bx                              \n\
+push cx                              \n\
+push dx                              \n\
+push si                              \n\
+push di                              \n\
+push bp                              \n\
+push ds                              \n\
+push es                              \n\
+mov ah, bl                            \n\
+mov bp, ax                            \n\
+mov si, bx                            \n\
+mov bx, 0040                          \n\
+mov ds, bx                            \n\
+mov ax, si                            \n\
+cmp ah, ds:[0062]                     \n\
+jnz $(label_int_10_write_char_done)   \n\
+push cx                               \n\
+mov dx, ds:[0050]                     \n\
+mov al, dh                             \n\
+xor ah, ah                             \n\
+mov cl, 50                             \n\
+mul cl                                 \n\
+xor dh, dh                             \n\
+add ax, dx                             \n\
+shl ax, 01                             \n\
+add ax, ds:[004e]                     \n\
+mov di, ax                             \n\
+pop cx                                \n\
+mov ax, b800                           \n\
+mov es, ax                             \n\
+mov ax, bp                             \n\
+rep:                                   \n\
+stosw                                  \n\
+$(label_int_10_write_char_done):      \n\
+pop es                                 \n\
+pop ds                                 \n\
+pop bp                                 \n\
+pop di                                 \n\
+pop si                                 \n\
+pop dx                                 \n\
+pop cx                                 \n\
+pop bx                                 \n\
+pop ax                                 \n\
+iret                                   \n\
 \
 $(label_int_10_clear):            \n\
 push ax                           \n\
