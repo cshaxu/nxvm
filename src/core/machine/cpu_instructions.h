@@ -14,7 +14,6 @@ extern "C" {
 #include "core/machine/cpu.h"
 #include "core/machine/fpu.h"
 #include "core/machine/fpu_interface.h"
-#include "core/machine/undefined_instruction_transition_interface.h"
 
 typedef enum {
     ARITHTYPE_NULL,
@@ -135,10 +134,6 @@ typedef struct core_machine_cpu_execution_diagnostic_provider {
         const t_cpuins *instructions);
 } core_machine_cpu_execution_diagnostic_provider;
 
-typedef C_VOID (*core_machine_cpu_undefined_instruction_dispatch)(C_VOID *context,
-    const core_machine_undefined_instruction_input *input,
-    core_machine_undefined_instruction_response *out_response);
-
 struct t_cpuins {
     t_cpuins_data data;
     t_cpuins_connect connect;
@@ -155,8 +150,6 @@ struct core_machine_cpu_execution_context {
     type_trace *trace;
     const core_machine_cpu_execution_diagnostic_provider *diagnostic_provider;
     C_VOID *diagnostic_context;
-    core_machine_cpu_undefined_instruction_dispatch undefined_instruction_dispatch;
-    C_VOID *undefined_instruction_context;
     type_bool stop_requested;
     type_bool reset_requested;
     core_machine_cpu_profile cpu_profile;
@@ -174,10 +167,6 @@ C_VOID core_machine_cpu_execution_context_bind_diagnostic_provider(
     core_machine_cpu_execution_context *context,
     const core_machine_cpu_execution_diagnostic_provider *provider,
     C_VOID *provider_context);
-C_VOID core_machine_cpu_execution_context_bind_undefined_instruction_dispatch(
-    core_machine_cpu_execution_context *context,
-    core_machine_cpu_undefined_instruction_dispatch dispatch,
-    C_VOID *dispatch_context);
 C_VOID core_machine_cpu_execution_context_bind_fpu(
     core_machine_cpu_execution_context *context, core_machine_fpu *fpu);
 type_bool core_machine_cpu_execution_load_segment(

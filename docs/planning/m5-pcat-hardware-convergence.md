@@ -16,10 +16,8 @@ Tasks are ROI-ordered, subject to their stated dependencies; a task begins with
 its own S1 contract and may split when its bounded stop condition is reached. A runnable implementation task uses its
 numeric task identifier as its artifact revision when it completes.
 
-T270--T292 are closed and archived in [M5 History](../history/m5.md). The
-numbered forward queue begins with active M5 T293 S1 in `status.md`, which
-combines protected-return fault atomicity with T293's original post-`#UD`
-transition removal. The unstarted continuation begins at T294.
+T270--T293 are closed and archived in [M5 History](../history/m5.md). The
+unstarted numbered queue begins at T294.
 
 ### A. Core Public-Surface Closure And Mantle Prerequisites
 
@@ -34,7 +32,7 @@ transition removal. The unstarted continuation begins at T294.
 | T300 | If T294 records an approved first-party non-VM use case, add a frozen pre-decode configured transition registry, separate from the deleted post-`#UD` interface. It observes actual instruction fetch before decoding and returns only unhandled, fixed-length resume, preserving-state stop, or structured fault. | Depends on T299 and the recorded use case. Otherwise it remains deferred. No profile/DOS/BOP meaning, raw state, arbitrary IP/segment/CRx/mode mutation, or second decoder. |
 | T301 | Add a stopped/paused, copied-value, prevalidated multi-span ordinary-RAM transaction. | Depends on T299. It uses the existing checked route, rejects non-RAM/overlap/overflow, guarantees zero writes on preflight failure, and does not claim concurrent or cycle atomicity or create a second memory route. |
 | T302 | Add a transition-local combined commit only if a real consumer requires it: checked staged RAM plus an allowed decoded-transition CPU patch at one execution boundary. | Depends on T300--T301 and a concrete consumer. Otherwise it remains deferred. |
-| T303 | Prove second-consumer readiness with a first-party core-only fixture and current NXVM regressions. | Depends on T293--T299 and T301, plus T300/T302 only if each was evidence-admitted. It does not create a `mantle` runtime. |
+| T303 | Prove second-consumer readiness with a first-party core-only fixture and current NXVM regressions. | Depends on T294--T299 and T301, plus T300/T302 only if each was evidence-admitted. It does not create a `mantle` runtime. |
 
 ### B. Later CPU, FPU, And Readiness Work
 

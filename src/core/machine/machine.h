@@ -37,7 +37,6 @@
 #include "core/machine/vadp.h"
 
 #define CORE_MACHINE_TRACE_CAPACITY 32u
-#define CORE_MACHINE_UNDEFINED_INSTRUCTION_TRANSITION_CAPACITY 8u
 #define CORE_MACHINE_IMMUTABLE_ROM_MAPPING_CAPACITY 4u
 
 typedef struct core_machine_port_slot {
@@ -61,20 +60,6 @@ typedef struct core_machine_cpu_diagnostic_state {
     core_machine_cpu_diagnostic snapshot;
     STD_SIZE_T next_index;
 } core_machine_cpu_diagnostic_state;
-
-typedef struct core_machine_undefined_instruction_transition {
-    uint8_t pattern[CORE_MACHINE_UNDEFINED_INSTRUCTION_MAX_BYTES];
-    uint8_t length;
-    core_machine_undefined_instruction_consumer consumer;
-    C_VOID *owner;
-} core_machine_undefined_instruction_transition;
-
-typedef struct core_machine_undefined_instruction_registry {
-    core_machine_undefined_instruction_transition
-        entries[CORE_MACHINE_UNDEFINED_INSTRUCTION_TRANSITION_CAPACITY];
-    STD_SIZE_T count;
-    type_bool frozen;
-} core_machine_undefined_instruction_registry;
 
 typedef struct core_machine_immutable_rom_mapping {
     uint32_t physical_start;
@@ -100,7 +85,6 @@ struct core_machine {
     core_machine_port_table port_providers;
     core_machine_trace_state trace;
     core_machine_cpu_diagnostic_state cpu_diagnostic;
-    core_machine_undefined_instruction_registry undefined_instruction_registry;
     core_machine_immutable_rom_mapping
         immutable_rom_mappings[CORE_MACHINE_IMMUTABLE_ROM_MAPPING_CAPACITY];
     STD_SIZE_T immutable_rom_mapping_count;

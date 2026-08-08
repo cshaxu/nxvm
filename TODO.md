@@ -166,9 +166,8 @@ default definition of NXVM completion.
 
 ## Architecture, Portability, And Product Boundaries
 
-- [ ] **M5 core public-surface closure (`TODO(High)`, T293--T303).** Remove
-  the unused post-`#UD` transition; replace VM raw configuration/profile
-  borrows with typed core-owned initialization, controller, firmware, and
+- [ ] **M5 core public-surface closure (`TODO(High)`, T294--T303).** Replace VM
+  raw configuration/profile borrows with typed core-owned initialization, controller, firmware, and
   debug capabilities. T296 proceeds through separately evidenced display/port,
   DMA/RTC, and storage stages; pre-decode transition support is admitted only
   for a recorded first-party non-VM consumer. This proves a core-only
