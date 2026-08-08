@@ -16,10 +16,9 @@ the caller-pointer boundary and direction-flag-independent PIO transfers.
 The reported EDIT colors were not a regression: both T209 and current use
 attribute `14h` (blue background, red foreground) for the observed text.
 The guest text memory, VADP copied frame, and Win32 GDI pixel output agree.
-S18 adds a non-activating GDI palette probe and removes automatic foreground
-and focus acquisition by a newly shown display window. It does not add a
-renderer-side VRAM copy, host media shortcut, CPU admission, or Windows
-support claim.
+S18 adds a GDI palette probe without changing the retained display-window
+foreground and focus behavior. It does not add a renderer-side VRAM copy,
+host media shortcut, CPU admission, or Windows support claim.
 
 T287 used lawful, repository-external DOS and Windows-install media through
 the real FDC, ATA PIO, ROM, IRQ, DMA/PIO, and copied-frame paths. No guest
@@ -48,7 +47,7 @@ coupling the controller regression to external bootable-media state.
 - **T287 artifact identity:** `current-gcc` and
   `verify-current-artifact-target` select `vm-0-5-0287`. Artifact
   `nxvm_0_5_0287.exe` SHA-256:
-  `226F4BCB4AF842923C3A490307E72629FBAB7C8A56E1D0A2DF5987BF582E7DE3`.
+  `5E3BCEDD0DE39A7FAE846547BEA3BC6FF64A109C9724808632822E76F0F03A82`.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
