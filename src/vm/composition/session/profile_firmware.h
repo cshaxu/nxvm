@@ -8,15 +8,13 @@
 typedef struct vm_session vm_session;
 
 C_VOID vm_session_profile_firmware_initialize(vm_session *session);
-C_INT vm_session_profile_firmware_materialize(vm_session *session);
 C_VOID vm_session_profile_firmware_register_cmos(vm_session *session);
 C_VOID vm_session_profile_firmware_register_keyboard(vm_session *session);
 C_VOID vm_session_profile_firmware_register_dma(vm_session *session);
 C_VOID vm_session_profile_firmware_register_fdc(vm_session *session);
 C_VOID vm_session_profile_firmware_register_hdc(vm_session *session);
 C_VOID vm_session_profile_firmware_register_core_posts(vm_session *session);
-C_VOID vm_session_profile_firmware_refresh(vm_session *session);
-C_VOID vm_session_profile_firmware_reset(vm_session *session);
 C_VOID vm_session_profile_firmware_finalize(vm_session *session);
+const core_machine_firmware_provider *vm_session_profile_firmware_provider(C_VOID);
 
 #endif

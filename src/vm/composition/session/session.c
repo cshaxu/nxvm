@@ -109,7 +109,6 @@ C_VOID vm_session_set_boot_hdd(vm_session *session, C_INT enabled)
 
 C_VOID vm_session_storage_initialize(vm_session *machine)
 {
-    core_machine_profile_binding profile_binding;
     const vm_profile_default_pc_at_port_range *attribute_ports;
     const vm_profile_default_pc_at_port_range *sequencer_ports;
     const vm_profile_default_pc_at_port_range *graphics_ports;
@@ -195,19 +194,15 @@ C_VOID vm_session_storage_initialize(vm_session *machine)
             TYPE_STATUS_OK || core_machine_configure_dma(machine->core_machine,
             &dma_wiring, &machine->fdc_dma_request) != TYPE_STATUS_OK ||
         core_machine_configure_rtc_cmos(machine->core_machine, &rtc_cmos_config) !=
-            TYPE_STATUS_OK || core_machine_profile_binding_initialize(
-            machine->core_machine, &profile_binding) != TYPE_STATUS_OK) {
+            TYPE_STATUS_OK) {
         core_machine_display_provider_slot_finalize(&machine->display_provider);
         core_machine_destroy(machine->core_machine);
         machine->core_machine = STD_NULL;
         return;
     }
-    vm_profile_default_context_initialize(&machine->default_profile_context,
-        &machine->default_bios, profile_binding,
-        STD_NULL, VM_SESSION_MEDIA_HDD_ID);
     core_machine_media_registry_initialize(&machine->media_registry);
-    machine->default_profile_context.media_registry = &machine->media_registry;
-    machine->default_profile_context.display_provider = &machine->display_provider;
+    vm_profile_default_context_initialize(&machine->default_profile_context,
+        &machine->default_bios, &machine->media_registry, VM_SESSION_MEDIA_HDD_ID);
     core_platform_presentation_mailbox_initialize(&machine->presentation_mailbox);
     core_product_debug_context_initialize(&machine->debugger_context);
     machine->display_generation = 0u;

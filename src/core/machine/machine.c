@@ -303,7 +303,12 @@ C_INT core_machine_configuration_is_open(const core_machine *machine)
 {
     return machine != STD_NULL &&
         machine->lifecycle == CORE_MACHINE_INITIALIZED &&
-        !machine->execution_provider_frozen;
+        !machine->execution_provider_frozen && !machine->firmware_operation_active;
+}
+
+C_INT core_machine_mutable_operation_is_allowed(const core_machine *machine)
+{
+    return machine != STD_NULL && !machine->firmware_operation_active;
 }
 
 t_cpu *core_machine_configuration_cpu_borrow(core_machine *machine)
@@ -319,55 +324,113 @@ core_machine_cpu_execution_context *core_machine_configuration_cpu_execution_bor
 t_ram *core_machine_configuration_memory_borrow(core_machine *machine)
 { return core_machine_configuration_is_open(machine) ? &machine->executor_memory : STD_NULL; }
 
-type_status core_machine_profile_binding_initialize(
-    core_machine *machine, core_machine_profile_binding *binding)
+static type_status core_machine_firmware_invoke(core_machine *machine,
+    C_INT configuring, type_status (*callback)(C_VOID *,
+    core_machine_firmware_context *))
 {
-    if (!core_machine_configuration_is_open(machine) || binding == STD_NULL) {
-        return TYPE_STATUS_INVALID_STATE;
+    type_status status;
+
+    if (machine == STD_NULL || callback == STD_NULL ||
+        machine->firmware_operation_active) return TYPE_STATUS_INVALID_STATE;
+    machine->firmware_operation_active = 1;
+    machine->firmware_context.machine = machine;
+    machine->firmware_context.configuring = configuring;
+    machine->firmware_context.active = 1;
+    status = callback(machine->firmware_provider_context,
+        &machine->firmware_context);
+    machine->firmware_context.active = 0;
+    machine->firmware_context.configuring = 0;
+    machine->firmware_operation_active = 0;
+    return status;
+}
+
+static C_INT core_machine_firmware_context_is_active(
+    const core_machine_firmware_context *firmware, C_INT configuring)
+{
+    return firmware != STD_NULL && firmware->active &&
+        firmware->machine != STD_NULL &&
+        firmware->configuring == configuring &&
+        firmware->machine->firmware_operation_active;
+}
+
+type_status core_machine_bind_firmware_provider(core_machine *machine,
+    const core_machine_firmware_provider *provider, C_VOID *provider_context)
+{
+    type_status status;
+
+    if (!core_machine_configuration_is_open(machine) ||
+        machine->firmware_provider != STD_NULL || provider == STD_NULL ||
+        provider->configure == STD_NULL || provider->reset == STD_NULL) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    binding->machine = machine;
+    machine->firmware_provider = provider;
+    machine->firmware_provider_context = provider_context;
+    status = core_machine_firmware_invoke(machine, 1, provider->configure);
+    if (status != TYPE_STATUS_OK) {
+        machine->firmware_provider = STD_NULL;
+        machine->firmware_provider_context = STD_NULL;
+        return status;
+    }
     return TYPE_STATUS_OK;
 }
 
-t_ram *core_machine_profile_binding_memory(
-    const core_machine_profile_binding *binding)
+type_status core_machine_firmware_register_immutable_rom(
+    core_machine_firmware_context *firmware, uint32_t physical_start,
+    const uint8_t *image, STD_SIZE_T bytes)
 {
-    return binding == STD_NULL || binding->machine == STD_NULL ? STD_NULL :
-        &binding->machine->executor_memory;
-}
-
-core_machine_cpu_execution_context *core_machine_profile_binding_execution(
-    const core_machine_profile_binding *binding)
-{
-    return binding == STD_NULL || binding->machine == STD_NULL ? STD_NULL :
-        &binding->machine->executor_cpu_execution;
-}
-
-type_status core_machine_profile_binding_read_real(
-    const core_machine_profile_binding *binding, uint16_t segment,
-    uint16_t offset, C_VOID *out_data, STD_SIZE_T size)
-{
-    return binding == STD_NULL || binding->machine == STD_NULL ?
-        TYPE_STATUS_INVALID_ARGUMENT : core_machine_memory_read_real_from(
-            &binding->machine->executor_memory, segment, offset, out_data, size);
-}
-
-type_status core_machine_profile_binding_write_real(
-    const core_machine_profile_binding *binding, uint16_t segment,
-    uint16_t offset, const C_VOID *data, STD_SIZE_T size)
-{
-    return binding == STD_NULL || binding->machine == STD_NULL ?
-        TYPE_STATUS_INVALID_ARGUMENT : core_machine_memory_write_real_to(
-            &binding->machine->executor_memory, segment, offset, data, size);
-}
-
-type_status core_machine_profile_binding_write_port(
-    const core_machine_profile_binding *binding, uint16_t port, uint32_t value)
-{
-    if (binding == STD_NULL || binding->machine == STD_NULL) {
-        return TYPE_STATUS_INVALID_ARGUMENT;
+    if (!core_machine_firmware_context_is_active(firmware, 1)) {
+        return TYPE_STATUS_INVALID_STATE;
     }
-    core_machine_port_write(&binding->machine->executor_port, port, value);
+    return core_machine_register_immutable_rom_mapping(firmware->machine,
+        physical_start, image, bytes);
+}
+
+type_status core_machine_firmware_memory_read(
+    core_machine_firmware_context *firmware, uint32_t physical,
+    C_VOID *out_data, STD_SIZE_T size)
+{
+    if (!core_machine_firmware_context_is_active(firmware, 0) ||
+        out_data == STD_NULL || size == 0u) return TYPE_STATUS_INVALID_STATE;
+    return core_machine_memory_read_physical(&firmware->machine->executor_memory,
+        physical, (type_virtual_address)out_data, size);
+}
+
+type_status core_machine_firmware_memory_write(
+    core_machine_firmware_context *firmware, uint32_t physical,
+    const C_VOID *data, STD_SIZE_T size)
+{
+    if (!core_machine_firmware_context_is_active(firmware, 0) ||
+        data == STD_NULL || size == 0u) return TYPE_STATUS_INVALID_STATE;
+    return core_machine_memory_write_physical(&firmware->machine->executor_memory,
+        physical, (type_virtual_address)data, size);
+}
+
+type_status core_machine_firmware_port_read(
+    core_machine_firmware_context *firmware, uint16_t port, uint32_t *out_value)
+{
+    if (!core_machine_firmware_context_is_active(firmware, 0) ||
+        out_value == STD_NULL) return TYPE_STATUS_INVALID_STATE;
+    *out_value = core_machine_port_read(&firmware->machine->executor_port, port);
+    return TYPE_STATUS_OK;
+}
+
+type_status core_machine_firmware_port_write(
+    core_machine_firmware_context *firmware, uint16_t port, uint32_t value)
+{
+    if (!core_machine_firmware_context_is_active(firmware, 0)) {
+        return TYPE_STATUS_INVALID_STATE;
+    }
+    core_machine_port_write(&firmware->machine->executor_port, port, value);
+    return TYPE_STATUS_OK;
+}
+
+type_status core_machine_firmware_request_stop(
+    core_machine_firmware_context *firmware)
+{
+    if (!core_machine_firmware_context_is_active(firmware, 0)) {
+        return TYPE_STATUS_INVALID_STATE;
+    }
+    STD_ATOMIC_STORE(&firmware->machine->stop_requested, 1);
     return TYPE_STATUS_OK;
 }
 
@@ -982,6 +1045,11 @@ static type_status core_machine_cold_reset(core_machine *machine)
         machine->execution_provider->reset != STD_NULL) {
         machine->execution_provider->reset(machine->execution_provider_context);
     }
+    if (machine->firmware_provider != STD_NULL &&
+        core_machine_firmware_invoke(machine, 0,
+            machine->firmware_provider->reset) != TYPE_STATUS_OK) {
+        return TYPE_STATUS_FAULT;
+    }
     machine->lifecycle = CORE_MACHINE_STOPPED;
     core_machine_trace_record(machine, CORE_MACHINE_TRACE_RESET, 0u, 0u, 0u);
     return TYPE_STATUS_OK;
@@ -992,7 +1060,8 @@ type_status core_machine_reconfigure_memory(core_machine *machine,
 {
     type_native_unsigned index;
 
-    if (machine == STD_NULL || !machine->execution_provider_frozen ||
+    if (machine == STD_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
+        !machine->execution_provider_frozen ||
         machine->lifecycle != CORE_MACHINE_STOPPED ||
         memory_bytes < CORE_MACHINE_MINIMUM_MEMORY_BYTES ||
         memory_bytes > CORE_MACHINE_MAXIMUM_MEMORY_BYTES) {
@@ -1020,7 +1089,8 @@ type_status core_machine_reset(core_machine *machine)
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
 
-    if (!machine->execution_provider_frozen ||
+    if (!core_machine_mutable_operation_is_allowed(machine) ||
+        !machine->execution_provider_frozen ||
         machine->lifecycle == CORE_MACHINE_RUNNING) {
         return TYPE_STATUS_INVALID_STATE;
     }
@@ -1045,7 +1115,8 @@ type_status core_machine_run(
     core_machine_run_budget budget,
     core_machine_run_result *result)
 {
-    if (machine == STD_NULL || result == STD_NULL) {
+    if (machine == STD_NULL || result == STD_NULL ||
+        !core_machine_mutable_operation_is_allowed(machine)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
 
@@ -1167,6 +1238,18 @@ type_status core_machine_run(
         machine->lifecycle = CORE_MACHINE_PAUSED;
         result->reason = CORE_MACHINE_STOP_BUDGET;
         result->linear_pc = core_machine_linear_pc(machine);
+        if (machine->firmware_provider != STD_NULL &&
+            machine->firmware_provider->after_run != STD_NULL &&
+            core_machine_firmware_invoke(machine, 0,
+                machine->firmware_provider->after_run) != TYPE_STATUS_OK) {
+            (C_VOID)core_machine_report_fault(machine, 0x46575245u);
+            result->reason = CORE_MACHINE_STOP_FAULT;
+            result->detail = machine->fault_detail;
+            return TYPE_STATUS_FAULT;
+        }
+        if (STD_ATOMIC_LOAD(&machine->stop_requested)) {
+            result->reason = CORE_MACHINE_STOP_REQUESTED;
+        }
         core_machine_trace_record(machine, CORE_MACHINE_TRACE_RUN_BOUNDARY,
             result->linear_pc, (uint32_t)result->executed,
             (uint32_t)result->reason);
@@ -1176,7 +1259,7 @@ type_status core_machine_run(
 
 type_status core_machine_request_stop(core_machine *machine)
 {
-    if (machine == STD_NULL) {
+    if (machine == STD_NULL || !core_machine_mutable_operation_is_allowed(machine)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
 
@@ -1186,7 +1269,7 @@ type_status core_machine_request_stop(core_machine *machine)
 
 type_status core_machine_set_nmi_mask(core_machine *machine, C_INT masked)
 {
-    if (machine == STD_NULL) {
+    if (machine == STD_NULL || !core_machine_mutable_operation_is_allowed(machine)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     machine->executor_cpu.data.flagMaskNMI = masked ? TYPE_TRUE : TYPE_FALSE;
@@ -1206,7 +1289,8 @@ type_status core_machine_get_nmi_mask(const core_machine *machine,
 type_status core_machine_keyboard_submit_scan_code(core_machine *machine,
     uint8_t scan_code)
 {
-    if (machine == STD_NULL || machine->lifecycle == CORE_MACHINE_INITIALIZED ||
+    if (machine == STD_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
+        machine->lifecycle == CORE_MACHINE_INITIALIZED ||
         machine->lifecycle == CORE_MACHINE_FAULTED) {
         return TYPE_STATUS_INVALID_STATE;
     }
@@ -1216,7 +1300,8 @@ type_status core_machine_keyboard_submit_scan_code(core_machine *machine,
 type_status core_machine_keyboard_submit_scan_codes(core_machine *machine,
     const uint8_t *scan_codes, STD_SIZE_T count)
 {
-    if (machine == STD_NULL || machine->lifecycle == CORE_MACHINE_INITIALIZED ||
+    if (machine == STD_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
+        machine->lifecycle == CORE_MACHINE_INITIALIZED ||
         machine->lifecycle == CORE_MACHINE_FAULTED) {
         return TYPE_STATUS_INVALID_STATE;
     }
@@ -1227,7 +1312,8 @@ type_status core_machine_keyboard_submit_scan_codes(core_machine *machine,
 type_status core_machine_mouse_submit_relative(core_machine *machine,
     int16_t delta_x, int16_t delta_y, uint8_t buttons)
 {
-    if (machine == STD_NULL || (machine->lifecycle != CORE_MACHINE_RUNNING &&
+    if (machine == STD_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
+        (machine->lifecycle != CORE_MACHINE_RUNNING &&
         machine->lifecycle != CORE_MACHINE_PAUSED &&
         machine->lifecycle != CORE_MACHINE_STOPPED)) {
         return TYPE_STATUS_INVALID_STATE;
@@ -1240,7 +1326,7 @@ type_status core_machine_report_fault(
     core_machine *machine,
     uint32_t detail)
 {
-    if (machine == STD_NULL) {
+    if (machine == STD_NULL || !core_machine_mutable_operation_is_allowed(machine)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
 

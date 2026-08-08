@@ -99,7 +99,9 @@ static const core_machine_execution_provider vm_session_execution_provider = {
 C_INT vm_session_bind_execution_provider(vm_session *machine)
 {
     return machine != STD_NULL && machine->core_machine != STD_NULL &&
-        vm_session_profile_firmware_materialize(machine) &&
+        core_machine_bind_firmware_provider(machine->core_machine,
+            vm_session_profile_firmware_provider(),
+            &machine->default_profile_context) == TYPE_STATUS_OK &&
         core_machine_bind_execution_provider(machine->core_machine,
             &vm_session_execution_provider, machine) == TYPE_STATUS_OK &&
         core_machine_freeze_execution_providers(machine->core_machine) ==

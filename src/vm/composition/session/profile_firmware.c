@@ -153,10 +153,6 @@ static C_VOID vm_session_profile_firmware_apply_range(vm_session *session,
 C_VOID vm_session_profile_firmware_initialize(vm_session *session)
 {
     if (session == STD_NULL) return;
-    (C_VOID)core_machine_memory_register_mapping(
-        vm_profile_default_context_memory(&session->default_profile_context),
-        session->profile->rom.linear_start, session->profile->rom.physical_start,
-        session->profile->rom.bytes);
     vm_profile_default_bios_initialize(&session->default_bios);
     vm_session_profile_firmware_add_interrupt(session, VBIOS_INT_SOFT_MISC_11,
         0x11u);
@@ -170,11 +166,47 @@ C_VOID vm_session_profile_firmware_initialize(vm_session *session)
         VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_VIDEO_INT10);
 }
 
-C_INT vm_session_profile_firmware_materialize(vm_session *session)
+static type_status vm_session_profile_firmware_configure(C_VOID *opaque,
+    core_machine_firmware_context *firmware)
 {
-    if (session == STD_NULL || session->core_machine == STD_NULL) return 0;
-    return vm_profile_default_bios_materialize(&session->default_bios,
-        session->core_machine);
+    vm_profile_default_context *context = (vm_profile_default_context *)opaque;
+
+    return context == STD_NULL || context->bios == STD_NULL ||
+        !vm_profile_default_bios_materialize(context->bios, firmware) ?
+        TYPE_STATUS_FAULT : TYPE_STATUS_OK;
+}
+
+static type_status vm_session_profile_firmware_reset_callback(C_VOID *opaque,
+    core_machine_firmware_context *firmware)
+{
+    vm_profile_default_context *context = (vm_profile_default_context *)opaque;
+
+    if (context == STD_NULL || context->bios == STD_NULL) return TYPE_STATUS_FAULT;
+    vm_profile_default_bios_reset(context->bios, firmware, context->media_registry,
+        context->hdd_media_id);
+    vm_profile_default_cga_reset(context, firmware);
+    return TYPE_STATUS_OK;
+}
+
+static type_status vm_session_profile_firmware_after_run(C_VOID *opaque,
+    core_machine_firmware_context *firmware)
+{
+    vm_profile_default_context *context = (vm_profile_default_context *)opaque;
+
+    if (context == STD_NULL || context->bios == STD_NULL) return TYPE_STATUS_FAULT;
+    return vm_profile_default_bios_take_boot_failure_report(firmware) ?
+        core_machine_firmware_request_stop(firmware) : TYPE_STATUS_OK;
+}
+
+static const core_machine_firmware_provider vm_session_default_firmware_provider = {
+    vm_session_profile_firmware_configure,
+    vm_session_profile_firmware_reset_callback,
+    vm_session_profile_firmware_after_run
+};
+
+const core_machine_firmware_provider *vm_session_profile_firmware_provider(C_VOID)
+{
+    return &vm_session_default_firmware_provider;
 }
 
 C_VOID vm_session_profile_firmware_register_cmos(vm_session *session)
@@ -221,22 +253,6 @@ C_VOID vm_session_profile_firmware_register_core_posts(vm_session *session)
     vm_session_profile_firmware_apply_range(session,
         VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_PIT_POST,
         VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_PIC_POST);
-}
-
-C_VOID vm_session_profile_firmware_refresh(vm_session *session)
-{
-    if (session == STD_NULL) return;
-    vm_profile_default_bios_refresh(&session->default_bios);
-}
-
-C_VOID vm_session_profile_firmware_reset(vm_session *session)
-{
-    if (session == STD_NULL) return;
-    vm_profile_default_bios_reset(&session->default_bios,
-        vm_profile_default_context_memory(&session->default_profile_context),
-        session->default_profile_context.media_registry,
-        session->default_profile_context.hdd_media_id);
-    vm_profile_default_cga_reset(&session->default_profile_context);
 }
 
 C_VOID vm_session_profile_firmware_finalize(vm_session *session)

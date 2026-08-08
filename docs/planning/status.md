@@ -2,17 +2,89 @@
 
 ## Current Work
 
-**Idle.** M5 T296 is closed in [M5 History](../history/m5.md); the unstarted
-queue head is T297 and remains unadmitted.
+**M5 T297 S1 active — opaque core-invoked firmware capability.**
+
+T296 is the reference baseline. S1 freezes and implements the firmware
+operation whitelist, lifecycle, failure/atomicity, and re-entry contract;
+S2 migrates the default ROM and QDCGA consumers; S3 adds the static and
+focused evidence, runs the full gates, and produces the `0.5.0297` developer
+artifact. Do not admit T298 or later work, close this task, merge, or push.
+
+### Task Packet
+
+- **Original request:** Replace the VM/default-profile firmware's long-lived
+  raw core profile binding with an opaque firmware provider/context. During
+  configuration core accepts only the opaque provider/context; after freeze
+  only core invokes it at explicit firmware-service boundaries. VM/profile
+  receives no executor, CPU, RAM, port, or device pointer; no mode/CRx setter
+  or direct invocation is admitted.
+- **S1 objective and completion condition:** Add one narrow `core/machine`
+  firmware provider contract and opaque invocation context. Its complete
+  operation enum is checked physical guest-memory read/write, checked port
+  read/write, and copied CPU-state read; no state patch is admitted because
+  the default ROM/QDCGA consumers have none. A provider binds only while
+  `INITIALIZED`; freeze makes the registration immutable; reset retains the
+  capability; destroy invalidates it. Core opens an operation borrow only for
+  the synchronous callback, rejects all nested/reentrant mutable machine
+  operations, and closes the borrow before returning even on failure. Binding
+  and freeze failures leave no half-bound provider. Complete S1 with focused
+  lifecycle/re-entry probes and a static whitelist gate.
+- **S2 objective and completion condition:** Convert default-ROM materialize,
+  BIOS reset/BDA update, QDCGA reset, and boot-failure-report handling to
+  core-invoked firmware services. Preserve the current ROM map, boot, Console,
+  debugger, display, and BIOS behavior; neither the VM session nor profile
+  calls firmware callbacks directly after freeze.
+- **Reference baseline:** T296, `vm-0-5-0296`, developer artifact
+  `nxvm_0_5_0296.exe` SHA-256
+  `28DBFE1A57EA2A1D53276CA9CED5D9E3A8B742F557C9A13076274AE2067EA02A`.
+- **In scope:** the core firmware capability/provider and service boundary;
+  default-profile BIOS/QDCGA migration; public contract/architecture updates;
+  targeted lifecycle/probe/static checks, current GCC gates, and the T297
+  developer artifact.
+- **Non-goals:** debugger capability (T298), broad public-borrow removal
+  (T299), a generic firmware registry without a consumer, DOS/BIOS semantics
+  in core, CPU-state mutation, CRx/mode/IP/segment setters, a new executor,
+  machine, scheduler, VM-side instruction loop, or host/product policy.
+- **Applicable rules:** `core/machine` owns generic guest state, topology
+  freeze, lifecycle, and invocation; VM profile owns immutable ROM and BIOS
+  policy. Core must not depend on VM/profile or learn PC/AT/BIOS/DOS meaning.
+  Callbacks are synchronous, transfer no raw storage pointer, and cannot
+  re-enter mutable operations. No source import, third-party material, guest
+  media, Microsoft research, or license/provenance change is involved.
+- **Consumer/whitelist audit:** default firmware needs (1) immutable-ROM
+  registration during configuration, (2) reset-time checked BDA/IVT/mutable
+  ROM reads and writes, (3) reset-time checked CGA/CRTC port writes, and (4)
+  post-quantum boot-report checked memory read/write. ROM registration is a
+  core-controlled configuration callback, not a runtime service operation.
+  No default consumer needs CPU state, state patching, or a CPU/mode/CRx
+  operation; copied CPU-state read stays enumerated only if the focused
+  provider contract proves its independent consumer rather than creating an
+  unconsumed API.
+- **Similar-issue sweep:** defect class is a profile/VM firmware context that
+  retains or obtains a raw core profile binding, RAM, executor, CPU, port, or
+  device pointer, or invokes firmware directly after freeze. Query:
+  `rg -n "core_machine_profile_binding|profile_binding_(memory|execution)|context_(memory|execution)|vm_profile_default_(bios_reset|cga_reset)" src tests --glob '*.[ch]'`.
+  Every production hit must be migrated, rejected by the new static gate, or
+  documented as an explicit out-of-scope future task; test-only fixtures must
+  use the capability contract rather than a mirror route.
+- **Planned evidence:** targeted firmware lifecycle/re-entry smoke and default
+  profile/ROM/Console/debugger probes; a static provider/whitelist gate;
+  `cmake --build --preset current-gates-gcc`; documentation governance;
+  `git diff --check`; and a rebuilt `build/output/nxvm_0_5_0297.exe` with
+  SHA-256, source commit, and runtime identity recorded before completion.
+- **Stop conditions:** stop for any need to broaden the whitelist, expose a
+  raw pointer, encode BIOS/DOS policy in core, retain a callback borrow beyond
+  its call, alter retained product behavior, or begin T298+; record the issue
+  for owner direction rather than extending scope.
 
 ## Current Technical Baseline
 
-- **T296 closure artifact identity:** `current-gcc` and
-  `verify-current-artifact-target` select `vm-0-5-0296`. The ignored developer
-  artifact `nxvm_0_5_0296.exe` is 2,682,261 bytes with SHA-256
-  `28DBFE1A57EA2A1D53276CA9CED5D9E3A8B742F557C9A13076274AE2067EA02A`,
-  built from `fa18847d0aed685554f786c89ba0f5908e539fb7`; its final managed GCC
-  verification passed 49 static/build/docs gates and 125/125 tests.
+- **T297 active artifact identity:** `current-gcc` and
+  `verify-current-artifact-target` select `vm-0-5-0297`. The T296 baseline
+  artifact remains `nxvm_0_5_0296.exe`, 2,682,261 bytes, SHA-256
+  `28DBFE1A57EA2A1D53276CA9CED5D9E3A8B742F557C9A13076274AE2067EA02A`, built
+  from `fa18847d0aed685554f786c89ba0f5908e539fb7`; T297's artifact and final
+  verification are pending S3.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
