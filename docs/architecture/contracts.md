@@ -616,6 +616,16 @@ and boot policy. Core contains no PC/AT default, image path, host I/O,
 firmware, or product state. The migration preserves one PIO route and does
 not admit ATA DMA, new commands, or another controller.
 
+### ATA nIEN IRQ Visibility (T286)
+
+T286 admits one device-control behavior only: primary-master ATA `nIEN` (bit
+1 at `3F6h`) suppresses the controller's PIC-visible IRQ14 assertion for both
+an already-pending interrupt and later command completion. It does not alter
+the command's PIO data/status phase; clearing `nIEN` restores normal IRQ14
+delivery for subsequent completions. The core HDC remains the sole owner of
+the bit, pending state, and PIC source lifecycle. This adds no IDE DMA, timing
+model, command, reset extension, or VM-side controller mirror.
+
 ### Core Controller Media-I/O Evidence (T283)
 
 T283 closes the remaining evidence gap without changing either controller's

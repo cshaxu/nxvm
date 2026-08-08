@@ -3,6 +3,7 @@
 #include <windows.h>
 
 #include "core/machine/machine_interface.h"
+#include "core/machine/hdc.h"
 #include "vm/composition/session/session_interface.h"
 #include "vm/composition/session/session.h"
 
@@ -53,6 +54,14 @@ static C_INT vm_ata253_write_sector(vm_ata253_program *program, uint16_t word)
         vm_ata253_put(program, 0xfdu);
 }
 
+static C_INT vm_ata253_set_nien(vm_ata253_program *program, C_INT enabled)
+{
+    return vm_ata253_put(program, 0xbau) && vm_ata253_word(program, 0x03f6u) &&
+        vm_ata253_put(program, 0xb0u) &&
+        vm_ata253_put(program, enabled ? CORE_MACHINE_HDC_DEVICE_CONTROL_NIEN : 0u) &&
+        vm_ata253_put(program, 0xeeu);
+}
+
 static C_INT vm_ata253_discard_words(vm_ata253_program *program, uint16_t count)
 {
     return vm_ata253_put(program, 0xb9u) && vm_ata253_word(program, count) &&
@@ -82,10 +91,12 @@ static C_INT vm_ata253_build_program(vm_ata253_program *program)
 
     if (program == STD_NULL) return 0;
     STD_MEMSET(program, 0, sizeof(*program));
-    if (!vm_ata253_out_task_file(program, 0x30u) ||
+    if (!vm_ata253_set_nien(program, 1) ||
+        !vm_ata253_out_task_file(program, 0x30u) ||
         !vm_ata253_put(program, 0xbau) || !vm_ata253_word(program, 0x01f0u) ||
         !vm_ata253_write_sector(program, 0x1357u) ||
         !vm_ata253_write_sector(program, 0x2468u) ||
+        !vm_ata253_set_nien(program, 0) ||
         !vm_ata253_out_task_file(program, 0x20u) ||
         !vm_ata253_put(program, 0xbau) || !vm_ata253_word(program, 0x01f0u) ||
         !vm_ata253_put(program, 0xedu) || !vm_ata253_put(program, 0x3du) ||
@@ -317,6 +328,7 @@ done:
     STD_FREE(fdd_image);
     STD_FREE(hdd_image);
     if (!passed) return 1;
+    STD_PRINTF("M5:T286:S3:ATA-NIEN:DOS:OK\n");
     STD_PRINTF("M5:T253:S3:ATA-PIO:DOS:OK\n");
     return 0;
 }

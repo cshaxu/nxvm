@@ -191,10 +191,34 @@ C_INT main(C_VOID)
                 core_machine_reset(machine) != TYPE_STATUS_OK) {
                 failed |= 0x04;
             } else {
+                if (!core_machine_hdc_write(machine,
+                        hdc_config.alternate_status_device_control_port,
+                        CORE_MACHINE_HDC_DEVICE_CONTROL_NIEN) ||
+                    !core_machine_hdc_program_chs(machine, &hdc_config) ||
+                    !core_machine_hdc_write(machine,
+                        hdc_config.status_command_port, 0x20u) ||
+                    !core_machine_hdc_read(machine,
+                        hdc_config.alternate_status_device_control_port, &status) ||
+                    status != (CORE_MACHINE_HDC_STATUS_DRDY |
+                        CORE_MACHINE_HDC_STATUS_DSC | CORE_MACHINE_HDC_STATUS_DRQ) ||
+                    core_machine_hdc_irq_pending(hdc) ||
+                    !core_machine_hdc_drain(machine, &hdc_config, &word) ||
+                    word != 0x1234u ||
+                    !core_machine_hdc_write(machine,
+                        hdc_config.alternate_status_device_control_port, 0u) ||
+                    !core_machine_hdc_program_chs(machine, &hdc_config) ||
+                    !core_machine_hdc_write(machine,
+                        hdc_config.status_command_port, 0x20u) ||
+                    !core_machine_hdc_irq_pending(hdc) ||
+                    !core_machine_hdc_read(machine, hdc_config.status_command_port,
+                        &status) ||
+                    !core_machine_hdc_drain(machine, &hdc_config, &word) ||
+                    word != 0x1234u) failed |= 0x400;
+
                 if (!core_machine_hdc_program_chs(machine, &hdc_config) ||
                     !core_machine_hdc_write(machine, hdc_config.status_command_port, 0x20u) ||
                     !core_machine_hdc_drain(machine, &hdc_config, &word) || word != 0x1234u ||
-                    media.read_count != 1u) failed |= 0x08;
+                    media.read_count != 3u) failed |= 0x08;
 
                 if (!core_machine_hdc_program_chs(machine, &hdc_config) ||
                     !core_machine_hdc_write(machine, hdc_config.status_command_port, 0x30u) ||
@@ -240,7 +264,12 @@ C_INT main(C_VOID)
     }
     core_machine_destroy(machine);
     core_machine_media_registry_finalize(&registry);
-    if (failed) return 1;
+    if (failed) {
+        STD_FPRINTF(STD_STDERR, "M5:T286:S1:ATA-NIEN:PORT:FAIL bits=%x status=%02x error=%02x word=%04x\n",
+            failed, status, error, word);
+        return 1;
+    }
+    puts("M5:T286:S1:ATA-NIEN:PORT:OK");
     puts("M5:T283:S2:CORE-HDC-MEDIA:OK");
     return 0;
 }
