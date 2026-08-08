@@ -16,14 +16,13 @@ Tasks are ROI-ordered, subject to their stated dependencies; a task begins with
 its own S1 contract and may split when its bounded stop condition is reached. A runnable implementation task uses its
 numeric task identifier as its artifact revision when it completes.
 
-T270--T293 are closed and archived in [M5 History](../history/m5.md). The
-unstarted numbered queue begins at T294.
+T270--T294 are closed and archived in [M5 History](../history/m5.md). The
+unstarted numbered queue begins at T295.
 
 ### A. Core Public-Surface Closure And Mantle Prerequisites
 
 | Task | Owner and purpose | Dependency and stop condition |
 | --- | --- | --- |
-| T294 | Inventory every `core/machine` public interface, configuration borrow, profile binding, and test-only probe. Classify each by current consumer, state owner, typed replacement, core initialization responsibility, regression, and removal task. | Documentation/design evidence only; it must not pre-admit a broad replacement API. |
 | T295 | Move CPU/PIC/lifecycle initialization authority fully into `core_machine`; VM composition supplies typed configuration/providers only. | Depends on T294. No VM CPU/PIC wiring, second scheduler, or NXVM lifecycle change. |
 | T296 | Move remaining shared-device initialization authority into core through mandatory stages: S1 migration matrix; S2 VADP and port setup; S3 DMA plus RTC/CMOS/NMI setup; S4 FDC/HDC setup. VM/profile supplies frozen topology, ports, IRQ/DMA routes, defaults, and media/provider policy only. | Depends on T295. Each stage needs its own focused display/port, DMA/clock/IRQ, or FDC/ATA regression and stops before the next stage on any lifecycle or owner regression. No controller storage mirror, PC/AT default in core, or media/path policy migration. |
 | T297 | Replace raw profile binding with an opaque core-invoked firmware capability. S1 freezes its operation enum, lifecycle, failure/atomicity, re-entry, and nested-call rules before implementation. Only the S1-approved checked guest-memory, port, and copied CPU-state operations may cross defined service boundaries. | Depends on T296. No `t_cpu *`, `t_ram *`, port/device pointer, executor access, DOS/BIOS meaning, or mode/CRx setter crosses the boundary. |

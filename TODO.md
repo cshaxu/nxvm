@@ -166,13 +166,13 @@ default definition of NXVM completion.
 
 ## Architecture, Portability, And Product Boundaries
 
-- [ ] **M5 core public-surface closure (`TODO(High)`, T294--T303).** Replace VM
-  raw configuration/profile borrows with typed core-owned initialization, controller, firmware, and
-  debug capabilities. T296 proceeds through separately evidenced display/port,
-  DMA/RTC, and storage stages; pre-decode transition support is admitted only
-  for a recorded first-party non-VM consumer. This proves a core-only
-  second-consumer fixture but does not implement `mantle`, DOS, VDM, an
-  external ABI, or host policy.
+- [ ] **M5 core public-surface closure (`TODO(High)`, T295--T303).** Replace VM
+  raw configuration/profile borrows with typed core-owned initialization,
+  controller, firmware, and debug capabilities. T296 proceeds through
+  separately evidenced display/port, DMA/RTC/CMOS/NMI, and FDC/HDC stages;
+  T300/T302 remain conditional on recorded first-party consumer evidence. This
+  proves a core-only second-consumer fixture but does not implement `mantle`,
+  DOS, VDM, an external ABI, or host policy.
 - [ ] **M6 mantle session envelope (`TODO(High)`).** After M5 T303 proves the
   cleaned second-consumer core boundary, build only the neutral lifecycle,
   execution pump, runtime bindings, transition gateway, and factual diagnostics
