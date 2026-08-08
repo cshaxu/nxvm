@@ -54,11 +54,11 @@ static type_status core_machine_port_add_provider(t_port *port,
 }
 
 
-C_VOID core_machine_port_execute_read(t_port *port, type_unsigned_16 port_id)
+type_status core_machine_port_execute_read(t_port *port, type_unsigned_16 port_id)
 {
     core_machine_port_provider_entry *provider;
 
-    if (port == STD_NULL) return;
+    if (port == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     provider = core_machine_port_find_provider(port, port_id, TYPE_FALSE);
     if (provider != STD_NULL) {
         if (provider->legacy_handler != STD_NULL) {
@@ -66,28 +66,34 @@ C_VOID core_machine_port_execute_read(t_port *port, type_unsigned_16 port_id)
         } else if (provider->read_provider != STD_NULL) {
             uint32_t value = 0u;
 
-            (C_VOID)provider->read_provider(provider->owner, port_id, &value);
+            type_status status = provider->read_provider(provider->owner, port_id, &value);
+
+            if (status != TYPE_STATUS_OK) return status;
             port->data.ioDWord = value;
         }
-        return;
+        return TYPE_STATUS_OK;
     }
+    return TYPE_STATUS_OK;
 }
 
-C_VOID core_machine_port_execute_write(t_port *port, type_unsigned_16 port_id)
+type_status core_machine_port_execute_write(t_port *port, type_unsigned_16 port_id)
 {
     core_machine_port_provider_entry *provider;
 
-    if (port == STD_NULL) return;
+    if (port == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     provider = core_machine_port_find_provider(port, port_id, TYPE_TRUE);
     if (provider != STD_NULL) {
         if (provider->legacy_handler != STD_NULL) {
             provider->legacy_handler(port, port_id, provider->owner);
         } else if (provider->write_provider != STD_NULL) {
-            (C_VOID)provider->write_provider(provider->owner, port_id,
+            type_status status = provider->write_provider(provider->owner, port_id,
                 port->data.ioDWord);
+
+            if (status != TYPE_STATUS_OK) return status;
         }
-        return;
+        return TYPE_STATUS_OK;
     }
+    return TYPE_STATUS_OK;
 }
 
 type_status core_machine_port_add_read(t_port *port, type_unsigned_16 port_id,
@@ -135,7 +141,7 @@ C_INT core_machine_port_has_write(const t_port *port, type_unsigned_16 port_id)
 uint32_t core_machine_port_read(t_port *port, uint16_t port_id)
 {
     if (port == STD_NULL) return 0u;
-    core_machine_port_execute_read(port, port_id);
+    (C_VOID)core_machine_port_execute_read(port, port_id);
     return port->data.ioDWord;
 }
 
@@ -143,7 +149,7 @@ C_VOID core_machine_port_write(t_port *port, uint16_t port_id, uint32_t value)
 {
     if (port == STD_NULL) return;
     port->data.ioDWord = value;
-    core_machine_port_execute_write(port, port_id);
+    (C_VOID)core_machine_port_execute_write(port, port_id);
 }
 
 

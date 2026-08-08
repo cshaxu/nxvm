@@ -38,8 +38,8 @@ struct t_port {
     t_port_connect connect;
 };
 
-C_VOID core_machine_port_execute_read(t_port *port, type_unsigned_16 port_id);
-C_VOID core_machine_port_execute_write(t_port *port, type_unsigned_16 port_id);
+type_status core_machine_port_execute_read(t_port *port, type_unsigned_16 port_id);
+type_status core_machine_port_execute_write(t_port *port, type_unsigned_16 port_id);
 type_status core_machine_port_add_read(t_port *port, type_unsigned_16 port_id,
     core_machine_port_handler handler, C_VOID *owner);
 type_status core_machine_port_add_write(t_port *port, type_unsigned_16 port_id,
