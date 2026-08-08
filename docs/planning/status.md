@@ -80,7 +80,8 @@ artifact. Do not admit T298 or later work, close this task, merge, or push.
   documentation governance and `git diff --check` passed. The rebuilt local
   developer artifact is `build/output/nxvm_0_5_0297.exe`, 2,685,736 bytes,
   SHA-256 `86748E4CC13C28934F3BA3399DBD807B07B3251E44B996E42E9693FCB151D393`,
-  produced by the current target with runtime build version `0.5.0297`.
+  produced by the current target with runtime build version `0.5.0297`; its
+  executable source is committed as `5d2f1bd1304edcb1dbaa45d4787c4ed57b3c4a69`.
 - **Stop conditions:** stop for any need to broaden the whitelist, expose a
   raw pointer, encode BIOS/DOS policy in core, retain a callback borrow beyond
   its call, alter retained product behavior, or begin T298+; record the issue
