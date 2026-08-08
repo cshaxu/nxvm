@@ -88,6 +88,7 @@ push di                     \n\
 push es                     \n\
 mov si, ax                  \n\
 mov di, bx                  \n\
+mov bx, dx                  \n\
 mov dx, 01f2                \n\
 mov ax, si                  \n\
 out dx, al                  \n\
@@ -108,7 +109,9 @@ shr al, 01                  \n\
 shr al, 01                  \n\
 out dx, al                  \n\
 inc dx                      \n\
-mov al, dh                  \n\
+mov ax, bx                  \n\
+mov al, ah                  \n\
+or al, a0                   \n\
 out dx, al                  \n\
 inc dx                      \n\
 mov al, 20                  \n\
@@ -172,6 +175,7 @@ push ds                     \n\
 push es                     \n\
 mov di, ax                  \n\
 mov si, bx                  \n\
+mov bx, dx                  \n\
 mov ax, es                  \n\
 mov ds, ax                  \n\
 mov dx, 01f2                \n\
@@ -194,7 +198,9 @@ shr al, 01                  \n\
 shr al, 01                  \n\
 out dx, al                  \n\
 inc dx                      \n\
-mov al, dh                  \n\
+mov ax, bx                  \n\
+mov al, ah                  \n\
+or al, a0                   \n\
 out dx, al                  \n\
 inc dx                      \n\
 mov al, 30                  \n\
