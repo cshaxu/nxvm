@@ -78,7 +78,17 @@ type_status core_machine_bus_read(
     if (!core_machine_port_has_read(&machine->executor_port, port)) {
         return TYPE_STATUS_UNSUPPORTED;
     }
-    *out_value = core_machine_port_read(&machine->executor_port, port);
+    {
+        type_status status = core_machine_port_execute_read(&machine->executor_port,
+            port);
+
+        if (status != TYPE_STATUS_OK) {
+            core_machine_trace_record(machine, CORE_MACHINE_TRACE_PORT_READ, port,
+                0u, (uint32_t)status);
+            return status;
+        }
+    }
+    *out_value = machine->executor_port.data.ioDWord;
     core_machine_trace_record(machine, CORE_MACHINE_TRACE_PORT_READ, port,
         *out_value, (uint32_t)TYPE_STATUS_OK);
     return TYPE_STATUS_OK;
@@ -100,7 +110,19 @@ type_status core_machine_bus_write(
     if (!core_machine_port_has_write(&machine->executor_port, port)) {
         return TYPE_STATUS_UNSUPPORTED;
     }
-    core_machine_port_write(&machine->executor_port, port, value);
+    {
+        uint32_t prior_value = machine->executor_port.data.ioDWord;
+        type_status status;
+
+        machine->executor_port.data.ioDWord = value;
+        status = core_machine_port_execute_write(&machine->executor_port, port);
+        if (status != TYPE_STATUS_OK) {
+            machine->executor_port.data.ioDWord = prior_value;
+            core_machine_trace_record(machine, CORE_MACHINE_TRACE_PORT_WRITE, port,
+                value, (uint32_t)status);
+            return status;
+        }
+    }
     core_machine_trace_record(machine, CORE_MACHINE_TRACE_PORT_WRITE, port,
         value, (uint32_t)TYPE_STATUS_OK);
     return TYPE_STATUS_OK;

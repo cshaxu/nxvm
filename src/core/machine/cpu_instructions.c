@@ -1598,7 +1598,9 @@ static C_VOID _p_input(core_machine_cpu_execution_context *context, type_unsigne
 {
     TYPE_TRACE_CALL_BEGIN("_p_input");
     TYPE_TRACE_CHECK_RETURN(_kpa_test_mode(context, portid, byte));
-    core_machine_port_execute_read(context->port, portid);
+    if (core_machine_port_execute_read(context->port, portid) != TYPE_STATUS_OK) {
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(portid));
+    }
     switch (byte)
     {
     case 1:
@@ -1658,7 +1660,9 @@ static C_VOID _p_output(core_machine_cpu_execution_context *context, type_unsign
         TYPE_TRACE_BLOCK_END;
         break;
     }
-    core_machine_port_execute_write(context->port, portid);
+    if (core_machine_port_execute_write(context->port, portid) != TYPE_STATUS_OK) {
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(portid));
+    }
     instruction_state.data.flagIgnore = TYPE_TRUE;
     TYPE_TRACE_CALL_END;
 }

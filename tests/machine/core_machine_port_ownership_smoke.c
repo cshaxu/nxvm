@@ -8,6 +8,8 @@ typedef struct core_machine_port_probe_state {
     uint32_t reads;
     uint32_t writes;
     uint32_t last_write;
+    type_status read_status;
+    type_status write_status;
 } core_machine_port_probe_state;
 
 static type_status core_machine_port_probe_read(C_VOID *owner, uint16_t port,
@@ -19,6 +21,7 @@ static type_status core_machine_port_probe_read(C_VOID *owner, uint16_t port,
     if (state == STD_NULL || out_value == STD_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
+    if (state->read_status != TYPE_STATUS_OK) return state->read_status;
     ++state->reads;
     *out_value = port == 0x00e0u ? 0xa5u : 0x5au;
     return TYPE_STATUS_OK;
@@ -33,6 +36,7 @@ static type_status core_machine_port_probe_write(C_VOID *owner, uint16_t port,
     if (state == STD_NULL || (port != 0x00e0u && port != 0x03f2u)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
+    if (state->write_status != TYPE_STATUS_OK) return state->write_status;
     ++state->writes;
     state->last_write = value;
     return TYPE_STATUS_OK;
@@ -99,7 +103,8 @@ static C_INT core_machine_port_probe_fdc_read_is_independent(C_VOID)
             .control_port = 0x03f7u, .irq = 6u, .dma_channel = 2u
         }
     };
-    core_machine_port_probe_state state = {0u, 0u, 0u};
+    core_machine_port_probe_state state = {0u, 0u, 0u, TYPE_STATUS_OK,
+        TYPE_STATUS_OK};
     core_machine *machine = STD_NULL;
     uint32_t value = 0u;
     C_INT failed = core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
@@ -146,7 +151,8 @@ static C_INT core_machine_port_probe_fdc_write_conflict_is_retained(C_VOID)
             .control_port = 0x03f7u, .irq = 6u, .dma_channel = 2u
         }
     };
-    core_machine_port_probe_state state = {0u, 0u, 0u};
+    core_machine_port_probe_state state = {0u, 0u, 0u, TYPE_STATUS_OK,
+        TYPE_STATUS_OK};
     core_machine *machine = STD_NULL;
     C_INT failed = core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
         core_machine_configure_dma(machine, &dma_wiring, &dma_request) !=
@@ -171,7 +177,9 @@ C_INT main(C_VOID)
     static const uint8_t program[] = {
         0xb0u, 0x5au, 0xe6u, 0xe0u, 0xe4u, 0xe0u, 0xf4u
     };
-    core_machine_port_probe_state port_state = {0u, 0u, 0u};
+    static const uint8_t failing_program[] = {0xb0u, 0x6cu, 0xe6u, 0xe0u};
+    core_machine_port_probe_state port_state = {0u, 0u, 0u, TYPE_STATUS_OK,
+        TYPE_STATUS_OK};
     core_machine_run_budget budget = {16u, 0u};
     core_machine_run_result result;
     core_machine *machine = STD_NULL;
@@ -190,6 +198,28 @@ C_INT main(C_VOID)
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
             port_state.reads != 2u || port_state.writes != 2u ||
             port_state.last_write != 0x5au;
+        port_state.read_status = TYPE_STATUS_FAULT;
+        value = 0xdeadbeefu;
+        failed |= core_machine_bus_read(machine, 0x00e0u, &value) !=
+                TYPE_STATUS_FAULT || value != 0xdeadbeefu;
+        port_state.read_status = TYPE_STATUS_OK;
+        failed |= core_machine_bus_read(machine, 0x00e0u, &value) !=
+                TYPE_STATUS_OK || value != 0xa5u;
+        port_state.write_status = TYPE_STATUS_FAULT;
+        failed |= core_machine_reset(machine) != TYPE_STATUS_OK ||
+            !test_core_machine_fixture_prepare_real_mode_execution(machine, 0u) ||
+            core_machine_memory_write(machine, 0u, failing_program,
+                sizeof(failing_program)) != TYPE_STATUS_OK ||
+            core_machine_run(machine, budget, &result) != TYPE_STATUS_FAULT;
+        if (!failed) {
+            core_machine_cpu_diagnostic diagnostic;
+
+            failed |= core_machine_get_cpu_diagnostic(machine, &diagnostic) !=
+                    TYPE_STATUS_OK || !diagnostic.first_fault.valid ||
+                !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
+                    VCPUINS_EXCEPT_CE) || diagnostic.first_fault.exception_code !=
+                    0x00e0u;
+        }
     }
     core_machine_destroy(machine);
     failed |= core_machine_port_probe_fdc_read_is_independent();

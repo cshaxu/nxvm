@@ -341,6 +341,14 @@ typed provider. Exact propagation of a provider's `type_status` to public bus,
 guest execution, trace, and output state is a separate S2 contract; this rule
 does not create a fallback or a second port path.
 
+T300 S2 makes that propagation explicit for typed providers: public bus read
+and write return the provider's exact non-OK `type_status`; a failed read does
+not modify the caller output, and a failed write restores the port data latch.
+Both failures produce their ordinary port trace event with `detail` equal to
+the returned status, rather than a success detail. Guest `IN`/`OUT` maps any
+such failure to the existing internal `#CE(port)` diagnostic. It introduces no
+new guest exception, provider fallback, or CPU-visible host status encoding.
+
 ## Time And Clock Ownership
 
 Time is not one device category. Each layer owns only its own observable

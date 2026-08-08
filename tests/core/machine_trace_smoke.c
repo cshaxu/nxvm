@@ -9,6 +9,7 @@ typedef struct trace_fixture {
     core_machine_trace_event events[8];
     C_UINT count;
     C_UINT port_value;
+    type_status read_status;
 } trace_fixture;
 
 static C_VOID trace_callback(C_VOID *context, const core_machine_trace_event *event)
@@ -25,6 +26,7 @@ static type_status port_read(C_VOID *owner, uint16_t port, uint32_t *out_value)
     trace_fixture *fixture = (trace_fixture *)owner;
 
     (C_VOID)port;
+    if (fixture->read_status != TYPE_STATUS_OK) return fixture->read_status;
     *out_value = fixture->port_value;
     return TYPE_STATUS_OK;
 }
@@ -50,7 +52,7 @@ C_INT main(C_VOID)
     core_machine_port_provider port_ops = { port_read, port_write };
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
-    trace_fixture fixture = { { { 0 } }, 0u, 0u };
+    trace_fixture fixture = { { { 0 } }, 0u, 0u, TYPE_STATUS_OK };
     uint32_t value;
     C_INT failed = 0;
 
@@ -93,10 +95,23 @@ C_INT main(C_VOID)
     failed |= fixture.count != 1u ||
               fixture.events[0].type != CORE_MACHINE_TRACE_FAULT ||
               fixture.events[0].detail != 0x44u;
+    fixture.read_status = TYPE_STATUS_FAULT;
+    value = 0xdeadbeefu;
+    failed |= expect_status(core_machine_bus_read(machine, 0x60u, &value),
+                            TYPE_STATUS_FAULT);
+    failed |= value != 0xdeadbeefu || fixture.count != 2u ||
+              fixture.events[1].type != CORE_MACHINE_TRACE_PORT_READ ||
+              fixture.events[1].address != 0x60u ||
+              fixture.events[1].value != 0u ||
+              fixture.events[1].detail != TYPE_STATUS_FAULT;
+    fixture.read_status = TYPE_STATUS_OK;
+    failed |= expect_status(core_machine_bus_read(machine, 0x60u, &value),
+                            TYPE_STATUS_OK) || fixture.count != 3u ||
+              fixture.events[2].detail != TYPE_STATUS_OK;
     failed |= expect_status(core_machine_set_trace_provider(machine, STD_NULL),
                             TYPE_STATUS_OK);
     failed |= expect_status(core_machine_reset(machine), TYPE_STATUS_OK);
-    failed |= fixture.count != 1u;
+    failed |= fixture.count != 3u;
 
     core_machine_destroy(machine);
     if (failed != 0) {
