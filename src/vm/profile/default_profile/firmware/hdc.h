@@ -312,13 +312,30 @@ jmp near $(label_int_13_end)\n\
 \
 $(label_int_13_end):        \n\
 ; set hdd status byte       \n\
+push ax                     \n\
 push bx                     \n\
+push cx                     \n\
+push dx                     \n\
 push ds                     \n\
+mov cl, ah                  \n\
+pushf                       \n\
+pop dx                      \n\
 mov bx, 0040                \n\
 mov ds, bx                  \n\
-mov ds:[0074], ah           \n\
+test dl, 01                 \n\
+jnz $(label_int_13_status_error)\n\
+mov byte ds:[0074], 00      \n\
+jmp near $(label_int_13_status_done)\n\
+$(label_int_13_status_error):\n\
+mov ds:[0074], cl           \n\
+$(label_int_13_status_done):\n\
+push dx                     \n\
+popf                        \n\
 pop ds                      \n\
+pop dx                      \n\
+pop cx                      \n\
 pop bx                      \n\
+pop ax                      \n\
 ; set/clear cf              \n\
 push ax                     \n\
 push bx                     \n\
