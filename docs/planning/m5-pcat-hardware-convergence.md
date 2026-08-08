@@ -58,7 +58,6 @@ Standard-mode checkpoint or pre-admit broad CPU, FPU, or FDC work.
 
 | Task | Owner and purpose | Dependency and stop condition |
 | --- | --- | --- |
-| T292 | 80386 real-mode high-frequency semantic conformance selected from T288's admission map. | Prepared-state corpus first, with only demonstrated failing forms from a non-overlapping set of `66h`/`67h`, REP variants, segment overrides, address-size stack behavior, or one far-transfer form. No broad 386 claim, paging, LDT, task gate, 32-bit TSS, or FPU work. |
 
 ### E. Later CPU, FPU, And Readiness Work
 

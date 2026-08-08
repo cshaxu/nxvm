@@ -2,7 +2,14 @@
 
 ## Current Work
 
-**Idle -- M5 T291 closed: FDC motor, media generation, and DIR are per-drive.**
+**Idle -- M5 T292 closed: the selected non-overlapping 80386 real-mode forms
+already conform.**
+
+T292 added a prepared-state core corpus for `67h` REPE CMPSB early-stop,
+`67h` REPNE SCASB hit-stop, and CS-overridden `67h` REPE CMPSB source selection.
+All preserve 32-bit indices/count, FLAGS, memory selection, and fault-free
+execution on the 80386 profile. Therefore no source instruction behavior was
+changed, no broad 386 claim is made, and no `0.5.0292` artifact is generated.
 
 T291 adds per-slot generation observations and disk-change latches to the
 frozen FDC topology. Refresh observes all slots while DIR reports the
@@ -155,7 +162,6 @@ coupling the controller regression to external bootable-media state.
 
 | Task | Compact result |
 | --- | --- |
-| T284 | Froze the first Windows-facing display admission contract for EGA mode 10h and added expected-failing core/VM corpus without changing runtime behavior. |
 | T285 | Implemented bounded EGA mode 10h direct, turned the T284 core/VM corpus into normal success coverage, and emitted the 0.5.0285 developer artifact. |
 | T286 | Fixed the corpus-proven ATA device-control `nIEN` IRQ14 visibility gap through core-owned controller state, with core, VM-port, and guest fixture success evidence; no DMA, timing, or command expansion. |
 | T287 | Fixed bounded ROM CHS device/head, AH=08h caller-pointer, FDISK text-service/window-clear, and HDD-only boot-selection defects; external DOS registers C:, presents stable FDISK copied frames, and hands off from HDD-only ATA boot, while the Standard-mode checkpoint remains a research result, not a Windows support claim. |
@@ -163,6 +169,7 @@ coupling the controller regression to external bootable-media state.
 | T289 | Materialized the default PC/AT ROM image before provider freeze, including its A20 reset alias, while reset restores only IVT/BDA and mutable device tables; ROM, boot, Console, debugger, and display regressions pass. |
 | T290 | Replaced the FDC single-media binding with frozen drive slots and exact DOR/unit selection, proven through core ports, VM composition, and DOS FDD0 regression without broadening FDC behavior. |
 | T291 | Made FDC generation, disk-change and motor/DMA cancellation per frozen drive slot, with core port and DOS FDD0 evidence while leaving timing, UI, and commands deferred. |
+| T292 | Added prepared-state evidence that selected 67h REP comparison, scan, and segment-override forms already conform; no CPU behavior or artifact changed. |
 
 Detailed contracts, commands, artifact provenance, and prior closures are in
 [M5 History](../history/m5.md) and Git history. The [M5 convergence queue]
