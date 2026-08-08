@@ -280,6 +280,8 @@ pop ds                      \n\
 pop bx                      \n\
 pop ax                      \n\
 mov bl, 2f                  \n\
+mov al, cl                  \n\
+and al, 3f                  \n\
 mov ah, 00                  \n\
 clc                         \n\
 jmp near $(label_int_13_end)\n\
