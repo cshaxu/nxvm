@@ -78,6 +78,9 @@ The concrete rules for distinguishing a private implementation, an exposed
 interface, an injected provider, and a session-owned registry are defined in
 [Core Machine Instance Design](core-machine-instance-design.md). That document
 also owns the forward migration away from selected-session globals.
+The current symbol-level migration baseline for the remaining public-surface
+closure is [Core Machine Public-Surface Inventory](core-machine-public-surface-inventory.md);
+it is a task design record, not an additional runtime contract.
 
 ## Foundation Units
 

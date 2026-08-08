@@ -2,7 +2,21 @@
 
 ## Current Work
 
-**Idle.**
+**M5 T294 S1 -- core/machine public-surface and borrow inventory (active).**
+
+The approved packet is [the T294 S1 inventory](../architecture/core-machine-public-surface-inventory.md).
+It is documentation/design only: no runtime C/CMake behavior, migration API, borrow
+removal, queue movement, or artifact revision is admitted by this subtask.
+
+| Packet field | Record |
+| --- | --- |
+| Original request | Create a real-codebase-driven matrix for every `core/machine` public interface, configuration borrow, profile/firmware binding, provider registration, debug access, and test-only probe; identify consumers, owner/lifetime, raw-state exposure, replacement or retention, core initialization responsibility, later task, and regression/gate. |
+| Scope | `src/core/machine/*_interface.h`, `machine_interface.h`, their definitions, and all `src/`/`tests/` callers; the matrix also fixes T296's display/port, DMA+RTC/CMOS/NMI, and FDC/HDC stages and T297's required pre-implementation contract topics. |
+| Non-goals | Do not begin T295--T299; do not change runtime C/CMake, Console/debugger/startup/artifact/current target, providers, firmware behavior, or protected media/third-party inputs. T300/T302 remain conditional only. |
+| Applicable rules | `module-layout.md`: core owns guest state and initialization order while VM composes frozen policy/providers; `contracts.md`: copied observation and non-reentrant callbacks; `coding-standard.md`: smallest existing boundary/no test facade for convenience; `source-policy.md`: no imports/assets; `execution-workflow.md` and `execution-policy.md`: one active packet, evidence, documentation gate. No exception requested. |
+| Similar-issue sweep | Not a defect repair. The design audit uses the same repository-wide symbol sweep needed to establish closure; it classifies every hit instead of modifying one instance. |
+| Commands and expected markers | `rg -n "core_machine_(configuration|profile_binding|debug)_" src tests --glob '*.[ch]'` (definitions plus all current borrow consumers); `rg -n "core_machine_(bind_execution_provider|freeze_execution_providers|install_port_provider|register_immutable_rom_mapping|set_trace_provider|apply_entry_plan)" src tests --glob '*.[ch]'` (registration/contract callers); documentation governance command must report `Documentation governance verification passed.` |
+| Stop condition | Matrix, lifecycle/ownership decisions, deferred conditional-admission statement, and static closure-gate design are reviewable; status stays active after the commit pending owner feedback. |
 
 ## Current Technical Baseline
 
