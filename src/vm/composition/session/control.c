@@ -14,13 +14,7 @@
 #include "vm/composition/session/execution.h"
 #include "vm/composition/session/fault.h"
 
-#include "core/machine/cpu.h"
-
 #include "core/machine/machine_interface.h"
-
-#include "core/machine/memory.h"
-
-#include "core/machine/port.h"
 
 #include "core/platform/sleep.h"
 
@@ -48,7 +42,11 @@ static C_VOID vm_session_execution_context_reset_callback(vm_session *machine)
 static C_VOID vm_session_execution_context_debug_refresh_callback(
     vm_session *machine)
 {
-    vm_machine_debug_refresh(machine == STD_NULL ? STD_NULL : &machine->debug);
+    core_machine_debug_instruction_observation observation;
+
+    if (machine == STD_NULL || core_machine_debug_capture_instruction_observation(
+            machine->core_machine, &observation) != TYPE_STATUS_OK) return;
+    vm_machine_debug_refresh(&machine->debug, &observation);
 }
 
 static const vm_session_execution_context_callbacks vm_session_execution_callbacks = {
@@ -200,9 +198,7 @@ C_VOID vm_session_control_initialize(vm_session_control_state *control,
     vm_session_execution_context_bind_callbacks(
         &control->execution_context, &vm_session_execution_callbacks);
     vm_session_execution_context_activate(&control->execution_context);
-    vm_machine_debug_initialize(&machine->debug,
-        core_machine_configuration_cpu_borrow(machine->core_machine),
-        core_machine_configuration_cpu_instructions_borrow(machine->core_machine));
+    vm_machine_debug_initialize(&machine->debug);
     vm_session_provider_lifecycle_initialize(machine);
     if (!vm_session_bind_execution_provider(machine)) {
         vm_session_control_stop(control);

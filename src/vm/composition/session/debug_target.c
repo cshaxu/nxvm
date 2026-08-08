@@ -12,14 +12,7 @@
 
 #include "vm/composition/session/control.h"
 
-#include "core/machine/cpu.h"
 #include "core/machine/debug_interface.h"
-
-#include "core/machine/memory.h"
-
-#include "core/machine/port.h"
-
-#include "core/machine/cpu.h"
 
 #include "vm/machine/debug.h"
 #include "vm/platform/input_flush.h"
@@ -29,27 +22,6 @@ C_VOID vm_session_debug_flush_console_input(C_VOID *context)
     (C_VOID)context;
     vm_platform_input_flush_console_input();
 }
-
-static t_cpu *vm_debug_cpu(const vm_session *machine)
-{ return machine == STD_NULL ? STD_NULL :
-    core_machine_debug_cpu_borrow(machine->core_machine); }
-
-static t_cpuins *vm_debug_instructions(const vm_session *machine)
-{ return machine == STD_NULL ? STD_NULL :
-    core_machine_debug_cpu_instructions_borrow(machine->core_machine); }
-
-static core_machine_cpu_execution_context *vm_debug_execution(
-    const vm_session *machine)
-{ return machine == STD_NULL ? STD_NULL :
-    core_machine_debug_cpu_execution_borrow(machine->core_machine); }
-
-static t_ram *vm_debug_memory(const vm_session *machine)
-{ return machine == STD_NULL ? STD_NULL :
-    core_machine_debug_memory_borrow(machine->core_machine); }
-
-static t_port *vm_debug_port(const vm_session *machine)
-{ return machine == STD_NULL ? STD_NULL :
-    core_machine_debug_port_borrow(machine->core_machine); }
 
 static C_INT vm_debug_running(C_VOID *context) { return vm_session_control_is_running(&((vm_session *)context)->control); }
 static C_VOID vm_debug_resume(C_VOID *context) { vm_session_resume((vm_session *)context); }
@@ -83,23 +55,9 @@ static C_INT vm_debug_read_register(C_VOID *context, core_product_debug_register
 {
     vm_session *machine =
         (vm_session *)context;
-    t_cpu *cpu = vm_debug_cpu(machine);
-    if (cpu == STD_NULL) return 1;
-    if (value == STD_NULL) return 1;
-    switch (reg) {
-    case CORE_PRODUCT_DEBUG_EAX: *value = cpu->data.eax; break; case CORE_PRODUCT_DEBUG_ECX: *value = cpu->data.ecx; break;
-    case CORE_PRODUCT_DEBUG_EDX: *value = cpu->data.edx; break; case CORE_PRODUCT_DEBUG_EBX: *value = cpu->data.ebx; break;
-    case CORE_PRODUCT_DEBUG_ESP: *value = cpu->data.esp; break; case CORE_PRODUCT_DEBUG_EBP: *value = cpu->data.ebp; break;
-    case CORE_PRODUCT_DEBUG_ESI: *value = cpu->data.esi; break; case CORE_PRODUCT_DEBUG_EDI: *value = cpu->data.edi; break;
-    case CORE_PRODUCT_DEBUG_EIP: *value = cpu->data.eip; break; case CORE_PRODUCT_DEBUG_EFLAGS: *value = cpu->data.eflags; break;
-    case CORE_PRODUCT_DEBUG_ES: *value = cpu->data.es.selector; break; case CORE_PRODUCT_DEBUG_CS: *value = cpu->data.cs.selector; break;
-    case CORE_PRODUCT_DEBUG_SS: *value = cpu->data.ss.selector; break; case CORE_PRODUCT_DEBUG_DS: *value = cpu->data.ds.selector; break;
-    case CORE_PRODUCT_DEBUG_FS: *value = cpu->data.fs.selector; break; case CORE_PRODUCT_DEBUG_GS: *value = cpu->data.gs.selector; break;
-    case CORE_PRODUCT_DEBUG_CR0: *value = cpu->data.cr0; break; case CORE_PRODUCT_DEBUG_CR1: *value = cpu->data.cr1; break;
-    case CORE_PRODUCT_DEBUG_CR2: *value = cpu->data.cr2; break; case CORE_PRODUCT_DEBUG_CR3: *value = cpu->data.cr3; break;
-    case CORE_PRODUCT_DEBUG_CR4: *value = cpu->data.cr4; break; default: return 1;
-    }
-    return 0;
+    return machine == STD_NULL || core_machine_debug_read_register(
+        machine->core_machine, (core_machine_debug_register)reg, value) !=
+        TYPE_STATUS_OK;
 }
 
 static C_INT vm_debug_write_register(C_VOID *context, core_product_debug_register reg,
@@ -107,58 +65,46 @@ static C_INT vm_debug_write_register(C_VOID *context, core_product_debug_registe
 {
     vm_session *machine =
         (vm_session *)context;
-    t_cpu *cpu = vm_debug_cpu(machine);
-    if (machine == STD_NULL || cpu == STD_NULL) return 1;
-    switch (reg) {
-    case CORE_PRODUCT_DEBUG_EAX: cpu->data.eax = value; break; case CORE_PRODUCT_DEBUG_ECX: cpu->data.ecx = value; break;
-    case CORE_PRODUCT_DEBUG_EDX: cpu->data.edx = value; break; case CORE_PRODUCT_DEBUG_EBX: cpu->data.ebx = value; break;
-    case CORE_PRODUCT_DEBUG_ESP: cpu->data.esp = value; break; case CORE_PRODUCT_DEBUG_EBP: cpu->data.ebp = value; break;
-    case CORE_PRODUCT_DEBUG_ESI: cpu->data.esi = value; break; case CORE_PRODUCT_DEBUG_EDI: cpu->data.edi = value; break;
-    case CORE_PRODUCT_DEBUG_EIP: cpu->data.eip = value; break; case CORE_PRODUCT_DEBUG_EFLAGS: cpu->data.eflags = value; break;
-    case CORE_PRODUCT_DEBUG_ES: return core_machine_cpu_execution_load_segment(vm_debug_execution(machine), &cpu->data.es, (uint16_t)value);
-    case CORE_PRODUCT_DEBUG_CS: return core_machine_cpu_execution_load_segment(vm_debug_execution(machine), &cpu->data.cs, (uint16_t)value);
-    case CORE_PRODUCT_DEBUG_SS: return core_machine_cpu_execution_load_segment(vm_debug_execution(machine), &cpu->data.ss, (uint16_t)value);
-    case CORE_PRODUCT_DEBUG_DS: return core_machine_cpu_execution_load_segment(vm_debug_execution(machine), &cpu->data.ds, (uint16_t)value);
-    case CORE_PRODUCT_DEBUG_FS: return core_machine_cpu_execution_load_segment(vm_debug_execution(machine), &cpu->data.fs, (uint16_t)value);
-    case CORE_PRODUCT_DEBUG_GS: return core_machine_cpu_execution_load_segment(vm_debug_execution(machine), &cpu->data.gs, (uint16_t)value);
-    case CORE_PRODUCT_DEBUG_CR0: cpu->data.cr0 = value; break; case CORE_PRODUCT_DEBUG_CR1: cpu->data.cr1 = value; break;
-    case CORE_PRODUCT_DEBUG_CR2: cpu->data.cr2 = value; break; case CORE_PRODUCT_DEBUG_CR3: cpu->data.cr3 = value; break;
-    case CORE_PRODUCT_DEBUG_CR4: cpu->data.cr4 = value; break; default: return 1;
-    }
-    return 0;
+    return machine == STD_NULL || core_machine_debug_write_register(
+        machine->core_machine, (core_machine_debug_register)reg, value) !=
+        TYPE_STATUS_OK;
 }
 
 static C_INT vm_debug_code_default_size(C_VOID *context)
 {
     vm_session *machine = (vm_session *)context;
-    return vm_debug_cpu(machine) == STD_NULL ? 0 : vm_debug_cpu(machine)->data.cs.seg.exec.defsize;
+    C_INT value = 0;
+    return machine == STD_NULL || core_machine_debug_get_code_default_size(
+        machine->core_machine, &value) != TYPE_STATUS_OK ? 0 : value;
 }
 static uint32_t vm_debug_code_base(C_VOID *context)
 {
     vm_session *machine = (vm_session *)context;
-    return vm_debug_cpu(machine) == STD_NULL ? 0u : vm_debug_cpu(machine)->data.cs.base;
+    uint32_t value = 0u;
+    return machine == STD_NULL || core_machine_debug_get_code_base(
+        machine->core_machine, &value) != TYPE_STATUS_OK ? 0u : value;
 }
 
 static C_INT vm_debug_read_linear(C_VOID *context, uint32_t address, C_VOID *out, uint8_t size)
 {
     vm_session *machine = (vm_session *)context;
-    return machine == STD_NULL ? 1 : core_machine_cpu_execution_read_linear(
-        vm_debug_execution(machine), address, (type_virtual_address)out, size);
+    return machine == STD_NULL || core_machine_debug_read_linear(
+        machine->core_machine, address, out, size) != TYPE_STATUS_OK;
 }
 static C_INT vm_debug_write_linear(C_VOID *context, uint32_t address, const C_VOID *in, uint8_t size)
 {
     vm_session *machine = (vm_session *)context;
-    return machine == STD_NULL ? 1 : core_machine_cpu_execution_write_linear(
-        vm_debug_execution(machine), address, (type_virtual_address)in, size);
+    return machine == STD_NULL || core_machine_debug_write_linear(
+        machine->core_machine, address, in, size) != TYPE_STATUS_OK;
 }
 static C_INT vm_debug_read_real(C_VOID *context, uint16_t seg, uint16_t off, C_VOID *out, STD_SIZE_T size)
-{ vm_session *machine = (vm_session *)context; if (machine == STD_NULL) return 1; core_machine_memory_read_real_from(vm_debug_memory(machine), seg, off, out, size); return 0; }
+{ vm_session *machine = (vm_session *)context; return machine == STD_NULL || core_machine_debug_read_real(machine->core_machine, seg, off, out, size) != TYPE_STATUS_OK; }
 static C_INT vm_debug_write_real(C_VOID *context, uint16_t seg, uint16_t off, const C_VOID *in, STD_SIZE_T size)
-{ vm_session *machine = (vm_session *)context; if (machine == STD_NULL) return 1; core_machine_memory_write_real_to(vm_debug_memory(machine), seg, off, in, size); return 0; }
+{ vm_session *machine = (vm_session *)context; return machine == STD_NULL || core_machine_debug_write_real(machine->core_machine, seg, off, in, size) != TYPE_STATUS_OK; }
 static uint32_t vm_debug_read_port(C_VOID *context, uint16_t port)
-{ vm_session *machine = (vm_session *)context; return machine == STD_NULL ? 0u : core_machine_port_read(vm_debug_port(machine), port); }
+{ vm_session *machine = (vm_session *)context; uint32_t value = 0u; return machine == STD_NULL || core_machine_debug_read_port(machine->core_machine, port, &value) != TYPE_STATUS_OK ? 0u : value; }
 static C_VOID vm_debug_write_port(C_VOID *context, uint16_t port, uint32_t value)
-{ vm_session *machine = (vm_session *)context; if (machine != STD_NULL) core_machine_port_write(vm_debug_port(machine), port, value); }
+{ vm_session *machine = (vm_session *)context; if (machine != STD_NULL) (C_VOID)core_machine_debug_write_port(machine->core_machine, port, value); }
 static C_VOID vm_debug_set_break_real(C_VOID *context, uint16_t seg, uint16_t off)
 { vm_session *machine = (vm_session *)context; if (machine != STD_NULL) vm_machine_debug_set_breakpoint_real(&machine->debug, seg, off); }
 static C_VOID vm_debug_set_break_linear(C_VOID *context, uint32_t address)
@@ -175,28 +121,25 @@ static C_VOID vm_debug_set_watch(C_VOID *context, core_product_debug_watch_kind 
 {
     vm_session *machine = (vm_session *)context;
     if (machine == STD_NULL) return;
-    if (kind == CORE_PRODUCT_DEBUG_WATCH_READ) { vm_debug_instructions(machine)->data.wrLinear = address; vm_debug_instructions(machine)->data.flagWR = TYPE_TRUE; }
-    else if (kind == CORE_PRODUCT_DEBUG_WATCH_WRITE) { vm_debug_instructions(machine)->data.wwLinear = address; vm_debug_instructions(machine)->data.flagWW = TYPE_TRUE; }
-    else { vm_debug_instructions(machine)->data.weLinear = address; vm_debug_instructions(machine)->data.flagWE = TYPE_TRUE; }
+    (C_VOID)core_machine_debug_set_watchpoint(machine->core_machine,
+        (core_machine_debug_watch_kind)kind, address);
 }
 static C_VOID vm_debug_clear_watch(C_VOID *context, core_product_debug_watch_kind kind)
 {
     vm_session *machine = (vm_session *)context;
-    if (machine == STD_NULL) return;
-    if (kind == CORE_PRODUCT_DEBUG_WATCH_READ) vm_debug_instructions(machine)->data.flagWR = TYPE_FALSE;
-    else if (kind == CORE_PRODUCT_DEBUG_WATCH_WRITE) vm_debug_instructions(machine)->data.flagWW = TYPE_FALSE;
-    else vm_debug_instructions(machine)->data.flagWE = TYPE_FALSE;
+    if (machine != STD_NULL) (C_VOID)core_machine_debug_clear_watchpoint(
+        machine->core_machine, (core_machine_debug_watch_kind)kind);
 }
 static C_VOID vm_debug_print_registers(C_VOID *context)
-{ vm_session *machine = (vm_session *)context; if (machine != STD_NULL) core_machine_cpu_print_registers(vm_debug_execution(machine)); }
+{ vm_session *machine = (vm_session *)context; if (machine != STD_NULL) (C_VOID)core_machine_debug_print_registers(machine->core_machine); }
 static C_VOID vm_debug_print_segment_registers(C_VOID *context)
-{ vm_session *machine = (vm_session *)context; if (machine != STD_NULL) core_machine_cpu_print_segment_registers(vm_debug_execution(machine)); }
+{ vm_session *machine = (vm_session *)context; if (machine != STD_NULL) (C_VOID)core_machine_debug_print_segment_registers(machine->core_machine); }
 static C_VOID vm_debug_print_control_registers(C_VOID *context)
-{ vm_session *machine = (vm_session *)context; if (machine != STD_NULL) core_machine_cpu_print_control_registers(vm_debug_execution(machine)); }
+{ vm_session *machine = (vm_session *)context; if (machine != STD_NULL) (C_VOID)core_machine_debug_print_control_registers(machine->core_machine); }
 static C_VOID vm_debug_print_memory(C_VOID *context)
-{ vm_session *machine = (vm_session *)context; if (machine != STD_NULL) core_machine_cpu_print_memory_accesses(vm_debug_execution(machine)); }
+{ vm_session *machine = (vm_session *)context; if (machine != STD_NULL) (C_VOID)core_machine_debug_print_memory_accesses(machine->core_machine); }
 static C_VOID vm_debug_print_watchpoints(C_VOID *context)
-{ vm_session *machine = (vm_session *)context; if (machine != STD_NULL) core_machine_cpu_print_watchpoints(vm_debug_execution(machine)); }
+{ vm_session *machine = (vm_session *)context; if (machine != STD_NULL) (C_VOID)core_machine_debug_print_watchpoints(machine->core_machine); }
 
 static C_INT vm_debug_get_fault_outcome(C_VOID *context,
     core_product_debug_fault_outcome *out_outcome)
