@@ -156,6 +156,10 @@ C_INT main(C_VOID)
         .direction_port = 0x03f7u, .control_port = 0x03f7u,
         .irq = 6u, .dma_channel = 2u
     };
+    const core_machine_fdc_drive_bindings drives = {
+        {1u, CORE_MACHINE_MEDIA_ID_INVALID, CORE_MACHINE_MEDIA_ID_INVALID,
+            CORE_MACHINE_MEDIA_ID_INVALID}
+    };
     core_machine_fdc_fixture_media fixture = {
         .generation = 1u, .present = TYPE_TRUE,
         .forced_read_result = CORE_MACHINE_MEDIA_RESULT_OK,
@@ -190,7 +194,7 @@ C_INT main(C_VOID)
                 &dma_request) != TYPE_STATUS_OK) {
             failed |= 0x02;
         } else {
-            core_machine_fdc_connect(fdc, &media, 1u, &dma_request,
+            core_machine_fdc_connect(fdc, &media, &drives, &dma_request,
                 core_machine_configuration_shared_pic_master_borrow(machine),
                 core_machine_configuration_shared_pic_slave_borrow(machine), port,
                 &fdc_config);

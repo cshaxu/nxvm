@@ -111,6 +111,10 @@ C_VOID vm_session_machine_devices_initialize_fdc(vm_session *session)
     const vm_profile_default_pc_at_port_range *ports;
     const vm_profile_default_pc_at_route *route;
     core_machine_dma_request_binding dma_request = {0};
+    const core_machine_fdc_drive_bindings drives = {
+        {VM_SESSION_MEDIA_FDD_ID, CORE_MACHINE_MEDIA_ID_INVALID,
+            CORE_MACHINE_MEDIA_ID_INVALID, CORE_MACHINE_MEDIA_ID_INVALID}
+    };
     core_machine_fdc_config config;
     core_machine_fdc *fdc;
 
@@ -138,7 +142,7 @@ C_VOID vm_session_machine_devices_initialize_fdc(vm_session *session)
         config.dma_channel, core_machine_fdc_dma_provider(), fdc,
         &dma_request) != TYPE_STATUS_OK) return;
     core_machine_fdc_connect(fdc, &session->media_registry,
-        VM_SESSION_MEDIA_FDD_ID, &dma_request,
+        &drives, &dma_request,
         core_machine_configuration_shared_pic_master_borrow(session->core_machine),
         core_machine_configuration_shared_pic_slave_borrow(session->core_machine),
         core_machine_configuration_port_borrow(session->core_machine), &config);

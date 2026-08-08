@@ -16,6 +16,7 @@ typedef struct t_pic t_pic;
 typedef struct t_port t_port;
 
 #define CORE_MACHINE_DEVICE_FDC "Intel 8272A"
+#define CORE_MACHINE_FDC_DRIVE_COUNT 4u
 
 typedef enum core_machine_fdc_phase {
     core_machine_fdc_PHASE_COMMAND = 0,
@@ -70,8 +71,12 @@ typedef struct {
 } core_machine_fdc_config;
 
 typedef struct {
+    core_machine_media_id media_id[CORE_MACHINE_FDC_DRIVE_COUNT];
+} core_machine_fdc_drive_bindings;
+
+typedef struct {
     const core_machine_media_registry *media_registry;
-    core_machine_media_id media_id;
+    core_machine_fdc_drive_bindings drives;
     core_machine_dma_request_binding dma_request;
     core_machine_pic_irq_source irq_source;
     t_port *port;
@@ -192,7 +197,7 @@ type_unsigned_8 VFDC_GetBPSC(type_unsigned_16 cb); /* convert bps to bps type */
 
 C_VOID core_machine_fdc_connect(core_machine_fdc *fdc,
     const core_machine_media_registry *media_registry,
-    core_machine_media_id media_id,
+    const core_machine_fdc_drive_bindings *drives,
     const core_machine_dma_request_binding *dma_request, t_pic *pic_master,
     t_pic *pic_slave, t_port *port, const core_machine_fdc_config *config);
 const core_machine_dma_channel_provider *core_machine_fdc_dma_provider(C_VOID);
