@@ -129,7 +129,7 @@ static C_VOID vm_session_machine_boot_hdd(C_VOID *context, C_INT value)
     vm_session *session = vm_session_machine_borrow_selected(context);
 
     if (session != STD_NULL) {
-        vm_profile_default_bios_set_boot_hdd(&session->default_bios, value);
+        vm_session_set_boot_hdd(session, value);
     }
 }
 

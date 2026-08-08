@@ -71,6 +71,7 @@ C_INT vm_session_insert_fdd(vm_session *session, const C_CHAR *path)
             sizeof(session->fdd_image_path), path) ||
         vm_machine_fdd_insert_for(&session->fdd, path) != 0) return -1;
     session->retained_config.fdd_image = session->fdd_image_path;
+    vm_session_apply_boot_preference(session);
     return 0;
 }
 
@@ -80,7 +81,28 @@ C_INT vm_session_insert_hdd(vm_session *session, const C_CHAR *path)
             sizeof(session->hdd_image_path), path) ||
         vm_machine_hdd_insert(&session->hdd, path) != 0) return -1;
     session->retained_config.hdd_image = session->hdd_image_path;
+    vm_session_apply_boot_preference(session);
     return 0;
+}
+
+C_VOID vm_session_apply_boot_preference(vm_session *session)
+{
+    C_INT boot_hdd;
+
+    if (session == STD_NULL) return;
+    boot_hdd = session->boot_preference == VM_SESSION_BOOT_PREFERENCE_HDD ||
+        (session->boot_preference == VM_SESSION_BOOT_PREFERENCE_AUTO &&
+            !session->fdd.connect.flagDiskExist && session->hdd.connect.flagDiskExist);
+    vm_profile_default_bios_set_boot_hdd(&session->default_bios, boot_hdd);
+}
+
+C_VOID vm_session_set_boot_hdd(vm_session *session, C_INT enabled)
+{
+    if (session == STD_NULL) return;
+    session->boot_preference = enabled ? VM_SESSION_BOOT_PREFERENCE_HDD :
+        VM_SESSION_BOOT_PREFERENCE_FDD;
+    session->retained_config.boot_hdd = enabled != 0;
+    vm_session_apply_boot_preference(session);
 }
 
 
@@ -220,10 +242,10 @@ C_INT vm_session_create(const vm_session_config *config, vm_session **out_sessio
     if (config != STD_NULL && config->create_hdd_cylinders != 0u) {
         vm_machine_hdd_create(&session->hdd, config->create_hdd_cylinders);
     }
-    if (config != STD_NULL) {
-        vm_profile_default_bios_set_boot_hdd(&session->default_bios,
-            config->boot_hdd != 0);
+    if (config != STD_NULL && config->boot_hdd) {
+        session->boot_preference = VM_SESSION_BOOT_PREFERENCE_HDD;
     }
+    vm_session_apply_boot_preference(session);
     vm_session_control_reset(&session->control);
     *out_session = session;
     return TYPE_STATUS_OK;

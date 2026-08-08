@@ -3,6 +3,7 @@
 #include "core/machine/debug_interface.h"
 #include "core/machine/machine_interface.h"
 #include "core/machine/machine.h"
+#include "vm/composition/session/lifecycle.h"
 #include "vm/composition/session/session_interface.h"
 #include "vm/composition/session/session.h"
 
@@ -55,11 +56,30 @@ static C_INT vm_hdc_hdd_boot_matches_partition_vbr(const vm_session *session)
     return boot_sector[510] == 0x55u && boot_sector[511] == 0xaau;
 }
 
+static C_INT vm_hdc_hdd_boot_preference_overrides(const vm_session_config *config)
+{
+    vm_session *session = STD_NULL;
+    C_INT passed = 0;
+
+    if (config == STD_NULL || vm_session_create(config, &session) != TYPE_STATUS_OK ||
+        session == STD_NULL) goto done;
+    vm_session_set_boot_hdd(session, 0);
+    vm_session_reset(session);
+    if (vm_profile_default_bios_get_boot_hdd(&session->default_bios)) goto done;
+    vm_session_set_boot_hdd(session, 1);
+    vm_session_reset(session);
+    if (!vm_profile_default_bios_get_boot_hdd(&session->default_bios)) goto done;
+    passed = 1;
+
+done:
+    vm_session_destroy(session);
+    return passed;
+}
+
 C_INT main(C_INT argc, C_CHAR **argv)
 {
     const vm_session_config config = {
         .hdd_image = argc == 2 ? argv[1] : STD_NULL,
-        .boot_hdd = 1,
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
@@ -73,7 +93,8 @@ C_INT main(C_INT argc, C_CHAR **argv)
     uint32_t executed = 0u;
     C_INT loaded = 0;
 
-    if (argc != 2 || vm_session_create(&config, &session) != TYPE_STATUS_OK ||
+    if (argc != 2 || !vm_hdc_hdd_boot_preference_overrides(&config) ||
+        vm_session_create(&config, &session) != TYPE_STATUS_OK ||
         session == STD_NULL || !session->hdd.connect.flagDiskExist) goto fail;
     while (executed < VM_HDC_HDD_BOOT_INSTRUCTION_BUDGET) {
         run_status = core_machine_run(session->core_machine, budget, &result);
@@ -122,7 +143,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
                 (STD_SIZE_T)vm_hdc_hdd_boot_partition_lba(session) * VM_HDC_HDD_BOOT_BYTES + 3u));
         goto fail;
     }
-    STD_PRINTF("M5:T213:S3:HDC:SYSTEM:OK command=20 reads=%u instructions=%u\n",
+    STD_PRINTF("M5:T287:S22:HDD-ONLY-BOOT:OK command=20 reads=%u instructions=%u\n",
         session->core_machine->hdc.data.command_count, executed);
     vm_session_destroy(session);
     return 0;
