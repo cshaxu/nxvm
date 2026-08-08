@@ -171,6 +171,10 @@ add_executable(core-machine-protected-privilege-smoke
     tests/machine/core_machine_protected_privilege_smoke.c)
 target_link_libraries(core-machine-protected-privilege-smoke PRIVATE core-machine)
 
+add_executable(core-machine-protected-return-atomicity-smoke
+    tests/machine/core_machine_protected_return_atomicity_smoke.c)
+target_link_libraries(core-machine-protected-return-atomicity-smoke PRIVATE core-machine)
+
 add_executable(core-machine-call-gate-smoke
     tests/machine/core_machine_call_gate_smoke.c)
 target_link_libraries(core-machine-call-gate-smoke PRIVATE core-machine)
@@ -197,10 +201,6 @@ add_executable(core-machine-checked-memory-smoke
 )
 target_link_libraries(core-machine-checked-memory-smoke PRIVATE core-machine)
 
-add_executable(core-machine-undefined-instruction-transition-smoke
-    tests/core/machine_undefined_instruction_transition_smoke.c
-)
-target_link_libraries(core-machine-undefined-instruction-transition-smoke PRIVATE core-machine)
 
 add_executable(core-machine-immutable-rom-mapping-smoke
     tests/core/machine_immutable_rom_mapping_smoke.c
@@ -247,7 +247,6 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(core-machine-stopped-lifecycle-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-memory-reconfigure-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-checked-memory-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(core-machine-undefined-instruction-transition-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-immutable-rom-mapping-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-entry-plan-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-trace-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -1044,6 +1043,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-arpl-smoke
     core-machine-cpu-profile-gate-smoke
     core-machine-protected-privilege-smoke
+    core-machine-protected-return-atomicity-smoke
     core-machine-call-gate-smoke
     core-machine-tss-iomap-port-smoke
     core-machine-task-switch-smoke
@@ -1090,7 +1090,6 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-stopped-lifecycle-smoke
     core-machine-memory-reconfigure-smoke
     core-machine-checked-memory-smoke
-    core-machine-undefined-instruction-transition-smoke
     core-machine-immutable-rom-mapping-smoke
     core-machine-entry-plan-smoke
     core-machine-int-ivt-smoke
@@ -1244,7 +1243,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0291 "0.5.0291")
+add_current_vm_artifact(vm-0-5-0293 "0.5.0293")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 

@@ -1307,6 +1307,27 @@ static C_VOID _s_test_ss_pop(core_machine_cpu_execution_context *context, type_u
     }
     TYPE_TRACE_CALL_END;
 }
+static C_VOID _s_peek_ss_pop(core_machine_cpu_execution_context *context,
+    type_unsigned_16 offset, type_virtual_address rdata, type_unsigned_8 byte)
+{
+    type_unsigned_32 cesp;
+
+    TYPE_TRACE_CALL_BEGIN("_s_peek_ss_pop");
+    switch (_GetStackSize)
+    {
+    case 2:
+        cesp = TYPE_MASK_UNSIGNED_16(cpu_state.data.sp + offset);
+        break;
+    case 4:
+        cesp = cpu_state.data.esp + offset;
+        break;
+    default:
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
+        break;
+    }
+    TYPE_TRACE_CHECK_RETURN(_s_read_ss(context, cesp, rdata, byte));
+    TYPE_TRACE_CALL_END;
+}
 static C_VOID _s_load_sreg(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, type_unsigned_16 selector)
 {
     TYPE_TRACE_CALL_BEGIN("_s_load_sreg");
@@ -3407,9 +3428,10 @@ static C_VOID _ser_ret_far_outer(core_machine_cpu_execution_context *context,
     if (byte != 2u)
         TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(byte));
     target_cpl = (type_unsigned_8)_GetSelector_RPL(newcs);
-    TYPE_TRACE_CHECK_RETURN(_s_test_ss_pop(context, 4u));
-    TYPE_TRACE_CHECK_RETURN(_kec_pop(context, TYPE_REFERENCE_OF(newsp), 2u));
-    TYPE_TRACE_CHECK_RETURN(_kec_pop(context, TYPE_REFERENCE_OF(xs_sel), 2u));
+    TYPE_TRACE_CHECK_RETURN(_s_test_ss_pop(context, 8u));
+    TYPE_TRACE_CHECK_RETURN(_s_peek_ss_pop(context, 4u, TYPE_REFERENCE_OF(newsp), 2u));
+    xs_sel = 0u;
+    TYPE_TRACE_CHECK_RETURN(_s_peek_ss_pop(context, 6u, TYPE_REFERENCE_OF(xs_sel), 2u));
     newss = TYPE_MASK_UNSIGNED_16(xs_sel);
     if (_IsSelectorNull(newss) || _GetSelector_TI(newss) ||
         _GetSelector_RPL(newss) != target_cpl) {
@@ -3910,37 +3932,53 @@ static C_VOID _ser_iret_protected_outer_16(
     type_unsigned_16 newsp;
     type_unsigned_16 newflags;
     type_unsigned_32 selector;
-    type_unsigned_64 descriptor;
+    type_unsigned_64 code_desc;
+    type_unsigned_64 ss_desc;
     type_unsigned_8 oldcpl;
     type_unsigned_8 newcpl;
+    t_cpu_data_sreg newcs_cache;
+    t_cpu_data_sreg newss_cache;
 
     TYPE_TRACE_CALL_BEGIN("_ser_iret_protected_outer_16");
     oldcpl = _GetCPL;
-    TYPE_TRACE_CHECK_RETURN(_kec_pop(context, TYPE_REFERENCE_OF(newip), 2u));
-    TYPE_TRACE_CHECK_RETURN(_kec_pop(context, TYPE_REFERENCE_OF(selector), 2u));
+    TYPE_TRACE_CHECK_RETURN(_s_test_ss_pop(context, 10u));
+    TYPE_TRACE_CHECK_RETURN(_s_peek_ss_pop(context, 0u, TYPE_REFERENCE_OF(newip), 2u));
+    selector = 0u;
+    TYPE_TRACE_CHECK_RETURN(_s_peek_ss_pop(context, 2u, TYPE_REFERENCE_OF(selector), 2u));
     newcs = TYPE_MASK_UNSIGNED_16(selector);
-    TYPE_TRACE_CHECK_RETURN(_kec_pop(context, TYPE_REFERENCE_OF(newflags), 2u));
+    TYPE_TRACE_CHECK_RETURN(_s_peek_ss_pop(context, 4u, TYPE_REFERENCE_OF(newflags), 2u));
     if (_IsSelectorNull(newcs) || _GetSelector_TI(newcs)) {
         TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(newcs & 0xfffcu));
     }
     TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, newcs,
-        TYPE_REFERENCE_OF(descriptor)));
-    if (!_IsDescCodeNonConform(descriptor) || !_IsDescPresent(descriptor)) {
+        TYPE_REFERENCE_OF(code_desc)));
+    if (!_IsDescCodeNonConform(code_desc) || !_IsDescPresent(code_desc)) {
         TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(newcs & 0xfffcu));
     }
     newcpl = (type_unsigned_8)_GetSelector_RPL(newcs);
-    if (newcpl <= oldcpl || newcpl != _GetDesc_DPL(descriptor)) {
+    if (newcpl <= oldcpl || newcpl != _GetDesc_DPL(code_desc)) {
         TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(newcs & 0xfffcu));
     }
-    TYPE_TRACE_CHECK_RETURN(_kec_pop(context, TYPE_REFERENCE_OF(newsp), 2u));
-    TYPE_TRACE_CHECK_RETURN(_kec_pop(context, TYPE_REFERENCE_OF(selector), 2u));
+    TYPE_TRACE_CHECK_RETURN(_s_peek_ss_pop(context, 6u, TYPE_REFERENCE_OF(newsp), 2u));
+    selector = 0u;
+    TYPE_TRACE_CHECK_RETURN(_s_peek_ss_pop(context, 8u, TYPE_REFERENCE_OF(selector), 2u));
     newss = TYPE_MASK_UNSIGNED_16(selector);
     if (_IsSelectorNull(newss) || _GetSelector_TI(newss) ||
         _GetSelector_RPL(newss) != newcpl) {
         TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(newss & 0xfffcu));
     }
-    TYPE_TRACE_CHECK_RETURN(_s_load_cs(context, newcs));
-    TYPE_TRACE_CHECK_RETURN(_s_load_ss(context, newss));
+    newcs_cache = cpu_state.data.cs;
+    TYPE_TRACE_CHECK_RETURN(_ksa_prepare_code_sreg(context, newcs, newcpl,
+        &newcs_cache, &code_desc));
+    newss_cache = cpu_state.data.ss;
+    TYPE_TRACE_CHECK_RETURN(_ksa_prepare_stack_sreg(context, newss, newcpl,
+        &newss_cache, &ss_desc));
+    TYPE_TRACE_CHECK_RETURN(_s_write_xdt(context, newcs,
+        TYPE_REFERENCE_OF(code_desc)));
+    TYPE_TRACE_CHECK_RETURN(_s_write_xdt(context, newss,
+        TYPE_REFERENCE_OF(ss_desc)));
+    cpu_state.data.cs = newcs_cache;
+    cpu_state.data.ss = newss_cache;
     cpu_state.data.sp = newsp;
     cpu_state.data.ip = newip;
     cpu_state.data.eflags = (cpu_state.data.eflags & VCPU_EFLAGS_RESERVED) |
@@ -4284,16 +4322,18 @@ static C_VOID _e_ret_far(core_machine_cpu_execution_context *context, type_unsig
     case 2:
         TYPE_TRACE_BLOCK_BEGIN("byte(2)");
         TYPE_TRACE_CHECK_RETURN(_s_test_ss_pop(context, 4));
-        TYPE_TRACE_CHECK_RETURN(_kec_pop(context, TYPE_REFERENCE_OF(neweip), 2));
-        TYPE_TRACE_CHECK_RETURN(_kec_pop(context, TYPE_REFERENCE_OF(xs_sel), 2));
+        TYPE_TRACE_CHECK_RETURN(_s_peek_ss_pop(context, 0u, TYPE_REFERENCE_OF(neweip), 2));
+        xs_sel = 0u;
+        TYPE_TRACE_CHECK_RETURN(_s_peek_ss_pop(context, 2u, TYPE_REFERENCE_OF(xs_sel), 2));
         newcs = TYPE_MASK_UNSIGNED_16(xs_sel);
         TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         TYPE_TRACE_BLOCK_BEGIN("byte(4)");
         TYPE_TRACE_CHECK_RETURN(_s_test_ss_pop(context, 8));
-        TYPE_TRACE_CHECK_RETURN(_kec_pop(context, TYPE_REFERENCE_OF(neweip), 4));
-        TYPE_TRACE_CHECK_RETURN(_kec_pop(context, TYPE_REFERENCE_OF(xs_sel), 4));
+        TYPE_TRACE_CHECK_RETURN(_s_peek_ss_pop(context, 0u, TYPE_REFERENCE_OF(neweip), 4));
+        xs_sel = 0u;
+        TYPE_TRACE_CHECK_RETURN(_s_peek_ss_pop(context, 4u, TYPE_REFERENCE_OF(xs_sel), 4));
         newcs = TYPE_MASK_UNSIGNED_16(xs_sel);
         TYPE_TRACE_BLOCK_END;
         break;
@@ -4306,7 +4346,8 @@ static C_VOID _e_ret_far(core_machine_cpu_execution_context *context, type_unsig
     if (!_IsProtected)
     {
         TYPE_TRACE_BLOCK_BEGIN("!Protected");
-        TYPE_TRACE_CHECK_RETURN(_ser_ret_far_real(context, newcs, neweip, parambyte, byte));
+        TYPE_TRACE_CHECK_RETURN(_ser_ret_far_real(context, newcs, neweip,
+            TYPE_MASK_UNSIGNED_16(parambyte + byte * 2u), byte));
         TYPE_TRACE_BLOCK_END;
     }
     else
@@ -4357,7 +4398,8 @@ static C_VOID _e_ret_far(core_machine_cpu_execution_context *context, type_unsig
         else
         {
             TYPE_TRACE_BLOCK_BEGIN("RPL(<=CPL)");
-            TYPE_TRACE_CHECK_RETURN(_ser_ret_far_same(context, newcs, neweip, parambyte, byte));
+            TYPE_TRACE_CHECK_RETURN(_ser_ret_far_same(context, newcs, neweip,
+                TYPE_MASK_UNSIGNED_16(parambyte + byte * 2u), byte));
             TYPE_TRACE_BLOCK_END;
         }
         TYPE_TRACE_BLOCK_END;
@@ -16171,9 +16213,6 @@ static C_VOID ExecFinal(core_machine_cpu_execution_context *context)
 #endif
     if (instruction_state.data.except)
     {
-        core_machine_undefined_instruction_response response;
-        core_machine_undefined_instruction_input input;
-
         fault_cpu = instruction_state.data.oldcpu;
         if (TYPE_GET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_PF))
         {
@@ -16208,57 +16247,6 @@ static C_VOID ExecFinal(core_machine_cpu_execution_context *context)
             instruction_state.data.excode = original_excode;
         }
 
-        STD_MEMSET(&response, 0, sizeof(response));
-        response.outcome = CORE_MACHINE_UNDEFINED_INSTRUCTION_UNHANDLED;
-        STD_MEMSET(&input, 0, sizeof(input));
-        if (instruction_state.data.except == VCPUINS_EXCEPT_UD &&
-            context->undefined_instruction_dispatch != STD_NULL &&
-            !TYPE_GET_BIT(instruction_state.data.oldcpu.data.cr0, VCPU_CR0_PE) &&
-            core_machine_memory_read_physical(context->memory,
-                instruction_state.data.oldcpu.data.cs.base +
-                    instruction_state.data.oldcpu.data.eip,
-                (type_virtual_address)input.bytes,
-                CORE_MACHINE_UNDEFINED_INSTRUCTION_MAX_BYTES) == TYPE_STATUS_OK)
-        {
-            input.cs = instruction_state.data.oldcpu.data.cs.selector;
-            input.eip = instruction_state.data.oldcpu.data.eip;
-            input.byte_count = CORE_MACHINE_UNDEFINED_INSTRUCTION_MAX_BYTES;
-            input.eax = instruction_state.data.oldcpu.data.eax;
-            input.ebx = instruction_state.data.oldcpu.data.ebx;
-            input.ecx = instruction_state.data.oldcpu.data.ecx;
-            input.edx = instruction_state.data.oldcpu.data.edx;
-            input.esi = instruction_state.data.oldcpu.data.esi;
-            input.edi = instruction_state.data.oldcpu.data.edi;
-            input.ebp = instruction_state.data.oldcpu.data.ebp;
-            input.eflags = instruction_state.data.oldcpu.data.eflags;
-            context->undefined_instruction_dispatch(
-                context->undefined_instruction_context, &input, &response);
-        }
-        if (response.outcome == CORE_MACHINE_UNDEFINED_INSTRUCTION_HANDLED_RESUME) {
-            const uint32_t mutable_flags = VCPU_EFLAGS_CF | VCPU_EFLAGS_PF |
-                VCPU_EFLAGS_AF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_SF | VCPU_EFLAGS_OF;
-
-            cpu_state = instruction_state.data.oldcpu;
-            cpu_state.data.eip += response.consumed_bytes;
-            cpu_state.data.eax = response.patch.eax;
-            cpu_state.data.ebx = response.patch.ebx;
-            cpu_state.data.ecx = response.patch.ecx;
-            cpu_state.data.edx = response.patch.edx;
-            cpu_state.data.esi = response.patch.esi;
-            cpu_state.data.edi = response.patch.edi;
-            cpu_state.data.ebp = response.patch.ebp;
-            cpu_state.data.eflags = (cpu_state.data.eflags & ~mutable_flags) |
-                (response.patch.eflags & mutable_flags);
-            instruction_state.data.except = 0u;
-            return;
-        }
-        if (response.outcome == CORE_MACHINE_UNDEFINED_INSTRUCTION_STOP ||
-            response.outcome == CORE_MACHINE_UNDEFINED_INSTRUCTION_FAULT) {
-            cpu_state = instruction_state.data.oldcpu;
-            instruction_state.data.except = 0u;
-            core_machine_cpu_execution_request_stop(context);
-            return;
-        }
         if (context->diagnostic_provider != STD_NULL &&
             context->diagnostic_provider->record_fault != STD_NULL)
         {
