@@ -29,6 +29,11 @@ DPT `+0Eh`; AH=08/AH=15 and the ROM corpus now use that slot, while `+08h`
 retains its control-byte value. This corrected contract does not yet change the
 external DOS `C:` result.
 
+S13 makes INT 13h/AH=08 return the sectors-per-track value in AL as well as
+the CH/CL geometry encoding. The ROM regression asserts AX=`003Fh` for the
+fixture geometry. This ABI correction also preserves the external DOS `C:`
+failure for further diagnosis.
+
 The external copied-frame checkpoint still reports the same `C:` failure after
 S3--S9. Its paused copied-frame observation retains BDA fixed-disk bytes
 `00/01/C0/00` for status, drive count, control, and port offset respectively;
@@ -41,7 +46,7 @@ is considered.
 - **T287 artifact identity:** `current-gcc` and
   `verify-current-artifact-target` select `vm-0-5-0287`. The active T287
   subtask has not closed. Artifact `nxvm_0_5_0287.exe` SHA-256:
-  `F8B975A1D183A9ED04F2047FACBAFB3E5BAE26870E690C8EEE9EB73810EBB00C`.
+  `B6612D7C1EFD2864DE777CAA2DB4A3441B7AC00128C61EA29AB6B52B5F321847`.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
