@@ -348,6 +348,9 @@ Both failures produce their ordinary port trace event with `detail` equal to
 the returned status, rather than a success detail. Guest `IN`/`OUT` maps any
 such failure to the existing internal `#CE(port)` diagnostic. It introduces no
 new guest exception, provider fallback, or CPU-visible host status encoding.
+Firmware and debugger port capabilities use this same executor-port dispatch:
+they preserve a failed read's caller output and restore their temporary write
+latch before returning the exact provider status.
 
 ## Time And Clock Ownership
 

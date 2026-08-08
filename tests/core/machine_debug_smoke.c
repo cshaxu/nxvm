@@ -5,6 +5,12 @@
 #include "core/machine/debug_interface.h"
 #include "../support/core_machine_executor_fixture.h"
 
+typedef struct debug_port_probe { type_status status; uint32_t value; } debug_port_probe;
+static type_status debug_port_read(C_VOID *owner, uint16_t port, uint32_t *out)
+{ debug_port_probe *probe = owner; (C_VOID)port; if (probe->status != TYPE_STATUS_OK) return probe->status; *out = probe->value; return TYPE_STATUS_OK; }
+static type_status debug_port_write(C_VOID *owner, uint16_t port, uint32_t value)
+{ debug_port_probe *probe = owner; (C_VOID)port; if (probe->status != TYPE_STATUS_OK) return probe->status; probe->value = value; return TYPE_STATUS_OK; }
+
 C_INT main(C_VOID)
 {
     core_machine *machine = STD_NULL;
@@ -16,8 +22,12 @@ C_INT main(C_VOID)
     uint32_t value;
     C_UCHAR byte = 0x5au;
     C_UCHAR nop = 0x90u;
+    debug_port_probe port_probe = {TYPE_STATUS_OK, 0x11u};
+    core_machine_port_provider port_provider = {debug_port_read, debug_port_write};
 
     if (test_core_machine_create_executor(0u, &machine) != TYPE_STATUS_OK ||
+        core_machine_install_port_provider(machine, 0x00e0u, 0x00e0u,
+            &port_provider, &port_probe) != TYPE_STATUS_OK ||
         core_machine_debug_read_cpu(machine, &cpu) != TYPE_STATUS_INVALID_STATE ||
         core_machine_debug_capture_instruction_observation(machine,
             &observation) != TYPE_STATUS_INVALID_STATE ||
@@ -36,6 +46,24 @@ C_INT main(C_VOID)
         result.reason != CORE_MACHINE_STOP_BUDGET ||
         core_machine_debug_continue(machine, budget, &result) != TYPE_STATUS_OK ||
         result.reason != CORE_MACHINE_STOP_BUDGET) {
+        core_machine_destroy(machine);
+        return 1;
+    }
+
+    port_probe.status = TYPE_STATUS_FAULT;
+    value = 0xdeadbeefu;
+    if (core_machine_debug_read_port(machine, 0x00e0u, &value) !=
+            TYPE_STATUS_FAULT || value != 0xdeadbeefu ||
+        core_machine_debug_write_port(machine, 0x00e0u, 0x55u) !=
+            TYPE_STATUS_FAULT) {
+        core_machine_destroy(machine);
+        return 1;
+    }
+    port_probe.status = TYPE_STATUS_OK;
+    if (core_machine_debug_read_port(machine, 0x00e0u, &value) !=
+            TYPE_STATUS_OK || value != 0x11u ||
+        core_machine_debug_write_port(machine, 0x00e0u, 0x55u) !=
+            TYPE_STATUS_OK || port_probe.value != 0x55u) {
         core_machine_destroy(machine);
         return 1;
     }

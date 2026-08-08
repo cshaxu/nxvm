@@ -13,7 +13,16 @@ typedef struct firmware_probe {
     C_INT reset_calls;
     C_INT after_run_calls;
     C_INT reentry_rejected;
+    type_status port_status;
+    uint32_t port_value;
 } firmware_probe;
+
+static type_status firmware_probe_port_read(C_VOID *owner, uint16_t port,
+    uint32_t *out_value)
+{ firmware_probe *probe = owner; (C_VOID)port; if (probe->port_status != TYPE_STATUS_OK) return probe->port_status; *out_value = probe->port_value; return TYPE_STATUS_OK; }
+static type_status firmware_probe_port_write(C_VOID *owner, uint16_t port,
+    uint32_t value)
+{ firmware_probe *probe = owner; (C_VOID)port; if (probe->port_status != TYPE_STATUS_OK) return probe->port_status; probe->port_value = value; return TYPE_STATUS_OK; }
 
 typedef struct firmware_failed_probe {
     core_machine_firmware_context *expired;
@@ -85,12 +94,23 @@ static type_status firmware_probe_after_run(C_VOID *opaque,
 {
     firmware_probe *probe = (firmware_probe *)opaque;
     uint8_t value = 0u;
+    uint32_t port_value = 0xdeadbeefu;
 
     if (probe == STD_NULL || core_machine_firmware_memory_read(firmware,
             0x500u, &value, sizeof(value)) != TYPE_STATUS_OK || value != 0x5au) {
         return TYPE_STATUS_FAULT;
     }
     ++probe->after_run_calls;
+    probe->port_status = TYPE_STATUS_FAULT;
+    if (core_machine_firmware_port_read(firmware, 0x00e0u, &port_value) !=
+            TYPE_STATUS_FAULT || port_value != 0xdeadbeefu ||
+        core_machine_firmware_port_write(firmware, 0x00e0u, 0x05u) !=
+            TYPE_STATUS_FAULT) return TYPE_STATUS_FAULT;
+    probe->port_status = TYPE_STATUS_OK;
+    if (core_machine_firmware_port_read(firmware, 0x00e0u, &port_value) !=
+            TYPE_STATUS_OK || port_value != probe->port_value ||
+        core_machine_firmware_port_write(firmware, 0x00e0u, 0x05u) !=
+            TYPE_STATUS_OK) return TYPE_STATUS_FAULT;
     probe->expired = firmware;
     return core_machine_firmware_port_write(firmware, 0x03d8u, 0x05u);
 }
@@ -121,11 +141,15 @@ C_INT main(C_VOID)
     C_INT failed = 0;
     type_status run_status;
     core_machine_lifecycle lifecycle = CORE_MACHINE_INITIALIZED;
+    core_machine_port_provider port_provider = {firmware_probe_port_read,
+        firmware_probe_port_write};
 
     failed |= test_core_machine_create_executor(
         CORE_MACHINE_MINIMUM_MEMORY_BYTES, &machine) != TYPE_STATUS_OK;
     failed |= core_machine_register_immutable_rom_mapping(machine, 0xd0000u,
         &prior_rom, sizeof(prior_rom)) != TYPE_STATUS_OK;
+    failed |= core_machine_install_port_provider(machine, 0x00e0u, 0x00e0u,
+        &port_provider, &probe) != TYPE_STATUS_OK;
     failed |= core_machine_bind_firmware_provider(machine,
         &firmware_failed_probe_provider, &failed_probe) != TYPE_STATUS_FAULT;
     failed |= failed_probe.configure_calls != 1;

@@ -33,6 +33,8 @@
 - **Current S2 evidence:** `core-machine-port-ownership-smoke` proves public
   failure/recovery and guest `OUT` to the retained `#CE(00E0)` diagnostic;
   `core-machine-trace-smoke` proves failure detail and unchanged caller output.
+  Firmware-capability and debugger port probes prove the same exact failure and
+  recovery contract through their public capability interfaces.
   Unbound guest directions retain legacy no-op behavior. `current-gates-gcc`
   passed 51/51 static/governance targets and 127/127 CTests on T299 baseline.
 - **S1 carry-forward:** c42ca2f and 1f4b100 froze the single directional
