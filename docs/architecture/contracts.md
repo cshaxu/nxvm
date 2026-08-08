@@ -580,15 +580,21 @@ core controller.
 `core/machine` owns one per-machine 8272A-compatible controller: command and
 result phases, DOR/CCR/MSR/DIR state, transfer cursor, media-generation
 observation, DMA request lifecycle, and IRQ6 source lifecycle. Its frozen
-configuration is limited to an already-selected media registry identity, a
-DMA request binding, a PIC source route, and explicit port addresses. It has
-no PC/AT defaults, drive-image path, firmware, host I/O, or product policy.
+configuration is limited to a frozen four-slot drive-to-media identity table,
+a DMA request binding, a PIC source route, and explicit port addresses. A
+guest command unit and the DOR-selected drive must agree; readiness and media
+I/O then resolve only through that selected frozen slot. An invalid or absent
+slot produces the established no-data result and cannot fall through to a
+different drive. It has no PC/AT defaults, drive-image path, firmware, host
+I/O, or product policy.
 
 VM composition selects the default-profile FDC port range, IRQ/DMA route, and
-FDD media identity while the machine is configurable, then binds the one core
-controller before freeze. Default-ROM POST and INT 0Eh/40h assembly remain
-profile firmware. No VM object mirrors controller state or accesses FDC media
-bytes through a side channel.
+drive-0 FDD media identity while the machine is configurable, then supplies
+that topology to the one core controller before freeze. The remaining default
+drive slots are invalid; a second-drive UI or runtime topology mutation is not
+admitted. Default-ROM POST and INT 0Eh/40h assembly remain profile firmware.
+No VM object mirrors controller state or accesses FDC media bytes through a
+side channel.
 
 ### ATA Media and Controller Boundary (T277--T278)
 

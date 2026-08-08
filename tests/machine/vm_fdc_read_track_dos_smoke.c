@@ -235,5 +235,6 @@ done:
     DeleteFileA(path); STD_FREE(image);
     STD_PRINTF("M5:T268:S3:FDC-MOTOR:DOS:OK\n");
     STD_PRINTF("M5:T269:S3:DMA-GRANT:DOS:OK\n");
+    STD_PRINTF("M5:T290:S3:FDC:DOS:OK\n");
     STD_PRINTF("M5:T242:S4:FDC:DOS:OK\n"); return 0;
 }

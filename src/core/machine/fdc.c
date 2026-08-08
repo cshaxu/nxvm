@@ -49,12 +49,21 @@ static type_unsigned_8 core_machine_fdc_msr(const core_machine_fdc *fdc)
     }
 }
 
+static core_machine_media_id core_machine_fdc_selected_media_id(
+    const core_machine_fdc *fdc)
+{
+    return fdc == STD_NULL || fdc->data.selected_drive >= CORE_MACHINE_FDC_DRIVE_COUNT ?
+        CORE_MACHINE_MEDIA_ID_INVALID :
+        fdc->connect.drives.media_id[fdc->data.selected_drive];
+}
+
 static C_INT core_machine_fdc_media_info(const core_machine_fdc *fdc,
     core_machine_media_info *out_info, core_machine_media_result *out_result)
 {
     return fdc != STD_NULL && fdc->connect.media_registry != STD_NULL &&
+        core_machine_fdc_selected_media_id(fdc) != CORE_MACHINE_MEDIA_ID_INVALID &&
         core_machine_media_query(fdc->connect.media_registry,
-            fdc->connect.media_id, out_info, out_result) == TYPE_STATUS_OK &&
+            core_machine_fdc_selected_media_id(fdc), out_info, out_result) == TYPE_STATUS_OK &&
         *out_result == CORE_MACHINE_MEDIA_RESULT_OK;
 }
 
@@ -151,7 +160,7 @@ static C_INT core_machine_fdc_drive_ready(const core_machine_fdc *fdc)
     core_machine_media_info info;
     core_machine_media_result result;
 
-    return fdc->data.selected_drive == 0u &&
+    return fdc->data.selected_drive == (fdc->data.dor & VFDC_DOR_DS) &&
         (fdc->data.dor & VFDC_DOR_NRS) != 0u &&
         (fdc->data.dor & VFDC_DOR_ME(fdc->data.selected_drive)) != 0u &&
         core_machine_fdc_media_info(fdc, &info, &result) && info.present;
@@ -171,6 +180,7 @@ static C_INT core_machine_fdc_transfer_byte(core_machine_fdc *fdc, t_latch *latc
     type_unsigned_8 byte;
     core_machine_media_info info;
     core_machine_media_result result;
+    core_machine_media_id media_id;
     uint64_t offset;
     if (fdc->data.transfer_remaining == 0u || !core_machine_fdc_drive_ready(fdc)) {
         core_machine_fdc_complete_transfer(fdc, core_machine_fdc_ST1_NO_DATA);
@@ -182,9 +192,10 @@ static C_INT core_machine_fdc_transfer_byte(core_machine_fdc *fdc, t_latch *latc
         core_machine_fdc_complete_transfer(fdc, core_machine_fdc_ST1_END_OF_CYLINDER);
         return TYPE_TRUE;
     }
+    media_id = core_machine_fdc_selected_media_id(fdc);
     if (write_to_media) {
         if (core_machine_media_write_bytes(fdc->connect.media_registry,
-            fdc->connect.media_id, offset, &latch->data.byte, 1u, &result) !=
+            media_id, offset, &latch->data.byte, 1u, &result) !=
             TYPE_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_OK) {
             core_machine_fdc_complete_transfer(fdc,
                 result == CORE_MACHINE_MEDIA_RESULT_READ_ONLY ?
@@ -192,7 +203,7 @@ static C_INT core_machine_fdc_transfer_byte(core_machine_fdc *fdc, t_latch *latc
             return TYPE_TRUE;
         }
     } else if (core_machine_media_read_bytes(fdc->connect.media_registry,
-        fdc->connect.media_id, offset, &byte, 1u, &result) != TYPE_STATUS_OK ||
+        media_id, offset, &byte, 1u, &result) != TYPE_STATUS_OK ||
         result != CORE_MACHINE_MEDIA_RESULT_OK) {
         core_machine_fdc_complete_transfer(fdc, core_machine_fdc_ST1_NO_DATA);
         return TYPE_TRUE;
@@ -209,6 +220,7 @@ static C_VOID core_machine_fdc_format_byte(core_machine_fdc *fdc, type_unsigned_
 {
     core_machine_media_info info;
     core_machine_media_result result;
+    core_machine_media_id media_id;
     uint64_t logical_sector;
     if (fdc->data.format_headers_remaining == 0u) return;
     fdc->data.format_id[fdc->data.format_id_index++] = byte;
@@ -226,8 +238,9 @@ static C_VOID core_machine_fdc_format_byte(core_machine_fdc *fdc, type_unsigned_
     logical_sector = ((uint64_t)fdc->data.cylinder * info.geometry.heads +
         fdc->data.head) * info.geometry.sectors_per_track +
         fdc->data.format_id[2] - 1u;
+    media_id = core_machine_fdc_selected_media_id(fdc);
     if (core_machine_media_format_sectors(fdc->connect.media_registry,
-        fdc->connect.media_id, logical_sector, 1u, fdc->data.cmd[5], &result) !=
+        media_id, logical_sector, 1u, fdc->data.cmd[5], &result) !=
         TYPE_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_OK) {
         core_machine_fdc_complete_transfer(fdc,
             result == CORE_MACHINE_MEDIA_RESULT_READ_ONLY ?
@@ -358,7 +371,7 @@ static C_VOID core_machine_fdc_execute(core_machine_fdc *fdc)
     type_unsigned_8 opcode = fdc->data.cmd[0] & 0x1fu;
     core_machine_media_info info;
     core_machine_media_result media_result;
-    C_INT media_ok = core_machine_fdc_media_info(fdc, &info, &media_result);
+    C_INT media_ok;
     switch (opcode) {
     case core_machine_fdc_CMD_SPECIFY:
         fdc->data.hut = fdc->data.cmd[1] & 0x0fu;
@@ -370,6 +383,7 @@ static C_VOID core_machine_fdc_execute(core_machine_fdc *fdc)
     case core_machine_fdc_CMD_SENSE_DRIVE_STATUS:
         fdc->data.selected_drive = fdc->data.cmd[1] & 0x03u;
         fdc->data.head = (fdc->data.cmd[1] >> 2u) & 1u;
+        media_ok = core_machine_fdc_media_info(fdc, &info, &media_result);
         fdc->data.st3 = (fdc->data.selected_drive & 3u) |
             (fdc->data.head << 2u) | (media_ok &&
             (info.capabilities & CORE_MACHINE_MEDIA_CAPABILITY_READ_ONLY) != 0u ? 0x40u : 0u) | (core_machine_fdc_drive_ready(fdc) ?
@@ -380,6 +394,7 @@ static C_VOID core_machine_fdc_execute(core_machine_fdc *fdc)
     case core_machine_fdc_CMD_RECALIBRATE:
         fdc->data.selected_drive = fdc->data.cmd[1] & 0x03u;
         fdc->data.cylinder = 0u; fdc->data.head = 0u; fdc->data.sector = 1u;
+        media_ok = core_machine_fdc_media_info(fdc, &info, &media_result);
         fdc->data.observed_media_generation = media_ok ? info.generation : 0u;
         core_machine_fdc_complete_simple(fdc, core_machine_fdc_ST0_NORMAL |
             VFDC_ST0_SEEK_END | fdc->data.selected_drive, 0u);
@@ -402,6 +417,7 @@ static C_VOID core_machine_fdc_execute(core_machine_fdc *fdc)
         fdc->data.selected_drive = fdc->data.cmd[1] & 0x03u;
         fdc->data.head = (fdc->data.cmd[1] >> 2u) & 1u;
         fdc->data.cylinder = fdc->data.cmd[2]; fdc->data.sector = 1u;
+        media_ok = core_machine_fdc_media_info(fdc, &info, &media_result);
         fdc->data.observed_media_generation = media_ok ? info.generation : 0u;
         core_machine_fdc_complete_simple(fdc, (core_machine_fdc_drive_ready(fdc) &&
             media_ok && fdc->data.cylinder < info.geometry.cylinders ? core_machine_fdc_ST0_NORMAL :
@@ -417,7 +433,8 @@ static C_VOID core_machine_fdc_execute(core_machine_fdc *fdc)
     case core_machine_fdc_CMD_READ_ID:
         fdc->data.selected_drive = fdc->data.cmd[1] & 0x03u;
         fdc->data.head = (fdc->data.cmd[1] >> 2u) & 1u;
-        if (!core_machine_fdc_drive_ready(fdc)) {
+        media_ok = core_machine_fdc_media_info(fdc, &info, &media_result);
+        if (!core_machine_fdc_drive_ready(fdc) || !media_ok) {
             core_machine_fdc_complete_transfer(fdc, core_machine_fdc_ST1_NO_DATA);
         } else {
             if (fdc->data.sector == 0u) fdc->data.sector = 1u;
@@ -442,6 +459,7 @@ static C_VOID core_machine_fdc_execute(core_machine_fdc *fdc)
         fdc->data.eot = fdc->data.cmd[3];
         fdc->data.format_headers_remaining = fdc->data.cmd[3];
         fdc->data.format_id_index = 0u;
+        media_ok = core_machine_fdc_media_info(fdc, &info, &media_result);
         if (core_machine_fdc_sector_size(fdc->data.cmd[2]) != 2u ||
             (fdc->data.ccr != 0u && fdc->data.ccr != VFDC_CCR_DRC) ||
             !core_machine_fdc_drive_ready(fdc) || fdc->data.eot == 0u ||
@@ -549,13 +567,13 @@ static C_VOID core_machine_fdc_write_control(t_port *port, type_unsigned_16 id,
 
 C_VOID core_machine_fdc_connect(core_machine_fdc *fdc,
     const core_machine_media_registry *media_registry,
-    core_machine_media_id media_id,
+    const core_machine_fdc_drive_bindings *drives,
     const core_machine_dma_request_binding *dma_request, t_pic *pic_master,
     t_pic *pic_slave, t_port *port, const core_machine_fdc_config *config)
 {
-    if (fdc == STD_NULL || dma_request == STD_NULL || config == STD_NULL) return;
+    if (fdc == STD_NULL || drives == STD_NULL || dma_request == STD_NULL || config == STD_NULL) return;
     fdc->connect.media_registry = media_registry;
-    fdc->connect.media_id = media_id;
+    fdc->connect.drives = *drives;
     fdc->connect.dma_request = *dma_request;
     core_machine_pic_irq_source_bind(&fdc->connect.irq_source, pic_master,
         pic_slave, config->irq);
