@@ -546,6 +546,11 @@ static const core_machine_port_provider core_machine_rtc_cmos_port_provider = {
     core_machine_rtc_cmos_port_write
 };
 
+static const core_machine_port_provider core_machine_rtc_cmos_index_port_provider = {
+    STD_NULL,
+    core_machine_rtc_cmos_port_write
+};
+
 type_status core_machine_configure_dma(core_machine *machine,
     const core_machine_dma_wiring *wiring,
     core_machine_dma_request_binding *out_fdc_request)
@@ -583,12 +588,9 @@ type_status core_machine_configure_rtc_cmos(core_machine *machine,
     if (!core_machine_rtc_cmos_config_is_valid(config)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    if (core_machine_port_has_read(&machine->executor_port,
-            config->index_port) ||
-        core_machine_port_has_write(&machine->executor_port,
-            config->index_port) ||
-        core_machine_port_has_read(&machine->executor_port,
-            config->data_port) ||
+    if (core_machine_port_has_write(&machine->executor_port,
+            config->index_port) || core_machine_port_has_read(
+            &machine->executor_port, config->data_port) ||
         core_machine_port_has_write(&machine->executor_port,
             config->data_port)) {
         return TYPE_STATUS_INVALID_STATE;
@@ -602,6 +604,9 @@ type_status core_machine_configure_rtc_cmos(core_machine *machine,
             config->defaults[index].index, config->defaults[index].value);
     }
     status = core_machine_install_port_provider(machine, config->index_port,
+        config->index_port, &core_machine_rtc_cmos_index_port_provider, machine);
+    if (status != TYPE_STATUS_OK) return status;
+    status = core_machine_install_port_provider(machine, config->data_port,
         config->data_port, &core_machine_rtc_cmos_port_provider, machine);
     if (status != TYPE_STATUS_OK) return status;
     machine->rtc_cmos_config = *config;
@@ -665,15 +670,25 @@ static C_INT core_machine_hdc_topology_is_valid(
     return 1;
 }
 
+typedef struct core_machine_port_direction_requirement {
+    uint16_t port;
+    type_bool read;
+    type_bool write;
+} core_machine_port_direction_requirement;
+
 static C_INT core_machine_controller_ports_are_available(
-    const core_machine *machine, const uint16_t *ports, STD_SIZE_T count)
+    const core_machine *machine,
+    const core_machine_port_direction_requirement *requirements,
+    STD_SIZE_T count)
 {
     STD_SIZE_T index;
 
-    if (machine == STD_NULL || ports == STD_NULL) return 0;
+    if (machine == STD_NULL || requirements == STD_NULL) return 0;
     for (index = 0u; index < count; ++index) {
-        if (core_machine_port_has_read(&machine->executor_port, ports[index]) ||
-            core_machine_port_has_write(&machine->executor_port, ports[index])) {
+        if ((requirements[index].read && core_machine_port_has_read(
+                &machine->executor_port, requirements[index].port)) ||
+            (requirements[index].write && core_machine_port_has_write(
+                &machine->executor_port, requirements[index].port))) {
             return 0;
         }
     }
@@ -683,12 +698,17 @@ static C_INT core_machine_controller_ports_are_available(
 type_status core_machine_configure_fdc(core_machine *machine,
     const core_machine_fdc_topology *topology)
 {
-    const uint16_t ports[] = {
-        topology == STD_NULL ? 0u : topology->config.dor_port,
-        topology == STD_NULL ? 0u : topology->config.status_port,
-        topology == STD_NULL ? 0u : topology->config.data_port,
-        topology == STD_NULL ? 0u : topology->config.direction_port,
-        topology == STD_NULL ? 0u : topology->config.control_port
+    const core_machine_port_direction_requirement ports[] = {
+        {topology == STD_NULL ? 0u : topology->config.dor_port,
+            TYPE_FALSE, TYPE_TRUE},
+        {topology == STD_NULL ? 0u : topology->config.status_port,
+            TYPE_TRUE, TYPE_FALSE},
+        {topology == STD_NULL ? 0u : topology->config.data_port,
+            TYPE_TRUE, TYPE_TRUE},
+        {topology == STD_NULL ? 0u : topology->config.direction_port,
+            TYPE_TRUE, TYPE_FALSE},
+        {topology == STD_NULL ? 0u : topology->config.control_port,
+            TYPE_FALSE, TYPE_TRUE}
     };
 
     if (!core_machine_configuration_is_open(machine) || !machine->dma_configured ||
@@ -716,17 +736,26 @@ type_status core_machine_configure_hdc(core_machine *machine,
     const core_machine_hdc_topology *topology)
 {
     const core_machine_port_provider *provider;
-    const uint16_t ports[] = {
-        topology == STD_NULL ? 0u : topology->config.data_port,
-        topology == STD_NULL ? 0u : topology->config.error_features_port,
-        topology == STD_NULL ? 0u : topology->config.sector_count_port,
-        topology == STD_NULL ? 0u : topology->config.sector_number_port,
-        topology == STD_NULL ? 0u : topology->config.cylinder_low_port,
-        topology == STD_NULL ? 0u : topology->config.cylinder_high_port,
-        topology == STD_NULL ? 0u : topology->config.drive_head_port,
-        topology == STD_NULL ? 0u : topology->config.status_command_port,
-        topology == STD_NULL ? 0u :
-            topology->config.alternate_status_device_control_port
+    const core_machine_port_direction_requirement ports[] = {
+        {topology == STD_NULL ? 0u : topology->config.data_port,
+            TYPE_TRUE, TYPE_TRUE},
+        {topology == STD_NULL ? 0u : topology->config.error_features_port,
+            TYPE_TRUE, TYPE_TRUE},
+        {topology == STD_NULL ? 0u : topology->config.sector_count_port,
+            TYPE_TRUE, TYPE_TRUE},
+        {topology == STD_NULL ? 0u : topology->config.sector_number_port,
+            TYPE_TRUE, TYPE_TRUE},
+        {topology == STD_NULL ? 0u : topology->config.cylinder_low_port,
+            TYPE_TRUE, TYPE_TRUE},
+        {topology == STD_NULL ? 0u : topology->config.cylinder_high_port,
+            TYPE_TRUE, TYPE_TRUE},
+        {topology == STD_NULL ? 0u : topology->config.drive_head_port,
+            TYPE_TRUE, TYPE_TRUE},
+        {topology == STD_NULL ? 0u : topology->config.status_command_port,
+            TYPE_TRUE, TYPE_TRUE},
+        {topology == STD_NULL ? 0u :
+            topology->config.alternate_status_device_control_port,
+            TYPE_TRUE, TYPE_TRUE}
     };
     type_status status;
 
