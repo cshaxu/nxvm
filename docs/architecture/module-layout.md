@@ -221,12 +221,14 @@ and product code.
 
 `core/machine` may provide optional profile-neutral controller mechanisms,
 including MC146818-compatible RTC, FDC, and ATA PIO models, through explicit
-port/IRQ/DMA/clock/media bindings. It never chooses PC/AT defaults, media
-paths, boot policy, firmware bytes, or host policy. `vm/machine` owns the VM
-media backing objects and PC/AT-only glue; it does not retain a second copy of
-a controller after that controller moves to core. The `vm/` root composition
-owns profile-selected boot/reset ordering, the bounded product execution pump,
-provider lifetime, and all wiring; it never duplicates the core scheduler.
+port/IRQ/DMA/clock/media bindings. It owns their storage and
+initialization/reset/finalization order. It never chooses PC/AT defaults,
+media paths, boot policy, firmware bytes, or host policy. `vm/machine` owns
+VM media backing objects and PC/AT-only policy; it does not retain a second
+copy of a core controller. The `vm/` root composition selects a profile,
+submits typed frozen configuration/provider bindings, owns provider lifetime
+and the bounded product execution pump, and never duplicates the core
+scheduler or borrows raw core state.
 `core/platform` owns policy-free opaque host capability contracts and shared
 Win32/Linux implementations. T271 currently supplies backing-resource, copied
 input, and wait/cancellation surfaces. T282 audits those existing surfaces and
@@ -241,9 +243,9 @@ The `vm/` root composition selects that profile, creates the providers, and
 binds their callbacks and lifetime. The retained Console receives a
 product-owned command target from that composition; it owns parsing, text, and
 command UX while the target owns machine, platform, debug, and media effects.
-Profile-specific firmware code is allowed
-only as an override provider against a public core contract; it does not create
-the machine or call a sibling module directly.
+Profile-specific firmware code is allowed only as an override provider against
+an opaque core-invoked capability. It does not create the machine, borrow CPU,
+RAM, port, controller, or executor storage, or call a sibling module directly.
 
 VM profile declarations may describe only immutable capabilities, topology,
 port/IRQ/DMA routes, controller/CMOS defaults, ROM-slot constraints,
@@ -261,7 +263,9 @@ Trusted external research may inform a neutral mantle requirement, but mantle
 knows no DOS ABI, external-runtime ABI, CLI grammar, path policy, protected
 asset, or product exit policy.
 `mantle/` root composition constructs the session and binds an admitted
-DOS-runtime provider to core at defined execution boundaries.
+DOS-runtime provider to core at defined execution boundaries. M5 may prove a
+core-only second-consumer fixture, but it must not create `src/mantle/` before
+the M6 entry gate.
 
 `dos/machine` owns the independent DOS loader, PSP, environment, DTA, handles,
 paths, DOS devices/services, errors, and program exit. `dos/platform`,

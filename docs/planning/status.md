@@ -2,8 +2,19 @@
 
 ## Current Work
 
-**Idle -- M5 T292 closed: the selected non-overlapping 80386 real-mode forms
-already conform.**
+**Idle -- M5 Td S40 has admitted the core public-surface closure before the
+next Windows CPU task.**
+
+T293--T303 first remove the unused post-`#UD` transition and migrate VM from
+raw core configuration/profile borrows to typed core-owned initialization,
+controller, firmware, and debug capabilities. T300/T301 then admit separate
+pre-decode transition and paused ordinary-RAM transaction contracts; T303
+proves a core-only second-consumer fixture without implementing `mantle`.
+T304 resumes the Windows Setup 80386 control-transition work at the retained
+`MOV CR0,EAX` checkpoint.
+
+T292 remains the latest completed implementation task: the selected
+non-overlapping 80386 real-mode forms already conform.
 
 T292 added a prepared-state core corpus for `67h` REPE CMPSB early-stop,
 `67h` REPNE SCASB hit-stop, and CS-overridden `67h` REPE CMPSB source selection.
@@ -50,11 +61,9 @@ checkpoint and recorded the later `MOV CR0,EAX` `#UD` without retaining any
 working-media identity in tracked evidence. Any T288 working-media clone is
 task-local and ignored; its path and hash never enter tracked evidence.
 
-M5 Td S38 reordered the evidence-led queue: T288 remains the post-copy Setup
-admission; T289--T292 cover ROM materialization, focused FDC topology and
-media-change work, and selected real-mode 80386 conformance; the former
-T289--T292 are now T293--T296. No T288 runtime work begins until its S1
-contract is explicitly approved.
+M5 Td S38 reordered the evidence-led queue before T288--T292 completed. Td S40
+supersedes its future-number allocation: T293--T303 now close the core public
+surface, and T304 begins the retained Windows control-transition work.
 
 M5 T287 S24 repaired the corpus-proven 80386 real-mode address-size defect.
 `_kma_linear_logical` now admits actual `SREG_DATA` reads and writes with
@@ -152,8 +161,9 @@ coupling the controller regression to external bootable-media state.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
-- **Core boundary:** T243--T246 retain checked physical memory, bounded `#UD`
-  transitions, immutable ROM mapping, and atomic real-mode entry plans.
+- **Core boundary:** T243--T246 retain checked physical memory, the current
+  post-`#UD` transition pending T293 removal, immutable ROM mapping, and
+  validated real-mode entry plans.
 - **Product boundary:** `nxvm.exe` is the retained runnable product. `mantle`,
   `dos`, and `nxvdm.exe` remain future architecture commitments; they are not
   current runtime or release products.
@@ -200,6 +210,10 @@ active packet becomes an operational authority only after approval.
 - **M5 Td S37:** made M5 history static, capped the status closure summary,
   and hardened the mojibake governance check. This task changes no runtime
   behavior or active-task scope.
+- **M5 Td S40:** inserted T293--T303 core public-surface closure, included
+  RTC/CMOS/NMI and opaque firmware capability in the migration boundary, and
+  shifted the remaining Windows CPU/FPU/readiness/closure work to T304--T308.
+  This task changes no runtime behavior or artifact.
 
 ## Milestone State
 

@@ -215,9 +215,17 @@ default definition of NXVM completion.
   UX. The core-only mantle-shape fixture proves configuration without
   implementing mantle. The remaining M5 closure work is the single-owner audit
   and Windows 3.x startup prerequisite corpus.
-- [ ] **M6 mantle session envelope (`TODO(High)`).** Build only the neutral
-  lifecycle, execution pump, runtime bindings, transition gateway, and factual
-  diagnostics over core. No DOS ABI, external ABI, host path policy, or UI.
+- [ ] **M5 core public-surface closure (`TODO(High)`, T293--T303).** Remove
+  the unused post-`#UD` transition; replace VM raw configuration/profile
+  borrows with typed core-owned initialization, controller, firmware, and
+  debug capabilities; then admit only evidence-backed pre-decode transition
+  and paused ordinary-RAM transaction contracts. This proves a core-only
+  second-consumer fixture but does not implement `mantle`, DOS, VDM, an
+  external ABI, or host policy.
+- [ ] **M6 mantle session envelope (`TODO(High)`).** After M5 T303 proves the
+  cleaned second-consumer core boundary, build only the neutral lifecycle,
+  execution pump, runtime bindings, transition gateway, and factual diagnostics
+  over core. No DOS ABI, external ABI, host path policy, or UI.
 - [ ] **M7 machine-profile system (`TODO(High)`).** Implement the T255
   admission contract for reproducible PC/AT, Compaq DeskPro 386, and IBM PC
   110 declarations with legal firmware/media boundaries; do not move profile

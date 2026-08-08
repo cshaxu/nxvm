@@ -101,7 +101,11 @@ foundation for Windows 3.x startup research and the later profile program.
 **Scope:** complete the admitted `core` versus `vm` boundary migration and its
 single-owner/single-path audit, including profile-neutral media contracts,
 policy-free core/platform host capabilities, and optional RTC/FDC/ATA controller
-mechanisms with VM-owned PC/AT wiring and media policy; retain
+mechanisms with VM-owned PC/AT policy and typed configuration/provider binding;
+retire public raw configuration/profile borrows before mantle consumes core;
+admit only a core-only decoded-transition facility and paused ordinary-RAM
+transaction when their bounded contracts and first-party evidence are ready;
+retain
 `vm/profile/default_profile`; strengthen
 the hardware and CPU corpus needed by real DOS and Windows 3.x startup
 experiments; preserve the retained NXVM Console/debugger, FDD/HDD boot, and
@@ -117,8 +121,9 @@ selector, or external-ROM loader.
 with focused regression evidence; the core/VM boundary has no duplicate state
 or execution route; the admitted hardware corpus covers the selected Windows
 3.x startup prerequisites or records each bounded deferral; and the source and
-CMake graphs obey the directed component model. No NXVDM, mantle, or DOS
-runtime is required. M5 remains open until the
+CMake graphs obey the directed component model. M5 also proves that a second
+policy-free consumer can use the cleaned core through a core-only fixture; it
+does not implement a mantle runtime, NXVDM, or DOS runtime. M5 remains open until the
 [closure checklist](m5-closure-checklist.md) has current evidence for every
 applicable item.
 
@@ -151,6 +156,9 @@ lifecycle, bounded execution pump, neutral runtime bindings, transition
 gateway, and structured stop/fault diagnostics. Trusted external research may
 validate capability requirements, but mantle never contains an external ABI,
 runtime file set, loader, selector, service table, or host policy.
+
+**Entry gate:** M5 T303 proves the core second-consumer boundary with no public
+raw core-object borrow. M6 does not repair or redefine that boundary.
 
 **Exit:** one minimal owned-runtime-facing mantle session is exercised through
 core contracts with explicit lifetime and failure probes; M7 profile work has a

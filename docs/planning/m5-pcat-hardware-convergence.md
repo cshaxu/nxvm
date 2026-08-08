@@ -37,13 +37,24 @@ reliability and interface package consumes T279--T283. T284/T285 then froze
 and implemented the mode-10h EGA direct path; T286 closed the single
 corpus-proven ATA `nIEN` IRQ-visibility gap; and T287 has recorded external
 fixed-drive initialization plus one real-mode 80386 address-size CPU gap. The
-remaining queue begins at T288. Historical completed task records retain their
-original identifiers.
+remaining queue now begins with the second core public-surface closure.
+Historical completed task records retain their original identifiers.
 
-### B. Reliability And Contract Evidence
+### B. Core Public-Surface Closure And Mantle Prerequisites
 
 | Task | Owner and purpose | Dependency and stop condition |
 | --- | --- | --- |
+| T293 | Delete the unused post-`#UD` real-mode transition interface, registry, CPU dispatch slot, smoke, and CMake registration. Retain native `#UD` behavior only. | No production consumer may remain. This does not add a decoded-transition facility or a compatibility wrapper. |
+| T294 | Inventory every `core/machine` public interface, configuration borrow, profile binding, and test-only probe. Classify each by current consumer, state owner, typed replacement, core initialization responsibility, regression, and removal task. | Documentation/design evidence only; it must not pre-admit a broad replacement API. |
+| T295 | Move CPU/PIC/lifecycle initialization authority fully into `core_machine`; VM composition supplies typed configuration/providers only. | Depends on T294. No VM CPU/PIC wiring, second scheduler, or NXVM lifecycle change. |
+| T296 | Move VADP, FDC, HDC, DMA, RTC/CMOS/NMI, and port initialization authority into core. VM/profile supplies frozen topology, ports, IRQ/DMA routes, defaults, and media/provider policy only. | Depends on T295. No controller storage mirror, PC/AT default in core, or media/path policy migration. |
+| T297 | Replace raw profile binding with an opaque core-invoked firmware capability. It provides only checked guest-memory, port, and explicitly admitted CPU-state operations at defined service boundaries. | Depends on T296. No `t_cpu *`, `t_ram *`, port/device pointer, executor access, DOS/BIOS meaning, or mode/CRx setter crosses the boundary. |
+| T298 | Replace debugger CPU/instruction borrows with copied or operation-specific core debug capability while retaining the NXVM Console/debugger UX. | Depends on T295 and T297. No debugger command, prompt, or startup behavior change. |
+| T299 | Remove public configuration borrows and raw profile-binding accessors. Migrate required tests to public corpus or a clearly test-only adapter. | Depends on T295--T298. Product headers export no raw CPU, RAM, port, controller, or executor pointer. |
+| T300 | Add a frozen pre-decode configured transition registry, separate from the deleted post-`#UD` interface. It observes actual instruction fetch before decoding and returns only unhandled, fixed-length resume, preserving-state stop, or structured fault. | Depends on T299. No profile/DOS/BOP meaning, raw state, arbitrary IP/segment/CRx/mode mutation, or second decoder. |
+| T301 | Add a stopped/paused, copied-value, prevalidated multi-span ordinary-RAM transaction. | Depends on T299. It uses the existing checked route, rejects non-RAM/overlap/overflow, guarantees zero writes on preflight failure, and does not claim concurrent or cycle atomicity or create a second memory route. |
+| T302 | Add a transition-local combined commit only if a real consumer requires it: checked staged RAM plus an allowed decoded-transition CPU patch at one execution boundary. | Depends on T300--T301 and a concrete consumer. Otherwise it remains deferred. |
+| T303 | Prove second-consumer readiness with a first-party core-only fixture and current NXVM regressions. | Depends on T293--T301, plus T302 only if admitted. It does not create a `mantle` runtime. |
 
 ### C. Windows 3.x Display And Storage Prerequisites
 
@@ -63,20 +74,21 @@ Standard-mode checkpoint or pre-admit broad CPU, FPU, or FDC work.
 
 | Task | Owner and purpose | Dependency and stop condition |
 | --- | --- | --- |
-| T293 | 80386 Enhanced-mode prerequisite selected by corpus, such as CPL3 paging permissions, 32-bit segmentation/control transfer, or 32-bit TSS behavior. | A failing prepared-state or system corpus is required. No broad 386-complete claim. |
-| T294 | Present-FPU extension selected by corpus: 80287/80387 profile state, format, environment, or exception delivery. | T288 or another owned reproducer. No host floating-point shortcut or blanket FPU claim. |
-| T295 | Windows 3.x Enhanced-mode readiness corpus and bounded deferral map. | T285--T294 as dictated by T287. No Windows 95 claim. |
+| T304 | 80386 Enhanced-mode control-transition family selected by the current Setup `MOV CR0,EAX` checkpoint, including exact decode, profile gate, `#UD/#GP`, and PE/PG state-transition semantics evidenced by corpus. | Depends on T303. No broad 386-complete claim. |
+| T305 | Next 80386 Enhanced-mode prerequisite selected by the next failing prepared-state or system corpus, such as CPL3 paging permissions, 32-bit segmentation/control transfer, or 32-bit TSS behavior. | Depends on T304 and a failing corpus. |
+| T306 | Present-FPU extension selected by corpus: 80287/80387 profile state, format, environment, or exception delivery. | An owned reproducer is required. No host floating-point shortcut or blanket FPU claim. |
+| T307 | Windows 3.x Enhanced-mode readiness corpus and bounded deferral map. | T285, T304--T306 as dictated by the external checkpoint. No Windows 95 claim. |
 
 ### F. M5 Closure And Handoff
 
 | Task | Owner and purpose | Dependency and stop condition |
 | --- | --- | --- |
-| T296 | Current-source M5 closure audit against the closure checklist, including single-owner/path, CMake graph, retained NXVM UX, Windows checkpoint evidence, and all remaining deferrals. | T264--T295. M5 may close only if the checklist, roadmap and TODO agree; otherwise this task records the next bounded M5 queue rather than declaring closure. |
+| T308 | Current-source M5 closure audit against the closure checklist, including single-owner/path, CMake graph, retained NXVM UX, core second-consumer readiness, Windows checkpoint evidence, and all remaining deferrals. | T264--T307. M5 may close only if the checklist, roadmap and TODO agree; otherwise this task records the next bounded M5 queue rather than declaring closure. |
 
 ## Later-Milestone Handoff
 
-- **M6:** implement the neutral `mantle` session envelope only after T274 has
-  proved its admitted core configuration shape; no DOS policy or external VDM
+- **M6:** implement the neutral `mantle` session envelope only after T303 has
+  proved the cleaned core consumer boundary; no DOS policy or external VDM
   backend enters it.
 - **M7:** implement default PC/AT, Compaq DeskPro 386, and IBM PC 110 profiles
   from the frozen admission contract, with user-supplied legal ROM/media
@@ -92,9 +104,10 @@ Standard-mode checkpoint or pre-admit broad CPU, FPU, or FDC work.
 
 - Keep one active subtask. Each task begins with a bounded S1 contract, owner,
   probe, deferred behavior, and stop condition.
-- `core/machine` owns generic guest state and elapsed time; `vm/machine` owns
-  VM-only devices; profiles provide frozen topology and ROM/firmware contents;
-  platform never mutates guest state.
+- `core/machine` owns generic guest state, elapsed time, shared-device storage,
+  and initialization/teardown order. VM/profile supplies only frozen topology,
+  providers, ROM/firmware contents, and PC/AT policy; platform never mutates
+  guest state.
 - Do not add a second executor, machine/session, device-state mirror,
   VM-side instruction loop, host-clock guest shortcut, global/TLS selector, or
   unapproved NXVM Console/debugger/startup/boot behavior change.
