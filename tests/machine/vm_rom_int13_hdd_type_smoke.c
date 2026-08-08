@@ -113,6 +113,7 @@ C_INT main(C_VOID)
     uint16_t sectors_low = 0u;
     uint16_t parameter_segment = 0u;
     uint16_t parameter_offset = 0u;
+    uint8_t sectors_per_track = 0u;
     uint8_t hdd_count = 0u;
     uint8_t cmos_fixed_disk_type = 0u;
     uint8_t drive_type = 0u;
@@ -145,6 +146,9 @@ C_INT main(C_VOID)
                 sizeof(parameter_segment)) != TYPE_STATUS_OK || core_machine_memory_read(
                 session->core_machine, 0x050au, &parameter_offset,
                 sizeof(parameter_offset)) != TYPE_STATUS_OK || core_machine_memory_read(
+                session->core_machine, (uint32_t)VBIOS_ADDR_START_SEG * 16u +
+                VBIOS_ADDR_HDD_PARAM + 8u, &sectors_per_track,
+                sizeof(sectors_per_track)) != TYPE_STATUS_OK || core_machine_memory_read(
                 session->core_machine, 0x050cu, &cmos_fixed_disk_type,
                 sizeof(cmos_fixed_disk_type)) != TYPE_STATUS_OK || core_machine_memory_read(
                 session->core_machine, 0x050du, &drive_type,
@@ -168,7 +172,7 @@ C_INT main(C_VOID)
             sectors_high == 0u &&
             sectors_low == 1008u &&
             parameter_segment == VBIOS_ADDR_START_SEG &&
-            parameter_offset == VBIOS_ADDR_HDD_PARAM &&
+            parameter_offset == VBIOS_ADDR_HDD_PARAM && sectors_per_track == 63u &&
             cmos_fixed_disk_type == 0xf0u && drive_type == 0x2fu &&
             cmos_extended_disk_type == 0x2fu &&
             (extension_ax & 0xff00u) == 0x0100u && extension_bx == 0x55aau &&
@@ -184,14 +188,14 @@ done:
     if (hdd_path[0] != '\0') DeleteFileA(hdd_path);
     if (!passed) {
         STD_FPRINTF(STD_STDERR,
-            "M5:T287:S9:ROM-INT13-HDD-CMOS:FAIL ax=%04X flags=%04X sectors=%04X:%04X dpt=%04X:%04X cmos=%02X/%02X type=%02X ext=%04X/%04X/%04X status=%04X/%04X hdd=%u\n",
+            "M5:T287:S11:ROM-INT13-HDD-DPT:FAIL ax=%04X flags=%04X sectors=%04X:%04X dpt=%04X:%04X spt=%02X cmos=%02X/%02X type=%02X ext=%04X/%04X/%04X status=%04X/%04X hdd=%u\n",
             result_ax, flags, sectors_high, sectors_low, parameter_segment,
-            parameter_offset, cmos_fixed_disk_type, cmos_extended_disk_type,
+            parameter_offset, sectors_per_track, cmos_fixed_disk_type, cmos_extended_disk_type,
             drive_type, extension_ax,
             extension_bx, extension_flags, initial_status_ax,
             initial_status_flags, hdd_count);
         return 1;
     }
-    STD_PRINTF("M5:T287:S9:ROM-INT13-HDD-CMOS:OK\n");
+    STD_PRINTF("M5:T287:S11:ROM-INT13-HDD-DPT:OK\n");
     return 0;
 }

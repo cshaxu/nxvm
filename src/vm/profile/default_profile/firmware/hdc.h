@@ -268,7 +268,7 @@ shl cl, 01                  \n\
 shl cl, 01                  \n\
 shl cl, 01                  \n\
 shl cl, 01                  \n\
-mov al, ds:[bx+04] ; nsector\n\
+mov al, ds:[bx+08] ; nsector\n\
 or  cl, al ; (ncyl>>2)&0xc0 \n\
            ; | nsector      \n\
 mov dh, ds:[bx+02]          \n\
@@ -295,7 +295,7 @@ mov bx, ds:[0104]           \n\
 mov ax, ds:[0106]           \n\
 mov ds, ax                  \n\
 mov cx, ds:[bx+00]          \n\
-mov al, ds:[bx+04] ; nsector\n\
+mov al, ds:[bx+08] ; nsector\n\
 mov dh, ds:[bx+02] ; nhead  \n\
 mov ah, 00                  \n\
 mul dh ; nhead * nsector    \n\
