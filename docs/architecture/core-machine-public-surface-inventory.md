@@ -34,9 +34,12 @@ is the retained non-runnable fixture and is not a second product path.
 - **Replace** describes a future minimal capability, not an S1 declaration or
   implementation.  It cannot be generalized before the named task supplies a
   real consumer and contract.
-- All listed callbacks/providers are borrowed only through core-controlled
-  teardown. They cannot re-enter mutable operations on their originating
-  machine.
+- The current provider facts are limited to their stored callback/context and
+  the observed call sites: `core_machine` retains an execution provider through
+  destroy and invokes its reset/refresh/advance-time callbacks; port, media,
+  trace, and display contracts retain their documented context. This audit does
+  not establish a general current non-reentry property. T297 must specify and
+  prove that property for its new firmware callback boundary.
 
 ## Migration Matrix
 
@@ -51,12 +54,43 @@ is the retained non-runnable fixture and is not a second product path.
 | Trace provider: `trace_interface.h` | VM composition debug target; trace smoke | Core trace state owns the callback slot; supplied context is borrowed until replace/destroy. | **Keep.** No raw state crosses. | Retain trace smoke and non-reentry contract review. |
 | Display snapshot and presentation helpers: `display_interface.h`, `core_machine_capture_display_snapshot` | VM display composition and DOS/video system tests | Core VADP/RAM owns mutable display state; capture returns copied snapshot only. | **Keep.** T296 S2 moves VADP initialization/port registration into core while VM retains profile timing/configuration. | Retain display snapshot and CGA/EGA system corpus. |
 | Keyboard/mouse/NMI/fault operations (`machine_interface.h`) | VM request bridge and VM/default-profile device setup; keyboard/mouse/CMOS tests | Core owns KBC/PIC/NMI and fault state; inputs are copied scalars. | **Keep.** T296 S3 places DMA plus RTC/CMOS/NMI construction/order in core; VM supplies typed routes/defaults only. | Retain keyboard/mouse, CMOS/RTC port, DMA-channel, and fault-outcome tests. |
-| Configuration raw borrows: CPU, instructions, execution, RAM, port, PIC master/slave, PIT, DMA latch/primary/secondary, FDC, HDC, KBC (`machine_interface.h:177-191`; `machine.c:306-436`) | Production: `vm/composition/session/session.c` (RAM mapping, CPU/PIC bind). Test-only: `tests/adapters/support/vm_cpu_probe.c`; `tests/core/machine_*`; `tests/machine/core_machine_{80286,80386,arpl,call_gate,fpu_8087,protected_*,task_switch,tss_iomap,*real_mode*,fdc*,hdc*}`, `cpu_*`, `fpu_escape`, `vm_core_executor_storage`, `vm_two_session_isolation`. | Embedded core-owned storage, valid only `INITIALIZED`/unfrozen, yet leaks every listed raw pointer. | **Replace/remove.** T295: CPU/instructions/execution/PIC; T296 S2: port/VADP implied setup; S3: PIT/DMA/KBC/PIC-related routes; S4: FDC/HDC. T299 removes remaining borrows; tests move to corpus or a clearly test-only adapter. | Preserve each named corpus; replace storage-identity assertions with behavior/ownership closure. T299 grep rejects public raw types/accessors. |
+| Configuration raw borrows: CPU, instructions, execution, RAM, port, PIC master/slave, PIT, DMA latch/primary/secondary, FDC, HDC, KBC (`machine_interface.h:177-191`; `machine.c:306-436`) | Production call map is below: session storage/profile binding, control debug initialization, and device setup. Test families are below. | Embedded core-owned storage, valid only `INITIALIZED`/unfrozen, yet leaks every listed raw pointer. | **Replace/remove.** T295: CPU/instructions/execution/PIC; T296 S2: port/VADP implied setup; S3: PIT/DMA/KBC/PIC-related routes; S4: FDC/HDC. T299 removes remaining borrows; tests move to corpus or a clearly test-only adapter. | Preserve each named corpus; replace storage-identity assertions with behavior/ownership closure. T299 grep rejects public raw types/accessors. |
 | Profile binding object and raw accessors (`core_machine_profile_binding`, `*_memory`, `*_execution`) | VM session creates binding; default-profile firmware context/qdcga reaches memory/execution | Binding wraps `core_machine *` but exports `t_ram *` and executor pointer; its lifetime is not independently closed on freeze. | **Replace/remove in T297.** Firmware capability must be opaque, core-invoked, available only in its stated lifecycle, and permit only S1-whitelisted checked guest-memory, port, and copied CPU-state operations. | Retain ROM/INT10/keyboard/FDC/HDC firmware corpus. T297 adds lifecycle, failure atomicity, re-entry and nested-call focused gates before implementation. |
 | Profile binding checked operations and VADP configuration (`read_real`, `write_real`, `write_port`, `configure_text_raster`, `configure_ega_*`) | VM session and profile firmware | First three use core state without pointer return; VADP calls target core-owned mutable VADP/RAM. | **Split.** T296 S2 absorbs typed frozen display configuration; T297 considers only checked memory/port operations for firmware whitelist. No BIOS/DOS meaning, CRx/mode setter, controller/executor pointer, or raw state backdoor. | Existing VADP configuration and ROM/video corpus; new T297 whitelist static review. |
 | Debug copied operations (`debug_read_cpu`, `debug_read_memory`, `debug_step`, `debug_continue`) | VM debug target; CPU diagnostic and NXVM/DOS/video/timer/Windows probes | Core owns execution/RAM; results are copied or bounded run results. | **Keep.** T298 verifies they satisfy retained Console/debugger UX without prompt/startup change. | Retain debug smoke and debugger/product acceptance corpus. |
-| Debug raw borrows: CPU, instructions, execution, RAM, port (`debug_interface.h`; `debug.c`) | No production caller outside test-facing composition adapter. Tests: `cpu_fault_diagnostic`, `vm_cpu_stop`, `vm_dos_video_port`, `vm_ega_*`, `vm_fault_outcome_runner`, `vm_no_media_video_port`, `vm_timer_firmware`, `vm_windows31_setup_probe`. | Core-owned storage, nominally paused-only, leaks raw state. | **Replace/remove in T298/T299.** Use copied read state, checked memory/port operation, or operation-specific debug capability; do not make a general snapshot/getter. | Preserve all listed test intent; T299 grep rejects public debug raw borrows. |
+| Debug raw borrows: CPU, instructions, execution, RAM, port (`debug_interface.h`; `debug.c`) | **Production:** `vm/composition/session/debug_target.c`: `vm_debug_cpu` (35), `vm_debug_instructions` (39), `vm_debug_execution` (44), `vm_debug_memory` (48), and `vm_debug_port` (52). These are the VM composition debugger-adapter helpers. Tests: `cpu_fault_diagnostic`, `vm_cpu_stop`, `vm_dos_video_port`, `vm_ega_*`, `vm_fault_outcome_runner`, `vm_no_media_video_port`, `vm_timer_firmware`, `vm_windows31_setup_probe`. | Core owns the storage; debug borrow definitions permit it only after the execution thread returns a paused boundary. VM composition owns the adapter/session lifetime and currently passes these pointers into retained debugger paths. | **Replace/remove in T298/T299.** T298 replaces each helper with copied CPU/instruction/memory/port observation or a named operation-specific debug capability; no general snapshot/getter and no Console/debugger UX change. | Preserve the named debugger adapter behavior and all listed test intent; T299 grep rejects public debug raw borrows. |
 | Test-only probe/seam: `tests/support/core_machine_executor_fixture.h`, adapter `vm_cpu_probe`, and direct private-header tests | Test-only, including core CPU/protected-mode corpus and mantle-shape fixture | Test-owned setup may directly exercise same-module implementation, but cannot become a product route or mirror mutable state. | **Deferred to T299 test migration.** Retain a narrow test-only adapter only where a public corpus cannot set an already-owned CPU state; it must be outside product headers and never be used by `src/`. | Add static closure: no `tests/support` seam included from `src/`; focused corpus names its ownership proof. |
+
+### Product-path raw-borrow call map
+
+These are production calls, not fixture-only evidence. All borrowed targets are
+embedded in `core_machine`; each is currently consumed while composition is
+constructing or servicing the retained VM session.
+
+| File and symbol | Exact current borrow/use | Current owner/lifecycle | Planned removal |
+| --- | --- | --- | --- |
+| `src/vm/composition/session/session.c`, `vm_session_storage_initialize` (131--155) | RAM (131), execution context (132), PIC master/slave (133--134) feed `core_machine_cpu_execution_context_bind_pic` (135); profile binding initializes at 137 and configures text/EGA at 143/149/155. | Core owns embedded targets; VM composition owns setup during `INITIALIZED` before provider freeze. | T295 absorbs CPU/PIC wiring; T296 S2 absorbs VADP configuration; T297 replaces profile binding. |
+| `src/vm/composition/session/control.c`, session initialization (204--205) | CPU and instruction borrows feed `vm_machine_debug_initialize`. | Core owns the CPU/instructions; VM composition creates its debug object during session initialization. | T295/T298 remove this direct debug initialization borrow; retained debugger behavior is regression-protected. |
+| `src/vm/composition/session/machine_devices.c`, RTC setup (102--103) | PIC master/slave borrows feed `core_machine_rtc_initialize`. | Core owns PIC pair; VM composition applies profile RTC configuration while configuration is open. | T296 S3 provides typed RTC/CMOS/NMI route configuration to core. |
+| `src/vm/composition/session/machine_devices.c`, `vm_session_machine_devices_register_fdc` (122, 139--148) | FDC, DMA latch/primary/secondary, PIC master/slave, and port borrows feed DMA bind and `core_machine_fdc_connect`. | Core owns controller/DMA/PIC/port; VM composition supplies frozen FDC topology/media/route. | T296 S4 moves connection/initialization order into core. |
+| `src/vm/composition/session/machine_devices.c`, HDC registration (161, 183--187) | HDC plus PIC master/slave borrows feed `core_machine_hdc_connect`. | Core owns controller/PIC; VM composition supplies frozen HDD provider/topology. | T296 S4 moves connection/initialization order into core. |
+| `src/vm/composition/session/debug_target.c`, `vm_debug_{cpu,instructions,execution,memory,port}` (35/39/44/48/52) | Calls all five `core_machine_debug_*_borrow` functions directly. | Core owns targets; VM composition owns the debugger adapter and its session-bound use after a paused execution boundary. | T298 supplies copied/operation-specific debug capability; T299 removes raw debug exports. |
+| `src/vm/profile/default_profile/firmware/context.h`, `vm_profile_default_context_{memory,execution}` (37/42) | Directly returns profile-binding RAM/execution raw pointers; used by default-profile firmware, including `qdcga.c`. | Core owns targets; VM profile firmware retains binding through current session/provider lifetime. | T297 opaque capability replaces both; firmware no longer receives direct pointers after freeze. |
+
+### Test raw-borrow families for T299
+
+`tests/machine/vm_core_executor_storage_smoke.c` and
+`tests/machine/vm_two_session_isolation_smoke.c` assert storage identity and
+directly mutate/check embedded storage; they require behavior/ownership
+replacements, not a new public getter. `tests/core/machine_{lifecycle,memory_reconfigure}.c`
+also assert configuration/debug borrow availability or identity and must become
+lifecycle/operation tests. The `core_machine_{80286,80386,arpl,call_gate,
+fpu_8087,protected_*,task_switch,tss_iomap,*real_mode*}`, `cpu_*`, and
+`fpu_escape` families set prepared CPU/executor state; retain their CPU corpus
+intent through a narrow test-only adapter only where a public entry plan cannot
+express it. `core_machine_{fdc*,hdc*}` and core PIT/DMA tests use raw controller
+setup and must migrate to typed frozen topology/provider corpus. Debug-borrow
+tests remain the explicitly named debug family in the matrix row above.
 
 ## Required Subsequent Contracts
 
@@ -69,19 +103,37 @@ PC/AT default, media path, boot policy, or controller mirror into core.
 
 ### T297 firmware capability admission
 
-Before code, T297 S1 must freeze an operation enum and exact lifecycle. The
-only candidate operations are checked guest-memory read/write, checked port
-write/read if needed by existing firmware, and copied CPU-state read. Every
-operation returns factual status, validates fully before mutation where that is
-possible, states its partial-effect rule, and cannot re-enter a mutable machine
-operation. Nested firmware calls are rejected unless an explicitly named
-read-only operation proves safe. Capability destruction/freeze/reset behavior
-must be defined; no raw CPU/RAM/port/controller/executor access, DOS/BIOS
+Before code, T297 S1 must freeze an operation enum and the following adjudicated
+future lifecycle; it is not a statement of current implementation behavior.
+Composition binds an opaque firmware provider/context only while configuring;
+freeze makes topology immutable. Core alone calls the capability at an explicit
+firmware-service callback boundary, so VM/profile has no direct invocation
+right after freeze. Reset retains the capability and invokes the frozen
+provider's reset semantics; callback return ends that operation's borrow;
+destroy/provider teardown invalidates the capability. Mutable operations are
+non-reentrant; nested callback is rejected by default unless a future contract
+explicitly admits and proves one read-only operation safe. The only candidate
+operations are checked guest-memory read/write, checked port write/read if
+needed by existing firmware, and copied CPU-state read. Every operation returns
+factual status, validates fully before mutation where possible, and states its
+partial-effect rule. No raw CPU/RAM/port/controller/executor access, DOS/BIOS
 semantic operation, mode/segment/CRx setter, or decoder hook is admissible.
 
 T300 and T302 are **conditional admission only**: neither has a recorded
 first-party use case in this audit, so neither is implemented, enabled, or
 treated as a default follow-on.
+
+## T294 S1 Verification Record
+
+The correction pass ran `git diff --check` successfully and then ran:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/Verify-DocumentationGovernance.ps1 -RepositoryRoot .
+```
+
+Its actual marker was `Documentation governance checks passed for vm-0-5-0293.`
+No build graph changed, so this documentation-only correction did not require a
+build gate.
 
 ## Sustainable Static Closure Gate (design only)
 
@@ -101,9 +153,9 @@ future API generator and not a runtime claim.
 ## Risks Requiring Owner Attention
 
 `core_machine_profile_binding` presently has a freeze-window initialization
-check but its later accessor calls do not re-check lifecycle. T297 must decide
-whether an opaque capability expires at freeze, reset, callback completion, or
-provider teardown before implementation. The current `session.c` direct
-CPU/PIC bind is concrete evidence that T295 must preserve ordering before its
-borrow removal. The numerous direct CPU corpus fixtures show that T299 needs a
-deliberate test migration plan rather than a bulk getter replacement.
+check but its later accessor calls do not re-check lifecycle; the T297 lifecycle
+above is the required future replacement, not a claim about those accessors.
+The current `session.c` direct CPU/PIC bind is concrete evidence that T295 must
+preserve ordering before its borrow removal. The numerous direct CPU corpus
+fixtures show that T299 needs a deliberate test migration plan rather than a
+bulk getter replacement.
