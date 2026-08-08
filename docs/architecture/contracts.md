@@ -352,6 +352,23 @@ Firmware and debugger port capabilities use this same executor-port dispatch:
 they preserve a failed read's caller output and restore their temporary write
 latch before returning the exact provider status.
 
+### VM Session Construction Atomicity
+
+VM composition publishes a `vm_session` only after its core, copied display
+provider, media registry, profile firmware, controller topology, frozen core
+providers, control state, and platform request/input transports have all
+initialized. Each construction stage returns its first exact `type_status` to
+the session factory. On failure, the session is never active or returned to a
+caller: composition tears down in reverse ownership order, stopping/discarding
+platform transport before provider/control finalization and storage/core
+destruction. A later valid creation is independent of the failed attempt.
+
+The default PC/AT profile remains declarative input. Invalid firmware-service
+metadata and controller topology are rejected as `TYPE_STATUS_INVALID_ARGUMENT`
+rather than becoming a partially bound VM. This contract neither changes core
+machine lifecycle nor introduces a host recovery path; Console/window,
+debugger, and FDD/HDD boot observe only fully constructed sessions.
+
 ## Time And Clock Ownership
 
 Time is not one device category. Each layer owns only its own observable

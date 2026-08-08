@@ -107,7 +107,7 @@ C_VOID vm_session_set_boot_hdd(vm_session *session, C_INT enabled)
 
 
 
-C_VOID vm_session_storage_initialize(vm_session *machine)
+type_status vm_session_storage_initialize(vm_session *machine)
 {
     const vm_profile_default_pc_at_port_range *attribute_ports;
     const vm_profile_default_pc_at_port_range *sequencer_ports;
@@ -119,20 +119,18 @@ C_VOID vm_session_storage_initialize(vm_session *machine)
     core_machine_display_config display_config;
     core_machine_dma_wiring dma_wiring;
     core_machine_rtc_cmos_config rtc_cmos_config = {0};
+    type_status status;
 
-    if (machine == STD_NULL || machine->core_machine != STD_NULL) return;
+    if (machine == STD_NULL || machine->core_machine != STD_NULL) {
+        return TYPE_STATUS_INVALID_STATE;
+    }
     if (machine->profile == STD_NULL) {
         machine->profile = vm_profile_default_pc_at_descriptor_get();
     }
-    if (machine->profile == STD_NULL) return;
-    {
-        if (core_machine_create(&machine->core_machine_config,
-                &machine->core_machine) != TYPE_STATUS_OK) {
-            core_machine_destroy(machine->core_machine);
-            machine->core_machine = STD_NULL;
-            return;
-        }
-    }
+    if (machine->profile == STD_NULL) return TYPE_STATUS_INVALID_STATE;
+    status = core_machine_create(&machine->core_machine_config,
+        &machine->core_machine);
+    if (status != TYPE_STATUS_OK) return status;
     core_machine_display_provider_slot_initialize(&machine->display_provider);
     vm_session_bind_display(machine);
     attribute_ports = vm_profile_default_pc_at_port_range_find(machine->profile,
@@ -155,7 +153,7 @@ C_VOID vm_session_storage_initialize(vm_session *machine)
         core_machine_display_provider_slot_finalize(&machine->display_provider);
         core_machine_destroy(machine->core_machine);
         machine->core_machine = STD_NULL;
-        return;
+        return TYPE_STATUS_INVALID_ARGUMENT;
     }
     display_config.text_timing = machine->profile->cga_text_timing;
     display_config.ega_sequencer = machine->profile->ega_sequencer;
@@ -190,15 +188,20 @@ C_VOID vm_session_storage_initialize(vm_session *machine)
     rtc_cmos_config.defaults[5].value = TYPE_MASK_UNSIGNED_8(
         machine->profile->cmos.base_memory_kib >> 8);
     rtc_cmos_config.default_count = CORE_MACHINE_RTC_DEFAULT_COUNT;
-    if (core_machine_configure_display(machine->core_machine, &display_config) !=
-            TYPE_STATUS_OK || core_machine_configure_dma(machine->core_machine,
-            &dma_wiring, &machine->fdc_dma_request) != TYPE_STATUS_OK ||
-        core_machine_configure_rtc_cmos(machine->core_machine, &rtc_cmos_config) !=
-            TYPE_STATUS_OK) {
+    status = core_machine_configure_display(machine->core_machine, &display_config);
+    if (status == TYPE_STATUS_OK) {
+        status = core_machine_configure_dma(machine->core_machine, &dma_wiring,
+            &machine->fdc_dma_request);
+    }
+    if (status == TYPE_STATUS_OK) {
+        status = core_machine_configure_rtc_cmos(machine->core_machine,
+            &rtc_cmos_config);
+    }
+    if (status != TYPE_STATUS_OK) {
         core_machine_display_provider_slot_finalize(&machine->display_provider);
         core_machine_destroy(machine->core_machine);
         machine->core_machine = STD_NULL;
-        return;
+        return status;
     }
     core_machine_media_registry_initialize(&machine->media_registry);
     vm_profile_default_context_initialize(&machine->default_profile_context,
@@ -206,6 +209,7 @@ C_VOID vm_session_storage_initialize(vm_session *machine)
     core_platform_presentation_mailbox_initialize(&machine->presentation_mailbox);
     core_product_debug_context_initialize(&machine->debugger_context);
     machine->display_generation = 0u;
+    return TYPE_STATUS_OK;
 }
 
 C_VOID vm_session_storage_finalize(vm_session *machine)
@@ -263,7 +267,14 @@ C_INT vm_session_create(const vm_session_config *config, vm_session **out_sessio
         session->core_machine_config.kbc_command_response_ticks =
             session->profile->kbc_command_response_ticks;
     }
-    vm_session_initialize(session);
+    {
+        type_status status = vm_session_initialize(session);
+
+        if (status != TYPE_STATUS_OK) {
+            STD_FREE(session);
+            return status;
+        }
+    }
     if (session->core_machine == STD_NULL) {
         STD_FREE(session);
         return TYPE_STATUS_FAULT;

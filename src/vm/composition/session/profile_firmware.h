@@ -7,7 +7,7 @@
 
 typedef struct vm_session vm_session;
 
-C_VOID vm_session_profile_firmware_initialize(vm_session *session);
+type_status vm_session_profile_firmware_initialize(vm_session *session);
 C_VOID vm_session_profile_firmware_register_cmos(vm_session *session);
 C_VOID vm_session_profile_firmware_register_keyboard(vm_session *session);
 C_VOID vm_session_profile_firmware_register_dma(vm_session *session);

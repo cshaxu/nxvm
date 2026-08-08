@@ -7,6 +7,6 @@ struct vm_session;
 #define VM_SESSION_MEDIA_FDD_ID 1u
 #define VM_SESSION_MEDIA_HDD_ID 2u
 
-C_VOID vm_session_bind_media(struct vm_session *machine);
+type_status vm_session_bind_media(struct vm_session *machine);
 
 #endif

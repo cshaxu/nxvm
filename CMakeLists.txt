@@ -99,6 +99,9 @@ target_link_libraries(vm-product-console-lifecycle-smoke PRIVATE
     vm-product vm-composition)
 add_executable(vm-product-session-smoke tests/products/nxvm_session_smoke.c)
 target_link_libraries(vm-product-session-smoke PRIVATE vm-composition)
+add_executable(vm-session-initialization-atomicity-smoke
+    tests/products/vm_session_initialization_atomicity_smoke.c)
+target_link_libraries(vm-session-initialization-atomicity-smoke PRIVATE vm-composition)
 add_executable(vm-session-manager-smoke
     tests/products/nxvm_session_manager_smoke.c)
 target_link_libraries(vm-session-manager-smoke PRIVATE vm-composition)
@@ -253,6 +256,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(vm-product-console-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-product-console-lifecycle-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-product-session-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(vm-session-initialization-atomicity-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-contract-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-instance-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-configuration-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -1160,6 +1164,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     vm-product-console-lifecycle-smoke
     vm-debug-target-smoke
     vm-product-session-smoke
+    vm-session-initialization-atomicity-smoke
     vm-session-manager-smoke
     vm-session-reconfigure-smoke
     vm-platform-host-surface-smoke

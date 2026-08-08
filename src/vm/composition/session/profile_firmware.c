@@ -76,6 +76,13 @@ static C_VOID vm_session_profile_firmware_set_boot(vm_session *session,
     vm_profile_default_bios_set_boot_code(&session->default_bios, bytes, length);
 }
 
+static C_INT vm_session_profile_firmware_hook_is_valid(
+    vm_profile_default_pc_at_firmware_hook hook)
+{
+    return hook >= VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_VIDEO_INT10 &&
+        hook <= VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_PIC_POST;
+}
+
 static C_VOID vm_session_profile_firmware_apply(
     vm_session *session, vm_profile_default_pc_at_firmware_hook hook,
     uint8_t vector)
@@ -150,9 +157,21 @@ static C_VOID vm_session_profile_firmware_apply_range(vm_session *session,
     }
 }
 
-C_VOID vm_session_profile_firmware_initialize(vm_session *session)
+type_status vm_session_profile_firmware_initialize(vm_session *session)
 {
-    if (session == STD_NULL) return;
+    STD_SIZE_T index;
+
+    if (session == STD_NULL || session->profile == STD_NULL ||
+        (session->profile->firmware_service_count != 0u &&
+        session->profile->firmware_services == STD_NULL)) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    for (index = 0u; index < session->profile->firmware_service_count; ++index) {
+        if (!vm_session_profile_firmware_hook_is_valid(
+                session->profile->firmware_services[index].hook)) {
+            return TYPE_STATUS_INVALID_ARGUMENT;
+        }
+    }
     vm_profile_default_bios_initialize(&session->default_bios);
     vm_session_profile_firmware_add_interrupt(session, VBIOS_INT_SOFT_MISC_11,
         0x11u);
@@ -164,6 +183,7 @@ C_VOID vm_session_profile_firmware_initialize(vm_session *session)
     vm_session_profile_firmware_apply_range(session,
         VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_VIDEO_INT10,
         VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_VIDEO_INT10);
+    return TYPE_STATUS_OK;
 }
 
 static type_status vm_session_profile_firmware_configure(C_VOID *opaque,

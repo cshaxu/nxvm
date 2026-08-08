@@ -10,14 +10,18 @@
 
 #include "vm/composition/session/session_interface.h"
 
-C_VOID vm_session_bind_media(vm_session *machine)
+type_status vm_session_bind_media(vm_session *machine)
 {
-    if (machine == STD_NULL) return;
-    if (core_machine_media_registry_bind(&machine->media_registry,
+    type_status status;
+
+    if (machine == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    status = core_machine_media_registry_bind(&machine->media_registry,
             VM_SESSION_MEDIA_FDD_ID, &machine->fdd,
-            vm_machine_fdd_media_provider()) != TYPE_STATUS_OK ||
-        core_machine_media_registry_bind(&machine->media_registry,
+            vm_machine_fdd_media_provider());
+    if (status != TYPE_STATUS_OK) return status;
+    status = core_machine_media_registry_bind(&machine->media_registry,
             VM_SESSION_MEDIA_HDD_ID, &machine->hdd,
-            vm_machine_hdd_media_provider()) != TYPE_STATUS_OK) return;
-    (C_VOID)core_machine_media_registry_freeze(&machine->media_registry);
+            vm_machine_hdd_media_provider());
+    if (status != TYPE_STATUS_OK) return status;
+    return core_machine_media_registry_freeze(&machine->media_registry);
 }

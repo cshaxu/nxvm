@@ -96,16 +96,20 @@ static const core_machine_execution_provider vm_session_execution_provider = {
     STD_NULL
 };
 
-C_INT vm_session_bind_execution_provider(vm_session *machine)
+type_status vm_session_bind_execution_provider(vm_session *machine)
 {
-    return machine != STD_NULL && machine->core_machine != STD_NULL &&
-        core_machine_bind_firmware_provider(machine->core_machine,
-            vm_session_profile_firmware_provider(),
-            &machine->default_profile_context) == TYPE_STATUS_OK &&
-        core_machine_bind_execution_provider(machine->core_machine,
-            &vm_session_execution_provider, machine) == TYPE_STATUS_OK &&
-        core_machine_freeze_execution_providers(machine->core_machine) ==
-            TYPE_STATUS_OK;
+    type_status status;
+
+    if (machine == STD_NULL || machine->core_machine == STD_NULL) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    status = core_machine_bind_firmware_provider(machine->core_machine,
+        vm_session_profile_firmware_provider(), &machine->default_profile_context);
+    if (status != TYPE_STATUS_OK) return status;
+    status = core_machine_bind_execution_provider(machine->core_machine,
+        &vm_session_execution_provider, machine);
+    if (status != TYPE_STATUS_OK) return status;
+    return core_machine_freeze_execution_providers(machine->core_machine);
 }
 
 static const core_platform_input_sink vm_session_input_sink = {
@@ -214,14 +218,20 @@ C_VOID vm_session_resume(vm_session *machine) {
     }
 }
 
-C_VOID vm_session_initialize(vm_session *machine) {
-    if (machine == STD_NULL) return;
-    if (machine->active) return;
-    vm_session_storage_initialize(machine);
-    if (machine->core_machine == STD_NULL) return;
+type_status vm_session_initialize(vm_session *machine) {
+    type_status status;
+
+    if (machine == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (machine->active) return TYPE_STATUS_INVALID_STATE;
+    status = vm_session_storage_initialize(machine);
+    if (status != TYPE_STATUS_OK) return status;
     core_utils_wait_scope_initialize(&machine->wait_scope,
         vm_session_wait, STD_NULL);
-    vm_session_control_initialize(&machine->control, machine);
+    status = vm_session_control_initialize(&machine->control, machine);
+    if (status != TYPE_STATUS_OK) {
+        vm_session_finalize(machine);
+        return status;
+    }
     vm_machine_debug_bind_pause(&machine->debug,
         vm_session_debug_request_pause, STD_NULL);
     vm_machine_debug_bind_disassembler(&machine->debug,
@@ -241,6 +251,7 @@ C_VOID vm_session_initialize(vm_session *machine) {
         vm_platform_request_transport_observe_execution_boundary,
         &machine->request_transport);
     machine->active = 1;
+    return TYPE_STATUS_OK;
 }
 
 C_VOID vm_session_finalize(vm_session *machine) {
@@ -253,7 +264,6 @@ C_VOID vm_session_finalize(vm_session *machine) {
     vm_platform_request_transport_discard(&machine->request_transport);
     machine->active = 0;
     vm_session_control_finalize(&machine->control, machine);
-    core_machine_display_provider_slot_finalize(&machine->display_provider);
     vm_machine_debug_bind_pause(&machine->debug, STD_NULL, STD_NULL);
     vm_machine_debug_bind_disassembler(&machine->debug, STD_NULL, STD_NULL);
     vm_session_debug_target_finalize(machine);

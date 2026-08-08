@@ -61,7 +61,7 @@ struct vm_session {
     C_CHAR hdd_image_path[1024];
 };
 
-C_VOID vm_session_storage_initialize(vm_session *machine);
+type_status vm_session_storage_initialize(vm_session *machine);
 C_VOID vm_session_storage_finalize(vm_session *machine);
 C_VOID vm_session_apply_boot_preference(vm_session *session);
 C_VOID vm_session_set_boot_hdd(vm_session *session, C_INT enabled);

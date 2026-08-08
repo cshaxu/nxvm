@@ -12,20 +12,26 @@
 #include "vm/composition/session/provider_lifecycle.h"
 #include "vm/composition/session/session_interface.h"
 
-C_VOID vm_session_provider_lifecycle_initialize(vm_session *session)
+type_status vm_session_provider_lifecycle_initialize(vm_session *session)
 {
-    if (session == STD_NULL) return;
+    type_status status;
+
+    if (session == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
 
     vm_session_machine_devices_initialize_media(session);
-    vm_session_profile_firmware_initialize(session);
+    status = vm_session_profile_firmware_initialize(session);
+    if (status != TYPE_STATUS_OK) return status;
     vm_session_profile_firmware_register_cmos(session);
     vm_session_profile_firmware_register_keyboard(session);
     vm_session_profile_firmware_register_dma(session);
-    if (!vm_session_machine_devices_configure_controllers(session)) return;
-    vm_session_bind_media(session);
+    status = vm_session_machine_devices_configure_controllers(session);
+    if (status != TYPE_STATUS_OK) return status;
+    status = vm_session_bind_media(session);
+    if (status != TYPE_STATUS_OK) return status;
     vm_session_profile_firmware_register_fdc(session);
     vm_session_profile_firmware_register_hdc(session);
     vm_session_profile_firmware_register_core_posts(session);
+    return TYPE_STATUS_OK;
 }
 
 C_VOID vm_session_provider_lifecycle_refresh(vm_session *session)
