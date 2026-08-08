@@ -170,6 +170,13 @@ C_VOID vm_session_profile_firmware_initialize(vm_session *session)
         VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_VIDEO_INT10);
 }
 
+C_INT vm_session_profile_firmware_materialize(vm_session *session)
+{
+    if (session == STD_NULL || session->core_machine == STD_NULL) return 0;
+    return vm_profile_default_bios_materialize(&session->default_bios,
+        session->core_machine);
+}
+
 C_VOID vm_session_profile_firmware_register_cmos(vm_session *session)
 {
     if (session == STD_NULL) return;

@@ -2,8 +2,8 @@
 
 ## Current Work
 
-**Idle -- M5 T288 closed: the first post-copy Windows Setup CPU blocker has
-full regression evidence.**
+**Idle -- M5 T289 closed: the default PC/AT ROM is materialized before
+execution providers freeze.**
 
 S1 reproduced the HDD-only Setup checkpoint after file copy and recorded
 protected-mode `CALL FAR 0000:00CB` as the internal `#CE(0)` source. S2 added
@@ -13,8 +13,11 @@ proves the CPL3-to-CPL0 TSS stack transition and return. The external replay
 now crosses that instruction and reaches a new, distinct first failure:
 `#UD(0)` at `0F 22 C0` (`MOV CR0,EAX`). T288 does not absorb that separate
 control-register instruction family. The normal gates passed, including the
-new call-gate corpus; T288 publishes the current developer artifact and leaves
-the new `#UD` checkpoint for a separately admitted task.
+new call-gate corpus; T288 publishes its developer artifact and leaves the new
+`#UD` checkpoint for a separately admitted task. T289 materializes the
+immutable ROM instruction image through the core provider, including the
+A20-wrapped reset alias; reset restores only IVT/BDA and the mutable HDD
+parameter work area. Its focused corpus and full gates pass.
 
 M5 Td S39 reconciled the documented current source tree with its target
 component topology and corrected the T288 evidence boundary. The current
@@ -119,10 +122,10 @@ coupling the controller regression to external bootable-media state.
 
 ## Current Technical Baseline
 
-- **T288 artifact identity:** `current-gcc` and
-  `verify-current-artifact-target` select `vm-0-5-0288`. Artifact
-  `nxvm_0_5_0288.exe` SHA-256:
-  `C124E671F80C7AF0724AB2793C5FFF05285C47A010FA464975F316E34BF65C53`.
+- **T289 artifact identity:** `current-gcc` and
+  `verify-current-artifact-target` select `vm-0-5-0289`. Artifact
+  `nxvm_0_5_0289.exe` SHA-256:
+  `C1698E508FA75FFEC43A8FD4975D47D3ED6AB5A48EF33ACBF14FEAE66747D526`.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
@@ -136,7 +139,6 @@ coupling the controller regression to external bootable-media state.
 
 | Task | Compact result |
 | --- | --- |
-| T281 | Renamed the sole core controller owners and configuration borrows from historical `shared_*` names to `fdc/hdc`, with no alias or behavior change. |
 | T282 | Moved native window/console handle ownership from core to VM platform while preserving copied core input, presentation, and wait contracts. |
 | T283 | Extended VM-free controller media evidence, removed unsafe HDD CHS transfer state, and made FDD/HDD persistence collision-safe and failure-preserving. |
 | T284 | Froze the first Windows-facing display admission contract for EGA mode 10h and added expected-failing core/VM corpus without changing runtime behavior. |
@@ -144,6 +146,7 @@ coupling the controller regression to external bootable-media state.
 | T286 | Fixed the corpus-proven ATA device-control `nIEN` IRQ14 visibility gap through core-owned controller state, with core, VM-port, and guest fixture success evidence; no DMA, timing, or command expansion. |
 | T287 | Fixed bounded ROM CHS device/head, AH=08h caller-pointer, FDISK text-service/window-clear, and HDD-only boot-selection defects; external DOS registers C:, presents stable FDISK copied frames, and hands off from HDD-only ATA boot, while the Standard-mode checkpoint remains a research result, not a Windows support claim. |
 | T288 | Resolved the external Setup post-copy `#CE` with the bounded 16-bit protected-mode call-gate and outer-`RETF` path; core and real replay now reach the next `MOV CR0,EAX` `#UD` checkpoint without claiming Windows support. |
+| T289 | Materialized the default PC/AT ROM image before provider freeze, including its A20 reset alias, while reset restores only IVT/BDA and mutable device tables; ROM, boot, Console, debugger, and display regressions pass. |
 
 Detailed contracts, commands, artifact provenance, and prior closures are in
 [M5 History](../history/m5.md) and Git history. The [M5 convergence queue]
