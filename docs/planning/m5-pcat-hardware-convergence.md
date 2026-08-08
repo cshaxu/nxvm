@@ -35,9 +35,10 @@ The boundary migration consumed T270--T278. The pre-migration future queue
 that formerly began at T270 was first displaced to T279--T287; this approved
 reliability and interface package consumes T279--T283. T284/T285 then froze
 and implemented the mode-10h EGA direct path; T286 closed the single
-corpus-proven ATA `nIEN` IRQ-visibility gap; and T287 recorded the first
-external fixed-drive initialization gap. The remaining queue begins at T288.
-Historical completed task records retain their original identifiers.
+corpus-proven ATA `nIEN` IRQ-visibility gap; and T287 has recorded external
+fixed-drive initialization plus one real-mode 80386 address-size CPU gap. The
+remaining queue begins at T288. Historical completed task records retain their
+original identifiers.
 
 ### B. Reliability And Contract Evidence
 
@@ -46,9 +47,10 @@ Historical completed task records retain their original identifiers.
 
 ### C. Windows 3.x Display And Storage Prerequisites
 
-T287 is closed. Its external fixed-drive BDS geometry failure is a separately
-deferred default-ROM/DOS fixed-drive initialization admission; it does not by
-itself admit the CPU-specific T288 or protected-mode T289 work.
+T287 remains a bounded external readiness corpus. Its fixed-drive BDS geometry
+and real-mode 80386 address-size failures are closed as individual admissions;
+the current external checkpoint reaches Windows Setup's Welcome page. This does
+not itself establish a Standard-mode checkpoint or pre-admit T288/T289.
 
 ### D. Protected-Mode And FPU Work Triggered By Evidence
 

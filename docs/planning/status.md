@@ -4,6 +4,22 @@
 
 **Idle.**
 
+M5 T287 S24 repaired the corpus-proven 80386 real-mode address-size defect.
+`_kma_linear_logical` now admits actual `SREG_DATA` reads and writes with
+32-bit offsets in real mode while retaining the existing code and stack
+boundaries. The core corpus proves `REP 67h 66h A5h` copies beyond `FFFFh`
+without a fault. The external Setup probe now passes `Reading SETUP.INF...` and
+reaches its Welcome page through real DOS, ATA PIO, ROM, keyboard, and copied
+presentation. This records one removed CPU blocker only: T287 has not reached
+Windows Standard mode and makes no Windows-support claim.
+
+M5 T287 S23 used the repository-external Windows Setup corpus through the real
+HDD-only default-ROM and ATA PIO path. A parameterized headless probe reached
+`Windows Setup` and `Reading SETUP.INF...`, then reproduced `#GP(0)` at
+`0FD7:06BA` with `CR0=0`, `ESI=00042FD8`, `EDI=00110000`, and opcode prefix
+`F3 67 66`. The first failure is therefore a real-mode 80386 address/operand
+size CPU defect, not a storage, display, or protected-mode transition result.
+
 M5 T287 S22 reproduced the external HDD-only failure before the ATA controller
 received any command: the default false `boot_hdd` bit selected an absent FDD.
 Composition now retains an `auto` boot preference that selects HDD only when no
