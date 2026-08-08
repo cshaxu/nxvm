@@ -304,14 +304,18 @@ owns outer scheduling and provider lifetime while `core_machine_run()` remains
 the only guest execution loop.
 
 An override firmware provider is core-invoked only at an explicit machine
-service boundary. Its future opaque capability may expose checked guest-memory
-and port operations plus separately admitted copied CPU-state observation or
-patching; it never exposes storage pointers, arbitrary instruction-pointer,
-segment, control-register, mode, device, or scheduler mutation. A profile
-declares metadata and provider inputs, not a machine constructor.
+service boundary. Before implementation, its contract freezes an operation
+enum plus lifecycle, failure/atomicity, re-entry, and nested-call rules. Only
+the approved enum may expose checked guest-memory and port operations or
+separately admitted copied CPU-state observation or patching. It never exposes
+storage pointers, arbitrary instruction-pointer, segment, control-register,
+mode, device, or scheduler mutation. A profile declares metadata and provider
+inputs, not a machine constructor.
 
 M5 T293--T303 migrate the current VM construction path to this boundary before
-M6 creates a mantle runtime. Until those tasks close, historical raw
+M6 creates a mantle runtime. The optional pre-decode transition requires a
+recorded first-party non-VM use case; second-consumer readiness does not depend
+on it when that admission is absent. Until those tasks close, historical raw
 configuration/profile borrows are transitional implementation detail, not a
 new consumer contract or mantle API.
 

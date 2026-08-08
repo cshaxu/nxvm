@@ -14,6 +14,16 @@
   that protected `RETF`/`IRET` may advance the guest stack before all
   return-frame validation succeeds. The owner corrected the initial T287
   allocation to the current T291 sequence; this is S4.
+- **Owner-approved identity exception:** T291 S4 is a one-time late subtask of
+  the existing T291 allocation, admitted after T291 S3 because concurrent
+  queue allocation had already consumed the intended identifier. It allocates
+  no second numeric task. If it changes runtime behavior, it rebuilds the same
+  `0.5.0291` task artifact and records its source commit and replacement SHA;
+  the T291 S3 artifact evidence remains in history. This exception does not
+  permit any future closed task identifier to be reused.
+- **Owner-approved governance exception:** M5 Td S42 may update only the
+  numbered-queue and contract wording while this packet is active. It must not
+  alter this task's implementation, tests, scope, or acceptance evidence.
 - **Scope:** the protected-mode far-return and outer-privilege `IRET` paths,
   their smallest shared non-mutating frame-read/preflight support if needed,
   and focused core tests/CMake registration.

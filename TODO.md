@@ -169,8 +169,9 @@ default definition of NXVM completion.
 - [ ] **M5 core public-surface closure (`TODO(High)`, T293--T303).** Remove
   the unused post-`#UD` transition; replace VM raw configuration/profile
   borrows with typed core-owned initialization, controller, firmware, and
-  debug capabilities; then admit only evidence-backed pre-decode transition
-  and paused ordinary-RAM transaction contracts. This proves a core-only
+  debug capabilities. T296 proceeds through separately evidenced display/port,
+  DMA/RTC, and storage stages; pre-decode transition support is admitted only
+  for a recorded first-party non-VM consumer. This proves a core-only
   second-consumer fixture but does not implement `mantle`, DOS, VDM, an
   external ABI, or host policy.
 - [ ] **M6 mantle session envelope (`TODO(High)`).** After M5 T303 proves the
