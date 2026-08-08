@@ -16,14 +16,13 @@ Tasks are ROI-ordered, subject to their stated dependencies; a task begins with
 its own S1 contract and may split when its bounded stop condition is reached. A runnable implementation task uses its
 numeric task identifier as its artifact revision when it completes.
 
-T270--T297 are closed and archived in [M5 History](../history/m5.md). The
-unstarted numbered queue begins at T298.
+T270--T298 are closed and archived in [M5 History](../history/m5.md). The
+unstarted numbered queue begins at T299.
 
 ### A. Core Public-Surface Closure And Mantle Prerequisites
 
 | Task | Owner and purpose | Dependency and stop condition |
 | --- | --- | --- |
-| T298 | Replace debugger CPU/instruction borrows with copied or operation-specific core debug capability while retaining the NXVM Console/debugger UX. | Depends on T295 and T297. No debugger command, prompt, or startup behavior change. |
 | T299 | Remove public configuration borrows and raw profile-binding accessors. Migrate required tests to public corpus or a clearly test-only adapter. | Depends on T295--T298. Product headers export no raw CPU, RAM, port, controller, or executor pointer. |
 | T300 | If T294 records an approved first-party non-VM use case, add a frozen pre-decode configured transition registry, separate from the deleted post-`#UD` interface. It observes actual instruction fetch before decoding and returns only unhandled, fixed-length resume, preserving-state stop, or structured fault. | Depends on T299 and the recorded use case. Otherwise it remains deferred. No profile/DOS/BOP meaning, raw state, arbitrary IP/segment/CRx/mode mutation, or second decoder. |
 | T301 | Add a stopped/paused, copied-value, prevalidated multi-span ordinary-RAM transaction. | Depends on T299. It uses the existing checked route, rejects non-RAM/overlap/overflow, guarantees zero writes on preflight failure, and does not claim concurrent or cycle atomicity or create a second memory route. |
