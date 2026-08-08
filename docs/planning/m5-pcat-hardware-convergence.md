@@ -5,8 +5,8 @@
 This is the ROI-ordered queue for remaining M5 NXVM PC/AT work. It does not
 redefine the roadmap, start a later milestone, or define NXVDM completion.
 Completed M5 evidence is summarized in [M5 History](../history/m5.md). The
-current baseline lives only in [Project Status](status.md); this document
-contains only the unstarted queue. Each admitted task follows the
+current baseline and active queue head live only in [Project Status](status.md);
+this document contains the unstarted continuation after that head. Each admitted task follows the
 hardware-device verification template and must preserve that baseline.
 
 ## ROI-Ordered Queue
@@ -17,16 +17,14 @@ its own S1 contract and may split when its bounded stop condition is reached. A 
 numeric task identifier as its artifact revision when it completes.
 
 T270--T292 are closed and archived in [M5 History](../history/m5.md). The
-unstarted new-task queue begins at T293. A corrective subtask of a closed task
-is admitted only through the sole active packet in `status.md`; M5 T291 S4 is
-the current protected-return fault-atomicity correction and does not reorder
-this queue.
+numbered forward queue begins with active M5 T293 S1 in `status.md`, which
+combines protected-return fault atomicity with T293's original post-`#UD`
+transition removal. The unstarted continuation begins at T294.
 
 ### A. Core Public-Surface Closure And Mantle Prerequisites
 
 | Task | Owner and purpose | Dependency and stop condition |
 | --- | --- | --- |
-| T293 | Delete the unused post-`#UD` real-mode transition interface, registry, CPU dispatch slot, smoke, and CMake registration. Retain native `#UD` behavior only. | No production consumer may remain. This does not add a decoded-transition facility or a compatibility wrapper. |
 | T294 | Inventory every `core/machine` public interface, configuration borrow, profile binding, and test-only probe. Classify each by current consumer, state owner, typed replacement, core initialization responsibility, regression, and removal task. | Documentation/design evidence only; it must not pre-admit a broad replacement API. |
 | T295 | Move CPU/PIC/lifecycle initialization authority fully into `core_machine`; VM composition supplies typed configuration/providers only. | Depends on T294. No VM CPU/PIC wiring, second scheduler, or NXVM lifecycle change. |
 | T296 | Move remaining shared-device initialization authority into core through mandatory stages: S1 migration matrix; S2 VADP and port setup; S3 DMA plus RTC/CMOS/NMI setup; S4 FDC/HDC setup. VM/profile supplies frozen topology, ports, IRQ/DMA routes, defaults, and media/provider policy only. | Depends on T295. Each stage needs its own focused display/port, DMA/clock/IRQ, or FDC/ATA regression and stops before the next stage on any lifecycle or owner regression. No controller storage mirror, PC/AT default in core, or media/path policy migration. |

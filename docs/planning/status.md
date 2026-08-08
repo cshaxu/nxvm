@@ -2,33 +2,28 @@
 
 ## Current Work
 
-**M5 T291 S4: Protected-return fault atomicity -- active.**
+**M5 T293 S1: Protected-return fault atomicity and post-`#UD` transition removal -- active.**
 
 | Requirement | Acceptance evidence |
 | --- | --- |
 | Preserve the architectural state of a faulting protected-mode far return. | A focused core corpus proves invalid or non-present return `CS`/`SS` and an inaccessible return entry deliver the required fault without a partial `SP`, `CS`, `SS`, `IP`, `CPL`, segment-cache, or flags commit. |
 | Close the equivalent protected-mode `RETF` and `IRET` defect class within the current implementation. | The similar-issue sweep records every relevant pop-before-validation path in `cpu_instructions.c`, fixes each in scope or records a bounded deferral with owner approval. |
 | Retain successful privilege-return behavior. | Existing protected privilege and call-gate corpora pass alongside the new negative corpus; full `current-gates-gcc` passes. |
+| Remove the unused post-`#UD` real-mode transition path. | No production consumer, registry, CPU dispatch slot, transition smoke, or CMake registration remains; the retained undefined-instruction corpus proves native `#UD` behavior. |
 
-- **Original request:** append a tracked subtask to repair the audit finding
-  that protected `RETF`/`IRET` may advance the guest stack before all
-  return-frame validation succeeds. The owner corrected the initial T287
-  allocation to the current T291 sequence; this is S4.
-- **Owner-approved identity exception:** T291 S4 is a one-time late subtask of
-  the existing T291 allocation, admitted after T291 S3 because concurrent
-  queue allocation had already consumed the intended identifier. It allocates
-  no second numeric task. If it changes runtime behavior, it rebuilds the same
-  `0.5.0291` task artifact and records its source commit and replacement SHA;
-  the T291 S3 artifact evidence remains in history. This exception does not
-  permit any future closed task identifier to be reused.
-- **Owner-approved governance exception:** M5 Td S42 may update only the
-  numbered-queue and contract wording while this packet is active. It must not
-  alter this task's implementation, tests, scope, or acceptance evidence.
+- **Original request:** repair the audit finding that protected `RETF`/`IRET`
+  may advance the guest stack before all return-frame validation succeeds, and
+  merge that repair into the already allocated T293 first work item. T293 also
+  deletes the unused post-`#UD` real-mode transition interface. The superseded
+  T291 S4 admission creates no implementation work or replacement artifact;
+  T291 remains the closed FDC task.
 - **Scope:** the protected-mode far-return and outer-privilege `IRET` paths,
   their smallest shared non-mutating frame-read/preflight support if needed,
-  and focused core tests/CMake registration.
+  focused core tests/CMake registration, and deletion of the unused post-`#UD`
+  transition interface, registry, CPU dispatch slot, smoke, and CMake entry.
 - **Non-goals:** new instruction families, 32-bit protected-return completion,
-  task switching, new Windows compatibility claims, or a broad CPU refactor.
+  task switching, a new decoded-transition facility or compatibility wrapper,
+  new Windows compatibility claims, or a broad CPU refactor.
 - **Risk:** the current path is live in call-gate and protected-privilege
   handling; changing its ordering can regress valid returns or fault delivery.
   Keep the commit boundary small and verify both valid and failing frames.
@@ -42,12 +37,14 @@
   is requested.
 - **Verification:** run the new focused corpus, retained
   `current.core-machine-protected-privilege-smoke` and
-  `current.core-machine-call-gate-smoke`, then `current-gates-gcc`. On closure,
-  record the sweep, commands, exact markers, commit, and the task's rebuilt
-  `0.5.0291` developer artifact identity as required by the task-ID policy.
+  `current.core-machine-call-gate-smoke`, the retained undefined-instruction
+  corpus, then `current-gates-gcc`. On closure, record both sweeps, commands,
+  exact markers, commit, and the T293 `0.5.0293` developer artifact identity
+  as required by the task-ID policy.
 - **Stop condition:** all stated failure cases are atomic at the defined guest
-  boundary, successful returns remain covered, and no in-scope production hit
-  lacks a recorded disposition.
+  boundary, successful returns remain covered, the post-`#UD` path has no
+  production consumer, and no in-scope production hit lacks a recorded
+  disposition.
 
 ## Current Technical Baseline
 
@@ -86,7 +83,6 @@ active packet becomes an operational authority only after approval.
 
 ## Recent Governance
 
-- **M5 Td S32:** admitted the original second core/composition migration.
 - **M5 Td S33:** corrected the external-consumer boundary and shifted the
   former forward queue to T279--T287.
 - **M5 Td S34:** repaired queue wording and inserted the approved T279--T283
@@ -99,6 +95,10 @@ active packet becomes an operational authority only after approval.
   and shifted remaining Windows CPU/FPU/readiness/closure work to T304--T308.
 - **M5 Td S41:** retired completed planning detail, made TODO open-only, removed
   tracked local-path samples, and added recurrence gates for those boundaries.
+- **M5 Td S43:** superseded the unimplemented T291 S4 admission by merging its
+  protected-return fault-atomicity scope into active T293 S1, which retains its
+  original post-`#UD` transition-removal scope. T291 remains closed FDC history;
+  the unstarted continuation remains T294--T308.
 
 ## Milestone State
 
