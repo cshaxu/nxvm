@@ -110,6 +110,11 @@ C_VOID vm_session_set_boot_hdd(vm_session *session, C_INT enabled)
 C_VOID vm_session_storage_initialize(vm_session *machine)
 {
     core_machine_profile_binding profile_binding;
+    const vm_profile_default_pc_at_port_range *attribute_ports;
+    const vm_profile_default_pc_at_port_range *sequencer_ports;
+    const vm_profile_default_pc_at_port_range *graphics_ports;
+    const vm_profile_default_pc_at_port_range *crtc_ports;
+    core_machine_display_config display_config;
 
     if (machine == STD_NULL || machine->core_machine != STD_NULL) return;
     if (machine->profile == STD_NULL) {
@@ -124,26 +129,39 @@ C_VOID vm_session_storage_initialize(vm_session *machine)
             return;
         }
     }
-    if (core_machine_profile_binding_initialize(machine->core_machine,
-            &profile_binding) != TYPE_STATUS_OK) {
+    core_machine_display_provider_slot_initialize(&machine->display_provider);
+    vm_session_bind_display(machine);
+    attribute_ports = vm_profile_default_pc_at_port_range_find(machine->profile,
+        VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP_ATTRIBUTE);
+    sequencer_ports = vm_profile_default_pc_at_port_range_find(machine->profile,
+        VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP_SEQUENCER);
+    graphics_ports = vm_profile_default_pc_at_port_range_find(machine->profile,
+        VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP_GRAPHICS);
+    crtc_ports = vm_profile_default_pc_at_port_range_find(machine->profile,
+        VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP);
+    if (attribute_ports == STD_NULL || sequencer_ports == STD_NULL ||
+        graphics_ports == STD_NULL || crtc_ports == STD_NULL) {
+        core_machine_display_provider_slot_finalize(&machine->display_provider);
         core_machine_destroy(machine->core_machine);
         machine->core_machine = STD_NULL;
         return;
     }
-    if (core_machine_profile_binding_configure_text_raster(&profile_binding,
-            &machine->profile->cga_text_timing) != TYPE_STATUS_OK) {
-        core_machine_destroy(machine->core_machine);
-        machine->core_machine = STD_NULL;
-        return;
-    }
-    if (core_machine_profile_binding_configure_ega_sequencer(&profile_binding,
-            &machine->profile->ega_sequencer) != TYPE_STATUS_OK) {
-        core_machine_destroy(machine->core_machine);
-        machine->core_machine = STD_NULL;
-        return;
-    }
-    if (core_machine_profile_binding_configure_ega_controllers(&profile_binding,
-            &machine->profile->ega_controllers) != TYPE_STATUS_OK) {
+    display_config.text_timing = machine->profile->cga_text_timing;
+    display_config.ega_sequencer = machine->profile->ega_sequencer;
+    display_config.ega_controllers = machine->profile->ega_controllers;
+    display_config.ports.attribute_first = attribute_ports->first;
+    display_config.ports.attribute_last = attribute_ports->last;
+    display_config.ports.sequencer_first = sequencer_ports->first;
+    display_config.ports.sequencer_last = sequencer_ports->last;
+    display_config.ports.graphics_first = graphics_ports->first;
+    display_config.ports.graphics_last = graphics_ports->last;
+    display_config.ports.crtc_first = crtc_ports->first;
+    display_config.ports.crtc_last = crtc_ports->last;
+    display_config.provider = &machine->display_provider;
+    if (core_machine_configure_display(machine->core_machine, &display_config) !=
+            TYPE_STATUS_OK || core_machine_profile_binding_initialize(
+            machine->core_machine, &profile_binding) != TYPE_STATUS_OK) {
+        core_machine_display_provider_slot_finalize(&machine->display_provider);
         core_machine_destroy(machine->core_machine);
         machine->core_machine = STD_NULL;
         return;
@@ -153,7 +171,6 @@ C_VOID vm_session_storage_initialize(vm_session *machine)
         STD_NULL, VM_SESSION_MEDIA_HDD_ID);
     core_machine_media_registry_initialize(&machine->media_registry);
     machine->default_profile_context.media_registry = &machine->media_registry;
-    core_machine_display_provider_slot_initialize(&machine->display_provider);
     machine->default_profile_context.display_provider = &machine->display_provider;
     core_platform_presentation_mailbox_initialize(&machine->presentation_mailbox);
     core_product_debug_context_initialize(&machine->debugger_context);

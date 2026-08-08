@@ -80,6 +80,27 @@ typedef struct core_machine_config {
     uint32_t kbc_command_response_ticks;
 } core_machine_config;
 
+typedef struct core_machine_display_port_topology {
+    uint16_t attribute_first;
+    uint16_t attribute_last;
+    uint16_t sequencer_first;
+    uint16_t sequencer_last;
+    uint16_t graphics_first;
+    uint16_t graphics_last;
+    uint16_t crtc_first;
+    uint16_t crtc_last;
+} core_machine_display_port_topology;
+
+/* Composition binds the neutral provider slot; core freezes it when this
+ * one-time display declaration has been applied. */
+typedef struct core_machine_display_config {
+    core_machine_vadp_text_timing text_timing;
+    core_machine_vadp_ega_sequencer_config ega_sequencer;
+    core_machine_vadp_ega_controller_config ega_controllers;
+    core_machine_display_port_topology ports;
+    core_machine_display_provider_slot *provider;
+} core_machine_display_config;
+
 typedef enum core_machine_stop_reason {
     CORE_MACHINE_STOP_NONE = 0,
     CORE_MACHINE_STOP_BUDGET,
@@ -167,6 +188,9 @@ type_status core_machine_mouse_submit_relative(core_machine *machine,
 type_status core_machine_capture_display_snapshot(const core_machine *machine,
     core_machine_display_snapshot *out_snapshot);
 
+type_status core_machine_configure_display(core_machine *machine,
+    const core_machine_display_config *config);
+
 type_status core_machine_report_fault(
     core_machine *machine,
     uint32_t detail);
@@ -204,15 +228,6 @@ type_status core_machine_profile_binding_write_real(
     uint16_t offset, const C_VOID *data, STD_SIZE_T size);
 type_status core_machine_profile_binding_write_port(
     const core_machine_profile_binding *binding, uint16_t port, uint32_t value);
-type_status core_machine_profile_binding_configure_text_raster(
-    const core_machine_profile_binding *binding,
-    const core_machine_vadp_text_timing *timing);
-type_status core_machine_profile_binding_configure_ega_sequencer(
-    const core_machine_profile_binding *binding,
-    const core_machine_vadp_ega_sequencer_config *config);
-type_status core_machine_profile_binding_configure_ega_controllers(
-    const core_machine_profile_binding *binding,
-    const core_machine_vadp_ega_controller_config *config);
 
 type_status core_machine_capture_observation(
     const core_machine *machine, core_machine_observation *out_observation);

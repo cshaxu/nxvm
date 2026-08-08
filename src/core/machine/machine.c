@@ -368,34 +368,6 @@ type_status core_machine_profile_binding_write_port(
     return TYPE_STATUS_OK;
 }
 
-type_status core_machine_profile_binding_configure_text_raster(
-    const core_machine_profile_binding *binding,
-    const core_machine_vadp_text_timing *timing)
-{
-    return binding == STD_NULL || binding->machine == STD_NULL ?
-        TYPE_STATUS_INVALID_ARGUMENT : core_machine_vadp_configure_text_timing(
-            &binding->machine->shared_vadp, timing);
-}
-
-type_status core_machine_profile_binding_configure_ega_sequencer(
-    const core_machine_profile_binding *binding,
-    const core_machine_vadp_ega_sequencer_config *config)
-{
-    return binding == STD_NULL || binding->machine == STD_NULL ?
-        TYPE_STATUS_INVALID_ARGUMENT : core_machine_vadp_configure_ega_sequencer(
-            &binding->machine->shared_vadp, &binding->machine->executor_memory,
-            config);
-}
-
-type_status core_machine_profile_binding_configure_ega_controllers(
-    const core_machine_profile_binding *binding,
-    const core_machine_vadp_ega_controller_config *config)
-{
-    return binding == STD_NULL || binding->machine == STD_NULL ?
-        TYPE_STATUS_INVALID_ARGUMENT : core_machine_vadp_configure_ega_controllers(
-            &binding->machine->shared_vadp, config);
-}
-
 type_status core_machine_capture_display_snapshot(const core_machine *machine,
     core_machine_display_snapshot *out_snapshot)
 {
@@ -411,6 +383,48 @@ type_status core_machine_capture_display_snapshot(const core_machine *machine,
     return core_machine_vadp_capture_snapshot(&mutable_machine->shared_vadp,
         &mutable_machine->executor_memory, out_snapshot) ? TYPE_STATUS_OK :
         TYPE_STATUS_UNSUPPORTED;
+}
+
+static C_INT core_machine_display_ports_are_vadp(
+    const core_machine_display_port_topology *ports)
+{
+    return ports != STD_NULL &&
+        ports->attribute_first == CORE_MACHINE_VADP_PORT_ATTRIBUTE &&
+        ports->attribute_last == CORE_MACHINE_VADP_PORT_ATTRIBUTE_DATA_READ &&
+        ports->sequencer_first == CORE_MACHINE_VADP_PORT_SEQUENCER_INDEX &&
+        ports->sequencer_last == CORE_MACHINE_VADP_PORT_SEQUENCER_DATA &&
+        ports->graphics_first == CORE_MACHINE_VADP_PORT_GRAPHICS_INDEX &&
+        ports->graphics_last == CORE_MACHINE_VADP_PORT_GRAPHICS_DATA &&
+        ports->crtc_first == CORE_MACHINE_VADP_PORT_CRTC_INDEX &&
+        ports->crtc_last == CORE_MACHINE_VADP_PORT_STATUS;
+}
+
+type_status core_machine_configure_display(core_machine *machine,
+    const core_machine_display_config *config)
+{
+    type_status status;
+
+    if (!core_machine_configuration_is_open(machine) || machine->display_configured) {
+        return TYPE_STATUS_INVALID_STATE;
+    }
+    if (config == STD_NULL || !core_machine_display_ports_are_vadp(&config->ports)) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    status = core_machine_vadp_configure_text_timing(&machine->shared_vadp,
+        &config->text_timing);
+    if (status != TYPE_STATUS_OK) return status;
+    status = core_machine_vadp_configure_ega_sequencer(&machine->shared_vadp,
+        &machine->executor_memory, &config->ega_sequencer);
+    if (status != TYPE_STATUS_OK) return status;
+    status = core_machine_vadp_configure_ega_controllers(&machine->shared_vadp,
+        &config->ega_controllers);
+    if (status != TYPE_STATUS_OK) return status;
+    machine->display_ports = config->ports;
+    machine->display_configured = TYPE_TRUE;
+    if (config->provider != STD_NULL) {
+        core_machine_display_provider_slot_freeze(config->provider);
+    }
+    return TYPE_STATUS_OK;
 }
 
 t_port *core_machine_configuration_port_borrow(core_machine *machine)

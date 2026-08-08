@@ -802,6 +802,10 @@ add_executable(core-machine-vadp-text-status-smoke
     tests/machine/core_machine_vadp_text_status_smoke.c
 )
 target_link_libraries(core-machine-vadp-text-status-smoke PRIVATE core-machine)
+add_executable(core-machine-display-authority-smoke
+    tests/machine/core_machine_display_authority_smoke.c
+)
+target_link_libraries(core-machine-display-authority-smoke PRIVATE core-machine)
 add_executable(core-machine-cga-graphics-port-smoke
     tests/machine/core_machine_cga_graphics_port_smoke.c
 )
@@ -1076,6 +1080,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     vm-keyboard-set1-mapper-smoke
     core-machine-vadp-text-smoke
     core-machine-vadp-text-status-smoke
+    core-machine-display-authority-smoke
     core-machine-cga-graphics-port-smoke
     core-machine-cga-640-port-smoke
     core-machine-ega-sequencer-port-smoke
@@ -1583,6 +1588,13 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         COMMENT "Verifying T295 core-owned CPU/PIC lifecycle authority"
         VERBATIM)
     add_dependencies(run-current-smokes verify-core-cpu-pic-authority)
+
+    add_custom_target(verify-core-display-authority
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_core_display_authority.cmake"
+        COMMENT "Verifying T296 core-owned display and port authority"
+        VERBATIM)
+    add_dependencies(run-current-smokes verify-core-display-authority)
 endif()
 
 if(PROJECT_ENABLE_BOCHX_RESEARCH)

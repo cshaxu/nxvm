@@ -82,6 +82,8 @@ struct core_machine {
     uint32_t kbc_typematic_initial_ticks;
     uint32_t kbc_typematic_repeat_ticks;
     uint32_t kbc_command_response_ticks;
+    core_machine_display_port_topology display_ports;
+    type_bool display_configured;
     core_machine_port_table port_providers;
     core_machine_trace_state trace;
     core_machine_cpu_diagnostic_state cpu_diagnostic;

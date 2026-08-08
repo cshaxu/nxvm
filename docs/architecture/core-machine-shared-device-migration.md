@@ -43,6 +43,37 @@ composition-owned and do not move into core.
 | **C - FDC.** `vm_session_machine_devices_initialize_fdc` borrows core FDC, DMA, PIC, and port storage; it binds DMA, calls `core_machine_fdc_connect`, then `core_machine_fdc_initialize`. Core cold reset/destroy already call `core_machine_fdc_reset/finalize`. | `core_machine.fdc` is embedded core storage; VM raw borrows compose it. VM-created media registry remains the only provider route; frozen drive-slot IDs are already typed. | S4 replaces borrows with a frozen FDC topology: ports, IRQ/DMA wiring, typed drive slots, and registry/provider binding. Core performs DMA bind, FDC connect/initialize/reset/finalize, and port registration. VM retains backing/media policy. | S4 static gate rejects VM FDC/PIC/DMA/port borrows and direct lifecycle calls; run core media-I/O and FDC ports plus FDD/DOS, boot, Console/debugger, and isolation regressions. Stop on a second media route or backing/path migration. |
 | **C - HDC.** `vm_session_machine_devices_initialize_hdc` borrows core HDC and PIC storage, calls `core_machine_hdc_connect/initialize`, then installs its port provider. Core cold reset/destroy already call `core_machine_hdc_reset/finalize`. | `core_machine.hdc` is embedded core storage; VM borrows HDC/PIC and registers ATA port ranges. `vm_session.hdd` and its backing stay VM-owned and use the existing media registry. | S4 replaces borrows with frozen typed ATA topology: PIO ranges/features, IRQ, abstract drive slot, and media/provider policy. Core validates neutral topology, connects/initializes/registers/resets/finalizes HDC, and receives no local path, PC/AT identity, or BIOS/DOS meaning. | S4 static gate rejects VM HDC/PIC/port lifecycle wiring; run core media-I/O, ATA/FDC port, HDD/FDD/DOS, boot, Console/debugger, and isolation regressions. Stop if policy enters core or a raw firmware/debug capability is required. |
 
+## S2 / A Implementation Evidence (Pending Coordinator Review)
+
+`core_machine_display_config` is the sole S2 typed submission: neutral text
+timing, EGA sequencer/controller configuration, exact VADP port groups, and a
+typed display-provider slot. `core_machine_configure_display` accepts it only
+while configuration is open, validates the fixed VADP topology, applies the
+configuration to embedded VADP/executor RAM, copies the topology, freezes the
+provider, and rejects a second submission. Core's existing VADP/port create,
+reset, and finalization entries are retained. The copied display snapshot
+boundary is unchanged.
+
+`vm_session_storage_initialize` now binds the composition-owned typed provider
+slot and submits profile timing/EGA values plus declared port ranges through
+that core entry. The former three profile-binding VADP configuration calls are
+removed. No DMA, RTC/CMOS/NMI, FDC, or HDC source changed. In particular,
+`machine_devices.c` still contains RTC and HDC direct port installation; those
+known B/C hits are intentionally deferred rather than hidden by the A-only
+static gate.
+
+Evidence: the focused `core-machine-display-authority-smoke` proves accepted
+submission, provider freeze, freeze-time rejection, reset, and EGA aperture
+write (`M5:T296:S2:DISPLAY-AUTHORITY:OK`); `verify-core-display-authority`
+rejects raw VADP/profile-binding/port-install calls in the display-composition
+sources. The managed `current-gates-gcc` run passed all 46 static/build gates
+and 123 current-gate tests, including VADP text/status, CGA/EGA, ROM-video,
+Console, and two-session isolation. Media-dependent tests used only existing
+owner-provided fixtures selected in the untracked build cache. A compiler
+warning about the pre-existing VADP EGA CRTC index-`13h` storage bound is
+tracked as `TODO(High)` for a future focused VADP admission; it is not changed
+by S2.
+
 ## Preserved Ordering and Deferred Edges
 
 The current VM sequence is recorded, not yet moved: media objects, profile
