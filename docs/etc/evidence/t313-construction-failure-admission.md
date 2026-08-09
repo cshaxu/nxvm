@@ -116,6 +116,15 @@ nonpublication, all known watch mappings, and unknown watch set/clear retention.
 Retained Console lifecycle and unified VM debugger backend checks preserve the
 existing debugger route and UX.
 
+## S7 Closure Preparation
+
+The sole current target and preset now select `vm-0-5-0313`; the generated
+artifact is `build/output/nxvm_0_5_0313.exe` with SHA-256
+`19A9E2A898BAC9C1046D994CC891BF3BF151422B95DB42D4F62DC1CDC8F2B752`.
+`current-gates-gcc` passed with 51/51 static/governance targets and 145/145
+current CTests. This record remains pending coordinator acceptance: it does not
+close T313, allocate T314, or admit M6.
+
 ## Exclusions
 
 No CPU executor, paging, RETF/IRET, product re-architecture, generic allocator
