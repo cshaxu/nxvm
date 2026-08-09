@@ -122,6 +122,7 @@ C_VOID core_machine_pic_irq_source_assert(core_machine_pic_irq_source *source);
 C_VOID core_machine_pic_irq_source_deassert(core_machine_pic_irq_source *source);
 C_VOID core_machine_pic_timer_output(C_VOID *owner, type_bool asserted);
 type_bool core_machine_pic_scan_interrupt(t_pic *master, t_pic *slave);
+type_unsigned_8 core_machine_pic_peek_interrupt(t_pic *master, t_pic *slave);
 type_unsigned_8 core_machine_pic_get_interrupt(t_pic *master, t_pic *slave);
 
 #define VPIC_POST "           \

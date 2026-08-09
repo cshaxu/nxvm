@@ -136,3 +136,39 @@ T257/T259 probes. No hit requires a second executor, state owner, public
 interface, PIC change, or exception-delivery rewrite. The retained 16-bit
 protected-mode and privilege/atomicity probes pass; hardware, `INT3`, `INTO`,
 fault, and outer/CPL-transition semantics remain S3/S4 or later-family work.
+
+## S3 Software And Hardware Front-End Evidence
+
+The planner now receives an explicit origin classification. `INT n`, `INT3`,
+and OF-set `INTO` are software origins and apply the gate DPL check; OF-clear
+`INTO` remains a no-entry form. Retained PIC and NMI selection are external
+origins, so they bypass only that software gate-DPL check while retaining the
+same gate, selector, target-limit, old-stack, frame, and commit validation.
+Fault entry remains separately marked and rejected by this batch; it is not
+silently reclassified as hardware delivery.
+
+`ExecInt` remains the sole core event route. PIC selection first uses the new
+internal `core_machine_pic_peek_interrupt` operation, runs the existing
+planner, and acknowledges the PIC only after the planner leaves no exception.
+NMI likewise clears its pending bit only after successful entry. A rejected
+event therefore keeps its PIC IRR state or NMI pending state, respectively;
+no new controller, callback, or host route is introduced. The existing debug
+trap source remains deferred rather than being admitted incidentally with
+external IRQ/NMI handling.
+
+The T305 focused synthetic probe extends its prepared states with `INT3`,
+OF-set and OF-clear `INTO`, and actual shared-PIC/NMI selection. It proves
+trap-gate return EIP for the software forms, OF-clear no entry, an external
+event from CPL3 through a DPL-zero 32-bit gate, successful PIC ISR publication
+and NMI clear, plus rejected PIC/NMI preservation. Its CPL3 external handler
+uses a bounded non-privileged loop solely to observe entry; it is not a guest
+fixture. The retained S2 rejection cases continue to prove frame/cache/flag
+atomicity. The marker remains `M5:T305:INTERRUPT-ENTRY:OK`.
+
+The S3 sweep revisited `_e_int3`, `_e_into`, `_e_int_n`, `_e_intr_n`,
+`ExecInt`, `core_machine_pic_scan_interrupt`,
+`core_machine_pic_peek_interrupt`, `core_machine_pic_get_interrupt`, the
+NMI state fields, and the focused PIC lifecycle checks. `IRET`, outer or CPL
+stack transitions, fault recursion, task/call gates, V86, paging, and public
+interfaces remain outside S3. No production hit requires another executor or
+an expanded controller ownership contract.
