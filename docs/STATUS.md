@@ -2,7 +2,27 @@
 
 ## Current Work
 
-**Idle.**
+**Active: M5 T302 S1.**
+
+## M5 T302 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New; M5 T302 S1; Coordinated Dual-Session Mode. |
+| Admission And Approval | Owner approved the direct M5 80386 32-bit protected execution/delivery package and instructed coordinator/executor execution through the package, stopping before Mantle. T301 is closed; T302 is the next approved Queue candidate. |
+| Objective | Admit the 80386 32-bit operand, address, and stack-instruction family: `66h`/`67h` forms for ModRM/SIB effective addresses, instruction fetch, general data access, `PUSH`/`POP`/`PUSHA`/`POPA`, `PUSHF`/`POPF`, `ENTER`/`LEAVE`, and string/REP access under 32-bit code/data/stack segments. Freeze exact form, profile, mode, limit, wrapping, segment-default, fault-order, and commit rules before implementation. |
+| Non-goals | Control-transfer semantics, descriptor-table/system instructions, interrupt/exception delivery, privilege transitions, paging-policy expansion, virtual-8086, arithmetic-family bulk work, host/product UX, external ABI, and source import. No new executor or execution path. |
+| Reference Baseline | `b2f1d6f7f716ce3865e0c05ca2ac98ae2f8d4eac`; current artifact `vm-0-5-0301` / `nxvm_0_5_0301.exe`. |
+| Files And ABI Surface | Initial audit may inspect `src/core/machine/cpu_instructions.c`, `cpu.h`, memory/fetch helpers, focused machine tests/CMake, and task/governance records. It must not change public core interfaces or cross-module ownership. |
+| Applicable Rules | `rules/EXECUTION.md`, `rules/ARCHITECTURE.md`, `rules/CODING.md`, `rules/DOCUMENT.md`, and `etc/operations/policy/source-policy.md`; retain one core executor and state owner, core-to-VM dependency direction, and NXVM Console/debugger/boot behavior. |
+| Verification | Intel 80386 PRM is authoritative; S1 records exact instruction entries and sections. Read-only comparison records the relevant Bochs 2.6 and PCjs 2.00.0 behavior paths and versions; do not copy source. Project verification uses focused synthetic probes, not long-start guest fixtures. Implementation later runs focused probes, `current-gates-gcc`, documentation governance, `git diff --check`, one task artifact, and one owner-supplied Setup observation after family closure. |
+| Expected Markers | S1 emits an audit record only. The later family probe marker is `M5:T302:OPERAND-ADDRESS-STACK:OK`; its task artifact is created only when CMake's current target is updated during implementation. |
+| Asset Needs | Local read-only reference checkouts and owner-supplied local Setup media may be observed but are never committed, packaged, or made default-build inputs. |
+| Stop Conditions | Stop and report on Intel/reference disagreement not resolved by a bounded optional bridge, a required architecture change, a second executor/state path, raw public-layout exposure, retained Console/debugger/boot regression, or an instruction form that belongs to another queued family. |
+| Exit Criteria | S1 produces a bounded form/profile/mode and fault/commit matrix with every current implementation path classified as retained, in scope, or deferred. It identifies focused probes and an implementation sequence without changing CPU behavior. |
+| Original Owner Request | Execute the 80386 task package in dual-session mode through the Mantle boundary; use Intel, Bochs, and PCjs to establish logic, observe Setup once per task, and use the optional bridge when uncertain. |
+| Similar-Issue Sweep | Audit all existing 66h/67h decode, effective-address, stack, fetch, string/REP, segment-limit, and commit helpers in `src`, `tests`, and CMake. Each production-path hit must be classified in the S1 record; do not silently widen scope. |
+| S1 Audit Record | [T302 operand/address/stack admission audit](etc/evidence/t302-operand-address-stack-admission.md) freezes the current form matrix, reference conclusions, focused-probe batches, and deferrals. It is a design/evidence record only; no CPU behavior, artifact target, or Queue entry changes in S1. |
 
 ## Current Technical Baseline
 
