@@ -138,7 +138,9 @@ task identifier, the debt ledger contains no completed row, history makes no
 current-baseline claim, status matches the configured current artifact target,
 no known mojibake is present, and the status closure table remains at eight rows
 or fewer. A failure blocks closure until the documents are made internally
-consistent.
+consistent. The gate verifies structural schemas, not semantic document
+ownership; the closure audit must still compare each changed document against
+the authority matrix in `docs/rules/DOCUMENT.md`.
 
 ## Milestone Closure Evidence
 

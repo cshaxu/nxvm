@@ -2,7 +2,7 @@
 
 ## Current Work
 
-**Idle. M5 Td S48 is closed; no numeric implementation task is active.** The
+**Idle. M5 Td S49 is closed; no numeric implementation task is active.** The
 first approved Queue candidate receives the next numeric task identifier.
 
 ## Current Technical Baseline
@@ -37,8 +37,6 @@ first approved Queue candidate receives the next numeric task identifier.
 
 ## Recent Governance
 
-- **M5 Td S37:** made M5 history static, capped closure summaries, and
-  hardened the mojibake governance check.
 - **M5 Td S40:** inserted the then-approved T293--T303 core public-surface
   closure and its then-reserved Windows follow-on queue. The later Td S45
   record in [M5 History](etc/legacy-history/m5.md) supersedes those unstarted numeric
@@ -63,3 +61,6 @@ first approved Queue candidate receives the next numeric task identifier.
   status, architecture, source, and execution material from principal and
   contributor documents; and added role-boundary checks. Td work has no
   history record.
+- **M5 Td S49:** replaced keyword-heavy authority checks with fixed-document
+  Markdown schemas and temporary-tree self-tests; semantic ownership remains
+  a closure-audit responsibility. Td work has no history record.
