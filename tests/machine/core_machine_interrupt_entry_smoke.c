@@ -27,6 +27,13 @@ typedef enum interrupt_entry_negative {
     INTERRUPT_ENTRY_NEGATIVE_STACK_LIMIT
 } interrupt_entry_negative;
 
+typedef enum interrupt_entry_delivery_failure {
+    INTERRUPT_ENTRY_DELIVERY_INVALID_GATE,
+    INTERRUPT_ENTRY_DELIVERY_NONPRESENT_GATE,
+    INTERRUPT_ENTRY_DELIVERY_TARGET_NOT_PRESENT,
+    INTERRUPT_ENTRY_DELIVERY_STACK_LIMIT
+} interrupt_entry_delivery_failure;
+
 static C_VOID ie_reset(C_VOID *opaque)
 {
     interrupt_entry_machine *state = (interrupt_entry_machine *)opaque;
@@ -419,6 +426,17 @@ static C_INT ie_delivered_is(const core_machine_cpu_diagnostic *diagnostic,
         diagnostic->last_delivered_exception.exception_code == code;
 }
 
+static C_INT ie_delivery_state_equal(const t_cpu *before, const t_cpu *after)
+{
+    return before->data.eip == after->data.eip &&
+        before->data.esp == after->data.esp &&
+        before->data.eflags == after->data.eflags &&
+        STD_MEMCMP(&before->data.cs, &after->data.cs,
+            sizeof(before->data.cs)) == 0 &&
+        STD_MEMCMP(&before->data.ss, &after->data.ss,
+            sizeof(before->data.ss)) == 0;
+}
+
 static C_INT ie_test_fault_delivery(uint32_t mask, uint8_t vector,
     uint32_t code, C_INT user_source)
 {
@@ -472,7 +490,38 @@ static C_INT ie_test_fault_delivery(uint32_t mask, uint8_t vector,
     return !failed;
 }
 
-static C_INT ie_test_fault_delivery_failure(C_VOID)
+static C_INT ie_test_t305_fault_delivery(C_VOID)
+{
+    interrupt_entry_machine state;
+    core_machine_cpu_diagnostic diagnostic;
+    t_cpu after;
+    uint32_t frame[4] = {0u,0u,0u,0u};
+    static const uint8_t code[] = {0xcdu,IE_VECTOR};
+    C_INT failed = !ie_prepare(&state, INTERRUPT_ENTRY_NEGATIVE_NONE,
+        VCPU_DESC_SYS_TYPE_INTGATE_32);
+
+    if (!failed) {
+        state.machine->executor_cpu.data.eflags = 0x00000202u;
+        failed |= !ie_install_gate(&state, IE_VECTOR, 0x0008u, 0x80u) ||
+            !ie_install_gate(&state, 0x0du, 0x0008u,
+                (uint8_t)(0x80u | VCPU_DESC_SYS_TYPE_INTGATE_32)) ||
+            !ie_write(&state, IE_CODE_BASE, code, sizeof(code)) ||
+            !ie_write(&state, IE_CODE_BASE + IE_HANDLER_OFFSET,
+                (const uint8_t[]){0xf4u}, 1u) || !ie_run(&state, 0, &after,
+                &diagnostic) || !ie_delivered_is(&diagnostic,
+                VCPUINS_EXCEPT_GP, IE_VECTOR * 8u + 2u) ||
+            after.data.cs.selector != 0x0008u ||
+            after.data.esp != IE_STACK_BASE - 16u ||
+            !ie_read(&state, IE_STACK_BASE - 16u, frame, sizeof(frame)) ||
+            frame[0] != IE_VECTOR * 8u + 2u || frame[1] != 0u ||
+            frame[2] != 0x0008u || frame[3] != 0x00000202u;
+    }
+    core_machine_destroy(state.machine);
+    return !failed;
+}
+
+static C_INT ie_test_fault_delivery_failure(
+    interrupt_entry_delivery_failure failure)
 {
     interrupt_entry_machine state;
     core_machine_cpu_diagnostic diagnostic;
@@ -480,27 +529,40 @@ static C_INT ie_test_fault_delivery_failure(C_VOID)
     t_cpu after;
     uint8_t access_before = 0u;
     uint8_t access_after = 0u;
+    uint32_t stack_before[4] = {0u,0u,0u,0u};
+    uint32_t stack_after[4] = {0u,0u,0u,0u};
+    uint8_t not_present_access = 0x7au;
     static const uint8_t code[] = {0x0fu,0x01u,0xf0u};
+    uint8_t gate_access = (uint8_t)(0x80u | VCPU_DESC_SYS_TYPE_INTGATE_32);
     C_INT failed = !ie_prepare(&state, INTERRUPT_ENTRY_NEGATIVE_NONE,
         VCPU_DESC_SYS_TYPE_INTGATE_32);
 
     if (!failed) {
+        if (failure == INTERRUPT_ENTRY_DELIVERY_INVALID_GATE) gate_access = 0x80u;
+        if (failure == INTERRUPT_ENTRY_DELIVERY_NONPRESENT_GATE)
+            gate_access = VCPU_DESC_SYS_TYPE_INTGATE_32;
         failed |= !ie_prepare_user_code(&state) ||
-            !ie_install_gate(&state, 0x0du, 0x000bu, 0x80u) ||
-            !ie_write(&state, IE_CODE_BASE, code, sizeof(code)) ||
-            !ie_read(&state, IE_GDT_BASE + 13u, &access_before,
-                sizeof(access_before));
+            !ie_install_gate(&state, 0x0du, 0x000bu, gate_access) ||
+            !ie_write(&state, IE_CODE_BASE, code, sizeof(code));
+        if (!failed && failure == INTERRUPT_ENTRY_DELIVERY_TARGET_NOT_PRESENT) {
+            failed |= !ie_write(&state, IE_GDT_BASE + 13u, &not_present_access,
+                sizeof(not_present_access));
+        }
+        if (!failed && failure == INTERRUPT_ENTRY_DELIVERY_STACK_LIMIT)
+            state.machine->executor_cpu.data.ss.limit = IE_STACK_BASE - 2u;
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
-        failed |= !ie_run_budget(&state, 1, &after, &diagnostic) ||
-            !ie_fault_is(&diagnostic, VCPUINS_EXCEPT_GP, 0u) ||
+        failed |= !ie_read(&state, IE_GDT_BASE + 13u, &access_before,
+            sizeof(access_before)) || !ie_read(&state, IE_STACK_BASE - 16u,
+            stack_before, sizeof(stack_before)) || !ie_run_budget(&state, 1, &after,
+            &diagnostic) || !ie_fault_is(&diagnostic, VCPUINS_EXCEPT_GP, 0u) ||
             diagnostic.last_delivered_exception.valid ||
             diagnostic.delivered_exception_count != 0u ||
             !ie_read(&state, IE_GDT_BASE + 13u, &access_after,
-                sizeof(access_after)) || after.data.cs.selector != before.data.cs.selector ||
-            after.data.cs.base != before.data.cs.base ||
-            after.data.cs.limit != before.data.cs.limit ||
-            after.data.eip != before.data.eip || after.data.esp != before.data.esp ||
-            after.data.eflags != before.data.eflags || access_after != access_before;
+                sizeof(access_after)) || !ie_read(&state, IE_STACK_BASE - 16u,
+                stack_after, sizeof(stack_after)) ||
+            !ie_delivery_state_equal(&before, &after) ||
+            access_after != access_before || STD_MEMCMP(stack_before, stack_after,
+                sizeof(stack_before)) != 0;
     }
     core_machine_destroy(state.machine);
     return !failed;
@@ -534,9 +596,18 @@ int main(void)
     failed |= !ie_test_fault_delivery(VCPUINS_EXCEPT_GP, 0x0du, 0u, 1);
     failed |= !ie_test_fault_delivery(VCPUINS_EXCEPT_NP, 0x0bu, 0x0018u, 0);
     failed |= !ie_test_fault_delivery(VCPUINS_EXCEPT_SS, 0x0cu, 0x0018u, 0);
-    failed |= !ie_test_fault_delivery_failure();
+    failed |= !ie_test_t305_fault_delivery();
+    failed |= !ie_test_fault_delivery_failure(
+        INTERRUPT_ENTRY_DELIVERY_INVALID_GATE);
+    failed |= !ie_test_fault_delivery_failure(
+        INTERRUPT_ENTRY_DELIVERY_NONPRESENT_GATE);
+    failed |= !ie_test_fault_delivery_failure(
+        INTERRUPT_ENTRY_DELIVERY_TARGET_NOT_PRESENT);
+    failed |= !ie_test_fault_delivery_failure(
+        INTERRUPT_ENTRY_DELIVERY_STACK_LIMIT);
 
     if (failed) return 1;
     STD_PRINTF("M5:T305:INTERRUPT-ENTRY:OK\n");
+    STD_PRINTF("M5:T308:S2:SAME-CPL-ERROR-DELIVERY:OK\n");
     return 0;
 }
