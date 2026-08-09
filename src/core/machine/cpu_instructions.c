@@ -2857,6 +2857,108 @@ _______todo _ser_call_far_cs_nonc(core_machine_cpu_execution_context *context, t
     TYPE_TRACE_CHECK_RETURN(_kec_call_far(context, newcs, neweip, byte));
     TYPE_TRACE_CALL_END;
 }
+static C_VOID _ser_call_far_call_gate_32(core_machine_cpu_execution_context *context,
+    type_unsigned_16 gate_selector)
+{
+    type_unsigned_64 gate_desc;
+    type_unsigned_64 code_desc;
+    type_unsigned_64 ss_desc;
+    type_unsigned_16 newcs;
+    type_unsigned_16 newss;
+    type_unsigned_16 oldcs;
+    type_unsigned_16 oldss;
+    type_unsigned_32 newesp;
+    type_unsigned_32 oldeip;
+    type_unsigned_32 oldesp;
+    type_unsigned_32 oldcs_frame;
+    type_unsigned_32 oldss_frame;
+    type_unsigned_32 parameters[31];
+    type_unsigned_8 oldcpl;
+    type_unsigned_8 target_cpl;
+    type_unsigned_8 parameter_count;
+    type_unsigned_8 index;
+    t_cpu_data_sreg newcs_cache;
+    t_cpu_data_sreg newss_cache;
+
+    TYPE_TRACE_CALL_BEGIN("_ser_call_far_call_gate_32");
+    if (!_IsProtected || _GetEFLAGS_VM)
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
+    TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, gate_selector,
+        TYPE_REFERENCE_OF(gate_desc)));
+    if (!_IsDescCallGate32(gate_desc))
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(gate_selector & 0xfffcu));
+    oldcpl = _GetCPL;
+    if (_GetDesc_DPL(gate_desc) < oldcpl ||
+        _GetDesc_DPL(gate_desc) < _GetSelector_RPL(gate_selector))
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(gate_selector & 0xfffcu));
+    if (!_IsDescPresent(gate_desc))
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_NP(gate_selector & 0xfffcu));
+    newcs = TYPE_MASK_UNSIGNED_16(_GetDescGate_Selector(gate_desc));
+    if (_IsSelectorNull(newcs) || _GetSelector_TI(newcs))
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(newcs & 0xfffcu));
+    TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, newcs,
+        TYPE_REFERENCE_OF(code_desc)));
+    if (!_IsDescCodeNonConform(code_desc) ||
+        _GetDesc_DPL(code_desc) >= oldcpl)
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(newcs & 0xfffcu));
+    target_cpl = (type_unsigned_8)_GetDesc_DPL(code_desc);
+    if (!_IsDescPresent(code_desc))
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_NP(newcs & 0xfffcu));
+    if (!cpu_state.data.tr.flagValid || cpu_state.data.tr.sys.type !=
+        VCPU_DESC_SYS_TYPE_TSS_32_BUSY)
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(0));
+    TYPE_TRACE_CHECK_RETURN(_s_test_tss(context, 4u, 6u));
+    TYPE_TRACE_CHECK_RETURN(_s_read_tss(context, 4u, TYPE_REFERENCE_OF(newesp),
+        4u));
+    TYPE_TRACE_CHECK_RETURN(_s_read_tss(context, 8u, TYPE_REFERENCE_OF(newss),
+        2u));
+    if (_IsSelectorNull(newss) || _GetSelector_TI(newss) ||
+        _GetSelector_RPL(newss) != target_cpl)
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(newss & 0xfffcu));
+
+    oldcs = cpu_state.data.cs.selector;
+    oldss = cpu_state.data.ss.selector;
+    oldeip = cpu_state.data.eip;
+    oldesp = cpu_state.data.esp;
+    oldcs_frame = oldcs;
+    oldss_frame = oldss;
+    parameter_count = (type_unsigned_8)_GetDescCall_Count(gate_desc);
+    for (index = 0u; index < parameter_count; ++index)
+        TYPE_TRACE_CHECK_RETURN(_s_peek_ss_pop(context, (type_unsigned_32)index *
+            4u, TYPE_REFERENCE_OF(parameters[index]), 4u));
+    newcs_cache = cpu_state.data.cs;
+    TYPE_TRACE_CHECK_RETURN(_ksa_prepare_code_sreg(context, newcs, target_cpl,
+        &newcs_cache, &code_desc));
+    TYPE_TRACE_CHECK_RETURN(_kma_test_access(context, &newcs_cache,
+        TYPE_MASK_UNSIGNED_32(_GetDescGate_Offset(gate_desc)), 1u, 0,
+        target_cpl, 1));
+    newss_cache = cpu_state.data.ss;
+    TYPE_TRACE_CHECK_RETURN(_ksa_prepare_stack_sreg(context, newss, target_cpl,
+        &newss_cache, &ss_desc));
+    TYPE_TRACE_CHECK_RETURN(_s_test_stack_frame_32(context, &newss_cache,
+        newesp, (type_unsigned_8)(4u + parameter_count), target_cpl));
+
+    TYPE_TRACE_CHECK_RETURN(_s_write_xdt(context, newss,
+        TYPE_REFERENCE_OF(ss_desc)));
+    TYPE_TRACE_CHECK_RETURN(_s_write_xdt(context, newcs,
+        TYPE_REFERENCE_OF(code_desc)));
+    cpu_state.data.ss = newss_cache;
+    if (newss_cache.seg.data.big)
+        cpu_state.data.esp = newesp;
+    else
+        cpu_state.data.sp = TYPE_MASK_UNSIGNED_16(newesp);
+    _MakeCPL(target_cpl);
+    TYPE_TRACE_CHECK_RETURN(_kec_push(context, TYPE_REFERENCE_OF(oldss_frame), 4u));
+    TYPE_TRACE_CHECK_RETURN(_kec_push(context, TYPE_REFERENCE_OF(oldesp), 4u));
+    for (index = parameter_count; index > 0u; --index)
+        TYPE_TRACE_CHECK_RETURN(_kec_push(context,
+            TYPE_REFERENCE_OF(parameters[index - 1u]), 4u));
+    TYPE_TRACE_CHECK_RETURN(_kec_push(context, TYPE_REFERENCE_OF(oldcs_frame), 4u));
+    TYPE_TRACE_CHECK_RETURN(_kec_push(context, TYPE_REFERENCE_OF(oldeip), 4u));
+    cpu_state.data.cs = newcs_cache;
+    cpu_state.data.eip = TYPE_MASK_UNSIGNED_32(_GetDescGate_Offset(gate_desc));
+    TYPE_TRACE_CALL_END;
+}
 static C_VOID _ser_call_far_call_gate(core_machine_cpu_execution_context *context,
     type_unsigned_16 gate_selector, type_unsigned_8 byte)
 {
@@ -2879,12 +2981,18 @@ static C_VOID _ser_call_far_call_gate(core_machine_cpu_execution_context *contex
     TYPE_TRACE_CALL_BEGIN("_ser_call_far_call_gate");
     if (!_IsProtected)
         TYPE_TRACE_IMPOSSIBLE_RETURN;
+    if (byte == 4u) {
+        TYPE_TRACE_CHECK_RETURN(_ser_call_far_call_gate_32(context,
+            gate_selector));
+        TYPE_TRACE_CALL_END;
+        return;
+    }
     if (byte != 2u)
         TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(byte));
     TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, gate_selector,
         TYPE_REFERENCE_OF(gate_desc)));
-    if (!_IsDescCallGate(gate_desc))
-        TYPE_TRACE_IMPOSSIBLE_RETURN;
+    if (!_IsDescCallGate16(gate_desc))
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(gate_selector & 0xfffcu));
     oldcpl = _GetCPL;
     if (_GetDesc_DPL(gate_desc) < oldcpl ||
         _GetDesc_DPL(gate_desc) < _GetSelector_RPL(gate_selector)) {
@@ -3841,7 +3949,7 @@ static C_VOID _e_call_far(core_machine_cpu_execution_context *context, type_unsi
         else
         {
             TYPE_TRACE_BLOCK_BEGIN("desc(invalid)");
-            TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(newcs));
+            TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(newcs & 0xfffcu));
             TYPE_TRACE_BLOCK_END;
         }
         TYPE_TRACE_BLOCK_END;
