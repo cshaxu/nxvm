@@ -34,14 +34,32 @@ static type_status core_machine_port_add_provider(t_port *port,
     core_machine_port_read_provider read_provider,
     core_machine_port_write_provider write_provider, C_VOID *owner)
 {
-    core_machine_port_provider_entry *entry =
-        core_machine_port_find_provider(port, port_id, write);
+    core_machine_port_provider_entry *entry;
 
     if (port == STD_NULL || (handler == STD_NULL && read_provider == STD_NULL &&
         write_provider == STD_NULL)) return TYPE_STATUS_INVALID_ARGUMENT;
-    if (entry != STD_NULL) return TYPE_STATUS_INVALID_STATE;
+    if (port->connect.registration_status != TYPE_STATUS_OK) {
+        return port->connect.registration_status;
+    }
+    entry = core_machine_port_find_provider(port, port_id, write);
+    if (entry != STD_NULL) {
+        port->connect.registration_status = TYPE_STATUS_INVALID_STATE;
+        return TYPE_STATUS_INVALID_STATE;
+    }
+    if (port->connect.test_allocation != STD_NULL) {
+        ++port->connect.test_allocation->attempts;
+        if (port->connect.test_allocation->fail_at != 0u &&
+            port->connect.test_allocation->attempts ==
+                port->connect.test_allocation->fail_at) {
+            port->connect.registration_status = TYPE_STATUS_NO_MEMORY;
+            return TYPE_STATUS_NO_MEMORY;
+        }
+    }
     entry = (core_machine_port_provider_entry *)STD_CALLOC(1u, sizeof(*entry));
-    if (entry == STD_NULL) return TYPE_STATUS_NO_MEMORY;
+    if (entry == STD_NULL) {
+        port->connect.registration_status = TYPE_STATUS_NO_MEMORY;
+        return TYPE_STATUS_NO_MEMORY;
+    }
     entry->port_id = port_id;
     entry->write = write;
     entry->legacy_handler = handler;
@@ -177,4 +195,37 @@ C_VOID core_machine_port_finalize(t_port *port)
         entry = next;
     }
     port->connect.providers = STD_NULL;
+}
+
+core_machine_port_provider_entry *core_machine_port_registration_begin(t_port *port)
+{
+    if (port == STD_NULL) return STD_NULL;
+    port->connect.registration_status = TYPE_STATUS_OK;
+    return port->connect.providers;
+}
+
+type_status core_machine_port_registration_status(const t_port *port)
+{
+    return port == STD_NULL ? TYPE_STATUS_INVALID_ARGUMENT :
+        port->connect.registration_status;
+}
+
+C_VOID core_machine_port_rollback_registration(t_port *port,
+    core_machine_port_provider_entry *checkpoint)
+{
+    if (port == STD_NULL) return;
+    while (port->connect.providers != checkpoint) {
+        core_machine_port_provider_entry *entry = port->connect.providers;
+
+        if (entry == STD_NULL) break;
+        port->connect.providers = entry->next;
+        STD_FREE(entry);
+    }
+    port->connect.registration_status = TYPE_STATUS_OK;
+}
+
+C_VOID core_machine_port_set_test_allocation(t_port *port,
+    core_machine_port_test_allocation *test_allocation)
+{
+    if (port != STD_NULL) port->connect.test_allocation = test_allocation;
 }

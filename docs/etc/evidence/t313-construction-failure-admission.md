@@ -47,6 +47,24 @@ interface. The focused `M5:T313:S2:RAM-CREATE:OK` proof covers default and
 explicit success, deterministic default and explicit failure, retained
 freeze/reset/destroy, and direct raw `t_ram` allocation.
 
+## S3 Port And Device Assembly Result
+
+The one directional port registry now supports a private registration
+checkpoint. Typed range registration rolls back every direction and port added
+after that checkpoint when an allocation fails; duplicate directional owners
+remain rejected without replacement. Create-time legacy device registration
+uses the same first-failure status and checkpoint before publishing a machine.
+FDC initialization, plus multi-step RTC and HDC configuration, roll back their
+own checkpoint on a later registration failure.
+
+The test-only port allocation observation is stored on the individual `t_port`
+operation and is passed only through the private create test seam. It has no
+process-global allocator or public fault-injection API. The focused
+`M5:T313:S3:PORT-ASSEMBLY:OK` proof covers a read/write range mid-failure with
+no surviving binding, retry and first-owner preservation, create failure with
+a null output, FDC configuration rollback, and fresh default creation after
+each injected failure.
+
 ## Exclusions
 
 No CPU executor, paging, RETF/IRET, product re-architecture, generic allocator

@@ -149,4 +149,7 @@ C_VOID core_machine_rollback_immutable_rom_mappings(core_machine *machine,
 type_status core_machine_create_with_test_memory_allocation(
     const core_machine_config *config, core_machine **out_machine,
     core_machine_memory_test_allocation *test_allocation);
+type_status core_machine_create_with_test_port_allocation(
+    const core_machine_config *config, core_machine **out_machine,
+    core_machine_port_test_allocation *test_allocation);
 #endif

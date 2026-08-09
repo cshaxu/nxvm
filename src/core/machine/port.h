@@ -21,8 +21,15 @@ typedef C_VOID (*core_machine_port_handler)(t_port *port, type_unsigned_16 port_
 typedef struct core_machine_port_provider_entry
     core_machine_port_provider_entry;
 
+typedef struct core_machine_port_test_allocation {
+    STD_SIZE_T fail_at;
+    STD_SIZE_T attempts;
+} core_machine_port_test_allocation;
+
 typedef struct {
     core_machine_port_provider_entry *providers;
+    core_machine_port_test_allocation *test_allocation;
+    type_status registration_status;
 } t_port_connect;
 
 typedef struct {
@@ -57,6 +64,12 @@ C_VOID core_machine_port_write(t_port *port, uint16_t port_id, uint32_t value);
 C_VOID core_machine_port_initialize(t_port *port);
 C_VOID core_machine_port_reset(t_port *port);
 C_VOID core_machine_port_finalize(t_port *port);
+core_machine_port_provider_entry *core_machine_port_registration_begin(t_port *port);
+type_status core_machine_port_registration_status(const t_port *port);
+C_VOID core_machine_port_rollback_registration(t_port *port,
+    core_machine_port_provider_entry *checkpoint);
+C_VOID core_machine_port_set_test_allocation(t_port *port,
+    core_machine_port_test_allocation *test_allocation);
 
 
 #ifdef __cplusplus
