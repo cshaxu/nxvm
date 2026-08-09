@@ -4,6 +4,8 @@ Use the public [Architecture Governance skill](https://github.com/cshaxu/skills/
 The concrete ntvdm64 component and composition map is
 [design/ARCHITECTURE.md](../design/ARCHITECTURE.md).
 
+## Non-Negotiable Invariants
+
 - Dependencies flow only toward more neutral, declared capabilities. No
   dependency cycle, reverse dependency, or peer-to-peer integration may hide
   behind an aggregate target, adapter, callback, global, or test helper.
@@ -19,6 +21,9 @@ The concrete ntvdm64 component and composition map is
   mutate guest state or select implicit current state.
 - Product-visible behavior changes require owner approval and before/after
   evidence.
+
+## Source And Research Admission
+
 - Imported or derived source requires provenance, preserved copyright notices,
   authorization, focused verification, and separate review for an independent
   third-party notice. Research, proprietary binaries, and third-party firmware

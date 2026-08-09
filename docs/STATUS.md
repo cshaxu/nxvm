@@ -2,7 +2,7 @@
 
 ## Current Work
 
-**Idle. M5 Td S49 is closed; no numeric implementation task is active.** The
+**Idle. M5 Td S50 is closed; no numeric implementation task is active.** The
 first approved Queue candidate receives the next numeric task identifier.
 
 ## Current Technical Baseline
@@ -37,10 +37,6 @@ first approved Queue candidate receives the next numeric task identifier.
 
 ## Recent Governance
 
-- **M5 Td S40:** inserted the then-approved T293--T303 core public-surface
-  closure and its then-reserved Windows follow-on queue. The later Td S45
-  record in [M5 History](etc/legacy-history/m5.md) supersedes those unstarted numeric
-  allocations after T300 consumed the original transition slot.
 - **M5 Td S41:** retired completed planning detail, made TODO open-only, removed
   tracked local-path samples, and added recurrence gates for those boundaries.
 - **M5 Td S43:** superseded the unimplemented T291 S4 admission by merging its
@@ -64,3 +60,7 @@ first approved Queue candidate receives the next numeric task identifier.
 - **M5 Td S49:** replaced keyword-heavy authority checks with fixed-document
   Markdown schemas and temporary-tree self-tests; semantic ownership remains
   a closure-audit responsibility. Td work has no history record.
+- **M5 Td S50:** made principal sections, active-packet fields, Git-derived
+  identifier continuity, supporting-index coverage, and relative Markdown
+  links structural closure gates with controlled negative self-tests. Td work
+  has no history record.

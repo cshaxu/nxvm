@@ -83,6 +83,173 @@ function Require-HeadingSchema(
     }
 }
 
+function Require-RequiredH2(
+    [string]$path,
+    [string]$text,
+    [string[]]$requiredH2Patterns
+) {
+    $headings = @(Get-MarkdownHeadings $text | Where-Object { $_.Level -eq 2 })
+    foreach ($pattern in $requiredH2Patterns) {
+        Require ((@($headings | Where-Object { $_.Text -match $pattern }).Count -gt 0)) `
+            "$path must contain a required level-two section matching: $pattern"
+    }
+}
+
+function Get-MarkdownLinks([string]$text) {
+    $inFence = $false
+    foreach ($line in [regex]::Split($text, "`r?`n")) {
+        if ($line -match '^\s*```') {
+            $inFence = -not $inFence
+            continue
+        }
+        if ($inFence) {
+            continue
+        }
+        foreach ($match in [regex]::Matches(
+            $line,
+            '(?<prefix>!?)\[[^\]]*\]\((?<destination><[^>]+>|[^)\s]+)(?:\s+[^)]*)?\)'
+        )) {
+            $destination = $match.Groups['destination'].Value.Trim('<', '>')
+            if (-not [string]::IsNullOrWhiteSpace($destination)) {
+                [pscustomobject]@{ Destination = $destination }
+            }
+        }
+    }
+}
+
+function Get-MarkdownAnchor([string]$heading) {
+    $anchor = $heading.ToLowerInvariant()
+    $anchor = [regex]::Replace($anchor, '[^a-z0-9 _-]', '')
+    $anchor = [regex]::Replace($anchor, '\s+', '-')
+    return [regex]::Replace($anchor, '-+', '-')
+}
+
+function Require-RelativeMarkdownLinks([string]$repositoryRoot, [string[]]$markdownPaths) {
+    foreach ($path in $markdownPaths) {
+        $text = Get-Content -Raw -LiteralPath $path
+        foreach ($link in @(Get-MarkdownLinks $text)) {
+            $destination = $link.Destination
+            if ($destination -match '^[a-z][a-z0-9+.-]*:' -or $destination.StartsWith('//')) {
+                continue
+            }
+            $parts = $destination.Split('#', 2)
+            $relativePath = $parts[0]
+            $fragment = if ($parts.Count -gt 1) { $parts[1] } else { '' }
+            $target = if ([string]::IsNullOrWhiteSpace($relativePath)) {
+                $path
+            }
+            else {
+                [System.IO.Path]::GetFullPath((Join-Path (Split-Path -Parent $path) $relativePath))
+            }
+            Require (Test-Path -LiteralPath $target) `
+                "Markdown link in $path targets a missing path: $destination"
+            if (-not [string]::IsNullOrWhiteSpace($fragment)) {
+                $targetText = Get-Content -Raw -LiteralPath $target
+                $anchors = @(Get-MarkdownHeadings $targetText | ForEach-Object {
+                    Get-MarkdownAnchor $_.Text
+                })
+                Require ($anchors -contains $fragment.ToLowerInvariant()) `
+                    "Markdown link in $path targets a missing anchor: $destination"
+            }
+        }
+    }
+}
+
+function Get-IdentifierRecordsFromSubjects([string[]]$subjects) {
+    $records = @()
+    foreach ($subject in $subjects) {
+        $match = [regex]::Match(
+            $subject,
+            '^M(?<milestone>\d+)\s+(?:(?:T(?<task>\d+)\s+S(?<subtask>\d+))|(?:Td\s+S(?<docSubtask>\d+)))\s+P\d+:'
+        )
+        if ($match.Success) {
+            $records += [pscustomobject]@{
+                Milestone = [int]$match.Groups['milestone'].Value
+                Task = if ($match.Groups['task'].Success) { [int]$match.Groups['task'].Value } else { $null }
+                Subtask = if ($match.Groups['subtask'].Success) { [int]$match.Groups['subtask'].Value } else { [int]$match.Groups['docSubtask'].Value }
+                IsDocumentation = -not $match.Groups['task'].Success
+            }
+        }
+    }
+    return @($records)
+}
+
+function Get-ClosedIdentifierRecords([string]$repositoryRoot) {
+    $subjects = @(git -C $repositoryRoot log --format=%s)
+    Require ($LASTEXITCODE -eq 0) "Git commit history is required to validate active identifier allocation."
+    return @(Get-IdentifierRecordsFromSubjects $subjects)
+}
+
+function Get-ActivePacket([string]$status) {
+    $match = [regex]::Match(
+        $status,
+        '(?ms)^## M(?<milestone>\d+) (?:(?:T(?<task>\d+))|Td) S(?<subtask>\d+) Packet\r?\n(?<body>.*?)(?=^## |\z)'
+    )
+    if (-not $match.Success) {
+        return $null
+    }
+    return [pscustomobject]@{
+        Milestone = [int]$match.Groups['milestone'].Value
+        Task = if ($match.Groups['task'].Success) { [int]$match.Groups['task'].Value } else { $null }
+        Subtask = [int]$match.Groups['subtask'].Value
+        IsDocumentation = -not $match.Groups['task'].Success
+        Body = $match.Groups['body'].Value
+    }
+}
+
+function Require-ActivePacketSchema([pscustomobject]$packet) {
+    Require ($packet.Body -match '(?m)^\|\s*Field\s*\|\s*Required record\s*\|\s*$') `
+        "Active task packet must contain the fixed Field table header."
+    Require ($packet.Body -match '(?m)^\|\s*---\s*\|\s*---\s*\|\s*$') `
+        "Active task packet must contain the fixed Field table separator."
+    $requiredFields = @(
+        'Identifier Mode', 'Admission And Approval', 'Objective', 'Non-goals',
+        'Reference Baseline', 'Files And ABI Surface', 'Applicable Rules',
+        'Verification', 'Expected Markers', 'Asset Needs', 'Stop Conditions',
+        'Exit Criteria', 'Original Owner Request', 'Similar-Issue Sweep'
+    )
+    foreach ($field in $requiredFields) {
+        $pattern = '(?m)^\|\s*' + [regex]::Escape($field) + '\s*\|\s*\S.+?\s*\|\s*$'
+        Require ($packet.Body -match $pattern) `
+            "Active task packet must contain a non-empty '$field' table record."
+    }
+}
+
+function Require-ActiveIdentifier([pscustomobject]$packet, [string]$repositoryRoot) {
+    $modeMatch = [regex]::Match($packet.Body, '(?m)^\|\s*Identifier Mode\s*\|\s*(?<mode>[^|]+?)\s*\|\s*$')
+    Require $modeMatch.Success "Active task packet must declare Identifier Mode."
+    $mode = $modeMatch.Groups['mode'].Value.Trim().Split(';')[0].Trim()
+    $closed = @(Get-ClosedIdentifierRecords $repositoryRoot)
+    if ($packet.IsDocumentation) {
+        Require ($mode -eq 'Governance') "A Td packet must use Identifier Mode Governance."
+        $previous = @($closed | Where-Object {
+            $_.IsDocumentation -and $_.Milestone -eq $packet.Milestone
+        } | Sort-Object Subtask -Descending | Select-Object -First 1)
+        $expected = if ($previous.Count -eq 0) { 1 } else { $previous[0].Subtask + 1 }
+        Require ($packet.Subtask -eq $expected) `
+            "Active Td packet must use the next M$($packet.Milestone) Td S identifier ($expected)."
+        return
+    }
+
+    $numeric = @($closed | Where-Object { -not $_.IsDocumentation })
+    $latestTask = if ($numeric.Count -eq 0) { 0 } else { ($numeric | Measure-Object -Property Task -Maximum).Maximum }
+    if ($mode -eq 'New') {
+        Require ($packet.Task -eq ($latestTask + 1) -and $packet.Subtask -eq 1) `
+            "A new task packet must use T$($latestTask + 1) S1."
+        return
+    }
+    if ($mode -eq 'Corrective') {
+        Require ($latestTask -gt 0 -and $packet.Task -eq $latestTask) `
+            "A corrective packet may only use the most recently closed numeric task T$latestTask."
+        $taskRecords = @($numeric | Where-Object { $_.Task -eq $packet.Task })
+        $expectedSubtask = ($taskRecords | Measure-Object -Property Subtask -Maximum).Maximum + 1
+        Require ($packet.Subtask -eq $expectedSubtask) `
+            "A corrective packet must use T$($packet.Task) S$expectedSubtask."
+        return
+    }
+    throw "Numeric task packet Identifier Mode must be New or Corrective."
+}
+
 function Require-NoTaskIdentifier([string]$path, [string]$text) {
     Require (-not ($text -match '\bT\d+\b')) `
         "$path must not allocate or describe a numeric implementation task."
@@ -136,7 +303,7 @@ function New-SelfTestRepository([string]$root) {
     Set-SelfTestFile $root "README.md" "# ntvdm64`n`n## Start Here`n`n## Project Boundary"
     Set-SelfTestFile $root "AGENTS.md" "# Agent Instructions`n`n## Authority`n`n## Execution"
     Set-SelfTestFile $root "CONTRIBUTING.md" "# Contributing`n`n## Change Submission`n`n## Review Record`n`n## Commits And Tracking"
-    Set-SelfTestFile $root "docs/README.md" "# Documentation Guide"
+    Set-SelfTestFile $root "docs/README.md" "# Documentation Guide`n`n## Reading Order`n`n## Daily Operation`n`n## Supporting Detail"
     Set-SelfTestFile $root "docs/QUEUE.md" "# Queue`n`n1. Candidate work"
     Set-SelfTestFile $root "docs/TODO.md" "# Long-Term Review Ledger`n`n## Compatibility Debt`n`n- [ ] **Fixture debt (`TODO(High)`).** Admit only with evidence."
     Set-SelfTestFile $root "docs/STATUS.md" @'
@@ -157,17 +324,24 @@ function New-SelfTestRepository([string]$root) {
 
 ## Recent Governance
 '@
-    Set-SelfTestFile $root "docs/rules/ARCHITECTURE.md" "# Architecture Rules"
-    Set-SelfTestFile $root "docs/rules/CODING.md" "# Coding Standard"
+    Set-SelfTestFile $root "docs/rules/ARCHITECTURE.md" "# Architecture Rules`n`n## Non-Negotiable Invariants`n`n## Source And Research Admission"
+    Set-SelfTestFile $root "docs/rules/CODING.md" "# Coding Standard`n`n## Source Discipline`n`n## Test Boundaries"
     Set-SelfTestFile $root "docs/rules/DOCUMENT.md" "# Documentation Rules`n`n## Authority Boundaries"
-    Set-SelfTestFile $root "docs/rules/EXECUTION.md" "# Execution Policy"
+    Set-SelfTestFile $root "docs/rules/EXECUTION.md" "# Execution Policy`n`n## Request Lifecycle`n`n## Change Discipline`n`n## Similar-Issue Sweep`n`n## Work Identifiers`n`n## Linear Identifier Allocation`n`n## Documentation Governance Gate`n`n## Milestone Closure Evidence`n`n## Build Tree Hygiene`n`n## Recorder Trace Containment"
     Set-SelfTestFile $root "docs/design/GOAL.md" "# Project Goals`n`n1. Strategic outcome"
-    Set-SelfTestFile $root "docs/design/ARCHITECTURE.md" "# System Architecture"
-    Set-SelfTestFile $root "docs/design/CODING.md" "# Source Layout"
-    Set-SelfTestFile $root "docs/design/UI.md" "# Product UX"
+    Set-SelfTestFile $root "docs/design/ARCHITECTURE.md" "# System Architecture`n`n## Product Shape`n`n## Modules, Ownership, And Assembly`n`n## Product And Host Boundary`n`n## Runtime Admission Boundary"
+    Set-SelfTestFile $root "docs/design/CODING.md" "# Source Layout`n`n## Current And Target Trees`n`n## Files And Names`n`n## Source Organization"
+    Set-SelfTestFile $root "docs/design/UI.md" "# Product UX`n`n## NXVM`n`n## NXVDM`n`n## Presentation And Debugging`n`n## Host Resources"
     Set-SelfTestFile $root "docs/design/ROADMAP.md" "# Roadmap`n`n## M0: Governance Reset"
     Set-SelfTestFile $root "docs/etc/README.md" "# Supporting Documentation Index"
     New-Item -ItemType Directory -Force -Path (Join-Path $root "docs/history") | Out-Null
+    git -C $root init -q
+    git -C $root config core.autocrlf false
+    git -C $root config user.email "fixture@example.invalid"
+    git -C $root config user.name "Documentation Fixture"
+    git -C $root add .
+    git -C $root commit -q -m "M5 Td S49 P1: fixture baseline"
+    git -C $root commit --allow-empty -q -m "M5 T300 S4 P1: fixture baseline"
 }
 
 if ($SelfTest) {
@@ -189,6 +363,19 @@ if ($SelfTest) {
         New-SelfTestRepository $fixtureRoot
         Require (Invoke-SelfTestCheck $fixtureRoot) `
             "Documentation schema rejected the controlled passing fixture."
+        $validStatus = Get-Content -Raw -LiteralPath (Join-Path $fixtureRoot "docs/STATUS.md")
+        Set-SelfTestFile $fixtureRoot "docs/design/ARCHITECTURE.md" "# System Architecture"
+        Require (-not (Invoke-SelfTestCheck $fixtureRoot -Quiet)) `
+            "Documentation schema accepted a principal document without required sections."
+        Set-SelfTestFile $fixtureRoot "docs/design/ARCHITECTURE.md" "# System Architecture`n`n## Product Shape`n`n## Modules, Ownership, And Assembly`n`n## Product And Host Boundary`n`n## Runtime Admission Boundary"
+        Set-SelfTestFile $fixtureRoot "docs/etc/unindexed.md" "# Unindexed Support"
+        Require (-not (Invoke-SelfTestCheck $fixtureRoot -Quiet)) `
+            "Documentation schema accepted an unindexed supporting file."
+        Remove-Item -LiteralPath (Join-Path $fixtureRoot "docs/etc/unindexed.md") -Force
+        Set-SelfTestFile $fixtureRoot "docs/README.md" "# Documentation Guide`n`n## Reading Order`n`n[missing](missing.md)`n`n## Daily Operation`n`n## Supporting Detail"
+        Require (-not (Invoke-SelfTestCheck $fixtureRoot -Quiet)) `
+            "Documentation schema accepted a broken relative Markdown link."
+        Set-SelfTestFile $fixtureRoot "docs/README.md" "# Documentation Guide`n`n## Reading Order`n`n## Daily Operation`n`n## Supporting Detail"
         Set-SelfTestFile $fixtureRoot "docs/QUEUE.md" "# Queue`n`n1. T301 is not allowed here"
         Require (-not (Invoke-SelfTestCheck $fixtureRoot -Quiet)) `
             "Documentation schema accepted a Queue task identifier."
@@ -197,6 +384,54 @@ if ($SelfTest) {
         Require (-not (Invoke-SelfTestCheck $fixtureRoot -Quiet)) `
             "Documentation schema accepted a completed debt entry."
         Set-SelfTestFile $fixtureRoot "docs/TODO.md" "# Long-Term Review Ledger`n`n## Compatibility Debt`n`n- [ ] **Fixture debt (`TODO(High)`).** Admit only with evidence."
+        $incompletePacket = $validStatus.Replace(
+            "**Idle.**",
+            "**Active: M5 Td S50.**"
+        ).Replace(
+            "## Current Technical Baseline",
+            "## M5 Td S50 Packet`n`n| Field | Required record |`n| --- | --- |`n| Identifier Mode | Governance |`n`n## Current Technical Baseline"
+        )
+        Set-SelfTestFile $fixtureRoot "docs/STATUS.md" $incompletePacket
+        Require (-not (Invoke-SelfTestCheck $fixtureRoot -Quiet)) `
+            "Documentation schema accepted an incomplete active task packet."
+        $packetRows = @'
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Governance |
+| Admission And Approval | Fixture approval |
+| Objective | Fixture objective |
+| Non-goals | Fixture non-goals |
+| Reference Baseline | T300 |
+| Files And ABI Surface | Documentation only |
+| Applicable Rules | Documentation rules |
+| Verification | Fixture gate |
+| Expected Markers | Fixture marker |
+| Asset Needs | None |
+| Stop Conditions | Fixture stop |
+| Exit Criteria | Fixture exit |
+| Original Owner Request | Fixture request |
+| Similar-Issue Sweep | Fixture sweep |
+'@
+        $validPacket = $validStatus.Replace(
+            "**Idle.**",
+            "**Active: M5 Td S50.**"
+        ).Replace(
+            "## Current Technical Baseline",
+            "## M5 Td S50 Packet`n`n$packetRows`n## Current Technical Baseline"
+        )
+        Set-SelfTestFile $fixtureRoot "docs/STATUS.md" $validPacket
+        Require (Invoke-SelfTestCheck $fixtureRoot) `
+            "Documentation schema rejected a complete next-identifier packet."
+        Set-SelfTestFile $fixtureRoot "docs/STATUS.md" ($validPacket.Replace("| Field | Required record |", "Field | Required record"))
+        Require (-not (Invoke-SelfTestCheck $fixtureRoot -Quiet)) `
+            "Documentation schema accepted an active packet without the fixed table header."
+        Set-SelfTestFile $fixtureRoot "docs/STATUS.md" ($validPacket.Replace("M5 Td S50", "M5 Td S51"))
+        Require (-not (Invoke-SelfTestCheck $fixtureRoot -Quiet)) `
+            "Documentation schema accepted a skipped Td identifier."
+        Set-SelfTestFile $fixtureRoot "docs/STATUS.md" ($validPacket.Replace("M5 Td S50", "M5 T302 S1").Replace("Governance", "New"))
+        Require (-not (Invoke-SelfTestCheck $fixtureRoot -Quiet)) `
+            "Documentation schema accepted a skipped numeric task identifier."
+        Set-SelfTestFile $fixtureRoot "docs/STATUS.md" $validStatus
         Set-SelfTestFile $fixtureRoot "docs/STATUS.md" @'
 # Project Status
 
@@ -275,6 +510,28 @@ Require (@(Get-ChildItem -LiteralPath $historyPath -Directory).Count -eq 0) `
     "docs/history/ must not contain subdirectories."
 Require (Test-Path -LiteralPath $etcIndexPath) `
     "docs/etc/ must contain its supporting-documentation index."
+$etcIndex = Get-Content -Raw -LiteralPath $etcIndexPath
+$etcIndexEntries = @([regex]::Matches($etcIndex, '`(?<entry>[^`]+)`') | ForEach-Object {
+    $_.Groups['entry'].Value.Replace('\', '/')
+})
+foreach ($supportingFile in @(Get-ChildItem -LiteralPath (Split-Path -Parent $etcIndexPath) -Recurse -File -Filter "*.md")) {
+    if ($supportingFile.FullName -eq (Resolve-Path $etcIndexPath).Path) {
+        continue
+    }
+    $supportingRoot = (Resolve-Path (Split-Path -Parent $etcIndexPath)).Path.TrimEnd('\')
+    $relativePath = $supportingFile.FullName.Substring($supportingRoot.Length).TrimStart('\').Replace('\', '/')
+    $covered = (@($etcIndexEntries | Where-Object {
+        if ($_.EndsWith('/')) {
+            return $relativePath.StartsWith($_, [System.StringComparison]::OrdinalIgnoreCase)
+        }
+        return [System.Management.Automation.WildcardPattern]::new(
+            $_,
+            [System.Management.Automation.WildcardOptions]::IgnoreCase
+        ).IsMatch($relativePath)
+    }).Count -gt 0)
+    Require $covered `
+        "Supporting Markdown file is not covered by docs/etc/README.md: $relativePath"
+}
 foreach ($historyFile in @(Get-ChildItem -LiteralPath $historyPath -File)) {
     Require ($historyFile.Name -match '^M\d+-T\d+-.+\.md$') `
         "docs/history/ may contain only numbered implementation-task records."
@@ -290,6 +547,9 @@ $roadmapDesign = Get-Content -Raw -LiteralPath $roadmapDesignPath
 $rootReadme = Get-Content -Raw -LiteralPath $rootReadmePath
 $agents = Get-Content -Raw -LiteralPath $agentsPath
 $contributing = Get-Content -Raw -LiteralPath $contributingPath
+$docsReadme = Get-Content -Raw -LiteralPath (Join-Path $docsRoot "README.md")
+$documentRules = Get-Content -Raw -LiteralPath (Join-Path $rulesPath "DOCUMENT.md")
+$executionRules = Get-Content -Raw -LiteralPath (Join-Path $rulesPath "EXECUTION.md")
 
 Require-HeadingSchema "README.md" $rootReadme "ntvdm64" @(
     '^Start Here$',
@@ -304,13 +564,22 @@ Require-HeadingSchema "CONTRIBUTING.md" $contributing "Contributing" @(
     '^Review Record$',
     '^Commits And Tracking$'
 )
-Require-HeadingSchema "docs/README.md" (Get-Content -Raw -LiteralPath (Join-Path $docsRoot "README.md")) `
-    "Documentation Guide" @()
-Require-HeadingSchema "docs/rules/ARCHITECTURE.md" $architectureRules "Architecture Rules" @()
-Require-HeadingSchema "docs/rules/CODING.md" $codingRules "Coding Standard" @()
-Require-HeadingSchema "docs/rules/DOCUMENT.md" (Get-Content -Raw -LiteralPath (Join-Path $rulesPath "DOCUMENT.md")) `
+Require-HeadingSchema "docs/README.md" $docsReadme "Documentation Guide" @(
+    '^Reading Order$',
+    '^Daily Operation$',
+    '^Supporting Detail$'
+)
+Require-HeadingSchema "docs/rules/ARCHITECTURE.md" $architectureRules "Architecture Rules" @(
+    '^Non-Negotiable Invariants$',
+    '^Source And Research Admission$'
+)
+Require-HeadingSchema "docs/rules/CODING.md" $codingRules "Coding Standard" @(
+    '^Source Discipline$',
+    '^Test Boundaries$'
+)
+Require-HeadingSchema "docs/rules/DOCUMENT.md" $documentRules `
     "Documentation Rules" @('^Authority Boundaries$')
-Require-HeadingSchema "docs/rules/EXECUTION.md" (Get-Content -Raw -LiteralPath (Join-Path $rulesPath "EXECUTION.md")) `
+Require-HeadingSchema "docs/rules/EXECUTION.md" $executionRules `
     "Execution Policy" @(
         '^Request Lifecycle$',
         '^Change Discipline$',
@@ -342,6 +611,38 @@ Require-HeadingSchema "docs/design/UI.md" $uiDesign "Product UX" @(
 )
 Require-HeadingSchema "docs/design/ROADMAP.md" $roadmapDesign "Roadmap" @(
     '^M\d+(?: And Later)?: .+$'
+)
+
+Require-RequiredH2 "README.md" $rootReadme @('^Start Here$', '^Project Boundary$')
+Require-RequiredH2 "AGENTS.md" $agents @('^Authority$', '^Execution$')
+Require-RequiredH2 "CONTRIBUTING.md" $contributing @(
+    '^Change Submission$', '^Review Record$', '^Commits And Tracking$'
+)
+Require-RequiredH2 "docs/README.md" $docsReadme @(
+    '^Reading Order$', '^Daily Operation$', '^Supporting Detail$'
+)
+Require-RequiredH2 "docs/rules/ARCHITECTURE.md" $architectureRules @(
+    '^Non-Negotiable Invariants$', '^Source And Research Admission$'
+)
+Require-RequiredH2 "docs/rules/CODING.md" $codingRules @(
+    '^Source Discipline$', '^Test Boundaries$'
+)
+Require-RequiredH2 "docs/rules/DOCUMENT.md" $documentRules @('^Authority Boundaries$')
+Require-RequiredH2 "docs/rules/EXECUTION.md" $executionRules @(
+    '^Request Lifecycle$', '^Change Discipline$', '^Similar-Issue Sweep$',
+    '^Work Identifiers$', '^Linear Identifier Allocation$',
+    '^Documentation Governance Gate$', '^Milestone Closure Evidence$',
+    '^Build Tree Hygiene$', '^Recorder Trace Containment$'
+)
+Require-RequiredH2 "docs/design/ARCHITECTURE.md" $architectureDesign @(
+    '^Product Shape$', '^Modules, Ownership, And Assembly$',
+    '^Product And Host Boundary$', '^Runtime Admission Boundary$'
+)
+Require-RequiredH2 "docs/design/CODING.md" $codingDesign @(
+    '^Current And Target Trees$', '^Files And Names$', '^Source Organization$'
+)
+Require-RequiredH2 "docs/design/UI.md" $uiDesign @(
+    '^NXVM$', '^NXVDM$', '^Presentation And Debugging$', '^Host Resources$'
 )
 
 Require-NoTaskIdentifier "docs/QUEUE.md" (Get-Content -Raw -LiteralPath $queuePath)
@@ -385,6 +686,10 @@ if ($idle) {
 else {
     Require (($status | Select-String -AllMatches -Pattern '(?m)^## M\d+ (?:T\d+|Td) S\d+ Packet$').Matches.Count -eq 1) `
         "Active STATUS.md must contain exactly one task packet."
+    $activePacket = Get-ActivePacket $status
+    Require ($null -ne $activePacket) "Active STATUS.md must expose a parseable task packet."
+    Require-ActivePacketSchema $activePacket
+    Require-ActiveIdentifier $activePacket $RepositoryRoot
 }
 
 Require (-not ($todo -match '(?m)^[-*] \[x\]')) `
@@ -428,6 +733,9 @@ Require ($statusArtifacts.Count -eq 1 -and $statusArtifacts[0] -eq $expectedArti
     "STATUS.md current artifact must match CMakePresets.json ($expectedArtifact)."
 
 $markdownFiles = @(
+    Get-Item -LiteralPath $rootReadmePath
+    Get-Item -LiteralPath $agentsPath
+    Get-Item -LiteralPath $contributingPath
     Get-ChildItem -LiteralPath $docsRoot -Recurse -File -Filter "*.md"
     Get-ChildItem -LiteralPath (Join-Path $RepositoryRoot "tools") -Recurse -File -Filter "*.md"
 )
@@ -437,5 +745,6 @@ Require ($null -eq $mojibake) "Documentation contains mojibake: $($mojibake.Full
 $localPaths = $markdownFiles |
     Where-Object { Test-MachineLocalPath (Get-Content -Raw -LiteralPath $_.FullName) }
 Require ($null -eq $localPaths) "Documentation contains machine-local paths: $($localPaths.FullName -join ', ')"
+Require-RelativeMarkdownLinks $RepositoryRoot @($markdownFiles | ForEach-Object FullName)
 
 Write-Output "Documentation governance checks passed for $currentTarget."
