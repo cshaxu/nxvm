@@ -363,6 +363,122 @@ static C_INT atomic_test_outer_retf32_nonpresent_stack(C_VOID)
     return failed;
 }
 
+static C_INT atomic_test_outer_iret_frame(C_INT operand16, C_INT address_prefix,
+    C_INT wide_new_stack)
+{
+    static const uint8_t iret32[] = { 0xcfu };
+    static const uint8_t iret32_address[] = { 0x67u,0xcfu };
+    static const uint8_t iret16[] = { 0x66u,0xcfu };
+    static const uint32_t frame32[] = {
+        0x0010u,0x001bu,0x00000203u,0x1000u,0x0023u
+    };
+    static const uint16_t frame16[] = {
+        0x0010u,0x001bu,0x0203u,0x1000u,0x0023u
+    };
+    const core_machine_run_budget boot_budget = { 128u, 0u };
+    const core_machine_run_budget budget = { 1u, 0u };
+    const uint8_t stack_flags = 0x40u;
+    const uint8_t *program = operand16 ? iret16 :
+        (address_prefix ? iret32_address : iret32);
+    const STD_SIZE_T program_bytes = operand16 ? sizeof(iret16) :
+        (address_prefix ? sizeof(iret32_address) : sizeof(iret32));
+    atomic_machine state;
+    core_machine_run_result result = {0};
+    core_machine_cpu_diagnostic diagnostic;
+    t_cpu cpu;
+    C_INT failed = !atomic_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+
+    if (!failed) {
+        failed |= !atomic_install(&state) ||
+            core_machine_run(state.machine, boot_budget, &result) != TYPE_STATUS_OK ||
+            result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
+        test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
+        cpu = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        cpu.data.cs.seg.exec.defsize = TYPE_TRUE;
+        cpu.data.esp = 0x12348000u;
+        state.machine->executor_cpu = cpu;
+        if (!failed && wide_new_stack) {
+            failed |= !atomic_write(&state, ATOMIC_GDT_BASE + 38u, &stack_flags,
+                sizeof(stack_flags));
+        }
+        failed |= !atomic_write(&state, ATOMIC_KERNEL_BASE, program, program_bytes) ||
+            !atomic_write(&state, ATOMIC_KERNEL_STACK_BASE + 0x8000u,
+                operand16 ? (const C_VOID *)frame16 : (const C_VOID *)frame32,
+                operand16 ? sizeof(frame16) : sizeof(frame32)) ||
+            core_machine_run(state.machine, budget, &result) != TYPE_STATUS_OK ||
+            result.reason != CORE_MACHINE_STOP_BUDGET ||
+            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != TYPE_STATUS_OK;
+        cpu = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        failed |= diagnostic.first_fault.valid || cpu.data.eip != 0x0010u ||
+            cpu.data.cs.selector != 0x001bu || cpu.data.cs.dpl != 3u ||
+            cpu.data.ss.selector != 0x0023u || cpu.data.ss.dpl != 3u ||
+            cpu.data.eflags != 0x00000203u ||
+            cpu.data.esp != (wide_new_stack ? 0x00001000u : 0x12341000u);
+    }
+    core_machine_destroy(state.machine);
+    return failed;
+}
+
+static C_INT atomic_test_outer_iret32_failure(C_INT target_limit)
+{
+    static const uint8_t iret[] = { 0x66u,0xcfu };
+    static const uint32_t frame[] = {
+        0x0010u,0x001bu,0x00000203u,0x1000u,0x0033u
+    };
+    const core_machine_run_budget boot_budget = { 128u, 0u };
+    const core_machine_run_budget budget = { 128u, 0u };
+    const uint8_t zero = 0u;
+    const uint8_t code_access = 0xf8u;
+    atomic_machine state;
+    core_machine_run_result result = {0};
+    core_machine_cpu_diagnostic diagnostic;
+    t_cpu before;
+    t_cpu after;
+    uint8_t current_code_access = 0u;
+    uint8_t stack_access = 0u;
+    C_INT failed = !atomic_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+
+    if (!failed) {
+        failed |= !atomic_install(&state) ||
+            core_machine_run(state.machine, boot_budget, &result) != TYPE_STATUS_OK ||
+            result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
+        test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
+        before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        before.data.esp = 0x12348000u;
+        state.machine->executor_cpu = before;
+        if (target_limit) {
+            failed |= !atomic_write(&state, ATOMIC_GDT_BASE + 24u, &zero, 1u) ||
+                !atomic_write(&state, ATOMIC_GDT_BASE + 25u, &zero, 1u) ||
+                !atomic_write(&state, ATOMIC_USER_CODE_ACCESS, &code_access, 1u);
+        }
+        failed |= !atomic_write(&state, ATOMIC_KERNEL_BASE, iret, sizeof(iret)) ||
+            !atomic_write(&state, ATOMIC_KERNEL_STACK_BASE + 0x8000u,
+                (const uint8_t *)frame, sizeof(frame)) ||
+            core_machine_run(state.machine, budget, &result) != TYPE_STATUS_OK ||
+            result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != TYPE_STATUS_OK;
+        after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        failed |= diagnostic.first_fault.valid ||
+            !diagnostic.last_delivered_exception.valid ||
+            !TYPE_GET_BIT(diagnostic.last_delivered_exception.exception_mask,
+                target_limit ? VCPUINS_EXCEPT_GP : VCPUINS_EXCEPT_SS) ||
+            diagnostic.last_delivered_exception.exception_code !=
+                (target_limit ? 0u : 0x0030u) ||
+            after.data.eip != atomic_fault_stop_ip(target_limit ? 13u : 12u) ||
+            after.data.sp != 0x7ff8u || after.data.flags != before.data.flags ||
+            STD_MEMCMP(&after.data.cs, &before.data.cs, sizeof(before.data.cs)) != 0 ||
+            STD_MEMCMP(&after.data.ss, &before.data.ss, sizeof(before.data.ss)) != 0 ||
+            !test_core_machine_fixture_read_linear(state.machine,
+                ATOMIC_USER_CODE_ACCESS, TYPE_REFERENCE_OF(current_code_access), 1u) ||
+            current_code_access != (target_limit ? code_access : 0xfau) ||
+            !test_core_machine_fixture_read_linear(state.machine,
+                ATOMIC_NONPRESENT_STACK_ACCESS, TYPE_REFERENCE_OF(stack_access), 1u) ||
+            stack_access != 0x72u;
+    }
+    core_machine_destroy(state.machine);
+    return failed;
+}
+
 C_INT main(C_VOID)
 {
     static const atomic_return_case cases[] = {
@@ -380,8 +496,14 @@ C_INT main(C_VOID)
     if (atomic_test_outer_retf_frame(1, 0, 0) ||
         atomic_test_outer_retf_frame(0, 0, 1) ||
         atomic_test_outer_retf_frame(0, 1, 1) ||
-        atomic_test_outer_retf32_nonpresent_stack()) return 1;
+        atomic_test_outer_retf32_nonpresent_stack() ||
+        atomic_test_outer_iret_frame(1, 0, 0) ||
+        atomic_test_outer_iret_frame(0, 0, 1) ||
+        atomic_test_outer_iret_frame(0, 1, 1) ||
+        atomic_test_outer_iret32_failure(0) ||
+        atomic_test_outer_iret32_failure(1)) return 1;
     STD_PRINTF("M5:T306:S4:OUTER-RETF:OK\n");
+    STD_PRINTF("M5:T306:S5:OUTER-IRET:OK\n");
     STD_PRINTF("M5:T293:S2:PROTECTED-RETURN-ATOMICITY:OK\n");
     return 0;
 }
