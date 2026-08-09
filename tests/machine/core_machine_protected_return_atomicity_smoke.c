@@ -14,6 +14,7 @@
 #define ATOMIC_NONPRESENT_CODE_ACCESS (ATOMIC_GDT_BASE + 45u)
 #define ATOMIC_NONPRESENT_STACK_ACCESS (ATOMIC_GDT_BASE + 53u)
 #define ATOMIC_BAD_ENTRY_ACCESS (ATOMIC_GDT_BASE + 61u)
+#define ATOMIC_CONFORM_CODE_ACCESS (ATOMIC_GDT_BASE + 69u)
 
 typedef struct atomic_machine {
     core_machine *machine;
@@ -25,6 +26,7 @@ typedef struct atomic_return_case {
     uint16_t ss;
     uint8_t vector;
     uint16_t error_code;
+    uint32_t exception_mask;
     C_INT delivered;
 } atomic_return_case;
 
@@ -81,7 +83,7 @@ static C_VOID atomic_set_gate(uint8_t *idt, uint8_t vector, uint16_t offset)
 
 static C_INT atomic_install(atomic_machine *state)
 {
-    static const uint8_t gdt_pointer[] = { 0x3fu, 0x00u, 0x00u, 0x03u, 0x00u, 0x00u };
+    static const uint8_t gdt_pointer[] = { 0x47u, 0x00u, 0x00u, 0x03u, 0x00u, 0x00u };
     static const uint8_t idt_pointer[] = { 0x6fu, 0x00u, 0x00u, 0x04u, 0x00u, 0x00u };
     static const uint8_t gdt[] = {
         0,0,0,0,0,0,0,0,
@@ -91,7 +93,8 @@ static C_INT atomic_install(atomic_machine *state)
         0xff,0xff,0,0x50,0,0xf2,0,0,
         0xff,0xff,0,0x40,0,0x7a,0,0,
         0xff,0xff,0,0x50,0,0x72,0,0,
-        0xff,0xff,0,0x60,0,0xf2,0,0
+        0xff,0xff,0,0x60,0,0xf2,0,0,
+        0xff,0xff,0,0x70,0,0xfe,0,0
     };
     uint8_t idt[0x70u] = {0};
     static const uint8_t real_code[] = {
@@ -165,11 +168,13 @@ static C_INT atomic_test_outer_return(const atomic_return_case *test, C_INT use_
         ATOMIC_USER_CODE_ACCESS,
         ATOMIC_NONPRESENT_CODE_ACCESS,
         ATOMIC_NONPRESENT_STACK_ACCESS,
-        ATOMIC_BAD_ENTRY_ACCESS
+        ATOMIC_BAD_ENTRY_ACCESS,
+        ATOMIC_CONFORM_CODE_ACCESS
     };
-    static const uint8_t expected_access[] = { 0xfau, 0x7au, 0x72u, 0xf2u };
+    static const uint8_t expected_access[] = { 0xfau, 0x7au, 0x72u, 0xf2u, 0xfeu };
     atomic_machine state;
     core_machine_run_result result = {0};
+    core_machine_cpu_diagnostic diagnostic;
     const core_machine_run_budget budget = { 128u, 0u };
     t_cpu_data before;
     t_cpu cpu;
@@ -198,7 +203,12 @@ static C_INT atomic_test_outer_return(const atomic_return_case *test, C_INT use_
             atomic_return_code(code, use_iret, test));
         if (test->delivered) {
             run_failed = core_machine_run(state.machine, budget, &result) != TYPE_STATUS_OK ||
-                result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
+                result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+                core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != TYPE_STATUS_OK ||
+                diagnostic.first_fault.valid || !diagnostic.last_delivered_exception.valid ||
+                !TYPE_GET_BIT(diagnostic.last_delivered_exception.exception_mask,
+                    test->exception_mask) ||
+                diagnostic.last_delivered_exception.exception_code != test->error_code;
         } else {
             run_failed = core_machine_run(state.machine, budget, &result) != TYPE_STATUS_FAULT ||
                 result.reason != CORE_MACHINE_STOP_FAULT ||
@@ -218,6 +228,7 @@ static C_INT atomic_test_outer_return(const atomic_return_case *test, C_INT use_
                 ATOMIC_KERNEL_STACK_BASE + expected_sp, frame, sizeof(frame)) != TYPE_STATUS_OK;
             state_failed |= cpu.data.eip != atomic_fault_stop_ip(test->vector) ||
                 cpu.data.sp != expected_sp ||
+                cpu.data.flags != before.flags ||
                 STD_MEMCMP(&cpu.data.cs, &before.cs, sizeof(before.cs)) != 0 ||
                 STD_MEMCMP(&cpu.data.ss, &before.ss, sizeof(before.ss)) != 0 ||
                 frame[0u] != test->error_code || frame[1u] != expected_return_ip ||
@@ -249,9 +260,10 @@ static C_INT atomic_test_outer_return(const atomic_return_case *test, C_INT use_
 C_INT main(C_VOID)
 {
     static const atomic_return_case cases[] = {
-        { "nonpresent-cs", 0x002bu, 0x0023u, 11u, 0x0028u, 1 },
-        { "nonpresent-ss", 0x001bu, 0x0033u, 12u, 0x0030u, 0 },
-        { "inaccessible-entry", 0x003bu, 0x0023u, 13u, 0x0038u, 1 }
+        { "nonpresent-cs", 0x002bu, 0x0023u, 11u, 0x0028u, VCPUINS_EXCEPT_NP, 1 },
+        { "nonpresent-ss", 0x001bu, 0x0033u, 12u, 0x0030u, VCPUINS_EXCEPT_SS, 0 },
+        { "inaccessible-entry", 0x003bu, 0x0023u, 13u, 0x0038u, VCPUINS_EXCEPT_GP, 1 },
+        { "conforming-cs", 0x0043u, 0x0023u, 13u, 0x0040u, VCPUINS_EXCEPT_GP, 1 }
     };
     STD_SIZE_T index;
 
