@@ -2,27 +2,27 @@
 
 ## Current Work
 
-**Active: M5 T312 S1 P0.**
+**Active: M5 T312 S2.**
 
-## M5 T312 S1 Packet
+## M5 T312 S2 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New; M5 T312 S1 P0 trace-driven 80386 system-extension admission. Coordinated Dual-Session Mode. |
-| Admission And Approval | T312 is the next linear task selected from the Queue after accepted T311 closure. S1 P0 is audit-only and creates no implementation admission. |
-| Objective | Freeze form-by-form evidence for the bounded candidate system-extension families and identify at most one existing reproducible VM/M5 consumer that could justify a later single-family packet. |
-| Non-goals | CPU/CMake/artifact/Queue/product changes, trace-framework construction, long guest-image runs, inferred consumer claims, FPU, M6 mantle, a second executor, or any implementation batch. |
-| Reference Baseline | Accepted T311 0.5.0311 paging-boundary closure, current Queue system-extension candidate, and retained T304/T307/T308 system/delivery evidence. |
-| Files And ABI Surface | S1 P0 may change only T312 evidence and active status records. It must not change runtime code, interfaces, test topology, ownership, artifact identity, Queue, or product UX. |
+| Identifier Mode | Corrective; M5 T312 S2 system-extension no-admission closure. T312 S1 P0 `67e73ca8` is the occupied audit admission packet; Coordinated Dual-Session Mode. |
+| Admission And Approval | T312 remains the current linear task. S2 records the required corrective evidence closure after S1 P0 was recognized by the identifier gate; it does not activate T313. |
+| Objective | Close the T312 system-extension audit as a withdraw/no-op: make each candidate's existing surface, focused proof, absent VM/M5 consumer, and future evidence requirement independently reviewable. |
+| Non-goals | CPU/CMake/artifact/Queue/product changes, trace-framework construction, long guest-image runs, inferred consumer claims, FPU, M6 mantle, a second executor, implementation, an artifact, or a task close/Idle transition. |
+| Reference Baseline | T312 S1 P0 `67e73ca8`, accepted T311 0.5.0311 paging-boundary closure, Queue system-extension candidate, and retained T304/T307/T308 evidence. |
+| Files And ABI Surface | S2 may change only T312 evidence and active status records. It must not change runtime code, interfaces, test topology, ownership, artifact identity, Queue, or product UX. |
 | Applicable Rules | `rules/EXECUTION.md`, `rules/ARCHITECTURE.md`, `rules/CODING.md`, `rules/DOCUMENT.md`, and `etc/operations/policy/source-policy.md`; retain one core executor/state owner and existing checked memory, stack, and fault routes. |
 | Verification | Intel 80386 PRM is authoritative. Record versioned read-only Bochs 2.6 and PCjs 2.00.0 behavior paths; use focused prepared-state probes only. |
-| Expected Markers | Documentation governance and diff check prove the audit-only record; S1 P0 creates no runtime marker or artifact. |
+| Expected Markers | Documentation governance and diff check prove the withdraw/no-op record; S2 creates no runtime marker or artifact. |
 | S1 Audit Record | [T312 system-extension admission](etc/evidence/t312-system-extension-admission.md) records the authority, form/consumer matrix, and no-admission or narrow-packet disposition. |
 | Asset Needs | Read-only local references only; no guest media, firmware, or third-party source is committed. |
 | Original Owner Request | Execute the direct M5 80386 protected execution/delivery package in coordinated mode, stopping before Mantle; use Intel as authority with read-only Bochs and PCjs comparison. |
 | Similar-Issue Sweep | Sweep decoder metadata, handler tables, profile/mode gates, existing tests, trace/diagnostic hooks, product/checkpoint evidence, and TODO for TSS/task-gate/nested-return, LDT, V86, debug-register, and remaining-system forms. |
 | Stop Conditions | Stop and report an Intel/reference disagreement, absent reproducible consumer, a need for trace-framework construction or long image probing, a cross-owner dependency, FPU scope, M6 mantle entry, or more than one candidate family. |
-| Exit Criteria | S1 P0 records the complete form/proof/consumer matrix, separates test evidence from production consumers, and either proposes one narrow later packet or records no admission; it passes documentation governance and diff check and pushes its audit commit before reporting. |
+| Exit Criteria | S2 records the complete per-candidate no-admission disposition, S1 P0/S2 corrective continuity, and future evidence requirements; it passes documentation governance and diff check and pushes its evidence commit before reporting. |
 
 ## Current Technical Baseline
 
