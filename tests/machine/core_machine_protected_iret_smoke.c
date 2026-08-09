@@ -210,7 +210,7 @@ static C_INT iret_test_user_flags(C_VOID)
     iret_machine state;
     t_cpu after;
     uint8_t program[] = {0xcfu,0x90u};
-    uint32_t frame[] = {1u,0x000bu,0x00003203u};
+    uint32_t frame[] = {1u,0x000bu,0x00013203u};
     C_INT failed = !iret_prepare(&state, IRET_NEGATIVE_NONE, 0, 0, 1);
 
     if (!failed) {
@@ -222,7 +222,7 @@ static C_INT iret_test_user_flags(C_VOID)
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= diagnostic.first_fault.valid || after.data.eip != 1u ||
             after.data.esp != IRET_STACK + 12u || after.data.cs.selector != 0x000bu ||
-            after.data.eflags != 0x00000003u;
+            after.data.eflags != 0x00010003u;
     }
     core_machine_destroy(state.machine);
     return !failed;

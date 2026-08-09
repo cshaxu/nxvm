@@ -190,6 +190,39 @@ The S5 similar-issue sweep covered `_e_iret`, the outer-return planner,
 and T293/T303/T305 retained probes. Same-CPL IRET, outer RETF, real-mode,
 VM/task branches, gates, and paging retain their previously frozen behavior.
 
+## S6 Outer IRET EFLAGS Privilege Evidence
+
+The Intel 80386 `IRET` protected-mode rules use the privilege state before the
+return: IOPL changes only at old CPL 0, IF changes only when old CPL is no
+greater than the old IOPL, and RF remains an ordinary restorable 80386 EFLAGS
+bit. VM is unaffected by ordinary protected returns; a frame requesting VM is
+routed to the retained virtual-8086 branch rather than this planner. The
+16-bit frame form additionally cannot supply high EFLAGS bits.
+
+`_ser_iret_protected_outer` now creates an explicit commit mask from the old
+CPL and old IOPL: reserved and VM bits always preserve entry state; nonzero
+old CPL also preserves IOPL; and an old CPL greater than old IOPL preserves
+IF. RF is deliberately absent from that mask. The same-CPL IRET sweep found
+the same erroneous nonzero-CPL RF mask and removes it there as the identical
+Intel rule; its IOPL, VM, and IF conditions remain otherwise unchanged.
+Real-mode, current-V86, returned-V86, and nested-task EFLAGS assignments use
+different frozen paths and are not changed.
+
+Read-only Bochs 2.6 `cpu/iret.cc` confirms the old-CPL/old-IOPL IF and IOPL
+conditions and the ordinary RF restore mask; PCjs 2.00.0
+`machines/pcx86/modules/v2/x86help.js` remains the read-only IRET path
+comparison. Neither source is copied. The Intel 80386 Programmer's Reference
+Manual remains semantic authority.
+
+The focused probes now cover a CPL0-to-CPL3 outer 32-bit frame that restores
+IF, IOPL, and RF, a 16-bit representative that restores IF and IOPL, and a
+CPL1-to-CPL3 32-bit frame where incoming IF and IOPL remain preserved while RF
+restores. VM stays clear in every ordinary protected-frame result, matching
+its explicit non-restoration rule. The retained same-CPL CPL3 probe now proves
+RF restoration while IOPL and IF remain masked. Failure probes retain the
+pre-commit CS/SS/EFLAGS/access-byte assertions. The marker remains
+`M5:T306:S5:OUTER-IRET:OK` because S6 narrows its existing EFLAGS contract.
+
 The retained T293 outer-return atomicity, T303 control-transfer, and T305
 interrupt-entry probes remain required regression consumers. S2 does not
 admit outer RETF/IRET, task/V86 returns, gates, or exception-delivery changes.

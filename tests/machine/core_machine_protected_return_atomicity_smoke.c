@@ -364,17 +364,13 @@ static C_INT atomic_test_outer_retf32_nonpresent_stack(C_VOID)
 }
 
 static C_INT atomic_test_outer_iret_frame(C_INT operand16, C_INT address_prefix,
-    C_INT wide_new_stack)
+    C_INT wide_new_stack, C_INT restricted_flags)
 {
     static const uint8_t iret32[] = { 0xcfu };
     static const uint8_t iret32_address[] = { 0x67u,0xcfu };
     static const uint8_t iret16[] = { 0x66u,0xcfu };
-    static const uint32_t frame32[] = {
-        0x0010u,0x001bu,0x00000203u,0x1000u,0x0023u
-    };
-    static const uint16_t frame16[] = {
-        0x0010u,0x001bu,0x0203u,0x1000u,0x0023u
-    };
+    uint32_t frame32[] = { 0x0010u,0x001bu,0u,0x1000u,0x0023u };
+    uint16_t frame16[] = { 0x0010u,0x001bu,0u,0x1000u,0x0023u };
     const core_machine_run_budget boot_budget = { 128u, 0u };
     const core_machine_run_budget budget = { 1u, 0u };
     const uint8_t stack_flags = 0x40u;
@@ -382,6 +378,10 @@ static C_INT atomic_test_outer_iret_frame(C_INT operand16, C_INT address_prefix,
         (address_prefix ? iret32_address : iret32);
     const STD_SIZE_T program_bytes = operand16 ? sizeof(iret16) :
         (address_prefix ? sizeof(iret32_address) : sizeof(iret32));
+    const uint32_t return_flags = restricted_flags ? 0x00013003u :
+        (operand16 ? 0x00003203u : 0x00013203u);
+    const uint32_t expected_flags = restricted_flags ? 0x00010203u :
+        return_flags;
     atomic_machine state;
     core_machine_run_result result = {0};
     core_machine_cpu_diagnostic diagnostic;
@@ -395,8 +395,17 @@ static C_INT atomic_test_outer_iret_frame(C_INT operand16, C_INT address_prefix,
         test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
         cpu = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         cpu.data.cs.seg.exec.defsize = TYPE_TRUE;
+        cpu.data.eflags = restricted_flags ? 0x00000202u : 0x00000002u;
+        if (restricted_flags) {
+            cpu.data.cs.selector = 0x0009u;
+            cpu.data.cs.dpl = 1u;
+            cpu.data.ss.selector = 0x0011u;
+            cpu.data.ss.dpl = 1u;
+        }
         cpu.data.esp = 0x12348000u;
         state.machine->executor_cpu = cpu;
+        frame32[2u] = return_flags;
+        frame16[2u] = (uint16_t)return_flags;
         if (!failed && wide_new_stack) {
             failed |= !atomic_write(&state, ATOMIC_GDT_BASE + 38u, &stack_flags,
                 sizeof(stack_flags));
@@ -412,7 +421,7 @@ static C_INT atomic_test_outer_iret_frame(C_INT operand16, C_INT address_prefix,
         failed |= diagnostic.first_fault.valid || cpu.data.eip != 0x0010u ||
             cpu.data.cs.selector != 0x001bu || cpu.data.cs.dpl != 3u ||
             cpu.data.ss.selector != 0x0023u || cpu.data.ss.dpl != 3u ||
-            cpu.data.eflags != 0x00000203u ||
+            cpu.data.eflags != expected_flags ||
             cpu.data.esp != (wide_new_stack ? 0x00001000u : 0x12341000u);
     }
     core_machine_destroy(state.machine);
@@ -497,9 +506,10 @@ C_INT main(C_VOID)
         atomic_test_outer_retf_frame(0, 0, 1) ||
         atomic_test_outer_retf_frame(0, 1, 1) ||
         atomic_test_outer_retf32_nonpresent_stack() ||
-        atomic_test_outer_iret_frame(1, 0, 0) ||
-        atomic_test_outer_iret_frame(0, 0, 1) ||
-        atomic_test_outer_iret_frame(0, 1, 1) ||
+        atomic_test_outer_iret_frame(1, 0, 0, 0) ||
+        atomic_test_outer_iret_frame(0, 0, 1, 0) ||
+        atomic_test_outer_iret_frame(0, 1, 1, 0) ||
+        atomic_test_outer_iret_frame(0, 0, 0, 1) ||
         atomic_test_outer_iret32_failure(0) ||
         atomic_test_outer_iret32_failure(1)) return 1;
     STD_PRINTF("M5:T306:S4:OUTER-RETF:OK\n");
