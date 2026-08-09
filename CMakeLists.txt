@@ -170,6 +170,10 @@ add_executable(core-machine-arpl-smoke
     tests/machine/core_machine_arpl_smoke.c)
 target_link_libraries(core-machine-arpl-smoke PRIVATE core-machine)
 
+add_executable(core-machine-segment-selector-smoke
+    tests/machine/core_machine_segment_selector_smoke.c)
+target_link_libraries(core-machine-segment-selector-smoke PRIVATE core-machine)
+
 add_executable(core-machine-80386-paging-smoke
     tests/machine/core_machine_80386_paging_smoke.c)
 target_link_libraries(core-machine-80386-paging-smoke PRIVATE core-machine)
@@ -1075,6 +1079,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-real-mode-386-rep-cmps-smoke
     core-machine-80286-protected-mode-smoke
     core-machine-arpl-smoke
+    core-machine-segment-selector-smoke
     core-machine-cpu-profile-gate-smoke
     core-machine-protected-privilege-smoke
     core-machine-protected-return-atomicity-smoke
