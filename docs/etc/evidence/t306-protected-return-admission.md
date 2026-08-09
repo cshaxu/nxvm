@@ -136,6 +136,29 @@ CS frame for both 16-bit outer RETF and outer IRET. It requires the retained
 access byte, and the exact delivered exception record. The pre-existing
 same-CPL and outer 16-bit success/failure paths remain in that probe.
 
+## S4 Outer RETF Evidence
+
+S4 extends `_ser_ret_far_outer` for both operand widths. It reads the 16-bit
+frame as IP, CS, parameter area, SP, SS and the 32-bit frame as EIP, CS dword
+slot, parameter area, ESP, SS dword slot. `66h` selects that width; `67h` does
+not alter it. The old stack route checks the return IP/EIP and CS words before
+the new-SP/SS peeks validate their own accesses. The retained new-SS-before-CS
+validation order remains intact.
+
+After all candidate CS, SS, privilege, present, and target-limit checks pass,
+descriptor accessed bytes are written and the new SS, CS, EIP, CPL, and stack
+pointer publish together. The new SS B bit independently chooses whether the
+returned pointer plus `imm16` updates ESP or only SP; neither the operand-size
+prefix nor `67h` changes that choice.
+
+The focused return probe adds 80386 outer RETF immediate forms for 16-bit
+operand size, 32-bit operand size, and `67h` with a 32-bit operand frame. It
+proves both target-stack B-bit outcomes and emits
+`M5:T306:S4:OUTER-RETF:OK`. A 32-bit-frame non-present new SS case proves
+`#SS(0x30)` delivery without early user CS/SS/ESP or descriptor-access publish.
+T293 remains the retained outer-16 atomicity marker; T303 and T305 remain
+retained transfer and delivery intersections. Outer IRET is unchanged.
+
 The retained T293 outer-return atomicity, T303 control-transfer, and T305
 interrupt-entry probes remain required regression consumers. S2 does not
 admit outer RETF/IRET, task/V86 returns, gates, or exception-delivery changes.
