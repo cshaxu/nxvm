@@ -172,12 +172,13 @@ default definition of NXVM completion.
 
 ## Architecture, Portability, And Product Boundaries
 
-- [ ] **M5 core second-consumer closure (`TODO(High)`, T300--T303).** T296
+- [ ] **M5 core second-consumer closure (`TODO(High)`, T301--T303).** T296
   completed the separately evidenced display/port, DMA/RTC/CMOS/NMI, and
   FDC/HDC initialization-authority stages with frozen typed core submissions;
-  T297--T299 closed firmware/debug capability and public raw-borrow removal.
-  T300/T302 remain conditional on recorded first-party consumer evidence;
-  T301 and T303 follow their stated dependencies. This proves a core-only
+  T297--T300 closed firmware/debug capability, public raw-borrow removal,
+  port ownership, failure propagation, and session-init atomicity. T302
+  remains conditional on recorded first-party consumer evidence; T301 and T303
+  follow their stated dependencies. This proves a core-only
   second-consumer boundary but does not implement `mantle`,
   DOS, VDM, an external ABI, or host policy.
 - [ ] **M6 mantle session envelope (`TODO(High)`).** After M5 T303 proves the

@@ -2,64 +2,15 @@
 
 ## Current Work
 
-**M5 T300 S4: Public interface boundary and recurrence gate -- active.**
-
-| Requirement | Acceptance evidence |
-| --- | --- |
-| Public interfaces carry no private implementation layout. | `machine_interface.h` uses only copyable display/controller configuration contracts; public headers do not include private core-machine headers. |
-| Debugger observation is explicit and copied. | The record names retained debugger CPU/instruction/memory fields without `t_cpu`, `t_cpuins`, executor, RAM, or port layout. |
-| The boundary cannot silently regress. | The strengthened raw-borrow gate rejects private public-header includes/layouts, raw borrows, profile bindings, `core_token` pointer conversion, and `src` use of `tests/support`. |
-
-- **Original request:** eliminate private device/CPU layouts from public core
-  interfaces, retain only necessary narrow copied configuration, and make the
-  debugger instruction observation an explicit copied contract.
-- **Scope:** core public interface headers, retained VM debugger consumer,
-  focused debugger evidence, and the T299 recurrence gate.
-- **Non-goals:** any new device framework, CPU/executor mutation contract,
-  pre-decode registry, T301 work, host shortcut, second video owner, or
-  Console/debugger/boot/DOS UX change.
-- **Frozen S4 contract:** `controller_interface.h` is the sole shared narrow
-  declaration for a core-issued opaque DMA binding nonce, FDC drive/config,
-  and HDC config values. The nonce is validated only against the receiving
-  machine's private DMA state; it is neither an address nor a dereferenceable
-  capability. FDC retains only core-installed request callbacks, which
-  revalidate against their owning machine before DRQ changes.
-  `display_interface.h` owns copied display capability
-  configuration. Public machine/debug interfaces expose no private device header or complete
-  CPU/instruction layout. The debugger record is copied and limited to fields
-  used by breakpoints, recorder/disassembly, and memory-access output.
-- **Similar-issue sweep:** `rg -n -g '*_interface.h'` scanned private
-  core-machine includes and raw layout names across `src`; there are no
-  production hits. Two core tests retain direct private includes only for
-  same-module test constants (`cpu.h` entry-plan flags and `vadp.h` display
-  topology); neither is a public or product route.
-- **Active P2 evidence:** `core-machine-dma-binding-token-smoke` creates two
-  core machines, proves their nonces differ, rejects each foreign binding, and
-  freezes/resets each matching binding. `core-machine-dma-channel-smoke`
-  retains same-machine DRQ transfer coverage.
-- **Rules:** architecture overview, module layout, contracts, coding standard,
-  source policy, execution workflow, and execution policy apply. The T300
-  admission is owner-approved. No exception is requested.
-- **Verification:** focused core debugger observation and public-interface
-  gate; retained Console/DOS/FDD/HDD boot probes; `git diff --check`,
-  documentation governance, and full `current-gates-gcc`. The active S4
-  artifact is `nxvm_0_5_0300.exe` (2,588,088 bytes, SHA-256
-  `B02BEF7B349BAD880086CDAB6485A64702C11E302060519D57E4743AD232023C`).
-- **Carry-forward:** S1's directional ownership, S2's exact provider failure
-  propagation, and S3's session failure atomicity remain unchanged.
-- **Stop condition:** every public header passes the source-shape gate, the
-  copied debugger observation retains its consumer behavior, and all retained
-  product regressions and the 0.5.0300 artifact evidence pass. T300 remains
-  active pending coordinator final review.
+**Idle. M5 T300 is closed; T301 is the next reserved numeric task.**
 
 ## Current Technical Baseline
 
 - **T300 artifact identity:** `current-gcc` and
   `verify-current-artifact-target` select `vm-0-5-0300` / `nxvm_0_5_0300.exe`.
-  S4 active evidence: the strengthened source-shape gate emits
+  T300 closure evidence: the strengthened source-shape gate emits
   `M5:T300:S4:PUBLIC-INTERFACE-BOUNDARY:OK`; the focused debugger snapshot
-  probe and the active artifact build passed. Final closure remains coordinator
-  owned.
+  probe and artifact build passed. The coordinator closure is recorded below.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
@@ -74,7 +25,6 @@
 
 | Task | Compact result |
 | --- | --- |
-| T292 | Added prepared-state evidence that selected 67h REP comparison, scan, and segment-override forms already conform; no CPU behavior or artifact changed. |
 | T293 | Removed the unused post-`#UD` transition surface, made protected outer `RETF`/`IRET` frame validation non-mutating until commit, and completed its exception/atomicity matrix: non-present returned `CS` is `#NP`, non-present `SS` is the retained terminal `#SS`, and invalid entries are `#GP`; all six `RETF`/outer-`IRET` cases preserve the defined pre-commit boundary. |
 | T294 | Completed the codebase-driven public-surface/raw-borrow matrix, fixed T296's three stages and T297's future firmware-capability lifecycle precondition, and left T300/T302 conditional; no runtime behavior, CMake graph, or artifact changed. |
 | T295 | Moved CPU execution-to-shared-PIC binding into `core_machine_create`; VM session no longer borrows or binds that path. CPU/PIC lifecycle evidence and all current gates passed; RTC/FDC/HDC/DMA remain T296 and debugger raw borrows remain T298/T299. |
@@ -82,6 +32,7 @@
 | T297 | Replaced default firmware raw profile binding with an opaque core-invoked capability for checked memory/port I/O and stop requests. Configure-time immutable ROM registration now rolls back atomically on callback failure; default BIOS/QDCGA, boot failure, 49 gates, and 126/126 CTests are closed without product UX change. |
 | T298 | Replaced formal debugger raw CPU/instruction/execution/RAM/port borrows with paused-or-stopped named core operations and copied observations. The retained Console/debugger UX passed focused checks and the 126-test regression suite without a global target or second execution path. |
 | T299 | Removed the remaining public configuration/debug raw borrows and profile raw binding. Production uses typed/copying interfaces; purpose-named test fixtures alone may include private core state. The recurrence gate, 51 current static/governance targets, and 126 CTests passed without product behavior changes. |
+| T300 | Unified the core directional port registry, propagated typed-provider failures, made VM session initialization failure-atomic, and removed public private layouts. The DMA binding uses a core-issued non-addressable nonce and core-internal revalidation; 51 static/governance gates and 129 CTests passed with `nxvm_0_5_0300.exe`. |
 
 Detailed contracts, commands, artifact provenance, and prior closures are in
 [M5 History](../history/m5.md) and Git history. The [M5 convergence queue]
