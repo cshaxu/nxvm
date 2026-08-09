@@ -2,40 +2,32 @@
 
 ## Current Work
 
-**Active: M5 T308 S7.**
+**Active: M5 T309 S1.**
 
-## M5 T308 S7 Packet
+## M5 T309 S1 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Corrective; M5 T308 S7 exception-delivery closure preparation; Coordinated Dual-Session Mode. S1-S6 are accepted. |
-| Admission And Approval | T307 is closed. T308 is the next uncompleted candidate in the owner-approved M5 80386 protected execution/delivery package; stale Queue entries for T301--T307 must be removed as part of this audit. |
-| Objective | Close the bounded 80386 exception-delivery family: verify the admitted same/outer error frames and contributory double-fault containment together, cut the T308 task artifact, and record every remaining exception-delivery boundary precisely. |
-| Non-goals | New exception semantics, actual triple-fault shutdown/reset, hardware/NMI integration, task/V86 returns, paging-policy expansion, product UX, public ABI, source import, or a second executor/delivery path. |
-| Reference Baseline | `8fd51f5`; the previously accepted T307 artifact remains historical evidence. |
-| Files And ABI Surface | S7 may change current-target CMake/preset identity, task evidence/history, and governance records only. It must not change CPU behavior, interfaces, cross-module ownership, or product UX. |
+| Identifier Mode | New; M5 T309 S1 80386 form audit and debug-capture design; Coordinated Dual-Session Mode. T308 is accepted and closed. |
+| Admission And Approval | T309 is the next linear Queue candidate in the owner-approved M5 80386 protected execution and delivery package. |
+| Objective | Build the form-level 80386 admission map: classify decoder/profile forms as proven, unproven, rejected, reserved/later, or absent; define bounded trace capture and prepared-state probe rules for future evidence-driven corrections. |
+| Non-goals | Bulk instruction implementation, a guest-image build fixture, long startup capture, product UX, public ABI, source import, a second executor, or implementation of paging/system extensions. |
+| Reference Baseline | Accepted T308 artifact `vm-0-5-0308` / `nxvm_0_5_0308.exe`; SHA-256 `A6BE95BB5C9647F72DB8C28982C8DEFB95CBDA9C9FE92F04F3B4EDC592BC646F`. |
+| Files And ABI Surface | S1 changes only task evidence and status records. It must not change CPU behavior, CMake target identity, public interfaces, cross-module ownership, or product UX. |
 | Applicable Rules | `rules/EXECUTION.md`, `rules/ARCHITECTURE.md`, `rules/CODING.md`, `rules/DOCUMENT.md`, and `etc/operations/policy/source-policy.md`; retain one core executor/state owner and existing checked stack/memory routes. |
-| Verification | Intel 80386 PRM is authoritative. Record versioned read-only Bochs 2.6 and PCjs 2.00.0 behavior paths; construction uses focused synthetic probes only. |
-| Expected Markers | Full current gates must preserve T301-T307 and T308 S2/S3/S5/S6 markers. S7 produces only `nxvm_0_5_0308.exe` and records its SHA-256. |
+| Verification | Intel 80386 PRM is authoritative. Record versioned read-only Bochs 2.6 and PCjs 2.00.0 behavior paths; use static source audit and focused synthetic probes only. |
+| Expected Markers | S1 adds no executable marker or artifact. It records auditable form coverage, trace budgets, and an evidence-driven next-family selection. |
 | Asset Needs | Read-only local references only; no guest media, firmware, or third-party source is committed. |
 | Original Owner Request | Execute the direct M5 80386 protected execution/delivery package in coordinated mode, stopping before Mantle; use Intel as authority with read-only Bochs and PCjs comparison. |
-| Similar-Issue Sweep | Reconcile every T308 packet/evidence claim, current target/preset, CMake registration, Queue position, deferred #PF/hardware/NMI/task/V86/triple-fault-reset boundaries, and retained product behavior. |
-| S1 Audit Record | [T308 exception-delivery admission audit](etc/evidence/t308-exception-delivery-admission.md) records the producer/consumer matrix, error-code and priority rules, terminal preservation, recursion boundary, focused-probe plan, deferrals, and Queue cleanup evidence. |
-| S2 Evidence Record | [T308 exception-delivery admission audit](etc/evidence/t308-exception-delivery-admission.md#s2-same-cpl-error-frame-evidence) records each admitted producer's vector/error code, same-CPL dword frame order, successful delivered diagnostic, and invalid-gate/stack failed-delivery restoration. |
-| S3 Evidence Record | [T308 exception-delivery admission audit](etc/evidence/t308-exception-delivery-admission.md#s3-same-cpl-ts-delivery-evidence) records the T307 target-SS `#TS` producer, vector 10 dword frame, delivered diagnostic, and invalid/non-present delivery-gate and stack restoration. |
-| S4 Evidence Record | [T308 exception-delivery admission audit](etc/evidence/t308-exception-delivery-admission.md#s4-retained-call-gate-completion-evidence) records the retained zero/two-parameter waiting completion and the combined pre-S3 T307 plus S3 `#TS` run. |
-| S5 Evidence Record | [T308 exception-delivery admission audit](etc/evidence/t308-exception-delivery-admission.md#s5-outer-cpl-error-frame-evidence) records the outer-CPL producer audit, T307 `#GP(0030)` frame and diagnostic, and delivery-gate, target, and stack restoration. |
-| S6 Evidence Record | [T308 exception-delivery admission audit](etc/evidence/t308-exception-delivery-admission.md#s6-failed-delivery-containment-evidence) records the Intel contributor-pair matrix, the existing-route `#DF(0)` conversion, and the bounded terminal disposition when vector 8 cannot be delivered. |
-| S7 Closure Record | [T308 exception-delivery admission audit](etc/evidence/t308-exception-delivery-admission.md#s7-closure-preparation-evidence) and [T308 pending history](history/M5-T308-exception-delivery-family.md) record the 0308 artifact, retained sweep, full gates, and limited product observation pending coordinator acceptance. |
-| Stop Conditions | Stop and report an artifact identity mismatch, a failed retained gate, a documentation inconsistency, an unrecorded behavior change, or any required CPU semantic change. |
-| Exit Criteria | S7 builds `nxvm_0_5_0308.exe`, records its SHA-256, passes full current gates and documentation governance, leaves T308 active pending coordinator acceptance, and does not start T309. |
+| Similar-Issue Sweep | Sweep all decoder metadata, profile gates, instruction tables, prefix dispatch, existing focused probes, CPU TODO entries, and trace facilities; distinguish executable forms from merely named metadata. |
+| Stop Conditions | Stop and report an Intel/reference disagreement, a missing source classification that cannot be proven by local code, an unbounded trace requirement, or any need to modify CPU semantics. |
+| Exit Criteria | S1 records the classification matrix, trace and probe budget contract, recommended next family with evidence, documentation governance, and diff check; it remains active pending coordinator acceptance and does not start S2. |
 
 ## Current Technical Baseline
 
-- **T308 pending artifact identity:** `current-gcc` and
+- **T308 accepted artifact identity:** `current-gcc` and
   `verify-current-artifact-target` select `vm-0-5-0308` / `nxvm_0_5_0308.exe`.
-  T308 remains active pending coordinator acceptance; the next Queue candidate
-  remains unnumbered.
+  T308 is closed; T309 is the active linear task.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.

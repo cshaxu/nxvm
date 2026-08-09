@@ -1,10 +1,10 @@
 # M5 T308: Exception-Delivery Family
 
-## Pending Acceptance
+## Accepted Closure
 
-This is closure-preparation evidence for coordinator review. T308 remains
-active in `STATUS.md`; this record does not close the task or advance the
-Queue.
+The coordinator independently accepted the closure evidence. T308 is closed;
+T309 is the next active linear task. This history preserves the acceptance
+evidence and does not redefine deferred exception-delivery boundaries.
 
 ## Scope And Semantics
 
