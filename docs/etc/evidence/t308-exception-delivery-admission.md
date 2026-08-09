@@ -86,3 +86,40 @@ descriptor/system-control, interrupt/exception-entry, protected-return, and
 privilege-transition candidates. The first remaining candidate is the current
 exception-delivery consistency closure; later candidates are unchanged and
 remain unnumbered.
+
+## S2 Same-CPL Error-Frame Evidence
+
+S2 found that the existing `ExecFinal` to `_e_except_n` to
+`_ser_int_protected_32_same` route already implements the admitted
+same-CPL 32-bit behavior without a second dispatcher or a CPU correction.
+`ExecFinal` retains the producer's `instruction_state.data.excode` while it
+selects vector 13 for `#GP`, vector 11 for `#NP`, and vector 12 for `#SS`.
+The selected 32-bit interrupt gate pushes that unchanged code as the low
+dword, below saved EIP, zero-extended CS, and EFLAGS. Only after successful
+entry does the core copy the delivered-exception diagnostic and clear the
+terminal first-fault result.
+
+The expanded `core-machine-interrupt-entry-smoke` focused synthetic probe
+uses all three admitted producer classes:
+
+| Producer class | Trigger | Required delivered frame and diagnostic |
+| --- | --- | --- |
+| T301 selector | `MOV DS, selector` with a non-present descriptor and `MOV SS, selector` with a non-present descriptor | `#NP(0018)` through vector 11 and `#SS(0018)` through vector 12; each frame has the original code at its lowest dword. |
+| T304 descriptor/control | CPL3 `0F 01 F0` | `#GP(0000)` through vector 13 with the low error-code dword and a copied delivered diagnostic. |
+| T305 IDT front end | `INT 30h` through an invalid IDT gate | `#GP(0182)` through vector 13; because the rejected `INT` is a fault, saved EIP is the instruction start, not its post-instruction address. |
+
+The same probe forces the vector-13 delivery gate invalid, non-present, to a
+non-present target CS, and onto an insufficient current SS range. In every
+case it observes the original T304 `#GP(0000)` as the terminal first fault,
+no delivered-exception record, unchanged EIP/ESP/EFLAGS and complete CS/SS
+caches, plus unchanged target-code descriptor access byte. This is the
+preflight-then-restore boundary for the admitted route; no failed delivery
+partially publishes a frame, cache, or accessed descriptor.
+
+The similar-issue sweep rechecked all three `ExecFinal` mappings and both
+16-bit and 32-bit same-CPL planners. The 16-bit planner remains a retained
+consumer and is not widened by S2. `#TS`, outer-CPL error frames,
+hardware/NMI origin, double/triple-fault conversion, task and virtual-8086
+paths, and paging remain deferred exactly as frozen in S1. The focused marker
+is `M5:T308:S2:SAME-CPL-ERROR-DELIVERY:OK`; retained T301/T304/T305/T306/T307
+probes remain required closure evidence.
