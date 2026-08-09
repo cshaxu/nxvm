@@ -124,3 +124,19 @@ saved frame pointer now follows operand size, while the post-push SP/ESP value
 continues to follow SS address size. The stack sweep classified return and
 interrupt frame helpers as control-transfer/exception work outside S3; no such
 path changed. Strings and REP remain S4.
+
+## S4 String Evidence
+
+The focused probe covers REP MOVSB, STOSB, LODSB, REP INSB and REP OUTSB under
+32-bit code, including DS source and fixed ES destination, DF decrement,
+16-bit address-size wrap, count/index completion, and a first failing REP MOVSB
+iteration whose source limit fault leaves ESI, EDI, and ECX unchanged. The I/O
+probe uses a frozen typed provider on port E0 through the existing core port
+registry: OUTSB produces writes only and INSB reads only. OUTSB previously
+called the input helper in all three paths; S4 changes those calls to `_p_outs`.
+
+The retained REP CMPS/SCAS probe supplies REPE/REPNE termination and source
+segment override coverage. The S4 sweep reviewed MOVS/CMPS/STOS/LODS/SCAS,
+INS/OUTS, REP dispatch, `_kas_move_index`, and `_p_ins`/`_p_outs`; no timing,
+port ownership, privilege, paging, control-transfer, or exception-delivery
+path changed.

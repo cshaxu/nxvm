@@ -15,6 +15,41 @@ typedef struct oas_machine {
     core_machine *machine;
 } oas_machine;
 
+typedef struct oas_port_state {
+    uint32_t reads;
+    uint32_t writes;
+    uint32_t last_write;
+} oas_port_state;
+
+static type_status oas_port_read(C_VOID *owner, uint16_t port,
+    uint32_t *out_value)
+{
+    oas_port_state *state = (oas_port_state *)owner;
+
+    if (state == STD_NULL || out_value == STD_NULL || port != 0x00e0u)
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    ++state->reads;
+    *out_value = 0x5au;
+    return TYPE_STATUS_OK;
+}
+
+static type_status oas_port_write(C_VOID *owner, uint16_t port, uint32_t value)
+{
+    oas_port_state *state = (oas_port_state *)owner;
+
+    if (state == STD_NULL || port != 0x00e0u || value > 0xffu)
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    ++state->writes;
+    state->last_write = value;
+    return TYPE_STATUS_OK;
+}
+
+static const core_machine_port_provider oas_port_provider = {
+    oas_port_read, oas_port_write
+};
+
+static oas_port_state *oas_next_port_state;
+
 static C_VOID oas_reset(C_VOID *opaque)
 {
     oas_machine *state = (oas_machine *)opaque;
@@ -65,6 +100,9 @@ static C_INT oas_prepare(oas_machine *state, core_machine_cpu_profile profile,
     STD_MEMSET(state, 0, sizeof(*state));
     gdt[14] = code32 ? 0x40u : 0u;
     if (core_machine_create(&config, &state->machine) != TYPE_STATUS_OK ||
+        (oas_next_port_state != STD_NULL && core_machine_install_port_provider(
+            state->machine, 0x00e0u, 0x00e0u, &oas_port_provider,
+            oas_next_port_state) != TYPE_STATUS_OK) ||
         core_machine_bind_execution_provider(state->machine, &oas_provider,
             state) != TYPE_STATUS_OK ||
         core_machine_freeze_execution_providers(state->machine) != TYPE_STATUS_OK ||
@@ -381,6 +419,100 @@ static C_INT oas_test_stack_forms(C_VOID)
     return !failed;
 }
 
+static C_INT oas_test_io_strings(C_VOID)
+{
+    static const uint8_t outsb[] = { 0x66u,0xbau,0xe0u,0,0xbeu,0,1,0,0,
+        0xb9u,2,0,0,0,0xf3u,0x6eu,0xf4u };
+    static const uint8_t insb[] = { 0x66u,0xbau,0xe0u,0,0xbfu,0,1,0,0,
+        0xb9u,2,0,0,0,0xf3u,0x6cu,0xf4u };
+    static const uint8_t source[] = { 0x31u,0x42u };
+    uint8_t destination[2] = {0};
+    oas_port_state port = {0};
+    oas_machine state;
+    t_cpu after;
+    C_INT failed;
+
+    oas_next_port_state = &port;
+    failed = !oas_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+    oas_next_port_state = STD_NULL;
+    if (!failed) failed |= !oas_write(&state, OAS_DATA_ADDRESS + 0x0100u,
+        source, sizeof(source)) || !oas_run_halt(&state, outsb, sizeof(outsb),
+        &after) || port.reads || port.writes != 2u || port.last_write != 0x42u ||
+        after.data.esi != 0x0102u || after.data.ecx != 0u;
+    core_machine_destroy(state.machine);
+    STD_MEMSET(&port, 0, sizeof(port));
+    oas_next_port_state = &port;
+    failed |= !oas_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+    oas_next_port_state = STD_NULL;
+    if (!failed) failed |= !oas_run_halt(&state, insb, sizeof(insb), &after) ||
+        port.reads != 2u || port.writes || after.data.edi != 0x0102u ||
+        after.data.ecx != 0u || core_machine_memory_read(state.machine,
+            OAS_DATA_ADDRESS + 0x0100u, destination, sizeof(destination)) !=
+            TYPE_STATUS_OK || destination[0] != 0x5au || destination[1] != 0x5au;
+    core_machine_destroy(state.machine);
+    return !failed;
+}
+
+static C_INT oas_test_memory_strings(C_VOID)
+{
+    static const uint8_t movs[] = { 0xbeu,0,1,0,0,0xbfu,0,2,0,0,
+        0xb9u,2,0,0,0,0xf3u,0xa4u,0xf4u };
+    static const uint8_t stos_lods[] = { 0xb8u,0x5au,0,0,0,0xbfu,0,3,0,0,
+        0xaau,0xbeu,0,3,0,0,0xacu,0xf4u };
+    static const uint8_t df_movs[] = { 0xbeu,1,1,0,0,0xbfu,1,2,0,0,
+        0xfdu,0xa4u,0xf4u };
+    static const uint8_t wrap_movs[] = { 0x66u,0xbeu,0xffu,0xffu,
+        0x66u,0xbfu,0xffu,0xffu,0x66u,0xb9u,1,0,0xf3u,0x67u,0xa4u,0xf4u };
+    static const uint8_t limited_movs[] = { 0xbeu,0,1,0,0,0xbfu,0,2,0,0,
+        0xb9u,1,0,0,0,0xf3u,0xa4u };
+    static const uint8_t source[] = { 0x31u,0x42u };
+    uint8_t destination[2] = {0};
+    oas_machine state;
+    t_cpu after;
+    C_INT failed = !oas_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+
+    if (!failed) failed |= !oas_write(&state, OAS_DATA_ADDRESS + 0x0100u,
+        source, sizeof(source)) || !oas_run_halt(&state, movs, sizeof(movs),
+        &after) || after.data.esi != 0x0102u || after.data.edi != 0x0202u ||
+        after.data.ecx != 0u || core_machine_memory_read(state.machine,
+            OAS_DATA_ADDRESS + 0x0200u, destination, sizeof(destination)) !=
+            TYPE_STATUS_OK || STD_MEMCMP(source, destination, sizeof(source));
+    core_machine_destroy(state.machine);
+    if (!failed) failed = !oas_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+    if (!failed) {
+        state.machine->executor_cpu.data.es.base = OAS_STACK_ADDRESS;
+        failed |= !oas_write(&state, OAS_DATA_ADDRESS + 0x0100u, source, 1u) ||
+            !oas_run_halt(&state, movs, sizeof(movs), &after) ||
+            core_machine_memory_read(state.machine, OAS_STACK_ADDRESS + 0x0200u,
+                destination, 1u) != TYPE_STATUS_OK || destination[0] != source[0];
+    }
+    core_machine_destroy(state.machine);
+    if (!failed) failed = !oas_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+    if (!failed) {
+        state.machine->executor_cpu.data.ds.limit = 0x00ffu;
+        failed |= !oas_run_gp(&state, limited_movs, sizeof(limited_movs), &after) ||
+            after.data.esi != 0x0100u || after.data.edi != 0x0200u ||
+            after.data.ecx != 1u;
+    }
+    core_machine_destroy(state.machine);
+    if (!failed) failed = !oas_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+    if (!failed) failed |= !oas_write(&state, OAS_DATA_ADDRESS + 0x0101u,
+        source, 1u) || !oas_run_halt(&state, df_movs, sizeof(df_movs), &after) ||
+        after.data.esi != 0x0100u || after.data.edi != 0x0200u;
+    core_machine_destroy(state.machine);
+    if (!failed) failed = !oas_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+    if (!failed) failed |= !oas_write(&state, OAS_DATA_ADDRESS + 0xffffu,
+        source, 1u) || !oas_run_halt(&state, wrap_movs, sizeof(wrap_movs),
+        &after) || after.data.esi != 0u || after.data.edi != 0u;
+    core_machine_destroy(state.machine);
+    if (!failed) failed = !oas_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+    if (!failed) failed |= !oas_run_halt(&state, stos_lods, sizeof(stos_lods),
+        &after) || after.data.al != 0x5au || after.data.esi != 0x0301u ||
+        after.data.edi != 0x0301u;
+    core_machine_destroy(state.machine);
+    return !failed;
+}
+
 C_INT main(C_VOID)
 {
     if (!oas_test_prefix_and_ea()) {
@@ -390,6 +522,12 @@ C_INT main(C_VOID)
         return 1;
     }
     if (!oas_test_stack_forms()) {
+        return 1;
+    }
+    if (!oas_test_io_strings()) {
+        return 1;
+    }
+    if (!oas_test_memory_strings()) {
         return 1;
     }
     STD_PRINTF("M5:T302:OPERAND-ADDRESS-STACK:OK\n");

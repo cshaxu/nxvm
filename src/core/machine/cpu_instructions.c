@@ -9275,7 +9275,7 @@ static C_VOID OUTSB(core_machine_cpu_execution_context *context)
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE)
         {
             TYPE_TRACE_BLOCK_BEGIN("prefix_rep(PREFIX_REP_NONE)");
-            TYPE_TRACE_CHECK_RETURN(_p_ins(context, 1));
+            TYPE_TRACE_CHECK_RETURN(_p_outs(context, 1));
             TYPE_TRACE_BLOCK_END;
         }
         else
@@ -9288,7 +9288,7 @@ static C_VOID OUTSB(core_machine_cpu_execution_context *context)
                 if (cpu_state.data.cx)
                 {
                     TYPE_TRACE_BLOCK_BEGIN("cx(!0)");
-                    TYPE_TRACE_CHECK_RETURN(_p_ins(context, 1));
+                    TYPE_TRACE_CHECK_RETURN(_p_outs(context, 1));
                     cpu_state.data.cx--;
                     TYPE_TRACE_BLOCK_END;
                 }
@@ -9301,7 +9301,7 @@ static C_VOID OUTSB(core_machine_cpu_execution_context *context)
                 if (cpu_state.data.ecx)
                 {
                     TYPE_TRACE_BLOCK_BEGIN("ecx(!0)");
-                    TYPE_TRACE_CHECK_RETURN(_p_ins(context, 1));
+                    TYPE_TRACE_CHECK_RETURN(_p_outs(context, 1));
                     cpu_state.data.ecx--;
                     TYPE_TRACE_BLOCK_END;
                 }
