@@ -2,35 +2,34 @@
 
 ## Current Work
 
-**Active: M5 T304 S4.**
+**Active: M5 T304 S5.**
 
-## M5 T304 S4 Packet
+## M5 T304 S5 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Corrective; M5 T304 S4 MSW/control-register batch; Coordinated Dual-Session Mode. S2/S3 closed table and selector/task-register forms. |
+| Identifier Mode | Corrective; M5 T304 S5 family-closure preparation and retained-path correction; Coordinated Dual-Session Mode. S2--S4 completed the admitted descriptor/system-control families. |
 | Admission And Approval | T303 is closed. T304 is the next linear Queue candidate in the owner-approved M5 80386 protected execution/delivery package. |
 | Objective | Admit the 80386 descriptor-table and system-control family: `SGDT`/`SIDT`, `LGDT`/`LIDT`, `SLDT`/`LLDT`, `STR`/`LTR`, `SMSW`/`LMSW`, `CLTS`, and permitted `MOV CRx` forms. Freeze exact 16/32 form, profile, privilege, fault, and commit matrices before implementation. |
 | Non-goals | Debug registers, 32-bit TSS switching, paging-policy expansion, task gates, virtual-8086, exception delivery, later-CPU opcodes, product UX, public ABI, and source import. No new executor or execution path. |
-| Reference Baseline | `05d4b4d`; current artifact `vm-0-5-0303` / `nxvm_0_5_0303.exe`. |
+| Reference Baseline | `05d4b4d`; current closure-preparation artifact `vm-0-5-0304` / `nxvm_0_5_0304.exe`. |
 | Files And ABI Surface | S1 may inspect core CPU decoder, descriptor/table/control helpers, focused tests, CMake, and task records. It must not change public interfaces or cross-module ownership. |
 | Applicable Rules | `rules/EXECUTION.md`, `rules/ARCHITECTURE.md`, `rules/CODING.md`, `rules/DOCUMENT.md`, and `etc/operations/policy/source-policy.md`; retain one core executor/state owner and NXVM behavior. |
-| Verification | Intel 80386 PRM is authoritative. Record versioned read-only Bochs 2.6 and PCjs 2.00.0 behavior paths; do not copy source. Construction uses focused synthetic probes only. S1 is audit only. |
-| Expected Markers | S1 records an audit only. Any later focused probe marker and artifact target are admitted after the matrix. |
+| Verification | Intel 80386 PRM is authoritative. Versioned read-only Bochs 2.6 and PCjs 2.00.0 behavior paths are recorded without source copying. Construction uses focused synthetic probes; S5 retains the full gate and one bounded product observation as closure-preparation evidence. |
+| Expected Markers | `M5:T304:DESCRIPTOR-SYSTEM:OK`, retained T258/T260/T261/T293/T301/T303 markers, and current artifact `vm-0-5-0304`; T304 remains active pending coordinator acceptance. |
 | Asset Needs | Read-only local references only; no guest media, firmware, or third-party source is committed. |
 | Original Owner Request | Execute the direct M5 80386 protected execution/delivery package in coordinated mode, stopping before Mantle; use Intel as authority with read-only Bochs and PCjs comparison. |
 | Similar-Issue Sweep | Audit decoder metadata, profile gates, descriptor/table/control helpers, privilege checks, fault helpers, current focused tests, and CMake registrations. Classify every production hit before implementation. |
 | S1 Audit Record | [T304 descriptor-table and system-control admission audit](etc/evidence/t304-descriptor-system-control-admission.md) freezes the instruction matrix, implementation batches, focused-probe boundary, and deferred-owner paths without changing CPU behavior. |
 | Stop Conditions | Stop and report any unresolved Intel/reference disagreement, required architecture change, second state/execution path, public raw-layout exposure, or behavior owned by delivery, task, paging, V86, or a later family. |
-| Exit Criteria | `SMSW`, `LMSW`, `CLTS`, and already-admitted `MOV CR0/CR2/CR3` forms satisfy fixed-width, profile/mode/CPL, allowed-register, and failure-before-control/destination-commit rules. Focused probes and narrow gates pass without paging-policy, debug/test register, or delivery work. |
+| Exit Criteria | The frozen S1--S4 matrix remains satisfied, including bounded `LTR` descriptor load/cache/busy-bit support for existing 16-bit and 32-bit TSS consumers without expanding task switching. Focused and retained probes, full `current-gates-gcc`, documentation governance, and `git diff --check` pass; the current artifact target is advanced during closure; one bounded owner-supplied Setup observation is recorded without claiming a checkpoint if host automation prevents guest interaction. No debug/test, paging-policy, delivery, or later-family work is introduced. |
 
 ## Current Technical Baseline
 
-- **T303 accepted artifact identity:** `current-gcc` and
-  `verify-current-artifact-target` select `vm-0-5-0303` / `nxvm_0_5_0303.exe`.
-  The S7 build hash, full-gate result, and bounded product-observation
-  limitation are recorded in [the T303 evidence record](etc/evidence/t303-control-transfer-admission.md).
-  T303 is accepted; T304 is the next linear candidate.
+- **T304 active closure-preparation artifact identity:** `current-gcc` and
+  `verify-current-artifact-target` select `vm-0-5-0304` / `nxvm_0_5_0304.exe`.
+  T304 remains active pending coordinator acceptance; its final full-gate and
+  product-observation evidence is recorded before that review.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
