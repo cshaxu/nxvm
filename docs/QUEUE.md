@@ -52,11 +52,6 @@ raw traces remain outside the repository and default build.
    frame, selector, flags, stack, and commit semantics. Cover failed-return
    preservation before visible state mutation. Do not implement task-return or
    virtual-8086 return here.
-1. **32-bit privilege-transition instruction family.** Complete the required
-   CPL3-to-CPL0 interrupt/trap/call-gate entry and matching outer returns using
-   32-bit TSS `SS0:ESP0`, 32-bit stack frames, and descriptor validation. This
-   task covers the whole admitted gate/return family, but excludes task gates,
-   nested-task return, V86, and general task switching.
 1. **32-bit exception-delivery consistency closure.** Sweep the prior families
    for error-code normalization, exception precedence, stack/cache atomicity,
    and terminal fault diagnostics. Add a bounded double-/triple-fault policy
