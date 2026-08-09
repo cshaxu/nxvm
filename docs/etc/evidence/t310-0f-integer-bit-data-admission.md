@@ -160,3 +160,48 @@ operand/address, real-mode 386 address, checked-memory, and CPU profile-gate
 intersections. No artifact, Setup observation, Queue change, or product-path
 change is made. BT-family, double-shift, scan, IMUL, paging, system, task,
 and V86 work remain deferred.
+
+## S5 Bit-Test/Modify Evidence
+
+Intel 80386 PRM Chapter 4 defines `BT`, `BTS`, `BTR`, and `BTC` as
+`r/m16, r16` or `r/m32, r32` forms selected by operand size, with `CF`
+receiving the prior bit.  For a memory bit string, the signed register index
+selects the containing element before its in-element bit; an unsigned `ib`
+index on `0F BA /4`--`/7` follows the same element-selection rule.  The other
+status flags are architecturally undefined and are deliberately not test
+oracles.  Bochs 2.6 `cpu/bit16.cc`, `cpu/bit32.cc`, and `cpu/fetchdecode.cc`,
+plus PCjs 2.00.0 `machines/pcx86/modules/v2/x86op0f.js` and `x86help.js`, were
+read-only behavior comparisons; no source was copied.
+
+The focused probe found one production defect: `_d_bit_rmimm` correctly
+selected a later memory element for signed register indexes but reduced an
+immediate index to its in-element bit without advancing the memory offset.
+S5 adds the missing `2 * (ib / 16)` or `4 * (ib / 32)` adjustment only for a
+memory immediate operand.  Register destinations remain reduced within their
+operand width.  The change retains the one executor, ModRM decoder, checked
+logical memory route, and write path.
+
+`core-machine-bit-test-smoke` covers all four register-index and immediate
+group forms, 16- and 32-bit elements, register and memory destinations,
+`66h`, combined `67h`/`66h` addressing, read-only `BT`, and modifying
+`BTS`/`BTR`/`BTC`.  It proves signed negative register-index selection and an
+immediate index that advances to the next memory element.  Access-counting
+providers show invalid `0F BA /0`--`/3` and 80186/80286 forms reach `#UD` before
+an operand read or write.  The retained 8086 `0F` `POP CS` compatibility is
+not a bit-family form and remains covered by `core-machine-cpu-profile-gate-
+smoke`.
+
+Two protected prepared states prove current-element nonpublication: a
+DS-limit read failure for `BT`, and a read-only DS write failure for `BTS`.
+Both use the retained checked-memory and terminal no-IDT delivery route; the
+observed terminal diagnostic is the established `#DF`, while `CF`, `EIP`, the
+register index, and the physical destination element remain at entry state.
+This does not alter exception-delivery policy.
+
+The sweep covered A3/AB/B3/BB and BA metadata/table entries, `INS_0F` profile
+and invalid-group gating, `_d_bit_rmimm`, `_m_read_rm`, `_m_write_rm`,
+operand/address prefix selection, and focused-smoke registration.  No second
+executor, memory route, or public surface was introduced.  SETcc, MOVX,
+SHLD/SHRD, BSF/BSR, IMUL, paging, system, task, and V86 work remain deferred.
+The direct marker is `M5:T310:S5:BIT:OK`; S5 creates no artifact, Queue
+change, Setup observation, or product-path change.
