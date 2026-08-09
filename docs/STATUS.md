@@ -2,29 +2,29 @@
 
 ## Current Work
 
-**Active: M5 T313 S5.**
+**Active: M5 T313 S6.**
 
-## M5 T313 S5 Packet
+## M5 T313 S6 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Corrective; M5 T313 S5 session/platform startup-failure visibility. |
-| Admission And Approval | T313 S4 `fb570637` is accepted. S5 implements only the selected session's platform-start outcome and existing Console visibility. |
+| Identifier Mode | Corrective; M5 T313 S6 debugger enum mapping closure. |
+| Admission And Approval | T313 S5 `ff5f0848` is accepted. S6 removes product-to-core debugger enum casts through private checked mappings. |
 | Reference Baseline | Accepted `vm-0-5-0311` / `nxvm_0_5_0311.exe`, HEAD `d9152c6d` before this admission, and retained T300 port/session-atomicity boundaries. |
-| Objective | Preserve exact platform-start failure as a session-owned outcome and surface it at the retained selected-session Console START/RESUME boundary. |
-| Non-goals | Controller/RAM work, debugger mapping, CPU/paging changes, a new CLI framework, OS/window timing failure dependence, artifact identity, or M6 mantle. |
-| Scope And Order | S5 only: VM session lifecycle/control, existing platform seam, and Console adapter/probes. S6 remains debugger enum mapping; S7 closure. |
-| Source Touchpoints | `vm/composition/session/*`, platform provider seam, retained Console command flow, and focused VM/product tests. |
-| Files And ABI Surface | Keep the outcome session-owned and separate from CPU fault diagnostic. Preserve selected-session policy; the local Console provider's start/resume callbacks return `type_status` so command dispatch can report the exact result immediately. |
+| Objective | Replace product-to-core debugger register/watch enum casts with private explicit mappings and reject all unknown values before core mutation. |
+| Non-goals | Controller/RAM/startup work, CPU/paging changes, module/interface merging, a generic debugger framework, artifact identity, or M6 mantle. |
+| Scope And Order | S6 only: session debug target adapter and focused mapping proof. S7 remains closure. |
+| Source Touchpoints | `vm/composition/session/debug_target.c`, private core/product debug enum adapters, and focused VM/product debugger tests. |
+| Files And ABI Surface | Keep core/product enum types separate. The retained void watch vtable rejects unknown values as an adapter no-op before core. |
 | Applicable Rules | `rules/EXECUTION.md`, `rules/ARCHITECTURE.md`, `rules/CODING.md`, `rules/DOCUMENT.md`, and the source policy; retain one core executor, typed provider boundaries, and the existing NXVM product route. |
-| Verification | Deterministic platform-start failure proves exact resume/start outcome, Console visibility, no run handle/false running control, and later success recovery in Console/window modes where applicable. |
-| Expected Markers | `M5:T313:S5:START-OUTCOME:OK`; S5 creates no artifact. |
+| Verification | Focused proof covers every named register/watch mapping, unknown-domain rejection, and no register/watch publication after invalid input; retain debugger/Console target behavior. |
+| Expected Markers | `M5:T313:S6:DEBUG-MAPPING:OK`; S6 creates no artifact. |
 | S1 Audit Record | [T313 construction-failure admission](etc/evidence/t313-construction-failure-admission.md) is the active design and acceptance record. |
 | Asset Needs | No guest media, firmware, third-party source, or host OOM dependency. |
-| Original Owner Request | Repair only session-owned platform-start failure propagation and immediate Console visibility. |
-| Similar-Issue Sweep | Inventory resume/start callers, void provider callbacks, selected-session Console dispatch, run-handle/control state, reset/new-start clearing, and platform test seams. |
-| Stop Conditions | Stop for a required generic CLI/provider framework, an unavailable deterministic seam, a change to CPU fault ownership, or an immediate-Console requirement impossible without an unapproved callback contract expansion. |
-| Exit Criteria | Exact failure is retained and shown by the Console without a false run state; later success rewrites it; focused/retained/governance checks pass before push. |
+| Original Owner Request | Repair only private debugger enum mapping and unknown-input nonpublication. |
+| Similar-Issue Sweep | Inventory every product/core debug register/watch conversion and command/vtable boundary that can carry an unknown enum. |
+| Stop Conditions | Stop for an external ABI change, a required core/product type merge, a non-local debugger framework, or a command-level status change beyond the retained void-watch policy. |
+| Exit Criteria | All named values map explicitly, unknown values never reach core or mutate state, and focused/retained/governance checks pass before push. |
 
 ## Current Technical Baseline
 
