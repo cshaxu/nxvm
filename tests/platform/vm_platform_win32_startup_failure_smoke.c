@@ -24,6 +24,17 @@ static C_INT assert_failed_start(vm_session *session)
         session->platform_run_handle.backend == STD_NULL;
 }
 
+static C_INT assert_failed_session_start(vm_session *session)
+{
+    type_status status = vm_session_resume(session);
+
+    return status != TYPE_STATUS_OK && session->start_outcome.valid &&
+        session->start_outcome.status == status &&
+        !vm_session_control_is_running(&session->control) &&
+        !vm_platform_run_handle_is_active(&session->platform_run_handle) &&
+        session->platform_run_handle.backend == STD_NULL;
+}
+
 int main(void)
 {
     vm_session *session = ((vm_session *)STD_CALLOC(1u, sizeof(vm_session)));
@@ -37,7 +48,8 @@ int main(void)
         stage_uses_window(stage));
 
     /* Repeating the branch proves the first cleanup left its owner reusable. */
-    if (!assert_failed_start(session) || !assert_failed_start(session)) goto done;
+    if (!assert_failed_start(session) || !assert_failed_start(session) ||
+        !assert_failed_session_start(session)) goto done;
     passed = 1;
 
 done:

@@ -2,29 +2,29 @@
 
 ## Current Work
 
-**Active: M5 T313 S4.**
+**Active: M5 T313 S5.**
 
-## M5 T313 S4 Packet
+## M5 T313 S5 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Corrective; M5 T313 S4 RTC and controller configuration rollback. |
-| Admission And Approval | T313 S3 `e7016d2a` established registry transactions but requires corrective RTC whole-configuration rollback before acceptance. |
+| Identifier Mode | Corrective; M5 T313 S5 session/platform startup-failure visibility. |
+| Admission And Approval | T313 S4 `fb570637` is accepted. S5 implements only the selected session's platform-start outcome and existing Console visibility. |
 | Reference Baseline | Accepted `vm-0-5-0311` / `nxvm_0_5_0311.exe`, HEAD `d9152c6d` before this admission, and retained T300 port/session-atomicity boundaries. |
-| Objective | Make RTC configuration rollback whole-controller atomic and prove FDC/HDC failure paths leave no mutable controller/topology/IRQ state before retry. |
-| Non-goals | RAM creation, platform/session/Console work, debugger mapping, CPU/paging changes, a second bus/registry, a production global allocator facade, artifact identity, M6 mantle, or public bus-contract changes. |
-| Scope And Order | S4 only: RTC/FDC/HDC configuration rollback and focused proof. S5 remains session/platform start result; S6 debugger enum mapping; S7 closure. |
-| Source Touchpoints | `core/machine/machine.c`, RTC/FDC/HDC private state and focused core machine tests. |
-| Files And ABI Surface | Preserve the single directional registry, T300 ownership, `core_machine_bus`, CPU I/O, and existing successful controller configuration behavior. |
+| Objective | Preserve exact platform-start failure as a session-owned outcome and surface it at the retained selected-session Console START/RESUME boundary. |
+| Non-goals | Controller/RAM work, debugger mapping, CPU/paging changes, a new CLI framework, OS/window timing failure dependence, artifact identity, or M6 mantle. |
+| Scope And Order | S5 only: VM session lifecycle/control, existing platform seam, and Console adapter/probes. S6 remains debugger enum mapping; S7 closure. |
+| Source Touchpoints | `vm/composition/session/*`, platform provider seam, retained Console command flow, and focused VM/product tests. |
+| Files And ABI Surface | Keep the outcome session-owned and separate from CPU fault diagnostic. Preserve selected-session policy; the local Console provider's start/resume callbacks return `type_status` so command dispatch can report the exact result immediately. |
 | Applicable Rules | `rules/EXECUTION.md`, `rules/ARCHITECTURE.md`, `rules/CODING.md`, `rules/DOCUMENT.md`, and the source policy; retain one core executor, typed provider boundaries, and the existing NXVM product route. |
-| Verification | Focused proof covers RTC first/second registration failure with no bindings/configuration/state mutation and retry; retain FDC/HDC rollback/retry and port ownership probes. |
-| Expected Markers | `M5:T313:S4:CONTROLLER-ROLLBACK:OK`; S4 creates no artifact. |
+| Verification | Deterministic platform-start failure proves exact resume/start outcome, Console visibility, no run handle/false running control, and later success recovery in Console/window modes where applicable. |
+| Expected Markers | `M5:T313:S5:START-OUTCOME:OK`; S5 creates no artifact. |
 | S1 Audit Record | [T313 construction-failure admission](etc/evidence/t313-construction-failure-admission.md) is the active design and acceptance record. |
 | Asset Needs | No guest media, firmware, third-party source, or host OOM dependency. |
-| Original Owner Request | Correct the remaining controller-state rollback defect before later independent failure boundaries. |
-| Similar-Issue Sweep | Verify RTC, FDC, and HDC registration failure restores all configuration, connect, data, topology, and IRQ state before retry. |
-| Stop Conditions | Stop for a required second registry, public generic fault API, a required VM/product change, or any controller state that cannot be restored through its existing private owner. |
-| Exit Criteria | RTC first/second failure has no published port/config/state effect; FDC/HDC failure is equally clean or corrected; focused/retained/governance checks pass before push. |
+| Original Owner Request | Repair only session-owned platform-start failure propagation and immediate Console visibility. |
+| Similar-Issue Sweep | Inventory resume/start callers, void provider callbacks, selected-session Console dispatch, run-handle/control state, reset/new-start clearing, and platform test seams. |
+| Stop Conditions | Stop for a required generic CLI/provider framework, an unavailable deterministic seam, a change to CPU fault ownership, or an immediate-Console requirement impossible without an unapproved callback contract expansion. |
+| Exit Criteria | Exact failure is retained and shown by the Console without a false run state; later success rewrites it; focused/retained/governance checks pass before push. |
 
 ## Current Technical Baseline
 

@@ -582,7 +582,10 @@ static C_VOID execute(vm_product_console_context *context)
     }
     else if (!STD_STRCMP(argArray[0], "start"))
     {
-        machineProvider->start(machineProvider->context);
+        type_status status = machineProvider->start(machineProvider->context);
+        if (status != TYPE_STATUS_OK) {
+            STD_PRINTF("START failed: %d.\n", (C_INT)status);
+        }
     }
     else if (!STD_STRCMP(argArray[0], "reset"))
     {
@@ -594,7 +597,10 @@ static C_VOID execute(vm_product_console_context *context)
     }
     else if (!STD_STRCMP(argArray[0], "resume"))
     {
-        machineProvider->resume(machineProvider->context);
+        type_status status = machineProvider->resume(machineProvider->context);
+        if (status != TYPE_STATUS_OK) {
+            STD_PRINTF("RESUME failed: %d.\n", (C_INT)status);
+        }
     }
     else
     {

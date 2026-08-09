@@ -14,9 +14,10 @@ status propagation are retained; this task does not reopen them.
 | S1 | Freeze contracts, seams, owners, and source inventory only. | Documentation governance and diff check; no runtime code. |
 | S2 | Resolve default versus explicit RAM once during `core_machine_create`; add a test-only deterministic allocation-failure seam without changing raw `t_ram` fixture ownership. | Default and explicit allocation each occur once; failure returns exact status and no machine escapes. Stop before ports/devices. |
 | S3 | Make typed port range registration and core device assembly transactional on allocation failure. | Mid-registration failure leaves no port owner, no partial binding, and `core_machine_create` returns failure after cleanup. Stop before VM platform work. |
-| S4 | Return a minimal precise status from session resume/start and retain it as session fault/start outcome; surface it at the existing Console boundary. | Forced `vm_platform_start` failure is observable to the selected session and Console, with no active run handle or false running state. Stop before new CLI or generalized product APIs. |
-| S5 | Replace product-to-core debug enum casts with private explicit mappings and unknown-value rejection. | Focused mapping proof covers every known value and unknown rejection. The existing void watch vtable cannot return status; record the retained command-level error policy or stop for a narrowly admitted contract change. |
-| S6 | Closure only. | Build `nxvm_0_5_0313.exe`, record SHA-256, pass focused intersections and `current-gates-gcc`; no new behavior. |
+| S4 | Make RTC/FDC/HDC configuration rollback whole-controller atomic. | First/second registration failures leave no ports, configuration, connect/data/topology, or IRQ state before retry. Stop before VM platform work. |
+| S5 | Return a minimal precise status from session resume/start and retain it as a session-owned start outcome; surface it at the existing Console boundary. | Forced `vm_platform_start` failure is observable to the selected session and Console, with no active run handle or false running state. Stop before new CLI or generalized product APIs. |
+| S6 | Replace product-to-core debug enum casts with private explicit mappings and unknown-value rejection. | Focused mapping proof covers every known value and unknown rejection. The existing void watch vtable cannot return status; record the retained command-level error policy or stop for a narrowly admitted contract change. |
+| S7 | Closure only. | Build `nxvm_0_5_0313.exe`, record SHA-256, pass focused intersections and `current-gates-gcc`; no new behavior. |
 
 ## Contracts
 
@@ -79,6 +80,24 @@ topology after the existing private finalizer clears controller state. The
 focused `M5:T313:S4:CONTROLLER-ROLLBACK:OK` proof directly checks RTC first and
 second failure, FDC and HDC port/controller/topology clean state, retry, and a
 fresh default create after each injected failure.
+
+## S5 Startup Failure Visibility Result
+
+`vm_session_start` and `vm_session_resume` now return the exact
+`vm_platform_start` status and store it in a small session-owned outcome. Reset
+clears the outcome; every subsequent start or resume rewrites it with its
+result. This state is separate from the guest CPU fault diagnostic. A failed
+platform launch leaves the run handle inactive and cannot enter the automatic
+display-promotion loop.
+
+The existing selected-session Console provider now returns that same status for
+`START` and `RESUME`; the retained Console prints `START failed: <status>.` or
+`RESUME failed: <status>.` immediately. The dedicated Win32 stage seam is run
+for a window-stage and a Console-stage failure. The focused
+`M5:T313:S5:START-OUTCOME:OK` proof captures the real Console output and checks
+the selected session's exact retained result, inactive handle, and stopped
+control state. The retained run-handle smoke proves reset clears the result and
+a later successful window start records `TYPE_STATUS_OK`.
 
 ## Exclusions
 

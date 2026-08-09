@@ -173,9 +173,26 @@ static C_VOID vm_session_platform_request_stop(vm_session *machine)
     vm_platform_run_handle_request_stop(&machine->platform_run_handle);
 }
 
-C_VOID vm_session_start(vm_session *machine) {
+static C_VOID vm_session_start_outcome_clear(vm_session *machine)
+{
+    if (machine == STD_NULL) return;
+    machine->start_outcome.valid = 0;
+    machine->start_outcome.status = TYPE_STATUS_OK;
+}
+
+static type_status vm_session_start_outcome_record(vm_session *machine,
+    type_status status)
+{
+    if (machine == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    machine->start_outcome.valid = 1;
+    machine->start_outcome.status = status;
+    return status;
+}
+
+type_status vm_session_start(vm_session *machine) {
+    if (machine == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     vm_session_reset(machine);
-    vm_session_resume(machine);
+    return vm_session_resume(machine);
 }
 
 C_VOID vm_session_reset(vm_session *machine) {
@@ -185,6 +202,7 @@ C_VOID vm_session_reset(vm_session *machine) {
         vm_session_platform_join_and_finalize(machine);
     }
     vm_session_control_reset(&machine->control);
+    vm_session_start_outcome_clear(machine);
     if (!vm_session_control_is_running(&machine->control)) {
         vm_session_publish_display(machine, 1);
     }
@@ -200,14 +218,20 @@ C_VOID vm_session_stop(vm_session *machine) {
     }
 }
 
-C_VOID vm_session_resume(vm_session *machine) {
-    if (machine == STD_NULL) return;
+type_status vm_session_resume(vm_session *machine) {
+    type_status status;
+
+    if (machine == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     if (vm_session_control_is_paused(&machine->control)) {
         vm_session_control_continue(&machine->control);
+        return vm_session_start_outcome_record(machine, TYPE_STATUS_OK);
     } else {
         do {
-            if (vm_platform_start(&machine->platform_run_context,
-                    &machine->platform_run_handle) != TYPE_STATUS_OK) return;
+            status = vm_platform_start(&machine->platform_run_context,
+                &machine->platform_run_handle);
+            if (status != TYPE_STATUS_OK) {
+                return vm_session_start_outcome_record(machine, status);
+            }
             if (vm_platform_run_handle_is_window_display(
                     &machine->platform_run_handle)) {
                 break;
@@ -216,6 +240,7 @@ C_VOID vm_session_resume(vm_session *machine) {
         } while (vm_platform_run_context_take_auto_promotion(
             &machine->platform_run_context));
     }
+    return vm_session_start_outcome_record(machine, TYPE_STATUS_OK);
 }
 
 type_status vm_session_initialize(vm_session *machine) {
@@ -247,6 +272,7 @@ type_status vm_session_initialize(vm_session *machine) {
         &machine->execution_transport, &machine->input_source,
         &machine->presentation_mailbox, &machine->wait_scope);
     vm_platform_run_handle_initialize(&machine->platform_run_handle);
+    vm_session_start_outcome_clear(machine);
     vm_session_control_bind_command_boundary(&machine->control,
         vm_platform_request_transport_observe_execution_boundary,
         &machine->request_transport);
