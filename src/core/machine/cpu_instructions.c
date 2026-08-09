@@ -325,7 +325,7 @@ static type_unsigned_32 _kma_linear_logical(core_machine_cpu_execution_context *
         upper = 0xffffffff;
     }
     linear = rsreg->base + offset;
-    if (offset < lower || offset > upper - (byte - 1))
+    if (offset < lower || (byte != 0u && offset > upper - (byte - 1)))
     {
         TYPE_TRACE_BLOCK_BEGIN("offset(<lower/>upper)");
         switch (rsreg->sregtype)
@@ -12507,19 +12507,29 @@ static C_VOID ENTER(core_machine_cpu_execution_context *context)
         TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
         level = (type_unsigned_8)instruction_state.data.cimm;
         level %= 32;
-        switch (_GetStackSize)
+        switch (_GetOperandSize)
         {
         case 2:
-            TYPE_TRACE_BLOCK_BEGIN("StackSize(2)");
+            TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
             TYPE_TRACE_CHECK_RETURN(_e_push(context, TYPE_REFERENCE_OF(cpu_state.data.bp), 2));
-            temp = cpu_state.data.sp;
             TYPE_TRACE_BLOCK_END;
             break;
         case 4:
-            TYPE_TRACE_BLOCK_BEGIN("StackSize(4)");
+            TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
             TYPE_TRACE_CHECK_RETURN(_e_push(context, TYPE_REFERENCE_OF(cpu_state.data.ebp), 4));
-            temp = cpu_state.data.esp;
             TYPE_TRACE_BLOCK_END;
+            break;
+        default:
+            TYPE_TRACE_IMPOSSIBLE_RETURN;
+            break;
+        }
+        switch (_GetStackSize)
+        {
+        case 2:
+            temp = cpu_state.data.sp;
+            break;
+        case 4:
+            temp = cpu_state.data.esp;
             break;
         default:
             TYPE_TRACE_IMPOSSIBLE_RETURN;
