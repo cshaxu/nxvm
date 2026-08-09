@@ -207,8 +207,9 @@ target CS non-present, and reduces the selected new SS limit below the
 six-dword frame. Each failure preserves the original terminal `#GP(0030)`,
 does not record a delivered exception, and restores complete entry CS/SS
 caches, EIP, ESP, EFLAGS, both candidate descriptor accessed bytes, and the
-candidate frame memory. The bounded `ExecFinal` restoration remains the sole
-failed-delivery containment policy; there is no recursive delivery attempt.
+candidate frame memory. At S5 the bounded `ExecFinal` restoration was the sole
+failed-delivery containment policy; S6 supersedes that disposition for
+contributor pairs.
 
 Intel 80386 PRM Chapter 9 requires the error code below the saved instruction
 state for a protected-mode exception frame. The existing read-only comparison
@@ -262,3 +263,35 @@ The sweep also checked the 16-bit same-CPL and outer planners: no new producer
 or delivery route is admitted. Page-fault combinations, hardware/NMI,
 task/V86 paths, and an actual triple-fault shutdown/reset policy remain
 deferred.
+
+## S7 Closure Preparation Evidence
+
+The sole current artifact target is `vm-0-5-0308`. Its generated executable is
+`build/output/nxvm_0_5_0308.exe` with SHA-256
+`A6BE95BB5C9647F72DB8C28982C8DEFB95CBDA9C9FE92F04F3B4EDC592BC646F`.
+The build-tree copy has the same SHA-256. The artifact contains no new CPU or
+test semantics beyond S1--S6.
+
+The S7 retained sweep found three 80386 protected focused probes whose blank
+error-vector fixtures had correctly changed from an original contributory
+terminal to `#DF(0000)`: T302 operand/address, T303 control transfer, and
+T261 task switching. Their helpers now select `#DF` only for the 80386
+protected contributor-pair case; their 80286 and real-mode assertions retain
+their original exception class. No production path changed in S7. This fixes
+the probe callers before they read a captured CPU snapshot, and retains every
+existing state assertion.
+
+`cmake --build --preset current-gates-gcc` passed all 51 static/governance
+targets and 137/137 current CTests. The direct retained intersection passed
+the T308 S2, S3, S5, and S6 markers together with T301, T304, T305, T306,
+T307, T261, T302, and T303 coverage. Documentation governance,
+`verify-current-artifact-target`, and `git diff --check` passed.
+
+One 45-second no-input, no-media product observation launched the 0308
+artifact hidden. The process remained alive, but its host window handle was
+zero and its title was empty. The observer stopped only that launched process.
+No guest command, guest checkpoint, or product regression conclusion was
+obtained; manual owner-controlled observation remains a verification-only
+follow-up. T308 remains active pending coordinator acceptance. Deferred
+boundaries remain page-fault combinations, hardware/NMI, task/V86 paths, and
+actual triple-fault shutdown/reset.

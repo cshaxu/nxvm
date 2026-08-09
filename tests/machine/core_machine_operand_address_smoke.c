@@ -150,7 +150,10 @@ static C_INT oas_run_gp(oas_machine *state, const uint8_t *code,
         result.reason != CORE_MACHINE_STOP_FAULT ||
         core_machine_get_cpu_diagnostic(state->machine, &diagnostic) != TYPE_STATUS_OK ||
         !diagnostic.first_fault.valid ||
-        !TYPE_GET_BIT(diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_GP)) return 0;
+        !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
+            state->machine->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386 &&
+            TYPE_GET_BIT(state->machine->executor_cpu.data.cr0, VCPU_CR0_PE) ?
+                VCPUINS_EXCEPT_DF : VCPUINS_EXCEPT_GP)) return 0;
     *out_cpu = test_core_machine_fixture_capture_cpu_after_run(state->machine);
     return 1;
 }
