@@ -234,11 +234,11 @@ C_INT main(C_VOID)
         !iret_test_success(0x67u, 0, 0, 0) || !iret_test_success(0x66u, 1, 1, 0) ||
         !iret_test_success(0u, 0, 0, 1) ||
         !iret_test_user_flags() ||
-        !iret_test_failure(IRET_NEGATIVE_NONPRESENT, VCPUINS_EXCEPT_NP, 0x0008u) ||
-        !iret_test_failure(IRET_NEGATIVE_LIMIT, VCPUINS_EXCEPT_GP, 0u) ||
-        !iret_test_failure(IRET_NEGATIVE_CODE_TYPE, VCPUINS_EXCEPT_GP, 0x0008u) ||
-        !iret_test_failure(IRET_NEGATIVE_CODE_DPL, VCPUINS_EXCEPT_GP, 0x0008u) ||
-        !iret_test_failure(IRET_NEGATIVE_STACK_LIMIT, VCPUINS_EXCEPT_SS, 0u)) return 1;
+        !iret_test_failure(IRET_NEGATIVE_NONPRESENT, VCPUINS_EXCEPT_DF, 0u) ||
+        !iret_test_failure(IRET_NEGATIVE_LIMIT, VCPUINS_EXCEPT_DF, 0u) ||
+        !iret_test_failure(IRET_NEGATIVE_CODE_TYPE, VCPUINS_EXCEPT_DF, 0u) ||
+        !iret_test_failure(IRET_NEGATIVE_CODE_DPL, VCPUINS_EXCEPT_DF, 0u) ||
+        !iret_test_failure(IRET_NEGATIVE_STACK_LIMIT, VCPUINS_EXCEPT_DF, 0u)) return 1;
     STD_PRINTF("M5:T306:S2:SAME-CPL-IRET:OK\n");
     return 0;
 }

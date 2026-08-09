@@ -99,6 +99,15 @@ static C_INT dt_run(descriptor_system_machine *state, const uint8_t *code,
             CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) ||
         core_machine_get_cpu_diagnostic(state->machine, &diagnostic) !=
             TYPE_STATUS_OK) return 0;
+    if (expect_fault && state->machine->cpu_profile >=
+            CORE_MACHINE_CPU_PROFILE_80386 &&
+        TYPE_GET_BIT(state->machine->executor_cpu.data.cr0, VCPU_CR0_PE) &&
+        (expect_exception == VCPUINS_EXCEPT_TS ||
+            expect_exception == VCPUINS_EXCEPT_NP ||
+            expect_exception == VCPUINS_EXCEPT_SS ||
+            expect_exception == VCPUINS_EXCEPT_GP)) {
+        expect_exception = VCPUINS_EXCEPT_DF;
+    }
     return expect_fault ? diagnostic.first_fault.valid &&
         TYPE_GET_BIT(diagnostic.first_fault.exception_mask, expect_exception) :
         !diagnostic.first_fault.valid;
@@ -110,6 +119,13 @@ static C_INT dt_run_fault_code(descriptor_system_machine *state,
 {
     core_machine_cpu_diagnostic diagnostic;
 
+    if (state != STD_NULL && state->machine != STD_NULL &&
+        state->machine->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386 &&
+        TYPE_GET_BIT(state->machine->executor_cpu.data.cr0, VCPU_CR0_PE) &&
+        (exception == VCPUINS_EXCEPT_TS || exception == VCPUINS_EXCEPT_NP ||
+            exception == VCPUINS_EXCEPT_SS || exception == VCPUINS_EXCEPT_GP)) {
+        exception_code = 0u;
+    }
     return dt_run(state, code, bytes, 1, exception) &&
         core_machine_get_cpu_diagnostic(state->machine, &diagnostic) ==
             TYPE_STATUS_OK &&

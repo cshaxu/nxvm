@@ -108,9 +108,9 @@ uses all three admitted producer classes:
 | T304 descriptor/control | CPL3 `0F 01 F0` | `#GP(0000)` through vector 13 with the low error-code dword and a copied delivered diagnostic. |
 | T305 IDT front end | `INT 30h` through an invalid IDT gate | `#GP(0182)` through vector 13; because the rejected `INT` is a fault, saved EIP is the instruction start, not its post-instruction address. |
 
-The same probe forces the vector-13 delivery gate invalid, non-present, to a
-non-present target CS, and onto an insufficient current SS range. In every
-case it observes the original T304 `#GP(0000)` as the terminal first fault,
+At S2 the same probe forced the vector-13 delivery gate invalid, non-present,
+to a non-present target CS, and onto an insufficient current SS range. In every
+case it observed the original T304 `#GP(0000)` as the terminal first fault,
 no delivered-exception record, unchanged EIP/ESP/EFLAGS and complete CS/SS
 caches, plus unchanged target-code descriptor access byte. This is the
 preflight-then-restore boundary for the admitted route; no failed delivery
@@ -143,9 +143,9 @@ ascending dword order, error code `00000010`, saved EIP `00000000`, saved CS
 so its observation cannot introduce the privileged `HLT` fault that would
 obscure the delivered result.
 
-The same focused probe makes the vector-10 gate invalid, non-present, and
-preflight-failing through the current SS limit. Each case retains the
-original terminal `#TS(0010)`, creates no delivered-exception record, and
+At S3 the same focused probe made the vector-10 gate invalid, non-present, and
+preflight-failing through the current SS limit. Each case retained the
+original terminal `#TS(0010)`, created no delivered-exception record, and
 keeps EIP, ESP, EFLAGS, complete CS/SS caches, the target-code accessed byte,
 and the candidate frame memory unchanged. This proves that failed vector-10
 delivery follows the existing preflight-then-restore boundary.
@@ -156,8 +156,8 @@ and task-register validation, 16/32-bit interrupt planners, protected return
 checks, and the T307 call-gate target-stack checks. Only the exact 80386
 terminal `#TS` enters the newly admitted vector-10 mapping. The 16-bit
 same-CPL planner remains unchanged, while outer-CPL error frames,
-hardware/NMI, double/triple fault containment, task and virtual-8086 paths,
-and paging remain deferred. The marker is
+hardware/NMI, task and virtual-8086 paths, and paging remained deferred. S6
+later admits the bounded double-fault policy. The marker is
 `M5:T308:S3:SAME-CPL-TS-DELIVERY:OK`; the retained T301/T304/T305/T306/T307
 focused probes remain required evidence.
 
@@ -202,7 +202,7 @@ at the new CPL0 stack is, in ascending dword order: `00000030`, saved EIP
 old SS `00000023`. The copied delivered diagnostic retains `#GP(0030)` and
 the target CS/SS accessed bytes publish only after the preflight succeeds.
 
-The same focused probe makes vector 13 invalid and non-present, makes its
+At S5 the same focused probe made vector 13 invalid and non-present, made its
 target CS non-present, and reduces the selected new SS limit below the
 six-dword frame. Each failure preserves the original terminal `#GP(0030)`,
 does not record a delivered exception, and restores complete entry CS/SS
@@ -216,5 +216,49 @@ remains Bochs 2.6 `cpu/exception.cc` and PCjs 2.00.0
 `machines/pcx86/modules/v2/cpux86.js`; both model exception entry separately
 from instruction decoding and introduce no semantic conflict. The marker is
 `M5:T308:S5:OUTER-CPL-ERROR-DELIVERY:OK`. Hardware/NMI delivery, outer-CPL
-fault producers beyond the admitted exact exceptions, double/triple-fault
-policy, task/V86 paths, and paging remain deferred.
+fault producers beyond the admitted exact exceptions, task/V86 paths, and
+paging remain deferred. S6 records the admitted double-fault policy.
+
+## S6 Failed-Delivery Containment Evidence
+
+Intel 80386 PRM Chapter 9 classifies `#TS`, `#NP`, `#SS`, and `#GP` as
+contributory exceptions. A second contributory exception while delivering one
+of those faults must become `#DF(0000)`. The S6 sweep classified every already
+admitted `ExecFinal` producer and delivery-preflight failure accordingly:
+
+| Original producer | Existing delivery-preflight failure | Intel disposition |
+| --- | --- | --- |
+| T301 selector and T304 descriptor/control `#GP`, `#NP`, or `#SS` | Invalid gate/target descriptor `#GP`, non-present gate/target `#NP`, or stack range `#SS` | `#DF(0000)` |
+| T304/T307 TSS or target-stack `#TS` | Invalid or non-present vector gate, candidate target, or stack | `#DF(0000)` when the second exception is contributory |
+| T305 same-CPL and T306 return preflight `#GP`, `#NP`, or `#SS` | Same existing 16/32-bit gate preflight failures | `#DF(0000)` |
+| T307 outer-CPL call-gate `#GP(0030)` | Vector-13 gate preflight `#GP` | `#DF(0000)` |
+
+`ExecFinal` now recognizes this exact 80386 contributory pair after its first
+existing `_e_except_n` delivery attempt. It restores the original fault CPU,
+sets `#DF(0000)`, and makes the vector-8 attempt through that same
+`_e_except_n` route. No dispatcher, recovery engine, selector owner, stack
+route, or public interface was added. A successful vector-8 gate creates the
+ordinary error-code frame and copied delivered-exception diagnostic. If vector
+8 preflight itself fails, the core restores the original machine state and
+records a terminal `#DF(0000)` diagnostic without attempting a third delivery.
+This is a bounded diagnostic disposition, not an assertion that the project
+implements Intel shutdown/reset after a true triple fault.
+
+The focused call-gate probe uses the already admitted CPL3 call-gate DPL
+rejection, `#GP(0030)`, followed by an invalid vector-13 gate. With a valid
+vector-8 32-bit gate it observes vector 8, code zero, and the six-dword outer
+frame at the target stack in ascending order: `00000000`, `00000000`,
+`0000001b`, `00000202`, `00008800`, `00000023`. With vector 8 invalid it
+observes terminal `#DF(0000)`, no delivered record, and unchanged EIP, ESP,
+EFLAGS, complete CS/SS caches, candidate descriptor access bytes, and frame
+memory. The marker is `M5:T308:S6:DOUBLE-FAULT-CONTAINMENT:OK`.
+
+Read-only comparison remains Intel 80386 PRM Chapter 9, Bochs 2.6
+`cpu/exception.cc` and `cpu/fetchdecode.cc`, and PCjs 2.00.0
+`machines/pcx86/modules/v2/cpux86.js` and `x86help.js`. Both references
+separately model contributory-pair escalation and terminal triple-fault
+handling; neither requires a different result for the admitted combinations.
+The sweep also checked the 16-bit same-CPL and outer planners: no new producer
+or delivery route is admitted. Page-fault combinations, hardware/NMI,
+task/V86 paths, and an actual triple-fault shutdown/reset policy remain
+deferred.

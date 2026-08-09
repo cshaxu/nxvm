@@ -16534,6 +16534,11 @@ static C_VOID ExecInit(core_machine_cpu_execution_context *context)
                                                          &cpu_state, &instruction_state);
     }
 }
+static type_bool _e_is_contributory_exception(type_unsigned_32 exception)
+{
+    return exception == VCPUINS_EXCEPT_TS || exception == VCPUINS_EXCEPT_NP ||
+        exception == VCPUINS_EXCEPT_SS || exception == VCPUINS_EXCEPT_GP;
+}
 static C_VOID ExecFinal(core_machine_cpu_execution_context *context)
 {
     t_cpu fault_cpu;
@@ -16590,8 +16595,34 @@ static C_VOID ExecFinal(core_machine_cpu_execution_context *context)
                 return;
             }
             cpu_state = fault_cpu;
-            instruction_state.data.except = original_except;
-            instruction_state.data.excode = original_excode;
+            if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386 &&
+                _e_is_contributory_exception(original_except) &&
+                _e_is_contributory_exception(instruction_state.data.except)) {
+                instruction_state.data.except = VCPUINS_EXCEPT_DF;
+                instruction_state.data.excode = 0u;
+                _e_except_n(context, 0x08u, _GetOperandSize);
+                if (!instruction_state.data.except) {
+                    if (context->diagnostic_provider != STD_NULL &&
+                        context->diagnostic_provider->record_delivered_exception !=
+                            STD_NULL) {
+                        instruction_state.data.except = VCPUINS_EXCEPT_DF;
+                        instruction_state.data.excode = 0u;
+                        context->diagnostic_provider->record_delivered_exception(
+                            context->diagnostic_context, &fault_cpu,
+                            &instruction_state);
+                        instruction_state.data.except = 0u;
+                    }
+                    return;
+                }
+                /* A failed #DF delivery is terminal here; reset policy is deferred. */
+                cpu_state = fault_cpu;
+                instruction_state.data.except = VCPUINS_EXCEPT_DF;
+                instruction_state.data.excode = 0u;
+            }
+            else {
+                instruction_state.data.except = original_except;
+                instruction_state.data.excode = original_excode;
+            }
         }
 
         if (context->diagnostic_provider != STD_NULL &&

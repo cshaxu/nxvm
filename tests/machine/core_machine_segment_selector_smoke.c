@@ -114,6 +114,12 @@ static C_INT segment_run_exception(segment_machine *state, const uint8_t *code,
         return 0;
     test_core_machine_fixture_resume_after_halt_at(state->machine,
         address == 0u ? 0u : address - SEG_CODE_ADDRESS);
+    if (state->machine->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386 &&
+        TYPE_GET_BIT(state->machine->executor_cpu.data.cr0, VCPU_CR0_PE) &&
+        (exception == VCPUINS_EXCEPT_TS || exception == VCPUINS_EXCEPT_NP ||
+            exception == VCPUINS_EXCEPT_SS || exception == VCPUINS_EXCEPT_GP)) {
+        exception = VCPUINS_EXCEPT_DF;
+    }
     if (core_machine_run(state->machine, budget, &result) != TYPE_STATUS_FAULT ||
         result.reason != CORE_MACHINE_STOP_FAULT ||
         core_machine_get_cpu_diagnostic(state->machine, &diagnostic) !=
@@ -976,8 +982,9 @@ static C_INT segment_test_pop_fault_atomicity(C_VOID)
         failed |= core_machine_run(state.machine, budget, &result) != TYPE_STATUS_FAULT ||
             result.reason != CORE_MACHINE_STOP_FAULT ||
             core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
-                TYPE_STATUS_OK || !diagnostic.first_fault.valid ||
-            !TYPE_GET_BIT(diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_NP);
+            TYPE_STATUS_OK || !diagnostic.first_fault.valid ||
+            !TYPE_GET_BIT(diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_DF) ||
+            diagnostic.first_fault.exception_code != 0u;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= after.data.esp != before.data.esp ||
             STD_MEMCMP(&after.data.fs, &before.data.fs, sizeof(after.data.fs)) != 0;

@@ -253,8 +253,8 @@ static C_INT pe_test_software_dpl_atomic(C_VOID)
         failed |= !pe_read(&state, PE_GDT_BASE + 13u, &cs_before,
                 sizeof(cs_before)) || !pe_read(&state, PE_GDT_BASE + 21u,
                 &ss_before, sizeof(ss_before)) || !pe_run(&state, 1, &after,
-                &diagnostic) || !pe_fault_is(&diagnostic, VCPUINS_EXCEPT_GP,
-                PE_VECTOR * 8u + 2u) || !pe_read(&state, PE_GDT_BASE + 13u,
+                &diagnostic) || !pe_fault_is(&diagnostic, VCPUINS_EXCEPT_DF,
+                0u) || !pe_read(&state, PE_GDT_BASE + 13u,
                 &cs_after, sizeof(cs_after)) || !pe_read(&state, PE_GDT_BASE + 21u,
                 &ss_after, sizeof(ss_after)) || after.data.eip != before.data.eip ||
             after.data.esp != before.data.esp || after.data.eflags != before.data.eflags ||
@@ -281,8 +281,8 @@ static C_INT pe_test_stack_failure_atomic(C_VOID)
         failed |= !pe_read(&state, PE_GDT_BASE + 13u, &cs_before,
                 sizeof(cs_before)) || !pe_read(&state, PE_GDT_BASE + 21u,
                 &ss_before, sizeof(ss_before)) || !pe_run(&state, 1, &after,
-                &diagnostic) || !pe_fault_is(&diagnostic, VCPUINS_EXCEPT_SS,
-                0x0010u) || !pe_read(&state, PE_GDT_BASE + 13u, &cs_after,
+                &diagnostic) || !pe_fault_is(&diagnostic, VCPUINS_EXCEPT_DF,
+                0u) || !pe_read(&state, PE_GDT_BASE + 13u, &cs_after,
                 sizeof(cs_after)) || !pe_read(&state, PE_GDT_BASE + 21u,
                 &ss_after, sizeof(ss_after)) || after.data.eip != before.data.eip ||
             after.data.esp != before.data.esp || after.data.eflags != before.data.eflags ||
@@ -312,8 +312,8 @@ static C_INT pe_test_code_failure_atomic(C_VOID)
         failed |= !pe_read(&state, PE_GDT_BASE + 13u, &cs_before,
                 sizeof(cs_before)) || !pe_read(&state, PE_GDT_BASE + 21u,
                 &ss_before, sizeof(ss_before)) || !pe_run(&state, 1, &after,
-                &diagnostic) || !pe_fault_is(&diagnostic, VCPUINS_EXCEPT_NP,
-                0x0008u) || !pe_read(&state, PE_GDT_BASE + 13u, &cs_after,
+                &diagnostic) || !pe_fault_is(&diagnostic, VCPUINS_EXCEPT_DF,
+                0u) || !pe_read(&state, PE_GDT_BASE + 13u, &cs_after,
                 sizeof(cs_after)) || !pe_read(&state, PE_GDT_BASE + 21u,
                 &ss_after, sizeof(ss_after)) || after.data.eip != before.data.eip ||
             after.data.esp != before.data.esp || after.data.eflags != before.data.eflags ||
