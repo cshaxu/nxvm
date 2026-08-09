@@ -4,7 +4,7 @@
 
 **Active: M5 T312 S1 P0.**
 
-## M5 T312 S1 P0 Packet
+## M5 T312 S1 Packet
 
 | Field | Required record |
 | --- | --- |
