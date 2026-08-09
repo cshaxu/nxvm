@@ -14,6 +14,9 @@
 #define TEST_DATA_PHYSICAL 0x5000u
 #define TEST_STACK_PHYSICAL 0x6000u
 #define TEST_PERMISSION_CODE 0x7000u
+#define TEST_CROSS_CODE_PHYSICAL 0x8000u
+#define TEST_CROSS_DATA_FIRST 0x9000u
+#define TEST_CROSS_DATA_SECOND 0xa000u
 #define TEST_DATA_LINEAR 0x00403000u
 #define TEST_CODE_SELECTOR 0x0008u
 #define TEST_DATA_SELECTOR 0x0010u
@@ -694,21 +697,269 @@ static C_INT paging_test_permissions(C_VOID)
     return failed;
 }
 
+static C_INT paging_cross_prepare(paging_machine *state, const uint8_t *program,
+    STD_SIZE_T program_size, uint32_t second_entry, C_INT write_protect)
+{
+    const uint32_t code_entry = TEST_PERMISSION_CODE | TEST_PAGE_PRESENT |
+        TEST_PAGE_WRITABLE;
+    const uint32_t data_entry = TEST_CROSS_DATA_FIRST | TEST_PAGE_PRESENT |
+        TEST_PAGE_WRITABLE;
+    const uint32_t stack_entry = TEST_STACK_PHYSICAL | TEST_PAGE_PRESENT |
+        TEST_PAGE_WRITABLE;
+    const uint32_t pde_code = TEST_PAGE_TABLE | TEST_PAGE_PRESENT |
+        TEST_PAGE_WRITABLE;
+    const uint32_t pde_data = TEST_PAGE_TABLE_SECOND | TEST_PAGE_PRESENT |
+        TEST_PAGE_WRITABLE;
+
+    return paging_permission_prepare(state, program, program_size, pde_code,
+        pde_data, code_entry, data_entry, stack_entry, 0, write_protect,
+        STD_NULL) && paging_write_u32(state->machine,
+        TEST_PAGE_TABLE_SECOND + 4u * 4u, second_entry);
+}
+
+static C_INT paging_cross_entries(core_machine *machine, uint32_t pde_address,
+    uint32_t first_address, uint32_t second_address, uint32_t expected_pde,
+    uint32_t expected_first, uint32_t expected_second)
+{
+    uint32_t pde = 0u;
+    uint32_t first = 0u;
+    uint32_t second = 0u;
+
+    return paging_permission_read(machine, pde_address, &pde, sizeof(pde)) &&
+        paging_permission_read(machine, first_address, &first, sizeof(first)) &&
+        paging_permission_read(machine, second_address, &second, sizeof(second)) &&
+        pde == expected_pde && first == expected_first && second == expected_second;
+}
+
+static C_INT paging_cross_run(paging_machine *state, C_INT expect_fault,
+    core_machine_run_result *out_result,
+    core_machine_cpu_diagnostic *out_diagnostic)
+{
+    const core_machine_run_budget budget = { 1u, 0u };
+
+    return core_machine_run(state->machine, budget, out_result) ==
+            (expect_fault ? TYPE_STATUS_FAULT : TYPE_STATUS_OK) &&
+        out_result->reason == (expect_fault ? CORE_MACHINE_STOP_FAULT :
+            CORE_MACHINE_STOP_BUDGET) && core_machine_get_cpu_diagnostic(
+                state->machine, out_diagnostic) == TYPE_STATUS_OK;
+}
+
+static C_INT paging_test_cross_data(C_VOID)
+{
+    static const uint8_t read[] = { 0x67u, 0x8bu, 0x03u };
+    static const uint8_t write[] = { 0x66u, 0x67u, 0x89u, 0x03u };
+    const uint32_t pde = TEST_PAGE_TABLE_SECOND | TEST_PAGE_PRESENT |
+        TEST_PAGE_WRITABLE;
+    const uint32_t first = TEST_CROSS_DATA_FIRST | TEST_PAGE_PRESENT |
+        TEST_PAGE_WRITABLE;
+    const uint32_t second = TEST_CROSS_DATA_SECOND | TEST_PAGE_PRESENT |
+        TEST_PAGE_WRITABLE;
+    paging_machine state;
+    core_machine_run_result result;
+    core_machine_cpu_diagnostic diagnostic;
+    t_cpu cpu;
+    uint16_t word = 0u;
+    uint8_t byte = 0u;
+    uint32_t dword = 0u;
+    C_INT failed = 0;
+
+    if (!paging_cross_prepare(&state, read, sizeof(read), second, 0)) return 1;
+    word = 0x3412u;
+    failed |= core_machine_memory_write(state.machine, TEST_CROSS_DATA_FIRST +
+        0xfffu, &word, sizeof(word)) != TYPE_STATUS_OK;
+    state.machine->executor_cpu.data.ebx = TEST_DATA_LINEAR + 0xfffu;
+    failed |= !paging_cross_run(&state, 0, &result, &diagnostic);
+    cpu = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+    failed |= diagnostic.first_fault.valid || cpu.data.eax != 0xface3412u ||
+        !paging_cross_entries(state.machine, TEST_PAGE_DIRECTORY + 4u,
+            TEST_PAGE_TABLE_SECOND + 3u * 4u, TEST_PAGE_TABLE_SECOND + 4u * 4u,
+            pde | TEST_PAGE_ACCESSED, first | TEST_PAGE_ACCESSED,
+            second | TEST_PAGE_ACCESSED);
+    core_machine_destroy(state.machine);
+
+    if (!paging_cross_prepare(&state, write, sizeof(write), second, 0)) return 1;
+    state.machine->executor_cpu.data.ebx = TEST_DATA_LINEAR + 0xfffu;
+    failed |= !paging_cross_run(&state, 0, &result, &diagnostic);
+    failed |= diagnostic.first_fault.valid || !paging_cross_entries(state.machine,
+        TEST_PAGE_DIRECTORY + 4u, TEST_PAGE_TABLE_SECOND + 3u * 4u,
+        TEST_PAGE_TABLE_SECOND + 4u * 4u, pde | TEST_PAGE_ACCESSED,
+        first | TEST_PAGE_ACCESSED | TEST_PAGE_DIRTY, second |
+        TEST_PAGE_ACCESSED | TEST_PAGE_DIRTY) || !paging_permission_read(
+        state.machine, TEST_CROSS_DATA_FIRST + 0xfffu, &byte, sizeof(byte)) ||
+        byte != 0xefu || !paging_permission_read(state.machine,
+        TEST_CROSS_DATA_SECOND, &word, sizeof(word)) || word != 0xcebeu;
+    core_machine_destroy(state.machine);
+
+    if (!paging_cross_prepare(&state, write, sizeof(write),
+            TEST_CROSS_DATA_SECOND | TEST_PAGE_PRESENT, 1)) return 1;
+    state.machine->executor_cpu.data.ebx = TEST_DATA_LINEAR + 0xfffu;
+    failed |= !paging_cross_run(&state, 1, &result, &diagnostic);
+    cpu = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+    failed |= !paging_expect_fault(&diagnostic, VCPUINS_EXCEPT_PF, 0x03u,
+        TEST_PERMISSION_CODE) || cpu.data.cr2 != TEST_DATA_LINEAR + 0x1000u ||
+        cpu.data.eip != 0u || cpu.data.eax != 0xfacebeefu ||
+        cpu.data.ebx != TEST_DATA_LINEAR + 0xfffu || cpu.data.esp != 0x5000u ||
+        cpu.data.eflags != 0x02u || !paging_cross_entries(state.machine,
+        TEST_PAGE_DIRECTORY + 4u, TEST_PAGE_TABLE_SECOND + 3u * 4u,
+        TEST_PAGE_TABLE_SECOND + 4u * 4u, pde, first,
+        TEST_CROSS_DATA_SECOND | TEST_PAGE_PRESENT) ||
+        !paging_permission_read(state.machine, TEST_CROSS_DATA_FIRST + 0xffcu,
+            &dword, sizeof(dword)) || dword != 0u;
+    core_machine_destroy(state.machine);
+    return failed;
+}
+
+static C_INT paging_test_cross_stack(C_VOID)
+{
+    static const uint8_t push[] = { 0x50u };
+    static const uint8_t pop[] = { 0x58u };
+    const uint32_t pde = TEST_PAGE_TABLE | TEST_PAGE_PRESENT |
+        TEST_PAGE_WRITABLE;
+    const uint32_t first = TEST_CROSS_DATA_FIRST | TEST_PAGE_PRESENT |
+        TEST_PAGE_WRITABLE;
+    const uint32_t second = TEST_STACK_PHYSICAL | TEST_PAGE_PRESENT |
+        TEST_PAGE_WRITABLE;
+    paging_machine state;
+    core_machine_run_result result;
+    core_machine_cpu_diagnostic diagnostic;
+    t_cpu cpu;
+    uint8_t low = 0u;
+    uint8_t high = 0u;
+    C_INT failed;
+
+    if (!paging_cross_prepare(&state, push, sizeof(push),
+            TEST_CROSS_DATA_SECOND | TEST_PAGE_PRESENT | TEST_PAGE_WRITABLE, 0))
+        return 1;
+    failed = !paging_write_u32(state.machine, TEST_PAGE_TABLE + 3u * 4u, first) ||
+        !paging_write_u32(state.machine, TEST_PAGE_TABLE + 4u * 4u, second);
+    state.machine->executor_cpu.data.esp = 0x00004001u;
+    failed |= !paging_cross_run(&state, 0, &result, &diagnostic);
+    cpu = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+    failed |= diagnostic.first_fault.valid || cpu.data.esp != 0x00003fffu ||
+        !paging_cross_entries(state.machine, TEST_PAGE_DIRECTORY,
+            TEST_PAGE_TABLE + 3u * 4u, TEST_PAGE_TABLE + 4u * 4u,
+            pde | TEST_PAGE_ACCESSED, first | TEST_PAGE_ACCESSED |
+            TEST_PAGE_DIRTY, second | TEST_PAGE_ACCESSED | TEST_PAGE_DIRTY) ||
+        !paging_permission_read(state.machine, TEST_CROSS_DATA_FIRST + 0xfffu,
+            &low, sizeof(low)) || !paging_permission_read(state.machine,
+            TEST_STACK_PHYSICAL, &high, sizeof(high)) || low != 0xefu ||
+        high != 0xbeu;
+    core_machine_destroy(state.machine);
+
+    if (!paging_cross_prepare(&state, pop, sizeof(pop),
+            TEST_CROSS_DATA_SECOND | TEST_PAGE_PRESENT | TEST_PAGE_WRITABLE, 0))
+        return 1;
+    failed |= !paging_write_u32(state.machine, TEST_PAGE_TABLE + 3u * 4u, first) ||
+        !paging_write_u32(state.machine, TEST_PAGE_TABLE + 4u * 4u, second) ||
+        core_machine_memory_write(state.machine, TEST_CROSS_DATA_FIRST + 0xfffu,
+            &(uint8_t){ 0x12u }, 1u) != TYPE_STATUS_OK ||
+        core_machine_memory_write(state.machine, TEST_STACK_PHYSICAL,
+            &(uint8_t){ 0x34u }, 1u) != TYPE_STATUS_OK;
+    state.machine->executor_cpu.data.esp = 0x00003fffu;
+    failed |= !paging_cross_run(&state, 0, &result, &diagnostic);
+    cpu = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+    failed |= diagnostic.first_fault.valid || cpu.data.esp != 0x00004001u ||
+        cpu.data.eax != 0xface3412u || !paging_cross_entries(state.machine,
+        TEST_PAGE_DIRECTORY, TEST_PAGE_TABLE + 3u * 4u,
+        TEST_PAGE_TABLE + 4u * 4u, pde | TEST_PAGE_ACCESSED,
+        first | TEST_PAGE_ACCESSED, second | TEST_PAGE_ACCESSED);
+    core_machine_destroy(state.machine);
+
+    if (!paging_cross_prepare(&state, push, sizeof(push),
+            TEST_CROSS_DATA_SECOND | TEST_PAGE_PRESENT | TEST_PAGE_WRITABLE, 0))
+        return 1;
+    failed |= !paging_write_u32(state.machine, TEST_PAGE_TABLE + 3u * 4u, first) ||
+        !paging_write_u32(state.machine, TEST_PAGE_TABLE + 4u * 4u,
+            TEST_STACK_PHYSICAL | TEST_PAGE_WRITABLE);
+    state.machine->executor_cpu.data.esp = 0x00004001u;
+    failed |= !paging_cross_run(&state, 1, &result, &diagnostic);
+    cpu = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+    failed |= !paging_expect_fault(&diagnostic, VCPUINS_EXCEPT_PF, 0x02u,
+        TEST_PERMISSION_CODE) || cpu.data.cr2 != 0x00004000u ||
+        cpu.data.esp != 0x00004001u || cpu.data.eax != 0xfacebeefu ||
+        cpu.data.eflags != 0x02u || !paging_cross_entries(state.machine,
+        TEST_PAGE_DIRECTORY, TEST_PAGE_TABLE + 3u * 4u,
+        TEST_PAGE_TABLE + 4u * 4u, pde | TEST_PAGE_ACCESSED, first,
+        TEST_STACK_PHYSICAL | TEST_PAGE_WRITABLE);
+    core_machine_destroy(state.machine);
+    return failed;
+}
+
+static C_INT paging_test_cross_fetch(C_VOID)
+{
+    static const uint8_t first[] = { 0x66u };
+    static const uint8_t second[] = { 0xb8u, 0x34u, 0x12u, 0x00u, 0x00u };
+    const uint32_t pde = TEST_PAGE_TABLE | TEST_PAGE_PRESENT |
+        TEST_PAGE_WRITABLE;
+    const uint32_t code_first = TEST_PERMISSION_CODE | TEST_PAGE_PRESENT |
+        TEST_PAGE_WRITABLE;
+    const uint32_t code_second = TEST_CROSS_CODE_PHYSICAL | TEST_PAGE_PRESENT |
+        TEST_PAGE_WRITABLE;
+    paging_machine state;
+    core_machine_run_result result;
+    core_machine_cpu_diagnostic diagnostic;
+    t_cpu cpu;
+    C_INT failed;
+
+    if (!paging_cross_prepare(&state, first, sizeof(first),
+            TEST_CROSS_DATA_SECOND | TEST_PAGE_PRESENT | TEST_PAGE_WRITABLE, 0))
+        return 1;
+    failed = !paging_write_u32(state.machine, TEST_PAGE_TABLE + 8u * 4u,
+        code_second) || core_machine_memory_write(state.machine,
+        TEST_PERMISSION_CODE + 0xfffu, first, sizeof(first)) != TYPE_STATUS_OK ||
+        core_machine_memory_write(state.machine, TEST_CROSS_CODE_PHYSICAL,
+            second, sizeof(second)) != TYPE_STATUS_OK;
+    state.machine->executor_cpu.data.eip = 0x0fffu;
+    failed |= !paging_cross_run(&state, 0, &result, &diagnostic);
+    failed |= diagnostic.first_fault.valid || !paging_cross_entries(state.machine,
+        TEST_PAGE_DIRECTORY, TEST_PAGE_TABLE + 7u * 4u,
+        TEST_PAGE_TABLE + 8u * 4u, pde | TEST_PAGE_ACCESSED,
+        code_first | TEST_PAGE_ACCESSED, code_second | TEST_PAGE_ACCESSED);
+    core_machine_destroy(state.machine);
+
+    if (!paging_cross_prepare(&state, first, sizeof(first),
+            TEST_CROSS_DATA_SECOND | TEST_PAGE_PRESENT | TEST_PAGE_WRITABLE, 0))
+        return 1;
+    failed |= !paging_write_u32(state.machine, TEST_PAGE_TABLE + 8u * 4u,
+        TEST_CROSS_CODE_PHYSICAL | TEST_PAGE_WRITABLE) ||
+        core_machine_memory_write(state.machine, TEST_PERMISSION_CODE + 0xfffu,
+            first, sizeof(first)) != TYPE_STATUS_OK;
+    state.machine->executor_cpu.data.eip = 0x0fffu;
+    failed |= !paging_cross_run(&state, 1, &result, &diagnostic);
+    cpu = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+    failed |= !paging_expect_fault(&diagnostic, VCPUINS_EXCEPT_PF, 0u,
+        TEST_PERMISSION_CODE + 0x0fffu) || cpu.data.cr2 !=
+        TEST_PERMISSION_CODE + 0x1000u || cpu.data.eip != 0x0fffu ||
+        !paging_cross_entries(state.machine, TEST_PAGE_DIRECTORY,
+            TEST_PAGE_TABLE + 7u * 4u, TEST_PAGE_TABLE + 8u * 4u, pde,
+            code_first, TEST_CROSS_CODE_PHYSICAL | TEST_PAGE_WRITABLE);
+    core_machine_destroy(state.machine);
+    return failed;
+}
+
+static C_INT paging_test_cross_page(C_VOID)
+{
+    return paging_test_cross_data() || paging_test_cross_stack() ||
+        paging_test_cross_fetch();
+}
+
 C_INT main(C_VOID)
 {
     const C_INT valid = paging_test_valid_path();
     const C_INT faults = paging_test_page_faults();
     const C_INT controls = paging_test_control_forms();
     const C_INT permissions = paging_test_permissions();
+    const C_INT cross_page = paging_test_cross_page();
 
-    if (valid || faults || controls || permissions) {
+    if (valid || faults || controls || permissions || cross_page) {
         STD_FPRINTF(STD_STDERR,
-            "M5:T258:S2:I386-PAGING:FAIL valid=%d faults=%d controls=%d permissions=%d\n",
-            valid, faults, controls, permissions);
+            "M5:T258:S2:I386-PAGING:FAIL valid=%d faults=%d controls=%d permissions=%d cross=%d\n",
+            valid, faults, controls, permissions, cross_page);
         return 1;
     }
     STD_PRINTF("M5:T258:S2:I386-PAGING:OK\n");
     STD_PRINTF("M5:T258:S3:I386-PAGING:CORPUS:OK\n");
     STD_PRINTF("M5:T311:S3:PAGING-PERMISSIONS:OK\n");
+    STD_PRINTF("M5:T311:S4:CROSS-PAGE:OK\n");
     return 0;
 }

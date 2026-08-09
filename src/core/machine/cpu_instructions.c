@@ -77,27 +77,38 @@ static C_VOID _kma_write_physical(core_machine_cpu_execution_context *context, t
                                                                byte));
     TYPE_TRACE_CALL_END;
 }
-/* translate linear to physical - paging mechanism*/
-static type_unsigned_32 _kma_physical_linear(core_machine_cpu_execution_context *context, type_unsigned_32 linear, type_unsigned_8 byte, type_bool write, type_unsigned_8 vpl)
+typedef struct t_kma_linear_translation {
+    type_unsigned_32 physical;
+    type_unsigned_32 ppde;
+    type_unsigned_32 ppte;
+    type_unsigned_32 cpde;
+    type_unsigned_32 cpte;
+    type_bool paging;
+} t_kma_linear_translation;
+
+/* Validate a linear page translation without publishing page-table side effects. */
+static C_VOID _kma_prepare_physical_linear(core_machine_cpu_execution_context *context, type_unsigned_32 linear, type_unsigned_8 byte, type_bool write, type_unsigned_8 vpl, t_kma_linear_translation *translation)
 {
     type_unsigned_32 ppde, ppte; /* page table entries */
     type_unsigned_32 cpde, cpte;
-    TYPE_TRACE_CALL_BEGIN("_t_kma_physical_linear");
+    TYPE_TRACE_CALL_BEGIN("_kma_prepare_physical_linear");
     if (_GetLinear_Offset(linear) > TYPE_MASK_UNSIGNED_32(_GetPageSize - byte))
-        TYPE_TRACE_IMPOSSIBLE_RETURN_ZERO;
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
     if (!_IsPaging)
     {
+        translation->physical = linear;
+        translation->paging = TYPE_FALSE;
         TYPE_TRACE_CALL_END;
-        return linear;
+        return;
     }
     ppde = _GetCR3_Base + _GetLinear_Dir(linear) * 4;
-    TYPE_TRACE_CHECK_RETURN_ZERO(_kma_read_physical(context, ppde, TYPE_REFERENCE_OF(cpde), 4));
+    TYPE_TRACE_CHECK_RETURN(_kma_read_physical(context, ppde, TYPE_REFERENCE_OF(cpde), 4));
     if (!_IsPageEntryPresent(cpde))
     {
         TYPE_TRACE_BLOCK_BEGIN("!PageDirEntryPresent");
         cpu_state.data.cr2 = linear;
-        TYPE_TRACE_CHECK_RETURN_ZERO(_SetExcept_PF(_MakePageFaultErrorCode(0, write, (vpl == 3))));
-        return 0;
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_PF(_MakePageFaultErrorCode(0, write, (vpl == 3))));
+        return;
         TYPE_TRACE_BLOCK_END;
     }
     if (vpl == 0x03)
@@ -107,16 +118,16 @@ static type_unsigned_32 _kma_physical_linear(core_machine_cpu_execution_context 
         {
             TYPE_TRACE_BLOCK_BEGIN("PageDirEntry_US(0)");
             cpu_state.data.cr2 = linear;
-            TYPE_TRACE_CHECK_RETURN_ZERO(_SetExcept_PF(_MakePageFaultErrorCode(1, write, 1)));
-            return 0;
+            TYPE_TRACE_CHECK_RETURN(_SetExcept_PF(_MakePageFaultErrorCode(1, write, 1)));
+            return;
             TYPE_TRACE_BLOCK_END;
         }
         if (write && !_IsPageEntryWritable(cpde))
         {
             TYPE_TRACE_BLOCK_BEGIN("write,!PageDirEntryWritable");
             cpu_state.data.cr2 = linear;
-            TYPE_TRACE_CHECK_RETURN_ZERO(_SetExcept_PF(_MakePageFaultErrorCode(1, 1, 1)));
-            return 0;
+            TYPE_TRACE_CHECK_RETURN(_SetExcept_PF(_MakePageFaultErrorCode(1, 1, 1)));
+            return;
             TYPE_TRACE_BLOCK_END;
         }
         TYPE_TRACE_BLOCK_END;
@@ -124,17 +135,17 @@ static type_unsigned_32 _kma_physical_linear(core_machine_cpu_execution_context 
     else if (write && _GetCR0_WP && !_IsPageEntryWritable(cpde))
     {
         cpu_state.data.cr2 = linear;
-        TYPE_TRACE_CHECK_RETURN_ZERO(_SetExcept_PF(_MakePageFaultErrorCode(1, 1, 0)));
-        return 0;
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_PF(_MakePageFaultErrorCode(1, 1, 0)));
+        return;
     }
     ppte = _GetPageEntry_Base(cpde) + _GetLinear_Page(linear) * 4;
-    TYPE_TRACE_CHECK_RETURN_ZERO(_kma_read_physical(context, ppte, TYPE_REFERENCE_OF(cpte), 4));
+    TYPE_TRACE_CHECK_RETURN(_kma_read_physical(context, ppte, TYPE_REFERENCE_OF(cpte), 4));
     if (!_IsPageEntryPresent(cpte))
     {
         TYPE_TRACE_BLOCK_BEGIN("!PageTabEntryPresent");
         cpu_state.data.cr2 = linear;
-        TYPE_TRACE_CHECK_RETURN_ZERO(_SetExcept_PF(_MakePageFaultErrorCode(0, write, (vpl == 3))));
-        return 0;
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_PF(_MakePageFaultErrorCode(0, write, (vpl == 3))));
+        return;
         TYPE_TRACE_BLOCK_END;
     }
     if (vpl == 0x03)
@@ -144,16 +155,16 @@ static type_unsigned_32 _kma_physical_linear(core_machine_cpu_execution_context 
         {
             TYPE_TRACE_BLOCK_BEGIN("PageTabEntry_US(0)");
             cpu_state.data.cr2 = linear;
-            TYPE_TRACE_CHECK_RETURN_ZERO(_SetExcept_PF(_MakePageFaultErrorCode(1, write, 1)));
-            return 0;
+            TYPE_TRACE_CHECK_RETURN(_SetExcept_PF(_MakePageFaultErrorCode(1, write, 1)));
+            return;
             TYPE_TRACE_BLOCK_END;
         }
         if (write && !_IsPageEntryWritable(cpte))
         {
             TYPE_TRACE_BLOCK_BEGIN("write,!PageTabEntryWritable");
             cpu_state.data.cr2 = linear;
-            TYPE_TRACE_CHECK_RETURN_ZERO(_SetExcept_PF(_MakePageFaultErrorCode(1, 1, 1)));
-            return 0;
+            TYPE_TRACE_CHECK_RETURN(_SetExcept_PF(_MakePageFaultErrorCode(1, 1, 1)));
+            return;
             TYPE_TRACE_BLOCK_END;
         }
         TYPE_TRACE_BLOCK_END;
@@ -161,17 +172,50 @@ static type_unsigned_32 _kma_physical_linear(core_machine_cpu_execution_context 
     else if (write && _GetCR0_WP && !_IsPageEntryWritable(cpte))
     {
         cpu_state.data.cr2 = linear;
-        TYPE_TRACE_CHECK_RETURN_ZERO(_SetExcept_PF(_MakePageFaultErrorCode(1, 1, 0)));
-        return 0;
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_PF(_MakePageFaultErrorCode(1, 1, 0)));
+        return;
     }
-    _SetPageEntry_A(cpde);
-    TYPE_TRACE_CHECK_RETURN_ZERO(_kma_write_physical(context, ppde, TYPE_REFERENCE_OF(cpde), 4));
-    _SetPageEntry_A(cpte);
-    if (write)
-        _SetPageEntry_D(cpte);
-    TYPE_TRACE_CHECK_RETURN_ZERO(_kma_write_physical(context, ppte, TYPE_REFERENCE_OF(cpte), 4));
+    translation->physical = _GetPageEntry_Base(cpte) + _GetLinear_Offset(linear);
+    translation->ppde = ppde;
+    translation->ppte = ppte;
+    translation->cpde = cpde;
+    translation->cpte = cpte;
+    translation->paging = TYPE_TRUE;
     TYPE_TRACE_CALL_END;
-    return (_GetPageEntry_Base(cpte) + _GetLinear_Offset(linear));
+}
+
+/* Publish A/D only after the complete checked access has been preflighted. */
+static C_VOID _kma_commit_physical_linear(core_machine_cpu_execution_context *context, t_kma_linear_translation *translation, type_bool write)
+{
+    TYPE_TRACE_CALL_BEGIN("_kma_commit_physical_linear");
+    if (!translation->paging)
+    {
+        TYPE_TRACE_CALL_END;
+        return;
+    }
+    _SetPageEntry_A(translation->cpde);
+    TYPE_TRACE_CHECK_RETURN(_kma_write_physical(context, translation->ppde,
+        TYPE_REFERENCE_OF(translation->cpde), 4));
+    _SetPageEntry_A(translation->cpte);
+    if (write)
+        _SetPageEntry_D(translation->cpte);
+    TYPE_TRACE_CHECK_RETURN(_kma_write_physical(context, translation->ppte,
+        TYPE_REFERENCE_OF(translation->cpte), 4));
+    TYPE_TRACE_CALL_END;
+}
+
+/* Translate and publish a single checked linear page access. */
+static type_unsigned_32 _kma_physical_linear(core_machine_cpu_execution_context *context, type_unsigned_32 linear, type_unsigned_8 byte, type_bool write, type_unsigned_8 vpl)
+{
+    t_kma_linear_translation translation;
+
+    TYPE_TRACE_CALL_BEGIN("_kma_physical_linear");
+    TYPE_TRACE_CHECK_RETURN_ZERO(_kma_prepare_physical_linear(context, linear,
+        byte, write, vpl, &translation));
+    TYPE_TRACE_CHECK_RETURN_ZERO(_kma_commit_physical_linear(context,
+        &translation, write));
+    TYPE_TRACE_CALL_END;
+    return translation.physical;
 }
 /* translate logical to linear - segmentation mechanism */
 static type_unsigned_32 _kma_linear_logical(core_machine_cpu_execution_context *context, t_cpu_data_sreg *rsreg, type_unsigned_32 offset, type_unsigned_8 byte, type_bool write, type_unsigned_8 vpl, type_bool force)
@@ -383,8 +427,20 @@ static C_VOID _kma_read_linear(core_machine_cpu_execution_context *context, type
         TYPE_TRACE_BLOCK_BEGIN("Linear_Offset(>PageSize)");
         byte1 = _GetPageSize - _GetLinear_Offset(linear);
         byte2 = byte - byte1;
-        TYPE_TRACE_CHECK_RETURN(phy1 = _kma_physical_linear(context, linear, byte1, 0, vpl));
-        TYPE_TRACE_CHECK_RETURN(phy2 = _kma_physical_linear(context, linear + byte1, byte2, 0, vpl));
+        {
+            t_kma_linear_translation translation1, translation2;
+
+            TYPE_TRACE_CHECK_RETURN(_kma_prepare_physical_linear(context,
+                linear, byte1, 0, vpl, &translation1));
+            TYPE_TRACE_CHECK_RETURN(_kma_prepare_physical_linear(context,
+                linear + byte1, byte2, 0, vpl, &translation2));
+            TYPE_TRACE_CHECK_RETURN(_kma_commit_physical_linear(context,
+                &translation1, 0));
+            TYPE_TRACE_CHECK_RETURN(_kma_commit_physical_linear(context,
+                &translation2, 0));
+            phy1 = translation1.physical;
+            phy2 = translation2.physical;
+        }
         TYPE_TRACE_CHECK_RETURN(_kma_read_physical(context, phy1, rdata, byte1));
         TYPE_TRACE_CHECK_RETURN(_kma_read_physical(context, phy2, rdata + byte1, byte2));
         TYPE_TRACE_BLOCK_END;
@@ -410,8 +466,20 @@ static C_VOID _kma_write_linear(core_machine_cpu_execution_context *context, typ
         TYPE_TRACE_BLOCK_BEGIN("Linear_Offset(>PageSize)");
         byte1 = _GetPageSize - _GetLinear_Offset(linear);
         byte2 = byte - byte1;
-        TYPE_TRACE_CHECK_RETURN(phy1 = _kma_physical_linear(context, linear, byte1, 1, vpl));
-        TYPE_TRACE_CHECK_RETURN(phy2 = _kma_physical_linear(context, linear + byte1, byte2, 1, vpl));
+        {
+            t_kma_linear_translation translation1, translation2;
+
+            TYPE_TRACE_CHECK_RETURN(_kma_prepare_physical_linear(context,
+                linear, byte1, 1, vpl, &translation1));
+            TYPE_TRACE_CHECK_RETURN(_kma_prepare_physical_linear(context,
+                linear + byte1, byte2, 1, vpl, &translation2));
+            TYPE_TRACE_CHECK_RETURN(_kma_commit_physical_linear(context,
+                &translation1, 1));
+            TYPE_TRACE_CHECK_RETURN(_kma_commit_physical_linear(context,
+                &translation2, 1));
+            phy1 = translation1.physical;
+            phy2 = translation2.physical;
+        }
         TYPE_TRACE_CHECK_RETURN(_kma_write_physical(context, phy1, rdata, byte1));
         TYPE_TRACE_CHECK_RETURN(_kma_write_physical(context, phy2, rdata + byte1, byte2));
         TYPE_TRACE_BLOCK_END;
@@ -521,8 +589,20 @@ static C_VOID _kma_test_linear(core_machine_cpu_execution_context *context, type
         TYPE_TRACE_BLOCK_BEGIN("Linear_Offset(>PageSize)");
         byte1 = _GetPageSize - _GetLinear_Offset(linear);
         byte2 = byte - byte1;
-        TYPE_TRACE_CHECK_RETURN(phy1 = _kma_physical_linear(context, linear, byte1, write, vpl));
-        TYPE_TRACE_CHECK_RETURN(phy2 = _kma_physical_linear(context, linear + byte1, byte2, write, vpl));
+        {
+            t_kma_linear_translation translation1, translation2;
+
+            TYPE_TRACE_CHECK_RETURN(_kma_prepare_physical_linear(context,
+                linear, byte1, write, vpl, &translation1));
+            TYPE_TRACE_CHECK_RETURN(_kma_prepare_physical_linear(context,
+                linear + byte1, byte2, write, vpl, &translation2));
+            TYPE_TRACE_CHECK_RETURN(_kma_commit_physical_linear(context,
+                &translation1, write));
+            TYPE_TRACE_CHECK_RETURN(_kma_commit_physical_linear(context,
+                &translation2, write));
+            phy1 = translation1.physical;
+            phy2 = translation2.physical;
+        }
         TYPE_TRACE_BLOCK_END;
     }
     else
@@ -16532,6 +16612,9 @@ static C_VOID ExecInit(core_machine_cpu_execution_context *context)
     instruction_state.data.reccs = cpu_state.data.cs.selector;
     instruction_state.data.receip = cpu_state.data.eip;
     instruction_state.data.linear = cpu_state.data.cs.base + cpu_state.data.eip;
+    instruction_state.data.oldcpu = cpu_state;
+    instruction_state.data.except = TYPE_ZERO_32;
+    instruction_state.data.excode = TYPE_ZERO_32;
     _kma_read_linear(context, instruction_state.data.linear,
         (type_virtual_address)instruction_state.data.opcodes, 15, _GetCPL, 1);
     if (instruction_state.data.except) {
@@ -16543,7 +16626,6 @@ static C_VOID ExecInit(core_machine_cpu_execution_context *context)
     }
 
     instruction_state.data.flagLock = TYPE_FALSE;
-    instruction_state.data.oldcpu = cpu_state;
     instruction_state.data.roverds = &cpu_state.data.ds;
     instruction_state.data.roverss = &cpu_state.data.ss;
     instruction_state.data.prefix_rep = PREFIX_REP_NONE;
@@ -16559,8 +16641,6 @@ static C_VOID ExecInit(core_machine_cpu_execution_context *context)
     instruction_state.data.udf = TYPE_ZERO_32;
     instruction_state.data.mrm.rsreg = STD_NULL;
     instruction_state.data.mrm.offset = TYPE_ZERO_32;
-    instruction_state.data.except = TYPE_ZERO_32;
-    instruction_state.data.excode = TYPE_ZERO_32;
 #if VCPUINS_TRACE == 1
     if (context->trace != STD_NULL)
         type_trace_initialize(context->trace);
