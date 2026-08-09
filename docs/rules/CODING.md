@@ -34,4 +34,4 @@ The concrete source tree and naming map is
   state, a test-only public contract, or product-visible behavior.
 
 Detailed historical vocabulary and migration inventory is retained in
-[etc/architecture-notes/c-library-facade.md](../etc/architecture-notes/c-library-facade.md).
+[etc/history/m5/c-library-facade.md](../etc/history/m5/c-library-facade.md).

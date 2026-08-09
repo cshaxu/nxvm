@@ -4,7 +4,7 @@ The roadmap defines milestone outcomes and their dependency order. It does not
 allocate tasks or prescribe implementation steps; those belong to
 [QUEUE.md](../QUEUE.md), [TODO.md](../TODO.md), and approved task packets.
 Detailed historical and M5 planning material is retained in
-[etc/governance/roadmap-detail.md](../etc/governance/roadmap-detail.md).
+[etc/history/m5/roadmap-detail.md](../etc/history/m5/roadmap-detail.md).
 
 ## M0: Governance Reset
 

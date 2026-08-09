@@ -1,7 +1,7 @@
 # Source, License, And Research Detail
 
 > Supporting procedure for the source/research constraints summarized in
-> [rules/ARCHITECTURE.md](../../rules/ARCHITECTURE.md). It cannot create a new
+> [rules/ARCHITECTURE.md](../../../rules/ARCHITECTURE.md). It cannot create a new
 > product dependency, distribution commitment, or architecture authority.
 
 ## NXVM Foundation
@@ -22,16 +22,16 @@ authorization.
 Each imported or substantially derived unit must record the exact NXVM commit,
 source and destination paths, copyright notices, MIT authorization, changes,
 and verification in its import commit and the compact
-[`provenance/nxvm-imports.md`](../provenance/nxvm-imports.md) index. New code must
+[`provenance/nxvm-imports.md`](../../research/provenance/nxvm-imports.md) index. New code must
 not extend NXVM's global state or legacy coupling when a bounded interface is
 practical. If a selected file carries an independent third-party notice or
 license, stop and record a separate review before importing it.
 
 ## C Vocabulary Boundary
 
-[rules/CODING.md](../../rules/CODING.md) defines the `type.h` vocabulary, ISO C
+[rules/CODING.md](../../../rules/CODING.md) defines the `type.h` vocabulary, ISO C
 header/call boundary, platform type exposure, and input-flush safety. The
-[C-Library Facade Detail Record](../architecture-notes/c-library-facade.md)
+[C-Library Facade Detail Record](../../history/m5/c-library-facade.md)
 preserves supporting M5 inventory and rationale. Imported or derived source
 must comply with the coding rules; this source policy does not restate them.
 

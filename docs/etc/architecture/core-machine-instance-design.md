@@ -153,4 +153,4 @@ callers for one family, define its context-passing API and freeze/lifetime
 rules, then migrate it without changing user-visible behavior. Later mantle
 work depends on completed M5 single-session and single-execution-path evidence.
 
-The completed migration is summarized in [M5 History](../legacy-history/m5.md).
+The completed migration is summarized in [M5 History](../history/legacy/m5.md).

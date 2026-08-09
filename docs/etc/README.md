@@ -1,13 +1,25 @@
 # Supporting Documentation Index
 
-The fixed documentation topology retains this owner-approved area for detail
+The fixed documentation topology retains this owner-approved area for supporting detail
 that does not fit the principal `rules/` and `design/` authorities. A supporting
 document may explain evidence, implementation detail, research, or a retired
 decision, but it cannot redefine current architecture, source layout, product
 UX, roadmap, rules, status, queue, or debt. Conflicts are resolved by the
 principal documents named in [docs/README.md](../README.md).
 
-| Material | Owner | Purpose | Merge or retirement condition |
+| Current category | Owner | Purpose |
+| --- | --- | --- |
+| `architecture/` | Architecture owner | Current detailed machine, profile, layout, and contract rationale. |
+| `requirements/` | Product and profile owners | Future DOS, NXVDM, and profile admissions. |
+| `evidence/` | Verification owner | Capability, verification, baseline, and fixture evidence. |
+| `operations/` | Execution, source, and release owners | Toolchain, policy, templates, release procedure, and closure material. |
+| `research/` | Source owner | Provenance, external references, and non-product research. |
+| `history/` | Documentation owner | Read-only legacy and M5 migration/roadmap evidence. |
+
+The retired pre-S52 directory map is retained below only as migration evidence;
+it does not index the current tree.
+
+| Category | Owner | Purpose | Promotion or retirement condition |
 | --- | --- | --- | --- |
 | `architecture-notes/architecture-detail.md`, `architecture-notes/module-layout-detail.md`, `architecture-notes/machine-contract-details.md` | Architecture owner | Preserved M1--M5 design, layout, and interface detail. | Distill a durable macro decision into `design/`; retire or split into task history when M5 closes. |
 | `architecture-notes/c-library-facade.md`, `architecture-notes/core-machine-*.md` | Architecture and coding owners | Detailed library, lifecycle, migration, and public-surface evidence. | Replace when the named boundary is superseded; retain only task evidence. |

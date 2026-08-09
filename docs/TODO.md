@@ -5,7 +5,7 @@ a priority and a bounded admission condition. It does not activate work,
 allocate a task identifier, or override [STATUS.md](STATUS.md). Current goals,
 candidate work, and detailed capability evidence belong in
 [design/GOAL.md](design/GOAL.md), [QUEUE.md](QUEUE.md), and
-[etc/requirements/current-capability-baseline.md](etc/requirements/current-capability-baseline.md).
+[etc/evidence/current-capability-baseline.md](etc/evidence/current-capability-baseline.md).
 
 ## Hardware And Compatibility Debt
 

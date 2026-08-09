@@ -17,7 +17,7 @@ task record and history.
 retained NXVM numeric aliases, common bit/constant helpers, and product-neutral
 legacy C-runtime and trace primitives. `src/type.c` owns their non-inline
 implementations. [rules/CODING.md](../../rules/CODING.md) defines the current C
-vocabulary and header boundary; [C-Library Facade Detail Record](c-library-facade.md)
+vocabulary and header boundary; [C-Library Facade Detail Record](../history/m5/c-library-facade.md)
 preserves the M5 inventory and rationale.
 
 Each product module owns its `PRODUCT_NAME`. The shared core-product banner
@@ -78,7 +78,7 @@ pointer or selected ID. Workers and guest execution paths receive only their
 own session and never access a manager. `core/composition/` is not a valid
 home for this mechanism. This record preserves the M5 contract detail; its
 completed NXVM implementation sequence is summarized in
-[M5 History](../legacy-history/m5.md).
+[M5 History](../history/legacy/m5.md).
 
 ## Contract Sequence
 

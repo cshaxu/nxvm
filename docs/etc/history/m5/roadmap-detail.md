@@ -1,7 +1,7 @@
 # Roadmap Detail Record
 
 > Supporting pre-S48 milestone planning detail. The current outcome-level
-> roadmap is [design/ROADMAP.md](../../design/ROADMAP.md). This record cannot
+> roadmap is [design/ROADMAP.md](../../../design/ROADMAP.md). This record cannot
 > allocate work, define current scope, or override later external-runtime and
 > WASM decisions.
 
@@ -117,7 +117,7 @@ experiments; preserve the retained NXVM Console/debugger, FDD/HDD boot, and
 developer artifacts. Core may admit only policy-free contracts with a concrete
 NXVM need and a stable, trusted research requirement; no external ABI or
 runtime dependency enters core. `nxvm.exe` has no new process CLI. The detailed
-queue remains [Queue](../../QUEUE.md).
+queue remains [Queue](../../../QUEUE.md).
 T255 freezes machine-profile admission as an immutable VM declaration and
 composition-owned construction boundary; it does not implement a new profile,
 selector, or external-ROM loader.
@@ -129,7 +129,7 @@ or execution route; the admitted hardware corpus covers the selected Windows
 CMake graphs obey the directed component model. M5 also proves that a second
 policy-free consumer can use the cleaned core through a core-only fixture; it
 does not implement a mantle runtime, NXVDM, or DOS runtime. M5 remains open until the
-[closure checklist](m5-closure-checklist.md) has current evidence for every
+[closure checklist](../../operations/policy/m5-closure-checklist.md) has current evidence for every
 applicable item.
 
 **Goal map:** M5 owns the common machine and PC/AT fidelity work: the Level 1

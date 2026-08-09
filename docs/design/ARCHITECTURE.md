@@ -66,7 +66,7 @@ external VDM/DOS implementation is isolated behind a dedicated adapter and
 does not become a shared public ABI, default runtime dependency, or release
 input. Source, firmware, research, and redistribution procedures are defined
 by [Architecture Rules](../rules/ARCHITECTURE.md) and the indexed
-[source policy](../etc/governance/source-policy.md).
+[source policy](../etc/operations/policy/source-policy.md).
 
 Current delivery state and staged implementation goals are defined only by
 [ROADMAP.md](ROADMAP.md) and [STATUS.md](../STATUS.md).

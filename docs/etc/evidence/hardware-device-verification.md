@@ -2,9 +2,9 @@
 
 This is the required verification shape for an admitted M5 machine-device
 task. It does not define a device contract or authorize implementation. Evidence
-authority remains [Evidence Policy](../governance/evidence-policy.md); generated
-DOS probes follow [Probe Format](../templates/probe-format.md); optional reference work
-follows [Differential Debug Policy](../governance/differential-debug-policy.md).
+authority remains [Evidence Policy](../operations/policy/evidence-policy.md); generated
+DOS probes follow [Probe Format](../operations/templates/probe-format.md); optional reference work
+follows [Differential Debug Policy](../operations/policy/differential-debug-policy.md).
 
 ## Required Task Shape
 

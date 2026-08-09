@@ -1,7 +1,7 @@
 # Project Constitution
 
-> Superseded by [design/GOAL.md](../../design/GOAL.md),
-> [design/ARCHITECTURE.md](../../design/ARCHITECTURE.md), and the current local
+> Superseded by [design/GOAL.md](../../../design/GOAL.md),
+> [design/ARCHITECTURE.md](../../../design/ARCHITECTURE.md), and the current local
 > rules. Retained as historical rationale only.
 
 1. This repository is the canonical successor to NXVM.

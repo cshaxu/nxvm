@@ -99,10 +99,10 @@ must not use an unfinished M5 boundary or corpus item as an implicit waiver.
 
 ## Evidence Sources
 
-- Milestone scope and exit: [Roadmap](../../design/ROADMAP.md)
-- Task, artifact, build-tree, and trace policy: [Execution Policy](../../rules/EXECUTION.md)
-- Dependency and ownership rules: [Module Layout](../../design/CODING.md)
-- Lifecycle and public-contract detail: [Machine Contract Details](../architecture-notes/machine-contract-details.md)
-- Coding and execution rules: [Coding Standard](../../rules/CODING.md) and
-  [Execution Policy](../../rules/EXECUTION.md)
-- Open work and approved deferrals: [TODO Ledger](../../TODO.md)
+- Milestone scope and exit: [Roadmap](../../../design/ROADMAP.md)
+- Task, artifact, build-tree, and trace policy: [Execution Policy](../../../rules/EXECUTION.md)
+- Dependency and ownership rules: [Module Layout](../../../design/CODING.md)
+- Lifecycle and public-contract detail: [Machine Contract Details](../../architecture/machine-contract-details.md)
+- Coding and execution rules: [Coding Standard](../../../rules/CODING.md) and
+  [Execution Policy](../../../rules/EXECUTION.md)
+- Open work and approved deferrals: [TODO Ledger](../../../TODO.md)

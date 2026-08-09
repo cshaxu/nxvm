@@ -10,7 +10,7 @@ does not restate them.
 - Follow [Architecture Rules](docs/rules/ARCHITECTURE.md),
   [Coding Rules](docs/rules/CODING.md), and
   [Execution Rules](docs/rules/EXECUTION.md).
-- Follow the [source and research procedure](docs/etc/governance/source-policy.md)
+- Follow the [source and research procedure](docs/etc/operations/policy/source-policy.md)
   before importing, deriving, or packaging third-party source, firmware, guest
   media, or Microsoft material.
 - Treat research and optional local tools as non-product inputs unless an
