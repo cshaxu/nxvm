@@ -128,3 +128,38 @@ route and adds a 32-bit target-stack preflight helper. It intentionally rejects
 error-code frames in this new route until the admitted S4 integration; it does
 not change hardware/NMI front ends, call gates, task/V86 paths, or return
 semantics.
+
+## S3 Call-Gate Planner Evidence
+
+Intel's 80386 call-gate count is a dword count for a 32-bit call gate. S3
+therefore admits the bounded architectural range (the descriptor's five-bit
+count, zero through 31) rather than treating a nonzero count as an internal
+error. `_ser_call_far_call_gate_32` accepts only a protected, non-V86,
+present 32-bit call gate whose DPL admits the source CPL/RPL and whose target
+is a present nonconforming code segment at a lower CPL. It reads all selected
+old-stack dwords before publishing the new stack, validates every `4 + count`
+new-stack dword slot, then writes the candidate stack/code accessed bytes and
+publishes the new SS/ESP/CPL, old SS/ESP pair, parameters, old CS/EIP pair,
+and target CS/EIP.
+
+The resulting low-to-high new-stack layout is saved EIP, padded CS, parameter
+zero through parameter `count - 1`, old ESP, and padded old SS. The parameter
+order is unchanged from the old stack. The retained 16-bit call-gate planner
+continues to accept only its matching 16-bit descriptor/frame form; a gate
+type and operand-size mismatch now reports `#GP(selector)` with selector RPL
+bits clear instead of falling through with a non-architectural RPL-bearing
+code.
+
+`core-machine-call-gate-privilege-entry-smoke` proves the zero-count and
+two-dword forms, including the target CS/SS caches, return continuation EIP,
+and frame contents. Its negative cases prove DPL `#GP`, non-present `#NP`,
+wrong-gate-type `#GP`, and a source-parameter stack `#SS`; each asserts old
+CS/SS, EIP, ESP, EFLAGS, and both target descriptor accessed bytes remain
+unchanged. The retained `core-machine-call-gate-smoke` continues to prove the
+existing 16-bit gate consumer.
+
+The S3 sweep reviewed far-CALL descriptor dispatch, both call-gate types,
+selector diagnostic creation, checked old-stack reads, target-stack preflight,
+TSS32 reads, selector/cache preparation, and T306 outer-return consumers. It
+does not alter IDT, error-code, PIC/NMI, task, V86, paging, or public-interface
+paths.
