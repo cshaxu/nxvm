@@ -124,6 +124,44 @@ control-transfer validators and remain in their already-closed family scope.
 The public `core_machine_cpu_execution_read_linear` helper remains a
 privileged fixture/debug capability and was intentionally not redefined.
 
+## S4 Cross-Page Checked Access
+
+S4 keeps the one core owner and checked physical-memory route. The private
+page-walk result is now a candidate containing the translated physical address
+and the PDE/PTE values needed for A/D publication. A single-page access
+validates its candidate and then publishes A/D as before. A split access first
+prepares both candidates, publishes their A/D state only after both succeed,
+and then performs the existing physical reads or writes. Thus a second-page
+present or permission fault retains the first candidate internally but cannot
+publish either page's A/D bits or guest data.
+
+The focused prepared-state paging probe uses real guest forms and directly
+proves: a word read and dword write spanning a boundary; `PUSH` and `POP`
+forms whose 16-bit stack write/read begins at offset `0x3fff`; and a 32-bit-immediate `MOV`
+whose operand begins on the next code page. Two valid pages publish A on both
+PDE/PTE candidates and D only for writes. A second data page write-protect
+fault preserves EIP, EFLAGS, registers, stack pointer, guest backing, and both
+pages' A/D state, with the expected CR2 and P/W/U code; the stack write's
+second-page present fault has the same nonpublication boundary. The cross-page fetch
+negative keeps EIP at the prefix, reports `#PF(0)` and CR2 for the second code
+page, and publishes neither page's A/D state.
+
+`ExecInit` retains its existing fixed 15-byte instruction-observation prefetch
+and its one checked linear route. S4 only corrects initialization ordering so
+an already-produced prefetch exception preserves the entry CPU snapshot and
+reaches the existing first-fault/STOP_FAULT diagnostic path. It does not claim
+an exact decoded-length x86 prefetch model: observation reads beyond a short
+instruction remain a strict deferred architecture risk for a later, separately
+admitted boundary.
+
+The S4 sweep covers `_kma_read_linear`, `_kma_write_linear`,
+`_kma_test_linear`, the single-page wrapper, instruction fetch, ordinary data,
+and stack preflight callers. It adds no TLB, `INVLPG`, #PF IDT delivery, public
+memory interface, VM/platform path, or host-memory shortcut. Intel 80386 PRM
+Chapters 5, 6, and 9 remain authoritative; Bochs 2.6 `cpu/paging.cc` and
+`cpu/fetchdecode.cc`, plus PCjs 2.00.0 `machines/pcx86/modules/v2/x86.js`, are
+read-only behavioral comparisons only.
+
 Intel 80386 PRM paging protection rules are the authority. Bochs 2.6
 `cpu/paging.cc` and PCjs 2.00.0 `machines/pcx86/modules/v2/x86.js` remain
 read-only behavior comparisons; no source is imported. `#PF` remains an
