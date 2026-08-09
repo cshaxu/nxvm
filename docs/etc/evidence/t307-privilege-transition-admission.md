@@ -95,3 +95,36 @@ call-gate planners plus their checked 32-bit new-stack support. The existing
 16-bit path, same-CPL 32-bit planner, TSS I/O-map consumers, outer returns,
 and task/V86 paths are classified as retained or deferred above. S1 changes no
 CPU behavior, CMake artifact identity, Queue entry, or product observation.
+
+## S2 Common Planner Evidence
+
+S2 adds `_ser_int_protected_32_outer` and reaches it only from the existing
+32-bit IDT planner after the gate target is known to be a lower-DPL
+nonconforming code segment. It accepts only an ordinary interrupt or trap
+gate, a non-V86 protected source, and a valid busy 32-bit TR. The planner
+reads `ESP0` and `SS0` through the existing checked TSS route, validates the
+candidate code and stack caches and every five-dword destination slot, then
+writes descriptor accessed bytes and publishes the new stack, CPL, frame, CS,
+EIP, and gate-controlled IF/TF state. Thus no checked memory or selector
+operation remains after publication begins.
+
+The new `core-machine-idt-privilege-entry-smoke` focused synthetic probe
+records the following S2 matrix:
+
+| Case | Expected result |
+| --- | --- |
+| CPL3 software `INT` through a DPL3 32-bit interrupt gate | CPL0 kernel CS/SS, `ESP0 - 20`, five dwords `EIP`, padded CS, EFLAGS, old ESP, padded SS; IF and TF clear. |
+| CPL3 software `INT` through a DPL3 32-bit trap gate | The same frame and transition; TF clears while IF remains set. |
+| Target SS B clear | The planner uses 16-bit stack addressing for all five dword writes while preserving the normal frame layout. |
+| CPL3 software `INT` through a DPL0 gate | `#GP(vector * 8 + 2)` before CS/SS, EIP, ESP, EFLAGS, or accessed-byte mutation. |
+| Existing external PIC origin through a DPL0 gate | Delivery bypasses the software DPL check and reaches the CPL0 interrupt-gate frame; the retained PIC state changes only after successful planner completion. |
+| Non-present gate target CS | `#NP(CS)` before candidate-stack or frame publication, including both target descriptor accessed bytes. |
+| Non-present TSS `SS0` descriptor | `#SS(SS0)` before all candidate-cache, frame, register, or accessed-byte publication. |
+
+The sweep revisited the 16-bit entry planner, same-CPL 32-bit planner, TSS
+I/O-map consumer, selector/cache preparation, checked stack helpers, PIC
+front-end, and T306 return planners. S2 changes only the lower-DPL 32-bit IDT
+route and adds a 32-bit target-stack preflight helper. It intentionally rejects
+error-code frames in this new route until the admitted S4 integration; it does
+not change hardware/NMI front ends, call gates, task/V86 paths, or return
+semantics.
