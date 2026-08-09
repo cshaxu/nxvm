@@ -1,7 +1,9 @@
-# Execution Workflow
+# Legacy Execution Workflow
 
-This is the mandatory local workflow and remains sufficient when no external
-Skill is installed or reachable. The public
+> Superseded by [rules/EXECUTION.md](../../rules/EXECUTION.md) and the shared
+> execution-governance skill. Retained only for historical retrieval.
+
+This was the former mandatory local workflow. The public
 [Execution Governance skill](https://github.com/cshaxu/skills/blob/main/execution-governance/SKILL.md)
 may extend it with reusable practice, but never replaces this local contract.
 It works with the

@@ -23,6 +23,13 @@ function Test-MachineLocalPath([string]$text) {
     return $text -match '(?i)[a-z]:(?:\\){2}(?:users|home)(?:\\){2}'
 }
 
+function Test-ExactNameSet([string[]]$actual, [string[]]$expected) {
+    return @(
+        Compare-Object -ReferenceObject @($expected | Sort-Object) `
+            -DifferenceObject @($actual | Sort-Object)
+    ).Count -eq 0
+}
+
 if ($SelfTest) {
     Require (Test-Mojibake (([char]0x00E2).ToString() + "quoted")) `
         "Mojibake detector did not reject the controlled negative sample."
@@ -32,6 +39,10 @@ if ($SelfTest) {
         "Machine-local path detector did not reject the controlled negative sample."
     Require (-not (Test-MachineLocalPath 'C:\\NAME.EXT')) `
         "Machine-local path detector rejected a guest DOS path control sample."
+    Require (Test-ExactNameSet @("A.md", "B.md") @("B.md", "A.md")) `
+        "Fixed-file checker rejected an identical control set."
+    Require (-not (Test-ExactNameSet @("A.md") @("B.md"))) `
+        "Fixed-file checker accepted a mismatched control set."
     Write-Output "Documentation governance self-tests passed."
     exit 0
 }
@@ -41,6 +52,62 @@ $statusPath = Join-Path $docsRoot "STATUS.md"
 $queuePath = Join-Path $docsRoot "QUEUE.md"
 $presetPath = Join-Path $RepositoryRoot "CMakePresets.json"
 $todoPath = Join-Path $docsRoot "TODO.md"
+
+$expectedRootFiles = @("QUEUE.md", "README.md", "STATUS.md", "TODO.md")
+$expectedRootDirectories = @("design", "etc", "history", "rules")
+$expectedRuleFiles = @("ARCHITECTURE.md", "CODING.md", "DOCUMENT.md", "EXECUTION.md")
+$expectedDesignFiles = @("ARCHITECTURE.md", "CODING.md", "GOAL.md", "ROADMAP.md", "UI.md")
+
+$rootFiles = @(Get-ChildItem -LiteralPath $docsRoot -File | ForEach-Object Name)
+$rootDirectories = @(Get-ChildItem -LiteralPath $docsRoot -Directory | ForEach-Object Name)
+Require (Test-ExactNameSet $rootFiles $expectedRootFiles) `
+    "docs/ must contain only README.md, STATUS.md, QUEUE.md, and TODO.md."
+Require (Test-ExactNameSet $rootDirectories $expectedRootDirectories) `
+    "docs/ must contain only rules/, design/, history/, and etc/."
+
+$rulesPath = Join-Path $docsRoot "rules"
+$designPath = Join-Path $docsRoot "design"
+$historyPath = Join-Path $docsRoot "history"
+$etcIndexPath = Join-Path $docsRoot "etc\\README.md"
+$architectureRulesPath = Join-Path $rulesPath "ARCHITECTURE.md"
+$codingRulesPath = Join-Path $rulesPath "CODING.md"
+$architectureDesignPath = Join-Path $designPath "ARCHITECTURE.md"
+$codingDesignPath = Join-Path $designPath "CODING.md"
+$ruleFiles = @(Get-ChildItem -LiteralPath $rulesPath -File | ForEach-Object Name)
+$designFiles = @(Get-ChildItem -LiteralPath $designPath -File | ForEach-Object Name)
+Require (Test-ExactNameSet $ruleFiles $expectedRuleFiles) `
+    "docs/rules/ must contain only its four fixed rule files."
+Require (Test-ExactNameSet $designFiles $expectedDesignFiles) `
+    "docs/design/ must contain only its five fixed design files."
+Require (@(Get-ChildItem -LiteralPath $rulesPath -Directory).Count -eq 0) `
+    "docs/rules/ must not contain subdirectories."
+Require (@(Get-ChildItem -LiteralPath $designPath -Directory).Count -eq 0) `
+    "docs/design/ must not contain subdirectories."
+Require (@(Get-ChildItem -LiteralPath $historyPath -Directory).Count -eq 0) `
+    "docs/history/ must not contain subdirectories."
+Require (Test-Path -LiteralPath $etcIndexPath) `
+    "docs/etc/ must contain its supporting-documentation index."
+foreach ($historyFile in @(Get-ChildItem -LiteralPath $historyPath -File)) {
+    Require ($historyFile.Name -match '^M\d+-T\d+-.+\.md$') `
+        "docs/history/ may contain only numbered implementation-task records."
+}
+
+$architectureRules = Get-Content -Raw -LiteralPath $architectureRulesPath
+$codingRules = Get-Content -Raw -LiteralPath $codingRulesPath
+$architectureDesign = Get-Content -Raw -LiteralPath $architectureDesignPath
+$codingDesign = Get-Content -Raw -LiteralPath $codingDesignPath
+Require ($architectureRules -match 'one explicit owner and one production path') `
+    "Architecture Rules must retain the one-owner/one-production-path invariant."
+Require ($architectureRules -match 'raw CPU, RAM, port, device, executor, or session pointer') `
+    "Architecture Rules must forbid raw mutable-internal pointers at public boundaries."
+Require (-not ($architectureRules -match '(?i)\b(core|vm|mantle|dos|vdm)\b')) `
+    "Architecture Rules must not duplicate the concrete ntvdm64 component map."
+Require (-not ($codingRules -match '(?i)git mv|TODO\(|similar-issue')) `
+    "Coding Rules must not contain task-execution discipline."
+Require (-not ($architectureDesign -match 'one explicit owner and one production path|raw CPU, RAM, port, device, executor, or session pointer')) `
+    "System Architecture must not duplicate architecture-rule invariants."
+Require (-not ($codingDesign -match '(?m)^## Dependency Direction$')) `
+    "Source Layout must not duplicate the architecture dependency map."
 
 $status = Get-Content -Raw -LiteralPath $statusPath
 $queue = Get-Content -Raw -LiteralPath $queuePath

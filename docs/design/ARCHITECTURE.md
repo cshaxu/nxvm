@@ -1,150 +1,75 @@
-# Architecture Overview
+# System Architecture
+
+This is the current high-level architecture authority. Apply the local
+[Architecture Rules](../rules/ARCHITECTURE.md) when changing it. Detailed M5
+contracts, migration rationale, and hardware notes are supporting material
+indexed in [etc/README.md](../etc/README.md); they cannot override this file.
 
 ## Product Shape
 
-ntvdm64 is the canonical successor to the NXVM machine codebase. It plans two
-executable products and three independently buildable components:
+ntvdm64 has two product forms and three planned reusable components:
+
+| Form or component | Purpose | Current state |
+| --- | --- | --- |
+| `nxvm.exe` / `vm` | Bootable whole-machine VM with the retained NXVM Console and debugger. | Runnable product. |
+| `core` | Product-neutral machine, platform, and reusable product tooling. | Shared source foundation; not yet a separate artifact. |
+| `mantle` | Policy-free VDM session composition over core. | Future component. |
+| `dos` | Owned DOS implementation independent of the other components. | Future component. |
+| `nxvdm.exe` / `vdm` | Non-bootable DOS application runner over mantle and dos. | Future product; only a non-runnable skeleton exists. |
+
+The medium-term build targets are `core.dll`, `mantle.dll`, and `dos.dll`.
+They are architectural commitments, not current release artifacts.
+
+## Modules, Ownership, And Assembly
+
+`core` contains `machine`, `platform`, and `product` modules plus the neutral
+`utils` foundation. `vm` and `vdm` each use `machine`, `platform`, `product`,
+and `profile` modules. `mantle` uses `machine`, `platform`, and `product`;
+`dos` may use its own `machine`, `platform`, `product`, and `profile` modules.
 
 ```text
-nxvm.exe
-  bootable whole-machine VM with BIOS/POST, disk-image boot, its retained
-  interactive NXVM Console, and whole-machine debugging behavior. It has no
-  new process CLI.
-
-nxvdm.exe
-  non-bootable DOS application runner with an owned DOS backend and
-  non-invasive host integration.
-
-core.dll
-  shared machine, platform, and product-tool foundation.
-
-mantle.dll
-  shared, policy-free VDM composition mechanism. Trusted external research
-  may validate its capability requirements, but does not become a consumer,
-  ABI, or runtime dependency.
-
-dos.dll
-  independent owned DOS implementation with no dependency on core, mantle,
-  VM, or VDM.
+vm -------> core
+mantle ---> core
+vdm ------> mantle + dos
+dos ------> (independent)
 ```
 
-`core.dll`, `mantle.dll`, and `dos.dll` are medium-term targets, not current
-independent artifacts. The planned `nxvdm run` contract is defined in
-[Runtime CLI Requirements](UI.md). Microsoft NTVDM
-components, invasive integration, and Win16 remain research-only unless a later
-owner-approved Go decision changes that boundary.
+`core` owns generic guest-machine behavior and policy-free host abstractions.
+It never depends on `vm`, `mantle`, `dos`, or `vdm`.
 
-Forward source ownership and dependency decisions are defined exclusively by
-[Module Layout](CODING.md); public interface decisions are defined by
-[Contracts](CONTRACTS.md). [Coding Standard](../rules/CODING.md),
-[Source Policy](../rules/SOURCE.md), and
-[Execution Policy](../rules/EXECUTION.md) define the corresponding
-local coding, source, and execution rules. Historical records preserve
-rationale and evidence, but cannot redefine a current boundary, interface, or
-milestone scope.
+`vm` owns bootable-machine composition, BIOS/POST boot policy, VM profiles, and
+the retained NXVM product experience. `mantle` owns reusable VDM composition,
+but no DOS or host-policy decision. `dos` owns DOS behavior without depending
+on another product component. `vdm` owns application-runner UX and combines an
+admitted mantle session with an admitted DOS implementation.
 
-Use the public [Architecture Governance skill](https://github.com/cshaxu/skills/blob/main/architecture-governance/SKILL.md)
-for reusable layering, ownership, contract, and abstraction method. This
-overview and the local module documents remain the authority for ntvdm64's
-dual-product architecture.
+The `vm` and `mantle` roots assemble their concrete sessions. The `vdm` root
+selects application-runner UX and binds mantle to dos. Product-root composition
+is where the declared machine, platform, product, and profile capabilities are
+combined.
 
-## Runtime Identity And Versioning
+## Product And Host Boundary
 
-The immutable M1 byte-identical NXVM snapshot retains its imported startup
-banner exactly:
+`nxvm.exe` remains a bootable VM and retains its interactive Console; it does
+not gain a replacement process CLI. `nxvdm.exe` will provide the approved DOS
+application-runner interaction, display, cancellation, and debugger behavior
+defined in [UI.md](UI.md).
 
-```text
-Neko's x86 Virtual Machine [0.4.015d]
-Copyright (c) 2012-2026 Neko.
-```
+Platform integrations report through opaque core contracts. Host policy and
+guest-state mutation occur at the owning product composition boundary, never
+inside a generic platform implementation.
 
-Historical M3 through M5 T47 task-level machine artifacts used:
+## Research And Distribution Boundary
 
-```text
-Neko's x86 Virtual Machine [0.4.015d.m<M>t<T>]
-Copyright (c) 2012-2026 Neko.
-```
+The owned DOS backend is the default NXVDM direction. External VDM/DOS and
+historical component research can establish neutral capability requirements,
+but cannot become a source import, ABI, backend, runtime dependency, or release
+input without a separately approved implementation decision. Microsoft binaries
+and third-party firmware remain user-supplied research material, never bundled
+product inputs.
 
-`M` and `T` are the decimal milestone and task identifiers that produced the
-executable, for example `0.4.015d.m3t1`. Subtask-specific executables are not
-developer artifacts.
+## Current Scope
 
-Beginning with M5 T48, task artifacts use the NXVM lineage `0.5.NNNN` form,
-where `NNNN` is exactly the four-digit numeric implementation task identifier.
-This is an identity rule: T258 produces `0.5.0258`. Numeric task identifiers
-are allocated in strict queue order and are never reused, so artifact versions
-cannot collide. For example, the early T48
-artifact was `0.5.0048`. Design-only subtasks do not create artifacts by
-themselves.
-
-Standalone documentation tasks use the `M<milestone> Td` identifier and do not
-allocate `NNNN`, change the current task artifact version, or create an
-executable. Design work explicitly attached to an implementation task uses that
-task's subtask identifier and follows its artifact policy.
-
-The bootable product keeps the Virtual Machine identity. After M8 implements
-the non-bootable DOS runner and proves that `nxvdm.exe` cannot continue into
-standalone disk boot or an implicit guest DOS shell, that product uses:
-
-```text
-Neko's x86 Virtual DOS Machine [0.5.NNNN] Copyright (c) 2012-2026 Neko.
-```
-
-Post-M5 task versions are task-governed developer versions, not release
-numbers. A future release cadence may restore NXVM-style `DDDH` release
-encoding through a separate owner-approved release policy.
-
-## Shared Foundation
-
-The target component topology is `core`, `vm`, `mantle`, `dos`, and `vdm`.
-The current tracked source tree contains `core/`, `vm/`, and a non-runnable M3
-`vdm/` skeleton only; `mantle/` and `dos/` remain architecture-only until their
-admission milestones. `core` has a strictly neutral `core/utils` layer below
-`core/machine`, `core/platform`, and `core/product`. `vm/` owns NXVM
-composition, lifecycle, and teardown. `mantle/` will own the reusable VDM
-composition mechanism over core. `dos/` will be an independent DOS
-implementation. The eventual `vdm/` is the NXVDM product shell over mantle and
-dos; its `product` module owns user experience rather than composition.
-Cross-module adaptation, including display and input bridging, occurs only in
-the relevant product root composition. Peer machine and platform modules do
-not adapt each other's contracts directly.
-
-`core/product/session` is a shared opaque registry and command facility for
-product sessions. It owns neither a concrete VM/VDM session nor composition;
-VM and mantle composition provide concrete lifecycle callbacks. No
-`core/composition` layer exists or is permitted.
-
-`src/type.h` is the system-wide type, `nxvm_core_status`, retained alias, and
-legacy helper foundation. Each product module owns its compile-time name; the
-shared `core/product/banner.h` helper supplies the common version, copyright,
-build time, and printing format. Public symbols use their ownership path, for
-example `core_machine_*`, `vm_product_*`, `mantle_product_*`, `dos_machine_*`,
-and `vdm_platform_*`. The detailed
-registry and dependency rules live only in
-[Module Layout](CODING.md) and [Contracts](CONTRACTS.md).
-
-`core/machine` session ownership plus provider/registry naming rules are
-defined in [Core Machine Instance Design](../etc/architecture-notes/core-machine-instance-design.md).
-
-## External Research Boundary
-
-Trusted external VDM/DOS research reports are admissible requirements and
-boundary references. They may demonstrate that a neutral capability is worth
-designing, but never supply an ABI, source import, binary, runtime consumer,
-or acceptance substitute. Core and mantle contracts describe only the neutral
-capability; external selectors, service numbers, file sets, layouts, and host
-policy remain outside this repository.
-
-Microsoft component work remains research-only and is not a runtime module or
-committed backend. It may not create a BOP framework, component loader,
-default dependency, or release requirement without a separately approved
-implementation decision.
-
-## Baseline Record
-
-M1 established the runnable whole-NXVM baseline before refactoring. M5
-migrated the executor, devices, firmware, presentation, retained Console, and
-debugger into the canonical roots. Git history and provenance records preserve
-the baseline evidence. Windows GCC is the acceptance run; the historical Linux
-platform source remains a future portability asset until a Linux run gate is
-introduced.
+M5 retains the runnable NXVM foundation while converging its shared-core
+boundaries. `mantle`, `dos`, and `nxvdm.exe` are not current runtime products.
+The milestone sequence and exit goals are defined only by [ROADMAP.md](ROADMAP.md).

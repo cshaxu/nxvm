@@ -4,7 +4,7 @@
 
 This file records the current source-distribution notice set. It is not a
 binary-release manifest and does not authorize a release. A release must also
-produce the manifest and complete the checklist in `docs/release/`.
+produce the manifest and complete the checklist in `docs/etc/release/`.
 
 ## Project-Owned Material
 
@@ -29,7 +29,7 @@ Copyright (c) 2012-2014 Neko
 Copyright (c) 2012-2026 Neko
 ```
 
-See `docs/provenance/nxvm-imports.md` for import scope and traceability.
+See `docs/etc/provenance/nxvm-imports.md` for import scope and traceability.
 
 ## Shipped Third-Party Components
 

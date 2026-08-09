@@ -3,13 +3,13 @@
 This ledger records open work, durable capability boundaries, and long-horizon
 goals. It does not activate a task, allocate a numeric task identifier, or
 override the current work recorded in
-[status.md](STATUS.md). Detailed completed-task evidence belongs
+[STATUS.md](STATUS.md). Detailed completed-task evidence belongs
 in its task record and Git history; the M5 implementation order belongs in
 [M5 NXVM PC/AT Hardware Convergence](QUEUE.md).
 
 ## Operating Rules
 
-- `status.md` owns the one active subtask. The M5 convergence plan owns the
+- `STATUS.md` owns the one active subtask. The unnumbered Queue owns the
   ordered task queue. This file tracks cross-cutting open risks and deferred
   admissions only.
 - A device admission follows the
@@ -52,7 +52,7 @@ only the near-term NXVM tasks.
 
 ## M5 Capability And Debt Ledger
 
-The active task is always the one in [status.md](STATUS.md).
+The active task is always the one in [STATUS.md](STATUS.md).
 The ordered implementation queue is maintained in
 [M5 NXVM PC/AT Hardware Convergence](QUEUE.md).
 The entries below are durable gaps and must not be mistaken for an independently
@@ -211,7 +211,7 @@ default definition of NXVM completion.
 
 These are permanent execution requirements, not individually completable
 tickets. The detailed rules live in
-[execution-policy.md](rules/EXECUTION.md), the architecture
+[Execution Rules](rules/EXECUTION.md), the architecture
 documents, and the M5 closure checklist.
 
 - Keep build presets, current artifact target, CTest registrations, task

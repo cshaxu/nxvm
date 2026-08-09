@@ -1,18 +1,40 @@
 # Execution Policy
 
-The local [Execution Workflow](EXECUTION.md) owns the mandatory
-request lifecycle. This policy owns ntvdm64's identifiers, evidence, artifact,
-and milestone gates. The public
+This file owns ntvdm64's mandatory request lifecycle, identifiers, evidence,
+artifact, and milestone gates. The public
 [Execution Governance skill](https://github.com/cshaxu/skills/blob/main/execution-governance/SKILL.md)
 is supplementary reusable guidance, not a prerequisite. One subtask is active
-at a time. Follow the local requirement packet and closure audit defined by the
-Execution Workflow.
+at a time. Follow the local requirement packet and closure audit defined here.
 Before implementation, create a subtask record
 with objective, non-goals, reference baseline, files/ABI surface, applicable
 local architecture, coding, source, and execution rules, exact test commands,
 expected markers, asset needs, and stop conditions. The rules review names each
 applicable invariant, its planned evidence, and any requested owner-approved
 exception; a task may mark a rule not applicable only with a short reason.
+
+## Request Lifecycle
+
+Answer a question, discussion, or exploration normally. When an owner requests
+one or more changes, preserve the request, inspect the current system and
+applicable rules, and split the work into bounded tasks with explicit exit
+criteria before implementation. Obtain approval before admitting the work to
+`STATUS.md`; only that one active packet may execute.
+
+During execution, record discovered repository issues. Fix a clear in-scope
+instance as an added subtask and run the similar-issue sweep; otherwise record
+the issue in `TODO.md` with priority, boundary, admission condition, and risk.
+At closure, re-read the original owner request, map every requested outcome to
+evidence, run the required verification, record the retrospective/prevention
+action when applicable, and report the result. A task is not complete merely
+because its implementation or tests look complete.
+
+## Change Discipline
+
+Structural relocation uses `git mv`: repair direct includes and build paths,
+run the relevant checks, then continue with the next bounded move. A deferred
+issue uses `TODO(High)`, `TODO(Medium)`, or `TODO(Low)` only with a ledger entry
+and bounded admission path. Do not leave an equivalent production defect
+unclassified after a local fix; apply the similar-issue sweep below.
 
 ## Similar-Issue Sweep
 

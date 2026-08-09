@@ -1,11 +1,18 @@
-# Core Machine Instance Design
+# Core Machine Instance Detail Record
 
-## Authority
+> Supporting M5 object, provider, and session design detail. The current
+> high-level architecture and source layout are
+> [design/ARCHITECTURE.md](../../design/ARCHITECTURE.md) and
+> [design/CODING.md](../../design/CODING.md); this record cannot create a
+> competing current architecture authority.
 
-This document is the forward-looking authority for `core/machine` naming,
-object ownership, public contracts, and injected providers. It supersedes only
-the forward-looking parts of historical M3--M5 authority records; those
-records remain verification evidence.
+## Scope
+
+This document preserves the detailed M5 design for `core/machine` naming,
+object ownership, public contracts, and injected providers. Historical M3--M5
+records remain verification evidence. New or changed interfaces are admitted
+through a numbered implementation task and summarized in the principal design
+documents when they alter a durable macro boundary.
 
 The design applies before any context-passing implementation work. It does not
 authorize a change to NXVM Console, debugger UX, boot/reset order, guest media
