@@ -2,7 +2,7 @@
 
 ## Current Work
 
-**Idle. M5 Td S54 is closed; no numeric implementation task is active.** The
+**Idle. M5 Td S55 is closed; no numeric implementation task is active.** The
 first approved Queue candidate receives the next numeric task identifier.
 
 ## Current Technical Baseline
@@ -37,10 +37,6 @@ first approved Queue candidate receives the next numeric task identifier.
 
 ## Recent Governance
 
-- **M5 Td S47:** enforced the fixed four-rule/five-design topology, indexed
-  retained detail in `etc/`, and separated abstract architecture/coding rules
-  from concrete ntvdm64 design. The strengthened governance gate prevents the
-  same rule/design overlap from returning. Td work has no history record.
 - **M5 Td S48:** made `GOAL.md` strategic-only; removed duplicate roadmap,
   status, architecture, source, and execution material from principal and
   contributor documents; and added role-boundary checks. Td work has no
@@ -65,3 +61,7 @@ first approved Queue candidate receives the next numeric task identifier.
 - **M5 Td S54:** reordered the Queue so the M5 80386 package precedes the M6
   mantle experiment; candidate order changed without assigning implementation
   identifiers or changing a candidate contract. Td work has no history record.
+- **M5 Td S55:** replaced the over-granular M5 80386 plan with a direct,
+  family-oriented 32-bit protected execution/delivery package before Mantle;
+  full-system checkpoints are debug/progress tools, while construction uses
+  focused synthetic architecture probes. Td work has no history record.
