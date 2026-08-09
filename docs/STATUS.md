@@ -2,37 +2,13 @@
 
 ## Current Work
 
-**Active: M5 T305 S5.**
-
-## M5 T305 S5 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Corrective; M5 T305 S5 closure-preparation for the interrupt and exception-entry family; Coordinated Dual-Session Mode. S2--S4 are implemented and pending final coordinator acceptance. |
-| Admission And Approval | T304 is closed. T305 is the next linear Queue candidate in the owner-approved M5 80386 protected execution/delivery package. |
-| Objective | Admit 32-bit IDT interrupt/trap-gate and exception-entry semantics for `INT`, `INT3`, `INTO`, hardware interrupts, and already-admitted faults. Freeze gate/type/DPL/present/target-CS/error-code/frame/recursive-fault matrices before implementation. |
-| Non-goals | 32-bit `IRET`, outer returns, call gates, task gates, task switching, virtual-8086, paging-policy expansion, product UX, public ABI, and source import. No new executor or delivery path. |
-| Reference Baseline | `f9be9c3`; current artifact `vm-0-5-0305` / `nxvm_0_5_0305.exe`. |
-| Files And ABI Surface | S1 may inspect core CPU delivery, IDT, fault, stack, selector, PIC-facing interrupt, focused tests, CMake, and task records. It must not alter public interfaces or cross-module ownership. |
-| Applicable Rules | `rules/EXECUTION.md`, `rules/ARCHITECTURE.md`, `rules/CODING.md`, `rules/DOCUMENT.md`, and `etc/operations/policy/source-policy.md`; retain one core executor/state owner and NXVM behavior. |
-| Verification | Intel 80386 PRM is authoritative. Record versioned read-only Bochs 2.6 and PCjs 2.00.0 behavior paths; do not copy source. Construction uses focused synthetic probes only. S1 is audit only. |
-| Expected Markers | `M5:T305:INTERRUPT-ENTRY:OK` plus retained T301/T293/T304/T260/T261 markers; the closure artifact is admitted for independent review only. |
-| Asset Needs | Read-only local references only; no guest media, firmware, or third-party source is committed. |
-| Original Owner Request | Execute the direct M5 80386 protected execution/delivery package in coordinated mode, stopping before Mantle; use Intel as authority with read-only Bochs and PCjs comparison. |
-| Similar-Issue Sweep | Audit interrupt/fault entry, IDT gate lookup, stack-frame and selector helpers, PIC/hardware delivery hooks, exception diagnostics, and current focused tests. Classify every production hit before implementation. |
-| S1 Audit Record | [T305 interrupt and exception-entry admission audit](etc/evidence/t305-interrupt-exception-entry-admission.md) freezes the gate/profile/origin/frame/commit matrix, current path classification, and bounded S2+ work. |
-| S2 Evidence Record | [T305 interrupt and exception-entry admission audit](etc/evidence/t305-interrupt-exception-entry-admission.md#s2-same-cpl-32-bit-gate-evidence) records the gate-type planner, focused prepared-state proof, retained 16-bit checks, and deferred origins. |
-| S3 Evidence Record | [T305 interrupt and exception-entry admission audit](etc/evidence/t305-interrupt-exception-entry-admission.md#s3-software-and-hardware-front-end-evidence) records software/external origin separation, staged PIC/NMI publication, and focused front-end proof. |
-| S4 Evidence Record | [T305 interrupt and exception-entry admission audit](etc/evidence/t305-interrupt-exception-entry-admission.md#s4-existing-fault-entry-and-containment-evidence) records 32-bit existing-fault error frames, bounded failed-delivery containment, and the retained selector-loader check. |
-| S5 Closure Record | [T305 interrupt and exception-entry admission audit](etc/evidence/t305-interrupt-exception-entry-admission.md#s5-closure-preparation-evidence) records the current artifact, full gates, retained probes, and bounded product observation. |
-| Stop Conditions | Stop and report unresolved Intel/reference disagreement, required architecture change, second execution/state path, raw public-layout exposure, or behavior owned by IRET/outer-return/gate/task/V86/later families. |
-| Exit Criteria | Artifact, full current gates, retained probes, documentation governance, diff check, and one bounded product observation are recorded. T305 remains active/pending coordinator acceptance; this packet does not set Idle, close T305, alter Queue, or start T306. |
+**Idle.**
 
 ## Current Technical Baseline
 
-- **T305 closure-preparation artifact identity:** `current-gcc` and
+- **T305 accepted artifact identity:** `current-gcc` and
   `verify-current-artifact-target` select `vm-0-5-0305` / `nxvm_0_5_0305.exe`.
-  T305 remains active pending coordinator acceptance.
+  T305 is accepted; T306 is the next linear candidate.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
@@ -47,7 +23,6 @@
 
 | Task | Compact result |
 | --- | --- |
-| T297 | Replaced default firmware raw profile binding with an opaque core-invoked capability for checked memory/port I/O and stop requests. Configure-time immutable ROM registration now rolls back atomically on callback failure; default BIOS/QDCGA, boot failure, 49 gates, and 126/126 CTests are closed without product UX change. |
 | T298 | Replaced formal debugger raw CPU/instruction/execution/RAM/port borrows with paused-or-stopped named core operations and copied observations. The retained Console/debugger UX passed focused checks and the 126-test regression suite without a global target or second execution path. |
 | T299 | Removed the remaining public configuration/debug raw borrows and profile raw binding. Production uses typed/copying interfaces; purpose-named test fixtures alone may include private core state. The recurrence gate, 51 current static/governance targets, and 126 CTests passed without product behavior changes. |
 | T300 | Unified the core directional port registry, propagated typed-provider failures, made VM session initialization failure-atomic, and removed public private layouts. The DMA binding uses a core-issued non-addressable nonce and core-internal revalidation; 51 static/governance gates and 129 CTests passed with its task-level developer artifact. |
@@ -55,6 +30,7 @@
 | T302 | Completed the 80386 operand/address/stack family. It corrected 16-bit fetch wrapping, crossed stack/frame width behavior, shared zero-length range validation, and `OUTSB` direction; all 131 CTests and its 0302 artifact passed. Product observation yielded no guest checkpoint because the process had no discoverable window handle; manual observation remains verification-only. |
 | T303 | Completed the 80386 same-privilege control-transfer family. It fixed `LOOP` target-fault count publication, `CALL ptr16:32` decode width, same-CPL `RETF` DPL/RPL validation, and far-indirect register `#UD`; 51 gates, 132 CTests, and the 0303 artifact passed. Product observation remained host-window limited before guest input. |
 | T304 | Completed the 80386 descriptor-table and system-control family. It corrected table register forms, fixed r/m16 selector/MSW widths, completed the admitted CR2/CR3 forms, and preserved existing 16/32-bit TSS LTR consumers; 51 gates, 133 CTests, and the 0304 artifact passed. Product observation remained host-window limited before guest input. |
+| T305 | Completed the 80386 32-bit interrupt and exception-entry family. It added same-CPL gate planning, software and external front ends, and bounded existing #GP/#NP/#SS error-frame delivery containment; 51 gates, 134 CTests, and the 0305 artifact passed. Product observation remained host-window limited before guest input. |
 
 ## Recent Governance
 
