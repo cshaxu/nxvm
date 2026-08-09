@@ -32,6 +32,72 @@ evidence, run the required verification, record the retrospective/prevention
 action when applicable, and report the result. A task is not complete merely
 because its implementation or tests look complete.
 
+## Execution Modes
+
+Every admitted task or task package uses one declared execution mode. Both
+modes retain one active `STATUS.md` packet, the same identifier rules, the
+same evidence requirements, and the same closure audit.
+
+**Ordinary Mode.**
+
+One conversation performs request review, task-packet preparation, owner
+approval, implementation, verification, closure review, and reporting in the
+same session. This is the default workflow described by this policy and the
+public execution-governance skill.
+
+**Coordinated Dual-Session Mode.**
+
+This mode separates decision/acceptance from implementation. It uses exactly
+the existing conversations named `coordinator` and `executor`. Create a named
+conversation only when it does not exist; reuse an existing named conversation
+and never create a duplicate role conversation.
+
+1. The coordinator selects the approved Queue candidate, admits its one active
+   packet, and prepares an **Instruction**. The Instruction is a concise
+   execution brief derived from that packet: objective, non-goals, baseline,
+   scope, applicable rules, verification, expected markers, stop conditions,
+   and exit criteria.
+2. The coordinator sends the Instruction to the executor and requires a report
+   for every objection, requested correction, and implementation result. The
+   executor waits for a coordinator instruction after every report.
+3. The executor inspects the Instruction. With no objection, the executor sets
+   its goal and implements it. With an objection, missing prerequisite, or
+   needed correction, the executor reports the issue instead and does not
+   silently alter the Instruction.
+4. On an objection or correction report, the coordinator revises the active
+   packet as needed, issues a replacement Instruction, and returns to step 2.
+   On an implementation-result report, the coordinator audits the original
+   request, Instruction, packet exit criteria, evidence, and applicable rules.
+   Any incomplete result receives a replacement Instruction and returns to
+   step 2. Only a complete result may close the current task and advance to the
+   next admitted Queue candidate.
+5. After the last task in a package closes, perform the package-close global
+   governance audit defined below. If it finds a code-quality or repository
+   defect, admit one next linear numeric remediation task and assign each
+   independently fixable finding its own subtask identifier. Execute those
+   subtasks through the same dual-session loop before declaring the package
+   complete.
+
+The coordinator owns Instruction fidelity, task admission, scope correction,
+and acceptance. The executor owns implementation, evidence, and prompt
+reporting. Neither role may close a task merely by asserting success.
+
+**Task Packages.**
+
+A task package is an owner-approved, bounded sequence of Queue candidates with
+an explicit length or stop condition. It does not pre-allocate task numbers or
+create multiple active packets: only its current head is admitted to
+`STATUS.md`, then the next candidate is admitted after the prior task closes.
+Ordinary mode applies the same package sequence within one conversation;
+dual-session mode applies the coordinator/executor loop to each admitted task.
+
+A package is complete only after every admitted task has closed and a global
+governance audit reviews the repository's documentation, code quality, open
+debt, task evidence, and applicable architecture/coding rules. The audit uses
+the normal similar-issue sweep: clear in-scope findings become new subtasks;
+larger or uncertain findings are recorded in `TODO.md` with their required
+admission path. No package completion bypasses this audit.
+
 ## Change Discipline
 
 Structural relocation uses `git mv`: repair direct includes and build paths,
