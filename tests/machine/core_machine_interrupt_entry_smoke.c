@@ -554,7 +554,7 @@ static C_INT ie_test_fault_delivery_failure(
         failed |= !ie_read(&state, IE_GDT_BASE + 13u, &access_before,
             sizeof(access_before)) || !ie_read(&state, IE_STACK_BASE - 16u,
             stack_before, sizeof(stack_before)) || !ie_run_budget(&state, 1, &after,
-            &diagnostic) || !ie_fault_is(&diagnostic, VCPUINS_EXCEPT_GP, 0u) ||
+            &diagnostic) || !ie_fault_is(&diagnostic, VCPUINS_EXCEPT_DF, 0u) ||
             diagnostic.last_delivered_exception.valid ||
             diagnostic.delivered_exception_count != 0u ||
             !ie_read(&state, IE_GDT_BASE + 13u, &access_after,
@@ -573,22 +573,22 @@ int main(void)
     C_INT failed = !ie_test_success(VCPU_DESC_SYS_TYPE_INTGATE_32, 0) ||
         !ie_test_success(VCPU_DESC_SYS_TYPE_TRAPGATE_32, 1) ||
         !ie_test_prefix_keeps_gate_width() ||
-        !ie_test_failure(INTERRUPT_ENTRY_NEGATIVE_IDT_LIMIT, VCPUINS_EXCEPT_GP,
-            IE_VECTOR * 8u + 2u) ||
-        !ie_test_failure(INTERRUPT_ENTRY_NEGATIVE_GATE_TYPE, VCPUINS_EXCEPT_GP,
-            IE_VECTOR * 8u + 2u) ||
-        !ie_test_failure(INTERRUPT_ENTRY_NEGATIVE_GATE_DPL, VCPUINS_EXCEPT_GP,
-            IE_VECTOR * 8u + 2u) ||
+        !ie_test_failure(INTERRUPT_ENTRY_NEGATIVE_IDT_LIMIT, VCPUINS_EXCEPT_DF,
+            0u) ||
+        !ie_test_failure(INTERRUPT_ENTRY_NEGATIVE_GATE_TYPE, VCPUINS_EXCEPT_DF,
+            0u) ||
+        !ie_test_failure(INTERRUPT_ENTRY_NEGATIVE_GATE_DPL, VCPUINS_EXCEPT_DF,
+            0u) ||
         !ie_test_failure(INTERRUPT_ENTRY_NEGATIVE_GATE_NOT_PRESENT,
-            VCPUINS_EXCEPT_NP, IE_VECTOR * 8u + 2u) ||
-        !ie_test_failure(INTERRUPT_ENTRY_NEGATIVE_CODE_TYPE, VCPUINS_EXCEPT_GP,
-            0x0008u) ||
+            VCPUINS_EXCEPT_DF, 0u) ||
+        !ie_test_failure(INTERRUPT_ENTRY_NEGATIVE_CODE_TYPE, VCPUINS_EXCEPT_DF,
+            0u) ||
         !ie_test_failure(INTERRUPT_ENTRY_NEGATIVE_CODE_NOT_PRESENT,
-            VCPUINS_EXCEPT_NP, 0x0008u) ||
-        !ie_test_failure(INTERRUPT_ENTRY_NEGATIVE_CODE_LIMIT, VCPUINS_EXCEPT_GP,
+            VCPUINS_EXCEPT_DF, 0u) ||
+        !ie_test_failure(INTERRUPT_ENTRY_NEGATIVE_CODE_LIMIT, VCPUINS_EXCEPT_DF,
             0u) ||
         !ie_test_failure(INTERRUPT_ENTRY_NEGATIVE_STACK_LIMIT,
-            VCPUINS_EXCEPT_SS, 0u) ||
+            VCPUINS_EXCEPT_DF, 0u) ||
         !ie_test_software_frontends() ||
         !ie_test_external_origin(0, 0) || !ie_test_external_origin(1, 0) ||
         !ie_test_external_origin(0, 1) || !ie_test_external_origin(1, 1);

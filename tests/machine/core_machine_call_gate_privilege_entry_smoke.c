@@ -243,6 +243,19 @@ static C_INT cg_install_outer_error_gate(call_gate_privilege_machine *state,
     return cg_write(state, CG_IDT_BASE + 13u * 8u, gate, sizeof(gate));
 }
 
+static C_INT cg_install_double_fault_gate(call_gate_privilege_machine *state,
+    uint8_t access)
+{
+    uint8_t gate[8] = {0};
+
+    if (state == STD_NULL || state->machine == STD_NULL) return 0;
+    gate[0] = CG_HANDLER_OFFSET & 0xffu;
+    gate[1] = CG_HANDLER_OFFSET >> 8u;
+    gate[2] = 0x08u;
+    gate[5] = access;
+    return cg_write(state, CG_IDT_BASE + 8u * 8u, gate, sizeof(gate));
+}
+
 static C_INT cg_test_success(uint8_t count)
 {
     call_gate_privilege_machine state;
@@ -287,8 +300,8 @@ static C_INT cg_test_dpl_failure_atomic(C_VOID)
         failed |= !cg_read(&state, CG_GDT_BASE + 13u, &cs_before,
                 sizeof(cs_before)) || !cg_read(&state, CG_GDT_BASE + 21u,
                 &ss_before, sizeof(ss_before)) || !cg_run(&state, 1, &after,
-                &diagnostic) || !cg_fault_is(&diagnostic, VCPUINS_EXCEPT_GP,
-                CG_GATE_SELECTOR & 0xfffcu) || !cg_read(&state, CG_GDT_BASE + 13u,
+                &diagnostic) || !cg_fault_is(&diagnostic, VCPUINS_EXCEPT_DF,
+                0u) || !cg_read(&state, CG_GDT_BASE + 13u,
                 &cs_after, sizeof(cs_after)) || !cg_read(&state, CG_GDT_BASE + 21u,
                 &ss_after, sizeof(ss_after)) || after.data.eip != before.data.eip ||
             after.data.esp != before.data.esp || after.data.cs.selector !=
@@ -344,7 +357,7 @@ static C_INT cg_test_parameter_source_failure_atomic(C_VOID)
         failed |= !cg_read(&state, CG_GDT_BASE + 13u, &cs_before,
                 sizeof(cs_before)) || !cg_read(&state, CG_GDT_BASE + 21u,
                 &ss_before, sizeof(ss_before)) || !cg_run(&state, 1, &after,
-                &diagnostic) || !cg_fault_is(&diagnostic, VCPUINS_EXCEPT_SS, 0u) ||
+            &diagnostic) || !cg_fault_is(&diagnostic, VCPUINS_EXCEPT_DF, 0u) ||
             !cg_read(&state, CG_GDT_BASE + 13u, &cs_after, sizeof(cs_after)) ||
             !cg_read(&state, CG_GDT_BASE + 21u, &ss_after, sizeof(ss_after)) ||
             after.data.eip != before.data.eip || after.data.esp != before.data.esp ||
@@ -481,8 +494,8 @@ static C_INT cg_test_ts_delivery_failure(call_gate_ts_delivery_failure failure)
         failed |= !cg_read(&state, CG_GDT_BASE + 29u, &access_before,
             sizeof(access_before)) || !cg_read(&state, 0x000087f0u,
             stack_before, sizeof(stack_before)) || !cg_run(&state, 1, &after,
-            &diagnostic) || !cg_fault_is(&diagnostic, VCPUINS_EXCEPT_TS,
-            0x0010u) || diagnostic.last_delivered_exception.valid ||
+            &diagnostic) || !cg_fault_is(&diagnostic, VCPUINS_EXCEPT_DF,
+            0u) || diagnostic.last_delivered_exception.valid ||
             diagnostic.delivered_exception_count != 0u ||
             !cg_read(&state, CG_GDT_BASE + 29u, &access_after,
                 sizeof(access_after)) || !cg_read(&state, 0x000087f0u,
@@ -572,8 +585,8 @@ static C_INT cg_test_outer_gp_delivery_failure(
             sizeof(cs_before)) || !cg_read(&state, CG_GDT_BASE + 21u,
             &ss_before, sizeof(ss_before)) || !cg_read(&state, 0x00008fe8u,
             stack_before, sizeof(stack_before)) || !cg_run(&state, 1, &after,
-            &diagnostic) || !cg_fault_is(&diagnostic, VCPUINS_EXCEPT_GP,
-            CG_GATE_SELECTOR & 0xfffcu) || diagnostic.last_delivered_exception.valid ||
+            &diagnostic) || !cg_fault_is(&diagnostic, VCPUINS_EXCEPT_DF,
+            0u) || diagnostic.last_delivered_exception.valid ||
             diagnostic.delivered_exception_count != 0u || !cg_read(&state,
                 CG_GDT_BASE + 13u, &cs_after, sizeof(cs_after)) || !cg_read(&state,
                 CG_GDT_BASE + 21u, &ss_after, sizeof(ss_after)) || !cg_read(&state,
@@ -586,25 +599,82 @@ static C_INT cg_test_outer_gp_delivery_failure(
     return !failed;
 }
 
+static C_INT cg_test_outer_gp_double_fault(C_INT double_fault_gate_valid)
+{
+    call_gate_privilege_machine state;
+    core_machine_cpu_diagnostic diagnostic;
+    t_cpu before;
+    t_cpu after;
+    uint32_t frame[6] = {0u,0u,0u,0u,0u,0u};
+    uint32_t frame_before[6] = {0u,0u,0u,0u,0u,0u};
+    uint32_t frame_after[6] = {0u,0u,0u,0u,0u,0u};
+    uint8_t cs_before = 0u;
+    uint8_t cs_after = 0u;
+    uint8_t ss_before = 0u;
+    uint8_t ss_after = 0u;
+    C_INT failed = !cg_prepare(&state, 0x8cu, 0u);
+
+    if (!failed) {
+        failed |= !cg_install_outer_error_gate(&state, 0x80u) ||
+            !cg_install_double_fault_gate(&state, double_fault_gate_valid ?
+                (uint8_t)(0x80u | VCPU_DESC_SYS_TYPE_INTGATE_32) : 0x80u);
+    }
+    if (!failed && double_fault_gate_valid) {
+        failed |= !cg_run(&state, 0, &after, &diagnostic) ||
+            diagnostic.first_fault.valid ||
+            !diagnostic.last_delivered_exception.valid ||
+            diagnostic.delivered_exception_count != 1u ||
+            !TYPE_GET_BIT(diagnostic.last_delivered_exception.exception_mask,
+                VCPUINS_EXCEPT_DF) ||
+            diagnostic.last_delivered_exception.exception_code != 0u ||
+            after.data.cs.selector != 0x0008u ||
+            after.data.ss.selector != 0x0010u ||
+            after.data.eip != CG_HANDLER_OFFSET + 1u ||
+            after.data.esp != 0x00008fe8u ||
+            !cg_read(&state, after.data.esp, frame, sizeof(frame)) ||
+            frame[0] != 0u || frame[1] != 0u || frame[2] != 0x0000001bu ||
+            frame[3] != 0x00000202u || frame[4] != 0x00008800u ||
+            frame[5] != 0x00000023u;
+    }
+    if (!failed && !double_fault_gate_valid) {
+        before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        failed |= !cg_read(&state, CG_GDT_BASE + 13u, &cs_before,
+            sizeof(cs_before)) || !cg_read(&state, CG_GDT_BASE + 21u,
+            &ss_before, sizeof(ss_before)) || !cg_read(&state, 0x00008fe8u,
+            frame_before, sizeof(frame_before)) || !cg_run(&state, 1, &after,
+            &diagnostic) || !cg_fault_is(&diagnostic, VCPUINS_EXCEPT_DF, 0u) ||
+            diagnostic.last_delivered_exception.valid ||
+            diagnostic.delivered_exception_count != 0u || !cg_read(&state,
+                CG_GDT_BASE + 13u, &cs_after, sizeof(cs_after)) || !cg_read(&state,
+                CG_GDT_BASE + 21u, &ss_after, sizeof(ss_after)) || !cg_read(&state,
+                0x00008fe8u, frame_after, sizeof(frame_after)) ||
+            !cg_entry_state_equal(&before, &after) || cs_after != cs_before ||
+            ss_after != ss_before || STD_MEMCMP(frame_before, frame_after,
+                sizeof(frame_before)) != 0;
+    }
+    core_machine_destroy(state.machine);
+    return !failed;
+}
+
 int main(void)
 {
     C_INT failed = !cg_test_success(0u) || !cg_test_success(2u) ||
         !cg_test_dpl_failure_atomic() || !cg_test_gate_failure_atomic(0x6cu,
-            VCPUINS_EXCEPT_NP, CG_GATE_SELECTOR & 0xfffcu) ||
-        !cg_test_gate_failure_atomic(0xeeu, VCPUINS_EXCEPT_GP,
-            CG_GATE_SELECTOR & 0xfffcu) || !cg_test_parameter_source_failure_atomic() ||
+            VCPUINS_EXCEPT_DF, 0u) ||
+        !cg_test_gate_failure_atomic(0xeeu, VCPUINS_EXCEPT_DF,
+            0u) || !cg_test_parameter_source_failure_atomic() ||
         !cg_test_target_failure_atomic(CALL_GATE_TARGET_CODE_TYPE,
-            VCPUINS_EXCEPT_GP, 0x0008u) ||
+            VCPUINS_EXCEPT_DF, 0u) ||
         !cg_test_target_failure_atomic(CALL_GATE_TARGET_CODE_NOT_PRESENT,
-            VCPUINS_EXCEPT_NP, 0x0008u) ||
+            VCPUINS_EXCEPT_DF, 0u) ||
         !cg_test_target_failure_atomic(CALL_GATE_TARGET_STACK_TYPE,
-            VCPUINS_EXCEPT_TS, 0x0010u) ||
+            VCPUINS_EXCEPT_DF, 0u) ||
         !cg_test_target_failure_atomic(CALL_GATE_TARGET_STACK_NOT_PRESENT,
-            VCPUINS_EXCEPT_SS, 0x0010u) ||
+            VCPUINS_EXCEPT_DF, 0u) ||
         !cg_test_target_failure_atomic(CALL_GATE_TARGET_STACK_SELECTOR,
-            VCPUINS_EXCEPT_TS, 0x0010u) ||
+            VCPUINS_EXCEPT_DF, 0u) ||
         !cg_test_target_failure_atomic(CALL_GATE_TARGET_STACK_BOUNDARY,
-            VCPUINS_EXCEPT_SS, 0u) || !cg_test_ts_delivery() ||
+            VCPUINS_EXCEPT_DF, 0u) || !cg_test_ts_delivery() ||
         !cg_test_ts_delivery_failure(CALL_GATE_TS_DELIVERY_INVALID_GATE) ||
         !cg_test_ts_delivery_failure(CALL_GATE_TS_DELIVERY_NONPRESENT_GATE) ||
         !cg_test_ts_delivery_failure(CALL_GATE_TS_DELIVERY_STACK_LIMIT) ||
@@ -615,11 +685,13 @@ int main(void)
         !cg_test_outer_gp_delivery_failure(
             CALL_GATE_OUTER_DELIVERY_TARGET_NOT_PRESENT) ||
         !cg_test_outer_gp_delivery_failure(
-            CALL_GATE_OUTER_DELIVERY_STACK_LIMIT);
+            CALL_GATE_OUTER_DELIVERY_STACK_LIMIT) ||
+        !cg_test_outer_gp_double_fault(1) || !cg_test_outer_gp_double_fault(0);
 
     if (failed) return 1;
     STD_PRINTF("M5:T307:CALL-GATE-PRIVILEGE-ENTRY:OK\n");
     STD_PRINTF("M5:T308:S3:SAME-CPL-TS-DELIVERY:OK\n");
     STD_PRINTF("M5:T308:S5:OUTER-CPL-ERROR-DELIVERY:OK\n");
+    STD_PRINTF("M5:T308:S6:DOUBLE-FAULT-CONTAINMENT:OK\n");
     return 0;
 }
