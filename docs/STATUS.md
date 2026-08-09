@@ -2,7 +2,27 @@
 
 ## Current Work
 
-**Idle.**
+**Active: M5 T303 S1.**
+
+## M5 T303 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New; M5 T303 S1; Coordinated Dual-Session Mode. |
+| Admission And Approval | Owner approved the direct M5 80386 32-bit protected execution/delivery package and instructed coordinator/executor execution through the package, stopping before Mantle. T302 is closed; T303 is the next approved Queue candidate. |
+| Objective | Admit the 80386 32-bit same-privilege control-transfer family: near/far `JMP`, `CALL`, `RET`, `RETF`, conditional-relative and loop-family forms, including operand-size variants, code-limit checks, return-frame ordering, and failure-before-visible-commit rules. Freeze exact form/profile/mode and commit matrices before implementation. |
+| Non-goals | Privilege transitions, call gates, task switching, interrupt/exception delivery, descriptor/system changes, paging policy, virtual-8086, stack primitive rework already closed by T302, host/product UX, external ABI, and source import. No new executor or execution path. |
+| Reference Baseline | `95950e0`; current artifact `vm-0-5-0302` / `nxvm_0_5_0302.exe`. |
+| Files And ABI Surface | Initial audit may inspect core CPU control-transfer, stack, descriptor, and fault helpers plus focused tests/CMake and task/governance records. It must not change public core interfaces or cross-module ownership. |
+| Applicable Rules | `rules/EXECUTION.md`, `rules/ARCHITECTURE.md`, `rules/CODING.md`, `rules/DOCUMENT.md`, and `etc/operations/policy/source-policy.md`; retain one core executor/state owner, core-to-VM dependency direction, and NXVM Console/debugger/boot behavior. |
+| Verification | Intel 80386 PRM is authoritative; S1 records exact instruction entries and sections. Read-only comparison records relevant Bochs 2.6 and PCjs 2.00.0 behavior paths and versions; do not copy source. Project verification uses focused synthetic probes, not long-start guest fixtures. Implementation later runs focused probes, `current-gates-gcc`, documentation governance, `git diff --check`, one task artifact, and one owner-supplied Setup observation after family closure. |
+| Expected Markers | S1 emits an audit record only. The later family probe marker is `M5:T303:CONTROL-TRANSFER:OK`; its task artifact is created only when CMake's current target is updated during implementation. |
+| Asset Needs | Local read-only reference checkouts and owner-supplied local Setup media may be observed but are never committed, packaged, or made default-build inputs. |
+| Stop Conditions | Stop and report on Intel/reference disagreement not resolved by a bounded optional bridge, a required architecture change, a second executor/state path, raw public-layout exposure, retained Console/debugger/boot regression, or a form owned by privilege/exception/task/V86 work. |
+| Exit Criteria | S1 produces a bounded form/profile/mode and fault/commit matrix with every current control-transfer path classified as retained, in scope, or deferred. It identifies focused probes and an implementation sequence without changing CPU behavior. |
+| Original Owner Request | Execute the 80386 task package in dual-session mode through the Mantle boundary; use Intel, Bochs, and PCjs to establish logic, observe Setup once per task, and use the optional bridge when uncertain. |
+| Similar-Issue Sweep | Audit all near/far branch, call, return, condition/loop, code-limit, stack-frame, selector/cache, and fault/commit helpers in `src`, `tests`, and CMake. Each production-path hit must be classified in the S1 record; do not silently widen scope. |
+| S1 Audit Record | [T303 control-transfer admission audit](etc/evidence/t303-control-transfer-admission.md) freezes the form/profile/mode, fault/commit, focused-probe, and deferred-owner matrices without changing CPU behavior. |
 
 ## Current Technical Baseline
 
