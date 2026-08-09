@@ -636,14 +636,6 @@ type_status core_machine_configure_rtc_cmos(core_machine *machine,
             config->data_port)) {
         return TYPE_STATUS_INVALID_STATE;
     }
-    rtc_config.irq = config->irq;
-    rtc_config.ticks_per_second = config->ticks_per_second;
-    core_machine_rtc_initialize(&machine->shared_rtc, &machine->shared_pic_master,
-        &machine->shared_pic_slave, &rtc_config);
-    for (index = 0u; index < config->default_count; ++index) {
-        core_machine_rtc_write_nvram(&machine->shared_rtc,
-            config->defaults[index].index, config->defaults[index].value);
-    }
     port_checkpoint = core_machine_port_registration_begin(&machine->executor_port);
     status = core_machine_install_port_provider(machine, config->index_port,
         config->index_port, &core_machine_rtc_cmos_index_port_provider, machine);
@@ -658,6 +650,14 @@ type_status core_machine_configure_rtc_cmos(core_machine *machine,
         core_machine_port_rollback_registration(&machine->executor_port,
             port_checkpoint);
         return status;
+    }
+    rtc_config.irq = config->irq;
+    rtc_config.ticks_per_second = config->ticks_per_second;
+    core_machine_rtc_initialize(&machine->shared_rtc, &machine->shared_pic_master,
+        &machine->shared_pic_slave, &rtc_config);
+    for (index = 0u; index < config->default_count; ++index) {
+        core_machine_rtc_write_nvram(&machine->shared_rtc,
+            config->defaults[index].index, config->defaults[index].value);
     }
     machine->rtc_cmos_config = *config;
     machine->rtc_cmos_configured = TYPE_TRUE;
@@ -847,6 +847,8 @@ type_status core_machine_configure_hdc(core_machine *machine,
         core_machine_port_rollback_registration(&machine->executor_port,
             port_checkpoint);
         core_machine_hdc_finalize(&machine->hdc);
+        STD_MEMSET(&machine->hdc_topology, TYPE_ZERO_8,
+            sizeof(machine->hdc_topology));
         return status;
     }
     status = core_machine_install_port_provider(machine,
@@ -857,6 +859,8 @@ type_status core_machine_configure_hdc(core_machine *machine,
         core_machine_port_rollback_registration(&machine->executor_port,
             port_checkpoint);
         core_machine_hdc_finalize(&machine->hdc);
+        STD_MEMSET(&machine->hdc_topology, TYPE_ZERO_8,
+            sizeof(machine->hdc_topology));
         return status;
     }
     machine->hdc_configured = TYPE_TRUE;

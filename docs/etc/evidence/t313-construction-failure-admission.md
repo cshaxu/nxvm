@@ -65,6 +65,21 @@ no surviving binding, retry and first-owner preservation, create failure with
 a null output, FDC configuration rollback, and fresh default creation after
 each injected failure.
 
+## S4 Controller Rollback Result
+
+RTC now registers its index and data providers before it initializes embedded
+RTC storage, writes defaults, or publishes its configuration. A first- or
+second-registration failure therefore rolls back the complete checkpoint while
+the RTC/configuration fields remain their clean stopped-machine values.
+
+The S4 sweep also found that FDC finalization only deasserted DMA/IRQ, and that
+HDC rollback left `hdc_topology` copied after controller finalization. FDC
+finalization now clears data and connection state; HDC failure clears its
+topology after the existing private finalizer clears controller state. The
+focused `M5:T313:S4:CONTROLLER-ROLLBACK:OK` proof directly checks RTC first and
+second failure, FDC and HDC port/controller/topology clean state, retry, and a
+fresh default create after each injected failure.
+
 ## Exclusions
 
 No CPU executor, paging, RETF/IRET, product re-architecture, generic allocator
