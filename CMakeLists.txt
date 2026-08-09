@@ -163,6 +163,8 @@ add_executable(core-machine-operand-address-smoke
 target_link_libraries(core-machine-operand-address-smoke PRIVATE core-machine)
 add_executable(core-machine-setcc-smoke tests/machine/core_machine_setcc_smoke.c)
 target_link_libraries(core-machine-setcc-smoke PRIVATE core-machine)
+add_executable(core-machine-movx-smoke tests/machine/core_machine_movx_smoke.c)
+target_link_libraries(core-machine-movx-smoke PRIVATE core-machine)
 add_executable(core-machine-control-transfer-smoke
     tests/machine/core_machine_control_transfer_smoke.c)
 target_link_libraries(core-machine-control-transfer-smoke PRIVATE core-machine)
@@ -1101,6 +1103,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-real-mode-386-address-smoke
     core-machine-operand-address-smoke
     core-machine-setcc-smoke
+    core-machine-movx-smoke
     core-machine-control-transfer-smoke
     core-machine-descriptor-system-smoke
     core-machine-interrupt-entry-smoke

@@ -123,3 +123,40 @@ checked-memory, and CPU profile-gate smoke intersections. The focused proof
 found no production SETcc defect, so S3 adds the probe and CMake registration
 but deliberately does not refactor otherwise correct CPU handlers. No
 artifact, Setup observation, Queue change, or product-path change is made.
+
+## S4 MOVZX/MOVSX Evidence
+
+Intel 80386 PRM Chapter 4 defines B6/B7/BE/BF with an operand-size-selected
+register destination: a 16-bit destination updates only its low half, while a
+32-bit destination receives the complete zero- or sign-extended result.
+Bochs 2.6 `cpu/data_xfer16.cc` and `cpu/data_xfer32.cc`, and PCjs 2.00.0
+`machines/pcx86/modules/v2/x86op0f.js` and `x86help.js`, remain read-only
+behavior comparisons; no source was copied.
+
+The focused `core-machine-movx-smoke` established the S2 candidate as a real
+defect. `MOVZX_R32_RM16` and `MOVSX_R32_RM16` decoded their destination and
+wrote it as four bytes regardless of operand size. S4 changes only those two
+calls to use `_GetOperandSize`, matching their B6/BE peers. In particular,
+`66h`/16-bit B7 and BF now retain the high sixteen bits of the destination.
+The sweep covered B6/B7/BE/BF metadata and table entries, `_d_modrm`,
+`_m_read_rm`, `_m_write_ref`, operand/address-size selection, sign/zero
+extension, EFLAGS writes, and focused registration. No second executor or
+memory route was found.
+
+The probe covers B6/B7/BE/BF with byte/word register and memory sources,
+zero/sign extension, both 16/32-bit destination widths, `66h`, and a combined
+`67h`/`66h` memory form. It preserves EFLAGS in every success case. A
+read-counting provider proves that all four forms receive `#UD` on 80186 and
+80286 before ModRM source access or destination publication. The 8086 profile
+is explicitly excluded from that assertion: retained
+`core-machine-cpu-profile-gate-smoke` preserves its historical `0F` `POP CS`
+compatibility route, which is neither MOVZX nor MOVSX support. A prepared
+protected DS-limit source read fails through the retained checked-memory and
+T308 delivery route; its terminal no-IDT diagnostic is `#DF`, while ECX,
+EFLAGS, and EIP retain entry values.
+
+The direct marker is `M5:T310:S4:MOVX:OK`. S4 retains the S3 SETcc,
+operand/address, real-mode 386 address, checked-memory, and CPU profile-gate
+intersections. No artifact, Setup observation, Queue change, or product-path
+change is made. BT-family, double-shift, scan, IMUL, paging, system, task,
+and V86 work remain deferred.

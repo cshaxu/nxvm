@@ -2,28 +2,29 @@
 
 ## Current Work
 
-**Active: M5 T310 S3.**
+**Active: M5 T310 S4.**
 
-## M5 T310 S3 Packet
+## M5 T310 S4 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Corrective; M5 T310 S3 SETcc implementation and batch-identity correction; Coordinated Dual-Session Mode. T310 S1 admission and S2 audit are accepted. |
+| Identifier Mode | Corrective; M5 T310 S4 MOVZX/MOVSX family implementation; Coordinated Dual-Session Mode. T310 S1--S3 are accepted. |
 | Admission And Approval | T310 is the next linear task selected by T309's accepted form audit; it precedes paging because its forms are metadata-valid and dispatch-reachable but lack focused semantic evidence. |
-| Objective | Correct the S2 planned-batch identifiers to begin at S3, then implement and prove the complete 80386 SETcc family (`0F 90`--`9F`) through the existing core decoder, ModRM, checked-memory, and fault routes. |
-| Non-goals | BT/BTS/BTR/BTC, SHLD/SHRD, BSF/BSR, MOVZX/MOVSX, IMUL, paging, debug/test registers, task/V86/system extensions, later-CPU forms, product UX, public ABI, source import, a second executor, or guest-image build fixtures. |
-| Reference Baseline | Accepted T308 artifact `vm-0-5-0308` / `nxvm_0_5_0308.exe`; T310 S2 audit `96b2bbd`. |
-| Files And ABI Surface | S3 may change core CPU SETcc execution, one focused prepared-state probe/CMake registration, and task records. It must not change public interfaces, cross-module ownership, or product UX. |
+| Objective | Implement and prove the complete 80386 `MOVZX`/`MOVSX` family (`0F B6`, `0F B7`, `0F BE`, `0F BF`) through the existing core decoder, ModRM, checked-memory, and fault routes. Explicitly prove or correct the S2 candidate that `B7`/`BF` incorrectly widen an operand-size-16 destination. |
+| Non-goals | SETcc changes, BT/BTS/BTR/BTC, SHLD/SHRD, BSF/BSR, IMUL, paging, debug/test registers, task/V86/system extensions, later-CPU forms, product UX, public ABI, source import, a second executor, or guest-image build fixtures. |
+| Reference Baseline | Accepted T308 artifact `vm-0-5-0308` / `nxvm_0_5_0308.exe`; accepted T310 S3 SETcc evidence `f97facc`. |
+| Files And ABI Surface | S4 may change core CPU MOVZX/MOVSX execution, one focused prepared-state probe/CMake registration, and task records. It must not change public interfaces, cross-module ownership, or product UX. |
 | Applicable Rules | `rules/EXECUTION.md`, `rules/ARCHITECTURE.md`, `rules/CODING.md`, `rules/DOCUMENT.md`, and `etc/operations/policy/source-policy.md`; retain one core executor/state owner and existing checked memory, stack, and fault routes. |
 | Verification | Intel 80386 PRM is authoritative. Record versioned read-only Bochs 2.6 and PCjs 2.00.0 behavior paths; use focused prepared-state probes only. |
-| Expected Markers | The SETcc marker proves all 16 predicates, register/memory `r/m8`, `67h` addressing, unchanged EFLAGS, 80386 gate, and failed-write nonpublication. S3 creates no artifact. |
+| Expected Markers | The MOVZX/MOVSX marker proves B6/B7/BE/BF, 16/32-bit destination widths, byte/word register and memory sources, sign/zero extension, `66h`/`67h`, unchanged EFLAGS, 80186/80286 `#UD` before source access, and failed-read nonpublication. The retained 8086 `0F` POP CS compatibility path is outside this form family and remains unchanged. S4 creates no artifact. |
 | S2 Audit Record | [T310 0F integer bit/data admission audit](etc/evidence/t310-0f-integer-bit-data-admission.md) records the authority, form matrix, static candidates, focused-probe rules, batch boundaries, retained intersections, and deferrals. |
 | Asset Needs | Read-only local references only; no guest media, firmware, or third-party source is committed. |
 | Original Owner Request | Execute the direct M5 80386 protected execution/delivery package in coordinated mode, stopping before Mantle; use Intel as authority with read-only Bochs and PCjs comparison. |
-| Similar-Issue Sweep | Sweep every SETcc handler/table entry, condition evaluator, ModRM byte destination path, address-size helper, profile gate, flags write path, and focused probe registration. |
-| S3 Evidence Record | [T310 SETcc evidence](etc/evidence/t310-0f-integer-bit-data-admission.md#s3-setcc-evidence) records the corrected S3-S8 batch identities, condition/memory/prefix matrix, failure nonpublication, retained intersections, and deferred boundary. |
-| Stop Conditions | Stop and report an Intel/reference disagreement, any need to modify condition-flag producers, a second executor or memory route, a public ABI change, or a failed retained intersection. |
-| Exit Criteria | S3 corrects planned batch identities, proves all SETcc forms and failure boundaries, passes relevant focused and retained probes, documentation governance, and diff check, and remains active pending coordinator acceptance. |
+| Similar-Issue Sweep | Sweep B6/B7/BE/BF metadata/table entries, shared source-read and destination-write helpers, operand/address-size selection, sign/zero extension, profile gate, flags path, and focused probe registration. |
+| S3 Evidence Record | [T310 SETcc evidence](etc/evidence/t310-0f-integer-bit-data-admission.md#s3-setcc-evidence) is retained unchanged. |
+| S4 Evidence Record | [T310 MOVZX/MOVSX evidence](etc/evidence/t310-0f-integer-bit-data-admission.md#s4-movzxmovsx-evidence) records the B7/BF width correction, full focused matrix, 80186/80286 read-before-UD proof, retained 8086 `POP CS` exception, and deferred boundary. |
+| Stop Conditions | Stop and report an Intel/reference disagreement, a pre-80386 or failed-read path that publishes a result, any need for a second executor or memory route, a public ABI change, or a failed retained intersection. |
+| Exit Criteria | S4 proves or corrects the B7/BF width candidate and all admitted MOVZX/MOVSX forms and failure boundaries, passes relevant focused and retained probes, documentation governance, and diff check, and remains active pending coordinator acceptance. |
 
 ## Current Technical Baseline
 

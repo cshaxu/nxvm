@@ -16347,10 +16347,10 @@ static C_VOID MOVZX_R32_RM16(core_machine_cpu_execution_context *context)
 {
     TYPE_TRACE_CALL_BEGIN("MOVZX_R32_RM16");
     _adv;
-    TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 4, 2));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, 2));
     TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
     instruction_state.data.crm = (type_unsigned_16)instruction_state.data.crm;
-    TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, TYPE_REFERENCE_OF(instruction_state.data.crm), 4));
+    TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, TYPE_REFERENCE_OF(instruction_state.data.crm), _GetOperandSize));
     TYPE_TRACE_CALL_END;
 }
 static C_VOID INS_0F_BA(core_machine_cpu_execution_context *context)
@@ -16479,10 +16479,10 @@ static C_VOID MOVSX_R32_RM16(core_machine_cpu_execution_context *context)
 {
     TYPE_TRACE_CALL_BEGIN("MOVSX_R32_RM16");
     _adv;
-    TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 4, 2));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, 2));
     TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
     instruction_state.data.crm = (type_signed_16)instruction_state.data.crm;
-    TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, TYPE_REFERENCE_OF(instruction_state.data.crm), 4));
+    TYPE_TRACE_CHECK_RETURN(_m_write_ref(context, instruction_state.data.rr, TYPE_REFERENCE_OF(instruction_state.data.crm), _GetOperandSize));
     TYPE_TRACE_CALL_END;
 }
 
