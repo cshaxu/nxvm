@@ -223,6 +223,37 @@ RF restoration while IOPL and IF remain masked. Failure probes retain the
 pre-commit CS/SS/EFLAGS/access-byte assertions. The marker remains
 `M5:T306:S5:OUTER-IRET:OK` because S6 narrows its existing EFLAGS contract.
 
+## S7 Closure-Preparation Evidence
+
+The one current artifact target is `vm-0-5-0306`. The generated
+`build/output/nxvm_0_5_0306.exe` has SHA-256
+`276A1ECE78FF66FCD2746C1DF9171E37716F203F36F9BAECC9ACB06DCBDF2DE3`.
+
+The final managed `cmake --build --preset current-gates-gcc` run passes all
+51 static/governance targets and 135/135 current-gate CTests. Focused return
+probes emit `M5:T306:S2:SAME-CPL-IRET:OK`,
+`M5:T306:S4:OUTER-RETF:OK`, and `M5:T306:S5:OUTER-IRET:OK`; the latter retains
+the S6 EFLAGS privilege cases. Retained probes emit
+`M5:T293:S2:PROTECTED-RETURN-ATOMICITY:OK`,
+`M5:T303:CONTROL-TRANSFER:OK`, `M5:T304:DESCRIPTOR-SYSTEM:OK`,
+`M5:T305:INTERRUPT-ENTRY:OK`, `M5:T260:S3:TSS-IOMAP:CORPUS:OK`, and the T261
+task-switch markers. Documentation governance and `git diff --check` pass.
+
+One bounded owner-supplied product observation ran the 0306 artifact without
+media or guest input for ten seconds. The process remained alive but exposed
+main-window handle zero, so host automation could not safely discover a guest
+surface. It was terminated and cleanup found no process residue. No guest
+command, Setup checkpoint, or CPU conclusion was obtained. This is a
+host-automation limitation retained for owner-controlled manual observation;
+it is not retried in T306.
+
+T306 remains active and pending coordinator acceptance. This is
+closure-preparation evidence only: it does not set the project Idle, close
+T306, change Queue state, or authorize T307. Deferred boundaries remain task
+and nested-task returns, task/call gates, virtual-8086 returns, reset or
+triple-fault policy, paging-policy expansion, new fault origins, and public
+ABI changes.
+
 The retained T293 outer-return atomicity, T303 control-transfer, and T305
 interrupt-entry probes remain required regression consumers. S2 does not
 admit outer RETF/IRET, task/V86 returns, gates, or exception-delivery changes.
