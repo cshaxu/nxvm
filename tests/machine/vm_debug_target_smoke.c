@@ -6,6 +6,8 @@
 
 #include "core/product/debug/debug_target.h"
 
+#include "core/machine/machine.h"
+
 #include "vm/composition/session/debug_target.h"
 
 #include "vm/composition/session/lifecycle.h"
@@ -15,6 +17,7 @@ C_INT main(C_VOID)
     vm_session *session;
     const core_product_debug_target *target;
     uint32_t value = 0u;
+    uint32_t before_eax = 0u;
     uint8_t byte = 0x5au;
     uint8_t linear_byte = 0xa5u;
 
@@ -41,16 +44,70 @@ C_INT main(C_VOID)
         STD_FREE(session);
         return 1;
     }
+    for (C_INT register_id = CORE_PRODUCT_DEBUG_EAX;
+         register_id <= CORE_PRODUCT_DEBUG_CR4; ++register_id) {
+        core_product_debug_register product_register =
+            (core_product_debug_register)register_id;
+
+        if (target->read_register(target->context, product_register, &value) ||
+            target->write_register(target->context, product_register, value)) {
+            vm_session_finalize(session);
+            STD_FREE(session);
+            return 1;
+        }
+    }
+    if (target->read_register(target->context, CORE_PRODUCT_DEBUG_EAX,
+            &before_eax) || !target->read_register(target->context,
+            (core_product_debug_register)99, &value) ||
+        !target->write_register(target->context,
+            (core_product_debug_register)99, 0xffffffffu) ||
+        target->read_register(target->context, CORE_PRODUCT_DEBUG_EAX,
+            &value) || value != before_eax) {
+        vm_session_finalize(session);
+        STD_FREE(session);
+        return 1;
+    }
     target->write_port(target->context, 0x80u, 0u);
     (C_VOID)target->read_port(target->context, 0x80u);
     target->set_watch(target->context, CORE_PRODUCT_DEBUG_WATCH_READ, 0x600u);
+    if (!session->core_machine->executor_cpu_instructions.data.flagWR ||
+        session->core_machine->executor_cpu_instructions.data.wrLinear != 0x600u) {
+        vm_session_finalize(session);
+        STD_FREE(session);
+        return 1;
+    }
+    target->set_watch(target->context, (core_product_debug_watch_kind)99, 0x700u);
+    target->clear_watch(target->context, (core_product_debug_watch_kind)99);
+    if (!session->core_machine->executor_cpu_instructions.data.flagWR ||
+        session->core_machine->executor_cpu_instructions.data.wrLinear != 0x600u) {
+        vm_session_finalize(session);
+        STD_FREE(session);
+        return 1;
+    }
     target->clear_watch(target->context, CORE_PRODUCT_DEBUG_WATCH_READ);
+    if (session->core_machine->executor_cpu_instructions.data.flagWR) {
+        vm_session_finalize(session);
+        STD_FREE(session);
+        return 1;
+    }
+    target->set_watch(target->context, CORE_PRODUCT_DEBUG_WATCH_WRITE, 0x700u);
+    target->set_watch(target->context, CORE_PRODUCT_DEBUG_WATCH_EXECUTE, 0x800u);
+    if (!session->core_machine->executor_cpu_instructions.data.flagWW ||
+        !session->core_machine->executor_cpu_instructions.data.flagWE ||
+        session->core_machine->executor_cpu_instructions.data.wwLinear != 0x700u ||
+        session->core_machine->executor_cpu_instructions.data.weLinear != 0x800u) {
+        vm_session_finalize(session);
+        STD_FREE(session);
+        return 1;
+    }
+    target->clear_watch(target->context, CORE_PRODUCT_DEBUG_WATCH_WRITE);
+    target->clear_watch(target->context, CORE_PRODUCT_DEBUG_WATCH_EXECUTE);
     target->set_break_real(target->context, 0xf000u, 0xfff0u);
     target->clear_break(target->context, TYPE_FALSE);
     target->set_trace(target->context, 1u);
     target->clear_trace(target->context);
     vm_session_finalize(session);
     STD_FREE(session);
-    puts("M5:T14:S3:VM-DEBUG-TARGET:OK");
+    puts("M5:T313:S6:DEBUG-MAPPING:OK");
     return 0;
 }

@@ -99,6 +99,23 @@ the selected session's exact retained result, inactive handle, and stopped
 control state. The retained run-handle smoke proves reset clears the result and
 a later successful window start records `TYPE_STATUS_OK`.
 
+## S6 Debug Enum Mapping Result
+
+The session debug target has four product-to-core enum crossings: register read,
+register write, watch set, and watch clear. Each now uses a private explicit
+switch that maps only the 21 named register values or three named watch kinds.
+Unknown product enum values return `TYPE_STATUS_INVALID_ARGUMENT` from the
+private mapper and are never passed to a core debug API.
+
+The product target's watch callbacks remain `void`, so their established local
+policy is an adapter no-op on an unknown watch kind: no core call and no watch
+state mutation. The command surface has no recoverable status channel for this
+vtable, so S6 does not widen it. The focused `M5:T313:S6:DEBUG-MAPPING:OK`
+proof covers every known register mapping, unknown register read/write
+nonpublication, all known watch mappings, and unknown watch set/clear retention.
+Retained Console lifecycle and unified VM debugger backend checks preserve the
+existing debugger route and UX.
+
 ## Exclusions
 
 No CPU executor, paging, RETF/IRET, product re-architecture, generic allocator

@@ -50,13 +50,66 @@ static C_VOID vm_debug_continue(C_VOID *context)
 static C_INT vm_debug_step(C_VOID *context)
 { return vm_session_control_step(&((vm_session *)context)->control) ? 0 : 1; }
 
+static type_status vm_debug_map_register(core_product_debug_register source,
+    core_machine_debug_register *out_target)
+{
+    if (out_target == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    switch (source) {
+    case CORE_PRODUCT_DEBUG_EAX: *out_target = CORE_MACHINE_DEBUG_EAX; break;
+    case CORE_PRODUCT_DEBUG_ECX: *out_target = CORE_MACHINE_DEBUG_ECX; break;
+    case CORE_PRODUCT_DEBUG_EDX: *out_target = CORE_MACHINE_DEBUG_EDX; break;
+    case CORE_PRODUCT_DEBUG_EBX: *out_target = CORE_MACHINE_DEBUG_EBX; break;
+    case CORE_PRODUCT_DEBUG_ESP: *out_target = CORE_MACHINE_DEBUG_ESP; break;
+    case CORE_PRODUCT_DEBUG_EBP: *out_target = CORE_MACHINE_DEBUG_EBP; break;
+    case CORE_PRODUCT_DEBUG_ESI: *out_target = CORE_MACHINE_DEBUG_ESI; break;
+    case CORE_PRODUCT_DEBUG_EDI: *out_target = CORE_MACHINE_DEBUG_EDI; break;
+    case CORE_PRODUCT_DEBUG_EIP: *out_target = CORE_MACHINE_DEBUG_EIP; break;
+    case CORE_PRODUCT_DEBUG_EFLAGS: *out_target = CORE_MACHINE_DEBUG_EFLAGS; break;
+    case CORE_PRODUCT_DEBUG_ES: *out_target = CORE_MACHINE_DEBUG_ES; break;
+    case CORE_PRODUCT_DEBUG_CS: *out_target = CORE_MACHINE_DEBUG_CS; break;
+    case CORE_PRODUCT_DEBUG_SS: *out_target = CORE_MACHINE_DEBUG_SS; break;
+    case CORE_PRODUCT_DEBUG_DS: *out_target = CORE_MACHINE_DEBUG_DS; break;
+    case CORE_PRODUCT_DEBUG_FS: *out_target = CORE_MACHINE_DEBUG_FS; break;
+    case CORE_PRODUCT_DEBUG_GS: *out_target = CORE_MACHINE_DEBUG_GS; break;
+    case CORE_PRODUCT_DEBUG_CR0: *out_target = CORE_MACHINE_DEBUG_CR0; break;
+    case CORE_PRODUCT_DEBUG_CR1: *out_target = CORE_MACHINE_DEBUG_CR1; break;
+    case CORE_PRODUCT_DEBUG_CR2: *out_target = CORE_MACHINE_DEBUG_CR2; break;
+    case CORE_PRODUCT_DEBUG_CR3: *out_target = CORE_MACHINE_DEBUG_CR3; break;
+    case CORE_PRODUCT_DEBUG_CR4: *out_target = CORE_MACHINE_DEBUG_CR4; break;
+    default: return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    return TYPE_STATUS_OK;
+}
+
+static type_status vm_debug_map_watch(core_product_debug_watch_kind source,
+    core_machine_debug_watch_kind *out_target)
+{
+    if (out_target == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    switch (source) {
+    case CORE_PRODUCT_DEBUG_WATCH_READ:
+        *out_target = CORE_MACHINE_DEBUG_WATCH_READ;
+        break;
+    case CORE_PRODUCT_DEBUG_WATCH_WRITE:
+        *out_target = CORE_MACHINE_DEBUG_WATCH_WRITE;
+        break;
+    case CORE_PRODUCT_DEBUG_WATCH_EXECUTE:
+        *out_target = CORE_MACHINE_DEBUG_WATCH_EXECUTE;
+        break;
+    default: return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    return TYPE_STATUS_OK;
+}
+
 static C_INT vm_debug_read_register(C_VOID *context, core_product_debug_register reg,
                                   uint32_t *value)
 {
     vm_session *machine =
         (vm_session *)context;
+    core_machine_debug_register mapped;
+
+    if (vm_debug_map_register(reg, &mapped) != TYPE_STATUS_OK) return 1;
     return machine == STD_NULL || core_machine_debug_read_register(
-        machine->core_machine, (core_machine_debug_register)reg, value) !=
+        machine->core_machine, mapped, value) !=
         TYPE_STATUS_OK;
 }
 
@@ -65,8 +118,11 @@ static C_INT vm_debug_write_register(C_VOID *context, core_product_debug_registe
 {
     vm_session *machine =
         (vm_session *)context;
+    core_machine_debug_register mapped;
+
+    if (vm_debug_map_register(reg, &mapped) != TYPE_STATUS_OK) return 1;
     return machine == STD_NULL || core_machine_debug_write_register(
-        machine->core_machine, (core_machine_debug_register)reg, value) !=
+        machine->core_machine, mapped, value) !=
         TYPE_STATUS_OK;
 }
 
@@ -120,15 +176,21 @@ static STD_SIZE_T vm_debug_break_count(C_VOID *context)
 static C_VOID vm_debug_set_watch(C_VOID *context, core_product_debug_watch_kind kind, uint32_t address)
 {
     vm_session *machine = (vm_session *)context;
-    if (machine == STD_NULL) return;
+    core_machine_debug_watch_kind mapped;
+
+    if (machine == STD_NULL || vm_debug_map_watch(kind, &mapped) !=
+            TYPE_STATUS_OK) return;
     (C_VOID)core_machine_debug_set_watchpoint(machine->core_machine,
-        (core_machine_debug_watch_kind)kind, address);
+        mapped, address);
 }
 static C_VOID vm_debug_clear_watch(C_VOID *context, core_product_debug_watch_kind kind)
 {
     vm_session *machine = (vm_session *)context;
-    if (machine != STD_NULL) (C_VOID)core_machine_debug_clear_watchpoint(
-        machine->core_machine, (core_machine_debug_watch_kind)kind);
+    core_machine_debug_watch_kind mapped;
+
+    if (machine != STD_NULL && vm_debug_map_watch(kind, &mapped) ==
+            TYPE_STATUS_OK) (C_VOID)core_machine_debug_clear_watchpoint(
+        machine->core_machine, mapped);
 }
 static C_VOID vm_debug_print_registers(C_VOID *context)
 { vm_session *machine = (vm_session *)context; if (machine != STD_NULL) (C_VOID)core_machine_debug_print_registers(machine->core_machine); }
