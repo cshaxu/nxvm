@@ -23,20 +23,6 @@ function Test-MachineLocalPath([string]$text) {
     return $text -match '(?i)[a-z]:(?:\\){2}(?:users|home)(?:\\){2}'
 }
 
-function Test-ContiguousTaskIds([int[]]$identifiers) {
-    if ($identifiers.Count -eq 0) {
-        return $true
-    }
-
-    for ($index = 1; $index -lt $identifiers.Count; $index++) {
-        if ($identifiers[$index] -ne ($identifiers[$index - 1] + 1)) {
-            return $false
-        }
-    }
-
-    return $true
-}
-
 if ($SelfTest) {
     Require (Test-Mojibake (([char]0x00E2).ToString() + "quoted")) `
         "Mojibake detector did not reject the controlled negative sample."
@@ -46,76 +32,48 @@ if ($SelfTest) {
         "Machine-local path detector did not reject the controlled negative sample."
     Require (-not (Test-MachineLocalPath 'C:\\NAME.EXT')) `
         "Machine-local path detector rejected a guest DOS path control sample."
-    Require (Test-ContiguousTaskIds @(300, 301, 302)) `
-        "Linear task identifier checker rejected a contiguous control sample."
-    Require (-not (Test-ContiguousTaskIds @(300, 302))) `
-        "Linear task identifier checker accepted a skipped control sample."
     Write-Output "Documentation governance self-tests passed."
     exit 0
 }
 
 $docsRoot = Join-Path $RepositoryRoot "docs"
-$planningRoot = Join-Path $docsRoot "planning"
-$statusPath = Join-Path $planningRoot "status.md"
-$historyPath = Join-Path $docsRoot "history/m5.md"
-$queuePath = Join-Path $planningRoot "m5-pcat-hardware-convergence.md"
+$statusPath = Join-Path $docsRoot "STATUS.md"
+$queuePath = Join-Path $docsRoot "QUEUE.md"
 $presetPath = Join-Path $RepositoryRoot "CMakePresets.json"
-$todoPath = Join-Path $RepositoryRoot "TODO.md"
+$todoPath = Join-Path $docsRoot "TODO.md"
 
 $status = Get-Content -Raw -LiteralPath $statusPath
-$history = Get-Content -Raw -LiteralPath $historyPath
 $queue = Get-Content -Raw -LiteralPath $queuePath
 $todo = Get-Content -Raw -LiteralPath $todoPath
 
 Require (($status | Select-String -AllMatches -Pattern '(?m)^## Current Technical Baseline$').Matches.Count -eq 1) `
-    "status.md must contain exactly one Current Technical Baseline heading."
+    "STATUS.md must contain exactly one Current Technical Baseline heading."
 
 $idle = $status -match '(?m)^\*\*Idle\.'
 if ($idle) {
     Require (-not ($status -match '(?m)^## (Historical )?T\d+(?: S\d+)? Packet$')) `
-        "Idle status.md must not retain a task packet."
+        "Idle STATUS.md must not retain a task packet."
     $baselineOffset = $status.IndexOf("## Current Technical Baseline")
-    Require ($baselineOffset -ge 0) "Idle status.md must contain a technical baseline."
+    Require ($baselineOffset -ge 0) "Idle STATUS.md must contain a technical baseline."
     $idlePrefixLines = ([regex]::Split($status.Substring(0, $baselineOffset), "`r?`n")).Count
     Require ($idlePrefixLines -le 8) `
-        "Idle status.md must not retain completed narrative before its technical baseline."
+        "Idle STATUS.md must not retain completed narrative before its technical baseline."
 }
 
-$taskRecords = @(Get-ChildItem -LiteralPath $planningRoot -File -Filter "m5-t*.md")
-Require ($taskRecords.Count -eq 0) `
-    "Completed M5 task records must be retired from docs/planning: $($taskRecords.Name -join ', ')"
-
-Require (-not ($history -match '(?im)^The latest completed M5 technical baseline')) `
-    "M5 history must not claim a current or latest technical baseline."
-Require (-not ($history -match '(?im)^## Remaining M5 Work$')) `
-    "M5 history must not carry current remaining-work state."
-Require (-not ($history -match '(?i)\bcurrent (?:static gates|CTest)')) `
-    "M5 history must use closure-time, not current, verification wording."
-Require (-not ($queue -match '(?im)^The retained baseline is')) `
-    "The M5 queue must link to status instead of copying the current baseline."
-Require (-not ($queue -match '(?m)^\| T\d+ \| \*\*Completed\.')) `
-    "The M5 queue must not retain completed task rows."
-Require (-not ($queue -match '(?im)^The completed migration order')) `
-    "The M5 queue must not retain completed migration narrative."
 Require (-not ($todo -match '(?m)^[-*] \[x\]')) `
     "TODO.md must contain only open debt entries."
-
-$queueTaskIds = @(
-    [regex]::Matches($queue, '(?m)^\| T(?<id>\d+) \|') |
-    ForEach-Object { [int]$_.Groups['id'].Value }
-)
-Require (Test-ContiguousTaskIds $queueTaskIds) `
-    "The M5 queue must allocate numeric task identifiers in one contiguous ascending sequence."
+Require (-not ($queue -match '\bT\d+\b')) `
+    "QUEUE.md must not reserve numeric implementation task identifiers."
 
 $closureSection = [regex]::Match($status, '(?ms)^## Recent M5 Closures\r?\n(?<body>.*?)(?=^## |\z)')
-Require ($closureSection.Success) "status.md must contain a Recent M5 Closures section."
+Require ($closureSection.Success) "STATUS.md must contain a Recent M5 Closures section."
 $closureCount = ([regex]::Matches($closureSection.Groups['body'].Value, '(?m)^\| T\d+ \|')).Count
-Require ($closureCount -le 8) "status.md must retain at most eight recent M5 closure rows."
+Require ($closureCount -le 8) "STATUS.md must retain at most eight recent M5 closure rows."
 
 $governanceSection = [regex]::Match($status, '(?ms)^## Recent Governance\r?\n(?<body>.*?)(?=^## |\z)')
-Require ($governanceSection.Success) "status.md must contain a Recent Governance section."
+Require ($governanceSection.Success) "STATUS.md must contain a Recent Governance section."
 $governanceCount = ([regex]::Matches($governanceSection.Groups['body'].Value, '(?m)^- \*\*M5 Td S\d+:')).Count
-Require ($governanceCount -le 8) "status.md must retain at most eight recent governance rows."
+Require ($governanceCount -le 8) "STATUS.md must retain at most eight recent governance rows."
 
 $presets = Get-Content -Raw -LiteralPath $presetPath | ConvertFrom-Json
 $currentPreset = @($presets.buildPresets | Where-Object { $_.name -eq "current-gcc" })
@@ -127,9 +85,9 @@ $expectedArtifact = "nxvm_" + ($currentTarget.Substring(3) -replace '-', '_') + 
 $statusTargets = @([regex]::Matches($status, '\bvm-0-5-\d{4}\b') | ForEach-Object Value | Select-Object -Unique)
 $statusArtifacts = @([regex]::Matches($status, '\bnxvm_0_5_\d{4}\.exe\b') | ForEach-Object Value | Select-Object -Unique)
 Require ($statusTargets.Count -eq 1 -and $statusTargets[0] -eq $currentTarget) `
-    "status.md current target must match CMakePresets.json ($currentTarget)."
+    "STATUS.md current target must match CMakePresets.json ($currentTarget)."
 Require ($statusArtifacts.Count -eq 1 -and $statusArtifacts[0] -eq $expectedArtifact) `
-    "status.md current artifact must match CMakePresets.json ($expectedArtifact)."
+    "STATUS.md current artifact must match CMakePresets.json ($expectedArtifact)."
 
 $markdownFiles = @(
     Get-ChildItem -LiteralPath $docsRoot -Recurse -File -Filter "*.md"

@@ -1,33 +1,27 @@
 # Documentation Guide
 
-Read the seven principal documents first:
+This is the sole documentation entry point. Read the current authorities in
+this order:
 
-1. [Design Principles](design-principles.md)
-2. [Coding Standard](coding-standard.md)
-3. [Documentation Standard](documentation-standard.md)
-4. [System Architecture](architecture/overview.md)
-5. [Roadmap And Milestones](planning/roadmap.md)
-6. [Debt Tracking](debt-tracking.md)
-7. [Execution Workflow](execution-workflow.md)
+1. [Project Goal](design/GOAL.md)
+2. [System Architecture](design/ARCHITECTURE.md)
+3. [Current Contracts](design/CONTRACTS.md)
+4. [Source Layout](design/CODING.md)
+5. [Product Requirements](design/REQUIREMENTS.md) and [Product UX](design/UI.md)
+6. [Roadmap](design/ROADMAP.md)
+7. [Documentation Rules](rules/DOCUMENT.md)
+8. [Execution Rules](rules/EXECUTION.md)
+9. [Architecture Rules](rules/ARCHITECTURE.md)
+10. [Coding Rules](rules/CODING.md)
+11. [Source Rules](rules/SOURCE.md)
 
-For active work, then read [Project Status](planning/status.md) and the
-[Execution Policy](planning/execution-policy.md); read the applicable closure
-checklist before claiming a milestone. `architecture/`, `requirements/`,
-research, references, provenance, and history refine one of the seven subjects
-but do not create a competing daily entry point.
+For daily work, read [Status](STATUS.md), then [Queue](QUEUE.md), then
+[Debt Ledger](TODO.md). `STATUS.md` is the only active-task and technical-
+baseline authority. `QUEUE.md` contains ordered, unnumbered candidate work;
+only an approved active task receives a numeric identifier. `TODO.md` contains
+unplanned debt only.
 
-The local authorities cite the public [Architecture](https://github.com/cshaxu/skills/blob/main/architecture-governance/SKILL.md),
-[Coding](https://github.com/cshaxu/skills/blob/main/coding-governance/SKILL.md),
-[Documentation](https://github.com/cshaxu/skills/blob/main/documentation-governance/SKILL.md),
-and [Execution](https://github.com/cshaxu/skills/blob/main/execution-governance/SKILL.md)
-governance skills for reusable method. They do not replace ntvdm64's local
-architecture, task identifiers, policies, or evidence.
-
-Admitted M5 hardware-device work follows the compact
-[Hardware Device Verification Template](compatibility/hardware-device-verification.md).
-
-[Module Layout](architecture/module-layout.md), [Contracts](architecture/contracts.md),
-[Coding Standard](coding-standard.md), [Source Policy](source-policy.md), and
-[Execution Policy](planning/execution-policy.md) provide the local
-implementation and review rules. `../TODO.md` is the live ledger referenced by
-Debt Tracking.
+[etc/README.md](etc/README.md) indexes owner-approved supporting material,
+including research, provenance, fixtures, release material, templates, and
+legacy documentation. It cannot define a current architecture, requirement,
+rule, task queue, or active status.
