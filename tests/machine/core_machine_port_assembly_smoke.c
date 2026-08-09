@@ -215,8 +215,12 @@ static C_INT port_assembly_hdc_transaction(C_VOID)
 C_INT main(C_VOID)
 {
     C_INT failed = port_assembly_range_transaction() ||
-        port_assembly_create_failure() || port_assembly_fdc_transaction() ||
-        port_assembly_rtc_transaction(1u) || port_assembly_rtc_transaction(2u) ||
+        port_assembly_create_failure() || port_assembly_fdc_transaction();
+
+    if (failed) return 1;
+    puts("M5:T313:S3:PORT-ASSEMBLY:OK");
+
+    failed = port_assembly_rtc_transaction(1u) || port_assembly_rtc_transaction(2u) ||
         port_assembly_hdc_transaction();
 
     if (failed) return 1;

@@ -18,6 +18,7 @@ status propagation are retained; this task does not reopen them.
 | S5 | Return a minimal precise status from session resume/start and retain it as a session-owned start outcome; surface it at the existing Console boundary. | Forced `vm_platform_start` failure is observable to the selected session and Console, with no active run handle or false running state. Stop before new CLI or generalized product APIs. |
 | S6 | Replace product-to-core debug enum casts with private explicit mappings and unknown-value rejection. | Focused mapping proof covers every known value and unknown rejection. The existing void watch vtable cannot return status; record the retained command-level error policy or stop for a narrowly admitted contract change. |
 | S7 | Closure only. | Build `nxvm_0_5_0313.exe`, record SHA-256, pass focused intersections and `current-gates-gcc`; no new behavior. |
+| S8 | Restore the two phase markers from the shared S3/S4 port-assembly proof. | Directly show both markers without changing runtime checks, artifact identity, or Queue state. |
 
 ## Contracts
 
@@ -81,6 +82,18 @@ focused `M5:T313:S4:CONTROLLER-ROLLBACK:OK` proof directly checks RTC first and
 second failure, FDC and HDC port/controller/topology clean state, retry, and a
 fresh default create after each injected failure.
 
+## S8 Shared Port-Assembly Marker Correction
+
+The S3 and S4 checks intentionally remain in one focused probe: its first phase
+performs the directional range, create-time assembly, and FDC transaction
+checks; its second phase performs the RTC and HDC controller rollback checks.
+The probe now publishes `M5:T313:S3:PORT-ASSEMBLY:OK` immediately after the S3
+phase and `M5:T313:S4:CONTROLLER-ROLLBACK:OK` after the S4 phase. This restores
+the two independently declared evidence contracts without duplicating the
+runtime checks or changing core, session, or product behavior. The pending
+0313 artifact is unchanged because S8 changes only focused-test evidence and
+governance records.
+
 ## S5 Startup Failure Visibility Result
 
 `vm_session_start` and `vm_session_resume` now return the exact
@@ -122,8 +135,8 @@ The sole current target and preset now select `vm-0-5-0313`; the generated
 artifact is `build/output/nxvm_0_5_0313.exe` with SHA-256
 `19A9E2A898BAC9C1046D994CC891BF3BF151422B95DB42D4F62DC1CDC8F2B752`.
 `current-gates-gcc` passed with 51/51 static/governance targets and 145/145
-current CTests. This record remains pending coordinator acceptance: it does not
-close T313, allocate T314, or admit M6.
+current CTests. S8 corrects its shared-port-probe marker evidence; T313 remains
+pending coordinator acceptance and does not close, allocate T314, or admit M6.
 
 ## Exclusions
 
