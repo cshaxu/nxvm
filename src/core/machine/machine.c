@@ -618,6 +618,7 @@ type_status core_machine_configure_rtc_cmos(core_machine *machine,
     const core_machine_rtc_cmos_config *config)
 {
     core_machine_rtc_config rtc_config;
+    core_machine_port_provider_entry *port_checkpoint;
     type_status status;
     STD_SIZE_T index;
 
@@ -643,12 +644,21 @@ type_status core_machine_configure_rtc_cmos(core_machine *machine,
         core_machine_rtc_write_nvram(&machine->shared_rtc,
             config->defaults[index].index, config->defaults[index].value);
     }
+    port_checkpoint = core_machine_port_registration_begin(&machine->executor_port);
     status = core_machine_install_port_provider(machine, config->index_port,
         config->index_port, &core_machine_rtc_cmos_index_port_provider, machine);
-    if (status != TYPE_STATUS_OK) return status;
+    if (status != TYPE_STATUS_OK) {
+        core_machine_port_rollback_registration(&machine->executor_port,
+            port_checkpoint);
+        return status;
+    }
     status = core_machine_install_port_provider(machine, config->data_port,
         config->data_port, &core_machine_rtc_cmos_port_provider, machine);
-    if (status != TYPE_STATUS_OK) return status;
+    if (status != TYPE_STATUS_OK) {
+        core_machine_port_rollback_registration(&machine->executor_port,
+            port_checkpoint);
+        return status;
+    }
     machine->rtc_cmos_config = *config;
     machine->rtc_cmos_configured = TYPE_TRUE;
     return TYPE_STATUS_OK;
@@ -750,6 +760,8 @@ type_status core_machine_configure_fdc(core_machine *machine,
         {topology == STD_NULL ? 0u : topology->config.control_port,
             TYPE_FALSE, TYPE_TRUE}
     };
+    core_machine_port_provider_entry *port_checkpoint;
+    type_status status;
 
     if (!core_machine_configuration_is_open(machine) || !machine->dma_configured ||
         machine->fdc_configured) {
@@ -762,6 +774,7 @@ type_status core_machine_configure_fdc(core_machine *machine,
     }
     if (!core_machine_controller_ports_are_available(machine, ports,
             sizeof(ports) / sizeof(ports[0]))) return TYPE_STATUS_INVALID_STATE;
+    port_checkpoint = core_machine_port_registration_begin(&machine->executor_port);
     machine->fdc_topology = *topology;
     core_machine_fdc_connect(&machine->fdc, machine->fdc_topology.media_registry,
         &machine->fdc_topology.drives, &machine->fdc_topology.dma_request,
@@ -770,6 +783,15 @@ type_status core_machine_configure_fdc(core_machine *machine,
         &machine->shared_pic_master, &machine->shared_pic_slave,
         &machine->executor_port, &machine->fdc_topology.config);
     core_machine_fdc_initialize(&machine->fdc);
+    status = core_machine_port_registration_status(&machine->executor_port);
+    if (status != TYPE_STATUS_OK) {
+        core_machine_port_rollback_registration(&machine->executor_port,
+            port_checkpoint);
+        core_machine_fdc_finalize(&machine->fdc);
+        STD_MEMSET(&machine->fdc_topology, TYPE_ZERO_8,
+            sizeof(machine->fdc_topology));
+        return status;
+    }
     machine->fdc_configured = TYPE_TRUE;
     return TYPE_STATUS_OK;
 }
@@ -800,6 +822,7 @@ type_status core_machine_configure_hdc(core_machine *machine,
             TYPE_TRUE, TYPE_TRUE}
     };
     type_status status;
+    core_machine_port_provider_entry *port_checkpoint;
 
     if (!core_machine_configuration_is_open(machine) || machine->hdc_configured) {
         return TYPE_STATUS_INVALID_STATE;
@@ -811,6 +834,7 @@ type_status core_machine_configure_hdc(core_machine *machine,
             sizeof(ports) / sizeof(ports[0]))) return TYPE_STATUS_INVALID_STATE;
     provider = core_machine_hdc_port_provider();
     if (provider == STD_NULL) return TYPE_STATUS_FAULT;
+    port_checkpoint = core_machine_port_registration_begin(&machine->executor_port);
     machine->hdc_topology = *topology;
     core_machine_hdc_connect(&machine->hdc, machine->hdc_topology.media_registry,
         machine->hdc_topology.media_id, &machine->shared_pic_master,
@@ -819,12 +843,22 @@ type_status core_machine_configure_hdc(core_machine *machine,
     status = core_machine_install_port_provider(machine,
         machine->hdc_topology.config.data_port,
         machine->hdc_topology.config.status_command_port, provider, &machine->hdc);
-    if (status != TYPE_STATUS_OK) return status;
+    if (status != TYPE_STATUS_OK) {
+        core_machine_port_rollback_registration(&machine->executor_port,
+            port_checkpoint);
+        core_machine_hdc_finalize(&machine->hdc);
+        return status;
+    }
     status = core_machine_install_port_provider(machine,
         machine->hdc_topology.config.alternate_status_device_control_port,
         machine->hdc_topology.config.alternate_status_device_control_port,
         provider, &machine->hdc);
-    if (status != TYPE_STATUS_OK) return status;
+    if (status != TYPE_STATUS_OK) {
+        core_machine_port_rollback_registration(&machine->executor_port,
+            port_checkpoint);
+        core_machine_hdc_finalize(&machine->hdc);
+        return status;
+    }
     machine->hdc_configured = TYPE_TRUE;
     return TYPE_STATUS_OK;
 }
@@ -959,9 +993,11 @@ type_status core_machine_capture_observation(
 static type_status core_machine_create_internal(
     const core_machine_config *config,
     core_machine **out_machine,
-    core_machine_memory_test_allocation *test_allocation)
+    core_machine_memory_test_allocation *test_allocation,
+    core_machine_port_test_allocation *port_test_allocation)
 {
     core_machine *machine;
+    core_machine_port_provider_entry *port_checkpoint;
     STD_SIZE_T memory_bytes;
     if (config == STD_NULL || out_machine == STD_NULL ||
         !core_machine_valid_cpu_profile(
@@ -1022,6 +1058,8 @@ static type_status core_machine_create_internal(
         machine);
     core_machine_cpu_state_initialize(&machine->executor_cpu_execution);
     core_machine_port_initialize(&machine->executor_port);
+    core_machine_port_set_test_allocation(&machine->executor_port,
+        port_test_allocation);
     if (core_machine_bus_initialize(machine) != TYPE_STATUS_OK) {
         core_machine_destroy(machine);
         return TYPE_STATUS_NO_MEMORY;
@@ -1031,6 +1069,7 @@ static type_status core_machine_create_internal(
         core_machine_destroy(machine);
         return TYPE_STATUS_NO_MEMORY;
     }
+    port_checkpoint = core_machine_port_registration_begin(&machine->executor_port);
     core_machine_memory_register_ports(&machine->executor_memory,
         &machine->executor_port);
     core_machine_vadp_initialize(&machine->shared_vadp, &machine->executor_port);
@@ -1056,6 +1095,17 @@ static type_status core_machine_create_internal(
     core_machine_kbc_set_command_response_timing(&machine->shared_kbc,
         machine->kbc_command_response_ticks);
     core_machine_pit_set_output(&machine->shared_pit, 1, STD_NULL, STD_NULL);
+    {
+        type_status status = core_machine_port_registration_status(
+            &machine->executor_port);
+
+        if (status != TYPE_STATUS_OK) {
+            core_machine_port_rollback_registration(&machine->executor_port,
+                port_checkpoint);
+            core_machine_destroy(machine);
+            return status;
+        }
+    }
 
     *out_machine = machine;
 
@@ -1065,14 +1115,23 @@ static type_status core_machine_create_internal(
 type_status core_machine_create(const core_machine_config *config,
     core_machine **out_machine)
 {
-    return core_machine_create_internal(config, out_machine, STD_NULL);
+    return core_machine_create_internal(config, out_machine, STD_NULL, STD_NULL);
 }
 
 type_status core_machine_create_with_test_memory_allocation(
     const core_machine_config *config, core_machine **out_machine,
     core_machine_memory_test_allocation *test_allocation)
 {
-    return core_machine_create_internal(config, out_machine, test_allocation);
+    return core_machine_create_internal(config, out_machine, test_allocation,
+        STD_NULL);
+}
+
+type_status core_machine_create_with_test_port_allocation(
+    const core_machine_config *config, core_machine **out_machine,
+    core_machine_port_test_allocation *test_allocation)
+{
+    return core_machine_create_internal(config, out_machine, STD_NULL,
+        test_allocation);
 }
 
 static type_status core_machine_cold_reset(core_machine *machine)

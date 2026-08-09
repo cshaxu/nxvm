@@ -25,6 +25,7 @@ type_status core_machine_install_port_provider(
     C_VOID *owner)
 {
     uint32_t port;
+    core_machine_port_provider_entry *checkpoint;
 
     if (!core_machine_configuration_is_open(machine)) {
         return TYPE_STATUS_INVALID_STATE;
@@ -34,6 +35,8 @@ type_status core_machine_install_port_provider(
         (provider->read == STD_NULL && provider->write == STD_NULL)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
+
+    checkpoint = core_machine_port_registration_begin(&machine->executor_port);
 
     for (port = first; port <= last; ++port) {
         if ((provider->read != STD_NULL && core_machine_port_has_read(
@@ -49,13 +52,21 @@ type_status core_machine_install_port_provider(
             type_status status = core_machine_port_add_read_provider(
                 &machine->executor_port, (uint16_t)port, provider->read, owner);
 
-            if (status != TYPE_STATUS_OK) return status;
+            if (status != TYPE_STATUS_OK) {
+                core_machine_port_rollback_registration(&machine->executor_port,
+                    checkpoint);
+                return status;
+            }
         }
         if (provider->write != STD_NULL) {
             type_status status = core_machine_port_add_write_provider(
                 &machine->executor_port, (uint16_t)port, provider->write, owner);
 
-            if (status != TYPE_STATUS_OK) return status;
+            if (status != TYPE_STATUS_OK) {
+                core_machine_port_rollback_registration(&machine->executor_port,
+                    checkpoint);
+                return status;
+            }
         }
     }
 
