@@ -9,6 +9,8 @@ boundaries, also use the public
 The concrete source tree and naming map is
 [design/CODING.md](../design/CODING.md).
 
+## Source Discipline
+
 - Use C11 and narrowly scoped, documented platform APIs. Keep repository source
   and code comments in English and prefer ASCII unless the domain requires
   another character set.
@@ -24,6 +26,9 @@ The concrete source tree and naming map is
 - Prefer an existing clear boundary over a duplicate abstraction. A helper,
   adapter, or compatibility layer needs a named responsibility and cannot
   merely forward the same object.
+
+## Test Boundaries
+
 - Tests prove an owned behavior or declared boundary. Test setup may exercise
   a same-module implementation when necessary, but must not create mirror
   state, a test-only public contract, or product-visible behavior.

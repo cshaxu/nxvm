@@ -5,12 +5,16 @@ artifact, and milestone gates. The public
 [Execution Governance skill](https://github.com/cshaxu/skills/blob/main/execution-governance/SKILL.md)
 is supplementary reusable guidance, not a prerequisite. One subtask is active
 at a time. Follow the local requirement packet and closure audit defined here.
-Before implementation, create a subtask record
-with objective, non-goals, reference baseline, files/ABI surface, applicable
-local architecture, coding, source, and execution rules, exact test commands,
-expected markers, asset needs, and stop conditions. The rules review names each
-applicable invariant, its planned evidence, and any requested owner-approved
-exception; a task may mark a rule not applicable only with a short reason.
+Before implementation, create the one active subtask packet in `STATUS.md` as
+the fixed two-column `Field | Required record` table. It must record identifier
+mode, admission and owner approval, objective, non-goals, reference baseline,
+files/ABI surface, applicable rules, exact verification, expected markers,
+asset needs, stop conditions, exit criteria, original owner request, and the
+similar-issue sweep. The gate rejects a packet missing a field, its fixed table
+shape, or an empty record value. The rules review names each applicable
+invariant, its planned evidence,
+and any requested owner-approved exception; a task may mark a rule not
+applicable only with a short reason.
 
 ## Request Lifecycle
 
@@ -97,6 +101,13 @@ Historical records do not become reusable capacity. The existing pre-policy
 unavailable. Later governance identifiers continue from the latest closed
 identifier and never fill that gap.
 
+The governance gate derives closed identifiers from Git commit subjects. A new
+numeric task must be the next global `T` and start at `S1`; a corrective task
+may only use the most recently closed numeric `T` with that task's next unused
+`S`; and a `Td` packet must use the next `S` for its milestone. The packet's
+`Identifier Mode` explicitly declares `New`, `Corrective`, or `Governance` so
+the rule is inspectable before code changes begin.
+
 The only corrective exception is narrow: when there is no active task, the
 most recently closed **numeric** task may receive its next unused subtask for
 an in-scope corrective repair. It must preserve that task's scope, run its
@@ -132,15 +143,14 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools/Verify-DocumentationGo
 ```
 
 The configured `current-gates-gcc` target also runs this check when PowerShell
-is available. It verifies that `STATUS.md` is the sole current-baseline
-authority, an Idle status has no retained packet, the queue contains no numeric
-task identifier, the debt ledger contains no completed row, history makes no
-current-baseline claim, status matches the configured current artifact target,
-no known mojibake is present, and the status closure table remains at eight rows
-or fewer. A failure blocks closure until the documents are made internally
-consistent. The gate verifies structural schemas, not semantic document
-ownership; the closure audit must still compare each changed document against
-the authority matrix in `docs/rules/DOCUMENT.md`.
+is available. It verifies required principal-document sections, active-packet
+fields and identifier continuity, `etc/` index coverage, relative Markdown
+links, the sole `STATUS.md` technical baseline, queue/debt boundaries, artifact
+identity, known mojibake, and capped Status summaries. A failure blocks closure
+until the documents are internally consistent. The gate verifies structural
+schemas, not semantic document ownership; the closure audit must still compare
+each changed document against the authority matrix in
+`docs/rules/DOCUMENT.md`.
 
 ## Milestone Closure Evidence
 

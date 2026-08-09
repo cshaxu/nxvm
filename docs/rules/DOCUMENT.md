@@ -60,13 +60,14 @@ normal way to cross a boundary; a copied summary is not a second authority.
 - `etc/legacy-history/` is read-only aggregation retained during migration. It
   is evidence, never a current authority.
 
-Every closure runs `tools/Verify-DocumentationGovernance.ps1`, link validation,
-and `git diff --check`. The checker enforces the fixed root, `rules/`,
-`design/`, and numbered-history file sets as well as principal-document roles,
-status headings, queue/debt boundaries, and artifact consistency. Its role
-checks are structural schemas: heading levels, allowed section forms, list and
-checklist shapes, task identifiers, and mechanical status data. They do not
-classify free prose as a goal, architecture decision, or roadmap item.
+Every closure runs `tools/Verify-DocumentationGovernance.ps1` and
+`git diff --check`. The checker includes relative-link validation and enforces
+the fixed root, `rules/`, `design/`, and numbered-history file sets; required
+principal sections; active-packet fields and identifiers; `etc/` index
+coverage; queue/debt boundaries; status artifact consistency; and mechanical
+status data. Its role checks are structural schemas: headings, tables, list and
+checklist shapes, task identifiers, and paths. They do not classify free prose
+as a goal, architecture decision, or roadmap item.
 
 The task-closure audit reviews that semantic ownership against the authority
 matrix above. A wording regex may be added only for a previously observed,
