@@ -2,7 +2,7 @@
 
 T313 closes the admitted construction-failure boundaries without adding a new
 executor, registry, VM lifecycle, product route, or public allocator/debugger
-facade. It remains pending coordinator acceptance at S9.
+facade. Coordinator accepted and closed it at S10.
 
 - S2 resolves the configured RAM capacity before one private backing allocation.
   Its deterministic failure seam returns `TYPE_STATUS_NO_MEMORY` with no live
@@ -40,5 +40,5 @@ facade. It remains pending coordinator acceptance at S9.
   targets and 145/145 CTests. Direct focused execution reconfirmed the S2,
   phase-ordered S3/S4, two-stage S5, and S6 markers; the 0313 SHA-256 remained
   `19A9E2A898BAC9C1046D994CC891BF3BF151422B95DB42D4F62DC1CDC8F2B752`.
-- Deferred: no new runtime work. T313's next action is coordinator acceptance;
-  M6 remains unadmitted and no T314 is allocated by this record.
+- Deferred: no new runtime work. M6 remains unadmitted and no T314 is allocated
+  by this record.

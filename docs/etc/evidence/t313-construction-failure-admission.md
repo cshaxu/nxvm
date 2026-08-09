@@ -136,9 +136,9 @@ The sole current target and preset now select `vm-0-5-0313`; the generated
 artifact is `build/output/nxvm_0_5_0313.exe` with SHA-256
 `19A9E2A898BAC9C1046D994CC891BF3BF151422B95DB42D4F62DC1CDC8F2B752`.
 `current-gates-gcc` passed with 51/51 static/governance targets and 145/145
-current CTests. S8 corrected its shared-port-probe marker evidence. S9 reruns
-the complete current gate set before coordinator acceptance; T313 remains active
-and does not close, allocate T314, or admit M6.
+current CTests. S8 corrected its shared-port-probe marker evidence. S9 reran
+the complete current gate set. T313 is accepted and closed; it does not allocate
+T314 or admit M6.
 
 ## S9 Final Gate Evidence
 
@@ -149,8 +149,8 @@ current CTests passed. Direct focused execution reconfirmed
 `M5:T313:S6:DEBUG-MAPPING:OK`. `verify-current-artifact-target` still selects
 `vm-0-5-0313`; the artifact SHA-256 remains
 `19A9E2A898BAC9C1046D994CC891BF3BF151422B95DB42D4F62DC1CDC8F2B752`.
-This is final closure-preparation evidence only. STATUS remains active pending
-coordinator acceptance.
+Coordinator accepted this final evidence. T313 is closed with no runtime work
+after S9; the next work remains unallocated.
 
 ## Exclusions
 
