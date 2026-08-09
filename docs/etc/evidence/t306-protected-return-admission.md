@@ -78,9 +78,10 @@ and TSS consumers without admitting task-return behavior.
 | Batch | Work | Focused synthetic proof | Stop boundary |
 | --- | --- | --- | --- |
 | S2 | Same-CPL protected IRET, 16/32 frame planning and atomic commit | Frame order, `66h`, SS address size, target/cache/limit failures, flags and unchanged state | No outer return, task, V86, or fault-origin expansion. |
-| S3 | Outer RETF alignment for 16/32 frames, including immediate stack adjustment | New SS/SP validation, selector/cache/target failures, commit ordering | No IRET outer frame or CPL delivery work. |
-| S4 | Outer IRET 16/32 planner and flags/CPL return rules | Full frames, fault precedence, stack/cache/flags atomicity | No task return, gate, V86, or exception-delivery change. |
-| S5 | Family closure | Retained T293/T303/T304/T305/T260/T261 probes and full governance | One bounded product observation only after all focused work. |
+| S3 | Preserve the retained outer RETF code-descriptor eligibility after the shared cache-helper correction | Conforming-code rejection and unchanged state | No outer IRET work. |
+| S4 | Outer RETF alignment for 16/32 frames, including immediate stack adjustment | New SS/SP validation, selector/cache/target failures, commit ordering | No IRET outer frame or CPL delivery work. |
+| S5 | Outer IRET 16/32 planner and flags/CPL return rules | Full frames, fault precedence, stack/cache/flags atomicity | No task return, gate, V86, or exception-delivery change. |
+| S6 | Family closure | Retained T293/T303/T304/T305/T260/T261 probes and full governance | One bounded product observation only after all focused work. |
 
 Any evidence that the required behavior needs a second executor, second state
 owner, host shortcut, public layout exposure, task-return semantics, or a
@@ -158,6 +159,36 @@ proves both target-stack B-bit outcomes and emits
 `#SS(0x30)` delivery without early user CS/SS/ESP or descriptor-access publish.
 T293 remains the retained outer-16 atomicity marker; T303 and T305 remain
 retained transfer and delivery intersections. Outer IRET is unchanged.
+
+## S5 Outer IRET Evidence
+
+S5 replaces the retained 16-bit-only outer-Iret planner with
+`_ser_iret_protected_outer(context, byte)`. It reads the 16-bit frame as IP,
+CS, FLAGS, SP, SS and the 32-bit frame as EIP, CS dword slot, EFLAGS, ESP, SS
+dword slot. `66h` selects the frame width; `67h` does not. The source SS stack
+address-size remains independent, while the returned SS B bit selects whether
+the final stack pointer write updates ESP or only SP.
+
+The planner first checks the full old-stack frame and peeks every frame field.
+It preserves the retained CS descriptor/type/present/RPL/DPL checks before the
+new SS selector/cache validation. Candidate code and stack caches, including
+the return-target limit check, complete before either descriptor accessed byte
+or CS, SS, EIP, EFLAGS, CPL, or stack state is published. The established
+EFLAGS reserved-bit mask is retained; no VM, task, nested-task, or exception
+delivery policy is admitted.
+
+The S5 additions to the focused atomicity probe cover 80386 outer IRET with a
+16-bit frame, a default 32-bit frame, and `67h` with the same 32-bit frame.
+They check CS/SS CPL 3 caches, EFLAGS restoration, and both target-SS B-bit
+outcomes. A 32-bit non-present target SS case proves delivered `#SS(0x30)`
+without early state or descriptor-access publication; a 32-bit target-limit
+case proves delivered `#GP(0)` with the unaccessed target-code descriptor
+unchanged. The probe emits `M5:T306:S5:OUTER-IRET:OK`.
+
+The S5 similar-issue sweep covered `_e_iret`, the outer-return planner,
+`_s_test_ss_pop`, `_s_peek_ss_pop`, candidate code/stack cache preparation,
+and T293/T303/T305 retained probes. Same-CPL IRET, outer RETF, real-mode,
+VM/task branches, gates, and paging retain their previously frozen behavior.
 
 The retained T293 outer-return atomicity, T303 control-transfer, and T305
 interrupt-entry probes remain required regression consumers. S2 does not
