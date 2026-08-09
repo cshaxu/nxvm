@@ -1,19 +1,24 @@
-# Contract Design
+# Machine Contract Detail Record
+
+> Supporting M1--M5 interface detail. The current high-level architecture is
+> [design/ARCHITECTURE.md](../../design/ARCHITECTURE.md); this record preserves
+> technical contract rationale and cannot establish a competing current rule.
 
 ## Authority
 
-This is the sole forward interface-design authority. It complements
-`module-layout.md`: that document owns source boundaries, while this document
-owns the public C contracts crossing those boundaries. Requirements describe
-observable behavior; planning documents do not define interfaces.
+This record preserves detailed public-C contract decisions made during M1--M5.
+Current source boundaries are owned by [design/CODING.md](../../design/CODING.md),
+and active implementation work must state any newly admitted interface in its
+task record and history.
 
 ## Foundation
 
 `src/type.h` is the common system type header. It defines `ntvdm64_status`,
 retained NXVM numeric aliases, common bit/constant helpers, and product-neutral
 legacy C-runtime and trace primitives. `src/type.c` owns their non-inline
-implementations. [C-Library Facade](../etc/architecture-notes/c-library-facade.md) is the sole authority
-for its C vocabulary and header boundary.
+implementations. [rules/CODING.md](../../rules/CODING.md) defines the current C
+vocabulary and header boundary; [C-Library Facade Detail Record](c-library-facade.md)
+preserves the M5 inventory and rationale.
 
 Each product module owns its `PRODUCT_NAME`. The shared core-product banner
 helper defines `PRODUCT_VERSION`, `PRODUCT_COPYRIGHT`, and
@@ -29,7 +34,7 @@ session contracts.
 
 The precise distinction among private machine implementation, exposed
 interface, injected provider, and session-owned registry is defined in
-[Core Machine Instance Design](../etc/architecture-notes/core-machine-instance-design.md). This document
+[Core Machine Instance Design](core-machine-instance-design.md). This document
 continues to define the semantics of those public contracts.
 
 ## Common Rules
@@ -71,8 +76,9 @@ it does not depend on an NXVM Console or VDM CLI. Product UI may route the
 `SESSION` verb to that facility, but must not cache a selected machine/session
 pointer or selected ID. Workers and guest execution paths receive only their
 own session and never access a manager. `core/composition/` is not a valid
-home for this mechanism. The current contract is defined here; its completed
-NXVM implementation sequence is summarized in [M5 History](../etc/legacy-history/m5.md).
+home for this mechanism. This record preserves the M5 contract detail; its
+completed NXVM implementation sequence is summarized in
+[M5 History](../legacy-history/m5.md).
 
 ## Contract Sequence
 

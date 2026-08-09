@@ -1,8 +1,12 @@
-# C-Library Facade
+# C-Library Facade Detail Record
 
-## Current Contract
+> Supporting M5 vocabulary, migration, and inventory detail. The current
+> coding rules are [rules/CODING.md](../../rules/CODING.md); this record cannot
+> establish a competing current coding authority.
 
-This is the sole current authority for `src/type.h`, C language aliases, ISO C
+## Retained M5 Snapshot
+
+This preserves the M5 treatment of `src/type.h`, C language aliases, ISO C
 vocabulary, platform type exposure, direct ISO C header/call restrictions, and
 input-flush safety. `C_*` names scalar typedefs, `STD_*` names ISO C
 types/objects/constants/atomics/wrappers, and `WIN32_*` names project-facing
@@ -45,7 +49,7 @@ temporary output stream rather than stdin.
 ## Historical Evidence (Non-Normative)
 
 The sections below preserve superseded inventories and migration proposals.
-They are not current rules and cannot override the Current Contract above;
+They are not current rules and cannot override the coding rules above;
 retrieve their task-specific context from Git history when needed.
 
 ## Decision

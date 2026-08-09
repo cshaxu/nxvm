@@ -9,9 +9,9 @@ Read these documents before changing the repository:
 5. `docs/design/ROADMAP.md`
 6. `docs/design/ARCHITECTURE.md`
 7. `docs/design/CODING.md`
-8. `docs/design/CONTRACTS.md`
+8. `docs/rules/ARCHITECTURE.md`
 9. `docs/rules/CODING.md`
-10. `docs/rules/SOURCE.md`
+10. `docs/rules/DOCUMENT.md`
 11. `CONTRIBUTING.md`
 
 ## Boundaries

@@ -1,4 +1,8 @@
-# CPU Correctness And Differential Verification Requirements
+# CPU Verification Detail Record
+
+> Supporting CPU capability and differential-debug detail. The project goal,
+> architecture, and milestone commitments remain in `docs/design/`; this record
+> does not promise a new product capability or schedule implementation work.
 
 ## Current Claim And Risk
 

@@ -23,5 +23,5 @@ boundary remains [Source Layout](CODING.md).
 6. Protected media, Microsoft components, external firmware, invasive
    integration, and research tools are never implicit runtime dependencies.
 
-See [System Architecture](ARCHITECTURE.md), [Source Rules](../rules/SOURCE.md),
-and [Debt Ledger](../TODO.md).
+See [System Architecture](ARCHITECTURE.md),
+[Architecture Rules](../rules/ARCHITECTURE.md), and [Debt Ledger](../TODO.md).

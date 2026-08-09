@@ -3,8 +3,8 @@
 ## Purpose
 
 This is the single operational index for closing M5. It does not create new
-architecture or execution rules: `roadmap.md`, `module-layout.md`,
-`coding-standard.md`, and `execution-policy.md` remain authoritative. A checked
+architecture or execution rules: `design/ROADMAP.md`, `design/CODING.md`,
+`rules/CODING.md`, and `rules/EXECUTION.md` remain authoritative. A checked
 item requires a compact
 evidence record with commands, result markers, source commit, and any approved
 exception. Historical task evidence is not enough when the current source graph
@@ -86,7 +86,7 @@ must not use an unfinished M5 boundary or corpus item as an implicit waiver.
 
 ## 5. Documentation And Deferred Work
 
-- [ ] `status.md`, `roadmap.md`, architecture contracts/layout, CMake presets,
+- [ ] `STATUS.md`, `design/ROADMAP.md`, architecture/layout detail, CMake presets,
   task tracking, and verification records agree on the current implementation,
   active subtask, artifact identity, and M5 scope.
 - [ ] Every remaining compatibility, hardware, platform, or product gap is
@@ -94,7 +94,7 @@ must not use an unfinished M5 boundary or corpus item as an implicit waiver.
   remain non-runnable until their respective M6/M8 admission work begins.
 - [ ] The final M5 verification record links this checklist item-by-item to
   commands and evidence, states every approved deferral, and explicitly says
-  whether M5 may close. Only then may `TODO.md`, `status.md`, and `roadmap.md`
+  whether M5 may close. Only then may `TODO.md`, `STATUS.md`, and `design/ROADMAP.md`
   record M5 closure.
 
 ## Evidence Sources
@@ -102,7 +102,7 @@ must not use an unfinished M5 boundary or corpus item as an implicit waiver.
 - Milestone scope and exit: [Roadmap](../../design/ROADMAP.md)
 - Task, artifact, build-tree, and trace policy: [Execution Policy](../../rules/EXECUTION.md)
 - Dependency and ownership rules: [Module Layout](../../design/CODING.md)
-- Lifecycle and public-contract rules: [Contracts](../../design/CONTRACTS.md)
+- Lifecycle and public-contract detail: [Machine Contract Details](../architecture-notes/machine-contract-details.md)
 - Coding and execution rules: [Coding Standard](../../rules/CODING.md) and
   [Execution Policy](../../rules/EXECUTION.md)
 - Open work and approved deferrals: [TODO Ledger](../../TODO.md)

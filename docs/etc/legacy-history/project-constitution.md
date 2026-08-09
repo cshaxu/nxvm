@@ -1,5 +1,9 @@
 # Project Constitution
 
+> Superseded by [design/GOAL.md](../../design/GOAL.md),
+> [design/ARCHITECTURE.md](../../design/ARCHITECTURE.md), and the current local
+> rules. Retained as historical rationale only.
+
 1. This repository is the canonical successor to NXVM.
 2. `nxvm.exe` and `nxvdm.exe` are first-class executable products.
 3. `core` is their shared foundation; `mantle` is the future shared VDM

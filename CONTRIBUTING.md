@@ -6,8 +6,9 @@
   documented Win32 APIs.
 - [System Architecture](docs/design/ARCHITECTURE.md),
   [Source Layout](docs/design/CODING.md),
-  [Coding Rules](docs/rules/CODING.md), [Source Rules](docs/rules/SOURCE.md),
-  and [Execution Rules](docs/rules/EXECUTION.md) are the local
+  [Architecture Rules](docs/rules/ARCHITECTURE.md),
+  [Coding Rules](docs/rules/CODING.md), and
+  [Execution Rules](docs/rules/EXECUTION.md) are the local
   implementation checklist. Every task records its applicable rules and proves
   them at exit or records an owner-approved exception.
 - Follow the visible module boundaries in `src/`. `core/machine` has no VM/VDM
@@ -26,11 +27,10 @@
 
 NXVM is the approved machine foundation and continuing bootable-VM product
 surface, not merely an example. Before copying or substantially deriving code,
-add a provenance record containing commit, source and destination paths, the
-MIT authorization record, preserved copyright notices, changes, and tests. Keep
-imported code inside the appropriate shared-core, firmware, platform, or
-product boundary and reduce legacy global-state coupling when making new
-interfaces.
+follow the provenance and license procedure in
+[source-policy.md](docs/etc/governance/source-policy.md). Keep imported code
+inside the appropriate shared-core, firmware, platform, or product boundary
+and reduce legacy global-state coupling when making new interfaces.
 
 ## References And Guest Components
 
@@ -38,7 +38,7 @@ Other open-source projects require a license review before copying. Trusted
 external VDM/DOS research may inform neutral requirements, but cannot create a
 shared ABI, source import, default runtime dependency, or substitute for owned
 product evidence. Microsoft binaries are never committed. Microsoft research
-belongs under `docs/research/` or approved `tools/research/`; it cannot block
+belongs under `docs/etc/research/` or approved `tools/research/`; it cannot block
 the owned DOS backend.
 
 ## Pull Request Record

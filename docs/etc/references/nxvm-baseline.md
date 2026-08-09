@@ -2,10 +2,10 @@
 
 NXVM is the formal machine foundation for ntvdm64. Its eligible CPU, memory,
 BIOS, device, debugger, assembler, and disassembler code may be imported under
-the policy in [../source-policy.md](../../rules/SOURCE.md).
+the policy in [source-policy.md](../governance/source-policy.md).
 
 The sibling checkout remains read-only. Before importing any unit, pin its
-commit, record source and destination paths in `docs/provenance/`, preserve
+commit, record source and destination paths in `docs/etc/provenance/`, preserve
 copyright notices, record the copyright-holder MIT authorization, describe
 modifications, and add focused tests.
 

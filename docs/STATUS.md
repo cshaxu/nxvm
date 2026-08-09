@@ -2,7 +2,7 @@
 
 ## Current Work
 
-**Idle. M5 Td S46 is closed; no numeric implementation task is active.** The
+**Idle. M5 Td S47 is closed; no numeric implementation task is active.** The
 first approved Queue candidate receives the next numeric task identifier.
 
 ## Current Technical Baseline
@@ -42,7 +42,6 @@ M5 scope; an active packet becomes an operational authority only after approval.
 
 ## Recent Governance
 
-- **M5 Td S35:** tightened T279, T280, T282, and T283 task contracts.
 - **M5 Td S36:** recorded the WASM media-backing admission boundary.
 - **M5 Td S37:** made M5 history static, capped closure summaries, and
   hardened the mojibake governance check.
@@ -62,6 +61,10 @@ M5 scope; an active packet becomes an operational authority only after approval.
 - **M5 Td S46:** reset the documentation topology to fixed rules/design/current
   authorities, an unnumbered Queue, numbered implementation history, and an
   owner-approved supporting-material index. Td work has no history record.
+- **M5 Td S47:** enforced the fixed four-rule/five-design topology, indexed
+  retained detail in `etc/`, and separated abstract architecture/coding rules
+  from concrete ntvdm64 design. The strengthened governance gate prevents the
+  same rule/design overlap from returning. Td work has no history record.
 
 ## Milestone State
 
@@ -77,5 +80,5 @@ M5 scope; an active packet becomes an operational authority only after approval.
 1. [Documentation Guide](README.md)
 2. [Status](STATUS.md) and [Queue](QUEUE.md)
 3. [Roadmap](design/ROADMAP.md)
-4. [Architecture](design/ARCHITECTURE.md) and [Contracts](design/CONTRACTS.md)
-5. [Requirements](design/REQUIREMENTS.md)
+4. [Architecture](design/ARCHITECTURE.md) and [Source Layout](design/CODING.md)
+5. [Supporting Detail Index](etc/README.md), when required by the task
