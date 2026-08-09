@@ -1,7 +1,7 @@
 # C-Library Facade Detail Record
 
 > Supporting M5 vocabulary, migration, and inventory detail. The current
-> coding rules are [rules/CODING.md](../../rules/CODING.md); this record cannot
+> coding rules are [rules/CODING.md](../../../rules/CODING.md); this record cannot
 > establish a competing current coding authority.
 
 ## Retained M5 Snapshot

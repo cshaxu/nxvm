@@ -23,5 +23,5 @@ legacy NXVM baseline. They remain read-only, local, unclassified protected
 inputs: they are not copied into this repository, build output, test fixture
 directory, or release package. The repository records only a logical name, size,
 SHA-256, role, and the fact that the owner supplied the file. See
-`docs/etc/fixtures/m1-local-images.md`. Absolute paths and image contents are never
+`docs/etc/evidence/fixtures/m1-local-images.md`. Absolute paths and image contents are never
 recorded.

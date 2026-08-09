@@ -29,7 +29,7 @@ Copyright (c) 2012-2014 Neko
 Copyright (c) 2012-2026 Neko
 ```
 
-See `docs/etc/provenance/nxvm-imports.md` for import scope and traceability.
+See `docs/etc/research/provenance/nxvm-imports.md` for import scope and traceability.
 
 ## Shipped Third-Party Components
 

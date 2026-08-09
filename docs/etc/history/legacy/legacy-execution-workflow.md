@@ -1,14 +1,14 @@
 # Legacy Execution Workflow
 
-> Superseded by [rules/EXECUTION.md](../../rules/EXECUTION.md) and the shared
+> Superseded by [rules/EXECUTION.md](../../../rules/EXECUTION.md) and the shared
 > execution-governance skill. Retained only for historical retrieval.
 
 This was the former mandatory local workflow. The public
 [Execution Governance skill](https://github.com/cshaxu/skills/blob/main/execution-governance/SKILL.md)
 may extend it with reusable practice, but never replaces this local contract.
 It works with the
-[Roadmap](../../design/ROADMAP.md), [Project Status](../../STATUS.md),
-[Debt Tracking](../../TODO.md), and [Execution Policy](../../rules/EXECUTION.md).
+[Roadmap](../../../design/ROADMAP.md), [Project Status](../../../STATUS.md),
+[Debt Tracking](../../../TODO.md), and [Execution Policy](../../../rules/EXECUTION.md).
 
 ## Mandatory Local Lifecycle
 
@@ -52,12 +52,12 @@ without turning a task into unrelated cleanup.
 
 ## Local Identifiers And Evidence
 
-[Execution Policy](../../rules/EXECUTION.md) owns the
+[Execution Policy](../../../rules/EXECUTION.md) owns the
 `M<milestone> T<task> S<subtask> P<part>` MTSP form, its standalone `Td`
 variant, commit subjects, artifact revision allocation, and runnable-output
 rules, including the strict linear allocation rule and its sole corrective
-exception. [Project Status](../../STATUS.md) is the active ledger;
-[Debt Tracking](../../TODO.md) is the deferred-work ledger.
+exception. [Project Status](../../../STATUS.md) is the active ledger;
+[Debt Tracking](../../../TODO.md) is the deferred-work ledger.
 
 Each ntvdm64 task packet maps original requirements to evidence and records
 the applicable source, test, provenance, toolchain, artifact, and release

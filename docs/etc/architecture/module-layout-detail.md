@@ -83,7 +83,7 @@ interface, an injected provider, and a session-owned registry are defined in
 [Core Machine Instance Design](core-machine-instance-design.md). That document
 also owns the forward migration away from selected-session globals.
 The current symbol-level migration baseline for the remaining public-surface
-closure is [Core Machine Public-Surface Inventory](core-machine-public-surface-inventory.md);
+closure is [Core Machine Public-Surface Inventory](../history/m5/core-machine-public-surface-inventory.md);
 it is a task design record, not an additional runtime contract.
 
 ## Foundation Units
@@ -94,7 +94,7 @@ bit/constant helpers, and shared runtime/trace primitives. `src/type.c` owns
 their non-inline implementations. All modules may include `type.h`; this is a
 foundation-unit dependency, not a dependency between product forms or modules.
 The detailed C vocabulary and header boundary are defined only by
-[C-Library Facade](c-library-facade.md).
+[C-Library Facade](../history/m5/c-library-facade.md).
 
 `src/core/utils/` is the sole shared utility module. It contains only small,
 product-neutral facilities and callback contracts that require neither guest
@@ -131,7 +131,7 @@ implementation, selected-item adaptation, and teardown under
 core-product contract; it never owns or caches a selected session pointer or
 ID. `core/composition/` is forbidden because it would be an accidental second
 product assembly layer. The completed implementation is summarized in
-[M5 History](../legacy-history/m5.md).
+[M5 History](../history/legacy/m5.md).
 
 A composition session's complete layout is private to its product root. Its
 public header declares an opaque `vm_session` or `mantle_session` handle, stable
@@ -369,7 +369,7 @@ session-owned, execution-thread-owned, caller-owned invocation state, or an
 explicit process-exclusive host lease. Immutable tables and descriptors may be
 shared. A process-global, `_Thread_local`, or implicit-current-object selector
 is not an acceptable production-state owner. The current closure authority is
-the [M5 closure checklist](../governance/m5-closure-checklist.md).
+the [M5 closure checklist](../operations/policy/m5-closure-checklist.md).
 An undocumented mutable file-static object is never an acceptable substitute
 for a session context or host lease.
 
@@ -381,7 +381,7 @@ non-runnable VDM skeleton, and keeps the root foundation units `type.*`.
 milestones; they do not enter the current NXVM build graph.
 
 The completed migration rationale is summarized in
-[M5 History](../legacy-history/m5.md). Current work must meet the current
+[M5 History](../history/legacy/m5.md). Current work must meet the current
 source-layout authority, not this record's historical phrasing.
 ownership and dependency rules directly; completed plans cannot create an
 exception. Shared concrete Win32/Linux host providers move to `core/platform`

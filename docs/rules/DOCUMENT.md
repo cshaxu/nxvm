@@ -57,7 +57,7 @@ normal way to cross a boundary; a copied summary is not a second authority.
   `history/M<milestone>-T<task>-*.md` record. Earlier consolidated evidence
   remains in indexed legacy material. Standalone `Td` tasks have no history
   record; their compact outcome is retained in Status and Git.
-- `etc/legacy-history/` is read-only aggregation retained during migration. It
+- `etc/history/legacy/` is read-only aggregation retained during migration. It
   is evidence, never a current authority.
 
 Every closure runs `tools/Verify-DocumentationGovernance.ps1` and

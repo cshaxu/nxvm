@@ -21,7 +21,7 @@ Read these documents before changing the repository:
   source.
 - Sibling repositories, including `../nxvm`, are read-only unless an approved
   task explicitly authorizes an import into this repository.
-- Read the [source and research policy](docs/etc/governance/source-policy.md)
+- Read the [source and research policy](docs/etc/operations/policy/source-policy.md)
   before importing, deriving, or researching source, firmware, guest media, or
   Microsoft components. Do not commit protected guest media, Microsoft
   binaries, machine-local paths, or unreviewed third-party code.

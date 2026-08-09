@@ -31,4 +31,4 @@ The concrete ntvdm64 component and composition map is
   decision.
 
 Detailed source, license, firmware, and research handling is supporting
-material in [etc/governance/source-policy.md](../etc/governance/source-policy.md).
+material in [etc/operations/policy/source-policy.md](../etc/operations/policy/source-policy.md).

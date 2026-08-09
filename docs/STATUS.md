@@ -2,7 +2,7 @@
 
 ## Current Work
 
-**Idle. M5 Td S51 is closed; no numeric implementation task is active.** The
+**Idle. M5 Td S52 is closed; no numeric implementation task is active.** The
 first approved Queue candidate receives the next numeric task identifier.
 
 ## Current Technical Baseline
@@ -37,9 +37,6 @@ first approved Queue candidate receives the next numeric task identifier.
 
 ## Recent Governance
 
-- **M5 Td S43:** superseded the unimplemented T291 S4 admission by merging its
-  protected-return fault-atomicity scope into active T293 S1, which retains its
-  original post-`#UD` transition-removal scope. T291 remains closed FDC history.
 - **M5 Td S44:** made queue-order allocation, closed-subtask finality, and the
   no-active-task corrective exception explicit; added a contiguous-queue
   governance gate. The pre-policy S43/S42 discontinuity is archival only, so
@@ -65,3 +62,6 @@ first approved Queue candidate receives the next numeric task identifier.
 - **M5 Td S51:** defined ordinary and coordinator/executor execution modes,
   Instructions, report-and-acceptance loops, bounded task packages, and their
   required package-close global governance audit. Td work has no history record.
+- **M5 Td S52:** regrouped supporting material into architecture, requirements,
+  evidence, operations, research, and history; isolated M5/legacy evidence and
+  repaired every governed migration link. Td work has no history record.
