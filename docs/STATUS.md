@@ -2,29 +2,29 @@
 
 ## Current Work
 
-**Active: M5 T313 S1.**
+**Active: M5 T313 S2.**
 
-## M5 T313 S1 Packet
+## M5 T313 S2 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New; M5 T313 S1 construction-failure atomicity and startup-failure visibility admission. |
-| Admission And Approval | T313 is the next linear implementation task after the accepted T312 withdrawal and Td S57 audit. The owner-approved independent audit identified the bounded P2/P3 failure-handling work; S1 admits planning only. |
+| Identifier Mode | Corrective; M5 T313 S2 core RAM creation allocation atomicity. |
+| Admission And Approval | T313 S1 P0 `b2538fb8` admitted the ordered construction-failure package. S2 implements only its core RAM creation boundary. |
 | Reference Baseline | Accepted `vm-0-5-0311` / `nxvm_0_5_0311.exe`, HEAD `d9152c6d` before this admission, and retained T300 port/session-atomicity boundaries. |
-| Objective | Freeze the ordered P2/P3 repair plan for one-allocation machine creation, transactional port/device assembly, visible VM platform-start failure, and explicit debugger enum mapping. |
-| Non-goals | CPU/paging changes, a new generic host interface, M6 mantle, Console UX redesign, core/product debug merger, or implementation in S1. |
-| Scope And Order | S2: core RAM decision and deterministic allocation-failure seam. S3: transactional port/device assembly and create rollback. S4: session/platform start status plus Console-visible failure. S5: private debugger enum mapping and void-watch status disposition. S6: artifact, full gate, and closure. |
-| Source Touchpoints | `core/machine/memory.*`, `machine.c`, `port_interface.c`, device configuration paths, `vm/composition/session/lifecycle.*`, Console adapter/product path, and `debug_target.c`; exact files remain subject to S1 inventory. |
-| Files And ABI Surface | S1 changes only this packet, the unnumbered Queue candidate, and its evidence record. Later subtasks keep production changes private unless a focused contract proves a public result is necessary. |
+| Objective | Resolve default or explicit RAM capacity once during `core_machine_create`, allocate backing exactly once, and make allocation failure leave no live machine. |
+| Non-goals | Port/device assembly, VM lifecycle, Console, debugger mapping, CPU/paging changes, a production global allocator facade, artifact identity, M6 mantle, or public memory-contract changes. |
+| Scope And Order | S2 only: private create/init/memory path and focused proof. S3 remains transactional port/device assembly; S4 session/platform start result; S5 debugger enum mapping; S6 closure. |
+| Source Touchpoints | `core/machine/machine.c`, private memory initialization/allocation and destroy path, plus focused core machine tests. |
+| Files And ABI Surface | Preserve raw `t_ram` plus `core_machine_memory_allocate_for` fixture use and all public core memory/reset contracts. A deterministic allocation-failure seam is test-only and controls only the core-owned backing allocation. |
 | Applicable Rules | `rules/EXECUTION.md`, `rules/ARCHITECTURE.md`, `rules/CODING.md`, `rules/DOCUMENT.md`, and the source policy; retain one core executor, typed provider boundaries, and the existing NXVM product route. |
-| Verification | Deterministic failure injection, not host OOM: zero/explicit RAM create failure, mid-range port registration/device assembly rollback, platform-start failure visible at the Console boundary, and unknown debugger enum rejection. Preserve raw `t_ram` fixture use. |
-| Expected Markers | S1 has no runtime marker. S2--S5 add focused failure and mapping probes; S6 records the task artifact, SHA-256, and full current gates. |
+| Verification | Focused proof verifies one default and one explicit allocation, correct installed bytes, exact `TYPE_STATUS_NO_MEMORY` and null out-machine on deterministic default/explicit failure, retained freeze/reset/destroy, and raw `t_ram` fixture allocation. |
+| Expected Markers | `M5:T313:S2:RAM-CREATE:OK`; S2 creates no artifact. |
 | S1 Audit Record | [T313 construction-failure admission](etc/evidence/t313-construction-failure-admission.md) is the active design and acceptance record. |
 | Asset Needs | No guest media, firmware, third-party source, or host OOM dependency. |
-| Original Owner Request | Establish the repair package only; do not begin runtime implementation before this S1 plan is reviewed. |
-| Similar-Issue Sweep | Inventory all core create allocation, port registration rollback, VM platform-start result, Console adapter, and debug enum conversion paths before S2. |
-| Stop Conditions | Stop for an allocator seam requiring a process-global production hook, a port rollback needing a second registry, a Console failure requiring a new generic interface, or a debugger vtable contract change beyond the retained boundary. |
-| Exit Criteria | S1 records contracts, seams, rollback ownership, focused probes, per-S boundaries, artifact rule `0.5.0313`, and full-gate closure requirement. It changes documentation only and does not start S2. |
+| Original Owner Request | Repair only core RAM creation allocation atomicity before the later independent failure boundaries. |
+| Similar-Issue Sweep | Sweep memory initialize/create/destroy paths, default capacity resolution, and all callers that rely on default memory bytes. |
+| Stop Conditions | Stop for a seam requiring process-global production allocation state, a public memory-contract change, a second memory route, or a required port/VM/product change. |
+| Exit Criteria | Exactly one resolved capacity and backing allocation per create; deterministic failures return exact status with null out-machine and no residual backing; focused proof, documentation governance, and diff check pass before push. |
 
 ## Current Technical Baseline
 

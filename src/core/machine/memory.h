@@ -75,6 +75,12 @@ typedef struct t_ram {
     t_ram_connect connect;
 } t_ram;
 
+/* Private test-only observation for one core-owned backing allocation. */
+typedef struct core_machine_memory_test_allocation {
+    type_bool fail;
+    STD_SIZE_T attempts;
+} core_machine_memory_test_allocation;
+
 #define VRAM_BIT_A20  0x00100000
 #define VRAM_FLAG_A20 0x02
 
@@ -87,6 +93,8 @@ type_status core_machine_memory_query_physical(const t_ram *ram,
     type_unsigned_32 physical, type_native_unsigned size,
     core_machine_memory_access access, core_machine_memory_route *out_route);
 C_VOID core_machine_memory_initialize(t_ram *ram);
+type_status core_machine_memory_initialize_for(t_ram *ram, STD_SIZE_T bytes,
+    core_machine_memory_test_allocation *test_allocation);
 C_VOID core_machine_memory_reset(t_ram *ram);
 C_VOID core_machine_memory_finalize(t_ram *ram);
 C_VOID core_machine_memory_register_ports(t_ram *ram, t_port *port);

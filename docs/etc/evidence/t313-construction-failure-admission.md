@@ -32,6 +32,21 @@ status propagation are retained; this task does not reopen them.
 - Debug product and core enum domains remain separate. A private total mapping
   accepts only named compatible values; unknown values never reach a cast.
 
+## S2 RAM Creation Result
+
+`core_machine_create` now resolves zero `memory_bytes` to the default before
+memory initialization and calls a private specified-capacity initializer once.
+The retained raw `t_ram` initializer continues to allocate its default backing
+for direct fixtures, while the create path no longer performs that allocation
+before an explicit capacity allocation.
+
+The test-only create seam receives a per-call private allocation observation;
+it can fail only the core-owned backing allocation and records attempts. It is
+not process-global allocator state and does not change the public memory
+interface. The focused `M5:T313:S2:RAM-CREATE:OK` proof covers default and
+explicit success, deterministic default and explicit failure, retained
+freeze/reset/destroy, and direct raw `t_ram` allocation.
+
 ## Exclusions
 
 No CPU executor, paging, RETF/IRET, product re-architecture, generic allocator

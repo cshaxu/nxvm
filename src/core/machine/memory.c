@@ -100,10 +100,16 @@ static type_status core_machine_memory_route_resolve(const t_ram *ram,
 }
 
 /* Allocates one core-owned RAM backing. Callers retain the t_ram, never backing. */
-type_status core_machine_memory_allocate_for(t_ram *ram, STD_SIZE_T bytes) {
+static type_status core_machine_memory_allocate_for_with_test(t_ram *ram,
+    STD_SIZE_T bytes, core_machine_memory_test_allocation *test_allocation)
+{
     C_VOID *backing;
 
     if (ram == STD_NULL || bytes == 0u) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (test_allocation != STD_NULL) {
+        ++test_allocation->attempts;
+        if (test_allocation->fail) return TYPE_STATUS_NO_MEMORY;
+    }
     backing = STD_CALLOC(1u, bytes);
     if (backing == STD_NULL) return TYPE_STATUS_NO_MEMORY;
     STD_FREE((C_VOID *)ram->connect.backing);
@@ -111,6 +117,11 @@ type_status core_machine_memory_allocate_for(t_ram *ram, STD_SIZE_T bytes) {
     ram->connect.installed_bytes = bytes;
     ram->connect.backing_capacity = bytes;
     return TYPE_STATUS_OK;
+}
+
+type_status core_machine_memory_allocate_for(t_ram *ram, STD_SIZE_T bytes)
+{
+    return core_machine_memory_allocate_for_with_test(ram, bytes, STD_NULL);
 }
 
 type_status core_machine_memory_register_mapping(t_ram *ram,
@@ -292,6 +303,15 @@ C_VOID core_machine_memory_initialize(t_ram *ram)
     if (ram == STD_NULL) return;
     STD_MEMSET((C_VOID *)ram, TYPE_ZERO_8, sizeof(*ram));
     (C_VOID)core_machine_memory_allocate_for(ram, 1u << 24);
+}
+
+type_status core_machine_memory_initialize_for(t_ram *ram, STD_SIZE_T bytes,
+    core_machine_memory_test_allocation *test_allocation)
+{
+    if (ram == STD_NULL || bytes == 0u) return TYPE_STATUS_INVALID_ARGUMENT;
+    STD_MEMSET((C_VOID *)ram, TYPE_ZERO_8, sizeof(*ram));
+    return core_machine_memory_allocate_for_with_test(ram, bytes,
+        test_allocation);
 }
 
 C_VOID core_machine_memory_reset(t_ram *ram)
