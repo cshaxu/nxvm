@@ -146,7 +146,7 @@ factual status, validates fully before mutation where possible, and states its
 partial-effect rule. No raw CPU/RAM/port/controller/executor access, DOS/BIOS
 semantic operation, mode/segment/CRx setter, or decoder hook is admissible.
 
-T300 and T302 are **conditional admission only**: neither has a recorded
+T301 and T303 are **conditional admission only**: neither has a recorded
 first-party use case in this audit, so neither is implemented, enabled, or
 treated as a default follow-on.
 
