@@ -1,14 +1,14 @@
 # M5 T302: Operand, Address, And Stack Family
 
-## Implementation Record Pending Coordinator Acceptance
+## Implementation Record
 
 T302 completes the admitted 80386 `66h`/`67h` operand, address, and stack
 family in the single core CPU executor: prefix/fetch/effective-address and
 general-data forms; `PUSH`/`POP`/`PUSHA`/`POPA`, `PUSHF`/`POPF`, and
 `ENTER`/`LEAVE`; and memory/I-O strings with `REP` forms. It does not add a
 second executor or state owner, alter public interfaces, or change Console,
-debugger, boot, or media behavior. The active S5 packet in
-[STATUS.md](../STATUS.md) remains authoritative until coordinator acceptance.
+debugger, boot, or media behavior. The coordinator independently accepted the
+record and closed T302.
 
 ## Reference Conclusion And Matrix
 
