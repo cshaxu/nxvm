@@ -228,8 +228,9 @@ mounted and no guest command, Setup checkpoint, or CPU conclusion was
 obtained. This is a host-automation limitation retained for owner-controlled
 manual observation; it is not retried in T305.
 
-T305 remains active and pending coordinator acceptance. This record is
-closure-preparation evidence only: it does not set the project Idle, close
+At its closure-preparation point, T305 remained pending coordinator acceptance.
+The coordinator subsequently accepted and closed T305; this record is
+historical closure-preparation evidence only: it did not set the project Idle, close
 T305, change Queue state, or authorize a subsequent task. The deferred
 boundary remains 32-bit `IRET`, outer/CPL transitions, call/task gates, task
 switching, V86, reset/triple-fault policy, paging-policy expansion, and new

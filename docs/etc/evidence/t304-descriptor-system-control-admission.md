@@ -261,6 +261,7 @@ input was sent. The process was terminated and cleanup confirmed no residue.
 This is a host-automation limitation retained for owner-controlled manual
 observation, not a product or CPU conclusion; it is not retried in T304.
 
-T304 remains active and pending coordinator acceptance. This record is
-closure-preparation evidence only: it does not set the project Idle, close
+At its closure-preparation point, T304 remained pending coordinator acceptance.
+The coordinator subsequently accepted and closed T304; this record is
+historical closure-preparation evidence only: it did not set the project Idle, close
 T304, change Queue state, or authorize a subsequent task.

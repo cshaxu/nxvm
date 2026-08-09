@@ -1,10 +1,10 @@
 # M5 T310: 80386 0F Integer Family
 
-## Pending Coordinator Acceptance
+## Accepted Closure
 
 T310 S1--S9 completed the admitted 80386 `0F` integer bit/data family and
-prepared the 0310 artifact.  This record remains pending coordinator
-acceptance; it does not close T310 or activate a successor.
+the 0310 artifact. The coordinator accepted and closed T310 before T311; this
+record preserves that closure and does not activate a successor.
 
 ## Completed Scope
 

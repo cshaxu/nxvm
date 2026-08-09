@@ -233,6 +233,7 @@ alive but had `MainWindowHandle=0`; the observer stopped only that launched
 process. This is a host-automation limitation, not a guest observation or
 checkpoint, and the attempt was not retried.
 
-The task remains active pending coordinator acceptance. Deferred boundaries
+At its closure-preparation point, T307 remained pending coordinator acceptance.
+The coordinator subsequently accepted and closed T307. Deferred boundaries
 remain error-code and hardware-NMI integration, task and virtual-8086 paths,
 paging policy, and any new fault-delivery origin.
