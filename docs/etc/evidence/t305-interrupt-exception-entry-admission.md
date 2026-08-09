@@ -205,3 +205,32 @@ S2/S3 front-end proof pass with the direct fault cases. `IRET`, fault-origin
 expansion, recursive/double-fault policy, reset/triple-fault policy, task and
 call gates, CPL transitions, V86, paging, and public interfaces remain
 deferred.
+
+## S5 Closure-Preparation Evidence
+
+The one current artifact target is `vm-0-5-0305`. The generated
+`build/output/nxvm_0_5_0305.exe` has SHA-256
+`53005149E1C157646D37BB54F9D3B68468122A41050706396E8DD7EFFC7412E6`.
+
+The final managed `cmake --build --preset current-gates-gcc` run passes all
+51 static/governance targets and 134/134 current-gate CTests. The focused T305
+probe emits `M5:T305:INTERRUPT-ENTRY:OK`. Retained direct probes emit
+`M5:T301:SEGMENT-SELECTOR:OK`, `M5:T293:S2:PROTECTED-RETURN-ATOMICITY:OK`,
+`M5:T304:DESCRIPTOR-SYSTEM:OK`, `M5:T260:S3:TSS-IOMAP:CORPUS:OK`, and the
+T261 task-switch markers. Documentation governance and `git diff --check`
+pass.
+
+One bounded owner-supplied product observation ran the 0305 artifact without
+guest input for ten seconds. The process was alive and responding but exposed
+main-window handle zero, so host automation could not safely discover a guest
+surface. It was terminated and cleanup found no process residue. No media was
+mounted and no guest command, Setup checkpoint, or CPU conclusion was
+obtained. This is a host-automation limitation retained for owner-controlled
+manual observation; it is not retried in T305.
+
+T305 remains active and pending coordinator acceptance. This record is
+closure-preparation evidence only: it does not set the project Idle, close
+T305, change Queue state, or authorize a subsequent task. The deferred
+boundary remains 32-bit `IRET`, outer/CPL transitions, call/task gates, task
+switching, V86, reset/triple-fault policy, paging-policy expansion, and new
+fault origins.

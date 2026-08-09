@@ -2,21 +2,21 @@
 
 ## Current Work
 
-**Active: M5 T305 S4.**
+**Active: M5 T305 S5.**
 
-## M5 T305 S4 Packet
+## M5 T305 S5 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Corrective; M5 T305 S4 existing fault-entry and failed-delivery containment; Coordinated Dual-Session Mode. S2/S3 closed the planner and front ends. |
+| Identifier Mode | Corrective; M5 T305 S5 closure-preparation for the interrupt and exception-entry family; Coordinated Dual-Session Mode. S2--S4 are implemented and pending final coordinator acceptance. |
 | Admission And Approval | T304 is closed. T305 is the next linear Queue candidate in the owner-approved M5 80386 protected execution/delivery package. |
 | Objective | Admit 32-bit IDT interrupt/trap-gate and exception-entry semantics for `INT`, `INT3`, `INTO`, hardware interrupts, and already-admitted faults. Freeze gate/type/DPL/present/target-CS/error-code/frame/recursive-fault matrices before implementation. |
 | Non-goals | 32-bit `IRET`, outer returns, call gates, task gates, task switching, virtual-8086, paging-policy expansion, product UX, public ABI, and source import. No new executor or delivery path. |
-| Reference Baseline | `69d1b83`; current artifact `vm-0-5-0304` / `nxvm_0_5_0304.exe`. |
+| Reference Baseline | `f9be9c3`; current artifact `vm-0-5-0305` / `nxvm_0_5_0305.exe`. |
 | Files And ABI Surface | S1 may inspect core CPU delivery, IDT, fault, stack, selector, PIC-facing interrupt, focused tests, CMake, and task records. It must not alter public interfaces or cross-module ownership. |
 | Applicable Rules | `rules/EXECUTION.md`, `rules/ARCHITECTURE.md`, `rules/CODING.md`, `rules/DOCUMENT.md`, and `etc/operations/policy/source-policy.md`; retain one core executor/state owner and NXVM behavior. |
 | Verification | Intel 80386 PRM is authoritative. Record versioned read-only Bochs 2.6 and PCjs 2.00.0 behavior paths; do not copy source. Construction uses focused synthetic probes only. S1 is audit only. |
-| Expected Markers | S1 records an audit only. A later focused marker and artifact target are admitted only after the matrix. |
+| Expected Markers | `M5:T305:INTERRUPT-ENTRY:OK` plus retained T301/T293/T304/T260/T261 markers; the closure artifact is admitted for independent review only. |
 | Asset Needs | Read-only local references only; no guest media, firmware, or third-party source is committed. |
 | Original Owner Request | Execute the direct M5 80386 protected execution/delivery package in coordinated mode, stopping before Mantle; use Intel as authority with read-only Bochs and PCjs comparison. |
 | Similar-Issue Sweep | Audit interrupt/fault entry, IDT gate lookup, stack-frame and selector helpers, PIC/hardware delivery hooks, exception diagnostics, and current focused tests. Classify every production hit before implementation. |
@@ -24,14 +24,15 @@
 | S2 Evidence Record | [T305 interrupt and exception-entry admission audit](etc/evidence/t305-interrupt-exception-entry-admission.md#s2-same-cpl-32-bit-gate-evidence) records the gate-type planner, focused prepared-state proof, retained 16-bit checks, and deferred origins. |
 | S3 Evidence Record | [T305 interrupt and exception-entry admission audit](etc/evidence/t305-interrupt-exception-entry-admission.md#s3-software-and-hardware-front-end-evidence) records software/external origin separation, staged PIC/NMI publication, and focused front-end proof. |
 | S4 Evidence Record | [T305 interrupt and exception-entry admission audit](etc/evidence/t305-interrupt-exception-entry-admission.md#s4-existing-fault-entry-and-containment-evidence) records 32-bit existing-fault error frames, bounded failed-delivery containment, and the retained selector-loader check. |
+| S5 Closure Record | [T305 interrupt and exception-entry admission audit](etc/evidence/t305-interrupt-exception-entry-admission.md#s5-closure-preparation-evidence) records the current artifact, full gates, retained probes, and bounded product observation. |
 | Stop Conditions | Stop and report unresolved Intel/reference disagreement, required architecture change, second execution/state path, raw public-layout exposure, or behavior owned by IRET/outer-return/gate/task/V86/later families. |
-| Exit Criteria | Existing admitted fault consumers enter the frozen 32-bit planner with correct retained error codes; failed delivery restores the original first fault under a bounded terminal containment observation. Focused probes and narrow gates pass without IRET, task gates, reset/triple-fault policy, or new fault-origin work. |
+| Exit Criteria | Artifact, full current gates, retained probes, documentation governance, diff check, and one bounded product observation are recorded. T305 remains active/pending coordinator acceptance; this packet does not set Idle, close T305, alter Queue, or start T306. |
 
 ## Current Technical Baseline
 
-- **T304 accepted artifact identity:** `current-gcc` and
-  `verify-current-artifact-target` select `vm-0-5-0304` / `nxvm_0_5_0304.exe`.
-  T304 is accepted; T305 is the next linear candidate.
+- **T305 closure-preparation artifact identity:** `current-gcc` and
+  `verify-current-artifact-target` select `vm-0-5-0305` / `nxvm_0_5_0305.exe`.
+  T305 remains active pending coordinator acceptance.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
