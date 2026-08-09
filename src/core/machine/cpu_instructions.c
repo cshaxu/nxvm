@@ -3313,6 +3313,12 @@ static C_VOID _ser_ret_far_outer(core_machine_cpu_execution_context *context,
     newss_cache = cpu_state.data.ss;
     TYPE_TRACE_CHECK_RETURN(_ksa_prepare_stack_sreg(context, newss, target_cpl,
         &newss_cache, &ss_desc));
+    TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, newcs,
+        TYPE_REFERENCE_OF(code_desc)));
+    if (!_IsDescCodeNonConform(code_desc))
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(newcs & 0xfffcu));
+    if (!_IsDescPresent(code_desc))
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_NP(newcs & 0xfffcu));
     newcs_cache = cpu_state.data.cs;
     TYPE_TRACE_CHECK_RETURN(_ksa_prepare_code_sreg(context, newcs, target_cpl,
         &newcs_cache, &code_desc));

@@ -111,12 +111,14 @@ The ordinary protected branch in `_e_iret` selects this route only for a
 non-VM, non-NT same-CPL return. Existing VM, nested-task, and outer-return
 branches remain unchanged.
 
-The candidate code-cache helper now accepts code descriptors generally; each
-existing call-site already supplies its narrower non-conforming eligibility
-check where that is required. The S2 return route supplies the Intel
-same-CPL conforming/non-conforming DPL checks before invoking it. The sweep of
-all helper call-sites found no other path whose admitted descriptor rule is
-broadened by this candidate-cache preparation change.
+The candidate code-cache helper now accepts code descriptors generally. The
+S2 return route supplies the Intel same-CPL conforming/non-conforming DPL
+checks before invoking it. P2 re-audited all six existing callers: the call
+gate, 16-bit interrupt gate, 32-bit same-CPL gate, and outer IRET callers
+already make their non-conforming eligibility explicit; `_ser_ret_far_outer`
+now does so as well, after its retained new-SS validation and before candidate
+cache preparation. No caller outside the S2 same-CPL IRET route gains a new
+admitted descriptor form.
 
 `core-machine-protected-iret-smoke` proves default 32-bit IRET, `66h` 16-bit
 IRET, `67h` retaining the 32-bit frame, a same-CPL conforming-code return, and
@@ -127,6 +129,12 @@ diagnostic and preserves EIP, EFLAGS, ESP, CS cache, SS cache, and the code
 descriptor access byte. A CPL3 return additionally proves that the frame's
 IOPL and IF bits remain masked when CPL exceeds IOPL while permitted arithmetic
 flags restore.
+
+The retained T293 outer-return atomicity probe now includes a conforming-code
+CS frame for both 16-bit outer RETF and outer IRET. It requires the retained
+`#GP(selector)` delivery, unchanged entry flags/CS/SS cache and descriptor
+access byte, and the exact delivered exception record. The pre-existing
+same-CPL and outer 16-bit success/failure paths remain in that probe.
 
 The retained T293 outer-return atomicity, T303 control-transfer, and T305
 interrupt-entry probes remain required regression consumers. S2 does not
