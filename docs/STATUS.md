@@ -2,7 +2,27 @@
 
 ## Current Work
 
-**Idle.**
+**Active: M5 T305 S1.**
+
+## M5 T305 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New; M5 T305 S1; Coordinated Dual-Session Mode. |
+| Admission And Approval | T304 is closed. T305 is the next linear Queue candidate in the owner-approved M5 80386 protected execution/delivery package. |
+| Objective | Admit 32-bit IDT interrupt/trap-gate and exception-entry semantics for `INT`, `INT3`, `INTO`, hardware interrupts, and already-admitted faults. Freeze gate/type/DPL/present/target-CS/error-code/frame/recursive-fault matrices before implementation. |
+| Non-goals | 32-bit `IRET`, outer returns, call gates, task gates, task switching, virtual-8086, paging-policy expansion, product UX, public ABI, and source import. No new executor or delivery path. |
+| Reference Baseline | `69d1b83`; current artifact `vm-0-5-0304` / `nxvm_0_5_0304.exe`. |
+| Files And ABI Surface | S1 may inspect core CPU delivery, IDT, fault, stack, selector, PIC-facing interrupt, focused tests, CMake, and task records. It must not alter public interfaces or cross-module ownership. |
+| Applicable Rules | `rules/EXECUTION.md`, `rules/ARCHITECTURE.md`, `rules/CODING.md`, `rules/DOCUMENT.md`, and `etc/operations/policy/source-policy.md`; retain one core executor/state owner and NXVM behavior. |
+| Verification | Intel 80386 PRM is authoritative. Record versioned read-only Bochs 2.6 and PCjs 2.00.0 behavior paths; do not copy source. Construction uses focused synthetic probes only. S1 is audit only. |
+| Expected Markers | S1 records an audit only. A later focused marker and artifact target are admitted only after the matrix. |
+| Asset Needs | Read-only local references only; no guest media, firmware, or third-party source is committed. |
+| Original Owner Request | Execute the direct M5 80386 protected execution/delivery package in coordinated mode, stopping before Mantle; use Intel as authority with read-only Bochs and PCjs comparison. |
+| Similar-Issue Sweep | Audit interrupt/fault entry, IDT gate lookup, stack-frame and selector helpers, PIC/hardware delivery hooks, exception diagnostics, and current focused tests. Classify every production hit before implementation. |
+| S1 Audit Record | [T305 interrupt and exception-entry admission audit](etc/evidence/t305-interrupt-exception-entry-admission.md) freezes the gate/profile/origin/frame/commit matrix, current path classification, and bounded S2+ work. |
+| Stop Conditions | Stop and report unresolved Intel/reference disagreement, required architecture change, second execution/state path, raw public-layout exposure, or behavior owned by IRET/outer-return/gate/task/V86/later families. |
+| Exit Criteria | S1 produces a bounded form/mode/CPL/fault/commit matrix, classifies current paths, identifies focused probes and batches, and changes no code, CMake target, artifact, Queue, or product behavior. |
 
 ## Current Technical Baseline
 
