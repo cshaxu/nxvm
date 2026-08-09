@@ -190,3 +190,20 @@ saved return EIP is the first byte after the far pointer. Protected same-CPL
 from the selector RPL before the generic code-cache loader, which intentionally
 does not perform that transfer-specific privilege check. No outer return,
 gate, task, delivery, public interface, or artifact path changed.
+
+## S5 Corrective Evidence
+
+The far-indirect `FF /3` and `FF /5` forms now decode the effective address at
+the offset width before their memory-only check. Legal 16:16 and 16:32 memory
+pointers reach the same protected far `CALL`/`JMP` routes as immediate forms;
+ModRM register encodings now terminate as architectural `#UD` rather than the
+decoder's former internal `#CE(6)`.
+
+The same-CPL `RETF` negative probes retain first-fault `#GP(20)` for the DPL
+mismatch and `#NP(28)` for the non-present descriptor. They compare entry and
+post-fault EIP, ESP, EFLAGS, CS selector/base/limit and executable/conforming/
+default-size cache fields. A private fixture-memory observation is necessary
+after a terminal fault because the public memory API correctly rejects that
+lifecycle state; it verifies the candidate descriptor access byte remains
+`0xBA` and `0x1A`, respectively. No production interface or second memory path
+was added.
