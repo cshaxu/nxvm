@@ -15,6 +15,15 @@ typedef struct call_gate_privilege_machine {
     core_machine *machine;
 } call_gate_privilege_machine;
 
+typedef enum call_gate_target_failure {
+    CALL_GATE_TARGET_CODE_TYPE,
+    CALL_GATE_TARGET_CODE_NOT_PRESENT,
+    CALL_GATE_TARGET_STACK_TYPE,
+    CALL_GATE_TARGET_STACK_NOT_PRESENT,
+    CALL_GATE_TARGET_STACK_SELECTOR,
+    CALL_GATE_TARGET_STACK_BOUNDARY
+} call_gate_target_failure;
+
 static C_VOID cg_reset(C_VOID *opaque)
 {
     call_gate_privilege_machine *state = (call_gate_privilege_machine *)opaque;
@@ -147,6 +156,16 @@ static C_INT cg_fault_is(const core_machine_cpu_diagnostic *diagnostic,
         diagnostic->first_fault.exception_code == code;
 }
 
+static C_INT cg_entry_state_equal(const t_cpu *before, const t_cpu *after)
+{
+    return before->data.eip == after->data.eip &&
+        before->data.esp == after->data.esp &&
+        before->data.eflags == after->data.eflags &&
+        STD_MEMCMP(&before->data.cs, &after->data.cs,
+            sizeof(before->data.cs)) == 0 && STD_MEMCMP(&before->data.ss,
+            &after->data.ss, sizeof(before->data.ss)) == 0;
+}
+
 static C_INT cg_test_success(uint8_t count)
 {
     call_gate_privilege_machine state;
@@ -260,13 +279,97 @@ static C_INT cg_test_parameter_source_failure_atomic(C_VOID)
     return !failed;
 }
 
+static C_INT cg_test_target_failure_atomic(call_gate_target_failure failure,
+    uint32_t mask, uint32_t code)
+{
+    call_gate_privilege_machine state;
+    core_machine_cpu_diagnostic diagnostic;
+    t_cpu before;
+    t_cpu after;
+    uint8_t cs_before = 0u, cs_after = 0u;
+    uint8_t ss_before = 0u, ss_after = 0u;
+    uint8_t access = 0u;
+    uint16_t selector = 0u;
+    const core_machine_run_budget budget = {1u, 0u};
+    core_machine_run_result result;
+    type_status status;
+    C_INT failed = !cg_prepare(&state, 0xecu, 0u);
+
+    if (!failed) {
+        switch (failure) {
+        case CALL_GATE_TARGET_CODE_TYPE:
+            access = 0x92u;
+            failed |= !cg_write(&state, CG_GDT_BASE + 13u, &access,
+                sizeof(access));
+            break;
+        case CALL_GATE_TARGET_CODE_NOT_PRESENT:
+            access = 0x1au;
+            failed |= !cg_write(&state, CG_GDT_BASE + 13u, &access,
+                sizeof(access));
+            break;
+        case CALL_GATE_TARGET_STACK_TYPE:
+            access = 0x9au;
+            failed |= !cg_write(&state, CG_GDT_BASE + 21u, &access,
+                sizeof(access));
+            break;
+        case CALL_GATE_TARGET_STACK_NOT_PRESENT:
+            access = 0x12u;
+            failed |= !cg_write(&state, CG_GDT_BASE + 21u, &access,
+                sizeof(access));
+            break;
+        case CALL_GATE_TARGET_STACK_SELECTOR:
+            selector = 0x0013u;
+            failed |= !cg_write(&state, CG_TSS_BASE + 8u, &selector,
+                sizeof(selector));
+            break;
+        case CALL_GATE_TARGET_STACK_BOUNDARY:
+            selector = 0x000fu;
+            failed |= !cg_write(&state, CG_GDT_BASE + 16u, &selector,
+                sizeof(selector));
+            access = 0x40u;
+            failed |= !cg_write(&state, CG_GDT_BASE + 22u, &access,
+                sizeof(access));
+            break;
+        default:
+            return 0;
+        }
+        before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        failed |= !cg_read(&state, CG_GDT_BASE + 13u, &cs_before,
+            sizeof(cs_before)) || !cg_read(&state, CG_GDT_BASE + 21u,
+            &ss_before, sizeof(ss_before));
+        status = core_machine_run(state.machine, budget, &result);
+        if (core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
+            TYPE_STATUS_OK) failed = 1;
+        after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        failed |= status != TYPE_STATUS_FAULT || result.reason !=
+            CORE_MACHINE_STOP_FAULT || !cg_fault_is(&diagnostic,
+                mask, code) ||
+            !cg_read(&state, CG_GDT_BASE + 13u, &cs_after, sizeof(cs_after)) ||
+            !cg_read(&state, CG_GDT_BASE + 21u, &ss_after, sizeof(ss_after)) ||
+            !cg_entry_state_equal(&before, &after) || cs_after != cs_before ||
+            ss_after != ss_before;
+    }
+    core_machine_destroy(state.machine);
+    return !failed;
+}
+
 int main(void)
 {
     C_INT failed = !cg_test_success(0u) || !cg_test_success(2u) ||
         !cg_test_dpl_failure_atomic() || !cg_test_gate_failure_atomic(0x6cu,
             VCPUINS_EXCEPT_NP, CG_GATE_SELECTOR & 0xfffcu) ||
         !cg_test_gate_failure_atomic(0xeeu, VCPUINS_EXCEPT_GP,
-            CG_GATE_SELECTOR & 0xfffcu) || !cg_test_parameter_source_failure_atomic();
+            CG_GATE_SELECTOR & 0xfffcu) || !cg_test_parameter_source_failure_atomic() ||
+        !cg_test_target_failure_atomic(CALL_GATE_TARGET_CODE_TYPE,
+            VCPUINS_EXCEPT_GP, 0x0008u) ||
+        !cg_test_target_failure_atomic(CALL_GATE_TARGET_CODE_NOT_PRESENT,
+            VCPUINS_EXCEPT_NP, 0x0008u) ||
+        !cg_test_target_failure_atomic(CALL_GATE_TARGET_STACK_TYPE,
+            VCPUINS_EXCEPT_GP, 0x0010u) ||
+        !cg_test_target_failure_atomic(CALL_GATE_TARGET_STACK_NOT_PRESENT,
+            VCPUINS_EXCEPT_SS, 0x0010u) ||
+        !cg_test_target_failure_atomic(CALL_GATE_TARGET_STACK_BOUNDARY,
+            VCPUINS_EXCEPT_SS, 0u);
 
     if (failed) return 1;
     STD_PRINTF("M5:T307:CALL-GATE-PRIVILEGE-ENTRY:OK\n");

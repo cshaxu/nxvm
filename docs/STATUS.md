@@ -2,29 +2,30 @@
 
 ## Current Work
 
-**Active: M5 T307 S3.**
+**Active: M5 T307 S4.**
 
-## M5 T307 S3 Packet
+## M5 T307 S4 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Corrective; M5 T307 S3 32-bit call-gate privilege entry; Coordinated Dual-Session Mode. S1/S2 are accepted. |
+| Identifier Mode | Corrective; M5 T307 S4 call-gate preflight evidence correction; Coordinated Dual-Session Mode. S1-S3 are accepted. |
 | Admission And Approval | T306 is closed. T307 is the next linear Queue candidate in the owner-approved M5 80386 protected execution/delivery package. |
-| Objective | Implement the admitted 80386 protected non-V86 CPL3-to-CPL0 32-bit call-gate entry through 32-bit TSS `SS0:ESP0`, frame and parameter semantics, selector/cache checks, and all-or-nothing commit. |
+| Objective | Complete the admitted 80386 protected non-V86 CPL3-to-CPL0 32-bit call-gate evidence: prove target code/stack rejection and new-target-stack preflight preserve all pre-entry state. |
 | Non-goals | Task/nested-task return, task gates, general task switching, virtual-8086, new fault origins, reset/triple-fault policy, paging-policy expansion, product UX, public ABI, and source import. No new executor or delivery route. |
 | Reference Baseline | `7d97ff6`; accepted artifact `vm-0-5-0306` / `nxvm_0_5_0306.exe`. |
-| Files And ABI Surface | S3 may change only core CPU 32-bit call-gate/TSS/stack/selector helpers, focused tests, CMake registrations, and task records. It must not alter public interfaces or cross-module ownership. |
+| Files And ABI Surface | S4 may change only core CPU 32-bit call-gate/TSS/stack/selector helpers, focused tests, CMake registrations, and task records. It must not alter public interfaces or cross-module ownership. |
 | Applicable Rules | `rules/EXECUTION.md`, `rules/ARCHITECTURE.md`, `rules/CODING.md`, `rules/DOCUMENT.md`, and `etc/operations/policy/source-policy.md`; retain one core executor/state owner, a single checked stack/memory route, and NXVM behavior. |
 | Verification | Intel 80386 PRM is authoritative. Record versioned read-only Bochs 2.6 and PCjs 2.00.0 behavior paths; do not copy source. Construction uses focused synthetic probes only; full-system observation is closure-only. |
-| Expected Markers | A focused T307 32-bit call-gate marker plus retained T305/T306/T304/T260/T261 markers. S3 creates no artifact. |
+| Expected Markers | The focused T307 32-bit call-gate marker must cover target code/stack and new-stack failure atomicity, plus retained T305/T306/T304/T260/T261 markers. S4 creates no artifact. |
 | Asset Needs | Read-only local references only; no guest media, firmware, or third-party source is committed. |
 | Original Owner Request | Execute the direct M5 80386 protected execution/delivery package in coordinated mode, stopping before Mantle; use Intel as authority with read-only Bochs and PCjs comparison. |
-| Similar-Issue Sweep | Sweep 16/32-bit call-gate decoding, parameter-copy counts, TSS stack reads, frame helpers, selector/cache validators, and retained call-gate probes. Error frames and hardware/NMI completion remain deferred. |
+| Similar-Issue Sweep | Sweep 16/32-bit call-gate target code/stack validation, TSS stack reads, new-stack frame preflight, descriptor accessed-byte publication, and retained call-gate probes. Error frames and hardware/NMI completion remain deferred. |
 | S1 Audit Record | [T307 privilege-transition admission audit](etc/evidence/t307-privilege-transition-admission.md) freezes the admitted 16/32-bit TSS/frame/gate matrix, existing 16-bit path intersections, and implementation batches before changing CPU behavior. |
 | S2 Evidence Record | [T307 privilege-transition admission audit](etc/evidence/t307-privilege-transition-admission.md#s2-common-planner-evidence) records the five-dword normal IDT frame, gate IF/TF behavior, software DPL versus external origin rule, and failure-state preservation. |
 | S3 Evidence Record | [T307 privilege-transition admission audit](etc/evidence/t307-privilege-transition-admission.md#s3-call-gate-planner-evidence) records 32-bit call-gate DPL/type/present checks, target stack and frame order, zero-count and admitted parameter-copy behavior, and failure-state preservation. |
+| S4 Evidence Record | [T307 privilege-transition admission audit](etc/evidence/t307-privilege-transition-admission.md#s4-call-gate-preflight-evidence) records target-code type/present and target-SS/new-stack rejection cases with unchanged CS/SS/EIP/ESP/EFLAGS and relevant descriptor accessed bytes; the Intel-correct but unobservable terminal `#TS(SS0)` is a T308 delivery input. |
 | Stop Conditions | Stop and report an unresolved Intel/reference disagreement, required architecture change, second execution/state path, public raw-layout exposure, or behavior owned by task/V86/paging/later families. |
-| Exit Criteria | S3 passes focused call-gate and retained T305/T306/T304/T260/T261 probes, documentation governance, and diff check. It remains active pending coordinator acceptance; it does not alter Queue, create an artifact, or start error-frame/hardware-NMI work. |
+| Exit Criteria | S4 passes the expanded focused call-gate and retained T305/T306/T304/T260/T261 probes, documentation governance, and diff check. It remains active pending coordinator acceptance; it does not alter Queue, create an artifact, or start error-frame/hardware-NMI work. |
 
 ## Current Technical Baseline
 
