@@ -34,16 +34,17 @@
 
 ## Recent Governance
 
+- **M5 Td S58:** made immediate remote push a cross-mode change-discipline
+  requirement. Every successful task or subtask commit must be pushed before
+  acceptance, closure, or completed-result reporting; a push failure is a
+  reportable delivery failure unless the owner records a bounded deferral.
+
 - **M5 Td S57:** completed the direct 80386 package-close audit. It found no
   T313-level runtime or boundary remediation; corrected stale lifecycle and
   recent-closure records in place; and recorded T301--T312 package completion
   before any separate M6 admission. See the
   [package-close audit](etc/evidence/m5-direct-80386-package-close-audit.md).
 
-- **M5 Td S50:** made principal sections, active-packet fields, Git-derived
-  identifier continuity, supporting-index coverage, and relative Markdown
-  links structural closure gates with controlled negative self-tests. Td work
-  has no history record.
 - **M5 Td S51:** defined ordinary and coordinator/executor execution modes,
   Instructions, report-and-acceptance loops, bounded task packages, and their
   required package-close global governance audit. Td work has no history record.
