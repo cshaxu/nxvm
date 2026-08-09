@@ -207,3 +207,14 @@ after a terminal fault because the public memory API correctly rejects that
 lifecycle state; it verifies the candidate descriptor access byte remains
 `0xBA` and `0x1A`, respectively. No production interface or second memory path
 was added.
+
+## S6 Far-Indirect Closure Evidence
+
+The focused probe now directly covers real-mode memory-indirect `FF /3` far
+`CALL` with its `RETF` continuation and `FF /5` far `JMP`, both through a
+ptr16:16 stored at the real-mode default data address. The protected register
+encodings for the same groups retain first-fault `#UD` and preserve entry EIP,
+ESP, EFLAGS, and CS selector/base/limit. Operand-size-crossing breadth outside
+the admitted ptr16:16 real-mode path remains deferred with the task's broader
+mode matrix; no outer return, gate, task, delivery, or production change was
+needed for S6.
