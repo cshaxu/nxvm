@@ -100,3 +100,39 @@ a permitted implementation base for this task.
 No audit finding requires a public interface change, a second state owner, or
 a reference bridge. T305 S1 changes no CPU behavior, CMake target, artifact,
 Queue entry, or product observation.
+
+## S2 Same-CPL 32-Bit Gate Evidence
+
+`_ser_int_protected` now reads the IDT entry before choosing an entry width.
+`INTGATE_16` continues through the retained 16-bit helper, while only an
+80386 `INTGATE_32` or `TRAPGATE_32` reaches the new
+`_ser_int_protected_32_same` planner. The instruction's decoded operand size
+is validated as an existing instruction form but does not select the frame:
+a `66h INT imm8` to a 32-bit gate still pushes the required three dwords.
+
+The planner is intentionally limited to the S2 software `INT imm8`, same-CPL,
+non-conforming-code case. It validates the IDT range, gate type, present bit,
+software DPL, target selector/type/present state, target offset, and the full
+old-stack frame range before descriptor access, frame writes, CS/EIP, or flags
+are published. A successful interrupt gate clears IF and TF; a trap gate
+preserves IF and clears TF. The frame at new ESP is saved EIP, zero-extended
+CS, then saved EFLAGS. `INT3` with a 32-bit operand form, `INTO`, external
+interrupts, protected fault delivery, V86, inter-privilege entry, task gates,
+and 16-bit trap gates remain deferred and do not enter this planner.
+
+`tests/machine/core_machine_interrupt_entry_smoke.c` is the prepared-state
+focused synthetic probe. It proves both 32-bit gate types, gate-type rather
+than `66h` frame width, exact dword frame order, interrupt/trap IF behavior,
+TF clearing, and successful target-code accessed-byte publication. Its IDT
+limit/type/DPL/present, target code type/present/limit, and stack-limit cases
+assert the first fault plus unchanged CS selector/base/limit, EIP, ESP,
+EFLAGS, and descriptor access byte. The marker is
+`M5:T305:INTERRUPT-ENTRY:OK`.
+
+The S2 sweep revisited `_ser_int_protected`, `_ser_int_protected_16`,
+`_ser_int_protected_32_same`, `_e_int3`, `_e_into`, `_e_int_n`, `_e_intr_n`,
+`_e_except_n`, IDT/selector preparation, stack preflight, and the retained
+T257/T259 probes. No hit requires a second executor, state owner, public
+interface, PIC change, or exception-delivery rewrite. The retained 16-bit
+protected-mode and privilege/atomicity probes pass; hardware, `INT3`, `INTO`,
+fault, and outer/CPL-transition semantics remain S3/S4 or later-family work.
