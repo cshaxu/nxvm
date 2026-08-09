@@ -218,3 +218,32 @@ ESP, EFLAGS, and CS selector/base/limit. Operand-size-crossing breadth outside
 the admitted ptr16:16 real-mode path remains deferred with the task's broader
 mode matrix; no outer return, gate, task, delivery, or production change was
 needed for S6.
+
+## S7 Closure-Preparation Evidence
+
+The current artifact target is `vm-0-5-0303`; the retained executable is
+`nxvm_0_5_0303.exe` with SHA-256
+`099CFB4DB65D791FD32703ACBDF737655258AB4A00836C4CA99764553FC01F24`.
+
+The focused control-transfer probe emitted `M5:T303:CONTROL-TRANSFER:OK`.
+Retained checks emitted `M5:T302:OPERAND-ADDRESS-STACK:OK`,
+`M5:T287:S24:REAL-MODE-386-ADDR32:OK`,
+`M5:T293:S2:PROTECTED-RETURN-ATOMICITY:OK`,
+`M5:T288:S2:CALL-GATE-16:OK`, and the three retained task-switch markers
+`M5:T261:S2:TASK-SWITCH:OK`, `M5:T261:S3:TASK-SWITCH:CORPUS:OK`, and
+`M5:T261:S5:SS-CACHE:OK`. Expected negative fault diagnostics in those
+focused probes are asserted paths, not product failures.
+
+`current-gates-gcc` completed its 51 static/governance targets and all
+132/132 CTests. Documentation governance and `git diff --check` also passed.
+
+The one bounded owner-supplied product observation did not reach a guest
+command or Setup checkpoint: after 45 seconds the NXVM process was alive, but
+host automation found no main-window handle. The process was then stopped; no
+guest input, guest stdout/stderr observation, or process residue was used as
+evidence. This is a host-automation limitation retained for owner-controlled
+manual observation, not a CPU or product regression and not a reason for a
+retry or repair in T303.
+
+T303 remains active pending coordinator acceptance. This record is closure
+preparation only; it neither closes T303 nor advances the Queue.
