@@ -5,6 +5,7 @@
 #include "../support/core_machine_cpu_fixture.h"
 
 #define CG_GDT_BASE 0x0300u
+#define CG_IDT_BASE 0x0400u
 #define CG_TSS_BASE 0x0600u
 #define CG_KERNEL_CODE_BASE 0x2000u
 #define CG_USER_CODE_BASE 0x3000u
@@ -23,6 +24,12 @@ typedef enum call_gate_target_failure {
     CALL_GATE_TARGET_STACK_SELECTOR,
     CALL_GATE_TARGET_STACK_BOUNDARY
 } call_gate_target_failure;
+
+typedef enum call_gate_ts_delivery_failure {
+    CALL_GATE_TS_DELIVERY_INVALID_GATE,
+    CALL_GATE_TS_DELIVERY_NONPRESENT_GATE,
+    CALL_GATE_TS_DELIVERY_STACK_LIMIT
+} call_gate_ts_delivery_failure;
 
 static C_VOID cg_reset(C_VOID *opaque)
 {
@@ -148,6 +155,19 @@ static C_INT cg_run(call_gate_privilege_machine *state, C_INT expect_fault,
             CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT);
 }
 
+static C_INT cg_run_budget(call_gate_privilege_machine *state, t_cpu *out_cpu,
+    core_machine_cpu_diagnostic *out_diagnostic)
+{
+    const core_machine_run_budget budget = {32u, 0u};
+    core_machine_run_result result;
+    type_status status = core_machine_run(state->machine, budget, &result);
+
+    if (core_machine_get_cpu_diagnostic(state->machine, out_diagnostic) !=
+        TYPE_STATUS_OK) return 0;
+    *out_cpu = test_core_machine_fixture_capture_cpu_after_run(state->machine);
+    return status == TYPE_STATUS_OK && result.reason == CORE_MACHINE_STOP_BUDGET;
+}
+
 static C_INT cg_fault_is(const core_machine_cpu_diagnostic *diagnostic,
     uint32_t mask, uint32_t code)
 {
@@ -164,6 +184,37 @@ static C_INT cg_entry_state_equal(const t_cpu *before, const t_cpu *after)
         STD_MEMCMP(&before->data.cs, &after->data.cs,
             sizeof(before->data.cs)) == 0 && STD_MEMCMP(&before->data.ss,
             &after->data.ss, sizeof(before->data.ss)) == 0;
+}
+
+static C_INT cg_install_ts_delivery_gate(call_gate_privilege_machine *state,
+    uint8_t access)
+{
+    uint8_t gate[8] = {0};
+    t_cpu *cpu;
+
+    if (state == STD_NULL || state->machine == STD_NULL) return 0;
+    gate[0] = CG_HANDLER_OFFSET & 0xffu;
+    gate[1] = CG_HANDLER_OFFSET >> 8u;
+    gate[2] = 0x1bu;
+    gate[5] = access;
+    cpu = &state->machine->executor_cpu;
+    cpu->data.idtr.flagValid = TYPE_TRUE;
+    cpu->data.idtr.sregtype = SREG_IDTR;
+    cpu->data.idtr.base = CG_IDT_BASE;
+    cpu->data.idtr.limit = 10u * 8u + 7u;
+    return cg_write(state, CG_IDT_BASE + 10u * 8u, gate, sizeof(gate)) &&
+        cg_write(state, CG_USER_CODE_BASE + CG_HANDLER_OFFSET,
+            (const uint8_t[]){0xebu,0xfeu}, 2u);
+}
+
+static C_INT cg_prepare_ts_delivery(call_gate_privilege_machine *state,
+    uint8_t gate_access)
+{
+    uint16_t invalid_ss0 = 0x0013u;
+
+    return cg_prepare(state, 0xecu, 0u) &&
+        cg_write(state, CG_TSS_BASE + 8u, &invalid_ss0, sizeof(invalid_ss0)) &&
+        cg_install_ts_delivery_gate(state, gate_access);
 }
 
 static C_INT cg_test_success(uint8_t count)
@@ -353,6 +404,71 @@ static C_INT cg_test_target_failure_atomic(call_gate_target_failure failure,
     return !failed;
 }
 
+static C_INT cg_test_ts_delivery(C_VOID)
+{
+    call_gate_privilege_machine state;
+    core_machine_cpu_diagnostic diagnostic;
+    t_cpu after;
+    uint32_t frame[4] = {0u,0u,0u,0u};
+    C_INT failed = !cg_prepare_ts_delivery(&state, 0xeeu);
+
+    if (!failed) {
+        failed |= !cg_run_budget(&state, &after, &diagnostic) ||
+            diagnostic.first_fault.valid ||
+            !diagnostic.last_delivered_exception.valid ||
+            diagnostic.delivered_exception_count != 1u ||
+            !TYPE_GET_BIT(diagnostic.last_delivered_exception.exception_mask,
+                VCPUINS_EXCEPT_TS) ||
+            diagnostic.last_delivered_exception.exception_code != 0x0010u ||
+            after.data.cs.selector != 0x001bu ||
+            after.data.ss.selector != 0x0023u ||
+            after.data.eip != CG_HANDLER_OFFSET ||
+            after.data.esp != 0x000087f0u ||
+            !cg_read(&state, after.data.esp, frame, sizeof(frame)) ||
+            frame[0] != 0x0010u || frame[1] != 0u ||
+            frame[2] != 0x0000001bu || frame[3] != 0x00000202u;
+    }
+    core_machine_destroy(state.machine);
+    return !failed;
+}
+
+static C_INT cg_test_ts_delivery_failure(call_gate_ts_delivery_failure failure)
+{
+    call_gate_privilege_machine state;
+    core_machine_cpu_diagnostic diagnostic;
+    t_cpu before;
+    t_cpu after;
+    uint8_t access_before = 0u;
+    uint8_t access_after = 0u;
+    uint32_t stack_before[4] = {0u,0u,0u,0u};
+    uint32_t stack_after[4] = {0u,0u,0u,0u};
+    uint8_t gate_access = 0xeeu;
+    C_INT failed;
+
+    if (failure == CALL_GATE_TS_DELIVERY_INVALID_GATE) gate_access = 0x80u;
+    if (failure == CALL_GATE_TS_DELIVERY_NONPRESENT_GATE) gate_access = 0x6eu;
+    failed = !cg_prepare_ts_delivery(&state, gate_access);
+    if (!failed && failure == CALL_GATE_TS_DELIVERY_STACK_LIMIT)
+        state.machine->executor_cpu.data.ss.limit = 0x000087feu;
+    if (!failed) {
+        before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        failed |= !cg_read(&state, CG_GDT_BASE + 29u, &access_before,
+            sizeof(access_before)) || !cg_read(&state, 0x000087f0u,
+            stack_before, sizeof(stack_before)) || !cg_run(&state, 1, &after,
+            &diagnostic) || !cg_fault_is(&diagnostic, VCPUINS_EXCEPT_TS,
+            0x0010u) || diagnostic.last_delivered_exception.valid ||
+            diagnostic.delivered_exception_count != 0u ||
+            !cg_read(&state, CG_GDT_BASE + 29u, &access_after,
+                sizeof(access_after)) || !cg_read(&state, 0x000087f0u,
+                stack_after, sizeof(stack_after)) ||
+            !cg_entry_state_equal(&before, &after) ||
+            access_after != access_before || STD_MEMCMP(stack_before, stack_after,
+                sizeof(stack_before)) != 0;
+    }
+    core_machine_destroy(state.machine);
+    return !failed;
+}
+
 int main(void)
 {
     C_INT failed = !cg_test_success(0u) || !cg_test_success(2u) ||
@@ -371,9 +487,13 @@ int main(void)
         !cg_test_target_failure_atomic(CALL_GATE_TARGET_STACK_SELECTOR,
             VCPUINS_EXCEPT_TS, 0x0010u) ||
         !cg_test_target_failure_atomic(CALL_GATE_TARGET_STACK_BOUNDARY,
-            VCPUINS_EXCEPT_SS, 0u);
+            VCPUINS_EXCEPT_SS, 0u) || !cg_test_ts_delivery() ||
+        !cg_test_ts_delivery_failure(CALL_GATE_TS_DELIVERY_INVALID_GATE) ||
+        !cg_test_ts_delivery_failure(CALL_GATE_TS_DELIVERY_NONPRESENT_GATE) ||
+        !cg_test_ts_delivery_failure(CALL_GATE_TS_DELIVERY_STACK_LIMIT);
 
     if (failed) return 1;
     STD_PRINTF("M5:T307:CALL-GATE-PRIVILEGE-ENTRY:OK\n");
+    STD_PRINTF("M5:T308:S3:SAME-CPL-TS-DELIVERY:OK\n");
     return 0;
 }

@@ -123,3 +123,40 @@ hardware/NMI origin, double/triple-fault conversion, task and virtual-8086
 paths, and paging remain deferred exactly as frozen in S1. The focused marker
 is `M5:T308:S2:SAME-CPL-ERROR-DELIVERY:OK`; retained T301/T304/T305/T306/T307
 probes remain required closure evidence.
+
+## S3 Same-CPL #TS Delivery Evidence
+
+Intel 80386 protected-mode exception delivery assigns `#TS` to vector 10.
+For the already admitted 80386 path, `ExecFinal` now maps an exact terminal
+`#TS` to vector 10 and reuses the existing `_e_except_n` to
+`_ser_int_protected_32_same` route. The mapping keeps the producer's exact
+`instruction_state.data.excode`; it does not add a dispatcher, normalize
+`#TS` to `#GP` or `#SS`, or change bit-combined terminal failures.
+
+The expanded `core-machine-call-gate-privilege-entry-smoke` focused synthetic
+probe uses the existing T307 32-bit call-gate target-SS selector failure. A
+TSS `SS0` selector with invalid RPL produces `#TS(0010)`. With a valid
+same-CPL vector-10 32-bit gate, the delivered diagnostic records vector 10
+and code `0010`; the copied guest frame at the current user stack is, in
+ascending dword order, error code `00000010`, saved EIP `00000000`, saved CS
+`0000001b`, and EFLAGS `00000202`. The handler is a bounded user-mode loop,
+so its observation cannot introduce the privileged `HLT` fault that would
+obscure the delivered result.
+
+The same focused probe makes the vector-10 gate invalid, non-present, and
+preflight-failing through the current SS limit. Each case retains the
+original terminal `#TS(0010)`, creates no delivered-exception record, and
+keeps EIP, ESP, EFLAGS, complete CS/SS caches, the target-code accessed byte,
+and the candidate frame memory unchanged. This proves that failed vector-10
+delivery follows the existing preflight-then-restore boundary.
+
+The S3 similar-issue sweep covered all `_SetExcept_TS` producers and the
+16-bit and 32-bit same-CPL consumers. The retained producers include selector
+and task-register validation, 16/32-bit interrupt planners, protected return
+checks, and the T307 call-gate target-stack checks. Only the exact 80386
+terminal `#TS` enters the newly admitted vector-10 mapping. The 16-bit
+same-CPL planner remains unchanged, while outer-CPL error frames,
+hardware/NMI, double/triple fault containment, task and virtual-8086 paths,
+and paging remain deferred. The marker is
+`M5:T308:S3:SAME-CPL-TS-DELIVERY:OK`; the retained T301/T304/T305/T306/T307
+focused probes remain required evidence.
