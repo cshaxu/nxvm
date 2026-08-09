@@ -145,4 +145,8 @@ type_status core_machine_register_immutable_rom_mapping_from_firmware(
     STD_SIZE_T bytes);
 C_VOID core_machine_rollback_immutable_rom_mappings(core_machine *machine,
     STD_SIZE_T mapping_count);
+/* Private test-only create seam; the public create contract remains unchanged. */
+type_status core_machine_create_with_test_memory_allocation(
+    const core_machine_config *config, core_machine **out_machine,
+    core_machine_memory_test_allocation *test_allocation);
 #endif

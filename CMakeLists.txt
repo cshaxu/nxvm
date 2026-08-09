@@ -1061,6 +1061,11 @@ target_link_libraries(core-machine-executor-run-smoke PRIVATE
     core-machine
 )
 
+add_executable(core-machine-ram-create-smoke
+    tests/machine/core_machine_ram_create_smoke.c
+)
+target_link_libraries(core-machine-ram-create-smoke PRIVATE core-machine)
+
 add_library(vdm-machine STATIC
     src/vdm/machine/dos_minimal.c
 )
@@ -1101,6 +1106,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     vm-two-session-isolation-smoke
     vm-core-executor-storage-smoke
     core-machine-executor-run-smoke
+    core-machine-ram-create-smoke
     core-machine-time-smoke
     core-machine-scheduler-smoke
     core-machine-timing-checkpoint-smoke

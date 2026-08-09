@@ -956,11 +956,13 @@ type_status core_machine_capture_observation(
     return TYPE_STATUS_OK;
 }
 
-type_status core_machine_create(
+static type_status core_machine_create_internal(
     const core_machine_config *config,
-    core_machine **out_machine)
+    core_machine **out_machine,
+    core_machine_memory_test_allocation *test_allocation)
 {
     core_machine *machine;
+    STD_SIZE_T memory_bytes;
     if (config == STD_NULL || out_machine == STD_NULL ||
         !core_machine_valid_cpu_profile(
             core_machine_resolve_cpu_profile(config->cpu_profile)) ||
@@ -970,6 +972,8 @@ type_status core_machine_create(
     }
 
     *out_machine = STD_NULL;
+    memory_bytes = config->memory_bytes == 0u ?
+        CORE_MACHINE_DEFAULT_MEMORY_BYTES : config->memory_bytes;
 
     machine = (core_machine *)STD_CALLOC(1u, sizeof(*machine));
     if (machine == STD_NULL) {
@@ -1022,13 +1026,10 @@ type_status core_machine_create(
         core_machine_destroy(machine);
         return TYPE_STATUS_NO_MEMORY;
     }
-    core_machine_memory_initialize(&machine->executor_memory);
-    if (config->memory_bytes != 0u) {
-        if (core_machine_memory_allocate_for(&machine->executor_memory,
-                config->memory_bytes) != TYPE_STATUS_OK) {
-            core_machine_destroy(machine);
-            return TYPE_STATUS_NO_MEMORY;
-        }
+    if (core_machine_memory_initialize_for(&machine->executor_memory,
+            memory_bytes, test_allocation) != TYPE_STATUS_OK) {
+        core_machine_destroy(machine);
+        return TYPE_STATUS_NO_MEMORY;
     }
     core_machine_memory_register_ports(&machine->executor_memory,
         &machine->executor_port);
@@ -1059,6 +1060,19 @@ type_status core_machine_create(
     *out_machine = machine;
 
     return TYPE_STATUS_OK;
+}
+
+type_status core_machine_create(const core_machine_config *config,
+    core_machine **out_machine)
+{
+    return core_machine_create_internal(config, out_machine, STD_NULL);
+}
+
+type_status core_machine_create_with_test_memory_allocation(
+    const core_machine_config *config, core_machine **out_machine,
+    core_machine_memory_test_allocation *test_allocation)
+{
+    return core_machine_create_internal(config, out_machine, test_allocation);
 }
 
 static type_status core_machine_cold_reset(core_machine *machine)
