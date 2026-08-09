@@ -14175,7 +14175,7 @@ static C_VOID INS_FF(core_machine_cpu_execution_context *context)
             break;
         case 3: /* CALL_M16_32 */
             TYPE_TRACE_BLOCK_BEGIN("CALL_M16_32");
-            TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize + 2));
+            TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize));
             if (!instruction_state.data.flagMem)
             {
                 TYPE_TRACE_BLOCK_BEGIN("flagMem(0)");
@@ -14200,7 +14200,7 @@ static C_VOID INS_FF(core_machine_cpu_execution_context *context)
             break;
         case 5: /* JMP_M16_32 */
             TYPE_TRACE_BLOCK_BEGIN("JMP_M16_32");
-            TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize + 2));
+            TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize));
             if (!instruction_state.data.flagMem)
             {
                 TYPE_TRACE_BLOCK_BEGIN("flagMem(0)");
@@ -14266,7 +14266,7 @@ static C_VOID INS_FF(core_machine_cpu_execution_context *context)
             break;
         case 3: /* CALL_M16_16 */
             TYPE_TRACE_BLOCK_BEGIN("CALL_M16_16");
-            TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 4));
+            TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 2));
             if (!instruction_state.data.flagMem)
             {
                 TYPE_TRACE_BLOCK_BEGIN("flagMem(0)");
@@ -14291,7 +14291,7 @@ static C_VOID INS_FF(core_machine_cpu_execution_context *context)
             break;
         case 5: /* JMP_M16_16 */
             TYPE_TRACE_BLOCK_BEGIN("JMP_M16_16");
-            TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 4));
+            TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 2));
             if (!instruction_state.data.flagMem)
             {
                 TYPE_TRACE_BLOCK_BEGIN("flagMem(0)");
