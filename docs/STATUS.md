@@ -2,35 +2,15 @@
 
 ## Current Work
 
-**Active: M5 T303 S7.**
-
-## M5 T303 S7 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Corrective; M5 T303 S7 family-closure preparation; Coordinated Dual-Session Mode. S6 completed real-mode far-indirect and register-form `#UD` entry-state evidence; S7 runs bounded closure verification only. |
-| Admission And Approval | Owner approved the direct M5 80386 32-bit protected execution/delivery package and instructed coordinator/executor execution through the package, stopping before Mantle. T302 is closed; T303 is the next approved Queue candidate. |
-| Objective | Admit the 80386 32-bit same-privilege control-transfer family: near/far `JMP`, `CALL`, `RET`, `RETF`, conditional-relative and loop-family forms, including operand-size variants, code-limit checks, return-frame ordering, and failure-before-visible-commit rules. Freeze exact form/profile/mode and commit matrices before implementation. |
-| Non-goals | Privilege transitions, call gates, task switching, interrupt/exception delivery, descriptor/system changes, paging policy, virtual-8086, stack primitive rework already closed by T302, host/product UX, external ABI, and source import. No new executor or execution path. |
-| Reference Baseline | `95950e0`; current artifact `vm-0-5-0303` / `nxvm_0_5_0303.exe`. |
-| Files And ABI Surface | Initial audit may inspect core CPU control-transfer, stack, descriptor, and fault helpers plus focused tests/CMake and task/governance records. It must not change public core interfaces or cross-module ownership. |
-| Applicable Rules | `rules/EXECUTION.md`, `rules/ARCHITECTURE.md`, `rules/CODING.md`, `rules/DOCUMENT.md`, and `etc/operations/policy/source-policy.md`; retain one core executor/state owner, core-to-VM dependency direction, and NXVM Console/debugger/boot behavior. |
-| Verification | Intel 80386 PRM is authoritative; S1 records exact instruction entries and sections. Read-only comparison records relevant Bochs 2.6 and PCjs 2.00.0 behavior paths and versions; do not copy source. Project verification uses focused synthetic probes, not long-start guest fixtures. Implementation later runs focused probes, `current-gates-gcc`, documentation governance, `git diff --check`, one task artifact, and one owner-supplied Setup observation after family closure. |
-| Expected Markers | S1 emits an audit record only. The later family probe marker is `M5:T303:CONTROL-TRANSFER:OK`; its task artifact is created only when CMake's current target is updated during implementation. |
-| Asset Needs | Local read-only reference checkouts and owner-supplied local Setup media may be observed but are never committed, packaged, or made default-build inputs. |
-| Stop Conditions | Stop and report on Intel/reference disagreement not resolved by a bounded optional bridge, a required architecture change, a second executor/state path, raw public-layout exposure, retained Console/debugger/boot regression, or a form owned by privilege/exception/task/V86 work. |
-| Exit Criteria | The frozen S1--S6 far-control matrix remains satisfied. Focused probes, full `current-gates-gcc`, documentation governance, and `git diff --check` pass; the current artifact target is advanced during closure; one bounded owner-supplied Setup observation is recorded without claiming a checkpoint if host automation prevents guest interaction. No outer return, gate, task, delivery, or later-family work is introduced. |
-| Original Owner Request | Execute the 80386 task package in dual-session mode through the Mantle boundary; use Intel, Bochs, and PCjs to establish logic, observe Setup once per task, and use the optional bridge when uncertain. |
-| Similar-Issue Sweep | Audit all near/far branch, call, return, condition/loop, code-limit, stack-frame, selector/cache, and fault/commit helpers in `src`, `tests`, and CMake. Each production-path hit must be classified in the S1 record; do not silently widen scope. |
-| S1 Audit Record | [T303 control-transfer admission audit](etc/evidence/t303-control-transfer-admission.md) freezes the form/profile/mode, fault/commit, focused-probe, and deferred-owner matrices without changing CPU behavior. |
+**Idle.**
 
 ## Current Technical Baseline
 
-- **T303 artifact identity:** `current-gcc` and
+- **T303 accepted artifact identity:** `current-gcc` and
   `verify-current-artifact-target` select `vm-0-5-0303` / `nxvm_0_5_0303.exe`.
   The S7 build hash, full-gate result, and bounded product-observation
   limitation are recorded in [the T303 evidence record](etc/evidence/t303-control-transfer-admission.md).
-  T303 remains active pending coordinator acceptance.
+  T303 is accepted; T304 is the next linear candidate.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
@@ -45,7 +25,6 @@
 
 | Task | Compact result |
 | --- | --- |
-| T295 | Moved CPU execution-to-shared-PIC binding into `core_machine_create`; VM session no longer borrows or binds that path. CPU/PIC lifecycle evidence and all current gates passed; RTC/FDC/HDC/DMA remain T296 and debugger raw borrows remain T298/T299. |
 | T296 | Completed A VADP/ports, B DMA/RTC/CMOS/NMI, and C FDC/HDC ownership migration through frozen typed core submissions. S2 `e84199e`, S3 `a02a0f0`, and S4 `fa18847d0aed685554f786c89ba0f5908e539fb7` passed focused owner/lifecycle evidence and the final 49-gate, 125-test verification; T298--T299 remained deferred at this closure. |
 | T297 | Replaced default firmware raw profile binding with an opaque core-invoked capability for checked memory/port I/O and stop requests. Configure-time immutable ROM registration now rolls back atomically on callback failure; default BIOS/QDCGA, boot failure, 49 gates, and 126/126 CTests are closed without product UX change. |
 | T298 | Replaced formal debugger raw CPU/instruction/execution/RAM/port borrows with paused-or-stopped named core operations and copied observations. The retained Console/debugger UX passed focused checks and the 126-test regression suite without a global target or second execution path. |
@@ -53,6 +32,7 @@
 | T300 | Unified the core directional port registry, propagated typed-provider failures, made VM session initialization failure-atomic, and removed public private layouts. The DMA binding uses a core-issued non-addressable nonce and core-internal revalidation; 51 static/governance gates and 129 CTests passed with its task-level developer artifact. |
 | T301 | Completed the 80386 segment-selector family, including atomic segment loads and selector queries. The S4 sweep corrected non-present query handling and system-descriptor DPL/RPL visibility; 51 static/governance checks, 130 CTests, and the T301 artifact passed. The bounded product observation reached no guest checkpoint because host window discovery failed before guest input; manual observation remains verification-only. |
 | T302 | Completed the 80386 operand/address/stack family. It corrected 16-bit fetch wrapping, crossed stack/frame width behavior, shared zero-length range validation, and `OUTSB` direction; all 131 CTests and its 0302 artifact passed. Product observation yielded no guest checkpoint because the process had no discoverable window handle; manual observation remains verification-only. |
+| T303 | Completed the 80386 same-privilege control-transfer family. It fixed `LOOP` target-fault count publication, `CALL ptr16:32` decode width, same-CPL `RETF` DPL/RPL validation, and far-indirect register `#UD`; 51 gates, 132 CTests, and the 0303 artifact passed. Product observation remained host-window limited before guest input. |
 
 ## Recent Governance
 
