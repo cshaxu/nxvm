@@ -1,14 +1,14 @@
 # M5 T301: Segment Selector Family
 
-## Implementation Record Pending Coordinator Acceptance
+## Implementation Record
 
 T301 implements the admitted 80386 segmentation and selector-instruction
 family in the single core CPU executor: `MOV`/`POP` segment loads,
 `LDS`/`LES`/`LFS`/`LGS`/`LSS`, `ARPL`, `LAR`, `LSL`, `VERR`, and `VERW`.
 It neither adds a second executor or state owner nor changes Console,
 debugger, boot, or media behavior. The active S4 packet and current artifact
-remain authoritative in [STATUS.md](../STATUS.md); this record is awaiting the
-coordinator's independent acceptance rather than closing the task.
+remain authoritative in [STATUS.md](../STATUS.md); the coordinator independently
+accepted the implementation evidence and closed the task.
 
 ## Reference Conclusion
 
@@ -64,8 +64,7 @@ untracked defects.
   `M5:T263:S3:ARPL:CORPUS:OK`.
 - `cmake --build --preset current-gates-gcc` passed 51 static/governance
   targets and 130/130 CTests, including documentation governance.
-- `git diff --check` passed before the pending documentation update; it is
-  rerun with the final S4 tree before coordinator review.
+- `git diff --check` passed with the final S4 tree before coordinator review.
 
 The S4 non-functional gate repair changed
 `cmake/verify_request_transport_closure.cmake` to read the existing detailed
