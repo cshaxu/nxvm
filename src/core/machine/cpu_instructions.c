@@ -2460,9 +2460,13 @@ static C_VOID _d_modrm_sreg(core_machine_cpu_execution_context *context, type_un
         instruction_state.data.rmovsreg = &cpu_state.data.ds;
         break;
     case 4:
+        if (context->cpu_profile < CORE_MACHINE_CPU_PROFILE_80386)
+            TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
         instruction_state.data.rmovsreg = &cpu_state.data.fs;
         break;
     case 5:
+        if (context->cpu_profile < CORE_MACHINE_CPU_PROFILE_80386)
+            TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
         instruction_state.data.rmovsreg = &cpu_state.data.gs;
         break;
     default:
@@ -4281,6 +4285,47 @@ static C_VOID _e_load_far(core_machine_cpu_execution_context *context, t_cpu_dat
         TYPE_TRACE_BLOCK_END;
         break;
     }
+    if (rsreg->sregtype == SREG_STACK)
+        instruction_state.data.flagMaskInt = TYPE_TRUE;
+    TYPE_TRACE_CALL_END;
+}
+static C_VOID _e_pop_sreg(core_machine_cpu_execution_context *context,
+    t_cpu_data_sreg *rsreg, type_unsigned_8 byte)
+{
+    type_unsigned_32 selector;
+    type_unsigned_32 cesp;
+
+    TYPE_TRACE_CALL_BEGIN("_e_pop_sreg");
+    switch (_GetStackSize)
+    {
+    case 2:
+        cesp = cpu_state.data.sp;
+        break;
+    case 4:
+        cesp = cpu_state.data.esp;
+        break;
+    default:
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
+        break;
+    }
+    TYPE_TRACE_CHECK_RETURN(_s_read_ss(context, cesp, TYPE_REFERENCE_OF(selector),
+        byte));
+    TYPE_TRACE_CHECK_RETURN(_s_load_sreg(context, rsreg,
+        TYPE_MASK_UNSIGNED_16(selector)));
+    switch (_GetStackSize)
+    {
+    case 2:
+        cpu_state.data.sp += byte;
+        break;
+    case 4:
+        cpu_state.data.esp += byte;
+        break;
+    default:
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
+        break;
+    }
+    if (rsreg->sregtype == SREG_STACK)
+        instruction_state.data.flagMaskInt = TYPE_TRUE;
     TYPE_TRACE_CALL_END;
 }
 static C_VOID _e_loopcc(core_machine_cpu_execution_context *context, type_signed_8 csrc, type_bool condition)
@@ -6314,7 +6359,7 @@ core_machine_cpu_instruction_metadata core_machine_cpu_instruction_metadata_get(
         if (opcode == 0x00u)
         {
             metadata.minimum_cpu = CORE_MACHINE_CPU_PROFILE_80286;
-            metadata.valid = ((modrm >> 3u) & 7u) <= 3u;
+            metadata.valid = ((modrm >> 3u) & 7u) <= 5u;
         }
         else if (opcode == 0x01u)
         {
@@ -6604,9 +6649,6 @@ static C_VOID PUSH_ES(core_machine_cpu_execution_context *context)
 }
 static C_VOID POP_ES(core_machine_cpu_execution_context *context)
 {
-    /* note: not sure if operand size is 32,
-        push/pop selector only or with higher 16 bit */
-    type_unsigned_32 xs_sel;
     TYPE_TRACE_CALL_BEGIN("POP_ES");
     if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
     {
@@ -6616,8 +6658,8 @@ static C_VOID POP_ES(core_machine_cpu_execution_context *context)
     {
         cpu_state.data.ip++;
     }
-    TYPE_TRACE_CHECK_RETURN(_e_pop(context, TYPE_REFERENCE_OF(xs_sel), _GetOperandSize));
-    TYPE_TRACE_CHECK_RETURN(_s_load_es(context, TYPE_MASK_UNSIGNED_16(xs_sel)));
+    TYPE_TRACE_CHECK_RETURN(_e_pop_sreg(context, &cpu_state.data.es,
+        _GetOperandSize));
     TYPE_TRACE_CALL_END;
 }
 static C_VOID OR_RM8_R8(core_machine_cpu_execution_context *context)
@@ -6963,9 +7005,6 @@ static C_VOID PUSH_SS(core_machine_cpu_execution_context *context)
 }
 static C_VOID POP_SS(core_machine_cpu_execution_context *context)
 {
-    /* note: not sure if operand size is 32,
-        push/pop selector only or with higher 16 bit */
-    type_unsigned_32 xs_sel;
     TYPE_TRACE_CALL_BEGIN("POP_SS");
     if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
     {
@@ -6975,8 +7014,8 @@ static C_VOID POP_SS(core_machine_cpu_execution_context *context)
     {
         cpu_state.data.ip++;
     }
-    TYPE_TRACE_CHECK_RETURN(_e_pop(context, TYPE_REFERENCE_OF(xs_sel), _GetOperandSize));
-    TYPE_TRACE_CHECK_RETURN(_s_load_ss(context, TYPE_MASK_UNSIGNED_16(xs_sel)));
+    TYPE_TRACE_CHECK_RETURN(_e_pop_sreg(context, &cpu_state.data.ss,
+        _GetOperandSize));
     TYPE_TRACE_CALL_END;
 }
 static C_VOID SBB_RM8_R8(core_machine_cpu_execution_context *context)
@@ -7128,9 +7167,6 @@ static C_VOID PUSH_DS(core_machine_cpu_execution_context *context)
 }
 static C_VOID POP_DS(core_machine_cpu_execution_context *context)
 {
-    /* note: not sure if operand size is 32,
-        push/pop selector only or with higher 16 bit */
-    type_unsigned_32 xs_sel;
     TYPE_TRACE_CALL_BEGIN("POP_DS");
     if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
     {
@@ -7140,8 +7176,8 @@ static C_VOID POP_DS(core_machine_cpu_execution_context *context)
     {
         cpu_state.data.ip++;
     }
-    TYPE_TRACE_CHECK_RETURN(_e_pop(context, TYPE_REFERENCE_OF(xs_sel), _GetOperandSize));
-    TYPE_TRACE_CHECK_RETURN(_s_load_ds(context, TYPE_MASK_UNSIGNED_16(xs_sel)));
+    TYPE_TRACE_CHECK_RETURN(_e_pop_sreg(context, &cpu_state.data.ds,
+        _GetOperandSize));
     TYPE_TRACE_CALL_END;
 }
 static C_VOID AND_RM8_R8(core_machine_cpu_execution_context *context)
@@ -10141,24 +10177,19 @@ static C_VOID MOV_SREG_RM16(core_machine_cpu_execution_context *context)
     {
         _adv;
         TYPE_TRACE_CHECK_RETURN(_d_modrm_sreg(context, 2));
-        if (instruction_state.data.rmovsreg->sregtype == SREG_CODE)
-        {
-            TYPE_TRACE_BLOCK_BEGIN("sregtype(SREG_CODE)");
-            TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
-            TYPE_TRACE_BLOCK_END;
-        }
-        TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
-        TYPE_TRACE_CHECK_RETURN(_s_load_sreg(context, instruction_state.data.rmovsreg, TYPE_MASK_UNSIGNED_16(instruction_state.data.crm)));
-        if (instruction_state.data.rmovsreg->sregtype == SREG_STACK)
-            instruction_state.data.flagMaskInt = TYPE_TRUE;
     }
     else
     {
         cpu_state.data.ip++;
-        _d_modrm_sreg(context, 2);
-        TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
-        TYPE_TRACE_CHECK_RETURN(_s_load_sreg(context, instruction_state.data.rmovsreg, TYPE_MASK_UNSIGNED_16(instruction_state.data.crm)));
+        TYPE_TRACE_CHECK_RETURN(_d_modrm_sreg(context, 2));
     }
+    if (instruction_state.data.rmovsreg->sregtype == SREG_CODE)
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
+    TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
+    TYPE_TRACE_CHECK_RETURN(_s_load_sreg(context, instruction_state.data.rmovsreg,
+        TYPE_MASK_UNSIGNED_16(instruction_state.data.crm)));
+    if (instruction_state.data.rmovsreg->sregtype == SREG_STACK)
+        instruction_state.data.flagMaskInt = TYPE_TRUE;
     TYPE_TRACE_CALL_END;
 }
 static C_VOID INS_8F(core_machine_cpu_execution_context *context)
@@ -12209,13 +12240,8 @@ static C_VOID LES_R32_M16_32(core_machine_cpu_execution_context *context)
     if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
     {
         _adv;
-        TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize + 2));
-        if (!instruction_state.data.flagMem)
-        {
-            TYPE_TRACE_BLOCK_BEGIN("flagMem(0)");
-            TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
-            TYPE_TRACE_BLOCK_END;
-        }
+        TYPE_TRACE_CHECK_RETURN(_d_modrm_ea(context, _GetOperandSize,
+            _GetOperandSize));
         TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
         switch (_GetOperandSize)
         {
@@ -12237,7 +12263,7 @@ static C_VOID LES_R32_M16_32(core_machine_cpu_execution_context *context)
     else
     {
         cpu_state.data.ip++;
-        _d_modrm(context, 2, 4);
+        TYPE_TRACE_CHECK_RETURN(_d_modrm_ea(context, 2, 2));
         TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
         offset = TYPE_MASK_UNSIGNED_16(instruction_state.data.crm);
         instruction_state.data.mrm.offset += 2;
@@ -12255,13 +12281,8 @@ static C_VOID LDS_R32_M16_32(core_machine_cpu_execution_context *context)
     if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
     {
         _adv;
-        TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize + 2));
-        if (!instruction_state.data.flagMem)
-        {
-            TYPE_TRACE_BLOCK_BEGIN("flagMem(0)");
-            TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
-            TYPE_TRACE_BLOCK_END;
-        }
+        TYPE_TRACE_CHECK_RETURN(_d_modrm_ea(context, _GetOperandSize,
+            _GetOperandSize));
         TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
         switch (_GetOperandSize)
         {
@@ -12283,7 +12304,7 @@ static C_VOID LDS_R32_M16_32(core_machine_cpu_execution_context *context)
     else
     {
         cpu_state.data.ip++;
-        _d_modrm(context, 2, 4);
+        TYPE_TRACE_CHECK_RETURN(_d_modrm_ea(context, 2, 2));
         TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
         offset = TYPE_MASK_UNSIGNED_16(instruction_state.data.crm);
         instruction_state.data.mrm.offset += 2;
@@ -15772,13 +15793,10 @@ static C_VOID PUSH_FS(core_machine_cpu_execution_context *context)
 }
 static C_VOID POP_FS(core_machine_cpu_execution_context *context)
 {
-    /* note: not sure if operand size is 32,
-        push/pop selector only or with higher 16 bit */
-    type_unsigned_32 xs_sel;
     TYPE_TRACE_CALL_BEGIN("POP_FS");
     _adv;
-    TYPE_TRACE_CHECK_RETURN(_e_pop(context, TYPE_REFERENCE_OF(xs_sel), _GetOperandSize));
-    TYPE_TRACE_CHECK_RETURN(_s_load_fs(context, TYPE_MASK_UNSIGNED_16(xs_sel)));
+    TYPE_TRACE_CHECK_RETURN(_e_pop_sreg(context, &cpu_state.data.fs,
+        _GetOperandSize));
     TYPE_TRACE_CALL_END;
 }
 _______todo CPUID(core_machine_cpu_execution_context *context)
@@ -15831,13 +15849,10 @@ static C_VOID PUSH_GS(core_machine_cpu_execution_context *context)
 }
 static C_VOID POP_GS(core_machine_cpu_execution_context *context)
 {
-    /* note: not sure if operand size is 32,
-        push/pop selector only or with higher 16 bit */
-    type_unsigned_32 xs_sel;
     TYPE_TRACE_CALL_BEGIN("POP_GS");
     _adv;
-    TYPE_TRACE_CHECK_RETURN(_e_pop(context, TYPE_REFERENCE_OF(xs_sel), _GetOperandSize));
-    TYPE_TRACE_CHECK_RETURN(_s_load_gs(context, TYPE_MASK_UNSIGNED_16(xs_sel)));
+    TYPE_TRACE_CHECK_RETURN(_e_pop_sreg(context, &cpu_state.data.gs,
+        _GetOperandSize));
     TYPE_TRACE_CALL_END;
 }
 _______todo RSM(core_machine_cpu_execution_context *context)
@@ -15897,13 +15912,8 @@ static C_VOID LSS_R32_M16_32(core_machine_cpu_execution_context *context)
     type_unsigned_32 offset;
     TYPE_TRACE_CALL_BEGIN("LSS_R32_M16_32");
     _adv;
-    TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize + 2));
-    if (!instruction_state.data.flagMem)
-    {
-        TYPE_TRACE_BLOCK_BEGIN("flagMem(0)");
-        TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
-        TYPE_TRACE_BLOCK_END;
-    }
+    TYPE_TRACE_CHECK_RETURN(_d_modrm_ea(context, _GetOperandSize,
+        _GetOperandSize));
     TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
     switch (_GetOperandSize)
     {
@@ -15940,13 +15950,8 @@ static C_VOID LFS_R32_M16_32(core_machine_cpu_execution_context *context)
     type_unsigned_32 offset;
     TYPE_TRACE_CALL_BEGIN("LFS_R32_M16_32");
     _adv;
-    TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize + 2));
-    if (!instruction_state.data.flagMem)
-    {
-        TYPE_TRACE_BLOCK_BEGIN("flagMem(0)");
-        TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
-        TYPE_TRACE_BLOCK_END;
-    }
+    TYPE_TRACE_CHECK_RETURN(_d_modrm_ea(context, _GetOperandSize,
+        _GetOperandSize));
     TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
     switch (_GetOperandSize)
     {
@@ -15973,13 +15978,8 @@ static C_VOID LGS_R32_M16_32(core_machine_cpu_execution_context *context)
     TYPE_TRACE_CALL_BEGIN("LGS_R32_M16_32");
     _new_code_path_;
     _adv;
-    TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize + 2));
-    if (!instruction_state.data.flagMem)
-    {
-        TYPE_TRACE_BLOCK_BEGIN("flagMem(0)");
-        TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
-        TYPE_TRACE_BLOCK_END;
-    }
+    TYPE_TRACE_CHECK_RETURN(_d_modrm_ea(context, _GetOperandSize,
+        _GetOperandSize));
     TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
     switch (_GetOperandSize)
     {

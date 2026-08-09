@@ -2,24 +2,24 @@
 
 ## Current Work
 
-**Active: M5 T301 S1.**
+**Active: M5 T301 S2.**
 
-## M5 T301 S1 Packet
+## M5 T301 S2 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New; M5 T301 S1 onward; Coordinated Dual-Session Mode. |
-| Admission And Approval | Owner approved the direct M5 80386 32-bit protected execution/delivery package and instructed coordinator/executor execution through the package, stopping before Mantle. |
+| Identifier Mode | New; M5 T301 S2 onward; Coordinated Dual-Session Mode. S1 admitted the family and frozen the source/reference audit; coordinator approved S2 implementation after the clarification below. |
+| Admission And Approval | Owner approved the direct M5 80386 32-bit protected execution/delivery package and instructed coordinator/executor execution through the package, stopping before Mantle. Coordinator additionally approved S2 with an instruction-form, CPU-profile, and execution-mode matrix. |
 | Objective | Complete the Queue's 32-bit segmentation and selector-instruction family: `MOV`/`POP` segment loads, `LDS`/`LES`/`LFS`/`LGS`/`LSS`, `ARPL`, `LAR`, `LSL`, `VERR`, and `VERW`, with all legal 80386 operand-size forms and correct descriptor/cache semantics. |
 | Non-goals | LDT breadth, task gates, virtual-8086, task switching, paging-policy expansion, host/product UX, external ABI, and source import. Reserved and later-CPU forms remain `#UD`. |
 | Reference Baseline | `87cb79993c5901cefd25d9228cf60b87d54b7d4e`; current artifact `vm-0-5-0300` / `nxvm_0_5_0300.exe`. |
 | Files And ABI Surface | `src/core/machine/cpu_instructions.c`, `cpu.h`, existing core CPU interfaces, focused machine tests/CMake, and task/governance records only. No new public raw borrow or cross-module interface. |
 | Applicable Rules | `rules/EXECUTION.md`, `rules/ARCHITECTURE.md`, `rules/CODING.md`, `rules/DOCUMENT.md`, and `etc/operations/policy/source-policy.md`; preserve one core executor/state owner and retained NXVM behavior. |
-| Verification | Record relevant Intel 80386 manual sections; record local Bochs and PCjs revision/location observations without copying. Run focused family probes, profile-negative probes, `current-gates-gcc`, documentation governance, `git diff --check`, and one owner-supplied local Windows Setup observation after family closure. |
+| Verification | Intel 80386 PRM Ch. 3, 5, 14, and 17 is authoritative; record the relevant instruction entries. Read-only comparison references are Bochs 2.6 (`cpu/protect_ctrl.cc`, `cpu/segment_ctrl.cc`, and `cpu/fetchdecode.cc`) and PCjs 2.00.0 (`machines/pcx86/modules/v2/x86ops.js`, `x86op0f.js`, and `segx86.js`); do not copy source. The form matrix is: `ARPL`/`LAR`/`LSL`/`VERR`/`VERW` are selector-check forms and are `#UD` outside protected mode; `MOV`/`POP`/`LDS`/`LES`/`LFS`/`LGS`/`LSS` retain their architecturally valid real-mode segment-load forms, while virtual-8086 remains deferred. Every LxS second operand is memory-only. `ARPL` operands remain `r/m16,r16`; `66h` changes `POP` segment stack transfer width and LxS offset/destination width, never the 16-bit selector source. FS/GS forms require 80386; reserved/later encodings remain `#UD`. Run focused form/profile/mode/atomicity probes, `current-gates-gcc`, documentation governance, `git diff --check`, and one owner-supplied local Windows Setup observation after family closure. |
 | Expected Markers | Family probe marker `M5:T301:SEGMENT-SELECTOR:OK`; T301 developer artifact after its CMake target is updated; Setup observation records checkpoint/stop/timeout only. |
 | Asset needs | Local read-only reference checkouts and owner-supplied local Setup media may be observed but are never committed, packaged, or made default-build inputs. |
 | Stop conditions | Stop and report on a source/license ambiguity, Intel/Bochs/PCjs disagreement not resolved by a bounded optional bridge, required architecture change, second executor/state path, public raw-layout exposure, or retained Console/debugger/boot regression. |
-| Exit criteria | The full named family is covered by project probes and profile rejections; all allowed forms follow the documented 80386 semantics; all failures preserve defined pre-commit state; required gates pass; Setup observation is recorded; artifact exists with SHA-256; coordinator independently accepts the result. |
+| Exit criteria | The full named family is covered by project probes and profile rejections; all allowed forms follow the frozen form/profile/mode matrix; protected segment caches, destination registers, stack state, descriptor accessed state, and flags mutate only after all required validation succeeds; required gates pass; Setup observation is recorded; artifact exists with SHA-256; coordinator independently accepts the result. |
 | Original owner request | Execute the 80386 task package in dual-session mode through the Mantle boundary; use Intel, Bochs, and PCjs to establish logic, observe Setup once per task, and use the optional bridge when uncertain. |
 | Similar-issue sweep | Search all selector/descriptor instruction handlers, 16/32-bit forms, profile gates, and fault/commit paths in `src`, `tests`, and CMake; every production-path hit is fixed, explicitly not applicable, or deferred in `TODO.md`. |
 
