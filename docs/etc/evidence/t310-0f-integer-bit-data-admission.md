@@ -64,12 +64,12 @@ that behavior as admitted.
 
 | Batch | Exact scope | Focused prepared-state proof | Retained intersections and stop boundary |
 | --- | --- | --- | --- |
-| S2 | `SETcc` only | All 16 predicates, register and memory `r/m8`, `67h` memory form, unchanged EFLAGS, profile `#UD`, and destination nonpublication on checked-memory failure. | Retain operand/address, checked-memory, and profile-gate probes. Stop if a condition requires an unadmitted flags producer change. |
-| S3 | `MOVZX`/`MOVSX` only | B6/B7/BE/BF with 16/32 destination widths, signed/zero extension, register/memory source, `66h`/`67h`, profile `#UD`, and failed-read nonmutation. This batch resolves the B7/BF candidate before any broader claim. | Retain operand/address, real-mode 386 address, checked-memory, and profile-gate probes. Stop if a result requires a public register-layout change. |
-| S4 | `BT`/`BTS`/`BTR`/`BTC`, register-index and `0F BA /4`--`/7` | Register and memory bit strings, 16/32 elements, signed index and immediate element selection, CF, write versus read-only forms, `/0`--`/3 #UD`, and failed current-element nonpublication. | Retain operand/address, checked-memory, and profile-gate probes. Stop if the first failure belongs to paging or a different fault-delivery policy. |
-| S5 | `SHLD`/`SHRD` only | 16/32 widths, immediate and CL count, count zero, masked counts, only defined flags/results, register/memory destination, and read/write failure boundaries. | Retain operand/address, checked-memory, and profile-gate probes. Stop if an undefined Intel result would be needed as a test oracle. |
-| S6 | `BSF`/`BSR` only | 16/32 widths, register/memory source, first/last index, zero/ZF behavior, defined-flag discipline, profile `#UD`, and failed-read nonmutation. | Retain operand/address, checked-memory, and profile-gate probes. Stop if an observation depends on undefined destination state. |
-| S7 | `0F AF` two-operand `IMUL` only | 16/32 signed products, fit/overflow CF+OF, register/memory source, `66h`/`67h`, profile `#UD`, and failed-read nonpublication. | Retain operand/address, checked-memory, and profile-gate probes. Stop if expansion would include one-operand or immediate IMUL forms. |
+| S3 | `SETcc` only | All 16 predicates, register and memory `r/m8`, `67h` memory form, unchanged EFLAGS, profile `#UD`, and destination nonpublication on checked-memory failure. | Retain operand/address, checked-memory, and profile-gate probes. Stop if a condition requires an unadmitted flags producer change. |
+| S4 | `MOVZX`/`MOVSX` only | B6/B7/BE/BF with 16/32 destination widths, signed/zero extension, register/memory source, `66h`/`67h`, profile `#UD`, and failed-read nonmutation. This batch resolves the B7/BF candidate before any broader claim. | Retain operand/address, real-mode 386 address, checked-memory, and profile-gate probes. Stop if a result requires a public register-layout change. |
+| S5 | `BT`/`BTS`/`BTR`/`BTC`, register-index and `0F BA /4`--`/7` | Register and memory bit strings, 16/32 elements, signed index and immediate element selection, CF, write versus read-only forms, `/0`--`/3 #UD`, and failed current-element nonpublication. | Retain operand/address, checked-memory, and profile-gate probes. Stop if the first failure belongs to paging or a different fault-delivery policy. |
+| S6 | `SHLD`/`SHRD` only | 16/32 widths, immediate and CL count, count zero, masked counts, only defined flags/results, register/memory destination, and read/write failure boundaries. | Retain operand/address, checked-memory, and profile-gate probes. Stop if an undefined Intel result would be needed as a test oracle. |
+| S7 | `BSF`/`BSR` only | 16/32 widths, register/memory source, first/last index, zero/ZF behavior, defined-flag discipline, profile `#UD`, and failed-read nonmutation. | Retain operand/address, checked-memory, and profile-gate probes. Stop if an observation depends on undefined destination state. |
+| S8 | `0F AF` two-operand `IMUL` only | 16/32 signed products, fit/overflow CF+OF, register/memory source, `66h`/`67h`, profile `#UD`, and failed-read nonpublication. | Retain operand/address, checked-memory, and profile-gate probes. Stop if expansion would include one-operand or immediate IMUL forms. |
 
 Each later batch may extend the same focused synthetic test executable, but
 must retain its own marker and assertions so a later family cannot silently
@@ -89,3 +89,37 @@ Deferred without inference are debug/test-register forms, later `0F` forms,
 paging policy and faults, task/V86/system behavior, and product observation.
 This S2 audit makes no artifact, CMake, Queue, CPU, ABI, or product-path
 change.
+
+## S3 SETcc Evidence
+
+S3 corrects the planned implementation identities without changing their
+scope: SETcc is S3, MOVZX/MOVSX is S4, bit test/modify is S5, SHLD/SHRD is
+S6, BSF/BSR is S7, and two-operand IMUL is S8. This preserves the original
+independent batch boundaries after the committed T310 S2 audit occupied its
+former first implementation identity.
+
+Intel 80386 PRM Chapter 4 defines SETcc as a byte `r/m8` destination selected
+from the entry condition flags without changing EFLAGS. The S2 read-only
+Bochs 2.6 and PCjs 2.00.0 paths remain the comparison identities for this
+family. The production sweep covered every `SETO_RM8` through `SETG_RM8`
+table entry, `_m_setcc_rm`, the `INS_0F` metadata/profile gate, `_d_modrm`,
+the byte register/reference write path, `_GetAddressSize`, and flag writes.
+All sixteen entries use the one checked `r/m8` write route; no second executor,
+memory route, or condition-flag producer is involved.
+
+`core-machine-setcc-smoke` is the focused prepared-state proof. It executes
+both truth values for all sixteen conditions into AL and a normal 16-bit
+addressed memory byte, preserving the full entry EFLAGS in every case. It
+also proves `66h` leaves the byte destination width unchanged, and `67h`
+selects the 32-bit effective-address form without changing EFLAGS or ESI.
+An 80286 profile receives `#UD` before an AL write or EFLAGS publication. A
+prepared 80386 protected DS limit makes a `67h` memory SETcc write fail; the
+existing T308 contributor-delivery route terminates that no-IDT fixture as
+`#DF`, while the destination byte, EAX, EFLAGS, and EIP retain their entry
+values. The terminal diagnostic is not a new SETcc exception policy.
+
+The direct marker is `M5:T310:S3:SETCC:OK`. S3 retains the operand/address,
+checked-memory, and CPU profile-gate smoke intersections. The focused proof
+found no production SETcc defect, so S3 adds the probe and CMake registration
+but deliberately does not refactor otherwise correct CPU handlers. No
+artifact, Setup observation, Queue change, or product-path change is made.
