@@ -25,11 +25,11 @@ Bochx/Bochs paired-step bridge with declared state masks and instruction,
 time, no-progress, and trace-size budgets; its source, binaries, media, and
 raw traces remain outside the repository and default build.
 
-1. **80386 form audit and debug capture.** Maintain a static map of
-   decoder/profile forms as proven, unproven, rejected, reserved/later-CPU, or
-   absent. A full-system checkpoint may record a short debug trace for the next
-   issue, but no captured guest image or long-start corpus becomes a build
-   fixture.
+1. **80386 `0F` integer bit/data family.** Close SETcc, BT/BTS/BTR/BTC
+   including `0F BA /4`--`/7`, SHLD/SHRD, BSF/BSR, MOVZX/MOVSX, and admitted
+   IMUL across legal 16/32-bit operand/address forms, profile rejection,
+   register/memory behavior, flags, limits, and pre-fault non-mutation. The
+   prior form audit defines the trace budget; no guest image becomes a build fixture.
 1. **CPL3 paging and user/kernel boundary.** Add only needed 80386 paging
     semantics: U/S and R/W permission checks, CR0.WP, precise page-fault bits
     and CR2, cross-page accesses, or `INVLPG`. Each addition needs mapped,
