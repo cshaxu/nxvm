@@ -247,8 +247,9 @@ command, Setup checkpoint, or CPU conclusion was obtained. This is a
 host-automation limitation retained for owner-controlled manual observation;
 it is not retried in T306.
 
-T306 remains active and pending coordinator acceptance. This is
-closure-preparation evidence only: it does not set the project Idle, close
+At its closure-preparation point, T306 remained pending coordinator acceptance.
+The coordinator subsequently accepted and closed T306; this is historical
+closure-preparation evidence only: it did not set the project Idle, close
 T306, change Queue state, or authorize T307. Deferred boundaries remain task
 and nested-task returns, task/call gates, virtual-8086 returns, reset or
 triple-fault policy, paging-policy expansion, new fault origins, and public

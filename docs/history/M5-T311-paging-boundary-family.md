@@ -20,5 +20,6 @@ the later-CPU `0F 01 /7` form remains `#UD`.
 - Deferred: exact decoded-length instruction-observation prefetch, #PF IDT
   delivery, PAE/large pages, and TLB/`INVLPG` only after a concrete consumer.
 
-S6 is closure preparation only. T311 remains active pending coordinator
-acceptance; this record does not close the task or advance the queue.
+The coordinator accepted and closed T311 before the T312 no-admission audit.
+This record preserves the accepted paging boundary and does not advance the
+queue.

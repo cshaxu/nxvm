@@ -245,5 +245,6 @@ evidence. This is a host-automation limitation retained for owner-controlled
 manual observation, not a CPU or product regression and not a reason for a
 retry or repair in T303.
 
-T303 remains active pending coordinator acceptance. This record is closure
-preparation only; it neither closes T303 nor advances the Queue.
+At its closure-preparation point, T303 remained pending coordinator acceptance.
+The coordinator subsequently accepted and closed T303; this evidence neither
+redefines that closure nor advances the Queue.

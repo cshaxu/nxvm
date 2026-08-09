@@ -292,6 +292,7 @@ artifact hidden. The process remained alive, but its host window handle was
 zero and its title was empty. The observer stopped only that launched process.
 No guest command, guest checkpoint, or product regression conclusion was
 obtained; manual owner-controlled observation remains a verification-only
-follow-up. T308 remains active pending coordinator acceptance. Deferred
+follow-up. At its closure-preparation point, T308 remained pending coordinator
+acceptance; the coordinator subsequently accepted and closed it. Deferred
 boundaries remain page-fault combinations, hardware/NMI, task/V86 paths, and
 actual triple-fault shutdown/reset.
