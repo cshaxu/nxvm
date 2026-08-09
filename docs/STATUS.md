@@ -2,29 +2,29 @@
 
 ## Current Work
 
-**Active: M5 T313 S8.**
+**Active: M5 T313 S9.**
 
-## M5 T313 S8 Packet
+## M5 T313 S9 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Corrective; M5 T313 S8 shared port-assembly marker evidence. |
-| Admission And Approval | S7 `e437c147` closure evidence requires a focused-marker correction before coordinator acceptance. |
-| Reference Baseline | T313 S7 `e437c147`, the pending 0313 artifact, and retained T300 port/session-atomicity boundaries. |
-| Objective | Restore separate truthful S3 and S4 markers from their one shared focused port-assembly probe without changing runtime behavior. |
-| Non-goals | Core/session/product behavior, a new task allocation, M6 mantle, Queue closure, product observation claims, artifact identity changes, or an executor-led T313 closure. |
-| Scope And Order | S8 only: shared focused-marker publication, direct proof, and status/evidence/history consistency; coordinator may allocate a final closure packet after acceptance. |
-| Source Touchpoints | The existing shared S3/S4 port-assembly smoke and status/evidence/history records. |
+| Identifier Mode | Corrective; M5 T313 S9 final closure preparation. |
+| Admission And Approval | T313 S8 `b44086b7` is accepted. S9 reruns the complete current gate set and consolidates final pending-acceptance evidence. |
+| Reference Baseline | T313 S8 `b44086b7`, the pending 0313 artifact, and retained T300 port/session-atomicity boundaries. |
+| Objective | Revalidate all T313 intersections and record the unchanged 0313 artifact before coordinator-only acceptance closure. |
+| Non-goals | Runtime/source behavior changes, a new task allocation, M6 mantle, Queue closure, product observation claims, artifact identity changes, or an executor-led T313 closure. |
+| Scope And Order | S9 only: full current gates, current artifact verification, shared S3/S4 proof, and final status/evidence/history consistency. |
+| Source Touchpoints | Status/evidence/history plus the existing T313 focused and retained gate topology. |
 | Files And ABI Surface | No API/ownership changes; retain coordinator-owned `docs/rules/EXECUTION.md` unstaged. |
 | Applicable Rules | `rules/EXECUTION.md`, `rules/ARCHITECTURE.md`, `rules/CODING.md`, `rules/DOCUMENT.md`, and the source policy; retain one core executor, typed provider boundaries, and the existing NXVM product route. |
-| Verification | Direct shared port-assembly proof with both markers, documentation governance, current artifact identity check, and diff check. |
-| Expected Markers | The shared smoke publishes `M5:T313:S3:PORT-ASSEMBLY:OK` after range/create/FDC checks and `M5:T313:S4:CONTROLLER-ROLLBACK:OK` after RTC/HDC checks. |
+| Verification | Full `current-gates-gcc`, current artifact target, direct shared S3/S4 proof, documentation governance, and diff check. |
+| Expected Markers | Retain `M5:T313:S2:RAM-CREATE:OK`, both phase-ordered shared S3/S4 markers, `M5:T313:S5:START-OUTCOME:OK`, and `M5:T313:S6:DEBUG-MAPPING:OK`. |
 | S1 Audit Record | [T313 construction-failure admission](etc/evidence/t313-construction-failure-admission.md) is the active design and acceptance record. |
 | Asset Needs | No guest media, firmware, third-party source, or host OOM dependency. |
-| Original Owner Request | Correct S7's missing S3 marker observability without changing the retained probe's runtime coverage. |
-| Similar-Issue Sweep | Check both shared-probe phase markers plus their status/evidence/history declarations; retain current artifact identity. |
-| Stop Conditions | Stop for an unrelated probe/gate regression or a requirement to alter core/session/product behavior. |
-| Exit Criteria | One shared direct probe visibly publishes both truthful phase markers; status remains active pending coordinator acceptance; Queue and task allocation remain unchanged. |
+| Original Owner Request | Prepare the accepted S2--S8 package for coordinator-only final closure without changing its runtime scope. |
+| Similar-Issue Sweep | Check current identity, artifact/hash, all S2--S6 markers, phase-ordered S3/S4 publication, and status/evidence/history consistency. |
+| Stop Conditions | Stop for any unrelated full-gate regression or a requirement to alter core/session/product behavior. |
+| Exit Criteria | Complete gates and artifact hash are recorded; status remains active S9 pending coordinator acceptance; Queue and task allocation remain unchanged. |
 
 ## Current Technical Baseline
 

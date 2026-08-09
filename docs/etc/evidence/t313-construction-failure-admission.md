@@ -19,6 +19,7 @@ status propagation are retained; this task does not reopen them.
 | S6 | Replace product-to-core debug enum casts with private explicit mappings and unknown-value rejection. | Focused mapping proof covers every known value and unknown rejection. The existing void watch vtable cannot return status; record the retained command-level error policy or stop for a narrowly admitted contract change. |
 | S7 | Closure only. | Build `nxvm_0_5_0313.exe`, record SHA-256, pass focused intersections and `current-gates-gcc`; no new behavior. |
 | S8 | Restore the two phase markers from the shared S3/S4 port-assembly proof. | Directly show both markers without changing runtime checks, artifact identity, or Queue state. |
+| S9 | Final closure preparation only. | Rerun all current gates and preserve the unchanged 0313 identity/hash for coordinator acceptance. |
 
 ## Contracts
 
@@ -135,8 +136,21 @@ The sole current target and preset now select `vm-0-5-0313`; the generated
 artifact is `build/output/nxvm_0_5_0313.exe` with SHA-256
 `19A9E2A898BAC9C1046D994CC891BF3BF151422B95DB42D4F62DC1CDC8F2B752`.
 `current-gates-gcc` passed with 51/51 static/governance targets and 145/145
-current CTests. S8 corrects its shared-port-probe marker evidence; T313 remains
-pending coordinator acceptance and does not close, allocate T314, or admit M6.
+current CTests. S8 corrected its shared-port-probe marker evidence. S9 reruns
+the complete current gate set before coordinator acceptance; T313 remains active
+and does not close, allocate T314, or admit M6.
+
+## S9 Final Gate Evidence
+
+S9 reran `current-gates-gcc`: all 51 static/governance targets and all 145
+current CTests passed. Direct focused execution reconfirmed
+`M5:T313:S2:RAM-CREATE:OK`, the S3 then S4 shared port-assembly markers,
+`M5:T313:S5:START-OUTCOME:OK` in both configured platform failure stages, and
+`M5:T313:S6:DEBUG-MAPPING:OK`. `verify-current-artifact-target` still selects
+`vm-0-5-0313`; the artifact SHA-256 remains
+`19A9E2A898BAC9C1046D994CC891BF3BF151422B95DB42D4F62DC1CDC8F2B752`.
+This is final closure-preparation evidence only. STATUS remains active pending
+coordinator acceptance.
 
 ## Exclusions
 
