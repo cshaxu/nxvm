@@ -770,13 +770,30 @@ static C_INT ct_test_far_indirect_forms(C_VOID)
     }
     {
         ct_machine state;
+        t_cpu before;
         t_cpu after;
         C_INT failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
-        if (!failed) failed = !ct_run_ud(&state, (const uint8_t[]){0xffu,0xd8u}, 2u, &after);
+        if (!failed) {
+            before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+            before.data.eip = 0u;
+            failed = !ct_run_ud(&state, (const uint8_t[]){0xffu,0xd8u}, 2u, &after) ||
+                after.data.eip != before.data.eip || after.data.esp != before.data.esp ||
+                after.data.eflags != before.data.eflags ||
+                after.data.cs.selector != before.data.cs.selector ||
+                after.data.cs.base != before.data.cs.base || after.data.cs.limit != before.data.cs.limit;
+        }
         core_machine_destroy(state.machine);
         if (failed) return 0;
         failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
-        if (!failed) failed = !ct_run_ud(&state, (const uint8_t[]){0xffu,0xe8u}, 2u, &after);
+        if (!failed) {
+            before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+            before.data.eip = 0u;
+            failed = !ct_run_ud(&state, (const uint8_t[]){0xffu,0xe8u}, 2u, &after) ||
+                after.data.eip != before.data.eip || after.data.esp != before.data.esp ||
+                after.data.eflags != before.data.eflags ||
+                after.data.cs.selector != before.data.cs.selector ||
+                after.data.cs.base != before.data.cs.base || after.data.cs.limit != before.data.cs.limit;
+        }
         core_machine_destroy(state.machine);
         if (failed) return 0;
     }
@@ -789,6 +806,9 @@ static C_INT ct_test_far_real_mode(C_VOID)
     static const uint8_t call[] = {0x9au,0,0,0,1,0xf4u};
     static const uint8_t halt[] = {0xf4u};
     static const uint8_t retf[] = {0xcbu};
+    static const uint8_t indirect_jmp[] = {0xffu,0x2eu,0,1};
+    static const uint8_t indirect_call[] = {0xffu,0x1eu,0,1,0xb0u,0xa5u,0xf4u};
+    static const uint8_t pointer[] = {0,0,0,1};
     const core_machine_run_budget budget = {48u,0u};
     core_machine_run_result result;
     ct_machine state;
@@ -813,6 +833,31 @@ static C_INT ct_test_far_real_mode(C_VOID)
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= after.data.cs.selector != 0u || after.data.cs.base != 0u;
+    }
+    core_machine_destroy(state.machine);
+    if (failed) return 0;
+    failed = !ct_prepare_real(&state);
+    if (!failed) {
+        failed = !ct_write(&state, 0u, indirect_jmp, sizeof(indirect_jmp)) ||
+            !ct_write(&state, 0x0100u, pointer, sizeof(pointer)) ||
+            !ct_write(&state, 0x1000u, halt, sizeof(halt)) ||
+            core_machine_run(state.machine, budget, &result) != TYPE_STATUS_OK ||
+            result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
+        after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        failed |= after.data.cs.selector != 0x0100u || after.data.cs.base != 0x1000u;
+    }
+    core_machine_destroy(state.machine);
+    if (failed) return 0;
+    failed = !ct_prepare_real(&state);
+    if (!failed) {
+        failed = !ct_write(&state, 0u, indirect_call, sizeof(indirect_call)) ||
+            !ct_write(&state, 0x0100u, pointer, sizeof(pointer)) ||
+            !ct_write(&state, 0x1000u, retf, sizeof(retf)) ||
+            core_machine_run(state.machine, budget, &result) != TYPE_STATUS_OK ||
+            result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
+        after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        failed |= after.data.cs.selector != 0u || after.data.cs.base != 0u ||
+            after.data.eax != 0x000000a5u;
     }
     core_machine_destroy(state.machine);
     return !failed;
