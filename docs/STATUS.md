@@ -2,27 +2,27 @@
 
 ## Current Work
 
-**Active: M5 T311 S4.**
+**Active: M5 T311 S5.**
 
-## M5 T311 S4 Packet
+## M5 T311 S5 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Corrective; M5 T311 S4 cross-page checked-access boundary. T311 S1 P0, S2, and S3 are accepted; Coordinated Dual-Session Mode. |
-| Admission And Approval | T311 is the next linear task selected by the first remaining direct M5 80386 package candidate in `QUEUE.md`. S4 follows T258's CPL0 4 KiB baseline, T311 S3 permissions, and T305--T308's bounded 32-bit exception delivery. |
-| Objective | Make exactly-one-4-KiB-boundary fetch, ordinary data, and constructible stack checked accesses validate both pages before any guest-data or paging A/D publication, using only the existing core translation and checked physical-memory route. |
-| Non-goals | `INVLPG`/TLB, page-fault IDT delivery, PAE, large pages, host-memory substitution, generic paging rewrite, V86, task/system expansion, timing or product UX changes, public ABI, source import, a second executor/memory route, a guest-image build fixture, artifact, or Setup observation. |
-| Reference Baseline | Accepted T310 artifact `vm-0-5-0310` / `nxvm_0_5_0310.exe`; retained T258 CPL0 paging, T311 S3 permission, T302 operand/address, T303 control-transfer, T306 return, and T308 delivery evidence. |
-| Files And ABI Surface | S4 may refactor private core page-walk candidate and A/D publication ordering, extend the existing focused prepared-state paging probe/CMake registration, and update task records. It must not change public interfaces, cross-module ownership, or product UX. |
+| Identifier Mode | Corrective; M5 T311 S5 translation-cache / `INVLPG` evidence closure. T311 S1 P0 through S4 are accepted; Coordinated Dual-Session Mode. |
+| Admission And Approval | T311 is the next linear task selected by the first remaining direct M5 80386 package candidate in `QUEUE.md`. S5 follows accepted T311 S4 checked-access atomicity and remains evidence-only unless a real persistent translation consumer is proven. |
+| Objective | Audit and close the 80386 translation-cache and `INVLPG` admission condition: prove that every current access uses the sole page walk and either record no cache/no stale path or stop with a reproducible consumer proof for later approval. |
+| Non-goals | Implementing TLB, `INVLPG`, a flush API, decoder/metadata/handler, page-fault delivery, PAE, large pages, host-memory substitution, generic paging rewrite, V86, task/system expansion, product UX, public ABI, source import, a second executor/memory route, artifact, or Setup observation. |
+| Reference Baseline | Accepted T310 artifact `vm-0-5-0310` / `nxvm_0_5_0310.exe`; accepted T311 S3 permissions and S4 cross-page evidence, plus retained T258/T302/T303/T306/T308 intersections. |
+| Files And ABI Surface | S5 may update only focused/static evidence and task records. It must not change CPU behavior, public interfaces, CMake current artifact identity, cross-module ownership, or product UX. |
 | Applicable Rules | `rules/EXECUTION.md`, `rules/ARCHITECTURE.md`, `rules/CODING.md`, `rules/DOCUMENT.md`, and `etc/operations/policy/source-policy.md`; retain one core executor/state owner and existing checked memory, stack, and fault routes. |
 | Verification | Intel 80386 PRM is authoritative. Record versioned read-only Bochs 2.6 and PCjs 2.00.0 behavior paths; use focused prepared-state probes only. |
-| Expected Markers | The cross-page marker proves two-page fetch/data/constructible-stack completion, per-page A and write-page D publication, exact second-page CR2/P-W-U faults, and no guest-data, register, instruction, stack, or A/D publication when the second page fails. S4 creates no artifact. |
+| Expected Markers | The cache-disposition marker proves the audited access paths retain no persistent translation cache or stale translation consumer, CR3 needs no extra flush, and `INVLPG` remains unadmitted/#UD. S5 creates no artifact. |
 | S1 Audit Record | [T311 paging boundary admission](etc/evidence/t311-paging-boundary-admission.md) records the authority, matrix, retained intersections, and batch boundaries. |
 | Asset Needs | Read-only local references only; no guest media, firmware, or third-party source is committed. |
 | Original Owner Request | Execute the direct M5 80386 protected execution/delivery package in coordinated mode, stopping before Mantle; use Intel as authority with read-only Bochs and PCjs comparison. |
 | Similar-Issue Sweep | Sweep all paging translation, permission, A/D, CR2, page-fault, cross-page, TLB, `INVLPG`, instruction-fetch, data, stack, and existing exception-delivery paths that could participate in this scope. |
-| Stop Conditions | Stop and report an Intel/reference disagreement, any need for #PF IDT delivery, a second executor/memory route, an A/D atomicity rule that cannot be frozen on the existing route, or expansion into TLB/PAE/large-page/task/V86/system behavior. |
-| Exit Criteria | S4 proves the admitted exactly-one-page-boundary outcomes and their producer diagnostics, passes focused and retained intersections plus documentation governance and diff check, pushes its successful local commit before reporting, and remains active pending coordinator acceptance. |
+| Stop Conditions | Stop and report an Intel/reference disagreement, any persistent translation cache or stale observable path, a required `INVLPG` form/handler/API, #PF delivery need, or expansion into PAE/large-page/task/V86/system behavior. |
+| Exit Criteria | S5 records a complete cache/`INVLPG` sweep and a no-op disposition, or stops with a reproducible consumer proof; it passes documentation governance and diff check, pushes its successful evidence commit before reporting, and remains active pending coordinator acceptance. |
 
 ## Current Technical Baseline
 

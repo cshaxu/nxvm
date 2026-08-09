@@ -162,6 +162,29 @@ Chapters 5, 6, and 9 remain authoritative; Bochs 2.6 `cpu/paging.cc` and
 `cpu/fetchdecode.cc`, plus PCjs 2.00.0 `machines/pcx86/modules/v2/x86.js`, are
 read-only behavioral comparisons only.
 
+## S5 Translation-Cache And `INVLPG` Disposition
+
+The S5 source and build sweep finds no persistent translation cache, cache
+entry, cache-generation, flush operation, stale-translation test path, or
+`INVLPG` decoder/metadata/handler in core execution, reset, CR3 loading,
+debug/firmware capabilities, tracing, test fixtures, or CMake smoke
+registration. `_kma_prepare_physical_linear` reads the current PDE and PTE
+from checked physical memory for every access. Its S4 candidate is automatic
+per-access state and expires before the next access; it is not a translation
+cache. `_s_write_cr3_80386` validates alignment and assigns CR3 only, so no
+cache flush is needed or observable in the present design. Reset clears CPU
+control state and cannot retain a translation.
+
+`0F 01 /7`, the later-CPU `INVLPG` encoding, remains routed by `INS_0F_01`
+to `UndefinedOpcode`; no operand decode, memory access, or cache effect is
+published. The form is therefore retained as 80386 `#UD`, not an unimplemented
+partial API. Existing focused paging proof observes current PTE changes through
+the same walker rather than a stale cached mapping. This is a no-op closure:
+no TLB, invalidation interface, decoder expansion, or production behavior is
+warranted. Intel 80386 PRM paging rules remain authoritative; Bochs 2.6
+`cpu/paging.cc` and PCjs 2.00.0 `machines/pcx86/modules/v2/x86.js` are
+read-only comparison paths only.
+
 Intel 80386 PRM paging protection rules are the authority. Bochs 2.6
 `cpu/paging.cc` and PCjs 2.00.0 `machines/pcx86/modules/v2/x86.js` remain
 read-only behavior comparisons; no source is imported. `#PF` remains an
