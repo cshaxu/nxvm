@@ -2,39 +2,39 @@
 
 ## Current Work
 
-**Active: M5 T310 S8.**
+**Active: M5 T310 S9.**
 
-## M5 T310 S8 Packet
+## M5 T310 S9 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Corrective; M5 T310 S8 two-operand IMUL implementation; Coordinated Dual-Session Mode. T310 S1--S7 are accepted. |
+| Identifier Mode | Corrective; M5 T310 S9 0F integer-family closure; Coordinated Dual-Session Mode. T310 S1--S8 are accepted. |
 | Admission And Approval | T310 is the next linear task selected by T309's accepted form audit; it precedes paging because its forms are metadata-valid and dispatch-reachable but lack focused semantic evidence. |
-| Objective | Implement and prove 80386 two-operand signed `IMUL` (`0F AF`) through the existing core decoder, ModRM, checked-memory, and fault routes. |
-| Non-goals | SETcc, MOVZX/MOVSX, bit-test/modify, SHLD/SHRD or BSF/BSR changes; one-operand or immediate IMUL; paging, debug/test registers, task/V86/system extensions, later-CPU forms, product UX, public ABI, source import, a second executor, or guest-image build fixtures. |
-| Reference Baseline | Accepted T308 artifact `vm-0-5-0308` / `nxvm_0_5_0308.exe`; accepted T310 S7 scan evidence `22ed9f3`. |
-| Files And ABI Surface | S8 may change core CPU two-operand IMUL execution, one focused prepared-state probe/CMake registration, and task records. It must not change public interfaces, cross-module ownership, or product UX. |
+| Objective | Close T310's SETcc, MOVZX/MOVSX, bit-test/modify, double-shift, bit-scan, and two-operand IMUL work: rebuild the current 0310 product artifact, run all current gates, record evidence/history, and remove the closed T310 candidate from the queue without changing CPU semantics. |
+| Non-goals | Any new instruction form, paging, debug/test registers, task/V86/system extensions, product UX, public ABI, source import, a second executor, a product repair, or a long guest-image fixture. |
+| Reference Baseline | Accepted T308 artifact baseline; accepted T310 S8 IMUL evidence `6655ba1`. |
+| Files And ABI Surface | S9 changes only CMake current artifact identity, task records/history/queue, and generated `build/output/nxvm_0_5_0310.exe`. It must not change CPU semantics, public interfaces, cross-module ownership, or product UX. |
 | Applicable Rules | `rules/EXECUTION.md`, `rules/ARCHITECTURE.md`, `rules/CODING.md`, `rules/DOCUMENT.md`, and `etc/operations/policy/source-policy.md`; retain one core executor/state owner and existing checked memory, stack, and fault routes. |
 | Verification | Intel 80386 PRM is authoritative. Record versioned read-only Bochs 2.6 and PCjs 2.00.0 behavior paths; use focused prepared-state probes only. |
-| Expected Markers | The IMUL marker proves signed 16/32-bit register and memory sources, in-range and overflow products, CF/OF behavior, `66h`/`67h`, 80186/80286 `#UD` before operand access, and failed-read nonpublication. Undefined flags other than CF/OF are not test oracles. One-operand and immediate IMUL remain outside S8. The retained 8086 `0F` POP CS compatibility path remains unchanged. S8 creates no artifact. |
+| Expected Markers | All T310 S3--S8 focused markers, `verify-current-artifact-target` for `vm-0-5-0310`, full `current-gates-gcc`, documentation governance, and diff check pass. Artifact identity is `build/output/nxvm_0_5_0310.exe` with recorded SHA-256. |
 | S2 Audit Record | [T310 0F integer bit/data admission audit](etc/evidence/t310-0f-integer-bit-data-admission.md) records the authority, form matrix, static candidates, focused-probe rules, batch boundaries, retained intersections, and deferrals. |
 | Asset Needs | Read-only local references only; no guest media, firmware, or third-party source is committed. |
 | Original Owner Request | Execute the direct M5 80386 protected execution/delivery package in coordinated mode, stopping before Mantle; use Intel as authority with read-only Bochs and PCjs comparison. |
-| Similar-Issue Sweep | Sweep AF metadata/table/decoder path, signed multiply helper, register/reference read/write paths, operand/address-size selection, CF/OF behavior, profile gate, and focused probe registration. |
+| Similar-Issue Sweep | Confirm the S3--S8 evidence records and focused registrations remain connected to `PROJECT_CURRENT_SMOKE_TARGETS`; do not repair unrelated failures under this closure packet. |
 | S3 Evidence Record | [T310 SETcc evidence](etc/evidence/t310-0f-integer-bit-data-admission.md#s3-setcc-evidence) is retained unchanged. |
 | S4 Evidence Record | [T310 MOVZX/MOVSX evidence](etc/evidence/t310-0f-integer-bit-data-admission.md#s4-movzxmovsx-evidence) is retained unchanged. |
 | S5 Evidence Record | [T310 bit-test/modify evidence](etc/evidence/t310-0f-integer-bit-data-admission.md#s5-bit-testmodify-evidence) is retained unchanged. |
 | S6 Evidence Record | [T310 SHLD/SHRD evidence](etc/evidence/t310-0f-integer-bit-data-admission.md#s6-shldshrd-evidence) is retained unchanged. |
 | S7 Evidence Record | [T310 BSF/BSR evidence](etc/evidence/t310-0f-integer-bit-data-admission.md#s7-bsfbsr-evidence) is retained unchanged. |
-| S8 Evidence Record | [T310 two-operand IMUL evidence](etc/evidence/t310-0f-integer-bit-data-admission.md#s8-two-operand-imul-evidence) records the signed product, CF/OF, profile, and checked-read proof. |
-| Stop Conditions | Stop and report an Intel/reference disagreement, a scope expansion to one-operand or immediate IMUL, a pre-80386 path that accesses an operand, any need for a second executor or memory route, a public ABI change, or a failed retained intersection. |
-| Exit Criteria | S8 proves all admitted two-operand IMUL forms and failure boundaries, passes relevant focused and retained probes, documentation governance, and diff check, pushes its successful local commit before reporting, and remains active pending coordinator acceptance. |
+| S8 Evidence Record | [T310 two-operand IMUL evidence](etc/evidence/t310-0f-integer-bit-data-admission.md#s8-two-operand-imul-evidence) is retained unchanged. |
+| Stop Conditions | Stop and report any full-gate failure outside a proven T310 regression intersection, any required CPU behavior change, artifact-identity inconsistency, or governance conflict. Do not start T311. |
+| Exit Criteria | S9 produces and verifies the 0310 artifact; records all T310 evidence, gate results, SHA-256, and remaining deferred forms; updates task history/queue/status consistently; pushes its successful closure-preparation commit; and remains active pending coordinator acceptance. |
 
 ## Current Technical Baseline
 
-- **T308 accepted artifact identity:** `current-gcc` and
-  `verify-current-artifact-target` select `vm-0-5-0308` / `nxvm_0_5_0308.exe`.
-  T308 and T309 are closed; T310 is the active linear task.
+- **T310 pending artifact identity:** `current-gcc` and
+  `verify-current-artifact-target` select `vm-0-5-0310` / `nxvm_0_5_0310.exe`.
+  T310 remains active pending coordinator acceptance.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
