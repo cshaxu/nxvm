@@ -95,3 +95,32 @@ T304 matrix is complete. The remaining hits in debug/test register handlers,
 task-switch and gate routes, delivery, V86, and broad paging behavior belong
 to their explicitly deferred families. No current S1 finding requires an
 architecture change, a second state owner, a public interface, or a bridge.
+
+## S2 Descriptor-Table Evidence
+
+`tests/machine/core_machine_descriptor_system_smoke.c` is the prepared-state
+focused probe for `SGDT`, `SIDT`, `LGDT`, and `LIDT`. It uses the retained
+single core CPU executor and ordinary memory only. It proves `m16:24` versus
+`m16:32` six-byte layouts, real-mode table stores and loads, protected-mode
+`SIDT`, protected CPL-zero loads, register-ModRM `#UD`, CPL-three load
+`#GP(0)`, and source/destination limit failures that preserve the old GDTR and
+IDTR values. The deliberate terminal fault diagnostics are asserted negative
+paths.
+
+Two narrow production corrections were required in `INS_0F_01`. `SIDT` no
+longer has its non-architectural protected-mode `#UD` branch. The four table
+forms now share `_d_modrm_table_memory`: it rejects a register ModRM before
+the six-byte memory operand decoder can produce the prior internal `#CE(6)`.
+Memory forms continue through the existing decoder and memory route; no new
+executor, table-state owner, memory path, delivery behavior, or public
+interface was introduced.
+
+The S2 sweep revisited `INS_0F`, `core_machine_cpu_profile_allows_form`,
+`INS_0F_01`, `_d_modrm_ea`, `_d_modrm_table_memory`, `_s_load_gdtr`,
+`_s_load_idtr`, and the retained 80286 protected-mode test. `0F 00` selector
+forms, MSW/control registers, debug/test registers, task paths, delivery,
+paging policy, and V86 remain outside S2 exactly as frozen. The focused probe
+emits `M5:T304:DESCRIPTOR-SYSTEM:OK`; retained
+`M5:T257:S6:80286-PROTECTED-MODE:OK`,
+`M5:T301:SEGMENT-SELECTOR:OK`, and
+`M5:T303:CONTROL-TRANSFER:OK` also pass.

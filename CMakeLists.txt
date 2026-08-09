@@ -164,6 +164,9 @@ target_link_libraries(core-machine-operand-address-smoke PRIVATE core-machine)
 add_executable(core-machine-control-transfer-smoke
     tests/machine/core_machine_control_transfer_smoke.c)
 target_link_libraries(core-machine-control-transfer-smoke PRIVATE core-machine)
+add_executable(core-machine-descriptor-system-smoke
+    tests/machine/core_machine_descriptor_system_smoke.c)
+target_link_libraries(core-machine-descriptor-system-smoke PRIVATE core-machine)
 add_executable(core-machine-real-mode-386-rep-cmps-smoke
     tests/machine/core_machine_real_mode_386_rep_cmps_smoke.c)
 target_link_libraries(core-machine-real-mode-386-rep-cmps-smoke PRIVATE core-machine)
@@ -1084,6 +1087,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-real-mode-386-address-smoke
     core-machine-operand-address-smoke
     core-machine-control-transfer-smoke
+    core-machine-descriptor-system-smoke
     core-machine-real-mode-386-rep-cmps-smoke
     core-machine-80286-protected-mode-smoke
     core-machine-arpl-smoke

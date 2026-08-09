@@ -43,6 +43,8 @@
 #define _SetExcept_FPU_UNSUPPORTED(n) (TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_FPU_UNSUPPORTED), instruction_state.data.excode = (n), STD_PRINTF("FPU(%x) - configured model is not implemented\n", instruction_state.data.excode))
 #define _SetExcept_CE(n) (TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_CE), instruction_state.data.excode = (n), STD_PRINTF("#CE(%x) - internal error\n", instruction_state.data.excode))
 
+static C_VOID UndefinedOpcode(core_machine_cpu_execution_context *context);
+
 /* memory management unit */
 /* kernel memory accessing */
 /* read content from reference */
@@ -2492,6 +2494,16 @@ static C_VOID _d_modrm_ea(core_machine_cpu_execution_context *context, type_unsi
         TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
         TYPE_TRACE_BLOCK_END;
     }
+    TYPE_TRACE_CALL_END;
+}
+static C_VOID _d_modrm_table_memory(core_machine_cpu_execution_context *context,
+    type_unsigned_8 modrm)
+{
+    TYPE_TRACE_CALL_BEGIN("_d_modrm_table_memory");
+    /* Reject a register form before the six-byte memory operand is decoded. */
+    if (_GetModRM_MOD(modrm) == 3)
+        TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+    TYPE_TRACE_CHECK_RETURN(_d_modrm_ea(context, 0, 6));
     TYPE_TRACE_CALL_END;
 }
 static C_VOID _d_modrm(core_machine_cpu_execution_context *context, type_unsigned_8 regbyte, type_unsigned_8 rmbyte)
@@ -15050,13 +15062,7 @@ static C_VOID INS_0F_01(core_machine_cpu_execution_context *context)
     {
     case 0: /* SGDT_M32_16 */
         TYPE_TRACE_BLOCK_BEGIN("SGDT_M32_16");
-        TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 6));
-        if (!instruction_state.data.flagMem)
-        {
-            TYPE_TRACE_BLOCK_BEGIN("flagMem(0)");
-            TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
-            TYPE_TRACE_BLOCK_END;
-        }
+        TYPE_TRACE_CHECK_RETURN(_d_modrm_table_memory(context, modrm));
         instruction_state.data.crm = cpu_state.data.gdtr.limit;
         TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
         instruction_state.data.mrm.offset += 2;
@@ -15077,19 +15083,7 @@ static C_VOID INS_0F_01(core_machine_cpu_execution_context *context)
         break;
     case 1: /* SIDT_M32_16 */
         TYPE_TRACE_BLOCK_BEGIN("SIDT_M32_16");
-        if (_GetCR0_PE)
-        {
-            TYPE_TRACE_BLOCK_BEGIN("Protected(1)");
-            TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
-            TYPE_TRACE_BLOCK_END;
-        }
-        TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 6));
-        if (!instruction_state.data.flagMem)
-        {
-            TYPE_TRACE_BLOCK_BEGIN("flagMem(0)");
-            TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
-            TYPE_TRACE_BLOCK_END;
-        }
+        TYPE_TRACE_CHECK_RETURN(_d_modrm_table_memory(context, modrm));
         instruction_state.data.crm = cpu_state.data.idtr.limit;
         TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
         instruction_state.data.mrm.offset += 2;
@@ -15110,13 +15104,7 @@ static C_VOID INS_0F_01(core_machine_cpu_execution_context *context)
         break;
     case 2: /* LGDT_M32_16 */
         TYPE_TRACE_BLOCK_BEGIN("LGDT_M32_16");
-        TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 6));
-        if (!instruction_state.data.flagMem)
-        {
-            TYPE_TRACE_BLOCK_BEGIN("flagMem(0)");
-            TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
-            TYPE_TRACE_BLOCK_END;
-        }
+        TYPE_TRACE_CHECK_RETURN(_d_modrm_table_memory(context, modrm));
         TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
         limit = TYPE_MASK_UNSIGNED_16(instruction_state.data.crm);
         instruction_state.data.mrm.offset += 2;
@@ -15140,13 +15128,7 @@ static C_VOID INS_0F_01(core_machine_cpu_execution_context *context)
         break;
     case 3: /* LIDT_M32_16 */
         TYPE_TRACE_BLOCK_BEGIN("LIDT_M32_16");
-        TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 6));
-        if (!instruction_state.data.flagMem)
-        {
-            TYPE_TRACE_BLOCK_BEGIN("flagMem(0)");
-            TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
-            TYPE_TRACE_BLOCK_END;
-        }
+        TYPE_TRACE_CHECK_RETURN(_d_modrm_table_memory(context, modrm));
         TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
         limit = TYPE_MASK_UNSIGNED_16(instruction_state.data.crm);
         instruction_state.data.mrm.offset += 2;
