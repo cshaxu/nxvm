@@ -180,13 +180,12 @@ present (`#NP`), target SS not present (`#SS`),
 and the target new-stack frame boundary (`#SS(0)`). The existing software DPL,
 gate type/present, and old parameter-source checks remain alongside them.
 
-The prepared RPL-mismatched TSS `SS0` case emits the Intel-correct `#TS(SS0)`,
-but this current CPU diagnostic path cannot preserve it as a terminal
-observation even with a one-instruction budget: it enters the unadmitted TS
-delivery area before the focused probe can observe an unchanged terminal
-state. It is recorded as a T308 delivery input rather than being retyped as
-`#GP`; S4 does not change fault delivery. The retained 16-bit call-gate probe
-was rerun and showed no matching implementation defect.
+At the S4 observation point, the prepared RPL-mismatched TSS `SS0` case emitted
+the Intel-correct `#TS(SS0)`, but did not retain a terminal observation under a
+one-instruction budget. S5 identified that the planner's return boundary, not
+TS delivery policy, caused that observation gap; its explicit precheck now
+keeps `#TS(SS0)` observable with the unchanged-state assertions. The retained
+16-bit call-gate probe was rerun and showed no matching implementation defect.
 
 ## S5 Call-Gate Stack Fault Classification
 
