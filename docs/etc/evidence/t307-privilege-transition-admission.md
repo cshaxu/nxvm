@@ -163,3 +163,27 @@ selector diagnostic creation, checked old-stack reads, target-stack preflight,
 TSS32 reads, selector/cache preparation, and T306 outer-return consumers. It
 does not alter IDT, error-code, PIC/NMI, task, V86, paging, or public-interface
 paths.
+
+## S4 Call-Gate Preflight Evidence
+
+S4 makes the TSS-provided `SS0` preflight explicit in the 32-bit call-gate
+planner: selector null/TI/RPL mismatch remains `#TS(SS0)`, while the selected
+descriptor remains subject to the Intel-required `#GP(SS0)` type/DPL and
+`#SS(SS0)` not-present outcomes. The candidate stack-cache helper remains the
+only cache constructor after those checks, so no parallel segment-cache
+semantics were added.
+
+The call-gate focused probe now directly proves, for every runnable negative
+case, the first fault and unchanged entry CS/SS cache, EIP, ESP, EFLAGS/CPL,
+and target CS/SS accessed bytes: target CS wrong type (`#GP`), target CS not
+present (`#NP`), target SS wrong type (`#GP`), target SS not present (`#SS`),
+and the target new-stack frame boundary (`#SS(0)`). The existing software DPL,
+gate type/present, and old parameter-source checks remain alongside them.
+
+The prepared RPL-mismatched TSS `SS0` case emits the Intel-correct `#TS(SS0)`,
+but this current CPU diagnostic path cannot preserve it as a terminal
+observation even with a one-instruction budget: it enters the unadmitted TS
+delivery area before the focused probe can observe an unchanged terminal
+state. It is recorded as a T308 delivery input rather than being retyped as
+`#GP`; S4 does not change fault delivery. The retained 16-bit call-gate probe
+was rerun and showed no matching implementation defect.

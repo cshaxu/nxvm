@@ -2913,8 +2913,24 @@ static C_VOID _ser_call_far_call_gate_32(core_machine_cpu_execution_context *con
     TYPE_TRACE_CHECK_RETURN(_s_read_tss(context, 8u, TYPE_REFERENCE_OF(newss),
         2u));
     if (_IsSelectorNull(newss) || _GetSelector_TI(newss) ||
-        _GetSelector_RPL(newss) != target_cpl)
-        TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(newss & 0xfffcu));
+        _GetSelector_RPL(newss) != target_cpl) {
+        _SetExcept_TS(newss & 0xfffcu);
+        TYPE_TRACE_CALL_END;
+        return;
+    }
+    TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, newss,
+        TYPE_REFERENCE_OF(ss_desc)));
+    if (!_IsDescDataWritable(ss_desc) ||
+        _GetDesc_DPL(ss_desc) != target_cpl) {
+        _SetExcept_GP(newss & 0xfffcu);
+        TYPE_TRACE_CALL_END;
+        return;
+    }
+    if (!_IsDescPresent(ss_desc)) {
+        _SetExcept_SS(newss & 0xfffcu);
+        TYPE_TRACE_CALL_END;
+        return;
+    }
 
     oldcs = cpu_state.data.cs.selector;
     oldss = cpu_state.data.ss.selector;
