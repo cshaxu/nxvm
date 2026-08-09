@@ -418,6 +418,18 @@ type_bool core_machine_pic_scan_interrupt(t_pic *master, t_pic *slave) {
     }
     return flagINTR;
 }
+type_unsigned_8 core_machine_pic_peek_interrupt(t_pic *master, t_pic *slave) {
+    type_unsigned_8 reqId1;
+    type_unsigned_8 reqId2;
+
+    if (master == STD_NULL || slave == STD_NULL) return 0;
+    reqId1 = VPIC_GetIntrTopId(master);
+    if (reqId1 == 0x02) {
+        reqId2 = VPIC_GetIntrTopId(slave);
+        return (type_unsigned_8)(reqId2 | slave->data.icw2);
+    }
+    return (type_unsigned_8)(reqId1 | master->data.icw2);
+}
 type_unsigned_8 core_machine_pic_get_interrupt(t_pic *master, t_pic *slave) {
     type_unsigned_8 reqId1; /* top requested C_INT id in master pic */
     type_unsigned_8 reqId2; /* top requested C_INT id in slave pic */

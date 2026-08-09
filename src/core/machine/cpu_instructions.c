@@ -3163,7 +3163,7 @@ static C_VOID _ser_int_protected_16(core_machine_cpu_execution_context *context,
     TYPE_TRACE_CALL_END;
 }
 static C_VOID _ser_int_protected_32_same(core_machine_cpu_execution_context *context,
-    type_unsigned_8 intid, type_unsigned_64 gate_desc)
+    type_unsigned_8 intid, type_unsigned_64 gate_desc, type_bool software_origin)
 {
     type_unsigned_64 code_desc;
     type_unsigned_16 newcs;
@@ -3183,7 +3183,7 @@ static C_VOID _ser_int_protected_32_same(core_machine_cpu_execution_context *con
     if (!_IsDescPresent(gate_desc))
         TYPE_TRACE_CHECK_RETURN(_SetExcept_NP(_ser_idt_error_code(intid)));
     oldcpl = _GetCPL;
-    if (_GetDesc_DPL(gate_desc) < oldcpl)
+    if (software_origin && _GetDesc_DPL(gate_desc) < oldcpl)
         TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(_ser_idt_error_code(intid)));
     newcs = TYPE_MASK_UNSIGNED_16(_GetDescGate_Selector(gate_desc));
     if (_IsSelectorNull(newcs) || _GetSelector_TI(newcs))
@@ -3222,7 +3222,8 @@ static C_VOID _ser_int_protected_32_same(core_machine_cpu_execution_context *con
     TYPE_TRACE_CALL_END;
 }
 static C_VOID _ser_int_protected(core_machine_cpu_execution_context *context,
-    type_unsigned_8 intid, type_unsigned_8 byte, type_bool flagext)
+    type_unsigned_8 intid, type_unsigned_8 byte, type_bool software_origin,
+    type_bool flagext)
 {
     type_unsigned_64 gate_desc;
 
@@ -3238,7 +3239,8 @@ static C_VOID _ser_int_protected(core_machine_cpu_execution_context *context,
         TYPE_REFERENCE_OF(gate_desc)));
     switch (_GetDesc_Type(gate_desc)) {
     case VCPU_DESC_SYS_TYPE_INTGATE_16:
-        TYPE_TRACE_CHECK_RETURN(_ser_int_protected_16(context, intid, flagext));
+        TYPE_TRACE_CHECK_RETURN(_ser_int_protected_16(context, intid,
+            !software_origin));
         break;
     case VCPU_DESC_SYS_TYPE_INTGATE_32:
     case VCPU_DESC_SYS_TYPE_TRAPGATE_32:
@@ -3247,7 +3249,7 @@ static C_VOID _ser_int_protected(core_machine_cpu_execution_context *context,
         if (flagext || _GetEFLAGS_VM)
             TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(0));
         TYPE_TRACE_CHECK_RETURN(_ser_int_protected_32_same(context, intid,
-            gate_desc));
+            gate_desc, software_origin));
         break;
     case VCPU_DESC_SYS_TYPE_TASKGATE:
     case VCPU_DESC_SYS_TYPE_TRAPGATE_16:
@@ -3704,11 +3706,8 @@ _______todo _e_int3(core_machine_cpu_execution_context *context, type_unsigned_8
     else
     {
         TYPE_TRACE_BLOCK_BEGIN("!Real");
-        if (byte == 4u)
-            TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(0));
-        else
-            TYPE_TRACE_CHECK_RETURN(_ser_int_protected(context, 0x03u, byte,
-                TYPE_FALSE));
+        TYPE_TRACE_CHECK_RETURN(_ser_int_protected(context, 0x03u, byte,
+            TYPE_TRUE, TYPE_FALSE));
         TYPE_TRACE_BLOCK_END;
     }
     TYPE_TRACE_CALL_END;
@@ -3728,7 +3727,8 @@ _______todo _e_into(core_machine_cpu_execution_context *context, type_unsigned_8
         else
         {
             TYPE_TRACE_BLOCK_BEGIN("!Real");
-            TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
+            TYPE_TRACE_CHECK_RETURN(_ser_int_protected(context, 0x04u, byte,
+                TYPE_TRUE, TYPE_FALSE));
             TYPE_TRACE_BLOCK_END;
         }
         TYPE_TRACE_BLOCK_END;
@@ -3751,12 +3751,13 @@ _______todo _e_int_n(core_machine_cpu_execution_context *context, type_unsigned_
             TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(0));
         else
             TYPE_TRACE_CHECK_RETURN(_ser_int_protected(context, intid, byte,
-                TYPE_FALSE));
+                TYPE_TRUE, TYPE_FALSE));
         TYPE_TRACE_BLOCK_END;
     }
     TYPE_TRACE_CALL_END;
 }
-_______todo _e_intr_n(core_machine_cpu_execution_context *context, type_unsigned_8 intid, type_unsigned_8 byte)
+_______todo _e_intr_n(core_machine_cpu_execution_context *context,
+    type_unsigned_8 intid, type_unsigned_8 byte, type_bool external_origin)
 {
     TYPE_TRACE_CALL_BEGIN("_e_intr_n");
     if (!_GetCR0_PE)
@@ -3768,7 +3769,11 @@ _______todo _e_intr_n(core_machine_cpu_execution_context *context, type_unsigned
     else
     {
         TYPE_TRACE_BLOCK_BEGIN("!Real");
-        TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
+        if (!external_origin)
+            TYPE_TRACE_CHECK_RETURN(_SetExcept_UD(0));
+        else
+            TYPE_TRACE_CHECK_RETURN(_ser_int_protected(context, intid, byte,
+                TYPE_FALSE, TYPE_FALSE));
         TYPE_TRACE_BLOCK_END;
     }
     TYPE_TRACE_CALL_END;
@@ -3787,7 +3792,7 @@ _______todo _e_except_n(core_machine_cpu_execution_context *context, type_unsign
     {
         TYPE_TRACE_BLOCK_BEGIN("!Real");
         TYPE_TRACE_CHECK_RETURN(_ser_int_protected(context, exid, byte,
-            TYPE_TRUE));
+            TYPE_FALSE, TYPE_TRUE));
         TYPE_TRACE_BLOCK_END;
     }
     TYPE_TRACE_CALL_END;
@@ -16186,28 +16191,34 @@ static C_VOID ExecInt(core_machine_cpu_execution_context *context)
         return;
     if (!cpu_state.data.flagMaskNMI && cpu_state.data.flagNMI)
     {
-        cpu_state.data.flagHalt = TYPE_FALSE;
-        cpu_state.data.flagNMI = TYPE_FALSE;
         ExecInit(context);
-        _e_intr_n(context, 0x02, _GetOperandSize);
+        _e_intr_n(context, 0x02, _GetOperandSize, TYPE_TRUE);
+        if (!instruction_state.data.except) {
+            cpu_state.data.flagHalt = TYPE_FALSE;
+            cpu_state.data.flagNMI = TYPE_FALSE;
+        }
         ExecFinal(context);
     }
     if (_GetEFLAGS_IF && core_machine_pic_scan_interrupt(
                              context->pic_master, context->pic_slave))
     {
-        cpu_state.data.flagHalt = TYPE_FALSE;
-        intr = core_machine_pic_get_interrupt(context->pic_master,
-                                              context->pic_slave);
+        intr = core_machine_pic_peek_interrupt(context->pic_master,
+                                               context->pic_slave);
         ExecInit(context);
-        _e_intr_n(context, intr, _GetOperandSize);
+        _e_intr_n(context, intr, _GetOperandSize, TYPE_TRUE);
+        if (!instruction_state.data.except) {
+            cpu_state.data.flagHalt = TYPE_FALSE;
+            (C_VOID)core_machine_pic_get_interrupt(context->pic_master,
+                context->pic_slave);
+            instruction_state.data.flagIgnore = TYPE_TRUE;
+        }
         ExecFinal(context);
-        instruction_state.data.flagIgnore = TYPE_TRUE;
     }
     if (_GetEFLAGS_TF)
     {
         cpu_state.data.flagHalt = TYPE_FALSE;
         ExecInit(context);
-        _e_intr_n(context, 0x01, _GetOperandSize);
+        _e_intr_n(context, 0x01, _GetOperandSize, TYPE_FALSE);
         ExecFinal(context);
     }
 }

@@ -55,6 +55,20 @@ static C_INT ie_read(interrupt_entry_machine *state, uint32_t address,
             address, (type_virtual_address)data, bytes) == TYPE_STATUS_OK;
 }
 
+static C_INT ie_install_gate(interrupt_entry_machine *state, uint8_t vector,
+    uint16_t selector, uint8_t gate_type)
+{
+    uint8_t gate[8] = {0};
+
+    gate[0] = IE_HANDLER_OFFSET & 0xffu;
+    gate[1] = IE_HANDLER_OFFSET >> 8u;
+    gate[2] = selector & 0xffu;
+    gate[3] = selector >> 8u;
+    gate[5] = gate_type;
+    return ie_write(state, IE_IDT_BASE + (uint32_t)vector * 8u, gate,
+        sizeof(gate));
+}
+
 static C_INT ie_prepare(interrupt_entry_machine *state,
     interrupt_entry_negative negative, uint8_t gate_type)
 {
@@ -169,6 +183,23 @@ static C_INT ie_run(interrupt_entry_machine *state, C_INT expect_fault,
     return 1;
 }
 
+static C_INT ie_run_external(interrupt_entry_machine *state, C_INT expect_fault,
+    t_cpu *out_cpu, core_machine_cpu_diagnostic *out_diagnostic)
+{
+    const core_machine_run_budget budget = {32u, 0u};
+    core_machine_run_result result;
+    type_status status;
+
+    status = core_machine_run(state->machine, budget, &result);
+    if (status != (expect_fault ? TYPE_STATUS_FAULT : TYPE_STATUS_OK) ||
+        result.reason != (expect_fault ? CORE_MACHINE_STOP_FAULT :
+            CORE_MACHINE_STOP_BUDGET) ||
+        core_machine_get_cpu_diagnostic(state->machine, out_diagnostic) !=
+            TYPE_STATUS_OK) return 0;
+    *out_cpu = test_core_machine_fixture_capture_cpu_after_run(state->machine);
+    return 1;
+}
+
 static C_INT ie_fault_is(const core_machine_cpu_diagnostic *diagnostic,
     uint32_t mask, uint32_t code)
 {
@@ -250,6 +281,130 @@ static C_INT ie_test_failure(interrupt_entry_negative negative, uint32_t mask,
     return !failed;
 }
 
+static C_INT ie_prepare_user_code(interrupt_entry_machine *state)
+{
+    uint8_t code_access = 0xfau;
+    uint8_t selector[] = {0x0bu, 0u};
+
+    if (!ie_write(state, IE_GDT_BASE + 13u, &code_access,
+            sizeof(code_access)) || !ie_write(state,
+            IE_IDT_BASE + IE_VECTOR * 8u + 2u, selector, sizeof(selector)))
+        return 0;
+    state->machine->executor_cpu.data.cs.selector = 0x000bu;
+    state->machine->executor_cpu.data.cs.dpl = 3u;
+    return 1;
+}
+
+static C_INT ie_test_software_frontends(C_VOID)
+{
+    static const uint8_t int3[] = {0xccu};
+    static const uint8_t into[] = {0xceu};
+    static const uint8_t into_clear[] = {0xceu,0xf4u};
+    const uint8_t *programs[] = {int3, into};
+    const uint8_t vectors[] = {0x03u, 0x04u};
+    const uint32_t returns[] = {1u, 1u};
+    STD_SIZE_T index;
+
+    for (index = 0u; index < sizeof(programs) / sizeof(programs[0]); ++index) {
+        interrupt_entry_machine state;
+        core_machine_cpu_diagnostic diagnostic;
+        t_cpu after;
+        uint32_t frame[3] = {0u, 0u, 0u};
+        uint32_t flags = 0x00000302u;
+        C_INT failed = !ie_prepare(&state, INTERRUPT_ENTRY_NEGATIVE_NONE,
+            VCPU_DESC_SYS_TYPE_TRAPGATE_32);
+
+        if (!failed) {
+            if (vectors[index] == 0x04u) flags |= VCPU_EFLAGS_OF;
+            state.machine->executor_cpu.data.eflags = flags;
+            failed |= !ie_install_gate(&state, vectors[index], 0x0008u,
+                    (uint8_t)(0xe0u | VCPU_DESC_SYS_TYPE_TRAPGATE_32)) ||
+                !ie_write(&state, IE_CODE_BASE, programs[index],
+                    index == 0u ? sizeof(int3) : sizeof(into)) ||
+                !ie_run(&state, 0, &after, &diagnostic) ||
+                diagnostic.first_fault.valid || after.data.esp != IE_STACK_BASE - 12u ||
+                TYPE_GET_BIT(after.data.eflags, VCPU_EFLAGS_TF) ||
+                !TYPE_GET_BIT(after.data.eflags, VCPU_EFLAGS_IF) ||
+                !ie_read(&state, IE_STACK_BASE - 12u, frame, sizeof(frame)) ||
+                frame[0] != returns[index] || frame[1] != 0x0008u ||
+                frame[2] != flags;
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+    }
+    {
+        interrupt_entry_machine state;
+        core_machine_cpu_diagnostic diagnostic;
+        t_cpu after;
+        C_INT failed = !ie_prepare(&state, INTERRUPT_ENTRY_NEGATIVE_NONE,
+            VCPU_DESC_SYS_TYPE_INTGATE_32);
+
+        if (!failed) {
+            state.machine->executor_cpu.data.eflags = 0x00000202u;
+            failed |= !ie_install_gate(&state, 0x04u, 0x0008u,
+                    (uint8_t)(0xe0u | VCPU_DESC_SYS_TYPE_INTGATE_32)) ||
+                !ie_write(&state, IE_CODE_BASE, into_clear, sizeof(into_clear)) ||
+                !ie_run(&state, 0, &after, &diagnostic) ||
+                diagnostic.first_fault.valid || after.data.eip != sizeof(into_clear) ||
+                after.data.esp != IE_STACK_BASE || after.data.eflags != 0x00000202u;
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+    }
+    return 1;
+}
+
+static C_INT ie_test_external_origin(C_INT nmi, C_INT reject)
+{
+    interrupt_entry_machine state;
+    core_machine_cpu_diagnostic diagnostic;
+    core_machine_pic_irq_source source;
+    t_cpu before;
+    t_cpu after;
+    static const uint8_t code[] = {0x90u};
+    static const uint8_t handler[] = {0xebu,0xfeu};
+    uint8_t vector = nmi ? 0x02u : IE_VECTOR;
+    C_INT failed = !ie_prepare(&state, INTERRUPT_ENTRY_NEGATIVE_NONE,
+        VCPU_DESC_SYS_TYPE_INTGATE_32);
+
+    if (!failed) {
+        state.machine->executor_cpu.data.eflags = 0x00000202u;
+        failed |= !ie_prepare_user_code(&state) ||
+            !ie_install_gate(&state, vector, 0x000bu,
+                reject ? 0x80u : (uint8_t)(0x80u | VCPU_DESC_SYS_TYPE_INTGATE_32)) ||
+            !ie_write(&state, IE_CODE_BASE, code, sizeof(code)) ||
+            !ie_write(&state, IE_CODE_BASE + IE_HANDLER_OFFSET, handler,
+                sizeof(handler));
+        if (!failed && !nmi) {
+            STD_MEMSET(&source, 0, sizeof(source));
+            state.machine->shared_pic_master.data.icw2 = IE_VECTOR;
+            core_machine_pic_irq_source_bind(&source,
+                &state.machine->shared_pic_master, &state.machine->shared_pic_slave, 0u);
+            core_machine_pic_irq_source_assert(&source);
+            core_machine_pic_irq_source_deassert(&source);
+        } else if (!failed) {
+            state.machine->executor_cpu.data.flagNMI = TYPE_TRUE;
+        }
+        before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        failed |= !ie_run_external(&state, reject, &after, &diagnostic);
+        if (!failed && !reject) {
+            failed |= after.data.cs.selector != 0x000bu ||
+                after.data.esp != IE_STACK_BASE - 12u ||
+                !TYPE_GET_BIT(state.machine->shared_pic_master.data.isr, 1u) && !nmi ||
+                TYPE_GET_BIT(state.machine->shared_pic_master.data.irr, 1u) ||
+                state.machine->executor_cpu.data.flagNMI;
+        } else if (!failed) {
+            failed |= after.data.cs.selector != before.data.cs.selector ||
+                after.data.esp != before.data.esp || after.data.eflags != before.data.eflags ||
+                (nmi ? !state.machine->executor_cpu.data.flagNMI :
+                    (!TYPE_GET_BIT(state.machine->shared_pic_master.data.irr, 1u) ||
+                     TYPE_GET_BIT(state.machine->shared_pic_master.data.isr, 1u)));
+        }
+    }
+    core_machine_destroy(state.machine);
+    return !failed;
+}
+
 int main(void)
 {
     C_INT failed = !ie_test_success(VCPU_DESC_SYS_TYPE_INTGATE_32, 0) ||
@@ -270,7 +425,10 @@ int main(void)
         !ie_test_failure(INTERRUPT_ENTRY_NEGATIVE_CODE_LIMIT, VCPUINS_EXCEPT_GP,
             0u) ||
         !ie_test_failure(INTERRUPT_ENTRY_NEGATIVE_STACK_LIMIT,
-            VCPUINS_EXCEPT_SS, 0u);
+            VCPUINS_EXCEPT_SS, 0u) ||
+        !ie_test_software_frontends() ||
+        !ie_test_external_origin(0, 0) || !ie_test_external_origin(1, 0) ||
+        !ie_test_external_origin(0, 1) || !ie_test_external_origin(1, 1);
 
     if (failed) return 1;
     STD_PRINTF("M5:T305:INTERRUPT-ENTRY:OK\n");
