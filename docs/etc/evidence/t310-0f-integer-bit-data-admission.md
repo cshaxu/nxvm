@@ -205,3 +205,41 @@ executor, memory route, or public surface was introduced.  SETcc, MOVX,
 SHLD/SHRD, BSF/BSR, IMUL, paging, system, task, and V86 work remain deferred.
 The direct marker is `M5:T310:S5:BIT:OK`; S5 creates no artifact, Queue
 change, Setup observation, or product-path change.
+
+## S6 SHLD/SHRD Evidence
+
+Intel 80386 PRM Chapter 4 defines `0F A4/A5` (`SHLD`) and `0F AC/AD`
+(`SHRD`) for a 16- or 32-bit `r/m` destination and register source.  The
+immediate or `CL` count is masked to five bits.  A resulting zero count is a
+complete no-op; for defined nonzero counts, `CF`, `SF`, `ZF`, and `PF` are
+defined, while `OF` is defined only for count one and `AF` is undefined.
+Results outside the operand-width domain are not test oracles.  Bochs 2.6
+`cpu/bit16.cc`, `cpu/bit32.cc`, and `cpu/fetchdecode.cc`, and PCjs 2.00.0
+`machines/pcx86/modules/v2/x86op0f.js` and `x86help.js`, were read-only
+behavior comparisons; no source was copied.
+
+The new focused proof found a count-zero publication defect.  `_a_shld` and
+`_a_shrd` correctly returned for a masked zero count, but all four immediate
+and `CL` handlers then wrote the stale `instruction_state.data.result` to the
+destination.  S6 gates that write on the same masked count.  No nonzero
+arithmetic, flag, decoder, memory, or executor route changed.
+
+`core-machine-double-shift-smoke` exhaustively covers the defined 16-bit
+counts one through sixteen and 32-bit counts one through thirty-one for both
+directions, both immediate and `CL` forms, and register and memory
+destinations.  It verifies `66h`, combined `67h`/`66h` memory addressing,
+result and defined flags, and count-zero destination/full-EFLAGS no-op.
+The profile cases prove 80186 and 80286 receive `#UD` before destination or
+defined-flag publication; the retained 8086 `0F` `POP CS` compatibility is
+not a double-shift form and remains covered by the profile-gate smoke.
+
+Protected DS-limit read failure for `SHLD` and read-only DS write failure for
+`SHRD` take the existing checked-memory and no-IDT terminal route.  The
+established `#DF` diagnostic is observed while the physical destination,
+`EIP`, and defined entry flags remain unchanged.  This adds no delivery
+policy.  The sweep covered A4/A5/AC/AD metadata and table entries,
+`_a_shld`, `_a_shrd`, their four handlers, count masking, read/write helpers,
+prefix selection, profile gate, and focused registration.  No public surface
+or second route is involved.  The marker is `M5:T310:S6:DOUBLE-SHIFT:OK`;
+S6 creates no artifact, Queue change, Setup observation, or product-path
+change.  BSF/BSR, IMUL, paging, system, task, and V86 work remain deferred.

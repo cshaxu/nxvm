@@ -16163,8 +16163,11 @@ static C_VOID SHLD_RM32_R32_I8(core_machine_cpu_execution_context *context)
     TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
     TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
     TYPE_TRACE_CHECK_RETURN(_a_shld(context, instruction_state.data.crm, instruction_state.data.cr, TYPE_MASK_UNSIGNED_8(instruction_state.data.cimm), _GetOperandSize * 8));
-    instruction_state.data.crm = instruction_state.data.result;
-    TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
+    if (TYPE_MASK_UNSIGNED_8(instruction_state.data.cimm) & 0x1f)
+    {
+        instruction_state.data.crm = instruction_state.data.result;
+        TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
+    }
     TYPE_TRACE_CALL_END;
 }
 static C_VOID SHLD_RM32_R32_CL(core_machine_cpu_execution_context *context)
@@ -16174,8 +16177,11 @@ static C_VOID SHLD_RM32_R32_CL(core_machine_cpu_execution_context *context)
     TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
     TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
     TYPE_TRACE_CHECK_RETURN(_a_shld(context, instruction_state.data.crm, instruction_state.data.cr, cpu_state.data.cl, _GetOperandSize * 8));
-    instruction_state.data.crm = instruction_state.data.result;
-    TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
+    if (cpu_state.data.cl & 0x1f)
+    {
+        instruction_state.data.crm = instruction_state.data.result;
+        TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
+    }
     TYPE_TRACE_CALL_END;
 }
 static C_VOID PUSH_GS(core_machine_cpu_execution_context *context)
@@ -16221,8 +16227,11 @@ static C_VOID SHRD_RM32_R32_I8(core_machine_cpu_execution_context *context)
     TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
     TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
     TYPE_TRACE_CHECK_RETURN(_a_shrd(context, instruction_state.data.crm, instruction_state.data.cr, TYPE_MASK_UNSIGNED_8(instruction_state.data.cimm), _GetOperandSize * 8));
-    instruction_state.data.crm = instruction_state.data.result;
-    TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
+    if (TYPE_MASK_UNSIGNED_8(instruction_state.data.cimm) & 0x1f)
+    {
+        instruction_state.data.crm = instruction_state.data.result;
+        TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
+    }
     TYPE_TRACE_CALL_END;
 }
 static C_VOID SHRD_RM32_R32_CL(core_machine_cpu_execution_context *context)
@@ -16232,8 +16241,11 @@ static C_VOID SHRD_RM32_R32_CL(core_machine_cpu_execution_context *context)
     TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
     TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
     TYPE_TRACE_CHECK_RETURN(_a_shrd(context, instruction_state.data.crm, instruction_state.data.cr, cpu_state.data.cl, _GetOperandSize * 8));
-    instruction_state.data.crm = instruction_state.data.result;
-    TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
+    if (cpu_state.data.cl & 0x1f)
+    {
+        instruction_state.data.crm = instruction_state.data.result;
+        TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
+    }
     TYPE_TRACE_CALL_END;
 }
 static C_VOID IMUL_R32_RM32(core_machine_cpu_execution_context *context)
