@@ -124,3 +124,53 @@ emits `M5:T304:DESCRIPTOR-SYSTEM:OK`; retained
 `M5:T257:S6:80286-PROTECTED-MODE:OK`,
 `M5:T301:SEGMENT-SELECTOR:OK`, and
 `M5:T303:CONTROL-TRANSFER:OK` also pass.
+
+## S3 Selector-Table And Bounded Task-Register Evidence
+
+The Intel 80386 PRM Chapter 17 entries `SLDT`, `STR`, `LLDT`, and `LTR`
+remain authoritative for this batch.  The S1 read-only comparison paths were
+rechecked: Bochs 2.6 `cpu/protect_ctrl.cc`, `cpu/segment_ctrl.cc`, and
+`cpu/fetchdecode.cc`; PCjs 2.00.0 `machines/pcx86/modules/v2/x86op0f.js`,
+`x86ops.js`, and `segx86.js`.  They agree with Intel that selector operands
+remain `r/m16`, that `SLDT`/`STR` are protected-mode stores rather than
+operand-size-dependent general-register writes, and that `LLDT`/`LTR` validate
+their candidate before publishing their invisible cache.  No reference source
+was copied or translated.
+
+`tests/machine/core_machine_descriptor_system_smoke.c` now extends the
+prepared-state focused synthetic probe with this frozen matrix:
+
+- Real-mode `SLDT`, `STR`, `LLDT`, and `LTR` each reach native `#UD(0)` with
+  LDTR/TR unchanged.  Protected user-CPL `SLDT` and `STR` store only their
+  visible selector into a register destination, including under `66h`; the
+  upper half of EAX is preserved.  Their memory forms store a word.
+- `LLDT` accepts both register and `66h`-prefixed memory `r/m16` sources;
+  a null GDT selector invalidates LDTR.  TI, non-LDT, and non-present sources
+  produce respectively `#GP(selector)`, `#GP(selector)`, and `#NP(selector)`
+  without changing the prior LDTR cache.
+- `LTR` accepts only an available, present GDT 16-bit TSS in this bounded
+  batch.  It commits the TR selector/cache and changes only that descriptor's
+  access byte from available `0x81` to busy `0x83`.  Its null, TI, LDT-type,
+  already-busy, non-present, and 32-bit-TSS cases produce the frozen
+  `#GP(0)`, `#GP(selector)`, `#GP(selector)`, `#GP(selector)`,
+  `#NP(selector)`, and `#GP(selector)` results.  Each negative probe asserts
+  the first fault, old TR cache, and, for a selected GDT descriptor, unchanged
+  access byte.  Fault-state descriptor observations use the allowed private
+  test fixture physical-memory operation only; production remains behind the
+  single core machine interface.
+
+Two narrow production corrections support that evidence.  `INS_0F_00` now
+decodes and writes `SLDT`/`STR` as fixed two-byte `r/m16` operations for both
+register and memory operands.  The existing `LTR` cache loader now accepts
+only an available 16-bit TSS descriptor, rather than accidentally admitting a
+32-bit available TSS without a corresponding 32-bit task path.  No task
+switch, gate, delivery, paging, public interface, or executor path changed.
+
+The S3 similar-issue sweep revisited `INS_0F`, `INS_0F_00`,
+`_s_load_ldtr`, `_s_load_tr`, `_ksa_load_sreg`, descriptor type macros, and
+the retained T261 task-switch route.  The T261 switch remains a separate
+bounded 16-bit far-JMP regression; the new LTR form evidence does not admit
+32-bit switching, task gates, delivery, LDT breadth, or any future task
+family.  The focused probe emits `M5:T304:DESCRIPTOR-SYSTEM:OK`; the retained
+task-switch smoke emits `M5:T261:S2:TASK-SWITCH:OK`,
+`M5:T261:S3:TASK-SWITCH:CORPUS:OK`, and `M5:T261:S5:SS-CACHE:OK`.

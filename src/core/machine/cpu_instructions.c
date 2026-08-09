@@ -1029,7 +1029,7 @@ static C_VOID _ksa_load_sreg(core_machine_cpu_execution_context *context, t_cpu_
             TYPE_TRACE_BLOCK_END;
         }
         TYPE_TRACE_CHECK_RETURN(_ksa_read_xdt(context, selector, TYPE_REFERENCE_OF(descriptor)));
-        if (!_IsDescTSSAvl(descriptor))
+        if (!_IsDescTSS16Avl(descriptor))
         {
             TYPE_TRACE_BLOCK_BEGIN("!DescTssAvl");
             TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(selector));
@@ -14932,16 +14932,16 @@ static C_VOID INS_0F_00(core_machine_cpu_execution_context *context)
         {
         case 0: /* SLDT_RM16 */
             TYPE_TRACE_BLOCK_BEGIN("SLDT_RM16");
-            TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, ((_GetModRM_MOD(modrm) != 3) ? 2 : _GetOperandSize)));
+            TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 2));
             instruction_state.data.crm = TYPE_MASK_UNSIGNED_16(cpu_state.data.ldtr.selector);
-            TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, instruction_state.data.flagMem ? 2 : _GetOperandSize));
+            TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
             TYPE_TRACE_BLOCK_END;
             break;
         case 1: /* STR_RM16 */
             TYPE_TRACE_BLOCK_BEGIN("STR_RM16");
-            TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, ((_GetModRM_MOD(modrm) != 3) ? 2 : _GetOperandSize)));
+            TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 2));
             instruction_state.data.crm = TYPE_MASK_UNSIGNED_16(cpu_state.data.tr.selector);
-            TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, instruction_state.data.flagMem ? 2 : _GetOperandSize));
+            TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
             TYPE_TRACE_BLOCK_END;
             break;
         case 2: /* LLDT_RM16 */

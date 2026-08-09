@@ -2,10 +2,18 @@
 
 #include "core/machine/cpu.h"
 #include "core/machine/machine_interface.h"
+#include "core/machine/memory.h"
 #include "../support/core_machine_cpu_fixture.h"
 
 #define DT_STORE_ADDRESS 0x0200u
 #define DT_LOAD_ADDRESS 0x0240u
+#define DT_GDT_ADDRESS 0x0300u
+#define DT_LDT_SELECTOR 0x0018u
+#define DT_TSS16_SELECTOR 0x0020u
+#define DT_LDT_NOT_PRESENT_SELECTOR 0x0028u
+#define DT_TSS16_BUSY_SELECTOR 0x0030u
+#define DT_TSS16_NOT_PRESENT_SELECTOR 0x0038u
+#define DT_TSS32_SELECTOR 0x0040u
 
 typedef struct descriptor_system_machine {
     core_machine *machine;
@@ -63,6 +71,14 @@ static C_INT dt_read(descriptor_system_machine *state, uint32_t address,
             TYPE_STATUS_OK;
 }
 
+static C_INT dt_read_private(descriptor_system_machine *state, uint32_t address,
+    uint8_t *data, STD_SIZE_T bytes)
+{
+    return state != STD_NULL && state->machine != STD_NULL &&
+        core_machine_memory_read_physical(&state->machine->executor_memory,
+            address, (type_virtual_address)data, bytes) == TYPE_STATUS_OK;
+}
+
 static C_INT dt_run(descriptor_system_machine *state, const uint8_t *code,
     STD_SIZE_T bytes, C_INT expect_fault, uint32_t expect_exception)
 {
@@ -80,6 +96,32 @@ static C_INT dt_run(descriptor_system_machine *state, const uint8_t *code,
     return expect_fault ? diagnostic.first_fault.valid &&
         TYPE_GET_BIT(diagnostic.first_fault.exception_mask, expect_exception) :
         !diagnostic.first_fault.valid;
+}
+
+static C_INT dt_run_fault_code(descriptor_system_machine *state,
+    const uint8_t *code, STD_SIZE_T bytes, uint32_t exception,
+    uint32_t exception_code)
+{
+    core_machine_cpu_diagnostic diagnostic;
+
+    return dt_run(state, code, bytes, 1, exception) &&
+        core_machine_get_cpu_diagnostic(state->machine, &diagnostic) ==
+            TYPE_STATUS_OK &&
+        diagnostic.first_fault.exception_code == exception_code;
+}
+
+static C_INT dt_run_one(descriptor_system_machine *state, const uint8_t *code,
+    STD_SIZE_T bytes)
+{
+    const core_machine_run_budget budget = {1u, 0u};
+    core_machine_run_result result;
+    core_machine_cpu_diagnostic diagnostic;
+
+    return dt_write(state, 0u, code, bytes) &&
+        core_machine_run(state->machine, budget, &result) == TYPE_STATUS_OK &&
+        result.reason == CORE_MACHINE_STOP_BUDGET && result.executed == 1u &&
+        core_machine_get_cpu_diagnostic(state->machine, &diagnostic) ==
+            TYPE_STATUS_OK && !diagnostic.first_fault.valid;
 }
 
 static C_VOID dt_set_tables(descriptor_system_machine *state,
@@ -121,6 +163,295 @@ static C_VOID dt_enter_protected(descriptor_system_machine *state,
     cpu->data.ds.seg.executable = TYPE_FALSE;
     cpu->data.ds.seg.data.writable = TYPE_TRUE;
     cpu->data.ds.dpl = cpl;
+}
+
+static C_VOID dt_enter_user_protected(descriptor_system_machine *state)
+{
+    dt_enter_protected(state, 3u);
+    state->machine->executor_cpu.data.cs.selector = 0x004bu;
+    state->machine->executor_cpu.data.ds.selector = 0x0053u;
+}
+
+static C_INT dt_sreg_equal(const t_cpu_data_sreg *first,
+    const t_cpu_data_sreg *second)
+{
+    return first->flagValid == second->flagValid &&
+        first->selector == second->selector &&
+        first->sregtype == second->sregtype && first->base == second->base &&
+        first->limit == second->limit && first->dpl == second->dpl &&
+        first->sys.type == second->sys.type;
+}
+
+static C_VOID dt_seed_system_sreg(t_cpu_data_sreg *sreg,
+    t_cpu_data_sreg_type type, uint16_t selector)
+{
+    STD_MEMSET(sreg, 0, sizeof(*sreg));
+    sreg->flagValid = TYPE_TRUE;
+    sreg->selector = selector;
+    sreg->sregtype = type;
+    sreg->base = 0x00000500u;
+    sreg->limit = 0x000000ffu;
+    sreg->dpl = 0u;
+    sreg->sys.type = type == SREG_TR ? VCPU_DESC_SYS_TYPE_TSS_16_BUSY :
+        VCPU_DESC_SYS_TYPE_LDT;
+}
+
+static C_INT dt_install_selector_tables(descriptor_system_machine *state)
+{
+    static const uint8_t gdt[] = {
+        0,0,0,0,0,0,0,0,
+        0xffu,0xffu,0,0,0,0x9au,0,0,
+        0xffu,0xffu,0,0,0,0x92u,0,0,
+        0xffu,0,0,0x05u,0,0x82u,0,0,
+        0x2bu,0,0,0x06u,0,0x81u,0,0,
+        0xffu,0,0,0x07u,0,0x02u,0,0,
+        0x2bu,0,0,0x08u,0,0x83u,0,0,
+        0x2bu,0,0,0x09u,0,0x01u,0,0,
+        0x67u,0,0,0x0au,0,0x89u,0,0,
+        0xffu,0xffu,0,0,0,0xfau,0,0,
+        0xffu,0xffu,0,0,0,0xf2u,0,0
+    };
+
+    dt_set_tables(state, DT_GDT_ADDRESS, (uint16_t)(sizeof(gdt) - 1u),
+        0u, 0u);
+    return dt_write(state, DT_GDT_ADDRESS, gdt, sizeof(gdt));
+}
+
+static C_INT dt_test_selector_stores(C_VOID)
+{
+    static const uint8_t register_code[][5] = {
+        {0x66u,0x0fu,0x00u,0xc0u,0xf4u},
+        {0x66u,0x0fu,0x00u,0xc8u,0xf4u}
+    };
+    static const uint8_t memory_code[][6] = {
+        {0x0fu,0x00u,0x06u,0x00u,0x02u,0xf4u},
+        {0x0fu,0x00u,0x0eu,0x00u,0x02u,0xf4u}
+    };
+    const uint16_t selectors[] = { DT_LDT_SELECTOR, DT_TSS16_SELECTOR };
+    STD_SIZE_T index;
+
+    for (index = 0u; index < 2u; ++index) {
+        descriptor_system_machine state;
+        uint16_t observed = 0u;
+        C_INT failed = !dt_prepare(&state);
+
+        if (!failed) {
+            failed = !dt_install_selector_tables(&state);
+            dt_enter_user_protected(&state);
+            dt_seed_system_sreg(&state.machine->executor_cpu.data.ldtr,
+                SREG_LDTR, DT_LDT_SELECTOR);
+            dt_seed_system_sreg(&state.machine->executor_cpu.data.tr,
+                SREG_TR, DT_TSS16_SELECTOR);
+            state.machine->executor_cpu.data.eax = 0xdeadbeefu;
+            failed |= !dt_run_one(&state, register_code[index],
+                sizeof(register_code[index])) ||
+                state.machine->executor_cpu.data.eax !=
+                    (0xdead0000u | selectors[index]);
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+    }
+    for (index = 0u; index < 2u; ++index) {
+        descriptor_system_machine state;
+        uint16_t observed = 0u;
+        C_INT failed = !dt_prepare(&state);
+
+        if (!failed) {
+            dt_enter_protected(&state, 0u);
+            dt_seed_system_sreg(&state.machine->executor_cpu.data.ldtr,
+                SREG_LDTR, DT_LDT_SELECTOR);
+            dt_seed_system_sreg(&state.machine->executor_cpu.data.tr,
+                SREG_TR, DT_TSS16_SELECTOR);
+            failed = !dt_run(&state, memory_code[index], sizeof(memory_code[index]),
+                0, 0u) || !dt_read(&state, DT_STORE_ADDRESS,
+                    (uint8_t *)&observed, sizeof(observed)) ||
+                observed != selectors[index];
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+    }
+    return 1;
+}
+
+static C_INT dt_test_selector_loads(C_VOID)
+{
+    static const uint8_t lldt[] = {0x0fu,0x00u,0xd0u,0xf4u};
+    static const uint8_t ltr[] = {0x0fu,0x00u,0xd8u,0xf4u};
+    static const uint8_t memory_load_code[][7] = {
+        {0x66u,0x0fu,0x00u,0x16u,0x40u,0x02u,0xf4u},
+        {0x66u,0x0fu,0x00u,0x1eu,0x40u,0x02u,0xf4u}
+    };
+    static const uint8_t real_code[][4] = {
+        {0x0fu,0x00u,0xc0u,0u}, {0x0fu,0x00u,0xc8u,0u},
+        {0x0fu,0x00u,0xd0u,0u}, {0x0fu,0x00u,0xd8u,0u}
+    };
+    static const uint16_t lldt_selectors[] = {
+        0x0004u, DT_TSS16_SELECTOR, DT_LDT_NOT_PRESENT_SELECTOR
+    };
+    static const uint32_t lldt_exceptions[] = {
+        VCPUINS_EXCEPT_GP, VCPUINS_EXCEPT_GP, VCPUINS_EXCEPT_NP
+    };
+    static const uint16_t ltr_selectors[] = {
+        0x0000u, 0x0004u, DT_LDT_SELECTOR, DT_TSS16_BUSY_SELECTOR,
+        DT_TSS16_NOT_PRESENT_SELECTOR, DT_TSS32_SELECTOR
+    };
+    static const uint32_t ltr_exceptions[] = {
+        VCPUINS_EXCEPT_GP, VCPUINS_EXCEPT_GP, VCPUINS_EXCEPT_GP,
+        VCPUINS_EXCEPT_GP, VCPUINS_EXCEPT_NP, VCPUINS_EXCEPT_GP
+    };
+    STD_SIZE_T index;
+
+    for (index = 0u; index < 4u; ++index) {
+        descriptor_system_machine state;
+        t_cpu before;
+        t_cpu after;
+        C_INT failed = !dt_prepare(&state);
+
+        if (!failed) {
+            before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+            failed = !dt_run_fault_code(&state, real_code[index], 3u,
+                VCPUINS_EXCEPT_UD, 0u);
+            after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+            failed |= !dt_sreg_equal(&before.data.ldtr, &after.data.ldtr) ||
+                !dt_sreg_equal(&before.data.tr, &after.data.tr);
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+    }
+    {
+        descriptor_system_machine state;
+        C_INT failed = !dt_prepare(&state);
+
+        if (!failed) {
+            dt_enter_protected(&state, 0u);
+            failed = !dt_install_selector_tables(&state);
+            state.machine->executor_cpu.data.eax = 0xffff0000u | DT_LDT_SELECTOR;
+            failed |= !dt_run(&state, lldt, sizeof(lldt), 0, 0u) ||
+                !state.machine->executor_cpu.data.ldtr.flagValid ||
+                state.machine->executor_cpu.data.ldtr.selector != DT_LDT_SELECTOR ||
+                state.machine->executor_cpu.data.ldtr.base != 0x00000500u ||
+                state.machine->executor_cpu.data.ldtr.limit != 0x000000ffu ||
+                state.machine->executor_cpu.data.ldtr.sys.type !=
+                    VCPU_DESC_SYS_TYPE_LDT;
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+    }
+    {
+        descriptor_system_machine state;
+        C_INT failed = !dt_prepare(&state);
+
+        if (!failed) {
+            dt_enter_protected(&state, 0u);
+            failed = !dt_install_selector_tables(&state);
+            state.machine->executor_cpu.data.eax = 0xffff0000u;
+            failed |= !dt_run(&state, lldt, sizeof(lldt), 0, 0u) ||
+                state.machine->executor_cpu.data.ldtr.flagValid ||
+                state.machine->executor_cpu.data.ldtr.selector != 0u;
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+    }
+    for (index = 0u; index < 2u; ++index) {
+        descriptor_system_machine state;
+        const uint16_t selector = index == 0u ? DT_LDT_SELECTOR :
+            DT_TSS16_SELECTOR;
+        C_INT failed = !dt_prepare(&state);
+
+        if (!failed) {
+            dt_enter_protected(&state, 0u);
+            failed = !dt_install_selector_tables(&state) || !dt_write(&state,
+                DT_LOAD_ADDRESS, (const uint8_t *)&selector, sizeof(selector)) ||
+                !dt_run(&state, memory_load_code[index],
+                    sizeof(memory_load_code[index]), 0, 0u);
+            if (index == 0u) {
+                failed |= !state.machine->executor_cpu.data.ldtr.flagValid ||
+                    state.machine->executor_cpu.data.ldtr.selector != selector;
+            } else {
+                failed |= !state.machine->executor_cpu.data.tr.flagValid ||
+                    state.machine->executor_cpu.data.tr.selector != selector;
+            }
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+    }
+    for (index = 0u; index < 3u; ++index) {
+        descriptor_system_machine state;
+        t_cpu before;
+        t_cpu after;
+        C_INT failed = !dt_prepare(&state);
+
+        if (!failed) {
+            dt_enter_protected(&state, 0u);
+            failed = !dt_install_selector_tables(&state);
+            dt_seed_system_sreg(&state.machine->executor_cpu.data.ldtr,
+                SREG_LDTR, DT_LDT_SELECTOR);
+            state.machine->executor_cpu.data.eax = 0xbeef0000u |
+                lldt_selectors[index];
+            before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+            failed |= !dt_run_fault_code(&state, lldt, sizeof(lldt),
+                lldt_exceptions[index], lldt_selectors[index]);
+            after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+            failed |= !dt_sreg_equal(&before.data.ldtr, &after.data.ldtr);
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+    }
+    {
+        descriptor_system_machine state;
+        uint8_t access = 0u;
+        C_INT failed = !dt_prepare(&state);
+
+        if (!failed) {
+            dt_enter_protected(&state, 0u);
+            failed = !dt_install_selector_tables(&state);
+            state.machine->executor_cpu.data.eax = 0xffff0000u | DT_TSS16_SELECTOR;
+            failed |= !dt_run(&state, ltr, sizeof(ltr), 0, 0u) ||
+                !state.machine->executor_cpu.data.tr.flagValid ||
+                state.machine->executor_cpu.data.tr.selector != DT_TSS16_SELECTOR ||
+                state.machine->executor_cpu.data.tr.base != 0x00000600u ||
+                state.machine->executor_cpu.data.tr.limit != 0x0000002bu ||
+                state.machine->executor_cpu.data.tr.sys.type !=
+                    VCPU_DESC_SYS_TYPE_TSS_16_BUSY ||
+                !dt_read(&state, DT_GDT_ADDRESS + DT_TSS16_SELECTOR + 5u,
+                    &access, sizeof(access)) || access != 0x83u;
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+    }
+    for (index = 0u; index < 6u; ++index) {
+        descriptor_system_machine state;
+        t_cpu before;
+        t_cpu after;
+        uint8_t before_access = 0u;
+        uint8_t after_access = 0u;
+        C_INT failed = !dt_prepare(&state);
+
+        if (!failed) {
+            dt_enter_protected(&state, 0u);
+            failed = !dt_install_selector_tables(&state);
+            dt_seed_system_sreg(&state.machine->executor_cpu.data.tr, SREG_TR,
+                DT_TSS16_SELECTOR);
+            state.machine->executor_cpu.data.eax = 0xbeef0000u |
+                ltr_selectors[index];
+            if (ltr_selectors[index] != 0u &&
+                (ltr_selectors[index] & 0x0004u) == 0u) failed |= !dt_read_private(&state,
+                DT_GDT_ADDRESS + ltr_selectors[index] + 5u, &before_access,
+                sizeof(before_access));
+            before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+            failed |= !dt_run_fault_code(&state, ltr, sizeof(ltr),
+                ltr_exceptions[index], ltr_selectors[index]);
+            after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+            if (ltr_selectors[index] != 0u &&
+                (ltr_selectors[index] & 0x0004u) == 0u) failed |= !dt_read_private(&state,
+                DT_GDT_ADDRESS + ltr_selectors[index] + 5u, &after_access,
+                sizeof(after_access)) || before_access != after_access;
+            failed |= !dt_sreg_equal(&before.data.tr, &after.data.tr);
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+    }
+    return 1;
 }
 
 static C_INT dt_test_store_layout(C_VOID)
@@ -354,7 +685,8 @@ C_INT main(C_VOID)
 {
     if (!dt_test_store_layout() || !dt_test_protected_stores() ||
         !dt_test_load_layout() || !dt_test_register_and_privilege_faults() ||
-        !dt_test_memory_faults_preserve_tables()) return 1;
+        !dt_test_memory_faults_preserve_tables() || !dt_test_selector_stores() ||
+        !dt_test_selector_loads()) return 1;
     STD_PRINTF("M5:T304:DESCRIPTOR-SYSTEM:OK\n");
     return 0;
 }
