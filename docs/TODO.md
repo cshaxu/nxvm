@@ -62,6 +62,14 @@ candidate work, and detailed capability evidence belong in
   r/m16,r16` profile-gate mismatch; every remaining instruction family remains
   corpus-specific. This remains lower ROI than the real-mode PC/AT device
   route.
+- [ ] **System-extension consumer admission (`TODO(Low)`, T312).** T312
+  withdrew 32-bit TSS/task-gate/nested-return, LDT breadth, V86, guest DR/TR,
+  and remaining system forms because handlers or focused probes alone were not
+  real VM/M5 consumers. Re-admit only from an owner-supplied bounded checkpoint
+  or trace naming one form and its required state/fault boundary; preserve the
+  per-family thresholds in
+  [T312 evidence](etc/evidence/t312-system-extension-admission.md). Do not use
+  this ledger entry to start M6 or claim system-family completion.
 - [ ] **Internal descriptor vocabulary cleanup (`TODO(Low)`).** Rename the
   internal segment-descriptor field vocabulary only through a future
   source-structure admission with an explicit caller inventory. Preserve data

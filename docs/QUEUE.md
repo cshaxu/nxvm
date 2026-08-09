@@ -30,10 +30,6 @@ raw traces remain outside the repository and default build.
     and CR2, cross-page accesses, or `INVLPG`. Each addition needs mapped,
     unmapped, protection, and pre-fault atomicity probes; no PAE or host-memory
     substitution.
-1. **Trace-driven 80386 system extensions.** Admit 32-bit TSS switching, task
-    gates, nested-task return, LDT breadth, virtual-8086, debug registers, or
-    remaining system-instruction forms only for a concrete consumer. Present
-    FPU expansion remains separate.
 The following four candidates establish the M6 source-locked, single-session
 mantle experiment. They do not define a DLL/SDK or external ABI. Mantle
 assembles one `core_machine` from typed profile and host providers supplied by
