@@ -45,12 +45,14 @@ static C_INT ct_prepare(ct_machine *state, core_machine_cpu_profile profile,
         .cpu_profile = profile,
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
-    const uint8_t gdt_pointer[] = { 0x1fu,0,0,0x03u,0,0 };
+    const uint8_t gdt_pointer[] = { 0x2fu,0,0,0x03u,0,0 };
     uint8_t gdt[] = {
         0,0,0,0,0,0,0,0,
         0xffu,0xffu,0,0x20u,0,0x9au,0,0,
         0xffu,0xffu,0,0x30u,0,0x92u,0xcfu,0,
-        0xffu,0xffu,0,0x40u,0,0x92u,0x40u,0
+        0xffu,0xffu,0,0x40u,0,0x92u,0x40u,0,
+        0xffu,0xffu,0,0x20u,0,0xbau,0,0,
+        0xffu,0xffu,0,0x20u,0,0x1au,0,0
     };
     const uint8_t real_code[] = {
         0x0fu,0x01u,0x16u,0x00u,0x01u,
@@ -135,6 +137,17 @@ static C_INT ct_run_gp(ct_machine *state, const uint8_t *code,
         core_machine_get_cpu_diagnostic(state->machine, &diagnostic) == TYPE_STATUS_OK &&
         diagnostic.first_fault.valid &&
         TYPE_GET_BIT(diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_GP);
+}
+
+static C_INT ct_run_np(ct_machine *state, const uint8_t *code,
+    STD_SIZE_T code_size, t_cpu *out_cpu)
+{
+    core_machine_cpu_diagnostic diagnostic;
+
+    return ct_run(state, code, code_size, CORE_MACHINE_STOP_FAULT, out_cpu) &&
+        core_machine_get_cpu_diagnostic(state->machine, &diagnostic) == TYPE_STATUS_OK &&
+        diagnostic.first_fault.valid &&
+        TYPE_GET_BIT(diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_NP);
 }
 
 static C_VOID ct_set_stack32(ct_machine *state, uint32_t esp)
@@ -611,6 +624,115 @@ static C_INT ct_test_near_indirect_and_fault_boundaries(C_VOID)
     return !failed;
 }
 
+static C_INT ct_test_far_same_cpl_return_validation(C_VOID)
+{
+    static const uint8_t retf[] = {0xcbu};
+    static const uint8_t dpl_mismatch[] = {0,0,0,0,0x20u,0,0,0};
+    static const uint8_t nonpresent[] = {0,0,0,0,0x28u,0,0,0};
+    ct_machine state;
+    t_cpu before;
+    t_cpu after;
+    uint8_t descriptor_access = 0u;
+    C_INT failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+
+    if (!failed) {
+        failed = !ct_write(&state, 0x0000c000u, dpl_mismatch,
+            sizeof(dpl_mismatch));
+        before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        before.data.eip = 0u;
+        if (!failed) {
+            C_INT run_ok = ct_run_gp(&state, retf, sizeof(retf), &after);
+            failed = !run_ok;
+        }
+    }
+    core_machine_destroy(state.machine);
+    if (failed) return 0;
+    failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+    if (!failed) {
+        failed = !ct_write(&state, 0x0000c000u, nonpresent, sizeof(nonpresent));
+        before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        before.data.eip = 0u;
+        if (!failed) {
+            C_INT run_ok = ct_run_np(&state, retf, sizeof(retf), &after);
+            failed = !run_ok;
+        }
+    }
+    core_machine_destroy(state.machine);
+    return !failed;
+}
+
+static C_INT ct_test_far_immediate_forms(C_VOID)
+{
+    static const uint8_t jmp32[] = {0xeau,7,0,0,0,8,0,0xf4u};
+    static const uint8_t jmp16[] = {0x66u,0xeau,6,0,8,0,0xf4u};
+    static const uint8_t call32[] = {
+        0x9au,10,0,0,0,8,0,0xb0u,0xa5u,0xf4u,0xcbu
+    };
+    static const uint8_t call16[] = {
+        0x66u,0x9au,9,0,8,0,0xb0u,0xa5u,0xf4u,0x66u,0xcbu
+    };
+    const uint8_t *const programs[] = {jmp32,jmp16,call32,call16};
+    const STD_SIZE_T sizes[] = {
+        sizeof(jmp32),sizeof(jmp16),sizeof(call32),sizeof(call16)
+    };
+    STD_SIZE_T index;
+
+    for (index = 0u; index < sizeof(programs) / sizeof(programs[0]); ++index) {
+        ct_machine state;
+        t_cpu before;
+        t_cpu after;
+        C_INT failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+
+        if (!failed) {
+            before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+            failed = !ct_run(&state, programs[index], sizes[index],
+                CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT, &after);
+            failed |= after.data.cs.selector != before.data.cs.selector ||
+                after.data.cs.base != before.data.cs.base ||
+                (index >= 2u && (after.data.eax != 0x000000a5u ||
+                    after.data.esp != before.data.esp));
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+    }
+    return 1;
+}
+
+static C_INT ct_test_far_real_mode(C_VOID)
+{
+    static const uint8_t jmp[] = {0xeau,0,0,0,1};
+    static const uint8_t call[] = {0x9au,0,0,0,1,0xf4u};
+    static const uint8_t halt[] = {0xf4u};
+    static const uint8_t retf[] = {0xcbu};
+    const core_machine_run_budget budget = {48u,0u};
+    core_machine_run_result result;
+    ct_machine state;
+    t_cpu after;
+    C_INT failed = !ct_prepare_real(&state);
+
+    if (!failed) {
+        failed = !ct_write(&state, 0u, jmp, sizeof(jmp)) ||
+            !ct_write(&state, 0x1000u, halt, sizeof(halt)) ||
+            core_machine_run(state.machine, budget, &result) != TYPE_STATUS_OK ||
+            result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
+        after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        failed |= after.data.cs.selector != 0x0100u || after.data.cs.base != 0x1000u;
+    }
+    core_machine_destroy(state.machine);
+    if (failed) return 0;
+    failed = !ct_prepare_real(&state);
+    if (!failed) {
+        failed = !ct_write(&state, 0u, call, sizeof(call)) ||
+            !ct_write(&state, 0x1000u, retf, sizeof(retf)) ||
+            core_machine_run(state.machine, budget, &result) != TYPE_STATUS_OK ||
+            result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
+        after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        failed |= after.data.cs.selector != 0u || after.data.cs.base != 0u;
+    }
+    core_machine_destroy(state.machine);
+    return !failed;
+}
+
 C_INT main(C_VOID)
 {
     if (!ct_test_jcc_short() || !ct_test_near_and_short_jumps() ||
@@ -618,7 +740,9 @@ C_INT main(C_VOID)
         !ct_test_loop_and_jcxz() || !ct_test_jcc_limit_boundaries() ||
         !ct_test_loop_target_fault_is_atomic() || !ct_test_pre386_near_jcc_is_ud() ||
         !ct_test_ret_target_fault_is_atomic() || !ct_test_near_call_and_ret_forms() ||
-        !ct_test_near_indirect_and_fault_boundaries()) return 1;
+        !ct_test_near_indirect_and_fault_boundaries() ||
+        !ct_test_far_same_cpl_return_validation() || !ct_test_far_immediate_forms() ||
+        !ct_test_far_real_mode()) return 1;
     STD_PRINTF("M5:T303:CONTROL-TRANSFER:OK\n");
     return 0;
 }

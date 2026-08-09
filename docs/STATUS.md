@@ -2,13 +2,13 @@
 
 ## Current Work
 
-**Active: M5 T303 S3.**
+**Active: M5 T303 S4.**
 
-## M5 T303 S3 Packet
+## M5 T303 S4 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Corrective; M5 T303 S3 implementation batch B; Coordinated Dual-Session Mode. S1/S2 established the committed control-transfer matrix and relative-transfer evidence; S3 implements near `CALL`/`JMP` and near `RET` only. |
+| Identifier Mode | Corrective; M5 T303 S4 implementation batch C; Coordinated Dual-Session Mode. S1--S3 established the matrix plus relative and near-transfer evidence; S4 implements real-mode and protected same-CPL far `CALL`/`JMP`/`RETF` only. |
 | Admission And Approval | Owner approved the direct M5 80386 32-bit protected execution/delivery package and instructed coordinator/executor execution through the package, stopping before Mantle. T302 is closed; T303 is the next approved Queue candidate. |
 | Objective | Admit the 80386 32-bit same-privilege control-transfer family: near/far `JMP`, `CALL`, `RET`, `RETF`, conditional-relative and loop-family forms, including operand-size variants, code-limit checks, return-frame ordering, and failure-before-visible-commit rules. Freeze exact form/profile/mode and commit matrices before implementation. |
 | Non-goals | Privilege transitions, call gates, task switching, interrupt/exception delivery, descriptor/system changes, paging policy, virtual-8086, stack primitive rework already closed by T302, host/product UX, external ABI, and source import. No new executor or execution path. |
@@ -19,7 +19,7 @@
 | Expected Markers | S1 emits an audit record only. The later family probe marker is `M5:T303:CONTROL-TRANSFER:OK`; its task artifact is created only when CMake's current target is updated during implementation. |
 | Asset Needs | Local read-only reference checkouts and owner-supplied local Setup media may be observed but are never committed, packaged, or made default-build inputs. |
 | Stop Conditions | Stop and report on Intel/reference disagreement not resolved by a bounded optional bridge, a required architecture change, a second executor/state path, raw public-layout exposure, retained Console/debugger/boot regression, or a form owned by privilege/exception/task/V86 work. |
-| Exit Criteria | Near relative/indirect `CALL` and `JMP`, plus near `RET`, follow the frozen 16/32 form/profile/mode, stack-address, target-validation, and failure-before-visible-commit matrix. Focused probes and required gates pass without touching far selectors, privilege, delivery, or later families. |
+| Exit Criteria | Real-mode and protected same-CPL far `CALL`/`JMP`/`RETF` follow the frozen pointer-width, selector/cache, descriptor/type/present/privilege/limit, return-frame, and failure-before-visible-commit matrix. Focused probes and required gates pass without touching outer return, gates, tasks, delivery, or later families. |
 | Original Owner Request | Execute the 80386 task package in dual-session mode through the Mantle boundary; use Intel, Bochs, and PCjs to establish logic, observe Setup once per task, and use the optional bridge when uncertain. |
 | Similar-Issue Sweep | Audit all near/far branch, call, return, condition/loop, code-limit, stack-frame, selector/cache, and fault/commit helpers in `src`, `tests`, and CMake. Each production-path hit must be classified in the S1 record; do not silently widen scope. |
 | S1 Audit Record | [T303 control-transfer admission audit](etc/evidence/t303-control-transfer-admission.md) freezes the form/profile/mode, fault/commit, focused-probe, and deferred-owner matrices without changing CPU behavior. |

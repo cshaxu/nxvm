@@ -174,3 +174,19 @@ interface, CMake artifact, or product-path code changed in S3. The focused
 probe and retained T302 operand/address and real-mode address probes pass;
 full gates, artifact construction, and Setup observation remain family-close
 work.
+
+## S4 Far Control-Transfer Evidence
+
+S4 extends the focused synthetic probe with real-mode far immediate `JMP` and
+`CALL`/`RETF`, plus protected same-CPL far immediate `JMP` and `CALL`/`RETF`
+in both 16- and 32-bit pointer widths. Protected `RETF` frames now prove the
+nonconforming DPL/RPL rejection as `#GP(selector)` and the non-present case as
+`#NP(selector)`.
+
+Two local production corrections were required. `CALL ptr16:32` now decodes
+its architectural six-byte immediate rather than consuming eight bytes, so the
+saved return EIP is the first byte after the far pointer. Protected same-CPL
+`RETF` now rejects a nonconforming return code descriptor whose DPL differs
+from the selector RPL before the generic code-cache loader, which intentionally
+does not perform that transfer-specific privilege check. No outer return,
+gate, task, delivery, public interface, or artifact path changed.

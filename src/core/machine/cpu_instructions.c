@@ -4450,6 +4450,12 @@ static C_VOID _e_ret_far(core_machine_cpu_execution_context *context, type_unsig
             }
             TYPE_TRACE_BLOCK_END;
         }
+        else if (_GetDesc_DPL(descriptor) != _GetSelector_RPL(newcs))
+        {
+            TYPE_TRACE_BLOCK_BEGIN("DescCodeNonConform/DPL(!RPL)");
+            TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(newcs & 0xfffcu));
+            TYPE_TRACE_BLOCK_END;
+        }
         if (!_IsDescPresent(descriptor))
         {
             TYPE_TRACE_BLOCK_BEGIN("!DescPresent");
@@ -10662,7 +10668,7 @@ static C_VOID CALL_PTR16_32(core_machine_cpu_execution_context *context)
             break;
         case 4:
             TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
-            TYPE_TRACE_CHECK_RETURN(_d_imm(context, 8));
+            TYPE_TRACE_CHECK_RETURN(_d_imm(context, 6));
             neweip = TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm);
             newcs = TYPE_MASK_UNSIGNED_16(instruction_state.data.cimm >> 32);
             TYPE_TRACE_CHECK_RETURN(_e_call_far(context, newcs, neweip, 4));
