@@ -270,3 +270,31 @@ and focused registration.  Existing production behavior passed; no executor,
 memory route, public surface, or product path changed.  The marker is
 `M5:T310:S7:BIT-SCAN:OK`; S7 creates no artifact, Queue change, or Setup
 observation.  IMUL, paging, system, task, and V86 work remain deferred.
+
+## S8 Two-Operand IMUL Evidence
+
+Intel 80386 PRM Chapter 4 defines only the admitted `0F AF /r` two-operand
+signed multiply here: the operand-size-selected register destination receives
+the truncated product, and CF/OF are both set exactly when that result is not
+the sign extension of the full product.  Other flags are undefined and are not
+test oracles.  Bochs 2.6 `cpu/arith16.cc`, `cpu/arith32.cc`, and
+`cpu/fetchdecode.cc`, and PCjs 2.00.0
+`machines/pcx86/modules/v2/x86ops.js`, `x86op0f.js`, and `x86help.js`, were
+read-only behavior comparisons; no source was copied.
+
+S8 makes the 32-bit intermediate multiplication explicitly `type_signed_64`.
+The prior pair of signed 32-bit operands could overflow in the host language
+before assignment to the 64-bit temporary.  The correction preserves guest
+result and CF/OF semantics while making the full-product comparison defined.
+
+`core-machine-imul2-smoke` proves signed 16/32-bit register and memory
+sources, in-range and overflow products, `66h`, combined `67h`/`66h`, and
+CF/OF.  A provider proves 80186/80286 `#UD` before source access.  A protected
+DS-limit source failure takes the retained no-IDT `#DF` terminal route while
+destination ECX, EIP, CF, and OF retain entry state.  One-operand and immediate
+IMUL are intentionally not decoded or tested by this packet.  The sweep covers
+AF metadata/table/decoder, `_a_imul2`, source/destination helpers, prefixes,
+CF/OF, profile gating, and focused registration.  The marker is
+`M5:T310:S8:IMUL2:OK`; no artifact, Queue change, Setup observation, or
+product-path change is made.  Paging, system, task, and V86 work remain
+deferred.

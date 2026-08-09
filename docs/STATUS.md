@@ -2,32 +2,33 @@
 
 ## Current Work
 
-**Active: M5 T310 S7.**
+**Active: M5 T310 S8.**
 
-## M5 T310 S7 Packet
+## M5 T310 S8 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Corrective; M5 T310 S7 BSF/BSR family implementation; Coordinated Dual-Session Mode. T310 S1--S6 are accepted. |
+| Identifier Mode | Corrective; M5 T310 S8 two-operand IMUL implementation; Coordinated Dual-Session Mode. T310 S1--S7 are accepted. |
 | Admission And Approval | T310 is the next linear task selected by T309's accepted form audit; it precedes paging because its forms are metadata-valid and dispatch-reachable but lack focused semantic evidence. |
-| Objective | Implement and prove 80386 `BSF`/`BSR` (`0F BC`/`BD`) through the existing core decoder, ModRM, checked-memory, and fault routes. |
-| Non-goals | SETcc, MOVZX/MOVSX, bit-test/modify or SHLD/SHRD changes, IMUL, paging, debug/test registers, task/V86/system extensions, later-CPU forms, product UX, public ABI, source import, a second executor, or guest-image build fixtures. |
-| Reference Baseline | Accepted T308 artifact `vm-0-5-0308` / `nxvm_0_5_0308.exe`; accepted T310 S6 double-shift evidence `942af6a`. |
-| Files And ABI Surface | S7 may change core CPU BSF/BSR execution, one focused prepared-state probe/CMake registration, and task records. It must not change public interfaces, cross-module ownership, or product UX. |
+| Objective | Implement and prove 80386 two-operand signed `IMUL` (`0F AF`) through the existing core decoder, ModRM, checked-memory, and fault routes. |
+| Non-goals | SETcc, MOVZX/MOVSX, bit-test/modify, SHLD/SHRD or BSF/BSR changes; one-operand or immediate IMUL; paging, debug/test registers, task/V86/system extensions, later-CPU forms, product UX, public ABI, source import, a second executor, or guest-image build fixtures. |
+| Reference Baseline | Accepted T308 artifact `vm-0-5-0308` / `nxvm_0_5_0308.exe`; accepted T310 S7 scan evidence `22ed9f3`. |
+| Files And ABI Surface | S8 may change core CPU two-operand IMUL execution, one focused prepared-state probe/CMake registration, and task records. It must not change public interfaces, cross-module ownership, or product UX. |
 | Applicable Rules | `rules/EXECUTION.md`, `rules/ARCHITECTURE.md`, `rules/CODING.md`, `rules/DOCUMENT.md`, and `etc/operations/policy/source-policy.md`; retain one core executor/state owner and existing checked memory, stack, and fault routes. |
 | Verification | Intel 80386 PRM is authoritative. Record versioned read-only Bochs 2.6 and PCjs 2.00.0 behavior paths; use focused prepared-state probes only. |
-| Expected Markers | The scan marker proves BSF/BSR, 16/32-bit destination width, register/memory source, first/last set-bit selection, zero-source ZF behavior without a destination-value oracle, `66h`/`67h`, 80186/80286 `#UD` before operand access, and failed-read nonpublication. Flags other than ZF and zero-source destination values are not test oracles. The retained 8086 `0F` POP CS compatibility path remains unchanged. S7 creates no artifact. |
+| Expected Markers | The IMUL marker proves signed 16/32-bit register and memory sources, in-range and overflow products, CF/OF behavior, `66h`/`67h`, 80186/80286 `#UD` before operand access, and failed-read nonpublication. Undefined flags other than CF/OF are not test oracles. One-operand and immediate IMUL remain outside S8. The retained 8086 `0F` POP CS compatibility path remains unchanged. S8 creates no artifact. |
 | S2 Audit Record | [T310 0F integer bit/data admission audit](etc/evidence/t310-0f-integer-bit-data-admission.md) records the authority, form matrix, static candidates, focused-probe rules, batch boundaries, retained intersections, and deferrals. |
 | Asset Needs | Read-only local references only; no guest media, firmware, or third-party source is committed. |
 | Original Owner Request | Execute the direct M5 80386 protected execution/delivery package in coordinated mode, stopping before Mantle; use Intel as authority with read-only Bochs and PCjs comparison. |
-| Similar-Issue Sweep | Sweep BC/BD metadata/table/decoder paths, scan/zero-test helpers, register/reference read/write paths, operand/address-size selection, defined ZF behavior, profile gate, and focused probe registration. |
+| Similar-Issue Sweep | Sweep AF metadata/table/decoder path, signed multiply helper, register/reference read/write paths, operand/address-size selection, CF/OF behavior, profile gate, and focused probe registration. |
 | S3 Evidence Record | [T310 SETcc evidence](etc/evidence/t310-0f-integer-bit-data-admission.md#s3-setcc-evidence) is retained unchanged. |
 | S4 Evidence Record | [T310 MOVZX/MOVSX evidence](etc/evidence/t310-0f-integer-bit-data-admission.md#s4-movzxmovsx-evidence) is retained unchanged. |
 | S5 Evidence Record | [T310 bit-test/modify evidence](etc/evidence/t310-0f-integer-bit-data-admission.md#s5-bit-testmodify-evidence) is retained unchanged. |
 | S6 Evidence Record | [T310 SHLD/SHRD evidence](etc/evidence/t310-0f-integer-bit-data-admission.md#s6-shldshrd-evidence) is retained unchanged. |
-| S7 Evidence Record | [T310 BSF/BSR evidence](etc/evidence/t310-0f-integer-bit-data-admission.md#s7-bsfbsr-evidence) records the focused scan matrix, zero-source discipline, and checked-read boundary. |
-| Stop Conditions | Stop and report an Intel/reference disagreement, use of an undefined zero-source destination value or undefined flag as an oracle, a pre-80386 path that accesses an operand, any need for a second executor or memory route, a public ABI change, or a failed retained intersection. |
-| Exit Criteria | S7 proves all admitted BSF/BSR forms and their defined failure boundaries, passes relevant focused and retained probes, documentation governance, and diff check, pushes its successful local commit before reporting, and remains active pending coordinator acceptance. |
+| S7 Evidence Record | [T310 BSF/BSR evidence](etc/evidence/t310-0f-integer-bit-data-admission.md#s7-bsfbsr-evidence) is retained unchanged. |
+| S8 Evidence Record | [T310 two-operand IMUL evidence](etc/evidence/t310-0f-integer-bit-data-admission.md#s8-two-operand-imul-evidence) records the signed product, CF/OF, profile, and checked-read proof. |
+| Stop Conditions | Stop and report an Intel/reference disagreement, a scope expansion to one-operand or immediate IMUL, a pre-80386 path that accesses an operand, any need for a second executor or memory route, a public ABI change, or a failed retained intersection. |
+| Exit Criteria | S8 proves all admitted two-operand IMUL forms and failure boundaries, passes relevant focused and retained probes, documentation governance, and diff check, pushes its successful local commit before reporting, and remains active pending coordinator acceptance. |
 
 ## Current Technical Baseline
 
