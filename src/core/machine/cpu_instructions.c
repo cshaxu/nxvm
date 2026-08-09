@@ -1701,7 +1701,11 @@ static type_bool _kdf_check_prefix(core_machine_cpu_execution_context *context, 
 static C_VOID _kdf_skip(core_machine_cpu_execution_context *context, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_kdf_skip");
-    TYPE_TRACE_CHECK_RETURN(cpu_state.data.eip += byte);
+    if (cpu_state.data.cs.seg.exec.defsize)
+        TYPE_TRACE_CHECK_RETURN(cpu_state.data.eip += byte);
+    else
+        TYPE_TRACE_CHECK_RETURN(cpu_state.data.eip = TYPE_MASK_UNSIGNED_16(
+            cpu_state.data.eip + byte));
     TYPE_TRACE_CALL_END;
 }
 static C_VOID _kdf_code(core_machine_cpu_execution_context *context, type_virtual_address rdata, type_unsigned_8 byte)

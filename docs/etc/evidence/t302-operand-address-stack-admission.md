@@ -74,3 +74,37 @@ are not yet family-complete. The only known uncertainty is the exact observable
 state on a late failing multi-access stack instruction; it is bounded to S3
 through Intel access-order probes. It does not require a reference bridge and
 does not justify a new executor, session, public interface, or host shortcut.
+
+## S2 Batch A Evidence
+
+`tests/machine/core_machine_operand_address_smoke.c` is the focused synthetic
+probe for Batch A. Its minimal protected-state setup deliberately gives the
+data segment a 4 GiB limit for 32-bit offset forms and leaves the stack segment
+at the bootstrap's 16-bit valid window; this avoids imposing unrelated stack
+constraints on fetch or general-data checks. It proves 16- and 32-bit code
+defaults, repeated `66h`, per-instruction prefix reset, `66h`/`67h` width
+crosses, 16-bit CS fetch wrap, `moffs`, signed-displacement SIB, no-index and
+no-base SIB, DS/SS defaults, and a DS override. It also checks that a normal
+data-limit failure and an expand-down data-limit failure leave EAX unchanged.
+
+The implementation correction is limited to `_kdf_skip`: when the current CS
+cache is 16-bit it now advances EIP as a 16-bit offset, so opcode, immediate,
+ModRM, and SIB fetches that share `_kdf_code` wrap at `FFFFh` rather than
+escaping the code segment. The probe's `NOP` at `CS:FFFFh` followed by `HLT`
+at `CS:0000h` is the direct proof.
+
+The S2 similar-issue sweep found no other 32-bit `eip` increment outside
+`_kdf_skip`. The many direct `ip++` sites are the retained pre-80386 branches
+of individual opcode handlers; Batch A's 80386 path reaches `_d_skip` and the
+single `_kdf_skip` helper. Stack helpers remain S3, and string/REP helpers
+remain S4. No exception-delivery, control-transfer, stack, or public-interface
+path changed.
+
+Focused commands passed: `core-machine-operand-address-smoke` emitted
+`M5:T302:OPERAND-ADDRESS-STACK:OK`; retained
+`core-machine-real-mode-386-address-smoke` emitted
+`M5:T287:S24:REAL-MODE-386-ADDR32:OK`; and retained
+`core-machine-real-mode-386-rep-cmps-smoke` emitted
+`M5:T292:S1:REP-STRING:OK`. The deliberate limit probes emit their normal
+guest fault diagnostics before their terminal marker. S2 has no artifact,
+full-gate, or Setup observation; those remain family-close work.
