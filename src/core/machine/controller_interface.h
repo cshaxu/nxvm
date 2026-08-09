@@ -7,8 +7,9 @@
 
 #define CORE_MACHINE_FDC_DRIVE_COUNT 4u
 
-/* A controller may retain this frozen core-issued request token, but never
- * DMA registers, guest memory, or a controller implementation pointer. */
+/* A controller may retain this frozen core-issued nonce, but never DMA
+ * registers, guest memory, a controller implementation pointer, or an address.
+ * Core validates it against the receiving machine's private DMA state. */
 typedef struct core_machine_dma_request_binding {
     type_native_unsigned core_token;
     uint8_t channel;

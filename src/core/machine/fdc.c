@@ -138,7 +138,18 @@ static C_INT core_machine_fdc_media_offset(const core_machine_fdc *fdc,
 
 static C_VOID core_machine_fdc_deassert_dma(core_machine_fdc *fdc)
 {
-    core_machine_dma_request_deassert(&fdc->connect.dma_request);
+    if (fdc->connect.dma_request_deassert != STD_NULL) {
+        fdc->connect.dma_request_deassert(fdc->connect.dma_request_owner,
+            &fdc->connect.dma_request);
+    }
+}
+
+static C_VOID core_machine_fdc_request_assert(core_machine_fdc *fdc)
+{
+    if (fdc->connect.dma_request_assert != STD_NULL) {
+        fdc->connect.dma_request_assert(fdc->connect.dma_request_owner,
+            &fdc->connect.dma_request);
+    }
 }
 
 static C_VOID core_machine_fdc_raise_irq(core_machine_fdc *fdc)
@@ -390,7 +401,7 @@ static C_VOID core_machine_fdc_start_transfer(core_machine_fdc *fdc, C_INT write
     fdc->data.phase = write_to_media ? core_machine_fdc_PHASE_EXECUTION_WRITE :
         core_machine_fdc_PHASE_EXECUTION_READ;
     if (!fdc->data.flagNDMA && (fdc->data.dor & VFDC_DOR_ENRQ) != 0u) {
-        core_machine_dma_request_assert(&fdc->connect.dma_request);
+        core_machine_fdc_request_assert(fdc);
     }
 }
 
@@ -420,7 +431,7 @@ static C_VOID core_machine_fdc_start_read_track(core_machine_fdc *fdc)
         info.geometry.sectors_per_track * 512u;
     fdc->data.phase = core_machine_fdc_PHASE_EXECUTION_READ;
     if ((fdc->data.dor & VFDC_DOR_ENRQ) != 0u) {
-        core_machine_dma_request_assert(&fdc->connect.dma_request);
+        core_machine_fdc_request_assert(fdc);
     }
 }
 
@@ -526,7 +537,7 @@ static C_VOID core_machine_fdc_execute(core_machine_fdc *fdc)
         } else {
             fdc->data.phase = core_machine_fdc_PHASE_EXECUTION_FORMAT;
             if (!fdc->data.flagNDMA && (fdc->data.dor & VFDC_DOR_ENRQ) != 0u) {
-                core_machine_dma_request_assert(&fdc->connect.dma_request);
+                core_machine_fdc_request_assert(fdc);
             }
         }
         break;
@@ -635,13 +646,21 @@ static C_VOID core_machine_fdc_write_control(t_port *port, type_unsigned_16 id,
 C_VOID core_machine_fdc_connect(core_machine_fdc *fdc,
     const core_machine_media_registry *media_registry,
     const core_machine_fdc_drive_bindings *drives,
-    const core_machine_dma_request_binding *dma_request, t_pic *pic_master,
-    t_pic *pic_slave, t_port *port, const core_machine_fdc_config *config)
+    const core_machine_dma_request_binding *dma_request,
+    core_machine_fdc_dma_request_operation dma_request_assert,
+    core_machine_fdc_dma_request_operation dma_request_deassert,
+    C_VOID *dma_request_owner, t_pic *pic_master, t_pic *pic_slave,
+    t_port *port, const core_machine_fdc_config *config)
 {
-    if (fdc == STD_NULL || drives == STD_NULL || dma_request == STD_NULL || config == STD_NULL) return;
+    if (fdc == STD_NULL || drives == STD_NULL || dma_request == STD_NULL ||
+        dma_request_assert == STD_NULL || dma_request_deassert == STD_NULL ||
+        dma_request_owner == STD_NULL || config == STD_NULL) return;
     fdc->connect.media_registry = media_registry;
     fdc->connect.drives = *drives;
     fdc->connect.dma_request = *dma_request;
+    fdc->connect.dma_request_assert = dma_request_assert;
+    fdc->connect.dma_request_deassert = dma_request_deassert;
+    fdc->connect.dma_request_owner = dma_request_owner;
     core_machine_pic_irq_source_bind(&fdc->connect.irq_source, pic_master,
         pic_slave, config->irq);
     fdc->connect.port = port;

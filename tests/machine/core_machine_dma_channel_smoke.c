@@ -90,7 +90,7 @@ C_INT main(C_VOID)
      * may expose only one byte. */
     core_machine_dma_write_channel2(&port, 0x1234u, 0x01u, 1u, 0x86u);
     core_machine_port_write(&port, 0x000au, 0x02u);
-    core_machine_dma_request_assert(&binding);
+    core_machine_dma_request_assert(&primary, &secondary, &binding);
     core_machine_port_write(&port, 0x00d4u, 0x00u);
     core_machine_dma_advance(&latch, &primary, &secondary, &memory, 1u);
     if (core_machine_memory_read_physical(&memory, 0x11234u,
@@ -129,7 +129,7 @@ C_INT main(C_VOID)
     }
     core_machine_dma_write_channel2(&port, 0x1234u, 0x01u, 0u, 0x46u);
     core_machine_port_write(&port, 0x000au, 0x06u);
-    core_machine_dma_request_assert(&binding);
+    core_machine_dma_request_assert(&primary, &secondary, &binding);
     core_machine_dma_advance(&latch, &primary, &secondary, &memory, 1u);
     if (core_machine_memory_read_physical(&memory, 0x11234u,
             (type_virtual_address)bytes, sizeof(bytes)) != TYPE_STATUS_OK ||
@@ -139,7 +139,7 @@ C_INT main(C_VOID)
         failed = 1;
     }
     core_machine_port_write(&port, 0x000au, 0x02u);
-    core_machine_dma_request_deassert(&binding);
+    core_machine_dma_request_deassert(&primary, &secondary, &binding);
     core_machine_dma_advance(&latch, &primary, &secondary, &memory, 1u);
     if (core_machine_memory_read_physical(&memory, 0x11234u,
             (type_virtual_address)bytes, sizeof(bytes)) != TYPE_STATUS_OK ||
@@ -156,9 +156,9 @@ C_INT main(C_VOID)
     fixture.next = 0u;
     core_machine_dma_write_channel2(&port, 0x1236u, 0x01u, 0u, 0x96u);
     core_machine_port_write(&port, 0x000au, 0x02u);
-    core_machine_dma_request_assert(&binding);
+    core_machine_dma_request_assert(&primary, &secondary, &binding);
     core_machine_dma_advance(&latch, &primary, &secondary, &memory, 1u);
-    core_machine_dma_request_assert(&binding);
+    core_machine_dma_request_assert(&primary, &secondary, &binding);
     core_machine_dma_advance(&latch, &primary, &secondary, &memory, 1u);
     if (core_machine_memory_read_physical(&memory, 0x11236u,
             (type_virtual_address)bytes, 1u) != TYPE_STATUS_OK ||
@@ -176,7 +176,7 @@ C_INT main(C_VOID)
     fixture.next = 0u;
     core_machine_dma_write_channel2(&port, 0x1238u, 0x01u, 0u, 0xa6u);
     core_machine_port_write(&port, 0x000au, 0x02u);
-    core_machine_dma_request_assert(&binding);
+    core_machine_dma_request_assert(&primary, &secondary, &binding);
     core_machine_dma_advance(&latch, &primary, &secondary, &memory, 1u);
     if (core_machine_memory_read_physical(&memory, 0x11238u,
             (type_virtual_address)bytes, 1u) != TYPE_STATUS_OK ||
@@ -196,7 +196,7 @@ C_INT main(C_VOID)
     core_machine_dma_write_channel2(&port, 0x1240u, 0x01u, 1u, 0x06u);
     core_machine_port_write(&port, 0x000au, 0x02u);
     core_machine_port_write(&port, 0x00d4u, 0x00u);
-    core_machine_dma_request_assert(&binding);
+    core_machine_dma_request_assert(&primary, &secondary, &binding);
     core_machine_dma_advance(&latch, &primary, &secondary, &memory, 1u);
     core_machine_dma_advance(&latch, &primary, &secondary, &memory, 1u);
     if (core_machine_memory_read_physical(&memory, 0x11240u,
@@ -206,7 +206,7 @@ C_INT main(C_VOID)
             bytes[0], bytes[1], fixture.terminal_count);
         failed = 1;
     }
-    core_machine_dma_request_assert(&binding);
+    core_machine_dma_request_assert(&primary, &secondary, &binding);
     core_machine_dma_advance(&latch, &primary, &secondary, &memory, 1u);
     if (core_machine_memory_read_physical(&memory, 0x11240u,
             (type_virtual_address)bytes, sizeof(bytes)) != TYPE_STATUS_OK ||
@@ -225,7 +225,7 @@ C_INT main(C_VOID)
     core_machine_dma_write_channel2(&port, 0x1242u, 0x01u, 1u, 0x46u);
     core_machine_port_write(&port, 0x000au, 0x02u);
     core_machine_port_write(&port, 0x00d4u, 0x00u);
-    core_machine_dma_request_assert(&binding);
+    core_machine_dma_request_assert(&primary, &secondary, &binding);
     core_machine_dma_advance(&latch, &primary, &secondary, &memory, 1u);
     core_machine_dma_advance(&latch, &primary, &secondary, &memory, 1u);
     if (core_machine_memory_read_physical(&memory, 0x11242u,
@@ -235,7 +235,7 @@ C_INT main(C_VOID)
             bytes[0], bytes[1], fixture.terminal_count);
         failed = 1;
     }
-    core_machine_dma_request_assert(&binding);
+    core_machine_dma_request_assert(&primary, &secondary, &binding);
     core_machine_dma_advance(&latch, &primary, &secondary, &memory, 1u);
     if (core_machine_memory_read_physical(&memory, 0x11242u,
             (type_virtual_address)bytes, sizeof(bytes)) != TYPE_STATUS_OK ||

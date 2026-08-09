@@ -372,9 +372,12 @@ debugger, and FDD/HDD boot observe only fully constructed sessions.
 ### Public Machine And Debugger Interfaces
 
 Public core-machine interfaces include only other public contracts and stable
-copyable values. `controller_interface.h` carries the frozen DMA request token
-and FDC/HDC topology values that composition genuinely submits; it carries no
-controller storage or lifecycle entry. `display_interface.h` carries copied
+copyable values. `controller_interface.h` carries a core-issued, opaque DMA
+binding nonce and FDC/HDC topology values that composition genuinely submits.
+The nonce is not an address or a dereferenceable capability: the receiving
+machine validates it against its own private DMA state, so a binding from one
+machine is rejected by another. It carries no controller storage or lifecycle
+entry. `display_interface.h` carries copied
 display capability configuration. Private CPU, decoder, RAM, port, controller,
 and VADP layouts remain implementation-only.
 

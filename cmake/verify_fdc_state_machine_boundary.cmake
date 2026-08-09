@@ -35,7 +35,7 @@ endforeach()
 foreach(required IN ITEMS "core_machine_fdc_PHASE_COMMAND"
     "core_machine_fdc_PHASE_RESULT" "core_machine_media_query"
     "core_machine_media_read_bytes" "core_machine_media_write_bytes"
-    "core_machine_media_format_sectors" "core_machine_dma_request_assert"
+    "core_machine_media_format_sectors" "core_machine_fdc_request_assert"
     "core_machine_pic_irq_source_assert")
     string(FIND "${fdc_source}" "${required}" position)
     if(position EQUAL -1)

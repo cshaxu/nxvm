@@ -8,7 +8,7 @@
 | --- | --- |
 | Public interfaces carry no private implementation layout. | `machine_interface.h` uses only copyable display/controller configuration contracts; public headers do not include private core-machine headers. |
 | Debugger observation is explicit and copied. | The record names retained debugger CPU/instruction/memory fields without `t_cpu`, `t_cpuins`, executor, RAM, or port layout. |
-| The boundary cannot silently regress. | The strengthened raw-borrow gate rejects private public-header includes/layouts, raw borrows, profile bindings, and `src` use of `tests/support`. |
+| The boundary cannot silently regress. | The strengthened raw-borrow gate rejects private public-header includes/layouts, raw borrows, profile bindings, `core_token` pointer conversion, and `src` use of `tests/support`. |
 
 - **Original request:** eliminate private device/CPU layouts from public core
   interfaces, retain only necessary narrow copied configuration, and make the
@@ -19,9 +19,13 @@
   pre-decode registry, T301 work, host shortcut, second video owner, or
   Console/debugger/boot/DOS UX change.
 - **Frozen S4 contract:** `controller_interface.h` is the sole shared narrow
-  declaration for frozen DMA request, FDC drive/config, and HDC config values;
-  `display_interface.h` owns copied display capability configuration. Public
-  machine/debug interfaces expose no private device header or complete
+  declaration for a core-issued opaque DMA binding nonce, FDC drive/config,
+  and HDC config values. The nonce is validated only against the receiving
+  machine's private DMA state; it is neither an address nor a dereferenceable
+  capability. FDC retains only core-installed request callbacks, which
+  revalidate against their owning machine before DRQ changes.
+  `display_interface.h` owns copied display capability
+  configuration. Public machine/debug interfaces expose no private device header or complete
   CPU/instruction layout. The debugger record is copied and limited to fields
   used by breakpoints, recorder/disassembly, and memory-access output.
 - **Similar-issue sweep:** `rg -n -g '*_interface.h'` scanned private
@@ -29,6 +33,10 @@
   production hits. Two core tests retain direct private includes only for
   same-module test constants (`cpu.h` entry-plan flags and `vadp.h` display
   topology); neither is a public or product route.
+- **Active P2 evidence:** `core-machine-dma-binding-token-smoke` creates two
+  core machines, proves their nonces differ, rejects each foreign binding, and
+  freezes/resets each matching binding. `core-machine-dma-channel-smoke`
+  retains same-machine DRQ transfer coverage.
 - **Rules:** architecture overview, module layout, contracts, coding standard,
   source policy, execution workflow, and execution policy apply. The T300
   admission is owner-approved. No exception is requested.
@@ -36,7 +44,7 @@
   gate; retained Console/DOS/FDD/HDD boot probes; `git diff --check`,
   documentation governance, and full `current-gates-gcc`. The active S4
   artifact is `nxvm_0_5_0300.exe` (2,588,088 bytes, SHA-256
-  `396B005EBAAC8134C0278FDBA87C22B9610D008B52B8FC9089E59E9D5A1DBBCA`).
+  `B02BEF7B349BAD880086CDAB6485A64702C11E302060519D57E4743AD232023C`).
 - **Carry-forward:** S1's directional ownership, S2's exact provider failure
   propagation, and S3's session failure atomicity remain unchanged.
 - **Stop condition:** every public header passes the source-shape gate, the
