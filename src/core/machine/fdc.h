@@ -61,10 +61,16 @@ typedef struct {
     type_bool media_changed[CORE_MACHINE_FDC_DRIVE_COUNT];
 } core_machine_fdc_data;
 
+typedef C_VOID (*core_machine_fdc_dma_request_operation)(C_VOID *owner,
+    const core_machine_dma_request_binding *binding);
+
 typedef struct {
     const core_machine_media_registry *media_registry;
     core_machine_fdc_drive_bindings drives;
     core_machine_dma_request_binding dma_request;
+    core_machine_fdc_dma_request_operation dma_request_assert;
+    core_machine_fdc_dma_request_operation dma_request_deassert;
+    C_VOID *dma_request_owner;
     core_machine_pic_irq_source irq_source;
     t_port *port;
     core_machine_fdc_config config;
@@ -185,8 +191,11 @@ type_unsigned_8 VFDC_GetBPSC(type_unsigned_16 cb); /* convert bps to bps type */
 C_VOID core_machine_fdc_connect(core_machine_fdc *fdc,
     const core_machine_media_registry *media_registry,
     const core_machine_fdc_drive_bindings *drives,
-    const core_machine_dma_request_binding *dma_request, t_pic *pic_master,
-    t_pic *pic_slave, t_port *port, const core_machine_fdc_config *config);
+    const core_machine_dma_request_binding *dma_request,
+    core_machine_fdc_dma_request_operation dma_request_assert,
+    core_machine_fdc_dma_request_operation dma_request_deassert,
+    C_VOID *dma_request_owner, t_pic *pic_master, t_pic *pic_slave,
+    t_port *port, const core_machine_fdc_config *config);
 const core_machine_dma_channel_provider *core_machine_fdc_dma_provider(C_VOID);
 C_VOID core_machine_fdc_initialize(core_machine_fdc *fdc);
 C_VOID core_machine_fdc_reset(core_machine_fdc *fdc);

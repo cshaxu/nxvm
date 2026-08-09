@@ -59,6 +59,7 @@ extern "C"
         core_machine_dma_device_provider write_provider[VDMA_CHANNEL_COUNT];
         core_machine_dma_device_provider close_provider[VDMA_CHANNEL_COUNT];
         C_VOID *device_owner[VDMA_CHANNEL_COUNT];
+        type_native_unsigned request_token;
     } t_dma_connect;
 
     typedef struct t_dma
@@ -174,9 +175,9 @@ extern "C"
         t_dma *secondary, uint8_t channel,
         const core_machine_dma_channel_provider *provider, C_VOID *device_owner,
         core_machine_dma_request_binding *out_binding);
-    C_VOID core_machine_dma_request_assert(
+    C_VOID core_machine_dma_request_assert(t_dma *primary, t_dma *secondary,
         const core_machine_dma_request_binding *binding);
-    C_VOID core_machine_dma_request_deassert(
+    C_VOID core_machine_dma_request_deassert(t_dma *primary, t_dma *secondary,
         const core_machine_dma_request_binding *binding);
     C_VOID core_machine_dma_finalize(t_latch *latch, t_dma *primary,
                                      t_dma *secondary);

@@ -567,6 +567,30 @@ static const core_machine_port_provider core_machine_rtc_cmos_index_port_provide
     core_machine_rtc_cmos_port_write
 };
 
+static C_VOID core_machine_fdc_dma_request_assert(C_VOID *owner,
+    const core_machine_dma_request_binding *binding)
+{
+    core_machine *machine = owner;
+
+    if (machine == STD_NULL || binding == STD_NULL ||
+        binding->core_token != machine->fdc_dma_request.core_token ||
+        binding->channel != machine->fdc_dma_request.channel) return;
+    core_machine_dma_request_assert(&machine->shared_dma_primary,
+        &machine->shared_dma_secondary, binding);
+}
+
+static C_VOID core_machine_fdc_dma_request_deassert(C_VOID *owner,
+    const core_machine_dma_request_binding *binding)
+{
+    core_machine *machine = owner;
+
+    if (machine == STD_NULL || binding == STD_NULL ||
+        binding->core_token != machine->fdc_dma_request.core_token ||
+        binding->channel != machine->fdc_dma_request.channel) return;
+    core_machine_dma_request_deassert(&machine->shared_dma_primary,
+        &machine->shared_dma_secondary, binding);
+}
+
 type_status core_machine_configure_dma(core_machine *machine,
     const core_machine_dma_wiring *wiring,
     core_machine_dma_request_binding *out_fdc_request)
@@ -741,6 +765,8 @@ type_status core_machine_configure_fdc(core_machine *machine,
     machine->fdc_topology = *topology;
     core_machine_fdc_connect(&machine->fdc, machine->fdc_topology.media_registry,
         &machine->fdc_topology.drives, &machine->fdc_topology.dma_request,
+        core_machine_fdc_dma_request_assert,
+        core_machine_fdc_dma_request_deassert, machine,
         &machine->shared_pic_master, &machine->shared_pic_slave,
         &machine->executor_port, &machine->fdc_topology.config);
     core_machine_fdc_initialize(&machine->fdc);

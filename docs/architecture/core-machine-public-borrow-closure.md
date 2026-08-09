@@ -53,3 +53,14 @@ core-machine implementation headers and complete private CPU, decoder, RAM,
 port, controller, or VADP layout names. The retained public values are only
 the copied display/controller configuration needed by composition and the
 explicit copied debugger observation consumed by the VM debugger.
+
+## T300 S4 Opaque Controller Binding Tokens
+
+The public DMA binding token is a core-issued nonce, not a converted private
+address. A private process-wide atomic sequence only allocates nonzero values;
+it never selects a current machine, session, or device. The receiving
+`core_machine` compares the submitted nonce to its own private DMA state before
+it connects FDC. FDC retains only core-installed request callbacks; the
+callbacks revalidate the nonce and use their owning machine's DMA state for
+later DRQ assertion/deassertion. A token issued by another machine is therefore
+rejected during configuration and cannot be converted into a private pointer.

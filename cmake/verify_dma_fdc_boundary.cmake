@@ -18,7 +18,7 @@ foreach(forbidden IN ITEMS "dma_primary" "dma_secondary" "dma_latch"
 endforeach()
 
 string(FIND "${fdc_header}" "core_machine_dma_request_binding" binding_position)
-string(FIND "${fdc_source}" "core_machine_dma_request_assert" assert_position)
+string(FIND "${fdc_source}" "core_machine_fdc_request_assert" assert_position)
 string(FIND "${machine_source}" "core_machine_configure_dma" composition_position)
 string(FIND "${machine_source}" "core_machine_dma_bind_channel" binding_owner_position)
 string(FIND "${devices_source}" "core_machine_dma_bind_channel" vm_binding_position)

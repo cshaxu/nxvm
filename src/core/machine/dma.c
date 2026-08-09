@@ -9,6 +9,22 @@
 #include "core/machine/port.h"
 #include "core/machine/dma.h"
 
+/* This only issues opaque binding nonces. It never selects a DMA instance. */
+static STD_ATOMIC_UINTPTR_T core_machine_dma_next_request_token = 1u;
+
+static type_native_unsigned core_machine_dma_request_token_allocate(C_VOID)
+{
+    uintptr_t expected = STD_ATOMIC_LOAD(&core_machine_dma_next_request_token);
+
+    while (expected != UINTPTR_MAX) {
+        if (STD_ATOMIC_COMPARE_EXCHANGE_STRONG(
+                &core_machine_dma_next_request_token, &expected, expected + 1u)) {
+            return (type_native_unsigned)expected;
+        }
+    }
+    return 0u;
+}
+
 static C_VOID doReset(t_dma *rdma) {
     STD_MEMSET((C_VOID *)(&rdma->data), TYPE_ZERO_8, sizeof(t_dma_data));
     rdma->data.mask = VDMA_MASK_VALID;
@@ -404,34 +420,38 @@ type_status core_machine_dma_bind_channel(t_latch *latch, t_dma *primary,
     }
     if (dma->connect.latch != latch || dma->connect.peer == STD_NULL ||
         dma->connect.device_owner[channel] != STD_NULL) return TYPE_STATUS_INVALID_STATE;
+    if (primary->connect.request_token == 0u) {
+        primary->connect.request_token = core_machine_dma_request_token_allocate();
+        if (primary->connect.request_token == 0u) return TYPE_STATUS_FAULT;
+    }
     dma->connect.read_provider[channel] = provider->read_device;
     dma->connect.write_provider[channel] = provider->write_device;
     dma->connect.close_provider[channel] = provider->terminal_count;
     dma->connect.device_owner[channel] = owner;
-    out_binding->core_token = (type_native_unsigned)(uintptr_t)primary;
+    out_binding->core_token = primary->connect.request_token;
     out_binding->channel = drq_id;
     return TYPE_STATUS_OK;
 }
 
-C_VOID core_machine_dma_request_assert(
+C_VOID core_machine_dma_request_assert(t_dma *primary, t_dma *secondary,
     const core_machine_dma_request_binding *binding)
 {
-    t_dma *primary;
-
-    if (binding == STD_NULL || binding->core_token == 0u) return;
-    primary = (t_dma *)(uintptr_t)binding->core_token;
-    core_machine_dma_set_drq(primary, primary->connect.peer,
+    if (binding == STD_NULL || primary == STD_NULL || secondary == STD_NULL ||
+        binding->core_token == 0u ||
+        binding->core_token != primary->connect.request_token ||
+        primary->connect.peer != secondary) return;
+    core_machine_dma_set_drq(primary, secondary,
         binding->channel, TYPE_TRUE);
 }
 
-C_VOID core_machine_dma_request_deassert(
+C_VOID core_machine_dma_request_deassert(t_dma *primary, t_dma *secondary,
     const core_machine_dma_request_binding *binding)
 {
-    t_dma *primary;
-
-    if (binding == STD_NULL || binding->core_token == 0u) return;
-    primary = (t_dma *)(uintptr_t)binding->core_token;
-    core_machine_dma_set_drq(primary, primary->connect.peer,
+    if (binding == STD_NULL || primary == STD_NULL || secondary == STD_NULL ||
+        binding->core_token == 0u ||
+        binding->core_token != primary->connect.request_token ||
+        primary->connect.peer != secondary) return;
+    core_machine_dma_set_drq(primary, secondary,
         binding->channel, TYPE_FALSE);
 }
 

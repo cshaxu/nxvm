@@ -732,6 +732,10 @@ add_executable(core-machine-dma-channel-smoke
     tests/machine/core_machine_dma_channel_smoke.c
 )
 target_link_libraries(core-machine-dma-channel-smoke PRIVATE core-machine)
+add_executable(core-machine-dma-binding-token-smoke
+    tests/machine/core_machine_dma_binding_token_smoke.c
+)
+target_link_libraries(core-machine-dma-binding-token-smoke PRIVATE core-machine)
 add_executable(core-machine-media-provider-smoke
     tests/machine/core_machine_media_provider_smoke.c
 )
@@ -1093,6 +1097,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-kbc-controller-smoke
     core-machine-kbc-aux-port-smoke
     core-machine-dma-channel-smoke
+    core-machine-dma-binding-token-smoke
     core-machine-media-provider-smoke
     core-machine-rtc-smoke
     core-machine-fdc-smoke
