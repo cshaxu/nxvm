@@ -2,35 +2,13 @@
 
 ## Current Work
 
-**Active: M5 T313 S9.**
-
-## M5 T313 S9 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Corrective; M5 T313 S9 final closure preparation. |
-| Admission And Approval | T313 S8 `b44086b7` is accepted. S9 reruns the complete current gate set and consolidates final pending-acceptance evidence. |
-| Reference Baseline | T313 S8 `b44086b7`, the pending 0313 artifact, and retained T300 port/session-atomicity boundaries. |
-| Objective | Revalidate all T313 intersections and record the unchanged 0313 artifact before coordinator-only acceptance closure. |
-| Non-goals | Runtime/source behavior changes, a new task allocation, M6 mantle, Queue closure, product observation claims, artifact identity changes, or an executor-led T313 closure. |
-| Scope And Order | S9 only: full current gates, current artifact verification, shared S3/S4 proof, and final status/evidence/history consistency. |
-| Source Touchpoints | Status/evidence/history plus the existing T313 focused and retained gate topology. |
-| Files And ABI Surface | No API/ownership changes; retain coordinator-owned `docs/rules/EXECUTION.md` unstaged. |
-| Applicable Rules | `rules/EXECUTION.md`, `rules/ARCHITECTURE.md`, `rules/CODING.md`, `rules/DOCUMENT.md`, and the source policy; retain one core executor, typed provider boundaries, and the existing NXVM product route. |
-| Verification | Full `current-gates-gcc`, current artifact target, direct shared S3/S4 proof, documentation governance, and diff check. |
-| Expected Markers | Retain `M5:T313:S2:RAM-CREATE:OK`, both phase-ordered shared S3/S4 markers, `M5:T313:S5:START-OUTCOME:OK`, and `M5:T313:S6:DEBUG-MAPPING:OK`. |
-| S1 Audit Record | [T313 construction-failure admission](etc/evidence/t313-construction-failure-admission.md) is the active design and acceptance record. |
-| Asset Needs | No guest media, firmware, third-party source, or host OOM dependency. |
-| Original Owner Request | Prepare the accepted S2--S8 package for coordinator-only final closure without changing its runtime scope. |
-| Similar-Issue Sweep | Check current identity, artifact/hash, all S2--S6 markers, phase-ordered S3/S4 publication, and status/evidence/history consistency. |
-| Stop Conditions | Stop for any unrelated full-gate regression or a requirement to alter core/session/product behavior. |
-| Exit Criteria | Complete gates and artifact hash are recorded; status remains active S9 pending coordinator acceptance; Queue and task allocation remain unchanged. |
+**Idle.**
 
 ## Current Technical Baseline
 
-- **Closure artifact candidate:** `current-gcc` and
+- **Current accepted artifact:** `current-gcc` and
   `verify-current-artifact-target` select `vm-0-5-0313` / `build/output/nxvm_0_5_0313.exe`.
-  It remains pending coordinator acceptance for T313.
+  It was accepted with T313.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
@@ -45,7 +23,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T305 | Completed the 80386 32-bit interrupt and exception-entry family. It added same-CPL gate planning, software and external front ends, and bounded existing #GP/#NP/#SS error-frame delivery containment; 51 gates, 134 CTests, and the 0305 artifact passed. Product observation remained host-window limited before guest input. |
+| T313 | Completed construction-failure atomicity and startup-failure visibility: single RAM allocation, transactional port/controller assembly, visible session start failure, and explicit debugger mappings. Its 0313 artifact, 51 gates, 145 CTests, and S2--S6 focused markers passed. |
 | T306 | Completed the 80386 protected-return family. It added same-CPL and outer 16/32-bit `IRET`, aligned outer `RETF`, restored explicit outer nonconforming-code ownership, and fixed IRET IF/IOPL/RF/VM privilege masks; 51 gates, 135 CTests, and the 0306 artifact passed. Product observation remained host-window limited before guest input. |
 | T307 | Completed 80386 32-bit CPL3-to-CPL0 IDT and call-gate entry with TSS32 target stacks, preflighted atomic publication, and Intel-correct target-SS `#TS` classification. Its 0307 artifact, 51 gates, 137 CTests, and 9 focused/retained probes passed; product observation remained host-window limited before guest input. |
 | T308 | Completed protected 32-bit same/outer error delivery and bounded contributory `#DF` containment through the existing route. Its 0308 artifact, 51 gates, and 137 CTests passed; triple-fault shutdown/reset remains deferred. |
