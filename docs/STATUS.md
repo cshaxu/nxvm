@@ -2,27 +2,27 @@
 
 ## Current Work
 
-**Active: M5 T311 S1.**
+**Active: M5 T311 S2.**
 
-## M5 T311 S1 Packet
+## M5 T311 S2 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New; M5 T311 S1 P0 CPL3 paging and user/kernel boundary admission; Coordinated Dual-Session Mode. T310 is accepted and closed. |
+| Identifier Mode | Corrective; M5 T311 S2 CPL3 paging and user/kernel boundary audit. T311 S1 P0 admission is committed in `0171936d`; Coordinated Dual-Session Mode. |
 | Admission And Approval | T311 is the next linear task selected by the first remaining direct M5 80386 package candidate in `QUEUE.md`. It follows T258's CPL0 4 KiB baseline and T305--T308's bounded 32-bit exception delivery. |
 | Objective | Audit and freeze the smallest consumer-neutral 80386 paging permission scope: CPL3 U/S and R/W checks, `CR0.WP`, precise `#PF` error bits and CR2, cross-page checked accesses, and only any TLB/`INVLPG` behavior that the established execution path demonstrably requires. |
 | Non-goals | PAE, host-memory substitution, generic paging rewrite, new instruction families beyond an evidence-required `INVLPG`, page-fault policy beyond the admitted existing delivery boundary, task/V86/debug/test/system expansion, product UX, public ABI, source import, a second executor, or a guest-image build fixture. |
 | Reference Baseline | Accepted T310 artifact `vm-0-5-0310` / `nxvm_0_5_0310.exe`; retained T258 CPL0 paging, T305--T308 interrupt/delivery, and T306 return evidence. |
-| Files And ABI Surface | S1 changes only task evidence and status records. It must not change CPU behavior, CMake current identity, public interfaces, cross-module ownership, or product UX. |
+| Files And ABI Surface | S2 changes only task evidence and status records. It must not change CPU behavior, CMake current identity, public interfaces, cross-module ownership, or product UX. |
 | Applicable Rules | `rules/EXECUTION.md`, `rules/ARCHITECTURE.md`, `rules/CODING.md`, `rules/DOCUMENT.md`, and `etc/operations/policy/source-policy.md`; retain one core executor/state owner and existing checked memory, stack, and fault routes. |
 | Verification | Intel 80386 PRM is authoritative. Record versioned read-only Bochs 2.6 and PCjs 2.00.0 behavior paths; use focused prepared-state probes only. |
-| Expected Markers | S1 adds no executable marker or artifact. It records the form/access matrix, existing owner/path map, exact page-fault bit and delivery assumptions, focused prepared-state probe plan, batch boundaries, and deferred policy. |
+| Expected Markers | S2 adds no executable marker or artifact. It records the form/access matrix, existing owner/path map, exact page-fault bit and delivery assumptions, focused prepared-state probe plan, batch boundaries, and deferred policy. |
 | S1 Audit Record | [T311 paging boundary admission](etc/evidence/t311-paging-boundary-admission.md) records the authority, matrix, retained intersections, and batch boundaries. |
 | Asset Needs | Read-only local references only; no guest media, firmware, or third-party source is committed. |
 | Original Owner Request | Execute the direct M5 80386 protected execution/delivery package in coordinated mode, stopping before Mantle; use Intel as authority with read-only Bochs and PCjs comparison. |
 | Similar-Issue Sweep | Sweep all paging translation, permission, A/D, CR2, page-fault, cross-page, TLB, `INVLPG`, instruction-fetch, data, stack, and existing exception-delivery paths that could participate in this scope. |
 | Stop Conditions | Stop and report an Intel/reference disagreement, any required host-policy or product dependency, an unsplittable privilege/delivery change, a need for a second executor or memory route, or a required expansion into PAE/task/V86/system behavior. |
-| Exit Criteria | S1 records the exact admitted matrix and implementation batches, cites Intel and read-only comparison identities, passes documentation governance and diff check, is committed and immediately pushed, and remains active pending coordinator acceptance. |
+| Exit Criteria | S2 records the exact admitted matrix and implementation batches, cites Intel and read-only comparison identities, passes documentation governance and diff check, is committed and immediately pushed, and remains active pending coordinator acceptance. |
 
 ## Current Technical Baseline
 
