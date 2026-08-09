@@ -143,8 +143,11 @@ static C_INT ct_run_gp(ct_machine *state, const uint8_t *code,
 
     return ct_run(state, code, code_size, CORE_MACHINE_STOP_FAULT, out_cpu) &&
         core_machine_get_cpu_diagnostic(state->machine, &diagnostic) == TYPE_STATUS_OK &&
-        diagnostic.first_fault.valid &&
-        TYPE_GET_BIT(diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_GP);
+        diagnostic.first_fault.valid && TYPE_GET_BIT(
+            diagnostic.first_fault.exception_mask,
+            state->machine->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386 &&
+            TYPE_GET_BIT(state->machine->executor_cpu.data.cr0, VCPU_CR0_PE) ?
+                VCPUINS_EXCEPT_DF : VCPUINS_EXCEPT_GP);
 }
 
 static C_INT ct_run_np(ct_machine *state, const uint8_t *code,
@@ -154,8 +157,11 @@ static C_INT ct_run_np(ct_machine *state, const uint8_t *code,
 
     return ct_run(state, code, code_size, CORE_MACHINE_STOP_FAULT, out_cpu) &&
         core_machine_get_cpu_diagnostic(state->machine, &diagnostic) == TYPE_STATUS_OK &&
-        diagnostic.first_fault.valid &&
-        TYPE_GET_BIT(diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_NP);
+        diagnostic.first_fault.valid && TYPE_GET_BIT(
+            diagnostic.first_fault.exception_mask,
+            state->machine->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386 &&
+            TYPE_GET_BIT(state->machine->executor_cpu.data.cr0, VCPU_CR0_PE) ?
+                VCPUINS_EXCEPT_DF : VCPUINS_EXCEPT_NP);
 }
 
 static C_INT ct_run_ud(ct_machine *state, const uint8_t *code,

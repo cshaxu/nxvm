@@ -204,7 +204,9 @@ static C_INT task_switch_expect_stack_fault(core_machine_cpu_profile profile)
         cpu = test_core_machine_fixture_capture_cpu_after_run(fixture.machine);
         failed |= core_machine_get_cpu_diagnostic(fixture.machine, &diagnostic) !=
             TYPE_STATUS_OK || !diagnostic.first_fault.valid ||
-            !TYPE_GET_BIT(diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_SS) ||
+            !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
+                profile == CORE_MACHINE_CPU_PROFILE_80386 ?
+                    VCPUINS_EXCEPT_DF : VCPUINS_EXCEPT_SS) ||
             diagnostic.first_fault.exception_code != 0u ||
             diagnostic.last_delivered_exception.valid ||
             cpu.data.ip != 0x0100u || cpu.data.sp != 0u ||
@@ -267,9 +269,9 @@ int main(void)
     failed |= task_switch_expect_fault(CORE_MACHINE_CPU_PROFILE_80286,
         TASK_SWITCH_CASE_NOT_PRESENT, VCPUINS_EXCEPT_NP, 0x0030u);
     failed |= task_switch_expect_fault(CORE_MACHINE_CPU_PROFILE_80386,
-        TASK_SWITCH_CASE_BUSY, VCPUINS_EXCEPT_GP, 0x0030u);
+        TASK_SWITCH_CASE_BUSY, VCPUINS_EXCEPT_DF, 0u);
     failed |= task_switch_expect_fault(CORE_MACHINE_CPU_PROFILE_80386,
-        TASK_SWITCH_CASE_SHORT_TSS, VCPUINS_EXCEPT_TS, 0x0030u);
+        TASK_SWITCH_CASE_SHORT_TSS, VCPUINS_EXCEPT_DF, 0u);
     failed |= task_switch_expect_stack_fault(CORE_MACHINE_CPU_PROFILE_80286);
     failed |= task_switch_expect_stack_fault(CORE_MACHINE_CPU_PROFILE_80386);
     if (failed) return 1;
