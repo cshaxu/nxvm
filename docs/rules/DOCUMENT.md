@@ -63,5 +63,14 @@ normal way to cross a boundary; a copied summary is not a second authority.
 Every closure runs `tools/Verify-DocumentationGovernance.ps1`, link validation,
 and `git diff --check`. The checker enforces the fixed root, `rules/`,
 `design/`, and numbered-history file sets as well as principal-document roles,
-status headings, queue/debt boundaries, and artifact consistency. A failure
-blocks closure until paths, authorities, and retained-detail indexes agree.
+status headings, queue/debt boundaries, and artifact consistency. Its role
+checks are structural schemas: heading levels, allowed section forms, list and
+checklist shapes, task identifiers, and mechanical status data. They do not
+classify free prose as a goal, architecture decision, or roadmap item.
+
+The task-closure audit reviews that semantic ownership against the authority
+matrix above. A wording regex may be added only for a previously observed,
+stable recurrence shape that a schema cannot represent; it must name the
+failure it prevents and remain narrower than a general semantic classifier. A
+failure blocks closure until paths, authorities, and retained-detail indexes
+agree.

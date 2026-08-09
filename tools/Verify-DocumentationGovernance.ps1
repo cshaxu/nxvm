@@ -9,17 +9,22 @@ if ([string]::IsNullOrWhiteSpace($RepositoryRoot)) {
     $RepositoryRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 }
 
-function Require([bool]$condition, [string]$message) {
-    if (-not $condition) {
+function Require([object]$condition, [string]$message) {
+    if ($condition -is [System.Array]) {
+        throw "Internal governance-check error: non-scalar condition for $message"
+    }
+    if (-not [bool]$condition) {
         throw $message
     }
 }
 
 function Test-Mojibake([string]$text) {
+    # Stable encoding-corruption recurrence: not expressible as document schema.
     return $text -match '\u00E2|\u00C3|\uFFFD'
 }
 
 function Test-MachineLocalPath([string]$text) {
+    # Stable disclosure recurrence: committed local paths are never portable evidence.
     return $text -match '(?i)[a-z]:(?:\\){2}(?:users|home)(?:\\){2}'
 }
 
@@ -28,6 +33,141 @@ function Test-ExactNameSet([string[]]$actual, [string[]]$expected) {
         Compare-Object -ReferenceObject @($expected | Sort-Object) `
             -DifferenceObject @($actual | Sort-Object)
     ).Count -eq 0
+}
+
+function Get-MarkdownHeadings([string]$text) {
+    $inFence = $false
+    $lineNumber = 0
+    foreach ($line in [regex]::Split($text, "`r?`n")) {
+        $lineNumber++
+        if ($line -match '^\s*```') {
+            $inFence = -not $inFence
+            continue
+        }
+        if ($inFence) {
+            continue
+        }
+        $match = [regex]::Match($line, '^(?<marks>#{1,6})[ \t]+(?<text>.+?)\s*$')
+        if ($match.Success) {
+            [pscustomobject]@{
+                Level = $match.Groups['marks'].Value.Length
+                Text = $match.Groups['text'].Value
+                Line = $lineNumber
+            }
+        }
+    }
+}
+
+function Require-HeadingSchema(
+    [string]$path,
+    [string]$text,
+    [string]$title,
+    [string[]]$allowedH2Patterns
+) {
+    $headings = @(Get-MarkdownHeadings $text)
+    Require ($headings.Count -ge 1) "$path must contain a Markdown title."
+    Require ($headings[0].Level -eq 1 -and $headings[0].Text -eq $title) `
+        "$path must begin with '# $title'."
+    Require ((@($headings | Where-Object { $_.Level -eq 1 })).Count -eq 1) `
+        "$path must contain exactly one level-one title."
+    foreach ($heading in $headings) {
+        Require ($heading.Level -le 2) `
+            "$path must not use heading levels below its fixed document schema."
+        if ($heading.Level -eq 2) {
+            $isAllowed = (@($allowedH2Patterns | Where-Object {
+                $heading.Text -match $_
+            }).Count -gt 0)
+            Require $isAllowed `
+                "$path contains an unsupported level-two section: $($heading.Text)"
+        }
+    }
+}
+
+function Require-NoTaskIdentifier([string]$path, [string]$text) {
+    Require (-not ($text -match '\bT\d+\b')) `
+        "$path must not allocate or describe a numeric implementation task."
+}
+
+function Require-NoChecklist([string]$path, [string]$text) {
+    Require (-not ($text -match '(?m)^\s*[-*]\s+\[[ xX]\]\s+')) `
+        "$path must not contain a checklist."
+}
+
+function Set-SelfTestFile([string]$root, [string]$relativePath, [string]$content) {
+    $path = Join-Path $root $relativePath
+    $parent = Split-Path -Parent $path
+    New-Item -ItemType Directory -Force -Path $parent | Out-Null
+    [System.IO.File]::WriteAllText(
+        $path,
+        $content + [Environment]::NewLine,
+        [System.Text.UTF8Encoding]::new($false)
+    )
+}
+
+$script:governanceScriptPath = $PSCommandPath
+
+function Invoke-SelfTestCheck([string]$repositoryRoot, [switch]$Quiet) {
+    $output = @()
+    $passed = $true
+    try {
+        $output = @(& $script:governanceScriptPath -RepositoryRoot $repositoryRoot *>&1)
+    }
+    catch {
+        $passed = $false
+        $output += $_
+    }
+    if (-not $Quiet -and -not $passed) {
+        $output | ForEach-Object { Write-Error $_ }
+    }
+    return $passed
+}
+
+function New-SelfTestRepository([string]$root) {
+    New-Item -ItemType Directory -Force -Path $root | Out-Null
+    New-Item -ItemType Directory -Force -Path (Join-Path $root "tools") | Out-Null
+    Set-SelfTestFile $root "CMakePresets.json" @'
+{
+  "version": 4,
+  "buildPresets": [
+    { "name": "current-gcc", "targets": ["vm-0-5-0300"] }
+  ]
+}
+'@
+    Set-SelfTestFile $root "README.md" "# ntvdm64`n`n## Start Here`n`n## Project Boundary"
+    Set-SelfTestFile $root "AGENTS.md" "# Agent Instructions`n`n## Authority`n`n## Execution"
+    Set-SelfTestFile $root "CONTRIBUTING.md" "# Contributing`n`n## Change Submission`n`n## Review Record`n`n## Commits And Tracking"
+    Set-SelfTestFile $root "docs/README.md" "# Documentation Guide"
+    Set-SelfTestFile $root "docs/QUEUE.md" "# Queue`n`n1. Candidate work"
+    Set-SelfTestFile $root "docs/TODO.md" "# Long-Term Review Ledger`n`n## Compatibility Debt`n`n- [ ] **Fixture debt (`TODO(High)`).** Admit only with evidence."
+    Set-SelfTestFile $root "docs/STATUS.md" @'
+# Project Status
+
+## Current Work
+
+**Idle.**
+
+## Current Technical Baseline
+
+- `vm-0-5-0300` / `nxvm_0_5_0300.exe`
+
+## Recent M5 Closures
+
+| Task | Compact result |
+| --- | --- |
+
+## Recent Governance
+'@
+    Set-SelfTestFile $root "docs/rules/ARCHITECTURE.md" "# Architecture Rules"
+    Set-SelfTestFile $root "docs/rules/CODING.md" "# Coding Standard"
+    Set-SelfTestFile $root "docs/rules/DOCUMENT.md" "# Documentation Rules`n`n## Authority Boundaries"
+    Set-SelfTestFile $root "docs/rules/EXECUTION.md" "# Execution Policy"
+    Set-SelfTestFile $root "docs/design/GOAL.md" "# Project Goals`n`n1. Strategic outcome"
+    Set-SelfTestFile $root "docs/design/ARCHITECTURE.md" "# System Architecture"
+    Set-SelfTestFile $root "docs/design/CODING.md" "# Source Layout"
+    Set-SelfTestFile $root "docs/design/UI.md" "# Product UX"
+    Set-SelfTestFile $root "docs/design/ROADMAP.md" "# Roadmap`n`n## M0: Governance Reset"
+    Set-SelfTestFile $root "docs/etc/README.md" "# Supporting Documentation Index"
+    New-Item -ItemType Directory -Force -Path (Join-Path $root "docs/history") | Out-Null
 }
 
 if ($SelfTest) {
@@ -43,6 +183,48 @@ if ($SelfTest) {
         "Fixed-file checker rejected an identical control set."
     Require (-not (Test-ExactNameSet @("A.md") @("B.md"))) `
         "Fixed-file checker accepted a mismatched control set."
+    $fixtureRoot = Join-Path ([System.IO.Path]::GetTempPath()) `
+        ("ntvdm64-doc-governance-" + [guid]::NewGuid().ToString("N"))
+    try {
+        New-SelfTestRepository $fixtureRoot
+        Require (Invoke-SelfTestCheck $fixtureRoot) `
+            "Documentation schema rejected the controlled passing fixture."
+        Set-SelfTestFile $fixtureRoot "docs/QUEUE.md" "# Queue`n`n1. T301 is not allowed here"
+        Require (-not (Invoke-SelfTestCheck $fixtureRoot -Quiet)) `
+            "Documentation schema accepted a Queue task identifier."
+        Set-SelfTestFile $fixtureRoot "docs/QUEUE.md" "# Queue`n`n1. Candidate work"
+        Set-SelfTestFile $fixtureRoot "docs/TODO.md" "# Long-Term Review Ledger`n`n## Compatibility Debt`n`n- [x] **Closed (`TODO(High)`).**"
+        Require (-not (Invoke-SelfTestCheck $fixtureRoot -Quiet)) `
+            "Documentation schema accepted a completed debt entry."
+        Set-SelfTestFile $fixtureRoot "docs/TODO.md" "# Long-Term Review Ledger`n`n## Compatibility Debt`n`n- [ ] **Fixture debt (`TODO(High)`).** Admit only with evidence."
+        Set-SelfTestFile $fixtureRoot "docs/STATUS.md" @'
+# Project Status
+
+## Current Work
+
+**Idle.**
+
+## Milestone State
+
+## Current Technical Baseline
+
+- `vm-0-5-0300` / `nxvm_0_5_0300.exe`
+
+## Recent M5 Closures
+
+| Task | Compact result |
+| --- | --- |
+
+## Recent Governance
+'@
+        Require (-not (Invoke-SelfTestCheck $fixtureRoot -Quiet)) `
+            "Documentation schema accepted an unsupported STATUS section."
+    }
+    finally {
+        if (Test-Path -LiteralPath $fixtureRoot) {
+            Remove-Item -LiteralPath $fixtureRoot -Recurse -Force
+        }
+    }
     Write-Output "Documentation governance self-tests passed."
     exit 0
 }
@@ -108,50 +290,87 @@ $roadmapDesign = Get-Content -Raw -LiteralPath $roadmapDesignPath
 $rootReadme = Get-Content -Raw -LiteralPath $rootReadmePath
 $agents = Get-Content -Raw -LiteralPath $agentsPath
 $contributing = Get-Content -Raw -LiteralPath $contributingPath
-Require ($architectureRules -match 'one explicit owner and one production path') `
-    "Architecture Rules must retain the one-owner/one-production-path invariant."
-Require ($architectureRules -match 'raw CPU, RAM, port, device, executor, or session pointer') `
-    "Architecture Rules must forbid raw mutable-internal pointers at public boundaries."
-Require (-not ($architectureRules -match '(?i)\b(core|vm|mantle|dos|vdm)\b')) `
-    "Architecture Rules must not duplicate the concrete ntvdm64 component map."
-Require (-not ($codingRules -match '(?i)git mv|TODO\(|similar-issue')) `
-    "Coding Rules must not contain task-execution discipline."
-Require (-not ($architectureDesign -match 'one explicit owner and one production path|raw CPU, RAM, port, device, executor, or session pointer')) `
-    "System Architecture must not duplicate architecture-rule invariants."
-Require (-not ($codingDesign -match '(?m)^## Dependency Direction$')) `
-    "Source Layout must not duplicate the architecture dependency map."
-Require (-not ($goalDesign -match '(?m)^## M\d+')) `
-    "Project Goals must not contain milestone planning."
-Require (-not ($uiDesign -match '(?m)^## (?:M\d+ Delivery Gate|Acceptance Cases|Delivery Boundary)$')) `
-    "Product UX must not contain delivery gates or acceptance detail."
-Require (-not ($roadmapDesign -match '\bT\d+\b')) `
-    "Roadmap must not allocate or describe numeric implementation tasks."
-Require (-not ($rootReadme -match '(?m)^## (?:Target Component Topology|Long-Term Research|Current State)$')) `
-    "Root README must remain public orientation rather than a second authority."
-Require (-not ($agents -match '(?m)^## Boundaries$')) `
-    "AGENTS.md must point to authorities rather than duplicate project boundaries."
-Require (-not ($contributing -match '(?m)^## Engineering Rules$')) `
-    "CONTRIBUTING.md must not duplicate architecture or execution rules."
+
+Require-HeadingSchema "README.md" $rootReadme "ntvdm64" @(
+    '^Start Here$',
+    '^Project Boundary$'
+)
+Require-HeadingSchema "AGENTS.md" $agents "Agent Instructions" @(
+    '^Authority$',
+    '^Execution$'
+)
+Require-HeadingSchema "CONTRIBUTING.md" $contributing "Contributing" @(
+    '^Change Submission$',
+    '^Review Record$',
+    '^Commits And Tracking$'
+)
+Require-HeadingSchema "docs/README.md" (Get-Content -Raw -LiteralPath (Join-Path $docsRoot "README.md")) `
+    "Documentation Guide" @()
+Require-HeadingSchema "docs/rules/ARCHITECTURE.md" $architectureRules "Architecture Rules" @()
+Require-HeadingSchema "docs/rules/CODING.md" $codingRules "Coding Standard" @()
+Require-HeadingSchema "docs/rules/DOCUMENT.md" (Get-Content -Raw -LiteralPath (Join-Path $rulesPath "DOCUMENT.md")) `
+    "Documentation Rules" @('^Authority Boundaries$')
+Require-HeadingSchema "docs/rules/EXECUTION.md" (Get-Content -Raw -LiteralPath (Join-Path $rulesPath "EXECUTION.md")) `
+    "Execution Policy" @(
+        '^Request Lifecycle$',
+        '^Change Discipline$',
+        '^Similar-Issue Sweep$',
+        '^Work Identifiers$',
+        '^Linear Identifier Allocation$',
+        '^Documentation Governance Gate$',
+        '^Milestone Closure Evidence$',
+        '^Build Tree Hygiene$',
+        '^Recorder Trace Containment$'
+    )
+Require-HeadingSchema "docs/design/GOAL.md" $goalDesign "Project Goals" @()
+Require-HeadingSchema "docs/design/ARCHITECTURE.md" $architectureDesign "System Architecture" @(
+    '^Product Shape$',
+    '^Modules, Ownership, And Assembly$',
+    '^Product And Host Boundary$',
+    '^Runtime Admission Boundary$'
+)
+Require-HeadingSchema "docs/design/CODING.md" $codingDesign "Source Layout" @(
+    '^Current And Target Trees$',
+    '^Files And Names$',
+    '^Source Organization$'
+)
+Require-HeadingSchema "docs/design/UI.md" $uiDesign "Product UX" @(
+    '^NXVM$',
+    '^NXVDM$',
+    '^Presentation And Debugging$',
+    '^Host Resources$'
+)
+Require-HeadingSchema "docs/design/ROADMAP.md" $roadmapDesign "Roadmap" @(
+    '^M\d+(?: And Later)?: .+$'
+)
+
+Require-NoTaskIdentifier "docs/QUEUE.md" (Get-Content -Raw -LiteralPath $queuePath)
+Require-NoTaskIdentifier "docs/design/GOAL.md" $goalDesign
+Require-NoTaskIdentifier "docs/design/UI.md" $uiDesign
+Require-NoTaskIdentifier "docs/design/ROADMAP.md" $roadmapDesign
+Require-NoChecklist "docs/QUEUE.md" (Get-Content -Raw -LiteralPath $queuePath)
+Require-NoChecklist "docs/design/GOAL.md" $goalDesign
+Require-NoChecklist "docs/design/ARCHITECTURE.md" $architectureDesign
+Require-NoChecklist "docs/design/CODING.md" $codingDesign
+Require-NoChecklist "docs/design/UI.md" $uiDesign
+Require-NoChecklist "docs/design/ROADMAP.md" $roadmapDesign
 
 $status = Get-Content -Raw -LiteralPath $statusPath
 $queue = Get-Content -Raw -LiteralPath $queuePath
 $todo = Get-Content -Raw -LiteralPath $todoPath
 
+Require-HeadingSchema "docs/STATUS.md" $status "Project Status" @(
+    '^Current Work$',
+    '^Current Technical Baseline$',
+    '^Recent M\d+ Closures$',
+    '^Recent Governance$',
+    '^M\d+ (?:T\d+|Td) S\d+ Packet$'
+)
+Require-HeadingSchema "docs/QUEUE.md" $queue "Queue" @()
+Require-HeadingSchema "docs/TODO.md" $todo "Long-Term Review Ledger" @('^.+ Debt$')
+
 Require (($status | Select-String -AllMatches -Pattern '(?m)^## Current Technical Baseline$').Matches.Count -eq 1) `
     "STATUS.md must contain exactly one Current Technical Baseline heading."
-
-$statusHeadings = @([regex]::Matches($status, '(?m)^## .+$') | ForEach-Object { $_.Value })
-$allowedStatusHeadings = @(
-    "## Current Work",
-    "## Current Technical Baseline",
-    "## Recent Governance"
-)
-foreach ($heading in $statusHeadings) {
-    $isTaskPacket = $heading -match '^## M\d+ (?:T\d+|Td) S\d+ Packet$'
-    $isClosureSummary = $heading -match '^## Recent M\d+ Closures$'
-    Require (($allowedStatusHeadings -contains $heading) -or $isTaskPacket -or $isClosureSummary) `
-        "STATUS.md contains a heading outside its current-status role: $heading"
-}
 
 $idle = $status -match '(?m)^\*\*Idle\.'
 if ($idle) {
@@ -170,18 +389,19 @@ else {
 
 Require (-not ($todo -match '(?m)^[-*] \[x\]')) `
     "TODO.md must contain only open debt entries."
-Require (-not ($todo -match '(?mi)^#{1,3} .*goal')) `
-    "TODO.md must not contain product goals."
 $todoEntries = @([regex]::Matches($todo, '(?m)^- \[ \] .+$') | ForEach-Object { $_.Value })
 foreach ($entry in $todoEntries) {
     Require ($entry -match 'TODO\((?:High|Medium|Low)\)') `
         "TODO.md debt entries must declare TODO(High), TODO(Medium), or TODO(Low)."
 }
-Require (-not ($queue -match '\bT\d+\b')) `
-    "QUEUE.md must not reserve numeric implementation task identifiers."
-$queueHeadings = @([regex]::Matches($queue, '(?m)^#+ .+$') | ForEach-Object { $_.Value })
-Require ($queueHeadings.Count -eq 1 -and $queueHeadings[0] -eq "# Queue") `
-    "QUEUE.md must contain only its title and ordered unnumbered candidates."
+Require (-not ($queue -match '(?m)^\s*[-*]\s+')) `
+    "QUEUE.md must use ordered candidates rather than an unordered list."
+Require (-not ($queue -match '(?m)^\s*\d+\)\s+')) `
+    "QUEUE.md must use Markdown ordered-list syntax for candidates."
+Require (([regex]::Matches($goalDesign, '(?m)^\d+\.\s+')).Count -gt 0) `
+    "Project Goals must contain an ordered strategic-outcome list."
+Require ((@((Get-MarkdownHeadings $roadmapDesign) | Where-Object { $_.Level -eq 2 })).Count -gt 0) `
+    "Roadmap must contain at least one milestone section."
 
 $closureSection = [regex]::Match($status, '(?ms)^## Recent M\d+ Closures\r?\n(?<body>.*?)(?=^## |\z)')
 Require ($closureSection.Success) "STATUS.md must contain a recent milestone-closure section."
