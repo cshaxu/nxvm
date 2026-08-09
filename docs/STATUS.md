@@ -2,15 +2,15 @@
 
 ## Current Work
 
-**Active: M5 T301 S2.**
+**Active: M5 T301 S3.**
 
-## M5 T301 S2 Packet
+## M5 T301 S3 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New; M5 T301 S2 onward; Coordinated Dual-Session Mode. S1 admitted the family and frozen the source/reference audit; coordinator approved S2 implementation after the clarification below. |
+| Identifier Mode | Corrective; M5 T301 S3 closure; Coordinated Dual-Session Mode. S1 admitted the family, and S2 implemented the complete focused synthetic form/profile/mode matrix. |
 | Admission And Approval | Owner approved the direct M5 80386 32-bit protected execution/delivery package and instructed coordinator/executor execution through the package, stopping before Mantle. Coordinator additionally approved S2 with an instruction-form, CPU-profile, and execution-mode matrix. |
-| Objective | Complete the Queue's 32-bit segmentation and selector-instruction family: `MOV`/`POP` segment loads, `LDS`/`LES`/`LFS`/`LGS`/`LSS`, `ARPL`, `LAR`, `LSL`, `VERR`, and `VERW`, with all legal 80386 operand-size forms and correct descriptor/cache semantics. |
+| Objective | Independently close the Queue's 32-bit segmentation and selector-instruction family: `MOV`/`POP` segment loads, `LDS`/`LES`/`LFS`/`LGS`/`LSS`, `ARPL`, `LAR`, `LSL`, `VERR`, and `VERW`, with all legal 80386 operand-size forms and correct descriptor/cache semantics. |
 | Non-goals | LDT breadth, task gates, virtual-8086, task switching, paging-policy expansion, host/product UX, external ABI, and source import. Reserved and later-CPU forms remain `#UD`. |
 | Reference Baseline | `87cb79993c5901cefd25d9228cf60b87d54b7d4e`; current artifact `vm-0-5-0300` / `nxvm_0_5_0300.exe`. |
 | Files And ABI Surface | `src/core/machine/cpu_instructions.c`, `cpu.h`, existing core CPU interfaces, focused machine tests/CMake, and task/governance records only. No new public raw borrow or cross-module interface. |
