@@ -10,13 +10,19 @@
 #define TEST_PROTECTED_CODE 0x0040u
 #define TEST_PAGE_DIRECTORY 0x1000u
 #define TEST_PAGE_TABLE 0x2000u
+#define TEST_PAGE_TABLE_SECOND 0x3000u
 #define TEST_DATA_PHYSICAL 0x5000u
 #define TEST_STACK_PHYSICAL 0x6000u
+#define TEST_PERMISSION_CODE 0x7000u
+#define TEST_DATA_LINEAR 0x00403000u
 #define TEST_CODE_SELECTOR 0x0008u
 #define TEST_DATA_SELECTOR 0x0010u
+#define TEST_USER_CODE_SELECTOR 0x001bu
+#define TEST_USER_DATA_SELECTOR 0x0023u
 
 #define TEST_PAGE_PRESENT 0x00000001u
 #define TEST_PAGE_WRITABLE 0x00000002u
+#define TEST_PAGE_US 0x00000004u
 #define TEST_PAGE_ACCESSED 0x00000020u
 #define TEST_PAGE_DIRTY 0x00000040u
 
@@ -78,12 +84,14 @@ static C_INT paging_read_u32(core_machine *machine, uint32_t address,
 static C_INT paging_install_gdt(core_machine *machine)
 {
     static const uint8_t gdt_pointer[] = {
-        0x17u, 0x00u, 0x00u, 0x03u, 0x00u, 0x00u
+        0x27u, 0x00u, 0x00u, 0x03u, 0x00u, 0x00u
     };
     static const uint8_t gdt[] = {
         0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
         0xffu, 0xffu, 0x00u, 0x00u, 0x00u, 0x9au, 0x00u, 0x00u,
-        0xffu, 0xffu, 0x00u, 0x00u, 0x00u, 0x92u, 0x00u, 0x00u
+        0xffu, 0xffu, 0x00u, 0x00u, 0x00u, 0x92u, 0x00u, 0x00u,
+        0xffu, 0xffu, 0x00u, 0x00u, 0x00u, 0xfau, 0x8fu, 0x00u,
+        0xffu, 0xffu, 0x00u, 0x00u, 0x00u, 0xf2u, 0x8fu, 0x00u
     };
 
     return core_machine_memory_write(machine, TEST_GDT_POINTER, gdt_pointer,
@@ -367,19 +375,340 @@ static C_INT paging_test_control_forms(C_VOID)
     return failed;
 }
 
+typedef enum paging_permission_access {
+    PAGING_PERMISSION_FETCH,
+    PAGING_PERMISSION_READ,
+    PAGING_PERMISSION_WRITE,
+    PAGING_PERMISSION_STACK
+} paging_permission_access;
+
+static C_INT paging_permission_install(core_machine *machine,
+    uint32_t pde_code, uint32_t pde_data, uint32_t pte_code,
+    uint32_t pte_data, uint32_t pte_stack)
+{
+    return core_machine_memory_write_physical(&machine->executor_memory,
+               TEST_PAGE_DIRECTORY, TYPE_REFERENCE_OF(pde_code),
+               sizeof(pde_code)) == TYPE_STATUS_OK &&
+        core_machine_memory_write_physical(&machine->executor_memory,
+            TEST_PAGE_DIRECTORY + 4u, TYPE_REFERENCE_OF(pde_data),
+            sizeof(pde_data)) == TYPE_STATUS_OK &&
+        core_machine_memory_write_physical(&machine->executor_memory,
+            TEST_PAGE_TABLE + 7u * 4u, TYPE_REFERENCE_OF(pte_code), sizeof(pte_code)) ==
+                TYPE_STATUS_OK &&
+        core_machine_memory_write_physical(&machine->executor_memory,
+            TEST_PAGE_TABLE + 4u * 4u, TYPE_REFERENCE_OF(pte_stack),
+            sizeof(pte_stack)) == TYPE_STATUS_OK &&
+        core_machine_memory_write_physical(&machine->executor_memory,
+            TEST_PAGE_TABLE_SECOND + 3u * 4u, TYPE_REFERENCE_OF(pte_data),
+            sizeof(pte_data)) == TYPE_STATUS_OK;
+}
+
+static C_INT paging_permission_read(core_machine *machine, uint32_t physical,
+    C_VOID *out_data, STD_SIZE_T bytes)
+{
+    return machine != STD_NULL && core_machine_memory_read_physical(
+        &machine->executor_memory, physical, (type_virtual_address)out_data,
+        bytes) == TYPE_STATUS_OK;
+}
+
+static C_INT paging_permission_prepare(paging_machine *state,
+    const uint8_t *program, STD_SIZE_T program_size, uint32_t pde_code,
+    uint32_t pde_data, uint32_t pte_code, uint32_t pte_data,
+    uint32_t pte_stack, C_INT user, C_INT write_protect,
+    uint32_t *out_program_eip)
+{
+    static const uint8_t enable_paging[] = {
+        0xbcu, 0x00u, 0x50u,
+        0x66u, 0xb8u, 0x00u, 0x10u, 0x00u, 0x00u,
+        0x0fu, 0x22u, 0xd8u,
+        0x66u, 0xb8u, 0x01u, 0x00u, 0x00u, 0x80u,
+        0x0fu, 0x22u, 0xc0u,
+        0xf4u
+    };
+    uint8_t protected_code[64u] = {0};
+    uint16_t data = 0x1234u;
+    uint16_t stack = 0xaaaau;
+    core_machine_run_result result;
+    core_machine_cpu_diagnostic diagnostic;
+    uint32_t initial_pde = TEST_PAGE_TABLE | TEST_PAGE_PRESENT |
+        TEST_PAGE_WRITABLE;
+    uint32_t initial_pte = TEST_PAGE_PRESENT | TEST_PAGE_WRITABLE;
+    C_INT failed = program_size > sizeof(protected_code) -
+        sizeof(enable_paging) || !paging_prepare(state,
+        CORE_MACHINE_CPU_PROFILE_80386);
+
+    if (!failed) {
+        STD_MEMCPY(protected_code, enable_paging, sizeof(enable_paging));
+        STD_MEMCPY(protected_code + sizeof(enable_paging), program, program_size);
+        failed |= !paging_permission_install(state->machine, initial_pde,
+            TEST_PAGE_TABLE_SECOND | TEST_PAGE_PRESENT | TEST_PAGE_WRITABLE,
+            initial_pte, TEST_DATA_PHYSICAL | TEST_PAGE_PRESENT |
+            TEST_PAGE_WRITABLE, TEST_STACK_PHYSICAL | TEST_PAGE_PRESENT |
+            TEST_PAGE_WRITABLE);
+        failed |= !paging_write_u32(state->machine, TEST_PAGE_TABLE, initial_pte);
+        failed |= !paging_write_bootstrap(state->machine, protected_code,
+            sizeof(enable_paging) + program_size);
+        failed |= core_machine_memory_write(state->machine, TEST_PERMISSION_CODE,
+            program, program_size) != TYPE_STATUS_OK;
+        failed |= core_machine_memory_write(state->machine, TEST_DATA_PHYSICAL,
+            &data, sizeof(data)) != TYPE_STATUS_OK ||
+            core_machine_memory_write(state->machine, TEST_STACK_PHYSICAL +
+                0xffeu, &stack, sizeof(stack)) != TYPE_STATUS_OK;
+        failed |= !paging_run(state->machine, 0, &result, &diagnostic);
+        if (user) {
+            state->machine->executor_cpu.data.cs.selector =
+                TEST_USER_CODE_SELECTOR;
+            state->machine->executor_cpu.data.cs.dpl = 3u;
+            failed |= core_machine_cpu_execution_load_segment(
+                &state->machine->executor_cpu_execution,
+                &state->machine->executor_cpu.data.ds,
+                TEST_USER_DATA_SELECTOR) != 0 ||
+                core_machine_cpu_execution_load_segment(
+                &state->machine->executor_cpu_execution,
+                &state->machine->executor_cpu.data.ss,
+                TEST_USER_DATA_SELECTOR) != 0;
+        } else {
+            state->machine->executor_cpu.data.ds.limit = 0xffffffffu;
+            state->machine->executor_cpu.data.ss.limit = 0xffffffffu;
+        }
+        failed |= !paging_permission_install(state->machine, pde_code, pde_data,
+            pte_code, pte_data, pte_stack);
+        state->machine->executor_cpu.data.cs.base = TEST_PERMISSION_CODE;
+        state->machine->executor_cpu.data.cr0 = VCPU_CR0_PE | VCPU_CR0_PG |
+            (write_protect ? VCPU_CR0_WP : 0u);
+        state->machine->executor_cpu.data.eax = 0xfacebeefu;
+        state->machine->executor_cpu.data.ebx = TEST_DATA_LINEAR;
+        state->machine->executor_cpu.data.esp = 0x00005000u;
+        test_core_machine_fixture_resume_after_halt_at(state->machine,
+            0u);
+        if (out_program_eip != STD_NULL) *out_program_eip =
+            0u;
+    }
+    return !failed;
+}
+
+static C_INT paging_permission_expect_fault(paging_machine *state,
+    uint32_t program_eip, uint32_t expected_code, uint32_t expected_cr2,
+    uint32_t pde_address, uint32_t pde_initial, uint32_t pte_address,
+    uint32_t pte_initial, paging_permission_access access)
+{
+    core_machine_run_result result;
+    core_machine_cpu_diagnostic diagnostic;
+    t_cpu cpu;
+    uint32_t pde = 0u;
+    uint32_t pte = 0u;
+    uint16_t data = 0u;
+    const core_machine_run_budget budget = { 32u, 0u };
+    C_INT failed = core_machine_run(state->machine, budget, &result) !=
+        TYPE_STATUS_FAULT || result.reason != CORE_MACHINE_STOP_FAULT ||
+        core_machine_get_cpu_diagnostic(state->machine, &diagnostic) !=
+            TYPE_STATUS_OK;
+
+    cpu = test_core_machine_fixture_capture_cpu_after_run(state->machine);
+    failed |= !diagnostic.first_fault.valid || !TYPE_GET_BIT(
+        diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_PF) ||
+        diagnostic.first_fault.exception_code != expected_code ||
+        diagnostic.first_fault.point.linear_pc != TEST_PERMISSION_CODE + program_eip ||
+        cpu.data.cr2 != expected_cr2 ||
+        diagnostic.first_fault.cr2 != expected_cr2 || cpu.data.eip != program_eip ||
+        cpu.data.ebx != TEST_DATA_LINEAR || cpu.data.esp != 0x00005000u ||
+        cpu.data.eflags != 0x00000002u;
+    if (access == PAGING_PERMISSION_READ) failed |= cpu.data.eax != 0xfacebeefu;
+    failed |= !paging_permission_read(state->machine, pde_address, &pde,
+        sizeof(pde)) || !paging_permission_read(state->machine, pte_address,
+            &pte, sizeof(pte)) ||
+        pde != pde_initial || pte != pte_initial;
+    if (access == PAGING_PERMISSION_WRITE) {
+        failed |= !paging_permission_read(state->machine, TEST_DATA_PHYSICAL,
+            &data, sizeof(data)) || data != 0x1234u;
+    } else if (access == PAGING_PERMISSION_STACK) {
+        failed |= !paging_permission_read(state->machine, TEST_STACK_PHYSICAL +
+            0xffeu, &data, sizeof(data)) || data != 0xaaaau;
+    }
+    if (failed) {
+        STD_FPRINTF(STD_STDERR,
+            "T311 fault access=%u result=%u/%u diag=%x/%x eip=%x cr2=%x eax=%x ebx=%x esp=%x flags=%x pde=%x/%x pte=%x/%x\n",
+            (unsigned)access, (unsigned)result.executed, (unsigned)result.reason,
+            diagnostic.first_fault.exception_mask,
+            diagnostic.first_fault.exception_code, cpu.data.eip, cpu.data.cr2,
+            cpu.data.eax, cpu.data.ebx, cpu.data.esp, cpu.data.eflags, pde,
+            pde_initial, pte, pte_initial);
+    }
+    return !failed;
+}
+
+static C_INT paging_permission_expect_success(paging_machine *state,
+    paging_permission_access access, uint32_t pde_address, uint32_t pte_address)
+{
+    core_machine_run_result result;
+    core_machine_cpu_diagnostic diagnostic;
+    t_cpu cpu;
+    uint32_t pde = 0u;
+    uint32_t pte = 0u;
+    uint16_t data = 0u;
+    const core_machine_run_budget budget = { 1u, 0u };
+    C_INT failed = core_machine_run(state->machine, budget, &result) !=
+        TYPE_STATUS_OK || result.reason != CORE_MACHINE_STOP_BUDGET ||
+        core_machine_get_cpu_diagnostic(state->machine, &diagnostic) !=
+            TYPE_STATUS_OK;
+
+    cpu = test_core_machine_fixture_capture_cpu_after_run(state->machine);
+    failed |= diagnostic.first_fault.valid || !paging_permission_read(
+        state->machine, pde_address, &pde, sizeof(pde)) ||
+        !paging_permission_read(state->machine, pte_address, &pte,
+            sizeof(pte)) || (pde & TEST_PAGE_ACCESSED) == 0u ||
+        (pte & TEST_PAGE_ACCESSED) == 0u;
+    if (access == PAGING_PERMISSION_READ) {
+        failed |= cpu.data.eax != 0xface1234u ||
+            (pte & TEST_PAGE_DIRTY) != 0u;
+    } else if (access == PAGING_PERMISSION_WRITE) {
+        failed |= !paging_permission_read(state->machine, TEST_DATA_PHYSICAL,
+            &data, sizeof(data)) || data != 0xbeefu ||
+            (pte & TEST_PAGE_DIRTY) == 0u;
+    } else if (access == PAGING_PERMISSION_STACK) {
+        failed |= cpu.data.esp != 0x00004ffeu ||
+            !paging_permission_read(state->machine, TEST_STACK_PHYSICAL +
+                0xffeu, &data, sizeof(data)) ||
+            data != 0xbeefu || (pte & TEST_PAGE_DIRTY) == 0u;
+    }
+    if (failed) {
+        STD_FPRINTF(STD_STDERR,
+            "T311 success access=%u result=%u/%u fault=%d eax=%x esp=%x pde=%x pte=%x\n",
+            (unsigned)access, (unsigned)result.executed, (unsigned)result.reason,
+            diagnostic.first_fault.valid, cpu.data.eax, cpu.data.esp, pde, pte);
+    }
+    return !failed;
+}
+
+static C_INT paging_test_permissions(C_VOID)
+{
+    static const uint8_t fetch[] = { 0x90u };
+    static const uint8_t read[] = { 0x67u, 0x8bu, 0x03u };
+    static const uint8_t write[] = { 0x67u, 0x89u, 0x03u };
+    static const uint8_t stack[] = { 0x50u };
+    const uint32_t code_user = TEST_PERMISSION_CODE | TEST_PAGE_PRESENT |
+        TEST_PAGE_WRITABLE | TEST_PAGE_US;
+    const uint32_t data_user = TEST_DATA_PHYSICAL | TEST_PAGE_PRESENT |
+        TEST_PAGE_WRITABLE | TEST_PAGE_US;
+    const uint32_t stack_user = TEST_STACK_PHYSICAL | TEST_PAGE_PRESENT |
+        TEST_PAGE_WRITABLE | TEST_PAGE_US;
+    const uint32_t pde_code = TEST_PAGE_TABLE | TEST_PAGE_PRESENT |
+        TEST_PAGE_WRITABLE | TEST_PAGE_US;
+    const uint32_t pde_data = TEST_PAGE_TABLE_SECOND | TEST_PAGE_PRESENT |
+        TEST_PAGE_WRITABLE | TEST_PAGE_US;
+    paging_machine state;
+    uint32_t eip = 0u;
+    C_INT failed = 0;
+
+    if (!paging_permission_prepare(&state, fetch, sizeof(fetch), pde_code,
+            pde_data, TEST_PERMISSION_CODE | TEST_PAGE_PRESENT |
+            TEST_PAGE_WRITABLE, data_user,
+            stack_user, 1, 0, &eip) || !paging_permission_expect_fault(&state,
+            eip, 0x05u, TEST_PERMISSION_CODE, TEST_PAGE_DIRECTORY, pde_code,
+            TEST_PAGE_TABLE + 7u * 4u, TEST_PERMISSION_CODE |
+            TEST_PAGE_PRESENT | TEST_PAGE_WRITABLE, PAGING_PERMISSION_FETCH))
+        failed = 1;
+    core_machine_destroy(state.machine);
+
+    if (!paging_permission_prepare(&state, read, sizeof(read), pde_code,
+            TEST_PAGE_TABLE_SECOND | TEST_PAGE_PRESENT | TEST_PAGE_WRITABLE,
+            code_user, data_user, stack_user, 1, 0, &eip) ||
+        !paging_permission_expect_fault(&state, eip, 0x05u, TEST_DATA_LINEAR,
+            TEST_PAGE_DIRECTORY + 4u, TEST_PAGE_TABLE_SECOND | TEST_PAGE_PRESENT |
+            TEST_PAGE_WRITABLE, TEST_PAGE_TABLE_SECOND + 3u * 4u, data_user,
+            PAGING_PERMISSION_READ)) failed = 1;
+    core_machine_destroy(state.machine);
+
+    if (!paging_permission_prepare(&state, read, sizeof(read), pde_code,
+            pde_data, code_user, TEST_DATA_PHYSICAL | TEST_PAGE_PRESENT |
+            TEST_PAGE_WRITABLE, stack_user, 1, 0, &eip) ||
+        !paging_permission_expect_fault(&state, eip, 0x05u, TEST_DATA_LINEAR,
+            TEST_PAGE_DIRECTORY + 4u, pde_data, TEST_PAGE_TABLE_SECOND + 3u * 4u,
+            TEST_DATA_PHYSICAL | TEST_PAGE_PRESENT | TEST_PAGE_WRITABLE,
+            PAGING_PERMISSION_READ)) failed = 1;
+    core_machine_destroy(state.machine);
+
+    if (!paging_permission_prepare(&state, write, sizeof(write), pde_code,
+            TEST_PAGE_TABLE_SECOND | TEST_PAGE_PRESENT | TEST_PAGE_US, code_user,
+            data_user, stack_user, 1, 0, &eip) ||
+        !paging_permission_expect_fault(&state, eip, 0x07u, TEST_DATA_LINEAR,
+            TEST_PAGE_DIRECTORY + 4u, TEST_PAGE_TABLE_SECOND | TEST_PAGE_PRESENT |
+            TEST_PAGE_US, TEST_PAGE_TABLE_SECOND + 3u * 4u, data_user,
+            PAGING_PERMISSION_WRITE)) failed = 1;
+    core_machine_destroy(state.machine);
+
+    if (!paging_permission_prepare(&state, write, sizeof(write), pde_code,
+            pde_data, code_user, TEST_DATA_PHYSICAL | TEST_PAGE_PRESENT |
+            TEST_PAGE_US, stack_user, 1, 0, &eip) ||
+        !paging_permission_expect_fault(&state, eip, 0x07u, TEST_DATA_LINEAR,
+            TEST_PAGE_DIRECTORY + 4u, pde_data, TEST_PAGE_TABLE_SECOND + 3u * 4u,
+            TEST_DATA_PHYSICAL | TEST_PAGE_PRESENT | TEST_PAGE_US,
+            PAGING_PERMISSION_WRITE)) failed = 1;
+    core_machine_destroy(state.machine);
+
+    if (!paging_permission_prepare(&state, stack, sizeof(stack), pde_code,
+            pde_data, code_user, data_user, TEST_STACK_PHYSICAL |
+            TEST_PAGE_PRESENT | TEST_PAGE_US, 1, 0, &eip) ||
+        !paging_permission_expect_fault(&state, eip, 0x07u, 0x00004ffeu,
+            TEST_PAGE_DIRECTORY, pde_code | TEST_PAGE_ACCESSED,
+            TEST_PAGE_TABLE + 4u * 4u, TEST_STACK_PHYSICAL |
+            TEST_PAGE_PRESENT | TEST_PAGE_US, PAGING_PERMISSION_STACK)) failed = 1;
+    core_machine_destroy(state.machine);
+
+    if (!paging_permission_prepare(&state, read, sizeof(read), pde_code,
+            pde_data, code_user, data_user, stack_user, 1, 0, &eip) ||
+        !paging_permission_expect_success(&state, PAGING_PERMISSION_READ,
+            TEST_PAGE_DIRECTORY + 4u, TEST_PAGE_TABLE_SECOND + 3u * 4u)) failed = 1;
+    core_machine_destroy(state.machine);
+
+    if (!paging_permission_prepare(&state, write, sizeof(write), pde_code,
+            pde_data, code_user, data_user, stack_user, 1, 0, &eip) ||
+        !paging_permission_expect_success(&state, PAGING_PERMISSION_WRITE,
+            TEST_PAGE_DIRECTORY + 4u, TEST_PAGE_TABLE_SECOND + 3u * 4u)) failed = 1;
+    core_machine_destroy(state.machine);
+
+    if (!paging_permission_prepare(&state, write, sizeof(write), pde_code,
+            TEST_PAGE_TABLE_SECOND | TEST_PAGE_PRESENT | TEST_PAGE_US, code_user,
+            data_user, stack_user, 0, 0, &eip) ||
+        !paging_permission_expect_success(&state, PAGING_PERMISSION_WRITE,
+            TEST_PAGE_DIRECTORY + 4u, TEST_PAGE_TABLE_SECOND + 3u * 4u)) failed = 1;
+    core_machine_destroy(state.machine);
+
+    if (!paging_permission_prepare(&state, write, sizeof(write), pde_code,
+            TEST_PAGE_TABLE_SECOND | TEST_PAGE_PRESENT | TEST_PAGE_US, code_user,
+            data_user, stack_user, 0, 1, &eip) ||
+        !paging_permission_expect_fault(&state, eip, 0x03u, TEST_DATA_LINEAR,
+            TEST_PAGE_DIRECTORY + 4u, TEST_PAGE_TABLE_SECOND | TEST_PAGE_PRESENT |
+            TEST_PAGE_US, TEST_PAGE_TABLE_SECOND + 3u * 4u, data_user,
+            PAGING_PERMISSION_WRITE)) failed = 1;
+    core_machine_destroy(state.machine);
+
+    if (!paging_permission_prepare(&state, write, sizeof(write), pde_code,
+            pde_data, code_user, TEST_DATA_PHYSICAL | TEST_PAGE_PRESENT |
+            TEST_PAGE_US, stack_user, 0, 1, &eip) ||
+        !paging_permission_expect_fault(&state, eip, 0x03u, TEST_DATA_LINEAR,
+            TEST_PAGE_DIRECTORY + 4u, pde_data, TEST_PAGE_TABLE_SECOND + 3u * 4u,
+            TEST_DATA_PHYSICAL | TEST_PAGE_PRESENT | TEST_PAGE_US,
+            PAGING_PERMISSION_WRITE)) failed = 1;
+    core_machine_destroy(state.machine);
+    return failed;
+}
+
 C_INT main(C_VOID)
 {
     const C_INT valid = paging_test_valid_path();
     const C_INT faults = paging_test_page_faults();
     const C_INT controls = paging_test_control_forms();
+    const C_INT permissions = paging_test_permissions();
 
-    if (valid || faults || controls) {
+    if (valid || faults || controls || permissions) {
         STD_FPRINTF(STD_STDERR,
-            "M5:T258:S2:I386-PAGING:FAIL valid=%d faults=%d controls=%d\n",
-            valid, faults, controls);
+            "M5:T258:S2:I386-PAGING:FAIL valid=%d faults=%d controls=%d permissions=%d\n",
+            valid, faults, controls, permissions);
         return 1;
     }
     STD_PRINTF("M5:T258:S2:I386-PAGING:OK\n");
     STD_PRINTF("M5:T258:S3:I386-PAGING:CORPUS:OK\n");
+    STD_PRINTF("M5:T311:S3:PAGING-PERMISSIONS:OK\n");
     return 0;
 }

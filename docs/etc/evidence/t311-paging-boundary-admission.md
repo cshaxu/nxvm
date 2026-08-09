@@ -95,3 +95,38 @@ comparison identities are Bochs 2.6 `cpu/paging.cc`, `cpu/exception.cc`, and
 only review paths; no source is copied. The retained T258 paging smoke and
 T305--T308 delivery probes are intersections, not substitutes for the new
 focused prepared-state probes.
+
+## S3 CPL3 Permissions And CR0.WP
+
+S3 keeps `_kma_physical_linear` as the sole PDE/PTE permission owner. A
+supervisor write now faults when either current PDE or PTE is read-only and
+`CR0.WP` is set; the existing page-fault helper therefore records `P=1`,
+`W=1`, and `U=0` (code 3). With WP clear, the same CPL0 writes remain legal.
+CPL3 continues to reject supervisor PDE/PTE entries with codes 5 or 7 as
+appropriate, with CR2 holding the faulting linear address.
+
+The focused prepared-state extension to the retained paging smoke reaches the
+single executor through real guest fetch, data read/write, and stack-write
+forms. It isolates the permission code page from descriptor/exception metadata
+and proves user fetch denial, PDE/PTE U/S and R/W denial, user read/write
+success, stack nonpublication, and CPL0 WP-clear/WP-set behavior. Failed
+accesses retain EIP, destination/source registers, stack pointer, EFLAGS, and
+the relevant PDE/PTE A/D bytes; successful read/write accesses publish A and,
+for writes, D.
+
+The similar-issue sweep reviewed all `_kma_physical_linear` callers and the
+code-fetch helpers. Two in-scope VPL0 bypasses were corrected: `_s_read_cs`
+now supplies `_GetCPL` while retaining forced CS access semantics, and
+`ExecInit`'s 15-byte instruction-observation prefetch now uses the same
+checked linear read with `_GetCPL`. `_s_test_eip` likewise uses CPL-aware
+checked code access; the retained `_s_test_cs` VPL0 callers are candidate
+control-transfer validators and remain in their already-closed family scope.
+The public `core_machine_cpu_execution_read_linear` helper remains a
+privileged fixture/debug capability and was intentionally not redefined.
+
+Intel 80386 PRM paging protection rules are the authority. Bochs 2.6
+`cpu/paging.cc` and PCjs 2.00.0 `machines/pcx86/modules/v2/x86.js` remain
+read-only behavior comparisons; no source is imported. `#PF` remains an
+existing producer diagnostic only: this S3 probe does not claim or introduce
+IDT page-fault delivery. Cross-page spans, explicit cache invalidation, PAE,
+and paging-policy expansion remain deferred to their admitted boundaries.

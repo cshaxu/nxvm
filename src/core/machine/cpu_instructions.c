@@ -97,6 +97,7 @@ static type_unsigned_32 _kma_physical_linear(core_machine_cpu_execution_context 
         TYPE_TRACE_BLOCK_BEGIN("!PageDirEntryPresent");
         cpu_state.data.cr2 = linear;
         TYPE_TRACE_CHECK_RETURN_ZERO(_SetExcept_PF(_MakePageFaultErrorCode(0, write, (vpl == 3))));
+        return 0;
         TYPE_TRACE_BLOCK_END;
     }
     if (vpl == 0x03)
@@ -107,6 +108,7 @@ static type_unsigned_32 _kma_physical_linear(core_machine_cpu_execution_context 
             TYPE_TRACE_BLOCK_BEGIN("PageDirEntry_US(0)");
             cpu_state.data.cr2 = linear;
             TYPE_TRACE_CHECK_RETURN_ZERO(_SetExcept_PF(_MakePageFaultErrorCode(1, write, 1)));
+            return 0;
             TYPE_TRACE_BLOCK_END;
         }
         if (write && !_IsPageEntryWritable(cpde))
@@ -114,12 +116,17 @@ static type_unsigned_32 _kma_physical_linear(core_machine_cpu_execution_context 
             TYPE_TRACE_BLOCK_BEGIN("write,!PageDirEntryWritable");
             cpu_state.data.cr2 = linear;
             TYPE_TRACE_CHECK_RETURN_ZERO(_SetExcept_PF(_MakePageFaultErrorCode(1, 1, 1)));
+            return 0;
             TYPE_TRACE_BLOCK_END;
         }
         TYPE_TRACE_BLOCK_END;
     }
-    _SetPageEntry_A(cpde);
-    TYPE_TRACE_CHECK_RETURN_ZERO(_kma_write_physical(context, ppde, TYPE_REFERENCE_OF(cpde), 4));
+    else if (write && _GetCR0_WP && !_IsPageEntryWritable(cpde))
+    {
+        cpu_state.data.cr2 = linear;
+        TYPE_TRACE_CHECK_RETURN_ZERO(_SetExcept_PF(_MakePageFaultErrorCode(1, 1, 0)));
+        return 0;
+    }
     ppte = _GetPageEntry_Base(cpde) + _GetLinear_Page(linear) * 4;
     TYPE_TRACE_CHECK_RETURN_ZERO(_kma_read_physical(context, ppte, TYPE_REFERENCE_OF(cpte), 4));
     if (!_IsPageEntryPresent(cpte))
@@ -127,6 +134,7 @@ static type_unsigned_32 _kma_physical_linear(core_machine_cpu_execution_context 
         TYPE_TRACE_BLOCK_BEGIN("!PageTabEntryPresent");
         cpu_state.data.cr2 = linear;
         TYPE_TRACE_CHECK_RETURN_ZERO(_SetExcept_PF(_MakePageFaultErrorCode(0, write, (vpl == 3))));
+        return 0;
         TYPE_TRACE_BLOCK_END;
     }
     if (vpl == 0x03)
@@ -137,6 +145,7 @@ static type_unsigned_32 _kma_physical_linear(core_machine_cpu_execution_context 
             TYPE_TRACE_BLOCK_BEGIN("PageTabEntry_US(0)");
             cpu_state.data.cr2 = linear;
             TYPE_TRACE_CHECK_RETURN_ZERO(_SetExcept_PF(_MakePageFaultErrorCode(1, write, 1)));
+            return 0;
             TYPE_TRACE_BLOCK_END;
         }
         if (write && !_IsPageEntryWritable(cpte))
@@ -144,10 +153,19 @@ static type_unsigned_32 _kma_physical_linear(core_machine_cpu_execution_context 
             TYPE_TRACE_BLOCK_BEGIN("write,!PageTabEntryWritable");
             cpu_state.data.cr2 = linear;
             TYPE_TRACE_CHECK_RETURN_ZERO(_SetExcept_PF(_MakePageFaultErrorCode(1, 1, 1)));
+            return 0;
             TYPE_TRACE_BLOCK_END;
         }
         TYPE_TRACE_BLOCK_END;
     }
+    else if (write && _GetCR0_WP && !_IsPageEntryWritable(cpte))
+    {
+        cpu_state.data.cr2 = linear;
+        TYPE_TRACE_CHECK_RETURN_ZERO(_SetExcept_PF(_MakePageFaultErrorCode(1, 1, 0)));
+        return 0;
+    }
+    _SetPageEntry_A(cpde);
+    TYPE_TRACE_CHECK_RETURN_ZERO(_kma_write_physical(context, ppde, TYPE_REFERENCE_OF(cpde), 4));
     _SetPageEntry_A(cpte);
     if (write)
         _SetPageEntry_D(cpte);
@@ -1149,7 +1167,8 @@ static C_VOID _s_read_es(core_machine_cpu_execution_context *context, type_unsig
 static C_VOID _s_read_cs(core_machine_cpu_execution_context *context, type_unsigned_32 offset, type_virtual_address rdata, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_s_read_cs");
-    TYPE_TRACE_CHECK_RETURN(_kma_read_logical(context, &cpu_state.data.cs, offset, rdata, byte, 0, 1));
+    TYPE_TRACE_CHECK_RETURN(_kma_read_logical(context, &cpu_state.data.cs,
+        offset, rdata, byte, _GetCPL, 1));
     TYPE_TRACE_CALL_END;
 }
 static C_VOID _s_read_ss(core_machine_cpu_execution_context *context, type_unsigned_32 offset, type_virtual_address rdata, type_unsigned_8 byte)
@@ -1547,7 +1566,8 @@ static C_VOID _s_load_gs(core_machine_cpu_execution_context *context, type_unsig
 static C_VOID _s_test_eip(core_machine_cpu_execution_context *context)
 {
     TYPE_TRACE_CALL_BEGIN("_s_test_eip");
-    TYPE_TRACE_CHECK_RETURN(_s_test_cs(context, cpu_state.data.eip, 0x01));
+    TYPE_TRACE_CHECK_RETURN(_kma_test_logical(context, &cpu_state.data.cs,
+        cpu_state.data.eip, 0x01, 0, _GetCPL, 1));
     TYPE_TRACE_CALL_END;
 }
 static C_VOID _s_test_esp(core_machine_cpu_execution_context *context)
@@ -16512,10 +16532,9 @@ static C_VOID ExecInit(core_machine_cpu_execution_context *context)
     instruction_state.data.reccs = cpu_state.data.cs.selector;
     instruction_state.data.receip = cpu_state.data.eip;
     instruction_state.data.linear = cpu_state.data.cs.base + cpu_state.data.eip;
-    if (core_machine_cpu_execution_read_linear(context,
-                                               instruction_state.data.linear,
-                                               (type_virtual_address)instruction_state.data.opcodes, 15))
-    {
+    _kma_read_linear(context, instruction_state.data.linear,
+        (type_virtual_address)instruction_state.data.opcodes, 15, _GetCPL, 1);
+    if (instruction_state.data.except) {
         instruction_state.data.oplen = 0;
     }
     else
