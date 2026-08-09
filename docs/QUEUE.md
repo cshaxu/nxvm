@@ -25,32 +25,3 @@ numeric identifier under [rules/EXECUTION.md](rules/EXECUTION.md).
    remaining prerequisite; no Windows 95 claim.
 8. **M5 closure audit.** Reconcile current source, product UX, contracts,
    CMake, evidence, and open debt before any M5-close decision.
-
-## Later-Milestone Handoff
-
-- **M6:** implement the neutral `mantle` session envelope only after the core
-  second-consumer gate has proved the cleaned boundary; no DOS policy or
-  external VDM backend enters it.
-- **M7:** implement default PC/AT, Compaq DeskPro 386, and IBM PC 110 profiles
-  from the frozen admission contract, with user-supplied legal ROM/media
-  manifests and profile-specific corpus. PC 110's 486 requirements become
-  separate evidence-led admissions.
-- **M8:** implement owned `dos` and `vdm` into `nxvdm.exe`, including the
-  approved CLI, containment, display, debugger, cancellation and exit policy.
-  External VDM/DOS remains isolated research, not a product dependency.
-- **M9 and later:** decide Windows 95/486 and cycle-exact profile work only
-  from prior corpus evidence; neither is an implied M5 exit.
-
-## Constraints
-
-- Keep one active subtask. Each task begins with a bounded S1 contract, owner,
-  probe, deferred behavior, and stop condition.
-- `core/machine` owns generic guest state, elapsed time, shared-device storage,
-  and initialization/teardown order. VM/profile supplies only frozen topology,
-  providers, ROM/firmware contents, and PC/AT policy; platform never mutates
-  guest state.
-- Do not add a second executor, machine/session, device-state mirror,
-  VM-side instruction loop, host-clock guest shortcut, global/TLS selector, or
-  unapproved NXVM Console/debugger/startup/boot behavior change.
-- A behavior-changing task records its focused evidence, retained regression
-  matrix, source commit, and verified task artifact before completion.
