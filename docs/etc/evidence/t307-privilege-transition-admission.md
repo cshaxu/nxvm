@@ -1,0 +1,97 @@
+# M5 T307 S1: Privilege Transition Family Admission Audit
+
+## Scope and Authority
+
+T307 admits only 80386 protected-mode entries from CPL 3 to CPL 0 through a
+32-bit interrupt or trap gate and a 32-bit call gate. The paired return
+boundary is the accepted T306 outer 32-bit `IRET`/`RETF` work: this task owns
+the matching TSS `SS0:ESP0` source, new-stack frame, selector/cache, privilege,
+and preflight-then-commit entry behavior. It retains the single core CPU
+executor, checked logical stack route, and core-owned selector/cache state.
+
+The semantic authority is the Intel *80386 Programmer's Reference Manual*
+(1986), protected-mode interrupt/trap-gate, call-gate, TSS, stack-switch, and
+return descriptions. Read-only comparison identities are Bochs 2.6
+(`cpu/exception.cc`, `cpu/call_far.cc`, `cpu/segment_ctrl_pro.cc`,
+`cpu/iret.cc`, and `cpu/ctrl_xfer32.cc`) and PCjs 2.00.0
+(`machines/pcx86/modules/v2/segx86.js`, `x86ops.js`, and `x86help.js`). They
+are behavior-location references only; no source is imported or copied.
+
+Deferred: task and nested-task entry/return, task gates, general task
+switching, virtual-8086 entries, new fault origins, reset/triple-fault policy,
+paging-policy work, product UX, public ABI, and source import.
+
+## Current Path Inventory
+
+| Area | Current core route | S1 classification |
+| --- | --- | --- |
+| IDT gate dispatch | `_ser_int_protected` | Retained profile/IDT/type/DPL front end; selects 16-bit route or 32-bit same-CPL route. |
+| 16-bit inner entry | `_ser_int_protected_16` | Retained intersection: validates selector/TSS/new SS, uses a 16-bit frame and `_s_test_stack_frame_16`. |
+| 32-bit same-CPL gate | `_ser_int_protected_32_same` | Retained T305 path; explicitly rejects target CPL lower than source CPL with `#CE`. |
+| Call-gate dispatch | `_ser_call_far_call_gate` | Retained 16-bit gate/frame path; accepts only operand byte 2 and uses `_s_test_stack_frame_16`. |
+| TSS reads | `_s_read_tss`, TR cache | Reusable checked logical TSS route; existing 32-bit TSS branches read offsets 4/8 but truncate or reject ESP above 16 bits for old 16-bit consumers. |
+| New-stack validation | `_ksa_prepare_stack_sreg`, `_s_test_stack_frame_16` | Reusable selector/cache validation; no 32-bit target-stack frame preflight helper exists. |
+| Return pairing | T306 outer `IRET`/`RETF` planners | Retained consumer boundary: 32-bit outer frames exist; T307 must produce their matching entry layout without changing return code. |
+| Focused evidence | T305 interrupt-entry, T288 call-gate, T260 TSS I/O-map, T261 task-switch probes | Retained coverage for same-CPL gates, 16-bit call-gate entry, 32-bit TR/TSS loading, and task consumers; no CPL3-to-CPL0 32-bit entry probe exists. |
+
+## Frozen Admission Matrix
+
+| Family | Profile and mode | Source and target | Admitted 32-bit form | Required frame and flags | Current disposition |
+| --- | --- | --- | --- | --- | --- |
+| Software `INT n`, `INT3`, `INTO` | 80386, protected, non-V86 | CPL 3 to nonconforming CPL 0 code | 32-bit IDT interrupt/trap gate | On new SS0 stack: EIP, padded CS, EFLAGS, old ESP, padded old SS; interrupt gate clears IF and TF, trap gate clears TF | S2 implement. Software gate DPL applies; retain existing front ends. |
+| Hardware IRQ/NMI and established fault delivery | 80386, protected, non-V86 | CPL 3 to CPL 0 | 32-bit IDT interrupt/trap gate | Same frame, with error code preceding EIP only for already admitted error-code sources | S4 integrate only after common planner; hardware bypasses software DPL. No new fault origin. |
+| Far `CALL` through gate | 80386, protected, non-V86 | CPL 3 to nonconforming CPL 0 code | 32-bit call gate with a 32-bit target offset | New SS0 frame holds padded old SS, old ESP, padded old CS, old EIP; gate parameter count chooses dword copies between stack-pair and return pair | S3 implement zero-count first, then bounded count/copy evidence if required by the frozen gate form. |
+| 16-bit IDT/call-gate intersection | 80286/80386, protected | Existing inner transition | Existing 16-bit gate/frame/TSS behavior | 16-bit frame and old TSS stack route | Retain and regression-test only; do not rewrite during S2/S3. |
+| Same-CPL 32-bit IDT gate | 80386, protected | CPL unchanged | Existing T305 planner | EIP, padded CS, EFLAGS; no new stack | Retain; shared helper changes require T305 regression. |
+| Real mode, V86, task/task gate, direct far transfer | Any deferred mode/family | Out of admission | None | None | Retain existing behavior or rejection; no implementation in T307. |
+
+For the ordinary non-error 32-bit IDT entry, the lowest address after the
+stack switch contains saved EIP, padded CS, EFLAGS, old ESP, then padded old
+SS. An already admitted error-code source places its error code below that
+five-dword frame. The call-gate frame uses the corresponding old-stack pair
+and return pair, with gate-count parameter copies between them. Operand-size
+prefixes do not narrow a 32-bit gate frame; target SS B independently selects
+ESP or SP addressing/publication. The selector identity in every padded slot
+remains 16 bits.
+
+## Validation and Commit Contract
+
+Before descriptor accessed-byte writes, target state, new-stack writes, IF/TF
+changes, pending-event publication, or CPL change, the admitted planner must
+validate: IDT or call-gate bounds/type/present and software DPL where
+applicable; target CS selector/type/nonconforming DPL/present/limit; valid busy
+32-bit TR; checked TSS `ESP0` and `SS0`; target SS selector/RPL/DPL/writable/
+present/cache; every source parameter read; and every target-stack frame write.
+
+Any failure must leave source CS/SS caches, EIP/EFLAGS, SP/ESP, CPL, target
+descriptor accessed bytes, target stack contents, and event/pending state
+unpublished. Existing error-code and terminal-delivery containment policies are
+retained; S4 may only connect already admitted sources after S2 proves the
+common planner.
+
+## Batches and Stop Boundaries
+
+| Batch | Work | Focused synthetic proof | Stop boundary |
+| --- | --- | --- | --- |
+| S2 | 32-bit IDT interrupt/trap common CPL3-to-CPL0 planner with TSS32 SS0:ESP0 and exact non-error frame | Software INT and trap/interrupt flag forms; frame/SS B/selector/cache/TSS/atomic negative matrix | No hardware/fault origin, call gate, parameter copy, outer return change, or V86/task path. |
+| S3 | 32-bit call-gate CPL3-to-CPL0 planner | 32-bit target offset, zero-count frame, then bounded parameter-count copy and failure preservation | No direct far transfer, task gate, or return implementation. |
+| S4 | Existing hardware/NMI and established error-code source integration | Hardware DPL bypass, error-code six-dword frame, rejection publication and retained T305 diagnostics | No new fault source or recursive/double-fault policy. |
+| S5 | Family closure | T307 focused probes, retained T305/T306/T304/T260/T261, current gates, artifact, and one bounded observation | No follow-on task until coordinator acceptance. |
+
+Stop and report any need for a second executor/state owner, a VM/platform
+dependency, a public raw layout, an exception-delivery policy expansion, or
+task/V86/paging semantics.
+
+## Similar-Issue Sweep and S1 Result
+
+The S1 sweep covered `_ser_int_protected`, `_ser_int_protected_16`,
+`_ser_int_protected_32_same`, `_ser_call_far_call_gate`, TSS read and stack
+frame helpers, selector/cache preparation, interrupt front ends, T306 outer
+returns, T305/T288/T260/T261 focused probes, descriptor constants, and 80386
+read-only comparison paths.
+
+The only admitted production gaps are the 32-bit inner-privilege IDT and
+call-gate planners plus their checked 32-bit new-stack support. The existing
+16-bit path, same-CPL 32-bit planner, TSS I/O-map consumers, outer returns,
+and task/V86 paths are classified as retained or deferred above. S1 changes no
+CPU behavior, CMake artifact identity, Queue entry, or product observation.
