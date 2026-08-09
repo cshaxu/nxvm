@@ -3163,7 +3163,8 @@ static C_VOID _ser_int_protected_16(core_machine_cpu_execution_context *context,
     TYPE_TRACE_CALL_END;
 }
 static C_VOID _ser_int_protected_32_same(core_machine_cpu_execution_context *context,
-    type_unsigned_8 intid, type_unsigned_64 gate_desc, type_bool software_origin)
+    type_unsigned_8 intid, type_unsigned_64 gate_desc, type_bool software_origin,
+    type_bool error_frame)
 {
     type_unsigned_64 code_desc;
     type_unsigned_16 newcs;
@@ -3171,6 +3172,7 @@ static C_VOID _ser_int_protected_32_same(core_machine_cpu_execution_context *con
     type_unsigned_32 oldeip;
     type_unsigned_32 oldeflags;
     type_unsigned_32 oldcs_frame;
+    type_unsigned_32 error_code;
     type_unsigned_8 oldcpl;
     type_bool interrupt_gate;
     t_cpu_data_sreg newcs_cache;
@@ -3201,13 +3203,14 @@ static C_VOID _ser_int_protected_32_same(core_machine_cpu_execution_context *con
     oldeip = cpu_state.data.eip;
     oldeflags = cpu_state.data.eflags;
     oldcs_frame = oldcs;
+    error_code = TYPE_MASK_UNSIGNED_32(instruction_state.data.excode);
     newcs_cache = cpu_state.data.cs;
     TYPE_TRACE_CHECK_RETURN(_ksa_prepare_code_sreg(context, newcs, oldcpl,
         &newcs_cache, &code_desc));
     TYPE_TRACE_CHECK_RETURN(_kma_test_access(context, &newcs_cache,
         TYPE_MASK_UNSIGNED_32(_GetDescGate_Offset(gate_desc)), 1u, 0,
         oldcpl, 1));
-    TYPE_TRACE_CHECK_RETURN(_s_test_ss_push(context, 12u));
+    TYPE_TRACE_CHECK_RETURN(_s_test_ss_push(context, error_frame ? 16u : 12u));
 
     /* Descriptor access and each frame write are preflighted before state publish. */
     TYPE_TRACE_CHECK_RETURN(_s_write_xdt(context, newcs,
@@ -3215,6 +3218,8 @@ static C_VOID _ser_int_protected_32_same(core_machine_cpu_execution_context *con
     TYPE_TRACE_CHECK_RETURN(_kec_push(context, TYPE_REFERENCE_OF(oldeflags), 4u));
     TYPE_TRACE_CHECK_RETURN(_kec_push(context, TYPE_REFERENCE_OF(oldcs_frame), 4u));
     TYPE_TRACE_CHECK_RETURN(_kec_push(context, TYPE_REFERENCE_OF(oldeip), 4u));
+    if (error_frame)
+        TYPE_TRACE_CHECK_RETURN(_kec_push(context, TYPE_REFERENCE_OF(error_code), 4u));
     cpu_state.data.cs = newcs_cache;
     cpu_state.data.eip = TYPE_MASK_UNSIGNED_32(_GetDescGate_Offset(gate_desc));
     if (interrupt_gate) _ClrEFLAGS_IF;
@@ -3246,10 +3251,10 @@ static C_VOID _ser_int_protected(core_machine_cpu_execution_context *context,
     case VCPU_DESC_SYS_TYPE_TRAPGATE_32:
         if (context->cpu_profile < CORE_MACHINE_CPU_PROFILE_80386)
             TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(_ser_idt_error_code(intid)));
-        if (flagext || _GetEFLAGS_VM)
+        if (_GetEFLAGS_VM)
             TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(0));
         TYPE_TRACE_CHECK_RETURN(_ser_int_protected_32_same(context, intid,
-            gate_desc, software_origin));
+            gate_desc, software_origin, flagext));
         break;
     case VCPU_DESC_SYS_TYPE_TASKGATE:
     case VCPU_DESC_SYS_TYPE_TRAPGATE_16:
@@ -16112,6 +16117,9 @@ static C_VOID ExecFinal(core_machine_cpu_execution_context *context)
             exception_vector = 0x0du;
         else if (instruction_state.data.except == VCPUINS_EXCEPT_NP)
             exception_vector = 0x0bu;
+        else if (instruction_state.data.except == VCPUINS_EXCEPT_SS &&
+            context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
+            exception_vector = 0x0cu;
         if (TYPE_GET_BIT(fault_cpu.data.cr0, VCPU_CR0_PE) &&
             exception_vector != 0u) {
             original_except = instruction_state.data.except;
