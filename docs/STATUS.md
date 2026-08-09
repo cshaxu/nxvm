@@ -2,13 +2,13 @@
 
 ## Current Work
 
-**Active: M5 T305 S3.**
+**Active: M5 T305 S4.**
 
-## M5 T305 S3 Packet
+## M5 T305 S4 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Corrective; M5 T305 S3 software and hardware entry front ends; Coordinated Dual-Session Mode. S2 closed the same-CPL 32-bit gate planner. |
+| Identifier Mode | Corrective; M5 T305 S4 existing fault-entry and failed-delivery containment; Coordinated Dual-Session Mode. S2/S3 closed the planner and front ends. |
 | Admission And Approval | T304 is closed. T305 is the next linear Queue candidate in the owner-approved M5 80386 protected execution/delivery package. |
 | Objective | Admit 32-bit IDT interrupt/trap-gate and exception-entry semantics for `INT`, `INT3`, `INTO`, hardware interrupts, and already-admitted faults. Freeze gate/type/DPL/present/target-CS/error-code/frame/recursive-fault matrices before implementation. |
 | Non-goals | 32-bit `IRET`, outer returns, call gates, task gates, task switching, virtual-8086, paging-policy expansion, product UX, public ABI, and source import. No new executor or delivery path. |
@@ -23,8 +23,9 @@
 | S1 Audit Record | [T305 interrupt and exception-entry admission audit](etc/evidence/t305-interrupt-exception-entry-admission.md) freezes the gate/profile/origin/frame/commit matrix, current path classification, and bounded S2+ work. |
 | S2 Evidence Record | [T305 interrupt and exception-entry admission audit](etc/evidence/t305-interrupt-exception-entry-admission.md#s2-same-cpl-32-bit-gate-evidence) records the gate-type planner, focused prepared-state proof, retained 16-bit checks, and deferred origins. |
 | S3 Evidence Record | [T305 interrupt and exception-entry admission audit](etc/evidence/t305-interrupt-exception-entry-admission.md#s3-software-and-hardware-front-end-evidence) records software/external origin separation, staged PIC/NMI publication, and focused front-end proof. |
+| S4 Evidence Record | [T305 interrupt and exception-entry admission audit](etc/evidence/t305-interrupt-exception-entry-admission.md#s4-existing-fault-entry-and-containment-evidence) records 32-bit existing-fault error frames, bounded failed-delivery containment, and the retained selector-loader check. |
 | Stop Conditions | Stop and report unresolved Intel/reference disagreement, required architecture change, second execution/state path, raw public-layout exposure, or behavior owned by IRET/outer-return/gate/task/V86/later families. |
-| Exit Criteria | `INT3`, `INT n`, OF-set `INTO`, and the retained PIC/NMI origin route enter the frozen planner with correct trap return EIP, software DPL versus hardware bypass, event publication, and interrupt/trap IF behavior. Focused probes and narrow gates pass without CPL change or fault recursion work. |
+| Exit Criteria | Existing admitted fault consumers enter the frozen 32-bit planner with correct retained error codes; failed delivery restores the original first fault under a bounded terminal containment observation. Focused probes and narrow gates pass without IRET, task gates, reset/triple-fault policy, or new fault-origin work. |
 
 ## Current Technical Baseline
 

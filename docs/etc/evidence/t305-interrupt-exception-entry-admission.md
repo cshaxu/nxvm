@@ -172,3 +172,36 @@ NMI state fields, and the focused PIC lifecycle checks. `IRET`, outer or CPL
 stack transitions, fault recursion, task/call gates, V86, paging, and public
 interfaces remain outside S3. No production hit requires another executor or
 an expanded controller ownership contract.
+
+## S4 Existing Fault Entry And Containment Evidence
+
+The frozen same-CPL 32-bit planner now accepts the existing exception-entry
+flag. It preflights sixteen stack bytes for a fault gate, retains the existing
+fault error code, and publishes the dword image as error code, saved EIP,
+saved CS, then saved EFLAGS. `ExecFinal` retains its single protected delivery
+attempt and original-fault restoration rule, while adding the already-existing
+exact `#SS` consumer to the same `#GP`/`#NP` vector selection on the admitted
+80386 profile only. The retained 80286/16-bit terminal `#SS` behavior is not
+reclassified. A rejected delivery restores the original CPU state and first-fault diagnostic before the
+existing terminal stop; it does not publish an IDT target, stack write,
+accessed byte, or delivered-exception record.
+
+The focused prepared-state probe directly produces existing protected `#GP`,
+`#NP(0018)`, and `#SS(0018)` sources and verifies their 32-bit gates, retained
+error code, return EIP, selector, flags, four-dword frame, and target
+descriptor access. The `#GP` failed-gate case verifies the bounded terminal
+containment: original first-fault diagnostics remain observable, no delivered
+exception is recorded, and CS cache, EIP, ESP, EFLAGS, and descriptor access
+are unchanged. The direct `#NP`/`#SS` setup clears fixture TF before its
+selector load, because debug-trap entry is intentionally deferred; this is
+only a prepared-state isolation measure and does not change a fault origin.
+
+The S4 sweep revisited `_e_except_n`, `ExecFinal`,
+`_ser_int_protected_32_same`, `_s_test_ss_push`, `_kec_push`, and the existing
+`MOV Sreg` loader route. No loader change was needed: the initial apparent
+`#UD` occurred after a successful `MOV EAX, imm32` with fixture TF set, before
+the selector-load instruction. Retained T301 selector coverage and the T305
+S2/S3 front-end proof pass with the direct fault cases. `IRET`, fault-origin
+expansion, recursive/double-fault policy, reset/triple-fault policy, task and
+call gates, CPL transitions, V86, paging, and public interfaces remain
+deferred.
