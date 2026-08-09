@@ -2,33 +2,13 @@
 
 ## Current Work
 
-**Active: M5 T312 S2.**
-
-## M5 T312 S2 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Corrective; M5 T312 S2 system-extension no-admission closure. T312 S1 P0 `67e73ca8` is the occupied audit admission packet; Coordinated Dual-Session Mode. |
-| Admission And Approval | T312 remains the current linear task. S2 records the required corrective evidence closure after S1 P0 was recognized by the identifier gate; it does not activate T313. |
-| Objective | Close the T312 system-extension audit as a withdraw/no-op: make each candidate's existing surface, focused proof, absent VM/M5 consumer, and future evidence requirement independently reviewable. |
-| Non-goals | CPU/CMake/artifact/Queue/product changes, trace-framework construction, long guest-image runs, inferred consumer claims, FPU, M6 mantle, a second executor, implementation, an artifact, or a task close/Idle transition. |
-| Reference Baseline | T312 S1 P0 `67e73ca8`, accepted T311 0.5.0311 paging-boundary closure, Queue system-extension candidate, and retained T304/T307/T308 evidence. |
-| Files And ABI Surface | S2 may change only T312 evidence and active status records. It must not change runtime code, interfaces, test topology, ownership, artifact identity, Queue, or product UX. |
-| Applicable Rules | `rules/EXECUTION.md`, `rules/ARCHITECTURE.md`, `rules/CODING.md`, `rules/DOCUMENT.md`, and `etc/operations/policy/source-policy.md`; retain one core executor/state owner and existing checked memory, stack, and fault routes. |
-| Verification | Intel 80386 PRM is authoritative. Record versioned read-only Bochs 2.6 and PCjs 2.00.0 behavior paths; use focused prepared-state probes only. |
-| Expected Markers | Documentation governance and diff check prove the withdraw/no-op record; S2 creates no runtime marker or artifact. |
-| S1 Audit Record | [T312 system-extension admission](etc/evidence/t312-system-extension-admission.md) records the authority, form/consumer matrix, and no-admission or narrow-packet disposition. |
-| Asset Needs | Read-only local references only; no guest media, firmware, or third-party source is committed. |
-| Original Owner Request | Execute the direct M5 80386 protected execution/delivery package in coordinated mode, stopping before Mantle; use Intel as authority with read-only Bochs and PCjs comparison. |
-| Similar-Issue Sweep | Sweep decoder metadata, handler tables, profile/mode gates, existing tests, trace/diagnostic hooks, product/checkpoint evidence, and TODO for TSS/task-gate/nested-return, LDT, V86, debug-register, and remaining-system forms. |
-| Stop Conditions | Stop and report an Intel/reference disagreement, absent reproducible consumer, a need for trace-framework construction or long image probing, a cross-owner dependency, FPU scope, M6 mantle entry, or more than one candidate family. |
-| Exit Criteria | S2 records the complete per-candidate no-admission disposition, S1 P0/S2 corrective continuity, and future evidence requirements; it passes documentation governance and diff check and pushes its evidence commit before reporting. |
+**Idle.**
 
 ## Current Technical Baseline
 
-- **T311 pending artifact identity:** `current-gcc` and
+- **Accepted artifact identity:** `current-gcc` and
   `verify-current-artifact-target` select `vm-0-5-0311` / `nxvm_0_5_0311.exe`.
-  T311 remains active pending coordinator acceptance.
+  T311 is the accepted M5 artifact baseline.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
@@ -43,7 +23,6 @@
 
 | Task | Compact result |
 | --- | --- |
-| T300 | Unified the core directional port registry, propagated typed-provider failures, made VM session initialization failure-atomic, and removed public private layouts. The DMA binding uses a core-issued non-addressable nonce and core-internal revalidation; 51 static/governance gates and 129 CTests passed with its task-level developer artifact. |
 | T301 | Completed the 80386 segment-selector family, including atomic segment loads and selector queries. The S4 sweep corrected non-present query handling and system-descriptor DPL/RPL visibility; 51 static/governance checks, 130 CTests, and the T301 artifact passed. The bounded product observation reached no guest checkpoint because host window discovery failed before guest input; manual observation remains verification-only. |
 | T302 | Completed the 80386 operand/address/stack family. It corrected 16-bit fetch wrapping, crossed stack/frame width behavior, shared zero-length range validation, and `OUTSB` direction; all 131 CTests and its 0302 artifact passed. Product observation yielded no guest checkpoint because the process had no discoverable window handle; manual observation remains verification-only. |
 | T303 | Completed the 80386 same-privilege control-transfer family. It fixed `LOOP` target-fault count publication, `CALL ptr16:32` decode width, same-CPL `RETF` DPL/RPL validation, and far-indirect register `#UD`; 51 gates, 132 CTests, and the 0303 artifact passed. Product observation remained host-window limited before guest input. |
@@ -51,6 +30,7 @@
 | T305 | Completed the 80386 32-bit interrupt and exception-entry family. It added same-CPL gate planning, software and external front ends, and bounded existing #GP/#NP/#SS error-frame delivery containment; 51 gates, 134 CTests, and the 0305 artifact passed. Product observation remained host-window limited before guest input. |
 | T306 | Completed the 80386 protected-return family. It added same-CPL and outer 16/32-bit `IRET`, aligned outer `RETF`, restored explicit outer nonconforming-code ownership, and fixed IRET IF/IOPL/RF/VM privilege masks; 51 gates, 135 CTests, and the 0306 artifact passed. Product observation remained host-window limited before guest input. |
 | T307 | Completed 80386 32-bit CPL3-to-CPL0 IDT and call-gate entry with TSS32 target stacks, preflighted atomic publication, and Intel-correct target-SS `#TS` classification. Its 0307 artifact, 51 gates, 137 CTests, and 9 focused/retained probes passed; product observation remained host-window limited before guest input. |
+| T312 | Closed as a withdraw/no-op after audit found no real VM/M5 consumer for the candidate 32-bit system-extension families. It made no runtime change or artifact; future admission requires the per-family consumer evidence recorded in [T312 evidence](etc/evidence/t312-system-extension-admission.md). M6 candidates remain unadmitted. |
 
 ## Recent Governance
 
