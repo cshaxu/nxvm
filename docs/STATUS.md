@@ -2,33 +2,27 @@
 
 ## Current Work
 
-**Active: M5 T310 S9.**
+**Active: M5 T311 S1.**
 
-## M5 T310 S9 Packet
+## M5 T311 S1 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Corrective; M5 T310 S9 0F integer-family closure; Coordinated Dual-Session Mode. T310 S1--S8 are accepted. |
-| Admission And Approval | T310 is the next linear task selected by T309's accepted form audit; it precedes paging because its forms are metadata-valid and dispatch-reachable but lack focused semantic evidence. |
-| Objective | Close T310's SETcc, MOVZX/MOVSX, bit-test/modify, double-shift, bit-scan, and two-operand IMUL work: rebuild the current 0310 product artifact, run all current gates, record evidence/history, and remove the closed T310 candidate from the queue without changing CPU semantics. |
-| Non-goals | Any new instruction form, paging, debug/test registers, task/V86/system extensions, product UX, public ABI, source import, a second executor, a product repair, or a long guest-image fixture. |
-| Reference Baseline | Accepted T308 artifact baseline; accepted T310 S8 IMUL evidence `6655ba1`. |
-| Files And ABI Surface | S9 changes only CMake current artifact identity, task records/history/queue, and generated `build/output/nxvm_0_5_0310.exe`. It must not change CPU semantics, public interfaces, cross-module ownership, or product UX. |
+| Identifier Mode | New; M5 T311 S1 P0 CPL3 paging and user/kernel boundary admission; Coordinated Dual-Session Mode. T310 is accepted and closed. |
+| Admission And Approval | T311 is the next linear task selected by the first remaining direct M5 80386 package candidate in `QUEUE.md`. It follows T258's CPL0 4 KiB baseline and T305--T308's bounded 32-bit exception delivery. |
+| Objective | Audit and freeze the smallest consumer-neutral 80386 paging permission scope: CPL3 U/S and R/W checks, `CR0.WP`, precise `#PF` error bits and CR2, cross-page checked accesses, and only any TLB/`INVLPG` behavior that the established execution path demonstrably requires. |
+| Non-goals | PAE, host-memory substitution, generic paging rewrite, new instruction families beyond an evidence-required `INVLPG`, page-fault policy beyond the admitted existing delivery boundary, task/V86/debug/test/system expansion, product UX, public ABI, source import, a second executor, or a guest-image build fixture. |
+| Reference Baseline | Accepted T310 artifact `vm-0-5-0310` / `nxvm_0_5_0310.exe`; retained T258 CPL0 paging, T305--T308 interrupt/delivery, and T306 return evidence. |
+| Files And ABI Surface | S1 changes only task evidence and status records. It must not change CPU behavior, CMake current identity, public interfaces, cross-module ownership, or product UX. |
 | Applicable Rules | `rules/EXECUTION.md`, `rules/ARCHITECTURE.md`, `rules/CODING.md`, `rules/DOCUMENT.md`, and `etc/operations/policy/source-policy.md`; retain one core executor/state owner and existing checked memory, stack, and fault routes. |
 | Verification | Intel 80386 PRM is authoritative. Record versioned read-only Bochs 2.6 and PCjs 2.00.0 behavior paths; use focused prepared-state probes only. |
-| Expected Markers | All T310 S3--S8 focused markers, `verify-current-artifact-target` for `vm-0-5-0310`, full `current-gates-gcc`, documentation governance, and diff check pass. Artifact identity is `build/output/nxvm_0_5_0310.exe` with recorded SHA-256. |
-| S2 Audit Record | [T310 0F integer bit/data admission audit](etc/evidence/t310-0f-integer-bit-data-admission.md) records the authority, form matrix, static candidates, focused-probe rules, batch boundaries, retained intersections, and deferrals. |
+| Expected Markers | S1 adds no executable marker or artifact. It records the form/access matrix, existing owner/path map, exact page-fault bit and delivery assumptions, focused prepared-state probe plan, batch boundaries, and deferred policy. |
+| S1 Audit Record | [T311 paging boundary admission](etc/evidence/t311-paging-boundary-admission.md) records the authority, matrix, retained intersections, and batch boundaries. |
 | Asset Needs | Read-only local references only; no guest media, firmware, or third-party source is committed. |
 | Original Owner Request | Execute the direct M5 80386 protected execution/delivery package in coordinated mode, stopping before Mantle; use Intel as authority with read-only Bochs and PCjs comparison. |
-| Similar-Issue Sweep | Confirm the S3--S8 evidence records and focused registrations remain connected to `PROJECT_CURRENT_SMOKE_TARGETS`; do not repair unrelated failures under this closure packet. |
-| S3 Evidence Record | [T310 SETcc evidence](etc/evidence/t310-0f-integer-bit-data-admission.md#s3-setcc-evidence) is retained unchanged. |
-| S4 Evidence Record | [T310 MOVZX/MOVSX evidence](etc/evidence/t310-0f-integer-bit-data-admission.md#s4-movzxmovsx-evidence) is retained unchanged. |
-| S5 Evidence Record | [T310 bit-test/modify evidence](etc/evidence/t310-0f-integer-bit-data-admission.md#s5-bit-testmodify-evidence) is retained unchanged. |
-| S6 Evidence Record | [T310 SHLD/SHRD evidence](etc/evidence/t310-0f-integer-bit-data-admission.md#s6-shldshrd-evidence) is retained unchanged. |
-| S7 Evidence Record | [T310 BSF/BSR evidence](etc/evidence/t310-0f-integer-bit-data-admission.md#s7-bsfbsr-evidence) is retained unchanged. |
-| S8 Evidence Record | [T310 two-operand IMUL evidence](etc/evidence/t310-0f-integer-bit-data-admission.md#s8-two-operand-imul-evidence) is retained unchanged. |
-| Stop Conditions | Stop and report any full-gate failure outside a proven T310 regression intersection, any required CPU behavior change, artifact-identity inconsistency, or governance conflict. Do not start T311. |
-| Exit Criteria | S9 produces and verifies the 0310 artifact; records all T310 evidence, gate results, SHA-256, and remaining deferred forms; updates task history/queue/status consistently; pushes its successful closure-preparation commit; and remains active pending coordinator acceptance. |
+| Similar-Issue Sweep | Sweep all paging translation, permission, A/D, CR2, page-fault, cross-page, TLB, `INVLPG`, instruction-fetch, data, stack, and existing exception-delivery paths that could participate in this scope. |
+| Stop Conditions | Stop and report an Intel/reference disagreement, any required host-policy or product dependency, an unsplittable privilege/delivery change, a need for a second executor or memory route, or a required expansion into PAE/task/V86/system behavior. |
+| Exit Criteria | S1 records the exact admitted matrix and implementation batches, cites Intel and read-only comparison identities, passes documentation governance and diff check, is committed and immediately pushed, and remains active pending coordinator acceptance. |
 
 ## Current Technical Baseline
 
