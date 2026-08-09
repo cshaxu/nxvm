@@ -2,7 +2,7 @@
 
 ## Current Work
 
-**Idle. M5 Td S52 is closed; no numeric implementation task is active.** The
+**Idle. M5 Td S53 is closed; no numeric implementation task is active.** The
 first approved Queue candidate receives the next numeric task identifier.
 
 ## Current Technical Baseline
@@ -37,10 +37,6 @@ first approved Queue candidate receives the next numeric task identifier.
 
 ## Recent Governance
 
-- **M5 Td S44:** made queue-order allocation, closed-subtask finality, and the
-  no-active-task corrective exception explicit; added a contiguous-queue
-  governance gate. The pre-policy S43/S42 discontinuity is archival only, so
-  `S42` remains unavailable.
 - **M5 Td S46:** reset the documentation topology to fixed rules/design/current
   authorities, an unnumbered Queue, numbered implementation history, and an
   owner-approved supporting-material index. Td work has no history record.
@@ -65,3 +61,7 @@ first approved Queue candidate receives the next numeric task identifier.
 - **M5 Td S52:** regrouped supporting material into architecture, requirements,
   evidence, operations, research, and history; isolated M5/legacy evidence and
   repaired every governed migration link. Td work has no history record.
+- **M5 Td S53:** recorded the approved M6 mantle-entry queue refinement and a
+  five-package, evidence-led 80386 candidate sequence; scrubbed prohibited
+  historical identifiers from retained external research prose. Td work has no
+  history record.

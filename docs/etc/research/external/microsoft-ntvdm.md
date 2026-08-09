@@ -16,7 +16,8 @@ contain Microsoft binaries, a component loader, a BOP dispatcher, or runtime
 source code.
 
 M11 T2 inventories the complete possible environment rather than assuming that
-`NTIO.SYS`, `NTDOS.SYS`, and `COMMAND.COM` are standalone. Candidate groups are
+Historical system-image components and the command processor are standalone.
+Candidate groups are
 host runtime, guest DOS files, ROMs, redirectors, debuggers, configuration, WOW,
 and Windows host facilities. For each component, record version, architecture,
 legal acquisition constraint, hash, role, startup dependency, guest/host class,
