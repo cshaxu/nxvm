@@ -14927,7 +14927,7 @@ static C_VOID INS_0F_00(core_machine_cpu_execution_context *context)
             {
                 TYPE_TRACE_BLOCK_BEGIN("selector(valid)");
                 TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, TYPE_MASK_UNSIGNED_16(instruction_state.data.crm), TYPE_REFERENCE_OF(descriptor)));
-                if (_IsDescSys(descriptor) ||
+                if (_IsDescSys(descriptor) || !_IsDescPresent(descriptor) ||
                     (!_IsDescCodeConform(descriptor) &&
                      (_GetCPL > _GetDesc_DPL(descriptor) ||
                       _GetSelector_RPL(TYPE_MASK_UNSIGNED_16(instruction_state.data.crm)) > _GetDesc_DPL(descriptor))))
@@ -14961,7 +14961,7 @@ static C_VOID INS_0F_00(core_machine_cpu_execution_context *context)
             {
                 TYPE_TRACE_BLOCK_BEGIN("selector(valid)");
                 TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, TYPE_MASK_UNSIGNED_16(instruction_state.data.crm), TYPE_REFERENCE_OF(descriptor)));
-                if (_IsDescSys(descriptor) ||
+                if (_IsDescSys(descriptor) || !_IsDescPresent(descriptor) ||
                     (!_IsDescCodeConform(descriptor) &&
                      (_GetCPL > _GetDesc_DPL(descriptor) ||
                       _GetSelector_RPL(TYPE_MASK_UNSIGNED_16(instruction_state.data.crm)) > _GetDesc_DPL(descriptor))))
@@ -15190,7 +15190,11 @@ static C_VOID LAR_R32_RM32(core_machine_cpu_execution_context *context)
         {
             TYPE_TRACE_BLOCK_BEGIN("selector(valid)");
             TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, selector, TYPE_REFERENCE_OF(descriptor)));
-            if (_IsDescUser(descriptor))
+            if (!_IsDescPresent(descriptor))
+            {
+                _ClrEFLAGS_ZF;
+            }
+            else if (_IsDescUser(descriptor))
             {
                 if (_IsDescCodeConform(descriptor))
                     _SetEFLAGS_ZF;
@@ -15219,6 +15223,9 @@ static C_VOID LAR_R32_RM32(core_machine_cpu_execution_context *context)
                 default:
                     _ClrEFLAGS_ZF;
                 }
+                if (_GetEFLAGS_ZF && (_GetCPL > _GetDesc_DPL(descriptor) ||
+                    _GetSelector_RPL(selector) > _GetDesc_DPL(descriptor)))
+                    _ClrEFLAGS_ZF;
             }
             if (_GetEFLAGS_ZF)
             {
@@ -15276,7 +15283,11 @@ static C_VOID LSL_R32_RM32(core_machine_cpu_execution_context *context)
         {
             TYPE_TRACE_BLOCK_BEGIN("selector(valid)");
             TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, selector, TYPE_REFERENCE_OF(descriptor)));
-            if (_IsDescUser(descriptor))
+            if (!_IsDescPresent(descriptor))
+            {
+                _ClrEFLAGS_ZF;
+            }
+            else if (_IsDescUser(descriptor))
             {
                 if (_IsDescCodeConform(descriptor))
                     _SetEFLAGS_ZF;
@@ -15302,6 +15313,9 @@ static C_VOID LSL_R32_RM32(core_machine_cpu_execution_context *context)
                 default:
                     _ClrEFLAGS_ZF;
                 }
+                if (_GetEFLAGS_ZF && (_GetCPL > _GetDesc_DPL(descriptor) ||
+                    _GetSelector_RPL(selector) > _GetDesc_DPL(descriptor)))
+                    _ClrEFLAGS_ZF;
             }
             if (_GetEFLAGS_ZF)
             {

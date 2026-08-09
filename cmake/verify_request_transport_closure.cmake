@@ -6,7 +6,7 @@ file(READ "${PROJECT_SOURCE_DIR}/src/vm/platform/vm_request_transport.h"
     transport_header)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/platform/vm_request_transport.c"
     transport_source)
-file(READ "${PROJECT_SOURCE_DIR}/docs/architecture/contracts.md" contract_record)
+file(READ "${PROJECT_SOURCE_DIR}/docs/etc/architecture/machine-contract-details.md" contract_record)
 
 foreach(source_text IN ITEMS "${transport_header}" "${transport_source}")
     string(FIND "${source_text}" "egress" egress_position)

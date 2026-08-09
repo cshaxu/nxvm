@@ -2,17 +2,17 @@
 
 ## Current Work
 
-**Active: M5 T301 S3.**
+**Active: M5 T301 S4.**
 
-## M5 T301 S3 Packet
+## M5 T301 S4 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Corrective; M5 T301 S3 closure; Coordinated Dual-Session Mode. S1 admitted the family, and S2 implemented the complete focused synthetic form/profile/mode matrix. |
+| Identifier Mode | Corrective; M5 T301 S4 closure; Coordinated Dual-Session Mode. S1 admitted the family, S2 implemented the complete focused synthetic form/profile/mode matrix, and the committed S3 packet admitted the closure review. |
 | Admission And Approval | Owner approved the direct M5 80386 32-bit protected execution/delivery package and instructed coordinator/executor execution through the package, stopping before Mantle. Coordinator additionally approved S2 with an instruction-form, CPU-profile, and execution-mode matrix. |
 | Objective | Independently close the Queue's 32-bit segmentation and selector-instruction family: `MOV`/`POP` segment loads, `LDS`/`LES`/`LFS`/`LGS`/`LSS`, `ARPL`, `LAR`, `LSL`, `VERR`, and `VERW`, with all legal 80386 operand-size forms and correct descriptor/cache semantics. |
 | Non-goals | LDT breadth, task gates, virtual-8086, task switching, paging-policy expansion, host/product UX, external ABI, and source import. Reserved and later-CPU forms remain `#UD`. |
-| Reference Baseline | `87cb79993c5901cefd25d9228cf60b87d54b7d4e`; current artifact `vm-0-5-0300` / `nxvm_0_5_0300.exe`. |
+| Reference Baseline | `87cb79993c5901cefd25d9228cf60b87d54b7d4e`; current artifact `vm-0-5-0301` / `nxvm_0_5_0301.exe`. |
 | Files And ABI Surface | `src/core/machine/cpu_instructions.c`, `cpu.h`, existing core CPU interfaces, focused machine tests/CMake, and task/governance records only. No new public raw borrow or cross-module interface. |
 | Applicable Rules | `rules/EXECUTION.md`, `rules/ARCHITECTURE.md`, `rules/CODING.md`, `rules/DOCUMENT.md`, and `etc/operations/policy/source-policy.md`; preserve one core executor/state owner and retained NXVM behavior. |
 | Verification | Intel 80386 PRM Ch. 3, 5, 14, and 17 is authoritative; record the relevant instruction entries. Read-only comparison references are Bochs 2.6 (`cpu/protect_ctrl.cc`, `cpu/segment_ctrl.cc`, and `cpu/fetchdecode.cc`) and PCjs 2.00.0 (`machines/pcx86/modules/v2/x86ops.js`, `x86op0f.js`, and `segx86.js`); do not copy source. The form matrix is: `ARPL`/`LAR`/`LSL`/`VERR`/`VERW` are selector-check forms and are `#UD` outside protected mode; `MOV`/`POP`/`LDS`/`LES`/`LFS`/`LGS`/`LSS` retain their architecturally valid real-mode segment-load forms, while virtual-8086 remains deferred. Every LxS second operand is memory-only. `ARPL` operands remain `r/m16,r16`; `66h` changes `POP` segment stack transfer width and LxS offset/destination width, never the 16-bit selector source. FS/GS forms require 80386; reserved/later encodings remain `#UD`. Run focused form/profile/mode/atomicity probes, `current-gates-gcc`, documentation governance, `git diff --check`, and one owner-supplied local Windows Setup observation after family closure. |
@@ -25,11 +25,18 @@
 
 ## Current Technical Baseline
 
-- **T300 artifact identity:** `current-gcc` and
-  `verify-current-artifact-target` select `vm-0-5-0300` / `nxvm_0_5_0300.exe`.
-  T300 closure evidence: the strengthened source-shape gate emits
-  `M5:T300:S4:PUBLIC-INTERFACE-BOUNDARY:OK`; the focused debugger snapshot
-  probe and artifact build passed. The coordinator closure is recorded below.
+- **T301 artifact identity:** `current-gcc` and
+  `verify-current-artifact-target` select `vm-0-5-0301` / `nxvm_0_5_0301.exe`.
+  S4 rebuilt `nxvm_0_5_0301.exe` with SHA-256
+  `54D6BEB2BEF9E495C09DD4AA976288449EB0608567A2F32F61693219FFA23E3D`.
+  The focused selector and retained ARPL probes, 51 static/governance targets,
+  and 130 CTests passed; implementation evidence remains pending coordinator
+  acceptance.
+- **T301 observation limit:** one bounded product-window observation budget
+  could not discover its host window before any guest command, stdout/stderr,
+  or process residue existed. It is not a Windows Setup checkpoint or product
+  regression. A later owner-controlled manual observation remains verification
+  only and does not change the CPU conclusion or create a repair task.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
