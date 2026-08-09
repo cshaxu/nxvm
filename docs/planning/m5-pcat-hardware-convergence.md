@@ -18,18 +18,17 @@ numeric task identifier as its artifact revision when it completes. Task
 identifiers are allocated linearly: this table is the reservation order, and a
 conditional row must be resolved before any later row may begin.
 
-T270--T299 are closed and archived in [M5 History](../history/m5.md). T300 is
-the admitted active queue head; its four bounded subtasks repair confirmed
-core/VM/VDM ownership and public-boundary defects before later work begins.
+T270--T300 are closed and archived in [M5 History](../history/m5.md). T301 is
+the next reserved numeric task. It may begin only through the normal linear
+admission workflow and must not imply that the conditional T302 is admitted.
 
 ### A. Core Public-Surface Closure And Mantle Prerequisites
 
 | Task | Owner and purpose | Dependency and stop condition |
 | --- | --- | --- |
-| T300 | Converge the core port bus, initialization, and public interface boundary in four bounded subtasks: S1 creates one core-owned port registration/dispatch registry with non-mutating directional conflict rejection; S2 propagates typed-provider failures through public and guest I/O; S3 makes VM session construction failure-atomic; S4 removes public private-layout leakage and adds a recurrence gate. | Depends on T299. It keeps existing core devices and product UX, creates no generic device framework or second I/O path, gives VDM no fake PC/AT controller, and does not add a pre-decode transition registry. Each S has focused probes; T300 closes only after current gates and `nxvm_0_5_0300.exe` evidence. |
-| T301 | Add a stopped/paused, copied-value, prevalidated multi-span ordinary-RAM transaction. | Depends on T299. It uses the existing checked route, rejects non-RAM/overlap/overflow, guarantees zero writes on preflight failure, and does not claim concurrent or cycle atomicity or create a second memory route. |
+| T301 | Add a stopped/paused, copied-value, prevalidated multi-span ordinary-RAM transaction. | Depends on closed T300. It uses the existing checked route, rejects non-RAM/overlap/overflow, guarantees zero writes on preflight failure, and does not claim concurrent or cycle atomicity or create a second memory route. |
 | T302 | Add a transition-local combined commit only if a real consumer requires it: checked staged RAM plus an allowed decoded-transition CPU patch at one execution boundary. | Depends on T300--T301 and a concrete consumer. Otherwise it remains deferred. |
-| T303 | Prove second-consumer readiness with a first-party core-only fixture and current NXVM regressions. | Depends on T294--T299 and T301, plus T300/T302 only if each was evidence-admitted. It does not create a `mantle` runtime. |
+| T303 | Prove second-consumer readiness with a first-party core-only fixture and current NXVM regressions. | Depends on T294--T301, plus T302 only if it is evidence-admitted. It does not create a `mantle` runtime. |
 
 ### B. Later CPU, FPU, And Readiness Work
 
