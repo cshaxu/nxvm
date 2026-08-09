@@ -2,29 +2,30 @@
 
 ## Current Work
 
-**Active: M5 T306 S3.**
+**Active: M5 T306 S4.**
 
-## M5 T306 S3 Packet
+## M5 T306 S4 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Corrective; M5 T306 S3 shared code-cache helper closure for the accepted same-CPL protected `IRET` implementation; Coordinated Dual-Session Mode. S2 is implemented and its retained outer-`RETF` regression is pending correction. |
+| Identifier Mode | Corrective; M5 T306 S4 outer protected `RETF` frame implementation; Coordinated Dual-Session Mode. S2/S3 are accepted. |
 | Admission And Approval | T305 is closed. T306 is the next linear Queue candidate in the owner-approved M5 80386 protected execution/delivery package. |
-| Objective | Implement and prove the admitted 80386 protected same-CPL `IRET` forms, including 16/32-bit frames, selector/cache checks, flags restoration, fault precedence, and all-or-nothing commit boundaries. |
+| Objective | Implement and prove the admitted protected outer `RETF` 16/32-bit frame paths, including immediate stack adjustment, selector/cache and new SS/ESP checks, fault precedence, and all-or-nothing commit boundaries. |
 | Non-goals | Task return, nested-task return, task gates, call gates, general task switching, virtual-8086 returns, new exception origins, reset/triple-fault policy, paging-policy expansion, product UX, public ABI, and source import. No new executor or return path. |
 | Reference Baseline | `5bf0127`; accepted artifact `vm-0-5-0305` / `nxvm_0_5_0305.exe`. |
-| Files And ABI Surface | S3 may change only the shared core CPU code-cache helper caller constraints, retained focused return probes, and task records. It must not alter public interfaces or cross-module ownership. |
+| Files And ABI Surface | S4 may change only core CPU outer-return/stack/selector helpers, focused tests, CMake registrations, and task records. It must not alter public interfaces or cross-module ownership. |
 | Applicable Rules | `rules/EXECUTION.md`, `rules/ARCHITECTURE.md`, `rules/CODING.md`, `rules/DOCUMENT.md`, and `etc/operations/policy/source-policy.md`; retain one core executor/state owner, a single checked stack/memory route, and NXVM behavior. |
 | Verification | Intel 80386 PRM is authoritative. Record versioned read-only Bochs 2.6 and PCjs 2.00.0 behavior paths; do not copy source. Construction uses focused synthetic probes only; full-system observation is closure-only. |
-| Expected Markers | Retain the focused T306 same-CPL return marker plus T293/T303/T305 markers. S3 creates no artifact. |
+| Expected Markers | A focused T306 outer-return marker plus retained T293/T303/T305 markers. S4 creates no artifact. |
 | Asset Needs | Read-only local references only; no guest media, firmware, or third-party source is committed. |
 | Original Owner Request | Execute the direct M5 80386 protected execution/delivery package in coordinated mode, stopping before Mantle; use Intel as authority with read-only Bochs and PCjs comparison. |
-| Similar-Issue Sweep | Sweep every `_ksa_prepare_code_sreg` caller. Each caller that requires nonconforming transfer code must enforce that rule before generic cache preparation; same-CPL `IRET` may retain its separately frozen conforming/nonconforming rules. |
+| Similar-Issue Sweep | Sweep outer `RETF` decoding, frame peek/pop helpers, stack-width and immediate-adjust paths, selector/cache validators, and retained outer-return probes. Classify every hit; outer `IRET`, task, V86, and paging paths remain deferred. |
 | S1 Audit Record | [T306 protected-return admission audit](etc/evidence/t306-protected-return-admission.md) freezes the admitted 16/32-bit matrix, producer/consumer intersections, batches, and stop boundaries before implementation. |
 | S2 Evidence Record | [T306 protected-return admission audit](etc/evidence/t306-protected-return-admission.md#s2-same-cpl-iret-evidence) records same-CPL frame order, `66h`/`67h`/SS address-size behavior, failure preservation, and retained T293/T303/T305 intersections. |
 | S3 Evidence Record | Restore outer `RETF`'s explicit nonconforming target rule at its retained validation priority; prove conforming-code rejection and unchanged state through the T293 retained probe. |
+| S4 Evidence Record | [T306 protected-return admission audit](etc/evidence/t306-protected-return-admission.md#s4-outer-retf-evidence) records outer `RETF` 16/32-bit frame order, `66h`/`67h`/SS address-size/imm16 behavior, new SS/ESP validation, and pre-commit failure preservation. |
 | Stop Conditions | Stop and report an unresolved Intel/reference disagreement, required architecture change, second execution/state path, public raw-layout exposure, or behavior owned by task/V86/paging/later families. |
-| Exit Criteria | S3 restores the retained outer-`RETF` rule, passes T306/T293/T303/T305 focused probes, documentation governance, and diff check. It remains active pending coordinator acceptance; it does not alter Queue, create an artifact, or begin outer-return implementation. |
+| Exit Criteria | S4 passes focused outer-return and retained T293/T303/T305 probes, documentation governance, and diff check. It remains active pending coordinator acceptance; it does not alter Queue, create an artifact, or start outer `IRET` work. |
 
 ## Current Technical Baseline
 
