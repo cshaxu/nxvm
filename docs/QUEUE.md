@@ -12,6 +12,19 @@ a build prerequisite. Each task closes every 80386-legal form in its named
 family, including 16/32-bit cross forms, profile rejection, fault precedence,
 and pre-fault non-mutation. Reserved and later-CPU forms remain `#UD`.
 
+For every candidate in this package, the task packet must record the relevant
+Intel 80386 Programmer's Reference Manual sections, the matching local Bochs
+and PCjs implementation/behavior locations and revisions, and the project
+probe result. Intel defines required semantics; Bochs and PCjs are read-only
+behavior references, never copy sources or replacement architecture. After
+each family closes, run the owner-supplied local Windows Setup flow once and
+record only the observed checkpoint, stop, or timeout. That observation does
+not expand the completed family or require an immediate fix. When a probe and
+the three references leave correctness uncertain, use the optional local
+Bochx/Bochs paired-step bridge with declared state masks and instruction,
+time, no-progress, and trace-size budgets; its source, binaries, media, and
+raw traces remain outside the repository and default build.
+
 1. **32-bit segmentation and selector-instruction family.** Complete the
    80386 semantics shared by `MOV`/`POP` segment loads, `LDS`/`LES`/`LFS`/`LGS`/
    `LSS`, `ARPL`, `LAR`, `LSL`, `VERR`, and `VERW`: 32-bit base/limit,
