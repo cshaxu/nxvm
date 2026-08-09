@@ -2,26 +2,27 @@
 
 ## Current Work
 
-**Active: M5 T310 S1.**
+**Active: M5 T310 S2.**
 
-## M5 T310 S1 Packet
+## M5 T310 S2 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New; M5 T310 S1 80386 `0F` integer bit/data family admission; Coordinated Dual-Session Mode. T309 is accepted and closed. |
+| Identifier Mode | Corrective; M5 T310 S2 80386 `0F` integer bit/data family admission audit; Coordinated Dual-Session Mode. T310 S1 admission is committed in `c988633`; T309 is accepted and closed. |
 | Admission And Approval | T310 is the next linear task selected by T309's accepted form audit; it precedes paging because its forms are metadata-valid and dispatch-reachable but lack focused semantic evidence. |
 | Objective | Audit and freeze the exact 80386 `0F` integer bit/data form matrix for SETcc, BT/BTS/BTR/BTC including `0F BA /4`--`/7`, SHLD/SHRD, BSF/BSR, MOVZX/MOVSX, and admitted IMUL before implementation. |
 | Non-goals | Paging, debug/test registers, task/V86/system extensions, later-CPU forms, product UX, public ABI, source import, a second executor, or guest-image build fixtures. |
 | Reference Baseline | Accepted T308 artifact `vm-0-5-0308` / `nxvm_0_5_0308.exe`; T309 S2 form audit `966bdd3`. |
-| Files And ABI Surface | S1 changes only task evidence and status records. It must not change CPU behavior, CMake target identity, public interfaces, cross-module ownership, or product UX. |
+| Files And ABI Surface | S2 changes only task evidence and status records. It must not change CPU behavior, CMake target identity, public interfaces, cross-module ownership, or product UX. |
 | Applicable Rules | `rules/EXECUTION.md`, `rules/ARCHITECTURE.md`, `rules/CODING.md`, `rules/DOCUMENT.md`, and `etc/operations/policy/source-policy.md`; retain one core executor/state owner and existing checked memory, stack, and fault routes. |
 | Verification | Intel 80386 PRM is authoritative. Record versioned read-only Bochs 2.6 and PCjs 2.00.0 behavior paths; use focused prepared-state probes only. |
-| Expected Markers | S1 adds no executable marker or artifact. It freezes form/profile/prefix/memory/flag/fault matrices and the independently testable implementation batches. |
+| Expected Markers | S2 adds no executable marker or artifact. It freezes form/profile/prefix/memory/flag/fault matrices and the independently testable implementation batches. |
+| S2 Audit Record | [T310 0F integer bit/data admission audit](etc/evidence/t310-0f-integer-bit-data-admission.md) records the authority, form matrix, static candidates, focused-probe rules, batch boundaries, retained intersections, and deferrals. |
 | Asset Needs | Read-only local references only; no guest media, firmware, or third-party source is committed. |
 | Original Owner Request | Execute the direct M5 80386 protected execution/delivery package in coordinated mode, stopping before Mantle; use Intel as authority with read-only Bochs and PCjs comparison. |
 | Similar-Issue Sweep | Sweep every named handler, metadata row, `0F` dispatch route, shared ModRM/operand/address helper, profile gate, flags path, and current focused probe for this exact family. |
 | Stop Conditions | Stop and report an Intel/reference disagreement, a form that crosses an unadmitted system/paging boundary, an unsplittable evidence matrix, or a requirement for a second executor or memory route. |
-| Exit Criteria | S1 records the full form matrix, authority conclusions, batch boundaries, focused probe requirements, documentation governance, and diff check; it remains active pending coordinator acceptance and does not start S2. |
+| Exit Criteria | S2 records the full form matrix, authority conclusions, batch boundaries, focused probe requirements, documentation governance, and diff check; it remains active pending coordinator acceptance and does not start S3. |
 
 ## Current Technical Baseline
 
