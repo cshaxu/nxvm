@@ -19,35 +19,37 @@ identifiers are allocated linearly: this table is the reservation order, and a
 conditional row must be resolved before any later row may begin.
 
 T270--T300 are closed and archived in [M5 History](../history/m5.md). T301 is
-the next reserved numeric task. It may begin only through the normal linear
-admission workflow and must not imply that the conditional T302 is admitted.
+the next reserved numeric task: the original conditional pre-decode configured
+transition registry. It may begin only through the normal linear admission
+workflow and must not imply that any later conditional task is admitted.
 
 ### A. Core Public-Surface Closure And Mantle Prerequisites
 
 | Task | Owner and purpose | Dependency and stop condition |
 | --- | --- | --- |
-| T301 | Add a stopped/paused, copied-value, prevalidated multi-span ordinary-RAM transaction. | Depends on closed T300. It uses the existing checked route, rejects non-RAM/overlap/overflow, guarantees zero writes on preflight failure, and does not claim concurrent or cycle atomicity or create a second memory route. |
-| T302 | Add a transition-local combined commit only if a real consumer requires it: checked staged RAM plus an allowed decoded-transition CPU patch at one execution boundary. | Depends on T300--T301 and a concrete consumer. Otherwise it remains deferred. |
-| T303 | Prove second-consumer readiness with a first-party core-only fixture and current NXVM regressions. | Depends on T294--T301, plus T302 only if it is evidence-admitted. It does not create a `mantle` runtime. |
+| T301 | Add a pre-decode configured decoded-transition registry only if a concrete first-party consumer requires it. | Depends on closed T300 and a recorded consumer. It must match decoded instruction form before execution, expose only checked copied state and finite resume/fault/stop/switch results, and must not recreate the removed post-`#UD` transition or introduce a guest-service ABI. Otherwise it remains deferred. |
+| T302 | Add a stopped/paused, copied-value, prevalidated multi-span ordinary-RAM transaction. | Depends on resolved T301. It uses the existing checked route, rejects non-RAM/overlap/overflow, guarantees zero writes on preflight failure, and does not claim concurrent or cycle atomicity or create a second memory route. |
+| T303 | Add a transition-local combined commit only if a real consumer requires it: checked staged RAM plus an allowed decoded-transition CPU patch at one execution boundary. | Depends on resolved T301--T302 and a concrete consumer. Otherwise it remains deferred. |
+| T304 | Prove second-consumer readiness with a first-party core-only fixture and current NXVM regressions. | Depends on T294--T302, plus T301/T303 only if each is evidence-admitted. It does not create a `mantle` runtime. |
 
 ### B. Later CPU, FPU, And Readiness Work
 
 | Task | Owner and purpose | Dependency and stop condition |
 | --- | --- | --- |
-| T304 | 80386 Enhanced-mode control-transition family selected by the current Setup `MOV CR0,EAX` checkpoint, including exact decode, profile gate, `#UD/#GP`, and PE/PG state-transition semantics evidenced by corpus. | Depends on T303. No broad 386-complete claim. |
-| T305 | Next 80386 Enhanced-mode prerequisite selected by the next failing prepared-state or system corpus, such as CPL3 paging permissions, 32-bit segmentation/control transfer, or 32-bit TSS behavior. | Depends on T304 and a failing corpus. |
-| T306 | Present-FPU extension selected by corpus: 80287/80387 profile state, format, environment, or exception delivery. | An owned reproducer is required. No host floating-point shortcut or blanket FPU claim. |
-| T307 | Windows 3.x Enhanced-mode readiness corpus and bounded deferral map. | T285, T304--T306 as dictated by the external checkpoint. No Windows 95 claim. |
+| T305 | 80386 Enhanced-mode control-transition family selected by the current Setup `MOV CR0,EAX` checkpoint, including exact decode, profile gate, `#UD/#GP`, and PE/PG state-transition semantics evidenced by corpus. | Depends on T304. No broad 386-complete claim. |
+| T306 | Next 80386 Enhanced-mode prerequisite selected by the next failing prepared-state or system corpus, such as CPL3 paging permissions, 32-bit segmentation/control transfer, or 32-bit TSS behavior. | Depends on T305 and a failing corpus. |
+| T307 | Present-FPU extension selected by corpus: 80287/80387 profile state, format, environment, or exception delivery. | An owned reproducer is required. No host floating-point shortcut or blanket FPU claim. |
+| T308 | Windows 3.x Enhanced-mode readiness corpus and bounded deferral map. | T285, T305--T307 as dictated by the external checkpoint. No Windows 95 claim. |
 
 ### C. M5 Closure And Handoff
 
 | Task | Owner and purpose | Dependency and stop condition |
 | --- | --- | --- |
-| T308 | Current-source M5 closure audit against the closure checklist, including single-owner/path, CMake graph, retained NXVM UX, core second-consumer readiness, Windows checkpoint evidence, and all remaining deferrals. | T264--T307. M5 may close only if the checklist, roadmap and TODO agree; otherwise this task records the next bounded M5 queue rather than declaring closure. |
+| T309 | Current-source M5 closure audit against the closure checklist, including single-owner/path, CMake graph, retained NXVM UX, core second-consumer readiness, Windows checkpoint evidence, and all remaining deferrals. | T264--T308. M5 may close only if the checklist, roadmap and TODO agree; otherwise this task records the next bounded M5 queue rather than declaring closure. |
 
 ## Later-Milestone Handoff
 
-- **M6:** implement the neutral `mantle` session envelope only after T303 has
+- **M6:** implement the neutral `mantle` session envelope only after T304 has
   proved the cleaned core consumer boundary; no DOS policy or external VDM
   backend enters it.
 - **M7:** implement default PC/AT, Compaq DeskPro 386, and IBM PC 110 profiles

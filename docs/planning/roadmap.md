@@ -157,7 +157,7 @@ gateway, and structured stop/fault diagnostics. Trusted external research may
 validate capability requirements, but mantle never contains an external ABI,
 runtime file set, loader, selector, service table, or host policy.
 
-**Entry gate:** M5 T303 proves the core second-consumer boundary with no public
+**Entry gate:** M5 T304 proves the core second-consumer boundary with no public
 raw core-object borrow. M6 does not repair or redefine that boundary.
 
 **Exit:** one minimal owned-runtime-facing mantle session is exercised through

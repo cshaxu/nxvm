@@ -312,7 +312,7 @@ storage pointers, arbitrary instruction-pointer, segment, control-register,
 mode, device, or scheduler mutation. A profile declares metadata and provider
 inputs, not a machine constructor.
 
-M5 T294--T303 migrate the current VM construction path to this boundary before
+M5 T294--T304 migrate the current VM construction path to this boundary before
 M6 creates a mantle runtime. No pre-decode transition registry is part of the
 admitted M5 work. Until those tasks close, historical raw configuration/profile
 borrows are transitional implementation detail, not a new consumer contract or
