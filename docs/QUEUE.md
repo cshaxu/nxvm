@@ -25,11 +25,12 @@ Bochx/Bochs paired-step bridge with declared state masks and instruction,
 time, no-progress, and trace-size budgets; its source, binaries, media, and
 raw traces remain outside the repository and default build.
 
-1. **CPL3 paging and user/kernel boundary.** Add only needed 80386 paging
-    semantics: U/S and R/W permission checks, CR0.WP, precise page-fault bits
-    and CR2, cross-page accesses, or `INVLPG`. Each addition needs mapped,
-    unmapped, protection, and pre-fault atomicity probes; no PAE or host-memory
-    substitution.
+1. **Construction failure atomicity and startup-failure visibility.** Make core
+    machine creation decide RAM once and fail atomically; make port/device
+    assembly rollback on deterministic allocation failure; propagate a platform
+    start failure to the selected VM session and retained Console; then replace
+    debugger enum casts with private checked mappings. Keep the four bounded
+    repairs ordered and avoid generic interface creation.
 The following four candidates establish the M6 source-locked, single-session
 mantle experiment. They do not define a DLL/SDK or external ABI. Mantle
 assembles one `core_machine` from typed profile and host providers supplied by

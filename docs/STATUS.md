@@ -2,12 +2,34 @@
 
 ## Current Work
 
-**Idle.**
+**Active: M5 T313 S1.**
+
+## M5 T313 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New; M5 T313 S1 construction-failure atomicity and startup-failure visibility admission. |
+| Admission And Approval | T313 is the next linear implementation task after the accepted T312 withdrawal and Td S57 audit. The owner-approved independent audit identified the bounded P2/P3 failure-handling work; S1 admits planning only. |
+| Reference Baseline | Accepted `vm-0-5-0311` / `nxvm_0_5_0311.exe`, HEAD `d9152c6d` before this admission, and retained T300 port/session-atomicity boundaries. |
+| Objective | Freeze the ordered P2/P3 repair plan for one-allocation machine creation, transactional port/device assembly, visible VM platform-start failure, and explicit debugger enum mapping. |
+| Non-goals | CPU/paging changes, a new generic host interface, M6 mantle, Console UX redesign, core/product debug merger, or implementation in S1. |
+| Scope And Order | S2: core RAM decision and deterministic allocation-failure seam. S3: transactional port/device assembly and create rollback. S4: session/platform start status plus Console-visible failure. S5: private debugger enum mapping and void-watch status disposition. S6: artifact, full gate, and closure. |
+| Source Touchpoints | `core/machine/memory.*`, `machine.c`, `port_interface.c`, device configuration paths, `vm/composition/session/lifecycle.*`, Console adapter/product path, and `debug_target.c`; exact files remain subject to S1 inventory. |
+| Files And ABI Surface | S1 changes only this packet, the unnumbered Queue candidate, and its evidence record. Later subtasks keep production changes private unless a focused contract proves a public result is necessary. |
+| Applicable Rules | `rules/EXECUTION.md`, `rules/ARCHITECTURE.md`, `rules/CODING.md`, `rules/DOCUMENT.md`, and the source policy; retain one core executor, typed provider boundaries, and the existing NXVM product route. |
+| Verification | Deterministic failure injection, not host OOM: zero/explicit RAM create failure, mid-range port registration/device assembly rollback, platform-start failure visible at the Console boundary, and unknown debugger enum rejection. Preserve raw `t_ram` fixture use. |
+| Expected Markers | S1 has no runtime marker. S2--S5 add focused failure and mapping probes; S6 records the task artifact, SHA-256, and full current gates. |
+| S1 Audit Record | [T313 construction-failure admission](etc/evidence/t313-construction-failure-admission.md) is the active design and acceptance record. |
+| Asset Needs | No guest media, firmware, third-party source, or host OOM dependency. |
+| Original Owner Request | Establish the repair package only; do not begin runtime implementation before this S1 plan is reviewed. |
+| Similar-Issue Sweep | Inventory all core create allocation, port registration rollback, VM platform-start result, Console adapter, and debug enum conversion paths before S2. |
+| Stop Conditions | Stop for an allocator seam requiring a process-global production hook, a port rollback needing a second registry, a Console failure requiring a new generic interface, or a debugger vtable contract change beyond the retained boundary. |
+| Exit Criteria | S1 records contracts, seams, rollback ownership, focused probes, per-S boundaries, artifact rule `0.5.0313`, and full-gate closure requirement. It changes documentation only and does not start S2. |
 
 ## Current Technical Baseline
 
 - **Accepted artifact identity:** `current-gcc` and
-  `verify-current-artifact-target` select `vm-0-5-0311` / `nxvm_0_5_0311.exe`.
+  `verify-current-artifact-target` select `vm-0-5-0311` / `build/output/nxvm_0_5_0311.exe`.
   T311 is the accepted M5 artifact baseline.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
