@@ -2,7 +2,7 @@
 
 T313 closes the admitted construction-failure boundaries without adding a new
 executor, registry, VM lifecycle, product route, or public allocator/debugger
-facade. It remains pending coordinator acceptance at S7.
+facade. It remains pending coordinator acceptance at S8.
 
 - S2 resolves the configured RAM capacity before one private backing allocation.
   Its deterministic failure seam returns `TYPE_STATUS_NO_MEMORY` with no live
@@ -29,5 +29,9 @@ facade. It remains pending coordinator acceptance at S7.
   gate selected `vm-0-5-0313`.
 - Product observation: absent. S7 made no product-flow claim and did not run a
   guest or host-window observation.
+- S8 corrects the shared port-assembly smoke's evidence publication: it retains
+  the single S3/S4 execution flow while printing the S3 marker after its
+  range/create/FDC phase and the S4 marker after its RTC/HDC phase. This is a
+  test/evidence-only correction; the 0313 artifact remains unchanged.
 - Deferred: no new runtime work. T313's next action is coordinator acceptance;
   M6 remains unadmitted and no T314 is allocated by this record.

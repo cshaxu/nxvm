@@ -2,29 +2,29 @@
 
 ## Current Work
 
-**Active: M5 T313 S7.**
+**Active: M5 T313 S8.**
 
-## M5 T313 S7 Packet
+## M5 T313 S8 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Corrective; M5 T313 S7 construction-failure package closure preparation. |
-| Admission And Approval | T313 S6 `9d5539c2` is accepted. S7 closes evidence, current artifact identity, and gates pending coordinator acceptance. |
-| Reference Baseline | Prior accepted M5 artifact, HEAD `9d5539c2`, and retained T300 port/session-atomicity boundaries. |
-| Objective | Produce the T313 current artifact and consolidate S1--S6 construction-failure evidence without changing runtime behavior. |
-| Non-goals | Runtime/source behavior changes, a new task allocation, M6 mantle, Queue closure, product observation claims, or an executor-led T313 closure. |
-| Scope And Order | S7 only: current artifact identity, full current gates, focused intersections, and pending-acceptance history/status evidence. |
-| Source Touchpoints | CMake current artifact/preset, status/evidence/history, and existing S2--S6 focused and retained checks. |
-| Files And ABI Surface | No source/API/ownership changes; retain coordinator-owned `docs/rules/EXECUTION.md` unstaged. |
+| Identifier Mode | Corrective; M5 T313 S8 shared port-assembly marker evidence. |
+| Admission And Approval | S7 `e437c147` closure evidence requires a focused-marker correction before coordinator acceptance. |
+| Reference Baseline | T313 S7 `e437c147`, the pending 0313 artifact, and retained T300 port/session-atomicity boundaries. |
+| Objective | Restore separate truthful S3 and S4 markers from their one shared focused port-assembly probe without changing runtime behavior. |
+| Non-goals | Core/session/product behavior, a new task allocation, M6 mantle, Queue closure, product observation claims, artifact identity changes, or an executor-led T313 closure. |
+| Scope And Order | S8 only: shared focused-marker publication, direct proof, and status/evidence/history consistency; coordinator may allocate a final closure packet after acceptance. |
+| Source Touchpoints | The existing shared S3/S4 port-assembly smoke and status/evidence/history records. |
+| Files And ABI Surface | No API/ownership changes; retain coordinator-owned `docs/rules/EXECUTION.md` unstaged. |
 | Applicable Rules | `rules/EXECUTION.md`, `rules/ARCHITECTURE.md`, `rules/CODING.md`, `rules/DOCUMENT.md`, and the source policy; retain one core executor, typed provider boundaries, and the existing NXVM product route. |
-| Verification | Full `current-gates-gcc`, current artifact target, S2--S6 marker intersections, documentation governance, and diff check. |
-| Expected Markers | `M5:T313:S2:RAM-CREATE:OK`, `M5:T313:S3:PORT-ASSEMBLY:OK`, `M5:T313:S4:CONTROLLER-ROLLBACK:OK`, `M5:T313:S5:START-OUTCOME:OK`, and `M5:T313:S6:DEBUG-MAPPING:OK`. |
+| Verification | Direct shared port-assembly proof with both markers, documentation governance, current artifact identity check, and diff check. |
+| Expected Markers | The shared smoke publishes `M5:T313:S3:PORT-ASSEMBLY:OK` after range/create/FDC checks and `M5:T313:S4:CONTROLLER-ROLLBACK:OK` after RTC/HDC checks. |
 | S1 Audit Record | [T313 construction-failure admission](etc/evidence/t313-construction-failure-admission.md) is the active design and acceptance record. |
 | Asset Needs | No guest media, firmware, third-party source, or host OOM dependency. |
-| Original Owner Request | Close the accepted S1--S6 package evidence and artifact without changing its runtime scope. |
-| Similar-Issue Sweep | Check CMake current identity, artifact/hash records, S2--S6 marker registration, docs/status/history/Queue consistency, and retained construction/session/Console/debugger intersections. |
-| Stop Conditions | Stop for any unrelated full-gate regression or a runtime behavior repair beyond T313's directly proven changes. |
-| Exit Criteria | Artifact/hash and full gates are recorded; history/status remain active pending coordinator acceptance; Queue and task allocation remain unchanged. |
+| Original Owner Request | Correct S7's missing S3 marker observability without changing the retained probe's runtime coverage. |
+| Similar-Issue Sweep | Check both shared-probe phase markers plus their status/evidence/history declarations; retain current artifact identity. |
+| Stop Conditions | Stop for an unrelated probe/gate regression or a requirement to alter core/session/product behavior. |
+| Exit Criteria | One shared direct probe visibly publishes both truthful phase markers; status remains active pending coordinator acceptance; Queue and task allocation remain unchanged. |
 
 ## Current Technical Baseline
 
