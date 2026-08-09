@@ -2,33 +2,33 @@
 
 ## Current Work
 
-**Active: M5 T311 S5.**
+**Active: M5 T311 S6.**
 
-## M5 T311 S5 Packet
+## M5 T311 S6 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Corrective; M5 T311 S5 translation-cache / `INVLPG` evidence closure. T311 S1 P0 through S4 are accepted; Coordinated Dual-Session Mode. |
-| Admission And Approval | T311 is the next linear task selected by the first remaining direct M5 80386 package candidate in `QUEUE.md`. S5 follows accepted T311 S4 checked-access atomicity and remains evidence-only unless a real persistent translation consumer is proven. |
-| Objective | Audit and close the 80386 translation-cache and `INVLPG` admission condition: prove that every current access uses the sole page walk and either record no cache/no stale path or stop with a reproducible consumer proof for later approval. |
-| Non-goals | Implementing TLB, `INVLPG`, a flush API, decoder/metadata/handler, page-fault delivery, PAE, large pages, host-memory substitution, generic paging rewrite, V86, task/system expansion, product UX, public ABI, source import, a second executor/memory route, artifact, or Setup observation. |
-| Reference Baseline | Accepted T310 artifact `vm-0-5-0310` / `nxvm_0_5_0310.exe`; accepted T311 S3 permissions and S4 cross-page evidence, plus retained T258/T302/T303/T306/T308 intersections. |
-| Files And ABI Surface | S5 may update only focused/static evidence and task records. It must not change CPU behavior, public interfaces, CMake current artifact identity, cross-module ownership, or product UX. |
+| Identifier Mode | Corrective; M5 T311 S6 paging-boundary closure preparation. T311 S1 P0 through S5 are accepted; Coordinated Dual-Session Mode. |
+| Admission And Approval | T311 is the next linear task selected by the first remaining direct M5 80386 package candidate in `QUEUE.md`. S6 closes the accepted permission, cross-page atomicity, and cache no-op scope pending coordinator acceptance. |
+| Objective | Prepare the T311 paging-boundary family closure with the 0.5.0311 artifact, full gate evidence, focused retained intersections, and an accurate deferred-boundary record. |
+| Non-goals | Paging CPU semantic changes, public ABI, CMake test topology, Queue successor changes, product-path changes, TLB/`INVLPG`, #PF IDT delivery, PAE, large pages, V86/task/system expansion, or a task closure/Idle transition. |
+| Reference Baseline | T311 S5 `4d5d8716`; retained T258 and T311 S3-S5 evidence plus retained execution/delivery intersections. |
+| Files And ABI Surface | S6 may change only current artifact identity, closure evidence/history/status, and generated artifact records. It must not change paging behavior, public interfaces, test topology, Queue, ownership, or product UX. |
 | Applicable Rules | `rules/EXECUTION.md`, `rules/ARCHITECTURE.md`, `rules/CODING.md`, `rules/DOCUMENT.md`, and `etc/operations/policy/source-policy.md`; retain one core executor/state owner and existing checked memory, stack, and fault routes. |
 | Verification | Intel 80386 PRM is authoritative. Record versioned read-only Bochs 2.6 and PCjs 2.00.0 behavior paths; use focused prepared-state probes only. |
-| Expected Markers | The cache-disposition marker proves the audited access paths retain no persistent translation cache or stale translation consumer, CR3 needs no extra flush, and `INVLPG` remains unadmitted/#UD. S5 creates no artifact. |
+| Expected Markers | Current gates, T258/T311 focused paging markers, retained intersections, current-artifact target verification, documentation governance, diff check, and the 0.5.0311 artifact SHA provide pending-acceptance closure evidence. |
 | S1 Audit Record | [T311 paging boundary admission](etc/evidence/t311-paging-boundary-admission.md) records the authority, matrix, retained intersections, and batch boundaries. |
 | Asset Needs | Read-only local references only; no guest media, firmware, or third-party source is committed. |
 | Original Owner Request | Execute the direct M5 80386 protected execution/delivery package in coordinated mode, stopping before Mantle; use Intel as authority with read-only Bochs and PCjs comparison. |
 | Similar-Issue Sweep | Sweep all paging translation, permission, A/D, CR2, page-fault, cross-page, TLB, `INVLPG`, instruction-fetch, data, stack, and existing exception-delivery paths that could participate in this scope. |
-| Stop Conditions | Stop and report an Intel/reference disagreement, any persistent translation cache or stale observable path, a required `INVLPG` form/handler/API, #PF delivery need, or expansion into PAE/large-page/task/V86/system behavior. |
-| Exit Criteria | S5 records a complete cache/`INVLPG` sweep and a no-op disposition, or stops with a reproducible consumer proof; it passes documentation governance and diff check, pushes its successful evidence commit before reporting, and remains active pending coordinator acceptance. |
+| Stop Conditions | Stop and report a gate regression caused outside T311 S2-S5, an artifact identity conflict, required paging semantic expansion, #PF delivery need, or expansion into TLB/PAE/large-page/task/V86/system behavior. |
+| Exit Criteria | S6 records the 0.5.0311 artifact/hash, full gates, focused retained intersections, product-observation fact or limitation, and exact deferred boundaries; it pushes a closure-preparation commit and remains active pending coordinator acceptance. |
 
 ## Current Technical Baseline
 
-- **T310 pending artifact identity:** `current-gcc` and
-  `verify-current-artifact-target` select `vm-0-5-0310` / `nxvm_0_5_0310.exe`.
-  T310 remains active pending coordinator acceptance.
+- **T311 pending artifact identity:** `current-gcc` and
+  `verify-current-artifact-target` select `vm-0-5-0311` / `nxvm_0_5_0311.exe`.
+  T311 remains active pending coordinator acceptance.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
