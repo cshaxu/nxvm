@@ -30,6 +30,11 @@ typedef enum vm_session_boot_preference {
     VM_SESSION_BOOT_PREFERENCE_HDD
 } vm_session_boot_preference;
 
+typedef struct vm_session_start_outcome {
+    C_INT valid;
+    type_status status;
+} vm_session_start_outcome;
+
 struct vm_session {
     C_INT active;
     vm_platform_request_transport request_transport;
@@ -50,6 +55,7 @@ struct vm_session {
     core_utils_wait_scope wait_scope;
     vm_platform_run_context platform_run_context;
     vm_platform_run_handle platform_run_handle;
+    vm_session_start_outcome start_outcome;
     core_product_debug_context debugger_context;
     uint64_t display_generation;
     core_product_debug_target *debug_target;

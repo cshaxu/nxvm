@@ -11,10 +11,10 @@ extern "C" {
 
 #include "vm/composition/session/session_interface.h"
 
-C_VOID vm_session_start(vm_session *machine);
+type_status vm_session_start(vm_session *machine);
 C_VOID vm_session_reset(vm_session *machine);
 C_VOID vm_session_stop(vm_session *machine);
-C_VOID vm_session_resume(vm_session *machine);
+type_status vm_session_resume(vm_session *machine);
 
 type_status vm_session_initialize(vm_session *machine);
 C_VOID vm_session_finalize(vm_session *machine);

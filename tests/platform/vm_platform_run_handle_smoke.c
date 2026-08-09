@@ -27,7 +27,9 @@ int main(void)
     vm_session_initialize(session);
     if (!session->active) goto fail;
     vm_platform_run_context_set_window_display(&session->platform_run_context, 1);
-    vm_session_start(session);
+    if (vm_session_start(session) != TYPE_STATUS_OK ||
+        !session->start_outcome.valid ||
+        session->start_outcome.status != TYPE_STATUS_OK) goto fail;
     if (!vm_platform_run_handle_is_active(&session->platform_run_handle)) goto fail;
     core_platform_sleep_milliseconds(50u);
     vm_platform_run_handle_report(&session->platform_run_handle,
@@ -35,9 +37,12 @@ int main(void)
     core_platform_sleep_milliseconds(50u);
     if (vm_session_control_is_running(&session->control)) goto fail;
     vm_session_reset(session);
+    if (session->start_outcome.valid) goto fail;
     if (vm_platform_run_handle_is_active(&session->platform_run_handle) ||
         session->platform_run_handle.backend != STD_NULL) goto fail;
-    vm_session_start(session);
+    if (vm_session_start(session) != TYPE_STATUS_OK ||
+        !session->start_outcome.valid ||
+        session->start_outcome.status != TYPE_STATUS_OK) goto fail;
     if (!vm_platform_run_handle_is_active(&session->platform_run_handle)) goto fail;
     vm_session_stop(session);
     if (vm_platform_run_handle_is_active(&session->platform_run_handle) ||

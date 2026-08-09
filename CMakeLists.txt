@@ -630,6 +630,11 @@ if(NOT PROJECT_VM_PLATFORM_TEST_FAILURE_STAGE STREQUAL "0")
     )
     target_link_libraries(vm-platform-win32-startup-failure-smoke PRIVATE
         vm-composition)
+    add_executable(vm-session-startup-failure-smoke
+        tests/platform/vm_session_startup_failure_smoke.c
+    )
+    target_link_libraries(vm-session-startup-failure-smoke PRIVATE
+        vm-product vm-composition)
 endif()
 if(NOT WIN32)
     add_executable(vm-platform-linux-run-handle-smoke

@@ -27,10 +27,10 @@ typedef struct vm_product_console_machine_provider {
     C_VOID (*create_hdd)(C_VOID *context, uint16_t cylinders);
     C_INT (*insert_hdd)(C_VOID *context, const C_CHAR *path);
     C_INT (*remove_hdd)(C_VOID *context, const C_CHAR *path);
-    C_VOID (*start)(C_VOID *context);
+    type_status (*start)(C_VOID *context);
     C_VOID (*reset)(C_VOID *context);
     C_VOID (*stop)(C_VOID *context);
-    C_VOID (*resume)(C_VOID *context);
+    type_status (*resume)(C_VOID *context);
     C_VOID *context;
 } vm_product_console_machine_provider;
 

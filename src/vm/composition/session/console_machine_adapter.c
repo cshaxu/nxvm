@@ -182,11 +182,12 @@ static C_INT vm_session_machine_remove_hdd(C_VOID *context, const C_CHAR *path)
     return session != STD_NULL ? vm_machine_hdd_remove(&session->hdd, path) : -1;
 }
 
-static C_VOID vm_session_machine_start(C_VOID *context)
+static type_status vm_session_machine_start(C_VOID *context)
 {
     vm_session *session = vm_session_machine_borrow_selected(context);
 
-    if (session != STD_NULL) vm_session_start(session);
+    return session == STD_NULL ? TYPE_STATUS_INVALID_STATE :
+        vm_session_start(session);
 }
 
 static C_VOID vm_session_machine_reset(C_VOID *context)
@@ -203,11 +204,12 @@ static C_VOID vm_session_machine_stop(C_VOID *context)
     if (session != STD_NULL) vm_session_stop(session);
 }
 
-static C_VOID vm_session_machine_resume(C_VOID *context)
+static type_status vm_session_machine_resume(C_VOID *context)
 {
     vm_session *session = vm_session_machine_borrow_selected(context);
 
-    if (session != STD_NULL) vm_session_resume(session);
+    return session == STD_NULL ? TYPE_STATUS_INVALID_STATE :
+        vm_session_resume(session);
 }
 
 static const vm_product_console_machine_provider vmSessionMachineProviderTemplate = {
