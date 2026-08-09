@@ -139,7 +139,7 @@ static const t_cpu_data_sreg *segment_sreg(const t_cpu *cpu, uint8_t target)
 static C_INT segment_boot_protected(segment_machine *state)
 {
     static const uint8_t gdt_pointer[] = {
-        0x2fu, 0x00u, 0x00u, 0x03u, 0x00u, 0x00u
+        0x37u, 0x00u, 0x00u, 0x03u, 0x00u, 0x00u
     };
     static const uint8_t gdt[] = {
         0,0,0,0,0,0,0,0,
@@ -147,7 +147,8 @@ static C_INT segment_boot_protected(segment_machine *state)
         0xff,0xff,0,0x30,0,0x92,0x40,0,
         0xff,0xff,0,0x30,0,0x12,0x40,0,
         0xff,0xff,0,0x30,0,0x98,0x40,0,
-        0,0,0,0,0,0x80,0,0
+        0,0,0,0,0,0x80,0,0,
+        0xff,0xff,0,0x00,0,0x89,0x40,0
     };
     static const uint8_t real_code[] = {
         0x0fu,0x01u,0x16u,0x00u,0x01u,
@@ -185,7 +186,7 @@ static C_INT segment_boot_protected(segment_machine *state)
 static C_INT segment_boot_protected_286(segment_machine *state)
 {
     static const uint8_t gdt_pointer[] = {
-        0x2fu, 0x00u, 0x00u, 0x03u, 0x00u, 0x00u
+        0x37u, 0x00u, 0x00u, 0x03u, 0x00u, 0x00u
     };
     static const uint8_t gdt[] = {
         0,0,0,0,0,0,0,0,
@@ -193,7 +194,8 @@ static C_INT segment_boot_protected_286(segment_machine *state)
         0xff,0xff,0,0x30,0,0x92,0,0,
         0xff,0xff,0,0x30,0,0x12,0,0,
         0xff,0xff,0,0x30,0,0x98,0,0,
-        0,0,0,0,0,0x80,0,0
+        0,0,0,0,0,0x80,0,0,
+        0xff,0xff,0,0x00,0,0x89,0,0
     };
     static const uint8_t real_code[] = {
         0x0fu,0x01u,0x16u,0x00u,0x01u,
@@ -434,6 +436,61 @@ static C_INT segment_test_lxs_memory_only(C_VOID)
                 before.data.eflags != after.data.eflags;
             core_machine_destroy(state.machine);
         }
+    }
+    return failed;
+}
+
+static C_INT segment_test_lxs_fault_atomicity(C_VOID)
+{
+    static const segment_lxs_form forms[] = {
+        { 0xc4u,0u,1u,0u }, { 0xc5u,0u,1u,1u },
+        { 0x0fu,0xb2u,2u,2u }, { 0x0fu,0xb4u,2u,3u },
+        { 0x0fu,0xb5u,2u,4u }
+    };
+    static const uint8_t pointer[] = { 0x44u,0x33u,0x22u,0x11u,0x18u,0u };
+    STD_SIZE_T index;
+    C_INT failed = 0;
+
+    for (index = 0u; index < sizeof(forms) / sizeof(forms[0]); ++index) {
+        uint8_t code[8u] = {0};
+        uint8_t code_size = 0u;
+        uint8_t access = 0u;
+        segment_machine state;
+        t_cpu before;
+        t_cpu after;
+        uint32_t exception = forms[index].target == 2u ? VCPUINS_EXCEPT_SS :
+            VCPUINS_EXCEPT_NP;
+
+        if (!segment_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386) ||
+            !segment_boot_protected(&state)) return 1;
+        code[code_size++] = forms[index].first;
+        if (forms[index].bytes == 2u) code[code_size++] = forms[index].second;
+        code[code_size++] = 0x05u;
+        code[code_size++] = 0x00u;
+        code[code_size++] = 0x04u;
+        code[code_size++] = 0x00u;
+        code[code_size++] = 0x00u;
+        before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        failed |= !segment_write(&state, SEG_DATA_ADDRESS + 0x0400u, pointer,
+                sizeof(pointer)) || !segment_run_exception(&state, code,
+                code_size, SEG_CODE_ADDRESS, exception, &after) ||
+            before.data.eax != after.data.eax ||
+            before.data.esp != after.data.esp ||
+            before.data.eflags != after.data.eflags ||
+            STD_MEMCMP(&before.data.es, &after.data.es,
+                sizeof(before.data.es)) != 0 ||
+            STD_MEMCMP(&before.data.ds, &after.data.ds,
+                sizeof(before.data.ds)) != 0 ||
+            STD_MEMCMP(&before.data.ss, &after.data.ss,
+                sizeof(before.data.ss)) != 0 ||
+            STD_MEMCMP(&before.data.fs, &after.data.fs,
+                sizeof(before.data.fs)) != 0 ||
+            STD_MEMCMP(&before.data.gs, &after.data.gs,
+                sizeof(before.data.gs)) != 0 ||
+            !test_core_machine_fixture_read_linear(state.machine,
+                SEG_GDT_ADDRESS + 29u, TYPE_REFERENCE_OF(access),
+                sizeof(access)) || access != 0x12u;
+        core_machine_destroy(state.machine);
     }
     return failed;
 }
@@ -736,6 +793,24 @@ static C_INT segment_test_selector_query_edges(C_VOID)
     static const uint8_t lsl_invalid[] = {
         0xb8u,0x28u,0x00u,0xcdu,0xabu,0x66u,0x0fu,0x03u,0xc0u,0xf4u
     };
+    static const uint8_t lar_nonpresent[] = {
+        0xb8u,0x18u,0x00u,0xcdu,0xabu,0x0fu,0x02u,0xc0u,0xf4u
+    };
+    static const uint8_t lsl_nonpresent[] = {
+        0xb8u,0x18u,0x00u,0xcdu,0xabu,0x66u,0x0fu,0x03u,0xc0u,0xf4u
+    };
+    static const uint8_t lar_tss[] = {
+        0xb8u,0x30u,0x00u,0,0,0x0fu,0x02u,0xc0u,0xf4u
+    };
+    static const uint8_t lsl_tss[] = {
+        0xb8u,0x30u,0x00u,0,0,0x0fu,0x03u,0xc0u,0xf4u
+    };
+    static const uint8_t lar_tss_rpl[] = {
+        0xb8u,0x33u,0x00u,0xcdu,0xabu,0x0fu,0x02u,0xc0u,0xf4u
+    };
+    static const uint8_t lsl_tss_rpl[] = {
+        0xb8u,0x33u,0x00u,0xcdu,0xabu,0x0fu,0x03u,0xc0u,0xf4u
+    };
     static const uint8_t verr_type[] = {
         0xb8u,0x20u,0x00u,0,0,0x0fu,0x00u,0xe0u,0xf4u
     };
@@ -745,6 +820,9 @@ static C_INT segment_test_selector_query_edges(C_VOID)
     static const uint8_t verr_nonpresent[] = {
         0xb8u,0x18u,0x00u,0,0,0x0fu,0x00u,0xe0u,0xf4u
     };
+    static const uint8_t verw_nonpresent[] = {
+        0xb8u,0x18u,0x00u,0,0,0x0fu,0x00u,0xe8u,0xf4u
+    };
     static const uint8_t verr_memory[] = {
         0x67u,0x0fu,0x00u,0x26u,0x00u,0x04u,0xf4u
     };
@@ -752,14 +830,21 @@ static C_INT segment_test_selector_query_edges(C_VOID)
         0x67u,0x0fu,0x00u,0x2eu,0x00u,0x04u,0xf4u
     };
     static const uint8_t data_selector[] = { 0x10u,0u };
-    const uint8_t *codes[] = { lsl16_code, lar_invalid, lsl_invalid, verr_type,
-        verw_type, verr_nonpresent, verr_memory, verw_memory };
+    const uint8_t *codes[] = { lsl16_code, lar_invalid, lsl_invalid,
+        lar_nonpresent, lsl_nonpresent, lar_tss, lsl_tss, lar_tss_rpl,
+        lsl_tss_rpl, verr_type, verw_type, verr_nonpresent, verw_nonpresent,
+        verr_memory, verw_memory };
     const STD_SIZE_T sizes[] = { sizeof(lsl16_code), sizeof(lar_invalid),
-        sizeof(lsl_invalid), sizeof(verr_type), sizeof(verw_type),
-        sizeof(verr_nonpresent), sizeof(verr_memory), sizeof(verw_memory) };
+        sizeof(lsl_invalid), sizeof(lar_nonpresent), sizeof(lsl_nonpresent),
+        sizeof(lar_tss), sizeof(lsl_tss), sizeof(lar_tss_rpl),
+        sizeof(lsl_tss_rpl), sizeof(verr_type), sizeof(verw_type),
+        sizeof(verr_nonpresent), sizeof(verw_nonpresent), sizeof(verr_memory),
+        sizeof(verw_memory) };
     const uint32_t expected_eax[] = { 0xabcdffffu,0xabcd0028u,0xabcd0028u,
-        0x00000020u,0x00000020u,0x00000018u,0x00000010u,0x00000010u };
-    const C_INT expected_zf[] = { 1,0,0,0,0,1,1,1 };
+        0xabcd0018u,0xabcd0018u,0x00408900u,0x0000ffffu,0xabcd0033u,
+        0xabcd0033u,0x00000020u,0x00000020u,0x00000018u,0x00000018u,
+        0x00000010u,0x00000010u };
+    const C_INT expected_zf[] = { 1,0,0,0,0,1,1,0,0,0,0,0,0,1,1 };
     STD_SIZE_T index;
     C_INT failed = 0;
 
@@ -774,7 +859,7 @@ static C_INT segment_test_selector_query_edges(C_VOID)
         if (!segment_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386) ||
             !segment_boot_protected(&state)) return 1;
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
-        if (index >= 6u)
+        if (index >= 13u)
             failed |= !segment_write(&state, SEG_DATA_ADDRESS + 0x0400u,
                 data_selector, sizeof(data_selector));
         case_failed = !segment_run_halt(&state, codes[index], sizes[index],
@@ -812,6 +897,7 @@ static C_INT segment_test_rejected_forms(C_VOID)
     static const uint8_t mov_to_fs[] = { 0x8eu,0xe0u };
     static const uint8_t pop_fs[] = { 0x0fu,0xa1u };
     static const uint8_t pop_gs[] = { 0x0fu,0xa9u };
+    static const uint8_t lss[] = { 0x0fu,0xb2u,0xc0u };
     static const uint8_t lfs[] = { 0x0fu,0xb4u,0xc0u };
     static const uint8_t lgs[] = { 0x0fu,0xb5u,0xc0u };
     static const uint8_t lar_real[] = { 0x0fu,0x02u,0xc0u };
@@ -823,18 +909,20 @@ static C_INT segment_test_rejected_forms(C_VOID)
         CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
     };
     const uint8_t *programs[] = { mov_cs, mov_from_fs, mov_to_fs, pop_fs,
-        pop_gs, lfs, lgs, lar_real, lsl_real, verr_real, verw_real, lar_66 };
+        pop_gs, lss, lfs, lgs, lar_real, lsl_real, verr_real, verw_real,
+        lar_66 };
     const STD_SIZE_T sizes[] = { sizeof(mov_cs), sizeof(mov_from_fs),
-        sizeof(mov_to_fs), sizeof(pop_fs), sizeof(pop_gs), sizeof(lfs),
-        sizeof(lgs), sizeof(lar_real), sizeof(lsl_real), sizeof(verr_real),
-        sizeof(verw_real), sizeof(lar_66) };
+        sizeof(mov_to_fs), sizeof(pop_fs), sizeof(pop_gs), sizeof(lss),
+        sizeof(lfs), sizeof(lgs), sizeof(lar_real), sizeof(lsl_real),
+        sizeof(verr_real), sizeof(verw_real), sizeof(lar_66) };
     const core_machine_cpu_profile maximum_profiles[] = {
         CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80286,
         CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80286,
         CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80286,
-        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386,
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80286,
         CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80386,
-        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80386
+        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_CPU_PROFILE_80386,
+        CORE_MACHINE_CPU_PROFILE_80386
     };
     STD_SIZE_T profile_index;
     STD_SIZE_T program_index;
@@ -920,6 +1008,7 @@ C_INT main(C_VOID)
     C_INT real_loads = segment_test_real_load_forms();
     C_INT protected_286 = segment_test_80286_protected_legal_forms();
     C_INT lxs_memory_only = segment_test_lxs_memory_only();
+    C_INT lxs_atomicity = segment_test_lxs_fault_atomicity();
     C_INT real_sregs = segment_test_real_sreg_loads();
     C_INT protected_sregs = segment_test_protected_sreg_success();
     C_INT protected_sreg_failures = segment_test_protected_sreg_failures();
@@ -929,12 +1018,12 @@ C_INT main(C_VOID)
     C_INT atomicity = segment_test_pop_fault_atomicity();
     C_INT metadata = segment_test_metadata();
 
-    if (real_loads || protected_286 || lxs_memory_only || real_sregs || protected_sregs ||
+    if (real_loads || protected_286 || lxs_memory_only || lxs_atomicity || real_sregs || protected_sregs ||
         protected_sreg_failures || protected_forms || query_edges || rejected ||
         atomicity || metadata) {
         STD_FPRINTF(STD_STDERR,
-            "M5:T301:SEGMENT-SELECTOR:FAIL real=%d protected-286=%d lxs=%d sreg-real=%d sreg-protected=%d sreg-fault=%d protected=%d query=%d rejected=%d atomic=%d metadata=%d\n",
-            real_loads, protected_286, lxs_memory_only, real_sregs, protected_sregs,
+            "M5:T301:SEGMENT-SELECTOR:FAIL real=%d protected-286=%d lxs=%d lxs-atomic=%d sreg-real=%d sreg-protected=%d sreg-fault=%d protected=%d query=%d rejected=%d atomic=%d metadata=%d\n",
+            real_loads, protected_286, lxs_memory_only, lxs_atomicity, real_sregs, protected_sregs,
             protected_sreg_failures, protected_forms, query_edges, rejected,
             atomicity, metadata);
         return 1;
