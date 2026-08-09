@@ -36,3 +36,24 @@ runtime behavior. A future packet requires an owner-supplied reproducible
 checkpoint or trace naming one missing family and its first required form; it
 must then freeze one family, one consumer, Intel sections, read-only comparison
 paths, prepared-state proof, and explicit deferrals before implementation.
+
+## S2 Corrective No-Admission Closure
+
+`M5 T312 S1 P0: audit system extension admission` (`67e73ca8`) is the task's
+occupied audit admission packet. The identifier gate therefore requires this
+evidence closure to use T312 S2 Corrective, not a new T313 task. This is a
+governance continuity fact only; it changes neither the matrix nor runtime.
+
+The candidate-specific future evidence threshold is deliberately strict:
+
+| Candidate | Existing handler/probe is insufficient because | Required future consumer evidence |
+| --- | --- | --- |
+| 32-bit TSS/task gate/nested return | T261 proves only a retained 16-bit focused far-JMP switch. | A bounded VM/M5 checkpoint or trace naming the first 32-bit task transfer form and state boundary. |
+| LDT breadth | Existing selector-table support is bounded to T304. | A reproducible consumer requiring a named LDT selector form beyond that matrix. |
+| V86 | Branches and TODOs are not a V86 execution checkpoint. | A trace that reaches a specific V86 entry, return, or I/O rule. |
+| Debug/test registers | Product debug capability is not guest DR/TR execution. | A guest instruction trace naming one DR/TR form and its expected privilege/fault outcome. |
+| Remaining system forms | Decoder names and rejected forms do not create a need. | A reproducible consumer for one named form, with a focused pre-fault contract. |
+
+T312 is therefore withdrawn as an implementation candidate. It makes no claim
+that the system-extension families are complete, does not create a T312
+artifact, and does not activate T313 or M6.
