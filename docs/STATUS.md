@@ -2,13 +2,13 @@
 
 ## Current Work
 
-**Active: M5 T302 S3.**
+**Active: M5 T302 S4.**
 
-## M5 T302 S3 Packet
+## M5 T302 S4 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Corrective; M5 T302 S3 implementation batch B; Coordinated Dual-Session Mode. S1 admitted the matrix and committed S2 closed prefix/fetch/effective-address/general-data semantics. S3 implements stack primitives and frame opcode forms only. |
+| Identifier Mode | Corrective; M5 T302 S4 implementation batch C; Coordinated Dual-Session Mode. S1 admitted the matrix, S2 closed prefix/fetch/effective-address/general-data semantics, and S3 closed stack primitives and frame opcode forms. S4 implements memory and I/O string/REP forms only. |
 | Admission And Approval | Owner approved the direct M5 80386 32-bit protected execution/delivery package and instructed coordinator/executor execution through the package, stopping before Mantle. T301 is closed; T302 is the next approved Queue candidate. |
 | Objective | Admit the 80386 32-bit operand, address, and stack-instruction family: `66h`/`67h` forms for ModRM/SIB effective addresses, instruction fetch, general data access, `PUSH`/`POP`/`PUSHA`/`POPA`, `PUSHF`/`POPF`, `ENTER`/`LEAVE`, and string/REP access under 32-bit code/data/stack segments. Freeze exact form, profile, mode, limit, wrapping, segment-default, fault-order, and commit rules before implementation. |
 | Non-goals | Control-transfer semantics, descriptor-table/system instructions, interrupt/exception delivery, privilege transitions, paging-policy expansion, virtual-8086, arithmetic-family bulk work, host/product UX, external ABI, and source import. No new executor or execution path. |
@@ -19,10 +19,10 @@
 | Expected Markers | S1 emits an audit record only. The later family probe marker is `M5:T302:OPERAND-ADDRESS-STACK:OK`; its task artifact is created only when CMake's current target is updated during implementation. |
 | Asset Needs | Local read-only reference checkouts and owner-supplied local Setup media may be observed but are never committed, packaged, or made default-build inputs. |
 | Stop Conditions | Stop and report on Intel/reference disagreement not resolved by a bounded optional bridge, a required architecture change, a second executor/state path, raw public-layout exposure, retained Console/debugger/boot regression, or an instruction form that belongs to another queued family. |
-| Exit Criteria | Stack primitives and frame forms follow the frozen 16/32 operand-width and independent SS stack-address-size matrix, including defined source/destination and partial-commit fault boundaries. Focused probes and required gates pass without touching strings/REP, control transfer, or later families. |
+| Exit Criteria | Memory and I/O string/REP forms follow the frozen element-size, address-size, count/index, DS/ES selection, DF, termination, wrap/limit, and failing-current-iteration rules. Focused probes and required gates pass without changing timing, privilege, paging, control transfer, or later families. |
 | Original Owner Request | Execute the 80386 task package in dual-session mode through the Mantle boundary; use Intel, Bochs, and PCjs to establish logic, observe Setup once per task, and use the optional bridge when uncertain. |
 | Similar-Issue Sweep | Audit all existing 66h/67h decode, effective-address, stack, fetch, string/REP, segment-limit, and commit helpers in `src`, `tests`, and CMake. Each production-path hit must be classified in the S1 record; do not silently widen scope. |
-| S1/S2 Evidence Record | [T302 operand/address/stack admission audit](etc/evidence/t302-operand-address-stack-admission.md) freezes the form matrix and records S2's focused Batch A correction and probe result. S2 does not change the current artifact target or Queue entry. |
+| S1-S4 Evidence Record | [T302 operand/address/stack admission audit](etc/evidence/t302-operand-address-stack-admission.md) freezes the form matrix and records the focused S2-S4 correction and probe results. S2-S4 do not change the current artifact target or Queue entry. |
 
 ## Current Technical Baseline
 
