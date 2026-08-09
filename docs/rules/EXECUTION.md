@@ -110,8 +110,8 @@ subtask breakdown for its immediate implementation milestone. The breakdown
 maps each task to an approved decision, contract, regression set, acceptance
 result, and stop condition. Do not pre-create or activate implementation tasks
 from an earlier milestone: their shape is an output of the preceding design
-gate, not an M0 prediction. M9-and-later research instead approves one such
-breakdown for each admitted implementation increment.
+gate, not an early roadmap prediction. Research work likewise approves one
+bounded breakdown for each admitted implementation increment.
 
 A subtask completes only when scoped behavior works, focused tests pass,
 established corpus entries remain valid, applicable local rule invariants pass
@@ -133,21 +133,21 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools/Verify-DocumentationGo
 
 The configured `current-gates-gcc` target also runs this check when PowerShell
 is available. It verifies that `STATUS.md` is the sole current-baseline
-authority, an Idle status has no retained packet, no completed `m5-t*.md`
-record remains in planning, the queue contains no completed row, history makes
-no current-baseline claim, status matches the configured current artifact
-target, no known mojibake is present, and the status closure table remains at
-eight rows or fewer. A failure blocks closure until the documents are made
-internally consistent.
+authority, an Idle status has no retained packet, the queue contains no numeric
+task identifier, the debt ledger contains no completed row, history makes no
+current-baseline claim, status matches the configured current artifact target,
+no known mojibake is present, and the status closure table remains at eight rows
+or fewer. A failure blocks closure until the documents are made internally
+consistent.
 
 ## Milestone Closure Evidence
 
 Before an implementation milestone closes, its final verification record must
 map the current source graph to the roadmap exit conditions, applicable rules,
 open TODO deferrals, and current evidence. A historical passing task, a clean
-compile, or a fixture-only smoke cannot close a changed runnable path. M5 uses
-the compact [M5 Closure Checklist](../etc/governance/m5-closure-checklist.md) as this mapping
-index; the checklist does not supersede this policy or the local architecture,
+compile, or a fixture-only smoke cannot close a changed runnable path. A
+milestone-specific closure checklist may be indexed in `etc/` as supporting
+evidence, but it does not supersede this policy or the local architecture,
 coding, source, and execution authorities.
 
 A configured smoke gate must state whether it builds, executes, or statically
@@ -159,10 +159,9 @@ runtime tests.
 
 Each completed implementation task that changes a runnable path must compile,
 verify, and copy one usable task-level local build output to the ignored
-`build/output/` directory. Effective with the T257 artifact-identity
-correction, every numeric implementation task uses its task identifier as the
-four-digit developer-artifact revision:
-`M5 T258` produces `0.5.0258`. This is an identity rule, not a sequence rule.
+`build/output/` directory. Every numeric implementation task uses its task
+identifier as the four-digit developer-artifact revision: task `T258` produces
+`0.5.0258`. This is an identity rule, not a sequence rule.
 All implementation subtasks rebuild their task-level artifact under that same
 revision; the source commit and recorded SHA-256 identify the exact build.
 Task numbers are never reused, so a completed task artifact version cannot
@@ -180,8 +179,7 @@ Record the artifact SHA-256, source commit, runtime identity/banner, and
 whether it is a baseline/developer artifact or a product artifact in the
 verification record. Smoke-test executables remain build-tree verification
 tools and are never copied as developer artifacts. Design-only tasks do not
-manufacture executables. M3 is a recorded historical exception: only its final
-T5 artifact is retained. Local artifacts are never release evidence, must not
+manufacture executables. Local artifacts are never release evidence, must not
 bundle protected media or Microsoft binaries, and may be replaced only by a
 newly verified build of the same named task.
 
@@ -198,9 +196,9 @@ verify the resolved target is below `build/`, exclude `build/output/`, and
 confirm no owned process still uses it.
 
 For a runnable artifact, the verification record also states the emitted runtime
-identity/banner and version. It must follow the task-version rules in
-`docs/design/ARCHITECTURE.md`; changing identity, version, or cutover state
-without an approved subtask and regression evidence is prohibited.
+identity/banner and version. It must follow the task-version rules above;
+changing identity, version, or cutover state without an approved subtask and
+regression evidence is prohibited.
 
 For a legacy coupled system, first establish and record a runnable full-source
 baseline before subtractive refactoring. A baseline import may be isolated from
@@ -240,12 +238,11 @@ Do not advance a milestone merely because individual code exists. The roadmap
 owns milestone goal, scope, and exit conditions; its active subtask owns exact
 commands, expected markers, budgets, and stop conditions. `breakdown.md` is an
 index only and cannot close a milestone.
-When a release cadence is established, implementation milestones M1, M3, M5,
-M6, M7, and M8 create immutable snapshot branches from verified `main` commits
-before the next milestone begins. M2 and M4 are design milestones; M9 and later
-are research milestones with one active task at a time. Design and research
-work has no default snapshot obligation, though the owner may require one for a
-specific approved deliverable.
+When a release cadence is established, an owner-designated implementation
+milestone creates an immutable snapshot branch from a verified `main` commit
+before its successor begins. Design and research work has no default snapshot
+obligation, though the owner may require one for a specific approved
+deliverable.
 
 Escalate to the owner if a license choice, protected asset, incompatible source
 license, undocumented Windows mechanism, or change to the direct-launch product

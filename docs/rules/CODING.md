@@ -9,6 +9,9 @@ boundaries, also use the public
 The concrete source tree and naming map is
 [design/CODING.md](../design/CODING.md).
 
+- Use C11 and narrowly scoped, documented platform APIs. Keep repository source
+  and code comments in English and prefer ASCII unless the domain requires
+  another character set.
 - Use clear, searchable names with one meaning per symbol. Keep a cohesive
   file focused on one owner and responsibility; split only when a real
   subsystem boundary exists.

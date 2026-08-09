@@ -13,7 +13,7 @@ ntvdm64 has two product forms and three planned reusable components:
 | --- | --- | --- |
 | `nxvm.exe` / `vm` | Bootable whole-machine VM with the retained NXVM Console and debugger. | Runnable product. |
 | `core` | Product-neutral machine, platform, and reusable product tooling. | Shared source foundation; not yet a separate artifact. |
-| `mantle` | Policy-free VDM session composition over core. | Future component. |
+| `mantle` | Policy-free VDM session composition over core and admitted runtime adapters. | Future component. |
 | `dos` | Owned DOS implementation independent of the other components. | Future component. |
 | `nxvdm.exe` / `vdm` | Non-bootable DOS application runner over mantle and dos. | Future product; only a non-runnable skeleton exists. |
 
@@ -39,9 +39,10 @@ It never depends on `vm`, `mantle`, `dos`, or `vdm`.
 
 `vm` owns bootable-machine composition, BIOS/POST boot policy, VM profiles, and
 the retained NXVM product experience. `mantle` owns reusable VDM composition,
-but no DOS or host-policy decision. `dos` owns DOS behavior without depending
-on another product component. `vdm` owns application-runner UX and combines an
-admitted mantle session with an admitted DOS implementation.
+including the neutral adapter boundary for an owned or separately admitted
+runtime, but no DOS or host-policy decision. `dos` owns DOS behavior without
+depending on another product component. `vdm` owns application-runner UX and
+combines an admitted mantle session with an admitted DOS implementation.
 
 The `vm` and `mantle` roots assemble their concrete sessions. The `vdm` root
 selects application-runner UX and binds mantle to dos. Product-root composition
@@ -50,26 +51,22 @@ combined.
 
 ## Product And Host Boundary
 
-`nxvm.exe` remains a bootable VM and retains its interactive Console; it does
-not gain a replacement process CLI. `nxvdm.exe` will provide the approved DOS
-application-runner interaction, display, cancellation, and debugger behavior
-defined in [UI.md](UI.md).
-
 Platform integrations report through opaque core contracts. Host policy and
 guest-state mutation occur at the owning product composition boundary, never
 inside a generic platform implementation.
 
-## Research And Distribution Boundary
+Native and WASM hosts share these component boundaries. A future TypeScript web
+product layer sits above the WASM platform/product adaptation; it does not move
+browser, network, or storage policy into generic machine behavior.
 
-The owned DOS backend is the default NXVDM direction. External VDM/DOS and
-historical component research can establish neutral capability requirements,
-but cannot become a source import, ABI, backend, runtime dependency, or release
-input without a separately approved implementation decision. Microsoft binaries
-and third-party firmware remain user-supplied research material, never bundled
-product inputs.
+## Runtime Admission Boundary
 
-## Current Scope
+The owned DOS backend is the default NXVDM direction. A separately admitted
+external VDM/DOS implementation is isolated behind a dedicated adapter and
+does not become a shared public ABI, default runtime dependency, or release
+input. Source, firmware, research, and redistribution procedures are defined
+by [Architecture Rules](../rules/ARCHITECTURE.md) and the indexed
+[source policy](../etc/governance/source-policy.md).
 
-M5 retains the runnable NXVM foundation while converging its shared-core
-boundaries. `mantle`, `dos`, and `nxvdm.exe` are not current runtime products.
-The milestone sequence and exit goals are defined only by [ROADMAP.md](ROADMAP.md).
+Current delivery state and staged implementation goals are defined only by
+[ROADMAP.md](ROADMAP.md) and [STATUS.md](../STATUS.md).

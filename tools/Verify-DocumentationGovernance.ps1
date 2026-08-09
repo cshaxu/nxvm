@@ -73,6 +73,12 @@ $architectureRulesPath = Join-Path $rulesPath "ARCHITECTURE.md"
 $codingRulesPath = Join-Path $rulesPath "CODING.md"
 $architectureDesignPath = Join-Path $designPath "ARCHITECTURE.md"
 $codingDesignPath = Join-Path $designPath "CODING.md"
+$goalDesignPath = Join-Path $designPath "GOAL.md"
+$uiDesignPath = Join-Path $designPath "UI.md"
+$roadmapDesignPath = Join-Path $designPath "ROADMAP.md"
+$rootReadmePath = Join-Path $RepositoryRoot "README.md"
+$agentsPath = Join-Path $RepositoryRoot "AGENTS.md"
+$contributingPath = Join-Path $RepositoryRoot "CONTRIBUTING.md"
 $ruleFiles = @(Get-ChildItem -LiteralPath $rulesPath -File | ForEach-Object Name)
 $designFiles = @(Get-ChildItem -LiteralPath $designPath -File | ForEach-Object Name)
 Require (Test-ExactNameSet $ruleFiles $expectedRuleFiles) `
@@ -96,6 +102,12 @@ $architectureRules = Get-Content -Raw -LiteralPath $architectureRulesPath
 $codingRules = Get-Content -Raw -LiteralPath $codingRulesPath
 $architectureDesign = Get-Content -Raw -LiteralPath $architectureDesignPath
 $codingDesign = Get-Content -Raw -LiteralPath $codingDesignPath
+$goalDesign = Get-Content -Raw -LiteralPath $goalDesignPath
+$uiDesign = Get-Content -Raw -LiteralPath $uiDesignPath
+$roadmapDesign = Get-Content -Raw -LiteralPath $roadmapDesignPath
+$rootReadme = Get-Content -Raw -LiteralPath $rootReadmePath
+$agents = Get-Content -Raw -LiteralPath $agentsPath
+$contributing = Get-Content -Raw -LiteralPath $contributingPath
 Require ($architectureRules -match 'one explicit owner and one production path') `
     "Architecture Rules must retain the one-owner/one-production-path invariant."
 Require ($architectureRules -match 'raw CPU, RAM, port, device, executor, or session pointer') `
@@ -108,6 +120,18 @@ Require (-not ($architectureDesign -match 'one explicit owner and one production
     "System Architecture must not duplicate architecture-rule invariants."
 Require (-not ($codingDesign -match '(?m)^## Dependency Direction$')) `
     "Source Layout must not duplicate the architecture dependency map."
+Require (-not ($goalDesign -match '(?m)^## M\d+')) `
+    "Project Goals must not contain milestone planning."
+Require (-not ($uiDesign -match '(?m)^## (?:M\d+ Delivery Gate|Acceptance Cases|Delivery Boundary)$')) `
+    "Product UX must not contain delivery gates or acceptance detail."
+Require (-not ($roadmapDesign -match '\bT\d+\b')) `
+    "Roadmap must not allocate or describe numeric implementation tasks."
+Require (-not ($rootReadme -match '(?m)^## (?:Target Component Topology|Long-Term Research|Current State)$')) `
+    "Root README must remain public orientation rather than a second authority."
+Require (-not ($agents -match '(?m)^## Boundaries$')) `
+    "AGENTS.md must point to authorities rather than duplicate project boundaries."
+Require (-not ($contributing -match '(?m)^## Engineering Rules$')) `
+    "CONTRIBUTING.md must not duplicate architecture or execution rules."
 
 $status = Get-Content -Raw -LiteralPath $statusPath
 $queue = Get-Content -Raw -LiteralPath $queuePath
@@ -115,6 +139,19 @@ $todo = Get-Content -Raw -LiteralPath $todoPath
 
 Require (($status | Select-String -AllMatches -Pattern '(?m)^## Current Technical Baseline$').Matches.Count -eq 1) `
     "STATUS.md must contain exactly one Current Technical Baseline heading."
+
+$statusHeadings = @([regex]::Matches($status, '(?m)^## .+$') | ForEach-Object { $_.Value })
+$allowedStatusHeadings = @(
+    "## Current Work",
+    "## Current Technical Baseline",
+    "## Recent Governance"
+)
+foreach ($heading in $statusHeadings) {
+    $isTaskPacket = $heading -match '^## M\d+ (?:T\d+|Td) S\d+ Packet$'
+    $isClosureSummary = $heading -match '^## Recent M\d+ Closures$'
+    Require (($allowedStatusHeadings -contains $heading) -or $isTaskPacket -or $isClosureSummary) `
+        "STATUS.md contains a heading outside its current-status role: $heading"
+}
 
 $idle = $status -match '(?m)^\*\*Idle\.'
 if ($idle) {
@@ -126,20 +163,34 @@ if ($idle) {
     Require ($idlePrefixLines -le 8) `
         "Idle STATUS.md must not retain completed narrative before its technical baseline."
 }
+else {
+    Require (($status | Select-String -AllMatches -Pattern '(?m)^## M\d+ (?:T\d+|Td) S\d+ Packet$').Matches.Count -eq 1) `
+        "Active STATUS.md must contain exactly one task packet."
+}
 
 Require (-not ($todo -match '(?m)^[-*] \[x\]')) `
     "TODO.md must contain only open debt entries."
+Require (-not ($todo -match '(?mi)^#{1,3} .*goal')) `
+    "TODO.md must not contain product goals."
+$todoEntries = @([regex]::Matches($todo, '(?m)^- \[ \] .+$') | ForEach-Object { $_.Value })
+foreach ($entry in $todoEntries) {
+    Require ($entry -match 'TODO\((?:High|Medium|Low)\)') `
+        "TODO.md debt entries must declare TODO(High), TODO(Medium), or TODO(Low)."
+}
 Require (-not ($queue -match '\bT\d+\b')) `
     "QUEUE.md must not reserve numeric implementation task identifiers."
+$queueHeadings = @([regex]::Matches($queue, '(?m)^#+ .+$') | ForEach-Object { $_.Value })
+Require ($queueHeadings.Count -eq 1 -and $queueHeadings[0] -eq "# Queue") `
+    "QUEUE.md must contain only its title and ordered unnumbered candidates."
 
-$closureSection = [regex]::Match($status, '(?ms)^## Recent M5 Closures\r?\n(?<body>.*?)(?=^## |\z)')
-Require ($closureSection.Success) "STATUS.md must contain a Recent M5 Closures section."
+$closureSection = [regex]::Match($status, '(?ms)^## Recent M\d+ Closures\r?\n(?<body>.*?)(?=^## |\z)')
+Require ($closureSection.Success) "STATUS.md must contain a recent milestone-closure section."
 $closureCount = ([regex]::Matches($closureSection.Groups['body'].Value, '(?m)^\| T\d+ \|')).Count
-Require ($closureCount -le 8) "STATUS.md must retain at most eight recent M5 closure rows."
+Require ($closureCount -le 8) "STATUS.md must retain at most eight recent milestone-closure rows."
 
 $governanceSection = [regex]::Match($status, '(?ms)^## Recent Governance\r?\n(?<body>.*?)(?=^## |\z)')
 Require ($governanceSection.Success) "STATUS.md must contain a Recent Governance section."
-$governanceCount = ([regex]::Matches($governanceSection.Groups['body'].Value, '(?m)^- \*\*M5 Td S\d+:')).Count
+$governanceCount = ([regex]::Matches($governanceSection.Groups['body'].Value, '(?m)^- \*\*M\d+ Td S\d+:')).Count
 Require ($governanceCount -le 8) "STATUS.md must retain at most eight recent governance rows."
 
 $presets = Get-Content -Raw -LiteralPath $presetPath | ConvertFrom-Json

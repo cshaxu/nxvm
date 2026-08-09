@@ -2,7 +2,7 @@
 
 ## Current Work
 
-**Idle. M5 Td S47 is closed; no numeric implementation task is active.** The
+**Idle. M5 Td S48 is closed; no numeric implementation task is active.** The
 first approved Queue candidate receives the next numeric task identifier.
 
 ## Current Technical Baseline
@@ -33,16 +33,10 @@ first approved Queue candidate receives the next numeric task identifier.
 | T297 | Replaced default firmware raw profile binding with an opaque core-invoked capability for checked memory/port I/O and stop requests. Configure-time immutable ROM registration now rolls back atomically on callback failure; default BIOS/QDCGA, boot failure, 49 gates, and 126/126 CTests are closed without product UX change. |
 | T298 | Replaced formal debugger raw CPU/instruction/execution/RAM/port borrows with paused-or-stopped named core operations and copied observations. The retained Console/debugger UX passed focused checks and the 126-test regression suite without a global target or second execution path. |
 | T299 | Removed the remaining public configuration/debug raw borrows and profile raw binding. Production uses typed/copying interfaces; purpose-named test fixtures alone may include private core state. The recurrence gate, 51 current static/governance targets, and 126 CTests passed without product behavior changes. |
-| T300 | Unified the core directional port registry, propagated typed-provider failures, made VM session initialization failure-atomic, and removed public private layouts. The DMA binding uses a core-issued non-addressable nonce and core-internal revalidation; 51 static/governance gates and 129 CTests passed with `nxvm_0_5_0300.exe`. |
-
-Detailed closure evidence remains in [legacy history](etc/legacy-history/m5.md)
-and Git. The [Queue](QUEUE.md), [Roadmap](design/ROADMAP.md), and
-[M5 closure checklist](etc/governance/m5-closure-checklist.md) refine current
-M5 scope; an active packet becomes an operational authority only after approval.
+| T300 | Unified the core directional port registry, propagated typed-provider failures, made VM session initialization failure-atomic, and removed public private layouts. The DMA binding uses a core-issued non-addressable nonce and core-internal revalidation; 51 static/governance gates and 129 CTests passed with its task-level developer artifact. |
 
 ## Recent Governance
 
-- **M5 Td S36:** recorded the WASM media-backing admission boundary.
 - **M5 Td S37:** made M5 history static, capped closure summaries, and
   hardened the mojibake governance check.
 - **M5 Td S40:** inserted the then-approved T293--T303 core public-surface
@@ -65,20 +59,7 @@ M5 scope; an active packet becomes an operational authority only after approval.
   retained detail in `etc/`, and separated abstract architecture/coding rules
   from concrete ntvdm64 design. The strengthened governance gate prevents the
   same rule/design overlap from returning. Td work has no history record.
-
-## Milestone State
-
-| Milestone | State | Current authority |
-| --- | --- | --- |
-| M0--M4 | Closed | [Roadmap](design/ROADMAP.md) and Git |
-| M5 | Open | [M5 closure checklist](etc/governance/m5-closure-checklist.md) |
-| M6--M8 | Not started | [Roadmap](design/ROADMAP.md) |
-| M9 onward | Research queue | [Roadmap](design/ROADMAP.md) |
-
-## Operational Reading Order
-
-1. [Documentation Guide](README.md)
-2. [Status](STATUS.md) and [Queue](QUEUE.md)
-3. [Roadmap](design/ROADMAP.md)
-4. [Architecture](design/ARCHITECTURE.md) and [Source Layout](design/CODING.md)
-5. [Supporting Detail Index](etc/README.md), when required by the task
+- **M5 Td S48:** made `GOAL.md` strategic-only; removed duplicate roadmap,
+  status, architecture, source, and execution material from principal and
+  contributor documents; and added role-boundary checks. Td work has no
+  history record.
