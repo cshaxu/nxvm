@@ -16562,6 +16562,9 @@ static C_VOID ExecFinal(core_machine_cpu_execution_context *context)
         else if (instruction_state.data.except == VCPUINS_EXCEPT_SS &&
             context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
             exception_vector = 0x0cu;
+        else if (instruction_state.data.except == VCPUINS_EXCEPT_TS &&
+            context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
+            exception_vector = 0x0au;
         if (TYPE_GET_BIT(fault_cpu.data.cr0, VCPU_CR0_PE) &&
             exception_vector != 0u) {
             original_except = instruction_state.data.except;
