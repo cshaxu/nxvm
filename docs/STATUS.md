@@ -2,41 +2,35 @@
 
 ## Current Work
 
-**Active: M5 T302 S4.**
+**Active: M5 T302 S5.**
 
-## M5 T302 S4 Packet
+## M5 T302 S5 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Corrective; M5 T302 S4 implementation batch C; Coordinated Dual-Session Mode. S1 admitted the matrix, S2 closed prefix/fetch/effective-address/general-data semantics, and S3 closed stack primitives and frame opcode forms. S4 implements memory and I/O string/REP forms only. |
+| Identifier Mode | Corrective; M5 T302 S5 closure; Coordinated Dual-Session Mode. S1 admitted the matrix; S2, S3, and S4 completed its prefix/address/data, stack/form, and string/I-O batches. |
 | Admission And Approval | Owner approved the direct M5 80386 32-bit protected execution/delivery package and instructed coordinator/executor execution through the package, stopping before Mantle. T301 is closed; T302 is the next approved Queue candidate. |
 | Objective | Admit the 80386 32-bit operand, address, and stack-instruction family: `66h`/`67h` forms for ModRM/SIB effective addresses, instruction fetch, general data access, `PUSH`/`POP`/`PUSHA`/`POPA`, `PUSHF`/`POPF`, `ENTER`/`LEAVE`, and string/REP access under 32-bit code/data/stack segments. Freeze exact form, profile, mode, limit, wrapping, segment-default, fault-order, and commit rules before implementation. |
 | Non-goals | Control-transfer semantics, descriptor-table/system instructions, interrupt/exception delivery, privilege transitions, paging-policy expansion, virtual-8086, arithmetic-family bulk work, host/product UX, external ABI, and source import. No new executor or execution path. |
-| Reference Baseline | `b2f1d6f7f716ce3865e0c05ca2ac98ae2f8d4eac`; current artifact `vm-0-5-0301` / `nxvm_0_5_0301.exe`. |
+| Reference Baseline | `b2f1d6f7f716ce3865e0c05ca2ac98ae2f8d4eac`; current artifact `vm-0-5-0302` / `nxvm_0_5_0302.exe`. |
 | Files And ABI Surface | Initial audit may inspect `src/core/machine/cpu_instructions.c`, `cpu.h`, memory/fetch helpers, focused machine tests/CMake, and task/governance records. It must not change public core interfaces or cross-module ownership. |
 | Applicable Rules | `rules/EXECUTION.md`, `rules/ARCHITECTURE.md`, `rules/CODING.md`, `rules/DOCUMENT.md`, and `etc/operations/policy/source-policy.md`; retain one core executor and state owner, core-to-VM dependency direction, and NXVM Console/debugger/boot behavior. |
 | Verification | Intel 80386 PRM is authoritative; S1 records exact instruction entries and sections. Read-only comparison records the relevant Bochs 2.6 and PCjs 2.00.0 behavior paths and versions; do not copy source. Project verification uses focused synthetic probes, not long-start guest fixtures. Implementation later runs focused probes, `current-gates-gcc`, documentation governance, `git diff --check`, one task artifact, and one owner-supplied Setup observation after family closure. |
 | Expected Markers | S1 emits an audit record only. The later family probe marker is `M5:T302:OPERAND-ADDRESS-STACK:OK`; its task artifact is created only when CMake's current target is updated during implementation. |
 | Asset Needs | Local read-only reference checkouts and owner-supplied local Setup media may be observed but are never committed, packaged, or made default-build inputs. |
 | Stop Conditions | Stop and report on Intel/reference disagreement not resolved by a bounded optional bridge, a required architecture change, a second executor/state path, raw public-layout exposure, retained Console/debugger/boot regression, or an instruction form that belongs to another queued family. |
-| Exit Criteria | Memory and I/O string/REP forms follow the frozen element-size, address-size, count/index, DS/ES selection, DF, termination, wrap/limit, and failing-current-iteration rules. Focused probes and required gates pass without changing timing, privilege, paging, control transfer, or later families. |
+| Exit Criteria | The full T302 family matrix, similar-issue sweep, focused and retained probes, `current-gates-gcc`, artifact target/hash, documentation governance, and one bounded owner-supplied Setup observation are recorded. No T303 work starts before coordinator independently accepts the evidence. |
 | Original Owner Request | Execute the 80386 task package in dual-session mode through the Mantle boundary; use Intel, Bochs, and PCjs to establish logic, observe Setup once per task, and use the optional bridge when uncertain. |
 | Similar-Issue Sweep | Audit all existing 66h/67h decode, effective-address, stack, fetch, string/REP, segment-limit, and commit helpers in `src`, `tests`, and CMake. Each production-path hit must be classified in the S1 record; do not silently widen scope. |
 | S1-S4 Evidence Record | [T302 operand/address/stack admission audit](etc/evidence/t302-operand-address-stack-admission.md) freezes the form matrix and records the focused S2-S4 correction and probe results. S2-S4 do not change the current artifact target or Queue entry. |
 
 ## Current Technical Baseline
 
-- **T301 artifact identity:** `current-gcc` and
-  `verify-current-artifact-target` select `vm-0-5-0301` / `nxvm_0_5_0301.exe`.
-  S4 rebuilt `nxvm_0_5_0301.exe` with SHA-256
-  `54D6BEB2BEF9E495C09DD4AA976288449EB0608567A2F32F61693219FFA23E3D`.
-  The focused selector and retained ARPL probes, 51 static/governance targets,
-  and 130 CTests passed; the coordinator independently accepted the result.
-- **T301 observation limit:** one bounded product-window observation budget
-  could not discover its host window before any guest command, stdout/stderr,
-  or process residue existed. It is not a Windows Setup checkpoint or product
-  regression. A later owner-controlled manual observation remains verification
-  only and does not change the CPU conclusion or create a repair task.
+- **T302 artifact identity:** `current-gcc` and
+  `verify-current-artifact-target` select `vm-0-5-0302` / `nxvm_0_5_0302.exe`.
+  The S5 build hash, full-gate result, and bounded Setup observation are
+  recorded in [T302 history](history/M5-T302-operand-address-stack-family.md)
+  and remain pending coordinator acceptance.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.

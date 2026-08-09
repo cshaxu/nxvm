@@ -118,12 +118,16 @@ operand width distinct from SS address size and verifies the normal and
 mixed-width frame restoration paths.
 
 S3 corrected two shared stack details. A zero-byte stack-cache validity probe
-must not perform the nonzero-access end-offset calculation, which underflowed
-at a full 32-bit segment limit and falsely raised `#SS`. `ENTER`'s initial
-saved frame pointer now follows operand size, while the post-push SP/ESP value
-continues to follow SS address size. The stack sweep classified return and
-interrupt frame helpers as control-transfer/exception work outside S3; no such
-path changed. Strings and REP remain S4.
+must validate its offset without using a nonzero-access end-offset calculation:
+the helper now rejects an out-of-range offset while avoiding end-offset
+underflow at a full 32-bit segment limit. The S5 sweep found that the first S3
+form accidentally skipped that zero-byte offset check, regressing the retained
+task-switch stack-limit case; the common helper now tests the start offset and
+then uses a non-underflowing remaining-range check for nonzero accesses.
+`ENTER`'s initial saved frame pointer now follows operand size, while the
+post-push SP/ESP value continues to follow SS address size. The stack sweep
+classified return and interrupt frame helpers as control-transfer/exception
+work outside S3; no such path changed. Strings and REP remain S4.
 
 ## S4 String Evidence
 

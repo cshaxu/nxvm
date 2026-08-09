@@ -207,6 +207,7 @@ static C_INT task_switch_expect_stack_fault(core_machine_cpu_profile profile)
             !TYPE_GET_BIT(diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_SS) ||
             diagnostic.first_fault.exception_code != 0u ||
             diagnostic.last_delivered_exception.valid ||
+            cpu.data.ip != 0x0100u || cpu.data.sp != 0u ||
             cpu.data.ss.sregtype != SREG_STACK || !cpu.data.tr.flagValid ||
             cpu.data.tr.selector != 0x0030u;
         if (failed) {
