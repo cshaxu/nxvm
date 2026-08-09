@@ -143,3 +143,34 @@ marker; retained `core-machine-operand-address-smoke` emitted
 `core-machine-real-mode-386-address-smoke` emitted
 `M5:T287:S24:REAL-MODE-386-ADDR32:OK`. S2 has no artifact, full-gate run, or
 Setup observation; those remain family-close work.
+
+## S3 Near Call, Jump, And Return Evidence
+
+S3 extended the same focused synthetic probe without creating a second CPU
+path. It covers relative `CALL` with each 16/32 code-default and operand-size
+cross, matched near `RET` width, and a 32-bit SS stack-address-size return
+with both 16-bit and 32-bit return offsets plus `RET imm16` adjustment. It
+also covers `FF /2` and `FF /4` register and memory targets in both operand
+widths, retaining T302's effective-address coverage rather than reopening its
+helpers.
+
+The admitted failure boundary is now explicit: direct `CALL`, indirect `JMP`,
+and near `RET` to a target outside CS each produce the focused terminal
+`#GP` path with entry EIP, flags, and applicable SP/ESP preserved. The RET
+probe confirmed the S1 candidate without changing production code: although
+`_kec_ret_near` uses the shared pop helper before target validation, the single
+core instruction transaction restores the architecturally visible entry state
+on the first target-validation fault. This agrees with the Intel `CALL`,
+`JMP`, and `RET` entries and the read-only Bochs 2.6
+`cpu/ctrl_xfer16.cc`/`cpu/ctrl_xfer32.cc` speculative return path. PCjs 2.00.0
+was retained as the independent read-only reference identity from S1; no source
+was copied or translated.
+
+The S3 similar-issue sweep revisited `_kec_call_near`, `_kec_jmp_near`,
+`_kec_ret_near`, `_e_call_near`, `_e_jmp_near`, `_e_ret_near`, `CALL_REL32`,
+`JMP_REL32`, `RET`, `RET_I16`, and `INS_FF`. Far selector/cache forms remain
+exclusively S4; no far, privilege, exception-delivery, stack-helper, public
+interface, CMake artifact, or product-path code changed in S3. The focused
+probe and retained T302 operand/address and real-mode address probes pass;
+full gates, artifact construction, and Setup observation remain family-close
+work.

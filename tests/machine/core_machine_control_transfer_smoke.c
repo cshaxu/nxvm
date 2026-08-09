@@ -137,6 +137,13 @@ static C_INT ct_run_gp(ct_machine *state, const uint8_t *code,
         TYPE_GET_BIT(diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_GP);
 }
 
+static C_VOID ct_set_stack32(ct_machine *state, uint32_t esp)
+{
+    state->machine->executor_cpu.data.ss.seg.data.big = TYPE_TRUE;
+    state->machine->executor_cpu.data.ss.limit = 0xffffffffu;
+    state->machine->executor_cpu.data.esp = esp;
+}
+
 static C_INT ct_test_jcc_short(C_VOID)
 {
     static const ct_jcc_case cases[] = {
@@ -438,13 +445,180 @@ static C_INT ct_test_pre386_near_jcc_is_ud(C_VOID)
     return !failed;
 }
 
+static C_INT ct_test_ret_target_fault_is_atomic(C_VOID)
+{
+    static const uint8_t ret[] = {0xc3u};
+    static const uint8_t target[] = {0x80u,0,0,0};
+    ct_machine state;
+    t_cpu before;
+    t_cpu after;
+    C_INT failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+
+    if (!failed) {
+        state.machine->executor_cpu.data.cs.limit = 0x007fu;
+        failed = !ct_write(&state, 0x0000c000u, target, sizeof(target));
+        before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        before.data.eip = 0u;
+        if (!failed) failed = !ct_run_gp(&state, ret, sizeof(ret), &after) ||
+            after.data.eip != before.data.eip || after.data.sp != before.data.sp ||
+            after.data.eflags != before.data.eflags;
+    }
+    core_machine_destroy(state.machine);
+    return !failed;
+}
+
+static C_INT ct_test_near_call_and_ret_forms(C_VOID)
+{
+    static const uint8_t code32_call32[] = {0xe8u,3,0,0,0,0xb0u,0xa5u,0xf4u,0xc3u};
+    static const uint8_t code32_call16[] = {0x66u,0xe8u,3,0,0xb0u,0xa5u,0xf4u,0x66u,0xc3u};
+    static const uint8_t code16_call16[] = {0xe8u,3,0,0xb0u,0xa5u,0xf4u,0xc3u};
+    static const uint8_t code16_call32[] = {0x66u,0xe8u,3,0,0,0,0xb0u,0xa5u,0xf4u,0x66u,0xc3u};
+    static const uint8_t ret16_imm[] = {0x66u,0xc2u,4,0,0xf4u};
+    static const uint8_t ret32_imm[] = {0xc2u,4,0,0xf4u};
+    const uint8_t *const programs[] = {
+        code32_call32, code32_call16, code16_call16, code16_call32
+    };
+    const STD_SIZE_T sizes[] = {
+        sizeof(code32_call32), sizeof(code32_call16), sizeof(code16_call16),
+        sizeof(code16_call32)
+    };
+    STD_SIZE_T index;
+
+    for (index = 0u; index < sizeof(programs) / sizeof(programs[0]); ++index) {
+        ct_machine state;
+        t_cpu before;
+        t_cpu after;
+        C_INT failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386,
+            index < 2u);
+
+        if (!failed) {
+            before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+            failed = !ct_run(&state, programs[index], sizes[index],
+                CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT, &after) ||
+                after.data.eax != 0x000000a5u || after.data.sp != before.data.sp ||
+                after.data.eflags != before.data.eflags;
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+    }
+    {
+        static const uint8_t target16[] = {4,0};
+        static const uint8_t target32[] = {3,0,0,0};
+        ct_machine state;
+        t_cpu before;
+        t_cpu after;
+        C_INT failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+
+        if (!failed) {
+            ct_set_stack32(&state, 0x00008000u);
+            failed = !ct_write(&state, 0x0000c000u, target16, sizeof(target16));
+            before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+            if (!failed) failed = !ct_run(&state, ret16_imm, sizeof(ret16_imm),
+                CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT, &after) ||
+                after.data.esp != before.data.esp + 6u;
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+        failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+        if (!failed) {
+            ct_set_stack32(&state, 0x00008000u);
+            failed = !ct_write(&state, 0x0000c000u, target32, sizeof(target32));
+            before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+            if (!failed) failed = !ct_run(&state, ret32_imm, sizeof(ret32_imm),
+                CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT, &after) ||
+                after.data.esp != before.data.esp + 8u;
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+    }
+    return 1;
+}
+
+static C_INT ct_test_near_indirect_and_fault_boundaries(C_VOID)
+{
+    static const uint8_t call_register[] = {
+        0xb8u,10,0,0,0,0xffu,0xd0u,0xb0u,0xa5u,0xf4u,0xc3u
+    };
+    static const uint8_t jmp_memory[] = {0xffu,0x25u,0,1,0,0,0xb0u,0,0xf4u};
+    static const uint8_t call16_register[] = {
+        0xb8u,8,0,0xffu,0xd0u,0xb0u,0xa5u,0xf4u,0xc3u
+    };
+    static const uint8_t jmp16_memory[] = {0xffu,0x26u,0,1,0xb0u,0,0xf4u};
+    static const uint8_t call_fault[] = {0xe8u,0x7bu,0,0,0};
+    static const uint8_t jmp_fault[] = {0xffu,0xe0u};
+    static const uint8_t jmp_target[] = {8,0,0,0};
+    ct_machine state;
+    t_cpu before;
+    t_cpu after;
+    C_INT failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+
+    if (!failed) {
+        before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        failed = !ct_run(&state, call_register, sizeof(call_register),
+            CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT, &after) ||
+            after.data.eax != 0x000000a5u || after.data.sp != before.data.sp;
+    }
+    core_machine_destroy(state.machine);
+    if (failed) return 0;
+    if (!failed) failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 0);
+    if (!failed) {
+        before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        failed = !ct_run(&state, call16_register, sizeof(call16_register),
+            CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT, &after) ||
+            after.data.eax != 0x000000a5u || after.data.sp != before.data.sp;
+    }
+    core_machine_destroy(state.machine);
+    if (failed) return 0;
+    if (!failed) failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+    if (!failed) {
+        failed = !ct_write(&state, 0x00003100u, jmp_target, sizeof(jmp_target));
+        if (!failed) failed = !ct_run(&state, jmp_memory, sizeof(jmp_memory),
+            CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT, &after) || after.data.eip != 9u;
+    }
+    core_machine_destroy(state.machine);
+    if (failed) return 0;
+    if (!failed) failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 0);
+    if (!failed) {
+        static const uint8_t target16[] = {6,0};
+        failed = !ct_write(&state, 0x00003100u, target16, sizeof(target16));
+        if (!failed) failed = !ct_run(&state, jmp16_memory, sizeof(jmp16_memory),
+            CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT, &after) || after.data.eip != 7u;
+    }
+    core_machine_destroy(state.machine);
+    if (failed) return 0;
+    if (!failed) failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+    if (!failed) {
+        state.machine->executor_cpu.data.cs.limit = 0x007fu;
+        before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        before.data.eip = 0u;
+        failed = !ct_run_gp(&state, call_fault, sizeof(call_fault), &after) ||
+            after.data.eip != before.data.eip || after.data.sp != before.data.sp ||
+            after.data.eflags != before.data.eflags;
+    }
+    core_machine_destroy(state.machine);
+    if (failed) return 0;
+    if (!failed) failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+    if (!failed) {
+        state.machine->executor_cpu.data.cs.limit = 0x007fu;
+        state.machine->executor_cpu.data.eax = 0x00000080u;
+        before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        before.data.eip = 0u;
+        failed = !ct_run_gp(&state, jmp_fault, sizeof(jmp_fault), &after) ||
+            after.data.eip != before.data.eip || after.data.eax != before.data.eax ||
+            after.data.eflags != before.data.eflags;
+    }
+    core_machine_destroy(state.machine);
+    return !failed;
+}
+
 C_INT main(C_VOID)
 {
     if (!ct_test_jcc_short() || !ct_test_near_and_short_jumps() ||
-        !ct_test_jcc_near_conditions() ||
-        !ct_test_16bit_code_and_real_mode() || !ct_test_loop_and_jcxz() ||
-        !ct_test_jcc_limit_boundaries() || !ct_test_loop_target_fault_is_atomic() ||
-        !ct_test_pre386_near_jcc_is_ud()) return 1;
+        !ct_test_jcc_near_conditions() || !ct_test_16bit_code_and_real_mode() ||
+        !ct_test_loop_and_jcxz() || !ct_test_jcc_limit_boundaries() ||
+        !ct_test_loop_target_fault_is_atomic() || !ct_test_pre386_near_jcc_is_ud() ||
+        !ct_test_ret_target_fault_is_atomic() || !ct_test_near_call_and_ret_forms() ||
+        !ct_test_near_indirect_and_fault_boundaries()) return 1;
     STD_PRINTF("M5:T303:CONTROL-TRANSFER:OK\n");
     return 0;
 }
