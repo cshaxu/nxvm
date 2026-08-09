@@ -2,35 +2,35 @@
 
 ## Current Work
 
-**Active: M5 T313 S6.**
+**Active: M5 T313 S7.**
 
-## M5 T313 S6 Packet
+## M5 T313 S7 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Corrective; M5 T313 S6 debugger enum mapping closure. |
-| Admission And Approval | T313 S5 `ff5f0848` is accepted. S6 removes product-to-core debugger enum casts through private checked mappings. |
-| Reference Baseline | Accepted `vm-0-5-0311` / `nxvm_0_5_0311.exe`, HEAD `d9152c6d` before this admission, and retained T300 port/session-atomicity boundaries. |
-| Objective | Replace product-to-core debugger register/watch enum casts with private explicit mappings and reject all unknown values before core mutation. |
-| Non-goals | Controller/RAM/startup work, CPU/paging changes, module/interface merging, a generic debugger framework, artifact identity, or M6 mantle. |
-| Scope And Order | S6 only: session debug target adapter and focused mapping proof. S7 remains closure. |
-| Source Touchpoints | `vm/composition/session/debug_target.c`, private core/product debug enum adapters, and focused VM/product debugger tests. |
-| Files And ABI Surface | Keep core/product enum types separate. The retained void watch vtable rejects unknown values as an adapter no-op before core. |
+| Identifier Mode | Corrective; M5 T313 S7 construction-failure package closure preparation. |
+| Admission And Approval | T313 S6 `9d5539c2` is accepted. S7 closes evidence, current artifact identity, and gates pending coordinator acceptance. |
+| Reference Baseline | Prior accepted M5 artifact, HEAD `9d5539c2`, and retained T300 port/session-atomicity boundaries. |
+| Objective | Produce the T313 current artifact and consolidate S1--S6 construction-failure evidence without changing runtime behavior. |
+| Non-goals | Runtime/source behavior changes, a new task allocation, M6 mantle, Queue closure, product observation claims, or an executor-led T313 closure. |
+| Scope And Order | S7 only: current artifact identity, full current gates, focused intersections, and pending-acceptance history/status evidence. |
+| Source Touchpoints | CMake current artifact/preset, status/evidence/history, and existing S2--S6 focused and retained checks. |
+| Files And ABI Surface | No source/API/ownership changes; retain coordinator-owned `docs/rules/EXECUTION.md` unstaged. |
 | Applicable Rules | `rules/EXECUTION.md`, `rules/ARCHITECTURE.md`, `rules/CODING.md`, `rules/DOCUMENT.md`, and the source policy; retain one core executor, typed provider boundaries, and the existing NXVM product route. |
-| Verification | Focused proof covers every named register/watch mapping, unknown-domain rejection, and no register/watch publication after invalid input; retain debugger/Console target behavior. |
-| Expected Markers | `M5:T313:S6:DEBUG-MAPPING:OK`; S6 creates no artifact. |
+| Verification | Full `current-gates-gcc`, current artifact target, S2--S6 marker intersections, documentation governance, and diff check. |
+| Expected Markers | `M5:T313:S2:RAM-CREATE:OK`, `M5:T313:S3:PORT-ASSEMBLY:OK`, `M5:T313:S4:CONTROLLER-ROLLBACK:OK`, `M5:T313:S5:START-OUTCOME:OK`, and `M5:T313:S6:DEBUG-MAPPING:OK`. |
 | S1 Audit Record | [T313 construction-failure admission](etc/evidence/t313-construction-failure-admission.md) is the active design and acceptance record. |
 | Asset Needs | No guest media, firmware, third-party source, or host OOM dependency. |
-| Original Owner Request | Repair only private debugger enum mapping and unknown-input nonpublication. |
-| Similar-Issue Sweep | Inventory every product/core debug register/watch conversion and command/vtable boundary that can carry an unknown enum. |
-| Stop Conditions | Stop for an external ABI change, a required core/product type merge, a non-local debugger framework, or a command-level status change beyond the retained void-watch policy. |
-| Exit Criteria | All named values map explicitly, unknown values never reach core or mutate state, and focused/retained/governance checks pass before push. |
+| Original Owner Request | Close the accepted S1--S6 package evidence and artifact without changing its runtime scope. |
+| Similar-Issue Sweep | Check CMake current identity, artifact/hash records, S2--S6 marker registration, docs/status/history/Queue consistency, and retained construction/session/Console/debugger intersections. |
+| Stop Conditions | Stop for any unrelated full-gate regression or a runtime behavior repair beyond T313's directly proven changes. |
+| Exit Criteria | Artifact/hash and full gates are recorded; history/status remain active pending coordinator acceptance; Queue and task allocation remain unchanged. |
 
 ## Current Technical Baseline
 
-- **Accepted artifact identity:** `current-gcc` and
-  `verify-current-artifact-target` select `vm-0-5-0311` / `build/output/nxvm_0_5_0311.exe`.
-  T311 is the accepted M5 artifact baseline.
+- **Closure artifact candidate:** `current-gcc` and
+  `verify-current-artifact-target` select `vm-0-5-0313` / `build/output/nxvm_0_5_0313.exe`.
+  It remains pending coordinator acceptance for T313.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
