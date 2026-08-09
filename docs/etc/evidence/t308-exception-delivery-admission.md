@@ -160,3 +160,20 @@ hardware/NMI, double/triple fault containment, task and virtual-8086 paths,
 and paging remain deferred. The marker is
 `M5:T308:S3:SAME-CPL-TS-DELIVERY:OK`; the retained T301/T304/T305/T306/T307
 focused probes remain required evidence.
+
+## S4 Retained Call-Gate Completion Evidence
+
+The S3 focused-probe diff was rechecked specifically for completion semantics.
+The retained T307 `cg_test_success(0u)` and `cg_test_success(2u)` cases use
+the original `cg_run(..., 0, ...)` helper and therefore require
+`CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT` after the existing kernel handler
+halts. The S3 vector-10 `#TS` delivery case alone uses `cg_run_budget`: its
+user-mode `EB FE` handler is intentionally non-privileged and bounded so that
+the delivery observation does not introduce a later `HLT` `#GP`.
+
+`main` executes both retained zero/two-parameter success cases, every
+pre-existing T307 DPL, gate, parameter-source, target code/stack, and stack
+boundary atomicity case, then all three S3 `#TS` cases. The direct focused
+run emits both `M5:T307:CALL-GATE-PRIVILEGE-ENTRY:OK` and
+`M5:T308:S3:SAME-CPL-TS-DELIVERY:OK`. No CPU, CMake, artifact, Queue, or
+product behavior changed for this corrective evidence record.
