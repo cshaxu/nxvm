@@ -25,11 +25,6 @@ Bochx/Bochs paired-step bridge with declared state masks and instruction,
 time, no-progress, and trace-size budgets; its source, binaries, media, and
 raw traces remain outside the repository and default build.
 
-1. **32-bit exception-delivery consistency closure.** Sweep the prior families
-   for error-code normalization, exception precedence, stack/cache atomicity,
-   and terminal fault diagnostics. Add a bounded double-/triple-fault policy
-   only when required to make an existing family architecturally coherent; do
-   not invent guest recovery behavior.
 1. **80386 form audit and debug capture.** Maintain a static map of
    decoder/profile forms as proven, unproven, rejected, reserved/later-CPU, or
    absent. A full-system checkpoint may record a short debug trace for the next
