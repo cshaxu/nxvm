@@ -275,12 +275,121 @@ static C_INT oas_test_16bit_code_and_faults(C_VOID)
     return !failed;
 }
 
+static C_VOID oas_set_stack32(oas_machine *state, uint32_t esp)
+{
+    state->machine->executor_cpu.data.ss.seg.data.big = TYPE_TRUE;
+    state->machine->executor_cpu.data.ss.limit = 0xffffffffu;
+    state->machine->executor_cpu.data.esp = esp;
+}
+
+static C_INT oas_test_stack_forms(C_VOID)
+{
+    static const uint8_t push_pop32[] = { 0x50u,0x59u,0xf4u };
+    static const uint8_t push_pop16[] = { 0x66u,0x50u,0x66u,0x5bu,0xf4u };
+    static const uint8_t pusha[] = { 0x60u,0xf4u };
+    static const uint8_t popa[] = { 0x61u,0xf4u };
+    static const uint8_t pushf[] = { 0x9cu,0xf4u };
+    static const uint8_t popf[] = { 0x9du,0xf4u };
+    static const uint8_t enter_leave[] = {
+        0xc8u,0x10u,0x00u,0x02u,0xc9u,0xf4u
+    };
+    static const uint8_t enter_leave16[] = {
+        0x66u,0xc8u,0x08u,0x00u,0x01u,0x66u,0xc9u,0xf4u
+    };
+    const uint32_t ignored_slot = 0xfeedfaceu;
+    const uint32_t flags = VCPU_EFLAGS_IF | 0x00000002u;
+    oas_machine state;
+    t_cpu before;
+    t_cpu after;
+    C_INT failed = !oas_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+
+    if (!failed) {
+        state.machine->executor_cpu.data.esp = 0x0100u;
+        state.machine->executor_cpu.data.eax = 0x11223344u;
+        failed |= !oas_run_halt(&state, push_pop32, sizeof(push_pop32), &after) ||
+            after.data.esp != 0x0100u || after.data.ecx != 0x11223344u;
+    }
+    core_machine_destroy(state.machine);
+    if (!failed) failed = !oas_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+    if (!failed) {
+        state.machine->executor_cpu.data.esp = 0x0100u;
+        state.machine->executor_cpu.data.eax = 0x11223344u;
+        failed |= !oas_run_halt(&state, push_pop16, sizeof(push_pop16), &after) ||
+            after.data.esp != 0x0100u || after.data.ebx != 0x00003344u;
+    }
+    core_machine_destroy(state.machine);
+    if (!failed) failed = !oas_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+    if (!failed) {
+        oas_set_stack32(&state, 0x00010100u);
+        state.machine->executor_cpu.data.eax = 0x55667788u;
+        failed |= !oas_run_halt(&state, push_pop16, sizeof(push_pop16), &after) ||
+            after.data.esp != 0x00010100u || after.data.ebx != 0x00007788u;
+    }
+    core_machine_destroy(state.machine);
+    if (!failed) failed = !oas_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+    if (!failed) {
+        oas_set_stack32(&state, 0x00000100u);
+        state.machine->executor_cpu.data.eax = 0x11111111u;
+        state.machine->executor_cpu.data.ecx = 0x22222222u;
+        state.machine->executor_cpu.data.edx = 0x33333333u;
+        state.machine->executor_cpu.data.ebx = 0x44444444u;
+        state.machine->executor_cpu.data.ebp = 0x55555555u;
+        state.machine->executor_cpu.data.esi = 0x66666666u;
+        state.machine->executor_cpu.data.edi = 0x77777777u;
+        before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        failed |= !oas_run_halt(&state, pusha, sizeof(pusha), &after) ||
+            after.data.esp != 0x000000e0u ||
+            !oas_write(&state, OAS_STACK_ADDRESS + 0x000000ecu, &ignored_slot,
+                sizeof(ignored_slot)) || !oas_run_halt(&state, popa,
+                sizeof(popa), &after) || after.data.esp != before.data.esp ||
+            after.data.eax != before.data.eax || after.data.ecx != before.data.ecx ||
+            after.data.edx != before.data.edx || after.data.ebx != before.data.ebx ||
+            after.data.ebp != before.data.ebp || after.data.esi != before.data.esi ||
+            after.data.edi != before.data.edi;
+    }
+    core_machine_destroy(state.machine);
+    if (!failed) failed = !oas_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+    if (!failed) {
+        oas_set_stack32(&state, 0x00000100u);
+        state.machine->executor_cpu.data.eflags = 0x00000002u;
+        failed |= !oas_run_halt(&state, pushf, sizeof(pushf), &after) ||
+            !oas_write(&state, OAS_STACK_ADDRESS + after.data.esp, &flags,
+                sizeof(flags)) || !oas_run_halt(&state, popf, sizeof(popf),
+                &after) || after.data.esp != 0x00000100u ||
+            (after.data.eflags & VCPU_EFLAGS_IF) == 0u;
+    }
+    core_machine_destroy(state.machine);
+    if (!failed) failed = !oas_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+    if (!failed) {
+        oas_set_stack32(&state, 0x00000100u);
+        state.machine->executor_cpu.data.ebp = 0x00000080u;
+        before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        failed |= !oas_run_halt(&state, enter_leave, sizeof(enter_leave), &after) ||
+            after.data.esp != before.data.esp || after.data.ebp != before.data.ebp;
+    }
+    core_machine_destroy(state.machine);
+    if (!failed) failed = !oas_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
+    if (!failed) {
+        oas_set_stack32(&state, 0x00000100u);
+        state.machine->executor_cpu.data.ebp = 0x00000080u;
+        before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        failed |= !oas_run_halt(&state, enter_leave16, sizeof(enter_leave16),
+            &after) || after.data.esp != before.data.esp ||
+            after.data.ebp != before.data.ebp;
+    }
+    core_machine_destroy(state.machine);
+    return !failed;
+}
+
 C_INT main(C_VOID)
 {
     if (!oas_test_prefix_and_ea()) {
         return 1;
     }
     if (!oas_test_16bit_code_and_faults()) {
+        return 1;
+    }
+    if (!oas_test_stack_forms()) {
         return 1;
     }
     STD_PRINTF("M5:T302:OPERAND-ADDRESS-STACK:OK\n");
