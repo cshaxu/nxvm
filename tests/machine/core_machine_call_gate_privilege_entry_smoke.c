@@ -365,9 +365,11 @@ int main(void)
         !cg_test_target_failure_atomic(CALL_GATE_TARGET_CODE_NOT_PRESENT,
             VCPUINS_EXCEPT_NP, 0x0008u) ||
         !cg_test_target_failure_atomic(CALL_GATE_TARGET_STACK_TYPE,
-            VCPUINS_EXCEPT_GP, 0x0010u) ||
+            VCPUINS_EXCEPT_TS, 0x0010u) ||
         !cg_test_target_failure_atomic(CALL_GATE_TARGET_STACK_NOT_PRESENT,
             VCPUINS_EXCEPT_SS, 0x0010u) ||
+        !cg_test_target_failure_atomic(CALL_GATE_TARGET_STACK_SELECTOR,
+            VCPUINS_EXCEPT_TS, 0x0010u) ||
         !cg_test_target_failure_atomic(CALL_GATE_TARGET_STACK_BOUNDARY,
             VCPUINS_EXCEPT_SS, 0u);
 

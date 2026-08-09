@@ -168,7 +168,7 @@ paths.
 
 S4 makes the TSS-provided `SS0` preflight explicit in the 32-bit call-gate
 planner: selector null/TI/RPL mismatch remains `#TS(SS0)`, while the selected
-descriptor remains subject to the Intel-required `#GP(SS0)` type/DPL and
+descriptor remains subject to the Intel-required `#TS(SS0)` type/DPL and
 `#SS(SS0)` not-present outcomes. The candidate stack-cache helper remains the
 only cache constructor after those checks, so no parallel segment-cache
 semantics were added.
@@ -176,7 +176,7 @@ semantics were added.
 The call-gate focused probe now directly proves, for every runnable negative
 case, the first fault and unchanged entry CS/SS cache, EIP, ESP, EFLAGS/CPL,
 and target CS/SS accessed bytes: target CS wrong type (`#GP`), target CS not
-present (`#NP`), target SS wrong type (`#GP`), target SS not present (`#SS`),
+present (`#NP`), target SS not present (`#SS`),
 and the target new-stack frame boundary (`#SS(0)`). The existing software DPL,
 gate type/present, and old parameter-source checks remain alongside them.
 
@@ -187,3 +187,21 @@ delivery area before the focused probe can observe an unchanged terminal
 state. It is recorded as a T308 delivery input rather than being retyped as
 `#GP`; S4 does not change fault delivery. The retained 16-bit call-gate probe
 was rerun and showed no matching implementation defect.
+
+## S5 Call-Gate Stack Fault Classification
+
+Intel 80386 and the read-only Bochs 2.6 `cpu/call_far.cc` call-gate path agree
+that a TSS-provided new SS descriptor which is not a writable data segment or
+whose DPL does not match the target CPL raises `#TS(SS selector)`, not `#GP`.
+S5 moves that rule into `_ser_check_call_gate_stack_sreg`, used by both the
+32-bit S3 planner and the retained 16-bit privilege call-gate branch. Null,
+TI, and RPL failures remain `#TS`; not-present remains `#SS`. Both callers
+then invoke the existing `_ksa_prepare_stack_sreg` cache constructor, so the
+classification change does not create a second cache implementation.
+
+The prepared 32-bit target-SS type/DPL and selector-mismatch cases now retain
+`#TS(SS0)` as the first fault under a one-instruction budget, with the same
+unchanged-state and accessed-byte assertions as the other negative cases. The
+earlier non-terminal observation was caused by the planner's return boundary,
+not a reason to alter TS delivery; no T308 delivery implementation is needed
+from this classification result.
