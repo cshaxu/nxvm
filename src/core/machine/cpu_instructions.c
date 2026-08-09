@@ -3842,11 +3842,18 @@ static C_VOID _ser_iret_protected_outer(core_machine_cpu_execution_context *cont
     type_unsigned_64 ss_desc;
     type_unsigned_8 oldcpl;
     type_unsigned_8 newcpl;
+    type_unsigned_32 flags_mask;
     t_cpu_data_sreg newcs_cache;
     t_cpu_data_sreg newss_cache;
 
     TYPE_TRACE_CALL_BEGIN("_ser_iret_protected_outer");
     oldcpl = _GetCPL;
+    /* Ordinary protected IRET never restores VM; old CPL controls IOPL/IF. */
+    flags_mask = VCPU_EFLAGS_RESERVED | VCPU_EFLAGS_VM;
+    if (oldcpl != 0u) {
+        flags_mask |= VCPU_EFLAGS_IOPL;
+        if (oldcpl > _GetEFLAGS_IOPL) flags_mask |= VCPU_EFLAGS_IF;
+    }
     switch (byte)
     {
     case 2:
@@ -3937,8 +3944,8 @@ static C_VOID _ser_iret_protected_outer(core_machine_cpu_execution_context *cont
     else
         cpu_state.data.sp = TYPE_MASK_UNSIGNED_16(newesp);
     cpu_state.data.eip = neweip;
-    cpu_state.data.eflags = (cpu_state.data.eflags & VCPU_EFLAGS_RESERVED) |
-        (newflags & ~VCPU_EFLAGS_RESERVED);
+    cpu_state.data.eflags = (cpu_state.data.eflags & flags_mask) |
+        (newflags & ~flags_mask);
     TYPE_TRACE_CALL_END;
 }
 static C_VOID _ser_iret_protected_same(core_machine_cpu_execution_context *context,
@@ -4003,7 +4010,7 @@ static C_VOID _ser_iret_protected_same(core_machine_cpu_execution_context *conte
     TYPE_TRACE_CHECK_RETURN(_kma_test_access(context, &newcs_cache, neweip,
         1u, 0, cpl, 1));
     if (cpl) {
-        mask |= VCPU_EFLAGS_IOPL | VCPU_EFLAGS_VM | VCPU_EFLAGS_RF;
+        mask |= VCPU_EFLAGS_IOPL | VCPU_EFLAGS_VM;
         if (cpl > _GetEFLAGS_IOPL) mask |= VCPU_EFLAGS_IF;
     }
     TYPE_TRACE_CHECK_RETURN(_s_write_xdt(context, newcs,
