@@ -2,39 +2,13 @@
 
 ## Current Work
 
-**Active: M5 T307 S7.**
-
-## M5 T307 S7 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Corrective; M5 T307 S7 privilege-transition closure preparation; Coordinated Dual-Session Mode. S1-S6 are accepted. |
-| Admission And Approval | T306 is closed. T307 is the next linear Queue candidate in the owner-approved M5 80386 protected execution/delivery package. |
-| Objective | Prepare T307 closure: build the task artifact and run complete current gates after the admitted 32-bit IDT/call-gate privilege-transition family. |
-| Non-goals | Task/nested-task return, task gates, general task switching, virtual-8086, new fault origins, reset/triple-fault policy, paging-policy expansion, product UX, public ABI, and source import. No new executor or delivery route. |
-| Reference Baseline | `7d97ff6`; accepted predecessor task artifact. |
-| Files And ABI Surface | S7 may change current build identity, task evidence, and task records only. It must not alter CPU behavior, public interfaces, or cross-module ownership. |
-| Applicable Rules | `rules/EXECUTION.md`, `rules/ARCHITECTURE.md`, `rules/CODING.md`, `rules/DOCUMENT.md`, and `etc/operations/policy/source-policy.md`; retain one core executor/state owner, a single checked stack/memory route, and NXVM behavior. |
-| Verification | Intel 80386 PRM is authoritative. Record versioned read-only Bochs 2.6 and PCjs 2.00.0 behavior paths; do not copy source. Construction uses focused synthetic probes only; full-system observation is closure-only. |
-| Expected Markers | T307 focused IDT and call-gate markers plus retained T305/T306/T304/T260/T261 markers; 0307 artifact and full current gate pass. |
-| Asset Needs | Read-only local references only; no guest media, firmware, or third-party source is committed. |
-| Original Owner Request | Execute the direct M5 80386 protected execution/delivery package in coordinated mode, stopping before Mantle; use Intel as authority with read-only Bochs and PCjs comparison. |
-| Similar-Issue Sweep | Sweep T307's two privilege-transition planners and the shared call-gate target-stack classifier for retained 16/32-bit, TSS, error-code and origin-boundary regressions; do not expand deferred hardware/error delivery. |
-| S1 Audit Record | [T307 privilege-transition admission audit](etc/evidence/t307-privilege-transition-admission.md) freezes the admitted 16/32-bit TSS/frame/gate matrix, existing 16-bit path intersections, and implementation batches before changing CPU behavior. |
-| S2 Evidence Record | [T307 privilege-transition admission audit](etc/evidence/t307-privilege-transition-admission.md#s2-common-planner-evidence) records the five-dword normal IDT frame, gate IF/TF behavior, software DPL versus external origin rule, and failure-state preservation. |
-| S3 Evidence Record | [T307 privilege-transition admission audit](etc/evidence/t307-privilege-transition-admission.md#s3-call-gate-planner-evidence) records 32-bit call-gate DPL/type/present checks, target stack and frame order, zero-count and admitted parameter-copy behavior, and failure-state preservation. |
-| S4 Evidence Record | [T307 privilege-transition admission audit](etc/evidence/t307-privilege-transition-admission.md#s4-call-gate-preflight-evidence) records target-code type/present and target-SS/new-stack rejection cases with unchanged CS/SS/EIP/ESP/EFLAGS and relevant descriptor accessed bytes. |
-| S5 Evidence Record | [T307 privilege-transition admission audit](etc/evidence/t307-privilege-transition-admission.md#s5-call-gate-stack-fault-classification) records Intel-required terminal `#TS(SS selector)` classification for invalid TSS-provided target SS type/DPL. |
-| S6 Evidence Record | Correct stale S4 observation wording so it is historical and does not claim an unresolved T308 input after S5 fixed the planner boundary. |
-| S7 Evidence Record | [T307 privilege-transition closure preparation](etc/evidence/t307-privilege-transition-admission.md#s7-closure-preparation) records the 0307 artifact/SHA, full gates, focused and retained markers, bounded host-only observation, and deferred boundaries. |
-| Stop Conditions | Stop and report an unresolved Intel/reference disagreement, required architecture change, second execution/state path, public raw-layout exposure, or behavior owned by task/V86/paging/later families. |
-| Exit Criteria | S7 passes full current gates, task/retained markers, documentation governance, and diff check. It remains active pending coordinator acceptance; it does not close Queue/history or start T308. |
+**Idle.**
 
 ## Current Technical Baseline
 
-- **T307 closure artifact identity:** `current-gcc` and
+- **T307 accepted artifact identity:** `current-gcc` and
   `verify-current-artifact-target` select `vm-0-5-0307` / `nxvm_0_5_0307.exe`.
-  T307 remains active pending coordinator acceptance.
+  T307 is closed; the next Queue candidate remains unnumbered.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
@@ -49,7 +23,6 @@
 
 | Task | Compact result |
 | --- | --- |
-| T299 | Removed the remaining public configuration/debug raw borrows and profile raw binding. Production uses typed/copying interfaces; purpose-named test fixtures alone may include private core state. The recurrence gate, 51 current static/governance targets, and 126 CTests passed without product behavior changes. |
 | T300 | Unified the core directional port registry, propagated typed-provider failures, made VM session initialization failure-atomic, and removed public private layouts. The DMA binding uses a core-issued non-addressable nonce and core-internal revalidation; 51 static/governance gates and 129 CTests passed with its task-level developer artifact. |
 | T301 | Completed the 80386 segment-selector family, including atomic segment loads and selector queries. The S4 sweep corrected non-present query handling and system-descriptor DPL/RPL visibility; 51 static/governance checks, 130 CTests, and the T301 artifact passed. The bounded product observation reached no guest checkpoint because host window discovery failed before guest input; manual observation remains verification-only. |
 | T302 | Completed the 80386 operand/address/stack family. It corrected 16-bit fetch wrapping, crossed stack/frame width behavior, shared zero-length range validation, and `OUTSB` direction; all 131 CTests and its 0302 artifact passed. Product observation yielded no guest checkpoint because the process had no discoverable window handle; manual observation remains verification-only. |
@@ -57,6 +30,7 @@
 | T304 | Completed the 80386 descriptor-table and system-control family. It corrected table register forms, fixed r/m16 selector/MSW widths, completed the admitted CR2/CR3 forms, and preserved existing 16/32-bit TSS LTR consumers; 51 gates, 133 CTests, and the 0304 artifact passed. Product observation remained host-window limited before guest input. |
 | T305 | Completed the 80386 32-bit interrupt and exception-entry family. It added same-CPL gate planning, software and external front ends, and bounded existing #GP/#NP/#SS error-frame delivery containment; 51 gates, 134 CTests, and the 0305 artifact passed. Product observation remained host-window limited before guest input. |
 | T306 | Completed the 80386 protected-return family. It added same-CPL and outer 16/32-bit `IRET`, aligned outer `RETF`, restored explicit outer nonconforming-code ownership, and fixed IRET IF/IOPL/RF/VM privilege masks; 51 gates, 135 CTests, and the 0306 artifact passed. Product observation remained host-window limited before guest input. |
+| T307 | Completed 80386 32-bit CPL3-to-CPL0 IDT and call-gate entry with TSS32 target stacks, preflighted atomic publication, and Intel-correct target-SS `#TS` classification. Its 0307 artifact, 51 gates, 137 CTests, and 9 focused/retained probes passed; product observation remained host-window limited before guest input. |
 
 ## Recent Governance
 
