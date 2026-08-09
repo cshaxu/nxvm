@@ -2,26 +2,27 @@
 
 ## Current Work
 
-**Active: M5 T309 S1.**
+**Active: M5 T309 S2.**
 
-## M5 T309 S1 Packet
+## M5 T309 S2 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New; M5 T309 S1 80386 form audit and debug-capture design; Coordinated Dual-Session Mode. T308 is accepted and closed. |
+| Identifier Mode | Corrective; M5 T309 S2 80386 form audit and debug-capture design; Coordinated Dual-Session Mode. T309 S1 admission is committed in `c6d819b`; T308 is accepted and closed. |
 | Admission And Approval | T309 is the next linear Queue candidate in the owner-approved M5 80386 protected execution and delivery package. |
 | Objective | Build the form-level 80386 admission map: classify decoder/profile forms as proven, unproven, rejected, reserved/later, or absent; define bounded trace capture and prepared-state probe rules for future evidence-driven corrections. |
 | Non-goals | Bulk instruction implementation, a guest-image build fixture, long startup capture, product UX, public ABI, source import, a second executor, or implementation of paging/system extensions. |
 | Reference Baseline | Accepted T308 artifact `vm-0-5-0308` / `nxvm_0_5_0308.exe`; SHA-256 `A6BE95BB5C9647F72DB8C28982C8DEFB95CBDA9C9FE92F04F3B4EDC592BC646F`. |
-| Files And ABI Surface | S1 changes only task evidence and status records. It must not change CPU behavior, CMake target identity, public interfaces, cross-module ownership, or product UX. |
+| Files And ABI Surface | S2 changes only task evidence and status records. It must not change CPU behavior, CMake target identity, public interfaces, cross-module ownership, or product UX. |
 | Applicable Rules | `rules/EXECUTION.md`, `rules/ARCHITECTURE.md`, `rules/CODING.md`, `rules/DOCUMENT.md`, and `etc/operations/policy/source-policy.md`; retain one core executor/state owner and existing checked stack/memory routes. |
 | Verification | Intel 80386 PRM is authoritative. Record versioned read-only Bochs 2.6 and PCjs 2.00.0 behavior paths; use static source audit and focused synthetic probes only. |
-| Expected Markers | S1 adds no executable marker or artifact. It records auditable form coverage, trace budgets, and an evidence-driven next-family selection. |
+| Expected Markers | S2 adds no executable marker or artifact. It records auditable form coverage, trace budgets, and an evidence-driven next-family selection. |
 | Asset Needs | Read-only local references only; no guest media, firmware, or third-party source is committed. |
 | Original Owner Request | Execute the direct M5 80386 protected execution/delivery package in coordinated mode, stopping before Mantle; use Intel as authority with read-only Bochs and PCjs comparison. |
 | Similar-Issue Sweep | Sweep all decoder metadata, profile gates, instruction tables, prefix dispatch, existing focused probes, CPU TODO entries, and trace facilities; distinguish executable forms from merely named metadata. |
+| S2 Audit Record | [T309 80386 form audit and debug-capture design](etc/evidence/t309-80386-form-audit.md) records the decoder-to-probe matrix, metadata-versus-dispatch dispositions, bounded capture contract, reference identities, and recommended next family. |
 | Stop Conditions | Stop and report an Intel/reference disagreement, a missing source classification that cannot be proven by local code, an unbounded trace requirement, or any need to modify CPU semantics. |
-| Exit Criteria | S1 records the classification matrix, trace and probe budget contract, recommended next family with evidence, documentation governance, and diff check; it remains active pending coordinator acceptance and does not start S2. |
+| Exit Criteria | S2 records the classification matrix, trace and probe budget contract, recommended next family with evidence, documentation governance, and diff check; it remains active pending coordinator acceptance and does not start S3. |
 
 ## Current Technical Baseline
 
