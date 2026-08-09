@@ -2857,6 +2857,27 @@ _______todo _ser_call_far_cs_nonc(core_machine_cpu_execution_context *context, t
     TYPE_TRACE_CHECK_RETURN(_kec_call_far(context, newcs, neweip, byte));
     TYPE_TRACE_CALL_END;
 }
+static C_VOID _ser_check_call_gate_stack_sreg(
+    core_machine_cpu_execution_context *context, type_unsigned_16 selector,
+    type_unsigned_8 target_cpl, type_virtual_address out_descriptor)
+{
+    type_unsigned_64 descriptor;
+
+    TYPE_TRACE_CALL_BEGIN("_ser_check_call_gate_stack_sreg");
+    if (_IsSelectorNull(selector) || _GetSelector_TI(selector) ||
+        _GetSelector_RPL(selector) != target_cpl)
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(selector & 0xfffcu));
+    TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, selector,
+        TYPE_REFERENCE_OF(descriptor)));
+    if (!_IsDescDataWritable(descriptor) ||
+        _GetDesc_DPL(descriptor) != target_cpl)
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(selector & 0xfffcu));
+    if (!_IsDescPresent(descriptor))
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_SS(selector & 0xfffcu));
+    STD_MEMCPY((C_VOID *)out_descriptor, (C_VOID *)TYPE_REFERENCE_OF(descriptor),
+        sizeof(descriptor));
+    TYPE_TRACE_CALL_END;
+}
 static C_VOID _ser_call_far_call_gate_32(core_machine_cpu_execution_context *context,
     type_unsigned_16 gate_selector)
 {
@@ -2912,25 +2933,8 @@ static C_VOID _ser_call_far_call_gate_32(core_machine_cpu_execution_context *con
         4u));
     TYPE_TRACE_CHECK_RETURN(_s_read_tss(context, 8u, TYPE_REFERENCE_OF(newss),
         2u));
-    if (_IsSelectorNull(newss) || _GetSelector_TI(newss) ||
-        _GetSelector_RPL(newss) != target_cpl) {
-        _SetExcept_TS(newss & 0xfffcu);
-        TYPE_TRACE_CALL_END;
-        return;
-    }
-    TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, newss,
-        TYPE_REFERENCE_OF(ss_desc)));
-    if (!_IsDescDataWritable(ss_desc) ||
-        _GetDesc_DPL(ss_desc) != target_cpl) {
-        _SetExcept_GP(newss & 0xfffcu);
-        TYPE_TRACE_CALL_END;
-        return;
-    }
-    if (!_IsDescPresent(ss_desc)) {
-        _SetExcept_SS(newss & 0xfffcu);
-        TYPE_TRACE_CALL_END;
-        return;
-    }
+    TYPE_TRACE_CHECK_RETURN(_ser_check_call_gate_stack_sreg(context, newss,
+        target_cpl, TYPE_REFERENCE_OF(ss_desc)));
 
     oldcs = cpu_state.data.cs.selector;
     oldss = cpu_state.data.ss.selector;
@@ -3072,10 +3076,8 @@ static C_VOID _ser_call_far_call_gate(core_machine_cpu_execution_context *contex
             TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(0));
             break;
         }
-        if (_IsSelectorNull(newss) || _GetSelector_TI(newss) ||
-            _GetSelector_RPL(newss) != target_cpl) {
-            TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(newss & 0xfffcu));
-        }
+        TYPE_TRACE_CHECK_RETURN(_ser_check_call_gate_stack_sreg(context, newss,
+            target_cpl, TYPE_REFERENCE_OF(ss_desc)));
         newss_cache = cpu_state.data.ss;
         TYPE_TRACE_CHECK_RETURN(_ksa_prepare_stack_sreg(context, newss,
             target_cpl, &newss_cache, &ss_desc));
