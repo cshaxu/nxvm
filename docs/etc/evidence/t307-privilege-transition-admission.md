@@ -204,3 +204,35 @@ unchanged-state and accessed-byte assertions as the other negative cases. The
 earlier non-terminal observation was caused by the planner's return boundary,
 not a reason to alter TS delivery; no T308 delivery implementation is needed
 from this classification result.
+
+## S6 Evidence Consistency
+
+S6 made no CPU, probe, or build change. It preserves S4 as the historical
+one-instruction observation and records that S5's explicit planner precheck
+made the Intel-correct `#TS(SS0)` classification observable with the focused
+unchanged-state assertions. It is not an unresolved delivery limitation or a
+follow-on task input.
+
+## S7 Closure Preparation
+
+The sole current artifact identity is `vm-0-5-0307`; its executable is
+`nxvm_0_5_0307.exe` with SHA-256
+`933A06EAED336A79A7855A8B5D9A93C53DBDB1CB1600994E3B27CA141D9235DA`.
+
+`cmake --build --preset current-gates-gcc` completed all 51 static/governance
+targets and 137 of 137 CTests. The selected focused and retained run also
+completed 9 of 9 CTests: the T307 IDT privilege-entry and call-gate
+privilege-entry probes, plus retained T304 descriptor-system, T305
+interrupt-entry, T306 protected-IRET and protected-return-atomicity, T288
+call-gate, T260 TSS-I/O-map-port, and T261 task-switch probes. Documentation
+governance and `git diff --check` pass for this preparation.
+
+One bounded product observation launched the 0307 executable hidden with no
+arguments, guest input, or media. After ten seconds the host process was still
+alive but had `MainWindowHandle=0`; the observer stopped only that launched
+process. This is a host-automation limitation, not a guest observation or
+checkpoint, and the attempt was not retried.
+
+The task remains active pending coordinator acceptance. Deferred boundaries
+remain error-code and hardware-NMI integration, task and virtual-8086 paths,
+paging policy, and any new fault-delivery origin.
