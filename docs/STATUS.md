@@ -2,29 +2,29 @@
 
 ## Current Work
 
-**Active: M5 T313 S3.**
+**Active: M5 T313 S4.**
 
-## M5 T313 S3 Packet
+## M5 T313 S4 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Corrective; M5 T313 S3 transactional port/device assembly. |
-| Admission And Approval | T313 S2 `86a75584` is accepted. S3 implements only the port/device construction-failure boundary. |
+| Identifier Mode | Corrective; M5 T313 S4 RTC and controller configuration rollback. |
+| Admission And Approval | T313 S3 `e7016d2a` established registry transactions but requires corrective RTC whole-configuration rollback before acceptance. |
 | Reference Baseline | Accepted `vm-0-5-0311` / `nxvm_0_5_0311.exe`, HEAD `d9152c6d` before this admission, and retained T300 port/session-atomicity boundaries. |
-| Objective | Make directional typed-port range registration and core create-time device assembly transactional under deterministic allocation failure. |
-| Non-goals | RAM creation, VM lifecycle, Console, debugger mapping, CPU/paging changes, a second bus/registry, a production global allocator facade, artifact identity, M6 mantle, or public bus-contract changes. |
-| Scope And Order | S3 only: private port registration, device assembly, create rollback, and focused proof. S4 remains session/platform start result; S5 debugger enum mapping; S6 closure. |
-| Source Touchpoints | `core/machine/port.*`, port interface and device initialization/configuration paths reached by `core_machine_create`, plus focused core machine tests. |
-| Files And ABI Surface | Preserve T300 directional ownership, `core_machine_bus` and CPU I/O behavior. A deterministic failure seam is private and per registration/assembly operation only. |
+| Objective | Make RTC configuration rollback whole-controller atomic and prove FDC/HDC failure paths leave no mutable controller/topology/IRQ state before retry. |
+| Non-goals | RAM creation, platform/session/Console work, debugger mapping, CPU/paging changes, a second bus/registry, a production global allocator facade, artifact identity, M6 mantle, or public bus-contract changes. |
+| Scope And Order | S4 only: RTC/FDC/HDC configuration rollback and focused proof. S5 remains session/platform start result; S6 debugger enum mapping; S7 closure. |
+| Source Touchpoints | `core/machine/machine.c`, RTC/FDC/HDC private state and focused core machine tests. |
+| Files And ABI Surface | Preserve the single directional registry, T300 ownership, `core_machine_bus`, CPU I/O, and existing successful controller configuration behavior. |
 | Applicable Rules | `rules/EXECUTION.md`, `rules/ARCHITECTURE.md`, `rules/CODING.md`, `rules/DOCUMENT.md`, and the source policy; retain one core executor, typed provider boundaries, and the existing NXVM product route. |
-| Verification | Focused proof covers mid-range failure with no bindings, retry/first-owner conflict preservation, exact create failure with null out-machine, and fresh default create after each injected failure; retain port/device/CPU-public-bus probes. |
-| Expected Markers | `M5:T313:S3:PORT-ASSEMBLY:OK`; S3 creates no artifact. |
+| Verification | Focused proof covers RTC first/second registration failure with no bindings/configuration/state mutation and retry; retain FDC/HDC rollback/retry and port ownership probes. |
+| Expected Markers | `M5:T313:S4:CONTROLLER-ROLLBACK:OK`; S4 creates no artifact. |
 | S1 Audit Record | [T313 construction-failure admission](etc/evidence/t313-construction-failure-admission.md) is the active design and acceptance record. |
 | Asset Needs | No guest media, firmware, third-party source, or host OOM dependency. |
-| Original Owner Request | Repair only core typed-port and device-assembly transactional failure behavior before the later independent failure boundaries. |
-| Similar-Issue Sweep | Inventory all registration allocations and status-bearing device configuration points in create, including FDC/PIC/PIT/KBC and retained T300 directional ownership. |
-| Stop Conditions | Stop for a seam requiring process-global production allocation state, an alternate bus/registry, a public generic fault API, a required VM/product change, or a failure that cannot preserve first-owner semantics. |
-| Exit Criteria | Registration and assembly failure leave no partial owner/controller state, create returns its exact status with null out-machine, fresh retry succeeds, and focused/retained/governance checks pass before push. |
+| Original Owner Request | Correct the remaining controller-state rollback defect before later independent failure boundaries. |
+| Similar-Issue Sweep | Verify RTC, FDC, and HDC registration failure restores all configuration, connect, data, topology, and IRQ state before retry. |
+| Stop Conditions | Stop for a required second registry, public generic fault API, a required VM/product change, or any controller state that cannot be restored through its existing private owner. |
+| Exit Criteria | RTC first/second failure has no published port/config/state effect; FDC/HDC failure is equally clean or corrected; focused/retained/governance checks pass before push. |
 
 ## Current Technical Baseline
 

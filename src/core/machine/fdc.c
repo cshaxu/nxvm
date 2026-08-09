@@ -718,6 +718,8 @@ C_VOID core_machine_fdc_finalize(core_machine_fdc *fdc)
     if (fdc == STD_NULL) return;
     core_machine_fdc_deassert_dma(fdc);
     core_machine_pic_irq_source_deassert(&fdc->connect.irq_source);
+    STD_MEMSET(&fdc->data, TYPE_ZERO_8, sizeof(fdc->data));
+    STD_MEMSET(&fdc->connect, TYPE_ZERO_8, sizeof(fdc->connect));
 }
 
 C_VOID core_machine_fdc_print(const core_machine_fdc *fdc)
