@@ -33,11 +33,12 @@ static const core_machine_execution_provider dt_provider = {
     STD_NULL
 };
 
-static C_INT dt_prepare(descriptor_system_machine *state)
+static C_INT dt_prepare_profile(descriptor_system_machine *state,
+    core_machine_cpu_profile profile)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+        .cpu_profile = profile,
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
 
@@ -53,6 +54,11 @@ static C_INT dt_prepare(descriptor_system_machine *state)
         return 0;
     }
     return 1;
+}
+
+static C_INT dt_prepare(descriptor_system_machine *state)
+{
+    return dt_prepare_profile(state, CORE_MACHINE_CPU_PROFILE_80386);
 }
 
 static C_INT dt_write(descriptor_system_machine *state, uint32_t address,
@@ -194,6 +200,243 @@ static C_VOID dt_seed_system_sreg(t_cpu_data_sreg *sreg,
     sreg->dpl = 0u;
     sreg->sys.type = type == SREG_TR ? VCPU_DESC_SYS_TYPE_TSS_16_BUSY :
         VCPU_DESC_SYS_TYPE_LDT;
+}
+
+static C_INT dt_control_equal(const t_cpu *first, const t_cpu *second)
+{
+    return first->data.cr0 == second->data.cr0 &&
+        first->data.cr2 == second->data.cr2 &&
+        first->data.cr3 == second->data.cr3;
+}
+
+static C_INT dt_test_msw_and_control_registers(C_VOID)
+{
+    static const uint8_t smsw_register[] = {0x66u,0x0fu,0x01u,0xe0u,0xf4u};
+    static const uint8_t smsw_memory[] = {0x66u,0x0fu,0x01u,0x26u,0x00u,0x02u,0xf4u};
+    static const uint8_t lmsw_register[] = {0x0fu,0x01u,0xf0u,0xf4u};
+    static const uint8_t clts[] = {0x0fu,0x06u,0xf4u};
+    static const uint8_t mov_read[][5] = {
+        {0x66u,0x0fu,0x20u,0xc0u,0xf4u},
+        {0x66u,0x0fu,0x20u,0xd0u,0xf4u},
+        {0x66u,0x0fu,0x20u,0xd8u,0xf4u}
+    };
+    static const uint8_t mov_write[][5] = {
+        {0x66u,0x0fu,0x22u,0xc0u,0xf4u},
+        {0x66u,0x0fu,0x22u,0xd0u,0xf4u},
+        {0x66u,0x0fu,0x22u,0xd8u,0xf4u}
+    };
+    static const uint8_t reserved_read[] = {0x0fu,0x20u,0xe0u,0xf4u};
+    static const uint8_t memory_read[] = {0x0fu,0x20u,0x00u,0xf4u};
+    static const uint8_t protected_lmsw[] = {0x0fu,0x01u,0xf0u,0xf4u};
+    static const uint8_t protected_mov[] = {0x0fu,0x20u,0xc0u,0xf4u};
+    static const uint8_t invalid_cr0_write[] = {0x0fu,0x22u,0xc0u,0xf4u};
+    uint32_t values[] = {0x00000001u, 0x12345678u, 0x00123000u};
+    STD_SIZE_T index;
+    {
+        descriptor_system_machine state;
+        uint16_t observed = 0u;
+        C_INT failed = !dt_prepare(&state);
+
+        if (!failed) {
+            state.machine->executor_cpu.data.cr0 = 0x0000000cu;
+            state.machine->executor_cpu.data.eax = 0xdeadbeefu;
+            failed = !dt_run(&state, smsw_register, sizeof(smsw_register), 0, 0u) ||
+                state.machine->executor_cpu.data.eax != 0xdead000cu ||
+                state.machine->executor_cpu.data.cr0 != 0x0000000cu;
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+    }
+    {
+        descriptor_system_machine state;
+        C_INT failed = !dt_prepare(&state);
+
+        if (!failed) {
+            dt_enter_user_protected(&state);
+            TYPE_SET_BIT(state.machine->executor_cpu.data.cr0, VCPU_CR0_TS);
+            state.machine->executor_cpu.data.eax = 0xdeadbeefu;
+            failed = !dt_run_one(&state, smsw_register, sizeof(smsw_register)) ||
+                state.machine->executor_cpu.data.eax != 0xdead0009u;
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+    }
+    {
+        descriptor_system_machine state;
+        uint16_t observed = 0u;
+        C_INT failed = !dt_prepare(&state);
+
+        if (!failed) {
+            state.machine->executor_cpu.data.cr0 = 0x0000000cu;
+            failed = !dt_run(&state, smsw_memory, sizeof(smsw_memory), 0, 0u) ||
+                !dt_read(&state, DT_STORE_ADDRESS, (uint8_t *)&observed,
+                    sizeof(observed)) || observed != 0x000cu;
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+    }
+    {
+        descriptor_system_machine state;
+        C_INT failed = !dt_prepare(&state);
+
+        if (!failed) {
+            dt_enter_protected(&state, 0u);
+            TYPE_SET_BIT(state.machine->executor_cpu.data.cr0, VCPU_CR0_TS);
+            state.machine->executor_cpu.data.eax = 0xabcd0000u;
+            failed = !dt_run_one(&state, lmsw_register, sizeof(lmsw_register)) ||
+                state.machine->executor_cpu.data.cr0 !=
+                    VCPU_CR0_PE;
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+    }
+    for (index = 0u; index < 2u; ++index) {
+        descriptor_system_machine state;
+        const core_machine_cpu_profile profile = index == 0u ?
+            CORE_MACHINE_CPU_PROFILE_80286 : CORE_MACHINE_CPU_PROFILE_80386;
+        const uint32_t flags = 0x00000246u;
+        C_INT failed = !dt_prepare_profile(&state, profile);
+
+        if (!failed) {
+            state.machine->executor_cpu.data.cr0 = VCPU_CR0_TS;
+            state.machine->executor_cpu.data.eflags = flags;
+            failed = !dt_run(&state, clts, sizeof(clts), 0, 0u) ||
+                state.machine->executor_cpu.data.cr0 != 0u ||
+                state.machine->executor_cpu.data.eflags != flags;
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+    }
+    {
+        descriptor_system_machine state;
+        const uint32_t flags = 0x00000246u;
+        C_INT failed = !dt_prepare(&state);
+
+        if (!failed) {
+            dt_enter_protected(&state, 0u);
+            TYPE_SET_BIT(state.machine->executor_cpu.data.cr0, VCPU_CR0_TS);
+            state.machine->executor_cpu.data.eflags = flags;
+            failed = !dt_run(&state, clts, sizeof(clts), 0, 0u) ||
+                state.machine->executor_cpu.data.cr0 != VCPU_CR0_PE ||
+                state.machine->executor_cpu.data.eflags != flags;
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+    }
+    {
+        descriptor_system_machine state;
+        t_cpu before;
+        t_cpu after;
+        C_INT failed = !dt_prepare_profile(&state, CORE_MACHINE_CPU_PROFILE_80186);
+
+        if (!failed) {
+            state.machine->executor_cpu.data.cr0 = VCPU_CR0_TS;
+            before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+            failed = !dt_run_fault_code(&state, clts, sizeof(clts),
+                VCPUINS_EXCEPT_UD, 0u);
+            after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+            failed |= !dt_control_equal(&before, &after);
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+    }
+    for (index = 0u; index < 3u; ++index) {
+        descriptor_system_machine state;
+        C_INT failed = !dt_prepare(&state);
+
+        if (!failed) {
+            state.machine->executor_cpu.data.cr0 = values[0];
+            state.machine->executor_cpu.data.cr2 = values[1];
+            state.machine->executor_cpu.data.cr3 = values[2];
+            state.machine->executor_cpu.data.eax = 0xdeadbeefu;
+            failed = !dt_run(&state, mov_read[index], sizeof(mov_read[index]),
+                0, 0u) || state.machine->executor_cpu.data.eax != values[index];
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+    }
+    for (index = 0u; index < 3u; ++index) {
+        descriptor_system_machine state;
+        C_INT failed = !dt_prepare(&state);
+
+        if (!failed) {
+            state.machine->executor_cpu.data.eax = values[index];
+            failed = !dt_run(&state, mov_write[index], sizeof(mov_write[index]),
+                0, 0u);
+            if (index == 0u) failed |= state.machine->executor_cpu.data.cr0 != values[0];
+            else if (index == 1u) failed |= state.machine->executor_cpu.data.cr2 != values[1];
+            else failed |= state.machine->executor_cpu.data.cr3 != values[2];
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+    }
+    {
+        const uint8_t *fault_code[] = {reserved_read, memory_read, invalid_cr0_write};
+        STD_SIZE_T bytes[] = {sizeof(reserved_read), sizeof(memory_read),
+            sizeof(invalid_cr0_write)};
+
+        for (index = 0u; index < 3u; ++index) {
+            descriptor_system_machine state;
+            t_cpu before;
+            t_cpu after;
+            C_INT failed = !dt_prepare(&state);
+
+            if (!failed) {
+                state.machine->executor_cpu.data.cr0 = 0x00000001u;
+                state.machine->executor_cpu.data.cr2 = values[1];
+                state.machine->executor_cpu.data.cr3 = values[2];
+                state.machine->executor_cpu.data.eax = 0x80000000u;
+                before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+                failed = !dt_run_fault_code(&state, fault_code[index], bytes[index],
+                    VCPUINS_EXCEPT_UD, 0u);
+                after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+                failed |= !dt_control_equal(&before, &after) ||
+                    after.data.eax != before.data.eax;
+            }
+            core_machine_destroy(state.machine);
+            if (failed) return 0;
+        }
+    }
+    for (index = 0u; index < 2u; ++index) {
+        descriptor_system_machine state;
+        t_cpu before;
+        t_cpu after;
+        const uint8_t *code = index == 0u ? protected_lmsw : protected_mov;
+        C_INT failed = !dt_prepare(&state);
+
+        if (!failed) {
+            dt_enter_protected(&state, 3u);
+            state.machine->executor_cpu.data.eax = 0x12345678u;
+            state.machine->executor_cpu.data.cr2 = values[1];
+            before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+            failed = !dt_run_fault_code(&state, code, 4u, VCPUINS_EXCEPT_GP, 0u);
+            after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+            failed |= !dt_control_equal(&before, &after) ||
+                after.data.eax != before.data.eax;
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+    }
+    {
+        descriptor_system_machine state;
+        t_cpu before;
+        t_cpu after;
+        C_INT failed = !dt_prepare(&state);
+
+        if (!failed) {
+            dt_enter_protected(&state, 3u);
+            TYPE_SET_BIT(state.machine->executor_cpu.data.cr0, VCPU_CR0_TS);
+            before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+            failed = !dt_run_fault_code(&state, clts, sizeof(clts),
+                VCPUINS_EXCEPT_GP, 0u);
+            after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+            failed |= !dt_control_equal(&before, &after) ||
+                after.data.eflags != before.data.eflags;
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+    }
+    return 1;
 }
 
 static C_INT dt_install_selector_tables(descriptor_system_machine *state)
@@ -686,7 +929,7 @@ C_INT main(C_VOID)
     if (!dt_test_store_layout() || !dt_test_protected_stores() ||
         !dt_test_load_layout() || !dt_test_register_and_privilege_faults() ||
         !dt_test_memory_faults_preserve_tables() || !dt_test_selector_stores() ||
-        !dt_test_selector_loads()) return 1;
+        !dt_test_selector_loads() || !dt_test_msw_and_control_registers()) return 1;
     STD_PRINTF("M5:T304:DESCRIPTOR-SYSTEM:OK\n");
     return 0;
 }

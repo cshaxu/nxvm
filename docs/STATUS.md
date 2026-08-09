@@ -2,13 +2,13 @@
 
 ## Current Work
 
-**Active: M5 T304 S3.**
+**Active: M5 T304 S4.**
 
-## M5 T304 S3 Packet
+## M5 T304 S4 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Corrective; M5 T304 S3 selector-table and bounded task-register batch; Coordinated Dual-Session Mode. S2 closed descriptor-table forms. |
+| Identifier Mode | Corrective; M5 T304 S4 MSW/control-register batch; Coordinated Dual-Session Mode. S2/S3 closed table and selector/task-register forms. |
 | Admission And Approval | T303 is closed. T304 is the next linear Queue candidate in the owner-approved M5 80386 protected execution/delivery package. |
 | Objective | Admit the 80386 descriptor-table and system-control family: `SGDT`/`SIDT`, `LGDT`/`LIDT`, `SLDT`/`LLDT`, `STR`/`LTR`, `SMSW`/`LMSW`, `CLTS`, and permitted `MOV CRx` forms. Freeze exact 16/32 form, profile, privilege, fault, and commit matrices before implementation. |
 | Non-goals | Debug registers, 32-bit TSS switching, paging-policy expansion, task gates, virtual-8086, exception delivery, later-CPU opcodes, product UX, public ABI, and source import. No new executor or execution path. |
@@ -22,7 +22,7 @@
 | Similar-Issue Sweep | Audit decoder metadata, profile gates, descriptor/table/control helpers, privilege checks, fault helpers, current focused tests, and CMake registrations. Classify every production hit before implementation. |
 | S1 Audit Record | [T304 descriptor-table and system-control admission audit](etc/evidence/t304-descriptor-system-control-admission.md) freezes the instruction matrix, implementation batches, focused-probe boundary, and deferred-owner paths without changing CPU behavior. |
 | Stop Conditions | Stop and report any unresolved Intel/reference disagreement, required architecture change, second state/execution path, public raw-layout exposure, or behavior owned by delivery, task, paging, V86, or a later family. |
-| Exit Criteria | `SLDT`, `LLDT`, `STR`, and the existing bounded 16-bit-TSS `LTR` path satisfy fixed r/m16, mode/CPL, null/TI/type/present/busy, cache/selector/busy-byte commit, and failure-preservation rules. Focused probes and required narrow gates pass without 32-bit TSS, gate, or delivery work. |
+| Exit Criteria | `SMSW`, `LMSW`, `CLTS`, and already-admitted `MOV CR0/CR2/CR3` forms satisfy fixed-width, profile/mode/CPL, allowed-register, and failure-before-control/destination-commit rules. Focused probes and narrow gates pass without paging-policy, debug/test register, or delivery work. |
 
 ## Current Technical Baseline
 
