@@ -243,3 +243,30 @@ prefix selection, profile gate, and focused registration.  No public surface
 or second route is involved.  The marker is `M5:T310:S6:DOUBLE-SHIFT:OK`;
 S6 creates no artifact, Queue change, Setup observation, or product-path
 change.  BSF/BSR, IMUL, paging, system, task, and V86 work remain deferred.
+
+## S7 BSF/BSR Evidence
+
+Intel 80386 PRM Chapter 4 defines `BSF` and `BSR` as 16- or 32-bit register
+destinations with an `r/m` source.  A nonzero source clears `ZF` and writes the
+lowest or highest set-bit index.  A zero source sets `ZF`; its destination and
+the flags other than `ZF` are undefined, so the probe does not make them test
+oracles.  Bochs 2.6 `cpu/bit16.cc`, `cpu/bit32.cc`, and `cpu/fetchdecode.cc`,
+and PCjs 2.00.0 `machines/pcx86/modules/v2/x86op0f.js` and `x86help.js`, were
+read-only behavior comparisons; no source was copied.
+
+`core-machine-bit-scan-smoke` proves both BC and BD forms with nonzero and
+zero register and memory sources, 16/32-bit destination widths, `66h`, and a
+combined `67h`/`66h` memory source.  Nonzero cases assert the required index
+and `ZF=0`; zero cases assert only `ZF=1`.  An access-counting provider proves
+80186 and 80286 receive `#UD` before the source access.  The retained 8086
+`0F` `POP CS` compatibility remains outside this family.
+
+Protected DS-limit read failures for both scans take the retained checked
+memory/no-IDT terminal route.  The established `#DF` diagnostic is observed
+while ECX, EIP, and the entry EFLAGS, including `ZF`, retain their values.  The
+sweep covered BC/BD metadata/table entries, `_a_bscc`, zero-test and
+destination-reference publication, operand/address prefixes, profile gate,
+and focused registration.  Existing production behavior passed; no executor,
+memory route, public surface, or product path changed.  The marker is
+`M5:T310:S7:BIT-SCAN:OK`; S7 creates no artifact, Queue change, or Setup
+observation.  IMUL, paging, system, task, and V86 work remain deferred.
