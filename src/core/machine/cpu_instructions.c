@@ -1029,7 +1029,7 @@ static C_VOID _ksa_load_sreg(core_machine_cpu_execution_context *context, t_cpu_
             TYPE_TRACE_BLOCK_END;
         }
         TYPE_TRACE_CHECK_RETURN(_ksa_read_xdt(context, selector, TYPE_REFERENCE_OF(descriptor)));
-        if (!_IsDescTSS16Avl(descriptor))
+        if (!_IsDescTSSAvl(descriptor))
         {
             TYPE_TRACE_BLOCK_BEGIN("!DescTssAvl");
             TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(selector));

@@ -536,11 +536,11 @@ static C_INT dt_test_selector_loads(C_VOID)
     };
     static const uint16_t ltr_selectors[] = {
         0x0000u, 0x0004u, DT_LDT_SELECTOR, DT_TSS16_BUSY_SELECTOR,
-        DT_TSS16_NOT_PRESENT_SELECTOR, DT_TSS32_SELECTOR
+        DT_TSS16_NOT_PRESENT_SELECTOR
     };
     static const uint32_t ltr_exceptions[] = {
         VCPUINS_EXCEPT_GP, VCPUINS_EXCEPT_GP, VCPUINS_EXCEPT_GP,
-        VCPUINS_EXCEPT_GP, VCPUINS_EXCEPT_NP, VCPUINS_EXCEPT_GP
+        VCPUINS_EXCEPT_GP, VCPUINS_EXCEPT_NP
     };
     STD_SIZE_T index;
 
@@ -662,7 +662,30 @@ static C_INT dt_test_selector_loads(C_VOID)
         core_machine_destroy(state.machine);
         if (failed) return 0;
     }
-    for (index = 0u; index < 6u; ++index) {
+    {
+        descriptor_system_machine state;
+        uint8_t access = 0u;
+        C_INT failed = !dt_prepare(&state);
+
+        if (!failed) {
+            dt_enter_protected(&state, 0u);
+            failed = !dt_install_selector_tables(&state);
+            state.machine->executor_cpu.data.eax = 0xffff0000u |
+                DT_TSS32_SELECTOR;
+            failed |= !dt_run(&state, ltr, sizeof(ltr), 0, 0u) ||
+                !state.machine->executor_cpu.data.tr.flagValid ||
+                state.machine->executor_cpu.data.tr.selector != DT_TSS32_SELECTOR ||
+                state.machine->executor_cpu.data.tr.base != 0x00000a00u ||
+                state.machine->executor_cpu.data.tr.limit != 0x00000067u ||
+                state.machine->executor_cpu.data.tr.sys.type !=
+                    VCPU_DESC_SYS_TYPE_TSS_32_BUSY ||
+                !dt_read(&state, DT_GDT_ADDRESS + DT_TSS32_SELECTOR + 5u,
+                    &access, sizeof(access)) || access != 0x8bu;
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+    }
+    for (index = 0u; index < 5u; ++index) {
         descriptor_system_machine state;
         t_cpu before;
         t_cpu after;
