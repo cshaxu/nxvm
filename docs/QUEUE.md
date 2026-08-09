@@ -25,33 +25,6 @@ Bochx/Bochs paired-step bridge with declared state masks and instruction,
 time, no-progress, and trace-size budgets; its source, binaries, media, and
 raw traces remain outside the repository and default build.
 
-1. **32-bit operand, address, and stack-instruction family.** Complete the
-   admitted 80386 66h/67h forms for ModRM/SIB effective addresses, instruction
-   fetch, general data accesses, `PUSH`/`POP`/`PUSHA`/`POPA`, `PUSHF`/`POPF`,
-   `ENTER`/`LEAVE`, and string/REP accesses under 32-bit code/data/stack
-   segments. Cover wrapping, limit and segment-default rules. Do not bulk-add
-   unrelated arithmetic or alter paging policy.
-1. **32-bit control-transfer instruction family.** Complete the 32-bit
-   same-privilege `JMP`, `CALL`, `RET`, `RETF`, conditional-relative forms, and
-   loop-family behavior required by 80386 protected execution, including
-   operand-size variants, code-limit checks, and frame commit ordering. Do not
-   add task switching, privilege transitions, or exception delivery here.
-1. **32-bit descriptor-table and system-control instruction family.** Complete
-   the 80386-legal 16/32-bit forms of `SGDT`/`SIDT`/`LGDT`/`LIDT`, `SLDT`/
-   `LLDT`, `STR`/`LTR`, `SMSW`/`LMSW`, `CLTS`, and permitted `MOV CRx` forms,
-   with exact profile/privilege/fault rules. Exclude debug registers, 32-bit
-   TSS switching, paging-policy expansion, and any later-CPU opcode.
-1. **32-bit interrupt and exception-entry family.** Complete 32-bit IDT
-   interrupt/trap-gate admission and entry for `INT`, `INT3`, `INTO`, hardware
-   interrupt delivery, and architecturally admitted faults. Cover DPL, target
-   CS, gate present/type, error-code formation, frame order, and recursive
-   delivery containment. Core diagnostics remain distinct from a delivered
-   guest exception.
-1. **32-bit `IRET` and protected-return family.** Complete same-CPL and outer
-   32-bit `IRET`, and align protected `RETF` return forms with matching 32-bit
-   frame, selector, flags, stack, and commit semantics. Cover failed-return
-   preservation before visible state mutation. Do not implement task-return or
-   virtual-8086 return here.
 1. **32-bit exception-delivery consistency closure.** Sweep the prior families
    for error-code normalization, exception precedence, stack/cache atomicity,
    and terminal fault diagnostics. Add a bounded double-/triple-fault policy
