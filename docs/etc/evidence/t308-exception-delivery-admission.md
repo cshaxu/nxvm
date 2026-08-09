@@ -177,3 +177,44 @@ boundary atomicity case, then all three S3 `#TS` cases. The direct focused
 run emits both `M5:T307:CALL-GATE-PRIVILEGE-ENTRY:OK` and
 `M5:T308:S3:SAME-CPL-TS-DELIVERY:OK`. No CPU, CMake, artifact, Queue, or
 product behavior changed for this corrective evidence record.
+
+## S5 Outer-CPL Error-Frame Evidence
+
+The S5 producer audit covers every exact protected 80386 terminal exception
+already admitted by `ExecFinal`: `#GP` maps to vector 13, `#NP` to vector 11,
+`#SS` to vector 12, and `#TS` to vector 10. For each, an IDT 32-bit gate with
+a nonconforming target code descriptor at a numerically lower DPL reaches the
+existing `_ser_int_protected_32_outer` planner. Existing sources include T301
+selector and stack loads (`#NP` and `#SS`), T304 descriptor/TSS validation
+(`#GP`, `#NP`, and `#TS`), T306 return preflight (`#GP`, `#NP`, and `#SS`),
+and T307 call-gate validation (`#GP`, `#NP`, `#SS`, and `#TS`). This is one
+existing producer-to-consumer route, not a new fault origin.
+
+The focused prepared-state proof selects the already retained T307 CPL3
+call-gate DPL rejection, `#GP(0030)`, and installs an existing-style vector-13
+32-bit interrupt gate targeting CPL0. Before S5, the outer planner rejected
+its `error_frame` parameter with `#CE(0000)`, proving the missing admitted
+consumer. The corrected planner retains its existing old/new TSS stack,
+candidate CS/SS cache, target-limit, and descriptor-write preflight, and now
+includes the error dword in the preflighted frame size. On success, the frame
+at the new CPL0 stack is, in ascending dword order: `00000030`, saved EIP
+`00000000`, saved CS `0000001b`, EFLAGS `00000202`, old ESP `00008800`, and
+old SS `00000023`. The copied delivered diagnostic retains `#GP(0030)` and
+the target CS/SS accessed bytes publish only after the preflight succeeds.
+
+The same focused probe makes vector 13 invalid and non-present, makes its
+target CS non-present, and reduces the selected new SS limit below the
+six-dword frame. Each failure preserves the original terminal `#GP(0030)`,
+does not record a delivered exception, and restores complete entry CS/SS
+caches, EIP, ESP, EFLAGS, both candidate descriptor accessed bytes, and the
+candidate frame memory. The bounded `ExecFinal` restoration remains the sole
+failed-delivery containment policy; there is no recursive delivery attempt.
+
+Intel 80386 PRM Chapter 9 requires the error code below the saved instruction
+state for a protected-mode exception frame. The existing read-only comparison
+remains Bochs 2.6 `cpu/exception.cc` and PCjs 2.00.0
+`machines/pcx86/modules/v2/cpux86.js`; both model exception entry separately
+from instruction decoding and introduce no semantic conflict. The marker is
+`M5:T308:S5:OUTER-CPL-ERROR-DELIVERY:OK`. Hardware/NMI delivery, outer-CPL
+fault producers beyond the admitted exact exceptions, double/triple-fault
+policy, task/V86 paths, and paging remain deferred.

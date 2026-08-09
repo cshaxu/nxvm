@@ -3330,8 +3330,10 @@ static C_VOID _ser_int_protected_32_outer(core_machine_cpu_execution_context *co
     type_unsigned_32 oldeflags;
     type_unsigned_32 oldcs_frame;
     type_unsigned_32 oldss_frame;
+    type_unsigned_32 error_code;
     type_unsigned_8 oldcpl;
     type_unsigned_8 target_cpl;
+    type_unsigned_8 frame_dwords;
     type_bool interrupt_gate;
     t_cpu_data_sreg newcs_cache;
     t_cpu_data_sreg newss_cache;
@@ -3341,8 +3343,6 @@ static C_VOID _ser_int_protected_32_outer(core_machine_cpu_execution_context *co
     if (!interrupt_gate && _GetDesc_Type(gate_desc) !=
         VCPU_DESC_SYS_TYPE_TRAPGATE_32)
         TYPE_TRACE_IMPOSSIBLE_RETURN;
-    if (error_frame)
-        TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(0));
     if (!_IsDescPresent(gate_desc))
         TYPE_TRACE_CHECK_RETURN(_SetExcept_NP(_ser_idt_error_code(intid)));
     oldcpl = _GetCPL;
@@ -3379,6 +3379,8 @@ static C_VOID _ser_int_protected_32_outer(core_machine_cpu_execution_context *co
     oldeflags = cpu_state.data.eflags;
     oldcs_frame = oldcs;
     oldss_frame = oldss;
+    error_code = TYPE_MASK_UNSIGNED_32(instruction_state.data.excode);
+    frame_dwords = (type_unsigned_8)(5u + (error_frame ? 1u : 0u));
     newcs_cache = cpu_state.data.cs;
     TYPE_TRACE_CHECK_RETURN(_ksa_prepare_code_sreg(context, newcs, target_cpl,
         &newcs_cache, &code_desc));
@@ -3389,7 +3391,7 @@ static C_VOID _ser_int_protected_32_outer(core_machine_cpu_execution_context *co
     TYPE_TRACE_CHECK_RETURN(_ksa_prepare_stack_sreg(context, newss, target_cpl,
         &newss_cache, &ss_desc));
     TYPE_TRACE_CHECK_RETURN(_s_test_stack_frame_32(context, &newss_cache,
-        newesp, 5u, target_cpl));
+        newesp, frame_dwords, target_cpl));
 
     TYPE_TRACE_CHECK_RETURN(_s_write_xdt(context, newss,
         TYPE_REFERENCE_OF(ss_desc)));
@@ -3406,6 +3408,9 @@ static C_VOID _ser_int_protected_32_outer(core_machine_cpu_execution_context *co
     TYPE_TRACE_CHECK_RETURN(_kec_push(context, TYPE_REFERENCE_OF(oldeflags), 4u));
     TYPE_TRACE_CHECK_RETURN(_kec_push(context, TYPE_REFERENCE_OF(oldcs_frame), 4u));
     TYPE_TRACE_CHECK_RETURN(_kec_push(context, TYPE_REFERENCE_OF(oldeip), 4u));
+    if (error_frame)
+        TYPE_TRACE_CHECK_RETURN(_kec_push(context, TYPE_REFERENCE_OF(error_code),
+            4u));
     cpu_state.data.cs = newcs_cache;
     cpu_state.data.eip = TYPE_MASK_UNSIGNED_32(_GetDescGate_Offset(gate_desc));
     if (interrupt_gate) _ClrEFLAGS_IF;
