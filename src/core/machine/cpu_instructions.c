@@ -4341,12 +4341,10 @@ static C_VOID _e_loopcc(core_machine_cpu_execution_context *context, type_signed
     switch (_GetAddressSize)
     {
     case 2:
-        cpu_state.data.cx--;
-        cecx = TYPE_MASK_UNSIGNED_16(cpu_state.data.ecx);
+        cecx = TYPE_MASK_UNSIGNED_16(cpu_state.data.cx - 1u);
         break;
     case 4:
-        cpu_state.data.ecx--;
-        cecx = TYPE_MASK_UNSIGNED_32(cpu_state.data.ecx);
+        cecx = TYPE_MASK_UNSIGNED_32(cpu_state.data.ecx - 1u);
         break;
     default:
         TYPE_TRACE_IMPOSSIBLE_RETURN;
@@ -4358,6 +4356,18 @@ static C_VOID _e_loopcc(core_machine_cpu_execution_context *context, type_signed
         neweip += csrc;
         TYPE_TRACE_CHECK_RETURN(_kec_jmp_near(context, neweip, _GetOperandSize));
         TYPE_TRACE_BLOCK_END;
+    }
+    switch (_GetAddressSize)
+    {
+    case 2:
+        cpu_state.data.cx = TYPE_MASK_UNSIGNED_16(cecx);
+        break;
+    case 4:
+        cpu_state.data.ecx = cecx;
+        break;
+    default:
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
+        break;
     }
     TYPE_TRACE_CALL_END;
 }
