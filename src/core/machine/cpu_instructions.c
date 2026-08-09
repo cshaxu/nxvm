@@ -325,7 +325,8 @@ static type_unsigned_32 _kma_linear_logical(core_machine_cpu_execution_context *
         upper = 0xffffffff;
     }
     linear = rsreg->base + offset;
-    if (offset < lower || (byte != 0u && offset > upper - (byte - 1)))
+    if (offset < lower || offset > upper || (byte != 0u &&
+        (type_unsigned_32)(byte - 1u) > upper - offset))
     {
         TYPE_TRACE_BLOCK_BEGIN("offset(<lower/>upper)");
         switch (rsreg->sregtype)
