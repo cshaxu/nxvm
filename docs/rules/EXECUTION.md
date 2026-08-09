@@ -106,6 +106,14 @@ issue uses `TODO(High)`, `TODO(Medium)`, or `TODO(Low)` only with a ledger entry
 and bounded admission path. Do not leave an equivalent production defect
 unclassified after a local fix; apply the similar-issue sweep below.
 
+Every successful task or subtask commit must be pushed to its configured remote
+immediately. Do not accumulate local completed commits or defer the push until
+the end of a task package. A push failure blocks acceptance, task closure, and
+completed-result reporting until it is resolved, or until the owner explicitly
+approves and the task evidence records a bounded deferral and recovery
+condition. It does not block a report that specifically identifies the push
+failure and awaits further instruction.
+
 ## Similar-Issue Sweep
 
 Every implementation task that fixes a source, behavioral, compatibility, or
