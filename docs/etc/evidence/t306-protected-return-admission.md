@@ -98,3 +98,36 @@ folded into this family.
 
 S1 changes no CPU behavior, probe, CMake artifact target, Queue entry, or
 product observation.
+
+## S2 Same-CPL IRET Evidence
+
+S2 adds `_ser_iret_protected_same` on the existing core executor. It preflights
+the complete 6-byte or 12-byte frame with `_s_test_ss_pop`, then peeks rather
+than pops the return IP/EIP, CS slot, and FLAGS/EFLAGS. It validates the
+same-CPL selector/type/DPL/present conditions, prepares a candidate code cache,
+checks the candidate target limit, and applies the protected FLAGS mask before
+the descriptor accessed-byte write and final CS/EIP/EFLAGS/SP-or-ESP commit.
+The ordinary protected branch in `_e_iret` selects this route only for a
+non-VM, non-NT same-CPL return. Existing VM, nested-task, and outer-return
+branches remain unchanged.
+
+The candidate code-cache helper now accepts code descriptors generally; each
+existing call-site already supplies its narrower non-conforming eligibility
+check where that is required. The S2 return route supplies the Intel
+same-CPL conforming/non-conforming DPL checks before invoking it. The sweep of
+all helper call-sites found no other path whose admitted descriptor rule is
+broadened by this candidate-cache preparation change.
+
+`core-machine-protected-iret-smoke` proves default 32-bit IRET, `66h` 16-bit
+IRET, `67h` retaining the 32-bit frame, a same-CPL conforming-code return, and
+a 16-bit SS address size with a 16-bit operand frame. It also proves `#NP` for
+a non-present CS and `#GP` for code type, DPL, and target-limit failures plus
+`#SS` for an unreadable complete frame. Every negative case checks the first
+diagnostic and preserves EIP, EFLAGS, ESP, CS cache, SS cache, and the code
+descriptor access byte. A CPL3 return additionally proves that the frame's
+IOPL and IF bits remain masked when CPL exceeds IOPL while permitted arithmetic
+flags restore.
+
+The retained T293 outer-return atomicity, T303 control-transfer, and T305
+interrupt-entry probes remain required regression consumers. S2 does not
+admit outer RETF/IRET, task/V86 returns, gates, or exception-delivery changes.
