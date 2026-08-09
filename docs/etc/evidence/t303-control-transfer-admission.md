@@ -93,3 +93,53 @@ retained regressions, but only the same-CPL return portion is T303 work. The
 remaining outer-return, gate, and task behavior stays with its existing owner.
 No current disagreement among Intel and the read-only comparison requires a
 bridge, new executor, state owner, public interface, or host-side behavior.
+
+## S2 Relative, Jump, And Loop Evidence
+
+`tests/machine/core_machine_control_transfer_smoke.c` is the T303 focused
+synthetic probe and is registered in `PROJECT_CURRENT_SMOKE_TARGETS` as
+`core-machine-control-transfer-smoke`. It constructs only a private prepared
+CPU/descriptor state; it does not use a guest image, long-start fixture, or
+host shortcut. Its marker is `M5:T303:CONTROL-TRANSFER:OK`.
+
+The probe proves all sixteen taken short and near `Jcc` predicates without
+changing EFLAGS; short `JMP`; near `JMP` and `Jcc` in 16- and 32-bit code
+defaults with the alternate operand size; and the real-mode 80386
+`66h 0F 84 rel32` form.
+It proves that `LOOPNZ`, `LOOPZ`, `LOOP`, and `JCXZ` retain their predicate
+rules, and that `67h` selects CX while preserving the upper ECX half in a
+32-bit code segment. It also proves `67h` selects ECX for `JECXZ`, that the
+80386 `0F 84` form is rejected as `#UD` on the 80286 profile, and that a
+not-taken conditional branch does not validate its otherwise out-of-limit
+target.
+
+Two deliberately terminal protected `#GP` cases have no installed IDT: a
+taken `Jcc` target beyond CS and a taken `LOOP` target beyond CS. The probe
+asserts that their first fault is `#GP`, their EIP and EFLAGS return to the
+instruction entry state, and the `LOOP` ECX value also returns to its entry
+state. The expected terminal diagnostics are therefore evidence of those
+negative paths, not renderer or delivery work.
+
+The implementation correction is limited to `_e_loopcc`. It now computes the
+selected CX/ECX decrement locally, validates a taken target through the
+existing `_kec_jmp_near` route, and publishes the count only after that route
+succeeds. A non-taken loop still publishes its decrement. This matches the
+Intel-defined restart boundary and the read-only Bochs 2.6 control-transfer
+path; PCjs 2.00.0 independently confirms the address-size selection of the
+loop/JCXZ count register. No Jcc/JMP helper, decoder, exception-delivery path,
+stack primitive, public interface, or artifact target changed.
+
+The S2 sweep revisited `_e_jcc`, `_e_loopcc`, `_kec_jmp_near`, `JMP_REL8`,
+`JMP_REL32`, all `70h`--`7Fh` handlers, all `0F 80h`--`8Fh` handlers,
+`LOOPNZ_REL8`, `LOOPZ_REL8`, `LOOP_REL8`, `JCXZ_REL8`, the primary/`0F`
+profile-form gate, and the current-smoke registration. The remaining
+`CALL`/`RET` and far selector/cache hits remain S3/S4 exactly as frozen in the
+matrix. A temporary malformed 16-bit-CS `66h 0F 84` probe encoding was fixed
+before acceptance; it was fixture data, not a production decoder defect.
+
+Focused commands passed: `core-machine-control-transfer-smoke` emitted its
+marker; retained `core-machine-operand-address-smoke` emitted
+`M5:T302:OPERAND-ADDRESS-STACK:OK`; and retained
+`core-machine-real-mode-386-address-smoke` emitted
+`M5:T287:S24:REAL-MODE-386-ADDR32:OK`. S2 has no artifact, full-gate run, or
+Setup observation; those remain family-close work.
