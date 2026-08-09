@@ -4,10 +4,10 @@
 
 - Repository content is English. Runtime code is C11 plus narrowly scoped
   documented Win32 APIs.
-- [Module Layout](docs/architecture/module-layout.md),
-  [Coding Standard](docs/coding-standard.md),
-  [Source Policy](docs/source-policy.md), and
-  [Execution Policy](docs/planning/execution-policy.md) are the local
+- [System Architecture](docs/design/ARCHITECTURE.md),
+  [Source Layout](docs/design/CODING.md),
+  [Coding Rules](docs/rules/CODING.md), [Source Rules](docs/rules/SOURCE.md),
+  and [Execution Rules](docs/rules/EXECUTION.md) are the local
   implementation checklist. Every task records its applicable rules and proves
   them at exit or records an owner-approved exception.
 - Follow the visible module boundaries in `src/`. `core/machine` has no VM/VDM
@@ -62,13 +62,13 @@ tasks and their task-specific design work. Use
 documentation/governance task; `Td` does not allocate a numeric `T` identifier
 or require an executable artifact. Keep records appropriate to the work,
 preserve all established baselines, and follow
-`docs/planning/execution-policy.md` for the authoritative identifier rules.
+`docs/rules/EXECUTION.md` for the authoritative identifier rules.
 Identifiers are allocated strictly in queue order; closed identifiers are never
 skipped backward, reopened, or reused.
 
 When a completed subtask produces a runnable Windows executable, place its
 verified local copy in ignored `build/output/` using the product-specific
-artifact name from `docs/planning/execution-policy.md`. Record its hash and
+artifact name from `docs/rules/EXECUTION.md`. Record its hash and
 artifact classification in the verification record; do not treat it as a
 release or bundle protected media.
 

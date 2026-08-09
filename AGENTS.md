@@ -3,15 +3,15 @@
 Read these documents before changing the repository:
 
 1. `docs/README.md`
-2. `docs/planning/status.md`
-3. `docs/execution-workflow.md`
-4. `docs/planning/execution-policy.md`
-5. `docs/planning/roadmap.md`
-6. `docs/architecture/overview.md`
-7. `docs/architecture/module-layout.md`
-8. `docs/architecture/contracts.md`
-9. `docs/coding-standard.md`
-10. `docs/source-policy.md`
+2. `docs/STATUS.md`
+3. `docs/rules/EXECUTION.md`
+4. `docs/QUEUE.md`
+5. `docs/design/ROADMAP.md`
+6. `docs/design/ARCHITECTURE.md`
+7. `docs/design/CODING.md`
+8. `docs/design/CONTRACTS.md`
+9. `docs/rules/CODING.md`
+10. `docs/rules/SOURCE.md`
 11. `CONTRIBUTING.md`
 
 ## Boundaries
@@ -30,7 +30,8 @@ Read these documents before changing the repository:
   research reports may inform neutral requirements, but never become a shared
   ABI, backend, default dependency, or release input. Microsoft components
   remain research-only, not a backend.
-- Use the module boundaries defined in `docs/architecture/module-layout.md`.
+- Use the module boundaries defined in `docs/design/ARCHITECTURE.md` and
+  `docs/design/CODING.md`.
 - Apply the applicable local architecture, coding, source, and execution
   rules to every task; record them and any owner-approved exception in the
   task and verification evidence.
@@ -42,9 +43,9 @@ Read these documents before changing the repository:
 
 ## Execution
 
-- Keep exactly one active subtask in `docs/planning/status.md`.
+- Keep exactly one active subtask in `docs/STATUS.md`.
 - Allocate numeric tasks and subtask/governance identifiers only in the linear
-  order defined by `docs/planning/execution-policy.md`; never skip, reopen, or
+  order defined by `docs/rules/EXECUTION.md`; never skip, reopen, or
   reuse a closed identifier.
 - Record evidence, provenance, verification, and task tracking when affected.
 - Preserve unrelated changes and avoid destructive Git operations.
