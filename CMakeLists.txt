@@ -197,6 +197,9 @@ target_link_libraries(core-machine-protected-privilege-smoke PRIVATE core-machin
 add_executable(core-machine-protected-return-atomicity-smoke
     tests/machine/core_machine_protected_return_atomicity_smoke.c)
 target_link_libraries(core-machine-protected-return-atomicity-smoke PRIVATE core-machine)
+add_executable(core-machine-protected-iret-smoke
+    tests/machine/core_machine_protected_iret_smoke.c)
+target_link_libraries(core-machine-protected-iret-smoke PRIVATE core-machine)
 
 add_executable(core-machine-call-gate-smoke
     tests/machine/core_machine_call_gate_smoke.c)
@@ -1099,6 +1102,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-cpu-profile-gate-smoke
     core-machine-protected-privilege-smoke
     core-machine-protected-return-atomicity-smoke
+    core-machine-protected-iret-smoke
     core-machine-call-gate-smoke
     core-machine-tss-iomap-port-smoke
     core-machine-task-switch-smoke

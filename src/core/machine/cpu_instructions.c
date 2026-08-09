@@ -754,7 +754,7 @@ static C_VOID _ksa_prepare_code_sreg(core_machine_cpu_execution_context *context
     TYPE_TRACE_CALL_BEGIN("_ksa_prepare_code_sreg");
     TYPE_TRACE_CHECK_RETURN(_ksa_read_xdt(context, selector,
         TYPE_REFERENCE_OF(descriptor)));
-    if (!_IsDescCodeNonConform(descriptor))
+    if (!_IsDescCode(descriptor))
         TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(selector & 0xfffcu));
     if (!_IsDescPresent(descriptor))
         TYPE_TRACE_CHECK_RETURN(_SetExcept_NP(selector & 0xfffcu));
@@ -3867,6 +3867,91 @@ static C_VOID _ser_iret_protected_outer_16(
         (newflags & ~VCPU_EFLAGS_RESERVED);
     TYPE_TRACE_CALL_END;
 }
+static C_VOID _ser_iret_protected_same(core_machine_cpu_execution_context *context,
+    type_unsigned_8 byte)
+{
+    type_unsigned_16 newcs;
+    type_unsigned_32 neweip;
+    type_unsigned_32 neweflags;
+    type_unsigned_32 selector;
+    type_unsigned_32 mask = VCPU_EFLAGS_RESERVED;
+    type_unsigned_64 code_desc;
+    type_unsigned_8 cpl;
+    t_cpu_data_sreg newcs_cache;
+
+    TYPE_TRACE_CALL_BEGIN("_ser_iret_protected_same");
+    cpl = _GetCPL;
+    switch (byte)
+    {
+    case 2:
+        TYPE_TRACE_CHECK_RETURN(_s_test_ss_pop(context, 6u));
+        TYPE_TRACE_CHECK_RETURN(_s_peek_ss_pop(context, 0u,
+            TYPE_REFERENCE_OF(neweip), 2u));
+        selector = 0u;
+        TYPE_TRACE_CHECK_RETURN(_s_peek_ss_pop(context, 2u,
+            TYPE_REFERENCE_OF(selector), 2u));
+        TYPE_TRACE_CHECK_RETURN(_s_peek_ss_pop(context, 4u,
+            TYPE_REFERENCE_OF(neweflags), 2u));
+        neweip = TYPE_MASK_UNSIGNED_16(neweip);
+        mask |= 0xffff0000u;
+        break;
+    case 4:
+        TYPE_TRACE_CHECK_RETURN(_s_test_ss_pop(context, 12u));
+        TYPE_TRACE_CHECK_RETURN(_s_peek_ss_pop(context, 0u,
+            TYPE_REFERENCE_OF(neweip), 4u));
+        selector = 0u;
+        TYPE_TRACE_CHECK_RETURN(_s_peek_ss_pop(context, 4u,
+            TYPE_REFERENCE_OF(selector), 4u));
+        TYPE_TRACE_CHECK_RETURN(_s_peek_ss_pop(context, 8u,
+            TYPE_REFERENCE_OF(neweflags), 4u));
+        break;
+    default:
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(byte));
+        break;
+    }
+    newcs = TYPE_MASK_UNSIGNED_16(selector);
+    if (_IsSelectorNull(newcs))
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(0));
+    TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, newcs,
+        TYPE_REFERENCE_OF(code_desc)));
+    if (!_IsDescCode(code_desc))
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(newcs & 0xfffcu));
+    if (_GetSelector_RPL(newcs) != cpl)
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(newcs & 0xfffcu));
+    if ((_IsDescCodeConform(code_desc) && _GetDesc_DPL(code_desc) > cpl) ||
+        (_IsDescCodeNonConform(code_desc) && _GetDesc_DPL(code_desc) != cpl))
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(newcs & 0xfffcu));
+    if (!_IsDescPresent(code_desc))
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_NP(newcs & 0xfffcu));
+    newcs_cache = cpu_state.data.cs;
+    TYPE_TRACE_CHECK_RETURN(_ksa_prepare_code_sreg(context, newcs, cpl,
+        &newcs_cache, &code_desc));
+    TYPE_TRACE_CHECK_RETURN(_kma_test_access(context, &newcs_cache, neweip,
+        1u, 0, cpl, 1));
+    if (cpl) {
+        mask |= VCPU_EFLAGS_IOPL | VCPU_EFLAGS_VM | VCPU_EFLAGS_RF;
+        if (cpl > _GetEFLAGS_IOPL) mask |= VCPU_EFLAGS_IF;
+    }
+    TYPE_TRACE_CHECK_RETURN(_s_write_xdt(context, newcs,
+        TYPE_REFERENCE_OF(code_desc)));
+    cpu_state.data.cs = newcs_cache;
+    cpu_state.data.eip = neweip;
+    cpu_state.data.eflags = (neweflags & ~mask) |
+        (cpu_state.data.eflags & mask);
+    switch (_GetStackSize)
+    {
+    case 2:
+        cpu_state.data.sp += byte * 3u;
+        break;
+    case 4:
+        cpu_state.data.esp += byte * 3u;
+        break;
+    default:
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
+        break;
+    }
+    TYPE_TRACE_CALL_END;
+}
 _______todo _e_iret(core_machine_cpu_execution_context *context, type_unsigned_8 byte)
 {
     type_unsigned_16 newcs, newss, newds, newes, newfs, newgs;
@@ -3917,6 +4002,35 @@ _______todo _e_iret(core_machine_cpu_execution_context *context, type_unsigned_8
     else
     {
         TYPE_TRACE_BLOCK_BEGIN("!Real");
+        if (!_GetEFLAGS_VM && !_GetEFLAGS_NT) {
+            type_unsigned_32 return_flags = 0u;
+
+            switch (byte) {
+            case 2:
+                TYPE_TRACE_CHECK_RETURN(_s_test_ss_pop(context, 6u));
+                TYPE_TRACE_CHECK_RETURN(_s_peek_ss_pop(context, 4u,
+                    TYPE_REFERENCE_OF(return_flags), 2u));
+                break;
+            case 4:
+                TYPE_TRACE_CHECK_RETURN(_s_test_ss_pop(context, 12u));
+                TYPE_TRACE_CHECK_RETURN(_s_peek_ss_pop(context, 8u,
+                    TYPE_REFERENCE_OF(return_flags), 4u));
+                break;
+            default:
+                TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(byte));
+                break;
+            }
+            if (!TYPE_GET_BIT(return_flags, VCPU_EFLAGS_VM)) {
+                TYPE_TRACE_CHECK_RETURN(_s_peek_ss_pop(context, byte,
+                    TYPE_REFERENCE_OF(return_cs), 2u));
+                if (_GetSelector_RPL(return_cs) <= _GetCPL) {
+                    TYPE_TRACE_CHECK_RETURN(_ser_iret_protected_same(context,
+                        byte));
+                    TYPE_TRACE_CALL_END;
+                    return;
+                }
+            }
+        }
         if (!_GetEFLAGS_VM && !_GetEFLAGS_NT && byte == 2u) {
             TYPE_TRACE_CHECK_RETURN(_kma_read_logical(context, &cpu_state.data.ss,
                 cpu_state.data.sp + 2u, TYPE_REFERENCE_OF(return_cs), 2u,
