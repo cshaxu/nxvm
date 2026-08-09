@@ -14838,6 +14838,9 @@ static C_VOID _d_bit_rmimm(core_machine_cpu_execution_context *context, type_uns
         }
         else
         {
+            if (instruction_state.data.flagMem)
+                instruction_state.data.mrm.offset += 2 *
+                    (TYPE_MASK_UNSIGNED_8(instruction_state.data.cimm) / 16);
             bitoperand = (TYPE_MASK_UNSIGNED_16(instruction_state.data.cimm) % 16);
         }
         TYPE_TRACE_CHECK_RETURN(instruction_state.data.cimm = TYPE_MASK_UNSIGNED_16((1 << bitoperand)));
@@ -14862,6 +14865,9 @@ static C_VOID _d_bit_rmimm(core_machine_cpu_execution_context *context, type_uns
         }
         else
         {
+            if (instruction_state.data.flagMem)
+                instruction_state.data.mrm.offset += 4 *
+                    (TYPE_MASK_UNSIGNED_8(instruction_state.data.cimm) / 32);
             bitoperand = (TYPE_MASK_UNSIGNED_32(instruction_state.data.cimm) % 32);
         }
         TYPE_TRACE_CHECK_RETURN(instruction_state.data.cimm = TYPE_MASK_UNSIGNED_32((1 << bitoperand)));
