@@ -6404,8 +6404,12 @@ core_machine_cpu_instruction_metadata core_machine_cpu_instruction_metadata_get(
             metadata.minimum_cpu = CORE_MACHINE_CPU_PROFILE_80286;
             metadata.valid = 1;
         }
-        else if (opcode == 0x06u ||
-                 (opcode >= 0x20u && opcode <= 0x26u) ||
+        else if (opcode == 0x06u)
+        {
+            metadata.minimum_cpu = CORE_MACHINE_CPU_PROFILE_80286;
+            metadata.valid = 1;
+        }
+        else if ((opcode >= 0x20u && opcode <= 0x26u) ||
                  (opcode >= 0x80u && opcode <= 0x8fu) ||
                  (opcode >= 0x90u && opcode <= 0x9fu) ||
                  opcode == 0xa0u || opcode == 0xa1u || opcode == 0xa3u ||
@@ -15152,12 +15156,9 @@ static C_VOID INS_0F_01(core_machine_cpu_execution_context *context)
         break;
     case 4: /* SMSW_RM16 */
         TYPE_TRACE_BLOCK_BEGIN("SMSW_RM16");
-        TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, ((_GetModRM_MOD(modrm) == 3) ? _GetOperandSize : 2)));
+        TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 2));
         instruction_state.data.crm = TYPE_MASK_UNSIGNED_16(cpu_state.data.cr0);
-        if (_GetOperandSize == 4 && !instruction_state.data.flagMem)
-            TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 4));
-        else
-            TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
+        TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
         TYPE_TRACE_BLOCK_END;
         break;
     case 5:
@@ -15403,7 +15404,8 @@ static C_VOID MOV_R32_CR(core_machine_cpu_execution_context *context)
     }
     TYPE_TRACE_CHECK_RETURN(_d_modrm_creg(context));
     if (instruction_state.data.rr != (type_virtual_address)&cpu_state.data.cr0 &&
-        instruction_state.data.rr != (type_virtual_address)&cpu_state.data.cr2)
+        instruction_state.data.rr != (type_virtual_address)&cpu_state.data.cr2 &&
+        instruction_state.data.rr != (type_virtual_address)&cpu_state.data.cr3)
     {
         TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
     }
@@ -15440,6 +15442,10 @@ static C_VOID MOV_CR_R32(core_machine_cpu_execution_context *context)
     {
         TYPE_TRACE_CHECK_RETURN(_s_write_cr0_80386(context,
             instruction_state.data.crm));
+    }
+    else if (instruction_state.data.rr == (type_virtual_address)&cpu_state.data.cr2)
+    {
+        cpu_state.data.cr2 = instruction_state.data.crm;
     }
     else if (instruction_state.data.rr == (type_virtual_address)&cpu_state.data.cr3)
     {

@@ -174,3 +174,50 @@ bounded 16-bit far-JMP regression; the new LTR form evidence does not admit
 family.  The focused probe emits `M5:T304:DESCRIPTOR-SYSTEM:OK`; the retained
 task-switch smoke emits `M5:T261:S2:TASK-SWITCH:OK`,
 `M5:T261:S3:TASK-SWITCH:CORPUS:OK`, and `M5:T261:S5:SS-CACHE:OK`.
+
+## S4 MSW And Admitted Control-Register Evidence
+
+The Intel 80386 PRM Chapter 17 entries `CLTS`, `LMSW`, `SMSW`, and `MOV --
+Move to/from Special Registers` are authoritative.  The S1 reference paths
+were rechecked: Bochs 2.6 `cpu/protect_ctrl.cc`, `cpu/crregs.cc`, and
+`cpu/fetchdecode.cc`; PCjs 2.00.0
+`machines/pcx86/modules/v2/x86op0f.js`, `x86ops.js`, and `cpux86.js`.
+They confirm fixed `r/m16` MSW operands, 80286-or-later `CLTS`, and 80386
+register-only 32-bit control-register moves.  The project continues to admit
+only CR0, CR2, and CR3 and retains its pre-existing CR0 PE/PG and aligned CR3
+policy; no reference implementation was copied or translated.
+
+The prepared-state focused probe now proves:
+
+- `SMSW` is a two-byte store in real mode and at protected user CPL, including
+  a `66h` register form that preserves EAX's upper half.  It does not alter
+  CR0.  `LMSW` consumes fixed `r/m16`, accepts a protected CPL-zero prepared
+  state, preserves PE once set, and changes the MSW TS bit without widening
+  its source.
+- `CLTS` clears only CR0.TS and leaves EFLAGS intact in real mode for both
+  80286 and 80386 profiles and in protected CPL0.  It is native `#UD(0)` on
+  80186 and `#GP(0)` at protected CPL3, with CR0/EFLAGS preserved.
+- `MOV r32,CR0/CR2/CR3` and `MOV CR0/CR2/CR3,r32` are fixed-width,
+  register-only 80386 forms.  The probe covers all three successful reads and
+  writes, including newly symmetric CR2 write and CR3 read.  Reserved CR,
+  memory ModRM, invalid CR0 policy input, and protected CPL3 paths reach the
+  required `#UD` or `#GP(0)` before changing the general destination or any
+  admitted control register.
+
+Three narrow production corrections were required.  The `0F` metadata now
+admits `CLTS` from the 80286 profile rather than treating it as 80386-only.
+`SMSW` now always decodes and writes `r/m16`.  The existing control-register
+decoder now exposes CR3 to the read form and commits CR2 on the write form.
+The retained T258 paging smoke was updated to keep testing a reserved CR1
+write instead of treating the newly admitted CR2 write as a paging-policy
+failure.  No debug/test-register path, INVD/INVLPG behavior, paging policy,
+delivery path, public interface, or executor changed.
+
+The S4 sweep revisited `core_machine_cpu_instruction_metadata_get`, `INS_0F`,
+`INS_0F_01`, `CLTS`, `_d_modrm_creg`, `MOV_R32_CR`, `MOV_CR_R32`,
+`_s_load_cr0_msw`, `_s_write_cr0_80386`, and `_s_write_cr3_80386`, together
+with the T258 focused paging probe.  Debug/test-register handlers, `0F 01
+/5,/7`, 32-bit TSS work, task/gate paths, paging-policy changes, V86, and
+delivery remain deferred exactly as frozen.  The T304 marker remains
+`M5:T304:DESCRIPTOR-SYSTEM:OK`; T258 retains
+`M5:T258:S2:I386-PAGING:OK` and `M5:T258:S3:I386-PAGING:CORPUS:OK`.

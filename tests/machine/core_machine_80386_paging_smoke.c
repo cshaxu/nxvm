@@ -339,9 +339,9 @@ static C_INT paging_test_control_gate(core_machine_cpu_profile profile,
 
 static C_INT paging_test_control_forms(C_VOID)
 {
-    static const uint8_t write_cr2[] = {
+    static const uint8_t write_reserved_cr1[] = {
         0x66u, 0xb8u, 0x34u, 0x12u, 0x00u, 0x00u,
-        0x0fu, 0x22u, 0xd0u
+        0x0fu, 0x22u, 0xc8u
     };
     static const uint8_t pg_without_pe[] = {
         0x66u, 0xb8u, 0x00u, 0x00u, 0x00u, 0x80u,
@@ -355,7 +355,7 @@ static C_INT paging_test_control_forms(C_VOID)
     C_INT failed = 0;
 
     failed |= paging_test_control_gate(CORE_MACHINE_CPU_PROFILE_80386,
-        write_cr2, sizeof(write_cr2));
+        write_reserved_cr1, sizeof(write_reserved_cr1));
     failed |= paging_test_control_gate(CORE_MACHINE_CPU_PROFILE_80386,
         pg_without_pe, sizeof(pg_without_pe));
     failed |= paging_test_control_gate(CORE_MACHINE_CPU_PROFILE_80386,
