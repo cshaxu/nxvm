@@ -2,7 +2,27 @@
 
 ## Current Work
 
-**Idle.**
+**Active: M5 T307 S1.**
+
+## M5 T307 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New; M5 T307 S1 admission audit for the 32-bit protected privilege-transition family; Coordinated Dual-Session Mode. |
+| Admission And Approval | T306 is closed. T307 is the next linear Queue candidate in the owner-approved M5 80386 protected execution/delivery package. |
+| Objective | Audit and freeze the admitted 80386 CPL3-to-CPL0 interrupt/trap and call-gate entry paths, matching 32-bit outer returns through 32-bit TSS `SS0:ESP0`, frame layout, selector/cache checks, privilege validation, and all-or-nothing commit boundaries. |
+| Non-goals | Task/nested-task return, task gates, general task switching, virtual-8086, new fault origins, reset/triple-fault policy, paging-policy expansion, product UX, public ABI, and source import. No new executor or delivery route. |
+| Reference Baseline | `7d97ff6`; accepted artifact `vm-0-5-0306` / `nxvm_0_5_0306.exe`. |
+| Files And ABI Surface | S1 may inspect core CPU interrupt/call-gate, TSS, stack, selector/cache, return, diagnostics, focused tests, CMake, and task records. It must not alter public interfaces or cross-module ownership. |
+| Applicable Rules | `rules/EXECUTION.md`, `rules/ARCHITECTURE.md`, `rules/CODING.md`, `rules/DOCUMENT.md`, and `etc/operations/policy/source-policy.md`; retain one core executor/state owner, a single checked stack/memory route, and NXVM behavior. |
+| Verification | Intel 80386 PRM is authoritative. Record versioned read-only Bochs 2.6 and PCjs 2.00.0 behavior paths; do not copy source. Construction uses focused synthetic probes only; full-system observation is closure-only. |
+| Expected Markers | A new focused T307 marker plus retained T305/T306/T304/T260/T261 markers. S1 is audit-only and creates no artifact. |
+| Asset Needs | Read-only local references only; no guest media, firmware, or third-party source is committed. |
+| Original Owner Request | Execute the direct M5 80386 protected execution/delivery package in coordinated mode, stopping before Mantle; use Intel as authority with read-only Bochs and PCjs comparison. |
+| Similar-Issue Sweep | Audit 16/32-bit IDT/call-gate entry, TSS stack reads, old/new stack frame helpers, selector/cache validators, interrupt delivery front ends, outer returns, and current focused probes. Classify every production hit before implementation. |
+| S1 Audit Record | [T307 privilege-transition admission audit](etc/evidence/t307-privilege-transition-admission.md) freezes the admitted 16/32-bit TSS/frame/gate matrix, existing 16-bit path intersections, and implementation batches before changing CPU behavior. |
+| Stop Conditions | Stop and report an unresolved Intel/reference disagreement, required architecture change, second execution/state path, public raw-layout exposure, or behavior owned by task/V86/paging/later families. |
+| Exit Criteria | Before closure, focused and retained probes, full current gates, documentation governance, diff check, a task artifact, and one bounded product observation must be recorded. T307 remains active/pending coordinator acceptance until coordinator closure; it does not alter Queue or start T308. |
 
 ## Current Technical Baseline
 
