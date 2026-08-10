@@ -199,6 +199,8 @@ add_executable(core-machine-movs-smoke tests/machine/core_machine_movs_smoke.c)
 target_link_libraries(core-machine-movs-smoke PRIVATE core-machine)
 add_executable(core-machine-stos-smoke tests/machine/core_machine_stos_smoke.c)
 target_link_libraries(core-machine-stos-smoke PRIVATE core-machine)
+add_executable(core-machine-lods-smoke tests/machine/core_machine_lods_smoke.c)
+target_link_libraries(core-machine-lods-smoke PRIVATE core-machine)
 add_executable(core-machine-double-shift-smoke tests/machine/core_machine_double_shift_smoke.c)
 target_link_libraries(core-machine-double-shift-smoke PRIVATE core-machine)
 add_executable(core-machine-bit-scan-smoke tests/machine/core_machine_bit_scan_smoke.c)
@@ -1182,6 +1184,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-sreg-mov-smoke
     core-machine-movs-smoke
     core-machine-stos-smoke
+    core-machine-lods-smoke
     core-machine-double-shift-smoke
     core-machine-bit-scan-smoke
     core-machine-imul2-smoke
