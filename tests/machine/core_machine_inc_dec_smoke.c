@@ -1528,6 +1528,259 @@ static C_INT inc_dec_test_adc_attribute_profile_fault(C_VOID)
     return !failed;
 }
 
+static C_INT inc_dec_test_sbb_forms(C_VOID)
+{
+    static const uint8_t forms[][9] = {
+        { 0x18u, 0xd1u },
+        { 0x19u, 0xd1u },
+        { 0x66u, 0x19u, 0xd1u },
+        { 0x1au, 0xd1u },
+        { 0x1bu, 0xd1u },
+        { 0x66u, 0x1bu, 0xd1u },
+        { 0x18u, 0x16u, 0u, 0x50u },
+        { 0x19u, 0x16u, 0u, 0x50u },
+        { 0x66u, 0x19u, 0x16u, 0u, 0x50u },
+        { 0x1au, 0x16u, 0u, 0x50u },
+        { 0x1bu, 0x16u, 0u, 0x50u },
+        { 0x66u, 0x1bu, 0x16u, 0u, 0x50u },
+        { 0x1cu, 0u },
+        { 0x1du, 0u, 0u },
+        { 0x66u, 0x1du, 0u, 0u, 0u, 0u },
+        { 0x80u, 0xd9u, 0u },
+        { 0x81u, 0xd9u, 0u, 0u },
+        { 0x66u, 0x81u, 0xd9u, 0u, 0u, 0u, 0u },
+        { 0x83u, 0xd9u, 0u },
+        { 0x66u, 0x83u, 0xd9u, 0u },
+        { 0x80u, 0x1eu, 0u, 0x50u, 0u },
+        { 0x81u, 0x1eu, 0u, 0x50u, 0u, 0u },
+        { 0x66u, 0x81u, 0x1eu, 0u, 0x50u, 0u, 0u },
+        { 0x83u, 0x1eu, 0u, 0x50u, 0u },
+        { 0x66u, 0x83u, 0x1eu, 0u, 0x50u, 0u }
+    };
+    static const uint8_t lengths[] = {
+        2u, 2u, 3u, 2u, 2u, 3u, 4u, 4u, 5u, 4u, 4u, 5u,
+        2u, 3u, 6u, 3u, 4u, 7u, 3u, 4u, 5u, 6u, 9u, 5u, 6u
+    };
+    uint8_t form;
+
+    for (form = 0u; form != sizeof(lengths); ++form) {
+        const uint8_t bytes = (form == 0u || form == 3u || form == 6u ||
+            form == 9u || form == 12u || form == 15u || form == 20u) ? 1u :
+            ((form == 1u || form == 4u || form == 7u || form == 10u ||
+              form == 13u || form == 16u || form == 18u || form == 21u ||
+              form == 23u) ? 2u : 4u);
+        const C_INT memory = (form >= 6u && form < 12u) || form >= 20u;
+        const C_INT register_destination = (form >= 3u && form < 6u) ||
+            (form >= 9u && form < 12u);
+        const C_INT memory_source = form >= 9u && form < 12u;
+        const C_INT accumulator = form >= 12u && form < 15u;
+        const C_INT immediate = form >= 12u;
+        const uint32_t mask = bytes == 1u ? 0xffu :
+            (bytes == 2u ? 0xffffu : 0xffffffffu);
+        inc_dec_machine state;
+        t_cpu after;
+        core_machine_cpu_diagnostic diagnostic;
+        uint32_t observed = 0u;
+        C_INT failed = !inc_dec_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
+        if (!failed) {
+            state.machine->executor_cpu.data.eax = 0u;
+            state.machine->executor_cpu.data.ecx = 0u;
+            state.machine->executor_cpu.data.edx = 0u;
+            state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF;
+            if (memory) {
+                const uint32_t value = 0u;
+                failed |= core_machine_memory_write(state.machine, INC_DEC_MEMORY,
+                    &value, bytes) != TYPE_STATUS_OK;
+            }
+            failed |= !inc_dec_run(&state, forms[form], lengths[form], 0, &after,
+                &diagnostic) || diagnostic.first_fault.valid ||
+                (after.data.eflags & ADD_DEFINED_FLAGS) !=
+                    (VCPU_EFLAGS_CF | VCPU_EFLAGS_SF | VCPU_EFLAGS_AF | VCPU_EFLAGS_PF);
+            if (memory) {
+                failed |= core_machine_memory_read(state.machine, INC_DEC_MEMORY,
+                    &observed, bytes) != TYPE_STATUS_OK ||
+                    observed != (memory_source ? 0u : mask);
+            } else if (accumulator) {
+                failed |= (after.data.eax & mask) != mask;
+            } else if (immediate || !register_destination) {
+                failed |= (after.data.ecx & mask) != mask;
+            } else {
+                failed |= (after.data.edx & mask) != mask;
+            }
+            if (!memory && !accumulator && !immediate && register_destination) {
+                failed |= after.data.ecx != 0u;
+            }
+            if (!memory && !accumulator && !immediate && !register_destination) {
+                failed |= after.data.edx != 0u;
+            }
+            if (memory && !memory_source) {
+                failed |= after.data.edx != 0u;
+            }
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+    }
+    return 1;
+}
+
+static C_INT inc_dec_test_sbb_boundaries(C_VOID)
+{
+    static const uint8_t overflow[][6] = {
+        { 0x1cu, 0u },
+        { 0x1du, 0u, 0u },
+        { 0x66u, 0x1du, 0u, 0u, 0u, 0u }
+    };
+    static const uint8_t overflow_lengths[] = { 2u, 3u, 6u };
+    static const uint8_t sign_extended_immediate[][4] = {
+        { 0x80u, 0xd9u, 0xffu },
+        { 0x83u, 0xd9u, 0xffu },
+        { 0x66u, 0x83u, 0xd9u, 0xffu }
+    };
+    static const uint8_t sign_extended_immediate_lengths[] = { 3u, 3u, 4u };
+    static const uint8_t address_code[] = { 0x67u, 0x66u, 0x19u, 0x16u };
+    static const uint8_t rejected[] = { 0x66u, 0x19u, 0xd1u };
+    static const uint8_t legacy[] = { 0x19u, 0xd1u };
+    static const uint8_t fault_code[] = { 0x19u, 0x16u, 0x10u, 0u };
+    uint8_t form;
+    uint8_t pass;
+
+    for (form = 0u; form != sizeof(overflow_lengths); ++form) {
+        const uint8_t bytes = form == 0u ? 1u : (form == 1u ? 2u : 4u);
+        const uint32_t initial = bytes == 1u ? 0x11223380u :
+            (bytes == 2u ? 0x11228000u : 0x80000000u);
+        const uint32_t expected = bytes == 1u ? 0x1122337fu :
+            (bytes == 2u ? 0x11227fffu : 0x7fffffffu);
+        inc_dec_machine state;
+        t_cpu after;
+        core_machine_cpu_diagnostic diagnostic;
+        C_INT failed = !inc_dec_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
+
+        if (!failed) {
+            state.machine->executor_cpu.data.eax = initial;
+            state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF;
+            failed |= !inc_dec_run(&state, overflow[form], overflow_lengths[form], 0,
+                &after, &diagnostic) || diagnostic.first_fault.valid ||
+                after.data.eax != expected || (after.data.eflags & ADD_DEFINED_FLAGS) !=
+                    (VCPU_EFLAGS_OF | VCPU_EFLAGS_AF |
+                        (bytes == 1u ? 0u : VCPU_EFLAGS_PF));
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+    }
+    for (form = 0u; form != sizeof(sign_extended_immediate_lengths); ++form) {
+        const uint8_t bytes = form == 0u ? 1u : (form == 1u ? 2u : 4u);
+        const uint32_t initial = form == 2u ? 0u : 0xaabb0000u;
+        const uint32_t expected = form == 2u ? 1u : 0xaabb0001u;
+        inc_dec_machine state;
+        t_cpu after;
+        core_machine_cpu_diagnostic diagnostic;
+        C_INT failed = !inc_dec_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
+
+        if (!failed) {
+            state.machine->executor_cpu.data.ecx = initial;
+            state.machine->executor_cpu.data.edx = 0x55667788u;
+            state.machine->executor_cpu.data.eflags = 0u;
+            failed |= !inc_dec_run(&state, sign_extended_immediate[form],
+                sign_extended_immediate_lengths[form], 0, &after, &diagnostic) ||
+                diagnostic.first_fault.valid || after.data.ecx != expected ||
+                after.data.edx != 0x55667788u ||
+                (after.data.eflags & ADD_DEFINED_FLAGS) !=
+                    (VCPU_EFLAGS_CF | VCPU_EFLAGS_AF);
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+    }
+    {
+        inc_dec_machine state;
+        t_cpu after;
+        core_machine_cpu_diagnostic diagnostic;
+        uint32_t value = 0u;
+        C_INT failed = !inc_dec_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
+
+        if (!failed) {
+            state.machine->executor_cpu.data.esi = INC_DEC_MEMORY;
+            state.machine->executor_cpu.data.edx = 0u;
+            state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF;
+            failed |= core_machine_memory_write(state.machine, INC_DEC_MEMORY, &value,
+                sizeof(value)) != TYPE_STATUS_OK || !inc_dec_run(&state, address_code,
+                    sizeof(address_code), 0, &after, &diagnostic) ||
+                diagnostic.first_fault.valid || core_machine_memory_read(state.machine,
+                    INC_DEC_MEMORY, &value, sizeof(value)) != TYPE_STATUS_OK ||
+                value != 0xffffffffu;
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+    }
+    {
+        inc_dec_machine state;
+        t_cpu after;
+        core_machine_cpu_diagnostic diagnostic;
+        C_INT failed = !inc_dec_prepare(CORE_MACHINE_CPU_PROFILE_80286, &state);
+
+        if (!failed) {
+            state.machine->executor_cpu.data.ecx = 0x11220000u;
+            state.machine->executor_cpu.data.edx = 0u;
+            state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF;
+            failed |= !inc_dec_run(&state, rejected, sizeof(rejected), 1, &after,
+                &diagnostic) || !diagnostic.first_fault.valid || !TYPE_GET_BIT(
+                    diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
+                after.data.ecx != 0x11220000u || after.data.edx != 0u ||
+                after.data.eflags != VCPU_EFLAGS_CF || after.data.eip != 0u;
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+    }
+    {
+        inc_dec_machine state;
+        t_cpu after;
+        core_machine_cpu_diagnostic diagnostic;
+        C_INT failed = !inc_dec_prepare(CORE_MACHINE_CPU_PROFILE_80186, &state);
+
+        if (!failed) {
+            state.machine->executor_cpu.data.ecx = 0xaabb0000u;
+            state.machine->executor_cpu.data.edx = 0u;
+            state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF;
+            failed |= !inc_dec_run(&state, legacy, sizeof(legacy), 0, &after,
+                &diagnostic) || diagnostic.first_fault.valid ||
+                after.data.ecx != 0xaabbffffu || after.data.edx != 0u;
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+    }
+    for (pass = 0u; pass != 2u; ++pass) {
+        inc_dec_machine state;
+        t_cpu after;
+        core_machine_cpu_diagnostic diagnostic;
+        core_machine_run_result result;
+        uint16_t before = 0u;
+        uint16_t observed = 0u;
+        C_INT failed = !inc_dec_prepare_protected(0, pass == 0u, &state);
+
+        if (!failed) {
+            state.machine->executor_cpu.data.edx = 0u;
+            state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF;
+            failed |= core_machine_memory_write(state.machine, 0x3010u, &before,
+                sizeof(before)) != TYPE_STATUS_OK || core_machine_memory_write(
+                    state.machine, 0x2000u, fault_code, sizeof(fault_code)) !=
+                TYPE_STATUS_OK;
+            test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
+            failed |= core_machine_run(state.machine, (core_machine_run_budget){ 1u, 0u },
+                &result) != TYPE_STATUS_FAULT || result.reason != CORE_MACHINE_STOP_FAULT ||
+                core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != TYPE_STATUS_OK;
+            after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+            failed |= !diagnostic.first_fault.valid || !TYPE_GET_BIT(
+                diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_DF) ||
+                core_machine_memory_read_physical(&state.machine->executor_memory, 0x3010u,
+                    (type_virtual_address)&observed, sizeof(observed)) != TYPE_STATUS_OK ||
+                observed != before || after.data.edx != 0u ||
+                after.data.eflags != VCPU_EFLAGS_CF || after.data.eip != 0u;
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+    }
+    return 1;
+}
+
 C_INT main(C_VOID)
 {
     if (!inc_dec_test_register_forms() || !inc_dec_test_rm_forms() ||
@@ -1549,7 +1802,7 @@ C_INT main(C_VOID)
         !inc_dec_test_add_attribute_and_profile() ||
         !inc_dec_test_add_fault_nonpublication() || !inc_dec_test_adc_forms() ||
         !inc_dec_test_adc_signed_overflow() ||
-        !inc_dec_test_adc_attribute_profile_fault()) return 1;
+        !inc_dec_test_adc_attribute_profile_fault() || !inc_dec_test_sbb_forms() || !inc_dec_test_sbb_boundaries()) return 1;
     STD_PRINTF("M5:T316:S2:INC-DEC:OK\n");
     STD_PRINTF("M5:T316:S3:NOT-NEG:OK\n");
     STD_PRINTF("M5:T316:S4:TEST:OK\n");
@@ -1558,5 +1811,6 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T316:S7:TEST-RM-REG:OK\n");
     STD_PRINTF("M5:T316:S8:ADD:OK\n");
     STD_PRINTF("M5:T316:S9:ADC:OK\n");
+    STD_PRINTF("M5:T316:S10:SBB:OK\n");
     return 0;
 }

@@ -354,6 +354,35 @@ the exact CF/ZF/AF/PF result with OF/SF clear. No runtime defect was found.
 
 `M5:T316:S9:ADC:OK`
 
+## S10 Primary SBB Closure Evidence
+
+`18h`--`1Dh` and Group `80h/81h/83h /3` route through `_a_sbb`; its shared
+`_kac_arith2` and `_kaf_set_flags` callers were audited and unchanged. The
+owner-bound smoke covers 8/16/32 non-alias register/memory r/m and reg/rm,
+accumulator and Group immediates, CF borrow-in, and `83h` sign-extension.
+Borrow-in vectors assert the all-defined CF/OF/SF/ZF/AF/PF contract and
+destination publication; the register-destination/memory-source form confirms
+the source memory remains unchanged. The initial assertion mistakenly expected
+that read-only source memory to publish the result; correcting that test-only
+expectation exposed no SBB runtime defect.
+
+Dedicated Group-immediate vectors use `80h /3, FFh` at 8 bits and `83h /3,
+FFh` at 16 and 32 bits. They prove the negative `imm8` interpretation by
+requiring the r/m destination `0 - (-1)` to become one, with exact CF and AF
+set and the remaining defined flags clear.
+
+Each non-alias register-source form also explicitly confirms that its source
+register is unchanged at the exercised width; memory-source forms reread the
+unchanged source memory.
+
+`M5:T316:S10:SBB:OK`
+
+S10 additionally proves `67h 66h 19h`, 80186 legacy acceptance, and 80286
+`66h` #UD non-publication. Protected source-limit and read-only-destination
+faults retain memory, register source, EFLAGS, and EIP at the existing `#DF`
+boundary. CF-participating signed-minimum subtraction at 8/16/32 bits proves
+the exact result and CF/OF/SF/ZF/AF/PF contract, including width-correct PF.
+
 S9 additionally proves carry-in-dependent signed overflow at 8/16/32 bits:
 accumulator `signed-max + 0 + CF` yields signed-min, with OF/SF/AF set,
 CF/ZF clear, and width-correct PF.
