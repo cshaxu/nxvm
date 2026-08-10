@@ -2,26 +2,8 @@
 
 ## Current Work
 
-**Active: M5 T316 S24.**
-
-## M5 T316 S24 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Corrective; M5 T316 S24 follows accepted T316 S23 within the same active task. |
-| Admission And Approval | Owner approved the M5 80386DX program and instructed that T316 continue normally after S1; coordinator accepted S23 at `a8e111c2` and admits S24 only. |
-| Objective | Complete Intel 80386 `LSS`/`LFS`/`LGS` (`0F B2/B4/B5`): 16/32-bit memory far-pointer load, destination offset and selector publication, profile disposition, source/selector fault atomicity, and LSS's one-instruction maskable-IRQ shadow. |
-| Non-goals | Do not admit FS/GS prefix consumers, general segment-selector redesign, `LES`/`LDS`, MOV/POP other segment registers, broad interrupt-shadow refactoring, protected exception-delivery expansion, public ABI changes, an 80387, or post-80386 forms. |
-| Reference baseline | Accepted T316 S1 matrix, S22 CLI/STI shadow proof, S23 FS/GS stack forms, and their current focused corpus. |
-| Files And ABI Surface | `src/core/machine/cpu_instructions.c` only if a demonstrated defect requires it; one owned LSS/LFS/LGS focused smoke and CMake registration if needed; T316 matrix/evidence, Status, and task artifact records. No public ABI change. |
-| Applicable rules | Architecture: one CPU decoder/executor path; Coding: audit every `_e_load_far` caller before any shared change, preserve local CPU style, and keep tests owner-bound; Execution: complete only the declared Intel form matrix with focused and retained evidence, artifact, documentation, diff, commit, and push gates; Source policy: Intel authority, no imported external source. |
-| Verification | Audit Intel 80386 `0F B2/B4/B5`: `INS_0F` metadata/profile gate, `LSS_R32_M16_32`/`LFS_R32_M16_32`/`LGS_R32_M16_32`, `_d_modrm_ea`, `_m_read_rm`, `_e_load_far`, `_s_load_sreg`, and all `_e_load_far` callers. Prove all three forms with memory-only ModRM in default 16-bit and `66h` 32-bit operand-size modes, real mode and controlled protected valid-selector load; assert source offset, destination general register, selector, EIP, and retained EFLAGS. Prove 80386 availability and 80286 rejection with no state publication. Exercise a bounded source or selector-load fault and prove offset register, selector, EIP, and EFLAGS remain unpublished. With a deterministic pending PIC IRQ, prove LSS defers maskable delivery for exactly one ordinary following instruction while LFS/LGS do not set that shadow. Rebuild the T316 artifact if runtime changes; run focused smoke, current gates, documentation governance, and `git diff --check`. |
-| Expected markers | New focused marker `M5:T316:S24:LSS-LFS-LGS:OK`; retained S1--S23 markers and applicable current-gate markers pass. |
-| Asset needs | None beyond existing governed current-gate assets. |
-| Stop conditions | Stop and report if Intel-correct LSS/LFS/LGS proof requires a shared far-load, selector-load, PIC, exception-delivery, or interrupt-shadow architecture change beyond the existing bounded routes; if an abstraction lacks caller coverage; or if decoder/ABI ownership must change. |
-| Exit criteria | Every declared `0F B2/B4/B5` form has focused proof for operand size, memory-only encoding, profile gate, offset/selector publication, declared fault atomicity, and LSS's one-instruction maskable IRQ shadow; every scan hit is disposed; FS/GS prefix consumers, `LES`/`LDS`, and wider segment/interrupt families remain explicitly partial; required gates, artifact handling, commit, and push pass. |
-| Original owner request | Execute the complete 80386 program in Coordinated Dual-Session Mode against an Intel form--implementation--test matrix, repairing omissions without using Windows demand as a scope filter. |
-| Similar-issue sweep | Defect class: 80386 memory far-load forms that omit profile, operand-size, memory-only, selector/load atomicity, or LSS interrupt-shadow behavior. Scope: tracked CPU implementation, CPU tests, CMake registrations, T316 evidence, and relevant records; use `rg -n "LSS_R32_M16_32|LFS_R32_M16_32|LGS_R32_M16_32|_e_load_far|_d_modrm_ea|_m_read_rm|_s_load_sreg|flagMaskInt|0xB2|0xB4|0xB5" src/core/machine tests CMakeLists.txt docs`. Classify every production hit as covered, fixed, deferred to a named matrix slice, or out of scope with reason. |
+**No active task.** M5 T316 S24 is closed; the next 80386 matrix slice requires
+a separately admitted packet.
 
 ## Current Technical Baseline
 
@@ -43,6 +25,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T316 S24 | Closed the bounded Intel 80386 `LSS`/`LFS`/`LGS` (`0F B2/B4/B5`) matrix with dedicated current-gate coverage: real/protected 16/32-bit memory far pointers, 80386/80286 and register-direct profile dispositions, source-fault non-publication, and the SS-only one-instruction IRQ shadow. No runtime or artifact change was needed. Documentation governance, 52 static gates, and 154 current-gate tests passed. |
 | T314 | Closed the EGA CRTC 13h bound, registered the deterministic xasm smoke, restored six historical target-local strict GCC sets while retaining three selected libraries, and added the CRTC static closure verifier; the two inherited-governance debts remain. Its 0315 artifact, 52 gates, 147 CTests, and S2/S3/S6 markers passed. |
 | T313 | Completed construction-failure atomicity and startup-failure visibility: single RAM allocation, transactional port/controller assembly, visible session start failure, and explicit debugger mappings. Its accepted artifact, 51 gates, 145 CTests, and S2--S6 focused markers passed. |
 | T307 | Completed 80386 32-bit CPL3-to-CPL0 IDT and call-gate entry with TSS32 target stacks, preflighted atomic publication, and Intel-correct target-SS `#TS` classification. Its 0307 artifact, 51 gates, 137 CTests, and 9 focused/retained probes passed; product observation remained host-window limited before guest input. |
