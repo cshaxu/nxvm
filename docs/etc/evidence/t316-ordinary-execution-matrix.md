@@ -42,7 +42,7 @@ not an allocation of later task identifiers.
 | --- | --- | --- | --- |
 | Prefixes `26/2E/36/3E`, `64/65`, `66/67`, `F0`, `F2/F3`; repeated-prefix resolution | Prefix loop and `_GetOperandSize`/address decode in `cpu_instructions.c`; FS/GS and `66/67` explicitly gate at 80386. | `core_machine_real_mode_386_address_smoke`, `core_machine_operand_address_smoke` (`M5:T302:OPERAND-ADDRESS-STACK:OK`), T301 baseline. | **Partial**: FS/GS and operand/address prefix paths have bounded proof, but no cross-product proof exists for every primary opcode, LOCK legality, and repeated-prefix combination. Next: ordinary operand/address subfamily. |
 | Register/memory/immediate data movement: `MOV`, `XCHG`, `LEA`, `LES/LDS`, moffs, `PUSH/POP`, `PUSHA/POPA`, `PUSH imm`, `ENTER/LEAVE`, `CBW/CWD` (including 32-bit attribute variants) | Primary table routes to `MOV_*`, `XCHG_*`, `LEA_R32_M32`, stack helpers `_kec_push/_kec_pop`, and `ENTER/LEAVE`; primary defaults do not by themselves certify 32-bit forms. | T302 stack/address focused probe; T301 prefix/profile baseline. | **Partial**: direct route and selected 16/32 stack/address cases are proven, but no complete MOV/XCHG/LEA/moffs/segment-load matrix covers all register/memory, size, and fault-publication forms. Next: ordinary data/operand family. |
-| Primary binary arithmetic/logical/test: `ADD/OR/ADC/SBB/AND/SUB/XOR/CMP/TEST`, accumulator immediates, Groups `80/81/83` | Primary table and `INS_80/81/83`; `_kac_arith2` uses operand read/write and `_kaf_set_flags`. | `core_machine_inc_dec_smoke` (`M5:T316:S4:TEST:OK`, `M5:T316:S7:TEST-RM-REG:OK`, `M5:T316:S8:ADD:OK`) proves declared TEST and ADD forms. | **Partial**: T316 S4/S7 complete the declared TEST forms, and S8 completes `00`--`05` plus `80/81/83 /0` ADD at 8/16/32 bits. ADC/SBB and the other binary arithmetic/logical groups remain unproven. Next: ordinary arithmetic/FLAGS family. |
+| Primary binary arithmetic/logical/test: `ADD/OR/ADC/SBB/AND/SUB/XOR/CMP/TEST`, accumulator immediates, Groups `80/81/83` | Primary table and `INS_80/81/83`; `_kac_arith2` uses operand read/write and `_kaf_set_flags`. | `core_machine_inc_dec_smoke` (`M5:T316:S4:TEST:OK`, `M5:T316:S7:TEST-RM-REG:OK`, `M5:T316:S8:ADD:OK`, `M5:T316:S9:ADC:OK`, `M5:T316:S10:SBB:OK`, `M5:T316:S11:OR:OK`) proves the declared slices. | **Partial**: T316 S4/S7 complete the declared TEST forms; S8 completes `00`--`05` plus `80/81/83 /0` ADD; S9 completes `10`--`15` plus `/2` ADC; S10 completes `18`--`1D` plus `/3` SBB; and S11 completes `08`--`0D` plus `/1` OR, each at their declared sizes and boundary conditions. Only AND, SUB, XOR, and CMP remain unproven in this row. Next: ordinary arithmetic/FLAGS family. |
 | Primary unary arithmetic: `INC/DEC` register (`40`--`4F`) and Groups `FE/FF /0,/1`; `NEG/NOT` Groups `F6/F7 /2,/3` | Register handlers `INC_*`/`DEC_*`; `INS_FE/FF`, `INS_F6/F7`; all use `_kac_arith1` and flag masks. | `core_machine_inc_dec_smoke` (`M5:T316:S2:INC-DEC:OK`, `M5:T316:S3:NOT-NEG:OK`) proves both admitted slices. | **Complete** only for T316's named INC/DEC and NOT/NEG forms: 16/32-bit register and 8/16/32-bit r/m forms, their Intel FLAGS contracts, 16/32 operand/address attributes, profile behavior, publication, and protected fault non-publication. The wider unary/arithmetic family remains **Partial**: `F6/F7 /6,/7` division is a separately named slice. |
 | Decimal/ASCII adjust and conversion: `DAA/DAS/AAA/AAS/AAM/AAD`, `XLAT` | Primary handlers `DAA`, `DAS`, `AAA`, `AAS`, `AAM`, `AAD`, `XLAT`; DAA/DAS/AAM/AAD call `_kaf_set_flags`. | No focused architecture probe found. | **Partial**: handlers exist, but documented flag-defined/undefined behavior, base-immediate edge cases, 16/32 addressing for XLAT, and faults are not proven. Next: ordinary arithmetic/FLAGS family. |
 | Shift/rotate Groups `C0/C1/D0`--`D3` | `INS_C0/C1/D0/D1/D2/D3`; shift paths call `_kaf_set_flags`. | No focused primary shift/rotate smoke; T310's double-shift smoke is only `SHLD/SHRD`. | **Partial**: primary count masking, count-zero flags, rotate flags, and memory faults remain unproven. Next: ordinary arithmetic/FLAGS family. |
@@ -375,13 +375,37 @@ Each non-alias register-source form also explicitly confirms that its source
 register is unchanged at the exercised width; memory-source forms reread the
 unchanged source memory.
 
-`M5:T316:S10:SBB:OK`
-
 S10 additionally proves `67h 66h 19h`, 80186 legacy acceptance, and 80286
 `66h` #UD non-publication. Protected source-limit and read-only-destination
 faults retain memory, register source, EFLAGS, and EIP at the existing `#DF`
 boundary. CF-participating signed-minimum subtraction at 8/16/32 bits proves
 the exact result and CF/OF/SF/ZF/AF/PF contract, including width-correct PF.
+
+`M5:T316:S10:SBB:OK`
+
+## S11 Primary OR Closure Evidence
+
+Intel 80386 primary OR forms `08h`--`0Dh` route through `OR_RM8_R8`,
+`OR_RM32_R32`, `OR_R8_RM8`, `OR_R32_RM32`, `OR_AL_I8`, and `OR_EAX_I32`.
+Groups `80h/81h/83h /1` dispatch through `INS_80`, `INS_81`, and `INS_83` to
+`_a_or`. `_a_or`, `_kac_arith2`, and `_kaf_set_flags` were audited; no shared
+change was needed. The `_kac_arith2` caller set remains ADD, ADC, SBB, AND,
+OR, SUB, XOR, CMP, and TEST; it was not refactored.
+
+The owner-bound smoke covers 8/16/32 non-alias register and memory r/m+reg
+and reg+r/m forms, accumulator and Group immediate forms, and `83h /1, FFh`
+at 16/32 bits to prove negative-imm8 sign extension. It proves destination
+publication, source preservation, CF/OF clear, and exact SF/ZF/PF results.
+AF is explicitly excluded from assertions because Intel defines it as
+undefined for OR. `67h 66h 09h`, 80186 acceptance, and 80286 `66h #UD`
+non-publication are covered. The established protected fixture proves both
+source-limit and read-only-destination faults retain destination, source,
+EFLAGS, and EIP at the existing `#DF` boundary. Two initial failures were
+test-only expectation defects: PF is based on the low byte, and byte/word
+memory observations require width-local comparison. No runtime defect was
+found.
+
+`M5:T316:S11:OR:OK`
 
 S9 additionally proves carry-in-dependent signed overflow at 8/16/32 bits:
 accumulator `signed-max + 0 + CF` yields signed-min, with OF/SF/AF set,
