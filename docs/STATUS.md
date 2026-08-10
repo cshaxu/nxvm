@@ -2,26 +2,8 @@
 
 ## Current Work
 
-**M5 T316 S32 - segment-register MOV forms.** The coordinator admitted this bounded ordinary-execution continuation in Coordinated Dual-Session Mode.
-
-## M5 T316 S32 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Corrective; next unused subtask of the most recently closed numeric task, M5 T316. |
-| Admission And Approval | The owner approved continuous execution of the Intel 80386DX architecture-completeness program in Coordinated Dual-Session Mode. This is the next linear bounded matrix slice after T316 S31. |
-| Objective | Complete the bounded Intel `8Ch` `MOV r/m16,Sreg` and `8Eh` `MOV Sreg,r/m16` matrix. |
-| Non-goals | PUSH/POP, LES/LDS/LSS/LFS/LGS, far CS transfers, moffs/MOVS, system/control/debug/test-register MOV, x87, and a broad shared-helper change without a demonstrated defect are outside this task. |
-| Reference Baseline | `8943d73f` / `vm-0-5-0316`, with T316 S31 closed and `main` equal to `origin/main`. |
-| Files And ABI Surface | Expected scope is a focused machine smoke, CMake registration, the ordinary-execution matrix, and this packet. Production changes require a demonstrated defect; no public ABI change. |
-| Applicable Rules | `docs/rules/EXECUTION.md`: one active packet, dual-session Instruction/report loop, actual-change coordinator review, linear corrective allocation, matrix audit, similar-issue sweep, and immediate push. `docs/rules/CODING.md`: preserve local code/test style and introduce no premature abstraction. Intel 80386 PRM `8Ch`/`8Eh` form, selector/cache, exception, prefix, and interrupt behavior is the form authority. |
-| Verification | Cover `8Ch`/`8Eh` register and memory forms; ES/CS/SS/DS, FS/GS, and reserved encodings 6/7; all four profiles; fixed 16-bit data behavior under `66h`, `67h` effective addresses and their combination; profile and LOCK rejection; EIP, FLAGS, full-GPR, and memory nonpublication; protected selector/cache, null, type, privilege, present, and applicable accessed-bit cases; `8Ch` destination write-limit and `8Eh` source read-limit boundaries; and exact pending-PIC `MOV SS` one-instruction shadow versus non-SS no-shadow. Build/run the focused smoke, prove current-gate registration, documentation governance, `git diff --check`, and complete current gates before closure. |
-| Expected Markers | Focused smoke emits `M5:T316:S32:SREG-MOV:OK`; matrix evidence records every admitted opcode family and exact boundary disposition. |
-| Asset Needs | None; deterministic CPU fixture only. No external media, code, firmware, or research import. |
-| Stop Conditions | Stop and report if a shared segment-register loader/helper change requires caller-coverage review, or if unexpected privilege, CS, or far-transfer semantics extend beyond scope. |
-| Exit Criteria | Every declared form is classified and proven; the result makes no false broader segment-family claim; focused, gate, and documentation checks pass; and the coordinator reviews the changed artifacts. |
-| Original Owner Request | Execute the complete Intel 80386 plan in dual-session mode against an Intel form--implementation--test matrix, repairing omissions and closing evidence without using Windows demand as the completeness boundary. |
-| Similar-Issue Sweep | Audit `8Ch`/`8Eh` dispatch, `_d_modrm_sreg`, `_s_load_sreg`/`_ksa_load_sreg`, `PREFIX_LOCK`, `ExecInt`, and the existing segment-selector smoke. Classify all hits; PUSH/POP, LxS, far-transfer, moffs, string, and system MOV families are excluded by opcode/semantic boundary. |
+**Idle.** M5 T316 S32 is closed; the next 80386 matrix slice requires a
+separately admitted packet.
 
 ## Current Technical Baseline
 
@@ -43,6 +25,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T316 S32 | Closed `8C`/`8E` segment-register MOV: form/profile/`66`/`67`, #UD/LOCK, protected cache/null/accessed and #DF nonpublication, plus MOV SS shadow and non-SS no-shadow. No production change was needed; 52 static/governance checks and 161 current-gate tests passed. |
 | T316 S31 | Closed primary non-segment GPR MOV `88`/`89`/`8A`/`8B`, `C6`/`C7`, and `B0`--`BF`: default, `66`/`67`, segment selection, #UD/LOCK, limit-#DF no-publication, and PIC no-shadow coverage. No production change was needed; 52 static/governance checks and 160 current-gate tests passed. |
 | T316 S30 | Closed bounded moffs MOV `A0`--`A3`: default plus `66h`/`67h` forms, segment selection, #UD/LOCK and read/write nonpublication, and no IRQ shadow. No runtime change was needed; 52 static/governance checks and 159 current-gate tests passed. |
 | T316 S29 | Closed Intel `98`/`99` default and `66h` sign extension with prefix, 80386 LOCK/nonpublication, and no-shadow coverage. The legacy LOCK-prefix divergence remains `TODO(Medium)`; no runtime change was needed. Documentation governance, 52 static checks, and 158 current-gate tests passed. |
