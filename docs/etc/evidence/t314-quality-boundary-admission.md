@@ -45,3 +45,24 @@ for a replacement instruction after every report.
 T314 does not alter inherited CPU execution, xasm implementation, Win32
 platform behavior, public interfaces, media policy, M6 admission, or product
 UX.
+
+## Closure Evidence
+
+T314 closed with `build/output/nxvm_0_5_0314.exe` and SHA-256
+`A193D81830AF7EDA1BD4BF368716817BE8232FBA9A091E4CDCFD123B26DD398D`.
+`current-gates-gcc` passed its 51 static/governance targets and 147 current
+CTests; `verify-current-artifact-target` selected `vm-0-5-0314`.
+
+- S2 retains one VADP CRTC offset state array, a 20-register storage bound,
+  bounded variable subscripts, compile-time constant bounds, and the focused
+  `M5:T314:S2:EGA-CRTC-BOUNDARY:OK` regression.
+- S3 registers the existing `current.core-product-xasm-smoke`, which emits
+  `M5:T129:S2:CORE-PRODUCT-XASM:OK`, without xasm source or API change.
+- S4 records every production library/artifact target in the
+  [strict GCC matrix](t314-strict-gcc-matrix.md), selects only `core-utils`,
+  `core-product-session`, and `vm-request-transport`, and verifies all four
+  flags in their Ninja commands. It records the approved xasm capacity/failure
+  semantics and inherited NXVM strict-compilation debts in `TODO.md`.
+- The closure sweep found no new unbounded VADP CRTC access, no duplicate xasm
+  current-gate registration, and no generic strict-GCC exemption. No artifact
+  or product behavior beyond the admitted S2 repair changed.
