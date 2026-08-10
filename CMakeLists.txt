@@ -237,6 +237,10 @@ add_executable(core-machine-lahf-sahf-smoke
     tests/machine/core_machine_lahf_sahf_smoke.c)
 target_link_libraries(core-machine-lahf-sahf-smoke PRIVATE core-machine)
 
+add_executable(core-machine-direct-flags-smoke
+    tests/machine/core_machine_direct_flags_smoke.c)
+target_link_libraries(core-machine-direct-flags-smoke PRIVATE core-machine)
+
 add_executable(core-machine-80286-protected-mode-smoke
     tests/machine/core_machine_80286_protected_mode_smoke.c)
 target_link_libraries(core-machine-80286-protected-mode-smoke PRIVATE core-machine)
@@ -1203,6 +1207,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-cmps-smoke
     core-machine-port-strings-smoke
     core-machine-lahf-sahf-smoke
+    core-machine-direct-flags-smoke
     core-machine-double-shift-smoke
     core-machine-bit-scan-smoke
     core-machine-imul2-smoke

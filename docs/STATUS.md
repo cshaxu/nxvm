@@ -2,8 +2,27 @@
 
 ## Current Work
 
-**Idle.** M5 T316 S39 is closed; the next 80386 matrix slice requires a
-separately admitted packet.
+**M5 T316 S40 - direct FLAGS control forms.** The coordinator admitted this
+bounded ordinary-execution continuation in Coordinated Dual-Session Mode.
+
+## M5 T316 S40 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Corrective; next unused subtask of the most recently closed numeric task, M5 T316. |
+| Admission And Approval | The owner approved continuous execution of the Intel 80386DX architecture-completeness program in Coordinated Dual-Session Mode. This is the next linear bounded matrix slice after T316 S39. |
+| Objective | Complete Intel direct FLAGS control forms CMC `F5h`, CLC `F8h`, STC `F9h`, CLD `FCh`, and STD `FDh`. |
+| Non-goals | PUSHF/POPF, CLI/STI, LAHF/SAHF, other FLAGS/control forms, production refactoring, post-80386 behavior, and 80387 are outside this packet. |
+| Reference Baseline | `3c22c537` / `vm-0-5-0316`, with T316 S39 closed, `main` equal to `origin/main`, and no active packet before admission. |
+| Files And ABI Surface | Expected scope is a focused machine smoke and CMake registration, the ordinary-execution matrix, and this packet. `src/core/machine/cpu_instructions.c` changes only for a demonstrated defect. No public ABI change. |
+| Applicable Rules | `docs/rules/EXECUTION.md`: one active packet, dual-session Instruction/report loop, actual-change coordinator review, linear corrective allocation, matrix audit, similar-issue sweep, and immediate push. Intel 80386 PRM direct FLAGS control opcode, FLAGS, privilege, prefix, exception, and interrupt behavior is the form authority. |
+| Verification | Cover CMC, CLC, STC, CLD, and STD on all four profiles; exact sole-FLAGS-bit mutation and all-other-EFLAGS/GPR/EIP preservation; `66h`, `67h`, and combined fixed-semantics or profile classification; LOCK #UD/nonpublication; fixture-expressible protected/VM86 privilege state; and pending-PIC successful no-shadow behavior. |
+| Expected Markers | Focused smoke emits `M5:T316:S40:DIRECT-FLAGS:OK`; matrix evidence records every admitted opcode form and exact boundary disposition. |
+| Asset Needs | None; deterministic CPU fixture only. No guest media, external code, firmware, or research import. |
+| Stop Conditions | Stop and report if an Intel privilege rule needs a material harness or production change, or if a demonstrated defect expands beyond the declared forms. |
+| Exit Criteria | Every admitted `F5h`, `F8h`, `F9h`, `FCh`, and `FDh` form is classified and proven with no wider FLAGS/control-family completeness claim. |
+| Original Owner Request | Execute the complete Intel 80386 plan in dual-session mode against an Intel form--implementation--test matrix, repairing omissions and closing evidence without using Windows demand as the completeness boundary. |
+| Similar-Issue Sweep | Audit CMC/CLC/STC/CLD/STD handlers, prefix and profile routes, CLI/STI and PUSHF/POPF privilege fixtures, S39 LAHF/SAHF evidence, PIC examples, and matrix evidence. Classify all hits; other FLAGS-transfer/control families are excluded by opcode boundary. |
 
 ## Current Technical Baseline
 
