@@ -342,3 +342,18 @@ and outside S8. No runtime source, decoder, ABI, CMake, or artifact changed;
 the existing T316 0316 artifact is retained without rebuild.
 
 `M5:T316:S8:ADD:OK`
+
+## S9 Primary ADC Closure Evidence
+
+`10h`--`15h` and Group `80h/81h/83h /2` route through `_a_adc`; shared
+`_kac_arith2` and `_kaf_set_flags` callers were audited and unchanged. The
+owner-bound smoke covers 8/16/32 non-alias register/memory directions,
+accumulator/group immediates, CF carry-in, 83h sign extension, 66/67,
+profiles, and protected source-fault non-publication. Carry-in vectors prove
+the exact CF/ZF/AF/PF result with OF/SF clear. No runtime defect was found.
+
+`M5:T316:S9:ADC:OK`
+
+S9 additionally proves carry-in-dependent signed overflow at 8/16/32 bits:
+accumulator `signed-max + 0 + CF` yields signed-min, with OF/SF/AF set,
+CF/ZF clear, and width-correct PF.
