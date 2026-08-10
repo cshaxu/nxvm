@@ -39,6 +39,18 @@ candidate work, and detailed capability evidence belong in
 
 ## CPU, Time, And Debugging Debt
 
+- [ ] **Legacy LOCK-prefix legality matrix (`TODO(Medium)`).** The
+  8086/80186/80286 profile path in `PREFIX_LOCK` advances past `F0` without
+  validating the following opcode; T316 S29 reproducibly observes `F0 98`
+  execute CBW on 8086 rather than follow the 80386-path `#UD` rule. This is
+  outside the bounded 80386 S29 slice because a correction changes shared
+  prefix behavior for every legacy opcode. Admit only with an Intel
+  profile-by-profile legality decision, an opcode/ModRM whitelist matrix,
+  focused valid-memory and invalid/register LOCK coverage for every affected
+  legacy route, and a retained 80386 regression. Do not special-case
+  `98`/`99` or import 80386 validation into legacy profiles without that
+  review.
+
 - [ ] **Broaden real-mode 8086 corpus (`TODO(High)`).** T240 established a
   reset-vector baseline for segment override, `REP`/direction strings,
   `INT`/`IRET`, port I/O, and fault retention.  Extend only through a failing

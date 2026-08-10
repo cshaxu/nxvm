@@ -2,8 +2,27 @@
 
 ## Current Work
 
-**Idle.** M5 T316 S28 is closed; the next 80386 matrix slice requires a
-separately admitted packet.
+**M5 T316 S29 - sign-extension conversion forms.** The coordinator admitted
+this bounded ordinary-execution continuation in Coordinated Dual-Session Mode.
+
+## M5 T316 S29 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Corrective; next unused subtask of the most recently closed numeric task, M5 T316. |
+| Admission And Approval | The owner approved continuous execution of the Intel 80386DX architecture-completeness program in Coordinated Dual-Session Mode. This is the next linear bounded matrix slice after T316 S28. |
+| Objective | Close Intel 80386 `98h`/`99h` sign-extension conversion forms: default-operand-size CBW/CWD and 80386 `66h` CWDE/CDQ, with their architectural register, FLAGS, profile, prefix, and interrupt boundaries. |
+| Non-goals | No arithmetic/division family, no new decoder or helper abstraction, no x87 implementation, no post-80386 behavior, no broad prefix-family completion, and no runtime change unless a focused vector demonstrates a defect. |
+| Reference Baseline | `adfaef3f` / `vm-0-5-0316`, with T316 S28 closed, `main` equal to `origin/main`, and no active packet before this admission. |
+| Files And ABI Surface | Expected scope is one focused machine smoke and CMake registration only if no current owner target can hold it, the ordinary-execution matrix, and this packet. `src/core/machine/cpu_instructions.c` changes only for a demonstrated defect. No public ABI change. |
+| Applicable Rules | `docs/rules/EXECUTION.md`: one active packet, dual-session Instruction/report loop, actual-change coordinator review, linear corrective allocation, matrix audit, similar-issue sweep, and immediate push. `docs/rules/CODING.md`: preserve local code style and do not introduce an abstraction before callers have focused coverage. Intel 80386 PRM CBW/CWDE, CWD/CDQ, operand-size, prefix, interrupt, and exception behavior is the form authority. |
+| Verification | Audit `98h`/`99h` table routes, both handlers, and prefix LOCK/profile dispatch. Add focused default 16-bit positive/negative vectors on 8086/80186/80286/80386; 80386 `66h` positive/negative 32-bit vectors; exact AX/EAX or DX/EDX publication and nonparticipant GPR/FLAGS preservation; `67h` acceptance with no semantic effect where applicable; lower-profile `66h` #UD/no publication; 80386 LOCK #UD/no publication; and a pending-IRQ vector for each handler proving no shadow. Build/run the focused smoke, documentation governance, `git diff --check`, and complete current gates before closure. |
+| Expected Markers | Focused smoke emits `M5:T316:S29:SIGN-EXTEND:OK`; matrix evidence records all `98h`/`99h` forms and the exact boundary dispositions. |
+| Asset Needs | None; deterministic CPU fixture only. No guest media, external code, firmware, or research import. |
+| Stop Conditions | Stop and report if the route audit conflicts with Intel 80386 form behavior, a shared helper requires change without covered callers, or a demonstrated 80386 defect expands beyond `98h`/`99h`. The observed legacy-profile LOCK divergence is recorded as a separate debt rather than silently changed by this 80386 slice. |
+| Exit Criteria | Every declared `98h`/`99h` form is complete or explicitly classified with authority; 16/32 sign behavior, state preservation, profile/LOCK rejection, and no-shadow IRQ behavior have focused proof; any demonstrated runtime defect is fixed; the matrix no longer leaves CBW/CWD forms merely implicit in a broader partial row; required gates pass; and the coordinator independently reviews changed artifacts before closure. |
+| Original Owner Request | Execute the complete Intel 80386 plan in dual-session mode against an Intel form--implementation--test matrix, repairing omissions and closing evidence without using Windows demand as the completeness boundary. |
+| Similar-Issue Sweep | Audit primary table entries `98h`/`99h`, CBW/CWD handlers, and prefix/profile dispatch. The named pair is the whole local defect/evidence class; if a defect appears, search both handlers and their direct table routes, classifying each hit. The legacy LOCK divergence is an out-of-scope shared-prefix hit and is recorded in `TODO.md` with a separate admission path. |
 
 ## Current Technical Baseline
 
