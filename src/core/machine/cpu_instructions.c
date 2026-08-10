@@ -5833,6 +5833,8 @@ static C_VOID _a_rol(core_machine_cpu_execution_context *context, type_unsigned_
         instruction_state.data.opr1 = TYPE_MASK_UNSIGNED_8(cdest);
         instruction_state.data.opr2 = count;
         instruction_state.data.result = instruction_state.data.opr1;
+        if (count == 0)
+            break;
         while (count)
         {
             flagcf = !!TYPE_GET_MSB_8(instruction_state.data.result);
@@ -5854,6 +5856,8 @@ static C_VOID _a_rol(core_machine_cpu_execution_context *context, type_unsigned_
         instruction_state.data.opr1 = TYPE_MASK_UNSIGNED_16(cdest);
         instruction_state.data.opr2 = count;
         instruction_state.data.result = instruction_state.data.opr1;
+        if (count == 0)
+            break;
         while (count)
         {
             flagcf = !!TYPE_GET_MSB_16(instruction_state.data.result);
@@ -5875,6 +5879,8 @@ static C_VOID _a_rol(core_machine_cpu_execution_context *context, type_unsigned_
         instruction_state.data.opr1 = TYPE_MASK_UNSIGNED_32(cdest);
         instruction_state.data.opr2 = count;
         instruction_state.data.result = instruction_state.data.opr1;
+        if (count == 0)
+            break;
         while (count)
         {
             flagcf = !!TYPE_GET_MSB_32(instruction_state.data.result);
@@ -5911,6 +5917,8 @@ static C_VOID _a_ror(core_machine_cpu_execution_context *context, type_unsigned_
         instruction_state.data.opr1 = TYPE_MASK_UNSIGNED_8(cdest);
         instruction_state.data.opr2 = count;
         instruction_state.data.result = instruction_state.data.opr1;
+        if (count == 0)
+            break;
         while (count)
         {
             flagcf = TYPE_GET_LSB_UNSIGNED_8(instruction_state.data.result) ? TYPE_MSB_8 : 0;
@@ -5932,6 +5940,8 @@ static C_VOID _a_ror(core_machine_cpu_execution_context *context, type_unsigned_
         instruction_state.data.opr1 = TYPE_MASK_UNSIGNED_16(cdest);
         instruction_state.data.opr2 = count;
         instruction_state.data.result = instruction_state.data.opr1;
+        if (count == 0)
+            break;
         while (count)
         {
             flagcf = TYPE_GET_LSB_UNSIGNED_16(instruction_state.data.result) ? TYPE_MSB_16 : 0;
@@ -5953,6 +5963,8 @@ static C_VOID _a_ror(core_machine_cpu_execution_context *context, type_unsigned_
         instruction_state.data.opr1 = TYPE_MASK_UNSIGNED_32(cdest);
         instruction_state.data.opr2 = count;
         instruction_state.data.result = instruction_state.data.opr1;
+        if (count == 0)
+            break;
         while (count)
         {
             flagcf = TYPE_GET_LSB_UNSIGNED_32(instruction_state.data.result) ? TYPE_MSB_32 : 0;
@@ -5989,6 +6001,8 @@ static C_VOID _a_rcl(core_machine_cpu_execution_context *context, type_unsigned_
         instruction_state.data.opr1 = TYPE_MASK_UNSIGNED_8(cdest);
         instruction_state.data.opr2 = count;
         instruction_state.data.result = instruction_state.data.opr1;
+        if (count == 0)
+            break;
         while (count)
         {
             flagcf = !!TYPE_GET_MSB_8(instruction_state.data.result);
@@ -6010,6 +6024,8 @@ static C_VOID _a_rcl(core_machine_cpu_execution_context *context, type_unsigned_
         instruction_state.data.opr1 = TYPE_MASK_UNSIGNED_16(cdest);
         instruction_state.data.opr2 = count;
         instruction_state.data.result = instruction_state.data.opr1;
+        if (count == 0)
+            break;
         while (count)
         {
             flagcf = !!TYPE_GET_MSB_16(instruction_state.data.result);
@@ -6031,6 +6047,8 @@ static C_VOID _a_rcl(core_machine_cpu_execution_context *context, type_unsigned_
         instruction_state.data.opr1 = TYPE_MASK_UNSIGNED_32(cdest);
         instruction_state.data.opr2 = count;
         instruction_state.data.result = instruction_state.data.opr1;
+        if (count == 0)
+            break;
         while (count)
         {
             flagcf = !!TYPE_GET_MSB_32(instruction_state.data.result);
@@ -6067,6 +6085,8 @@ static C_VOID _a_rcr(core_machine_cpu_execution_context *context, type_unsigned_
         instruction_state.data.opr1 = TYPE_MASK_UNSIGNED_8(cdest);
         instruction_state.data.opr2 = count;
         instruction_state.data.result = instruction_state.data.opr1;
+        if (count == 0)
+            break;
         if (instruction_state.data.opr2 == 1)
             TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_OF,
                           ((!!TYPE_GET_MSB_8(instruction_state.data.result)) ^ _GetEFLAGS_CF));
@@ -6088,6 +6108,8 @@ static C_VOID _a_rcr(core_machine_cpu_execution_context *context, type_unsigned_
         instruction_state.data.opr1 = TYPE_MASK_UNSIGNED_16(cdest);
         instruction_state.data.opr2 = count;
         instruction_state.data.result = instruction_state.data.opr1;
+        if (count == 0)
+            break;
         if (instruction_state.data.opr2 == 1)
             TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_OF,
                           ((!!TYPE_GET_MSB_16(instruction_state.data.result)) ^ _GetEFLAGS_CF));
@@ -6109,6 +6131,8 @@ static C_VOID _a_rcr(core_machine_cpu_execution_context *context, type_unsigned_
         instruction_state.data.opr1 = TYPE_MASK_UNSIGNED_32(cdest);
         instruction_state.data.opr2 = count;
         instruction_state.data.result = instruction_state.data.opr1;
+        if (count == 0)
+            break;
         if (instruction_state.data.opr2 == 1)
             TYPE_MAKE_BIT(cpu_state.data.eflags, VCPU_EFLAGS_OF,
                           ((!!TYPE_GET_MSB_32(instruction_state.data.result)) ^ _GetEFLAGS_CF));
