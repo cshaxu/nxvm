@@ -2,26 +2,26 @@
 
 ## Current Work
 
-**Active: M5 T316 S7.**
+**Active: M5 T316 S8.**
 
-## M5 T316 S7 Packet
+## M5 T316 S8 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Corrective; M5 T316 S7 follows accepted T316 S6 within the same active task. |
-| Admission And Approval | Owner approved the M5 80386DX program and instructed that T316 continue normally after S1; coordinator accepted S6 through `0837d284` and admits S7 only. |
-| Objective | Complete the remaining primary TEST register-source matrix slice: `84h TEST r/m8,r8` and `85h TEST r/m16/32,r16/32`, with Intel-correct defined FLAGS, no destination publication, operand sizes, and source-fault behavior. |
-| Non-goals | Do not claim primary binary arithmetic/FLAGS or the ordinary family complete; do not refactor `_a_test` or shared flag helpers, alter decoder ownership/public ABI, reimplement accumulator/immediate TEST forms, implement an 80387, or admit post-80386 forms. |
+| Identifier Mode | Corrective; M5 T316 S8 follows accepted T316 S7 within the same active task. |
+| Admission And Approval | Owner approved the M5 80386DX program and instructed that T316 continue normally after S1; coordinator accepted S7 at `30c5f03b` and admits S8 only. |
+| Objective | Complete the declared primary ADD matrix slice: `00h`--`05h` and Group `80h/81h/83h /0`, with Intel-correct destination publication, defined FLAGS, operand sizes, and fault behavior. |
+| Non-goals | Do not claim primary binary arithmetic/FLAGS or the ordinary family complete; do not refactor shared arithmetic/flag helpers, alter decoder ownership/public ABI, implement ADC/SBB/other logical groups, implement an 80387, or admit post-80386 forms. |
 | Reference baseline | Accepted T314 artifact baseline; accepted T316 S1/S2 matrix and current focused corpus. |
 | Files And ABI Surface | `src/core/machine/cpu_instructions.c`, one owned CPU focused smoke and CMake registration if needed, T316 matrix/evidence, Status, and task artifact records. No public ABI change. |
 | Applicable rules | Architecture: one CPU decoder/executor path; Coding: preserve local CPU style, use no speculative abstraction, and keep tests owner-bound; Execution: complete only the declared matrix slice with focused and retained evidence, artifact, documentation, diff, commit, and push gates; Source policy: Intel authority, no imported external source. |
-| Verification | Audit Intel `84h/85h` forms before implementation; exercise 8/16/32 non-alias register and memory r/m operands; prove CF/OF/SF/ZF/PF results while not asserting undefined AF, no register/memory destination publication, operand/address attributes, legacy/profile behavior, and protected source-fault non-publication; scan `TEST_RM8_R8`, `TEST_RM32_R32`, `_a_test`, and flag-helper callers before any abstraction; rebuild the T316 task artifact only if runtime changes, run focused smoke, current gates, documentation governance, and `git diff --check`. |
-| Expected markers | New focused marker `M5:T316:S7:TEST-RM-REG:OK`; retained S1--S6 markers and applicable current-gate markers pass. |
+| Verification | Audit Intel ADD forms before implementation; exercise `00h`--`05h` and `80h/81h/83h /0` at 8/16/32 bits with non-alias register/memory destinations; prove CF/OF/SF/ZF/AF/PF, immediate sign extension where applicable, operand/address attributes, profile behavior, and protected source/destination-fault publication; scan ADD handlers, Group arithmetic dispatch, `_kac_arith2`, and flag-helper callers before any abstraction; rebuild T316 artifact if runtime changes, run focused smoke, current gates, documentation governance, and `git diff --check`. |
+| Expected markers | New focused marker `M5:T316:S8:ADD:OK`; retained S1--S7 markers and applicable current-gate markers pass. |
 | Asset needs | None beyond existing governed current-gate assets. |
-| Stop conditions | Stop and report if Intel-correct behavior requires a shared-helper change whose other callers lack coverage, decoder/ABI or exception-delivery architecture change, ambiguous undefined-flag contract, or an architecture boundary change. |
-| Exit criteria | Every Intel `84h/85h` TEST r/m,reg form in the declared S7 slice has implementation and focused proof; 8/16/32 non-alias register/memory behavior, defined FLAGS, undefined-AF discipline, no destination publication, attribute/profile behavior, and source-fault non-publication pass; every scan hit is disposed; no broader family-completeness claim is made; required gates, artifact handling, commit, and push pass. |
+| Stop conditions | Stop and report if Intel-correct behavior requires a shared-helper change whose other callers lack coverage, decoder/ABI or exception-delivery architecture change, or an architecture boundary change. |
+| Exit criteria | Every declared Intel ADD form has implementation and focused proof; 8/16/32 register/memory behavior, destination publication, all defined arithmetic FLAGS, immediate/sign-extension, attribute/profile behavior, and source/destination-fault non-publication pass; every scan hit is disposed; no broader family-completeness claim is made; required gates, artifact handling, commit, and push pass. |
 | Original owner request | Execute the complete 80386 program in Coordinated Dual-Session Mode against an Intel form--implementation--test matrix, repairing omissions without using Windows demand as a scope filter. |
-| Similar-issue sweep | Defect class: primary TEST r/m,reg routes lacking Intel-form evidence or correct FLAGS/no-publication/source-fault behavior. Scope: tracked CPU implementation, CPU tests, CMake registrations, T316 evidence, and relevant records; use `rg -n "TEST_RM8_R8|TEST_RM32_R32|_a_test|TEST_FLAG|_kaf_set_flags" src/core/machine tests CMakeLists.txt docs`. Classify every production hit as covered, fixed, deferred to a named matrix slice, or out of scope with reason. |
+| Similar-issue sweep | Defect class: primary ADD routes lacking Intel-form evidence or correct result/FLAGS/fault-publication behavior. Scope: tracked CPU implementation, CPU tests, CMake registrations, T316 evidence, and relevant records; use `rg -n "ADD_|INS_80|INS_81|INS_83|_kac_arith2|ADD_FLAG|_kaf_set_flags" src/core/machine tests CMakeLists.txt docs`. Classify every production hit as covered, fixed, deferred to a named matrix slice, or out of scope with reason. |
 
 ## Current Technical Baseline
 
