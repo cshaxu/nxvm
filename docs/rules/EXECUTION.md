@@ -43,73 +43,124 @@ not a substitute for reviewing the actual Git/worktree changes.
 
 ## Execution Modes
 
-Every admitted task or task package uses one declared execution mode. Both
-modes retain one active `STATUS.md` packet, the same identifier rules, the
-same evidence requirements, and the same closure audit.
+Every admitted T task package declares either **Ordinary Mode** or
+**Coordinated Dual-Session Mode**. Both modes retain one active `STATUS.md`
+packet, the same identifier rules, evidence requirements, similar-issue sweep,
+and closure audit. The modes change who performs each role; they do not weaken
+the T/S/P lifecycle.
 
-**Ordinary Mode.**
+**T, S, and P.**
 
-One conversation performs request review, task-packet preparation, owner
-approval, implementation, verification, closure review, and reporting in the
-same session. This is the default workflow described by this policy and the
-public execution-governance skill.
+`QUEUE.md` owns the ordered queue of T task packages. A T is a bounded,
+owner-approved goal with a stated scope, non-goals, dependencies, completion
+standard, and stop condition. It is not a pre-allocation of every implementation
+step. The coordinator observes the evidence produced by each admitted S and
+dynamically plans the next S within the active T boundary.
+
+An S is the smallest implementation, review, and acceptance unit inside an
+active T. Its active `STATUS.md` packet is the required task contract. Each S
+brief must state its objective, precise scope, non-goals, authority/baseline,
+verification and evidence requirements, quality standard, expected changed
+surface, stop conditions, and exit criteria. The brief defines task-specific
+technical requirements; this policy does not prescribe them. An S must not be
+silently turned into a moving target: a material scope, authority, acceptance,
+or risk change requires an explicit packet/brief revision before implementation
+continues.
+
+A P is one sequential, pushed commit within an S. An executor formal delivery
+becomes a P only after coordinator review, verification, commit, and push. P1
+is the first accepted delivery; later P values record corrections, added
+evidence, or other accepted changes. A pushed P is immutable: a correction
+uses the next P rather than rewriting history. The final P is the governance
+closure for its S. Pure documentation, status, or state changes remain a P of
+the current S when they belong to that S; they do not by themselves allocate a
+new T or S.
+
+Only the coordinator may create, admit, re-plan, suspend, close, cancel, or
+reorder T packages and their S tasks. The executor may question and execute an
+admitted S, but may not allocate identifiers, admit or expand S scope, create
+the next S, close a T, commit, or push. A finding outside an admitted S is
+reported to the coordinator; the coordinator decides whether it is an in-scope
+S revision, a later S in the active T, a future T, or a `TODO.md` deferral.
+
+A T closes only when its stated completion standard is proven, every in-scope
+remaining gap is closed or explicitly transferred through the normal queue/debt
+process, and the T-level closure audit completes. Merely completing some S
+tasks does not close a T. A T-level audit reviews documentation, code quality,
+open debt, task evidence, and applicable rules; it cannot be bypassed by a
+passing local implementation.
 
 **Coordinated Dual-Session Mode.**
 
-This mode separates decision/acceptance from implementation. It uses exactly
-the existing conversations named `coordinator` and `executor`. Create a named
-conversation only when it does not exist; reuse an existing named conversation
-and never create a duplicate role conversation.
+This mode uses exactly the existing conversations named `coordinator` and
+`executor`. Create a named conversation only when it does not exist; reuse an
+existing named conversation and never create a duplicate role conversation.
 
-1. The coordinator selects the approved Queue candidate, admits its one active
-   packet, and prepares an **Instruction**. The Instruction is a concise
-   execution brief derived from that packet: objective, non-goals, baseline,
-   scope, applicable rules, verification, expected markers, stop conditions,
-   and exit criteria.
-2. The coordinator sends the Instruction to the executor and requires a report
-   for every objection, requested correction, and implementation result. The
-   executor waits for a coordinator instruction after every report.
-3. The executor inspects the Instruction. With no objection, the executor sets
-   its goal and implements it. With an objection, missing prerequisite, or
-   needed correction, the executor reports the issue instead and does not
-   silently alter the Instruction.
-4. On an objection or correction report, the coordinator revises the active
-   packet as needed, issues a replacement Instruction, and returns to step 2.
-   On an implementation-result report, the coordinator audits the original
-   request, Instruction, packet exit criteria, evidence, applicable rules, and
-   the actual Git/worktree changes. This includes reading the relevant changed
-   code and artifacts, not merely `git diff --stat` or the executor's summary.
-   Any incomplete result receives a replacement Instruction and returns to
-   step 2. Only a complete result may close the current task and advance to the
-   next admitted Queue candidate.
-5. After the last task in a package closes, perform the package-close global
-   governance audit defined below. If it finds a code-quality or repository
-   defect, admit one next linear numeric remediation task and assign each
-   independently fixable finding its own subtask identifier. Execute those
-   subtasks through the same dual-session loop before declaring the package
-   complete.
+1. The coordinator selects an approved T, plans its next bounded S, admits the
+   sole active packet, and sends the executor a complete S brief. The brief is
+   the executor's authority to work; it is not a sequence of micro-instructions.
+2. Before implementation, the executor independently reviews the brief,
+   relevant routes, existing evidence, and task-specific risks. The executor
+   may raise a **scope objection**, **evidence objection**, **risk objection**,
+   or a **material clarification request**.
+3. The executor records and resolves ordinary implementation details under a
+   stated reasonable assumption. For an objection or request that materially
+   changes the S contract, the executor pauses the affected work and reports
+   it. The coordinator decides the issue and, when necessary, revises the
+   packet and replaces the S brief. The coordinator must not override an
+   unresolved material objection merely by requesting continued work.
+4. Once the executor accepts the S contract, it creates its internal acceptance
+   checklist and executes continuously. A partial implementation, a first
+   failure diagnosis, a local smoke result, an internal batch, or packet
+   preparation is not a formal completion point. The executor formally returns
+   only with a complete S delivery, a reproducible material blocker, or a newly
+   discovered fact that changes the accepted S contract.
+5. Before formal delivery, the executor re-reads the S brief and self-reviews
+   every acceptance requirement against actual evidence. Its report includes
+   the requirement-to-evidence mapping, changed files, production/shared impact,
+   verification commands and results, known gaps, and the explicit outside-scope
+   disposition. It must not claim closure while a stated requirement lacks
+   evidence.
+6. The coordinator independently reviews the original request, S brief,
+   packet, evidence, applicable rules, and actual Git/worktree changes. The
+   executor report is an evidence index, not a replacement for reading changed
+   code and artifacts. The coordinator runs required verification and, when
+   accepted, commits and pushes the next P.
+7. A failed coordinator review produces one consolidated corrective review for
+   that delivery: all then-known issues, evidence, required correction, and
+   re-acceptance standard. The executor implements it as the next P of the
+   same S unless the coordinator explicitly admits a separate S. The coordinator
+   does not normally direct individual implementation batches.
+8. Only after all S requirements are proven by pushed P values may the
+   coordinator authorize the final governance-closure P. It removes the active
+   packet, updates status/history and any necessary truthful governance records,
+   verifies closure, commits, and pushes. The next S is then planned from the
+   resulting repository state.
 
-The coordinator owns Instruction fidelity, task admission, scope correction,
-the actual-change review, and acceptance. The executor owns implementation,
-evidence, and prompt reporting. Neither role may close a task merely by
+The coordinator owns T planning, S admission, brief fidelity, scope decisions,
+actual-change review, P formation, and T/S closure. The executor owns
+independent S scrutiny, implementation, evidence, self-review, and prompt
+reporting of material objections. Neither role may close an S or T merely by
 asserting success.
 
-**Task Packages.**
+**Ordinary Mode.**
 
-A task package is an owner-approved, bounded sequence of Queue candidates with
-an explicit length or stop condition. It does not pre-allocate task numbers or
-create multiple active packets: only its current head is admitted to
-`STATUS.md`, then the next candidate is admitted after the prior task closes.
-Ordinary mode applies the same package sequence within one conversation;
-dual-session mode applies the coordinator/executor loop to each admitted task.
+One conversation may perform both coordinator and executor roles. It retains
+the same T/S/P model, active-packet rule, evidence standard, and closure audit.
+Combining people does not combine governance stages.
 
-A package is complete only after every admitted task has closed and a global
-governance audit reviews the repository's documentation, code quality, open
-debt, task evidence, and applicable architecture/coding rules. The audit uses
-the normal similar-issue sweep: clear in-scope findings become new subtasks;
-larger or uncertain findings are recorded in `TODO.md` with their required
-admission path. No package completion bypasses this audit.
+The single executor first plans/adopts the coordinator S brief, then performs
+an executor-style independent contract and implementation review, then returns
+to a coordinator-style actual-change and acceptance review before forming each
+P. Before committing, it must explicitly compare the S brief with the actual
+changes and evidence, check for scope drift and unresolved objections, and run
+required verification. A discovered material contradiction requires a brief
+revision or a later S; it must not be silently absorbed.
 
+Ordinary Mode must not claim independent dual-session review. If an active S
+changes execution mode, its handoff record states the accepted brief, current
+evidence, unresolved objections, and worktree state; the receiving mode then
+continues under its own role rules.
 ## Change Discipline
 
 Structural relocation uses `git mv`: repair direct includes and build paths,
