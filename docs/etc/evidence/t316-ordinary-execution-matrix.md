@@ -42,7 +42,7 @@ not an allocation of later task identifiers.
 | --- | --- | --- | --- |
 | Prefixes `26/2E/36/3E`, `64/65`, `66/67`, `F0`, `F2/F3`; repeated-prefix resolution | Prefix loop and `_GetOperandSize`/address decode in `cpu_instructions.c`; FS/GS and `66/67` explicitly gate at 80386. | `core_machine_real_mode_386_address_smoke`, `core_machine_operand_address_smoke` (`M5:T302:OPERAND-ADDRESS-STACK:OK`), T301 baseline. | **Partial**: FS/GS and operand/address prefix paths have bounded proof, but no cross-product proof exists for every primary opcode, LOCK legality, and repeated-prefix combination. Next: ordinary operand/address subfamily. |
 | Register/memory/immediate data movement: `MOV`, `XCHG`, `LEA`, `LES/LDS`, moffs, `PUSH/POP`, `PUSHA/POPA`, `PUSH imm`, `ENTER/LEAVE`, `CBW/CWD` (including 32-bit attribute variants) | Primary table routes to `MOV_*`, `XCHG_*`, `LEA_R32_M32`, stack helpers `_kec_push/_kec_pop`, and `ENTER/LEAVE`; primary defaults do not by themselves certify 32-bit forms. | T302 stack/address focused probe; T301 prefix/profile baseline. | **Partial**: direct route and selected 16/32 stack/address cases are proven, but no complete MOV/XCHG/LEA/moffs/segment-load matrix covers all register/memory, size, and fault-publication forms. Next: ordinary data/operand family. |
-| Primary binary arithmetic/logical/test: `ADD/OR/ADC/SBB/AND/SUB/XOR/CMP/TEST`, accumulator immediates, Groups `80/81/83` | Primary table and `INS_80/81/83`; `_kac_arith2` uses operand read/write and `_kaf_set_flags`. | `core_machine_inc_dec_smoke` (`M5:T316:S4:TEST:OK`, `M5:T316:S7:TEST-RM-REG:OK`) proves the declared TEST forms. | **Partial**: T316 S4 and S7 complete TEST `A8/A9`, `F6/F7 /0`, and `84/85` at 8/16/32 bits. The remaining binary arithmetic/logical groups lack a group proof. Next: ordinary arithmetic/FLAGS family. |
+| Primary binary arithmetic/logical/test: `ADD/OR/ADC/SBB/AND/SUB/XOR/CMP/TEST`, accumulator immediates, Groups `80/81/83` | Primary table and `INS_80/81/83`; `_kac_arith2` uses operand read/write and `_kaf_set_flags`. | `core_machine_inc_dec_smoke` (`M5:T316:S4:TEST:OK`, `M5:T316:S7:TEST-RM-REG:OK`, `M5:T316:S8:ADD:OK`) proves declared TEST and ADD forms. | **Partial**: T316 S4/S7 complete the declared TEST forms, and S8 completes `00`--`05` plus `80/81/83 /0` ADD at 8/16/32 bits. ADC/SBB and the other binary arithmetic/logical groups remain unproven. Next: ordinary arithmetic/FLAGS family. |
 | Primary unary arithmetic: `INC/DEC` register (`40`--`4F`) and Groups `FE/FF /0,/1`; `NEG/NOT` Groups `F6/F7 /2,/3` | Register handlers `INC_*`/`DEC_*`; `INS_FE/FF`, `INS_F6/F7`; all use `_kac_arith1` and flag masks. | `core_machine_inc_dec_smoke` (`M5:T316:S2:INC-DEC:OK`, `M5:T316:S3:NOT-NEG:OK`) proves both admitted slices. | **Complete** only for T316's named INC/DEC and NOT/NEG forms: 16/32-bit register and 8/16/32-bit r/m forms, their Intel FLAGS contracts, 16/32 operand/address attributes, profile behavior, publication, and protected fault non-publication. The wider unary/arithmetic family remains **Partial**: `F6/F7 /6,/7` division is a separately named slice. |
 | Decimal/ASCII adjust and conversion: `DAA/DAS/AAA/AAS/AAM/AAD`, `XLAT` | Primary handlers `DAA`, `DAS`, `AAA`, `AAS`, `AAM`, `AAD`, `XLAT`; DAA/DAS/AAM/AAD call `_kaf_set_flags`. | No focused architecture probe found. | **Partial**: handlers exist, but documented flag-defined/undefined behavior, base-immediate edge cases, 16/32 addressing for XLAT, and faults are not proven. Next: ordinary arithmetic/FLAGS family. |
 | Shift/rotate Groups `C0/C1/D0`--`D3` | `INS_C0/C1/D0/D1/D2/D3`; shift paths call `_kaf_set_flags`. | No focused primary shift/rotate smoke; T310's double-shift smoke is only `SHLD/SHRD`. | **Partial**: primary count masking, count-zero flags, rotate flags, and memory faults remain unproven. Next: ordinary arithmetic/FLAGS family. |
@@ -306,3 +306,39 @@ or artifact changed, so the existing T316 0316 artifact is retained without a
 rebuild.
 
 `M5:T316:S7:TEST-RM-REG:OK`
+
+## S8 Primary ADD Closure Evidence
+
+The declared Intel ADD forms are `00h`--`03h` r/m,reg and reg,r/m at byte and
+word/dword widths, `04h/05h` accumulator immediates, and Group
+`80h/81h/83h /0`. `83h` sign-extends its byte immediate to the active 16- or
+32-bit operand size. ADD publishes its destination and defines CF, OF, SF,
+ZF, AF, and PF.
+
+`core_machine_inc_dec_smoke` covers 8/16/32 non-alias register and direct
+memory destinations in both r/m,reg and reg,r/m directions, accumulator
+immediates, and every Group `/0` immediate form including memory destinations.
+Wraparound vectors assert CF/ZF/AF/PF and clear OF/SF; bounded 8/16/32
+accumulator `signed-max + 1` vectors independently assert OF/SF/AF and the
+width-correct PF result with CF/ZF clear. `83h` negative-immediate vectors
+prove sign extension with SF/PF and the remaining defined flags clear.
+The smoke checks destination publication and preservation of the non-destination
+register or memory source. `67h 66h 01h` proves 32-bit address/operand
+attributes; legacy word ADD is accepted on 80186 and `66h` rejects on 80286
+without publishing registers, EFLAGS, or EIP.
+
+The protected fixture covers both an out-of-limit r/m source and an in-limit
+read-only r/m destination for `01h`, observing the existing deliverable `#DF`
+boundary and proving destination memory, the register source, EFLAGS, and EIP
+are unpublished. Initial test work corrected two fixture defects: it had
+classified default `83h` as 32-bit rather than 16-bit, and configured the
+destination-write vector as writable. Neither exposed a runtime defect.
+
+The S8 sweep finds the six `00h`--`05h` handlers and Group `80/81/83 /0` all
+feed `_a_add`; `_kac_arith2` also serves ADC, logical operations, SUB/SBB, CMP,
+and TEST, while `_kaf_set_flags` has the broader callers recorded above. Neither
+shared helper changed. FPU `FADD` is the retained external-coprocessor boundary
+and outside S8. No runtime source, decoder, ABI, CMake, or artifact changed;
+the existing T316 0316 artifact is retained without rebuild.
+
+`M5:T316:S8:ADD:OK`
