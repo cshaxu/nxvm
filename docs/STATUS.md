@@ -2,26 +2,26 @@
 
 ## Current Work
 
-**Active: M5 T316 S1.**
+**Active: M5 T316 S2.**
 
-## M5 T316 S1 Packet
+## M5 T316 S2 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New; the previous T315 admission commit consumed T315 before the identifier gate rejected its packet; M5 T316 S1 is now the next valid global numeric task. |
-| Admission And Approval | Owner approved the M5 80386DX architecture-completeness program, matrix-driven admission/exit, and Coordinated Dual-Session Mode on 2026-08-09. Coordinator admits S1 only; every later subtask requires coordinator acceptance of the prior result. |
-| Objective | Produce the Intel 80386 PRM-to-source-to-test matrix for the first Queue family, ordinary execution and flag completeness, and select one independently correctable implementation slice for S2. |
-| Non-goals | Do not modify CPU behavior, claim a family is complete, implement an 80387, admit later IA-32 forms, change a public ABI, use Windows demand as a scope filter, or copy/import Bochs, PCjs, or other third-party source. |
-| Reference baseline | Accepted T314 `vm-0-5-0315` / `build/output/nxvm_0_5_0315.exe`; current source, test corpus, T309 audit, and the M5 80386DX completeness program. |
-| Files And ABI Surface | New `docs/etc/evidence/t316-ordinary-execution-matrix.md`, the active-identifier calculation in `tools/Verify-DocumentationGovernance.ps1`, and, if needed, Status/evidence cross-links only. No production source, test executable, CMake target, public ABI, or artifact identity changes in S1. |
-| Applicable rules | Architecture: one CPU decoder/executor ownership path and no new cross-component coupling; Coding: preserve existing CPU ownership/style and record reusable-helper caller coverage before abstraction; Execution: PRM matrix-driven admission, evidence, documentation, diff, commit, and push gates; Source policy: Intel is behavioral authority and external implementations are read-only references only. |
-| Verification | Inspect the Intel 80386 ordinary execution/FLAGS/operand/address/string/control forms against the initialized primary dispatch, metadata/profile gates, operand/flag helpers, focused tests, and T309 baseline; record code/test evidence and all complete/partial/missing/outside/boundary classifications; verify every retained partial or missing form names its next Queue family or candidate slice. Verify the identifier gate excludes only the current active packet's own admission record while retaining prior subtasks for later corrective allocation; run its self-test, documentation governance, and `git diff --check`. |
-| Expected markers | Evidence marker `M5:T316:S1:80386-ORDINARY-MATRIX:OK`, emitted only when every reviewed form has a classification, source/test disposition, and next placement; no runtime marker or artifact is expected because S1 changes no runnable path. |
-| Asset needs | None. Intel PRM citation material and read-only local/reference metadata may be consulted under source policy; no guest media, third-party source, binary, trace, or external asset enters the repository. |
-| Stop conditions | Stop and report if the family cannot be bounded without changing decoder ownership, a shared helper lacks caller coverage needed for safe alteration, the Intel form boundary is ambiguous after authority review, or a proposed abstraction changes architecture/public ABI. |
-| Exit criteria | The ordinary-family matrix covers its relevant 80386 forms and records each classification, source route, existing focused evidence, and remaining gap. The matrix identifies one S2 slice with exact forms, helper-caller coverage, focused proof plan, non-goals, and similar-issue sweep; no unclassified in-scope form is hidden, and no completeness claim is made before the whole family matrix is resolved. The identifier gate recognizes the current active packet's admission as active rather than closed, without weakening prior-task or corrective-subtask allocation. |
-| Original owner request | Adopt Coordinated Dual-Session Mode to execute the complete 80386 plan against an Intel 80386 form--implementation--test matrix, repair omissions, perform differential/boundary review where needed, and close the package with governance evidence; 80387 implementation is out of scope while 80386 coprocessor-interface behavior remains in scope. |
-| Similar-issue sweep | Not a defect repair in S1. Matrix inventory scope: tracked CPU production source, CPU-focused tests, dispatch/profile metadata, prior 80386 evidence, Queue, TODO, and relevant rules; use `rg -n "insTable|INS_0F|ExecIns|core_machine_cpu_instruction_metadata_get|flag|operand|opcode" src/core/machine tests docs` plus exact PRM-form review. Every in-scope primary-form hit receives a matrix disposition; external-reference source is read-only and excluded from repository scan. |
+| Identifier Mode | Corrective; M5 T316 S2 follows accepted T316 S1 within the same active task. |
+| Admission And Approval | Owner approved the M5 80386DX program and instructed that T316 continue normally after S1; coordinator accepted S1 matrix at `64553802` and admits S2 only. |
+| Objective | Complete the declared INC/DEC matrix slice: `40h`--`4Fh`, `FE /0,/1`, and `FF /0,/1`, with Intel-correct operand sizes, FLAGS, memory publication, and fault behavior. |
+| Non-goals | Do not claim the unary-arithmetic or ordinary family complete; do not implement NEG/NOT, refactor shared arithmetic helpers, alter decoder ownership/public ABI, implement an 80387, or admit post-80386 forms. |
+| Reference baseline | Accepted T314 `vm-0-5-0315`; accepted T316 S1 matrix `64553802`; current source and focused corpus. |
+| Files And ABI Surface | `src/core/machine/cpu_instructions.c`, one owned CPU focused smoke and CMake registration if needed, T316 matrix/evidence, Status, and task artifact records. No public ABI change. |
+| Applicable rules | Architecture: one CPU decoder/executor path; Coding: preserve local CPU style, use no speculative abstraction, and keep tests owner-bound; Execution: complete only the declared matrix slice with focused and retained evidence, artifact, documentation, diff, commit, and push gates; Source policy: Intel authority, no imported external source. |
+| Verification | Exercise register and r/m INC/DEC forms at 8/16/32 bits; prove CF unchanged and defined FLAGS; cover register/memory publication and fault non-publication, operand/address attributes and profile rejection; scan all INC/DEC handlers and `_kac_arith1` callers; build the task artifact, run focused smoke, current gates, documentation governance, and `git diff --check`. |
+| Expected markers | New focused marker `M5:T316:S2:INC-DEC:OK`; retained matrix marker and applicable current-gate markers pass. |
+| Asset needs | None beyond existing governed current-gate assets. |
+| Stop conditions | Stop and report if Intel-correct behavior requires a shared-helper change whose other callers lack coverage, decoder/ABI change, ambiguous undefined-flag contract, or an architecture boundary change. |
+| Exit criteria | Every INC/DEC form in the declared S2 slice has implementation and focused proof; CF preservation, defined flags, 8/16/32 register/memory behavior, and fault non-publication pass; every scan hit is disposed; no broader family-completeness claim is made; required gates, artifact, commit, and push pass. |
+| Original owner request | Execute the complete 80386 program in Coordinated Dual-Session Mode against an Intel form--implementation--test matrix, repairing omissions without using Windows demand as a scope filter. |
+| Similar-issue sweep | Defect class: primary INC/DEC form routes lacking form-level evidence or Intel flag/publication behavior. Scope: tracked CPU implementation, CPU tests, CMake registrations, T316 evidence, and relevant records; use `rg -n "INC_|DEC_|INS_FE|INS_FF|_kac_arith1" src/core/machine tests CMakeLists.txt docs`. Classify every production hit as covered, fixed, deferred to a named matrix slice, or out of scope with reason. |
 
 ## Current Technical Baseline
 
