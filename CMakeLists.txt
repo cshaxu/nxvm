@@ -171,6 +171,8 @@ add_executable(core-machine-inc-dec-smoke tests/machine/core_machine_inc_dec_smo
 target_link_libraries(core-machine-inc-dec-smoke PRIVATE core-machine)
 add_executable(core-machine-rotate-smoke tests/machine/core_machine_rotate_smoke.c)
 target_link_libraries(core-machine-rotate-smoke PRIVATE core-machine)
+add_executable(core-machine-eflags-local-smoke tests/machine/core_machine_eflags_local_smoke.c)
+target_link_libraries(core-machine-eflags-local-smoke PRIVATE core-machine)
 add_executable(core-machine-double-shift-smoke tests/machine/core_machine_double_shift_smoke.c)
 target_link_libraries(core-machine-double-shift-smoke PRIVATE core-machine)
 add_executable(core-machine-bit-scan-smoke tests/machine/core_machine_bit_scan_smoke.c)
@@ -1140,6 +1142,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-bit-test-smoke
     core-machine-inc-dec-smoke
     core-machine-rotate-smoke
+    core-machine-eflags-local-smoke
     core-machine-double-shift-smoke
     core-machine-bit-scan-smoke
     core-machine-imul2-smoke

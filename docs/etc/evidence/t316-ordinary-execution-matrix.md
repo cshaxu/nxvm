@@ -537,3 +537,19 @@ three local helpers and six dispatch routes as covered, `/6` as retained #UD,
 and the remaining Group-2 rotate routes as accepted S18 scope.
 
 `M5:T316:S19:SHIFT:OK`
+
+## S20 Local EFLAGS Evidence
+
+`core_machine_eflags_local_smoke` proves `LAHF`, `SAHF`, `CMC`, `CLC`, `STC`,
+`CLD`, and `STD` through their primary decoder entries. SAHF covers both low
+flag inputs and preserves all non-SAHF flags; LAHF proves AH low-flag transfer,
+bit1 forced to one, EFLAGS preservation, and non-AH EAX preservation. CMC
+uses both CF inputs; CLC/STC and CLD/STD assert their sole affected bit while
+preserving the rest. All seven forms are independently reachable on both 8086
+and 80186 profiles; they have no operand/address-size attribute semantics.
+The focused fixture is fault-free and checks EIP publication. A focused failure
+found LAHF omitted Intel-mandated AH bit1; the local handler now ORs `02h` into
+its AH result. PUSHF/POPF, CLI/STI, IOPL and interrupt shadow remain partial
+and out of S20 scope; no shared helper changed.
+
+`M5:T316:S20:EFLAGS-LOCAL:OK`
