@@ -7,6 +7,15 @@ numeric identifier under [rules/EXECUTION.md](rules/EXECUTION.md).
 
 Before M6 admission, complete the remaining M5 candidates:
 
+Every 80386DX candidate is matrix-driven rather than Windows-demand-driven.
+Before admitting a task, audit its relevant Intel 80386 PRM instruction and
+behavior forms and record each form as complete, partial, missing, outside
+80386, or an explicit external-coprocessor boundary. A task may close only its
+declared bounded matrix slice; it cannot claim its family complete while an
+in-scope form is partial, missing, or unclassified. A family candidate advances
+only when its whole assigned matrix is resolved by implementation and focused
+evidence, or by an approved boundary classification.
+
 1. **80386DX ordinary execution and flag-completeness foundation.** Complete
    the remaining ordinary instruction, operand-size, address-size, flag, and
    string/control families against the Intel 80386 architecture. Reuse an

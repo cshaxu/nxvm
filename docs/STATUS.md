@@ -34,6 +34,11 @@
 
 ## Recent Governance
 
+- **M5 Td S63:** made Intel 80386 PRM form audits a per-candidate admission
+  input and exit gate. A bounded task can close only its declared matrix slice;
+  a family cannot close while any in-scope form is partial, missing, or
+  unclassified. Td work has no runtime or artifact change.
+
 - **M5 Td S62:** recorded the owner-approved Intel 80386DX
   architecture-completeness program before M6, replaced the closed T314 Queue
   candidate with its ordered family sequence, scoped 80386-to-x87 coupling
@@ -64,9 +69,6 @@
   before any separate M6 admission. See the
   [package-close audit](etc/evidence/m5-direct-80386-package-close-audit.md).
 
-- **M5 Td S54:** reordered the Queue so the M5 80386 package precedes the M6
-  mantle experiment; candidate order changed without assigning implementation
-  identifiers or changing a candidate contract. Td work has no history record.
 - **M5 Td S55:** replaced the over-granular M5 80386 plan with a direct,
   family-oriented 32-bit protected execution/delivery package before Mantle;
   full-system checkpoints are debug/progress tools, while construction uses
