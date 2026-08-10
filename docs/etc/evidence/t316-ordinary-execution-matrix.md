@@ -683,6 +683,7 @@ all nonparticipant GPR preservation, lower-profile `66h` #UD without
 publication, and LOCK #UD without publication. A pending-PIC vector proves
 the `91` exchange retires and reaches the handler before the following NOP, so
 these accumulator handlers establish no interrupt shadow. No runtime change
-was required.
+was required. The coordinator independently passed all 52 static/governance
+checks and all 157 current-gate tests.
 
 `M5:T316:S28:XCHG-ACC:OK`
