@@ -34,11 +34,14 @@
 
 ## Recent Governance
 
-- **M5 Td S59:** governed the relocated local media set and CMake media root.
-  Current aliases select the owner-approved MS-DOS 6.22 FDD and EWIN31 Setup
-  HDD by hash; historical M1 DOS 5 evidence remains separate. The new FDD
-  exposes ten retained DOS 5-bound smoke failures, recorded as explicit debt
-  rather than weakened tests or a compatibility claim.
+- **M5 Td S60:** routed every DOS 5-bound smoke contract through the explicit
+  M1 FDD image while retaining the current MS-DOS 6.22 FDD and EWIN31 Setup
+  HDD for their applicable checks. Fresh configuration restored 145/145 current
+  gates without weakening old assertions or claiming broad DOS 6.22 support.
+
+- **M5 Td S59:** established the repository-relative current-media root,
+  approved-media identities, and protected-media change controls. Its initial
+  DOS 5 contract mismatch was classified and corrected by S60.
 
 - **M5 Td S58:** made immediate remote push a cross-mode change-discipline
   requirement. Every successful task or subtask commit must be pushed before
@@ -51,9 +54,7 @@
   before any separate M6 admission. See the
   [package-close audit](etc/evidence/m5-direct-80386-package-close-audit.md).
 
-- **M5 Td S52:** regrouped supporting material into architecture, requirements,
-  evidence, operations, research, and history; isolated M5/legacy evidence and
-  repaired every governed migration link. Td work has no history record.
+
 - **M5 Td S53:** recorded the approved M6 mantle-entry queue refinement and a
   five-package, evidence-led 80386 candidate sequence; scrubbed prohibited
   historical identifiers from retained external research prose. Td work has no

@@ -26,18 +26,16 @@ run.
 
 ## Current Observation
 
-A fresh configured run resolved both aliases through the repository-relative
-asset root. The retained current gate passed 135 of 145 tests. Ten FDD/DOS
-tests did not establish an MS-DOS 6.22 contract and remain failed evidence:
-`vm-dos-prompt-smoke`, `vm-dos-keyboard-smoke`,
-`vm-dos-mem-fault-smoke`, `vm-dos-video-port-smoke`,
-`vm-cga-graphics-dos-smoke`, `vm-ega-planar-dos-smoke`,
-`vm-rom-ega-int10-dos-smoke`, `vm-mouse-driver-dos-smoke`,
-`vm-fdc-read-track-dos-smoke`, and `vm-ata-pio-dos-smoke`.
+A fresh configured run first showed that ten FDD/DOS tests retain MS-DOS 5
+prompt/state contracts, including `vm-ata-pio-dos-smoke`. CMake now routes the
+nine FDD-only tests and ATA DOS smoke through `m1-fdd-msdos500`; ATA retains
+`runtime-hdd-ewin31-setup`. The current FDD remains the input for
+`vm-timer-firmware-smoke`, `vm-debug-pause-boundary-smoke`,
+`vm-unified-debug-backend-smoke`, and the current product-session smoke.
 
-Those tests retain DOS 5 prompt/state assumptions; one prompt run also ended
-with `0xc0000374`. This record does not claim DOS 6.22 guest compatibility or
-weaken the retained corpus. The follow-up admission is recorded in `TODO.md`.
+With that contract routing, the retained current gate passes 145 of 145 tests.
+This evidence does not claim broad MS-DOS 6.22 guest compatibility or weaken
+any historical assertion.
 
 ## Change Control
 

@@ -6,8 +6,8 @@ Their contents and source path are intentionally not recorded here.
 
 | Logical name | Size (bytes) | SHA-256 | Role |
 | --- | ---: | --- | --- |
-| `fdd.img` | 1,474,560 | `fadeb3a27c6a0e1cf582dde0b9aecb7e5d30678f2f967f2f4562f167cc0cb1d5` | Existing NXVM removable-disk baseline input. |
-| `hdd.img` | 51,609,600 | `f4d1e81bc410bb9a7558667b7c3741a9664e84077a3774e73104cd24b631d688` | Existing NXVM hard-disk baseline input. |
+| `m1-fdd-msdos500` | 1,474,560 | `fadeb3a27c6a0e1cf582dde0b9aecb7e5d30678f2f967f2f4562f167cc0cb1d5` | Historical MS-DOS 5 FDD input for M1-bound smoke contracts. |
+| `m1-hdd-msdos500` | 51,609,600 | `f4d1e81bc410bb9a7558667b7c3741a9664e84077a3774e73104cd24b631d688` | Historical MS-DOS 5 HDD baseline input. |
 | `stop.com` | 4 | `53d8bb10d4b4f1b6a2ff05520510593a6227c6430203fa12856a0a40fca3b39f` | Owner-provided guest payload; M1 must classify placement and behavior before use. |
 | `reset.com` | 4 | `b970ddd63ec0caf7e7cc256cc5cd7c7d7f1fc009b0ee4cbf3cdfeed64dc1b849` | Owner-provided guest payload; M1 must classify placement and behavior before use. |
 
