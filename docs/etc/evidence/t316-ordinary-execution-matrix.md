@@ -699,5 +699,7 @@ preservation, and 80386 `67h` acceptance without semantic effect. Lower-profile
 publication on 80386 only. The separate legacy LOCK-prefix divergence is
 recorded as `TODO(Medium)`, not claimed complete here. Pending-PIC vectors for
 both handlers prove no interrupt shadow. No runtime change was required.
+The coordinator independently passed all 52 static/governance checks and all
+158 current-gate tests.
 
 `M5:T316:S29:SIGN-EXTEND:OK`
