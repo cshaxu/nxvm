@@ -2,26 +2,26 @@
 
 ## Current Work
 
-**Active: M5 T316 S6.**
+**Active: M5 T316 S7.**
 
-## M5 T316 S6 Packet
+## M5 T316 S7 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Corrective; M5 T316 S6 follows accepted T316 S5 within the same active task. |
-| Admission And Approval | Owner approved the M5 80386DX program and instructed that T316 continue normally after S1; coordinator accepted S5 through `97972850` and admits S6 only. |
-| Objective | Complete the declared Group `F6/F7 /6,/7` matrix slice: one-operand unsigned `DIV` and signed `IDIV`, with Intel-correct implicit dividend/quotient/remainder registers, divide-error behavior, operand sizes, and source-fault behavior. |
-| Non-goals | Do not claim the multiply/divide, binary-arithmetic/FLAGS, or ordinary family complete; do not refactor shared arithmetic helpers, alter decoder ownership/public ABI, implement any FPU arithmetic, alter external exception-delivery architecture, implement an 80387, or admit post-80386 forms. |
+| Identifier Mode | Corrective; M5 T316 S7 follows accepted T316 S6 within the same active task. |
+| Admission And Approval | Owner approved the M5 80386DX program and instructed that T316 continue normally after S1; coordinator accepted S6 through `0837d284` and admits S7 only. |
+| Objective | Complete the remaining primary TEST register-source matrix slice: `84h TEST r/m8,r8` and `85h TEST r/m16/32,r16/32`, with Intel-correct defined FLAGS, no destination publication, operand sizes, and source-fault behavior. |
+| Non-goals | Do not claim primary binary arithmetic/FLAGS or the ordinary family complete; do not refactor `_a_test` or shared flag helpers, alter decoder ownership/public ABI, reimplement accumulator/immediate TEST forms, implement an 80387, or admit post-80386 forms. |
 | Reference baseline | Accepted T314 artifact baseline; accepted T316 S1/S2 matrix and current focused corpus. |
 | Files And ABI Surface | `src/core/machine/cpu_instructions.c`, one owned CPU focused smoke and CMake registration if needed, T316 matrix/evidence, Status, and task artifact records. No public ABI change. |
 | Applicable rules | Architecture: one CPU decoder/executor path; Coding: preserve local CPU style, use no speculative abstraction, and keep tests owner-bound; Execution: complete only the declared matrix slice with focused and retained evidence, artifact, documentation, diff, commit, and push gates; Source policy: Intel authority, no imported external source. |
-| Verification | Audit the Intel one-operand `DIV` and `IDIV` forms before implementation; exercise Group `F6/F7 /6,/7` register and memory sources at 8/16/32 bits; prove implicit `AX`, `DX:AX`, and `EDX:EAX` quotient/remainder publication, undefined-flag non-claims, divide-by-zero and quotient-overflow exception/non-publication, operand/address attributes, legacy/profile behavior, and protected source-fault non-publication; scan `_a_div`, `_a_idiv`, `INS_F6/F7`, exception paths, and helper callers before any abstraction; rebuild the T316 task artifact, run focused smoke, current gates, documentation governance, and `git diff --check`. |
-| Expected markers | New focused marker `M5:T316:S6:DIV-IDIV:OK`; retained S1--S5 markers and applicable current-gate markers pass. |
+| Verification | Audit Intel `84h/85h` forms before implementation; exercise 8/16/32 non-alias register and memory r/m operands; prove CF/OF/SF/ZF/PF results while not asserting undefined AF, no register/memory destination publication, operand/address attributes, legacy/profile behavior, and protected source-fault non-publication; scan `TEST_RM8_R8`, `TEST_RM32_R32`, `_a_test`, and flag-helper callers before any abstraction; rebuild the T316 task artifact only if runtime changes, run focused smoke, current gates, documentation governance, and `git diff --check`. |
+| Expected markers | New focused marker `M5:T316:S7:TEST-RM-REG:OK`; retained S1--S6 markers and applicable current-gate markers pass. |
 | Asset needs | None beyond existing governed current-gate assets. |
-| Stop conditions | Stop and report if Intel-correct behavior requires a shared-helper change whose other callers lack coverage, decoder/ABI or exception-delivery architecture change, ambiguous quotient-overflow behavior, a fault-class change not represented by the existing fixture boundary, or an architecture boundary change. |
-| Exit criteria | Every Intel `F6/F7 /6,/7` one-operand division form in the declared S6 slice has implementation and focused proof; 8/16/32 register/memory behavior, implicit dividend and quotient/remainder publication, divide-error non-publication, undefined-flag discipline, attribute/profile behavior, and source-fault non-publication pass; every scan hit is disposed; no broader family-completeness claim is made; required gates, rebuilt T316 artifact, commit, and push pass. |
+| Stop conditions | Stop and report if Intel-correct behavior requires a shared-helper change whose other callers lack coverage, decoder/ABI or exception-delivery architecture change, ambiguous undefined-flag contract, or an architecture boundary change. |
+| Exit criteria | Every Intel `84h/85h` TEST r/m,reg form in the declared S7 slice has implementation and focused proof; 8/16/32 non-alias register/memory behavior, defined FLAGS, undefined-AF discipline, no destination publication, attribute/profile behavior, and source-fault non-publication pass; every scan hit is disposed; no broader family-completeness claim is made; required gates, artifact handling, commit, and push pass. |
 | Original owner request | Execute the complete 80386 program in Coordinated Dual-Session Mode against an Intel form--implementation--test matrix, repairing omissions without using Windows demand as a scope filter. |
-| Similar-issue sweep | Defect class: one-operand `DIV`/`IDIV` routes lacking Intel-form evidence or correct implicit-result/divide-error/source-fault behavior. Scope: tracked CPU implementation, CPU tests, CMake registrations, T316 evidence, and relevant records; use `rg -n "_a_div|_a_idiv|INS_F6|INS_F7|DIV_|IDIV_|EXCEPT_DE" src/core/machine tests CMakeLists.txt docs`. Classify every production hit as covered, fixed, deferred to a named matrix slice, or out of scope with reason. |
+| Similar-issue sweep | Defect class: primary TEST r/m,reg routes lacking Intel-form evidence or correct FLAGS/no-publication/source-fault behavior. Scope: tracked CPU implementation, CPU tests, CMake registrations, T316 evidence, and relevant records; use `rg -n "TEST_RM8_R8|TEST_RM32_R32|_a_test|TEST_FLAG|_kaf_set_flags" src/core/machine tests CMakeLists.txt docs`. Classify every production hit as covered, fixed, deferred to a named matrix slice, or out of scope with reason. |
 
 ## Current Technical Baseline
 
