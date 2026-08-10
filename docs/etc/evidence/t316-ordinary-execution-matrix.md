@@ -42,7 +42,7 @@ not an allocation of later task identifiers.
 | --- | --- | --- | --- |
 | Prefixes `26/2E/36/3E`, `64/65`, `66/67`, `F0`, `F2/F3`; repeated-prefix resolution | Prefix loop and `_GetOperandSize`/address decode in `cpu_instructions.c`; FS/GS and `66/67` explicitly gate at 80386. | `core_machine_real_mode_386_address_smoke`, `core_machine_operand_address_smoke` (`M5:T302:OPERAND-ADDRESS-STACK:OK`), T301 baseline. | **Partial**: FS/GS and operand/address prefix paths have bounded proof, but no cross-product proof exists for every primary opcode, LOCK legality, and repeated-prefix combination. Next: ordinary operand/address subfamily. |
 | Register/memory/immediate data movement: `MOV`, `XCHG`, `LEA`, `LES/LDS`, moffs, `PUSH/POP`, `PUSHA/POPA`, `PUSH imm`, `ENTER/LEAVE`, `CBW/CWD` (including 32-bit attribute variants) | Primary table routes to `MOV_*`, `XCHG_*`, `LEA_R32_M32`, stack helpers `_kec_push/_kec_pop`, and `ENTER/LEAVE`; primary defaults do not by themselves certify 32-bit forms. | T302 stack/address focused probe; T301 prefix/profile baseline. | **Partial**: direct route and selected 16/32 stack/address cases are proven, but no complete MOV/XCHG/LEA/moffs/segment-load matrix covers all register/memory, size, and fault-publication forms. Next: ordinary data/operand family. |
-| Primary binary arithmetic/logical/test: `ADD/OR/ADC/SBB/AND/SUB/XOR/CMP/TEST`, accumulator immediates, Groups `80/81/83` | Primary table and `INS_80/81/83`; `_kac_arith2` uses operand read/write and `_kaf_set_flags`. | `core_machine_inc_dec_smoke` (`M5:T316:S4:TEST:OK`, `M5:T316:S7:TEST-RM-REG:OK`, `M5:T316:S8:ADD:OK`, `M5:T316:S9:ADC:OK`, `M5:T316:S10:SBB:OK`, `M5:T316:S11:OR:OK`) proves the declared slices. | **Partial**: T316 S4/S7 complete the declared TEST forms; S8 completes `00`--`05` plus `80/81/83 /0` ADD; S9 completes `10`--`15` plus `/2` ADC; S10 completes `18`--`1D` plus `/3` SBB; and S11 completes `08`--`0D` plus `/1` OR, each at their declared sizes and boundary conditions. Only AND, SUB, XOR, and CMP remain unproven in this row. Next: ordinary arithmetic/FLAGS family. |
+| Primary binary arithmetic/logical/test: `ADD/OR/ADC/SBB/AND/SUB/XOR/CMP/TEST`, accumulator immediates, Groups `80/81/83` | Primary table and `INS_80/81/83`; `_kac_arith2` uses operand read/write and `_kaf_set_flags`. | `core_machine_inc_dec_smoke` (`M5:T316:S4:TEST:OK`, `M5:T316:S7:TEST-RM-REG:OK`, `M5:T316:S8:ADD:OK`, `M5:T316:S9:ADC:OK`, `M5:T316:S10:SBB:OK`, `M5:T316:S11:OR:OK`, `M5:T316:S12:AND:OK`) proves the declared slices. | **Partial**: T316 S4/S7 complete declared TEST; S8 `00`--`05` plus `/0` ADD; S9 `10`--`15` plus `/2` ADC; S10 `18`--`1D` plus `/3` SBB; S11 `08`--`0D` plus `/1` OR; and S12 `20`--`25` plus `/4` AND. Only SUB, XOR, and CMP remain unproven in this row. Next: ordinary arithmetic/FLAGS family. |
 | Primary unary arithmetic: `INC/DEC` register (`40`--`4F`) and Groups `FE/FF /0,/1`; `NEG/NOT` Groups `F6/F7 /2,/3` | Register handlers `INC_*`/`DEC_*`; `INS_FE/FF`, `INS_F6/F7`; all use `_kac_arith1` and flag masks. | `core_machine_inc_dec_smoke` (`M5:T316:S2:INC-DEC:OK`, `M5:T316:S3:NOT-NEG:OK`) proves both admitted slices. | **Complete** only for T316's named INC/DEC and NOT/NEG forms: 16/32-bit register and 8/16/32-bit r/m forms, their Intel FLAGS contracts, 16/32 operand/address attributes, profile behavior, publication, and protected fault non-publication. The wider unary/arithmetic family remains **Partial**: `F6/F7 /6,/7` division is a separately named slice. |
 | Decimal/ASCII adjust and conversion: `DAA/DAS/AAA/AAS/AAM/AAD`, `XLAT` | Primary handlers `DAA`, `DAS`, `AAA`, `AAS`, `AAM`, `AAD`, `XLAT`; DAA/DAS/AAM/AAD call `_kaf_set_flags`. | No focused architecture probe found. | **Partial**: handlers exist, but documented flag-defined/undefined behavior, base-immediate edge cases, 16/32 addressing for XLAT, and faults are not proven. Next: ordinary arithmetic/FLAGS family. |
 | Shift/rotate Groups `C0/C1/D0`--`D3` | `INS_C0/C1/D0/D1/D2/D3`; shift paths call `_kaf_set_flags`. | No focused primary shift/rotate smoke; T310's double-shift smoke is only `SHLD/SHRD`. | **Partial**: primary count masking, count-zero flags, rotate flags, and memory faults remain unproven. Next: ordinary arithmetic/FLAGS family. |
@@ -352,6 +352,10 @@ accumulator/group immediates, CF carry-in, 83h sign extension, 66/67,
 profiles, and protected source-fault non-publication. Carry-in vectors prove
 the exact CF/ZF/AF/PF result with OF/SF clear. No runtime defect was found.
 
+S9 additionally proves carry-in-dependent signed overflow at 8/16/32 bits:
+accumulator `signed-max + 0 + CF` yields signed-min, with OF/SF/AF set,
+CF/ZF clear, and width-correct PF.
+
 `M5:T316:S9:ADC:OK`
 
 ## S10 Primary SBB Closure Evidence
@@ -407,6 +411,18 @@ found.
 
 `M5:T316:S11:OR:OK`
 
-S9 additionally proves carry-in-dependent signed overflow at 8/16/32 bits:
-accumulator `signed-max + 0 + CF` yields signed-min, with OF/SF/AF set,
-CF/ZF clear, and width-correct PF.
+## S12 Primary AND Closure Evidence
+
+`20h`--`25h` route through the six `AND_*` handlers; Group `80h/81h/83h /4`
+routes through `INS_80/81/83` to `_a_and`. `_a_and`, `_kac_arith2`, and
+`_kaf_set_flags` were audited; no shared change was needed. The focused smoke
+proves 8/16/32 non-alias register/memory r/m+reg and reg+r/m, accumulator and
+Group immediate destination publication, source preservation, `83h /4, FFh`
+sign extension, SF/PF and zero-result ZF/PF behavior, with CF/OF clear. AF is
+explicitly unasserted because Intel defines it as undefined for AND. It also
+proves `67h 66h 21h`, 80186 acceptance, 80286 `66h` #UD non-publication, and
+protected source-limit/read-only-destination fault non-publication at `#DF`.
+The only correction was a width-local test expectation; no runtime defect was
+found.
+
+`M5:T316:S12:AND:OK`
