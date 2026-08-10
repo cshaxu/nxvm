@@ -49,7 +49,7 @@ not an allocation of later task identifiers.
 | One-operand multiply/divide Groups `F6/F7 /4`--`/7` | `INS_F6/F7` dispatches `/4` to `_a_mul`, `/5` to `_a_imul`, `/6` to `_a_div`, and `/7` to `_a_idiv`. | `core_machine_inc_dec_smoke` (`M5:T316:S5:MUL-IMUL:OK`, `M5:T316:S6:DIV-IDIV:OK`) covers `/4`--`/7`. | **Complete** only for T316's declared one-operand Group `F6/F7 /4`--`/7` forms at 8/16/32 bits. This does not claim the wider multiply/divide or ordinary arithmetic family complete. |
 | EFLAGS transfers and direct flag control: `PUSHF/POPF`, `LAHF/SAHF`, `CMC/CLC/STC/CLI/STI/CLD/STD` | `PUSHF`, `POPF`, `SAHF`, `LAHF`, and primary flag handlers; protected-mode masking is local to those routes. | T302 checks selected PUSHF/POPF; retained string/product tests incidentally use DF/IF paths. | **Partial**: no focused table covers all modifiable/reserved flag bits, CPL/IOPL rules, interrupt shadow, and each direct flag form. Next: ordinary FLAGS/control family. |
 | Memory strings `MOVS/CMPS/STOS/LODS/SCAS`, REP/REPE/REPNE, DF, 16/32 operand/address attributes | `MOVSB/W`, `CMPSB/W`, `STOSB/W`, `LODSB/W`, `SCASB/W`, `_kas_move_index`; primary REP loop. | `core_machine_real_mode_386_rep_cmps_smoke` (`M5:T292:S1:REP-STRING:OK`), `core_machine_movs_smoke` (`M5:T316:S33:MOVS:OK`), `core_machine_stos_smoke` (`M5:T316:S34:STOS:OK`), `core_machine_lods_smoke` (`M5:T316:S35:LODS:OK`), `core_machine_scas_smoke` (`M5:T316:S36:SCAS:OK`), and `core_machine_cmps_smoke` (`M5:T316:S37:CMPS:OK`). | **Partial**: S35 closes only LODSB `AC` and LODSW/LODSD `AD`; S36 closes only SCASB `AE` and SCASW/SCASD `AF`; S37 closes only CMPSB `A6` and CMPSW/CMPSD `A7`, including declared attributes, DS source/fixed ES destination, FLAGS, REPE/REPNE condition/restart, #UD/LOCK non-publication, protected DS/ES read-limit #DF, and PIC boundaries. INS/OUTS and broader string behavior remain partial or outside this slice. |
-| Port strings `INS/OUTS` with REP and size/address attributes | `INSB/INSW/OUTSB/OUTSW` and `_kas_move_index`. | T302 I/O-string portion. | **Partial**: selected I/O-string route is proven; all port-width, REP, protection, and fault/restart behavior is not. Next: ordinary strings/control family. |
+| Port strings `INS/OUTS` with REP and size/address attributes | `INSB/INSW/OUTSB/OUTSW`, `_p_input`, `_p_output`, `_kpa_test_mode`, and `_kas_move_index`. | T302 I/O-string portion and `core_machine_port_strings_smoke` (`M5:T316:S38:PORT-STRINGS:OK`). | **Partial**: S38 closes only INSB `6C`, INSW/INSD `6D`, OUTSB `6E`, and OUTSW/OUTSD `6F`, including declared port width, profile, attribute, segment, REP, limit-fault, and interrupt boundaries. Ordinary IN/OUT, general I/O privilege architecture, and broader string behavior remain outside this slice. |
 | Short/near conditional control: `Jcc`, `LOOP/LOOPE/LOOPNE`, `JCXZ/JECXZ`, near `CALL/JMP/RET` | Primary `J*_REL8`, `LOOP*`, `JCXZ_REL8`, `CALL_REL32`, `JMP_REL*`, return helpers; `0F 80`--`8F` repeats the profile gate. | `core_machine_control_transfer_smoke` (`M5:T303:CONTROL-TRANSFER:OK`). | **Complete** for T303's declared real/protected 16/32 near, condition, target-limit, and atomic-fault matrix. Other control forms remain separately listed. |
 | Far direct/indirect `CALL/JMP`, same-CPL `RETF`; outer returns, gates, task/V86 interactions | `CALL_PTR16_32`, `JMP_PTR16_32`, `_kec_call_far/_kec_jmp_far/_kec_ret_far`, IRET/protection routes. | T303 proves admitted real/protected far and same-CPL return cases; T305--T308 prove bounded privilege paths. | **Partial** for the ordinary-family inventory: outer-return, task/gate, V86, and broader exception interaction belong to the Queue control/protection/exception families. |
 | 80386 `0F 90`--`9F` SETcc | `INS_0F` then `SETO_RM8`--`SETG_RM8`; metadata requires 80386. | `core_machine_setcc_smoke` (`M5:T310:S3:SETCC:OK`) covers conditions, register/memory, prefixes, and pre-fault non-publication. | **Complete** for the declared T310 SETcc matrix. |
@@ -828,3 +828,21 @@ production defect was found or changed. INS/OUTS and wider string behavior
 remain outside this slice.
 
 `M5:T316:S37:CMPS:OK`
+
+### T316 S38 - INS/OUTS port string forms
+
+`core_machine_port_strings_smoke` closes only INSB `6C`, INSW/INSD `6D`,
+OUTSB `6E`, and OUTSW/OUTSD `6F`. It uses a local installed port provider to
+prove DX selection, port width, fixed-ES INS destination despite CS/FS
+overrides, DS/CS/FS OUTS source selection, DF, and exact index/count/EIP/GPR/
+FLAGS and memory or port publication. F3 REP covers zero and multiple counts
+at 16- and 32-bit address sizes. Lower profiles and pre-386 attributes, plus
+80386 LOCK, reject with #UD and no state, memory, or port publication.
+Protected ES write-limit INS and DS read-limit OUTS prove no-IDT #DF single
+restart and REP partial progress, including cache nonpublication. Pending IRQ
+proves single no-shadow delivery and REP restartable one-primitive progress.
+The existing I/O-permission route was not widened or claimed complete. No CPU
+production defect was found or changed. Ordinary IN/OUT and broader string
+behavior remain outside this slice.
+
+`M5:T316:S38:PORT-STRINGS:OK`
