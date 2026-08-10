@@ -2,26 +2,26 @@
 
 ## Current Work
 
-**Active: M5 T316 S18.**
+**Active: M5 T316 S19.**
 
-## M5 T316 S18 Packet
+## M5 T316 S19 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Corrective; M5 T316 S18 follows accepted T316 S17 within the same active task. |
-| Admission And Approval | Owner approved the M5 80386DX program and instructed that T316 continue normally after S1; coordinator accepted S17 at `9127168f` and admits S18 only. |
-| Objective | Complete the declared Group-2 rotate slice: `ROL`, `ROR`, `RCL`, and `RCR` through `C0/C1/D0/D1/D2/D3`, including Intel count handling and flag publication. |
-| Non-goals | Do not claim the shift (`SHL/SAL/SHR/SAR`), wider ordinary arithmetic/FLAGS, string, or data/operand families complete; do not refactor shared operand/address/flag helpers, alter decoder ownership/public ABI, implement an 80387, or admit post-80386 forms. |
+| Identifier Mode | Corrective; M5 T316 S19 follows accepted T316 S18 within the same active task. |
+| Admission And Approval | Owner approved the M5 80386DX program and instructed that T316 continue normally after S1; coordinator accepted S18 at `7073549a` and admits S19 only. |
+| Objective | Complete the declared Group-2 shift slice: `SHL/SAL /4`, `SHR /5`, and `SAR /7` through `C0/C1/D0/D1/D2/D3`, while retaining the Intel 80386 `/6` undefined-opcode boundary. |
+| Non-goals | Do not claim the wider ordinary arithmetic/FLAGS, string, or data/operand families complete; do not change the accepted rotate slice, refactor shared operand/address/flag helpers, alter decoder ownership/public ABI, implement an 80387, or admit post-80386 forms. |
 | Reference baseline | Accepted T314 artifact baseline; accepted T316 S1/S2 matrix and current focused corpus. |
-| Files And ABI Surface | `src/core/machine/cpu_instructions.c`, one owned Group-2 focused smoke and CMake registration, T316 matrix/evidence, Status, and task artifact records. No public ABI change. |
+| Files And ABI Surface | `src/core/machine/cpu_instructions.c`, the owned Group-2 focused smoke and CMake registration, T316 matrix/evidence, Status, and task artifact records. No public ABI change. |
 | Applicable rules | Architecture: one CPU decoder/executor path; Coding: preserve local CPU style, use no speculative abstraction, and keep tests owner-bound; Execution: complete only the declared matrix slice with focused and retained evidence, artifact, documentation, diff, commit, and push gates; Source policy: Intel authority, no imported external source. |
-| Verification | Audit Intel 80386 Group-2 rotate forms before implementation; exercise all four rotates at 8/16/32 bits across immediate-one, immediate-count, and CL-count encodings, count zero/no-op and 5-bit masking, rotate-through-carry widths/counts, defined CF/OF versus undefined flags, register and memory publication, legacy/profile and 66/67 attributes, and protected read/write fault non-publication; scan `_a_rol/_a_ror/_a_rcl/_a_rcr`, `INS_C0/C1/D0/D1/D2/D3`, flag publication, and every helper caller before any abstraction; rebuild T316 artifact if runtime changes, run focused smoke, current gates, documentation governance, and `git diff --check`. |
-| Expected markers | New focused marker `M5:T316:S18:ROTATE:OK`; retained S1--S17 markers and applicable current-gate markers pass. |
+| Verification | Audit Intel 80386 Group-2 shift forms before implementation; exercise `SHL/SAL`, `SHR`, and `SAR` at 8/16/32 bits across immediate-one, immediate-count, and CL-count encodings, count zero/no-op and 5-bit masking, defined CF/OF and SF/ZF/PF versus AF/OF undefined boundaries, register and memory publication, legacy/profile and 66/67 attributes, `/6` #UD, and protected read/write fault non-publication; scan `_a_shl/_a_shr/_a_sar`, `INS_C0/C1/D0/D1/D2/D3`, flag publication, and every helper caller before any abstraction; rebuild T316 artifact if runtime changes, run focused smoke, current gates, documentation governance, and `git diff --check`. |
+| Expected markers | New focused marker `M5:T316:S19:SHIFT:OK`; retained S1--S18 markers and applicable current-gate markers pass. |
 | Asset needs | None beyond existing governed current-gate assets. |
 | Stop conditions | Stop and report if Intel-correct behavior requires a shared-helper change whose other callers lack coverage, decoder/ABI or exception-delivery architecture change, or an architecture boundary change. |
-| Exit criteria | Every declared Group-2 rotate form has implementation and focused proof; all encoding/count/width/flag/publication/profile/fault criteria pass; every scan hit is disposed; shift and wider ordinary families remain explicitly partial; required gates, artifact handling, commit, and push pass. |
+| Exit criteria | Every declared Group-2 shift form has implementation and focused proof; all encoding/count/width/flag/publication/profile/fault criteria pass; `/6` remains proved #UD; every scan hit is disposed; wider ordinary families remain explicitly partial; required gates, artifact handling, commit, and push pass. |
 | Original owner request | Execute the complete 80386 program in Coordinated Dual-Session Mode against an Intel form--implementation--test matrix, repairing omissions without using Windows demand as a scope filter. |
-| Similar-issue sweep | Defect class: Group-2 rotate routes lacking Intel-form evidence or correct count, CF/OF, undefined-flag, profile, and atomic publication behavior. Scope: tracked CPU implementation, CPU tests, CMake registrations, T316 evidence, and relevant records; use `rg -n "_a_rol|_a_ror|_a_rcl|_a_rcr|INS_C0|INS_C1|INS_D0|INS_D1|INS_D2|INS_D3|VCPU_EFLAGS_(CF|OF)" src/core/machine tests CMakeLists.txt docs`. Classify every production hit as covered, fixed, deferred to a named matrix slice, or out of scope with reason. |
+| Similar-issue sweep | Defect class: Group-2 shift routes lacking Intel-form evidence or correct count, CF/OF, undefined-flag, profile, and atomic publication behavior. Scope: tracked CPU implementation, CPU tests, CMake registrations, T316 evidence, and relevant records; use `rg -n "_a_shl|_a_shr|_a_sar|INS_C0|INS_C1|INS_D0|INS_D1|INS_D2|INS_D3|VCPU_EFLAGS_(CF|OF|AF|SF|ZF|PF)" src/core/machine tests CMakeLists.txt docs`. Classify every production hit as covered, fixed, deferred to a named matrix slice, or out of scope with reason. |
 
 ## Current Technical Baseline
 
