@@ -42,7 +42,7 @@ not an allocation of later task identifiers.
 | --- | --- | --- | --- |
 | Prefixes `26/2E/36/3E`, `64/65`, `66/67`, `F0`, `F2/F3`; repeated-prefix resolution | Prefix loop and `_GetOperandSize`/address decode in `cpu_instructions.c`; FS/GS and `66/67` explicitly gate at 80386. | `core_machine_real_mode_386_address_smoke`, `core_machine_operand_address_smoke` (`M5:T302:OPERAND-ADDRESS-STACK:OK`), T301 baseline. | **Partial**: FS/GS and operand/address prefix paths have bounded proof, but no cross-product proof exists for every primary opcode, LOCK legality, and repeated-prefix combination. Next: ordinary operand/address subfamily. |
 | Register/memory/immediate data movement: `MOV`, `XCHG`, `LEA`, `LES/LDS`, moffs, `PUSH/POP`, `PUSHA/POPA`, `PUSH imm`, `ENTER/LEAVE`, `CBW/CWD` (including 32-bit attribute variants) | Primary table routes to `MOV_*`, `XCHG_*`, `LEA_R32_M32`, stack helpers `_kec_push/_kec_pop`, and `ENTER/LEAVE`; primary defaults do not by themselves certify 32-bit forms. | T302 stack/address focused probe; T301 prefix/profile baseline. | **Partial**: direct route and selected 16/32 stack/address cases are proven, but no complete MOV/XCHG/LEA/moffs/segment-load matrix covers all register/memory, size, and fault-publication forms. Next: ordinary data/operand family. |
-| Primary binary arithmetic/logical/test: `ADD/OR/ADC/SBB/AND/SUB/XOR/CMP/TEST`, accumulator immediates, Groups `80/81/83` | Primary table and `INS_80/81/83`; `_kac_arith2` uses operand read/write and `_kaf_set_flags`. | `core_machine_inc_dec_smoke` (`M5:T316:S4:TEST:OK`) proves only TEST `A8/A9` and `F6/F7 /0`. | **Partial**: T316 S4 completes the named TEST accumulator and immediate r/m forms at 8/16/32 bits. Other primary TEST register forms and the remaining binary arithmetic/logical groups lack a group proof. Next: ordinary arithmetic/FLAGS family. |
+| Primary binary arithmetic/logical/test: `ADD/OR/ADC/SBB/AND/SUB/XOR/CMP/TEST`, accumulator immediates, Groups `80/81/83` | Primary table and `INS_80/81/83`; `_kac_arith2` uses operand read/write and `_kaf_set_flags`. | `core_machine_inc_dec_smoke` (`M5:T316:S4:TEST:OK`, `M5:T316:S7:TEST-RM-REG:OK`) proves the declared TEST forms. | **Partial**: T316 S4 and S7 complete TEST `A8/A9`, `F6/F7 /0`, and `84/85` at 8/16/32 bits. The remaining binary arithmetic/logical groups lack a group proof. Next: ordinary arithmetic/FLAGS family. |
 | Primary unary arithmetic: `INC/DEC` register (`40`--`4F`) and Groups `FE/FF /0,/1`; `NEG/NOT` Groups `F6/F7 /2,/3` | Register handlers `INC_*`/`DEC_*`; `INS_FE/FF`, `INS_F6/F7`; all use `_kac_arith1` and flag masks. | `core_machine_inc_dec_smoke` (`M5:T316:S2:INC-DEC:OK`, `M5:T316:S3:NOT-NEG:OK`) proves both admitted slices. | **Complete** only for T316's named INC/DEC and NOT/NEG forms: 16/32-bit register and 8/16/32-bit r/m forms, their Intel FLAGS contracts, 16/32 operand/address attributes, profile behavior, publication, and protected fault non-publication. The wider unary/arithmetic family remains **Partial**: `F6/F7 /6,/7` division is a separately named slice. |
 | Decimal/ASCII adjust and conversion: `DAA/DAS/AAA/AAS/AAM/AAD`, `XLAT` | Primary handlers `DAA`, `DAS`, `AAA`, `AAS`, `AAM`, `AAD`, `XLAT`; DAA/DAS/AAM/AAD call `_kaf_set_flags`. | No focused architecture probe found. | **Partial**: handlers exist, but documented flag-defined/undefined behavior, base-immediate edge cases, 16/32 addressing for XLAT, and faults are not proven. Next: ordinary arithmetic/FLAGS family. |
 | Shift/rotate Groups `C0/C1/D0`--`D3` | `INS_C0/C1/D0/D1/D2/D3`; shift paths call `_kaf_set_flags`. | No focused primary shift/rotate smoke; T310's double-shift smoke is only `SHLD/SHRD`. | **Partial**: primary count masking, count-zero flags, rotate flags, and memory faults remain unproven. Next: ordinary arithmetic/FLAGS family. |
@@ -73,7 +73,7 @@ records the caller discipline required before any future shared-helper change.
 | Candidate helper | Current callers / responsibility | Current focused coverage | S2 consequence |
 | --- | --- | --- | --- |
 | `_kac_arith1` macro | Four operation families only: `INC`, `DEC`, `NOT`, `NEG` (lines 5321, 5331, 5341, 5352). | T316 S2 covers INC/DEC; T316 S3 covers NOT/NEG. Incidental product bytecode remains excluded. | All current callers now have focused coverage. Neither S2 nor S3 changes this macro; any shared-helper correction still requires a separately admitted caller-impact review. |
-| `_kaf_set_flags` | Called by arithmetic macros, primary shifts, string compares, DAA/DAS/AAM/AAD, and T310 SHLD/SHRD; it owns mask-driven CF/PF/AF/ZF/SF/OF publication. | T316 S2--S4 cover the named INC/DEC, NOT/NEG, and TEST callers; T310 covers SHLD/SHRD and selected string/data paths. Broader primary flag breadth is incomplete. | Do not change it in T316. Each admitted slice asserts its handler-bound flag contract; any shared-helper correction still requires caller-impact review. |
+| `_kaf_set_flags` | Called by arithmetic macros, primary shifts, string compares, DAA/DAS/AAM/AAD, and T310 SHLD/SHRD; it owns mask-driven CF/PF/AF/ZF/SF/OF publication. | T316 S2--S4 and S7 cover the named INC/DEC, NOT/NEG, and TEST callers; T310 covers SHLD/SHRD and selected string/data paths. Broader primary flag breadth is incomplete. | Do not change it in T316. Each admitted slice asserts its handler-bound flag contract; any shared-helper correction still requires caller-impact review. |
 | `_a_mul` / `_a_imul` / `_a_div` / `_a_idiv` | Only `INS_F6 /4,/5,/6,/7` and `INS_F7 /4,/5,/6,/7`; they publish implicit multiply/divide result registers locally. | T316 S5 covers `/4,/5`; T316 S6 covers `/6,/7` at every 8/16/32 register and memory route, including source-fault and `#DE` non-publication. | S5 retains the demonstrated `_a_imul` signed-widening correction. S6 corrects only `_a_idiv`'s local signed quotient range check; no shared flag helper changes. |
 | `_kas_move_index` | MOVS, CMPS, STOS, LODS, SCAS, INS, and OUTS size/index combinations. | T292 and T302 cover selected REP/string and I/O-string cases. | Not in S2; strings remain their own matrix slice. |
 | `_kec_push/_kec_pop` | Near/far calls/returns, interrupt/IRET frames, PUSH/POP and protected transfer helpers. | T302 stack cases; T303 control transfer; T305--T308 delivery/return matrices. | Not in S2; a helper change would cross ordinary and delivery families. |
@@ -273,3 +273,36 @@ Its S6 accepted source commit is
 on admission `8485f4ad`.
 
 `M5:T316:S6:DIV-IDIV:OK`
+
+## S7 Primary TEST r/m,reg Closure Evidence
+
+Intel primary `84h` is `TEST r/m8,r8`; `85h` is `TEST r/m16,r16` or, with
+the 80386 operand-size attribute, `TEST r/m32,r32`. TEST reads both operands
+without publishing either. It clears CF and OF and defines SF, ZF, and PF from
+the bitwise-AND result; AF is undefined and is deliberately not asserted.
+
+`core_machine_inc_dec_smoke` covers all declared 8/16/32-bit forms with
+non-alias register operands `CL/CX/ECX` and `DL/DX/EDX`, plus direct-memory
+r/m destinations and the same source register. Two vectors per form prove the
+SF and PF case and the ZF/PF case, with CF/OF clear. Each verifies that both
+register operands remain unchanged and, for memory forms, rereads unchanged
+memory. `67h 66h 85h` uses `[ESI]` to prove 32-bit address and operand
+attributes. An 80186 `85h` form is accepted; `66h 85h` rejects under the 80286
+profile with registers, EFLAGS, and EIP unchanged.
+
+The protected bounded-memory fixture executes 84h, 85h, and `66h 85h` with an
+out-of-limit r/m source. It observes the existing deliverable `#DF` diagnostic
+boundary and proves source memory, the register source, EFLAGS, and EIP are
+not published. The initial 16/32-bit SF test expected PF clear for a high-bit
+result; its low byte is zero and therefore has even parity. Correcting that
+focused-test expectation exposed no runtime defect.
+
+The S7 sweep finds `TEST_RM8_R8` and `TEST_RM32_R32` as the sole primary
+84h/85h handlers; both feed `_a_test`. `_a_test` is also called by T316 S4's
+accumulator and immediate Group F6/F7 TEST forms. `_kaf_set_flags` has the
+reviewed arithmetic, shift, string, adjust, and double-shift callers recorded
+above; none changed. No runtime source, decoder, ABI, shared helper, CMake,
+or artifact changed, so the existing T316 0316 artifact is retained without a
+rebuild.
+
+`M5:T316:S7:TEST-RM-REG:OK`
