@@ -101,6 +101,10 @@ candidate work, and detailed capability evidence belong in
 - [ ] **Debugger assembler `checkop` review (`TODO(Low)`).** Keep runtime
   disassemble/reassemble comparison out of per-instruction refresh. Add a
   focused regression only when an owned BIOS/debugger defect requires it.
+- [ ] **xasm API capacity and failure semantics (`TODO(Medium)`).** Admit only
+  with explicit input/output capacities, return and failure-atomicity
+  contracts, caller inventory/migration, and bounded assembler/disassembler
+  regressions. A local string-operation substitution cannot claim closure.
 - [ ] **Bounded differential debugging (`TODO(Low)`).** A historical
   Bochx/Bochs bridge may be an optional developer tool with provenance,
   checkpoint schema, masks, instruction/time/no-progress/trace budgets, and
@@ -126,6 +130,10 @@ default definition of NXVM completion.
 
 ## Architecture And Portability Debt
 
+- [ ] **Inherited NXVM strict compilation (`TODO(Medium)`).** Admit only when
+  an inherited unit is substantively changed or safely separated from a mixed
+  target. Record the diagnostic baseline, exact modification scope, selected
+  constraints, and regression result.
 - [ ] **Linux runtime verification (`TODO(Medium)`).** Linux source is a
   portability asset, not a support claim. Add native POSIX compile and runtime
   probes after an approved POSIX environment is available; do not install WSL
