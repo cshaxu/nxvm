@@ -2,26 +2,26 @@
 
 ## Current Work
 
-**Active: M5 T316 S16.**
+**Active: M5 T316 S17.**
 
-## M5 T316 S16 Packet
+## M5 T316 S17 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Corrective; M5 T316 S16 follows accepted T316 S15 within the same active task. |
-| Admission And Approval | Owner approved the M5 80386DX program and instructed that T316 continue normally after S1; coordinator accepted S15 at `3c569582` and admits S16 only. |
-| Objective | Complete the declared decimal/ASCII-adjust matrix slice: `DAA`, `DAS`, `AAA`, `AAS`, `AAM`, and `AAD`, with Intel-correct AL/AH and defined-FLAGS behavior, immediate-base behavior, profile behavior, and fault atomicity. |
-| Non-goals | Do not claim decimal/ASCII-adjust, the wider ordinary arithmetic/FLAGS family, or `XLAT` complete; do not refactor shared flag helpers, alter decoder ownership/public ABI, implement an 80387, or admit post-80386 forms. |
+| Identifier Mode | Corrective; M5 T316 S17 follows accepted T316 S16 within the same active task. |
+| Admission And Approval | Owner approved the M5 80386DX program and instructed that T316 continue normally after S1; coordinator accepted S16 at `6f50d74e` and admits S17 only. |
+| Objective | Complete the declared `XLAT` matrix slice: DS default and segment-override lookup, 16/32 address-size base selection, AL publication, profile behavior, and protected read-fault atomicity. |
+| Non-goals | Do not claim the wider data/operand or ordinary arithmetic/FLAGS families complete; do not refactor address or segment helpers, alter decoder ownership/public ABI, implement an 80387, or admit post-80386 forms. |
 | Reference baseline | Accepted T314 artifact baseline; accepted T316 S1/S2 matrix and current focused corpus. |
 | Files And ABI Surface | `src/core/machine/cpu_instructions.c`, one owned CPU focused smoke and CMake registration if needed, T316 matrix/evidence, Status, and task artifact records. No public ABI change. |
 | Applicable rules | Architecture: one CPU decoder/executor path; Coding: preserve local CPU style, use no speculative abstraction, and keep tests owner-bound; Execution: complete only the declared matrix slice with focused and retained evidence, artifact, documentation, diff, commit, and push gates; Source policy: Intel authority, no imported external source. |
-| Verification | Audit Intel 80386 DAA/DAS/AAA/AAS/AAM/AAD forms before implementation; exercise decimal-adjust carry/auxiliary-carry and AL/AH boundaries, documented defined versus undefined FLAGS treatment, AAM/AAD immediate base values and `AAM 00h` #DE atomicity, legacy/profile behavior, and protected-mode fault non-publication as applicable; scan handlers, decode routes, divide/error delivery, and flag-helper callers before any abstraction; rebuild T316 artifact if runtime changes, run focused smoke, current gates, documentation governance, and `git diff --check`. |
-| Expected markers | New focused marker `M5:T316:S16:DECIMAL-ADJUST:OK`; retained S1--S15 markers and applicable current-gate markers pass. |
+| Verification | Audit Intel 80386 `XLAT` before implementation; exercise DS default and permitted segment override, 16-bit BX+zero-extended-AL and `67h` 32-bit EBX+zero-extended-AL addressing, AL-only publication with other GPR/EFLAGS preservation, legacy/profile behavior, and protected read-limit/segment fault non-publication; scan `XLAT`, address and segment operand helpers before any abstraction; rebuild T316 artifact if runtime changes, run focused smoke, current gates, documentation governance, and `git diff --check`. |
+| Expected markers | New focused marker `M5:T316:S17:XLAT:OK`; retained S1--S16 markers and applicable current-gate markers pass. |
 | Asset needs | None beyond existing governed current-gate assets. |
 | Stop conditions | Stop and report if Intel-correct behavior requires a shared-helper change whose other callers lack coverage, decoder/ABI or exception-delivery architecture change, or an architecture boundary change. |
-| Exit criteria | Every declared DAA/DAS/AAA/AAS/AAM/AAD form has implementation and focused proof; AL/AH and documented FLAGS outcomes, immediate-base and `#DE` atomicity, profile behavior, and applicable fault non-publication pass; every scan hit is disposed; `XLAT` and the wider family remain explicitly partial; required gates, artifact handling, commit, and push pass. |
+| Exit criteria | Every declared `XLAT` form has implementation and focused proof; DS/override and 16/32 addressing, AL-only publication, profile behavior, and protected read-fault non-publication pass; every scan hit is disposed; wider data/operand and ordinary families remain explicitly partial; required gates, artifact handling, commit, and push pass. |
 | Original owner request | Execute the complete 80386 program in Coordinated Dual-Session Mode against an Intel form--implementation--test matrix, repairing omissions without using Windows demand as a scope filter. |
-| Similar-issue sweep | Defect class: decimal/ASCII-adjust routes lacking Intel-form evidence or correct AL/AH/FLAGS/#DE behavior. Scope: tracked CPU implementation, CPU tests, CMake registrations, T316 evidence, and relevant records; use `rg -n "DAA|DAS|AAA|AAS|AAM|AAD|VCPUINS_EXCEPT_DE|_kaf_set_flags" src/core/machine tests CMakeLists.txt docs`. Classify every production hit as covered, fixed, deferred to a named matrix slice, or out of scope with reason. |
+| Similar-issue sweep | Defect class: `XLAT` routes lacking Intel-form evidence or correct address/segment/AL/fault behavior. Scope: tracked CPU implementation, CPU tests, CMake registrations, T316 evidence, and relevant records; use `rg -n "XLAT|_GetAddress|_GetOperand|segment_override|VCPUINS_EXCEPT" src/core/machine tests CMakeLists.txt docs`. Classify every production hit as covered, fixed, deferred to a named matrix slice, or out of scope with reason. |
 
 ## Current Technical Baseline
 
