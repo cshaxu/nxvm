@@ -34,6 +34,12 @@
 
 ## Recent Governance
 
+- **M5 Td S62:** recorded the owner-approved Intel 80386DX
+  architecture-completeness program before M6, replaced the closed T314 Queue
+  candidate with its ordered family sequence, scoped 80386-to-x87 coupling
+  without admitting an 80387, and recorded the required reuse and coverage
+  discipline. Td work has no runtime or artifact change.
+
 - **M5 Td S61:** restored Queue dependency order by placing residual M5 work
   before M6 mantle candidates; removed stale package/index detail; and changed
   historical evidence to name closure artifacts rather than current state.
@@ -58,11 +64,6 @@
   before any separate M6 admission. See the
   [package-close audit](etc/evidence/m5-direct-80386-package-close-audit.md).
 
-
-- **M5 Td S53:** recorded the approved M6 mantle-entry queue refinement and a
-  five-package, evidence-led 80386 candidate sequence; scrubbed prohibited
-  historical identifiers from retained external research prose. Td work has no
-  history record.
 - **M5 Td S54:** reordered the Queue so the M5 80386 package precedes the M6
   mantle experiment; candidate order changed without assigning implementation
   identifiers or changing a candidate contract. Td work has no history record.

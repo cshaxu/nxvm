@@ -36,6 +36,10 @@ implementation plan for core convergence.
 Complete the shared-core/NXVM boundary and the PC/AT fidelity required for
 evidence-led DOS and early Windows research. Prove that a second policy-free
 consumer can use core without making mantle, DOS, or NXVDM a current runtime.
+Before M6 admission, carry the owner-approved Intel 80386DX
+architecture-completeness program through its evidence-led Queue sequence.
+That program does not make an 80387 implementation or Windows-compatibility
+claim.
 
 ## M6: Build Mantle
 
