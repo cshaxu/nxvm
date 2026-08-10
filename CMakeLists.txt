@@ -225,6 +225,10 @@ add_executable(core-machine-real-mode-386-rep-cmps-smoke
     tests/machine/core_machine_real_mode_386_rep_cmps_smoke.c)
 target_link_libraries(core-machine-real-mode-386-rep-cmps-smoke PRIVATE core-machine)
 
+add_executable(core-machine-cmps-smoke
+    tests/machine/core_machine_cmps_smoke.c)
+target_link_libraries(core-machine-cmps-smoke PRIVATE core-machine)
+
 add_executable(core-machine-80286-protected-mode-smoke
     tests/machine/core_machine_80286_protected_mode_smoke.c)
 target_link_libraries(core-machine-80286-protected-mode-smoke PRIVATE core-machine)
@@ -1188,6 +1192,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-stos-smoke
     core-machine-lods-smoke
     core-machine-scas-smoke
+    core-machine-cmps-smoke
     core-machine-double-shift-smoke
     core-machine-bit-scan-smoke
     core-machine-imul2-smoke
