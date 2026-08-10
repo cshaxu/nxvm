@@ -55,6 +55,32 @@ form and behavior as implemented-and-tested, outside the 80386 architecture,
 or an explicit external-coprocessor boundary. It must not leave a form merely
 "not needed by Windows" or "without a product consumer."
 
+## Matrix-Driven Admission And Exit
+
+Each task-package admission begins with the relevant Intel 80386 PRM
+instruction-table and behavior-family audit. Its packet and evidence identify
+the exact forms in scope and classify every reviewed form as:
+
+- complete, with its existing implementation and focused evidence;
+- partial, naming the missing operand, address-size, flag, privilege, fault,
+  restart, or state-transition behavior;
+- missing;
+- outside the Intel 80386 architecture; or
+- an explicit external-coprocessor boundary defined by this program.
+
+The task then declares a bounded matrix slice. It may close only when every
+form in that slice is resolved by implementation and focused evidence, or by a
+valid boundary classification. All reviewed forms outside the slice must remain
+visible in the matrix with their classification and next Queue family; they may
+not disappear into a generic later audit.
+
+A task's closure never claims that its instruction family is complete unless
+the task owns the entire family matrix. A family candidate cannot advance, and
+the package cannot describe that family objective as complete, while any
+in-scope form remains partial, missing, or unclassified. The package-close
+audit verifies the accumulated matrix against the Intel authority before the
+next Queue candidate is admitted.
+
 ## Reuse, Abstraction, And Source Discipline
 
 Before admitting each instruction or system family, the task review records:
