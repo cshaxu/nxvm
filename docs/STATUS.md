@@ -2,27 +2,8 @@
 
 ## Current Work
 
-**M5 T316 S30 - moffs MOV forms.** The coordinator admitted this bounded
-ordinary-execution continuation in Coordinated Dual-Session Mode.
-
-## M5 T316 S30 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Corrective; next unused subtask of the most recently closed numeric task, M5 T316. |
-| Admission And Approval | The owner approved continuous execution of the Intel 80386DX architecture-completeness program in Coordinated Dual-Session Mode. This is the next linear bounded matrix slice after T316 S29. |
-| Objective | Close Intel `A0`--`A3` moffs MOV forms: AL and AX/EAX reads/writes with their 16/32 operand-size and 16/32 address-size forms, default DS and segment-override selection, and read/write publication boundaries. |
-| Non-goals | No ModRM MOV family, string MOVS, general segment-load work, x87 implementation, post-80386 behavior, or broad prefix-family completion. Do not change runtime unless a focused vector demonstrates a defect. |
-| Reference Baseline | `821044ce` / `vm-0-5-0316`, with T316 S29 closed, `main` equal to `origin/main`, and no active packet before admission. |
-| Files And ABI Surface | Expected scope is a focused machine smoke and CMake registration, the ordinary-execution matrix, and this packet. `src/core/machine/cpu_instructions.c` changes only for a demonstrated defect. No public ABI change. |
-| Applicable Rules | `docs/rules/EXECUTION.md`: one active packet, dual-session Instruction/report loop, actual-change coordinator review, linear corrective allocation, matrix audit, similar-issue sweep, and immediate push. `docs/rules/CODING.md`: preserve local code/test style and introduce no premature abstraction. Intel 80386 PRM MOV moffs, operand/address attributes, segment override, prefix, exception, and interrupt behavior is the form authority. |
-| Verification | Audit A0--A3 routes, `_d_moffs`, read/write helpers, profile and LOCK dispatch. Add focused default 16-bit byte/word reads and writes on 8086/80186/80286/80386; 80386 `66h`, `67h`, and combined 32-bit operand/address vectors; exact AL/AX/EAX and memory publication plus FLAGS/nonparticipant preservation; DS default and ES/FS/GS override selection; lower-profile `66h`/`67h` #UD/no publication; 80386 LOCK #UD/no publication; protected read/write-limit fault nonpublication; and pending IRQ no shadow. Build/run focused smoke, documentation governance, `git diff --check`, and complete current gates before closure. |
-| Expected Markers | Focused smoke emits `M5:T316:S30:MOFFS:OK`; matrix evidence records all A0--A3 forms and exact boundary dispositions. |
-| Asset Needs | None; deterministic CPU fixture only. No guest media, external code, firmware, or research import. |
-| Stop Conditions | Stop and report if the route audit conflicts with Intel 80386 form behavior, a shared memory/segment helper requires change without covered callers, or a demonstrated defect expands beyond A0--A3. |
-| Exit Criteria | Every declared A0--A3 form is complete or explicitly classified with authority; attributes, segment selection, results, read/write fault publication, profile/LOCK rejection, and IRQ behavior have focused proof; any demonstrated runtime defect is fixed; the matrix no longer leaves moffs implicit in a broader partial row; required gates pass; and the coordinator independently reviews changed artifacts before closure. |
-| Original Owner Request | Execute the complete Intel 80386 plan in dual-session mode against an Intel form--implementation--test matrix, repairing omissions and closing evidence without using Windows demand as the completeness boundary. |
-| Similar-Issue Sweep | Audit all A0--A3 table entries, four moffs handlers, `_d_moffs`, and direct profile/LOCK prefix routes. If a defect appears, search the entire moffs group and classify every hit; ModRM and string families are out of scope. |
+**Idle.** M5 T316 S30 is closed; the next 80386 matrix slice requires a
+separately admitted packet.
 
 ## Current Technical Baseline
 
@@ -44,6 +25,7 @@ ordinary-execution continuation in Coordinated Dual-Session Mode.
 
 | Task | Compact result |
 | --- | --- |
+| T316 S30 | Closed bounded moffs MOV `A0`--`A3`: default plus `66h`/`67h` forms, segment selection, #UD/LOCK and read/write nonpublication, and no IRQ shadow. No runtime change was needed; 52 static/governance checks and 159 current-gate tests passed. |
 | T316 S29 | Closed Intel `98`/`99` default and `66h` sign extension with prefix, 80386 LOCK/nonpublication, and no-shadow coverage. The legacy LOCK-prefix divergence remains `TODO(Medium)`; no runtime change was needed. Documentation governance, 52 static checks, and 158 current-gate tests passed. |
 | T316 S28 | Closed Intel accumulator XCHG `90`--`97`: `90` NOP-equivalent and `91`--`97` named AX/EAX exchanges, default and `66h` profile coverage, #UD/nonpublication and LOCK boundaries, and no IRQ shadow. No runtime change was needed; 52 static/governance checks and 157 current-gate tests passed. |
 | T316 S26 | Closed Intel LEA `8D /r` coverage without a runtime change: 8086--80386 default 16-bit form, all 80386 `66`/`67` combinations in real and protected mode, #UD/profile/LOCK boundaries, null-DS no-read semantics, and no IRQ shadow. Its focused smoke joins the current gate. |
