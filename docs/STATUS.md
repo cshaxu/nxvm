@@ -2,32 +2,13 @@
 
 ## Current Work
 
-**Active: M5 T314 S4.**
-
-## M5 T314 S4 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Corrective; M5 T314 S3 closed in commit `c994815f`, so the strict-GCC matrix is the next subtask. |
-| Admission And Approval | Owner approved T314 on 2026-08-09. Coordinator accepted S3 evidence and admits S4 only. |
-| Objective | Inventory every production target's source provenance and effective GCC warning policy; apply strict flags only to pure ntvdm64 targets that independently compile; record the two approved inherited-governance debts. |
-| Non-goals | Do not make `core-machine` pure, split mixed targets, globally add `-Werror`, change inherited CPU/xasm/Win32 sources, or claim full production coverage. |
-| Reference Baseline | Accepted T313 artifact `vm-0-5-0313`; accepted T314 S2/S3 commits `0e38508d` and `c994815f`. |
-| Files And ABI Surface | CMake strict-option policy, T314 evidence/matrix, TODO, and Status. No runtime or public ABI change. |
-| Applicable Rules | Execution: target-by-target evidence and debt admission; Coding: GCC C11 warning discipline; Architecture: no target split or hidden ownership change; Source policy: no import. |
-| Verification | Configure `mingw-gcc-x64`; enumerate all production `add_library`/artifact targets and source ownership; inspect actual Ninja commands for each selected target; build selected targets and `current-gates-gcc`; run documentation governance and `git diff --check`. |
-| Expected Markers | Matrix records every production target; selected commands contain `-Wall -Wextra -Wpedantic -Werror`; retained current-gate markers pass. |
-| Asset Needs | No new assets; retained current-gate media remains under existing policy. |
-| Stop Conditions | Do not split a mixed target or clean inherited warnings if either alters behavior, ownership, or architecture; record a precise deferral instead. |
-| Exit Criteria | Matrix covers every production target with source/ownership/current options/disposition; each selected target's actual Ninja command has all four flags; each excluded target has an exact reason and gate; both approved TODOs exist; stated verification passes. |
-| Original Owner Request | Implement owner-approved T314 in coordinated dual-session mode: repair EGA CRTC 13h bounds, register the deterministic xasm smoke, audit/apply strict GCC coverage only to confirmed owned targets, and record two inherited-governance debts. |
-| Similar-Issue Sweep | Defect class: target-level strict flags incorrectly imply coverage of inherited or transitive source. Scope: all production CMake target/source lists, options, Ninja commands, TODO, and T314 evidence; use `rg -n "add_library|add_current_vm_artifact|target_compile_options|_SOURCES" CMakeLists.txt` plus Ninja command inspection. Classify every target; no generic exemption. |
+**Idle.**
 
 ## Current Technical Baseline
 
 - **Current accepted artifact:** `current-gcc` and
-  `verify-current-artifact-target` select `vm-0-5-0313` / `build/output/nxvm_0_5_0313.exe`.
-  It was accepted with T313.
+  `verify-current-artifact-target` select `vm-0-5-0314` / `build/output/nxvm_0_5_0314.exe`.
+  It was accepted with T314.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
@@ -42,8 +23,8 @@
 
 | Task | Compact result |
 | --- | --- |
-| T313 | Completed construction-failure atomicity and startup-failure visibility: single RAM allocation, transactional port/controller assembly, visible session start failure, and explicit debugger mappings. Its 0313 artifact, 51 gates, 145 CTests, and S2--S6 focused markers passed. |
-| T306 | Completed the 80386 protected-return family. It added same-CPL and outer 16/32-bit `IRET`, aligned outer `RETF`, restored explicit outer nonconforming-code ownership, and fixed IRET IF/IOPL/RF/VM privilege masks; 51 gates, 135 CTests, and the 0306 artifact passed. Product observation remained host-window limited before guest input. |
+| T314 | Closed the EGA CRTC 13h bound, registered the deterministic xasm smoke, narrowed strict GCC to three proven owned static libraries, and recorded two inherited-governance debts. Its 0314 artifact, 51 gates, 147 CTests, and S2/S3 focused markers passed. |
+| T313 | Completed construction-failure atomicity and startup-failure visibility: single RAM allocation, transactional port/controller assembly, visible session start failure, and explicit debugger mappings. Its accepted artifact, 51 gates, 145 CTests, and S2--S6 focused markers passed. |
 | T307 | Completed 80386 32-bit CPL3-to-CPL0 IDT and call-gate entry with TSS32 target stacks, preflighted atomic publication, and Intel-correct target-SS `#TS` classification. Its 0307 artifact, 51 gates, 137 CTests, and 9 focused/retained probes passed; product observation remained host-window limited before guest input. |
 | T308 | Completed protected 32-bit same/outer error delivery and bounded contributory `#DF` containment through the existing route. Its 0308 artifact, 51 gates, and 137 CTests passed; triple-fault shutdown/reset remains deferred. |
 | T309 | Completed the form-level 80386 audit and bounded trace-design record without runtime or artifact change; it selected T310 through evidence rather than a completeness claim. |
