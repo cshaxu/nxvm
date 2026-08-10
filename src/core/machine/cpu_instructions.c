@@ -11179,13 +11179,14 @@ static C_VOID PUSHF(core_machine_cpu_execution_context *context)
             {
             case 2:
                 TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
-                ceflags = cpu_state.data.flags;
+                ceflags = (cpu_state.data.flags & ~VCPU_EFLAGS_RESERVED) | 0x02u;
                 TYPE_TRACE_CHECK_RETURN(_e_push(context, TYPE_REFERENCE_OF(ceflags), 2));
                 TYPE_TRACE_BLOCK_END;
                 break;
             case 4:
                 TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
-                ceflags = cpu_state.data.eflags & ~(VCPU_EFLAGS_VM | VCPU_EFLAGS_RF);
+                ceflags = (cpu_state.data.eflags & ~(VCPU_EFLAGS_VM | VCPU_EFLAGS_RF |
+                    VCPU_EFLAGS_RESERVED)) | 0x02u;
                 TYPE_TRACE_CHECK_RETURN(_e_push(context, TYPE_REFERENCE_OF(ceflags), 4));
                 TYPE_TRACE_BLOCK_END;
                 break;
@@ -11265,6 +11266,8 @@ static C_VOID POPF(core_machine_cpu_execution_context *context)
                     TYPE_TRACE_IMPOSSIBLE_RETURN;
                     break;
                 }
+                if (_GetCPL > _GetEFLAGS_IOPL)
+                    mask |= VCPU_EFLAGS_IF;
                 TYPE_TRACE_BLOCK_END;
             }
             TYPE_TRACE_BLOCK_END;

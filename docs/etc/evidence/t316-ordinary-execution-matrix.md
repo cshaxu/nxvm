@@ -553,3 +553,16 @@ its AH result. PUSHF/POPF, CLI/STI, IOPL and interrupt shadow remain partial
 and out of S20 scope; no shared helper changed.
 
 `M5:T316:S20:EFLAGS-LOCAL:OK`
+
+## S21 PUSHF/POPF Evidence
+
+`core_machine_pushf_popf_smoke` completes only the 80386 `9Ch/9Dh` slice:
+16/32 operand forms, ESP deltas, normalized stack images (reserved bits clear
+and bit1 set; PUSHFD also clears VM/RF), POPF writable/preserved bits, CPL0
+and controlled-CPL3 IOPL/IF gates, VM86 IOPL3 success and IOPL<3 first-#GP
+non-publication, plus protected PUSHF write and POPF read stack-fault
+atomicity. The VM86 fixture asserts the original #GP diagnostic and source
+state non-publication; its later exception-delivery endpoint is not claimed by
+S21. CLI/STI, interrupt shadow, and wider FLAGS control remain partial.
+
+`M5:T316:S21:PUSHF-POPF:OK`
