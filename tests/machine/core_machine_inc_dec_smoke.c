@@ -3060,6 +3060,87 @@ static C_INT inc_dec_test_decimal_adjust(C_VOID)
     return 1;
 }
 
+static C_INT inc_dec_run_xlat_es(inc_dec_machine *state, const uint8_t *code,
+    t_cpu *out, core_machine_cpu_diagnostic *diagnostic)
+{
+    core_machine_run_result result;
+    if (state == STD_NULL || state->machine == STD_NULL ||
+        !test_core_machine_fixture_prepare_real_mode_execution(state->machine, 0u) ||
+        core_machine_cpu_execution_load_segment(&state->machine->executor_cpu_execution,
+            &state->machine->executor_cpu.data.es, 0x10u) ||
+        core_machine_memory_write(state->machine, 0u, code, 2u) != TYPE_STATUS_OK ||
+        core_machine_run(state->machine, (core_machine_run_budget){ 1u, 0u },
+            &result) != TYPE_STATUS_OK ||
+        result.reason != CORE_MACHINE_STOP_BUDGET ||
+        core_machine_get_cpu_diagnostic(state->machine, diagnostic) != TYPE_STATUS_OK)
+        return 0;
+    *out = test_core_machine_fixture_capture_cpu_after_run(state->machine);
+    return 1;
+}
+
+static C_INT inc_dec_test_xlat(C_VOID)
+{
+    static const uint8_t code[][2] = { { 0xd7u, 0u }, { 0x67u, 0xd7u }, { 0x26u, 0xd7u } };
+    uint8_t form;
+    for (form = 0u; form != 3u; ++form) {
+        const uint32_t base = form == 1u ? 0x00010000u : 0xaabb0010u;
+        const uint8_t value = form == 1u ? 0x5au : (form == 2u ? 0x3cu : 0xa5u);
+        inc_dec_machine state;
+        t_cpu after;
+        core_machine_cpu_diagnostic diagnostic;
+        C_INT failed = !inc_dec_prepare(form == 0u ? CORE_MACHINE_CPU_PROFILE_80186 : CORE_MACHINE_CPU_PROFILE_80386, &state);
+
+        if (!failed) {
+            state.machine->executor_cpu.data.ebx = base;
+            state.machine->executor_cpu.data.eax = 0x11223304u;
+            state.machine->executor_cpu.data.ecx = 0x55667788u;
+            state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF;
+            failed |= core_machine_memory_write(state.machine, form == 1u ? 0x10004u :
+                (form == 2u ? 0x114u : 0x14u), &value, 1) != TYPE_STATUS_OK;
+            if (form == 2u)
+                failed |= !inc_dec_run_xlat_es(&state, code[form], &after, &diagnostic);
+            else
+                failed |= !inc_dec_run(&state, code[form], form == 0u ? 1u : 2u,
+                    0, &after, &diagnostic);
+            failed |= diagnostic.first_fault.valid ||
+                after.data.eax != (0x11223300u | value) || after.data.ebx != base ||
+                after.data.ecx != 0x55667788u || after.data.eflags != VCPU_EFLAGS_CF;
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+    }
+    {
+        static const uint8_t fault_code[] = { 0xd7u };
+        const uint32_t eax = 0x11223304u;
+        const uint32_t flags = VCPU_EFLAGS_CF;
+        inc_dec_machine state;
+        t_cpu after;
+        core_machine_cpu_diagnostic diagnostic;
+        core_machine_run_result result;
+        C_INT failed = !inc_dec_prepare_protected(0, 1, &state);
+
+        if (!failed) {
+            state.machine->executor_cpu.data.ebx = 0x10u;
+            state.machine->executor_cpu.data.eax = eax;
+            state.machine->executor_cpu.data.eflags = flags;
+            failed |= core_machine_memory_write(state.machine, 0x2000u, fault_code,
+                sizeof(fault_code)) != TYPE_STATUS_OK;
+            test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
+            failed |= core_machine_run(state.machine, (core_machine_run_budget){ 1u, 0u },
+                &result) != TYPE_STATUS_FAULT || result.reason != CORE_MACHINE_STOP_FAULT ||
+                core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != TYPE_STATUS_OK;
+            after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+            failed |= !diagnostic.first_fault.valid || !TYPE_GET_BIT(
+                diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_DF) ||
+                after.data.eax != eax || after.data.ebx != 0x10u ||
+                after.data.eflags != flags || after.data.eip != 0u;
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+    }
+    return 1;
+}
+
 C_INT main(C_VOID)
 {
     if (!inc_dec_test_register_forms() || !inc_dec_test_rm_forms() ||
@@ -3092,7 +3173,7 @@ C_INT main(C_VOID)
         !inc_dec_test_sub_attribute_profile_fault() || !inc_dec_test_xor_forms() ||
         !inc_dec_test_xor_immediates() || !inc_dec_test_xor_attribute_profile_fault() ||
         !inc_dec_test_cmp_forms() || !inc_dec_test_cmp_boundaries() ||
-        !inc_dec_test_cmp_attribute_profile_fault() || !inc_dec_test_decimal_adjust()) return 1;
+        !inc_dec_test_cmp_attribute_profile_fault() || !inc_dec_test_decimal_adjust() || !inc_dec_test_xlat()) return 1;
     STD_PRINTF("M5:T316:S2:INC-DEC:OK\n");
     STD_PRINTF("M5:T316:S3:NOT-NEG:OK\n");
     STD_PRINTF("M5:T316:S4:TEST:OK\n");
@@ -3108,5 +3189,6 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T316:S14:XOR:OK\n");
     STD_PRINTF("M5:T316:S15:CMP:OK\n");
     STD_PRINTF("M5:T316:S16:DECIMAL-ADJUST:OK\n");
+    STD_PRINTF("M5:T316:S17:XLAT:OK\n");
     return 0;
 }
