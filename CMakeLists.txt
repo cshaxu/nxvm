@@ -177,6 +177,8 @@ add_executable(core-machine-pushf-popf-smoke tests/machine/core_machine_pushf_po
 target_link_libraries(core-machine-pushf-popf-smoke PRIVATE core-machine)
 add_executable(core-machine-cli-sti-smoke tests/machine/core_machine_cli_sti_smoke.c)
 target_link_libraries(core-machine-cli-sti-smoke PRIVATE core-machine)
+add_executable(core-machine-fs-gs-stack-smoke tests/machine/core_machine_fs_gs_stack_smoke.c)
+target_link_libraries(core-machine-fs-gs-stack-smoke PRIVATE core-machine)
 add_executable(core-machine-double-shift-smoke tests/machine/core_machine_double_shift_smoke.c)
 target_link_libraries(core-machine-double-shift-smoke PRIVATE core-machine)
 add_executable(core-machine-bit-scan-smoke tests/machine/core_machine_bit_scan_smoke.c)
@@ -1149,6 +1151,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-eflags-local-smoke
     core-machine-pushf-popf-smoke
     core-machine-cli-sti-smoke
+    core-machine-fs-gs-stack-smoke
     core-machine-double-shift-smoke
     core-machine-bit-scan-smoke
     core-machine-imul2-smoke
