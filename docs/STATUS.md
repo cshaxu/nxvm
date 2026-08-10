@@ -2,26 +2,26 @@
 
 ## Current Work
 
-**Active: M5 T314 S3.**
+**Active: M5 T314 S4.**
 
-## M5 T314 S3 Packet
+## M5 T314 S4 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Corrective; M5 T314 S2 closed in commit `0e38508d`, so xasm-smoke registration is the next subtask. |
-| Admission And Approval | Owner approved T314 on 2026-08-09. Coordinator accepted S2 evidence and admits S3 only. |
-| Objective | Register the existing deterministic `core-product-xasm-smoke` in the actual current gate. |
-| Non-goals | Do not change xasm implementation, public APIs, instruction coverage, CPU, platform behavior, artifact identity, or media policy. |
-| Reference Baseline | Accepted T313 artifact `vm-0-5-0313`; accepted T314 S2 source repair in `0e38508d`. |
-| Files And ABI Surface | `CMakeLists.txt`, T314 evidence, and Status only. No source or ABI change. |
-| Applicable Rules | Execution: precise gate registration and closure evidence; Coding: no needless abstraction; Architecture/source policy: no applicable ownership or import change. |
-| Verification | Configure `mingw-gcc-x64`; run `ctest -N -L current-gate` and prove `current.core-product-xasm-smoke`; run the named smoke and `current-gates-gcc`; run documentation governance and `git diff --check`. |
-| Expected Markers | Existing `M5:T129:S2:CORE-PRODUCT-XASM:OK` appears through `current.core-product-xasm-smoke`; all retained current markers pass. |
-| Asset Needs | None; this smoke has no arguments or external media. |
-| Stop Conditions | Stop if registration reveals a media, non-determinism, or runtime dependency; replace it only with an equivalent deterministic owned smoke after coordinator instruction. |
-| Exit Criteria | The target is in `PROJECT_CURRENT_SMOKE_TARGETS`; CTest lists and executes the exact current-gate name; current gates and documentation checks pass; S3 evidence is accepted. |
+| Identifier Mode | Corrective; M5 T314 S3 closed in commit `c994815f`, so the strict-GCC matrix is the next subtask. |
+| Admission And Approval | Owner approved T314 on 2026-08-09. Coordinator accepted S3 evidence and admits S4 only. |
+| Objective | Inventory every production target's source provenance and effective GCC warning policy; apply strict flags only to pure ntvdm64 targets that independently compile; record the two approved inherited-governance debts. |
+| Non-goals | Do not make `core-machine` pure, split mixed targets, globally add `-Werror`, change inherited CPU/xasm/Win32 sources, or claim full production coverage. |
+| Reference Baseline | Accepted T313 artifact `vm-0-5-0313`; accepted T314 S2/S3 commits `0e38508d` and `c994815f`. |
+| Files And ABI Surface | CMake strict-option policy, T314 evidence/matrix, TODO, and Status. No runtime or public ABI change. |
+| Applicable Rules | Execution: target-by-target evidence and debt admission; Coding: GCC C11 warning discipline; Architecture: no target split or hidden ownership change; Source policy: no import. |
+| Verification | Configure `mingw-gcc-x64`; enumerate all production `add_library`/artifact targets and source ownership; inspect actual Ninja commands for each selected target; build selected targets and `current-gates-gcc`; run documentation governance and `git diff --check`. |
+| Expected Markers | Matrix records every production target; selected commands contain `-Wall -Wextra -Wpedantic -Werror`; retained current-gate markers pass. |
+| Asset Needs | No new assets; retained current-gate media remains under existing policy. |
+| Stop Conditions | Do not split a mixed target or clean inherited warnings if either alters behavior, ownership, or architecture; record a precise deferral instead. |
+| Exit Criteria | Matrix covers every production target with source/ownership/current options/disposition; each selected target's actual Ninja command has all four flags; each excluded target has an exact reason and gate; both approved TODOs exist; stated verification passes. |
 | Original Owner Request | Implement owner-approved T314 in coordinated dual-session mode: repair EGA CRTC 13h bounds, register the deterministic xasm smoke, audit/apply strict GCC coverage only to confirmed owned targets, and record two inherited-governance debts. |
-| Similar-Issue Sweep | Defect class: an existing deterministic current smoke omitted from the registration list. Scope: `CMakeLists.txt` target/list/CTest wiring and T129 evidence, using `rg -n "core-product-xasm-smoke|PROJECT_CURRENT_SMOKE_TARGETS|project_add_current_smoke_test" CMakeLists.txt docs tests`; classify each hit and confirm no duplicate registration. |
+| Similar-Issue Sweep | Defect class: target-level strict flags incorrectly imply coverage of inherited or transitive source. Scope: all production CMake target/source lists, options, Ninja commands, TODO, and T314 evidence; use `rg -n "add_library|add_current_vm_artifact|target_compile_options|_SOURCES" CMakeLists.txt` plus Ninja command inspection. Classify every target; no generic exemption. |
 
 ## Current Technical Baseline
 

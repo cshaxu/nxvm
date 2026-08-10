@@ -284,7 +284,6 @@ add_executable(core-machine-presentation-smoke tests/core/presentation_smoke.c)
 target_link_libraries(core-machine-presentation-smoke PRIVATE core-machine)
 
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
-    target_compile_options(core-machine PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-default-pc-at-profile-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-hdc-port-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-hdc-hdd-boot-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -562,9 +561,6 @@ add_library(vm-profile STATIC ${VM_PROFILE_SOURCES})
 target_include_directories(vm-profile PUBLIC
     "${CMAKE_SOURCE_DIR}/src"
 )
-if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
-    target_compile_options(vm-profile PRIVATE -Wall -Wextra -Wpedantic -Werror)
-endif()
 target_link_libraries(vm-profile PUBLIC
     core-machine
     type-facade)
@@ -1357,10 +1353,6 @@ function(add_current_vm_artifact target version)
         vm-product
         vm-composition)
 
-    if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
-        target_compile_options(${target} PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    endif()
-
     add_custom_command(TARGET ${target} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/output"
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
@@ -1763,7 +1755,9 @@ if(PROJECT_ENABLE_BOCHX_RESEARCH)
 endif()
 
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
-    target_compile_options(core-platform PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(core-utils PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(core-product-session PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(vm-request-transport PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-platform-host-surface-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-platform-input-source-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-platform-presentation-mailbox-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -1774,8 +1768,6 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(vm-core-executor-storage-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-executor-run-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-cpu-pic-lifecycle-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(vdm-machine PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(vdm-composition PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vdm-minimal-session-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vdm-minimal-presentation-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-cpu-probe-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
