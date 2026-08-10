@@ -221,7 +221,8 @@ and `6B` IMUL routes remain T310 evidence and are outside S5.
 S5's developer artifact is `vm-0-5-0316` at
 `build/output/nxvm_0_5_0316.exe`, SHA-256
 `D7FBB953E0143E9F302D483CC4439DE2859B65C9CE82FD98B800B7E9E9481B71`.
-Its source commit is pending the coordinator's acceptance commit; the
-verified worktree was based on admission `bff7908092776e5cb16fbb84fb6428803d4d3989`.
+Its accepted source commit is
+`7935bad23704b431893becef11757daee051bd8f`; the verified worktree was based
+on admission `bff7908092776e5cb16fbb84fb6428803d4d3989`.
 
 `M5:T316:S5:MUL-IMUL:OK`
