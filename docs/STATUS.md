@@ -2,8 +2,27 @@
 
 ## Current Work
 
-**Idle.** M5 T316 S37 is closed; the next 80386 matrix slice requires a
-separately admitted packet.
+**M5 T316 S38 - INS/OUTS port string forms.** The coordinator admitted this
+bounded ordinary-execution continuation in Coordinated Dual-Session Mode.
+
+## M5 T316 S38 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Corrective; next unused subtask of the most recently closed numeric task, M5 T316. |
+| Admission And Approval | The owner approved continuous execution of the Intel 80386DX architecture-completeness program in Coordinated Dual-Session Mode. This is the next linear bounded matrix slice after T316 S37. |
+| Objective | Complete Intel INSB `6Ch`, INSW/INSD `6Dh`, OUTSB `6Eh`, and OUTSW/OUTSD `6Fh` string forms with single and F3 REP execution. |
+| Non-goals | Ordinary IN/OUT, MOVS, CMPS, STOS, LODS, SCAS, general I/O privilege architecture changes, general or segment stack forms, broader prefix families, post-80386 behavior, 80387, production refactoring, and any shared port or `_kas_move_index` change without a demonstrated defect and caller sweep are outside this packet. |
+| Reference Baseline | `61cc6ce0` / `vm-0-5-0316`, with T316 S37 closed, `main` equal to `origin/main`, and no active packet before admission. |
+| Files And ABI Surface | Expected scope is a focused machine smoke and CMake registration, the ordinary-execution matrix, and this packet. `src/core/machine/cpu_instructions.c` changes only for a demonstrated defect. No public ABI change. |
+| Applicable Rules | `docs/rules/EXECUTION.md`: one active packet, dual-session Instruction/report loop, actual-change coordinator review, linear corrective allocation, matrix audit, similar-issue sweep, and immediate push. `docs/rules/CODING.md`: preserve local code/test style and introduce no premature abstraction. Intel 80386 PRM INS/OUTS opcode, REP, operand/address attribute, prefix, exception, I/O permission, and interrupt behavior is the form authority. |
+| Verification | Audit primary dispatch, port provider and memory paths, T302 I/O-string evidence, prefixes, profiles, and permission routes. Cover supported default forms; classify unsupported profiles as #UD without publication; 80386 `66h`, `67h`, and combined forms; fixed-ES INS destination under CS/FS overrides and DS-source OUTS overrides; DF, F3 counts zero/one/multiple, 16/32 count semantics, port width/DX, exact EIP/index/count/GPR/FLAGS and memory or port publication; pre-80386 attributes and 80386 LOCK #UD without state, memory, or port publication; protected INS ES write-limit and OUTS DS read-limit single restart/no publication and REP partial restart at the no-IDT diagnostic boundary; and pending-PIC single no-shadow plus REP one-primitive restartable progress. IOPL/TSS is evidence only if the existing route can express it. |
+| Expected Markers | Focused smoke emits `M5:T316:S38:PORT-STRINGS:OK`; matrix evidence records every admitted opcode family and exact boundary disposition. |
+| Asset Needs | None; deterministic CPU and local port fixture only. No guest media, external code, firmware, or research import. |
+| Stop Conditions | Stop and report if a shared port or `_kas_move_index` change requires a covered caller sweep, if the existing port fixture cannot express an Intel behavior without a material harness change, or if a demonstrated defect expands beyond the declared forms. |
+| Exit Criteria | Every admitted `6Ch`--`6Fh` form is classified and proven with no ordinary IN/OUT, broader I/O permission, other string-family, post-80386, or 80387 completeness claim. |
+| Original Owner Request | Execute the complete Intel 80386 plan in dual-session mode against an Intel form--implementation--test matrix, repairing omissions and closing evidence without using Windows demand as the completeness boundary. |
+| Similar-Issue Sweep | Audit INSB/INSW/OUTSB/OUTSW, `_p_input`, `_p_output`, `_kpa_test_mode`, `_kpa_test_iomap`, `_kas_move_index`, primary prefix routes, the port provider, and existing operand/address and I/O-string smokes. Classify all hits; ordinary IN/OUT and other string families are excluded by opcode/semantic boundary. |
 
 ## Current Technical Baseline
 
