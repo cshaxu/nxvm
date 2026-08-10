@@ -43,7 +43,7 @@ not an allocation of later task identifiers.
 | Prefixes `26/2E/36/3E`, `64/65`, `66/67`, `F0`, `F2/F3`; repeated-prefix resolution | Prefix loop and `_GetOperandSize`/address decode in `cpu_instructions.c`; FS/GS and `66/67` explicitly gate at 80386. | `core_machine_real_mode_386_address_smoke`, `core_machine_operand_address_smoke` (`M5:T302:OPERAND-ADDRESS-STACK:OK`), T301 baseline. | **Partial**: FS/GS and operand/address prefix paths have bounded proof, but no cross-product proof exists for every primary opcode, LOCK legality, and repeated-prefix combination. Next: ordinary operand/address subfamily. |
 | Register/memory/immediate data movement: `MOV`, `XCHG`, `LEA`, `LES/LDS`, moffs, `PUSH/POP`, `PUSHA/POPA`, `PUSH imm`, `ENTER/LEAVE`, `CBW/CWD` (including 32-bit attribute variants) | Primary table routes to `MOV_*`, `XCHG_*`, `LEA_R32_M32`, stack helpers `_kec_push/_kec_pop`, and `ENTER/LEAVE`; primary defaults do not by themselves certify 32-bit forms. | T302 stack/address focused probe; T301 prefix/profile baseline. | **Partial**: direct route and selected 16/32 stack/address cases are proven, but no complete MOV/XCHG/LEA/moffs/segment-load matrix covers all register/memory, size, and fault-publication forms. Next: ordinary data/operand family. |
 | Primary binary arithmetic/logical/test: `ADD/OR/ADC/SBB/AND/SUB/XOR/CMP/TEST`, accumulator immediates, Groups `80/81/83` | Primary table and `INS_80/81/83`; `_kac_arith2` uses operand read/write and `_kaf_set_flags`. | T302 proves only selected cross-width/data-path cases; no dedicated primary arithmetic/FLAGS smoke was found. | **Partial**: handlers are reachable, but all 16/32, memory, carry/borrow, AF/PF, and pre-fault non-publication combinations lack a group proof. Next: ordinary arithmetic/FLAGS family. |
-| Primary unary arithmetic: `INC/DEC` register (`40`--`4F`) and Groups `FE/FF /0,/1`; `NEG/NOT` Groups `F6/F7 /2,/3` | Register handlers `INC_*`/`DEC_*`; `INS_FE/FF`, `INS_F6/F7`; all use `_kac_arith1` and flag masks. | `core_machine_inc_dec_smoke` (`M5:T316:S2:INC-DEC:OK`) proves the declared INC/DEC slice. | **Complete** for T316 S2 INC/DEC: 16/32-bit register and 8/16/32-bit r/m forms, CF preservation, defined flags, 16/32 operand/address attributes, profile behavior, and protected fault non-publication. **Partial** remains for `NEG/NOT`, which stays visible for the later unary-arithmetic slice. |
+| Primary unary arithmetic: `INC/DEC` register (`40`--`4F`) and Groups `FE/FF /0,/1`; `NEG/NOT` Groups `F6/F7 /2,/3` | Register handlers `INC_*`/`DEC_*`; `INS_FE/FF`, `INS_F6/F7`; all use `_kac_arith1` and flag masks. | `core_machine_inc_dec_smoke` (`M5:T316:S2:INC-DEC:OK`, `M5:T316:S3:NOT-NEG:OK`) proves both admitted slices. | **Complete** only for T316's named INC/DEC and NOT/NEG forms: 16/32-bit register and 8/16/32-bit r/m forms, their Intel FLAGS contracts, 16/32 operand/address attributes, profile behavior, publication, and protected fault non-publication. The wider unary/arithmetic family remains **Partial**: `F6/F7 /0,/1` and `/4`--`/7` belong to separately named TEST and multiply/divide/shift slices. |
 | Decimal/ASCII adjust and conversion: `DAA/DAS/AAA/AAS/AAM/AAD`, `XLAT` | Primary handlers `DAA`, `DAS`, `AAA`, `AAS`, `AAM`, `AAD`, `XLAT`; DAA/DAS/AAM/AAD call `_kaf_set_flags`. | No focused architecture probe found. | **Partial**: handlers exist, but documented flag-defined/undefined behavior, base-immediate edge cases, 16/32 addressing for XLAT, and faults are not proven. Next: ordinary arithmetic/FLAGS family. |
 | Shift/rotate Groups `C0/C1/D0`--`D3`, `F6/F7 /4`--`/7` | `INS_C0/C1/D0/D1/D2/D3/F6/F7`; shift paths call `_kaf_set_flags`. | No focused primary shift/rotate smoke; T310's double-shift smoke is only `SHLD/SHRD`. | **Partial**: primary count masking, count-zero flags, rotate flags, and memory faults remain unproven. Next: ordinary arithmetic/FLAGS family. |
 | EFLAGS transfers and direct flag control: `PUSHF/POPF`, `LAHF/SAHF`, `CMC/CLC/STC/CLI/STI/CLD/STD` | `PUSHF`, `POPF`, `SAHF`, `LAHF`, and primary flag handlers; protected-mode masking is local to those routes. | T302 checks selected PUSHF/POPF; retained string/product tests incidentally use DF/IF paths. | **Partial**: no focused table covers all modifiable/reserved flag bits, CPL/IOPL rules, interrupt shadow, and each direct flag form. Next: ordinary FLAGS/control family. |
@@ -71,7 +71,7 @@ records the caller discipline required before any future shared-helper change.
 
 | Candidate helper | Current callers / responsibility | Current focused coverage | S2 consequence |
 | --- | --- | --- | --- |
-| `_kac_arith1` macro | Four operation families only: `INC`, `DEC`, `NOT`, `NEG` (lines 5321, 5331, 5341, 5352). | No dedicated focused proof for any of the four; incidental product bytecode is excluded. | S2 may exercise `INC/DEC`, but must not alter this macro until `NOT/NEG` callers receive coverage or a separately admitted scope owns them. |
+| `_kac_arith1` macro | Four operation families only: `INC`, `DEC`, `NOT`, `NEG` (lines 5321, 5331, 5341, 5352). | T316 S2 covers INC/DEC; T316 S3 covers NOT/NEG. Incidental product bytecode remains excluded. | All current callers now have focused coverage. Neither S2 nor S3 changes this macro; any shared-helper correction still requires a separately admitted caller-impact review. |
 | `_kaf_set_flags` | Called by arithmetic macros, primary shifts, string compares, DAA/DAS/AAM/AAD, and T310 SHLD/SHRD; it owns mask-driven CF/PF/AF/ZF/SF/OF publication. | T310 covers SHLD/SHRD and selected string/data paths; primary unary/binary flag breadth is incomplete. | Do not change it in S2. Preserve existing flags plumbing and test the `INC/DEC` CF-preservation contract at the handler result boundary. |
 | `_kas_move_index` | MOVS, CMPS, STOS, LODS, SCAS, INS, and OUTS size/index combinations. | T292 and T302 cover selected REP/string and I/O-string cases. | Not in S2; strings remain their own matrix slice. |
 | `_kec_push/_kec_pop` | Near/far calls/returns, interrupt/IRET frames, PUSH/POP and protected transfer helpers. | T302 stack cases; T303 control transfer; T305--T308 delivery/return matrices. | Not in S2; a helper change would cross ordinary and delivery families. |
@@ -126,3 +126,32 @@ The S2 sweep finds all `INC_*`/`DEC_*` primary handlers, `INS_FE`, and
 later unary-arithmetic slice.
 
 `M5:T316:S2:INC-DEC:OK`
+
+## S3 NOT/NEG Closure Evidence
+
+The same owner-bound `core_machine_inc_dec_smoke` now covers `F6 /2,/3` and
+`F7 /2,/3` in 8/16/32-bit register and memory forms. NOT vectors require the
+complete initialized FLAGS value to remain unchanged. NEG vectors use the
+signed-minimum operand at each width to prove result, CF, OF, SF, PF, ZF, and
+AF; they also prove register and memory publication. The focused 32-bit
+operand/address vector uses `67h 66h F7 /3` and the 80186 `F7 /2` route; a
+`66h F7 /2` vector rejects with `#UD` below the 80386 profile.
+
+Both NOT and NEG use the established protected-mode bounded/read-only-memory
+fixture for source-limit and destination-write faults. Each case proves the
+destination, EFLAGS, and EIP remain unpublished and observes the existing
+deliverable `#DF` diagnostic. No CPU handler, decoder, shared arithmetic
+helper, CMake graph, ABI, artifact target, or preset changed.
+
+The focused test initially omitted the precondition for its `67h 66h F7 1Eh`
+vector: at 32-bit address size, r/m `6` names `[ESI]`, not an absolute
+displacement. Initializing ESI to the governed test address corrected that
+test-only encoding/precondition error; it did not expose a runtime defect.
+
+S3's sweep finds `_kac_arith1` has exactly INC, DEC, NOT, and NEG callers, all
+now covered by the T316 focused smoke. `INS_F6` and `INS_F7` also contain
+`/0,/1` TEST and `/4`--`/7` multiply/divide routes; those production paths are
+outside S3 and remain named partial matrix slices. The F6/F7 primary-table
+registrations are covered by this smoke's `/2,/3` executions.
+
+`M5:T316:S3:NOT-NEG:OK`
