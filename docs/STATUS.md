@@ -2,8 +2,27 @@
 
 ## Current Work
 
-**No active task.** M5 T316 S24 is closed; the next 80386 matrix slice requires
+**No active task.** M5 T316 S25 is closed; the next 80386 matrix slice requires
 a separately admitted packet.
+
+## M5 T316 S25 Closure Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Sequential bounded implementation; M5 T316 S25 follows accepted S24 within the owner-approved 80386DX ordinary-execution program. |
+| Admission And Approval | Owner approved continuous T316 80386 matrix execution; S24 is accepted at `8ad66329`. Coordinator admits only this adjacent LES/LDS slice. |
+| Objective | Complete Intel `LES`/`LDS` (`C4`/`C5`) memory far-pointer loads in legacy default 16-bit and 80386 `66h` 32-bit operand-size forms: selector and GPR offset publication, profile disposition, and source/selector fault atomicity. |
+| Non-goals | Do not admit LSS/LFS/LGS, FS/GS prefix consumers, MOV/POP segment-register families, `LEA`, generic MOV/XCHG, interrupt-shadow refactoring, exception-delivery expansion, x87, or post-80386 forms. |
+| Reference baseline | Accepted T316 S24 at `8ad66329`; Intel 80386 PRM LES/LDS forms; existing `_e_load_far` caller audit and focused corpus. |
+| Files And ABI Surface | `src/core/machine/cpu_instructions.c` only if a demonstrated LES/LDS defect requires it; one owned focused smoke and CMake registration; T316 matrix/evidence and Status closure records. No public ABI or artifact change. |
+| Applicable rules | One CPU decoder/executor route; audit `_e_load_far` callers before shared change; preserve local style; test owner-bound forms; Intel authority and no imported external source; dual-session coordinator independently reviews actual changes. |
+| Verification | Audit `LES_R32_M16_32`, `LDS_R32_M16_32`, decoder metadata/profile disposition, `_d_modrm_ea`, `_m_read_rm`, `_e_load_far`, `_s_load_sreg`, and all `_e_load_far` callers. Prove C4/C5 memory-only far pointers in real and controlled protected mode, legacy default 16-bit and `66h` 32-bit operand size; assert GPR offset, ES/DS selector, EIP, and EFLAGS. Prove register-direct #UD; prove 8086/80286 legacy default-16 acceptance and `66h` #UD below 80386; prove source or selector fault non-publication and no maskable-IRQ shadow. Run focused, documentation governance, current gates, diff, commit, and push. |
+| Expected markers | New `M5:T316:S25:LES-LDS:OK`; retained S1--S24 and current-gate markers pass. |
+| Asset needs | None beyond governed current-gate assets. |
+| Stop conditions | Stop if correct proof needs a shared selector/far-load/PIC/exception-delivery redesign, if a helper change lacks caller coverage, or if decoder/ABI ownership changes. |
+| Exit criteria | Every declared C4/C5 form is proven for size, memory-only encoding, profile, publication, declared fault atomicity, and absence of an SS-only IRQ shadow; all scan hits are disposed; broader segment/operand families remain explicit partial; required gates and delivery pass. |
+| Original owner request | Execute the complete 80386 program in Coordinated Dual-Session Mode against Intel form--implementation--test matrix evidence without using Windows demand as a scope filter. |
+| Similar-issue sweep | Scan `LES_R32_M16_32|LDS_R32_M16_32|LSS_R32_M16_32|LFS_R32_M16_32|LGS_R32_M16_32|_e_load_far|_d_modrm_ea|_m_read_rm|_s_load_sreg|flagMaskInt|0xC4|0xC5` across source, tests, CMake, and records; classify each production hit as covered, fixed, deferred, or out of scope. |
 
 ## Current Technical Baseline
 
