@@ -2,26 +2,26 @@
 
 ## Current Work
 
-**Active: M5 T316 S8.**
+**Active: M5 T316 S9.**
 
-## M5 T316 S8 Packet
+## M5 T316 S9 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Corrective; M5 T316 S8 follows accepted T316 S7 within the same active task. |
-| Admission And Approval | Owner approved the M5 80386DX program and instructed that T316 continue normally after S1; coordinator accepted S7 at `30c5f03b` and admits S8 only. |
-| Objective | Complete the declared primary ADD matrix slice: `00h`--`05h` and Group `80h/81h/83h /0`, with Intel-correct destination publication, defined FLAGS, operand sizes, and fault behavior. |
-| Non-goals | Do not claim primary binary arithmetic/FLAGS or the ordinary family complete; do not refactor shared arithmetic/flag helpers, alter decoder ownership/public ABI, implement ADC/SBB/other logical groups, implement an 80387, or admit post-80386 forms. |
+| Identifier Mode | Corrective; M5 T316 S9 follows accepted T316 S8 within the same active task. |
+| Admission And Approval | Owner approved the M5 80386DX program and instructed that T316 continue normally after S1; coordinator accepted S8 at `544af860` and admits S9 only. |
+| Objective | Complete the declared primary ADC matrix slice: `10h`--`15h` and Group `80h/81h/83h /2`, with Intel-correct carry-in, destination publication, defined FLAGS, operand sizes, and fault behavior. |
+| Non-goals | Do not claim primary binary arithmetic/FLAGS or the ordinary family complete; do not refactor shared arithmetic/flag helpers, alter decoder ownership/public ABI, implement ADD/SBB/other logical groups, implement an 80387, or admit post-80386 forms. |
 | Reference baseline | Accepted T314 artifact baseline; accepted T316 S1/S2 matrix and current focused corpus. |
 | Files And ABI Surface | `src/core/machine/cpu_instructions.c`, one owned CPU focused smoke and CMake registration if needed, T316 matrix/evidence, Status, and task artifact records. No public ABI change. |
 | Applicable rules | Architecture: one CPU decoder/executor path; Coding: preserve local CPU style, use no speculative abstraction, and keep tests owner-bound; Execution: complete only the declared matrix slice with focused and retained evidence, artifact, documentation, diff, commit, and push gates; Source policy: Intel authority, no imported external source. |
-| Verification | Audit Intel ADD forms before implementation; exercise `00h`--`05h` and `80h/81h/83h /0` at 8/16/32 bits with non-alias register/memory destinations; prove CF/OF/SF/ZF/AF/PF, immediate sign extension where applicable, operand/address attributes, profile behavior, and protected source/destination-fault publication; scan ADD handlers, Group arithmetic dispatch, `_kac_arith2`, and flag-helper callers before any abstraction; rebuild T316 artifact if runtime changes, run focused smoke, current gates, documentation governance, and `git diff --check`. |
-| Expected markers | New focused marker `M5:T316:S8:ADD:OK`; retained S1--S7 markers and applicable current-gate markers pass. |
+| Verification | Audit Intel ADC forms before implementation; exercise `10h`--`15h` and `80h/81h/83h /2` at 8/16/32 bits with non-alias register/memory destinations; prove carry-in-dependent results plus CF/OF/SF/ZF/AF/PF, immediate sign extension where applicable, operand/address attributes, profile behavior, and protected source/destination-fault non-publication; scan ADC handlers, Group arithmetic dispatch, `_a_adc`, `_kac_arith2`, and flag-helper callers before any abstraction; rebuild T316 artifact if runtime changes, run focused smoke, current gates, documentation governance, and `git diff --check`. |
+| Expected markers | New focused marker `M5:T316:S9:ADC:OK`; retained S1--S8 markers and applicable current-gate markers pass. |
 | Asset needs | None beyond existing governed current-gate assets. |
 | Stop conditions | Stop and report if Intel-correct behavior requires a shared-helper change whose other callers lack coverage, decoder/ABI or exception-delivery architecture change, or an architecture boundary change. |
-| Exit criteria | Every declared Intel ADD form has implementation and focused proof; 8/16/32 register/memory behavior, destination publication, all defined arithmetic FLAGS, immediate/sign-extension, attribute/profile behavior, and source/destination-fault non-publication pass; every scan hit is disposed; no broader family-completeness claim is made; required gates, artifact handling, commit, and push pass. |
+| Exit criteria | Every declared Intel ADC form has implementation and focused proof; 8/16/32 register/memory behavior, carry-in-dependent result/FLAGS, destination publication, all defined arithmetic FLAGS, immediate/sign-extension, attribute/profile behavior, and source/destination-fault non-publication pass; every scan hit is disposed; no broader family-completeness claim is made; required gates, artifact handling, commit, and push pass. |
 | Original owner request | Execute the complete 80386 program in Coordinated Dual-Session Mode against an Intel form--implementation--test matrix, repairing omissions without using Windows demand as a scope filter. |
-| Similar-issue sweep | Defect class: primary ADD routes lacking Intel-form evidence or correct result/FLAGS/fault-publication behavior. Scope: tracked CPU implementation, CPU tests, CMake registrations, T316 evidence, and relevant records; use `rg -n "ADD_|INS_80|INS_81|INS_83|_kac_arith2|ADD_FLAG|_kaf_set_flags" src/core/machine tests CMakeLists.txt docs`. Classify every production hit as covered, fixed, deferred to a named matrix slice, or out of scope with reason. |
+| Similar-issue sweep | Defect class: primary ADC routes lacking Intel-form evidence or correct carry-in/result/FLAGS/fault-publication behavior. Scope: tracked CPU implementation, CPU tests, CMake registrations, T316 evidence, and relevant records; use `rg -n "ADC_|INS_80|INS_81|INS_83|_a_adc|ADC_FLAG|_kac_arith2|_kaf_set_flags" src/core/machine tests CMakeLists.txt docs`. Classify every production hit as covered, fixed, deferred to a named matrix slice, or out of scope with reason. |
 
 ## Current Technical Baseline
 
