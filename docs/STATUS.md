@@ -2,26 +2,26 @@
 
 ## Current Work
 
-**Active: M5 T314 S2.**
+**Active: M5 T314 S3.**
 
-## M5 T314 S2 Packet
+## M5 T314 S3 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Corrective; M5 T314 S1 admission closed in commit `4932cbe6`, so the repair is its next subtask. |
-| Admission And Approval | Owner approved the inserted Queue candidate and T314 package on 2026-08-09. Coordinator accepted S1 admission and admits S2 only; later subtasks require coordinator acceptance of the prior result. |
-| Objective | Remove the VADP CRTC 13h out-of-bounds port read/write while retaining `crtc[]` as the sole EGA offset state source. |
-| Non-goals | Do not add CRTC behavior, change EGA 320x200x16 or 640x350x16 behavior, alter firmware/display topology/host presentation, or modify inherited CPU, xasm, or Win32 code. |
-| Reference baseline | Accepted T313 `vm-0-5-0313` / `build/output/nxvm_0_5_0313.exe`; current source and artifact identity remain T313 until T314 closure. |
-| Files And ABI Surface | `src/core/machine/vadp.c`, `src/core/machine/vadp.h`, an owned VADP port smoke, CMake registration, Task evidence, Queue, TODO, and Status. No public ABI change. |
-| Applicable rules | Architecture: one VADP owner and one CRTC offset truth source; Coding: C11, cohesive ownership and owner-bound tests; Execution: defect-class sweep, exact evidence, artifact, documentation, diff, commit, and push gates; Source policy: no import or external asset. |
-| Verification | Configure `mingw-gcc-x64`; run the focused VADP port smoke; enumerate every `crtc[` occurrence in `vadp.c` and `vadp.h` with disposition; build `current-gates-gcc`; run `powershell -NoProfile -ExecutionPolicy Bypass -File tools/Verify-DocumentationGovernance.ps1 -RepositoryRoot .`; run `git diff --check`. At package closure, build and hash the T314 artifact. |
-| Expected markers | New focused marker `M5:T314:S2:EGA-CRTC-BOUNDARY:OK`; retained EGA/VADP and current-gate markers remain passing. |
-| Asset needs | None for S2 focused proof; retained current-gate media uses the approved repository-relative assets under existing governance. |
-| Stop conditions | Stop and report if the repair requires changed EGA mode semantics, firmware, display ownership, a second offset state source, or a public interface change. |
-| Exit criteria | CRTC index 13h has same-array storage; every variable CRTC array access is guarded by the bounded support predicate; CRTC constant indices are compile-time bounded; the port regression verifies read/write and isolation; the stale TODO is closed or narrowed; all stated gates pass and the S2 result is accepted. |
-| Original owner request | Implement owner-approved T314 in coordinated dual-session mode: repair EGA CRTC 13h bounds, register the deterministic xasm smoke, audit/apply strict GCC coverage only to confirmed owned targets, and record two inherited-governance debts. |
-| Similar-issue sweep | Defect class: accepted CRTC index used as an unchecked array subscript. Scope: tracked VADP production/test/CMake and relevant records, using `rg -n "crtc\\[|supported_crtc_index|CRTC_REGISTER_COUNT" src/core/machine tests CMakeLists.txt docs`. Classify every production hit; variable accesses must route through the bounded predicate, constants through compile-time bounds, and unrelated hits receive a reason. |
+| Identifier Mode | Corrective; M5 T314 S2 closed in commit `0e38508d`, so xasm-smoke registration is the next subtask. |
+| Admission And Approval | Owner approved T314 on 2026-08-09. Coordinator accepted S2 evidence and admits S3 only. |
+| Objective | Register the existing deterministic `core-product-xasm-smoke` in the actual current gate. |
+| Non-goals | Do not change xasm implementation, public APIs, instruction coverage, CPU, platform behavior, artifact identity, or media policy. |
+| Reference Baseline | Accepted T313 artifact `vm-0-5-0313`; accepted T314 S2 source repair in `0e38508d`. |
+| Files And ABI Surface | `CMakeLists.txt`, T314 evidence, and Status only. No source or ABI change. |
+| Applicable Rules | Execution: precise gate registration and closure evidence; Coding: no needless abstraction; Architecture/source policy: no applicable ownership or import change. |
+| Verification | Configure `mingw-gcc-x64`; run `ctest -N -L current-gate` and prove `current.core-product-xasm-smoke`; run the named smoke and `current-gates-gcc`; run documentation governance and `git diff --check`. |
+| Expected Markers | Existing `M5:T129:S2:CORE-PRODUCT-XASM:OK` appears through `current.core-product-xasm-smoke`; all retained current markers pass. |
+| Asset Needs | None; this smoke has no arguments or external media. |
+| Stop Conditions | Stop if registration reveals a media, non-determinism, or runtime dependency; replace it only with an equivalent deterministic owned smoke after coordinator instruction. |
+| Exit Criteria | The target is in `PROJECT_CURRENT_SMOKE_TARGETS`; CTest lists and executes the exact current-gate name; current gates and documentation checks pass; S3 evidence is accepted. |
+| Original Owner Request | Implement owner-approved T314 in coordinated dual-session mode: repair EGA CRTC 13h bounds, register the deterministic xasm smoke, audit/apply strict GCC coverage only to confirmed owned targets, and record two inherited-governance debts. |
+| Similar-Issue Sweep | Defect class: an existing deterministic current smoke omitted from the registration list. Scope: `CMakeLists.txt` target/list/CTest wiring and T129 evidence, using `rg -n "core-product-xasm-smoke|PROJECT_CURRENT_SMOKE_TARGETS|project_add_current_smoke_test" CMakeLists.txt docs tests`; classify each hit and confirm no duplicate registration. |
 
 ## Current Technical Baseline
 
