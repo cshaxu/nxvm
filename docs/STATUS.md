@@ -2,26 +2,26 @@
 
 ## Current Work
 
-**Active: M5 T316 S20.**
+**Active: M5 T316 S21.**
 
-## M5 T316 S20 Packet
+## M5 T316 S21 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Corrective; M5 T316 S20 follows accepted T316 S19 within the same active task. |
-| Admission And Approval | Owner approved the M5 80386DX program and instructed that T316 continue normally after S1; coordinator accepted S19 at `87831762` and admits S20 only. |
-| Objective | Complete the unprivileged EFLAGS transfer/control slice: `LAHF`, `SAHF`, `CMC`, `CLC`, `STC`, `CLD`, and `STD`, including Intel-defined flag preservation. |
-| Non-goals | Do not admit `PUSHF/POPF` or `CLI/STI` privilege, IOPL, or interrupt-shadow behavior; do not claim the wider ordinary FLAGS family complete; do not refactor shared flag/stack/exception helpers, alter decoder ownership/public ABI, implement an 80387, or admit post-80386 forms. |
+| Identifier Mode | Corrective; M5 T316 S21 follows accepted T316 S20 within the same active task. |
+| Admission And Approval | Owner approved the M5 80386DX program and instructed that T316 continue normally after S1; coordinator accepted S20 at `bd0be3c1` and admits S21 only. |
+| Objective | Complete the 80386 `PUSHF`/`POPF` (`9C`/`9D`) slice: 16/32-bit operand forms, stack image and publication, reserved-bit behavior, protected-mode CPL/IOPL masking, VM86 admission, and fault atomicity. |
+| Non-goals | Do not admit `CLI/STI`, interrupt-shadow delivery, wider ordinary FLAGS control, task switch/NT semantics beyond the architectural stack image, shared stack/exception refactors, decoder/public ABI changes, an 80387, or post-80386 forms. |
 | Reference baseline | Accepted T314 artifact baseline; accepted T316 S1/S2 matrix and current focused corpus. |
-| Files And ABI Surface | `src/core/machine/cpu_instructions.c`, one owned EFLAGS focused smoke and CMake registration if needed, T316 matrix/evidence, Status, and task artifact records. No public ABI change. |
+| Files And ABI Surface | `src/core/machine/cpu_instructions.c`, one owned PUSHF/POPF focused smoke and CMake registration if needed, T316 matrix/evidence, Status, and task artifact records. No public ABI change. |
 | Applicable rules | Architecture: one CPU decoder/executor path; Coding: preserve local CPU style, use no speculative abstraction, and keep tests owner-bound; Execution: complete only the declared matrix slice with focused and retained evidence, artifact, documentation, diff, commit, and push gates; Source policy: Intel authority, no imported external source. |
-| Verification | Audit Intel 80386 `LAHF/SAHF/CMC/CLC/STC/CLD/STD` before implementation; exercise AH/low-EFLAGS transfer masks, bit 1 behavior, all affected and all preserved flags, both CF inputs for CMC, 16/32 operand attribute behavior where Intel applies it, legacy/profile reachability, and fault-free atomic publication; scan `LAHF|SAHF|CMC|CLC|STC|CLD|STD`, EFLAGS writes, decoder entries, and every candidate helper caller before any abstraction; rebuild T316 artifact if runtime changes, run focused smoke, current gates, documentation governance, and `git diff --check`. |
-| Expected markers | New focused marker `M5:T316:S20:EFLAGS-LOCAL:OK`; retained S1--S19 markers and applicable current-gate markers pass. |
+| Verification | Audit the Intel 80386 `PUSHF`/`POPF` forms before implementation. Exercise real mode and protected CPL0/CPL3 with IOPL above/equal/below CPL; VM86 IOPL=3 and IOPL&lt;3 admission; 16- and 32-bit operand attributes; pushed VM/RF and reserved-bit images; POPF's modifiable, preserved, and IF-gated bits; stack read/write and EIP/EFLAGS/ESP non-publication on faults. Scan `PUSHF|POPF|_e_push|_e_pop|VCPU_EFLAGS|_GetCPL|_GetEFLAGS_IOPL`, decoder entries, and every candidate helper caller before any abstraction. Rebuild the T316 artifact if runtime changes; run focused smoke, current gates, documentation governance, and `git diff --check`. |
+| Expected markers | New focused marker `M5:T316:S21:PUSHF-POPF:OK`; retained S1--S20 markers and applicable current-gate markers pass. |
 | Asset needs | None beyond existing governed current-gate assets. |
-| Stop conditions | Stop and report if Intel-correct behavior requires a shared-helper change whose other callers lack coverage, decoder/ABI or exception-delivery architecture change, or an architecture boundary change. |
-| Exit criteria | Every declared unprivileged EFLAGS transfer/control form has implementation and focused proof; transfer masks, affected/preserved flags, profile behavior, and publication pass; every scan hit is disposed; `PUSHF/POPF` and `CLI/STI` plus wider ordinary families remain explicitly partial; required gates, artifact handling, commit, and push pass. |
+| Stop conditions | Stop and report if Intel-correct behavior requires an untested shared-helper change, task-switch/NT control transfer, decoder/ABI or exception-delivery architecture change, or another architecture-boundary change. |
+| Exit criteria | Every declared `9C`/`9D` form and mode boundary has focused implementation proof; stack images, reserved and modifiable/preserved bits, CPL/IOPL/VM86 disposition, and fault non-publication pass; every scan hit is disposed; `CLI/STI`, interrupt shadow, and wider ordinary families remain explicitly partial; required gates, artifact handling, commit, and push pass. |
 | Original owner request | Execute the complete 80386 program in Coordinated Dual-Session Mode against an Intel form--implementation--test matrix, repairing omissions without using Windows demand as a scope filter. |
-| Similar-issue sweep | Defect class: unprivileged EFLAGS transfer/control routes lacking Intel-form evidence or correct mask, preservation, profile, and atomic publication behavior. Scope: tracked CPU implementation, CPU tests, CMake registrations, T316 evidence, and relevant records; use `rg -n "LAHF|SAHF|CMC|CLC|STC|CLD|STD|VCPU_EFLAGS|eflags" src/core/machine tests CMakeLists.txt docs`. Classify every production hit as covered, fixed, deferred to a named matrix slice, or out of scope with reason. |
+| Similar-issue sweep | Defect class: EFLAGS stack transfer routes that omit an Intel operand/mode/privilege boundary or publish partial state. Scope: tracked CPU implementation, CPU tests, CMake registrations, T316 evidence, and relevant records; use `rg -n "PUSHF|POPF|_e_push|_e_pop|VCPU_EFLAGS|_GetCPL|_GetEFLAGS_IOPL" src/core/machine tests CMakeLists.txt docs`. Classify every production hit as covered, fixed, deferred to a named matrix slice, or out of scope with reason. |
 
 ## Current Technical Baseline
 
