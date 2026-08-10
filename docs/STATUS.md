@@ -2,8 +2,27 @@
 
 ## Current Work
 
-**Idle.** M5 T316 S27 is closed; the next 80386 matrix slice requires a
-separately admitted packet.
+**M5 T316 S28 - accumulator XCHG forms.** The coordinator admitted this
+bounded ordinary-execution continuation in Coordinated Dual-Session Mode.
+
+## M5 T316 S28 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Corrective; next unused subtask of the most recently closed numeric task, M5 T316. |
+| Admission And Approval | The owner approved continuous execution of the Intel 80386DX architecture-completeness program in Coordinated Dual-Session Mode. This is the next linear bounded matrix slice after T316 S27. |
+| Objective | Close the Intel 80386 accumulator-XCHG opcode slice `90h`--`97h`: establish focused evidence for `91h`--`97h` exchanges between AX/EAX and each named general register, and explicitly prove `90h`'s architecturally equivalent no-op behavior without treating it as a separate data-exchange implementation. |
+| Non-goals | No new CPU abstraction, decoder, or runtime feature; no x87 implementation; no post-80386 behavior; no memory-XCHG, `86h`/`87h` r/m coverage beyond S27; no broad prefix-family claim. |
+| Reference Baseline | `bf52dba4` / `vm-0-5-0316`, with T316 S27's r/m XCHG matrix closed and current `main` equal to `origin/main` before admission. |
+| Files And ABI Surface | Expected test/build/evidence scope: `tests/machine/core_machine_xchg_smoke.c`, `CMakeLists.txt` only if a distinct target is necessary, `docs/etc/evidence/t316-ordinary-execution-matrix.md`, and this active packet. `src/core/machine/cpu_instructions.c` changes only for a demonstrated defect. No public ABI change. |
+| Applicable Rules | `docs/rules/EXECUTION.md`: one active packet, dual-session Instruction/report loop, actual-change coordinator review, linear corrective allocation, matrix audit, similar-issue sweep, immediate push. `docs/rules/CODING.md`: preserve local instruction/test style and introduce no premature helper. Intel 80386 PRM XCHG/NOP, operand-size, prefix, interrupt, and exception behavior is the form authority. |
+| Verification | Audit every `90h`--`97h` table route and handler. Add focused vectors for default 16-bit exchange on 8086/80186/80286/80386; 80386 `66h` 32-bit exchange; partial-register/high-half preservation; EIP and EFLAGS preservation; every named register form; `90h` no-op; lower-profile `66h` rejection without publication; LOCK rejection without publication; and pending-IRQ delivery proving no interrupt shadow. Build and run the focused smoke, documentation governance, `git diff --check`, then the complete current-gate preset before closure. |
+| Expected Markers | Focused smoke emits `M5:T316:S28:XCHG-ACC:OK`; matrix evidence records every `90h`--`97h` form and the exact boundary dispositions. |
+| Asset Needs | None; deterministic CPU fixture only. No guest media, external code, firmware, or research import. |
+| Stop Conditions | Stop and report if the form audit requires a shared helper change whose existing callers lack focused coverage, if Intel behavior conflicts with the retained profile boundary, or if fixing a demonstrated defect expands into another form family. |
+| Exit Criteria | Each declared opcode/form is complete or explicitly classified with authority; its result/no-op behavior, width, profile/prefix rejection, FLAGS/EIP, and IRQ boundary have focused proof; no demonstrated runtime defect remains unaddressed; matrix wording no longer leaves accumulator XCHG partial; required gates pass; coordinator independently reviews all changed artifacts before closure. |
+| Original Owner Request | Execute the complete Intel 80386 plan in dual-session mode against an Intel form--implementation--test matrix, repairing omissions and closing evidence without using Windows demand as the completeness boundary. |
+| Similar-Issue Sweep | Audit the primary table entries and all `XCHG_*_EAX` routes for `90h`--`97h`, plus prefix LOCK/profile dispatch. S27 already owns `86h`/`87h`; no source defect is presumed. If a defect is found, search the full accumulator-XCHG handler group and classify every hit. |
 
 ## Current Technical Baseline
 
