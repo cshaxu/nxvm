@@ -653,3 +653,7 @@ the handler before the following NOP, proving no interrupt shadow. The
 audited; no runtime defect was reproduced, so no runtime source changed.
 
 `M5:T316:S26:LEA:OK`
+
+The coordinator independently reran `current-gates-gcc` after the closure
+review: all 52 static/governance checks and all 156 current-gate CTest cases
+passed.
