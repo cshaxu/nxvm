@@ -53,6 +53,12 @@
 
 ## Recent Governance
 
+- **M5 Td S64:** requires an actual-change review before a task or subtask is
+  accepted: reports, test summaries, and diff statistics are evidence indexes,
+  not substitutes for reading the relevant changed code, build, test, and
+  documentation artifacts. In dual-session mode the coordinator owns that
+  independent review. Td work has no runtime or artifact change.
+
 - **M5 Td S63:** made Intel 80386 PRM form audits a per-candidate admission
   input and exit gate. A bounded task can close only its declared matrix slice;
   a family cannot close while any in-scope form is partial, missing, or
@@ -87,8 +93,3 @@
   recent-closure records in place; and recorded T301--T312 package completion
   before any separate M6 admission. See the
   [package-close audit](etc/evidence/m5-direct-80386-package-close-audit.md).
-
-- **M5 Td S55:** replaced the over-granular M5 80386 plan with a direct,
-  family-oriented 32-bit protected execution/delivery package before Mantle;
-  full-system checkpoints are debug/progress tools, while construction uses
-  focused synthetic architecture probes. Td work has no history record.

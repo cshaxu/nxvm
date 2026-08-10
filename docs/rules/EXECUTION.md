@@ -32,6 +32,15 @@ evidence, run the required verification, record the retrospective/prevention
 action when applicable, and report the result. A task is not complete merely
 because its implementation or tests look complete.
 
+Before accepting or closing any task or subtask, inspect its actual repository
+changes, rather than relying only on a report, test summary, or diff statistic.
+Review the relevant added, modified, renamed, and deleted files and the actual
+code, build, test, and documentation changes against the packet scope, exit
+criteria, and recorded evidence. In Ordinary Mode, the single session performs
+this review. In Coordinated Dual-Session Mode, the coordinator performs it
+independently before acceptance; the executor's report is an evidence index,
+not a substitute for reviewing the actual Git/worktree changes.
+
 ## Execution Modes
 
 Every admitted task or task package uses one declared execution mode. Both
@@ -67,7 +76,9 @@ and never create a duplicate role conversation.
 4. On an objection or correction report, the coordinator revises the active
    packet as needed, issues a replacement Instruction, and returns to step 2.
    On an implementation-result report, the coordinator audits the original
-   request, Instruction, packet exit criteria, evidence, and applicable rules.
+   request, Instruction, packet exit criteria, evidence, applicable rules, and
+   the actual Git/worktree changes. This includes reading the relevant changed
+   code and artifacts, not merely `git diff --stat` or the executor's summary.
    Any incomplete result receives a replacement Instruction and returns to
    step 2. Only a complete result may close the current task and advance to the
    next admitted Queue candidate.
@@ -79,8 +90,9 @@ and never create a duplicate role conversation.
    complete.
 
 The coordinator owns Instruction fidelity, task admission, scope correction,
-and acceptance. The executor owns implementation, evidence, and prompt
-reporting. Neither role may close a task merely by asserting success.
+the actual-change review, and acceptance. The executor owns implementation,
+evidence, and prompt reporting. Neither role may close a task merely by
+asserting success.
 
 **Task Packages.**
 
