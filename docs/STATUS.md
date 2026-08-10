@@ -2,7 +2,26 @@
 
 ## Current Work
 
-**Idle.**
+**Active: M5 T314 S6.**
+
+## M5 T314 S6 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Corrective; T314 is the most recently closed numeric task and S6 follows closed S5. |
+| Admission And Approval | Owner approved the T314 corrective repair and requires coordinated dual-session execution on 2026-08-09. |
+| Objective | Restore six existing target-local GCC strict-option sets and add a narrow CRTC boundary static closure gate. |
+| Non-goals | Do not add global flags, claim transitive strict coverage, split targets, change runtime code, or broaden into C semantic analysis. |
+| Reference Baseline | Accepted T314 0314 artifact and commit `fa1fe40b`. |
+| Files And ABI Surface | `CMakeLists.txt`, a narrow CMake verifier, strict-GCC matrix/evidence, Status/history, and final artifact selection. No public ABI. |
+| Applicable Rules | Execution corrective exception and mechanical defect closure; Coding GCC warning discipline; Architecture single VADP state owner; Documentation authority. |
+| Verification | Build each restored target and inspect target-local Ninja flags; run new verifier directly and through `run-current-smokes`; run `current-gates-gcc`, documentation governance, `git diff --check`, and final artifact/hash checks. |
+| Expected Markers | Restored target-local strict commands retain all four flags; `verify-ega-crtc-boundary` passes; retained S2/S3 markers and all current gates pass. |
+| Asset Needs | Existing approved current-gate media only. |
+| Stop Conditions | Stop if a restored target no longer compiles strictly, or if a narrow source-shape verifier cannot distinguish the admitted VADP paths without generalized parsing. |
+| Exit Criteria | All six existing target-local strict options are restored; matrix states retained/local-only; the new verifier catches the known CRTC bypass shapes and is gate-wired; final evidence/gates/artifact pass and T314 recloses. |
+| Original Owner Request | Correct T314: restore six pre-existing strict target-local constraints; add a narrow CRTC boundary closure gate; retain the three new strict libraries and all previous outcomes. |
+| Similar-Issue Sweep | Scope: all target-level strict options and VADP CRTC indexing shapes. Use CMake option/target searches and the verifier fixture checks; classify each historical strict target and each dynamic CRTC access. |
 
 ## Current Technical Baseline
 
