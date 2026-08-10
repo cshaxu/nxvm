@@ -2,26 +2,8 @@
 
 ## Current Work
 
-**M5 T316 S35 - LODS string forms.** The coordinator admitted this bounded ordinary-execution continuation in Coordinated Dual-Session Mode.
-
-## M5 T316 S35 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Corrective; next unused subtask of the most recently closed numeric task, M5 T316. |
-| Admission And Approval | The owner approved continuous execution of the Intel 80386DX architecture-completeness program in Coordinated Dual-Session Mode. This is the next linear bounded matrix slice after T316 S34. |
-| Objective | Complete Intel LODSB `ACh` and LODSW/LODSD `ADh` string forms with single and REP execution. |
-| Non-goals | CMPS, SCAS, MOVS, STOS, INS/OUTS, general or segment stack forms, broader prefix families, and any helper change without a demonstrated defect are outside this packet. |
-| Reference Baseline | `2e2133b2` / `vm-0-5-0316`, with T316 S34 closed, `main` equal to `origin/main`, and no active packet before admission. |
-| Files And ABI Surface | Expected scope is a focused machine smoke and CMake registration, the ordinary-execution matrix, and this packet. `src/core/machine/cpu_instructions.c` changes only for a demonstrated defect. No public ABI change. |
-| Applicable Rules | `docs/rules/EXECUTION.md`: one active packet, dual-session Instruction/report loop, actual-change coordinator review, linear corrective allocation, matrix audit, similar-issue sweep, and immediate push. `docs/rules/CODING.md`: preserve local code/test style and introduce no premature abstraction. Intel 80386 PRM LODS opcode, REP, operand/address attribute, prefix, exception, and interrupt behavior is the form authority. |
-| Verification | Cover single `ACh`/`ADh` on all four profiles; 80386 `66h`, `67h`, and combined forms; REP count zero, one, and multiple; DF increment and decrement; DS source plus CS/SS/ES/FS/GS source overrides; exact AL/AX/EAX publication, SI/ESI/CX/ECX/EIP, nonparticipant GPR/FLAGS, and memory behavior; pre-80386 attribute and 80386 LOCK #UD nonpublication; protected source read-limit/restart/no-publication at the established no-IDT diagnostic boundary; and pending-PIC single no-shadow plus REP restartable partial progress. |
-| Expected Markers | Focused smoke emits `M5:T316:S35:LODS:OK`; matrix evidence records every admitted opcode family and exact boundary disposition. |
-| Asset Needs | None; deterministic CPU fixture only. No guest media, external code, firmware, or research import. |
-| Stop Conditions | Stop and report if a shared `_m_lods` or `_kas_move_index` change requires a covered caller sweep. |
-| Exit Criteria | Every admitted `ACh`/`ADh` form is classified and proven with no CMPS, SCAS, MOVS, STOS, INS/OUTS, or stack-family completeness claim. |
-| Original Owner Request | Execute the complete Intel 80386 plan in dual-session mode against an Intel form--implementation--test matrix, repairing omissions and closing evidence without using Windows demand as the completeness boundary. |
-| Similar-Issue Sweep | Audit LODS handlers, `_m_lods`, `_kas_move_index`, primary prefix routes, and the existing operand/address smoke. Classify all hits; CMPS, SCAS, MOVS, STOS, INS/OUTS, and stack families are excluded by opcode/semantic boundary. |
+**Idle.** M5 T316 S35 is closed; the next 80386 matrix slice requires a
+separately admitted packet.
 
 ## Current Technical Baseline
 
@@ -43,6 +25,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T316 S35 | Closed LODS `AC`/`AD`: single/REP profiles plus `66`/`67`, source segments/DF, #UD/LOCK, DS #DF single/partial, and PIC no-shadow/restart coverage. No production change was needed; 52 governance/static checks and 164 current-gate tests passed. |
 | T316 S34 | Closed STOS `AA`/`AB`: default plus `66`/`67`, REP/DF, fixed ES destination, #UD/LOCK, #DF single/partial, and PIC single/restartable coverage. Test-only; 52 governance/static checks and 163 current-gate tests passed. |
 | T316 S33 | Closed MOVS `A4`/`A5`: single/REP default and `66`/`67`, segment/DF, #UD/LOCK, protected source/destination limit #DF full nonpublication including DS/ES cache, single no-shadow plus REP restartable partial IRQ. No production change was needed; 52 governance checks and 162 current tests passed. |
 | T316 S32 | Closed `8C`/`8E` segment-register MOV: form/profile/`66`/`67`, #UD/LOCK, protected cache/null/accessed and #DF nonpublication, plus MOV SS shadow and non-SS no-shadow. No production change was needed; 52 static/governance checks and 161 current-gate tests passed. |
