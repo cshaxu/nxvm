@@ -14496,13 +14496,13 @@ static C_VOID STI(core_machine_cpu_execution_context *context)
             }
             TYPE_TRACE_BLOCK_END;
         }
-        instruction_state.data.flagMaskInt = TYPE_TRUE;
     }
     else
     {
         cpu_state.data.ip++;
         _SetEFLAGS_IF;
     }
+    instruction_state.data.flagMaskInt = TYPE_TRUE;
     TYPE_TRACE_CALL_END;
 }
 static C_VOID CLD(core_machine_cpu_execution_context *context)
