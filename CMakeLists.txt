@@ -187,6 +187,8 @@ add_executable(core-machine-lea-smoke tests/machine/core_machine_lea_smoke.c)
 target_link_libraries(core-machine-lea-smoke PRIVATE core-machine)
 add_executable(core-machine-xchg-smoke tests/machine/core_machine_xchg_smoke.c)
 target_link_libraries(core-machine-xchg-smoke PRIVATE core-machine)
+add_executable(core-machine-sign-extend-smoke tests/machine/core_machine_sign_extend_smoke.c)
+target_link_libraries(core-machine-sign-extend-smoke PRIVATE core-machine)
 add_executable(core-machine-double-shift-smoke tests/machine/core_machine_double_shift_smoke.c)
 target_link_libraries(core-machine-double-shift-smoke PRIVATE core-machine)
 add_executable(core-machine-bit-scan-smoke tests/machine/core_machine_bit_scan_smoke.c)
@@ -1164,6 +1166,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-les-lds-smoke
     core-machine-lea-smoke
     core-machine-xchg-smoke
+    core-machine-sign-extend-smoke
     core-machine-double-shift-smoke
     core-machine-bit-scan-smoke
     core-machine-imul2-smoke
