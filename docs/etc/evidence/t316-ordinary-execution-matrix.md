@@ -46,7 +46,7 @@ not an allocation of later task identifiers.
 | Primary unary arithmetic: `INC/DEC` register (`40`--`4F`) and Groups `FE/FF /0,/1`; `NEG/NOT` Groups `F6/F7 /2,/3` | Register handlers `INC_*`/`DEC_*`; `INS_FE/FF`, `INS_F6/F7`; all use `_kac_arith1` and flag masks. | `core_machine_inc_dec_smoke` (`M5:T316:S2:INC-DEC:OK`, `M5:T316:S3:NOT-NEG:OK`) proves both admitted slices. | **Complete** only for T316's named INC/DEC and NOT/NEG forms: 16/32-bit register and 8/16/32-bit r/m forms, their Intel FLAGS contracts, 16/32 operand/address attributes, profile behavior, publication, and protected fault non-publication. The wider unary/arithmetic family remains **Partial**: `F6/F7 /6,/7` division is a separately named slice. |
 | Decimal/ASCII adjust and conversion: `DAA/DAS/AAA/AAS/AAM/AAD`, `XLAT` | Primary handlers `DAA`, `DAS`, `AAA`, `AAS`, `AAM`, `AAD`, `XLAT`; DAA/DAS/AAM/AAD call `_kaf_set_flags`. | No focused architecture probe found. | **Partial**: handlers exist, but documented flag-defined/undefined behavior, base-immediate edge cases, 16/32 addressing for XLAT, and faults are not proven. Next: ordinary arithmetic/FLAGS family. |
 | Shift/rotate Groups `C0/C1/D0`--`D3` | `INS_C0/C1/D0/D1/D2/D3`; shift paths call `_kaf_set_flags`. | No focused primary shift/rotate smoke; T310's double-shift smoke is only `SHLD/SHRD`. | **Partial**: primary count masking, count-zero flags, rotate flags, and memory faults remain unproven. Next: ordinary arithmetic/FLAGS family. |
-| One-operand multiply/divide Groups `F6/F7 /4`--`/7` | `INS_F6/F7` dispatches `/4` to `_a_mul`, `/5` to `_a_imul`, `/6` to `_a_div`, and `/7` to `_a_idiv`. | `core_machine_inc_dec_smoke` (`M5:T316:S5:MUL-IMUL:OK`) covers `/4,/5` only. | **Partial**: T316 S5 completes unsigned MUL and signed IMUL at 8/16/32 bits; DIV/IDIV remain a separate unadmitted slice. |
+| One-operand multiply/divide Groups `F6/F7 /4`--`/7` | `INS_F6/F7` dispatches `/4` to `_a_mul`, `/5` to `_a_imul`, `/6` to `_a_div`, and `/7` to `_a_idiv`. | `core_machine_inc_dec_smoke` (`M5:T316:S5:MUL-IMUL:OK`, `M5:T316:S6:DIV-IDIV:OK`) covers `/4`--`/7`. | **Complete** only for T316's declared one-operand Group `F6/F7 /4`--`/7` forms at 8/16/32 bits. This does not claim the wider multiply/divide or ordinary arithmetic family complete. |
 | EFLAGS transfers and direct flag control: `PUSHF/POPF`, `LAHF/SAHF`, `CMC/CLC/STC/CLI/STI/CLD/STD` | `PUSHF`, `POPF`, `SAHF`, `LAHF`, and primary flag handlers; protected-mode masking is local to those routes. | T302 checks selected PUSHF/POPF; retained string/product tests incidentally use DF/IF paths. | **Partial**: no focused table covers all modifiable/reserved flag bits, CPL/IOPL rules, interrupt shadow, and each direct flag form. Next: ordinary FLAGS/control family. |
 | Memory strings `MOVS/CMPS/STOS/LODS/SCAS`, REP/REPE/REPNE, DF, 16/32 operand/address attributes | `MOVSB/W`, `CMPSB/W`, `STOSB/W`, `LODSB/W`, `SCASB/W`, `_kas_move_index`; primary REP loop. | `core_machine_real_mode_386_rep_cmps_smoke` (`M5:T292:S1:REP-STRING:OK`) and T302 memory-string checks. | **Partial**: bounded REP CMPS, index/size, and selected string paths pass; every string opcode, DF direction, segment override, limit/fault restart, and full 32-bit matrix is not proven. Next: ordinary strings/control family. |
 | Port strings `INS/OUTS` with REP and size/address attributes | `INSB/INSW/OUTSB/OUTSW` and `_kas_move_index`. | T302 I/O-string portion. | **Partial**: selected I/O-string route is proven; all port-width, REP, protection, and fault/restart behavior is not. Next: ordinary strings/control family. |
@@ -74,7 +74,7 @@ records the caller discipline required before any future shared-helper change.
 | --- | --- | --- | --- |
 | `_kac_arith1` macro | Four operation families only: `INC`, `DEC`, `NOT`, `NEG` (lines 5321, 5331, 5341, 5352). | T316 S2 covers INC/DEC; T316 S3 covers NOT/NEG. Incidental product bytecode remains excluded. | All current callers now have focused coverage. Neither S2 nor S3 changes this macro; any shared-helper correction still requires a separately admitted caller-impact review. |
 | `_kaf_set_flags` | Called by arithmetic macros, primary shifts, string compares, DAA/DAS/AAM/AAD, and T310 SHLD/SHRD; it owns mask-driven CF/PF/AF/ZF/SF/OF publication. | T316 S2--S4 cover the named INC/DEC, NOT/NEG, and TEST callers; T310 covers SHLD/SHRD and selected string/data paths. Broader primary flag breadth is incomplete. | Do not change it in T316. Each admitted slice asserts its handler-bound flag contract; any shared-helper correction still requires caller-impact review. |
-| `_a_mul` / `_a_imul` | Only `INS_F6 /4,/5` and `INS_F7 /4,/5`; they publish implicit multiply result registers and define CF/OF directly. | T316 S5 covers every 8/16/32 register and memory source route, including source-fault non-publication. | S5 retains both local helpers. `_a_imul` receives only the demonstrated 32-bit signed widening correction; no shared flag helper changes. |
+| `_a_mul` / `_a_imul` / `_a_div` / `_a_idiv` | Only `INS_F6 /4,/5,/6,/7` and `INS_F7 /4,/5,/6,/7`; they publish implicit multiply/divide result registers locally. | T316 S5 covers `/4,/5`; T316 S6 covers `/6,/7` at every 8/16/32 register and memory route, including source-fault and `#DE` non-publication. | S5 retains the demonstrated `_a_imul` signed-widening correction. S6 corrects only `_a_idiv`'s local signed quotient range check; no shared flag helper changes. |
 | `_kas_move_index` | MOVS, CMPS, STOS, LODS, SCAS, INS, and OUTS size/index combinations. | T292 and T302 cover selected REP/string and I/O-string cases. | Not in S2; strings remain their own matrix slice. |
 | `_kec_push/_kec_pop` | Near/far calls/returns, interrupt/IRET frames, PUSH/POP and protected transfer helpers. | T302 stack cases; T303 control transfer; T305--T308 delivery/return matrices. | Not in S2; a helper change would cross ordinary and delivery families. |
 
@@ -218,11 +218,57 @@ explicit undefined-opcode route, `/2,/3` are T316 S3 NOT/NEG, and `/6,/7`
 remain the separately named DIV/IDIV slice. The two-operand `0F AF`, `69`,
 and `6B` IMUL routes remain T310 evidence and are outside S5.
 
-S5's developer artifact is `vm-0-5-0316` at
-`build/output/nxvm_0_5_0316.exe`, SHA-256
-`D7FBB953E0143E9F302D483CC4439DE2859B65C9CE82FD98B800B7E9E9481B71`.
-Its accepted source commit is
+S5 established the continuing T316 developer artifact `vm-0-5-0316` at
+`build/output/nxvm_0_5_0316.exe`. Its accepted source commit is
 `7935bad23704b431893becef11757daee051bd8f`; the verified worktree was based
 on admission `bff7908092776e5cb16fbb84fb6428803d4d3989`.
 
 `M5:T316:S5:MUL-IMUL:OK`
+
+## S6 One-Operand DIV/IDIV Closure Evidence
+
+Intel one-operand DIV/IDIV uses the implicit dividend and result pairs: byte
+`AX` to quotient `AL` and remainder `AH`; word `DX:AX` to `AX`/`DX`; and
+dword `EDX:EAX` to `EAX`/`EDX`. `F6 /6,/7` supplies the byte source and
+`F7 /6,/7` supplies the word/dword source. All arithmetic FLAGS are undefined;
+the smoke deliberately makes no FLAGS-result assertion for successful division.
+
+`core_machine_inc_dec_smoke` exercises every declared 8/16/32-bit DIV and
+IDIV register and memory source. Register vectors use non-alias
+`CL`/`CX`/`ECX` sources, independently proving generic ModRM register reads
+from the implicit dividend registers. The signed vectors prove negative
+quotient/remainder cases; the unsigned vectors prove quotient and remainder
+publication. The memory operand is reread unchanged after execution. `67h 66h
+F7 /7` proves 32-bit address and operand attributes, an 80186 `F7 /6` form is
+accepted, and `66h F7 /6` is rejected with `#UD` under the 80286 profile with
+registers, EFLAGS, and EIP unchanged.
+
+For every register form at 8/16/32 bits, divide-by-zero and quotient-overflow
+vectors reach the available real-mode `#DE` diagnostic and prove EAX, EDX,
+ECX, EFLAGS, and EIP are not published. The protected bounded-memory fixture
+executes both `F7 /6` and `/7` with an out-of-limit source, observes the
+existing deliverable `#DF` boundary, and proves implicit result registers,
+EFLAGS, EIP, and the source memory remain unchanged.
+
+The focused negative-quotient vectors found one local runtime defect in
+`_a_idiv`: it masked a signed quotient to an unsigned width before its range
+test, causing representable negative results to report `#DE`. The correction
+keeps the quotient signed until the explicit signed range check and adds the
+host signed-minimum divided by `-1` precheck before C division. `_a_div`, the
+decoder, shared helpers, exception-delivery architecture, ABI, and FPU routes
+were not changed.
+
+S6's `_a_div|_a_idiv|INS_F6|INS_F7|DIV_|IDIV_|EXCEPT_DE` sweep finds only the
+declared `/6,/7` production routes plus the shared Group F6/F7 dispatch. `/0`
+is T316 S4 TEST, `/1` is the explicit undefined-opcode path, `/2,/3` are
+T316 S3 NOT/NEG, and `/4,/5` are T316 S5 MUL/IMUL. No other production DIV or
+IDIV implementation or caller was found. The two-operand IMUL routes remain
+T310 evidence and are outside S6.
+
+T316's current developer artifact remains `vm-0-5-0316` at
+`build/output/nxvm_0_5_0316.exe`, SHA-256
+`5D3405AE5D6C284074BB51EDD4E255A5C3C77F2F030AFFC5A7D3921B42540DD1`.
+The S6 verified worktree is based on admission
+`8485f4ad`; the coordinator acceptance source commit remains pending.
+
+`M5:T316:S6:DIV-IDIV:OK`

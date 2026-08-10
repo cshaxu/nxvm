@@ -5601,6 +5601,8 @@ static C_VOID _a_div(core_machine_cpu_execution_context *context, type_unsigned_
 static C_VOID _a_idiv(core_machine_cpu_execution_context *context, type_unsigned_64 csrc, type_unsigned_8 bit)
 {
     type_signed_64 temp;
+    type_signed_64 dividend;
+    type_signed_64 divisor;
     TYPE_TRACE_CALL_BEGIN("_a_idiv");
     switch (bit)
     {
@@ -5618,9 +5620,10 @@ static C_VOID _a_idiv(core_machine_cpu_execution_context *context, type_unsigned
         else
         {
             TYPE_TRACE_BLOCK_BEGIN("opr2(!0)");
-            temp = TYPE_MASK_UNSIGNED_16((type_signed_16)instruction_state.data.opr1 / (type_signed_8)instruction_state.data.opr2);
-            if ((temp > 0 && TYPE_MASK_UNSIGNED_8(temp) > 0x7f) ||
-                (temp < 0 && TYPE_MASK_UNSIGNED_8(temp) < 0x80))
+            dividend = (type_signed_16)cpu_state.data.ax;
+            divisor = (type_signed_8)csrc;
+            temp = dividend / divisor;
+            if (temp > 0x7f || temp < -0x80)
             {
                 TYPE_TRACE_BLOCK_BEGIN("temp(>0x7f/<0x80)");
                 TYPE_TRACE_CHECK_RETURN(_SetExcept_DE(0));
@@ -5629,7 +5632,7 @@ static C_VOID _a_idiv(core_machine_cpu_execution_context *context, type_unsigned
             else
             {
                 cpu_state.data.al = TYPE_MASK_UNSIGNED_8(temp);
-                cpu_state.data.ah = TYPE_MASK_UNSIGNED_8((type_signed_16)instruction_state.data.opr1 % (type_signed_8)instruction_state.data.opr2);
+                cpu_state.data.ah = TYPE_MASK_UNSIGNED_8(dividend % divisor);
             }
             TYPE_TRACE_BLOCK_END;
         }
@@ -5650,9 +5653,15 @@ static C_VOID _a_idiv(core_machine_cpu_execution_context *context, type_unsigned
         else
         {
             TYPE_TRACE_BLOCK_BEGIN("opr2(!0)");
-            temp = TYPE_MASK_UNSIGNED_32((type_signed_32)instruction_state.data.opr1 / (type_signed_16)instruction_state.data.opr2);
-            if ((temp > 0 && TYPE_MASK_UNSIGNED_16(temp) > 0x7fff) ||
-                (temp < 0 && TYPE_MASK_UNSIGNED_16(temp) < 0x8000))
+            dividend = (type_signed_32)(((type_unsigned_32)cpu_state.data.dx << 16) | cpu_state.data.ax);
+            divisor = (type_signed_16)csrc;
+            if (dividend == ((type_signed_32)-2147483647 - 1) && divisor == -1)
+            {
+                TYPE_TRACE_BLOCK_BEGIN("temp(overflow)");
+                TYPE_TRACE_CHECK_RETURN(_SetExcept_DE(0));
+                TYPE_TRACE_BLOCK_END;
+            }
+            else if ((temp = dividend / divisor) > 0x7fff || temp < -0x8000)
             {
                 TYPE_TRACE_BLOCK_BEGIN("temp(>0x7fff/<0x8000)");
                 TYPE_TRACE_CHECK_RETURN(_SetExcept_DE(0));
@@ -5661,7 +5670,7 @@ static C_VOID _a_idiv(core_machine_cpu_execution_context *context, type_unsigned
             else
             {
                 cpu_state.data.ax = TYPE_MASK_UNSIGNED_16(temp);
-                cpu_state.data.dx = TYPE_MASK_UNSIGNED_16((type_signed_32)instruction_state.data.opr1 % (type_signed_16)instruction_state.data.opr2);
+                cpu_state.data.dx = TYPE_MASK_UNSIGNED_16(dividend % divisor);
             }
             TYPE_TRACE_BLOCK_END;
         }
@@ -5682,9 +5691,15 @@ static C_VOID _a_idiv(core_machine_cpu_execution_context *context, type_unsigned
         else
         {
             TYPE_TRACE_BLOCK_BEGIN("opr2(!0)");
-            temp = TYPE_MASK_UNSIGNED_64((type_signed_64)instruction_state.data.opr1 / (type_signed_32)instruction_state.data.opr2);
-            if ((temp > 0 && TYPE_MASK_UNSIGNED_32(temp) > 0x7fffffff) ||
-                (temp < 0 && TYPE_MASK_UNSIGNED_32(temp) < 0x80000000))
+            dividend = (type_signed_64)(((type_unsigned_64)cpu_state.data.edx << 32) | cpu_state.data.eax);
+            divisor = (type_signed_32)csrc;
+            if (dividend == ((type_signed_64)-9223372036854775807LL - 1LL) && divisor == -1)
+            {
+                TYPE_TRACE_BLOCK_BEGIN("temp(overflow)");
+                TYPE_TRACE_CHECK_RETURN(_SetExcept_DE(0));
+                TYPE_TRACE_BLOCK_END;
+            }
+            else if ((temp = dividend / divisor) > 0x7fffffff || temp < -0x80000000LL)
             {
                 TYPE_TRACE_BLOCK_BEGIN("temp(>0x7fffffff/<0x80000000)");
                 TYPE_TRACE_CHECK_RETURN(_SetExcept_DE(0));
@@ -5693,7 +5708,7 @@ static C_VOID _a_idiv(core_machine_cpu_execution_context *context, type_unsigned
             else
             {
                 cpu_state.data.eax = TYPE_MASK_UNSIGNED_32(temp);
-                cpu_state.data.edx = TYPE_MASK_UNSIGNED_32((type_signed_64)instruction_state.data.opr1 % (type_signed_32)instruction_state.data.opr2);
+                cpu_state.data.edx = TYPE_MASK_UNSIGNED_32(dividend % divisor);
             }
             TYPE_TRACE_BLOCK_END;
         }

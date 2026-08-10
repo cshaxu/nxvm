@@ -758,6 +758,205 @@ static C_INT inc_dec_test_mul_imul_fault_nonpublication(C_VOID)
     return 1;
 }
 
+static C_INT inc_dec_test_div_idiv_forms(C_VOID)
+{
+    static const uint8_t forms[][5] = {
+        { 0xf6u,0xf1u }, { 0xf6u,0xf9u }, { 0xf7u,0xf1u }, { 0xf7u,0xf9u },
+        { 0x66u,0xf7u,0xf1u }, { 0x66u,0xf7u,0xf9u },
+        { 0xf6u,0x36u,0u,0x50u }, { 0xf6u,0x3eu,0u,0x50u },
+        { 0xf7u,0x36u,0u,0x50u }, { 0xf7u,0x3eu,0u,0x50u },
+        { 0x66u,0xf7u,0x36u,0u,0x50u },
+        { 0x66u,0xf7u,0x3eu,0u,0x50u }
+    };
+    static const uint8_t lengths[] = { 2u,2u,2u,2u,3u,3u,4u,4u,4u,4u,5u,5u };
+    uint8_t form;
+
+    for (form = 0u; form != sizeof(lengths); ++form) {
+        const C_INT signed_divide = (form & 1u) != 0u;
+        const C_INT memory = form >= 6u;
+        const uint8_t bytes = form == 0u || form == 1u || form == 6u || form == 7u ?
+            1u : (form == 2u || form == 3u || form == 8u || form == 9u ? 2u : 4u);
+        const uint32_t mask = bytes == 1u ? 0xffu :
+            (bytes == 2u ? 0xffffu : 0xffffffffu);
+        const uint32_t source = signed_divide && memory ? mask - 1u : 2u;
+        const uint32_t quotient = signed_divide ? (memory ? 2u : mask - 1u) : 2u;
+        const uint32_t remainder = signed_divide ? mask : 1u;
+        inc_dec_machine state;
+        t_cpu after;
+        core_machine_cpu_diagnostic diagnostic;
+        uint32_t observed = 0u;
+        C_INT failed = !inc_dec_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
+
+        if (!failed) {
+            state.machine->executor_cpu.data.eax = signed_divide ?
+                (bytes == 1u ? 0xfffbu : mask - 4u) : 5u;
+            state.machine->executor_cpu.data.edx = signed_divide && bytes != 1u ? mask : 0u;
+            state.machine->executor_cpu.data.ecx = source;
+            state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF | VCPU_EFLAGS_OF;
+            if (memory) failed |= core_machine_memory_write(state.machine,
+                INC_DEC_MEMORY, &source, bytes) != TYPE_STATUS_OK;
+            failed |= !inc_dec_run(&state, forms[form], lengths[form], 0, &after,
+                &diagnostic) || diagnostic.first_fault.valid;
+            if (bytes == 1u) {
+                failed |= after.data.al != quotient || after.data.ah != remainder;
+            } else if (bytes == 2u) {
+                failed |= after.data.ax != quotient || after.data.dx != remainder;
+            } else {
+                failed |= after.data.eax != quotient || after.data.edx != remainder;
+            }
+            if (memory) failed |= core_machine_memory_read(state.machine,
+                INC_DEC_MEMORY, &observed, bytes) != TYPE_STATUS_OK ||
+                observed != (source & mask);
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+    }
+    return 1;
+}
+
+static C_INT inc_dec_test_div_idiv_attribute_and_profile(C_VOID)
+{
+    static const uint8_t address_code[] = { 0x67u,0x66u,0xf7u,0x3eu };
+    static const uint8_t rejected_prefix[] = { 0x66u,0xf7u,0xf1u };
+    static const uint8_t accepted_legacy[] = { 0xf7u,0xf1u };
+    inc_dec_machine state;
+    t_cpu after;
+    core_machine_cpu_diagnostic diagnostic;
+    uint32_t source = 0xfffffffeu;
+    C_INT failed = !inc_dec_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
+
+    if (!failed) {
+        state.machine->executor_cpu.data.esi = INC_DEC_MEMORY;
+        state.machine->executor_cpu.data.eax = 0xfffffffbu;
+        state.machine->executor_cpu.data.edx = 0xffffffffu;
+        failed |= core_machine_memory_write(state.machine, INC_DEC_MEMORY, &source,
+            sizeof(source)) != TYPE_STATUS_OK || !inc_dec_run(&state, address_code,
+                sizeof(address_code), 0, &after, &diagnostic) ||
+            diagnostic.first_fault.valid || after.data.eax != 2u ||
+            after.data.edx != 0xffffffffu;
+    }
+    core_machine_destroy(state.machine);
+    if (failed) return 0;
+
+    failed = !inc_dec_prepare(CORE_MACHINE_CPU_PROFILE_80286, &state);
+    if (!failed) {
+        state.machine->executor_cpu.data.eax = 0x11220005u;
+        state.machine->executor_cpu.data.edx = 0xaabbccddu;
+        state.machine->executor_cpu.data.ecx = 2u;
+        state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF;
+        failed |= !inc_dec_run(&state, rejected_prefix, sizeof(rejected_prefix), 1,
+            &after, &diagnostic) || !diagnostic.first_fault.valid || !TYPE_GET_BIT(
+                diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
+            after.data.eax != 0x11220005u || after.data.edx != 0xaabbccddu ||
+            after.data.ecx != 2u || after.data.eflags != VCPU_EFLAGS_CF ||
+            after.data.eip != 0u;
+    }
+    core_machine_destroy(state.machine);
+    if (failed) return 0;
+
+    failed = !inc_dec_prepare(CORE_MACHINE_CPU_PROFILE_80186, &state);
+    if (!failed) {
+        state.machine->executor_cpu.data.eax = 5u;
+        state.machine->executor_cpu.data.edx = 0u;
+        state.machine->executor_cpu.data.ecx = 2u;
+        failed |= !inc_dec_run(&state, accepted_legacy, sizeof(accepted_legacy), 0,
+            &after, &diagnostic) || diagnostic.first_fault.valid ||
+            after.data.ax != 2u || after.data.dx != 1u;
+    }
+    core_machine_destroy(state.machine);
+    return !failed;
+}
+
+static C_INT inc_dec_test_div_idiv_de_nonpublication(C_VOID)
+{
+    static const uint8_t code[][3] = {
+        { 0xf6u,0xf1u }, { 0xf6u,0xf9u }, { 0xf7u,0xf1u }, { 0xf7u,0xf9u },
+        { 0x66u,0xf7u,0xf1u }, { 0x66u,0xf7u,0xf9u }
+    };
+    uint8_t fault_case;
+    uint8_t form;
+
+    for (fault_case = 0u; fault_case != 2u; ++fault_case) {
+        for (form = 0u; form != sizeof(code) / sizeof(code[0]); ++form) {
+            const C_INT signed_divide = (form & 1u) != 0u;
+            const uint8_t bytes = form < 2u ? 1u : (form < 4u ? 2u : 4u);
+            inc_dec_machine state;
+            t_cpu after;
+            core_machine_cpu_diagnostic diagnostic;
+            uint32_t eax = fault_case ? (signed_divide ?
+                (bytes == 1u ? 0xff80u : (bytes == 2u ? 0x00008000u : 0x80000000u)) : 0u) : 5u;
+            uint32_t edx = fault_case ? (bytes == 1u ? 0x11223344u :
+                (signed_divide ? (bytes == 2u ? 0x0000ffffu : 0xffffffffu) : 1u)) :
+                0xaabbccddu;
+            uint32_t ecx = fault_case ? (signed_divide ?
+                (bytes == 1u ? 0xffu : (bytes == 2u ? 0xffffu : 0xffffffffu)) : 1u) : 0u;
+            const uint32_t flags = VCPU_EFLAGS_CF | VCPU_EFLAGS_OF;
+            C_INT failed = !inc_dec_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
+
+            if (!failed) {
+                if (fault_case && !signed_divide && bytes == 1u) eax = 0x00000100u;
+                state.machine->executor_cpu.data.eax = eax;
+                state.machine->executor_cpu.data.edx = edx;
+                state.machine->executor_cpu.data.ecx = ecx;
+                state.machine->executor_cpu.data.eflags = flags;
+                failed |= !inc_dec_run(&state, code[form], form < 4u ? 2u : 3u, 1,
+                    &after, &diagnostic) || !diagnostic.first_fault.valid || !TYPE_GET_BIT(
+                        diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_DE) ||
+                    after.data.eax != eax || after.data.edx != edx ||
+                    after.data.ecx != ecx || after.data.eflags != flags ||
+                    after.data.eip != 0u;
+            }
+            core_machine_destroy(state.machine);
+            if (failed) return 0;
+        }
+    }
+    return 1;
+}
+
+static C_INT inc_dec_test_div_idiv_fault_nonpublication(C_VOID)
+{
+    static const uint8_t code[][4] = {
+        { 0xf7u,0x36u,0x10u,0u }, { 0xf7u,0x3eu,0x10u,0u }
+    };
+    uint8_t operation;
+
+    for (operation = 0u; operation != 2u; ++operation) {
+        inc_dec_machine state;
+        t_cpu after;
+        core_machine_cpu_diagnostic diagnostic;
+        core_machine_run_result result;
+        uint16_t before = 2u;
+        uint16_t observed = 0u;
+        const uint32_t flags = VCPU_EFLAGS_CF | VCPU_EFLAGS_OF;
+        C_INT failed = !inc_dec_prepare_protected(1, 1, &state);
+
+        if (!failed) {
+            state.machine->executor_cpu.data.eax = 5u;
+            state.machine->executor_cpu.data.edx = 0xaabbccddu;
+            state.machine->executor_cpu.data.eflags = flags;
+            failed |= core_machine_memory_write(state.machine, 0x3010u, &before,
+                sizeof(before)) != TYPE_STATUS_OK || core_machine_memory_write(
+                    state.machine, 0x2000u, code[operation], sizeof(code[operation])) !=
+                TYPE_STATUS_OK;
+            test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
+            failed |= core_machine_run(state.machine, (core_machine_run_budget){ 1u, 0u },
+                &result) != TYPE_STATUS_FAULT || result.reason != CORE_MACHINE_STOP_FAULT ||
+                core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != TYPE_STATUS_OK;
+            after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+            failed |= !diagnostic.first_fault.valid || !TYPE_GET_BIT(
+                diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_DF) ||
+                core_machine_memory_read_physical(&state.machine->executor_memory,
+                    0x3010u, (type_virtual_address)&observed, sizeof(observed)) !=
+                    TYPE_STATUS_OK || observed != before ||
+                after.data.eax != 5u || after.data.edx != 0xaabbccddu ||
+                after.data.eflags != flags || after.data.eip != 0u;
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+    }
+    return 1;
+}
+
 C_INT main(C_VOID)
 {
     if (!inc_dec_test_register_forms() || !inc_dec_test_rm_forms() ||
@@ -767,10 +966,14 @@ C_INT main(C_VOID)
         !inc_dec_test_test_address_and_profile() ||
         !inc_dec_test_test_fault_nonpublication() || !inc_dec_test_mul_imul_forms() ||
         !inc_dec_test_mul_imul_address_and_profile() ||
-        !inc_dec_test_mul_imul_fault_nonpublication()) return 1;
+        !inc_dec_test_mul_imul_fault_nonpublication() || !inc_dec_test_div_idiv_forms() ||
+        !inc_dec_test_div_idiv_attribute_and_profile() ||
+        !inc_dec_test_div_idiv_de_nonpublication() ||
+        !inc_dec_test_div_idiv_fault_nonpublication()) return 1;
     STD_PRINTF("M5:T316:S2:INC-DEC:OK\n");
     STD_PRINTF("M5:T316:S3:NOT-NEG:OK\n");
     STD_PRINTF("M5:T316:S4:TEST:OK\n");
     STD_PRINTF("M5:T316:S5:MUL-IMUL:OK\n");
+    STD_PRINTF("M5:T316:S6:DIV-IDIV:OK\n");
     return 0;
 }
