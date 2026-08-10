@@ -441,3 +441,17 @@ protected source-limit/read-only-destination fault non-publication at `#DF`
 are covered. No runtime defect was found.
 
 `M5:T316:S13:SUB:OK`
+
+## S14 Primary XOR Evidence
+
+`30h`--`35h` route through the six `XOR_*` handlers and Group
+`80h/81h/83h /6` routes through `INS_80/81/83` to `_a_xor`. The owner-bound
+smoke covers 8/16/32 non-alias register/memory directions, accumulator and
+Group immediates, zero-result ZF/PF, and `83h /6, FFh` sign extension. CF/OF
+are asserted clear; AF is deliberately unasserted because Intel defines it
+as undefined. `67h 66h 31h`, 80186 acceptance, 80286 `66h` #UD
+non-publication, and protected source-limit/read-only-destination `#DF`
+non-publication are present. `_a_xor`, `_kac_arith2`, and `_kaf_set_flags`
+were audited; no runtime/shared-helper change was made.
+
+`M5:T316:S14:XOR:OK`
