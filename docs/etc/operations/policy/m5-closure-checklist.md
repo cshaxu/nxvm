@@ -10,9 +10,10 @@ evidence record with commands, result markers, source commit, and any approved
 exception. Historical task evidence is not enough when the current source graph
 has changed.
 
-M5 remains open until every applicable item is evidenced or an owner-approved
-deferral is recorded in `TODO.md` with its target milestone. M6 mantle work
-must not use an unfinished M5 boundary or corpus item as an implicit waiver.
+An M5-close decision requires every applicable item to be evidenced or an
+owner-approved deferral to be recorded in `TODO.md` with its target milestone.
+M6 mantle work must not use an unfinished M5 boundary or corpus item as an
+implicit waiver. Current milestone state remains in `STATUS.md`.
 
 ## 1. Current Build Graph
 

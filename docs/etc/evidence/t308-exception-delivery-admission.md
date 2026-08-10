@@ -266,7 +266,7 @@ deferred.
 
 ## S7 Closure Preparation Evidence
 
-The sole current artifact target is `vm-0-5-0308`. Its generated executable is
+The T308 closure artifact target is `vm-0-5-0308`. Its generated executable is
 `build/output/nxvm_0_5_0308.exe` with SHA-256
 `A6BE95BB5C9647F72DB8C28982C8DEFB95CBDA9C9FE92F04F3B4EDC592BC646F`.
 The build-tree copy has the same SHA-256. The artifact contains no new CPU or

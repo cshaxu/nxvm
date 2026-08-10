@@ -34,6 +34,10 @@
 
 ## Recent Governance
 
+- **M5 Td S61:** restored Queue dependency order by placing residual M5 work
+  before M6 mantle candidates; removed stale package/index detail; and changed
+  historical evidence to name closure artifacts rather than current state.
+
 - **M5 Td S60:** routed every DOS 5-bound smoke contract through the explicit
   M1 FDD image while retaining the current MS-DOS 6.22 FDD and EWIN31 Setup
   HDD for their applicable checks. Fresh configuration restored 145/145 current
@@ -66,7 +70,3 @@
   family-oriented 32-bit protected execution/delivery package before Mantle;
   full-system checkpoints are debug/progress tools, while construction uses
   focused synthetic architecture probes. Td work has no history record.
-- **M5 Td S56:** made Intel manual review, versioned Bochs/PCjs behavior
-  comparison, one post-family Setup observation, and bounded optional bridge
-  escalation mandatory evidence for the 80386 package. Td work has no history
-  record.

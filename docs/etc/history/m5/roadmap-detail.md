@@ -11,8 +11,8 @@ successor to NXVM: `nxvm.exe` remains a bootable whole-machine VM; `nxvdm.exe`
 becomes the non-invasive DOS application runner. `core`, `mantle`, and `dos`
 are the planned shared-component targets.
 
-M5 is the current NXVM/shared-core convergence milestone. M6 through M8 build
-the future VDM stack in dependency order: mantle, VM profiles, then the owned
+At the time of this record, M5 was the NXVM/shared-core convergence milestone.
+M6 through M8 build the future VDM stack in dependency order: mantle, VM profiles, then the owned
 DOS and NXVDM product. M9 onward is a research queue; it does not schedule an
 external VDM or external DOS backend in this repository.
 
@@ -128,8 +128,8 @@ or execution route; the admitted hardware corpus covers the selected Windows
 3.x startup prerequisites or records each bounded deferral; and the source and
 CMake graphs obey the directed component model. M5 also proves that a second
 policy-free consumer can use the cleaned core through a core-only fixture; it
-does not implement a mantle runtime, NXVDM, or DOS runtime. M5 remains open until the
-[closure checklist](../../operations/policy/m5-closure-checklist.md) has current evidence for every
+does not implement a mantle runtime, NXVDM, or DOS runtime. At that time, M5
+remained open until the [closure checklist](../../operations/policy/m5-closure-checklist.md) had current evidence for every
 applicable item.
 
 **Goal map:** M5 owns the common machine and PC/AT fidelity work: the Level 1
