@@ -566,3 +566,23 @@ state non-publication; its later exception-delivery endpoint is not claimed by
 S21. CLI/STI, interrupt shadow, and wider FLAGS control remain partial.
 
 `M5:T316:S21:PUSHF-POPF:OK`
+
+### T316 S22 - CLI/STI and maskable IRQ shadow
+
+`core_machine_cli_sti_smoke` proves `FA`/`FB` real-mode reachability on 8086,
+80186, and 80386; CLI/STI IF/EIP publication and preservation of the other
+tested FLAGS; and deterministic pending-PIC delivery.  The pending IRQ remains
+in IRR while STI retires, then is delivered only after one ordinary NOP retires;
+the handler frame returns to IP 2 on every profile.  CLI has no shadow and
+leaves the IRQ pending.
+
+The protected matrix proves both opcodes at CPL0 and controlled CPL3/IOPL3.
+CPL3/IOPL0 rejection uses a delivered `#GP(0)` frame (error code, original
+EIP 0, CS 8, and original EFLAGS) rather than `first_fault`; this proves the
+instruction did not publish IF or EIP before exception entry.  The VM86 matrix
+uses the retained S21 first-fault gate boundary: IOPL3 succeeds and IOPL0
+records the original #GP without instruction-state publication.  NMI, POPF and
+MOV SS shadow ownership, interrupt-delivery endpoints beyond these observed
+boundaries, and wider FLAGS control remain partial.
+
+`M5:T316:S22:CLI-STI:OK`
