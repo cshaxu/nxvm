@@ -3,18 +3,20 @@
 ## Admission
 
 The owner approved the Queue candidate and this bounded M5 package on
-2026-08-09. T314 begins at S1 after accepted T313. Coordinated dual-session
-mode applies: the coordinator admits and accepts one subtask at a time, and
-the executor waits for a replacement instruction after every report.
+2026-08-09. The S1 admission commit closes the first allocated T314 subtask;
+the repair begins at corrective S2. Coordinated dual-session mode applies: the
+coordinator admits and accepts one subtask at a time, and the executor waits
+for a replacement instruction after every report.
 
 ## Ordered Subtasks
 
 | Subtask | Scope | Deterministic proof and stop boundary |
 | --- | --- | --- |
-| S1 | Repair VADP CRTC 13h storage bounds and add its port-level regression. | Variable CRTC subscripts route through a predicate containing the array bound; constants have compile-time bounds; 13h round-trips without adjacent state mutation. Stop before other CRTC semantics or display/firmware changes. |
-| S2 | Register the existing deterministic `core-product-xasm-smoke` in the current gate. | CTest lists and executes `current.core-product-xasm-smoke`; no xasm implementation or API change. |
-| S3 | Produce the production-target strict-GCC coverage matrix and apply options only to targets proved pure ntvdm64 and independently buildable. | Actual Ninja commands contain all four options for each selected target; every remaining target has a precise exclusion and admission condition. Stop instead of splitting a target if that changes behavior or architecture. |
-| S4 | Close the package. | Update current artifact to 0314, record SHA-256 and final matrix/debt evidence, pass focused checks, all current gates, documentation governance, diff check, commit, and immediate push. |
+| S1 | Admit T314. | Queue, active-packet, and package evidence pass documentation governance; no runtime change. |
+| S2 | Repair VADP CRTC 13h storage bounds and add its port-level regression. | Variable CRTC subscripts route through a predicate containing the array bound; constants have compile-time bounds; 13h round-trips without adjacent state mutation. Stop before other CRTC semantics or display/firmware changes. |
+| S3 | Register the existing deterministic `core-product-xasm-smoke` in the current gate. | CTest lists and executes `current.core-product-xasm-smoke`; no xasm implementation or API change. |
+| S4 | Produce the production-target strict-GCC coverage matrix and apply options only to targets proved pure ntvdm64 and independently buildable. | Actual Ninja commands contain all four options for each selected target; every remaining target has a precise exclusion and admission condition. Stop instead of splitting a target if that changes behavior or architecture. |
+| S5 | Close the package. | Update current artifact to 0314, record SHA-256 and final matrix/debt evidence, pass focused checks, all current gates, documentation governance, diff check, commit, and immediate push. |
 
 ## S1 Invariants
 
