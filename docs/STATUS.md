@@ -2,26 +2,26 @@
 
 ## Current Work
 
-**Active: M5 T316 S15.**
+**Active: M5 T316 S16.**
 
-## M5 T316 S15 Packet
+## M5 T316 S16 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Corrective; M5 T316 S15 follows accepted T316 S14 within the same active task. |
-| Admission And Approval | Owner approved the M5 80386DX program and instructed that T316 continue normally after S1; coordinator accepted S14 at `2fa07a5f` and admits S15 only. |
-| Objective | Complete the declared primary CMP matrix slice: `38h`--`3Dh` and Group `80h/81h/83h /7`, with Intel-correct no-destination-publication, defined FLAGS, operand sizes, and fault behavior. |
-| Non-goals | Do not claim primary binary arithmetic/FLAGS or the ordinary family complete; do not refactor shared arithmetic/flag helpers, alter decoder ownership/public ABI, implement ADD/ADC/SBB/OR/AND/SUB/XOR/other logical groups, implement an 80387, or admit post-80386 forms. |
+| Identifier Mode | Corrective; M5 T316 S16 follows accepted T316 S15 within the same active task. |
+| Admission And Approval | Owner approved the M5 80386DX program and instructed that T316 continue normally after S1; coordinator accepted S15 at `3c569582` and admits S16 only. |
+| Objective | Complete the declared decimal/ASCII-adjust matrix slice: `DAA`, `DAS`, `AAA`, `AAS`, `AAM`, and `AAD`, with Intel-correct AL/AH and defined-FLAGS behavior, immediate-base behavior, profile behavior, and fault atomicity. |
+| Non-goals | Do not claim decimal/ASCII-adjust, the wider ordinary arithmetic/FLAGS family, or `XLAT` complete; do not refactor shared flag helpers, alter decoder ownership/public ABI, implement an 80387, or admit post-80386 forms. |
 | Reference baseline | Accepted T314 artifact baseline; accepted T316 S1/S2 matrix and current focused corpus. |
 | Files And ABI Surface | `src/core/machine/cpu_instructions.c`, one owned CPU focused smoke and CMake registration if needed, T316 matrix/evidence, Status, and task artifact records. No public ABI change. |
 | Applicable rules | Architecture: one CPU decoder/executor path; Coding: preserve local CPU style, use no speculative abstraction, and keep tests owner-bound; Execution: complete only the declared matrix slice with focused and retained evidence, artifact, documentation, diff, commit, and push gates; Source policy: Intel authority, no imported external source. |
-| Verification | Audit Intel CMP forms before implementation; exercise `38h`--`3Dh` and `80h/81h/83h /7` at 8/16/32 bits with non-alias register/memory operands; prove both operands remain unmodified plus exact CF/OF/SF/ZF/AF/PF behavior, immediate sign extension where applicable, operand/address attributes, profile behavior, and protected source/destination-fault non-publication; scan CMP handlers, Group arithmetic dispatch, `_a_cmp`, `_kac_arith2`, and flag-helper callers before any abstraction; rebuild T316 artifact if runtime changes, run focused smoke, current gates, documentation governance, and `git diff --check`. |
-| Expected markers | New focused marker `M5:T316:S15:CMP:OK`; retained S1--S14 markers and applicable current-gate markers pass. |
+| Verification | Audit Intel 80386 DAA/DAS/AAA/AAS/AAM/AAD forms before implementation; exercise decimal-adjust carry/auxiliary-carry and AL/AH boundaries, documented defined versus undefined FLAGS treatment, AAM/AAD immediate base values and `AAM 00h` #DE atomicity, legacy/profile behavior, and protected-mode fault non-publication as applicable; scan handlers, decode routes, divide/error delivery, and flag-helper callers before any abstraction; rebuild T316 artifact if runtime changes, run focused smoke, current gates, documentation governance, and `git diff --check`. |
+| Expected markers | New focused marker `M5:T316:S16:DECIMAL-ADJUST:OK`; retained S1--S15 markers and applicable current-gate markers pass. |
 | Asset needs | None beyond existing governed current-gate assets. |
 | Stop conditions | Stop and report if Intel-correct behavior requires a shared-helper change whose other callers lack coverage, decoder/ABI or exception-delivery architecture change, or an architecture boundary change. |
-| Exit criteria | Every declared Intel CMP form has implementation and focused proof; 8/16/32 register/memory behavior, no destination publication, exact defined FLAGS, immediate/sign-extension, attribute/profile behavior, and source/destination-fault non-publication pass; every scan hit is disposed; no broader family-completeness claim is made; required gates, artifact handling, commit, and push pass. |
+| Exit criteria | Every declared DAA/DAS/AAA/AAS/AAM/AAD form has implementation and focused proof; AL/AH and documented FLAGS outcomes, immediate-base and `#DE` atomicity, profile behavior, and applicable fault non-publication pass; every scan hit is disposed; `XLAT` and the wider family remain explicitly partial; required gates, artifact handling, commit, and push pass. |
 | Original owner request | Execute the complete 80386 program in Coordinated Dual-Session Mode against an Intel form--implementation--test matrix, repairing omissions without using Windows demand as a scope filter. |
-| Similar-issue sweep | Defect class: primary CMP routes lacking Intel-form evidence or correct no-publication/FLAGS/fault-publication behavior. Scope: tracked CPU implementation, CPU tests, CMake registrations, T316 evidence, and relevant records; use `rg -n "CMP_|INS_80|INS_81|INS_83|_a_cmp|_kac_arith2|_kaf_set_flags" src/core/machine tests CMakeLists.txt docs`. Classify every production hit as covered, fixed, deferred to a named matrix slice, or out of scope with reason. |
+| Similar-issue sweep | Defect class: decimal/ASCII-adjust routes lacking Intel-form evidence or correct AL/AH/FLAGS/#DE behavior. Scope: tracked CPU implementation, CPU tests, CMake registrations, T316 evidence, and relevant records; use `rg -n "DAA|DAS|AAA|AAS|AAM|AAD|VCPUINS_EXCEPT_DE|_kaf_set_flags" src/core/machine tests CMakeLists.txt docs`. Classify every production hit as covered, fixed, deferred to a named matrix slice, or out of scope with reason. |
 
 ## Current Technical Baseline
 
