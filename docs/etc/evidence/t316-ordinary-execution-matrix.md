@@ -48,7 +48,7 @@ not an allocation of later task identifiers.
 | Shift/rotate Groups `C0/C1/D0`--`D3` | `INS_C0/C1/D0/D1/D2/D3`; rotate paths call `_a_rol/_a_ror/_a_rcl/_a_rcr`; shift paths call `_a_shl/_a_shr/_a_sar`; `/6` remains `UndefinedOpcode`. | `core_machine_rotate_smoke` (`M5:T316:S18:ROTATE:OK`, `M5:T316:S19:SHIFT:OK`) proves the declared slices; T310's double-shift smoke remains only `SHLD/SHRD`. | **Complete only for T316 S18 rotates and S19 SHL/SAL, SHR, SAR**: Group-2 encodings, 8/16/32-bit register and memory operands, count handling, defined/undefined FLAGS boundaries, attributes, profiles, and protected access atomicity. `/6` remains #UD. |
 | One-operand multiply/divide Groups `F6/F7 /4`--`/7` | `INS_F6/F7` dispatches `/4` to `_a_mul`, `/5` to `_a_imul`, `/6` to `_a_div`, and `/7` to `_a_idiv`. | `core_machine_inc_dec_smoke` (`M5:T316:S5:MUL-IMUL:OK`, `M5:T316:S6:DIV-IDIV:OK`) covers `/4`--`/7`. | **Complete** only for T316's declared one-operand Group `F6/F7 /4`--`/7` forms at 8/16/32 bits. This does not claim the wider multiply/divide or ordinary arithmetic family complete. |
 | EFLAGS transfers and direct flag control: `PUSHF/POPF`, `LAHF/SAHF`, `CMC/CLC/STC/CLI/STI/CLD/STD` | `PUSHF`, `POPF`, `SAHF`, `LAHF`, and primary flag handlers; protected-mode masking is local to those routes. | T302 checks selected PUSHF/POPF; retained string/product tests incidentally use DF/IF paths. | **Partial**: no focused table covers all modifiable/reserved flag bits, CPL/IOPL rules, interrupt shadow, and each direct flag form. Next: ordinary FLAGS/control family. |
-| Memory strings `MOVS/CMPS/STOS/LODS/SCAS`, REP/REPE/REPNE, DF, 16/32 operand/address attributes | `MOVSB/W`, `CMPSB/W`, `STOSB/W`, `LODSB/W`, `SCASB/W`, `_kas_move_index`; primary REP loop. | `core_machine_real_mode_386_rep_cmps_smoke` (`M5:T292:S1:REP-STRING:OK`), `core_machine_movs_smoke` (`M5:T316:S33:MOVS:OK`), `core_machine_stos_smoke` (`M5:T316:S34:STOS:OK`), and `core_machine_lods_smoke` (`M5:T316:S35:LODS:OK`). | **Partial**: S35 closes only LODSB `AC` and LODSW/LODSD `AD`: default profiles, 80386 `66h`/`67h`/combined attributes, DS and CS/SS/ES/FS/GS source selection, REP/DF, #UD/LOCK non-publication, protected DS source-limit #DF restart/publication, and PIC single no-shadow plus restartable REP partial progress. CMPS, SCAS, INS/OUTS, and broader string behavior remain partial or outside this slice. |
+| Memory strings `MOVS/CMPS/STOS/LODS/SCAS`, REP/REPE/REPNE, DF, 16/32 operand/address attributes | `MOVSB/W`, `CMPSB/W`, `STOSB/W`, `LODSB/W`, `SCASB/W`, `_kas_move_index`; primary REP loop. | `core_machine_real_mode_386_rep_cmps_smoke` (`M5:T292:S1:REP-STRING:OK`), `core_machine_movs_smoke` (`M5:T316:S33:MOVS:OK`), `core_machine_stos_smoke` (`M5:T316:S34:STOS:OK`), `core_machine_lods_smoke` (`M5:T316:S35:LODS:OK`), and `core_machine_scas_smoke` (`M5:T316:S36:SCAS:OK`). | **Partial**: S35 closes only LODSB `AC` and LODSW/LODSD `AD`; S36 closes only SCASB `AE` and SCASW/SCASD `AF`, including declared attributes, ES selection, FLAGS, REP condition/restart, #UD/LOCK non-publication, protected ES read-limit #DF, and PIC boundaries. CMPS, INS/OUTS, and broader string behavior remain partial or outside this slice. |
 | Port strings `INS/OUTS` with REP and size/address attributes | `INSB/INSW/OUTSB/OUTSW` and `_kas_move_index`. | T302 I/O-string portion. | **Partial**: selected I/O-string route is proven; all port-width, REP, protection, and fault/restart behavior is not. Next: ordinary strings/control family. |
 | Short/near conditional control: `Jcc`, `LOOP/LOOPE/LOOPNE`, `JCXZ/JECXZ`, near `CALL/JMP/RET` | Primary `J*_REL8`, `LOOP*`, `JCXZ_REL8`, `CALL_REL32`, `JMP_REL*`, return helpers; `0F 80`--`8F` repeats the profile gate. | `core_machine_control_transfer_smoke` (`M5:T303:CONTROL-TRANSFER:OK`). | **Complete** for T303's declared real/protected 16/32 near, condition, target-limit, and atomic-fault matrix. Other control forms remain separately listed. |
 | Far direct/indirect `CALL/JMP`, same-CPL `RETF`; outer returns, gates, task/V86 interactions | `CALL_PTR16_32`, `JMP_PTR16_32`, `_kec_call_far/_kec_jmp_far/_kec_ret_far`, IRET/protection routes. | T303 proves admitted real/protected far and same-CPL return cases; T305--T308 prove bounded privilege paths. | **Partial** for the ordinary-family inventory: outer-return, task/gate, V86, and broader exception interaction belong to the Queue control/protection/exception families. |
@@ -797,3 +797,18 @@ was found or changed. CMPS, SCAS, INS/OUTS, and broader string behavior remain
 outside this slice.
 
 `M5:T316:S35:LODS:OK`
+
+### T316 S36 - SCAS string forms
+
+`core_machine_scas_smoke` closes only SCASB `AE` and SCASW/SCASD `AF`.
+It proves four-profile single byte/word forms, 80386 `66h`, `67h`, and combined
+attributes, fixed ES scanning despite CS/FS overrides, DF movement, exact
+comparison FLAGS, and accumulator/nonparticipant preservation. F3 REPE and F2
+REPNE cover zero and conditional multi-iteration termination. Lower-profile
+attributes and 80386 LOCK reject with #UD and no publication. Protected ES
+read limits prove no-IDT #DF single restart and REP partial progress; pending
+IRQ proves single no-shadow delivery and REP restartable partial progress. No
+CPU production defect was found or changed. CMPS, INS/OUTS, and wider strings
+remain outside this slice.
+
+`M5:T316:S36:SCAS:OK`
