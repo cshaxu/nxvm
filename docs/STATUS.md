@@ -2,26 +2,26 @@
 
 ## Current Work
 
-**Active: M5 T316 S2.**
+**Active: M5 T316 S3.**
 
-## M5 T316 S2 Packet
+## M5 T316 S3 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Corrective; M5 T316 S2 follows accepted T316 S1 within the same active task. |
-| Admission And Approval | Owner approved the M5 80386DX program and instructed that T316 continue normally after S1; coordinator accepted S1 matrix at `64553802` and admits S2 only. |
-| Objective | Complete the declared INC/DEC matrix slice: `40h`--`4Fh`, `FE /0,/1`, and `FF /0,/1`, with Intel-correct operand sizes, FLAGS, memory publication, and fault behavior. |
-| Non-goals | Do not claim the unary-arithmetic or ordinary family complete; do not implement NEG/NOT, refactor shared arithmetic helpers, alter decoder ownership/public ABI, implement an 80387, or admit post-80386 forms. |
-| Reference baseline | Accepted T314 `vm-0-5-0315`; accepted T316 S1 matrix `64553802`; current source and focused corpus. |
+| Identifier Mode | Corrective; M5 T316 S3 follows accepted T316 S2 within the same active task. |
+| Admission And Approval | Owner approved the M5 80386DX program and instructed that T316 continue normally after S1; coordinator accepted S2 at `8ff890e2` and admits S3 only. |
+| Objective | Complete the declared primary NOT/NEG matrix slice: `F6 /2,/3` and `F7 /2,/3`, with Intel-correct operand sizes, FLAGS, memory publication, and fault behavior. |
+| Non-goals | Do not claim the unary-arithmetic or ordinary family complete; do not refactor shared arithmetic helpers, alter decoder ownership/public ABI, implement binary arithmetic/shift/rotate, implement an 80387, or admit post-80386 forms. |
+| Reference baseline | Accepted T314 `vm-0-5-0315`; accepted T316 S1/S2 matrix and current focused corpus. |
 | Files And ABI Surface | `src/core/machine/cpu_instructions.c`, one owned CPU focused smoke and CMake registration if needed, T316 matrix/evidence, Status, and task artifact records. No public ABI change. |
 | Applicable rules | Architecture: one CPU decoder/executor path; Coding: preserve local CPU style, use no speculative abstraction, and keep tests owner-bound; Execution: complete only the declared matrix slice with focused and retained evidence, artifact, documentation, diff, commit, and push gates; Source policy: Intel authority, no imported external source. |
-| Verification | Exercise register and r/m INC/DEC forms at 8/16/32 bits; prove CF unchanged and defined FLAGS; cover register/memory publication and fault non-publication, operand/address attributes and profile rejection; scan all INC/DEC handlers and `_kac_arith1` callers; build the task artifact, run focused smoke, current gates, documentation governance, and `git diff --check`. |
-| Expected markers | New focused marker `M5:T316:S2:INC-DEC:OK`; retained matrix marker and applicable current-gate markers pass. |
+| Verification | Exercise register and r/m NOT/NEG forms at 8/16/32 bits; prove NOT preserves FLAGS and NEG's defined FLAGS/CF behavior; cover register/memory publication and fault non-publication, operand/address attributes and profile rejection; scan `INS_F6/F7` and all `_kac_arith1` callers; build the task artifact, run focused smoke, current gates, documentation governance, and `git diff --check`. |
+| Expected markers | New focused marker `M5:T316:S3:NOT-NEG:OK`; retained S1/S2 matrix markers and applicable current-gate markers pass. |
 | Asset needs | None beyond existing governed current-gate assets. |
 | Stop conditions | Stop and report if Intel-correct behavior requires a shared-helper change whose other callers lack coverage, decoder/ABI change, ambiguous undefined-flag contract, or an architecture boundary change. |
-| Exit criteria | Every INC/DEC form in the declared S2 slice has implementation and focused proof; CF preservation, defined flags, 8/16/32 register/memory behavior, and fault non-publication pass; every scan hit is disposed; no broader family-completeness claim is made; required gates, artifact, commit, and push pass. |
+| Exit criteria | Every NOT/NEG form in the declared S3 slice has implementation and focused proof; defined flags, 8/16/32 register/memory behavior, and fault non-publication pass; every scan hit is disposed; no broader family-completeness claim is made; required gates, artifact, commit, and push pass. |
 | Original owner request | Execute the complete 80386 program in Coordinated Dual-Session Mode against an Intel form--implementation--test matrix, repairing omissions without using Windows demand as a scope filter. |
-| Similar-issue sweep | Defect class: primary INC/DEC form routes lacking form-level evidence or Intel flag/publication behavior. Scope: tracked CPU implementation, CPU tests, CMake registrations, T316 evidence, and relevant records; use `rg -n "INC_|DEC_|INS_FE|INS_FF|_kac_arith1" src/core/machine tests CMakeLists.txt docs`. Classify every production hit as covered, fixed, deferred to a named matrix slice, or out of scope with reason. |
+| Similar-issue sweep | Defect class: primary NOT/NEG form routes lacking form-level evidence or Intel flag/publication behavior. Scope: tracked CPU implementation, CPU tests, CMake registrations, T316 evidence, and relevant records; use `rg -n "NOT_|NEG_|INS_F6|INS_F7|_kac_arith1" src/core/machine tests CMakeLists.txt docs`. Classify every production hit as covered, fixed, deferred to a named matrix slice, or out of scope with reason. |
 
 ## Current Technical Baseline
 
