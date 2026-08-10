@@ -2,26 +2,26 @@
 
 ## Current Work
 
-**Active: M5 T316 S17.**
+**Active: M5 T316 S18.**
 
-## M5 T316 S17 Packet
+## M5 T316 S18 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Corrective; M5 T316 S17 follows accepted T316 S16 within the same active task. |
-| Admission And Approval | Owner approved the M5 80386DX program and instructed that T316 continue normally after S1; coordinator accepted S16 at `6f50d74e` and admits S17 only. |
-| Objective | Complete the declared `XLAT` matrix slice: DS default and segment-override lookup, 16/32 address-size base selection, AL publication, profile behavior, and protected read-fault atomicity. |
-| Non-goals | Do not claim the wider data/operand or ordinary arithmetic/FLAGS families complete; do not refactor address or segment helpers, alter decoder ownership/public ABI, implement an 80387, or admit post-80386 forms. |
+| Identifier Mode | Corrective; M5 T316 S18 follows accepted T316 S17 within the same active task. |
+| Admission And Approval | Owner approved the M5 80386DX program and instructed that T316 continue normally after S1; coordinator accepted S17 at `9127168f` and admits S18 only. |
+| Objective | Complete the declared Group-2 rotate slice: `ROL`, `ROR`, `RCL`, and `RCR` through `C0/C1/D0/D1/D2/D3`, including Intel count handling and flag publication. |
+| Non-goals | Do not claim the shift (`SHL/SAL/SHR/SAR`), wider ordinary arithmetic/FLAGS, string, or data/operand families complete; do not refactor shared operand/address/flag helpers, alter decoder ownership/public ABI, implement an 80387, or admit post-80386 forms. |
 | Reference baseline | Accepted T314 artifact baseline; accepted T316 S1/S2 matrix and current focused corpus. |
-| Files And ABI Surface | `src/core/machine/cpu_instructions.c`, one owned CPU focused smoke and CMake registration if needed, T316 matrix/evidence, Status, and task artifact records. No public ABI change. |
+| Files And ABI Surface | `src/core/machine/cpu_instructions.c`, one owned Group-2 focused smoke and CMake registration, T316 matrix/evidence, Status, and task artifact records. No public ABI change. |
 | Applicable rules | Architecture: one CPU decoder/executor path; Coding: preserve local CPU style, use no speculative abstraction, and keep tests owner-bound; Execution: complete only the declared matrix slice with focused and retained evidence, artifact, documentation, diff, commit, and push gates; Source policy: Intel authority, no imported external source. |
-| Verification | Audit Intel 80386 `XLAT` before implementation; exercise DS default and permitted segment override, 16-bit BX+zero-extended-AL and `67h` 32-bit EBX+zero-extended-AL addressing, AL-only publication with other GPR/EFLAGS preservation, legacy/profile behavior, and protected read-limit/segment fault non-publication; scan `XLAT`, address and segment operand helpers before any abstraction; rebuild T316 artifact if runtime changes, run focused smoke, current gates, documentation governance, and `git diff --check`. |
-| Expected markers | New focused marker `M5:T316:S17:XLAT:OK`; retained S1--S16 markers and applicable current-gate markers pass. |
+| Verification | Audit Intel 80386 Group-2 rotate forms before implementation; exercise all four rotates at 8/16/32 bits across immediate-one, immediate-count, and CL-count encodings, count zero/no-op and 5-bit masking, rotate-through-carry widths/counts, defined CF/OF versus undefined flags, register and memory publication, legacy/profile and 66/67 attributes, and protected read/write fault non-publication; scan `_a_rol/_a_ror/_a_rcl/_a_rcr`, `INS_C0/C1/D0/D1/D2/D3`, flag publication, and every helper caller before any abstraction; rebuild T316 artifact if runtime changes, run focused smoke, current gates, documentation governance, and `git diff --check`. |
+| Expected markers | New focused marker `M5:T316:S18:ROTATE:OK`; retained S1--S17 markers and applicable current-gate markers pass. |
 | Asset needs | None beyond existing governed current-gate assets. |
 | Stop conditions | Stop and report if Intel-correct behavior requires a shared-helper change whose other callers lack coverage, decoder/ABI or exception-delivery architecture change, or an architecture boundary change. |
-| Exit criteria | Every declared `XLAT` form has implementation and focused proof; DS/override and 16/32 addressing, AL-only publication, profile behavior, and protected read-fault non-publication pass; every scan hit is disposed; wider data/operand and ordinary families remain explicitly partial; required gates, artifact handling, commit, and push pass. |
+| Exit criteria | Every declared Group-2 rotate form has implementation and focused proof; all encoding/count/width/flag/publication/profile/fault criteria pass; every scan hit is disposed; shift and wider ordinary families remain explicitly partial; required gates, artifact handling, commit, and push pass. |
 | Original owner request | Execute the complete 80386 program in Coordinated Dual-Session Mode against an Intel form--implementation--test matrix, repairing omissions without using Windows demand as a scope filter. |
-| Similar-issue sweep | Defect class: `XLAT` routes lacking Intel-form evidence or correct address/segment/AL/fault behavior. Scope: tracked CPU implementation, CPU tests, CMake registrations, T316 evidence, and relevant records; use `rg -n "XLAT|_GetAddress|_GetOperand|segment_override|VCPUINS_EXCEPT" src/core/machine tests CMakeLists.txt docs`. Classify every production hit as covered, fixed, deferred to a named matrix slice, or out of scope with reason. |
+| Similar-issue sweep | Defect class: Group-2 rotate routes lacking Intel-form evidence or correct count, CF/OF, undefined-flag, profile, and atomic publication behavior. Scope: tracked CPU implementation, CPU tests, CMake registrations, T316 evidence, and relevant records; use `rg -n "_a_rol|_a_ror|_a_rcl|_a_rcr|INS_C0|INS_C1|INS_D0|INS_D1|INS_D2|INS_D3|VCPU_EFLAGS_(CF|OF)" src/core/machine tests CMakeLists.txt docs`. Classify every production hit as covered, fixed, deferred to a named matrix slice, or out of scope with reason. |
 
 ## Current Technical Baseline
 
