@@ -183,6 +183,10 @@ add_executable(core-machine-lss-lfs-lgs-smoke tests/machine/core_machine_lss_lfs
 target_link_libraries(core-machine-lss-lfs-lgs-smoke PRIVATE core-machine)
 add_executable(core-machine-les-lds-smoke tests/machine/core_machine_les_lds_smoke.c)
 target_link_libraries(core-machine-les-lds-smoke PRIVATE core-machine)
+
+add_executable(core-machine-les-lds-s41-smoke
+    tests/machine/core_machine_les_lds_s41_smoke.c)
+target_link_libraries(core-machine-les-lds-s41-smoke PRIVATE core-machine)
 add_executable(core-machine-lea-smoke tests/machine/core_machine_lea_smoke.c)
 target_link_libraries(core-machine-lea-smoke PRIVATE core-machine)
 add_executable(core-machine-xchg-smoke tests/machine/core_machine_xchg_smoke.c)
@@ -1194,6 +1198,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-fs-gs-stack-smoke
     core-machine-lss-lfs-lgs-smoke
     core-machine-les-lds-smoke
+    core-machine-les-lds-s41-smoke
     core-machine-lea-smoke
     core-machine-xchg-smoke
     core-machine-sign-extend-smoke

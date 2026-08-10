@@ -2,8 +2,27 @@
 
 ## Current Work
 
-**Idle.** M5 T316 S40 is closed; the next 80386 matrix slice requires a
-separately admitted packet.
+**M5 T316 S41 - LES/LDS far-pointer load forms.** The coordinator admitted
+this bounded ordinary-execution continuation in Coordinated Dual-Session Mode.
+
+## M5 T316 S41 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Corrective; next unused subtask of the most recently closed numeric task, M5 T316. |
+| Admission And Approval | The owner approved continuous execution of the Intel 80386DX architecture-completeness program in Coordinated Dual-Session Mode. This is the next linear bounded matrix slice after T316 S40. |
+| Objective | Close Intel LES `C4h` and LDS `C5h` memory far-pointer loads: destination GPR plus ES or DS selector/cache. |
+| Non-goals | LSS/LFS/LGS, MOV/POP segment registers, moffs or general MOV, far control transfers, and wider segment-family completeness are outside this packet. |
+| Reference Baseline | `4d216f7f` / `vm-0-5-0316`, with T316 S40 closed, `main` equal to `origin/main`, and no active packet before admission. |
+| Files And ABI Surface | Expected scope is a focused machine smoke and CMake registration, the ordinary-execution matrix, and this packet. `src/core/machine/cpu_instructions.c` changes only for a demonstrated defect. No public ABI change. |
+| Applicable Rules | `docs/rules/EXECUTION.md`: one active packet, dual-session Instruction/report loop, actual-change coordinator review, linear corrective allocation, matrix audit, similar-issue sweep, and immediate push. Intel 80386 PRM LES/LDS opcode, ModRM, operand/address attribute, selector, exception, and interrupt behavior is the form authority. |
+| Verification | Cover default 16-bit C4/C5 on all four profiles; 80386 `66h`, `67h`, and combined forms; legacy-prefix and LOCK rejection; memory-only ModRM; exact GPR/segment-cache publication and source preservation; DS default plus CS/SS/ES/FS/GS selection grid with 16/32-bit effective addresses; real/protected successful/null/descriptor behavior including accessed bit; protected source-limit and selector-fault atomicity at the established no-IDT boundary; fixture-expressible CPL3 privilege; and pending-PIC no-shadow success. |
+| Expected Markers | Focused smoke emits `M5:T316:S41:LES-LDS:OK`; matrix evidence records C4/C5 only and exact remaining boundaries. |
+| Asset Needs | None; deterministic CPU fixture only. No guest media, external code, firmware, or research import. |
+| Stop Conditions | Stop and report if a selector rule needs a material harness or production change, or if a demonstrated shared `_e_load_far`/`_s_load_sreg` defect expands to callers outside C4/C5. |
+| Exit Criteria | Every admitted C4/C5 memory form is classified and proven with no wider far-load or segment-family completeness claim. |
+| Original Owner Request | Execute the complete Intel 80386 plan in dual-session mode against an Intel form--implementation--test matrix, repairing omissions and closing evidence without using Windows demand as the completeness boundary. |
+| Similar-Issue Sweep | Audit C4/C5 handlers, `_e_load_far`, `_s_load_sreg`, LSS/LFS/LGS, MOV Sreg, selector smokes, prefix/profile routes, PIC examples, and matrix evidence. Classify all hits; other far loads and segment families are excluded by opcode/semantic boundary. |
 
 ## Current Technical Baseline
 
