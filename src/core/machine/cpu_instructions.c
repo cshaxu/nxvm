@@ -11345,7 +11345,7 @@ static C_VOID LAHF(core_machine_cpu_execution_context *context)
     {
         cpu_state.data.ip++;
     }
-    cpu_state.data.ah = TYPE_MASK_UNSIGNED_8(cpu_state.data.flags);
+    cpu_state.data.ah = TYPE_MASK_UNSIGNED_8(cpu_state.data.flags) | 0x02u;
     TYPE_TRACE_CALL_END;
 }
 static C_VOID MOV_AL_MOFFS8(core_machine_cpu_execution_context *context)
