@@ -17,6 +17,8 @@ for a replacement instruction after every report.
 | S3 | Register the existing deterministic `core-product-xasm-smoke` in the current gate. | CTest lists and executes `current.core-product-xasm-smoke`; no xasm implementation or API change. |
 | S4 | Produce the production-target strict-GCC coverage matrix and apply options only to targets proved pure ntvdm64 and independently buildable. | Actual Ninja commands contain all four options for each selected target; every remaining target has a precise exclusion and admission condition. Stop instead of splitting a target if that changes behavior or architecture. |
 | S5 | Close the package. | Update current artifact to 0314, record SHA-256 and final matrix/debt evidence, pass focused checks, all current gates, documentation governance, diff check, commit, and immediate push. |
+| S6 | Restore the pre-S4 target-local strict options and add a narrow static CRTC closure verifier. | Six historical target-local strict sets and the three S4 selected libraries have actual strict Ninja commands; `verify-ega-crtc-boundary` permits only known predicate-guarded dynamic shapes and compile-time-asserted constants. |
+| S7 | Close the corrective package. | Update the current artifact to 0315, record final S6 evidence and SHA-256, pass retained markers and all current gates, then return Status to Idle. |
 
 ## S1 Invariants
 
@@ -48,10 +50,10 @@ UX.
 
 ## Closure Evidence
 
-T314 closed with `build/output/nxvm_0_5_0314.exe` and SHA-256
-`A193D81830AF7EDA1BD4BF368716817BE8232FBA9A091E4CDCFD123B26DD398D`.
-`current-gates-gcc` passed its 51 static/governance targets and 147 current
-CTests; `verify-current-artifact-target` selected `vm-0-5-0314`.
+T314 corrective closure published `build/output/nxvm_0_5_0315.exe` and
+SHA-256 `6B97C2738C3C8F8983FCF216D3841840973CCFE8B17AAB97DBEF60E742C7D454`.
+`current-gates-gcc` passed its 52 static/governance targets and 147 current
+CTests; `verify-current-artifact-target` selected `vm-0-5-0315`.
 
 - S2 retains one VADP CRTC offset state array, a 20-register storage bound,
   bounded variable subscripts, compile-time constant bounds, and the focused
@@ -59,10 +61,18 @@ CTests; `verify-current-artifact-target` selected `vm-0-5-0314`.
 - S3 registers the existing `current.core-product-xasm-smoke`, which emits
   `M5:T129:S2:CORE-PRODUCT-XASM:OK`, without xasm source or API change.
 - S4 records every production library/artifact target in the
-  [strict GCC matrix](t314-strict-gcc-matrix.md), selects only `core-utils`,
+  [strict GCC matrix](t314-strict-gcc-matrix.md), selects `core-utils`,
   `core-product-session`, and `vm-request-transport`, and verifies all four
   flags in their Ninja commands. It records the approved xasm capacity/failure
   semantics and inherited NXVM strict-compilation debts in `TODO.md`.
-- The closure sweep found no new unbounded VADP CRTC access, no duplicate xasm
-  current-gate registration, and no generic strict-GCC exemption. No artifact
-  or product behavior beyond the admitted S2 repair changed.
+- S6 restores the historical target-local strict sets for `core-machine`,
+  `vm-profile`, `vm-0-5-0315`, `core-platform`, `vdm-machine`, and
+  `vdm-composition`, while retaining the three S4 libraries. The matrix makes
+  no transitive or whole-product strict-coverage claim. It adds
+  `verify-ega-crtc-boundary` to current smokes: the verifier checks the known
+  CRTC constants' `_Static_assert` coverage, the bounded support predicate,
+  the three approved dynamic access shapes, and a negative bypass fixture.
+- The corrective closure sweep found no residual removed historical strict
+  option and no unclassified dynamic VADP CRTC access; it also found no
+  duplicate xasm current-gate registration or generic strict-GCC exemption.
+  No artifact or product behavior beyond the admitted S2 repair changed.
