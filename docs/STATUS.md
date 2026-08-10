@@ -2,26 +2,26 @@
 
 ## Current Work
 
-**Active: M5 T316 S22.**
+**Active: M5 T316 S23.**
 
-## M5 T316 S22 Packet
+## M5 T316 S23 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Corrective; M5 T316 S22 follows accepted T316 S21 within the same active task. |
-| Admission And Approval | Owner approved the M5 80386DX program and instructed that T316 continue normally after S1; coordinator accepted S21 at `d66daca6` and admits S22 only. |
-| Objective | Complete 80386 `CLI`/`STI` (`FA`/`FB`): IF publication, real/protected/VM86 CPL and IOPL admission, `#GP` non-publication, and STI's one-instruction maskable-IRQ shadow on every supported profile. |
-| Non-goals | Do not admit NMI inhibition/delivery, full protected exception-delivery endpoints, POPF/MOV SS shadow ownership beyond retained callers, wider ordinary FLAGS control, shared interrupt/decoder refactors, public ABI changes, an 80387, or post-80386 forms. |
-| Reference baseline | Accepted T314 artifact baseline; accepted T316 S1/S2 matrix and current focused corpus. |
-| Files And ABI Surface | `src/core/machine/cpu_instructions.c`, one owned CLI/STI focused smoke and CMake registration if needed, T316 matrix/evidence, Status, and task artifact records. No public ABI change. |
-| Applicable rules | Architecture: one CPU decoder/executor path; Coding: preserve local CPU style, use no speculative abstraction, and keep tests owner-bound; Execution: complete only the declared matrix slice with focused and retained evidence, artifact, documentation, diff, commit, and push gates; Source policy: Intel authority, no imported external source. |
-| Verification | Audit Intel 80386 `CLI`/`STI` before implementation. Exercise real-mode 8086, 80186, and 80386 reachability; protected CPL0 and controlled CPL3 with IOPL above/equal/below CPL; VM86 IOPL=3 and IOPL&lt;3; IF changed only on admitted forms and EIP/EFLAGS publication is absent on `#GP`. With a deterministic pending PIC IRQ, prove STI suppresses maskable delivery until exactly one following instruction retires on both legacy and 80386 profiles; prove CLI does not introduce a shadow. Scan `CLI|STI|flagMaskInt|ExecInt|_GetEFLAGS_IF|_GetEFLAGS_IOPL|_GetCPL`, decoder entries, PIC callers, and every shadow setter before any abstraction. Rebuild the T316 artifact if runtime changes; run focused smoke, current gates, documentation governance, and `git diff --check`. |
-| Expected markers | New focused marker `M5:T316:S22:CLI-STI:OK`; retained S1--S21 markers and applicable current-gate markers pass. |
+| Identifier Mode | Sequential bounded implementation; M5 T316 S23 follows accepted T316 S22 within the same active task. |
+| Admission And Approval | Owner approved the M5 80386DX program and instructed that T316 continue normally after S1; coordinator accepted S22 at `75f3c17d` and admits S23 only. |
+| Objective | Complete Intel 80386 `PUSH FS`/`POP FS` and `PUSH GS`/`POP GS` (`0F A0/A1/A8/A9`): 16/32-bit stack images and deltas, destination selector publication, profile disposition, and atomicity at the existing segment-load and stack-fault boundaries. |
+| Non-goals | Do not admit `LSS`/`LFS`/`LGS`, FS/GS prefix consumers, general segment-selector redesign, MOV/POP other segment registers, interrupt-shadow ownership beyond the existing POP-segment route, protected exception-delivery expansion, public ABI changes, an 80387, or post-80386 forms. |
+| Reference baseline | Accepted T316 S1 matrix, accepted S20 local EFLAGS, S21 PUSHF/POPF, S22 CLI/STI, and their current focused corpus. |
+| Files And ABI Surface | `src/core/machine/cpu_instructions.c` only if a demonstrated defect requires it; one owned FS/GS stack focused smoke and CMake registration if needed; T316 matrix/evidence, Status, and task artifact records. No public ABI change. |
+| Applicable rules | Architecture: one CPU decoder/executor path; Coding: audit helper callers before any shared change, preserve local CPU style, and keep tests owner-bound; Execution: complete only the declared Intel form matrix with focused and retained evidence, artifact, documentation, diff, commit, and push gates; Source policy: Intel authority, no imported external source. |
+| Verification | Audit Intel 80386 `0F A0/A1/A8/A9` before implementation: decoder metadata/profile gate, `PUSH_FS`/`POP_FS`/`PUSH_GS`/`POP_GS`, `_e_push`, `_e_pop_sreg`, `_s_load_sreg`, `flagMaskInt`, and every existing FS/GS test hit. Prove all four forms in 16-bit default and `66h` 32-bit operand-size modes, real mode and a controlled protected selector-load case; assert exact ESP deltas, selector image/load, untouched general registers and EFLAGS, and instruction-size EIP publication. Prove 80386 availability and 80286 rejection with no state publication. Exercise a bounded stack read/write or selector-load fault using an existing fixture and prove no partial state publication. Rebuild the T316 artifact if runtime changes; run focused smoke, current gates, documentation governance, and `git diff --check`. |
+| Expected markers | New focused marker `M5:T316:S23:FS-GS-STACK:OK`; retained S1--S22 markers and applicable current-gate markers pass. |
 | Asset needs | None beyond existing governed current-gate assets. |
-| Stop conditions | Stop and report if Intel-correct IRQ-shadow proof requires an untested shared interrupt/PIC architecture change, NMI delivery semantics, decoder/ABI change, or another architecture-boundary change. |
-| Exit criteria | Every declared `FA`/`FB` form and admission boundary has focused proof; IF/EIP publication, CPL/IOPL/VM86 disposition, `#GP` non-publication, and one-instruction maskable IRQ shadow pass on legacy and 80386 profiles; every scan hit is disposed; NMI and wider ordinary FLAGS families remain explicitly partial; required gates, artifact handling, commit, and push pass. |
+| Stop conditions | Stop and report if Intel-correct FS/GS form proof requires a shared selector-load, stack, exception-delivery, or interrupt-shadow architecture change beyond the existing bounded routes; if an abstraction lacks caller coverage; or if decoder/ABI ownership must change. |
+| Exit criteria | Every declared `0F A0/A1/A8/A9` form has focused proof for operand size, profile gate, selector/stack publication, and declared fault atomicity; every scan hit is disposed; `LSS`/`LFS`/`LGS`, FS/GS prefix consumers, and wider segment/interrupt families remain explicitly partial; required gates, artifact handling, commit, and push pass. |
 | Original owner request | Execute the complete 80386 program in Coordinated Dual-Session Mode against an Intel form--implementation--test matrix, repairing omissions without using Windows demand as a scope filter. |
-| Similar-issue sweep | Defect class: direct IF-control or IRQ-shadow routes that omit an Intel profile/mode/privilege boundary or deliver a maskable IRQ at the wrong instruction boundary. Scope: tracked CPU implementation, CPU tests, CMake registrations, T316 evidence, and relevant records; use `rg -n "CLI|STI|flagMaskInt|ExecInt|EFLAGS_IF|EFLAGS_IOPL|_GetCPL" src/core/machine tests CMakeLists.txt docs`. Classify every production hit as covered, fixed, deferred to a named matrix slice, or out of scope with reason. |
+| Similar-issue sweep | Defect class: 80386 FS/GS stack forms that omit profile, operand-size, selector-load, or atomic-publication behavior. Scope: tracked CPU implementation, CPU tests, CMake registrations, T316 evidence, and relevant records; use `rg -n "PUSH_FS|POP_FS|PUSH_GS|POP_GS|_e_push|_e_pop_sreg|_s_load_sreg|flagMaskInt|0xA0|0xA1|0xA8|0xA9" src/core/machine tests CMakeLists.txt docs`. Classify every production hit as covered, fixed, deferred to a named matrix slice, or out of scope with reason. |
 
 ## Current Technical Baseline
 
