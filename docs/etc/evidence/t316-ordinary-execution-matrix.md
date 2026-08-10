@@ -586,3 +586,20 @@ MOV SS shadow ownership, interrupt-delivery endpoints beyond these observed
 boundaries, and wider FLAGS control remain partial.
 
 `M5:T316:S22:CLI-STI:OK`
+
+### T316 S23 - FS/GS stack forms
+
+`core_machine_fs_gs_stack_smoke` proves `0F A0/A1/A8/A9` only: PUSH/POP FS
+and PUSH/POP GS on 80386 in default 16-bit and `66h` 32-bit operand-size
+forms, with exact stack deltas/images, selector publication, EIP, and retained
+general register/EFLAGS state. It also proves 80286 #UD non-publication and
+valid protected POP FS/GS selector loads. For the bounded SS-source-limit
+fault, POP FS/GS retain EIP, ESP, EFLAGS and destination selector; the existing
+fixture observes the resulting first-#DF diagnostic boundary after #SS.
+`_e_pop_sreg`'s `flagMaskInt` setter is classified as SS-only and is not
+expanded by this slice.
+
+LSS/LFS/LGS, FS/GS prefix consumers, general segment-selector families, and
+interrupt-shadow ownership remain partial.
+
+`M5:T316:S23:FS-GS-STACK:OK`

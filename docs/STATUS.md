@@ -8,7 +8,7 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Sequential bounded implementation; M5 T316 S23 follows accepted T316 S22 within the same active task. |
+| Identifier Mode | Corrective; M5 T316 S23 follows accepted T316 S22 within the same active task. |
 | Admission And Approval | Owner approved the M5 80386DX program and instructed that T316 continue normally after S1; coordinator accepted S22 at `75f3c17d` and admits S23 only. |
 | Objective | Complete Intel 80386 `PUSH FS`/`POP FS` and `PUSH GS`/`POP GS` (`0F A0/A1/A8/A9`): 16/32-bit stack images and deltas, destination selector publication, profile disposition, and atomicity at the existing segment-load and stack-fault boundaries. |
 | Non-goals | Do not admit `LSS`/`LFS`/`LGS`, FS/GS prefix consumers, general segment-selector redesign, MOV/POP other segment registers, interrupt-shadow ownership beyond the existing POP-segment route, protected exception-delivery expansion, public ABI changes, an 80387, or post-80386 forms. |
