@@ -13599,6 +13599,11 @@ static C_VOID AAM(core_machine_cpu_execution_context *context)
         _d_imm(context, 1);
     }
     base = TYPE_MASK_UNSIGNED_8(instruction_state.data.cimm);
+    if (base == 0)
+    {
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_DE(0));
+        return;
+    }
     cpu_state.data.ah = cpu_state.data.al / base;
     cpu_state.data.al = cpu_state.data.al % base;
     instruction_state.data.bit = 0x08;

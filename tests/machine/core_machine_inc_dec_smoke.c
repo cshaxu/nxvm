@@ -2986,6 +2986,80 @@ static C_INT inc_dec_test_cmp_attribute_profile_fault(C_VOID)
     return 1;
 }
 
+static C_INT inc_dec_test_decimal_adjust(C_VOID)
+{
+    static const uint8_t code[][2] = {
+        { 0x27u, 0u }, { 0x27u, 0u }, { 0x2fu, 0u },
+        { 0x37u, 0u }, { 0x3fu, 0u }, { 0xd4u, 0x10u }, { 0xd5u, 0x10u }
+    };
+    static const uint8_t lengths[] = { 1u, 1u, 1u, 1u, 1u, 2u, 2u };
+    static const uint32_t eax[] = {
+        0x1122330au, 0x1122339au, 0x11223300u, 0x11220a0au,
+        0x11220a0au, 0x1122002fu, 0x1122020fu
+    };
+    static const uint32_t input_flags[] = { 0u, 0u, VCPU_EFLAGS_AF, 0u, 0u, 0u, 0u };
+    static const uint32_t result_eax[] = {
+        0x11223310u, 0x11223300u, 0x1122339au, 0x11220b00u,
+        0x11220904u, 0x1122020fu, 0x1122002fu
+    };
+    static const uint32_t flag_masks[] = {
+        VCPU_EFLAGS_CF | VCPU_EFLAGS_AF | VCPU_EFLAGS_SF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_PF,
+        VCPU_EFLAGS_CF | VCPU_EFLAGS_AF | VCPU_EFLAGS_SF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_PF,
+        VCPU_EFLAGS_CF | VCPU_EFLAGS_AF | VCPU_EFLAGS_SF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_PF,
+        VCPU_EFLAGS_CF | VCPU_EFLAGS_AF, VCPU_EFLAGS_CF | VCPU_EFLAGS_AF,
+        VCPU_EFLAGS_SF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_PF,
+        VCPU_EFLAGS_SF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_PF
+    };
+    static const uint32_t expected_flags[] = {
+        VCPU_EFLAGS_AF,
+        VCPU_EFLAGS_CF | VCPU_EFLAGS_AF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_PF,
+        VCPU_EFLAGS_CF | VCPU_EFLAGS_AF | VCPU_EFLAGS_SF | VCPU_EFLAGS_PF,
+        VCPU_EFLAGS_CF | VCPU_EFLAGS_AF, VCPU_EFLAGS_CF | VCPU_EFLAGS_AF,
+        VCPU_EFLAGS_PF, 0u
+    };
+    uint8_t form;
+
+    for (form = 0u; form != sizeof(lengths); ++form) {
+        inc_dec_machine state;
+        t_cpu after;
+        core_machine_cpu_diagnostic diagnostic;
+        C_INT failed = !inc_dec_prepare(form == 6u ? CORE_MACHINE_CPU_PROFILE_80186 :
+            CORE_MACHINE_CPU_PROFILE_80386, &state);
+
+        if (!failed) {
+            state.machine->executor_cpu.data.eax = eax[form];
+            state.machine->executor_cpu.data.eflags = input_flags[form];
+            failed |= !inc_dec_run(&state, code[form], lengths[form], 0, &after,
+                &diagnostic) || diagnostic.first_fault.valid || after.data.eax != result_eax[form] ||
+                (after.data.eflags & flag_masks[form]) != expected_flags[form];
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+    }
+    {
+        static const uint8_t aam_zero[] = { 0xd4u, 0u };
+        const uint32_t eax_before = 0x1122332fu;
+        const uint32_t flags_before = VCPU_EFLAGS_CF | VCPU_EFLAGS_OF;
+        inc_dec_machine state;
+        t_cpu after;
+        core_machine_cpu_diagnostic diagnostic;
+        C_INT failed = !inc_dec_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
+
+        if (!failed) {
+            state.machine->executor_cpu.data.eax = eax_before;
+            state.machine->executor_cpu.data.eflags = flags_before;
+            failed |= !inc_dec_run(&state, aam_zero, sizeof(aam_zero), 1, &after,
+                &diagnostic) || !diagnostic.first_fault.valid || !TYPE_GET_BIT(
+                diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_DE) ||
+                after.data.eax != eax_before || after.data.eflags != flags_before ||
+                after.data.eip != 0u;
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+    }
+    return 1;
+}
+
 C_INT main(C_VOID)
 {
     if (!inc_dec_test_register_forms() || !inc_dec_test_rm_forms() ||
@@ -3018,7 +3092,7 @@ C_INT main(C_VOID)
         !inc_dec_test_sub_attribute_profile_fault() || !inc_dec_test_xor_forms() ||
         !inc_dec_test_xor_immediates() || !inc_dec_test_xor_attribute_profile_fault() ||
         !inc_dec_test_cmp_forms() || !inc_dec_test_cmp_boundaries() ||
-        !inc_dec_test_cmp_attribute_profile_fault()) return 1;
+        !inc_dec_test_cmp_attribute_profile_fault() || !inc_dec_test_decimal_adjust()) return 1;
     STD_PRINTF("M5:T316:S2:INC-DEC:OK\n");
     STD_PRINTF("M5:T316:S3:NOT-NEG:OK\n");
     STD_PRINTF("M5:T316:S4:TEST:OK\n");
@@ -3033,5 +3107,6 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T316:S13:SUB:OK\n");
     STD_PRINTF("M5:T316:S14:XOR:OK\n");
     STD_PRINTF("M5:T316:S15:CMP:OK\n");
+    STD_PRINTF("M5:T316:S16:DECIMAL-ADJUST:OK\n");
     return 0;
 }
