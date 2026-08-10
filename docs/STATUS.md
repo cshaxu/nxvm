@@ -2,8 +2,26 @@
 
 ## Current Work
 
-**Idle.** M5 T316 S33 is closed; the next 80386 matrix slice requires a
-separately admitted packet.
+**M5 T316 S34 - STOS string forms.** The coordinator admitted this bounded ordinary-execution continuation in Coordinated Dual-Session Mode.
+
+## M5 T316 S34 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Corrective; next unused subtask of the most recently closed numeric task, M5 T316. |
+| Admission And Approval | The owner approved continuous execution of the Intel 80386DX architecture-completeness program in Coordinated Dual-Session Mode. This is the next linear bounded matrix slice after T316 S33. |
+| Objective | Complete Intel STOSB `AAh` and STOSW/STOSD `ABh` string forms with single and REP execution. |
+| Non-goals | MOVS, CMPS, LODS, SCAS, INS/OUTS, general or segment stack forms, broader prefix families, and any helper change without a demonstrated defect are outside this packet. |
+| Reference Baseline | `2e2133b2` / `vm-0-5-0316`, with T316 S33 closed, `main` equal to `origin/main`, and no active packet before admission. |
+| Files And ABI Surface | Expected scope is a focused machine smoke and CMake registration, the ordinary-execution matrix, and this packet. `src/core/machine/cpu_instructions.c` changes only for a demonstrated defect. No public ABI change. |
+| Applicable Rules | `docs/rules/EXECUTION.md`: one active packet, dual-session Instruction/report loop, actual-change coordinator review, linear corrective allocation, matrix audit, similar-issue sweep, and immediate push. `docs/rules/CODING.md`: preserve local code/test style and introduce no premature abstraction. Intel 80386 PRM STOS opcode, REP, operand/address attribute, prefix, exception, and interrupt behavior is the form authority. |
+| Verification | Cover single `AAh`/`ABh` on all four profiles; 80386 `66h`, `67h`, and combined forms; REP count zero, one, and multiple; DF increment and decrement; fixed ES destination and representative segment overrides that do not change it; exact DI/EDI/CX/ECX/EIP, accumulator source, nonparticipant GPR/FLAGS, and memory publication; lower-profile prefix and LOCK #UD nonpublication; protected ES write-limit/restart/no-publication at the established no-IDT diagnostic boundary; and pending-PIC single immediate no-shadow plus REP restartable partial progress. |
+| Expected Markers | Focused smoke emits `M5:T316:S34:STOS:OK`; matrix evidence records every admitted opcode family and exact boundary disposition. |
+| Asset Needs | None; deterministic CPU fixture only. No guest media, external code, firmware, or research import. |
+| Stop Conditions | Stop and report if a shared `_m_stos` or `_kas_move_index` change requires a covered caller sweep. |
+| Exit Criteria | Every admitted `AAh`/`ABh` form is classified and proven with no MOVS, CMPS, LODS, SCAS, INS/OUTS, or stack-family completeness claim. |
+| Original Owner Request | Execute the complete Intel 80386 plan in dual-session mode against an Intel form--implementation--test matrix, repairing omissions and closing evidence without using Windows demand as the completeness boundary. |
+| Similar-Issue Sweep | Audit STOS handlers, `_m_stos`, `_kas_move_index`, primary prefix routes, and the existing operand/address smoke. Classify all hits; MOVS, CMPS, LODS, SCAS, INS/OUTS, and stack families are excluded by opcode/semantic boundary. |
 
 ## Current Technical Baseline
 
