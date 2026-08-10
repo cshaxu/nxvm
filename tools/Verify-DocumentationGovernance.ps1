@@ -219,7 +219,12 @@ function Require-ActiveIdentifier([pscustomobject]$packet, [string]$repositoryRo
     $modeMatch = [regex]::Match($packet.Body, '(?m)^\|\s*Identifier Mode\s*\|\s*(?<mode>[^|]+?)\s*\|\s*$')
     Require $modeMatch.Success "Active task packet must declare Identifier Mode."
     $mode = $modeMatch.Groups['mode'].Value.Trim().Split(';')[0].Trim()
-    $closed = @(Get-ClosedIdentifierRecords $repositoryRoot)
+    $closed = @(Get-ClosedIdentifierRecords $repositoryRoot | Where-Object {
+        $_.Milestone -ne $packet.Milestone -or
+        $_.Task -ne $packet.Task -or
+        $_.Subtask -ne $packet.Subtask -or
+        $_.IsDocumentation -ne $packet.IsDocumentation
+    })
     if ($packet.IsDocumentation) {
         Require ($mode -eq 'Governance') "A Td packet must use Identifier Mode Governance."
         $previous = @($closed | Where-Object {
@@ -431,6 +436,15 @@ if ($SelfTest) {
         Set-SelfTestFile $fixtureRoot "docs/STATUS.md" ($validPacket.Replace("M5 Td S50", "M5 T302 S1").Replace("Governance", "New"))
         Require (-not (Invoke-SelfTestCheck $fixtureRoot -Quiet)) `
             "Documentation schema accepted a skipped numeric task identifier."
+        $activeNumericPacket = $validPacket.Replace("M5 Td S50", "M5 T301 S1").Replace(
+            "| Identifier Mode | Governance |",
+            "| Identifier Mode | New |"
+        )
+        Set-SelfTestFile $fixtureRoot "docs/STATUS.md" $activeNumericPacket
+        git -C $fixtureRoot add docs/STATUS.md
+        git -C $fixtureRoot commit -q -m "M5 T301 S1 P0: admit fixture"
+        Require (Invoke-SelfTestCheck $fixtureRoot) `
+            "Documentation schema treated a committed active-packet admission as closed."
         Set-SelfTestFile $fixtureRoot "docs/STATUS.md" $validStatus
         Set-SelfTestFile $fixtureRoot "docs/STATUS.md" @'
 # Project Status
