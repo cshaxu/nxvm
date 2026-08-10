@@ -45,7 +45,7 @@ not an allocation of later task identifiers.
 | Primary binary arithmetic/logical/test: `ADD/OR/ADC/SBB/AND/SUB/XOR/CMP/TEST`, accumulator immediates, Groups `80/81/83` | Primary table and `INS_80/81/83`; `_kac_arith2` uses operand read/write and `_kaf_set_flags`. | `core_machine_inc_dec_smoke` (`M5:T316:S4:TEST:OK`, `M5:T316:S7:TEST-RM-REG:OK`, `M5:T316:S8:ADD:OK`, `M5:T316:S9:ADC:OK`, `M5:T316:S10:SBB:OK`, `M5:T316:S11:OR:OK`, `M5:T316:S12:AND:OK`, `M5:T316:S13:SUB:OK`, `M5:T316:S14:XOR:OK`, `M5:T316:S15:CMP:OK`) proves the declared slices. | **Complete for this enumerated primary slice**: TEST forms admitted by S4/S7; `00`--`05` plus `/0` ADD; `08`--`0D` plus `/1` OR; `10`--`15` plus `/2` ADC; `18`--`1D` plus `/3` SBB; `20`--`25` plus `/4` AND; `28`--`2D` plus `/5` SUB; `30`--`35` plus `/6` XOR; and `38`--`3D` plus `/7` CMP, including their declared accumulator/immediate, operand/address, profile, FLAGS, publication, and fault boundaries. This does not claim the wider ordinary arithmetic/FLAGS family complete. |
 | Primary unary arithmetic: `INC/DEC` register (`40`--`4F`) and Groups `FE/FF /0,/1`; `NEG/NOT` Groups `F6/F7 /2,/3` | Register handlers `INC_*`/`DEC_*`; `INS_FE/FF`, `INS_F6/F7`; all use `_kac_arith1` and flag masks. | `core_machine_inc_dec_smoke` (`M5:T316:S2:INC-DEC:OK`, `M5:T316:S3:NOT-NEG:OK`) proves both admitted slices. | **Complete** only for T316's named INC/DEC and NOT/NEG forms: 16/32-bit register and 8/16/32-bit r/m forms, their Intel FLAGS contracts, 16/32 operand/address attributes, profile behavior, publication, and protected fault non-publication. The wider unary/arithmetic family remains **Partial**: `F6/F7 /6,/7` division is a separately named slice. |
 | Decimal/ASCII adjust and conversion: `DAA/DAS/AAA/AAS/AAM/AAD`, `XLAT` | Primary handlers `DAA`, `DAS`, `AAA`, `AAS`, `AAM`, `AAD`, `XLAT`; DAA/DAS/AAM/AAD call `_kaf_set_flags`. | `core_machine_inc_dec_smoke` (`M5:T316:S16:DECIMAL-ADJUST:OK`, `M5:T316:S17:XLAT:OK`) proves the admitted slices. | **Complete only for T316 S16's six named adjust forms** and T316 S17 XLAT: DS default and ES override, 16-bit BX/AL and `67h` EBX/AL addressing, AL-only publication, legacy/profile behavior, and protected read-limit fault non-publication. The wider data/operand and ordinary arithmetic/FLAGS families remain **Partial**. |
-| Shift/rotate Groups `C0/C1/D0`--`D3` | `INS_C0/C1/D0/D1/D2/D3`; shift paths call `_kaf_set_flags`. | No focused primary shift/rotate smoke; T310's double-shift smoke is only `SHLD/SHRD`. | **Partial**: primary count masking, count-zero flags, rotate flags, and memory faults remain unproven. Next: ordinary arithmetic/FLAGS family. |
+| Shift/rotate Groups `C0/C1/D0`--`D3` | `INS_C0/C1/D0/D1/D2/D3`; rotate paths call `_a_rol/_a_ror/_a_rcl/_a_rcr`; shift paths remain separately routed. | `core_machine_rotate_smoke` (`M5:T316:S18:ROTATE:OK`) proves the declared rotate slice; T310's double-shift smoke remains only `SHLD/SHRD`. | **Complete only for T316 S18 ROL/ROR/RCL/RCR**: all Group-2 encodings, 8/16/32-bit register and memory operands, count handling, defined CF/OF and undefined-flag boundaries, attributes, profiles, and protected access atomicity. `SHL/SAL/SHR/SAR` remain **Partial** and unclaimed. |
 | One-operand multiply/divide Groups `F6/F7 /4`--`/7` | `INS_F6/F7` dispatches `/4` to `_a_mul`, `/5` to `_a_imul`, `/6` to `_a_div`, and `/7` to `_a_idiv`. | `core_machine_inc_dec_smoke` (`M5:T316:S5:MUL-IMUL:OK`, `M5:T316:S6:DIV-IDIV:OK`) covers `/4`--`/7`. | **Complete** only for T316's declared one-operand Group `F6/F7 /4`--`/7` forms at 8/16/32 bits. This does not claim the wider multiply/divide or ordinary arithmetic family complete. |
 | EFLAGS transfers and direct flag control: `PUSHF/POPF`, `LAHF/SAHF`, `CMC/CLC/STC/CLI/STI/CLD/STD` | `PUSHF`, `POPF`, `SAHF`, `LAHF`, and primary flag handlers; protected-mode masking is local to those routes. | T302 checks selected PUSHF/POPF; retained string/product tests incidentally use DF/IF paths. | **Partial**: no focused table covers all modifiable/reserved flag bits, CPL/IOPL rules, interrupt shadow, and each direct flag form. Next: ordinary FLAGS/control family. |
 | Memory strings `MOVS/CMPS/STOS/LODS/SCAS`, REP/REPE/REPNE, DF, 16/32 operand/address attributes | `MOVSB/W`, `CMPSB/W`, `STOSB/W`, `LODSB/W`, `SCASB/W`, `_kas_move_index`; primary REP loop. | `core_machine_real_mode_386_rep_cmps_smoke` (`M5:T292:S1:REP-STRING:OK`) and T302 memory-string checks. | **Partial**: bounded REP CMPS, index/size, and selected string paths pass; every string opcode, DF direction, segment override, limit/fault restart, and full 32-bit matrix is not proven. Next: ordinary strings/control family. |
@@ -473,3 +473,50 @@ both CF and AF for `00h - FFh`, and CMP's no-write contract means a read-only
 memory operand is not a fault condition.
 
 `M5:T316:S15:CMP:OK`
+
+## S18 Group-2 Rotate Closure Evidence
+
+`INS_C0`, `INS_C1`, `INS_D0`, `INS_D1`, `INS_D2`, and `INS_D3` dispatch
+Group-2 `/0`--`/3` to `_a_rol`, `_a_ror`, `_a_rcl`, and `_a_rcr`. The
+S18 sweep audited every one of those routes and their local CF/OF publication;
+no shared operand, address, or flag helper was changed. `/4`--`/7`
+`SHL/SAL/SHR/SAR` are explicitly outside this slice and remain partial.
+
+`core_machine_rotate_smoke` proves ROL/ROR/RCL/RCR at 8, 16, and 32 bits for
+register and memory r/m operands through immediate-count `C0/C1`, one-count
+`D0/D1`, and CL-count `D2/D3` encodings. Its immediate and CL count `21h`
+vectors prove 5-bit masking; the four operations, three widths, and both
+immediate/CL routes also prove count-zero no-op publication. RCL/RCR cases
+start with CF set and apply their width-specific carry-ring count handling. A
+separate immediate effective-count-two matrix covers all four rotates and all
+three widths, proving multi-step result/CF publication while deliberately not
+asserting Intel-undefined OF.
+For effective count one the smoke asserts Intel-defined CF and OF; for other
+nonzero counts it asserts CF and deliberately does not claim OF, while the
+other FLAGS remain unchanged.
+
+The matrix covers destination memory publication and register preservation,
+including CL preservation. `67h 66h` memory vectors prove 32-bit
+address/operand attributes. An 80186 immediate-count form is accepted; a
+80286 `66h` form raises `#UD` without publishing EAX, EFLAGS, or EIP. The
+protected fixture proves both out-of-limit read and read-only write failures
+retain destination memory, EFLAGS, and EIP at the existing diagnostic fault
+boundary.
+
+The initial count-zero vectors exposed a local implementation defect: all four
+handlers treated effective zero as an undefined-OF case, and ROR also republished
+CF from the unchanged operand. The local 8/16/32 branches now early-exit on
+effective zero, preserving all FLAGS as Intel requires. No decoder, ABI,
+shared helper, CMake artifact, or preset changed.
+
+The prescribed similar-issue sweep classifies `_a_rol/_a_ror/_a_rcl/_a_rcr`
+as **fixed and covered** by the new owner-bound matrix; `INS_C0/C1/D0/D1/D2/D3`
+as **covered** by its immediate, one, and CL encodings; and their local
+CF/OF publications as **covered** by effective-one and effective-two vectors.
+The other Group-2 `/4`--`/7` hits are **deferred/out of scope** to an explicitly
+admitted shift slice. `_kaf_set_flags` and the broader arithmetic CF/OF hits
+are **out of scope** because rotate handlers do not call that helper; no shared
+helper modification was considered. T310 `SHLD/SHRD` evidence remains a
+separate covered double-shift route rather than evidence for primary rotates.
+
+`M5:T316:S18:ROTATE:OK`
