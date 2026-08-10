@@ -4,7 +4,13 @@ Protected guest media is excluded by default. This includes BIOS/ROM dumps,
 DOS distributions, disk images, commercial applications, Microsoft guest
 components, and third-party executables whose redistribution status is unclear.
 
-- Store local inputs under ignored `local-assets/`.
+- Store local inputs outside the repository or under ignored `local-assets/`.
+- A filename is only an operator-local alias; a media identity is its logical
+  role, size, SHA-256, and declared use.
+- CMake media cache inputs are operator-provided and must not embed an absolute
+  local path in tracked source, presets, or documentation.
+- A changed hash or guest purpose requires a new approved media record; it does
+  not rewrite a historical baseline.
 - Commit only logical identifiers, expected SHA-256 values, size, role, and
   provenance note.
 - Prefer generated COM/MZ probes and redistributable fixtures in tests.
