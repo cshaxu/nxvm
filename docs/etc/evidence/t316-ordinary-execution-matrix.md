@@ -56,7 +56,7 @@ not an allocation of later task identifiers.
 | 80386 `0F A3/AB/B3/BB`, `0F BA /4`--`/7` BT/BTS/BTR/BTC | `BT_*`, `BTS_*`, `BTR_*`, `BTC_*`, `INS_0F_BA`; metadata/profile gate. | `core_machine_bit_test_smoke` (`M5:T310:S5:BIT:OK`) covers register/memory, immediate/indexed, 16/32, address prefix, rejection, and access-failure publication. | **Complete** for the declared T310 bit-test matrix. |
 | 80386 `0F A4/A5/AC/AD` SHLD/SHRD | `SHLD_*`/`SHRD_*`, `_kaf_set_flags`, 80386 metadata gate. | `core_machine_double_shift_smoke` (`M5:T310:S6:DOUBLE-SHIFT:OK`) covers forms, count zero, profile rejection, and access failure. | **Complete** for the declared T310 double-shift matrix. |
 | 80386 `0F AF` two-operand IMUL; `0F BC/BD` BSF/BSR; `0F B6/B7/BE/BF` MOVZX/MOVSX | `IMUL_R32_RM32`, `BSF/BSR`, `MOVZX/MOVSX` through `INS_0F` and metadata gate. | `core_machine_imul2_smoke` (`M5:T310:S8:IMUL2:OK`), `core_machine_bit_scan_smoke` (`M5:T310:S7:BIT-SCAN:OK`), `core_machine_movx_smoke` (`M5:T310:S4:MOVX:OK`). | **Complete** for each declared T310 form matrix, including profile rejection and named memory/fault boundaries. |
-| 80386 `0F A0/A1/A8/A9` FS/GS push/pop and `0F B2/B4/B5` LSS/LFS/LGS | `INS_0F` table and segment-load routes, with profile checks. | T301/T302 prefix/segment baseline. | **Partial**: the bounded segment-load matrix is retained from T301; these exact 0F forms lack a dedicated current focused proof in this ordinary audit. Next: ordinary data/operand family, then protection family if privilege semantics expand. |
+| 80386 `0F A0/A1/A8/A9` FS/GS push/pop and `0F B2/B4/B5` LSS/LFS/LGS | `INS_0F` table and segment-load routes, with profile checks; `_e_load_far` loads the selector before publishing the destination offset and sets the maskable-IRQ shadow only for SS. | `core_machine_fs_gs_stack_smoke` (`M5:T316:S23:FS-GS-STACK:OK`) and `core_machine_lss_lfs_lgs_smoke` (`M5:T316:S24:LSS-LFS-LGS:OK`). | **Complete only for T316 S23's FS/GS stack forms and S24's LSS/LFS/LGS matrix**: default/`66h` operand size, memory-only form, 80386 gate, selected real/protected publication, bounded source-fault non-publication, and the SS-only IRQ shadow. FS/GS prefix consumers, `LES`/`LDS`, MOV/POP other segment-register families, and broader privilege semantics remain **Partial**. |
 | Post-80386 or reserved encodings seen in the tables: `CPUID`, `RSM`, `WBINVD`, `RDMSR/WRMSR`, `CMPXCHG`, `XADD`, `BSWAP`, undefined holes | Metadata/profile gate rejects forms above the active 80386 profile before the named table handler can establish behavior. | `cpu_profile_gate_smoke` and T309 rejection baseline. | **Outside-80386**: retain rejection; no later-IA-32 implementation is admitted by T316. |
 | `WAIT/FWAIT`, ESC `D8`--`DF`, CR0 `MP/EM/TS`, `#NM`, external coprocessor fault interface | `WAIT`, FPU escape/profile routes and CPU exception state; optional FPU provider is outside ordinary decoding. | `cpu_fpu_profile_smoke`, `cpu_fpu_profile_closure_smoke`, `fpu_escape_smoke`, `core_machine_fpu_8087_smoke`. | **External-coprocessor boundary**: only 80386-side control/reporting is in the approved program; no 8087/80287/80387 arithmetic, state, or completeness claim is made. |
 
@@ -603,3 +603,25 @@ LSS/LFS/LGS, FS/GS prefix consumers, general segment-selector families, and
 interrupt-shadow ownership remain partial.
 
 `M5:T316:S23:FS-GS-STACK:OK`
+
+### T316 S24 - LSS/LFS/LGS memory far-pointer forms
+
+`core_machine_lss_lfs_lgs_smoke` proves the bounded `0F B2` LSS, `0F B4`
+LFS, and `0F B5` LGS matrix.  Each form uses the required memory ModRM in
+real mode and a controlled protected selector load, in both default 16-bit
+and `66h` 32-bit operand-size forms.  The vectors assert source offset to
+AX/EAX, destination selector, EIP, and retained EFLAGS.  Register-direct
+encodings #UD on 80386, and all memory forms #UD on 80286, without GPR,
+EFLAGS, or opcode-selected SS/FS/GS publication.
+
+The protected source-boundary probe constrains DS across the far pointer and
+observes the retained first-#DF delivery boundary; it proves EIP, EAX,
+EFLAGS, and the selected destination selector remain unpublished.  The
+deterministic PIC fixture proves LSS defers a pending maskable IRQ through
+exactly one following NOP (interrupt frame IP 6), while LFS and LGS take the
+same IRQ before that NOP (frame IP 5).  `_e_load_far` caller review classifies
+the resulting shadow as SS-only; no shared helper or runtime change was
+needed.  FS/GS prefix consumers, `LES`/`LDS`, general segment-register
+families, and broader segment privilege semantics remain partial.
+
+`M5:T316:S24:LSS-LFS-LGS:OK`
