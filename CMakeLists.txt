@@ -1211,6 +1211,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     vm-request-transport-smoke
     core-utils-wait-smoke
     std-snprintf-smoke
+    core-product-xasm-smoke
     core-product-session-contract-smoke
     core-product-session-manager-smoke
     core-product-debug-target-smoke
