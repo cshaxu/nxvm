@@ -2,21 +2,21 @@
 
 ## Current Work
 
-**Active: M5 T315 S1.**
+**Active: M5 T316 S1.**
 
-## M5 T315 S1 Packet
+## M5 T316 S1 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New; M5 T315 S1 is the next global numeric task after closed T314. |
+| Identifier Mode | New; the previous T315 admission commit consumed T315 before the identifier gate rejected its packet; M5 T316 S1 is now the next valid global numeric task. |
 | Admission And Approval | Owner approved the M5 80386DX architecture-completeness program, matrix-driven admission/exit, and Coordinated Dual-Session Mode on 2026-08-09. Coordinator admits S1 only; every later subtask requires coordinator acceptance of the prior result. |
 | Objective | Produce the Intel 80386 PRM-to-source-to-test matrix for the first Queue family, ordinary execution and flag completeness, and select one independently correctable implementation slice for S2. |
 | Non-goals | Do not modify CPU behavior, claim a family is complete, implement an 80387, admit later IA-32 forms, change a public ABI, use Windows demand as a scope filter, or copy/import Bochs, PCjs, or other third-party source. |
 | Reference baseline | Accepted T314 `vm-0-5-0315` / `build/output/nxvm_0_5_0315.exe`; current source, test corpus, T309 audit, and the M5 80386DX completeness program. |
-| Files And ABI Surface | New `docs/etc/evidence/t315-ordinary-execution-matrix.md` and, if needed, Status/evidence cross-links only. No production source, test executable, CMake target, public ABI, or artifact identity changes in S1. |
+| Files And ABI Surface | New `docs/etc/evidence/t316-ordinary-execution-matrix.md` and, if needed, Status/evidence cross-links only. No production source, test executable, CMake target, public ABI, or artifact identity changes in S1. |
 | Applicable rules | Architecture: one CPU decoder/executor ownership path and no new cross-component coupling; Coding: preserve existing CPU ownership/style and record reusable-helper caller coverage before abstraction; Execution: PRM matrix-driven admission, evidence, documentation, diff, commit, and push gates; Source policy: Intel is behavioral authority and external implementations are read-only references only. |
 | Verification | Inspect the Intel 80386 ordinary execution/FLAGS/operand/address/string/control forms against the initialized primary dispatch, metadata/profile gates, operand/flag helpers, focused tests, and T309 baseline; record code/test evidence and all complete/partial/missing/outside/boundary classifications; verify every retained partial or missing form names its next Queue family or candidate slice; run documentation governance and `git diff --check`. |
-| Expected markers | Evidence marker `M5:T315:S1:80386-ORDINARY-MATRIX:OK`, emitted only when every reviewed form has a classification, source/test disposition, and next placement; no runtime marker or artifact is expected because S1 changes no runnable path. |
+| Expected markers | Evidence marker `M5:T316:S1:80386-ORDINARY-MATRIX:OK`, emitted only when every reviewed form has a classification, source/test disposition, and next placement; no runtime marker or artifact is expected because S1 changes no runnable path. |
 | Asset needs | None. Intel PRM citation material and read-only local/reference metadata may be consulted under source policy; no guest media, third-party source, binary, trace, or external asset enters the repository. |
 | Stop conditions | Stop and report if the family cannot be bounded without changing decoder ownership, a shared helper lacks caller coverage needed for safe alteration, the Intel form boundary is ambiguous after authority review, or a proposed abstraction changes architecture/public ABI. |
 | Exit criteria | The ordinary-family matrix covers its relevant 80386 forms and records each classification, source route, existing focused evidence, and remaining gap. The matrix identifies one S2 slice with exact forms, helper-caller coverage, focused proof plan, non-goals, and similar-issue sweep; no unclassified in-scope form is hidden, and no completeness claim is made before the whole family matrix is resolved. |
