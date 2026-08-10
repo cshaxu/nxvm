@@ -2,8 +2,27 @@
 
 ## Current Work
 
-**Idle.** M5 T316 S26 is closed; the next 80386 matrix slice requires a
-separately admitted packet.
+**M5 T316 S27 - XCHG r/m form matrix.** This is the active subtask in the
+owner-approved T316 80386DX ordinary-execution program.
+
+## M5 T316 S27 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Corrective; bounded T316 continuation after accepted S26. |
+| Admission And Approval | Owner approved continuous T316 80386 matrix execution; coordinator admits only XCHG `86/87` r/m forms after baseline `5e27c708`. |
+| Objective | Complete Intel XCHG `86/87` r/m form evidence and repair any demonstrated exchange publication-atomicity defect. |
+| Non-goals | Do not admit `90`--`97` accumulator exchanges, MOV, generic LOCK refactoring, post-80386 forms, x87, or exception-delivery redesign. |
+| Reference Baseline | T316 S26 at `5e27c708`; `XCHG_RM8_R8`, `XCHG_RM32_R32`, `_d_modrm`, `_m_read_rm`, and `_m_write_rm`. |
+| Files And ABI Surface | One owned smoke and CMake registration; runtime handler only for reproduced local XCHG defect; matrix and Status records. No public ABI or artifact change. |
+| Applicable Rules | Preserve destination/source atomicity on faults; audit shared memory helper callers before any helper change; 80386 operand/address attributes and LOCK disposition; dual-session actual-change review. |
+| Verification | Prove register and memory XCHG at 8/16/32 bits, 66/67 attributes, flags/EIP/source preservation, legacy acceptance and lower-profile prefix #UD, LOCK and register forms, protected read/write fault non-publication, and no interrupt shadow. Audit all `XCHG_RM8_R8|XCHG_RM32_R32|_m_write_rm` hits. |
+| Expected Markers | New `M5:T316:S27:XCHG-RM:OK`; retained gates pass. |
+| Asset Needs | None beyond governed current-gate assets. |
+| Stop Conditions | Stop if atomic repair needs shared memory, decoder, PIC, or exception-delivery redesign beyond audited callers. |
+| Exit Criteria | Both 86/87 form classes are proven for widths, attributes, profiles, LOCK, FLAGS, and fault atomicity; wider XCHG family remains partial; gates and push pass. |
+| Original Owner Request | Execute the complete 80386 program in Coordinated Dual-Session Mode against Intel form--implementation--test matrix evidence. |
+| Similar-Issue Sweep | Scan `XCHG_RM8_R8|XCHG_RM32_R32|_m_read_rm|_m_write_rm|flagLock|0x86|0x87` across production, tests, CMake, and records. |
 
 ## Current Technical Baseline
 
