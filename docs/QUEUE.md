@@ -7,11 +7,26 @@ numeric identifier under [rules/EXECUTION.md](rules/EXECUTION.md).
 
 Before M6 admission, complete the remaining M5 candidates:
 
-1. **Core quality-boundary repair and coverage audit.** Repair the VADP EGA
-   CRTC 13h storage boundary, register the existing deterministic xasm smoke
-   in the current gate, and record then apply a target-by-target strict GCC
-   coverage decision without widening inherited NXVM warning policy. Record
-   the bounded xasm API and inherited-compilation governance deferrals.
+1. **80386DX ordinary execution and flag-completeness foundation.** Complete
+   the remaining ordinary instruction, operand-size, address-size, flag, and
+   string/control families against the Intel 80386 architecture. Reuse an
+   existing helper only when its callers are covered; introduce an abstraction
+   only after the affected callers have focused coverage and the shared
+   responsibility is concrete.
+1. **80386DX exception, interrupt, and processor-control closure.** Complete
+   remaining architected fault, trap, interrupt, return, CR0/CR2/CR3, and
+   coprocessor-interface behavior without implementing an 80387.
+1. **80386DX protection and privilege-transfer closure.** Complete descriptor,
+   segmentation, privilege, gate, and user/kernel transfer behavior required
+   by the Intel 80386 architecture.
+1. **80386DX paging and translation closure.** Complete the remaining
+   non-PAE 80386 paging, protection, invalidation, and diagnostic behavior.
+1. **80386DX task, local-descriptor, virtual-8086, and debug/test-register
+   closure.** Complete the remaining 80386 system-state families; do not use
+   a missing product consumer to withdraw a family from this approved program.
+1. **80386DX architecture-coverage closure audit.** Reconcile every in-scope
+   Intel 80386 architectural form and behavior with implementation evidence,
+   a focused regression, or an explicit external-coprocessor boundary.
 1. **Windows 3.x readiness map.** Record the latest bounded checkpoint and
    every remaining CPU, device, timing, profile, and media prerequisite; do
    not make a Windows 95 claim.
