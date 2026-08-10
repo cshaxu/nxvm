@@ -2,26 +2,26 @@
 
 ## Current Work
 
-**Active: M5 T316 S12.**
+**Active: M5 T316 S13.**
 
-## M5 T316 S12 Packet
+## M5 T316 S13 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Corrective; M5 T316 S12 follows accepted T316 S11 within the same active task. |
-| Admission And Approval | Owner approved the M5 80386DX program and instructed that T316 continue normally after S1; coordinator accepted S11 at `378622a9` and admits S12 only. |
-| Objective | Complete the declared primary AND matrix slice: `20h`--`25h` and Group `80h/81h/83h /4`, with Intel-correct destination publication, defined FLAGS, operand sizes, and fault behavior. |
-| Non-goals | Do not claim primary binary arithmetic/FLAGS or the ordinary family complete; do not refactor shared arithmetic/flag helpers, alter decoder ownership/public ABI, implement ADD/ADC/SBB/OR/SUB/other logical groups, implement an 80387, or admit post-80386 forms. |
+| Identifier Mode | Corrective; M5 T316 S13 follows accepted T316 S12 within the same active task. |
+| Admission And Approval | Owner approved the M5 80386DX program and instructed that T316 continue normally after S1; coordinator accepted S12 at `81b965f8` and admits S13 only. |
+| Objective | Complete the declared primary SUB matrix slice: `28h`--`2Dh` and Group `80h/81h/83h /5`, with Intel-correct destination publication, defined FLAGS, operand sizes, and fault behavior. |
+| Non-goals | Do not claim primary binary arithmetic/FLAGS or the ordinary family complete; do not refactor shared arithmetic/flag helpers, alter decoder ownership/public ABI, implement ADD/ADC/SBB/OR/AND/other logical groups, implement an 80387, or admit post-80386 forms. |
 | Reference baseline | Accepted T314 artifact baseline; accepted T316 S1/S2 matrix and current focused corpus. |
 | Files And ABI Surface | `src/core/machine/cpu_instructions.c`, one owned CPU focused smoke and CMake registration if needed, T316 matrix/evidence, Status, and task artifact records. No public ABI change. |
 | Applicable rules | Architecture: one CPU decoder/executor path; Coding: preserve local CPU style, use no speculative abstraction, and keep tests owner-bound; Execution: complete only the declared matrix slice with focused and retained evidence, artifact, documentation, diff, commit, and push gates; Source policy: Intel authority, no imported external source. |
-| Verification | Audit Intel AND forms before implementation; exercise `20h`--`25h` and `80h/81h/83h /4` at 8/16/32 bits with non-alias register/memory destinations; prove destination publication plus exact defined CF/OF/SF/ZF/PF behavior and AF treatment, immediate sign extension where applicable, operand/address attributes, profile behavior, and protected source/destination-fault non-publication; scan AND handlers, Group arithmetic dispatch, `_a_and`, `_kac_arith2`, and flag-helper callers before any abstraction; rebuild T316 artifact if runtime changes, run focused smoke, current gates, documentation governance, and `git diff --check`. |
-| Expected markers | New focused marker `M5:T316:S12:AND:OK`; retained S1--S11 markers and applicable current-gate markers pass. |
+| Verification | Audit Intel SUB forms before implementation; exercise `28h`--`2Dh` and `80h/81h/83h /5` at 8/16/32 bits with non-alias register/memory destinations; prove destination publication plus exact defined CF/OF/SF/ZF/AF/PF behavior, immediate sign extension where applicable, operand/address attributes, profile behavior, and protected source/destination-fault non-publication; scan SUB handlers, Group arithmetic dispatch, `_a_sub`, `_kac_arith2`, and flag-helper callers before any abstraction; rebuild T316 artifact if runtime changes, run focused smoke, current gates, documentation governance, and `git diff --check`. |
+| Expected markers | New focused marker `M5:T316:S13:SUB:OK`; retained S1--S12 markers and applicable current-gate markers pass. |
 | Asset needs | None beyond existing governed current-gate assets. |
 | Stop conditions | Stop and report if Intel-correct behavior requires a shared-helper change whose other callers lack coverage, decoder/ABI or exception-delivery architecture change, or an architecture boundary change. |
-| Exit criteria | Every declared Intel AND form has implementation and focused proof; 8/16/32 register/memory behavior, destination publication, exact defined FLAGS and AF treatment, immediate/sign-extension, attribute/profile behavior, and source/destination-fault non-publication pass; every scan hit is disposed; no broader family-completeness claim is made; required gates, artifact handling, commit, and push pass. |
+| Exit criteria | Every declared Intel SUB form has implementation and focused proof; 8/16/32 register/memory behavior, destination publication, exact defined FLAGS, immediate/sign-extension, attribute/profile behavior, and source/destination-fault non-publication pass; every scan hit is disposed; no broader family-completeness claim is made; required gates, artifact handling, commit, and push pass. |
 | Original owner request | Execute the complete 80386 program in Coordinated Dual-Session Mode against an Intel form--implementation--test matrix, repairing omissions without using Windows demand as a scope filter. |
-| Similar-issue sweep | Defect class: primary AND routes lacking Intel-form evidence or correct result/FLAGS/fault-publication behavior. Scope: tracked CPU implementation, CPU tests, CMake registrations, T316 evidence, and relevant records; use `rg -n "AND_|INS_80|INS_81|INS_83|_a_and|_kac_arith2|_kaf_set_flags" src/core/machine tests CMakeLists.txt docs`. Classify every production hit as covered, fixed, deferred to a named matrix slice, or out of scope with reason. |
+| Similar-issue sweep | Defect class: primary SUB routes lacking Intel-form evidence or correct result/FLAGS/fault-publication behavior. Scope: tracked CPU implementation, CPU tests, CMake registrations, T316 evidence, and relevant records; use `rg -n "SUB_|INS_80|INS_81|INS_83|_a_sub|_kac_arith2|_kaf_set_flags" src/core/machine tests CMakeLists.txt docs`. Classify every production hit as covered, fixed, deferred to a named matrix slice, or out of scope with reason. |
 
 ## Current Technical Baseline
 
