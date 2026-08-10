@@ -2,8 +2,26 @@
 
 ## Current Work
 
-**Idle.** M5 T316 S32 is closed; the next 80386 matrix slice requires a
-separately admitted packet.
+**M5 T316 S33 - MOVS string forms.** The coordinator admitted this bounded ordinary-execution continuation in Coordinated Dual-Session Mode.
+
+## M5 T316 S33 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Corrective; next unused subtask of the most recently closed numeric task, M5 T316. |
+| Admission And Approval | The owner approved continuous execution of the Intel 80386DX architecture-completeness program in Coordinated Dual-Session Mode. This is the next linear bounded matrix slice after T316 S32. |
+| Objective | Complete Intel `MOVSB` `A4h` and `MOVSW`/`MOVSD` `A5h` string forms with single and REP execution. |
+| Non-goals | CMPS, STOS, LODS, SCAS, INS/OUTS, general or segment stack forms, broader repeat or prefix families, and any helper change without a demonstrated defect are outside this packet. |
+| Reference Baseline | `300ae645` / `vm-0-5-0316`, with T316 S32 closed, `main` equal to `origin/main`, and no active packet before admission. |
+| Files And ABI Surface | Expected scope is a focused machine smoke and CMake registration, the ordinary-execution matrix, and this packet. `src/core/machine/cpu_instructions.c` changes only for a demonstrated defect. No public ABI change. |
+| Applicable Rules | `docs/rules/EXECUTION.md`: one active packet, dual-session Instruction/report loop, actual-change coordinator review, linear corrective allocation, matrix audit, similar-issue sweep, and immediate push. `docs/rules/CODING.md`: preserve local code/test style and introduce no premature abstraction. Intel 80386 PRM MOVS opcode, REP, operand/address attribute, prefix, exception, and interrupt behavior is the form authority. |
+| Verification | Cover single `A4h`/`A5h` on all four profiles; 80386 `66h`, `67h`, and combined forms; REP count zero, one, and multiple; DF increment and decrement; DS source plus CS/SS/ES/FS/GS source overrides with fixed ES destination; exact SI/DI/CX/ECX/GPR/EFLAGS/EIP/memory publication; pre-80386 prefix and LOCK #UD nonpublication; protected source read-limit and destination write-limit/restart/no-publication at the established no-IDT diagnostic boundary; and pending-PIC no-shadow. |
+| Expected Markers | Focused smoke emits `M5:T316:S33:MOVS:OK`; matrix evidence records every admitted opcode family and exact boundary disposition. |
+| Asset Needs | None; deterministic CPU fixture only. No guest media, external code, firmware, or research import. |
+| Stop Conditions | Stop and report if a shared `_m_movs` or `_kas_move_index` change requires a covered caller sweep. |
+| Exit Criteria | Every admitted `A4h`/`A5h` form is classified and proven with no broader strings claim. |
+| Original Owner Request | Execute the complete Intel 80386 plan in dual-session mode against an Intel form--implementation--test matrix, repairing omissions and closing evidence without using Windows demand as the completeness boundary. |
+| Similar-Issue Sweep | Audit MOVS handlers, `_m_movs`, `_kas_move_index`, primary prefix routes, and the existing operand/address smoke. Classify all hits; CMPS, STOS, LODS, SCAS, INS/OUTS, and stack families are excluded by opcode/semantic boundary. |
 
 ## Current Technical Baseline
 
