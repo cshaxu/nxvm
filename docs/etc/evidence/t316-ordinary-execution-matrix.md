@@ -268,7 +268,8 @@ T310 evidence and are outside S6.
 T316's current developer artifact remains `vm-0-5-0316` at
 `build/output/nxvm_0_5_0316.exe`, SHA-256
 `5D3405AE5D6C284074BB51EDD4E255A5C3C77F2F030AFFC5A7D3921B42540DD1`.
-The S6 verified worktree is based on admission
-`8485f4ad`; the coordinator acceptance source commit remains pending.
+Its S6 accepted source commit is
+`bcfc4fe17cab21a11a5ef896748c3629b2a60e02`; the verified worktree was based
+on admission `8485f4ad`.
 
 `M5:T316:S6:DIV-IDIV:OK`
