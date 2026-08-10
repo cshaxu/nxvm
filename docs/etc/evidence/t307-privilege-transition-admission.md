@@ -215,7 +215,7 @@ follow-on task input.
 
 ## S7 Closure Preparation
 
-The sole current artifact identity is `vm-0-5-0307`; its executable is
+The T307 closure artifact identity is `vm-0-5-0307`; its executable is
 `nxvm_0_5_0307.exe` with SHA-256
 `933A06EAED336A79A7855A8B5D9A93C53DBDB1CB1600994E3B27CA141D9235DA`.
 

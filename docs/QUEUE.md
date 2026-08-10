@@ -5,32 +5,20 @@ reserve a numeric task identifier, or define a technical baseline. The first
 approved candidate enters [STATUS.md](STATUS.md) and receives the next linear
 numeric identifier under [rules/EXECUTION.md](rules/EXECUTION.md).
 
-The first candidates are the direct M5 80386 32-bit protected execution and
-delivery package. They use focused synthetic architecture probes during
-construction; a full-system checkpoint is only a debug/progress tool and never
-a build prerequisite. Each task closes every 80386-legal form in its named
-family, including 16/32-bit cross forms, profile rejection, fault precedence,
-and pre-fault non-mutation. Reserved and later-CPU forms remain `#UD`.
+Before M6 admission, complete the remaining M5 candidates:
 
-For every candidate in this package, the task packet must record the relevant
-Intel 80386 Programmer's Reference Manual sections, the matching local Bochs
-and PCjs implementation/behavior locations and revisions, and the project
-probe result. Intel defines required semantics; Bochs and PCjs are read-only
-behavior references, never copy sources or replacement architecture. After
-each family closes, run the owner-supplied local Windows Setup flow once and
-record only the observed checkpoint, stop, or timeout. That observation does
-not expand the completed family or require an immediate fix. When a probe and
-the three references leave correctness uncertain, use the optional local
-Bochx/Bochs paired-step bridge with declared state masks and instruction,
-time, no-progress, and trace-size budgets; its source, binaries, media, and
-raw traces remain outside the repository and default build.
+1. **Windows 3.x readiness map.** Record the latest bounded checkpoint and
+   every remaining CPU, device, timing, profile, and media prerequisite; do
+   not make a Windows 95 claim.
+1. **M5 closure audit.** Reconcile current source, product UX, contracts,
+   CMake, evidence, and open debt before any M5-close decision.
 
-The following four candidates establish the M6 source-locked, single-session
-mantle experiment. They do not define a DLL/SDK or external ABI. Mantle
-assembles one `core_machine` from typed profile and host providers supplied by
-a VDM adapter; it does not own DOS behavior, host path policy, product UI, or a
-VM profile. The adapter remains responsible for connecting DOS and host-facing
-providers.
+After M5 closes, the following four candidates establish the M6 source-locked,
+single-session mantle experiment. They do not define a DLL/SDK or external ABI.
+Mantle assembles one `core_machine` from typed profile and host providers
+supplied by a VDM adapter; it does not own DOS behavior, host path policy,
+product UI, or a VM profile. The adapter remains responsible for connecting DOS
+and host-facing providers.
 
 1. **Pre-decode transition gateway and mantle probe, conditional.** Admit only
    with a concrete first-party mantle consumer. Register finite decoded forms
@@ -56,8 +44,3 @@ providers.
    while consuming only public core interfaces. Prove two independent sessions,
    retained NXVM regressions, no VM/private borrow, and no DOS or host-policy
    implementation in mantle.
-1. **Windows 3.x readiness map.** Record the latest bounded checkpoint and
-    every remaining CPU, device, timing, profile, and media prerequisite; do
-    not make a Windows 95 claim.
-1. **M5 closure audit.** Reconcile current source, product UX, contracts,
-    CMake, evidence, and open debt before any M5-close decision.
