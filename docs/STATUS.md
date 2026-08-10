@@ -34,6 +34,12 @@
 
 ## Recent Governance
 
+- **M5 Td S59:** governed the relocated local media set and CMake media root.
+  Current aliases select the owner-approved MS-DOS 6.22 FDD and EWIN31 Setup
+  HDD by hash; historical M1 DOS 5 evidence remains separate. The new FDD
+  exposes ten retained DOS 5-bound smoke failures, recorded as explicit debt
+  rather than weakened tests or a compatibility claim.
+
 - **M5 Td S58:** made immediate remote push a cross-mode change-discipline
   requirement. Every successful task or subtask commit must be pushed before
   acceptance, closure, or completed-result reporting; a push failure is a
@@ -45,9 +51,6 @@
   before any separate M6 admission. See the
   [package-close audit](etc/evidence/m5-direct-80386-package-close-audit.md).
 
-- **M5 Td S51:** defined ordinary and coordinator/executor execution modes,
-  Instructions, report-and-acceptance loops, bounded task packages, and their
-  required package-close global governance audit. Td work has no history record.
 - **M5 Td S52:** regrouped supporting material into architecture, requirements,
   evidence, operations, research, and history; isolated M5/legacy evidence and
   repaired every governed migration link. Td work has no history record.

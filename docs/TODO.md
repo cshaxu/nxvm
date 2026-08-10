@@ -7,6 +7,15 @@ candidate work, and detailed capability evidence belong in
 [design/GOAL.md](design/GOAL.md), [QUEUE.md](QUEUE.md), and
 [etc/evidence/current-capability-baseline.md](etc/evidence/current-capability-baseline.md).
 
+## Media Compatibility Debt
+
+- [ ] **MS-DOS 6.22 FDD smoke admission (`TODO(High)`).** The approved current
+  FDD media differs from the historical M1 DOS 5 input. A future admission
+  requires a bounded MS-DOS 6.22 checkpoint contract for the ten failed
+  FDD/DOS smoke paths, diagnosis of the prompt-run `0xc0000374`, and retained
+  M1 coverage without silently changing its assertions. See
+  [current runtime media](etc/evidence/fixtures/current-runtime-media.md).
+
 ## Hardware And Compatibility Debt
 
 - [ ] **Advanced 8042 AUX protocol (`TODO(Medium)`).** T267 adds bounded

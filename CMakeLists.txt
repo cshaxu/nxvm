@@ -1277,9 +1277,11 @@ set(PROJECT_CURRENT_ALL_SMOKE_TARGETS
     ${PROJECT_CURRENT_SMOKE_TARGETS}
     ${PROJECT_CURRENT_MEDIA_SMOKE_TARGETS})
 list(REMOVE_DUPLICATES PROJECT_CURRENT_ALL_SMOKE_TARGETS)
-set(PROJECT_FDD_SMOKE_IMAGE "${CMAKE_SOURCE_DIR}/../fdd.img" CACHE FILEPATH
+set(PROJECT_ASSETS_ROOT "${CMAKE_SOURCE_DIR}/../../assets" CACHE PATH
+    "Owner-provided local asset root for current runtime smoke coverage")
+set(PROJECT_FDD_SMOKE_IMAGE "${PROJECT_ASSETS_ROOT}/fdd.img" CACHE FILEPATH
     "Owner-provided FDD image for current runtime smoke coverage")
-set(PROJECT_HDD_SMOKE_IMAGE "${CMAKE_SOURCE_DIR}/../hdd.img" CACHE FILEPATH
+set(PROJECT_HDD_SMOKE_IMAGE "${PROJECT_ASSETS_ROOT}/hdd.img" CACHE FILEPATH
     "Owner-provided HDD image for current runtime smoke coverage")
 
 function(project_add_current_smoke_test target)
