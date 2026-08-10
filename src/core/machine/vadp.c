@@ -30,6 +30,17 @@
 #define CORE_MACHINE_VADP_EGA_640X350_ROW_BYTES 80u
 #define CORE_MACHINE_VADP_EGA_640X350_CRTC_OFFSET 40u
 
+_Static_assert(CORE_MACHINE_VADP_CRTC_CURSOR_TOP <
+        CORE_MACHINE_VADP_CRTC_REGISTER_COUNT &&
+    CORE_MACHINE_VADP_CRTC_CURSOR_BOTTOM <
+        CORE_MACHINE_VADP_CRTC_REGISTER_COUNT &&
+    CORE_MACHINE_VADP_CRTC_START_HIGH + 1u <
+        CORE_MACHINE_VADP_CRTC_REGISTER_COUNT &&
+    CORE_MACHINE_VADP_CRTC_CURSOR_HIGH + 1u <
+        CORE_MACHINE_VADP_CRTC_REGISTER_COUNT &&
+    CORE_MACHINE_VADP_CRTC_OFFSET < CORE_MACHINE_VADP_CRTC_REGISTER_COUNT,
+    "CRTC constant indices must fit the VADP CRTC register bank");
+
 static C_VOID core_machine_vadp_mark_dirty(t_vadp *adapter);
 
 static C_INT core_machine_vadp_is_graphics_mode(const t_vadp *adapter)
@@ -211,9 +222,10 @@ static type_status core_machine_vadp_ega_planar_query(C_VOID *owner,
 
 static C_INT core_machine_vadp_supported_crtc_index(uint8_t index)
 {
-    return (index >= CORE_MACHINE_VADP_CRTC_CURSOR_TOP &&
+    return index < CORE_MACHINE_VADP_CRTC_REGISTER_COUNT &&
+        ((index >= CORE_MACHINE_VADP_CRTC_CURSOR_TOP &&
         index <= CORE_MACHINE_VADP_CRTC_CURSOR_LOW) ||
-        index == CORE_MACHINE_VADP_CRTC_OFFSET;
+        index == CORE_MACHINE_VADP_CRTC_OFFSET);
 }
 
 static uint8_t core_machine_vadp_crtc_mask(uint8_t index)
@@ -234,8 +246,14 @@ static uint8_t core_machine_vadp_crtc_mask(uint8_t index)
 static uint16_t core_machine_vadp_crtc_word(const t_vadp *adapter,
     uint8_t high_index)
 {
+    uint8_t low_index = (uint8_t)(high_index + 1u);
+
+    if (adapter == STD_NULL || !core_machine_vadp_supported_crtc_index(high_index) ||
+        !core_machine_vadp_supported_crtc_index(low_index)) {
+        return 0u;
+    }
     return (uint16_t)(((uint16_t)adapter->data.crtc[high_index] << 8) |
-        adapter->data.crtc[high_index + 1u]);
+        adapter->data.crtc[low_index]);
 }
 
 static core_machine_display_kind core_machine_vadp_ega_display_kind(
