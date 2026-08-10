@@ -5462,7 +5462,8 @@ static C_VOID _a_imul(core_machine_cpu_execution_context *context, type_unsigned
         instruction_state.data.bit = 32;
         instruction_state.data.opr1 = cpu_state.data.eax;
         instruction_state.data.opr2 = TYPE_MASK_UNSIGNED_32((type_signed_32)csrc);
-        cdest = TYPE_MASK_UNSIGNED_64((type_signed_32)cpu_state.data.eax * (type_signed_32)instruction_state.data.opr2);
+        cdest = TYPE_MASK_UNSIGNED_64((type_signed_64)(type_signed_32)cpu_state.data.eax *
+                                      (type_signed_64)(type_signed_32)instruction_state.data.opr2);
         cpu_state.data.eax = TYPE_MASK_UNSIGNED_32(cdest);
         cpu_state.data.edx = TYPE_MASK_UNSIGNED_32(cdest >> 32);
         if (TYPE_MASK_UNSIGNED_64(cdest) == (type_signed_64)((type_signed_32)cpu_state.data.eax))

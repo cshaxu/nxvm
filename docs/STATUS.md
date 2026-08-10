@@ -12,7 +12,7 @@
 | Admission And Approval | Owner approved the M5 80386DX program and instructed that T316 continue normally after S1; coordinator accepted S4 at `bd0045b3` and admits S5 only. |
 | Objective | Complete the declared Group `F6/F7 /4,/5` matrix slice: one-operand unsigned `MUL` and signed `IMUL`, with Intel-correct implicit result registers, CF/OF definition, undefined-flag handling, operand sizes, and source-fault behavior. |
 | Non-goals | Do not claim the multiply/divide, binary-arithmetic/FLAGS, or ordinary family complete; do not refactor shared arithmetic helpers, alter decoder ownership/public ABI, implement Group `F6/F7 /6,/7` division, implement an 80387, or admit post-80386 forms. |
-| Reference baseline | Accepted T314 `vm-0-5-0315`; accepted T316 S1/S2 matrix and current focused corpus. |
+| Reference baseline | Accepted T314 artifact baseline; accepted T316 S1/S2 matrix and current focused corpus. |
 | Files And ABI Surface | `src/core/machine/cpu_instructions.c`, one owned CPU focused smoke and CMake registration if needed, T316 matrix/evidence, Status, and task artifact records. No public ABI change. |
 | Applicable rules | Architecture: one CPU decoder/executor path; Coding: preserve local CPU style, use no speculative abstraction, and keep tests owner-bound; Execution: complete only the declared matrix slice with focused and retained evidence, artifact, documentation, diff, commit, and push gates; Source policy: Intel authority, no imported external source. |
 | Verification | Audit the Intel one-operand `MUL` and `IMUL` forms before implementation; exercise Group `F6/F7 /4,/5` register and memory sources at 8/16/32 bits; prove implicit `AX`, `DX:AX`, and `EDX:EAX` results, CF/OF overflow definition, undefined-flag non-claims, operand/address attributes, legacy/profile behavior, and protected source-fault non-publication; scan `_a_mul`, `_a_imul`, `INS_F6/F7`, and shared flag/helper callers before any abstraction; build the task artifact, run focused smoke, current gates, documentation governance, and `git diff --check`. |
@@ -25,9 +25,10 @@
 
 ## Current Technical Baseline
 
-- **Current accepted artifact:** `current-gcc` and
-  `verify-current-artifact-target` select `vm-0-5-0315` / `build/output/nxvm_0_5_0315.exe`.
-  It was accepted with T314 S7 closure.
+- **Current task artifact:** `current-gcc` and
+  `verify-current-artifact-target` select `vm-0-5-0316` / `build/output/nxvm_0_5_0316.exe`.
+  T316 S5 owns this developer artifact; its source commit is finalized only by
+  the coordinator's subsequent acceptance commit.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
