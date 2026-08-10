@@ -2,27 +2,8 @@
 
 ## Current Work
 
-**M5 T316 S39 - LAHF/SAHF FLAGS transfers.** The coordinator admitted this
-bounded ordinary-execution continuation in Coordinated Dual-Session Mode.
-
-## M5 T316 S39 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Corrective; next unused subtask of the most recently closed numeric task, M5 T316. |
-| Admission And Approval | The owner approved continuous execution of the Intel 80386DX architecture-completeness program in Coordinated Dual-Session Mode. This is the next linear bounded matrix slice after T316 S38. |
-| Objective | Complete Intel LAHF `9Fh` and SAHF `9Eh` FLAGS-transfer forms. |
-| Non-goals | PUSHF/POPF, CLI/STI, CMC/CLC/STC/CLD/STD, production refactoring, post-80386 behavior, and 80387 are outside this packet. |
-| Reference Baseline | `2f0cc367` / `vm-0-5-0316`, with T316 S38 closed, `main` equal to `origin/main`, and no active packet before admission. |
-| Files And ABI Surface | Expected scope is a focused machine smoke and CMake registration, the ordinary-execution matrix, and this packet. `src/core/machine/cpu_instructions.c` changes only for a demonstrated defect. No public ABI change. |
-| Applicable Rules | `docs/rules/EXECUTION.md`: one active packet, dual-session Instruction/report loop, actual-change coordinator review, linear corrective allocation, matrix audit, similar-issue sweep, and immediate push. Intel 80386 PRM LAHF/SAHF opcode, FLAGS, privilege, prefix, exception, and interrupt behavior is the form authority. |
-| Verification | Cover all four profiles; exact AH mapping for CF/PF/AF/ZF/SF plus constant bit1 and non-transfer-bit disposition; SAHF preservation of all other EFLAGS and GPRs; LAHF AH-only EAX publication; exact EIP/nonparticipants; `66h`, `67h`, and combined behavior classification; LOCK #UD/nonpublication; fixture-expressible protected privilege/IOPL/VM rules or explicit outside classification; no-IDT fault atomicity if applicable; and pending-PIC successful no-shadow behavior. |
-| Expected Markers | Focused smoke emits `M5:T316:S39:LAHF-SAHF:OK`; matrix evidence records every admitted opcode family and exact boundary disposition. |
-| Asset Needs | None; deterministic CPU fixture only. No guest media, external code, firmware, or research import. |
-| Stop Conditions | Stop and report if an Intel privilege rule needs a material harness or production change, or if a demonstrated defect expands beyond the declared forms. |
-| Exit Criteria | Every admitted `9Eh`/`9Fh` form is classified and proven with no wider FLAGS/control-family completeness claim. |
-| Original Owner Request | Execute the complete Intel 80386 plan in dual-session mode against an Intel form--implementation--test matrix, repairing omissions and closing evidence without using Windows demand as the completeness boundary. |
-| Similar-Issue Sweep | Audit SAHF/LAHF handlers, profile and prefix routes, local EFLAGS smoke, protected flags/privilege fixtures, PIC examples, and matrix evidence. Classify all hits; other FLAGS-transfer/control families are excluded by opcode boundary. |
+**Idle.** M5 T316 S39 is closed; the next 80386 matrix slice requires a
+separately admitted packet.
 
 ## Current Technical Baseline
 
@@ -44,6 +25,7 @@ bounded ordinary-execution continuation in Coordinated Dual-Session Mode.
 
 | Task | Compact result |
 | --- | --- |
+| T316 S39 | Closed LAHF/SAHF `9E`/`9F`: profiles plus `66`/`67` and LOCK, protected/VM86 FLAGS preservation, and PIC no-shadow coverage. No production change was needed; 52 governance/static checks and 168 current-gate tests passed. |
 | T316 S38 | Closed port strings `6C`--`6F`: single/REP profiles plus `66`/`67`, segment/DF, #UD/LOCK, protected DS/ES #DF, and PIC no-shadow/restart coverage. No production change was needed; 52 governance/static checks and 167 current-gate tests passed. |
 | T316 S37 | Closed CMPS `A6`/`A7`: single/REPE/REPNE profiles plus `66`/`67`, DS-to-fixed-ES selection/DF/full FLAGS, #UD/LOCK, protected DS/ES #DF, and PIC no-shadow/restart coverage. No production change was needed; 52 governance/static checks and 166 current-gate tests passed. |
 | T316 S36 | Closed SCAS `AE`/`AF`: single/REPE/REPNE profiles plus `66`/`67`, fixed ES/DF and full FLAGS, #UD/LOCK, protected ES #DF, and PIC no-shadow/restart coverage. No production change was needed; 52 governance/static checks and 165 current-gate tests passed. |
