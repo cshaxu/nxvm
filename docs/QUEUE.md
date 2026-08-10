@@ -7,6 +7,11 @@ numeric identifier under [rules/EXECUTION.md](rules/EXECUTION.md).
 
 Before M6 admission, complete the remaining M5 candidates:
 
+1. **Core quality-boundary repair and coverage audit.** Repair the VADP EGA
+   CRTC 13h storage boundary, register the existing deterministic xasm smoke
+   in the current gate, and record then apply a target-by-target strict GCC
+   coverage decision without widening inherited NXVM warning policy. Record
+   the bounded xasm API and inherited-compilation governance deferrals.
 1. **Windows 3.x readiness map.** Record the latest bounded checkpoint and
    every remaining CPU, device, timing, profile, and media prerequisite; do
    not make a Windows 95 claim.

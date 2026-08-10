@@ -2,7 +2,26 @@
 
 ## Current Work
 
-**Idle.**
+**Active: M5 T314 S1.**
+
+## M5 T314 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New; M5 T314 S1 is the next global numeric task after closed T313. |
+| Admission And Approval | Owner approved the inserted Queue candidate and the T314 package on 2026-08-09. Coordinator admits S1 only; later subtasks require coordinator acceptance of the prior result. |
+| Objective | Remove the VADP CRTC 13h out-of-bounds port read/write while retaining `crtc[]` as the sole EGA offset state source. |
+| Non-goals | Do not add CRTC behavior, change EGA 320x200x16 or 640x350x16 behavior, alter firmware/display topology/host presentation, or modify inherited CPU, xasm, or Win32 code. |
+| Reference baseline | Accepted T313 `vm-0-5-0313` / `build/output/nxvm_0_5_0313.exe`; current source and artifact identity remain T313 until T314 closure. |
+| Files And ABI Surface | `src/core/machine/vadp.c`, `src/core/machine/vadp.h`, an owned VADP port smoke, CMake registration, Task evidence, Queue, TODO, and Status. No public ABI change. |
+| Applicable rules | Architecture: one VADP owner and one CRTC offset truth source; Coding: C11, cohesive ownership and owner-bound tests; Execution: defect-class sweep, exact evidence, artifact, documentation, diff, commit, and push gates; Source policy: no import or external asset. |
+| Verification | Configure `mingw-gcc-x64`; run the focused VADP port smoke; enumerate every `crtc[` occurrence in `vadp.c` and `vadp.h` with disposition; build `current-gates-gcc`; run `powershell -NoProfile -ExecutionPolicy Bypass -File tools/Verify-DocumentationGovernance.ps1 -RepositoryRoot .`; run `git diff --check`. At package closure, build and hash the T314 artifact. |
+| Expected markers | New focused marker `M5:T314:S1:EGA-CRTC-BOUNDARY:OK`; retained EGA/VADP and current-gate markers remain passing. |
+| Asset needs | None for S1 focused proof; retained current-gate media uses the approved repository-relative assets under existing governance. |
+| Stop conditions | Stop and report if the repair requires changed EGA mode semantics, firmware, display ownership, a second offset state source, or a public interface change. |
+| Exit criteria | CRTC index 13h has same-array storage; every variable CRTC array access is guarded by the bounded support predicate; CRTC constant indices are compile-time bounded; the port regression verifies read/write and isolation; the stale TODO is closed or narrowed; all stated gates pass and the S1 result is accepted. |
+| Original owner request | Implement owner-approved T314 in coordinated dual-session mode: repair EGA CRTC 13h bounds, register the deterministic xasm smoke, audit/apply strict GCC coverage only to confirmed owned targets, and record two inherited-governance debts. |
+| Similar-issue sweep | Defect class: accepted CRTC index used as an unchecked array subscript. Scope: tracked VADP production/test/CMake and relevant records, using `rg -n "crtc\\[|supported_crtc_index|CRTC_REGISTER_COUNT" src/core/machine tests CMakeLists.txt docs`. Classify every production hit; variable accesses must route through the bounded predicate, constants through compile-time bounds, and unrelated hits receive a reason. |
 
 ## Current Technical Baseline
 
