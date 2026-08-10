@@ -2,8 +2,27 @@
 
 ## Current Work
 
-**Idle.** M5 T316 S35 is closed; the next 80386 matrix slice requires a
-separately admitted packet.
+**M5 T316 S36 - SCAS string forms.** The coordinator admitted this bounded
+ordinary-execution continuation in Coordinated Dual-Session Mode.
+
+## M5 T316 S36 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Corrective; next unused subtask of the most recently closed numeric task, M5 T316. |
+| Admission And Approval | The owner approved continuous execution of the Intel 80386DX architecture-completeness program in Coordinated Dual-Session Mode. This is the next linear bounded matrix slice after T316 S35. |
+| Objective | Complete Intel SCASB `AEh` and SCASW/SCASD `AFh` string forms with single, F3 REPE, and F2 REPNE execution. |
+| Non-goals | CMPS, LODS, MOVS, STOS, INS/OUTS, general or segment stack forms, broader prefix families, post-80386 behavior, 80387, production refactoring, and any shared `_kas_move_index` change without a demonstrated defect and caller sweep are outside this packet. |
+| Reference Baseline | `d31852cc` / `vm-0-5-0316`, with T316 S35 closed, `main` equal to `origin/main`, and no active packet before admission. |
+| Files And ABI Surface | Expected scope is a focused machine smoke and CMake registration, the ordinary-execution matrix, and this packet. `src/core/machine/cpu_instructions.c` changes only for a demonstrated defect. No public ABI change. |
+| Applicable Rules | `docs/rules/EXECUTION.md`: one active packet, dual-session Instruction/report loop, actual-change coordinator review, linear corrective allocation, matrix audit, similar-issue sweep, and immediate push. `docs/rules/CODING.md`: preserve local code/test style and introduce no premature abstraction. Intel 80386 PRM SCAS opcode, REP condition, operand/address attribute, prefix, exception, FLAGS, and interrupt behavior is the form authority. |
+| Verification | Cover single `AEh`/`AFh` on all four profiles; 80386 `66h`, `67h`, and combined forms; fixed ES scan destination under CS/FS overrides; DF increment and decrement; complete CF/PF/AF/ZF/SF/OF flags; AL/AX/EAX preservation; exact DI/EDI/EIP and nonparticipant GPR preservation; F3 REPE and F2 REPNE count zero, one, and multiple including ZF termination; pre-80386 attributes and 80386 LOCK #UD nonpublication; protected ES source read-limit restart/no-publication at the no-IDT diagnostic boundary; and pending-PIC single no-shadow plus repeat restartable partial progress. |
+| Expected Markers | Focused smoke emits `M5:T316:S36:SCAS:OK`; matrix evidence records every admitted opcode family and exact boundary disposition. |
+| Asset Needs | None; deterministic CPU fixture only. No guest media, external code, firmware, or research import. |
+| Stop Conditions | Stop and report if a shared `_kas_move_index` change requires a covered caller sweep, if an Intel repeat condition cannot be expressed by the existing fixture, or if a demonstrated defect expands beyond the declared forms. |
+| Exit Criteria | Every admitted `AEh`/`AFh` form is classified and proven with no CMPS, LODS, MOVS, STOS, INS/OUTS, stack-family, post-80386, or 80387 completeness claim. |
+| Original Owner Request | Execute the complete Intel 80386 plan in dual-session mode against an Intel form--implementation--test matrix, repairing omissions and closing evidence without using Windows demand as the completeness boundary. |
+| Similar-Issue Sweep | Audit SCAS handlers, `_m_scas`, `_kas_move_index`, primary prefix routes, and existing operand/address and string smokes. Classify all hits; CMPS, LODS, MOVS, STOS, INS/OUTS, and stack families are excluded by opcode/semantic boundary. |
 
 ## Current Technical Baseline
 
