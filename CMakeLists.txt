@@ -1252,9 +1252,8 @@ if(WIN32)
         vm-platform-win32-keyboard-scan-smoke)
 endif()
 
-set(PROJECT_CURRENT_FDD_SMOKE_TARGETS
+set(PROJECT_LEGACY_M1_FDD_SMOKE_TARGETS
     vm-dos-prompt-smoke
-    vm-timer-firmware-smoke
     vm-dos-keyboard-smoke
     vm-dos-mem-fault-smoke
     vm-dos-video-port-smoke
@@ -1262,17 +1261,20 @@ set(PROJECT_CURRENT_FDD_SMOKE_TARGETS
     vm-ega-planar-dos-smoke
     vm-rom-ega-int10-dos-smoke
     vm-mouse-driver-dos-smoke
-    vm-fdc-read-track-dos-smoke
+    vm-fdc-read-track-dos-smoke)
+set(PROJECT_CURRENT_FDD_SMOKE_TARGETS
+    vm-timer-firmware-smoke
     vm-debug-pause-boundary-smoke
     vm-unified-debug-backend-smoke)
-set(PROJECT_CURRENT_FDD_HDD_SMOKE_TARGETS
-    vm-product-session-smoke
-    vm-ata-pio-dos-smoke)
+set(PROJECT_CURRENT_FDD_HDD_SMOKE_TARGETS vm-product-session-smoke)
+set(PROJECT_LEGACY_M1_FDD_CURRENT_HDD_SMOKE_TARGETS vm-ata-pio-dos-smoke)
 set(PROJECT_CURRENT_HDD_SMOKE_TARGETS vm-hdc-hdd-boot-smoke)
 set(PROJECT_CURRENT_MEDIA_SMOKE_TARGETS
+    ${PROJECT_LEGACY_M1_FDD_SMOKE_TARGETS}
     ${PROJECT_CURRENT_FDD_SMOKE_TARGETS}
     ${PROJECT_CURRENT_HDD_SMOKE_TARGETS}
-    ${PROJECT_CURRENT_FDD_HDD_SMOKE_TARGETS})
+    ${PROJECT_CURRENT_FDD_HDD_SMOKE_TARGETS}
+    ${PROJECT_LEGACY_M1_FDD_CURRENT_HDD_SMOKE_TARGETS})
 set(PROJECT_CURRENT_ALL_SMOKE_TARGETS
     ${PROJECT_CURRENT_SMOKE_TARGETS}
     ${PROJECT_CURRENT_MEDIA_SMOKE_TARGETS})
@@ -1281,6 +1283,8 @@ set(PROJECT_ASSETS_ROOT "${CMAKE_SOURCE_DIR}/../../assets" CACHE PATH
     "Owner-provided local asset root for current runtime smoke coverage")
 set(PROJECT_FDD_SMOKE_IMAGE "${PROJECT_ASSETS_ROOT}/fdd.img" CACHE FILEPATH
     "Owner-provided FDD image for current runtime smoke coverage")
+set(PROJECT_M1_FDD_SMOKE_IMAGE "${PROJECT_ASSETS_ROOT}/fdd-msdos500.img" CACHE FILEPATH
+    "Owner-provided historical M1 DOS 5 FDD image for legacy smoke coverage")
 set(PROJECT_HDD_SMOKE_IMAGE "${PROJECT_ASSETS_ROOT}/hdd.img" CACHE FILEPATH
     "Owner-provided HDD image for current runtime smoke coverage")
 
@@ -1304,11 +1308,18 @@ endforeach()
 foreach(target IN LISTS PROJECT_CURRENT_FDD_SMOKE_TARGETS)
     project_add_current_smoke_test(${target} "${PROJECT_FDD_SMOKE_IMAGE}")
 endforeach()
+foreach(target IN LISTS PROJECT_LEGACY_M1_FDD_SMOKE_TARGETS)
+    project_add_current_smoke_test(${target} "${PROJECT_M1_FDD_SMOKE_IMAGE}")
+endforeach()
 foreach(target IN LISTS PROJECT_CURRENT_HDD_SMOKE_TARGETS)
     project_add_current_smoke_test(${target} "${PROJECT_HDD_SMOKE_IMAGE}")
 endforeach()
 foreach(target IN LISTS PROJECT_CURRENT_FDD_HDD_SMOKE_TARGETS)
     project_add_current_smoke_test(${target} "${PROJECT_FDD_SMOKE_IMAGE}"
+        "${PROJECT_HDD_SMOKE_IMAGE}")
+endforeach()
+foreach(target IN LISTS PROJECT_LEGACY_M1_FDD_CURRENT_HDD_SMOKE_TARGETS)
+    project_add_current_smoke_test(${target} "${PROJECT_M1_FDD_SMOKE_IMAGE}"
         "${PROJECT_HDD_SMOKE_IMAGE}")
 endforeach()
 
