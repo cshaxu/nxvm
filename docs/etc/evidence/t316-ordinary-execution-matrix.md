@@ -967,3 +967,15 @@ Only local gates, sign extension, and LOCK rejection changed; shared immediate
 and stack helpers remain unchanged. Other stack forms remain outside this slice.
 
 `M5:T316:S45:PUSH-IMMEDIATE:OK`
+
+### T316 S46 - legacy segment-register stack forms
+
+`core_machine_legacy_sreg_stack_smoke` closes only `PUSH/POP ES`, `PUSH CS`,
+`PUSH/POP SS`, and `PUSH/POP DS` (`06`--`07`, `0E`, `16`--`17`, `1E`--`1F`).
+It proves default profiles, operand/address prefixes and LOCK rejection,
+protected valid/null selector boundaries, controlled SS limit #DF nonpublication,
+and POP SS one-instruction IRQ shadow versus ES/DS/PUSH no-shadow. FS/GS,
+general and immediate stacks, MOV/POP r/m Sreg, LxS, stack switching, and far
+returns remain outside this slice.
+
+`M5:T316:S46:LEGACY-SREG-STACK:OK`
