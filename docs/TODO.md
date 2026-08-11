@@ -103,9 +103,12 @@ candidate work, and detailed capability evidence belong in
   regression; do not let VM composition acquire paging semantics.
 - [ ] **Broaden present x87 (`TODO(Low)`).** T262 closes only the exact-8087
   finite-`m32real`/basic-arithmetic baseline with owned state, exceptions, and
-  `FWAIT`. 80287/80387, broad formats, complete IEEE behavior, environment
-  save/restore, and protected-mode FPU delivery each require new corpus-based
-  admission.
+  `FWAIT`. T317 S1 reconciles retained ESC/WAIT `#NM` vector-7 delivery tests
+  but does not implement coprocessor execution. Re-admit 80287/80387, broad
+  formats, complete IEEE behavior, environment save/restore, and protected-mode
+  FPU delivery only with a corpus-driven instruction matrix; that admission must
+  rerun the retained ESC/WAIT no-FPU, vector-7, optional-8087, and provider
+  boundary tests alongside its new execution tests.
 - [ ] **CPU-fault outcome audit (`TODO(Medium)`).** T214 established a
   session-owned fault result. Revisit only with a reproducible case showing a
   fault/detail is not available to the retained Console/debugger boundary;

@@ -27,8 +27,11 @@ static C_INT legacy_sreg_stack_test_lock(C_VOID)
 
     for (index = 0u; index != sizeof(opcodes); ++index)
     {
-        const core_machine_config config = {CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-            CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_FPU_PROFILE_NONE};
+        const core_machine_config config = {
+            .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+            .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+            .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
+        };
         legacy_sreg_stack_machine state;
         core_machine_cpu_diagnostic diagnostic;
         core_machine_run_result result;
@@ -77,8 +80,11 @@ static C_INT legacy_sreg_stack_test_lock(C_VOID)
 static C_INT legacy_sreg_stack_prepare(core_machine_cpu_profile profile,
     legacy_sreg_stack_machine *state)
 {
-    const core_machine_config config = {CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        profile, CORE_MACHINE_FPU_PROFILE_NONE};
+    const core_machine_config config = {
+        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .cpu_profile = profile,
+        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
+    };
 
     STD_MEMSET(state, 0, sizeof(*state));
     return core_machine_create(&config, &state->machine) == TYPE_STATUS_OK &&

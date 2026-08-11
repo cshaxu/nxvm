@@ -68,9 +68,9 @@ static C_INT port_io_s55_prepare(port_io_s55_machine *state,
     core_machine_cpu_profile profile)
 {
     const core_machine_config config = {
-        CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        profile,
-        CORE_MACHINE_FPU_PROFILE_NONE
+        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .cpu_profile = profile,
+        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
 
     STD_MEMSET(state, 0, sizeof(*state));

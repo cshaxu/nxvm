@@ -18,8 +18,11 @@ static const core_machine_execution_provider fs_gs_provider = {
 
 static C_INT fs_gs_prepare(core_machine_cpu_profile profile, fs_gs_machine *state)
 {
-    const core_machine_config config = { CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        profile, CORE_MACHINE_FPU_PROFILE_NONE };
+    const core_machine_config config = {
+        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .cpu_profile = profile,
+        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
+    };
     STD_MEMSET(state, 0, sizeof(*state));
     return core_machine_create(&config, &state->machine) == TYPE_STATUS_OK &&
         core_machine_bind_execution_provider(state->machine, &fs_gs_provider, state) == TYPE_STATUS_OK &&
@@ -78,7 +81,8 @@ static C_INT fs_gs_test_real(C_VOID)
                 status != TYPE_STATUS_OK || diagnostic.first_fault.valid ||
                 after.data.eip != (size ? 3u : 2u) || after.data.eflags != (VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF) ||
                 after.data.eax != 0x11223344u || after.data.ecx != 0x55667788u ||
-                after.data.esp != before_esp + (pop ? (size ? 4u : 2u) : -(int)(size ? 4u : 2u));
+                after.data.esp != (pop ? before_esp + (size ? 4u : 2u) :
+                before_esp - (size ? 4u : 2u));
             if (!pop)
                 failed |= core_machine_memory_read(state.machine, after.data.ss.base + after.data.esp,
                     &image, size ? 4u : 2u) != TYPE_STATUS_OK ||

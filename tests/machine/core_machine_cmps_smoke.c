@@ -25,8 +25,11 @@ static const core_machine_execution_provider cmps_provider = {
 
 static C_INT cmps_prepare(core_machine_cpu_profile profile, cmps_machine *state)
 {
-    const core_machine_config config = {CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        profile, CORE_MACHINE_FPU_PROFILE_NONE};
+    const core_machine_config config = {
+        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .cpu_profile = profile,
+        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
+    };
 
     STD_MEMSET(state, 0, sizeof(*state));
     return core_machine_create(&config, &state->machine) == TYPE_STATUS_OK &&
@@ -142,7 +145,7 @@ static C_INT cmps_single_case(core_machine_cpu_profile profile,
             after.data.ecx != before.data.ecx ||
             after.data.esi != (address32 ? 0x1010u +
             (decrement ? -(int32_t)width : width) :
-            (before.data.esi & 0xffff0000u) | (uint16_t)expected_index - 0x10u) ||
+            (before.data.esi & 0xffff0000u) | (uint16_t)(expected_index - 0x10u)) ||
             after.data.edi != (address32 ? expected_index :
             (before.data.edi & 0xffff0000u) | (uint16_t)expected_index) ||
             (after.data.eflags & CMPS_FLAGS) !=
@@ -288,7 +291,7 @@ static C_INT cmps_rep_case(core_machine_cpu_profile profile,
             right, 3u) != TYPE_STATUS_OK;
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !cmps_run(&state, code, bytes, count == 0u ? 1u :
-            count - expected_count, &after, &diagnostic, &status, &result) ||
+            (uint8_t)(count - expected_count), &after, &diagnostic, &status, &result) ||
             status != TYPE_STATUS_OK || diagnostic.first_fault.valid ||
             after.data.eip != bytes || !cmps_nonindexes_same(&before, &after) ||
             after.data.ecx != ((before.data.ecx & 0xffff0000u) | expected_count) ||
@@ -389,10 +392,10 @@ static C_INT cmps_rep_attribute_case(const uint8_t *code, uint8_t bytes,
             (VCPU_EFLAGS_PF | VCPU_EFLAGS_ZF) ||
             (after.data.eflags & ~CMPS_FLAGS) !=
             (before.data.eflags & ~CMPS_FLAGS);
-        expected_source = source_index + (decrement ? -(int32_t)(width * 3u) :
-            width * 3u);
-        expected_destination = destination_index +
-            (decrement ? -(int32_t)(width * 3u) : width * 3u);
+        expected_source = decrement ? source_index - width * 3u :
+            source_index + width * 3u;
+        expected_destination = decrement ? destination_index - width * 3u :
+            destination_index + width * 3u;
         failed |= after.data.esi != (address32 ? expected_source :
             (before.data.esi & 0xffff0000u) | (uint16_t)expected_source) ||
             after.data.edi != (address32 ? expected_destination :

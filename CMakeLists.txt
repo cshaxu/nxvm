@@ -402,6 +402,118 @@ target_link_libraries(core-machine-debug-smoke PRIVATE core-machine)
 add_executable(core-machine-presentation-smoke tests/core/presentation_smoke.c)
 target_link_libraries(core-machine-presentation-smoke PRIVATE core-machine)
 
+# T317 owns this exact source-to-target inventory.  Keep strict options on the
+# smoke executables themselves: core-machine is a linked dependency and is not
+# evidence of strict compilation for a smoke source.
+function(project_configure_t317_strict_cpu_smokes)
+set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
+    "core-machine-arpl-s53-smoke|tests/machine/core_machine_arpl_s53_smoke.c"
+    "core-machine-bound-s54-smoke|tests/machine/core_machine_bound_s54_smoke.c"
+    "core-machine-cli-sti-s48-smoke|tests/machine/core_machine_cli_sti_s48_smoke.c"
+    "core-machine-cli-sti-smoke|tests/machine/core_machine_cli_sti_smoke.c"
+    "core-machine-clts-s62-smoke|tests/machine/core_machine_clts_s62_smoke.c"
+    "core-machine-cmps-smoke|tests/machine/core_machine_cmps_smoke.c"
+    "core-machine-debug-mov-s59-smoke|tests/machine/core_machine_debug_mov_s59_smoke.c"
+    "core-machine-direct-flags-smoke|tests/machine/core_machine_direct_flags_smoke.c"
+    "core-machine-dttr-s61-smoke|tests/machine/core_machine_dttr_s61_smoke.c"
+    "core-machine-eflags-local-smoke|tests/machine/core_machine_eflags_local_smoke.c"
+    "core-machine-enter-leave-smoke|tests/machine/core_machine_enter_leave_smoke.c"
+    "core-machine-fpu-interface-s65-smoke|tests/machine/core_machine_fpu_interface_s65_smoke.c"
+    "core-machine-fs-gs-stack-smoke|tests/machine/core_machine_fs_gs_stack_smoke.c"
+    "core-machine-gpr-mov-smoke|tests/machine/core_machine_gpr_mov_smoke.c"
+    "core-machine-gpr-push-pop-smoke|tests/machine/core_machine_gpr_push_pop_smoke.c"
+    "core-machine-hlt-s49-smoke|tests/machine/core_machine_hlt_s49_smoke.c"
+    "core-machine-imul-immediate-s56-smoke|tests/machine/core_machine_imul_immediate_s56_smoke.c"
+    "core-machine-inc-dec-smoke|tests/machine/core_machine_inc_dec_smoke.c"
+    "core-machine-iret-outer-s52-smoke|tests/machine/core_machine_iret_outer_s52_smoke.c"
+    "core-machine-iret-s51-smoke|tests/machine/core_machine_iret_s51_smoke.c"
+    "core-machine-lahf-sahf-smoke|tests/machine/core_machine_lahf_sahf_smoke.c"
+    "core-machine-lar-lsl-s57-smoke|tests/machine/core_machine_lar_lsl_s57_smoke.c"
+    "core-machine-lea-smoke|tests/machine/core_machine_lea_smoke.c"
+    "core-machine-legacy-sreg-stack-smoke|tests/machine/core_machine_legacy_sreg_stack_smoke.c"
+    "core-machine-les-lds-s41-smoke|tests/machine/core_machine_les_lds_s41_smoke.c"
+    "core-machine-les-lds-smoke|tests/machine/core_machine_les_lds_smoke.c"
+    "core-machine-lods-smoke|tests/machine/core_machine_lods_smoke.c"
+    "core-machine-lss-lfs-lgs-smoke|tests/machine/core_machine_lss_lfs_lgs_smoke.c"
+    "core-machine-moffs-smoke|tests/machine/core_machine_moffs_smoke.c"
+    "core-machine-movs-smoke|tests/machine/core_machine_movs_smoke.c"
+    "core-machine-msw-s63-smoke|tests/machine/core_machine_msw_s63_smoke.c"
+    "core-machine-port-io-s55-smoke|tests/machine/core_machine_port_io_s55_smoke.c"
+    "core-machine-port-strings-smoke|tests/machine/core_machine_port_strings_smoke.c"
+    "core-machine-prefix-attributes-s64-smoke|tests/machine/core_machine_prefix_attributes_s64_smoke.c"
+    "core-machine-push-immediate-smoke|tests/machine/core_machine_push_immediate_smoke.c"
+    "core-machine-pusha-popa-smoke|tests/machine/core_machine_pusha_popa_smoke.c"
+    "core-machine-pushf-popf-s47-smoke|tests/machine/core_machine_pushf_popf_s47_smoke.c"
+    "core-machine-pushf-popf-smoke|tests/machine/core_machine_pushf_popf_smoke.c"
+    "core-machine-rotate-smoke|tests/machine/core_machine_rotate_smoke.c"
+    "core-machine-scas-smoke|tests/machine/core_machine_scas_smoke.c"
+    "core-machine-sign-extend-smoke|tests/machine/core_machine_sign_extend_smoke.c"
+    "core-machine-software-int-s50-smoke|tests/machine/core_machine_software_int_s50_smoke.c"
+    "core-machine-sreg-mov-smoke|tests/machine/core_machine_sreg_mov_smoke.c"
+    "core-machine-stos-smoke|tests/machine/core_machine_stos_smoke.c"
+    "core-machine-tf-db-s60-smoke|tests/machine/core_machine_tf_db_s60_smoke.c"
+    "core-machine-verr-verw-s58-smoke|tests/machine/core_machine_verr_verw_s58_smoke.c"
+    "core-machine-xchg-smoke|tests/machine/core_machine_xchg_smoke.c")
+
+list(LENGTH PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY project_t317_inventory_count)
+if(NOT project_t317_inventory_count EQUAL 47)
+    message(FATAL_ERROR "T317 strict CPU smoke inventory must contain 47 entries.")
+endif()
+
+set(PROJECT_T317_STRICT_CPU_SMOKE_TARGETS)
+set(PROJECT_T317_STRICT_CPU_SMOKE_SOURCES)
+foreach(project_t317_inventory_entry IN LISTS PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY)
+    string(REPLACE "|" ";" project_t317_inventory_fields
+        "${project_t317_inventory_entry}")
+    list(GET project_t317_inventory_fields 0 project_t317_target)
+    list(GET project_t317_inventory_fields 1 project_t317_source)
+    if(NOT TARGET ${project_t317_target})
+        message(FATAL_ERROR "T317 strict CPU smoke target is missing: ${project_t317_target}")
+    endif()
+    get_target_property(project_t317_target_sources ${project_t317_target} SOURCES)
+    list(FIND project_t317_target_sources ${project_t317_source}
+        project_t317_source_index)
+    if(project_t317_source_index EQUAL -1)
+        message(FATAL_ERROR
+            "T317 strict CPU smoke mapping is invalid: ${project_t317_target} does not own ${project_t317_source}")
+    endif()
+    list(APPEND PROJECT_T317_STRICT_CPU_SMOKE_TARGETS ${project_t317_target})
+    list(APPEND PROJECT_T317_STRICT_CPU_SMOKE_SOURCES ${project_t317_source})
+endforeach()
+list(REMOVE_DUPLICATES PROJECT_T317_STRICT_CPU_SMOKE_TARGETS)
+list(REMOVE_DUPLICATES PROJECT_T317_STRICT_CPU_SMOKE_SOURCES)
+list(LENGTH PROJECT_T317_STRICT_CPU_SMOKE_TARGETS project_t317_target_count)
+list(LENGTH PROJECT_T317_STRICT_CPU_SMOKE_SOURCES project_t317_source_count)
+if(NOT project_t317_target_count EQUAL 47 OR NOT project_t317_source_count EQUAL 47)
+    message(FATAL_ERROR "T317 strict CPU smoke inventory must have 47 unique targets and sources.")
+endif()
+
+if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
+    foreach(project_t317_target IN LISTS PROJECT_T317_STRICT_CPU_SMOKE_TARGETS)
+        target_compile_options(${project_t317_target} PRIVATE
+            -Wall -Wextra -Wpedantic -Werror)
+    endforeach()
+endif()
+
+string(REPLACE ";" "\n" project_t317_inventory_contents
+    "${PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY}")
+file(GENERATE
+    OUTPUT "${CMAKE_BINARY_DIR}/t317-strict-cpu-smoke-inventory.txt"
+    CONTENT "${project_t317_inventory_contents}\n")
+
+if(CMAKE_GENERATOR MATCHES "Ninja")
+    add_custom_target(verify-t317-strict-cpu-smoke-coverage
+        COMMAND "${CMAKE_COMMAND}"
+            -DPROJECT_T317_STRICT_INVENTORY_FILE=${CMAKE_BINARY_DIR}/t317-strict-cpu-smoke-inventory.txt
+            -DPROJECT_T317_STRICT_NINJA=${CMAKE_MAKE_PROGRAM}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_t317_strict_cpu_smoke_coverage.cmake"
+        DEPENDS ${PROJECT_T317_STRICT_CPU_SMOKE_TARGETS}
+        COMMENT "Verifying T317 target-local strict CPU smoke compilation"
+        VERBATIM)
+    add_dependencies(run-current-smokes verify-t317-strict-cpu-smoke-coverage)
+endif()
+endfunction()
+
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(core-machine PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-default-pc-at-profile-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -1504,6 +1616,8 @@ add_custom_target(run-current-smokes
     DEPENDS ${PROJECT_CURRENT_ALL_SMOKE_TARGETS}
     COMMENT "Building and executing current runnable smoke coverage"
     VERBATIM)
+
+project_configure_t317_strict_cpu_smokes()
 
 
 # CMake builds the current source artifact only. Historical task executables are

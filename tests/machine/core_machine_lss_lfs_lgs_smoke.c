@@ -22,8 +22,11 @@ static const core_machine_execution_provider lfg_provider = {
 
 static C_INT lfg_prepare(core_machine_cpu_profile profile, lfg_machine *state)
 {
-    const core_machine_config config = { CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        profile, CORE_MACHINE_FPU_PROFILE_NONE };
+    const core_machine_config config = {
+        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .cpu_profile = profile,
+        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
+    };
 
     STD_MEMSET(state, 0, sizeof(*state));
     return core_machine_create(&config, &state->machine) == TYPE_STATUS_OK &&
@@ -31,24 +34,6 @@ static C_INT lfg_prepare(core_machine_cpu_profile profile, lfg_machine *state)
             state) == TYPE_STATUS_OK &&
         core_machine_freeze_execution_providers(state->machine) == TYPE_STATUS_OK &&
         core_machine_reset(state->machine) == TYPE_STATUS_OK;
-}
-
-static C_INT lfg_run(lfg_machine *state, const uint8_t *code, uint8_t bytes,
-    t_cpu *after, core_machine_cpu_diagnostic *diagnostic, type_status *status)
-{
-    core_machine_run_result result;
-
-    if (!test_core_machine_fixture_prepare_real_mode_execution(state->machine,
-            0u))
-        return 0;
-    if (core_machine_memory_write(state->machine, 0u, code, bytes) !=
-            TYPE_STATUS_OK)
-        return 0;
-    *status = core_machine_run(state->machine,
-        (core_machine_run_budget){ 1u, 0u }, &result);
-    *after = test_core_machine_fixture_capture_cpu_after_run(state->machine);
-    return core_machine_get_cpu_diagnostic(state->machine, diagnostic) ==
-        TYPE_STATUS_OK;
 }
 
 static C_INT lfg_run_prepared(lfg_machine *state, const uint8_t *code,

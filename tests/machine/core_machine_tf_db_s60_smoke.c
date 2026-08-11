@@ -236,7 +236,6 @@ static C_INT tf_db_s60_expect_ud_no_trap(core_machine_cpu_profile profile,
     tf_db_s60_machine state;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
-    t_cpu before;
     t_cpu after;
     type_status status;
     C_INT failed = !tf_db_s60_prepare(&state, profile);
@@ -246,7 +245,6 @@ static C_INT tf_db_s60_expect_ud_no_trap(core_machine_cpu_profile profile,
         state.machine->executor_cpu.data.esp = 0x8000u;
         state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_TF | VCPU_EFLAGS_IF |
             VCPU_EFLAGS_CF;
-        before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_memory_write(state.machine, 0u, code, code_bytes) !=
             TYPE_STATUS_OK;
         test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
