@@ -2,9 +2,27 @@
 
 ## Current Work
 
-**Idle.** M5 T316 S43 is closed; the next 80386 matrix slice requires a
-separately admitted packet.
+**M5 T316 S44 - general-register PUSH/POP forms.** The coordinator admits this
+Intel 80386 ordinary-execution matrix slice in Coordinated Dual-Session Mode.
 
+## M5 T316 S44 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Corrective; contiguous next numeric subtask after T316 S43. |
+| Admission And Approval | The owner authorized autonomous progression along the Intel 80386 route; this is one complete S-level instruction-family package. |
+| Objective | Make architected general-register PUSH/POP forms conform to their Intel 8086/80386 profile, operand/address-size, stack-image, publication, fault, and interrupt-boundary contracts. |
+| Non-goals | PUSH immediate, PUSHF/POPF, PUSHA/POPA, ENTER/LEAVE, segment-register PUSH/POP, stack switching, far-call/return stack effects, and generalized stack-helper refactoring are outside S44. |
+| Reference Baseline | `aa7f8af1` / `vm-0-5-0316`, with T316 S43 closed and pushed. |
+| Files And ABI Surface | Expected scope is local handlers only for a demonstrated defect, one owner-bound smoke, CMake current-gate registration, this Status packet, and T316 matrix evidence. No public ABI change. |
+| Applicable Rules | Intel 80386 PRM form audit; T316 matrix closure rule; dual-session roles; caller-coverage-before-abstraction; local style; no unsupported family-completeness claim. |
+| Verification | Audit `50`--`5F`, `FF /6`, and `8F /0` dispatch, metadata, handlers, operand/address helpers, and stack helper callers; execute a dedicated smoke, exact current-gate registration, governance/whitespace checks, and the full current gate before acceptance. |
+| Expected Markers | `M5:T316:S44:GPR-PUSH-POP:OK`; exact stack and destination behavior for all admitted forms, including SP/ESP source/destination ordering and `POP r/m` effective-address timing; profile/prefix/LOCK/fault/IRQ boundaries classified. |
+| Asset Needs | None. |
+| Stop Conditions | Stop for coordinator review if correctness requires changing `_e_push`, `_e_pop`, `_m_read_rm`, `_m_write_rm`, or another shared helper, or if required behavior cannot be isolated from unadmitted stack-switch/segment/return semantics. |
+| Exit Criteria | All declared general-register forms are classified and focused-proven: `50`--`5F`, `FF /6`, `8F /0`; 16/32 operands and applicable 32-bit EA; register and memory stack/destination behavior; pre-386/80386 attributes and LOCK; controlled protected stack/source/destination faults; and pending-IRQ no-shadow. Any defect is locally corrected with a caller-impact sweep. |
+| Original Owner Request | Execute the complete Intel 80386 plan in dual-session mode, using a form--implementation--test matrix, boundary review, evidence closure, and immediate push. |
+| Similar-Issue Sweep | Review all `50`--`5F`, `FF /6`, and `8F /0` routes and metadata; 16/32 operand/stack/address branches; `PUSH SP/ESP`, `POP SP/ESP`, and memory forms using SP/ESP as the effective-address base; `_e_push`/`_e_pop`/`_m_read_rm`/`_m_write_rm` callers; existing stack/control tests; and prefix/interrupt paths. |
 ## Current Technical Baseline
 
 - **Current task artifact:** `current-gcc` and

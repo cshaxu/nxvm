@@ -213,6 +213,9 @@ target_link_libraries(core-machine-pusha-popa-smoke PRIVATE core-machine)
 add_executable(core-machine-enter-leave-smoke
     tests/machine/core_machine_enter_leave_smoke.c)
 target_link_libraries(core-machine-enter-leave-smoke PRIVATE core-machine)
+add_executable(core-machine-gpr-push-pop-smoke
+    tests/machine/core_machine_gpr_push_pop_smoke.c)
+target_link_libraries(core-machine-gpr-push-pop-smoke PRIVATE core-machine)
 add_executable(core-machine-double-shift-smoke tests/machine/core_machine_double_shift_smoke.c)
 target_link_libraries(core-machine-double-shift-smoke PRIVATE core-machine)
 add_executable(core-machine-bit-scan-smoke tests/machine/core_machine_bit_scan_smoke.c)
@@ -1207,6 +1210,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-les-lds-s41-smoke
     core-machine-pusha-popa-smoke
     core-machine-enter-leave-smoke
+    core-machine-gpr-push-pop-smoke
     core-machine-lea-smoke
     core-machine-xchg-smoke
     core-machine-sign-extend-smoke
