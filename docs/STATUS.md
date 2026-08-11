@@ -2,8 +2,27 @@
 
 ## Current Work
 
-**Idle.** M5 T316 S45 is closed; the next 80386 matrix slice requires a
-separately admitted packet.
+**M5 T316 S46 - legacy segment-register stack forms.** The coordinator admits this
+Intel 80386 ordinary-execution matrix slice in Coordinated Dual-Session Mode.
+
+## M5 T316 S46 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Corrective; contiguous next numeric subtask after T316 S45. |
+| Admission And Approval | The owner authorized autonomous progression along the Intel 80386 route; this is one complete S-level instruction-family package. |
+| Objective | Make legacy segment-register stack forms conform to Intel 8086/80386 profile, selector/cache, operand-size, stack, fault, and interrupt-shadow contracts. |
+| Non-goals | 80386 FS/GS stack forms, MOV/POP r/m segment loads, LxS, PUSHF/POPF, general-register PUSH/POP, stack switching, far-call/return stack effects, and generalized stack/helper refactoring are outside S46. |
+| Reference Baseline | `df0de271` / `vm-0-5-0316`, with T316 S45 closed and pushed. |
+| Files And ABI Surface | Expected scope is local handlers only for a demonstrated defect, one owner-bound smoke, CMake current-gate registration, this Status packet, and T316 matrix evidence. No public ABI change. |
+| Applicable Rules | Intel 80386 PRM form audit; T316 matrix closure rule; dual-session roles; caller-coverage-before-abstraction; local style; no unsupported family-completeness claim. |
+| Verification | Audit `06`, `07`, `0E`, `16`, `17`, `1E`, `1F` dispatch, metadata, selector stack/load helpers and their callers, operand-size routes, and prefix/interrupt paths; execute a dedicated smoke, exact current-gate registration, governance/whitespace checks, and the full current gate before acceptance. |
+| Expected Markers | `M5:T316:S46:LEGACY-SREG-STACK:OK`; exact selector/cache and defined stack behavior, profile/prefix/LOCK/fault classification, plus POP SS one-instruction IRQ shadow versus POP ES/DS no-shadow. |
+| Asset Needs | None. |
+| Stop Conditions | Stop for coordinator review if correctness requires changing `_e_push`, `_e_pop_sreg`, `_ksa_load_sreg`, another shared selector/stack helper, or behavior cannot be isolated from unadmitted stack-switch/return semantics. |
+| Exit Criteria | All declared forms are classified and focused-proven: PUSH ES `06`, POP ES `07`, PUSH CS `0E`, PUSH SS `16`, POP SS `17`, PUSH DS `1E`, POP DS `1F`; default profiles, 80386 `66`, `67`, and combined forms; defined low-selector/stack behavior; lower-profile attributes and 80386 LOCK rejection without publication; controlled protected push-stack and pop-stack/selector faults with cache atomicity; and POP SS exact shadow versus POP ES/DS no-shadow. Any defect is locally corrected with a caller-impact sweep. |
+| Original Owner Request | Execute the complete Intel 80386 plan in dual-session mode, using a form--implementation--test matrix, boundary review, evidence closure, and immediate push. |
+| Similar-Issue Sweep | Review all declared opcode routes and metadata; 16/32 selector stack images and unspecified upper stack bytes; `66`/`67`/LOCK paths; protected selector null/type/privilege/present behavior for POP ES/SS/DS; push/pop stack-limit fault publication; POP SS shadow consumption; `_e_push`, `_e_pop_sreg`, and `_ksa_load_sreg` callers; existing selector and FS/GS stack tests. |
 
 ## Current Technical Baseline
 
