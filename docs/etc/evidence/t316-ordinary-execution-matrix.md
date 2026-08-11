@@ -64,6 +64,7 @@ not an allocation of later task identifiers.
 | Immediate three-operand IMUL `69 /r iw/id`, `6B /r ib` | `IMUL_R32_RM32_I32`, `IMUL_R32_RM32_I8`, `_a_imul3`, `_d_modrm`, and r/m access routes. | `core_machine_imul_immediate_s56_smoke` (`M5:T316:S56:IMUL-IMM:OK`). | **Complete only for T316 S56**: 80186--80386 immediate three-operand IMUL, declared 16/32 operand/address attributes, signed product CF/OF boundary, r/m segment/source-limit, VM86, rejection, and PIC boundaries. One-operand IMUL, `0F AF`, MUL/DIV, and general FLAGS behavior remain outside this slice. |
 | LAR/LSL `0F 02 /r`, `0F 03 /r` selector inspection | `INS_0F`, `LAR_R32_RM32`, `LSL_R32_RM32`, selector/XDT and r/m read routes. | `core_machine-lar-lsl-s57-smoke` (`M5:T316:S57:LAR-LSL:OK`). | **Complete only for T316 S57's bounded LAR/LSL query forms**: protected GDT/LDT selector inspection, declared attribute/profile/LOCK and memory-source boundaries, VM86 rejection, and PIC delivery. VERR/VERW, selector loads, and broader descriptor architecture remain outside this slice. |
 | VERR/VERW `0F 00 /4,/5` selector accessibility | `INS_0F_00` VERR/VERW cases with selector/XDT and r/m read routes. | `core-machine-verr-verw-s58-smoke` (`M5:T316:S58:VERR-VERW:OK`). | **Complete only for T316 S58**: 80286/80386 protected selector accessibility, ZF-only result, GDT/LDT, declared prefix/profile/memory-source/fault/VM86/LOCK/PIC boundaries. The other `0F 00` forms and selector-load architecture remain outside this slice. |
+| 80386 debug-register MOV `0F 21 /r`, `0F 23 /r` | `MOV_R32_DR`, `MOV_DR_R32`, and `_d_modrm_dreg`; register-only DR0--DR3/DR6/DR7 routes. | `core-machine-debug-mov-s59-smoke` (`M5:T316:S59:DEBUG-MOV:OK`). | **Complete only for T316 S59**: CPL0 80386 DR transfer, declared `66`/`67`, profile/real/privilege/LOCK and pending-IRQ boundaries. Breakpoint matching, debug exceptions, DR4/DR5 aliases, test registers, and broader debug architecture remain outside this slice. |
 | Post-80386 or reserved encodings seen in the tables: `CPUID`, `RSM`, `WBINVD`, `RDMSR/WRMSR`, `CMPXCHG`, `XADD`, `BSWAP`, undefined holes | Metadata/profile gate rejects forms above the active 80386 profile before the named table handler can establish behavior. | `cpu_profile_gate_smoke` and T309 rejection baseline. | **Outside-80386**: retain rejection; no later-IA-32 implementation is admitted by T316. |
 | `WAIT/FWAIT`, ESC `D8`--`DF`, CR0 `MP/EM/TS`, `#NM`, external coprocessor fault interface | `WAIT`, FPU escape/profile routes and CPU exception state; optional FPU provider is outside ordinary decoding. | `cpu_fpu_profile_smoke`, `cpu_fpu_profile_closure_smoke`, `fpu_escape_smoke`, `core_machine_fpu_8087_smoke`. | **External-coprocessor boundary**: only 80386-side control/reporting is in the approved program; no 8087/80287/80387 arithmetic, state, or completeness claim is made. |
 
@@ -1230,3 +1231,20 @@ No production or shared-helper change was required. Other `0F 00` forms,
 selector loads, and broader descriptor architecture remain outside S58.
 
 `M5:T316:S58:VERR-VERW:OK`
+### T316 S59 - 80386 debug-register MOV forms
+
+`core-machine-debug-mov-s59-smoke` covers only `0F 21 /r` MOV r32,DRn and
+`0F 23 /r` MOV DRn,r32. It proves DR0--DR3, DR6, and DR7 both directions at
+80386 CPL0 in protected mode and real mode, including GPR destination
+publication, unaffected GPR/EFLAGS/segment-cache state, and `66h`, `67h`, and
+combined-prefix acceptance. `80186` and `80286` reject the 0F forms; DR4/DR5,
+memory ModRM encodings, and LOCK reject without DR/GPR/EFLAGS/cache publication.
+A controlled CPL3 route observes the established no-IDT terminal `#DF` after
+the DR handler's `#GP(0)` producer, retaining all architected instruction
+state. Pending IRQ0 after a successful DR write saves IP 3 (after MOV, before
+NOP), publishes DR0, and reaches the local handler with ISR set and IRR clear;
+there is no interrupt shadow. No CPU production or shared decoder change was
+needed. Breakpoint matching, debug exceptions, DR4/DR5 aliases, test registers,
+and wider debug-register semantics remain outside S59.
+
+`M5:T316:S59:DEBUG-MOV:OK`
