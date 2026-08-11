@@ -2,9 +2,28 @@
 
 ## Current Work
 
-**Idle.** M5 T316 is closed. The next approved Queue candidate requires a
-separately admitted numeric task packet.
+**Active: M5 T317 S1.** Apply target-local strict GCC compilation to every
+T316-added CPU smoke target in Coordinated Dual-Session Mode.
 
+## M5 T317 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New; T317 is the owner-approved test-corpus quality corrective package following closed T316. |
+| Admission And Approval | Owner approved the audit findings and the ordered T317 plan in `docs/etc/evidence/t317-test-corpus-quality-plan.md`; this is S1 of four planned quality-corrective slices. |
+| Objective | Apply `-Wall -Wextra -Wpedantic -Werror` as GCC target-local options to all 47 T316-added `tests/machine` smoke executable targets, without implying dependency or global coverage. |
+| Non-goals | No global compiler flags; no options on inherited production targets; no CPU/runtime behavior, test semantics, type migration, fixture refactor, public ABI, or target-graph redesign. |
+| Reference Baseline | `aeeefce6` / `vm-0-5-0316`; the 47-target audited inventory in the T317 plan is authoritative. |
+| Files And ABI Surface | Expected `CMakeLists.txt`, T317 evidence, and `STATUS.md`; test-source changes are prohibited in S1. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/CODING.md`, `docs/rules/DOCUMENT.md`, `docs/design/CODING.md`, and the T317 plan. |
+| Verification | Fresh GCC configure; build all 47 targets; actual Ninja command audit verifies each target includes all four options; exact target inventory, documentation governance, diff check, and full current-gate. |
+| Expected Markers | A deterministic S1 strict-coverage marker or auditable command matrix for all 47 targets; no runtime marker changes. |
+| Asset Needs | None; deterministic local GCC/Ninja build only. |
+| Reporting Requirements | Executor first confirms or materially objects, then creates/updates the S1 completion goal. Return only a complete committed/pushed P1 or a reproducible material blocker; no per-target partial reports. |
+| Stop Conditions | Stop for a target not reliably attributable to T316, a warning that requires inherited/product changes, or any need for global/transitive flag policy; report the exact target and command. |
+| Exit Criteria | All 47 named T316-added smoke targets show the four options in actual Ninja GCC compile commands; no unrelated target loses or gains policy; all required gates pass; implementation P is committed/pushed and passes coordinator review and governance closure. |
+| Original Owner Request | Repair the proven strict-GCC, project-type, and fixture-quality gaps as a governed T317 package before resuming ordinary 80386 capability work. |
+| Similar-Issue Sweep | Compare every T316-added smoke source to its executable target and current-gate registration; inspect every existing strict-option block for unintended target scope. |
 ## Current Technical Baseline
 
 - **Current task artifact:** `current-gcc` and
