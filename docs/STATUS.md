@@ -2,27 +2,8 @@
 
 ## Current Work
 
-**M5 Td S65 - active-task Status topology governance.** The coordinator admitted
-this standalone documentation governance task in Coordinated Dual-Session Mode.
-
-## M5 Td S65 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Governance; next standalone M5 Td subtask after Td S64. |
-| Admission And Approval | The owner authorized this independently verified governance change after the current numeric S closed and its task changes were pushed. The coordinator admits it separately from T316. |
-| Objective | Make active-task Status retention, task-level closure consolidation, and mechanical documentation governance checks agree. |
-| Non-goals | CPU behavior, CMake/test runtime behavior, T316 matrix scope, task-ID renumbering, historical Git rewriting, and new numeric implementation work are outside this task. |
-| Reference Baseline | `ed80f851` / `vm-0-5-0316`, with T316 S42 closed and pushed; the uncommitted governance edits are the owner-provided admission input. |
-| Files And ABI Surface | `docs/rules/DOCUMENT.md`, `docs/rules/EXECUTION.md`, `tools/Verify-DocumentationGovernance.ps1`, and truthful Status topology records only. No public/runtime ABI change. |
-| Applicable Rules | Documentation and execution governance define authority ownership, Td lifecycle, one active packet, status-retention topology, task/subtask/P semantics, checker scope, actual-change review, and immediate push. |
-| Verification | Review the three rule/checker changes and the resulting Status topology; run `Verify-DocumentationGovernance.ps1`, its applicable self-test if present, `git diff --check`, and inspect that no T316 implementation file or runtime behavior is staged. |
-| Expected Markers | Documentation governance passes; Status retains compact progress only for the one latest open numeric task (T316), never mixes it with that task's task-level closure or another task, and Td S65 closure records one compact governance outcome. |
-| Asset Needs | None. |
-| Stop Conditions | Stop and report if the retention rule requires losing authoritative task evidence rather than relocating it to existing history/indexed evidence, or if checker changes become a general semantic classifier. |
-| Exit Criteria | Rules, checker, and Status obey one consistent active-task/subtask-retention model; the Td change is independently committed and pushed without T316 implementation scope. |
-| Original Owner Request | Continue the Intel 80386 program in dual-session mode while applying the owner-provided execution-governance revision as an independent Td change after the active numeric S closes. |
-| Similar-Issue Sweep | Compare DOCUMENT ownership, EXECUTION T/S/P and dual-session rules, checker identifier/status rules, STATUS closure rows, Td numbering, and recent task/governance retention. Keep the checker structural and narrow. |
+**Idle.** M5 Td S65 is closed; the next governed task requires a
+separately admitted packet.
 
 ## Current Technical Baseline
 
@@ -72,6 +53,8 @@ this standalone documentation governance task in Coordinated Dual-Session Mode.
 
 ## Recent Governance
 
+- **M5 Td S65:** aligned active numeric-task progress retention with task-level closure consolidation, added narrow structural checker coverage (including retained-progress self-tests), and preserved the eight-row cap for task-level closures. Td work has no runtime or artifact change.
+
 - **M5 Td S64:** requires an actual-change review before a task or subtask is
   accepted: reports, test summaries, and diff statistics are evidence indexes,
   not substitutes for reading the relevant changed code, build, test, and
@@ -107,8 +90,3 @@ this standalone documentation governance task in Coordinated Dual-Session Mode.
   acceptance, closure, or completed-result reporting; a push failure is a
   reportable delivery failure unless the owner records a bounded deferral.
 
-- **M5 Td S57:** completed the direct 80386 package-close audit. It found no
-  T313-level runtime or boundary remediation; corrected stale lifecycle and
-  recent-closure records in place; and recorded T301--T312 package completion
-  before any separate M6 admission. See the
-  [package-close audit](etc/evidence/m5-direct-80386-package-close-audit.md).
