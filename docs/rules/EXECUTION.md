@@ -289,6 +289,13 @@ schemas, not semantic document ownership; the closure audit must still compare
 each changed document against the authority matrix in
 `docs/rules/DOCUMENT.md`.
 
+While a numeric task package remains open, Status may retain compact progress
+summaries for its completed subtasks, including while no next subtask is
+admitted. Those summaries belong only to that latest open numeric task; they
+are not task-history substitutes. The task's final closure replaces them with
+one compact task-level result. The recent task-level closure list remains
+capped under the documentation rules.
+
 ## Milestone Closure Evidence
 
 Before an implementation milestone closes, its final verification record must

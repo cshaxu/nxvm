@@ -31,7 +31,7 @@ normal way to cross a boundary; a copied summary is not a second authority.
 | Location | Contains | Does not contain |
 | --- | --- | --- |
 | `docs/README.md` | Reading order and authority map. | Product design, task state, or policy copies. |
-| `STATUS.md` | One active packet, current baseline, and capped recent closures. | Milestone plan, reading guide, or completed task packet. |
+| `STATUS.md` | One active packet, current baseline, active-task progress, and capped recent task closures. | Milestone plan, reading guide, or completed task packet. |
 | `QUEUE.md` | Ordered, unnumbered candidate work. | Task identifiers, baseline, detailed contract, or active plan. |
 | `TODO.md` | Open debt or deferred admission with priority and admission path. | Goals, roadmap, completed work, or active plan. |
 | `rules/*.md` | Mandatory project constraints in their named discipline. | Concrete component map, source map, or task history. |
@@ -51,6 +51,13 @@ normal way to cross a boundary; a copied summary is not a second authority.
 - One topic has one current authority. Link instead of copying.
 - [STATUS.md](../STATUS.md) alone defines active work, technical baseline,
   artifact identity, and recent closure summaries.
+- While a numeric task package remains open, `STATUS.md` may retain compact
+  summaries of its completed subtasks as task progress, including between
+  admitted subtasks. It may retain progress for only that one latest open
+  numeric task. When the task closes, replace that progress with one task-level
+  closure summary and retain detailed evidence in its history or indexed
+  supporting record. The recent task-level closure list is capped at eight
+  rows.
 - [QUEUE.md](../QUEUE.md) contains only unnumbered, ordered candidate work.
   [TODO.md](../TODO.md) contains only unplanned debt.
 - Each numeric implementation task closed under this topology has one

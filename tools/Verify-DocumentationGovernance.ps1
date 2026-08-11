@@ -445,6 +445,31 @@ if ($SelfTest) {
         git -C $fixtureRoot commit -q -m "M5 T301 S1 P0: admit fixture"
         Require (Invoke-SelfTestCheck $fixtureRoot) `
             "Documentation schema treated a committed active-packet admission as closed."
+        $latestTaskProgress = $validPacket.Replace(
+            "| --- | --- |",
+            "| --- | --- |`n| T301 S1 | Fixture progress |"
+        )
+        Set-SelfTestFile $fixtureRoot "docs/STATUS.md" $latestTaskProgress
+        Require (Invoke-SelfTestCheck $fixtureRoot) `
+            "Documentation schema rejected compact progress for the latest open numeric task."
+        $mixedTaskClosure = $latestTaskProgress.Replace(
+            "| T301 S1 | Fixture progress |",
+            "| T301 S1 | Fixture progress |`n| T301 | Closed fixture |"
+        )
+        Set-SelfTestFile $fixtureRoot "docs/STATUS.md" $mixedTaskClosure
+        Require (-not (Invoke-SelfTestCheck $fixtureRoot -Quiet)) `
+            "Documentation schema accepted mixed task-progress and task-closure rows."
+        $staleTaskProgress = $latestTaskProgress.Replace("T301 S1", "T300 S4")
+        Set-SelfTestFile $fixtureRoot "docs/STATUS.md" $staleTaskProgress
+        Require (-not (Invoke-SelfTestCheck $fixtureRoot -Quiet)) `
+            "Documentation schema accepted progress for a non-latest numeric task."
+        $multipleTaskProgress = $latestTaskProgress.Replace(
+            "| T301 S1 | Fixture progress |",
+            "| T301 S1 | Fixture progress |`n| T300 S4 | Fixture progress |"
+        )
+        Set-SelfTestFile $fixtureRoot "docs/STATUS.md" $multipleTaskProgress
+        Require (-not (Invoke-SelfTestCheck $fixtureRoot -Quiet)) `
+            "Documentation schema accepted progress for multiple numeric tasks."
         Set-SelfTestFile $fixtureRoot "docs/STATUS.md" $validStatus
         Set-SelfTestFile $fixtureRoot "docs/STATUS.md" @'
 # Project Status
@@ -688,6 +713,7 @@ Require-HeadingSchema "docs/TODO.md" $todo "Long-Term Review Ledger" @('^.+ Debt
 Require (($status | Select-String -AllMatches -Pattern '(?m)^## Current Technical Baseline$').Matches.Count -eq 1) `
     "STATUS.md must contain exactly one Current Technical Baseline heading."
 
+$activePacket = $null
 $idle = $status -match '(?m)^\*\*Idle\.'
 if ($idle) {
     Require (-not ($status -match '(?m)^## (Historical )?T\d+(?: S\d+)? Packet$')) `
@@ -725,8 +751,30 @@ Require ((@((Get-MarkdownHeadings $roadmapDesign) | Where-Object { $_.Level -eq 
 
 $closureSection = [regex]::Match($status, '(?ms)^## Recent M\d+ Closures\r?\n(?<body>.*?)(?=^## |\z)')
 Require ($closureSection.Success) "STATUS.md must contain a recent milestone-closure section."
-$closureCount = ([regex]::Matches($closureSection.Groups['body'].Value, '(?m)^\| T\d+ \|')).Count
-Require ($closureCount -le 8) "STATUS.md must retain at most eight recent milestone-closure rows."
+$closureRows = @([regex]::Matches(
+        $closureSection.Groups['body'].Value,
+        '(?m)^\| T(?<task>\d+)(?: S(?<subtask>\d+))? \|'
+    ) | ForEach-Object {
+        [pscustomobject]@{
+            Task = [int]$_.Groups['task'].Value
+            HasSubtask = $_.Groups['subtask'].Success
+        }
+    })
+$subtaskProgressRows = @($closureRows | Where-Object HasSubtask)
+if ($subtaskProgressRows.Count -gt 0) {
+    $progressTaskNumbers = @($subtaskProgressRows | ForEach-Object Task | Select-Object -Unique)
+    Require ($progressTaskNumbers.Count -eq 1) `
+        "STATUS.md may retain subtask progress for only one open numeric task."
+    $progressTask = $progressTaskNumbers[0]
+    $closedNumericRecords = @(Get-ClosedIdentifierRecords $RepositoryRoot | Where-Object { -not $_.IsDocumentation })
+    $latestNumericTask = ($closedNumericRecords | Measure-Object -Property Task -Maximum).Maximum
+    Require ($progressTask -eq $latestNumericTask) `
+        "STATUS.md subtask progress must belong to the latest open numeric task."
+    Require (-not ($closureRows | Where-Object { -not $_.HasSubtask -and $_.Task -eq $progressTask })) `
+        "STATUS.md must replace closed-task subtask progress with one task-level summary."
+}
+$taskClosureCount = @($closureRows | Where-Object { -not $_.HasSubtask }).Count
+Require ($taskClosureCount -le 8) "STATUS.md must retain at most eight recent task-level closure rows."
 
 $governanceSection = [regex]::Match($status, '(?ms)^## Recent Governance\r?\n(?<body>.*?)(?=^## |\z)')
 Require ($governanceSection.Success) "STATUS.md must contain a Recent Governance section."
