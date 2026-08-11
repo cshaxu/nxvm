@@ -2,27 +2,8 @@
 
 ## Current Work
 
-**M5 T316 S49 - HLT halt/wake/privilege forms.** The coordinator admitted this
-bounded ordinary-execution continuation in Coordinated Dual-Session Mode.
-
-## M5 T316 S49 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Corrective; next unused subtask of M5 T316. |
-| Admission And Approval | The owner approved autonomous continuation after T316 S48. |
-| Objective | Close only Intel HLT `F4`: halt state, privilege, prefix/LOCK classification, and maskable-IRQ wake behavior. |
-| Non-goals | CLI/STI, IRET, NMI, task switch, generic PIC/interrupt-engine refactoring, VME/PVI, and post-80386 behavior are outside S49. |
-| Reference Baseline | `1d097b32` / `vm-0-5-0316`, with S48 closed and pushed. |
-| Files And ABI Surface | Expected scope is a local owner smoke, CMake registration, this packet, and the T316 matrix. Production changes require a demonstrated local HLT defect. |
-| Applicable Rules | Intel 80386 PRM HLT opcode, privilege, prefix, exception, interrupt, and halt-resume rules are authoritative. |
-| Verification | Prove 8086--80386 defaults, 80386 `66h`/`67h`/combined fixed semantics, lower-profile prefix and 80386 LOCK #UD/nonpublication, exact halt/EIP/GPR/FLAGS/cache effects, protected CPL0/CPL>0, VM86 #GP, and pending maskable IRQ behavior with IF set versus clear; run focused/current registration/governance/diff/full gate. |
-| Expected Markers | `M5:T316:S49:HLT:OK`. |
-| Asset Needs | None. |
-| Stop Conditions | Stop before changing shared execution stop-state, interrupt, prefix, or privilege helpers; report caller/form impact. |
-| Exit Criteria | HLT and every declared profile, prefix, privilege, and IRQ boundary have focused executable proof; no broader interrupt architecture claim. |
-| Original Owner Request | Execute the complete Intel 80386 plan in dual-session mode, using a form--implementation--test matrix, boundary review, evidence closure, and immediate push. |
-| Similar-Issue Sweep | Audit HLT dispatch/handler, profile/prefix route, halt state, PIC wake path, and existing CLI/STI, direct-FLAGS, executor, and interrupt tests. |
+**Idle.** M5 T316 S49 is closed; the next 80386 matrix slice requires a
+separately admitted packet.
 
 ## Current Technical Baseline
 
@@ -44,6 +25,7 @@ bounded ordinary-execution continuation in Coordinated Dual-Session Mode.
 
 | Task | Compact result |
 | --- | --- |
+| T316 S49 | Closed HLT `F4`: default and `66`/`67`/LOCK form behavior, protected/VM86 privilege rejection, and IF-qualified pending-IRQ wake behavior passed. No production change was needed; 178 current-gate tests passed. |
 | T316 S48 | Closed CLI/STI `FA`/`FB`: profiles/`66`/`67`/LOCK, protected and ordinary VM86 IOPL boundaries, and exact CLI pending-IRQ inhibition versus STI one-instruction shadow coverage passed. No production change was needed; 177 current-gate tests passed. |
 | T316 S47 | Closed PUSHF/PUSHFD and POPF/POPFD `9C`/`9D`: visible FLAGS/bit1, profiles/`66`/`67`/LOCK, protected and VM86 privilege boundaries, stack #DF atomicity, and PIC no-shadow coverage passed. Corrected legacy PUSHF FLAGS-image normalization and POPFD RF preservation; 176 current-gate tests passed. |
 | T316 S46 | Closed legacy segment-register stacks `06`/`07`, `0E`, `16`/`17`, and `1E`/`1F`: default/`66`/`67`/LOCK, protected selector/cache and stack-limit #DF, plus POP SS shadow and POP ES/DS/PUSH no-shadow coverage passed. No production change was needed; 29 static/governance steps and 175 current-gate tests passed. |
