@@ -2,26 +2,8 @@
 
 ## Current Work
 
-**M5 T316 S55 - ordinary IN/OUT port forms.** The coordinator admitted this bounded ordinary-execution continuation in Coordinated Dual-Session Mode.
-
-## M5 T316 S55 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Corrective; next unused subtask of M5 T316. |
-| Admission And Approval | The owner approved the Intel 80386DX route after T316 S54 in Coordinated Dual-Session Mode. |
-| Objective | Close `E4h`/`E5h`/`E6h`/`E7h`/`ECh`/`EDh`/`EEh`/`EFh` immediate/DX ordinary I/O across declared profile, attribute, mode, error, and PIC boundaries. |
-| Non-goals | No INS/OUTS, generic I/O refactor, port-device semantics, VME/PVI, or post-80386 behavior. |
-| Reference Baseline | `a5171bfa` / `vm-0-5-0316`, with T316 S54 closed and `main` equal to `origin/main`. |
-| Files And ABI Surface | Expected scope is one owner smoke, CMake registration, this packet, and the ordinary-execution matrix. Production changes are limited to reproduced local opcode-handler defects. No public ABI change. |
-| Applicable Rules | `docs/rules/EXECUTION.md` and `docs/rules/CODING.md`; Intel 80386 PRM ordinary IN/OUT, prefix, protection, and interrupt behavior is the form authority. |
-| Verification | Prove callback port, width, and payload; partial EAX publication; FLAGS, GPR, cache, and EIP preservation; profile, `66h`/`67h`, and LOCK classification; protected IOPL and TSS bitmap, ordinary VM86, provider-error atomicity, and PIC no-shadow boundaries. |
-| Expected Markers | Focused smoke emits `M5:T316:S55:PORT-IO:OK`; current CTest registers exactly `current.core-machine-port-io-s55-smoke`. |
-| Asset Needs | None; deterministic CPU and port-provider fixtures only. |
-| Stop Conditions | Stop before changing shared `_kpa_test_mode`, `_p_input`, `_p_output`, or I/O-map semantics; provide caller sweep and coordinator review. |
-| Exit Criteria | Every declared IN/OUT form and failure path is resolved with focused evidence, without claiming S38 or generic I/O completion. |
-| Original Owner Request | Execute the complete Intel 80386 plan in dual-session mode against an Intel form--implementation--test matrix, repairing omissions and closing evidence without using Windows demand as the completeness boundary. |
-| Similar-Issue Sweep | Audit all eight handlers, dispatch, prefix/LOCK, permission and provider routes, and existing S38 evidence. |
+**Idle.** M5 T316 S55 is closed; the next 80386 matrix slice requires a
+separately admitted packet.
 
 ## Current Technical Baseline
 
@@ -43,6 +25,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T316 S55 | Closed ordinary IN/OUT `E4`--`E7`/`EC`--`EF`: four profiles/`66`/`67`/LOCK, provider atomicity, protected TSS bitmap/IOPL and VM86 terminal boundaries, plus PIC no-shadow passed. No production or shared I/O change was needed; 184 current-gate tests passed. |
 | T316 S54 | Closed BOUND `62 /r`: corrected the 80186 gate, dword upper-pair access, and BOUND-only `#BR` vector-5 delivery; profiles/`66`/`67`/LOCK, segment and VM86 execution, DS/SS access boundaries, and PIC no-shadow passed. 183 current-gate tests passed; no generalized exception refactor. |
 | T316 S53 | Closed protected ARPL `63 /r`: all register ModRM/RPL/ZF outcomes, segment and 16/32 EA selection, profile/prefix/LOCK rejection, #GP handler-boundary, and STI-window PIC no-extra-shadow coverage passed. No production change was needed; 182 current-gate tests passed. |
 | T316 S52 | Closed protected IRET `CF` CPL0-to-outer returns: 16/32 and `66`/`67` forms, full target cache/GPR/stack-image proof, selector/limit handler-boundary failures, and TSS-backed IF/PIC delivery passed. No production change was needed; 181 current-gate tests passed. |
