@@ -282,6 +282,9 @@ target_link_libraries(core-machine-arpl-smoke PRIVATE core-machine)
 add_executable(core-machine-arpl-s53-smoke
     tests/machine/core_machine_arpl_s53_smoke.c)
 target_link_libraries(core-machine-arpl-s53-smoke PRIVATE core-machine)
+add_executable(core-machine-bound-s54-smoke
+    tests/machine/core_machine_bound_s54_smoke.c)
+target_link_libraries(core-machine-bound-s54-smoke PRIVATE core-machine)
 
 add_executable(core-machine-segment-selector-smoke
     tests/machine/core_machine_segment_selector_smoke.c)
@@ -1265,6 +1268,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-80286-protected-mode-smoke
     core-machine-arpl-smoke
     core-machine-arpl-s53-smoke
+    core-machine-bound-s54-smoke
     core-machine-segment-selector-smoke
     core-machine-cpu-profile-gate-smoke
     core-machine-protected-privilege-smoke
