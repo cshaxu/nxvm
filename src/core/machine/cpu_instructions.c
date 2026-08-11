@@ -9458,7 +9458,7 @@ static C_VOID BOUND_R16_M16_16(core_machine_cpu_execution_context *context)
     type_signed_16 a16, l16, u16;
     type_signed_32 a32, l32, u32;
     TYPE_TRACE_CALL_BEGIN("BOUND_R16_M16_16");
-    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80186)
     {
         _adv;
         TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize * 2));
@@ -9487,7 +9487,7 @@ static C_VOID BOUND_R16_M16_16(core_machine_cpu_execution_context *context)
             a32 = (type_signed_32)instruction_state.data.cr;
             TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 4));
             l32 = (type_signed_32)instruction_state.data.crm;
-            instruction_state.data.mrm.offset += 2;
+            instruction_state.data.mrm.offset += 4;
             TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 4));
             u32 = (type_signed_32)instruction_state.data.crm;
             if (a32 < l32 || a32 > u32)
@@ -16795,6 +16795,8 @@ static C_VOID ExecFinal(core_machine_cpu_execution_context *context)
         exception_vector = 0u;
         if (instruction_state.data.except == VCPUINS_EXCEPT_GP)
             exception_vector = 0x0du;
+        else if (instruction_state.data.except == VCPUINS_EXCEPT_BR)
+            exception_vector = 0x05u;
         else if (instruction_state.data.except == VCPUINS_EXCEPT_NP)
             exception_vector = 0x0bu;
         else if (instruction_state.data.except == VCPUINS_EXCEPT_SS &&
@@ -16851,6 +16853,31 @@ static C_VOID ExecFinal(core_machine_cpu_execution_context *context)
                 instruction_state.data.except = original_except;
                 instruction_state.data.excode = original_excode;
             }
+        }
+
+        if (!TYPE_GET_BIT(fault_cpu.data.cr0, VCPU_CR0_PE) &&
+            TYPE_GET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_BR)) {
+            original_except = instruction_state.data.except;
+            original_excode = instruction_state.data.excode;
+            cpu_state = fault_cpu;
+            TYPE_CLEAR_BIT(instruction_state.data.except, VCPUINS_EXCEPT_BR);
+            _e_except_n(context, 0x05u, _GetOperandSize);
+            if (!instruction_state.data.except) {
+                if (context->diagnostic_provider != STD_NULL &&
+                    context->diagnostic_provider->record_delivered_exception !=
+                        STD_NULL) {
+                    instruction_state.data.except = original_except;
+                    instruction_state.data.excode = original_excode;
+                    context->diagnostic_provider->record_delivered_exception(
+                        context->diagnostic_context, &fault_cpu,
+                        &instruction_state);
+                    instruction_state.data.except = 0u;
+                }
+                return;
+            }
+            cpu_state = fault_cpu;
+            instruction_state.data.except = original_except;
+            instruction_state.data.excode = original_excode;
         }
 
         if (context->diagnostic_provider != STD_NULL &&

@@ -59,6 +59,7 @@ not an allocation of later task identifiers.
 | 80386 `0F AF` two-operand IMUL; `0F BC/BD` BSF/BSR; `0F B6/B7/BE/BF` MOVZX/MOVSX | `IMUL_R32_RM32`, `BSF/BSR`, `MOVZX/MOVSX` through `INS_0F` and metadata gate. | `core_machine_imul2_smoke` (`M5:T310:S8:IMUL2:OK`), `core_machine_bit_scan_smoke` (`M5:T310:S7:BIT-SCAN:OK`), `core_machine_movx_smoke` (`M5:T310:S4:MOVX:OK`). | **Complete** for each declared T310 form matrix, including profile rejection and named memory/fault boundaries. |
 | 80386 `0F A0/A1/A8/A9` FS/GS push/pop and `0F B2/B4/B5` LSS/LFS/LGS | `INS_0F` table and segment-load routes, with profile checks; `_e_load_far` loads the selector before publishing the destination offset and sets the maskable-IRQ shadow only for SS. | `core_machine_fs_gs_stack_smoke` (`M5:T316:S23:FS-GS-STACK:OK`) and `core_machine_lss_lfs_lgs_smoke` (`M5:T316:S24:LSS-LFS-LGS:OK`). | **Complete only for T316 S23's FS/GS stack forms and S24's LSS/LFS/LGS matrix**: default/`66h` operand size, memory-only form, 80386 gate, selected real/protected publication, bounded source-fault non-publication, and the SS-only IRQ shadow. FS/GS prefix consumers, `LES`/`LDS`, MOV/POP other segment-register families, and broader privilege semantics remain **Partial**. |
 | ARPL `63 /r` selector RPL adjustment | `ARPL_RM16_R16` with `_d_modrm`, `_m_read_rm`, and `_m_write_rm`; the handler requires protected mode and profile 80286 or later. | `core_machine_arpl_s53_smoke` (`M5:T316:S53:ARPL:OK`) executes the bounded S53 vectors. | **Complete only for T316 S53**: r/m16,r16 RPL comparison/update and ZF semantics, register and memory destinations, declared segment/address attributes, profile/LOCK rejection, protected operand-access boundary, and PIC delivery. Descriptor validation/loading, MOV/POP Sreg, LAR/LSL/VERR/VERW, and general segment privilege architecture remain outside this slice. |
+| BOUND `62 /r` signed range check | `BOUND_R16_M16_16` decodes memory-only ModRM through `_d_modrm` and reads the signed lower/upper pair through `_m_read_rm`; `_SetExcept_BR` now reaches the narrow `#BR` vector-5 delivery route in `ExecFinal`. | `core_machine_bound_s54_smoke` (`M5:T316:S54:BOUND:OK`) executes the bounded S54 vectors. | **Complete only for T316 S54**: BOUND r16,m16&16 and r32,m32&32 with the declared profile, attribute, signed-boundary, segment/EA, IVT/IDT `#BR`, operand-limit, VM86, and pending-PIC boundaries. General exception delivery, descriptor validation, and broader arithmetic/control-transfer behavior remain outside this slice. |
 | Post-80386 or reserved encodings seen in the tables: `CPUID`, `RSM`, `WBINVD`, `RDMSR/WRMSR`, `CMPXCHG`, `XADD`, `BSWAP`, undefined holes | Metadata/profile gate rejects forms above the active 80386 profile before the named table handler can establish behavior. | `cpu_profile_gate_smoke` and T309 rejection baseline. | **Outside-80386**: retain rejection; no later-IA-32 implementation is admitted by T316. |
 | `WAIT/FWAIT`, ESC `D8`--`DF`, CR0 `MP/EM/TS`, `#NM`, external coprocessor fault interface | `WAIT`, FPU escape/profile routes and CPU exception state; optional FPU provider is outside ordinary decoding. | `cpu_fpu_profile_smoke`, `cpu_fpu_profile_closure_smoke`, `fpu_escape_smoke`, `core_machine_fpu_8087_smoke`. | **External-coprocessor boundary**: only 80386-side control/reporting is in the approved program; no 8087/80287/80387 arithmetic, state, or completeness claim is made. |
 
@@ -1122,3 +1123,31 @@ Descriptor loading, MOV/POP segment-register forms, LAR/LSL/VERR/VERW, and
 broader selector privilege architecture remain outside S53.
 
 `M5:T316:S53:ARPL:OK`
+
+### T316 S54 - BOUND range-check and `#BR` delivery
+
+`core_machine_bound_s54_smoke` closes only memory-form `BOUND 62h /r`:
+the 80186--80386 default signed r16/m16&16 form and the 80386 `66h`
+r32/m32&32 form.  Its vectors prove signed lower and upper equality,
+in-range, and out-of-range decisions; the latter reach real-mode IVT and
+protected-mode IDT vector 5 with restart at the BOUND instruction.  The
+runtime correction is limited to BOUND's 80186 profile gate, its dword upper
+pair at EA+4, and the BOUND-only real-mode delivered-`#BR` branch in final
+exception delivery.  `_SetExcept_BR` is the production producer reviewed for
+that branch; no other exception class or operand/address helper changed.
+
+The focused matrix includes memory-only ModRM rejection, 8086 `#UD`,
+pre-386 `66h`/`67h`/combined rejection, 80386 `66h`, `67h`, combined, and
+LOCK rejection with CPU/cache nonpublication.  It covers DS and BP/SS
+defaults, CS/ES/FS/GS override selection, and a 32-bit-address SIB
+SS-default route.  Successful real, protected, and ordinary VM86 vectors
+retain BOUND's GPR, FLAGS, cache, and bounds-memory state.  Protected DS
+upper-pair access uses the installed handler boundary; the SS pair's no-IDT
+delivery chain terminates as the established `#DF` observable boundary, while
+the producer remains the SS access route.  A pending IRQ0 vector proves a
+successful BOUND has no interrupt shadow: delivery occurs after BOUND and
+before its following NOP.  Descriptor loading/validation, general exception
+refactoring, and unrelated arithmetic or control-transfer forms remain outside
+S54.
+
+`M5:T316:S54:BOUND:OK`
