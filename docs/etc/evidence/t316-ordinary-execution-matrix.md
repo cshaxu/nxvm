@@ -1001,3 +1001,16 @@ RF across POPF/POPFD. No shared helper changed. CLI/STI, IRET, VME/PVI, task
 switching, and broader FLAGS or stack behavior remain outside this slice.
 
 `M5:T316:S47:PUSHF-POPF:OK`
+
+### T316 S48 - CLI/STI interrupt-enable forms
+
+`core_machine_cli_sti_s48_smoke` closes only CLI `FA` and STI `FB`. It proves
+their default forms on 8086--80386; 80386 `66h`, `67h`, and combined fixed
+semantics; pre-386 prefix and 80386 LOCK #UD/full nonpublication; and exact IF,
+EIP, GPR, and segment-cache behavior. It executes the protected CPL/IOPL and
+ordinary VM86 IOPL3/IOPL<3 boundaries, CLI pending-IRQ inhibition, and STI's
+one-next-instruction shadow with frame/IP and PIC ISR/IRR assertions. VME/PVI,
+IRET, task switching, and wider interrupt/privilege architecture remain outside
+this slice; no production or shared-helper change was needed.
+
+`M5:T316:S48:CLI-STI:OK`
