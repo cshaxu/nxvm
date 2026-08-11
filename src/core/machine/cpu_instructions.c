@@ -16796,6 +16796,8 @@ static C_VOID ExecFinal(core_machine_cpu_execution_context *context)
         exception_vector = 0u;
         if (instruction_state.data.except == VCPUINS_EXCEPT_GP)
             exception_vector = 0x0du;
+        else if (instruction_state.data.except == VCPUINS_EXCEPT_NM)
+            exception_vector = 0x07u;
         else if (instruction_state.data.except == VCPUINS_EXCEPT_BR)
             exception_vector = 0x05u;
         else if (instruction_state.data.except == VCPUINS_EXCEPT_NP)
@@ -16863,6 +16865,31 @@ static C_VOID ExecFinal(core_machine_cpu_execution_context *context)
             cpu_state = fault_cpu;
             TYPE_CLEAR_BIT(instruction_state.data.except, VCPUINS_EXCEPT_BR);
             _e_except_n(context, 0x05u, _GetOperandSize);
+            if (!instruction_state.data.except) {
+                if (context->diagnostic_provider != STD_NULL &&
+                    context->diagnostic_provider->record_delivered_exception !=
+                        STD_NULL) {
+                    instruction_state.data.except = original_except;
+                    instruction_state.data.excode = original_excode;
+                    context->diagnostic_provider->record_delivered_exception(
+                        context->diagnostic_context, &fault_cpu,
+                        &instruction_state);
+                    instruction_state.data.except = 0u;
+                }
+                return;
+            }
+            cpu_state = fault_cpu;
+            instruction_state.data.except = original_except;
+            instruction_state.data.excode = original_excode;
+        }
+
+        if (!TYPE_GET_BIT(fault_cpu.data.cr0, VCPU_CR0_PE) &&
+            TYPE_GET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_NM)) {
+            original_except = instruction_state.data.except;
+            original_excode = instruction_state.data.excode;
+            cpu_state = fault_cpu;
+            TYPE_CLEAR_BIT(instruction_state.data.except, VCPUINS_EXCEPT_NM);
+            _e_except_n(context, 0x07u, _GetOperandSize);
             if (!instruction_state.data.except) {
                 if (context->diagnostic_provider != STD_NULL &&
                     context->diagnostic_provider->record_delivered_exception !=

@@ -2,8 +2,29 @@
 
 ## Current Work
 
-**Idle.** No S is active. M5 T316 remains the latest open numeric task, so its
-compact completed-subtask progress remains below until that T closes.
+**Active: M5 T316 S65.** Close the 80386 CPU-side external-coprocessor
+interface boundary in Coordinated Dual-Session Mode; no 80387 implementation is
+admitted.
+
+## M5 T316 S65 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Corrective; the latest open numeric task is M5 T316 and S65 follows closed S64. |
+| Admission And Approval | Owner-approved T316 closure plan in `docs/etc/evidence/t316-ordinary-execution-matrix.md`; coordinator admits this bounded S in Coordinated Dual-Session Mode. |
+| Objective | Close the 80386 CPU-side interface contract for `WAIT`/`FWAIT`, ESC `D8`--`DF`, CR0 `MP`/`EM`/`TS`, and `#NM`, without making an 8087/80287/80387 implementation claim. |
+| Non-goals | No x87 arithmetic, register stack, environment, IEEE semantics, coprocessor-internal exceptions, generic CR0 redesign, task-switch implementation, or broad exception/interrupt refactor. |
+| Reference Baseline | `ae71353e` / `vm-0-5-0316`; retain the existing optional FPU-provider boundary and all current-gate coverage. |
+| Files And ABI Surface | Expected owner smoke, CMake registration, matrix evidence, and `STATUS.md`; production only for a reproduced CPU-side defect with caller sweep. No public ABI or provider-contract expansion without renewed approval. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, source/research policy, and the T316 matrix S65 brief; apply the full-P lifecycle, completion-goal, similar-issue sweep, and actual-change review rules. |
+| Verification | Owner smoke plus retained `cpu_fpu_profile_smoke`, `cpu_fpu_profile_closure_smoke`, `fpu_escape_smoke`, and applicable FPU boundary gate; configure, exact CTest registration, full current-gate, documentation governance, diff check, and coordinator review. |
+| Expected Markers | A new exact `M5:T316:S65:*:OK` owner marker; retained FPU-profile and FPU-boundary markers; no product artifact or 80387 marker. |
+| Asset Needs | None; deterministic local CPU fixtures and existing optional-provider profiles only. |
+| Reporting Requirements | Executor first reports a scope/evidence/risk objection or confirms the packet, then creates/updates the S65 completion goal; report only the final complete implementation P or a material blocker, with interim nodes limited to a reproduced production defect or stop condition. |
+| Stop Conditions | Stop for a required FPU-provider ABI change, an unbounded x87 implementation dependency, a shared CR0/exception change whose callers cannot be swept, or a required task/paging/interrupt semantic outside this S; report the reproducer and transfer/debt disposition. |
+| Exit Criteria | Every S65 CPU-side form is implemented and focused-proven or explicitly classified at the external-coprocessor boundary; no 80387 claim; owner implementation P is self-reviewed, committed and pushed, then coordinator actual-change review and a truthful governance closure P both pass. |
+| Original Owner Request | Continue the owner-approved complete-80386 program with dual-session execution, Intel form--implementation--test matrix evidence, boundary review, governance closure, and permitted commits/pushes. |
+| Similar-Issue Sweep | For any defect, inspect all callers of the changed CPU/FPU or exception helper, all `WAIT`/ESC routes, profile gates, CR0 bit consumers, and retained FPU fixtures; record exact commands and disposition in delivery evidence. |
 ## Current Technical Baseline
 
 - **Current task artifact:** `current-gcc` and

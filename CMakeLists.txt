@@ -1134,6 +1134,9 @@ target_link_libraries(core-machine-cpu-profile-gate-smoke PRIVATE
 add_executable(core-machine-fpu-escape-smoke
     tests/machine/fpu_escape_smoke.c)
 target_link_libraries(core-machine-fpu-escape-smoke PRIVATE core-machine)
+add_executable(core-machine-fpu-interface-s65-smoke
+    tests/machine/core_machine_fpu_interface_s65_smoke.c)
+target_link_libraries(core-machine-fpu-interface-s65-smoke PRIVATE core-machine)
 add_executable(core-machine-fpu-8087-smoke
     tests/machine/core_machine_fpu_8087_smoke.c)
 target_link_libraries(core-machine-fpu-8087-smoke PRIVATE core-machine)
@@ -1320,6 +1323,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-task-switch-smoke
     core-machine-80386-paging-smoke
     core-machine-fpu-escape-smoke
+    core-machine-fpu-interface-s65-smoke
     core-machine-fpu-8087-smoke
     core-machine-trace-context-smoke
     core-machine-cpu-fault-diagnostic-smoke
