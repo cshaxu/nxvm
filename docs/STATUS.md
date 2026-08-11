@@ -2,8 +2,8 @@
 
 ## Current Work
 
-**Idle.** M5 T316 S64 is closed; the next 80386 matrix slice requires a
-separately admitted packet.
+**Idle.** No S is active. M5 T316 remains the latest open numeric task, so its
+compact completed-subtask progress remains below until that T closes.
 ## Current Technical Baseline
 
 - **Current task artifact:** `current-gcc` and
@@ -74,6 +74,16 @@ separately admitted packet.
 
 ## Recent Governance
 
+- **M5 Td S66:** replaced all-documents startup reading with a role- and
+  change-triggered reading set; aligned implementation and governance P
+  lifecycle in both execution modes; clarified owner approval, coordinator and
+  executor reporting, S-brief authority, corrective re-admission, and Status
+  retention; added the `Reporting Requirements` packet field; and split the
+  governance verifier into diagnostic documentation and state scopes while
+  retaining its combined closure gate. Documentation and state checks, combined
+  check, self-test, and diff check passed. Td work has no runtime or artifact
+  change.
+
 - **M5 Td S65:** aligned active numeric-task progress retention with task-level closure consolidation, added narrow structural checker coverage (including retained-progress self-tests), and preserved the eight-row cap for task-level closures. Td work has no runtime or artifact change.
 
 - **M5 Td S64:** requires an actual-change review before a task or subtask is
@@ -105,8 +115,3 @@ separately admitted packet.
 - **M5 Td S59:** established the repository-relative current-media root,
   approved-media identities, and protected-media change controls. Its initial
   DOS 5 contract mismatch was classified and corrected by S60.
-
-- **M5 Td S58:** made immediate remote push a cross-mode change-discipline
-  requirement. Every successful task or subtask commit must be pushed before
-  acceptance, closure, or completed-result reporting; a push failure is a
-  reportable delivery failure unless the owner records a bounded deferral.
