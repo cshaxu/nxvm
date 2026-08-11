@@ -2,8 +2,27 @@
 
 ## Current Work
 
-**Idle.** M5 T316 S41 is closed; the next 80386 matrix slice requires a
-separately admitted packet.
+**M5 T316 S42 - PUSHA/POPA stack-register forms.** The coordinator admitted
+this bounded ordinary-execution continuation in Coordinated Dual-Session Mode.
+
+## M5 T316 S42 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Corrective; next unused subtask of the active M5 T316 package. |
+| Admission And Approval | The owner approved continuous execution of the Intel 80386DX architecture-completeness program in Coordinated Dual-Session Mode. The coordinator admits this next linear bounded matrix slice after T316 S41. |
+| Objective | Close Intel PUSHA `60h` and POPA `61h` stack-register forms, including their 16-bit and 80386 32-bit operand-size behavior. |
+| Non-goals | Individual PUSH/POP, PUSH immediate, PUSHF/POPF, ENTER/LEAVE, CALL/RET, segment-register stacks, stack switching, and broader stack-family completeness are outside this packet. |
+| Reference Baseline | `f62d9c9e` / `vm-0-5-0316`, with T316 S41 closed, `main` equal to `origin/main`, and no active packet before admission. |
+| Files And ABI Surface | Expected scope is a focused machine smoke and CMake registration, the ordinary-execution matrix, and this packet. `src/core/machine/cpu_instructions.c` changes only for a demonstrated defect. No public ABI change. |
+| Applicable Rules | `docs/rules/EXECUTION.md`: coordinator-owned S admission, one active packet, dual-session complete-S brief/delivery loop, actual-change review, linear P commits, matrix audit, and immediate push. Intel 80386 PRM PUSHA/POPA opcode, stack, operand-size, prefix, exception, and interrupt behavior is the form authority. |
+| Verification | Cover default `60h`/`61h` profile dispositions (8086 rejection; 80186/80286/80386 acceptance), exact 16-bit stack image and original-SP rule, 80386 `66h` 32-bit image/original-ESP rule, `67h` and combined classification, lower-profile prefix and LOCK rejection/nonpublication, all GPR/EFLAGS/EIP and stack-memory publication/preservation, protected stack read/write limit faults at the established observable boundary, and pending-PIC successful no-shadow behavior. |
+| Expected Markers | Focused smoke emits `M5:T316:S42:PUSHA-POPA:OK`; matrix evidence records only `60h`/`61h` and exact remaining boundaries. |
+| Asset Needs | None; deterministic CPU fixture only. No guest media, external code, firmware, or research import. |
+| Stop Conditions | Stop and report if Intel stack-fault delivery, partial multi-push/pop publication, or a shared stack helper defect requires a material caller-impact review beyond `60h`/`61h`. |
+| Exit Criteria | Every admitted `60h`/`61h` form is classified and proven with no wider stack-family completeness claim. |
+| Original Owner Request | Execute the complete Intel 80386 plan in dual-session mode against an Intel form--implementation--test matrix, repairing omissions and closing evidence without using Windows demand as the completeness boundary. |
+| Similar-Issue Sweep | Audit PUSHA/POPA, `_kec_push`/`_kec_pop`, ENTER/LEAVE, FS/GS and segment-stack forms, stack fault fixtures, prefix/profile routes, PIC examples, and matrix evidence. Classify all hits; other stack forms are excluded by opcode/semantic boundary. |
 
 ## Current Technical Baseline
 
