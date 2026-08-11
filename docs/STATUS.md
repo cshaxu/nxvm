@@ -2,8 +2,27 @@
 
 ## Current Work
 
-**Idle.** M5 T316 S46 is closed; the next 80386 matrix slice requires a
-separately admitted packet.
+**M5 T316 S47 - PUSHF/POPF FLAGS stack-transfer forms.** The coordinator
+admitted this bounded ordinary-execution continuation in Coordinated Dual-Session Mode.
+
+## M5 T316 S47 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Corrective; next unused subtask of the active numeric task, M5 T316. |
+| Admission And Approval | The owner authorized autonomous progression along the Intel 80386 form--implementation--test matrix after T316 S46. |
+| Objective | Close only `PUSHF`/`PUSHFD` `9Ch` and `POPF`/`POPFD` `9Dh`: profile, operand/address attributes, FLAGS image and privilege masking, stack faults, and IRQ boundaries. |
+| Non-goals | CLI/STI, IRET, task switching, VME/PVI extensions, general stack-helper refactoring, and post-80386/80387 behavior are outside S47. VME is excluded because it is not an Intel 80386 feature. |
+| Reference Baseline | `9b93bd27` / `vm-0-5-0316`, with T316 S46 closed and pushed, `main` equal to `origin/main`, and no active packet before admission. |
+| Files And ABI Surface | Expected scope is one local owner smoke, its CMake registration, the ordinary-execution matrix, and this packet. `src/core/machine/cpu_instructions.c` changes only for a demonstrated local `9Ch`/`9Dh` defect; no public ABI change. |
+| Applicable Rules | Intel 80386 PRM `PUSHF`/`POPF` form, FLAGS, privilege, exception, and interrupt rules are authoritative. Follow `docs/rules/EXECUTION.md`, `docs/rules/CODING.md`, current-gate discipline, and caller-impact review before any shared helper change. |
+| Verification | Execute default `9Ch`/`9Dh` on 8086/80186/80286/80386; 80386 `66h`, `67h`, and combined forms; and lower-profile prefix plus 80386 LOCK #UD/full nonpublication. Prove normalized FLAGS stack image, reserved bit and VM/RF disposition, exact SP/ESP/EIP/GPR/cache/memory behavior; protected CPL/IOPL IF/NT/RF/VM masks, ordinary VM86 IOPL boundary without VME; protected SS write/read limits at the no-IDT diagnostic boundary; and pending PIC no-shadow. Configure, focused run, exact CTest discovery, documentation governance, diff check, and full supported current gate. |
+| Expected Markers | Focused smoke emits `M5:T316:S47:PUSHF-POPF:OK`; matrix evidence records only `9Ch`/`9Dh` and exact privilege/exception disposition. |
+| Asset Needs | None; deterministic CPU fixture only. |
+| Stop Conditions | Stop and report if a fix requires `_e_push`, `_e_pop`, shared FLAGS/privilege helpers, or another unadmitted stack/exception semantic; provide caller-impact evidence before changing it. |
+| Exit Criteria | Each declared form is actually classified and focused-proven. FLAGS image/masks, reserved bits, all non-FLAGS state, stack effects, prefix/LOCK rejection, protected and VM86 permissions, fault atomicity, and PIC delivery have evidence; only then register the target and update the narrow matrix row. |
+| Original Owner Request | Execute the complete Intel 80386 plan in dual-session mode, using a form--implementation--test matrix, boundary review, evidence closure, and immediate push. |
+| Similar-Issue Sweep | Audit `PUSHF`, `POPF`, `_e_push`, `_e_pop`, operand/address prefix routes, FLAGS masks, CPL/IOPL/VM checks, existing S21/T302 tests, and CLI/STI/IRET boundary callers. |
 
 ## Current Technical Baseline
 

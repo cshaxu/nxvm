@@ -175,6 +175,8 @@ add_executable(core-machine-eflags-local-smoke tests/machine/core_machine_eflags
 target_link_libraries(core-machine-eflags-local-smoke PRIVATE core-machine)
 add_executable(core-machine-pushf-popf-smoke tests/machine/core_machine_pushf_popf_smoke.c)
 target_link_libraries(core-machine-pushf-popf-smoke PRIVATE core-machine)
+add_executable(core-machine-pushf-popf-s47-smoke tests/machine/core_machine_pushf_popf_s47_smoke.c)
+target_link_libraries(core-machine-pushf-popf-s47-smoke PRIVATE core-machine)
 add_executable(core-machine-cli-sti-smoke tests/machine/core_machine_cli_sti_smoke.c)
 target_link_libraries(core-machine-cli-sti-smoke PRIVATE core-machine)
 add_executable(core-machine-fs-gs-stack-smoke tests/machine/core_machine_fs_gs_stack_smoke.c)
@@ -1209,6 +1211,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-rotate-smoke
     core-machine-eflags-local-smoke
     core-machine-pushf-popf-smoke
+    core-machine-pushf-popf-s47-smoke
     core-machine-cli-sti-smoke
     core-machine-fs-gs-stack-smoke
     core-machine-lss-lfs-lgs-smoke

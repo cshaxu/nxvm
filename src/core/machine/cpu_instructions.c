@@ -11234,13 +11234,14 @@ static C_VOID PUSHF(core_machine_cpu_execution_context *context)
     else
     {
         cpu_state.data.ip++;
-        _e_push(context, TYPE_REFERENCE_OF(cpu_state.data.flags), 2);
+        ceflags = (cpu_state.data.flags & ~VCPU_EFLAGS_RESERVED) | 0x02u;
+        _e_push(context, TYPE_REFERENCE_OF(ceflags), 2);
     }
     TYPE_TRACE_CALL_END;
 }
 static C_VOID POPF(core_machine_cpu_execution_context *context)
 {
-    type_unsigned_32 mask = VCPU_EFLAGS_RESERVED;
+    type_unsigned_32 mask = VCPU_EFLAGS_RESERVED | VCPU_EFLAGS_RF;
     type_unsigned_32 ceflags = TYPE_ZERO_32;
     TYPE_TRACE_CALL_BEGIN("POPF");
     if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
@@ -11345,7 +11346,8 @@ static C_VOID POPF(core_machine_cpu_execution_context *context)
     else
     {
         cpu_state.data.ip++;
-        TYPE_TRACE_CHECK_RETURN(_e_pop(context, TYPE_REFERENCE_OF(cpu_state.data.flags), 2));
+        TYPE_TRACE_CHECK_RETURN(_e_pop(context, TYPE_REFERENCE_OF(ceflags), 2));
+        cpu_state.data.flags = (ceflags & ~VCPU_EFLAGS_RESERVED) | 0x02u;
     }
     TYPE_TRACE_CALL_END;
 }
