@@ -2,27 +2,8 @@
 
 ## Current Work
 
-**M5 T316 S51 - IRET same-privilege return.** The coordinator admitted this
-bounded ordinary-execution continuation in Coordinated Dual-Session Mode.
-
-## M5 T316 S51 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Corrective; next unused subtask of M5 T316. |
-| Admission And Approval | The owner approved this bounded continuation after T316 S50 in Coordinated Dual-Session Mode. |
-| Objective | Close only IRET `CFh` real-mode and protected same-CPL return-frame semantics. |
-| Non-goals | Outer-privilege and VM-transition returns, NT/task return, IRET error-code handling, generic IDT/IRQ/NMI/task-switch refactoring, VME/PVI, and post-80386 behavior are outside S51. |
-| Reference Baseline | `b167c734` / `vm-0-5-0316`, with T316 S50 closed and `main` equal to `origin/main`. |
-| Files And ABI Surface | Expected scope is one local owner smoke, CMake registration, the ordinary-execution matrix, and this packet. Production changes require a reproduced local IRET defect; shared stack, exception, interrupt, or privilege helpers require a caller-impact review before change. |
-| Applicable Rules | `docs/rules/EXECUTION.md` dual-session lifecycle and matrix evidence rules; `docs/rules/CODING.md` local-style and no-premature-abstraction rules. Intel 80386 PRM IRET, protected return, prefix, exception, and interrupt rules are form authority. |
-| Verification | Prove real-mode 8086--80386 16-bit IRET frames; 80386 `66h`/`67h`/combined width and stack-address behavior; lower-profile prefix and 80386 LOCK #UD nonpublication; protected same-CPL valid, selector/type/present/DPL/RPL/IP-limit/SS-limit boundaries; ordinary VM86 only if locally expressible; and IF-restoring versus IF-preserving pending-PIC behavior. Build focused, prove exact current registration, run documentation governance, diff check, and current gate. |
-| Expected Markers | Focused smoke emits `M5:T316:S51:IRET:OK`. |
-| Asset Needs | None; deterministic CPU fixtures only. |
-| Stop Conditions | Stop before changing a shared exception, interrupt, privilege, stack, or selector helper; report exact reproducer plus caller and coverage impact. |
-| Exit Criteria | Every declared same-CPL form and boundary has focused evidence; frame, FLAGS, stack, cache, fault, and IRQ publication are accurately classified without claiming excluded IRET families. |
-| Original Owner Request | Execute the complete Intel 80386 plan in dual-session mode against an Intel form--implementation--test matrix, repairing omissions and closing evidence without using Windows demand as the completeness boundary. |
-| Similar-Issue Sweep | Audit `CFh`, `IRET`, `_e_iret`, `_ser_iret_protected_same`, stack pop/peek and selector helpers, INT delivery, and existing protected-return fixtures; classify outer-return and task paths as excluded semantic boundaries. |
+**Idle.** M5 T316 S51 is closed; the next 80386 matrix slice requires a
+separately admitted packet.
 
 ## Current Technical Baseline
 
@@ -44,6 +25,7 @@ bounded ordinary-execution continuation in Coordinated Dual-Session Mode.
 
 | Task | Compact result |
 | --- | --- |
+| T316 S51 | Closed same-CPL IRET `CF`: four real profiles, `66` wide-frame and inert `67` 16-bit stack route, #UD/LOCK, protected selector/limit #DF, and IF-restoring versus IF-preserving PIC boundaries passed. No production change was needed; 180 current-gate tests passed. |
 | T316 S50 | Closed software interrupts INT3 `CC`, INT imm8 `CD ib`, and INTO `CE`: four real-mode profiles, `66`/`67`/LOCK, IVT/IDT frame, DPL/VM86/fault, and pending-PIC boundaries passed. No production change was needed; 179 current-gate tests passed. |
 | T316 S49 | Closed HLT `F4`: default and `66`/`67`/LOCK form behavior, protected/VM86 privilege rejection, and IF-qualified pending-IRQ wake behavior passed. No production change was needed; 178 current-gate tests passed. |
 | T316 S48 | Closed CLI/STI `FA`/`FB`: profiles/`66`/`67`/LOCK, protected and ordinary VM86 IOPL boundaries, and exact CLI pending-IRQ inhibition versus STI one-instruction shadow coverage passed. No production change was needed; 177 current-gate tests passed. |
