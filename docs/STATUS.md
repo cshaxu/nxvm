@@ -2,8 +2,26 @@
 
 ## Current Work
 
-**Idle.** M5 T316 S55 is closed; the next 80386 matrix slice requires a
-separately admitted packet.
+**M5 T316 S56 - immediate three-operand IMUL forms.** The coordinator admitted this bounded ordinary-execution continuation in Coordinated Dual-Session Mode.
+
+## M5 T316 S56 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Corrective; next unused subtask of M5 T316. |
+| Admission And Approval | The owner approved this bounded Intel 80386DX continuation after T316 S55 in Coordinated Dual-Session Mode. |
+| Objective | Close immediate three-operand IMUL `69h /r iw/id` and `6Bh /r ib` on 80186--80386, including their declared profile, attribute, operand, address, fault, and interrupt forms. |
+| Non-goals | No one-operand `F6h`/`F7h` IMUL, `0Fh AFh` IMUL, MUL/DIV, generic FLAGS refactor, or wider arithmetic-family completion. |
+| Reference Baseline | `c92b67ac` / `vm-0-5-0316`, with T316 S55 closed and `main` equal to `origin/main`. |
+| Files And ABI Surface | Expected scope is one owner smoke, CMake registration, this packet, and the ordinary-execution matrix; production changes are limited to the two reproduced local IMUL profile guards. No public ABI change. |
+| Applicable Rules | `docs/rules/EXECUTION.md` and `docs/rules/CODING.md`; Intel 80386 PRM IMUL, prefix, protection, exception, and interrupt behavior is the form authority. |
+| Verification | Prove signed product, CF/OF, and defined-state publication; prefix/profile, segment/EA, protected source fault, ordinary VM86, and pending-PIC boundaries. |
+| Expected Markers | Focused smoke emits `M5:T316:S56:IMUL-IMM:OK`; current CTest registers exactly `current.core-machine-imul-immediate-s56-smoke`. |
+| Asset Needs | None; deterministic CPU fixture only. |
+| Stop Conditions | Stop before changing shared `_a_imul3`, decoder, memory, or FLAGS helpers; provide caller sweep and coordinator review. |
+| Exit Criteria | Every declared `69h`/`6Bh` form matrix is resolved with focused evidence and no wider IMUL or arithmetic-family claim. |
+| Original Owner Request | Execute the complete Intel 80386 plan in dual-session mode against an Intel form--implementation--test matrix, repairing omissions and closing evidence without using Windows demand as the completeness boundary. |
+| Similar-Issue Sweep | Audit both handlers, metadata, dispatch, `_a_imul3`, prefix routes, and existing two-operand IMUL evidence. |
 
 ## Current Technical Baseline
 
