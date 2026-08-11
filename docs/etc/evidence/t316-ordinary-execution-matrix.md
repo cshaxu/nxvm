@@ -55,9 +55,9 @@ transferred to the later processor-control package.
 
 | Planned slice | Boundary | Completion result |
 | --- | --- | --- |
-| S64 | Shared prefix and attribute-resolution closure for ordinary execution. | Every prefix category has a declared 80386 semantic class and focused evidence; no per-opcode Cartesian-product claim. |
-| S65 (planned; not yet active) | CPU-side `WAIT`/`FWAIT`, ESC, `MP`/`EM`/`TS`, and `#NM` external-coprocessor interface. | The 80386 CPU contract is proved or explicitly bounded without an 8087/80287/80387 implementation claim. |
-| S66 (planned; not yet active) | T316 task-level matrix and evidence closure audit. | No declared T316 sub-slice remains partial, missing, or unclassified; every residual parent-family breadth is explicitly transferred to one later Queue package, TODO, or an external/outside-80386 boundary. |
+| S64 | Shared prefix and attribute-resolution closure for ordinary execution. | **Complete:** every prefix category has a declared 80386 semantic class and focused evidence; no per-opcode Cartesian-product claim. |
+| S65 | CPU-side `WAIT`/`FWAIT`, ESC, `MP`/`EM`/`TS`, and `#NM` external-coprocessor interface. | **Complete:** the CPU contract is proved or explicitly bounded without an 8087/80287/80387 implementation claim. |
+| S66 (active) | T316 task-level matrix and evidence closure audit. | No declared T316 sub-slice remains partial, missing, or unclassified; every residual parent-family breadth is explicitly transferred to one later Queue package, TODO, or an external/outside-80386 boundary. |
 
 Only S64 is admitted below. S65 and S66 are planning labels, not active
 authority; they require their own later `STATUS.md` packet after the preceding
@@ -135,6 +135,30 @@ No reviewed ordinary primary form is classified **Missing**: each named ordinary
 group has a primary/`0F` route or the explicit external-coprocessor boundary.
 This is not a claim that all routed forms are correct; the partial rows are
 the visible remaining work.
+
+## S66 Residual Parent-Family Transfers
+
+S66 closes the declared T316 slices, not the broader inventories that contain
+them.  This table makes every remaining breadth visible and gives it exactly
+one next owner; it does not upgrade any parent row from **Partial** to
+**Complete**.
+
+| Parent inventory row | Residual breadth not claimed by T316 | Sole next owner |
+| --- | --- | --- |
+| Prefix attributes | 8086/80186/80286 LOCK legality beyond the retained 80386 semantic representatives. | `TODO(Medium): Legacy LOCK-prefix legality matrix`. |
+| Data movement and stack | Unadmitted ordinary MOV/XCHG/stack forms and wider stack behavior. | **80386DX ordinary execution and flag-completeness foundation** Queue package. |
+| Data movement and stack | Stack switching and selector/privilege-owned stack behavior. | **80386DX protection and privilege-transfer closure** Queue package. |
+| Unary, decimal, and ordinary FLAGS breadth | Any primary arithmetic, conversion, or FLAGS form beyond the named T316 slices. | **80386DX ordinary execution and flag-completeness foundation** Queue package. |
+| FLAGS/control and software interrupts | Hardware IRQ/NMI, generic exception delivery, VME/PVI, and unadmitted control interactions. | **80386DX exception, interrupt, and processor-control closure** Queue package. |
+| FLAGS/control and far returns | Task switching, task gates, and task-return interactions. | **80386DX task, local-descriptor, virtual-8086, and debug/test-register closure** Queue package. |
+| Memory and port strings | Wider string and port-string behavior, including unadmitted REP/IO combinations. | **80386DX ordinary execution and flag-completeness foundation** Queue package. |
+| Ordinary and port I/O | Generic I/O privilege architecture, device semantics, and VME/PVI extensions. | **80386DX protection and privilege-transfer closure** Queue package. |
+| Far control transfer and IRET | Far-gate, privilege-return, and broad exception/return behavior outside S51/S52. | **80386DX exception, interrupt, and processor-control closure** Queue package. |
+| FS/GS and segment forms | Remaining selector-load, descriptor, and privilege semantics. | **80386DX protection and privilege-transfer closure** Queue package. |
+| Paging/control/system state | Translation/invalidation behavior and processor-control forms not named by S61--S63. | **80386DX paging and translation closure** Queue package. |
+| Debug/task/V86 state | Breakpoint matching, test registers, task/V86 breadth beyond S59/S60. | **80386DX task, local-descriptor, virtual-8086, and debug/test-register closure** Queue package. |
+| External coprocessor | 8087/80287/80387 arithmetic, state, ABI, formats, and IEEE behavior. | Explicit **external-coprocessor boundary**; future admission requires a separately approved implementation package. |
+| Compatibility and product readiness | System/device/timing/media prerequisites for Windows 3.x observation. | **Windows 3.x readiness map** Queue package. |
 
 ## Helper Caller And Test-Coverage Inventory
 
@@ -1427,3 +1451,23 @@ CLTS, MOV control registers, paging policy, task switching, VME/PVI and
 generic control-state redesign remain outside this slice.
 
 `M5:T316:S63:MSW:OK`
+
+### T316 S66 - Final ordinary-execution closure audit
+
+S66 reconciled the declared T316 slices with their source routes, owner-smoke
+markers, CMake current-gate registrations, Queue/TODO boundaries, and the
+current task artifact.  The audit retains each parent inventory row's
+**Partial** classification where broader behavior remains; the S66 residual
+transfer table above assigns that behavior to one later Queue package, an
+explicit TODO, or the external-coprocessor boundary.  It does not claim
+whole-family or whole-80386 completion.
+
+The retained T316 artifact is `build/output/nxvm_0_5_0316.exe`, SHA-256
+`672F11D9174B910836F9FF02BC31025C064DE9F7D5F1667A31443D1FEB96AB3E`.
+`verify-current-artifact-target` selected it, and the complete
+`current-gate` CTest label passed 194/194 tests.  The final S64 and S65 owner
+smokes remain individually registered as
+`current.core-machine-prefix-attributes-s64-smoke` and
+`current.core-machine-fpu-interface-s65-smoke`.
+
+`M5:T316:S66:CLOSURE-AUDIT:OK`
