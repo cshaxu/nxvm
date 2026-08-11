@@ -9025,7 +9025,15 @@ static C_VOID PUSH_ESP(core_machine_cpu_execution_context *context)
     else
     {
         cpu_state.data.ip++;
-        TYPE_TRACE_CHECK_RETURN(_e_push(context, TYPE_REFERENCE_OF(cpu_state.data.sp), 2));
+        if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_8086)
+        {
+            type_unsigned_16 value = cpu_state.data.sp - 2;
+
+            TYPE_TRACE_CHECK_RETURN(_e_push(context, TYPE_REFERENCE_OF(value), 2));
+        }
+        else
+            TYPE_TRACE_CHECK_RETURN(_e_push(context,
+                TYPE_REFERENCE_OF(cpu_state.data.sp), 2));
     }
     TYPE_TRACE_CALL_END;
 }
@@ -10672,16 +10680,25 @@ static C_VOID MOV_SREG_RM16(core_machine_cpu_execution_context *context)
 }
 static C_VOID INS_8F(core_machine_cpu_execution_context *context)
 {
+    type_unsigned_8 modrm;
+    type_unsigned_32 value;
+
     TYPE_TRACE_CALL_BEGIN("INS_8F");
     if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
     {
         _adv;
-        TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize));
-        switch (instruction_state.data.cr)
+        TYPE_TRACE_CHECK_RETURN(_s_read_cs(context, cpu_state.data.eip,
+            TYPE_REFERENCE_OF(modrm), 1));
+        if (instruction_state.data.flagLock)
+            TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+        switch (_GetModRM_REG(modrm))
         {
         case 0: /* POP_RM32 */
             TYPE_TRACE_BLOCK_BEGIN("POP_RM32");
-            TYPE_TRACE_CHECK_RETURN(_e_pop(context, TYPE_REFERENCE_OF(instruction_state.data.crm), _GetOperandSize));
+            TYPE_TRACE_CHECK_RETURN(_e_pop(context,
+                TYPE_REFERENCE_OF(value), _GetOperandSize));
+            TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize));
+            instruction_state.data.crm = value;
             TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, _GetOperandSize));
             TYPE_TRACE_BLOCK_END;
             break;
@@ -10728,12 +10745,18 @@ static C_VOID INS_8F(core_machine_cpu_execution_context *context)
     else
     {
         cpu_state.data.ip++;
-        TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 2));
-        switch (instruction_state.data.cr)
+        TYPE_TRACE_CHECK_RETURN(_s_read_cs(context, cpu_state.data.ip,
+            TYPE_REFERENCE_OF(modrm), 1));
+        if (instruction_state.data.flagLock)
+            TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
+        switch (_GetModRM_REG(modrm))
         {
         case 0: /* POP_RM16 */
             TYPE_TRACE_BLOCK_BEGIN("POP_RM16");
-            TYPE_TRACE_CHECK_RETURN(_e_pop(context, TYPE_REFERENCE_OF(instruction_state.data.crm), 2));
+            TYPE_TRACE_CHECK_RETURN(_e_pop(context,
+                TYPE_REFERENCE_OF(value), 2));
+            TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 2));
+            instruction_state.data.crm = value;
             TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
             TYPE_TRACE_BLOCK_END;
             break;
@@ -14711,6 +14734,8 @@ static C_VOID INS_FF(core_machine_cpu_execution_context *context)
         case 6: /* PUSH_RM32 */
             TYPE_TRACE_BLOCK_BEGIN("PUSH_RM32");
             TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize));
+            if (instruction_state.data.flagLock)
+                TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
             TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, _GetOperandSize));
             TYPE_TRACE_CHECK_RETURN(_e_push(context, TYPE_REFERENCE_OF(instruction_state.data.crm), _GetOperandSize));
             TYPE_TRACE_BLOCK_END;
@@ -14802,6 +14827,8 @@ static C_VOID INS_FF(core_machine_cpu_execution_context *context)
         case 6: /* PUSH_RM16 */
             TYPE_TRACE_BLOCK_BEGIN("PUSH_RM16");
             TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 2));
+            if (instruction_state.data.flagLock)
+                TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
             TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
             TYPE_TRACE_CHECK_RETURN(_e_push(context, TYPE_REFERENCE_OF(instruction_state.data.crm), 2));
             TYPE_TRACE_BLOCK_END;
