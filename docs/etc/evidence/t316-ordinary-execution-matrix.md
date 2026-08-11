@@ -32,6 +32,66 @@ Classification meaning:
 - **External-coprocessor boundary** means the 80386-side interface is in the
   approved program while 8087/80287/80387 execution is expressly not.
 
+## Owner-Approved T316 Closure Plan
+
+### Scope Correction And Handoff
+
+T316 closes the first Queue candidate: the Intel 80386 ordinary-execution and
+flag-completeness foundation. It does not close the entire 80386 architecture.
+The completed S50--S63 system, interrupt, descriptor, and debug slices remain
+valid retained evidence, but they do not make the unimplemented breadth of
+those families a T316 obligation. The following work is transferred to later
+Queue packages: table-register forms (`SGDT`/`SIDT`/`LGDT`/`LIDT`), `MOV CRx`,
+general exception/IRQ/NMI delivery, far-gate and broad privilege transfers,
+paging/TLB/`INVLPG`, task switching, broad LDT/VM86/VME/PVI, and breakpoint or
+DR6/DR7 behavior. The 80387 remains out of scope; only the CPU-side external
+coprocessor interface is retained here.
+
+The previous uncommitted S64 table-register smoke was withdrawn before this
+plan. It is not evidence, was not registered as a completed slice, and is
+transferred to the later processor-control package.
+
+### Ordered Closure Slices
+
+| Planned slice | Boundary | Completion result |
+| --- | --- | --- |
+| S64 | Shared prefix and attribute-resolution closure for ordinary execution. | Every prefix category has a declared 80386 semantic class and focused evidence; no per-opcode Cartesian-product claim. |
+| S65 (planned; not yet active) | CPU-side `WAIT`/`FWAIT`, ESC, `MP`/`EM`/`TS`, and `#NM` external-coprocessor interface. | The 80386 CPU contract is proved or explicitly bounded without an 8087/80287/80387 implementation claim. |
+| S66 (planned; not yet active) | T316 task-level matrix and evidence closure audit. | No T316-owned row remains partial, missing, or unclassified; every remaining boundary is transferred or explicitly external/outside-80386. |
+
+Only S64 is admitted below. S65 and S66 are planning labels, not active
+authority; they require their own later `STATUS.md` packet after the preceding
+slice closes.
+
+### S64 Brief - Ordinary Prefix And Attribute Resolution
+
+| Field | Required record |
+| --- | --- |
+| Objective | Close T316's remaining cross-cutting ordinary-execution prefix/attribute gap: segment overrides `26/2E/36/3E/64/65`, `66`, `67`, `F0`, `F2/F3`, and repeated-prefix resolution. |
+| Scope | Audit the common prefix scanner and its precedence/length behavior; prove one representative per semantic class of ordinary instruction: memory read, memory write, fixed-segment string, REP string, register-only, LOCK-legal RMW, and LOCK-illegal form. Include 80386 accepted combinations, pre-386 `66`/`67` rejection, and the existing separate legacy-LOCK debt boundary. |
+| Non-goals | Do not enumerate every prefix/opcode Cartesian product; do not revise legacy LOCK legality globally; do not implement system-control, paging, task, VME/PVI, 80387, or change shared decoder policy absent a reproduced defect and caller sweep. |
+| Files and quality surface | Expected: one owner smoke, CMake target/current-gate registration, this matrix and `STATUS.md`; production only if a focused defect reproduces. Preserve the existing decoder style; no abstraction without caller coverage. |
+| Required evidence | Exact instruction-byte lengths and EIP; segment selection or fixed-segment immunity; operand/address width; REP category and zero/one/multiple behavior where applicable; LOCK rejection before publication; full state/memory nonpublication on rejection; pending-IRQ ordering for successful representatives. |
+| Stop conditions | Stop and revise the brief if closure requires a global legacy LOCK policy, changes shared prefix semantics for an uncovered caller class, needs a broad decoder refactor, or exposes a system/exception/paging behavior outside this boundary. Record a TODO or transfer when required. |
+| Exit criteria | The prefix matrix row is no longer Partial: each prefix class is either proven for its declared ordinary semantic class, transferred to a named later Queue package, or retained as the explicit legacy-LOCK debt. Focused smoke, current-gate, governance, actual-change review, commit, and push all pass. |
+
+### S65 Brief - External Coprocessor Interface Boundary
+
+| Field | Required record |
+| --- | --- |
+| Objective | Close the CPU-side 80386 interface contract for `WAIT`/`FWAIT`, ESC `D8`--`DF`, CR0 `MP`/`EM`/`TS`, and `#NM`. |
+| Scope | Profile/mode classification, `#NM` producer and delivery boundary, WAIT behavior under relevant CR0/FPU-provider states, ESC routing/rejection, prefix/LOCK classification, state publication, and interrupt ordering. |
+| Non-goals | 8087/80287/80387 arithmetic, register stack, environment, IEEE semantics, or any external coprocessor implementation. |
+| Quality and exit | Use an owner smoke and retained FPU-profile evidence; retain one CPU owner and the existing optional-provider boundary. Close only when every CPU-side form is proved or explicitly external, all gates pass, and the result is committed/pushed. |
+
+### S66 Brief - T316 Final Closure Audit
+
+| Field | Required record |
+| --- | --- |
+| Objective | Reconcile the original ordinary-execution matrix, current source graph, focused evidence, Queue handoffs, TODO debt, artifact record, and current gates before closing T316. |
+| Scope | Every original matrix row and every S2--S65 closure; verify code/evidence ownership, no hidden partial T316 form, current-gate registration, documented handoffs, artifact identity/SHA-256, and documentation topology. |
+| Non-goals | No new instruction behavior, no reimplementation of transferred processor-control/protection/paging/task work, and no 80387 completeness claim. |
+| Exit criteria | All T316-owned forms are complete; every other form is explicitly outside-80386, external-coprocessor, TODO, or transferred to one later Queue package; final build artifact and gates are recorded; task history/Status closure passes governance; accepted commit is pushed. |
 ## Form Matrix
 
 Every row is an exhaustive named PRM-form grouping for this S1 ordinary
@@ -40,7 +100,7 @@ not an allocation of later task identifiers.
 
 | PRM form group | Current code route and profile disposition | Focused evidence | Classification and next placement |
 | --- | --- | --- | --- |
-| Prefixes `26/2E/36/3E`, `64/65`, `66/67`, `F0`, `F2/F3`; repeated-prefix resolution | Prefix loop and `_GetOperandSize`/address decode in `cpu_instructions.c`; FS/GS and `66/67` explicitly gate at 80386. | `core_machine_real_mode_386_address_smoke`, `core_machine_operand_address_smoke` (`M5:T302:OPERAND-ADDRESS-STACK:OK`), T301 baseline. | **Partial**: FS/GS and operand/address prefix paths have bounded proof, but no cross-product proof exists for every primary opcode, LOCK legality, and repeated-prefix combination. Next: ordinary operand/address subfamily. |
+| Prefixes `26/2E/36/3E`, `64/65`, `66/67`, `F0`, `F2/F3`; repeated-prefix resolution | Prefix loop and `_GetOperandSize`/address decode in `cpu_instructions.c`; FS/GS and `66/67` explicitly gate at 80386. | `core_machine_prefix_attributes_s64_smoke` (`M5:T316:S64:PREFIX-ATTRIBUTES:OK`) plus retained operand/address and string smokes. | **Complete only for T316 S64's semantic-class closure**: representative memory read/write, fixed-segment and REP strings, register/attribute decode, legal and illegal LOCK, repeated segment precedence, rejection, and IRQ ordering prove the shared ordinary prefix rules. The legacy LOCK-policy debt remains explicit; this is not an every-opcode Cartesian-product claim. |
 | Register/memory/immediate data movement: `MOV`, `XCHG`, `LEA`, `LES/LDS`, moffs, `PUSH/POP`, `PUSHA/POPA`, `PUSH imm`, `ENTER/LEAVE`, `CBW/CWD` (including 32-bit attribute variants) | Primary table routes to `MOV_*`, `XCHG_*`, `LEA_R32_M32`/`LDS_R32_M16_32`/`LES_R32_M16_32`, `PUSHA`/`POPA`, stack helpers `_kec_push/_kec_pop`, and `ENTER/LEAVE`; primary defaults do not by themselves certify 32-bit forms. | T302 stack/address focused probe; T301 prefix/profile baseline; `core_machine_les_lds_s41_smoke` (`M5:T316:S41:LES-LDS:OK`), `core_machine_pusha_popa_smoke` (`M5:T316:S42:PUSHA-POPA:OK`), `core_machine_enter_leave_smoke` (`M5:T316:S43:ENTER-LEAVE:OK`), `core_machine_gpr_push_pop_smoke` (`M5:T316:S44:GPR-PUSH-POP:OK`), S26 LEA, S27 XCHG, S29 sign-extend, and S30--S35 movement/string smokes. | **Partial**: S44 closes only general-register PUSH/POP `50`--`5F`, `FF /6`, and `8F /0`; PUSH immediate, PUSHF/POPF, PUSHA/POPA, ENTER/LEAVE, segment-register stacks, stack switching, and wider stack breadth remain partial or outside this slice. Earlier bounded S26--S43 evidence remains indexed below. |
 | Primary binary arithmetic/logical/test: `ADD/OR/ADC/SBB/AND/SUB/XOR/CMP/TEST`, accumulator immediates, Groups `80/81/83` | Primary table and `INS_80/81/83`; `_kac_arith2` uses operand read/write and `_kaf_set_flags`. | `core_machine_inc_dec_smoke` (`M5:T316:S4:TEST:OK`, `M5:T316:S7:TEST-RM-REG:OK`, `M5:T316:S8:ADD:OK`, `M5:T316:S9:ADC:OK`, `M5:T316:S10:SBB:OK`, `M5:T316:S11:OR:OK`, `M5:T316:S12:AND:OK`, `M5:T316:S13:SUB:OK`, `M5:T316:S14:XOR:OK`, `M5:T316:S15:CMP:OK`) proves the declared slices. | **Complete for this enumerated primary slice**: TEST forms admitted by S4/S7; `00`--`05` plus `/0` ADD; `08`--`0D` plus `/1` OR; `10`--`15` plus `/2` ADC; `18`--`1D` plus `/3` SBB; `20`--`25` plus `/4` AND; `28`--`2D` plus `/5` SUB; `30`--`35` plus `/6` XOR; and `38`--`3D` plus `/7` CMP, including their declared accumulator/immediate, operand/address, profile, FLAGS, publication, and fault boundaries. This does not claim the wider ordinary arithmetic/FLAGS family complete. |
 | Primary unary arithmetic: `INC/DEC` register (`40`--`4F`) and Groups `FE/FF /0,/1`; `NEG/NOT` Groups `F6/F7 /2,/3` | Register handlers `INC_*`/`DEC_*`; `INS_FE/FF`, `INS_F6/F7`; all use `_kac_arith1` and flag masks. | `core_machine_inc_dec_smoke` (`M5:T316:S2:INC-DEC:OK`, `M5:T316:S3:NOT-NEG:OK`) proves both admitted slices. | **Complete** only for T316's named INC/DEC and NOT/NEG forms: 16/32-bit register and 8/16/32-bit r/m forms, their Intel FLAGS contracts, 16/32 operand/address attributes, profile behavior, publication, and protected fault non-publication. The wider unary/arithmetic family remains **Partial**: `F6/F7 /6,/7` division is a separately named slice. |
@@ -1296,6 +1356,35 @@ registers, task switching, VME/PVI, and generic privilege or interrupt
 architecture remain outside this slice.
 
 `M5:T316:S62:CLTS:OK`
+### T316 S64 - ordinary prefix and attribute-resolution closure
+
+`core_machine_prefix_attributes_s64_smoke` owns the bounded cross-cutting
+evidence rather than enumerating every opcode/prefix Cartesian product. It
+executes all six segment overrides on memory reads, verifies repeated segment
+prefix last-wins precedence and instruction length. Independent `66h`-only
+memory read/write vectors prove 32-bit operands through the ordinary 16-bit EA
+route, while independent `67h`-only byte read/write vectors use distinct
+16-bit and 32-bit EA candidates to prove the 32-bit addressing route and
+partial-register semantics; retained `66h 67h` vectors prove the combined
+form. A register-only attribute form isolates its fixed semantic class. A
+fixed-ES string vector proves that its segment override
+changes the source without changing the fixed ES destination. It also proves
+all pre-386 `66h`/`67h`/combined rejection and 80386 legal RMW LOCK versus
+illegal LOCK rejection before register, cache, or target-memory publication.
+`F3` MOVS covers zero, one, and multiple counts, while `F2` supplies the
+alternate repeat-prefix route; both prove EIP and count/index publication.
+Mixed `F2h F3h` and `F3h F2h` SCASB vectors use equality-controlled repetition
+to prove observable last-prefix selection: the former completes REPE work and
+the latter stops REPNE after its first primitive, with exact EIP, count/index,
+FLAGS, and unchanged scanned memory.
+A pending IRQ0 after a successful prefixed memory read reaches its handler with
+the saved IP after the whole prefixed instruction and the expected PIC ISR/IRR
+state. Existing string smokes retain fixed-ES and broader REP condition proof.
+No production prefix scanner or legacy LOCK policy changed; the retained legacy
+LOCK TODO remains outside this semantic-class closure.
+
+`M5:T316:S64:PREFIX-ATTRIBUTES:OK`
+
 ### T316 S63 - SMSW/LMSW machine-status-word control forms
 
 `core-machine-msw-s63-smoke` closes only SMSW `0F 01 /4` and LMSW `0F 01
