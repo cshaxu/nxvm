@@ -68,14 +68,26 @@ or risk change requires an explicit packet/brief revision before implementation
 continues.
 
 A P is one sequential, pushed commit within an S. An executor formal delivery
-becomes a P only after coordinator review, verification, commit, and push. P1
-is the first accepted delivery; later P values record corrections, added
-evidence, or other accepted changes. A pushed P is immutable: a correction
-uses the next P rather than rewriting history. The final P is the governance
-closure for its S. Pure documentation, status, or state changes remain a P of
-the current S when they belong to that S; they do not by themselves allocate a
-new T or S.
+becomes a P only after coordinator review, verification, commit, and push.
+Every admitted S begins with P1. P1 is the complete first delivery of that S,
+not a planning marker, internal batch, or partial implementation milestone: it
+must satisfy the entire admitted S packet, including every required
+implementation, focused proof, regression/gate result, evidence artifact, and
+truthful status or governance change needed to close the S. An S may therefore
+close with P1 alone.
 
+A later P is created only when coordinator review rejects the preceding P, or
+when post-review evidence demonstrates that the preceding accepted delivery did
+not in fact meet the S contract. It is a corrective continuation of the same S,
+not a preallocated lifecycle phase. The coordinator creates one consolidated
+corrective brief containing all then-known defects and acceptance requirements;
+the executor must complete that entire corrective brief before returning it for
+review. Do not create a new P for a local vector, fixture diagnosis, individual
+gate, admission-artifact step, or status-only follow-up that P1 (or the active
+corrective P) should have included. A pushed P is immutable: a necessary
+correction uses the next P rather than rewriting history. Pure documentation,
+status, or state changes remain part of the current S when they belong to that
+S; they do not by themselves allocate a new T or S.
 Only the coordinator may create, admit, re-plan, suspend, close, cancel, or
 reorder T packages and their S tasks. The executor may question and execute an
 admitted S, but may not allocate identifiers, admit or expand S scope, create
@@ -110,17 +122,18 @@ existing named conversation and never create a duplicate role conversation.
    packet and replaces the S brief. The coordinator must not override an
    unresolved material objection merely by requesting continued work.
 4. Once the executor accepts the S contract, it creates its internal acceptance
-   checklist and executes continuously. A partial implementation, a first
-   failure diagnosis, a local smoke result, an internal batch, or packet
-   preparation is not a formal completion point. The executor formally returns
-   only with a complete S delivery, a reproducible material blocker, or a newly
-   discovered fact that changes the accepted S contract.
-5. Before formal delivery, the executor re-reads the S brief and self-reviews
-   every acceptance requirement against actual evidence. Its report includes
-   the requirement-to-evidence mapping, changed files, production/shared impact,
-   verification commands and results, known gaps, and the explicit outside-scope
-   disposition. It must not claim closure while a stated requirement lacks
-   evidence.
+   checklist and executes continuously toward a complete P1 delivery. A partial
+   implementation, a first failure diagnosis, a local smoke result, an internal
+   batch, packet preparation, registration lookup, or status update is not a
+   formal completion point and must not end the executor's P1 work. The executor
+   formally returns only with complete P1 evidence, a reproducible material
+   blocker, or a newly discovered fact that changes the accepted S contract.
+5. Before formal P1 delivery, the executor re-reads the S brief and
+   self-reviews every acceptance requirement against actual evidence. Its report
+   includes the requirement-to-evidence mapping, changed files,
+   production/shared impact, verification commands and results, known gaps, and
+   the explicit outside-scope disposition. It must not claim P1 readiness while
+   a stated requirement lacks evidence.
 6. The coordinator independently reviews the original request, S brief,
    packet, evidence, applicable rules, and actual Git/worktree changes. The
    executor report is an evidence index, not a replacement for reading changed
@@ -128,14 +141,15 @@ existing named conversation and never create a duplicate role conversation.
    accepted, commits and pushes the next P.
 7. A failed coordinator review produces one consolidated corrective review for
    that delivery: all then-known issues, evidence, required correction, and
-   re-acceptance standard. The executor implements it as the next P of the
-   same S unless the coordinator explicitly admits a separate S. The coordinator
-   does not normally direct individual implementation batches.
-8. Only after all S requirements are proven by pushed P values may the
-   coordinator authorize the final governance-closure P. It removes the active
-   packet, updates status/history and any necessary truthful governance records,
-   verifies closure, commits, and pushes. The next S is then planned from the
-   resulting repository state.
+   re-acceptance standard. The executor implements the entire corrective brief
+   as the next P of the same S unless the coordinator explicitly admits a
+   separate S. The coordinator does not normally direct individual
+   implementation batches or split a corrective P into routine sub-deliveries.
+8. When coordinator review accepts P1, it closes the S as part of that accepted
+   delivery: it removes the active packet, updates status/history and any
+   necessary truthful governance records, verifies closure, commits, and pushes.
+   The same rule applies when a corrective P is accepted. The next S is then
+   planned from the resulting repository state.
 
 The coordinator owns T planning, S admission, brief fidelity, scope decisions,
 actual-change review, P formation, and T/S closure. The executor owns
