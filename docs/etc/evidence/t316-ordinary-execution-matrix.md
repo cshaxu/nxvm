@@ -65,6 +65,7 @@ not an allocation of later task identifiers.
 | LAR/LSL `0F 02 /r`, `0F 03 /r` selector inspection | `INS_0F`, `LAR_R32_RM32`, `LSL_R32_RM32`, selector/XDT and r/m read routes. | `core_machine-lar-lsl-s57-smoke` (`M5:T316:S57:LAR-LSL:OK`). | **Complete only for T316 S57's bounded LAR/LSL query forms**: protected GDT/LDT selector inspection, declared attribute/profile/LOCK and memory-source boundaries, VM86 rejection, and PIC delivery. VERR/VERW, selector loads, and broader descriptor architecture remain outside this slice. |
 | VERR/VERW `0F 00 /4,/5` selector accessibility | `INS_0F_00` VERR/VERW cases with selector/XDT and r/m read routes. | `core-machine-verr-verw-s58-smoke` (`M5:T316:S58:VERR-VERW:OK`). | **Complete only for T316 S58**: 80286/80386 protected selector accessibility, ZF-only result, GDT/LDT, declared prefix/profile/memory-source/fault/VM86/LOCK/PIC boundaries. The other `0F 00` forms and selector-load architecture remain outside this slice. |
 | SLDT/STR/LLDT/LTR 0F 00 /0--/3 descriptor-table/task-register transfers | INS_0F_00, _s_load_ldtr, _s_load_tr, selector/XDT and r/m routes. | core-machine-dttr-s61-smoke plus retained core-machine-descriptor-system-smoke. | **Complete only for T316 S61**: 80286/80386 CPL0 default forms, 66h fixed-width and 67h attribute/memory routing, register and memory store/load, LDTR null invalidation, LTR busy publication, profile/real-mode and LOCK rejection. Retained descriptor-system vectors provide type/TI/null/present and load-atomicity boundaries. Task switch, task gates, and descriptor redesign remain outside. |
+| CLTS `0F 06` CR0.TS control form | `INS_0F` profile gate and local `CLTS` handler; no operand decoder or shared control helper. | `core-machine-clts-s62-smoke` (`M5:T316:S62:CLTS:OK`) plus retained descriptor-system control evidence. | **Complete only for T316 S62**: 80286/80386 real and protected CPL0 TS clearing, 80386 prefix/LOCK classification, protected CPL3 and VM86 failure boundaries, and pending-IRQ no-shadow. LMSW/SMSW, MOV control registers, task switching, VME/PVI, and generalized privilege/interrupt redesign remain outside. |
 | 80386 debug-register MOV `0F 21 /r`, `0F 23 /r` | `MOV_R32_DR`, `MOV_DR_R32`, and `_d_modrm_dreg`; register-only DR0--DR3/DR6/DR7 routes. | `core-machine-debug-mov-s59-smoke` (`M5:T316:S59:DEBUG-MOV:OK`). | **Complete only for T316 S59**: CPL0 80386 DR transfer, declared `66`/`67`, profile/real/privilege/LOCK and pending-IRQ boundaries. Breakpoint matching, debug exceptions, DR4/DR5 aliases, test registers, and broader debug architecture remain outside this slice. |
 | Trap Flag single-step `#DB` delivery | `ExecInt` observes TF after the completed instruction and routes vector 1 through `_e_intr_n`; protected execution must use the external/hardware delivery branch. | `core-machine-tf-db-s60-smoke` (`M5:T316:S60:TF-DB:OK`). | **Complete only for T316 S60**: real and protected CPL0 post-NOP traps, saved post-instruction IP/FLAGS, `66`/`67` prefix lengths, live handler TF/IF clearing, and lower-profile/LOCK #UD priority without a spurious vector-1 trap. DR breakpoint matching, DR6, RF, task switches, and debugger APIs remain outside this slice. || Post-80386 or reserved encodings seen in the tables: `CPUID`, `RSM`, `WBINVD`, `RDMSR/WRMSR`, `CMPXCHG`, `XADD`, `BSWAP`, undefined holes | Metadata/profile gate rejects forms above the active 80386 profile before the named table handler can establish behavior. | `cpu_profile_gate_smoke` and T309 rejection baseline. | **Outside-80386**: retain rejection; no later-IA-32 implementation is admitted by T316. |
 | `WAIT/FWAIT`, ESC `D8`--`DF`, CR0 `MP/EM/TS`, `#NM`, external coprocessor fault interface | `WAIT`, FPU escape/profile routes and CPU exception state; optional FPU provider is outside ordinary decoding. | `cpu_fpu_profile_smoke`, `cpu_fpu_profile_closure_smoke`, `fpu_escape_smoke`, `core_machine_fpu_8087_smoke`. | **External-coprocessor boundary**: only 80386-side control/reporting is in the approved program; no 8087/80287/80387 arithmetic, state, or completeness claim is made. |
@@ -1277,3 +1278,20 @@ switching, task gates, outer privilege transitions, and a general descriptor
 refactor remain outside this slice.
 
 `M5:T316:S61:DTTR:OK`
+### T316 S62 - CLTS CR0.TS control form
+
+`core-machine-clts-s62-smoke` closes only `0F 06` CLTS. It proves that the
+80286 and 80386 profiles clear precisely CR0.TS in real mode and protected
+CPL0, retaining all GPRs, FLAGS, and segment caches. On 80386, `66h`, `67h`,
+and the combined prefix are inert attributes with prefix-exact EIP; all
+pre-386 attribute forms and every LOCK combination reject before publication.
+The 80186 `0F` escape rejects, while 8086's legacy `0F` POP-CS encoding is
+not a CLTS form and is deliberately excluded. Protected CPL3 and ordinary
+VM86 reach the established no-IDT terminal boundary after CLTS's `#GP(0)`
+producer without clearing TS. A pending IRQ0 delivers immediately after a
+successful CLTS, with saved IP after the two-byte form and no extra shadow.
+No production or shared-helper change was required. LMSW/SMSW, MOV control
+registers, task switching, VME/PVI, and generic privilege or interrupt
+architecture remain outside this slice.
+
+`M5:T316:S62:CLTS:OK`
