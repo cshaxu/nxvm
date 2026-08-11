@@ -1388,19 +1388,22 @@ LOCK TODO remains outside this semantic-class closure.
 ### T316 S65 - CPU-side external-coprocessor interface
 
 `core-machine-fpu-interface-s65-smoke` closes only the CPU-side interface for
-`WAIT`/`FWAIT` and ESC `D8h`--`DFh`. It executes the forms on all four CPU
+`WAIT`/`FWAIT` and every ESC primary opcode `D8h`--`DFh`. It executes compact
+register-form representatives for every primary escape on all four CPU
 profiles with no FPU provider, retains the optional 8087 provider route, and
 classifies configured 80287/80387 profiles as the existing unsupported-provider
 boundary. It proves that ESC is consumed at the no-provider boundary without
 manufacturing an x87 result. It proves CR0 `EM` and `TS` #NM producer behavior
-for ESC, the `TS`+`MP` WAIT #NM condition, real-mode vector-7 #NM delivery and
-restart frame, and the pending-provider WAIT #MF producer boundary. The narrow
+for every ESC primary opcode, the `TS`+`MP` WAIT #NM condition, real-mode
+vector-7 #NM delivery and restart frame, and the pending-provider WAIT #MF
+producer boundary. The narrow
 `ExecFinal` vector-7 route is exercised by both CPU-side #NM producers; their
 only callers are `FPU_ESCAPE` and `WAIT`. It also proves individual and
 combined 80386 `66h`/`67h` lengths, the complete pre-386 attribute rejection
-grid, LOCK rejection before CPU publication, and successful WAIT/ESC pending-
-PIC delivery after the instruction. Retained profile and escape smokes cover
-metadata and configured FPU profiles.
+grid, LOCK rejection before CPU publication, protected vector-7 #NM IDT
+delivery, ordinary VM86 no-provider execution, and successful WAIT/ESC
+pending-PIC delivery after the instruction. Retained profile and escape smokes
+cover metadata and configured FPU profiles.
 
 No x87 arithmetic, register stack, environment, formats, IEEE behavior, or
 provider ABI claim is made; those remain the external-coprocessor boundary.
