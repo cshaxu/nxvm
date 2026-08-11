@@ -16,6 +16,11 @@ in-scope form is partial, missing, or unclassified. A family candidate advances
 only when its whole assigned matrix is resolved by implementation and focused
 evidence, or by an approved boundary classification.
 
+1. **Test-corpus quality corrective.** Repair the project-owned CPU smoke corpus before
+   new 80386 feature work: target-local strict GCC coverage, project-type
+   vocabulary, test-only fixture consolidation, and a package audit. This is a
+   bounded test/governance repair; it does not redefine or remove any 80386DX
+   capability candidate below.
 1. **80386DX ordinary execution and flag-completeness foundation.** Complete
    the remaining ordinary instruction, operand-size, address-size, flag, and
    string/control families against the Intel 80386 architecture. Reuse an
