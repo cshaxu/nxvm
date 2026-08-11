@@ -58,6 +58,7 @@ not an allocation of later task identifiers.
 | 80386 `0F A4/A5/AC/AD` SHLD/SHRD | `SHLD_*`/`SHRD_*`, `_kaf_set_flags`, 80386 metadata gate. | `core_machine_double_shift_smoke` (`M5:T310:S6:DOUBLE-SHIFT:OK`) covers forms, count zero, profile rejection, and access failure. | **Complete** for the declared T310 double-shift matrix. |
 | 80386 `0F AF` two-operand IMUL; `0F BC/BD` BSF/BSR; `0F B6/B7/BE/BF` MOVZX/MOVSX | `IMUL_R32_RM32`, `BSF/BSR`, `MOVZX/MOVSX` through `INS_0F` and metadata gate. | `core_machine_imul2_smoke` (`M5:T310:S8:IMUL2:OK`), `core_machine_bit_scan_smoke` (`M5:T310:S7:BIT-SCAN:OK`), `core_machine_movx_smoke` (`M5:T310:S4:MOVX:OK`). | **Complete** for each declared T310 form matrix, including profile rejection and named memory/fault boundaries. |
 | 80386 `0F A0/A1/A8/A9` FS/GS push/pop and `0F B2/B4/B5` LSS/LFS/LGS | `INS_0F` table and segment-load routes, with profile checks; `_e_load_far` loads the selector before publishing the destination offset and sets the maskable-IRQ shadow only for SS. | `core_machine_fs_gs_stack_smoke` (`M5:T316:S23:FS-GS-STACK:OK`) and `core_machine_lss_lfs_lgs_smoke` (`M5:T316:S24:LSS-LFS-LGS:OK`). | **Complete only for T316 S23's FS/GS stack forms and S24's LSS/LFS/LGS matrix**: default/`66h` operand size, memory-only form, 80386 gate, selected real/protected publication, bounded source-fault non-publication, and the SS-only IRQ shadow. FS/GS prefix consumers, `LES`/`LDS`, MOV/POP other segment-register families, and broader privilege semantics remain **Partial**. |
+| ARPL `63 /r` selector RPL adjustment | `ARPL_RM16_R16` with `_d_modrm`, `_m_read_rm`, and `_m_write_rm`; the handler requires protected mode and profile 80286 or later. | `core_machine_arpl_s53_smoke` (`M5:T316:S53:ARPL:OK`) executes the bounded S53 vectors. | **Complete only for T316 S53**: r/m16,r16 RPL comparison/update and ZF semantics, register and memory destinations, declared segment/address attributes, profile/LOCK rejection, protected operand-access boundary, and PIC delivery. Descriptor validation/loading, MOV/POP Sreg, LAR/LSL/VERR/VERW, and general segment privilege architecture remain outside this slice. |
 | Post-80386 or reserved encodings seen in the tables: `CPUID`, `RSM`, `WBINVD`, `RDMSR/WRMSR`, `CMPXCHG`, `XADD`, `BSWAP`, undefined holes | Metadata/profile gate rejects forms above the active 80386 profile before the named table handler can establish behavior. | `cpu_profile_gate_smoke` and T309 rejection baseline. | **Outside-80386**: retain rejection; no later-IA-32 implementation is admitted by T316. |
 | `WAIT/FWAIT`, ESC `D8`--`DF`, CR0 `MP/EM/TS`, `#NM`, external coprocessor fault interface | `WAIT`, FPU escape/profile routes and CPU exception state; optional FPU provider is outside ordinary decoding. | `cpu_fpu_profile_smoke`, `cpu_fpu_profile_closure_smoke`, `fpu_escape_smoke`, `core_machine_fpu_8087_smoke`. | **External-coprocessor boundary**: only 80386-side control/reporting is in the approved program; no 8087/80287/80387 arithmetic, state, or completeness claim is made. |
 
@@ -1095,3 +1096,29 @@ Same-CPL and real IRET, task/NT and VM86/VME/PVI returns, error-code frames,
 and generic IDT, IRQ, and NMI behavior remain outside S52.
 
 `M5:T316:S52:IRET-OUTER:OK`
+
+### T316 S53 - ARPL selector RPL adjustment
+
+`core_machine_arpl_s53_smoke` closes only `ARPL r/m16,r16` (`63 /r`) in
+protected mode on 80286/80386. It executes all register-direct encodings and
+both no-change and RPL-raise paths, proving that only the destination selector
+RPL and ZF are published. Memory vectors cover DS and SS defaults, ES/FS/GS
+overrides, and 80386 `67h`/`66h` combined addressing; `66h` leaves ARPL's
+word payload unchanged. Real mode and 8086/80186 rejection, pre-386
+`66h`/`67h` rejection, and 80386 LOCK rejection retain CPU state and the
+candidate memory image.
+
+The protected access-boundary vector records the installed no-IDT diagnostic
+handler boundary for an out-of-limit r/m destination: its candidate and
+adjacent word, ECX, and all segment caches remain unchanged; EIP and SP are
+exception-delivery state, while the saved handler-frame FLAGS preserve the
+pre-instruction value. A protected 80386 IRQ0 fixture uses a standard
+interrupt gate and the STI one-instruction inhibition window: ARPL executes,
+then delivery enters the IRQ handler with return IP `3`, correct ZF/result,
+saved pre-gate FLAGS, preserved non-stack GPRs/caches, and PIC ISR/IRR state.
+ARPL does not descriptor-validate either selector and does not alter segment
+caches. No production or shared helper changed.
+Descriptor loading, MOV/POP segment-register forms, LAR/LSL/VERR/VERW, and
+broader selector privilege architecture remain outside S53.
+
+`M5:T316:S53:ARPL:OK`
