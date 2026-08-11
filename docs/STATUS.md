@@ -2,28 +2,9 @@
 
 ## Current Work
 
-**Active: M5 T317 S1.** Apply target-local strict GCC compilation to every
-T316-added CPU smoke target in Coordinated Dual-Session Mode.
+**Idle.** M5 T317 S1 is accepted and closed; T317 S2 requires a
+separately admitted packet.
 
-## M5 T317 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New; T317 is the owner-approved test-corpus quality corrective package following closed T316. |
-| Admission And Approval | Owner approved the audit findings and the ordered T317 plan in `docs/etc/evidence/t317-test-corpus-quality-plan.md`; this is S1 of four planned quality-corrective slices. |
-| Objective | Apply `-Wall -Wextra -Wpedantic -Werror` as GCC target-local options to all 47 T316-added `tests/machine` smoke executable targets, make only the warning-clean behavior-preserving owner-smoke edits required for that fixed policy, and reconcile the retained `fpu_escape_smoke` current-gate contract with T316 S65's delivered real-mode `#NM` vector-7 behavior; do not imply dependency or global coverage. |
-| Non-goals | No global compiler flags; no options on inherited production targets; no change to CPU execution semantics, `#NM` production delivery, provider ABI, FPU implementation, type migration beyond edits inherently required to eliminate a strict diagnostic, fixture refactor, public ABI, or target-graph redesign. The permitted retained-test contract migration must validate existing S65 behavior, not alter it. |
-| Reference Baseline | `aeeefce6` / `vm-0-5-0316`; the 47-target audited inventory in the T317 plan is authoritative. |
-| Files And ABI Surface | Expected `CMakeLists.txt`, `cmake/verify_t317_strict_cpu_smoke_coverage.cmake`, the 47 governed owner smoke sources only when required to eliminate an emitted strict diagnostic, `tests/machine/fpu_escape_smoke.c` for the sole retained-test contract migration, `docs/TODO.md`, T317 evidence, and `STATUS.md`; no production or public-interface source. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/CODING.md`, `docs/rules/DOCUMENT.md`, `docs/design/CODING.md`, and the T317 plan. |
-| Verification | Fresh GCC configure; build all 47 targets; actual Ninja command audit verifies each target includes all four options; exact target inventory; `fpu_escape_smoke` real-mode vector-7 handler/frame/restart proof for ESC+EM and WAIT+TS+MP; documentation governance, diff check, and full current-gate. |
-| Expected Markers | `verify-t317-strict-cpu-smoke-coverage` is the deterministic 47-target command-audit marker; its source-remediation inventory is `docs/etc/evidence/t317-s1-strict-gcc-evidence.md`. No runtime marker changes. |
-| Asset Needs | None; deterministic local GCC/Ninja build only. |
-| Reporting Requirements | Executor first confirms or materially objects, then continues under its existing durable session goal. Return only a complete committed/pushed P1 or a reproducible material blocker; no per-target partial reports. The P1 report must inventory every source edit by warning class and state the no-behavior-change evidence; it must separately explain the retained FPU smoke migration and link its later-execution TODO. |
-| Stop Conditions | Stop for a target not reliably attributable to T316, a warning that requires inherited/product changes, any edit that changes test behavior or assertion meaning beyond the specifically approved `fpu_escape_smoke` migration to already-delivered `#NM` vector-7 semantics, any need to change `#NM` production delivery/provider ABI/FPU execution, or any need for global/transitive flag policy; report the exact target, command, diagnostic, and minimal alternative. |
-| Exit Criteria | All 47 named T316-added smoke targets show the four options in actual Ninja GCC compile commands and build warning-clean; every owner-smoke edit is a minimal warning-remediation with no behavior/assertion change; the one approved retained `fpu_escape_smoke` migration proves existing vector-7 delivery without production change and records later FPU-execution debt; no unrelated target loses or gains policy; all required gates pass; implementation P is committed/pushed and passes coordinator review and governance closure. |
-| Original Owner Request | Repair the proven strict-GCC, project-type, and fixture-quality gaps as a governed T317 package before resuming ordinary 80386 capability work. |
-| Similar-Issue Sweep | Compare every T316-added smoke source to its executable target and current-gate registration; inspect every existing strict-option block for unintended target scope. |
 ## Current Technical Baseline
 
 - **Current task artifact:** `current-gcc` and
@@ -44,6 +25,7 @@ T316-added CPU smoke target in Coordinated Dual-Session Mode.
 
 | Task | Compact result |
 | --- | --- |
+| T317 S1 | Accepted target-local strict GCC coverage for all 47 T316-added CPU smoke targets with a CMake inventory and actual-Ninja command gate; warning-clean, behavior-preserving smoke remediation; retained real-mode #NM vector-7 FPU frame regression; and future x87 admission debt. Coordinator verified strict audit, documentation governance, diff check, and 194/194 current-gate tests. |
 | T316 | Closed the declared 80386 ordinary-execution slices through S66. Residual parent-family breadth remains explicitly transferred in the S66 matrix to named later Queue packages, the legacy LOCK TODO, or the external-coprocessor boundary; no whole-80386 claim. Artifact `nxvm_0_5_0316.exe` SHA-256 `672F11D9174B910836F9FF02BC31025C064DE9F7D5F1667A31443D1FEB96AB3E`; 194 current-gate tests passed. |
 | T314 | Closed the EGA CRTC 13h bound, registered the deterministic xasm smoke, restored six historical target-local strict GCC sets while retaining three selected libraries, and added the CRTC static closure verifier; the two inherited-governance debts remain. Its 0315 artifact, 52 gates, 147 CTests, and S2/S3/S6 markers passed. |
 | T313 | Completed construction-failure atomicity and startup-failure visibility: single RAM allocation, transactional port/controller assembly, visible session start failure, and explicit debugger mappings. Its accepted artifact, 51 gates, 145 CTests, and S2--S6 focused markers passed. |
