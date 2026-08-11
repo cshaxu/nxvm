@@ -2,9 +2,28 @@
 
 ## Current Work
 
-**Idle.** M5 T317 S2 is accepted and closed; T317 S3 requires a
-separately admitted packet.
+**Active: M5 T317 S3.** Consolidate governed CPU smoke lifecycle mechanics into
+test-only support without changing instruction-family assertions in Coordinated Dual-Session Mode.
 
+## M5 T317 S3 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Corrective; S3 is the next owner-approved corrective slice inside latest open T317, following accepted S2. |
+| Admission And Approval | Owner approved the ordered T317 plan and directed the coordinator to drive T317 through completion with the existing executor; S3 implements its test-only fixture-consolidation requirement. |
+| Objective | Centralize repeated behavior-neutral CPU-smoke mechanics: machine creation, execution-provider bind/freeze/reset, real-mode preparation, bounded run, and copied observation move to `tests/support`; instruction input, GDT/IDT/PIC setup, family assertions, and diagnostic policy remain in owner smokes. |
+| Non-goals | No production/public API or `src/` change; no test-only mirror state, product-visible interface, generic test framework, assertion/marker/input/behavior change, target-policy change, or consolidation of instruction-family, descriptor, interrupt, port, or device semantics. |
+| Reference Baseline | `1124eb3c` / `vm-0-5-0316`; the S1 47-source inventory and S2 type-vocabulary boundary remain authoritative. |
+| Files And ABI Surface | Expected `tests/support/core_machine_cpu_fixture.h`, governed owner smokes that consume a clearly identical support operation, CMake/evidence/`STATUS.md`; no `src/` production or public-interface path. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/CODING.md`, `docs/rules/DOCUMENT.md`, `docs/design/CODING.md`, and `docs/etc/evidence/t317-test-corpus-quality-plan.md`. |
+| Verification | Record pre/post caller inventory and every migration/local-exception disposition; focused proof for each support operation's representative consumers; prove no `src/` source includes `tests/support`; rerun type and strict gates, documentation governance, diff check, and full current-gate. |
+| Expected Markers | A deterministic S3 support-caller inventory/evidence record naming centralized operations, migrated callers, and retained owner-local semantics; existing runtime markers are unchanged. |
+| Asset Needs | None; deterministic local C/GCC/Ninja test corpus only. |
+| Reporting Requirements | Executor first confirms or materially objects, then continues under its existing durable session goal. Return only a complete committed/pushed P1 or reproducible material blocker; no partial reports. P1 maps each helper's responsibility to every migrated caller and every deliberate local exception. |
+| Stop Conditions | Stop if a proposed helper carries instruction, descriptor, interrupt, port, device, or assertion semantics; would mirror mutable machine state; lacks caller coverage; needs a public/product API; or cannot preserve owner behavior mechanically. |
+| Exit Criteria | All duplicate mechanics matching the admitted support-operation shapes are centralized or explicitly retained with a precise local-semantic reason; every helper has caller inventory and focused evidence; no `src/` include of support and no product/API change; all required gates pass; implementation P is committed/pushed and passes coordinator review and governance closure. |
+| Original Owner Request | Repair the proven strict-GCC, project-type, and fixture-quality gaps as a governed T317 package before resuming ordinary 80386 capability work. |
+| Similar-Issue Sweep | Search the 47 inventory sources for create/bind/freeze/reset, real-mode preparation, run/result/diagnostic/copy shapes; compare all hits with support operations and record migrated or retained-local disposition. |
 ## Current Technical Baseline
 
 - **Current task artifact:** `current-gcc` and

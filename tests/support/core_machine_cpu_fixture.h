@@ -36,6 +36,23 @@ static inline t_cpu test_core_machine_fixture_capture_cpu_after_run(
     return observation;
 }
 
+/*
+ * This preserves the corpus' established short-circuit lifecycle: it does
+ * not add cleanup or validation policy.  Owner smokes retain all device and
+ * instruction-specific setup before or after this fixed sequence.
+ */
+static inline C_INT test_core_machine_fixture_create_bind_freeze_reset(
+    const core_machine_config *config,
+    const core_machine_execution_provider *provider, C_VOID *provider_owner,
+    core_machine **out_machine)
+{
+    return core_machine_create(config, out_machine) == TYPE_STATUS_OK &&
+        core_machine_bind_execution_provider(*out_machine, provider,
+            provider_owner) == TYPE_STATUS_OK &&
+        core_machine_freeze_execution_providers(*out_machine) == TYPE_STATUS_OK &&
+        core_machine_reset(*out_machine) == TYPE_STATUS_OK;
+}
+
 static inline type_status test_core_machine_fixture_register_reset_mapping(
     core_machine *machine, type_unsigned_32 linear, type_unsigned_32 physical,
     STD_SIZE_T bytes)

@@ -30,12 +30,8 @@ static C_INT sign_extend_prepare(core_machine_cpu_profile profile,
     };
 
     STD_MEMSET(state, 0, sizeof(*state));
-    return core_machine_create(&config, &state->machine) == TYPE_STATUS_OK &&
-        core_machine_bind_execution_provider(state->machine,
-            &sign_extend_provider, state) == TYPE_STATUS_OK &&
-        core_machine_freeze_execution_providers(state->machine) ==
-            TYPE_STATUS_OK &&
-        core_machine_reset(state->machine) == TYPE_STATUS_OK;
+return test_core_machine_fixture_create_bind_freeze_reset(&config,
+        &sign_extend_provider, state, &state->machine);
 }
 
 static C_INT sign_extend_run(sign_extend_machine *state, const type_unsigned_8 *code,
