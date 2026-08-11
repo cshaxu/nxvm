@@ -28,10 +28,8 @@ static C_INT imul_s56_prepare(core_machine **machine,
     };
 
     return core_machine_create(&config, machine) == TYPE_STATUS_OK &&
-        core_machine_bind_execution_provider(*machine,
-            &imul_s56_execution_provider, *machine) == TYPE_STATUS_OK &&
-        core_machine_freeze_execution_providers(*machine) == TYPE_STATUS_OK &&
-        core_machine_reset(*machine) == TYPE_STATUS_OK &&
+        test_core_machine_fixture_bind_freeze_reset(*machine,
+            &imul_s56_execution_provider, *machine) &&
         test_core_machine_fixture_prepare_real_mode_execution(*machine, 0u);
 }
 

@@ -27,7 +27,7 @@ machine, so its failure order and ownership match the previous caller
 expression.  It has no instruction, device, descriptor, interrupt, assertion,
 or result-policy input.
 
-Migrated callers are:
+Thirty-five callers use the complete helper:
 
 - `core_machine_cli_sti_smoke.c`, `core_machine_cmps_smoke.c`,
   `core_machine_eflags_local_smoke.c`, `core_machine_fs_gs_stack_smoke.c`,
@@ -40,7 +40,21 @@ Migrated callers are:
   `core_machine_pusha_popa_smoke.c`, `core_machine_pushf_popf_s47_smoke.c`
 - `core_machine_pushf_popf_smoke.c`, `core_machine_scas_smoke.c`,
   `core_machine_sign_extend_smoke.c`, `core_machine_sreg_mov_smoke.c`,
-  `core_machine_stos_smoke.c`, `core_machine_xchg_smoke.c`
+  `core_machine_stos_smoke.c`, `core_machine_xchg_smoke.c`,
+  `core_machine_clts_s62_smoke.c`, `core_machine_direct_flags_smoke.c`,
+  `core_machine_dttr_s61_smoke.c`, `core_machine_enter_leave_smoke.c`,
+  `core_machine_fpu_interface_s65_smoke.c`, `core_machine_gpr_mov_smoke.c`,
+  `core_machine_debug_mov_s59_smoke.c`, `core_machine_inc_dec_smoke.c`,
+  `core_machine_rotate_smoke.c`, `core_machine_tf_db_s60_smoke.c`
+
+Six callers use `test_core_machine_fixture_bind_freeze_reset`, which keeps the
+creation-before-provider-owner, device-installation-before-bind, or
+creation-failure ownership local while centralizing the mechanically identical
+lifecycle tail:
+
+- `core_machine_bound_s54_smoke.c`, `core_machine_imul_immediate_s56_smoke.c`,
+  `core_machine_lar_lsl_s57_smoke.c`, `core_machine_port_io_s55_smoke.c`,
+  `core_machine_port_strings_smoke.c`, `core_machine_verr_verw_s58_smoke.c`
 
 The existing `prepare_real_mode_execution` remains the only centralized
 real-mode preparation shape, and `capture_cpu_after_run` remains the copied
@@ -50,11 +64,9 @@ classification, or state observation point.  Those inputs cannot be made
 implicit in support without creating the prohibited framework or moving
 instruction-family semantics.
 
-The remaining direct lifecycle shapes are retained only where their sequence
-is interleaved with owner-local port/device installation, construction-derived
-provider ownership, explicit destruction/rollback, or diagnostic failure
-classification.  They are not equivalent to the helper's uninterrupted
-four-operation contract.
+The other six inventory sources contain no create/bind/freeze/reset lifecycle
+shape; their shared machine setup is intentionally outside this S3 operation
+boundary.  No governed source retains a direct bind/freeze/reset chain.
 
 ## Boundary and focused proof
 
