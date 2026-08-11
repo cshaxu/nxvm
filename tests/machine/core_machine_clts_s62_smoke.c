@@ -30,11 +30,8 @@ static C_INT clts_s62_prepare(clts_s62_machine *state,
     };
 
     STD_MEMSET(state, 0, sizeof(*state));
-    return core_machine_create(&config, &state->machine) == TYPE_STATUS_OK &&
-        core_machine_bind_execution_provider(state->machine, &clts_s62_provider,
-            state) == TYPE_STATUS_OK &&
-        core_machine_freeze_execution_providers(state->machine) == TYPE_STATUS_OK &&
-        core_machine_reset(state->machine) == TYPE_STATUS_OK &&
+    return test_core_machine_fixture_create_bind_freeze_reset(&config,
+        &clts_s62_provider, state, &state->machine) &&
         test_core_machine_fixture_prepare_real_mode_execution(state->machine, 0u);
 }
 

@@ -72,10 +72,8 @@ static C_INT port_strings_prepare(core_machine_cpu_profile profile,
     return core_machine_create(&config, &state->machine) == TYPE_STATUS_OK &&
         core_machine_install_port_provider(state->machine, 0x00e0u, 0x00e0u,
             &port_strings_provider, &state->port) == TYPE_STATUS_OK &&
-        core_machine_bind_execution_provider(state->machine,
-            &port_strings_execution_provider, state) == TYPE_STATUS_OK &&
-        core_machine_freeze_execution_providers(state->machine) == TYPE_STATUS_OK &&
-        core_machine_reset(state->machine) == TYPE_STATUS_OK &&
+        test_core_machine_fixture_bind_freeze_reset(state->machine,
+            &port_strings_execution_provider, state) &&
         test_core_machine_fixture_prepare_real_mode_execution(state->machine, 0u);
 }
 
