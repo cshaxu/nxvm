@@ -263,6 +263,9 @@ target_link_libraries(core-machine-cmps-smoke PRIVATE core-machine)
 add_executable(core-machine-port-strings-smoke
     tests/machine/core_machine_port_strings_smoke.c)
 target_link_libraries(core-machine-port-strings-smoke PRIVATE core-machine)
+add_executable(core-machine-port-io-s55-smoke
+    tests/machine/core_machine_port_io_s55_smoke.c)
+target_link_libraries(core-machine-port-io-s55-smoke PRIVATE core-machine)
 
 add_executable(core-machine-lahf-sahf-smoke
     tests/machine/core_machine_lahf_sahf_smoke.c)
@@ -1255,6 +1258,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-scas-smoke
     core-machine-cmps-smoke
     core-machine-port-strings-smoke
+    core-machine-port-io-s55-smoke
     core-machine-lahf-sahf-smoke
     core-machine-direct-flags-smoke
     core-machine-double-shift-smoke
