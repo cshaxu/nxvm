@@ -20,7 +20,9 @@ static const core_machine_execution_provider rotate_provider = {
 static C_INT rotate_prepare(core_machine_cpu_profile profile, rotate_machine *state)
 {
     const core_machine_config config = {
-        CORE_MACHINE_MINIMUM_MEMORY_BYTES, profile, CORE_MACHINE_FPU_PROFILE_NONE
+        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .cpu_profile = profile,
+        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
     if (state == STD_NULL)
         return 0;

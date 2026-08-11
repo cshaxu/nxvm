@@ -24,8 +24,11 @@ static const core_machine_execution_provider enter_leave_provider = {
 static C_INT enter_leave_prepare(core_machine_cpu_profile profile,
     enter_leave_machine *state)
 {
-    const core_machine_config config = {CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        profile, CORE_MACHINE_FPU_PROFILE_NONE};
+    const core_machine_config config = {
+        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .cpu_profile = profile,
+        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
+    };
 
     STD_MEMSET(state, 0, sizeof(*state));
     return core_machine_create(&config, &state->machine) == TYPE_STATUS_OK &&
@@ -432,7 +435,6 @@ static C_INT enter_leave_test_protected_stack32(C_VOID)
     t_cpu after;
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
-    uint32_t old_bp = 0x55667788u;
     uint32_t parent = 0x11112222u;
     C_INT failed = !enter_leave_prepare(CORE_MACHINE_CPU_PROFILE_80386,
         &state);

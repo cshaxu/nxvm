@@ -31,8 +31,11 @@ static const core_machine_execution_provider inc_dec_provider = {
 
 static C_INT inc_dec_prepare(core_machine_cpu_profile profile, inc_dec_machine *state)
 {
-    const core_machine_config config = { CORE_MACHINE_MINIMUM_MEMORY_BYTES, profile,
-        CORE_MACHINE_FPU_PROFILE_NONE };
+    const core_machine_config config = {
+        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .cpu_profile = profile,
+        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
+    };
     if (state == STD_NULL) return 0;
     STD_MEMSET(state, 0, sizeof(*state));
     if (core_machine_create(&config, &state->machine) != TYPE_STATUS_OK ||
@@ -1672,7 +1675,6 @@ static C_INT inc_dec_test_sbb_boundaries(C_VOID)
         if (failed) return 0;
     }
     for (form = 0u; form != sizeof(sign_extended_immediate_lengths); ++form) {
-        const uint8_t bytes = form == 0u ? 1u : (form == 1u ? 2u : 4u);
         const uint32_t initial = form == 2u ? 0u : 0xaabb0000u;
         const uint32_t expected = form == 2u ? 1u : 0xaabb0001u;
         inc_dec_machine state;

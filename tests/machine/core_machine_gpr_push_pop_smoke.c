@@ -23,8 +23,11 @@ static const core_machine_execution_provider gpr_push_pop_provider = {
 static C_INT gpr_push_pop_prepare(core_machine_cpu_profile profile,
     gpr_push_pop_machine *state)
 {
-    const core_machine_config config = {CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        profile, CORE_MACHINE_FPU_PROFILE_NONE};
+    const core_machine_config config = {
+        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .cpu_profile = profile,
+        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
+    };
 
     STD_MEMSET(state, 0, sizeof(*state));
     return core_machine_create(&config, &state->machine) == TYPE_STATUS_OK &&
@@ -400,7 +403,6 @@ static C_INT gpr_push_pop_test_rejections(C_VOID)
     static const uint8_t locks[][4] = {{0xf0u, 0x50u}, {0xf0u, 0x58u},
         {0xf0u, 0xffu, 0xf0u}, {0xf0u, 0xffu, 0x36u, 0x20u},
         {0xf0u, 0x8fu, 0xc1u}, {0xf0u, 0x8fu, 0x06u, 0x20u}};
-    static const uint8_t invalid[] = {0x8fu, 0xc8u};
     static const core_machine_cpu_profile legacy[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286

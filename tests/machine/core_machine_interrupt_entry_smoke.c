@@ -401,7 +401,7 @@ static C_INT ie_test_external_origin(C_INT nmi, C_INT reject)
         if (!failed && !reject) {
             failed |= after.data.cs.selector != 0x000bu ||
                 after.data.esp != IE_STACK_BASE - 12u ||
-                !TYPE_GET_BIT(state.machine->shared_pic_master.data.isr, 1u) && !nmi ||
+                (!TYPE_GET_BIT(state.machine->shared_pic_master.data.isr, 1u) && !nmi) ||
                 TYPE_GET_BIT(state.machine->shared_pic_master.data.irr, 1u) ||
                 state.machine->executor_cpu.data.flagNMI;
         } else if (!failed) {

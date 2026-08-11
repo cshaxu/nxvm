@@ -20,8 +20,11 @@ static const core_machine_execution_provider pushf_provider = {
 
 static C_INT pushf_prepare(pushf_machine *state)
 {
-    const core_machine_config config = { CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_FPU_PROFILE_NONE };
+    const core_machine_config config = {
+        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
+    };
     STD_MEMSET(state, 0, sizeof(*state));
     return core_machine_create(&config, &state->machine) == TYPE_STATUS_OK &&
         core_machine_bind_execution_provider(state->machine, &pushf_provider, state) == TYPE_STATUS_OK &&

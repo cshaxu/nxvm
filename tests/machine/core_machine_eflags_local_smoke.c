@@ -18,8 +18,11 @@ static const core_machine_execution_provider eflags_provider = {
 
 static C_INT eflags_prepare_profile(core_machine_cpu_profile profile, eflags_machine *state)
 {
-    const core_machine_config config = { CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        profile, CORE_MACHINE_FPU_PROFILE_NONE };
+    const core_machine_config config = {
+        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .cpu_profile = profile,
+        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
+    };
     STD_MEMSET(state, 0, sizeof(*state));
     return core_machine_create(&config, &state->machine) == TYPE_STATUS_OK &&
         core_machine_bind_execution_provider(state->machine, &eflags_provider, state) == TYPE_STATUS_OK &&

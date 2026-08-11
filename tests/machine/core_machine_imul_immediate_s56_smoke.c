@@ -22,9 +22,9 @@ static C_INT imul_s56_prepare(core_machine **machine,
     core_machine_cpu_profile profile)
 {
     const core_machine_config config = {
-        CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        profile,
-        CORE_MACHINE_FPU_PROFILE_NONE
+        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .cpu_profile = profile,
+        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
 
     return core_machine_create(&config, machine) == TYPE_STATUS_OK &&

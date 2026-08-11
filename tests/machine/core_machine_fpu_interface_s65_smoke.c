@@ -32,7 +32,9 @@ static C_INT fpu_interface_s65_prepare(core_machine_cpu_profile profile,
     core_machine_fpu_profile fpu_profile, fpu_interface_s65_machine *state)
 {
     const core_machine_config config = {
-        CORE_MACHINE_MINIMUM_MEMORY_BYTES, profile, fpu_profile
+        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .cpu_profile = profile,
+        .fpu_profile = fpu_profile
     };
 
     if (state == STD_NULL) {

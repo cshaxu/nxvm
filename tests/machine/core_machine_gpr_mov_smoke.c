@@ -18,8 +18,11 @@ static const core_machine_execution_provider gpr_mov_provider = {
 
 static C_INT gpr_mov_prepare(core_machine_cpu_profile profile, gpr_mov_machine *state)
 {
-    const core_machine_config config = { CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        profile, CORE_MACHINE_FPU_PROFILE_NONE };
+    const core_machine_config config = {
+        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .cpu_profile = profile,
+        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
+    };
     STD_MEMSET(state, 0, sizeof(*state));
     return core_machine_create(&config, &state->machine) == TYPE_STATUS_OK &&
         core_machine_bind_execution_provider(state->machine, &gpr_mov_provider, state) ==
@@ -50,34 +53,6 @@ static C_INT gpr_mov_run(gpr_mov_machine *state, const uint8_t *code, uint8_t by
     *status = core_machine_run(state->machine, (core_machine_run_budget){1u,0u}, &result);
     *after = test_core_machine_fixture_capture_cpu_after_run(state->machine);
     return core_machine_get_cpu_diagnostic(state->machine, diagnostic) == TYPE_STATUS_OK;
-}
-
-static uint8_t gpr_mov_byte(const t_cpu *cpu, uint8_t index)
-{
-    switch (index) {
-    case 0: return cpu->data.al;
-    case 1: return cpu->data.cl;
-    case 2: return cpu->data.dl;
-    case 3: return cpu->data.bl;
-    case 4: return cpu->data.ah;
-    case 5: return cpu->data.ch;
-    case 6: return cpu->data.dh;
-    default: return cpu->data.bh;
-    }
-}
-
-static uint16_t gpr_mov_word(const t_cpu *cpu, uint8_t index)
-{
-    switch (index) {
-    case 0: return cpu->data.ax;
-    case 1: return cpu->data.cx;
-    case 2: return cpu->data.dx;
-    case 3: return cpu->data.bx;
-    case 4: return cpu->data.sp;
-    case 5: return cpu->data.bp;
-    case 6: return cpu->data.si;
-    default: return cpu->data.di;
-    }
 }
 
 static uint32_t gpr_mov_gpr(const t_cpu *cpu, uint8_t index)

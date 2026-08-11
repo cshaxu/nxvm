@@ -32,9 +32,9 @@ static C_INT prefix_attributes_s64_prepare(core_machine_cpu_profile profile,
     prefix_attributes_s64_machine *state)
 {
     const core_machine_config config = {
-        CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        profile,
-        CORE_MACHINE_FPU_PROFILE_NONE
+        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .cpu_profile = profile,
+        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
 
     if (state == STD_NULL) {
@@ -223,7 +223,6 @@ static C_INT prefix_attributes_s64_test_attributes_and_lock(C_VOID)
     static const uint8_t write32[] = { 0x66u, 0x67u, 0x89u, 0x06u };
     static const uint8_t lock_add[] = { 0xf0u, 0x01u, 0x06u, 0x00u, 0x01u };
     static const uint8_t lock_read[] = { 0xf0u, 0x8bu, 0x06u, 0x00u, 0x01u };
-    static const uint8_t legacy_attr[] = { 0x66u, 0x8bu, 0x06u, 0x00u, 0x01u };
     prefix_attributes_s64_machine state;
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;

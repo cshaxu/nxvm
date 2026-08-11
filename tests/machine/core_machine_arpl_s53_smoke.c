@@ -280,7 +280,6 @@ static C_INT arpl_s53_test_rpl_and_flags(C_VOID)
 static C_INT arpl_s53_test_memory_case(const uint8_t *program,
     uint8_t program_bytes, uint32_t address, uint8_t change)
 {
-    const uint16_t source = 0x0003u;
     const uint16_t adjacent = 0x3ca5u;
     uint16_t destination = change ? 0x5a01u : 0x5a03u;
     uint16_t after_destination = 0u;
