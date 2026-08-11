@@ -2,27 +2,8 @@
 
 ## Current Work
 
-**M5 T316 S50 - software interrupt forms.** The coordinator admitted this
-bounded ordinary-execution continuation in Coordinated Dual-Session Mode.
-
-## M5 T316 S50 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Corrective; next unused subtask of M5 T316. |
-| Admission And Approval | The owner approved autonomous continuation after T316 S49. |
-| Objective | Close only INT3 `CCh`, INT imm8 `CDh ib`, and INTO `CEh`: real/protected interrupt entry, attribute, privilege, and PIC boundaries. |
-| Non-goals | IRET, hardware IRQ/NMI, task gates/task switch, general exception/IDT refactoring, VME/PVI, outer privilege return, and post-80386 behavior are outside S50. |
-| Reference Baseline | `a4991231` / `vm-0-5-0316`, with S49 closed and pushed. |
-| Files And ABI Surface | Expected scope is a local owner smoke, CMake registration, this packet, and the T316 matrix. Production changes require a demonstrated local INT3/INT/INTO defect. |
-| Applicable Rules | Intel 80386 PRM software-interrupt, IDT gate, DPL, VM86, prefix, exception, and interrupt-entry rules are authoritative. |
-| Verification | Prove four-profile real INT3/INT/INTO OF disposition, 80386 `66h`/`67h`/combined behavior, lower-prefix and 80386 LOCK #UD/nonpublication, exact IVT/IDT frame and FLAGS effects, protected DPL allow/reject and target/IDT fault atomicity, applicable ordinary VM86 boundary, and PIC no-shadow; run focused/current registration/governance/diff/full gate. |
-| Expected Markers | `M5:T316:S50:SOFTWARE-INT:OK`. |
-| Asset Needs | None. |
-| Stop Conditions | Stop before changing shared interrupt, IDT, privilege, prefix, or exception helpers; report caller/form impact. |
-| Exit Criteria | Every declared software-interrupt form and boundary has focused executable proof; no broader exception or hardware-interrupt architecture claim. |
-| Original Owner Request | Execute the complete Intel 80386 plan in dual-session mode, using a form--implementation--test matrix, boundary review, evidence closure, and immediate push. |
-| Similar-Issue Sweep | Audit INT3/INT/INTO handlers, `_e_int3`, `_e_into`, `_e_int_n`, `_ser_int_real`, `_ser_int_protected`, prefix routes, and existing interrupt/IDT/CLI-STI evidence. |
+**Idle.** M5 T316 S50 is closed; the next 80386 matrix slice requires a
+separately admitted packet.
 
 ## Current Technical Baseline
 
@@ -44,6 +25,7 @@ bounded ordinary-execution continuation in Coordinated Dual-Session Mode.
 
 | Task | Compact result |
 | --- | --- |
+| T316 S50 | Closed software interrupts INT3 `CC`, INT imm8 `CD ib`, and INTO `CE`: four real-mode profiles, `66`/`67`/LOCK, IVT/IDT frame, DPL/VM86/fault, and pending-PIC boundaries passed. No production change was needed; 179 current-gate tests passed. |
 | T316 S49 | Closed HLT `F4`: default and `66`/`67`/LOCK form behavior, protected/VM86 privilege rejection, and IF-qualified pending-IRQ wake behavior passed. No production change was needed; 178 current-gate tests passed. |
 | T316 S48 | Closed CLI/STI `FA`/`FB`: profiles/`66`/`67`/LOCK, protected and ordinary VM86 IOPL boundaries, and exact CLI pending-IRQ inhibition versus STI one-instruction shadow coverage passed. No production change was needed; 177 current-gate tests passed. |
 | T316 S47 | Closed PUSHF/PUSHFD and POPF/POPFD `9C`/`9D`: visible FLAGS/bit1, profiles/`66`/`67`/LOCK, protected and VM86 privilege boundaries, stack #DF atomicity, and PIC no-shadow coverage passed. Corrected legacy PUSHF FLAGS-image normalization and POPFD RF preservation; 176 current-gate tests passed. |
