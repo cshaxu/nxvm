@@ -57,7 +57,7 @@ transferred to the later processor-control package.
 | --- | --- | --- |
 | S64 | Shared prefix and attribute-resolution closure for ordinary execution. | Every prefix category has a declared 80386 semantic class and focused evidence; no per-opcode Cartesian-product claim. |
 | S65 (planned; not yet active) | CPU-side `WAIT`/`FWAIT`, ESC, `MP`/`EM`/`TS`, and `#NM` external-coprocessor interface. | The 80386 CPU contract is proved or explicitly bounded without an 8087/80287/80387 implementation claim. |
-| S66 (planned; not yet active) | T316 task-level matrix and evidence closure audit. | No T316-owned row remains partial, missing, or unclassified; every remaining boundary is transferred or explicitly external/outside-80386. |
+| S66 (planned; not yet active) | T316 task-level matrix and evidence closure audit. | No declared T316 sub-slice remains partial, missing, or unclassified; every residual parent-family breadth is explicitly transferred to one later Queue package, TODO, or an external/outside-80386 boundary. |
 
 Only S64 is admitted below. S65 and S66 are planning labels, not active
 authority; they require their own later `STATUS.md` packet after the preceding
@@ -89,9 +89,9 @@ slice closes.
 | Field | Required record |
 | --- | --- |
 | Objective | Reconcile the original ordinary-execution matrix, current source graph, focused evidence, Queue handoffs, TODO debt, artifact record, and current gates before closing T316. |
-| Scope | Every original matrix row and every S2--S65 closure; verify code/evidence ownership, no hidden partial T316 form, current-gate registration, documented handoffs, artifact identity/SHA-256, and documentation topology. |
+| Scope | Every original matrix row and every S2--S65 closure; distinguish each declared T316 sub-slice from its wider parent-family inventory; verify code/evidence ownership, no hidden partial declared T316 form, current-gate registration, documented row-by-row Queue/TODO handoffs for residual breadth, artifact identity/SHA-256, and documentation topology. |
 | Non-goals | No new instruction behavior, no reimplementation of transferred processor-control/protection/paging/task work, and no 80387 completeness claim. |
-| Exit criteria | All T316-owned forms are complete; every other form is explicitly outside-80386, external-coprocessor, TODO, or transferred to one later Queue package; final build artifact and gates are recorded; task history/Status closure passes governance; accepted commit is pushed. |
+| Exit criteria | All declared T316 forms are complete; every residual parent-family form is explicitly outside-80386, external-coprocessor, TODO, or transferred in a row-by-row record to one later Queue package; final build artifact and gates are recorded; task history/Status closure passes governance; accepted commit is pushed. |
 ## Form Matrix
 
 Every row is an exhaustive named PRM-form grouping for this S1 ordinary
