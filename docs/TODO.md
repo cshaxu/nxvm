@@ -149,6 +149,12 @@ default definition of NXVM completion.
   an inherited unit is substantively changed or safely separated from a mixed
   target. Record the diagnostic baseline, exact modification scope, selected
   constraints, and regression result.
+- [ ] **Inherited test raw-type vocabulary (`TODO(Low)`).** T317 S2 proves
+    project type vocabulary only for its exact 47 owner smoke sources and
+    `tests/support/core_machine_cpu_fixture.h`. Admit any wider inherited-test
+    migration only with an owner-approved file inventory, token baseline,
+    source-equivalence review, and scoped negative/positive verifier; do not
+    claim repository-wide raw-type cleanup from the T317 gate.
 - [ ] **Linux runtime verification (`TODO(Medium)`).** Linux source is a
   portability asset, not a support claim. Add native POSIX compile and runtime
   probes after an approved POSIX environment is available; do not install WSL

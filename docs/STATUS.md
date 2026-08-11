@@ -2,8 +2,28 @@
 
 ## Current Work
 
-**Idle.** M5 T317 S3 is closed; the next T317 quality slice requires a
-separately admitted packet.
+**Active: M5 T317 S4.** Complete the T317 test-corpus quality closure audit in
+Coordinated Dual-Session Mode.
+
+## M5 T317 S4 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Corrective; S4 is the final owner-approved closure-audit slice inside latest open T317, following accepted S3. |
+| Admission And Approval | Owner approved the ordered T317 plan and directed the coordinator to drive T317 to completion with the existing executor; S4 implements its stated package-closure audit. |
+| Objective | Re-audit the exact T317 boundary and produce its factual task history: 47 target-local strict commands, the inventory-bounded project-type gate, test-support ownership and lifecycle evidence, deferred inherited migration debt, no capability-semantic change, and full current-gate. |
+| Non-goals | No CPU, x87, device, timing, product, ABI, test behavior, target-policy, or broad inherited-source migration change; no new helper or test consolidation unless a residual in-scope defect requires a separately revised brief. |
+| Reference Baseline | `2d9ceefb` / `vm-0-5-0316`; accepted S1 strict compilation, S2 type vocabulary, and S3 fixture consolidation are the evidence inputs. |
+| Files And ABI Surface | Expected `docs/history/M5-T317-*.md`, T317 evidence records, `docs/STATUS.md`, and only narrowly necessary documentation/index changes; no `src/` production or public-interface path. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/rules/CODING.md`, `docs/design/CODING.md`, and `docs/etc/evidence/t317-test-corpus-quality-plan.md`. |
+| Verification | Re-run fresh configure, strict command and type-vocabulary gates, inspect all 47 inventory entries and support caller evidence, prove no `src/` include of `tests/support`, run documentation governance and diff check, and run complete current-gates-gcc. |
+| Expected Markers | A factual M5 T317 history record maps S1--S3 outcomes, exact governed boundary, verification, no capability behavior claim, and inherited raw-type debt admission path; every closure claim has a command or indexed evidence source. |
+| Asset Needs | None; deterministic local C/GCC/Ninja test corpus only. |
+| Reporting Requirements | Executor confirms or materially objects, then returns only a complete committed/pushed P1 or reproducible material blocker. P1 must self-review every package-completion bullet, create the history record, and leave the active S4 packet for coordinator-only acceptance/closure. |
+| Stop Conditions | Stop on a residual governed corpus defect, undocumented local exception, support-to-product dependency, behavior change, missing evidence, failing required gate, or a history claim not grounded in current records. |
+| Exit Criteria | Every T317 completion-standard bullet is independently mapped to current evidence; deferred inherited type migration is explicitly bounded in TODO; history records facts without an 80386 capability-completeness claim; all gates pass; implementation P is pushed and then passes coordinator review and final T317 governance closure. |
+| Original Owner Request | Repair the proven strict-GCC, project-type, and fixture-quality gaps as a governed T317 package before resuming ordinary 80386 capability work. |
+| Similar-Issue Sweep | Re-evaluate the exact 47-source inventory, all touched test-support paths, CMake verification scripts, TODO debt, task evidence, and Status/history topology; classify every hit as closed evidence, retained local exception, or explicit deferred boundary. |
 ## Current Technical Baseline
 
 - **Current task artifact:** `current-gcc` and
