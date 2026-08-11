@@ -183,6 +183,8 @@ add_executable(core-machine-cli-sti-s48-smoke tests/machine/core_machine_cli_sti
 target_link_libraries(core-machine-cli-sti-s48-smoke PRIVATE core-machine)
 add_executable(core-machine-hlt-s49-smoke tests/machine/core_machine_hlt_s49_smoke.c)
 target_link_libraries(core-machine-hlt-s49-smoke PRIVATE core-machine)
+add_executable(core-machine-software-int-s50-smoke tests/machine/core_machine_software_int_s50_smoke.c)
+target_link_libraries(core-machine-software-int-s50-smoke PRIVATE core-machine)
 add_executable(core-machine-fs-gs-stack-smoke tests/machine/core_machine_fs_gs_stack_smoke.c)
 target_link_libraries(core-machine-fs-gs-stack-smoke PRIVATE core-machine)
 add_executable(core-machine-lss-lfs-lgs-smoke tests/machine/core_machine_lss_lfs_lgs_smoke.c)
@@ -1219,6 +1221,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-cli-sti-smoke
     core-machine-cli-sti-s48-smoke
     core-machine-hlt-s49-smoke
+    core-machine-software-int-s50-smoke
     core-machine-fs-gs-stack-smoke
     core-machine-lss-lfs-lgs-smoke
     core-machine-les-lds-smoke

@@ -48,6 +48,7 @@ not an allocation of later task identifiers.
 | Shift/rotate Groups `C0/C1/D0`--`D3` | `INS_C0/C1/D0/D1/D2/D3`; rotate paths call `_a_rol/_a_ror/_a_rcl/_a_rcr`; shift paths call `_a_shl/_a_shr/_a_sar`; `/6` remains `UndefinedOpcode`. | `core_machine_rotate_smoke` (`M5:T316:S18:ROTATE:OK`, `M5:T316:S19:SHIFT:OK`) proves the declared slices; T310's double-shift smoke remains only `SHLD/SHRD`. | **Complete only for T316 S18 rotates and S19 SHL/SAL, SHR, SAR**: Group-2 encodings, 8/16/32-bit register and memory operands, count handling, defined/undefined FLAGS boundaries, attributes, profiles, and protected access atomicity. `/6` remains #UD. |
 | One-operand multiply/divide Groups `F6/F7 /4`--`/7` | `INS_F6/F7` dispatches `/4` to `_a_mul`, `/5` to `_a_imul`, `/6` to `_a_div`, and `/7` to `_a_idiv`. | `core_machine_inc_dec_smoke` (`M5:T316:S5:MUL-IMUL:OK`, `M5:T316:S6:DIV-IDIV:OK`) covers `/4`--`/7`. | **Complete** only for T316's declared one-operand Group `F6/F7 /4`--`/7` forms at 8/16/32 bits. This does not claim the wider multiply/divide or ordinary arithmetic family complete. |
 | EFLAGS transfers, direct flag control, and HLT: `PUSHF/POPF`, `LAHF/SAHF`, `CMC/CLC/STC/CLI/STI/CLD/STD`, `HLT` | `PUSHF`, `POPF`, `SAHF`, `LAHF`, `HLT`, and primary flag handlers; protected-mode masking and halt state are local to those routes. | T302 checks selected PUSHF/POPF; `core_machine_pushf_popf_s47_smoke` (`M5:T316:S47:PUSHF-POPF:OK`), `core_machine_lahf_sahf_smoke` (`M5:T316:S39:LAHF-SAHF:OK`), `core_machine_direct_flags_smoke` (`M5:T316:S40:DIRECT-FLAGS:OK`), `core_machine_cli_sti_s48_smoke` (`M5:T316:S48:CLI-STI:OK`), and `core_machine_hlt_s49_smoke` (`M5:T316:S49:HLT:OK`) prove their named slices. | **Partial**: S47 closes only PUSHF/POPF `9C`/`9D`; S48 closes only CLI/STI `FA`/`FB`; S49 closes only HLT `F4`. IRET, VME/PVI extensions, task switching, NMI, generic interrupt architecture, and other FLAGS/control behavior remain outside these slices. |
+| Software interrupt forms: INT3 `CC`, INT imm8 `CD ib`, INTO `CE` | `INT3`, `INT_I8`, `INTO`, `_e_int3`, `_e_int_n`, `_e_into`, and real/protected interrupt serialization. | `core_machine_software_int_s50_smoke` (`M5:T316:S50:SOFTWARE-INT:OK`) proves the admitted S50 routes. | **Complete only for T316 S50**: INT3, immediate INT, and INTO default and declared prefix/profile, IVT/IDT entry, DPL/VM86/fault, LOCK, and pending-PIC boundaries. IRET, hardware IRQ/NMI, task gates/switches, VME/PVI, outer privilege returns, and generic interrupt architecture remain outside this slice. |
 | Memory strings `MOVS/CMPS/STOS/LODS/SCAS`, REP/REPE/REPNE, DF, 16/32 operand/address attributes | `MOVSB/W`, `CMPSB/W`, `STOSB/W`, `LODSB/W`, `SCASB/W`, `_kas_move_index`; primary REP loop. | `core_machine_real_mode_386_rep_cmps_smoke` (`M5:T292:S1:REP-STRING:OK`), `core_machine_movs_smoke` (`M5:T316:S33:MOVS:OK`), `core_machine_stos_smoke` (`M5:T316:S34:STOS:OK`), `core_machine_lods_smoke` (`M5:T316:S35:LODS:OK`), `core_machine_scas_smoke` (`M5:T316:S36:SCAS:OK`), and `core_machine_cmps_smoke` (`M5:T316:S37:CMPS:OK`). | **Partial**: S35 closes only LODSB `AC` and LODSW/LODSD `AD`; S36 closes only SCASB `AE` and SCASW/SCASD `AF`; S37 closes only CMPSB `A6` and CMPSW/CMPSD `A7`, including declared attributes, DS source/fixed ES destination, FLAGS, REPE/REPNE condition/restart, #UD/LOCK non-publication, protected DS/ES read-limit #DF, and PIC boundaries. INS/OUTS and broader string behavior remain partial or outside this slice. |
 | Port strings `INS/OUTS` with REP and size/address attributes | `INSB/INSW/OUTSB/OUTSW`, `_p_input`, `_p_output`, `_kpa_test_mode`, and `_kas_move_index`. | T302 I/O-string portion and `core_machine_port_strings_smoke` (`M5:T316:S38:PORT-STRINGS:OK`). | **Partial**: S38 closes only INSB `6C`, INSW/INSD `6D`, OUTSB `6E`, and OUTSW/OUTSD `6F`, including declared port width, profile, attribute, segment, REP, limit-fault, and interrupt boundaries. Ordinary IN/OUT, general I/O privilege architecture, and broader string behavior remain outside this slice. |
 | Short/near conditional control: `Jcc`, `LOOP/LOOPE/LOOPNE`, `JCXZ/JECXZ`, near `CALL/JMP/RET` | Primary `J*_REL8`, `LOOP*`, `JCXZ_REL8`, `CALL_REL32`, `JMP_REL*`, return helpers; `0F 80`--`8F` repeats the profile gate. | `core_machine_control_transfer_smoke` (`M5:T303:CONTROL-TRANSFER:OK`). | **Complete** for T303's declared real/protected 16/32 near, condition, target-limit, and atomic-fault matrix. Other control forms remain separately listed. |
@@ -1032,3 +1033,21 @@ and post-80386 behavior remain outside this slice. No production or shared
 helper change was needed.
 
 `M5:T316:S49:HLT:OK`
+
+### T316 S50 - software interrupt forms
+
+`core_machine_software_int_s50_smoke` closes only INT3 `CC`, INT imm8 `CD ib`,
+and INTO `CE`. It executes all four real-mode profiles, both INTO OF
+dispositions, IVT transfer/frame/IF-and-TF effects, and 80386 `66h`, `67h`,
+and combined prefix lengths and stack widths. Pre-386 attribute and 80386 LOCK
+forms reject with `#UD` without CPU or stack publication.
+
+The local protected fixtures prove software-gate DPL allow/reject behavior,
+selected IDT/target failure observability at the established no-IDT `#DF`
+boundary, and the ordinary VM86 route. The pending-IRQ fixture retains the
+software interrupt result and PIC ISR/IRR boundary without assigning these
+forms an interrupt shadow. No production or shared-helper change was needed.
+IRET, hardware IRQ/NMI, task gates/switches, VME/PVI, outer privilege returns,
+and generic interrupt architecture remain outside S50.
+
+`M5:T316:S50:SOFTWARE-INT:OK`
