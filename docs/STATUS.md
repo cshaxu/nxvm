@@ -2,8 +2,27 @@
 
 ## Current Work
 
-**Idle.** M5 T316 S44 is closed; the next 80386 matrix slice requires a
-separately admitted packet.
+**M5 T316 S45 - PUSH immediate forms.** The coordinator admits this Intel 80386
+ordinary-execution matrix slice in Coordinated Dual-Session Mode.
+
+## M5 T316 S45 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Corrective; contiguous next numeric subtask after T316 S44. |
+| Admission And Approval | The owner authorized autonomous progression along the Intel 80386 route; this is one complete S-level instruction-family package. |
+| Objective | Make immediate PUSH `68` and `6A` conform to Intel 8086/80386 profile, immediate-extension, operand-size, stack-image, publication, fault, and interrupt-boundary contracts. |
+| Non-goals | General-register and r/m PUSH/POP, PUSHA/POPA, PUSHF/POPF, segment-register stacks, ENTER/LEAVE, stack switching, far-call/return stack effects, and generalized stack-helper refactoring are outside S45. |
+| Reference Baseline | `c110351e` / `vm-0-5-0316`, with T316 S44 closed and pushed. |
+| Files And ABI Surface | Expected scope is local `68`/`6A` handlers only for a demonstrated defect, one owner-bound smoke, CMake current-gate registration, this Status packet, and T316 matrix evidence. No public ABI change. |
+| Applicable Rules | Intel 80386 PRM form audit; T316 matrix closure rule; dual-session roles; caller-coverage-before-abstraction; local style; no unsupported family-completeness claim. |
+| Verification | Audit `68 iw/id` and `6A ib` dispatch, metadata, immediate decode/sign extension, operand-size branches, stack helper callers, and prefix/interrupt paths; execute a dedicated smoke, exact current-gate registration, governance/whitespace checks, and the full current gate before acceptance. |
+| Expected Markers | `M5:T316:S45:PUSH-IMM:OK`; exact `6A` sign extension and `68` immediate width, 80186/80286/80386 versus 8086 profile classification, prefix/LOCK/fault/IRQ boundaries classified. |
+| Asset Needs | None. |
+| Stop Conditions | Stop for coordinator review if correctness requires changing `_e_push`, `_d_imm`, another shared decoder/helper, or behavior cannot be isolated from unadmitted stack-switch/segment/return semantics. |
+| Exit Criteria | Both declared forms are classified and focused-proven: default `68`/`6A` on 8086/80186/80286/80386; 80386 `66`, `67`, and combined attributes; `6A` sign extension at each accepted operand width; lower-profile attribute and 80386 LOCK rejection without publication; controlled protected stack write-limit faults; and pending-IRQ no-shadow. Any defect is locally corrected with a caller-impact sweep. |
+| Original Owner Request | Execute the complete Intel 80386 plan in dual-session mode, using a form--implementation--test matrix, boundary review, evidence closure, and immediate push. |
+| Similar-Issue Sweep | Review all `68`/`6A` table routes and metadata; 80186/80286/80386 versus 8086 gates; 16/32 immediate decode and sign extension; `66`/`67`/LOCK paths; stack write fault/rollback behavior; `_e_push` and `_d_imm` callers; existing stack/control tests; and pending-interrupt boundaries. |
 
 ## Current Technical Baseline
 

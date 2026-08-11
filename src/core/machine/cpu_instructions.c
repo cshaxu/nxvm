@@ -9585,9 +9585,11 @@ static C_VOID PREFIX_AddrSize(core_machine_cpu_execution_context *context)
 static C_VOID PUSH_I32(core_machine_cpu_execution_context *context)
 {
     TYPE_TRACE_CALL_BEGIN("PUSH_I32");
-    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80186)
     {
         _adv;
+        if (instruction_state.data.flagLock)
+            TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
         TYPE_TRACE_CHECK_RETURN(_d_imm(context, _GetOperandSize));
         TYPE_TRACE_CHECK_RETURN(_e_push(context, TYPE_REFERENCE_OF(instruction_state.data.cimm), _GetOperandSize));
     }
@@ -9614,10 +9616,13 @@ static C_VOID IMUL_R32_RM32_I32(core_machine_cpu_execution_context *context)
 static C_VOID PUSH_I8(core_machine_cpu_execution_context *context)
 {
     TYPE_TRACE_CALL_BEGIN("PUSH_I8");
-    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80186)
     {
         _adv;
+        if (instruction_state.data.flagLock)
+            TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
         TYPE_TRACE_CHECK_RETURN(_d_imm(context, 1));
+        instruction_state.data.cimm = (type_signed_8)instruction_state.data.cimm;
         TYPE_TRACE_CHECK_RETURN(_e_push(context, TYPE_REFERENCE_OF(instruction_state.data.cimm), _GetOperandSize));
     }
     else
