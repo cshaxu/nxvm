@@ -10,6 +10,11 @@ typedef struct fpu_interface_s65_machine {
     core_machine *machine;
 } fpu_interface_s65_machine;
 
+#define FPU_S65_GDT_POINTER 0x0100u
+#define FPU_S65_GDT_BASE 0x0300u
+#define FPU_S65_IDT_BASE 0x0400u
+#define FPU_S65_CODE_BASE 0x2000u
+
 static C_VOID fpu_interface_s65_reset(C_VOID *opaque)
 {
     fpu_interface_s65_machine *state = (fpu_interface_s65_machine *)opaque;
@@ -288,10 +293,127 @@ static C_INT fpu_interface_s65_irq(const uint8_t *instruction,
     return !failed;
 }
 
+static C_INT fpu_interface_s65_vm86(C_VOID)
+{
+    static const uint8_t esc[] = { 0xd8u, 0xc0u };
+    fpu_interface_s65_machine state;
+    core_machine_cpu_diagnostic diagnostic;
+    core_machine_run_result result;
+    t_cpu before;
+    t_cpu after;
+    type_status status;
+    C_INT failed = !fpu_interface_s65_prepare(CORE_MACHINE_CPU_PROFILE_80386,
+        CORE_MACHINE_FPU_PROFILE_NONE, &state);
+
+    if (!failed) {
+        state.machine->executor_cpu.data.cr0 |= VCPU_CR0_PE;
+        state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_VM |
+            VCPU_EFLAGS_IOPL | VCPU_EFLAGS_IF | VCPU_EFLAGS_CF;
+        state.machine->executor_cpu.data.cs.selector = 0u;
+        state.machine->executor_cpu.data.cs.base = 0u;
+        state.machine->executor_cpu.data.cs.limit = 0xffffu;
+        state.machine->executor_cpu.data.cs.dpl = 3u;
+        state.machine->executor_cpu.data.cs.flagValid = TYPE_TRUE;
+        state.machine->executor_cpu.data.ds.selector = 0u;
+        state.machine->executor_cpu.data.ds.base = 0u;
+        state.machine->executor_cpu.data.ds.limit = 0xffffu;
+        state.machine->executor_cpu.data.ds.dpl = 3u;
+        state.machine->executor_cpu.data.ds.flagValid = TYPE_TRUE;
+        state.machine->executor_cpu.data.ss.selector = 0u;
+        state.machine->executor_cpu.data.ss.base = 0u;
+        state.machine->executor_cpu.data.ss.limit = 0xffffu;
+        state.machine->executor_cpu.data.ss.dpl = 3u;
+        state.machine->executor_cpu.data.ss.flagValid = TYPE_TRUE;
+        before = state.machine->executor_cpu;
+        failed |= core_machine_memory_write(state.machine, 0u, esc,
+            sizeof(esc)) != TYPE_STATUS_OK;
+        status = core_machine_run(state.machine,
+            (core_machine_run_budget){ 1u, 0u }, &result);
+        failed |= status != TYPE_STATUS_OK ||
+            result.reason != CORE_MACHINE_STOP_BUDGET ||
+            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
+                TYPE_STATUS_OK;
+        after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        failed |= after.data.eip != sizeof(esc) || after.data.eax != before.data.eax ||
+            after.data.ecx != before.data.ecx || after.data.edx != before.data.edx ||
+            after.data.ebx != before.data.ebx || after.data.esp != before.data.esp ||
+            after.data.ebp != before.data.ebp || after.data.esi != before.data.esi ||
+            after.data.edi != before.data.edi || after.data.eflags != before.data.eflags;
+    }
+    core_machine_destroy(state.machine);
+    return !failed;
+}
+
+static C_INT fpu_interface_s65_protected_nm(C_VOID)
+{
+    static const uint8_t gdt_pointer[] = { 0x1fu,0u,0u,0x03u,0u,0u };
+    static const uint8_t idt_pointer[] = { 0xffu,0u,0u,0x04u,0u,0u };
+    static const uint8_t gdt[] = {
+        0,0,0,0,0,0,0,0, 0xffu,0xffu,0,0x20u,0,0x9au,0,0,
+        0xffu,0xffu,0,0x30u,0,0x92u,0,0, 0xffu,0xffu,0,0x40u,0,0x92u,0,0
+    };
+    static const uint8_t real_code[] = {
+        0x0fu,0x01u,0x16u,0x00u,0x01u, 0x0fu,0x01u,0x1eu,0x10u,0x01u,
+        0xb8u,0x01u,0,0x0fu,0x01u,0xf0u, 0xb8u,0x10u,0,0x8eu,0xd8u,
+        0xb8u,0x18u,0,0x8eu,0xd0u, 0xeau,0,0,0x08u,0
+    };
+    static const uint8_t esc[] = { 0xd8u,0xc0u };
+    static const uint8_t hlt = 0xf4u;
+    uint8_t idt[0x100u] = { 0u };
+    fpu_interface_s65_machine state;
+    core_machine_run_result result;
+    core_machine_cpu_diagnostic diagnostic;
+    t_cpu after;
+    C_INT failed = !fpu_interface_s65_prepare(CORE_MACHINE_CPU_PROFILE_80386,
+        CORE_MACHINE_FPU_PROFILE_NONE, &state);
+
+    idt[7u * 8u + 1u] = 0x01u;
+    idt[7u * 8u + 2u] = 0x08u;
+    idt[7u * 8u + 5u] = 0x86u;
+    if (!failed) {
+        failed |= core_machine_memory_write(state.machine, FPU_S65_GDT_POINTER,
+            gdt_pointer, sizeof(gdt_pointer)) != TYPE_STATUS_OK ||
+            core_machine_memory_write(state.machine, FPU_S65_GDT_BASE, gdt,
+            sizeof(gdt)) != TYPE_STATUS_OK || core_machine_memory_write(
+            state.machine, 0x0110u, idt_pointer, sizeof(idt_pointer)) != TYPE_STATUS_OK ||
+            core_machine_memory_write(state.machine, FPU_S65_IDT_BASE, idt,
+            sizeof(idt)) != TYPE_STATUS_OK || core_machine_memory_write(
+            state.machine, 0u, real_code, sizeof(real_code)) != TYPE_STATUS_OK ||
+            core_machine_memory_write(state.machine, FPU_S65_CODE_BASE + 0x100u,
+            &hlt, sizeof(hlt)) != TYPE_STATUS_OK;
+    }
+    if (!failed) {
+        type_status boot_status = core_machine_run(state.machine,
+            (core_machine_run_budget){256u,0u}, &result);
+        failed |= boot_status != TYPE_STATUS_OK ||
+            result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
+    }
+    if (!failed) {
+        test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
+        state.machine->executor_cpu.data.cr0 |= VCPU_CR0_EM;
+        failed |= core_machine_memory_write(state.machine, FPU_S65_CODE_BASE, esc,
+            sizeof(esc)) != TYPE_STATUS_OK || core_machine_run(state.machine,
+            (core_machine_run_budget){64u,0u}, &result) != TYPE_STATUS_OK ||
+            result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != TYPE_STATUS_OK;
+        after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        failed |= !diagnostic.last_delivered_exception.valid || !TYPE_GET_BIT(
+            diagnostic.last_delivered_exception.exception_mask,
+            VCPUINS_EXCEPT_NM) || after.data.eip != 0x101u;
+    }
+    core_machine_destroy(state.machine);
+    return !failed;
+}
+
 C_INT main(C_VOID)
 {
     static const uint8_t wait[] = { 0x9bu };
     static const uint8_t fninit[] = { 0xdbu, 0xe3u };
+    static const uint8_t escapes[][2] = {
+        { 0xd8u, 0xc0u }, { 0xd9u, 0xc0u }, { 0xdau, 0xc0u },
+        { 0xdbu, 0xe3u }, { 0xdcu, 0xc0u }, { 0xddu, 0xc0u },
+        { 0xdeu, 0xc0u }, { 0xdfu, 0xc0u }
+    };
     static const uint8_t attr_wait_66[] = { 0x66u, 0x9bu };
     static const uint8_t attr_wait_67[] = { 0x67u, 0x9bu };
     static const uint8_t attr_wait[] = { 0x66u, 0x67u, 0x9bu };
@@ -321,6 +443,12 @@ C_INT main(C_VOID)
             CORE_MACHINE_FPU_PROFILE_NONE, 0u);
         failed |= !fpu_interface_s65_success(fninit, sizeof(fninit), profile,
             CORE_MACHINE_FPU_PROFILE_NONE, 0u);
+        for (index = 0u; index != sizeof(escapes) / sizeof(escapes[0]);
+            ++index) {
+            failed |= !fpu_interface_s65_success(escapes[index],
+                sizeof(escapes[index]), profile, CORE_MACHINE_FPU_PROFILE_NONE,
+                0u);
+        }
     }
     failed |= !fpu_interface_s65_success(fninit, sizeof(fninit),
         CORE_MACHINE_CPU_PROFILE_80386, CORE_MACHINE_FPU_PROFILE_8087, 0u);
@@ -359,12 +487,27 @@ C_INT main(C_VOID)
         STD_FPRINTF(STD_STDERR, "S65 stage=nm-delivery\n");
         failed = 1;
     }
+    for (index = 0u; index != sizeof(escapes) / sizeof(escapes[0]); ++index) {
+        if (!fpu_interface_s65_nm_delivery(escapes[index],
+            sizeof(escapes[index]), VCPU_CR0_EM)) {
+            STD_FPRINTF(STD_STDERR, "S65 stage=escape-nm index=%u\n", index);
+            failed = 1;
+        }
+    }
     if (!fpu_interface_s65_irq(wait, sizeof(wait))) {
         STD_FPRINTF(STD_STDERR, "S65 stage=wait-irq\n");
         failed = 1;
     }
     if (!fpu_interface_s65_irq(fninit, sizeof(fninit))) {
         STD_FPRINTF(STD_STDERR, "S65 stage=esc-irq\n");
+        failed = 1;
+    }
+    if (!fpu_interface_s65_vm86()) {
+        STD_FPRINTF(STD_STDERR, "S65 stage=vm86\n");
+        failed = 1;
+    }
+    if (!fpu_interface_s65_protected_nm()) {
+        STD_FPRINTF(STD_STDERR, "S65 stage=protected-nm\n");
         failed = 1;
     }
     if (failed) {
