@@ -955,3 +955,15 @@ PUSH immediate, PUSHF/POPF, PUSHA/POPA, ENTER/LEAVE, segment stacks, stack
 switching, and wider stack behavior remain outside this slice.
 
 `M5:T316:S44:GPR-PUSH-POP:OK`
+
+### T316 S45 - PUSH immediate forms
+
+`core_machine_push_immediate_smoke` closes only PUSH immediate `68` and `6A`:
+8086 #UD; 80186--80386 default forms; 80386 `66`, `67`, and combined forms;
+and exact `6A` sign extension. It proves lower-profile prefix and 80386 LOCK
+rejection without publication, protected no-IDT stack-limit #DF nonpublication
+for both handlers, and immediate IRQ0 delivery after each successful form.
+Only local gates, sign extension, and LOCK rejection changed; shared immediate
+and stack helpers remain unchanged. Other stack forms remain outside this slice.
+
+`M5:T316:S45:PUSH-IMMEDIATE:OK`
