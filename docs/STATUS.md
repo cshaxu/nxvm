@@ -2,27 +2,8 @@
 
 ## Current Work
 
-**M5 T316 S53 - ARPL selector RPL adjustment.** The coordinator admitted this
-bounded ordinary-execution continuation in Coordinated Dual-Session Mode.
-
-## M5 T316 S53 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Corrective; next unused subtask of M5 T316. |
-| Admission And Approval | The owner approved this bounded continuation after T316 S52 in Coordinated Dual-Session Mode. |
-| Objective | Close only Intel ARPL `63h /r` r/m16,r16 selector RPL comparison, adjustment, and ZF semantics. |
-| Non-goals | No segment loading, MOV/POP Sreg, LAR/LSL/VERR/VERW, descriptor validation, general segment privilege architecture, VME/PVI, or post-80386 behavior. |
-| Reference Baseline | `b3ccc4f4` / `vm-0-5-0316`, with T316 S52 closed and `main` equal to `origin/main`. |
-| Files And ABI Surface | Expected scope is one focused owner smoke, CMake current registration, this packet, and the ordinary-execution matrix. Production changes require a reproduced local ARPL defect; shared operand, flag, selector, exception, or interrupt helpers require caller-impact review before change. |
-| Applicable Rules | `docs/rules/EXECUTION.md` dual-session lifecycle and evidence rules; `docs/rules/CODING.md` local style and no-premature-abstraction rules. Intel 80386 PRM ARPL form, protected-mode, operand, flag, exception, and interrupt rules are the form authority. |
-| Verification | Prove all direct RPL/ZF outcomes; 16/32-bit memory EA and segment selection; profile, mode, prefix, and LOCK disposition; protected access-fault nonpublication; and pending-PIC no-shadow. Build focused, prove exact current registration, run documentation governance, diff check, and current gate. |
-| Expected Markers | Focused smoke emits `M5:T316:S53:ARPL:OK`. |
-| Asset Needs | None; deterministic CPU fixtures only. |
-| Stop Conditions | Stop before changing a shared operand, FLAGS, selector, exception, or interrupt helper; report exact reproducer plus caller and coverage impact. |
-| Exit Criteria | Every declared ARPL direct and memory form, RPL/ZF outcome, profile/mode/attribute/LOCK, fault, and PIC boundary has focused evidence without claiming excluded selector or privilege families. |
-| Original Owner Request | Execute the complete Intel 80386 plan in dual-session mode against an Intel form--implementation--test matrix, repairing omissions and closing evidence without using Windows demand as the completeness boundary. |
-| Similar-Issue Sweep | Audit `63h`, `ARPL_RM16_R16`, `_d_modrm`, `_m_read_rm`, `_m_write_rm`, prefix/profile routes, selector tests, and existing ARPL/protected fixtures; classify descriptor loads and selector-query families as excluded boundaries. |
+**Idle.** M5 T316 S53 is closed; the next 80386 matrix slice requires a
+separately admitted packet.
 
 ## Current Technical Baseline
 
@@ -44,6 +25,7 @@ bounded ordinary-execution continuation in Coordinated Dual-Session Mode.
 
 | Task | Compact result |
 | --- | --- |
+| T316 S53 | Closed protected ARPL `63 /r`: all register ModRM/RPL/ZF outcomes, segment and 16/32 EA selection, profile/prefix/LOCK rejection, #GP handler-boundary, and STI-window PIC no-extra-shadow coverage passed. No production change was needed; 182 current-gate tests passed. |
 | T316 S52 | Closed protected IRET `CF` CPL0-to-outer returns: 16/32 and `66`/`67` forms, full target cache/GPR/stack-image proof, selector/limit handler-boundary failures, and TSS-backed IF/PIC delivery passed. No production change was needed; 181 current-gate tests passed. |
 | T316 S51 | Closed same-CPL IRET `CF`: four real profiles, `66` wide-frame and inert `67` 16-bit stack route, #UD/LOCK, protected selector/limit #DF, and IF-restoring versus IF-preserving PIC boundaries passed. No production change was needed; 180 current-gate tests passed. |
 | T316 S50 | Closed software interrupts INT3 `CC`, INT imm8 `CD ib`, and INTO `CE`: four real-mode profiles, `66`/`67`/LOCK, IVT/IDT frame, DPL/VM86/fault, and pending-PIC boundaries passed. No production change was needed; 179 current-gate tests passed. |
