@@ -243,6 +243,9 @@ target_link_libraries(core-machine-imul2-smoke PRIVATE core-machine)
 add_executable(core-machine-imul-immediate-s56-smoke
     tests/machine/core_machine_imul_immediate_s56_smoke.c)
 target_link_libraries(core-machine-imul-immediate-s56-smoke PRIVATE core-machine)
+add_executable(core-machine-lar-lsl-s57-smoke
+    tests/machine/core_machine_lar_lsl_s57_smoke.c)
+target_link_libraries(core-machine-lar-lsl-s57-smoke PRIVATE core-machine)
 add_executable(core-machine-control-transfer-smoke
     tests/machine/core_machine_control_transfer_smoke.c)
 target_link_libraries(core-machine-control-transfer-smoke PRIVATE core-machine)
@@ -1268,6 +1271,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-bit-scan-smoke
     core-machine-imul2-smoke
     core-machine-imul-immediate-s56-smoke
+    core-machine-lar-lsl-s57-smoke
     core-machine-control-transfer-smoke
     core-machine-descriptor-system-smoke
     core-machine-interrupt-entry-smoke
