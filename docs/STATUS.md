@@ -2,7 +2,7 @@
 
 ## Current Work
 
-**Idle.** M5 T316 S62 is closed; the next 80386 matrix slice requires a
+**Idle.** M5 T316 S63 is closed; the next 80386 matrix slice requires a
 separately admitted packet.
 ## Current Technical Baseline
 
@@ -24,6 +24,7 @@ separately admitted packet.
 
 | Task | Compact result |
 | --- | --- |
+| T316 S63 | SMSW/LMSW `0F 01 /4,/6`: 80286/80386 fixed r/m16 forms, MSW/PE-sticky CR0 behavior, protected privilege/VM86, attributes/LOCK, access-fault and PIC no-shadow boundaries passed. No production or shared-helper change; current-gate verification is recorded in the accepted P1. |
 | T316 S62 | CLTS `0F 06`: 80286/80386 real and protected CPL0 TS clearing; 80386 `66`/`67`/LOCK; 80186, CPL3 and VM86 boundaries; and PIC no-shadow all passed. No production or shared-helper change; 191 current-gate tests passed. |
 | T316 S61 | SLDT/STR/LLDT/LTR 0F 00 /0--/3: 80286/80386 CPL0 default, attributes and memory forms, LDTR null cache invalidation, LTR busy publication, profile/real/LOCK rejection; retained descriptor-system bounds; no production change; 190 current-gate tests. |
 | T316 S60 | Closed Trap Flag single-step `#DB` vector-1 delivery: real and protected CPL0 post-instruction frames, `66`/`67` length, live TF/IF clearing, and legacy-prefix/LOCK synchronous #UD priority passed. Corrected protected TF delivery to use the hardware interrupt serialization branch; no breakpoint or generic exception-policy expansion; 189 current-gate tests passed. |
