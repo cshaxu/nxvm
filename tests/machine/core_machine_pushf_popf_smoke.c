@@ -26,10 +26,8 @@ static C_INT pushf_prepare(pushf_machine *state)
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
     STD_MEMSET(state, 0, sizeof(*state));
-    return core_machine_create(&config, &state->machine) == TYPE_STATUS_OK &&
-        core_machine_bind_execution_provider(state->machine, &pushf_provider, state) == TYPE_STATUS_OK &&
-        core_machine_freeze_execution_providers(state->machine) == TYPE_STATUS_OK &&
-        core_machine_reset(state->machine) == TYPE_STATUS_OK;
+return test_core_machine_fixture_create_bind_freeze_reset(&config,
+        &pushf_provider, state, &state->machine);
 }
 
 static C_INT pushf_run(pushf_machine *state, const type_unsigned_8 *code, type_unsigned_8 bytes, t_cpu *after)

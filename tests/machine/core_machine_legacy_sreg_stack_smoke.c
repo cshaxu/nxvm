@@ -44,11 +44,8 @@ static C_INT legacy_sreg_stack_test_lock(C_VOID)
         C_INT failed;
 
         STD_MEMSET(&state, 0, sizeof(state));
-        failed = core_machine_create(&config, &state.machine) != TYPE_STATUS_OK ||
-            core_machine_bind_execution_provider(state.machine,
-            &legacy_sreg_stack_provider, &state) != TYPE_STATUS_OK ||
-            core_machine_freeze_execution_providers(state.machine) != TYPE_STATUS_OK ||
-            core_machine_reset(state.machine) != TYPE_STATUS_OK ||
+        failed = !test_core_machine_fixture_create_bind_freeze_reset(&config,
+            &legacy_sreg_stack_provider, &state, &state.machine) ||
             !test_core_machine_fixture_prepare_real_mode_execution(state.machine, 0u);
         if (!failed)
         {
