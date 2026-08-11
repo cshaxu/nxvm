@@ -57,11 +57,11 @@ transferred to the later processor-control package.
 | --- | --- | --- |
 | S64 | Shared prefix and attribute-resolution closure for ordinary execution. | **Complete:** every prefix category has a declared 80386 semantic class and focused evidence; no per-opcode Cartesian-product claim. |
 | S65 | CPU-side `WAIT`/`FWAIT`, ESC, `MP`/`EM`/`TS`, and `#NM` external-coprocessor interface. | **Complete:** the CPU contract is proved or explicitly bounded without an 8087/80287/80387 implementation claim. |
-| S66 (active) | T316 task-level matrix and evidence closure audit. | No declared T316 sub-slice remains partial, missing, or unclassified; every residual parent-family breadth is explicitly transferred to one later Queue package, TODO, or an external/outside-80386 boundary. |
+| S66 | T316 task-level matrix and evidence closure audit. | **Complete:** no declared T316 sub-slice remains partial, missing, or unclassified; every residual parent-family breadth is explicitly transferred to one later Queue package, TODO, or an external/outside-80386 boundary. |
 
-Only S64 is admitted below. S65 and S66 are planning labels, not active
-authority; they require their own later `STATUS.md` packet after the preceding
-slice closes.
+S64--S66 are closed. T316 is closed with the S66 transfer record, task history,
+governance, and current gates; the next Queue package must receive its own
+separate numeric-task packet.
 
 ### S64 Brief - Ordinary Prefix And Attribute Resolution
 
