@@ -2,8 +2,7 @@
 
 ## Current Work
 
-**Idle.** M5 T316 S57 is closed; the next 80386 matrix slice requires a
-separately admitted packet.
+**Idle.** M5 T316 S58 is closed; the next 80386 matrix slice requires a`nseparately admitted packet.
 
 ## Current Technical Baseline
 
@@ -25,6 +24,7 @@ separately admitted packet.
 
 | Task | Compact result |
 | --- | --- |
+| T316 S58 | Closed VERR/VERW `0F 00 /4,/5`: protected accessibility/ZF-only outcomes, GDT/LDT, `66`/`67`, DS/SS source limits, real/VM86/profile and LOCK rejection, plus PIC no-shadow passed. No production or shared-helper change was needed; current-gate evidence is registered. |
 | T316 S57 | Closed LAR/LSL `0F 02`/`0F 03` selector inspection: 80286/80386 protected selector queries, `66`/`67`/LOCK classifications, GDT/LDT and source-segment/limit boundaries, VM86 rejection, and LAR/LSL invalid/success PIC delivery passed. No production or shared-helper change was made; 186 current-gate tests passed. |
 | T316 S56 | Closed immediate three-operand IMUL `69`/`6B`: corrected the 80186 guards and 32-bit `_a_imul3` widening; profiles/`66`/`67`/LOCK, destination/source alias, protected source limits, VM86, and PIC no-shadow coverage passed. No generalized helper refactor was made; 185 current-gate tests passed. |
 | T316 S55 | Closed ordinary IN/OUT `E4`--`E7`/`EC`--`EF`: four profiles/`66`/`67`/LOCK, provider atomicity, protected TSS bitmap/IOPL and VM86 terminal boundaries, plus PIC no-shadow passed. No production or shared I/O change was needed; 184 current-gate tests passed. |
