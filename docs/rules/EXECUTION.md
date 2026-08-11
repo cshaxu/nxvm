@@ -133,23 +133,16 @@ After pushing the governance P, the coordinator reports to the owner the
 accepted implementation P, verification conclusion, closed S or T, transferred
 or deferred items, and every remaining owner decision.
 
-**Executor completion goal.** When the coordinator issues an initial S brief
-or a consolidated corrective brief for its next implementation P, the executor
-must first create or update that S's completion goal before implementation. The
-goal names the brief objective, the complete acceptance required for its
-assigned implementation P, stop conditions, and the rule that no partial
-delivery is acceptable. The first
-resume instruction after the executor stops work on that brief must require the
-executor to reconfirm or update the same goal before continuing. A local smoke,
-diagnosis, individual gate, internal batch, or other partial result neither
-ends nor replaces it. A material objection or newly discovered contract change
-pauses the goal pending coordinator direction; it does not close it. The goal
-ends only when its assigned implementation P is delivered completely, when a
-reproducible material blocker ends the work, or when a second stop on the same
-S explicitly transfers execution to Ordinary Mode.
-If coordinator review rejects the delivery and issues a corrective brief, the
-coordinator reactivates and updates that same S goal before the executor
-resumes.
+**Executor completion goal.** An executor creates one durable goal for its
+entire executor session: **Complete the coordinator's assignment fully.** It
+does not create, replace, reactivate, or update that goal for an S, corrective
+brief, implementation P, or resume. The active packet and S brief, rather than
+the goal, define the current objective, complete acceptance, stop conditions,
+and no-partial-delivery rule. A local smoke, diagnosis, individual gate, or
+internal batch does not alter the goal. A material objection or newly discovered
+contract change pauses work pending coordinator direction; a corrective brief
+then continues under the same goal. The goal is retired only when the executor
+session ends or the coordinator transfers or cancels that executor role.
 
 An unreported stop occurs when the executor stops active work without reporting
 progress, a result, or a blocker to the coordinator. The coordinator checks
@@ -194,9 +187,9 @@ existing named conversation and never create a duplicate role conversation.
    override an unresolved material objection merely by requesting continued
    work. The executor reports either its objection or its confirmation of the
    S contract before execution begins.
-3. After confirming the S contract, the executor creates or updates its
-   completion goal and executes the complete implementation P under the lifecycle
-   and reporting rules above. A partial implementation, local smoke, diagnostic,
+3. After confirming the S contract, the executor continues under its durable
+   completion goal and executes the complete implementation P under the
+   lifecycle and reporting rules above. A partial implementation, local smoke, diagnostic,
    internal batch, packet preparation, registration lookup, or status update is
    not a formal completion point. The executor sends progress reports at the
    nodes required by the S brief. It formally returns only complete
