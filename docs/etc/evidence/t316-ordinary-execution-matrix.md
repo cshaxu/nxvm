@@ -64,6 +64,7 @@ not an allocation of later task identifiers.
 | Immediate three-operand IMUL `69 /r iw/id`, `6B /r ib` | `IMUL_R32_RM32_I32`, `IMUL_R32_RM32_I8`, `_a_imul3`, `_d_modrm`, and r/m access routes. | `core_machine_imul_immediate_s56_smoke` (`M5:T316:S56:IMUL-IMM:OK`). | **Complete only for T316 S56**: 80186--80386 immediate three-operand IMUL, declared 16/32 operand/address attributes, signed product CF/OF boundary, r/m segment/source-limit, VM86, rejection, and PIC boundaries. One-operand IMUL, `0F AF`, MUL/DIV, and general FLAGS behavior remain outside this slice. |
 | LAR/LSL `0F 02 /r`, `0F 03 /r` selector inspection | `INS_0F`, `LAR_R32_RM32`, `LSL_R32_RM32`, selector/XDT and r/m read routes. | `core_machine-lar-lsl-s57-smoke` (`M5:T316:S57:LAR-LSL:OK`). | **Complete only for T316 S57's bounded LAR/LSL query forms**: protected GDT/LDT selector inspection, declared attribute/profile/LOCK and memory-source boundaries, VM86 rejection, and PIC delivery. VERR/VERW, selector loads, and broader descriptor architecture remain outside this slice. |
 | VERR/VERW `0F 00 /4,/5` selector accessibility | `INS_0F_00` VERR/VERW cases with selector/XDT and r/m read routes. | `core-machine-verr-verw-s58-smoke` (`M5:T316:S58:VERR-VERW:OK`). | **Complete only for T316 S58**: 80286/80386 protected selector accessibility, ZF-only result, GDT/LDT, declared prefix/profile/memory-source/fault/VM86/LOCK/PIC boundaries. The other `0F 00` forms and selector-load architecture remain outside this slice. |
+| SLDT/STR/LLDT/LTR 0F 00 /0--/3 descriptor-table/task-register transfers | INS_0F_00, _s_load_ldtr, _s_load_tr, selector/XDT and r/m routes. | core-machine-dttr-s61-smoke plus retained core-machine-descriptor-system-smoke. | **Complete only for T316 S61**: 80286/80386 CPL0 default forms, 66h fixed-width and 67h attribute/memory routing, register and memory store/load, LDTR null invalidation, LTR busy publication, profile/real-mode and LOCK rejection. Retained descriptor-system vectors provide type/TI/null/present and load-atomicity boundaries. Task switch, task gates, and descriptor redesign remain outside. |
 | 80386 debug-register MOV `0F 21 /r`, `0F 23 /r` | `MOV_R32_DR`, `MOV_DR_R32`, and `_d_modrm_dreg`; register-only DR0--DR3/DR6/DR7 routes. | `core-machine-debug-mov-s59-smoke` (`M5:T316:S59:DEBUG-MOV:OK`). | **Complete only for T316 S59**: CPL0 80386 DR transfer, declared `66`/`67`, profile/real/privilege/LOCK and pending-IRQ boundaries. Breakpoint matching, debug exceptions, DR4/DR5 aliases, test registers, and broader debug architecture remain outside this slice. |
 | Trap Flag single-step `#DB` delivery | `ExecInt` observes TF after the completed instruction and routes vector 1 through `_e_intr_n`; protected execution must use the external/hardware delivery branch. | `core-machine-tf-db-s60-smoke` (`M5:T316:S60:TF-DB:OK`). | **Complete only for T316 S60**: real and protected CPL0 post-NOP traps, saved post-instruction IP/FLAGS, `66`/`67` prefix lengths, live handler TF/IF clearing, and lower-profile/LOCK #UD priority without a spurious vector-1 trap. DR breakpoint matching, DR6, RF, task switches, and debugger APIs remain outside this slice. || Post-80386 or reserved encodings seen in the tables: `CPUID`, `RSM`, `WBINVD`, `RDMSR/WRMSR`, `CMPXCHG`, `XADD`, `BSWAP`, undefined holes | Metadata/profile gate rejects forms above the active 80386 profile before the named table handler can establish behavior. | `cpu_profile_gate_smoke` and T309 rejection baseline. | **Outside-80386**: retain rejection; no later-IA-32 implementation is admitted by T316. |
 | `WAIT/FWAIT`, ESC `D8`--`DF`, CR0 `MP/EM/TS`, `#NM`, external coprocessor fault interface | `WAIT`, FPU escape/profile routes and CPU exception state; optional FPU provider is outside ordinary decoding. | `cpu_fpu_profile_smoke`, `cpu_fpu_profile_closure_smoke`, `fpu_escape_smoke`, `core_machine_fpu_8087_smoke`. | **External-coprocessor boundary**: only 80386-side control/reporting is in the approved program; no 8087/80287/80387 arithmetic, state, or completeness claim is made. |
@@ -1261,3 +1262,18 @@ that the existing protected-mode TF route now uses the hardware interrupt
 serialization branch; it does not alter generic exception priority or
 breakpoint matching. DR7, DR6, RF, task switches, and debugger APIs remain
 outside this evidence.
+### T316 S61 - Descriptor-table and task-register transfers
+
+`core-machine-dttr-s61-smoke` closes the bounded `0F 00 /0`--`/3` forms:
+SLDT, STR, LLDT, and LTR execute as fixed 16-bit selector transfers in
+protected CPL0 on both 80286 and 80386.  The owner coverage verifies register
+and memory directions, 80386 `66h`, `67h`, and combined attributes, LLDT null
+cache invalidation, and LTR's TSS busy-bit/cache publication.  The 80186 escape,
+real-mode forms, legacy attributes, and `LOCK` are rejected.  The retained
+current-gate descriptor-system smoke supplies the shared descriptor type, TI,
+present/null, busy, and load-atomicity boundaries for these same helper routes.
+No production helper or descriptor serialization change was required.  Task
+switching, task gates, outer privilege transitions, and a general descriptor
+refactor remain outside this slice.
+
+`M5:T316:S61:DTTR:OK`
