@@ -65,7 +65,7 @@ not an allocation of later task identifiers.
 | LAR/LSL `0F 02 /r`, `0F 03 /r` selector inspection | `INS_0F`, `LAR_R32_RM32`, `LSL_R32_RM32`, selector/XDT and r/m read routes. | `core_machine-lar-lsl-s57-smoke` (`M5:T316:S57:LAR-LSL:OK`). | **Complete only for T316 S57's bounded LAR/LSL query forms**: protected GDT/LDT selector inspection, declared attribute/profile/LOCK and memory-source boundaries, VM86 rejection, and PIC delivery. VERR/VERW, selector loads, and broader descriptor architecture remain outside this slice. |
 | VERR/VERW `0F 00 /4,/5` selector accessibility | `INS_0F_00` VERR/VERW cases with selector/XDT and r/m read routes. | `core-machine-verr-verw-s58-smoke` (`M5:T316:S58:VERR-VERW:OK`). | **Complete only for T316 S58**: 80286/80386 protected selector accessibility, ZF-only result, GDT/LDT, declared prefix/profile/memory-source/fault/VM86/LOCK/PIC boundaries. The other `0F 00` forms and selector-load architecture remain outside this slice. |
 | 80386 debug-register MOV `0F 21 /r`, `0F 23 /r` | `MOV_R32_DR`, `MOV_DR_R32`, and `_d_modrm_dreg`; register-only DR0--DR3/DR6/DR7 routes. | `core-machine-debug-mov-s59-smoke` (`M5:T316:S59:DEBUG-MOV:OK`). | **Complete only for T316 S59**: CPL0 80386 DR transfer, declared `66`/`67`, profile/real/privilege/LOCK and pending-IRQ boundaries. Breakpoint matching, debug exceptions, DR4/DR5 aliases, test registers, and broader debug architecture remain outside this slice. |
-| Post-80386 or reserved encodings seen in the tables: `CPUID`, `RSM`, `WBINVD`, `RDMSR/WRMSR`, `CMPXCHG`, `XADD`, `BSWAP`, undefined holes | Metadata/profile gate rejects forms above the active 80386 profile before the named table handler can establish behavior. | `cpu_profile_gate_smoke` and T309 rejection baseline. | **Outside-80386**: retain rejection; no later-IA-32 implementation is admitted by T316. |
+| Trap Flag single-step `#DB` delivery | `ExecInt` observes TF after the completed instruction and routes vector 1 through `_e_intr_n`; protected execution must use the external/hardware delivery branch. | `core-machine-tf-db-s60-smoke` (`M5:T316:S60:TF-DB:OK`). | **Complete only for T316 S60**: real and protected CPL0 post-NOP traps, saved post-instruction IP/FLAGS, `66`/`67` prefix lengths, live handler TF/IF clearing, and lower-profile/LOCK #UD priority without a spurious vector-1 trap. DR breakpoint matching, DR6, RF, task switches, and debugger APIs remain outside this slice. || Post-80386 or reserved encodings seen in the tables: `CPUID`, `RSM`, `WBINVD`, `RDMSR/WRMSR`, `CMPXCHG`, `XADD`, `BSWAP`, undefined holes | Metadata/profile gate rejects forms above the active 80386 profile before the named table handler can establish behavior. | `cpu_profile_gate_smoke` and T309 rejection baseline. | **Outside-80386**: retain rejection; no later-IA-32 implementation is admitted by T316. |
 | `WAIT/FWAIT`, ESC `D8`--`DF`, CR0 `MP/EM/TS`, `#NM`, external coprocessor fault interface | `WAIT`, FPU escape/profile routes and CPU exception state; optional FPU provider is outside ordinary decoding. | `cpu_fpu_profile_smoke`, `cpu_fpu_profile_closure_smoke`, `fpu_escape_smoke`, `core_machine_fpu_8087_smoke`. | **External-coprocessor boundary**: only 80386-side control/reporting is in the approved program; no 8087/80287/80387 arithmetic, state, or completeness claim is made. |
 
 No reviewed ordinary primary form is classified **Missing**: each named ordinary
@@ -1248,3 +1248,16 @@ needed. Breakpoint matching, debug exceptions, DR4/DR5 aliases, test registers,
 and wider debug-register semantics remain outside S59.
 
 `M5:T316:S59:DEBUG-MOV:OK`
+
+### T316 S60 - Trap Flag single-step debug delivery
+
+The bounded TF route executes a completed NOP then delivers vector 1. The owner
+smoke proves real and protected CPL0 frames contain the post-instruction IP and
+pre-delivery FLAGS; live handler state clears TF and IF. In 80386 protected
+mode, `66`, `67`, and combined prefixes preserve the correct saved instruction
+length. Legacy prefix and 80386 LOCK rejection vectors stop synchronously and
+never enter the installed vector-1 handler. The only production correction is
+that the existing protected-mode TF route now uses the hardware interrupt
+serialization branch; it does not alter generic exception priority or
+breakpoint matching. DR7, DR6, RF, task switches, and debugger APIs remain
+outside this evidence.
