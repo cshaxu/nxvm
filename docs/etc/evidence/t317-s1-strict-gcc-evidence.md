@@ -30,9 +30,11 @@ runtime marker changes.
 `tests/machine/fpu_escape_smoke.c` now installs a real-mode IVT vector-7
 handler (`INC AX; HLT`) for the two already-delivered CPU-side `#NM` cases:
 ESC with `CR0.EM`, and WAIT with `CR0.TS|CR0.MP`.  Each case proves that
-execution transfers to vector 7 without a terminal diagnostic, that the saved
-restart IP is the synchronous faulting instruction IP (`0`), and that the
-handler executes through its halt while advancing AX.  The pre-existing
+execution transfers to vector 7 without a terminal diagnostic, and proves the
+complete real-mode frame at the selected `SS:SP`: restart IP is the synchronous
+faulting instruction IP (`0`), followed by the captured pre-fault CS and
+FLAGS, with the 16-bit three-word SP decrement preserving ESP's high half.
+The handler then executes through its halt while advancing AX.  The pre-existing
 no-FPU consume cases and the optional-8087 success case remain intact.  This
 is a retained-test expectation migration only; it makes no FPU/provider or
 CPU delivery change.  `docs/TODO.md` records that any future FPU-execution
