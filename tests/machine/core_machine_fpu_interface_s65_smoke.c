@@ -51,7 +51,7 @@ static C_INT fpu_interface_s65_prepare(core_machine_cpu_profile profile,
 }
 
 static C_INT fpu_interface_s65_run(fpu_interface_s65_machine *state,
-    const uint8_t *code, STD_SIZE_T size, t_cpu *after,
+    const type_unsigned_8 *code, STD_SIZE_T size, t_cpu *after,
     core_machine_cpu_diagnostic *diagnostic, type_status *status)
 {
     core_machine_run_result result;
@@ -73,9 +73,9 @@ static C_INT fpu_interface_s65_same(const t_cpu *before, const t_cpu *after)
     return STD_MEMCMP(before, after, sizeof(*before)) == 0;
 }
 
-static C_INT fpu_interface_s65_success(const uint8_t *code, STD_SIZE_T size,
+static C_INT fpu_interface_s65_success(const type_unsigned_8 *code, STD_SIZE_T size,
     core_machine_cpu_profile profile, core_machine_fpu_profile fpu_profile,
-    uint32_t cr0)
+    type_unsigned_32 cr0)
 {
     fpu_interface_s65_machine state;
     core_machine_cpu_diagnostic diagnostic;
@@ -118,7 +118,7 @@ static C_INT fpu_interface_s65_success(const uint8_t *code, STD_SIZE_T size,
 
 static C_INT fpu_interface_s65_mf(C_VOID)
 {
-    static const uint8_t wait[] = { 0x9bu };
+    static const type_unsigned_8 wait[] = { 0x9bu };
     fpu_interface_s65_machine state;
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
@@ -140,7 +140,7 @@ static C_INT fpu_interface_s65_mf(C_VOID)
     return !failed;
 }
 
-static C_INT fpu_interface_s65_reject(const uint8_t *code, STD_SIZE_T size,
+static C_INT fpu_interface_s65_reject(const type_unsigned_8 *code, STD_SIZE_T size,
     core_machine_cpu_profile profile)
 {
     fpu_interface_s65_machine state;
@@ -165,7 +165,7 @@ static C_INT fpu_interface_s65_reject(const uint8_t *code, STD_SIZE_T size,
 
 static C_INT fpu_interface_s65_unsupported(core_machine_fpu_profile profile)
 {
-    static const uint8_t fninit[] = { 0xdbu, 0xe3u };
+    static const type_unsigned_8 fninit[] = { 0xdbu, 0xe3u };
     fpu_interface_s65_machine state;
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
@@ -187,17 +187,17 @@ static C_INT fpu_interface_s65_unsupported(core_machine_fpu_profile profile)
     return !failed;
 }
 
-static C_INT fpu_interface_s65_nm_delivery(const uint8_t *code,
-    STD_SIZE_T code_size, uint32_t cr0)
+static C_INT fpu_interface_s65_nm_delivery(const type_unsigned_8 *code,
+    STD_SIZE_T code_size, type_unsigned_32 cr0)
 {
-    static const uint8_t hlt = 0xf4u;
-    const uint16_t offset = 0x0100u;
-    const uint16_t segment = 0u;
+    static const type_unsigned_8 hlt = 0xf4u;
+    const type_unsigned_16 offset = 0x0100u;
+    const type_unsigned_16 segment = 0u;
     fpu_interface_s65_machine state;
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
     t_cpu after;
-    uint16_t frame_ip = 0u;
+    type_unsigned_16 frame_ip = 0u;
     C_INT failed = !fpu_interface_s65_prepare(CORE_MACHINE_CPU_PROFILE_80386,
         CORE_MACHINE_FPU_PROFILE_NONE, &state);
 
@@ -224,7 +224,7 @@ static C_INT fpu_interface_s65_nm_delivery(const uint8_t *code,
                 diagnostic.last_delivered_exception.exception_mask,
                 VCPUINS_EXCEPT_NM) || after.data.eip != offset ||
             core_machine_memory_read_physical(&state.machine->executor_memory,
-                after.data.ss.base + (uint16_t)after.data.esp,
+                after.data.ss.base + (type_unsigned_16)after.data.esp,
                 TYPE_REFERENCE_OF(frame_ip), sizeof(frame_ip)) != TYPE_STATUS_OK ||
             frame_ip != 0u;
         failed |= core_machine_run(state.machine,
@@ -237,19 +237,19 @@ static C_INT fpu_interface_s65_nm_delivery(const uint8_t *code,
     return !failed;
 }
 
-static C_INT fpu_interface_s65_irq(const uint8_t *instruction,
+static C_INT fpu_interface_s65_irq(const type_unsigned_8 *instruction,
     STD_SIZE_T instruction_size)
 {
-    static const uint8_t hlt = 0xf4u;
-    const uint16_t offset = 0x0100u;
-    const uint16_t segment = 0u;
+    static const type_unsigned_8 hlt = 0xf4u;
+    const type_unsigned_16 offset = 0x0100u;
+    const type_unsigned_16 segment = 0u;
     fpu_interface_s65_machine state;
     core_machine_pic_irq_source irq;
     core_machine_run_result result;
     t_cpu before;
     t_cpu after;
-    uint8_t code[8] = { 0u };
-    uint16_t frame_ip = 0u;
+    type_unsigned_8 code[8] = { 0u };
+    type_unsigned_16 frame_ip = 0u;
     C_INT failed = instruction_size + 1u > sizeof(code) ||
         !fpu_interface_s65_prepare(CORE_MACHINE_CPU_PROFILE_80386,
             CORE_MACHINE_FPU_PROFILE_NONE, &state);
@@ -281,7 +281,7 @@ static C_INT fpu_interface_s65_irq(const uint8_t *instruction,
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= after.data.eip != offset + 1u || frame_ip != 0u ||
             core_machine_memory_read_physical(&state.machine->executor_memory,
-                after.data.ss.base + (uint16_t)after.data.esp,
+                after.data.ss.base + (type_unsigned_16)after.data.esp,
                 TYPE_REFERENCE_OF(frame_ip), sizeof(frame_ip)) != TYPE_STATUS_OK ||
             frame_ip != instruction_size || after.data.eax != before.data.eax ||
             after.data.ebx != before.data.ebx || after.data.ecx != before.data.ecx ||
@@ -297,7 +297,7 @@ static C_INT fpu_interface_s65_irq(const uint8_t *instruction,
 
 static C_INT fpu_interface_s65_vm86(C_VOID)
 {
-    static const uint8_t esc[] = { 0xd8u, 0xc0u };
+    static const type_unsigned_8 esc[] = { 0xd8u, 0xc0u };
     fpu_interface_s65_machine state;
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
@@ -354,26 +354,26 @@ static C_INT fpu_interface_s65_vm86(C_VOID)
 
 static C_INT fpu_interface_s65_protected_nm(C_VOID)
 {
-    static const uint8_t gdt_pointer[] = { 0x1fu,0u,0u,0x03u,0u,0u };
-    static const uint8_t idt_pointer[] = { 0xffu,0u,0u,0x04u,0u,0u };
-    static const uint8_t gdt[] = {
+    static const type_unsigned_8 gdt_pointer[] = { 0x1fu,0u,0u,0x03u,0u,0u };
+    static const type_unsigned_8 idt_pointer[] = { 0xffu,0u,0u,0x04u,0u,0u };
+    static const type_unsigned_8 gdt[] = {
         0,0,0,0,0,0,0,0, 0xffu,0xffu,0,0x20u,0,0x9au,0,0,
         0xffu,0xffu,0,0x30u,0,0x92u,0,0, 0xffu,0xffu,0,0x40u,0,0x92u,0,0
     };
-    static const uint8_t real_code[] = {
+    static const type_unsigned_8 real_code[] = {
         0x0fu,0x01u,0x16u,0x00u,0x01u, 0x0fu,0x01u,0x1eu,0x10u,0x01u,
         0xb8u,0x01u,0,0x0fu,0x01u,0xf0u, 0xb8u,0x10u,0,0x8eu,0xd8u,
         0xb8u,0x18u,0,0x8eu,0xd0u, 0xeau,0,0,0x08u,0
     };
-    static const uint8_t esc[] = { 0xd8u,0xc0u };
-    static const uint8_t hlt = 0xf4u;
-    uint8_t idt[0x100u] = { 0u };
+    static const type_unsigned_8 esc[] = { 0xd8u,0xc0u };
+    static const type_unsigned_8 hlt = 0xf4u;
+    type_unsigned_8 idt[0x100u] = { 0u };
     fpu_interface_s65_machine state;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
     t_cpu after;
-    uint16_t frame_ip = 0u;
+    type_unsigned_16 frame_ip = 0u;
     C_INT failed = !fpu_interface_s65_prepare(CORE_MACHINE_CPU_PROFILE_80386,
         CORE_MACHINE_FPU_PROFILE_NONE, &state);
 
@@ -409,7 +409,7 @@ static C_INT fpu_interface_s65_protected_nm(C_VOID)
             core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != TYPE_STATUS_OK;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
-            after.data.ss.base + (uint16_t)after.data.esp, TYPE_REFERENCE_OF(frame_ip),
+            after.data.ss.base + (type_unsigned_16)after.data.esp, TYPE_REFERENCE_OF(frame_ip),
             sizeof(frame_ip)) != TYPE_STATUS_OK;
         failed |= !diagnostic.last_delivered_exception.valid || !TYPE_GET_BIT(
             diagnostic.last_delivered_exception.exception_mask,
@@ -429,34 +429,34 @@ static C_INT fpu_interface_s65_protected_nm(C_VOID)
 
 C_INT main(C_VOID)
 {
-    static const uint8_t wait[] = { 0x9bu };
-    static const uint8_t fninit[] = { 0xdbu, 0xe3u };
-    static const uint8_t escapes[][2] = {
+    static const type_unsigned_8 wait[] = { 0x9bu };
+    static const type_unsigned_8 fninit[] = { 0xdbu, 0xe3u };
+    static const type_unsigned_8 escapes[][2] = {
         { 0xd8u, 0xc0u }, { 0xd9u, 0xc0u }, { 0xdau, 0xc0u },
         { 0xdbu, 0xe3u }, { 0xdcu, 0xc0u }, { 0xddu, 0xc0u },
         { 0xdeu, 0xc0u }, { 0xdfu, 0xc0u }
     };
-    static const uint8_t attr_wait_66[] = { 0x66u, 0x9bu };
-    static const uint8_t attr_wait_67[] = { 0x67u, 0x9bu };
-    static const uint8_t attr_wait[] = { 0x66u, 0x67u, 0x9bu };
-    static const uint8_t attr_esc_66[] = { 0x66u, 0xdbu, 0xe3u };
-    static const uint8_t attr_esc_67[] = { 0x67u, 0xdbu, 0xe3u };
-    static const uint8_t attr_esc[] = { 0x66u, 0x67u, 0xdbu, 0xe3u };
-    static const uint8_t *const legacy_attributes[] = {
+    static const type_unsigned_8 attr_wait_66[] = { 0x66u, 0x9bu };
+    static const type_unsigned_8 attr_wait_67[] = { 0x67u, 0x9bu };
+    static const type_unsigned_8 attr_wait[] = { 0x66u, 0x67u, 0x9bu };
+    static const type_unsigned_8 attr_esc_66[] = { 0x66u, 0xdbu, 0xe3u };
+    static const type_unsigned_8 attr_esc_67[] = { 0x67u, 0xdbu, 0xe3u };
+    static const type_unsigned_8 attr_esc[] = { 0x66u, 0x67u, 0xdbu, 0xe3u };
+    static const type_unsigned_8 *const legacy_attributes[] = {
         attr_wait_66, attr_wait_67, attr_wait, attr_esc_66, attr_esc_67,
         attr_esc
     };
-    static const uint8_t legacy_attribute_sizes[] = { 2u, 2u, 3u, 3u, 3u, 4u };
-    static const uint8_t lock_forms[][5] = {
+    static const type_unsigned_8 legacy_attribute_sizes[] = { 2u, 2u, 3u, 3u, 3u, 4u };
+    static const type_unsigned_8 lock_forms[][5] = {
         { 0xf0u, 0x9bu }, { 0xf0u, 0x66u, 0x9bu },
         { 0xf0u, 0x67u, 0x9bu }, { 0xf0u, 0x66u, 0x67u, 0x9bu },
         { 0xf0u, 0xdbu, 0xe3u }, { 0xf0u, 0x66u, 0xdbu, 0xe3u },
         { 0xf0u, 0x67u, 0xdbu, 0xe3u },
         { 0xf0u, 0x66u, 0x67u, 0xdbu, 0xe3u }
     };
-    static const uint8_t lock_sizes[] = { 2u, 3u, 3u, 4u, 3u, 4u, 4u, 5u };
+    static const type_unsigned_8 lock_sizes[] = { 2u, 3u, 3u, 4u, 3u, 4u, 4u, 5u };
     core_machine_cpu_profile profile;
-    uint8_t index;
+    type_unsigned_8 index;
     C_INT failed = 0;
 
     for (profile = CORE_MACHINE_CPU_PROFILE_8086;

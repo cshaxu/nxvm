@@ -19,21 +19,21 @@ static C_INT bound_s54_prepare(bound_s54_machine *state,
     core_machine_cpu_profile profile);
 
 static C_INT bound_s54_boot_protected(bound_s54_machine *state,
-    const uint8_t *program, STD_SIZE_T program_bytes)
+    const type_unsigned_8 *program, STD_SIZE_T program_bytes)
 {
-    static const uint8_t gdt_pointer[] = {
+    static const type_unsigned_8 gdt_pointer[] = {
         0x1fu, 0x00u, 0x00u, 0x03u, 0x00u, 0x00u
     };
-    static const uint8_t idt_pointer[] = {
+    static const type_unsigned_8 idt_pointer[] = {
         0xffu, 0x00u, 0x00u, 0x04u, 0x00u, 0x00u
     };
-    static const uint8_t gdt[] = {
+    static const type_unsigned_8 gdt[] = {
         0,0,0,0,0,0,0,0,
         0xffu,0xffu,0,0x20u,0,0x9au,0,0,
         0xffu,0xffu,0,0x30u,0,0x92u,0,0,
         0xffu,0xffu,0,0x40u,0,0x92u,0,0
     };
-    static const uint8_t real_code[] = {
+    static const type_unsigned_8 real_code[] = {
         0x0fu,0x01u,0x16u,0x00u,0x01u,
         0x0fu,0x01u,0x1eu,0x10u,0x01u,
         0xb8u,0x01u,0x00u,0x0fu,0x01u,0xf0u,
@@ -41,7 +41,7 @@ static C_INT bound_s54_boot_protected(bound_s54_machine *state,
         0xb8u,0x18u,0x00u,0x8eu,0xd0u,
         0xeau,0x00u,0x00u,0x08u,0x00u
     };
-    uint8_t idt[0x100u] = { 0u };
+    type_unsigned_8 idt[0x100u] = { 0u };
 
     idt[5u * 8u + 1u] = 0x01u;
     idt[5u * 8u + 2u] = 0x08u;
@@ -63,7 +63,7 @@ static C_INT bound_s54_boot_protected(bound_s54_machine *state,
         core_machine_memory_write(state->machine, BOUND_S54_CODE_BASE,
             program, program_bytes) == TYPE_STATUS_OK &&
         core_machine_memory_write(state->machine, BOUND_S54_CODE_BASE + 0x100u,
-            (const uint8_t[]){ 0xf4u }, 1u) == TYPE_STATUS_OK;
+            (const type_unsigned_8[]){ 0xf4u }, 1u) == TYPE_STATUS_OK;
 }
 
 static C_VOID bound_s54_reset(C_VOID *opaque)
@@ -149,7 +149,7 @@ static C_INT bound_s54_sregs_same(const t_cpu *before, const t_cpu *after)
             sizeof(before->data.gs)) == 0;
 }
 
-static C_INT bound_s54_run(bound_s54_machine *state, uint32_t budget,
+static C_INT bound_s54_run(bound_s54_machine *state, type_unsigned_32 budget,
     core_machine_run_result *result, t_cpu *after,
     core_machine_cpu_diagnostic *diagnostic)
 {
@@ -170,9 +170,9 @@ static C_INT bound_s54_test_profiles_and_width(C_VOID)
         CORE_MACHINE_CPU_PROFILE_80286,
         CORE_MACHINE_CPU_PROFILE_80386
     };
-    static const uint8_t code[] = { 0x62u, 0x06u, 0x00u, 0x04u, 0xf4u };
-    const int16_t bounds[] = { -2, 2 };
-    uint8_t profile;
+    static const type_unsigned_8 code[] = { 0x62u, 0x06u, 0x00u, 0x04u, 0xf4u };
+    const type_signed_16 bounds[] = { -2, 2 };
+    type_unsigned_8 profile;
 
     for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]);
         ++profile) {
@@ -208,10 +208,10 @@ static C_INT bound_s54_test_profiles_and_width(C_VOID)
 
 static C_INT bound_s54_test_386_dword_pair(C_VOID)
 {
-    static const uint8_t code[] = {
+    static const type_unsigned_8 code[] = {
         0x66u, 0x62u, 0x06u, 0x00u, 0x04u, 0xf4u
     };
-    const int32_t bounds[] = { -4, 4 };
+    const type_signed_32 bounds[] = { -4, 4 };
     bound_s54_machine state;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
@@ -241,14 +241,14 @@ static C_INT bound_s54_test_386_dword_pair(C_VOID)
 
 static C_INT bound_s54_test_386_attributes(C_VOID)
 {
-    static const uint8_t forms[][9] = {
+    static const type_unsigned_8 forms[][9] = {
         { 0x67u, 0x62u, 0x05u, 0x00u, 0x04u, 0x00u, 0x00u, 0xf4u, 0u },
         { 0x66u, 0x67u, 0x62u, 0x05u, 0x00u, 0x04u, 0x00u, 0x00u, 0xf4u }
     };
-    const uint8_t bytes[] = { 8u, 9u };
-    const int32_t bounds32[] = { -4, 4 };
-    const int16_t bounds16[] = { -2, 2 };
-    uint8_t form;
+    const type_unsigned_8 bytes[] = { 8u, 9u };
+    const type_signed_32 bounds32[] = { -4, 4 };
+    const type_signed_16 bounds16[] = { -2, 2 };
+    type_unsigned_8 form;
 
     for (form = 0u; form != sizeof(forms) / sizeof(forms[0]); ++form) {
         bound_s54_machine state;
@@ -288,7 +288,7 @@ static C_INT bound_s54_test_386_attributes(C_VOID)
 
 static C_INT bound_s54_test_rejections(C_VOID)
 {
-    static const uint8_t codes[][6] = {
+    static const type_unsigned_8 codes[][6] = {
         { 0x62u, 0xc0u },
         { 0xf0u, 0x62u, 0x06u, 0x00u, 0x04u },
         { 0x66u, 0x62u, 0x06u, 0x00u, 0x04u },
@@ -296,18 +296,18 @@ static C_INT bound_s54_test_rejections(C_VOID)
         { 0x66u, 0x67u, 0x62u, 0x06u, 0x00u, 0x04u },
         { 0x62u, 0x06u, 0x00u, 0x04u }
     };
-    static const uint8_t bytes[] = { 2u, 5u, 5u, 5u, 6u, 4u };
+    static const type_unsigned_8 bytes[] = { 2u, 5u, 5u, 5u, 6u, 4u };
     static const core_machine_cpu_profile pre386[] = {
         CORE_MACHINE_CPU_PROFILE_8086,
         CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286
     };
-    static const int16_t pair[] = { -2, 2 };
-    uint8_t index;
+    static const type_signed_16 pair[] = { -2, 2 };
+    type_unsigned_8 index;
 
     for (index = 0u; index != sizeof(codes) / sizeof(codes[0]); ++index) {
-        uint8_t profile_first = 0u;
-        uint8_t profile_count = 1u;
+        type_unsigned_8 profile_first = 0u;
+        type_unsigned_8 profile_count = 1u;
 
         if (index >= 2u && index <= 4u)
             profile_count = sizeof(pre386) / sizeof(pre386[0]);
@@ -350,11 +350,11 @@ static C_INT bound_s54_test_rejections(C_VOID)
 
 static C_INT bound_s54_test_real_br_delivery(C_VOID)
 {
-    static const uint8_t code[] = { 0x62u, 0x06u, 0x00u, 0x04u };
-    static const uint8_t handler[] = { 0xf4u };
-    const int16_t bounds[] = { -2, 2 };
-    const uint16_t vector[] = { 0x0100u, 0x0000u };
-    uint16_t frame[3] = { 0u, 0u, 0u };
+    static const type_unsigned_8 code[] = { 0x62u, 0x06u, 0x00u, 0x04u };
+    static const type_unsigned_8 handler[] = { 0xf4u };
+    const type_signed_16 bounds[] = { -2, 2 };
+    const type_unsigned_16 vector[] = { 0x0100u, 0x0000u };
+    type_unsigned_16 frame[3] = { 0u, 0u, 0u };
     bound_s54_machine state;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
@@ -383,11 +383,11 @@ static C_INT bound_s54_test_real_br_delivery(C_VOID)
         failed |= after.data.eax != before.data.eax;
         failed |= !bound_s54_sregs_same(&before, &after);
         failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
-            after.data.ss.base + (uint16_t)after.data.esp,
+            after.data.ss.base + (type_unsigned_16)after.data.esp,
             (type_virtual_address)frame, sizeof(frame)) != TYPE_STATUS_OK;
         failed |= frame[0u] != 0u;
         failed |= frame[1u] != before.data.cs.selector;
-        failed |= frame[2u] != (uint16_t)before.data.eflags;
+        failed |= frame[2u] != (type_unsigned_16)before.data.eflags;
         failed |= !bound_s54_run(&state, 1u, &result, &after, &diagnostic);
         failed |= result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         failed |= after.data.eip != 0x0101u;
@@ -398,10 +398,10 @@ static C_INT bound_s54_test_real_br_delivery(C_VOID)
 
 static C_INT bound_s54_test_signed_lower_bound(C_VOID)
 {
-    static const uint8_t code[] = { 0x62u, 0x06u, 0x00u, 0x04u };
-    static const uint8_t handler[] = { 0xf4u };
-    const int16_t bounds[] = { -2, 2 };
-    const uint16_t vector[] = { 0x0100u, 0x0000u };
+    static const type_unsigned_8 code[] = { 0x62u, 0x06u, 0x00u, 0x04u };
+    static const type_unsigned_8 handler[] = { 0xf4u };
+    const type_signed_16 bounds[] = { -2, 2 };
+    const type_unsigned_16 vector[] = { 0x0100u, 0x0000u };
     bound_s54_machine state;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
@@ -431,9 +431,9 @@ static C_INT bound_s54_test_signed_lower_bound(C_VOID)
 
 static C_INT bound_s54_test_protected_br_delivery(C_VOID)
 {
-    static const uint8_t hlt[] = { 0xf4u };
-    static const uint8_t code[] = { 0x62u, 0x06u, 0x00u, 0x04u };
-    const int16_t bounds[] = { -2, 2 };
+    static const type_unsigned_8 hlt[] = { 0xf4u };
+    static const type_unsigned_8 code[] = { 0x62u, 0x06u, 0x00u, 0x04u };
+    const type_signed_16 bounds[] = { -2, 2 };
     bound_s54_machine state;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
@@ -471,9 +471,9 @@ static C_INT bound_s54_test_protected_br_delivery(C_VOID)
 
 static C_INT bound_s54_test_protected_ds_upper_limit(C_VOID)
 {
-    static const uint8_t hlt[] = { 0xf4u };
-    static const uint8_t code[] = { 0x62u, 0x06u, 0x00u, 0x04u };
-    const int16_t bounds[] = { -2, 2 };
+    static const type_unsigned_8 hlt[] = { 0xf4u };
+    static const type_unsigned_8 code[] = { 0x62u, 0x06u, 0x00u, 0x04u };
+    const type_signed_16 bounds[] = { -2, 2 };
     bound_s54_machine state;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
@@ -511,9 +511,9 @@ static C_INT bound_s54_test_protected_ds_upper_limit(C_VOID)
 
 static C_INT bound_s54_test_protected_ss_upper_limit(C_VOID)
 {
-    static const uint8_t hlt[] = { 0xf4u };
-    static const uint8_t code[] = { 0x36u, 0x62u, 0x06u, 0x00u, 0x04u };
-    const int16_t bounds[] = { -2, 2 };
+    static const type_unsigned_8 hlt[] = { 0xf4u };
+    static const type_unsigned_8 code[] = { 0x36u, 0x62u, 0x06u, 0x00u, 0x04u };
+    const type_signed_16 bounds[] = { -2, 2 };
     bound_s54_machine state;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
@@ -556,12 +556,12 @@ static C_INT bound_s54_test_protected_ss_upper_limit(C_VOID)
 
 static C_INT bound_s54_test_irq_no_shadow(C_VOID)
 {
-    static const uint8_t code[] = { 0x62u, 0x06u, 0x00u, 0x04u, 0x90u };
-    static const uint8_t hlt = 0xf4u;
-    const int16_t bounds[] = { -2, 2 };
-    uint16_t vector_offset = 0x0100u;
-    uint16_t vector_segment = 0u;
-    uint16_t frame_ip = 0u;
+    static const type_unsigned_8 code[] = { 0x62u, 0x06u, 0x00u, 0x04u, 0x90u };
+    static const type_unsigned_8 hlt = 0xf4u;
+    const type_signed_16 bounds[] = { -2, 2 };
+    type_unsigned_16 vector_offset = 0x0100u;
+    type_unsigned_16 vector_segment = 0u;
+    type_unsigned_16 frame_ip = 0u;
     bound_s54_machine state;
     core_machine_pic_irq_source source;
     core_machine_run_result result;
@@ -598,7 +598,7 @@ static C_INT bound_s54_test_irq_no_shadow(C_VOID)
         failed |= after.data.eip != 0x0101u;
         failed |= after.data.eax != before.data.eax;
         failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
-            after.data.ss.base + (uint16_t)after.data.esp,
+            after.data.ss.base + (type_unsigned_16)after.data.esp,
             (type_virtual_address)&frame_ip, sizeof(frame_ip)) != TYPE_STATUS_OK;
         failed |= frame_ip != 4u;
         failed |= !TYPE_GET_BIT(state.machine->shared_pic_master.data.isr,
@@ -612,14 +612,14 @@ static C_INT bound_s54_test_irq_no_shadow(C_VOID)
 
 static C_INT bound_s54_test_segments(C_VOID)
 {
-    static const uint8_t codes[][5] = {
+    static const type_unsigned_8 codes[][5] = {
         { 0x62u,0x06u,0x10u,0,0 }, { 0x62u,0x46u,0,0,0 },
         { 0x2eu,0x62u,0x06u,0x10u,0 }, { 0x26u,0x62u,0x06u,0x10u,0 },
         { 0x64u,0x62u,0x06u,0x10u,0 }, { 0x65u,0x62u,0x06u,0x10u,0 }
     };
-    static const uint8_t bytes[] = { 4u,3u,5u,5u,5u,5u };
-    const int16_t bounds[] = { -2, 2 };
-    uint8_t form;
+    static const type_unsigned_8 bytes[] = { 4u,3u,5u,5u,5u,5u };
+    const type_signed_16 bounds[] = { -2, 2 };
+    type_unsigned_8 form;
 
     for (form = 0u; form != sizeof(bytes); ++form) {
         bound_s54_machine state;
@@ -627,8 +627,8 @@ static C_INT bound_s54_test_segments(C_VOID)
         core_machine_cpu_diagnostic diagnostic;
         t_cpu before;
         t_cpu after;
-        uint16_t selector = (uint16_t)(0x1000u + form * 0x1000u);
-        uint32_t address = ((uint32_t)selector << 4u) + 0x10u;
+        type_unsigned_16 selector = (type_unsigned_16)(0x1000u + form * 0x1000u);
+        type_unsigned_32 address = ((type_unsigned_32)selector << 4u) + 0x10u;
         C_INT failed = !bound_s54_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
 
         if (!failed) {
@@ -648,7 +648,7 @@ static C_INT bound_s54_test_segments(C_VOID)
                 &state.machine->executor_cpu_execution, segment, selector);
             if (form == 2u)
                 failed |= core_machine_memory_write(state.machine,
-                    (uint32_t)selector << 4u, codes[form], bytes[form]) != TYPE_STATUS_OK;
+                    (type_unsigned_32)selector << 4u, codes[form], bytes[form]) != TYPE_STATUS_OK;
             else
                 failed |= core_machine_memory_write(state.machine, 0u, codes[form],
                     bytes[form]) != TYPE_STATUS_OK;
@@ -679,10 +679,10 @@ static C_INT bound_s54_test_segments(C_VOID)
 
 static C_INT bound_s54_test_signed_boundaries(C_VOID)
 {
-    static const uint8_t code[] = { 0x62u, 0x06u, 0x00u, 0x04u };
-    static const int16_t pair[] = { -2, 2 };
-    static const uint16_t values[] = { 0xfffeu, 0x0002u };
-    uint8_t value;
+    static const type_unsigned_8 code[] = { 0x62u, 0x06u, 0x00u, 0x04u };
+    static const type_signed_16 pair[] = { -2, 2 };
+    static const type_unsigned_16 values[] = { 0xfffeu, 0x0002u };
+    type_unsigned_8 value;
 
     for (value = 0u; value != sizeof(values) / sizeof(values[0]); ++value) {
         bound_s54_machine state;
@@ -721,16 +721,16 @@ static C_INT bound_s54_test_signed_boundaries(C_VOID)
 
 static C_INT bound_s54_test_67_sib_stack_segment(C_VOID)
 {
-    static const uint8_t code[] = {
+    static const type_unsigned_8 code[] = {
         0x67u, 0x62u, 0x44u, 0x24u, 0x10u
     };
-    static const int16_t pair[] = { -2, 2 };
+    static const type_signed_16 pair[] = { -2, 2 };
     bound_s54_machine state;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
     t_cpu after;
-    const uint32_t address = 0x20010u;
+    const type_unsigned_32 address = 0x20010u;
     C_INT failed = !bound_s54_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
 
     if (!failed) {
@@ -761,8 +761,8 @@ static C_INT bound_s54_test_67_sib_stack_segment(C_VOID)
 
 static C_INT bound_s54_test_vm86(C_VOID)
 {
-    static const uint8_t code[] = { 0x62u, 0x06u, 0x00u, 0x04u };
-    static const int16_t pair[] = { -2, 2 };
+    static const type_unsigned_8 code[] = { 0x62u, 0x06u, 0x00u, 0x04u };
+    static const type_signed_16 pair[] = { -2, 2 };
     bound_s54_machine state;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;

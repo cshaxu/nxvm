@@ -501,6 +501,24 @@ file(GENERATE
     OUTPUT "${CMAKE_BINARY_DIR}/t317-strict-cpu-smoke-inventory.txt"
     CONTENT "${project_t317_inventory_contents}\n")
 
+# S2 consumes the S1 inventory above and no broader test or source surface.
+set(PROJECT_T317_TEST_TYPE_VOCABULARY_SUPPORT_HEADERS
+    "tests/support/core_machine_cpu_fixture.h")
+string(REPLACE ";" "\n" project_t317_type_support_contents
+    "${PROJECT_T317_TEST_TYPE_VOCABULARY_SUPPORT_HEADERS}")
+file(GENERATE
+    OUTPUT "${CMAKE_BINARY_DIR}/t317-test-type-vocabulary-support-headers.txt"
+    CONTENT "${project_t317_type_support_contents}\n")
+add_custom_target(verify-t317-test-type-vocabulary
+    COMMAND "${CMAKE_COMMAND}"
+        -DPROJECT_T317_TYPE_SOURCE_DIR=${CMAKE_SOURCE_DIR}
+        -DPROJECT_T317_TYPE_INVENTORY_FILE=${CMAKE_BINARY_DIR}/t317-strict-cpu-smoke-inventory.txt
+        -DPROJECT_T317_TYPE_SUPPORT_HEADERS_FILE=${CMAKE_BINARY_DIR}/t317-test-type-vocabulary-support-headers.txt
+        -P "${CMAKE_SOURCE_DIR}/cmake/verify_t317_test_type_vocabulary.cmake"
+    COMMENT "Verifying T317 governed test type vocabulary"
+    VERBATIM)
+add_dependencies(run-current-smokes verify-t317-test-type-vocabulary)
+
 if(CMAKE_GENERATOR MATCHES "Ninja")
     add_custom_target(verify-t317-strict-cpu-smoke-coverage
         COMMAND "${CMAKE_COMMAND}"

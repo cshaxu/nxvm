@@ -68,8 +68,8 @@ static C_INT scas_nonparticipants_same(const t_cpu *before, const t_cpu *after)
         after->data.esi == before->data.esi;
 }
 
-static C_INT scas_run(scas_machine *state, const uint8_t *code, uint8_t bytes,
-    uint32_t budget, t_cpu *after, core_machine_cpu_diagnostic *diagnostic,
+static C_INT scas_run(scas_machine *state, const type_unsigned_8 *code, type_unsigned_8 bytes,
+    type_unsigned_32 budget, t_cpu *after, core_machine_cpu_diagnostic *diagnostic,
     type_status *status, core_machine_run_result *result)
 {
     if (core_machine_memory_write(state->machine, 0u, code, bytes) !=
@@ -83,8 +83,8 @@ static C_INT scas_run(scas_machine *state, const uint8_t *code, uint8_t bytes,
 }
 
 static C_INT scas_single_case(core_machine_cpu_profile profile,
-    const uint8_t *code, uint8_t bytes, uint8_t width, C_INT address32,
-    C_INT decrement, uint32_t physical)
+    const type_unsigned_8 *code, type_unsigned_8 bytes, type_unsigned_8 width, C_INT address32,
+    C_INT decrement, type_unsigned_32 physical)
 {
     scas_machine state;
     t_cpu before;
@@ -92,10 +92,10 @@ static C_INT scas_single_case(core_machine_cpu_profile profile,
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
     type_status status;
-    uint32_t image = width == 4u ? 0xaabb0001u : 1u;
-    uint32_t observed;
-    uint32_t index = address32 ? 0x1020u : 0x20u;
-    uint32_t expected_index = index + (decrement ? -(int32_t)width : width);
+    type_unsigned_32 image = width == 4u ? 0xaabb0001u : 1u;
+    type_unsigned_32 observed;
+    type_unsigned_32 index = address32 ? 0x1020u : 0x20u;
+    type_unsigned_32 expected_index = index + (decrement ? -(type_signed_32)width : width);
     C_INT failed = !scas_prepare(profile, &state);
 
     if (!failed) {
@@ -116,7 +116,7 @@ static C_INT scas_single_case(core_machine_cpu_profile profile,
             !scas_nonparticipants_same(&before, &after) ||
             after.data.ecx != before.data.ecx ||
             after.data.edi != (address32 ? expected_index :
-            (before.data.edi & 0xffff0000u) | (uint16_t)expected_index) ||
+            (before.data.edi & 0xffff0000u) | (type_unsigned_16)expected_index) ||
             (after.data.eflags & SCAS_CMP_FLAGS) !=
             (VCPU_EFLAGS_PF | VCPU_EFLAGS_AF) ||
             (after.data.eflags & ~SCAS_CMP_FLAGS) !=
@@ -136,14 +136,14 @@ static C_INT scas_test_single(C_VOID)
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
     };
-    static const uint8_t scasb = 0xaeu;
-    static const uint8_t scasw = 0xafu;
-    static const uint8_t scasd[] = {0x66u, 0xafu};
-    static const uint8_t address32[] = {0x67u, 0xaeu};
-    static const uint8_t combined[] = {0x66u, 0x67u, 0xafu};
-    static const uint8_t cs[] = {0x2eu, 0xaeu};
-    static const uint8_t fs[] = {0x64u, 0xaeu};
-    uint8_t profile;
+    static const type_unsigned_8 scasb = 0xaeu;
+    static const type_unsigned_8 scasw = 0xafu;
+    static const type_unsigned_8 scasd[] = {0x66u, 0xafu};
+    static const type_unsigned_8 address32[] = {0x67u, 0xaeu};
+    static const type_unsigned_8 combined[] = {0x66u, 0x67u, 0xafu};
+    static const type_unsigned_8 cs[] = {0x2eu, 0xaeu};
+    static const type_unsigned_8 fs[] = {0x64u, 0xaeu};
+    type_unsigned_8 profile;
 
     for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]);
         ++profile) {
@@ -173,17 +173,17 @@ static C_INT scas_test_single(C_VOID)
         1u, 0, 0, 0x20020u);
 }
 
-static C_INT scas_flag_case(uint8_t accumulator, uint8_t image,
-    uint32_t expected_flags)
+static C_INT scas_flag_case(type_unsigned_8 accumulator, type_unsigned_8 image,
+    type_unsigned_32 expected_flags)
 {
-    static const uint8_t code = 0xaeu;
+    static const type_unsigned_8 code = 0xaeu;
     scas_machine state;
     t_cpu before;
     t_cpu after;
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
     type_status status;
-    uint8_t observed;
+    type_unsigned_8 observed;
     C_INT failed = !scas_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
     if (!failed) {
@@ -218,9 +218,9 @@ static C_INT scas_test_flags(C_VOID)
         VCPU_EFLAGS_AF | VCPU_EFLAGS_OF);
 }
 
-static C_INT scas_rep_case(const uint8_t *code, uint8_t bytes, C_INT repz,
-    uint16_t count, const uint8_t *image, uint16_t expected_count,
-    uint16_t expected_di, uint32_t expected_flags)
+static C_INT scas_rep_case(const type_unsigned_8 *code, type_unsigned_8 bytes, C_INT repz,
+    type_unsigned_16 count, const type_unsigned_8 *image, type_unsigned_16 expected_count,
+    type_unsigned_16 expected_di, type_unsigned_32 expected_flags)
 {
     scas_machine state;
     t_cpu before;
@@ -228,7 +228,7 @@ static C_INT scas_rep_case(const uint8_t *code, uint8_t bytes, C_INT repz,
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
     type_status status;
-    uint8_t observed[3] = {0u, 0u, 0u};
+    type_unsigned_8 observed[3] = {0u, 0u, 0u};
     C_INT failed = !scas_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
     if (!failed) {
@@ -238,7 +238,7 @@ static C_INT scas_rep_case(const uint8_t *code, uint8_t bytes, C_INT repz,
             3u) != TYPE_STATUS_OK;
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !scas_run(&state, code, bytes, count == 0u ? 1u :
-            (uint8_t)(count - expected_count),
+            (type_unsigned_8)(count - expected_count),
             &after, &diagnostic, &status, &result) || status != TYPE_STATUS_OK ||
             diagnostic.first_fault.valid || after.data.eip != bytes ||
             !scas_nonparticipants_same(&before, &after) ||
@@ -258,12 +258,12 @@ static C_INT scas_rep_case(const uint8_t *code, uint8_t bytes, C_INT repz,
 
 static C_INT scas_test_rep(C_VOID)
 {
-    static const uint8_t repe[] = {0xf3u, 0xaeu};
-    static const uint8_t repne[] = {0xf2u, 0xaeu};
-    static const uint8_t equals[] = {0x10u, 1u, 0x10u};
-    static const uint8_t unequal[] = {1u, 0x10u, 1u};
-    static const uint8_t zero[] = {1u, 1u, 1u};
-    static const uint8_t one[] = {0x10u, 1u, 1u};
+    static const type_unsigned_8 repe[] = {0xf3u, 0xaeu};
+    static const type_unsigned_8 repne[] = {0xf2u, 0xaeu};
+    static const type_unsigned_8 equals[] = {0x10u, 1u, 0x10u};
+    static const type_unsigned_8 unequal[] = {1u, 0x10u, 1u};
+    static const type_unsigned_8 zero[] = {1u, 1u, 1u};
+    static const type_unsigned_8 one[] = {0x10u, 1u, 1u};
 
     if (!scas_rep_case(repe, sizeof(repe), 1, 0u, zero, 0u, 0x20u, 0u)) {
         STD_PRINTF("SCAS rep=zero\n");
@@ -290,7 +290,7 @@ static C_INT scas_test_rep(C_VOID)
 }
 
 static C_INT scas_expect_ud(core_machine_cpu_profile profile,
-    const uint8_t *code, uint8_t bytes)
+    const type_unsigned_8 *code, type_unsigned_8 bytes)
 {
     scas_machine state;
     t_cpu before;
@@ -298,8 +298,8 @@ static C_INT scas_expect_ud(core_machine_cpu_profile profile,
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
     type_status status;
-    uint32_t image = 0x11223344u;
-    uint32_t observed;
+    type_unsigned_32 image = 0x11223344u;
+    type_unsigned_32 observed;
     C_INT failed = !scas_prepare(profile, &state);
 
     if (!failed) {
@@ -332,22 +332,22 @@ static C_INT scas_test_rejections(C_VOID)
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286
     };
-    static const uint8_t attr[][4] = {
+    static const type_unsigned_8 attr[][4] = {
         {0x66u, 0xaeu, 0u, 0u}, {0x67u, 0xafu, 0u, 0u},
         {0x66u, 0x67u, 0xafu, 0u}, {0xf3u, 0x66u, 0xaeu, 0u},
         {0xf2u, 0x67u, 0xafu, 0u}, {0xf3u, 0x66u, 0x67u, 0xafu}
     };
-    static const uint8_t attr_bytes[] = {2u, 2u, 3u, 3u, 3u, 4u};
-    static const uint8_t lock[][5] = {
+    static const type_unsigned_8 attr_bytes[] = {2u, 2u, 3u, 3u, 3u, 4u};
+    static const type_unsigned_8 lock[][5] = {
         {0xf0u, 0xaeu, 0u, 0u, 0u}, {0xf0u, 0xafu, 0u, 0u, 0u},
         {0xf0u, 0xf3u, 0xaeu, 0u, 0u}, {0xf0u, 0xf2u, 0xafu, 0u, 0u},
         {0xf0u, 0x66u, 0xafu, 0u, 0u}, {0xf0u, 0x67u, 0xaeu, 0u, 0u},
         {0xf0u, 0x66u, 0x67u, 0xafu, 0u},
         {0xf0u, 0xf3u, 0x66u, 0x67u, 0xafu}
     };
-    static const uint8_t lock_bytes[] = {2u, 2u, 3u, 3u, 3u, 3u, 4u, 5u};
-    uint8_t profile;
-    uint8_t form;
+    static const type_unsigned_8 lock_bytes[] = {2u, 2u, 3u, 3u, 3u, 3u, 4u, 5u};
+    type_unsigned_8 profile;
+    type_unsigned_8 form;
 
     for (profile = 0u; profile != sizeof(legacy) / sizeof(legacy[0]); ++profile)
         for (form = 0u; form != sizeof(attr_bytes); ++form)
@@ -362,17 +362,17 @@ static C_INT scas_test_rejections(C_VOID)
 
 static C_INT scas_boot_protected(scas_machine *state)
 {
-    static const uint8_t pointer[] = {0x1fu, 0u, 0u, 0x03u, 0u, 0u};
-    static const uint8_t gdt[] = {
+    static const type_unsigned_8 pointer[] = {0x1fu, 0u, 0u, 0x03u, 0u, 0u};
+    static const type_unsigned_8 gdt[] = {
         0,0,0,0,0,0,0,0, 0xffu,0xffu,0,0x20u,0,0x9au,0,0,
         0x0fu,0,0,0x30u,0,0x92u,0,0, 0xffu,0xffu,0,0x40u,0,0x92u,0,0
     };
-    static const uint8_t boot[] = {
+    static const type_unsigned_8 boot[] = {
         0x0fu,0x01u,0x16u,0,1u, 0xb8u,1u,0,0x0fu,0x01u,0xf0u,
         0xb8u,0x18u,0,0x8eu,0xd8u, 0xb8u,0x10u,0,0x8eu,0xc0u,
         0xb8u,0x18u,0,0x8eu,0xd0u,0xbcu,0,0x80u, 0xeau,0,0,8u,0
     };
-    static const uint8_t halt = 0xf4u;
+    static const type_unsigned_8 halt = 0xf4u;
     core_machine_run_result result;
 
     return core_machine_memory_write(state->machine, 0x100u, pointer,
@@ -387,14 +387,14 @@ static C_INT scas_boot_protected(scas_machine *state)
 
 static C_INT scas_test_protected_limit(C_VOID)
 {
-    static const uint8_t code[] = {0xaeu};
+    static const type_unsigned_8 code[] = {0xaeu};
     scas_machine state;
     t_cpu before;
     t_cpu after;
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
-    uint8_t image = 1u;
-    uint8_t observed;
+    type_unsigned_8 image = 1u;
+    type_unsigned_8 observed;
     C_INT failed = !scas_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
     if (!failed)
@@ -440,15 +440,15 @@ static C_INT scas_test_protected_limit(C_VOID)
 
 static C_INT scas_test_protected_rep_limit(C_VOID)
 {
-    static const uint8_t code[] = {0xf3u, 0xaeu};
+    static const type_unsigned_8 code[] = {0xf3u, 0xaeu};
     scas_machine state;
     t_cpu before;
     t_cpu after;
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
-    uint8_t first = 0x10u;
-    uint8_t second = 1u;
-    uint8_t observed;
+    type_unsigned_8 first = 0x10u;
+    type_unsigned_8 second = 1u;
+    type_unsigned_8 observed;
     C_INT failed = !scas_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
     if (!failed)
@@ -501,17 +501,17 @@ static C_INT scas_test_protected_rep_limit(C_VOID)
 
 static C_INT scas_test_irq(C_VOID)
 {
-    static const uint8_t single[] = {0xaeu, 0x90u};
-    static const uint8_t repeat[] = {0xf3u, 0xaeu, 0x90u};
-    static const uint8_t hlt = 0xf4u;
+    static const type_unsigned_8 single[] = {0xaeu, 0x90u};
+    static const type_unsigned_8 repeat[] = {0xf3u, 0xaeu, 0x90u};
+    static const type_unsigned_8 hlt = 0xf4u;
     scas_machine state;
     core_machine_pic_irq_source irq;
     core_machine_run_result result;
     t_cpu after;
-    uint16_t offset = 0x100u;
-    uint16_t segment = 0u;
-    uint16_t frame_ip = 0u;
-    uint8_t image[] = {0x10u, 1u, 1u};
+    type_unsigned_16 offset = 0x100u;
+    type_unsigned_16 segment = 0u;
+    type_unsigned_16 frame_ip = 0u;
+    type_unsigned_8 image[] = {0x10u, 1u, 1u};
     C_INT failed = !scas_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
     if (!failed) {
@@ -538,7 +538,7 @@ static C_INT scas_test_irq(C_VOID)
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
-            after.data.ss.base + (uint16_t)after.data.esp,
+            after.data.ss.base + (type_unsigned_16)after.data.esp,
             TYPE_REFERENCE_OF(frame_ip), sizeof(frame_ip)) != TYPE_STATUS_OK ||
             after.data.eip != 0x101u || frame_ip != 1u || after.data.edi != 0x21u ||
             !TYPE_GET_BIT(state.machine->shared_pic_master.data.isr,
@@ -575,7 +575,7 @@ static C_INT scas_test_irq(C_VOID)
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
-            after.data.ss.base + (uint16_t)after.data.esp,
+            after.data.ss.base + (type_unsigned_16)after.data.esp,
             TYPE_REFERENCE_OF(frame_ip), sizeof(frame_ip)) != TYPE_STATUS_OK ||
             after.data.eip != 0x101u || frame_ip != 0u ||
             after.data.ecx != 0x11220002u || after.data.edi != 0x21u ||

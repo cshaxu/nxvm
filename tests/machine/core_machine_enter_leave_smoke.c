@@ -82,16 +82,16 @@ static C_INT enter_leave_cpu_same(const t_cpu *before, const t_cpu *after)
         enter_leave_sregs_same(before, after);
 }
 
-static C_INT enter_leave_read(enter_leave_machine *state, uint32_t address,
-    uint8_t width, uint32_t *value)
+static C_INT enter_leave_read(enter_leave_machine *state, type_unsigned_32 address,
+    type_unsigned_8 width, type_unsigned_32 *value)
 {
     *value = 0u;
     return core_machine_memory_read_physical(&state->machine->executor_memory,
         address, TYPE_REFERENCE_OF(*value), width) == TYPE_STATUS_OK;
 }
 
-static C_INT enter_leave_run(enter_leave_machine *state, const uint8_t *code,
-    uint8_t bytes, core_machine_run_budget budget, t_cpu *after,
+static C_INT enter_leave_run(enter_leave_machine *state, const type_unsigned_8 *code,
+    type_unsigned_8 bytes, core_machine_run_budget budget, t_cpu *after,
     core_machine_cpu_diagnostic *diagnostic, type_status *status,
     core_machine_run_result *result)
 {
@@ -106,17 +106,17 @@ static C_INT enter_leave_run(enter_leave_machine *state, const uint8_t *code,
 }
 
 static C_INT enter_leave_expect_image(enter_leave_machine *state,
-    uint32_t address, uint8_t width, uint32_t expected)
+    type_unsigned_32 address, type_unsigned_8 width, type_unsigned_32 expected)
 {
-    uint32_t observed;
+    type_unsigned_32 observed;
 
     return enter_leave_read(state, address, width, &observed) && observed ==
         (width == 2u ? (expected & 0xffffu) : expected);
 }
 
 static C_INT enter_leave_test_enter(core_machine_cpu_profile profile,
-    const uint8_t *code, uint8_t bytes, uint8_t width, uint16_t allocation,
-    uint8_t level, C_INT stack32)
+    const type_unsigned_8 *code, type_unsigned_8 bytes, type_unsigned_8 width, type_unsigned_16 allocation,
+    type_unsigned_8 level, C_INT stack32)
 {
     enter_leave_machine state;
     t_cpu before;
@@ -124,12 +124,12 @@ static C_INT enter_leave_test_enter(core_machine_cpu_profile profile,
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
     type_status status;
-    uint32_t old_stack;
-    uint32_t frame;
-    uint32_t final_stack;
-    uint32_t display0 = 0x11112222u;
-    uint32_t display1 = 0x33334444u;
-    uint8_t effective_level = level & 31u;
+    type_unsigned_32 old_stack;
+    type_unsigned_32 frame;
+    type_unsigned_32 final_stack;
+    type_unsigned_32 display0 = 0x11112222u;
+    type_unsigned_32 display1 = 0x33334444u;
+    type_unsigned_8 effective_level = level & 31u;
     C_INT failed = !enter_leave_prepare(profile, &state);
 
     if (!failed)
@@ -146,7 +146,7 @@ static C_INT enter_leave_test_enter(core_machine_cpu_profile profile,
             state.machine->executor_cpu.data.sp;
         if (effective_level > 1u)
         {
-            uint32_t source = width == 2u ?
+            type_unsigned_32 source = width == 2u ?
                 state.machine->executor_cpu.data.bp :
                 state.machine->executor_cpu.data.ebp;
 
@@ -200,7 +200,7 @@ static C_INT enter_leave_test_enter(core_machine_cpu_profile profile,
 }
 
 static C_INT enter_leave_test_leave(core_machine_cpu_profile profile,
-    const uint8_t *code, uint8_t bytes, uint8_t width, C_INT stack32)
+    const type_unsigned_8 *code, type_unsigned_8 bytes, type_unsigned_8 width, C_INT stack32)
 {
     enter_leave_machine state;
     t_cpu before;
@@ -208,8 +208,8 @@ static C_INT enter_leave_test_leave(core_machine_cpu_profile profile,
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
     type_status status;
-    uint32_t old_bp = width == 2u ? 0xface4321u : 0xface4321u;
-    uint32_t frame = stack32 ? 0x00008020u : 0x00008020u;
+    type_unsigned_32 old_bp = width == 2u ? 0xface4321u : 0xface4321u;
+    type_unsigned_32 frame = stack32 ? 0x00008020u : 0x00008020u;
     C_INT failed = !enter_leave_prepare(profile, &state);
 
     if (!failed)
@@ -252,12 +252,12 @@ static C_INT enter_leave_test_defaults(C_VOID)
     static const core_machine_cpu_profile supported[] = {
         CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286,
         CORE_MACHINE_CPU_PROFILE_80386};
-    static const uint8_t enter0[] = {0xc8u, 0x04u, 0x00u, 0x00u};
-    static const uint8_t enter1[] = {0xc8u, 0x00u, 0x00u, 0x01u};
-    static const uint8_t enter3[] = {0xc8u, 0x04u, 0x00u, 0x03u};
-    static const uint8_t enter33[] = {0xc8u, 0x02u, 0x00u, 0x21u};
-    static const uint8_t leave[] = {0xc9u};
-    uint8_t profile;
+    static const type_unsigned_8 enter0[] = {0xc8u, 0x04u, 0x00u, 0x00u};
+    static const type_unsigned_8 enter1[] = {0xc8u, 0x00u, 0x00u, 0x01u};
+    static const type_unsigned_8 enter3[] = {0xc8u, 0x04u, 0x00u, 0x03u};
+    static const type_unsigned_8 enter33[] = {0xc8u, 0x02u, 0x00u, 0x21u};
+    static const type_unsigned_8 leave[] = {0xc9u};
+    type_unsigned_8 profile;
 
     for (profile = 0u; profile != sizeof(supported) / sizeof(supported[0]);
          ++profile)
@@ -283,13 +283,13 @@ static C_INT enter_leave_test_defaults(C_VOID)
 
 static C_INT enter_leave_test_attributes(C_VOID)
 {
-    static const uint8_t enter32[] = {0x66u, 0xc8u, 0x08u, 0x00u, 0x02u};
-    static const uint8_t leave32[] = {0x66u, 0xc9u};
-    static const uint8_t enter67[] = {0x67u, 0xc8u, 0x04u, 0x00u, 0x00u};
-    static const uint8_t leave67[] = {0x67u, 0xc9u};
-    static const uint8_t enter3267[] = {0x66u, 0x67u, 0xc8u, 0x04u, 0x00u,
+    static const type_unsigned_8 enter32[] = {0x66u, 0xc8u, 0x08u, 0x00u, 0x02u};
+    static const type_unsigned_8 leave32[] = {0x66u, 0xc9u};
+    static const type_unsigned_8 enter67[] = {0x67u, 0xc8u, 0x04u, 0x00u, 0x00u};
+    static const type_unsigned_8 leave67[] = {0x67u, 0xc9u};
+    static const type_unsigned_8 enter3267[] = {0x66u, 0x67u, 0xc8u, 0x04u, 0x00u,
         0x01u};
-    static const uint8_t leave3267[] = {0x66u, 0x67u, 0xc9u};
+    static const type_unsigned_8 leave3267[] = {0x66u, 0x67u, 0xc9u};
 
     if (!enter_leave_test_enter(CORE_MACHINE_CPU_PROFILE_80386, enter32,
         sizeof(enter32), 4u, 8u, 2u, 0))
@@ -313,7 +313,7 @@ static C_INT enter_leave_test_attributes(C_VOID)
 }
 
 static C_INT enter_leave_test_reject_case(core_machine_cpu_profile profile,
-    const uint8_t *code, uint8_t bytes)
+    const type_unsigned_8 *code, type_unsigned_8 bytes)
 {
     enter_leave_machine state;
     t_cpu before;
@@ -321,8 +321,8 @@ static C_INT enter_leave_test_reject_case(core_machine_cpu_profile profile,
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
     type_status status;
-    uint32_t image = 0xdecafbad;
-    uint32_t observed;
+    type_unsigned_32 image = 0xdecafbad;
+    type_unsigned_32 observed;
     C_INT failed = !enter_leave_prepare(profile, &state);
 
     if (!failed)
@@ -348,9 +348,9 @@ static C_INT enter_leave_test_reject_case(core_machine_cpu_profile profile,
 
 static C_INT enter_leave_test_rejections(C_VOID)
 {
-    static const uint8_t enter[] = {0xc8u, 0x04u, 0x00u, 0x00u};
-    static const uint8_t leave[] = {0xc9u};
-    static const uint8_t attributes[][6] = {
+    static const type_unsigned_8 enter[] = {0xc8u, 0x04u, 0x00u, 0x00u};
+    static const type_unsigned_8 leave[] = {0xc9u};
+    static const type_unsigned_8 attributes[][6] = {
         {0x66u, 0xc8u, 0x04u, 0x00u, 0x00u, 0u},
         {0x67u, 0xc8u, 0x04u, 0x00u, 0x00u, 0u},
         {0x66u, 0x67u, 0xc8u, 0x04u, 0x00u, 0x00u},
@@ -358,20 +358,20 @@ static C_INT enter_leave_test_rejections(C_VOID)
         {0x67u, 0xc9u, 0u, 0u, 0u, 0u},
         {0x66u, 0x67u, 0xc9u, 0u, 0u, 0u}
     };
-    static const uint8_t attribute_bytes[] = {5u, 5u, 6u, 2u, 2u, 3u};
-    static const uint8_t lock[][7] = {
+    static const type_unsigned_8 attribute_bytes[] = {5u, 5u, 6u, 2u, 2u, 3u};
+    static const type_unsigned_8 lock[][7] = {
         {0xf0u, 0xc8u, 0x04u, 0x00u, 0x00u, 0u, 0u},
         {0xf0u, 0xc9u, 0u, 0u, 0u, 0u, 0u},
         {0xf0u, 0x66u, 0xc8u, 0x04u, 0x00u, 0x00u, 0u},
         {0xf0u, 0x67u, 0xc9u, 0u, 0u, 0u, 0u},
         {0xf0u, 0x66u, 0x67u, 0xc8u, 0x04u, 0x00u, 0x00u}
     };
-    static const uint8_t lock_bytes[] = {5u, 2u, 6u, 3u, 7u};
+    static const type_unsigned_8 lock_bytes[] = {5u, 2u, 6u, 3u, 7u};
     static const core_machine_cpu_profile legacy[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286};
-    uint8_t profile;
-    uint8_t form;
+    type_unsigned_8 profile;
+    type_unsigned_8 form;
 
     if (!enter_leave_test_reject_case(CORE_MACHINE_CPU_PROFILE_8086, enter,
         sizeof(enter)) || !enter_leave_test_reject_case(
@@ -399,20 +399,20 @@ static C_INT enter_leave_test_rejections(C_VOID)
 
 static C_INT enter_leave_boot_protected(enter_leave_machine *state)
 {
-    static const uint8_t pointer[] = {0x1fu, 0u, 0u, 0x03u, 0u, 0u};
-    static const uint8_t gdt[] = {
+    static const type_unsigned_8 pointer[] = {0x1fu, 0u, 0u, 0x03u, 0u, 0u};
+    static const type_unsigned_8 gdt[] = {
         0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
         0xffu, 0xffu, 0u, 0x20u, 0u, 0x9au, 0u, 0u,
         0xffu, 0xffu, 0u, 0x30u, 0u, 0x92u, 0u, 0u,
         0xffu, 0xffu, 0u, 0x40u, 0u, 0x92u, 0u, 0u
     };
-    static const uint8_t bootstrap[] = {
+    static const type_unsigned_8 bootstrap[] = {
         0x0fu, 0x01u, 0x16u, 0x00u, 0x01u, 0xb8u, 0x01u, 0x00u,
         0x0fu, 0x01u, 0xf0u, 0xb8u, 0x10u, 0x00u, 0x8eu, 0xd8u,
         0x8eu, 0xc0u, 0xb8u, 0x18u, 0x00u, 0x8eu, 0xd0u, 0xbcu,
         0x00u, 0x80u, 0xeau, 0x00u, 0x00u, 0x08u, 0x00u
     };
-    static const uint8_t halt[] = {0xf4u};
+    static const type_unsigned_8 halt[] = {0xf4u};
     core_machine_run_result result;
 
     return core_machine_memory_write(state->machine, 0x0100u, pointer,
@@ -428,14 +428,14 @@ static C_INT enter_leave_boot_protected(enter_leave_machine *state)
 
 static C_INT enter_leave_test_protected_stack32(C_VOID)
 {
-    static const uint8_t enter[] = {0x66u, 0xc8u, 0x08u, 0x00u, 0x02u};
-    static const uint8_t leave[] = {0x66u, 0xc9u};
+    static const type_unsigned_8 enter[] = {0x66u, 0xc8u, 0x08u, 0x00u, 0x02u};
+    static const type_unsigned_8 leave[] = {0x66u, 0xc9u};
     enter_leave_machine state;
     t_cpu before;
     t_cpu after;
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
-    uint32_t parent = 0x11112222u;
+    type_unsigned_32 parent = 0x11112222u;
     C_INT failed = !enter_leave_prepare(CORE_MACHINE_CPU_PROFILE_80386,
         &state);
 
@@ -493,17 +493,17 @@ static C_INT enter_leave_test_protected_stack32(C_VOID)
 
 static C_INT enter_leave_test_protected_faults(C_VOID)
 {
-    static const uint8_t enter[] = {0xc8u, 0x00u, 0x00u, 0x03u};
-    static const uint8_t leave[] = {0xc9u};
+    static const type_unsigned_8 enter[] = {0xc8u, 0x00u, 0x00u, 0x03u};
+    static const type_unsigned_8 leave[] = {0xc9u};
     enter_leave_machine state;
     t_cpu before;
     t_cpu after;
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
     type_status status;
-    uint16_t stack_image[] = {0xaaaau, 0xbbbbu, 0xccccu, 0xddddu,
+    type_unsigned_16 stack_image[] = {0xaaaau, 0xbbbbu, 0xccccu, 0xddddu,
         0xeeeeu};
-    uint32_t value;
+    type_unsigned_32 value;
     C_INT failed = !enter_leave_prepare(CORE_MACHINE_CPU_PROFILE_80386,
         &state);
 
@@ -518,10 +518,10 @@ static C_INT enter_leave_test_protected_faults(C_VOID)
         stack_image[0] = 0x1111u;
         stack_image[1] = 0x2222u;
         failed |= core_machine_memory_write(state.machine, 0xcffeu,
-            &stack_image[0], sizeof(uint16_t)) != TYPE_STATUS_OK ||
+            &stack_image[0], sizeof(type_unsigned_16)) != TYPE_STATUS_OK ||
             core_machine_memory_write(state.machine, 0xcffcu, &stack_image[1],
-            sizeof(uint16_t)) != TYPE_STATUS_OK || core_machine_memory_write(
-            state.machine, 0x4018u, &stack_image[2], sizeof(uint16_t)) !=
+            sizeof(type_unsigned_16)) != TYPE_STATUS_OK || core_machine_memory_write(
+            state.machine, 0x4018u, &stack_image[2], sizeof(type_unsigned_16)) !=
             TYPE_STATUS_OK || core_machine_memory_write(state.machine, 0x2000u,
             enter, sizeof(enter)) != TYPE_STATUS_OK;
         test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
@@ -554,7 +554,7 @@ static C_INT enter_leave_test_protected_faults(C_VOID)
         state.machine->executor_cpu.data.ss.limit = 0x1fu;
         state.machine->executor_cpu.data.ebp = 0xe1e20020u;
         failed |= core_machine_memory_write(state.machine, 0x4020u, stack_image,
-            sizeof(uint16_t)) != TYPE_STATUS_OK || core_machine_memory_write(
+            sizeof(type_unsigned_16)) != TYPE_STATUS_OK || core_machine_memory_write(
             state.machine, 0x2000u, leave, sizeof(leave)) != TYPE_STATUS_OK;
         test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
@@ -574,13 +574,13 @@ static C_INT enter_leave_test_protected_faults(C_VOID)
 
 static C_INT enter_leave_test_irq_no_shadow(C_VOID)
 {
-    static const uint8_t codes[][5] = {
+    static const type_unsigned_8 codes[][5] = {
         {0xc8u, 0x04u, 0x00u, 0x00u, 0x90u},
         {0xc9u, 0x90u, 0u, 0u, 0u}
     };
-    static const uint8_t bytes[] = {5u, 2u};
-    static const uint8_t halt = 0xf4u;
-    uint8_t form;
+    static const type_unsigned_8 bytes[] = {5u, 2u};
+    static const type_unsigned_8 halt = 0xf4u;
+    type_unsigned_8 form;
 
     for (form = 0u; form != 2u; ++form)
     {
@@ -589,10 +589,10 @@ static C_INT enter_leave_test_irq_no_shadow(C_VOID)
         core_machine_run_result result;
         t_cpu before;
         t_cpu after;
-        uint16_t offset = 0x100u;
-        uint16_t segment = 0u;
-        uint16_t frame_ip = 0u;
-        uint16_t old_bp = 0x4567u;
+        type_unsigned_16 offset = 0x100u;
+        type_unsigned_16 segment = 0u;
+        type_unsigned_16 frame_ip = 0u;
+        type_unsigned_16 old_bp = 0x4567u;
         C_INT failed = !enter_leave_prepare(CORE_MACHINE_CPU_PROFILE_80386,
             &state);
 
@@ -628,7 +628,7 @@ static C_INT enter_leave_test_irq_no_shadow(C_VOID)
                 result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
             after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
-                after.data.ss.base + (uint16_t)after.data.esp,
+                after.data.ss.base + (type_unsigned_16)after.data.esp,
                 TYPE_REFERENCE_OF(frame_ip), sizeof(frame_ip)) != TYPE_STATUS_OK ||
                 after.data.eip != 0x101u || frame_ip != (form == 0u ? 4u : 1u) ||
                 !TYPE_GET_BIT(state.machine->shared_pic_master.data.isr,

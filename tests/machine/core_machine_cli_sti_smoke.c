@@ -39,8 +39,8 @@ static C_INT cli_sti_prepare(core_machine_cpu_profile profile,
         core_machine_reset(state->machine) == TYPE_STATUS_OK;
 }
 
-static C_INT cli_sti_run(cli_sti_machine *state, const uint8_t *code,
-    uint32_t count, uint32_t budget, t_cpu *after)
+static C_INT cli_sti_run(cli_sti_machine *state, const type_unsigned_8 *code,
+    type_unsigned_32 count, type_unsigned_32 budget, t_cpu *after)
 {
     core_machine_run_result result;
 
@@ -60,20 +60,20 @@ static C_INT cli_sti_test_real_forms(C_VOID)
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80386
     };
-    static const uint8_t opcodes[] = { 0xfau, 0xfbu };
-    const uint32_t preserved = VCPU_EFLAGS_CF | VCPU_EFLAGS_PF |
+    static const type_unsigned_8 opcodes[] = { 0xfau, 0xfbu };
+    const type_unsigned_32 preserved = VCPU_EFLAGS_CF | VCPU_EFLAGS_PF |
         VCPU_EFLAGS_AF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_SF |
         VCPU_EFLAGS_DF | VCPU_EFLAGS_OF;
-    uint8_t profile;
-    uint8_t opcode;
+    type_unsigned_8 profile;
+    type_unsigned_8 opcode;
 
     for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile) {
         for (opcode = 0u; opcode != sizeof(opcodes); ++opcode) {
             cli_sti_machine state;
             t_cpu after;
-            uint32_t initial = preserved | (opcodes[opcode] == 0xfau ?
+            type_unsigned_32 initial = preserved | (opcodes[opcode] == 0xfau ?
                 VCPU_EFLAGS_IF : 0u);
-            uint32_t expected = opcodes[opcode] == 0xfau ? preserved :
+            type_unsigned_32 expected = opcodes[opcode] == 0xfau ? preserved :
                 preserved | VCPU_EFLAGS_IF;
             C_INT failed = !cli_sti_prepare(profiles[profile], &state);
 
@@ -96,20 +96,20 @@ static C_INT cli_sti_test_irq_shadow(C_VOID)
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80386
     };
-    static const uint8_t sti_nop[] = { 0xfbu, 0x90u };
-    static const uint8_t cli_nop[] = { 0xfau, 0x90u };
-    static const uint8_t hlt = 0xf4u;
-    uint8_t profile;
+    static const type_unsigned_8 sti_nop[] = { 0xfbu, 0x90u };
+    static const type_unsigned_8 cli_nop[] = { 0xfau, 0x90u };
+    static const type_unsigned_8 hlt = 0xf4u;
+    type_unsigned_8 profile;
 
     for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile) {
         cli_sti_machine state;
         core_machine_pic_irq_source source;
         core_machine_run_result result;
         t_cpu after;
-        uint32_t vector = 0x20u;
-        uint16_t offset = 0x0100u;
-        uint16_t segment = 0u;
-        uint16_t frame_ip = 0u;
+        type_unsigned_32 vector = 0x20u;
+        type_unsigned_16 offset = 0x0100u;
+        type_unsigned_16 segment = 0u;
+        type_unsigned_16 frame_ip = 0u;
         type_status frame_status;
         C_INT failed = !cli_sti_prepare(profiles[profile], &state);
 
@@ -127,7 +127,7 @@ static C_INT cli_sti_test_irq_shadow(C_VOID)
         }
         if (!failed) {
             STD_MEMSET(&source, 0, sizeof(source));
-            state.machine->shared_pic_master.data.icw2 = (uint8_t)vector;
+            state.machine->shared_pic_master.data.icw2 = (type_unsigned_8)vector;
             core_machine_pic_irq_source_bind(&source,
                 &state.machine->shared_pic_master, &state.machine->shared_pic_slave, 0u);
             core_machine_pic_irq_source_assert(&source);
@@ -138,7 +138,7 @@ static C_INT cli_sti_test_irq_shadow(C_VOID)
             after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             frame_status = core_machine_memory_read_physical(
                 &state.machine->executor_memory,
-                after.data.ss.base + (uint16_t)after.data.esp,
+                after.data.ss.base + (type_unsigned_16)after.data.esp,
                 (type_virtual_address)&frame_ip, sizeof(frame_ip));
             failed |=
                 after.data.eip != offset ||
@@ -186,17 +186,17 @@ static C_INT cli_sti_test_irq_shadow(C_VOID)
 
 static C_INT cli_sti_prepare_protected(cli_sti_machine *state)
 {
-    static const uint8_t pointer[] = { 0x1fu, 0, 0, 0x03u, 0, 0 };
-    static const uint8_t gdt[] = {
+    static const type_unsigned_8 pointer[] = { 0x1fu, 0, 0, 0x03u, 0, 0 };
+    static const type_unsigned_8 gdt[] = {
         0,0,0,0,0,0,0,0, 0xffu,0xffu,0,0x20u,0,0x9au,0,0,
         0xffu,0xffu,0,0,0,0x92u,0,0, 0xffu,0xffu,0,0x40u,0,0x92u,0,0
     };
-    static const uint8_t bootstrap[] = {
+    static const type_unsigned_8 bootstrap[] = {
         0x0fu,0x01u,0x16u,0x00u,0x01u,0xb8u,0x01u,0x00u,0x0fu,0x01u,0xf0u,
         0xb8u,0x10u,0x00u,0x8eu,0xd8u,0x8eu,0xc0u,0xb8u,0x18u,0x00u,0x8eu,
         0xd0u,0xbcu,0x00u,0x80u,0xeau,0x00u,0x00u,0x08u,0x00u
     };
-    static const uint8_t halt[] = { 0xf4u };
+    static const type_unsigned_8 halt[] = { 0xf4u };
     core_machine_run_result result;
 
     return cli_sti_prepare(CORE_MACHINE_CPU_PROFILE_80386, state) &&
@@ -215,13 +215,13 @@ static C_INT cli_sti_prepare_protected(cli_sti_machine *state)
 
 static C_INT cli_sti_install_gp_gate(cli_sti_machine *state)
 {
-    static const uint8_t handler[] = { 0xf4u };
-    uint8_t tss[10] = { 0 };
-    static const uint8_t gdt[] = {
+    static const type_unsigned_8 handler[] = { 0xf4u };
+    type_unsigned_8 tss[10] = { 0 };
+    static const type_unsigned_8 gdt[] = {
         0,0,0,0,0,0,0,0, 0xffu,0xffu,0,0x20u,0,0x9au,0x40u,0,
         0xffu,0xffu,0,0,0,0x92u,0xcfu,0
     };
-    uint8_t gate[8] = { 0 };
+    type_unsigned_8 gate[8] = { 0 };
     t_cpu *cpu = &state->machine->executor_cpu;
 
     gate[0] = 0x00u;
@@ -274,8 +274,8 @@ static C_INT cli_sti_install_gp_gate(cli_sti_machine *state)
             sizeof(handler)) == TYPE_STATUS_OK;
 }
 
-static C_INT cli_sti_run_vm86(cli_sti_machine *state, const uint8_t *code,
-    uint8_t bytes, uint32_t eflags, C_INT fault, t_cpu *after,
+static C_INT cli_sti_run_vm86(cli_sti_machine *state, const type_unsigned_8 *code,
+    type_unsigned_8 bytes, type_unsigned_32 eflags, C_INT fault, t_cpu *after,
     core_machine_cpu_diagnostic *diagnostic)
 {
     core_machine_run_result result;
@@ -310,21 +310,21 @@ static C_INT cli_sti_run_vm86(cli_sti_machine *state, const uint8_t *code,
 
 static C_INT cli_sti_test_protected_success(C_VOID)
 {
-    static const uint8_t opcodes[] = { 0xfau, 0xfbu };
-    uint8_t pass;
+    static const type_unsigned_8 opcodes[] = { 0xfau, 0xfbu };
+    type_unsigned_8 pass;
 
     for (pass = 0u; pass != 2u; ++pass) {
-        uint8_t opcode;
+        type_unsigned_8 opcode;
 
         for (opcode = 0u; opcode != sizeof(opcodes); ++opcode) {
             cli_sti_machine state;
             core_machine_run_result result;
             t_cpu after;
-            uint8_t cpl = pass ? 3u : 0u;
-            uint32_t iopl = pass ? VCPU_EFLAGS_IOPL : 0u;
-            uint32_t initial = VCPU_EFLAGS_CF | iopl |
+            type_unsigned_8 cpl = pass ? 3u : 0u;
+            type_unsigned_32 iopl = pass ? VCPU_EFLAGS_IOPL : 0u;
+            type_unsigned_32 initial = VCPU_EFLAGS_CF | iopl |
                 (opcodes[opcode] == 0xfau ? VCPU_EFLAGS_IF : 0u);
-            uint32_t expected = VCPU_EFLAGS_CF | iopl |
+            type_unsigned_32 expected = VCPU_EFLAGS_CF | iopl |
                 (opcodes[opcode] == 0xfbu ? VCPU_EFLAGS_IF : 0u);
             C_INT failed = !cli_sti_prepare_protected(&state);
 
@@ -352,8 +352,8 @@ static C_INT cli_sti_test_protected_success(C_VOID)
 
 static C_INT cli_sti_test_protected_reject(C_VOID)
 {
-    static const uint8_t opcodes[] = { 0xfau, 0xfbu };
-    uint8_t opcode;
+    static const type_unsigned_8 opcodes[] = { 0xfau, 0xfbu };
+    type_unsigned_8 opcode;
 
     for (opcode = 0u; opcode != sizeof(opcodes); ++opcode) {
         cli_sti_machine state;
@@ -361,8 +361,8 @@ static C_INT cli_sti_test_protected_reject(C_VOID)
         core_machine_cpu_diagnostic diagnostic;
         t_cpu after;
         type_status status;
-        uint32_t frame[4] = { 0u, 0u, 0u, 0u };
-        const uint32_t flags = VCPU_EFLAGS_CF;
+        type_unsigned_32 frame[4] = { 0u, 0u, 0u, 0u };
+        const type_unsigned_32 flags = VCPU_EFLAGS_CF;
         C_INT failed = !cli_sti_prepare_protected(&state);
 
         if (!failed) {
@@ -402,19 +402,19 @@ static C_INT cli_sti_test_protected_reject(C_VOID)
 
 static C_INT cli_sti_test_vm86(C_VOID)
 {
-    static const uint8_t opcodes[] = { 0xfau, 0xfbu };
-    uint8_t opcode;
+    static const type_unsigned_8 opcodes[] = { 0xfau, 0xfbu };
+    type_unsigned_8 opcode;
 
     for (opcode = 0u; opcode != sizeof(opcodes); ++opcode) {
-        uint8_t pass;
+        type_unsigned_8 pass;
 
         for (pass = 0u; pass != 2u; ++pass) {
             cli_sti_machine state;
             core_machine_cpu_diagnostic diagnostic;
             t_cpu after;
-            const uint32_t flags = VCPU_EFLAGS_VM | VCPU_EFLAGS_CF |
+            const type_unsigned_32 flags = VCPU_EFLAGS_VM | VCPU_EFLAGS_CF |
                 (pass ? 0u : VCPU_EFLAGS_IOPL);
-            const uint32_t expected = pass ? flags :
+            const type_unsigned_32 expected = pass ? flags :
                 (opcodes[opcode] == 0xfau ? flags & ~VCPU_EFLAGS_IF :
                     flags | VCPU_EFLAGS_IF);
             C_INT failed = !cli_sti_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);

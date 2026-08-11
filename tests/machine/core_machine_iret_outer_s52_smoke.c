@@ -3,15 +3,15 @@
 #undef main
 
 static C_INT iret_outer_s52_expect_ud(core_machine_cpu_profile profile,
-    const uint8_t *code, uint8_t bytes)
+    const type_unsigned_8 *code, type_unsigned_8 bytes)
 {
     atomic_machine state;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
     t_cpu after;
-    uint8_t stack_before[16] = { 0u };
-    uint8_t stack_after[16] = { 0u };
+    type_unsigned_8 stack_before[16] = { 0u };
+    type_unsigned_8 stack_after[16] = { 0u };
     C_INT failed = !atomic_prepare(&state, profile);
 
     if (!failed) {
@@ -50,26 +50,26 @@ static C_INT iret_outer_s52_test_rejections(C_VOID)
         CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286
     };
-    static const uint8_t attributes[][3] = {
+    static const type_unsigned_8 attributes[][3] = {
         { 0x66u, 0xcfu, 0u },
         { 0x67u, 0xcfu, 0u },
         { 0x66u, 0x67u, 0xcfu }
     };
-    static const uint8_t lock_forms[][4] = {
+    static const type_unsigned_8 lock_forms[][4] = {
         { 0xf0u, 0xcfu, 0u, 0u },
         { 0xf0u, 0x66u, 0xcfu, 0u },
         { 0xf0u, 0x67u, 0xcfu, 0u },
         { 0xf0u, 0x66u, 0x67u, 0xcfu }
     };
-    uint8_t profile;
+    type_unsigned_8 profile;
 
     for (profile = 0u; profile != sizeof(legacy) / sizeof(legacy[0]);
         ++profile) {
-        uint8_t attribute;
+        type_unsigned_8 attribute;
 
         for (attribute = 0u;
             attribute != sizeof(attributes) / sizeof(attributes[0]); ++attribute) {
-            uint8_t bytes = attribute == 2u ? 3u : 2u;
+            type_unsigned_8 bytes = attribute == 2u ? 3u : 2u;
 
             if (!iret_outer_s52_expect_ud(legacy[profile],
                     attributes[attribute], bytes))
@@ -78,7 +78,7 @@ static C_INT iret_outer_s52_test_rejections(C_VOID)
     }
     for (profile = 0u; profile != sizeof(lock_forms) / sizeof(lock_forms[0]);
         ++profile) {
-        uint8_t bytes = profile == 3u ? 4u : profile == 0u ? 2u : 3u;
+        type_unsigned_8 bytes = profile == 3u ? 4u : profile == 0u ? 2u : 3u;
 
         if (!iret_outer_s52_expect_ud(CORE_MACHINE_CPU_PROFILE_80386,
                 lock_forms[profile], bytes))
@@ -89,8 +89,8 @@ static C_INT iret_outer_s52_test_rejections(C_VOID)
 
 static C_INT iret_outer_s52_test_combined(C_VOID)
 {
-    static const uint8_t program[] = { 0x66u, 0x67u, 0xcfu };
-    static const uint16_t frame[] = {
+    static const type_unsigned_8 program[] = { 0x66u, 0x67u, 0xcfu };
+    static const type_unsigned_16 frame[] = {
         0x0010u, 0x001bu, 0x0203u, 0x1000u, 0x0023u
     };
     const core_machine_run_budget boot_budget = { 128u, 0u };
@@ -117,7 +117,7 @@ static C_INT iret_outer_s52_test_combined(C_VOID)
         failed |= !atomic_write(&state, ATOMIC_KERNEL_BASE, program,
             sizeof(program));
         failed |= !atomic_write(&state, ATOMIC_KERNEL_STACK_BASE + 0x8000u,
-            (const uint8_t *)frame, sizeof(frame));
+            (const type_unsigned_8 *)frame, sizeof(frame));
         failed |= core_machine_run(state.machine, budget, &result) !=
             TYPE_STATUS_OK;
         failed |= result.reason != CORE_MACHINE_STOP_BUDGET;
@@ -196,26 +196,26 @@ static C_INT iret_outer_s52_non_target_sregs_same(const t_cpu *before,
 
 static C_INT iret_outer_s52_test_success(C_VOID)
 {
-    static const uint8_t programs[][3] = {
+    static const type_unsigned_8 programs[][3] = {
         { 0xcfu, 0u, 0u },
         { 0x67u, 0xcfu, 0u },
         { 0x66u, 0xcfu, 0u },
         { 0x66u, 0x67u, 0xcfu }
     };
-    static const uint8_t program_bytes[] = { 1u, 2u, 2u, 3u };
-    static const uint8_t operand16[] = { 0u, 0u, 1u, 1u };
-    static const uint8_t wide_stack[] = { 0u, 1u, 0u, 1u };
-    static const uint32_t frame32[] = {
+    static const type_unsigned_8 program_bytes[] = { 1u, 2u, 2u, 3u };
+    static const type_unsigned_8 operand16[] = { 0u, 0u, 1u, 1u };
+    static const type_unsigned_8 wide_stack[] = { 0u, 1u, 0u, 1u };
+    static const type_unsigned_32 frame32[] = {
         0x00000010u, 0x0000001bu, 0x00000203u,
         0x00001000u, 0x00000023u
     };
-    static const uint16_t frame16[] = {
+    static const type_unsigned_16 frame16[] = {
         0x0010u, 0x001bu, 0x0203u, 0x1000u, 0x0023u
     };
     const core_machine_run_budget boot_budget = { 128u, 0u };
     const core_machine_run_budget budget = { 1u, 0u };
-    const uint8_t stack_flags = 0x40u;
-    uint8_t form;
+    const type_unsigned_8 stack_flags = 0x40u;
+    type_unsigned_8 form;
 
     for (form = 0u; form != sizeof(programs) / sizeof(programs[0]); ++form) {
         atomic_machine state;
@@ -223,17 +223,17 @@ static C_INT iret_outer_s52_test_success(C_VOID)
         core_machine_cpu_diagnostic diagnostic;
         t_cpu before;
         t_cpu after;
-        uint8_t old_before[sizeof(frame32)] = { 0u };
-        uint8_t old_after[sizeof(frame32)] = { 0u };
-        uint8_t outer_target_before[8] = {
+        type_unsigned_8 old_before[sizeof(frame32)] = { 0u };
+        type_unsigned_8 old_after[sizeof(frame32)] = { 0u };
+        type_unsigned_8 outer_target_before[8] = {
             0xa1u, 0xa2u, 0xa3u, 0xa4u, 0xa5u, 0xa6u, 0xa7u, 0xa8u
         };
-        uint8_t outer_target_after[sizeof(outer_target_before)] = { 0u };
-        uint8_t outer_unselected_before[8] = {
+        type_unsigned_8 outer_target_after[sizeof(outer_target_before)] = { 0u };
+        type_unsigned_8 outer_unselected_before[8] = {
             0xb1u, 0xb2u, 0xb3u, 0xb4u, 0xb5u, 0xb6u, 0xb7u, 0xb8u
         };
-        uint8_t outer_unselected_after[sizeof(outer_unselected_before)] = { 0u };
-        uint32_t expected_esp = wide_stack[form] ? 0x00001000u :
+        type_unsigned_8 outer_unselected_after[sizeof(outer_unselected_before)] = { 0u };
+        type_unsigned_32 expected_esp = wide_stack[form] ? 0x00001000u :
             0x12341000u;
         C_INT failed = !atomic_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
 
@@ -336,15 +336,15 @@ static C_INT iret_outer_s52_test_outer(C_VOID)
 
 static C_INT iret_outer_s52_test_pic(C_VOID)
 {
-    static const uint8_t iret[] = { 0xcfu };
-    static const uint8_t nop = 0x90u;
-    static const uint8_t hlt = 0xf4u;
-    static const uint8_t tss_descriptor[] = {
+    static const type_unsigned_8 iret[] = { 0xcfu };
+    static const type_unsigned_8 nop = 0x90u;
+    static const type_unsigned_8 hlt = 0xf4u;
+    static const type_unsigned_8 tss_descriptor[] = {
         0x67u, 0x00u, 0x00u, 0x06u,
         0x00u, 0x8bu, 0x00u, 0x00u
     };
-    const uint8_t vector = 0x20u;
-    uint8_t restore_if;
+    const type_unsigned_8 vector = 0x20u;
+    type_unsigned_8 restore_if;
 
     for (restore_if = 0u; restore_if != 2u; ++restore_if) {
         atomic_machine state;
@@ -353,16 +353,16 @@ static C_INT iret_outer_s52_test_pic(C_VOID)
         core_machine_cpu_diagnostic diagnostic;
         t_cpu before;
         t_cpu after;
-        uint8_t gate[8] = { 0u };
-        uint32_t frame[] = {
+        type_unsigned_8 gate[8] = { 0u };
+        type_unsigned_32 frame[] = {
             0x00000010u, 0x0000001bu,
             restore_if ? VCPU_EFLAGS_IF | 0x02u : 0x02u,
             0x00001000u, 0x00000023u
         };
-        uint32_t irq_frame[3] = { 0u, 0u, 0u };
-        uint8_t tss[10] = { 0u };
-        uint32_t esp0 = 0x00009000u;
-        uint16_t ss0 = 0x0010u;
+        type_unsigned_32 irq_frame[3] = { 0u, 0u, 0u };
+        type_unsigned_8 tss[10] = { 0u };
+        type_unsigned_32 esp0 = 0x00009000u;
+        type_unsigned_16 ss0 = 0x0010u;
         C_INT failed = !atomic_prepare(&state,
             CORE_MACHINE_CPU_PROFILE_80386);
 
@@ -397,7 +397,7 @@ static C_INT iret_outer_s52_test_pic(C_VOID)
             failed |= !atomic_write(&state, ATOMIC_KERNEL_BASE, iret,
                 sizeof(iret));
             failed |= !atomic_write(&state,
-                ATOMIC_KERNEL_STACK_BASE + 0x8000u, (const uint8_t *)frame,
+                ATOMIC_KERNEL_STACK_BASE + 0x8000u, (const type_unsigned_8 *)frame,
                 sizeof(frame));
             failed |= !atomic_write(&state, 0x4010u, &nop, sizeof(nop));
             failed |= !atomic_write(&state, 0x4100u, &hlt, sizeof(hlt));

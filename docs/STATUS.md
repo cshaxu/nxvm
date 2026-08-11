@@ -2,9 +2,28 @@
 
 ## Current Work
 
-**Idle.** M5 T317 S1 is accepted and closed; T317 S2 requires a
-separately admitted packet.
+**Active: M5 T317 S2.** Migrate the governed T316 CPU smoke corpus to the
+project type vocabulary and enforce it with a narrow static gate in Coordinated Dual-Session Mode.
 
+## M5 T317 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Corrective; S2 is the next owner-approved corrective slice inside latest open T317, following accepted S1. |
+| Admission And Approval | Owner approved the ordered T317 plan and directed the coordinator to drive T317 through completion with the existing executor; S2 implements the plan's project-type vocabulary requirement. |
+| Objective | Replace direct fixed-width C scalar spellings in the exact 47 T316-added owner smoke sources and the necessary test-only support header(s) with the project type vocabulary, then add a narrow mechanical gate that prevents regression in that governed set. |
+| Non-goals | No migration of inherited tests, production sources, public headers, or repository-wide type debt; no behavior/assertion, fixture, CMake target-policy, ABI, CPU/FPU/device/timing change; no local aliases or type facade; `src/type.h` remains the foundational definition boundary. |
+| Reference Baseline | `58b6b299` / `vm-0-5-0316`; S1's authoritative 47-entry CMake inventory and `tests/support/core_machine_cpu_fixture.h` define the governed corpus/support boundary. |
+| Files And ABI Surface | Expected 47 inventory owner smoke sources only where they contain a governed spelling, `tests/support/core_machine_cpu_fixture.h` only if required, a narrow CMake/static verifier and evidence, plus `CMakeLists.txt` and `STATUS.md`; no `src/` production or public-interface source. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/CODING.md`, `docs/rules/DOCUMENT.md`, `docs/design/CODING.md`, and `docs/etc/evidence/t317-test-corpus-quality-plan.md`. |
+| Verification | Fresh GCC configure; narrow vocabulary gate with positive and negative self-checks; zero forbidden `uint*_t`/`int*_t` spellings in the 47-source inventory and touched support header boundary; strict 47-target audit; documentation governance, diff check, and full current-gate. |
+| Expected Markers | Deterministic `verify-t317-test-type-vocabulary` success marker with governed-file count and zero direct fixed-width spellings; no runtime marker changes. |
+| Asset Needs | None; deterministic local source scan and GCC/Ninja build only. |
+| Reporting Requirements | Executor first confirms or materially objects, then continues under its existing durable session goal. Return only a complete committed/pushed P1 or reproducible material blocker; no partial reports. P1 maps each type spelling family and support-header impact to evidence. |
+| Stop Conditions | Stop for any required type migration outside the exact governed corpus/support boundary, any need for a local alias or public/production type change, any behavior/assertion change, or a scanner rule that cannot remain mechanically narrow; report the hit and minimal alternative. |
+| Exit Criteria | Every governed source/support file is free of direct fixed-width integer spellings, the narrow gate proves positive and negative cases without scanning unrelated debt, strict 47-target audit and all required gates pass, and the implementation P is committed/pushed and passes coordinator review and governance closure. |
+| Original Owner Request | Repair the proven strict-GCC, project-type, and fixture-quality gaps as a governed T317 package before resuming ordinary 80386 capability work. |
+| Similar-Issue Sweep | Derive the source set from S1's 47-entry inventory; scan every governed owner source and each touched support header for `uint*_t`/`int*_t`; compare scanner exclusions with `src/type.h` and retain unrelated repository debt outside its boundary. |
 ## Current Technical Baseline
 
 - **Current task artifact:** `current-gcc` and

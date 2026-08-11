@@ -50,20 +50,20 @@ static C_INT debug_mov_s59_prepare(debug_mov_s59_machine *state,
 
 static C_INT debug_mov_s59_boot_protected(debug_mov_s59_machine *state)
 {
-    static const uint8_t gdt_pointer[] = { 0x17u, 0x00u, 0x00u, 0x03u, 0u, 0u };
-    static const uint8_t gdt[] = {
+    static const type_unsigned_8 gdt_pointer[] = { 0x17u, 0x00u, 0x00u, 0x03u, 0u, 0u };
+    static const type_unsigned_8 gdt[] = {
         0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
         0xffu, 0xffu, 0u, 0x20u, 0u, 0x9au, 0u, 0u,
         0xffu, 0xffu, 0u, 0u, 0u, 0x92u, 0u, 0u
     };
-    static const uint8_t code[] = {
+    static const type_unsigned_8 code[] = {
         0x0fu, 0x01u, 0x16u, 0x00u, 0x01u,
         0xb8u, 0x01u, 0x00u, 0x0fu, 0x01u, 0xf0u,
         0xb8u, 0x10u, 0x00u, 0x8eu, 0xd8u, 0x8eu, 0xc0u,
         0x8eu, 0xd0u, 0xbcu, 0x00u, 0x80u,
         0xeau, 0x00u, 0x00u, 0x08u, 0x00u
     };
-    static const uint8_t halt[] = { 0xf4u };
+    static const type_unsigned_8 halt[] = { 0xf4u };
     core_machine_run_result result;
 
     if (state == STD_NULL || state->machine == STD_NULL ||
@@ -82,7 +82,7 @@ static C_INT debug_mov_s59_boot_protected(debug_mov_s59_machine *state)
 }
 
 static C_INT debug_mov_s59_run(debug_mov_s59_machine *state,
-    const uint8_t *code, STD_SIZE_T bytes, t_cpu *out_cpu,
+    const type_unsigned_8 *code, STD_SIZE_T bytes, t_cpu *out_cpu,
     core_machine_cpu_diagnostic *out_diagnostic, type_status *out_status)
 {
     core_machine_run_result result;
@@ -131,7 +131,7 @@ static C_INT debug_mov_s59_reject_state_same(const t_cpu *before,
         before->data.dr7 == after->data.dr7 &&
         debug_mov_s59_sregs_same(before, after);
 }
-static type_unsigned_32 *debug_mov_s59_dr(t_cpu *cpu, uint8_t index)
+static type_unsigned_32 *debug_mov_s59_dr(t_cpu *cpu, type_unsigned_8 index)
 {
     switch (index) {
     case 0: return &cpu->data.dr0;
@@ -146,7 +146,7 @@ static type_unsigned_32 *debug_mov_s59_dr(t_cpu *cpu, uint8_t index)
 
 static C_INT debug_mov_s59_test_round_trips(C_VOID)
 {
-    static const uint8_t indices[] = { 0u, 1u, 2u, 3u, 6u, 7u };
+    static const type_unsigned_8 indices[] = { 0u, 1u, 2u, 3u, 6u, 7u };
     debug_mov_s59_machine state;
     C_INT failed = 0;
     STD_SIZE_T i;
@@ -154,13 +154,13 @@ static C_INT debug_mov_s59_test_round_trips(C_VOID)
     if (!debug_mov_s59_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386) ||
         !debug_mov_s59_boot_protected(&state)) return 1;
     for (i = 0u; i < (sizeof(indices) / sizeof(indices[0])); ++i) {
-        uint8_t code[] = { 0x0fu, 0x23u, (uint8_t)(0xc1u | (indices[i] << 3u)),
-            0x0fu, 0x21u, (uint8_t)(0xc0u | (indices[i] << 3u)), 0xf4u };
+        type_unsigned_8 code[] = { 0x0fu, 0x23u, (type_unsigned_8)(0xc1u | (indices[i] << 3u)),
+            0x0fu, 0x21u, (type_unsigned_8)(0xc0u | (indices[i] << 3u)), 0xf4u };
         t_cpu before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
         type_status status;
-        uint32_t value = 0x10203040u + (uint32_t)indices[i];
+        type_unsigned_32 value = 0x10203040u + (type_unsigned_32)indices[i];
 
         state.machine->executor_cpu.data.ecx = value;
         state.machine->executor_cpu.data.eax = 0xaabbccddu;
@@ -186,8 +186,8 @@ static C_INT debug_mov_s59_test_real_profiles(C_VOID)
     static const core_machine_cpu_profile rejected[] = {
         CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286
     };
-    static const uint8_t reject_code[] = { 0x0fu, 0x21u, 0xc0u };
-    static const uint8_t success_code[] = { 0x0fu, 0x23u, 0xf9u,
+    static const type_unsigned_8 reject_code[] = { 0x0fu, 0x21u, 0xc0u };
+    static const type_unsigned_8 success_code[] = { 0x0fu, 0x23u, 0xf9u,
         0x0fu, 0x21u, 0xf8u, 0xf4u };
     C_INT failed = 0;
     STD_SIZE_T i;
@@ -233,7 +233,7 @@ static C_INT debug_mov_s59_test_real_profiles(C_VOID)
 }
 static C_INT debug_mov_s59_test_rejections(C_VOID)
 {
-    static const uint8_t forms[][3] = {
+    static const type_unsigned_8 forms[][3] = {
         { 0x0fu, 0x21u, 0xe0u }, { 0x0fu, 0x23u, 0xe8u },
         { 0x0fu, 0x21u, 0x00u }, { 0x0fu, 0x23u, 0x00u }
     };
@@ -265,7 +265,7 @@ static C_INT debug_mov_s59_test_rejections(C_VOID)
 
 static C_INT debug_mov_s59_test_attributes(C_VOID)
 {
-    static const uint8_t prefixes[][2] = {
+    static const type_unsigned_8 prefixes[][2] = {
         { 0x66u, 0u }, { 0x67u, 0u }, { 0x66u, 0x67u }
     };
     C_INT failed = 0;
@@ -273,7 +273,7 @@ static C_INT debug_mov_s59_test_attributes(C_VOID)
 
     for (i = 0u; i < (sizeof(prefixes) / sizeof(prefixes[0])); ++i) {
         debug_mov_s59_machine state;
-        uint8_t code[9] = { 0u };
+        type_unsigned_8 code[9] = { 0u };
         STD_SIZE_T length = prefixes[i][1] == 0u ? 7u : 8u;
         t_cpu before;
         t_cpu after;
@@ -306,10 +306,10 @@ static C_INT debug_mov_s59_test_attributes(C_VOID)
 }
 static C_INT debug_mov_s59_test_privilege_and_lock(C_VOID)
 {
-    static const uint8_t cpl3_forms[][3] = {
+    static const type_unsigned_8 cpl3_forms[][3] = {
         { 0x0fu, 0x21u, 0xc0u }, { 0x0fu, 0x23u, 0xc1u }
     };
-    static const uint8_t lock_forms[][4] = {
+    static const type_unsigned_8 lock_forms[][4] = {
         { 0xf0u, 0x0fu, 0x21u, 0xc0u },
         { 0xf0u, 0x0fu, 0x23u, 0xc1u }
     };
@@ -361,15 +361,15 @@ static C_INT debug_mov_s59_test_privilege_and_lock(C_VOID)
 }
 static C_INT debug_mov_s59_test_pic_no_shadow(C_VOID)
 {
-    static const uint8_t code[] = { 0x0fu, 0x23u, 0xc1u, 0x90u };
-    static const uint8_t halt[] = { 0xf4u };
+    static const type_unsigned_8 code[] = { 0x0fu, 0x23u, 0xc1u, 0x90u };
+    static const type_unsigned_8 halt[] = { 0xf4u };
     debug_mov_s59_machine state;
     core_machine_pic_irq_source source;
     core_machine_run_result result;
     t_cpu before;
     t_cpu after;
-    uint32_t frame[3u] = { 0u, 0u, 0u };
-    uint8_t gate[8u] = { 0u };
+    type_unsigned_32 frame[3u] = { 0u, 0u, 0u };
+    type_unsigned_8 gate[8u] = { 0u };
     C_INT failed = !debug_mov_s59_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
 
     if (!failed) failed = !debug_mov_s59_boot_protected(&state);
@@ -406,7 +406,7 @@ static C_INT debug_mov_s59_test_pic_no_shadow(C_VOID)
             !TYPE_GET_BIT(state.machine->shared_pic_master.data.isr, VPIC_ISR_IRQ(0u)) ||
             TYPE_GET_BIT(state.machine->shared_pic_master.data.irr, VPIC_IRR_IRQ(0u)) ||
             core_machine_memory_read_physical(&state.machine->executor_memory,
-                after.data.ss.base + (uint16_t)after.data.esp,
+                after.data.ss.base + (type_unsigned_16)after.data.esp,
                 (type_virtual_address)frame, sizeof(frame)) != TYPE_STATUS_OK ||
             frame[0] != 3u || frame[1] != before.data.cs.selector ||
             frame[2] != before.data.eflags;

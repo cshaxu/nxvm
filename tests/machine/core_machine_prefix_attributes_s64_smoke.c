@@ -51,7 +51,7 @@ static C_INT prefix_attributes_s64_prepare(core_machine_cpu_profile profile,
 }
 
 static C_INT prefix_attributes_s64_run(prefix_attributes_s64_machine *state,
-    const uint8_t *code, STD_SIZE_T code_size, uint32_t instructions,
+    const type_unsigned_8 *code, STD_SIZE_T code_size, type_unsigned_32 instructions,
     t_cpu *out_cpu, core_machine_cpu_diagnostic *out_diagnostic,
     type_status *out_status)
 {
@@ -130,13 +130,13 @@ static C_INT prefix_attributes_s64_gprs_same_except_ecx_edi(
 
 static C_INT prefix_attributes_s64_test_segments(C_VOID)
 {
-    static const uint8_t prefixes[] = {
+    static const type_unsigned_8 prefixes[] = {
         0x26u, 0x2eu, 0x36u, 0x3eu, 0x64u, 0x65u
     };
-    const uint32_t bases[] = {
+    const type_unsigned_32 bases[] = {
         0x10000u, 0x11000u, 0x12000u, 0x13000u, 0x14000u, 0x15000u
     };
-    uint8_t form;
+    type_unsigned_8 form;
 
     for (form = 0u; form != sizeof(prefixes); ++form) {
         prefix_attributes_s64_machine state;
@@ -144,8 +144,8 @@ static C_INT prefix_attributes_s64_test_segments(C_VOID)
         t_cpu before;
         t_cpu after;
         type_status status;
-        uint8_t source = (uint8_t)(0x40u + form);
-        const uint8_t code[] = {
+        type_unsigned_8 source = (type_unsigned_8)(0x40u + form);
+        const type_unsigned_8 code[] = {
             prefixes[form], 0x8au, 0x06u, 0x00u, 0x01u
         };
         C_INT failed = !prefix_attributes_s64_prepare(
@@ -183,13 +183,13 @@ static C_INT prefix_attributes_s64_test_segments(C_VOID)
 
 static C_INT prefix_attributes_s64_test_last_wins(C_VOID)
 {
-    static const uint8_t code[] = { 0x2eu, 0x36u, 0x8au, 0x06u, 0x00u, 0x01u };
+    static const type_unsigned_8 code[] = { 0x2eu, 0x36u, 0x8au, 0x06u, 0x00u, 0x01u };
     prefix_attributes_s64_machine state;
     core_machine_cpu_diagnostic diagnostic;
     t_cpu after;
     type_status status;
-    uint8_t cs_source = 0x11u;
-    uint8_t ss_source = 0x22u;
+    type_unsigned_8 cs_source = 0x11u;
+    type_unsigned_8 ss_source = 0x22u;
     C_INT failed = !prefix_attributes_s64_prepare(
         CORE_MACHINE_CPU_PROFILE_80386, &state);
 
@@ -211,28 +211,28 @@ static C_INT prefix_attributes_s64_test_last_wins(C_VOID)
 
 static C_INT prefix_attributes_s64_test_attributes_and_lock(C_VOID)
 {
-    static const uint8_t read_operand32[] = {
+    static const type_unsigned_8 read_operand32[] = {
         0x66u, 0x8bu, 0x06u, 0x00u, 0x01u
     };
-    static const uint8_t write_operand32[] = {
+    static const type_unsigned_8 write_operand32[] = {
         0x66u, 0x89u, 0x06u, 0x00u, 0x01u
     };
-    static const uint8_t read_address32[] = { 0x67u, 0x8au, 0x06u };
-    static const uint8_t write_address32[] = { 0x67u, 0x88u, 0x06u };
-    static const uint8_t read32[] = { 0x66u, 0x67u, 0x8bu, 0x06u };
-    static const uint8_t write32[] = { 0x66u, 0x67u, 0x89u, 0x06u };
-    static const uint8_t lock_add[] = { 0xf0u, 0x01u, 0x06u, 0x00u, 0x01u };
-    static const uint8_t lock_read[] = { 0xf0u, 0x8bu, 0x06u, 0x00u, 0x01u };
+    static const type_unsigned_8 read_address32[] = { 0x67u, 0x8au, 0x06u };
+    static const type_unsigned_8 write_address32[] = { 0x67u, 0x88u, 0x06u };
+    static const type_unsigned_8 read32[] = { 0x66u, 0x67u, 0x8bu, 0x06u };
+    static const type_unsigned_8 write32[] = { 0x66u, 0x67u, 0x89u, 0x06u };
+    static const type_unsigned_8 lock_add[] = { 0xf0u, 0x01u, 0x06u, 0x00u, 0x01u };
+    static const type_unsigned_8 lock_read[] = { 0xf0u, 0x8bu, 0x06u, 0x00u, 0x01u };
     prefix_attributes_s64_machine state;
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
     t_cpu after;
     type_status status;
-    uint32_t image = 0x11223344u;
-    uint32_t other_image = 0u;
-    uint8_t byte_image = 0u;
-    uint8_t other_byte = 0u;
-    uint8_t observed_byte = 0u;
+    type_unsigned_32 image = 0x11223344u;
+    type_unsigned_32 other_image = 0u;
+    type_unsigned_8 byte_image = 0u;
+    type_unsigned_8 other_byte = 0u;
+    type_unsigned_8 observed_byte = 0u;
     C_INT failed = !prefix_attributes_s64_prepare(
         CORE_MACHINE_CPU_PROFILE_80386, &state);
 
@@ -428,14 +428,14 @@ static C_INT prefix_attributes_s64_test_attributes_and_lock(C_VOID)
             CORE_MACHINE_CPU_PROFILE_80186,
             CORE_MACHINE_CPU_PROFILE_80286
         };
-        static const uint8_t forms[][6] = {
+        static const type_unsigned_8 forms[][6] = {
             { 0x66u, 0x8bu, 0x06u, 0x00u, 0x01u, 0u },
             { 0x67u, 0x8bu, 0x06u, 0x00u, 0x01u, 0u },
             { 0x66u, 0x67u, 0x8bu, 0x06u, 0u, 0u }
         };
         static const STD_SIZE_T lengths[] = { 5u, 5u, 4u };
-        uint8_t profile;
-        uint8_t form;
+        type_unsigned_8 profile;
+        type_unsigned_8 form;
 
         for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]);
             ++profile) {
@@ -465,8 +465,8 @@ static C_INT prefix_attributes_s64_test_attributes_and_lock(C_VOID)
 
 static C_INT prefix_attributes_s64_test_fixed_segment_and_register(C_VOID)
 {
-    static const uint8_t fixed_segment[] = { 0x26u, 0xa4u };
-    static const uint8_t register_only[] = {
+    static const type_unsigned_8 fixed_segment[] = { 0x26u, 0xa4u };
+    static const type_unsigned_8 register_only[] = {
         0x66u, 0x67u, 0xb8u, 0x44u, 0x33u, 0x22u, 0x11u
     };
     prefix_attributes_s64_machine state;
@@ -474,8 +474,8 @@ static C_INT prefix_attributes_s64_test_fixed_segment_and_register(C_VOID)
     t_cpu before;
     t_cpu after;
     type_status status;
-    uint8_t source = 0x4du;
-    uint8_t target = 0u;
+    type_unsigned_8 source = 0x4du;
+    type_unsigned_8 target = 0u;
     C_INT failed = !prefix_attributes_s64_prepare(
         CORE_MACHINE_CPU_PROFILE_80386, &state);
 
@@ -525,13 +525,13 @@ static C_INT prefix_attributes_s64_test_fixed_segment_and_register(C_VOID)
 
 static C_INT prefix_attributes_s64_test_rep_movs(C_VOID)
 {
-    static const uint8_t code[] = { 0xf3u, 0xa4u, 0xf4u };
+    static const type_unsigned_8 code[] = { 0xf3u, 0xa4u, 0xf4u };
     prefix_attributes_s64_machine state;
     core_machine_cpu_diagnostic diagnostic;
     t_cpu after;
     type_status status;
-    uint8_t source[] = { 0x31u, 0x42u, 0x53u };
-    uint8_t target[] = { 0u, 0u, 0u };
+    type_unsigned_8 source[] = { 0x31u, 0x42u, 0x53u };
+    type_unsigned_8 target[] = { 0u, 0u, 0u };
     C_INT failed = !prefix_attributes_s64_prepare(
         CORE_MACHINE_CPU_PROFILE_80386, &state);
 
@@ -559,17 +559,17 @@ static C_INT prefix_attributes_s64_test_rep_movs(C_VOID)
 
 static C_INT prefix_attributes_s64_test_rep_edges(C_VOID)
 {
-    static const uint8_t code[] = { 0xf3u, 0xa4u, 0xf4u };
-    const uint32_t counts[] = { 0u, 1u };
-    uint8_t form;
+    static const type_unsigned_8 code[] = { 0xf3u, 0xa4u, 0xf4u };
+    const type_unsigned_32 counts[] = { 0u, 1u };
+    type_unsigned_8 form;
 
     for (form = 0u; form != sizeof(counts) / sizeof(counts[0]); ++form) {
         prefix_attributes_s64_machine state;
         core_machine_cpu_diagnostic diagnostic;
         t_cpu after;
         type_status status;
-        uint8_t source = 0x5au;
-        uint8_t target = 0xc3u;
+        type_unsigned_8 source = 0x5au;
+        type_unsigned_8 target = 0xc3u;
         C_INT failed = !prefix_attributes_s64_prepare(
             CORE_MACHINE_CPU_PROFILE_80386, &state);
 
@@ -602,13 +602,13 @@ static C_INT prefix_attributes_s64_test_rep_edges(C_VOID)
 
 static C_INT prefix_attributes_s64_test_repne_movs(C_VOID)
 {
-    static const uint8_t code[] = { 0xf2u, 0xa4u };
+    static const type_unsigned_8 code[] = { 0xf2u, 0xa4u };
     prefix_attributes_s64_machine state;
     core_machine_cpu_diagnostic diagnostic;
     t_cpu after;
     type_status status;
-    uint8_t source = 0x7eu;
-    uint8_t target = 0u;
+    type_unsigned_8 source = 0x7eu;
+    type_unsigned_8 target = 0u;
     C_INT failed = !prefix_attributes_s64_prepare(
         CORE_MACHINE_CPU_PROFILE_80386, &state);
 
@@ -633,14 +633,14 @@ static C_INT prefix_attributes_s64_test_repne_movs(C_VOID)
 
 static C_INT prefix_attributes_s64_test_mixed_repeat_last_wins(C_VOID)
 {
-    static const uint8_t forms[][3] = {
+    static const type_unsigned_8 forms[][3] = {
         { 0xf2u, 0xf3u, 0xaeu },
         { 0xf3u, 0xf2u, 0xaeu }
     };
-    static const uint32_t budgets[] = { 2u, 1u };
-    static const uint16_t final_cx[] = { 0u, 1u };
-    static const uint16_t final_di[] = { 0x0202u, 0x0201u };
-    uint8_t form;
+    static const type_unsigned_32 budgets[] = { 2u, 1u };
+    static const type_unsigned_16 final_cx[] = { 0u, 1u };
+    static const type_unsigned_16 final_di[] = { 0x0202u, 0x0201u };
+    type_unsigned_8 form;
 
     for (form = 0u; form != sizeof(forms) / sizeof(forms[0]); ++form) {
         prefix_attributes_s64_machine state;
@@ -648,8 +648,8 @@ static C_INT prefix_attributes_s64_test_mixed_repeat_last_wins(C_VOID)
         t_cpu before;
         t_cpu after;
         type_status status;
-        uint8_t image[] = { 0x3cu, 0x3cu };
-        uint8_t observed[] = { 0u, 0u };
+        type_unsigned_8 image[] = { 0x3cu, 0x3cu };
+        type_unsigned_8 observed[] = { 0u, 0u };
         C_INT failed = !prefix_attributes_s64_prepare(
             CORE_MACHINE_CPU_PROFILE_80386, &state);
 
@@ -688,18 +688,18 @@ static C_INT prefix_attributes_s64_test_mixed_repeat_last_wins(C_VOID)
 
 static C_INT prefix_attributes_s64_test_irq_no_shadow(C_VOID)
 {
-    static const uint8_t code[] = {
+    static const type_unsigned_8 code[] = {
         0x3eu, 0x8au, 0x06u, 0x00u, 0x10u, 0x90u
     };
-    static const uint8_t hlt[] = { 0xf4u };
+    static const type_unsigned_8 hlt[] = { 0xf4u };
     prefix_attributes_s64_machine state;
     core_machine_pic_irq_source source;
     core_machine_run_result result;
     t_cpu after;
-    uint16_t vector_offset = 0x0100u;
-    uint16_t vector_segment = 0u;
-    uint16_t frame_ip = 0u;
-    uint8_t image = 0x6du;
+    type_unsigned_16 vector_offset = 0x0100u;
+    type_unsigned_16 vector_segment = 0u;
+    type_unsigned_16 frame_ip = 0u;
+    type_unsigned_8 image = 0x6du;
     C_INT failed = !prefix_attributes_s64_prepare(
         CORE_MACHINE_CPU_PROFILE_80386, &state);
 
@@ -728,7 +728,7 @@ static C_INT prefix_attributes_s64_test_irq_no_shadow(C_VOID)
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
-            after.data.ss.base + (uint16_t)after.data.esp,
+            after.data.ss.base + (type_unsigned_16)after.data.esp,
             (type_virtual_address)&frame_ip, sizeof(frame_ip)) != TYPE_STATUS_OK ||
             after.data.eip != 0x0101u || frame_ip != 5u ||
             after.data.al != image || !TYPE_GET_BIT(

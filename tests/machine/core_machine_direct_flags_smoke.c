@@ -9,8 +9,8 @@ typedef struct direct_flags_machine {
 } direct_flags_machine;
 
 typedef struct direct_flags_case {
-    uint8_t opcode;
-    uint32_t initial_bits;
+    type_unsigned_8 opcode;
+    type_unsigned_32 initial_bits;
 } direct_flags_case;
 
 static C_VOID direct_flags_reset(C_VOID *opaque)
@@ -84,7 +84,7 @@ static C_INT direct_flags_irq_gprs_same(const t_cpu *before,
         after->data.edi == before->data.edi;
 }
 
-static uint32_t direct_flags_expected(uint8_t opcode, uint32_t flags)
+static type_unsigned_32 direct_flags_expected(type_unsigned_8 opcode, type_unsigned_32 flags)
 {
     switch (opcode) {
     case 0xf5u:
@@ -102,8 +102,8 @@ static uint32_t direct_flags_expected(uint8_t opcode, uint32_t flags)
     }
 }
 
-static C_INT direct_flags_run(direct_flags_machine *state, const uint8_t *code,
-    uint8_t bytes, t_cpu *after, core_machine_cpu_diagnostic *diagnostic,
+static C_INT direct_flags_run(direct_flags_machine *state, const type_unsigned_8 *code,
+    type_unsigned_8 bytes, t_cpu *after, core_machine_cpu_diagnostic *diagnostic,
     type_status *status, core_machine_run_result *result)
 {
     if (core_machine_memory_write(state->machine, 0u, code, bytes) !=
@@ -126,8 +126,8 @@ static C_INT direct_flags_test_default(C_VOID)
         {0xf5u,0u}, {0xf5u,VCPU_EFLAGS_CF}, {0xf8u,VCPU_EFLAGS_CF},
         {0xf9u,0u}, {0xfcu,VCPU_EFLAGS_DF}, {0xfdu,0u}
     };
-    uint8_t profile;
-    uint8_t form;
+    type_unsigned_8 profile;
+    type_unsigned_8 form;
 
     for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]);
         ++profile) {
@@ -138,7 +138,7 @@ static C_INT direct_flags_test_default(C_VOID)
             core_machine_cpu_diagnostic diagnostic;
             core_machine_run_result result;
             type_status status;
-            const uint32_t flags = VCPU_EFLAGS_IF | VCPU_EFLAGS_PF |
+            const type_unsigned_32 flags = VCPU_EFLAGS_IF | VCPU_EFLAGS_PF |
                 VCPU_EFLAGS_AF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_SF |
                 VCPU_EFLAGS_OF | cases[form].initial_bits;
             C_INT failed = !direct_flags_prepare(profiles[profile], &state);
@@ -165,7 +165,7 @@ static C_INT direct_flags_test_default(C_VOID)
 }
 
 static C_INT direct_flags_expect_ud(core_machine_cpu_profile profile,
-    const uint8_t *code, uint8_t bytes)
+    const type_unsigned_8 *code, type_unsigned_8 bytes)
 {
     direct_flags_machine state;
     t_cpu before;
@@ -191,21 +191,21 @@ static C_INT direct_flags_expect_ud(core_machine_cpu_profile profile,
 
 static C_INT direct_flags_test_attributes(C_VOID)
 {
-    static const uint8_t opcodes[] = {0xf5u,0xf8u,0xf9u,0xfcu,0xfdu};
+    static const type_unsigned_8 opcodes[] = {0xf5u,0xf8u,0xf9u,0xfcu,0xfdu};
     static const core_machine_cpu_profile legacy[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286
     };
-    uint8_t profile;
-    uint8_t opcode;
-    uint8_t prefix;
+    type_unsigned_8 profile;
+    type_unsigned_8 opcode;
+    type_unsigned_8 prefix;
 
     for (profile = 0u; profile != sizeof(legacy) / sizeof(legacy[0]);
         ++profile) {
         for (opcode = 0u; opcode != sizeof(opcodes); ++opcode) {
             for (prefix = 0u; prefix != 3u; ++prefix) {
-                uint8_t code[] = {0x66u,opcodes[opcode],0u};
-                uint8_t bytes = prefix == 2u ? 3u : 2u;
+                type_unsigned_8 code[] = {0x66u,opcodes[opcode],0u};
+                type_unsigned_8 bytes = prefix == 2u ? 3u : 2u;
 
                 if (prefix == 1u)
                     code[0] = 0x67u;
@@ -219,7 +219,7 @@ static C_INT direct_flags_test_attributes(C_VOID)
         }
     }
     for (opcode = 0u; opcode != sizeof(opcodes); ++opcode) {
-        uint8_t code[] = {0xf0u,opcodes[opcode]};
+        type_unsigned_8 code[] = {0xf0u,opcodes[opcode]};
 
         if (!direct_flags_expect_ud(CORE_MACHINE_CPU_PROFILE_80386, code,
             sizeof(code)))
@@ -230,9 +230,9 @@ static C_INT direct_flags_test_attributes(C_VOID)
 
 static C_INT direct_flags_test_386_attributes(C_VOID)
 {
-    static const uint8_t opcodes[] = {0xf5u,0xf8u,0xf9u,0xfcu,0xfdu};
-    uint8_t opcode;
-    uint8_t prefix;
+    static const type_unsigned_8 opcodes[] = {0xf5u,0xf8u,0xf9u,0xfcu,0xfdu};
+    type_unsigned_8 opcode;
+    type_unsigned_8 prefix;
 
     for (opcode = 0u; opcode != sizeof(opcodes); ++opcode) {
         for (prefix = 0u; prefix != 3u; ++prefix) {
@@ -242,8 +242,8 @@ static C_INT direct_flags_test_386_attributes(C_VOID)
             core_machine_cpu_diagnostic diagnostic;
             core_machine_run_result result;
             type_status status;
-            uint8_t code[] = {0x66u,opcodes[opcode],0u};
-            uint8_t bytes = prefix == 2u ? 3u : 2u;
+            type_unsigned_8 code[] = {0x66u,opcodes[opcode],0u};
+            type_unsigned_8 bytes = prefix == 2u ? 3u : 2u;
             C_INT failed = !direct_flags_prepare(CORE_MACHINE_CPU_PROFILE_80386,
                 &state);
 
@@ -275,17 +275,17 @@ static C_INT direct_flags_test_386_attributes(C_VOID)
 
 static C_INT direct_flags_boot_protected(direct_flags_machine *state)
 {
-    static const uint8_t pointer[] = {0x1fu,0u,0u,0x03u,0u,0u};
-    static const uint8_t gdt[] = {
+    static const type_unsigned_8 pointer[] = {0x1fu,0u,0u,0x03u,0u,0u};
+    static const type_unsigned_8 gdt[] = {
         0,0,0,0,0,0,0,0, 0xffu,0xffu,0,0x20u,0,0x9au,0,0,
         0xffu,0xffu,0,0,0,0x92u,0,0, 0xffu,0xffu,0,0,0,0x92u,0,0
     };
-    static const uint8_t boot[] = {
+    static const type_unsigned_8 boot[] = {
         0x0fu,0x01u,0x16u,0,1u, 0xb8u,1u,0,0x0fu,0x01u,0xf0u,
         0xb8u,0x10u,0,0x8eu,0xd8u,0x8eu,0xc0u, 0xb8u,0x18u,0,0x8eu,
         0xd0u,0xbcu,0,0x80u, 0xeau,0,0,8u,0
     };
-    static const uint8_t halt = 0xf4u;
+    static const type_unsigned_8 halt = 0xf4u;
     core_machine_run_result result;
 
     return core_machine_memory_write(state->machine, 0x100u, pointer,
@@ -300,8 +300,8 @@ static C_INT direct_flags_boot_protected(direct_flags_machine *state)
 
 static C_INT direct_flags_test_protected(C_VOID)
 {
-    static const uint8_t opcodes[] = {0xf5u,0xf8u,0xf9u,0xfcu,0xfdu};
-    uint8_t opcode;
+    static const type_unsigned_8 opcodes[] = {0xf5u,0xf8u,0xf9u,0xfcu,0xfdu};
+    type_unsigned_8 opcode;
 
     for (opcode = 0u; opcode != sizeof(opcodes); ++opcode) {
         direct_flags_machine state;
@@ -309,7 +309,7 @@ static C_INT direct_flags_test_protected(C_VOID)
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
         core_machine_run_result result;
-        const uint32_t flags = VCPU_EFLAGS_IF | VCPU_EFLAGS_CF |
+        const type_unsigned_32 flags = VCPU_EFLAGS_IF | VCPU_EFLAGS_CF |
             VCPU_EFLAGS_DF | VCPU_EFLAGS_PF | VCPU_EFLAGS_AF |
             VCPU_EFLAGS_ZF | VCPU_EFLAGS_SF | VCPU_EFLAGS_OF |
             VCPU_EFLAGS_IOPL;
@@ -361,8 +361,8 @@ static C_INT direct_flags_test_protected(C_VOID)
 
 static C_INT direct_flags_test_vm86(C_VOID)
 {
-    static const uint8_t opcodes[] = {0xf5u,0xf8u,0xf9u,0xfcu,0xfdu};
-    uint8_t opcode;
+    static const type_unsigned_8 opcodes[] = {0xf5u,0xf8u,0xf9u,0xfcu,0xfdu};
+    type_unsigned_8 opcode;
 
     for (opcode = 0u; opcode != sizeof(opcodes); ++opcode) {
         direct_flags_machine state;
@@ -370,7 +370,7 @@ static C_INT direct_flags_test_vm86(C_VOID)
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
         core_machine_run_result result;
-        const uint32_t flags = VCPU_EFLAGS_VM | VCPU_EFLAGS_IF |
+        const type_unsigned_32 flags = VCPU_EFLAGS_VM | VCPU_EFLAGS_IF |
             VCPU_EFLAGS_CF | VCPU_EFLAGS_DF | VCPU_EFLAGS_PF |
             VCPU_EFLAGS_AF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_SF |
             VCPU_EFLAGS_OF | VCPU_EFLAGS_IOPL;
@@ -417,9 +417,9 @@ static C_INT direct_flags_test_vm86(C_VOID)
 
 static C_INT direct_flags_test_irq(C_VOID)
 {
-    static const uint8_t opcodes[] = {0xf5u,0xf8u,0xf9u,0xfcu,0xfdu};
-    static const uint8_t hlt = 0xf4u;
-    uint8_t opcode;
+    static const type_unsigned_8 opcodes[] = {0xf5u,0xf8u,0xf9u,0xfcu,0xfdu};
+    static const type_unsigned_8 hlt = 0xf4u;
+    type_unsigned_8 opcode;
 
     for (opcode = 0u; opcode != sizeof(opcodes); ++opcode) {
         direct_flags_machine state;
@@ -427,11 +427,11 @@ static C_INT direct_flags_test_irq(C_VOID)
         core_machine_run_result result;
         t_cpu before;
         t_cpu after;
-        uint16_t offset = 0x100u;
-        uint16_t segment = 0u;
-        uint16_t frame_ip = 0u;
-        uint8_t code[] = {opcodes[opcode],0x90u};
-        const uint32_t flags = VCPU_EFLAGS_IF | VCPU_EFLAGS_CF |
+        type_unsigned_16 offset = 0x100u;
+        type_unsigned_16 segment = 0u;
+        type_unsigned_16 frame_ip = 0u;
+        type_unsigned_8 code[] = {opcodes[opcode],0x90u};
+        const type_unsigned_32 flags = VCPU_EFLAGS_IF | VCPU_EFLAGS_CF |
             VCPU_EFLAGS_DF | VCPU_EFLAGS_PF | VCPU_EFLAGS_AF |
             VCPU_EFLAGS_ZF | VCPU_EFLAGS_SF | VCPU_EFLAGS_OF;
         C_INT failed = !direct_flags_prepare(CORE_MACHINE_CPU_PROFILE_80386,
@@ -461,7 +461,7 @@ static C_INT direct_flags_test_irq(C_VOID)
                 result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
             after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
-                after.data.ss.base + (uint16_t)after.data.esp,
+                after.data.ss.base + (type_unsigned_16)after.data.esp,
                 TYPE_REFERENCE_OF(frame_ip), sizeof(frame_ip)) != TYPE_STATUS_OK ||
                 after.data.eip != 0x101u || frame_ip != 1u ||
                 !direct_flags_irq_gprs_same(&before, &after) ||

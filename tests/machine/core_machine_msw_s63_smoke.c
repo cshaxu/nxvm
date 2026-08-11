@@ -67,8 +67,8 @@ static C_INT msw_s63_gprs_same(const t_cpu *before, const t_cpu *after)
         after->data.esi == before->data.esi && after->data.edi == before->data.edi;
 }
 
-static C_INT msw_s63_run(msw_s63_machine *state, const uint8_t *code,
-    uint8_t bytes, uint32_t cycles, type_status *status,
+static C_INT msw_s63_run(msw_s63_machine *state, const type_unsigned_8 *code,
+    type_unsigned_8 bytes, type_unsigned_32 cycles, type_status *status,
     core_machine_run_result *result, core_machine_cpu_diagnostic *diagnostic)
 {
     if (core_machine_memory_write(state->machine, 0u, code, bytes) != TYPE_STATUS_OK)
@@ -77,8 +77,8 @@ static C_INT msw_s63_run(msw_s63_machine *state, const uint8_t *code,
     return core_machine_get_cpu_diagnostic(state->machine, diagnostic) == TYPE_STATUS_OK;
 }
 
-static C_INT msw_s63_expect_ud(core_machine_cpu_profile profile, const uint8_t *code,
-    uint8_t bytes)
+static C_INT msw_s63_expect_ud(core_machine_cpu_profile profile, const type_unsigned_8 *code,
+    type_unsigned_8 bytes)
 {
     msw_s63_machine state; t_cpu before; t_cpu after; core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic; type_status status;
@@ -95,12 +95,12 @@ static C_INT msw_s63_expect_ud(core_machine_cpu_profile profile, const uint8_t *
     core_machine_destroy(state.machine); return !failed;
 }
 
-static C_VOID msw_s63_enter_protected(msw_s63_machine *state, uint8_t cpl,
+static C_VOID msw_s63_enter_protected(msw_s63_machine *state, type_unsigned_8 cpl,
     C_INT vm86)
 {
     t_cpu *cpu = &state->machine->executor_cpu;
     TYPE_SET_BIT(cpu->data.cr0, VCPU_CR0_PE);
-    cpu->data.cs.selector = (uint16_t)(0x0008u | cpl);
+    cpu->data.cs.selector = (type_unsigned_16)(0x0008u | cpl);
     cpu->data.cs.base = 0u; cpu->data.cs.limit = 0xffffu; cpu->data.cs.dpl = cpl;
     cpu->data.cs.flagValid = TYPE_TRUE; cpu->data.cs.sregtype = SREG_CODE;
     cpu->data.cs.seg.executable = TYPE_TRUE;
@@ -111,9 +111,9 @@ static C_INT msw_s63_test_success(C_VOID)
 {
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386 };
-    static const uint8_t smsw[] = {0x0fu,0x01u,0xe0u};
-    static const uint8_t lmsw[] = {0x0fu,0x01u,0xf0u};
-    uint8_t profile;
+    static const type_unsigned_8 smsw[] = {0x0fu,0x01u,0xe0u};
+    static const type_unsigned_8 lmsw[] = {0x0fu,0x01u,0xf0u};
+    type_unsigned_8 profile;
     for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile) {
         msw_s63_machine state; t_cpu before; t_cpu after; core_machine_run_result result;
         core_machine_cpu_diagnostic diagnostic; type_status status;
@@ -150,19 +150,19 @@ static C_INT msw_s63_test_success(C_VOID)
 
 static C_INT msw_s63_test_memory_and_protected(C_VOID)
 {
-    static const uint8_t smsw_memory[] = {0x0fu,0x01u,0x26u,0x00u,0x04u};
-    static const uint8_t lmsw_memory[] = {0x0fu,0x01u,0x36u,0x00u,0x04u};
+    static const type_unsigned_8 smsw_memory[] = {0x0fu,0x01u,0x26u,0x00u,0x04u};
+    static const type_unsigned_8 lmsw_memory[] = {0x0fu,0x01u,0x36u,0x00u,0x04u};
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
     };
-    uint8_t profile;
+    type_unsigned_8 profile;
     msw_s63_machine state;
     t_cpu before;
     t_cpu after;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
     type_status status;
-    uint32_t image;
+    type_unsigned_32 image;
     C_INT failed = !msw_s63_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
 
     if (!failed) {
@@ -211,7 +211,7 @@ static C_INT msw_s63_test_memory_and_protected(C_VOID)
 
     for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]);
         ++profile) {
-        static const uint8_t lmsw_register[] = {0x0fu,0x01u,0xf0u};
+        static const type_unsigned_8 lmsw_register[] = {0x0fu,0x01u,0xf0u};
 
         failed = !msw_s63_prepare(&state, profiles[profile]);
         if (!failed) {
@@ -237,14 +237,14 @@ static C_INT msw_s63_test_memory_and_protected(C_VOID)
 }
 static C_INT msw_s63_test_attributes(C_VOID)
 {
-    static const uint8_t forms[][6] = {
+    static const type_unsigned_8 forms[][6] = {
         {0x66u,0x0fu,0x01u,0xe0u,0u,0u}, {0x67u,0x0fu,0x01u,0xe0u,0u,0u},
         {0x66u,0x67u,0x0fu,0x01u,0xe0u,0u}, {0x66u,0x0fu,0x01u,0xf0u,0u,0u},
         {0x67u,0x0fu,0x01u,0xf0u,0u,0u}, {0x66u,0x67u,0x0fu,0x01u,0xf0u,0u} };
-    static const uint8_t lengths[] = {4u,4u,5u,4u,4u,5u};
+    static const type_unsigned_8 lengths[] = {4u,4u,5u,4u,4u,5u};
     static const core_machine_cpu_profile legacy[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286 };
-    uint8_t i, p;
+    type_unsigned_8 i, p;
     for (p=0u; p != sizeof(legacy)/sizeof(legacy[0]); ++p)
         for (i=0u; i != sizeof(forms)/sizeof(forms[0]); ++i)
             if (!msw_s63_expect_ud(legacy[p], forms[i], lengths[i])) return 0;
@@ -267,13 +267,13 @@ static C_INT msw_s63_test_attributes(C_VOID)
 
 static C_INT msw_s63_test_privilege_and_faults(C_VOID)
 {
-    static const uint8_t smsw[] = {0x0fu,0x01u,0xe0u}; static const uint8_t lmsw[] = {0x0fu,0x01u,0xf0u};
-    static const uint8_t smsw_memory[] = {0x0fu,0x01u,0x26u,0x10u,0u};
-    static const uint8_t lmsw_memory[] = {0x0fu,0x01u,0x36u,0x10u,0u};
-    uint8_t mode;
+    static const type_unsigned_8 smsw[] = {0x0fu,0x01u,0xe0u}; static const type_unsigned_8 lmsw[] = {0x0fu,0x01u,0xf0u};
+    static const type_unsigned_8 smsw_memory[] = {0x0fu,0x01u,0x26u,0x10u,0u};
+    static const type_unsigned_8 lmsw_memory[] = {0x0fu,0x01u,0x36u,0x10u,0u};
+    type_unsigned_8 mode;
     for (mode=0u; mode != 3u; ++mode) {
         msw_s63_machine state; t_cpu before; t_cpu after; core_machine_run_result result;
-        core_machine_cpu_diagnostic diagnostic; type_status status; const uint8_t *code = mode == 0u ? smsw : lmsw;
+        core_machine_cpu_diagnostic diagnostic; type_status status; const type_unsigned_8 *code = mode == 0u ? smsw : lmsw;
         C_INT failed = !msw_s63_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
         if (!failed) {
             msw_s63_seed(&state); msw_s63_enter_protected(&state, mode == 0u ? 3u : 3u, mode == 2u);
@@ -288,7 +288,7 @@ static C_INT msw_s63_test_privilege_and_faults(C_VOID)
     }
     for (mode=0u; mode != 2u; ++mode) {
         msw_s63_machine state; t_cpu before; t_cpu after; core_machine_run_result result;
-        core_machine_cpu_diagnostic diagnostic; type_status status; const uint8_t *code = mode == 0u ? smsw_memory : lmsw_memory;
+        core_machine_cpu_diagnostic diagnostic; type_status status; const type_unsigned_8 *code = mode == 0u ? smsw_memory : lmsw_memory;
         C_INT failed = !msw_s63_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
         if (!failed) {
             msw_s63_seed(&state); msw_s63_enter_protected(&state, 0u, 0); state.machine->executor_cpu.data.ds.limit = 0x0fu;
@@ -304,7 +304,7 @@ static C_INT msw_s63_test_privilege_and_faults(C_VOID)
 
 static C_INT msw_s63_test_lock_irq(C_VOID)
 {
-    static const uint8_t lock_forms[][6] = {
+    static const type_unsigned_8 lock_forms[][6] = {
         {0xf0u,0x0fu,0x01u,0xe0u,0u,0u},
         {0xf0u,0x66u,0x0fu,0x01u,0xe0u,0u},
         {0xf0u,0x67u,0x0fu,0x01u,0xe0u,0u},
@@ -314,17 +314,17 @@ static C_INT msw_s63_test_lock_irq(C_VOID)
         {0xf0u,0x67u,0x0fu,0x01u,0xf0u,0u},
         {0xf0u,0x66u,0x67u,0x0fu,0x01u,0xf0u}
     };
-    static const uint8_t lock_lengths[] = {4u,5u,5u,6u,4u,5u,5u,6u};
-    static const uint8_t hlt=0xf4u; static const uint8_t smsw_code[]={0x0fu,0x01u,0xe0u,0x90u}; static const uint8_t lmsw_code[]={0x0fu,0x01u,0xf0u,0x90u};
-    const uint8_t *codes[]={smsw_code,lmsw_code}; uint8_t form;
+    static const type_unsigned_8 lock_lengths[] = {4u,5u,5u,6u,4u,5u,5u,6u};
+    static const type_unsigned_8 hlt=0xf4u; static const type_unsigned_8 smsw_code[]={0x0fu,0x01u,0xe0u,0x90u}; static const type_unsigned_8 lmsw_code[]={0x0fu,0x01u,0xf0u,0x90u};
+    const type_unsigned_8 *codes[]={smsw_code,lmsw_code}; type_unsigned_8 form;
     for(form=0u;form!=sizeof(lock_forms)/sizeof(lock_forms[0]);++form)
         if(!msw_s63_expect_ud(CORE_MACHINE_CPU_PROFILE_80386, lock_forms[form],
             lock_lengths[form])) return 0;
     for(form=0u;form!=2u;++form) {
-        msw_s63_machine state; core_machine_pic_irq_source irq; core_machine_run_result result; t_cpu before; t_cpu after; uint16_t offset=0x100u,segment=0u,frame=0u;
+        msw_s63_machine state; core_machine_pic_irq_source irq; core_machine_run_result result; t_cpu before; t_cpu after; type_unsigned_16 offset=0x100u,segment=0u,frame=0u;
         C_INT failed=!msw_s63_prepare(&state,CORE_MACHINE_CPU_PROFILE_80386);
         if(!failed) failed |= core_machine_memory_write(state.machine,0u,codes[form],4u)!=TYPE_STATUS_OK || core_machine_memory_write(state.machine,0x80u,&offset,2u)!=TYPE_STATUS_OK || core_machine_memory_write(state.machine,0x82u,&segment,2u)!=TYPE_STATUS_OK || core_machine_memory_write(state.machine,0x100u,&hlt,1u)!=TYPE_STATUS_OK;
-        if(!failed) { msw_s63_seed(&state); state.machine->executor_cpu.data.eax=0xdead000cu; state.machine->executor_cpu.data.cr0=0x00a50000u; before=test_core_machine_fixture_capture_cpu_after_run(state.machine); STD_MEMSET(&irq,0,sizeof(irq)); state.machine->shared_pic_master.data.icw2=0x20u; core_machine_pic_irq_source_bind(&irq,&state.machine->shared_pic_master,&state.machine->shared_pic_slave,0u); core_machine_pic_irq_source_assert(&irq); core_machine_pic_irq_source_deassert(&irq); failed |= core_machine_run(state.machine,(core_machine_run_budget){2u,0u},&result)!=TYPE_STATUS_OK || result.reason!=CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT; after=test_core_machine_fixture_capture_cpu_after_run(state.machine); failed |= core_machine_memory_read_physical(&state.machine->executor_memory,after.data.ss.base+(uint16_t)after.data.esp,TYPE_REFERENCE_OF(frame),2u)!=TYPE_STATUS_OK || after.data.eip!=0x101u || frame!=3u || after.data.eflags!=(before.data.eflags&~VCPU_EFLAGS_IF) || !TYPE_GET_BIT(state.machine->shared_pic_master.data.isr,VPIC_ISR_IRQ(0u)) || TYPE_GET_BIT(state.machine->shared_pic_master.data.irr,VPIC_IRR_IRQ(0u)); if(form==0u) failed |= after.data.eax!=0xdead0000u || after.data.cr0!=before.data.cr0; else failed |= after.data.cr0!=0x00a5000cu || after.data.eax!=before.data.eax; }
+        if(!failed) { msw_s63_seed(&state); state.machine->executor_cpu.data.eax=0xdead000cu; state.machine->executor_cpu.data.cr0=0x00a50000u; before=test_core_machine_fixture_capture_cpu_after_run(state.machine); STD_MEMSET(&irq,0,sizeof(irq)); state.machine->shared_pic_master.data.icw2=0x20u; core_machine_pic_irq_source_bind(&irq,&state.machine->shared_pic_master,&state.machine->shared_pic_slave,0u); core_machine_pic_irq_source_assert(&irq); core_machine_pic_irq_source_deassert(&irq); failed |= core_machine_run(state.machine,(core_machine_run_budget){2u,0u},&result)!=TYPE_STATUS_OK || result.reason!=CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT; after=test_core_machine_fixture_capture_cpu_after_run(state.machine); failed |= core_machine_memory_read_physical(&state.machine->executor_memory,after.data.ss.base+(type_unsigned_16)after.data.esp,TYPE_REFERENCE_OF(frame),2u)!=TYPE_STATUS_OK || after.data.eip!=0x101u || frame!=3u || after.data.eflags!=(before.data.eflags&~VCPU_EFLAGS_IF) || !TYPE_GET_BIT(state.machine->shared_pic_master.data.isr,VPIC_ISR_IRQ(0u)) || TYPE_GET_BIT(state.machine->shared_pic_master.data.irr,VPIC_IRR_IRQ(0u)); if(form==0u) failed |= after.data.eax!=0xdead0000u || after.data.cr0!=before.data.cr0; else failed |= after.data.cr0!=0x00a5000cu || after.data.eax!=before.data.eax; }
         core_machine_destroy(state.machine); if(failed)return 0;
     } return 1;
 }

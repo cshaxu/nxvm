@@ -60,10 +60,10 @@ static C_INT verr_verw_s58_prepare(verr_verw_s58_machine *state,
 
 static C_INT verr_verw_s58_install_gdt(core_machine *machine)
 {
-    static const uint8_t pointer[] = {
+    static const type_unsigned_8 pointer[] = {
         0x37u, 0x00u, 0x00u, 0x03u, 0x00u, 0x00u
     };
-    static const uint8_t gdt[] = {
+    static const type_unsigned_8 gdt[] = {
         0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
         0xffu, 0xffu, 0x00u, 0x20u, 0x00u, 0x9au, 0x00u, 0x00u,
         0xffu, 0xffu, 0x00u, 0x30u, 0x00u, 0x92u, 0x00u, 0x00u,
@@ -82,20 +82,20 @@ static C_INT verr_verw_s58_install_gdt(core_machine *machine)
 static C_INT verr_verw_s58_boot_protected(verr_verw_s58_machine *state,
     t_cpu *out_cpu)
 {
-    static const uint8_t real_code[] = {
+    static const type_unsigned_8 real_code[] = {
         0x0fu, 0x01u, 0x16u, 0x00u, 0x01u,
         0x0fu, 0x01u, 0x1eu, 0x10u, 0x01u,
         0xb8u, 0x01u, 0x00u, 0x0fu, 0x01u, 0xf0u,
         0xb8u, 0x10u, 0x00u, 0x8eu, 0xd8u, 0x8eu, 0xc0u, 0x8eu, 0xd0u,
         0xbcu, 0x00u, 0x80u, 0xeau, 0x00u, 0x00u, 0x08u, 0x00u
     };
-    static const uint8_t idt_pointer[] = {
+    static const type_unsigned_8 idt_pointer[] = {
         0x07u, 0x01u, 0x00u, 0x04u, 0x00u, 0x00u
     };
-    static const uint8_t halt[] = { 0xf4u };
+    static const type_unsigned_8 halt[] = { 0xf4u };
     const core_machine_run_budget budget = { 96u, 0u };
     core_machine_run_result result;
-    uint8_t idt[0x108u] = { 0u };
+    type_unsigned_8 idt[0x108u] = { 0u };
 
     idt[0x100u] = 0x00u;
     idt[0x101u] = 0x01u;
@@ -150,7 +150,7 @@ static C_INT verr_verw_s58_non_eax_gprs_same(const t_cpu *before,
 }
 
 static C_INT verr_verw_s58_run_halt(verr_verw_s58_machine *state,
-    const uint8_t *code, STD_SIZE_T code_size, t_cpu *out_cpu)
+    const type_unsigned_8 *code, STD_SIZE_T code_size, t_cpu *out_cpu)
 {
     const core_machine_run_budget budget = { 16u, 0u };
     core_machine_run_result result;
@@ -171,31 +171,31 @@ static C_INT verr_verw_s58_run_halt(verr_verw_s58_machine *state,
 
 static C_INT verr_verw_s58_test_outcomes(C_VOID)
 {
-    static const uint16_t selectors[] = {
+    static const type_unsigned_16 selectors[] = {
         0x0010u, 0x0008u, 0x0020u, 0x0018u, 0x0000u, 0x0013u
     };
-    static const uint8_t expected_verr[] = { 1u, 1u, 0u, 0u, 0u, 0u };
-    static const uint8_t expected_verw[] = { 1u, 0u, 0u, 0u, 0u, 0u };
+    static const type_unsigned_8 expected_verr[] = { 1u, 1u, 0u, 0u, 0u, 0u };
+    static const type_unsigned_8 expected_verw[] = { 1u, 0u, 0u, 0u, 0u, 0u };
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
     };
-    uint8_t profile_index;
-    uint8_t query;
-    uint8_t selector_index;
+    type_unsigned_8 profile_index;
+    type_unsigned_8 query;
+    type_unsigned_8 selector_index;
 
     for (profile_index = 0u; profile_index != 2u; ++profile_index) {
         for (query = 0u; query != 2u; ++query) {
             for (selector_index = 0u; selector_index != 6u; ++selector_index) {
-                const uint8_t code[] = {
-                    0xb8u, (uint8_t)selectors[selector_index],
-                    (uint8_t)(selectors[selector_index] >> 8), 0x0fu, 0x00u,
+                const type_unsigned_8 code[] = {
+                    0xb8u, (type_unsigned_8)selectors[selector_index],
+                    (type_unsigned_8)(selectors[selector_index] >> 8), 0x0fu, 0x00u,
                     query ? VERR_VERW_S58_VERW_MODRM : VERR_VERW_S58_VERR_MODRM,
                     0xf4u
                 };
                 verr_verw_s58_machine state;
                 t_cpu before;
                 t_cpu after;
-                const uint8_t expected_zf = query ? expected_verw[selector_index] :
+                const type_unsigned_8 expected_zf = query ? expected_verw[selector_index] :
                     expected_verr[selector_index];
                 C_INT failed = !verr_verw_s58_prepare(&state,
                     profiles[profile_index]);
@@ -233,7 +233,7 @@ static C_INT verr_verw_s58_test_outcomes(C_VOID)
 }
 
 static C_INT verr_verw_s58_expect_ud(core_machine_cpu_profile profile,
-    const uint8_t *code, STD_SIZE_T code_size)
+    const type_unsigned_8 *code, STD_SIZE_T code_size)
 {
     const core_machine_run_budget budget = { 16u, 0u };
     core_machine_run_result result;
@@ -267,29 +267,29 @@ static C_INT verr_verw_s58_expect_ud(core_machine_cpu_profile profile,
 
 static C_INT verr_verw_s58_test_prefix_and_rejection(C_VOID)
 {
-    static const uint8_t default_verr[] = { 0x0fu, 0x00u, 0xe0u };
-    static const uint8_t default_verw[] = { 0x0fu, 0x00u, 0xe8u };
-    static const uint8_t attr_verr[][5] = {
+    static const type_unsigned_8 default_verr[] = { 0x0fu, 0x00u, 0xe0u };
+    static const type_unsigned_8 default_verw[] = { 0x0fu, 0x00u, 0xe8u };
+    static const type_unsigned_8 attr_verr[][5] = {
         { 0x66u, 0x0fu, 0x00u, 0xe0u, 0u },
         { 0x67u, 0x0fu, 0x00u, 0xe0u, 0u },
         { 0x66u, 0x67u, 0x0fu, 0x00u, 0xe0u }
     };
-    static const uint8_t attr_verw[][5] = {
+    static const type_unsigned_8 attr_verw[][5] = {
         { 0x66u, 0x0fu, 0x00u, 0xe8u, 0u },
         { 0x67u, 0x0fu, 0x00u, 0xe8u, 0u },
         { 0x66u, 0x67u, 0x0fu, 0x00u, 0xe8u }
     };
-    static const uint8_t lengths[] = { 4u, 4u, 5u };
+    static const type_unsigned_8 lengths[] = { 4u, 4u, 5u };
     const core_machine_cpu_profile legacy_profiles[] = {
         CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286
     };
-    uint8_t query;
-    uint8_t attr;
-    uint8_t profile;
+    type_unsigned_8 query;
+    type_unsigned_8 attr;
+    type_unsigned_8 profile;
 
     for (query = 0u; query != 2u; ++query) {
-        const uint8_t *default_code = query ? default_verw : default_verr;
-        const uint8_t (*attr_codes)[5] = query ? attr_verw : attr_verr;
+        const type_unsigned_8 *default_code = query ? default_verw : default_verr;
+        const type_unsigned_8 (*attr_codes)[5] = query ? attr_verw : attr_verr;
 
         if (!verr_verw_s58_expect_ud(CORE_MACHINE_CPU_PROFILE_80186,
                 default_code, 3u) ||
@@ -312,8 +312,8 @@ static C_INT verr_verw_s58_test_prefix_and_rejection(C_VOID)
         verr_verw_s58_machine state;
         t_cpu before;
         t_cpu after;
-        const uint8_t (*attr_codes)[5] = query ? attr_verw : attr_verr;
-        uint8_t code[6u] = { 0u };
+        const type_unsigned_8 (*attr_codes)[5] = query ? attr_verw : attr_verr;
+        type_unsigned_8 code[6u] = { 0u };
 
         if (!verr_verw_s58_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386) ||
             !verr_verw_s58_boot_protected(&state, &before)) {
@@ -323,8 +323,8 @@ static C_INT verr_verw_s58_test_prefix_and_rejection(C_VOID)
             return 0;
         }
         for (attr = 0u; attr != 3u; ++attr) {
-            const uint8_t length = lengths[attr];
-            const uint8_t prefix_count = length - 3u;
+            const type_unsigned_8 length = lengths[attr];
+            const type_unsigned_8 prefix_count = length - 3u;
 
             STD_MEMCPY(code, attr_codes[attr], length);
             code[length] = 0xf4u;
@@ -333,7 +333,7 @@ static C_INT verr_verw_s58_test_prefix_and_rejection(C_VOID)
                 VCPU_EFLAGS_IF;
             before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             if (!verr_verw_s58_run_halt(&state, code, (STD_SIZE_T)length + 1u,
-                    &after) || after.data.eip != (uint32_t)length + 1u ||
+                    &after) || after.data.eip != (type_unsigned_32)length + 1u ||
                 after.data.eax != before.data.eax ||
                 !TYPE_GET_BIT(after.data.eflags, VCPU_EFLAGS_ZF) ||
                 (after.data.eflags & ~VCPU_EFLAGS_ZF) !=
@@ -347,7 +347,7 @@ static C_INT verr_verw_s58_test_prefix_and_rejection(C_VOID)
         core_machine_destroy(state.machine);
     }
     for (query = 0u; query != 2u; ++query) {
-        uint8_t lock_code[] = { 0xf0u, 0x0fu, 0x00u,
+        type_unsigned_8 lock_code[] = { 0xf0u, 0x0fu, 0x00u,
             query ? VERR_VERW_S58_VERW_MODRM : VERR_VERW_S58_VERR_MODRM };
 
         if (!verr_verw_s58_expect_ud(CORE_MACHINE_CPU_PROFILE_80386,
@@ -359,29 +359,29 @@ static C_INT verr_verw_s58_test_prefix_and_rejection(C_VOID)
 }
 static C_INT verr_verw_s58_test_memory_sources(C_VOID)
 {
-    static const uint8_t verr_codes[][9] = {
+    static const type_unsigned_8 verr_codes[][9] = {
         { 0x0fu, 0x00u, 0x26u, 0x10u, 0x00u, 0xf4u },
         { 0x0fu, 0x00u, 0x66u, 0x10u, 0xf4u },
         { 0x67u, 0x0fu, 0x00u, 0x25u, 0x10u, 0x00u, 0x00u, 0x00u, 0xf4u }
     };
-    static const uint8_t verw_codes[][9] = {
+    static const type_unsigned_8 verw_codes[][9] = {
         { 0x0fu, 0x00u, 0x2eu, 0x10u, 0x00u, 0xf4u },
         { 0x0fu, 0x00u, 0x6eu, 0x10u, 0xf4u },
         { 0x67u, 0x0fu, 0x00u, 0x2du, 0x10u, 0x00u, 0x00u, 0x00u, 0xf4u }
     };
-    static const uint8_t lengths[] = { 6u, 5u, 9u };
-    uint8_t query;
-    uint8_t form;
+    static const type_unsigned_8 lengths[] = { 6u, 5u, 9u };
+    type_unsigned_8 query;
+    type_unsigned_8 form;
 
     for (query = 0u; query != 2u; ++query) {
-        const uint8_t (*codes)[9] = query ? verw_codes : verr_codes;
+        const type_unsigned_8 (*codes)[9] = query ? verw_codes : verr_codes;
 
         for (form = 0u; form != 3u; ++form) {
             verr_verw_s58_machine state;
             t_cpu before;
             t_cpu after;
-            uint16_t selector = 0x0010u;
-            const uint32_t source_address = 0x3010u;
+            type_unsigned_16 selector = 0x0010u;
+            const type_unsigned_32 source_address = 0x3010u;
             C_INT failed = !verr_verw_s58_prepare(&state,
                 CORE_MACHINE_CPU_PROFILE_80386);
 
@@ -415,21 +415,21 @@ static C_INT verr_verw_s58_test_memory_sources(C_VOID)
 }
 static C_INT verr_verw_s58_test_source_limit(C_VOID)
 {
-    static const uint8_t verr_codes[][5] = {
+    static const type_unsigned_8 verr_codes[][5] = {
         { 0x0fu, 0x00u, 0x26u, 0x10u, 0x00u },
         { 0x0fu, 0x00u, 0x66u, 0x10u }
     };
-    static const uint8_t verw_codes[][5] = {
+    static const type_unsigned_8 verw_codes[][5] = {
         { 0x0fu, 0x00u, 0x2eu, 0x10u, 0x00u },
         { 0x0fu, 0x00u, 0x6eu, 0x10u }
     };
-    static const uint8_t lengths[] = { 5u, 4u };
+    static const type_unsigned_8 lengths[] = { 5u, 4u };
     const core_machine_run_budget budget = { 32u, 0u };
-    uint8_t query;
-    uint8_t form;
+    type_unsigned_8 query;
+    type_unsigned_8 form;
 
     for (query = 0u; query != 2u; ++query) {
-        const uint8_t (*codes)[5] = query ? verw_codes : verr_codes;
+        const type_unsigned_8 (*codes)[5] = query ? verw_codes : verr_codes;
 
         for (form = 0u; form != 2u; ++form) {
             verr_verw_s58_machine state;
@@ -437,7 +437,7 @@ static C_INT verr_verw_s58_test_source_limit(C_VOID)
             core_machine_cpu_diagnostic diagnostic;
             t_cpu before;
             t_cpu after;
-            uint16_t selector = 0x0010u;
+            type_unsigned_16 selector = 0x0010u;
             C_INT failed = !verr_verw_s58_prepare(&state,
                 CORE_MACHINE_CPU_PROFILE_80386);
 
@@ -489,12 +489,12 @@ static C_INT verr_verw_s58_test_source_limit(C_VOID)
 }
 static C_INT verr_verw_s58_test_vm86(C_VOID)
 {
-    static const uint8_t codes[][3] = {
+    static const type_unsigned_8 codes[][3] = {
         { 0x0fu, 0x00u, VERR_VERW_S58_VERR_MODRM },
         { 0x0fu, 0x00u, VERR_VERW_S58_VERW_MODRM }
     };
     const core_machine_run_budget budget = { 8u, 0u };
-    uint8_t query;
+    type_unsigned_8 query;
 
     for (query = 0u; query != 2u; ++query) {
         verr_verw_s58_machine state;
@@ -545,11 +545,11 @@ static C_INT verr_verw_s58_test_vm86(C_VOID)
 }
 static C_INT verr_verw_s58_test_pic_no_shadow(C_VOID)
 {
-    static const uint8_t codes[][5] = {
+    static const type_unsigned_8 codes[][5] = {
         { 0xfbu, 0x0fu, 0x00u, VERR_VERW_S58_VERR_MODRM, 0x90u },
         { 0xfbu, 0x0fu, 0x00u, VERR_VERW_S58_VERW_MODRM, 0x90u }
     };
-    uint8_t query;
+    type_unsigned_8 query;
 
     for (query = 0u; query != 2u; ++query) {
         verr_verw_s58_machine state;
@@ -557,7 +557,7 @@ static C_INT verr_verw_s58_test_pic_no_shadow(C_VOID)
         core_machine_run_result result;
         t_cpu before;
         t_cpu after;
-        uint32_t frame[3u] = { 0u };
+        type_unsigned_32 frame[3u] = { 0u };
         C_INT failed = !verr_verw_s58_prepare(&state,
             CORE_MACHINE_CPU_PROFILE_80386);
 
@@ -596,7 +596,7 @@ static C_INT verr_verw_s58_test_pic_no_shadow(C_VOID)
                     VPIC_ISR_IRQ(0u)) || TYPE_GET_BIT(
                         state.machine->shared_pic_master.data.irr, VPIC_IRR_IRQ(0u));
             failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
-                after.data.ss.base + (uint16_t)after.data.esp,
+                after.data.ss.base + (type_unsigned_16)after.data.esp,
                 (type_virtual_address)frame, sizeof(frame)) != TYPE_STATUS_OK ||
                 frame[0u] != 4u || !TYPE_GET_BIT(frame[2u], VCPU_EFLAGS_ZF) ||
                 !TYPE_GET_BIT(frame[2u], VCPU_EFLAGS_IF) ||
@@ -611,16 +611,16 @@ static C_INT verr_verw_s58_test_pic_no_shadow(C_VOID)
 }
 static C_INT verr_verw_s58_test_ldt_selector(C_VOID)
 {
-    static const uint8_t ldt_descriptor[] = {
+    static const type_unsigned_8 ldt_descriptor[] = {
         0xffu, 0xffu, 0x00u, 0x70u, 0x00u, 0x92u, 0x00u, 0x00u
     };
-    static const uint8_t codes[][16] = {
+    static const type_unsigned_8 codes[][16] = {
         { 0xb8u, 0x30u, 0x00u, 0x0fu, 0x00u, 0xd0u,
           0xb9u, 0x0cu, 0x00u, 0x0fu, 0x00u, 0xe1u, 0xf4u },
         { 0xb8u, 0x30u, 0x00u, 0x0fu, 0x00u, 0xd0u,
           0xb9u, 0x0cu, 0x00u, 0x0fu, 0x00u, 0xe9u, 0xf4u }
     };
-    uint8_t query;
+    type_unsigned_8 query;
 
     for (query = 0u; query != 2u; ++query) {
         verr_verw_s58_machine state;
