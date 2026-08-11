@@ -2,27 +2,8 @@
 
 ## Current Work
 
-**M5 T316 S54 - BOUND range-check and #BR delivery.** The coordinator admitted
-this bounded ordinary-execution continuation in Coordinated Dual-Session Mode.
-
-## M5 T316 S54 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Corrective; next unused subtask of M5 T316. |
-| Admission And Approval | The owner-approved 80386DX route continues after T316 S53 in Coordinated Dual-Session Mode. |
-| Objective | Close Intel BOUND `62h /r`: signed r16/m16&16 and r32/m32&32 range checking, architected `#BR` vector-5 delivery, and declared publication/restart behavior. |
-| Non-goals | No generic exception refactor, other exception classes, descriptor loading, segment-register transfer, LAR/LSL/VERR/VERW, task switching, VME/PVI, or post-80386 behavior. |
-| Reference Baseline | `8d6ef36e` / `vm-0-5-0316`, with T316 S53 closed and `main` equal to `origin/main`. |
-| Files And ABI Surface | Expected scope is one BOUND owner smoke, CMake registration, this packet, ordinary-execution evidence, BOUND's local handler, and the narrow `#BR` branch in shared final exception delivery. Any broader dispatcher/helper change requires caller-impact review and a stop report. |
-| Applicable Rules | `docs/rules/EXECUTION.md` dual-session lifecycle and evidence rules; `docs/rules/CODING.md`; Intel 80386 PRM BOUND, exception, operand/address-size, prefix, and interrupt rules are authority. |
-| Verification | Prove signed lower/upper/in-range behavior, r/m-only classification, default and `66`/`67`/combined forms, DS/SS and override EA selection, 80186--80386 versus 8086 profiles, real/protected/ordinary VM86 modes, prefix/LOCK rejection, `#BR` IVT/IDT delivery and restart, operand access faults, and pending-PIC no-shadow. |
-| Expected Markers | Focused smoke emits `M5:T316:S54:BOUND:OK`; current CTest registers exactly `current.core-machine-bound-s54-smoke`. |
-| Asset Needs | None; deterministic CPU fixtures only. |
-| Stop Conditions | Stop before broadening the shared exception dispatcher beyond the BOUND-only `#BR` vector-5 route, changing another exception class, or changing shared operand/address helpers; report reproducer, caller list, and regression impact. |
-| Exit Criteria | Every BOUND form and defining `#BR` path in scope has focused evidence. The package must not close as success-only or claim selector/descriptor semantics outside BOUND. |
-| Original Owner Request | Execute the complete Intel 80386 plan in dual-session mode against an Intel form--implementation--test matrix, repairing omissions and closing evidence without using Windows demand as the completeness boundary. |
-| Similar-Issue Sweep | Audit `BOUND_R16_M16_16`, `62h` metadata/dispatch, `_d_modrm`, `_m_read_rm`, `_SetExcept_BR`, `ExecFinal`, IVT/IDT exception routes, and all existing exception-vector mappings; classify every non-BR class as outside this narrow corrective change. |
+**Idle.** M5 T316 S54 is closed; the next 80386 matrix slice requires a
+separately admitted packet.
 
 ## Current Technical Baseline
 
@@ -44,6 +25,7 @@ this bounded ordinary-execution continuation in Coordinated Dual-Session Mode.
 
 | Task | Compact result |
 | --- | --- |
+| T316 S54 | Closed BOUND `62 /r`: corrected the 80186 gate, dword upper-pair access, and BOUND-only `#BR` vector-5 delivery; profiles/`66`/`67`/LOCK, segment and VM86 execution, DS/SS access boundaries, and PIC no-shadow passed. 183 current-gate tests passed; no generalized exception refactor. |
 | T316 S53 | Closed protected ARPL `63 /r`: all register ModRM/RPL/ZF outcomes, segment and 16/32 EA selection, profile/prefix/LOCK rejection, #GP handler-boundary, and STI-window PIC no-extra-shadow coverage passed. No production change was needed; 182 current-gate tests passed. |
 | T316 S52 | Closed protected IRET `CF` CPL0-to-outer returns: 16/32 and `66`/`67` forms, full target cache/GPR/stack-image proof, selector/limit handler-boundary failures, and TSS-backed IF/PIC delivery passed. No production change was needed; 181 current-gate tests passed. |
 | T316 S51 | Closed same-CPL IRET `CF`: four real profiles, `66` wide-frame and inert `67` 16-bit stack route, #UD/LOCK, protected selector/limit #DF, and IF-restoring versus IF-preserving PIC boundaries passed. No production change was needed; 180 current-gate tests passed. |
