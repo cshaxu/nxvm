@@ -47,7 +47,7 @@ not an allocation of later task identifiers.
 | Decimal/ASCII adjust and conversion: `DAA/DAS/AAA/AAS/AAM/AAD`, `XLAT` | Primary handlers `DAA`, `DAS`, `AAA`, `AAS`, `AAM`, `AAD`, `XLAT`; DAA/DAS/AAM/AAD call `_kaf_set_flags`. | `core_machine_inc_dec_smoke` (`M5:T316:S16:DECIMAL-ADJUST:OK`, `M5:T316:S17:XLAT:OK`) proves the admitted slices. | **Complete only for T316 S16's six named adjust forms** and T316 S17 XLAT: DS default and ES override, 16-bit BX/AL and `67h` EBX/AL addressing, AL-only publication, legacy/profile behavior, and protected read-limit fault non-publication. The wider data/operand and ordinary arithmetic/FLAGS families remain **Partial**. |
 | Shift/rotate Groups `C0/C1/D0`--`D3` | `INS_C0/C1/D0/D1/D2/D3`; rotate paths call `_a_rol/_a_ror/_a_rcl/_a_rcr`; shift paths call `_a_shl/_a_shr/_a_sar`; `/6` remains `UndefinedOpcode`. | `core_machine_rotate_smoke` (`M5:T316:S18:ROTATE:OK`, `M5:T316:S19:SHIFT:OK`) proves the declared slices; T310's double-shift smoke remains only `SHLD/SHRD`. | **Complete only for T316 S18 rotates and S19 SHL/SAL, SHR, SAR**: Group-2 encodings, 8/16/32-bit register and memory operands, count handling, defined/undefined FLAGS boundaries, attributes, profiles, and protected access atomicity. `/6` remains #UD. |
 | One-operand multiply/divide Groups `F6/F7 /4`--`/7` | `INS_F6/F7` dispatches `/4` to `_a_mul`, `/5` to `_a_imul`, `/6` to `_a_div`, and `/7` to `_a_idiv`. | `core_machine_inc_dec_smoke` (`M5:T316:S5:MUL-IMUL:OK`, `M5:T316:S6:DIV-IDIV:OK`) covers `/4`--`/7`. | **Complete** only for T316's declared one-operand Group `F6/F7 /4`--`/7` forms at 8/16/32 bits. This does not claim the wider multiply/divide or ordinary arithmetic family complete. |
-| EFLAGS transfers and direct flag control: `PUSHF/POPF`, `LAHF/SAHF`, `CMC/CLC/STC/CLI/STI/CLD/STD` | `PUSHF`, `POPF`, `SAHF`, `LAHF`, and primary flag handlers; protected-mode masking is local to those routes. | T302 checks selected PUSHF/POPF; `core_machine_lahf_sahf_smoke` (`M5:T316:S39:LAHF-SAHF:OK`) and `core_machine_direct_flags_smoke` (`M5:T316:S40:DIRECT-FLAGS:OK`) prove their named slices; retained string/product tests incidentally use DF/IF paths. | **Partial**: S39 closes only LAHF `9F` and SAHF `9E`; S40 closes only CMC `F5`, CLC `F8`, STC `F9`, CLD `FC`, and STD `FD`, including all profiles, fixed `66`/`67` prefix classification, LOCK rejection, protected/VM86 fixture-expressible preservation, and PIC no-shadow. PUSHF/POPF, CLI/STI, broader privilege architecture, and other FLAGS/control behavior remain partial or outside these slices. |
+| EFLAGS transfers and direct flag control: `PUSHF/POPF`, `LAHF/SAHF`, `CMC/CLC/STC/CLI/STI/CLD/STD` | `PUSHF`, `POPF`, `SAHF`, `LAHF`, and primary flag handlers; protected-mode masking is local to those routes. | T302 checks selected PUSHF/POPF; `core_machine_pushf_popf_s47_smoke` (`M5:T316:S47:PUSHF-POPF:OK`), `core_machine_lahf_sahf_smoke` (`M5:T316:S39:LAHF-SAHF:OK`) and `core_machine_direct_flags_smoke` (`M5:T316:S40:DIRECT-FLAGS:OK`) prove their named slices. | **Partial**: S47 closes only PUSHF/POPF `9C`/`9D`; CLI/STI, IRET, VME/PVI extensions, broader privilege architecture, and other FLAGS/control behavior remain outside this slice. |
 | Memory strings `MOVS/CMPS/STOS/LODS/SCAS`, REP/REPE/REPNE, DF, 16/32 operand/address attributes | `MOVSB/W`, `CMPSB/W`, `STOSB/W`, `LODSB/W`, `SCASB/W`, `_kas_move_index`; primary REP loop. | `core_machine_real_mode_386_rep_cmps_smoke` (`M5:T292:S1:REP-STRING:OK`), `core_machine_movs_smoke` (`M5:T316:S33:MOVS:OK`), `core_machine_stos_smoke` (`M5:T316:S34:STOS:OK`), `core_machine_lods_smoke` (`M5:T316:S35:LODS:OK`), `core_machine_scas_smoke` (`M5:T316:S36:SCAS:OK`), and `core_machine_cmps_smoke` (`M5:T316:S37:CMPS:OK`). | **Partial**: S35 closes only LODSB `AC` and LODSW/LODSD `AD`; S36 closes only SCASB `AE` and SCASW/SCASD `AF`; S37 closes only CMPSB `A6` and CMPSW/CMPSD `A7`, including declared attributes, DS source/fixed ES destination, FLAGS, REPE/REPNE condition/restart, #UD/LOCK non-publication, protected DS/ES read-limit #DF, and PIC boundaries. INS/OUTS and broader string behavior remain partial or outside this slice. |
 | Port strings `INS/OUTS` with REP and size/address attributes | `INSB/INSW/OUTSB/OUTSW`, `_p_input`, `_p_output`, `_kpa_test_mode`, and `_kas_move_index`. | T302 I/O-string portion and `core_machine_port_strings_smoke` (`M5:T316:S38:PORT-STRINGS:OK`). | **Partial**: S38 closes only INSB `6C`, INSW/INSD `6D`, OUTSB `6E`, and OUTSW/OUTSD `6F`, including declared port width, profile, attribute, segment, REP, limit-fault, and interrupt boundaries. Ordinary IN/OUT, general I/O privilege architecture, and broader string behavior remain outside this slice. |
 | Short/near conditional control: `Jcc`, `LOOP/LOOPE/LOOPNE`, `JCXZ/JECXZ`, near `CALL/JMP/RET` | Primary `J*_REL8`, `LOOP*`, `JCXZ_REL8`, `CALL_REL32`, `JMP_REL*`, return helpers; `0F 80`--`8F` repeats the profile gate. | `core_machine_control_transfer_smoke` (`M5:T303:CONTROL-TRANSFER:OK`). | **Complete** for T303's declared real/protected 16/32 near, condition, target-limit, and atomic-fault matrix. Other control forms remain separately listed. |
@@ -979,3 +979,25 @@ general and immediate stacks, MOV/POP r/m Sreg, LxS, stack switching, and far
 returns remain outside this slice.
 
 `M5:T316:S46:LEGACY-SREG-STACK:OK`
+
+### T316 S47 - PUSHF/POPF FLAGS stack-transfer forms
+
+`core_machine_pushf_popf_s47_smoke` closes only `PUSHF`/`PUSHFD` `9C` and
+`POPF`/`POPFD` `9D`. It executes the default word forms on 8086, 80186, 80286,
+and 80386; 80386 `66h`, `67h`, and combined operand/address prefixes; and all
+pre-386 attribute rejections. The vectors prove the visible FLAGS image,
+including forced bit1 and reserved-bit disposition, 16/32 stack width and
+SP/ESP publication, and POPF/POPFD RF/VM preservation.
+
+The protected fixture exercises CPL/IOPL IF and IOPL masking, stack #DF
+no-publication boundaries, and ordinary VM86 IOPL3 success versus IOPL<3 #GP
+behavior. VME/PVI is explicitly excluded: it is not an Intel 80386 feature.
+The full `F0` LOCK grid for both opcodes and all accepted attribute forms is
+#UD with CPU, cache, and candidate stack-slot nonpublication. Pending PIC IRQ0
+is delivered immediately after successful PUSHF and POPF, proving no shadow.
+
+Two local handler fixes normalize legacy PUSHF's visible FLAGS image and retain
+RF across POPF/POPFD. No shared helper changed. CLI/STI, IRET, VME/PVI, task
+switching, and broader FLAGS or stack behavior remain outside this slice.
+
+`M5:T316:S47:PUSHF-POPF:OK`
