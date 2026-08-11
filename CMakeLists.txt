@@ -161,6 +161,9 @@ target_link_libraries(core-machine-real-mode-386-address-smoke PRIVATE core-mach
 add_executable(core-machine-operand-address-smoke
     tests/machine/core_machine_operand_address_smoke.c)
 target_link_libraries(core-machine-operand-address-smoke PRIVATE core-machine)
+add_executable(core-machine-prefix-attributes-s64-smoke
+    tests/machine/core_machine_prefix_attributes_s64_smoke.c)
+target_link_libraries(core-machine-prefix-attributes-s64-smoke PRIVATE core-machine)
 add_executable(core-machine-setcc-smoke tests/machine/core_machine_setcc_smoke.c)
 target_link_libraries(core-machine-setcc-smoke PRIVATE core-machine)
 add_executable(core-machine-movx-smoke tests/machine/core_machine_movx_smoke.c)
@@ -1247,6 +1250,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-real-mode-corpus-smoke
     core-machine-real-mode-386-address-smoke
     core-machine-operand-address-smoke
+    core-machine-prefix-attributes-s64-smoke
     core-machine-setcc-smoke
     core-machine-movx-smoke
     core-machine-bit-test-smoke
