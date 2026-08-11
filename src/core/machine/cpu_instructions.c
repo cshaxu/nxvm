@@ -16963,7 +16963,7 @@ static C_VOID ExecInt(core_machine_cpu_execution_context *context)
     {
         cpu_state.data.flagHalt = TYPE_FALSE;
         ExecInit(context);
-        _e_intr_n(context, 0x01, _GetOperandSize, TYPE_FALSE);
+        _e_intr_n(context, 0x01, _GetOperandSize, TYPE_TRUE);
         ExecFinal(context);
     }
 }
