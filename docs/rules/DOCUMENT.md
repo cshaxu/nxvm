@@ -30,7 +30,7 @@ normal way to cross a boundary; a copied summary is not a second authority.
 
 | Location | Contains | Does not contain |
 | --- | --- | --- |
-| `docs/README.md` | Reading order and authority map. | Product design, task state, or policy copies. |
+| `docs/README.md` | Task reading set and authority map. | Product design, task state, or policy copies. |
 | `STATUS.md` | One active packet, current baseline, active-task progress, and capped recent task closures. | Milestone plan, reading guide, or completed task packet. |
 | `QUEUE.md` | Ordered, unnumbered candidate work. | Task identifiers, baseline, detailed contract, or active plan. |
 | `TODO.md` | Open debt or deferred admission with priority and admission path. | Goals, roadmap, completed work, or active plan. |
