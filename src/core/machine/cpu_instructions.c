@@ -12976,7 +12976,7 @@ static C_VOID ENTER(core_machine_cpu_execution_context *context)
     type_unsigned_16 size = TYPE_ZERO_16;
     type_unsigned_8 level = TYPE_ZERO_8;
     TYPE_TRACE_CALL_BEGIN("ENTER");
-    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80186)
     {
         _adv;
         TYPE_TRACE_CHECK_RETURN(_d_imm(context, 2));
@@ -13015,7 +13015,7 @@ static C_VOID ENTER(core_machine_cpu_execution_context *context)
         if (level)
         {
             TYPE_TRACE_BLOCK_BEGIN("level(!0)");
-            for (i = 0; i < level; ++i)
+            for (i = 1; i < level; ++i)
             {
                 TYPE_TRACE_BLOCK_BEGIN("for");
                 switch (_GetOperandSize)
@@ -13092,18 +13092,32 @@ static C_VOID ENTER(core_machine_cpu_execution_context *context)
             }
             TYPE_TRACE_BLOCK_END;
         }
+        switch (_GetOperandSize)
+        {
+        case 2:
+            TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
+            cpu_state.data.bp = TYPE_MASK_UNSIGNED_16(temp);
+            TYPE_TRACE_BLOCK_END;
+            break;
+        case 4:
+            TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
+            cpu_state.data.ebp = TYPE_MASK_UNSIGNED_32(temp);
+            TYPE_TRACE_BLOCK_END;
+            break;
+        default:
+            TYPE_TRACE_IMPOSSIBLE_RETURN;
+            break;
+        }
         switch (_GetStackSize)
         {
         case 2:
             TYPE_TRACE_BLOCK_BEGIN("StackSize(2)");
-            cpu_state.data.bp = TYPE_MASK_UNSIGNED_16(temp);
-            cpu_state.data.sp = cpu_state.data.bp - size;
+            cpu_state.data.sp -= size;
             TYPE_TRACE_BLOCK_END;
             break;
         case 4:
             TYPE_TRACE_BLOCK_BEGIN("StackSize(4)");
-            cpu_state.data.ebp = TYPE_MASK_UNSIGNED_32(temp);
-            cpu_state.data.esp = cpu_state.data.ebp - size;
+            cpu_state.data.esp -= size;
             TYPE_TRACE_BLOCK_END;
             break;
         default:
@@ -13117,17 +13131,31 @@ static C_VOID ENTER(core_machine_cpu_execution_context *context)
 }
 static C_VOID LEAVE(core_machine_cpu_execution_context *context)
 {
+    type_unsigned_32 stack = TYPE_ZERO_32;
     TYPE_TRACE_CALL_BEGIN("LEAVE");
-    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80186)
     {
         _adv;
-        if (!_IsProtected && cpu_state.data.ebp > 0x0000ffff)
+        switch (_GetStackSize)
+        {
+        case 2:
+            stack = cpu_state.data.bp;
+            break;
+        case 4:
+            stack = cpu_state.data.ebp;
+            break;
+        default:
+            TYPE_TRACE_IMPOSSIBLE_RETURN;
+            break;
+        }
+        if (!_IsProtected && stack > 0x0000ffff)
         {
             TYPE_TRACE_BLOCK_BEGIN("Protected(0),ebp(>0000ffff)");
             TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(0));
             TYPE_TRACE_BLOCK_END;
         }
-        TYPE_TRACE_CHECK_RETURN(_m_test_logical(context, &cpu_state.data.ss, cpu_state.data.ebp, _GetOperandSize, 1));
+        TYPE_TRACE_CHECK_RETURN(_m_test_logical(context, &cpu_state.data.ss,
+            stack, _GetOperandSize, 1));
         switch (_GetStackSize)
         {
         case 2:

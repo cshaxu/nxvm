@@ -2,9 +2,27 @@
 
 ## Current Work
 
-**Idle.** M5 Td S65 is closed; the next governed task requires a
-separately admitted packet.
+**M5 T316 S43 - ENTER/LEAVE frame construction.** The coordinator admits this
+Intel 80386 ordinary-execution matrix slice in Coordinated Dual-Session Mode.
 
+## M5 T316 S43 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Corrective; contiguous next numeric subtask after T316 S42. |
+| Admission And Approval | The owner authorized autonomous progression along the Intel 80386 route; this is a single S-level packet, not a task renumbering or a micro-batch. |
+| Objective | Make `ENTER C8 iw,ib` and `LEAVE C9` conform to their Intel 80186/80386 form, profile, frame-layout, attribute, fault, and interrupt-boundary contracts. |
+| Non-goals | Individual PUSH/POP, PUSH imm, PUSHF/POPF, PUSHA/POPA, stack switching, far returns, other frame/exception architecture, x87, and generalized stack-helper refactoring are outside S43. |
+| Reference Baseline | `c5fe2592` / `vm-0-5-0316`; Td S65 is closed and T316 remains the sole open numeric task. |
+| Files And ABI Surface | Expected local scope is `src/core/machine/cpu_instructions.c` only for a demonstrated C8/C9 defect, one owner-bound smoke, CMake current-gate registration, this Status packet, and T316 matrix evidence. No public ABI change. |
+| Applicable Rules | Intel 80386 PRM form audit; T316 matrix closure rule; coordinated dual-session roles; caller-coverage-before-abstraction; local style; no unsupported completeness claim. |
+| Verification | Audit C8/C9 dispatch/metadata/handlers and relevant stack-helper callers; execute a dedicated smoke plus exact current-gate registration, documentation governance, whitespace checks, and the full current gate before acceptance. |
+| Expected Markers | `M5:T316:S43:ENTER-LEAVE:OK`; profile-correct 80186/80286/80386 behavior; 8086 and invalid-prefix/LOCK rejection where architecturally required; no unproven broader stack claim. |
+| Asset Needs | None. |
+| Stop Conditions | Stop for coordinator review if correctness requires changing `_e_push`, `_e_pop`, `_m_test_logical`, or another shared route, or if a required frame/fault behavior cannot be isolated without broad stack/exception semantics. |
+| Exit Criteria | Every declared C8/C9 PRM form is classified and focused-proven: 16/32 operand forms; nesting levels including zero/nonzero/masked behavior; 16/32 stack-size interaction; exact frame image and publication; profile/prefix/LOCK boundaries; controlled protected stack faults; and pending-IRQ no-shadow. Any defect is locally corrected with a caller-impact sweep. |
+| Original Owner Request | Execute the complete Intel 80386 plan in dual-session mode, using a form--implementation--test matrix, boundary review, evidence closure, and immediate push. |
+| Similar-Issue Sweep | Review C8/C9 dispatch and profile metadata, both handler guards, operand/stack-size branches, nesting traversal, immediate decoding, `_e_push`/`_e_pop`/`_m_test_logical` caller coverage, existing PUSHA/POPA and control-transfer stack tests, and all affected prefix/interrupt paths. |
 ## Current Technical Baseline
 
 - **Current task artifact:** `current-gcc` and
