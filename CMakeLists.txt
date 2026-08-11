@@ -258,6 +258,9 @@ target_link_libraries(core-machine-tf-db-s60-smoke PRIVATE core-machine)
 add_executable(core-machine-dttr-s61-smoke
     tests/machine/core_machine_dttr_s61_smoke.c)
 target_link_libraries(core-machine-dttr-s61-smoke PRIVATE core-machine)
+add_executable(core-machine-clts-s62-smoke
+    tests/machine/core_machine_clts_s62_smoke.c)
+target_link_libraries(core-machine-clts-s62-smoke PRIVATE core-machine)
 add_executable(core-machine-control-transfer-smoke
     tests/machine/core_machine_control_transfer_smoke.c)
 target_link_libraries(core-machine-control-transfer-smoke PRIVATE core-machine)
@@ -1288,6 +1291,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-debug-mov-s59-smoke
     core-machine-tf-db-s60-smoke
     core-machine-dttr-s61-smoke
+    core-machine-clts-s62-smoke
     core-machine-control-transfer-smoke
     core-machine-descriptor-system-smoke
     core-machine-interrupt-entry-smoke
