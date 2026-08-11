@@ -90,8 +90,9 @@ static C_INT run_nm_delivery_case(const C_UCHAR *program,
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
+    t_cpu before;
     t_cpu after;
-    uint16_t restart_ip = 0u;
+    uint16_t frame[3] = { 0u, 0u, 0u };
     uint32_t original_eax = 0u;
     C_INT failed = prepare_machine(CORE_MACHINE_FPU_PROFILE_NONE, cr0, &state);
 
@@ -105,7 +106,8 @@ static C_INT run_nm_delivery_case(const C_UCHAR *program,
             sizeof(handler)) != TYPE_STATUS_OK;
     }
     if (!failed) {
-        original_eax = state.machine->executor_cpu.data.eax;
+        before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        original_eax = before.data.eax;
         failed |= core_machine_run(state.machine, budget, &result) !=
             TYPE_STATUS_OK || result.reason != CORE_MACHINE_STOP_BUDGET ||
             core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
@@ -115,10 +117,16 @@ static C_INT run_nm_delivery_case(const C_UCHAR *program,
             !diagnostic.last_delivered_exception.valid || !TYPE_GET_BIT(
                 diagnostic.last_delivered_exception.exception_mask,
                 VCPUINS_EXCEPT_NM) || after.data.eip != handler_offset ||
+            after.data.esp != ((before.data.esp & 0xffff0000u) |
+                (uint16_t)(before.data.esp - 6u)) ||
+            after.data.ss.selector != before.data.ss.selector ||
+            after.data.ss.base != before.data.ss.base ||
             core_machine_memory_read_physical(&state.machine->executor_memory,
                 after.data.ss.base + (uint16_t)after.data.esp,
-                TYPE_REFERENCE_OF(restart_ip),
-                sizeof(restart_ip)) != TYPE_STATUS_OK || restart_ip != 0u;
+                TYPE_REFERENCE_OF(frame), sizeof(frame)) != TYPE_STATUS_OK ||
+            frame[0] != 0u ||
+            frame[1] != before.data.cs.selector || frame[2] !=
+                (uint16_t)before.data.eflags;
     }
     if (!failed) {
         budget.instructions = 2u;
