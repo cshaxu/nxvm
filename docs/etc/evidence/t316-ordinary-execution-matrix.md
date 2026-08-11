@@ -129,7 +129,7 @@ not an allocation of later task identifiers.
 | SMSW/LMSW `0F 01 /4,/6` machine-status word forms | `INS_0F_01`, fixed `r/m16` decode, and `_s_load_cr0_msw`; no generic CR0 policy change. | `core-machine-msw-s63-smoke` (`M5:T316:S63:MSW:OK`) plus retained descriptor-system control evidence. | **Complete only for T316 S63**: 80286/80386 fixed 16-bit SMSW/LMSW register and memory forms, CR0 low-MSW/PE-stickiness boundary, protected privilege/VM86, attribute/LOCK, access-fault and pending-IRQ boundaries. Table-register forms, CLTS, MOV control registers, paging policy, task switching, VME/PVI and generic control-state redesign remain outside. |
 | 80386 debug-register MOV `0F 21 /r`, `0F 23 /r` | `MOV_R32_DR`, `MOV_DR_R32`, and `_d_modrm_dreg`; register-only DR0--DR3/DR6/DR7 routes. | `core-machine-debug-mov-s59-smoke` (`M5:T316:S59:DEBUG-MOV:OK`). | **Complete only for T316 S59**: CPL0 80386 DR transfer, declared `66`/`67`, profile/real/privilege/LOCK and pending-IRQ boundaries. Breakpoint matching, debug exceptions, DR4/DR5 aliases, test registers, and broader debug architecture remain outside this slice. |
 | Trap Flag single-step `#DB` delivery | `ExecInt` observes TF after the completed instruction and routes vector 1 through `_e_intr_n`; protected execution must use the external/hardware delivery branch. | `core-machine-tf-db-s60-smoke` (`M5:T316:S60:TF-DB:OK`). | **Complete only for T316 S60**: real and protected CPL0 post-NOP traps, saved post-instruction IP/FLAGS, `66`/`67` prefix lengths, live handler TF/IF clearing, and lower-profile/LOCK #UD priority without a spurious vector-1 trap. DR breakpoint matching, DR6, RF, task switches, and debugger APIs remain outside this slice. || Post-80386 or reserved encodings seen in the tables: `CPUID`, `RSM`, `WBINVD`, `RDMSR/WRMSR`, `CMPXCHG`, `XADD`, `BSWAP`, undefined holes | Metadata/profile gate rejects forms above the active 80386 profile before the named table handler can establish behavior. | `cpu_profile_gate_smoke` and T309 rejection baseline. | **Outside-80386**: retain rejection; no later-IA-32 implementation is admitted by T316. |
-| `WAIT/FWAIT`, ESC `D8`--`DF`, CR0 `MP/EM/TS`, `#NM`, external coprocessor fault interface | `WAIT`, FPU escape/profile routes and CPU exception state; optional FPU provider is outside ordinary decoding. | `cpu_fpu_profile_smoke`, `cpu_fpu_profile_closure_smoke`, `fpu_escape_smoke`, `core_machine_fpu_8087_smoke`. | **External-coprocessor boundary**: only 80386-side control/reporting is in the approved program; no 8087/80287/80387 arithmetic, state, or completeness claim is made. |
+| `WAIT/FWAIT`, ESC `D8`--`DF`, CR0 `MP/EM/TS`, `#NM`, external coprocessor fault interface | `WAIT`, FPU escape/profile routes and CPU exception state; optional FPU provider is outside ordinary decoding. | `core-machine-fpu-interface-s65-smoke` (`M5:T316:S65:FPU-INTERFACE:OK`) plus retained `cpu_fpu_profile_smoke`, `cpu_fpu_profile_closure_smoke`, `fpu_escape_smoke`, and `core_machine_fpu_8087_smoke`. | **External-coprocessor boundary**: S65 proves the CPU-side WAIT/ESC profile, CR0 `MP`/`EM`/`TS`, #NM and pending-provider #MF producer behavior, optional-provider classification, and prefix/LOCK rejection. No 8087/80287/80387 arithmetic, state, or completeness claim is made. |
 
 No reviewed ordinary primary form is classified **Missing**: each named ordinary
 group has a primary/`0F` route or the explicit external-coprocessor boundary.
@@ -1384,6 +1384,28 @@ No production prefix scanner or legacy LOCK policy changed; the retained legacy
 LOCK TODO remains outside this semantic-class closure.
 
 `M5:T316:S64:PREFIX-ATTRIBUTES:OK`
+
+### T316 S65 - CPU-side external-coprocessor interface
+
+`core-machine-fpu-interface-s65-smoke` closes only the CPU-side interface for
+`WAIT`/`FWAIT` and ESC `D8h`--`DFh`. It executes the forms on all four CPU
+profiles with no FPU provider, retains the optional 8087 provider route, and
+classifies configured 80287/80387 profiles as the existing unsupported-provider
+boundary. It proves that ESC is consumed at the no-provider boundary without
+manufacturing an x87 result. It proves CR0 `EM` and `TS` #NM producer behavior
+for ESC, the `TS`+`MP` WAIT #NM condition, real-mode vector-7 #NM delivery and
+restart frame, and the pending-provider WAIT #MF producer boundary. The narrow
+`ExecFinal` vector-7 route is exercised by both CPU-side #NM producers; their
+only callers are `FPU_ESCAPE` and `WAIT`. It also proves individual and
+combined 80386 `66h`/`67h` lengths, the complete pre-386 attribute rejection
+grid, LOCK rejection before CPU publication, and successful WAIT/ESC pending-
+PIC delivery after the instruction. Retained profile and escape smokes cover
+metadata and configured FPU profiles.
+
+No x87 arithmetic, register stack, environment, formats, IEEE behavior, or
+provider ABI claim is made; those remain the external-coprocessor boundary.
+
+`M5:T316:S65:FPU-INTERFACE:OK`
 
 ### T316 S63 - SMSW/LMSW machine-status-word control forms
 
