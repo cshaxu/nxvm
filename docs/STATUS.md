@@ -2,27 +2,8 @@
 
 ## Current Work
 
-**M5 T316 S52 - IRET outer-privilege return.** The coordinator admitted this
-bounded ordinary-execution continuation in Coordinated Dual-Session Mode.
-
-## M5 T316 S52 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Corrective; next unused subtask of M5 T316. |
-| Admission And Approval | The owner approved this bounded continuation after T316 S51 in Coordinated Dual-Session Mode. |
-| Objective | Close only protected IRET `CFh` returns from CPL0 to an outer CPL, including its frame, stack switch, cache, FLAGS, fault, and pending-IRQ boundaries. |
-| Non-goals | Same-CPL and real IRET, VM-transition and outer-CPL return families beyond this declared CPL0-to-outer slice, NT/task return, IRET error-code handling, generic IDT/IRQ/NMI/task switching, VME/PVI, and post-80386 behavior are outside S52. |
-| Reference Baseline | `f0535936` / `vm-0-5-0316`, with T316 S51 closed and `main` equal to `origin/main`. |
-| Files And ABI Surface | Expected scope is one local owner smoke, CMake registration, the ordinary-execution matrix, and this packet. Production changes require a reproduced local IRET defect; shared exception, interrupt, privilege, stack, or selector helpers require caller-impact review before change. |
-| Applicable Rules | `docs/rules/EXECUTION.md` dual-session lifecycle and matrix evidence; `docs/rules/CODING.md` local-style and no-premature-abstraction rules. Intel 80386 PRM IRET outer-privilege return, selector, stack, FLAGS, exception, and interrupt rules are form authority. |
-| Verification | Prove valid outer frame and old/new stack publication, cache and FLAGS state; `66h`, `67h`, and combined disposition; pre-386 prefix and 80386 LOCK #UD full nonpublication; controlled CS/SS/IP/stack failure observability; and IF-restoring versus IF-preserving pending-PIC behavior. Build focused, prove exact current registration, run documentation governance, diff check, and current gate. |
-| Expected Markers | Focused smoke emits `M5:T316:S52:IRET-OUTER:OK`. |
-| Asset Needs | None; deterministic CPU fixtures only. |
-| Stop Conditions | Stop before changing a shared exception, interrupt, privilege, stack, or selector helper; report exact reproducer plus caller and coverage impact. |
-| Exit Criteria | Every declared outer-return form and boundary has focused evidence without claiming excluded IRET, task, VM, or generic interrupt families. |
-| Original Owner Request | Execute the complete Intel 80386 plan in dual-session mode against an Intel form--implementation--test matrix, repairing omissions and closing evidence without using Windows demand as the completeness boundary. |
-| Similar-Issue Sweep | Audit `CFh`, `_e_iret`, `_ser_iret_protected_outer`, TSS and outer-stack selector routes, and S305--S308/protected-return fixtures; classify same-CPL, task, and VM paths as excluded semantic boundaries. |
+**Idle.** M5 T316 S52 is closed; the next 80386 matrix slice requires a
+separately admitted packet.
 
 ## Current Technical Baseline
 
@@ -44,6 +25,7 @@ bounded ordinary-execution continuation in Coordinated Dual-Session Mode.
 
 | Task | Compact result |
 | --- | --- |
+| T316 S52 | Closed protected IRET `CF` CPL0-to-outer returns: 16/32 and `66`/`67` forms, full target cache/GPR/stack-image proof, selector/limit handler-boundary failures, and TSS-backed IF/PIC delivery passed. No production change was needed; 181 current-gate tests passed. |
 | T316 S51 | Closed same-CPL IRET `CF`: four real profiles, `66` wide-frame and inert `67` 16-bit stack route, #UD/LOCK, protected selector/limit #DF, and IF-restoring versus IF-preserving PIC boundaries passed. No production change was needed; 180 current-gate tests passed. |
 | T316 S50 | Closed software interrupts INT3 `CC`, INT imm8 `CD ib`, and INTO `CE`: four real-mode profiles, `66`/`67`/LOCK, IVT/IDT frame, DPL/VM86/fault, and pending-PIC boundaries passed. No production change was needed; 179 current-gate tests passed. |
 | T316 S49 | Closed HLT `F4`: default and `66`/`67`/LOCK form behavior, protected/VM86 privilege rejection, and IF-qualified pending-IRQ wake behavior passed. No production change was needed; 178 current-gate tests passed. |
