@@ -9363,7 +9363,7 @@ static C_VOID PUSHA(core_machine_cpu_execution_context *context)
 {
     type_unsigned_32 cesp;
     TYPE_TRACE_CALL_BEGIN("PUSHA");
-    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80186)
     {
         _adv;
         switch (_GetOperandSize)
@@ -9407,7 +9407,7 @@ static C_VOID POPA(core_machine_cpu_execution_context *context)
 {
     type_unsigned_32 cesp;
     TYPE_TRACE_CALL_BEGIN("POPA");
-    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80186)
     {
         _adv;
         switch (_GetOperandSize)
