@@ -2,8 +2,27 @@
 
 ## Current Work
 
-**Idle.** M5 T316 S47 is closed; the next 80386 matrix slice requires a
-separately admitted packet.
+**M5 T316 S48 - CLI/STI interrupt-enable forms.** The coordinator admitted this
+bounded ordinary-execution continuation in Coordinated Dual-Session Mode.
+
+## M5 T316 S48 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Corrective; next unused subtask of M5 T316. |
+| Admission And Approval | The owner approved autonomous continuation after T316 S47. |
+| Objective | Close only CLI `FA` and STI `FB`: profiles, prefix/LOCK classification, privilege, IF publication, and PIC shadow behavior. |
+| Non-goals | PUSHF/POPF, IRET, VME/PVI, task switch, generic PIC or FLAGS-shadow refactoring, and later privilege architecture are outside S48. |
+| Reference Baseline | `321db547` / `vm-0-5-0316`, with S47 closed and pushed. |
+| Files And ABI Surface | Expected scope is a local owner smoke, CMake registration, this packet, and the T316 matrix. Production changes require a demonstrated local FA/FB defect. |
+| Applicable Rules | Intel 80386 PRM CLI/STI, IOPL, VM86, prefix, exception, and interrupt-shadow rules are authoritative. |
+| Verification | Prove 8086--80386 defaults, 80386 66/67/combined fixed semantics, lower-prefix and 80386 LOCK #UD/nonpublication, protected CPL/IOPL and ordinary VM86 gates, exact FLAGS/GPR/cache/EIP effects, CLI pending-IRQ inhibition, STI one-next-instruction shadow, rejected-form non-shadow, focused/current registration/governance/diff/full gate. |
+| Expected Markers | `M5:T316:S48:CLI-STI:OK`. |
+| Asset Needs | None. |
+| Stop Conditions | Stop before changing shared interrupt, prefix, privilege, or global shadow helpers; report caller/form impact. |
+| Exit Criteria | Both forms and every declared boundary have focused executable proof; no broader FLAGS or interrupt architecture claim. |
+| Original Owner Request | Execute the complete Intel 80386 plan in dual-session mode, using a form--implementation--test matrix, boundary review, evidence closure, and immediate push. |
+| Similar-Issue Sweep | Audit CLI/STI handlers, prefix route, IOPL/VM checks, shadow state, existing S22 smoke, and IRET/POPF boundaries. |
 
 ## Current Technical Baseline
 
