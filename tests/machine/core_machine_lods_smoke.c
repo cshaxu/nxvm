@@ -44,13 +44,13 @@ static C_VOID lods_seed(lods_machine *state)
     cpu->data.fs.base = 0x40000u; cpu->data.gs.base = 0x50000u;
 }
 
-static C_INT lods_case(core_machine_cpu_profile profile, const uint8_t *code,
-    uint8_t bytes, uint8_t width, C_INT address32, C_INT decrement,
-    uint32_t address, uint32_t source)
+static C_INT lods_case(core_machine_cpu_profile profile, const type_unsigned_8 *code,
+    type_unsigned_8 bytes, type_unsigned_8 width, C_INT address32, C_INT decrement,
+    type_unsigned_32 address, type_unsigned_32 source)
 {
     lods_machine state; t_cpu before, after; core_machine_cpu_diagnostic diagnostic;
-    core_machine_run_result result; type_status status; uint32_t source_after;
-    uint32_t expected = width == 1u ? 0xaabb3300u | (source & 0xffu) :
+    core_machine_run_result result; type_status status; type_unsigned_32 source_after;
+    type_unsigned_32 expected = width == 1u ? 0xaabb3300u | (source & 0xffu) :
         width == 2u ? 0xaabb0000u | (source & 0xffffu) : source;
     C_INT failed = !lods_prepare(profile, &state);
     if (!failed) {
@@ -68,8 +68,8 @@ static C_INT lods_case(core_machine_cpu_profile profile, const uint8_t *code,
             after.data.edx != before.data.edx || after.data.ebx != before.data.ebx ||
             after.data.esp != before.data.esp || after.data.ebp != before.data.ebp ||
             after.data.edi != before.data.edi || after.data.eflags != before.data.eflags ||
-            after.data.esi != (address32 ? before.data.esi + (decrement ? -(int32_t)width : width) :
-            ((before.data.esi & 0xffff0000u) | (uint16_t)((uint16_t)before.data.esi + (decrement ? -(int32_t)width : width)))) ||
+            after.data.esi != (address32 ? before.data.esi + (decrement ? -(type_signed_32)width : width) :
+            ((before.data.esi & 0xffff0000u) | (type_unsigned_16)((type_unsigned_16)before.data.esi + (decrement ? -(type_signed_32)width : width)))) ||
             core_machine_memory_read_physical(&state.machine->executor_memory, address,
             TYPE_REFERENCE_OF(source_after), width) != TYPE_STATUS_OK ||
             (width == 1u ? (source_after & 0xffu) != (source & 0xffu) :
@@ -80,8 +80,8 @@ static C_INT lods_case(core_machine_cpu_profile profile, const uint8_t *code,
 }
 
 static C_INT lods_rep_case(core_machine_cpu_profile profile,
-    const uint8_t *code, uint8_t bytes, uint8_t width, C_INT address32,
-    C_INT decrement, uint16_t count, const uint32_t *source)
+    const type_unsigned_8 *code, type_unsigned_8 bytes, type_unsigned_8 width, C_INT address32,
+    C_INT decrement, type_unsigned_16 count, const type_unsigned_32 *source)
 {
     lods_machine state;
     t_cpu before;
@@ -89,12 +89,12 @@ static C_INT lods_rep_case(core_machine_cpu_profile profile,
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
     type_status status;
-    uint32_t source_after;
-    uint32_t address;
-    uint32_t expected_eax;
-    uint32_t expected_esi;
-    uint32_t expected_ecx;
-    uint16_t index;
+    type_unsigned_32 source_after;
+    type_unsigned_32 address;
+    type_unsigned_32 expected_eax;
+    type_unsigned_32 expected_esi;
+    type_unsigned_32 expected_ecx;
+    type_unsigned_16 index;
     C_INT failed = !lods_prepare(profile, &state);
 
     if (!failed) {
@@ -106,7 +106,7 @@ static C_INT lods_rep_case(core_machine_cpu_profile profile,
             state.machine->executor_cpu.data.eflags |= VCPU_EFLAGS_DF;
         for (index = 0u; index != count; ++index) {
             address = 0x10000u + (address32 ? 0x1010u : 0x10u) +
-                (decrement ? -(int32_t)(index * width) : index * width);
+                (decrement ? -(type_signed_32)(index * width) : index * width);
             failed |= core_machine_memory_write(state.machine, address,
                 &source[index], width) != TYPE_STATUS_OK;
         }
@@ -121,9 +121,9 @@ static C_INT lods_rep_case(core_machine_cpu_profile profile,
             width == 2u ? (before.data.eax & 0xffff0000u) |
             (source[count - 1u] & 0xffffu) : source[count - 1u];
         expected_esi = address32 ? before.data.esi + (decrement ?
-            -(int32_t)(count * width) : count * width) :
-            (before.data.esi & 0xffff0000u) | (uint16_t)((uint16_t)
-            before.data.esi + (decrement ? -(int32_t)(count * width) :
+            -(type_signed_32)(count * width) : count * width) :
+            (before.data.esi & 0xffff0000u) | (type_unsigned_16)((type_unsigned_16)
+            before.data.esi + (decrement ? -(type_signed_32)(count * width) :
             count * width));
         expected_ecx = address32 ? 0u : before.data.ecx & 0xffff0000u;
         failed |= core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
@@ -136,7 +136,7 @@ static C_INT lods_rep_case(core_machine_cpu_profile profile,
             after.data.eflags != before.data.eflags;
         for (index = 0u; index != count; ++index) {
             address = 0x10000u + (address32 ? 0x1010u : 0x10u) +
-                (decrement ? -(int32_t)(index * width) : index * width);
+                (decrement ? -(type_signed_32)(index * width) : index * width);
             failed |= core_machine_memory_read_physical(
                 &state.machine->executor_memory, address,
                 TYPE_REFERENCE_OF(source_after), width) != TYPE_STATUS_OK ||
@@ -151,16 +151,16 @@ static C_INT lods_rep_case(core_machine_cpu_profile profile,
 }
 
 static C_INT lods_expect_ud(core_machine_cpu_profile profile,
-    const uint8_t *code, uint8_t bytes)
+    const type_unsigned_8 *code, type_unsigned_8 bytes)
 {
-    static const uint32_t source = 0x12345678u;
+    static const type_unsigned_32 source = 0x12345678u;
     lods_machine state;
     t_cpu before;
     t_cpu after;
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
     type_status status;
-    uint32_t source_after;
+    type_unsigned_32 source_after;
     C_INT failed = !lods_prepare(profile, &state);
 
     if (!failed) {
@@ -197,25 +197,25 @@ static C_INT lods_test_rejections(C_VOID)
         CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286
     };
-    static const uint8_t prefix_66_ac[] = {0x66u, 0xacu};
-    static const uint8_t prefix_67_ad[] = {0x67u, 0xadu};
-    static const uint8_t prefix_66_67_ad[] = {0x66u, 0x67u, 0xadu};
-    static const uint8_t rep_prefix_66_ac[] = {0xf3u, 0x66u, 0xacu};
-    static const uint8_t rep_prefix_67_ad[] = {0xf3u, 0x67u, 0xadu};
-    static const uint8_t rep_prefix_66_67_ad[] = {0xf3u, 0x66u, 0x67u, 0xadu};
-    static const uint8_t lock_ac[] = {0xf0u, 0xacu};
-    static const uint8_t lock_ad[] = {0xf0u, 0xadu};
-    static const uint8_t lock_rep_ac[] = {0xf0u, 0xf3u, 0xacu};
-    static const uint8_t lock_rep_ad[] = {0xf0u, 0xf3u, 0xadu};
-    static const uint8_t lock_66_ac[] = {0xf0u, 0x66u, 0xacu};
-    static const uint8_t lock_rep_66_ad[] = {0xf0u, 0xf3u, 0x66u, 0xadu};
-    static const uint8_t lock_67_ac[] = {0xf0u, 0x67u, 0xacu};
-    static const uint8_t lock_rep_67_ad[] = {0xf0u, 0xf3u, 0x67u, 0xadu};
-    static const uint8_t lock_66_67_ad[] = {0xf0u, 0x66u, 0x67u, 0xadu};
-    static const uint8_t lock_rep_66_67_ad[] = {
+    static const type_unsigned_8 prefix_66_ac[] = {0x66u, 0xacu};
+    static const type_unsigned_8 prefix_67_ad[] = {0x67u, 0xadu};
+    static const type_unsigned_8 prefix_66_67_ad[] = {0x66u, 0x67u, 0xadu};
+    static const type_unsigned_8 rep_prefix_66_ac[] = {0xf3u, 0x66u, 0xacu};
+    static const type_unsigned_8 rep_prefix_67_ad[] = {0xf3u, 0x67u, 0xadu};
+    static const type_unsigned_8 rep_prefix_66_67_ad[] = {0xf3u, 0x66u, 0x67u, 0xadu};
+    static const type_unsigned_8 lock_ac[] = {0xf0u, 0xacu};
+    static const type_unsigned_8 lock_ad[] = {0xf0u, 0xadu};
+    static const type_unsigned_8 lock_rep_ac[] = {0xf0u, 0xf3u, 0xacu};
+    static const type_unsigned_8 lock_rep_ad[] = {0xf0u, 0xf3u, 0xadu};
+    static const type_unsigned_8 lock_66_ac[] = {0xf0u, 0x66u, 0xacu};
+    static const type_unsigned_8 lock_rep_66_ad[] = {0xf0u, 0xf3u, 0x66u, 0xadu};
+    static const type_unsigned_8 lock_67_ac[] = {0xf0u, 0x67u, 0xacu};
+    static const type_unsigned_8 lock_rep_67_ad[] = {0xf0u, 0xf3u, 0x67u, 0xadu};
+    static const type_unsigned_8 lock_66_67_ad[] = {0xf0u, 0x66u, 0x67u, 0xadu};
+    static const type_unsigned_8 lock_rep_66_67_ad[] = {
         0xf0u, 0xf3u, 0x66u, 0x67u, 0xadu
     };
-    uint8_t index;
+    type_unsigned_8 index;
 
     for (index = 0u; index != sizeof(profiles) / sizeof(profiles[0]); ++index) {
         if (!lods_expect_ud(profiles[index], prefix_66_ac,
@@ -249,14 +249,14 @@ static C_INT lods_test_rejections(C_VOID)
 
 static C_INT lods_boot_protected(lods_machine *state)
 {
-    static const uint8_t pointer[] = {0x1fu, 0u, 0u, 0x03u, 0u, 0u};
-    static const uint8_t gdt[] = {
+    static const type_unsigned_8 pointer[] = {0x1fu, 0u, 0u, 0x03u, 0u, 0u};
+    static const type_unsigned_8 gdt[] = {
         0, 0, 0, 0, 0, 0, 0, 0,
         0xffu, 0xffu, 0, 0x20u, 0, 0x9au, 0, 0,
         0x0fu, 0, 0, 0x30u, 0, 0x92u, 0, 0,
         0xffu, 0xffu, 0, 0x40u, 0, 0x92u, 0, 0
     };
-    static const uint8_t boot[] = {
+    static const type_unsigned_8 boot[] = {
         0x0fu, 0x01u, 0x16u, 0, 1u,
         0xb8u, 1u, 0,
         0x0fu, 0x01u, 0xf0u,
@@ -269,7 +269,7 @@ static C_INT lods_boot_protected(lods_machine *state)
         0xbcu, 0, 0x80u,
         0xeau, 0, 0, 8u, 0
     };
-    static const uint8_t halt = 0xf4u;
+    static const type_unsigned_8 halt = 0xf4u;
     core_machine_run_result result;
 
     return core_machine_memory_write(state->machine, 0x100u, pointer,
@@ -282,7 +282,7 @@ static C_INT lods_boot_protected(lods_machine *state)
         TYPE_STATUS_OK && result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
 }
 
-static C_VOID lods_seed_protected(lods_machine *state, uint32_t ds_limit)
+static C_VOID lods_seed_protected(lods_machine *state, type_unsigned_32 ds_limit)
 {
     lods_seed(state);
     state->machine->executor_cpu.data.cs.base = 0x2000u;
@@ -293,12 +293,12 @@ static C_VOID lods_seed_protected(lods_machine *state, uint32_t ds_limit)
 
 static C_INT lods_test_protected_limits(C_VOID)
 {
-    static const uint8_t single_codes[][2] = {
+    static const type_unsigned_8 single_codes[][2] = {
         {0xacu, 0u},
         {0x66u, 0xadu}
     };
-    static const uint8_t rep_ac[] = {0xf3u, 0xacu};
-    uint8_t form;
+    static const type_unsigned_8 rep_ac[] = {0xf3u, 0xacu};
+    type_unsigned_8 form;
 
     for (form = 0u; form != 2u; ++form) {
         lods_machine state;
@@ -306,10 +306,10 @@ static C_INT lods_test_protected_limits(C_VOID)
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
         core_machine_run_result result;
-        uint32_t source = 0x11223344u;
-        uint32_t source_after;
-        uint8_t bytes = form == 0u ? 1u : 2u;
-        uint8_t width = form == 0u ? 1u : 4u;
+        type_unsigned_32 source = 0x11223344u;
+        type_unsigned_32 source_after;
+        type_unsigned_8 bytes = form == 0u ? 1u : 2u;
+        type_unsigned_8 width = form == 0u ? 1u : 4u;
         C_INT failed = !lods_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
         if (!failed)
@@ -352,10 +352,10 @@ static C_INT lods_test_protected_limits(C_VOID)
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
         core_machine_run_result result;
-        uint8_t first = 0x51u;
-        uint8_t second = 0x62u;
-        uint8_t first_after;
-        uint8_t second_after;
+        type_unsigned_8 first = 0x51u;
+        type_unsigned_8 second = 0x62u;
+        type_unsigned_8 first_after;
+        type_unsigned_8 second_after;
         C_INT failed = !lods_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
         if (!failed)
@@ -401,24 +401,24 @@ static C_INT lods_test_protected_limits(C_VOID)
 
 static C_INT lods_test_irq_no_shadow(C_VOID)
 {
-    static const uint8_t codes[][2] = {
+    static const type_unsigned_8 codes[][2] = {
         {0xacu, 0x90u},
         {0xadu, 0x90u}
     };
-    static const uint8_t hlt = 0xf4u;
-    uint8_t form;
+    static const type_unsigned_8 hlt = 0xf4u;
+    type_unsigned_8 form;
 
     for (form = 0u; form != 2u; ++form) {
         lods_machine state;
         core_machine_pic_irq_source irq;
         core_machine_run_result result;
         t_cpu after;
-        uint16_t offset = 0x100u;
-        uint16_t segment = 0u;
-        uint16_t frame_ip = 0u;
-        uint32_t source = form == 0u ? 0x51u : 0x2262u;
-        uint32_t source_after;
-        uint8_t width = form == 0u ? 1u : 2u;
+        type_unsigned_16 offset = 0x100u;
+        type_unsigned_16 segment = 0u;
+        type_unsigned_16 frame_ip = 0u;
+        type_unsigned_32 source = form == 0u ? 0x51u : 0x2262u;
+        type_unsigned_32 source_after;
+        type_unsigned_8 width = form == 0u ? 1u : 2u;
         C_INT failed = !lods_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
         if (!failed) {
@@ -447,7 +447,7 @@ static C_INT lods_test_irq_no_shadow(C_VOID)
                 result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
             after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
-                after.data.ss.base + (uint16_t)after.data.esp,
+                after.data.ss.base + (type_unsigned_16)after.data.esp,
                 TYPE_REFERENCE_OF(frame_ip), sizeof(frame_ip)) != TYPE_STATUS_OK ||
                 after.data.eip != 0x101u || frame_ip != 1u ||
                 !TYPE_GET_BIT(state.machine->shared_pic_master.data.isr,
@@ -469,17 +469,17 @@ static C_INT lods_test_irq_no_shadow(C_VOID)
 
 static C_INT lods_test_irq_rep_restart(C_VOID)
 {
-    static const uint8_t code[] = {0xf3u, 0xacu, 0x90u};
-    static const uint8_t hlt = 0xf4u;
+    static const type_unsigned_8 code[] = {0xf3u, 0xacu, 0x90u};
+    static const type_unsigned_8 hlt = 0xf4u;
     lods_machine state;
     core_machine_pic_irq_source irq;
     core_machine_run_result result;
     t_cpu after;
-    uint16_t offset = 0x100u;
-    uint16_t segment = 0u;
-    uint16_t frame_ip = 0u;
-    uint8_t source[] = {0x51u, 0x62u, 0x73u};
-    uint8_t source_after[sizeof(source)] = {0u, 0u, 0u};
+    type_unsigned_16 offset = 0x100u;
+    type_unsigned_16 segment = 0u;
+    type_unsigned_16 frame_ip = 0u;
+    type_unsigned_8 source[] = {0x51u, 0x62u, 0x73u};
+    type_unsigned_8 source_after[sizeof(source)] = {0u, 0u, 0u};
     C_INT failed = !lods_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
     if (!failed) {
@@ -508,7 +508,7 @@ static C_INT lods_test_irq_rep_restart(C_VOID)
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
-            after.data.ss.base + (uint16_t)after.data.esp,
+            after.data.ss.base + (type_unsigned_16)after.data.esp,
             TYPE_REFERENCE_OF(frame_ip), sizeof(frame_ip)) != TYPE_STATUS_OK ||
             after.data.eip != 0x101u || frame_ip != 0u ||
             !TYPE_GET_BIT(state.machine->shared_pic_master.data.isr,
@@ -527,21 +527,21 @@ static C_INT lods_test_irq_rep_restart(C_VOID)
 C_INT main(C_VOID)
 {
     static const core_machine_cpu_profile profiles[] = {CORE_MACHINE_CPU_PROFILE_8086,CORE_MACHINE_CPU_PROFILE_80186,CORE_MACHINE_CPU_PROFILE_80286,CORE_MACHINE_CPU_PROFILE_80386};
-    static const uint8_t ac = 0xacu, ad = 0xadu, dword[] = {0x66u,0xadu}, addr[] = {0x67u,0xacu}, both[] = {0x66u,0x67u,0xadu};
-    static const uint8_t cs[] = {0x2eu,0xacu}, ss[] = {0x36u,0xacu}, es[] = {0x26u,0xacu}, fs[] = {0x64u,0xacu}, gs[] = {0x65u,0xacu};
-    uint8_t profile;
+    static const type_unsigned_8 ac = 0xacu, ad = 0xadu, dword[] = {0x66u,0xadu}, addr[] = {0x67u,0xacu}, both[] = {0x66u,0x67u,0xadu};
+    static const type_unsigned_8 cs[] = {0x2eu,0xacu}, ss[] = {0x36u,0xacu}, es[] = {0x26u,0xacu}, fs[] = {0x64u,0xacu}, gs[] = {0x65u,0xacu};
+    type_unsigned_8 profile;
     for (profile=0u; profile != sizeof(profiles)/sizeof(profiles[0]); ++profile)
         if (!lods_case(profiles[profile], &ac,1u,1u,0,0,0x10010u,0x12345678u) || !lods_case(profiles[profile], &ad,1u,2u,0,0,0x10010u,0x12345678u)) return 1;
     if (!lods_case(CORE_MACHINE_CPU_PROFILE_80386,dword,2u,4u,0,0,0x10010u,0x12345678u) || !lods_case(CORE_MACHINE_CPU_PROFILE_80386,addr,2u,1u,1,0,0x11010u,0x12345678u) || !lods_case(CORE_MACHINE_CPU_PROFILE_80386,both,3u,4u,1,0,0x11010u,0x12345678u) || !lods_case(CORE_MACHINE_CPU_PROFILE_80386,&ad,1u,2u,0,1,0x10010u,0x12345678u) || !lods_case(CORE_MACHINE_CPU_PROFILE_80386,cs,2u,1u,0,0,0x10u,0x51u) || !lods_case(CORE_MACHINE_CPU_PROFILE_80386,ss,2u,1u,0,0,0x30010u,0x52u) || !lods_case(CORE_MACHINE_CPU_PROFILE_80386,es,2u,1u,0,0,0x20010u,0x53u) || !lods_case(CORE_MACHINE_CPU_PROFILE_80386,fs,2u,1u,0,0,0x40010u,0x54u) || !lods_case(CORE_MACHINE_CPU_PROFILE_80386,gs,2u,1u,0,0,0x50010u,0x55u)) return 1;
     {
-        static const uint8_t rep_ac[] = {0xf3u, 0xacu};
-        static const uint8_t rep_ad[] = {0xf3u, 0xadu};
-        static const uint8_t rep_66_ad[] = {0xf3u, 0x66u, 0xadu};
-        static const uint8_t rep_67_ac[] = {0xf3u, 0x67u, 0xacu};
-        static const uint8_t rep_66_67_ad[] = {0xf3u, 0x66u, 0x67u, 0xadu};
-        static const uint32_t byte_source[] = {0x51u, 0x62u, 0x73u};
-        static const uint32_t word_source[] = {0x1151u, 0x2262u, 0x3373u};
-        static const uint32_t dword_source[] = {0x10203040u, 0x50607080u,
+        static const type_unsigned_8 rep_ac[] = {0xf3u, 0xacu};
+        static const type_unsigned_8 rep_ad[] = {0xf3u, 0xadu};
+        static const type_unsigned_8 rep_66_ad[] = {0xf3u, 0x66u, 0xadu};
+        static const type_unsigned_8 rep_67_ac[] = {0xf3u, 0x67u, 0xacu};
+        static const type_unsigned_8 rep_66_67_ad[] = {0xf3u, 0x66u, 0x67u, 0xadu};
+        static const type_unsigned_32 byte_source[] = {0x51u, 0x62u, 0x73u};
+        static const type_unsigned_32 word_source[] = {0x1151u, 0x2262u, 0x3373u};
+        static const type_unsigned_32 dword_source[] = {0x10203040u, 0x50607080u,
             0x90a0b0c0u};
 
         for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]);

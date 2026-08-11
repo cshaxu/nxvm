@@ -32,7 +32,7 @@ static C_INT pushf_prepare(pushf_machine *state)
         core_machine_reset(state->machine) == TYPE_STATUS_OK;
 }
 
-static C_INT pushf_run(pushf_machine *state, const uint8_t *code, uint8_t bytes, t_cpu *after)
+static C_INT pushf_run(pushf_machine *state, const type_unsigned_8 *code, type_unsigned_8 bytes, t_cpu *after)
 {
     core_machine_run_result result;
     return test_core_machine_fixture_prepare_real_mode_execution(state->machine, 0u) &&
@@ -42,8 +42,8 @@ static C_INT pushf_run(pushf_machine *state, const uint8_t *code, uint8_t bytes,
         ((*after = test_core_machine_fixture_capture_cpu_after_run(state->machine)), 1);
 }
 
-static C_INT pushf_run_vm86(pushf_machine *state, const uint8_t *code, uint8_t bytes,
-    uint32_t eflags, uint32_t esp, C_INT fault, t_cpu *after,
+static C_INT pushf_run_vm86(pushf_machine *state, const type_unsigned_8 *code, type_unsigned_8 bytes,
+    type_unsigned_32 eflags, type_unsigned_32 esp, C_INT fault, t_cpu *after,
     core_machine_cpu_diagnostic *diagnostic, type_status *run_status,
     core_machine_stop_reason *reason)
 {
@@ -80,11 +80,11 @@ static C_INT pushf_run_vm86(pushf_machine *state, const uint8_t *code, uint8_t b
 
 static C_INT pushf_test_vm86(C_VOID)
 {
-    static const uint8_t pushf[] = { 0x9cu };
-    static const uint8_t popf[] = { 0x9du };
-    uint8_t pass;
+    static const type_unsigned_8 pushf[] = { 0x9cu };
+    static const type_unsigned_8 popf[] = { 0x9du };
+    type_unsigned_8 pass;
     for (pass = 0u; pass != 2u; ++pass) {
-        const uint32_t flags = VCPU_EFLAGS_VM | (pass ? 0u : VCPU_EFLAGS_IOPL) | VCPU_EFLAGS_CF;
+        const type_unsigned_32 flags = VCPU_EFLAGS_VM | (pass ? 0u : VCPU_EFLAGS_IOPL) | VCPU_EFLAGS_CF;
         pushf_machine state;
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
@@ -107,9 +107,9 @@ static C_INT pushf_test_vm86(C_VOID)
         if (failed) return 0;
     }
     for (pass = 0u; pass != 2u; ++pass) {
-        const uint32_t flags = VCPU_EFLAGS_VM | (pass ? 0u : VCPU_EFLAGS_IOPL) |
+        const type_unsigned_32 flags = VCPU_EFLAGS_VM | (pass ? 0u : VCPU_EFLAGS_IOPL) |
             VCPU_EFLAGS_CF;
-        const uint16_t image = VCPU_EFLAGS_ZF | VCPU_EFLAGS_IF;
+        const type_unsigned_16 image = VCPU_EFLAGS_ZF | VCPU_EFLAGS_IF;
         pushf_machine state;
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
@@ -134,12 +134,12 @@ static C_INT pushf_test_vm86(C_VOID)
         if (failed) return 0;
     }
     {
-        static const uint8_t pushfd[] = { 0x66u, 0x9cu };
-        const uint32_t flags = VCPU_EFLAGS_VM | VCPU_EFLAGS_IOPL |
+        static const type_unsigned_8 pushfd[] = { 0x66u, 0x9cu };
+        const type_unsigned_32 flags = VCPU_EFLAGS_VM | VCPU_EFLAGS_IOPL |
             VCPU_EFLAGS_RF | VCPU_EFLAGS_CF;
-        const uint32_t expected = (flags & ~(VCPU_EFLAGS_VM | VCPU_EFLAGS_RF |
+        const type_unsigned_32 expected = (flags & ~(VCPU_EFLAGS_VM | VCPU_EFLAGS_RF |
             VCPU_EFLAGS_RESERVED)) | 0x02u;
-        uint32_t image = 0u;
+        type_unsigned_32 image = 0u;
         pushf_machine state;
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
@@ -161,17 +161,17 @@ static C_INT pushf_test_vm86(C_VOID)
 
 static C_INT pushf_prepare_protected(pushf_machine *state)
 {
-    static const uint8_t pointer[] = { 0x1fu, 0, 0, 0x03u, 0, 0 };
-    static const uint8_t gdt[] = {
+    static const type_unsigned_8 pointer[] = { 0x1fu, 0, 0, 0x03u, 0, 0 };
+    static const type_unsigned_8 gdt[] = {
         0,0,0,0,0,0,0,0, 0xffu,0xffu,0,0x20u,0,0x9au,0,0,
         0xffu,0xffu,0,0x30u,0,0x92u,0,0, 0xffu,0xffu,0,0x40u,0,0x92u,0,0
     };
-    static const uint8_t bootstrap[] = {
+    static const type_unsigned_8 bootstrap[] = {
         0x0fu,0x01u,0x16u,0x00u,0x01u,0xb8u,0x01u,0x00u,0x0fu,0x01u,0xf0u,
         0xb8u,0x10u,0x00u,0x8eu,0xd8u,0x8eu,0xc0u,0xb8u,0x18u,0x00u,0x8eu,
         0xd0u,0xbcu,0x00u,0x80u,0xeau,0x00u,0x00u,0x08u,0x00u
     };
-    static const uint8_t halt[] = { 0xf4u };
+    static const type_unsigned_8 halt[] = { 0xf4u };
     core_machine_run_result result;
     return pushf_prepare(state) &&
         core_machine_memory_write(state->machine, 0x0100u, pointer, sizeof(pointer)) == TYPE_STATUS_OK &&
@@ -184,13 +184,13 @@ static C_INT pushf_prepare_protected(pushf_machine *state)
 
 static C_INT pushf_install_gp_gate(pushf_machine *state)
 {
-    static const uint8_t handler[] = { 0xf4u };
-    uint8_t tss[10] = { 0 };
-    static const uint8_t gdt[] = {
+    static const type_unsigned_8 handler[] = { 0xf4u };
+    type_unsigned_8 tss[10] = { 0 };
+    static const type_unsigned_8 gdt[] = {
         0,0,0,0,0,0,0,0, 0xffu,0xffu,0,0x20u,0,0x9au,0x40u,0,
         0xffu,0xffu,0,0,0,0x92u,0xcfu,0
     };
-    uint8_t gate[8] = { 0 };
+    type_unsigned_8 gate[8] = { 0 };
     t_cpu *cpu = &state->machine->executor_cpu;
     gate[0] = 0x00u;
     gate[1] = 0x01u;
@@ -242,15 +242,15 @@ static C_INT pushf_install_gp_gate(pushf_machine *state)
 
 static C_INT pushf_test_protected_iopl(C_VOID)
 {
-    static const uint8_t popf[] = { 0x9du };
-    uint8_t pass;
+    static const type_unsigned_8 popf[] = { 0x9du };
+    type_unsigned_8 pass;
     for (pass = 0u; pass != 3u; ++pass) {
-        const uint8_t cpl = pass == 0u ? 0u : 3u;
-        const uint32_t iopl = pass == 2u ? VCPU_EFLAGS_IOPL : 0u;
-        const uint32_t initial = VCPU_EFLAGS_CF | iopl;
-        const uint32_t image = VCPU_EFLAGS_IF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_IOPL;
-        const uint32_t expected_if = pass == 1u ? 0u : VCPU_EFLAGS_IF;
-        const uint32_t expected_iopl = pass == 0u ? VCPU_EFLAGS_IOPL : iopl;
+        const type_unsigned_8 cpl = pass == 0u ? 0u : 3u;
+        const type_unsigned_32 iopl = pass == 2u ? VCPU_EFLAGS_IOPL : 0u;
+        const type_unsigned_32 initial = VCPU_EFLAGS_CF | iopl;
+        const type_unsigned_32 image = VCPU_EFLAGS_IF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_IOPL;
+        const type_unsigned_32 expected_if = pass == 1u ? 0u : VCPU_EFLAGS_IF;
+        const type_unsigned_32 expected_iopl = pass == 0u ? VCPU_EFLAGS_IOPL : iopl;
         pushf_machine state;
         t_cpu after;
         core_machine_run_result result;
@@ -276,15 +276,15 @@ static C_INT pushf_test_protected_iopl(C_VOID)
 
 static C_INT pushf_test_stack_faults(C_VOID)
 {
-    static const uint8_t pushfw[] = { 0x9cu };
-    static const uint8_t popfd[] = { 0x66u, 0x9du };
-    uint8_t pass;
+    static const type_unsigned_8 pushfw[] = { 0x9cu };
+    static const type_unsigned_8 popfd[] = { 0x66u, 0x9du };
+    type_unsigned_8 pass;
     for (pass = 0u; pass != 2u; ++pass) {
-        const uint8_t *code = pass ? popfd : pushfw;
-        const uint8_t bytes = pass ? sizeof(popfd) : sizeof(pushfw);
-        const uint32_t flags = VCPU_EFLAGS_CF | VCPU_EFLAGS_IF;
-        uint32_t image = VCPU_EFLAGS_ZF | VCPU_EFLAGS_IF;
-        uint32_t after_image = 0u;
+        const type_unsigned_8 *code = pass ? popfd : pushfw;
+        const type_unsigned_8 bytes = pass ? sizeof(popfd) : sizeof(pushfw);
+        const type_unsigned_32 flags = VCPU_EFLAGS_CF | VCPU_EFLAGS_IF;
+        type_unsigned_32 image = VCPU_EFLAGS_ZF | VCPU_EFLAGS_IF;
+        type_unsigned_32 after_image = 0u;
         pushf_machine state;
         t_cpu after;
         core_machine_run_result result;
@@ -319,21 +319,21 @@ static C_INT pushf_test_stack_faults(C_VOID)
 
 C_INT main(C_VOID)
 {
-    static const uint8_t pushfw[] = { 0x9cu };
-    static const uint8_t pushfd[] = { 0x66u, 0x9cu };
-    static const uint8_t popfw[] = { 0x9du };
-    static const uint8_t popfd[] = { 0x66u, 0x9du };
-    const uint32_t flags = VCPU_EFLAGS_CF | VCPU_EFLAGS_PF | VCPU_EFLAGS_IF |
+    static const type_unsigned_8 pushfw[] = { 0x9cu };
+    static const type_unsigned_8 pushfd[] = { 0x66u, 0x9cu };
+    static const type_unsigned_8 popfw[] = { 0x9du };
+    static const type_unsigned_8 popfd[] = { 0x66u, 0x9du };
+    const type_unsigned_32 flags = VCPU_EFLAGS_CF | VCPU_EFLAGS_PF | VCPU_EFLAGS_IF |
         VCPU_EFLAGS_DF | VCPU_EFLAGS_OF;
-    const uint8_t *code[] = { pushfw, pushfd, popfw, popfd };
-    const uint8_t bytes[] = { 1u, 2u, 1u, 2u };
-    uint8_t form;
+    const type_unsigned_8 *code[] = { pushfw, pushfd, popfw, popfd };
+    const type_unsigned_8 bytes[] = { 1u, 2u, 1u, 2u };
+    type_unsigned_8 form;
     for (form = 0u; form != 4u; ++form) {
         pushf_machine state;
         t_cpu after;
-        uint32_t image = form < 2u ? 0u : VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_IF;
-        const uint32_t pushfw_image = (flags & ~VCPU_EFLAGS_RESERVED) | 0x02u;
-        const uint32_t pushfd_image = (flags & ~(VCPU_EFLAGS_RESERVED |
+        type_unsigned_32 image = form < 2u ? 0u : VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_IF;
+        const type_unsigned_32 pushfw_image = (flags & ~VCPU_EFLAGS_RESERVED) | 0x02u;
+        const type_unsigned_32 pushfd_image = (flags & ~(VCPU_EFLAGS_RESERVED |
             VCPU_EFLAGS_VM | VCPU_EFLAGS_RF)) | 0x02u;
         C_INT failed = !pushf_prepare(&state);
         if (!failed) {

@@ -5,11 +5,11 @@
 #include "../support/core_machine_cpu_fixture.h"
 
 typedef struct port_strings_port {
-    uint32_t input;
-    uint32_t reads;
-    uint32_t writes;
-    uint32_t last_write;
-    uint32_t write_log[3];
+    type_unsigned_32 input;
+    type_unsigned_32 reads;
+    type_unsigned_32 writes;
+    type_unsigned_32 last_write;
+    type_unsigned_32 write_log[3];
 } port_strings_port;
 
 typedef struct port_strings_machine {
@@ -17,8 +17,8 @@ typedef struct port_strings_machine {
     port_strings_port port;
 } port_strings_machine;
 
-static type_status port_strings_read(C_VOID *owner, uint16_t port,
-    uint32_t *value)
+static type_status port_strings_read(C_VOID *owner, type_unsigned_16 port,
+    type_unsigned_32 *value)
 {
     port_strings_port *state = (port_strings_port *)owner;
 
@@ -29,8 +29,8 @@ static type_status port_strings_read(C_VOID *owner, uint16_t port,
     return TYPE_STATUS_OK;
 }
 
-static type_status port_strings_write(C_VOID *owner, uint16_t port,
-    uint32_t value)
+static type_status port_strings_write(C_VOID *owner, type_unsigned_16 port,
+    type_unsigned_32 value)
 {
     port_strings_port *state = (port_strings_port *)owner;
 
@@ -108,8 +108,8 @@ static C_INT port_strings_nonindexes_same(const t_cpu *before,
         after->data.ebp == before->data.ebp;
 }
 
-static C_INT port_strings_run(port_strings_machine *state, const uint8_t *code,
-    uint8_t bytes, uint32_t budget, t_cpu *after,
+static C_INT port_strings_run(port_strings_machine *state, const type_unsigned_8 *code,
+    type_unsigned_8 bytes, type_unsigned_32 budget, t_cpu *after,
     core_machine_cpu_diagnostic *diagnostic, type_status *status,
     core_machine_run_result *result)
 {
@@ -123,19 +123,19 @@ static C_INT port_strings_run(port_strings_machine *state, const uint8_t *code,
         TYPE_STATUS_OK;
 }
 
-static C_INT port_strings_memory(port_strings_machine *state, uint32_t address,
-    uint32_t expected, uint8_t width)
+static C_INT port_strings_memory(port_strings_machine *state, type_unsigned_32 address,
+    type_unsigned_32 expected, type_unsigned_8 width)
 {
-    uint32_t observed = 0u;
+    type_unsigned_32 observed = 0u;
 
     return core_machine_memory_read_physical(&state->machine->executor_memory,
         address, TYPE_REFERENCE_OF(observed), width) == TYPE_STATUS_OK &&
         STD_MEMCMP(&observed, &expected, width) == 0;
 }
 
-static C_INT port_strings_single(C_INT input, const uint8_t *code,
-    uint8_t bytes, uint8_t width, C_INT address32, uint32_t memory,
-    uint32_t value)
+static C_INT port_strings_single(C_INT input, const type_unsigned_8 *code,
+    type_unsigned_8 bytes, type_unsigned_8 width, C_INT address32, type_unsigned_32 memory,
+    type_unsigned_32 value)
 {
     port_strings_machine state;
     t_cpu before;
@@ -143,7 +143,7 @@ static C_INT port_strings_single(C_INT input, const uint8_t *code,
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
     type_status status;
-    uint32_t index = address32 ? 0x1020u : input ? 0x20u : 0x10u;
+    type_unsigned_32 index = address32 ? 0x1020u : input ? 0x20u : 0x10u;
     C_INT failed = !port_strings_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
     if (!failed) {
@@ -167,9 +167,9 @@ static C_INT port_strings_single(C_INT input, const uint8_t *code,
             after.data.ecx != before.data.ecx || after.data.eflags !=
             before.data.eflags || after.data.esi != (input ? before.data.esi :
             (address32 ? 0x1010u + width : (before.data.esi & 0xffff0000u) |
-            (uint16_t)(0x10u + width))) || after.data.edi != (input ?
+            (type_unsigned_16)(0x10u + width))) || after.data.edi != (input ?
             (address32 ? 0x1020u + width : (before.data.edi & 0xffff0000u) |
-            (uint16_t)(0x20u + width)) : before.data.edi) ||
+            (type_unsigned_16)(0x20u + width)) : before.data.edi) ||
             (input ? state.port.reads != 1u || state.port.writes != 0u ||
             !port_strings_memory(&state, memory, value, width) :
             state.port.reads != 0u || state.port.writes != 1u ||
@@ -182,16 +182,16 @@ static C_INT port_strings_single(C_INT input, const uint8_t *code,
 
 static C_INT port_strings_test_single(C_VOID)
 {
-    static const uint8_t insb = 0x6cu;
-    static const uint8_t insw = 0x6du;
-    static const uint8_t outsb = 0x6eu;
-    static const uint8_t outsw = 0x6fu;
-    static const uint8_t insd[] = {0x66u, 0x6du};
-    static const uint8_t outsd[] = {0x66u, 0x6fu};
-    static const uint8_t ins32[] = {0x67u, 0x6cu};
-    static const uint8_t out32[] = {0x67u, 0x6eu};
-    static const uint8_t ins_combined[] = {0x66u, 0x67u, 0x6du};
-    static const uint8_t out_combined[] = {0x66u, 0x67u, 0x6fu};
+    static const type_unsigned_8 insb = 0x6cu;
+    static const type_unsigned_8 insw = 0x6du;
+    static const type_unsigned_8 outsb = 0x6eu;
+    static const type_unsigned_8 outsw = 0x6fu;
+    static const type_unsigned_8 insd[] = {0x66u, 0x6du};
+    static const type_unsigned_8 outsd[] = {0x66u, 0x6fu};
+    static const type_unsigned_8 ins32[] = {0x67u, 0x6cu};
+    static const type_unsigned_8 out32[] = {0x67u, 0x6eu};
+    static const type_unsigned_8 ins_combined[] = {0x66u, 0x67u, 0x6du};
+    static const type_unsigned_8 out_combined[] = {0x66u, 0x67u, 0x6fu};
 
     return port_strings_single(1, &insb, 1u, 1u, 0, 0x30020u, 0x5au) &&
         port_strings_single(1, &insw, 1u, 2u, 0, 0x30020u, 0x5a5au) &&
@@ -207,8 +207,8 @@ static C_INT port_strings_test_single(C_VOID)
         out_combined, sizeof(out_combined), 4u, 1, 0x21010u, 0x5a5a5a5au);
 }
 
-static C_INT port_strings_rep(C_INT input, const uint8_t *code, uint8_t bytes,
-    uint8_t width, C_INT address32)
+static C_INT port_strings_rep(C_INT input, const type_unsigned_8 *code, type_unsigned_8 bytes,
+    type_unsigned_8 width, C_INT address32)
 {
     port_strings_machine state;
     t_cpu before;
@@ -216,10 +216,10 @@ static C_INT port_strings_rep(C_INT input, const uint8_t *code, uint8_t bytes,
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
     type_status status;
-    uint32_t values[] = {0x11u, 0x22u, 0x33u};
-    uint32_t base = input ? (address32 ? 0x31020u : 0x30020u) :
+    type_unsigned_32 values[] = {0x11u, 0x22u, 0x33u};
+    type_unsigned_32 base = input ? (address32 ? 0x31020u : 0x30020u) :
         (address32 ? 0x21010u : 0x20010u);
-    uint8_t item;
+    type_unsigned_8 item;
     C_INT failed = !port_strings_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
     if (!failed) {
@@ -246,9 +246,9 @@ static C_INT port_strings_rep(C_INT input, const uint8_t *code, uint8_t bytes,
             after.data.ecx != (address32 ? 0u : 0x11220000u) ||
             after.data.eflags != before.data.eflags || after.data.esi !=
             (input ? before.data.esi : (address32 ? 0x1010u + width * 3u :
-            (before.data.esi & 0xffff0000u) | (uint16_t)(0x10u + width * 3u))) ||
+            (before.data.esi & 0xffff0000u) | (type_unsigned_16)(0x10u + width * 3u))) ||
             after.data.edi != (input ? (address32 ? 0x1020u + width * 3u :
-            (before.data.edi & 0xffff0000u) | (uint16_t)(0x20u + width * 3u)) :
+            (before.data.edi & 0xffff0000u) | (type_unsigned_16)(0x20u + width * 3u)) :
             before.data.edi) || (input ? state.port.reads != 3u ||
             state.port.writes != 0u : state.port.reads != 0u ||
             state.port.writes != 3u || state.port.write_log[0] != values[0] ||
@@ -268,10 +268,10 @@ static C_INT port_strings_rep(C_INT input, const uint8_t *code, uint8_t bytes,
 
 static C_INT port_strings_test_rep(C_VOID)
 {
-    static const uint8_t rep_insb[] = {0xf3u, 0x6cu};
-    static const uint8_t rep_outsb[] = {0xf3u, 0x6eu};
-    static const uint8_t rep_insd[] = {0xf3u, 0x66u, 0x67u, 0x6du};
-    static const uint8_t rep_outsd[] = {0xf3u, 0x66u, 0x67u, 0x6fu};
+    static const type_unsigned_8 rep_insb[] = {0xf3u, 0x6cu};
+    static const type_unsigned_8 rep_outsb[] = {0xf3u, 0x6eu};
+    static const type_unsigned_8 rep_insd[] = {0xf3u, 0x66u, 0x67u, 0x6du};
+    static const type_unsigned_8 rep_outsd[] = {0xf3u, 0x66u, 0x67u, 0x6fu};
 
     return port_strings_rep(1, rep_insb, sizeof(rep_insb), 1u, 0) &&
         port_strings_rep(0, rep_outsb, sizeof(rep_outsb), 1u, 0) &&
@@ -279,8 +279,8 @@ static C_INT port_strings_test_rep(C_VOID)
         port_strings_rep(0, rep_outsd, sizeof(rep_outsd), 4u, 1);
 }
 
-static C_INT port_strings_rep_zero(C_INT input, const uint8_t *code,
-    uint8_t bytes, C_INT address32)
+static C_INT port_strings_rep_zero(C_INT input, const type_unsigned_8 *code,
+    type_unsigned_8 bytes, C_INT address32)
 {
     port_strings_machine state;
     t_cpu before;
@@ -288,8 +288,8 @@ static C_INT port_strings_rep_zero(C_INT input, const uint8_t *code,
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
     type_status status;
-    uint8_t source = 0x5au;
-    uint8_t destination = 0xa5u;
+    type_unsigned_8 source = 0x5au;
+    type_unsigned_8 destination = 0xa5u;
     C_INT failed = !port_strings_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
     if (!failed) {
@@ -321,10 +321,10 @@ static C_INT port_strings_rep_zero(C_INT input, const uint8_t *code,
 
 static C_INT port_strings_test_rep_counts(C_VOID)
 {
-    static const uint8_t rep_insb[] = {0xf3u, 0x6cu};
-    static const uint8_t rep_outsb[] = {0xf3u, 0x6eu};
-    static const uint8_t rep_ins32[] = {0xf3u, 0x67u, 0x6cu};
-    static const uint8_t rep_out32[] = {0xf3u, 0x67u, 0x6eu};
+    static const type_unsigned_8 rep_insb[] = {0xf3u, 0x6cu};
+    static const type_unsigned_8 rep_outsb[] = {0xf3u, 0x6eu};
+    static const type_unsigned_8 rep_ins32[] = {0xf3u, 0x67u, 0x6cu};
+    static const type_unsigned_8 rep_out32[] = {0xf3u, 0x67u, 0x6eu};
 
     return port_strings_rep_zero(1, rep_insb, sizeof(rep_insb), 0) &&
         port_strings_rep_zero(0, rep_outsb, sizeof(rep_outsb), 0) &&
@@ -334,16 +334,16 @@ static C_INT port_strings_test_rep_counts(C_VOID)
 
 static C_INT port_strings_rep_one(C_INT input)
 {
-    static const uint8_t ins[] = {0xf3u, 0x6cu};
-    static const uint8_t outs[] = {0xf3u, 0x6eu};
+    static const type_unsigned_8 ins[] = {0xf3u, 0x6cu};
+    static const type_unsigned_8 outs[] = {0xf3u, 0x6eu};
     port_strings_machine state;
     t_cpu before;
     t_cpu after;
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
     type_status status;
-    uint8_t value = 0x5au;
-    const uint8_t *code = input ? ins : outs;
+    type_unsigned_8 value = 0x5au;
+    const type_unsigned_8 *code = input ? ins : outs;
     C_INT failed = !port_strings_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
     if (!failed) {
@@ -374,17 +374,17 @@ static C_INT port_strings_rep_one(C_INT input)
 
 static C_INT port_strings_test_segments_and_df(C_VOID)
 {
-    static const uint8_t ins_cs[] = {0x2eu, 0x6cu};
-    static const uint8_t ins_fs[] = {0x64u, 0x6cu};
-    static const uint8_t out_cs[] = {0x2eu, 0x6eu};
-    static const uint8_t out_fs[] = {0x64u, 0x6eu};
-    static const uint8_t ins_df = 0x6cu;
-    static const uint8_t out_df = 0x6eu;
-    const uint8_t *ins_forms[] = {ins_cs, ins_fs};
-    const uint8_t *out_forms[] = {out_cs, out_fs};
-    const uint8_t ins_bytes[] = {sizeof(ins_cs), sizeof(ins_fs)};
-    const uint8_t out_bytes[] = {sizeof(out_cs), sizeof(out_fs)};
-    uint8_t form;
+    static const type_unsigned_8 ins_cs[] = {0x2eu, 0x6cu};
+    static const type_unsigned_8 ins_fs[] = {0x64u, 0x6cu};
+    static const type_unsigned_8 out_cs[] = {0x2eu, 0x6eu};
+    static const type_unsigned_8 out_fs[] = {0x64u, 0x6eu};
+    static const type_unsigned_8 ins_df = 0x6cu;
+    static const type_unsigned_8 out_df = 0x6eu;
+    const type_unsigned_8 *ins_forms[] = {ins_cs, ins_fs};
+    const type_unsigned_8 *out_forms[] = {out_cs, out_fs};
+    const type_unsigned_8 ins_bytes[] = {sizeof(ins_cs), sizeof(ins_fs)};
+    const type_unsigned_8 out_bytes[] = {sizeof(out_cs), sizeof(out_fs)};
+    type_unsigned_8 form;
 
     for (form = 0u; form != 2u; ++form) {
         port_strings_machine state;
@@ -393,9 +393,9 @@ static C_INT port_strings_test_segments_and_df(C_VOID)
         core_machine_cpu_diagnostic diagnostic;
         core_machine_run_result result;
         type_status status;
-        uint8_t source = 0x5au;
-        uint8_t expected = 0x5au;
-        uint32_t source_address = form == 0u ? 0x10u : 0x40010u;
+        type_unsigned_8 source = 0x5au;
+        type_unsigned_8 expected = 0x5au;
+        type_unsigned_32 source_address = form == 0u ? 0x10u : 0x40010u;
         C_INT failed = !port_strings_prepare(CORE_MACHINE_CPU_PROFILE_80386,
             &state);
 
@@ -450,7 +450,7 @@ static C_INT port_strings_test_segments_and_df(C_VOID)
         core_machine_cpu_diagnostic diagnostic;
         core_machine_run_result result;
         type_status status;
-        uint8_t value = 0x5au;
+        type_unsigned_8 value = 0x5au;
         C_INT failed = !port_strings_prepare(CORE_MACHINE_CPU_PROFILE_80386,
             &state);
 
@@ -496,18 +496,18 @@ static C_INT port_strings_test_segments_and_df(C_VOID)
 
 static C_INT port_strings_boot_protected(port_strings_machine *state)
 {
-    static const uint8_t pointer[] = {0x27u,0,0,0x03u,0,0};
-    static const uint8_t gdt[] = {
+    static const type_unsigned_8 pointer[] = {0x27u,0,0,0x03u,0,0};
+    static const type_unsigned_8 gdt[] = {
         0,0,0,0,0,0,0,0, 0xffu,0xffu,0,0x20u,0,0x9au,0,0,
         0x0fu,0,0,0x30u,0,0x92u,0,0, 0x0fu,0,0,0x40u,0,0x92u,0,0,
         0xffu,0xffu,0,0x50u,0,0x92u,0,0
     };
-    static const uint8_t boot[] = {
+    static const type_unsigned_8 boot[] = {
         0x0fu,0x01u,0x16u,0,1u, 0xb8u,1u,0,0x0fu,0x01u,0xf0u,
         0xb8u,0x10u,0,0x8eu,0xd8u, 0xb8u,0x18u,0,0x8eu,0xc0u,
         0xb8u,0x20u,0,0x8eu,0xd0u,0xbcu,0,0x80u, 0xeau,0,0,8u,0
     };
-    static const uint8_t halt = 0xf4u;
+    static const type_unsigned_8 halt = 0xf4u;
     core_machine_run_result result;
 
     return core_machine_memory_write(state->machine, 0x100u, pointer,
@@ -522,16 +522,16 @@ static C_INT port_strings_boot_protected(port_strings_machine *state)
 
 static C_INT port_strings_protected_single(C_INT input)
 {
-    static const uint8_t ins = 0x6cu;
-    static const uint8_t outs = 0x6eu;
+    static const type_unsigned_8 ins = 0x6cu;
+    static const type_unsigned_8 outs = 0x6eu;
     port_strings_machine state;
     t_cpu before;
     t_cpu after;
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
-    uint8_t source = 0x5au;
-    uint8_t destination = 0xa5u;
-    const uint8_t *code = input ? &ins : &outs;
+    type_unsigned_8 source = 0x5au;
+    type_unsigned_8 destination = 0xa5u;
+    const type_unsigned_8 *code = input ? &ins : &outs;
     C_INT failed = !port_strings_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
     if (!failed)
@@ -599,16 +599,16 @@ static C_INT port_strings_test_protected(C_VOID)
 
 static C_INT port_strings_protected_rep(C_INT input)
 {
-    static const uint8_t ins[] = {0xf3u, 0x6cu};
-    static const uint8_t outs[] = {0xf3u, 0x6eu};
+    static const type_unsigned_8 ins[] = {0xf3u, 0x6cu};
+    static const type_unsigned_8 outs[] = {0xf3u, 0x6eu};
     port_strings_machine state;
     t_cpu before;
     t_cpu after;
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
-    uint8_t source[] = {0x5au, 0x6bu};
-    uint8_t destination[] = {0xa5u, 0xb6u};
-    const uint8_t *code = input ? ins : outs;
+    type_unsigned_8 source[] = {0x5au, 0x6bu};
+    type_unsigned_8 destination[] = {0xa5u, 0xb6u};
+    const type_unsigned_8 *code = input ? ins : outs;
     C_INT failed = !port_strings_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
     if (!failed)
@@ -670,22 +670,22 @@ static C_INT port_strings_protected_rep(C_INT input)
 
 static C_INT port_strings_irq_case(C_INT input, C_INT repeat)
 {
-    static const uint8_t ins[] = {0x6cu, 0x90u};
-    static const uint8_t outs[] = {0x6eu, 0x90u};
-    static const uint8_t rep_ins[] = {0xf3u, 0x6cu, 0x90u};
-    static const uint8_t rep_outs[] = {0xf3u, 0x6eu, 0x90u};
-    static const uint8_t hlt = 0xf4u;
+    static const type_unsigned_8 ins[] = {0x6cu, 0x90u};
+    static const type_unsigned_8 outs[] = {0x6eu, 0x90u};
+    static const type_unsigned_8 rep_ins[] = {0xf3u, 0x6cu, 0x90u};
+    static const type_unsigned_8 rep_outs[] = {0xf3u, 0x6eu, 0x90u};
+    static const type_unsigned_8 hlt = 0xf4u;
     port_strings_machine state;
     core_machine_pic_irq_source irq;
     core_machine_run_result result;
     t_cpu after;
-    uint16_t offset = 0x100u;
-    uint16_t segment = 0u;
-    uint16_t frame_ip = 0u;
-    uint8_t source[] = {0x5au, 0x6bu, 0x7cu};
-    const uint8_t *code = repeat ? (input ? rep_ins : rep_outs) :
+    type_unsigned_16 offset = 0x100u;
+    type_unsigned_16 segment = 0u;
+    type_unsigned_16 frame_ip = 0u;
+    type_unsigned_8 source[] = {0x5au, 0x6bu, 0x7cu};
+    const type_unsigned_8 *code = repeat ? (input ? rep_ins : rep_outs) :
         (input ? ins : outs);
-    uint8_t bytes = repeat ? 3u : 2u;
+    type_unsigned_8 bytes = repeat ? 3u : 2u;
     C_INT failed = !port_strings_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
     if (!failed) {
@@ -716,7 +716,7 @@ static C_INT port_strings_irq_case(C_INT input, C_INT repeat)
             TYPE_STATUS_OK || result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
-            after.data.ss.base + (uint16_t)after.data.esp,
+            after.data.ss.base + (type_unsigned_16)after.data.esp,
             TYPE_REFERENCE_OF(frame_ip), sizeof(frame_ip)) != TYPE_STATUS_OK ||
             after.data.eip != 0x101u || frame_ip != (repeat ? 0u : 1u) ||
             after.data.esi != (input ? 0x10u : 0x11u) || after.data.edi !=
@@ -741,7 +741,7 @@ static C_INT port_strings_test_irq(C_VOID)
 }
 
 static C_INT port_strings_expect_ud(core_machine_cpu_profile profile,
-    const uint8_t *code, uint8_t bytes)
+    const type_unsigned_8 *code, type_unsigned_8 bytes)
 {
     port_strings_machine state;
     t_cpu before;
@@ -749,8 +749,8 @@ static C_INT port_strings_expect_ud(core_machine_cpu_profile profile,
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
     type_status status;
-    uint8_t source = 0x5au;
-    uint8_t destination = 0xa5u;
+    type_unsigned_8 source = 0x5au;
+    type_unsigned_8 destination = 0xa5u;
     C_INT failed = !port_strings_prepare(profile, &state);
 
     if (!failed) {
@@ -780,16 +780,16 @@ static C_INT port_strings_test_rejections(C_VOID)
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286
     };
-    static const uint8_t forms[][5] = {
+    static const type_unsigned_8 forms[][5] = {
         {0x6cu,0,0,0,0}, {0x6du,0,0,0,0}, {0x6eu,0,0,0,0}, {0x6fu,0,0,0,0},
         {0xf3u,0x6cu,0,0,0}, {0xf3u,0x6fu,0,0,0}, {0x66u,0x6du,0,0,0},
         {0x67u,0x6eu,0,0,0}, {0x66u,0x67u,0x6fu,0,0},
         {0xf0u,0x6cu,0,0,0}, {0xf0u,0x6du,0,0,0}, {0xf0u,0x6eu,0,0,0},
         {0xf0u,0x6fu,0,0,0}, {0xf0u,0xf3u,0x66u,0x67u,0x6du}
     };
-    static const uint8_t bytes[] = {1u,1u,1u,1u,2u,2u,2u,2u,3u,2u,2u,2u,2u,5u};
-    uint8_t profile;
-    uint8_t form;
+    static const type_unsigned_8 bytes[] = {1u,1u,1u,1u,2u,2u,2u,2u,3u,2u,2u,2u,2u,5u};
+    type_unsigned_8 profile;
+    type_unsigned_8 form;
 
     for (profile = 0u; profile != sizeof(legacy) / sizeof(legacy[0]); ++profile)
         for (form = 0u; form != 9u; ++form)

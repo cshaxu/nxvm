@@ -79,7 +79,7 @@ static C_INT imul_s56_nonparticipants_same(const t_cpu *before,
 static C_INT imul_s56_nonarithmetic_flags_same(const t_cpu *before,
     const t_cpu *after)
 {
-    const uint32_t imul_flags = VCPU_EFLAGS_CF | VCPU_EFLAGS_OF |
+    const type_unsigned_32 imul_flags = VCPU_EFLAGS_CF | VCPU_EFLAGS_OF |
         VCPU_EFLAGS_SF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_AF | VCPU_EFLAGS_PF;
 
     return (before->data.eflags & ~imul_flags) ==
@@ -87,8 +87,8 @@ static C_INT imul_s56_nonarithmetic_flags_same(const t_cpu *before,
 }
 
 static C_INT imul_s56_run(core_machine_cpu_profile profile,
-    const uint8_t *code, uint8_t bytes, uint32_t source,
-    uint32_t expected, C_INT overflow, C_INT dword)
+    const type_unsigned_8 *code, type_unsigned_8 bytes, type_unsigned_32 source,
+    type_unsigned_32 expected, C_INT overflow, C_INT dword)
 {
     core_machine *machine = STD_NULL;
     core_machine_run_result result;
@@ -143,17 +143,17 @@ static C_INT imul_s56_run(core_machine_cpu_profile profile,
 
 static C_INT imul_s56_test_defaults(C_VOID)
 {
-    static const uint8_t imul_iw[] = { 0x69u, 0xc1u, 0xfeu, 0xffu };
-    static const uint8_t imul_ib[] = { 0x6bu, 0xc1u, 0xfeu };
-    static const uint8_t alias_iw[] = { 0x69u, 0xc0u, 0xfeu, 0xffu };
-    static const uint8_t alias_ib[] = { 0x6bu, 0xc0u, 0xfeu };
-    static const uint8_t overflow[] = { 0x69u, 0xc1u, 0x00u, 0x40u };
+    static const type_unsigned_8 imul_iw[] = { 0x69u, 0xc1u, 0xfeu, 0xffu };
+    static const type_unsigned_8 imul_ib[] = { 0x6bu, 0xc1u, 0xfeu };
+    static const type_unsigned_8 alias_iw[] = { 0x69u, 0xc0u, 0xfeu, 0xffu };
+    static const type_unsigned_8 alias_ib[] = { 0x6bu, 0xc0u, 0xfeu };
+    static const type_unsigned_8 overflow[] = { 0x69u, 0xc1u, 0x00u, 0x40u };
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286,
         CORE_MACHINE_CPU_PROFILE_80386
     };
-    uint8_t profile;
+    type_unsigned_8 profile;
 
     for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]);
             ++profile) {
@@ -173,7 +173,7 @@ static C_INT imul_s56_test_defaults(C_VOID)
 }
 
 static C_INT imul_s56_expect_ud(core_machine_cpu_profile profile,
-    const uint8_t *code, uint8_t bytes)
+    const type_unsigned_8 *code, type_unsigned_8 bytes)
 {
     core_machine *machine = STD_NULL;
     core_machine_run_result result;
@@ -207,15 +207,15 @@ static C_INT imul_s56_expect_ud(core_machine_cpu_profile profile,
 
 static C_INT imul_s56_test_attributes_and_rejects(C_VOID)
 {
-    static const uint8_t dword_iw[] = {
+    static const type_unsigned_8 dword_iw[] = {
         0x66u, 0x69u, 0xc1u, 0x00u, 0x00u, 0x00u, 0x40u
     };
-    static const uint8_t dword_ib[] = { 0x66u, 0x6bu, 0xc1u, 0xfeu };
-    static const uint8_t inert[] = { 0x67u, 0x6bu, 0xc1u, 0xfeu };
-    static const uint8_t combined[] = {
+    static const type_unsigned_8 dword_ib[] = { 0x66u, 0x6bu, 0xc1u, 0xfeu };
+    static const type_unsigned_8 inert[] = { 0x67u, 0x6bu, 0xc1u, 0xfeu };
+    static const type_unsigned_8 combined[] = {
         0x66u, 0x67u, 0x69u, 0xc1u, 0xfeu, 0xffu, 0xffu, 0xffu
     };
-    static const uint8_t lock[][9] = {
+    static const type_unsigned_8 lock[][9] = {
         { 0xf0u, 0x69u, 0xc1u, 0xfeu, 0xffu },
         { 0xf0u, 0x6bu, 0xc1u, 0xfeu },
         { 0xf0u, 0x66u, 0x69u, 0xc1u, 0xfeu, 0xffu, 0xffu, 0xffu },
@@ -225,13 +225,13 @@ static C_INT imul_s56_test_attributes_and_rejects(C_VOID)
         { 0xf0u, 0x66u, 0x67u, 0x69u, 0xc1u, 0xfeu, 0xffu, 0xffu, 0xffu },
         { 0xf0u, 0x66u, 0x67u, 0x6bu, 0xc1u, 0xfeu }
     };
-    static const uint8_t lock_bytes[] = { 5u,4u,8u,5u,6u,5u,9u,6u };
+    static const type_unsigned_8 lock_bytes[] = { 5u,4u,8u,5u,6u,5u,9u,6u };
     static const core_machine_cpu_profile pre386[] = {
         CORE_MACHINE_CPU_PROFILE_8086,
         CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286
     };
-    uint8_t profile;
+    type_unsigned_8 profile;
 
     if (!imul_s56_run(CORE_MACHINE_CPU_PROFILE_80386, dword_iw,
             sizeof(dword_iw), 2u, 0x80000000u, 1, 1)) {
@@ -268,27 +268,27 @@ static C_INT imul_s56_test_attributes_and_rejects(C_VOID)
 
 static C_INT imul_s56_test_memory_forms(C_VOID)
 {
-    static const uint8_t word_iw[] = {
+    static const type_unsigned_8 word_iw[] = {
         0x69u, 0x06u, 0x00u, 0x40u, 0xfeu, 0xffu
     };
-    static const uint8_t word_ib[] = {
+    static const type_unsigned_8 word_ib[] = {
         0x6bu, 0x06u, 0x00u, 0x40u, 0xfeu
     };
-    static const uint8_t dword_iw[] = {
+    static const type_unsigned_8 dword_iw[] = {
         0x66u, 0x67u, 0x69u, 0x05u, 0x00u, 0x40u, 0x00u, 0x00u,
         0xfeu, 0xffu, 0xffu, 0xffu
     };
-    static const uint8_t dword_ib[] = {
+    static const type_unsigned_8 dword_ib[] = {
         0x66u, 0x67u, 0x6bu, 0x05u, 0x00u, 0x40u, 0x00u, 0x00u,
         0xfeu
     };
-    const uint32_t dword_source = 0xfffffffeu;
-    const uint16_t word_source = 0xfffeu;
-    const uint8_t *codes[] = { word_iw, word_ib, dword_iw, dword_ib };
-    const uint8_t sizes[] = {
+    const type_unsigned_32 dword_source = 0xfffffffeu;
+    const type_unsigned_16 word_source = 0xfffeu;
+    const type_unsigned_8 *codes[] = { word_iw, word_ib, dword_iw, dword_ib };
+    const type_unsigned_8 sizes[] = {
         sizeof(word_iw), sizeof(word_ib), sizeof(dword_iw), sizeof(dword_ib)
     };
-    uint8_t form;
+    type_unsigned_8 form;
 
     for (form = 0u; form != sizeof(codes) / sizeof(codes[0]); ++form) {
         core_machine *machine = STD_NULL;
@@ -296,7 +296,7 @@ static C_INT imul_s56_test_memory_forms(C_VOID)
         core_machine_cpu_diagnostic diagnostic;
         t_cpu before;
         t_cpu after;
-        uint32_t source_after = 0u;
+        type_unsigned_32 source_after = 0u;
         C_INT dword = form >= 2u;
         C_INT failed = !imul_s56_prepare(&machine,
             CORE_MACHINE_CPU_PROFILE_80386);
@@ -329,7 +329,7 @@ static C_INT imul_s56_test_memory_forms(C_VOID)
                 failed |= core_machine_memory_read(machine, 0x4000u,
                     &source_after, dword ? 4u : 2u) != TYPE_STATUS_OK;
                 failed |= dword ? source_after != dword_source :
-                    (uint16_t)source_after != word_source;
+                    (type_unsigned_16)source_after != word_source;
             }
         }
         core_machine_destroy(machine);
@@ -342,7 +342,7 @@ static C_INT imul_s56_test_memory_forms(C_VOID)
 
 static C_INT imul_s56_test_segments(C_VOID)
 {
-    static const uint8_t codes[][7] = {
+    static const type_unsigned_8 codes[][7] = {
         { 0x69u, 0x06u, 0x10u, 0x00u, 0xfeu, 0xffu, 0u },
         { 0x69u, 0x46u, 0x00u, 0xfeu, 0xffu, 0u, 0u },
         { 0x2eu, 0x69u, 0x06u, 0x10u, 0x00u, 0xfeu, 0xffu },
@@ -350,8 +350,8 @@ static C_INT imul_s56_test_segments(C_VOID)
         { 0x64u, 0x69u, 0x06u, 0x10u, 0x00u, 0xfeu, 0xffu },
         { 0x65u, 0x69u, 0x06u, 0x10u, 0x00u, 0xfeu, 0xffu }
     };
-    static const uint8_t bytes[] = { 6u, 5u, 7u, 7u, 7u, 7u };
-    uint8_t form;
+    static const type_unsigned_8 bytes[] = { 6u, 5u, 7u, 7u, 7u, 7u };
+    type_unsigned_8 form;
 
     for (form = 0u; form != sizeof(bytes); ++form) {
         core_machine *machine = STD_NULL;
@@ -360,10 +360,10 @@ static C_INT imul_s56_test_segments(C_VOID)
         t_cpu before;
         t_cpu after;
         t_cpu_data_sreg *segment;
-        uint16_t selector = (uint16_t)(0x1000u + form * 0x1000u);
-        uint32_t address = ((uint32_t)selector << 4u) + 0x10u;
-        uint32_t code_address = 0u;
-        const uint16_t source = 0xfffeu;
+        type_unsigned_16 selector = (type_unsigned_16)(0x1000u + form * 0x1000u);
+        type_unsigned_32 address = ((type_unsigned_32)selector << 4u) + 0x10u;
+        type_unsigned_32 code_address = 0u;
+        const type_unsigned_16 source = 0xfffeu;
         C_INT failed = !imul_s56_prepare(&machine,
             CORE_MACHINE_CPU_PROFILE_80386);
 
@@ -381,7 +381,7 @@ static C_INT imul_s56_test_segments(C_VOID)
             else if (form == 5u)
                 segment = &machine->executor_cpu.data.gs;
             segment->selector = selector;
-            segment->base = (uint32_t)selector << 4u;
+            segment->base = (type_unsigned_32)selector << 4u;
             if (form == 2u)
                 code_address = segment->base;
             if (form == 1u)
@@ -418,10 +418,10 @@ static C_INT imul_s56_test_segments(C_VOID)
 
 static C_INT imul_s56_test_67_sib_ss(C_VOID)
 {
-    static const uint8_t code[] = {
+    static const type_unsigned_8 code[] = {
         0x67u, 0x69u, 0x44u, 0x24u, 0x10u, 0xfeu, 0xffu
     };
-    const uint16_t source = 0xfffeu;
+    const type_unsigned_16 source = 0xfffeu;
     core_machine *machine = STD_NULL;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
@@ -466,20 +466,20 @@ static C_INT imul_s56_test_67_sib_ss(C_VOID)
 
 static C_INT imul_s56_test_protected_source_limits(C_VOID)
 {
-    static const uint8_t gdtr[] = { 0x1fu, 0u, 0x00u, 0x03u, 0u, 0u };
-    static const uint8_t gdt[] = {
+    static const type_unsigned_8 gdtr[] = { 0x1fu, 0u, 0x00u, 0x03u, 0u, 0u };
+    static const type_unsigned_8 gdt[] = {
         0,0,0,0,0,0,0,0, 0xff,0xff,0,0x20,0,0x9a,0,0,
         0x0f,0,0,0x30,0,0x92,0,0, 0xff,0xff,0,0x40,0,0x92,0,0
     };
-    static const uint8_t boot[] = {
+    static const type_unsigned_8 boot[] = {
         0x0f,1,0x16,0,1, 0xb8,1,0, 0x0f,1,0xf0, 0xb8,0x10,0,
         0x8e,0xd8, 0x8e,0xc0, 0xb8,0x18,0, 0x8e,0xd0, 0xbc,0,0x80,
         0xea,0,0,8,0
     };
-    static const uint8_t code[] = { 0x69u, 0x06u, 0x10u, 0u, 0xfeu, 0xffu };
-    static const uint8_t ss_code[] = { 0x69u, 0x46u, 0u, 0xfeu, 0xffu };
-    static const uint8_t hlt = 0xf4u;
-    uint8_t form;
+    static const type_unsigned_8 code[] = { 0x69u, 0x06u, 0x10u, 0u, 0xfeu, 0xffu };
+    static const type_unsigned_8 ss_code[] = { 0x69u, 0x46u, 0u, 0xfeu, 0xffu };
+    static const type_unsigned_8 hlt = 0xf4u;
+    type_unsigned_8 form;
 
     for (form = 0u; form != 2u; ++form) {
         core_machine *machine = STD_NULL;
@@ -541,7 +541,7 @@ static C_INT imul_s56_test_protected_source_limits(C_VOID)
 
 static C_INT imul_s56_test_vm86(C_VOID)
 {
-    static const uint8_t code[] = { 0x69u, 0xc1u, 0xfeu, 0xffu };
+    static const type_unsigned_8 code[] = { 0x69u, 0xc1u, 0xfeu, 0xffu };
     core_machine *machine = STD_NULL;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
@@ -606,28 +606,28 @@ static C_INT imul_s56_test_vm86(C_VOID)
 
 static C_INT imul_s56_test_irq_no_shadow(C_VOID)
 {
-    static const uint8_t register_code[] = {
+    static const type_unsigned_8 register_code[] = {
         0x69u, 0xc1u, 0xfeu, 0xffu, 0x90u
     };
-    static const uint8_t memory_code[] = {
+    static const type_unsigned_8 memory_code[] = {
         0x69u, 0x06u, 0x00u, 0x40u, 0xfeu, 0xffu, 0x90u
     };
-    static const uint8_t hlt = 0xf4u;
-    const uint16_t vector_offset = 0x0100u;
-    const uint16_t vector_segment = 0u;
-    const uint16_t source = 0xfffeu;
-    uint8_t form;
+    static const type_unsigned_8 hlt = 0xf4u;
+    const type_unsigned_16 vector_offset = 0x0100u;
+    const type_unsigned_16 vector_segment = 0u;
+    const type_unsigned_16 source = 0xfffeu;
+    type_unsigned_8 form;
 
     for (form = 0u; form != 2u; ++form) {
-        const uint8_t *code = form ? memory_code : register_code;
-        const uint8_t instruction_bytes = form ? 6u : 4u;
+        const type_unsigned_8 *code = form ? memory_code : register_code;
+        const type_unsigned_8 instruction_bytes = form ? 6u : 4u;
         core_machine *machine = STD_NULL;
         core_machine_pic_irq_source source_irq;
         core_machine_run_result result;
         t_cpu before;
         t_cpu after;
-        uint16_t frame_ip = 0u;
-        uint16_t frame_flags = 0u;
+        type_unsigned_16 frame_ip = 0u;
+        type_unsigned_16 frame_flags = 0u;
         C_INT failed = !imul_s56_prepare(&machine,
             CORE_MACHINE_CPU_PROFILE_80386);
 
@@ -673,10 +673,10 @@ static C_INT imul_s56_test_irq_no_shadow(C_VOID)
             failed |= after.data.edi != before.data.edi;
             failed |= !imul_s56_sregs_same(&before, &after);
             failed |= core_machine_memory_read_physical(&machine->executor_memory,
-                after.data.ss.base + (uint16_t)after.data.esp,
+                after.data.ss.base + (type_unsigned_16)after.data.esp,
                 (type_virtual_address)&frame_ip, sizeof(frame_ip)) != TYPE_STATUS_OK;
             failed |= core_machine_memory_read_physical(&machine->executor_memory,
-                after.data.ss.base + (uint16_t)after.data.esp + 4u,
+                after.data.ss.base + (type_unsigned_16)after.data.esp + 4u,
                 (type_virtual_address)&frame_flags, sizeof(frame_flags)) !=
                 TYPE_STATUS_OK;
             failed |= frame_ip != instruction_bytes;
@@ -704,11 +704,11 @@ static C_INT imul_s56_test_irq_no_shadow(C_VOID)
 C_INT main(C_VOID)
 {
     if (!imul_s56_expect_ud(CORE_MACHINE_CPU_PROFILE_8086,
-            (const uint8_t[]){ 0x69u, 0xc1u, 0xfeu, 0xffu }, 4u)) {
+            (const type_unsigned_8[]){ 0x69u, 0xc1u, 0xfeu, 0xffu }, 4u)) {
         return 1;
     }
     if (!imul_s56_expect_ud(CORE_MACHINE_CPU_PROFILE_8086,
-            (const uint8_t[]){ 0x6bu, 0xc1u, 0xfeu }, 3u)) {
+            (const type_unsigned_8[]){ 0x6bu, 0xc1u, 0xfeu }, 3u)) {
         return 1;
     }
     if (!imul_s56_test_defaults()) {

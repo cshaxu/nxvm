@@ -35,7 +35,7 @@ static C_INT eflags_prepare(eflags_machine *state)
     return eflags_prepare_profile(CORE_MACHINE_CPU_PROFILE_80386, state);
 }
 
-static C_INT eflags_run(eflags_machine *state, uint8_t opcode, t_cpu *after)
+static C_INT eflags_run(eflags_machine *state, type_unsigned_8 opcode, t_cpu *after)
 {
     core_machine_run_result result;
     return test_core_machine_fixture_prepare_real_mode_execution(state->machine, 0u) &&
@@ -47,12 +47,12 @@ static C_INT eflags_run(eflags_machine *state, uint8_t opcode, t_cpu *after)
 
 C_INT main(C_VOID)
 {
-    const uint32_t saved = VCPU_EFLAGS_CF | VCPU_EFLAGS_PF | VCPU_EFLAGS_AF |
+    const type_unsigned_32 saved = VCPU_EFLAGS_CF | VCPU_EFLAGS_PF | VCPU_EFLAGS_AF |
         VCPU_EFLAGS_ZF | VCPU_EFLAGS_SF | VCPU_EFLAGS_IF |
         VCPU_EFLAGS_DF | VCPU_EFLAGS_OF;
-    const uint32_t sahf_mask = VCPU_EFLAGS_CF | VCPU_EFLAGS_PF | VCPU_EFLAGS_AF |
+    const type_unsigned_32 sahf_mask = VCPU_EFLAGS_CF | VCPU_EFLAGS_PF | VCPU_EFLAGS_AF |
         VCPU_EFLAGS_ZF | VCPU_EFLAGS_SF;
-    uint8_t op;
+    type_unsigned_8 op;
     for (op = 0u; op != 2u; ++op) {
         eflags_machine state;
         t_cpu after;
@@ -84,13 +84,13 @@ C_INT main(C_VOID)
         if (failed) return 1;
     }
     {
-        static const uint8_t opcodes[] = { 0xf5u, 0xf5u, 0xf8u, 0xf9u, 0xfcu, 0xfdu };
-        uint8_t index;
+        static const type_unsigned_8 opcodes[] = { 0xf5u, 0xf5u, 0xf8u, 0xf9u, 0xfcu, 0xfdu };
+        type_unsigned_8 index;
         for (index = 0u; index != sizeof(opcodes); ++index) {
             eflags_machine state;
             t_cpu after;
-            uint32_t initial = saved;
-            uint32_t expected = saved;
+            type_unsigned_32 initial = saved;
+            type_unsigned_32 expected = saved;
             C_INT failed = !eflags_prepare(&state);
             if (opcodes[index] == 0xf5u)
                 initial = index == 0u ? saved & ~VCPU_EFLAGS_CF : saved;
@@ -112,11 +112,11 @@ C_INT main(C_VOID)
         }
     }
     {
-        static const uint8_t opcodes[] = { 0x9eu, 0x9fu, 0xf5u, 0xf8u, 0xf9u, 0xfcu, 0xfdu };
+        static const type_unsigned_8 opcodes[] = { 0x9eu, 0x9fu, 0xf5u, 0xf8u, 0xf9u, 0xfcu, 0xfdu };
         core_machine_cpu_profile profiles[] = { CORE_MACHINE_CPU_PROFILE_8086,
             CORE_MACHINE_CPU_PROFILE_80186 };
-        uint8_t profile;
-        uint8_t index;
+        type_unsigned_8 profile;
+        type_unsigned_8 index;
         for (profile = 0u; profile != 2u; ++profile) {
         for (index = 0u; index != sizeof(opcodes); ++index) {
             eflags_machine state;

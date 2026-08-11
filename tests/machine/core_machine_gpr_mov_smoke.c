@@ -44,7 +44,7 @@ static C_VOID gpr_mov_seed(gpr_mov_machine *state)
     state->machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF;
 }
 
-static C_INT gpr_mov_run(gpr_mov_machine *state, const uint8_t *code, uint8_t bytes,
+static C_INT gpr_mov_run(gpr_mov_machine *state, const type_unsigned_8 *code, type_unsigned_8 bytes,
     t_cpu *after, core_machine_cpu_diagnostic *diagnostic, type_status *status)
 {
     core_machine_run_result result;
@@ -55,7 +55,7 @@ static C_INT gpr_mov_run(gpr_mov_machine *state, const uint8_t *code, uint8_t by
     return core_machine_get_cpu_diagnostic(state->machine, diagnostic) == TYPE_STATUS_OK;
 }
 
-static uint32_t gpr_mov_gpr(const t_cpu *cpu, uint8_t index)
+static type_unsigned_32 gpr_mov_gpr(const t_cpu *cpu, type_unsigned_8 index)
 {
     switch (index) {
     case 0: return cpu->data.eax;
@@ -70,7 +70,7 @@ static uint32_t gpr_mov_gpr(const t_cpu *cpu, uint8_t index)
 }
 
 static C_INT gpr_mov_nonparticipants(const t_cpu *before, const t_cpu *after,
-    uint8_t destination)
+    type_unsigned_8 destination)
 {
     return before->data.eflags == after->data.eflags &&
         (destination == 0u || before->data.eax == after->data.eax) &&
@@ -89,12 +89,12 @@ static C_INT gpr_mov_test_defaults(C_VOID)
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
     };
-    static const uint8_t memory_codes[][4] = {
+    static const type_unsigned_8 memory_codes[][4] = {
         {0x88u,0x06u,0x00u,0x10u}, {0x89u,0x0eu,0x00u,0x10u},
         {0x8au,0x06u,0x00u,0x10u}, {0x8bu,0x0eu,0x00u,0x10u}
     };
-    uint8_t profile;
-    uint8_t form;
+    type_unsigned_8 profile;
+    type_unsigned_8 form;
 
     for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]);
          ++profile) {
@@ -105,7 +105,7 @@ static C_INT gpr_mov_test_defaults(C_VOID)
             t_cpu after;
             core_machine_cpu_diagnostic diagnostic;
             type_status status;
-            uint16_t image = 0xbe5au;
+            type_unsigned_16 image = 0xbe5au;
             C_INT failed = !gpr_mov_prepare(profiles[profile], &state);
             if (!failed) {
                 gpr_mov_seed(&state);
@@ -136,10 +136,10 @@ static C_INT gpr_mov_test_defaults(C_VOID)
             t_cpu after;
             core_machine_cpu_diagnostic diagnostic;
             type_status status;
-            uint8_t code[] = {(uint8_t)(0xb0u + form),
-                (uint8_t)(0x80u + form)};
-            uint8_t target = form & 3u;
-            uint32_t expected;
+            type_unsigned_8 code[] = {(type_unsigned_8)(0xb0u + form),
+                (type_unsigned_8)(0x80u + form)};
+            type_unsigned_8 target = form & 3u;
+            type_unsigned_32 expected;
             C_INT failed = !gpr_mov_prepare(profiles[profile], &state);
             if (!failed) {
                 gpr_mov_seed(&state);
@@ -149,7 +149,7 @@ static C_INT gpr_mov_test_defaults(C_VOID)
                 expected = form < 4u ?
                     (expected & 0xffffff00u) | (0x80u + form) :
                     (expected & 0xffff00ffu) |
-                        ((uint32_t)(0x80u + form) << 8u);
+                        ((type_unsigned_32)(0x80u + form) << 8u);
                 failed |= !gpr_mov_run(&state, code, sizeof(code), &after,
                     &diagnostic, &status) || status != TYPE_STATUS_OK ||
                     diagnostic.first_fault.valid || after.data.eip != sizeof(code) ||
@@ -165,9 +165,9 @@ static C_INT gpr_mov_test_defaults(C_VOID)
             t_cpu after;
             core_machine_cpu_diagnostic diagnostic;
             type_status status;
-            uint8_t code[] = {(uint8_t)(0xb8u + form), 0x34u,
-                (uint8_t)(0x12u + form)};
-            uint32_t expected;
+            type_unsigned_8 code[] = {(type_unsigned_8)(0xb8u + form), 0x34u,
+                (type_unsigned_8)(0x12u + form)};
+            type_unsigned_32 expected;
             C_INT failed = !gpr_mov_prepare(profiles[profile], &state);
 
             if (!failed) {
@@ -175,7 +175,7 @@ static C_INT gpr_mov_test_defaults(C_VOID)
                 before = test_core_machine_fixture_capture_cpu_after_run(
                     state.machine);
                 expected = (gpr_mov_gpr(&before, form) & 0xffff0000u) |
-                    (uint16_t)(0x1234u + (form << 8u));
+                    (type_unsigned_16)(0x1234u + (form << 8u));
                 failed |= !gpr_mov_run(&state, code, sizeof(code), &after,
                     &diagnostic, &status) || status != TYPE_STATUS_OK ||
                     diagnostic.first_fault.valid || after.data.eip != sizeof(code) ||
@@ -187,10 +187,10 @@ static C_INT gpr_mov_test_defaults(C_VOID)
         }
     }
     {
-        static const uint8_t codes[][2] = {
+        static const type_unsigned_8 codes[][2] = {
             {0x88u,0xcbu}, {0x89u,0xcbu}, {0x8au,0xcbu}, {0x8bu,0xcbu}
         };
-        uint8_t direction;
+        type_unsigned_8 direction;
 
         for (direction = 0u; direction != sizeof(codes) / sizeof(codes[0]);
              ++direction) {
@@ -199,7 +199,7 @@ static C_INT gpr_mov_test_defaults(C_VOID)
             t_cpu after;
             core_machine_cpu_diagnostic diagnostic;
             type_status status;
-            uint8_t destination = direction < 2u ? 3u : 1u;
+            type_unsigned_8 destination = direction < 2u ? 3u : 1u;
             C_INT failed = !gpr_mov_prepare(CORE_MACHINE_CPU_PROFILE_80386,
                 &state);
 
@@ -234,11 +234,11 @@ static C_INT gpr_mov_test_defaults(C_VOID)
 
 static C_INT gpr_mov_test_immediate_and_reject(C_VOID)
 {
-    static const uint8_t valid[][6] = {
+    static const type_unsigned_8 valid[][6] = {
         {0xc6u,0x06u,0,0x10u,0x5au,0},
         {0xc7u,0x06u,0,0x10u,0x34u,0x12u}
     };
-    uint8_t form;
+    type_unsigned_8 form;
 
     for (form = 0u; form != 2u; ++form) {
         gpr_mov_machine state;
@@ -246,8 +246,8 @@ static C_INT gpr_mov_test_immediate_and_reject(C_VOID)
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
         type_status status;
-        uint16_t image = 0u;
-        uint8_t bytes = form == 0u ? 5u : 6u;
+        type_unsigned_16 image = 0u;
+        type_unsigned_8 bytes = form == 0u ? 5u : 6u;
         C_INT failed = !gpr_mov_prepare(CORE_MACHINE_CPU_PROFILE_80386,
             &state);
 
@@ -267,7 +267,7 @@ static C_INT gpr_mov_test_immediate_and_reject(C_VOID)
         if (failed) return 0;
     }
     for (form = 0u; form != 2u; ++form) {
-        uint8_t extension;
+        type_unsigned_8 extension;
 
         for (extension = 1u; extension != 8u; ++extension) {
             gpr_mov_machine state;
@@ -275,9 +275,9 @@ static C_INT gpr_mov_test_immediate_and_reject(C_VOID)
             t_cpu after;
             core_machine_cpu_diagnostic diagnostic;
             type_status status;
-            uint16_t image = 0xbeefu;
-            uint8_t code[] = {(uint8_t)(form ? 0xc7u : 0xc6u),
-                (uint8_t)(0x06u | (extension << 3u)),0,0x10u,0,0};
+            type_unsigned_16 image = 0xbeefu;
+            type_unsigned_8 code[] = {(type_unsigned_8)(form ? 0xc7u : 0xc6u),
+                (type_unsigned_8)(0x06u | (extension << 3u)),0,0x10u,0,0};
             C_INT failed = !gpr_mov_prepare(CORE_MACHINE_CPU_PROFILE_80386,
                 &state);
 
@@ -306,15 +306,15 @@ static C_INT gpr_mov_test_immediate_and_reject(C_VOID)
 
 static C_INT gpr_mov_test_386_attributes(C_VOID)
 {
-    static const uint8_t codes[][12] = {
+    static const type_unsigned_8 codes[][12] = {
         {0x66u, 0x89u, 0x0eu, 0, 0x10u},
         {0x67u, 0x8bu, 0x05u, 0, 0x10u, 0, 0},
         {0x66u, 0x67u, 0x8bu, 0x05u, 0, 0x10u, 0, 0},
         {0x66u, 0xb8u, 0x44u, 0x33u, 0x22u, 0x11u},
         {0x67u, 0xb0u, 0x5au}
     };
-    static const uint8_t bytes[] = {5u, 7u, 8u, 6u, 3u};
-    uint8_t form;
+    static const type_unsigned_8 bytes[] = {5u, 7u, 8u, 6u, 3u};
+    type_unsigned_8 form;
 
     for (form = 0u; form != sizeof(bytes); ++form) {
         gpr_mov_machine state;
@@ -322,8 +322,8 @@ static C_INT gpr_mov_test_386_attributes(C_VOID)
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
         type_status status;
-        uint32_t image = 0xaabbccddU;
-        uint8_t destination = form == 0u ? 8u : 0u;
+        type_unsigned_32 image = 0xaabbccddU;
+        type_unsigned_8 destination = form == 0u ? 8u : 0u;
         C_INT failed = !gpr_mov_prepare(CORE_MACHINE_CPU_PROFILE_80386,
             &state);
 
@@ -364,14 +364,14 @@ static C_INT gpr_mov_test_prefix_lock(C_VOID)
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286
     };
-    static const uint8_t prefix_codes[][7] = {
+    static const type_unsigned_8 prefix_codes[][7] = {
         {0x66u,0x8bu,0x06u,0,0x10u},
         {0x67u,0x89u,0x06u,0,0x10u},
         {0x66u,0xc7u,0x06u,0,0x10u,0},
         {0x67u,0xb8u,0,0,0}
     };
-    static const uint8_t prefix_sizes[] = {5u,5u,6u,5u};
-    static const uint8_t lock_codes[][7] = {
+    static const type_unsigned_8 prefix_sizes[] = {5u,5u,6u,5u};
+    static const type_unsigned_8 lock_codes[][7] = {
         {0xf0u,0x88u,0x06u,0,0x10u},
         {0xf0u,0x89u,0x0eu,0,0x10u},
         {0xf0u,0x8au,0x06u,0,0x10u},
@@ -380,9 +380,9 @@ static C_INT gpr_mov_test_prefix_lock(C_VOID)
         {0xf0u,0xc7u,0x06u,0,0x10u,0x34u,0x12u},
         {0xf0u,0xb0u,0x5au}, {0xf0u,0xb8u,0x34u,0x12u}
     };
-    static const uint8_t lock_sizes[] = {5u,5u,5u,5u,6u,7u,3u,4u};
-    uint8_t profile;
-    uint8_t form;
+    static const type_unsigned_8 lock_sizes[] = {5u,5u,5u,5u,6u,7u,3u,4u};
+    type_unsigned_8 profile;
+    type_unsigned_8 form;
 
     for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]);
          ++profile) {
@@ -392,7 +392,7 @@ static C_INT gpr_mov_test_prefix_lock(C_VOID)
             t_cpu after;
             core_machine_cpu_diagnostic diagnostic;
             type_status status;
-            uint16_t image = 0xbeefu;
+            type_unsigned_16 image = 0xbeefu;
             C_INT failed = !gpr_mov_prepare(profiles[profile], &state);
 
             if (!failed) {
@@ -421,7 +421,7 @@ static C_INT gpr_mov_test_prefix_lock(C_VOID)
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
         type_status status;
-        uint16_t image = 0xbeefu;
+        type_unsigned_16 image = 0xbeefu;
         C_INT failed = !gpr_mov_prepare(CORE_MACHINE_CPU_PROFILE_80386,
             &state);
 
@@ -448,7 +448,7 @@ static C_INT gpr_mov_test_prefix_lock(C_VOID)
 
 static C_INT gpr_mov_test_segments_and_irq(C_VOID)
 {
-    static const uint8_t codes[][5] = {
+    static const type_unsigned_8 codes[][5] = {
         {0x8au, 0x06u, 0x10u, 0, 0},
         {0x8au, 0x46u, 0, 0, 0},
         {0x26u, 0x88u, 0x06u, 0x10u, 0},
@@ -456,9 +456,9 @@ static C_INT gpr_mov_test_segments_and_irq(C_VOID)
         {0x65u, 0x88u, 0x06u, 0x10u, 0},
         {0x67u, 0x8au, 0x45u, 0, 0}
     };
-    static const uint8_t bytes[] = {4u, 3u, 5u, 5u, 5u, 4u};
-    static const uint8_t values[] = {0x11u, 0x22u, 0, 0x44u, 0, 0x66u};
-    uint8_t form;
+    static const type_unsigned_8 bytes[] = {4u, 3u, 5u, 5u, 5u, 4u};
+    static const type_unsigned_8 values[] = {0x11u, 0x22u, 0, 0x44u, 0, 0x66u};
+    type_unsigned_8 form;
 
     for (form = 0u; form != sizeof(bytes); ++form) {
         gpr_mov_machine state;
@@ -466,8 +466,8 @@ static C_INT gpr_mov_test_segments_and_irq(C_VOID)
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
         type_status status;
-        uint8_t image = values[form];
-        uint32_t address = form == 0u ? 0x10u : form == 1u ? 0x110u :
+        type_unsigned_8 image = values[form];
+        type_unsigned_32 address = form == 0u ? 0x10u : form == 1u ? 0x110u :
             form == 2u ? 0x110u : form == 3u ? 0x210u :
             form == 4u ? 0x310u : 0x110u;
         C_INT failed = !gpr_mov_prepare(CORE_MACHINE_CPU_PROFILE_80386,
@@ -524,26 +524,26 @@ static C_INT gpr_mov_test_segments_and_irq(C_VOID)
 
 static C_INT gpr_mov_test_protected_limit(C_VOID)
 {
-    static const uint8_t pointer[] = {0x1fu, 0, 0, 0x03u, 0, 0};
-    static const uint8_t gdt[] = {
+    static const type_unsigned_8 pointer[] = {0x1fu, 0, 0, 0x03u, 0, 0};
+    static const type_unsigned_8 gdt[] = {
         0, 0, 0, 0, 0, 0, 0, 0,
         0xffu, 0xffu, 0, 0x20u, 0, 0x9au, 0, 0,
         0x0fu, 0, 0, 0x30u, 0, 0x92u, 0, 0,
         0xffu, 0xffu, 0, 0x40u, 0, 0x92u, 0, 0
     };
-    static const uint8_t boot[] = {
+    static const type_unsigned_8 boot[] = {
         0x0fu, 0x01u, 0x16u, 0, 1u, 0xb8u, 1u, 0,
         0x0fu, 0x01u, 0xf0u, 0xb8u, 0x10u, 0, 0x8eu, 0xd8u,
         0x8eu, 0xc0u, 0xb8u, 0x18u, 0, 0x8eu, 0xd0u, 0xbcu,
         0, 0x80u, 0xeau, 0, 0, 8u, 0
     };
-    static const uint8_t halt[] = {0xf4u};
-    static const uint8_t codes[][10] = {
+    static const type_unsigned_8 halt[] = {0xf4u};
+    static const type_unsigned_8 codes[][10] = {
         {0x8au, 0x06u, 0x10u, 0},
         {0x66u, 0xc7u, 0x06u, 0x10u, 0, 0x78u, 0x56u, 0x34u, 0x12u}
     };
-    static const uint8_t bytes[] = {4u, 9u};
-    uint8_t form;
+    static const type_unsigned_8 bytes[] = {4u, 9u};
+    type_unsigned_8 form;
 
     for (form = 0u; form != 2u; ++form) {
         gpr_mov_machine state;
@@ -551,7 +551,7 @@ static C_INT gpr_mov_test_protected_limit(C_VOID)
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
         core_machine_run_result result;
-        uint32_t image = 0x11223344u;
+        type_unsigned_32 image = 0x11223344u;
         C_INT failed = !gpr_mov_prepare(CORE_MACHINE_CPU_PROFILE_80386,
             &state);
 
@@ -603,22 +603,22 @@ static C_INT gpr_mov_test_protected_limit(C_VOID)
 
 static C_INT gpr_mov_test_irq_no_shadow(C_VOID)
 {
-    static const uint8_t codes[][5] = {
+    static const type_unsigned_8 codes[][5] = {
         {0x8au, 0x06u, 0, 0x10u, 0x90u},
         {0x88u, 0x06u, 0, 0x10u, 0x90u}
     };
-    static const uint8_t hlt = 0xf4u;
-    uint8_t form;
+    static const type_unsigned_8 hlt = 0xf4u;
+    type_unsigned_8 form;
 
     for (form = 0u; form != 2u; ++form) {
         gpr_mov_machine state;
         core_machine_pic_irq_source source;
         core_machine_run_result result;
         t_cpu after;
-        uint16_t offset = 0x100u;
-        uint16_t segment = 0u;
-        uint16_t frame = 0u;
-        uint8_t image = form ? 0u : 0x5au;
+        type_unsigned_16 offset = 0x100u;
+        type_unsigned_16 segment = 0u;
+        type_unsigned_16 frame = 0u;
+        type_unsigned_8 image = form ? 0u : 0x5au;
         C_INT failed = !gpr_mov_prepare(CORE_MACHINE_CPU_PROFILE_80386,
             &state);
 
@@ -649,7 +649,7 @@ static C_INT gpr_mov_test_irq_no_shadow(C_VOID)
             after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= core_machine_memory_read_physical(
                 &state.machine->executor_memory,
-                after.data.ss.base + (uint16_t)after.data.esp,
+                after.data.ss.base + (type_unsigned_16)after.data.esp,
                 TYPE_REFERENCE_OF(frame), 2u) != TYPE_STATUS_OK ||
                 after.data.eip != 0x101u || frame != 4u || !TYPE_GET_BIT(
                     state.machine->shared_pic_master.data.isr, VPIC_ISR_IRQ(0u)) ||

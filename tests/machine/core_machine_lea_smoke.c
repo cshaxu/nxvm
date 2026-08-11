@@ -37,8 +37,8 @@ static C_INT lea_prepare(core_machine_cpu_profile profile, lea_machine *state)
         core_machine_reset(state->machine) == TYPE_STATUS_OK;
 }
 
-static C_INT lea_run_prepared(lea_machine *state, const uint8_t *code,
-    uint8_t bytes, t_cpu *after, core_machine_cpu_diagnostic *diagnostic,
+static C_INT lea_run_prepared(lea_machine *state, const type_unsigned_8 *code,
+    type_unsigned_8 bytes, t_cpu *after, core_machine_cpu_diagnostic *diagnostic,
     type_status *status)
 {
     core_machine_run_result result;
@@ -64,10 +64,10 @@ static C_VOID lea_set_registers(lea_machine *state)
 
 static C_INT lea_test_real_forms(C_VOID)
 {
-    static const uint8_t code16[] = { 0x8du, 0x40u, 0x10u };
-    static const uint8_t code66[] = { 0x66u, 0x8du, 0x40u, 0x10u };
-    static const uint8_t code67[] = { 0x67u, 0x8du, 0x46u, 0x10u };
-    static const uint8_t code6766[] = {
+    static const type_unsigned_8 code16[] = { 0x8du, 0x40u, 0x10u };
+    static const type_unsigned_8 code66[] = { 0x66u, 0x8du, 0x40u, 0x10u };
+    static const type_unsigned_8 code67[] = { 0x67u, 0x8du, 0x46u, 0x10u };
+    static const type_unsigned_8 code6766[] = {
         0x67u, 0x66u, 0x8du, 0x46u, 0x10u
     };
     static const core_machine_cpu_profile profiles[] = {
@@ -76,13 +76,13 @@ static C_INT lea_test_real_forms(C_VOID)
         CORE_MACHINE_CPU_PROFILE_80286,
         CORE_MACHINE_CPU_PROFILE_80386
     };
-    const uint8_t *codes[] = { code16, code66, code67, code6766 };
-    const uint8_t code_bytes[] = { 3u, 4u, 4u, 5u };
-    const uint32_t expected_eax[] = {
+    const type_unsigned_8 *codes[] = { code16, code66, code67, code6766 };
+    const type_unsigned_8 code_bytes[] = { 3u, 4u, 4u, 5u };
+    const type_unsigned_32 expected_eax[] = {
         0xaabb7010u, 0x00007010u, 0xaabb5010u, 0x12345010u
     };
-    uint8_t profile;
-    uint8_t form;
+    type_unsigned_8 profile;
+    type_unsigned_8 form;
 
     for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]);
             ++profile) {
@@ -136,8 +136,8 @@ static C_INT lea_test_register_direct(C_VOID)
         CORE_MACHINE_CPU_PROFILE_80286,
         CORE_MACHINE_CPU_PROFILE_80386
     };
-    static const uint8_t code[] = { 0x8du, 0xc0u };
-    uint8_t profile;
+    static const type_unsigned_8 code[] = { 0x8du, 0xc0u };
+    type_unsigned_8 profile;
 
     for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]);
             ++profile) {
@@ -170,7 +170,7 @@ static C_INT lea_test_register_direct(C_VOID)
 
 static C_INT lea_test_lock_ud(C_VOID)
 {
-    static const uint8_t code[] = { 0xf0u, 0x8du, 0x40u, 0x10u };
+    static const type_unsigned_8 code[] = { 0xf0u, 0x8du, 0x40u, 0x10u };
     lea_machine state;
     t_cpu before;
     t_cpu after;
@@ -196,19 +196,19 @@ static C_INT lea_test_lock_ud(C_VOID)
 
 static C_INT lea_prepare_protected(lea_machine *state)
 {
-    static const uint8_t pointer[] = { 0x1fu, 0, 0, 0x03u, 0, 0 };
-    static const uint8_t gdt[] = {
+    static const type_unsigned_8 pointer[] = { 0x1fu, 0, 0, 0x03u, 0, 0 };
+    static const type_unsigned_8 gdt[] = {
         0, 0, 0, 0, 0, 0, 0, 0, 0xffu, 0xffu, 0, 0x20u, 0, 0x9au, 0, 0,
         0xffu, 0xffu, 0, 0, 0, 0x92u, 0, 0, 0xffu, 0xffu, 0, 0x40u, 0, 0x92u,
         0, 0
     };
-    static const uint8_t bootstrap[] = {
+    static const type_unsigned_8 bootstrap[] = {
         0x0fu, 0x01u, 0x16u, 0x00u, 0x01u, 0xb8u, 0x01u, 0x00u, 0x0fu, 0x01u,
         0xf0u, 0xb8u, 0x10u, 0x00u, 0x8eu, 0xd8u, 0x8eu, 0xc0u, 0xb8u, 0x18u,
         0x00u, 0x8eu, 0xd0u, 0xbcu, 0x00u, 0x80u, 0xeau, 0x00u, 0x00u, 0x08u,
         0x00u
     };
-    static const uint8_t hlt[] = { 0xf4u };
+    static const type_unsigned_8 hlt[] = { 0xf4u };
     core_machine_run_result result;
 
     return lea_prepare(CORE_MACHINE_CPU_PROFILE_80386, state) &&
@@ -227,18 +227,18 @@ static C_INT lea_prepare_protected(lea_machine *state)
 
 static C_INT lea_test_protected(C_VOID)
 {
-    static const uint8_t code16[] = { 0x8du, 0x40u, 0x10u };
-    static const uint8_t code66[] = { 0x66u, 0x8du, 0x40u, 0x10u };
-    static const uint8_t code67[] = { 0x67u, 0x8du, 0x46u, 0x10u };
-    static const uint8_t code6766[] = {
+    static const type_unsigned_8 code16[] = { 0x8du, 0x40u, 0x10u };
+    static const type_unsigned_8 code66[] = { 0x66u, 0x8du, 0x40u, 0x10u };
+    static const type_unsigned_8 code67[] = { 0x67u, 0x8du, 0x46u, 0x10u };
+    static const type_unsigned_8 code6766[] = {
         0x67u, 0x66u, 0x8du, 0x46u, 0x10u
     };
-    const uint8_t *codes[] = { code16, code66, code67, code6766 };
-    const uint8_t code_bytes[] = { 3u, 4u, 4u, 5u };
-    const uint32_t expected_eax[] = {
+    const type_unsigned_8 *codes[] = { code16, code66, code67, code6766 };
+    const type_unsigned_8 code_bytes[] = { 3u, 4u, 4u, 5u };
+    const type_unsigned_32 expected_eax[] = {
         0xaabb7010u, 0x00007010u, 0xaabb5010u, 0x12345010u
     };
-    uint8_t form;
+    type_unsigned_8 form;
 
     for (form = 0u; form != sizeof(codes) / sizeof(codes[0]); ++form) {
         lea_machine state;
@@ -272,7 +272,7 @@ static C_INT lea_test_protected(C_VOID)
 
 static C_INT lea_test_null_ds_no_read(C_VOID)
 {
-    static const uint8_t code[] = { 0x8du, 0x40u, 0x10u };
+    static const type_unsigned_8 code[] = { 0x8du, 0x40u, 0x10u };
     lea_machine state;
     core_machine_run_result result;
     t_cpu before;
@@ -304,15 +304,15 @@ static C_INT lea_test_null_ds_no_read(C_VOID)
 
 static C_INT lea_test_irq_no_shadow(C_VOID)
 {
-    static const uint8_t code[] = { 0x8du, 0x40u, 0x10u, 0x90u };
-    static const uint8_t hlt = 0xf4u;
+    static const type_unsigned_8 code[] = { 0x8du, 0x40u, 0x10u, 0x90u };
+    static const type_unsigned_8 hlt = 0xf4u;
     lea_machine state;
     core_machine_pic_irq_source source;
     core_machine_run_result result;
     t_cpu after;
-    uint16_t vector_offset = 0x0100u;
-    uint16_t vector_segment = 0u;
-    uint16_t frame_ip = 0u;
+    type_unsigned_16 vector_offset = 0x0100u;
+    type_unsigned_16 vector_segment = 0u;
+    type_unsigned_16 frame_ip = 0u;
     C_INT failed = !lea_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
     if (!failed) {
@@ -342,7 +342,7 @@ static C_INT lea_test_irq_no_shadow(C_VOID)
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
-                after.data.ss.base + (uint16_t)after.data.esp,
+                after.data.ss.base + (type_unsigned_16)after.data.esp,
                 (type_virtual_address)&frame_ip, sizeof(frame_ip)) != TYPE_STATUS_OK ||
             after.data.eip != 0x0101u || !TYPE_GET_BIT(
                 state.machine->shared_pic_master.data.isr, VPIC_ISR_IRQ(0u)) ||

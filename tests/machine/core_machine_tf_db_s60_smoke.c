@@ -50,7 +50,7 @@ static C_INT tf_db_s60_prepare(tf_db_s60_machine *state,
 }
 
 static C_INT tf_db_s60_run(tf_db_s60_machine *state,
-    const uint8_t *code, STD_SIZE_T code_bytes, uint32_t code_address,
+    const type_unsigned_8 *code, STD_SIZE_T code_bytes, type_unsigned_32 code_address,
     core_machine_run_result *out_result, t_cpu *out_cpu,
     core_machine_cpu_diagnostic *out_diagnostic)
 {
@@ -81,8 +81,8 @@ static C_INT tf_db_s60_sregs_same(const t_cpu *before, const t_cpu *after)
 
 static C_INT tf_db_s60_install_real_vector(tf_db_s60_machine *state)
 {
-    static const uint8_t handler[] = { 0xf4u };
-    static const uint8_t vector[] = { 0x00u, 0x01u, 0x00u, 0x00u };
+    static const type_unsigned_8 handler[] = { 0xf4u };
+    static const type_unsigned_8 vector[] = { 0x00u, 0x01u, 0x00u, 0x00u };
 
     return core_machine_memory_write(state->machine, 4u, vector, sizeof(vector)) ==
         TYPE_STATUS_OK && core_machine_memory_write(state->machine, 0x0100u,
@@ -91,20 +91,20 @@ static C_INT tf_db_s60_install_real_vector(tf_db_s60_machine *state)
 
 static C_INT tf_db_s60_boot_protected(tf_db_s60_machine *state)
 {
-    static const uint8_t gdt_pointer[] = { 0x17u, 0x00u, 0x00u, 0x03u, 0u, 0u };
-    static const uint8_t gdt[] = {
+    static const type_unsigned_8 gdt_pointer[] = { 0x17u, 0x00u, 0x00u, 0x03u, 0u, 0u };
+    static const type_unsigned_8 gdt[] = {
         0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
         0xffu, 0xffu, 0u, 0x20u, 0u, 0x9au, 0u, 0u,
         0xffu, 0xffu, 0u, 0u, 0u, 0x92u, 0u, 0u
     };
-    static const uint8_t bootstrap[] = {
+    static const type_unsigned_8 bootstrap[] = {
         0x0fu, 0x01u, 0x16u, 0x00u, 0x01u,
         0xb8u, 0x01u, 0x00u, 0x0fu, 0x01u, 0xf0u,
         0xb8u, 0x10u, 0x00u, 0x8eu, 0xd8u, 0x8eu, 0xc0u,
         0x8eu, 0xd0u, 0xbcu, 0x00u, 0x80u,
         0xeau, 0x00u, 0x00u, 0x08u, 0x00u
     };
-    static const uint8_t halt[] = { 0xf4u };
+    static const type_unsigned_8 halt[] = { 0xf4u };
     core_machine_run_result result;
 
     if (state == STD_NULL || state->machine == STD_NULL ||
@@ -124,8 +124,8 @@ static C_INT tf_db_s60_boot_protected(tf_db_s60_machine *state)
 
 static C_INT tf_db_s60_install_protected_vector(tf_db_s60_machine *state)
 {
-    static const uint8_t handler[] = { 0xf4u };
-    uint8_t gate[8u] = { 0u };
+    static const type_unsigned_8 handler[] = { 0xf4u };
+    type_unsigned_8 gate[8u] = { 0u };
 
     gate[0] = 0x00u;
     gate[1] = 0x01u;
@@ -142,19 +142,19 @@ static C_INT tf_db_s60_install_protected_vector(tf_db_s60_machine *state)
 }
 
 static C_INT tf_db_s60_frame_real(tf_db_s60_machine *state, const t_cpu *after,
-    uint16_t expected_ip, uint16_t expected_flags)
+    type_unsigned_16 expected_ip, type_unsigned_16 expected_flags)
 {
-    uint16_t frame[3u] = { 0u, 0u, 0u };
+    type_unsigned_16 frame[3u] = { 0u, 0u, 0u };
 
     return core_machine_memory_read_physical(&state->machine->executor_memory,
-        after->data.ss.base + (uint16_t)after->data.esp,
+        after->data.ss.base + (type_unsigned_16)after->data.esp,
         (type_virtual_address)frame, sizeof(frame)) == TYPE_STATUS_OK &&
         frame[0] == expected_ip && frame[1] == 0u && frame[2] == expected_flags;
 }
 
 static C_INT tf_db_s60_test_real(C_VOID)
 {
-    static const uint8_t code[] = { 0x90u };
+    static const type_unsigned_8 code[] = { 0x90u };
     tf_db_s60_machine state;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
@@ -178,7 +178,7 @@ static C_INT tf_db_s60_test_real(C_VOID)
             after.data.edx != before.data.edx || after.data.ebx != before.data.ebx ||
             after.data.ebp != before.data.ebp || after.data.esi != before.data.esi ||
             after.data.edi != before.data.edi || !tf_db_s60_sregs_same(&before, &after) ||
-            !tf_db_s60_frame_real(&state, &after, 1u, (uint16_t)before.data.eflags);
+            !tf_db_s60_frame_real(&state, &after, 1u, (type_unsigned_16)before.data.eflags);
     }
     if (state.machine != STD_NULL) core_machine_destroy(state.machine);
     return failed;
@@ -186,7 +186,7 @@ static C_INT tf_db_s60_test_real(C_VOID)
 
 static C_INT tf_db_s60_test_protected_attributes(C_VOID)
 {
-    static const uint8_t prefixes[][2] = {
+    static const type_unsigned_8 prefixes[][2] = {
         { 0u, 0u }, { 0x66u, 0u }, { 0x67u, 0u }, { 0x66u, 0x67u }
     };
     C_INT failed = 0;
@@ -194,13 +194,13 @@ static C_INT tf_db_s60_test_protected_attributes(C_VOID)
 
     for (i = 0u; i < sizeof(prefixes) / sizeof(prefixes[0]); ++i) {
         tf_db_s60_machine state;
-        uint8_t code[4u] = { 0u, 0u, 0x90u, 0u };
-        uint8_t length = prefixes[i][1] == 0u ? (prefixes[i][0] == 0u ? 1u : 2u) : 3u;
+        type_unsigned_8 code[4u] = { 0u, 0u, 0x90u, 0u };
+        type_unsigned_8 length = prefixes[i][1] == 0u ? (prefixes[i][0] == 0u ? 1u : 2u) : 3u;
         core_machine_run_result result;
         core_machine_cpu_diagnostic diagnostic;
         t_cpu before;
         t_cpu after;
-        uint32_t frame[3u] = { 0u, 0u, 0u };
+        type_unsigned_32 frame[3u] = { 0u, 0u, 0u };
 
         if (!tf_db_s60_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386) ||
             !tf_db_s60_boot_protected(&state) ||
@@ -220,7 +220,7 @@ static C_INT tf_db_s60_test_protected_attributes(C_VOID)
             TYPE_GET_BIT(after.data.eflags, VCPU_EFLAGS_IF) ||
             !tf_db_s60_sregs_same(&before, &after) ||
             core_machine_memory_read_physical(&state.machine->executor_memory,
-                after.data.ss.base + (uint16_t)after.data.esp,
+                after.data.ss.base + (type_unsigned_16)after.data.esp,
                 (type_virtual_address)frame, sizeof(frame)) != TYPE_STATUS_OK ||
             frame[0] != length || frame[1] != before.data.cs.selector ||
             frame[2] != before.data.eflags;
@@ -231,7 +231,7 @@ static C_INT tf_db_s60_test_protected_attributes(C_VOID)
 }
 
 static C_INT tf_db_s60_expect_ud_no_trap(core_machine_cpu_profile profile,
-    const uint8_t *code, STD_SIZE_T code_bytes)
+    const type_unsigned_8 *code, STD_SIZE_T code_bytes)
 {
     tf_db_s60_machine state;
     core_machine_run_result result;
@@ -261,13 +261,13 @@ static C_INT tf_db_s60_expect_ud_no_trap(core_machine_cpu_profile profile,
 
 static C_INT tf_db_s60_test_rejections(C_VOID)
 {
-    static const uint8_t prefix_66[] = { 0x66u, 0x90u };
-    static const uint8_t prefix_67[] = { 0x67u, 0x90u };
-    static const uint8_t prefixes[] = { 0x66u, 0x67u, 0x90u };
-    static const uint8_t lock[] = { 0xf0u, 0x90u };
-    static const uint8_t lock_66[] = { 0xf0u, 0x66u, 0x90u };
-    static const uint8_t lock_67[] = { 0xf0u, 0x67u, 0x90u };
-    static const uint8_t lock_prefixes[] = { 0xf0u, 0x66u, 0x67u, 0x90u };
+    static const type_unsigned_8 prefix_66[] = { 0x66u, 0x90u };
+    static const type_unsigned_8 prefix_67[] = { 0x67u, 0x90u };
+    static const type_unsigned_8 prefixes[] = { 0x66u, 0x67u, 0x90u };
+    static const type_unsigned_8 lock[] = { 0xf0u, 0x90u };
+    static const type_unsigned_8 lock_66[] = { 0xf0u, 0x66u, 0x90u };
+    static const type_unsigned_8 lock_67[] = { 0xf0u, 0x67u, 0x90u };
+    static const type_unsigned_8 lock_prefixes[] = { 0xf0u, 0x66u, 0x67u, 0x90u };
     const core_machine_cpu_profile legacy[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286

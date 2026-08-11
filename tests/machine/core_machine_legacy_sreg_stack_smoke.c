@@ -22,8 +22,8 @@ static const core_machine_execution_provider legacy_sreg_stack_provider = {
 
 static C_INT legacy_sreg_stack_test_lock(C_VOID)
 {
-    static const uint8_t opcodes[] = {0x06u,0x07u,0x0eu,0x16u,0x17u,0x1eu,0x1fu};
-    uint8_t index;
+    static const type_unsigned_8 opcodes[] = {0x06u,0x07u,0x0eu,0x16u,0x17u,0x1eu,0x1fu};
+    type_unsigned_8 index;
 
     for (index = 0u; index != sizeof(opcodes); ++index)
     {
@@ -38,9 +38,9 @@ static C_INT legacy_sreg_stack_test_lock(C_VOID)
         t_cpu before;
         t_cpu after;
         type_status status;
-        uint8_t code[] = {0xf0u, opcodes[index]};
-        uint32_t sentinel = 0xdeadbeefu;
-        uint32_t observed = 0u;
+        type_unsigned_8 code[] = {0xf0u, opcodes[index]};
+        type_unsigned_32 sentinel = 0xdeadbeefu;
+        type_unsigned_32 observed = 0u;
         C_INT failed;
 
         STD_MEMSET(&state, 0, sizeof(state));
@@ -124,7 +124,7 @@ static C_INT legacy_sreg_stack_sregs_same(const t_cpu *before, const t_cpu *afte
 }
 
 static const t_cpu_data_sreg *legacy_sreg_stack_target(const t_cpu *cpu,
-    uint8_t target)
+    type_unsigned_8 target)
 {
     if (target == 0u)
         return &cpu->data.es;
@@ -134,7 +134,7 @@ static const t_cpu_data_sreg *legacy_sreg_stack_target(const t_cpu *cpu,
 }
 
 static C_INT legacy_sreg_stack_non_target_sregs_same(const t_cpu *before,
-    const t_cpu *after, uint8_t target)
+    const t_cpu *after, type_unsigned_8 target)
 {
     return (target == 0u || STD_MEMCMP(&before->data.es, &after->data.es,
         sizeof(before->data.es)) == 0) &&
@@ -151,17 +151,17 @@ static C_INT legacy_sreg_stack_non_target_sregs_same(const t_cpu *before,
 }
 
 static C_INT legacy_sreg_stack_real_cache(const t_cpu_data_sreg *sreg,
-    uint16_t selector, uint8_t target)
+    type_unsigned_16 selector, type_unsigned_8 target)
 {
     return sreg->selector == selector && sreg->flagValid &&
-        sreg->base == (uint32_t)selector << 4u && sreg->limit == 0xffffu &&
+        sreg->base == (type_unsigned_32)selector << 4u && sreg->limit == 0xffffu &&
         sreg->sregtype == (target == 1u ? SREG_STACK : SREG_DATA) &&
         !sreg->seg.executable && sreg->seg.data.writable &&
         !sreg->seg.data.big && !sreg->seg.data.expdown;
 }
 
 static C_INT legacy_sreg_stack_protected_cache(const t_cpu_data_sreg *sreg,
-    uint16_t selector, uint8_t target)
+    type_unsigned_16 selector, type_unsigned_8 target)
 {
     return sreg->selector == selector && sreg->flagValid &&
         sreg->base == 0x5000u && sreg->limit == 0xffffu &&
@@ -176,13 +176,13 @@ static C_INT legacy_sreg_stack_test_defaults(C_VOID)
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
     };
-    static const uint8_t push_ops[] = {0x06u,0x0eu,0x16u,0x1eu};
-    static const uint8_t pop_ops[] = {0x07u,0x17u,0x1fu};
-    uint8_t profile;
+    static const type_unsigned_8 push_ops[] = {0x06u,0x0eu,0x16u,0x1eu};
+    static const type_unsigned_8 pop_ops[] = {0x07u,0x17u,0x1fu};
+    type_unsigned_8 profile;
 
     for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]); ++profile)
     {
-        uint8_t form;
+        type_unsigned_8 form;
 
         for (form = 0u; form != sizeof(push_ops); ++form)
         {
@@ -192,7 +192,7 @@ static C_INT legacy_sreg_stack_test_defaults(C_VOID)
             t_cpu before;
             t_cpu after;
             type_status status;
-            uint32_t image = 0u;
+            type_unsigned_32 image = 0u;
             C_INT failed = !legacy_sreg_stack_prepare(profiles[profile], &state);
 
             if (!failed)
@@ -227,7 +227,7 @@ static C_INT legacy_sreg_stack_test_defaults(C_VOID)
             t_cpu before;
             t_cpu after;
             type_status status;
-            uint16_t selector = (uint16_t)(0x5555u + form);
+            type_unsigned_16 selector = (type_unsigned_16)(0x5555u + form);
             C_INT failed = !legacy_sreg_stack_prepare(profiles[profile], &state);
 
             if (!failed)
@@ -258,17 +258,17 @@ static C_INT legacy_sreg_stack_test_defaults(C_VOID)
 
 static C_INT legacy_sreg_stack_test_attributes(C_VOID)
 {
-    static const uint8_t prefixes[][2] = {
+    static const type_unsigned_8 prefixes[][2] = {
         {0x66u, 0u}, {0x67u, 0u}, {0x66u, 0x67u}
     };
-    static const uint8_t push_ops[] = {0x06u, 0x0eu, 0x16u, 0x1eu};
-    static const uint8_t push_selectors[] = {0x11u, 0x22u, 0x33u, 0x44u};
-    static const uint8_t pop_ops[] = {0x07u, 0x17u, 0x1fu};
+    static const type_unsigned_8 push_ops[] = {0x06u, 0x0eu, 0x16u, 0x1eu};
+    static const type_unsigned_8 push_selectors[] = {0x11u, 0x22u, 0x33u, 0x44u};
+    static const type_unsigned_8 pop_ops[] = {0x07u, 0x17u, 0x1fu};
     static const core_machine_cpu_profile legacy[] = {CORE_MACHINE_CPU_PROFILE_8086,
         CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286};
-    uint8_t attribute;
-    uint8_t form;
-    uint8_t profile;
+    type_unsigned_8 attribute;
+    type_unsigned_8 form;
+    type_unsigned_8 profile;
 
     for (attribute = 0u; attribute != sizeof(prefixes) / sizeof(prefixes[0]);
         ++attribute)
@@ -281,12 +281,12 @@ static C_INT legacy_sreg_stack_test_attributes(C_VOID)
             t_cpu before;
             t_cpu after;
             type_status status;
-            uint8_t code[] = {prefixes[attribute][0], push_ops[form], 0u};
-            uint8_t bytes = attribute == 2u ? 3u : 2u;
-            uint16_t image = 0u;
-            uint16_t selector = push_selectors[form];
-            uint8_t width = attribute == 0u || attribute == 2u ? 4u : 2u;
-            uint32_t expected_esp = 0x12348000u - width;
+            type_unsigned_8 code[] = {prefixes[attribute][0], push_ops[form], 0u};
+            type_unsigned_8 bytes = attribute == 2u ? 3u : 2u;
+            type_unsigned_16 image = 0u;
+            type_unsigned_16 selector = push_selectors[form];
+            type_unsigned_8 width = attribute == 0u || attribute == 2u ? 4u : 2u;
+            type_unsigned_32 expected_esp = 0x12348000u - width;
             C_INT failed = !legacy_sreg_stack_prepare(CORE_MACHINE_CPU_PROFILE_80386,
                 &state);
 
@@ -331,10 +331,10 @@ static C_INT legacy_sreg_stack_test_attributes(C_VOID)
             t_cpu before;
             t_cpu after;
             type_status status;
-            uint8_t code[] = {prefixes[attribute][0], pop_ops[form], 0u};
-            uint8_t bytes = attribute == 2u ? 3u : 2u;
-            uint8_t width = attribute == 0u || attribute == 2u ? 4u : 2u;
-            uint16_t selector = (uint16_t)(0x1110u + attribute * 3u + form);
+            type_unsigned_8 code[] = {prefixes[attribute][0], pop_ops[form], 0u};
+            type_unsigned_8 bytes = attribute == 2u ? 3u : 2u;
+            type_unsigned_8 width = attribute == 0u || attribute == 2u ? 4u : 2u;
+            type_unsigned_16 selector = (type_unsigned_16)(0x1110u + attribute * 3u + form);
             C_INT failed = !legacy_sreg_stack_prepare(CORE_MACHINE_CPU_PROFILE_80386,
                 &state);
 
@@ -381,10 +381,10 @@ static C_INT legacy_sreg_stack_test_attributes(C_VOID)
                 t_cpu before;
                 t_cpu after;
                 type_status status;
-                uint8_t opcode = form < sizeof(push_ops) ? push_ops[form] :
+                type_unsigned_8 opcode = form < sizeof(push_ops) ? push_ops[form] :
                     pop_ops[form - sizeof(push_ops)];
-                uint8_t code[] = {prefixes[attribute][0], opcode, 0u};
-                uint8_t bytes = attribute == 2u ? 3u : 2u;
+                type_unsigned_8 code[] = {prefixes[attribute][0], opcode, 0u};
+                type_unsigned_8 bytes = attribute == 2u ? 3u : 2u;
                 C_INT failed = !legacy_sreg_stack_prepare(legacy[profile], &state);
 
                 if (!failed)
@@ -417,18 +417,18 @@ static C_INT legacy_sreg_stack_test_attributes(C_VOID)
 
 static C_INT legacy_sreg_stack_boot_protected(legacy_sreg_stack_machine *state)
 {
-    static const uint8_t pointer[] = {0x37u,0u,0u,0x03u,0u,0u};
-    static const uint8_t gdt[] = {0,0,0,0,0,0,0,0,
+    static const type_unsigned_8 pointer[] = {0x37u,0u,0u,0x03u,0u,0u};
+    static const type_unsigned_8 gdt[] = {0,0,0,0,0,0,0,0,
         0xffu,0xffu,0,0x20u,0,0x9au,0,0,
         0xffu,0xffu,0,0x30u,0,0x92u,0,0,
         0xffu,0xffu,0,0x40u,0,0x92u,0,0,
         0xffu,0xffu,0,0x50u,0,0x92u,0,0,
         0xffu,0xffu,0,0x50u,0,0x98u,0,0,
         0xffu,0xffu,0,0x50u,0,0x12u,0,0};
-    static const uint8_t boot[] = {0x0fu,1u,0x16u,0,1u,0xb8u,1u,0,
+    static const type_unsigned_8 boot[] = {0x0fu,1u,0x16u,0,1u,0xb8u,1u,0,
         0x0fu,1u,0xf0u,0xb8u,0x10u,0,0x8eu,0xd8u,0x8eu,0xc0u,
         0xb8u,0x18u,0,0x8eu,0xd0u,0xbcu,0,0x80u,0xeau,0,0,8u,0};
-    static const uint8_t halt = 0xf4u;
+    static const type_unsigned_8 halt = 0xf4u;
     core_machine_run_result result;
     return core_machine_memory_write(state->machine,0x100u,pointer,sizeof(pointer)) == TYPE_STATUS_OK &&
         core_machine_memory_write(state->machine,0x300u,gdt,sizeof(gdt)) == TYPE_STATUS_OK &&
@@ -440,8 +440,8 @@ static C_INT legacy_sreg_stack_boot_protected(legacy_sreg_stack_machine *state)
 
 static C_INT legacy_sreg_stack_test_protected_pop(C_VOID)
 {
-    static const uint8_t opcodes[] = {0x07u,0x17u,0x1fu};
-    uint8_t form;
+    static const type_unsigned_8 opcodes[] = {0x07u,0x17u,0x1fu};
+    type_unsigned_8 form;
 
     for (form = 0u; form != 3u; ++form)
     {
@@ -451,8 +451,8 @@ static C_INT legacy_sreg_stack_test_protected_pop(C_VOID)
         t_cpu before;
         t_cpu after;
         type_status status;
-        uint16_t selector = 0x20u;
-        uint8_t access = 0u;
+        type_unsigned_16 selector = 0x20u;
+        type_unsigned_8 access = 0u;
         C_INT failed = !legacy_sreg_stack_prepare(CORE_MACHINE_CPU_PROFILE_80386,
             &state);
 
@@ -489,8 +489,8 @@ static C_INT legacy_sreg_stack_test_protected_pop(C_VOID)
 
 static C_INT legacy_sreg_stack_test_protected_null(C_VOID)
 {
-    static const uint8_t opcodes[] = {0x07u, 0x1fu};
-    uint8_t form;
+    static const type_unsigned_8 opcodes[] = {0x07u, 0x1fu};
+    type_unsigned_8 form;
 
     for (form = 0u; form != sizeof(opcodes); ++form)
     {
@@ -500,7 +500,7 @@ static C_INT legacy_sreg_stack_test_protected_null(C_VOID)
         t_cpu before;
         t_cpu after;
         type_status status;
-        uint16_t selector = 0u;
+        type_unsigned_16 selector = 0u;
         C_INT failed = !legacy_sreg_stack_prepare(CORE_MACHINE_CPU_PROFILE_80386,
             &state);
 
@@ -537,11 +537,11 @@ static C_INT legacy_sreg_stack_test_protected_ss_null(C_VOID)
 {
     legacy_sreg_stack_machine state; core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic; t_cpu before,after; type_status status;
-    uint16_t selector=0u; C_INT failed=!legacy_sreg_stack_prepare(CORE_MACHINE_CPU_PROFILE_80386,&state);
+    type_unsigned_16 selector=0u; C_INT failed=!legacy_sreg_stack_prepare(CORE_MACHINE_CPU_PROFILE_80386,&state);
     if(!failed) failed|=!legacy_sreg_stack_boot_protected(&state);
     if(!failed) {
         failed|=core_machine_memory_write(state.machine,0xc000u,&selector,2u)!=TYPE_STATUS_OK ||
-            core_machine_memory_write(state.machine,0x2000u,(uint8_t[]){0x17u},1u)!=TYPE_STATUS_OK;
+            core_machine_memory_write(state.machine,0x2000u,(type_unsigned_8[]){0x17u},1u)!=TYPE_STATUS_OK;
         before=test_core_machine_fixture_capture_cpu_after_run(state.machine);
         test_core_machine_fixture_resume_after_halt_at(state.machine,0u);
         status=core_machine_run(state.machine,(core_machine_run_budget){1u,0u},&result);
@@ -558,13 +558,13 @@ static C_INT legacy_sreg_stack_test_protected_ss_null(C_VOID)
 
 static C_INT legacy_sreg_stack_test_protected_rejects(C_VOID)
 {
-    static const uint8_t opcodes[] = {0x07u,0x17u,0x1fu};
-    static const uint16_t selectors[] = {0x28u,0x23u,0x30u};
-    uint8_t target,kind;
+    static const type_unsigned_8 opcodes[] = {0x07u,0x17u,0x1fu};
+    static const type_unsigned_16 selectors[] = {0x28u,0x23u,0x30u};
+    type_unsigned_8 target,kind;
     for(target=0u;target!=3u;++target) for(kind=0u;kind!=3u;++kind) {
         legacy_sreg_stack_machine state; core_machine_run_result result;
         core_machine_cpu_diagnostic diagnostic; t_cpu before,after; type_status status;
-        uint16_t selector=selectors[kind], observed=0u;
+        type_unsigned_16 selector=selectors[kind], observed=0u;
         C_INT failed=!legacy_sreg_stack_prepare(CORE_MACHINE_CPU_PROFILE_80386,&state);
         if(!failed) failed|=!legacy_sreg_stack_boot_protected(&state);
         if(!failed) {
@@ -589,12 +589,12 @@ static C_INT legacy_sreg_stack_test_protected_rejects(C_VOID)
 
 static C_INT legacy_sreg_stack_test_protected_stack_limits(C_VOID)
 {
-    static const uint8_t opcodes[] = {0x06u,0x07u};
-    uint8_t form;
+    static const type_unsigned_8 opcodes[] = {0x06u,0x07u};
+    type_unsigned_8 form;
     for(form=0u;form!=2u;++form) {
         legacy_sreg_stack_machine state; core_machine_run_result result;
         core_machine_cpu_diagnostic diagnostic; t_cpu before,after; type_status status;
-        uint16_t image=0xbe5au; uint32_t candidate=form==0u?0xbffeu:0xc000u;
+        type_unsigned_16 image=0xbe5au; type_unsigned_32 candidate=form==0u?0xbffeu:0xc000u;
         C_INT failed=!legacy_sreg_stack_prepare(CORE_MACHINE_CPU_PROFILE_80386,&state);
         if(!failed) failed|=!legacy_sreg_stack_boot_protected(&state);
         if(!failed) {
@@ -622,13 +622,13 @@ static C_INT legacy_sreg_stack_test_protected_stack_limits(C_VOID)
 
 static C_INT legacy_sreg_stack_test_irq(C_VOID)
 {
-    static const uint8_t codes[][3]={{0x17u,0x90u},{0x07u,0x90u},{0x1fu,0x90u},{0x06u,0x90u}};
-    static const uint8_t frame[] = {2u,1u,1u,1u}; static const uint8_t halt=0xf4u;
-    uint8_t form;
+    static const type_unsigned_8 codes[][3]={{0x17u,0x90u},{0x07u,0x90u},{0x1fu,0x90u},{0x06u,0x90u}};
+    static const type_unsigned_8 frame[] = {2u,1u,1u,1u}; static const type_unsigned_8 halt=0xf4u;
+    type_unsigned_8 form;
     for(form=0u;form!=4u;++form) {
         legacy_sreg_stack_machine state; core_machine_pic_irq_source source;
         core_machine_run_result result; t_cpu before,after;
-        uint16_t off=0x100u,seg=0u,ip=0u,sel=0u,image=0u;
+        type_unsigned_16 off=0x100u,seg=0u,ip=0u,sel=0u,image=0u;
         C_INT failed=!legacy_sreg_stack_prepare(CORE_MACHINE_CPU_PROFILE_80386,&state);
         if(!failed) {
             state.machine->executor_cpu.data.esp=0x8000u;
@@ -647,7 +647,7 @@ static C_INT legacy_sreg_stack_test_irq(C_VOID)
             failed|=core_machine_run(state.machine,(core_machine_run_budget){3u,0u},&result)!=TYPE_STATUS_OK ||
                 result.reason!=CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
             after=test_core_machine_fixture_capture_cpu_after_run(state.machine);
-            failed|=core_machine_memory_read_physical(&state.machine->executor_memory,after.data.ss.base+(uint16_t)after.data.esp,TYPE_REFERENCE_OF(ip),2u)!=TYPE_STATUS_OK ||
+            failed|=core_machine_memory_read_physical(&state.machine->executor_memory,after.data.ss.base+(type_unsigned_16)after.data.esp,TYPE_REFERENCE_OF(ip),2u)!=TYPE_STATUS_OK ||
                 after.data.eip!=0x101u || ip!=frame[form] || !TYPE_GET_BIT(state.machine->shared_pic_master.data.isr,VPIC_ISR_IRQ(0u)) ||
                 TYPE_GET_BIT(state.machine->shared_pic_master.data.irr,VPIC_IRR_IRQ(0u)) ||
                 !legacy_sreg_stack_gprs_same_except_esp(&before, &after) ||

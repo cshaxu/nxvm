@@ -36,7 +36,7 @@ static C_INT xchg_prepare(core_machine_cpu_profile profile, xchg_machine *state)
         core_machine_reset(state->machine) == TYPE_STATUS_OK;
 }
 
-static C_INT xchg_run(xchg_machine *state, const uint8_t *code, uint8_t bytes,
+static C_INT xchg_run(xchg_machine *state, const type_unsigned_8 *code, type_unsigned_8 bytes,
     t_cpu *after, core_machine_cpu_diagnostic *diagnostic, type_status *status)
 {
     core_machine_run_result result;
@@ -50,24 +50,24 @@ static C_INT xchg_run(xchg_machine *state, const uint8_t *code, uint8_t bytes,
 }
 
 typedef struct xchg_vector {
-    const uint8_t *code;
-    uint8_t bytes;
-    uint8_t memory_width;
-    uint32_t memory_address;
-    uint32_t memory_before;
-    uint32_t memory_after;
-    uint32_t eax_after;
-    uint32_t ecx_after;
+    const type_unsigned_8 *code;
+    type_unsigned_8 bytes;
+    type_unsigned_8 memory_width;
+    type_unsigned_32 memory_address;
+    type_unsigned_32 memory_before;
+    type_unsigned_32 memory_after;
+    type_unsigned_32 eax_after;
+    type_unsigned_32 ecx_after;
 } xchg_vector;
 
 static C_INT xchg_test_real(C_VOID)
 {
-    static const uint8_t r8[] = { 0x86u, 0xc1u };
-    static const uint8_t m8[] = { 0x86u, 0x06u, 0x00u, 0x10u };
-    static const uint8_t r16[] = { 0x87u, 0xc1u };
-    static const uint8_t m16[] = { 0x87u, 0x06u, 0x00u, 0x10u };
-    static const uint8_t r32[] = { 0x66u, 0x87u, 0xc1u };
-    static const uint8_t m32[] = { 0x67u, 0x66u, 0x87u, 0x46u, 0x10u };
+    static const type_unsigned_8 r8[] = { 0x86u, 0xc1u };
+    static const type_unsigned_8 m8[] = { 0x86u, 0x06u, 0x00u, 0x10u };
+    static const type_unsigned_8 r16[] = { 0x87u, 0xc1u };
+    static const type_unsigned_8 m16[] = { 0x87u, 0x06u, 0x00u, 0x10u };
+    static const type_unsigned_8 r32[] = { 0x66u, 0x87u, 0xc1u };
+    static const type_unsigned_8 m32[] = { 0x67u, 0x66u, 0x87u, 0x46u, 0x10u };
     static const xchg_vector vectors[] = {
         { r8, sizeof(r8), 0u, 0u, 0u, 0u, 0xaabb3388u, 0x55667744u },
         { m8, sizeof(m8), 1u, 0x1000u, 0x22u, 0x44u, 0xaabb3322u, 0x55667788u },
@@ -76,7 +76,7 @@ static C_INT xchg_test_real(C_VOID)
         { r32, sizeof(r32), 0u, 0u, 0u, 0u, 0x55667788u, 0xaabb3344u },
         { m32, sizeof(m32), 4u, 0x1010u, 0x11223344u, 0xaabb3344u, 0x11223344u, 0x55667788u }
     };
-    uint8_t form;
+    type_unsigned_8 form;
 
     for (form = 0u; form != sizeof(vectors) / sizeof(vectors[0]); ++form)
     {
@@ -84,7 +84,7 @@ static C_INT xchg_test_real(C_VOID)
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
         type_status status;
-        uint32_t memory_after = 0u;
+        type_unsigned_32 memory_after = 0u;
         C_INT failed = !xchg_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
         if (!failed) {
@@ -121,9 +121,9 @@ static C_INT xchg_test_profiles_and_lock(C_VOID)
 {
     static const core_machine_cpu_profile profiles[] = { CORE_MACHINE_CPU_PROFILE_8086,
         CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286 };
-    static const uint8_t prefixes[][4] = { {0x66u,0x87u,0xc1u,0u},
+    static const type_unsigned_8 prefixes[][4] = { {0x66u,0x87u,0xc1u,0u},
         {0x67u,0x87u,0xc1u,0u}, {0x66u,0x67u,0x87u,0xc1u} };
-    uint8_t profile, form;
+    type_unsigned_8 profile, form;
     for (profile = 0u; profile != 3u; ++profile)
     {
         for (form = 0u; form != 3u; ++form)
@@ -158,9 +158,9 @@ static C_INT xchg_test_legacy_default16(C_VOID)
         CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286
     };
-    static const uint8_t register_code[] = { 0x87u, 0xc1u };
-    static const uint8_t memory_code[] = { 0x87u, 0x06u, 0x00u, 0x10u };
-    uint8_t profile;
+    static const type_unsigned_8 register_code[] = { 0x87u, 0xc1u };
+    static const type_unsigned_8 memory_code[] = { 0x87u, 0x06u, 0x00u, 0x10u };
+    type_unsigned_8 profile;
 
     for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]);
             ++profile) {
@@ -168,7 +168,7 @@ static C_INT xchg_test_legacy_default16(C_VOID)
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
         type_status status;
-        uint16_t memory = 0x7788u;
+        type_unsigned_16 memory = 0x7788u;
         C_INT failed = !xchg_prepare(profiles[profile], &state);
 
         if (!failed) {
@@ -208,17 +208,17 @@ static C_INT xchg_test_legacy_default16(C_VOID)
 
 static C_INT xchg_prepare_protected(xchg_machine *state)
 {
-    static const uint8_t pointer[] = { 0x1fu, 0, 0, 0x03u, 0, 0 };
-    static const uint8_t gdt[] = {
+    static const type_unsigned_8 pointer[] = { 0x1fu, 0, 0, 0x03u, 0, 0 };
+    static const type_unsigned_8 gdt[] = {
         0,0,0,0,0,0,0,0, 0xffu,0xffu,0,0x20u,0,0x9au,0,0,
         0xffu,0xffu,0,0,0,0x92u,0,0, 0xffu,0xffu,0,0x40u,0,0x92u,0,0
     };
-    static const uint8_t bootstrap[] = {
+    static const type_unsigned_8 bootstrap[] = {
         0x0fu,0x01u,0x16u,0,0x01u,0xb8u,1,0,0x0fu,0x01u,0xf0u,0xb8u,
         0x10u,0,0x8eu,0xd8u,0x8eu,0xc0u,0xb8u,0x18u,0,0x8eu,0xd0u,
         0xbcu,0,0x80u,0xeau,0,0,0x08u,0
     };
-    static const uint8_t hlt[] = { 0xf4u };
+    static const type_unsigned_8 hlt[] = { 0xf4u };
     core_machine_run_result result;
 
     return xchg_prepare(CORE_MACHINE_CPU_PROFILE_80386, state) &&
@@ -232,14 +232,14 @@ static C_INT xchg_prepare_protected(xchg_machine *state)
 
 static C_INT xchg_test_write_fault_atomicity(C_VOID)
 {
-    static const uint8_t code[] = { 0x87u,0x06u,0x00u,0x10u };
+    static const type_unsigned_8 code[] = { 0x87u,0x06u,0x00u,0x10u };
     xchg_machine state;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
     t_cpu after;
-    uint16_t memory_before = 0x7788u;
-    uint16_t memory_after = 0u;
+    type_unsigned_16 memory_before = 0x7788u;
+    type_unsigned_16 memory_after = 0u;
     C_INT failed = !xchg_prepare_protected(&state);
 
     if (!failed)
@@ -266,9 +266,9 @@ static C_INT xchg_test_write_fault_atomicity(C_VOID)
 
 static C_INT xchg_test_read_fault_atomicity(C_VOID)
 {
-    static const uint8_t codes[][5] = { {0x86u,0x06u,0x02u,0x10u,0u},
+    static const type_unsigned_8 codes[][5] = { {0x86u,0x06u,0x02u,0x10u,0u},
         {0x66u,0x87u,0x06u,0x02u,0x10u} };
-    uint8_t form;
+    type_unsigned_8 form;
     for (form = 0u; form != 2u; ++form)
     {
         xchg_machine state;
@@ -277,8 +277,8 @@ static C_INT xchg_test_read_fault_atomicity(C_VOID)
         type_status status;
         t_cpu before;
         t_cpu after;
-        uint32_t memory_before = 0x11223344u;
-        uint32_t memory_after = 0u;
+        type_unsigned_32 memory_before = 0x11223344u;
+        type_unsigned_32 memory_after = 0u;
         C_INT failed = !xchg_prepare_protected(&state);
         if (!failed)
         {
@@ -305,15 +305,15 @@ static C_INT xchg_test_read_fault_atomicity(C_VOID)
 
 static C_INT xchg_test_lock(C_VOID)
 {
-    static const uint8_t plain_code[] = {0x87u,0x06u,0x00u,0x10u};
-    static const uint8_t memory_code[] = {0xf0u,0x87u,0x06u,0x00u,0x10u};
-    static const uint8_t register_code[] = {0xf0u,0x87u,0xc1u};
+    static const type_unsigned_8 plain_code[] = {0x87u,0x06u,0x00u,0x10u};
+    static const type_unsigned_8 memory_code[] = {0xf0u,0x87u,0x06u,0x00u,0x10u};
+    static const type_unsigned_8 register_code[] = {0xf0u,0x87u,0xc1u};
     xchg_machine state;
     t_cpu before;
     t_cpu after;
     core_machine_cpu_diagnostic diagnostic;
     type_status status;
-    uint16_t memory = 0x7788u;
+    type_unsigned_16 memory = 0x7788u;
     C_INT failed = !xchg_prepare(CORE_MACHINE_CPU_PROFILE_80386,&state);
     if (!failed)
     {
@@ -339,16 +339,16 @@ static C_INT xchg_test_lock(C_VOID)
 
 static C_INT xchg_test_irq_no_shadow(C_VOID)
 {
-    static const uint8_t code[] = { 0x87u, 0x06u, 0x00u, 0x10u, 0x90u };
-    static const uint8_t hlt = 0xf4u;
+    static const type_unsigned_8 code[] = { 0x87u, 0x06u, 0x00u, 0x10u, 0x90u };
+    static const type_unsigned_8 hlt = 0xf4u;
     xchg_machine state;
     core_machine_pic_irq_source source;
     core_machine_run_result result;
     t_cpu after;
-    uint16_t offset = 0x0100u;
-    uint16_t segment = 0u;
-    uint16_t frame = 0u;
-    uint16_t memory = 0x7788u;
+    type_unsigned_16 offset = 0x0100u;
+    type_unsigned_16 segment = 0u;
+    type_unsigned_16 frame = 0u;
+    type_unsigned_16 memory = 0x7788u;
     C_INT failed = !xchg_prepare(CORE_MACHINE_CPU_PROFILE_80386,&state);
     if (!failed)
     {
@@ -368,7 +368,7 @@ static C_INT xchg_test_irq_no_shadow(C_VOID)
         failed |= core_machine_run(state.machine,(core_machine_run_budget){2u,0u},&result)!=TYPE_STATUS_OK ||
             result.reason!=CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         after=test_core_machine_fixture_capture_cpu_after_run(state.machine);
-        failed |= core_machine_memory_read_physical(&state.machine->executor_memory,after.data.ss.base+(uint16_t)after.data.esp,
+        failed |= core_machine_memory_read_physical(&state.machine->executor_memory,after.data.ss.base+(type_unsigned_16)after.data.esp,
             (type_virtual_address)&frame,2u)!=TYPE_STATUS_OK || after.data.eip!=0x101u || frame!=4u ||
             !TYPE_GET_BIT(state.machine->shared_pic_master.data.isr,VPIC_ISR_IRQ(0u));
     }
@@ -376,7 +376,7 @@ static C_INT xchg_test_irq_no_shadow(C_VOID)
     return !failed;
 }
 
-static uint32_t *xchg_acc_target(t_cpu *cpu, uint8_t opcode)
+static type_unsigned_32 *xchg_acc_target(t_cpu *cpu, type_unsigned_8 opcode)
 {
     switch (opcode)
     {
@@ -419,7 +419,7 @@ static C_INT xchg_acc_gpr_flags_equal(const t_cpu *before, const t_cpu *after)
 }
 
 static C_INT xchg_acc_nonparticipants_equal(const t_cpu *before,
-    const t_cpu *after, uint8_t opcode)
+    const t_cpu *after, type_unsigned_8 opcode)
 {
     if (opcode == 0x90u)
         return xchg_acc_gpr_flags_equal(before, after);
@@ -442,8 +442,8 @@ static C_INT xchg_test_accumulator(C_VOID)
         CORE_MACHINE_CPU_PROFILE_80286,
         CORE_MACHINE_CPU_PROFILE_80386
     };
-    uint8_t profile;
-    uint8_t opcode;
+    type_unsigned_8 profile;
+    type_unsigned_8 opcode;
 
     for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]);
             ++profile)
@@ -455,8 +455,8 @@ static C_INT xchg_test_accumulator(C_VOID)
             t_cpu after;
             core_machine_cpu_diagnostic diagnostic;
             type_status status;
-            uint8_t code[] = { opcode };
-            uint32_t *target;
+            type_unsigned_8 code[] = { opcode };
+            type_unsigned_32 *target;
             C_INT failed;
 
             STD_MEMSET(&state, 0, sizeof(state));
@@ -534,8 +534,8 @@ static C_INT xchg_test_accumulator_reject(C_VOID)
         CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286
     };
-    uint8_t profile;
-    uint8_t opcode;
+    type_unsigned_8 profile;
+    type_unsigned_8 opcode;
 
     for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]);
             ++profile)
@@ -547,7 +547,7 @@ static C_INT xchg_test_accumulator_reject(C_VOID)
             t_cpu after;
             core_machine_cpu_diagnostic diagnostic;
             type_status status;
-            uint8_t code[] = { 0x66u, opcode };
+            type_unsigned_8 code[] = { 0x66u, opcode };
             C_INT failed;
 
             STD_MEMSET(&state, 0, sizeof(state));
@@ -598,7 +598,7 @@ static C_INT xchg_test_accumulator_reject(C_VOID)
 
 static C_INT xchg_test_accumulator_lock(C_VOID)
 {
-    uint8_t opcode;
+    type_unsigned_8 opcode;
 
     for (opcode = 0x90u; opcode <= 0x97u; ++opcode)
     {
@@ -607,7 +607,7 @@ static C_INT xchg_test_accumulator_lock(C_VOID)
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
         type_status status;
-        uint8_t code[] = { 0xf0u, opcode };
+        type_unsigned_8 code[] = { 0xf0u, opcode };
         C_INT failed;
 
         STD_MEMSET(&state, 0, sizeof(state));
@@ -655,15 +655,15 @@ static C_INT xchg_test_accumulator_lock(C_VOID)
 
 static C_INT xchg_test_accumulator_irq(C_VOID)
 {
-    static const uint8_t code[] = { 0x91u, 0x90u };
-    static const uint8_t hlt = 0xf4u;
+    static const type_unsigned_8 code[] = { 0x91u, 0x90u };
+    static const type_unsigned_8 hlt = 0xf4u;
     xchg_machine state;
     core_machine_pic_irq_source source;
     core_machine_run_result result;
     t_cpu after;
-    uint16_t offset = 0x0100u;
-    uint16_t segment = 0u;
-    uint16_t frame = 0u;
+    type_unsigned_16 offset = 0x0100u;
+    type_unsigned_16 segment = 0u;
+    type_unsigned_16 frame = 0u;
     C_INT failed;
 
     STD_MEMSET(&state, 0, sizeof(state));
@@ -698,7 +698,7 @@ static C_INT xchg_test_accumulator_irq(C_VOID)
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
-            after.data.ss.base + (uint16_t)after.data.esp,
+            after.data.ss.base + (type_unsigned_16)after.data.esp,
             (type_virtual_address)&frame, 2u) != TYPE_STATUS_OK ||
             after.data.eip != 0x101u ||
             frame != 1u ||
@@ -726,7 +726,7 @@ static C_INT xchg_test_accumulator_irq(C_VOID)
 
 static C_INT xchg_test_accumulator_386_boundaries(C_VOID)
 {
-    uint8_t opcode;
+    type_unsigned_8 opcode;
 
     for (opcode = 0x90u; opcode <= 0x97u; ++opcode)
     {
@@ -735,8 +735,8 @@ static C_INT xchg_test_accumulator_386_boundaries(C_VOID)
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
         type_status status;
-        uint8_t code[] = { 0x66u, opcode };
-        uint32_t *target;
+        type_unsigned_8 code[] = { 0x66u, opcode };
+        type_unsigned_32 *target;
         C_INT failed;
 
         STD_MEMSET(&state, 0, sizeof(state));

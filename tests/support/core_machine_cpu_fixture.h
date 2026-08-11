@@ -20,7 +20,7 @@ static inline C_INT test_core_machine_fixture_reset_real_mode(core_machine *mach
 }
 
 static inline C_INT test_core_machine_fixture_set_control_zero(
-    core_machine *machine, uint32_t value)
+    core_machine *machine, type_unsigned_32 value)
 {
     if (machine == STD_NULL) return 0;
     machine->executor_cpu.data.cr0 = value;
@@ -37,7 +37,7 @@ static inline t_cpu test_core_machine_fixture_capture_cpu_after_run(
 }
 
 static inline type_status test_core_machine_fixture_register_reset_mapping(
-    core_machine *machine, uint32_t linear, uint32_t physical,
+    core_machine *machine, type_unsigned_32 linear, type_unsigned_32 physical,
     STD_SIZE_T bytes)
 {
     return machine == STD_NULL ? TYPE_STATUS_INVALID_ARGUMENT :
@@ -46,7 +46,7 @@ static inline type_status test_core_machine_fixture_register_reset_mapping(
 }
 
 static inline type_status test_core_machine_fixture_register_memory_device_provider(
-    core_machine *machine, uint32_t physical, STD_SIZE_T bytes,
+    core_machine *machine, type_unsigned_32 physical, STD_SIZE_T bytes,
     core_machine_memory_device_read read,
     core_machine_memory_device_write write,
     core_machine_memory_device_query query, C_VOID *owner)
@@ -57,7 +57,7 @@ static inline type_status test_core_machine_fixture_register_memory_device_provi
 }
 
 static inline C_VOID test_core_machine_fixture_program_pit_divider(
-    core_machine *machine, uint8_t control, uint16_t divisor,
+    core_machine *machine, type_unsigned_8 control, type_unsigned_16 divisor,
     core_machine_pit_output_provider output, C_VOID *owner)
 {
     if (machine == STD_NULL) return;
@@ -67,15 +67,15 @@ static inline C_VOID test_core_machine_fixture_program_pit_divider(
     core_machine_port_write(&machine->executor_port, 0x0040u, divisor >> 8u);
 }
 
-static inline uint8_t test_core_machine_fixture_read_port(
-    const core_machine *machine, uint16_t address)
+static inline type_unsigned_8 test_core_machine_fixture_read_port(
+    const core_machine *machine, type_unsigned_16 address)
 {
     return machine == STD_NULL ? 0u : core_machine_port_read(
         (t_port *)&machine->executor_port, address);
 }
 
 static inline C_INT test_core_machine_fixture_capture_instruction_exception(
-    const core_machine *machine, uint32_t *out_mask, uint32_t *out_code)
+    const core_machine *machine, type_unsigned_32 *out_mask, type_unsigned_32 *out_code)
 {
     if (machine == STD_NULL || out_mask == STD_NULL || out_code == STD_NULL) return 0;
     *out_mask = machine->executor_cpu_instructions.data.except;
@@ -84,7 +84,7 @@ static inline C_INT test_core_machine_fixture_capture_instruction_exception(
 }
 
 static inline C_INT test_core_machine_fixture_prepare_real_mode_execution(
-    core_machine *machine, uint32_t eip)
+    core_machine *machine, type_unsigned_32 eip)
 {
     if (!test_core_machine_fixture_reset_real_mode(machine)) return 0;
     machine->executor_cpu.data.eip = eip;
@@ -93,7 +93,7 @@ static inline C_INT test_core_machine_fixture_prepare_real_mode_execution(
 }
 
 static inline C_VOID test_core_machine_fixture_resume_after_halt_at(
-    core_machine *machine, uint32_t eip)
+    core_machine *machine, type_unsigned_32 eip)
 {
     if (machine == STD_NULL) return;
     machine->executor_cpu.data.flagHalt = TYPE_FALSE;
@@ -101,7 +101,7 @@ static inline C_VOID test_core_machine_fixture_resume_after_halt_at(
 }
 
 static inline C_INT test_core_machine_fixture_read_linear(
-    core_machine *machine, uint32_t address, type_virtual_address destination,
+    core_machine *machine, type_unsigned_32 address, type_virtual_address destination,
     STD_SIZE_T bytes)
 {
     return machine != STD_NULL && core_machine_cpu_execution_read_linear(
@@ -109,7 +109,7 @@ static inline C_INT test_core_machine_fixture_read_linear(
 }
 
 static inline type_status test_core_machine_fixture_query_configuration_memory_route(
-    const core_machine *machine, uint32_t physical, STD_SIZE_T bytes,
+    const core_machine *machine, type_unsigned_32 physical, STD_SIZE_T bytes,
     core_machine_memory_access access, core_machine_memory_route *out_route)
 {
     return machine == STD_NULL ? TYPE_STATUS_INVALID_ARGUMENT :
@@ -138,9 +138,9 @@ static inline C_INT test_core_machine_fixture_executor_storage_is_coherent(
 static inline C_INT test_core_machine_fixture_sessions_are_isolated(
     core_machine *first, core_machine *second)
 {
-    uint8_t first_value = 0x11u;
-    uint8_t second_value = 0x22u;
-    uint8_t observed = 0u;
+    type_unsigned_8 first_value = 0x11u;
+    type_unsigned_8 second_value = 0x22u;
+    type_unsigned_8 observed = 0u;
 
     if (first == STD_NULL || second == STD_NULL || first == second ||
         &first->executor_cpu == &second->executor_cpu ||

@@ -37,8 +37,8 @@ static C_INT lld_prepare(core_machine_cpu_profile profile, lld_machine *state)
         core_machine_reset(state->machine) == TYPE_STATUS_OK;
 }
 
-static C_INT lld_run_prepared(lld_machine *state, const uint8_t *code,
-    uint8_t bytes, t_cpu *after, core_machine_cpu_diagnostic *diagnostic,
+static C_INT lld_run_prepared(lld_machine *state, const type_unsigned_8 *code,
+    type_unsigned_8 bytes, t_cpu *after, core_machine_cpu_diagnostic *diagnostic,
     type_status *status)
 {
     core_machine_run_result result;
@@ -55,19 +55,19 @@ static C_INT lld_run_prepared(lld_machine *state, const uint8_t *code,
 
 static C_INT lld_test_real(C_VOID)
 {
-    static const uint8_t opcodes[] = { 0xc4u, 0xc5u };
+    static const type_unsigned_8 opcodes[] = { 0xc4u, 0xc5u };
     static const core_machine_cpu_profile legacy_profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086,
         CORE_MACHINE_CPU_PROFILE_80286,
         CORE_MACHINE_CPU_PROFILE_80386
     };
-    static const uint8_t pointer16[] = { 0x44u, 0x33u, 0x34u, 0x12u };
-    static const uint8_t pointer32[] = {
+    static const type_unsigned_8 pointer16[] = { 0x44u, 0x33u, 0x34u, 0x12u };
+    static const type_unsigned_8 pointer32[] = {
         0x44u, 0x33u, 0x22u, 0x11u, 0x34u, 0x12u
     };
-    uint8_t opcode;
-    uint8_t profile;
-    uint8_t operand32;
+    type_unsigned_8 opcode;
+    type_unsigned_8 profile;
+    type_unsigned_8 operand32;
 
     for (opcode = 0u; opcode != sizeof(opcodes); ++opcode) {
         for (profile = 0u; profile != sizeof(legacy_profiles) /
@@ -77,10 +77,10 @@ static C_INT lld_test_real(C_VOID)
                 t_cpu after;
                 core_machine_cpu_diagnostic diagnostic;
                 type_status status;
-                uint8_t code[] = { opcodes[opcode], 0x06u, 0x00u, 0x10u, 0u };
-                const uint8_t *pointer = operand32 ? pointer32 : pointer16;
-                uint8_t code_bytes = operand32 ? 5u : 4u;
-                uint8_t pointer_bytes = operand32 ? 6u : 4u;
+                type_unsigned_8 code[] = { opcodes[opcode], 0x06u, 0x00u, 0x10u, 0u };
+                const type_unsigned_8 *pointer = operand32 ? pointer32 : pointer16;
+                type_unsigned_8 code_bytes = operand32 ? 5u : 4u;
+                type_unsigned_8 pointer_bytes = operand32 ? 6u : 4u;
                 C_INT failed = !lld_prepare(legacy_profiles[profile], &state);
 
                 if (operand32 && profile != 2u)
@@ -122,8 +122,8 @@ static C_INT lld_test_real(C_VOID)
 
 static C_INT lld_test_reg_direct_ud(C_VOID)
 {
-    static const uint8_t opcodes[] = { 0xc4u, 0xc5u };
-    uint8_t opcode;
+    static const type_unsigned_8 opcodes[] = { 0xc4u, 0xc5u };
+    type_unsigned_8 opcode;
 
     for (opcode = 0u; opcode != sizeof(opcodes); ++opcode) {
         lld_machine state;
@@ -131,7 +131,7 @@ static C_INT lld_test_reg_direct_ud(C_VOID)
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
         type_status status;
-        uint8_t code[] = { opcodes[opcode], 0xc0u };
+        type_unsigned_8 code[] = { opcodes[opcode], 0xc0u };
         C_INT failed = !lld_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
         if (!failed) {
@@ -160,13 +160,13 @@ static C_INT lld_test_reg_direct_ud(C_VOID)
 
 static C_INT lld_test_80286_operand32_ud(C_VOID)
 {
-    static const uint8_t opcodes[] = { 0xc4u, 0xc5u };
+    static const type_unsigned_8 opcodes[] = { 0xc4u, 0xc5u };
     static const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086,
         CORE_MACHINE_CPU_PROFILE_80286
     };
-    uint8_t opcode;
-    uint8_t profile;
+    type_unsigned_8 opcode;
+    type_unsigned_8 profile;
 
     for (opcode = 0u; opcode != sizeof(opcodes); ++opcode) {
         for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]);
@@ -176,7 +176,7 @@ static C_INT lld_test_80286_operand32_ud(C_VOID)
             t_cpu after;
             core_machine_cpu_diagnostic diagnostic;
             type_status status;
-            uint8_t code[] = { 0x66u, opcodes[opcode], 0x06u, 0x00u, 0x10u };
+            type_unsigned_8 code[] = { 0x66u, opcodes[opcode], 0x06u, 0x00u, 0x10u };
             C_INT failed = !lld_prepare(profiles[profile], &state);
 
             if (!failed) {
@@ -207,19 +207,19 @@ static C_INT lld_test_80286_operand32_ud(C_VOID)
 
 static C_INT lld_prepare_protected(lld_machine *state)
 {
-    static const uint8_t pointer[] = { 0x1fu, 0, 0, 0x03u, 0, 0 };
-    static const uint8_t gdt[] = {
+    static const type_unsigned_8 pointer[] = { 0x1fu, 0, 0, 0x03u, 0, 0 };
+    static const type_unsigned_8 gdt[] = {
         0, 0, 0, 0, 0, 0, 0, 0, 0xffu, 0xffu, 0, 0x20u, 0, 0x9au, 0, 0,
         0xffu, 0xffu, 0, 0, 0, 0x92u, 0, 0, 0xffu, 0xffu, 0, 0x40u, 0, 0x92u,
         0, 0
     };
-    static const uint8_t bootstrap[] = {
+    static const type_unsigned_8 bootstrap[] = {
         0x0fu, 0x01u, 0x16u, 0x00u, 0x01u, 0xb8u, 0x01u, 0x00u, 0x0fu, 0x01u,
         0xf0u, 0xb8u, 0x10u, 0x00u, 0x8eu, 0xd8u, 0x8eu, 0xc0u, 0xb8u, 0x18u,
         0x00u, 0x8eu, 0xd0u, 0xbcu, 0x00u, 0x80u, 0xeau, 0x00u, 0x00u, 0x08u,
         0x00u
     };
-    static const uint8_t hlt[] = { 0xf4u };
+    static const type_unsigned_8 hlt[] = { 0xf4u };
     core_machine_run_result result;
 
     return lld_prepare(CORE_MACHINE_CPU_PROFILE_80386, state) &&
@@ -238,23 +238,23 @@ static C_INT lld_prepare_protected(lld_machine *state)
 
 static C_INT lld_test_protected(C_VOID)
 {
-    static const uint8_t opcodes[] = { 0xc4u, 0xc5u };
-    static const uint8_t pointer16[] = { 0x44u, 0x33u, 0x10u, 0x00u };
-    static const uint8_t pointer32[] = {
+    static const type_unsigned_8 opcodes[] = { 0xc4u, 0xc5u };
+    static const type_unsigned_8 pointer16[] = { 0x44u, 0x33u, 0x10u, 0x00u };
+    static const type_unsigned_8 pointer32[] = {
         0x44u, 0x33u, 0x22u, 0x11u, 0x10u, 0x00u
     };
-    uint8_t opcode;
-    uint8_t operand32;
+    type_unsigned_8 opcode;
+    type_unsigned_8 operand32;
 
     for (opcode = 0u; opcode != sizeof(opcodes); ++opcode) {
         for (operand32 = 0u; operand32 != 2u; ++operand32) {
             lld_machine state;
             core_machine_run_result result;
             t_cpu after;
-            uint8_t code[] = { opcodes[opcode], 0x06u, 0x00u, 0x10u, 0u };
-            const uint8_t *pointer = operand32 ? pointer32 : pointer16;
-            uint8_t code_bytes = operand32 ? 5u : 4u;
-            uint8_t pointer_bytes = operand32 ? 6u : 4u;
+            type_unsigned_8 code[] = { opcodes[opcode], 0x06u, 0x00u, 0x10u, 0u };
+            const type_unsigned_8 *pointer = operand32 ? pointer32 : pointer16;
+            type_unsigned_8 code_bytes = operand32 ? 5u : 4u;
+            type_unsigned_8 pointer_bytes = operand32 ? 6u : 4u;
             C_INT failed = !lld_prepare_protected(&state);
 
             if (operand32) {
@@ -297,8 +297,8 @@ static C_INT lld_test_protected(C_VOID)
 
 static C_INT lld_test_source_fault_atomicity(C_VOID)
 {
-    static const uint8_t opcodes[] = { 0xc4u, 0xc5u };
-    uint8_t opcode;
+    static const type_unsigned_8 opcodes[] = { 0xc4u, 0xc5u };
+    type_unsigned_8 opcode;
 
     for (opcode = 0u; opcode != sizeof(opcodes); ++opcode) {
         lld_machine state;
@@ -306,7 +306,7 @@ static C_INT lld_test_source_fault_atomicity(C_VOID)
         core_machine_cpu_diagnostic diagnostic;
         t_cpu before;
         t_cpu after;
-        uint8_t code[] = { opcodes[opcode], 0x06u, 0x00u, 0x10u };
+        type_unsigned_8 code[] = { opcodes[opcode], 0x06u, 0x00u, 0x10u };
         C_INT failed = !lld_prepare_protected(&state);
 
         if (!failed) {
@@ -344,20 +344,20 @@ static C_INT lld_test_source_fault_atomicity(C_VOID)
 
 static C_INT lld_test_irq_no_shadow(C_VOID)
 {
-    static const uint8_t opcodes[] = { 0xc4u, 0xc5u };
-    static const uint8_t pointer[] = { 0x44u, 0x33u, 0x00u, 0x00u };
-    static const uint8_t hlt = 0xf4u;
-    uint8_t opcode;
+    static const type_unsigned_8 opcodes[] = { 0xc4u, 0xc5u };
+    static const type_unsigned_8 pointer[] = { 0x44u, 0x33u, 0x00u, 0x00u };
+    static const type_unsigned_8 hlt = 0xf4u;
+    type_unsigned_8 opcode;
 
     for (opcode = 0u; opcode != sizeof(opcodes); ++opcode) {
         lld_machine state;
         core_machine_pic_irq_source source;
         core_machine_run_result result;
         t_cpu after;
-        uint16_t vector_offset = 0x0100u;
-        uint16_t vector_segment = 0u;
-        uint16_t frame_ip = 0u;
-        uint8_t code[] = { opcodes[opcode], 0x06u, 0x00u, 0x10u, 0x90u };
+        type_unsigned_16 vector_offset = 0x0100u;
+        type_unsigned_16 vector_segment = 0u;
+        type_unsigned_16 frame_ip = 0u;
+        type_unsigned_8 code[] = { opcodes[opcode], 0x06u, 0x00u, 0x10u, 0x90u };
         C_INT failed = !lld_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
 
         if (!failed) {
@@ -389,7 +389,7 @@ static C_INT lld_test_irq_no_shadow(C_VOID)
                 result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
             after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
-                    after.data.ss.base + (uint16_t)after.data.esp,
+                    after.data.ss.base + (type_unsigned_16)after.data.esp,
                     (type_virtual_address)&frame_ip, sizeof(frame_ip)) !=
                         TYPE_STATUS_OK || after.data.eip != 0x0101u ||
                 !TYPE_GET_BIT(state.machine->shared_pic_master.data.isr,
