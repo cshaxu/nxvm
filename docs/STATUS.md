@@ -89,4 +89,3 @@ separately admitted packet.
   requirement. Every successful task or subtask commit must be pushed before
   acceptance, closure, or completed-result reporting; a push failure is a
   reportable delivery failure unless the owner records a bounded deferral.
-
