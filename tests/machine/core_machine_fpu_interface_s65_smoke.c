@@ -338,7 +338,13 @@ static C_INT fpu_interface_s65_vm86(C_VOID)
             after.data.ecx != before.data.ecx || after.data.edx != before.data.edx ||
             after.data.ebx != before.data.ebx || after.data.esp != before.data.esp ||
             after.data.ebp != before.data.ebp || after.data.esi != before.data.esi ||
-            after.data.edi != before.data.edi || after.data.eflags != before.data.eflags;
+            after.data.edi != before.data.edi || after.data.eflags != before.data.eflags ||
+            STD_MEMCMP(&after.data.es, &before.data.es, sizeof(after.data.es)) != 0 ||
+            STD_MEMCMP(&after.data.cs, &before.data.cs, sizeof(after.data.cs)) != 0 ||
+            STD_MEMCMP(&after.data.ss, &before.data.ss, sizeof(after.data.ss)) != 0 ||
+            STD_MEMCMP(&after.data.ds, &before.data.ds, sizeof(after.data.ds)) != 0 ||
+            STD_MEMCMP(&after.data.fs, &before.data.fs, sizeof(after.data.fs)) != 0 ||
+            STD_MEMCMP(&after.data.gs, &before.data.gs, sizeof(after.data.gs)) != 0;
     }
     core_machine_destroy(state.machine);
     return !failed;
@@ -363,7 +369,9 @@ static C_INT fpu_interface_s65_protected_nm(C_VOID)
     fpu_interface_s65_machine state;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
+    t_cpu before;
     t_cpu after;
+    uint16_t frame_ip = 0u;
     C_INT failed = !fpu_interface_s65_prepare(CORE_MACHINE_CPU_PROFILE_80386,
         CORE_MACHINE_FPU_PROFILE_NONE, &state);
 
@@ -391,15 +399,27 @@ static C_INT fpu_interface_s65_protected_nm(C_VOID)
     if (!failed) {
         test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
         state.machine->executor_cpu.data.cr0 |= VCPU_CR0_EM;
+        before = state.machine->executor_cpu;
         failed |= core_machine_memory_write(state.machine, FPU_S65_CODE_BASE, esc,
             sizeof(esc)) != TYPE_STATUS_OK || core_machine_run(state.machine,
             (core_machine_run_budget){64u,0u}, &result) != TYPE_STATUS_OK ||
             result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
             core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != TYPE_STATUS_OK;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
+            after.data.ss.base + (uint16_t)after.data.esp, TYPE_REFERENCE_OF(frame_ip),
+            sizeof(frame_ip)) != TYPE_STATUS_OK;
         failed |= !diagnostic.last_delivered_exception.valid || !TYPE_GET_BIT(
             diagnostic.last_delivered_exception.exception_mask,
-            VCPUINS_EXCEPT_NM) || after.data.eip != 0x101u;
+            VCPUINS_EXCEPT_NM) || after.data.eip != 0x101u || frame_ip != 0u ||
+            after.data.eax != before.data.eax || after.data.ecx != before.data.ecx ||
+            after.data.edx != before.data.edx || after.data.ebx != before.data.ebx ||
+            after.data.ebp != before.data.ebp || after.data.esi != before.data.esi ||
+            after.data.edi != before.data.edi ||
+            STD_MEMCMP(&after.data.ds, &before.data.ds, sizeof(after.data.ds)) != 0 ||
+            STD_MEMCMP(&after.data.es, &before.data.es, sizeof(after.data.es)) != 0 ||
+            STD_MEMCMP(&after.data.fs, &before.data.fs, sizeof(after.data.fs)) != 0 ||
+            STD_MEMCMP(&after.data.gs, &before.data.gs, sizeof(after.data.gs)) != 0;
     }
     core_machine_destroy(state.machine);
     return !failed;
@@ -491,6 +511,11 @@ C_INT main(C_VOID)
         if (!fpu_interface_s65_nm_delivery(escapes[index],
             sizeof(escapes[index]), VCPU_CR0_EM)) {
             STD_FPRINTF(STD_STDERR, "S65 stage=escape-nm index=%u\n", index);
+            failed = 1;
+        }
+        if (!fpu_interface_s65_nm_delivery(escapes[index],
+            sizeof(escapes[index]), VCPU_CR0_TS)) {
+            STD_FPRINTF(STD_STDERR, "S65 stage=escape-ts index=%u\n", index);
             failed = 1;
         }
     }
