@@ -61,6 +61,7 @@ not an allocation of later task identifiers.
 | 80386 `0F A0/A1/A8/A9` FS/GS push/pop and `0F B2/B4/B5` LSS/LFS/LGS | `INS_0F` table and segment-load routes, with profile checks; `_e_load_far` loads the selector before publishing the destination offset and sets the maskable-IRQ shadow only for SS. | `core_machine_fs_gs_stack_smoke` (`M5:T316:S23:FS-GS-STACK:OK`) and `core_machine_lss_lfs_lgs_smoke` (`M5:T316:S24:LSS-LFS-LGS:OK`). | **Complete only for T316 S23's FS/GS stack forms and S24's LSS/LFS/LGS matrix**: default/`66h` operand size, memory-only form, 80386 gate, selected real/protected publication, bounded source-fault non-publication, and the SS-only IRQ shadow. FS/GS prefix consumers, `LES`/`LDS`, MOV/POP other segment-register families, and broader privilege semantics remain **Partial**. |
 | ARPL `63 /r` selector RPL adjustment | `ARPL_RM16_R16` with `_d_modrm`, `_m_read_rm`, and `_m_write_rm`; the handler requires protected mode and profile 80286 or later. | `core_machine_arpl_s53_smoke` (`M5:T316:S53:ARPL:OK`) executes the bounded S53 vectors. | **Complete only for T316 S53**: r/m16,r16 RPL comparison/update and ZF semantics, register and memory destinations, declared segment/address attributes, profile/LOCK rejection, protected operand-access boundary, and PIC delivery. Descriptor validation/loading, MOV/POP Sreg, LAR/LSL/VERR/VERW, and general segment privilege architecture remain outside this slice. |
 | BOUND `62 /r` signed range check | `BOUND_R16_M16_16` decodes memory-only ModRM through `_d_modrm` and reads the signed lower/upper pair through `_m_read_rm`; `_SetExcept_BR` now reaches the narrow `#BR` vector-5 delivery route in `ExecFinal`. | `core_machine_bound_s54_smoke` (`M5:T316:S54:BOUND:OK`) executes the bounded S54 vectors. | **Complete only for T316 S54**: BOUND r16,m16&16 and r32,m32&32 with the declared profile, attribute, signed-boundary, segment/EA, IVT/IDT `#BR`, operand-limit, VM86, and pending-PIC boundaries. General exception delivery, descriptor validation, and broader arithmetic/control-transfer behavior remain outside this slice. |
+| Immediate three-operand IMUL `69 /r iw/id`, `6B /r ib` | `IMUL_R32_RM32_I32`, `IMUL_R32_RM32_I8`, `_a_imul3`, `_d_modrm`, and r/m access routes. | `core_machine_imul_immediate_s56_smoke` (`M5:T316:S56:IMUL-IMM:OK`). | **Complete only for T316 S56**: 80186--80386 immediate three-operand IMUL, declared 16/32 operand/address attributes, signed product CF/OF boundary, r/m segment/source-limit, VM86, rejection, and PIC boundaries. One-operand IMUL, `0F AF`, MUL/DIV, and general FLAGS behavior remain outside this slice. |
 | Post-80386 or reserved encodings seen in the tables: `CPUID`, `RSM`, `WBINVD`, `RDMSR/WRMSR`, `CMPXCHG`, `XADD`, `BSWAP`, undefined holes | Metadata/profile gate rejects forms above the active 80386 profile before the named table handler can establish behavior. | `cpu_profile_gate_smoke` and T309 rejection baseline. | **Outside-80386**: retain rejection; no later-IA-32 implementation is admitted by T316. |
 | `WAIT/FWAIT`, ESC `D8`--`DF`, CR0 `MP/EM/TS`, `#NM`, external coprocessor fault interface | `WAIT`, FPU escape/profile routes and CPU exception state; optional FPU provider is outside ordinary decoding. | `cpu_fpu_profile_smoke`, `cpu_fpu_profile_closure_smoke`, `fpu_escape_smoke`, `core_machine_fpu_8087_smoke`. | **External-coprocessor boundary**: only 80386-side control/reporting is in the approved program; no 8087/80287/80387 arithmetic, state, or completeness claim is made. |
 
@@ -1176,3 +1177,25 @@ INS/OUTS, port-device semantics, and other I/O architecture remain outside
 this slice.
 
 `M5:T316:S55:PORT-IO:OK`
+
+### T316 S56 - immediate three-operand IMUL forms
+
+`core_machine_imul_immediate_s56_smoke` closes only `69 /r iw/id` and `6B /r ib`.
+It executes the 8086 rejection and 80186/80286/80386 default word forms, signed
+positive, negative, boundary, destination/source-alias, and overflow products,
+including `6B` sign extension and defined CF/OF publication without asserting
+undefined arithmetic flags.
+
+The 80386 vectors cover `66h` dword products, `67h` effective addresses,
+combined attributes, DS/SS defaults and CS/ES/FS/GS overrides, and an SS-default
+SIB source. Pre-386 attributes and the 80386 `LOCK` default/`66h`/`67h`/
+combined grids for both opcodes reject without CPU or source publication.
+Controlled DS and SS source limits use the established no-IDT
+`#DF` boundary; ordinary VM86 executes successfully. Pending IRQ0 after both
+register and memory IMUL is delivered after IMUL and before NOP, preserving the
+product, defined FLAGS in the saved frame, and PIC ISR/IRR contract. `_a_imul3` now widens 32-bit signed operands
+before multiplication; its only production callers are the two declared forms.
+No decoder, memory, or shared FLAGS helper changed. Other IMUL, multiply/divide,
+and general arithmetic families remain outside this slice.
+
+`M5:T316:S56:IMUL-IMM:OK`

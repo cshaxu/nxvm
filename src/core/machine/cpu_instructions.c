@@ -5794,7 +5794,8 @@ static C_VOID _a_imul3(core_machine_cpu_execution_context *context, type_unsigne
         instruction_state.data.bit = 32;
         instruction_state.data.opr1 = (type_signed_32)csrc1;
         instruction_state.data.opr2 = (type_signed_32)csrc2;
-        cdest = TYPE_MASK_UNSIGNED_64((type_signed_32)instruction_state.data.opr1 * (type_signed_32)instruction_state.data.opr2);
+        cdest = TYPE_MASK_UNSIGNED_64((type_signed_64)(type_signed_32)instruction_state.data.opr1 *
+            (type_signed_64)(type_signed_32)instruction_state.data.opr2);
         instruction_state.data.result = TYPE_MASK_UNSIGNED_32(cdest);
         if (TYPE_MASK_UNSIGNED_64(cdest) != TYPE_MASK_UNSIGNED_64((type_signed_32)instruction_state.data.result))
         {
@@ -9600,7 +9601,7 @@ static C_VOID PUSH_I32(core_machine_cpu_execution_context *context)
 static C_VOID IMUL_R32_RM32_I32(core_machine_cpu_execution_context *context)
 {
     TYPE_TRACE_CALL_BEGIN("IMUL_R32_RM32_I32");
-    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80186)
     {
         _adv;
         TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
@@ -9632,7 +9633,7 @@ static C_VOID PUSH_I8(core_machine_cpu_execution_context *context)
 static C_VOID IMUL_R32_RM32_I8(core_machine_cpu_execution_context *context)
 {
     TYPE_TRACE_CALL_BEGIN("IMUL_R32_RM32_I8");
-    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80186)
     {
         _adv;
         TYPE_TRACE_CHECK_RETURN(_d_modrm(context, _GetOperandSize, _GetOperandSize));
