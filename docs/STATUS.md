@@ -2,8 +2,28 @@
 
 ## Current Work
 
-**Idle.** No S is active. M5 T316 remains the latest open numeric task, so its
-compact completed-subtask progress remains below until that T closes.
+**Active: M5 T316 S66.** Reconcile and close the T316 80386 ordinary-execution
+matrix in Coordinated Dual-Session Mode; no new instruction behavior is admitted.
+
+## M5 T316 S66 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Corrective; M5 T316 remains the latest open numeric task and S66 follows closed S65. |
+| Admission And Approval | Owner-approved T316 closure plan and S66 brief in `docs/etc/evidence/t316-ordinary-execution-matrix.md`; coordinator admits the final bounded audit in Coordinated Dual-Session Mode. |
+| Objective | Reconcile every T316-owned matrix row, current source route, focused evidence, Queue handoff, TODO debt, artifact record, current-gate registration, and Status/history topology before deciding whether T316 can close. |
+| Non-goals | No new instruction behavior; no reimplementation of transferred processor-control, protection, paging, task, x87, device, timing, or Windows-readiness work; no 80387 completeness claim. |
+| Reference Baseline | `6b66b9ab` / `vm-0-5-0316`; retain all accepted S2--S65 evidence and current-gate coverage. |
+| Files And ABI Surface | Expected audit/evidence, Queue/TODO/history/Status records, and artifact identity records only. Production, CMake, test, public ABI, or provider changes are prohibited unless a material contradiction requires a separately admitted corrective S. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/QUEUE.md`, `docs/TODO.md`, and the S66 matrix brief; apply the full-P lifecycle, completion-goal, actual-change review, and T-level closure audit rules. |
+| Verification | Structural reconciliation of every original matrix row and S2--S65 closure against source/evidence/current-gate registration; record artifact identity/SHA-256; run documentation governance, diff check, and full current-gate. Coordinator independently reviews the pushed P. |
+| Expected Markers | A deterministic `M5:T316:S66:CLOSURE-AUDIT:OK` audit marker or equivalent documented audit result; no new runtime/product/80387 marker. |
+| Asset Needs | Existing deterministic source, evidence, build artifact, and local test assets only. |
+| Reporting Requirements | Executor first confirms or materially objects to the complete S contract, then creates or updates the S66 completion goal. Report only a complete pushed implementation P or a reproducible material blocker; no partial audit nodes. |
+| Stop Conditions | Stop for a hidden partial/missing T316-owned form, contradictory source/evidence or artifact identity, an unrecorded debt/handoff, a required production/runtime change, or a form that cannot be classified without widening T316. Report exact evidence and propose later-T/TODO transfer. |
+| Exit Criteria | Every T316-owned row is complete or accurately reclassified; all residual work is explicitly outside-80386, external-coprocessor, TODO, or transferred to one later Queue package; artifact identity/SHA-256, full gates, documentation topology, history, and Status closure are truthful. The executor implementation P is committed/pushed and then passes coordinator actual review and governance closure P. |
+| Original Owner Request | Continue and close the owner-approved T316 80386 program quickly while preserving code quality, explicit boundaries, and durable governance evidence. |
+| Similar-Issue Sweep | Audit every matrix row, accepted S2--S65 smoke/registration, relevant source route, Queue item, TODO, history/evidence reference, task artifact claim, and current-gate inventory; do not infer completion from a report alone. |
 ## Current Technical Baseline
 
 - **Current task artifact:** `current-gcc` and
