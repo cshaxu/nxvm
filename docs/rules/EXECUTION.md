@@ -9,12 +9,24 @@ Before implementation, create the one active subtask packet in `STATUS.md` as
 the fixed two-column `Field | Required record` table. It must record identifier
 mode, admission and owner approval, objective, non-goals, reference baseline,
 files/ABI surface, applicable rules, exact verification, expected markers,
-asset needs, stop conditions, exit criteria, original owner request, and the
-similar-issue sweep. The gate rejects a packet missing a field, its fixed table
+asset needs, reporting requirements, stop conditions, exit criteria,
+original owner request, and the similar-issue sweep. The gate rejects a packet
+missing a field, its fixed table
 shape, or an empty record value. The rules review names each applicable
 invariant, its planned evidence,
 and any requested owner-approved exception; a task may mark a rule not
 applicable only with a short reason.
+
+The exact packet fields, in the required table's first column, are: `Identifier
+Mode`, `Admission And Approval`, `Objective`, `Non-goals`, `Reference
+Baseline`, `Files And ABI Surface`, `Applicable Rules`, `Verification`,
+`Expected Markers`, `Asset Needs`, `Reporting Requirements`, `Stop Conditions`,
+`Exit Criteria`, `Original Owner Request`, and `Similar-Issue Sweep`.
+
+For this policy, the owner is the person or authority that issued or approved
+the original request. `Admission And Approval` identifies that owner, the
+approval source and date or baseline, the approved scope, and every allowed
+exception. A non-empty table cell is not evidence of approval by itself.
 
 ## Request Lifecycle
 
@@ -61,37 +73,95 @@ An S is the smallest implementation, review, and acceptance unit inside an
 active T. Its active `STATUS.md` packet is the required task contract. Each S
 brief must state its objective, precise scope, non-goals, authority/baseline,
 verification and evidence requirements, quality standard, expected changed
-surface, stop conditions, and exit criteria. The brief defines task-specific
+surface, reporting requirements (initial objection or confirmation,
+S-specified progress nodes, and final delivery), stop conditions, and exit
+criteria. The brief defines task-specific
 technical requirements; this policy does not prescribe them. An S must not be
 silently turned into a moving target: a material scope, authority, acceptance,
 or risk change requires an explicit packet/brief revision before implementation
+continues. The coordinator may clarify or consolidate work that remains within
+the admitted objective and non-goals. A revision that expands scope, risk,
+authority, or exit criteria requires renewed owner approval before work
 continues.
 
-A P is one sequential, pushed commit within an S. An executor formal delivery
-becomes a P only after coordinator review, verification, commit, and push.
-Every admitted S begins with P1. P1 is the complete first delivery of that S,
-not a planning marker, internal batch, or partial implementation milestone: it
-must satisfy the entire admitted S packet, including every required
-implementation, focused proof, regression/gate result, evidence artifact, and
-truthful status or governance change needed to close the S. An S may therefore
-close with P1 alone.
+The S brief is the task-specific delivery instruction recorded in the active
+packet, not an independent contract. A coordinator message may reproduce or
+clarify it, but may not add a material requirement without the packet/brief
+revision required above.
 
-A later P is created only when coordinator review rejects the preceding P, or
-when post-review evidence demonstrates that the preceding accepted delivery did
-not in fact meet the S contract. It is a corrective continuation of the same S,
-not a preallocated lifecycle phase. The coordinator creates one consolidated
-corrective brief containing all then-known defects and acceptance requirements;
-the executor must complete that entire corrective brief before returning it for
+A P is one sequential, pushed commit within an S. The executor forms an
+implementation P by completing its assigned brief, performing the required
+self-review, committing, and immediately pushing that complete delivery. It is
+not a planning marker, internal batch, or partial implementation milestone: it
+must satisfy the entire assigned brief, including every required implementation,
+task documentation update, focused proof, regression/gate result, and evidence
+artifact. The coordinator then reviews the pushed implementation P
+independently.
+
+Each pushed implementation or governance commit consumes the next `P<part>` in
+that S's commit-subject sequence; the two roles share one consecutive sequence.
+
+If coordinator review rejects an implementation P, the coordinator creates one
+consolidated corrective brief containing all then-known defects and acceptance
+requirements. The executor must question or confirm that brief, then complete,
+commit, and push it as the next implementation P before returning it for
 review. Do not create a new P for a local vector, fixture diagnosis, individual
-gate, admission-artifact step, or status-only follow-up that P1 (or the active
-corrective P) should have included. A pushed P is immutable: a necessary
-correction uses the next P rather than rewriting history. Pure documentation,
-status, or state changes remain part of the current S when they belong to that
-S; they do not by themselves allocate a new T or S.
+gate, admission-artifact step, or executor-owned task-documentation follow-up
+that the assigned implementation P should have included. A pushed P is
+immutable: a necessary correction uses the next P rather than rewriting
+history.
+
+If post-review evidence demonstrates that an accepted and closed S did not meet
+its contract, the coordinator does not reopen that S. While its containing T
+remains open, the coordinator admits the next bounded corrective S in that T.
+After the T has closed, the coordinator uses the narrow corrective-S exception
+in **Linear Identifier Allocation** when it applies; otherwise it admits a new
+T. The corrective S begins its own implementation-P lifecycle.
+
+The governance P required after coordinator acceptance is the sole exception:
+it is a later P without a rejected implementation P, records only truthful
+closure, and adds no implementation scope.
+
+When the coordinator accepts an implementation P, the coordinator updates the
+applicable Status, history, and governance records, commits and pushes that
+purely governance P, and closes the S. The governance P records acceptance; it
+does not add implementation scope. Pure documentation, status, or state changes
+therefore remain in the current S when they are required for its closure, but do
+not by themselves allocate a new T or S.
+
+After pushing the governance P, the coordinator reports to the owner the
+accepted implementation P, verification conclusion, closed S or T, transferred
+or deferred items, and every remaining owner decision.
+
+**Executor completion goal.** When the coordinator issues an initial S brief
+or a consolidated corrective brief for its next implementation P, the executor
+must first create or update that S's completion goal before implementation. The
+goal names the brief objective, the complete acceptance required for its
+assigned implementation P, stop conditions, and the rule that no partial
+delivery is acceptable. The first
+resume instruction after the executor stops work on that brief must require the
+executor to reconfirm or update the same goal before continuing. A local smoke,
+diagnosis, individual gate, internal batch, or other partial result neither
+ends nor replaces it. A material objection or newly discovered contract change
+pauses the goal pending coordinator direction; it does not close it. The goal
+ends only when its assigned implementation P is delivered completely, when a
+reproducible material blocker ends the work, or when a second stop on the same
+S explicitly transfers execution to Ordinary Mode.
+If coordinator review rejects the delivery and issues a corrective brief, the
+coordinator reactivates and updates that same S goal before the executor
+resumes.
+
+An unreported stop occurs when the executor stops active work without reporting
+progress, a result, or a blocker to the coordinator. The coordinator checks
+every five minutes whether the executor is in a stopped state; when it is and
+no such report was made, the coordinator records one stop for that S. Reported
+waiting for coordinator direction is not an unreported stop.
+
 Only the coordinator may create, admit, re-plan, suspend, close, cancel, or
 reorder T packages and their S tasks. The executor may question and execute an
-admitted S, but may not allocate identifiers, admit or expand S scope, create
-the next S, close a T, commit, or push. A finding outside an admitted S is
+admitted S, and may commit and push only its complete assigned P. It may not
+allocate identifiers, admit or expand S scope, create the next S, or close a T.
+A finding outside an admitted S is
 reported to the coordinator; the coordinator decides whether it is an in-scope
 S revision, a later S in the active T, a future T, or a `TODO.md` deferral.
 
@@ -102,60 +172,50 @@ tasks does not close a T. A T-level audit reviews documentation, code quality,
 open debt, task evidence, and applicable rules; it cannot be bypassed by a
 passing local implementation.
 
+**Per-S reading index.** Before first work, and again on its first resume in
+either mode, the executor reads the active packet plus the S-contract,
+P-lifecycle, completion-goal, stop, and role-authority paragraphs above, and
+applicable project rules. This index is navigation only; those paragraphs
+remain the sole requirements source.
+
 **Coordinated Dual-Session Mode.**
 
 This mode uses exactly the existing conversations named `coordinator` and
 `executor`. Create a named conversation only when it does not exist; reuse an
 existing named conversation and never create a duplicate role conversation.
 
-1. The coordinator selects an approved T, plans its next bounded S, admits the
-   sole active packet, and sends the executor a complete S brief. The brief is
-   the executor's authority to work; it is not a sequence of micro-instructions.
-2. Before implementation, the executor independently reviews the brief,
-   relevant routes, existing evidence, and task-specific risks. The executor
-   may raise a **scope objection**, **evidence objection**, **risk objection**,
-   or a **material clarification request**.
-3. The executor records and resolves ordinary implementation details under a
-   stated reasonable assumption. For an objection or request that materially
-   changes the S contract, the executor pauses the affected work and reports
-   it. The coordinator decides the issue and, when necessary, revises the
-   packet and replaces the S brief. The coordinator must not override an
-   unresolved material objection merely by requesting continued work.
-4. Once the executor accepts the S contract, it creates its internal acceptance
-   checklist and executes continuously toward a complete P1 delivery. A partial
-   implementation, a first failure diagnosis, a local smoke result, an internal
-   batch, packet preparation, registration lookup, or status update is not a
-   formal completion point and must not end the executor's P1 work. The executor
-   formally returns only with complete P1 evidence, a reproducible material
-   blocker, or a newly discovered fact that changes the accepted S contract.
-5. Before formal P1 delivery, the executor re-reads the S brief and
+1. The coordinator selects an approved T, admits its bounded S packet, and
+   sends the executor the complete S brief.
+2. The executor independently scrutinizes the brief, relevant routes, existing
+   evidence, and task-specific risks. It records ordinary implementation details
+   under stated reasonable assumptions. A material scope, evidence, risk, or
+   clarification objection pauses affected work and is reported for coordinator
+   decision and, if needed, packet/brief revision; the coordinator must not
+   override an unresolved material objection merely by requesting continued
+   work. The executor reports either its objection or its confirmation of the
+   S contract before execution begins.
+3. After confirming the S contract, the executor creates or updates its
+   completion goal and executes the complete implementation P under the lifecycle
+   and reporting rules above. A partial implementation, local smoke, diagnostic,
+   internal batch, packet preparation, registration lookup, or status update is
+   not a formal completion point. The executor sends progress reports at the
+   nodes required by the S brief. It formally returns only complete
+   implementation-P evidence, a reproducible material blocker, or a fact that
+   changes the S contract.
+4. Before returning that delivery, the executor re-reads the S brief and
    self-reviews every acceptance requirement against actual evidence. Its report
-   includes the requirement-to-evidence mapping, changed files,
-   production/shared impact, verification commands and results, known gaps, and
-   the explicit outside-scope disposition. It must not claim P1 readiness while
-   a stated requirement lacks evidence.
-6. The coordinator independently reviews the original request, S brief,
-   packet, evidence, applicable rules, and actual Git/worktree changes. The
-   executor report is an evidence index, not a replacement for reading changed
-   code and artifacts. The coordinator runs required verification and, when
-   accepted, commits and pushes the next P.
-7. A failed coordinator review produces one consolidated corrective review for
-   that delivery: all then-known issues, evidence, required correction, and
-   re-acceptance standard. The executor implements the entire corrective brief
-   as the next P of the same S unless the coordinator explicitly admits a
-   separate S. The coordinator does not normally direct individual
-   implementation batches or split a corrective P into routine sub-deliveries.
-8. When coordinator review accepts P1, it closes the S as part of that accepted
-   delivery: it removes the active packet, updates status/history and any
-   necessary truthful governance records, verifies closure, commits, and pushes.
-   The same rule applies when a corrective P is accepted. The next S is then
-   planned from the resulting repository state.
-
-The coordinator owns T planning, S admission, brief fidelity, scope decisions,
-actual-change review, P formation, and T/S closure. The executor owns
-independent S scrutiny, implementation, evidence, self-review, and prompt
-reporting of material objections. Neither role may close an S or T merely by
-asserting success.
+   maps requirements to evidence and names changed files, shared impact,
+   verification results, known gaps, and the outside-scope disposition.
+5. The executor commits and pushes that complete implementation P before
+   reporting it. The coordinator independently reviews the original request, S
+   brief, packet, evidence, applicable rules, and the pushed P's actual
+   Git/worktree changes. The
+   executor report is an evidence index, not a substitute for this review. The
+   coordinator runs required verification and either rejects the delivery with
+   one consolidated corrective brief or accepts it.
+6. On acceptance, the coordinator completes the applicable Status, history, and
+   governance closure, commits and pushes the purely governance P, and then
+   plans the next S from the resulting repository state.
 
 **Ordinary Mode.**
 
@@ -163,13 +223,14 @@ One conversation may perform both coordinator and executor roles. It retains
 the same T/S/P model, active-packet rule, evidence standard, and closure audit.
 Combining people does not combine governance stages.
 
-The single executor first plans/adopts the coordinator S brief, then performs
-an executor-style independent contract and implementation review, then returns
-to a coordinator-style actual-change and acceptance review before forming each
-P. Before committing, it must explicitly compare the S brief with the actual
-changes and evidence, check for scope drift and unresolved objections, and run
-required verification. A discovered material contradiction requires a brief
-revision or a later S; it must not be silently absorbed.
+The single session first plans or adopts the coordinator S brief, then performs
+the executor-side contract review, self-review, commit, and push of the complete
+implementation P. It then performs the coordinator-side actual-change review
+and acceptance; on acceptance, it commits and pushes the governance P. Before
+the implementation-P commit, it explicitly compares the S brief with the
+actual changes and evidence, checks for scope drift and unresolved objections,
+and runs required verification. A discovered material contradiction requires a
+brief revision or a later S; it must not be silently absorbed.
 
 Ordinary Mode must not claim independent dual-session review. If an active S
 changes execution mode, its handoff record states the accepted brief, current
@@ -247,10 +308,9 @@ subtask identifier.
 
 Allocate implementation subtask (`S`) and standalone documentation (`Td S`)
 identifiers strictly after the latest closed identifier in their own sequence.
-Historical records do not become reusable capacity. The existing pre-policy
-`M5 Td S43` record is an archival discontinuity: `S42` is permanently
-unavailable. Later governance identifiers continue from the latest closed
-identifier and never fill that gap.
+Historical records and any historical discontinuity do not become reusable
+capacity. Later identifiers continue from the latest closed identifier and
+never fill a historical gap.
 
 The governance gate derives closed identifiers from Git commit subjects. A new
 numeric task must be the next global `T` and start at `S1`; a corrective task
@@ -293,15 +353,24 @@ Every task closure and standalone `Td` closure runs:
 powershell -NoProfile -ExecutionPolicy Bypass -File tools/Verify-DocumentationGovernance.ps1 -RepositoryRoot .
 ```
 
-The configured `current-gates-gcc` target also runs this check when PowerShell
-is available. It verifies required principal-document sections, active-packet
-fields and identifier continuity, `etc/` index coverage, relative Markdown
-links, the sole `STATUS.md` technical baseline, queue/debt boundaries, artifact
-identity, known mojibake, and capped Status summaries. A failure blocks closure
-until the documents are internally consistent. The gate verifies structural
-schemas, not semantic document ownership; the closure audit must still compare
-each changed document against the authority matrix in
-`docs/rules/DOCUMENT.md`.
+The default command composes two diagnostic scopes, either of which may be run
+independently while investigating a failure:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/Verify-DocumentationGovernance.ps1 -RepositoryRoot . -Scope Documentation
+powershell -NoProfile -ExecutionPolicy Bypass -File tools/Verify-DocumentationGovernance.ps1 -RepositoryRoot . -Scope GovernanceState
+```
+
+`Documentation` verifies topology, principal-document schemas, the Task
+Reading Set navigation, `etc/` index coverage, relative Markdown links,
+mojibake, and machine-local paths. `GovernanceState` verifies active-packet
+fields and identifier continuity, the sole `STATUS.md` technical baseline,
+queue/debt boundaries, artifact identity, and capped Status summaries. The
+configured `current-gates-gcc` target runs the default combined check when
+PowerShell is available. A failure blocks closure until the documents are
+internally consistent. The gate verifies structural schemas, not semantic
+document ownership; the closure audit must still compare each changed document
+against the authority matrix in `docs/rules/DOCUMENT.md`.
 
 While a numeric task package remains open, Status may retain compact progress
 summaries for its completed subtasks, including while no next subtask is

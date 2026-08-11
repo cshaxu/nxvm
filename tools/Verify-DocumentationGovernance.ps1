@@ -1,7 +1,9 @@
 [CmdletBinding()]
 param(
     [string]$RepositoryRoot,
-    [switch]$SelfTest
+    [switch]$SelfTest,
+    [ValidateSet('All', 'Documentation', 'GovernanceState')]
+    [string]$Scope = 'All'
 )
 
 $ErrorActionPreference = "Stop"
@@ -71,8 +73,8 @@ function Require-HeadingSchema(
     Require ((@($headings | Where-Object { $_.Level -eq 1 })).Count -eq 1) `
         "$path must contain exactly one level-one title."
     foreach ($heading in $headings) {
-        Require ($heading.Level -le 2) `
-            "$path must not use heading levels below its fixed document schema."
+        Require ($heading.Level -le 3) `
+            "$path must not use heading levels below its document schema."
         if ($heading.Level -eq 2) {
             $isAllowed = (@($allowedH2Patterns | Where-Object {
                 $heading.Text -match $_
@@ -205,7 +207,8 @@ function Require-ActivePacketSchema([pscustomobject]$packet) {
     $requiredFields = @(
         'Identifier Mode', 'Admission And Approval', 'Objective', 'Non-goals',
         'Reference Baseline', 'Files And ABI Surface', 'Applicable Rules',
-        'Verification', 'Expected Markers', 'Asset Needs', 'Stop Conditions',
+        'Verification', 'Expected Markers', 'Asset Needs',
+        'Reporting Requirements', 'Stop Conditions',
         'Exit Criteria', 'Original Owner Request', 'Similar-Issue Sweep'
     )
     foreach ($field in $requiredFields) {
@@ -308,7 +311,7 @@ function New-SelfTestRepository([string]$root) {
     Set-SelfTestFile $root "README.md" "# ntvdm64`n`n## Start Here`n`n## Project Boundary"
     Set-SelfTestFile $root "AGENTS.md" "# Agent Instructions`n`n## Authority`n`n## Execution"
     Set-SelfTestFile $root "CONTRIBUTING.md" "# Contributing`n`n## Change Submission`n`n## Review Record`n`n## Commits And Tracking"
-    Set-SelfTestFile $root "docs/README.md" "# Documentation Guide`n`n## Reading Order`n`n## Daily Operation`n`n## Supporting Detail"
+    Set-SelfTestFile $root "docs/README.md" "# Documentation Guide`n`n## Task Reading Set`n`n[Status](STATUS.md)`n[Execution](rules/EXECUTION.md)`n[Contributing](../CONTRIBUTING.md)`n`n## Daily Operation`n`n## Supporting Detail"
     Set-SelfTestFile $root "docs/QUEUE.md" "# Queue`n`n1. Candidate work"
     Set-SelfTestFile $root "docs/TODO.md" "# Long-Term Review Ledger`n`n## Compatibility Debt`n`n- [ ] **Fixture debt (`TODO(High)`).** Admit only with evidence."
     Set-SelfTestFile $root "docs/STATUS.md" @'
@@ -377,10 +380,10 @@ if ($SelfTest) {
         Require (-not (Invoke-SelfTestCheck $fixtureRoot -Quiet)) `
             "Documentation schema accepted an unindexed supporting file."
         Remove-Item -LiteralPath (Join-Path $fixtureRoot "docs/etc/unindexed.md") -Force
-        Set-SelfTestFile $fixtureRoot "docs/README.md" "# Documentation Guide`n`n## Reading Order`n`n[missing](missing.md)`n`n## Daily Operation`n`n## Supporting Detail"
+        Set-SelfTestFile $fixtureRoot "docs/README.md" "# Documentation Guide`n`n## Task Reading Set`n`n[Status](STATUS.md)`n[Execution](rules/EXECUTION.md)`n[Contributing](../CONTRIBUTING.md)`n[missing](missing.md)`n`n## Daily Operation`n`n## Supporting Detail"
         Require (-not (Invoke-SelfTestCheck $fixtureRoot -Quiet)) `
             "Documentation schema accepted a broken relative Markdown link."
-        Set-SelfTestFile $fixtureRoot "docs/README.md" "# Documentation Guide`n`n## Reading Order`n`n## Daily Operation`n`n## Supporting Detail"
+        Set-SelfTestFile $fixtureRoot "docs/README.md" "# Documentation Guide`n`n## Task Reading Set`n`n[Status](STATUS.md)`n[Execution](rules/EXECUTION.md)`n[Contributing](../CONTRIBUTING.md)`n`n## Daily Operation`n`n## Supporting Detail"
         Set-SelfTestFile $fixtureRoot "docs/QUEUE.md" "# Queue`n`n1. T301 is not allowed here"
         Require (-not (Invoke-SelfTestCheck $fixtureRoot -Quiet)) `
             "Documentation schema accepted a Queue task identifier."
@@ -412,6 +415,7 @@ if ($SelfTest) {
 | Verification | Fixture gate |
 | Expected Markers | Fixture marker |
 | Asset Needs | None |
+| Reporting Requirements | Fixture reports |
 | Stop Conditions | Fixture stop |
 | Exit Criteria | Fixture exit |
 | Original Owner Request | Fixture request |
@@ -513,7 +517,10 @@ $expectedRootFiles = @("QUEUE.md", "README.md", "STATUS.md", "TODO.md")
 $expectedRootDirectories = @("design", "etc", "history", "rules")
 $expectedRuleFiles = @("ARCHITECTURE.md", "CODING.md", "DOCUMENT.md", "EXECUTION.md")
 $expectedDesignFiles = @("ARCHITECTURE.md", "CODING.md", "GOAL.md", "ROADMAP.md", "UI.md")
+$RunDocumentation = $Scope -in @('All', 'Documentation')
+$RunGovernanceState = $Scope -in @('All', 'GovernanceState')
 
+if ($RunDocumentation) {
 $rootFiles = @(Get-ChildItem -LiteralPath $docsRoot -File | ForEach-Object Name)
 $rootDirectories = @(Get-ChildItem -LiteralPath $docsRoot -Directory | ForEach-Object Name)
 Require (Test-ExactNameSet $rootFiles $expectedRootFiles) `
@@ -590,6 +597,13 @@ $docsReadme = Get-Content -Raw -LiteralPath (Join-Path $docsRoot "README.md")
 $documentRules = Get-Content -Raw -LiteralPath (Join-Path $rulesPath "DOCUMENT.md")
 $executionRules = Get-Content -Raw -LiteralPath (Join-Path $rulesPath "EXECUTION.md")
 
+Require ($docsReadme -match '(?m)^## Task Reading Set$') `
+    "docs/README.md must contain the Task Reading Set section."
+foreach ($requiredReadingLink in @('STATUS.md', 'rules/EXECUTION.md', '../CONTRIBUTING.md')) {
+    Require ($docsReadme -match [regex]::Escape("($requiredReadingLink)")) `
+        "docs/README.md Task Reading Set must link to $requiredReadingLink."
+}
+
 Require-HeadingSchema "README.md" $rootReadme "ntvdm64" @(
     '^Start Here$',
     '^Project Boundary$'
@@ -604,7 +618,8 @@ Require-HeadingSchema "CONTRIBUTING.md" $contributing "Contributing" @(
     '^Commits And Tracking$'
 )
 Require-HeadingSchema "docs/README.md" $docsReadme "Documentation Guide" @(
-    '^Reading Order$',
+    '^Task Reading Set$',
+    '^Orientation Map$',
     '^Daily Operation$',
     '^Supporting Detail$'
 )
@@ -659,7 +674,7 @@ Require-RequiredH2 "CONTRIBUTING.md" $contributing @(
     '^Change Submission$', '^Review Record$', '^Commits And Tracking$'
 )
 Require-RequiredH2 "docs/README.md" $docsReadme @(
-    '^Reading Order$', '^Daily Operation$', '^Supporting Detail$'
+    '^Task Reading Set$', '^Daily Operation$', '^Supporting Detail$'
 )
 Require-RequiredH2 "docs/rules/ARCHITECTURE.md" $architectureRules @(
     '^Non-Negotiable Invariants$', '^Source And Research Admission$'
@@ -695,7 +710,13 @@ Require-NoChecklist "docs/design/ARCHITECTURE.md" $architectureDesign
 Require-NoChecklist "docs/design/CODING.md" $codingDesign
 Require-NoChecklist "docs/design/UI.md" $uiDesign
 Require-NoChecklist "docs/design/ROADMAP.md" $roadmapDesign
+Require (([regex]::Matches($goalDesign, '(?m)^\d+\.\s+')).Count -gt 0) `
+    "Project Goals must contain an ordered strategic-outcome list."
+Require ((@((Get-MarkdownHeadings $roadmapDesign) | Where-Object { $_.Level -eq 2 })).Count -gt 0) `
+    "Roadmap must contain at least one milestone section."
+}
 
+if ($RunGovernanceState) {
 $status = Get-Content -Raw -LiteralPath $statusPath
 $queue = Get-Content -Raw -LiteralPath $queuePath
 $todo = Get-Content -Raw -LiteralPath $todoPath
@@ -744,11 +765,6 @@ Require (-not ($queue -match '(?m)^\s*[-*]\s+')) `
     "QUEUE.md must use ordered candidates rather than an unordered list."
 Require (-not ($queue -match '(?m)^\s*\d+\)\s+')) `
     "QUEUE.md must use Markdown ordered-list syntax for candidates."
-Require (([regex]::Matches($goalDesign, '(?m)^\d+\.\s+')).Count -gt 0) `
-    "Project Goals must contain an ordered strategic-outcome list."
-Require ((@((Get-MarkdownHeadings $roadmapDesign) | Where-Object { $_.Level -eq 2 })).Count -gt 0) `
-    "Roadmap must contain at least one milestone section."
-
 $closureSection = [regex]::Match($status, '(?ms)^## Recent M\d+ Closures\r?\n(?<body>.*?)(?=^## |\z)')
 Require ($closureSection.Success) "STATUS.md must contain a recent milestone-closure section."
 $closureRows = @([regex]::Matches(
@@ -794,7 +810,9 @@ Require ($statusTargets.Count -eq 1 -and $statusTargets[0] -eq $currentTarget) `
     "STATUS.md current target must match CMakePresets.json ($currentTarget)."
 Require ($statusArtifacts.Count -eq 1 -and $statusArtifacts[0] -eq $expectedArtifact) `
     "STATUS.md current artifact must match CMakePresets.json ($expectedArtifact)."
+}
 
+if ($RunDocumentation) {
 $markdownFiles = @(
     Get-Item -LiteralPath $rootReadmePath
     Get-Item -LiteralPath $agentsPath
@@ -809,5 +827,7 @@ $localPaths = $markdownFiles |
     Where-Object { Test-MachineLocalPath (Get-Content -Raw -LiteralPath $_.FullName) }
 Require ($null -eq $localPaths) "Documentation contains machine-local paths: $($localPaths.FullName -join ', ')"
 Require-RelativeMarkdownLinks $RepositoryRoot @($markdownFiles | ForEach-Object FullName)
+}
 
-Write-Output "Documentation governance checks passed for $currentTarget."
+$scopeTarget = if ($RunGovernanceState) { $currentTarget } else { 'documentation scope' }
+Write-Output "Documentation governance checks passed for $scopeTarget."
