@@ -52,7 +52,7 @@ not an allocation of later task identifiers.
 | Memory strings `MOVS/CMPS/STOS/LODS/SCAS`, REP/REPE/REPNE, DF, 16/32 operand/address attributes | `MOVSB/W`, `CMPSB/W`, `STOSB/W`, `LODSB/W`, `SCASB/W`, `_kas_move_index`; primary REP loop. | `core_machine_real_mode_386_rep_cmps_smoke` (`M5:T292:S1:REP-STRING:OK`), `core_machine_movs_smoke` (`M5:T316:S33:MOVS:OK`), `core_machine_stos_smoke` (`M5:T316:S34:STOS:OK`), `core_machine_lods_smoke` (`M5:T316:S35:LODS:OK`), `core_machine_scas_smoke` (`M5:T316:S36:SCAS:OK`), and `core_machine_cmps_smoke` (`M5:T316:S37:CMPS:OK`). | **Partial**: S35 closes only LODSB `AC` and LODSW/LODSD `AD`; S36 closes only SCASB `AE` and SCASW/SCASD `AF`; S37 closes only CMPSB `A6` and CMPSW/CMPSD `A7`, including declared attributes, DS source/fixed ES destination, FLAGS, REPE/REPNE condition/restart, #UD/LOCK non-publication, protected DS/ES read-limit #DF, and PIC boundaries. INS/OUTS and broader string behavior remain partial or outside this slice. |
 | Port strings `INS/OUTS` with REP and size/address attributes | `INSB/INSW/OUTSB/OUTSW`, `_p_input`, `_p_output`, `_kpa_test_mode`, and `_kas_move_index`. | T302 I/O-string portion and `core_machine_port_strings_smoke` (`M5:T316:S38:PORT-STRINGS:OK`). | **Partial**: S38 closes only INSB `6C`, INSW/INSD `6D`, OUTSB `6E`, and OUTSW/OUTSD `6F`, including declared port width, profile, attribute, segment, REP, limit-fault, and interrupt boundaries. Ordinary IN/OUT, general I/O privilege architecture, and broader string behavior remain outside this slice. |
 | Short/near conditional control: `Jcc`, `LOOP/LOOPE/LOOPNE`, `JCXZ/JECXZ`, near `CALL/JMP/RET` | Primary `J*_REL8`, `LOOP*`, `JCXZ_REL8`, `CALL_REL32`, `JMP_REL*`, return helpers; `0F 80`--`8F` repeats the profile gate. | `core_machine_control_transfer_smoke` (`M5:T303:CONTROL-TRANSFER:OK`). | **Complete** for T303's declared real/protected 16/32 near, condition, target-limit, and atomic-fault matrix. Other control forms remain separately listed. |
-| Far direct/indirect `CALL/JMP`, same-CPL `RETF` and `IRET`; outer returns, gates, task/V86 interactions | `CALL_PTR16_32`, `JMP_PTR16_32`, `_kec_call_far/_kec_jmp_far/_kec_ret_far`, `_e_iret`, and protected return routes. | T303 proves admitted real/protected far and same-CPL return cases; `core_machine_iret_s51_smoke` (`M5:T316:S51:IRET:OK`) proves the bounded IRET slice; T305--T308 prove bounded privilege paths. | **Partial** for the ordinary-family inventory: S51 closes only real-mode and protected same-CPL IRET `CF`, with declared profile/prefix, frame, fault, and pending-IRQ boundaries. Outer-return, task/gate, V86, and broader exception interaction remain separate boundaries. |
+| Far direct/indirect `CALL/JMP`, same-CPL `RETF` and `IRET`; outer returns, gates, task/V86 interactions | `CALL_PTR16_32`, `JMP_PTR16_32`, `_kec_call_far/_kec_jmp_far/_kec_ret_far`, `_e_iret`, and protected return routes. | T303 proves admitted real/protected far and same-CPL return cases; `core_machine_iret_s51_smoke` (`M5:T316:S51:IRET:OK`) and `core_machine_iret_outer_s52_smoke` (`M5:T316:S52:IRET-OUTER:OK`) prove their bounded IRET slices; T305--T308 prove bounded privilege paths. | **Partial** for the ordinary-family inventory: S51 closes only real-mode and protected same-CPL IRET `CF`; S52 closes only protected IRET returns from CPL0 to an outer CPL. Task/gate, VM86/VME/PVI, outer-return variants beyond this bounded route, and broader exception interaction remain separate boundaries. |
 | 80386 `0F 90`--`9F` SETcc | `INS_0F` then `SETO_RM8`--`SETG_RM8`; metadata requires 80386. | `core_machine_setcc_smoke` (`M5:T310:S3:SETCC:OK`) covers conditions, register/memory, prefixes, and pre-fault non-publication. | **Complete** for the declared T310 SETcc matrix. |
 | 80386 `0F A3/AB/B3/BB`, `0F BA /4`--`/7` BT/BTS/BTR/BTC | `BT_*`, `BTS_*`, `BTR_*`, `BTC_*`, `INS_0F_BA`; metadata/profile gate. | `core_machine_bit_test_smoke` (`M5:T310:S5:BIT:OK`) covers register/memory, immediate/indexed, 16/32, address prefix, rejection, and access-failure publication. | **Complete** for the declared T310 bit-test matrix. |
 | 80386 `0F A4/A5/AC/AD` SHLD/SHRD | `SHLD_*`/`SHRD_*`, `_kaf_set_flags`, 80386 metadata gate. | `core_machine_double_shift_smoke` (`M5:T310:S6:DOUBLE-SHIFT:OK`) covers forms, count zero, profile rejection, and access failure. | **Complete** for the declared T310 double-shift matrix. |
@@ -1074,3 +1074,24 @@ remains pending when IRET does not restore IF. No production or shared-helper
 change was needed.
 
 `M5:T316:S51:IRET:OK`
+
+### T316 S52 - IRET outer-privilege return
+
+`core_machine_iret_outer_s52_smoke` closes only protected `IRET` (`CFh`)
+returns from CPL0 to an outer CPL. S52-local vectors execute valid 16-bit and
+32-bit frames plus `66h`, `67h`, and combined disposition, and assert return
+EIP/EFLAGS, all non-target GPR and ES/DS/FS/GS preservation, complete target
+CS/SS caches, unchanged old kernel frame, and distinct untouched outer-stack
+candidates. The focused rejection grid retains pre-386 attribute and 80386
+LOCK `#UD` full nonpublication. The existing bounded protected-return fixture
+is run through target-CS/SS type, present, privilege, and limit failures plus
+old-stack/new-stack fault paths; those cases assert the established installed
+handler boundary rather than claiming unobserved pre-handler full-CPU equality.
+A local TSS-backed IRQ0 fixture proves an
+IF-restoring outer IRET immediately admits IRQ delivery on its target path and
+that an IF-clear return leaves it pending; it verifies the CPL switch, handler
+frame IP, and PIC ISR/IRR disposition. No production or shared helper changed.
+Same-CPL and real IRET, task/NT and VM86/VME/PVI returns, error-code frames,
+and generic IDT, IRQ, and NMI behavior remain outside S52.
+
+`M5:T316:S52:IRET-OUTER:OK`
