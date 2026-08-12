@@ -2,8 +2,28 @@
 
 ## Current Work
 
-**Idle.** M5 T320 is closed; the next Queue candidate is the 80386DX
-exception, interrupt, and processor-control closure.
+**Active.** M5 T321 S1 audits and sequences the 80386DX exception, interrupt,
+return, and processor-control closure in Ordinary Mode.
+
+## M5 T321 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner approved single-session execution toward the 80386DX architecture-coverage closure audit on 2026-08-12. T320 has a task-level closure row, so T321 S1 is the next numeric implementation task and its explicit design prerequisite. The scope is the first Queue processor-control candidate, not paging, protection-transfer breadth, task/debug state, or x87 execution. |
+| Objective | Reconcile the remaining Intel 80386DX exception, interrupt, return, and processor-control forms with current source and focused evidence; update the closure map and Queue; produce the ordered, bounded T321 implementation-S breakdown. |
+| Non-goals | No CPU/runtime behavior, CMake, smoke, artifact, paging, protection/privilege-transfer, task/LDT/debug/test-register, VME/PVI, or x87 numerical-unit change. Do not claim whole-80386 closure. |
+| Reference Baseline | `2e49804d` / `vm-0-5-0320`; T320's developer artifact SHA-256 is retained in `docs/history/M5-T320-vm86-delivery.md`. |
+| Files And ABI Surface | `docs/STATUS.md`, `docs/QUEUE.md`, `docs/etc/evidence/80386-closure-map.md`, and new T321 supporting audit evidence only. No ABI or runtime surface. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/design/ROADMAP.md`, `docs/QUEUE.md`, `docs/etc/operations/policy/source-policy.md`, and the Intel 80386 PRM form audit required by Td S63. |
+| Verification | Re-read every named authority; inspect `ExecFinal`, exception producers, interrupt/return/table/control routes, current focused tests, and retained T304/T308/T318/T319/T320 evidence; run documentation governance and `git diff --check`. |
+| Expected Markers | Documentation governance passes. The audit names no runtime marker because S1 changes no runnable path. |
+| Asset Needs | None. Intel documentation is a read-only requirements source; no source, firmware, binary, media, trace, or third-party implementation is imported. |
+| Reporting Requirements | Record the PRM/source/evidence crosswalk, every complete/partial/missing/explicit-boundary classification, the next-S dependency order, and any stop condition in an indexed evidence record. |
+| Stop Conditions | Stop and request owner direction if the audit requires a paging, protection/privilege-transfer, task/debug, VME/PVI, or x87 execution commitment; do not move such work into T321 silently. |
+| Exit Criteria | Queue no longer lists the completed VM86 delivery foundation; the closure map records T320 as complete; every T321-owned remaining row has a route/test disposition and exactly one next T321 S or later Queue destination; no partial/missing item is hidden by a broad family claim. |
+| Original Owner Request | "请你以单人模式开始执行到80386DX 架构覆盖收口审计". |
+| Similar-Issue Sweep | Documentation-only prerequisite; inspect all tracked CPU exception masks, producer sites, dispatcher mappings, system-control routes, focused tests, Queue rows, and closure-map rows. No defect is fixed in S1. |
 
 ## Current Technical Baseline
 
