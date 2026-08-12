@@ -2,28 +2,8 @@
 
 ## Current Work
 
-**Active.** M5 T329 S6 non-null LDTR/LDT task images and TI-selector
-resolution (Ordinary Mode).
-
-## M5 T329 S6 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; Ordinary Mode, with the coordinator as sole planner, implementer, reviewer, and closer. |
-| Admission And Approval | Owner approved autonomous continuation of T329 on 2026-08-12. This packet admits the S6 boundary recorded in the T329 task-switch state-machine record after accepted S1--S5. |
-| Objective | Close the protected 80286/80386 task-transition boundary for a non-null incoming LDTR and `TI=1` incoming code/data/stack selectors: validate the incoming LDT descriptor before selector use, resolve the task image against that proposed LDT, preflight all reads and writes, cache the incoming LDTR, and commit it atomically with the existing task transition. |
-| Non-goals | Task paging/CR3, debug state, arbitrary task chains, VM86 task breadth, LLDT/LTR instruction-family closure, generic selector-loader redesign, x87, and any non-task LDT family are outside this S. |
-| Reference Baseline | `3acc88c1` / `vm-0-5-0328`, with accepted T329 S1--S5 task-transition evidence. |
-| Files And ABI Surface | `src/core/machine/cpu_instructions.c`, the existing owner task-switch smoke, CMake registration only if required, and T329 evidence/Status. No public ABI, provider, or product interface change. |
-| Applicable Rules | Task Reading Set; Execution, Coding, Architecture, and Documentation rules; Intel 80286/80386 protected-task and LDT semantics remain the authority. One planned task preflight/plan/commit path must own each mutable task/LDTR state transition. |
-| Verification | Add owner-bound valid 16-bit and 32-bit task-image vectors with a non-null GDT LDTR descriptor and `TI=1` LDT CS/SS/DS/ES selectors (FS/GS when applicable); cover LDT descriptor type/present/limit and LDT selector type/present/limit failures with no partial outgoing TSS, busy, TR, or LDTR publication at the installed-handler boundary; retain prior T329 task smoke; run focused target, documentation governance, diff check, and the full current-gate selection. |
-| Expected Markers | Existing task-switch smoke retains its marker; evidence names valid non-null-LDT transitions and each controlled fault boundary. |
-| Asset Needs | No guest media, firmware, third-party import, or external runtime asset. |
-| Reporting Requirements | Record the preflight resolver design, all selector/table fault dispositions, actual changed code/evidence review, and final pushed implementation plus governance closure. Report a shared resolver/descriptor delivery issue before expanding scope. |
-| Stop Conditions | Stop for a fix requiring a general non-task selector-loader/API redesign, paging/debug task semantics, a public ABI/provider change, or a change to shared exception delivery not proved necessary by this task boundary. |
-| Exit Criteria | Valid 16-bit and 32-bit non-null-LDTR transitions load and cache LDT-backed task selectors; declared LDT/selector fault matrix proves no partial task-state publication; all prior task-switch coverage remains green; matrix/state-machine/closure-map evidence states the residual S7 transfer; full current gate passes. |
-| Original Owner Request | Complete T329 in single-agent mode as the Intel 80386 task-state closure package, with holistic preflight/plan/commit construction rather than incremental symptom patches. |
-| Similar-Issue Sweep | Audit both 16-bit and 32-bit task transition planners/commit paths and all task selector validation helpers; do not claim unrelated LLDT/LTR or ordinary selector-load coverage. |
+**Idle.** M5 T329 S6 is closed; T329 remains open for its final separately
+admitted task paging/debug state-machine slice.
 
 ## Current Technical Baseline
 
@@ -43,6 +23,7 @@ resolution (Ordinary Mode).
 ## Recent M5 Closures
 
 | Task | Compact result |
+| T329 S6 | Closed non-null LDTR/LDT task images and task-local `TI=1` selector resolution for 16/32-bit protected transitions. The unified preflight validates incoming LDT state before selector use and atomically commits cached LDTR with task state; LDT type/present/limit and selector type/limit failures retain outgoing TSS, busy, TR, and LDTR state at installed-handler boundaries. [S6 evidence](etc/evidence/t329-s6-task-ldt-images.md) and 211/211 current-gate tests pass. Task paging/debug composition remains S7. |
 | T329 S5 | Closed nested protected-task `IRET` return for 16/32-bit TSS images, IDT task-gate entry, and a bounded 80386 `#GP`-delivery-to-`#DF` task-gate chain. The named transition boundary now distinguishes nested entry from backlink return, with busy/TR/TS/NT, image/cache, and 211/211 current-gate proof in [S5 evidence](etc/evidence/t329-s5-task-return-idt-task-gate.md). Non-null LDT, task paging, debug state, arbitrary chains, and failed-double-fault reset policy remain transferred. |
 | T329 S4 | Closed protected direct far-CALL and GDT task-gate entry for 16/32-bit TSS images: shared nested transition semantics, backlink/NT, busy/TR/TS, direct/indirect CALL and task-gate JMP/CALL, local `LOCK FF /3` rejection, installed-handler and terminal fault boundaries, and 211/211 current-gate proof. Nested IRET, IDT task gates/double fault, LDT, task paging, and debug remain transferred in [S4 evidence](etc/evidence/t329-s4-task-gate-call-entry.md). |
 | T329 S1 | Closed the bounded 80286/80386 protected direct far-JMP-to-16-bit-TSS matrix: direct/indirect and permitted `66h`/`67h` forms, descriptor/TSS faults, busy and `CR0.TS` publication, local pending-IRQ boundary, target-local strict GCC compile, and 211/211 current-gate evidence are in [T329 S1 evidence](etc/evidence/t329-s1-tss16-direct-jump.md). 32-bit TSS, task gates/CALL/NT, LDT task state, task paging, and broader VM86/debug behavior remain transferred. |
