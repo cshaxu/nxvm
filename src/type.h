@@ -98,7 +98,7 @@ extern "C"
 #define STD_MEMORY_ORDER_ACQ_REL memory_order_acq_rel
 #define STD_MEMORY_ORDER_SEQ_CST memory_order_seq_cst
 
-/* Retained VM numeric aliases. New code should prefer stdint names. */
+/* Project numeric aliases. New code uses this type facade, not raw stdint names. */
 #define MAXLINE 0x100
 
     typedef C_CHAR type_string_buffer[MAXLINE];

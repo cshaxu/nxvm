@@ -18,6 +18,7 @@ test-behavior capability completion.
 | S3 fixture mechanics | `1f4c9af92d903922028f948460f4e86ef0324a3d` and `3cb1bd4b843ee5bfc4594b0c974b794d55d51819` centralize the mechanically identical lifecycle setup in private `tests/support` helpers. [S3 evidence](../etc/evidence/t317-s3-test-fixture-consolidation-evidence.md) lists the 35 full-helper callers, six lifecycle-tail callers, real-mode/captured-observation boundary, and retained owner semantics. Acceptance is `2d9ceefb`. |
 | S4 closure audit | This record independently rechecks the generated inventory, actual Ninja command audit, vocabulary gate, support boundary, then-deferred raw-type admission context, documentation governance, diff, and full current gate. It adds no runtime or test behavior. |
 | S5 global fixed-width vocabulary | `b1a474f312811283c052bcfbc5e95bdc2a696e00` migrates the approved 240-file, 4,138-spelling baseline across the repository and adds the global positive/negative verifier. `e19a9a4045950b855a7e9f99a2506e14fa8436e1` removes the obsolete inherited-test vocabulary debt. The exact foundational and controlled-fixture exceptions are recorded in [S5 evidence](../etc/evidence/t317-s5-global-type-vocabulary-evidence.md). |
+| S6 verifier correction | Corrects the stale type-facade guidance and replaces working-tree glob discovery with tracked-path discovery that requires root `CMakeLists.txt` coverage and a controlled in-memory root-script negative proof. [S6 evidence](../etc/evidence/t317-s6-global-type-vocabulary-verifier.md) records the 469-path verifier result and 194/194 current-gate regression. |
 
 ## S4 Independent Audit
 
@@ -71,6 +72,15 @@ negative-fixture exceptions, source-equivalence review, and [S5 evidence](../etc
 
 The separate inherited strict-compilation admission remains bounded in the
 current TODO ledger. It does not alter the completed S5 vocabulary scope.
+
+## S6 Corrective Closure
+
+The post-closure audit found that the S5 facade comment still directed new code
+toward raw standard names and that verifier discovery was based on filesystem
+globs rather than tracked paths. S6 corrects both without changing runtime
+behavior. The tracked-path verifier, controlled root-entry negative proof,
+retained strict command audit, and 194/194 current gates passed; see [S6
+evidence](../etc/evidence/t317-s6-global-type-vocabulary-verifier.md).
 
 ## S5 Coordinator Closure Verification
 
