@@ -2,27 +2,8 @@
 
 ## Current Work
 
-M5 T329 S4: 80386 task-gate and far-CALL-to-TSS entry (Ordinary Mode).
-
-## M5 T329 S4 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; T329 S1/S2/S3 remain retained task progress. Ordinary Mode performs implementation and acceptance review. |
-| Admission And Approval | Owner approved autonomous single-session continuation toward Intel 80386DX architecture closure and the accepted holistic task-switch state-machine method. S4 is the task-entry dependency cut after direct-JMP S2/S3. |
-| Objective | Implement and prove protected-mode 80386 task entry through a task gate and direct far CALL-to-available-TSS: 16-bit and 32-bit TSS forms as architecturally applicable, direct and memory-indirect CALL encodings, backlink save, NT publication, outgoing/incoming state and busy-descriptor transition, privilege/presence/type/limit failures, and pending-IRQ behavior after a valid incoming IF transition. |
-| Non-goals | Nested IRET task return; task-return/double-fault chains; non-null LDT; task paging/TLB; debug state; generic exception/IRQ redesign; call-gate behavior; and x87. |
-| Reference Baseline | `e76b4928` / current `origin/main` after T329 S3 P2; preserve user-owned uncommitted `docs/QUEUE.md`. |
-| Files And ABI Surface | Local task-switch execution code, its owner smoke/evidence/closure map and STATUS only. No public ABI, provider contract, or product-visible interface changes. |
-| Applicable Rules | Task Reading Set; Intel 80386 architecture as authority; Execution ordinary-mode lifecycle and actual-change review; Architecture/Coding/Documentation rules; accepted [T329 state-machine record](etc/evidence/t329-task-switch-state-machine.md). Task-gate and direct-TSS CALL routes must reuse a named transition planner/commit boundary, not duplicate independent state writes. Bochs/PCjs are read-only diagnostics only under source policy. |
-| Verification | Fresh GCC configure; focused task-switch marker; actual Ninja target-local strict GCC command; exact current registration; documentation governance; `git diff --check`; full `ctest -L current-gate --output-on-failure -j 16`. |
-| Expected Markers | Retain earlier markers and emit `M5:T329:S4:TSS-CALL-GATE:OK`; exact registration remains `current.core-machine-task-switch-smoke`. |
-| Asset Needs | None; deterministic in-memory GDT/TSS/IDT/PIC fixtures only. |
-| Reporting Requirements | Deliver one complete implementation P with an Intel form/state/fault matrix, shared-path audit, and requirement-to-proof evidence; after actual-change review push governance P closure. Report only a reproducible material blocker or accepted completion. |
-| Stop Conditions | Stop before shared paging/TLB, generic exception/IRQ, provider, or public-ABI changes; before nested IRET/task return, non-null LDT, paging/debug task state; or if CALL/task-gate entry cannot be modelled as a preflighted extension of the accepted planner/commit transition. Transfer rather than silently broaden. |
-| Exit Criteria | All admitted task-gate and direct-TSS CALL forms have focused success/fault/attribute/IRQ evidence. Valid entry proves backlink, NT, busy/TR/TS and complete image/cache publication. Installed fault handlers prove no partial outgoing TSS/descriptor state. Existing direct-JMP behavior remains green; remaining nested return/LDT/paging/debug work is explicitly transferred. |
-| Original Owner Request | Complete Intel 80386 with a holistic, maintainable design; avoid incremental symptom patches; commit and push accepted work. |
-| Similar-Issue Sweep | Audit `_e_call_far`, `_ser_call_far_task_gate`, `_ser_call_far_tss`, task-gate/JMP callers, all 16/32 TSS save/load paths, backlink/NT writes, descriptors, and task-switch fixtures. |
+**Idle.** M5 T329 S4 is closed; T329 remains open for its next separately
+admitted state-machine slice.
 
 ## Current Technical Baseline
 
@@ -42,6 +23,7 @@ M5 T329 S4: 80386 task-gate and far-CALL-to-TSS entry (Ordinary Mode).
 ## Recent M5 Closures
 
 | Task | Compact result |
+| T329 S4 | Closed protected direct far-CALL and GDT task-gate entry for 16/32-bit TSS images: shared nested transition semantics, backlink/NT, busy/TR/TS, direct/indirect CALL and task-gate JMP/CALL, local `LOCK FF /3` rejection, installed-handler and terminal fault boundaries, and 211/211 current-gate proof. Nested IRET, IDT task gates/double fault, LDT, task paging, and debug remain transferred in [S4 evidence](etc/evidence/t329-s4-task-gate-call-entry.md). |
 | T329 S1 | Closed the bounded 80286/80386 protected direct far-JMP-to-16-bit-TSS matrix: direct/indirect and permitted `66h`/`67h` forms, descriptor/TSS faults, busy and `CR0.TS` publication, local pending-IRQ boundary, target-local strict GCC compile, and 211/211 current-gate evidence are in [T329 S1 evidence](etc/evidence/t329-s1-tss16-direct-jump.md). 32-bit TSS, task gates/CALL/NT, LDT task state, task paging, and broader VM86/debug behavior remain transferred. |
 | T329 S2 | Closed the bounded 80386 32-bit-TSS direct far-JMP slice: complete outgoing/incoming state including CR3 and FS/GS, `EA`/`FF /5` 66h/67h matrix, descriptor/TSS/stack preflight boundaries, busy/TS, null LDTR, pending IRQ, and direct/indirect LOCK rejection. The targeted `FF /5` LOCK repair leaves the shared prefix policy unchanged; task gates/CALL/NT, non-null LDT, task paging, and debug state remain transferred in [S2 evidence](etc/evidence/t329-s2-tss32-direct-jump.md). |
 | T329 S3 | Closed the direct 32-bit TSS image/fault-order contract: named/checked CR3-through-LDTR offsets, full outbound/inbound cache/state proof, and installed `#TS/#GP/#SS` handler checkpoints proving descriptor/TSS/stack preflight failures leave no partial TSS or busy-descriptor write. Task gates/CALL/NT, non-null LDT, task paging, and debug state remain transferred in [S3 evidence](etc/evidence/t329-s3-tss32-image-fault-order.md). |
