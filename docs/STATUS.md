@@ -2,29 +2,8 @@
 
 ## Current Work
 
-**M5 T329 S1 - 16-bit TSS direct-jump task switch** (Single-Session Mode):
-the first task-system slice is active; it closes only direct protected far-JMP
-switches between 16-bit TSS images.
-
-## M5 T329 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner-approved autonomous single-session continuation of the ordered 80386DX architecture-coverage program, 2026-08-12. |
-| Objective | Close the Intel 80286/80386 protected direct far-JMP transition between valid 16-bit TSS images: descriptor checks, outgoing save, incoming register/cache/TR load, busy-bit transition, CR0.TS, fault ordering, and post-switch execution. |
-| Non-goals | No 32-bit TSS, task gate, far CALL-to-task, NT/nested IRET return, task-based CR3/page semantics, non-null LDT task image, VME/PVI, debug/test registers, generic exception redesign, or public ABI. |
-| Reference Baseline | `9e11cb4b`; current developer artifact remains `vm-0-5-0328`. |
-| Files And ABI Surface | Local task-switch production path only if a focused defect reproduces; one owner smoke/current-gate target; T329 form evidence and Status/history closure records; no public ABI. |
-| Applicable Rules | Intel task-management reference; execution, coding, architecture, source, and documentation rules; existing T261 task-switch evidence is retained input, not closure by itself. |
-| Verification | Fresh GCC configure; focused owner marker; exact current-gate discovery; strict direct compile command; retained task-switch regression; full current gate; documentation governance; diff check; artifact/commit/push if production changes. |
-| Expected Markers | New `M5:T329:S1:TSS16-JMP:OK`; retained `M5:T261:TASK-SWITCH:OK`; current-gate and documentation governance pass. |
-| Asset Needs | None. |
-| Reporting Requirements | Deliver one complete P1 only after all declared forms, rejection/fault boundaries, evidence, gate registration, matrix disposition, governance closure, commit, and push are complete. |
-| Stop Conditions | Stop and revise if closure needs 32-bit TSS layout/CR3 semantics, task-gate/CALL/NT behavior, non-null LDT load, shared exception changes beyond a reproduced TSS fault-delivery defect, or any runtime/API change outside this direct 16-bit JMP slice. |
-| Exit Criteria | Default and permitted attribute forms, real/VM86/privilege classifications, valid and invalid TSS descriptor matrix, state save/load, busy/TS ordering, controlled access faults/nonpublication, and pending-IRQ boundary are all evidenced; remaining task-system forms are explicitly transferred. |
-| Original Owner Request | Continue autonomously to the 80386DX architecture-coverage closure audit while preserving unrelated worktree changes. |
-| Similar-Issue Sweep | Audit every direct far-JMP route that reaches `_ser_jmp_far_tss`, all 16-bit TSS field accesses, descriptor busy/cache writes, and retained T261 coverage before deciding whether production changes are required. |
+**Idle.** M5 T329 S1 is closed; the next task-system slice requires separate
+Continuation admission.
 
 ## Current Technical Baseline
 
@@ -44,6 +23,7 @@ switches between 16-bit TSS images.
 ## Recent M5 Closures
 
 | Task | Compact result |
+| T329 S1 | Closed the bounded 80286/80386 protected direct far-JMP-to-16-bit-TSS matrix: direct/indirect and permitted `66h`/`67h` forms, descriptor/TSS faults, busy and `CR0.TS` publication, local pending-IRQ boundary, target-local strict GCC compile, and 211/211 current-gate evidence are in [T329 S1 evidence](etc/evidence/t329-s1-tss16-direct-jump.md). 32-bit TSS, task gates/CALL/NT, LDT task state, task paging, and broader VM86/debug behavior remain transferred. |
 | --- | --- |
 | T328 | Closed the historical LOCK-prefix legality matrix: 8086/80186 retain transparent valid-next-instruction semantics; 80286 adds protected `CPL <= IOPL`; retained 80386 memory-whitelist behavior stays intact. S2 reconciled the current closure map and ordinary matrix, removing the stale Deferred/TODO transfer without changing the user-owned Queue edit. Register, memory, REP, I/O, #GP frame, strict compile, artifact, and 211/211 gate evidence are in [history](history/M5-T328-legacy-lock-legality.md). |
 | T327 | Closed the current/specialized-gate reconciliation: fast smoke no longer builds classified media targets, and generated CTest/Ninja evidence now proves the full 210 = 15 media + 195 non-media partition, both developer roots, all specialized verifiers, and the aggregate's two roots. [History](history/M5-T327-current-gate-reconciliation.md). |
