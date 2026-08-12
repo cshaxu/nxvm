@@ -25,11 +25,14 @@ state closures below. Every admitted 80386DX candidate identifies the map rows
 it advances and any residual row it transfers. A completed smoke count or
 opcode slice is never a substitute for a closed state transition.
 
-1. **P0 - 80386DX exception, interrupt, and processor-control closure.**
-   Complete remaining architected fault, trap, interrupt, return, CR0/CR2/CR3,
-   descriptor-table load, and coprocessor-interface behavior without
-   implementing an 80387. Re-admit the VM86 LGDT/LIDT `#GP(0)` no-source-read
-   proof only after the preceding delivery foundation is complete.
+1. **P0 - 80386DX ordinary execution and flag-completeness foundation.**
+   Resolve the residual primary arithmetic, conversion, data-movement, stack,
+   string, port-string, and EFLAGS breadth transferred by the prior
+   ordinary-execution closure. Audit
+   each Intel 80386 form family before admission, preserve the completed
+   exception/IRQ foundation, and transfer selector/privilege stacks, paging,
+   task state, and legacy LOCK policy to their named packages rather than
+   absorbing them into ordinary execution.
 1. **P1 - 80386DX protection and privilege-transfer closure.** Complete
    descriptor, segmentation, privilege, gate, and user/kernel transfer
    behavior required by the Intel 80386 architecture. This consumes the proven
