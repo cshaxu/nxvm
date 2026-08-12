@@ -5,7 +5,10 @@ reserve a numeric task identifier, or define a technical baseline. The first
 approved candidate enters [STATUS.md](STATUS.md) and receives the next linear
 numeric identifier under [rules/EXECUTION.md](rules/EXECUTION.md).
 
-Before M6 admission, complete the remaining M5 candidates:
+Before M6 admission, complete the remaining M5 candidates. The current bounded
+LGDT/LIDT load work is not repeated here: it retains its non-VM86 boundary
+while the ordered candidates below begin with the shared prerequisite exposed
+by its VM86 stop condition.
 
 Every 80386DX candidate is matrix-driven rather than Windows-demand-driven.
 Before admitting a task, audit its relevant Intel 80386 PRM instruction and
@@ -16,28 +19,39 @@ in-scope form is partial, missing, or unclassified. A family candidate advances
 only when its whole assigned matrix is resolved by implementation and focused
 evidence, or by an approved boundary classification.
 
-1. **Test-corpus quality corrective.** Repair the project-owned CPU smoke corpus before
-   new 80386 feature work: target-local strict GCC coverage, project-type
-   vocabulary, test-only fixture consolidation, and a package audit. This is a
-   bounded test/governance repair; it does not redefine or remove any 80386DX
-   capability candidate below.
-1. **80386DX ordinary execution and flag-completeness foundation.** Complete
-   the remaining ordinary instruction, operand-size, address-size, flag, and
-   string/control families against the Intel 80386 architecture. Reuse an
-   existing helper only when its callers are covered; introduce an abstraction
-   only after the affected callers have focused coverage and the shared
-   responsibility is concrete.
-1. **80386DX exception, interrupt, and processor-control closure.** Complete
-   remaining architected fault, trap, interrupt, return, CR0/CR2/CR3, and
-   coprocessor-interface behavior without implementing an 80387.
-1. **80386DX protection and privilege-transfer closure.** Complete descriptor,
-   segmentation, privilege, gate, and user/kernel transfer behavior required
-   by the Intel 80386 architecture.
-1. **80386DX paging and translation closure.** Complete the remaining
+1. **P0 - VM86-to-protected exception and interrupt delivery foundation.**
+   Implement the shared 80386 VM86 `#GP`/`#UD`/`#NM` and IRQ path through an
+   IDT gate to CPL0: TSS-selected `SS0:ESP0` stack transition, Intel-correct
+   VM86 exception frame, gate effects, failure atomicity, and a bounded IRET
+   return proof. It must not claim VME/PVI, task switching, paging breadth, or
+   every VM86 instruction. This is the prerequisite for VM86 rejection
+   semantics in privileged instruction families, including the deferred
+   LGDT/LIDT case.
+1. **P0 - 80386DX exception, interrupt, and processor-control closure.**
+   Complete remaining architected fault, trap, interrupt, return, CR0/CR2/CR3,
+   descriptor-table load, and coprocessor-interface behavior without
+   implementing an 80387. Re-admit the VM86 LGDT/LIDT `#GP(0)` no-source-read
+   proof only after the preceding delivery foundation is complete.
+1. **P1 - 80386DX protection and privilege-transfer closure.** Complete
+   descriptor, segmentation, privilege, gate, and user/kernel transfer
+   behavior required by the Intel 80386 architecture. This consumes the proven
+   exception/TSS boundary rather than duplicating it in individual instruction
+   tasks.
+1. **P1 - 80386DX paging and translation closure.** Complete the remaining
    non-PAE 80386 paging, protection, invalidation, and diagnostic behavior.
-1. **80386DX task, local-descriptor, virtual-8086, and debug/test-register
-   closure.** Complete the remaining 80386 system-state families; do not use
-   a missing product consumer to withdraw a family from this approved program.
+   Admit after the exception and privilege paths can report `#PF` and
+   protection failures reliably.
+1. **P2 - 80186/80286 legacy LOCK-prefix legality matrix.** Resolve the
+   retained cross-cutting `PREFIX_LOCK` debt with Intel profile-by-profile
+   legality rules, a complete affected opcode/ModRM matrix, valid-memory and
+   invalid/register coverage, and retained 80386 regressions. It is ordered
+   after the high-ROI VM86/exception/protection foundation because it changes
+   shared legacy prefix behavior; it must not be special-cased per opcode.
+1. **P2 - 80386DX task, local-descriptor, virtual-8086, and debug/test-register
+   closure.** Complete the remaining 80386 system-state families, including
+   the VM86 instruction breadth unlocked by the delivery foundation; do not
+   use a missing product consumer to withdraw a family from this approved
+   program.
 1. **80386DX architecture-coverage closure audit.** Reconcile every in-scope
    Intel 80386 architectural form and behavior with implementation evidence,
    a focused regression, or an explicit external-coprocessor boundary.
