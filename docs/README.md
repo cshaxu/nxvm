@@ -31,6 +31,12 @@ evidence, or artifacts; those are also required. Then apply these triggers:
 This is the task-reading authority. Do not treat the following orientation map
 as a requirement to re-read every authority for every S.
 
+Read the fixed set when first starting an S and on its first resume. Re-read an
+authority when the packet, S brief, that authority, or the change surface has
+materially changed; routine implementation steps and progress reports do not
+require a full repeat reading. This cadence does not excuse reading every
+authority newly triggered by a revision or discovered change surface.
+
 ## Orientation Map
 
 For system-wide orientation, read the current authorities in this order:
