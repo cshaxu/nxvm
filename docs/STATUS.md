@@ -2,28 +2,8 @@
 
 ## Current Work
 
-M5 T323 S8 is active: audit the 80386DX protected segmentation and
-privilege-transfer closure against its Queue boundary (Ordinary Mode).
-
-## M5 T323 S8 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner authorization to execute in single-session mode through the 80386DX architecture-coverage closure audit, 2026-08-12. T323 S1--S7 are accepted. |
-| Objective | Perform the task-level closure audit for the Queue's 80386DX protection and privilege-transfer boundary: reconcile Intel 80286/80386 protected, non-VM86 segmentation, selector/cache, direct and gate transfers, outer stack transitions, and return composition with current code and focused evidence. |
-| Non-goals | No new product behavior, whole-CPU claim, paging, task gate/switch, LDT/debug/VM86 breadth, VME/PVI, x87 execution, legacy LOCK policy, or test-only evidence inflation is admitted. |
-| Reference Baseline | `0e676b8c`; accepted T303/T306/T307/T320/T321/T323 records, the current Queue, and the 80386DX closure map are inputs. |
-| Files And ABI Surface | Expected: Status, the T323 closure/audit evidence, and the closure map only if its current disposition changes. Code, CMake, fixtures, public ABI, and Queue are excluded unless a separately admitted corrective S is required. |
-| Applicable Rules | Task Reading Set; execution/documentation rules; Queue and roadmap; 80386DX closure map; retained T303/T306/T307/T320/T321/T323 evidence; Intel 80286/80386 protected segmentation, gates, returns, and privilege rules. |
-| Verification | Read each claimed code/evidence route, map every required condition to focused proof or an explicit named transfer, rerun the documentation governance and diff checks, inspect all proposed documentation changes, and report whether T323 can close or which exact corrective S remains. |
-| Expected Markers | `M5:T323:S8:PROTECTION-PRIVILEGE-AUDIT:OK`; no smoke target is expected unless a new corrective S is admitted. |
-| Asset Needs | No external asset, guest media, firmware, or imported source. |
-| Reporting Requirements | Deliver one complete audit P while retaining this packet. A task closure is permitted only if every T323-owned row is complete or explicitly transferred to a named Queue/TODO boundary; otherwise retain T323 open and admit the exact next corrective S. |
-| Stop Conditions | Stop before silently classifying an unproven architectural form as complete, modifying Queue ownership, revising global policy, or expanding into task/VM86/paging/x87/legacy LOCK behavior. Report the exact form and destination instead. |
-| Exit Criteria | The audit gives every T323-owned state/form a code-and-evidence basis; all residual rows have a precise owner; the closure map no longer says `Partial` for a condition claimed complete; governance and diff checks pass; and any task closure or next-S decision is truthful and pushed. |
-| Original Owner Request | Continue the owner-approved Intel 80386 implementation program in single-session mode through the 80386DX architecture coverage closure audit, with code quality and complete evidence. |
-| Similar-Issue Sweep | Reconcile `_ser_int_protected_16`, `_ser_int_protected_32_outer`, `_ser_call_far_call_gate`, `_ser_call_far_call_gate_32`, `_ser_ret_far_outer`, `_ser_iret_protected_outer`, selector/cache and TSS-stack preparation, plus their T303/T306/T307/T320/T321/T323 owner proofs. |
+**Idle.** M5 T323 is closed; the next 80386DX Queue candidate requires a
+separately admitted task packet.
 
 ## Current Technical Baseline
 
@@ -44,13 +24,7 @@ privilege-transfer closure against its Queue boundary (Ordinary Mode).
 
 | Task | Compact result |
 | --- | --- |
-| T323 S7 | Accepted protected 16-bit call-gate entry: 80286 TSS16 plus 80386 TSS16/TSS32 outer calls, same-CPL DPL behavior, two-word parameter copy and exact six-word frame, gate/code/TSS/SS/stack/source prepublication boundaries, and STI-composed IRQ ordering are focused-proven. `_ser_call_far_call_gate` now preflights and copies 16-bit parameters; the refreshed 0323 artifact SHA-256 is recorded. Target-local strict GCC, governance, and 209/209 current-gate passed. [Evidence](etc/evidence/t323-s7-protected-16-call-gate.md). |
-| T323 S6 | Accepted protected CPL0-to-CPL3 16-bit outer `IRET`: 80286/80386 default plus 80386 `67`, exact five-word frame consumption, cache/CPL/FLAGS/16-bit-SP publication, invalid CS/SS/short-frame atomicity, and restored-IF IRQ composition are focused-proven. No production change; target-local strict GCC, governance, and 208/208 current-gate passed. [Evidence](etc/evidence/t323-s6-protected-16-outer-iret.md). |
-| T323 S5 | Accepted protected CPL3-to-CPL0 16-bit external entry: 80286 TSS16 and 80386 TSS16/TSS32 paths publish the five-word outer frame, DPL0 CS/SS stack state, gate-specific IF/TF effects, and IRQ/NMI acknowledgment. Invalid TSS plus null/non-present SS0 retain target-stack/PIC publication boundaries. No production change; target-local strict GCC, governance, and 207/207 current-gate passed. [Evidence](etc/evidence/t323-s5-protected-16-outer.md). |
-| T323 S4 | Accepted same-CPL3 16-bit protected external entry: 80286/80386 IRQ0 and NMI bypass DPL-zero interrupt/trap gate software policy, publish the exact three-word frame and gate-specific IF/TF state, and acknowledge their source. Invalid and non-present external gates retain source ownership and target-stack nonpublication after the source NOP. No production change; target-local strict GCC, governance, and 206/206 current-gate passed. [Evidence](etc/evidence/t323-s4-protected-16-external.md). |
-| T323 S3 | Accepted same-CPL 16-bit protected interrupt/trap gates: 80286/80386 software frames, 66/67/LOCK classification, software DPL rejection, existing error-code frame, and external IRQ frame are focused-proven. `_ser_int_protected_16` now distinguishes software origin from error frame, accepts trap gates, clears IF only for interrupt gates, and clears TF for both. Target-local strict GCC, refreshed 0323 artifact, governance, and 205/205 current-gate passed. [Evidence](etc/evidence/t323-s3-protected-16-gate.md). |
-| T323 S2 | Accepted the protected loaded DS/ES/SS data-access matrix: 80286/80386 cache rights, null/read-only/ordinary/expand-down limits, DS/SS/ES selection, profile/LOCK rejection, and the corrected same-CPL 16-bit IRQ0 FLAGS/CS/IP frame are focused-proven. The sole `_ser_int_protected` call-site repair passes the existing error-frame classification; target-local strict GCC, the 0323 artifact, governance, and 204/204 current-gate passed. [Evidence](etc/evidence/t323-s2-protected-data-access.md). |
-| T323 S1 | Accepted the direct protected far `CALL`/`JMP` code-descriptor matrix: 80286/80386 immediate and `FF /3,/5` forms, 66/67 routes, descriptor/RPL/DPL/present classification, target and stack preflight, LOCK/profile rejection, and protected IRQ0 no-shadow are focused-proven. No production change; target-local strict GCC, governance, and 203/203 current-gate passed. [Evidence](etc/evidence/t323-s1-protected-far-transfer.md). |
+| T323 | Closed the bounded 80386DX non-task, non-VM86 protection/privilege-transfer composition: direct far transfer, loaded segment rights, 16-bit same/outer gate entry, outer IRET, and parameterized 16-bit call gates now join retained selector, 32-bit, and outer-RETF evidence. The sole S7 serializer correction preflights/copies parameter words. Task/LDT/debug/VM86, paging, legacy LOCK, and x87 retain named boundaries; the 0323 artifact SHA-256 and 209/209 gate result are in the [closure audit](etc/evidence/t323-protection-privilege-closure-audit.md). |
 | T322 | Audited and withdrew the duplicate ordinary-execution/FLAGS candidate: T316's accepted S23--S65 owner smokes already cover the transferred Intel 80386 ordinary application forms. Remaining work is explicitly protection/privilege, paging, task/debug/VM86, legacy LOCK, or external x87 scope; no invented implementation slice or artifact was created. Documentation governance and diff checks passed. |
 | T321 | Closed the bounded exception, interrupt, return, VM86 table-load, and processor-control composition program: S2 delivers active `#DE/#PF/#MF` vectors; S3 proves NMI/IRQ/TF ordering; S4 composes software INT/IRET with IRQ; S5 enforces VM86 LGDT/LIDT `#GP(0)` before source access; and S6 records the artifact and all transfers. The 0321 artifact, governance, and 202/202 current-gate passed. |
 | T320 | Closed the bounded VM86-to-CPL0 32-bit delivery foundation: `#GP/#UD/#NM/IRQ0` entry through TSS `SS0:ESP0`, full VM86 frame and failure boundaries, plus atomic nine-dword CPL0 `IRET` return with a real IRQ0-to-handler-to-VM86 round trip. `66` is classified as non-VM86 return, `67` succeeds, and VME/PVI/task/paging breadth remains transferred. Artifact 0320 SHA-256 is recorded in history; fresh configure, governance/diff checks, and 198/198 current-gate passed. |
@@ -58,7 +32,6 @@ privilege-transfer closure against its Queue boundary (Ordinary Mode).
 | T318 | Closed the bounded SGDT/SIDT `0F 01 /0,/1 table-store slice: a local six-byte preflight/publication repair prevents partial pseudo-descriptor writes; both forms have profile, attribute, segment, rejection, protected atomicity, VM86 and IRQ-ordering evidence. 195/195 current-gate passed, and executor plus coordinator 0318 artifact hashes are retained in its history. LGDT/LIDT and wider processor-control work remain future bounded packages. |
 | T317 | Closed test-corpus quality plus corrective type-vocabulary and developer-feedback work. S7 retains the 194-test current gate while adding validated default-four-job CTest execution, 15 explicit media labels, and a 179-test non-media fast preset; its full gate, fast run, media verifier, documentation governance, and diff check passed. |
 | T316 | Closed the declared 80386 ordinary-execution slices through S66. Residual parent-family breadth remains explicitly transferred in the S66 matrix to named later Queue packages, the legacy LOCK TODO, or the external-coprocessor boundary; no whole-80386 claim. Its predecessor developer artifact and 194 current-gate tests passed. |
-| T314 | Closed the EGA CRTC 13h bound, registered the deterministic xasm smoke, restored six historical target-local strict GCC sets while retaining three selected libraries, and added the CRTC static closure verifier; the two inherited-governance debts remain. Its 0315 artifact, 52 gates, 147 CTests, and S2/S3/S6 markers passed. |
 
 ## Recent Governance
 
