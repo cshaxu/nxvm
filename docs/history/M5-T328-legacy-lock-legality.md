@@ -31,3 +31,11 @@ Commit `e5aa9d97` produced current developer artifact `vm-0-5-0328` at
 VME/PVI, physical bus arbitration/timing, task state, paging, and x87
 execution remain in their independently named Queue or TODO boundaries. No
 legacy LOCK-prefix debt remains in `TODO.md`.
+
+## Current Crosswalk Reconciliation
+
+T328 S2 reconciles the current [80386DX closure map](../etc/evidence/80386-closure-map.md)
+and ordinary-execution matrix with this accepted result. The completed
+8086/80186/80286 `LOCK` boundary is no longer a Deferred or TODO destination.
+Older task histories retain their contemporaneous transfer statements as
+historical records; they are not current allocation authorities.

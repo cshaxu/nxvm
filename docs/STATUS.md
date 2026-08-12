@@ -2,8 +2,29 @@
 
 ## Current Work
 
-**Idle.** T328 is closed; the next 80386DX package requires separate
-admission from the Queue.
+**M5 T328 S2 - legacy LOCK closure-map reconciliation** (Ordinary Mode):
+documentation-only corrective reconciliation is active; no runtime or Queue
+change is authorized.
+
+## M5 T328 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Corrective |
+| Admission And Approval | Owner-approved autonomous 80386DX closure work, 2026-08-12. Correct the immediately preceding T328 closure's stale supporting-map disposition only. |
+| Objective | Reconcile every T328-owned legacy LOCK transfer record so the closure map, TODO ledger, ordinary-execution matrix, Status history, and T328 history state the same completed boundary. |
+| Non-goals | No CPU, CMake, artifact, Queue, runtime, or policy change; do not edit the user-owned uncommitted Queue candidate. |
+| Reference Baseline | `d5c11c3d` T328 closure; current developer artifact remains `vm-0-5-0328`. |
+| Files And ABI Surface | `docs/etc/evidence/80386-closure-map.md`, `docs/history/M5-T328-legacy-lock-legality.md`, and Status closure bookkeeping only; no ABI. |
+| Applicable Rules | Documentation and execution rules; maintain one authoritative completed/deferred disposition per closure boundary. |
+| Verification | Documentation governance, `git diff --check`, changed-document review, commit, and push. |
+| Expected Markers | Documentation governance passes for `vm-0-5-0328`; no runtime marker applies. |
+| Asset Needs | None. |
+| Reporting Requirements | One complete documentation corrective P1, followed by the governance closure P2; identify the preserved user-owned Queue edit. |
+| Stop Conditions | Stop if reconciling the stale record requires changing the Queue's user-owned candidate, task scope, runtime behavior, or artifact identity. |
+| Exit Criteria | The closure map no longer lists legacy LOCK as Deferred, references T328 evidence, and agrees with TODO/matrix/history; governance and diff checks pass; commits are pushed. |
+| Original Owner Request | Continue autonomously through the 80386DX coverage closure audit while preserving unrelated worktree changes. |
+| Similar-Issue Sweep | Search all current documentation references to legacy LOCK, T328, and the former TODO destination. |
 
 ## Current Technical Baseline
 
