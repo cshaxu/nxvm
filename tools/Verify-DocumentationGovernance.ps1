@@ -27,7 +27,7 @@ function Test-Mojibake([string]$text) {
 
 function Test-MachineLocalPath([string]$text) {
     # Stable disclosure recurrence: committed local paths are never portable evidence.
-    return $text -match '(?i)[a-z]:(?:\\){2}(?:users|home)(?:\\){2}'
+    return $text -match '(?i)(?:[a-z]:\\(?:users|home)\\|/(?:home|users)/|\\\\[a-z0-9][a-z0-9.-]*\\)'
 }
 
 function Test-ExactNameSet([string[]]$actual, [string[]]$expected) {
@@ -351,6 +351,8 @@ function New-SelfTestRepository([string]$root) {
     Set-SelfTestFile $root "README.md" "# ntvdm64`n`n## Start Here`n`n## Project Boundary"
     Set-SelfTestFile $root "AGENTS.md" "# Agent Instructions`n`n## Authority`n`n## Execution"
     Set-SelfTestFile $root "CONTRIBUTING.md" "# Contributing`n`n## Change Submission`n`n## Review Record`n`n## Commits And Tracking"
+    Set-SelfTestFile $root "THIRD_PARTY_NOTICES.md" "# Third-Party Notices"
+    Set-SelfTestFile $root "tests/README.md" "# Test Directory"
     Set-SelfTestFile $root "docs/README.md" "# Documentation Guide`n`n## Task Reading Set`n`n[Status](STATUS.md)`n[Execution](rules/EXECUTION.md)`n[Contributing](../CONTRIBUTING.md)`n`n## Daily Operation`n`n## Supporting Detail"
     Set-SelfTestFile $root "docs/QUEUE.md" "# Queue`n`n1. Candidate work"
     Set-SelfTestFile $root "docs/TODO.md" "# Long-Term Review Ledger`n`n## Compatibility Debt`n`n- [ ] **Fixture debt (`TODO(High)`).** Admit only with evidence."
@@ -397,9 +399,16 @@ if ($SelfTest) {
         "Mojibake detector did not reject the controlled negative sample."
     Require (-not (Test-Mojibake "ASCII only")) `
         "Mojibake detector rejected an ASCII control sample."
-    Require (Test-MachineLocalPath 'D:\\home\\example') `
-        "Machine-local path detector did not reject the controlled negative sample."
-    Require (-not (Test-MachineLocalPath 'C:\\NAME.EXT')) `
+    foreach ($machineLocalPath in @(
+            'C:\Users\alice\file.txt',
+            'D:\home\example',
+            '/home/alice/file.txt',
+            '\\server\share\file.txt'
+        )) {
+        Require (Test-MachineLocalPath $machineLocalPath) `
+            "Machine-local path detector did not reject: $machineLocalPath"
+    }
+    Require (-not (Test-MachineLocalPath 'C:\NAME.EXT')) `
         "Machine-local path detector rejected a guest DOS path control sample."
     Require (Test-ExactNameSet @("A.md", "B.md") @("B.md", "A.md")) `
         "Fixed-file checker rejected an identical control set."
@@ -411,6 +420,10 @@ if ($SelfTest) {
         New-SelfTestRepository $fixtureRoot
         Require (Invoke-SelfTestCheck $fixtureRoot) `
             "Documentation schema rejected the controlled passing fixture."
+        Set-SelfTestFile $fixtureRoot "tests/README.md" "# Test Directory`n`nC:\Users\alice\private"
+        Require (-not (Invoke-SelfTestCheck $fixtureRoot -Quiet)) `
+            "Documentation schema accepted a machine-local path in a test README."
+        Set-SelfTestFile $fixtureRoot "tests/README.md" "# Test Directory"
         $validStatus = Get-Content -Raw -LiteralPath (Join-Path $fixtureRoot "docs/STATUS.md")
         Set-SelfTestFile $fixtureRoot "docs/design/ARCHITECTURE.md" "# System Architecture"
         Require (-not (Invoke-SelfTestCheck $fixtureRoot -Quiet)) `
@@ -883,9 +896,11 @@ $markdownFiles = @(
     Get-Item -LiteralPath $rootReadmePath
     Get-Item -LiteralPath $agentsPath
     Get-Item -LiteralPath $contributingPath
+    Get-Item -LiteralPath (Join-Path $RepositoryRoot "THIRD_PARTY_NOTICES.md") -ErrorAction SilentlyContinue
     Get-ChildItem -LiteralPath $docsRoot -Recurse -File -Filter "*.md"
+    Get-ChildItem -LiteralPath (Join-Path $RepositoryRoot "tests") -Recurse -File -Filter "*.md" -ErrorAction SilentlyContinue
     Get-ChildItem -LiteralPath (Join-Path $RepositoryRoot "tools") -Recurse -File -Filter "*.md"
-)
+) | Sort-Object -Property FullName -Unique
 $mojibake = $markdownFiles |
     Where-Object { Test-Mojibake (Get-Content -Raw -LiteralPath $_.FullName) }
 Require ($null -eq $mojibake) "Documentation contains mojibake: $($mojibake.FullName -join ', ')"

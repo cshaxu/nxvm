@@ -54,11 +54,13 @@ independently before acceptance; the executor's report is an evidence index,
 not a substitute for reviewing the actual Git/worktree changes.
 
 **Concise reporting.** Each conversation report states only the information
-applicable to its purpose. A completion or blocker delivery records completion
-or blocker, pushed commit, verification result or evidence location, and known
-boundary or transfer. Contract confirmation or objection and S-required
-progress reports state the applicable decision or progress node and link to
-their evidence. Reports link to rather than reproduce command output,
+applicable to its purpose. A completion delivery records completion, pushed
+commit, verification result or evidence location, and known boundary or
+transfer. A blocker delivery records the blocker, current commit status if
+any, relevant evidence, and the requested decision or transfer. Contract
+confirmation or objection and S-required progress reports state the applicable
+decision or progress node and link to their evidence. Reports link to rather
+than reproduce command output,
 requirement matrices, implementation narratives, or full evidence. The
 committed delivery and its indexed evidence retain the complete
 requirement-to-proof record. Concise reporting never reduces self-review,
@@ -177,10 +179,12 @@ open debt, task evidence, and applicable rules; it cannot be bypassed by a
 passing local implementation.
 
 **Per-S reading index.** Before first work, and again on its first resume in
-either mode, the executor reads the active packet plus the S-contract,
-P-lifecycle, completion-goal, stop, and role-authority paragraphs above, and
-applicable project rules. This index is navigation only; those paragraphs
-remain the sole requirements source.
+either mode, the executor first follows the [Task Reading Set](../README.md)
+and then reads the active packet plus the S-contract, P-lifecycle,
+completion-goal, stop, and role-authority paragraphs above. It also reads each
+project rule triggered by the packet or change surface. This index is
+navigation only; the referenced authorities remain the sole requirements
+sources.
 
 **Coordinated Dual-Session Mode.**
 
@@ -389,12 +393,8 @@ internally consistent. The gate verifies structural schemas, not semantic
 document ownership; the closure audit must still compare each changed document
 against the authority matrix in `docs/rules/DOCUMENT.md`.
 
-While a numeric task package remains open, Status may retain compact progress
-summaries for its completed subtasks, including while no next subtask is
-admitted. Those summaries belong only to that latest open numeric task; they
-are not task-history substitutes. The task's final closure replaces them with
-one compact task-level result. The recent task-level closure list remains
-capped under the documentation rules.
+Status retention and closure-summary limits follow the
+[Documentation Rules](DOCUMENT.md).
 
 ## Milestone Closure Evidence
 
