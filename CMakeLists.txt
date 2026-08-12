@@ -285,6 +285,12 @@ target_link_libraries(core-machine-vm86-delivery-smoke PRIVATE core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(core-machine-vm86-delivery-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
+add_executable(core-machine-vm86-iret-smoke
+    tests/machine/core_machine_vm86_iret_smoke.c)
+target_link_libraries(core-machine-vm86-iret-smoke PRIVATE core-machine)
+if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(core-machine-vm86-iret-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+endif()
 add_executable(core-machine-interrupt-entry-smoke
     tests/machine/core_machine_interrupt_entry_smoke.c)
 target_link_libraries(core-machine-interrupt-entry-smoke PRIVATE core-machine)
@@ -1450,6 +1456,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-sgdt-sidt-smoke
     core-machine-lgdt-lidt-smoke
     core-machine-vm86-delivery-smoke
+    core-machine-vm86-iret-smoke
     core-machine-interrupt-entry-smoke
     core-machine-idt-privilege-entry-smoke
     core-machine-real-mode-386-rep-cmps-smoke

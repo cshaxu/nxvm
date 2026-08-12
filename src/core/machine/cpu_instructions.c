@@ -4465,6 +4465,93 @@ static C_VOID _ser_iret_protected_same(core_machine_cpu_execution_context *conte
     }
     TYPE_TRACE_CALL_END;
 }
+/* Build the architectural real-mode-style cache used after a CPL0 32-bit
+ * IRET return to virtual-8086 mode.  The return-frame selectors are not
+ * protected-mode selectors: they cannot require a descriptor-table lookup
+ * and therefore this helper is deliberately infallible. */
+static C_VOID _ser_iret_vm86_sreg(t_cpu_data_sreg *rsreg,
+    type_unsigned_16 selector, type_unsigned_8 sregtype)
+{
+    rsreg->flagValid = TYPE_TRUE;
+    rsreg->selector = selector;
+    rsreg->base = (type_unsigned_32)selector << 4u;
+    rsreg->limit = 0x0000ffffu;
+    rsreg->dpl = 3u;
+    rsreg->sregtype = sregtype;
+    rsreg->seg.accessed = TYPE_FALSE;
+    rsreg->seg.executable = sregtype == SREG_CODE;
+    if (sregtype == SREG_CODE) {
+        rsreg->seg.exec.defsize = TYPE_FALSE;
+        rsreg->seg.exec.conform = TYPE_FALSE;
+        rsreg->seg.exec.readable = TYPE_TRUE;
+    } else {
+        rsreg->seg.data.big = TYPE_FALSE;
+        rsreg->seg.data.expdown = TYPE_FALSE;
+        rsreg->seg.data.writable = TYPE_TRUE;
+    }
+}
+static C_VOID _ser_iret_protected_to_vm86(
+    core_machine_cpu_execution_context *context)
+{
+    type_unsigned_32 neweip;
+    type_unsigned_32 newflags;
+    type_unsigned_32 newesp;
+    type_unsigned_32 selector;
+    type_unsigned_16 newcs, newss, newes, newds, newfs, newgs;
+    t_cpu_data_sreg newcs_cache = cpu_state.data.cs;
+    t_cpu_data_sreg newss_cache = cpu_state.data.ss;
+    t_cpu_data_sreg newes_cache = cpu_state.data.es;
+    t_cpu_data_sreg newds_cache = cpu_state.data.ds;
+    t_cpu_data_sreg newfs_cache = cpu_state.data.fs;
+    t_cpu_data_sreg newgs_cache = cpu_state.data.gs;
+
+    TYPE_TRACE_CALL_BEGIN("_ser_iret_protected_to_vm86");
+    /* This is the full 80386 32-bit VM86 return frame.  Every read precedes
+     * publication so a failed stack read leaves the CPL0 frame intact. */
+    TYPE_TRACE_CHECK_RETURN(_s_test_ss_pop(context, 36u));
+    TYPE_TRACE_CHECK_RETURN(_s_peek_ss_pop(context, 0u,
+        TYPE_REFERENCE_OF(neweip), 4u));
+    TYPE_TRACE_CHECK_RETURN(_s_peek_ss_pop(context, 4u,
+        TYPE_REFERENCE_OF(selector), 4u));
+    newcs = TYPE_MASK_UNSIGNED_16(selector);
+    TYPE_TRACE_CHECK_RETURN(_s_peek_ss_pop(context, 8u,
+        TYPE_REFERENCE_OF(newflags), 4u));
+    TYPE_TRACE_CHECK_RETURN(_s_peek_ss_pop(context, 12u,
+        TYPE_REFERENCE_OF(newesp), 4u));
+    TYPE_TRACE_CHECK_RETURN(_s_peek_ss_pop(context, 16u,
+        TYPE_REFERENCE_OF(selector), 4u));
+    newss = TYPE_MASK_UNSIGNED_16(selector);
+    TYPE_TRACE_CHECK_RETURN(_s_peek_ss_pop(context, 20u,
+        TYPE_REFERENCE_OF(selector), 4u));
+    newes = TYPE_MASK_UNSIGNED_16(selector);
+    TYPE_TRACE_CHECK_RETURN(_s_peek_ss_pop(context, 24u,
+        TYPE_REFERENCE_OF(selector), 4u));
+    newds = TYPE_MASK_UNSIGNED_16(selector);
+    TYPE_TRACE_CHECK_RETURN(_s_peek_ss_pop(context, 28u,
+        TYPE_REFERENCE_OF(selector), 4u));
+    newfs = TYPE_MASK_UNSIGNED_16(selector);
+    TYPE_TRACE_CHECK_RETURN(_s_peek_ss_pop(context, 32u,
+        TYPE_REFERENCE_OF(selector), 4u));
+    newgs = TYPE_MASK_UNSIGNED_16(selector);
+    _ser_iret_vm86_sreg(&newcs_cache, newcs, SREG_CODE);
+    _ser_iret_vm86_sreg(&newss_cache, newss, SREG_STACK);
+    _ser_iret_vm86_sreg(&newes_cache, newes, SREG_DATA);
+    _ser_iret_vm86_sreg(&newds_cache, newds, SREG_DATA);
+    _ser_iret_vm86_sreg(&newfs_cache, newfs, SREG_DATA);
+    _ser_iret_vm86_sreg(&newgs_cache, newgs, SREG_DATA);
+    cpu_state.data.eflags = (newflags & ~VCPU_EFLAGS_RESERVED) |
+        (cpu_state.data.eflags & VCPU_EFLAGS_RESERVED);
+    cpu_state.data.cs = newcs_cache;
+    cpu_state.data.ss = newss_cache;
+    cpu_state.data.es = newes_cache;
+    cpu_state.data.ds = newds_cache;
+    cpu_state.data.fs = newfs_cache;
+    cpu_state.data.gs = newgs_cache;
+    cpu_state.data.eip = neweip;
+    cpu_state.data.esp = newesp;
+    _MakeCPL(3u);
+    TYPE_TRACE_CALL_END;
+}
 _______todo _e_iret(core_machine_cpu_execution_context *context, type_unsigned_8 byte)
 {
     type_unsigned_16 newcs, newss, newds, newes, newfs, newgs;
@@ -4528,6 +4615,11 @@ _______todo _e_iret(core_machine_cpu_execution_context *context, type_unsigned_8
                 TYPE_TRACE_CHECK_RETURN(_s_test_ss_pop(context, 12u));
                 TYPE_TRACE_CHECK_RETURN(_s_peek_ss_pop(context, 8u,
                     TYPE_REFERENCE_OF(return_flags), 4u));
+                if (TYPE_GET_BIT(return_flags, VCPU_EFLAGS_VM) && !_GetCPL) {
+                    TYPE_TRACE_CHECK_RETURN(_ser_iret_protected_to_vm86(context));
+                    TYPE_TRACE_CALL_END;
+                    return;
+                }
                 break;
             default:
                 TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(byte));
@@ -4636,31 +4728,48 @@ _______todo _e_iret(core_machine_cpu_execution_context *context, type_unsigned_8
             }
             if (TYPE_GET_BIT(neweflags, VCPU_EFLAGS_VM) && !_GetCPL)
             {
+                t_cpu_data_sreg newcs_cache = cpu_state.data.cs;
+                t_cpu_data_sreg newss_cache = cpu_state.data.ss;
+                t_cpu_data_sreg newes_cache = cpu_state.data.es;
+                t_cpu_data_sreg newds_cache = cpu_state.data.ds;
+                t_cpu_data_sreg newfs_cache = cpu_state.data.fs;
+                t_cpu_data_sreg newgs_cache = cpu_state.data.gs;
                 TYPE_TRACE_BLOCK_BEGIN("neweflags(VM),CPL(0)");
-                /* return to v86 */
-                TYPE_TRACE_CHECK_RETURN(_s_test_ss_pop(context, 24));
-                cpu_state.data.eflags = (neweflags & ~mask) | (cpu_state.data.eflags & mask);
-                TYPE_TRACE_CHECK_RETURN(_ksa_load_sreg(context, &ccs, newcs));
-                TYPE_TRACE_CHECK_RETURN(_kma_test_logical(context, &ccs, neweip, 0x01, 0, 0x00, 1));
-                cpu_state.data.cs = ccs;
-                cpu_state.data.eip = neweip;
-                TYPE_TRACE_CHECK_RETURN(_kec_pop(context, TYPE_REFERENCE_OF(newesp), 4));
-                TYPE_TRACE_CHECK_RETURN(_kec_pop(context, TYPE_REFERENCE_OF(xs_sel), 4));
+                /* Preflight and read the complete nine-dword frame before
+                 * publishing VM, CPL, stack, or any segment cache. */
+                TYPE_TRACE_CHECK_RETURN(_s_test_ss_pop(context, 36u));
+                TYPE_TRACE_CHECK_RETURN(_s_peek_ss_pop(context, 12u,
+                    TYPE_REFERENCE_OF(newesp), 4u));
+                TYPE_TRACE_CHECK_RETURN(_s_peek_ss_pop(context, 16u,
+                    TYPE_REFERENCE_OF(xs_sel), 4u));
                 newss = TYPE_MASK_UNSIGNED_16(xs_sel);
-                TYPE_TRACE_CHECK_RETURN(_kec_pop(context, TYPE_REFERENCE_OF(xs_sel), 4));
+                TYPE_TRACE_CHECK_RETURN(_s_peek_ss_pop(context, 20u,
+                    TYPE_REFERENCE_OF(xs_sel), 4u));
                 newes = TYPE_MASK_UNSIGNED_16(xs_sel);
-                TYPE_TRACE_CHECK_RETURN(_kec_pop(context, TYPE_REFERENCE_OF(xs_sel), 4));
+                TYPE_TRACE_CHECK_RETURN(_s_peek_ss_pop(context, 24u,
+                    TYPE_REFERENCE_OF(xs_sel), 4u));
                 newds = TYPE_MASK_UNSIGNED_16(xs_sel);
-                TYPE_TRACE_CHECK_RETURN(_kec_pop(context, TYPE_REFERENCE_OF(xs_sel), 4));
+                TYPE_TRACE_CHECK_RETURN(_s_peek_ss_pop(context, 28u,
+                    TYPE_REFERENCE_OF(xs_sel), 4u));
                 newfs = TYPE_MASK_UNSIGNED_16(xs_sel);
-                TYPE_TRACE_CHECK_RETURN(_kec_pop(context, TYPE_REFERENCE_OF(xs_sel), 4));
+                TYPE_TRACE_CHECK_RETURN(_s_peek_ss_pop(context, 32u,
+                    TYPE_REFERENCE_OF(xs_sel), 4u));
                 newgs = TYPE_MASK_UNSIGNED_16(xs_sel);
-                TYPE_TRACE_CHECK_RETURN(_s_load_ss(context, newss));
+                _ser_iret_vm86_sreg(&newcs_cache, newcs, SREG_CODE);
+                _ser_iret_vm86_sreg(&newss_cache, newss, SREG_STACK);
+                _ser_iret_vm86_sreg(&newes_cache, newes, SREG_DATA);
+                _ser_iret_vm86_sreg(&newds_cache, newds, SREG_DATA);
+                _ser_iret_vm86_sreg(&newfs_cache, newfs, SREG_DATA);
+                _ser_iret_vm86_sreg(&newgs_cache, newgs, SREG_DATA);
+                cpu_state.data.eflags = (neweflags & ~mask) |
+                    (cpu_state.data.eflags & mask);
+                cpu_state.data.cs = newcs_cache;
+                cpu_state.data.ss = newss_cache;
+                cpu_state.data.es = newes_cache;
+                cpu_state.data.ds = newds_cache;
+                cpu_state.data.fs = newfs_cache;
+                cpu_state.data.gs = newgs_cache;
                 cpu_state.data.esp = newesp;
-                TYPE_TRACE_CHECK_RETURN(_s_load_es(context, newes));
-                TYPE_TRACE_CHECK_RETURN(_s_load_ds(context, newds));
-                TYPE_TRACE_CHECK_RETURN(_s_load_fs(context, newfs));
-                TYPE_TRACE_CHECK_RETURN(_s_load_gs(context, newgs));
                 _MakeCPL(0x03);
                 TYPE_TRACE_BLOCK_END;
             }
