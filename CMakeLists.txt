@@ -427,6 +427,10 @@ target_link_libraries(core-machine-tss-iomap-port-smoke PRIVATE core-machine)
 add_executable(core-machine-task-switch-smoke
     tests/machine/core_machine_task_switch_smoke.c)
 target_link_libraries(core-machine-task-switch-smoke PRIVATE core-machine)
+if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
+    target_compile_options(core-machine-task-switch-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
 
 add_executable(core-machine-stopped-lifecycle-smoke
     tests/core/machine_stopped_lifecycle_smoke.c

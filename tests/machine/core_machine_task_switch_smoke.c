@@ -3,10 +3,12 @@
 #include "core/machine/cpu.h"
 #include "core/machine/machine_interface.h"
 #include "core/machine/memory_interface.h"
+#include "core/machine/pic.h"
 #include "../support/core_machine_cpu_fixture.h"
 
 #define GDT_POINTER 0x0100u
 #define GDT_BASE 0x0300u
+#define IDT_BASE 0x0400u
 #define TASK_A_BASE 0x0600u
 #define TASK_B_BASE 0x0700u
 #define KERNEL_BASE 0x2000u
@@ -21,7 +23,14 @@ typedef enum task_switch_case {
     TASK_SWITCH_CASE_NOT_PRESENT,
     TASK_SWITCH_CASE_BUSY,
     TASK_SWITCH_CASE_SHORT_TSS,
-    TASK_SWITCH_CASE_STACK_LIMIT
+    TASK_SWITCH_CASE_STACK_LIMIT,
+    TASK_SWITCH_CASE_INDIRECT_SUCCESS,
+    TASK_SWITCH_CASE_OPERAND32_SUCCESS,
+    TASK_SWITCH_CASE_INDIRECT_OPERAND32_SUCCESS,
+    TASK_SWITCH_CASE_INDIRECT_ADDRESS32_SUCCESS,
+    TASK_SWITCH_CASE_INDIRECT_OPERAND_ADDRESS32_SUCCESS,
+    TASK_SWITCH_CASE_IRQ_SUCCESS,
+    TASK_SWITCH_CASE_LOCK_REJECT
 } task_switch_case;
 
 static C_VOID task_switch_reset(C_VOID *opaque)
@@ -87,9 +96,20 @@ static C_INT task_switch_install(task_switch_fixture *fixture,
         0xb8,0x10,0x00,0x8e,0xd0,0xbc,0x00,0x80,
         0xea,0x00,0x00,0x08,0x00
     };
-    type_unsigned_8 kernel_code[] = {
-        0xb8,0x11,0x11,0xea,0x00,0x00,0x30,0x00
+    static const type_unsigned_8 real_code_with_ds[] = {
+        0x0f,0x01,0x16,0x00,0x01,
+        0xb8,0x01,0x00,0x0f,0x01,0xf0,
+        0xb8,0x28,0x00,0x0f,0x00,0xd8,
+        0xb8,0x10,0x00,0x8e,0xd0,0x8e,0xd8,0xbc,0x00,0x80,
+        0xea,0x00,0x00,0x08,0x00
     };
+    const type_unsigned_8 *bootstrap_code = real_code;
+    STD_SIZE_T bootstrap_bytes = sizeof(real_code);
+    type_unsigned_8 kernel_code[] = {
+        0xb8,0x11,0x11,0xea,0x00,0x00,0x30,0x00,0,0,0,0
+    };
+    static const type_unsigned_8 indirect_pointer[] = { 0,0,0x30,0 };
+    static const type_unsigned_8 indirect_pointer32[] = { 0,0,0,0,0x30,0 };
     type_unsigned_8 task_b_state[] = {
         0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0,0,
         0x00,0x01, 0x02,0x00, 0x22,0x22, 0,0, 0,0, 0,0,
@@ -101,6 +121,68 @@ static C_INT task_switch_install(task_switch_fixture *fixture,
     };
 
     switch (test_case) {
+    case TASK_SWITCH_CASE_LOCK_REJECT:
+        kernel_code[3] = 0xf0u;
+        kernel_code[4] = 0xeau;
+        kernel_code[5] = 0u;
+        kernel_code[6] = 0u;
+        kernel_code[7] = 0x30u;
+        break;
+    case TASK_SWITCH_CASE_IRQ_SUCCESS:
+        task_b_state[16] = 0x02u;
+        task_b_state[17] = 0x02u;
+        break;
+    case TASK_SWITCH_CASE_INDIRECT_OPERAND_ADDRESS32_SUCCESS:
+        bootstrap_code = real_code_with_ds;
+        bootstrap_bytes = sizeof(real_code_with_ds);
+        kernel_code[3] = 0x66u;
+        kernel_code[4] = 0x67u;
+        kernel_code[5] = 0xffu;
+        kernel_code[6] = 0x2du;
+        kernel_code[7] = 0x00u;
+        kernel_code[8] = 0x22u;
+        kernel_code[9] = 0u;
+        kernel_code[10] = 0u;
+        break;
+    case TASK_SWITCH_CASE_INDIRECT_ADDRESS32_SUCCESS:
+        bootstrap_code = real_code_with_ds;
+        bootstrap_bytes = sizeof(real_code_with_ds);
+        kernel_code[3] = 0x67u;
+        kernel_code[4] = 0xffu;
+        kernel_code[5] = 0x2du;
+        kernel_code[6] = 0x00u;
+        kernel_code[7] = 0x22u;
+        kernel_code[8] = 0u;
+        kernel_code[9] = 0u;
+        break;
+    case TASK_SWITCH_CASE_INDIRECT_OPERAND32_SUCCESS:
+        bootstrap_code = real_code_with_ds;
+        bootstrap_bytes = sizeof(real_code_with_ds);
+        kernel_code[3] = 0x66u;
+        kernel_code[4] = 0xffu;
+        kernel_code[5] = 0x2eu;
+        kernel_code[6] = 0x00u;
+        kernel_code[7] = 0x22u;
+        break;
+    case TASK_SWITCH_CASE_OPERAND32_SUCCESS:
+        kernel_code[3] = 0x66u;
+        kernel_code[4] = 0xeau;
+        kernel_code[5] = 0u;
+        kernel_code[6] = 0u;
+        kernel_code[7] = 0u;
+        kernel_code[8] = 0u;
+        kernel_code[9] = 0x30u;
+        kernel_code[10] = 0u;
+        break;
+    case TASK_SWITCH_CASE_INDIRECT_SUCCESS:
+        bootstrap_code = real_code_with_ds;
+        bootstrap_bytes = sizeof(real_code_with_ds);
+        kernel_code[3] = 0xffu;
+        kernel_code[4] = 0x2eu;
+        kernel_code[5] = 0x00u;
+        kernel_code[6] = 0x22u;
+        kernel_code[7] = 0x90u;
+        break;
     case TASK_SWITCH_CASE_INVALID_SELECTOR:
         kernel_code[6] = 0x38u;
         break;
@@ -132,14 +214,27 @@ static C_INT task_switch_install(task_switch_fixture *fixture,
         write_bytes(fixture->machine, TASK_A_BASE, (const type_unsigned_8[44]){0}, 44u) &&
         write_bytes(fixture->machine, TASK_B_BASE, task_b_state,
             sizeof(task_b_state)) &&
-        write_bytes(fixture->machine, 0u, real_code, sizeof(real_code)) &&
+        write_bytes(fixture->machine, 0u, bootstrap_code, bootstrap_bytes) &&
         write_bytes(fixture->machine, KERNEL_BASE, kernel_code,
             sizeof(kernel_code)) &&
+        (test_case != TASK_SWITCH_CASE_INDIRECT_SUCCESS ||
+            write_bytes(fixture->machine, 0x5200u,
+                indirect_pointer, sizeof(indirect_pointer))) &&
+        (test_case != TASK_SWITCH_CASE_INDIRECT_ADDRESS32_SUCCESS ||
+            write_bytes(fixture->machine, 0x5200u,
+                indirect_pointer, sizeof(indirect_pointer))) &&
+        (test_case != TASK_SWITCH_CASE_INDIRECT_OPERAND32_SUCCESS ||
+            write_bytes(fixture->machine, 0x5200u,
+                indirect_pointer32, sizeof(indirect_pointer32))) &&
+        (test_case != TASK_SWITCH_CASE_INDIRECT_OPERAND_ADDRESS32_SUCCESS ||
+            write_bytes(fixture->machine, 0x5200u,
+                indirect_pointer32, sizeof(indirect_pointer32))) &&
         write_bytes(fixture->machine, KERNEL_BASE + 0x100u, task_b_code,
             sizeof(task_b_code));
 }
 
-static C_INT task_switch_expect_switch(core_machine_cpu_profile profile)
+static C_INT task_switch_expect_switch(core_machine_cpu_profile profile,
+    task_switch_case test_case)
 {
     task_switch_fixture fixture;
     core_machine_run_result result;
@@ -153,7 +248,7 @@ static C_INT task_switch_expect_switch(core_machine_cpu_profile profile)
     C_INT failed = !task_switch_prepare(&fixture, profile);
 
     if (!failed) {
-        failed |= !task_switch_install(&fixture, TASK_SWITCH_CASE_SUCCESS);
+        failed |= !task_switch_install(&fixture, test_case);
         failed |= core_machine_run(fixture.machine, budget, &result) !=
             TYPE_STATUS_OK || result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
         cpu = test_core_machine_fixture_capture_cpu_after_run(fixture.machine);
@@ -163,7 +258,13 @@ static C_INT task_switch_expect_switch(core_machine_cpu_profile profile)
         failed |= core_machine_memory_read(fixture.machine, 0x3000u, &marker,
             sizeof(marker)) != TYPE_STATUS_OK || marker != 0x2222u;
         failed |= core_machine_memory_read(fixture.machine, TASK_A_BASE + 0x0eu,
-            &saved_ip, sizeof(saved_ip)) != TYPE_STATUS_OK || saved_ip != 0x0008u;
+            &saved_ip, sizeof(saved_ip)) != TYPE_STATUS_OK || saved_ip !=
+            (test_case == TASK_SWITCH_CASE_INDIRECT_SUCCESS ? 0x0007u :
+                test_case == TASK_SWITCH_CASE_INDIRECT_OPERAND32_SUCCESS ? 0x0008u :
+                test_case == TASK_SWITCH_CASE_INDIRECT_ADDRESS32_SUCCESS ? 0x000au :
+                test_case == TASK_SWITCH_CASE_INDIRECT_OPERAND_ADDRESS32_SUCCESS ? 0x000bu :
+                test_case == TASK_SWITCH_CASE_OPERAND32_SUCCESS ? 0x000bu :
+                0x0008u);
         failed |= core_machine_memory_read(fixture.machine, TASK_A_BASE + 0x12u,
             &saved_ax, sizeof(saved_ax)) != TYPE_STATUS_OK || saved_ax != 0x1111u;
         failed |= core_machine_memory_read(fixture.machine, GDT_BASE + 0x2du,
@@ -178,8 +279,8 @@ static C_INT task_switch_expect_switch(core_machine_cpu_profile profile)
         }
         if (failed) {
             STD_FPRINTF(STD_STDERR,
-                "T261 switch=%u result=%u marker=%04x ip=%04x ax=%04x access=%02x/%02x tr=%04x eax=%08x\n",
-                (unsigned)profile, (unsigned)result.reason,
+                "T261 switch=%u case=%u result=%u marker=%04x ip=%04x ax=%04x access=%02x/%02x tr=%04x eax=%08x\n",
+                (unsigned)profile, (unsigned)test_case, (unsigned)result.reason,
                 marker, saved_ip, saved_ax, access[0], access[1],
                 cpu.data.tr.selector, cpu.data.eax);
         }
@@ -258,12 +359,86 @@ static C_INT task_switch_expect_fault(core_machine_cpu_profile profile,
     return failed;
 }
 
+static C_INT task_switch_expect_pending_irq(core_machine_cpu_profile profile)
+{
+    task_switch_fixture fixture;
+    core_machine_pic_irq_source irq;
+    core_machine_run_result result;
+    core_machine_cpu_diagnostic diagnostic;
+    type_unsigned_16 marker = 0xffffu;
+    t_cpu cpu;
+    static const type_unsigned_8 gate[] = { 0x80u,0x01u,0x08u,0u,0u,0x86u,0u,0u };
+    const core_machine_run_budget budget = { 128u, 0u };
+    C_INT failed = !task_switch_prepare(&fixture, profile);
+
+    STD_MEMSET(&irq, 0, sizeof(irq));
+    if (!failed) {
+        failed |= !task_switch_install(&fixture, TASK_SWITCH_CASE_IRQ_SUCCESS) ||
+            core_machine_memory_write(fixture.machine, IDT_BASE + 0x100u, gate,
+                sizeof(gate)) != TYPE_STATUS_OK ||
+            core_machine_memory_write(fixture.machine, KERNEL_BASE + 0x180u,
+                (const type_unsigned_8[]){ 0xf4u }, 1u) != TYPE_STATUS_OK;
+        fixture.machine->executor_cpu.data.idtr.flagValid = TYPE_TRUE;
+        fixture.machine->executor_cpu.data.idtr.sregtype = SREG_IDTR;
+        fixture.machine->executor_cpu.data.idtr.base = IDT_BASE;
+        fixture.machine->executor_cpu.data.idtr.limit = 0x0107u;
+        fixture.machine->shared_pic_master.data.icw2 = 0x20u;
+        core_machine_pic_irq_source_bind(&irq, &fixture.machine->shared_pic_master,
+            &fixture.machine->shared_pic_slave, 0u);
+        core_machine_pic_irq_source_assert(&irq);
+        core_machine_pic_irq_source_deassert(&irq);
+        failed |= core_machine_run(fixture.machine, budget, &result) !=
+            TYPE_STATUS_OK || result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
+        cpu = test_core_machine_fixture_capture_cpu_after_run(fixture.machine);
+        failed |= core_machine_get_cpu_diagnostic(fixture.machine, &diagnostic) !=
+            TYPE_STATUS_OK || diagnostic.first_fault.valid;
+        failed |=
+            cpu.data.eip != 0x0181u || cpu.data.ax != 0x2222u ||
+            cpu.data.sp != 0x7ffau || TYPE_GET_BIT(cpu.data.eflags,
+                VCPU_EFLAGS_IF) ||
+            cpu.data.tr.selector != 0x0030u ||
+            !TYPE_GET_BIT(cpu.data.cr0, VCPU_CR0_TS) ||
+            !TYPE_GET_BIT(fixture.machine->shared_pic_master.data.isr,
+                VPIC_ISR_IRQ(0u)) ||
+            TYPE_GET_BIT(fixture.machine->shared_pic_master.data.irr,
+                VPIC_IRR_IRQ(0u));
+        failed |= core_machine_memory_read(fixture.machine, 0x3000u, &marker,
+            sizeof(marker)) != TYPE_STATUS_OK || marker != 0u;
+        if (failed) {
+            STD_FPRINTF(STD_STDERR,
+                "T329 irq=%u result=%u eip=%04x ax=%04x sp=%04x ss=%05x tr=%04x isr=%02x irr=%02x marker=%04x\n",
+                (unsigned)profile, (unsigned)result.reason, cpu.data.eip,
+                cpu.data.ax, cpu.data.sp, cpu.data.ss.base, cpu.data.tr.selector,
+                fixture.machine->shared_pic_master.data.isr,
+                fixture.machine->shared_pic_master.data.irr, marker);
+        }
+    }
+    core_machine_destroy(fixture.machine);
+    return failed;
+}
+
 int main(void)
 {
     C_INT failed = 0;
 
-    failed |= task_switch_expect_switch(CORE_MACHINE_CPU_PROFILE_80286);
-    failed |= task_switch_expect_switch(CORE_MACHINE_CPU_PROFILE_80386);
+    failed |= task_switch_expect_switch(CORE_MACHINE_CPU_PROFILE_80286,
+        TASK_SWITCH_CASE_SUCCESS);
+    failed |= task_switch_expect_switch(CORE_MACHINE_CPU_PROFILE_80386,
+        TASK_SWITCH_CASE_SUCCESS);
+    failed |= task_switch_expect_switch(CORE_MACHINE_CPU_PROFILE_80286,
+        TASK_SWITCH_CASE_INDIRECT_SUCCESS);
+    failed |= task_switch_expect_switch(CORE_MACHINE_CPU_PROFILE_80386,
+        TASK_SWITCH_CASE_INDIRECT_SUCCESS);
+    failed |= task_switch_expect_switch(CORE_MACHINE_CPU_PROFILE_80386,
+        TASK_SWITCH_CASE_OPERAND32_SUCCESS);
+    failed |= task_switch_expect_switch(CORE_MACHINE_CPU_PROFILE_80386,
+        TASK_SWITCH_CASE_INDIRECT_OPERAND32_SUCCESS);
+    failed |= task_switch_expect_switch(CORE_MACHINE_CPU_PROFILE_80386,
+        TASK_SWITCH_CASE_INDIRECT_ADDRESS32_SUCCESS);
+    failed |= task_switch_expect_switch(CORE_MACHINE_CPU_PROFILE_80386,
+        TASK_SWITCH_CASE_INDIRECT_OPERAND_ADDRESS32_SUCCESS);
+    failed |= task_switch_expect_pending_irq(CORE_MACHINE_CPU_PROFILE_80286);
+    failed |= task_switch_expect_pending_irq(CORE_MACHINE_CPU_PROFILE_80386);
     failed |= task_switch_expect_fault(CORE_MACHINE_CPU_PROFILE_80286,
         TASK_SWITCH_CASE_INVALID_SELECTOR, VCPUINS_EXCEPT_GP, 0x0038u);
     failed |= task_switch_expect_fault(CORE_MACHINE_CPU_PROFILE_80286,
@@ -272,11 +447,14 @@ int main(void)
         TASK_SWITCH_CASE_BUSY, VCPUINS_EXCEPT_DF, 0u);
     failed |= task_switch_expect_fault(CORE_MACHINE_CPU_PROFILE_80386,
         TASK_SWITCH_CASE_SHORT_TSS, VCPUINS_EXCEPT_DF, 0u);
+    failed |= task_switch_expect_fault(CORE_MACHINE_CPU_PROFILE_80386,
+        TASK_SWITCH_CASE_LOCK_REJECT, VCPUINS_EXCEPT_UD, 0u);
     failed |= task_switch_expect_stack_fault(CORE_MACHINE_CPU_PROFILE_80286);
     failed |= task_switch_expect_stack_fault(CORE_MACHINE_CPU_PROFILE_80386);
     if (failed) return 1;
     STD_PRINTF("M5:T261:S2:TASK-SWITCH:OK\n");
     STD_PRINTF("M5:T261:S3:TASK-SWITCH:CORPUS:OK\n");
     STD_PRINTF("M5:T261:S5:SS-CACHE:OK\n");
+    STD_PRINTF("M5:T329:S1:TSS16-JMP:OK\n");
     return 0;
 }
