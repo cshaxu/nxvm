@@ -60,12 +60,20 @@ IRET remains unmodified as a T320 S2 transfer. Real mode, same-CPL protected
 delivery, 16-bit gates, task gates, paging, VME/PVI, and PIC policy do not
 change.
 
-## Directly Affected Historical Assertions
+## Direct Consumer Disposition
 
-The T316 `CLI`/`STI`, `PUSHF`/`POPF`, and `HLT` VM86 fixtures had deliberately
-installed valid CPL0 `#GP` gates but retained the pre-T320 expectation that
-the producer ended as an undelivered fault. Their narrow VM86 IOPL-failure
-assertions now require a delivered vector-13 CPL0 entry instead. The instruction
-success cases and all non-VM86 assertions remain unchanged; the S47/S48 smoke
-sources include those owner fixtures and therefore receive the same corrected
-assertion without a duplicate implementation.
+| Consumer | Valid VM86 facility disposition | Invalid-facility/non-VM86 disposition |
+| --- | --- | --- |
+| S47 | Includes the migrated `PUSHF`/`POPF` valid-GP owner assertion. | Retained inherited attribute, stack, and IRQ matrix. |
+| S48 | Includes the migrated `CLI`/`STI` valid-GP owner assertion. | Retained inherited profile and LOCK matrix. |
+| S49 | Its valid-GP `HLT` producer asserts vector-13 CPL0 entry. | Retained non-VM86 HLT/IRQ matrix. |
+| S50 | Its included `CLI`/`STI` owner supplies the valid-GP proof. Its native VM86 software-interrupt cases deliberately lack the admitted valid facility. | Native invalid-IDT/target cases retain terminal diagnostics. |
+| S55 | Native VM86 I/O cases deliberately omit a valid interrupt-gate/TSS delivery facility. | I/O bitmap, provider, and terminal-fault assertions remain unchanged. |
+| S62 | Native VM86 privilege branch has no admitted valid delivery facility. | Its terminal privilege boundary and non-VM86 CLTS matrix remain unchanged. |
+| S63 | Native VM86 privilege branch has no admitted valid delivery facility. | Its terminal privilege boundary and non-VM86 SMSW/LMSW matrix remain unchanged. |
+
+The T316 `CLI`/`STI`, `PUSHF`/`POPF`, and `HLT` valid-GP fixtures deliberately
+install valid CPL0 `#GP` gates but had retained the pre-T320 undelivered-fault
+expectation. Their narrow VM86 IOPL-failure assertions now require a delivered
+vector-13 CPL0 entry. No other named consumer has a valid-IDT plus busy-TSS
+VM86 producer branch to migrate.

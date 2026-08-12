@@ -155,10 +155,6 @@ static C_INT vm86_delivery_irq0(C_VOID)
             frame[3u] != 0x1234u || frame[4u] != 0x0300u || frame[5u] != 0x0500u ||
             frame[6u] != 0x0400u || frame[7u] != 0x0600u || frame[8u] != 0x0700u;
     }
-    if (failed) STD_PRINTF("irq reason=%u executed=%u eip=%08X esp=%08X isr=%X irr=%X first=%X\\n",
-        result.reason, result.executed, state.machine->executor_cpu.data.eip,
-        state.machine->executor_cpu.data.esp, state.machine->shared_pic_master.data.isr,
-        state.machine->shared_pic_master.data.irr, diagnostic.first_fault.exception_mask);
     core_machine_destroy(state.machine); return !failed;
 }
 static C_INT vm86_delivery_expect_prepublication(vm86_delivery_state *state)
