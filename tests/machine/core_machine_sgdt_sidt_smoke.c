@@ -309,8 +309,14 @@ static C_INT sgdt_sidt_test_rejections_and_atomicity(C_VOID)
     static const type_unsigned_8 lock_form[] = {0xf0u,0x0fu,0x01u,0x06u,0x00u,0x02u};
     static const type_unsigned_8 sgdt[] = {0x0fu,0x01u,0x06u,0x0eu,0x00u};
     type_unsigned_8 table;
-    if (!sgdt_sidt_expect_ud(CORE_MACHINE_CPU_PROFILE_80186, sgdt, sizeof(sgdt)))
-        return 0;
+    for (table = 0u; table != 2u; ++table) {
+        type_unsigned_8 low_profile_code[sizeof(sgdt)];
+
+        STD_MEMCPY(low_profile_code, sgdt, sizeof(low_profile_code));
+        low_profile_code[2] |= table << 3u;
+        if (!sgdt_sidt_expect_ud(CORE_MACHINE_CPU_PROFILE_80186,
+            low_profile_code, sizeof(low_profile_code))) return 0;
+    }
     if (!sgdt_sidt_expect_ud(CORE_MACHINE_CPU_PROFILE_80386, reserved_form,
         sizeof(reserved_form))) return 0;
     for (table = 0u; table != 2u; ++table) {

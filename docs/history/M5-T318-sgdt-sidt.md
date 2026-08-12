@@ -55,6 +55,19 @@ gates, and the current `0.5.0318` artifact hash/runtime identity before its
 single pushed corrective commit. The rebuilt artifact remained SHA-256
 `700DA3C0BB4FF0C1F5443FE2EF8623DA65E1BBD0E4354979FA3245A6CCD4583C`.
 
+## Corrective P3
+
+P3 completes the low-profile proof by running the 80186 native-`#UD` and
+no-publication vector independently for both SGDT `/0` and SIDT `/1`. It also
+records the artifact-cleanup correction: the executor's earlier interactive
+runtime-identity launch left the exact `vm-0-5-0318.exe` process alive. P3
+verified its PID/path ownership, terminated only that process, confirmed no
+such artifact process remained, then freshly configured and rebuilt the
+current artifact before its final gate run. No production or behavior change
+is part of P3. The freshly relinked `0.5.0318` artifact, identified as
+`Neko's x86 Virtual Machine` with `PRODUCT_BUILD_VERSION` `0.5.0318`, has
+SHA-256 `60B3CDF0BA63C6303E9809146CEBF2B7CDC278D20A79D05174197E05089030D9`.
+
 ## Retained Boundary
 
 The Intel 80386 PRM table-register entries govern only the admitted stores.
