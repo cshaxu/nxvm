@@ -3677,7 +3677,7 @@ static C_VOID _ser_int_protected(core_machine_cpu_execution_context *context,
     switch (_GetDesc_Type(gate_desc)) {
     case VCPU_DESC_SYS_TYPE_INTGATE_16:
         TYPE_TRACE_CHECK_RETURN(_ser_int_protected_16(context, intid,
-            !software_origin));
+            flagext));
         break;
     case VCPU_DESC_SYS_TYPE_INTGATE_32:
     case VCPU_DESC_SYS_TYPE_TRAPGATE_32:
