@@ -7,14 +7,14 @@
  * turn one UI cadence wait into many scheduler-granularity Sleep(1) calls. */
 #define CORE_PLATFORM_WAIT_POLL_MILLISECONDS 20u
 
-core_platform_wait_result core_platform_wait_milliseconds(uint32_t milliseconds,
+core_platform_wait_result core_platform_wait_milliseconds(type_unsigned_32 milliseconds,
     core_platform_wait_cancel_predicate cancelled, C_VOID *context)
 {
-    uint32_t waited = 0u;
+    type_unsigned_32 waited = 0u;
 
     if (cancelled == STD_NULL) return CORE_PLATFORM_WAIT_INVALID_ARGUMENT;
     while (waited < milliseconds) {
-        uint32_t interval;
+        type_unsigned_32 interval;
 
         if (cancelled(context)) return CORE_PLATFORM_WAIT_CANCELLED;
         interval = milliseconds - waited;

@@ -7,7 +7,7 @@
 
 type_status core_machine_memory_read(
     const core_machine *machine,
-    uint32_t physical,
+    type_unsigned_32 physical,
     C_VOID *out_data,
     STD_SIZE_T size)
 {
@@ -29,7 +29,7 @@ type_status core_machine_memory_read(
 
 type_status core_machine_memory_write(
     core_machine *machine,
-    uint32_t physical,
+    type_unsigned_32 physical,
     const C_VOID *data,
     STD_SIZE_T size)
 {
@@ -52,7 +52,7 @@ type_status core_machine_memory_write(
 
 type_status core_machine_memory_query(
     const core_machine *machine,
-    uint32_t physical,
+    type_unsigned_32 physical,
     STD_SIZE_T size,
     core_machine_memory_access access,
     core_machine_memory_route *out_route)

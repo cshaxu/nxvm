@@ -36,7 +36,7 @@ foreach ($file in $publicHeaders) {
 foreach ($file in $sourceFiles) {
     $relative = $file.FullName.Substring($root.Length + 1).Replace('\', '/')
     $text = Get-Content -LiteralPath $file.FullName -Raw
-    if ($text -match 'core_token\s*=\s*\([^\r\n]*(?:uintptr_t|t_dma\s*\*)' -or
+    if ($text -match 'core_token\s*=\s*\([^\r\n]*(?:type_unsigned_pointer|t_dma\s*\*)' -or
         $text -match '\(t_dma\s*\*\)\s*[^\r\n]*core_token') {
         $failures += "$relative converts a public core token to or from a DMA pointer"
     }

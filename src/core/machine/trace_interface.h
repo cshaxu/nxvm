@@ -21,11 +21,11 @@ typedef enum core_machine_trace_event_type {
 
 typedef struct core_machine_trace_event {
     core_machine_trace_event_type type;
-    uint64_t sequence;
-    uint32_t linear_pc;
-    uint32_t address;
-    uint32_t value;
-    uint32_t detail;
+    type_unsigned_64 sequence;
+    type_unsigned_32 linear_pc;
+    type_unsigned_32 address;
+    type_unsigned_32 value;
+    type_unsigned_32 detail;
 } core_machine_trace_event;
 
 typedef C_VOID (*core_machine_trace_event_provider)(

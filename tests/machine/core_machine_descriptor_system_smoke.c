@@ -61,32 +61,32 @@ static C_INT dt_prepare(descriptor_system_machine *state)
     return dt_prepare_profile(state, CORE_MACHINE_CPU_PROFILE_80386);
 }
 
-static C_INT dt_write(descriptor_system_machine *state, uint32_t address,
-    const uint8_t *data, STD_SIZE_T bytes)
+static C_INT dt_write(descriptor_system_machine *state, type_unsigned_32 address,
+    const type_unsigned_8 *data, STD_SIZE_T bytes)
 {
     return state != STD_NULL && state->machine != STD_NULL &&
         core_machine_memory_write(state->machine, address, data, bytes) ==
             TYPE_STATUS_OK;
 }
 
-static C_INT dt_read(descriptor_system_machine *state, uint32_t address,
-    uint8_t *data, STD_SIZE_T bytes)
+static C_INT dt_read(descriptor_system_machine *state, type_unsigned_32 address,
+    type_unsigned_8 *data, STD_SIZE_T bytes)
 {
     return state != STD_NULL && state->machine != STD_NULL &&
         core_machine_memory_read(state->machine, address, data, bytes) ==
             TYPE_STATUS_OK;
 }
 
-static C_INT dt_read_private(descriptor_system_machine *state, uint32_t address,
-    uint8_t *data, STD_SIZE_T bytes)
+static C_INT dt_read_private(descriptor_system_machine *state, type_unsigned_32 address,
+    type_unsigned_8 *data, STD_SIZE_T bytes)
 {
     return state != STD_NULL && state->machine != STD_NULL &&
         core_machine_memory_read_physical(&state->machine->executor_memory,
             address, (type_virtual_address)data, bytes) == TYPE_STATUS_OK;
 }
 
-static C_INT dt_run(descriptor_system_machine *state, const uint8_t *code,
-    STD_SIZE_T bytes, C_INT expect_fault, uint32_t expect_exception)
+static C_INT dt_run(descriptor_system_machine *state, const type_unsigned_8 *code,
+    STD_SIZE_T bytes, C_INT expect_fault, type_unsigned_32 expect_exception)
 {
     const core_machine_run_budget budget = {32u, 0u};
     core_machine_run_result result;
@@ -114,8 +114,8 @@ static C_INT dt_run(descriptor_system_machine *state, const uint8_t *code,
 }
 
 static C_INT dt_run_fault_code(descriptor_system_machine *state,
-    const uint8_t *code, STD_SIZE_T bytes, uint32_t exception,
-    uint32_t exception_code)
+    const type_unsigned_8 *code, STD_SIZE_T bytes, type_unsigned_32 exception,
+    type_unsigned_32 exception_code)
 {
     core_machine_cpu_diagnostic diagnostic;
 
@@ -132,7 +132,7 @@ static C_INT dt_run_fault_code(descriptor_system_machine *state,
         diagnostic.first_fault.exception_code == exception_code;
 }
 
-static C_INT dt_run_one(descriptor_system_machine *state, const uint8_t *code,
+static C_INT dt_run_one(descriptor_system_machine *state, const type_unsigned_8 *code,
     STD_SIZE_T bytes)
 {
     const core_machine_run_budget budget = {1u, 0u};
@@ -147,8 +147,8 @@ static C_INT dt_run_one(descriptor_system_machine *state, const uint8_t *code,
 }
 
 static C_VOID dt_set_tables(descriptor_system_machine *state,
-    uint32_t gdtr_base, uint16_t gdtr_limit, uint32_t idtr_base,
-    uint16_t idtr_limit)
+    type_unsigned_32 gdtr_base, type_unsigned_16 gdtr_limit, type_unsigned_32 idtr_base,
+    type_unsigned_16 idtr_limit)
 {
     state->machine->executor_cpu.data.gdtr.base = gdtr_base;
     state->machine->executor_cpu.data.gdtr.limit = gdtr_limit;
@@ -165,12 +165,12 @@ static C_INT dt_tables_equal(const t_cpu *first, const t_cpu *second)
 }
 
 static C_VOID dt_enter_protected(descriptor_system_machine *state,
-    uint8_t cpl)
+    type_unsigned_8 cpl)
 {
     t_cpu *cpu = &state->machine->executor_cpu;
 
     TYPE_SET_BIT(cpu->data.cr0, VCPU_CR0_PE);
-    cpu->data.cs.selector = (uint16_t)(0x0008u | cpl);
+    cpu->data.cs.selector = (type_unsigned_16)(0x0008u | cpl);
     cpu->data.cs.dpl = cpl;
     cpu->data.cs.base = 0u;
     cpu->data.cs.limit = 0xffffu;
@@ -179,7 +179,7 @@ static C_VOID dt_enter_protected(descriptor_system_machine *state,
     cpu->data.cs.seg.executable = TYPE_TRUE;
     cpu->data.ds.base = 0u;
     cpu->data.ds.limit = 0xffffu;
-    cpu->data.ds.selector = (uint16_t)(0x0010u | cpl);
+    cpu->data.ds.selector = (type_unsigned_16)(0x0010u | cpl);
     cpu->data.ds.flagValid = TYPE_TRUE;
     cpu->data.ds.sregtype = SREG_DATA;
     cpu->data.ds.seg.executable = TYPE_FALSE;
@@ -205,7 +205,7 @@ static C_INT dt_sreg_equal(const t_cpu_data_sreg *first,
 }
 
 static C_VOID dt_seed_system_sreg(t_cpu_data_sreg *sreg,
-    t_cpu_data_sreg_type type, uint16_t selector)
+    t_cpu_data_sreg_type type, type_unsigned_16 selector)
 {
     STD_MEMSET(sreg, 0, sizeof(*sreg));
     sreg->flagValid = TYPE_TRUE;
@@ -227,30 +227,30 @@ static C_INT dt_control_equal(const t_cpu *first, const t_cpu *second)
 
 static C_INT dt_test_msw_and_control_registers(C_VOID)
 {
-    static const uint8_t smsw_register[] = {0x66u,0x0fu,0x01u,0xe0u,0xf4u};
-    static const uint8_t smsw_memory[] = {0x66u,0x0fu,0x01u,0x26u,0x00u,0x02u,0xf4u};
-    static const uint8_t lmsw_register[] = {0x0fu,0x01u,0xf0u,0xf4u};
-    static const uint8_t clts[] = {0x0fu,0x06u,0xf4u};
-    static const uint8_t mov_read[][5] = {
+    static const type_unsigned_8 smsw_register[] = {0x66u,0x0fu,0x01u,0xe0u,0xf4u};
+    static const type_unsigned_8 smsw_memory[] = {0x66u,0x0fu,0x01u,0x26u,0x00u,0x02u,0xf4u};
+    static const type_unsigned_8 lmsw_register[] = {0x0fu,0x01u,0xf0u,0xf4u};
+    static const type_unsigned_8 clts[] = {0x0fu,0x06u,0xf4u};
+    static const type_unsigned_8 mov_read[][5] = {
         {0x66u,0x0fu,0x20u,0xc0u,0xf4u},
         {0x66u,0x0fu,0x20u,0xd0u,0xf4u},
         {0x66u,0x0fu,0x20u,0xd8u,0xf4u}
     };
-    static const uint8_t mov_write[][5] = {
+    static const type_unsigned_8 mov_write[][5] = {
         {0x66u,0x0fu,0x22u,0xc0u,0xf4u},
         {0x66u,0x0fu,0x22u,0xd0u,0xf4u},
         {0x66u,0x0fu,0x22u,0xd8u,0xf4u}
     };
-    static const uint8_t reserved_read[] = {0x0fu,0x20u,0xe0u,0xf4u};
-    static const uint8_t memory_read[] = {0x0fu,0x20u,0x00u,0xf4u};
-    static const uint8_t protected_lmsw[] = {0x0fu,0x01u,0xf0u,0xf4u};
-    static const uint8_t protected_mov[] = {0x0fu,0x20u,0xc0u,0xf4u};
-    static const uint8_t invalid_cr0_write[] = {0x0fu,0x22u,0xc0u,0xf4u};
-    uint32_t values[] = {0x00000001u, 0x12345678u, 0x00123000u};
+    static const type_unsigned_8 reserved_read[] = {0x0fu,0x20u,0xe0u,0xf4u};
+    static const type_unsigned_8 memory_read[] = {0x0fu,0x20u,0x00u,0xf4u};
+    static const type_unsigned_8 protected_lmsw[] = {0x0fu,0x01u,0xf0u,0xf4u};
+    static const type_unsigned_8 protected_mov[] = {0x0fu,0x20u,0xc0u,0xf4u};
+    static const type_unsigned_8 invalid_cr0_write[] = {0x0fu,0x22u,0xc0u,0xf4u};
+    type_unsigned_32 values[] = {0x00000001u, 0x12345678u, 0x00123000u};
     STD_SIZE_T index;
     {
         descriptor_system_machine state;
-        uint16_t observed = 0u;
+        type_unsigned_16 observed = 0u;
         C_INT failed = !dt_prepare(&state);
 
         if (!failed) {
@@ -279,13 +279,13 @@ static C_INT dt_test_msw_and_control_registers(C_VOID)
     }
     {
         descriptor_system_machine state;
-        uint16_t observed = 0u;
+        type_unsigned_16 observed = 0u;
         C_INT failed = !dt_prepare(&state);
 
         if (!failed) {
             state.machine->executor_cpu.data.cr0 = 0x0000000cu;
             failed = !dt_run(&state, smsw_memory, sizeof(smsw_memory), 0, 0u) ||
-                !dt_read(&state, DT_STORE_ADDRESS, (uint8_t *)&observed,
+                !dt_read(&state, DT_STORE_ADDRESS, (type_unsigned_8 *)&observed,
                     sizeof(observed)) || observed != 0x000cu;
         }
         core_machine_destroy(state.machine);
@@ -310,7 +310,7 @@ static C_INT dt_test_msw_and_control_registers(C_VOID)
         descriptor_system_machine state;
         const core_machine_cpu_profile profile = index == 0u ?
             CORE_MACHINE_CPU_PROFILE_80286 : CORE_MACHINE_CPU_PROFILE_80386;
-        const uint32_t flags = 0x00000246u;
+        const type_unsigned_32 flags = 0x00000246u;
         C_INT failed = !dt_prepare_profile(&state, profile);
 
         if (!failed) {
@@ -325,7 +325,7 @@ static C_INT dt_test_msw_and_control_registers(C_VOID)
     }
     {
         descriptor_system_machine state;
-        const uint32_t flags = 0x00000246u;
+        const type_unsigned_32 flags = 0x00000246u;
         C_INT failed = !dt_prepare(&state);
 
         if (!failed) {
@@ -387,7 +387,7 @@ static C_INT dt_test_msw_and_control_registers(C_VOID)
         if (failed) return 0;
     }
     {
-        const uint8_t *fault_code[] = {reserved_read, memory_read, invalid_cr0_write};
+        const type_unsigned_8 *fault_code[] = {reserved_read, memory_read, invalid_cr0_write};
         STD_SIZE_T bytes[] = {sizeof(reserved_read), sizeof(memory_read),
             sizeof(invalid_cr0_write)};
 
@@ -417,7 +417,7 @@ static C_INT dt_test_msw_and_control_registers(C_VOID)
         descriptor_system_machine state;
         t_cpu before;
         t_cpu after;
-        const uint8_t *code = index == 0u ? protected_lmsw : protected_mov;
+        const type_unsigned_8 *code = index == 0u ? protected_lmsw : protected_mov;
         C_INT failed = !dt_prepare(&state);
 
         if (!failed) {
@@ -457,7 +457,7 @@ static C_INT dt_test_msw_and_control_registers(C_VOID)
 
 static C_INT dt_install_selector_tables(descriptor_system_machine *state)
 {
-    static const uint8_t gdt[] = {
+    static const type_unsigned_8 gdt[] = {
         0,0,0,0,0,0,0,0,
         0xffu,0xffu,0,0,0,0x9au,0,0,
         0xffu,0xffu,0,0,0,0x92u,0,0,
@@ -471,27 +471,27 @@ static C_INT dt_install_selector_tables(descriptor_system_machine *state)
         0xffu,0xffu,0,0,0,0xf2u,0,0
     };
 
-    dt_set_tables(state, DT_GDT_ADDRESS, (uint16_t)(sizeof(gdt) - 1u),
+    dt_set_tables(state, DT_GDT_ADDRESS, (type_unsigned_16)(sizeof(gdt) - 1u),
         0u, 0u);
     return dt_write(state, DT_GDT_ADDRESS, gdt, sizeof(gdt));
 }
 
 static C_INT dt_test_selector_stores(C_VOID)
 {
-    static const uint8_t register_code[][5] = {
+    static const type_unsigned_8 register_code[][5] = {
         {0x66u,0x0fu,0x00u,0xc0u,0xf4u},
         {0x66u,0x0fu,0x00u,0xc8u,0xf4u}
     };
-    static const uint8_t memory_code[][6] = {
+    static const type_unsigned_8 memory_code[][6] = {
         {0x0fu,0x00u,0x06u,0x00u,0x02u,0xf4u},
         {0x0fu,0x00u,0x0eu,0x00u,0x02u,0xf4u}
     };
-    const uint16_t selectors[] = { DT_LDT_SELECTOR, DT_TSS16_SELECTOR };
+    const type_unsigned_16 selectors[] = { DT_LDT_SELECTOR, DT_TSS16_SELECTOR };
     STD_SIZE_T index;
 
     for (index = 0u; index < 2u; ++index) {
         descriptor_system_machine state;
-        uint16_t observed = 0u;
+        type_unsigned_16 observed = 0u;
         C_INT failed = !dt_prepare(&state);
 
         if (!failed) {
@@ -512,7 +512,7 @@ static C_INT dt_test_selector_stores(C_VOID)
     }
     for (index = 0u; index < 2u; ++index) {
         descriptor_system_machine state;
-        uint16_t observed = 0u;
+        type_unsigned_16 observed = 0u;
         C_INT failed = !dt_prepare(&state);
 
         if (!failed) {
@@ -523,7 +523,7 @@ static C_INT dt_test_selector_stores(C_VOID)
                 SREG_TR, DT_TSS16_SELECTOR);
             failed = !dt_run(&state, memory_code[index], sizeof(memory_code[index]),
                 0, 0u) || !dt_read(&state, DT_STORE_ADDRESS,
-                    (uint8_t *)&observed, sizeof(observed)) ||
+                    (type_unsigned_8 *)&observed, sizeof(observed)) ||
                 observed != selectors[index];
         }
         core_machine_destroy(state.machine);
@@ -534,27 +534,27 @@ static C_INT dt_test_selector_stores(C_VOID)
 
 static C_INT dt_test_selector_loads(C_VOID)
 {
-    static const uint8_t lldt[] = {0x0fu,0x00u,0xd0u,0xf4u};
-    static const uint8_t ltr[] = {0x0fu,0x00u,0xd8u,0xf4u};
-    static const uint8_t memory_load_code[][7] = {
+    static const type_unsigned_8 lldt[] = {0x0fu,0x00u,0xd0u,0xf4u};
+    static const type_unsigned_8 ltr[] = {0x0fu,0x00u,0xd8u,0xf4u};
+    static const type_unsigned_8 memory_load_code[][7] = {
         {0x66u,0x0fu,0x00u,0x16u,0x40u,0x02u,0xf4u},
         {0x66u,0x0fu,0x00u,0x1eu,0x40u,0x02u,0xf4u}
     };
-    static const uint8_t real_code[][4] = {
+    static const type_unsigned_8 real_code[][4] = {
         {0x0fu,0x00u,0xc0u,0u}, {0x0fu,0x00u,0xc8u,0u},
         {0x0fu,0x00u,0xd0u,0u}, {0x0fu,0x00u,0xd8u,0u}
     };
-    static const uint16_t lldt_selectors[] = {
+    static const type_unsigned_16 lldt_selectors[] = {
         0x0004u, DT_TSS16_SELECTOR, DT_LDT_NOT_PRESENT_SELECTOR
     };
-    static const uint32_t lldt_exceptions[] = {
+    static const type_unsigned_32 lldt_exceptions[] = {
         VCPUINS_EXCEPT_GP, VCPUINS_EXCEPT_GP, VCPUINS_EXCEPT_NP
     };
-    static const uint16_t ltr_selectors[] = {
+    static const type_unsigned_16 ltr_selectors[] = {
         0x0000u, 0x0004u, DT_LDT_SELECTOR, DT_TSS16_BUSY_SELECTOR,
         DT_TSS16_NOT_PRESENT_SELECTOR
     };
-    static const uint32_t ltr_exceptions[] = {
+    static const type_unsigned_32 ltr_exceptions[] = {
         VCPUINS_EXCEPT_GP, VCPUINS_EXCEPT_GP, VCPUINS_EXCEPT_GP,
         VCPUINS_EXCEPT_GP, VCPUINS_EXCEPT_NP
     };
@@ -613,14 +613,14 @@ static C_INT dt_test_selector_loads(C_VOID)
     }
     for (index = 0u; index < 2u; ++index) {
         descriptor_system_machine state;
-        const uint16_t selector = index == 0u ? DT_LDT_SELECTOR :
+        const type_unsigned_16 selector = index == 0u ? DT_LDT_SELECTOR :
             DT_TSS16_SELECTOR;
         C_INT failed = !dt_prepare(&state);
 
         if (!failed) {
             dt_enter_protected(&state, 0u);
             failed = !dt_install_selector_tables(&state) || !dt_write(&state,
-                DT_LOAD_ADDRESS, (const uint8_t *)&selector, sizeof(selector)) ||
+                DT_LOAD_ADDRESS, (const type_unsigned_8 *)&selector, sizeof(selector)) ||
                 !dt_run(&state, memory_load_code[index],
                     sizeof(memory_load_code[index]), 0, 0u);
             if (index == 0u) {
@@ -658,7 +658,7 @@ static C_INT dt_test_selector_loads(C_VOID)
     }
     {
         descriptor_system_machine state;
-        uint8_t access = 0u;
+        type_unsigned_8 access = 0u;
         C_INT failed = !dt_prepare(&state);
 
         if (!failed) {
@@ -680,7 +680,7 @@ static C_INT dt_test_selector_loads(C_VOID)
     }
     {
         descriptor_system_machine state;
-        uint8_t access = 0u;
+        type_unsigned_8 access = 0u;
         C_INT failed = !dt_prepare(&state);
 
         if (!failed) {
@@ -705,8 +705,8 @@ static C_INT dt_test_selector_loads(C_VOID)
         descriptor_system_machine state;
         t_cpu before;
         t_cpu after;
-        uint8_t before_access = 0u;
-        uint8_t after_access = 0u;
+        type_unsigned_8 before_access = 0u;
+        type_unsigned_8 after_access = 0u;
         C_INT failed = !dt_prepare(&state);
 
         if (!failed) {
@@ -738,13 +738,13 @@ static C_INT dt_test_selector_loads(C_VOID)
 
 static C_INT dt_test_store_layout(C_VOID)
 {
-    static const uint8_t code[][7] = {
+    static const type_unsigned_8 code[][7] = {
         {0x0fu, 0x01u, 0x06u, 0x00u, 0x02u, 0xf4u, 0u},
         {0x0fu, 0x01u, 0x0eu, 0x00u, 0x02u, 0xf4u, 0u},
         {0x66u, 0x0fu, 0x01u, 0x06u, 0x00u, 0x02u, 0xf4u},
         {0x66u, 0x0fu, 0x01u, 0x0eu, 0x00u, 0x02u, 0xf4u}
     };
-    static const uint8_t expected[][6] = {
+    static const type_unsigned_8 expected[][6] = {
         {0x34u, 0x12u, 0x12u, 0xdeu, 0xbcu, 0u},
         {0x78u, 0x56u, 0x78u, 0x56u, 0x34u, 0u},
         {0x34u, 0x12u, 0x12u, 0xdeu, 0xbcu, 0x7au},
@@ -754,8 +754,8 @@ static C_INT dt_test_store_layout(C_VOID)
 
     for (index = 0u; index < 4u; ++index) {
         descriptor_system_machine state;
-        uint8_t observed[6] = {0};
-        uint8_t clear[6] = {0};
+        type_unsigned_8 observed[6] = {0};
+        type_unsigned_8 clear[6] = {0};
         C_INT failed = !dt_prepare(&state);
 
         if (!failed) {
@@ -774,11 +774,11 @@ static C_INT dt_test_store_layout(C_VOID)
 
 static C_INT dt_test_protected_stores(C_VOID)
 {
-    static const uint8_t code[][7] = {
+    static const type_unsigned_8 code[][7] = {
         {0x66u, 0x0fu, 0x01u, 0x06u, 0x00u, 0x02u, 0xf4u},
         {0x66u, 0x0fu, 0x01u, 0x0eu, 0x00u, 0x02u, 0xf4u}
     };
-    static const uint8_t expected[][6] = {
+    static const type_unsigned_8 expected[][6] = {
         {0x34u, 0x12u, 0x12u, 0xdeu, 0xbcu, 0x7au},
         {0x78u, 0x56u, 0x78u, 0x56u, 0x34u, 0x12u}
     };
@@ -786,7 +786,7 @@ static C_INT dt_test_protected_stores(C_VOID)
 
     for (index = 0u; index < 2u; ++index) {
         descriptor_system_machine state;
-        uint8_t observed[6] = {0};
+        type_unsigned_8 observed[6] = {0};
         C_INT failed = !dt_prepare(&state);
 
         if (!failed) {
@@ -804,13 +804,13 @@ static C_INT dt_test_protected_stores(C_VOID)
 
 static C_INT dt_test_load_layout(C_VOID)
 {
-    static const uint8_t code[][7] = {
+    static const type_unsigned_8 code[][7] = {
         {0x0fu, 0x01u, 0x16u, 0x40u, 0x02u, 0xf4u, 0u},
         {0x0fu, 0x01u, 0x1eu, 0x40u, 0x02u, 0xf4u, 0u},
         {0x66u, 0x0fu, 0x01u, 0x16u, 0x40u, 0x02u, 0xf4u},
         {0x66u, 0x0fu, 0x01u, 0x1eu, 0x40u, 0x02u, 0xf4u}
     };
-    static const uint8_t source[] = {0xbcu, 0x9au, 0x78u, 0x56u, 0x34u, 0x12u};
+    static const type_unsigned_8 source[] = {0xbcu, 0x9au, 0x78u, 0x56u, 0x34u, 0x12u};
     STD_SIZE_T index;
 
     for (index = 0u; index < 4u; ++index) {
@@ -860,15 +860,15 @@ static C_INT dt_test_load_layout(C_VOID)
 
 static C_INT dt_test_register_and_privilege_faults(C_VOID)
 {
-    static const uint8_t register_code[][4] = {
+    static const type_unsigned_8 register_code[][4] = {
         {0x0fu, 0x01u, 0xc0u, 0u}, {0x0fu, 0x01u, 0xc8u, 0u},
         {0x0fu, 0x01u, 0xd0u, 0u}, {0x0fu, 0x01u, 0xd8u, 0u}
     };
-    static const uint8_t load_code[][6] = {
+    static const type_unsigned_8 load_code[][6] = {
         {0x0fu, 0x01u, 0x16u, 0x40u, 0x02u, 0xf4u},
         {0x0fu, 0x01u, 0x1eu, 0x40u, 0x02u, 0xf4u}
     };
-    static const uint8_t source[] = {0xbcu, 0x9au, 0x78u, 0x56u, 0x34u, 0x12u};
+    static const type_unsigned_8 source[] = {0xbcu, 0x9au, 0x78u, 0x56u, 0x34u, 0x12u};
     STD_SIZE_T index;
 
     for (index = 0u; index < 4u; ++index) {
@@ -912,11 +912,11 @@ static C_INT dt_test_register_and_privilege_faults(C_VOID)
 
 static C_INT dt_test_memory_faults_preserve_tables(C_VOID)
 {
-    static const uint8_t store_code[][6] = {
+    static const type_unsigned_8 store_code[][6] = {
         {0x0fu, 0x01u, 0x06u, 0x00u, 0x02u, 0xf4u},
         {0x0fu, 0x01u, 0x0eu, 0x00u, 0x02u, 0xf4u}
     };
-    static const uint8_t load_code[][6] = {
+    static const type_unsigned_8 load_code[][6] = {
         {0x0fu, 0x01u, 0x16u, 0x00u, 0x02u, 0xf4u},
         {0x0fu, 0x01u, 0x1eu, 0x00u, 0x02u, 0xf4u}
     };

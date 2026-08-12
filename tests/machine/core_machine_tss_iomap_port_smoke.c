@@ -24,9 +24,9 @@ typedef enum iomap_case {
 } iomap_case;
 
 typedef struct iomap_port_state {
-    uint32_t reads;
-    uint32_t writes;
-    uint32_t last_write;
+    type_unsigned_32 reads;
+    type_unsigned_32 writes;
+    type_unsigned_32 last_write;
 } iomap_port_state;
 
 typedef struct iomap_machine {
@@ -42,8 +42,8 @@ static C_VOID iomap_reset(C_VOID *opaque)
         state->machine);
 }
 
-static type_status iomap_port_read(C_VOID *opaque, uint16_t port,
-    uint32_t *out_value)
+static type_status iomap_port_read(C_VOID *opaque, type_unsigned_16 port,
+    type_unsigned_32 *out_value)
 {
     iomap_port_state *state = (iomap_port_state *)opaque;
 
@@ -53,8 +53,8 @@ static type_status iomap_port_read(C_VOID *opaque, uint16_t port,
     return TYPE_STATUS_OK;
 }
 
-static type_status iomap_port_write(C_VOID *opaque, uint16_t port,
-    uint32_t value)
+static type_status iomap_port_write(C_VOID *opaque, type_unsigned_16 port,
+    type_unsigned_32 value)
 {
     iomap_port_state *state = (iomap_port_state *)opaque;
 
@@ -74,8 +74,8 @@ static const core_machine_port_provider iomap_port_provider = {
     iomap_port_read, iomap_port_write
 };
 
-static C_INT write_bytes(core_machine *machine, uint32_t address,
-    const uint8_t *bytes, STD_SIZE_T count)
+static C_INT write_bytes(core_machine *machine, type_unsigned_32 address,
+    const type_unsigned_8 *bytes, STD_SIZE_T count)
 {
     return core_machine_memory_write(machine, address, bytes, count) ==
         TYPE_STATUS_OK;
@@ -108,9 +108,9 @@ static C_INT iomap_prepare(iomap_machine *state, core_machine_cpu_profile profil
 static C_INT iomap_install(iomap_machine *state, core_machine_cpu_profile profile,
     iomap_case test_case)
 {
-    static const uint8_t gdt_pointer[] = { 0x2fu,0,0,3,0,0 };
-    static const uint8_t idt_pointer[] = { 0x97u,0x01u,0,4,0,0 };
-    uint8_t gdt[] = {
+    static const type_unsigned_8 gdt_pointer[] = { 0x2fu,0,0,3,0,0 };
+    static const type_unsigned_8 idt_pointer[] = { 0x97u,0x01u,0,4,0,0 };
+    type_unsigned_8 gdt[] = {
         0,0,0,0,0,0,0,0,
         0xff,0xff,0,0x20,0,0x9a,0,0,
         0xff,0xff,0,0x30,0,0x92,0,0,
@@ -118,7 +118,7 @@ static C_INT iomap_install(iomap_machine *state, core_machine_cpu_profile profil
         0xff,0xff,0,0x50,0,0xf2,0,0,
         0xff,0,0,0x06,0,0x89,0,0
     };
-    static const uint8_t real_code[] = {
+    static const type_unsigned_8 real_code[] = {
         0x0f,0x01,0x16,0x00,0x01,
         0x0f,0x01,0x1e,0x10,0x01,
         0xb8,0x01,0x00,0x0f,0x01,0xf0,
@@ -126,7 +126,7 @@ static C_INT iomap_install(iomap_machine *state, core_machine_cpu_profile profil
         0xb8,0x10,0x00,0x8e,0xd0,0xbc,0x00,0x80,
         0xea,0x00,0x00,0x08,0x00
     };
-    uint8_t kernel_entry[] = {
+    type_unsigned_8 kernel_entry[] = {
         0xb8,0x10,0x00,0x8e,0xd8,
         0xb8,0x23,0x00,0x50,
         0xb8,0x00,0xa0,0x50,
@@ -136,23 +136,23 @@ static C_INT iomap_install(iomap_machine *state, core_machine_cpu_profile profil
         0xb8,0x23,0x00,0x8e,0xd8,
         0xcf
     };
-    static const uint8_t kernel_stop[] = { 0xf4 };
-    static const uint8_t kernel_fault[] = {
+    static const type_unsigned_8 kernel_stop[] = { 0xf4 };
+    static const type_unsigned_8 kernel_fault[] = {
         0xb8,0x33,0x33,0xa3,0x04,0x00,0xf4
     };
-    static const uint8_t user_allow[] = {
+    static const type_unsigned_8 user_allow[] = {
         0xe4,0xe0,0xa2,0x00,0x00,0xb0,0x5a,0xe6,0xe0,0xcd,0x31
     };
-    static const uint8_t user_deny_in[] = { 0xe4,0xe0 };
-    static const uint8_t user_deny_out[] = { 0xb0,0x5a,0xe6,0xe0 };
-    static const uint8_t user_truncated_word[] = { 0xe5,0xe1 };
-    uint8_t idt[0x198u] = {0};
-    uint8_t iomap_byte = 0u;
-    uint16_t iomap_base = 0x0080u;
-    uint16_t ss0 = 0x0010u;
-    uint32_t esp0 = 0x00009000u;
-    uint32_t tss_limit = 0x00ffu;
-    const uint8_t *user_code = user_allow;
+    static const type_unsigned_8 user_deny_in[] = { 0xe4,0xe0 };
+    static const type_unsigned_8 user_deny_out[] = { 0xb0,0x5a,0xe6,0xe0 };
+    static const type_unsigned_8 user_truncated_word[] = { 0xe5,0xe1 };
+    type_unsigned_8 idt[0x198u] = {0};
+    type_unsigned_8 iomap_byte = 0u;
+    type_unsigned_16 iomap_base = 0x0080u;
+    type_unsigned_16 ss0 = 0x0010u;
+    type_unsigned_32 esp0 = 0x00009000u;
+    type_unsigned_32 tss_limit = 0x00ffu;
+    const type_unsigned_8 *user_code = user_allow;
     STD_SIZE_T user_code_bytes = sizeof(user_allow);
 
     idt[0x68u] = 0x20u;
@@ -190,27 +190,27 @@ static C_INT iomap_install(iomap_machine *state, core_machine_cpu_profile profil
         break;
     }
     if (profile == CORE_MACHINE_CPU_PROFILE_80286) {
-        uint16_t sp0 = 0x9000u;
+        type_unsigned_16 sp0 = 0x9000u;
 
         gdt[45] = 0x81u;
         if (!write_bytes(state->machine, TSS_BASE + 2u,
-                (const uint8_t *)&sp0, sizeof(sp0)) ||
+                (const type_unsigned_8 *)&sp0, sizeof(sp0)) ||
             !write_bytes(state->machine, TSS_BASE + 4u,
-                (const uint8_t *)&ss0, sizeof(ss0))) return 0;
+                (const type_unsigned_8 *)&ss0, sizeof(ss0))) return 0;
     } else if (!write_bytes(state->machine, TSS_BASE + 4u,
-            (const uint8_t *)&esp0, sizeof(esp0)) ||
+            (const type_unsigned_8 *)&esp0, sizeof(esp0)) ||
         !write_bytes(state->machine, TSS_BASE + 8u,
-            (const uint8_t *)&ss0, sizeof(ss0))) {
+            (const type_unsigned_8 *)&ss0, sizeof(ss0))) {
         return 0;
     }
-    gdt[40] = (uint8_t)tss_limit;
-    gdt[41] = (uint8_t)(tss_limit >> 8u);
+    gdt[40] = (type_unsigned_8)tss_limit;
+    gdt[41] = (type_unsigned_8)(tss_limit >> 8u);
     return write_bytes(state->machine, GDT_PTR, gdt_pointer, sizeof(gdt_pointer)) &&
         write_bytes(state->machine, IDT_PTR, idt_pointer, sizeof(idt_pointer)) &&
         write_bytes(state->machine, GDT_BASE, gdt, sizeof(gdt)) &&
         write_bytes(state->machine, IDT_BASE, idt, sizeof(idt)) &&
         write_bytes(state->machine, TSS_BASE + 0x66u,
-            (const uint8_t *)&iomap_base, sizeof(iomap_base)) &&
+            (const type_unsigned_8 *)&iomap_base, sizeof(iomap_base)) &&
         write_bytes(state->machine, TSS_BASE + iomap_base + 0x1cu,
             &iomap_byte, sizeof(iomap_byte)) &&
         write_bytes(state->machine, 0u, real_code, sizeof(real_code)) &&
@@ -227,7 +227,7 @@ static C_INT iomap_run_case(core_machine_cpu_profile profile, iomap_case test_ca
     iomap_machine state;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
-    uint16_t marker[3] = {0u, 0u, 0u};
+    type_unsigned_16 marker[3] = {0u, 0u, 0u};
     const core_machine_run_budget budget = { 1024u, 0u };
     C_INT failed = !iomap_prepare(&state, profile);
     C_INT denied = test_case == IOMAP_CASE_DENY_IN ||

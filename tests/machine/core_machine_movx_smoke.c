@@ -7,8 +7,8 @@
 #define MOVX_SOURCE_MEMORY 0x5000u
 
 typedef struct movx_provider {
-    uint32_t reads;
-    uint8_t value[2];
+    type_unsigned_32 reads;
+    type_unsigned_8 value[2];
     type_status read_status;
 } movx_provider;
 
@@ -17,10 +17,10 @@ typedef struct movx_machine {
 } movx_machine;
 
 typedef struct movx_form {
-    uint8_t opcode;
-    uint32_t source;
-    uint32_t result;
-    uint8_t source_bytes;
+    type_unsigned_8 opcode;
+    type_unsigned_32 source;
+    type_unsigned_32 result;
+    type_unsigned_8 source_bytes;
 } movx_form;
 
 static type_status movx_read(C_VOID *owner, type_unsigned_32 physical,
@@ -94,7 +94,7 @@ static C_INT movx_prepare(core_machine_cpu_profile profile,
     return 1;
 }
 
-static C_INT movx_run(movx_machine *state, const uint8_t *code,
+static C_INT movx_run(movx_machine *state, const type_unsigned_8 *code,
     STD_SIZE_T code_size, C_INT expect_fault, t_cpu *out_cpu,
     core_machine_cpu_diagnostic *out_diagnostic)
 {
@@ -124,21 +124,21 @@ static C_INT movx_test_forms(C_VOID)
         {0xbeu, 0x00000080u, 0xffffff80u, 1u},
         {0xbfu, 0x00008001u, 0xffff8001u, 2u}
     };
-    uint8_t form_index;
+    type_unsigned_8 form_index;
     C_INT operand32;
     C_INT memory;
 
     for (form_index = 0u; form_index != sizeof(forms) / sizeof(forms[0]); ++form_index) {
         for (operand32 = 0; operand32 != 2; ++operand32) {
             for (memory = 0; memory != 2; ++memory) {
-                uint8_t code[6] = {0};
-                uint8_t source[2] = {
-                    (uint8_t)forms[form_index].source,
-                    (uint8_t)(forms[form_index].source >> 8u)
+                type_unsigned_8 code[6] = {0};
+                type_unsigned_8 source[2] = {
+                    (type_unsigned_8)forms[form_index].source,
+                    (type_unsigned_8)(forms[form_index].source >> 8u)
                 };
-                const uint32_t flags = VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF |
+                const type_unsigned_32 flags = VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF |
                     VCPU_EFLAGS_SF;
-                const uint32_t expected = operand32 ? forms[form_index].result :
+                const type_unsigned_32 expected = operand32 ? forms[form_index].result :
                     (0xaabb0000u | (forms[form_index].result & 0xffffu));
                 const STD_SIZE_T code_size = (operand32 ? 1u : 0u) +
                     (memory ? 5u : 3u);
@@ -178,9 +178,9 @@ static C_INT movx_test_forms(C_VOID)
 
 static C_INT movx_test_address_prefix(C_VOID)
 {
-    static const uint8_t code[] = {0x67u,0x66u,0x0fu,0xbfu,0x0eu};
-    const uint8_t source[] = {0x01u,0x80u};
-    const uint32_t flags = VCPU_EFLAGS_CF | VCPU_EFLAGS_OF;
+    static const type_unsigned_8 code[] = {0x67u,0x66u,0x0fu,0xbfu,0x0eu};
+    const type_unsigned_8 source[] = {0x01u,0x80u};
+    const type_unsigned_32 flags = VCPU_EFLAGS_CF | VCPU_EFLAGS_OF;
     movx_machine state;
     t_cpu after;
     core_machine_cpu_diagnostic diagnostic;
@@ -203,21 +203,21 @@ static C_INT movx_test_address_prefix(C_VOID)
 
 static C_INT movx_prepare_protected_limit(movx_machine *state)
 {
-    static const uint8_t gdt_pointer[] = {0x1fu,0,0,0x03u,0,0};
-    static const uint8_t gdt[] = {
+    static const type_unsigned_8 gdt_pointer[] = {0x1fu,0,0,0x03u,0,0};
+    static const type_unsigned_8 gdt[] = {
         0,0,0,0,0,0,0,0,
         0xffu,0xffu,0,0x20u,0,0x9au,0,0,
         0x0fu,0,0,0x30u,0,0x92u,0,0,
         0xffu,0xffu,0,0x40u,0,0x92u,0x40u,0
     };
-    static const uint8_t bootstrap[] = {
+    static const type_unsigned_8 bootstrap[] = {
         0x0fu,0x01u,0x16u,0x00u,0x01u,
         0xb8u,0x01u,0x00u,0x0fu,0x01u,0xf0u,
         0xb8u,0x10u,0x00u,0x8eu,0xd8u,0x8eu,0xc0u,
         0xb8u,0x18u,0x00u,0x8eu,0xd0u,
         0xbcu,0x00u,0x80u,0xeau,0x00u,0x00u,0x08u,0x00u
     };
-    static const uint8_t halt[] = {0xf4u};
+    static const type_unsigned_8 halt[] = {0xf4u};
     const core_machine_run_budget budget = {96u, 0u};
     core_machine_run_result result;
 
@@ -234,13 +234,13 @@ static C_INT movx_prepare_protected_limit(movx_machine *state)
 
 static C_INT movx_test_read_boundaries(C_VOID)
 {
-    static const uint8_t code[] = {0x0fu,0xb6u,0x0eu,0x00u,0x50u};
-    const uint32_t flags = VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF;
+    static const type_unsigned_8 code[] = {0x0fu,0xb6u,0x0eu,0x00u,0x50u};
+    const type_unsigned_32 flags = VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF;
     core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286
     };
-    uint8_t opcode;
-    uint8_t profile_index;
+    type_unsigned_8 opcode;
+    type_unsigned_8 profile_index;
 
     for (profile_index = 0u; profile_index != sizeof(profiles) / sizeof(profiles[0]);
          ++profile_index) {
@@ -251,7 +251,7 @@ static C_INT movx_test_read_boundaries(C_VOID)
             core_machine_cpu_diagnostic diagnostic;
             C_INT failed = !movx_prepare(profiles[profile_index], &provider,
                 &state);
-            uint8_t form_code[sizeof(code)];
+            type_unsigned_8 form_code[sizeof(code)];
 
             if (opcode == 0xb8u || opcode == 0xb9u || opcode == 0xbau ||
                 opcode == 0xbbu || opcode == 0xbcu || opcode == 0xbdu) continue;
@@ -273,7 +273,7 @@ static C_INT movx_test_read_boundaries(C_VOID)
     }
 
     {
-        static const uint8_t limit_code[] = {0x0fu,0xbfu,0x0eu,0x10u,0x00u};
+        static const type_unsigned_8 limit_code[] = {0x0fu,0xbfu,0x0eu,0x10u,0x00u};
         const core_machine_run_budget budget = {1u, 0u};
         movx_machine state;
         t_cpu after;

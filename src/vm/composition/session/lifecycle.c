@@ -43,14 +43,14 @@
 
 #include "vm/composition/session/lifecycle.h"
 
-static C_VOID vm_session_wait(C_VOID *context, uint32_t milliseconds)
+static C_VOID vm_session_wait(C_VOID *context, type_unsigned_32 milliseconds)
 {
     (C_VOID)context;
     core_platform_sleep_milliseconds(milliseconds);
 }
 
-static uint8_t vm_session_debug_disassemble(C_VOID *context,
-    C_CHAR *statement, uint8_t *code, C_INT flag32)
+static type_unsigned_8 vm_session_debug_disassemble(C_VOID *context,
+    C_CHAR *statement, type_unsigned_8 *code, C_INT flag32)
 {
     (C_VOID)context;
     return core_product_utils_dasm32(statement, code, flag32);

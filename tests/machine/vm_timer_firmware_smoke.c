@@ -27,19 +27,19 @@ C_INT main(C_INT argc, C_CHAR **argv)
     vm_session *session = STD_NULL;
     HANDLE thread = STD_NULL;
     DWORD elapsed;
-    uint32_t bda_ticks = 0u;
-    uint32_t int1a_ticks;
-    uint64_t paused_elapsed_ticks;
-    uint64_t observed_paused_elapsed_ticks;
-    uint64_t stepped_elapsed_ticks;
-    uint32_t rollover_seed = VM_TIMER_DAILY_LIMIT - 1u;
-    uint8_t rollover_byte = 0u;
+    type_unsigned_32 bda_ticks = 0u;
+    type_unsigned_32 int1a_ticks;
+    type_unsigned_64 paused_elapsed_ticks;
+    type_unsigned_64 observed_paused_elapsed_ticks;
+    type_unsigned_64 stepped_elapsed_ticks;
+    type_unsigned_32 rollover_seed = VM_TIMER_DAILY_LIMIT - 1u;
+    type_unsigned_8 rollover_byte = 0u;
     core_machine_run_budget budget = { 512u, 0u };
     core_machine_run_result result;
     t_cpu cpu;
     C_INT stage = 0;
-    static const uint8_t int1a_program[] = { 0xb4u, 0x00u, 0xcdu, 0x1au, 0xf4u };
-    static const uint8_t rollover_program[] = {
+    static const type_unsigned_8 int1a_program[] = { 0xb4u, 0x00u, 0xcdu, 0x1au, 0xf4u };
+    static const type_unsigned_8 rollover_program[] = {
         0xcdu, 0x08u, 0xb4u, 0x00u, 0xcdu, 0x1au, 0xf4u
     };
 
@@ -88,7 +88,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
         result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) goto fail;
     stage = 8;
     cpu = test_core_machine_fixture_capture_cpu_after_run(session->core_machine);
-    int1a_ticks = ((uint32_t)cpu.data.cx << 16) | cpu.data.dx;
+    int1a_ticks = ((type_unsigned_32)cpu.data.cx << 16) | cpu.data.dx;
     if (int1a_ticks != bda_ticks || cpu.data.al != 0u) goto fail;
     stage = 9;
     if (!test_core_machine_fixture_prepare_real_mode_execution(
@@ -103,7 +103,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
         result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) goto fail;
     stage = 10;
     cpu = test_core_machine_fixture_capture_cpu_after_run(session->core_machine);
-    int1a_ticks = ((uint32_t)cpu.data.cx << 16) | cpu.data.dx;
+    int1a_ticks = ((type_unsigned_32)cpu.data.cx << 16) | cpu.data.dx;
     if (int1a_ticks != 0u || cpu.data.al != 1u ||
         core_machine_debug_read_memory(session->core_machine,
             VM_TIMER_BDA_ROLLOVER, &rollover_byte, sizeof(rollover_byte)) !=

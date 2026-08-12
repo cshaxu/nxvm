@@ -15,8 +15,8 @@ typedef struct core_machine_firmware_context core_machine_firmware_context;
 #define VM_PROFILE_DEFAULT_DEVICE_BIOS "Unknown BIOS"
 
 typedef struct vm_profile_default_bios_code {
-    uint8_t *bytes;
-    uint16_t length;
+    type_unsigned_8 *bytes;
+    type_unsigned_16 length;
 } vm_profile_default_bios_code;
 
 typedef struct {
@@ -35,7 +35,7 @@ typedef struct {
 typedef struct t_bios {
     t_bios_data data;
     t_bios_connect connect;
-    uint8_t reset_ivt[0x400];
+    type_unsigned_8 reset_ivt[0x400];
     type_bool flagBoot;
     type_bool rom_materialized;
 } t_bios;
@@ -163,12 +163,12 @@ typedef struct t_bios {
 #define VBIOS_POST_REPORT_NONE                      0x00u
 #define VBIOS_POST_REPORT_BOOT_FAILURE_ACKNOWLEDGED 0x01u
 
-C_VOID vm_profile_default_bios_add_post_code(t_bios *bios, uint8_t *bytes,
-    uint16_t length);
-C_VOID vm_profile_default_bios_add_interrupt_code(t_bios *bios, uint8_t *bytes,
-    uint16_t length, uint8_t intid);
-C_VOID vm_profile_default_bios_set_boot_code(t_bios *bios, uint8_t *bytes,
-    uint16_t length);
+C_VOID vm_profile_default_bios_add_post_code(t_bios *bios, type_unsigned_8 *bytes,
+    type_unsigned_16 length);
+C_VOID vm_profile_default_bios_add_interrupt_code(t_bios *bios, type_unsigned_8 *bytes,
+    type_unsigned_16 length, type_unsigned_8 intid);
+C_VOID vm_profile_default_bios_set_boot_code(t_bios *bios, type_unsigned_8 *bytes,
+    type_unsigned_16 length);
 C_VOID vm_profile_default_bios_initialize(t_bios *bios);
 C_INT vm_profile_default_bios_materialize(t_bios *bios,
     core_machine_firmware_context *firmware);

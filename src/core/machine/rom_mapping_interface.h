@@ -11,8 +11,8 @@ typedef struct core_machine core_machine;
 
 type_status core_machine_register_immutable_rom_mapping(
     core_machine *machine,
-    uint32_t physical_start,
-    const uint8_t *image,
+    type_unsigned_32 physical_start,
+    const type_unsigned_8 *image,
     STD_SIZE_T bytes);
 
 #ifdef __cplusplus

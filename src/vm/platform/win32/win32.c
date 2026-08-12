@@ -15,7 +15,7 @@
 
 C_VOID vm_platform_win32_keyboard_make_key_for(
     const vm_platform_run_context *context, vm_platform_run_handle *owner,
-    uint16_t scanCode, uint16_t virtualKey, C_INT pressed)
+    type_unsigned_16 scanCode, type_unsigned_16 virtualKey, C_INT pressed)
 {
     core_platform_input_event event;
 
@@ -31,8 +31,8 @@ C_VOID vm_platform_win32_keyboard_make_key_for(
 }
 
 C_VOID vm_platform_win32_mouse_relative_for(
-    const vm_platform_run_context *context, int16_t delta_x, int16_t delta_y,
-    uint8_t buttons)
+    const vm_platform_run_context *context, type_signed_16 delta_x, type_signed_16 delta_y,
+    type_unsigned_8 buttons)
 {
     core_platform_input_event event;
 

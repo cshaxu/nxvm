@@ -70,15 +70,15 @@ static C_INT paging_prepare(paging_machine *state,
     return 1;
 }
 
-static C_INT paging_write_u32(core_machine *machine, uint32_t address,
-    uint32_t value)
+static C_INT paging_write_u32(core_machine *machine, type_unsigned_32 address,
+    type_unsigned_32 value)
 {
     return core_machine_memory_write(machine, address, &value, sizeof(value)) ==
         TYPE_STATUS_OK;
 }
 
-static C_INT paging_read_u32(core_machine *machine, uint32_t address,
-    uint32_t *out_value)
+static C_INT paging_read_u32(core_machine *machine, type_unsigned_32 address,
+    type_unsigned_32 *out_value)
 {
     return core_machine_memory_read(machine, address, out_value,
         sizeof(*out_value)) == TYPE_STATUS_OK;
@@ -86,10 +86,10 @@ static C_INT paging_read_u32(core_machine *machine, uint32_t address,
 
 static C_INT paging_install_gdt(core_machine *machine)
 {
-    static const uint8_t gdt_pointer[] = {
+    static const type_unsigned_8 gdt_pointer[] = {
         0x27u, 0x00u, 0x00u, 0x03u, 0x00u, 0x00u
     };
-    static const uint8_t gdt[] = {
+    static const type_unsigned_8 gdt[] = {
         0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
         0xffu, 0xffu, 0x00u, 0x00u, 0x00u, 0x9au, 0x00u, 0x00u,
         0xffu, 0xffu, 0x00u, 0x00u, 0x00u, 0x92u, 0x00u, 0x00u,
@@ -103,8 +103,8 @@ static C_INT paging_install_gdt(core_machine *machine)
             sizeof(gdt)) == TYPE_STATUS_OK;
 }
 
-static C_INT paging_install_tables(core_machine *machine, uint32_t code_entry,
-    uint32_t data_entry, uint32_t stack_entry)
+static C_INT paging_install_tables(core_machine *machine, type_unsigned_32 code_entry,
+    type_unsigned_32 data_entry, type_unsigned_32 stack_entry)
 {
     return paging_write_u32(machine, TEST_PAGE_DIRECTORY,
                TEST_PAGE_TABLE | TEST_PAGE_PRESENT | TEST_PAGE_WRITABLE) &&
@@ -114,9 +114,9 @@ static C_INT paging_install_tables(core_machine *machine, uint32_t code_entry,
 }
 
 static C_INT paging_write_bootstrap(core_machine *machine,
-    const uint8_t *protected_code, STD_SIZE_T protected_code_size)
+    const type_unsigned_8 *protected_code, STD_SIZE_T protected_code_size)
 {
-    static const uint8_t real_code[] = {
+    static const type_unsigned_8 real_code[] = {
         0x0fu, 0x01u, 0x16u, 0x00u, 0x01u,
         0xb8u, 0x01u, 0x00u,
         0x0fu, 0x01u, 0xf0u,
@@ -147,7 +147,7 @@ static C_INT paging_run(core_machine *machine, C_INT expect_fault,
 }
 
 static C_INT paging_expect_fault(const core_machine_cpu_diagnostic *diagnostic,
-    uint32_t exception, uint32_t code, uint32_t point_linear)
+    type_unsigned_32 exception, type_unsigned_32 code, type_unsigned_32 point_linear)
 {
     return diagnostic->first_fault.valid &&
         TYPE_GET_BIT(diagnostic->first_fault.exception_mask, exception) &&
@@ -158,7 +158,7 @@ static C_INT paging_expect_fault(const core_machine_cpu_diagnostic *diagnostic,
 
 static C_INT paging_test_valid_path(C_VOID)
 {
-    static const uint8_t protected_code[] = {
+    static const type_unsigned_8 protected_code[] = {
         0xbcu, 0x00u, 0x50u,
         0x66u, 0xb8u, 0x00u, 0x10u, 0x00u, 0x00u,
         0x0fu, 0x22u, 0xd8u,
@@ -173,24 +173,24 @@ static C_INT paging_test_valid_path(C_VOID)
         0x5eu,
         0xf4u
     };
-    const uint32_t code_entry = TEST_PAGE_PRESENT | TEST_PAGE_WRITABLE;
-    const uint32_t data_entry = TEST_DATA_PHYSICAL | TEST_PAGE_PRESENT |
+    const type_unsigned_32 code_entry = TEST_PAGE_PRESENT | TEST_PAGE_WRITABLE;
+    const type_unsigned_32 data_entry = TEST_DATA_PHYSICAL | TEST_PAGE_PRESENT |
         TEST_PAGE_WRITABLE;
-    const uint32_t stack_entry = TEST_STACK_PHYSICAL | TEST_PAGE_PRESENT |
+    const type_unsigned_32 stack_entry = TEST_STACK_PHYSICAL | TEST_PAGE_PRESENT |
         TEST_PAGE_WRITABLE;
     paging_machine state;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
-    uint16_t data = 0u;
-    uint32_t pde = 0u;
-    uint32_t pte_code = 0u;
-    uint32_t pte_data = 0u;
-    uint32_t pte_stack = 0u;
-    uint32_t pre_cr0 = 0u;
-    uint32_t pre_cr2 = 0u;
-    uint32_t pre_cr3 = 0u;
-    uint32_t pre_ecx = 0u;
-    uint32_t pre_edx = 0u;
+    type_unsigned_16 data = 0u;
+    type_unsigned_32 pde = 0u;
+    type_unsigned_32 pte_code = 0u;
+    type_unsigned_32 pte_data = 0u;
+    type_unsigned_32 pte_stack = 0u;
+    type_unsigned_32 pre_cr0 = 0u;
+    type_unsigned_32 pre_cr2 = 0u;
+    type_unsigned_32 pre_cr3 = 0u;
+    type_unsigned_32 pre_ecx = 0u;
+    type_unsigned_32 pre_edx = 0u;
     t_cpu cpu;
     C_INT ran;
     C_INT registers;
@@ -250,10 +250,10 @@ static C_INT paging_test_valid_path(C_VOID)
     return failed;
 }
 
-static C_INT paging_test_fault(uint32_t code_entry, uint32_t data_entry,
-    uint32_t stack_entry, const uint8_t *protected_code,
-    STD_SIZE_T protected_code_size, uint32_t expected_code,
-    uint32_t expected_point, uint32_t expected_cr2)
+static C_INT paging_test_fault(type_unsigned_32 code_entry, type_unsigned_32 data_entry,
+    type_unsigned_32 stack_entry, const type_unsigned_8 *protected_code,
+    STD_SIZE_T protected_code_size, type_unsigned_32 expected_code,
+    type_unsigned_32 expected_point, type_unsigned_32 expected_cr2)
 {
     paging_machine state;
     core_machine_run_result result;
@@ -289,13 +289,13 @@ static C_INT paging_test_fault(uint32_t code_entry, uint32_t data_entry,
 
 static C_INT paging_test_page_faults(C_VOID)
 {
-    static const uint8_t enable_only[] = {
+    static const type_unsigned_8 enable_only[] = {
         0x66u, 0xb8u, 0x00u, 0x10u, 0x00u, 0x00u,
         0x0fu, 0x22u, 0xd8u,
         0x66u, 0xb8u, 0x01u, 0x00u, 0x00u, 0x80u,
         0x0fu, 0x22u, 0xc0u
     };
-    static const uint8_t data_read[] = {
+    static const type_unsigned_8 data_read[] = {
         0x66u, 0xb8u, 0x00u, 0x10u, 0x00u, 0x00u,
         0x0fu, 0x22u, 0xd8u,
         0x66u, 0xb8u, 0x01u, 0x00u, 0x00u, 0x80u,
@@ -303,7 +303,7 @@ static C_INT paging_test_page_faults(C_VOID)
         0xbbu, 0x00u, 0x30u,
         0x8bu, 0x07u
     };
-    static const uint8_t stack_write[] = {
+    static const type_unsigned_8 stack_write[] = {
         0xbcu, 0x00u, 0x50u,
         0x66u, 0xb8u, 0x00u, 0x10u, 0x00u, 0x00u,
         0x0fu, 0x22u, 0xd8u,
@@ -311,10 +311,10 @@ static C_INT paging_test_page_faults(C_VOID)
         0x0fu, 0x22u, 0xc0u,
         0x50u
     };
-    const uint32_t code = TEST_PAGE_PRESENT | TEST_PAGE_WRITABLE;
-    const uint32_t data = TEST_DATA_PHYSICAL | TEST_PAGE_PRESENT |
+    const type_unsigned_32 code = TEST_PAGE_PRESENT | TEST_PAGE_WRITABLE;
+    const type_unsigned_32 data = TEST_DATA_PHYSICAL | TEST_PAGE_PRESENT |
         TEST_PAGE_WRITABLE;
-    const uint32_t stack = TEST_STACK_PHYSICAL | TEST_PAGE_PRESENT |
+    const type_unsigned_32 stack = TEST_STACK_PHYSICAL | TEST_PAGE_PRESENT |
         TEST_PAGE_WRITABLE;
     C_INT failed = 0;
 
@@ -329,7 +329,7 @@ static C_INT paging_test_page_faults(C_VOID)
 }
 
 static C_INT paging_test_control_gate(core_machine_cpu_profile profile,
-    const uint8_t *code, STD_SIZE_T code_size)
+    const type_unsigned_8 *code, STD_SIZE_T code_size)
 {
     paging_machine state;
     core_machine_run_result result;
@@ -350,19 +350,19 @@ static C_INT paging_test_control_gate(core_machine_cpu_profile profile,
 
 static C_INT paging_test_control_forms(C_VOID)
 {
-    static const uint8_t write_reserved_cr1[] = {
+    static const type_unsigned_8 write_reserved_cr1[] = {
         0x66u, 0xb8u, 0x34u, 0x12u, 0x00u, 0x00u,
         0x0fu, 0x22u, 0xc8u
     };
-    static const uint8_t pg_without_pe[] = {
+    static const type_unsigned_8 pg_without_pe[] = {
         0x66u, 0xb8u, 0x00u, 0x00u, 0x00u, 0x80u,
         0x0fu, 0x22u, 0xc0u
     };
-    static const uint8_t unaligned_cr3[] = {
+    static const type_unsigned_8 unaligned_cr3[] = {
         0x66u, 0xb8u, 0x34u, 0x12u, 0x00u, 0x00u,
         0x0fu, 0x22u, 0xd8u
     };
-    static const uint8_t read_cr0[] = { 0x0fu, 0x20u, 0xc0u };
+    static const type_unsigned_8 read_cr0[] = { 0x0fu, 0x20u, 0xc0u };
     C_INT failed = 0;
 
     failed |= paging_test_control_gate(CORE_MACHINE_CPU_PROFILE_80386,
@@ -386,8 +386,8 @@ typedef enum paging_permission_access {
 } paging_permission_access;
 
 static C_INT paging_permission_install(core_machine *machine,
-    uint32_t pde_code, uint32_t pde_data, uint32_t pte_code,
-    uint32_t pte_data, uint32_t pte_stack)
+    type_unsigned_32 pde_code, type_unsigned_32 pde_data, type_unsigned_32 pte_code,
+    type_unsigned_32 pte_data, type_unsigned_32 pte_stack)
 {
     return core_machine_memory_write_physical(&machine->executor_memory,
                TEST_PAGE_DIRECTORY, TYPE_REFERENCE_OF(pde_code),
@@ -406,7 +406,7 @@ static C_INT paging_permission_install(core_machine *machine,
             sizeof(pte_data)) == TYPE_STATUS_OK;
 }
 
-static C_INT paging_permission_read(core_machine *machine, uint32_t physical,
+static C_INT paging_permission_read(core_machine *machine, type_unsigned_32 physical,
     C_VOID *out_data, STD_SIZE_T bytes)
 {
     return machine != STD_NULL && core_machine_memory_read_physical(
@@ -415,12 +415,12 @@ static C_INT paging_permission_read(core_machine *machine, uint32_t physical,
 }
 
 static C_INT paging_permission_prepare(paging_machine *state,
-    const uint8_t *program, STD_SIZE_T program_size, uint32_t pde_code,
-    uint32_t pde_data, uint32_t pte_code, uint32_t pte_data,
-    uint32_t pte_stack, C_INT user, C_INT write_protect,
-    uint32_t *out_program_eip)
+    const type_unsigned_8 *program, STD_SIZE_T program_size, type_unsigned_32 pde_code,
+    type_unsigned_32 pde_data, type_unsigned_32 pte_code, type_unsigned_32 pte_data,
+    type_unsigned_32 pte_stack, C_INT user, C_INT write_protect,
+    type_unsigned_32 *out_program_eip)
 {
-    static const uint8_t enable_paging[] = {
+    static const type_unsigned_8 enable_paging[] = {
         0xbcu, 0x00u, 0x50u,
         0x66u, 0xb8u, 0x00u, 0x10u, 0x00u, 0x00u,
         0x0fu, 0x22u, 0xd8u,
@@ -428,14 +428,14 @@ static C_INT paging_permission_prepare(paging_machine *state,
         0x0fu, 0x22u, 0xc0u,
         0xf4u
     };
-    uint8_t protected_code[64u] = {0};
-    uint16_t data = 0x1234u;
-    uint16_t stack = 0xaaaau;
+    type_unsigned_8 protected_code[64u] = {0};
+    type_unsigned_16 data = 0x1234u;
+    type_unsigned_16 stack = 0xaaaau;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
-    uint32_t initial_pde = TEST_PAGE_TABLE | TEST_PAGE_PRESENT |
+    type_unsigned_32 initial_pde = TEST_PAGE_TABLE | TEST_PAGE_PRESENT |
         TEST_PAGE_WRITABLE;
-    uint32_t initial_pte = TEST_PAGE_PRESENT | TEST_PAGE_WRITABLE;
+    type_unsigned_32 initial_pte = TEST_PAGE_PRESENT | TEST_PAGE_WRITABLE;
     C_INT failed = program_size > sizeof(protected_code) -
         sizeof(enable_paging) || !paging_prepare(state,
         CORE_MACHINE_CPU_PROFILE_80386);
@@ -491,16 +491,16 @@ static C_INT paging_permission_prepare(paging_machine *state,
 }
 
 static C_INT paging_permission_expect_fault(paging_machine *state,
-    uint32_t program_eip, uint32_t expected_code, uint32_t expected_cr2,
-    uint32_t pde_address, uint32_t pde_initial, uint32_t pte_address,
-    uint32_t pte_initial, paging_permission_access access)
+    type_unsigned_32 program_eip, type_unsigned_32 expected_code, type_unsigned_32 expected_cr2,
+    type_unsigned_32 pde_address, type_unsigned_32 pde_initial, type_unsigned_32 pte_address,
+    type_unsigned_32 pte_initial, paging_permission_access access)
 {
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
     t_cpu cpu;
-    uint32_t pde = 0u;
-    uint32_t pte = 0u;
-    uint16_t data = 0u;
+    type_unsigned_32 pde = 0u;
+    type_unsigned_32 pte = 0u;
+    type_unsigned_16 data = 0u;
     const core_machine_run_budget budget = { 32u, 0u };
     C_INT failed = core_machine_run(state->machine, budget, &result) !=
         TYPE_STATUS_FAULT || result.reason != CORE_MACHINE_STOP_FAULT ||
@@ -541,14 +541,14 @@ static C_INT paging_permission_expect_fault(paging_machine *state,
 }
 
 static C_INT paging_permission_expect_success(paging_machine *state,
-    paging_permission_access access, uint32_t pde_address, uint32_t pte_address)
+    paging_permission_access access, type_unsigned_32 pde_address, type_unsigned_32 pte_address)
 {
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
     t_cpu cpu;
-    uint32_t pde = 0u;
-    uint32_t pte = 0u;
-    uint16_t data = 0u;
+    type_unsigned_32 pde = 0u;
+    type_unsigned_32 pte = 0u;
+    type_unsigned_16 data = 0u;
     const core_machine_run_budget budget = { 1u, 0u };
     C_INT failed = core_machine_run(state->machine, budget, &result) !=
         TYPE_STATUS_OK || result.reason != CORE_MACHINE_STOP_BUDGET ||
@@ -585,22 +585,22 @@ static C_INT paging_permission_expect_success(paging_machine *state,
 
 static C_INT paging_test_permissions(C_VOID)
 {
-    static const uint8_t fetch[] = { 0x90u };
-    static const uint8_t read[] = { 0x67u, 0x8bu, 0x03u };
-    static const uint8_t write[] = { 0x67u, 0x89u, 0x03u };
-    static const uint8_t stack[] = { 0x50u };
-    const uint32_t code_user = TEST_PERMISSION_CODE | TEST_PAGE_PRESENT |
+    static const type_unsigned_8 fetch[] = { 0x90u };
+    static const type_unsigned_8 read[] = { 0x67u, 0x8bu, 0x03u };
+    static const type_unsigned_8 write[] = { 0x67u, 0x89u, 0x03u };
+    static const type_unsigned_8 stack[] = { 0x50u };
+    const type_unsigned_32 code_user = TEST_PERMISSION_CODE | TEST_PAGE_PRESENT |
         TEST_PAGE_WRITABLE | TEST_PAGE_US;
-    const uint32_t data_user = TEST_DATA_PHYSICAL | TEST_PAGE_PRESENT |
+    const type_unsigned_32 data_user = TEST_DATA_PHYSICAL | TEST_PAGE_PRESENT |
         TEST_PAGE_WRITABLE | TEST_PAGE_US;
-    const uint32_t stack_user = TEST_STACK_PHYSICAL | TEST_PAGE_PRESENT |
+    const type_unsigned_32 stack_user = TEST_STACK_PHYSICAL | TEST_PAGE_PRESENT |
         TEST_PAGE_WRITABLE | TEST_PAGE_US;
-    const uint32_t pde_code = TEST_PAGE_TABLE | TEST_PAGE_PRESENT |
+    const type_unsigned_32 pde_code = TEST_PAGE_TABLE | TEST_PAGE_PRESENT |
         TEST_PAGE_WRITABLE | TEST_PAGE_US;
-    const uint32_t pde_data = TEST_PAGE_TABLE_SECOND | TEST_PAGE_PRESENT |
+    const type_unsigned_32 pde_data = TEST_PAGE_TABLE_SECOND | TEST_PAGE_PRESENT |
         TEST_PAGE_WRITABLE | TEST_PAGE_US;
     paging_machine state;
-    uint32_t eip = 0u;
+    type_unsigned_32 eip = 0u;
     C_INT failed = 0;
 
     if (!paging_permission_prepare(&state, fetch, sizeof(fetch), pde_code,
@@ -697,18 +697,18 @@ static C_INT paging_test_permissions(C_VOID)
     return failed;
 }
 
-static C_INT paging_cross_prepare(paging_machine *state, const uint8_t *program,
-    STD_SIZE_T program_size, uint32_t second_entry, C_INT write_protect)
+static C_INT paging_cross_prepare(paging_machine *state, const type_unsigned_8 *program,
+    STD_SIZE_T program_size, type_unsigned_32 second_entry, C_INT write_protect)
 {
-    const uint32_t code_entry = TEST_PERMISSION_CODE | TEST_PAGE_PRESENT |
+    const type_unsigned_32 code_entry = TEST_PERMISSION_CODE | TEST_PAGE_PRESENT |
         TEST_PAGE_WRITABLE;
-    const uint32_t data_entry = TEST_CROSS_DATA_FIRST | TEST_PAGE_PRESENT |
+    const type_unsigned_32 data_entry = TEST_CROSS_DATA_FIRST | TEST_PAGE_PRESENT |
         TEST_PAGE_WRITABLE;
-    const uint32_t stack_entry = TEST_STACK_PHYSICAL | TEST_PAGE_PRESENT |
+    const type_unsigned_32 stack_entry = TEST_STACK_PHYSICAL | TEST_PAGE_PRESENT |
         TEST_PAGE_WRITABLE;
-    const uint32_t pde_code = TEST_PAGE_TABLE | TEST_PAGE_PRESENT |
+    const type_unsigned_32 pde_code = TEST_PAGE_TABLE | TEST_PAGE_PRESENT |
         TEST_PAGE_WRITABLE;
-    const uint32_t pde_data = TEST_PAGE_TABLE_SECOND | TEST_PAGE_PRESENT |
+    const type_unsigned_32 pde_data = TEST_PAGE_TABLE_SECOND | TEST_PAGE_PRESENT |
         TEST_PAGE_WRITABLE;
 
     return paging_permission_prepare(state, program, program_size, pde_code,
@@ -717,13 +717,13 @@ static C_INT paging_cross_prepare(paging_machine *state, const uint8_t *program,
         TEST_PAGE_TABLE_SECOND + 4u * 4u, second_entry);
 }
 
-static C_INT paging_cross_entries(core_machine *machine, uint32_t pde_address,
-    uint32_t first_address, uint32_t second_address, uint32_t expected_pde,
-    uint32_t expected_first, uint32_t expected_second)
+static C_INT paging_cross_entries(core_machine *machine, type_unsigned_32 pde_address,
+    type_unsigned_32 first_address, type_unsigned_32 second_address, type_unsigned_32 expected_pde,
+    type_unsigned_32 expected_first, type_unsigned_32 expected_second)
 {
-    uint32_t pde = 0u;
-    uint32_t first = 0u;
-    uint32_t second = 0u;
+    type_unsigned_32 pde = 0u;
+    type_unsigned_32 first = 0u;
+    type_unsigned_32 second = 0u;
 
     return paging_permission_read(machine, pde_address, &pde, sizeof(pde)) &&
         paging_permission_read(machine, first_address, &first, sizeof(first)) &&
@@ -746,21 +746,21 @@ static C_INT paging_cross_run(paging_machine *state, C_INT expect_fault,
 
 static C_INT paging_test_cross_data(C_VOID)
 {
-    static const uint8_t read[] = { 0x67u, 0x8bu, 0x03u };
-    static const uint8_t write[] = { 0x66u, 0x67u, 0x89u, 0x03u };
-    const uint32_t pde = TEST_PAGE_TABLE_SECOND | TEST_PAGE_PRESENT |
+    static const type_unsigned_8 read[] = { 0x67u, 0x8bu, 0x03u };
+    static const type_unsigned_8 write[] = { 0x66u, 0x67u, 0x89u, 0x03u };
+    const type_unsigned_32 pde = TEST_PAGE_TABLE_SECOND | TEST_PAGE_PRESENT |
         TEST_PAGE_WRITABLE;
-    const uint32_t first = TEST_CROSS_DATA_FIRST | TEST_PAGE_PRESENT |
+    const type_unsigned_32 first = TEST_CROSS_DATA_FIRST | TEST_PAGE_PRESENT |
         TEST_PAGE_WRITABLE;
-    const uint32_t second = TEST_CROSS_DATA_SECOND | TEST_PAGE_PRESENT |
+    const type_unsigned_32 second = TEST_CROSS_DATA_SECOND | TEST_PAGE_PRESENT |
         TEST_PAGE_WRITABLE;
     paging_machine state;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
     t_cpu cpu;
-    uint16_t word = 0u;
-    uint8_t byte = 0u;
-    uint32_t dword = 0u;
+    type_unsigned_16 word = 0u;
+    type_unsigned_8 byte = 0u;
+    type_unsigned_32 dword = 0u;
     C_INT failed = 0;
 
     if (!paging_cross_prepare(&state, read, sizeof(read), second, 0)) return 1;
@@ -811,20 +811,20 @@ static C_INT paging_test_cross_data(C_VOID)
 
 static C_INT paging_test_cross_stack(C_VOID)
 {
-    static const uint8_t push[] = { 0x50u };
-    static const uint8_t pop[] = { 0x58u };
-    const uint32_t pde = TEST_PAGE_TABLE | TEST_PAGE_PRESENT |
+    static const type_unsigned_8 push[] = { 0x50u };
+    static const type_unsigned_8 pop[] = { 0x58u };
+    const type_unsigned_32 pde = TEST_PAGE_TABLE | TEST_PAGE_PRESENT |
         TEST_PAGE_WRITABLE;
-    const uint32_t first = TEST_CROSS_DATA_FIRST | TEST_PAGE_PRESENT |
+    const type_unsigned_32 first = TEST_CROSS_DATA_FIRST | TEST_PAGE_PRESENT |
         TEST_PAGE_WRITABLE;
-    const uint32_t second = TEST_STACK_PHYSICAL | TEST_PAGE_PRESENT |
+    const type_unsigned_32 second = TEST_STACK_PHYSICAL | TEST_PAGE_PRESENT |
         TEST_PAGE_WRITABLE;
     paging_machine state;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
     t_cpu cpu;
-    uint8_t low = 0u;
-    uint8_t high = 0u;
+    type_unsigned_8 low = 0u;
+    type_unsigned_8 high = 0u;
     C_INT failed;
 
     if (!paging_cross_prepare(&state, push, sizeof(push),
@@ -852,9 +852,9 @@ static C_INT paging_test_cross_stack(C_VOID)
     failed |= !paging_write_u32(state.machine, TEST_PAGE_TABLE + 3u * 4u, first) ||
         !paging_write_u32(state.machine, TEST_PAGE_TABLE + 4u * 4u, second) ||
         core_machine_memory_write(state.machine, TEST_CROSS_DATA_FIRST + 0xfffu,
-            &(uint8_t){ 0x12u }, 1u) != TYPE_STATUS_OK ||
+            &(type_unsigned_8){ 0x12u }, 1u) != TYPE_STATUS_OK ||
         core_machine_memory_write(state.machine, TEST_STACK_PHYSICAL,
-            &(uint8_t){ 0x34u }, 1u) != TYPE_STATUS_OK;
+            &(type_unsigned_8){ 0x34u }, 1u) != TYPE_STATUS_OK;
     state.machine->executor_cpu.data.esp = 0x00003fffu;
     failed |= !paging_cross_run(&state, 0, &result, &diagnostic);
     cpu = test_core_machine_fixture_capture_cpu_after_run(state.machine);
@@ -887,13 +887,13 @@ static C_INT paging_test_cross_stack(C_VOID)
 
 static C_INT paging_test_cross_fetch(C_VOID)
 {
-    static const uint8_t first[] = { 0x66u };
-    static const uint8_t second[] = { 0xb8u, 0x34u, 0x12u, 0x00u, 0x00u };
-    const uint32_t pde = TEST_PAGE_TABLE | TEST_PAGE_PRESENT |
+    static const type_unsigned_8 first[] = { 0x66u };
+    static const type_unsigned_8 second[] = { 0xb8u, 0x34u, 0x12u, 0x00u, 0x00u };
+    const type_unsigned_32 pde = TEST_PAGE_TABLE | TEST_PAGE_PRESENT |
         TEST_PAGE_WRITABLE;
-    const uint32_t code_first = TEST_PERMISSION_CODE | TEST_PAGE_PRESENT |
+    const type_unsigned_32 code_first = TEST_PERMISSION_CODE | TEST_PAGE_PRESENT |
         TEST_PAGE_WRITABLE;
-    const uint32_t code_second = TEST_CROSS_CODE_PHYSICAL | TEST_PAGE_PRESENT |
+    const type_unsigned_32 code_second = TEST_CROSS_CODE_PHYSICAL | TEST_PAGE_PRESENT |
         TEST_PAGE_WRITABLE;
     paging_machine state;
     core_machine_run_result result;

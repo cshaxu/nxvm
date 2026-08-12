@@ -142,8 +142,8 @@ C_VOID vm_machine_debug_bind_disassembler(t_debug *debug,
     debug->connect.disassembleContext = context;
 }
 
-C_VOID vm_machine_debug_set_breakpoint_real(t_debug *debug, uint16_t segment,
-    uint16_t offset) {
+C_VOID vm_machine_debug_set_breakpoint_real(t_debug *debug, type_unsigned_16 segment,
+    type_unsigned_16 offset) {
     if (debug == STD_NULL) return;
     debug->data.breakCS = segment;
     debug->data.breakIP = offset;
@@ -153,7 +153,7 @@ C_VOID vm_machine_debug_clear_breakpoint_real(t_debug *debug) {
     if (debug == STD_NULL) return;
     debug->data.flagBreak = TYPE_FALSE;
 }
-C_VOID vm_machine_debug_set_breakpoint_linear(t_debug *debug, uint32_t linear) {
+C_VOID vm_machine_debug_set_breakpoint_linear(t_debug *debug, type_unsigned_32 linear) {
     if (debug == STD_NULL) return;
     debug->data.breakLinear = linear;
     debug->data.flagBreak32 = TYPE_TRUE;

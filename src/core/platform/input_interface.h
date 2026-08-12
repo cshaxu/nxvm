@@ -12,14 +12,14 @@ typedef struct core_platform_input_event {
     core_platform_input_kind kind;
     union {
         struct {
-            uint16_t scan_code;
-            uint16_t virtual_key;
+            type_unsigned_16 scan_code;
+            type_unsigned_16 virtual_key;
             C_INT pressed;
         } key;
         struct {
-            int16_t delta_x;
-            int16_t delta_y;
-            uint8_t buttons;
+            type_signed_16 delta_x;
+            type_signed_16 delta_y;
+            type_unsigned_8 buttons;
         } relative_mouse;
     } data;
 } core_platform_input_event;

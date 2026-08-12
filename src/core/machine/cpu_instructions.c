@@ -6797,7 +6797,7 @@ static C_VOID _a_scas(core_machine_cpu_execution_context *context, type_unsigned
 #define _adv TYPE_TRACE_CHECK_RETURN(_d_skip(context, 1))
 
 core_machine_cpu_instruction_metadata core_machine_cpu_instruction_metadata_get(
-    core_machine_cpu_instruction_space space, uint8_t opcode, uint8_t modrm)
+    core_machine_cpu_instruction_space space, type_unsigned_8 opcode, type_unsigned_8 modrm)
 {
     core_machine_cpu_instruction_metadata metadata = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_FPU_PROFILE_NONE, 1};
@@ -6880,7 +6880,7 @@ core_machine_cpu_instruction_metadata core_machine_cpu_instruction_metadata_get(
 
 static C_INT core_machine_cpu_profile_allows_form(
     const core_machine_cpu_execution_context *context,
-    core_machine_cpu_instruction_space space, uint8_t opcode, uint8_t modrm)
+    core_machine_cpu_instruction_space space, type_unsigned_8 opcode, type_unsigned_8 modrm)
 {
     core_machine_cpu_instruction_metadata metadata;
 
@@ -6909,7 +6909,7 @@ static C_VOID FPU_ESCAPE(core_machine_cpu_execution_context *context)
     core_machine_fpu_operation_metadata fpu_metadata;
     type_unsigned_8 escape_opcode;
     type_unsigned_8 modrm;
-    uint32_t fpu_m32;
+    type_unsigned_32 fpu_m32;
 
     TYPE_TRACE_CALL_BEGIN("FPU_ESCAPE");
     TYPE_TRACE_CHECK_RETURN(_s_read_cs(context, cpu_state.data.eip,
@@ -6967,7 +6967,7 @@ static C_VOID FPU_ESCAPE(core_machine_cpu_execution_context *context)
             case CORE_MACHINE_FPU_OPERATION_FSUB_ST0_STI:
             case CORE_MACHINE_FPU_OPERATION_FDIV_ST0_STI:
                 result = core_machine_fpu_binary_st0_sti(context->fpu,
-                    fpu_metadata.operation, (uint8_t)(modrm & 7u));
+                    fpu_metadata.operation, (type_unsigned_8)(modrm & 7u));
                 break;
             default:
                 result = CORE_MACHINE_FPU_EXECUTE_UNSUPPORTED;

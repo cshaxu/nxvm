@@ -13,7 +13,7 @@
     (T285_EGA_MODE10_START_BYTE + (T285_EGA_MODE10_HEIGHT - 1u) * \
         T285_EGA_MODE10_ROW_BYTES)
 
-static C_INT t285_write_byte(t_ram *memory, uint32_t physical, uint8_t value)
+static C_INT t285_write_byte(t_ram *memory, type_unsigned_32 physical, type_unsigned_8 value)
 {
     return core_machine_memory_write_physical(memory, physical,
         (type_virtual_address)&value, sizeof(value)) == TYPE_STATUS_OK;
@@ -35,7 +35,7 @@ C_INT main(C_VOID)
     t_ram memory;
     t_vadp vadp;
     core_machine_display_snapshot snapshot;
-    uint8_t plane;
+    type_unsigned_8 plane;
     C_INT failed = 0;
 
     STD_MEMSET(&memory, 0, sizeof(memory));
@@ -67,7 +67,7 @@ C_INT main(C_VOID)
     core_machine_port_write(&port, 0x03c0u, 0x01u);
     for (plane = 0u; plane < CORE_MACHINE_VADP_EGA_PLANES; ++plane) {
         core_machine_port_write(&port, 0x03c4u, 2u);
-        core_machine_port_write(&port, 0x03c5u, (uint8_t)(1u << plane));
+        core_machine_port_write(&port, 0x03c5u, (type_unsigned_8)(1u << plane));
         failed |= !t285_write_byte(&memory,
             CORE_MACHINE_VADP_EGA_APERTURE_BASE + T285_EGA_MODE10_START_BYTE,
             0x80u);

@@ -26,51 +26,51 @@ typedef enum vm_profile_default_pc_at_device_role {
 
 typedef struct vm_profile_default_pc_at_port_range {
     vm_profile_default_pc_at_device_role device;
-    uint16_t first;
-    uint16_t last;
+    type_unsigned_16 first;
+    type_unsigned_16 last;
 } vm_profile_default_pc_at_port_range;
 
 typedef struct vm_profile_default_pc_at_route {
     vm_profile_default_pc_at_device_role device;
-    uint8_t irq;
-    uint8_t dma_channel;
+    type_unsigned_8 irq;
+    type_unsigned_8 dma_channel;
 } vm_profile_default_pc_at_route;
 
 typedef struct vm_profile_default_pc_at_hdc_pio {
-    uint16_t data_port;
-    uint16_t error_features_port;
-    uint16_t sector_count_port;
-    uint16_t sector_number_port;
-    uint16_t cylinder_low_port;
-    uint16_t cylinder_high_port;
-    uint16_t drive_head_port;
-    uint16_t status_command_port;
-    uint16_t alternate_status_device_control_port;
-    uint8_t irq;
-    uint8_t dma_channel;
-    uint8_t data_width_bits;
-    uint8_t register_width_bits;
+    type_unsigned_16 data_port;
+    type_unsigned_16 error_features_port;
+    type_unsigned_16 sector_count_port;
+    type_unsigned_16 sector_number_port;
+    type_unsigned_16 cylinder_low_port;
+    type_unsigned_16 cylinder_high_port;
+    type_unsigned_16 drive_head_port;
+    type_unsigned_16 status_command_port;
+    type_unsigned_16 alternate_status_device_control_port;
+    type_unsigned_8 irq;
+    type_unsigned_8 dma_channel;
+    type_unsigned_8 data_width_bits;
+    type_unsigned_8 register_width_bits;
     type_bool lba28_supported;
     type_bool slave_present;
     type_bool secondary_channel_present;
 } vm_profile_default_pc_at_hdc_pio;
 
 typedef struct vm_profile_default_pc_at_rom_mapping {
-    uint32_t linear_start;
-    uint32_t physical_start;
+    type_unsigned_32 linear_start;
+    type_unsigned_32 physical_start;
     STD_SIZE_T bytes;
-    uint16_t reset_segment;
-    uint16_t reset_offset;
+    type_unsigned_16 reset_segment;
+    type_unsigned_16 reset_offset;
 } vm_profile_default_pc_at_rom_mapping;
 
 typedef struct vm_profile_default_pc_at_cmos_defaults {
-    uint8_t equipment;
-    uint16_t base_memory_kib;
-    uint8_t floppy_type;
-    uint8_t fixed_disk_type;
-    uint8_t fixed_disk_type_extended_0;
-    uint8_t boot_floppy_drive;
-    uint8_t boot_hard_disk_drive;
+    type_unsigned_8 equipment;
+    type_unsigned_16 base_memory_kib;
+    type_unsigned_8 floppy_type;
+    type_unsigned_8 fixed_disk_type;
+    type_unsigned_8 fixed_disk_type_extended_0;
+    type_unsigned_8 boot_floppy_drive;
+    type_unsigned_8 boot_hard_disk_drive;
 } vm_profile_default_pc_at_cmos_defaults;
 
 typedef enum vm_profile_default_pc_at_firmware_hook {
@@ -92,21 +92,21 @@ typedef enum vm_profile_default_pc_at_firmware_hook {
 
 typedef struct vm_profile_default_pc_at_firmware_service {
     vm_profile_default_pc_at_firmware_hook hook;
-    uint8_t vector;
+    type_unsigned_8 vector;
 } vm_profile_default_pc_at_firmware_service;
 
 typedef struct vm_profile_default_pc_at_descriptor {
     const C_CHAR *identity;
-    uint32_t compatibility_revision;
+    type_unsigned_32 compatibility_revision;
     core_machine_cpu_profile cpu_profile;
     core_machine_fpu_profile fpu_profile;
-    uint32_t ticks_per_instruction;
+    type_unsigned_32 ticks_per_instruction;
     core_machine_instruction_timing instruction_timing;
     core_machine_clock_plan clock_plan;
-    uint32_t kbc_typematic_initial_ticks;
-    uint32_t kbc_typematic_repeat_ticks;
-    uint32_t kbc_command_response_ticks;
-    uint32_t rtc_ticks_per_second;
+    type_unsigned_32 kbc_typematic_initial_ticks;
+    type_unsigned_32 kbc_typematic_repeat_ticks;
+    type_unsigned_32 kbc_command_response_ticks;
+    type_unsigned_32 rtc_ticks_per_second;
     core_machine_vadp_text_timing cga_text_timing;
     core_machine_vadp_ega_sequencer_config ega_sequencer;
     core_machine_vadp_ega_controller_config ega_controllers;

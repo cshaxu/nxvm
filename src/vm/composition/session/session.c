@@ -43,9 +43,9 @@ C_VOID vm_session_consume_request(
     }
 }
 
-static uint16_t vm_session_read_u16(const C_VOID *source)
+static type_unsigned_16 vm_session_read_u16(const C_VOID *source)
 {
-    uint16_t value;
+    type_unsigned_16 value;
 
     STD_MEMCPY(&value, source, sizeof(value));
     return value;
@@ -334,6 +334,6 @@ C_INT vm_session_get_reset_vector(const vm_session *session,
     if (core_machine_capture_observation(session->core_machine, &observation) !=
         TYPE_STATUS_OK) return TYPE_STATUS_INVALID_STATE;
     out_vector->cs = observation.cpu.cs;
-    out_vector->ip = (uint16_t)observation.cpu.eip;
+    out_vector->ip = (type_unsigned_16)observation.cpu.eip;
     return TYPE_STATUS_OK;
 }

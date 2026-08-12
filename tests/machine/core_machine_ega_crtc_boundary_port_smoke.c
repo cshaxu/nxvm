@@ -9,14 +9,14 @@
 _Static_assert(T314_CRTC_ADJACENT_INDEX < CORE_MACHINE_VADP_CRTC_REGISTER_COUNT,
     "T314 adjacent CRTC test index must fit the VADP CRTC register bank");
 
-static C_VOID core_machine_ega_crtc_write(t_port *port, uint8_t index,
-    uint8_t value)
+static C_VOID core_machine_ega_crtc_write(t_port *port, type_unsigned_8 index,
+    type_unsigned_8 value)
 {
     core_machine_port_write(port, CORE_MACHINE_VADP_PORT_CRTC_INDEX, index);
     core_machine_port_write(port, CORE_MACHINE_VADP_PORT_CRTC_DATA, value);
 }
 
-static uint8_t core_machine_ega_crtc_read(t_port *port, uint8_t index)
+static type_unsigned_8 core_machine_ega_crtc_read(t_port *port, type_unsigned_8 index)
 {
     core_machine_port_write(port, CORE_MACHINE_VADP_PORT_CRTC_INDEX, index);
     return core_machine_port_read(port, CORE_MACHINE_VADP_PORT_CRTC_DATA);
@@ -38,8 +38,8 @@ C_INT main(C_VOID)
     t_ram memory;
     t_vadp vadp;
     core_machine_display_snapshot snapshot;
-    uint8_t mode;
-    uint8_t color;
+    type_unsigned_8 mode;
+    type_unsigned_8 color;
     C_INT failed = 0;
 
     STD_MEMSET(&memory, 0, sizeof(memory));

@@ -6,9 +6,9 @@
 #include "core/machine/pic.h"
 #include "core/machine/port.h"
 
-static uint8_t read_port(t_port *port, uint16_t id)
+static type_unsigned_8 read_port(t_port *port, type_unsigned_16 id)
 {
-    return (uint8_t)core_machine_port_read(port, id);
+    return (type_unsigned_8)core_machine_port_read(port, id);
 }
 
 static C_VOID initialize_pic(t_port *port)
@@ -24,7 +24,7 @@ static C_VOID initialize_pic(t_port *port)
 }
 
 static C_INT take_aux_byte(t_port *port, t_pic *master, t_pic *slave,
-    uint8_t expected)
+    type_unsigned_8 expected)
 {
     core_machine_pic_refresh(master, slave);
     if ((read_port(port, 0x0064u) & (VKBC_STATUS_OBF | VKBC_STATUS_AUX)) !=
@@ -36,13 +36,13 @@ static C_INT take_aux_byte(t_port *port, t_pic *master, t_pic *slave,
     return 1;
 }
 
-static C_VOID send_aux_command(t_port *port, uint8_t command)
+static C_VOID send_aux_command(t_port *port, type_unsigned_8 command)
 {
     core_machine_port_write(port, 0x0064u, 0xd4u);
     core_machine_port_write(port, 0x0060u, command);
 }
 
-static C_VOID send_aux_parameter(t_port *port, uint8_t value)
+static C_VOID send_aux_parameter(t_port *port, type_unsigned_8 value)
 {
     core_machine_port_write(port, 0x0064u, 0xd4u);
     core_machine_port_write(port, 0x0060u, value);

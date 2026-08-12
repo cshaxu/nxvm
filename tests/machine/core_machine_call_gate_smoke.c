@@ -49,8 +49,8 @@ static C_INT call_gate_prepare(call_gate_machine *state)
     return 1;
 }
 
-static C_INT call_gate_write(call_gate_machine *machine, uint32_t address,
-    const uint8_t *bytes, STD_SIZE_T count)
+static C_INT call_gate_write(call_gate_machine *machine, type_unsigned_32 address,
+    const type_unsigned_8 *bytes, STD_SIZE_T count)
 {
     return core_machine_memory_write(machine->machine, address, bytes, count) ==
         TYPE_STATUS_OK;
@@ -58,10 +58,10 @@ static C_INT call_gate_write(call_gate_machine *machine, uint32_t address,
 
 static C_INT call_gate_install(call_gate_machine *state)
 {
-    static const uint8_t gdt_pointer[] = {
+    static const type_unsigned_8 gdt_pointer[] = {
         0x37u,0x00u,0x00u,0x03u,0x00u,0x00u
     };
-    static const uint8_t gdt[] = {
+    static const type_unsigned_8 gdt[] = {
         0,0,0,0,0,0,0,0,
         0xff,0xff,0,0x20,0,0x9a,0,0,
         0xff,0xff,0,0x30,0,0x92,0,0,
@@ -70,14 +70,14 @@ static C_INT call_gate_install(call_gate_machine *state)
         0x2b,0,0,0x06,0,0x81,0,0,
         0x00,0x01,0x08,0x00,0x00,0xe4,0x00,0x00
     };
-    static const uint8_t real_code[] = {
+    static const type_unsigned_8 real_code[] = {
         0x0f,0x01,0x16,0x00,0x01,
         0xb8,0x01,0x00,0x0f,0x01,0xf0,
         0xb8,0x28,0x00,0x0f,0x00,0xd8,
         0xb8,0x10,0x00,0x8e,0xd0,0xbc,0x00,0x80,
         0xea,0x00,0x00,0x08,0x00
     };
-    static const uint8_t kernel_code[] = {
+    static const type_unsigned_8 kernel_code[] = {
         0xb8,0x10,0x00,0x8e,0xd8,
         0xb8,0x23,0x00,0x50,
         0xb8,0x00,0xa0,0x50,
@@ -87,22 +87,22 @@ static C_INT call_gate_install(call_gate_machine *state)
         0xb8,0x23,0x00,0x8e,0xd8,
         0xcf
     };
-    static const uint8_t gate_target[] = {
+    static const type_unsigned_8 gate_target[] = {
         0xb8,0x11,0x11,0xa3,0x00,0x00,0xcb
     };
-    static const uint8_t user_code[] = {
+    static const type_unsigned_8 user_code[] = {
         0x9a,0x00,0x00,0x33,0x00,
         0xb8,0x22,0x22,0xa3,0x02,0x00,0xeb,0xfe
     };
-    const uint16_t sp0 = 0x9000u;
-    const uint16_t ss0 = 0x0010u;
+    const type_unsigned_16 sp0 = 0x9000u;
+    const type_unsigned_16 ss0 = 0x0010u;
 
     return call_gate_write(state, CALL_GATE_GDT_POINTER, gdt_pointer,
             sizeof(gdt_pointer)) &&
         call_gate_write(state, CALL_GATE_GDT_BASE, gdt, sizeof(gdt)) &&
-        call_gate_write(state, CALL_GATE_TSS_BASE + 2u, (const uint8_t *)&sp0,
+        call_gate_write(state, CALL_GATE_TSS_BASE + 2u, (const type_unsigned_8 *)&sp0,
             sizeof(sp0)) &&
-        call_gate_write(state, CALL_GATE_TSS_BASE + 4u, (const uint8_t *)&ss0,
+        call_gate_write(state, CALL_GATE_TSS_BASE + 4u, (const type_unsigned_8 *)&ss0,
             sizeof(ss0)) &&
         call_gate_write(state, 0u, real_code, sizeof(real_code)) &&
         call_gate_write(state, CALL_GATE_KERNEL_BASE, kernel_code,
@@ -118,7 +118,7 @@ int main(void)
     call_gate_machine state;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
-    uint16_t markers[2] = {0u, 0u};
+    type_unsigned_16 markers[2] = {0u, 0u};
     const core_machine_run_budget budget = { 1024u, 0u };
     C_INT failed = !call_gate_prepare(&state);
 

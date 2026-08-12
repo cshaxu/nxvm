@@ -14,15 +14,15 @@ static type_unsigned_8 core_machine_pit_mode(const t_pit *pit,
     return mode == 6u ? 2u : mode == 7u ? 3u : mode;
 }
 
-static uint32_t core_machine_pit_bcd_decode(type_unsigned_16 value)
+static type_unsigned_32 core_machine_pit_bcd_decode(type_unsigned_16 value)
 {
-    return (uint32_t)(value & 0x000fu) +
-        (uint32_t)((value >> 4) & 0x000fu) * 10u +
-        (uint32_t)((value >> 8) & 0x000fu) * 100u +
-        (uint32_t)((value >> 12) & 0x000fu) * 1000u;
+    return (type_unsigned_32)(value & 0x000fu) +
+        (type_unsigned_32)((value >> 4) & 0x000fu) * 10u +
+        (type_unsigned_32)((value >> 8) & 0x000fu) * 100u +
+        (type_unsigned_32)((value >> 12) & 0x000fu) * 1000u;
 }
 
-static type_unsigned_16 core_machine_pit_bcd_encode(uint32_t value)
+static type_unsigned_16 core_machine_pit_bcd_encode(type_unsigned_32 value)
 {
     type_unsigned_16 result = 0u;
     result |= (type_unsigned_16)(value % 10u);
@@ -35,18 +35,18 @@ static type_unsigned_16 core_machine_pit_bcd_encode(uint32_t value)
     return result;
 }
 
-static uint32_t core_machine_pit_decode_reload(const t_pit *pit,
+static type_unsigned_32 core_machine_pit_decode_reload(const t_pit *pit,
     type_unsigned_8 id)
 {
     if ((pit->data.cw[id] & VPIT_CW_BCD) != 0u) {
-        uint32_t result = core_machine_pit_bcd_decode(pit->data.init[id]);
+        type_unsigned_32 result = core_machine_pit_bcd_decode(pit->data.init[id]);
         return result == 0u ? 10000u : result;
     }
     return pit->data.init[id] == 0u ? 65536u : pit->data.init[id];
 }
 
 static type_unsigned_16 core_machine_pit_encode_count(const t_pit *pit,
-    type_unsigned_8 id, uint32_t count)
+    type_unsigned_8 id, type_unsigned_32 count)
 {
     if ((pit->data.cw[id] & VPIT_CW_BCD) != 0u) {
         return count == 10000u ? 0u : core_machine_pit_bcd_encode(count);
@@ -71,13 +71,13 @@ static C_VOID core_machine_pit_set_output_level(t_pit *pit,
     }
 }
 
-static uint32_t core_machine_pit_mode3_high_length(const t_pit *pit,
+static type_unsigned_32 core_machine_pit_mode3_high_length(const t_pit *pit,
     type_unsigned_8 id)
 {
     return (pit->data.reload[id] + 1u) / 2u;
 }
 
-static uint32_t core_machine_pit_mode3_low_length(const t_pit *pit,
+static type_unsigned_32 core_machine_pit_mode3_low_length(const t_pit *pit,
     type_unsigned_8 id)
 {
     return pit->data.reload[id] / 2u;
@@ -430,9 +430,9 @@ C_VOID core_machine_pit_reset(t_pit *pit)
     }
 }
 
-C_VOID core_machine_pit_advance(t_pit *pit, uint64_t elapsed_ticks)
+C_VOID core_machine_pit_advance(t_pit *pit, type_unsigned_64 elapsed_ticks)
 {
-    uint64_t tick;
+    type_unsigned_64 tick;
     type_unsigned_8 id;
     if (pit == STD_NULL) return;
     for (tick = 0u; tick < elapsed_ticks; ++tick) {

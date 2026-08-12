@@ -23,7 +23,7 @@ int main(C_VOID)
     core_machine_display_config display_config = {0};
     core_machine_display_provider_slot provider;
     core_machine *machine = STD_NULL;
-    uint8_t pixel = 0x5au;
+    type_unsigned_8 pixel = 0x5au;
     C_INT failed = 0;
 
     machine_config.memory_bytes = CORE_MACHINE_DEFAULT_MEMORY_BYTES;

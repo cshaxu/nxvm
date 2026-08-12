@@ -14,7 +14,7 @@ static STD_ATOMIC_UINTPTR_T core_machine_dma_next_request_token = 1u;
 
 static type_native_unsigned core_machine_dma_request_token_allocate(C_VOID)
 {
-    uintptr_t expected = STD_ATOMIC_LOAD(&core_machine_dma_next_request_token);
+    type_unsigned_pointer expected = STD_ATOMIC_LOAD(&core_machine_dma_next_request_token);
 
     while (expected != UINTPTR_MAX) {
         if (STD_ATOMIC_COMPARE_EXCHANGE_STRONG(
@@ -398,7 +398,7 @@ static C_VOID core_machine_dma_set_drq(t_dma *primary, t_dma *secondary,
 }
 
 type_status core_machine_dma_bind_channel(t_latch *latch, t_dma *primary,
-    t_dma *secondary, uint8_t drq_id,
+    t_dma *secondary, type_unsigned_8 drq_id,
     const core_machine_dma_channel_provider *provider, C_VOID *owner,
     core_machine_dma_request_binding *out_binding)
 {
@@ -573,9 +573,9 @@ static C_VOID core_machine_dma_advance_one(t_latch *latch, t_dma *primary,
 }
 
 C_VOID core_machine_dma_advance(t_latch *latch, t_dma *primary,
-    t_dma *secondary, t_ram *ram, uint64_t elapsed_ticks)
+    t_dma *secondary, t_ram *ram, type_unsigned_64 elapsed_ticks)
 {
-    uint64_t tick;
+    type_unsigned_64 tick;
 
     for (tick = 0u; tick < elapsed_ticks; ++tick) {
         core_machine_dma_advance_one(latch, primary, secondary, ram);

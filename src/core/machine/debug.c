@@ -30,7 +30,7 @@ type_status core_machine_debug_read_cpu(
 
 type_status core_machine_debug_read_memory(
     const core_machine *machine,
-    uint32_t physical,
+    type_unsigned_32 physical,
     C_VOID *out_data,
     STD_SIZE_T size)
 {
@@ -117,7 +117,7 @@ type_status core_machine_debug_capture_instruction_observation(
 }
 
 type_status core_machine_debug_read_register(const core_machine *machine,
-    core_machine_debug_register register_id, uint32_t *out_value)
+    core_machine_debug_register register_id, type_unsigned_32 *out_value)
 {
     type_status status = core_machine_debug_require_boundary(machine);
     const t_cpu *cpu;
@@ -153,7 +153,7 @@ type_status core_machine_debug_read_register(const core_machine *machine,
 }
 
 type_status core_machine_debug_write_register(core_machine *machine,
-    core_machine_debug_register register_id, uint32_t value)
+    core_machine_debug_register register_id, type_unsigned_32 value)
 {
     core_machine_debug_register_patch patch = {0};
 
@@ -166,27 +166,27 @@ type_status core_machine_debug_write_register(core_machine *machine,
 
 static C_INT core_machine_debug_patch_segment(
     core_machine_cpu_execution_context *context, t_cpu *cpu,
-    core_machine_debug_register register_id, uint32_t value)
+    core_machine_debug_register register_id, type_unsigned_32 value)
 {
     switch (register_id) {
     case CORE_MACHINE_DEBUG_ES:
         return core_machine_cpu_execution_load_segment(context, &cpu->data.es,
-            (uint16_t)value);
+            (type_unsigned_16)value);
     case CORE_MACHINE_DEBUG_CS:
         return core_machine_cpu_execution_load_segment(context, &cpu->data.cs,
-            (uint16_t)value);
+            (type_unsigned_16)value);
     case CORE_MACHINE_DEBUG_SS:
         return core_machine_cpu_execution_load_segment(context, &cpu->data.ss,
-            (uint16_t)value);
+            (type_unsigned_16)value);
     case CORE_MACHINE_DEBUG_DS:
         return core_machine_cpu_execution_load_segment(context, &cpu->data.ds,
-            (uint16_t)value);
+            (type_unsigned_16)value);
     case CORE_MACHINE_DEBUG_FS:
         return core_machine_cpu_execution_load_segment(context, &cpu->data.fs,
-            (uint16_t)value);
+            (type_unsigned_16)value);
     case CORE_MACHINE_DEBUG_GS:
         return core_machine_cpu_execution_load_segment(context, &cpu->data.gs,
-            (uint16_t)value);
+            (type_unsigned_16)value);
     default: return 0;
     }
 }
@@ -194,7 +194,7 @@ static C_INT core_machine_debug_patch_segment(
 type_status core_machine_debug_patch_registers(core_machine *machine,
     const core_machine_debug_register_patch *patch)
 {
-    const uint32_t valid_mask =
+    const type_unsigned_32 valid_mask =
         (1u << CORE_MACHINE_DEBUG_REGISTER_COUNT) - 1u;
     core_machine_cpu_execution_context candidate_context;
     t_cpu candidate_cpu;
@@ -251,7 +251,7 @@ type_status core_machine_debug_get_code_default_size(const core_machine *machine
 }
 
 type_status core_machine_debug_get_code_base(const core_machine *machine,
-    uint32_t *out_base)
+    type_unsigned_32 *out_base)
 {
     type_status status = core_machine_debug_require_boundary(machine);
     if (status != TYPE_STATUS_OK || out_base == STD_NULL) return
@@ -260,8 +260,8 @@ type_status core_machine_debug_get_code_base(const core_machine *machine,
     return TYPE_STATUS_OK;
 }
 
-type_status core_machine_debug_read_linear(core_machine *machine, uint32_t address,
-    C_VOID *out_data, uint8_t size)
+type_status core_machine_debug_read_linear(core_machine *machine, type_unsigned_32 address,
+    C_VOID *out_data, type_unsigned_8 size)
 {
     type_status status = core_machine_debug_require_boundary(machine);
     if (status != TYPE_STATUS_OK) return status;
@@ -269,8 +269,8 @@ type_status core_machine_debug_read_linear(core_machine *machine, uint32_t addre
         out_data, size) == 0 ? TYPE_STATUS_OK : TYPE_STATUS_INVALID_STATE;
 }
 
-type_status core_machine_debug_write_linear(core_machine *machine, uint32_t address,
-    const C_VOID *data, uint8_t size)
+type_status core_machine_debug_write_linear(core_machine *machine, type_unsigned_32 address,
+    const C_VOID *data, type_unsigned_8 size)
 {
     type_status status = core_machine_debug_require_boundary(machine);
     if (status != TYPE_STATUS_OK) return status;
@@ -278,8 +278,8 @@ type_status core_machine_debug_write_linear(core_machine *machine, uint32_t addr
         data, size) == 0 ? TYPE_STATUS_OK : TYPE_STATUS_INVALID_STATE;
 }
 
-type_status core_machine_debug_read_real(core_machine *machine, uint16_t segment,
-    uint16_t offset, C_VOID *out_data, STD_SIZE_T size)
+type_status core_machine_debug_read_real(core_machine *machine, type_unsigned_16 segment,
+    type_unsigned_16 offset, C_VOID *out_data, STD_SIZE_T size)
 {
     type_status status = core_machine_debug_require_boundary(machine);
     if (status != TYPE_STATUS_OK) return status;
@@ -287,8 +287,8 @@ type_status core_machine_debug_read_real(core_machine *machine, uint16_t segment
         offset, out_data, size);
 }
 
-type_status core_machine_debug_write_real(core_machine *machine, uint16_t segment,
-    uint16_t offset, const C_VOID *data, STD_SIZE_T size)
+type_status core_machine_debug_write_real(core_machine *machine, type_unsigned_16 segment,
+    type_unsigned_16 offset, const C_VOID *data, STD_SIZE_T size)
 {
     type_status status = core_machine_debug_require_boundary(machine);
     if (status != TYPE_STATUS_OK) return status;
@@ -296,8 +296,8 @@ type_status core_machine_debug_write_real(core_machine *machine, uint16_t segmen
         offset, data, size);
 }
 
-type_status core_machine_debug_read_port(core_machine *machine, uint16_t port,
-    uint32_t *out_value)
+type_status core_machine_debug_read_port(core_machine *machine, type_unsigned_16 port,
+    type_unsigned_32 *out_value)
 {
     type_status status = core_machine_debug_require_boundary(machine);
     if (status != TYPE_STATUS_OK || out_value == STD_NULL) return
@@ -308,13 +308,13 @@ type_status core_machine_debug_read_port(core_machine *machine, uint16_t port,
     return TYPE_STATUS_OK;
 }
 
-type_status core_machine_debug_write_port(core_machine *machine, uint16_t port,
-    uint32_t value)
+type_status core_machine_debug_write_port(core_machine *machine, type_unsigned_16 port,
+    type_unsigned_32 value)
 {
     type_status status = core_machine_debug_require_boundary(machine);
     if (status != TYPE_STATUS_OK) return status;
     {
-        uint32_t prior_value = machine->executor_port.data.ioDWord;
+        type_unsigned_32 prior_value = machine->executor_port.data.ioDWord;
 
         machine->executor_port.data.ioDWord = value;
         status = core_machine_port_execute_write(&machine->executor_port, port);
@@ -325,7 +325,7 @@ type_status core_machine_debug_write_port(core_machine *machine, uint16_t port,
 }
 
 type_status core_machine_debug_set_watchpoint(core_machine *machine,
-    core_machine_debug_watch_kind kind, uint32_t address)
+    core_machine_debug_watch_kind kind, type_unsigned_32 address)
 {
     type_status status = core_machine_debug_require_boundary(machine);
     if (status != TYPE_STATUS_OK || kind > CORE_MACHINE_DEBUG_WATCH_EXECUTE)

@@ -509,14 +509,14 @@ string(REPLACE ";" "\n" project_t317_type_support_contents
 file(GENERATE
     OUTPUT "${CMAKE_BINARY_DIR}/t317-test-type-vocabulary-support-headers.txt"
     CONTENT "${project_t317_type_support_contents}\n")
-add_custom_target(verify-t317-test-type-vocabulary
+add_custom_target(verify-global-fixed-width-vocabulary
     COMMAND "${CMAKE_COMMAND}"
         -DPROJECT_T317_TYPE_SOURCE_DIR=${CMAKE_SOURCE_DIR}
-        -DPROJECT_T317_TYPE_INVENTORY_FILE=${CMAKE_BINARY_DIR}/t317-strict-cpu-smoke-inventory.txt
-        -DPROJECT_T317_TYPE_SUPPORT_HEADERS_FILE=${CMAKE_BINARY_DIR}/t317-test-type-vocabulary-support-headers.txt
         -P "${CMAKE_SOURCE_DIR}/cmake/verify_t317_test_type_vocabulary.cmake"
-    COMMENT "Verifying T317 governed test type vocabulary"
+    COMMENT "Verifying global fixed-width type vocabulary"
     VERBATIM)
+add_custom_target(verify-t317-test-type-vocabulary
+    DEPENDS verify-global-fixed-width-vocabulary)
 add_dependencies(run-current-smokes verify-t317-test-type-vocabulary)
 
 if(CMAKE_GENERATOR MATCHES "Ninja")
@@ -1673,7 +1673,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0316 "0.5.0316")
+add_current_vm_artifact(vm-0-5-0317 "0.5.0317")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 

@@ -5,11 +5,11 @@
 #include "core/machine/media_interface.h"
 
 typedef struct core_machine_hdc_fixture_media {
-    uint8_t sector[512];
-    uint64_t generation;
-    uint32_t query_count;
-    uint32_t read_count;
-    uint32_t write_count;
+    type_unsigned_8 sector[512];
+    type_unsigned_64 generation;
+    type_unsigned_32 query_count;
+    type_unsigned_32 read_count;
+    type_unsigned_32 write_count;
     type_bool present;
     type_bool read_only;
     core_machine_media_result forced_read_result;
@@ -40,7 +40,7 @@ static core_machine_media_result core_machine_hdc_fixture_query(C_VOID *context,
 }
 
 static core_machine_media_result core_machine_hdc_fixture_read(C_VOID *context,
-    uint64_t offset, C_VOID *buffer, uint32_t byte_count)
+    type_unsigned_64 offset, C_VOID *buffer, type_unsigned_32 byte_count)
 {
     core_machine_hdc_fixture_media *media = context;
 
@@ -59,7 +59,7 @@ static core_machine_media_result core_machine_hdc_fixture_read(C_VOID *context,
 }
 
 static core_machine_media_result core_machine_hdc_fixture_write(C_VOID *context,
-    uint64_t offset, const C_VOID *buffer, uint32_t byte_count)
+    type_unsigned_64 offset, const C_VOID *buffer, type_unsigned_32 byte_count)
 {
     core_machine_hdc_fixture_media *media = context;
 
@@ -86,14 +86,14 @@ static const core_machine_media_provider core_machine_hdc_fixture_provider = {
     STD_NULL
 };
 
-static C_INT core_machine_hdc_write(core_machine *machine, uint16_t port,
-    uint32_t value)
+static C_INT core_machine_hdc_write(core_machine *machine, type_unsigned_16 port,
+    type_unsigned_32 value)
 {
     return core_machine_bus_write(machine, port, value) == TYPE_STATUS_OK;
 }
 
-static C_INT core_machine_hdc_read(core_machine *machine, uint16_t port,
-    uint32_t *out_value)
+static C_INT core_machine_hdc_read(core_machine *machine, type_unsigned_16 port,
+    type_unsigned_32 *out_value)
 {
     return core_machine_bus_read(machine, port, out_value) == TYPE_STATUS_OK;
 }
@@ -109,21 +109,21 @@ static C_INT core_machine_hdc_program_chs(core_machine *machine,
 }
 
 static C_INT core_machine_hdc_drain(core_machine *machine,
-    const core_machine_hdc_config *config, uint16_t *first_word)
+    const core_machine_hdc_config *config, type_unsigned_16 *first_word)
 {
-    uint32_t word;
+    type_unsigned_32 word;
 
-    for (uint32_t index = 0u; index < 256u; ++index) {
+    for (type_unsigned_32 index = 0u; index < 256u; ++index) {
         if (!core_machine_hdc_read(machine, config->data_port, &word)) return 0;
-        if (index == 0u && first_word != STD_NULL) *first_word = (uint16_t)word;
+        if (index == 0u && first_word != STD_NULL) *first_word = (type_unsigned_16)word;
     }
     return 1;
 }
 
 static C_INT core_machine_hdc_fill(core_machine *machine,
-    const core_machine_hdc_config *config, uint16_t first_word)
+    const core_machine_hdc_config *config, type_unsigned_16 first_word)
 {
-    for (uint32_t index = 0u; index < 256u; ++index) {
+    for (type_unsigned_32 index = 0u; index < 256u; ++index) {
         if (!core_machine_hdc_write(machine, config->data_port,
                 index == 0u ? first_word : 0u)) return 0;
     }
@@ -155,10 +155,10 @@ C_INT main(C_VOID)
     core_machine_hdc_topology topology = {0};
     core_machine *machine = STD_NULL;
     core_machine_hdc *hdc;
-    uint32_t status = 0u;
-    uint32_t error = 0u;
-    uint16_t word = 0u;
-    uint32_t queries_before;
+    type_unsigned_32 status = 0u;
+    type_unsigned_32 error = 0u;
+    type_unsigned_16 word = 0u;
+    type_unsigned_32 queries_before;
     C_INT failed = 0;
 
     media.sector[0] = 0x34u;

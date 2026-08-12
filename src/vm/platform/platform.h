@@ -29,7 +29,7 @@ typedef struct vm_platform_run_context {
     vm_platform_host_surface_context window_surface;
     C_VOID *console_renderer;
     C_VOID *window_renderer;
-    uint64_t terminal_displayed_generation;
+    type_unsigned_64 terminal_displayed_generation;
     vm_platform_display_mode display_mode;
     C_INT auto_window_active;
     C_INT auto_promotion_pending;

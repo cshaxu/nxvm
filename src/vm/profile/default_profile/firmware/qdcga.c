@@ -19,52 +19,52 @@
 #define QDCGA_MAX_PAGES 8u
 #define QDCGA_TEXT_ROWS 25u
 
-static uint16_t qdcga_read16(core_machine_firmware_context *firmware,
-    uint32_t address)
+static type_unsigned_16 qdcga_read16(core_machine_firmware_context *firmware,
+    type_unsigned_32 address)
 {
-    uint16_t value = 0u;
+    type_unsigned_16 value = 0u;
     (C_VOID)core_machine_firmware_memory_read(firmware, address, &value,
         sizeof(value));
     return value;
 }
 
-static C_VOID qdcga_write8(core_machine_firmware_context *firmware, uint32_t address,
-    uint8_t value)
+static C_VOID qdcga_write8(core_machine_firmware_context *firmware, type_unsigned_32 address,
+    type_unsigned_8 value)
 {
     (C_VOID)core_machine_firmware_memory_write(firmware, address, &value,
         sizeof(value));
 }
 
-static C_VOID qdcga_write16(core_machine_firmware_context *firmware, uint32_t address,
-    uint16_t value)
+static C_VOID qdcga_write16(core_machine_firmware_context *firmware, type_unsigned_32 address,
+    type_unsigned_16 value)
 {
     (C_VOID)core_machine_firmware_memory_write(firmware, address, &value,
         sizeof(value));
 }
 
-static uint16_t qdcga_columns(core_machine_firmware_context *firmware)
+static type_unsigned_16 qdcga_columns(core_machine_firmware_context *firmware)
 {
     return qdcga_read16(firmware, QDCGA_BDA_COLUMNS);
 }
 
-static uint16_t qdcga_page_size(core_machine_firmware_context *firmware)
+static type_unsigned_16 qdcga_page_size(core_machine_firmware_context *firmware)
 {
     return qdcga_read16(firmware, QDCGA_BDA_PAGE_SIZE);
 }
 
-static uint16_t qdcga_cursor_address(core_machine_firmware_context *firmware,
-    uint8_t page, uint8_t row, uint8_t column)
+static type_unsigned_16 qdcga_cursor_address(core_machine_firmware_context *firmware,
+    type_unsigned_8 page, type_unsigned_8 row, type_unsigned_8 column)
 {
-    return (uint16_t)((uint32_t)page * qdcga_page_size(firmware) / 2u +
-        (uint32_t)row * qdcga_columns(firmware) + column);
+    return (type_unsigned_16)((type_unsigned_32)page * qdcga_page_size(firmware) / 2u +
+        (type_unsigned_32)row * qdcga_columns(firmware) + column);
 }
 
-static C_VOID qdcga_set_cursor(core_machine_firmware_context *firmware, uint8_t page,
-    uint8_t row, uint8_t column)
+static C_VOID qdcga_set_cursor(core_machine_firmware_context *firmware, type_unsigned_8 page,
+    type_unsigned_8 row, type_unsigned_8 column)
 {
-    qdcga_write8(firmware, QDCGA_BDA_CURSOR + (uint32_t)page * 2u, column);
-    qdcga_write8(firmware, QDCGA_BDA_CURSOR + (uint32_t)page * 2u + 1u, row);
-    uint16_t address = qdcga_cursor_address(firmware, page, row, column);
+    qdcga_write8(firmware, QDCGA_BDA_CURSOR + (type_unsigned_32)page * 2u, column);
+    qdcga_write8(firmware, QDCGA_BDA_CURSOR + (type_unsigned_32)page * 2u + 1u, row);
+    type_unsigned_16 address = qdcga_cursor_address(firmware, page, row, column);
     (C_VOID)core_machine_firmware_port_write(firmware, 0x03d4u,
         0x0eu);
     (C_VOID)core_machine_firmware_port_write(firmware, 0x03d5u,

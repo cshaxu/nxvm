@@ -19,24 +19,24 @@
 #define CORE_MACHINE_DISPLAY_EGA_ATTRIBUTE_REGISTER_COUNT 21u
 
 typedef struct core_machine_vadp_text_timing {
-    uint32_t active_display_ticks;
-    uint32_t horizontal_blank_ticks;
-    uint32_t vertical_retrace_ticks;
+    type_unsigned_32 active_display_ticks;
+    type_unsigned_32 horizontal_blank_ticks;
+    type_unsigned_32 vertical_retrace_ticks;
 } core_machine_vadp_text_timing;
 
 typedef struct core_machine_vadp_ega_sequencer_config {
-    uint32_t aperture_base;
-    uint32_t aperture_bytes;
-    uint8_t reset;
-    uint8_t clocking_mode;
-    uint8_t map_mask;
-    uint8_t memory_mode;
+    type_unsigned_32 aperture_base;
+    type_unsigned_32 aperture_bytes;
+    type_unsigned_8 reset;
+    type_unsigned_8 clocking_mode;
+    type_unsigned_8 map_mask;
+    type_unsigned_8 memory_mode;
     type_bool planar_ega;
 } core_machine_vadp_ega_sequencer_config;
 
 typedef struct core_machine_vadp_ega_controller_config {
-    uint8_t graphics[CORE_MACHINE_DISPLAY_EGA_GRAPHICS_REGISTER_COUNT];
-    uint8_t attribute[CORE_MACHINE_DISPLAY_EGA_ATTRIBUTE_REGISTER_COUNT];
+    type_unsigned_8 graphics[CORE_MACHINE_DISPLAY_EGA_GRAPHICS_REGISTER_COUNT];
+    type_unsigned_8 attribute[CORE_MACHINE_DISPLAY_EGA_ATTRIBUTE_REGISTER_COUNT];
 } core_machine_vadp_ega_controller_config;
 
 typedef enum core_machine_display_kind {
@@ -51,22 +51,22 @@ typedef C_VOID (*core_machine_display_provider)(C_VOID *context);
 
 typedef struct core_machine_display_snapshot {
     core_machine_display_kind kind;
-    uint16_t columns;
-    uint16_t rows;
-    uint8_t cursor_top;
-    uint8_t cursor_bottom;
+    type_unsigned_16 columns;
+    type_unsigned_16 rows;
+    type_unsigned_8 cursor_top;
+    type_unsigned_8 cursor_bottom;
     /* Text coordinates are column then row, relative to display start. */
-    uint8_t cursor_x;
-    uint8_t cursor_y;
+    type_unsigned_8 cursor_x;
+    type_unsigned_8 cursor_y;
     C_INT cursor_visible;
     C_INT buffer_changed;
     C_INT cursor_changed;
-    uint8_t characters[CORE_MACHINE_DISPLAY_MAX_COLUMNS * CORE_MACHINE_DISPLAY_MAX_ROWS];
-    uint8_t attributes[CORE_MACHINE_DISPLAY_MAX_COLUMNS * CORE_MACHINE_DISPLAY_MAX_ROWS];
-    uint16_t pixel_width;
-    uint16_t pixel_height;
-    uint8_t pixels[CORE_MACHINE_DISPLAY_MAX_PIXELS];
-    uint32_t palette_rgb[CORE_MACHINE_DISPLAY_PALETTE_ENTRIES];
+    type_unsigned_8 characters[CORE_MACHINE_DISPLAY_MAX_COLUMNS * CORE_MACHINE_DISPLAY_MAX_ROWS];
+    type_unsigned_8 attributes[CORE_MACHINE_DISPLAY_MAX_COLUMNS * CORE_MACHINE_DISPLAY_MAX_ROWS];
+    type_unsigned_16 pixel_width;
+    type_unsigned_16 pixel_height;
+    type_unsigned_8 pixels[CORE_MACHINE_DISPLAY_MAX_PIXELS];
+    type_unsigned_32 palette_rgb[CORE_MACHINE_DISPLAY_PALETTE_ENTRIES];
 } core_machine_display_snapshot;
 
 typedef C_INT (*core_machine_display_snapshot_provider)(C_VOID *context,

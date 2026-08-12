@@ -10,7 +10,7 @@ C_VOID core_machine_keyboard_queue_initialize(core_machine_keyboard_queue *queue
 }
 
 type_status core_machine_keyboard_queue_push(
-    core_machine_keyboard_queue *queue, uint16_t value)
+    core_machine_keyboard_queue *queue, type_unsigned_16 value)
 {
     STD_SIZE_T index;
     if (queue == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
@@ -22,7 +22,7 @@ type_status core_machine_keyboard_queue_push(
 }
 
 type_status core_machine_keyboard_queue_pop(
-    core_machine_keyboard_queue *queue, uint16_t *out_value)
+    core_machine_keyboard_queue *queue, type_unsigned_16 *out_value)
 {
     if (queue == STD_NULL || out_value == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     if (queue->count == 0u) return TYPE_STATUS_UNSUPPORTED;
@@ -42,8 +42,8 @@ C_VOID core_machine_text_snapshot_initialize(core_machine_text_snapshot *snapsho
 }
 
 type_status core_machine_text_snapshot_write(
-    core_machine_text_snapshot *snapshot, uint16_t x, uint16_t y,
-    uint8_t character, uint8_t attribute)
+    core_machine_text_snapshot *snapshot, type_unsigned_16 x, type_unsigned_16 y,
+    type_unsigned_8 character, type_unsigned_8 attribute)
 {
     STD_SIZE_T index;
     if (snapshot == STD_NULL || x >= snapshot->columns || y >= snapshot->rows) return TYPE_STATUS_INVALID_ARGUMENT;

@@ -29,7 +29,7 @@ static C_INT vm_runner_display_cadence_contains(const core_platform_display_fram
         for (index = 0u; text[index] != '\0' && cell + index <
                 CORE_PLATFORM_DISPLAY_MAX_COLUMNS * CORE_PLATFORM_DISPLAY_MAX_ROWS;
              ++index) {
-            if (frame->characters[cell + index] != (uint8_t)text[index]) break;
+            if (frame->characters[cell + index] != (type_unsigned_8)text[index]) break;
         }
         if (text[index] == '\0') return 1;
     }

@@ -4,15 +4,15 @@
 #include "core/machine/port.h"
 #include "core/machine/vadp.h"
 
-static C_INT core_machine_ega_write(t_ram *memory, uint32_t physical,
-    uint8_t value)
+static C_INT core_machine_ega_write(t_ram *memory, type_unsigned_32 physical,
+    type_unsigned_8 value)
 {
     return core_machine_memory_write_physical(memory, physical,
         (type_virtual_address)&value, sizeof(value)) == TYPE_STATUS_OK;
 }
 
-static C_INT core_machine_ega_read(t_ram *memory, uint32_t physical,
-    uint8_t *value)
+static C_INT core_machine_ega_read(t_ram *memory, type_unsigned_32 physical,
+    type_unsigned_8 *value)
 {
     return core_machine_memory_read_physical(memory, physical,
         (type_virtual_address)value, sizeof(*value)) == TYPE_STATUS_OK;
@@ -27,8 +27,8 @@ C_INT main(C_VOID)
     t_port port;
     t_ram memory;
     t_vadp vadp;
-    uint8_t value = 0u;
-    uint64_t dirty_generation;
+    type_unsigned_8 value = 0u;
+    type_unsigned_64 dirty_generation;
     C_INT failed = 0;
 
     STD_MEMSET(&memory, 0, sizeof(memory));

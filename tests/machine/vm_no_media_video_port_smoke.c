@@ -21,7 +21,7 @@ static C_INT vm_no_media_snapshot_has_text(
     for (cell = 0u; cell + length <= VM_NO_MEDIA_TEXT_CELLS; ++cell) {
         for (character = 0u; character < length; ++character) {
             if (snapshot->characters[cell + character] !=
-                (uint8_t)text[character]) break;
+                (type_unsigned_8)text[character]) break;
         }
         if (character == length) return 1;
     }
@@ -35,10 +35,10 @@ C_INT main(C_VOID)
     core_machine_run_result result;
     core_machine_observation observation;
     core_machine_display_snapshot snapshot;
-    uint8_t opcode[2];
-    uint8_t functions[256] = {0};
-    uint16_t cursor;
-    uint64_t instruction;
+    type_unsigned_8 opcode[2];
+    type_unsigned_8 functions[256] = {0};
+    type_unsigned_16 cursor;
+    type_unsigned_64 instruction;
     C_UINT int10_count = 0u;
     C_UINT f2_count = 0u;
     C_INT key_wait_seen = 0;

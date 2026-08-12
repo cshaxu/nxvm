@@ -2,9 +2,9 @@
 
 #include "vm/profile/default_profile/keyboard_mapper.h"
 
-static uint8_t vm_profile_default_keyboard_map_ascii(uint16_t value)
+static type_unsigned_8 vm_profile_default_keyboard_map_ascii(type_unsigned_16 value)
 {
-    static const uint8_t scan_codes[128] = {
+    static const type_unsigned_8 scan_codes[128] = {
         [0x08] = 0x0eu, [0x09] = 0x0fu, [0x0d] = 0x1cu,
         [0x1b] = 0x01u, [0x20] = 0x39u,
         ['0'] = 0x0bu, ['1'] = 0x02u, ['2'] = 0x03u, ['3'] = 0x04u,
@@ -27,11 +27,11 @@ static uint8_t vm_profile_default_keyboard_map_ascii(uint16_t value)
     return scan_codes[value];
 }
 
-type_status vm_profile_default_keyboard_map_host_key(uint16_t host_scan_code,
-    uint16_t host_virtual_key, C_INT pressed,
+type_status vm_profile_default_keyboard_map_host_key(type_unsigned_16 host_scan_code,
+    type_unsigned_16 host_virtual_key, C_INT pressed,
     vm_profile_default_keyboard_sequence *out_sequence)
 {
-    uint8_t scan_code;
+    type_unsigned_8 scan_code;
 
     if (out_sequence == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     out_sequence->count = 0u;
@@ -49,7 +49,7 @@ type_status vm_profile_default_keyboard_map_host_key(uint16_t host_scan_code,
     }
     if ((host_scan_code & 0xffu) > 0u &&
         (host_scan_code & 0xffu) <= 0x58u) {
-        scan_code = (uint8_t)(host_scan_code & 0xffu);
+        scan_code = (type_unsigned_8)(host_scan_code & 0xffu);
     } else {
         scan_code = vm_profile_default_keyboard_map_ascii(host_virtual_key);
         if (scan_code == 0u) return TYPE_STATUS_UNSUPPORTED;
@@ -59,6 +59,6 @@ type_status vm_profile_default_keyboard_map_host_key(uint16_t host_scan_code,
         out_sequence->bytes[out_sequence->count++] = 0xe0u;
     }
     out_sequence->bytes[out_sequence->count++] = pressed ? scan_code :
-        (uint8_t)(scan_code | 0x80u);
+        (type_unsigned_8)(scan_code | 0x80u);
     return TYPE_STATUS_OK;
 }

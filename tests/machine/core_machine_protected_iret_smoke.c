@@ -34,7 +34,7 @@ static const core_machine_execution_provider iret_provider = {
     iret_reset, STD_NULL, STD_NULL
 };
 
-static C_INT iret_write(iret_machine *state, uint32_t address,
+static C_INT iret_write(iret_machine *state, type_unsigned_32 address,
     const C_VOID *data, STD_SIZE_T bytes)
 {
     return state != STD_NULL && state->machine != STD_NULL &&
@@ -50,7 +50,7 @@ static C_INT iret_prepare(iret_machine *state, iret_negative negative,
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
-    uint8_t gdt[] = {
+    type_unsigned_8 gdt[] = {
         0,0,0,0,0,0,0,0,
         0xffu,0xffu,0,0x20u,0,0x9au,0x40u,0,
         0xffu,0xffu,0,0,0,0x92u,0xcfu,0
@@ -118,7 +118,7 @@ static C_INT iret_prepare(iret_machine *state, iret_negative negative,
 }
 
 static C_INT iret_fault_is(const core_machine_cpu_diagnostic *diagnostic,
-    uint32_t mask, uint32_t code)
+    type_unsigned_32 mask, type_unsigned_32 code)
 {
     return diagnostic->first_fault.valid && TYPE_GET_BIT(
         diagnostic->first_fault.exception_mask, mask) &&
@@ -140,16 +140,16 @@ static C_INT iret_run(iret_machine *state, C_INT expect_fault, t_cpu *after,
             CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT);
 }
 
-static C_INT iret_test_success(uint8_t prefix, C_INT operand16,
+static C_INT iret_test_success(type_unsigned_8 prefix, C_INT operand16,
     C_INT small_stack, C_INT conforming)
 {
     iret_machine state;
     core_machine_cpu_diagnostic diagnostic;
     t_cpu after;
-    uint8_t code[] = { prefix, 0xcfu, 0xf4u };
-    uint32_t frame32[] = { prefix ? 2u : 1u, 0x0008u, 0x00000203u };
-    uint16_t frame16[] = { 2u, 0x0008u, 0x0203u };
-    uint32_t expected_esp = small_stack ?
+    type_unsigned_8 code[] = { prefix, 0xcfu, 0xf4u };
+    type_unsigned_32 frame32[] = { prefix ? 2u : 1u, 0x0008u, 0x00000203u };
+    type_unsigned_16 frame16[] = { 2u, 0x0008u, 0x0203u };
+    type_unsigned_32 expected_esp = small_stack ?
         (operand16 ? 0x00018006u : 0x0001800cu) :
         (operand16 ? IRET_STACK + 6u : IRET_STACK + 12u);
     C_INT failed = !iret_prepare(&state, IRET_NEGATIVE_NONE, small_stack,
@@ -168,18 +168,18 @@ static C_INT iret_test_success(uint8_t prefix, C_INT operand16,
     return !failed;
 }
 
-static C_INT iret_test_failure(iret_negative negative, uint32_t mask,
-    uint32_t code)
+static C_INT iret_test_failure(iret_negative negative, type_unsigned_32 mask,
+    type_unsigned_32 code)
 {
     iret_machine state;
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
     t_cpu after;
-    uint8_t program[] = {0xcfu,0xf4u};
-    uint32_t frame[] = { negative == IRET_NEGATIVE_LIMIT ? 1u : 1u,
+    type_unsigned_8 program[] = {0xcfu,0xf4u};
+    type_unsigned_32 frame[] = { negative == IRET_NEGATIVE_LIMIT ? 1u : 1u,
         0x0008u, 0x00000203u };
-    uint8_t access_before = 0u;
-    uint8_t access_after = 0u;
+    type_unsigned_8 access_before = 0u;
+    type_unsigned_8 access_after = 0u;
     C_INT failed = !iret_prepare(&state, negative, 0, 0, 0);
 
     if (!failed) {
@@ -209,8 +209,8 @@ static C_INT iret_test_user_flags(C_VOID)
     core_machine_cpu_diagnostic diagnostic;
     iret_machine state;
     t_cpu after;
-    uint8_t program[] = {0xcfu,0x90u};
-    uint32_t frame[] = {1u,0x000bu,0x00013203u};
+    type_unsigned_8 program[] = {0xcfu,0x90u};
+    type_unsigned_32 frame[] = {1u,0x000bu,0x00013203u};
     C_INT failed = !iret_prepare(&state, IRET_NEGATIVE_NONE, 0, 0, 1);
 
     if (!failed) {

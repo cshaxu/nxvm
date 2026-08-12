@@ -11,29 +11,29 @@
 #include "bios.h"
 
 static C_VOID bios_write_byte(core_machine_firmware_context *firmware,
-    uint16_t segment, uint16_t offset,
+    type_unsigned_16 segment, type_unsigned_16 offset,
     type_unsigned_8 value)
 {
     (C_VOID)core_machine_firmware_memory_write(firmware,
-        (uint32_t)segment * 16u + offset, &value,
+        (type_unsigned_32)segment * 16u + offset, &value,
         sizeof(value));
 }
 
 static C_VOID bios_write_word(core_machine_firmware_context *firmware,
-    uint16_t segment, uint16_t offset,
+    type_unsigned_16 segment, type_unsigned_16 offset,
     type_unsigned_16 value)
 {
     (C_VOID)core_machine_firmware_memory_write(firmware,
-        (uint32_t)segment * 16u + offset, &value,
+        (type_unsigned_32)segment * 16u + offset, &value,
         sizeof(value));
 }
 
 static C_VOID bios_write_dword(core_machine_firmware_context *firmware,
-    uint16_t segment, uint16_t offset,
+    type_unsigned_16 segment, type_unsigned_16 offset,
     type_unsigned_32 value)
 {
     (C_VOID)core_machine_firmware_memory_write(firmware,
-        (uint32_t)segment * 16u + offset, &value,
+        (type_unsigned_32)segment * 16u + offset, &value,
         sizeof(value));
 }
 
@@ -83,7 +83,7 @@ static C_VOID bios_load_additional(core_machine_firmware_context *firmware,
     bios_write_byte(firmware, VBIOS_ADDR_START_SEG, VBIOS_ADDR_HDD_PARAM + 15, 0u);
 }
 
-static C_INT bios_image_write_code(uint8_t *image, uint16_t offset,
+static C_INT bios_image_write_code(type_unsigned_8 *image, type_unsigned_16 offset,
     const vm_profile_default_bios_code *code)
 {
     if (image == STD_NULL || code == STD_NULL || code->bytes == STD_NULL ||
@@ -92,9 +92,9 @@ static C_INT bios_image_write_code(uint8_t *image, uint16_t offset,
     return code->length;
 }
 
-static C_VOID bios_image_load_keyboard_tables(uint8_t *image)
+static C_VOID bios_image_load_keyboard_tables(type_unsigned_8 *image)
 {
-    static const uint8_t normal[0x59] = {
+    static const type_unsigned_8 normal[0x59] = {
         [0x01] = 0x1bu, [0x02] = '1', [0x03] = '2', [0x04] = '3',
         [0x05] = '4', [0x06] = '5', [0x07] = '6', [0x08] = '7',
         [0x09] = '8', [0x0a] = '9', [0x0b] = '0', [0x0c] = '-',
@@ -110,7 +110,7 @@ static C_VOID bios_image_load_keyboard_tables(uint8_t *image)
         [0x32] = 'm', [0x33] = ',', [0x34] = '.', [0x35] = '/',
         [0x37] = '*', [0x39] = ' ', [0x4a] = '-', [0x4e] = '+'
     };
-    static const uint8_t shifted[0x59] = {
+    static const type_unsigned_8 shifted[0x59] = {
         [0x01] = 0x1bu, [0x02] = '!', [0x03] = '@', [0x04] = '#',
         [0x05] = '$', [0x06] = '%', [0x07] = '^', [0x08] = '&',
         [0x09] = '*', [0x0a] = '(', [0x0b] = ')', [0x0c] = '_',
@@ -132,12 +132,12 @@ static C_VOID bios_image_load_keyboard_tables(uint8_t *image)
     STD_MEMCPY(image + VBIOS_ADDR_KEYB_SCAN_ASCII_SHIFT, shifted, sizeof(shifted));
 }
 
-static C_INT bios_image_load(t_bios *bios, uint8_t *image, uint8_t *ivt)
+static C_INT bios_image_load(t_bios *bios, type_unsigned_8 *image, type_unsigned_8 *ivt)
 {
-    static const uint8_t iret[] = { 0xcfu };
-    vm_profile_default_bios_code code = { (uint8_t *)iret, sizeof(iret) };
+    static const type_unsigned_8 iret[] = { 0xcfu };
+    vm_profile_default_bios_code code = { (type_unsigned_8 *)iret, sizeof(iret) };
     type_native_unsigned index;
-    uint16_t build_ip;
+    type_unsigned_16 build_ip;
 
     if (bios == STD_NULL || image == STD_NULL || ivt == STD_NULL) return 0;
     bios_image_load_keyboard_tables(image);
@@ -148,9 +148,9 @@ static C_INT bios_image_load(t_bios *bios, uint8_t *image, uint8_t *ivt)
     image[VBIOS_ADDR_ROM_INFO + 5u] = 0xb4u;
     image[VBIOS_ADDR_ROM_INFO + 6u] = 0x40u;
     build_ip = 0u;
-    build_ip = (uint16_t)(build_ip + bios_image_write_code(image, build_ip, &code));
+    build_ip = (type_unsigned_16)(build_ip + bios_image_write_code(image, build_ip, &code));
     for (index = 0u; index < 0x100u; ++index) {
-        uint16_t vector_offset = bios->connect.intTable[index].bytes == STD_NULL ?
+        type_unsigned_16 vector_offset = bios->connect.intTable[index].bytes == STD_NULL ?
             VBIOS_ADDR_START_OFF : build_ip;
 
         ivt[index * 4u] = TYPE_MASK_UNSIGNED_8(vector_offset);
@@ -158,10 +158,10 @@ static C_INT bios_image_load(t_bios *bios, uint8_t *image, uint8_t *ivt)
         ivt[index * 4u + 2u] = TYPE_MASK_UNSIGNED_8(VBIOS_ADDR_START_SEG);
         ivt[index * 4u + 3u] = TYPE_MASK_UNSIGNED_8(VBIOS_ADDR_START_SEG >> 8);
         if (bios->connect.intTable[index].bytes != STD_NULL) {
-            uint16_t length = (uint16_t)bios_image_write_code(image, build_ip,
+            type_unsigned_16 length = (type_unsigned_16)bios_image_write_code(image, build_ip,
                 &bios->connect.intTable[index]);
             if (length == 0u) return 0;
-            build_ip = (uint16_t)(build_ip + length);
+            build_ip = (type_unsigned_16)(build_ip + length);
         }
     }
     image[VBIOS_ADDR_POST_OFF] = 0xeau;
@@ -170,10 +170,10 @@ static C_INT bios_image_load(t_bios *bios, uint8_t *image, uint8_t *ivt)
     image[VBIOS_ADDR_POST_OFF + 3u] = 0x00u;
     image[VBIOS_ADDR_POST_OFF + 4u] = 0xf0u;
     for (index = 0u; index < bios->connect.postCount; ++index) {
-        uint16_t length = (uint16_t)bios_image_write_code(image, build_ip,
+        type_unsigned_16 length = (type_unsigned_16)bios_image_write_code(image, build_ip,
             &bios->connect.postTable[index]);
         if (length == 0u) return 0;
-        build_ip = (uint16_t)(build_ip + length);
+        build_ip = (type_unsigned_16)(build_ip + length);
     }
     if (bios_image_write_code(image, build_ip, &bios->connect.bootCode) == 0u) {
         return 0;
@@ -183,8 +183,8 @@ static C_INT bios_image_load(t_bios *bios, uint8_t *image, uint8_t *ivt)
     return 1;
 }
 
-C_VOID vm_profile_default_bios_add_post_code(t_bios *bios, uint8_t *bytes,
-    uint16_t length)
+C_VOID vm_profile_default_bios_add_post_code(t_bios *bios, type_unsigned_8 *bytes,
+    type_unsigned_16 length)
 {
     if (bios == STD_NULL || bytes == STD_NULL || length == 0u ||
         bios->connect.postCount >= 0x100u) {
@@ -196,8 +196,8 @@ C_VOID vm_profile_default_bios_add_post_code(t_bios *bios, uint8_t *bytes,
     bios->connect.postCount++;
 }
 
-C_VOID vm_profile_default_bios_add_interrupt_code(t_bios *bios, uint8_t *bytes,
-    uint16_t length, uint8_t intid)
+C_VOID vm_profile_default_bios_add_interrupt_code(t_bios *bios, type_unsigned_8 *bytes,
+    type_unsigned_16 length, type_unsigned_8 intid)
 {
     if (bios == STD_NULL || bytes == STD_NULL || length == 0u) {
         STD_FREE(bytes);
@@ -208,8 +208,8 @@ C_VOID vm_profile_default_bios_add_interrupt_code(t_bios *bios, uint8_t *bytes,
     bios->connect.intTable[intid].length = length;
 }
 
-C_VOID vm_profile_default_bios_set_boot_code(t_bios *bios, uint8_t *bytes,
-    uint16_t length)
+C_VOID vm_profile_default_bios_set_boot_code(t_bios *bios, type_unsigned_8 *bytes,
+    type_unsigned_16 length)
 {
     if (bios == STD_NULL || bytes == STD_NULL || length == 0u) {
         STD_FREE(bytes);
@@ -229,15 +229,15 @@ C_VOID vm_profile_default_bios_initialize(t_bios *bios) {
 C_INT vm_profile_default_bios_materialize(t_bios *bios,
     core_machine_firmware_context *firmware)
 {
-    uint8_t *image;
-    const uint32_t physical_start = 0x000f0000u;
+    type_unsigned_8 *image;
+    const type_unsigned_32 physical_start = 0x000f0000u;
     const STD_SIZE_T bytes = 0x10000u;
     const STD_SIZE_T mutable_offset = VBIOS_ADDR_HDD_PARAM;
     const STD_SIZE_T mutable_bytes = 16u;
     C_INT result;
 
     if (bios == STD_NULL || firmware == STD_NULL || bios->rom_materialized) return 0;
-    image = (uint8_t *)STD_CALLOC(1u, bytes);
+    image = (type_unsigned_8 *)STD_CALLOC(1u, bytes);
     if (image == STD_NULL) return 0;
     if (!bios_image_load(bios, image, bios->reset_ivt)) {
         STD_FREE(image);
@@ -301,7 +301,7 @@ C_INT vm_profile_default_bios_get_boot_hdd(const t_bios *bios) {
 C_INT vm_profile_default_bios_take_boot_failure_report(
     core_machine_firmware_context *firmware)
 {
-    uint8_t report = VBIOS_POST_REPORT_NONE;
+    type_unsigned_8 report = VBIOS_POST_REPORT_NONE;
 
     if (firmware == STD_NULL || core_machine_firmware_memory_read(firmware,
             VBIOS_ADDR_POST_WORK_AREA, &report, sizeof(report)) != TYPE_STATUS_OK ||

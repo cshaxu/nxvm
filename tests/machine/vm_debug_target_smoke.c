@@ -16,10 +16,10 @@ C_INT main(C_VOID)
 {
     vm_session *session;
     const core_product_debug_target *target;
-    uint32_t value = 0u;
-    uint32_t before_eax = 0u;
-    uint8_t byte = 0x5au;
-    uint8_t linear_byte = 0xa5u;
+    type_unsigned_32 value = 0u;
+    type_unsigned_32 before_eax = 0u;
+    type_unsigned_8 byte = 0x5au;
+    type_unsigned_8 linear_byte = 0xa5u;
 
     session = ((vm_session *)STD_CALLOC(1u, sizeof(vm_session)));
     if (session == STD_NULL) return 1;
@@ -36,10 +36,10 @@ C_INT main(C_VOID)
         target->get_code_default_size(target->context) < 0 ||
         target->write_linear(target->context, 0x600u, &linear_byte, 1u) ||
         target->read_linear(target->context, 0x600u, &value, 1u) ||
-        (uint8_t)value != linear_byte ||
+        (type_unsigned_8)value != linear_byte ||
         target->write_real(target->context, 0u, 0x500u, &byte, 1u) ||
         target->read_real(target->context, 0u, 0x500u, &value, 1u) ||
-        (uint8_t)value != byte) {
+        (type_unsigned_8)value != byte) {
         vm_session_finalize(session);
         STD_FREE(session);
         return 1;

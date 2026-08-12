@@ -30,6 +30,6 @@ C_VOID vm_platform_execution_stop_for(
     const vm_platform_execution_transport *transport);
 C_INT vm_platform_execution_wait_for_flip_for(
     const vm_platform_execution_transport *transport, C_INT initial_flip,
-    uint32_t timeout_milliseconds);
+    type_unsigned_32 timeout_milliseconds);
 
 #endif

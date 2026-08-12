@@ -34,7 +34,7 @@ static core_machine_media_result vm_machine_hdd_media_query(C_VOID *context,
 }
 
 static core_machine_media_result vm_machine_hdd_media_read(C_VOID *context,
-    uint64_t offset, C_VOID *buffer, uint32_t byte_count)
+    type_unsigned_64 offset, C_VOID *buffer, type_unsigned_32 byte_count)
 {
     const t_hdd *hdd = (const t_hdd *)context;
     STD_SIZE_T image_size;
@@ -52,7 +52,7 @@ static core_machine_media_result vm_machine_hdd_media_read(C_VOID *context,
 }
 
 static core_machine_media_result vm_machine_hdd_media_write(C_VOID *context,
-    uint64_t offset, const C_VOID *buffer, uint32_t byte_count)
+    type_unsigned_64 offset, const C_VOID *buffer, type_unsigned_32 byte_count)
 {
     t_hdd *hdd = (t_hdd *)context;
     STD_SIZE_T image_size;
@@ -74,10 +74,10 @@ static core_machine_media_result vm_machine_hdd_media_write(C_VOID *context,
 }
 
 static core_machine_media_result vm_machine_hdd_media_format(C_VOID *context,
-    uint64_t logical_sector, uint32_t sector_count, uint8_t fill)
+    type_unsigned_64 logical_sector, type_unsigned_32 sector_count, type_unsigned_8 fill)
 {
     t_hdd *hdd = (t_hdd *)context;
-    uint64_t sector_total;
+    type_unsigned_64 sector_total;
 
     if (hdd == STD_NULL || !hdd->connect.flagDiskExist)
         return CORE_MACHINE_MEDIA_RESULT_ABSENT;
@@ -112,7 +112,7 @@ STD_SIZE_T vm_machine_hdd_image_size(const t_hdd *hdd) {
 }
 
 static C_INT vm_machine_hdd_capacity_from_raw(STD_SIZE_T raw_byte_count,
-    STD_SIZE_T *out_virtual_byte_count, uint32_t *out_cylinders)
+    STD_SIZE_T *out_virtual_byte_count, type_unsigned_32 *out_cylinders)
 {
     const STD_SIZE_T sector_size = 512u;
     const STD_SIZE_T sectors_per_cylinder = 16u * 63u;
@@ -134,7 +134,7 @@ static C_INT vm_machine_hdd_capacity_from_raw(STD_SIZE_T raw_byte_count,
         return TYPE_TRUE;
     }
     *out_virtual_byte_count = virtual_byte_count;
-    *out_cylinders = (uint32_t)cylinders;
+    *out_cylinders = (type_unsigned_32)cylinders;
     return TYPE_FALSE;
 }
 
@@ -154,7 +154,7 @@ static type_virtual_address vm_machine_hdd_allocate_candidate(STD_SIZE_T byte_co
 
 static C_VOID vm_machine_hdd_commit_candidate(t_hdd *hdd,
     type_virtual_address candidate, STD_SIZE_T raw_byte_count,
-    STD_SIZE_T virtual_byte_count, uint32_t cylinders)
+    STD_SIZE_T virtual_byte_count, type_unsigned_32 cylinders)
 {
     type_virtual_address old_image = hdd->connect.pImgBase;
 
@@ -188,7 +188,7 @@ C_VOID vm_machine_hdd_reset(t_hdd *hdd) {
     hdd->data.nsector = 63;
     hdd->data.nbyte = 512;
     if (hdd->connect.virtual_byte_count != 0u) {
-        hdd->data.ncyl = (uint32_t)((hdd->connect.virtual_byte_count / 512u +
+        hdd->data.ncyl = (type_unsigned_32)((hdd->connect.virtual_byte_count / 512u +
             (16u * 63u) - 1u) / (16u * 63u));
     }
 }
@@ -205,7 +205,7 @@ C_VOID vm_machine_hdd_finalize(t_hdd *hdd) {
     }
 }
 
-C_VOID vm_machine_hdd_create(t_hdd *hdd, uint16_t cylinders) {
+C_VOID vm_machine_hdd_create(t_hdd *hdd, type_unsigned_16 cylinders) {
     STD_SIZE_T virtual_byte_count;
     type_virtual_address candidate;
 
@@ -222,7 +222,7 @@ C_INT vm_machine_hdd_replace_bytes(t_hdd *hdd, const C_VOID *bytes,
     STD_SIZE_T raw_byte_count)
 {
     STD_SIZE_T virtual_byte_count;
-    uint32_t cylinders;
+    type_unsigned_32 cylinders;
     type_virtual_address candidate;
 
     if (hdd == STD_NULL || (raw_byte_count != 0u && bytes == STD_NULL) ||
@@ -242,10 +242,10 @@ C_INT vm_machine_hdd_replace_bytes(t_hdd *hdd, const C_VOID *bytes,
     return TYPE_FALSE;
 }
 C_INT vm_machine_hdd_insert(t_hdd *hdd, const C_CHAR *file_name) {
-    int64_t raw_length;
+    type_signed_64 raw_length;
     STD_SIZE_T raw_byte_count;
     STD_SIZE_T virtual_byte_count;
-    uint32_t cylinders;
+    type_unsigned_32 cylinders;
     type_virtual_address candidate;
     STD_FILE *image;
 

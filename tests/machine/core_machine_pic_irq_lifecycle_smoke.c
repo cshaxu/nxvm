@@ -4,7 +4,7 @@
 #include "core/machine/port.h"
 
 static C_VOID initialize_pic(t_pic *master, t_pic *slave, t_port *port,
-    uint8_t icw1)
+    type_unsigned_8 icw1)
 {
     core_machine_port_write(port, 0x0020u, icw1);
     core_machine_port_write(port, 0x0021u, 0x08u);

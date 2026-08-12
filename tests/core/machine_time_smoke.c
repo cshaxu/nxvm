@@ -15,8 +15,8 @@ C_INT main(C_VOID)
     core_machine_run_result result;
     core_machine_observation observation;
     core_machine *machine = STD_NULL;
-    const uint8_t nop = 0x90u;
-    uint64_t elapsed = 0u;
+    const type_unsigned_8 nop = 0x90u;
+    type_unsigned_64 elapsed = 0u;
     C_INT failed = 0;
 
     config.ticks_per_instruction = 3u;

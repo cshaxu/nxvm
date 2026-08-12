@@ -18,14 +18,14 @@ typedef struct core_machine_fpu_value {
     core_machine_fpu_value_kind kind;
     type_bool negative;
     type_signed_16 exponent;
-    uint32_t significand;
+    type_unsigned_32 significand;
 } core_machine_fpu_value;
 
 struct core_machine_fpu {
     core_machine_fpu_profile profile;
-    uint16_t control_word;
-    uint16_t status_word;
-    uint8_t top;
+    type_unsigned_16 control_word;
+    type_unsigned_16 status_word;
+    type_unsigned_8 top;
     core_machine_fpu_tag tags[8];
     core_machine_fpu_value registers[8];
     type_bool pending_unmasked_exception;
@@ -49,13 +49,13 @@ core_machine_fpu_escape_action core_machine_fpu_escape_dispatch(
 C_VOID core_machine_fpu_get_state(const core_machine_fpu *fpu,
     core_machine_fpu_state *out_state);
 core_machine_fpu_execute_result core_machine_fpu_load_m32(core_machine_fpu *fpu,
-    uint32_t bits);
+    type_unsigned_32 bits);
 core_machine_fpu_execute_result core_machine_fpu_store_m32(core_machine_fpu *fpu,
-    uint32_t *out_bits);
+    type_unsigned_32 *out_bits);
 C_VOID core_machine_fpu_load_control_word(core_machine_fpu *fpu,
-    uint16_t control_word);
+    type_unsigned_16 control_word);
 core_machine_fpu_execute_result core_machine_fpu_binary_st0_sti(core_machine_fpu *fpu,
-    core_machine_fpu_operation operation, uint8_t index);
+    core_machine_fpu_operation operation, type_unsigned_8 index);
 type_bool core_machine_fpu_wait_pending(const core_machine_fpu *fpu);
 
 #endif

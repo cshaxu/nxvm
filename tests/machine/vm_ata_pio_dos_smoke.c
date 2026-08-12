@@ -12,25 +12,25 @@
 #define VM_ATA253_MARKER_CELL 1920u
 
 typedef struct vm_ata253_program {
-    uint8_t bytes[192];
-    uint16_t length;
+    type_unsigned_8 bytes[192];
+    type_unsigned_16 length;
 } vm_ata253_program;
 
-static C_INT vm_ata253_put(vm_ata253_program *program, uint8_t value)
+static C_INT vm_ata253_put(vm_ata253_program *program, type_unsigned_8 value)
 {
     if (program == STD_NULL || program->length >= sizeof(program->bytes)) return 0;
     program->bytes[program->length++] = value;
     return 1;
 }
 
-static C_INT vm_ata253_word(vm_ata253_program *program, uint16_t value)
+static C_INT vm_ata253_word(vm_ata253_program *program, type_unsigned_16 value)
 {
-    return vm_ata253_put(program, (uint8_t)value) &&
-        vm_ata253_put(program, (uint8_t)(value >> 8u));
+    return vm_ata253_put(program, (type_unsigned_8)value) &&
+        vm_ata253_put(program, (type_unsigned_8)(value >> 8u));
 }
 
 static C_INT vm_ata253_out_task_file(vm_ata253_program *program,
-    uint8_t command)
+    type_unsigned_8 command)
 {
     return vm_ata253_put(program, 0xbau) && vm_ata253_word(program, 0x01f2u) &&
         vm_ata253_put(program, 0xb0u) && vm_ata253_put(program, 2u) &&
@@ -46,7 +46,7 @@ static C_INT vm_ata253_out_task_file(vm_ata253_program *program,
         vm_ata253_put(program, command) && vm_ata253_put(program, 0xeeu);
 }
 
-static C_INT vm_ata253_write_sector(vm_ata253_program *program, uint16_t word)
+static C_INT vm_ata253_write_sector(vm_ata253_program *program, type_unsigned_16 word)
 {
     return vm_ata253_put(program, 0xb9u) && vm_ata253_word(program, 256u) &&
         vm_ata253_put(program, 0xb8u) && vm_ata253_word(program, word) &&
@@ -62,32 +62,32 @@ static C_INT vm_ata253_set_nien(vm_ata253_program *program, C_INT enabled)
         vm_ata253_put(program, 0xeeu);
 }
 
-static C_INT vm_ata253_discard_words(vm_ata253_program *program, uint16_t count)
+static C_INT vm_ata253_discard_words(vm_ata253_program *program, type_unsigned_16 count)
 {
     return vm_ata253_put(program, 0xb9u) && vm_ata253_word(program, count) &&
         vm_ata253_put(program, 0xedu) && vm_ata253_put(program, 0xe2u) &&
         vm_ata253_put(program, 0xfdu);
 }
 
-static C_INT vm_ata253_marker(vm_ata253_program *program, uint8_t character,
-    uint8_t exit_code)
+static C_INT vm_ata253_marker(vm_ata253_program *program, type_unsigned_8 character,
+    type_unsigned_8 exit_code)
 {
     return vm_ata253_put(program, 0xb8u) && vm_ata253_word(program, 0xb800u) &&
         vm_ata253_put(program, 0x8eu) && vm_ata253_put(program, 0xc0u) &&
         vm_ata253_put(program, 0x26u) && vm_ata253_put(program, 0xc7u) &&
         vm_ata253_put(program, 0x06u) && vm_ata253_word(program, 0x0f00u) &&
-        vm_ata253_word(program, (uint16_t)(0x0700u | character)) &&
+        vm_ata253_word(program, (type_unsigned_16)(0x0700u | character)) &&
         vm_ata253_put(program, 0xb8u) && vm_ata253_word(program,
-            (uint16_t)(0x4c00u | exit_code)) && vm_ata253_put(program, 0xcdu) &&
+            (type_unsigned_16)(0x4c00u | exit_code)) && vm_ata253_put(program, 0xcdu) &&
         vm_ata253_put(program, 0x21u);
 }
 
 static C_INT vm_ata253_build_program(vm_ata253_program *program)
 {
-    uint16_t first_failure;
-    uint16_t second_failure;
-    uint16_t failure;
-    int16_t delta;
+    type_unsigned_16 first_failure;
+    type_unsigned_16 second_failure;
+    type_unsigned_16 failure;
+    type_signed_16 delta;
 
     if (program == STD_NULL) return 0;
     STD_MEMSET(program, 0, sizeof(*program));
@@ -114,41 +114,41 @@ static C_INT vm_ata253_build_program(vm_ata253_program *program)
         !vm_ata253_marker(program, 'O', 0u)) return 0;
     failure = program->length;
     if (!vm_ata253_marker(program, 'X', 1u)) return 0;
-    delta = (int16_t)failure - (int16_t)(first_failure + 1u);
+    delta = (type_signed_16)failure - (type_signed_16)(first_failure + 1u);
     if (delta < -128 || delta > 127) return 0;
-    program->bytes[first_failure] = (uint8_t)(int8_t)delta;
-    delta = (int16_t)failure - (int16_t)(second_failure + 1u);
+    program->bytes[first_failure] = (type_unsigned_8)(type_signed_8)delta;
+    delta = (type_signed_16)failure - (type_signed_16)(second_failure + 1u);
     if (delta < -128 || delta > 127) return 0;
-    program->bytes[second_failure] = (uint8_t)(int8_t)delta;
+    program->bytes[second_failure] = (type_unsigned_8)(type_signed_8)delta;
     return 1;
 }
 
-static uint16_t vm_ata253_fat12_get(const uint8_t *fat, uint16_t cluster)
+static type_unsigned_16 vm_ata253_fat12_get(const type_unsigned_8 *fat, type_unsigned_16 cluster)
 {
-    uint32_t offset = cluster + cluster / 2u;
-    uint16_t pair = (uint16_t)(fat[offset] | ((uint16_t)fat[offset + 1u] << 8u));
+    type_unsigned_32 offset = cluster + cluster / 2u;
+    type_unsigned_16 pair = (type_unsigned_16)(fat[offset] | ((type_unsigned_16)fat[offset + 1u] << 8u));
 
     return (cluster & 1u) != 0u ? pair >> 4u : pair & 0x0fffu;
 }
 
-static C_VOID vm_ata253_fat12_set(uint8_t *fat, uint16_t cluster, uint16_t value)
+static C_VOID vm_ata253_fat12_set(type_unsigned_8 *fat, type_unsigned_16 cluster, type_unsigned_16 value)
 {
-    uint32_t offset = cluster + cluster / 2u;
-    uint16_t pair = (uint16_t)(fat[offset] | ((uint16_t)fat[offset + 1u] << 8u));
+    type_unsigned_32 offset = cluster + cluster / 2u;
+    type_unsigned_16 pair = (type_unsigned_16)(fat[offset] | ((type_unsigned_16)fat[offset + 1u] << 8u));
 
-    if ((cluster & 1u) != 0u) pair = (uint16_t)((pair & 0x000fu) | (value << 4u));
-    else pair = (uint16_t)((pair & 0xf000u) | value);
-    fat[offset] = (uint8_t)pair;
-    fat[offset + 1u] = (uint8_t)(pair >> 8u);
+    if ((cluster & 1u) != 0u) pair = (type_unsigned_16)((pair & 0x000fu) | (value << 4u));
+    else pair = (type_unsigned_16)((pair & 0xf000u) | value);
+    fat[offset] = (type_unsigned_8)pair;
+    fat[offset + 1u] = (type_unsigned_8)(pair >> 8u);
 }
 
 static C_INT vm_ata253_clone(const C_CHAR *source, C_CHAR path[MAX_PATH],
-    uint8_t **out_image, DWORD *out_size)
+    type_unsigned_8 **out_image, DWORD *out_size)
 {
     HANDLE input = INVALID_HANDLE_VALUE;
     HANDLE output = INVALID_HANDLE_VALUE;
     LARGE_INTEGER size;
-    uint8_t *image = STD_NULL;
+    type_unsigned_8 *image = STD_NULL;
     DWORD count;
 
     if (source == STD_NULL || path == STD_NULL || out_image == STD_NULL ||
@@ -182,7 +182,7 @@ fail:
     return 0;
 }
 
-static C_INT vm_ata253_zero_image(uint8_t *image, DWORD image_size,
+static C_INT vm_ata253_zero_image(type_unsigned_8 *image, DWORD image_size,
     const C_CHAR *path)
 {
     HANDLE output;
@@ -201,34 +201,34 @@ static C_INT vm_ata253_zero_image(uint8_t *image, DWORD image_size,
     return 1;
 }
 
-static C_INT vm_ata253_install(uint8_t *image, DWORD image_size,
+static C_INT vm_ata253_install(type_unsigned_8 *image, DWORD image_size,
     const C_CHAR *path)
 {
     vm_ata253_program program;
-    uint32_t bytes_per_sector;
-    uint32_t sectors_per_cluster;
-    uint32_t reserved_sectors;
-    uint32_t fat_count;
-    uint32_t root_entries;
-    uint32_t sectors_per_fat;
-    uint32_t root_start;
-    uint32_t root_bytes;
-    uint32_t data_start;
-    uint32_t clusters;
-    uint32_t cluster;
-    uint32_t root;
-    uint8_t *entry = STD_NULL;
+    type_unsigned_32 bytes_per_sector;
+    type_unsigned_32 sectors_per_cluster;
+    type_unsigned_32 reserved_sectors;
+    type_unsigned_32 fat_count;
+    type_unsigned_32 root_entries;
+    type_unsigned_32 sectors_per_fat;
+    type_unsigned_32 root_start;
+    type_unsigned_32 root_bytes;
+    type_unsigned_32 data_start;
+    type_unsigned_32 clusters;
+    type_unsigned_32 cluster;
+    type_unsigned_32 root;
+    type_unsigned_8 *entry = STD_NULL;
     HANDLE output;
     DWORD written;
 
     if (!vm_ata253_build_program(&program) || image == STD_NULL ||
         image_size < 512u || path == STD_NULL) return 0;
-    bytes_per_sector = image[11u] | ((uint32_t)image[12u] << 8u);
+    bytes_per_sector = image[11u] | ((type_unsigned_32)image[12u] << 8u);
     sectors_per_cluster = image[13u];
-    reserved_sectors = image[14u] | ((uint32_t)image[15u] << 8u);
+    reserved_sectors = image[14u] | ((type_unsigned_32)image[15u] << 8u);
     fat_count = image[16u];
-    root_entries = image[17u] | ((uint32_t)image[18u] << 8u);
-    sectors_per_fat = image[22u] | ((uint32_t)image[23u] << 8u);
+    root_entries = image[17u] | ((type_unsigned_32)image[18u] << 8u);
+    sectors_per_fat = image[22u] | ((type_unsigned_32)image[23u] << 8u);
     if (bytes_per_sector == 0u || sectors_per_cluster == 0u || fat_count == 0u ||
         sectors_per_fat == 0u) return 0;
     root_start = (reserved_sectors + fat_count * sectors_per_fat) * bytes_per_sector;
@@ -237,7 +237,7 @@ static C_INT vm_ata253_install(uint8_t *image, DWORD image_size,
         bytes_per_sector) * bytes_per_sector;
     if (data_start >= image_size || root_start + root_bytes > image_size) return 0;
     for (root = 0u; root < root_entries; ++root) {
-        uint8_t *candidate = image + root_start + root * 32u;
+        type_unsigned_8 *candidate = image + root_start + root * 32u;
 
         if (candidate[0] == 0u || candidate[0] == 0xe5u) {
             entry = candidate;
@@ -247,20 +247,20 @@ static C_INT vm_ata253_install(uint8_t *image, DWORD image_size,
     clusters = (image_size - data_start) / (bytes_per_sector * sectors_per_cluster);
     for (cluster = 2u; cluster < clusters + 2u; ++cluster) {
         if (vm_ata253_fat12_get(image + reserved_sectors * bytes_per_sector,
-                (uint16_t)cluster) == 0u) break;
+                (type_unsigned_16)cluster) == 0u) break;
     }
     if (entry == STD_NULL || cluster >= clusters + 2u || program.length >
         bytes_per_sector * sectors_per_cluster) return 0;
     STD_MEMSET(entry, 0, 32u);
     STD_MEMCPY(entry, "ATA253  COM", 11u);
     entry[11u] = 0x20u;
-    entry[26u] = (uint8_t)cluster;
-    entry[27u] = (uint8_t)(cluster >> 8u);
-    entry[28u] = (uint8_t)program.length;
-    entry[29u] = (uint8_t)(program.length >> 8u);
+    entry[26u] = (type_unsigned_8)cluster;
+    entry[27u] = (type_unsigned_8)(cluster >> 8u);
+    entry[28u] = (type_unsigned_8)program.length;
+    entry[29u] = (type_unsigned_8)(program.length >> 8u);
     for (root = 0u; root < fat_count; ++root) {
         vm_ata253_fat12_set(image + (reserved_sectors + root * sectors_per_fat) *
-            bytes_per_sector, (uint16_t)cluster, 0x0fffu);
+            bytes_per_sector, (type_unsigned_16)cluster, 0x0fffu);
     }
     STD_MEMCPY(image + data_start + (cluster - 2u) * bytes_per_sector *
         sectors_per_cluster, program.bytes, program.length);
@@ -289,13 +289,13 @@ static C_INT vm_ata253_has_prompt(const core_machine_display_snapshot *snapshot)
     return 0;
 }
 
-static C_INT vm_ata253_run_until(vm_session *session, uint32_t limit,
-    uint8_t marker)
+static C_INT vm_ata253_run_until(vm_session *session, type_unsigned_32 limit,
+    type_unsigned_8 marker)
 {
     const core_machine_run_budget budget = { 128u, 0u };
     core_machine_run_result result;
     core_machine_display_snapshot snapshot;
-    uint32_t executed = 0u;
+    type_unsigned_32 executed = 0u;
 
     while (executed < limit) {
         if (core_machine_run(session->core_machine, budget, &result) != TYPE_STATUS_OK ||
@@ -312,12 +312,12 @@ static C_INT vm_ata253_run_until(vm_session *session, uint32_t limit,
 
 C_INT main(C_INT argc, C_CHAR **argv)
 {
-    static const uint8_t command[] = { 0x1eu, 0x14u, 0x1eu, 0x03u, 0x06u,
+    static const type_unsigned_8 command[] = { 0x1eu, 0x14u, 0x1eu, 0x03u, 0x06u,
         0x04u, 0x1cu };
     vm_session_config config = {0};
     vm_session *session = STD_NULL;
-    uint8_t *fdd_image = STD_NULL;
-    uint8_t *hdd_image = STD_NULL;
+    type_unsigned_8 *fdd_image = STD_NULL;
+    type_unsigned_8 *hdd_image = STD_NULL;
     DWORD fdd_size = 0u;
     DWORD hdd_size = 0u;
     C_CHAR fdd_path[MAX_PATH] = {0};

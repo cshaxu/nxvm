@@ -13,8 +13,8 @@
 
 typedef struct corpus_port_event {
     C_INT write;
-    uint16_t port;
-    uint32_t value;
+    type_unsigned_16 port;
+    type_unsigned_32 value;
 } corpus_port_event;
 
 typedef struct corpus_port_state {
@@ -50,10 +50,10 @@ static C_INT corpus_prepare_machine(core_machine **out_machine,
     return 0;
 }
 
-static C_INT corpus_run_to_ud(core_machine *machine, const uint8_t *program,
+static C_INT corpus_run_to_ud(core_machine *machine, const type_unsigned_8 *program,
     STD_SIZE_T program_bytes, core_machine_cpu_fault_snapshot *out_fault)
 {
-    static const uint8_t reset_jump[] = { 0xeau, 0x00u, 0x00u, 0x00u, 0x00u };
+    static const type_unsigned_8 reset_jump[] = { 0xeau, 0x00u, 0x00u, 0x00u, 0x00u };
     const core_machine_run_budget budget = { 128u, 0u };
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
@@ -76,10 +76,10 @@ static C_INT corpus_run_to_ud(core_machine *machine, const uint8_t *program,
     return 0;
 }
 
-static C_INT corpus_run_to_halt(core_machine *machine, const uint8_t *program,
+static C_INT corpus_run_to_halt(core_machine *machine, const type_unsigned_8 *program,
     STD_SIZE_T program_bytes)
 {
-    static const uint8_t reset_jump[] = { 0xeau, 0x00u, 0x00u, 0x00u, 0x00u };
+    static const type_unsigned_8 reset_jump[] = { 0xeau, 0x00u, 0x00u, 0x00u, 0x00u };
     const core_machine_run_budget budget = { 128u, 0u };
     core_machine_run_result result;
 
@@ -94,8 +94,8 @@ static C_INT corpus_run_to_halt(core_machine *machine, const uint8_t *program,
 
 static C_INT corpus_test_segment_override(C_VOID)
 {
-    static const uint8_t program[] = { 0x2eu, 0xa0u, 0x00u, 0x01u, 0x66u };
-    static const uint8_t source = 0xa5u;
+    static const type_unsigned_8 program[] = { 0x2eu, 0xa0u, 0x00u, 0x01u, 0x66u };
+    static const type_unsigned_8 source = 0xa5u;
     core_machine_cpu_fault_snapshot fault;
     core_machine *machine = STD_NULL;
     C_INT failed = corpus_prepare_machine(&machine, STD_NULL, STD_NULL);
@@ -112,7 +112,7 @@ static C_INT corpus_test_segment_override(C_VOID)
 
 static C_INT corpus_test_rep_direction(C_VOID)
 {
-    static const uint8_t program[] = {
+    static const type_unsigned_8 program[] = {
         0xb8u, 0x00u, 0x00u,
         0x8eu, 0xd8u,
         0x8eu, 0xc0u,
@@ -128,11 +128,11 @@ static C_INT corpus_test_rep_direction(C_VOID)
         0xaau,
         0xf4u
     };
-    static const uint8_t source[] = { 0x11u, 0x22u, 0x33u };
-    uint8_t source_before[3] = { 0u, 0u, 0u };
-    uint8_t source_after[3] = { 0u, 0u, 0u };
-    uint8_t copied[3] = { 0u, 0u, 0u };
-    uint8_t stored = 0u;
+    static const type_unsigned_8 source[] = { 0x11u, 0x22u, 0x33u };
+    type_unsigned_8 source_before[3] = { 0u, 0u, 0u };
+    type_unsigned_8 source_after[3] = { 0u, 0u, 0u };
+    type_unsigned_8 copied[3] = { 0u, 0u, 0u };
+    type_unsigned_8 stored = 0u;
     core_machine *machine = STD_NULL;
     C_INT failed = corpus_prepare_machine(&machine, STD_NULL, STD_NULL);
 
@@ -169,14 +169,14 @@ static C_INT corpus_test_rep_direction(C_VOID)
 
 static C_INT corpus_test_int_iret(C_VOID)
 {
-    static const uint8_t program[] = {
+    static const type_unsigned_8 program[] = {
         0xbcu, 0x00u, 0x10u,
         0xf9u,
         0xcdu, 0x60u,
         0x66u
     };
-    static const uint8_t ivt_entry[] = { 0x00u, 0x02u, 0x00u, 0x00u };
-    static const uint8_t handler[] = { 0xb8u, 0x34u, 0x12u, 0xcfu };
+    static const type_unsigned_8 ivt_entry[] = { 0x00u, 0x02u, 0x00u, 0x00u };
+    static const type_unsigned_8 handler[] = { 0xb8u, 0x34u, 0x12u, 0xcfu };
     core_machine_cpu_fault_snapshot fault;
     core_machine *machine = STD_NULL;
     C_INT failed = corpus_prepare_machine(&machine, STD_NULL, STD_NULL);
@@ -195,8 +195,8 @@ static C_INT corpus_test_int_iret(C_VOID)
     return failed;
 }
 
-static type_status corpus_port_read(C_VOID *owner, uint16_t port,
-    uint32_t *out_value)
+static type_status corpus_port_read(C_VOID *owner, type_unsigned_16 port,
+    type_unsigned_32 *out_value)
 {
     corpus_port_state *state = (corpus_port_state *)owner;
 
@@ -212,8 +212,8 @@ static type_status corpus_port_read(C_VOID *owner, uint16_t port,
     return TYPE_STATUS_OK;
 }
 
-static type_status corpus_port_write(C_VOID *owner, uint16_t port,
-    uint32_t value)
+static type_status corpus_port_write(C_VOID *owner, type_unsigned_16 port,
+    type_unsigned_32 value)
 {
     corpus_port_state *state = (corpus_port_state *)owner;
 
@@ -230,7 +230,7 @@ static type_status corpus_port_write(C_VOID *owner, uint16_t port,
 
 static C_INT corpus_test_port_transactions(C_VOID)
 {
-    static const uint8_t program[] = {
+    static const type_unsigned_8 program[] = {
         0xb0u, 0x5au,
         0xe6u, 0xe0u,
         0xbau, 0xe1u, 0x00u,

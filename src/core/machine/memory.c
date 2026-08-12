@@ -28,9 +28,9 @@ static type_status core_machine_memory_offset(const t_ram *ram,
     for (index = 0u; index < ram->connect.mapping_count; ++index) {
         const core_machine_memory_mapping *mapping = &ram->connect.mappings[index];
         if (physical >= mapping->physical_start &&
-            (uint64_t)physical - mapping->physical_start + size <= mapping->bytes) {
+            (type_unsigned_64)physical - mapping->physical_start + size <= mapping->bytes) {
             offset = (STD_SIZE_T)mapping->backing_start +
-                (STD_SIZE_T)((uint64_t)physical - mapping->physical_start);
+                (STD_SIZE_T)((type_unsigned_64)physical - mapping->physical_start);
             break;
         }
     }
@@ -53,7 +53,7 @@ core_machine_memory_device_provider_find(const t_ram *ram,
         const core_machine_memory_device_provider *provider =
             &ram->connect.device_providers[index];
         if (physical >= provider->physical_start &&
-            (uint64_t)physical - provider->physical_start + bytes <=
+            (type_unsigned_64)physical - provider->physical_start + bytes <=
                 provider->bytes) {
             return provider;
         }
@@ -171,14 +171,14 @@ type_status core_machine_memory_register_device_provider(t_ram *ram,
 {
     core_machine_memory_device_provider *provider;
     type_native_unsigned index;
-    uint64_t end;
+    type_unsigned_64 end;
 
     if (ram == STD_NULL || bytes == 0u || read == STD_NULL || write == STD_NULL ||
         query == STD_NULL || owner == STD_NULL || ram->connect.mappings_frozen) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
-    end = (uint64_t)physical_start + bytes;
-    if (end > (uint64_t)TYPE_MAX_UNSIGNED_32 + 1u ||
+    end = (type_unsigned_64)physical_start + bytes;
+    if (end > (type_unsigned_64)TYPE_MAX_UNSIGNED_32 + 1u ||
         ram->connect.device_provider_count >=
             CORE_MACHINE_MEMORY_DEVICE_PROVIDER_CAPACITY) {
         return TYPE_STATUS_NO_MEMORY;
@@ -186,10 +186,10 @@ type_status core_machine_memory_register_device_provider(t_ram *ram,
     for (index = 0u; index < ram->connect.device_provider_count; ++index) {
         const core_machine_memory_device_provider *existing =
             &ram->connect.device_providers[index];
-        uint64_t existing_end = (uint64_t)existing->physical_start + existing->bytes;
+        type_unsigned_64 existing_end = (type_unsigned_64)existing->physical_start + existing->bytes;
 
-        if ((uint64_t)physical_start < existing_end &&
-            (uint64_t)existing->physical_start < end) {
+        if ((type_unsigned_64)physical_start < existing_end &&
+            (type_unsigned_64)existing->physical_start < end) {
             return TYPE_STATUS_INVALID_ARGUMENT;
         }
     }
@@ -341,8 +341,8 @@ C_VOID core_machine_memory_register_ports(t_ram *ram, t_port *port)
         core_machine_memory_write_a20, ram);
 }
 
-type_status core_machine_memory_read_real_from(t_ram *ram, uint16_t segment,
-    uint16_t offset, C_VOID *out_data, STD_SIZE_T size)
+type_status core_machine_memory_read_real_from(t_ram *ram, type_unsigned_16 segment,
+    type_unsigned_16 offset, C_VOID *out_data, STD_SIZE_T size)
 {
     type_unsigned_32 physical;
 
@@ -353,8 +353,8 @@ type_status core_machine_memory_read_real_from(t_ram *ram, uint16_t segment,
         (type_virtual_address)out_data, size);
 }
 
-type_status core_machine_memory_write_real_to(t_ram *ram, uint16_t segment,
-    uint16_t offset, const C_VOID *in_data, STD_SIZE_T size)
+type_status core_machine_memory_write_real_to(t_ram *ram, type_unsigned_16 segment,
+    type_unsigned_16 offset, const C_VOID *in_data, STD_SIZE_T size)
 {
     type_unsigned_32 physical;
 

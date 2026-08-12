@@ -22,16 +22,16 @@ typedef struct win32app_run_handle {
     HINSTANCE instance;
     C_INT initial_flip;
     C_INT mouse_position_valid;
-    int16_t mouse_x;
-    int16_t mouse_y;
+    type_signed_16 mouse_x;
+    type_signed_16 mouse_y;
     volatile LONG display_ready;
     volatile LONG display_failed;
     volatile LONG stop_requested;
 } win32app_run_handle;
 
-static uint8_t win32app_mouse_buttons(WPARAM w_param)
+static type_unsigned_8 win32app_mouse_buttons(WPARAM w_param)
 {
-    uint8_t buttons = 0u;
+    type_unsigned_8 buttons = 0u;
 
     if ((w_param & MK_LBUTTON) != 0u) buttons |= 0x01u;
     if ((w_param & MK_RBUTTON) != 0u) buttons |= 0x02u;
@@ -42,17 +42,17 @@ static uint8_t win32app_mouse_buttons(WPARAM w_param)
 static C_VOID win32app_submit_mouse_event(win32app_run_handle *handle,
     WPARAM w_param, LPARAM l_param, C_INT force)
 {
-    int16_t x;
-    int16_t y;
-    int16_t delta_x = 0;
-    int16_t delta_y = 0;
+    type_signed_16 x;
+    type_signed_16 y;
+    type_signed_16 delta_x = 0;
+    type_signed_16 delta_y = 0;
 
     if (handle == STD_NULL) return;
-    x = (int16_t)(short)LOWORD(l_param);
-    y = (int16_t)(short)HIWORD(l_param);
+    x = (type_signed_16)(short)LOWORD(l_param);
+    y = (type_signed_16)(short)HIWORD(l_param);
     if (handle->mouse_position_valid) {
-        delta_x = (int16_t)(x - handle->mouse_x);
-        delta_y = (int16_t)(y - handle->mouse_y);
+        delta_x = (type_signed_16)(x - handle->mouse_x);
+        delta_y = (type_signed_16)(y - handle->mouse_y);
     }
     handle->mouse_x = x;
     handle->mouse_y = y;
@@ -100,7 +100,7 @@ static LRESULT CALLBACK win32app_window_procedure(HWND window, UINT message,
 {
     win32app_run_handle *handle;
     PAINTSTRUCT paint;
-    uint16_t scan_code;
+    type_unsigned_16 scan_code;
     UCHAR virtual_key;
 
     if (message == WM_NCCREATE) {
@@ -141,14 +141,14 @@ static LRESULT CALLBACK win32app_window_procedure(HWND window, UINT message,
     case WM_KEYDOWN:
     case WM_SYSKEYDOWN:
         scan_code = vm_platform_win32app_decode_scan_code(lParam);
-        virtual_key = (uint16_t)(wParam & 0xffff);
+        virtual_key = (type_unsigned_16)(wParam & 0xffff);
         vm_platform_win32_keyboard_make_key_for(handle->platform,
             handle->owner, scan_code, virtual_key, 1);
         return 0;
     case WM_KEYUP:
     case WM_SYSKEYUP:
         scan_code = vm_platform_win32app_decode_scan_code(lParam);
-        virtual_key = (uint16_t)(wParam & 0xffff);
+        virtual_key = (type_unsigned_16)(wParam & 0xffff);
         vm_platform_win32_keyboard_make_key_for(handle->platform,
             handle->owner, scan_code, virtual_key, 0);
         return 0;
@@ -176,9 +176,9 @@ static LRESULT CALLBACK win32app_window_procedure(HWND window, UINT message,
     }
 }
 
-uint16_t vm_platform_win32app_decode_scan_code(LPARAM l_param)
+type_unsigned_16 vm_platform_win32app_decode_scan_code(LPARAM l_param)
 {
-    uint16_t scan_code = (uint16_t)((l_param >> 16) & 0xff);
+    type_unsigned_16 scan_code = (type_unsigned_16)((l_param >> 16) & 0xff);
 
     if ((l_param & (1L << 24)) != 0) scan_code |= 0x0100u;
     return scan_code;

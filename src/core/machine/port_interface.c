@@ -19,12 +19,12 @@ C_VOID core_machine_bus_finalize(core_machine *machine)
 
 type_status core_machine_install_port_provider(
     core_machine *machine,
-    uint16_t first,
-    uint16_t last,
+    type_unsigned_16 first,
+    type_unsigned_16 last,
     const core_machine_port_provider *provider,
     C_VOID *owner)
 {
-    uint32_t port;
+    type_unsigned_32 port;
     core_machine_port_provider_entry *checkpoint;
 
     if (!core_machine_configuration_is_open(machine)) {
@@ -40,9 +40,9 @@ type_status core_machine_install_port_provider(
 
     for (port = first; port <= last; ++port) {
         if ((provider->read != STD_NULL && core_machine_port_has_read(
-                &machine->executor_port, (uint16_t)port)) ||
+                &machine->executor_port, (type_unsigned_16)port)) ||
             (provider->write != STD_NULL && core_machine_port_has_write(
-                &machine->executor_port, (uint16_t)port))) {
+                &machine->executor_port, (type_unsigned_16)port))) {
             return TYPE_STATUS_INVALID_STATE;
         }
     }
@@ -50,7 +50,7 @@ type_status core_machine_install_port_provider(
     for (port = first; port <= last; ++port) {
         if (provider->read != STD_NULL) {
             type_status status = core_machine_port_add_read_provider(
-                &machine->executor_port, (uint16_t)port, provider->read, owner);
+                &machine->executor_port, (type_unsigned_16)port, provider->read, owner);
 
             if (status != TYPE_STATUS_OK) {
                 core_machine_port_rollback_registration(&machine->executor_port,
@@ -60,7 +60,7 @@ type_status core_machine_install_port_provider(
         }
         if (provider->write != STD_NULL) {
             type_status status = core_machine_port_add_write_provider(
-                &machine->executor_port, (uint16_t)port, provider->write, owner);
+                &machine->executor_port, (type_unsigned_16)port, provider->write, owner);
 
             if (status != TYPE_STATUS_OK) {
                 core_machine_port_rollback_registration(&machine->executor_port,
@@ -75,8 +75,8 @@ type_status core_machine_install_port_provider(
 
 type_status core_machine_bus_read(
     core_machine *machine,
-    uint16_t port,
-    uint32_t *out_value)
+    type_unsigned_16 port,
+    type_unsigned_32 *out_value)
 {
     if (machine == STD_NULL || out_value == STD_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
@@ -95,20 +95,20 @@ type_status core_machine_bus_read(
 
         if (status != TYPE_STATUS_OK) {
             core_machine_trace_record(machine, CORE_MACHINE_TRACE_PORT_READ, port,
-                0u, (uint32_t)status);
+                0u, (type_unsigned_32)status);
             return status;
         }
     }
     *out_value = machine->executor_port.data.ioDWord;
     core_machine_trace_record(machine, CORE_MACHINE_TRACE_PORT_READ, port,
-        *out_value, (uint32_t)TYPE_STATUS_OK);
+        *out_value, (type_unsigned_32)TYPE_STATUS_OK);
     return TYPE_STATUS_OK;
 }
 
 type_status core_machine_bus_write(
     core_machine *machine,
-    uint16_t port,
-    uint32_t value)
+    type_unsigned_16 port,
+    type_unsigned_32 value)
 {
     if (machine == STD_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
@@ -122,7 +122,7 @@ type_status core_machine_bus_write(
         return TYPE_STATUS_UNSUPPORTED;
     }
     {
-        uint32_t prior_value = machine->executor_port.data.ioDWord;
+        type_unsigned_32 prior_value = machine->executor_port.data.ioDWord;
         type_status status;
 
         machine->executor_port.data.ioDWord = value;
@@ -130,11 +130,11 @@ type_status core_machine_bus_write(
         if (status != TYPE_STATUS_OK) {
             machine->executor_port.data.ioDWord = prior_value;
             core_machine_trace_record(machine, CORE_MACHINE_TRACE_PORT_WRITE, port,
-                value, (uint32_t)status);
+                value, (type_unsigned_32)status);
             return status;
         }
     }
     core_machine_trace_record(machine, CORE_MACHINE_TRACE_PORT_WRITE, port,
-        value, (uint32_t)TYPE_STATUS_OK);
+        value, (type_unsigned_32)TYPE_STATUS_OK);
     return TYPE_STATUS_OK;
 }

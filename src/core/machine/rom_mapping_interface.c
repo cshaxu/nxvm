@@ -12,7 +12,7 @@ static type_status core_machine_rom_mapping_read(C_VOID *owner,
 
     if (mapping == STD_NULL || mapping->image == STD_NULL || destination == 0u ||
         physical < mapping->physical_start) return TYPE_STATUS_FAULT;
-    offset = (STD_SIZE_T)((uint64_t)physical - mapping->physical_start);
+    offset = (STD_SIZE_T)((type_unsigned_64)physical - mapping->physical_start);
     if (offset > mapping->bytes || bytes > mapping->bytes - offset) {
         return TYPE_STATUS_FAULT;
     }
@@ -41,7 +41,7 @@ static type_status core_machine_rom_mapping_query(C_VOID *owner,
 
     if (mapping == STD_NULL || mapping->image == STD_NULL ||
         physical < mapping->physical_start) return TYPE_STATUS_FAULT;
-    offset = (STD_SIZE_T)((uint64_t)physical - mapping->physical_start);
+    offset = (STD_SIZE_T)((type_unsigned_64)physical - mapping->physical_start);
     if (offset > mapping->bytes || bytes > mapping->bytes - offset) {
         return TYPE_STATUS_FAULT;
     }
@@ -50,15 +50,15 @@ static type_status core_machine_rom_mapping_query(C_VOID *owner,
 }
 
 static type_status core_machine_register_immutable_rom_mapping_internal(
-    core_machine *machine, uint32_t physical_start, const uint8_t *image,
+    core_machine *machine, type_unsigned_32 physical_start, const type_unsigned_8 *image,
     STD_SIZE_T bytes, C_INT firmware_call)
 {
     core_machine_immutable_rom_mapping *mapping;
-    uint8_t *copy;
+    type_unsigned_8 *copy;
     type_status status;
 
     if (machine == STD_NULL || image == STD_NULL || bytes == 0u ||
-        (uint64_t)physical_start + bytes > (uint64_t)TYPE_MAX_UNSIGNED_32 + 1u) {
+        (type_unsigned_64)physical_start + bytes > (type_unsigned_64)TYPE_MAX_UNSIGNED_32 + 1u) {
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     if ((!firmware_call && !core_machine_configuration_is_open(machine)) ||
@@ -69,7 +69,7 @@ static type_status core_machine_register_immutable_rom_mapping_internal(
     if (machine->immutable_rom_mapping_count >=
         CORE_MACHINE_IMMUTABLE_ROM_MAPPING_CAPACITY) return TYPE_STATUS_NO_MEMORY;
 
-    copy = (uint8_t *)STD_CALLOC(1u, bytes);
+    copy = (type_unsigned_8 *)STD_CALLOC(1u, bytes);
     if (copy == STD_NULL) return TYPE_STATUS_NO_MEMORY;
     STD_MEMCPY(copy, image, bytes);
     mapping = &machine->immutable_rom_mappings[machine->immutable_rom_mapping_count];
@@ -89,7 +89,7 @@ static type_status core_machine_register_immutable_rom_mapping_internal(
 }
 
 type_status core_machine_register_immutable_rom_mapping(
-    core_machine *machine, uint32_t physical_start, const uint8_t *image,
+    core_machine *machine, type_unsigned_32 physical_start, const type_unsigned_8 *image,
     STD_SIZE_T bytes)
 {
     return core_machine_register_immutable_rom_mapping_internal(machine,
@@ -97,7 +97,7 @@ type_status core_machine_register_immutable_rom_mapping(
 }
 
 type_status core_machine_register_immutable_rom_mapping_from_firmware(
-    core_machine *machine, uint32_t physical_start, const uint8_t *image,
+    core_machine *machine, type_unsigned_32 physical_start, const type_unsigned_8 *image,
     STD_SIZE_T bytes)
 {
     return core_machine_register_immutable_rom_mapping_internal(machine,

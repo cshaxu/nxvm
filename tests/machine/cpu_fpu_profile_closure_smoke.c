@@ -15,7 +15,7 @@ static C_INT valid_fpu_profile(core_machine_fpu_profile profile)
 }
 
 static C_INT verify_metadata(core_machine_cpu_instruction_space space,
-    uint8_t opcode, uint8_t modrm)
+    type_unsigned_8 opcode, type_unsigned_8 modrm)
 {
     core_machine_cpu_instruction_metadata metadata =
         core_machine_cpu_instruction_metadata_get(space, opcode, modrm);
@@ -26,16 +26,16 @@ static C_INT verify_metadata(core_machine_cpu_instruction_space space,
 
 C_INT main(C_VOID)
 {
-    uint32_t opcode;
-    uint32_t modrm;
+    type_unsigned_32 opcode;
+    type_unsigned_32 modrm;
     C_INT failed = 0;
 
     for (opcode = 0u; opcode <= 0xffu; ++opcode) {
         failed |= verify_metadata(CORE_MACHINE_CPU_INSTRUCTION_PRIMARY,
-            (uint8_t)opcode, 0u);
+            (type_unsigned_8)opcode, 0u);
         for (modrm = 0u; modrm <= 0xffu; ++modrm) {
             failed |= verify_metadata(CORE_MACHINE_CPU_INSTRUCTION_0F,
-                (uint8_t)opcode, (uint8_t)modrm);
+                (type_unsigned_8)opcode, (type_unsigned_8)modrm);
         }
     }
     for (opcode = 0xd8u; opcode <= 0xdfu; ++opcode) {
@@ -43,7 +43,7 @@ C_INT main(C_VOID)
             core_machine_cpu_instruction_metadata metadata =
                 core_machine_cpu_instruction_metadata_get(
                     CORE_MACHINE_CPU_INSTRUCTION_FPU_ESCAPE,
-                    (uint8_t)opcode, (uint8_t)modrm);
+                    (type_unsigned_8)opcode, (type_unsigned_8)modrm);
             failed |= !metadata.valid ||
                 metadata.minimum_cpu != CORE_MACHINE_CPU_PROFILE_8086 ||
                 metadata.minimum_fpu != CORE_MACHINE_FPU_PROFILE_8087;
@@ -52,7 +52,7 @@ C_INT main(C_VOID)
     for (opcode = 0u; opcode <= 0xffu; ++opcode) {
         core_machine_cpu_instruction_metadata metadata =
             core_machine_cpu_instruction_metadata_get(
-                CORE_MACHINE_CPU_INSTRUCTION_FPU_ESCAPE, (uint8_t)opcode, 0u);
+                CORE_MACHINE_CPU_INSTRUCTION_FPU_ESCAPE, (type_unsigned_8)opcode, 0u);
         if (opcode < 0xd8u || opcode > 0xdfu) failed |= metadata.valid;
     }
     if (failed) return 1;

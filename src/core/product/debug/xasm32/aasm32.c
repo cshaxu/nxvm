@@ -191,7 +191,7 @@ typedef struct
 {
     t_aasm_oprreg32 base;
     t_aasm_oprreg32 index;
-    uint8_t scale;
+    type_unsigned_8 scale;
 } t_aasm_oprsib;
 typedef struct
 {
@@ -216,42 +216,42 @@ typedef struct
     t_aasm_oprcreg creg;
     t_aasm_oprdreg dreg;
     t_aasm_oprtreg treg;
-    uint8_t imms; /* if imm is C_INT */
-    uint8_t immn; /* if imm is negative */
-    uint8_t imm8;
-    uint16_t imm16;
-    uint32_t imm32;
+    type_unsigned_8 imms; /* if imm is C_INT */
+    type_unsigned_8 immn; /* if imm is negative */
+    type_unsigned_8 imm8;
+    type_unsigned_16 imm16;
+    type_unsigned_32 imm32;
     C_CHAR disp8;
-    uint16_t disp16;   /* use as imm when type = 6; use by modrm as disp when mod = 0,1,2; */
-    uint32_t disp32;   /* use as imm when type = 7; use by modrm as disp when mod = 0,1,2; */
+    type_unsigned_16 disp16;   /* use as imm when type = 6; use by modrm as disp when mod = 0,1,2; */
+    type_unsigned_32 disp32;   /* use as imm when type = 7; use by modrm as disp when mod = 0,1,2; */
     t_aasm_oprptr ptr; /* 0 = near; 1 = far */
-    uint16_t rcs;
-    uint32_t reip;
+    type_unsigned_16 rcs;
+    type_unsigned_32 reip;
     C_CHAR label[0x100];
-    uint8_t flages, flagcs, flagss, flagds, flagfs, flaggs;
+    type_unsigned_8 flages, flagcs, flagss, flagds, flagfs, flaggs;
 } t_aasm_oprinfo;
 /* global variables */
 
-typedef uint8_t t_aasm_prefix;
+typedef type_unsigned_8 t_aasm_prefix;
 
 typedef struct aasm32_context
 {
     type_trace trace;
-    uint8_t defsize;
+    type_unsigned_8 defsize;
     t_aasm_prefix prefix_oprsizeg, prefix_addrsizeg;
     t_aasm_prefix prefix_oprsize, prefix_addrsize;
     t_aasm_prefix prefix_lock, prefix_repz, prefix_repnz;
-    uint8_t acode[15];
-    uint8_t iop;
+    type_unsigned_8 acode[15];
+    type_unsigned_8 iop;
     C_CHAR *rop, *ropr1, *ropr2, *ropr3;
-    uint16_t avcs, avip;
+    type_unsigned_16 avcs, avip;
     C_CHAR *aop, *aopr1, *aopr2;
-    uint8_t flagError;
+    type_unsigned_8 flagError;
     t_aasm_oprinfo aoprig, aopri1, aopri2, aopri3;
     t_aasm_oprinfo *rinfo;
-    uint8_t tokimm8;
-    uint16_t tokimm16;
-    uint32_t tokimm32;
+    type_unsigned_8 tokimm8;
+    type_unsigned_16 tokimm16;
+    type_unsigned_32 tokimm32;
     C_CHAR tokchar;
     C_CHAR tokstring[0x100], toklabel[0x100];
     C_CHAR *tokptr;
@@ -768,9 +768,9 @@ typedef enum
 #define take(n) (flagend = 1, token = (n))
 static t_aasm_token gettoken(aasm32_context *aasmContext, C_CHAR *str)
 {
-    uint8_t toklen = 0;
-    uint32_t tokimm = 0;
-    uint8_t flagend = 0;
+    type_unsigned_8 toklen = 0;
+    type_unsigned_32 tokimm = 0;
+    type_unsigned_8 flagend = 0;
     t_aasm_token token = TOKEN_NULL;
     t_aasm_scan_state state = STATE_START;
     C_CHAR *tokptrbak;
@@ -1106,7 +1106,7 @@ static t_aasm_token gettoken(aasm32_context *aasmContext, C_CHAR *str)
                 break;
             default:
                 tokptr--;
-                tokimm8 = (uint8_t)tokimm;
+                tokimm8 = (type_unsigned_8)tokimm;
                 take(TOKEN_IMM8);
                 break;
             }
@@ -1289,7 +1289,7 @@ static t_aasm_token gettoken(aasm32_context *aasmContext, C_CHAR *str)
                 break;
             default:
                 tokptr--;
-                tokimm16 = (uint16_t)tokimm;
+                tokimm16 = (type_unsigned_16)tokimm;
                 take(TOKEN_IMM16);
                 break;
             }
@@ -1594,7 +1594,7 @@ static t_aasm_token gettoken(aasm32_context *aasmContext, C_CHAR *str)
                 break;
             default:
                 tokptr--;
-                tokimm32 = (uint32_t)tokimm;
+                tokimm32 = (type_unsigned_32)tokimm;
                 take(TOKEN_IMM32);
                 break;
             }
@@ -2391,7 +2391,7 @@ static t_aasm_token gettoken(aasm32_context *aasmContext, C_CHAR *str)
                 break;
             default:
                 tokptr--;
-                tokimm8 = (uint8_t)tokimm;
+                tokimm8 = (type_unsigned_8)tokimm;
                 take(TOKEN_IMM8);
                 break;
             }
@@ -2409,7 +2409,7 @@ static t_aasm_token gettoken(aasm32_context *aasmContext, C_CHAR *str)
                 break;
             default:
                 tokptr--;
-                tokimm8 = (uint8_t)tokimm;
+                tokimm8 = (type_unsigned_8)tokimm;
                 take(TOKEN_IMM8);
                 break;
             }
@@ -2424,7 +2424,7 @@ static t_aasm_token gettoken(aasm32_context *aasmContext, C_CHAR *str)
                 break;
             default:
                 tokptr--;
-                tokimm8 = (uint8_t)tokimm;
+                tokimm8 = (type_unsigned_8)tokimm;
                 take(TOKEN_IMM8);
                 break;
             }
@@ -2442,7 +2442,7 @@ static t_aasm_token gettoken(aasm32_context *aasmContext, C_CHAR *str)
                 break;
             default:
                 tokptr--;
-                tokimm8 = (uint8_t)tokimm;
+                tokimm8 = (type_unsigned_8)tokimm;
                 take(TOKEN_IMM8);
                 break;
             }
@@ -2554,7 +2554,7 @@ static t_aasm_token gettoken(aasm32_context *aasmContext, C_CHAR *str)
                 break;
             default:
                 tokptr--;
-                tokimm8 = (uint8_t)tokimm;
+                tokimm8 = (type_unsigned_8)tokimm;
                 take(TOKEN_IMM8);
                 break;
             }
@@ -2942,10 +2942,10 @@ static C_VOID matchtoken(aasm32_context *aasmContext, t_aasm_token token)
 static t_aasm_oprinfo parsearg_mem(aasm32_context *aasmContext, t_aasm_token token)
 {
     t_aasm_oprinfo info;
-    uint8_t oldtoken;
-    uint8_t bx, bp, si, di, neg, al;
-    uint8_t eax, ecx, edx, ebx, esp, ebp, esi, edi;
-    uint8_t ieax, iecx, iedx, iebx, iebp, iesi, iedi;
+    type_unsigned_8 oldtoken;
+    type_unsigned_8 bx, bp, si, di, neg, al;
+    type_unsigned_8 eax, ecx, edx, ebx, esp, ebp, esi, edi;
+    type_unsigned_8 ieax, iecx, iedx, iebx, iebp, iesi, iedi;
     TYPE_TRACE_CALL_BEGIN("parsearg_mem");
     STD_MEMSET((C_VOID *)(&info), 0x00, sizeof(t_aasm_oprinfo));
     bx = bp = si = di = neg = al = 0;
@@ -4106,43 +4106,43 @@ static t_aasm_oprinfo parsearg(aasm32_context *aasmContext, C_CHAR *arg)
     return info;
 }
 /* assembly compiler: code generator */
-static C_VOID _c_setbyte(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID _c_setbyte(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
-    (*(uint8_t *)(acode + iop)) = byte;
+    (*(type_unsigned_8 *)(acode + iop)) = byte;
     iop += 1;
 }
-static C_VOID _c_setword(aasm32_context *aasmContext, uint16_t word)
+static C_VOID _c_setword(aasm32_context *aasmContext, type_unsigned_16 word)
 {
-    (*(uint16_t *)(acode + iop)) = word;
+    (*(type_unsigned_16 *)(acode + iop)) = word;
     iop += 2;
 }
-static C_VOID _c_setdword(aasm32_context *aasmContext, uint32_t dword)
+static C_VOID _c_setdword(aasm32_context *aasmContext, type_unsigned_32 dword)
 {
-    (*(uint32_t *)(acode + iop)) = dword;
+    (*(type_unsigned_32 *)(acode + iop)) = dword;
     iop += 4;
 }
-static C_VOID _c_imm8(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID _c_imm8(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_c_imm8");
     TYPE_TRACE_CHECK_RETURN(_c_setbyte(aasmContext, byte));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _c_imm16(aasm32_context *aasmContext, uint16_t word)
+static C_VOID _c_imm16(aasm32_context *aasmContext, type_unsigned_16 word)
 {
     TYPE_TRACE_CALL_BEGIN("_c_imm16");
     TYPE_TRACE_CHECK_RETURN(_c_setword(aasmContext, word));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _c_imm32(aasm32_context *aasmContext, uint32_t dword)
+static C_VOID _c_imm32(aasm32_context *aasmContext, type_unsigned_32 dword)
 {
     TYPE_TRACE_CALL_BEGIN("_c_imm32");
     TYPE_TRACE_CHECK_RETURN(_c_setdword(aasmContext, dword));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _c_modrm(aasm32_context *aasmContext, t_aasm_oprinfo rminfo, uint8_t reg)
+static C_VOID _c_modrm(aasm32_context *aasmContext, t_aasm_oprinfo rminfo, type_unsigned_8 reg)
 {
-    uint8_t sibval;
-    uint8_t modrmval = (reg << 3);
+    type_unsigned_8 sibval;
+    type_unsigned_8 modrmval = (reg << 3);
 
     TYPE_TRACE_CALL_BEGIN("_c_rminfo");
 
@@ -4162,7 +4162,7 @@ static C_VOID _c_modrm(aasm32_context *aasmContext, t_aasm_oprinfo rminfo, uint8
         {
         case MOD_M:
             modrmval |= (0 << 6);
-            modrmval |= (uint8_t)rminfo.mem;
+            modrmval |= (type_unsigned_8)rminfo.mem;
             _c_setbyte(aasmContext, modrmval);
             switch (rminfo.mem)
             {
@@ -4175,13 +4175,13 @@ static C_VOID _c_modrm(aasm32_context *aasmContext, t_aasm_oprinfo rminfo, uint8
             break;
         case MOD_M_DISP8:
             modrmval |= (1 << 6);
-            modrmval |= (uint8_t)rminfo.mem;
+            modrmval |= (type_unsigned_8)rminfo.mem;
             _c_setbyte(aasmContext, modrmval);
             _c_setbyte(aasmContext, rminfo.disp8);
             break;
         case MOD_M_DISP16:
             modrmval |= (2 << 6);
-            modrmval |= (uint8_t)rminfo.mem;
+            modrmval |= (type_unsigned_8)rminfo.mem;
             _c_setbyte(aasmContext, modrmval);
             _c_setword(aasmContext, rminfo.disp16);
             break;
@@ -4191,15 +4191,15 @@ static C_VOID _c_modrm(aasm32_context *aasmContext, t_aasm_oprinfo rminfo, uint8
             switch (rminfo.type)
             {
             case TYPE_R8:
-                modrmval |= (uint8_t)rminfo.reg8;
+                modrmval |= (type_unsigned_8)rminfo.reg8;
                 _c_setbyte(aasmContext, modrmval);
                 break;
             case TYPE_R16:
-                modrmval |= (uint8_t)rminfo.reg16;
+                modrmval |= (type_unsigned_8)rminfo.reg16;
                 _c_setbyte(aasmContext, modrmval);
                 break;
             case TYPE_R32:
-                modrmval |= (uint8_t)rminfo.reg32;
+                modrmval |= (type_unsigned_8)rminfo.reg32;
                 _c_setbyte(aasmContext, modrmval);
                 break;
             default:
@@ -4228,13 +4228,13 @@ static C_VOID _c_modrm(aasm32_context *aasmContext, t_aasm_oprinfo rminfo, uint8
         {
         case MOD_M:
             modrmval |= (0 << 6);
-            modrmval |= (uint8_t)rminfo.mem & 0x07;
+            modrmval |= (type_unsigned_8)rminfo.mem & 0x07;
             _c_setbyte(aasmContext, modrmval);
             switch (rminfo.mem)
             {
             case MEM_SIB:
-                sibval = (uint8_t)rminfo.sib.base;
-                sibval |= ((uint8_t)rminfo.sib.index << 3);
+                sibval = (type_unsigned_8)rminfo.sib.base;
+                sibval |= ((type_unsigned_8)rminfo.sib.index << 3);
                 switch (rminfo.sib.scale)
                 {
                 case 0:
@@ -4276,13 +4276,13 @@ static C_VOID _c_modrm(aasm32_context *aasmContext, t_aasm_oprinfo rminfo, uint8
             break;
         case MOD_M_DISP8:
             modrmval |= (1 << 6);
-            modrmval |= (uint8_t)rminfo.mem & 0x07;
+            modrmval |= (type_unsigned_8)rminfo.mem & 0x07;
             _c_setbyte(aasmContext, modrmval);
             switch (rminfo.mem)
             {
             case MEM_SIB:
-                sibval = (uint8_t)rminfo.sib.base;
-                sibval |= ((uint8_t)rminfo.sib.index << 3);
+                sibval = (type_unsigned_8)rminfo.sib.base;
+                sibval |= ((type_unsigned_8)rminfo.sib.index << 3);
                 switch (rminfo.sib.scale)
                 {
                 case 0:
@@ -4314,13 +4314,13 @@ static C_VOID _c_modrm(aasm32_context *aasmContext, t_aasm_oprinfo rminfo, uint8
             break;
         case MOD_M_DISP32:
             modrmval |= (2 << 6);
-            modrmval |= (uint8_t)rminfo.mem & 0x07;
+            modrmval |= (type_unsigned_8)rminfo.mem & 0x07;
             _c_setbyte(aasmContext, modrmval);
             switch (rminfo.mem)
             {
             case MEM_SIB:
-                sibval = (uint8_t)rminfo.sib.base;
-                sibval |= ((uint8_t)rminfo.sib.index << 3);
+                sibval = (type_unsigned_8)rminfo.sib.base;
+                sibval |= ((type_unsigned_8)rminfo.sib.index << 3);
                 switch (rminfo.sib.scale)
                 {
                 case 0:
@@ -4356,15 +4356,15 @@ static C_VOID _c_modrm(aasm32_context *aasmContext, t_aasm_oprinfo rminfo, uint8
             switch (rminfo.type)
             {
             case TYPE_R8:
-                modrmval |= (uint8_t)rminfo.reg8;
+                modrmval |= (type_unsigned_8)rminfo.reg8;
                 _c_setbyte(aasmContext, modrmval);
                 break;
             case TYPE_R16:
-                modrmval |= (uint8_t)rminfo.reg16;
+                modrmval |= (type_unsigned_8)rminfo.reg16;
                 _c_setbyte(aasmContext, modrmval);
                 break;
             case TYPE_R32:
-                modrmval |= (uint8_t)rminfo.reg32;
+                modrmval |= (type_unsigned_8)rminfo.reg32;
                 _c_setbyte(aasmContext, modrmval);
                 break;
             default:
@@ -4394,7 +4394,7 @@ static C_VOID ADD_RM8_R8(aasm32_context *aasmContext)
     TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg8));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID ADD_RM32_R32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID ADD_RM32_R32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("ADD_RM32_R32");
     _SetOperandSize(byte);
@@ -4424,7 +4424,7 @@ static C_VOID ADD_R8_RM8(aasm32_context *aasmContext)
     TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg8));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID ADD_R32_RM32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID ADD_R32_RM32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("ADD_R32_RM32");
     _SetOperandSize(byte);
@@ -4454,7 +4454,7 @@ static C_VOID ADD_AL_I8(aasm32_context *aasmContext)
     TYPE_TRACE_CHECK_RETURN(_c_imm8(aasmContext, aopri2.imm8));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID ADD_EAX_I32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID ADD_EAX_I32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("ADD_EAX_I32");
     _SetOperandSize(byte);
@@ -4496,7 +4496,7 @@ static C_VOID OR_RM8_R8(aasm32_context *aasmContext)
     TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg8));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID OR_RM32_R32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID OR_RM32_R32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("OR_RM32_R32");
     _SetOperandSize(byte);
@@ -4526,7 +4526,7 @@ static C_VOID OR_R8_RM8(aasm32_context *aasmContext)
     TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg8));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID OR_R32_RM32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID OR_R32_RM32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("OR_R32_RM32");
     _SetOperandSize(byte);
@@ -4556,7 +4556,7 @@ static C_VOID OR_AL_I8(aasm32_context *aasmContext)
     _c_imm8(aasmContext, aopri2.imm8);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID OR_EAX_I32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID OR_EAX_I32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("OR_EAX_I32");
     _SetOperandSize(byte);
@@ -4604,7 +4604,7 @@ static C_VOID ADC_RM8_R8(aasm32_context *aasmContext)
     TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg8));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID ADC_RM32_R32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID ADC_RM32_R32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("ADC_RM32_R32");
     _SetOperandSize(byte);
@@ -4634,7 +4634,7 @@ static C_VOID ADC_R8_RM8(aasm32_context *aasmContext)
     TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg8));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID ADC_R32_RM32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID ADC_R32_RM32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("ADC_R32_RM32");
     _SetOperandSize(byte);
@@ -4664,7 +4664,7 @@ static C_VOID ADC_AL_I8(aasm32_context *aasmContext)
     TYPE_TRACE_CHECK_RETURN(_c_imm8(aasmContext, aopri2.imm8));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID ADC_EAX_I32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID ADC_EAX_I32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("ADC_EAX_I32");
     _SetOperandSize(byte);
@@ -4706,7 +4706,7 @@ static C_VOID SBB_RM8_R8(aasm32_context *aasmContext)
     TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg8));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID SBB_RM32_R32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID SBB_RM32_R32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("SBB_RM32_R32");
     _SetOperandSize(byte);
@@ -4736,7 +4736,7 @@ static C_VOID SBB_R8_RM8(aasm32_context *aasmContext)
     TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg8));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID SBB_R32_RM32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID SBB_R32_RM32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("SBB_R32_RM32");
     _SetOperandSize(byte);
@@ -4766,7 +4766,7 @@ static C_VOID SBB_AL_I8(aasm32_context *aasmContext)
     _c_imm8(aasmContext, aopri2.imm8);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID SBB_EAX_I32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID SBB_EAX_I32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("SBB_EAX_I32");
     _SetOperandSize(byte);
@@ -4808,7 +4808,7 @@ static C_VOID AND_RM8_R8(aasm32_context *aasmContext)
     TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg8));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID AND_RM32_R32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID AND_RM32_R32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("AND_RM32_R32");
     _SetOperandSize(byte);
@@ -4838,7 +4838,7 @@ static C_VOID AND_R8_RM8(aasm32_context *aasmContext)
     TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg8));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID AND_R32_RM32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID AND_R32_RM32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("AND_R32_RM32");
     _SetOperandSize(byte);
@@ -4868,7 +4868,7 @@ static C_VOID AND_AL_I8(aasm32_context *aasmContext)
     TYPE_TRACE_CHECK_RETURN(_c_imm8(aasmContext, aopri2.imm8));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID AND_EAX_I32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID AND_EAX_I32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("AND_EAX_I32");
     _SetOperandSize(byte);
@@ -4916,7 +4916,7 @@ static C_VOID SUB_RM8_R8(aasm32_context *aasmContext)
     TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg8));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID SUB_RM32_R32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID SUB_RM32_R32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("SUB_RM32_R32");
     _SetOperandSize(byte);
@@ -4946,7 +4946,7 @@ static C_VOID SUB_R8_RM8(aasm32_context *aasmContext)
     TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg8));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID SUB_R32_RM32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID SUB_R32_RM32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("SUB_R32_RM32");
     _SetOperandSize(byte);
@@ -4976,7 +4976,7 @@ static C_VOID SUB_AL_I8(aasm32_context *aasmContext)
     _c_imm8(aasmContext, aopri2.imm8);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID SUB_EAX_I32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID SUB_EAX_I32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("SUB_EAX_I32");
     _SetOperandSize(byte);
@@ -5024,7 +5024,7 @@ static C_VOID XOR_RM8_R8(aasm32_context *aasmContext)
     TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg8));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID XOR_RM32_R32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID XOR_RM32_R32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("XOR_RM32_R32");
     _SetOperandSize(byte);
@@ -5054,7 +5054,7 @@ static C_VOID XOR_R8_RM8(aasm32_context *aasmContext)
     TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg8));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID XOR_R32_RM32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID XOR_R32_RM32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("XOR_R32_RM32");
     _SetOperandSize(byte);
@@ -5084,7 +5084,7 @@ static C_VOID XOR_AL_I8(aasm32_context *aasmContext)
     TYPE_TRACE_CHECK_RETURN(_c_imm8(aasmContext, aopri2.imm8));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID XOR_EAX_I32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID XOR_EAX_I32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("XOR_EAX_I32");
     _SetOperandSize(byte);
@@ -5132,7 +5132,7 @@ static C_VOID CMP_RM8_R8(aasm32_context *aasmContext)
     TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg8));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID CMP_RM32_R32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID CMP_RM32_R32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("CMP_RM32_R32");
     _SetOperandSize(byte);
@@ -5162,7 +5162,7 @@ static C_VOID CMP_R8_RM8(aasm32_context *aasmContext)
     TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg8));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID CMP_R32_RM32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID CMP_R32_RM32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("CMP_R32_RM32");
     _SetOperandSize(byte);
@@ -5192,7 +5192,7 @@ static C_VOID CMP_AL_I8(aasm32_context *aasmContext)
     _c_imm8(aasmContext, aopri2.imm8);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID CMP_EAX_I32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID CMP_EAX_I32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("CMP_EAX_I32");
     _SetOperandSize(byte);
@@ -5233,238 +5233,238 @@ static C_VOID AAS(aasm32_context *aasmContext)
         _ser_;
     TYPE_TRACE_CALL_END;
 }
-static C_VOID INC_EAX(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID INC_EAX(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("INC_EAX");
     _SetOperandSize(byte);
     _c_setbyte(aasmContext, 0x40);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID INC_ECX(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID INC_ECX(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("INC_ECX");
     _SetOperandSize(byte);
     _c_setbyte(aasmContext, 0x41);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID INC_EDX(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID INC_EDX(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("INC_EDX");
     _SetOperandSize(byte);
     _c_setbyte(aasmContext, 0x42);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID INC_EBX(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID INC_EBX(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("INC_EBX");
     _SetOperandSize(byte);
     _c_setbyte(aasmContext, 0x43);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID INC_ESP(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID INC_ESP(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("INC_ESP");
     _SetOperandSize(byte);
     _c_setbyte(aasmContext, 0x44);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID INC_EBP(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID INC_EBP(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("INC_EBP");
     _SetOperandSize(byte);
     _c_setbyte(aasmContext, 0x45);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID INC_ESI(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID INC_ESI(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("INC_ESI");
     _SetOperandSize(byte);
     _c_setbyte(aasmContext, 0x46);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID INC_EDI(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID INC_EDI(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("INC_EDI");
     _SetOperandSize(byte);
     _c_setbyte(aasmContext, 0x47);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID DEC_EAX(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID DEC_EAX(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("DEC_EAX");
     _SetOperandSize(byte);
     _c_setbyte(aasmContext, 0x48);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID DEC_ECX(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID DEC_ECX(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("DEC_ECX");
     _SetOperandSize(byte);
     _c_setbyte(aasmContext, 0x49);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID DEC_EDX(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID DEC_EDX(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("DEC_EDX");
     _SetOperandSize(byte);
     _c_setbyte(aasmContext, 0x4a);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID DEC_EBX(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID DEC_EBX(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("DEC_EBX");
     _SetOperandSize(byte);
     _c_setbyte(aasmContext, 0x4b);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID DEC_ESP(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID DEC_ESP(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("DEC_ESP");
     _SetOperandSize(byte);
     _c_setbyte(aasmContext, 0x4c);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID DEC_EBP(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID DEC_EBP(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("DEC_EBP");
     _SetOperandSize(byte);
     _c_setbyte(aasmContext, 0x4d);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID DEC_ESI(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID DEC_ESI(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("DEC_ESI");
     _SetOperandSize(byte);
     _c_setbyte(aasmContext, 0x4e);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID DEC_EDI(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID DEC_EDI(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("DEC_EDI");
     _SetOperandSize(byte);
     _c_setbyte(aasmContext, 0x4f);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID PUSH_EAX(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID PUSH_EAX(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("PUSH_EAX");
     _SetOperandSize(byte);
     _c_setbyte(aasmContext, 0x50);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID PUSH_ECX(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID PUSH_ECX(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("PUSH_ECX");
     _SetOperandSize(byte);
     _c_setbyte(aasmContext, 0x51);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID PUSH_EDX(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID PUSH_EDX(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("PUSH_EDX");
     _SetOperandSize(byte);
     _c_setbyte(aasmContext, 0x52);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID PUSH_EBX(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID PUSH_EBX(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("PUSH_EBX");
     _SetOperandSize(byte);
     _c_setbyte(aasmContext, 0x53);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID PUSH_ESP(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID PUSH_ESP(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("PUSH_ESP");
     _SetOperandSize(byte);
     _c_setbyte(aasmContext, 0x54);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID PUSH_EBP(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID PUSH_EBP(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("PUSH_EBP");
     _SetOperandSize(byte);
     _c_setbyte(aasmContext, 0x55);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID PUSH_ESI(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID PUSH_ESI(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("PUSH_ESI");
     _SetOperandSize(byte);
     _c_setbyte(aasmContext, 0x56);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID PUSH_EDI(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID PUSH_EDI(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("PUSH_EDI");
     _SetOperandSize(byte);
     _c_setbyte(aasmContext, 0x57);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID POP_EAX(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID POP_EAX(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("POP_EAX");
     _SetOperandSize(byte);
     _c_setbyte(aasmContext, 0x58);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID POP_ECX(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID POP_ECX(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("POP_ECX");
     _SetOperandSize(byte);
     _c_setbyte(aasmContext, 0x59);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID POP_EDX(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID POP_EDX(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("POP_EDX");
     _SetOperandSize(byte);
     _c_setbyte(aasmContext, 0x5a);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID POP_EBX(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID POP_EBX(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("POP_EBX");
     _SetOperandSize(byte);
     _c_setbyte(aasmContext, 0x5b);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID POP_ESP(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID POP_ESP(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("POP_ESP");
     _SetOperandSize(byte);
     _c_setbyte(aasmContext, 0x5c);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID POP_EBP(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID POP_EBP(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("POP_EBP");
     _SetOperandSize(byte);
     _c_setbyte(aasmContext, 0x5d);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID POP_ESI(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID POP_ESI(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("POP_ESI");
     _SetOperandSize(byte);
     _c_setbyte(aasmContext, 0x5e);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID POP_EDI(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID POP_EDI(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("POP_EDI");
     _SetOperandSize(byte);
     _c_setbyte(aasmContext, 0x5f);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID PUSHA(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID PUSHA(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("PUSHA");
     _SetOperandSize(byte);
     _c_setbyte(aasmContext, 0x60);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID POPA(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID POPA(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("POPA");
     _SetOperandSize(byte);
@@ -5472,7 +5472,7 @@ static C_VOID POPA(aasm32_context *aasmContext, uint8_t byte)
     TYPE_TRACE_CALL_END;
 }
 
-static C_VOID BOUND_R32_M32_32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID BOUND_R32_M32_32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("BOUND_R32_M32_32");
     _SetOperandSize(byte);
@@ -5545,7 +5545,7 @@ static C_VOID PREFIX_AddrSize(aasm32_context *aasmContext)
         _ser_;
     TYPE_TRACE_CALL_END;
 }
-static C_VOID PUSH_I32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID PUSH_I32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("PUSH_I32");
     _SetOperandSize(byte);
@@ -5568,7 +5568,7 @@ static C_VOID PUSH_I32(aasm32_context *aasmContext, uint8_t byte)
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID IMUL_R32_RM32_I32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID IMUL_R32_RM32_I32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("IMUL_R32_RM32_I32");
     _SetOperandSize(byte);
@@ -5601,7 +5601,7 @@ static C_VOID PUSH_I8(aasm32_context *aasmContext)
     TYPE_TRACE_CHECK_RETURN(_c_imm8(aasmContext, aopri1.imm8));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID IMUL_R32_RM32_I8(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID IMUL_R32_RM32_I8(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("IMUL_R32_RM32_I32");
     _SetOperandSize(byte);
@@ -5642,7 +5642,7 @@ static C_VOID INSB(aasm32_context *aasmContext)
         _ser_;
     TYPE_TRACE_CALL_END;
 }
-static C_VOID INSW(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID INSW(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("INSW");
     _SetOperandSize(byte);
@@ -5697,7 +5697,7 @@ static C_VOID OUTSB(aasm32_context *aasmContext)
         _ser_;
     TYPE_TRACE_CALL_END;
 }
-static C_VOID OUTSW(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID OUTSW(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("OUTSW");
     _SetOperandSize(byte);
@@ -5737,7 +5737,7 @@ static C_VOID OUTSW(aasm32_context *aasmContext, uint8_t byte)
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID INS_80(aasm32_context *aasmContext, uint8_t rid)
+static C_VOID INS_80(aasm32_context *aasmContext, type_unsigned_8 rid)
 {
     TYPE_TRACE_CALL_BEGIN("INS_80");
     _c_setbyte(aasmContext, 0x80);
@@ -5745,7 +5745,7 @@ static C_VOID INS_80(aasm32_context *aasmContext, uint8_t rid)
     TYPE_TRACE_CHECK_RETURN(_c_imm8(aasmContext, aopri2.imm8));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID INS_81(aasm32_context *aasmContext, uint8_t rid, uint8_t byte)
+static C_VOID INS_81(aasm32_context *aasmContext, type_unsigned_8 rid, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("INS_81");
     _SetOperandSize(byte);
@@ -5769,7 +5769,7 @@ static C_VOID INS_81(aasm32_context *aasmContext, uint8_t rid, uint8_t byte)
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID INS_83(aasm32_context *aasmContext, uint8_t rid, uint8_t byte)
+static C_VOID INS_83(aasm32_context *aasmContext, type_unsigned_8 rid, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("INS_83");
     _SetOperandSize(byte);
@@ -5785,7 +5785,7 @@ static C_VOID TEST_RM8_R8(aasm32_context *aasmContext)
     TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg8));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID TEST_RM32_R32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID TEST_RM32_R32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("TEST_RM32_R32");
     _SetOperandSize(byte);
@@ -5815,7 +5815,7 @@ static C_VOID XCHG_RM8_R8(aasm32_context *aasmContext)
     TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg8));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID XCHG_RM32_R32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID XCHG_RM32_R32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("XCHG_RM32_R32");
     _SetOperandSize(byte);
@@ -5845,7 +5845,7 @@ static C_VOID MOV_RM8_R8(aasm32_context *aasmContext)
     TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.reg8));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_RM32_R32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID MOV_RM32_R32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("MOV_RM32_R32");
     _SetOperandSize(byte);
@@ -5875,7 +5875,7 @@ static C_VOID MOV_R8_RM8(aasm32_context *aasmContext)
     TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg8));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_R32_RM32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID MOV_R32_RM32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("MOV_R32_RM32");
     _SetOperandSize(byte);
@@ -5898,7 +5898,7 @@ static C_VOID MOV_R32_RM32(aasm32_context *aasmContext, uint8_t byte)
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_RM16_SREG(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID MOV_RM16_SREG(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("MOV_RM16_SREG");
     _SetOperandSize(byte);
@@ -5906,7 +5906,7 @@ static C_VOID MOV_RM16_SREG(aasm32_context *aasmContext, uint8_t byte)
     TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, aopri2.sreg));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID LEA_R32_M32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID LEA_R32_M32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("LEA_R32_M32");
     _SetOperandSize(byte);
@@ -5929,7 +5929,7 @@ static C_VOID LEA_R32_M32(aasm32_context *aasmContext, uint8_t byte)
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_SREG_RM16(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID MOV_SREG_RM16(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("MOV_SREG_RM16");
     _SetOperandSize(byte);
@@ -5937,7 +5937,7 @@ static C_VOID MOV_SREG_RM16(aasm32_context *aasmContext, uint8_t byte)
     TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.sreg));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID INS_8F(aasm32_context *aasmContext, uint8_t rid, uint8_t byte)
+static C_VOID INS_8F(aasm32_context *aasmContext, type_unsigned_8 rid, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("INS_8F");
     _SetOperandSize(byte);
@@ -5954,63 +5954,63 @@ static C_VOID NOP(aasm32_context *aasmContext)
         _ser_;
     TYPE_TRACE_CALL_END;
 }
-static C_VOID XCHG_EAX_EAX(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID XCHG_EAX_EAX(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("XCHG_EAX_EAX");
     _SetOperandSize(byte);
     _c_setbyte(aasmContext, 0x90);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID XCHG_ECX_EAX(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID XCHG_ECX_EAX(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("XCHG_ECX_EAX");
     _SetOperandSize(byte);
     _c_setbyte(aasmContext, 0x91);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID XCHG_EDX_EAX(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID XCHG_EDX_EAX(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("XCHG_EDX_EAX");
     _SetOperandSize(byte);
     _c_setbyte(aasmContext, 0x92);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID XCHG_EBX_EAX(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID XCHG_EBX_EAX(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("XCHG_EBX_EAX");
     _SetOperandSize(byte);
     _c_setbyte(aasmContext, 0x93);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID XCHG_ESP_EAX(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID XCHG_ESP_EAX(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("XCHG_ESP_EAX");
     _SetOperandSize(byte);
     _c_setbyte(aasmContext, 0x94);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID XCHG_EBP_EAX(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID XCHG_EBP_EAX(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("XCHG_EBP_EAX");
     _SetOperandSize(byte);
     _c_setbyte(aasmContext, 0x95);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID XCHG_ESI_EAX(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID XCHG_ESI_EAX(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("XCHG_ESI_EAX");
     _SetOperandSize(byte);
     _c_setbyte(aasmContext, 0x96);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID XCHG_EDI_EAX(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID XCHG_EDI_EAX(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("XCHG_EDI_EAX");
     _SetOperandSize(byte);
     _c_setbyte(aasmContext, 0x97);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID CBW(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID CBW(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("CBW");
     _SetOperandSize(byte);
@@ -6020,7 +6020,7 @@ static C_VOID CBW(aasm32_context *aasmContext, uint8_t byte)
         _ser_;
     TYPE_TRACE_CALL_END;
 }
-static C_VOID CWD(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID CWD(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("CWD");
     _SetOperandSize(byte);
@@ -6030,7 +6030,7 @@ static C_VOID CWD(aasm32_context *aasmContext, uint8_t byte)
         _ser_;
     TYPE_TRACE_CALL_END;
 }
-static C_VOID CALL_PTR16_32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID CALL_PTR16_32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("CALL_PTR16_32");
     _SetOperandSize(byte);
@@ -6039,12 +6039,12 @@ static C_VOID CALL_PTR16_32(aasm32_context *aasmContext, uint8_t byte)
     {
     case 2:
         TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        TYPE_TRACE_CHECK_RETURN(_c_imm16(aasmContext, (uint16_t)aopri1.reip));
+        TYPE_TRACE_CHECK_RETURN(_c_imm16(aasmContext, (type_unsigned_16)aopri1.reip));
         TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        TYPE_TRACE_CHECK_RETURN(_c_imm32(aasmContext, (uint32_t)aopri1.reip));
+        TYPE_TRACE_CHECK_RETURN(_c_imm32(aasmContext, (type_unsigned_32)aopri1.reip));
         TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -6060,14 +6060,14 @@ static C_VOID WAIT(aasm32_context *aasmContext)
     _c_setbyte(aasmContext, 0x9b);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID PUSHF(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID PUSHF(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("PUSHF");
     _SetOperandSize(byte);
     _c_setbyte(aasmContext, 0x9c);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID POPF(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID POPF(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("POPF");
     _SetOperandSize(byte);
@@ -6108,7 +6108,7 @@ static C_VOID MOV_AL_MOFFS8(aasm32_context *aasmContext)
         _ser_;
     TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_EAX_MOFFS32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID MOV_EAX_MOFFS32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("MOV_EAX_MOFFS32");
     _SetOperandSize(byte);
@@ -6153,7 +6153,7 @@ static C_VOID MOV_MOFFS8_AL(aasm32_context *aasmContext)
         _ser_;
     TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_MOFFS32_EAX(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID MOV_MOFFS32_EAX(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("MOV_MOFFS32_EAX");
     _SetOperandSize(byte);
@@ -6193,7 +6193,7 @@ static C_VOID MOVSB(aasm32_context *aasmContext)
         _ser_;
     TYPE_TRACE_CALL_END;
 }
-static C_VOID MOVSW(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID MOVSW(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("MOVSW");
     _SetOperandSize(byte);
@@ -6250,7 +6250,7 @@ static C_VOID CMPSB(aasm32_context *aasmContext)
         _ser_;
     TYPE_TRACE_CALL_END;
 }
-static C_VOID CMPSW(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID CMPSW(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("CMPSW");
     _SetOperandSize(byte);
@@ -6297,7 +6297,7 @@ static C_VOID TEST_AL_I8(aasm32_context *aasmContext)
     TYPE_TRACE_CHECK_RETURN(_c_imm8(aasmContext, aopri2.imm8));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID TEST_EAX_I32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID TEST_EAX_I32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("TEST_EAX_I32");
     _SetOperandSize(byte);
@@ -6335,7 +6335,7 @@ static C_VOID STOSB(aasm32_context *aasmContext)
         _ser_;
     TYPE_TRACE_CALL_END;
 }
-static C_VOID STOSW(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID STOSW(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("STOSW");
     _SetOperandSize(byte);
@@ -6390,7 +6390,7 @@ static C_VOID LODSB(aasm32_context *aasmContext)
         _ser_;
     TYPE_TRACE_CALL_END;
 }
-static C_VOID LODSW(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID LODSW(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("LODSW");
     _SetOperandSize(byte);
@@ -6445,7 +6445,7 @@ static C_VOID SCASB(aasm32_context *aasmContext)
         _ser_;
     TYPE_TRACE_CALL_END;
 }
-static C_VOID SCASW(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID SCASW(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("SCASW");
     _SetOperandSize(byte);
@@ -6539,7 +6539,7 @@ static C_VOID MOV_BH_I8(aasm32_context *aasmContext)
     TYPE_TRACE_CHECK_RETURN(_c_imm8(aasmContext, aopri2.imm8));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_EAX_I32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID MOV_EAX_I32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("MOV_EAX_I32");
     _SetOperandSize(byte);
@@ -6562,7 +6562,7 @@ static C_VOID MOV_EAX_I32(aasm32_context *aasmContext, uint8_t byte)
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_ECX_I32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID MOV_ECX_I32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("MOV_ECX_I32");
     _SetOperandSize(byte);
@@ -6585,7 +6585,7 @@ static C_VOID MOV_ECX_I32(aasm32_context *aasmContext, uint8_t byte)
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_EDX_I32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID MOV_EDX_I32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("MOV_EDX_I32");
     _SetOperandSize(byte);
@@ -6608,7 +6608,7 @@ static C_VOID MOV_EDX_I32(aasm32_context *aasmContext, uint8_t byte)
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_EBX_I32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID MOV_EBX_I32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("MOV_EBX_I32");
     _SetOperandSize(byte);
@@ -6631,7 +6631,7 @@ static C_VOID MOV_EBX_I32(aasm32_context *aasmContext, uint8_t byte)
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_ESP_I32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID MOV_ESP_I32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("MOV_ESP_I32");
     _SetOperandSize(byte);
@@ -6654,7 +6654,7 @@ static C_VOID MOV_ESP_I32(aasm32_context *aasmContext, uint8_t byte)
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_EBP_I32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID MOV_EBP_I32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("MOV_EBP_I32");
     _SetOperandSize(byte);
@@ -6677,7 +6677,7 @@ static C_VOID MOV_EBP_I32(aasm32_context *aasmContext, uint8_t byte)
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_ESI_I32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID MOV_ESI_I32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("MOV_ESI_I32");
     _SetOperandSize(byte);
@@ -6700,7 +6700,7 @@ static C_VOID MOV_ESI_I32(aasm32_context *aasmContext, uint8_t byte)
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_EDI_I32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID MOV_EDI_I32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("MOV_EDI_I32");
     _SetOperandSize(byte);
@@ -6723,7 +6723,7 @@ static C_VOID MOV_EDI_I32(aasm32_context *aasmContext, uint8_t byte)
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID INS_C0(aasm32_context *aasmContext, uint8_t rid)
+static C_VOID INS_C0(aasm32_context *aasmContext, type_unsigned_8 rid)
 {
     TYPE_TRACE_CALL_BEGIN("INS_C0");
     _c_setbyte(aasmContext, 0xc0);
@@ -6731,7 +6731,7 @@ static C_VOID INS_C0(aasm32_context *aasmContext, uint8_t rid)
     TYPE_TRACE_CHECK_RETURN(_c_imm8(aasmContext, aopri2.imm8));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID INS_C1(aasm32_context *aasmContext, uint8_t rid, uint8_t byte)
+static C_VOID INS_C1(aasm32_context *aasmContext, type_unsigned_8 rid, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("INS_C1");
     _SetOperandSize(byte);
@@ -6753,7 +6753,7 @@ static C_VOID RET_(aasm32_context *aasmContext)
     _c_setbyte(aasmContext, 0xc3);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID LES_R32_M16_32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID LES_R32_M16_32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("LES_R32_M16_32");
     _SetOperandSize(byte);
@@ -6776,7 +6776,7 @@ static C_VOID LES_R32_M16_32(aasm32_context *aasmContext, uint8_t byte)
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID LDS_R32_M16_32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID LDS_R32_M16_32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("LDS_R32_M16_32");
     _c_setbyte(aasmContext, 0xc5);
@@ -6798,7 +6798,7 @@ static C_VOID LDS_R32_M16_32(aasm32_context *aasmContext, uint8_t byte)
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID INS_C6(aasm32_context *aasmContext, uint8_t rid)
+static C_VOID INS_C6(aasm32_context *aasmContext, type_unsigned_8 rid)
 {
     TYPE_TRACE_CALL_BEGIN("INS_C6");
     _c_setbyte(aasmContext, 0xc6);
@@ -6806,7 +6806,7 @@ static C_VOID INS_C6(aasm32_context *aasmContext, uint8_t rid)
     TYPE_TRACE_CHECK_RETURN(_c_imm8(aasmContext, aopri2.imm8));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID INS_C7(aasm32_context *aasmContext, uint8_t rid, uint8_t byte)
+static C_VOID INS_C7(aasm32_context *aasmContext, type_unsigned_8 rid, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("INS_C7");
     _SetOperandSize(byte);
@@ -6886,21 +6886,21 @@ static C_VOID INTO(aasm32_context *aasmContext)
     _c_setbyte(aasmContext, 0xcd);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID IRET(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID IRET(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("IRET");
     _SetOperandSize(byte);
     _c_setbyte(aasmContext, 0xcf);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID INS_D0(aasm32_context *aasmContext, uint8_t rid)
+static C_VOID INS_D0(aasm32_context *aasmContext, type_unsigned_8 rid)
 {
     TYPE_TRACE_CALL_BEGIN("INS_DO");
     _c_setbyte(aasmContext, 0xd0);
     TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, rid));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID INS_D1(aasm32_context *aasmContext, uint8_t rid, uint8_t byte)
+static C_VOID INS_D1(aasm32_context *aasmContext, type_unsigned_8 rid, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("INS_D1");
     _SetOperandSize(byte);
@@ -6908,14 +6908,14 @@ static C_VOID INS_D1(aasm32_context *aasmContext, uint8_t rid, uint8_t byte)
     TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, rid));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID INS_D2(aasm32_context *aasmContext, uint8_t rid)
+static C_VOID INS_D2(aasm32_context *aasmContext, type_unsigned_8 rid)
 {
     TYPE_TRACE_CALL_BEGIN("INS_D2");
     _c_setbyte(aasmContext, 0xd2);
     TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, rid));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID INS_D3(aasm32_context *aasmContext, uint8_t rid, uint8_t byte)
+static C_VOID INS_D3(aasm32_context *aasmContext, type_unsigned_8 rid, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("INS_D3");
     _SetOperandSize(byte);
@@ -6991,7 +6991,7 @@ static C_VOID IN_AL_I8(aasm32_context *aasmContext)
     TYPE_TRACE_CHECK_RETURN(_c_imm8(aasmContext, aopri2.imm8));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID IN_EAX_I8(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID IN_EAX_I8(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("IN_AL_I8");
     _SetOperandSize(byte);
@@ -7006,14 +7006,14 @@ static C_VOID OUT_I8_AL(aasm32_context *aasmContext)
     TYPE_TRACE_CHECK_RETURN(_c_imm8(aasmContext, aopri1.imm8));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID OUT_I8_EAX(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID OUT_I8_EAX(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("OUT_I8_EAX");
     _c_setbyte(aasmContext, 0xe7);
     TYPE_TRACE_CHECK_RETURN(_c_imm8(aasmContext, aopri1.imm8));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID CALL_REL32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID CALL_REL32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("CALL_REL32");
     _SetOperandSize(byte);
@@ -7036,7 +7036,7 @@ static C_VOID CALL_REL32(aasm32_context *aasmContext, uint8_t byte)
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID JMP_REL32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID JMP_REL32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("JMP_REL32");
     _SetOperandSize(byte);
@@ -7059,7 +7059,7 @@ static C_VOID JMP_REL32(aasm32_context *aasmContext, uint8_t byte)
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID JMP_PTR16_32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID JMP_PTR16_32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("JMP_PTR16_32");
     _SetOperandSize(byte);
@@ -7068,12 +7068,12 @@ static C_VOID JMP_PTR16_32(aasm32_context *aasmContext, uint8_t byte)
     {
     case 2:
         TYPE_TRACE_BLOCK_BEGIN("byte(2)");
-        TYPE_TRACE_CHECK_RETURN(_c_imm16(aasmContext, (uint16_t)aopri1.reip));
+        TYPE_TRACE_CHECK_RETURN(_c_imm16(aasmContext, (type_unsigned_16)aopri1.reip));
         TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         TYPE_TRACE_BLOCK_BEGIN("byte(4)");
-        TYPE_TRACE_CHECK_RETURN(_c_imm32(aasmContext, (uint32_t)aopri1.reip));
+        TYPE_TRACE_CHECK_RETURN(_c_imm32(aasmContext, (type_unsigned_32)aopri1.reip));
         TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -7089,7 +7089,7 @@ static C_VOID IN_AL_DX(aasm32_context *aasmContext)
     _c_setbyte(aasmContext, 0xec);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID IN_EAX_DX(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID IN_EAX_DX(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("IN_EAX_DX");
     _SetOperandSize(byte);
@@ -7102,7 +7102,7 @@ static C_VOID OUT_DX_AL(aasm32_context *aasmContext)
     _c_setbyte(aasmContext, 0xee);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID OUT_DX_EAX(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID OUT_DX_EAX(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("OUT_DX_EAX");
     _SetOperandSize(byte);
@@ -7154,7 +7154,7 @@ static C_VOID CMC(aasm32_context *aasmContext)
         _ser_;
     TYPE_TRACE_CALL_END;
 }
-static C_VOID INS_F6(aasm32_context *aasmContext, uint8_t rid)
+static C_VOID INS_F6(aasm32_context *aasmContext, type_unsigned_8 rid)
 {
     TYPE_TRACE_CALL_BEGIN("INS_F6");
     _c_setbyte(aasmContext, 0xf6);
@@ -7163,7 +7163,7 @@ static C_VOID INS_F6(aasm32_context *aasmContext, uint8_t rid)
         TYPE_TRACE_CHECK_RETURN(_c_imm8(aasmContext, aopri2.imm8));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID INS_F7(aasm32_context *aasmContext, uint8_t rid, uint8_t byte)
+static C_VOID INS_F7(aasm32_context *aasmContext, type_unsigned_8 rid, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("INS_F7");
     _SetOperandSize(byte);
@@ -7246,14 +7246,14 @@ static C_VOID STD(aasm32_context *aasmContext)
         _ser_;
     TYPE_TRACE_CALL_END;
 }
-static C_VOID INS_FE(aasm32_context *aasmContext, uint8_t rid)
+static C_VOID INS_FE(aasm32_context *aasmContext, type_unsigned_8 rid)
 {
     TYPE_TRACE_CALL_BEGIN("INS_FE");
     _c_setbyte(aasmContext, 0xfe);
     TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, rid));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID INS_FF(aasm32_context *aasmContext, uint8_t rid, uint8_t byte)
+static C_VOID INS_FF(aasm32_context *aasmContext, type_unsigned_8 rid, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("INS_FF");
     _SetOperandSize(byte);
@@ -7262,7 +7262,7 @@ static C_VOID INS_FF(aasm32_context *aasmContext, uint8_t rid, uint8_t byte)
     TYPE_TRACE_CALL_END;
 }
 /* concrete extended instructions */
-static C_VOID INS_0F_00(aasm32_context *aasmContext, uint8_t rid, uint8_t byte)
+static C_VOID INS_0F_00(aasm32_context *aasmContext, type_unsigned_8 rid, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("INS_0F_00");
     _SetOperandSize(byte);
@@ -7271,7 +7271,7 @@ static C_VOID INS_0F_00(aasm32_context *aasmContext, uint8_t rid, uint8_t byte)
     TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, rid));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID INS_0F_01(aasm32_context *aasmContext, uint8_t rid, uint8_t byte)
+static C_VOID INS_0F_01(aasm32_context *aasmContext, type_unsigned_8 rid, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("INS_0F_01");
     _SetOperandSize(byte);
@@ -7280,7 +7280,7 @@ static C_VOID INS_0F_01(aasm32_context *aasmContext, uint8_t rid, uint8_t byte)
     TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, rid));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID LAR_R32_RM32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID LAR_R32_RM32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("LAR_R32_RM32");
     _SetOperandSize(byte);
@@ -7304,7 +7304,7 @@ static C_VOID LAR_R32_RM32(aasm32_context *aasmContext, uint8_t byte)
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID LSL_R32_RM32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID LSL_R32_RM32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("LSL_R32_RM32");
     _SetOperandSize(byte);
@@ -7335,7 +7335,7 @@ static C_VOID CLTS(aasm32_context *aasmContext)
     _c_setbyte(aasmContext, 0x06);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_R32_CR(aasm32_context *aasmContext, uint8_t crid)
+static C_VOID MOV_R32_CR(aasm32_context *aasmContext, type_unsigned_8 crid)
 {
     TYPE_TRACE_CALL_BEGIN("MOV_R32_CR");
     INS_0F(aasmContext);
@@ -7343,7 +7343,7 @@ static C_VOID MOV_R32_CR(aasm32_context *aasmContext, uint8_t crid)
     TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, crid));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_R32_DR(aasm32_context *aasmContext, uint8_t drid)
+static C_VOID MOV_R32_DR(aasm32_context *aasmContext, type_unsigned_8 drid)
 {
     TYPE_TRACE_CALL_BEGIN("MOV_R32_DR");
     INS_0F(aasmContext);
@@ -7351,7 +7351,7 @@ static C_VOID MOV_R32_DR(aasm32_context *aasmContext, uint8_t drid)
     TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, drid));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_CR_R32(aasm32_context *aasmContext, uint8_t crid)
+static C_VOID MOV_CR_R32(aasm32_context *aasmContext, type_unsigned_8 crid)
 {
     TYPE_TRACE_CALL_BEGIN("MOV_CR_R32");
     INS_0F(aasmContext);
@@ -7359,7 +7359,7 @@ static C_VOID MOV_CR_R32(aasm32_context *aasmContext, uint8_t crid)
     TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, crid));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_DR_R32(aasm32_context *aasmContext, uint8_t drid)
+static C_VOID MOV_DR_R32(aasm32_context *aasmContext, type_unsigned_8 drid)
 {
     TYPE_TRACE_CALL_BEGIN("MOV_DR_R32");
     INS_0F(aasmContext);
@@ -7367,7 +7367,7 @@ static C_VOID MOV_DR_R32(aasm32_context *aasmContext, uint8_t drid)
     TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, drid));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_R32_TR(aasm32_context *aasmContext, uint8_t trid)
+static C_VOID MOV_R32_TR(aasm32_context *aasmContext, type_unsigned_8 trid)
 {
     TYPE_TRACE_CALL_BEGIN("MOV_R32_TR");
     INS_0F(aasmContext);
@@ -7375,7 +7375,7 @@ static C_VOID MOV_R32_TR(aasm32_context *aasmContext, uint8_t trid)
     TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri1, trid));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID MOV_TR_R32(aasm32_context *aasmContext, uint8_t trid)
+static C_VOID MOV_TR_R32(aasm32_context *aasmContext, type_unsigned_8 trid)
 {
     TYPE_TRACE_CALL_BEGIN("MOV_TR_R32");
     INS_0F(aasmContext);
@@ -7383,7 +7383,7 @@ static C_VOID MOV_TR_R32(aasm32_context *aasmContext, uint8_t trid)
     TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, trid));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID SETCC_RM8(aasm32_context *aasmContext, uint8_t opcode)
+static C_VOID SETCC_RM8(aasm32_context *aasmContext, type_unsigned_8 opcode)
 {
     TYPE_TRACE_CALL_BEGIN("SETCC_RM8");
     if (ARG_RM8)
@@ -7410,7 +7410,7 @@ static C_VOID POP_FS(aasm32_context *aasmContext)
     _c_setbyte(aasmContext, 0xa1);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID BT_RM32_R32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID BT_RM32_R32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("BT_RM32_R32");
     _SetOperandSize(byte);
@@ -7430,7 +7430,7 @@ static C_VOID BT_RM32_R32(aasm32_context *aasmContext, uint8_t byte)
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID SHLD_RM32_R32_I8(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID SHLD_RM32_R32_I8(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("SHLD_RM32_R32_I8");
     _SetOperandSize(byte);
@@ -7451,7 +7451,7 @@ static C_VOID SHLD_RM32_R32_I8(aasm32_context *aasmContext, uint8_t byte)
     TYPE_TRACE_CHECK_RETURN(_c_imm8(aasmContext, aopri3.imm8));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID SHLD_RM32_R32_CL(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID SHLD_RM32_R32_CL(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("SHLD_RM32_R32_CL");
     _SetOperandSize(byte);
@@ -7485,7 +7485,7 @@ static C_VOID POP_GS(aasm32_context *aasmContext)
     _c_setbyte(aasmContext, 0xa9);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID BTS_RM32_R32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID BTS_RM32_R32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("BTS_RM32_R32");
     _SetOperandSize(byte);
@@ -7505,7 +7505,7 @@ static C_VOID BTS_RM32_R32(aasm32_context *aasmContext, uint8_t byte)
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID SHRD_RM32_R32_I8(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID SHRD_RM32_R32_I8(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("SHRD_RM32_R32_I8");
     _SetOperandSize(byte);
@@ -7526,7 +7526,7 @@ static C_VOID SHRD_RM32_R32_I8(aasm32_context *aasmContext, uint8_t byte)
     TYPE_TRACE_CHECK_RETURN(_c_imm8(aasmContext, aopri3.imm8));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID SHRD_RM32_R32_CL(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID SHRD_RM32_R32_CL(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("SHRD_RM32_R32_CL");
     _SetOperandSize(byte);
@@ -7546,7 +7546,7 @@ static C_VOID SHRD_RM32_R32_CL(aasm32_context *aasmContext, uint8_t byte)
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID IMUL_R32_RM32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID IMUL_R32_RM32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("IMUL_R32_RM32");
     _SetOperandSize(byte);
@@ -7566,7 +7566,7 @@ static C_VOID IMUL_R32_RM32(aasm32_context *aasmContext, uint8_t byte)
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID LSS_R32_M16_32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID LSS_R32_M16_32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("LSS_R32_M16_32");
     _SetOperandSize(byte);
@@ -7590,7 +7590,7 @@ static C_VOID LSS_R32_M16_32(aasm32_context *aasmContext, uint8_t byte)
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID BTR_RM32_R32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID BTR_RM32_R32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("BTR_RM32_R32");
     _SetOperandSize(byte);
@@ -7610,7 +7610,7 @@ static C_VOID BTR_RM32_R32(aasm32_context *aasmContext, uint8_t byte)
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID LFS_R32_M16_32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID LFS_R32_M16_32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("LFS_R32_M16_32");
     _SetOperandSize(byte);
@@ -7634,7 +7634,7 @@ static C_VOID LFS_R32_M16_32(aasm32_context *aasmContext, uint8_t byte)
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID LGS_R32_M16_32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID LGS_R32_M16_32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("LGS_R32_M16_32");
     _SetOperandSize(byte);
@@ -7658,7 +7658,7 @@ static C_VOID LGS_R32_M16_32(aasm32_context *aasmContext, uint8_t byte)
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID MOVZX_R32_RM8(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID MOVZX_R32_RM8(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("MOVZX_R32_RM8");
     _SetOperandSize(byte);
@@ -7690,7 +7690,7 @@ static C_VOID MOVZX_R32_RM16(aasm32_context *aasmContext)
     TYPE_TRACE_CHECK_RETURN(_c_modrm(aasmContext, aopri2, aopri1.reg32));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID INS_0F_BA(aasm32_context *aasmContext, uint8_t rid, uint8_t byte)
+static C_VOID INS_0F_BA(aasm32_context *aasmContext, type_unsigned_8 rid, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("INS_0F_BA");
     _SetOperandSize(byte);
@@ -7700,7 +7700,7 @@ static C_VOID INS_0F_BA(aasm32_context *aasmContext, uint8_t rid, uint8_t byte)
     TYPE_TRACE_CHECK_RETURN(_c_imm8(aasmContext, aopri2.imm8));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID BTC_RM32_R32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID BTC_RM32_R32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("BTC_RM32_R32");
     _SetOperandSize(byte);
@@ -7720,7 +7720,7 @@ static C_VOID BTC_RM32_R32(aasm32_context *aasmContext, uint8_t byte)
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID BSF_R32_RM32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID BSF_R32_RM32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("BSF_R32_RM32");
     _SetOperandSize(byte);
@@ -7744,7 +7744,7 @@ static C_VOID BSF_R32_RM32(aasm32_context *aasmContext, uint8_t byte)
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID BSR_R32_RM32(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID BSR_R32_RM32(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("BSR_R32_RM32");
     _SetOperandSize(byte);
@@ -7768,7 +7768,7 @@ static C_VOID BSR_R32_RM32(aasm32_context *aasmContext, uint8_t byte)
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID MOVSX_R32_RM8(aasm32_context *aasmContext, uint8_t byte)
+static C_VOID MOVSX_R32_RM8(aasm32_context *aasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("MOVSX_R32_RM8");
     _SetOperandSize(byte);
@@ -7920,7 +7920,7 @@ static C_VOID POP(aasm32_context *aasmContext)
 }
 static C_VOID ADD(aasm32_context *aasmContext)
 {
-    uint8_t rid = 0x00;
+    type_unsigned_8 rid = 0x00;
     TYPE_TRACE_CALL_BEGIN("ADD");
     if (ARG_AL_I8)
         ADD_AL_I8(aasmContext);
@@ -7992,7 +7992,7 @@ static C_VOID ADD(aasm32_context *aasmContext)
 }
 static C_VOID OR(aasm32_context *aasmContext)
 {
-    uint8_t rid = 0x01;
+    type_unsigned_8 rid = 0x01;
     TYPE_TRACE_CALL_BEGIN("OR");
     if (ARG_AL_I8)
         OR_AL_I8(aasmContext);
@@ -8064,7 +8064,7 @@ static C_VOID OR(aasm32_context *aasmContext)
 }
 static C_VOID ADC(aasm32_context *aasmContext)
 {
-    uint8_t rid = 0x02;
+    type_unsigned_8 rid = 0x02;
     TYPE_TRACE_CALL_BEGIN("ADC");
     if (ARG_AL_I8)
         ADC_AL_I8(aasmContext);
@@ -8136,7 +8136,7 @@ static C_VOID ADC(aasm32_context *aasmContext)
 }
 static C_VOID SBB(aasm32_context *aasmContext)
 {
-    uint8_t rid = 0x03;
+    type_unsigned_8 rid = 0x03;
     TYPE_TRACE_CALL_BEGIN("SBB");
     if (ARG_AL_I8)
         SBB_AL_I8(aasmContext);
@@ -8208,7 +8208,7 @@ static C_VOID SBB(aasm32_context *aasmContext)
 }
 static C_VOID AND(aasm32_context *aasmContext)
 {
-    uint8_t rid = 0x04;
+    type_unsigned_8 rid = 0x04;
     TYPE_TRACE_CALL_BEGIN("AND");
     if (ARG_AL_I8)
         AND_AL_I8(aasmContext);
@@ -8280,7 +8280,7 @@ static C_VOID AND(aasm32_context *aasmContext)
 }
 static C_VOID SUB(aasm32_context *aasmContext)
 {
-    uint8_t rid = 0x05;
+    type_unsigned_8 rid = 0x05;
     TYPE_TRACE_CALL_BEGIN("SUB");
     if (ARG_AL_I8)
         SUB_AL_I8(aasmContext);
@@ -8352,7 +8352,7 @@ static C_VOID SUB(aasm32_context *aasmContext)
 }
 static C_VOID XOR(aasm32_context *aasmContext)
 {
-    uint8_t rid = 0x06;
+    type_unsigned_8 rid = 0x06;
     TYPE_TRACE_CALL_BEGIN("XOR");
     if (ARG_AL_I8)
         XOR_AL_I8(aasmContext);
@@ -8424,7 +8424,7 @@ static C_VOID XOR(aasm32_context *aasmContext)
 }
 static C_VOID CMP(aasm32_context *aasmContext)
 {
-    uint8_t rid = 0x07;
+    type_unsigned_8 rid = 0x07;
     TYPE_TRACE_CALL_BEGIN("CMP");
     if (ARG_AL_I8)
         CMP_AL_I8(aasmContext);
@@ -8646,7 +8646,7 @@ static C_VOID OUTS(aasm32_context *aasmContext)
         _ser_;
     TYPE_TRACE_CALL_END;
 }
-static C_VOID JCC_REL(aasm32_context *aasmContext, uint8_t opcode)
+static C_VOID JCC_REL(aasm32_context *aasmContext, type_unsigned_8 opcode)
 {
     TYPE_TRACE_CALL_BEGIN("JCC_REL");
     if (ARG_PNONE_I8s || ARG_SHORT_I8s)
@@ -9042,7 +9042,7 @@ static C_VOID XLAT(aasm32_context *aasmContext)
 }
 static C_VOID ROL(aasm32_context *aasmContext)
 {
-    uint8_t rid = 0x00;
+    type_unsigned_8 rid = 0x00;
     TYPE_TRACE_CALL_BEGIN("ROL");
     if (ARG_RM8_I8 && aopri2.imm8 == 1)
         INS_D0(aasmContext, rid);
@@ -9068,7 +9068,7 @@ static C_VOID ROL(aasm32_context *aasmContext)
 }
 static C_VOID ROR(aasm32_context *aasmContext)
 {
-    uint8_t rid = 0x01;
+    type_unsigned_8 rid = 0x01;
     TYPE_TRACE_CALL_BEGIN("ROR");
     if (ARG_RM8_I8 && aopri2.imm8 == 1)
         INS_D0(aasmContext, rid);
@@ -9094,7 +9094,7 @@ static C_VOID ROR(aasm32_context *aasmContext)
 }
 static C_VOID RCL(aasm32_context *aasmContext)
 {
-    uint8_t rid = 0x02;
+    type_unsigned_8 rid = 0x02;
     TYPE_TRACE_CALL_BEGIN("RCL");
     if (ARG_RM8_I8 && aopri2.imm8 == 1)
         INS_D0(aasmContext, rid);
@@ -9120,7 +9120,7 @@ static C_VOID RCL(aasm32_context *aasmContext)
 }
 static C_VOID RCR(aasm32_context *aasmContext)
 {
-    uint8_t rid = 0x03;
+    type_unsigned_8 rid = 0x03;
     TYPE_TRACE_CALL_BEGIN("IN");
     if (ARG_RM8_I8 && aopri2.imm8 == 1)
         INS_D0(aasmContext, rid);
@@ -9146,7 +9146,7 @@ static C_VOID RCR(aasm32_context *aasmContext)
 }
 static C_VOID SHL(aasm32_context *aasmContext)
 {
-    uint8_t rid = 0x04;
+    type_unsigned_8 rid = 0x04;
     TYPE_TRACE_CALL_BEGIN("SHL");
     if (ARG_RM8_I8 && aopri2.imm8 == 1)
         INS_D0(aasmContext, rid);
@@ -9172,7 +9172,7 @@ static C_VOID SHL(aasm32_context *aasmContext)
 }
 static C_VOID SHR(aasm32_context *aasmContext)
 {
-    uint8_t rid = 0x05;
+    type_unsigned_8 rid = 0x05;
     TYPE_TRACE_CALL_BEGIN("SHR");
     if (ARG_RM8_I8 && aopri2.imm8 == 1)
         INS_D0(aasmContext, rid);
@@ -9198,7 +9198,7 @@ static C_VOID SHR(aasm32_context *aasmContext)
 }
 static C_VOID SAL(aasm32_context *aasmContext)
 {
-    uint8_t rid = 0x04;
+    type_unsigned_8 rid = 0x04;
     TYPE_TRACE_CALL_BEGIN("SAL");
     if (ARG_RM8_I8 && aopri2.imm8 == 1)
         INS_D0(aasmContext, rid);
@@ -9224,7 +9224,7 @@ static C_VOID SAL(aasm32_context *aasmContext)
 }
 static C_VOID SAR(aasm32_context *aasmContext)
 {
-    uint8_t rid = 0x07;
+    type_unsigned_8 rid = 0x07;
     TYPE_TRACE_CALL_BEGIN("SAR");
     if (ARG_RM8_I8 && aopri2.imm8 == 1)
         INS_D0(aasmContext, rid);
@@ -9379,7 +9379,7 @@ static C_VOID JMP(aasm32_context *aasmContext)
 /* abstract extended instructions */
 static C_VOID SLDT(aasm32_context *aasmContext)
 {
-    uint8_t rid = 0x00;
+    type_unsigned_8 rid = 0x00;
     TYPE_TRACE_CALL_BEGIN("SLDT");
     if (ARG_RM16)
         INS_0F_00(aasmContext, rid, 2);
@@ -9391,7 +9391,7 @@ static C_VOID SLDT(aasm32_context *aasmContext)
 }
 static C_VOID STR(aasm32_context *aasmContext)
 {
-    uint8_t rid = 0x01;
+    type_unsigned_8 rid = 0x01;
     TYPE_TRACE_CALL_BEGIN("STR");
     if (ARG_RM16)
         INS_0F_00(aasmContext, rid, 2);
@@ -9403,7 +9403,7 @@ static C_VOID STR(aasm32_context *aasmContext)
 }
 static C_VOID LLDT(aasm32_context *aasmContext)
 {
-    uint8_t rid = 0x02;
+    type_unsigned_8 rid = 0x02;
     TYPE_TRACE_CALL_BEGIN("LLDT");
     if (ARG_RM16)
         INS_0F_00(aasmContext, rid, 0);
@@ -9413,7 +9413,7 @@ static C_VOID LLDT(aasm32_context *aasmContext)
 }
 static C_VOID LTR(aasm32_context *aasmContext)
 {
-    uint8_t rid = 0x03;
+    type_unsigned_8 rid = 0x03;
     TYPE_TRACE_CALL_BEGIN("LTR");
     if (ARG_RM16)
         INS_0F_00(aasmContext, rid, 0);
@@ -9423,7 +9423,7 @@ static C_VOID LTR(aasm32_context *aasmContext)
 }
 static C_VOID VERR(aasm32_context *aasmContext)
 {
-    uint8_t rid = 0x04;
+    type_unsigned_8 rid = 0x04;
     TYPE_TRACE_CALL_BEGIN("VERR");
     if (ARG_RM16)
         INS_0F_00(aasmContext, rid, 0);
@@ -9433,7 +9433,7 @@ static C_VOID VERR(aasm32_context *aasmContext)
 }
 static C_VOID VERW(aasm32_context *aasmContext)
 {
-    uint8_t rid = 0x05;
+    type_unsigned_8 rid = 0x05;
     TYPE_TRACE_CALL_BEGIN("VERW");
     if (ARG_RM16)
         INS_0F_00(aasmContext, rid, 0);
@@ -9443,7 +9443,7 @@ static C_VOID VERW(aasm32_context *aasmContext)
 }
 static C_VOID SGDT(aasm32_context *aasmContext)
 {
-    uint8_t rid = 0x00;
+    type_unsigned_8 rid = 0x00;
     TYPE_TRACE_CALL_BEGIN("SGDT");
     if (ARG_M16s)
         INS_0F_01(aasmContext, rid, 2);
@@ -9455,7 +9455,7 @@ static C_VOID SGDT(aasm32_context *aasmContext)
 }
 static C_VOID SIDT(aasm32_context *aasmContext)
 {
-    uint8_t rid = 0x01;
+    type_unsigned_8 rid = 0x01;
     TYPE_TRACE_CALL_BEGIN("SIDT");
     if (ARG_M16s)
         INS_0F_01(aasmContext, rid, 2);
@@ -9467,7 +9467,7 @@ static C_VOID SIDT(aasm32_context *aasmContext)
 }
 static C_VOID LGDT(aasm32_context *aasmContext)
 {
-    uint8_t rid = 0x02;
+    type_unsigned_8 rid = 0x02;
     TYPE_TRACE_CALL_BEGIN("SIDT");
     if (ARG_M16s)
         INS_0F_01(aasmContext, rid, 2);
@@ -9479,7 +9479,7 @@ static C_VOID LGDT(aasm32_context *aasmContext)
 }
 static C_VOID LIDT(aasm32_context *aasmContext)
 {
-    uint8_t rid = 0x03;
+    type_unsigned_8 rid = 0x03;
     TYPE_TRACE_CALL_BEGIN("LIDT");
     if (ARG_M16s)
         INS_0F_01(aasmContext, rid, 2);
@@ -9491,7 +9491,7 @@ static C_VOID LIDT(aasm32_context *aasmContext)
 }
 static C_VOID SMSW(aasm32_context *aasmContext)
 {
-    uint8_t rid = 0x04;
+    type_unsigned_8 rid = 0x04;
     TYPE_TRACE_CALL_BEGIN("SMSW");
     if (ARG_RM16)
         INS_0F_01(aasmContext, rid, 2);
@@ -9503,7 +9503,7 @@ static C_VOID SMSW(aasm32_context *aasmContext)
 }
 static C_VOID LMSW(aasm32_context *aasmContext)
 {
-    uint8_t rid = 0x06;
+    type_unsigned_8 rid = 0x06;
     TYPE_TRACE_CALL_BEGIN("LMSW");
     if (ARG_RM16)
         INS_0F_01(aasmContext, rid, 0);
@@ -9535,7 +9535,7 @@ static C_VOID LSL(aasm32_context *aasmContext)
 }
 static C_VOID BT(aasm32_context *aasmContext)
 {
-    uint8_t rid = 0x04;
+    type_unsigned_8 rid = 0x04;
     TYPE_TRACE_CALL_BEGIN("BT");
     if (ARG_RM16_R16)
         BT_RM32_R32(aasmContext, 2);
@@ -9566,7 +9566,7 @@ static C_VOID SHLD(aasm32_context *aasmContext)
 }
 static C_VOID BTS(aasm32_context *aasmContext)
 {
-    uint8_t rid = 0x05;
+    type_unsigned_8 rid = 0x05;
     TYPE_TRACE_CALL_BEGIN("BTS");
     if (ARG_RM16_R16)
         BTS_RM32_R32(aasmContext, 2);
@@ -9608,7 +9608,7 @@ static C_VOID LSS(aasm32_context *aasmContext)
 }
 static C_VOID BTR(aasm32_context *aasmContext)
 {
-    uint8_t rid = 0x06;
+    type_unsigned_8 rid = 0x06;
     TYPE_TRACE_CALL_BEGIN("BTR");
     if (ARG_RM16_R16)
         BTR_RM32_R32(aasmContext, 2);
@@ -9659,7 +9659,7 @@ static C_VOID MOVZX(aasm32_context *aasmContext)
 }
 static C_VOID BTC(aasm32_context *aasmContext)
 {
-    uint8_t rid = 0x07;
+    type_unsigned_8 rid = 0x07;
     TYPE_TRACE_CALL_BEGIN("BTC");
     if (ARG_RM16_R16)
         BTC_RM32_R32(aasmContext, 2);
@@ -10212,12 +10212,12 @@ static C_CHAR *take_arg(aasm32_context *aasmContext, C_CHAR *s)
     *(rend + 1) = 0;
     return rresult;
 }
-static uint8_t aasm32_execute(aasm32_context *aasmContext, const C_CHAR *stmt, uint8_t *rcode, C_INT flag32)
+static type_unsigned_8 aasm32_execute(aasm32_context *aasmContext, const C_CHAR *stmt, type_unsigned_8 *rcode, C_INT flag32)
 {
-    uint8_t len;
+    type_unsigned_8 len;
     C_CHAR astmt[0x100];
     C_CHAR *rstmt;
-    uint8_t flagprefix;
+    type_unsigned_8 flagprefix;
 
     if (!stmt || is_end(aasmContext, stmt[0]))
     {
@@ -10380,7 +10380,7 @@ static uint8_t aasm32_execute(aasm32_context *aasmContext, const C_CHAR *stmt, u
     return len;
 }
 
-uint8_t aasm32(const C_CHAR *stmt, uint8_t *rcode, C_INT flag32)
+type_unsigned_8 aasm32(const C_CHAR *stmt, type_unsigned_8 *rcode, C_INT flag32)
 {
     aasm32_context local_context;
 
@@ -10392,11 +10392,11 @@ uint8_t aasm32(const C_CHAR *stmt, uint8_t *rcode, C_INT flag32)
 typedef struct
 {
     C_CHAR stmt[0x100];
-    uint32_t stmt_id;
-    uint8_t code_array[15];
-    uint8_t code_len;
-    uint8_t flag_is_label;
-    uint8_t flag_has_label;
+    type_unsigned_32 stmt_id;
+    type_unsigned_8 code_array[15];
+    type_unsigned_8 code_len;
+    type_unsigned_8 flag_is_label;
+    type_unsigned_8 flag_has_label;
     C_CHAR label_str[0x100];
     C_CHAR op_str[0x100];
     t_aasm_oprptr ptr;
@@ -10560,16 +10560,16 @@ static C_VOID asmx_parse_instr(aasm32_context *aasmContext, t_aasm_instr *rinstr
         }
     }
 }
-static uint32_t aasm32x_execute(aasm32_context *aasmContext, const C_CHAR *stmt, uint8_t *rcode, C_INT flag32)
+static type_unsigned_32 aasm32x_execute(aasm32_context *aasmContext, const C_CHAR *stmt, type_unsigned_8 *rcode, C_INT flag32)
 {
-    int32_t i, j, k, count;
-    uint32_t len;
-    uint32_t offset;
+    type_signed_32 i, j, k, count;
+    type_unsigned_32 len;
+    type_unsigned_32 offset;
     C_CHAR imm[0x100];
     t_aasm_instr *instr;
     count = 1;
     flagError = 0;
-    for (i = 0; i < (int32_t)STD_STRLEN(stmt); ++i)
+    for (i = 0; i < (type_signed_32)STD_STRLEN(stmt); ++i)
     {
         if (stmt[i] == '\n')
         {
@@ -10599,7 +10599,7 @@ static uint32_t aasm32x_execute(aasm32_context *aasmContext, const C_CHAR *stmt,
                     {
                         instr[k].stmt[j + 1] = 0;
                         type_string_lower(instr[k].stmt);
-                        instr[k].stmt_id = (uint32_t)k;
+                        instr[k].stmt_id = (type_unsigned_32)k;
                         j = 0;
                         k++;
                     }
@@ -10717,7 +10717,7 @@ static uint32_t aasm32x_execute(aasm32_context *aasmContext, const C_CHAR *stmt,
                             STD_STRCAT(instr[j].stmt, " short ");
                             if (offset < 0x80)
                             {
-                                STD_SNPRINTF(imm, sizeof(imm), "+%02x", (uint8_t)offset);
+                                STD_SNPRINTF(imm, sizeof(imm), "+%02x", (type_unsigned_8)offset);
                             }
                             else
                             {
@@ -10732,7 +10732,7 @@ static uint32_t aasm32x_execute(aasm32_context *aasmContext, const C_CHAR *stmt,
                             case 2:
                                 if (offset < 0x8000)
                                 {
-                                    STD_SNPRINTF(imm, sizeof(imm), "+%04x", (uint16_t)offset);
+                                    STD_SNPRINTF(imm, sizeof(imm), "+%04x", (type_unsigned_16)offset);
                                 }
                                 else
                                 {
@@ -10743,7 +10743,7 @@ static uint32_t aasm32x_execute(aasm32_context *aasmContext, const C_CHAR *stmt,
                             case 4:
                                 if (offset < 0x80000000)
                                 {
-                                    STD_SNPRINTF(imm, sizeof(imm), "+%08x", (uint32_t)offset);
+                                    STD_SNPRINTF(imm, sizeof(imm), "+%08x", (type_unsigned_32)offset);
                                 }
                                 else
                                 {
@@ -10797,7 +10797,7 @@ static uint32_t aasm32x_execute(aasm32_context *aasmContext, const C_CHAR *stmt,
                             STD_STRCAT(instr[j].stmt, " short ");
                             if (offset < 0x80)
                             {
-                                STD_SNPRINTF(imm, sizeof(imm), "-%02x", (uint8_t)offset);
+                                STD_SNPRINTF(imm, sizeof(imm), "-%02x", (type_unsigned_8)offset);
                             }
                             else
                             {
@@ -10812,7 +10812,7 @@ static uint32_t aasm32x_execute(aasm32_context *aasmContext, const C_CHAR *stmt,
                             case 2:
                                 if (offset < 0x8000)
                                 {
-                                    STD_SNPRINTF(imm, sizeof(imm), "-%04x", (uint16_t)offset);
+                                    STD_SNPRINTF(imm, sizeof(imm), "-%04x", (type_unsigned_16)offset);
                                 }
                                 else
                                 {
@@ -10823,7 +10823,7 @@ static uint32_t aasm32x_execute(aasm32_context *aasmContext, const C_CHAR *stmt,
                             case 4:
                                 if (offset < 0x80000000)
                                 {
-                                    STD_SNPRINTF(imm, sizeof(imm), "-%08x", (uint32_t)offset);
+                                    STD_SNPRINTF(imm, sizeof(imm), "-%08x", (type_unsigned_32)offset);
                                 }
                                 else
                                 {
@@ -10855,7 +10855,7 @@ static uint32_t aasm32x_execute(aasm32_context *aasmContext, const C_CHAR *stmt,
     for (i = 0; i < count; ++i)
     {
         /*STD_PRINTF("%04X: %s", len, instr[i].stmt);
-        for (j = (int32_t) STD_STRLEN(instr[i].stmt);j < 50;++j) STD_PRINTF(" ");
+        for (j = (type_signed_32) STD_STRLEN(instr[i].stmt);j < 50;++j) STD_PRINTF(" ");
         STD_PRINTF("[");
         for (j = 0;j < instr[i].code_len;++j) STD_PRINTF("%02X", instr[i].code_array[j]);
         STD_PRINTF("]\n");*/
@@ -10866,7 +10866,7 @@ static uint32_t aasm32x_execute(aasm32_context *aasmContext, const C_CHAR *stmt,
     return len;
 }
 
-uint32_t aasm32x(const C_CHAR *stmt, uint8_t *rcode, C_INT flag32)
+type_unsigned_32 aasm32x(const C_CHAR *stmt, type_unsigned_8 *rcode, C_INT flag32)
 {
     aasm32_context local_context;
 

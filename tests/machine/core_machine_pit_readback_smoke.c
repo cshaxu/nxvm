@@ -3,8 +3,8 @@
 #include "core/machine/pit.h"
 #include "core/machine/port.h"
 
-static C_VOID core_machine_pit_write_counter(t_port *port, uint16_t control,
-    uint16_t count)
+static C_VOID core_machine_pit_write_counter(t_port *port, type_unsigned_16 control,
+    type_unsigned_16 count)
 {
     core_machine_port_write(port, 0x0043u, control);
     core_machine_port_write(port, 0x0040u + ((control >> 6) & 0x03u),
@@ -13,17 +13,17 @@ static C_VOID core_machine_pit_write_counter(t_port *port, uint16_t control,
         count >> 8);
 }
 
-static uint8_t core_machine_pit_read_byte(t_port *port, uint16_t port_id)
+static type_unsigned_8 core_machine_pit_read_byte(t_port *port, type_unsigned_16 port_id)
 {
-    return (uint8_t)core_machine_port_read(port, port_id);
+    return (type_unsigned_8)core_machine_port_read(port, port_id);
 }
 
 C_INT main(C_VOID)
 {
     t_pit pit;
     t_port port;
-    uint8_t status_before;
-    uint8_t status_after;
+    type_unsigned_8 status_before;
+    type_unsigned_8 status_after;
     C_INT failed = 0;
 
     core_machine_port_initialize(&port);

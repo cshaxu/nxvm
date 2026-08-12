@@ -27,7 +27,7 @@ struct w32cdisp_context {
     CONSOLE_CURSOR_INFO default_cursor;
     UINT default_code_page;
     CONSOLE_SCREEN_BUFFER_INFO default_buffer;
-    uint64_t displayed_generation;
+    type_unsigned_64 displayed_generation;
 };
 
 w32cdisp_context *w32cdisp_context_create(C_VOID) {
@@ -40,7 +40,7 @@ C_VOID w32cdisp_context_destroy(w32cdisp_context *context) {
     STD_FREE(context);
 }
 
-uint64_t w32cdisp_context_generation(const w32cdisp_context *context) {
+type_unsigned_64 w32cdisp_context_generation(const w32cdisp_context *context) {
     return context == STD_NULL ? 0u : context->displayed_generation;
 }
 

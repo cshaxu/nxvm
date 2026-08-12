@@ -9,7 +9,7 @@ C_INT main(C_VOID)
     core_machine_keyboard_queue queue;
     core_machine_text_snapshot source;
     core_machine_text_snapshot copy;
-    uint16_t key;
+    type_unsigned_16 key;
     C_UINT index;
 
     core_machine_keyboard_queue_initialize(&queue);
@@ -19,7 +19,7 @@ C_INT main(C_VOID)
         core_machine_keyboard_queue_pop(&queue, &key) != TYPE_STATUS_OK || key != 0x30u ||
         core_machine_keyboard_queue_pop(&queue, &key) != TYPE_STATUS_UNSUPPORTED) return 1;
     for (index = 0u; index < CORE_MACHINE_KEYBOARD_QUEUE_CAPACITY; ++index) {
-        if (core_machine_keyboard_queue_push(&queue, (uint16_t)index) != TYPE_STATUS_OK) return 1;
+        if (core_machine_keyboard_queue_push(&queue, (type_unsigned_16)index) != TYPE_STATUS_OK) return 1;
     }
     if (core_machine_keyboard_queue_push(&queue, 1u) != TYPE_STATUS_NO_MEMORY) return 1;
     core_machine_keyboard_queue_initialize(&queue);

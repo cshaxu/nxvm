@@ -28,7 +28,7 @@ static const core_machine_execution_provider pe_provider = {
     pe_reset, STD_NULL, STD_NULL
 };
 
-static C_INT pe_write(privilege_entry_machine *state, uint32_t address,
+static C_INT pe_write(privilege_entry_machine *state, type_unsigned_32 address,
     const C_VOID *data, STD_SIZE_T bytes)
 {
     return state != STD_NULL && state->machine != STD_NULL &&
@@ -36,7 +36,7 @@ static C_INT pe_write(privilege_entry_machine *state, uint32_t address,
             TYPE_STATUS_OK;
 }
 
-static C_INT pe_read(privilege_entry_machine *state, uint32_t address,
+static C_INT pe_read(privilege_entry_machine *state, type_unsigned_32 address,
     C_VOID *data, STD_SIZE_T bytes)
 {
     return state != STD_NULL && state->machine != STD_NULL &&
@@ -44,28 +44,28 @@ static C_INT pe_read(privilege_entry_machine *state, uint32_t address,
             address, (type_virtual_address)data, bytes) == TYPE_STATUS_OK;
 }
 
-static C_INT pe_prepare(privilege_entry_machine *state, uint8_t gate_access,
-    uint8_t stack_access, C_INT stack_big)
+static C_INT pe_prepare(privilege_entry_machine *state, type_unsigned_8 gate_access,
+    type_unsigned_8 stack_access, C_INT stack_big)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
-    uint8_t gdt[] = {
+    type_unsigned_8 gdt[] = {
         0,0,0,0,0,0,0,0,
         0xffu,0xffu,0,0x20u,0,0x9au,0x40u,0,
-        0xffu,0xffu,0,0,0,0x92u,(uint8_t)(stack_big ? 0xcfu : 0x8fu),0,
+        0xffu,0xffu,0,0,0,0x92u,(type_unsigned_8)(stack_big ? 0xcfu : 0x8fu),0,
         0xffu,0xffu,0,0x30u,0,0xfau,0x40u,0,
         0xffu,0xffu,0,0,0,0xf2u,0xcfu,0,
         0x67u,0,0,0x06u,0,0x8bu,0,0
     };
-    uint8_t idt[PE_VECTOR * 8u + 8u] = {0};
-    uint8_t tss[10] = {0};
-    static const uint8_t program[] = {0xcdu,PE_VECTOR};
-    static const uint8_t handler[] = {0xf4u};
-    uint32_t esp0 = 0x00009000u;
-    uint16_t ss0 = 0x0010u;
+    type_unsigned_8 idt[PE_VECTOR * 8u + 8u] = {0};
+    type_unsigned_8 tss[10] = {0};
+    static const type_unsigned_8 program[] = {0xcdu,PE_VECTOR};
+    static const type_unsigned_8 handler[] = {0xf4u};
+    type_unsigned_32 esp0 = 0x00009000u;
+    type_unsigned_16 ss0 = 0x0010u;
     t_cpu *cpu;
 
     if (state == STD_NULL) return 0;
@@ -151,21 +151,21 @@ static C_INT pe_run(privilege_entry_machine *state, C_INT expect_fault,
 }
 
 static C_INT pe_fault_is(const core_machine_cpu_diagnostic *diagnostic,
-    uint32_t mask, uint32_t code)
+    type_unsigned_32 mask, type_unsigned_32 code)
 {
     return diagnostic->first_fault.valid && TYPE_GET_BIT(
         diagnostic->first_fault.exception_mask, mask) &&
         diagnostic->first_fault.exception_code == code;
 }
 
-static C_INT pe_test_success(uint8_t gate_access, C_INT expect_if)
+static C_INT pe_test_success(type_unsigned_8 gate_access, C_INT expect_if)
 {
     privilege_entry_machine state;
     core_machine_cpu_diagnostic diagnostic;
     t_cpu after;
-    uint32_t frame[5] = {0u,0u,0u,0u,0u};
-    uint8_t cs_access = 0u;
-    uint8_t ss_access = 0u;
+    type_unsigned_32 frame[5] = {0u,0u,0u,0u,0u};
+    type_unsigned_8 cs_access = 0u;
+    type_unsigned_8 ss_access = 0u;
     C_INT failed = !pe_prepare(&state, gate_access, 0x92u, 1);
 
     if (!failed) {
@@ -193,7 +193,7 @@ static C_INT pe_test_16bit_target_stack(C_VOID)
     privilege_entry_machine state;
     core_machine_cpu_diagnostic diagnostic;
     t_cpu after;
-    uint32_t frame[5] = {0u,0u,0u,0u,0u};
+    type_unsigned_32 frame[5] = {0u,0u,0u,0u,0u};
     C_INT failed = !pe_prepare(&state, 0xeeu, 0x92u, 0);
 
     if (!failed) {
@@ -215,7 +215,7 @@ static C_INT pe_test_external_bypasses_software_dpl(C_VOID)
     core_machine_cpu_diagnostic diagnostic;
     core_machine_pic_irq_source source;
     t_cpu after;
-    static const uint8_t program[] = {0x90u};
+    static const type_unsigned_8 program[] = {0x90u};
     C_INT failed = !pe_prepare(&state, 0x8eu, 0x92u, 1);
 
     if (!failed) {
@@ -244,8 +244,8 @@ static C_INT pe_test_software_dpl_atomic(C_VOID)
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
     t_cpu after;
-    uint8_t cs_before = 0u, cs_after = 0u;
-    uint8_t ss_before = 0u, ss_after = 0u;
+    type_unsigned_8 cs_before = 0u, cs_after = 0u;
+    type_unsigned_8 ss_before = 0u, ss_after = 0u;
     C_INT failed = !pe_prepare(&state, 0x8eu, 0x92u, 1);
 
     if (!failed) {
@@ -272,8 +272,8 @@ static C_INT pe_test_stack_failure_atomic(C_VOID)
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
     t_cpu after;
-    uint8_t cs_before = 0u, cs_after = 0u;
-    uint8_t ss_before = 0u, ss_after = 0u;
+    type_unsigned_8 cs_before = 0u, cs_after = 0u;
+    type_unsigned_8 ss_before = 0u, ss_after = 0u;
     C_INT failed = !pe_prepare(&state, 0xeeu, 0x12u, 1);
 
     if (!failed) {
@@ -300,9 +300,9 @@ static C_INT pe_test_code_failure_atomic(C_VOID)
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
     t_cpu after;
-    uint8_t code_access = 0x1au;
-    uint8_t cs_before = 0u, cs_after = 0u;
-    uint8_t ss_before = 0u, ss_after = 0u;
+    type_unsigned_8 code_access = 0x1au;
+    type_unsigned_8 cs_before = 0u, cs_after = 0u;
+    type_unsigned_8 ss_before = 0u, ss_after = 0u;
     C_INT failed = !pe_prepare(&state, 0xeeu, 0x92u, 1);
 
     if (!failed) {

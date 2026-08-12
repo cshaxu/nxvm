@@ -11,7 +11,7 @@ static C_VOID core_machine_cpu_diagnostic_copy_point(
     point->cs_base = cpu->data.cs.base;
     point->eip = cpu->data.eip;
     point->linear_pc = instructions->data.linear;
-    point->byte_count = (uint8_t)instructions->data.oplen;
+    point->byte_count = (type_unsigned_8)instructions->data.oplen;
     STD_MEMCPY(point->bytes, instructions->data.opcodes, sizeof(point->bytes));
 }
 
@@ -125,7 +125,7 @@ C_VOID core_machine_cpu_diagnostic_reset(core_machine *machine)
 
 
 
-static uint32_t core_machine_linear_pc(const core_machine *machine)
+static type_unsigned_32 core_machine_linear_pc(const core_machine *machine)
 {
     return machine->executor_cpu.data.cs.base + machine->executor_cpu.data.eip;
 }
@@ -137,14 +137,14 @@ static core_machine_cpu_profile core_machine_resolve_cpu_profile(
         CORE_MACHINE_CPU_PROFILE_80386 : profile;
 }
 
-static uint32_t core_machine_resolve_ticks_per_instruction(uint32_t ticks)
+static type_unsigned_32 core_machine_resolve_ticks_per_instruction(type_unsigned_32 ticks)
 {
     return ticks == 0u ? 1u : ticks;
 }
 
 static C_VOID core_machine_resolve_instruction_timing(
     core_machine_instruction_timing *out_timing,
-    const core_machine_instruction_timing *timing, uint32_t legacy_base)
+    const core_machine_instruction_timing *timing, type_unsigned_32 legacy_base)
 {
     *out_timing = *timing;
     if (out_timing->base_ticks == 0u) {
@@ -153,14 +153,14 @@ static C_VOID core_machine_resolve_instruction_timing(
     }
 }
 
-static C_INT core_machine_add_ticks(uint64_t *value, uint64_t delta)
+static C_INT core_machine_add_ticks(type_unsigned_64 *value, type_unsigned_64 delta)
 {
     if (value == STD_NULL || UINT64_MAX - *value < delta) return 0;
     *value += delta;
     return 1;
 }
 
-static C_INT core_machine_instruction_is_prefix(uint8_t opcode)
+static C_INT core_machine_instruction_is_prefix(type_unsigned_8 opcode)
 {
     switch (opcode) {
     case 0xf0u: case 0xf2u: case 0xf3u: case 0x2eu: case 0x36u:
@@ -172,9 +172,9 @@ static C_INT core_machine_instruction_is_prefix(uint8_t opcode)
     }
 }
 
-static uint32_t core_machine_instruction_prefix_count(const t_cpuins_data *data)
+static type_unsigned_32 core_machine_instruction_prefix_count(const t_cpuins_data *data)
 {
-    uint32_t count = 0u;
+    type_unsigned_32 count = 0u;
 
     while (count < sizeof(data->opcodes) &&
         core_machine_instruction_is_prefix(data->opcodes[count])) {
@@ -183,25 +183,25 @@ static uint32_t core_machine_instruction_prefix_count(const t_cpuins_data *data)
     return count;
 }
 
-static uint64_t core_machine_instruction_maximum_ticks(
+static type_unsigned_64 core_machine_instruction_maximum_ticks(
     const core_machine_instruction_timing *timing)
 {
-    return (uint64_t)timing->base_ticks +
-        (uint64_t)timing->prefix_surcharge * 15u +
+    return (type_unsigned_64)timing->base_ticks +
+        (type_unsigned_64)timing->prefix_surcharge * 15u +
         timing->taken_branch_surcharge + timing->data_memory_surcharge +
         timing->io_surcharge + timing->rep_iteration_surcharge;
 }
 
 static C_INT core_machine_instruction_cost(core_machine *machine,
-    uint64_t *out_ticks)
+    type_unsigned_64 *out_ticks)
 {
     const t_cpuins_data *data = &machine->executor_cpu_instructions.data;
     const core_machine_instruction_timing *timing =
         &machine->instruction_timing;
-    uint32_t prefixes = core_machine_instruction_prefix_count(data);
-    uint8_t opcode;
-    uint64_t ticks = timing->base_ticks;
-    uint32_t fallthrough;
+    type_unsigned_32 prefixes = core_machine_instruction_prefix_count(data);
+    type_unsigned_8 opcode;
+    type_unsigned_64 ticks = timing->base_ticks;
+    type_unsigned_32 fallthrough;
     type_bool code32;
 
     if (prefixes >= sizeof(data->opcodes)) return 0;
@@ -211,7 +211,7 @@ static C_INT core_machine_instruction_cost(core_machine *machine,
             return 0;
         }
     } else if (!core_machine_add_ticks(&ticks,
-            (uint64_t)prefixes * timing->prefix_surcharge)) {
+            (type_unsigned_64)prefixes * timing->prefix_surcharge)) {
         return 0;
     }
     if (opcode >= 0x70u && opcode <= 0x7fu) {
@@ -248,13 +248,13 @@ static C_INT core_machine_clock_plan_is_valid(
 }
 
 static C_VOID core_machine_advance_scheduler(core_machine *machine,
-    uint64_t elapsed_ticks)
+    type_unsigned_64 elapsed_ticks)
 {
-    uint64_t dma_ticks;
-    uint64_t pit_ticks;
-    uint64_t vadp_ticks;
-    uint64_t kbc_ticks;
-    uint64_t provider_ticks;
+    type_unsigned_64 dma_ticks;
+    type_unsigned_64 pit_ticks;
+    type_unsigned_64 vadp_ticks;
+    type_unsigned_64 kbc_ticks;
+    type_unsigned_64 provider_ticks;
 
     dma_ticks = core_machine_clock_domain_advance(&machine->dma_clock,
         elapsed_ticks);
@@ -366,8 +366,8 @@ type_status core_machine_bind_firmware_provider(core_machine *machine,
 }
 
 type_status core_machine_firmware_register_immutable_rom(
-    core_machine_firmware_context *firmware, uint32_t physical_start,
-    const uint8_t *image, STD_SIZE_T bytes)
+    core_machine_firmware_context *firmware, type_unsigned_32 physical_start,
+    const type_unsigned_8 *image, STD_SIZE_T bytes)
 {
     if (!core_machine_firmware_context_is_active(firmware, 1)) {
         return TYPE_STATUS_INVALID_STATE;
@@ -377,7 +377,7 @@ type_status core_machine_firmware_register_immutable_rom(
 }
 
 type_status core_machine_firmware_memory_read(
-    core_machine_firmware_context *firmware, uint32_t physical,
+    core_machine_firmware_context *firmware, type_unsigned_32 physical,
     C_VOID *out_data, STD_SIZE_T size)
 {
     if (!core_machine_firmware_context_is_active(firmware, 0) ||
@@ -387,7 +387,7 @@ type_status core_machine_firmware_memory_read(
 }
 
 type_status core_machine_firmware_memory_write(
-    core_machine_firmware_context *firmware, uint32_t physical,
+    core_machine_firmware_context *firmware, type_unsigned_32 physical,
     const C_VOID *data, STD_SIZE_T size)
 {
     if (!core_machine_firmware_context_is_active(firmware, 0) ||
@@ -397,7 +397,7 @@ type_status core_machine_firmware_memory_write(
 }
 
 type_status core_machine_firmware_port_read(
-    core_machine_firmware_context *firmware, uint16_t port, uint32_t *out_value)
+    core_machine_firmware_context *firmware, type_unsigned_16 port, type_unsigned_32 *out_value)
 {
     if (!core_machine_firmware_context_is_active(firmware, 0) ||
         out_value == STD_NULL) return TYPE_STATUS_INVALID_STATE;
@@ -412,13 +412,13 @@ type_status core_machine_firmware_port_read(
 }
 
 type_status core_machine_firmware_port_write(
-    core_machine_firmware_context *firmware, uint16_t port, uint32_t value)
+    core_machine_firmware_context *firmware, type_unsigned_16 port, type_unsigned_32 value)
 {
     if (!core_machine_firmware_context_is_active(firmware, 0)) {
         return TYPE_STATUS_INVALID_STATE;
     }
     {
-        uint32_t prior_value = firmware->machine->executor_port.data.ioDWord;
+        type_unsigned_32 prior_value = firmware->machine->executor_port.data.ioDWord;
         type_status status;
 
         firmware->machine->executor_port.data.ioDWord = value;
@@ -506,12 +506,12 @@ static C_INT core_machine_rtc_cmos_config_is_valid(
     STD_SIZE_T index;
 
     if (config == STD_NULL || config->data_port !=
-        (uint16_t)(config->index_port + 1u) || config->nmi_mask_bit == 0u ||
+        (type_unsigned_16)(config->index_port + 1u) || config->nmi_mask_bit == 0u ||
         config->default_count > CORE_MACHINE_RTC_DEFAULT_COUNT) {
         return TYPE_FALSE;
     }
     for (index = 0u; index < config->default_count; ++index) {
-        uint8_t register_index = config->defaults[index].index;
+        type_unsigned_8 register_index = config->defaults[index].index;
 
         if (register_index >= CORE_MACHINE_RTC_REGISTER_COUNT ||
             register_index == CORE_MACHINE_RTC_REG_A ||
@@ -525,7 +525,7 @@ static C_INT core_machine_rtc_cmos_config_is_valid(
 }
 
 static type_status core_machine_rtc_cmos_port_read(C_VOID *owner,
-    uint16_t port, uint32_t *out_value)
+    type_unsigned_16 port, type_unsigned_32 *out_value)
 {
     core_machine *machine = (core_machine *)owner;
 
@@ -538,7 +538,7 @@ static type_status core_machine_rtc_cmos_port_read(C_VOID *owner,
 }
 
 static type_status core_machine_rtc_cmos_port_write(C_VOID *owner,
-    uint16_t port, uint32_t value)
+    type_unsigned_16 port, type_unsigned_32 value)
 {
     core_machine *machine = (core_machine *)owner;
 
@@ -547,11 +547,11 @@ static type_status core_machine_rtc_cmos_port_write(C_VOID *owner,
         (C_VOID)core_machine_set_nmi_mask(machine,
             (value & machine->rtc_cmos_config.nmi_mask_bit) != 0u ?
             TYPE_TRUE : TYPE_FALSE);
-        core_machine_rtc_select_register(&machine->shared_rtc, (uint8_t)value);
+        core_machine_rtc_select_register(&machine->shared_rtc, (type_unsigned_8)value);
         return TYPE_STATUS_OK;
     }
     if (port == machine->rtc_cmos_config.data_port) {
-        core_machine_rtc_write_selected(&machine->shared_rtc, (uint8_t)value);
+        core_machine_rtc_write_selected(&machine->shared_rtc, (type_unsigned_8)value);
         return TYPE_STATUS_OK;
     }
     return TYPE_STATUS_INVALID_ARGUMENT;
@@ -691,7 +691,7 @@ static C_INT core_machine_hdc_topology_is_valid(
     const core_machine_hdc_topology *topology)
 {
     const core_machine_hdc_config *config;
-    const uint16_t ports[] = {
+    const type_unsigned_16 ports[] = {
         topology == STD_NULL ? 0u : topology->config.data_port,
         topology == STD_NULL ? 0u : topology->config.error_features_port,
         topology == STD_NULL ? 0u : topology->config.sector_count_port,
@@ -721,7 +721,7 @@ static C_INT core_machine_hdc_topology_is_valid(
 }
 
 typedef struct core_machine_port_direction_requirement {
-    uint16_t port;
+    type_unsigned_16 port;
     type_bool read;
     type_bool write;
 } core_machine_port_direction_requirement;
@@ -951,7 +951,7 @@ type_status core_machine_get_memory_bytes(
 }
 
 type_status core_machine_get_elapsed_ticks(
-    const core_machine *machine, uint64_t *out_elapsed_ticks)
+    const core_machine *machine, type_unsigned_64 *out_elapsed_ticks)
 {
     if (machine == STD_NULL || out_elapsed_ticks == STD_NULL ||
         machine->lifecycle == CORE_MACHINE_INITIALIZED ||
@@ -1273,7 +1273,7 @@ type_status core_machine_run(
         result->reason = CORE_MACHINE_STOP_REQUESTED;
         result->linear_pc = core_machine_linear_pc(machine);
         core_machine_trace_record(machine, CORE_MACHINE_TRACE_STOP, 0u, 0u,
-                               (uint32_t)result->reason);
+                               (type_unsigned_32)result->reason);
         return TYPE_STATUS_OK;
     }
 
@@ -1298,7 +1298,7 @@ type_status core_machine_run(
                 result->reason = CORE_MACHINE_STOP_REQUESTED;
                 result->linear_pc = core_machine_linear_pc(machine);
                 core_machine_trace_record(machine, CORE_MACHINE_TRACE_STOP, 0u,
-                    0u, (uint32_t)result->reason);
+                    0u, (type_unsigned_32)result->reason);
                 return TYPE_STATUS_OK;
             }
             if (core_machine_cpu_execution_consume_reset_request(
@@ -1334,7 +1334,7 @@ type_status core_machine_run(
                 return TYPE_STATUS_FAULT;
             }
             {
-                uint64_t instruction_ticks;
+                type_unsigned_64 instruction_ticks;
 
                 if (!core_machine_instruction_cost(machine, &instruction_ticks) ||
                     UINT64_MAX - result->ticks < instruction_ticks ||
@@ -1375,8 +1375,8 @@ type_status core_machine_run(
             result->reason = CORE_MACHINE_STOP_REQUESTED;
         }
         core_machine_trace_record(machine, CORE_MACHINE_TRACE_RUN_BOUNDARY,
-            result->linear_pc, (uint32_t)result->executed,
-            (uint32_t)result->reason);
+            result->linear_pc, (type_unsigned_32)result->executed,
+            (type_unsigned_32)result->reason);
         return TYPE_STATUS_OK;
     }
 }
@@ -1412,7 +1412,7 @@ type_status core_machine_get_nmi_mask(const core_machine *machine,
 }
 
 type_status core_machine_keyboard_submit_scan_code(core_machine *machine,
-    uint8_t scan_code)
+    type_unsigned_8 scan_code)
 {
     if (machine == STD_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
         machine->lifecycle == CORE_MACHINE_INITIALIZED ||
@@ -1423,7 +1423,7 @@ type_status core_machine_keyboard_submit_scan_code(core_machine *machine,
 }
 
 type_status core_machine_keyboard_submit_scan_codes(core_machine *machine,
-    const uint8_t *scan_codes, STD_SIZE_T count)
+    const type_unsigned_8 *scan_codes, STD_SIZE_T count)
 {
     if (machine == STD_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
         machine->lifecycle == CORE_MACHINE_INITIALIZED ||
@@ -1435,7 +1435,7 @@ type_status core_machine_keyboard_submit_scan_codes(core_machine *machine,
 }
 
 type_status core_machine_mouse_submit_relative(core_machine *machine,
-    int16_t delta_x, int16_t delta_y, uint8_t buttons)
+    type_signed_16 delta_x, type_signed_16 delta_y, type_unsigned_8 buttons)
 {
     if (machine == STD_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
         (machine->lifecycle != CORE_MACHINE_RUNNING &&
@@ -1449,7 +1449,7 @@ type_status core_machine_mouse_submit_relative(core_machine *machine,
 
 type_status core_machine_report_fault(
     core_machine *machine,
-    uint32_t detail)
+    type_unsigned_32 detail)
 {
     if (machine == STD_NULL || !core_machine_mutable_operation_is_allowed(machine)) {
         return TYPE_STATUS_INVALID_ARGUMENT;

@@ -29,7 +29,7 @@ C_INT main(C_VOID)
     core_machine_run_result result;
     core_machine *machine = STD_NULL;
     scheduler_provider_probe provider_probe = { 0u };
-    const uint8_t nop = 0x90u;
+    const type_unsigned_8 nop = 0x90u;
     C_INT failed = 0;
 
     config.ticks_per_instruction = 2u;

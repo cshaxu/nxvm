@@ -9,7 +9,7 @@ static C_VOID core_machine_media_set_result(core_machine_media_result *out_resul
 static const core_machine_media_binding *core_machine_media_find(
     const core_machine_media_registry *registry, core_machine_media_id id)
 {
-    uint32_t index;
+    type_unsigned_32 index;
 
     if (registry == STD_NULL || id == CORE_MACHINE_MEDIA_ID_INVALID) return STD_NULL;
     for (index = 0u; index < registry->binding_count; ++index) {
@@ -36,12 +36,12 @@ static type_status core_machine_media_get_binding(
 
 static type_status core_machine_media_get_sector_range(
     const core_machine_media_registry *registry, core_machine_media_id id,
-    uint64_t logical_sector, uint32_t sector_count, uint64_t *out_offset,
-    uint32_t *out_byte_count, core_machine_media_result *out_result)
+    type_unsigned_64 logical_sector, type_unsigned_32 sector_count, type_unsigned_64 *out_offset,
+    type_unsigned_32 *out_byte_count, core_machine_media_result *out_result)
 {
     core_machine_media_info info;
     type_status status;
-    uint64_t byte_count;
+    type_unsigned_64 byte_count;
 
     if (out_offset == STD_NULL || out_byte_count == STD_NULL || out_result == STD_NULL ||
         sector_count == 0u)
@@ -56,14 +56,14 @@ static type_status core_machine_media_get_sector_range(
         core_machine_media_set_result(out_result, CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE);
         return TYPE_STATUS_OK;
     }
-    byte_count = (uint64_t)sector_count * info.geometry.bytes_per_sector;
+    byte_count = (type_unsigned_64)sector_count * info.geometry.bytes_per_sector;
     if (byte_count > UINT32_MAX || logical_sector > UINT64_MAX /
             info.geometry.bytes_per_sector) {
         core_machine_media_set_result(out_result, CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE);
         return TYPE_STATUS_OK;
     }
     *out_offset = logical_sector * info.geometry.bytes_per_sector;
-    *out_byte_count = (uint32_t)byte_count;
+    *out_byte_count = (type_unsigned_32)byte_count;
     return TYPE_STATUS_OK;
 }
 
@@ -123,7 +123,7 @@ type_status core_machine_media_query(const core_machine_media_registry *registry
 }
 
 type_status core_machine_media_read_bytes(const core_machine_media_registry *registry,
-    core_machine_media_id id, uint64_t offset, C_VOID *buffer, uint32_t byte_count,
+    core_machine_media_id id, type_unsigned_64 offset, C_VOID *buffer, type_unsigned_32 byte_count,
     core_machine_media_result *out_result)
 {
     const core_machine_media_binding *binding;
@@ -140,8 +140,8 @@ type_status core_machine_media_read_bytes(const core_machine_media_registry *reg
 }
 
 type_status core_machine_media_write_bytes(const core_machine_media_registry *registry,
-    core_machine_media_id id, uint64_t offset, const C_VOID *buffer,
-    uint32_t byte_count, core_machine_media_result *out_result)
+    core_machine_media_id id, type_unsigned_64 offset, const C_VOID *buffer,
+    type_unsigned_32 byte_count, core_machine_media_result *out_result)
 {
     const core_machine_media_binding *binding;
     type_status status;
@@ -157,11 +157,11 @@ type_status core_machine_media_write_bytes(const core_machine_media_registry *re
 }
 
 type_status core_machine_media_read_sectors(const core_machine_media_registry *registry,
-    core_machine_media_id id, uint64_t logical_sector, uint32_t sector_count,
+    core_machine_media_id id, type_unsigned_64 logical_sector, type_unsigned_32 sector_count,
     C_VOID *buffer, core_machine_media_result *out_result)
 {
-    uint64_t offset;
-    uint32_t byte_count;
+    type_unsigned_64 offset;
+    type_unsigned_32 byte_count;
     type_status status = core_machine_media_get_sector_range(registry, id,
         logical_sector, sector_count, &offset, &byte_count, out_result);
 
@@ -172,11 +172,11 @@ type_status core_machine_media_read_sectors(const core_machine_media_registry *r
 }
 
 type_status core_machine_media_write_sectors(const core_machine_media_registry *registry,
-    core_machine_media_id id, uint64_t logical_sector, uint32_t sector_count,
+    core_machine_media_id id, type_unsigned_64 logical_sector, type_unsigned_32 sector_count,
     const C_VOID *buffer, core_machine_media_result *out_result)
 {
-    uint64_t offset;
-    uint32_t byte_count;
+    type_unsigned_64 offset;
+    type_unsigned_32 byte_count;
     type_status status = core_machine_media_get_sector_range(registry, id,
         logical_sector, sector_count, &offset, &byte_count, out_result);
 
@@ -187,14 +187,14 @@ type_status core_machine_media_write_sectors(const core_machine_media_registry *
 }
 
 type_status core_machine_media_format_sectors(const core_machine_media_registry *registry,
-    core_machine_media_id id, uint64_t logical_sector, uint32_t sector_count,
-    uint8_t fill, core_machine_media_result *out_result)
+    core_machine_media_id id, type_unsigned_64 logical_sector, type_unsigned_32 sector_count,
+    type_unsigned_8 fill, core_machine_media_result *out_result)
 {
     const core_machine_media_binding *binding;
     core_machine_media_info info;
     type_status status;
-    uint64_t offset;
-    uint32_t byte_count;
+    type_unsigned_64 offset;
+    type_unsigned_32 byte_count;
 
     status = core_machine_media_get_sector_range(registry, id, logical_sector,
         sector_count, &offset, &byte_count, out_result);

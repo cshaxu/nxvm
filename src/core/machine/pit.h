@@ -37,9 +37,9 @@ typedef struct {
     type_bool flagActive[3]; /* a loaded waveform is currently counting */
     type_bool flagPulseLow[3]; /* one elapsed-tick low strobe is pending */
 
-    uint32_t reload[3]; /* effective binary/BCD reload; zero is never stored */
-    uint32_t remaining[3]; /* effective count exposed through count[] */
-    uint32_t phase[3]; /* remaining high/low phase for mode 3 */
+    type_unsigned_32 reload[3]; /* effective binary/BCD reload; zero is never stored */
+    type_unsigned_32 remaining[3]; /* effective count exposed through count[] */
+    type_unsigned_32 phase[3]; /* remaining high/low phase for mode 3 */
 
     t_pit_data_status_rw flagRead[3];  /* flag of low byte read */
     t_pit_data_status_rw flagWrite[3]; /* flag of low byte write */
@@ -90,7 +90,7 @@ typedef struct {
 
 C_VOID core_machine_pit_initialize(t_pit *pit, t_port *port);
 C_VOID core_machine_pit_reset(t_pit *pit);
-C_VOID core_machine_pit_advance(t_pit *pit, uint64_t elapsed_ticks);
+C_VOID core_machine_pit_advance(t_pit *pit, type_unsigned_64 elapsed_ticks);
 C_VOID core_machine_pit_finalize(t_pit *pit);
 C_VOID core_machine_pit_set_output(t_pit *pit, type_unsigned_8 id,
     core_machine_pit_output_provider provider, C_VOID *owner);

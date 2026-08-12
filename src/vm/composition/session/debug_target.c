@@ -101,7 +101,7 @@ static type_status vm_debug_map_watch(core_product_debug_watch_kind source,
 }
 
 static C_INT vm_debug_read_register(C_VOID *context, core_product_debug_register reg,
-                                  uint32_t *value)
+                                  type_unsigned_32 *value)
 {
     vm_session *machine =
         (vm_session *)context;
@@ -114,7 +114,7 @@ static C_INT vm_debug_read_register(C_VOID *context, core_product_debug_register
 }
 
 static C_INT vm_debug_write_register(C_VOID *context, core_product_debug_register reg,
-                                   uint32_t value)
+                                   type_unsigned_32 value)
 {
     vm_session *machine =
         (vm_session *)context;
@@ -133,37 +133,37 @@ static C_INT vm_debug_code_default_size(C_VOID *context)
     return machine == STD_NULL || core_machine_debug_get_code_default_size(
         machine->core_machine, &value) != TYPE_STATUS_OK ? 0 : value;
 }
-static uint32_t vm_debug_code_base(C_VOID *context)
+static type_unsigned_32 vm_debug_code_base(C_VOID *context)
 {
     vm_session *machine = (vm_session *)context;
-    uint32_t value = 0u;
+    type_unsigned_32 value = 0u;
     return machine == STD_NULL || core_machine_debug_get_code_base(
         machine->core_machine, &value) != TYPE_STATUS_OK ? 0u : value;
 }
 
-static C_INT vm_debug_read_linear(C_VOID *context, uint32_t address, C_VOID *out, uint8_t size)
+static C_INT vm_debug_read_linear(C_VOID *context, type_unsigned_32 address, C_VOID *out, type_unsigned_8 size)
 {
     vm_session *machine = (vm_session *)context;
     return machine == STD_NULL || core_machine_debug_read_linear(
         machine->core_machine, address, out, size) != TYPE_STATUS_OK;
 }
-static C_INT vm_debug_write_linear(C_VOID *context, uint32_t address, const C_VOID *in, uint8_t size)
+static C_INT vm_debug_write_linear(C_VOID *context, type_unsigned_32 address, const C_VOID *in, type_unsigned_8 size)
 {
     vm_session *machine = (vm_session *)context;
     return machine == STD_NULL || core_machine_debug_write_linear(
         machine->core_machine, address, in, size) != TYPE_STATUS_OK;
 }
-static C_INT vm_debug_read_real(C_VOID *context, uint16_t seg, uint16_t off, C_VOID *out, STD_SIZE_T size)
+static C_INT vm_debug_read_real(C_VOID *context, type_unsigned_16 seg, type_unsigned_16 off, C_VOID *out, STD_SIZE_T size)
 { vm_session *machine = (vm_session *)context; return machine == STD_NULL || core_machine_debug_read_real(machine->core_machine, seg, off, out, size) != TYPE_STATUS_OK; }
-static C_INT vm_debug_write_real(C_VOID *context, uint16_t seg, uint16_t off, const C_VOID *in, STD_SIZE_T size)
+static C_INT vm_debug_write_real(C_VOID *context, type_unsigned_16 seg, type_unsigned_16 off, const C_VOID *in, STD_SIZE_T size)
 { vm_session *machine = (vm_session *)context; return machine == STD_NULL || core_machine_debug_write_real(machine->core_machine, seg, off, in, size) != TYPE_STATUS_OK; }
-static uint32_t vm_debug_read_port(C_VOID *context, uint16_t port)
-{ vm_session *machine = (vm_session *)context; uint32_t value = 0u; return machine == STD_NULL || core_machine_debug_read_port(machine->core_machine, port, &value) != TYPE_STATUS_OK ? 0u : value; }
-static C_VOID vm_debug_write_port(C_VOID *context, uint16_t port, uint32_t value)
+static type_unsigned_32 vm_debug_read_port(C_VOID *context, type_unsigned_16 port)
+{ vm_session *machine = (vm_session *)context; type_unsigned_32 value = 0u; return machine == STD_NULL || core_machine_debug_read_port(machine->core_machine, port, &value) != TYPE_STATUS_OK ? 0u : value; }
+static C_VOID vm_debug_write_port(C_VOID *context, type_unsigned_16 port, type_unsigned_32 value)
 { vm_session *machine = (vm_session *)context; if (machine != STD_NULL) (C_VOID)core_machine_debug_write_port(machine->core_machine, port, value); }
-static C_VOID vm_debug_set_break_real(C_VOID *context, uint16_t seg, uint16_t off)
+static C_VOID vm_debug_set_break_real(C_VOID *context, type_unsigned_16 seg, type_unsigned_16 off)
 { vm_session *machine = (vm_session *)context; if (machine != STD_NULL) vm_machine_debug_set_breakpoint_real(&machine->debug, seg, off); }
-static C_VOID vm_debug_set_break_linear(C_VOID *context, uint32_t address)
+static C_VOID vm_debug_set_break_linear(C_VOID *context, type_unsigned_32 address)
 { vm_session *machine = (vm_session *)context; if (machine != STD_NULL) vm_machine_debug_set_breakpoint_linear(&machine->debug, address); }
 static C_VOID vm_debug_clear_break(C_VOID *context, C_INT linear)
 { vm_session *machine = (vm_session *)context; if (machine == STD_NULL) return; if (linear) vm_machine_debug_clear_breakpoint_linear(&machine->debug); else vm_machine_debug_clear_breakpoint_real(&machine->debug); }
@@ -173,7 +173,7 @@ static C_VOID vm_debug_clear_trace(C_VOID *context)
 { vm_session *machine = (vm_session *)context; if (machine != STD_NULL) vm_machine_debug_clear_trace(&machine->debug); }
 static STD_SIZE_T vm_debug_break_count(C_VOID *context)
 { vm_session *machine = (vm_session *)context; return machine == STD_NULL ? 0u : vm_machine_debug_get_breakpoint_count(&machine->debug); }
-static C_VOID vm_debug_set_watch(C_VOID *context, core_product_debug_watch_kind kind, uint32_t address)
+static C_VOID vm_debug_set_watch(C_VOID *context, core_product_debug_watch_kind kind, type_unsigned_32 address)
 {
     vm_session *machine = (vm_session *)context;
     core_machine_debug_watch_kind mapped;

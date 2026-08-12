@@ -36,6 +36,15 @@ outside this list remain a separately governed migration issue.
 | S3 | Consolidate duplicated test-only fixture mechanics into `tests/support`. | Caller inventory, focused evidence for each migrated family, no `src/` include of support, and no product/API change. | Any helper would carry instruction semantics, mirror mutable machine state, or lacks caller coverage. |
 | S4 | Perform package closure audit. | Recheck 47 command lines, type gate, support ownership, full current-gate, documentation governance, and task history. | Any residual corpus defect, undocumented exception, or behavior change. |
 
+## Owner-Approved Corrective Extension
+
+S5 is a corrective extension admitted after the S4 closure audit identified the
+recorded inherited raw-type migration boundary.  It replaces direct standard
+fixed-width vocabulary across the approved tracked C, header, CMake, and
+PowerShell surface, with only `src/type.h` foundational aliases and a controlled
+negative verifier fixture as lexical exceptions.  It changes no capability or
+runtime behavior and retains the original S1--S4 evidence boundary.
+
 ## Deferred Boundary
 
 Repository-wide raw fixed-width C types, inherited NXVM code, and test sources

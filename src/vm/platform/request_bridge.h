@@ -14,15 +14,15 @@ typedef enum vm_platform_request_kind {
 } vm_platform_request_kind;
 
 typedef struct vm_platform_key_event {
-    uint16_t scan_code;
-    uint16_t virtual_key;
+    type_unsigned_16 scan_code;
+    type_unsigned_16 virtual_key;
     C_INT pressed;
 } vm_platform_key_event;
 
 typedef struct vm_platform_mouse_event {
-    int16_t delta_x;
-    int16_t delta_y;
-    uint8_t buttons;
+    type_signed_16 delta_x;
+    type_signed_16 delta_y;
+    type_unsigned_8 buttons;
 } vm_platform_mouse_event;
 
 typedef struct vm_platform_request {

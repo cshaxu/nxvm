@@ -16,7 +16,7 @@ type_status core_machine_debug_read_cpu(
     core_machine_cpu_state *out_state);
 type_status core_machine_debug_read_memory(
     const core_machine *machine,
-    uint32_t physical,
+    type_unsigned_32 physical,
     C_VOID *out_data,
     STD_SIZE_T size);
 type_status core_machine_debug_step(
@@ -44,41 +44,41 @@ type_status core_machine_debug_continue(
 
 typedef struct core_machine_debug_memory_access {
     C_INT write;
-    uint32_t linear;
-    uint8_t bytes;
-    uint64_t data;
+    type_unsigned_32 linear;
+    type_unsigned_8 bytes;
+    type_unsigned_64 data;
 } core_machine_debug_memory_access;
 
 /* A copied debugger record names only the fields consumed by the retained
  * debugger. It is not a CPU, decoder, or executor layout. */
 typedef struct core_machine_debug_instruction_observation {
-    uint16_t cs;
-    uint16_t ss;
-    uint16_t ds;
-    uint16_t es;
-    uint16_t fs;
-    uint16_t gs;
-    uint32_t cs_base;
-    uint32_t ss_base;
-    uint32_t eip;
-    uint32_t esp;
-    uint32_t eax;
-    uint32_t ecx;
-    uint32_t edx;
-    uint32_t ebx;
-    uint32_t ebp;
-    uint32_t esi;
-    uint32_t edi;
-    uint32_t eflags;
+    type_unsigned_16 cs;
+    type_unsigned_16 ss;
+    type_unsigned_16 ds;
+    type_unsigned_16 es;
+    type_unsigned_16 fs;
+    type_unsigned_16 gs;
+    type_unsigned_32 cs_base;
+    type_unsigned_32 ss_base;
+    type_unsigned_32 eip;
+    type_unsigned_32 esp;
+    type_unsigned_32 eax;
+    type_unsigned_32 ecx;
+    type_unsigned_32 edx;
+    type_unsigned_32 ebx;
+    type_unsigned_32 ebp;
+    type_unsigned_32 esi;
+    type_unsigned_32 edi;
+    type_unsigned_32 eflags;
     C_INT code_default_size;
-    uint16_t instruction_cs;
-    uint32_t instruction_eip;
-    uint32_t instruction_linear;
-    uint8_t instruction_bytes[CORE_MACHINE_DEBUG_INSTRUCTION_BYTES];
-    uint8_t instruction_byte_count;
+    type_unsigned_16 instruction_cs;
+    type_unsigned_32 instruction_eip;
+    type_unsigned_32 instruction_linear;
+    type_unsigned_8 instruction_bytes[CORE_MACHINE_DEBUG_INSTRUCTION_BYTES];
+    type_unsigned_8 instruction_byte_count;
     core_machine_debug_memory_access
         memory_accesses[CORE_MACHINE_DEBUG_MEMORY_ACCESS_CAPACITY];
-    uint8_t memory_access_count;
+    type_unsigned_8 memory_access_count;
 } core_machine_debug_instruction_observation;
 
 typedef enum core_machine_debug_register {
@@ -98,8 +98,8 @@ typedef enum core_machine_debug_register {
 /* A patch names precisely the fields it may alter. Core validates the complete
  * requested set against a candidate CPU and commits it only on success. */
 typedef struct core_machine_debug_register_patch {
-    uint32_t mask;
-    uint32_t values[CORE_MACHINE_DEBUG_REGISTER_COUNT];
+    type_unsigned_32 mask;
+    type_unsigned_32 values[CORE_MACHINE_DEBUG_REGISTER_COUNT];
 } core_machine_debug_register_patch;
 
 typedef enum core_machine_debug_watch_kind {
@@ -113,30 +113,30 @@ type_status core_machine_debug_capture_instruction_observation(
     core_machine_debug_instruction_observation *out_observation);
 type_status core_machine_debug_read_register(
     const core_machine *machine, core_machine_debug_register register_id,
-    uint32_t *out_value);
+    type_unsigned_32 *out_value);
 type_status core_machine_debug_write_register(
     core_machine *machine, core_machine_debug_register register_id,
-    uint32_t value);
+    type_unsigned_32 value);
 type_status core_machine_debug_patch_registers(core_machine *machine,
     const core_machine_debug_register_patch *patch);
 type_status core_machine_debug_get_code_default_size(
     const core_machine *machine, C_INT *out_default_size);
 type_status core_machine_debug_get_code_base(
-    const core_machine *machine, uint32_t *out_base);
+    const core_machine *machine, type_unsigned_32 *out_base);
 type_status core_machine_debug_read_linear(core_machine *machine,
-    uint32_t address, C_VOID *out_data, uint8_t size);
+    type_unsigned_32 address, C_VOID *out_data, type_unsigned_8 size);
 type_status core_machine_debug_write_linear(core_machine *machine,
-    uint32_t address, const C_VOID *data, uint8_t size);
-type_status core_machine_debug_read_real(core_machine *machine, uint16_t segment,
-    uint16_t offset, C_VOID *out_data, STD_SIZE_T size);
-type_status core_machine_debug_write_real(core_machine *machine, uint16_t segment,
-    uint16_t offset, const C_VOID *data, STD_SIZE_T size);
-type_status core_machine_debug_read_port(core_machine *machine, uint16_t port,
-    uint32_t *out_value);
-type_status core_machine_debug_write_port(core_machine *machine, uint16_t port,
-    uint32_t value);
+    type_unsigned_32 address, const C_VOID *data, type_unsigned_8 size);
+type_status core_machine_debug_read_real(core_machine *machine, type_unsigned_16 segment,
+    type_unsigned_16 offset, C_VOID *out_data, STD_SIZE_T size);
+type_status core_machine_debug_write_real(core_machine *machine, type_unsigned_16 segment,
+    type_unsigned_16 offset, const C_VOID *data, STD_SIZE_T size);
+type_status core_machine_debug_read_port(core_machine *machine, type_unsigned_16 port,
+    type_unsigned_32 *out_value);
+type_status core_machine_debug_write_port(core_machine *machine, type_unsigned_16 port,
+    type_unsigned_32 value);
 type_status core_machine_debug_set_watchpoint(core_machine *machine,
-    core_machine_debug_watch_kind kind, uint32_t address);
+    core_machine_debug_watch_kind kind, type_unsigned_32 address);
 type_status core_machine_debug_clear_watchpoint(core_machine *machine,
     core_machine_debug_watch_kind kind);
 type_status core_machine_debug_print_registers(core_machine *machine);

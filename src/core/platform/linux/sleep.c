@@ -5,7 +5,7 @@
 
 #include <unistd.h>
 
-C_VOID core_platform_sleep_milliseconds(uint32_t milliseconds)
+C_VOID core_platform_sleep_milliseconds(type_unsigned_32 milliseconds)
 {
     usleep(milliseconds * 1000u);
 }

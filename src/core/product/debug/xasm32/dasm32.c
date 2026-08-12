@@ -8,7 +8,7 @@
 #define TYPE_TRACE_ERROR flagError
 #define TYPE_TRACE_SET_ERROR (flagError = 1)
 
-typedef uint8_t t_dasm_prefix;
+typedef type_unsigned_8 t_dasm_prefix;
 
 typedef struct dasm32_context dasm32_context;
 
@@ -17,20 +17,20 @@ typedef C_VOID (*dasm32_handler)(dasm32_context *);
 struct dasm32_context
 {
     type_trace trace;
-    uint8_t defsize;
-    uint8_t flagError;
-    uint8_t *drcode;
+    type_unsigned_8 defsize;
+    type_unsigned_8 flagError;
+    type_unsigned_8 *drcode;
     C_CHAR dstmt[0x100];
     C_CHAR dop[0x100], dopr[0x100], drm[0x100], dr[0x100], dimm[0x100];
     C_CHAR dmovsreg[0x100], doverds[0x100], doverss[0x100];
     C_CHAR dimmoff8[0x100], dimmoff16[0x100], dimmsign[0x100];
-    uint8_t flagmem, flaglock;
+    type_unsigned_8 flagmem, flaglock;
     t_dasm_prefix prefix_oprsize, prefix_addrsize;
-    uint8_t cr;
-    uint64_t cimm;
-    uint8_t iop;
+    type_unsigned_8 cr;
+    type_unsigned_64 cimm;
+    type_unsigned_8 iop;
     dasm32_handler dtable[0x100], dtable_0f[0x100];
-    uint8_t initialized;
+    type_unsigned_8 initialized;
 };
 
 #define trace (dasmContext->trace)
@@ -87,20 +87,20 @@ struct dasm32_context
         }                                                                           \
     } while (0)
 
-static C_VOID SPRINTFSI(dasm32_context *dasmContext, C_CHAR *str, uint32_t imm, uint8_t byte)
+static C_VOID SPRINTFSI(dasm32_context *dasmContext, C_CHAR *str, type_unsigned_32 imm, type_unsigned_8 byte)
 {
     C_CHAR sign;
-    uint8_t i8u;
-    uint16_t i16u;
-    uint32_t i32u;
+    type_unsigned_8 i8u;
+    type_unsigned_16 i16u;
+    type_unsigned_32 i32u;
     TYPE_TRACE_CALL_BEGIN("SPRINTFSI");
-    i8u = (uint8_t)(imm);
-    i16u = (uint16_t)(imm);
-    i32u = (uint32_t)(imm);
+    i8u = (type_unsigned_8)(imm);
+    i16u = (type_unsigned_16)(imm);
+    i32u = (type_unsigned_32)(imm);
     switch (byte)
     {
     case 1:
-        if ((uint8_t)(imm & 0x80))
+        if ((type_unsigned_8)(imm & 0x80))
         {
             sign = '-';
             i8u = ((~i8u) + 0x01);
@@ -112,7 +112,7 @@ static C_VOID SPRINTFSI(dasm32_context *dasmContext, C_CHAR *str, uint32_t imm, 
         DASM_FORMAT_ARRAY(str, "%c%02X", sign, i8u);
         break;
     case 2:
-        if ((uint16_t)(imm & 0x8000))
+        if ((type_unsigned_16)(imm & 0x8000))
         {
             sign = '-';
             i16u = ((~i16u) + 0x01);
@@ -124,7 +124,7 @@ static C_VOID SPRINTFSI(dasm32_context *dasmContext, C_CHAR *str, uint32_t imm, 
         DASM_FORMAT_ARRAY(str, "%c%04X", sign, i16u);
         break;
     case 4:
-        if ((uint32_t)(imm & 0x80000000))
+        if ((type_unsigned_32)(imm & 0x80000000))
         {
             sign = '-';
             i32u = ((~i32u) + 0x01);
@@ -143,7 +143,7 @@ static C_VOID SPRINTFSI(dasm32_context *dasmContext, C_CHAR *str, uint32_t imm, 
 }
 
 /* kernel decoding function */
-static uint8_t _kdf_check_prefix(dasm32_context *dasmContext, uint8_t opcode)
+static type_unsigned_8 _kdf_check_prefix(dasm32_context *dasmContext, type_unsigned_8 opcode)
 {
     TYPE_TRACE_CALL_BEGIN("_kdf_check_prefix");
     switch (opcode)
@@ -174,13 +174,13 @@ static uint8_t _kdf_check_prefix(dasm32_context *dasmContext, uint8_t opcode)
     return 0;
 }
 
-static C_VOID _kdf_skip(dasm32_context *dasmContext, uint8_t byte)
+static C_VOID _kdf_skip(dasm32_context *dasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_kdf_skip");
     TYPE_TRACE_CHECK_RETURN(iop += byte);
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _kdf_code(dasm32_context *dasmContext, uint8_t *rdata, uint8_t byte)
+static C_VOID _kdf_code(dasm32_context *dasmContext, type_unsigned_8 *rdata, type_unsigned_8 byte)
 {
     STD_SIZE_T i;
     TYPE_TRACE_CALL_BEGIN("_kdf_code");
@@ -189,15 +189,15 @@ static C_VOID _kdf_code(dasm32_context *dasmContext, uint8_t *rdata, uint8_t byt
     TYPE_TRACE_CHECK_RETURN(_kdf_skip(dasmContext, byte));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _kdf_modrm(dasm32_context *dasmContext, uint8_t regbyte, uint8_t rmbyte)
+static C_VOID _kdf_modrm(dasm32_context *dasmContext, type_unsigned_8 regbyte, type_unsigned_8 rmbyte)
 {
     C_CHAR disp8;
-    uint16_t disp16;
-    uint32_t disp32;
+    type_unsigned_16 disp16;
+    type_unsigned_32 disp32;
     C_CHAR dsibindex[0x100], dptr[0x100];
-    uint8_t modrm, sib;
+    type_unsigned_8 modrm, sib;
     C_CHAR sign;
-    uint8_t disp8u;
+    type_unsigned_8 disp8u;
     TYPE_TRACE_CALL_BEGIN("_kdf_modrm");
     TYPE_TRACE_CHECK_RETURN(_kdf_code(dasmContext, &modrm, 1));
     flagmem = 1;
@@ -247,7 +247,7 @@ static C_VOID _kdf_modrm(dasm32_context *dasmContext, uint8_t regbyte, uint8_t r
                 break;
             case 6:
                 TYPE_TRACE_BLOCK_BEGIN("ModRM_RM(6)");
-                TYPE_TRACE_CHECK_RETURN(_kdf_code(dasmContext, (uint8_t *)(&disp16), 2));
+                TYPE_TRACE_CHECK_RETURN(_kdf_code(dasmContext, (type_unsigned_8 *)(&disp16), 2));
                 DASM_FORMAT_ARRAY(drm, "%s:[%04X]", doverds, disp16);
                 TYPE_TRACE_BLOCK_END;
                 break;
@@ -263,7 +263,7 @@ static C_VOID _kdf_modrm(dasm32_context *dasmContext, uint8_t regbyte, uint8_t r
             break;
         case 1:
             TYPE_TRACE_BLOCK_BEGIN("ModRM_MOD(1)");
-            TYPE_TRACE_CHECK_RETURN(_kdf_code(dasmContext, (uint8_t *)(&disp8), 1));
+            TYPE_TRACE_CHECK_RETURN(_kdf_code(dasmContext, (type_unsigned_8 *)(&disp8), 1));
             sign = (disp8 & 0x80) ? '-' : '+';
             disp8u = (disp8 & 0x80) ? ((~disp8) + 0x01) : disp8;
             switch (_GetModRM_RM(modrm))
@@ -300,7 +300,7 @@ static C_VOID _kdf_modrm(dasm32_context *dasmContext, uint8_t regbyte, uint8_t r
             break;
         case 2:
             TYPE_TRACE_BLOCK_BEGIN("ModRM_MOD(2)");
-            TYPE_TRACE_CHECK_RETURN(_kdf_code(dasmContext, (uint8_t *)(&disp16), 2));
+            TYPE_TRACE_CHECK_RETURN(_kdf_code(dasmContext, (type_unsigned_8 *)(&disp16), 2));
             switch (_GetModRM_RM(modrm))
             {
             case 0:
@@ -346,7 +346,7 @@ static C_VOID _kdf_modrm(dasm32_context *dasmContext, uint8_t regbyte, uint8_t r
         if (_GetModRM_MOD(modrm) != 3 && _GetModRM_RM(modrm) == 4)
         {
             TYPE_TRACE_BLOCK_BEGIN("ModRM_MOD(!3),ModRM_RM(4)");
-            TYPE_TRACE_CHECK_RETURN(_kdf_code(dasmContext, (uint8_t *)(&sib), 1));
+            TYPE_TRACE_CHECK_RETURN(_kdf_code(dasmContext, (type_unsigned_8 *)(&sib), 1));
             switch (_GetSIB_Index(sib))
             {
             case 0:
@@ -416,7 +416,7 @@ static C_VOID _kdf_modrm(dasm32_context *dasmContext, uint8_t regbyte, uint8_t r
                     break;
                 case 5:
                     TYPE_TRACE_BLOCK_BEGIN("SIB_Base(5)");
-                    TYPE_TRACE_CHECK_RETURN(_kdf_code(dasmContext, (uint8_t *)(&disp32), 4));
+                    TYPE_TRACE_CHECK_RETURN(_kdf_code(dasmContext, (type_unsigned_8 *)(&disp32), 4));
                     DASM_FORMAT_ARRAY(drm, "%s:[%08X%s]", doverds, disp32, dsibindex);
                     TYPE_TRACE_BLOCK_END;
                     break;
@@ -434,7 +434,7 @@ static C_VOID _kdf_modrm(dasm32_context *dasmContext, uint8_t regbyte, uint8_t r
                 break;
             case 5:
                 TYPE_TRACE_BLOCK_BEGIN("ModRM_RM(5)");
-                TYPE_TRACE_CHECK_RETURN(_kdf_code(dasmContext, (uint8_t *)(&disp32), 4));
+                TYPE_TRACE_CHECK_RETURN(_kdf_code(dasmContext, (type_unsigned_8 *)(&disp32), 4));
                 DASM_FORMAT_ARRAY(drm, "%s:[%08X]", doverds, disp32);
                 TYPE_TRACE_BLOCK_END;
                 break;
@@ -452,7 +452,7 @@ static C_VOID _kdf_modrm(dasm32_context *dasmContext, uint8_t regbyte, uint8_t r
             break;
         case 1:
             TYPE_TRACE_BLOCK_BEGIN("ModRM_MOD(1)");
-            TYPE_TRACE_CHECK_RETURN(_kdf_code(dasmContext, (uint8_t *)(&disp8), 1));
+            TYPE_TRACE_CHECK_RETURN(_kdf_code(dasmContext, (type_unsigned_8 *)(&disp8), 1));
             sign = (disp8 & 0x80) ? '-' : '+';
             disp8u = (disp8 & 0x80) ? ((~disp8) + 0x01) : disp8;
             switch (_GetModRM_RM(modrm))
@@ -520,7 +520,7 @@ static C_VOID _kdf_modrm(dasm32_context *dasmContext, uint8_t regbyte, uint8_t r
             break;
         case 2:
             TYPE_TRACE_BLOCK_BEGIN("ModRM_MOD(2)");
-            TYPE_TRACE_CHECK_RETURN(_kdf_code(dasmContext, (uint8_t *)(&disp32), 4));
+            TYPE_TRACE_CHECK_RETURN(_kdf_code(dasmContext, (type_unsigned_8 *)(&disp32), 4));
             switch (_GetModRM_RM(modrm))
             {
             case 0:
@@ -818,42 +818,42 @@ static C_VOID _kdf_modrm(dasm32_context *dasmContext, uint8_t regbyte, uint8_t r
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _d_skip(dasm32_context *dasmContext, uint8_t byte)
+static C_VOID _d_skip(dasm32_context *dasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_d_skip");
     TYPE_TRACE_CHECK_RETURN(_kdf_skip(dasmContext, byte));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _d_code(dasm32_context *dasmContext, uint8_t *rdata, uint8_t byte)
+static C_VOID _d_code(dasm32_context *dasmContext, type_unsigned_8 *rdata, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_d_code");
     TYPE_TRACE_CHECK_RETURN(_kdf_code(dasmContext, rdata, byte));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _d_imm(dasm32_context *dasmContext, uint8_t byte)
+static C_VOID _d_imm(dasm32_context *dasmContext, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_d_imm");
     cimm = 0;
-    TYPE_TRACE_CHECK_RETURN(_d_code(dasmContext, (uint8_t *)(&cimm), byte));
+    TYPE_TRACE_CHECK_RETURN(_d_code(dasmContext, (type_unsigned_8 *)(&cimm), byte));
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _d_moffs(dasm32_context *dasmContext, uint8_t byte)
+static C_VOID _d_moffs(dasm32_context *dasmContext, type_unsigned_8 byte)
 {
-    uint32_t offset = 0;
+    type_unsigned_32 offset = 0;
     TYPE_TRACE_CALL_BEGIN("_d_moffs");
     flagmem = 1;
     switch (_GetAddressSize)
     {
     case 2:
         TYPE_TRACE_BLOCK_BEGIN("AddressSize(2)");
-        TYPE_TRACE_CHECK_RETURN(_d_code(dasmContext, (uint8_t *)(&offset), 2));
-        DASM_FORMAT_ARRAY(drm, "%s:[%04X]", doverds, (uint16_t)(offset));
+        TYPE_TRACE_CHECK_RETURN(_d_code(dasmContext, (type_unsigned_8 *)(&offset), 2));
+        DASM_FORMAT_ARRAY(drm, "%s:[%04X]", doverds, (type_unsigned_16)(offset));
         TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         TYPE_TRACE_BLOCK_BEGIN("AddressSize(4)");
-        TYPE_TRACE_CHECK_RETURN(_d_code(dasmContext, (uint8_t *)(&offset), 4));
-        DASM_FORMAT_ARRAY(drm, "%s:[%08X]", doverds, (uint32_t)(offset));
+        TYPE_TRACE_CHECK_RETURN(_d_code(dasmContext, (type_unsigned_8 *)(&offset), 4));
+        DASM_FORMAT_ARRAY(drm, "%s:[%08X]", doverds, (type_unsigned_32)(offset));
         TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -862,7 +862,7 @@ static C_VOID _d_moffs(dasm32_context *dasmContext, uint8_t byte)
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _d_modrm_sreg(dasm32_context *dasmContext, uint8_t rmbyte)
+static C_VOID _d_modrm_sreg(dasm32_context *dasmContext, type_unsigned_8 rmbyte)
 {
     TYPE_TRACE_CALL_BEGIN("_d_modrm_sreg");
     TYPE_TRACE_CHECK_RETURN(_kdf_modrm(dasmContext, 0, rmbyte));
@@ -894,7 +894,7 @@ static C_VOID _d_modrm_sreg(dasm32_context *dasmContext, uint8_t rmbyte)
     }
     TYPE_TRACE_CALL_END;
 }
-static C_VOID _d_modrm(dasm32_context *dasmContext, uint8_t regbyte, uint8_t rmbyte)
+static C_VOID _d_modrm(dasm32_context *dasmContext, type_unsigned_8 regbyte, type_unsigned_8 rmbyte)
 {
     TYPE_TRACE_CALL_BEGIN("_d_modrm");
     TYPE_TRACE_CHECK_RETURN(_kdf_modrm(dasmContext, regbyte, rmbyte));
@@ -957,7 +957,7 @@ static C_VOID ADD_AL_I8(dasm32_context *dasmContext)
     _adv;
     TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
     DASM_FORMAT_ARRAY(dop, "ADD");
-    DASM_FORMAT_ARRAY(dopr, "AL,%02X", (uint8_t)(cimm));
+    DASM_FORMAT_ARRAY(dopr, "AL,%02X", (type_unsigned_8)(cimm));
     TYPE_TRACE_CALL_END;
 }
 static C_VOID ADD_EAX_I32(dasm32_context *dasmContext)
@@ -970,13 +970,13 @@ static C_VOID ADD_EAX_I32(dasm32_context *dasmContext)
     case 2:
         TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
         TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 2));
-        DASM_FORMAT_ARRAY(dopr, "AX,%04X", (uint16_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "AX,%04X", (type_unsigned_16)(cimm));
         TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
         TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 4));
-        DASM_FORMAT_ARRAY(dopr, "EAX,%08X", (uint32_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "EAX,%08X", (type_unsigned_32)(cimm));
         TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -1043,7 +1043,7 @@ static C_VOID OR_AL_I8(dasm32_context *dasmContext)
     _adv;
     TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
     DASM_FORMAT_ARRAY(dop, "OR");
-    DASM_FORMAT_ARRAY(dopr, "AL,%02X", (uint8_t)(cimm));
+    DASM_FORMAT_ARRAY(dopr, "AL,%02X", (type_unsigned_8)(cimm));
     TYPE_TRACE_CALL_END;
 }
 static C_VOID OR_EAX_I32(dasm32_context *dasmContext)
@@ -1056,13 +1056,13 @@ static C_VOID OR_EAX_I32(dasm32_context *dasmContext)
     case 2:
         TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
         TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 2));
-        DASM_FORMAT_ARRAY(dopr, "AX,%04X", (uint16_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "AX,%04X", (type_unsigned_16)(cimm));
         TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
         TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 4));
-        DASM_FORMAT_ARRAY(dopr, "EAX,%08X", (uint32_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "EAX,%08X", (type_unsigned_32)(cimm));
         TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -1090,12 +1090,12 @@ static C_VOID POP_CS(dasm32_context *dasmContext)
 }
 static C_VOID INS_0F(dasm32_context *dasmContext)
 {
-    uint8_t oldiop;
-    uint8_t opcode;
+    type_unsigned_8 oldiop;
+    type_unsigned_8 opcode;
     TYPE_TRACE_CALL_BEGIN("INS_0F");
     _adv;
     oldiop = iop;
-    TYPE_TRACE_CHECK_RETURN(_d_code(dasmContext, (uint8_t *)(&opcode), 1));
+    TYPE_TRACE_CHECK_RETURN(_d_code(dasmContext, (type_unsigned_8 *)(&opcode), 1));
     iop = oldiop;
     TYPE_TRACE_CHECK_RETURN((*(dtable_0f[opcode]))(dasmContext));
     TYPE_TRACE_CALL_END;
@@ -1142,7 +1142,7 @@ static C_VOID ADC_AL_I8(dasm32_context *dasmContext)
     _adv;
     TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
     DASM_FORMAT_ARRAY(dop, "ADC");
-    DASM_FORMAT_ARRAY(dopr, "AL,%02X", (uint8_t)(cimm));
+    DASM_FORMAT_ARRAY(dopr, "AL,%02X", (type_unsigned_8)(cimm));
     TYPE_TRACE_CALL_END;
 }
 static C_VOID ADC_EAX_I32(dasm32_context *dasmContext)
@@ -1155,13 +1155,13 @@ static C_VOID ADC_EAX_I32(dasm32_context *dasmContext)
     case 2:
         TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
         TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 2));
-        DASM_FORMAT_ARRAY(dopr, "AX,%04X", (uint16_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "AX,%04X", (type_unsigned_16)(cimm));
         TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
         TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 4));
-        DASM_FORMAT_ARRAY(dopr, "EAX,%08X", (uint32_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "EAX,%08X", (type_unsigned_32)(cimm));
         TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -1229,7 +1229,7 @@ static C_VOID SBB_AL_I8(dasm32_context *dasmContext)
     _adv;
     TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
     DASM_FORMAT_ARRAY(dop, "SBB");
-    DASM_FORMAT_ARRAY(dopr, "AL,%02X", (uint8_t)(cimm));
+    DASM_FORMAT_ARRAY(dopr, "AL,%02X", (type_unsigned_8)(cimm));
     TYPE_TRACE_CALL_END;
 }
 static C_VOID SBB_EAX_I32(dasm32_context *dasmContext)
@@ -1242,13 +1242,13 @@ static C_VOID SBB_EAX_I32(dasm32_context *dasmContext)
     case 2:
         TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
         TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 2));
-        DASM_FORMAT_ARRAY(dopr, "AX,%04X", (uint16_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "AX,%04X", (type_unsigned_16)(cimm));
         TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
         TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 4));
-        DASM_FORMAT_ARRAY(dopr, "EAX,%08X", (uint32_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "EAX,%08X", (type_unsigned_32)(cimm));
         TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -1316,7 +1316,7 @@ static C_VOID AND_AL_I8(dasm32_context *dasmContext)
     _adv;
     TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
     DASM_FORMAT_ARRAY(dop, "AND");
-    DASM_FORMAT_ARRAY(dopr, "AL,%02X", (uint8_t)(cimm));
+    DASM_FORMAT_ARRAY(dopr, "AL,%02X", (type_unsigned_8)(cimm));
     TYPE_TRACE_CALL_END;
 }
 static C_VOID AND_EAX_I32(dasm32_context *dasmContext)
@@ -1329,13 +1329,13 @@ static C_VOID AND_EAX_I32(dasm32_context *dasmContext)
     case 2:
         TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
         TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 2));
-        DASM_FORMAT_ARRAY(dopr, "AX,%04X", (uint16_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "AX,%04X", (type_unsigned_16)(cimm));
         TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
         TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 4));
-        DASM_FORMAT_ARRAY(dopr, "EAX,%08X", (uint32_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "EAX,%08X", (type_unsigned_32)(cimm));
         TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -1401,7 +1401,7 @@ static C_VOID SUB_AL_I8(dasm32_context *dasmContext)
     _adv;
     TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
     DASM_FORMAT_ARRAY(dop, "SUB");
-    DASM_FORMAT_ARRAY(dopr, "AL,%02X", (uint8_t)(cimm));
+    DASM_FORMAT_ARRAY(dopr, "AL,%02X", (type_unsigned_8)(cimm));
     TYPE_TRACE_CALL_END;
 }
 static C_VOID SUB_EAX_I32(dasm32_context *dasmContext)
@@ -1414,13 +1414,13 @@ static C_VOID SUB_EAX_I32(dasm32_context *dasmContext)
     case 2:
         TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
         TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 2));
-        DASM_FORMAT_ARRAY(dopr, "AX,%04X", (uint16_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "AX,%04X", (type_unsigned_16)(cimm));
         TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
         TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 4));
-        DASM_FORMAT_ARRAY(dopr, "EAX,%08X", (uint32_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "EAX,%08X", (type_unsigned_32)(cimm));
         TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -1486,7 +1486,7 @@ static C_VOID XOR_AL_I8(dasm32_context *dasmContext)
     _adv;
     TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
     DASM_FORMAT_ARRAY(dop, "XOR");
-    DASM_FORMAT_ARRAY(dopr, "AL,%02X", (uint8_t)(cimm));
+    DASM_FORMAT_ARRAY(dopr, "AL,%02X", (type_unsigned_8)(cimm));
     TYPE_TRACE_CALL_END;
 }
 static C_VOID XOR_EAX_I32(dasm32_context *dasmContext)
@@ -1499,13 +1499,13 @@ static C_VOID XOR_EAX_I32(dasm32_context *dasmContext)
     case 2:
         TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
         TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 2));
-        DASM_FORMAT_ARRAY(dopr, "AX,%04X", (uint16_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "AX,%04X", (type_unsigned_16)(cimm));
         TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
         TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 4));
-        DASM_FORMAT_ARRAY(dopr, "EAX,%08X", (uint32_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "EAX,%08X", (type_unsigned_32)(cimm));
         TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -1571,7 +1571,7 @@ static C_VOID CMP_AL_I8(dasm32_context *dasmContext)
     _adv;
     TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
     DASM_FORMAT_ARRAY(dop, "CMP");
-    DASM_FORMAT_ARRAY(dopr, "AL,%02X", (uint8_t)(cimm));
+    DASM_FORMAT_ARRAY(dopr, "AL,%02X", (type_unsigned_8)(cimm));
     TYPE_TRACE_CALL_END;
 }
 static C_VOID CMP_EAX_I32(dasm32_context *dasmContext)
@@ -1584,13 +1584,13 @@ static C_VOID CMP_EAX_I32(dasm32_context *dasmContext)
     case 2:
         TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
         TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 2));
-        DASM_FORMAT_ARRAY(dopr, "AX,%04X", (uint16_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "AX,%04X", (type_unsigned_16)(cimm));
         TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
         TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 4));
-        DASM_FORMAT_ARRAY(dopr, "EAX,%08X", (uint32_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "EAX,%08X", (type_unsigned_32)(cimm));
         TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -2323,10 +2323,10 @@ static C_VOID PUSH_I32(dasm32_context *dasmContext)
     switch (_GetOperandSize)
     {
     case 2:
-        DASM_FORMAT_ARRAY(dopr, "%04X", (uint16_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "%04X", (type_unsigned_16)(cimm));
         break;
     case 4:
-        DASM_FORMAT_ARRAY(dopr, "%08X", (uint32_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "%08X", (type_unsigned_32)(cimm));
         break;
     default:
         TYPE_TRACE_IMPOSSIBLE_RETURN;
@@ -2344,10 +2344,10 @@ static C_VOID IMUL_R32_RM32_I32(dasm32_context *dasmContext)
     switch (_GetOperandSize)
     {
     case 2:
-        DASM_FORMAT_ARRAY(dopr, "%s,%s,%04X", dr, drm, (uint16_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "%s,%s,%04X", dr, drm, (type_unsigned_16)(cimm));
         break;
     case 4:
-        DASM_FORMAT_ARRAY(dopr, "%s,%s,%08X", dr, drm, (uint32_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "%s,%s,%08X", dr, drm, (type_unsigned_32)(cimm));
         break;
     default:
         TYPE_TRACE_IMPOSSIBLE_RETURN;
@@ -2361,7 +2361,7 @@ static C_VOID PUSH_I8(dasm32_context *dasmContext)
     _adv;
     DASM_FORMAT_ARRAY(dop, "PUSH");
     TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
-    DASM_FORMAT_ARRAY(dopr, "%02X", (uint8_t)(cimm));
+    DASM_FORMAT_ARRAY(dopr, "%02X", (type_unsigned_8)(cimm));
     TYPE_TRACE_CALL_END;
 }
 static C_VOID IMUL_R32_RM32_I8(dasm32_context *dasmContext)
@@ -2371,7 +2371,7 @@ static C_VOID IMUL_R32_RM32_I8(dasm32_context *dasmContext)
     DASM_FORMAT_ARRAY(dop, "IMUL");
     TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
     TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
-    DASM_FORMAT_ARRAY(dopr, "%s,%s,%02X", dr, drm, (uint8_t)(cimm));
+    DASM_FORMAT_ARRAY(dopr, "%s,%s,%02X", dr, drm, (type_unsigned_8)(cimm));
     TYPE_TRACE_CALL_END;
 }
 static C_VOID INSB(dasm32_context *dasmContext)
@@ -2488,7 +2488,7 @@ static C_VOID JO_REL8(dasm32_context *dasmContext)
     _adv;
     DASM_FORMAT_ARRAY(dop, "JO");
     TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
-    SPRINTFSI(dasmContext, dopr, (uint8_t)(cimm), 1);
+    SPRINTFSI(dasmContext, dopr, (type_unsigned_8)(cimm), 1);
     TYPE_TRACE_CALL_END;
 }
 static C_VOID JNO_REL8(dasm32_context *dasmContext)
@@ -2497,7 +2497,7 @@ static C_VOID JNO_REL8(dasm32_context *dasmContext)
     _adv;
     DASM_FORMAT_ARRAY(dop, "JNO");
     TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
-    SPRINTFSI(dasmContext, dopr, (uint8_t)(cimm), 1);
+    SPRINTFSI(dasmContext, dopr, (type_unsigned_8)(cimm), 1);
     TYPE_TRACE_CALL_END;
 }
 static C_VOID JC_REL8(dasm32_context *dasmContext)
@@ -2506,7 +2506,7 @@ static C_VOID JC_REL8(dasm32_context *dasmContext)
     _adv;
     DASM_FORMAT_ARRAY(dop, "JC");
     TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
-    SPRINTFSI(dasmContext, dopr, (uint8_t)(cimm), 1);
+    SPRINTFSI(dasmContext, dopr, (type_unsigned_8)(cimm), 1);
     TYPE_TRACE_CALL_END;
 }
 static C_VOID JNC_REL8(dasm32_context *dasmContext)
@@ -2515,7 +2515,7 @@ static C_VOID JNC_REL8(dasm32_context *dasmContext)
     _adv;
     DASM_FORMAT_ARRAY(dop, "JNC");
     TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
-    SPRINTFSI(dasmContext, dopr, (uint8_t)(cimm), 1);
+    SPRINTFSI(dasmContext, dopr, (type_unsigned_8)(cimm), 1);
     TYPE_TRACE_CALL_END;
 }
 static C_VOID JZ_REL8(dasm32_context *dasmContext)
@@ -2524,7 +2524,7 @@ static C_VOID JZ_REL8(dasm32_context *dasmContext)
     _adv;
     DASM_FORMAT_ARRAY(dop, "JZ");
     TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
-    SPRINTFSI(dasmContext, dopr, (uint8_t)(cimm), 1);
+    SPRINTFSI(dasmContext, dopr, (type_unsigned_8)(cimm), 1);
     TYPE_TRACE_CALL_END;
 }
 static C_VOID JNZ_REL8(dasm32_context *dasmContext)
@@ -2533,7 +2533,7 @@ static C_VOID JNZ_REL8(dasm32_context *dasmContext)
     _adv;
     DASM_FORMAT_ARRAY(dop, "JNZ");
     TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
-    SPRINTFSI(dasmContext, dopr, (uint8_t)(cimm), 1);
+    SPRINTFSI(dasmContext, dopr, (type_unsigned_8)(cimm), 1);
     TYPE_TRACE_CALL_END;
 }
 static C_VOID JNA_REL8(dasm32_context *dasmContext)
@@ -2542,7 +2542,7 @@ static C_VOID JNA_REL8(dasm32_context *dasmContext)
     _adv;
     DASM_FORMAT_ARRAY(dop, "JNA");
     TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
-    SPRINTFSI(dasmContext, dopr, (uint8_t)(cimm), 1);
+    SPRINTFSI(dasmContext, dopr, (type_unsigned_8)(cimm), 1);
     TYPE_TRACE_CALL_END;
 }
 static C_VOID JA_REL8(dasm32_context *dasmContext)
@@ -2551,7 +2551,7 @@ static C_VOID JA_REL8(dasm32_context *dasmContext)
     _adv;
     DASM_FORMAT_ARRAY(dop, "JA");
     TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
-    SPRINTFSI(dasmContext, dopr, (uint8_t)(cimm), 1);
+    SPRINTFSI(dasmContext, dopr, (type_unsigned_8)(cimm), 1);
     TYPE_TRACE_CALL_END;
 }
 static C_VOID JS_REL8(dasm32_context *dasmContext)
@@ -2560,7 +2560,7 @@ static C_VOID JS_REL8(dasm32_context *dasmContext)
     _adv;
     DASM_FORMAT_ARRAY(dop, "JS");
     TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
-    SPRINTFSI(dasmContext, dopr, (uint8_t)(cimm), 1);
+    SPRINTFSI(dasmContext, dopr, (type_unsigned_8)(cimm), 1);
     TYPE_TRACE_CALL_END;
 }
 static C_VOID JNS_REL8(dasm32_context *dasmContext)
@@ -2569,7 +2569,7 @@ static C_VOID JNS_REL8(dasm32_context *dasmContext)
     _adv;
     DASM_FORMAT_ARRAY(dop, "JNS");
     TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
-    SPRINTFSI(dasmContext, dopr, (uint8_t)(cimm), 1);
+    SPRINTFSI(dasmContext, dopr, (type_unsigned_8)(cimm), 1);
     TYPE_TRACE_CALL_END;
 }
 static C_VOID JP_REL8(dasm32_context *dasmContext)
@@ -2578,7 +2578,7 @@ static C_VOID JP_REL8(dasm32_context *dasmContext)
     _adv;
     DASM_FORMAT_ARRAY(dop, "JP");
     TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
-    SPRINTFSI(dasmContext, dopr, (uint8_t)(cimm), 1);
+    SPRINTFSI(dasmContext, dopr, (type_unsigned_8)(cimm), 1);
     TYPE_TRACE_CALL_END;
 }
 static C_VOID JNP_REL8(dasm32_context *dasmContext)
@@ -2587,7 +2587,7 @@ static C_VOID JNP_REL8(dasm32_context *dasmContext)
     _adv;
     DASM_FORMAT_ARRAY(dop, "JNP");
     TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
-    SPRINTFSI(dasmContext, dopr, (uint8_t)(cimm), 1);
+    SPRINTFSI(dasmContext, dopr, (type_unsigned_8)(cimm), 1);
     TYPE_TRACE_CALL_END;
 }
 static C_VOID JL_REL8(dasm32_context *dasmContext)
@@ -2596,7 +2596,7 @@ static C_VOID JL_REL8(dasm32_context *dasmContext)
     _adv;
     DASM_FORMAT_ARRAY(dop, "JL");
     TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
-    SPRINTFSI(dasmContext, dopr, (uint8_t)(cimm), 1);
+    SPRINTFSI(dasmContext, dopr, (type_unsigned_8)(cimm), 1);
     TYPE_TRACE_CALL_END;
 }
 static C_VOID JNL_REL8(dasm32_context *dasmContext)
@@ -2605,7 +2605,7 @@ static C_VOID JNL_REL8(dasm32_context *dasmContext)
     _adv;
     DASM_FORMAT_ARRAY(dop, "JNL");
     TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
-    SPRINTFSI(dasmContext, dopr, (uint8_t)(cimm), 1);
+    SPRINTFSI(dasmContext, dopr, (type_unsigned_8)(cimm), 1);
     TYPE_TRACE_CALL_END;
 }
 static C_VOID JNG_REL8(dasm32_context *dasmContext)
@@ -2614,7 +2614,7 @@ static C_VOID JNG_REL8(dasm32_context *dasmContext)
     _adv;
     DASM_FORMAT_ARRAY(dop, "JNG");
     TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
-    SPRINTFSI(dasmContext, dopr, (uint8_t)(cimm), 1);
+    SPRINTFSI(dasmContext, dopr, (type_unsigned_8)(cimm), 1);
     TYPE_TRACE_CALL_END;
 }
 static C_VOID JG_REL8(dasm32_context *dasmContext)
@@ -2623,7 +2623,7 @@ static C_VOID JG_REL8(dasm32_context *dasmContext)
     _adv;
     DASM_FORMAT_ARRAY(dop, "JG");
     TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
-    SPRINTFSI(dasmContext, dopr, (uint8_t)(cimm), 1);
+    SPRINTFSI(dasmContext, dopr, (type_unsigned_8)(cimm), 1);
     TYPE_TRACE_CALL_END;
 }
 static C_VOID INS_80(dasm32_context *dasmContext)
@@ -2678,7 +2678,7 @@ static C_VOID INS_80(dasm32_context *dasmContext)
         TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    DASM_FORMAT_ARRAY(dopr, "%s,%02X", drm, (uint8_t)(cimm));
+    DASM_FORMAT_ARRAY(dopr, "%s,%02X", drm, (type_unsigned_8)(cimm));
     TYPE_TRACE_CALL_END;
 }
 static C_VOID INS_81(dasm32_context *dasmContext)
@@ -2736,10 +2736,10 @@ static C_VOID INS_81(dasm32_context *dasmContext)
     switch (_GetOperandSize)
     {
     case 2:
-        DASM_FORMAT_ARRAY(dopr, "%s,%04X", drm, (uint16_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "%s,%04X", drm, (type_unsigned_16)(cimm));
         break;
     case 4:
-        DASM_FORMAT_ARRAY(dopr, "%s,%08X", drm, (uint32_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "%s,%08X", drm, (type_unsigned_32)(cimm));
         break;
     default:
         TYPE_TRACE_IMPOSSIBLE_RETURN;
@@ -2800,7 +2800,7 @@ static C_VOID INS_83(dasm32_context *dasmContext)
         TYPE_TRACE_IMPOSSIBLE_RETURN;
         break;
     }
-    SPRINTFSI(dasmContext, dsimm, (uint8_t)(cimm), 1);
+    SPRINTFSI(dasmContext, dsimm, (type_unsigned_8)(cimm), 1);
     DASM_FORMAT_ARRAY(dopr, "%s,%s", drm, dsimm);
     TYPE_TRACE_CALL_END;
 }
@@ -3174,8 +3174,8 @@ static C_VOID CWD(dasm32_context *dasmContext)
 }
 static C_VOID CALL_PTR16_32(dasm32_context *dasmContext)
 {
-    uint16_t newcs;
-    uint32_t neweip;
+    type_unsigned_16 newcs;
+    type_unsigned_32 neweip;
     TYPE_TRACE_CALL_BEGIN("CALL_PTR16_32");
     _adv;
     DASM_FORMAT_ARRAY(dop, "CALL");
@@ -3184,17 +3184,17 @@ static C_VOID CALL_PTR16_32(dasm32_context *dasmContext)
     case 2:
         TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
         TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 4));
-        neweip = (uint16_t)(cimm);
-        newcs = (uint16_t)(cimm >> 16);
-        DASM_FORMAT_ARRAY(dopr, "%04X:%04X", newcs, (uint16_t)(neweip));
+        neweip = (type_unsigned_16)(cimm);
+        newcs = (type_unsigned_16)(cimm >> 16);
+        DASM_FORMAT_ARRAY(dopr, "%04X:%04X", newcs, (type_unsigned_16)(neweip));
         TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
         TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 8));
-        neweip = (uint32_t)(cimm);
-        newcs = (uint16_t)(cimm >> 32);
-        DASM_FORMAT_ARRAY(dopr, "%04X:%08X", newcs, (uint32_t)(neweip));
+        neweip = (type_unsigned_32)(cimm);
+        newcs = (type_unsigned_16)(cimm >> 32);
+        DASM_FORMAT_ARRAY(dopr, "%04X:%08X", newcs, (type_unsigned_32)(neweip));
         TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -3432,7 +3432,7 @@ static C_VOID TEST_AL_I8(dasm32_context *dasmContext)
     _adv;
     DASM_FORMAT_ARRAY(dop, "TEST");
     TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
-    DASM_FORMAT_ARRAY(dopr, "AL,%02X", (uint8_t)(cimm));
+    DASM_FORMAT_ARRAY(dopr, "AL,%02X", (type_unsigned_8)(cimm));
     TYPE_TRACE_CALL_END;
 }
 static C_VOID TEST_EAX_I32(dasm32_context *dasmContext)
@@ -3444,10 +3444,10 @@ static C_VOID TEST_EAX_I32(dasm32_context *dasmContext)
     switch (_GetOperandSize)
     {
     case 2:
-        DASM_FORMAT_ARRAY(dopr, "AX,%04X", (uint16_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "AX,%04X", (type_unsigned_16)(cimm));
         break;
     case 4:
-        DASM_FORMAT_ARRAY(dopr, "EAX,%08X", (uint32_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "EAX,%08X", (type_unsigned_32)(cimm));
         break;
     default:
         TYPE_TRACE_IMPOSSIBLE_RETURN;
@@ -3623,7 +3623,7 @@ static C_VOID MOV_AL_I8(dasm32_context *dasmContext)
     _adv;
     DASM_FORMAT_ARRAY(dop, "MOV");
     TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
-    DASM_FORMAT_ARRAY(dopr, "AL,%02X", (uint8_t)(cimm));
+    DASM_FORMAT_ARRAY(dopr, "AL,%02X", (type_unsigned_8)(cimm));
     TYPE_TRACE_CALL_END;
 }
 static C_VOID MOV_CL_I8(dasm32_context *dasmContext)
@@ -3632,7 +3632,7 @@ static C_VOID MOV_CL_I8(dasm32_context *dasmContext)
     _adv;
     DASM_FORMAT_ARRAY(dop, "MOV");
     TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
-    DASM_FORMAT_ARRAY(dopr, "CL,%02X", (uint8_t)(cimm));
+    DASM_FORMAT_ARRAY(dopr, "CL,%02X", (type_unsigned_8)(cimm));
     TYPE_TRACE_CALL_END;
 }
 static C_VOID MOV_DL_I8(dasm32_context *dasmContext)
@@ -3641,7 +3641,7 @@ static C_VOID MOV_DL_I8(dasm32_context *dasmContext)
     _adv;
     DASM_FORMAT_ARRAY(dop, "MOV");
     TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
-    DASM_FORMAT_ARRAY(dopr, "DL,%02X", (uint8_t)(cimm));
+    DASM_FORMAT_ARRAY(dopr, "DL,%02X", (type_unsigned_8)(cimm));
     TYPE_TRACE_CALL_END;
 }
 static C_VOID MOV_BL_I8(dasm32_context *dasmContext)
@@ -3650,7 +3650,7 @@ static C_VOID MOV_BL_I8(dasm32_context *dasmContext)
     _adv;
     DASM_FORMAT_ARRAY(dop, "MOV");
     TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
-    DASM_FORMAT_ARRAY(dopr, "BL,%02X", (uint8_t)(cimm));
+    DASM_FORMAT_ARRAY(dopr, "BL,%02X", (type_unsigned_8)(cimm));
     TYPE_TRACE_CALL_END;
 }
 static C_VOID MOV_AH_I8(dasm32_context *dasmContext)
@@ -3659,7 +3659,7 @@ static C_VOID MOV_AH_I8(dasm32_context *dasmContext)
     _adv;
     DASM_FORMAT_ARRAY(dop, "MOV");
     TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
-    DASM_FORMAT_ARRAY(dopr, "AH,%02X", (uint8_t)(cimm));
+    DASM_FORMAT_ARRAY(dopr, "AH,%02X", (type_unsigned_8)(cimm));
     TYPE_TRACE_CALL_END;
 }
 static C_VOID MOV_CH_I8(dasm32_context *dasmContext)
@@ -3668,7 +3668,7 @@ static C_VOID MOV_CH_I8(dasm32_context *dasmContext)
     _adv;
     DASM_FORMAT_ARRAY(dop, "MOV");
     TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
-    DASM_FORMAT_ARRAY(dopr, "CH,%02X", (uint8_t)(cimm));
+    DASM_FORMAT_ARRAY(dopr, "CH,%02X", (type_unsigned_8)(cimm));
     TYPE_TRACE_CALL_END;
 }
 static C_VOID MOV_DH_I8(dasm32_context *dasmContext)
@@ -3677,7 +3677,7 @@ static C_VOID MOV_DH_I8(dasm32_context *dasmContext)
     _adv;
     DASM_FORMAT_ARRAY(dop, "MOV");
     TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
-    DASM_FORMAT_ARRAY(dopr, "DH,%02X", (uint8_t)(cimm));
+    DASM_FORMAT_ARRAY(dopr, "DH,%02X", (type_unsigned_8)(cimm));
     TYPE_TRACE_CALL_END;
 }
 static C_VOID MOV_BH_I8(dasm32_context *dasmContext)
@@ -3686,7 +3686,7 @@ static C_VOID MOV_BH_I8(dasm32_context *dasmContext)
     _adv;
     DASM_FORMAT_ARRAY(dop, "MOV");
     TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
-    DASM_FORMAT_ARRAY(dopr, "BH,%02X", (uint8_t)(cimm));
+    DASM_FORMAT_ARRAY(dopr, "BH,%02X", (type_unsigned_8)(cimm));
     TYPE_TRACE_CALL_END;
 }
 static C_VOID MOV_EAX_I32(dasm32_context *dasmContext)
@@ -3698,10 +3698,10 @@ static C_VOID MOV_EAX_I32(dasm32_context *dasmContext)
     switch (_GetOperandSize)
     {
     case 2:
-        DASM_FORMAT_ARRAY(dopr, "AX,%04X", (uint16_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "AX,%04X", (type_unsigned_16)(cimm));
         break;
     case 4:
-        DASM_FORMAT_ARRAY(dopr, "EAX,%08X", (uint32_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "EAX,%08X", (type_unsigned_32)(cimm));
         break;
     default:
         TYPE_TRACE_IMPOSSIBLE_RETURN;
@@ -3718,10 +3718,10 @@ static C_VOID MOV_ECX_I32(dasm32_context *dasmContext)
     switch (_GetOperandSize)
     {
     case 2:
-        DASM_FORMAT_ARRAY(dopr, "CX,%04X", (uint16_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "CX,%04X", (type_unsigned_16)(cimm));
         break;
     case 4:
-        DASM_FORMAT_ARRAY(dopr, "ECX,%08X", (uint32_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "ECX,%08X", (type_unsigned_32)(cimm));
         break;
     default:
         TYPE_TRACE_IMPOSSIBLE_RETURN;
@@ -3738,10 +3738,10 @@ static C_VOID MOV_EDX_I32(dasm32_context *dasmContext)
     switch (_GetOperandSize)
     {
     case 2:
-        DASM_FORMAT_ARRAY(dopr, "DX,%04X", (uint16_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "DX,%04X", (type_unsigned_16)(cimm));
         break;
     case 4:
-        DASM_FORMAT_ARRAY(dopr, "EDX,%08X", (uint32_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "EDX,%08X", (type_unsigned_32)(cimm));
         break;
     default:
         TYPE_TRACE_IMPOSSIBLE_RETURN;
@@ -3758,10 +3758,10 @@ static C_VOID MOV_EBX_I32(dasm32_context *dasmContext)
     switch (_GetOperandSize)
     {
     case 2:
-        DASM_FORMAT_ARRAY(dopr, "BX,%04X", (uint16_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "BX,%04X", (type_unsigned_16)(cimm));
         break;
     case 4:
-        DASM_FORMAT_ARRAY(dopr, "EBX,%08X", (uint32_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "EBX,%08X", (type_unsigned_32)(cimm));
         break;
     default:
         TYPE_TRACE_IMPOSSIBLE_RETURN;
@@ -3778,10 +3778,10 @@ static C_VOID MOV_ESP_I32(dasm32_context *dasmContext)
     switch (_GetOperandSize)
     {
     case 2:
-        DASM_FORMAT_ARRAY(dopr, "SP,%04X", (uint16_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "SP,%04X", (type_unsigned_16)(cimm));
         break;
     case 4:
-        DASM_FORMAT_ARRAY(dopr, "ESP,%08X", (uint32_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "ESP,%08X", (type_unsigned_32)(cimm));
         break;
     default:
         TYPE_TRACE_IMPOSSIBLE_RETURN;
@@ -3798,10 +3798,10 @@ static C_VOID MOV_EBP_I32(dasm32_context *dasmContext)
     switch (_GetOperandSize)
     {
     case 2:
-        DASM_FORMAT_ARRAY(dopr, "BP,%04X", (uint16_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "BP,%04X", (type_unsigned_16)(cimm));
         break;
     case 4:
-        DASM_FORMAT_ARRAY(dopr, "EBP,%08X", (uint32_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "EBP,%08X", (type_unsigned_32)(cimm));
         break;
     default:
         TYPE_TRACE_IMPOSSIBLE_RETURN;
@@ -3818,10 +3818,10 @@ static C_VOID MOV_ESI_I32(dasm32_context *dasmContext)
     switch (_GetOperandSize)
     {
     case 2:
-        DASM_FORMAT_ARRAY(dopr, "SI,%04X", (uint16_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "SI,%04X", (type_unsigned_16)(cimm));
         break;
     case 4:
-        DASM_FORMAT_ARRAY(dopr, "ESI,%08X", (uint32_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "ESI,%08X", (type_unsigned_32)(cimm));
         break;
     default:
         TYPE_TRACE_IMPOSSIBLE_RETURN;
@@ -3838,10 +3838,10 @@ static C_VOID MOV_EDI_I32(dasm32_context *dasmContext)
     switch (_GetOperandSize)
     {
     case 2:
-        DASM_FORMAT_ARRAY(dopr, "DI,%04X", (uint16_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "DI,%04X", (type_unsigned_16)(cimm));
         break;
     case 4:
-        DASM_FORMAT_ARRAY(dopr, "EDI,%08X", (uint32_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "EDI,%08X", (type_unsigned_32)(cimm));
         break;
     default:
         TYPE_TRACE_IMPOSSIBLE_RETURN;
@@ -3860,37 +3860,37 @@ static C_VOID INS_C0(dasm32_context *dasmContext)
     case 0: /* ROL_RM8_I8 */
         TYPE_TRACE_BLOCK_BEGIN("ROL_RM8_I8");
         DASM_FORMAT_ARRAY(dop, "ROL");
-        DASM_FORMAT_ARRAY(dopr, "%s,%02X", drm, (uint8_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "%s,%02X", drm, (type_unsigned_8)(cimm));
         TYPE_TRACE_BLOCK_END;
         break;
     case 1: /* ROR_RM8_I8 */
         TYPE_TRACE_BLOCK_BEGIN("ROR_RM8_I8");
         DASM_FORMAT_ARRAY(dop, "ROL");
-        DASM_FORMAT_ARRAY(dopr, "%s,%02X", drm, (uint8_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "%s,%02X", drm, (type_unsigned_8)(cimm));
         TYPE_TRACE_BLOCK_END;
         break;
     case 2: /* RCL_RM8_I8 */
         TYPE_TRACE_BLOCK_BEGIN("RCL_RM8_I8");
         DASM_FORMAT_ARRAY(dop, "RCL");
-        DASM_FORMAT_ARRAY(dopr, "%s,%02X", drm, (uint8_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "%s,%02X", drm, (type_unsigned_8)(cimm));
         TYPE_TRACE_BLOCK_END;
         break;
     case 3: /* RCR_RM8_I8 */
         TYPE_TRACE_BLOCK_BEGIN("RCR_RM8_I8");
         DASM_FORMAT_ARRAY(dop, "RCR");
-        DASM_FORMAT_ARRAY(dopr, "%s,%02X", drm, (uint8_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "%s,%02X", drm, (type_unsigned_8)(cimm));
         TYPE_TRACE_BLOCK_END;
         break;
     case 4: /* SHL_RM8_I8 */
         TYPE_TRACE_BLOCK_BEGIN("SHL_RM8_I8");
         DASM_FORMAT_ARRAY(dop, "SHL");
-        DASM_FORMAT_ARRAY(dopr, "%s,%02X", drm, (uint8_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "%s,%02X", drm, (type_unsigned_8)(cimm));
         TYPE_TRACE_BLOCK_END;
         break;
     case 5: /* SHR_RM8_I8 */
         TYPE_TRACE_BLOCK_BEGIN("SHR_RM8_I8");
         DASM_FORMAT_ARRAY(dop, "SHR");
-        DASM_FORMAT_ARRAY(dopr, "%s,%02X", drm, (uint8_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "%s,%02X", drm, (type_unsigned_8)(cimm));
         TYPE_TRACE_BLOCK_END;
         break;
     case 6: /* UndefinedOpcode */
@@ -3901,7 +3901,7 @@ static C_VOID INS_C0(dasm32_context *dasmContext)
     case 7: /* SAR_RM8_I8 */
         TYPE_TRACE_BLOCK_BEGIN("SAR_RM8_I8");
         DASM_FORMAT_ARRAY(dop, "SAR");
-        DASM_FORMAT_ARRAY(dopr, "%s,%02X", drm, (uint8_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "%s,%02X", drm, (type_unsigned_8)(cimm));
         TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -3921,37 +3921,37 @@ static C_VOID INS_C1(dasm32_context *dasmContext)
     case 0: /* ROL_RM32_I8 */
         TYPE_TRACE_BLOCK_BEGIN("ROL_RM32_I8");
         DASM_FORMAT_ARRAY(dop, "ROL");
-        DASM_FORMAT_ARRAY(dopr, "%s,%02X", drm, (uint8_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "%s,%02X", drm, (type_unsigned_8)(cimm));
         TYPE_TRACE_BLOCK_END;
         break;
     case 1: /* ROR_RM32_I8 */
         TYPE_TRACE_BLOCK_BEGIN("ROR_RM32_I8");
         DASM_FORMAT_ARRAY(dop, "ROR");
-        DASM_FORMAT_ARRAY(dopr, "%s,%02X", drm, (uint8_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "%s,%02X", drm, (type_unsigned_8)(cimm));
         TYPE_TRACE_BLOCK_END;
         break;
     case 2: /* RCL_RM32_I8 */
         TYPE_TRACE_BLOCK_BEGIN("RCL_RM32_I8");
         DASM_FORMAT_ARRAY(dop, "RCL");
-        DASM_FORMAT_ARRAY(dopr, "%s,%02X", drm, (uint8_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "%s,%02X", drm, (type_unsigned_8)(cimm));
         TYPE_TRACE_BLOCK_END;
         break;
     case 3: /* RCR_RM32_I8 */
         TYPE_TRACE_BLOCK_BEGIN("RCR_RM32_I8");
         DASM_FORMAT_ARRAY(dop, "RCR");
-        DASM_FORMAT_ARRAY(dopr, "%s,%02X", drm, (uint8_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "%s,%02X", drm, (type_unsigned_8)(cimm));
         TYPE_TRACE_BLOCK_END;
         break;
     case 4: /* SHL_RM32_I8 */
         TYPE_TRACE_BLOCK_BEGIN("SHL_RM32_I8");
         DASM_FORMAT_ARRAY(dop, "SHL");
-        DASM_FORMAT_ARRAY(dopr, "%s,%02X", drm, (uint8_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "%s,%02X", drm, (type_unsigned_8)(cimm));
         TYPE_TRACE_BLOCK_END;
         break;
     case 5: /* SHR_RM32_I8 */
         TYPE_TRACE_BLOCK_BEGIN("SHR_RM32_I8");
         DASM_FORMAT_ARRAY(dop, "SHR");
-        DASM_FORMAT_ARRAY(dopr, "%s,%02X", drm, (uint8_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "%s,%02X", drm, (type_unsigned_8)(cimm));
         TYPE_TRACE_BLOCK_END;
         break;
     case 6: /* UndefinedOpcode */
@@ -3962,7 +3962,7 @@ static C_VOID INS_C1(dasm32_context *dasmContext)
     case 7: /* SAR_RM32_I8 */
         TYPE_TRACE_BLOCK_BEGIN("SAR_RM32_I8");
         DASM_FORMAT_ARRAY(dop, "SAR");
-        DASM_FORMAT_ARRAY(dopr, "%s,%02X", drm, (uint8_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "%s,%02X", drm, (type_unsigned_8)(cimm));
         TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -3977,7 +3977,7 @@ static C_VOID RET_I16(dasm32_context *dasmContext)
     _adv;
     DASM_FORMAT_ARRAY(dop, "RET");
     TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 2));
-    DASM_FORMAT_ARRAY(dopr, "%04X", (uint16_t)(cimm));
+    DASM_FORMAT_ARRAY(dopr, "%04X", (type_unsigned_16)(cimm));
     TYPE_TRACE_CALL_END;
 }
 static C_VOID RET(dasm32_context *dasmContext)
@@ -4028,7 +4028,7 @@ static C_VOID INS_C6(dasm32_context *dasmContext)
         TYPE_TRACE_BLOCK_BEGIN("MOV_RM8_I8");
         DASM_FORMAT_ARRAY(dop, "MOV");
         TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
-        DASM_FORMAT_ARRAY(dopr, "%s,%02X", drm, (uint8_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "%s,%02X", drm, (type_unsigned_8)(cimm));
         TYPE_TRACE_BLOCK_END;
         break;
     case 1:
@@ -4086,10 +4086,10 @@ static C_VOID INS_C7(dasm32_context *dasmContext)
         switch (_GetOperandSize)
         {
         case 2:
-            DASM_FORMAT_ARRAY(dopr, "%s,%04X", drm, (uint16_t)(cimm));
+            DASM_FORMAT_ARRAY(dopr, "%s,%04X", drm, (type_unsigned_16)(cimm));
             break;
         case 4:
-            DASM_FORMAT_ARRAY(dopr, "%s,%08X", drm, (uint32_t)(cimm));
+            DASM_FORMAT_ARRAY(dopr, "%s,%08X", drm, (type_unsigned_32)(cimm));
             break;
         default:
             TYPE_TRACE_IMPOSSIBLE_RETURN;
@@ -4145,9 +4145,9 @@ static C_VOID ENTER(dasm32_context *dasmContext)
     _adv;
     DASM_FORMAT_ARRAY(dop, "ENTER");
     TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 2));
-    DASM_FORMAT_ARRAY(dframesize, "%04X", (uint16_t)(cimm));
+    DASM_FORMAT_ARRAY(dframesize, "%04X", (type_unsigned_16)(cimm));
     TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
-    DASM_FORMAT_ARRAY(dnestlevel, "%02X", (uint8_t)(cimm));
+    DASM_FORMAT_ARRAY(dnestlevel, "%02X", (type_unsigned_8)(cimm));
     DASM_FORMAT_ARRAY(dopr, "%s,%s", dframesize, dnestlevel);
     TYPE_TRACE_CALL_END;
 }
@@ -4164,7 +4164,7 @@ static C_VOID RETF_I16(dasm32_context *dasmContext)
     _adv;
     DASM_FORMAT_ARRAY(dop, "RETF");
     TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 2));
-    DASM_FORMAT_ARRAY(dopr, "%04X", (uint16_t)(cimm));
+    DASM_FORMAT_ARRAY(dopr, "%04X", (type_unsigned_16)(cimm));
     TYPE_TRACE_CALL_END;
 }
 static C_VOID RETF(dasm32_context *dasmContext)
@@ -4187,7 +4187,7 @@ static C_VOID INT_I8(dasm32_context *dasmContext)
     _adv;
     DASM_FORMAT_ARRAY(dop, "INT");
     TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
-    DASM_FORMAT_ARRAY(dopr, "%02X", (uint8_t)(cimm));
+    DASM_FORMAT_ARRAY(dopr, "%02X", (type_unsigned_8)(cimm));
     TYPE_TRACE_CALL_END;
 }
 static C_VOID INTO(dasm32_context *dasmContext)
@@ -4461,8 +4461,8 @@ static C_VOID AAM(dasm32_context *dasmContext)
     _adv;
     DASM_FORMAT_ARRAY(dop, "AAM");
     TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
-    if ((uint8_t)(cimm) != 0x0a)
-        DASM_FORMAT_ARRAY(dopr, "%02X", (uint8_t)(cimm));
+    if ((type_unsigned_8)(cimm) != 0x0a)
+        DASM_FORMAT_ARRAY(dopr, "%02X", (type_unsigned_8)(cimm));
     TYPE_TRACE_CALL_END;
 }
 static C_VOID AAD(dasm32_context *dasmContext)
@@ -4471,8 +4471,8 @@ static C_VOID AAD(dasm32_context *dasmContext)
     _adv;
     DASM_FORMAT_ARRAY(dop, "AAD");
     TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
-    if ((uint8_t)(cimm) != 0x0a)
-        DASM_FORMAT_ARRAY(dopr, "%02X", (uint8_t)(cimm));
+    if ((type_unsigned_8)(cimm) != 0x0a)
+        DASM_FORMAT_ARRAY(dopr, "%02X", (type_unsigned_8)(cimm));
     TYPE_TRACE_CALL_END;
 }
 static C_VOID XLAT(dasm32_context *dasmContext)
@@ -4500,7 +4500,7 @@ static C_VOID LOOPNZ_REL8(dasm32_context *dasmContext)
     _adv;
     DASM_FORMAT_ARRAY(dop, "LOOPNZ");
     TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
-    SPRINTFSI(dasmContext, dopr, (uint8_t)(cimm), 1);
+    SPRINTFSI(dasmContext, dopr, (type_unsigned_8)(cimm), 1);
     TYPE_TRACE_CALL_END;
 }
 static C_VOID LOOPZ_REL8(dasm32_context *dasmContext)
@@ -4509,7 +4509,7 @@ static C_VOID LOOPZ_REL8(dasm32_context *dasmContext)
     _adv;
     DASM_FORMAT_ARRAY(dop, "LOOPZ");
     TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
-    SPRINTFSI(dasmContext, dopr, (uint8_t)(cimm), 1);
+    SPRINTFSI(dasmContext, dopr, (type_unsigned_8)(cimm), 1);
     TYPE_TRACE_CALL_END;
 }
 static C_VOID LOOP_REL8(dasm32_context *dasmContext)
@@ -4518,7 +4518,7 @@ static C_VOID LOOP_REL8(dasm32_context *dasmContext)
     _adv;
     DASM_FORMAT_ARRAY(dop, "LOOP");
     TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
-    SPRINTFSI(dasmContext, dopr, (uint8_t)(cimm), 1);
+    SPRINTFSI(dasmContext, dopr, (type_unsigned_8)(cimm), 1);
     TYPE_TRACE_CALL_END;
 }
 static C_VOID JCXZ_REL8(dasm32_context *dasmContext)
@@ -4527,7 +4527,7 @@ static C_VOID JCXZ_REL8(dasm32_context *dasmContext)
     _adv;
     DASM_FORMAT_ARRAY(dop, "JCXZ");
     TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
-    SPRINTFSI(dasmContext, dopr, (uint8_t)(cimm), 1);
+    SPRINTFSI(dasmContext, dopr, (type_unsigned_8)(cimm), 1);
     TYPE_TRACE_CALL_END;
 }
 static C_VOID IN_AL_I8(dasm32_context *dasmContext)
@@ -4536,7 +4536,7 @@ static C_VOID IN_AL_I8(dasm32_context *dasmContext)
     _adv;
     DASM_FORMAT_ARRAY(dop, "IN");
     TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
-    DASM_FORMAT_ARRAY(dopr, "AL,%02X", (uint8_t)(cimm));
+    DASM_FORMAT_ARRAY(dopr, "AL,%02X", (type_unsigned_8)(cimm));
     TYPE_TRACE_CALL_END;
 }
 static C_VOID IN_EAX_I8(dasm32_context *dasmContext)
@@ -4548,10 +4548,10 @@ static C_VOID IN_EAX_I8(dasm32_context *dasmContext)
     switch (_GetOperandSize)
     {
     case 2:
-        DASM_FORMAT_ARRAY(dopr, "AX,%02X", (uint8_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "AX,%02X", (type_unsigned_8)(cimm));
         break;
     case 4:
-        DASM_FORMAT_ARRAY(dopr, "EAX,%02X", (uint8_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "EAX,%02X", (type_unsigned_8)(cimm));
         break;
     default:
         TYPE_TRACE_IMPOSSIBLE_RETURN;
@@ -4565,7 +4565,7 @@ static C_VOID OUT_I8_AL(dasm32_context *dasmContext)
     _adv;
     DASM_FORMAT_ARRAY(dop, "OUT");
     TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
-    DASM_FORMAT_ARRAY(dopr, "%02X,AL", (uint8_t)(cimm));
+    DASM_FORMAT_ARRAY(dopr, "%02X,AL", (type_unsigned_8)(cimm));
     TYPE_TRACE_CALL_END;
 }
 static C_VOID OUT_I8_EAX(dasm32_context *dasmContext)
@@ -4577,10 +4577,10 @@ static C_VOID OUT_I8_EAX(dasm32_context *dasmContext)
     switch (_GetOperandSize)
     {
     case 2:
-        DASM_FORMAT_ARRAY(dopr, "%02X,AX", (uint8_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "%02X,AX", (type_unsigned_8)(cimm));
         break;
     case 4:
-        DASM_FORMAT_ARRAY(dopr, "%02X,EAX", (uint8_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "%02X,EAX", (type_unsigned_8)(cimm));
         break;
     default:
         TYPE_TRACE_IMPOSSIBLE_RETURN;
@@ -4597,10 +4597,10 @@ static C_VOID CALL_REL32(dasm32_context *dasmContext)
     switch (_GetOperandSize)
     {
     case 2:
-        SPRINTFSI(dasmContext, dopr, (uint16_t)(cimm), 2);
+        SPRINTFSI(dasmContext, dopr, (type_unsigned_16)(cimm), 2);
         break;
     case 4:
-        SPRINTFSI(dasmContext, dopr, (uint32_t)(cimm), 4);
+        SPRINTFSI(dasmContext, dopr, (type_unsigned_32)(cimm), 4);
         break;
     default:
         TYPE_TRACE_IMPOSSIBLE_RETURN;
@@ -4617,10 +4617,10 @@ static C_VOID JMP_REL32(dasm32_context *dasmContext)
     switch (_GetOperandSize)
     {
     case 2:
-        SPRINTFSI(dasmContext, dopr, (uint16_t)(cimm), 2);
+        SPRINTFSI(dasmContext, dopr, (type_unsigned_16)(cimm), 2);
         break;
     case 4:
-        SPRINTFSI(dasmContext, dopr, (uint32_t)(cimm), 4);
+        SPRINTFSI(dasmContext, dopr, (type_unsigned_32)(cimm), 4);
         break;
     default:
         TYPE_TRACE_IMPOSSIBLE_RETURN;
@@ -4630,8 +4630,8 @@ static C_VOID JMP_REL32(dasm32_context *dasmContext)
 }
 static C_VOID JMP_PTR16_32(dasm32_context *dasmContext)
 {
-    uint16_t newcs;
-    uint32_t neweip;
+    type_unsigned_16 newcs;
+    type_unsigned_32 neweip;
     TYPE_TRACE_CALL_BEGIN("JMP_PTR16_32");
     _adv;
     DASM_FORMAT_ARRAY(dop, "JMP");
@@ -4640,20 +4640,20 @@ static C_VOID JMP_PTR16_32(dasm32_context *dasmContext)
     case 2:
         TYPE_TRACE_BLOCK_BEGIN("OperandSize(2)");
         TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 2));
-        neweip = (uint16_t)(cimm);
+        neweip = (type_unsigned_16)(cimm);
         TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 2));
-        newcs = (uint16_t)(cimm);
-        DASM_FORMAT_ARRAY(dopr, "%04X:%04X", newcs, (uint16_t)(neweip));
+        newcs = (type_unsigned_16)(cimm);
+        DASM_FORMAT_ARRAY(dopr, "%04X:%04X", newcs, (type_unsigned_16)(neweip));
         TYPE_TRACE_BLOCK_END;
         break;
     case 4:
         TYPE_TRACE_BLOCK_BEGIN("OperandSize(4)");
         _newins_;
         TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 4));
-        neweip = (uint32_t)(cimm);
+        neweip = (type_unsigned_32)(cimm);
         TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 2));
-        newcs = (uint16_t)(cimm);
-        DASM_FORMAT_ARRAY(dopr, "%04X:%08X", newcs, (uint32_t)(neweip));
+        newcs = (type_unsigned_16)(cimm);
+        DASM_FORMAT_ARRAY(dopr, "%04X:%08X", newcs, (type_unsigned_32)(neweip));
         TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -4668,7 +4668,7 @@ static C_VOID JMP_REL8(dasm32_context *dasmContext)
     _adv;
     DASM_FORMAT_ARRAY(dop, "JMP");
     TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
-    SPRINTFSI(dasmContext, dopr, (uint8_t)(cimm), 1);
+    SPRINTFSI(dasmContext, dopr, (type_unsigned_8)(cimm), 1);
     TYPE_TRACE_CALL_END;
 }
 static C_VOID IN_AL_DX(dasm32_context *dasmContext)
@@ -4771,7 +4771,7 @@ static C_VOID INS_F6(dasm32_context *dasmContext)
         TYPE_TRACE_BLOCK_BEGIN("TEST_RM8_I8");
         DASM_FORMAT_ARRAY(dop, "TEST");
         TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
-        DASM_FORMAT_ARRAY(dopr, "%s,%02X", drm, (uint8_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "%s,%02X", drm, (type_unsigned_8)(cimm));
         TYPE_TRACE_BLOCK_END;
         break;
     case 1: /* UndefinedOpcode */
@@ -4835,10 +4835,10 @@ static C_VOID INS_F7(dasm32_context *dasmContext)
         switch (_GetOperandSize)
         {
         case 2:
-            DASM_FORMAT_ARRAY(dopr, "%s,%04X", drm, (uint16_t)(cimm));
+            DASM_FORMAT_ARRAY(dopr, "%s,%04X", drm, (type_unsigned_16)(cimm));
             break;
         case 4:
-            DASM_FORMAT_ARRAY(dopr, "%s,%08X", drm, (uint32_t)(cimm));
+            DASM_FORMAT_ARRAY(dopr, "%s,%08X", drm, (type_unsigned_32)(cimm));
             break;
         default:
             TYPE_TRACE_IMPOSSIBLE_RETURN;
@@ -4993,12 +4993,12 @@ static C_VOID INS_FE(dasm32_context *dasmContext)
 static C_VOID INS_FF(dasm32_context *dasmContext)
 {
     C_CHAR dptr[0x100];
-    uint8_t oldiop;
-    uint8_t modrm;
+    type_unsigned_8 oldiop;
+    type_unsigned_8 modrm;
     TYPE_TRACE_CALL_BEGIN("INS_FF");
     _adv;
     oldiop = iop;
-    TYPE_TRACE_CHECK_RETURN(_d_code(dasmContext, (uint8_t *)(&modrm), 1));
+    TYPE_TRACE_CHECK_RETURN(_d_code(dasmContext, (type_unsigned_8 *)(&modrm), 1));
     iop = oldiop;
     switch (_GetModRM_REG(modrm))
     {
@@ -5190,11 +5190,11 @@ static C_VOID _d_modrm_treg(dasm32_context *dasmContext)
 
 static C_VOID INS_0F_00(dasm32_context *dasmContext)
 {
-    uint8_t modrm, oldiop;
+    type_unsigned_8 modrm, oldiop;
     TYPE_TRACE_CALL_BEGIN("INS_0F_00");
     _adv;
     oldiop = iop;
-    TYPE_TRACE_CHECK_RETURN(_d_code(dasmContext, (uint8_t *)(&modrm), 1));
+    TYPE_TRACE_CHECK_RETURN(_d_code(dasmContext, (type_unsigned_8 *)(&modrm), 1));
     iop = oldiop;
     switch (_GetModRM_REG(modrm))
     {
@@ -5258,11 +5258,11 @@ static C_VOID INS_0F_00(dasm32_context *dasmContext)
 }
 static C_VOID INS_0F_01(dasm32_context *dasmContext)
 {
-    uint8_t modrm, oldiop;
+    type_unsigned_8 modrm, oldiop;
     TYPE_TRACE_CALL_BEGIN("INS_0F_01");
     _adv;
     oldiop = iop;
-    TYPE_TRACE_CHECK_RETURN(_d_code(dasmContext, (uint8_t *)(&modrm), 1));
+    TYPE_TRACE_CHECK_RETURN(_d_code(dasmContext, (type_unsigned_8 *)(&modrm), 1));
     iop = oldiop;
     switch (_GetModRM_REG(modrm))
     {
@@ -5483,10 +5483,10 @@ static C_VOID JO_REL32(dasm32_context *dasmContext)
     switch (_GetOperandSize)
     {
     case 2:
-        SPRINTFSI(dasmContext, dopr, (uint16_t)(cimm), 2);
+        SPRINTFSI(dasmContext, dopr, (type_unsigned_16)(cimm), 2);
         break;
     case 4:
-        SPRINTFSI(dasmContext, dopr, (uint32_t)(cimm), 4);
+        SPRINTFSI(dasmContext, dopr, (type_unsigned_32)(cimm), 4);
         break;
     default:
         TYPE_TRACE_IMPOSSIBLE_RETURN;
@@ -5503,10 +5503,10 @@ static C_VOID JNO_REL32(dasm32_context *dasmContext)
     switch (_GetOperandSize)
     {
     case 2:
-        SPRINTFSI(dasmContext, dopr, (uint16_t)(cimm), 2);
+        SPRINTFSI(dasmContext, dopr, (type_unsigned_16)(cimm), 2);
         break;
     case 4:
-        SPRINTFSI(dasmContext, dopr, (uint32_t)(cimm), 4);
+        SPRINTFSI(dasmContext, dopr, (type_unsigned_32)(cimm), 4);
         break;
     default:
         TYPE_TRACE_IMPOSSIBLE_RETURN;
@@ -5523,10 +5523,10 @@ static C_VOID JC_REL32(dasm32_context *dasmContext)
     switch (_GetOperandSize)
     {
     case 2:
-        SPRINTFSI(dasmContext, dopr, (uint16_t)(cimm), 2);
+        SPRINTFSI(dasmContext, dopr, (type_unsigned_16)(cimm), 2);
         break;
     case 4:
-        SPRINTFSI(dasmContext, dopr, (uint32_t)(cimm), 4);
+        SPRINTFSI(dasmContext, dopr, (type_unsigned_32)(cimm), 4);
         break;
     default:
         TYPE_TRACE_IMPOSSIBLE_RETURN;
@@ -5543,10 +5543,10 @@ static C_VOID JNC_REL32(dasm32_context *dasmContext)
     switch (_GetOperandSize)
     {
     case 2:
-        SPRINTFSI(dasmContext, dopr, (uint16_t)(cimm), 2);
+        SPRINTFSI(dasmContext, dopr, (type_unsigned_16)(cimm), 2);
         break;
     case 4:
-        SPRINTFSI(dasmContext, dopr, (uint32_t)(cimm), 4);
+        SPRINTFSI(dasmContext, dopr, (type_unsigned_32)(cimm), 4);
         break;
     default:
         TYPE_TRACE_IMPOSSIBLE_RETURN;
@@ -5563,10 +5563,10 @@ static C_VOID JZ_REL32(dasm32_context *dasmContext)
     switch (_GetOperandSize)
     {
     case 2:
-        SPRINTFSI(dasmContext, dopr, (uint16_t)(cimm), 2);
+        SPRINTFSI(dasmContext, dopr, (type_unsigned_16)(cimm), 2);
         break;
     case 4:
-        SPRINTFSI(dasmContext, dopr, (uint32_t)(cimm), 4);
+        SPRINTFSI(dasmContext, dopr, (type_unsigned_32)(cimm), 4);
         break;
     default:
         TYPE_TRACE_IMPOSSIBLE_RETURN;
@@ -5583,10 +5583,10 @@ static C_VOID JNZ_REL32(dasm32_context *dasmContext)
     switch (_GetOperandSize)
     {
     case 2:
-        SPRINTFSI(dasmContext, dopr, (uint16_t)(cimm), 2);
+        SPRINTFSI(dasmContext, dopr, (type_unsigned_16)(cimm), 2);
         break;
     case 4:
-        SPRINTFSI(dasmContext, dopr, (uint32_t)(cimm), 4);
+        SPRINTFSI(dasmContext, dopr, (type_unsigned_32)(cimm), 4);
         break;
     default:
         TYPE_TRACE_IMPOSSIBLE_RETURN;
@@ -5603,10 +5603,10 @@ static C_VOID JNA_REL32(dasm32_context *dasmContext)
     switch (_GetOperandSize)
     {
     case 2:
-        SPRINTFSI(dasmContext, dopr, (uint16_t)(cimm), 2);
+        SPRINTFSI(dasmContext, dopr, (type_unsigned_16)(cimm), 2);
         break;
     case 4:
-        SPRINTFSI(dasmContext, dopr, (uint32_t)(cimm), 4);
+        SPRINTFSI(dasmContext, dopr, (type_unsigned_32)(cimm), 4);
         break;
     default:
         TYPE_TRACE_IMPOSSIBLE_RETURN;
@@ -5623,10 +5623,10 @@ static C_VOID JA_REL32(dasm32_context *dasmContext)
     switch (_GetOperandSize)
     {
     case 2:
-        SPRINTFSI(dasmContext, dopr, (uint16_t)(cimm), 2);
+        SPRINTFSI(dasmContext, dopr, (type_unsigned_16)(cimm), 2);
         break;
     case 4:
-        SPRINTFSI(dasmContext, dopr, (uint32_t)(cimm), 4);
+        SPRINTFSI(dasmContext, dopr, (type_unsigned_32)(cimm), 4);
         break;
     default:
         TYPE_TRACE_IMPOSSIBLE_RETURN;
@@ -5643,10 +5643,10 @@ static C_VOID JS_REL32(dasm32_context *dasmContext)
     switch (_GetOperandSize)
     {
     case 2:
-        SPRINTFSI(dasmContext, dopr, (uint16_t)(cimm), 2);
+        SPRINTFSI(dasmContext, dopr, (type_unsigned_16)(cimm), 2);
         break;
     case 4:
-        SPRINTFSI(dasmContext, dopr, (uint32_t)(cimm), 4);
+        SPRINTFSI(dasmContext, dopr, (type_unsigned_32)(cimm), 4);
         break;
     default:
         TYPE_TRACE_IMPOSSIBLE_RETURN;
@@ -5663,10 +5663,10 @@ static C_VOID JNS_REL32(dasm32_context *dasmContext)
     switch (_GetOperandSize)
     {
     case 2:
-        SPRINTFSI(dasmContext, dopr, (uint16_t)(cimm), 2);
+        SPRINTFSI(dasmContext, dopr, (type_unsigned_16)(cimm), 2);
         break;
     case 4:
-        SPRINTFSI(dasmContext, dopr, (uint32_t)(cimm), 4);
+        SPRINTFSI(dasmContext, dopr, (type_unsigned_32)(cimm), 4);
         break;
     default:
         TYPE_TRACE_IMPOSSIBLE_RETURN;
@@ -5683,10 +5683,10 @@ static C_VOID JP_REL32(dasm32_context *dasmContext)
     switch (_GetOperandSize)
     {
     case 2:
-        SPRINTFSI(dasmContext, dopr, (uint16_t)(cimm), 2);
+        SPRINTFSI(dasmContext, dopr, (type_unsigned_16)(cimm), 2);
         break;
     case 4:
-        SPRINTFSI(dasmContext, dopr, (uint32_t)(cimm), 4);
+        SPRINTFSI(dasmContext, dopr, (type_unsigned_32)(cimm), 4);
         break;
     default:
         TYPE_TRACE_IMPOSSIBLE_RETURN;
@@ -5703,10 +5703,10 @@ static C_VOID JNP_REL32(dasm32_context *dasmContext)
     switch (_GetOperandSize)
     {
     case 2:
-        SPRINTFSI(dasmContext, dopr, (uint16_t)(cimm), 2);
+        SPRINTFSI(dasmContext, dopr, (type_unsigned_16)(cimm), 2);
         break;
     case 4:
-        SPRINTFSI(dasmContext, dopr, (uint32_t)(cimm), 4);
+        SPRINTFSI(dasmContext, dopr, (type_unsigned_32)(cimm), 4);
         break;
     default:
         TYPE_TRACE_IMPOSSIBLE_RETURN;
@@ -5723,10 +5723,10 @@ static C_VOID JL_REL32(dasm32_context *dasmContext)
     switch (_GetOperandSize)
     {
     case 2:
-        SPRINTFSI(dasmContext, dopr, (uint16_t)(cimm), 2);
+        SPRINTFSI(dasmContext, dopr, (type_unsigned_16)(cimm), 2);
         break;
     case 4:
-        SPRINTFSI(dasmContext, dopr, (uint32_t)(cimm), 4);
+        SPRINTFSI(dasmContext, dopr, (type_unsigned_32)(cimm), 4);
         break;
     default:
         TYPE_TRACE_IMPOSSIBLE_RETURN;
@@ -5743,10 +5743,10 @@ static C_VOID JNL_REL32(dasm32_context *dasmContext)
     switch (_GetOperandSize)
     {
     case 2:
-        SPRINTFSI(dasmContext, dopr, (uint16_t)(cimm), 2);
+        SPRINTFSI(dasmContext, dopr, (type_unsigned_16)(cimm), 2);
         break;
     case 4:
-        SPRINTFSI(dasmContext, dopr, (uint32_t)(cimm), 4);
+        SPRINTFSI(dasmContext, dopr, (type_unsigned_32)(cimm), 4);
         break;
     default:
         TYPE_TRACE_IMPOSSIBLE_RETURN;
@@ -5763,10 +5763,10 @@ static C_VOID JNG_REL32(dasm32_context *dasmContext)
     switch (_GetOperandSize)
     {
     case 2:
-        SPRINTFSI(dasmContext, dopr, (uint16_t)(cimm), 2);
+        SPRINTFSI(dasmContext, dopr, (type_unsigned_16)(cimm), 2);
         break;
     case 4:
-        SPRINTFSI(dasmContext, dopr, (uint32_t)(cimm), 4);
+        SPRINTFSI(dasmContext, dopr, (type_unsigned_32)(cimm), 4);
         break;
     default:
         TYPE_TRACE_IMPOSSIBLE_RETURN;
@@ -5783,10 +5783,10 @@ static C_VOID JG_REL32(dasm32_context *dasmContext)
     switch (_GetOperandSize)
     {
     case 2:
-        SPRINTFSI(dasmContext, dopr, (uint16_t)(cimm), 2);
+        SPRINTFSI(dasmContext, dopr, (type_unsigned_16)(cimm), 2);
         break;
     case 4:
-        SPRINTFSI(dasmContext, dopr, (uint32_t)(cimm), 4);
+        SPRINTFSI(dasmContext, dopr, (type_unsigned_32)(cimm), 4);
         break;
     default:
         TYPE_TRACE_IMPOSSIBLE_RETURN;
@@ -5971,7 +5971,7 @@ static C_VOID SHLD_RM32_R32_I8(dasm32_context *dasmContext)
     DASM_FORMAT_ARRAY(dop, "SHLD");
     TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
     TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
-    DASM_FORMAT_ARRAY(dopr, "%s,%s,%02X", drm, dr, (uint8_t)(cimm));
+    DASM_FORMAT_ARRAY(dopr, "%s,%s,%02X", drm, dr, (type_unsigned_8)(cimm));
     TYPE_TRACE_CALL_END;
 }
 static C_VOID SHLD_RM32_R32_CL(dasm32_context *dasmContext)
@@ -6016,7 +6016,7 @@ static C_VOID SHRD_RM32_R32_I8(dasm32_context *dasmContext)
     DASM_FORMAT_ARRAY(dop, "SHRD");
     TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, _GetOperandSize, _GetOperandSize));
     TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
-    DASM_FORMAT_ARRAY(dopr, "%s,%s,%02X", drm, dr, (uint8_t)(cimm));
+    DASM_FORMAT_ARRAY(dopr, "%s,%s,%02X", drm, dr, (type_unsigned_8)(cimm));
     TYPE_TRACE_CALL_END;
 }
 static C_VOID SHRD_RM32_R32_CL(dasm32_context *dasmContext)
@@ -6121,11 +6121,11 @@ static C_VOID MOVZX_R32_RM16(dasm32_context *dasmContext)
 }
 static C_VOID INS_0F_BA(dasm32_context *dasmContext)
 {
-    uint8_t modrm, oldiop;
+    type_unsigned_8 modrm, oldiop;
     TYPE_TRACE_CALL_BEGIN("INS_0F_BA");
     _adv;
     oldiop = iop;
-    TYPE_TRACE_CHECK_RETURN(_d_code(dasmContext, (uint8_t *)(&modrm), 1));
+    TYPE_TRACE_CHECK_RETURN(_d_code(dasmContext, (type_unsigned_8 *)(&modrm), 1));
     iop = oldiop;
     TYPE_TRACE_CHECK_RETURN(_d_modrm(dasmContext, 0, _GetOperandSize));
     switch (cr)
@@ -6154,28 +6154,28 @@ static C_VOID INS_0F_BA(dasm32_context *dasmContext)
         TYPE_TRACE_BLOCK_BEGIN("BT_RM32_I8");
         DASM_FORMAT_ARRAY(dop, "BT");
         TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
-        DASM_FORMAT_ARRAY(dopr, "%s,%02X", drm, (uint8_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "%s,%02X", drm, (type_unsigned_8)(cimm));
         TYPE_TRACE_BLOCK_END;
         break;
     case 5: /* BTS_RM32_I8 */
         TYPE_TRACE_BLOCK_BEGIN("BTS_RM32_I8");
         DASM_FORMAT_ARRAY(dop, "BTS");
         TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
-        DASM_FORMAT_ARRAY(dopr, "%s,%02X", drm, (uint8_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "%s,%02X", drm, (type_unsigned_8)(cimm));
         TYPE_TRACE_BLOCK_END;
         break;
     case 6: /* BTR_RM32_I8 */
         TYPE_TRACE_BLOCK_BEGIN("BTR_RM32_I8");
         DASM_FORMAT_ARRAY(dop, "BTR");
         TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
-        DASM_FORMAT_ARRAY(dopr, "%s,%02X", drm, (uint8_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "%s,%02X", drm, (type_unsigned_8)(cimm));
         TYPE_TRACE_BLOCK_END;
         break;
     case 7: /* BTC_RM32_I8 */
         TYPE_TRACE_BLOCK_BEGIN("BTC_RM32_I8");
         DASM_FORMAT_ARRAY(dop, "BTC");
         TYPE_TRACE_CHECK_RETURN(_d_imm(dasmContext, 1));
-        DASM_FORMAT_ARRAY(dopr, "%s,%02X", drm, (uint8_t)(cimm));
+        DASM_FORMAT_ARRAY(dopr, "%s,%02X", drm, (type_unsigned_8)(cimm));
         TYPE_TRACE_BLOCK_END;
         break;
     default:
@@ -6239,10 +6239,10 @@ static C_VOID MOVSX_R32_RM16(dasm32_context *dasmContext)
     DASM_FORMAT_ARRAY(dopr, "%s,%s%s", dr, dptr, drm);
     TYPE_TRACE_CALL_END;
 }
-static uint8_t dasm32_execute(dasm32_context *dasmContext, C_CHAR *stmt, uint8_t *rcode, C_INT flag32)
+static type_unsigned_8 dasm32_execute(dasm32_context *dasmContext, C_CHAR *stmt, type_unsigned_8 *rcode, C_INT flag32)
 {
     STD_SIZE_T i;
-    uint8_t opcode, oldiop;
+    type_unsigned_8 opcode, oldiop;
 #if DASM_TRACE == 1
     type_trace_initialize(&trace);
 #endif
@@ -6783,7 +6783,7 @@ static uint8_t dasm32_execute(dasm32_context *dasmContext, C_CHAR *stmt, uint8_t
         dopr[0] = 0;
         dstmt[0] = 0;
         oldiop = iop;
-        TYPE_TRACE_CHECK_BREAK(_d_code(dasmContext, (uint8_t *)(&opcode), 1));
+        TYPE_TRACE_CHECK_BREAK(_d_code(dasmContext, (type_unsigned_8 *)(&opcode), 1));
         iop = oldiop;
         TYPE_TRACE_CHECK_BREAK((*(dtable[opcode]))(dasmContext));
         if (STD_STRLEN(dop))
@@ -6807,7 +6807,7 @@ static uint8_t dasm32_execute(dasm32_context *dasmContext, C_CHAR *stmt, uint8_t
     return iop;
 }
 
-uint8_t dasm32(C_CHAR *stmt, uint8_t *rcode, C_INT flag32)
+type_unsigned_8 dasm32(C_CHAR *stmt, type_unsigned_8 *rcode, C_INT flag32)
 {
     dasm32_context local_context;
 

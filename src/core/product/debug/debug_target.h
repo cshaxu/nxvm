@@ -31,14 +31,14 @@ typedef enum core_product_debug_pause_reason {
 
 typedef struct core_product_debug_fault_outcome {
     C_INT valid;
-    uint32_t detail;
-    uint32_t linear_pc;
-    uint64_t executed;
+    type_unsigned_32 detail;
+    type_unsigned_32 linear_pc;
+    type_unsigned_64 executed;
     C_INT diagnostic_valid;
-    uint32_t exception_mask;
-    uint32_t exception_code;
-    uint16_t cs;
-    uint32_t eip;
+    type_unsigned_32 exception_mask;
+    type_unsigned_32 exception_code;
+    type_unsigned_16 cs;
+    type_unsigned_32 eip;
 } core_product_debug_fault_outcome;
 
 typedef struct core_product_debug_target {
@@ -50,27 +50,27 @@ typedef struct core_product_debug_target {
     C_VOID (*continue_execution)(C_VOID *context);
     C_INT (*step)(C_VOID *context);
     C_INT (*read_register)(C_VOID *context, core_product_debug_register reg,
-                         uint32_t *value);
+                         type_unsigned_32 *value);
     C_INT (*write_register)(C_VOID *context, core_product_debug_register reg,
-                          uint32_t value);
+                          type_unsigned_32 value);
     C_INT (*get_code_default_size)(C_VOID *context);
-    uint32_t (*get_code_base)(C_VOID *context);
-    C_INT (*read_linear)(C_VOID *context, uint32_t address, C_VOID *out, uint8_t size);
-    C_INT (*write_linear)(C_VOID *context, uint32_t address, const C_VOID *in, uint8_t size);
-    C_INT (*read_real)(C_VOID *context, uint16_t segment, uint16_t offset,
+    type_unsigned_32 (*get_code_base)(C_VOID *context);
+    C_INT (*read_linear)(C_VOID *context, type_unsigned_32 address, C_VOID *out, type_unsigned_8 size);
+    C_INT (*write_linear)(C_VOID *context, type_unsigned_32 address, const C_VOID *in, type_unsigned_8 size);
+    C_INT (*read_real)(C_VOID *context, type_unsigned_16 segment, type_unsigned_16 offset,
                      C_VOID *out, STD_SIZE_T size);
-    C_INT (*write_real)(C_VOID *context, uint16_t segment, uint16_t offset,
+    C_INT (*write_real)(C_VOID *context, type_unsigned_16 segment, type_unsigned_16 offset,
                       const C_VOID *in, STD_SIZE_T size);
-    uint32_t (*read_port)(C_VOID *context, uint16_t port);
-    C_VOID (*write_port)(C_VOID *context, uint16_t port, uint32_t value);
-    C_VOID (*set_break_real)(C_VOID *context, uint16_t segment, uint16_t offset);
-    C_VOID (*set_break_linear)(C_VOID *context, uint32_t address);
+    type_unsigned_32 (*read_port)(C_VOID *context, type_unsigned_16 port);
+    C_VOID (*write_port)(C_VOID *context, type_unsigned_16 port, type_unsigned_32 value);
+    C_VOID (*set_break_real)(C_VOID *context, type_unsigned_16 segment, type_unsigned_16 offset);
+    C_VOID (*set_break_linear)(C_VOID *context, type_unsigned_32 address);
     C_VOID (*clear_break)(C_VOID *context, C_INT linear);
     C_VOID (*set_trace)(C_VOID *context, STD_SIZE_T count);
     C_VOID (*clear_trace)(C_VOID *context);
     STD_SIZE_T (*get_break_count)(C_VOID *context);
     C_VOID (*set_watch)(C_VOID *context, core_product_debug_watch_kind kind,
-                      uint32_t address);
+                      type_unsigned_32 address);
     C_VOID (*clear_watch)(C_VOID *context, core_product_debug_watch_kind kind);
     C_VOID (*print_registers)(C_VOID *context);
     C_VOID (*print_segment_registers)(C_VOID *context);

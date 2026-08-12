@@ -63,23 +63,23 @@ static C_VOID core_product_debug_flush_console_input(core_product_debug_context 
 #define core_product_debug_print_memory() core_product_debug_print_memory(debugTarget)
 #define core_product_debug_print_watchpoints() core_product_debug_print_watchpoints(debugTarget)
 
-static uint32_t debug_register(core_product_debug_context *debugContext, core_product_debug_register reg)
+static type_unsigned_32 debug_register(core_product_debug_context *debugContext, core_product_debug_register reg)
 {
-    uint32_t value = 0;
+    type_unsigned_32 value = 0;
     core_product_debug_read_register(reg, &value);
     return value;
 }
-static C_INT debug_set_register(core_product_debug_context *debugContext, core_product_debug_register reg, uint32_t value)
+static C_INT debug_set_register(core_product_debug_context *debugContext, core_product_debug_register reg, type_unsigned_32 value)
 {
     return core_product_debug_write_register(reg, value);
 }
-static C_INT debug_flag(core_product_debug_context *debugContext, uint32_t mask)
+static C_INT debug_flag(core_product_debug_context *debugContext, type_unsigned_32 mask)
 {
     return (debug_register(debugContext, CORE_PRODUCT_DEBUG_EFLAGS) & mask) != 0;
 }
-static C_VOID debug_set_flag(core_product_debug_context *debugContext, uint32_t mask, C_INT set)
+static C_VOID debug_set_flag(core_product_debug_context *debugContext, type_unsigned_32 mask, C_INT set)
 {
-    uint32_t flags = debug_register(debugContext, CORE_PRODUCT_DEBUG_EFLAGS);
+    type_unsigned_32 flags = debug_register(debugContext, CORE_PRODUCT_DEBUG_EFLAGS);
     debug_set_register(debugContext, CORE_PRODUCT_DEBUG_EFLAGS, set ? flags | mask : flags & ~mask);
 }
 
@@ -94,29 +94,29 @@ static C_VOID debug_set_flag(core_product_debug_context *debugContext, uint32_t 
 #define _eflags debug_register(debugContext, CORE_PRODUCT_DEBUG_EFLAGS)
 #define _eip debug_register(debugContext, CORE_PRODUCT_DEBUG_EIP)
 #define _cr(i) debug_register(debugContext, (core_product_debug_register)(CORE_PRODUCT_DEBUG_CR0 + (i)))
-#define _ax ((uint16_t)_eax)
-#define _cx ((uint16_t)_ecx)
-#define _dx ((uint16_t)_edx)
-#define _bx ((uint16_t)_ebx)
-#define _sp ((uint16_t)_esp)
-#define _bp ((uint16_t)_ebp)
-#define _si ((uint16_t)_esi)
-#define _di ((uint16_t)_edi)
-#define _ip ((uint16_t)_eip)
-#define _es ((uint16_t)debug_register(debugContext, CORE_PRODUCT_DEBUG_ES))
-#define _cs ((uint16_t)debug_register(debugContext, CORE_PRODUCT_DEBUG_CS))
-#define _ss ((uint16_t)debug_register(debugContext, CORE_PRODUCT_DEBUG_SS))
-#define _ds ((uint16_t)debug_register(debugContext, CORE_PRODUCT_DEBUG_DS))
-#define _fs ((uint16_t)debug_register(debugContext, CORE_PRODUCT_DEBUG_FS))
-#define _gs ((uint16_t)debug_register(debugContext, CORE_PRODUCT_DEBUG_GS))
+#define _ax ((type_unsigned_16)_eax)
+#define _cx ((type_unsigned_16)_ecx)
+#define _dx ((type_unsigned_16)_edx)
+#define _bx ((type_unsigned_16)_ebx)
+#define _sp ((type_unsigned_16)_esp)
+#define _bp ((type_unsigned_16)_ebp)
+#define _si ((type_unsigned_16)_esi)
+#define _di ((type_unsigned_16)_edi)
+#define _ip ((type_unsigned_16)_eip)
+#define _es ((type_unsigned_16)debug_register(debugContext, CORE_PRODUCT_DEBUG_ES))
+#define _cs ((type_unsigned_16)debug_register(debugContext, CORE_PRODUCT_DEBUG_CS))
+#define _ss ((type_unsigned_16)debug_register(debugContext, CORE_PRODUCT_DEBUG_SS))
+#define _ds ((type_unsigned_16)debug_register(debugContext, CORE_PRODUCT_DEBUG_DS))
+#define _fs ((type_unsigned_16)debug_register(debugContext, CORE_PRODUCT_DEBUG_FS))
+#define _gs ((type_unsigned_16)debug_register(debugContext, CORE_PRODUCT_DEBUG_GS))
 
 static C_VOID seterr(core_product_debug_context *debugContext, STD_SIZE_T pos)
 {
     nErrPos = (STD_SIZE_T)(arg[pos] - strCmdCopy + STD_STRLEN(arg[pos]) + 1);
 }
-static uint8_t scannubit8(core_product_debug_context *debugContext, C_CHAR *s)
+static type_unsigned_8 scannubit8(core_product_debug_context *debugContext, C_CHAR *s)
 {
-    uint8_t ans = 0;
+    type_unsigned_8 ans = 0;
     STD_SIZE_T i = 0;
     if (s[0] == '\'' && s[2] == '\'')
     {
@@ -147,9 +147,9 @@ static uint8_t scannubit8(core_product_debug_context *debugContext, C_CHAR *s)
     }
     return ans;
 }
-static uint16_t scannubit16(core_product_debug_context *debugContext, C_CHAR *s)
+static type_unsigned_16 scannubit16(core_product_debug_context *debugContext, C_CHAR *s)
 {
-    uint16_t ans = 0;
+    type_unsigned_16 ans = 0;
     STD_SIZE_T i = 0;
     type_string_lower(s);
     while (s[i] != '\0' && s[i] != '\n')
@@ -176,9 +176,9 @@ static uint16_t scannubit16(core_product_debug_context *debugContext, C_CHAR *s)
     }
     return ans;
 }
-static uint32_t scannubit32(core_product_debug_context *debugContext, C_CHAR *s)
+static type_unsigned_32 scannubit32(core_product_debug_context *debugContext, C_CHAR *s)
 {
-    uint32_t ans = 0;
+    type_unsigned_32 ans = 0;
     STD_SIZE_T i = 0;
     type_string_lower(s);
     while (s[i] != '\0' && s[i] != '\n')
@@ -215,7 +215,7 @@ static uint32_t scannubit32(core_product_debug_context *debugContext, C_CHAR *s)
 #define seg (debugContext->parsed_segment)
 #define ptr (debugContext->parsed_offset)
 
-static C_VOID addrparse(core_product_debug_context *debugContext, uint16_t defseg, const C_CHAR *addr)
+static C_VOID addrparse(core_product_debug_context *debugContext, type_unsigned_16 defseg, const C_CHAR *addr)
 {
     C_CHAR *cseg, *cptr;
     C_CHAR ccopy[0x100];
@@ -259,7 +259,7 @@ static C_VOID aconsole(core_product_debug_context *debugContext)
 {
     STD_SIZE_T i, len, errAsmPos;
     C_CHAR cmdAsmBuff[0x100];
-    uint8_t acode[15];
+    type_unsigned_8 acode[15];
     C_INT flagExitAsm = 0;
     while (!flagExitAsm)
     {
@@ -284,12 +284,12 @@ static C_VOID aconsole(core_product_debug_context *debugContext)
         }
         else
         {
-            if (core_product_debug_write_linear((asmSegRec << 4) + asmPtrRec, (C_VOID *)acode, (uint8_t)len))
+            if (core_product_debug_write_linear((asmSegRec << 4) + asmPtrRec, (C_VOID *)acode, (type_unsigned_8)len))
             {
                 STD_PRINTF("debug: fail to write to L%08X\n", (asmSegRec << 4) + asmPtrRec);
                 return;
             }
-            asmPtrRec += (uint16_t)len;
+            asmPtrRec += (type_unsigned_16)len;
         }
         if (errAsmPos)
         {
@@ -327,8 +327,8 @@ static C_VOID a(core_product_debug_context *debugContext)
 static C_VOID c(core_product_debug_context *debugContext)
 {
     STD_SIZE_T i;
-    uint8_t val1, val2;
-    uint16_t seg1, ptr1, seg2, ptr2, range;
+    type_unsigned_8 val1, val2;
+    type_unsigned_16 seg1, ptr1, seg2, ptr2, range;
     if (narg != 4)
     {
         seterr(debugContext, narg - 1);
@@ -346,28 +346,28 @@ static C_VOID c(core_product_debug_context *debugContext)
         {
             for (i = 0; i <= range; ++i)
             {
-                core_product_debug_read_real(seg1, (uint16_t)(ptr1 + i), (C_VOID *)(&val1), 1);
-                core_product_debug_read_real(seg2, (uint16_t)(ptr2 + i), (C_VOID *)(&val2), 1);
+                core_product_debug_read_real(seg1, (type_unsigned_16)(ptr1 + i), (C_VOID *)(&val1), 1);
+                core_product_debug_read_real(seg2, (type_unsigned_16)(ptr2 + i), (C_VOID *)(&val2), 1);
                 if (val1 != val2)
                 {
-                    STD_PRINTF("%04X:%04X  ", seg1, (uint16_t)(ptr1 + i));
+                    STD_PRINTF("%04X:%04X  ", seg1, (type_unsigned_16)(ptr1 + i));
                     STD_PRINTF("%02X  %02X", val1, val2);
-                    STD_PRINTF("  %04X:%04X\n", seg2, (uint16_t)(ptr2 + i));
+                    STD_PRINTF("  %04X:%04X\n", seg2, (type_unsigned_16)(ptr2 + i));
                 }
             }
         }
     }
 }
 /* dump */
-static C_VOID dprint(core_product_debug_context *debugContext, uint16_t segment, uint16_t start, uint16_t end)
+static C_VOID dprint(core_product_debug_context *debugContext, type_unsigned_16 segment, type_unsigned_16 start, type_unsigned_16 end)
 {
     C_CHAR t, c[0x11];
-    uint16_t iaddr;
+    type_unsigned_16 iaddr;
     if (start > end)
         end = 0xffff;
-    if ((uint32_t)((segment << 4) + end) > 0x000fffff)
+    if ((type_unsigned_32)((segment << 4) + end) > 0x000fffff)
     {
-        end = (uint16_t)(0x000fffff - (segment << 4));
+        end = (type_unsigned_16)(0x000fffff - (segment << 4));
     }
     c[0x10] = '\0';
     if (end < start)
@@ -420,7 +420,7 @@ static C_VOID dprint(core_product_debug_context *debugContext, uint16_t segment,
 }
 static C_VOID d(core_product_debug_context *debugContext)
 {
-    uint16_t ptr2;
+    type_unsigned_16 ptr2;
     if (narg == 1)
     {
         dprint(debugContext, dumpSegRec, dumpPtrRec, dumpPtrRec + 0x7f);
@@ -460,7 +460,7 @@ static C_VOID d(core_product_debug_context *debugContext)
 static C_VOID e(core_product_debug_context *debugContext)
 {
     STD_SIZE_T i;
-    uint8_t val;
+    type_unsigned_8 val;
     C_CHAR s[0x100];
     if (narg == 1)
     {
@@ -510,10 +510,10 @@ static C_VOID e(core_product_debug_context *debugContext)
 /* fill */
 static C_VOID f(core_product_debug_context *debugContext)
 {
-    uint8_t nbyte;
-    uint8_t val;
+    type_unsigned_8 nbyte;
+    type_unsigned_8 val;
     STD_SIZE_T i, j;
-    uint16_t end;
+    type_unsigned_16 end;
     if (narg < 4)
     {
         seterr(debugContext, narg - 1);
@@ -528,13 +528,13 @@ static C_VOID f(core_product_debug_context *debugContext)
         }
         if (!nErrPos)
         {
-            nbyte = (uint8_t)narg - 3;
+            nbyte = (type_unsigned_8)narg - 3;
             for (i = ptr, j = 0; i <= end; ++i, ++j)
             {
                 val = scannubit8(debugContext, arg[j % nbyte + 3]);
                 if (!nErrPos)
                 {
-                    core_product_debug_write_real(seg, (uint16_t)i, (C_VOID *)(&val), 1);
+                    core_product_debug_write_real(seg, (type_unsigned_16)i, (C_VOID *)(&val), 1);
                 }
                 else
                 {
@@ -592,7 +592,7 @@ static C_VOID g(core_product_debug_context *debugContext)
 /* hex */
 static C_VOID h(core_product_debug_context *debugContext)
 {
-    uint16_t val1, val2;
+    type_unsigned_16 val1, val2;
     if (narg != 3)
     {
         seterr(debugContext, narg - 1);
@@ -603,9 +603,9 @@ static C_VOID h(core_product_debug_context *debugContext)
         val2 = scannubit16(debugContext, arg[2]);
         if (!nErrPos)
         {
-            STD_PRINTF("%04X", (uint16_t)(val1 + val2));
+            STD_PRINTF("%04X", (type_unsigned_16)(val1 + val2));
             STD_PRINTF("  ");
-            STD_PRINTF("%04X", (uint16_t)(val1 - val2));
+            STD_PRINTF("%04X", (type_unsigned_16)(val1 - val2));
             STD_PRINTF("\n");
         }
     }
@@ -613,7 +613,7 @@ static C_VOID h(core_product_debug_context *debugContext)
 /* input */
 static C_VOID i(core_product_debug_context *debugContext)
 {
-    uint16_t in;
+    type_unsigned_16 in;
     if (narg != 2)
     {
         seterr(debugContext, narg - 1);
@@ -631,9 +631,9 @@ static C_VOID i(core_product_debug_context *debugContext)
 /* load */
 static C_VOID l(core_product_debug_context *debugContext)
 {
-    uint8_t c;
-    uint16_t i = 0;
-    uint32_t len = 0;
+    type_unsigned_8 c;
+    type_unsigned_16 i = 0;
+    type_unsigned_32 len = 0;
     STD_FILE *load = STD_FOPEN(strFileName, "rb");
     if (!load)
         STD_PRINTF("File not found\n");
@@ -661,9 +661,9 @@ static C_VOID l(core_product_debug_context *debugContext)
                 i = len / 0x10000;
                 c = STD_FGETC(load);
             }
-            debug_set_register(debugContext, CORE_PRODUCT_DEBUG_ECX, (uint16_t)(len & 0xffff));
+            debug_set_register(debugContext, CORE_PRODUCT_DEBUG_ECX, (type_unsigned_16)(len & 0xffff));
             if (len > 0xffff)
-                debug_set_register(debugContext, CORE_PRODUCT_DEBUG_EBX, (uint16_t)(len >> 16));
+                debug_set_register(debugContext, CORE_PRODUCT_DEBUG_EBX, (type_unsigned_16)(len >> 16));
             else
                 debug_set_register(debugContext, CORE_PRODUCT_DEBUG_EBX, 0x0000u);
         }
@@ -674,8 +674,8 @@ static C_VOID l(core_product_debug_context *debugContext)
 static C_VOID m(core_product_debug_context *debugContext)
 {
     STD_SIZE_T i;
-    uint8_t val;
-    uint16_t seg1, ptr1, range, seg2, ptr2;
+    type_unsigned_8 val;
+    type_unsigned_16 seg1, ptr1, range, seg2, ptr2;
     if (narg != 4)
         seterr(debugContext, narg - 1);
     else
@@ -693,16 +693,16 @@ static C_VOID m(core_product_debug_context *debugContext)
             {
                 for (i = 0; i <= range; ++i)
                 {
-                    core_product_debug_read_real(seg1, (uint16_t)(ptr1 + range - i), (C_VOID *)(&val), 1);
-                    core_product_debug_write_real(seg2, (uint16_t)(ptr2 + range - i), (C_VOID *)(&val), 1);
+                    core_product_debug_read_real(seg1, (type_unsigned_16)(ptr1 + range - i), (C_VOID *)(&val), 1);
+                    core_product_debug_write_real(seg2, (type_unsigned_16)(ptr2 + range - i), (C_VOID *)(&val), 1);
                 }
             }
             else if (((seg1 << 4) + ptr1) > ((seg2 << 4) + ptr2))
             {
                 for (i = 0; i <= range; ++i)
                 {
-                    core_product_debug_read_real(seg1, (uint16_t)(ptr1 + i), (C_VOID *)(&val), 1);
-                    core_product_debug_write_real(seg2, (uint16_t)(ptr2 + i), (C_VOID *)(&val), 1);
+                    core_product_debug_read_real(seg1, (type_unsigned_16)(ptr1 + i), (C_VOID *)(&val), 1);
+                    core_product_debug_write_real(seg2, (type_unsigned_16)(ptr2 + i), (C_VOID *)(&val), 1);
                 }
             }
         }
@@ -719,8 +719,8 @@ static C_VOID n(core_product_debug_context *debugContext)
 /* output */
 static C_VOID o(core_product_debug_context *debugContext)
 {
-    uint16_t out;
-    uint32_t value;
+    type_unsigned_16 out;
+    type_unsigned_32 value;
     if (narg != 3)
         seterr(debugContext, narg - 1);
     else
@@ -740,14 +740,14 @@ static C_VOID q(core_product_debug_context *debugContext)
     flagExit = 1;
 }
 /* register */
-static uint8_t uprintins(core_product_debug_context *debugContext, uint16_t segment, uint16_t off)
+static type_unsigned_8 uprintins(core_product_debug_context *debugContext, type_unsigned_16 segment, type_unsigned_16 off)
 {
     STD_SIZE_T i;
     STD_SIZE_T sbin_remaining;
     C_INT binary_failed = TYPE_FALSE;
     C_INT format_result;
-    uint8_t len;
-    uint8_t ucode[15];
+    type_unsigned_8 len;
+    type_unsigned_8 ucode[15];
     C_CHAR str[0x100], stmt[0x100], sbin[0x100];
     C_CHAR *sbin_cursor;
     if (core_product_debug_read_linear((segment << 4) + off, (C_VOID *)ucode, 15))
@@ -764,7 +764,7 @@ static uint8_t uprintins(core_product_debug_context *debugContext, uint16_t segm
         for (i = 0; i < len; ++i)
         {
             format_result = STD_SNPRINTF_APPEND(&sbin_cursor, &sbin_remaining,
-                "%02X", (uint8_t)ucode[i]);
+                "%02X", (type_unsigned_8)ucode[i]);
             if (format_result < 0 || (STD_SIZE_T)format_result >= sbin_remaining) {
                 binary_failed = TYPE_TRUE;
                 len = 0;
@@ -821,7 +821,7 @@ static C_VOID rprintregs(core_product_debug_context *debugContext)
 }
 static C_VOID rscanregs(core_product_debug_context *debugContext)
 {
-    uint16_t value;
+    type_unsigned_16 value;
     C_CHAR s[0x100];
     if (!STD_STRCMP(arg[1], "ax"))
     {
@@ -832,7 +832,7 @@ static C_VOID rscanregs(core_product_debug_context *debugContext)
         value = scannubit16(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos)
         {
-            debug_set_register(debugContext, CORE_PRODUCT_DEBUG_EAX, (uint16_t)value);
+            debug_set_register(debugContext, CORE_PRODUCT_DEBUG_EAX, (type_unsigned_16)value);
         }
     }
     else if (!STD_STRCMP(arg[1], "bx"))
@@ -844,7 +844,7 @@ static C_VOID rscanregs(core_product_debug_context *debugContext)
         value = scannubit16(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos)
         {
-            debug_set_register(debugContext, CORE_PRODUCT_DEBUG_EBX, (uint16_t)value);
+            debug_set_register(debugContext, CORE_PRODUCT_DEBUG_EBX, (type_unsigned_16)value);
         }
     }
     else if (!STD_STRCMP(arg[1], "cx"))
@@ -856,7 +856,7 @@ static C_VOID rscanregs(core_product_debug_context *debugContext)
         value = scannubit16(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos)
         {
-            debug_set_register(debugContext, CORE_PRODUCT_DEBUG_ECX, (uint16_t)value);
+            debug_set_register(debugContext, CORE_PRODUCT_DEBUG_ECX, (type_unsigned_16)value);
         }
     }
     else if (!STD_STRCMP(arg[1], "dx"))
@@ -868,7 +868,7 @@ static C_VOID rscanregs(core_product_debug_context *debugContext)
         value = scannubit16(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos)
         {
-            debug_set_register(debugContext, CORE_PRODUCT_DEBUG_EDX, (uint16_t)value);
+            debug_set_register(debugContext, CORE_PRODUCT_DEBUG_EDX, (type_unsigned_16)value);
         }
     }
     else if (!STD_STRCMP(arg[1], "bp"))
@@ -880,7 +880,7 @@ static C_VOID rscanregs(core_product_debug_context *debugContext)
         value = scannubit16(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos)
         {
-            debug_set_register(debugContext, CORE_PRODUCT_DEBUG_EBP, (uint16_t)value);
+            debug_set_register(debugContext, CORE_PRODUCT_DEBUG_EBP, (type_unsigned_16)value);
         }
     }
     else if (!STD_STRCMP(arg[1], "sp"))
@@ -892,7 +892,7 @@ static C_VOID rscanregs(core_product_debug_context *debugContext)
         value = scannubit16(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos)
         {
-            debug_set_register(debugContext, CORE_PRODUCT_DEBUG_ESP, (uint16_t)value);
+            debug_set_register(debugContext, CORE_PRODUCT_DEBUG_ESP, (type_unsigned_16)value);
         }
     }
     else if (!STD_STRCMP(arg[1], "si"))
@@ -904,7 +904,7 @@ static C_VOID rscanregs(core_product_debug_context *debugContext)
         value = scannubit16(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos)
         {
-            debug_set_register(debugContext, CORE_PRODUCT_DEBUG_ESI, (uint16_t)value);
+            debug_set_register(debugContext, CORE_PRODUCT_DEBUG_ESI, (type_unsigned_16)value);
         }
     }
     else if (!STD_STRCMP(arg[1], "di"))
@@ -916,7 +916,7 @@ static C_VOID rscanregs(core_product_debug_context *debugContext)
         value = scannubit16(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos)
         {
-            debug_set_register(debugContext, CORE_PRODUCT_DEBUG_EDI, (uint16_t)value);
+            debug_set_register(debugContext, CORE_PRODUCT_DEBUG_EDI, (type_unsigned_16)value);
         }
     }
     else if (!STD_STRCMP(arg[1], "ss"))
@@ -928,9 +928,9 @@ static C_VOID rscanregs(core_product_debug_context *debugContext)
         value = scannubit16(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos)
         {
-            if (debug_set_register(debugContext, CORE_PRODUCT_DEBUG_SS, (uint16_t)value))
+            if (debug_set_register(debugContext, CORE_PRODUCT_DEBUG_SS, (type_unsigned_16)value))
             {
-                STD_PRINTF("debug: fail to load ss from %04X\n", (uint16_t)value);
+                STD_PRINTF("debug: fail to load ss from %04X\n", (type_unsigned_16)value);
             }
         }
     }
@@ -943,9 +943,9 @@ static C_VOID rscanregs(core_product_debug_context *debugContext)
         value = scannubit16(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos)
         {
-            if (debug_set_register(debugContext, CORE_PRODUCT_DEBUG_CS, (uint16_t)value))
+            if (debug_set_register(debugContext, CORE_PRODUCT_DEBUG_CS, (type_unsigned_16)value))
             {
-                STD_PRINTF("debug: fail to load cs from %04X\n", (uint16_t)value);
+                STD_PRINTF("debug: fail to load cs from %04X\n", (type_unsigned_16)value);
             }
         }
     }
@@ -958,9 +958,9 @@ static C_VOID rscanregs(core_product_debug_context *debugContext)
         value = scannubit16(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos)
         {
-            if (debug_set_register(debugContext, CORE_PRODUCT_DEBUG_DS, (uint16_t)value))
+            if (debug_set_register(debugContext, CORE_PRODUCT_DEBUG_DS, (type_unsigned_16)value))
             {
-                STD_PRINTF("debug: fail to load ds from %04X\n", (uint16_t)value);
+                STD_PRINTF("debug: fail to load ds from %04X\n", (type_unsigned_16)value);
             }
         }
     }
@@ -973,9 +973,9 @@ static C_VOID rscanregs(core_product_debug_context *debugContext)
         value = scannubit16(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos)
         {
-            if (debug_set_register(debugContext, CORE_PRODUCT_DEBUG_ES, (uint16_t)value))
+            if (debug_set_register(debugContext, CORE_PRODUCT_DEBUG_ES, (type_unsigned_16)value))
             {
-                STD_PRINTF("debug: fail to load es from %04X\n", (uint16_t)value);
+                STD_PRINTF("debug: fail to load es from %04X\n", (type_unsigned_16)value);
             }
         }
     }
@@ -1089,8 +1089,8 @@ static C_VOID s(core_product_debug_context *debugContext)
 {
     STD_SIZE_T i;
     C_INT flagFound = 0;
-    uint16_t p, pfront, start, end;
-    uint8_t cstart, val;
+    type_unsigned_16 p, pfront, start, end;
+    type_unsigned_8 cstart, val;
     if (narg < 4)
     {
         seterr(debugContext, narg - 1);
@@ -1141,7 +1141,7 @@ static C_VOID s(core_product_debug_context *debugContext)
 static C_VOID t(core_product_debug_context *debugContext)
 {
     STD_SIZE_T i;
-    uint16_t count;
+    type_unsigned_16 count;
     if (core_product_debug_is_running())
     {
         STD_PRINTF("Machine is already running.\n");
@@ -1203,15 +1203,15 @@ static C_VOID t(core_product_debug_context *debugContext)
     core_product_debug_clear_trace();
 }
 /* unassemble */
-static C_VOID uprint(core_product_debug_context *debugContext, uint16_t segment, uint16_t start, uint16_t end)
+static C_VOID uprint(core_product_debug_context *debugContext, type_unsigned_16 segment, type_unsigned_16 start, type_unsigned_16 end)
 {
-    uint8_t len;
-    uint32_t boundary;
+    type_unsigned_8 len;
+    type_unsigned_32 boundary;
     if (start > end)
     {
         end = 0xffff;
     }
-    if ((uint32_t)((segment << 4) + end) > 0xfffff)
+    if ((type_unsigned_32)((segment << 4) + end) > 0xfffff)
     {
         end = (0xfffff - (segment << 4));
     }
@@ -1219,7 +1219,7 @@ static C_VOID uprint(core_product_debug_context *debugContext, uint16_t segment,
     {
         len = uprintins(debugContext, segment, start);
         start += len;
-        boundary = (uint32_t)start + (uint32_t)len;
+        boundary = (type_unsigned_32)start + (type_unsigned_32)len;
         if (boundary > 0xffff)
         {
             break;
@@ -1231,7 +1231,7 @@ static C_VOID uprint(core_product_debug_context *debugContext, uint16_t segment,
 }
 static C_VOID u(core_product_debug_context *debugContext)
 {
-    uint16_t ptr2;
+    type_unsigned_16 ptr2;
     if (narg == 1)
     {
         uprint(debugContext, uasmSegRec, uasmPtrRec, uasmPtrRec + 0x1f);
@@ -1300,8 +1300,8 @@ static C_VOID v(core_product_debug_context *debugContext)
 static C_VOID w(core_product_debug_context *debugContext)
 {
     STD_SIZE_T i = 0;
-    uint8_t val;
-    uint32_t len = (_bx << 16) + _cx;
+    type_unsigned_8 val;
+    type_unsigned_32 len = (_bx << 16) + _cx;
     STD_FILE *write;
     if (!STD_STRLEN(strFileName))
     {
@@ -1339,7 +1339,7 @@ static C_VOID w(core_product_debug_context *debugContext)
         {
             while (i < len)
             {
-                core_product_debug_read_real(seg, (uint8_t)(ptr + i++), (C_VOID *)(&val), 1);
+                core_product_debug_read_real(seg, (type_unsigned_8)(ptr + i++), (C_VOID *)(&val), 1);
                 STD_FPUTC(val, write);
             }
         }
@@ -1349,18 +1349,18 @@ static C_VOID w(core_product_debug_context *debugContext)
 /* DEBUG CMD END */
 
 /* EXTENDED DEBUG CMD BEGIN */
-uint32_t xalin;
-uint32_t xdlin;
-uint32_t xulin;
+type_unsigned_32 xalin;
+type_unsigned_32 xdlin;
+type_unsigned_32 xulin;
 /* print */
-static uint8_t xuprintins(core_product_debug_context *debugContext, uint32_t linear)
+static type_unsigned_8 xuprintins(core_product_debug_context *debugContext, type_unsigned_32 linear)
 {
     STD_SIZE_T i;
     STD_SIZE_T sbin_remaining;
     C_INT binary_failed = TYPE_FALSE;
     C_INT format_result;
-    uint8_t len;
-    uint8_t ucode[15];
+    type_unsigned_8 len;
+    type_unsigned_8 ucode[15];
     C_CHAR str[0x100], stmt[0x100], sbin[0x100];
     C_CHAR *sbin_cursor;
     if (core_product_debug_read_linear(linear, (C_VOID *)ucode, 15))
@@ -1377,7 +1377,7 @@ static uint8_t xuprintins(core_product_debug_context *debugContext, uint32_t lin
         for (i = 0; i < len; ++i)
         {
             format_result = STD_SNPRINTF_APPEND(&sbin_cursor, &sbin_remaining,
-                "%02X", (uint8_t)ucode[i]);
+                "%02X", (type_unsigned_8)ucode[i]);
             if (format_result < 0 || (STD_SIZE_T)format_result >= sbin_remaining) {
                 binary_failed = TYPE_TRUE;
                 len = 0;
@@ -1404,11 +1404,11 @@ static C_VOID xrprintreg(core_product_debug_context *debugContext)
     xuprintins(debugContext, xulin);
 }
 /* assemble */
-static C_VOID xaconsole(core_product_debug_context *debugContext, uint32_t linear)
+static C_VOID xaconsole(core_product_debug_context *debugContext, type_unsigned_32 linear)
 {
     STD_SIZE_T i, len, errAsmPos;
     C_CHAR astmt[0x100];
-    uint8_t acode[15];
+    type_unsigned_8 acode[15];
     C_INT flagExitAsm = 0;
     while (!flagExitAsm)
     {
@@ -1429,12 +1429,12 @@ static C_VOID xaconsole(core_product_debug_context *debugContext, uint32_t linea
         }
         else
         {
-            if (core_product_debug_write_linear(linear, (C_VOID *)acode, (uint8_t)len))
+            if (core_product_debug_write_linear(linear, (C_VOID *)acode, (type_unsigned_8)len))
             {
                 STD_PRINTF("debug: fail to write to L%08X\n", linear);
                 return;
             }
-            linear += (uint32_t)len;
+            linear += (type_unsigned_32)len;
         }
         if (errAsmPos)
         {
@@ -1471,8 +1471,8 @@ static C_VOID xa(core_product_debug_context *debugContext)
 static C_VOID xc(core_product_debug_context *debugContext)
 {
     STD_SIZE_T i, count;
-    uint32_t lin1, lin2;
-    uint8_t val1, val2;
+    type_unsigned_32 lin1, lin2;
+    type_unsigned_8 val1, val2;
     if (narg != 4)
     {
         seterr(debugContext, narg - 1);
@@ -1500,29 +1500,29 @@ static C_VOID xc(core_product_debug_context *debugContext)
         }
         for (i = 0; i < count; ++i)
         {
-            if (core_product_debug_read_linear((uint32_t)(lin1 + i), (C_VOID *)(&val1), 1))
+            if (core_product_debug_read_linear((type_unsigned_32)(lin1 + i), (C_VOID *)(&val1), 1))
             {
-                STD_PRINTF("debug: fail to read from L%08X.\n", (uint32_t)(lin1 + i));
+                STD_PRINTF("debug: fail to read from L%08X.\n", (type_unsigned_32)(lin1 + i));
                 return;
             }
-            if (core_product_debug_read_linear((uint32_t)(lin2 + i), (C_VOID *)(&val2), 1))
+            if (core_product_debug_read_linear((type_unsigned_32)(lin2 + i), (C_VOID *)(&val2), 1))
             {
-                STD_PRINTF("debug: fail to read from L%08X.\n", (uint32_t)(lin2 + i));
+                STD_PRINTF("debug: fail to read from L%08X.\n", (type_unsigned_32)(lin2 + i));
                 return;
             }
             if (val1 != val2)
                 STD_PRINTF("L%08X  %02X  %02X  L%08X\n",
-                           (uint32_t)(lin1 + i), val1, val2, (uint32_t)(lin2 + i));
+                           (type_unsigned_32)(lin1 + i), val1, val2, (type_unsigned_32)(lin2 + i));
         }
     }
 }
 /* dump */
-static C_VOID xdprint(core_product_debug_context *debugContext, uint32_t linear, uint32_t count)
+static C_VOID xdprint(core_product_debug_context *debugContext, type_unsigned_32 linear, type_unsigned_32 count)
 {
     C_CHAR t, c[0x11];
-    uint32_t ilinear;
-    uint32_t start = linear;
-    uint32_t end = linear + count - 1;
+    type_unsigned_32 ilinear;
+    type_unsigned_32 start = linear;
+    type_unsigned_32 end = linear + count - 1;
     c[0x10] = '\0';
     if (!count)
     {
@@ -1575,7 +1575,7 @@ static C_VOID xdprint(core_product_debug_context *debugContext, uint32_t linear,
 }
 static C_VOID xd(core_product_debug_context *debugContext)
 {
-    uint32_t count;
+    type_unsigned_32 count;
     if (narg == 1)
     {
         xdprint(debugContext, xdlin, 0x80);
@@ -1608,8 +1608,8 @@ static C_VOID xd(core_product_debug_context *debugContext)
 static C_VOID xe(core_product_debug_context *debugContext)
 {
     STD_SIZE_T i;
-    uint8_t val;
-    uint32_t linear;
+    type_unsigned_8 val;
+    type_unsigned_32 linear;
     C_CHAR s[0x100];
     if (narg == 1)
     {
@@ -1672,9 +1672,9 @@ static C_VOID xe(core_product_debug_context *debugContext)
 /* fill */
 static C_VOID xf(core_product_debug_context *debugContext)
 {
-    uint8_t val;
+    type_unsigned_8 val;
     STD_SIZE_T i, j, count, bcount;
-    uint32_t linear;
+    type_unsigned_32 linear;
     if (narg < 4)
     {
         seterr(debugContext, narg - 1);
@@ -1699,9 +1699,9 @@ static C_VOID xf(core_product_debug_context *debugContext)
             {
                 return;
             }
-            if (core_product_debug_write_linear((uint32_t)(linear + i), (C_VOID *)(&val), 1))
+            if (core_product_debug_write_linear((type_unsigned_32)(linear + i), (C_VOID *)(&val), 1))
             {
-                STD_PRINTF("debug: fail to write to L%08X.\n", (uint32_t)(linear + i));
+                STD_PRINTF("debug: fail to write to L%08X.\n", (type_unsigned_32)(linear + i));
                 return;
             }
         }
@@ -1711,7 +1711,7 @@ static C_VOID xf(core_product_debug_context *debugContext)
 static C_VOID xg(core_product_debug_context *debugContext)
 {
     STD_SIZE_T i, count = 0;
-    uint32_t linear;
+    type_unsigned_32 linear;
     if (core_product_debug_is_running())
     {
         STD_PRINTF("Machine is already running.\n");
@@ -1756,9 +1756,9 @@ static C_VOID xg(core_product_debug_context *debugContext)
 /* move */
 static C_VOID xm(core_product_debug_context *debugContext)
 {
-    uint8_t val;
+    type_unsigned_8 val;
     STD_SIZE_T i;
-    uint32_t lin1, lin2, count;
+    type_unsigned_32 lin1, lin2, count;
     if (narg != 4)
     {
         seterr(debugContext, narg - 1);
@@ -1782,12 +1782,12 @@ static C_VOID xm(core_product_debug_context *debugContext)
         }
         for (i = 0; i < count; ++i)
         {
-            if (core_product_debug_read_linear((uint32_t)(lin1 + i), (C_VOID *)(&val), 1))
+            if (core_product_debug_read_linear((type_unsigned_32)(lin1 + i), (C_VOID *)(&val), 1))
             {
                 STD_PRINTF("debug: fail to read from L%08X.\n", lin1 + i);
                 return;
             }
-            if (core_product_debug_write_linear((uint32_t)(lin2 + i), (C_VOID *)(&val), 1))
+            if (core_product_debug_write_linear((type_unsigned_32)(lin2 + i), (C_VOID *)(&val), 1))
             {
                 STD_PRINTF("debug: fail to write to L%08X.\n", lin2 + i);
                 return;
@@ -1799,8 +1799,8 @@ static C_VOID xm(core_product_debug_context *debugContext)
 static C_VOID xs(core_product_debug_context *debugContext)
 {
     STD_SIZE_T i, count, bcount;
-    uint32_t linear;
-    uint8_t val, mem[256], line[256];
+    type_unsigned_32 linear;
+    type_unsigned_8 val, mem[256], line[256];
     if (narg < 4)
     {
         seterr(debugContext, narg - 1);
@@ -1830,7 +1830,7 @@ static C_VOID xs(core_product_debug_context *debugContext)
         }
         for (i = 0; i < count; ++i)
         {
-            if (core_product_debug_read_linear((uint32_t)(linear + i), (C_VOID *)mem, (uint8_t)bcount))
+            if (core_product_debug_read_linear((type_unsigned_32)(linear + i), (C_VOID *)mem, (type_unsigned_8)bcount))
             {
                 STD_PRINTF("debug: fail to read from L%08X.\n", linear + i);
                 return;
@@ -1846,7 +1846,7 @@ static C_VOID xs(core_product_debug_context *debugContext)
 static C_VOID xt(core_product_debug_context *debugContext)
 {
     STD_SIZE_T i;
-    uint32_t count;
+    type_unsigned_32 count;
     if (core_product_debug_is_running())
     {
         STD_PRINTF("Machine is already running.\n");
@@ -1902,7 +1902,7 @@ static C_VOID xt(core_product_debug_context *debugContext)
 /* register */
 static C_VOID xrscanreg(core_product_debug_context *debugContext)
 {
-    uint32_t value;
+    type_unsigned_32 value;
     C_CHAR s[0x100];
     if (!STD_STRCMP(arg[1], "eax"))
     {
@@ -2032,9 +2032,9 @@ static C_VOID xrscanreg(core_product_debug_context *debugContext)
         value = scannubit16(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos)
         {
-            if (debug_set_register(debugContext, CORE_PRODUCT_DEBUG_ES, (uint16_t)value))
+            if (debug_set_register(debugContext, CORE_PRODUCT_DEBUG_ES, (type_unsigned_16)value))
             {
-                STD_PRINTF("debug: fail to load es from %04X\n", (uint16_t)value);
+                STD_PRINTF("debug: fail to load es from %04X\n", (type_unsigned_16)value);
             }
         }
     }
@@ -2046,9 +2046,9 @@ static C_VOID xrscanreg(core_product_debug_context *debugContext)
         value = scannubit16(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos)
         {
-            if (debug_set_register(debugContext, CORE_PRODUCT_DEBUG_CS, (uint16_t)value))
+            if (debug_set_register(debugContext, CORE_PRODUCT_DEBUG_CS, (type_unsigned_16)value))
             {
-                STD_PRINTF("debug: fail to load cs from %04X\n", (uint16_t)value);
+                STD_PRINTF("debug: fail to load cs from %04X\n", (type_unsigned_16)value);
             }
         }
     }
@@ -2060,9 +2060,9 @@ static C_VOID xrscanreg(core_product_debug_context *debugContext)
         value = scannubit16(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos)
         {
-            if (debug_set_register(debugContext, CORE_PRODUCT_DEBUG_SS, (uint16_t)value))
+            if (debug_set_register(debugContext, CORE_PRODUCT_DEBUG_SS, (type_unsigned_16)value))
             {
-                STD_PRINTF("debug: fail to load ss from %04X\n", (uint16_t)value);
+                STD_PRINTF("debug: fail to load ss from %04X\n", (type_unsigned_16)value);
             }
         }
     }
@@ -2074,9 +2074,9 @@ static C_VOID xrscanreg(core_product_debug_context *debugContext)
         value = scannubit16(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos)
         {
-            if (debug_set_register(debugContext, CORE_PRODUCT_DEBUG_DS, (uint16_t)value))
+            if (debug_set_register(debugContext, CORE_PRODUCT_DEBUG_DS, (type_unsigned_16)value))
             {
-                STD_PRINTF("debug: fail to load ds from %04X\n", (uint16_t)value);
+                STD_PRINTF("debug: fail to load ds from %04X\n", (type_unsigned_16)value);
             }
         }
     }
@@ -2088,9 +2088,9 @@ static C_VOID xrscanreg(core_product_debug_context *debugContext)
         value = scannubit16(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos)
         {
-            if (debug_set_register(debugContext, CORE_PRODUCT_DEBUG_FS, (uint16_t)value))
+            if (debug_set_register(debugContext, CORE_PRODUCT_DEBUG_FS, (type_unsigned_16)value))
             {
-                STD_PRINTF("debug: fail to load fs from %04X\n", (uint16_t)value);
+                STD_PRINTF("debug: fail to load fs from %04X\n", (type_unsigned_16)value);
             }
         }
     }
@@ -2102,9 +2102,9 @@ static C_VOID xrscanreg(core_product_debug_context *debugContext)
         value = scannubit16(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos)
         {
-            if (debug_set_register(debugContext, CORE_PRODUCT_DEBUG_GS, (uint16_t)value))
+            if (debug_set_register(debugContext, CORE_PRODUCT_DEBUG_GS, (type_unsigned_16)value))
             {
-                STD_PRINTF("debug: fail to load gs from %04X\n", (uint16_t)value);
+                STD_PRINTF("debug: fail to load gs from %04X\n", (type_unsigned_16)value);
             }
         }
     }
@@ -2177,9 +2177,9 @@ static C_VOID xr(core_product_debug_context *debugContext)
     }
 }
 /* unassemble */
-static C_VOID xuprint(core_product_debug_context *debugContext, uint32_t linear, uint8_t count)
+static C_VOID xuprint(core_product_debug_context *debugContext, type_unsigned_32 linear, type_unsigned_8 count)
 {
-    uint32_t len = 0;
+    type_unsigned_32 len = 0;
     STD_SIZE_T i;
     for (i = 0; i < count; ++i)
     {
@@ -2194,7 +2194,7 @@ static C_VOID xuprint(core_product_debug_context *debugContext, uint32_t linear,
 }
 static C_VOID xu(core_product_debug_context *debugContext)
 {
-    uint32_t count;
+    type_unsigned_32 count;
     if (narg == 1)
     {
         xuprint(debugContext, xulin, 10);
@@ -2226,7 +2226,7 @@ static C_VOID xu(core_product_debug_context *debugContext)
 /* watch */
 static C_VOID xw(core_product_debug_context *debugContext)
 {
-    uint32_t linear;
+    type_unsigned_32 linear;
     switch (narg)
     {
     case 1:
@@ -2565,7 +2565,7 @@ C_VOID core_product_debug_main(core_product_debug_context *context,
     asmSegRec = uasmSegRec = _cs;
     asmPtrRec = uasmPtrRec = _ip;
     dumpSegRec = _ds;
-    dumpPtrRec = (uint16_t)(_ip) / 0x10 * 0x10;
+    dumpPtrRec = (type_unsigned_16)(_ip) / 0x10 * 0x10;
     xalin = 0;
     xdlin = 0;
     xulin = core_product_debug_get_code_base() + _eip;

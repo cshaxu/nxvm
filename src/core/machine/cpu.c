@@ -198,21 +198,21 @@ type_bool core_machine_cpu_execution_consume_reset_request(
     return requested;
 }
 
-C_INT core_machine_cpu_read_linear(core_machine_cpu_execution_context *context, uint32_t linear, C_VOID *out_data, uint8_t size)
+C_INT core_machine_cpu_read_linear(core_machine_cpu_execution_context *context, type_unsigned_32 linear, C_VOID *out_data, type_unsigned_8 size)
 {
     return core_machine_cpu_execution_read_linear(context, linear,
         (type_virtual_address)out_data, size);
 }
 
 C_INT core_machine_cpu_write_linear(core_machine_cpu_execution_context *context,
-    uint32_t linear, const C_VOID *in_data, uint8_t size)
+    type_unsigned_32 linear, const C_VOID *in_data, type_unsigned_8 size)
 {
     return core_machine_cpu_execution_write_linear(context, linear,
         (type_virtual_address)in_data, size);
 }
 
 C_INT core_machine_cpu_load_segment(core_machine_cpu_execution_context *context,
-    core_machine_cpu_segment segment, uint16_t selector)
+    core_machine_cpu_segment segment, type_unsigned_16 selector)
 {
     switch (segment) {
     case CORE_MACHINE_CPU_SEGMENT_ES:
@@ -242,13 +242,13 @@ C_INT core_machine_cpu_get_code_default_size(const core_machine_cpu_execution_co
     return cpu_state.data.cs.seg.exec.defsize;
 }
 
-uint32_t core_machine_cpu_get_code_base(const core_machine_cpu_execution_context *context)
+type_unsigned_32 core_machine_cpu_get_code_base(const core_machine_cpu_execution_context *context)
 {
     return cpu_state.data.cs.base;
 }
 
 C_VOID core_machine_cpu_set_watchpoint(core_machine_cpu_execution_context *context,
-    core_machine_cpu_watchpoint kind, uint32_t linear)
+    core_machine_cpu_watchpoint kind, type_unsigned_32 linear)
 {
     switch (kind) {
     case CORE_MACHINE_CPU_WATCH_READ:

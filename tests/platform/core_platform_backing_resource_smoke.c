@@ -3,14 +3,14 @@
 #include "core/platform/backing_resource_interface.h"
 
 typedef struct core_platform_backing_resource_fixture {
-    uint8_t bytes[8];
-    uint32_t close_count;
-    uint32_t flush_count;
+    type_unsigned_8 bytes[8];
+    type_unsigned_32 close_count;
+    type_unsigned_32 flush_count;
     core_platform_backing_resource_result forced_flush_result;
 } core_platform_backing_resource_fixture;
 
 static core_platform_backing_resource_result core_platform_backing_resource_fixture_size(
-    C_VOID *context, uint64_t *out_size)
+    C_VOID *context, type_unsigned_64 *out_size)
 {
     core_platform_backing_resource_fixture *fixture = context;
 
@@ -19,8 +19,8 @@ static core_platform_backing_resource_result core_platform_backing_resource_fixt
 }
 
 static core_platform_backing_resource_result core_platform_backing_resource_fixture_read(
-    C_VOID *context, uint64_t offset, C_VOID *buffer, uint32_t requested,
-    uint32_t *out_transferred)
+    C_VOID *context, type_unsigned_64 offset, C_VOID *buffer, type_unsigned_32 requested,
+    type_unsigned_32 *out_transferred)
 {
     core_platform_backing_resource_fixture *fixture = context;
 
@@ -32,8 +32,8 @@ static core_platform_backing_resource_result core_platform_backing_resource_fixt
 }
 
 static core_platform_backing_resource_result core_platform_backing_resource_fixture_write(
-    C_VOID *context, uint64_t offset, const C_VOID *buffer, uint32_t requested,
-    uint32_t *out_transferred)
+    C_VOID *context, type_unsigned_64 offset, const C_VOID *buffer, type_unsigned_32 requested,
+    type_unsigned_32 *out_transferred)
 {
     core_platform_backing_resource_fixture *fixture = context;
 
@@ -73,10 +73,10 @@ C_INT main(C_VOID)
         CORE_PLATFORM_BACKING_RESOURCE_OK};
     core_platform_backing_resource resource;
     core_platform_backing_resource_result result;
-    uint8_t write[4] = {1u, 2u, 3u, 4u};
-    uint8_t read[4] = {0};
-    uint64_t size = 0u;
-    uint32_t transferred = 0u;
+    type_unsigned_8 write[4] = {1u, 2u, 3u, 4u};
+    type_unsigned_8 read[4] = {0};
+    type_unsigned_64 size = 0u;
+    type_unsigned_32 transferred = 0u;
     C_INT failed = 0;
 
     core_platform_backing_resource_initialize(&resource, &fixture, &provider);

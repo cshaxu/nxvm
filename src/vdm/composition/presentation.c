@@ -68,7 +68,7 @@ type_status vdm_presentation_apply_input(
 
 type_status vdm_presentation_capture_text(
     vdm_presentation *presentation,
-    uint64_t timestamp,
+    type_unsigned_64 timestamp,
     vdm_presentation_snapshot *out_snapshot)
 {
     vdm_machine_text_snapshot text;

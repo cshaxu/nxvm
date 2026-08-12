@@ -15,7 +15,7 @@
 
 static C_INT vm_fault_outcome_prepare(vm_session *session)
 {
-    const uint8_t program[] = { 0xd6u };
+    const type_unsigned_8 program[] = { 0xd6u };
 
     if (session == STD_NULL || session->core_machine == STD_NULL) return 0;
     return test_core_machine_fixture_prepare_real_mode_execution(

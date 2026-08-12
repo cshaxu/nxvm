@@ -10,24 +10,24 @@
 #define CORE_MACHINE_FPU_STATUS_ES 0x0080u
 #define CORE_MACHINE_FPU_STATUS_TOP 0x3800u
 
-static uint8_t core_machine_fpu_physical_index(const core_machine_fpu *fpu,
-    uint8_t logical_index)
+static type_unsigned_8 core_machine_fpu_physical_index(const core_machine_fpu *fpu,
+    type_unsigned_8 logical_index)
 {
-    return (uint8_t)((fpu->top + logical_index) & 7u);
+    return (type_unsigned_8)((fpu->top + logical_index) & 7u);
 }
 
 static C_VOID core_machine_fpu_sync_top(core_machine_fpu *fpu)
 {
-    fpu->status_word = (uint16_t)((fpu->status_word & ~CORE_MACHINE_FPU_STATUS_TOP) |
-        ((uint16_t)fpu->top << 11u));
+    fpu->status_word = (type_unsigned_16)((fpu->status_word & ~CORE_MACHINE_FPU_STATUS_TOP) |
+        ((type_unsigned_16)fpu->top << 11u));
 }
 
 static C_VOID core_machine_fpu_raise(core_machine_fpu *fpu,
-    uint16_t status_bits, uint16_t mask_bits)
+    type_unsigned_16 status_bits, type_unsigned_16 mask_bits)
 {
-    fpu->status_word = (uint16_t)(fpu->status_word | status_bits);
+    fpu->status_word = (type_unsigned_16)(fpu->status_word | status_bits);
     if ((fpu->control_word & mask_bits) != mask_bits) {
-        fpu->status_word = (uint16_t)(fpu->status_word | CORE_MACHINE_FPU_STATUS_ES);
+        fpu->status_word = (type_unsigned_16)(fpu->status_word | CORE_MACHINE_FPU_STATUS_ES);
         fpu->pending_unmasked_exception = TYPE_TRUE;
     }
 }
@@ -35,7 +35,7 @@ static C_VOID core_machine_fpu_raise(core_machine_fpu *fpu,
 static C_INT core_machine_fpu_push(core_machine_fpu *fpu,
     const core_machine_fpu_value *value)
 {
-    uint8_t index = (uint8_t)((fpu->top + 7u) & 7u);
+    type_unsigned_8 index = (type_unsigned_8)((fpu->top + 7u) & 7u);
 
     if (fpu->tags[index] != CORE_MACHINE_FPU_TAG_EMPTY) {
         core_machine_fpu_raise(fpu, CORE_MACHINE_FPU_STATUS_IE |
@@ -49,10 +49,10 @@ static C_INT core_machine_fpu_push(core_machine_fpu *fpu,
     return 1;
 }
 
-static C_INT core_machine_fpu_st(const core_machine_fpu *fpu, uint8_t logical,
-    core_machine_fpu_value *out_value, uint8_t *out_physical)
+static C_INT core_machine_fpu_st(const core_machine_fpu *fpu, type_unsigned_8 logical,
+    core_machine_fpu_value *out_value, type_unsigned_8 *out_physical)
 {
-    uint8_t index;
+    type_unsigned_8 index;
 
     if (logical >= 8u) return 0;
     index = core_machine_fpu_physical_index(fpu, logical);
@@ -68,11 +68,11 @@ static C_VOID core_machine_fpu_stack_fault(core_machine_fpu *fpu)
         CORE_MACHINE_FPU_STATUS_SF, CORE_MACHINE_FPU_STATUS_IE);
 }
 
-static C_INT core_machine_fpu_decode_m32(uint32_t bits,
+static C_INT core_machine_fpu_decode_m32(type_unsigned_32 bits,
     core_machine_fpu_value *out_value)
 {
-    uint32_t exponent = (bits >> 23u) & 0xffu;
-    uint32_t fraction = bits & 0x007fffffu;
+    type_unsigned_32 exponent = (bits >> 23u) & 0xffu;
+    type_unsigned_32 fraction = bits & 0x007fffffu;
 
     if (exponent == 0xffu || (exponent == 0u && fraction != 0u)) return 0;
     out_value->negative = (type_bool)((bits >> 31u) != 0u);
@@ -89,9 +89,9 @@ static C_INT core_machine_fpu_decode_m32(uint32_t bits,
 }
 
 static C_INT core_machine_fpu_encode_m32(const core_machine_fpu_value *value,
-    uint32_t *out_bits)
+    type_unsigned_32 *out_bits)
 {
-    uint32_t bits = value->negative ? 0x80000000u : 0u;
+    type_unsigned_32 bits = value->negative ? 0x80000000u : 0u;
     int exponent;
 
     if (value->kind == CORE_MACHINE_FPU_VALUE_ZERO) {
@@ -107,7 +107,7 @@ static C_INT core_machine_fpu_encode_m32(const core_machine_fpu_value *value,
         value->significand < 0x00800000u || value->significand >= 0x01000000u) {
         return 0;
     }
-    *out_bits = bits | ((uint32_t)exponent << 23u) |
+    *out_bits = bits | ((type_unsigned_32)exponent << 23u) |
         (value->significand & 0x007fffffu);
     return 1;
 }
@@ -120,7 +120,7 @@ static C_INT core_machine_fpu_add(const core_machine_fpu_value *left,
     type_signed_64 right_value;
     type_signed_64 result;
     type_unsigned_64 magnitude;
-    uint32_t shift;
+    type_unsigned_32 shift;
 
     if (left->kind == CORE_MACHINE_FPU_VALUE_ZERO) {
         *out_value = *right;
@@ -133,9 +133,9 @@ static C_INT core_machine_fpu_add(const core_machine_fpu_value *left,
     if (left->kind != CORE_MACHINE_FPU_VALUE_FINITE ||
         right->kind != CORE_MACHINE_FPU_VALUE_FINITE) return 0;
     exponent = left->exponent >= right->exponent ? left->exponent : right->exponent;
-    shift = (uint32_t)(exponent - left->exponent);
+    shift = (type_unsigned_32)(exponent - left->exponent);
     left_value = shift >= 32u ? 0 : (type_signed_64)left->significand << 8u >> shift;
-    shift = (uint32_t)(exponent - right->exponent);
+    shift = (type_unsigned_32)(exponent - right->exponent);
     right_value = shift >= 32u ? 0 : (type_signed_64)right->significand << 8u >> shift;
     if (left->negative) left_value = -left_value;
     if (right->negative) right_value = -right_value;
@@ -159,7 +159,7 @@ static C_INT core_machine_fpu_add(const core_machine_fpu_value *left,
     }
     out_value->kind = CORE_MACHINE_FPU_VALUE_FINITE;
     out_value->exponent = exponent;
-    out_value->significand = (uint32_t)(magnitude >> 8u);
+    out_value->significand = (type_unsigned_32)(magnitude >> 8u);
     return 1;
 }
 
@@ -167,7 +167,7 @@ static C_INT core_machine_fpu_multiply(const core_machine_fpu_value *left,
     const core_machine_fpu_value *right, core_machine_fpu_value *out_value)
 {
     type_unsigned_64 product;
-    uint32_t shift;
+    type_unsigned_32 shift;
 
     if (left->kind == CORE_MACHINE_FPU_VALUE_ZERO ||
         right->kind == CORE_MACHINE_FPU_VALUE_ZERO) {
@@ -185,7 +185,7 @@ static C_INT core_machine_fpu_multiply(const core_machine_fpu_value *left,
     out_value->negative = left->negative != right->negative;
     out_value->exponent = (type_signed_16)(left->exponent + right->exponent +
         (shift == 24u ? 1 : 0));
-    out_value->significand = (uint32_t)(product >> shift);
+    out_value->significand = (type_unsigned_32)(product >> shift);
     return 1;
 }
 
@@ -221,7 +221,7 @@ static C_INT core_machine_fpu_divide(core_machine_fpu *fpu,
         quotient >>= 1u;
         ++out_value->exponent;
     }
-    out_value->significand = (uint32_t)quotient;
+    out_value->significand = (type_unsigned_32)quotient;
     return 1;
 }
 
@@ -246,7 +246,7 @@ C_VOID core_machine_fpu_initialize(core_machine_fpu *fpu,
 
 C_VOID core_machine_fpu_reset(core_machine_fpu *fpu)
 {
-    uint8_t index;
+    type_unsigned_8 index;
 
     if (fpu == STD_NULL) return;
     fpu->control_word = CORE_MACHINE_FPU_CONTROL_DEFAULT;
@@ -264,13 +264,13 @@ C_VOID core_machine_fpu_reset(core_machine_fpu *fpu)
 }
 
 core_machine_fpu_operation_metadata core_machine_fpu_operation_metadata_get(
-    uint8_t escape_opcode, uint8_t modrm)
+    type_unsigned_8 escape_opcode, type_unsigned_8 modrm)
 {
     core_machine_fpu_operation_metadata metadata = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_FPU_PROFILE_8087,
         CORE_MACHINE_FPU_OPERATION_UNSUPPORTED, 0};
-    uint8_t mod = (uint8_t)(modrm >> 6u);
-    uint8_t reg = (uint8_t)((modrm >> 3u) & 7u);
+    type_unsigned_8 mod = (type_unsigned_8)(modrm >> 6u);
+    type_unsigned_8 reg = (type_unsigned_8)((modrm >> 3u) & 7u);
 
     if (escape_opcode == 0xdbu && modrm == 0xe3u) {
         metadata.operation = CORE_MACHINE_FPU_OPERATION_FNINIT;
@@ -310,7 +310,7 @@ core_machine_fpu_escape_action core_machine_fpu_escape_dispatch(
 C_VOID core_machine_fpu_get_state(const core_machine_fpu *fpu,
     core_machine_fpu_state *out_state)
 {
-    uint8_t index;
+    type_unsigned_8 index;
 
     if (fpu == STD_NULL || out_state == STD_NULL) return;
     out_state->control_word = fpu->control_word;
@@ -321,7 +321,7 @@ C_VOID core_machine_fpu_get_state(const core_machine_fpu *fpu,
 }
 
 core_machine_fpu_execute_result core_machine_fpu_load_m32(core_machine_fpu *fpu,
-    uint32_t bits)
+    type_unsigned_32 bits)
 {
     core_machine_fpu_value value;
 
@@ -333,10 +333,10 @@ core_machine_fpu_execute_result core_machine_fpu_load_m32(core_machine_fpu *fpu,
 }
 
 core_machine_fpu_execute_result core_machine_fpu_store_m32(core_machine_fpu *fpu,
-    uint32_t *out_bits)
+    type_unsigned_32 *out_bits)
 {
     core_machine_fpu_value value;
-    uint8_t index;
+    type_unsigned_8 index;
 
     if (fpu == STD_NULL || out_bits == STD_NULL ||
         !core_machine_fpu_st(fpu, 0u, &value, &index)) {
@@ -348,16 +348,16 @@ core_machine_fpu_execute_result core_machine_fpu_store_m32(core_machine_fpu *fpu
         return CORE_MACHINE_FPU_EXECUTE_UNSUPPORTED;
     }
     fpu->tags[index] = CORE_MACHINE_FPU_TAG_EMPTY;
-    fpu->top = (uint8_t)((fpu->top + 1u) & 7u);
+    fpu->top = (type_unsigned_8)((fpu->top + 1u) & 7u);
     core_machine_fpu_sync_top(fpu);
     return CORE_MACHINE_FPU_EXECUTE_COMPLETED;
 }
 
 C_VOID core_machine_fpu_load_control_word(core_machine_fpu *fpu,
-    uint16_t control_word)
+    type_unsigned_16 control_word)
 {
     if (fpu == STD_NULL) return;
-    fpu->control_word = (uint16_t)((control_word & CORE_MACHINE_FPU_CONTROL_EXCEPTION_MASK) |
+    fpu->control_word = (type_unsigned_16)((control_word & CORE_MACHINE_FPU_CONTROL_EXCEPTION_MASK) |
         (CORE_MACHINE_FPU_CONTROL_DEFAULT & ~CORE_MACHINE_FPU_CONTROL_EXCEPTION_MASK));
     if ((fpu->status_word & CORE_MACHINE_FPU_STATUS_ES) != 0u &&
         (fpu->control_word & (fpu->status_word & CORE_MACHINE_FPU_CONTROL_EXCEPTION_MASK)) !=
@@ -367,12 +367,12 @@ C_VOID core_machine_fpu_load_control_word(core_machine_fpu *fpu,
 }
 
 core_machine_fpu_execute_result core_machine_fpu_binary_st0_sti(core_machine_fpu *fpu,
-    core_machine_fpu_operation operation, uint8_t index)
+    core_machine_fpu_operation operation, type_unsigned_8 index)
 {
     core_machine_fpu_value left;
     core_machine_fpu_value right;
     core_machine_fpu_value result;
-    uint8_t destination;
+    type_unsigned_8 destination;
     C_INT completed = 0;
 
     if (fpu == STD_NULL || !core_machine_fpu_st(fpu, 0u, &left, &destination) ||

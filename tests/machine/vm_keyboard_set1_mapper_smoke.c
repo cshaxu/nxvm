@@ -2,11 +2,11 @@
 
 #include "vm/profile/default_profile/keyboard_mapper.h"
 
-static C_INT vm_keyboard_set1_expect(uint16_t scan, uint16_t key,
-    C_INT pressed, const uint8_t *expected, uint8_t count)
+static C_INT vm_keyboard_set1_expect(type_unsigned_16 scan, type_unsigned_16 key,
+    C_INT pressed, const type_unsigned_8 *expected, type_unsigned_8 count)
 {
     vm_profile_default_keyboard_sequence sequence;
-    uint8_t index;
+    type_unsigned_8 index;
 
     if (vm_profile_default_keyboard_map_host_key(scan, key, pressed,
             &sequence) != TYPE_STATUS_OK || sequence.count != count) {
@@ -20,11 +20,11 @@ static C_INT vm_keyboard_set1_expect(uint16_t scan, uint16_t key,
 
 C_INT main(C_VOID)
 {
-    static const uint8_t a_make[] = { 0x1eu };
-    static const uint8_t a_break[] = { 0x9eu };
-    static const uint8_t up_make[] = { 0xe0u, 0x48u };
-    static const uint8_t up_break[] = { 0xe0u, 0xc8u };
-    static const uint8_t pause_make[] = {
+    static const type_unsigned_8 a_make[] = { 0x1eu };
+    static const type_unsigned_8 a_break[] = { 0x9eu };
+    static const type_unsigned_8 up_make[] = { 0xe0u, 0x48u };
+    static const type_unsigned_8 up_break[] = { 0xe0u, 0xc8u };
+    static const type_unsigned_8 pause_make[] = {
         0xe1u, 0x1du, 0x45u, 0xe1u, 0x9du, 0xc5u
     };
 

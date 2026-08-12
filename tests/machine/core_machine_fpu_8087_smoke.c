@@ -49,14 +49,14 @@ static C_INT fpu_test_prepare(fpu_test_machine *state,
     return 1;
 }
 
-static C_INT fpu_test_write(fpu_test_machine *state, uint32_t physical,
+static C_INT fpu_test_write(fpu_test_machine *state, type_unsigned_32 physical,
     const C_VOID *data, STD_SIZE_T size)
 {
     return core_machine_memory_write(state->machine, physical, data, size) ==
         TYPE_STATUS_OK;
 }
 
-static C_INT fpu_test_run(fpu_test_machine *state, uint64_t instructions,
+static C_INT fpu_test_run(fpu_test_machine *state, type_unsigned_64 instructions,
     type_status expected_status, core_machine_cpu_diagnostic *out_diagnostic)
 {
     core_machine_run_budget budget = { instructions, 0u };
@@ -69,19 +69,19 @@ static C_INT fpu_test_run(fpu_test_machine *state, uint64_t instructions,
 
 static C_INT test_arithmetic_and_fninit(C_VOID)
 {
-    static const uint8_t program[] = {
+    static const type_unsigned_8 program[] = {
         0xd9u, 0x06u, 0x00u, 0x01u, /* FLD dword [0100] */
         0xd9u, 0x06u, 0x04u, 0x01u, /* FLD dword [0104] */
         0xd8u, 0xc1u,             /* FADD ST(0), ST(1) */
         0xd9u, 0x1eu, 0x08u, 0x01u, /* FSTP dword [0108] */
         0x9bu, 0xf4u
     };
-    const uint32_t first = 0x3fc00000u;  /* 1.5 */
-    const uint32_t second = 0x40100000u; /* 2.25 */
-    const uint32_t expected = 0x40700000u; /* 3.75 */
+    const type_unsigned_32 first = 0x3fc00000u;  /* 1.5 */
+    const type_unsigned_32 second = 0x40100000u; /* 2.25 */
+    const type_unsigned_32 expected = 0x40700000u; /* 3.75 */
     fpu_test_machine state;
     core_machine_fpu_state fpu_state;
-    uint32_t observed = 0u;
+    type_unsigned_32 observed = 0u;
     C_INT failed = !fpu_test_prepare(&state, CORE_MACHINE_CPU_PROFILE_8086,
         CORE_MACHINE_FPU_PROFILE_8087);
 
@@ -104,17 +104,17 @@ static C_INT test_arithmetic_and_fninit(C_VOID)
 
 static C_INT test_stack_fault_and_reset(C_VOID)
 {
-    static const uint8_t fld[] = { 0xd9u, 0x06u, 0x00u, 0x01u };
-    static const uint8_t fninit[] = { 0xdbu, 0xe3u };
-    const uint32_t one = 0x3f800000u;
+    static const type_unsigned_8 fld[] = { 0xd9u, 0x06u, 0x00u, 0x01u };
+    static const type_unsigned_8 fninit[] = { 0xdbu, 0xe3u };
+    const type_unsigned_32 one = 0x3f800000u;
     fpu_test_machine state;
     core_machine_fpu_state fpu_state;
     C_INT failed = !fpu_test_prepare(&state, CORE_MACHINE_CPU_PROFILE_8086,
         CORE_MACHINE_FPU_PROFILE_8087);
 
     if (!failed) {
-        for (uint8_t index = 0u; index < 9u; ++index) {
-            failed |= !fpu_test_write(&state, (uint32_t)index * 4u, fld, sizeof(fld));
+        for (type_unsigned_8 index = 0u; index < 9u; ++index) {
+            failed |= !fpu_test_write(&state, (type_unsigned_32)index * 4u, fld, sizeof(fld));
         }
         failed |= !fpu_test_write(&state, FPU_TEST_ONE, &one, sizeof(one));
         failed |= !fpu_test_run(&state, 9u, TYPE_STATUS_OK, STD_NULL);
@@ -133,16 +133,16 @@ static C_INT test_stack_fault_and_reset(C_VOID)
 
 static C_INT test_unmasked_fwait(C_VOID)
 {
-    static const uint8_t program[] = {
+    static const type_unsigned_8 program[] = {
         0xd9u, 0x2eu, 0x10u, 0x01u, /* FLDCW word [0110] */
         0xd9u, 0x06u, 0x04u, 0x01u, /* FLD dword [0104] */
         0xd9u, 0x06u, 0x00u, 0x01u, /* FLD dword [0100] */
         0xd8u, 0xf1u,             /* FDIV ST(0), ST(1) */
         0x9bu
     };
-    const uint32_t one = 0x3f800000u;
-    const uint32_t zero = 0u;
-    const uint16_t unmask_zero_divide = 0x037bu;
+    const type_unsigned_32 one = 0x3f800000u;
+    const type_unsigned_32 zero = 0u;
+    const type_unsigned_16 unmask_zero_divide = 0x037bu;
     fpu_test_machine state;
     core_machine_cpu_diagnostic diagnostic;
     core_machine_fpu_state fpu_state;
@@ -169,9 +169,9 @@ static C_INT test_unmasked_fwait(C_VOID)
 
 static C_INT test_profile_gates(C_VOID)
 {
-    static const uint8_t fninit[] = { 0xdbu, 0xe3u };
-    static const uint8_t unsupported_m32[] = { 0xd9u, 0x06u, 0x00u, 0x01u };
-    const uint32_t nan = 0x7fc00000u;
+    static const type_unsigned_8 fninit[] = { 0xdbu, 0xe3u };
+    static const type_unsigned_8 unsupported_m32[] = { 0xd9u, 0x06u, 0x00u, 0x01u };
+    const type_unsigned_32 nan = 0x7fc00000u;
     const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
@@ -183,7 +183,7 @@ static C_INT test_profile_gates(C_VOID)
     failed |= !metadata.valid || metadata.minimum_cpu != CORE_MACHINE_CPU_PROFILE_8086 ||
         metadata.minimum_fpu != CORE_MACHINE_FPU_PROFILE_8087 ||
         metadata.operation != CORE_MACHINE_FPU_OPERATION_FLD_M32;
-    for (uint8_t index = 0u; index < sizeof(profiles) / sizeof(profiles[0]); ++index) {
+    for (type_unsigned_8 index = 0u; index < sizeof(profiles) / sizeof(profiles[0]); ++index) {
         fpu_test_machine state;
         failed |= !fpu_test_prepare(&state, profiles[index],
             CORE_MACHINE_FPU_PROFILE_8087);

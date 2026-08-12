@@ -13,8 +13,8 @@ typedef struct ct_machine {
 } ct_machine;
 
 typedef struct ct_jcc_case {
-    uint8_t opcode;
-    uint32_t flags;
+    type_unsigned_8 opcode;
+    type_unsigned_32 flags;
 } ct_jcc_case;
 
 static C_VOID ct_reset(C_VOID *opaque)
@@ -29,7 +29,7 @@ static const core_machine_execution_provider ct_provider = {
     ct_reset, STD_NULL, STD_NULL
 };
 
-static C_INT ct_write(ct_machine *state, uint32_t address, const C_VOID *bytes,
+static C_INT ct_write(ct_machine *state, type_unsigned_32 address, const C_VOID *bytes,
     STD_SIZE_T byte_count)
 {
     return state != STD_NULL && state->machine != STD_NULL &&
@@ -37,7 +37,7 @@ static C_INT ct_write(ct_machine *state, uint32_t address, const C_VOID *bytes,
             TYPE_STATUS_OK;
 }
 
-static C_INT ct_read_private(ct_machine *state, uint32_t address, C_VOID *bytes,
+static C_INT ct_read_private(ct_machine *state, type_unsigned_32 address, C_VOID *bytes,
     STD_SIZE_T byte_count)
 {
     return state != STD_NULL && state->machine != STD_NULL &&
@@ -53,8 +53,8 @@ static C_INT ct_prepare(ct_machine *state, core_machine_cpu_profile profile,
         .cpu_profile = profile,
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
-    const uint8_t gdt_pointer[] = { 0x2fu,0,0,0x03u,0,0 };
-    uint8_t gdt[] = {
+    const type_unsigned_8 gdt_pointer[] = { 0x2fu,0,0,0x03u,0,0 };
+    type_unsigned_8 gdt[] = {
         0,0,0,0,0,0,0,0,
         0xffu,0xffu,0,0x20u,0,0x9au,0,0,
         0xffu,0xffu,0,0x30u,0,0x92u,0xcfu,0,
@@ -62,14 +62,14 @@ static C_INT ct_prepare(ct_machine *state, core_machine_cpu_profile profile,
         0xffu,0xffu,0,0x20u,0,0xbau,0,0,
         0xffu,0xffu,0,0x20u,0,0x1au,0,0
     };
-    const uint8_t real_code[] = {
+    const type_unsigned_8 real_code[] = {
         0x0fu,0x01u,0x16u,0x00u,0x01u,
         0xb8u,0x01u,0x00u,0x0fu,0x01u,0xf0u,
         0xb8u,0x10u,0x00u,0x8eu,0xd8u,0x8eu,0xc0u,
         0xb8u,0x18u,0x00u,0x8eu,0xd0u,
         0xbcu,0x00u,0x80u,0xeau,0x00u,0x00u,0x08u,0x00u
     };
-    const uint8_t halt[] = { 0xf4u };
+    const type_unsigned_8 halt[] = { 0xf4u };
     const core_machine_run_budget budget = { 96u, 0u };
     core_machine_run_result result;
 
@@ -101,7 +101,7 @@ static C_INT ct_prepare_real(ct_machine *state)
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
-    static const uint8_t reset_jump[] = {0xeau,0,0,0,0};
+    static const type_unsigned_8 reset_jump[] = {0xeau,0,0,0,0};
 
     if (state == STD_NULL) return 0;
     STD_MEMSET(state, 0, sizeof(*state));
@@ -119,7 +119,7 @@ static C_INT ct_prepare_real(ct_machine *state)
     return 1;
 }
 
-static C_INT ct_run(ct_machine *state, const uint8_t *code,
+static C_INT ct_run(ct_machine *state, const type_unsigned_8 *code,
     STD_SIZE_T code_size, core_machine_stop_reason expected_reason, t_cpu *out_cpu)
 {
     const core_machine_run_budget budget = { 48u, 0u };
@@ -136,7 +136,7 @@ static C_INT ct_run(ct_machine *state, const uint8_t *code,
     return 1;
 }
 
-static C_INT ct_run_gp(ct_machine *state, const uint8_t *code,
+static C_INT ct_run_gp(ct_machine *state, const type_unsigned_8 *code,
     STD_SIZE_T code_size, t_cpu *out_cpu)
 {
     core_machine_cpu_diagnostic diagnostic;
@@ -150,7 +150,7 @@ static C_INT ct_run_gp(ct_machine *state, const uint8_t *code,
                 VCPUINS_EXCEPT_DF : VCPUINS_EXCEPT_GP);
 }
 
-static C_INT ct_run_np(ct_machine *state, const uint8_t *code,
+static C_INT ct_run_np(ct_machine *state, const type_unsigned_8 *code,
     STD_SIZE_T code_size, t_cpu *out_cpu)
 {
     core_machine_cpu_diagnostic diagnostic;
@@ -164,7 +164,7 @@ static C_INT ct_run_np(ct_machine *state, const uint8_t *code,
                 VCPUINS_EXCEPT_DF : VCPUINS_EXCEPT_NP);
 }
 
-static C_INT ct_run_ud(ct_machine *state, const uint8_t *code,
+static C_INT ct_run_ud(ct_machine *state, const type_unsigned_8 *code,
     STD_SIZE_T code_size, t_cpu *out_cpu)
 {
     core_machine_cpu_diagnostic diagnostic;
@@ -175,7 +175,7 @@ static C_INT ct_run_ud(ct_machine *state, const uint8_t *code,
         TYPE_GET_BIT(diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD);
 }
 
-static C_VOID ct_set_stack32(ct_machine *state, uint32_t esp)
+static C_VOID ct_set_stack32(ct_machine *state, type_unsigned_32 esp)
 {
     state->machine->executor_cpu.data.ss.seg.data.big = TYPE_TRUE;
     state->machine->executor_cpu.data.ss.limit = 0xffffffffu;
@@ -190,7 +190,7 @@ static C_INT ct_test_jcc_short(C_VOID)
         {0x78u,VCPU_EFLAGS_SF}, {0x79u,0}, {0x7au,VCPU_EFLAGS_PF}, {0x7bu,0},
         {0x7cu,VCPU_EFLAGS_SF}, {0x7du,0}, {0x7eu,VCPU_EFLAGS_ZF}, {0x7fu,0}
     };
-    uint8_t code[] = {0,2,0xb0u,0,0xf4u};
+    type_unsigned_8 code[] = {0,2,0xb0u,0,0xf4u};
     STD_SIZE_T index;
 
     for (index = 0u; index < sizeof(cases) / sizeof(cases[0]); ++index) {
@@ -217,12 +217,12 @@ static C_INT ct_test_jcc_short(C_VOID)
 
 static C_INT ct_test_near_and_short_jumps(C_VOID)
 {
-    static const uint8_t short_jump[] = {0xebu,2,0xb0u,0,0xf4u};
-    static const uint8_t jump32[] = {0xe9u,2,0,0,0,0xb0u,0,0xf4u};
-    static const uint8_t jump16[] = {0x66u,0xe9u,2,0,0xb0u,0,0xf4u};
-    static const uint8_t jz32[] = {0x0fu,0x84u,2,0,0,0,0xb0u,0,0xf4u};
-    static const uint8_t jz16[] = {0x66u,0x0fu,0x84u,2,0,0xb0u,0,0xf4u};
-    const uint8_t *const programs[] = {
+    static const type_unsigned_8 short_jump[] = {0xebu,2,0xb0u,0,0xf4u};
+    static const type_unsigned_8 jump32[] = {0xe9u,2,0,0,0,0xb0u,0,0xf4u};
+    static const type_unsigned_8 jump16[] = {0x66u,0xe9u,2,0,0xb0u,0,0xf4u};
+    static const type_unsigned_8 jz32[] = {0x0fu,0x84u,2,0,0,0,0xb0u,0,0xf4u};
+    static const type_unsigned_8 jz16[] = {0x66u,0x0fu,0x84u,2,0,0xb0u,0,0xf4u};
+    const type_unsigned_8 *const programs[] = {
         short_jump, jump32, jump16, jz32, jz16
     };
     const STD_SIZE_T sizes[] = {
@@ -256,7 +256,7 @@ static C_INT ct_test_jcc_near_conditions(C_VOID)
         {0x88u,VCPU_EFLAGS_SF}, {0x89u,0}, {0x8au,VCPU_EFLAGS_PF}, {0x8bu,0},
         {0x8cu,VCPU_EFLAGS_SF}, {0x8du,0}, {0x8eu,VCPU_EFLAGS_ZF}, {0x8fu,0}
     };
-    uint8_t code[] = {0x0fu,0,2,0,0,0,0xb0u,0,0xf4u};
+    type_unsigned_8 code[] = {0x0fu,0,2,0,0,0,0xb0u,0,0xf4u};
     STD_SIZE_T index;
 
     for (index = 0u; index < sizeof(cases) / sizeof(cases[0]); ++index) {
@@ -283,15 +283,15 @@ static C_INT ct_test_jcc_near_conditions(C_VOID)
 
 static C_INT ct_test_16bit_code_and_real_mode(C_VOID)
 {
-    static const uint8_t jump16[] = {0xe9u,2,0,0xb0u,0,0xf4u};
-    static const uint8_t jump32[] = {0x66u,0xe9u,2,0,0,0,0xb0u,0,0xf4u};
-    static const uint8_t jz16[] = {0x0fu,0x84u,2,0,0xb0u,0,0xf4u};
-    static const uint8_t jz32[] = {0x66u,0x0fu,0x84u,2,0,0,0,0xb0u,0,0xf4u};
-    const uint8_t *const protected_programs[] = {jump16, jump32, jz16, jz32};
+    static const type_unsigned_8 jump16[] = {0xe9u,2,0,0xb0u,0,0xf4u};
+    static const type_unsigned_8 jump32[] = {0x66u,0xe9u,2,0,0,0,0xb0u,0,0xf4u};
+    static const type_unsigned_8 jz16[] = {0x0fu,0x84u,2,0,0xb0u,0,0xf4u};
+    static const type_unsigned_8 jz32[] = {0x66u,0x0fu,0x84u,2,0,0,0,0xb0u,0,0xf4u};
+    const type_unsigned_8 *const protected_programs[] = {jump16, jump32, jz16, jz32};
     const STD_SIZE_T protected_sizes[] = {
         sizeof(jump16), sizeof(jump32), sizeof(jz16), sizeof(jz32)
     };
-    static const uint8_t real_jz32[] = {0x66u,0x0fu,0x84u,2,0,0,0,0xb0u,0,0xf4u};
+    static const type_unsigned_8 real_jz32[] = {0x66u,0x0fu,0x84u,2,0,0,0,0xb0u,0,0xf4u};
     STD_SIZE_T index;
 
     for (index = 0u; index < sizeof(protected_programs) / sizeof(protected_programs[0]); ++index) {
@@ -311,7 +311,7 @@ static C_INT ct_test_16bit_code_and_real_mode(C_VOID)
         if (failed) return 0;
     }
     {
-        static const uint8_t loop16[] = {0xe2u,2,0xb0u,0,0xf4u};
+        static const type_unsigned_8 loop16[] = {0xe2u,2,0xb0u,0,0xf4u};
         ct_machine state;
         t_cpu after;
         C_INT failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 0);
@@ -350,11 +350,11 @@ static C_INT ct_test_16bit_code_and_real_mode(C_VOID)
 
 static C_INT ct_test_loop_and_jcxz(C_VOID)
 {
-    static const uint8_t loop[] = {0xe2u,2,0xb0u,0,0xf4u};
-    static const uint8_t loopnz[] = {0xe0u,2,0xb0u,0,0xf4u};
-    static const uint8_t loopz[] = {0xe1u,2,0xb0u,0,0xf4u};
-    static const uint8_t jcxz[] = {0xe3u,2,0xb0u,0,0xf4u};
-    static const uint8_t jecxz[] = {0x67u,0xe3u,2,0xb0u,0,0xf4u};
+    static const type_unsigned_8 loop[] = {0xe2u,2,0xb0u,0,0xf4u};
+    static const type_unsigned_8 loopnz[] = {0xe0u,2,0xb0u,0,0xf4u};
+    static const type_unsigned_8 loopz[] = {0xe1u,2,0xb0u,0,0xf4u};
+    static const type_unsigned_8 jcxz[] = {0xe3u,2,0xb0u,0,0xf4u};
+    static const type_unsigned_8 jecxz[] = {0x67u,0xe3u,2,0xb0u,0,0xf4u};
     ct_machine state;
     t_cpu after;
     C_INT failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
@@ -368,14 +368,14 @@ static C_INT ct_test_loop_and_jcxz(C_VOID)
     if (!failed) failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
     if (!failed) {
         state.machine->executor_cpu.data.ecx = 2u;
-        failed |= !ct_run(&state, (const uint8_t[]){0x66u,0xe2u,2,0xb0u,0,0xf4u}, 6u,
+        failed |= !ct_run(&state, (const type_unsigned_8[]){0x66u,0xe2u,2,0xb0u,0,0xf4u}, 6u,
             CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT, &after) || after.data.ecx != 1u;
     }
     core_machine_destroy(state.machine);
     if (!failed) failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
     if (!failed) {
         state.machine->executor_cpu.data.ecx = 0x12340002u;
-        failed |= !ct_run(&state, (const uint8_t[]){0x67u,0xe2u,2,0xb0u,0,0xf4u}, 6u,
+        failed |= !ct_run(&state, (const type_unsigned_8[]){0x67u,0xe2u,2,0xb0u,0,0xf4u}, 6u,
             CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT, &after) ||
             after.data.ecx != 0x12340001u;
     }
@@ -416,7 +416,7 @@ static C_INT ct_test_loop_and_jcxz(C_VOID)
 
 static C_INT ct_test_loop_target_fault_is_atomic(C_VOID)
 {
-    static const uint8_t loop_fault[] = {0xe2u,0x7fu};
+    static const type_unsigned_8 loop_fault[] = {0xe2u,0x7fu};
     ct_machine state;
     t_cpu before;
     t_cpu after;
@@ -437,8 +437,8 @@ static C_INT ct_test_loop_target_fault_is_atomic(C_VOID)
 
 static C_INT ct_test_jcc_limit_boundaries(C_VOID)
 {
-    static const uint8_t taken_fault[] = {0x74u,0x7fu};
-    static const uint8_t not_taken[] = {0x74u,0x7fu,0xf4u};
+    static const type_unsigned_8 taken_fault[] = {0x74u,0x7fu};
+    static const type_unsigned_8 not_taken[] = {0x74u,0x7fu,0xf4u};
     ct_machine state;
     t_cpu before;
     t_cpu after;
@@ -466,7 +466,7 @@ static C_INT ct_test_jcc_limit_boundaries(C_VOID)
 
 static C_INT ct_test_pre386_near_jcc_is_ud(C_VOID)
 {
-    static const uint8_t near_jcc[] = {0x0fu,0x84u,0,0};
+    static const type_unsigned_8 near_jcc[] = {0x0fu,0x84u,0,0};
     ct_machine state;
     t_cpu after;
     core_machine_cpu_diagnostic diagnostic;
@@ -485,8 +485,8 @@ static C_INT ct_test_pre386_near_jcc_is_ud(C_VOID)
 
 static C_INT ct_test_ret_target_fault_is_atomic(C_VOID)
 {
-    static const uint8_t ret[] = {0xc3u};
-    static const uint8_t target[] = {0x80u,0,0,0};
+    static const type_unsigned_8 ret[] = {0xc3u};
+    static const type_unsigned_8 target[] = {0x80u,0,0,0};
     ct_machine state;
     t_cpu before;
     t_cpu after;
@@ -507,13 +507,13 @@ static C_INT ct_test_ret_target_fault_is_atomic(C_VOID)
 
 static C_INT ct_test_near_call_and_ret_forms(C_VOID)
 {
-    static const uint8_t code32_call32[] = {0xe8u,3,0,0,0,0xb0u,0xa5u,0xf4u,0xc3u};
-    static const uint8_t code32_call16[] = {0x66u,0xe8u,3,0,0xb0u,0xa5u,0xf4u,0x66u,0xc3u};
-    static const uint8_t code16_call16[] = {0xe8u,3,0,0xb0u,0xa5u,0xf4u,0xc3u};
-    static const uint8_t code16_call32[] = {0x66u,0xe8u,3,0,0,0,0xb0u,0xa5u,0xf4u,0x66u,0xc3u};
-    static const uint8_t ret16_imm[] = {0x66u,0xc2u,4,0,0xf4u};
-    static const uint8_t ret32_imm[] = {0xc2u,4,0,0xf4u};
-    const uint8_t *const programs[] = {
+    static const type_unsigned_8 code32_call32[] = {0xe8u,3,0,0,0,0xb0u,0xa5u,0xf4u,0xc3u};
+    static const type_unsigned_8 code32_call16[] = {0x66u,0xe8u,3,0,0xb0u,0xa5u,0xf4u,0x66u,0xc3u};
+    static const type_unsigned_8 code16_call16[] = {0xe8u,3,0,0xb0u,0xa5u,0xf4u,0xc3u};
+    static const type_unsigned_8 code16_call32[] = {0x66u,0xe8u,3,0,0,0,0xb0u,0xa5u,0xf4u,0x66u,0xc3u};
+    static const type_unsigned_8 ret16_imm[] = {0x66u,0xc2u,4,0,0xf4u};
+    static const type_unsigned_8 ret32_imm[] = {0xc2u,4,0,0xf4u};
+    const type_unsigned_8 *const programs[] = {
         code32_call32, code32_call16, code16_call16, code16_call32
     };
     const STD_SIZE_T sizes[] = {
@@ -540,8 +540,8 @@ static C_INT ct_test_near_call_and_ret_forms(C_VOID)
         if (failed) return 0;
     }
     {
-        static const uint8_t target16[] = {4,0};
-        static const uint8_t target32[] = {3,0,0,0};
+        static const type_unsigned_8 target16[] = {4,0};
+        static const type_unsigned_8 target32[] = {3,0,0,0};
         ct_machine state;
         t_cpu before;
         t_cpu after;
@@ -574,17 +574,17 @@ static C_INT ct_test_near_call_and_ret_forms(C_VOID)
 
 static C_INT ct_test_near_indirect_and_fault_boundaries(C_VOID)
 {
-    static const uint8_t call_register[] = {
+    static const type_unsigned_8 call_register[] = {
         0xb8u,10,0,0,0,0xffu,0xd0u,0xb0u,0xa5u,0xf4u,0xc3u
     };
-    static const uint8_t jmp_memory[] = {0xffu,0x25u,0,1,0,0,0xb0u,0,0xf4u};
-    static const uint8_t call16_register[] = {
+    static const type_unsigned_8 jmp_memory[] = {0xffu,0x25u,0,1,0,0,0xb0u,0,0xf4u};
+    static const type_unsigned_8 call16_register[] = {
         0xb8u,8,0,0xffu,0xd0u,0xb0u,0xa5u,0xf4u,0xc3u
     };
-    static const uint8_t jmp16_memory[] = {0xffu,0x26u,0,1,0xb0u,0,0xf4u};
-    static const uint8_t call_fault[] = {0xe8u,0x7bu,0,0,0};
-    static const uint8_t jmp_fault[] = {0xffu,0xe0u};
-    static const uint8_t jmp_target[] = {8,0,0,0};
+    static const type_unsigned_8 jmp16_memory[] = {0xffu,0x26u,0,1,0xb0u,0,0xf4u};
+    static const type_unsigned_8 call_fault[] = {0xe8u,0x7bu,0,0,0};
+    static const type_unsigned_8 jmp_fault[] = {0xffu,0xe0u};
+    static const type_unsigned_8 jmp_target[] = {8,0,0,0};
     ct_machine state;
     t_cpu before;
     t_cpu after;
@@ -617,7 +617,7 @@ static C_INT ct_test_near_indirect_and_fault_boundaries(C_VOID)
     if (failed) return 0;
     if (!failed) failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 0);
     if (!failed) {
-        static const uint8_t target16[] = {6,0};
+        static const type_unsigned_8 target16[] = {6,0};
         failed = !ct_write(&state, 0x00003100u, target16, sizeof(target16));
         if (!failed) failed = !ct_run(&state, jmp16_memory, sizeof(jmp16_memory),
             CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT, &after) || after.data.eip != 7u;
@@ -651,13 +651,13 @@ static C_INT ct_test_near_indirect_and_fault_boundaries(C_VOID)
 
 static C_INT ct_test_far_same_cpl_return_validation(C_VOID)
 {
-    static const uint8_t retf[] = {0xcbu};
-    static const uint8_t dpl_mismatch[] = {0,0,0,0,0x20u,0,0,0};
-    static const uint8_t nonpresent[] = {0,0,0,0,0x28u,0,0,0};
+    static const type_unsigned_8 retf[] = {0xcbu};
+    static const type_unsigned_8 dpl_mismatch[] = {0,0,0,0,0x20u,0,0,0};
+    static const type_unsigned_8 nonpresent[] = {0,0,0,0,0x28u,0,0,0};
     ct_machine state;
     t_cpu before;
     t_cpu after;
-    uint8_t descriptor_access = 0u;
+    type_unsigned_8 descriptor_access = 0u;
     C_INT failed = !ct_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
 
     if (!failed) {
@@ -708,15 +708,15 @@ static C_INT ct_test_far_same_cpl_return_validation(C_VOID)
 
 static C_INT ct_test_far_immediate_forms(C_VOID)
 {
-    static const uint8_t jmp32[] = {0xeau,7,0,0,0,8,0,0xf4u};
-    static const uint8_t jmp16[] = {0x66u,0xeau,6,0,8,0,0xf4u};
-    static const uint8_t call32[] = {
+    static const type_unsigned_8 jmp32[] = {0xeau,7,0,0,0,8,0,0xf4u};
+    static const type_unsigned_8 jmp16[] = {0x66u,0xeau,6,0,8,0,0xf4u};
+    static const type_unsigned_8 call32[] = {
         0x9au,10,0,0,0,8,0,0xb0u,0xa5u,0xf4u,0xcbu
     };
-    static const uint8_t call16[] = {
+    static const type_unsigned_8 call16[] = {
         0x66u,0x9au,9,0,8,0,0xb0u,0xa5u,0xf4u,0x66u,0xcbu
     };
-    const uint8_t *const programs[] = {jmp32,jmp16,call32,call16};
+    const type_unsigned_8 *const programs[] = {jmp32,jmp16,call32,call16};
     const STD_SIZE_T sizes[] = {
         sizeof(jmp32),sizeof(jmp16),sizeof(call32),sizeof(call16)
     };
@@ -745,16 +745,16 @@ static C_INT ct_test_far_immediate_forms(C_VOID)
 
 static C_INT ct_test_far_indirect_forms(C_VOID)
 {
-    static const uint8_t call32[] = {0xffu,0x1du,0,1,0,0,0xb0u,0xa5u,0xf4u,0xcbu};
-    static const uint8_t call16[] = {0x66u,0xffu,0x1du,0,1,0,0,0xb0u,0xa5u,0xf4u,0x66u,0xcbu};
-    static const uint8_t jmp32[] = {0xffu,0x2du,0,1,0,0,0xf4u};
-    static const uint8_t jmp16[] = {0x66u,0xffu,0x2du,0,1,0,0,0xf4u};
-    static const uint8_t pointer_call32[] = {9,0,0,0,8,0};
-    static const uint8_t pointer_call16[] = {10,0,8,0};
-    static const uint8_t pointer_jmp32[] = {6,0,0,0,8,0};
-    static const uint8_t pointer_jmp16[] = {7,0,8,0};
-    const uint8_t *const programs[] = {call32,call16,jmp32,jmp16};
-    const uint8_t *const pointers[] = {pointer_call32,pointer_call16,pointer_jmp32,pointer_jmp16};
+    static const type_unsigned_8 call32[] = {0xffu,0x1du,0,1,0,0,0xb0u,0xa5u,0xf4u,0xcbu};
+    static const type_unsigned_8 call16[] = {0x66u,0xffu,0x1du,0,1,0,0,0xb0u,0xa5u,0xf4u,0x66u,0xcbu};
+    static const type_unsigned_8 jmp32[] = {0xffu,0x2du,0,1,0,0,0xf4u};
+    static const type_unsigned_8 jmp16[] = {0x66u,0xffu,0x2du,0,1,0,0,0xf4u};
+    static const type_unsigned_8 pointer_call32[] = {9,0,0,0,8,0};
+    static const type_unsigned_8 pointer_call16[] = {10,0,8,0};
+    static const type_unsigned_8 pointer_jmp32[] = {6,0,0,0,8,0};
+    static const type_unsigned_8 pointer_jmp16[] = {7,0,8,0};
+    const type_unsigned_8 *const programs[] = {call32,call16,jmp32,jmp16};
+    const type_unsigned_8 *const pointers[] = {pointer_call32,pointer_call16,pointer_jmp32,pointer_jmp16};
     const STD_SIZE_T sizes[] = {sizeof(call32),sizeof(call16),sizeof(jmp32),sizeof(jmp16)};
     const STD_SIZE_T pointer_sizes[] = {sizeof(pointer_call32),sizeof(pointer_call16),sizeof(pointer_jmp32),sizeof(pointer_jmp16)};
     STD_SIZE_T index;
@@ -782,7 +782,7 @@ static C_INT ct_test_far_indirect_forms(C_VOID)
         if (!failed) {
             before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             before.data.eip = 0u;
-            failed = !ct_run_ud(&state, (const uint8_t[]){0xffu,0xd8u}, 2u, &after) ||
+            failed = !ct_run_ud(&state, (const type_unsigned_8[]){0xffu,0xd8u}, 2u, &after) ||
                 after.data.eip != before.data.eip || after.data.esp != before.data.esp ||
                 after.data.eflags != before.data.eflags ||
                 after.data.cs.selector != before.data.cs.selector ||
@@ -794,7 +794,7 @@ static C_INT ct_test_far_indirect_forms(C_VOID)
         if (!failed) {
             before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             before.data.eip = 0u;
-            failed = !ct_run_ud(&state, (const uint8_t[]){0xffu,0xe8u}, 2u, &after) ||
+            failed = !ct_run_ud(&state, (const type_unsigned_8[]){0xffu,0xe8u}, 2u, &after) ||
                 after.data.eip != before.data.eip || after.data.esp != before.data.esp ||
                 after.data.eflags != before.data.eflags ||
                 after.data.cs.selector != before.data.cs.selector ||
@@ -808,13 +808,13 @@ static C_INT ct_test_far_indirect_forms(C_VOID)
 
 static C_INT ct_test_far_real_mode(C_VOID)
 {
-    static const uint8_t jmp[] = {0xeau,0,0,0,1};
-    static const uint8_t call[] = {0x9au,0,0,0,1,0xf4u};
-    static const uint8_t halt[] = {0xf4u};
-    static const uint8_t retf[] = {0xcbu};
-    static const uint8_t indirect_jmp[] = {0xffu,0x2eu,0,1};
-    static const uint8_t indirect_call[] = {0xffu,0x1eu,0,1,0xb0u,0xa5u,0xf4u};
-    static const uint8_t pointer[] = {0,0,0,1};
+    static const type_unsigned_8 jmp[] = {0xeau,0,0,0,1};
+    static const type_unsigned_8 call[] = {0x9au,0,0,0,1,0xf4u};
+    static const type_unsigned_8 halt[] = {0xf4u};
+    static const type_unsigned_8 retf[] = {0xcbu};
+    static const type_unsigned_8 indirect_jmp[] = {0xffu,0x2eu,0,1};
+    static const type_unsigned_8 indirect_call[] = {0xffu,0x1eu,0,1,0xb0u,0xa5u,0xf4u};
+    static const type_unsigned_8 pointer[] = {0,0,0,1};
     const core_machine_run_budget budget = {48u,0u};
     core_machine_run_result result;
     ct_machine state;

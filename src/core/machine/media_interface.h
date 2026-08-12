@@ -7,7 +7,7 @@
 #define CORE_MACHINE_MEDIA_MAX_DEVICES 4u
 #define CORE_MACHINE_MEDIA_ID_INVALID 0u
 
-typedef uint32_t core_machine_media_id;
+typedef type_unsigned_32 core_machine_media_id;
 
 typedef enum core_machine_media_result {
     CORE_MACHINE_MEDIA_RESULT_OK = 0,
@@ -30,17 +30,17 @@ typedef enum core_machine_media_capability {
 } core_machine_media_capability;
 
 typedef struct core_machine_media_geometry {
-    uint64_t logical_sector_count;
-    uint32_t bytes_per_sector;
-    uint32_t cylinders;
-    uint32_t heads;
-    uint32_t sectors_per_track;
+    type_unsigned_64 logical_sector_count;
+    type_unsigned_32 bytes_per_sector;
+    type_unsigned_32 cylinders;
+    type_unsigned_32 heads;
+    type_unsigned_32 sectors_per_track;
 } core_machine_media_geometry;
 
 typedef struct core_machine_media_info {
     core_machine_media_id id;
-    uint64_t generation;
-    uint32_t capabilities;
+    type_unsigned_64 generation;
+    type_unsigned_32 capabilities;
     type_bool present;
     core_machine_media_geometry geometry;
 } core_machine_media_info;
@@ -48,11 +48,11 @@ typedef struct core_machine_media_info {
 typedef core_machine_media_result (*core_machine_media_query_provider)(
     C_VOID *context, core_machine_media_info *out_info);
 typedef core_machine_media_result (*core_machine_media_read_provider)(
-    C_VOID *context, uint64_t offset, C_VOID *buffer, uint32_t byte_count);
+    C_VOID *context, type_unsigned_64 offset, C_VOID *buffer, type_unsigned_32 byte_count);
 typedef core_machine_media_result (*core_machine_media_write_provider)(
-    C_VOID *context, uint64_t offset, const C_VOID *buffer, uint32_t byte_count);
+    C_VOID *context, type_unsigned_64 offset, const C_VOID *buffer, type_unsigned_32 byte_count);
 typedef core_machine_media_result (*core_machine_media_format_provider)(
-    C_VOID *context, uint64_t logical_sector, uint32_t sector_count, uint8_t fill);
+    C_VOID *context, type_unsigned_64 logical_sector, type_unsigned_32 sector_count, type_unsigned_8 fill);
 typedef core_machine_media_result (*core_machine_media_flush_provider)(
     C_VOID *context);
 
@@ -72,7 +72,7 @@ typedef struct core_machine_media_binding {
 
 typedef struct core_machine_media_registry {
     core_machine_media_binding bindings[CORE_MACHINE_MEDIA_MAX_DEVICES];
-    uint32_t binding_count;
+    type_unsigned_32 binding_count;
     type_bool frozen;
 } core_machine_media_registry;
 
@@ -87,20 +87,20 @@ type_status core_machine_media_query(const core_machine_media_registry *registry
     core_machine_media_id id, core_machine_media_info *out_info,
     core_machine_media_result *out_result);
 type_status core_machine_media_read_bytes(const core_machine_media_registry *registry,
-    core_machine_media_id id, uint64_t offset, C_VOID *buffer, uint32_t byte_count,
+    core_machine_media_id id, type_unsigned_64 offset, C_VOID *buffer, type_unsigned_32 byte_count,
     core_machine_media_result *out_result);
 type_status core_machine_media_write_bytes(const core_machine_media_registry *registry,
-    core_machine_media_id id, uint64_t offset, const C_VOID *buffer,
-    uint32_t byte_count, core_machine_media_result *out_result);
+    core_machine_media_id id, type_unsigned_64 offset, const C_VOID *buffer,
+    type_unsigned_32 byte_count, core_machine_media_result *out_result);
 type_status core_machine_media_read_sectors(const core_machine_media_registry *registry,
-    core_machine_media_id id, uint64_t logical_sector, uint32_t sector_count,
+    core_machine_media_id id, type_unsigned_64 logical_sector, type_unsigned_32 sector_count,
     C_VOID *buffer, core_machine_media_result *out_result);
 type_status core_machine_media_write_sectors(const core_machine_media_registry *registry,
-    core_machine_media_id id, uint64_t logical_sector, uint32_t sector_count,
+    core_machine_media_id id, type_unsigned_64 logical_sector, type_unsigned_32 sector_count,
     const C_VOID *buffer, core_machine_media_result *out_result);
 type_status core_machine_media_format_sectors(const core_machine_media_registry *registry,
-    core_machine_media_id id, uint64_t logical_sector, uint32_t sector_count,
-    uint8_t fill, core_machine_media_result *out_result);
+    core_machine_media_id id, type_unsigned_64 logical_sector, type_unsigned_32 sector_count,
+    type_unsigned_8 fill, core_machine_media_result *out_result);
 type_status core_machine_media_flush(const core_machine_media_registry *registry,
     core_machine_media_id id, core_machine_media_result *out_result);
 

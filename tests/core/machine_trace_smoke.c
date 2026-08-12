@@ -21,7 +21,7 @@ static C_VOID trace_callback(C_VOID *context, const core_machine_trace_event *ev
     }
 }
 
-static type_status port_read(C_VOID *owner, uint16_t port, uint32_t *out_value)
+static type_status port_read(C_VOID *owner, type_unsigned_16 port, type_unsigned_32 *out_value)
 {
     trace_fixture *fixture = (trace_fixture *)owner;
 
@@ -31,7 +31,7 @@ static type_status port_read(C_VOID *owner, uint16_t port, uint32_t *out_value)
     return TYPE_STATUS_OK;
 }
 
-static type_status port_write(C_VOID *owner, uint16_t port, uint32_t value)
+static type_status port_write(C_VOID *owner, type_unsigned_16 port, type_unsigned_32 value)
 {
     trace_fixture *fixture = (trace_fixture *)owner;
 
@@ -53,7 +53,7 @@ C_INT main(C_VOID)
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
     trace_fixture fixture = { { { 0 } }, 0u, 0u, TYPE_STATUS_OK };
-    uint32_t value;
+    type_unsigned_32 value;
     C_INT failed = 0;
 
     sink.callback = trace_callback;

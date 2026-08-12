@@ -5,7 +5,7 @@
 #include "core/machine/port.h"
 
 static C_VOID core_machine_controller_fdc_command(t_port *port,
-    const uint8_t *bytes, STD_SIZE_T count)
+    const type_unsigned_8 *bytes, STD_SIZE_T count)
 {
     STD_SIZE_T index;
 
@@ -14,13 +14,13 @@ static C_VOID core_machine_controller_fdc_command(t_port *port,
     }
 }
 
-static C_INT core_machine_controller_fdc_result(t_port *port, uint8_t *result,
+static C_INT core_machine_controller_fdc_result(t_port *port, type_unsigned_8 *result,
     STD_SIZE_T count)
 {
     STD_SIZE_T index;
 
     for (index = 0u; index < count; ++index) {
-        result[index] = (uint8_t)core_machine_port_read(port, 0x03f5u);
+        result[index] = (type_unsigned_8)core_machine_port_read(port, 0x03f5u);
     }
     return (core_machine_port_read(port, 0x03f4u) &
         (VFDC_MSR_CB | VFDC_MSR_DIO)) == 0u;
@@ -43,11 +43,11 @@ static C_INT core_machine_controller_hdc_program_chs(core_machine *machine,
 
 C_INT main(C_VOID)
 {
-    static const uint8_t specify_non_dma[] = {0x03u, 0xdfu, 0x03u};
-    static const uint8_t read_absent[] = {
+    static const type_unsigned_8 specify_non_dma[] = {0x03u, 0xdfu, 0x03u};
+    static const type_unsigned_8 read_absent[] = {
         0xe6u, 0x00u, 0x00u, 0x00u, 0x01u, 0x02u, 0x01u, 0x1bu, 0xffu
     };
-    static const uint8_t write_absent[] = {
+    static const type_unsigned_8 write_absent[] = {
         0xc5u, 0x00u, 0x00u, 0x00u, 0x01u, 0x02u, 0x01u, 0x1bu, 0xffu
     };
     const core_machine_config config = {
@@ -96,9 +96,9 @@ C_INT main(C_VOID)
     };
     core_machine *machine = STD_NULL;
     t_port *port;
-    uint8_t result[7] = {0};
-    uint32_t status = 0u;
-    uint32_t error = 0u;
+    type_unsigned_8 result[7] = {0};
+    type_unsigned_32 status = 0u;
+    type_unsigned_32 error = 0u;
     type_status fdc_before_dma = TYPE_STATUS_OK;
     type_status dma_status = TYPE_STATUS_OK;
     type_status fdc_status = TYPE_STATUS_OK;

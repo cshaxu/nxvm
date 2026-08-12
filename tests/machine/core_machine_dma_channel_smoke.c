@@ -5,8 +5,8 @@
 #include "core/machine/port.h"
 
 typedef struct core_machine_dma_fixture {
-    uint8_t bytes[2];
-    uint8_t next;
+    type_unsigned_8 bytes[2];
+    type_unsigned_8 next;
     C_UINT terminal_count;
 } core_machine_dma_fixture;
 
@@ -26,8 +26,8 @@ static C_VOID core_machine_dma_fixture_terminal(C_VOID *owner, t_latch *latch)
     if (fixture != STD_NULL) ++fixture->terminal_count;
 }
 
-static C_VOID core_machine_dma_write_channel2(t_port *port, uint16_t address,
-    uint8_t page, uint16_t count, uint8_t mode)
+static C_VOID core_machine_dma_write_channel2(t_port *port, type_unsigned_16 address,
+    type_unsigned_8 page, type_unsigned_16 count, type_unsigned_8 mode)
 {
     core_machine_port_write(port, 0x000cu, 0u);
     core_machine_port_write(port, 0x0004u, address & 0xffu);
@@ -39,15 +39,15 @@ static C_VOID core_machine_dma_write_channel2(t_port *port, uint16_t address,
 }
 
 static C_VOID core_machine_dma_write_primary_channel(t_port *port,
-    uint8_t channel, uint16_t address, uint16_t count, uint8_t mode)
+    type_unsigned_8 channel, type_unsigned_16 address, type_unsigned_16 count, type_unsigned_8 mode)
 {
-    uint16_t address_port = (uint16_t)(channel * 2u);
+    type_unsigned_16 address_port = (type_unsigned_16)(channel * 2u);
 
     core_machine_port_write(port, 0x000cu, 0u);
     core_machine_port_write(port, address_port, address & 0xffu);
     core_machine_port_write(port, address_port, address >> 8u);
-    core_machine_port_write(port, (uint16_t)(address_port + 1u), count & 0xffu);
-    core_machine_port_write(port, (uint16_t)(address_port + 1u), count >> 8u);
+    core_machine_port_write(port, (type_unsigned_16)(address_port + 1u), count & 0xffu);
+    core_machine_port_write(port, (type_unsigned_16)(address_port + 1u), count >> 8u);
     core_machine_port_write(port, 0x000bu, mode);
 }
 
@@ -65,8 +65,8 @@ C_INT main(C_VOID)
     t_port port;
     core_machine_dma_request_binding binding = {0};
     core_machine_dma_fixture fixture = {{0xa5u, 0x5au}, 0u, 0u};
-    uint8_t bytes[2] = {0};
-    uint8_t zeroes[2] = {0};
+    type_unsigned_8 bytes[2] = {0};
+    type_unsigned_8 zeroes[2] = {0};
     C_INT failed = 0;
 
     core_machine_port_initialize(&port);

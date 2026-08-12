@@ -82,7 +82,7 @@ type_status core_machine_port_execute_read(t_port *port, type_unsigned_16 port_i
         if (provider->legacy_handler != STD_NULL) {
             provider->legacy_handler(port, port_id, provider->owner);
         } else if (provider->read_provider != STD_NULL) {
-            uint32_t value = 0u;
+            type_unsigned_32 value = 0u;
 
             type_status status = provider->read_provider(provider->owner, port_id, &value);
 
@@ -156,14 +156,14 @@ C_INT core_machine_port_has_write(const t_port *port, type_unsigned_16 port_id)
         TYPE_TRUE) != STD_NULL;
 }
 
-uint32_t core_machine_port_read(t_port *port, uint16_t port_id)
+type_unsigned_32 core_machine_port_read(t_port *port, type_unsigned_16 port_id)
 {
     if (port == STD_NULL) return 0u;
     (C_VOID)core_machine_port_execute_read(port, port_id);
     return port->data.ioDWord;
 }
 
-C_VOID core_machine_port_write(t_port *port, uint16_t port_id, uint32_t value)
+C_VOID core_machine_port_write(t_port *port, type_unsigned_16 port_id, type_unsigned_32 value)
 {
     if (port == STD_NULL) return;
     port->data.ioDWord = value;

@@ -6,11 +6,11 @@
 #define CHECKPOINTS 64u
 
 static C_INT timing_checkpoint_run(core_machine *machine,
-    const uint8_t *program, uint8_t *statuses)
+    const type_unsigned_8 *program, type_unsigned_8 *statuses)
 {
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
-    uint32_t index;
+    type_unsigned_32 index;
 
     if (core_machine_reset(machine) != TYPE_STATUS_OK ||
         core_machine_memory_write(machine, 0xfffffff0u, program, CHECKPOINTS) !=
@@ -38,9 +38,9 @@ C_INT main(C_VOID)
 {
     core_machine *machine = STD_NULL;
     core_machine_config config = { 0 };
-    uint8_t program[CHECKPOINTS];
-    uint8_t first[CHECKPOINTS];
-    uint8_t second[CHECKPOINTS];
+    type_unsigned_8 program[CHECKPOINTS];
+    type_unsigned_8 first[CHECKPOINTS];
+    type_unsigned_8 second[CHECKPOINTS];
     C_INT failed = 0;
 
     STD_MEMSET(program, 0x90, sizeof(program));

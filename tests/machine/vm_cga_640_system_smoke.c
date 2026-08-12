@@ -9,11 +9,11 @@
 #define VM_CGA254_IMAGE_BYTES (1440u * 1024u)
 #define VM_CGA254_BOOT_BUDGET 500000u
 
-static uint8_t vm_cga254_image[VM_CGA254_IMAGE_BYTES];
+static type_unsigned_8 vm_cga254_image[VM_CGA254_IMAGE_BYTES];
 
 static C_INT vm_cga254_write_fixture(C_CHAR path[MAX_PATH])
 {
-    static const uint8_t boot_code[] = {
+    static const type_unsigned_8 boot_code[] = {
         0x31u, 0xc0u, 0x8eu, 0xd8u,
         0xb8u, 0x06u, 0x00u, 0xcdu, 0x10u,
         0xb8u, 0x00u, 0xb8u, 0x8eu, 0xc0u, 0x31u, 0xffu,
@@ -55,8 +55,8 @@ C_INT main(C_VOID)
     core_machine_display_snapshot snapshot;
     vm_session *session = STD_NULL;
     C_CHAR path[MAX_PATH] = {0};
-    uint8_t mode = 0u;
-    uint32_t instruction;
+    type_unsigned_8 mode = 0u;
+    type_unsigned_32 instruction;
     C_INT saw_cga = 0;
     C_INT saw_text = 0;
 

@@ -3,7 +3,7 @@
 
 #include "type.h"
 
-typedef C_VOID (*core_utils_wait_provider)(C_VOID *context, uint32_t milliseconds);
+typedef C_VOID (*core_utils_wait_provider)(C_VOID *context, type_unsigned_32 milliseconds);
 
 typedef struct core_utils_wait_scope {
     core_utils_wait_provider provider;

@@ -7,9 +7,9 @@
 #define BIT_SOURCE_MEMORY 0x5000u
 
 typedef struct bit_memory_provider {
-    uint32_t reads;
-    uint32_t writes;
-    uint8_t value[4];
+    type_unsigned_32 reads;
+    type_unsigned_32 writes;
+    type_unsigned_8 value[4];
     type_status read_status;
     type_status write_status;
 } bit_memory_provider;
@@ -76,7 +76,7 @@ static C_INT bit_prepare(core_machine_cpu_profile profile, bit_memory_provider *
     return 1;
 }
 
-static C_INT bit_run(bit_machine *state,const uint8_t *code,STD_SIZE_T bytes,
+static C_INT bit_run(bit_machine *state,const type_unsigned_8 *code,STD_SIZE_T bytes,
     C_INT fault,t_cpu *out,core_machine_cpu_diagnostic *diagnostic)
 {
     const core_machine_run_budget budget={1u,0u}; core_machine_run_result result;
@@ -91,13 +91,13 @@ static C_INT bit_run(bit_machine *state,const uint8_t *code,STD_SIZE_T bytes,
 
 static C_INT bit_test_register_forms(C_VOID)
 {
-    static const uint8_t opcodes[]={0xa3u,0xabu,0xb3u,0xbbu};
-    static const uint32_t expected[]={0x00000002u,0x00000002u,0x00000000u,0x00000000u};
-    uint8_t index;
+    static const type_unsigned_8 opcodes[]={0xa3u,0xabu,0xb3u,0xbbu};
+    static const type_unsigned_32 expected[]={0x00000002u,0x00000002u,0x00000000u,0x00000000u};
+    type_unsigned_8 index;
     for(index=0u;index<4u;++index) {
-        uint8_t operand32;
+        type_unsigned_8 operand32;
         for(operand32=0u;operand32<2u;++operand32) {
-            uint8_t code[]={0x66u,0x0fu,opcodes[index],0xc8u};
+            type_unsigned_8 code[]={0x66u,0x0fu,opcodes[index],0xc8u};
             bit_machine state; t_cpu after; core_machine_cpu_diagnostic diagnostic;
             C_INT failed=!bit_prepare(CORE_MACHINE_CPU_PROFILE_80386,STD_NULL,&state);
             if (!operand32) { code[0]=0x0fu; code[1]=opcodes[index]; code[2]=0xc8u; }
@@ -117,10 +117,10 @@ static C_INT bit_test_register_forms(C_VOID)
 
 static C_INT bit_test_immediate_and_memory(C_VOID)
 {
-    static const uint8_t groups[]={4u,5u,6u,7u};
-    uint8_t group;
+    static const type_unsigned_8 groups[]={4u,5u,6u,7u};
+    type_unsigned_8 group;
     for(group=0u;group<4u;++group) {
-        uint8_t code[]={0x0fu,0xbau,(uint8_t)(0xe1u+(groups[group]-4u)*8u),1u};
+        type_unsigned_8 code[]={0x0fu,0xbau,(type_unsigned_8)(0xe1u+(groups[group]-4u)*8u),1u};
         bit_machine state; t_cpu after; core_machine_cpu_diagnostic diagnostic;
         C_INT failed=!bit_prepare(CORE_MACHINE_CPU_PROFILE_80386,STD_NULL,&state);
         if(!failed) {
@@ -132,11 +132,11 @@ static C_INT bit_test_immediate_and_memory(C_VOID)
         core_machine_destroy(state.machine);if(failed)return 0;
     }
     {
-        static const uint8_t signed_code[]={0x0fu,0xabu,0x0eu,0x02u,0x40u};
-        static const uint8_t immediate_code[]={0x0fu,0xbau,0x2eu,0x00u,0x40u,0x10u};
-        static const uint8_t immediate32_code[]={0x66u,0x0fu,0xbau,0x2eu,0x08u,0x40u,0x21u};
-        uint16_t first=0u,second=0u,read=0u;
-        uint32_t third=0u,fourth=0u;
+        static const type_unsigned_8 signed_code[]={0x0fu,0xabu,0x0eu,0x02u,0x40u};
+        static const type_unsigned_8 immediate_code[]={0x0fu,0xbau,0x2eu,0x00u,0x40u,0x10u};
+        static const type_unsigned_8 immediate32_code[]={0x66u,0x0fu,0xbau,0x2eu,0x08u,0x40u,0x21u};
+        type_unsigned_16 first=0u,second=0u,read=0u;
+        type_unsigned_32 third=0u,fourth=0u;
         bit_machine state;t_cpu after;core_machine_cpu_diagnostic diagnostic;
         C_INT failed=!bit_prepare(CORE_MACHINE_CPU_PROFILE_80386,STD_NULL,&state);
         if(!failed) {
@@ -165,10 +165,10 @@ static C_INT bit_test_immediate_and_memory(C_VOID)
         core_machine_destroy(state.machine);if(failed)return 0;
     }
     {
-        static const uint8_t memory_bt[]={0x0fu,0xa3u,0x0eu,0x00u,0x40u};
-        static const uint8_t address32_bts[]={0x67u,0x66u,0x0fu,0xabu,0x0eu};
-        uint16_t word=2u,read16=0u;
-        uint32_t dword=0u,read32=0u;
+        static const type_unsigned_8 memory_bt[]={0x0fu,0xa3u,0x0eu,0x00u,0x40u};
+        static const type_unsigned_8 address32_bts[]={0x67u,0x66u,0x0fu,0xabu,0x0eu};
+        type_unsigned_16 word=2u,read16=0u;
+        type_unsigned_32 dword=0u,read32=0u;
         bit_machine state;t_cpu after;core_machine_cpu_diagnostic diagnostic;
         C_INT failed=!bit_prepare(CORE_MACHINE_CPU_PROFILE_80386,STD_NULL,&state);
         if(!failed) {
@@ -193,13 +193,13 @@ static C_INT bit_test_immediate_and_memory(C_VOID)
 
 static C_INT bit_test_memory_destination_forms(C_VOID)
 {
-    static const uint8_t opcodes[]={0xa3u,0xabu,0xb3u,0xbbu};
-    uint8_t form;
+    static const type_unsigned_8 opcodes[]={0xa3u,0xabu,0xb3u,0xbbu};
+    type_unsigned_8 form;
 
     for(form=0u;form<4u;++form) {
-        uint8_t indexed[]={0x0fu,opcodes[form],0x0eu,0x00u,0x40u};
-        uint8_t immediate[]={0x0fu,0xbau,(uint8_t)(0x26u+form*8u),0x00u,0x40u,1u};
-        uint16_t value=2u,read=0u;
+        type_unsigned_8 indexed[]={0x0fu,opcodes[form],0x0eu,0x00u,0x40u};
+        type_unsigned_8 immediate[]={0x0fu,0xbau,(type_unsigned_8)(0x26u+form*8u),0x00u,0x40u,1u};
+        type_unsigned_16 value=2u,read=0u;
         bit_machine state;
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
@@ -227,10 +227,10 @@ static C_INT bit_test_memory_destination_forms(C_VOID)
 
 static C_INT bit_test_rejection(C_VOID)
 {
-    static const uint8_t invalid_ba[]={0x0fu,0xbau,0x06u,0x00u,0x50u,0u};
-    static const uint8_t bt_memory[]={0x0fu,0xa3u,0x0eu,0x00u,0x50u};
+    static const type_unsigned_8 invalid_ba[]={0x0fu,0xbau,0x06u,0x00u,0x50u,0u};
+    static const type_unsigned_8 bt_memory[]={0x0fu,0xa3u,0x0eu,0x00u,0x50u};
     core_machine_cpu_profile profiles[]={CORE_MACHINE_CPU_PROFILE_80186,CORE_MACHINE_CPU_PROFILE_80286};
-    uint8_t i;
+    type_unsigned_8 i;
     for(i=0u;i<2u;++i) {
         bit_machine state;t_cpu after;core_machine_cpu_diagnostic diagnostic;
         bit_memory_provider provider={0u,0u,{0u,0u,0u,0u},TYPE_STATUS_OK,TYPE_STATUS_OK};
@@ -248,21 +248,21 @@ static C_INT bit_test_rejection(C_VOID)
 static C_INT bit_prepare_protected(C_INT writable, C_INT out_of_limit,
     bit_machine *state)
 {
-    static const uint8_t gdt_pointer[]={0x1fu,0,0,0x03u,0,0};
-    uint8_t gdt[]={
+    static const type_unsigned_8 gdt_pointer[]={0x1fu,0,0,0x03u,0,0};
+    type_unsigned_8 gdt[]={
         0,0,0,0,0,0,0,0,
         0xffu,0xffu,0,0x20u,0,0x9au,0,0,
         0xffu,0xffu,0,0x30u,0,0x92u,0,0,
         0xffu,0xffu,0,0x40u,0,0x92u,0,0
     };
-    static const uint8_t bootstrap[]={
+    static const type_unsigned_8 bootstrap[]={
         0x0fu,0x01u,0x16u,0x00u,0x01u,
         0xb8u,0x01u,0x00u,0x0fu,0x01u,0xf0u,
         0xb8u,0x10u,0x00u,0x8eu,0xd8u,0x8eu,0xc0u,
         0xb8u,0x18u,0x00u,0x8eu,0xd0u,
         0xbcu,0x00u,0x80u,0xeau,0x00u,0x00u,0x08u,0x00u
     };
-    static const uint8_t halt[]={0xf4u};
+    static const type_unsigned_8 halt[]={0xf4u};
     const core_machine_run_budget budget={96u,0u};
     core_machine_run_result result;
 
@@ -280,17 +280,17 @@ static C_INT bit_prepare_protected(C_INT writable, C_INT out_of_limit,
 
 static C_INT bit_test_access_failure(C_VOID)
 {
-    static const uint8_t read_code[]={0x0fu,0xa3u,0x0eu,0x10u,0u};
-    static const uint8_t write_code[]={0x0fu,0xabu,0x0eu,0x10u,0u};
-    const uint32_t flags=VCPU_EFLAGS_ZF;
-    uint8_t pass;
+    static const type_unsigned_8 read_code[]={0x0fu,0xa3u,0x0eu,0x10u,0u};
+    static const type_unsigned_8 write_code[]={0x0fu,0xabu,0x0eu,0x10u,0u};
+    const type_unsigned_32 flags=VCPU_EFLAGS_ZF;
+    type_unsigned_8 pass;
 
     for(pass=0u;pass<2u;++pass) {
         bit_machine state;
         t_cpu after;
         core_machine_cpu_diagnostic diagnostic;
         core_machine_run_result result;
-        uint16_t before=2u,after_memory=0u;
+        type_unsigned_16 before=2u,after_memory=0u;
         C_INT failed;
 
         failed=!bit_prepare_protected(pass==0u,pass==0u,&state);

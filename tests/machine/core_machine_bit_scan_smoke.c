@@ -4,7 +4,7 @@
 #include "../support/core_machine_cpu_fixture.h"
 
 #define SCAN_PROVIDER_ADDRESS 0x5000u
-typedef struct scan_provider { uint32_t reads; } scan_provider;
+typedef struct scan_provider { type_unsigned_32 reads; } scan_provider;
 typedef struct scan_machine { core_machine *machine; } scan_machine;
 
 static type_status scan_read(C_VOID *owner,type_unsigned_32 physical,
@@ -42,7 +42,7 @@ static C_INT scan_prepare(core_machine_cpu_profile profile,scan_provider *provid
     }
     return 1;
 }
-static C_INT scan_run_real(scan_machine *state,const uint8_t *code,STD_SIZE_T bytes,
+static C_INT scan_run_real(scan_machine *state,const type_unsigned_8 *code,STD_SIZE_T bytes,
     C_INT fault,t_cpu *out,core_machine_cpu_diagnostic *diagnostic)
 {
     core_machine_run_result result;type_status status;
@@ -56,15 +56,15 @@ static C_INT scan_run_real(scan_machine *state,const uint8_t *code,STD_SIZE_T by
 
 static C_INT scan_test_forms(C_VOID)
 {
-    static const uint8_t opcodes[]={0xbcu,0xbdu};
-    const uint32_t flags=VCPU_EFLAGS_CF|VCPU_EFLAGS_OF;
-    uint8_t opcode,width,memory,zero;
+    static const type_unsigned_8 opcodes[]={0xbcu,0xbdu};
+    const type_unsigned_32 flags=VCPU_EFLAGS_CF|VCPU_EFLAGS_OF;
+    type_unsigned_8 opcode,width,memory,zero;
     for(opcode=0u;opcode<2u;++opcode)for(width=0u;width<2u;++width)
     for(memory=0u;memory<2u;++memory)for(zero=0u;zero<2u;++zero) {
-        uint8_t code[6]={0};STD_SIZE_T bytes=0u;
-        const uint32_t source=zero?0u:(width?0x80000120u:0x00008120u);
-        const uint32_t expected=opcode? (width?31u:15u):5u;
-        scan_machine state;t_cpu after;core_machine_cpu_diagnostic diagnostic;uint32_t read=0u;
+        type_unsigned_8 code[6]={0};STD_SIZE_T bytes=0u;
+        const type_unsigned_32 source=zero?0u:(width?0x80000120u:0x00008120u);
+        const type_unsigned_32 expected=opcode? (width?31u:15u):5u;
+        scan_machine state;t_cpu after;core_machine_cpu_diagnostic diagnostic;type_unsigned_32 read=0u;
         C_INT failed=!scan_prepare(CORE_MACHINE_CPU_PROFILE_80386,STD_NULL,&state);
         if(memory&&width)code[bytes++]=0x67u;if(width)code[bytes++]=0x66u;
         code[bytes++]=0x0fu;code[bytes++]=opcodes[opcode];
@@ -89,8 +89,8 @@ static C_INT scan_test_forms(C_VOID)
 
 static C_INT scan_test_profile(C_VOID)
 {
-    static const uint8_t code[]={0x0fu,0xbcu,0x0eu,0x00u,0x50u};
-    core_machine_cpu_profile profiles[]={CORE_MACHINE_CPU_PROFILE_80186,CORE_MACHINE_CPU_PROFILE_80286};uint8_t index;
+    static const type_unsigned_8 code[]={0x0fu,0xbcu,0x0eu,0x00u,0x50u};
+    core_machine_cpu_profile profiles[]={CORE_MACHINE_CPU_PROFILE_80186,CORE_MACHINE_CPU_PROFILE_80286};type_unsigned_8 index;
     for(index=0u;index<2u;++index) {
         scan_provider provider={0u};scan_machine state;t_cpu after;core_machine_cpu_diagnostic diagnostic;
         C_INT failed=!scan_prepare(profiles[index],&provider,&state);
@@ -105,17 +105,17 @@ static C_INT scan_test_profile(C_VOID)
 
 static C_INT scan_prepare_limit(scan_machine *state)
 {
-    static const uint8_t pointer[]={0x1fu,0,0,0x03u,0,0};
-    static const uint8_t gdt[]={
+    static const type_unsigned_8 pointer[]={0x1fu,0,0,0x03u,0,0};
+    static const type_unsigned_8 gdt[]={
         0,0,0,0,0,0,0,0,0xffu,0xffu,0,0x20u,0,0x9au,0,0,
         0x0fu,0,0,0x30u,0,0x92u,0,0,0xffu,0xffu,0,0x40u,0,0x92u,0,0
     };
-    static const uint8_t bootstrap[]={
+    static const type_unsigned_8 bootstrap[]={
         0x0fu,0x01u,0x16u,0x00u,0x01u,0xb8u,0x01u,0x00u,0x0fu,0x01u,0xf0u,
         0xb8u,0x10u,0x00u,0x8eu,0xd8u,0x8eu,0xc0u,0xb8u,0x18u,0x00u,
         0x8eu,0xd0u,0xbcu,0x00u,0x80u,0xeau,0x00u,0x00u,0x08u,0x00u
     };
-    static const uint8_t halt[]={0xf4u};core_machine_run_result result;
+    static const type_unsigned_8 halt[]={0xf4u};core_machine_run_result result;
     return scan_prepare(CORE_MACHINE_CPU_PROFILE_80386,STD_NULL,state)&&
         core_machine_memory_write(state->machine,0x0100u,pointer,sizeof(pointer))==TYPE_STATUS_OK&&
         core_machine_memory_write(state->machine,0x0300u,gdt,sizeof(gdt))==TYPE_STATUS_OK&&
@@ -127,8 +127,8 @@ static C_INT scan_prepare_limit(scan_machine *state)
 
 static C_INT scan_test_read_failure(C_VOID)
 {
-    static const uint8_t codes[][5]={{0x0fu,0xbcu,0x0eu,0x10u,0u},{0x0fu,0xbdu,0x0eu,0x10u,0u}};
-    const uint32_t flags=VCPU_EFLAGS_CF|VCPU_EFLAGS_OF;uint8_t index;
+    static const type_unsigned_8 codes[][5]={{0x0fu,0xbcu,0x0eu,0x10u,0u},{0x0fu,0xbdu,0x0eu,0x10u,0u}};
+    const type_unsigned_32 flags=VCPU_EFLAGS_CF|VCPU_EFLAGS_OF;type_unsigned_8 index;
     for(index=0u;index<2u;++index) {
         scan_machine state;t_cpu after;core_machine_cpu_diagnostic diagnostic;core_machine_run_result result;
         C_INT failed=!scan_prepare_limit(&state);

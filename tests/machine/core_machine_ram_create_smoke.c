@@ -39,8 +39,8 @@ static C_INT ram_create_failure(STD_SIZE_T memory_bytes)
 static C_INT ram_fixture_retained(C_VOID)
 {
     t_ram ram = {0};
-    uint8_t value = 0x5au;
-    uint8_t observed = 0u;
+    type_unsigned_8 value = 0x5au;
+    type_unsigned_8 observed = 0u;
     C_INT failed = 0;
 
     core_machine_memory_initialize(&ram);

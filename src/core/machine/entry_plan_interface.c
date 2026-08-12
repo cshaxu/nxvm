@@ -46,7 +46,7 @@ type_status core_machine_apply_entry_plan(core_machine *machine,
     t_cpu candidate;
     core_machine_memory_route route;
     STD_SIZE_T index;
-    uint32_t expected_physical;
+    type_unsigned_32 expected_physical;
     type_status status;
 
     if (machine == STD_NULL || plan == STD_NULL ||
@@ -59,7 +59,7 @@ type_status core_machine_apply_entry_plan(core_machine *machine,
     if (machine->lifecycle != CORE_MACHINE_STOPPED || machine->entry_plan_applied) {
         return TYPE_STATUS_INVALID_STATE;
     }
-    expected_physical = ((uint32_t)plan->state.cs << 4) + plan->state.ip;
+    expected_physical = ((type_unsigned_32)plan->state.cs << 4) + plan->state.ip;
     if (plan->entry_physical != expected_physical ||
         core_machine_entry_plan_build_cpu(machine, &plan->state, &candidate) !=
             TYPE_STATUS_OK || core_machine_memory_query(machine,
@@ -79,11 +79,11 @@ type_status core_machine_apply_entry_plan(core_machine *machine,
         }
         for (prior = 0u; prior < index; ++prior) {
             const core_machine_entry_plan_preload *other = &plan->preloads[prior];
-            uint64_t preload_end = (uint64_t)preload->physical + preload->byte_count;
-            uint64_t other_end = (uint64_t)other->physical + other->byte_count;
+            type_unsigned_64 preload_end = (type_unsigned_64)preload->physical + preload->byte_count;
+            type_unsigned_64 other_end = (type_unsigned_64)other->physical + other->byte_count;
 
-            if ((uint64_t)preload->physical < other_end &&
-                (uint64_t)other->physical < preload_end) {
+            if ((type_unsigned_64)preload->physical < other_end &&
+                (type_unsigned_64)other->physical < preload_end) {
                 return TYPE_STATUS_INVALID_ARGUMENT;
             }
         }

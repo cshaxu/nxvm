@@ -24,23 +24,23 @@ typedef enum core_platform_display_kind {
 
 typedef struct core_platform_display_frame {
     core_platform_display_kind kind;
-    uint8_t characters[CORE_PLATFORM_DISPLAY_MAX_CELLS];
-    uint8_t attributes[CORE_PLATFORM_DISPLAY_MAX_CELLS];
-    uint16_t columns;
-    uint16_t rows;
-    uint8_t cursor_top;
-    uint8_t cursor_bottom;
+    type_unsigned_8 characters[CORE_PLATFORM_DISPLAY_MAX_CELLS];
+    type_unsigned_8 attributes[CORE_PLATFORM_DISPLAY_MAX_CELLS];
+    type_unsigned_16 columns;
+    type_unsigned_16 rows;
+    type_unsigned_8 cursor_top;
+    type_unsigned_8 cursor_bottom;
     /* Copied text coordinates are column then row. */
-    uint8_t cursor_x;
-    uint8_t cursor_y;
+    type_unsigned_8 cursor_x;
+    type_unsigned_8 cursor_y;
     C_INT cursor_visible;
     C_INT buffer_changed;
     C_INT cursor_changed;
-    uint16_t pixel_width;
-    uint16_t pixel_height;
-    uint8_t pixels[CORE_PLATFORM_DISPLAY_MAX_PIXELS];
-    uint32_t palette_rgb[CORE_PLATFORM_DISPLAY_PALETTE_ENTRIES];
-    uint64_t generation;
+    type_unsigned_16 pixel_width;
+    type_unsigned_16 pixel_height;
+    type_unsigned_8 pixels[CORE_PLATFORM_DISPLAY_MAX_PIXELS];
+    type_unsigned_32 palette_rgb[CORE_PLATFORM_DISPLAY_PALETTE_ENTRIES];
+    type_unsigned_64 generation;
 } core_platform_display_frame;
 
 #endif

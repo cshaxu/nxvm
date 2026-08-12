@@ -36,8 +36,8 @@ static const core_machine_execution_provider task_switch_provider = {
     task_switch_reset, STD_NULL, STD_NULL
 };
 
-static C_INT write_bytes(core_machine *machine, uint32_t address,
-    const uint8_t *bytes, STD_SIZE_T count)
+static C_INT write_bytes(core_machine *machine, type_unsigned_32 address,
+    const type_unsigned_8 *bytes, STD_SIZE_T count)
 {
     return core_machine_memory_write(machine, address, bytes, count) ==
         TYPE_STATUS_OK;
@@ -69,8 +69,8 @@ static C_INT task_switch_prepare(task_switch_fixture *fixture,
 static C_INT task_switch_install(task_switch_fixture *fixture,
     task_switch_case test_case)
 {
-    static const uint8_t gdt_pointer[] = { 0x3fu,0,0x00u,0x03u,0,0 };
-    uint8_t gdt[] = {
+    static const type_unsigned_8 gdt_pointer[] = { 0x3fu,0,0x00u,0x03u,0,0 };
+    type_unsigned_8 gdt[] = {
         0,0,0,0,0,0,0,0,
         0xff,0xff,0,0x20,0,0x9a,0,0,
         0xff,0xff,0,0x30,0,0x92,0,0,
@@ -80,23 +80,23 @@ static C_INT task_switch_install(task_switch_fixture *fixture,
         0x2b,0,0,0x07,0,0x81,0,0,
         0,0,0,0,0,0,0,0
     };
-    static const uint8_t real_code[] = {
+    static const type_unsigned_8 real_code[] = {
         0x0f,0x01,0x16,0x00,0x01,
         0xb8,0x01,0x00,0x0f,0x01,0xf0,
         0xb8,0x28,0x00,0x0f,0x00,0xd8,
         0xb8,0x10,0x00,0x8e,0xd0,0xbc,0x00,0x80,
         0xea,0x00,0x00,0x08,0x00
     };
-    uint8_t kernel_code[] = {
+    type_unsigned_8 kernel_code[] = {
         0xb8,0x11,0x11,0xea,0x00,0x00,0x30,0x00
     };
-    uint8_t task_b_state[] = {
+    type_unsigned_8 task_b_state[] = {
         0,0, 0,0, 0,0, 0,0, 0,0, 0,0, 0,0,
         0x00,0x01, 0x02,0x00, 0x22,0x22, 0,0, 0,0, 0,0,
         0x00,0x80, 0,0, 0,0, 0,0,
         0x10,0x00, 0x08,0x00, 0x10,0x00, 0x10,0x00, 0,0
     };
-    uint8_t task_b_code[] = {
+    type_unsigned_8 task_b_code[] = {
         0xb8,0x22,0x22,0xa3,0x00,0x00,0xf4
     };
 
@@ -129,7 +129,7 @@ static C_INT task_switch_install(task_switch_fixture *fixture,
     return write_bytes(fixture->machine, GDT_POINTER, gdt_pointer,
             sizeof(gdt_pointer)) &&
         write_bytes(fixture->machine, GDT_BASE, gdt, sizeof(gdt)) &&
-        write_bytes(fixture->machine, TASK_A_BASE, (const uint8_t[44]){0}, 44u) &&
+        write_bytes(fixture->machine, TASK_A_BASE, (const type_unsigned_8[44]){0}, 44u) &&
         write_bytes(fixture->machine, TASK_B_BASE, task_b_state,
             sizeof(task_b_state)) &&
         write_bytes(fixture->machine, 0u, real_code, sizeof(real_code)) &&
@@ -144,10 +144,10 @@ static C_INT task_switch_expect_switch(core_machine_cpu_profile profile)
     task_switch_fixture fixture;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
-    uint16_t marker = 0u;
-    uint16_t saved_ip = 0u;
-    uint16_t saved_ax = 0u;
-    uint8_t access[2] = {0u, 0u};
+    type_unsigned_16 marker = 0u;
+    type_unsigned_16 saved_ip = 0u;
+    type_unsigned_16 saved_ax = 0u;
+    type_unsigned_8 access[2] = {0u, 0u};
     t_cpu cpu;
     const core_machine_run_budget budget = { 128u, 0u };
     C_INT failed = !task_switch_prepare(&fixture, profile);
@@ -226,7 +226,7 @@ static C_INT task_switch_expect_stack_fault(core_machine_cpu_profile profile)
 }
 
 static C_INT task_switch_expect_fault(core_machine_cpu_profile profile,
-    task_switch_case test_case, uint32_t expected_mask, uint16_t expected_code)
+    task_switch_case test_case, type_unsigned_32 expected_mask, type_unsigned_16 expected_code)
 {
     task_switch_fixture fixture;
     core_machine_run_result result;

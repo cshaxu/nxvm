@@ -117,6 +117,8 @@ extern "C"
     typedef int64_t type_signed_48;
     typedef uint64_t type_unsigned_64;
     typedef int64_t type_signed_64;
+    typedef uintptr_t type_unsigned_pointer;
+    typedef intptr_t type_signed_pointer;
     typedef C_FLOAT type_float_32;
     typedef C_DOUBLE type_float_64;
 #if GLOBAL_SIZE_INTEGER == 64
@@ -275,8 +277,8 @@ typedef type_signed_32 type_native_signed;
     C_CHAR *STD_FGETS(C_CHAR *_Buf, C_INT _MaxCount, STD_FILE *_File);
     C_INT STD_FSEEK(STD_FILE *_File, C_LONG _Offset, C_INT _Origin);
     C_LONG STD_FTELL(STD_FILE *_File);
-    C_INT STD_FSEEK_64(STD_FILE *_File, int64_t _Offset, C_INT _Origin);
-    int64_t STD_FTELL_64(STD_FILE *_File);
+    C_INT STD_FSEEK_64(STD_FILE *_File, type_signed_64 _Offset, C_INT _Origin);
+    type_signed_64 STD_FTELL_64(STD_FILE *_File);
     C_INT STD_FGETC(STD_FILE *_File);
     C_INT STD_FPUTC(C_INT _Character, STD_FILE *_File);
     C_INT STD_FPUTS(const C_CHAR *_String, STD_FILE *_File);

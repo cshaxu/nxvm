@@ -116,18 +116,18 @@ STD_SIZE_T STD_FWRITE(const C_VOID *_Buffer, STD_SIZE_T _Size, STD_SIZE_T _Count
 C_CHAR* STD_FGETS(C_CHAR *_Buf, C_INT _MaxCount, STD_FILE *_File) { return fgets(_Buf, _MaxCount, _File); }
 C_INT STD_FSEEK(STD_FILE *_File, C_LONG _Offset, C_INT _Origin) { return fseek(_File, _Offset, _Origin); }
 C_LONG STD_FTELL(STD_FILE *_File) { return ftell(_File); }
-C_INT STD_FSEEK_64(STD_FILE *_File, int64_t _Offset, C_INT _Origin) {
+C_INT STD_FSEEK_64(STD_FILE *_File, type_signed_64 _Offset, C_INT _Origin) {
 #ifdef _WIN32
     return _fseeki64(_File, _Offset, _Origin);
 #else
     return fseeko(_File, (off_t)_Offset, _Origin);
 #endif
 }
-int64_t STD_FTELL_64(STD_FILE *_File) {
+type_signed_64 STD_FTELL_64(STD_FILE *_File) {
 #ifdef _WIN32
     return _ftelli64(_File);
 #else
-    return (int64_t)ftello(_File);
+    return (type_signed_64)ftello(_File);
 #endif
 }
 C_INT STD_FGETC(STD_FILE *_File) { return fgetc(_File); }

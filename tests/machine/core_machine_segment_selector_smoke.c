@@ -49,7 +49,7 @@ static C_INT segment_prepare(segment_machine *state,
     return 1;
 }
 
-static C_INT segment_write(segment_machine *state, uint32_t address,
+static C_INT segment_write(segment_machine *state, type_unsigned_32 address,
     const C_VOID *bytes, STD_SIZE_T byte_count)
 {
     return state != STD_NULL && state->machine != STD_NULL &&
@@ -57,8 +57,8 @@ static C_INT segment_write(segment_machine *state, uint32_t address,
             TYPE_STATUS_OK;
 }
 
-static C_INT segment_run_halt(segment_machine *state, const uint8_t *code,
-    STD_SIZE_T code_size, uint32_t address, t_cpu *out_cpu)
+static C_INT segment_run_halt(segment_machine *state, const type_unsigned_8 *code,
+    STD_SIZE_T code_size, type_unsigned_32 address, t_cpu *out_cpu)
 {
     const core_machine_run_budget budget = { 96u, 0u };
     core_machine_run_result result;
@@ -79,8 +79,8 @@ static C_INT segment_run_halt(segment_machine *state, const uint8_t *code,
     return 1;
 }
 
-static C_INT segment_run_ud(segment_machine *state, const uint8_t *code,
-    STD_SIZE_T code_size, uint32_t address, t_cpu *out_cpu)
+static C_INT segment_run_ud(segment_machine *state, const type_unsigned_8 *code,
+    STD_SIZE_T code_size, type_unsigned_32 address, t_cpu *out_cpu)
 {
     const core_machine_run_budget budget = { 16u, 0u };
     core_machine_run_result result;
@@ -101,8 +101,8 @@ static C_INT segment_run_ud(segment_machine *state, const uint8_t *code,
     return 1;
 }
 
-static C_INT segment_run_exception(segment_machine *state, const uint8_t *code,
-    STD_SIZE_T code_size, uint32_t address, uint32_t exception,
+static C_INT segment_run_exception(segment_machine *state, const type_unsigned_8 *code,
+    STD_SIZE_T code_size, type_unsigned_32 address, type_unsigned_32 exception,
     t_cpu *out_cpu)
 {
     const core_machine_run_budget budget = { 16u, 0u };
@@ -129,7 +129,7 @@ static C_INT segment_run_exception(segment_machine *state, const uint8_t *code,
     return 1;
 }
 
-static const t_cpu_data_sreg *segment_sreg(const t_cpu *cpu, uint8_t target)
+static const t_cpu_data_sreg *segment_sreg(const t_cpu *cpu, type_unsigned_8 target)
 {
     if (cpu == STD_NULL) return STD_NULL;
     switch (target) {
@@ -144,10 +144,10 @@ static const t_cpu_data_sreg *segment_sreg(const t_cpu *cpu, uint8_t target)
 
 static C_INT segment_boot_protected(segment_machine *state)
 {
-    static const uint8_t gdt_pointer[] = {
+    static const type_unsigned_8 gdt_pointer[] = {
         0x37u, 0x00u, 0x00u, 0x03u, 0x00u, 0x00u
     };
-    static const uint8_t gdt[] = {
+    static const type_unsigned_8 gdt[] = {
         0,0,0,0,0,0,0,0,
         0xff,0xff,0,0x20,0,0x9a,0x40,0,
         0xff,0xff,0,0x30,0,0x92,0x40,0,
@@ -156,13 +156,13 @@ static C_INT segment_boot_protected(segment_machine *state)
         0,0,0,0,0,0x80,0,0,
         0xff,0xff,0,0x00,0,0x89,0x40,0
     };
-    static const uint8_t real_code[] = {
+    static const type_unsigned_8 real_code[] = {
         0x0fu,0x01u,0x16u,0x00u,0x01u,
         0xb8u,0x01u,0x00u,0x0fu,0x01u,0xf0u,
         0xb8u,0x10u,0x00u,0x8eu,0xd8u,0x8eu,0xc0u,0x8eu,0xd0u,
         0xbcu,0x00u,0x80u,0xeau,0x00u,0x00u,0x08u,0x00u
     };
-    static const uint8_t halt[] = { 0xf4u };
+    static const type_unsigned_8 halt[] = { 0xf4u };
     const core_machine_run_budget budget = { 96u, 0u };
     core_machine_run_result result;
     C_INT installed;
@@ -191,10 +191,10 @@ static C_INT segment_boot_protected(segment_machine *state)
 
 static C_INT segment_boot_protected_286(segment_machine *state)
 {
-    static const uint8_t gdt_pointer[] = {
+    static const type_unsigned_8 gdt_pointer[] = {
         0x37u, 0x00u, 0x00u, 0x03u, 0x00u, 0x00u
     };
-    static const uint8_t gdt[] = {
+    static const type_unsigned_8 gdt[] = {
         0,0,0,0,0,0,0,0,
         0xff,0xff,0,0x20,0,0x9a,0,0,
         0xff,0xff,0,0x30,0,0x92,0,0,
@@ -203,13 +203,13 @@ static C_INT segment_boot_protected_286(segment_machine *state)
         0,0,0,0,0,0x80,0,0,
         0xff,0xff,0,0x00,0,0x89,0,0
     };
-    static const uint8_t real_code[] = {
+    static const type_unsigned_8 real_code[] = {
         0x0fu,0x01u,0x16u,0x00u,0x01u,
         0xb8u,0x01u,0x00u,0x0fu,0x01u,0xf0u,
         0xb8u,0x10u,0x00u,0x8eu,0xd8u,0x8eu,0xc0u,0x8eu,0xd0u,
         0xbcu,0x00u,0x80u,0xeau,0x00u,0x00u,0x08u,0x00u
     };
-    static const uint8_t halt[] = { 0xf4u };
+    static const type_unsigned_8 halt[] = { 0xf4u };
     const core_machine_run_budget budget = { 96u, 0u };
     core_machine_run_result result;
 
@@ -224,21 +224,21 @@ static C_INT segment_boot_protected_286(segment_machine *state)
 
 static C_INT segment_test_real_load_forms(C_VOID)
 {
-    static const uint8_t mov_code[] = {
+    static const type_unsigned_8 mov_code[] = {
         0xb8u,0x34u,0x12u,0x8eu,0xe0u,0x8cu,0xe0u,0xf4u
     };
-    static const uint8_t les_code[] = {
+    static const type_unsigned_8 les_code[] = {
         0xc4u,0x1eu,0x00u,0x04u,0xf4u
     };
-    static const uint8_t lfs_code[] = {
+    static const type_unsigned_8 lfs_code[] = {
         0x66u,0x0fu,0xb4u,0x1eu,0x00u,0x04u,0xf4u
     };
-    static const uint8_t pop_code[] = { 0x66u,0x0fu,0xa9u,0xf4u };
-    static const uint8_t pointer16[] = { 0x78u,0x56u,0x56u,0x34u };
-    static const uint8_t pointer32_bytes[] = {
+    static const type_unsigned_8 pop_code[] = { 0x66u,0x0fu,0xa9u,0xf4u };
+    static const type_unsigned_8 pointer16[] = { 0x78u,0x56u,0x56u,0x34u };
+    static const type_unsigned_8 pointer32_bytes[] = {
         0x78u,0x56u,0x34u,0x12u,0x56u,0x34u
     };
-    static const uint8_t pop_value[] = { 0x56u,0x34u,0xefu,0xbeu };
+    static const type_unsigned_8 pop_value[] = { 0x56u,0x34u,0xefu,0xbeu };
     segment_machine state;
     t_cpu cpu;
     C_INT failed = !segment_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
@@ -284,22 +284,22 @@ static C_INT segment_test_real_load_forms(C_VOID)
 
 static C_INT segment_test_80286_protected_legal_forms(C_VOID)
 {
-    static const uint8_t les_code[] = { 0xc4u,0x1eu,0x00u,0x04u,0xf4u };
-    static const uint8_t lds_code[] = { 0xc5u,0x1eu,0x00u,0x04u,0xf4u };
-    static const uint8_t lar_code[] = {
+    static const type_unsigned_8 les_code[] = { 0xc4u,0x1eu,0x00u,0x04u,0xf4u };
+    static const type_unsigned_8 lds_code[] = { 0xc5u,0x1eu,0x00u,0x04u,0xf4u };
+    static const type_unsigned_8 lar_code[] = {
         0xb8u,0x10u,0x00u,0x0fu,0x02u,0xc0u,0xf4u
     };
-    static const uint8_t lsl_code[] = {
+    static const type_unsigned_8 lsl_code[] = {
         0xb8u,0x10u,0x00u,0x0fu,0x03u,0xc0u,0xf4u
     };
-    static const uint8_t verr_code[] = {
+    static const type_unsigned_8 verr_code[] = {
         0xb8u,0x10u,0x00u,0x0fu,0x00u,0xe0u,0xf4u
     };
-    static const uint8_t verw_code[] = {
+    static const type_unsigned_8 verw_code[] = {
         0xb8u,0x10u,0x00u,0x0fu,0x00u,0xe8u,0xf4u
     };
-    static const uint8_t pointer[] = { 0x78u,0x56u,0x10u,0x00u };
-    const uint8_t *codes[] = { les_code, lds_code, lar_code, lsl_code,
+    static const type_unsigned_8 pointer[] = { 0x78u,0x56u,0x10u,0x00u };
+    const type_unsigned_8 *codes[] = { les_code, lds_code, lar_code, lsl_code,
         verr_code, verw_code };
     const STD_SIZE_T sizes[] = { sizeof(les_code), sizeof(lds_code),
         sizeof(lar_code), sizeof(lsl_code), sizeof(verr_code), sizeof(verw_code) };
@@ -343,26 +343,26 @@ static C_INT segment_test_80286_protected_legal_forms(C_VOID)
 }
 
 typedef struct segment_lxs_form {
-    uint8_t first;
-    uint8_t second;
-    uint8_t bytes;
-    uint8_t target;
+    type_unsigned_8 first;
+    type_unsigned_8 second;
+    type_unsigned_8 bytes;
+    type_unsigned_8 target;
 } segment_lxs_form;
 
 static C_INT segment_test_lxs_success(const segment_lxs_form *form,
     C_INT protected_mode, C_INT pointer32)
 {
-    static const uint8_t pointer16[] = { 0x78u,0x56u,0x10u,0x00u };
-    static const uint8_t pointer32_bytes[] = {
+    static const type_unsigned_8 pointer16[] = { 0x78u,0x56u,0x10u,0x00u };
+    static const type_unsigned_8 pointer32_bytes[] = {
         0x78u,0x56u,0x34u,0x12u,0x10u,0x00u
     };
-    uint8_t code[8u] = {0};
-    uint8_t code_size = 0u;
-    uint8_t prefix = protected_mode ? !pointer32 : pointer32;
-    uint32_t address = protected_mode ? SEG_CODE_ADDRESS : 0u;
-    uint32_t pointer_address = protected_mode ? SEG_DATA_ADDRESS + 0x0400u :
+    type_unsigned_8 code[8u] = {0};
+    type_unsigned_8 code_size = 0u;
+    type_unsigned_8 prefix = protected_mode ? !pointer32 : pointer32;
+    type_unsigned_32 address = protected_mode ? SEG_CODE_ADDRESS : 0u;
+    type_unsigned_32 pointer_address = protected_mode ? SEG_DATA_ADDRESS + 0x0400u :
         0x0400u;
-    uint32_t expected_offset = pointer32 ? 0x12345678u : 0x00005678u;
+    type_unsigned_32 expected_offset = pointer32 ? 0x12345678u : 0x00005678u;
     segment_machine state;
     t_cpu cpu;
     const t_cpu_data_sreg *sreg;
@@ -414,9 +414,9 @@ static C_INT segment_test_lxs_memory_only(C_VOID)
     }
     for (protected_mode = 0; protected_mode <= 1; ++protected_mode) {
         for (index = 0u; index < sizeof(forms) / sizeof(forms[0]); ++index) {
-            uint8_t code[5u] = {0};
-            uint8_t code_size = 0u;
-            uint32_t address = protected_mode ? SEG_CODE_ADDRESS : 0u;
+            type_unsigned_8 code[5u] = {0};
+            type_unsigned_8 code_size = 0u;
+            type_unsigned_32 address = protected_mode ? SEG_CODE_ADDRESS : 0u;
             segment_machine state;
             t_cpu before;
             t_cpu after;
@@ -453,18 +453,18 @@ static C_INT segment_test_lxs_fault_atomicity(C_VOID)
         { 0x0fu,0xb2u,2u,2u }, { 0x0fu,0xb4u,2u,3u },
         { 0x0fu,0xb5u,2u,4u }
     };
-    static const uint8_t pointer[] = { 0x44u,0x33u,0x22u,0x11u,0x18u,0u };
+    static const type_unsigned_8 pointer[] = { 0x44u,0x33u,0x22u,0x11u,0x18u,0u };
     STD_SIZE_T index;
     C_INT failed = 0;
 
     for (index = 0u; index < sizeof(forms) / sizeof(forms[0]); ++index) {
-        uint8_t code[8u] = {0};
-        uint8_t code_size = 0u;
-        uint8_t access = 0u;
+        type_unsigned_8 code[8u] = {0};
+        type_unsigned_8 code_size = 0u;
+        type_unsigned_8 access = 0u;
         segment_machine state;
         t_cpu before;
         t_cpu after;
-        uint32_t exception = forms[index].target == 2u ? VCPUINS_EXCEPT_SS :
+        type_unsigned_32 exception = forms[index].target == 2u ? VCPUINS_EXCEPT_SS :
             VCPUINS_EXCEPT_NP;
 
         if (!segment_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386) ||
@@ -502,11 +502,11 @@ static C_INT segment_test_lxs_fault_atomicity(C_VOID)
 }
 
 typedef struct segment_sreg_form {
-    uint8_t target;
-    uint8_t mov_modrm;
-    uint8_t pop_first;
-    uint8_t pop_second;
-    uint8_t pop_bytes;
+    type_unsigned_8 target;
+    type_unsigned_8 mov_modrm;
+    type_unsigned_8 pop_first;
+    type_unsigned_8 pop_second;
+    type_unsigned_8 pop_bytes;
 } segment_sreg_form;
 
 static C_INT segment_test_real_sreg_loads(C_VOID)
@@ -516,14 +516,14 @@ static C_INT segment_test_real_sreg_loads(C_VOID)
         { 1u,0xd8u,0x1fu,0u,1u }, { 3u,0xe0u,0x0fu,0xa1u,2u },
         { 4u,0xe8u,0x0fu,0xa9u,2u }
     };
-    static const uint8_t stack_word[] = { 0x34u,0x12u,0,0 };
-    static const uint8_t stack_dword[] = { 0x34u,0x12u,0xefu,0xbeu };
+    static const type_unsigned_8 stack_word[] = { 0x34u,0x12u,0,0 };
+    static const type_unsigned_8 stack_dword[] = { 0x34u,0x12u,0xefu,0xbeu };
     STD_SIZE_T index;
     C_INT width32;
     C_INT failed = 0;
 
     for (index = 0u; index < sizeof(forms) / sizeof(forms[0]); ++index) {
-        uint8_t code[] = { 0xb8u,0x34u,0x12u,0x8eu,forms[index].mov_modrm,0xf4u };
+        type_unsigned_8 code[] = { 0xb8u,0x34u,0x12u,0x8eu,forms[index].mov_modrm,0xf4u };
         segment_machine state;
         t_cpu before;
         t_cpu cpu;
@@ -538,8 +538,8 @@ static C_INT segment_test_real_sreg_loads(C_VOID)
     }
     for (width32 = 0; width32 <= 1; ++width32) {
         for (index = 0u; index < sizeof(forms) / sizeof(forms[0]); ++index) {
-            uint8_t code[5u] = {0};
-            uint8_t code_size = 0u;
+            type_unsigned_8 code[5u] = {0};
+            type_unsigned_8 code_size = 0u;
             segment_machine state;
             t_cpu cpu;
             const t_cpu_data_sreg *sreg;
@@ -572,14 +572,14 @@ static C_INT segment_test_protected_sreg_success(C_VOID)
         { 1u,0xd8u,0x1fu,0u,1u }, { 3u,0xe0u,0x0fu,0xa1u,2u },
         { 4u,0xe8u,0x0fu,0xa9u,2u }
     };
-    static const uint8_t stack_word[] = { 0x10u,0,0,0 };
-    static const uint8_t stack_dword[] = { 0x10u,0,0xefu,0xbeu };
+    static const type_unsigned_8 stack_word[] = { 0x10u,0,0,0 };
+    static const type_unsigned_8 stack_dword[] = { 0x10u,0,0xefu,0xbeu };
     STD_SIZE_T index;
     C_INT width32;
     C_INT failed = 0;
 
     for (index = 0u; index < sizeof(forms) / sizeof(forms[0]); ++index) {
-        uint8_t code[] = { 0xb8u,0x10u,0,0,0,0x8eu,forms[index].mov_modrm,0xf4u };
+        type_unsigned_8 code[] = { 0xb8u,0x10u,0,0,0,0x8eu,forms[index].mov_modrm,0xf4u };
         segment_machine state;
         t_cpu cpu;
         const t_cpu_data_sreg *sreg;
@@ -595,8 +595,8 @@ static C_INT segment_test_protected_sreg_success(C_VOID)
     }
     for (width32 = 0; width32 <= 1; ++width32) {
         for (index = 0u; index < sizeof(forms) / sizeof(forms[0]); ++index) {
-            uint8_t code[5u] = {0};
-            uint8_t code_size = 0u;
+            type_unsigned_8 code[5u] = {0};
+            type_unsigned_8 code_size = 0u;
             segment_machine state;
             t_cpu cpu;
             const t_cpu_data_sreg *sreg;
@@ -625,12 +625,12 @@ static C_INT segment_test_protected_sreg_success(C_VOID)
 }
 
 typedef struct segment_sreg_failure {
-    uint8_t target;
-    uint8_t mov_modrm;
-    uint16_t selector;
-    uint32_t exception;
-    uint32_t access_address;
-    uint8_t access_value;
+    type_unsigned_8 target;
+    type_unsigned_8 mov_modrm;
+    type_unsigned_16 selector;
+    type_unsigned_32 exception;
+    type_unsigned_32 access_address;
+    type_unsigned_8 access_value;
 } segment_sreg_failure;
 
 static C_INT segment_test_protected_sreg_failures(C_VOID)
@@ -641,24 +641,24 @@ static C_INT segment_test_protected_sreg_failures(C_VOID)
         { 3u,0xe0u,0x0020u,VCPUINS_EXCEPT_GP,SEG_GDT_ADDRESS + 37u,0x98u },
         { 4u,0xe8u,0x0013u,VCPUINS_EXCEPT_GP,SEG_GDT_ADDRESS + 21u,0x93u }
     };
-    static const uint8_t pop_fs[] = { 0x66u,0x0fu,0xa1u };
-    static const uint8_t pop_ss[] = { 0x66u,0x17u };
-    static const uint8_t selector_nonpresent[] = { 0x18u,0,0,0 };
+    static const type_unsigned_8 pop_fs[] = { 0x66u,0x0fu,0xa1u };
+    static const type_unsigned_8 pop_ss[] = { 0x66u,0x17u };
+    static const type_unsigned_8 selector_nonpresent[] = { 0x18u,0,0,0 };
     STD_SIZE_T index;
     C_INT failed = 0;
 
     for (index = 0u; index < sizeof(failures) / sizeof(failures[0]); ++index) {
-        uint8_t code[] = { 0xb8u,0,0,0,0,0x8eu,failures[index].mov_modrm };
+        type_unsigned_8 code[] = { 0xb8u,0,0,0,0,0x8eu,failures[index].mov_modrm };
         segment_machine state;
         t_cpu before;
         t_cpu after;
         const t_cpu_data_sreg *before_sreg;
         const t_cpu_data_sreg *after_sreg;
-        uint8_t access = 0u;
+        type_unsigned_8 access = 0u;
         C_INT case_failed;
 
-        code[1u] = (uint8_t)failures[index].selector;
-        code[2u] = (uint8_t)(failures[index].selector >> 8u);
+        code[1u] = (type_unsigned_8)failures[index].selector;
+        code[2u] = (type_unsigned_8)(failures[index].selector >> 8u);
         if (!segment_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386) ||
             !segment_boot_protected(&state)) return 1;
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
@@ -682,16 +682,16 @@ static C_INT segment_test_protected_sreg_failures(C_VOID)
         core_machine_destroy(state.machine);
     }
     for (index = 0u; index < 2u; ++index) {
-        const uint8_t *code = index == 0u ? pop_fs : pop_ss;
+        const type_unsigned_8 *code = index == 0u ? pop_fs : pop_ss;
         STD_SIZE_T code_size = index == 0u ? sizeof(pop_fs) : sizeof(pop_ss);
-        uint8_t target = index == 0u ? 3u : 2u;
-        uint32_t exception = index == 0u ? VCPUINS_EXCEPT_NP : VCPUINS_EXCEPT_SS;
+        type_unsigned_8 target = index == 0u ? 3u : 2u;
+        type_unsigned_32 exception = index == 0u ? VCPUINS_EXCEPT_NP : VCPUINS_EXCEPT_SS;
         segment_machine state;
         t_cpu before;
         t_cpu after;
         const t_cpu_data_sreg *before_sreg;
         const t_cpu_data_sreg *after_sreg;
-        uint8_t access = 0u;
+        type_unsigned_8 access = 0u;
         C_INT case_failed;
 
         if (!segment_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386) ||
@@ -723,23 +723,23 @@ static C_INT segment_test_protected_sreg_failures(C_VOID)
 
 static C_INT segment_test_protected_selector_forms(C_VOID)
 {
-    static const uint8_t lar_code[] = {
+    static const type_unsigned_8 lar_code[] = {
         0xb8u,0x10u,0x00u,0x00u,0x00u,0x0fu,0x02u,0xc0u,0xf4u
     };
-    static const uint8_t lsl_code[] = {
+    static const type_unsigned_8 lsl_code[] = {
         0xb8u,0x10u,0x00u,0x00u,0x00u,0x0fu,0x03u,0xc0u,0xf4u
     };
-    static const uint8_t lar16_code[] = {
+    static const type_unsigned_8 lar16_code[] = {
         0xb8u,0x10u,0x00u,0xcdu,0xabu,0x66u,0x0fu,0x02u,0xc0u,0xf4u
     };
-    static const uint8_t arpl_code[] = {
+    static const type_unsigned_8 arpl_code[] = {
         0x66u,0xb8u,0x01u,0x00u,0x66u,0xb9u,0x03u,0x00u,
         0x66u,0x63u,0xc8u,0xf4u
     };
-    static const uint8_t verr_code[] = {
+    static const type_unsigned_8 verr_code[] = {
         0xb8u,0x10u,0x00u,0x00u,0x00u,0x0fu,0x00u,0xe0u,0xf4u
     };
-    static const uint8_t verw_code[] = {
+    static const type_unsigned_8 verw_code[] = {
         0xb8u,0x10u,0x00u,0x00u,0x00u,0x0fu,0x00u,0xe8u,0xf4u
     };
     segment_machine state;
@@ -790,53 +790,53 @@ static C_INT segment_test_protected_selector_forms(C_VOID)
 
 static C_INT segment_test_selector_query_edges(C_VOID)
 {
-    static const uint8_t lsl16_code[] = {
+    static const type_unsigned_8 lsl16_code[] = {
         0xb8u,0x10u,0x00u,0xcdu,0xabu,0x66u,0x0fu,0x03u,0xc0u,0xf4u
     };
-    static const uint8_t lar_invalid[] = {
+    static const type_unsigned_8 lar_invalid[] = {
         0xb8u,0x28u,0x00u,0xcdu,0xabu,0x0fu,0x02u,0xc0u,0xf4u
     };
-    static const uint8_t lsl_invalid[] = {
+    static const type_unsigned_8 lsl_invalid[] = {
         0xb8u,0x28u,0x00u,0xcdu,0xabu,0x66u,0x0fu,0x03u,0xc0u,0xf4u
     };
-    static const uint8_t lar_nonpresent[] = {
+    static const type_unsigned_8 lar_nonpresent[] = {
         0xb8u,0x18u,0x00u,0xcdu,0xabu,0x0fu,0x02u,0xc0u,0xf4u
     };
-    static const uint8_t lsl_nonpresent[] = {
+    static const type_unsigned_8 lsl_nonpresent[] = {
         0xb8u,0x18u,0x00u,0xcdu,0xabu,0x66u,0x0fu,0x03u,0xc0u,0xf4u
     };
-    static const uint8_t lar_tss[] = {
+    static const type_unsigned_8 lar_tss[] = {
         0xb8u,0x30u,0x00u,0,0,0x0fu,0x02u,0xc0u,0xf4u
     };
-    static const uint8_t lsl_tss[] = {
+    static const type_unsigned_8 lsl_tss[] = {
         0xb8u,0x30u,0x00u,0,0,0x0fu,0x03u,0xc0u,0xf4u
     };
-    static const uint8_t lar_tss_rpl[] = {
+    static const type_unsigned_8 lar_tss_rpl[] = {
         0xb8u,0x33u,0x00u,0xcdu,0xabu,0x0fu,0x02u,0xc0u,0xf4u
     };
-    static const uint8_t lsl_tss_rpl[] = {
+    static const type_unsigned_8 lsl_tss_rpl[] = {
         0xb8u,0x33u,0x00u,0xcdu,0xabu,0x0fu,0x03u,0xc0u,0xf4u
     };
-    static const uint8_t verr_type[] = {
+    static const type_unsigned_8 verr_type[] = {
         0xb8u,0x20u,0x00u,0,0,0x0fu,0x00u,0xe0u,0xf4u
     };
-    static const uint8_t verw_type[] = {
+    static const type_unsigned_8 verw_type[] = {
         0xb8u,0x20u,0x00u,0,0,0x0fu,0x00u,0xe8u,0xf4u
     };
-    static const uint8_t verr_nonpresent[] = {
+    static const type_unsigned_8 verr_nonpresent[] = {
         0xb8u,0x18u,0x00u,0,0,0x0fu,0x00u,0xe0u,0xf4u
     };
-    static const uint8_t verw_nonpresent[] = {
+    static const type_unsigned_8 verw_nonpresent[] = {
         0xb8u,0x18u,0x00u,0,0,0x0fu,0x00u,0xe8u,0xf4u
     };
-    static const uint8_t verr_memory[] = {
+    static const type_unsigned_8 verr_memory[] = {
         0x67u,0x0fu,0x00u,0x26u,0x00u,0x04u,0xf4u
     };
-    static const uint8_t verw_memory[] = {
+    static const type_unsigned_8 verw_memory[] = {
         0x67u,0x0fu,0x00u,0x2eu,0x00u,0x04u,0xf4u
     };
-    static const uint8_t data_selector[] = { 0x10u,0u };
-    const uint8_t *codes[] = { lsl16_code, lar_invalid, lsl_invalid,
+    static const type_unsigned_8 data_selector[] = { 0x10u,0u };
+    const type_unsigned_8 *codes[] = { lsl16_code, lar_invalid, lsl_invalid,
         lar_nonpresent, lsl_nonpresent, lar_tss, lsl_tss, lar_tss_rpl,
         lsl_tss_rpl, verr_type, verw_type, verr_nonpresent, verw_nonpresent,
         verr_memory, verw_memory };
@@ -846,7 +846,7 @@ static C_INT segment_test_selector_query_edges(C_VOID)
         sizeof(lsl_tss_rpl), sizeof(verr_type), sizeof(verw_type),
         sizeof(verr_nonpresent), sizeof(verw_nonpresent), sizeof(verr_memory),
         sizeof(verw_memory) };
-    const uint32_t expected_eax[] = { 0xabcdffffu,0xabcd0028u,0xabcd0028u,
+    const type_unsigned_32 expected_eax[] = { 0xabcdffffu,0xabcd0028u,0xabcd0028u,
         0xabcd0018u,0xabcd0018u,0x00408900u,0x0000ffffu,0xabcd0033u,
         0xabcd0033u,0x00000020u,0x00000020u,0x00000018u,0x00000018u,
         0x00000010u,0x00000010u };
@@ -858,8 +858,8 @@ static C_INT segment_test_selector_query_edges(C_VOID)
         segment_machine state;
         t_cpu before;
         t_cpu cpu;
-        uint8_t system_access = 0u;
-        uint8_t nonpresent_access = 0u;
+        type_unsigned_8 system_access = 0u;
+        type_unsigned_8 nonpresent_access = 0u;
         C_INT case_failed;
 
         if (!segment_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386) ||
@@ -898,23 +898,23 @@ static C_INT segment_test_selector_query_edges(C_VOID)
 
 static C_INT segment_test_rejected_forms(C_VOID)
 {
-    static const uint8_t mov_cs[] = { 0x8eu,0xc8u };
-    static const uint8_t mov_from_fs[] = { 0x8cu,0xe0u };
-    static const uint8_t mov_to_fs[] = { 0x8eu,0xe0u };
-    static const uint8_t pop_fs[] = { 0x0fu,0xa1u };
-    static const uint8_t pop_gs[] = { 0x0fu,0xa9u };
-    static const uint8_t lss[] = { 0x0fu,0xb2u,0xc0u };
-    static const uint8_t lfs[] = { 0x0fu,0xb4u,0xc0u };
-    static const uint8_t lgs[] = { 0x0fu,0xb5u,0xc0u };
-    static const uint8_t lar_real[] = { 0x0fu,0x02u,0xc0u };
-    static const uint8_t lsl_real[] = { 0x0fu,0x03u,0xc0u };
-    static const uint8_t verr_real[] = { 0x0fu,0x00u,0xe0u };
-    static const uint8_t verw_real[] = { 0x0fu,0x00u,0xe8u };
-    static const uint8_t lar_66[] = { 0x66u,0x0fu,0x02u,0xc0u };
+    static const type_unsigned_8 mov_cs[] = { 0x8eu,0xc8u };
+    static const type_unsigned_8 mov_from_fs[] = { 0x8cu,0xe0u };
+    static const type_unsigned_8 mov_to_fs[] = { 0x8eu,0xe0u };
+    static const type_unsigned_8 pop_fs[] = { 0x0fu,0xa1u };
+    static const type_unsigned_8 pop_gs[] = { 0x0fu,0xa9u };
+    static const type_unsigned_8 lss[] = { 0x0fu,0xb2u,0xc0u };
+    static const type_unsigned_8 lfs[] = { 0x0fu,0xb4u,0xc0u };
+    static const type_unsigned_8 lgs[] = { 0x0fu,0xb5u,0xc0u };
+    static const type_unsigned_8 lar_real[] = { 0x0fu,0x02u,0xc0u };
+    static const type_unsigned_8 lsl_real[] = { 0x0fu,0x03u,0xc0u };
+    static const type_unsigned_8 verr_real[] = { 0x0fu,0x00u,0xe0u };
+    static const type_unsigned_8 verw_real[] = { 0x0fu,0x00u,0xe8u };
+    static const type_unsigned_8 lar_66[] = { 0x66u,0x0fu,0x02u,0xc0u };
     const core_machine_cpu_profile profiles[] = {
         CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
     };
-    const uint8_t *programs[] = { mov_cs, mov_from_fs, mov_to_fs, pop_fs,
+    const type_unsigned_8 *programs[] = { mov_cs, mov_from_fs, mov_to_fs, pop_fs,
         pop_gs, lss, lfs, lgs, lar_real, lsl_real, verr_real, verw_real,
         lar_66 };
     const STD_SIZE_T sizes[] = { sizeof(mov_cs), sizeof(mov_from_fs),
@@ -961,8 +961,8 @@ static C_INT segment_test_rejected_forms(C_VOID)
 
 static C_INT segment_test_pop_fault_atomicity(C_VOID)
 {
-    static const uint8_t pop_fs[] = { 0x66u,0x0fu,0xa1u };
-    static const uint8_t selector[] = { 0x18u,0x00u,0,0 };
+    static const type_unsigned_8 pop_fs[] = { 0x66u,0x0fu,0xa1u };
+    static const type_unsigned_8 selector[] = { 0x18u,0x00u,0,0 };
     const core_machine_run_budget budget = { 8u, 0u };
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;

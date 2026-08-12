@@ -8,12 +8,12 @@
 #define TIMING_WINDOW_BYTES 64u
 
 typedef struct timing_port_state {
-    uint32_t reads;
-    uint32_t writes;
+    type_unsigned_32 reads;
+    type_unsigned_32 writes;
 } timing_port_state;
 
-static type_status timing_port_read(C_VOID *owner, uint16_t port,
-    uint32_t *out_value)
+static type_status timing_port_read(C_VOID *owner, type_unsigned_16 port,
+    type_unsigned_32 *out_value)
 {
     timing_port_state *state = (timing_port_state *)owner;
 
@@ -25,8 +25,8 @@ static type_status timing_port_read(C_VOID *owner, uint16_t port,
     return TYPE_STATUS_OK;
 }
 
-static type_status timing_port_write(C_VOID *owner, uint16_t port,
-    uint32_t value)
+static type_status timing_port_write(C_VOID *owner, type_unsigned_16 port,
+    type_unsigned_32 value)
 {
     timing_port_state *state = (timing_port_state *)owner;
 
@@ -68,8 +68,8 @@ static C_INT timing_prepare(core_machine **out_machine,
     return 1;
 }
 
-static C_INT timing_run(core_machine *machine, const uint8_t *program,
-    STD_SIZE_T program_bytes, uint64_t instructions, uint64_t *out_ticks)
+static C_INT timing_run(core_machine *machine, const type_unsigned_8 *program,
+    STD_SIZE_T program_bytes, type_unsigned_64 instructions, type_unsigned_64 *out_ticks)
 {
     core_machine_run_budget budget = { instructions, 0u };
     core_machine_run_result result;
@@ -87,12 +87,12 @@ static C_INT timing_run(core_machine *machine, const uint8_t *program,
     return 1;
 }
 
-static C_INT timing_case(const uint8_t *program, STD_SIZE_T program_bytes,
-    uint64_t instructions, uint64_t expected_ticks)
+static C_INT timing_case(const type_unsigned_8 *program, STD_SIZE_T program_bytes,
+    type_unsigned_64 instructions, type_unsigned_64 expected_ticks)
 {
     timing_port_state port_state = { 0u, 0u };
     core_machine *machine = STD_NULL;
-    uint64_t ticks = 0u;
+    type_unsigned_64 ticks = 0u;
     C_INT failed = !timing_prepare(&machine, &port_state);
 
     if (!failed) {
@@ -105,16 +105,16 @@ static C_INT timing_case(const uint8_t *program, STD_SIZE_T program_bytes,
 
 static C_INT timing_test_quantum_and_reset(C_VOID)
 {
-    static const uint8_t program[] = { 0x90u, 0x26u, 0x90u, 0xa0u, 0x00u, 0x00u };
+    static const type_unsigned_8 program[] = { 0x90u, 0x26u, 0x90u, 0xa0u, 0x00u, 0x00u };
     timing_port_state port_state = { 0u, 0u };
     core_machine_run_budget one = { 1u, 0u };
     core_machine_run_budget all = { 3u, 0u };
     core_machine_run_result result;
     core_machine *machine = STD_NULL;
-    uint64_t split_ticks = 0u;
-    uint64_t single_ticks = 0u;
+    type_unsigned_64 split_ticks = 0u;
+    type_unsigned_64 single_ticks = 0u;
     C_INT failed = !timing_prepare(&machine, &port_state);
-    uint32_t index;
+    type_unsigned_32 index;
 
     if (!failed) {
         failed |= core_machine_memory_write(machine, TIMING_RESET_LINEAR,
@@ -139,7 +139,7 @@ static C_INT timing_test_quantum_and_reset(C_VOID)
 
 static C_INT timing_test_fault(C_VOID)
 {
-    static const uint8_t fault[] = { 0x66u, 0x90u };
+    static const type_unsigned_8 fault[] = { 0x66u, 0x90u };
     timing_port_state port_state = { 0u, 0u };
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
@@ -159,7 +159,7 @@ static C_INT timing_test_fault(C_VOID)
 
 static C_INT timing_test_stop(C_VOID)
 {
-    static const uint8_t nop[] = { 0x90u };
+    static const type_unsigned_8 nop[] = { 0x90u };
     timing_port_state port_state = { 0u, 0u };
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
@@ -180,15 +180,15 @@ static C_INT timing_test_stop(C_VOID)
 
 C_INT main(C_VOID)
 {
-    static const uint8_t nop[] = { 0x90u };
-    static const uint8_t register_mov[] = { 0xb8u, 0x34u, 0x12u };
-    static const uint8_t prefixed_nop[] = { 0x26u, 0x90u };
-    static const uint8_t memory_mov[] = { 0xa0u, 0x00u, 0x00u };
-    static const uint8_t out_port[] = { 0xe6u, 0x80u };
-    static const uint8_t in_port[] = { 0xe4u, 0x80u };
-    static const uint8_t taken_branch[] = { 0x31u, 0xc0u, 0x74u, 0x01u, 0x90u };
-    static const uint8_t not_taken_branch[] = { 0x31u, 0xc0u, 0x75u, 0x00u };
-    static const uint8_t rep_movsb[] = { 0xb9u, 0x03u, 0x00u, 0xf3u, 0xa4u };
+    static const type_unsigned_8 nop[] = { 0x90u };
+    static const type_unsigned_8 register_mov[] = { 0xb8u, 0x34u, 0x12u };
+    static const type_unsigned_8 prefixed_nop[] = { 0x26u, 0x90u };
+    static const type_unsigned_8 memory_mov[] = { 0xa0u, 0x00u, 0x00u };
+    static const type_unsigned_8 out_port[] = { 0xe6u, 0x80u };
+    static const type_unsigned_8 in_port[] = { 0xe4u, 0x80u };
+    static const type_unsigned_8 taken_branch[] = { 0x31u, 0xc0u, 0x74u, 0x01u, 0x90u };
+    static const type_unsigned_8 not_taken_branch[] = { 0x31u, 0xc0u, 0x75u, 0x00u };
+    static const type_unsigned_8 rep_movsb[] = { 0xb9u, 0x03u, 0x00u, 0xf3u, 0xa4u };
     C_INT failed = 0;
 
     failed |= timing_case(nop, sizeof(nop), 1u, 10u);

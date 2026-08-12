@@ -5,15 +5,15 @@
 #include "../support/core_machine_cpu_fixture.h"
 
 typedef struct core_machine_port_probe_state {
-    uint32_t reads;
-    uint32_t writes;
-    uint32_t last_write;
+    type_unsigned_32 reads;
+    type_unsigned_32 writes;
+    type_unsigned_32 last_write;
     type_status read_status;
     type_status write_status;
 } core_machine_port_probe_state;
 
-static type_status core_machine_port_probe_read(C_VOID *owner, uint16_t port,
-    uint32_t *out_value)
+static type_status core_machine_port_probe_read(C_VOID *owner, type_unsigned_16 port,
+    type_unsigned_32 *out_value)
 {
     core_machine_port_probe_state *state =
         (core_machine_port_probe_state *)owner;
@@ -27,8 +27,8 @@ static type_status core_machine_port_probe_read(C_VOID *owner, uint16_t port,
     return TYPE_STATUS_OK;
 }
 
-static type_status core_machine_port_probe_write(C_VOID *owner, uint16_t port,
-    uint32_t value)
+static type_status core_machine_port_probe_write(C_VOID *owner, type_unsigned_16 port,
+    type_unsigned_32 value)
 {
     core_machine_port_probe_state *state =
         (core_machine_port_probe_state *)owner;
@@ -106,7 +106,7 @@ static C_INT core_machine_port_probe_fdc_read_is_independent(C_VOID)
     core_machine_port_probe_state state = {0u, 0u, 0u, TYPE_STATUS_OK,
         TYPE_STATUS_OK};
     core_machine *machine = STD_NULL;
-    uint32_t value = 0u;
+    type_unsigned_32 value = 0u;
     C_INT failed = core_machine_create(&config, &machine) != TYPE_STATUS_OK ||
         core_machine_configure_dma(machine, &dma_wiring, &dma_request) !=
             TYPE_STATUS_OK ||
@@ -174,16 +174,16 @@ static C_INT core_machine_port_probe_fdc_write_conflict_is_retained(C_VOID)
 
 C_INT main(C_VOID)
 {
-    static const uint8_t program[] = {
+    static const type_unsigned_8 program[] = {
         0xb0u, 0x5au, 0xe6u, 0xe0u, 0xe4u, 0xe0u, 0xf4u
     };
-    static const uint8_t failing_program[] = {0xb0u, 0x6cu, 0xe6u, 0xe0u};
+    static const type_unsigned_8 failing_program[] = {0xb0u, 0x6cu, 0xe6u, 0xe0u};
     core_machine_port_probe_state port_state = {0u, 0u, 0u, TYPE_STATUS_OK,
         TYPE_STATUS_OK};
     core_machine_run_budget budget = {16u, 0u};
     core_machine_run_result result;
     core_machine *machine = STD_NULL;
-    uint32_t value = 0u;
+    type_unsigned_32 value = 0u;
     C_INT failed = core_machine_port_probe_prepare(&machine, &port_state);
 
     if (!failed) {
