@@ -150,7 +150,26 @@ one next owner; it does not upgrade any parent row from **Partial** to
 
 | Parent inventory row | Residual breadth not claimed by T316 | Sole next owner |
 | --- | --- | --- |
-| Prefix attributes | 8086/80186/80286 LOCK legality beyond the retained 80386 semantic representatives. | `TODO(Medium): Legacy LOCK-prefix legality matrix`. |
+| Prefix attributes | T328 S1 closes the historical LOCK-profile boundary: 8086/80186 accept `F0` as the bus prefix of a valid following instruction, while protected 80286 adds only `CPL <= IOPL`; the retained 80386 memory-modifying whitelist and register-form `#UD` remain unchanged. | `core-machine-legacy-lock-s1-smoke` (`M5:T328:S1:LEGACY-LOCK:OK`) plus retained S64 representatives. |
+
+### T328 S1 - Historical LOCK-prefix legality matrix
+
+`PREFIX_LOCK` now records the architecture boundary rather than applying the
+80386 whitelist to older profiles.  In 8086 and 80186 real execution, `F0` is
+the bus prefix of the next otherwise-valid instruction.  In 80286 real mode
+the same rule applies; protected 80286 performs the documented `CPL <= IOPL`
+check before the following opcode can publish state.  This model has no host
+bus-arbitration surface, so it proves architectural acceptance, instruction
+results, privilege ordering, and rejection, not a physical LOCK-pin waveform.
+
+`core-machine-legacy-lock-s1-smoke` proves `F0 98`, a valid-memory `F0 ADD`,
+`F0 REP MOVSB`, and provider-observed `F0 OUT imm8,AL` across 8086/80186/80286,
+including EIP and applicable register/memory/port publication.  It proves that `F0` does not make an otherwise
+undefined 80186/80286 opcode valid.  It separately proves protected 80286
+CPL0/IOPL0 and CPL3/IOPL3 success, and a CPL3/IOPL0 vector-13 delivery before
+CBW publication.  Retained 80386 vectors prove legal locked memory ADD and
+locked register ADD `#UD` nonpublication.  No 80386 whitelist, generic
+privilege helper, bus/device contract, or timing model changed.
 | Data movement and stack | No additional Intel 80386 ordinary MOV/XCHG/stack opcode form after the accepted S23--S47 consolidation; stack switching and selector/privilege-owned stack behavior remain distinct. | **T322 S1 reconciliation:** ordinary forms complete; stack switching remains the **80386DX protection and privilege-transfer closure** Queue package. |
 | Unary, decimal, and ordinary FLAGS breadth | No additional Intel 80386 primary arithmetic, conversion, or local FLAGS opcode form after the accepted S2--S20 and S39--S49 consolidation. | **T322 S1 reconciliation:** ordinary forms complete; legacy LOCK and system-state boundaries retain their own destinations. |
 | FLAGS/control and software interrupts | Hardware IRQ/NMI and generic exception/return composition are complete only at T321's bounded state boundary; VME/PVI and unadmitted control interactions remain separate. | **T321 history** for delivered composition; **80386DX task, local-descriptor, virtual-8086, and debug/test-register closure** for VME/PVI/task breadth. |
