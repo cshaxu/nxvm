@@ -269,11 +269,9 @@ typedef struct {
 
 #define VCPU_CR0_PE 0x00000001
 #define VCPU_CR0_TS 0x00000008
-#define VCPU_CR0_WP 0x00010000
 #define VCPU_CR0_PG 0x80000000
 #define _GetCR0_PE (TYPE_GET_BIT(cpu_state.data.cr0, VCPU_CR0_PE))
 #define _GetCR0_PG (TYPE_GET_BIT(cpu_state.data.cr0, VCPU_CR0_PG))
-#define _GetCR0_WP (TYPE_GET_BIT(cpu_state.data.cr0, VCPU_CR0_WP))
 #define _SetCR0_TS (TYPE_SET_BIT(cpu_state.data.cr0, VCPU_CR0_TS))
 
 #define _MakePageFaultErrorCode(p, wr, us) ((p) | ((wr) << 1) | ((us) << 2))

@@ -28,6 +28,7 @@
 #define TEST_PAGE_US 0x00000004u
 #define TEST_PAGE_ACCESSED 0x00000020u
 #define TEST_PAGE_DIRTY 0x00000040u
+#define TEST_80386_FORMER_WP_BIT 0x00010000u
 
 typedef struct paging_machine {
     core_machine *machine;
@@ -451,6 +452,45 @@ static C_INT paging_test_control_forms(C_VOID)
     return failed;
 }
 
+static C_INT paging_test_cr0_mutable_controls(C_VOID)
+{
+    static const type_unsigned_8 write_mutable[] = {
+        0x66u, 0xb8u, 0x1eu, 0x00u, 0x00u, 0x00u,
+        0x0fu, 0x22u, 0xc0u,
+        0x0fu, 0x20u, 0xc1u,
+        0xf4u
+    };
+    const type_unsigned_32 mutable = VCPU_CR0_MP | VCPU_CR0_EM | VCPU_CR0_TS |
+        VCPU_CR0_ET;
+    paging_machine state;
+    core_machine_run_result result;
+    core_machine_cpu_diagnostic diagnostic;
+    t_cpu before;
+    t_cpu cpu;
+    C_INT failed = !paging_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+
+    if (!failed) {
+        before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        failed |= core_machine_memory_write(state.machine, 0u, write_mutable,
+            sizeof(write_mutable)) != TYPE_STATUS_OK || !paging_run(state.machine,
+            0, &result, &diagnostic);
+        cpu = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        failed |= diagnostic.first_fault.valid || cpu.data.cr0 != mutable ||
+            cpu.data.eax != mutable || cpu.data.ecx != mutable ||
+            cpu.data.eip != sizeof(write_mutable) || cpu.data.eflags != 0x02u ||
+            cpu.data.ebx != 0u || cpu.data.edx != 0u || cpu.data.esp != 0u ||
+            cpu.data.ebp != 0u || cpu.data.esi != 0u || cpu.data.edi != 0u ||
+            STD_MEMCMP(&cpu.data.es, &before.data.es, sizeof(cpu.data.es)) != 0 ||
+            STD_MEMCMP(&cpu.data.cs, &before.data.cs, sizeof(cpu.data.cs)) != 0 ||
+            STD_MEMCMP(&cpu.data.ss, &before.data.ss, sizeof(cpu.data.ss)) != 0 ||
+            STD_MEMCMP(&cpu.data.ds, &before.data.ds, sizeof(cpu.data.ds)) != 0 ||
+            STD_MEMCMP(&cpu.data.fs, &before.data.fs, sizeof(cpu.data.fs)) != 0 ||
+            STD_MEMCMP(&cpu.data.gs, &before.data.gs, sizeof(cpu.data.gs)) != 0;
+    }
+    core_machine_destroy(state.machine);
+    return failed;
+}
+
 typedef enum paging_permission_access {
     PAGING_PERMISSION_FETCH,
     PAGING_PERMISSION_READ,
@@ -490,7 +530,7 @@ static C_INT paging_permission_read(core_machine *machine, type_unsigned_32 phys
 static C_INT paging_permission_prepare(paging_machine *state,
     const type_unsigned_8 *program, STD_SIZE_T program_size, type_unsigned_32 pde_code,
     type_unsigned_32 pde_data, type_unsigned_32 pte_code, type_unsigned_32 pte_data,
-    type_unsigned_32 pte_stack, C_INT user, C_INT write_protect,
+    type_unsigned_32 pte_stack, C_INT user, C_INT set_reserved_cr0_bit,
     type_unsigned_32 *out_program_eip)
 {
     static const type_unsigned_8 enable_paging[] = {
@@ -551,7 +591,7 @@ static C_INT paging_permission_prepare(paging_machine *state,
             pte_code, pte_data, pte_stack);
         state->machine->executor_cpu.data.cs.base = TEST_PERMISSION_CODE;
         state->machine->executor_cpu.data.cr0 = VCPU_CR0_PE | VCPU_CR0_PG |
-            (write_protect ? VCPU_CR0_WP : 0u);
+            (set_reserved_cr0_bit ? TEST_80386_FORMER_WP_BIT : 0u);
         state->machine->executor_cpu.data.eax = 0xfacebeefu;
         state->machine->executor_cpu.data.ebx = TEST_DATA_LINEAR;
         state->machine->executor_cpu.data.esp = 0x00005000u;
@@ -754,25 +794,24 @@ static C_INT paging_test_permissions(C_VOID)
     if (!paging_permission_prepare(&state, write, sizeof(write), pde_code,
             TEST_PAGE_TABLE_SECOND | TEST_PAGE_PRESENT | TEST_PAGE_US, code_user,
             data_user, stack_user, 0, 1, &eip) ||
-        !paging_permission_expect_fault(&state, eip, 0x03u, TEST_DATA_LINEAR,
-            TEST_PAGE_DIRECTORY + 4u, TEST_PAGE_TABLE_SECOND | TEST_PAGE_PRESENT |
-            TEST_PAGE_US, TEST_PAGE_TABLE_SECOND + 3u * 4u, data_user,
-            PAGING_PERMISSION_WRITE)) failed = 1;
+        !paging_permission_expect_success(&state, PAGING_PERMISSION_WRITE,
+            TEST_PAGE_DIRECTORY + 4u, TEST_PAGE_TABLE_SECOND + 3u * 4u))
+        failed = 1;
     core_machine_destroy(state.machine);
 
     if (!paging_permission_prepare(&state, write, sizeof(write), pde_code,
             pde_data, code_user, TEST_DATA_PHYSICAL | TEST_PAGE_PRESENT |
             TEST_PAGE_US, stack_user, 0, 1, &eip) ||
-        !paging_permission_expect_fault(&state, eip, 0x03u, TEST_DATA_LINEAR,
-            TEST_PAGE_DIRECTORY + 4u, pde_data, TEST_PAGE_TABLE_SECOND + 3u * 4u,
-            TEST_DATA_PHYSICAL | TEST_PAGE_PRESENT | TEST_PAGE_US,
-            PAGING_PERMISSION_WRITE)) failed = 1;
+        !paging_permission_expect_success(&state, PAGING_PERMISSION_WRITE,
+            TEST_PAGE_DIRECTORY + 4u, TEST_PAGE_TABLE_SECOND + 3u * 4u))
+        failed = 1;
     core_machine_destroy(state.machine);
     return failed;
 }
 
 static C_INT paging_cross_prepare(paging_machine *state, const type_unsigned_8 *program,
-    STD_SIZE_T program_size, type_unsigned_32 second_entry, C_INT write_protect)
+    STD_SIZE_T program_size, type_unsigned_32 second_entry,
+    C_INT set_reserved_cr0_bit)
 {
     const type_unsigned_32 code_entry = TEST_PERMISSION_CODE | TEST_PAGE_PRESENT |
         TEST_PAGE_WRITABLE;
@@ -786,7 +825,7 @@ static C_INT paging_cross_prepare(paging_machine *state, const type_unsigned_8 *
         TEST_PAGE_WRITABLE;
 
     return paging_permission_prepare(state, program, program_size, pde_code,
-        pde_data, code_entry, data_entry, stack_entry, 0, write_protect,
+        pde_data, code_entry, data_entry, stack_entry, 0, set_reserved_cr0_bit,
         STD_NULL) && paging_write_u32(state->machine,
         TEST_PAGE_TABLE_SECOND + 4u * 4u, second_entry);
 }
@@ -834,7 +873,6 @@ static C_INT paging_test_cross_data(C_VOID)
     t_cpu cpu;
     type_unsigned_16 word = 0u;
     type_unsigned_8 byte = 0u;
-    type_unsigned_32 dword = 0u;
     C_INT failed = 0;
 
     if (!paging_cross_prepare(&state, read, sizeof(read), second, 0)) return 1;
@@ -864,22 +902,6 @@ static C_INT paging_test_cross_data(C_VOID)
         TEST_CROSS_DATA_SECOND, &word, sizeof(word)) || word != 0xcebeu;
     core_machine_destroy(state.machine);
 
-    if (!paging_cross_prepare(&state, write, sizeof(write),
-            TEST_CROSS_DATA_SECOND | TEST_PAGE_PRESENT, 1)) return 1;
-    state.machine->executor_cpu.data.ebx = TEST_DATA_LINEAR + 0xfffu;
-    failed |= !paging_cross_run(&state, 1, &result, &diagnostic);
-    cpu = test_core_machine_fixture_capture_cpu_after_run(state.machine);
-    failed |= !paging_expect_fault(&diagnostic, VCPUINS_EXCEPT_PF, 0x03u,
-        TEST_PERMISSION_CODE) || cpu.data.cr2 != TEST_DATA_LINEAR + 0x1000u ||
-        cpu.data.eip != 0u || cpu.data.eax != 0xfacebeefu ||
-        cpu.data.ebx != TEST_DATA_LINEAR + 0xfffu || cpu.data.esp != 0x5000u ||
-        cpu.data.eflags != 0x02u || !paging_cross_entries(state.machine,
-        TEST_PAGE_DIRECTORY + 4u, TEST_PAGE_TABLE_SECOND + 3u * 4u,
-        TEST_PAGE_TABLE_SECOND + 4u * 4u, pde, first,
-        TEST_CROSS_DATA_SECOND | TEST_PAGE_PRESENT) ||
-        !paging_permission_read(state.machine, TEST_CROSS_DATA_FIRST + 0xffcu,
-            &dword, sizeof(dword)) || dword != 0u;
-    core_machine_destroy(state.machine);
     return failed;
 }
 
@@ -1024,18 +1046,22 @@ C_INT main(C_VOID)
     const C_INT delivered = paging_test_delivered_page_fault();
     const C_INT faults = paging_test_page_faults();
     const C_INT controls = paging_test_control_forms();
+    const C_INT cr0_controls = paging_test_cr0_mutable_controls();
     const C_INT permissions = paging_test_permissions();
     const C_INT cross_page = paging_test_cross_page();
 
-    if (valid || delivered || faults || controls || permissions || cross_page) {
+    if (valid || delivered || faults || controls || cr0_controls || permissions ||
+        cross_page) {
         STD_FPRINTF(STD_STDERR,
-            "M5:T258:S2:I386-PAGING:FAIL valid=%d delivered=%d faults=%d controls=%d permissions=%d cross=%d\n",
-            valid, delivered, faults, controls, permissions, cross_page);
+            "M5:T258:S2:I386-PAGING:FAIL valid=%d delivered=%d faults=%d controls=%d cr0=%d permissions=%d cross=%d\n",
+            valid, delivered, faults, controls, cr0_controls, permissions,
+            cross_page);
         return 1;
     }
     STD_PRINTF("M5:T258:S2:I386-PAGING:OK\n");
     STD_PRINTF("M5:T258:S3:I386-PAGING:CORPUS:OK\n");
     STD_PRINTF("M5:T311:S3:PAGING-PERMISSIONS:OK\n");
     STD_PRINTF("M5:T311:S4:CROSS-PAGE:OK\n");
+    STD_PRINTF("M5:T325:S1:CR0-PAGING-CONTROL:OK\n");
     return 0;
 }

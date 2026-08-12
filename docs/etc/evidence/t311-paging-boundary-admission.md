@@ -1,5 +1,12 @@
 # T311: CPL3 Paging And User/Kernel Boundary Admission
 
+> **Superseded 80386 detail:** T311's former `CR0.WP` supervisor-write
+> classification was a 80486-era rule incorrectly applied to 80386. T325 S1
+> replaces that narrow claim with the Intel 80386 CPL0 writable-page rule; see
+> [T325 S1 CR0/paging evidence](t325-s1-cr0-paging-control.md). The retained
+> U/S, CPL3 R/W, CR2, A/D, and cross-page observations remain evidence only as
+> refined by that correction.
+
 ## Purpose
 
 T311 follows the retained T258 CPL0 4 KiB paging baseline. It admits only the

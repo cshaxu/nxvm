@@ -2,8 +2,27 @@
 
 ## Current Work
 
-**Idle.** M5 T324 is closed; the next 80386DX Queue candidate requires a
-separately admitted task packet.
+**M5 T325 S1: correct Intel 80386 CR0 paging-control and supervisor page-write semantics (Ordinary Mode).**
+
+## M5 T325 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New; Ordinary Mode. `M5 T325 S1` is the next linear implementation identifier after closed T324. |
+| Admission And Approval | Owner-approved autonomous continuation of the ordered Queue candidate **80386DX paging and translation closure** on 2026-08-12. This S admits only the 80386 CR0/page-protection correction and its focused evidence. |
+| Objective | Reconcile the CPU executor with the Intel 80386 CR0 and page-protection contract: make `MP`/`EM`/`TS`/`ET` CR0 controls reachable through `MOV CR0`, retain only the defined PE/PG transition boundary, and remove the post-80386 `CR0.WP` supervisor-write rule from the 80386 page walk. Prove CPL0 still writes read-only pages, while CPL3 U/S and R/W protection remains intact. |
+| Non-goals | No PE-clear/re-entry transition, PAE, PSE, 80486 `WP`, CR4, `INVLPG`, persistent-TLB/test-register design, task-switch paging state, page-table ABI, host-memory substitution, public API, x87 execution, VM86 paging breadth, or generic exception/PIC redesign. |
+| Reference Baseline | `ed376b82` / `vm-0-5-0323`; retain T258/T311 paging probes and T321 delivered-`#PF` foundation as evidence inputs, not as unreviewed authority. |
+| Files And ABI Surface | Expected: `src/core/machine/cpu.h`, `src/core/machine/cpu_instructions.c`, one owner-focused paging/control smoke and its target registration, the paging evidence/closure map, and task history. No public header or product ABI change. |
+| Applicable Rules | `docs/design/GOAL.md` goal 6; Queue paging candidate; `docs/etc/evidence/80386-closure-map.md` paging row; Architecture Rules one CPU-executor/page-walk owner; Coding Rules project types and target-local strict compilation; Documentation and Execution Rules packet/P lifecycle. Intel 80386 PRM Chapters 4--6 is form authority. |
+| Verification | Focused real/protected CPL0/CPL3 prepared-state smoke; `MOV CR0` control-bit and fault/publication checks; supervisor versus user read-only-page outcomes; retained paging smoke; CMake configure; exact current registration; documentation governance; `git diff --check`; full current-gate CTest and specialized verification aggregate. |
+| Expected Markers | New focused marker `M5:T325:S1:CR0-PAGING-CONTROL:OK`; retained T258/T311 paging markers; full current-gate and specialized-verifier success. |
+| Asset Needs | None; deterministic in-memory GDT/IDT/page-table fixtures only. |
+| Reporting Requirements | Before code, record the CR0/80386 PRM form audit and any material objection. P1 is one complete, pushed implementation delivery with requirement-to-proof evidence; then perform the Ordinary-Mode actual-change review before a pure governance P2. |
+| Stop Conditions | Stop before accepting uncertain PE/PG transition semantics, a change to task-switch/TLB/test-register behavior, a public interface, a generic exception delivery policy, or an architecture requirement beyond 80386. A failure requiring any shared route outside the named CR0/page-walk helpers requires a revised packet or later S. |
+| Exit Criteria | Intel 80386 `MP`/`EM`/`TS`/`ET` writability and CPL0/CPL3 page-write behavior are explicitly classified and mechanically tested; no 80486 `WP` behavior remains in the 80386 page walker; every touched helper/caller is swept; focused and retained paging regressions, current gate, specialized verifiers, governance, and diff checks pass; evidence names PE-clear, paging/task/debug transfers. |
+| Original Owner Request | Continue in single-session mode through the Intel 80386DX architecture-coverage closure audit, prioritizing correct, bounded architectural implementation and evidence. |
+| Similar-Issue Sweep | Sweep all CR0 readers/writers, all page-protection branches, direct control-register forms, existing T311 WP claims, and their focused tests; classify test-register/TLB and task-switch consumers rather than silently absorbing them. |
 
 ## Current Technical Baseline
 
