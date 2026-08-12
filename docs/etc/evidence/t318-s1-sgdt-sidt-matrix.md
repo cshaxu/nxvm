@@ -24,11 +24,11 @@ interrupt route changed.
 | --- | --- |
 | `SGDT` and `SIDT`, 80286 real and protected mode | `core-machine-sgdt-sidt-smoke` executes both default-size memory forms in each profile/mode pairing, checks distinct GDTR/IDTR limit/base images, exact EIP, and unchanged GPRs, FLAGS, and visible/cache segment state. |
 | 80386 16/32-bit operand and address attributes | The four `none`, `66`, `67`, and `66 67` forms prove EIPs 5, 6, 8, and 9 respectively.  `16`-bit operand form writes `m16:24` with byte five zero; `66` writes the complete `m16:32` image. |
-| Segment-selected effective address | SIDT DS displacement, SS-default BP displacement, and ES override each prove their physical destination and preserve non-destination CPU state. |
-| Memory-only/rejection | 80386 register ModRM `/0`, reserved `/5`, and LOCK-prefixed `/0` each produce native `#UD` without CPU publication.  80186 rejects the `0F` form before a table store.  The 8086 legacy `0F` POP-CS compatibility route is retained outside this 80286-or-later instruction decoder and is not SGDT/SIDT admission. |
-| Protected destination boundary | A protected DS limit ending inside the six-byte destination faults before any byte changes; six sentinel bytes remain intact, EIP restarts at zero, and the captured GPR/FLAGS/segment state remains unchanged. |
-| Pending PIC ordering | A pending master IRQ before a successful SGDT is delivered after the instruction (saved interrupt frame IP is 5), reaches the vector handler, clears IF, and enters PIC ISR.  SGDT receives no interrupt shadow. |
-| VM86 | 80386 VM86-state SGDT executes as the documented unprivileged memory store through the retained segment/memory route; the focused image assertion is a factual implementation/PRM classification, not V86 breadth admission. |
+| Segment-selected effective address | For **each** `/0` and `/1`, DS displacement, SS-default BP displacement, and ES override prove the selected physical destination, exact EIP, six-byte image, and unchanged GPR/FLAGS/segment cache state. |
+| Memory-only/rejection | For **each** `/0` and `/1`, 80386 register ModRM and representative default-form F0 LOCK reach native `#UD` without CPU state or destination publication. Reserved `/5` is retained `#UD`; 80186 rejects the `0F` form before a table store. The 8086 legacy `0F` POP-CS compatibility route is retained outside this 80286-or-later decoder and is not SGDT/SIDT admission. |
+| Protected destination boundary | For **each** `/0` and `/1`, a protected DS limit ending inside the six-byte destination faults before any byte changes; all six sentinel bytes remain intact, EIP restarts at zero, and captured GPR/FLAGS/segment cache state remains unchanged. |
+| Pending PIC ordering | For **each** `/0` and `/1`, a pending master IRQ before a successful store is delivered after the actual instruction (saved frame IP is 5), reaches the HLT handler, clears IF, moves the request into PIC ISR, clears IRR, and leaves the table image correct. Neither form receives an interrupt shadow. |
+| VM86 | For **each** `/0` and `/1`, 80386 VM86-state execution stores the correct image at DS, advances EIP to 5, and preserves captured GPR/FLAGS/segment cache state. This is a factual implementation/PRM classification, not V86 breadth admission. |
 
 ## Similar-Issue Sweep
 
@@ -53,8 +53,9 @@ commit rules would exceed the approved table-store scope.
 - `PROJECT_CURRENT_SMOKE_TARGETS` contains exactly one
   `core-machine-sgdt-sidt-smoke` registration; the normal current-gate helper
   derives its single CTest registration from that list.
-- The final P1 records fresh gate, governance, diff, current artifact SHA-256,
-  runtime identity, and source commit in the corresponding T318 history.
+- P2 reruns fresh configuration, the exact registration discovery, governance,
+  diff, full current gates, and the current artifact SHA-256/runtime identity;
+  the corresponding T318 history records the result.
 
 ## Boundary
 

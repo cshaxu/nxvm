@@ -37,6 +37,24 @@ are in [T318 S1 evidence](../etc/evidence/t318-s1-sgdt-sidt-matrix.md).
 - Artifact source commit: `8c3f8761` (the P1 source/build commit before this
   evidence-only record was finalized).
 
+## Corrective P2
+
+Coordinator review found that P1's owner smoke had not provided a complete
+per-opcode proof for several `/1` boundaries. P2 changes only that smoke and
+its evidence: every requirement that depends on the table-store opcode now
+loops over both SGDT `/0` and SIDT `/1`. It proves, for each form, register
+ModRM and F0 LOCK rejection, protected six-byte destination atomicity,
+pending-PIC delivery after the actual instruction, VM86 image/state, and
+DS/SS-default/ES-overridden effective addresses. The matrix now states that
+coverage precisely; no production, decoder, table-load, control-register,
+paging, or delivery implementation changes are introduced.
+
+P2 reruns fresh GCC configuration, the focused marker, exact current-gate
+registration discovery, documentation governance, diff check, full current
+gates, and the current `0.5.0318` artifact hash/runtime identity before its
+single pushed corrective commit. The rebuilt artifact remained SHA-256
+`700DA3C0BB4FF0C1F5443FE2EF8623DA65E1BBD0E4354979FA3245A6CCD4583C`.
+
 ## Retained Boundary
 
 The Intel 80386 PRM table-register entries govern only the admitted stores.
