@@ -1302,6 +1302,13 @@ if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(core-machine-hardware-delivery-s3-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
+add_executable(core-machine-interrupt-return-composition-s4-smoke
+    tests/machine/core_machine_interrupt_return_composition_s4_smoke.c)
+target_link_libraries(core-machine-interrupt-return-composition-s4-smoke PRIVATE core-machine)
+if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(core-machine-interrupt-return-composition-s4-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
 add_executable(core-machine-int-ivt-smoke
     tests/machine/cpu_int_ivt_smoke.c)
 target_link_libraries(core-machine-int-ivt-smoke PRIVATE
@@ -1493,6 +1500,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-fpu-8087-smoke
     core-machine-exception-delivery-s2-smoke
     core-machine-hardware-delivery-s3-smoke
+    core-machine-interrupt-return-composition-s4-smoke
     core-machine-trace-context-smoke
     core-machine-cpu-fault-diagnostic-smoke
     core-machine-configuration-smoke

@@ -2,8 +2,28 @@
 
 ## Current Work
 
-**Idle.** M5 T321 S3 is accepted and closed; S4 requires a separately admitted
-packet.
+**Active.** M5 T321 S4 closes the bounded 80386 software-interrupt, trap, and
+return-composition matrix in Ordinary Mode.
+
+## M5 T321 S4 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | The owner authorized continued single-session implementation toward the 80386DX architecture-coverage closure audit on 2026-08-12. T321 S1 ordered this composition work after accepted S2 and S3. |
+| Objective | Reconcile the already bounded `INT3`, `INT ib`, `INTO`, and same/outer `IRET` paths with shared external-event composition: software versus external origin, interrupt/trap gate IF/TF behavior, return restoration versus pending IRQ ordering, and fault/return frame separation. |
+| Non-goals | No expansion of the individual INT/INTO/IRET encoding matrices, no VM86 IRET return reopening, no PIC/NMI redesign, no task gate/switch, VME/PVI, debug/breakpoint policy, paging policy, exception recursion, or x87 execution. |
+| Reference Baseline | `dc8496f2` / `vm-0-5-0320`; T321 S1 audit, accepted S2/S3 evidence, retained T305/T308 entry evidence, T316 S50--S52 owner smokes, and T320 VM86 return evidence. |
+| Files And ABI Surface | An S4 owner smoke, indexed evidence, CMake registration, and Status; existing retained tests only if an assertion must be made precise. `cpu_instructions.c` only for a reproduced composition defect with complete affected-caller sweep. No public interface, PIC-provider, or product change. |
+| Applicable Rules | Task Reading Set; `docs/rules/EXECUTION.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/rules/DOCUMENT.md`, Intel 80386 interrupt/trap and IRET rules, T305/T308 evidence, T316 S50--S52 evidence, T320 matrix, and T321 S1 audit. |
+| Verification | Audit `_e_int3`, `_e_int_n`, `_e_into`, `_e_iret`, `_e_intr_n`, serializers, and the retained software/return smokes. Add deterministic composition evidence for a pending IRQ across a successful software-interrupt/IRET sequence; verify saved IP, frame order, IF/TF behavior, source acknowledgement, and no error-code confusion. Fresh configure; exact current registration; documentation governance; diff check; full current gate. |
+| Expected Markers | One deterministic S4 owner marker and exactly one current-gate registration. Evidence names which retained owner proves each form and distinguishes software, external, and fault frames. |
+| Asset Needs | None; deterministic local CPU/IVT/IDT/stack/PIC fixtures only. No guest media, firmware, source import, or external provider. |
+| Reporting Requirements | Record source sweep, reused form evidence, the newly exercised composition sequence, frame and FLAGS/acknowledgement results, any changed caller, and transferred boundaries in indexed evidence. Before implementation, confirm this matrix or report a material objection. |
+| Stop Conditions | Stop for a required generic event-loop/PIC/NMI redesign, a VM86/task/VME/PVI expansion, exception-recursion/triple-fault policy, paging change, or shared serializer change beyond the admitted software/return callers. |
+| Exit Criteria | The admitted software/trap/return composition is directly proven, retained form owners are correctly cross-linked, external event acknowledgement and frame/FLAGS order are exact, no unrelated route changes, and evidence, gates, commit, and push pass. |
+| Original Owner Request | Continue single-session implementation through the 80386DX architecture-coverage closure audit with code quality preserved. |
+| Similar-Issue Sweep | Search `_e_int3`, `_e_int_n`, `_e_into`, `_e_iret`, `_e_intr_n`, `ExecInt`, serializers, and all T305/T316 S50--S52/T320 focused evidence; classify every relevant route as covered, fixed, retained, or transferred. |
 
 ## Current Technical Baseline
 
