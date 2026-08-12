@@ -164,6 +164,13 @@ target_link_libraries(core-machine-operand-address-smoke PRIVATE core-machine)
 add_executable(core-machine-prefix-attributes-s64-smoke
     tests/machine/core_machine_prefix_attributes_s64_smoke.c)
 target_link_libraries(core-machine-prefix-attributes-s64-smoke PRIVATE core-machine)
+add_executable(core-machine-legacy-lock-s1-smoke
+    tests/machine/core_machine_legacy_lock_s1_smoke.c)
+target_link_libraries(core-machine-legacy-lock-s1-smoke PRIVATE core-machine)
+if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
+    target_compile_options(core-machine-legacy-lock-s1-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
 add_executable(core-machine-setcc-smoke tests/machine/core_machine_setcc_smoke.c)
 target_link_libraries(core-machine-setcc-smoke PRIVATE core-machine)
 add_executable(core-machine-movx-smoke tests/machine/core_machine_movx_smoke.c)
@@ -1488,6 +1495,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-real-mode-386-address-smoke
     core-machine-operand-address-smoke
     core-machine-prefix-attributes-s64-smoke
+    core-machine-legacy-lock-s1-smoke
     core-machine-setcc-smoke
     core-machine-movx-smoke
     core-machine-bit-test-smoke
@@ -1817,7 +1825,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0323 "0.5.0323")
+add_current_vm_artifact(vm-0-5-0328 "0.5.0328")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 

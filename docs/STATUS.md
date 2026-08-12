@@ -2,14 +2,34 @@
 
 ## Current Work
 
-**Idle.** T327 is closed; the next 80386DX package requires separate
-admission from the Queue.
+**Active.** M5 T328 S1 resolves the retained 8086/80186/80286 LOCK-prefix
+legality boundary in Ordinary Mode.
+
+## M5 T328 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner-approved continuation of the 80386DX completion program, 2026-08-12. Admit the Queue's legacy LOCK-prefix legality matrix as one complete P1; direct commit and push are authorized. |
+| Objective | Establish the Intel-profiled semantics of `F0` for 8086/80186/80286 without changing the retained 80386 memory-modifying whitelist: 8086/80186 accept a valid following instruction, and 80286 additionally faults before the following opcode when protected `CPL > IOPL`. Close the named legacy LOCK TODO with focused executable evidence. |
+| Non-goals | No host bus-arbitration model, timing claim, 80386 whitelist redesign, VME/PVI, paging, task-switch work, generic privilege refactor, or per-opcode special case. No claim that a single-threaded VM exposes external LOCK-pin behavior. |
+| Reference Baseline | `ad1458b1` (T327 closure source); preserve the user-owned uncommitted `docs/QUEUE.md` candidate ordering. |
+| Files And ABI Surface | Expected: local `PREFIX_LOCK` policy in `src/core/machine/cpu_instructions.c`; one owner smoke under `tests/machine/`; CMake target/current-gate registration; ordinary-execution evidence, TODO disposition, task history, Status, and `build/output/nxvm_0_5_0328.exe`. No public ABI. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `CODING.md`, `ARCHITECTURE.md`, `DOCUMENT.md`; `docs/design/ARCHITECTURE.md` and `CODING.md`; source-policy research procedure. Preserve one CPU-state owner and test-only boundaries; use project types and target-local strict GCC options. |
+| Verification | Fresh GCC configure; focused owner marker; actual Ninja compile command contains `-Wall -Wextra -Wpedantic -Werror`; retained 80386 S64 legal/illegal LOCK smoke; documentation governance; `git diff --check`; full `ctest -L current-gate --output-on-failure -j 4`; build/copy and SHA-256 the T328 developer artifact. |
+| Expected Markers | `M5:T328:S1:LEGACY-LOCK:OK`; focused and full current-gate pass. |
+| Asset Needs | None; Intel historical manuals are research-only and are not imported. |
+| Reporting Requirements | One complete P1 only: implementation, tests, CMake, evidence, TODO disposition, artifact, self-review, verification, commit, and push. Report a material shared-prefix/privilege conflict before expanding scope. |
+| Stop Conditions | Stop if Intel primary sources require a profile rule incompatible with the bounded transparent-prefix/80286-IOPL contract, if a repair changes 80386 whitelist semantics, requires a bus/device contract, or exposes a shared privilege/exception defect outside LOCK ordering. Record/transfer any such issue. |
+| Exit Criteria | 8086/80186 valid following forms and 80286 real/protected `CPL <= IOPL` forms execute with prefix-length/state evidence; 80286 protected `CPL > IOPL` produces restartable `#GP` before operand publication; representative register, valid-memory, string/REP, I/O and illegal-unprefixed forms distinguish prefix policy from opcode validity; retained 80386 legal-memory and illegal/register behavior remains green. The named TODO is closed or truthfully replaced, all verification passes, actual-change review passes, and the complete P1 is committed/pushed. |
+| Original Owner Request | Continue autonomously in single-session mode through the 80386DX architecture coverage closure audit; prioritize Queue dependencies and retain explicit boundaries. |
+| Similar-Issue Sweep | Audit every `flagLock` producer/consumer, all legacy `F0` dispatch paths, existing prefix smoke coverage, and the deferred-lock references in Queue/TODO/closure map. |
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** T323 selects `vm-0-5-0323` /
-  `build/output/nxvm_0_5_0323.exe`; its source commit, SHA-256, and bounded
-  protection/privilege closure transfers will be recorded at T323 closure.
+- **Current developer artifact:** T328 selects `vm-0-5-0328` /
+  `build/output/nxvm_0_5_0328.exe`; its source commit, SHA-256, and bounded
+  legacy LOCK-prefix closure transfers will be recorded at T328 closure.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.

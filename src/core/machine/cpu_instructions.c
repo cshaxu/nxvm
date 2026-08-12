@@ -14343,7 +14343,17 @@ static C_VOID PREFIX_LOCK(core_machine_cpu_execution_context *context)
         }
     }
     else
-        _adv;
+    {
+        /* Before the 80386, LOCK is a bus prefix for the following valid
+         * instruction.  The 80286 additionally treats it as IOPL-sensitive
+         * in protected mode; it does not use the later 80386 opcode whitelist.
+         */
+        if (context->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 &&
+            _IsProtected && _GetCPL > (type_unsigned_8)_GetEFLAGS_IOPL)
+            TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(0));
+        else
+            _adv;
+    }
     TYPE_TRACE_CALL_END;
 }
 static C_VOID PREFIX_REPNZ(core_machine_cpu_execution_context *context)
