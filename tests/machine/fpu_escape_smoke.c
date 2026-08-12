@@ -22,7 +22,7 @@ static const core_machine_execution_provider fpu_escape_provider = {
 };
 
 static C_INT prepare_machine(core_machine_fpu_profile fpu_profile,
-    uint32_t cr0, fpu_escape_machine *state)
+    type_unsigned_32 cr0, fpu_escape_machine *state)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
@@ -45,8 +45,8 @@ static C_INT prepare_machine(core_machine_fpu_profile fpu_profile,
 }
 
 static C_INT run_case(const C_UCHAR *program, STD_SIZE_T program_size,
-    core_machine_fpu_profile fpu_profile, uint32_t cr0, uint32_t expected_exception,
-    uint32_t expected_eip)
+    core_machine_fpu_profile fpu_profile, type_unsigned_32 cr0, type_unsigned_32 expected_exception,
+    type_unsigned_32 expected_eip)
 {
     fpu_escape_machine state;
     core_machine_run_budget budget = { 1u, 0u };
@@ -81,19 +81,19 @@ static C_INT run_case(const C_UCHAR *program, STD_SIZE_T program_size,
 }
 
 static C_INT run_nm_delivery_case(const C_UCHAR *program,
-    STD_SIZE_T program_size, uint32_t cr0)
+    STD_SIZE_T program_size, type_unsigned_32 cr0)
 {
     static const C_UCHAR handler[] = { 0x40u, 0xf4u };
-    const uint16_t handler_offset = 0x0100u;
-    const uint16_t handler_segment = 0u;
+    const type_unsigned_16 handler_offset = 0x0100u;
+    const type_unsigned_16 handler_segment = 0u;
     fpu_escape_machine state;
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
     t_cpu after;
-    uint16_t frame[3] = { 0u, 0u, 0u };
-    uint32_t original_eax = 0u;
+    type_unsigned_16 frame[3] = { 0u, 0u, 0u };
+    type_unsigned_32 original_eax = 0u;
     C_INT failed = prepare_machine(CORE_MACHINE_FPU_PROFILE_NONE, cr0, &state);
 
     if (!failed) {
@@ -118,15 +118,15 @@ static C_INT run_nm_delivery_case(const C_UCHAR *program,
                 diagnostic.last_delivered_exception.exception_mask,
                 VCPUINS_EXCEPT_NM) || after.data.eip != handler_offset ||
             after.data.esp != ((before.data.esp & 0xffff0000u) |
-                (uint16_t)(before.data.esp - 6u)) ||
+                (type_unsigned_16)(before.data.esp - 6u)) ||
             after.data.ss.selector != before.data.ss.selector ||
             after.data.ss.base != before.data.ss.base ||
             core_machine_memory_read_physical(&state.machine->executor_memory,
-                after.data.ss.base + (uint16_t)after.data.esp,
+                after.data.ss.base + (type_unsigned_16)after.data.esp,
                 TYPE_REFERENCE_OF(frame), sizeof(frame)) != TYPE_STATUS_OK ||
             frame[0] != 0u ||
             frame[1] != before.data.cs.selector || frame[2] !=
-                (uint16_t)before.data.eflags;
+                (type_unsigned_16)before.data.eflags;
     }
     if (!failed) {
         budget.instructions = 2u;

@@ -18,12 +18,12 @@
 #define HDC_STATUS_COMMAND_PORT 0x01f7u
 #define HDC_ALT_STATUS_CONTROL_PORT 0x03f6u
 
-static C_INT vm_hdc_write(core_machine *machine, uint16_t port, uint32_t value)
+static C_INT vm_hdc_write(core_machine *machine, type_unsigned_16 port, type_unsigned_32 value)
 {
     return core_machine_bus_write(machine, port, value) == TYPE_STATUS_OK;
 }
 
-static C_INT vm_hdc_read(core_machine *machine, uint16_t port, uint32_t *value)
+static C_INT vm_hdc_read(core_machine *machine, type_unsigned_16 port, type_unsigned_32 *value)
 {
     return core_machine_bus_read(machine, port, value) == TYPE_STATUS_OK;
 }
@@ -37,34 +37,34 @@ static C_INT vm_hdc_program_chs(vm_session *session)
         vm_hdc_write(session->core_machine, HDC_DRIVE_HEAD_PORT, 0u);
 }
 
-static C_INT vm_hdc_program_lba(vm_session *session, uint32_t lba,
-    uint8_t sector_count)
+static C_INT vm_hdc_program_lba(vm_session *session, type_unsigned_32 lba,
+    type_unsigned_8 sector_count)
 {
     return vm_hdc_write(session->core_machine, HDC_SECTOR_COUNT_PORT,
             sector_count) &&
         vm_hdc_write(session->core_machine, HDC_SECTOR_NUMBER_PORT,
-            (uint8_t)lba) &&
+            (type_unsigned_8)lba) &&
         vm_hdc_write(session->core_machine, HDC_CYLINDER_LOW_PORT,
-            (uint8_t)(lba >> 8u)) &&
+            (type_unsigned_8)(lba >> 8u)) &&
         vm_hdc_write(session->core_machine, HDC_CYLINDER_HIGH_PORT,
-            (uint8_t)(lba >> 16u)) &&
+            (type_unsigned_8)(lba >> 16u)) &&
         vm_hdc_write(session->core_machine, HDC_DRIVE_HEAD_PORT,
-            0x40u | (uint8_t)(lba >> 24u));
+            0x40u | (type_unsigned_8)(lba >> 24u));
 }
 
-static C_INT vm_hdc_drain_data(core_machine *machine, uint16_t *first_word)
+static C_INT vm_hdc_drain_data(core_machine *machine, type_unsigned_16 *first_word)
 {
     STD_SIZE_T index;
-    uint32_t value;
+    type_unsigned_32 value;
 
     for (index = 0u; index < 256u; ++index) {
         if (!vm_hdc_read(machine, HDC_DATA_PORT, &value)) return 0;
-        if (index == 0u && first_word != STD_NULL) *first_word = (uint16_t)value;
+        if (index == 0u && first_word != STD_NULL) *first_word = (type_unsigned_16)value;
     }
     return 1;
 }
 
-static C_INT vm_hdc_fill_data(core_machine *machine, uint16_t first_word)
+static C_INT vm_hdc_fill_data(core_machine *machine, type_unsigned_16 first_word)
 {
     STD_SIZE_T index;
 
@@ -101,8 +101,8 @@ static C_INT vm_hdc_profile_contract_is_valid(C_VOID)
 
 static C_INT vm_hdc_progress_probe(vm_session *session)
 {
-    uint32_t value;
-    uint16_t word;
+    type_unsigned_32 value;
+    type_unsigned_16 word;
 
     if (!vm_hdc_program_lba(session, 0u, 2u) ||
         !vm_hdc_write(session->core_machine, HDC_STATUS_COMMAND_PORT, 0x20u) ||
@@ -135,16 +135,16 @@ C_INT main(C_VOID)
     vm_session_config config = {0};
     vm_session *session = STD_NULL;
     vm_session *no_media = STD_NULL;
-    uint32_t value;
-    uint32_t invalid_lba;
-    uint16_t word = 0u;
+    type_unsigned_32 value;
+    type_unsigned_32 invalid_lba;
+    type_unsigned_16 word = 0u;
     C_INT failed = 0;
 
     config.create_hdd_cylinders = 2u;
     if (!vm_hdc_profile_contract_is_valid() ||
         vm_session_create(&config, &session) != TYPE_STATUS_OK ||
         session == STD_NULL || session->core_machine == STD_NULL) goto fail;
-    invalid_lba = (uint32_t)session->hdd.data.ncyl * session->hdd.data.nhead *
+    invalid_lba = (type_unsigned_32)session->hdd.data.ncyl * session->hdd.data.nhead *
         session->hdd.data.nsector;
     if (!session->media_registry.frozen || session->media_registry.binding_count != 2u ||
         session->media_registry.bindings[VM_SESSION_MEDIA_HDD_ID - 1u].context !=

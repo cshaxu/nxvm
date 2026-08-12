@@ -3,9 +3,9 @@
 #include "core/machine/media_interface.h"
 
 typedef struct core_machine_media_fixture {
-    uint8_t bytes[16];
-    uint64_t generation;
-    uint32_t flush_count;
+    type_unsigned_8 bytes[16];
+    type_unsigned_64 generation;
+    type_unsigned_32 flush_count;
     type_bool present;
     type_bool read_only;
     core_machine_media_result forced_read_result;
@@ -34,7 +34,7 @@ static core_machine_media_result core_machine_media_fixture_query(C_VOID *contex
 }
 
 static core_machine_media_result core_machine_media_fixture_read(C_VOID *context,
-    uint64_t offset, C_VOID *buffer, uint32_t byte_count)
+    type_unsigned_64 offset, C_VOID *buffer, type_unsigned_32 byte_count)
 {
     core_machine_media_fixture *fixture = (core_machine_media_fixture *)context;
 
@@ -48,7 +48,7 @@ static core_machine_media_result core_machine_media_fixture_read(C_VOID *context
 }
 
 static core_machine_media_result core_machine_media_fixture_write(C_VOID *context,
-    uint64_t offset, const C_VOID *buffer, uint32_t byte_count)
+    type_unsigned_64 offset, const C_VOID *buffer, type_unsigned_32 byte_count)
 {
     core_machine_media_fixture *fixture = (core_machine_media_fixture *)context;
 
@@ -61,11 +61,11 @@ static core_machine_media_result core_machine_media_fixture_write(C_VOID *contex
 }
 
 static core_machine_media_result core_machine_media_fixture_format(C_VOID *context,
-    uint64_t logical_sector, uint32_t sector_count, uint8_t fill)
+    type_unsigned_64 logical_sector, type_unsigned_32 sector_count, type_unsigned_8 fill)
 {
     core_machine_media_fixture *fixture = (core_machine_media_fixture *)context;
-    uint64_t offset = logical_sector * 4u;
-    uint32_t bytes = sector_count * 4u;
+    type_unsigned_64 offset = logical_sector * 4u;
+    type_unsigned_32 bytes = sector_count * 4u;
 
     if (fixture == STD_NULL || !fixture->present) return CORE_MACHINE_MEDIA_RESULT_ABSENT;
     if (fixture->read_only) return CORE_MACHINE_MEDIA_RESULT_READ_ONLY;
@@ -101,8 +101,8 @@ C_INT main(C_VOID)
         CORE_MACHINE_MEDIA_RESULT_OK};
     core_machine_media_info info;
     core_machine_media_result result = CORE_MACHINE_MEDIA_RESULT_PERMANENT;
-    uint8_t bytes[4] = {1u, 2u, 3u, 4u};
-    uint8_t readback[4] = {0};
+    type_unsigned_8 bytes[4] = {1u, 2u, 3u, 4u};
+    type_unsigned_8 readback[4] = {0};
     C_INT failed = 0;
 
     core_machine_media_registry_initialize(&registry);

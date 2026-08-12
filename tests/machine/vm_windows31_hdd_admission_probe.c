@@ -14,11 +14,11 @@
 #define VM_T287_PROBE_VBR 0x1200u
 #define VM_T287_PROBE_RESULT 0x0500u
 
-static uint8_t vm_t287_probe_fdd[VM_T287_PROBE_FDD_BYTES];
+static type_unsigned_8 vm_t287_probe_fdd[VM_T287_PROBE_FDD_BYTES];
 
 static C_INT vm_t287_probe_write_fdd(C_CHAR path[MAX_PATH])
 {
-    static const uint8_t boot_code[] = {
+    static const type_unsigned_8 boot_code[] = {
         0x31u, 0xc0u,                         /* xor ax,ax */
         0x8eu, 0xd0u,                         /* mov ss,ax */
         0xbcu, 0x00u, 0x7cu,                  /* mov sp,7c00h */
@@ -76,7 +76,7 @@ static C_INT vm_t287_probe_write_fdd(C_CHAR path[MAX_PATH])
     return 1;
 }
 
-static C_INT vm_t287_probe_read_file(const C_CHAR *path, uint8_t *bytes,
+static C_INT vm_t287_probe_read_file(const C_CHAR *path, type_unsigned_8 *bytes,
     DWORD count)
 {
     HANDLE file;
@@ -94,10 +94,10 @@ static C_INT vm_t287_probe_read_file(const C_CHAR *path, uint8_t *bytes,
     return 1;
 }
 
-static uint32_t vm_t287_probe_lba(const uint8_t *entry)
+static type_unsigned_32 vm_t287_probe_lba(const type_unsigned_8 *entry)
 {
-    return (uint32_t)entry[8] | ((uint32_t)entry[9] << 8u) |
-        ((uint32_t)entry[10] << 16u) | ((uint32_t)entry[11] << 24u);
+    return (type_unsigned_32)entry[8] | ((type_unsigned_32)entry[9] << 8u) |
+        ((type_unsigned_32)entry[10] << 16u) | ((type_unsigned_32)entry[11] << 24u);
 }
 
 C_INT main(C_INT argc, C_CHAR **argv)
@@ -112,25 +112,25 @@ C_INT main(C_INT argc, C_CHAR **argv)
     core_machine_cpu_state cpu = {0};
     vm_session *session = STD_NULL;
     C_CHAR fdd_path[MAX_PATH] = {0};
-    uint8_t host_mbr[512] = {0};
-    uint8_t host_vbr[512] = {0};
-    uint8_t guest_mbr[512] = {0};
-    uint8_t guest_vbr[512] = {0};
-    uint16_t values[12] = {0};
-    uint16_t int13_vector[2] = {0};
-    const uint8_t *entry = STD_NULL;
-    uint32_t lba = 0u;
-    uint32_t sectors_per_track = 0u;
-    uint32_t heads = 0u;
-    uint32_t cylinder = 0u;
-    uint32_t head = 0u;
-    uint32_t sector = 0u;
-    uint32_t instruction;
-    uint8_t first_sector_number = 0u;
-    uint8_t first_cylinder_low = 0u;
-    uint8_t first_cylinder_high = 0u;
-    uint8_t first_drive_head = 0u;
-    uint32_t first_command_count = 0u;
+    type_unsigned_8 host_mbr[512] = {0};
+    type_unsigned_8 host_vbr[512] = {0};
+    type_unsigned_8 guest_mbr[512] = {0};
+    type_unsigned_8 guest_vbr[512] = {0};
+    type_unsigned_16 values[12] = {0};
+    type_unsigned_16 int13_vector[2] = {0};
+    const type_unsigned_8 *entry = STD_NULL;
+    type_unsigned_32 lba = 0u;
+    type_unsigned_32 sectors_per_track = 0u;
+    type_unsigned_32 heads = 0u;
+    type_unsigned_32 cylinder = 0u;
+    type_unsigned_32 head = 0u;
+    type_unsigned_32 sector = 0u;
+    type_unsigned_32 instruction;
+    type_unsigned_8 first_sector_number = 0u;
+    type_unsigned_8 first_cylinder_low = 0u;
+    type_unsigned_8 first_cylinder_high = 0u;
+    type_unsigned_8 first_drive_head = 0u;
+    type_unsigned_32 first_command_count = 0u;
     C_INT passed = 0;
     STD_SIZE_T mbr_mismatch = sizeof(guest_mbr);
     STD_SIZE_T vbr_mismatch = sizeof(guest_vbr);
@@ -196,8 +196,8 @@ C_INT main(C_INT argc, C_CHAR **argv)
         guest_mbr[510] == 0x55u && guest_mbr[511] == 0xaau &&
         (entry[4] == 1u || entry[4] == 4u || entry[4] == 6u) &&
         cylinder < 1024u && entry[1] == head && entry[2] ==
-            (uint8_t)(sector | ((cylinder >> 2u) & 0xc0u)) && entry[3] ==
-            (uint8_t)cylinder && STD_MEMCMP(guest_vbr, host_vbr,
+            (type_unsigned_8)(sector | ((cylinder >> 2u) & 0xc0u)) && entry[3] ==
+            (type_unsigned_8)cylinder && STD_MEMCMP(guest_vbr, host_vbr,
                 sizeof(guest_vbr)) == 0;
 
 done:

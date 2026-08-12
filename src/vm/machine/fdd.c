@@ -26,7 +26,7 @@ static core_machine_media_result vm_machine_fdd_media_query(C_VOID *context,
     if (fdd->connect.flagReadOnly)
         out_info->capabilities |= CORE_MACHINE_MEDIA_CAPABILITY_READ_ONLY;
     out_info->present = fdd->connect.flagDiskExist;
-    out_info->geometry.logical_sector_count = (uint64_t)fdd->data.ncyl *
+    out_info->geometry.logical_sector_count = (type_unsigned_64)fdd->data.ncyl *
         fdd->data.nhead * fdd->data.nsector;
     out_info->geometry.bytes_per_sector = fdd->data.nbyte;
     out_info->geometry.cylinders = fdd->data.ncyl;
@@ -37,7 +37,7 @@ static core_machine_media_result vm_machine_fdd_media_query(C_VOID *context,
 }
 
 static core_machine_media_result vm_machine_fdd_media_read(C_VOID *context,
-    uint64_t offset, C_VOID *buffer, uint32_t byte_count)
+    type_unsigned_64 offset, C_VOID *buffer, type_unsigned_32 byte_count)
 {
     const t_fdd *fdd = (const t_fdd *)context;
     STD_SIZE_T image_size;
@@ -52,7 +52,7 @@ static core_machine_media_result vm_machine_fdd_media_read(C_VOID *context,
 }
 
 static core_machine_media_result vm_machine_fdd_media_write(C_VOID *context,
-    uint64_t offset, const C_VOID *buffer, uint32_t byte_count)
+    type_unsigned_64 offset, const C_VOID *buffer, type_unsigned_32 byte_count)
 {
     t_fdd *fdd = (t_fdd *)context;
     STD_SIZE_T image_size;
@@ -68,15 +68,15 @@ static core_machine_media_result vm_machine_fdd_media_write(C_VOID *context,
 }
 
 static core_machine_media_result vm_machine_fdd_media_format(C_VOID *context,
-    uint64_t logical_sector, uint32_t sector_count, uint8_t fill)
+    type_unsigned_64 logical_sector, type_unsigned_32 sector_count, type_unsigned_8 fill)
 {
     t_fdd *fdd = (t_fdd *)context;
-    uint64_t sector_total;
+    type_unsigned_64 sector_total;
 
     if (fdd == STD_NULL || !fdd->connect.flagDiskExist)
         return CORE_MACHINE_MEDIA_RESULT_ABSENT;
     if (fdd->connect.flagReadOnly) return CORE_MACHINE_MEDIA_RESULT_READ_ONLY;
-    sector_total = (uint64_t)fdd->data.ncyl * fdd->data.nhead * fdd->data.nsector;
+    sector_total = (type_unsigned_64)fdd->data.ncyl * fdd->data.nhead * fdd->data.nsector;
     if (logical_sector >= sector_total || sector_count > sector_total - logical_sector)
         return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
     STD_MEMSET((C_VOID *)(fdd->connect.pImgBase + logical_sector * fdd->data.nbyte),
@@ -229,7 +229,7 @@ C_VOID vm_machine_fdd_create_for(t_fdd *fdd)
 
 C_INT vm_machine_fdd_insert_for(t_fdd *fdd, const C_CHAR *file_name)
 {
-    int64_t image_length;
+    type_signed_64 image_length;
     STD_SIZE_T image_size;
     type_virtual_address candidate;
     STD_FILE *image;

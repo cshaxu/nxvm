@@ -28,7 +28,7 @@ static C_INT vm_t287_fdisk_has_text(const vm_session *session, const C_CHAR *tex
             &frame) != TYPE_STATUS_OK) return 0;
     for (cell = 0u; cell + length <= VM_T287_FDISK_CELLS; ++cell) {
         for (character = 0u; character < length; ++character) {
-            if (frame.characters[cell + character] != (uint8_t)text[character]) break;
+            if (frame.characters[cell + character] != (type_unsigned_8)text[character]) break;
         }
         if (character == length) return 1;
     }
@@ -50,7 +50,7 @@ static C_INT vm_t287_fdisk_wait(const vm_session *session, const C_CHAR *text,
     return 0;
 }
 
-static C_INT vm_t287_fdisk_submit(const vm_session *session, const uint8_t *codes,
+static C_INT vm_t287_fdisk_submit(const vm_session *session, const type_unsigned_8 *codes,
     STD_SIZE_T count)
 {
     STD_SIZE_T index;
@@ -71,10 +71,10 @@ C_INT main(C_INT argc, C_CHAR **argv)
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
-    const uint8_t enter[] = {0x1cu};
-    const uint8_t four_make[] = {0x05u};
-    const uint8_t four_break[] = {0x85u};
-    const uint8_t fdisk[] = {0x21u, 0xa1u, 0x20u, 0xa0u, 0x17u, 0x97u,
+    const type_unsigned_8 enter[] = {0x1cu};
+    const type_unsigned_8 four_make[] = {0x05u};
+    const type_unsigned_8 four_break[] = {0x85u};
+    const type_unsigned_8 fdisk[] = {0x21u, 0xa1u, 0x20u, 0xa0u, 0x17u, 0x97u,
         0x1fu, 0x9fu, 0x25u, 0xa5u, 0x1cu};
     HANDLE thread = STD_NULL;
     vm_session *session = STD_NULL;

@@ -170,9 +170,9 @@ extern "C"
                                   t_dma *secondary);
     C_VOID core_machine_dma_advance(t_latch *latch, t_dma *primary,
                                     t_dma *secondary, t_ram *ram,
-                                    uint64_t elapsed_ticks);
+                                    type_unsigned_64 elapsed_ticks);
     type_status core_machine_dma_bind_channel(t_latch *latch, t_dma *primary,
-        t_dma *secondary, uint8_t channel,
+        t_dma *secondary, type_unsigned_8 channel,
         const core_machine_dma_channel_provider *provider, C_VOID *device_owner,
         core_machine_dma_request_binding *out_binding);
     C_VOID core_machine_dma_request_assert(t_dma *primary, t_dma *secondary,

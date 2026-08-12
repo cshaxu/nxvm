@@ -4,8 +4,8 @@
 #include "core/machine/port.h"
 #include "core/machine/vadp.h"
 
-static C_VOID core_machine_vadp_write_crtc(t_port *port, uint8_t index,
-    uint8_t value)
+static C_VOID core_machine_vadp_write_crtc(t_port *port, type_unsigned_8 index,
+    type_unsigned_8 value)
 {
     core_machine_port_write(port, 0x03d4u, index);
     core_machine_port_write(port, 0x03d5u, value);
@@ -17,12 +17,12 @@ C_INT main(C_VOID)
     t_ram memory;
     t_vadp vadp;
     core_machine_display_snapshot snapshot;
-    uint8_t value;
+    type_unsigned_8 value;
     C_INT saw_vertical_retrace = TYPE_FALSE;
     C_INT saw_display = TYPE_FALSE;
     C_INT saw_horizontal_blank = TYPE_FALSE;
     core_machine_vadp_text_timing timing = { 3u, 2u, 1u };
-    uint8_t status;
+    type_unsigned_8 status;
     STD_SIZE_T refresh;
     C_INT failed = 0;
 

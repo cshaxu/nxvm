@@ -6,9 +6,9 @@
 #include "core/machine/pic.h"
 #include "core/machine/port.h"
 
-static uint8_t core_machine_kbc_read_byte(t_port *port, uint16_t port_id)
+static type_unsigned_8 core_machine_kbc_read_byte(t_port *port, type_unsigned_16 port_id)
 {
-    return (uint8_t)core_machine_port_read(port, port_id);
+    return (type_unsigned_8)core_machine_port_read(port, port_id);
 }
 
 static C_VOID core_machine_kbc_initialize_pic(t_port *port)
@@ -32,7 +32,7 @@ C_INT main(C_VOID)
     core_machine_cpu_execution_context execution = {0};
     t_port port;
     C_INT failed = 0;
-    uint8_t index;
+    type_unsigned_8 index;
 
     core_machine_port_initialize(&port);
     core_machine_pic_initialize(&pic_master, &pic_slave, &port);

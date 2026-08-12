@@ -35,12 +35,12 @@ static C_VOID core_machine_hdc_raise_irq(core_machine_hdc *hdc)
     core_machine_pic_irq_source_assert(&hdc->connect.irq_source);
 }
 
-static uint32_t core_machine_hdc_lba(const core_machine_hdc *hdc)
+static type_unsigned_32 core_machine_hdc_lba(const core_machine_hdc *hdc)
 {
-    return (uint32_t)hdc->data.sector_number |
-        ((uint32_t)hdc->data.cylinder_low << 8u) |
-        ((uint32_t)hdc->data.cylinder_high << 16u) |
-        ((uint32_t)(hdc->data.drive_head & 0x0fu) << 24u);
+    return (type_unsigned_32)hdc->data.sector_number |
+        ((type_unsigned_32)hdc->data.cylinder_low << 8u) |
+        ((type_unsigned_32)hdc->data.cylinder_high << 16u) |
+        ((type_unsigned_32)(hdc->data.drive_head & 0x0fu) << 24u);
 }
 
 static C_INT core_machine_hdc_media_info(const core_machine_hdc *hdc,
@@ -68,7 +68,7 @@ static C_VOID core_machine_hdc_complete(core_machine_hdc *hdc)
     core_machine_hdc_raise_irq(hdc);
 }
 
-static C_VOID core_machine_hdc_fail(core_machine_hdc *hdc, uint8_t error)
+static C_VOID core_machine_hdc_fail(core_machine_hdc *hdc, type_unsigned_8 error)
 {
     if (hdc == STD_NULL) return;
     hdc->data.error = error;
@@ -82,9 +82,9 @@ static C_INT core_machine_hdc_load_chs_sector(core_machine_hdc *hdc)
 {
     core_machine_media_info info;
     core_machine_media_result media_result;
-    uint16_t cylinder;
-    uint8_t head;
-    uint8_t sector;
+    type_unsigned_16 cylinder;
+    type_unsigned_8 head;
+    type_unsigned_8 sector;
     STD_SIZE_T offset;
 
     if (hdc == STD_NULL || !core_machine_hdc_media_info(hdc, &info, &media_result) ||
@@ -92,8 +92,8 @@ static C_INT core_machine_hdc_load_chs_sector(core_machine_hdc *hdc)
         core_machine_hdc_fail(hdc, CORE_MACHINE_HDC_ERROR_ABORT);
         return 0;
     }
-    cylinder = (uint16_t)hdc->data.cylinder_low |
-        ((uint16_t)hdc->data.cylinder_high << 8u);
+    cylinder = (type_unsigned_16)hdc->data.cylinder_low |
+        ((type_unsigned_16)hdc->data.cylinder_high << 8u);
     head = hdc->data.drive_head & 0x0fu;
     sector = hdc->data.sector_number;
     if (!core_machine_hdc_selected_master(hdc) || core_machine_hdc_lba_mode(hdc) ||
@@ -120,7 +120,7 @@ static C_INT core_machine_hdc_load_lba_sector(core_machine_hdc *hdc)
 {
     core_machine_media_info info;
     core_machine_media_result media_result;
-    uint32_t lba;
+    type_unsigned_32 lba;
     STD_SIZE_T offset;
 
     if (hdc == STD_NULL || !core_machine_hdc_media_info(hdc, &info, &media_result) ||
@@ -157,9 +157,9 @@ static C_INT core_machine_hdc_store_chs_sector(core_machine_hdc *hdc)
 {
     core_machine_media_info info;
     core_machine_media_result media_result;
-    uint16_t cylinder;
-    uint8_t head;
-    uint8_t sector;
+    type_unsigned_16 cylinder;
+    type_unsigned_8 head;
+    type_unsigned_8 sector;
     STD_SIZE_T offset;
 
     if (hdc == STD_NULL || !core_machine_hdc_media_info(hdc, &info, &media_result) ||
@@ -167,8 +167,8 @@ static C_INT core_machine_hdc_store_chs_sector(core_machine_hdc *hdc)
         core_machine_hdc_fail(hdc, CORE_MACHINE_HDC_ERROR_ABORT);
         return 0;
     }
-    cylinder = (uint16_t)hdc->data.cylinder_low |
-        ((uint16_t)hdc->data.cylinder_high << 8u);
+    cylinder = (type_unsigned_16)hdc->data.cylinder_low |
+        ((type_unsigned_16)hdc->data.cylinder_high << 8u);
     head = hdc->data.drive_head & 0x0fu;
     sector = hdc->data.sector_number;
     if (!core_machine_hdc_selected_master(hdc) || core_machine_hdc_lba_mode(hdc) ||
@@ -195,7 +195,7 @@ static C_INT core_machine_hdc_store_lba_sector(core_machine_hdc *hdc)
 {
     core_machine_media_info info;
     core_machine_media_result media_result;
-    uint32_t lba;
+    type_unsigned_32 lba;
     STD_SIZE_T offset;
 
     if (hdc == STD_NULL || !core_machine_hdc_media_info(hdc, &info, &media_result) ||
@@ -232,7 +232,7 @@ static C_VOID core_machine_hdc_identify(core_machine_hdc *hdc)
 {
     core_machine_media_info info;
     core_machine_media_result media_result;
-    uint16_t word;
+    type_unsigned_16 word;
 
     if (hdc == STD_NULL || !core_machine_hdc_media_info(hdc, &info, &media_result) ||
         !core_machine_hdc_selected_master(hdc) ||
@@ -251,9 +251,9 @@ static C_VOID core_machine_hdc_identify(core_machine_hdc *hdc)
     STD_MEMCPY(&hdc->data.data[12], &word, sizeof(word));
     word = 0x0200u;
     STD_MEMCPY(&hdc->data.data[98], &word, sizeof(word));
-    word = (uint16_t)core_machine_hdc_sector_capacity(&info);
+    word = (type_unsigned_16)core_machine_hdc_sector_capacity(&info);
     STD_MEMCPY(&hdc->data.data[120], &word, sizeof(word));
-    word = (uint16_t)(core_machine_hdc_sector_capacity(&info) >> 16u);
+    word = (type_unsigned_16)(core_machine_hdc_sector_capacity(&info) >> 16u);
     STD_MEMCPY(&hdc->data.data[122], &word, sizeof(word));
     hdc->data.phase = CORE_MACHINE_HDC_PHASE_DATA_READ;
     hdc->data.data_index = 0u;
@@ -267,19 +267,19 @@ static C_INT core_machine_hdc_advance_chs(core_machine_hdc *hdc)
 {
     core_machine_media_info info;
     core_machine_media_result media_result;
-    uint16_t cylinder;
-    uint8_t head;
-    uint8_t sector;
+    type_unsigned_16 cylinder;
+    type_unsigned_8 head;
+    type_unsigned_8 sector;
 
     if (hdc == STD_NULL || !core_machine_hdc_media_info(hdc, &info, &media_result) ||
         !info.present) {
         core_machine_hdc_fail(hdc, CORE_MACHINE_HDC_ERROR_ABORT);
         return 0;
     }
-    cylinder = (uint16_t)hdc->data.cylinder_low |
-        ((uint16_t)hdc->data.cylinder_high << 8u);
+    cylinder = (type_unsigned_16)hdc->data.cylinder_low |
+        ((type_unsigned_16)hdc->data.cylinder_high << 8u);
     head = hdc->data.drive_head & 0x0fu;
-    sector = (uint8_t)(hdc->data.sector_number + 1u);
+    sector = (type_unsigned_8)(hdc->data.sector_number + 1u);
     if (sector > info.geometry.sectors_per_track) {
         sector = 1u;
         ++head;
@@ -293,8 +293,8 @@ static C_INT core_machine_hdc_advance_chs(core_machine_hdc *hdc)
         return 0;
     }
     hdc->data.sector_number = sector;
-    hdc->data.cylinder_low = (uint8_t)cylinder;
-    hdc->data.cylinder_high = (uint8_t)(cylinder >> 8u);
+    hdc->data.cylinder_low = (type_unsigned_8)cylinder;
+    hdc->data.cylinder_high = (type_unsigned_8)(cylinder >> 8u);
     hdc->data.drive_head = (hdc->data.drive_head & 0xf0u) | head;
     return 1;
 }
@@ -303,7 +303,7 @@ static C_INT core_machine_hdc_advance_lba(core_machine_hdc *hdc)
 {
     core_machine_media_info info;
     core_machine_media_result media_result;
-    uint32_t lba;
+    type_unsigned_32 lba;
 
     if (hdc == STD_NULL || !core_machine_hdc_media_info(hdc, &info, &media_result) ||
         !info.present) {
@@ -315,11 +315,11 @@ static C_INT core_machine_hdc_advance_lba(core_machine_hdc *hdc)
         core_machine_hdc_fail(hdc, CORE_MACHINE_HDC_ERROR_ID_NOT_FOUND);
         return 0;
     }
-    hdc->data.sector_number = (uint8_t)lba;
-    hdc->data.cylinder_low = (uint8_t)(lba >> 8u);
-    hdc->data.cylinder_high = (uint8_t)(lba >> 16u);
+    hdc->data.sector_number = (type_unsigned_8)lba;
+    hdc->data.cylinder_low = (type_unsigned_8)(lba >> 8u);
+    hdc->data.cylinder_high = (type_unsigned_8)(lba >> 16u);
     hdc->data.drive_head = (hdc->data.drive_head & 0xf0u) |
-        (uint8_t)(lba >> 24u);
+        (type_unsigned_8)(lba >> 24u);
     return 1;
 }
 
@@ -366,7 +366,7 @@ static C_VOID core_machine_hdc_next_write_sector(core_machine_hdc *hdc)
     core_machine_hdc_raise_irq(hdc);
 }
 
-static C_VOID core_machine_hdc_execute_command(core_machine_hdc *hdc, uint8_t command)
+static C_VOID core_machine_hdc_execute_command(core_machine_hdc *hdc, type_unsigned_8 command)
 {
     if (hdc == STD_NULL) return;
     hdc->data.last_command = command;
@@ -413,11 +413,11 @@ static C_VOID core_machine_hdc_execute_command(core_machine_hdc *hdc, uint8_t co
     }
 }
 
-static type_status core_machine_hdc_port_read(C_VOID *opaque, uint16_t port,
-    uint32_t *out_value)
+static type_status core_machine_hdc_port_read(C_VOID *opaque, type_unsigned_16 port,
+    type_unsigned_32 *out_value)
 {
     core_machine_hdc *hdc = (core_machine_hdc *)opaque;
-    uint16_t word;
+    type_unsigned_16 word;
 
     if (hdc == STD_NULL || out_value == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     *out_value = 0u;
@@ -428,7 +428,7 @@ static type_status core_machine_hdc_port_read(C_VOID *opaque, uint16_t port,
         }
         STD_MEMCPY(&word, &hdc->data.data[hdc->data.data_index], sizeof(word));
         *out_value = word;
-        hdc->data.data_index = (uint16_t)(hdc->data.data_index + sizeof(word));
+        hdc->data.data_index = (type_unsigned_16)(hdc->data.data_index + sizeof(word));
         if (hdc->data.data_index == sizeof(hdc->data.data)) {
             core_machine_hdc_next_read_sector(hdc);
         }
@@ -457,41 +457,41 @@ static type_status core_machine_hdc_port_read(C_VOID *opaque, uint16_t port,
     return TYPE_STATUS_OK;
 }
 
-static type_status core_machine_hdc_port_write(C_VOID *opaque, uint16_t port,
-    uint32_t value)
+static type_status core_machine_hdc_port_write(C_VOID *opaque, type_unsigned_16 port,
+    type_unsigned_32 value)
 {
     core_machine_hdc *hdc = (core_machine_hdc *)opaque;
 
     if (hdc == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     if (port == hdc->connect.config.data_port) {
-        uint16_t word = (uint16_t)value;
+        type_unsigned_16 word = (type_unsigned_16)value;
         if (hdc->data.phase != CORE_MACHINE_HDC_PHASE_DATA_WRITE ||
             hdc->data.data_index >= sizeof(hdc->data.data)) {
             return TYPE_STATUS_OK;
         }
         STD_MEMCPY(&hdc->data.data[hdc->data.data_index], &word, sizeof(word));
-        hdc->data.data_index = (uint16_t)(hdc->data.data_index + sizeof(word));
+        hdc->data.data_index = (type_unsigned_16)(hdc->data.data_index + sizeof(word));
         if (hdc->data.data_index == sizeof(hdc->data.data)) {
             core_machine_hdc_next_write_sector(hdc);
         }
         return TYPE_STATUS_OK;
     }
     if (port == hdc->connect.config.error_features_port) {
-        hdc->data.features = (uint8_t)value;
+        hdc->data.features = (type_unsigned_8)value;
     } else if (port == hdc->connect.config.sector_count_port) {
-        hdc->data.sector_count = (uint8_t)value;
+        hdc->data.sector_count = (type_unsigned_8)value;
     } else if (port == hdc->connect.config.sector_number_port) {
-        hdc->data.sector_number = (uint8_t)value;
+        hdc->data.sector_number = (type_unsigned_8)value;
     } else if (port == hdc->connect.config.cylinder_low_port) {
-        hdc->data.cylinder_low = (uint8_t)value;
+        hdc->data.cylinder_low = (type_unsigned_8)value;
     } else if (port == hdc->connect.config.cylinder_high_port) {
-        hdc->data.cylinder_high = (uint8_t)value;
+        hdc->data.cylinder_high = (type_unsigned_8)value;
     } else if (port == hdc->connect.config.drive_head_port) {
-        hdc->data.drive_head = (uint8_t)value;
+        hdc->data.drive_head = (type_unsigned_8)value;
     } else if (port == hdc->connect.config.status_command_port) {
-        core_machine_hdc_execute_command(hdc, (uint8_t)value);
+        core_machine_hdc_execute_command(hdc, (type_unsigned_8)value);
     } else if (port == hdc->connect.config.alternate_status_device_control_port) {
-        uint8_t device_control = (uint8_t)value;
+        type_unsigned_8 device_control = (type_unsigned_8)value;
         type_bool reset_asserted = (device_control &
             CORE_MACHINE_HDC_DEVICE_CONTROL_SRST) != 0u;
 

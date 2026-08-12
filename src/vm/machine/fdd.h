@@ -30,7 +30,7 @@ typedef struct {
     type_bool flagDiskExist; /* flag of floppy disk existance */
 
     type_virtual_address pImgBase;   /* pointer to disk in ram */
-    uint32_t media_generation; /* advances on every insert/remove/create */
+    type_unsigned_32 media_generation; /* advances on every insert/remove/create */
 } t_fdd_connect;
 
 typedef struct {

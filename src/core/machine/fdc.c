@@ -119,9 +119,9 @@ static C_VOID core_machine_fdc_observe_all_drives(core_machine_fdc *fdc)
 }
 
 static C_INT core_machine_fdc_media_offset(const core_machine_fdc *fdc,
-    const core_machine_media_info *info, uint64_t *out_offset)
+    const core_machine_media_info *info, type_unsigned_64 *out_offset)
 {
-    uint64_t sector;
+    type_unsigned_64 sector;
 
     if (fdc == STD_NULL || info == STD_NULL || out_offset == STD_NULL ||
         fdc->data.head >= info->geometry.heads ||
@@ -129,7 +129,7 @@ static C_INT core_machine_fdc_media_offset(const core_machine_fdc *fdc,
         fdc->data.sector == 0u ||
         fdc->data.sector > info->geometry.sectors_per_track ||
         info->geometry.bytes_per_sector != 512u) return TYPE_FALSE;
-    sector = ((uint64_t)fdc->data.cylinder * info->geometry.heads +
+    sector = ((type_unsigned_64)fdc->data.cylinder * info->geometry.heads +
         fdc->data.head) * info->geometry.sectors_per_track +
         (fdc->data.sector - 1u);
     *out_offset = sector * info->geometry.bytes_per_sector + fdc->data.byte_offset;
@@ -250,7 +250,7 @@ static C_INT core_machine_fdc_transfer_byte(core_machine_fdc *fdc, t_latch *latc
     core_machine_media_info info;
     core_machine_media_result result;
     core_machine_media_id media_id;
-    uint64_t offset;
+    type_unsigned_64 offset;
     if (fdc->data.transfer_remaining == 0u || !core_machine_fdc_drive_ready(fdc)) {
         core_machine_fdc_complete_transfer(fdc, core_machine_fdc_ST1_NO_DATA);
         return TYPE_TRUE;
@@ -290,7 +290,7 @@ static C_VOID core_machine_fdc_format_byte(core_machine_fdc *fdc, type_unsigned_
     core_machine_media_info info;
     core_machine_media_result result;
     core_machine_media_id media_id;
-    uint64_t logical_sector;
+    type_unsigned_64 logical_sector;
     if (fdc->data.format_headers_remaining == 0u) return;
     fdc->data.format_id[fdc->data.format_id_index++] = byte;
     if (fdc->data.format_id_index != 4u) return;
@@ -304,7 +304,7 @@ static C_VOID core_machine_fdc_format_byte(core_machine_fdc *fdc, type_unsigned_
         core_machine_fdc_complete_transfer(fdc, core_machine_fdc_ST1_NO_DATA);
         return;
     }
-    logical_sector = ((uint64_t)fdc->data.cylinder * info.geometry.heads +
+    logical_sector = ((type_unsigned_64)fdc->data.cylinder * info.geometry.heads +
         fdc->data.head) * info.geometry.sectors_per_track +
         fdc->data.format_id[2] - 1u;
     media_id = core_machine_fdc_selected_media_id(fdc);
@@ -551,7 +551,7 @@ static C_VOID core_machine_fdc_execute(core_machine_fdc *fdc)
 static C_VOID core_machine_fdc_reset_controller(core_machine_fdc *fdc)
 {
     type_unsigned_8 ccr = fdc->data.ccr;
-    uint64_t observed_media_generation[CORE_MACHINE_FDC_DRIVE_COUNT];
+    type_unsigned_64 observed_media_generation[CORE_MACHINE_FDC_DRIVE_COUNT];
     STD_MEMCPY(observed_media_generation, fdc->data.observed_media_generation,
         sizeof(observed_media_generation));
     core_machine_fdc_cancel_execution(fdc);

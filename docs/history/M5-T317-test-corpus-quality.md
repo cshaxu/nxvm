@@ -1,8 +1,8 @@
-# M5 T317: Test-Corpus Quality Closure
+# M5 T317: Test-Corpus Quality History
 
 ## Accepted Boundary
 
-T317 closes only the admitted quality boundary for the 47 T316-added CPU smoke
+S1--S4 closed only the admitted quality boundary for the 47 T316-added CPU smoke
 owners listed by `PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY`.  It establishes
 target-local strict GCC command coverage, an inventory-bounded project type
 vocabulary check, and private test-fixture lifecycle consolidation.  It does
@@ -52,7 +52,15 @@ violate T317's no-framework and no-implicit-instruction-semantics boundary.
 - `cmake --build --preset current-gates-gcc` passed all 54 static/governance
   targets and 194/194 CTests.
 
-## Deferred Boundary
+## S5 Corrective Extension
+
+The owner later admitted S5 as a repository-wide fixed-width vocabulary repair.
+It does not expand T317 into a CPU or product capability task: it replaces
+lexical type spelling through the single `src/type.h` facade while retaining
+the original S1--S4 smoke, strict-command, and lifecycle evidence. The factual
+details and the 0.5.0317 artifact hash are recorded in [S5 evidence](../etc/evidence/t317-s5-global-type-vocabulary-evidence.md).
+
+## S1--S4 Deferred Boundary
 
 The type-vocabulary verifier deliberately does not scan inherited tests or the
 repository at large. [TODO: inherited test raw-type vocabulary](../TODO.md)

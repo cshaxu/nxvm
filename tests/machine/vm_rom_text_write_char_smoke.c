@@ -9,11 +9,11 @@
 #define VM_ROM_TEXT_IMAGE_BYTES (1440u * 1024u)
 #define VM_ROM_TEXT_BOOT_BUDGET 300000u
 
-static uint8_t vm_rom_text_image[VM_ROM_TEXT_IMAGE_BYTES];
+static type_unsigned_8 vm_rom_text_image[VM_ROM_TEXT_IMAGE_BYTES];
 
 static C_INT vm_rom_text_write_fixture(C_CHAR path[MAX_PATH])
 {
-    static const uint8_t boot_code[] = {
+    static const type_unsigned_8 boot_code[] = {
         0x31u, 0xc0u, 0x8eu, 0xd8u,             /* xor ax,ax; mov ds,ax */
         0xb8u, 0x03u, 0x00u, 0xcdu, 0x10u,      /* mov ax,0003h; int 10h */
         0xb4u, 0x02u, 0xb7u, 0x00u, 0xb6u, 0x01u,
@@ -63,9 +63,9 @@ C_INT main(C_VOID)
     core_machine_display_snapshot snapshot;
     vm_session *session = STD_NULL;
     C_CHAR path[MAX_PATH] = {0};
-    uint16_t character = 0u;
-    uint8_t page = 0xffu;
-    uint32_t instruction;
+    type_unsigned_16 character = 0u;
+    type_unsigned_8 page = 0xffu;
+    type_unsigned_32 instruction;
     C_INT passed = 0;
 
     if (!vm_rom_text_write_fixture(path)) goto done;

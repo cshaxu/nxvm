@@ -10,8 +10,8 @@
 typedef struct mantle_fixture {
     core_machine_rtc rtc;
     core_machine_media_registry media;
-    uint8_t media_byte;
-    uint8_t backing_byte;
+    type_unsigned_8 media_byte;
+    type_unsigned_8 backing_byte;
 } mantle_fixture;
 
 static C_VOID fixture_reset(C_VOID *context)
@@ -20,7 +20,7 @@ static C_VOID fixture_reset(C_VOID *context)
     if (fixture != STD_NULL) core_machine_rtc_reset(&fixture->rtc);
 }
 
-static C_VOID fixture_advance(C_VOID *context, uint64_t elapsed_ticks)
+static C_VOID fixture_advance(C_VOID *context, type_unsigned_64 elapsed_ticks)
 {
     mantle_fixture *fixture = (mantle_fixture *)context;
     if (fixture != STD_NULL) core_machine_rtc_advance(&fixture->rtc, elapsed_ticks);
@@ -46,12 +46,12 @@ static core_machine_media_result fixture_media_query(C_VOID *context,
 }
 
 static core_machine_media_result fixture_media_read(C_VOID *context,
-    uint64_t offset, C_VOID *buffer, uint32_t byte_count)
+    type_unsigned_64 offset, C_VOID *buffer, type_unsigned_32 byte_count)
 {
     if (context == STD_NULL || buffer == STD_NULL || offset != 0u || byte_count != 1u) {
         return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
     }
-    *(uint8_t *)buffer = *(uint8_t *)context;
+    *(type_unsigned_8 *)buffer = *(type_unsigned_8 *)context;
     return CORE_MACHINE_MEDIA_RESULT_OK;
 }
 
@@ -64,7 +64,7 @@ static const core_machine_media_provider fixture_media_provider = {
 };
 
 static core_platform_backing_resource_result fixture_backing_size(C_VOID *context,
-    uint64_t *out_size)
+    type_unsigned_64 *out_size)
 {
     if (context == STD_NULL || out_size == STD_NULL) {
         return CORE_PLATFORM_BACKING_RESOURCE_PERMANENT;
@@ -74,13 +74,13 @@ static core_platform_backing_resource_result fixture_backing_size(C_VOID *contex
 }
 
 static core_platform_backing_resource_result fixture_backing_read(C_VOID *context,
-    uint64_t offset, C_VOID *buffer, uint32_t requested, uint32_t *out_transferred)
+    type_unsigned_64 offset, C_VOID *buffer, type_unsigned_32 requested, type_unsigned_32 *out_transferred)
 {
     if (context == STD_NULL || buffer == STD_NULL || out_transferred == STD_NULL ||
         offset != 0u || requested != 1u) {
         return CORE_PLATFORM_BACKING_RESOURCE_INVALID_RANGE;
     }
-    *(uint8_t *)buffer = *(uint8_t *)context;
+    *(type_unsigned_8 *)buffer = *(type_unsigned_8 *)context;
     *out_transferred = 1u;
     return CORE_PLATFORM_BACKING_RESOURCE_OK;
 }
@@ -95,7 +95,7 @@ static const core_platform_backing_resource_provider fixture_backing_provider = 
 
 C_INT main(C_VOID)
 {
-    static const uint8_t halt[] = { 0xf4u };
+    static const type_unsigned_8 halt[] = { 0xf4u };
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086,
@@ -113,8 +113,8 @@ C_INT main(C_VOID)
     core_machine_media_result media_result;
     core_machine *machine = STD_NULL;
     mantle_fixture fixture = { 0 };
-    uint8_t observed = 0u;
-    uint32_t transferred = 0u;
+    type_unsigned_8 observed = 0u;
+    type_unsigned_32 transferred = 0u;
     C_INT failed = 0;
 
     fixture.media_byte = 0xa5u;

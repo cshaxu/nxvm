@@ -8,8 +8,8 @@
 
 C_INT main(C_VOID)
 {
-    static const uint8_t image[] = { 0xf4u, 0x90u, 0x90u };
-    static const uint8_t reset_jump[] = { 0xeau, 0x00u, 0x10u, 0x00u, 0x00u };
+    static const type_unsigned_8 image[] = { 0xf4u, 0x90u, 0x90u };
+    static const type_unsigned_8 reset_jump[] = { 0xeau, 0x00u, 0x10u, 0x00u, 0x00u };
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086,
@@ -20,8 +20,8 @@ C_INT main(C_VOID)
     core_machine *machine = STD_NULL;
     core_machine_memory_route route;
     core_machine_run_result result;
-    uint8_t observed[sizeof(image)] = { 0u };
-    uint8_t overwrite = 0u;
+    type_unsigned_8 observed[sizeof(image)] = { 0u };
+    type_unsigned_8 overwrite = 0u;
     C_INT failed = 0;
 
     failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK;

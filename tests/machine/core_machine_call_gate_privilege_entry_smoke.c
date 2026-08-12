@@ -50,7 +50,7 @@ static const core_machine_execution_provider cg_provider = {
     cg_reset, STD_NULL, STD_NULL
 };
 
-static C_INT cg_write(call_gate_privilege_machine *state, uint32_t address,
+static C_INT cg_write(call_gate_privilege_machine *state, type_unsigned_32 address,
     const C_VOID *data, STD_SIZE_T bytes)
 {
     return state != STD_NULL && state->machine != STD_NULL &&
@@ -58,7 +58,7 @@ static C_INT cg_write(call_gate_privilege_machine *state, uint32_t address,
             TYPE_STATUS_OK;
 }
 
-static C_INT cg_read(call_gate_privilege_machine *state, uint32_t address,
+static C_INT cg_read(call_gate_privilege_machine *state, type_unsigned_32 address,
     C_VOID *data, STD_SIZE_T bytes)
 {
     return state != STD_NULL && state->machine != STD_NULL &&
@@ -66,15 +66,15 @@ static C_INT cg_read(call_gate_privilege_machine *state, uint32_t address,
             address, (type_virtual_address)data, bytes) == TYPE_STATUS_OK;
 }
 
-static C_INT cg_prepare(call_gate_privilege_machine *state, uint8_t gate_access,
-    uint8_t parameter_count)
+static C_INT cg_prepare(call_gate_privilege_machine *state, type_unsigned_8 gate_access,
+    type_unsigned_8 parameter_count)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
-    uint8_t gdt[] = {
+    type_unsigned_8 gdt[] = {
         0,0,0,0,0,0,0,0,
         0xffu,0xffu,0,0x20u,0,0x9au,0x40u,0,
         0xffu,0xffu,0,0,0,0x92u,0xcfu,0,
@@ -83,11 +83,11 @@ static C_INT cg_prepare(call_gate_privilege_machine *state, uint8_t gate_access,
         0x67u,0,0,0x06u,0,0x8bu,0,0,
         0,0x01u,0x08u,0,parameter_count,gate_access,0,0
     };
-    uint8_t tss[10] = {0};
-    static const uint8_t call[] = {0x9au,0,0x01u,0,0,0x33u,0};
-    static const uint8_t handler[] = {0xf4u};
-    uint32_t esp0 = 0x00009000u;
-    uint16_t ss0 = 0x0010u;
+    type_unsigned_8 tss[10] = {0};
+    static const type_unsigned_8 call[] = {0x9au,0,0x01u,0,0,0x33u,0};
+    static const type_unsigned_8 handler[] = {0xf4u};
+    type_unsigned_32 esp0 = 0x00009000u;
+    type_unsigned_16 ss0 = 0x0010u;
     t_cpu *cpu;
 
     if (state == STD_NULL) return 0;
@@ -176,7 +176,7 @@ static C_INT cg_run_budget(call_gate_privilege_machine *state, t_cpu *out_cpu,
 }
 
 static C_INT cg_fault_is(const core_machine_cpu_diagnostic *diagnostic,
-    uint32_t mask, uint32_t code)
+    type_unsigned_32 mask, type_unsigned_32 code)
 {
     return diagnostic->first_fault.valid && TYPE_GET_BIT(
         diagnostic->first_fault.exception_mask, mask) &&
@@ -194,9 +194,9 @@ static C_INT cg_entry_state_equal(const t_cpu *before, const t_cpu *after)
 }
 
 static C_INT cg_install_ts_delivery_gate(call_gate_privilege_machine *state,
-    uint8_t access)
+    type_unsigned_8 access)
 {
-    uint8_t gate[8] = {0};
+    type_unsigned_8 gate[8] = {0};
     t_cpu *cpu;
 
     if (state == STD_NULL || state->machine == STD_NULL) return 0;
@@ -211,13 +211,13 @@ static C_INT cg_install_ts_delivery_gate(call_gate_privilege_machine *state,
     cpu->data.idtr.limit = 10u * 8u + 7u;
     return cg_write(state, CG_IDT_BASE + 10u * 8u, gate, sizeof(gate)) &&
         cg_write(state, CG_USER_CODE_BASE + CG_HANDLER_OFFSET,
-            (const uint8_t[]){0xebu,0xfeu}, 2u);
+            (const type_unsigned_8[]){0xebu,0xfeu}, 2u);
 }
 
 static C_INT cg_prepare_ts_delivery(call_gate_privilege_machine *state,
-    uint8_t gate_access)
+    type_unsigned_8 gate_access)
 {
-    uint16_t invalid_ss0 = 0x0013u;
+    type_unsigned_16 invalid_ss0 = 0x0013u;
 
     return cg_prepare(state, 0xecu, 0u) &&
         cg_write(state, CG_TSS_BASE + 8u, &invalid_ss0, sizeof(invalid_ss0)) &&
@@ -225,9 +225,9 @@ static C_INT cg_prepare_ts_delivery(call_gate_privilege_machine *state,
 }
 
 static C_INT cg_install_outer_error_gate(call_gate_privilege_machine *state,
-    uint8_t access)
+    type_unsigned_8 access)
 {
-    uint8_t gate[8] = {0};
+    type_unsigned_8 gate[8] = {0};
     t_cpu *cpu;
 
     if (state == STD_NULL || state->machine == STD_NULL) return 0;
@@ -244,9 +244,9 @@ static C_INT cg_install_outer_error_gate(call_gate_privilege_machine *state,
 }
 
 static C_INT cg_install_double_fault_gate(call_gate_privilege_machine *state,
-    uint8_t access)
+    type_unsigned_8 access)
 {
-    uint8_t gate[8] = {0};
+    type_unsigned_8 gate[8] = {0};
 
     if (state == STD_NULL || state->machine == STD_NULL) return 0;
     gate[0] = CG_HANDLER_OFFSET & 0xffu;
@@ -256,13 +256,13 @@ static C_INT cg_install_double_fault_gate(call_gate_privilege_machine *state,
     return cg_write(state, CG_IDT_BASE + 8u * 8u, gate, sizeof(gate));
 }
 
-static C_INT cg_test_success(uint8_t count)
+static C_INT cg_test_success(type_unsigned_8 count)
 {
     call_gate_privilege_machine state;
     core_machine_cpu_diagnostic diagnostic;
     t_cpu after;
-    uint32_t frame[6] = {0u,0u,0u,0u,0u,0u};
-    uint32_t parameters[2] = {0x11223344u,0x55667788u};
+    type_unsigned_32 frame[6] = {0u,0u,0u,0u,0u,0u};
+    type_unsigned_32 parameters[2] = {0x11223344u,0x55667788u};
     C_INT failed = !cg_prepare(&state, 0xecu, count);
 
     if (!failed && count) failed |= !cg_write(&state, 0x00008800u,
@@ -272,7 +272,7 @@ static C_INT cg_test_success(uint8_t count)
             diagnostic.first_fault.valid || after.data.cs.selector != 0x0008u ||
             after.data.cs.dpl != 0u || after.data.eip != CG_HANDLER_OFFSET + 1u ||
             after.data.ss.selector != 0x0010u || after.data.esp !=
-                0x00009000u - (uint32_t)(4u + count) * 4u ||
+                0x00009000u - (type_unsigned_32)(4u + count) * 4u ||
             !cg_read(&state, after.data.esp, frame,
                 (STD_SIZE_T)(4u + count) * sizeof(frame[0])) ||
             frame[0] != 7u || frame[1] != 0x0000001bu ||
@@ -291,8 +291,8 @@ static C_INT cg_test_dpl_failure_atomic(C_VOID)
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
     t_cpu after;
-    uint8_t cs_before = 0u, cs_after = 0u;
-    uint8_t ss_before = 0u, ss_after = 0u;
+    type_unsigned_8 cs_before = 0u, cs_after = 0u;
+    type_unsigned_8 ss_before = 0u, ss_after = 0u;
     C_INT failed = !cg_prepare(&state, 0x8cu, 0u);
 
     if (!failed) {
@@ -312,15 +312,15 @@ static C_INT cg_test_dpl_failure_atomic(C_VOID)
     return !failed;
 }
 
-static C_INT cg_test_gate_failure_atomic(uint8_t gate_access, uint32_t mask,
-    uint32_t code)
+static C_INT cg_test_gate_failure_atomic(type_unsigned_8 gate_access, type_unsigned_32 mask,
+    type_unsigned_32 code)
 {
     call_gate_privilege_machine state;
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
     t_cpu after;
-    uint8_t cs_before = 0u, cs_after = 0u;
-    uint8_t ss_before = 0u, ss_after = 0u;
+    type_unsigned_8 cs_before = 0u, cs_after = 0u;
+    type_unsigned_8 ss_before = 0u, ss_after = 0u;
     C_INT failed = !cg_prepare(&state, gate_access, 0u);
 
     if (!failed) {
@@ -347,8 +347,8 @@ static C_INT cg_test_parameter_source_failure_atomic(C_VOID)
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
     t_cpu after;
-    uint8_t cs_before = 0u, cs_after = 0u;
-    uint8_t ss_before = 0u, ss_after = 0u;
+    type_unsigned_8 cs_before = 0u, cs_after = 0u;
+    type_unsigned_8 ss_before = 0u, ss_after = 0u;
     C_INT failed = !cg_prepare(&state, 0xecu, 1u);
 
     if (!failed) {
@@ -370,16 +370,16 @@ static C_INT cg_test_parameter_source_failure_atomic(C_VOID)
 }
 
 static C_INT cg_test_target_failure_atomic(call_gate_target_failure failure,
-    uint32_t mask, uint32_t code)
+    type_unsigned_32 mask, type_unsigned_32 code)
 {
     call_gate_privilege_machine state;
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
     t_cpu after;
-    uint8_t cs_before = 0u, cs_after = 0u;
-    uint8_t ss_before = 0u, ss_after = 0u;
-    uint8_t access = 0u;
-    uint16_t selector = 0u;
+    type_unsigned_8 cs_before = 0u, cs_after = 0u;
+    type_unsigned_8 ss_before = 0u, ss_after = 0u;
+    type_unsigned_8 access = 0u;
+    type_unsigned_16 selector = 0u;
     const core_machine_run_budget budget = {1u, 0u};
     core_machine_run_result result;
     type_status status;
@@ -448,7 +448,7 @@ static C_INT cg_test_ts_delivery(C_VOID)
     call_gate_privilege_machine state;
     core_machine_cpu_diagnostic diagnostic;
     t_cpu after;
-    uint32_t frame[4] = {0u,0u,0u,0u};
+    type_unsigned_32 frame[4] = {0u,0u,0u,0u};
     C_INT failed = !cg_prepare_ts_delivery(&state, 0xeeu);
 
     if (!failed) {
@@ -477,11 +477,11 @@ static C_INT cg_test_ts_delivery_failure(call_gate_ts_delivery_failure failure)
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
     t_cpu after;
-    uint8_t access_before = 0u;
-    uint8_t access_after = 0u;
-    uint32_t stack_before[4] = {0u,0u,0u,0u};
-    uint32_t stack_after[4] = {0u,0u,0u,0u};
-    uint8_t gate_access = 0xeeu;
+    type_unsigned_8 access_before = 0u;
+    type_unsigned_8 access_after = 0u;
+    type_unsigned_32 stack_before[4] = {0u,0u,0u,0u};
+    type_unsigned_32 stack_after[4] = {0u,0u,0u,0u};
+    type_unsigned_8 gate_access = 0xeeu;
     C_INT failed;
 
     if (failure == CALL_GATE_TS_DELIVERY_INVALID_GATE) gate_access = 0x80u;
@@ -513,14 +513,14 @@ static C_INT cg_test_outer_gp_delivery(C_VOID)
     call_gate_privilege_machine state;
     core_machine_cpu_diagnostic diagnostic;
     t_cpu after;
-    uint32_t frame[6] = {0u,0u,0u,0u,0u,0u};
-    uint8_t cs_access = 0u;
-    uint8_t ss_access = 0u;
+    type_unsigned_32 frame[6] = {0u,0u,0u,0u,0u,0u};
+    type_unsigned_8 cs_access = 0u;
+    type_unsigned_8 ss_access = 0u;
     C_INT failed = !cg_prepare(&state, 0x8cu, 0u);
 
     if (!failed) {
         failed |= !cg_install_outer_error_gate(&state,
-                (uint8_t)(0x80u | VCPU_DESC_SYS_TYPE_INTGATE_32)) ||
+                (type_unsigned_8)(0x80u | VCPU_DESC_SYS_TYPE_INTGATE_32)) ||
             !cg_run(&state, 0, &after, &diagnostic) ||
             diagnostic.first_fault.valid ||
             !diagnostic.last_delivered_exception.valid ||
@@ -552,13 +552,13 @@ static C_INT cg_test_outer_gp_delivery_failure(
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
     t_cpu after;
-    uint8_t cs_before = 0u;
-    uint8_t cs_after = 0u;
-    uint8_t ss_before = 0u;
-    uint8_t ss_after = 0u;
-    uint32_t stack_before[6] = {0u,0u,0u,0u,0u,0u};
-    uint32_t stack_after[6] = {0u,0u,0u,0u,0u,0u};
-    uint8_t gate_access = (uint8_t)(0x80u | VCPU_DESC_SYS_TYPE_INTGATE_32);
+    type_unsigned_8 cs_before = 0u;
+    type_unsigned_8 cs_after = 0u;
+    type_unsigned_8 ss_before = 0u;
+    type_unsigned_8 ss_after = 0u;
+    type_unsigned_32 stack_before[6] = {0u,0u,0u,0u,0u,0u};
+    type_unsigned_32 stack_after[6] = {0u,0u,0u,0u,0u,0u};
+    type_unsigned_8 gate_access = (type_unsigned_8)(0x80u | VCPU_DESC_SYS_TYPE_INTGATE_32);
     C_INT failed = !cg_prepare(&state, 0x8cu, 0u);
 
     if (failure == CALL_GATE_OUTER_DELIVERY_INVALID_GATE) gate_access = 0x80u;
@@ -567,13 +567,13 @@ static C_INT cg_test_outer_gp_delivery_failure(
     if (!failed) {
         failed |= !cg_install_outer_error_gate(&state, gate_access);
         if (!failed && failure == CALL_GATE_OUTER_DELIVERY_TARGET_NOT_PRESENT) {
-            uint8_t access = 0x1au;
+            type_unsigned_8 access = 0x1au;
             failed |= !cg_write(&state, CG_GDT_BASE + 13u, &access,
                 sizeof(access));
         }
         if (!failed && failure == CALL_GATE_OUTER_DELIVERY_STACK_LIMIT) {
-            uint8_t limit[] = {0u,0u};
-            uint8_t granularity = 0x40u;
+            type_unsigned_8 limit[] = {0u,0u};
+            type_unsigned_8 granularity = 0x40u;
             failed |= !cg_write(&state, CG_GDT_BASE + 16u, limit,
                 sizeof(limit)) || !cg_write(&state, CG_GDT_BASE + 22u,
                 &granularity, sizeof(granularity));
@@ -605,19 +605,19 @@ static C_INT cg_test_outer_gp_double_fault(C_INT double_fault_gate_valid)
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
     t_cpu after;
-    uint32_t frame[6] = {0u,0u,0u,0u,0u,0u};
-    uint32_t frame_before[6] = {0u,0u,0u,0u,0u,0u};
-    uint32_t frame_after[6] = {0u,0u,0u,0u,0u,0u};
-    uint8_t cs_before = 0u;
-    uint8_t cs_after = 0u;
-    uint8_t ss_before = 0u;
-    uint8_t ss_after = 0u;
+    type_unsigned_32 frame[6] = {0u,0u,0u,0u,0u,0u};
+    type_unsigned_32 frame_before[6] = {0u,0u,0u,0u,0u,0u};
+    type_unsigned_32 frame_after[6] = {0u,0u,0u,0u,0u,0u};
+    type_unsigned_8 cs_before = 0u;
+    type_unsigned_8 cs_after = 0u;
+    type_unsigned_8 ss_before = 0u;
+    type_unsigned_8 ss_after = 0u;
     C_INT failed = !cg_prepare(&state, 0x8cu, 0u);
 
     if (!failed) {
         failed |= !cg_install_outer_error_gate(&state, 0x80u) ||
             !cg_install_double_fault_gate(&state, double_fault_gate_valid ?
-                (uint8_t)(0x80u | VCPU_DESC_SYS_TYPE_INTGATE_32) : 0x80u);
+                (type_unsigned_8)(0x80u | VCPU_DESC_SYS_TYPE_INTGATE_32) : 0x80u);
     }
     if (!failed && double_fault_gate_valid) {
         failed |= !cg_run(&state, 0, &after, &diagnostic) ||

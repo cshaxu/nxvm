@@ -76,7 +76,7 @@ static C_INT vm_dos_keyboard_has_edit_menu(const vm_session *session)
 static C_INT vm_dos_keyboard_verify_text_frame(const vm_session *session)
 {
     core_platform_display_frame frame;
-    uint8_t text[TEXT_VIDEO_CELLS * 2u];
+    type_unsigned_8 text[TEXT_VIDEO_CELLS * 2u];
     STD_SIZE_T cell;
     STD_SIZE_T title_cell = TEXT_VIDEO_CELLS;
 
@@ -119,10 +119,10 @@ static C_VOID vm_dos_keyboard_report_failure(const vm_session *session,
     const core_machine_cpu_state *state)
 {
     core_platform_display_frame frame;
-    uint16_t head = 0u;
-    uint16_t tail = 0u;
-    uint8_t video_mode = 0u;
-    uint8_t instructions[8] = { 0u };
+    type_unsigned_16 head = 0u;
+    type_unsigned_16 tail = 0u;
+    type_unsigned_8 video_mode = 0u;
+    type_unsigned_8 instructions[8] = { 0u };
     STD_SIZE_T cell;
     STD_SIZE_T index;
 

@@ -86,11 +86,11 @@ typedef struct t_kbc_data {
     core_machine_kbc_output_origin delayed_response_origin;
     type_unsigned_8 delayed_response_count;
     type_unsigned_8 delayed_response_index;
-    uint64_t typematic_remaining_ticks;
-    uint64_t response_remaining_ticks;
-    uint32_t typematic_initial_ticks;
-    uint32_t typematic_repeat_ticks;
-    uint32_t command_response_ticks;
+    type_unsigned_64 typematic_remaining_ticks;
+    type_unsigned_64 response_remaining_ticks;
+    type_unsigned_32 typematic_initial_ticks;
+    type_unsigned_32 typematic_repeat_ticks;
+    type_unsigned_32 command_response_ticks;
     type_bool typematic_active;
 } t_kbc_data;
 
@@ -113,17 +113,17 @@ C_VOID core_machine_kbc_bind_core_services(t_kbc *controller, t_pic *pic_master,
     core_machine_cpu_execution_context *execution);
 C_VOID core_machine_kbc_reset(t_kbc *controller);
 C_VOID core_machine_kbc_refresh(t_kbc *controller);
-C_VOID core_machine_kbc_advance(t_kbc *controller, uint64_t elapsed_ticks);
+C_VOID core_machine_kbc_advance(t_kbc *controller, type_unsigned_64 elapsed_ticks);
 C_VOID core_machine_kbc_set_typematic_timing(t_kbc *controller,
-    uint32_t initial_ticks, uint32_t repeat_ticks);
+    type_unsigned_32 initial_ticks, type_unsigned_32 repeat_ticks);
 C_VOID core_machine_kbc_set_command_response_timing(t_kbc *controller,
-    uint32_t response_ticks);
+    type_unsigned_32 response_ticks);
 C_VOID core_machine_kbc_finalize(t_kbc *controller);
-type_status core_machine_kbc_submit_scan_code(t_kbc *controller, uint8_t scan_code);
+type_status core_machine_kbc_submit_scan_code(t_kbc *controller, type_unsigned_8 scan_code);
 type_status core_machine_kbc_submit_scan_codes(t_kbc *controller,
-    const uint8_t *scan_codes, STD_SIZE_T count);
+    const type_unsigned_8 *scan_codes, STD_SIZE_T count);
 type_status core_machine_kbc_submit_aux_report(t_kbc *controller,
-    int16_t delta_x, int16_t delta_y, uint8_t buttons);
+    type_signed_16 delta_x, type_signed_16 delta_y, type_unsigned_8 buttons);
 
 #ifdef __cplusplus
 }/*_EOCD_*/

@@ -29,23 +29,23 @@ typedef enum core_machine_hdc_phase {
 } core_machine_hdc_phase;
 
 typedef struct core_machine_hdc_data {
-    uint8_t features;
-    uint8_t error;
-    uint8_t sector_count;
-    uint8_t sector_number;
-    uint8_t cylinder_low;
-    uint8_t cylinder_high;
-    uint8_t drive_head;
-    uint8_t status;
-    uint8_t device_control;
+    type_unsigned_8 features;
+    type_unsigned_8 error;
+    type_unsigned_8 sector_count;
+    type_unsigned_8 sector_number;
+    type_unsigned_8 cylinder_low;
+    type_unsigned_8 cylinder_high;
+    type_unsigned_8 drive_head;
+    type_unsigned_8 status;
+    type_unsigned_8 device_control;
     type_bool irq_pending;
     type_bool reset_asserted;
-    uint8_t last_command;
-    uint16_t sectors_remaining;
-    uint32_t command_count;
+    type_unsigned_8 last_command;
+    type_unsigned_16 sectors_remaining;
+    type_unsigned_32 command_count;
     core_machine_hdc_phase phase;
-    uint16_t data_index;
-    uint8_t data[512];
+    type_unsigned_16 data_index;
+    type_unsigned_8 data[512];
 } core_machine_hdc_data;
 
 typedef struct core_machine_hdc_connection {

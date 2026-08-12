@@ -18,11 +18,11 @@ C_INT main(C_INT argc, C_CHAR **argv)
     };
     core_machine_run_result result;
     vm_session *session = STD_NULL;
-    uint16_t int13[2] = {0};
-    uint32_t instruction;
-    uint8_t active_ah = 0u;
-    uint8_t active_dl = 0u;
-    uint32_t read_count = 0u;
+    type_unsigned_16 int13[2] = {0};
+    type_unsigned_32 instruction;
+    type_unsigned_8 active_ah = 0u;
+    type_unsigned_8 active_dl = 0u;
+    type_unsigned_32 read_count = 0u;
     C_INT geometry_ok = 0;
     C_INT active = 0;
     C_INT passed = 0;
@@ -36,9 +36,9 @@ C_INT main(C_INT argc, C_CHAR **argv)
         t_cpu *cpu = &session->core_machine->executor_cpu;
 
         if (!active && cpu->data.cs.selector == int13[1] &&
-            (uint16_t)cpu->data.eip == int13[0]) {
-            active_ah = (uint8_t)(cpu->data.eax >> 8u);
-            active_dl = (uint8_t)cpu->data.edx;
+            (type_unsigned_16)cpu->data.eip == int13[0]) {
+            active_ah = (type_unsigned_8)(cpu->data.eax >> 8u);
+            active_dl = (type_unsigned_8)cpu->data.edx;
             active = active_dl >= 0x80u;
         }
         if (core_machine_run(session->core_machine, budget, &result) !=
@@ -49,12 +49,12 @@ C_INT main(C_INT argc, C_CHAR **argv)
         if (active && cpu->data.cs.selector != int13[1]) {
             STD_PRINTF("M5:T287:S18:INT13 ah=%02X dl=%02X cf=%u ax=%04X "
                 "cx=%04X dx=%04X\n", active_ah, active_dl,
-                cpu->data.eflags & 1u, (uint16_t)cpu->data.eax,
-                (uint16_t)cpu->data.ecx, (uint16_t)cpu->data.edx);
+                cpu->data.eflags & 1u, (type_unsigned_16)cpu->data.eax,
+                (type_unsigned_16)cpu->data.ecx, (type_unsigned_16)cpu->data.edx);
             if (active_ah == 0x08u && (cpu->data.eflags & 1u) == 0u &&
-                ((uint16_t)cpu->data.ecx & 0x003fu) == 63u &&
-                ((uint16_t)(cpu->data.edx >> 8u)) == 15u &&
-                (uint8_t)cpu->data.edx == 1u) {
+                ((type_unsigned_16)cpu->data.ecx & 0x003fu) == 63u &&
+                ((type_unsigned_16)(cpu->data.edx >> 8u)) == 15u &&
+                (type_unsigned_8)cpu->data.edx == 1u) {
                 geometry_ok = 1;
             }
             if (active_ah == 0x02u && (cpu->data.eflags & 1u) == 0u) {

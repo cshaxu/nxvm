@@ -5,12 +5,12 @@
 #include "vm/machine/hdd.h"
 #include "vm/machine/media_save.h"
 
-static uint8_t vm_media_provider_fdd_image[80u * 2u * 18u * 512u];
+static type_unsigned_8 vm_media_provider_fdd_image[80u * 2u * 18u * 512u];
 static const C_CHAR vm_media_provider_save_target[] = "vm_media_provider_t283.img";
 static const C_CHAR vm_media_provider_save_collision[] =
     "vm_media_provider_t283.img.ntvdm64.tmp.000";
 
-static C_INT vm_media_provider_write_byte_file(const C_CHAR *file_name, uint8_t byte)
+static C_INT vm_media_provider_write_byte_file(const C_CHAR *file_name, type_unsigned_8 byte)
 {
     STD_FILE *file = STD_FOPEN(file_name, "wb");
     C_INT failed = file == STD_NULL || STD_FWRITE(&byte, sizeof(byte), 1u, file) != 1u;
@@ -19,9 +19,9 @@ static C_INT vm_media_provider_write_byte_file(const C_CHAR *file_name, uint8_t 
     return failed;
 }
 
-static C_INT vm_media_provider_read_byte_file(const C_CHAR *file_name, uint8_t expected)
+static C_INT vm_media_provider_read_byte_file(const C_CHAR *file_name, type_unsigned_8 expected)
 {
-    uint8_t byte = 0u;
+    type_unsigned_8 byte = 0u;
     STD_FILE *file = STD_FOPEN(file_name, "rb");
     C_INT failed = file == STD_NULL || STD_FREAD(&byte, sizeof(byte), 1u, file) != 1u ||
         byte != expected;
@@ -32,11 +32,11 @@ static C_INT vm_media_provider_read_byte_file(const C_CHAR *file_name, uint8_t e
 
 static C_INT vm_media_provider_expect_hdd_capacity(t_hdd *hdd,
     core_machine_media_registry *registry, STD_SIZE_T raw_byte_count,
-    uint8_t expected_first_byte)
+    type_unsigned_8 expected_first_byte)
 {
     core_machine_media_info info;
     core_machine_media_result result;
-    uint8_t tail_byte = 0xffu;
+    type_unsigned_8 tail_byte = 0xffu;
     STD_SIZE_T expected_virtual_byte_count = raw_byte_count == 0u ? 0u :
         ((raw_byte_count + 511u) / 512u) * 512u;
 
@@ -71,13 +71,13 @@ C_INT main(C_VOID)
     core_machine_media_result result;
     t_fdd fdd;
     t_hdd hdd;
-    uint8_t bytes[512] = {0};
-    uint8_t hdd_bytes[513] = {0x5au};
-    uint8_t tail_write = 0xa7u;
-    uint8_t save_byte = 0x5eu;
-    uint8_t collision_byte = 0xc3u;
-    uint64_t fdd_generation;
-    uint64_t hdd_generation;
+    type_unsigned_8 bytes[512] = {0};
+    type_unsigned_8 hdd_bytes[513] = {0x5au};
+    type_unsigned_8 tail_write = 0xa7u;
+    type_unsigned_8 save_byte = 0x5eu;
+    type_unsigned_8 collision_byte = 0xc3u;
+    type_unsigned_64 fdd_generation;
+    type_unsigned_64 hdd_generation;
     type_virtual_address fdd_image;
     type_virtual_address hdd_image;
     STD_FILE *temporary_image;

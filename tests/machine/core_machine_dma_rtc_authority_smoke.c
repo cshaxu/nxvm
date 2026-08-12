@@ -16,20 +16,20 @@ static C_VOID core_machine_dma_rtc_initialize_pic(core_machine *machine)
 }
 
 static C_VOID core_machine_dma_rtc_cmos_write(core_machine *machine,
-    uint8_t index, uint8_t value)
+    type_unsigned_8 index, type_unsigned_8 value)
 {
     (C_VOID)core_machine_bus_write(machine, 0x0070u, index);
     (C_VOID)core_machine_bus_write(machine, 0x0071u, value);
 }
 
-static uint8_t core_machine_dma_rtc_cmos_read(core_machine *machine,
-    uint8_t index)
+static type_unsigned_8 core_machine_dma_rtc_cmos_read(core_machine *machine,
+    type_unsigned_8 index)
 {
-    uint32_t value = 0u;
+    type_unsigned_32 value = 0u;
 
     (C_VOID)core_machine_bus_write(machine, 0x0070u, index);
     (C_VOID)core_machine_bus_read(machine, 0x0071u, &value);
-    return (uint8_t)value;
+    return (type_unsigned_8)value;
 }
 
 int main(C_VOID)
@@ -41,8 +41,8 @@ int main(C_VOID)
     core_machine_run_budget budget = {1u, 0u};
     core_machine_run_result result;
     core_machine *machine = STD_NULL;
-    uint8_t halt = 0xf4u;
-    uint8_t interrupt_vector = 0u;
+    type_unsigned_8 halt = 0xf4u;
+    type_unsigned_8 interrupt_vector = 0u;
     C_INT nmi_masked = 0;
     C_INT interrupt_pending = 0;
     C_INT failed = 0;

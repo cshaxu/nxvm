@@ -480,17 +480,17 @@ typedef struct {
 #define _MakeCPL(cpl) (cpu_state.data.cs.dpl = (cpl))
 
 C_INT core_machine_cpu_read_linear(core_machine_cpu_execution_context *context,
-    uint32_t linear, C_VOID *out_data, uint8_t size);
+    type_unsigned_32 linear, C_VOID *out_data, type_unsigned_8 size);
 C_INT core_machine_cpu_write_linear(core_machine_cpu_execution_context *context,
-    uint32_t linear, const C_VOID *in_data, uint8_t size);
+    type_unsigned_32 linear, const C_VOID *in_data, type_unsigned_8 size);
 C_INT core_machine_cpu_load_segment(core_machine_cpu_execution_context *context,
-    core_machine_cpu_segment segment, uint16_t selector);
+    core_machine_cpu_segment segment, type_unsigned_16 selector);
 C_INT core_machine_cpu_get_code_default_size(
     const core_machine_cpu_execution_context *context);
-uint32_t core_machine_cpu_get_code_base(
+type_unsigned_32 core_machine_cpu_get_code_base(
     const core_machine_cpu_execution_context *context);
 C_VOID core_machine_cpu_set_watchpoint(core_machine_cpu_execution_context *context,
-    core_machine_cpu_watchpoint kind, uint32_t linear);
+    core_machine_cpu_watchpoint kind, type_unsigned_32 linear);
 C_VOID core_machine_cpu_clear_watchpoint(core_machine_cpu_execution_context *context,
     core_machine_cpu_watchpoint kind);
 C_VOID core_machine_cpu_print_registers(

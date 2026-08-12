@@ -5,7 +5,7 @@
 #include "core/machine/vadp.h"
 
 static C_INT core_machine_cga_graphics_write_byte(t_ram *memory,
-    uint32_t offset, uint8_t value)
+    type_unsigned_32 offset, type_unsigned_8 value)
 {
     return core_machine_memory_write_physical(memory,
         CORE_MACHINE_VADP_VIDEO_BASE + offset, (type_virtual_address)&value,

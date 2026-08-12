@@ -17,7 +17,7 @@ typedef struct w32adisp_context w32adisp_context;
 
 w32adisp_context *w32adisp_context_create(C_VOID);
 C_VOID w32adisp_context_destroy(w32adisp_context *context);
-uint64_t w32adisp_context_generation(const w32adisp_context *context);
+type_unsigned_64 w32adisp_context_generation(const w32adisp_context *context);
 
 C_VOID w32adispSetScreen(w32adisp_context *context, WIN32_HWND window,
                         const core_platform_presentation_mailbox *mailbox);

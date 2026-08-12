@@ -6,7 +6,7 @@
 
 typedef struct {
     type_bool level[16];
-    uint32_t count;
+    type_unsigned_32 count;
     core_machine_pic_irq_source *irq0;
 } core_machine_pit_waveform_probe;
 
@@ -22,8 +22,8 @@ static C_VOID core_machine_pit_waveform_output(C_VOID *owner,
     }
 }
 
-static C_VOID core_machine_pit_waveform_write(t_port *port, uint8_t control,
-    uint16_t count)
+static C_VOID core_machine_pit_waveform_write(t_port *port, type_unsigned_8 control,
+    type_unsigned_16 count)
 {
     core_machine_port_write(port, 0x0043u, control);
     core_machine_port_write(port, 0x0040u, count & 0xffu);

@@ -16,13 +16,13 @@ typedef enum core_platform_backing_resource_result {
 } core_platform_backing_resource_result;
 
 typedef core_platform_backing_resource_result (*core_platform_backing_resource_size_provider)(
-    C_VOID *context, uint64_t *out_size);
+    C_VOID *context, type_unsigned_64 *out_size);
 typedef core_platform_backing_resource_result (*core_platform_backing_resource_read_provider)(
-    C_VOID *context, uint64_t offset, C_VOID *buffer, uint32_t requested,
-    uint32_t *out_transferred);
+    C_VOID *context, type_unsigned_64 offset, C_VOID *buffer, type_unsigned_32 requested,
+    type_unsigned_32 *out_transferred);
 typedef core_platform_backing_resource_result (*core_platform_backing_resource_write_provider)(
-    C_VOID *context, uint64_t offset, const C_VOID *buffer, uint32_t requested,
-    uint32_t *out_transferred);
+    C_VOID *context, type_unsigned_64 offset, const C_VOID *buffer, type_unsigned_32 requested,
+    type_unsigned_32 *out_transferred);
 typedef core_platform_backing_resource_result (*core_platform_backing_resource_flush_provider)(
     C_VOID *context);
 typedef core_platform_backing_resource_result (*core_platform_backing_resource_close_provider)(
@@ -46,15 +46,15 @@ C_VOID core_platform_backing_resource_initialize(
     core_platform_backing_resource *resource, C_VOID *context,
     const core_platform_backing_resource_provider *provider);
 type_status core_platform_backing_resource_size(
-    const core_platform_backing_resource *resource, uint64_t *out_size,
+    const core_platform_backing_resource *resource, type_unsigned_64 *out_size,
     core_platform_backing_resource_result *out_result);
 type_status core_platform_backing_resource_read(
-    const core_platform_backing_resource *resource, uint64_t offset,
-    C_VOID *buffer, uint32_t requested, uint32_t *out_transferred,
+    const core_platform_backing_resource *resource, type_unsigned_64 offset,
+    C_VOID *buffer, type_unsigned_32 requested, type_unsigned_32 *out_transferred,
     core_platform_backing_resource_result *out_result);
 type_status core_platform_backing_resource_write(
-    const core_platform_backing_resource *resource, uint64_t offset,
-    const C_VOID *buffer, uint32_t requested, uint32_t *out_transferred,
+    const core_platform_backing_resource *resource, type_unsigned_64 offset,
+    const C_VOID *buffer, type_unsigned_32 requested, type_unsigned_32 *out_transferred,
     core_platform_backing_resource_result *out_result);
 type_status core_platform_backing_resource_flush(
     const core_platform_backing_resource *resource,

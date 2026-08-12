@@ -448,7 +448,7 @@ static C_VOID doDevice(vm_product_console_context *context)
                 {
                     if (STD_ATOI(argArray[4]))
                     {
-                        machineProvider->create_hdd(machineProvider->context, (uint16_t)STD_ATOI(argArray[4]));
+                        machineProvider->create_hdd(machineProvider->context, (type_unsigned_16)STD_ATOI(argArray[4]));
                     }
                     else
                     {

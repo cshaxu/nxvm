@@ -14,14 +14,14 @@ C_VOID vm_platform_host_surface_context_initialize(
 C_VOID vm_platform_host_surface_lease_initialize(
     vm_platform_host_surface_lease *lease)
 {
-    if (lease != STD_NULL) STD_ATOMIC_INIT(&lease->owner, (uintptr_t)0u);
+    if (lease != STD_NULL) STD_ATOMIC_INIT(&lease->owner, (type_unsigned_pointer)0u);
 }
 
 type_status vm_platform_host_surface_lease_acquire(
     vm_platform_host_surface_lease *lease, const C_VOID *owner)
 {
-    uintptr_t expected = (uintptr_t)0u;
-    uintptr_t token = (uintptr_t)owner;
+    type_unsigned_pointer expected = (type_unsigned_pointer)0u;
+    type_unsigned_pointer token = (type_unsigned_pointer)owner;
 
     if (lease == STD_NULL || owner == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     if (STD_ATOMIC_COMPARE_EXCHANGE_STRONG(&lease->owner, &expected, token)) {
@@ -34,16 +34,16 @@ type_status vm_platform_host_surface_lease_acquire(
 type_status vm_platform_host_surface_lease_release(
     vm_platform_host_surface_lease *lease, const C_VOID *owner)
 {
-    uintptr_t expected = (uintptr_t)owner;
+    type_unsigned_pointer expected = (type_unsigned_pointer)owner;
 
     if (lease == STD_NULL || owner == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
     return STD_ATOMIC_COMPARE_EXCHANGE_STRONG(&lease->owner, &expected,
-        (uintptr_t)0u) ? TYPE_STATUS_OK : TYPE_STATUS_INVALID_STATE;
+        (type_unsigned_pointer)0u) ? TYPE_STATUS_OK : TYPE_STATUS_INVALID_STATE;
 }
 
 C_INT vm_platform_host_surface_lease_is_owned_by(
     const vm_platform_host_surface_lease *lease, const C_VOID *owner)
 {
     return lease != STD_NULL && owner != STD_NULL &&
-        STD_ATOMIC_LOAD(&lease->owner) == (uintptr_t)owner;
+        STD_ATOMIC_LOAD(&lease->owner) == (type_unsigned_pointer)owner;
 }

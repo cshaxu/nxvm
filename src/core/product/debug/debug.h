@@ -28,14 +28,14 @@ typedef struct core_product_debug_context {
     C_CHAR command_buffer[0x100];
     C_CHAR command_copy[0x100];
     C_CHAR file_name[0x100];
-    uint16_t dump_segment;
-    uint16_t dump_offset;
-    uint16_t assemble_segment;
-    uint16_t assemble_offset;
-    uint16_t unassemble_segment;
-    uint16_t unassemble_offset;
-    uint16_t parsed_segment;
-    uint16_t parsed_offset;
+    type_unsigned_16 dump_segment;
+    type_unsigned_16 dump_offset;
+    type_unsigned_16 assemble_segment;
+    type_unsigned_16 assemble_offset;
+    type_unsigned_16 unassemble_segment;
+    type_unsigned_16 unassemble_offset;
+    type_unsigned_16 parsed_segment;
+    type_unsigned_16 parsed_offset;
 } core_product_debug_context;
 
 C_VOID core_product_debug_context_initialize(core_product_debug_context *context);

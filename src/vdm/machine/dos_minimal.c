@@ -73,7 +73,7 @@ type_status vdm_machine_dos_minimal_reset(
 
 type_status vdm_machine_dos_minimal_tick(
     vdm_machine_dos_minimal *session,
-    uint32_t ticks)
+    type_unsigned_32 ticks)
 {
     if (session == STD_NULL) {
         return TYPE_STATUS_INVALID_ARGUMENT;
@@ -84,7 +84,7 @@ type_status vdm_machine_dos_minimal_tick(
 
 type_status vdm_machine_dos_minimal_inject_key(
     vdm_machine_dos_minimal *session,
-    uint8_t scan_code)
+    type_unsigned_8 scan_code)
 {
     type_status status;
 
@@ -100,9 +100,9 @@ type_status vdm_machine_dos_minimal_inject_key(
 
 type_status vdm_machine_dos_minimal_write_text(
     vdm_machine_dos_minimal *session,
-    uint16_t cell,
-    uint8_t character,
-    uint8_t attribute)
+    type_unsigned_16 cell,
+    type_unsigned_8 character,
+    type_unsigned_8 attribute)
 {
     if (session == STD_NULL || cell >= CORE_MACHINE_TEXT_CELLS) {
         return TYPE_STATUS_INVALID_ARGUMENT;
@@ -125,8 +125,8 @@ type_status vdm_machine_dos_minimal_get_snapshot(
 
 type_status vdm_machine_dos_minimal_port_read(
     vdm_machine_dos_minimal *session,
-    uint16_t port,
-    uint32_t *out_value)
+    type_unsigned_16 port,
+    type_unsigned_32 *out_value)
 {
     type_status status;
 

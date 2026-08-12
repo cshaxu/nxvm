@@ -187,7 +187,7 @@ C_VOID core_machine_cpu_execution_refresh(
 C_VOID core_machine_cpu_execution_finalize(
     core_machine_cpu_execution_context *context);
 core_machine_cpu_instruction_metadata core_machine_cpu_instruction_metadata_get(
-    core_machine_cpu_instruction_space space, uint8_t opcode, uint8_t modrm);
+    core_machine_cpu_instruction_space space, type_unsigned_8 opcode, type_unsigned_8 modrm);
 
 #define VCPUINS_EXCEPT_DE  0x00000001 /* 00 - fault: divide error */
 #define VCPUINS_EXCEPT_DB  0x00000002 /* 01 - trap/fault: debug exception */

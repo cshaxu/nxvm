@@ -9,11 +9,11 @@
 #define VM_ROM_EGA_IMAGE_BYTES (1440u * 1024u)
 #define VM_ROM_EGA_BOOT_BUDGET 500000u
 
-static uint8_t vm_rom_ega_image[VM_ROM_EGA_IMAGE_BYTES];
+static type_unsigned_8 vm_rom_ega_image[VM_ROM_EGA_IMAGE_BYTES];
 
 static C_INT vm_rom_ega_write_fixture(C_CHAR path[MAX_PATH])
 {
-    static const uint8_t boot_code[] = {
+    static const type_unsigned_8 boot_code[] = {
         0x31u, 0xc0u, 0x8eu, 0xd8u,             /* xor ax,ax; mov ds,ax */
         0xb8u, 0x0du, 0x00u, 0xcdu, 0x10u,      /* mov ax,000dh; int 10h */
         0xb4u, 0x0fu, 0xcdu, 0x10u,             /* mov ah,0fh; int 10h */
@@ -58,10 +58,10 @@ C_INT main(C_VOID)
     core_machine_display_snapshot snapshot;
     vm_session *session = STD_NULL;
     C_CHAR path[MAX_PATH] = {0};
-    uint16_t ega_query = 0u;
-    uint16_t text_query = 0u;
-    uint8_t mode = 0u;
-    uint32_t instruction;
+    type_unsigned_16 ega_query = 0u;
+    type_unsigned_16 text_query = 0u;
+    type_unsigned_8 mode = 0u;
+    type_unsigned_32 instruction;
     C_INT saw_ega = 0;
     C_INT saw_text = 0;
 

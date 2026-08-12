@@ -10,12 +10,12 @@
 #define VM_INT13_HDD_FDD_BYTES (1440u * 1024u)
 #define VM_INT13_HDD_BOOT_BUDGET 500000u
 
-static uint8_t vm_int13_hdd_fdd[VM_INT13_HDD_FDD_BYTES];
+static type_unsigned_8 vm_int13_hdd_fdd[VM_INT13_HDD_FDD_BYTES];
 
 static C_INT vm_int13_hdd_write_fixture(C_CHAR fdd_path[MAX_PATH],
     C_CHAR hdd_path[MAX_PATH])
 {
-    static const uint8_t boot_code[] = {
+    static const type_unsigned_8 boot_code[] = {
         0x31u, 0xc0u,                         /* xor ax,ax */
         0x8eu, 0xd8u,                         /* mov ds,ax */
         0xb4u, 0x01u,                         /* mov ah,01h */
@@ -89,7 +89,7 @@ static C_INT vm_int13_hdd_write_fixture(C_CHAR fdd_path[MAX_PATH],
         0xc7u, 0x06u, 0x20u, 0x05u, 0x5au, 0xa5u, /* mov word [0520h],A55Ah */
         0xf4u, 0xebu, 0xfeu                   /* hlt; jmp $ */
     };
-    uint8_t hdd_sector[512] = {0};
+    type_unsigned_8 hdd_sector[512] = {0};
     STD_FILE *file;
     DWORD length;
 
@@ -139,32 +139,32 @@ C_INT main(C_VOID)
     C_CHAR fdd_path[MAX_PATH] = {0};
     C_CHAR hdd_path[MAX_PATH] = {0};
     vm_session_config fixture_config = config;
-    uint16_t result_ax = 0u;
-    uint16_t flags = 0u;
-    uint16_t sectors_high = 0u;
-    uint16_t sectors_low = 0u;
-    uint16_t parameter_segment = 0u;
-    uint16_t parameter_offset = 0u;
-    uint8_t sectors_per_track = 0u;
-    uint8_t hdd_count = 0u;
-    uint8_t cmos_fixed_disk_type = 0u;
-    uint8_t drive_type = 0u;
-    uint8_t cmos_extended_disk_type = 0u;
-    uint16_t extension_ax = 0u;
-    uint16_t extension_bx = 0u;
-    uint16_t extension_flags = 0u;
-    uint16_t initial_status_ax = 0u;
-    uint16_t initial_status_flags = 0u;
-    uint16_t parameters_ax = 0u;
-    uint16_t post_type_status_ax = 0u;
-    uint16_t post_type_status_flags = 0u;
-    uint16_t write_ax = 0u;
-    uint16_t write_flags = 0u;
-    uint16_t read_ax = 0u;
-    uint16_t read_flags = 0u;
-    uint16_t read_word = 0u;
-    uint16_t completed = 0u;
-    uint32_t instruction;
+    type_unsigned_16 result_ax = 0u;
+    type_unsigned_16 flags = 0u;
+    type_unsigned_16 sectors_high = 0u;
+    type_unsigned_16 sectors_low = 0u;
+    type_unsigned_16 parameter_segment = 0u;
+    type_unsigned_16 parameter_offset = 0u;
+    type_unsigned_8 sectors_per_track = 0u;
+    type_unsigned_8 hdd_count = 0u;
+    type_unsigned_8 cmos_fixed_disk_type = 0u;
+    type_unsigned_8 drive_type = 0u;
+    type_unsigned_8 cmos_extended_disk_type = 0u;
+    type_unsigned_16 extension_ax = 0u;
+    type_unsigned_16 extension_bx = 0u;
+    type_unsigned_16 extension_flags = 0u;
+    type_unsigned_16 initial_status_ax = 0u;
+    type_unsigned_16 initial_status_flags = 0u;
+    type_unsigned_16 parameters_ax = 0u;
+    type_unsigned_16 post_type_status_ax = 0u;
+    type_unsigned_16 post_type_status_flags = 0u;
+    type_unsigned_16 write_ax = 0u;
+    type_unsigned_16 write_flags = 0u;
+    type_unsigned_16 read_ax = 0u;
+    type_unsigned_16 read_flags = 0u;
+    type_unsigned_16 read_word = 0u;
+    type_unsigned_16 completed = 0u;
+    type_unsigned_32 instruction;
     C_INT passed = 0;
 
     if (!vm_int13_hdd_write_fixture(fdd_path, hdd_path)) goto done;
@@ -187,7 +187,7 @@ C_INT main(C_VOID)
                 sizeof(parameter_segment)) != TYPE_STATUS_OK || core_machine_memory_read(
                 session->core_machine, 0x050au, &parameter_offset,
                 sizeof(parameter_offset)) != TYPE_STATUS_OK || core_machine_memory_read(
-                session->core_machine, (uint32_t)VBIOS_ADDR_START_SEG * 16u +
+                session->core_machine, (type_unsigned_32)VBIOS_ADDR_START_SEG * 16u +
                 VBIOS_ADDR_HDD_PARAM + 14u, &sectors_per_track,
                 sizeof(sectors_per_track)) != TYPE_STATUS_OK || core_machine_memory_read(
                 session->core_machine, 0x050cu, &cmos_fixed_disk_type,

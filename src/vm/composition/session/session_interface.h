@@ -13,7 +13,7 @@ typedef struct vm_session_config {
     const C_CHAR *fdd_image;
     const C_CHAR *hdd_image;
     C_INT create_fdd;
-    uint16_t create_hdd_cylinders;
+    type_unsigned_16 create_hdd_cylinders;
     C_INT boot_hdd;
     core_machine_cpu_profile cpu_profile;
     core_machine_fpu_profile fpu_profile;
@@ -22,8 +22,8 @@ typedef struct vm_session_config {
 typedef struct vm_session vm_session;
 
 typedef struct vm_session_reset_vector {
-    uint16_t cs;
-    uint16_t ip;
+    type_unsigned_16 cs;
+    type_unsigned_16 ip;
 } vm_session_reset_vector;
 
 C_INT vm_session_create(const vm_session_config *config, vm_session **out_session);

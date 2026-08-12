@@ -55,7 +55,7 @@ static C_INT vm_t287_wait_for_text(const vm_session *session, const C_CHAR *text
     return 0;
 }
 
-static C_INT vm_t287_submit(const vm_session *session, const uint8_t *codes,
+static C_INT vm_t287_submit(const vm_session *session, const type_unsigned_8 *codes,
     STD_SIZE_T count)
 {
     STD_SIZE_T index;
@@ -136,14 +136,14 @@ C_INT main(C_INT argc, C_CHAR **argv)
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
-    const uint8_t enter[] = {0x1cu};
-    const uint8_t select_c[] = {0x2eu, 0x2au, 0x27u, 0xaau, 0x1cu};
+    const type_unsigned_8 enter[] = {0x1cu};
+    const type_unsigned_8 select_c[] = {0x2eu, 0x2au, 0x27u, 0xaau, 0x1cu};
     HANDLE thread = STD_NULL;
     vm_session *session = STD_NULL;
-    uint8_t hdd_count = 0u;
-    uint8_t hdd_bda[4] = {0};
+    type_unsigned_8 hdd_count = 0u;
+    type_unsigned_8 hdd_bda[4] = {0};
     C_UINT ata_commands = 0u;
-    uint8_t last_command = 0u;
+    type_unsigned_8 last_command = 0u;
     C_INT c_present;
     C_INT c_absent;
     const C_CHAR *stage = "create";

@@ -5,10 +5,10 @@
 
 static C_INT core_machine_real_mode_tick_case(
     const C_CHAR *name,
-    const uint8_t *program, STD_SIZE_T program_bytes,
+    const type_unsigned_8 *program, STD_SIZE_T program_bytes,
     core_machine_cpu_profile profile, type_status expected_status,
-    core_machine_stop_reason expected_reason, uint64_t expected_executed,
-    uint64_t expected_ticks)
+    core_machine_stop_reason expected_reason, type_unsigned_64 expected_executed,
+    type_unsigned_64 expected_ticks)
 {
     const core_machine_config config = {
         .cpu_profile = profile,
@@ -52,12 +52,12 @@ static C_INT core_machine_real_mode_tick_case(
 
 C_INT main(C_VOID)
 {
-    static const uint8_t mov_ax[] = { 0xb8u, 0x34u, 0x12u };
-    static const uint8_t out_80[] = { 0xe6u, 0x80u };
-    static const uint8_t int_20[] = { 0xcdu, 0x20u };
-    static const uint8_t prefixed_nop[] = { 0x26u, 0x90u };
-    static const uint8_t halt[] = { 0xf4u };
-    static const uint8_t operand_size_prefix[] = { 0x66u, 0x90u };
+    static const type_unsigned_8 mov_ax[] = { 0xb8u, 0x34u, 0x12u };
+    static const type_unsigned_8 out_80[] = { 0xe6u, 0x80u };
+    static const type_unsigned_8 int_20[] = { 0xcdu, 0x20u };
+    static const type_unsigned_8 prefixed_nop[] = { 0x26u, 0x90u };
+    static const type_unsigned_8 halt[] = { 0xf4u };
+    static const type_unsigned_8 operand_size_prefix[] = { 0x66u, 0x90u };
     C_INT failed = 0;
 
     failed |= core_machine_real_mode_tick_case("mov", mov_ax, sizeof(mov_ax),

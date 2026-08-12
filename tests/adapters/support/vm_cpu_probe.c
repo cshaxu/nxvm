@@ -79,7 +79,7 @@ C_INT vm_session_cpu_probe_create(test_vm_cpu_probe **out_probe)
 
 C_INT vm_session_cpu_probe_step(
     test_vm_cpu_probe *probe,
-    const uint8_t *bytes,
+    const type_unsigned_8 *bytes,
     STD_SIZE_T byte_count,
     vm_session_cpu_probe_capture *out_capture)
 {

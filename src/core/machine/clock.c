@@ -38,19 +38,19 @@ C_VOID core_machine_clock_domain_reset(core_machine_clock_domain *domain)
     domain->delivered_ticks = 0u;
 }
 
-uint64_t core_machine_clock_domain_advance(core_machine_clock_domain *domain,
-    uint64_t elapsed_ticks)
+type_unsigned_64 core_machine_clock_domain_advance(core_machine_clock_domain *domain,
+    type_unsigned_64 elapsed_ticks)
 {
-    uint64_t ticks;
-    uint64_t remainder;
-    uint64_t converted;
+    type_unsigned_64 ticks;
+    type_unsigned_64 remainder;
+    type_unsigned_64 converted;
 
     if (domain == STD_NULL || domain->denominator == 0u) return 0u;
     ticks = (elapsed_ticks / domain->denominator) * domain->numerator;
     remainder = (elapsed_ticks % domain->denominator) * domain->numerator +
         domain->phase;
     converted = ticks + remainder / domain->denominator;
-    domain->phase = (uint32_t)(remainder % domain->denominator);
+    domain->phase = (type_unsigned_32)(remainder % domain->denominator);
     domain->delivered_ticks += converted;
     return converted;
 }

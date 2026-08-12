@@ -7,14 +7,14 @@
 #include "../support/core_machine_executor_fixture.h"
 
 typedef struct port_fixture {
-    uint16_t last_port;
-    uint32_t value;
+    type_unsigned_16 last_port;
+    type_unsigned_32 value;
 } port_fixture;
 
 static type_status port_read(
     C_VOID *owner,
-    uint16_t port,
-    uint32_t *out_value)
+    type_unsigned_16 port,
+    type_unsigned_32 *out_value)
 {
     port_fixture *fixture = (port_fixture *)owner;
 
@@ -25,8 +25,8 @@ static type_status port_read(
 
 static type_status port_write(
     C_VOID *owner,
-    uint16_t port,
-    uint32_t value)
+    type_unsigned_16 port,
+    type_unsigned_32 value)
 {
     port_fixture *fixture = (port_fixture *)owner;
 
@@ -48,8 +48,8 @@ C_INT main(C_VOID)
     core_machine_port_provider ops = { port_read, port_write };
     port_fixture first_port = { 0u, 0u };
     port_fixture second_port = { 0u, 0u };
-    uint8_t value;
-    uint32_t port_value;
+    type_unsigned_8 value;
+    type_unsigned_32 port_value;
     C_INT result = 0;
 
     result |= expect_status(test_core_machine_create_executor(

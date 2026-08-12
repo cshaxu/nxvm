@@ -16,13 +16,13 @@
 #include "vm/profile/default_profile/firmware/qdcga.h"
 #include "vm/profile/default_profile/firmware/qdkeyb.h"
 
-static uint16_t vm_session_profile_firmware_assemble(const C_CHAR *statement,
-    uint8_t **out_bytes)
+static type_unsigned_16 vm_session_profile_firmware_assemble(const C_CHAR *statement,
+    type_unsigned_8 **out_bytes)
 {
-    uint32_t length;
+    type_unsigned_32 length;
     STD_SIZE_T capacity;
     STD_SIZE_T index;
-    uint8_t *bytes;
+    type_unsigned_8 *bytes;
 
     if (out_bytes == STD_NULL || statement == STD_NULL) return 0u;
     *out_bytes = STD_NULL;
@@ -31,7 +31,7 @@ static uint16_t vm_session_profile_firmware_assemble(const C_CHAR *statement,
         if (statement[index] == '\n') capacity++;
     }
     if (capacity > TYPE_MAX_UNSIGNED_16 / 15u) return 0u;
-    bytes = (uint8_t *)STD_MALLOC(capacity * 15u);
+    bytes = (type_unsigned_8 *)STD_MALLOC(capacity * 15u);
     if (bytes == STD_NULL) return 0u;
     length = core_product_utils_aasm32x(statement, bytes, TYPE_FALSE);
     if (length == 0u || length > TYPE_MAX_UNSIGNED_16) {
@@ -39,14 +39,14 @@ static uint16_t vm_session_profile_firmware_assemble(const C_CHAR *statement,
         return 0u;
     }
     *out_bytes = bytes;
-    return (uint16_t)length;
+    return (type_unsigned_16)length;
 }
 
 static C_VOID vm_session_profile_firmware_add_post(vm_session *session,
     const C_CHAR *statement)
 {
-    uint8_t *bytes;
-    uint16_t length;
+    type_unsigned_8 *bytes;
+    type_unsigned_16 length;
 
     if (session == STD_NULL) return;
     length = vm_session_profile_firmware_assemble(statement, &bytes);
@@ -54,10 +54,10 @@ static C_VOID vm_session_profile_firmware_add_post(vm_session *session,
 }
 
 static C_VOID vm_session_profile_firmware_add_interrupt(vm_session *session,
-    const C_CHAR *statement, uint8_t vector)
+    const C_CHAR *statement, type_unsigned_8 vector)
 {
-    uint8_t *bytes;
-    uint16_t length;
+    type_unsigned_8 *bytes;
+    type_unsigned_16 length;
 
     if (session == STD_NULL) return;
     length = vm_session_profile_firmware_assemble(statement, &bytes);
@@ -68,8 +68,8 @@ static C_VOID vm_session_profile_firmware_add_interrupt(vm_session *session,
 static C_VOID vm_session_profile_firmware_set_boot(vm_session *session,
     const C_CHAR *statement)
 {
-    uint8_t *bytes;
-    uint16_t length;
+    type_unsigned_8 *bytes;
+    type_unsigned_16 length;
 
     if (session == STD_NULL) return;
     length = vm_session_profile_firmware_assemble(statement, &bytes);
@@ -85,7 +85,7 @@ static C_INT vm_session_profile_firmware_hook_is_valid(
 
 static C_VOID vm_session_profile_firmware_apply(
     vm_session *session, vm_profile_default_pc_at_firmware_hook hook,
-    uint8_t vector)
+    type_unsigned_8 vector)
 {
     if (session == STD_NULL) return;
     switch (hook) {

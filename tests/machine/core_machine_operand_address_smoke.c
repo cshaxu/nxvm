@@ -16,13 +16,13 @@ typedef struct oas_machine {
 } oas_machine;
 
 typedef struct oas_port_state {
-    uint32_t reads;
-    uint32_t writes;
-    uint32_t last_write;
+    type_unsigned_32 reads;
+    type_unsigned_32 writes;
+    type_unsigned_32 last_write;
 } oas_port_state;
 
-static type_status oas_port_read(C_VOID *owner, uint16_t port,
-    uint32_t *out_value)
+static type_status oas_port_read(C_VOID *owner, type_unsigned_16 port,
+    type_unsigned_32 *out_value)
 {
     oas_port_state *state = (oas_port_state *)owner;
 
@@ -33,7 +33,7 @@ static type_status oas_port_read(C_VOID *owner, uint16_t port,
     return TYPE_STATUS_OK;
 }
 
-static type_status oas_port_write(C_VOID *owner, uint16_t port, uint32_t value)
+static type_status oas_port_write(C_VOID *owner, type_unsigned_16 port, type_unsigned_32 value)
 {
     oas_port_state *state = (oas_port_state *)owner;
 
@@ -62,7 +62,7 @@ static const core_machine_execution_provider oas_provider = {
     oas_reset, STD_NULL, STD_NULL
 };
 
-static C_INT oas_write(oas_machine *state, uint32_t address,
+static C_INT oas_write(oas_machine *state, type_unsigned_32 address,
     const C_VOID *bytes, STD_SIZE_T byte_count)
 {
     return state != STD_NULL && state->machine != STD_NULL &&
@@ -78,21 +78,21 @@ static C_INT oas_prepare(oas_machine *state, core_machine_cpu_profile profile,
         .cpu_profile = profile,
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
-    const uint8_t gdt_pointer[] = { 0x1fu,0,0,0x03u,0,0 };
-    uint8_t gdt[] = {
+    const type_unsigned_8 gdt_pointer[] = { 0x1fu,0,0,0x03u,0,0 };
+    type_unsigned_8 gdt[] = {
         0,0,0,0,0,0,0,0,
         0xffu,0xffu,0,0x20u,0,0x9au,0,0,
         0xffu,0xffu,0,0x30u,0,0x92u,0xcfu,0,
         0xffu,0xffu,0,0x40u,0,0x92u,0x40u,0
     };
-    const uint8_t real_code[] = {
+    const type_unsigned_8 real_code[] = {
         0x0fu,0x01u,0x16u,0x00u,0x01u,
         0xb8u,0x01u,0x00u,0x0fu,0x01u,0xf0u,
         0xb8u,0x10u,0x00u,0x8eu,0xd8u,0x8eu,0xc0u,
         0xb8u,0x18u,0x00u,0x8eu,0xd0u,
         0xbcu,0x00u,0x80u,0xeau,0x00u,0x00u,0x08u,0x00u
     };
-    const uint8_t halt[] = { 0xf4u };
+    const type_unsigned_8 halt[] = { 0xf4u };
     const core_machine_run_budget budget = { 96u, 0u };
     core_machine_run_result result;
 
@@ -120,7 +120,7 @@ static C_INT oas_prepare(oas_machine *state, core_machine_cpu_profile profile,
     return 1;
 }
 
-static C_INT oas_run_halt(oas_machine *state, const uint8_t *code,
+static C_INT oas_run_halt(oas_machine *state, const type_unsigned_8 *code,
     STD_SIZE_T code_size, t_cpu *out_cpu)
 {
     const core_machine_run_budget budget = { 48u, 0u };
@@ -135,7 +135,7 @@ static C_INT oas_run_halt(oas_machine *state, const uint8_t *code,
     return 1;
 }
 
-static C_INT oas_run_gp(oas_machine *state, const uint8_t *code,
+static C_INT oas_run_gp(oas_machine *state, const type_unsigned_8 *code,
     STD_SIZE_T code_size, t_cpu *out_cpu)
 {
     const core_machine_run_budget budget = { 16u, 0u };
@@ -160,23 +160,23 @@ static C_INT oas_run_gp(oas_machine *state, const uint8_t *code,
 
 static C_INT oas_test_prefix_and_ea(C_VOID)
 {
-    static const uint8_t repeat_prefix[] = {
+    static const type_unsigned_8 repeat_prefix[] = {
         0x66u,0x66u,0xb8u,0x34u,0x12u,0xb9u,0x78u,0x56u,0x34u,0x12u,0xf4u
     };
-    static const uint8_t address16[] = { 0x67u,0x8bu,0x00u,0xf4u };
-    static const uint8_t operand16[] = { 0x66u,0x8bu,0x00u,0xf4u };
-    static const uint8_t moffs16[] = { 0x67u,0xa1u,0x60u,0x00u,0xf4u };
-    static const uint8_t sib_scaled[] = { 0x8bu,0x44u,0x88u,0xfcu,0xf4u };
-    static const uint8_t sib_absolute[] = {
+    static const type_unsigned_8 address16[] = { 0x67u,0x8bu,0x00u,0xf4u };
+    static const type_unsigned_8 operand16[] = { 0x66u,0x8bu,0x00u,0xf4u };
+    static const type_unsigned_8 moffs16[] = { 0x67u,0xa1u,0x60u,0x00u,0xf4u };
+    static const type_unsigned_8 sib_scaled[] = { 0x8bu,0x44u,0x88u,0xfcu,0xf4u };
+    static const type_unsigned_8 sib_absolute[] = {
         0x8bu,0x04u,0x25u,0x20u,0x01u,0x00u,0x00u,0xf4u
     };
-    static const uint8_t ss_default[] = { 0x8bu,0x45u,0x00u,0xf4u };
-    static const uint8_t ds_override[] = { 0x3eu,0x8bu,0x45u,0x00u,0xf4u };
-    const uint32_t word_source = 0x1234beefu;
-    const uint32_t sib_source = 0x87654321u;
-    const uint32_t absolute_source = 0x0badf00du;
-    const uint32_t ds_source = 0x13579bdfu;
-    const uint32_t ss_source = 0x2468ace0u;
+    static const type_unsigned_8 ss_default[] = { 0x8bu,0x45u,0x00u,0xf4u };
+    static const type_unsigned_8 ds_override[] = { 0x3eu,0x8bu,0x45u,0x00u,0xf4u };
+    const type_unsigned_32 word_source = 0x1234beefu;
+    const type_unsigned_32 sib_source = 0x87654321u;
+    const type_unsigned_32 absolute_source = 0x0badf00du;
+    const type_unsigned_32 ds_source = 0x13579bdfu;
+    const type_unsigned_32 ss_source = 0x2468ace0u;
     oas_machine state;
     t_cpu cpu;
     C_INT failed = !oas_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);
@@ -247,22 +247,22 @@ static C_INT oas_test_prefix_and_ea(C_VOID)
 
 static C_INT oas_test_16bit_code_and_faults(C_VOID)
 {
-    static const uint8_t defaults16[] = {
+    static const type_unsigned_8 defaults16[] = {
         0x66u,0xb8u,0x78u,0x56u,0x34u,0x12u,0xb9u,0x34u,0x12u,0xf4u
     };
-    static const uint8_t address32[] = { 0x67u,0x8bu,0x00u,0xf4u };
-    static const uint8_t invalid_data[] = {
+    static const type_unsigned_8 address32[] = { 0x67u,0x8bu,0x00u,0xf4u };
+    static const type_unsigned_8 invalid_data[] = {
         0x8bu,0x05u,0x20u,0x00u,0x00u,0x00u
     };
-    static const uint8_t invalid_expand_down[] = {
+    static const type_unsigned_8 invalid_expand_down[] = {
         0x8bu,0x05u,0x10u,0x00u,0x00u,0x00u
     };
-    static const uint8_t nop[] = { 0x90u };
-    static const uint8_t halt[] = { 0xf4u };
+    static const type_unsigned_8 nop[] = { 0x90u };
+    static const type_unsigned_8 halt[] = { 0xf4u };
     oas_machine state;
     t_cpu before;
     t_cpu after;
-    const uint32_t source = 0xcafebabeu;
+    const type_unsigned_32 source = 0xcafebabeu;
     C_INT failed = !oas_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 0);
 
     if (!failed) {
@@ -316,7 +316,7 @@ static C_INT oas_test_16bit_code_and_faults(C_VOID)
     return !failed;
 }
 
-static C_VOID oas_set_stack32(oas_machine *state, uint32_t esp)
+static C_VOID oas_set_stack32(oas_machine *state, type_unsigned_32 esp)
 {
     state->machine->executor_cpu.data.ss.seg.data.big = TYPE_TRUE;
     state->machine->executor_cpu.data.ss.limit = 0xffffffffu;
@@ -325,20 +325,20 @@ static C_VOID oas_set_stack32(oas_machine *state, uint32_t esp)
 
 static C_INT oas_test_stack_forms(C_VOID)
 {
-    static const uint8_t push_pop32[] = { 0x50u,0x59u,0xf4u };
-    static const uint8_t push_pop16[] = { 0x66u,0x50u,0x66u,0x5bu,0xf4u };
-    static const uint8_t pusha[] = { 0x60u,0xf4u };
-    static const uint8_t popa[] = { 0x61u,0xf4u };
-    static const uint8_t pushf[] = { 0x9cu,0xf4u };
-    static const uint8_t popf[] = { 0x9du,0xf4u };
-    static const uint8_t enter_leave[] = {
+    static const type_unsigned_8 push_pop32[] = { 0x50u,0x59u,0xf4u };
+    static const type_unsigned_8 push_pop16[] = { 0x66u,0x50u,0x66u,0x5bu,0xf4u };
+    static const type_unsigned_8 pusha[] = { 0x60u,0xf4u };
+    static const type_unsigned_8 popa[] = { 0x61u,0xf4u };
+    static const type_unsigned_8 pushf[] = { 0x9cu,0xf4u };
+    static const type_unsigned_8 popf[] = { 0x9du,0xf4u };
+    static const type_unsigned_8 enter_leave[] = {
         0xc8u,0x10u,0x00u,0x02u,0xc9u,0xf4u
     };
-    static const uint8_t enter_leave16[] = {
+    static const type_unsigned_8 enter_leave16[] = {
         0x66u,0xc8u,0x08u,0x00u,0x01u,0x66u,0xc9u,0xf4u
     };
-    const uint32_t ignored_slot = 0xfeedfaceu;
-    const uint32_t flags = VCPU_EFLAGS_IF | 0x00000002u;
+    const type_unsigned_32 ignored_slot = 0xfeedfaceu;
+    const type_unsigned_32 flags = VCPU_EFLAGS_IF | 0x00000002u;
     oas_machine state;
     t_cpu before;
     t_cpu after;
@@ -424,12 +424,12 @@ static C_INT oas_test_stack_forms(C_VOID)
 
 static C_INT oas_test_io_strings(C_VOID)
 {
-    static const uint8_t outsb[] = { 0x66u,0xbau,0xe0u,0,0xbeu,0,1,0,0,
+    static const type_unsigned_8 outsb[] = { 0x66u,0xbau,0xe0u,0,0xbeu,0,1,0,0,
         0xb9u,2,0,0,0,0xf3u,0x6eu,0xf4u };
-    static const uint8_t insb[] = { 0x66u,0xbau,0xe0u,0,0xbfu,0,1,0,0,
+    static const type_unsigned_8 insb[] = { 0x66u,0xbau,0xe0u,0,0xbfu,0,1,0,0,
         0xb9u,2,0,0,0,0xf3u,0x6cu,0xf4u };
-    static const uint8_t source[] = { 0x31u,0x42u };
-    uint8_t destination[2] = {0};
+    static const type_unsigned_8 source[] = { 0x31u,0x42u };
+    type_unsigned_8 destination[2] = {0};
     oas_port_state port = {0};
     oas_machine state;
     t_cpu after;
@@ -458,18 +458,18 @@ static C_INT oas_test_io_strings(C_VOID)
 
 static C_INT oas_test_memory_strings(C_VOID)
 {
-    static const uint8_t movs[] = { 0xbeu,0,1,0,0,0xbfu,0,2,0,0,
+    static const type_unsigned_8 movs[] = { 0xbeu,0,1,0,0,0xbfu,0,2,0,0,
         0xb9u,2,0,0,0,0xf3u,0xa4u,0xf4u };
-    static const uint8_t stos_lods[] = { 0xb8u,0x5au,0,0,0,0xbfu,0,3,0,0,
+    static const type_unsigned_8 stos_lods[] = { 0xb8u,0x5au,0,0,0,0xbfu,0,3,0,0,
         0xaau,0xbeu,0,3,0,0,0xacu,0xf4u };
-    static const uint8_t df_movs[] = { 0xbeu,1,1,0,0,0xbfu,1,2,0,0,
+    static const type_unsigned_8 df_movs[] = { 0xbeu,1,1,0,0,0xbfu,1,2,0,0,
         0xfdu,0xa4u,0xf4u };
-    static const uint8_t wrap_movs[] = { 0x66u,0xbeu,0xffu,0xffu,
+    static const type_unsigned_8 wrap_movs[] = { 0x66u,0xbeu,0xffu,0xffu,
         0x66u,0xbfu,0xffu,0xffu,0x66u,0xb9u,1,0,0xf3u,0x67u,0xa4u,0xf4u };
-    static const uint8_t limited_movs[] = { 0xbeu,0,1,0,0,0xbfu,0,2,0,0,
+    static const type_unsigned_8 limited_movs[] = { 0xbeu,0,1,0,0,0xbfu,0,2,0,0,
         0xb9u,1,0,0,0,0xf3u,0xa4u };
-    static const uint8_t source[] = { 0x31u,0x42u };
-    uint8_t destination[2] = {0};
+    static const type_unsigned_8 source[] = { 0x31u,0x42u };
+    type_unsigned_8 destination[2] = {0};
     oas_machine state;
     t_cpu after;
     C_INT failed = !oas_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386, 1);

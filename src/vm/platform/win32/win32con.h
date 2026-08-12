@@ -13,7 +13,7 @@ extern "C" {
 typedef struct vm_platform_run_context vm_platform_run_context;
 typedef struct vm_platform_run_handle vm_platform_run_handle;
 
-uint16_t vm_platform_win32con_decode_scan_code(uint16_t raw_scan_code,
+type_unsigned_16 vm_platform_win32con_decode_scan_code(type_unsigned_16 raw_scan_code,
     DWORD control_key_state);
 
 C_VOID vm_platform_win32con_display_set_screen(const vm_platform_run_context *context);

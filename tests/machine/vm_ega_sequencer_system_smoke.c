@@ -9,9 +9,9 @@
 C_INT main(C_VOID)
 {
     vm_session *session = STD_NULL;
-    uint8_t aperture_value = 0x5au;
-    uint8_t read_value = 0u;
-    uint32_t port_value = 0u;
+    type_unsigned_8 aperture_value = 0x5au;
+    type_unsigned_8 read_value = 0u;
+    type_unsigned_32 port_value = 0u;
     C_INT failed = 0;
 
     if (vm_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||

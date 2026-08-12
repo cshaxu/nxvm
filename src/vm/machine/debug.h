@@ -19,8 +19,8 @@ typedef enum vm_machine_debug_pause_reason {
 
 typedef C_VOID (*vm_machine_debug_pause_callback)(C_VOID *context,
     vm_machine_debug_pause_reason reason);
-typedef uint8_t (*vm_machine_debug_disassemble_provider)(C_VOID *context,
-    C_CHAR *statement, uint8_t *code, C_INT flag32);
+typedef type_unsigned_8 (*vm_machine_debug_disassemble_provider)(C_VOID *context,
+    C_CHAR *statement, type_unsigned_8 *code, C_INT flag32);
 
 typedef struct {
     STD_FILE *recordFile; /* pointer to dump file */
@@ -55,10 +55,10 @@ C_VOID vm_machine_debug_bind_pause(t_debug *debug,
     vm_machine_debug_pause_callback callback, C_VOID *context);
 C_VOID vm_machine_debug_bind_disassembler(t_debug *debug,
     vm_machine_debug_disassemble_provider provider, C_VOID *context);
-C_VOID vm_machine_debug_set_breakpoint_real(t_debug *debug, uint16_t segment,
-    uint16_t offset);
+C_VOID vm_machine_debug_set_breakpoint_real(t_debug *debug, type_unsigned_16 segment,
+    type_unsigned_16 offset);
 C_VOID vm_machine_debug_clear_breakpoint_real(t_debug *debug);
-C_VOID vm_machine_debug_set_breakpoint_linear(t_debug *debug, uint32_t linear);
+C_VOID vm_machine_debug_set_breakpoint_linear(t_debug *debug, type_unsigned_32 linear);
 C_VOID vm_machine_debug_clear_breakpoint_linear(t_debug *debug);
 STD_SIZE_T vm_machine_debug_get_breakpoint_count(const t_debug *debug);
 C_VOID vm_machine_debug_set_trace(t_debug *debug, STD_SIZE_T instruction_count);

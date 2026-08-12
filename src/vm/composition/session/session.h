@@ -57,7 +57,7 @@ struct vm_session {
     vm_platform_run_handle platform_run_handle;
     vm_session_start_outcome start_outcome;
     core_product_debug_context debugger_context;
-    uint64_t display_generation;
+    type_unsigned_64 display_generation;
     core_product_debug_target *debug_target;
     vm_session_fault_outcome fault_outcome;
     vm_session_control_state control;

@@ -8,7 +8,7 @@
 #include "vm/profile/default_profile/firmware/qdkeyb.h"
 
 static C_INT vm_keyboard_host_ingress_read_byte(const vm_session *session,
-    uint16_t offset, uint8_t *out_value)
+    type_unsigned_16 offset, type_unsigned_8 *out_value)
 {
     return core_machine_debug_read_memory(session->core_machine, offset,
         out_value, sizeof(*out_value)) == TYPE_STATUS_OK;
@@ -18,8 +18,8 @@ C_INT main(C_VOID)
 {
     vm_session *session = STD_NULL;
     vm_platform_request request;
-    uint8_t before;
-    uint8_t after;
+    type_unsigned_8 before;
+    type_unsigned_8 after;
 
     if (vm_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||
         !vm_keyboard_host_ingress_read_byte(session,

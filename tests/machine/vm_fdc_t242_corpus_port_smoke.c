@@ -13,7 +13,7 @@
 
 #define VM_FDC_T242_IMAGE_BYTES (1440u * 1024u)
 
-static uint8_t vm_fdc_t242_image[VM_FDC_T242_IMAGE_BYTES];
+static type_unsigned_8 vm_fdc_t242_image[VM_FDC_T242_IMAGE_BYTES];
 
 static C_INT vm_fdc_t242_write_boot_loop(C_CHAR path[MAX_PATH])
 {

@@ -49,7 +49,7 @@ static C_VOID vm_platform_linuxcon_terminal_finalize()
     endwin();
 }
 
-static uint8_t vm_platform_linuxcon_reverse_color(uint8_t value)
+static type_unsigned_8 vm_platform_linuxcon_reverse_color(type_unsigned_8 value)
 {
     value &= 0x07;
     switch (value) {
@@ -73,7 +73,7 @@ static uint8_t vm_platform_linuxcon_reverse_color(uint8_t value)
     return COLOR_BLACK;
 }
 
-static uint8_t vm_platform_linuxcon_attribute_color(uint8_t value)
+static type_unsigned_8 vm_platform_linuxcon_attribute_color(type_unsigned_8 value)
 {
     value &= 0x07;
     switch (value) {
@@ -97,9 +97,9 @@ static uint8_t vm_platform_linuxcon_attribute_color(uint8_t value)
     return COLOR_BLACK;
 }
 
-static uint8_t vm_platform_linuxcon_color_pair(uint8_t prop)
+static type_unsigned_8 vm_platform_linuxcon_color_pair(type_unsigned_8 prop)
 {
-    uint8_t fore0, back0, fore1, back1;
+    type_unsigned_8 fore0, back0, fore1, back1;
     fore0 = prop & 0x0f;
     back0 = ((prop & 0x70) >> 4);
     fore1 = vm_platform_linuxcon_attribute_color(fore0);
@@ -110,7 +110,7 @@ static uint8_t vm_platform_linuxcon_color_pair(uint8_t prop)
     return (fore1 * 8 + back1);
 }
 
-static const uint8_t vm_platform_linuxcon_ascii_to_print[][2] = {
+static const type_unsigned_8 vm_platform_linuxcon_ascii_to_print[][2] = {
     {0x00, ' ' }, {0x01, '*' }, {0x02, '*' }, {0x03, '*' },
     {0x04, '*' }, {0x05, '*' }, {0x06, '*' }, {0x07, 0x07},
     {0x08, 0x08}, {0x09, 0x09}, {0x0a, 0x0a}, {0x0b, 0x0b},
@@ -186,10 +186,10 @@ typedef struct linuxcon_run_handle linuxcon_run_handle;
 static C_VOID vm_platform_linuxcon_process_keyboard(linuxcon_run_handle *handle);
 
 static C_VOID vm_platform_linuxcon_paint(vm_platform_run_context *context,
-    uint8_t force)
+    type_unsigned_8 force)
 {
     C_INT ref;
-    uint8_t p, c;
+    type_unsigned_8 p, c;
     C_INT i, j, sizeRow, sizeCol, curX, curY;
     core_platform_display_frame frame;
 

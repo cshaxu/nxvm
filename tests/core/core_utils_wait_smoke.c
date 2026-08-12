@@ -6,11 +6,11 @@
 #include "core/utils/wait.h"
 #include "core/utils/wait_provider.h"
 
-static uint32_t observed_milliseconds;
+static type_unsigned_32 observed_milliseconds;
 
-static C_VOID core_utils_wait_smoke_provider(C_VOID *context, uint32_t milliseconds)
+static C_VOID core_utils_wait_smoke_provider(C_VOID *context, type_unsigned_32 milliseconds)
 {
-    uint32_t *calls = context;
+    type_unsigned_32 *calls = context;
 
     *calls += 1u;
     observed_milliseconds = milliseconds;
@@ -18,8 +18,8 @@ static C_VOID core_utils_wait_smoke_provider(C_VOID *context, uint32_t milliseco
 
 C_INT main(C_VOID)
 {
-    uint32_t calls = 0u;
-    uint32_t nested_calls = 0u;
+    type_unsigned_32 calls = 0u;
+    type_unsigned_32 nested_calls = 0u;
     core_utils_wait_scope scope;
     core_utils_wait_scope nested_scope;
 

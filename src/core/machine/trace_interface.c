@@ -4,7 +4,7 @@
 
 
 
-static uint32_t core_machine_trace_linear_pc(const core_machine *machine)
+static type_unsigned_32 core_machine_trace_linear_pc(const core_machine *machine)
 {
     return machine->executor_cpu.data.cs.base + machine->executor_cpu.data.eip;
 }
@@ -68,9 +68,9 @@ type_status core_machine_set_trace_provider(
 C_VOID core_machine_trace_record(
     core_machine *machine,
     core_machine_trace_event_type type,
-    uint32_t address,
-    uint32_t value,
-    uint32_t detail)
+    type_unsigned_32 address,
+    type_unsigned_32 value,
+    type_unsigned_32 detail)
 {
     core_machine_trace_state *trace;
     core_machine_trace_event *event;

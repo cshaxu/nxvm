@@ -48,13 +48,13 @@ C_INT core_product_debug_step(const core_product_debug_target *target)
     return target != STD_NULL && target->step != STD_NULL && target->step(target->context) == 0;
 }
 
-C_INT core_product_debug_read_register(const core_product_debug_target *target, core_product_debug_register reg, uint32_t *value)
+C_INT core_product_debug_read_register(const core_product_debug_target *target, core_product_debug_register reg, type_unsigned_32 *value)
 {
     return target == STD_NULL || target->read_register == STD_NULL ||
            target->read_register(target->context, reg, value);
 }
 
-C_INT core_product_debug_write_register(const core_product_debug_target *target, core_product_debug_register reg, uint32_t value)
+C_INT core_product_debug_write_register(const core_product_debug_target *target, core_product_debug_register reg, type_unsigned_32 value)
 {
     return target == STD_NULL || target->write_register == STD_NULL ||
            target->write_register(target->context, reg, value);
@@ -66,53 +66,53 @@ C_INT core_product_debug_get_code_default_size(const core_product_debug_target *
            target->get_code_default_size(target->context) : 0;
 }
 
-uint32_t core_product_debug_get_code_base(const core_product_debug_target *target)
+type_unsigned_32 core_product_debug_get_code_base(const core_product_debug_target *target)
 {
     return target != STD_NULL && target->get_code_base != STD_NULL ?
            target->get_code_base(target->context) : 0u;
 }
 
-C_INT core_product_debug_read_linear(const core_product_debug_target *target, uint32_t address, C_VOID *out, uint8_t size)
+C_INT core_product_debug_read_linear(const core_product_debug_target *target, type_unsigned_32 address, C_VOID *out, type_unsigned_8 size)
 {
     return target == STD_NULL || target->read_linear == STD_NULL ||
            target->read_linear(target->context, address, out, size);
 }
 
-C_INT core_product_debug_write_linear(const core_product_debug_target *target, uint32_t address, const C_VOID *in, uint8_t size)
+C_INT core_product_debug_write_linear(const core_product_debug_target *target, type_unsigned_32 address, const C_VOID *in, type_unsigned_8 size)
 {
     return target == STD_NULL || target->write_linear == STD_NULL ||
            target->write_linear(target->context, address, in, size);
 }
 
-C_INT core_product_debug_read_real(const core_product_debug_target *target, uint16_t segment, uint16_t offset, C_VOID *out, STD_SIZE_T size)
+C_INT core_product_debug_read_real(const core_product_debug_target *target, type_unsigned_16 segment, type_unsigned_16 offset, C_VOID *out, STD_SIZE_T size)
 {
     return target == STD_NULL || target->read_real == STD_NULL ||
            target->read_real(target->context, segment, offset, out, size);
 }
 
-C_INT core_product_debug_write_real(const core_product_debug_target *target, uint16_t segment, uint16_t offset, const C_VOID *in, STD_SIZE_T size)
+C_INT core_product_debug_write_real(const core_product_debug_target *target, type_unsigned_16 segment, type_unsigned_16 offset, const C_VOID *in, STD_SIZE_T size)
 {
     return target == STD_NULL || target->write_real == STD_NULL ||
            target->write_real(target->context, segment, offset, in, size);
 }
 
-uint32_t core_product_debug_read_port(const core_product_debug_target *target, uint16_t port)
+type_unsigned_32 core_product_debug_read_port(const core_product_debug_target *target, type_unsigned_16 port)
 {
     return target != STD_NULL && target->read_port != STD_NULL ?
            target->read_port(target->context, port) : 0u;
 }
 
-C_VOID core_product_debug_write_port(const core_product_debug_target *target, uint16_t port, uint32_t value)
+C_VOID core_product_debug_write_port(const core_product_debug_target *target, type_unsigned_16 port, type_unsigned_32 value)
 {
     if (target != STD_NULL && target->write_port != STD_NULL) target->write_port(target->context, port, value);
 }
 
-C_VOID core_product_debug_set_break_real(const core_product_debug_target *target, uint16_t segment, uint16_t offset)
+C_VOID core_product_debug_set_break_real(const core_product_debug_target *target, type_unsigned_16 segment, type_unsigned_16 offset)
 {
     if (target != STD_NULL && target->set_break_real != STD_NULL) target->set_break_real(target->context, segment, offset);
 }
 
-C_VOID core_product_debug_set_break_linear(const core_product_debug_target *target, uint32_t address)
+C_VOID core_product_debug_set_break_linear(const core_product_debug_target *target, type_unsigned_32 address)
 {
     if (target != STD_NULL && target->set_break_linear != STD_NULL) target->set_break_linear(target->context, address);
 }
@@ -138,7 +138,7 @@ STD_SIZE_T core_product_debug_get_break_count(const core_product_debug_target *t
            target->get_break_count(target->context) : 0u;
 }
 
-C_VOID core_product_debug_set_watch(const core_product_debug_target *target, core_product_debug_watch_kind kind, uint32_t address)
+C_VOID core_product_debug_set_watch(const core_product_debug_target *target, core_product_debug_watch_kind kind, type_unsigned_32 address)
 {
     if (target != STD_NULL && target->set_watch != STD_NULL) target->set_watch(target->context, kind, address);
 }

@@ -19,7 +19,7 @@ static C_VOID pit_divider_output(C_VOID *opaque, type_bool asserted)
 
 C_INT main(C_VOID)
 {
-    const uint8_t program[8] = { 0x90u, 0x90u, 0x90u, 0x90u,
+    const type_unsigned_8 program[8] = { 0x90u, 0x90u, 0x90u, 0x90u,
         0x90u, 0x90u, 0x90u, 0x90u };
     core_machine_config config = { 0 };
     core_machine_run_budget four_instruction_budget = { 4u, 0u };

@@ -56,12 +56,12 @@ static C_INT protected_mode_prepare(protected_mode_machine *state,
 }
 
 static C_INT protected_mode_install_gdt(core_machine *machine,
-    uint8_t code_access, uint8_t data_access)
+    type_unsigned_8 code_access, type_unsigned_8 data_access)
 {
-    static const uint8_t gdt_pointer[] = {
+    static const type_unsigned_8 gdt_pointer[] = {
         0x17u, 0x00u, 0x00u, 0x03u, 0x00u, 0x00u
     };
-    uint8_t gdt[] = {
+    type_unsigned_8 gdt[] = {
         0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
         0xffu, 0xffu, 0x00u, 0x20u, 0x00u, 0x9au, 0x00u, 0x00u,
         0xffu, 0xffu, 0x00u, 0x30u, 0x00u, 0x92u, 0x00u, 0x00u
@@ -77,10 +77,10 @@ static C_INT protected_mode_install_gdt(core_machine *machine,
 
 static C_INT protected_mode_install_idt(core_machine *machine)
 {
-    static const uint8_t idt_pointer[] = {
+    static const type_unsigned_8 idt_pointer[] = {
         0x1fu, 0x00u, 0x00u, 0x04u, 0x00u, 0x00u
     };
-    uint8_t idt[32] = {0};
+    type_unsigned_8 idt[32] = {0};
 
     idt[24u] = 0x10u;
     idt[26u] = 0x08u;
@@ -92,9 +92,9 @@ static C_INT protected_mode_install_idt(core_machine *machine)
 }
 
 static C_INT protected_mode_run(core_machine *machine,
-    const uint8_t *real_code, STD_SIZE_T real_code_size,
-    const uint8_t *protected_code, STD_SIZE_T protected_code_size,
-    uint8_t code_access, uint8_t data_access,
+    const type_unsigned_8 *real_code, STD_SIZE_T real_code_size,
+    const type_unsigned_8 *protected_code, STD_SIZE_T protected_code_size,
+    type_unsigned_8 code_access, type_unsigned_8 data_access,
     C_INT expect_fault,
     core_machine_run_result *out_result,
     core_machine_cpu_diagnostic *out_diagnostic)
@@ -119,7 +119,7 @@ static C_INT protected_mode_run(core_machine *machine,
 
 static C_INT protected_mode_test_positive(C_VOID)
 {
-    static const uint8_t real_code[] = {
+    static const type_unsigned_8 real_code[] = {
         0x0fu, 0x01u, 0x16u, 0x00u, 0x01u,
         0xb8u, 0x01u, 0x00u,
         0x0fu, 0x01u, 0xf0u,
@@ -128,7 +128,7 @@ static C_INT protected_mode_test_positive(C_VOID)
         0x8eu, 0xd0u,
         0xeau, 0x00u, 0x00u, 0x08u, 0x00u
     };
-    static const uint8_t protected_code[] = {
+    static const type_unsigned_8 protected_code[] = {
         0xb8u, 0x34u, 0x12u,
         0xbbu, 0x00u, 0x00u,
         0x89u, 0x07u,
@@ -144,8 +144,8 @@ static C_INT protected_mode_test_positive(C_VOID)
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
     core_machine_cpu_state cpu;
-    uint16_t first = 0u;
-    uint16_t second = 0u;
+    type_unsigned_16 first = 0u;
+    type_unsigned_16 second = 0u;
     C_INT failed = !protected_mode_prepare(&state,
         CORE_MACHINE_CPU_PROFILE_80286);
 
@@ -184,13 +184,13 @@ static C_INT protected_mode_test_positive(C_VOID)
 
 static C_INT protected_mode_test_invalid_selector(C_VOID)
 {
-    static const uint8_t real_code[] = {
+    static const type_unsigned_8 real_code[] = {
         0x0fu, 0x01u, 0x16u, 0x00u, 0x01u,
         0xb8u, 0x01u, 0x00u,
         0x0fu, 0x01u, 0xf0u,
         0xeau, 0x00u, 0x00u, 0x18u, 0x00u
     };
-    static const uint8_t protected_code[] = { 0x90u };
+    static const type_unsigned_8 protected_code[] = { 0x90u };
     protected_mode_machine state;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
@@ -218,13 +218,13 @@ static C_INT protected_mode_test_invalid_selector(C_VOID)
 
 static C_INT protected_mode_test_nonpresent_code(C_VOID)
 {
-    static const uint8_t real_code[] = {
+    static const type_unsigned_8 real_code[] = {
         0x0fu, 0x01u, 0x16u, 0x00u, 0x01u,
         0xb8u, 0x01u, 0x00u,
         0x0fu, 0x01u, 0xf0u,
         0xeau, 0x00u, 0x00u, 0x08u, 0x00u
     };
-    static const uint8_t protected_code[] = { 0x90u };
+    static const type_unsigned_8 protected_code[] = { 0x90u };
     protected_mode_machine state;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
@@ -246,14 +246,14 @@ static C_INT protected_mode_test_nonpresent_code(C_VOID)
 
 static C_INT protected_mode_test_nonpresent_stack(C_VOID)
 {
-    static const uint8_t real_code[] = {
+    static const type_unsigned_8 real_code[] = {
         0x0fu, 0x01u, 0x16u, 0x00u, 0x01u,
         0xb8u, 0x01u, 0x00u,
         0x0fu, 0x01u, 0xf0u,
         0xb8u, 0x10u, 0x00u,
         0x8eu, 0xd0u
     };
-    static const uint8_t protected_code[] = { 0x90u };
+    static const type_unsigned_8 protected_code[] = { 0x90u };
     protected_mode_machine state;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
@@ -275,13 +275,13 @@ static C_INT protected_mode_test_nonpresent_stack(C_VOID)
 
 static C_INT protected_mode_test_protected_lidt_admitted(C_VOID)
 {
-    static const uint8_t real_code[] = {
+    static const type_unsigned_8 real_code[] = {
         0x0fu, 0x01u, 0x16u, 0x00u, 0x01u,
         0xb8u, 0x01u, 0x00u,
         0x0fu, 0x01u, 0xf0u,
         0xeau, 0x00u, 0x00u, 0x08u, 0x00u
     };
-    static const uint8_t protected_code[] = {
+    static const type_unsigned_8 protected_code[] = {
         0xb8u, 0x10u, 0x00u,
         0x8eu, 0xd8u,
         0x0fu, 0x01u, 0x1eu, 0x10u, 0x01u,
@@ -305,7 +305,7 @@ static C_INT protected_mode_test_protected_lidt_admitted(C_VOID)
 
 static C_INT protected_mode_test_configured_idt_interrupts(C_VOID)
 {
-    static const uint8_t real_code[] = {
+    static const type_unsigned_8 real_code[] = {
         0x0fu, 0x01u, 0x16u, 0x00u, 0x01u,
         0x0fu, 0x01u, 0x1eu, 0x10u, 0x01u,
         0xb8u, 0x01u, 0x00u,
@@ -315,7 +315,7 @@ static C_INT protected_mode_test_configured_idt_interrupts(C_VOID)
         0x8eu, 0xd0u,
         0xeau, 0x00u, 0x00u, 0x08u, 0x00u
     };
-    static const uint8_t protected_code[] = {
+    static const type_unsigned_8 protected_code[] = {
         0xccu, 0x90u, 0x90u, 0x90u, 0x90u, 0x90u, 0x90u, 0x90u,
         0x90u, 0x90u, 0x90u, 0x90u, 0x90u, 0x90u, 0x90u, 0x90u,
         0xf4u
@@ -339,8 +339,8 @@ static C_INT protected_mode_test_configured_idt_interrupts(C_VOID)
 
 static C_INT protected_mode_test_80186_gate(C_VOID)
 {
-    static const uint8_t real_code[] = { 0x0fu, 0x01u, 0x16u, 0x00u, 0x01u };
-    static const uint8_t protected_code[] = { 0x90u };
+    static const type_unsigned_8 real_code[] = { 0x0fu, 0x01u, 0x16u, 0x00u, 0x01u };
+    static const type_unsigned_8 protected_code[] = { 0x90u };
     protected_mode_machine state;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
@@ -361,8 +361,8 @@ static C_INT protected_mode_test_80186_gate(C_VOID)
 
 static C_INT protected_mode_test_80286_rejects_386(C_VOID)
 {
-    static const uint8_t real_code[] = { 0x0fu, 0x20u, 0xc0u };
-    static const uint8_t protected_code[] = { 0x90u };
+    static const type_unsigned_8 real_code[] = { 0x0fu, 0x20u, 0xc0u };
+    static const type_unsigned_8 protected_code[] = { 0x90u };
     protected_mode_machine state;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;

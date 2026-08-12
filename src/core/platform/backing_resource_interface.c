@@ -33,7 +33,7 @@ C_VOID core_platform_backing_resource_initialize(
 }
 
 type_status core_platform_backing_resource_size(
-    const core_platform_backing_resource *resource, uint64_t *out_size,
+    const core_platform_backing_resource *resource, type_unsigned_64 *out_size,
     core_platform_backing_resource_result *out_result)
 {
     type_status status;
@@ -53,8 +53,8 @@ type_status core_platform_backing_resource_size(
 }
 
 static type_status core_platform_backing_resource_transfer(
-    const core_platform_backing_resource *resource, uint64_t offset,
-    C_VOID *buffer, uint32_t requested, uint32_t *out_transferred,
+    const core_platform_backing_resource *resource, type_unsigned_64 offset,
+    C_VOID *buffer, type_unsigned_32 requested, type_unsigned_32 *out_transferred,
     core_platform_backing_resource_result *out_result, type_bool write)
 {
     type_status status;
@@ -80,8 +80,8 @@ static type_status core_platform_backing_resource_transfer(
 }
 
 type_status core_platform_backing_resource_read(
-    const core_platform_backing_resource *resource, uint64_t offset,
-    C_VOID *buffer, uint32_t requested, uint32_t *out_transferred,
+    const core_platform_backing_resource *resource, type_unsigned_64 offset,
+    C_VOID *buffer, type_unsigned_32 requested, type_unsigned_32 *out_transferred,
     core_platform_backing_resource_result *out_result)
 {
     return core_platform_backing_resource_transfer(resource, offset, buffer,
@@ -89,8 +89,8 @@ type_status core_platform_backing_resource_read(
 }
 
 type_status core_platform_backing_resource_write(
-    const core_platform_backing_resource *resource, uint64_t offset,
-    const C_VOID *buffer, uint32_t requested, uint32_t *out_transferred,
+    const core_platform_backing_resource *resource, type_unsigned_64 offset,
+    const C_VOID *buffer, type_unsigned_32 requested, type_unsigned_32 *out_transferred,
     core_platform_backing_resource_result *out_result)
 {
     return core_platform_backing_resource_transfer(resource, offset, (C_VOID *)buffer,

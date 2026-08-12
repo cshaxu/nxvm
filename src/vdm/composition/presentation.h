@@ -14,7 +14,7 @@ extern "C" {
 typedef struct vdm_presentation vdm_presentation;
 
 typedef struct vdm_presentation_snapshot {
-    uint64_t timestamp;
+    type_unsigned_64 timestamp;
     core_machine_text_snapshot text;
 } vdm_presentation_snapshot;
 
@@ -28,7 +28,7 @@ type_status vdm_presentation_apply_input(
     vdm_presentation *presentation);
 type_status vdm_presentation_capture_text(
     vdm_presentation *presentation,
-    uint64_t timestamp,
+    type_unsigned_64 timestamp,
     vdm_presentation_snapshot *out_snapshot);
 C_VOID vdm_presentation_destroy(
     vdm_presentation *presentation);

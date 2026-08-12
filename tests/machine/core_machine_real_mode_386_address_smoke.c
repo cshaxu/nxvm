@@ -20,7 +20,7 @@ static C_INT real_mode_386_prepare(core_machine **out_machine)
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE,
         .ticks_per_instruction = 1u
     };
-    static const uint8_t reset_jump[] = {0xeau, 0x00u, 0x00u, 0x00u, 0x00u};
+    static const type_unsigned_8 reset_jump[] = {0xeau, 0x00u, 0x00u, 0x00u, 0x00u};
     core_machine *machine = STD_NULL;
 
     if (out_machine == STD_NULL || core_machine_create(&config, &machine) !=
@@ -40,7 +40,7 @@ static C_INT real_mode_386_prepare(core_machine **out_machine)
 
 C_INT main(C_VOID)
 {
-    static const uint8_t program[] = {
+    static const type_unsigned_8 program[] = {
         0xb8u, 0x00u, 0x00u,
         0x8eu, 0xd8u,
         0x8eu, 0xc0u,
@@ -51,8 +51,8 @@ C_INT main(C_VOID)
         0xf3u, 0x67u, 0x66u, 0xa5u,
         0xf4u
     };
-    static const uint8_t source[] = {0x41u, 0x42u, 0x43u, 0x44u};
-    uint8_t destination[sizeof(source)] = {0};
+    static const type_unsigned_8 source[] = {0x41u, 0x42u, 0x43u, 0x44u};
+    type_unsigned_8 destination[sizeof(source)] = {0};
     core_machine_cpu_state state;
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;

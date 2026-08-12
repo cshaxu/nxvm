@@ -53,10 +53,10 @@ static C_INT arpl_prepare(arpl_machine *state,
 
 static C_INT arpl_install_gdt(core_machine *machine)
 {
-    static const uint8_t gdt_pointer[] = {
+    static const type_unsigned_8 gdt_pointer[] = {
         0x17u, 0x00u, 0x00u, 0x03u, 0x00u, 0x00u
     };
-    static const uint8_t gdt[] = {
+    static const type_unsigned_8 gdt[] = {
         0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u,
         0xffu, 0xffu, 0x00u, 0x20u, 0x00u, 0x9au, 0x00u, 0x00u,
         0xffu, 0xffu, 0x00u, 0x30u, 0x00u, 0x92u, 0x00u, 0x00u
@@ -69,10 +69,10 @@ static C_INT arpl_install_gdt(core_machine *machine)
 }
 
 static C_INT arpl_run_protected(arpl_machine *state,
-    const uint8_t *protected_code, STD_SIZE_T protected_code_size,
+    const type_unsigned_8 *protected_code, STD_SIZE_T protected_code_size,
     t_cpu *out_cpu)
 {
-    static const uint8_t real_code[] = {
+    static const type_unsigned_8 real_code[] = {
         0x0fu, 0x01u, 0x16u, 0x00u, 0x01u,
         0xb8u, 0x01u, 0x00u,
         0x0fu, 0x01u, 0xf0u,
@@ -108,13 +108,13 @@ static C_INT arpl_run_protected(arpl_machine *state,
 
 static C_INT arpl_test_register_forms(C_VOID)
 {
-    static const uint8_t adjust_code[] = {
+    static const type_unsigned_8 adjust_code[] = {
         0xb8u, 0x01u, 0x00u,
         0xb9u, 0x03u, 0x00u,
         0x63u, 0xc8u,
         0xf4u
     };
-    static const uint8_t retain_code[] = {
+    static const type_unsigned_8 retain_code[] = {
         0xb8u, 0x03u, 0x00u,
         0xb9u, 0x01u, 0x00u,
         0x63u, 0xc8u,
@@ -157,12 +157,12 @@ static C_INT arpl_test_register_forms(C_VOID)
 
 static C_INT arpl_test_memory_prefix_form(C_VOID)
 {
-    static const uint8_t code[] = {
+    static const type_unsigned_8 code[] = {
         0xb9u, 0x03u, 0x00u,
         0x26u, 0x63u, 0x0eu, 0x00u, 0x04u,
         0xf4u
     };
-    uint16_t selector = 0x0001u;
+    type_unsigned_16 selector = 0x0001u;
     t_cpu cpu;
     arpl_machine state;
     C_INT failed = !arpl_prepare(&state, CORE_MACHINE_CPU_PROFILE_80286);
@@ -191,7 +191,7 @@ static C_INT arpl_test_memory_prefix_form(C_VOID)
 
 static C_INT arpl_test_rejected_forms(C_VOID)
 {
-    static const uint8_t program[] = {
+    static const type_unsigned_8 program[] = {
         0xb8u, 0x01u, 0x00u,
         0xb9u, 0x03u, 0x00u,
         0x63u, 0xc8u

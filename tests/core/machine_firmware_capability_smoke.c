@@ -14,14 +14,14 @@ typedef struct firmware_probe {
     C_INT after_run_calls;
     C_INT reentry_rejected;
     type_status port_status;
-    uint32_t port_value;
+    type_unsigned_32 port_value;
 } firmware_probe;
 
-static type_status firmware_probe_port_read(C_VOID *owner, uint16_t port,
-    uint32_t *out_value)
+static type_status firmware_probe_port_read(C_VOID *owner, type_unsigned_16 port,
+    type_unsigned_32 *out_value)
 { firmware_probe *probe = owner; (C_VOID)port; if (probe->port_status != TYPE_STATUS_OK) return probe->port_status; *out_value = probe->port_value; return TYPE_STATUS_OK; }
-static type_status firmware_probe_port_write(C_VOID *owner, uint16_t port,
-    uint32_t value)
+static type_status firmware_probe_port_write(C_VOID *owner, type_unsigned_16 port,
+    type_unsigned_32 value)
 { firmware_probe *probe = owner; (C_VOID)port; if (probe->port_status != TYPE_STATUS_OK) return probe->port_status; probe->port_value = value; return TYPE_STATUS_OK; }
 
 typedef struct firmware_failed_probe {
@@ -33,7 +33,7 @@ static type_status firmware_probe_configure(C_VOID *opaque,
     core_machine_firmware_context *firmware)
 {
     firmware_probe *probe = (firmware_probe *)opaque;
-    const uint8_t code = 0x90u;
+    const type_unsigned_8 code = 0x90u;
     type_status status;
 
     if (probe == STD_NULL || firmware == STD_NULL) return TYPE_STATUS_FAULT;
@@ -53,7 +53,7 @@ static type_status firmware_failed_probe_configure(C_VOID *opaque,
     core_machine_firmware_context *firmware)
 {
     firmware_failed_probe *probe = (firmware_failed_probe *)opaque;
-    const uint8_t code = 0x90u;
+    const type_unsigned_8 code = 0x90u;
 
     if (probe == STD_NULL || firmware == STD_NULL ||
         core_machine_firmware_register_immutable_rom(firmware, 0xe0000u,
@@ -77,7 +77,7 @@ static type_status firmware_probe_reset(C_VOID *opaque,
     core_machine_firmware_context *firmware)
 {
     firmware_probe *probe = (firmware_probe *)opaque;
-    uint8_t value = 0x5au;
+    type_unsigned_8 value = 0x5au;
 
     if (probe == STD_NULL) return TYPE_STATUS_FAULT;
     ++probe->reset_calls;
@@ -93,8 +93,8 @@ static type_status firmware_probe_after_run(C_VOID *opaque,
     core_machine_firmware_context *firmware)
 {
     firmware_probe *probe = (firmware_probe *)opaque;
-    uint8_t value = 0u;
-    uint32_t port_value = 0xdeadbeefu;
+    type_unsigned_8 value = 0u;
+    type_unsigned_32 port_value = 0xdeadbeefu;
 
     if (probe == STD_NULL || core_machine_firmware_memory_read(firmware,
             0x500u, &value, sizeof(value)) != TYPE_STATUS_OK || value != 0x5au) {
@@ -135,9 +135,9 @@ C_INT main(C_VOID)
     firmware_probe probe = {0};
     firmware_failed_probe failed_probe = {0};
     core_machine_memory_route route = CORE_MACHINE_MEMORY_ROUTE_ORDINARY_RAM;
-    const uint8_t prior_rom = 0xebu;
-    uint8_t value = 0u;
-    uint32_t port_value = 0u;
+    const type_unsigned_8 prior_rom = 0xebu;
+    type_unsigned_8 value = 0u;
+    type_unsigned_32 port_value = 0u;
     C_INT failed = 0;
     type_status run_status;
     core_machine_lifecycle lifecycle = CORE_MACHINE_INITIALIZED;

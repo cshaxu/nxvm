@@ -43,7 +43,7 @@ static C_VOID win32con_process_input(const win32con_run_handle *handle)
 {
     DWORD count;
     INPUT_RECORD input;
-    uint16_t scan_code;
+    type_unsigned_16 scan_code;
     UCHAR virtual_key;
 
     GetNumberOfConsoleInputEvents(handle->input, &count);
@@ -64,7 +64,7 @@ static C_VOID win32con_process_input(const win32con_run_handle *handle)
     }
 }
 
-uint16_t vm_platform_win32con_decode_scan_code(uint16_t raw_scan_code,
+type_unsigned_16 vm_platform_win32con_decode_scan_code(type_unsigned_16 raw_scan_code,
     DWORD control_key_state)
 {
     if ((control_key_state & ENHANCED_KEY) != 0u) raw_scan_code |= 0x0100u;

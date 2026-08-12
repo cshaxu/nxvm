@@ -82,7 +82,7 @@ static C_INT vm_t287_wait_for(const vm_session *session, const C_CHAR *text,
     return 0;
 }
 
-static C_INT vm_t287_submit(const vm_session *session, const uint8_t *codes,
+static C_INT vm_t287_submit(const vm_session *session, const type_unsigned_8 *codes,
     STD_SIZE_T count)
 {
     STD_SIZE_T index;
@@ -98,11 +98,11 @@ static C_INT vm_t287_submit(const vm_session *session, const uint8_t *codes,
 
 static C_INT vm_t287_type_setup(vm_session *session)
 {
-    static const uint8_t scan_codes[] = {
+    static const type_unsigned_8 scan_codes[] = {
         0x2bu, 0x12u, 0x11u, 0x17u, 0x31u, 0x04u, 0x02u, 0x2bu, 0x1fu,
         0x12u, 0x14u, 0x16u, 0x19u, 0x34u, 0x12u, 0x2du, 0x12u, 0x1cu
     };
-    static const uint8_t virtual_keys[] = {
+    static const type_unsigned_8 virtual_keys[] = {
         VK_OEM_5, 'E', 'W', 'I', 'N', '3', '1', VK_OEM_5, 'S', 'E', 'T',
         'U', 'P', VK_OEM_PERIOD, 'E', 'X', 'E', VK_RETURN
     };
@@ -122,10 +122,10 @@ static C_INT vm_t287_type_setup(vm_session *session)
 
 static C_INT vm_t288_type_windows(vm_session *session)
 {
-    static const uint8_t scan_codes[] = {
+    static const type_unsigned_8 scan_codes[] = {
         0x11u, 0x17u, 0x31u, 0x20u, 0x18u, 0x11u, 0x1fu, 0x1cu
     };
-    static const uint8_t virtual_keys[] = {
+    static const type_unsigned_8 virtual_keys[] = {
         'W', 'I', 'N', 'D', 'O', 'W', 'S', VK_RETURN
     };
     STD_SIZE_T index;
@@ -218,7 +218,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
-    const uint8_t enter[] = {0x1cu};
+    const type_unsigned_8 enter[] = {0x1cu};
     HANDLE thread = STD_NULL;
     vm_session *session = STD_NULL;
     const C_CHAR *stage = "create";

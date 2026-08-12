@@ -10,9 +10,9 @@ extern "C"
 
 #include "type.h"
     /* Assembler Library */
-    uint8_t core_product_utils_aasm32(const C_CHAR *stmt, uint8_t *rcode, C_INT flag32);
-    uint32_t core_product_utils_aasm32x(const C_CHAR *stmt, uint8_t *rcode, C_INT flag32);
-    uint8_t core_product_utils_dasm32(C_CHAR *stmt, uint8_t *rcode, C_INT flag32);
+    type_unsigned_8 core_product_utils_aasm32(const C_CHAR *stmt, type_unsigned_8 *rcode, C_INT flag32);
+    type_unsigned_32 core_product_utils_aasm32x(const C_CHAR *stmt, type_unsigned_8 *rcode, C_INT flag32);
+    type_unsigned_8 core_product_utils_dasm32(C_CHAR *stmt, type_unsigned_8 *rcode, C_INT flag32);
 
 #ifdef __cplusplus
 } /*_EOCD_*/

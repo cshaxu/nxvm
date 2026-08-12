@@ -16,13 +16,13 @@ int main(C_VOID)
 {
     vm_session *session = STD_NULL;
     core_machine_memory_route route;
-    uint8_t code_before = 0u;
-    uint8_t code_after = 0u;
-    uint8_t reset_opcode = 0u;
-    uint8_t overwrite = 0u;
-    uint8_t bda_mode = 0u;
-    uint8_t ivt_before[4] = {0};
-    uint8_t ivt_after[4] = {0};
+    type_unsigned_8 code_before = 0u;
+    type_unsigned_8 code_after = 0u;
+    type_unsigned_8 reset_opcode = 0u;
+    type_unsigned_8 overwrite = 0u;
+    type_unsigned_8 bda_mode = 0u;
+    type_unsigned_8 ivt_before[4] = {0};
+    type_unsigned_8 ivt_after[4] = {0};
     C_INT failed = vm_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||
         session == STD_NULL;
 

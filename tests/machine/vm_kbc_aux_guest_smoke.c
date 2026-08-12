@@ -13,11 +13,11 @@
 #define VM_KBC_AUX_COUNT_ADDRESS 0x0500u
 #define VM_KBC_AUX_BYTES_ADDRESS 0x0510u
 
-static uint8_t vm_kbc_aux_image[VM_KBC_AUX_IMAGE_BYTES];
+static type_unsigned_8 vm_kbc_aux_image[VM_KBC_AUX_IMAGE_BYTES];
 
 static C_INT vm_kbc_aux_write_fixture(C_CHAR path[MAX_PATH])
 {
-    static const uint8_t boot_code[] = {
+    static const type_unsigned_8 boot_code[] = {
         0xfau,                         /* cli */
         0x31u, 0xc0u,                 /* xor ax, ax */
         0x8eu, 0xd8u,                 /* mov ds, ax */
@@ -37,7 +37,7 @@ static C_INT vm_kbc_aux_write_fixture(C_CHAR path[MAX_PATH])
         0xf4u,                         /* hlt */
         0xebu, 0xfdu                  /* jmp to hlt */
     };
-    static const uint8_t irq12_handler[] = {
+    static const type_unsigned_8 irq12_handler[] = {
         0x50u,                         /* push ax */
         0x53u,                         /* push bx */
         0xe4u, 0x60u,                 /* in al, 60h */
@@ -76,18 +76,18 @@ static C_INT vm_kbc_aux_write_fixture(C_CHAR path[MAX_PATH])
     return 1;
 }
 
-static C_INT vm_kbc_aux_read_count(vm_session *session, uint16_t *out_count)
+static C_INT vm_kbc_aux_read_count(vm_session *session, type_unsigned_16 *out_count)
 {
     return core_machine_memory_read(session->core_machine,
         VM_KBC_AUX_COUNT_ADDRESS, out_count, sizeof(*out_count)) == TYPE_STATUS_OK;
 }
 
-static C_INT vm_kbc_aux_run_until_count(vm_session *session, uint16_t expected)
+static C_INT vm_kbc_aux_run_until_count(vm_session *session, type_unsigned_16 expected)
 {
     core_machine_run_budget budget = { 1u, 0u };
     core_machine_run_result result;
-    uint32_t instruction;
-    uint16_t count = 0u;
+    type_unsigned_32 instruction;
+    type_unsigned_16 count = 0u;
 
     for (instruction = 0u; instruction < VM_KBC_AUX_BOOT_BUDGET;
          ++instruction) {
@@ -110,8 +110,8 @@ C_INT main(C_VOID)
     vm_session *session = STD_NULL;
     vm_session_config fixture_config = config;
     C_CHAR path[MAX_PATH] = {0};
-    uint8_t bytes[4] = {0};
-    uint16_t count = 0u;
+    type_unsigned_8 bytes[4] = {0};
+    type_unsigned_16 count = 0u;
     C_INT passed = 0;
 
     if (!vm_kbc_aux_write_fixture(path)) goto done;

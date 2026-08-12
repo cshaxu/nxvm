@@ -9,7 +9,7 @@
 C_INT main(C_VOID)
 {
     vm_session *session = STD_NULL;
-    uint8_t report = VBIOS_POST_REPORT_BOOT_FAILURE_ACKNOWLEDGED;
+    type_unsigned_8 report = VBIOS_POST_REPORT_BOOT_FAILURE_ACKNOWLEDGED;
 
     if (vm_session_create(STD_NULL, &session) != TYPE_STATUS_OK ||
         core_machine_memory_write(session->core_machine,

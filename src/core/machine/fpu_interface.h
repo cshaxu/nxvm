@@ -35,15 +35,15 @@ typedef struct core_machine_fpu_operation_metadata {
 } core_machine_fpu_operation_metadata;
 
 typedef struct core_machine_fpu_state {
-    uint16_t control_word;
-    uint16_t status_word;
-    uint8_t top;
-    uint8_t tags[8];
+    type_unsigned_16 control_word;
+    type_unsigned_16 status_word;
+    type_unsigned_8 top;
+    type_unsigned_8 tags[8];
     C_INT pending_unmasked_exception;
 } core_machine_fpu_state;
 
 const C_CHAR *core_machine_fpu_profile_name(core_machine_fpu_profile profile);
 core_machine_fpu_operation_metadata core_machine_fpu_operation_metadata_get(
-    uint8_t escape_opcode, uint8_t modrm);
+    type_unsigned_8 escape_opcode, type_unsigned_8 modrm);
 
 #endif

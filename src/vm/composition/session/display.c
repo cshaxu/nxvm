@@ -23,8 +23,8 @@ core_machine_display_kind vm_session_publish_display(vm_session *machine,
     C_INT force)
 {
     core_platform_display_frame frame;
-    uint16_t row;
-    uint16_t column;
+    type_unsigned_16 row;
+    type_unsigned_16 column;
     C_INT buffer_changed;
     C_INT cursor_changed;
 
@@ -69,7 +69,7 @@ core_machine_display_kind vm_session_publish_display(vm_session *machine,
     frame.cursor_visible = snapshot.cursor_visible;
     for (row = 0u; row < frame.rows; ++row) {
         for (column = 0u; column < frame.columns; ++column) {
-            uint16_t index = row * CORE_PLATFORM_DISPLAY_MAX_COLUMNS + column;
+            type_unsigned_16 index = row * CORE_PLATFORM_DISPLAY_MAX_COLUMNS + column;
             frame.characters[index] = snapshot.characters[index];
             frame.attributes[index] = snapshot.attributes[index];
         }

@@ -51,19 +51,19 @@ C_VOID vdm_session_destroy(vdm_session *session)
     }
 }
 
-type_status vdm_session_inject_key(vdm_session *session, uint8_t scan_code)
+type_status vdm_session_inject_key(vdm_session *session, type_unsigned_8 scan_code)
 { return session == STD_NULL ? TYPE_STATUS_INVALID_ARGUMENT :
     vdm_machine_dos_minimal_inject_key(session->dos_minimal, scan_code); }
-type_status vdm_session_write_text(vdm_session *session, uint16_t cell,
-    uint8_t character, uint8_t attribute)
+type_status vdm_session_write_text(vdm_session *session, type_unsigned_16 cell,
+    type_unsigned_8 character, type_unsigned_8 attribute)
 { return session == STD_NULL ? TYPE_STATUS_INVALID_ARGUMENT :
     vdm_machine_dos_minimal_write_text(session->dos_minimal, cell, character, attribute); }
 type_status vdm_session_get_snapshot(const vdm_session *session,
     vdm_machine_text_snapshot *out_snapshot)
 { return session == STD_NULL ? TYPE_STATUS_INVALID_ARGUMENT :
     vdm_machine_dos_minimal_get_snapshot(session->dos_minimal, out_snapshot); }
-type_status vdm_session_port_read(vdm_session *session, uint16_t port,
-    uint32_t *out_value)
+type_status vdm_session_port_read(vdm_session *session, type_unsigned_16 port,
+    type_unsigned_32 *out_value)
 { return session == STD_NULL ? TYPE_STATUS_INVALID_ARGUMENT :
     vdm_machine_dos_minimal_port_read(session->dos_minimal, port, out_value); }
 

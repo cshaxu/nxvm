@@ -7,8 +7,8 @@
 #define RATIONAL_CLOCK_STEPS 4u
 
 typedef struct rational_clock_probe {
-    uint64_t ticks[RATIONAL_CLOCK_STEPS];
-    uint32_t count;
+    type_unsigned_64 ticks[RATIONAL_CLOCK_STEPS];
+    type_unsigned_32 count;
 } rational_clock_probe;
 
 static C_VOID rational_clock_probe_reset(C_VOID *opaque)
@@ -19,7 +19,7 @@ static C_VOID rational_clock_probe_reset(C_VOID *opaque)
 }
 
 static C_VOID rational_clock_probe_advance(C_VOID *opaque,
-    uint64_t elapsed_ticks)
+    type_unsigned_64 elapsed_ticks)
 {
     rational_clock_probe *probe = (rational_clock_probe *)opaque;
 
@@ -37,7 +37,7 @@ static const core_machine_execution_provider rational_clock_provider = {
 static C_INT rational_clock_prepare(core_machine **out_machine,
     rational_clock_probe *probe)
 {
-    const uint8_t program[RATIONAL_CLOCK_STEPS] = {
+    const type_unsigned_8 program[RATIONAL_CLOCK_STEPS] = {
         0x90u, 0x90u, 0x90u, 0x90u
     };
     core_machine_config config = { 0 };
@@ -64,7 +64,7 @@ static C_INT rational_clock_prepare(core_machine **out_machine,
 
 static C_INT rational_clock_restart(core_machine *machine)
 {
-    const uint8_t program[RATIONAL_CLOCK_STEPS] = {
+    const type_unsigned_8 program[RATIONAL_CLOCK_STEPS] = {
         0x90u, 0x90u, 0x90u, 0x90u
     };
 
@@ -73,11 +73,11 @@ static C_INT rational_clock_restart(core_machine *machine)
             sizeof(program)) == TYPE_STATUS_OK;
 }
 
-static C_INT rational_clock_run(core_machine *machine, uint32_t quantum)
+static C_INT rational_clock_run(core_machine *machine, type_unsigned_32 quantum)
 {
     core_machine_run_budget budget = { quantum, 0u };
     core_machine_run_result result;
-    uint32_t remaining = RATIONAL_CLOCK_STEPS;
+    type_unsigned_32 remaining = RATIONAL_CLOCK_STEPS;
 
     while (remaining != 0u) {
         if (core_machine_run(machine, budget, &result) != TYPE_STATUS_OK ||

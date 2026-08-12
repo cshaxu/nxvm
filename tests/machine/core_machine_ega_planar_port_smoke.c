@@ -4,15 +4,15 @@
 #include "core/machine/port.h"
 #include "core/machine/vadp.h"
 
-static C_INT core_machine_ega_planar_write(t_ram *memory, uint32_t physical,
-    uint8_t value)
+static C_INT core_machine_ega_planar_write(t_ram *memory, type_unsigned_32 physical,
+    type_unsigned_8 value)
 {
     return core_machine_memory_write_physical(memory, physical,
         (type_virtual_address)&value, sizeof(value)) == TYPE_STATUS_OK;
 }
 
-static C_INT core_machine_ega_planar_read(t_ram *memory, uint32_t physical,
-    uint8_t *value)
+static C_INT core_machine_ega_planar_read(t_ram *memory, type_unsigned_32 physical,
+    type_unsigned_8 *value)
 {
     return core_machine_memory_read_physical(memory, physical,
         (type_virtual_address)value, sizeof(*value)) == TYPE_STATUS_OK;
@@ -33,7 +33,7 @@ C_INT main(C_VOID)
     t_port port;
     t_ram memory;
     t_vadp vadp;
-    uint8_t value = 0u;
+    type_unsigned_8 value = 0u;
     core_machine_display_snapshot snapshot;
     C_INT failed = 0;
 

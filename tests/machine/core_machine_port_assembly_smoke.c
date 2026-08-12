@@ -4,11 +4,11 @@
 #include "core/machine/media_interface.h"
 
 typedef struct port_assembly_probe_state {
-    uint32_t value;
+    type_unsigned_32 value;
 } port_assembly_probe_state;
 
-static type_status port_assembly_read(C_VOID *owner, uint16_t port,
-    uint32_t *out_value)
+static type_status port_assembly_read(C_VOID *owner, type_unsigned_16 port,
+    type_unsigned_32 *out_value)
 {
     port_assembly_probe_state *state = (port_assembly_probe_state *)owner;
 
@@ -18,8 +18,8 @@ static type_status port_assembly_read(C_VOID *owner, uint16_t port,
     return TYPE_STATUS_OK;
 }
 
-static type_status port_assembly_write(C_VOID *owner, uint16_t port,
-    uint32_t value)
+static type_status port_assembly_write(C_VOID *owner, type_unsigned_16 port,
+    type_unsigned_32 value)
 {
     port_assembly_probe_state *state = (port_assembly_probe_state *)owner;
 
@@ -46,7 +46,7 @@ static C_INT port_assembly_range_transaction(C_VOID)
     core_machine_port_test_allocation allocation = { 3u, 0u };
     port_assembly_probe_state state = {0u};
     core_machine *machine = STD_NULL;
-    uint32_t value = 0u;
+    type_unsigned_32 value = 0u;
     C_INT failed = core_machine_create(&config, &machine) != TYPE_STATUS_OK;
 
     if (!failed) {

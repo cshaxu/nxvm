@@ -16,46 +16,46 @@ typedef enum core_machine_cpu_profile {
 const C_CHAR *core_machine_cpu_profile_name(core_machine_cpu_profile profile);
 
 typedef struct core_machine_cpu_state {
-    uint16_t cs;
-    uint32_t cs_base;
-    uint32_t eip;
-    uint32_t eflags;
-    uint8_t halted;
+    type_unsigned_16 cs;
+    type_unsigned_32 cs_base;
+    type_unsigned_32 eip;
+    type_unsigned_32 eflags;
+    type_unsigned_8 halted;
 } core_machine_cpu_state;
 
 #define CORE_MACHINE_CPU_DIAGNOSTIC_WINDOW_CAPACITY 32u
 #define CORE_MACHINE_CPU_DIAGNOSTIC_BYTES 15u
 
 typedef struct core_machine_cpu_execution_point {
-    uint16_t cs;
-    uint32_t cs_base;
-    uint32_t eip;
-    uint32_t linear_pc;
-    uint8_t bytes[CORE_MACHINE_CPU_DIAGNOSTIC_BYTES];
-    uint8_t byte_count;
+    type_unsigned_16 cs;
+    type_unsigned_32 cs_base;
+    type_unsigned_32 eip;
+    type_unsigned_32 linear_pc;
+    type_unsigned_8 bytes[CORE_MACHINE_CPU_DIAGNOSTIC_BYTES];
+    type_unsigned_8 byte_count;
 } core_machine_cpu_execution_point;
 
 typedef struct core_machine_cpu_fault_snapshot {
     C_INT valid;
-    uint32_t exception_mask;
-    uint32_t exception_code;
+    type_unsigned_32 exception_mask;
+    type_unsigned_32 exception_code;
     core_machine_cpu_execution_point point;
-    uint32_t eax;
-    uint32_t ebx;
-    uint32_t ecx;
-    uint32_t edx;
-    uint32_t cr2;
-    uint32_t esp;
-    uint32_t ebp;
-    uint32_t esi;
-    uint32_t edi;
-    uint32_t eflags;
+    type_unsigned_32 eax;
+    type_unsigned_32 ebx;
+    type_unsigned_32 ecx;
+    type_unsigned_32 edx;
+    type_unsigned_32 cr2;
+    type_unsigned_32 esp;
+    type_unsigned_32 ebp;
+    type_unsigned_32 esi;
+    type_unsigned_32 edi;
+    type_unsigned_32 eflags;
 } core_machine_cpu_fault_snapshot;
 
 typedef struct core_machine_cpu_diagnostic {
     core_machine_cpu_fault_snapshot first_fault;
     core_machine_cpu_fault_snapshot last_delivered_exception;
-    uint32_t delivered_exception_count;
+    type_unsigned_32 delivered_exception_count;
     core_machine_cpu_execution_point recent[CORE_MACHINE_CPU_DIAGNOSTIC_WINDOW_CAPACITY];
     STD_SIZE_T recent_count;
 } core_machine_cpu_diagnostic;

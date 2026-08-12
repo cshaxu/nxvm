@@ -161,7 +161,7 @@ static C_INT vm_session_machine_remove_fdd(C_VOID *context, const C_CHAR *path)
     return session != STD_NULL ? vm_machine_fdd_remove_for(&session->fdd, path) : -1;
 }
 
-static C_VOID vm_session_machine_create_hdd(C_VOID *context, uint16_t cylinders)
+static C_VOID vm_session_machine_create_hdd(C_VOID *context, type_unsigned_16 cylinders)
 {
     vm_session *session = vm_session_machine_borrow_selected(context);
 

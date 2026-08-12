@@ -99,9 +99,9 @@ static C_INT core_machine_rtc_alarm_matches(const core_machine_rtc *cmos)
         cmos->registers[CORE_MACHINE_RTC_HOUR_ALARM] == core_machine_rtc_hour_encode(cmos);
 }
 
-static uint32_t core_machine_rtc_periodic_hz(const core_machine_rtc *cmos)
+static type_unsigned_32 core_machine_rtc_periodic_hz(const core_machine_rtc *cmos)
 {
-    uint8_t rate = cmos->registers[CORE_MACHINE_RTC_REG_A] & 0x0fu;
+    type_unsigned_8 rate = cmos->registers[CORE_MACHINE_RTC_REG_A] & 0x0fu;
     return rate >= 3u && rate <= 15u ? 32768u >> (rate - 1u) : 0u;
 }
 
@@ -173,9 +173,9 @@ C_VOID core_machine_rtc_reset(core_machine_rtc *cmos)
     core_machine_pic_irq_source_deassert(&cmos->irq_source);
 }
 
-C_VOID core_machine_rtc_advance(core_machine_rtc *cmos, uint64_t elapsed_ticks)
+C_VOID core_machine_rtc_advance(core_machine_rtc *cmos, type_unsigned_64 elapsed_ticks)
 {
-    uint32_t periodic_hz;
+    type_unsigned_32 periodic_hz;
     if (cmos == STD_NULL || (cmos->registers[CORE_MACHINE_RTC_REG_B] & CORE_MACHINE_RTC_REG_B_SET) != 0u)
         return;
     cmos->calendar.second_ticks += elapsed_ticks;
@@ -199,26 +199,26 @@ C_VOID core_machine_rtc_advance(core_machine_rtc *cmos, uint64_t elapsed_ticks)
 
 C_VOID core_machine_rtc_finalize(core_machine_rtc *cmos) { (C_VOID)cmos; }
 
-C_VOID core_machine_rtc_select_register(core_machine_rtc *cmos, uint8_t index)
+C_VOID core_machine_rtc_select_register(core_machine_rtc *cmos, type_unsigned_8 index)
 {
     if (cmos != STD_NULL) cmos->selected_register = index & 0x7fu;
 }
 
-uint8_t core_machine_rtc_read_selected(core_machine_rtc *cmos)
+type_unsigned_8 core_machine_rtc_read_selected(core_machine_rtc *cmos)
 {
     return cmos == STD_NULL ? 0u : core_machine_rtc_read_register(cmos,
         cmos->selected_register);
 }
 
-C_VOID core_machine_rtc_write_selected(core_machine_rtc *cmos, uint8_t value)
+C_VOID core_machine_rtc_write_selected(core_machine_rtc *cmos, type_unsigned_8 value)
 {
     if (cmos != STD_NULL) {
         core_machine_rtc_write_register(cmos, cmos->selected_register, value);
     }
 }
 
-C_VOID core_machine_rtc_write_nvram(core_machine_rtc *cmos, uint8_t index,
-    uint8_t value)
+C_VOID core_machine_rtc_write_nvram(core_machine_rtc *cmos, type_unsigned_8 index,
+    type_unsigned_8 value)
 {
     if (cmos == STD_NULL || index >= CORE_MACHINE_RTC_REGISTER_COUNT ||
         index == CORE_MACHINE_RTC_REG_A || index == CORE_MACHINE_RTC_REG_B ||

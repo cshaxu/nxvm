@@ -4,13 +4,13 @@
 #include "core/machine/port.h"
 #include "core/machine/vadp.h"
 
-static C_VOID vadp_write_crtc(t_port *port, uint8_t index, uint8_t value)
+static C_VOID vadp_write_crtc(t_port *port, type_unsigned_8 index, type_unsigned_8 value)
 {
     core_machine_port_write(port, 0x03d4u, index);
     core_machine_port_write(port, 0x03d5u, value);
 }
 
-static uint8_t vadp_read_crtc(t_port *port, uint8_t index)
+static type_unsigned_8 vadp_read_crtc(t_port *port, type_unsigned_8 index)
 {
     core_machine_port_write(port, 0x03d4u, index);
     return core_machine_port_read(port, 0x03d5u);
@@ -30,8 +30,8 @@ C_INT main(C_VOID)
     t_port port;
     t_ram memory;
     t_vadp vadp;
-    uint8_t value;
-    uint8_t initial_status;
+    type_unsigned_8 value;
+    type_unsigned_8 initial_status;
     C_INT failed = 0;
 
     STD_MEMSET(&memory, 0, sizeof(memory));

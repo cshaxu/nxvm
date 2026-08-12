@@ -7,7 +7,7 @@
 #include "core/machine/port.h"
 
 typedef struct core_machine_fdc_change_media {
-    uint64_t generation;
+    type_unsigned_64 generation;
     type_bool present;
 } core_machine_fdc_change_media;
 
@@ -34,7 +34,7 @@ static core_machine_media_result core_machine_fdc_change_query(C_VOID *context,
 }
 
 static core_machine_media_result core_machine_fdc_change_read(C_VOID *context,
-    uint64_t offset, C_VOID *buffer, uint32_t byte_count)
+    type_unsigned_64 offset, C_VOID *buffer, type_unsigned_32 byte_count)
 {
     core_machine_fdc_change_media *media = context;
 
@@ -42,7 +42,7 @@ static core_machine_media_result core_machine_fdc_change_read(C_VOID *context,
         return CORE_MACHINE_MEDIA_RESULT_ABSENT;
     }
     if (offset >= 512u || byte_count != 1u) return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
-    *(uint8_t *)buffer = 0x5au;
+    *(type_unsigned_8 *)buffer = 0x5au;
     return CORE_MACHINE_MEDIA_RESULT_OK;
 }
 
@@ -54,7 +54,7 @@ static const core_machine_media_provider core_machine_fdc_change_provider = {
     STD_NULL
 };
 
-static C_VOID core_machine_fdc_change_command(t_port *port, const uint8_t *bytes,
+static C_VOID core_machine_fdc_change_command(t_port *port, const type_unsigned_8 *bytes,
     STD_SIZE_T count)
 {
     STD_SIZE_T index;
@@ -66,18 +66,18 @@ static C_VOID core_machine_fdc_change_command(t_port *port, const uint8_t *bytes
 
 static C_VOID core_machine_fdc_change_ack_irq(t_port *port)
 {
-    core_machine_fdc_change_command(port, (const uint8_t[]){0x08u}, 1u);
+    core_machine_fdc_change_command(port, (const type_unsigned_8[]){0x08u}, 1u);
     (C_VOID)core_machine_port_read(port, 0x03f5u);
     (C_VOID)core_machine_port_read(port, 0x03f5u);
 }
 
 int main(C_VOID)
 {
-    static const uint8_t recalibrate_0[] = {0x07u, 0x00u};
-    static const uint8_t recalibrate_1[] = {0x07u, 0x01u};
-    static const uint8_t sense_1[] = {0x04u, 0x01u};
-    static const uint8_t specify_dma[] = {0x03u, 0xdfu, 0x02u};
-    static const uint8_t read_0[] = {0xe6u, 0x00u, 0x00u, 0x00u, 0x01u,
+    static const type_unsigned_8 recalibrate_0[] = {0x07u, 0x00u};
+    static const type_unsigned_8 recalibrate_1[] = {0x07u, 0x01u};
+    static const type_unsigned_8 sense_1[] = {0x04u, 0x01u};
+    static const type_unsigned_8 specify_dma[] = {0x03u, 0xdfu, 0x02u};
+    static const type_unsigned_8 read_0[] = {0xe6u, 0x00u, 0x00u, 0x00u, 0x01u,
         0x02u, 0x01u, 0x1bu, 0xffu};
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
@@ -103,7 +103,7 @@ int main(C_VOID)
     core_machine_fdc *fdc;
     t_dma *dma;
     t_port *port;
-    uint8_t status;
+    type_unsigned_8 status;
     C_INT failed = 0;
 
     core_machine_media_registry_initialize(&media);
@@ -161,7 +161,7 @@ int main(C_VOID)
                 core_machine_fdc_refresh(fdc);
                 status = 0u;
                 core_machine_fdc_change_command(port, sense_1, sizeof(sense_1));
-                status = (uint8_t)core_machine_port_read(port, 0x03f5u);
+                status = (type_unsigned_8)core_machine_port_read(port, 0x03f5u);
                 failed |= (core_machine_port_read(port, 0x03f7u) & VFDC_DIR_DC) == 0u ||
                     status != 0x11u;
 

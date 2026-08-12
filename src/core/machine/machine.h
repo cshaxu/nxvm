@@ -44,7 +44,7 @@
 typedef struct core_machine_trace_state {
     core_machine_trace_provider provider;
     core_machine_trace_event events[CORE_MACHINE_TRACE_CAPACITY];
-    uint64_t next_sequence;
+    type_unsigned_64 next_sequence;
     STD_SIZE_T count;
     C_INT flushing;
 } core_machine_trace_state;
@@ -55,9 +55,9 @@ typedef struct core_machine_cpu_diagnostic_state {
 } core_machine_cpu_diagnostic_state;
 
 typedef struct core_machine_immutable_rom_mapping {
-    uint32_t physical_start;
+    type_unsigned_32 physical_start;
     STD_SIZE_T bytes;
-    uint8_t *image;
+    type_unsigned_8 *image;
 } core_machine_immutable_rom_mapping;
 
 struct core_machine_firmware_context {
@@ -69,18 +69,18 @@ struct core_machine_firmware_context {
 struct core_machine {
     core_machine_lifecycle lifecycle;
     STD_ATOMIC_BOOL stop_requested;
-    uint32_t fault_detail;
-    uint64_t elapsed_ticks;
+    type_unsigned_32 fault_detail;
+    type_unsigned_64 elapsed_ticks;
     core_machine_instruction_timing instruction_timing;
-    uint64_t maximum_instruction_ticks;
+    type_unsigned_64 maximum_instruction_ticks;
     core_machine_clock_domain dma_clock;
     core_machine_clock_domain pit_clock;
     core_machine_clock_domain vadp_clock;
     core_machine_clock_domain kbc_clock;
     core_machine_clock_domain provider_clock;
-    uint32_t kbc_typematic_initial_ticks;
-    uint32_t kbc_typematic_repeat_ticks;
-    uint32_t kbc_command_response_ticks;
+    type_unsigned_32 kbc_typematic_initial_ticks;
+    type_unsigned_32 kbc_typematic_repeat_ticks;
+    type_unsigned_32 kbc_command_response_ticks;
     core_machine_display_port_topology display_ports;
     type_bool display_configured;
     core_machine_dma_wiring dma_wiring;
@@ -133,15 +133,15 @@ C_VOID core_machine_trace_finalize(core_machine *machine);
 C_VOID core_machine_trace_record(
     core_machine *machine,
     core_machine_trace_event_type type,
-    uint32_t address,
-    uint32_t value,
-    uint32_t detail);
+    type_unsigned_32 address,
+    type_unsigned_32 value,
+    type_unsigned_32 detail);
 C_VOID core_machine_cpu_diagnostic_initialize(core_machine *machine);
 C_VOID core_machine_cpu_diagnostic_reset(core_machine *machine);
 C_INT core_machine_configuration_is_open(const core_machine *machine);
 C_INT core_machine_mutable_operation_is_allowed(const core_machine *machine);
 type_status core_machine_register_immutable_rom_mapping_from_firmware(
-    core_machine *machine, uint32_t physical_start, const uint8_t *image,
+    core_machine *machine, type_unsigned_32 physical_start, const type_unsigned_8 *image,
     STD_SIZE_T bytes);
 C_VOID core_machine_rollback_immutable_rom_mappings(core_machine *machine,
     STD_SIZE_T mapping_count);

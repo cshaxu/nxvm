@@ -32,7 +32,7 @@ static C_VOID initialize_pic(t_port *port)
     core_machine_port_write(port, 0x00a1u, 0x01u);
 }
 
-static C_VOID advance_cmos(core_machine_rtc *cmos, uint64_t elapsed_ticks)
+static C_VOID advance_cmos(core_machine_rtc *cmos, type_unsigned_64 elapsed_ticks)
 {
     core_machine_rtc_advance(cmos, elapsed_ticks);
     core_machine_pic_refresh(cmos->irq_source.master,

@@ -9,11 +9,11 @@
 #define VM_EGA_PLANAR_IMAGE_BYTES (1440u * 1024u)
 #define VM_EGA_PLANAR_BOOT_BUDGET 500000u
 
-static uint8_t vm_ega_planar_image[VM_EGA_PLANAR_IMAGE_BYTES];
+static type_unsigned_8 vm_ega_planar_image[VM_EGA_PLANAR_IMAGE_BYTES];
 
 static C_INT vm_ega_planar_write_fixture(C_CHAR path[MAX_PATH])
 {
-    static const uint8_t boot_code[] = {
+    static const type_unsigned_8 boot_code[] = {
         0xb8u, 0x00u, 0xa0u,       /* mov ax, a000h */
         0x8eu, 0xc0u,              /* mov es, ax */
         0xbau, 0xc4u, 0x03u,       /* mov dx, 3c4h */
@@ -80,7 +80,7 @@ C_INT main(C_VOID)
     core_machine_display_snapshot snapshot;
     vm_session *session = STD_NULL;
     C_CHAR path[MAX_PATH] = {0};
-    uint32_t instruction;
+    type_unsigned_32 instruction;
     C_INT passed = 0;
 
     if (!vm_ega_planar_write_fixture(path)) goto done;

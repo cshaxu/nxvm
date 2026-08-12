@@ -7,12 +7,12 @@
 #include "core/machine/port.h"
 
 typedef struct core_machine_fdc_fixture_media {
-    uint8_t bytes[512];
-    uint64_t generation;
-    uint32_t query_count;
-    uint32_t read_count;
-    uint32_t write_count;
-    uint32_t format_count;
+    type_unsigned_8 bytes[512];
+    type_unsigned_64 generation;
+    type_unsigned_32 query_count;
+    type_unsigned_32 read_count;
+    type_unsigned_32 write_count;
+    type_unsigned_32 format_count;
     type_bool present;
     type_bool read_only;
     core_machine_media_result forced_read_result;
@@ -46,7 +46,7 @@ static core_machine_media_result core_machine_fdc_fixture_query(C_VOID *context,
 }
 
 static core_machine_media_result core_machine_fdc_fixture_read(C_VOID *context,
-    uint64_t offset, C_VOID *buffer, uint32_t byte_count)
+    type_unsigned_64 offset, C_VOID *buffer, type_unsigned_32 byte_count)
 {
     core_machine_fdc_fixture_media *media = context;
 
@@ -60,12 +60,12 @@ static core_machine_media_result core_machine_fdc_fixture_read(C_VOID *context,
         return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
     }
     ++media->read_count;
-    *(uint8_t *)buffer = media->bytes[offset];
+    *(type_unsigned_8 *)buffer = media->bytes[offset];
     return CORE_MACHINE_MEDIA_RESULT_OK;
 }
 
 static core_machine_media_result core_machine_fdc_fixture_write(C_VOID *context,
-    uint64_t offset, const C_VOID *buffer, uint32_t byte_count)
+    type_unsigned_64 offset, const C_VOID *buffer, type_unsigned_32 byte_count)
 {
     core_machine_fdc_fixture_media *media = context;
 
@@ -80,12 +80,12 @@ static core_machine_media_result core_machine_fdc_fixture_write(C_VOID *context,
         return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
     }
     ++media->write_count;
-    media->bytes[offset] = *(const uint8_t *)buffer;
+    media->bytes[offset] = *(const type_unsigned_8 *)buffer;
     return CORE_MACHINE_MEDIA_RESULT_OK;
 }
 
 static core_machine_media_result core_machine_fdc_fixture_format(C_VOID *context,
-    uint64_t logical_sector, uint32_t sector_count, uint8_t fill)
+    type_unsigned_64 logical_sector, type_unsigned_32 sector_count, type_unsigned_8 fill)
 {
     core_machine_fdc_fixture_media *media = context;
 
@@ -111,7 +111,7 @@ static const core_machine_media_provider core_machine_fdc_fixture_provider = {
     STD_NULL
 };
 
-static C_VOID core_machine_fdc_command(t_port *port, const uint8_t *bytes,
+static C_VOID core_machine_fdc_command(t_port *port, const type_unsigned_8 *bytes,
     STD_SIZE_T count)
 {
     STD_SIZE_T index;
@@ -121,30 +121,30 @@ static C_VOID core_machine_fdc_command(t_port *port, const uint8_t *bytes,
     }
 }
 
-static C_INT core_machine_fdc_read_result(t_port *port, uint8_t *result,
+static C_INT core_machine_fdc_read_result(t_port *port, type_unsigned_8 *result,
     STD_SIZE_T count)
 {
     STD_SIZE_T index;
 
     for (index = 0u; index < count; ++index) {
-        result[index] = (uint8_t)core_machine_port_read(port, 0x03f5u);
+        result[index] = (type_unsigned_8)core_machine_port_read(port, 0x03f5u);
     }
     return (core_machine_port_read(port, 0x03f4u) & (VFDC_MSR_CB | VFDC_MSR_DIO)) == 0u;
 }
 
 C_INT main(C_VOID)
 {
-    static const uint8_t specify_non_dma[] = {0x03u, 0xdfu, 0x03u};
-    static const uint8_t read_sector[] = {
+    static const type_unsigned_8 specify_non_dma[] = {0x03u, 0xdfu, 0x03u};
+    static const type_unsigned_8 read_sector[] = {
         0xe6u, 0x00u, 0x00u, 0x00u, 0x01u, 0x02u, 0x01u, 0x1bu, 0xffu
     };
-    static const uint8_t write_sector[] = {
+    static const type_unsigned_8 write_sector[] = {
         0xc5u, 0x00u, 0x00u, 0x00u, 0x01u, 0x02u, 0x01u, 0x1bu, 0xffu
     };
-    static const uint8_t format_track[] = {
+    static const type_unsigned_8 format_track[] = {
         0x4du, 0x00u, 0x02u, 0x01u, 0x1bu, 0xa5u
     };
-    static const uint8_t format_id[] = {0x00u, 0x00u, 0x01u, 0x02u};
+    static const type_unsigned_8 format_id[] = {0x00u, 0x00u, 0x01u, 0x02u};
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086,
@@ -173,7 +173,7 @@ C_INT main(C_VOID)
     core_machine *machine = STD_NULL;
     core_machine_fdc *fdc;
     t_port *port;
-    uint8_t result[7];
+    type_unsigned_8 result[7];
     C_INT failed = 0;
 
     fixture.bytes[0] = 0x4au;
@@ -206,14 +206,14 @@ C_INT main(C_VOID)
 
                 core_machine_fdc_command(port, read_sector, sizeof(read_sector));
                 failed |= core_machine_port_read(port, fdc_config.data_port) != 0x4au;
-                for (uint32_t index = 1u; index < 512u; ++index) {
+                for (type_unsigned_32 index = 1u; index < 512u; ++index) {
                     (C_VOID)core_machine_port_read(port, fdc_config.data_port);
                 }
                 failed |= !core_machine_fdc_read_result(port, result, sizeof(result)) ||
                     result[0] != core_machine_fdc_ST0_NORMAL || fixture.read_count != 512u;
 
                 core_machine_fdc_command(port, write_sector, sizeof(write_sector));
-                for (uint32_t index = 0u; index < 512u; ++index) {
+                for (type_unsigned_32 index = 0u; index < 512u; ++index) {
                     core_machine_port_write(port, fdc_config.data_port,
                         index == 0u ? 0x5au : 0u);
                 }
@@ -227,8 +227,8 @@ C_INT main(C_VOID)
                     result[0] != core_machine_fdc_ST0_NORMAL || fixture.format_count != 1u ||
                     fixture.generation != 2u || fixture.bytes[511] != 0xa5u;
 
-                core_machine_fdc_command(port, (const uint8_t[]){0x0fu, 0x00u, 0x00u}, 3u);
-                core_machine_fdc_command(port, (const uint8_t[]){0x08u}, 1u);
+                core_machine_fdc_command(port, (const type_unsigned_8[]){0x0fu, 0x00u, 0x00u}, 3u);
+                core_machine_fdc_command(port, (const type_unsigned_8[]){0x08u}, 1u);
                 failed |= !core_machine_fdc_read_result(port, result, 2u);
                 core_machine_fdc_refresh(fdc);
                 failed |= (core_machine_port_read(port, fdc_config.direction_port) & VFDC_DIR_DC) != 0u;

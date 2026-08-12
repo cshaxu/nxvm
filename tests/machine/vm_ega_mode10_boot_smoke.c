@@ -9,11 +9,11 @@
 #define T285_MODE10_IMAGE_BYTES (1440u * 1024u)
 #define T285_MODE10_BOOT_BUDGET 2000u
 
-static uint8_t t285_mode10_image[T285_MODE10_IMAGE_BYTES];
+static type_unsigned_8 t285_mode10_image[T285_MODE10_IMAGE_BYTES];
 
 static C_INT t285_mode10_write_fixture(C_CHAR path[MAX_PATH])
 {
-    static const uint8_t boot_code[] = {
+    static const type_unsigned_8 boot_code[] = {
         0x31u, 0xc0u, 0x8eu, 0xd8u,             /* xor ax,ax; mov ds,ax */
         0xb8u, 0x10u, 0x00u, 0xcdu, 0x10u,      /* mov ax,0010h; int 10h */
         0xb4u, 0x0fu, 0xcdu, 0x10u,             /* mov ah,0fh; int 10h */
@@ -75,12 +75,12 @@ C_INT main(C_VOID)
     core_machine_display_snapshot snapshot;
     vm_session *session = STD_NULL;
     C_CHAR path[MAX_PATH] = {0};
-    uint16_t mode10_query = 0u;
-    uint16_t text_query = 0u;
-    uint8_t bda_mode = 0u;
-    uint8_t graphics_ready = 0u;
-    uint8_t observed_pixels[4] = {0u};
-    uint32_t instruction;
+    type_unsigned_16 mode10_query = 0u;
+    type_unsigned_16 text_query = 0u;
+    type_unsigned_8 bda_mode = 0u;
+    type_unsigned_8 graphics_ready = 0u;
+    type_unsigned_8 observed_pixels[4] = {0u};
+    type_unsigned_32 instruction;
     C_INT saw_mode10 = 0;
     C_INT saw_write_frame = 0;
     C_INT saw_pixels = 0;

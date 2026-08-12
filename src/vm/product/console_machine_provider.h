@@ -24,7 +24,7 @@ typedef struct vm_product_console_machine_provider {
     C_VOID (*create_fdd)(C_VOID *context);
     C_INT (*insert_fdd)(C_VOID *context, const C_CHAR *path);
     C_INT (*remove_fdd)(C_VOID *context, const C_CHAR *path);
-    C_VOID (*create_hdd)(C_VOID *context, uint16_t cylinders);
+    C_VOID (*create_hdd)(C_VOID *context, type_unsigned_16 cylinders);
     C_INT (*insert_hdd)(C_VOID *context, const C_CHAR *path);
     C_INT (*remove_hdd)(C_VOID *context, const C_CHAR *path);
     type_status (*start)(C_VOID *context);

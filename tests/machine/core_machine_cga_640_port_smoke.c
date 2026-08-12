@@ -10,8 +10,8 @@ C_INT main(C_VOID)
     t_ram memory;
     t_vadp vadp;
     core_machine_display_snapshot snapshot;
-    uint8_t pixel = 0xa0u;
-    uint32_t status;
+    type_unsigned_8 pixel = 0xa0u;
+    type_unsigned_32 status;
     C_INT failed = 0;
 
     STD_MEMSET(&memory, 0, sizeof(memory));

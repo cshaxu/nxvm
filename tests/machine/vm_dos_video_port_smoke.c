@@ -33,9 +33,9 @@ C_INT main(C_INT argc, C_CHAR **argv)
     core_machine_observation observation;
     core_machine_display_snapshot snapshot;
     t_cpu cpu;
-    uint8_t opcode[2];
-    uint8_t functions[256] = {0};
-    uint64_t instruction;
+    type_unsigned_8 opcode[2];
+    type_unsigned_8 functions[256] = {0};
+    type_unsigned_64 instruction;
     C_UINT int10_count = 0u;
     C_UINT f2_count = 0u;
     C_INT prompt_seen = 0;

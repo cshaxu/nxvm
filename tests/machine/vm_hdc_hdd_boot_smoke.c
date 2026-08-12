@@ -14,7 +14,7 @@
 #define VM_HDC_HDD_BOOT_INSTRUCTION_BUDGET 500000u
 #define VM_HDC_HDD_BOOT_QUANTUM 1u
 
-static uint32_t vm_hdc_hdd_boot_partition_lba(const vm_session *session)
+static type_unsigned_32 vm_hdc_hdd_boot_partition_lba(const vm_session *session)
 {
     const type_unsigned_8 *image;
     const type_unsigned_8 *entry;
@@ -22,16 +22,16 @@ static uint32_t vm_hdc_hdd_boot_partition_lba(const vm_session *session)
     if (session == STD_NULL || session->hdd.connect.pImgBase == 0u) return 0u;
     image = (const type_unsigned_8 *)session->hdd.connect.pImgBase;
     entry = image + VM_HDC_HDD_PARTITION_TABLE_OFFSET;
-    return (uint32_t)entry[VM_HDC_HDD_PARTITION_LBA_OFFSET] |
-        ((uint32_t)entry[VM_HDC_HDD_PARTITION_LBA_OFFSET + 1u] << 8u) |
-        ((uint32_t)entry[VM_HDC_HDD_PARTITION_LBA_OFFSET + 2u] << 16u) |
-        ((uint32_t)entry[VM_HDC_HDD_PARTITION_LBA_OFFSET + 3u] << 24u);
+    return (type_unsigned_32)entry[VM_HDC_HDD_PARTITION_LBA_OFFSET] |
+        ((type_unsigned_32)entry[VM_HDC_HDD_PARTITION_LBA_OFFSET + 1u] << 8u) |
+        ((type_unsigned_32)entry[VM_HDC_HDD_PARTITION_LBA_OFFSET + 2u] << 16u) |
+        ((type_unsigned_32)entry[VM_HDC_HDD_PARTITION_LBA_OFFSET + 3u] << 24u);
 }
 
 static C_INT vm_hdc_hdd_boot_matches_partition_vbr(const vm_session *session)
 {
-    uint8_t boot_sector[VM_HDC_HDD_BOOT_BYTES];
-    uint32_t partition_lba;
+    type_unsigned_8 boot_sector[VM_HDC_HDD_BOOT_BYTES];
+    type_unsigned_32 partition_lba;
     const type_unsigned_8 *image;
     STD_SIZE_T index;
 
@@ -90,7 +90,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
     type_status run_status;
-    uint32_t executed = 0u;
+    type_unsigned_32 executed = 0u;
     C_INT loaded = 0;
 
     if (argc != 2 || !vm_hdc_hdd_boot_preference_overrides(&config) ||
@@ -124,7 +124,7 @@ C_INT main(C_INT argc, C_CHAR **argv)
         }
     }
     if (!loaded) {
-        uint8_t bytes[16] = {0};
+        type_unsigned_8 bytes[16] = {0};
 
         (C_VOID)core_machine_debug_read_memory(session->core_machine,
             VM_HDC_HDD_BOOT_ADDRESS, bytes, sizeof(bytes));

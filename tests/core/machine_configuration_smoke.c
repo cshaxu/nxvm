@@ -3,7 +3,7 @@
 #include "core/machine/machine_interface.h"
 
 static type_status machine_configuration_port_read(C_VOID *owner,
-    uint16_t port, uint32_t *out_value)
+    type_unsigned_16 port, type_unsigned_32 *out_value)
 {
     (C_VOID)owner;
     (C_VOID)port;

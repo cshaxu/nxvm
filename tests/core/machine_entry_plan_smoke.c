@@ -5,7 +5,7 @@
 
 static C_INT prepare_machine(core_machine **out_machine)
 {
-    static const uint8_t rom[] = { 0xf4u };
+    static const type_unsigned_8 rom[] = { 0xf4u };
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_8086,
@@ -26,8 +26,8 @@ static C_INT prepare_machine(core_machine **out_machine)
     return 0;
 }
 
-static core_machine_entry_plan make_plan(uint16_t cs, uint16_t ip,
-    uint32_t physical, core_machine_memory_route route,
+static core_machine_entry_plan make_plan(type_unsigned_16 cs, type_unsigned_16 ip,
+    type_unsigned_32 physical, core_machine_memory_route route,
     const core_machine_entry_plan_preload *preloads, STD_SIZE_T preload_count)
 {
     core_machine_entry_plan plan;
@@ -49,7 +49,7 @@ static core_machine_entry_plan make_plan(uint16_t cs, uint16_t ip,
 
 C_INT main(C_VOID)
 {
-    static const uint8_t halt[] = { 0xf4u };
+    static const type_unsigned_8 halt[] = { 0xf4u };
     core_machine *machine = STD_NULL;
     core_machine_cpu_state state;
     core_machine_run_result result;
@@ -61,7 +61,7 @@ C_INT main(C_VOID)
         { 0x0200u, halt, sizeof(halt) }, { 0x0200u, halt, sizeof(halt) }
     };
     core_machine_entry_plan plan;
-    uint8_t observed = 0xffu;
+    type_unsigned_8 observed = 0xffu;
     C_INT failed = prepare_machine(&machine);
 
     if (!failed) {

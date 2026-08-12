@@ -4,7 +4,7 @@
 #include "type.h"
 
 
-typedef uint32_t core_product_session_id;
+typedef type_unsigned_32 core_product_session_id;
 
 typedef enum core_product_session_state {
     CORE_PRODUCT_SESSION_STATE_READY,

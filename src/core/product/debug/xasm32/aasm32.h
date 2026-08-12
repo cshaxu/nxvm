@@ -10,9 +10,9 @@ extern "C" {
 #include "type.h"
 
 /* assemble single instruction */
-uint8_t aasm32(const C_CHAR *stmt, uint8_t *rcode, C_INT flag32);
+type_unsigned_8 aasm32(const C_CHAR *stmt, type_unsigned_8 *rcode, C_INT flag32);
 /* assemble a paragraph of instructions */
-uint32_t aasm32x(const C_CHAR *stmt, uint8_t *rcode, C_INT flag32);
+type_unsigned_32 aasm32x(const C_CHAR *stmt, type_unsigned_8 *rcode, C_INT flag32);
 
 #ifdef __cplusplus
 }/*_EOCD_*/

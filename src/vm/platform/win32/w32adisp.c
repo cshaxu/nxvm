@@ -305,7 +305,7 @@ struct w32adisp_context {
     USHORT columns;
     UCHAR cursor_top;
     UCHAR cursor_bottom;
-    uint64_t displayed_generation;
+    type_unsigned_64 displayed_generation;
     HDC font_dc;
     HBITMAP font_bitmap;
     BOOL font_character_exists[FONT_NCHAR][FONT_NCOLOR];
@@ -415,7 +415,7 @@ C_VOID w32adisp_context_destroy(w32adisp_context *context) {
     STD_FREE(context);
 }
 
-uint64_t w32adisp_context_generation(const w32adisp_context *context) {
+type_unsigned_64 w32adisp_context_generation(const w32adisp_context *context) {
     return context == STD_NULL ? 0u : context->displayed_generation;
 }
 
@@ -503,7 +503,7 @@ static VOID DisplayCursor(w32adisp_context *context,
     DeleteObject(hBrush);
 }
 
-static COLORREF w32adisp_rgb(uint32_t rgb)
+static COLORREF w32adisp_rgb(type_unsigned_32 rgb)
 {
     return RGB((rgb >> 16) & 0xffu, (rgb >> 8) & 0xffu, rgb & 0xffu);
 }
@@ -511,14 +511,14 @@ static COLORREF w32adisp_rgb(uint32_t rgb)
 static C_VOID w32adisp_paint_indexed_pixels(w32adisp_context *context,
     const core_platform_display_frame *frame)
 {
-    uint16_t y;
-    uint16_t x;
+    type_unsigned_16 y;
+    type_unsigned_16 x;
 
     if (context == STD_NULL || frame == STD_NULL ||
         frame->pixel_width == 0u || frame->pixel_height == 0u) return;
     for (y = 0u; y < frame->pixel_height; ++y) {
         for (x = 0u; x < frame->pixel_width; ++x) {
-            uint8_t index = frame->pixels[(uint32_t)y * frame->pixel_width + x];
+            type_unsigned_8 index = frame->pixels[(type_unsigned_32)y * frame->pixel_width + x];
             SetPixelV(context->buffer_dc, x, y,
                 w32adisp_rgb(frame->palette_rgb[index & 0x0fu]));
         }

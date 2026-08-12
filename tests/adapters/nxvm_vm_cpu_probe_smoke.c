@@ -10,9 +10,9 @@
 
 static C_INT expect_capture(
     const vm_session_cpu_probe_capture *capture,
-    uint32_t eax,
-    uint16_t ip,
-    uint32_t exception_mask)
+    type_unsigned_32 eax,
+    type_unsigned_16 ip,
+    type_unsigned_32 exception_mask)
 {
     return capture->after.eax == eax && capture->after.ip == ip &&
         capture->exception_mask == exception_mask;
@@ -20,12 +20,12 @@ static C_INT expect_capture(
 
 C_INT main(C_VOID)
 {
-    const uint8_t mov_ax[] = { 0xb8u, 0x34u, 0x12u };
-    const uint8_t add_ax[] = { 0x05u, 0x34u, 0x12u };
-    const uint8_t short_jump[] = { 0xebu, 0x02u };
-    const uint8_t segment_prefix_nop[] = { 0x26u, 0x90u };
-    const uint8_t prefixed_mov[] = { 0x66u, 0xb8u, 0x78u, 0x56u, 0x34u, 0x12u };
-    const uint8_t invalid[] = { 0x0fu, 0x0bu };
+    const type_unsigned_8 mov_ax[] = { 0xb8u, 0x34u, 0x12u };
+    const type_unsigned_8 add_ax[] = { 0x05u, 0x34u, 0x12u };
+    const type_unsigned_8 short_jump[] = { 0xebu, 0x02u };
+    const type_unsigned_8 segment_prefix_nop[] = { 0x26u, 0x90u };
+    const type_unsigned_8 prefixed_mov[] = { 0x66u, 0xb8u, 0x78u, 0x56u, 0x34u, 0x12u };
+    const type_unsigned_8 invalid[] = { 0x0fu, 0x0bu };
     vm_session_cpu_probe_capture capture;
     test_vm_cpu_probe *probe = STD_NULL;
     C_INT failed = 0;

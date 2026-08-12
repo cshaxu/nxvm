@@ -7,13 +7,13 @@
 #include "core/product/debug/debug_target.h"
 
 typedef struct debug_target_fixture {
-    uint32_t eax;
+    type_unsigned_32 eax;
     STD_SIZE_T break_count;
 } debug_target_fixture;
 
 static C_INT debug_target_read_register(C_VOID *context,
                                       core_product_debug_register reg,
-                                      uint32_t *value)
+                                      type_unsigned_32 *value)
 {
     debug_target_fixture *fixture = context;
 
@@ -24,7 +24,7 @@ static C_INT debug_target_read_register(C_VOID *context,
 
 static C_INT debug_target_write_register(C_VOID *context,
                                        core_product_debug_register reg,
-                                       uint32_t value)
+                                       type_unsigned_32 value)
 {
     debug_target_fixture *fixture = context;
 
@@ -50,7 +50,7 @@ static C_INT debug_target_code_default_size(C_VOID *context)
     return 16;
 }
 
-static uint32_t debug_target_code_base(C_VOID *context)
+static type_unsigned_32 debug_target_code_base(C_VOID *context)
 {
     (C_VOID)context;
     return 0xf0000u;
@@ -60,7 +60,7 @@ C_INT main(C_VOID)
 {
     debug_target_fixture fixture = {0x12345678u, 7u};
     core_product_debug_target target = {0};
-    uint32_t value = 0u;
+    type_unsigned_32 value = 0u;
 
     target.is_running = debug_target_is_running;
     target.read_register = debug_target_read_register;

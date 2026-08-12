@@ -14,7 +14,7 @@ C_INT main(C_VOID)
     vdm_composition_input_event second_event = { 43u, 0x30u };
     vdm_presentation_snapshot first_snapshot;
     vdm_presentation_snapshot second_snapshot;
-    uint32_t key;
+    type_unsigned_32 key;
 
     if (vdm_session_create(&first) != TYPE_STATUS_OK ||
         vdm_session_create(&second) != TYPE_STATUS_OK ||

@@ -12,7 +12,7 @@ C_VOID core_utils_wait_scope_initialize(core_utils_wait_scope *scope,
 }
 
 C_VOID core_utils_wait_milliseconds(const core_utils_wait_scope *scope,
-    uint32_t milliseconds)
+    type_unsigned_32 milliseconds)
 {
     if (scope == STD_NULL || scope->provider == STD_NULL) return;
     scope->provider(scope->context, milliseconds);
