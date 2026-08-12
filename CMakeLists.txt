@@ -1704,6 +1704,10 @@ set(PROJECT_CURRENT_ALL_SMOKE_TARGETS
     ${PROJECT_CURRENT_SMOKE_TARGETS}
     ${PROJECT_CURRENT_MEDIA_SMOKE_TARGETS})
 list(REMOVE_DUPLICATES PROJECT_CURRENT_ALL_SMOKE_TARGETS)
+set(PROJECT_CURRENT_NONMEDIA_SMOKE_TARGETS
+    ${PROJECT_CURRENT_SMOKE_TARGETS})
+list(REMOVE_ITEM PROJECT_CURRENT_NONMEDIA_SMOKE_TARGETS
+    ${PROJECT_CURRENT_MEDIA_SMOKE_TARGETS})
 set(PROJECT_CURRENT_SMOKE_JOBS "4" CACHE STRING
     "Positive CTest parallel job count for current smoke targets")
 if(NOT PROJECT_CURRENT_SMOKE_JOBS MATCHES "^[1-9][0-9]*$")
@@ -1771,7 +1775,7 @@ add_custom_target(run-current-fast-smokes
     COMMAND "${CMAKE_CTEST_COMMAND}" --test-dir "${CMAKE_BINARY_DIR}"
         --output-on-failure --no-tests=error --label-regex "^current-gate$"
         --label-exclude "media" --parallel "${PROJECT_CURRENT_SMOKE_JOBS}"
-    DEPENDS ${PROJECT_CURRENT_SMOKE_TARGETS}
+    DEPENDS ${PROJECT_CURRENT_NONMEDIA_SMOKE_TARGETS}
     COMMENT "Building and executing current non-media smoke coverage"
     VERBATIM)
 
@@ -2233,6 +2237,7 @@ add_custom_target(verify-current-gate-separation
         -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
         -DPROJECT_NINJA:FILEPATH=${CMAKE_MAKE_PROGRAM}
         -DPROJECT_SPECIALIZED_TARGETS_FILE:FILEPATH=${CMAKE_BINARY_DIR}/current-specialized-verifier-targets.txt
+        -DPROJECT_CTEST_TEST_FILE:FILEPATH=${CMAKE_BINARY_DIR}/CTestTestfile.cmake
         -P "${CMAKE_SOURCE_DIR}/cmake/verify_current_gate_separation.cmake"
     COMMENT "Verifying current smoke and specialized gate separation"
     VERBATIM)
