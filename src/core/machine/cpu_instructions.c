@@ -3224,12 +3224,34 @@ static C_VOID _ser_call_far_call_gate(core_machine_cpu_execution_context *contex
 }
 static C_VOID _ser_task_switch_tss(core_machine_cpu_execution_context *context,
     type_unsigned_16 newcs, type_bool nested);
+static C_VOID _ser_task_return_tss(core_machine_cpu_execution_context *context);
+
+static C_VOID _ser_task_gate_descriptor(
+    core_machine_cpu_execution_context *context, type_unsigned_64 descriptor,
+    type_unsigned_16 gate_error, type_bool check_privilege,
+    type_bool nested)
+{
+    type_unsigned_16 target_selector;
+
+    TYPE_TRACE_CALL_BEGIN("_ser_task_gate_descriptor");
+    if (!_IsDescTaskGate(descriptor))
+        TYPE_TRACE_IMPOSSIBLE_RETURN;
+    if (check_privilege && _GetDesc_DPL(descriptor) < _GetCPL)
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(gate_error));
+    if (!_IsDescPresent(descriptor))
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_NP(gate_error));
+    target_selector = TYPE_MASK_UNSIGNED_16(_GetDescGate_Selector(descriptor));
+    if (_IsSelectorNull(target_selector) || _GetSelector_TI(target_selector))
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(target_selector & 0xfffcu));
+    TYPE_TRACE_CHECK_RETURN(_ser_task_switch_tss(context, target_selector,
+        nested));
+    TYPE_TRACE_CALL_END;
+}
 
 static C_VOID _ser_task_gate_target(core_machine_cpu_execution_context *context,
     type_unsigned_16 gate_selector, type_bool nested)
 {
     type_unsigned_64 descriptor;
-    type_unsigned_16 target_selector;
 
     TYPE_TRACE_CALL_BEGIN("_ser_task_gate_target");
     if (!_IsProtected || _GetEFLAGS_VM)
@@ -3238,16 +3260,10 @@ static C_VOID _ser_task_gate_target(core_machine_cpu_execution_context *context,
         TYPE_REFERENCE_OF(descriptor)));
     if (!_IsDescTaskGate(descriptor))
         TYPE_TRACE_IMPOSSIBLE_RETURN;
-    if (_GetDesc_DPL(descriptor) < _GetCPL ||
-        _GetDesc_DPL(descriptor) < _GetSelector_RPL(gate_selector))
+    if (_GetDesc_DPL(descriptor) < _GetSelector_RPL(gate_selector))
         TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(gate_selector & 0xfffcu));
-    if (!_IsDescPresent(descriptor))
-        TYPE_TRACE_CHECK_RETURN(_SetExcept_NP(gate_selector & 0xfffcu));
-    target_selector = TYPE_MASK_UNSIGNED_16(_GetDescGate_Selector(descriptor));
-    if (_IsSelectorNull(target_selector) || _GetSelector_TI(target_selector))
-        TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(target_selector & 0xfffcu));
-    TYPE_TRACE_CHECK_RETURN(_ser_task_switch_tss(context, target_selector,
-        nested));
+    TYPE_TRACE_CHECK_RETURN(_ser_task_gate_descriptor(context, descriptor,
+        gate_selector & 0xfffcu, TYPE_TRUE, nested));
     TYPE_TRACE_CALL_END;
 }
 
@@ -3708,7 +3724,8 @@ static C_VOID _ser_int_protected(core_machine_cpu_execution_context *context,
             gate_desc, software_origin, flagext));
         break;
     case VCPU_DESC_SYS_TYPE_TASKGATE:
-        TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(0));
+        TYPE_TRACE_CHECK_RETURN(_ser_task_gate_descriptor(context, gate_desc,
+            _ser_idt_error_code(intid), software_origin, TYPE_TRUE));
         break;
     default:
         TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(_ser_idt_error_code(intid)));
@@ -4112,7 +4129,7 @@ static C_VOID _s_task_write_state_32(core_machine_cpu_execution_context *context
 
 static C_VOID _s_task_plan_transition_32(
     core_machine_cpu_execution_context *context, type_unsigned_16 newcs,
-    type_bool nested, task_switch_plan_32 *plan)
+    type_bool nested, type_bool returning, task_switch_plan_32 *plan)
 {
     TYPE_TRACE_CALL_BEGIN("_s_task_plan_transition_32");
     if (!_IsProtected || context->cpu_profile < CORE_MACHINE_CPU_PROFILE_80386)
@@ -4128,8 +4145,9 @@ static C_VOID _s_task_plan_transition_32(
         TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(cpu_state.data.tr.selector & 0xfffcu));
     TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, newcs,
         TYPE_REFERENCE_OF(plan->new_descriptor)));
-    if (_IsDescTSS32Busy(plan->new_descriptor) ||
-        !_IsDescTSS32Avl(plan->new_descriptor) ||
+    if ((returning && !_IsDescTSS32Busy(plan->new_descriptor)) ||
+        (!returning && (!_IsDescTSS32Avl(plan->new_descriptor) ||
+            _IsDescTSS32Busy(plan->new_descriptor))) ||
         _GetDesc_DPL(plan->new_descriptor) != 0u)
         TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(newcs & 0xfffcu));
     if (!_IsDescPresent(plan->new_descriptor))
@@ -4195,7 +4213,8 @@ static C_VOID _s_task_plan_transition_32(
     plan->backlink = cpu_state.data.tr.selector;
     if (!nested)
         _ClrDescTSSBusy(plan->old_descriptor);
-    _SetDescTSSBusy(plan->new_descriptor);
+    if (!returning)
+        _SetDescTSSBusy(plan->new_descriptor);
     TYPE_TRACE_CALL_END;
 }
 
@@ -4241,20 +4260,20 @@ static C_VOID _s_task_commit_transition_32(core_machine_cpu_execution_context *c
 
 static C_VOID _ser_task_switch_tss_32(
     core_machine_cpu_execution_context *context, type_unsigned_16 newcs,
-    type_bool nested)
+    type_bool nested, type_bool returning)
 {
     task_switch_plan_32 plan;
 
     TYPE_TRACE_CALL_BEGIN("_ser_task_switch_tss_32");
     STD_MEMSET(&plan, 0, sizeof(plan));
     TYPE_TRACE_CHECK_RETURN(_s_task_plan_transition_32(context, newcs, nested,
-        &plan));
+        returning, &plan));
     TYPE_TRACE_CHECK_RETURN(_s_task_commit_transition_32(context, &plan));
     TYPE_TRACE_CALL_END;
 }
 
-static C_VOID _ser_task_switch_tss(core_machine_cpu_execution_context *context,
-    type_unsigned_16 newcs, type_bool nested)
+static C_VOID _ser_task_transition_tss(core_machine_cpu_execution_context *context,
+    type_unsigned_16 newcs, type_bool nested, type_bool returning)
 {
     type_unsigned_64 old_descriptor;
     type_unsigned_64 new_descriptor;
@@ -4265,12 +4284,12 @@ static C_VOID _ser_task_switch_tss(core_machine_cpu_execution_context *context,
     t_cpu_data_sreg newes_cache;
     task_switch_state_16 state;
 
-    TYPE_TRACE_CALL_BEGIN("_ser_task_switch_tss");
+    TYPE_TRACE_CALL_BEGIN("_ser_task_transition_tss");
     if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386 &&
         cpu_state.data.tr.flagValid &&
         cpu_state.data.tr.sys.type == VCPU_DESC_SYS_TYPE_TSS_32_BUSY) {
         TYPE_TRACE_CHECK_RETURN(_ser_task_switch_tss_32(context, newcs,
-            nested));
+            nested, returning));
         TYPE_TRACE_CALL_END;
         return;
     }
@@ -4292,7 +4311,9 @@ static C_VOID _ser_task_switch_tss(core_machine_cpu_execution_context *context,
     }
     TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, newcs,
         TYPE_REFERENCE_OF(new_descriptor)));
-    if (_IsDescTSS16Busy(new_descriptor) || !_IsDescTSS16Avl(new_descriptor) ||
+    if ((returning && !_IsDescTSS16Busy(new_descriptor)) ||
+        (!returning && (!_IsDescTSS16Avl(new_descriptor) ||
+            _IsDescTSS16Busy(new_descriptor))) ||
         _GetDesc_DPL(new_descriptor) != 0u) {
         TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(newcs & 0xfffcu));
     }
@@ -4331,7 +4352,8 @@ static C_VOID _ser_task_switch_tss(core_machine_cpu_execution_context *context,
 
     if (!nested)
         _ClrDescTSSBusy(old_descriptor);
-    _SetDescTSSBusy(new_descriptor);
+    if (!returning)
+        _SetDescTSSBusy(new_descriptor);
     if (nested)
         TYPE_TRACE_CHECK_RETURN(_kma_write_logical(context, &newtr,
             TASK_SWITCH_TSS_BACKLINK_OFFSET,
@@ -4403,6 +4425,35 @@ static C_VOID _ser_task_switch_tss(core_machine_cpu_execution_context *context,
     newtr.sys.type = VCPU_DESC_SYS_TYPE_TSS_16_BUSY;
     cpu_state.data.tr = newtr;
     _SetCR0_TS;
+    TYPE_TRACE_CALL_END;
+}
+
+static C_VOID _ser_task_switch_tss(core_machine_cpu_execution_context *context,
+    type_unsigned_16 newcs, type_bool nested)
+{
+    TYPE_TRACE_CALL_BEGIN("_ser_task_switch_tss");
+    TYPE_TRACE_CHECK_RETURN(_ser_task_transition_tss(context, newcs, nested,
+        TYPE_FALSE));
+    TYPE_TRACE_CALL_END;
+}
+
+static C_VOID _ser_task_return_tss(core_machine_cpu_execution_context *context)
+{
+    type_unsigned_16 backlink;
+
+    TYPE_TRACE_CALL_BEGIN("_ser_task_return_tss");
+    if (!_IsProtected || !cpu_state.data.tr.flagValid ||
+        _GetSelector_TI(cpu_state.data.tr.selector) ||
+        (cpu_state.data.tr.sys.type != VCPU_DESC_SYS_TYPE_TSS_16_BUSY &&
+            cpu_state.data.tr.sys.type != VCPU_DESC_SYS_TYPE_TSS_32_BUSY) ||
+        cpu_state.data.tr.limit < 1u)
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(0));
+    TYPE_TRACE_CHECK_RETURN(_s_read_tss(context, TASK_SWITCH_TSS_BACKLINK_OFFSET,
+        TYPE_REFERENCE_OF(backlink), 2u));
+    if (_IsSelectorNull(backlink) || _GetSelector_TI(backlink))
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(backlink & 0xfffcu));
+    TYPE_TRACE_CHECK_RETURN(_ser_task_transition_tss(context, backlink,
+        TYPE_FALSE, TYPE_TRUE));
     TYPE_TRACE_CALL_END;
 }
 /* regular execute control */
@@ -5006,7 +5057,7 @@ _______todo _e_iret(core_machine_cpu_execution_context *context, type_unsigned_8
         else if (_GetEFLAGS_NT)
         {
             TYPE_TRACE_BLOCK_BEGIN("Nested");
-            TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(0));
+            TYPE_TRACE_CHECK_RETURN(_ser_task_return_tss(context));
             TYPE_TRACE_BLOCK_END;
         }
         else

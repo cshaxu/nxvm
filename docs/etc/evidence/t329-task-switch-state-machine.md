@@ -17,16 +17,17 @@ the transition model by itself.
 
 S2 establishes, and S3 strengthens, the protected CPL0 direct far `JMP` from a
 valid busy 32-bit TSS to an available 32-bit TSS. S4 adds direct far `CALL`
-and GDT task-gate entry to that same transition. Paging is disabled and the
-incoming LDTR is null. Direct and memory-indirect transfer encodings are
-forms of one transition, not separate state models.
+and GDT task-gate entry; S5 adds backlink-driven nested `IRET` return and IDT
+task-gate entry to that same transition. Paging is disabled and the incoming
+LDTR is null. Direct and memory-indirect transfer encodings are forms of one
+transition, not separate state models.
 
 | Phase | Required work | May publish architectural state? |
 | --- | --- | --- |
 | Decode | Classify profile, prefixes, `LOCK`, direct/indirect source, and selector. | No. |
 | Preflight | Read old and new descriptors; verify old TR, target TSS type/presence/limit, every read/write span, target TSS image, null LDTR, CR3 boundary, CS/SS/DS/ES/FS/GS selectors and caches, target instruction byte, and target stack boundary. | No. |
 | Plan | Materialize the outgoing TSS image, incoming CPU/cache image, old/new descriptor updates, and transition kind as private values. All field offsets are named and compile-time checked. | No. |
-| Commit | Write the outgoing image; for nested CALL/task-gate entry, write backlink and retain old busy, otherwise clear it; then publish the target busy state, CR3, registers, EFLAGS including `NT` when nested, segment caches, LDTR, TR, and `CR0.TS` in one non-faulting local sequence. | Yes. |
+| Commit | Write the outgoing image; for nested CALL/task-gate entry, write backlink and retain old busy; for a backlink return, clear the outgoing busy state and retain the returning busy target; otherwise clear old busy. Then publish CR3, registers, EFLAGS including `NT` only when nested, segment caches, LDTR, TR, and `CR0.TS` in one non-faulting local sequence. | Yes. |
 | Post-commit | Execute the target's next instruction or accept a pending IRQ according to the already-preflighted target state. | Yes. |
 
 No operation that can introduce an ordinary architectural fault is allowed
@@ -68,7 +69,7 @@ The later S boundaries are intentional dependency cuts, not omitted tests:
 | --- | --- | --- |
 | S3 | Full 32-bit task image, CR3/cache details, and complete direct-JMP fault order. | Uses S2 preflight/commit framework. |
 | S4 | Task gates, far `CALL` to TSS, backlink, and NT entry. | Requires one correct direct-switch state transition. |
-| S5 | Nested-task `IRET`, task-return and double-fault chains. | Requires S4's backlink/NT semantics. |
+| S5 | Nested-task `IRET`, bounded IDT task-gate and double-fault task chains. | Closed: requires and proves S4's backlink/NT semantics; arbitrary chains and failed-`#DF` reset policy transfer. |
 | S6 | Non-null LDTR/LDT task images and selector resolution. | Requires S2's null-LDTR boundary. |
 | S7 | Task switching with paging and debug state. | Requires S3 plus the existing paging/debug boundaries. |
 

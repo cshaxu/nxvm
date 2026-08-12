@@ -2,8 +2,28 @@
 
 ## Current Work
 
-**Idle.** M5 T329 S4 is closed; T329 remains open for its next separately
-admitted state-machine slice.
+M5 T329 S5: nested task IRET return, IDT task-gate entry, and double-fault
+task-chain boundaries (Ordinary Mode).
+
+## M5 T329 S5 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; T329 S1--S4 remain retained task progress. Ordinary Mode performs implementation and acceptance review. |
+| Admission And Approval | Owner approved autonomous single-session continuation toward Intel 80386DX architecture closure and the accepted holistic task-switch state-machine method. S5 is the state-return and exceptional-task-entry dependency cut after S4 nested-entry semantics. |
+| Objective | Implement and prove protected 80286/80386 nested-task `IRET` return through the outgoing TSS backlink, IDT task-gate task entry, and the bounded double-fault task-gate chain needed to compose those transitions. Each route must reuse the named task-transition planner/commit boundary and preserve architecturally correct busy, NT, TR, TS, frame/restart, and fault ordering semantics. |
+| Non-goals | Non-null LDT task images; task paging/TLB; debug state; generic exception/IRQ redesign; ordinary call-gate behavior; arbitrary nested task chains beyond the bounded return/double-fault matrix; VME/PVI; and x87 execution. |
+| Reference Baseline | `41692cba` / current `origin/main` after T329 S4 P2; preserve user-owned uncommitted Queue/TODO and debt-evidence changes. |
+| Files And ABI Surface | Local task-switch, IRET, IDT task-gate/double-fault execution code, its owner smoke/evidence/closure map and STATUS only. No public ABI, provider contract, or product-visible interface changes. |
+| Applicable Rules | Task Reading Set; Intel 80386 architecture as authority; Execution ordinary-mode lifecycle and actual-change review; Architecture/Coding/Documentation rules; accepted [T329 state-machine record](etc/evidence/t329-task-switch-state-machine.md). IRET, IDT task-gate, and double-fault routes must extend the named preflight/plan/commit transition rather than duplicate task state writes. |
+| Verification | Fresh GCC configure; focused task-switch marker; actual Ninja target-local strict GCC command; exact current registration; documentation governance; `git diff --check`; full `ctest -L current-gate --output-on-failure -j 16`. |
+| Expected Markers | Retain earlier markers and extend `M5:T329:S4:TSS-CALL-GATE:OK` only when task-switch coverage remains a coherent owner smoke; exact registration remains `current.core-machine-task-switch-smoke`. |
+| Asset Needs | None; deterministic in-memory GDT/TSS/IDT/PIC fixtures only. |
+| Reporting Requirements | Deliver one complete implementation P with an Intel form/state/fault matrix, shared-path audit, and requirement-to-proof evidence; after actual-change review push governance P closure. Report only a reproducible material blocker or accepted completion. |
+| Stop Conditions | Stop before shared paging/TLB, generic exception/IRQ, provider, or public-ABI changes; before non-null LDT, paging/debug task state, VME/PVI, or an arbitrary task-chain model; or if IRET/IDT task-gate/double-fault semantics cannot be modeled as preflighted extensions of the accepted planner/commit transition. Transfer rather than silently broaden. |
+| Exit Criteria | All admitted nested IRET, IDT task-gate, and bounded double-fault task-chain forms have focused success/fault/attribute/IRQ evidence. Valid routes prove backlink consumption, busy/TR/TS/NT publication and complete image/cache state. Installed fault handlers prove no partial outgoing TSS/descriptor state. S1--S4 direct entry remains green; non-null LDT/paging/debug work is explicitly transferred. |
+| Original Owner Request | Complete Intel 80386 with a holistic, maintainable design; avoid incremental symptom patches; commit and push accepted work. |
+| Similar-Issue Sweep | Audit `IRET`, `_ser_iret*`, `_ser_task_switch_tss*`, task-gate IDT callers, double-fault producer/delivery paths, all 16/32 TSS busy/backlink/NT updates, and task-switch fixtures. |
 
 ## Current Technical Baseline
 
