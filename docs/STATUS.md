@@ -2,28 +2,8 @@
 
 ## Current Work
 
-**Active.** M5 T320 S2 completes the bounded CPL0 32-bit `IRET` return to
-VM86 in Ordinary Mode after coordinator rejection of incomplete P1 evidence.
-
-## M5 T320 S2 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; M5 T320 S2 follows retained T320 S1 progress and must be its exact next committed subtask. |
-| Admission And Approval | The owner approved continued holistic 80386 implementation on 2026-08-11 and authorized the bounded inverse VM86 delivery slice after S1. Td S68 repaired the prerequisite identifier gate. The owner authorized Ordinary Mode on 2026-08-12; P1 is not accepted because its complete-P1 evidence was incomplete. |
-| Objective | Implement and prove Intel 80386 CPL0 32-bit `IRET` return to VM86 from a complete nine-dword return frame, including atomic VM86 EIP/CS/EFLAGS/ESP/SS/ES/DS/FS restoration and a direct S1-entry-to-handler-IRET round trip. |
-| Non-goals | No VM86-origin IRET, VME/PVI, NT/task return, task switch, paging, call gates, 16-bit-gate breadth, generic interrupt/PIC redesign, arbitrary protected outer return, or x87 work. |
-| Reference Baseline | `6b5d294a`; T320 S1 accepted VM86-to-CPL0 32-bit delivery and retains its compact progress row. Artifact remains `vm-0-5-0320`. |
-| Files And ABI Surface | Local CPU IRET/segment-cache path in `src/core/machine/cpu_instructions.c`; one owner smoke under `tests/machine/`; CMake registration; T320 matrix/history/Status evidence. P2 may remove unreachable duplicate VM86-return code in the same local IRET path. No public API or provider ABI change without a revised packet. |
-| Applicable Rules | Task Reading Set; execution, architecture, coding, documentation, source-layout, and 80386 PRM return-frame/VM86 rules. Intel form audit is mandatory before claim or repair. |
-| Verification | One complete P2 corrective: manual valid frames and S1 handler round trip; all nine fields/cache semantics; explicit `66` non-VM86-form classification and `67` success classification; controlled short-stack atomic boundary and documented VM86 selector-word masking semantics; post-return VM86 execution and pending-IRQ ordering. Fresh configure, exact registration, documentation governance, diff check, full current gate, artifact rebuild/hash/history record. |
-| Expected Markers | Owner marker; returned VM86 code executes with real-mode-style segment caches; invalid return does not partially publish VM86 state; current gate passes. |
-| Asset Needs | None; synthetic local GDT/IDT/TSS/VM86 fixtures only. |
-| Reporting Requirements | Ordinary Mode handoff: executor P1 `be84b715` is rejected for incomplete evidence and a duplicate unreachable VM86 return branch. This session completes one consolidated P2 corrective, self-reviews actual changes against every packet row, commits and pushes it, then independently accepts or rejects it before a pure closure P3. |
-| Stop Conditions | Stop for a required generic IRET/interrupt/segment helper redesign, a VM86 contract that cannot be supported without VME/PVI or task-switch scope, undocumented frame semantics, nonlocal caller effects needing a broader sweep, or unavailable required facility. |
-| Exit Criteria | Valid CPL0 32-bit return to VM86 is proven by manual and S1 round-trip frames, preserves/restores all declared state atomically, `66` and `67` are explicitly classified, no duplicate dead VM86 return path remains, every accepted/rejected form has truthful classification, tests/gates/artifact evidence pass, and excluded breadth is explicitly retained. |
-| Original Owner Request | Continue the 80386 program holistically and prioritize the VM86 exception/IRQ delivery foundation, with correct bounded task decomposition. |
-| Similar-Issue Sweep | Audit all `_e_iret` VM86 branches, protected outer-return helpers, segment-load/cache paths, S1 direct consumers, frame-width/prefix handling, and every changed shared caller; fix, retain, or defer each hit explicitly. |
+**Idle.** M5 T320 is closed; the next Queue candidate is the 80386DX
+exception, interrupt, and processor-control closure.
 
 ## Current Technical Baseline
 
@@ -44,7 +24,7 @@ VM86 in Ordinary Mode after coordinator rejection of incomplete P1 evidence.
 
 | Task | Compact result |
 | --- | --- |
-| T320 S1 | Accepted VM86-to-CPL0 32-bit interrupt-gate delivery for `#GP`, `#UD`, `#NM`, and IRQ0: TSS `SS0:ESP0`, full VM86 frame, gate/cache effects, and invalid-facility boundaries; direct consumer disposition is retained in T320 evidence. Artifact `0320` SHA-256 is recorded in history; independent fresh configure, governance/diff checks, and 197/197 current-gate passed. CPL0 `IRET` return remains T320 S2. |
+| T320 | Closed the bounded VM86-to-CPL0 32-bit delivery foundation: `#GP/#UD/#NM/IRQ0` entry through TSS `SS0:ESP0`, full VM86 frame and failure boundaries, plus atomic nine-dword CPL0 `IRET` return with a real IRQ0-to-handler-to-VM86 round trip. `66` is classified as non-VM86 return, `67` succeeds, and VME/PVI/task/paging breadth remains transferred. Artifact 0320 SHA-256 is recorded in history; fresh configure, governance/diff checks, and 198/198 current-gate passed. |
 | T319 | Closed the bounded non-VM86 LGDT/LIDT `0F 01 /2,/3` table-load slice: protected CPL>0 now rejects before pseudo-descriptor reads, both forms have real/protected, attribute, source-atomicity, table-consumer, and PIC evidence, and VM86 plus 80286 LOCK remain transferred. Its 0319 artifact and 196/196 current-gate pass are retained in history. |
 | T318 | Closed the bounded SGDT/SIDT `0F 01 /0,/1 table-store slice: a local six-byte preflight/publication repair prevents partial pseudo-descriptor writes; both forms have profile, attribute, segment, rejection, protected atomicity, VM86 and IRQ-ordering evidence. 195/195 current-gate passed, and executor plus coordinator 0318 artifact hashes are retained in its history. LGDT/LIDT and wider processor-control work remain future bounded packages. |
 | T317 | Closed test-corpus quality plus corrective type-vocabulary and developer-feedback work. S7 retains the 194-test current gate while adding validated default-four-job CTest execution, 15 explicit media labels, and a 179-test non-media fast preset; its full gate, fast run, media verifier, documentation governance, and diff check passed. |
@@ -52,7 +32,6 @@ VM86 in Ordinary Mode after coordinator rejection of incomplete P1 evidence.
 | T314 | Closed the EGA CRTC 13h bound, registered the deterministic xasm smoke, restored six historical target-local strict GCC sets while retaining three selected libraries, and added the CRTC static closure verifier; the two inherited-governance debts remain. Its 0315 artifact, 52 gates, 147 CTests, and S2/S3/S6 markers passed. |
 | T313 | Completed construction-failure atomicity and startup-failure visibility: single RAM allocation, transactional port/controller assembly, visible session start failure, and explicit debugger mappings. Its accepted artifact, 51 gates, 145 CTests, and S2--S6 focused markers passed. |
 | T307 | Completed 80386 32-bit CPL3-to-CPL0 IDT and call-gate entry with TSS32 target stacks, preflighted atomic publication, and Intel-correct target-SS `#TS` classification. Its 0307 artifact, 51 gates, 137 CTests, and 9 focused/retained probes passed; product observation remained host-window limited before guest input. |
-| T308 | Completed protected 32-bit same/outer error delivery and bounded contributory `#DF` containment through the existing route. Its 0308 artifact, 51 gates, and 137 CTests passed; triple-fault shutdown/reset remains deferred. |
 
 ## Recent Governance
 
