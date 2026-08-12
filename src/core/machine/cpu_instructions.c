@@ -3114,8 +3114,11 @@ static C_VOID _ser_call_far_call_gate(core_machine_cpu_execution_context *contex
     type_unsigned_16 oldsp;
     type_unsigned_16 oldcs;
     type_unsigned_16 oldip;
+    type_unsigned_16 parameters[31];
     type_unsigned_8 oldcpl;
     type_unsigned_8 target_cpl;
+    type_unsigned_8 parameter_count;
+    type_unsigned_8 index;
     t_cpu_data_sreg newcs_cache;
     t_cpu_data_sreg newss_cache;
 
@@ -3142,10 +3145,6 @@ static C_VOID _ser_call_far_call_gate(core_machine_cpu_execution_context *contex
     if (!_IsDescPresent(gate_desc)) {
         TYPE_TRACE_CHECK_RETURN(_SetExcept_NP(gate_selector & 0xfffcu));
     }
-    if (_GetDescCall_Count(gate_desc) != 0u) {
-        /* Parameter-copying gates remain outside the T288 admission. */
-        TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(_GetDescCall_Count(gate_desc)));
-    }
     newcs = TYPE_MASK_UNSIGNED_16(_GetDescGate_Selector(gate_desc));
     if (_IsSelectorNull(newcs) || _GetSelector_TI(newcs)) {
         TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(newcs & 0xfffcu));
@@ -3166,6 +3165,7 @@ static C_VOID _ser_call_far_call_gate(core_machine_cpu_execution_context *contex
     oldsp = cpu_state.data.sp;
     oldcs = cpu_state.data.cs.selector;
     oldip = cpu_state.data.ip;
+    parameter_count = (type_unsigned_8)_GetDescCall_Count(gate_desc);
     newcs_cache = cpu_state.data.cs;
     TYPE_TRACE_CHECK_RETURN(_ksa_prepare_code_sreg(context, newcs, target_cpl,
         &newcs_cache, &code_desc));
@@ -3173,6 +3173,10 @@ static C_VOID _ser_call_far_call_gate(core_machine_cpu_execution_context *contex
         TYPE_MASK_UNSIGNED_16(_GetDescGate_Offset(gate_desc)), 1u, 0,
         target_cpl, 1));
     if (target_cpl < oldcpl) {
+        for (index = 0u; index < parameter_count; ++index)
+            TYPE_TRACE_CHECK_RETURN(_s_peek_ss_pop(context,
+                (type_unsigned_32)index * 2u,
+                TYPE_REFERENCE_OF(parameters[index]), 2u));
         if (!cpu_state.data.tr.flagValid) {
             TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(0));
         }
@@ -3203,7 +3207,7 @@ static C_VOID _ser_call_far_call_gate(core_machine_cpu_execution_context *contex
         TYPE_TRACE_CHECK_RETURN(_ksa_prepare_stack_sreg(context, newss,
             target_cpl, &newss_cache, &ss_desc));
         TYPE_TRACE_CHECK_RETURN(_s_test_stack_frame_16(context, &newss_cache,
-            newsp, 4u, target_cpl));
+            newsp, (type_unsigned_8)(4u + parameter_count), target_cpl));
 
         TYPE_TRACE_CHECK_RETURN(_s_write_xdt(context, newss,
             TYPE_REFERENCE_OF(ss_desc)));
@@ -3214,6 +3218,9 @@ static C_VOID _ser_call_far_call_gate(core_machine_cpu_execution_context *contex
         _MakeCPL(target_cpl);
         TYPE_TRACE_CHECK_RETURN(_kec_push(context, TYPE_REFERENCE_OF(oldss), 2u));
         TYPE_TRACE_CHECK_RETURN(_kec_push(context, TYPE_REFERENCE_OF(oldsp), 2u));
+        for (index = parameter_count; index > 0u; --index)
+            TYPE_TRACE_CHECK_RETURN(_kec_push(context,
+                TYPE_REFERENCE_OF(parameters[index - 1u]), 2u));
     }
     else {
         TYPE_TRACE_CHECK_RETURN(_s_test_ss_push(context, 4u));
