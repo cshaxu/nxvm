@@ -45,3 +45,13 @@ Detailed form, frame, failure-boundary, and caller-sweep evidence is in
 CPL0 `IRET` return to VM86 is T320 S2. VME/PVI, task gates/switching, 16-bit
 VM86 gates, paging, NMI/PIC redesign, VM86 LGDT/LIDT, and x87/provider work
 remain outside T320 S1.
+
+## Coordinator Acceptance
+
+The coordinator independently reviewed implementation P1 (`afa35a6b`), the
+direct-consumer and diagnostic corrective P2 (`bf1628f5`), and the packet
+consistency corrective P3 (`e69fae9e`). Fresh configuration, the complete
+197-test current gate, documentation governance, `git diff --check`, and the
+recorded `0320` artifact SHA-256 were independently re-run. S1 is accepted;
+the T320 package remains open for a separately admitted S2 covering the
+inverse CPL0 `IRET` return to VM86.
