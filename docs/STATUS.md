@@ -2,28 +2,8 @@
 
 ## Current Work
 
-**Active.** M5 T321 S2 closes the bounded 80386 `#DE`, `#PF`, and `#MF`
-exception-vector and frame-delivery gap in Ordinary Mode.
-
-## M5 T321 S2 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | The owner authorized continued single-session 80386DX architecture coverage on 2026-08-12. Accepted T321 S1 identified this shared exception-delivery gap and ordered S2 before dependent IRQ/control consumers. |
-| Objective | Implement and prove Intel 80386 delivery for the existing `#DE`, `#PF`, and `#MF` producers: exact vectors 0, 14, and 16; real/protected mode disposition; error-code versus no-error-code frame shape; restart/trap state; and failed-delivery containment. |
-| Non-goals | No paging policy or translation change, no x87/80287/80387 numerical execution, no debug/breakpoint/overflow/NMI policy, no task switch, VME/PVI, reset/shutdown/triple-fault policy, generic PIC redesign, or new public/provider ABI. |
-| Reference Baseline | `2f18e0bb` / `vm-0-5-0320`; T321 S1 audit in `docs/etc/evidence/t321-s1-processor-control-closure-audit.md`. |
-| Files And ABI Surface | `src/core/machine/cpu_instructions.c` only for proven shared finalizer/delivery fixes; a new owner smoke; direct producer regressions `core_machine_inc_dec_smoke.c`, `core_machine_80386_paging_smoke.c`, `core_machine_fpu_interface_s65_smoke.c`, and `core_machine_fpu_8087_smoke.c` only where their former terminal expectation must become an installed-vector delivery assertion; CMake registration/artifact wiring, T321 evidence/history, and Status. No shared paging walk, FPU provider, memory, or public API change. |
-| Applicable Rules | Task Reading Set; `docs/rules/EXECUTION.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/rules/DOCUMENT.md`, project source layout, Intel 80386 exceptions/interrupts and page-fault frame rules, and T308 retained delivery evidence. |
-| Verification | Focused real/protected vectors for divide error, page fault, and WAIT pending FPU error; exact IDT entry, diagnostic, saved frame and error-code checks; failure-preflight preservation; migrate each named direct producer regression only to its equivalent installed-vector contract; direct producer/caller sweep; fresh configure; exact current registration; artifact build/SHA-256; documentation governance; diff check; full current gate. |
-| Expected Markers | New deterministic owner marker and exactly one current-gate registration. `#DE` and `#MF` frames contain saved EIP/CS/EFLAGS only; `#PF` adds its unchanged producer error code below that frame. |
-| Asset Needs | None; deterministic local CPU/GDT/IDT/stack/page/FPU-provider fixtures only. No source, firmware, guest media, or external provider import. |
-| Reporting Requirements | Record every producer, exact vector, frame layout, real/protected outcome, failed-delivery disposition, modified caller, and excluded architecture boundary in indexed evidence. Before implementation, confirm this matrix or report a material objection. |
-| Stop Conditions | Stop for a required paging-walker change, FPU provider ABI/numerical implementation, generic interrupt/PIC redesign, debug/NMI/trap policy, task/VM86 expansion, or a double/triple-fault/reset contract beyond retained T308 behavior. |
-| Exit Criteria | Every current `#DE`, `#PF`, and `#MF` producer has an exact delivery/terminal disposition; valid real/protected vectors prove correct frame, restart/error-code, gate, and handler behavior; invalid delivery proves contained no-partial publication; no unrelated exception class changes; required artifact, evidence, gates, commit, and push pass. |
-| Original Owner Request | Continue in Ordinary Mode toward the 80386DX architecture-coverage closure audit. |
-| Similar-Issue Sweep | Search all `_SetExcept_DE/_PF/_MF` producers, `ExecFinal` exact-mask dispatch, `_e_except_n` error-frame selection, real/protected interrupt planners, paging/fpu focused tests, and every changed helper caller. |
+**Idle.** M5 T321 S2 is accepted and closed; S3 requires a separately admitted
+packet.
 
 ## Current Technical Baseline
 
@@ -44,6 +24,7 @@ exception-vector and frame-delivery gap in Ordinary Mode.
 
 | Task | Compact result |
 | --- | --- |
+| T321 S2 | Closed exact active `#DE/#PF/#MF` producer delivery: `ExecFinal` now selects vectors 0/14/16 (including vector-zero admission), real `#DE/#MF` and protected `#PF` frames have direct producer evidence, and retained no-handler paging cases document the IDT-preflight PDE accessed-bit effect. New strict owner smoke and 199/199 current-gate passed; paging policy, x87 execution, IRQ composition, and other exception classes remain transferred. |
 | T321 S1 | Accepted the Intel/source/evidence closure audit: completed VM86 delivery was removed from Queue and marked complete in the closure map; all active exception-producer and processor-control intersections now have an explicit next-S or later-Queue destination. S2 owns the missing `#DE/#PF/#MF` delivery closure. Documentation governance and diff check passed. |
 | T320 | Closed the bounded VM86-to-CPL0 32-bit delivery foundation: `#GP/#UD/#NM/IRQ0` entry through TSS `SS0:ESP0`, full VM86 frame and failure boundaries, plus atomic nine-dword CPL0 `IRET` return with a real IRQ0-to-handler-to-VM86 round trip. `66` is classified as non-VM86 return, `67` succeeds, and VME/PVI/task/paging breadth remains transferred. Artifact 0320 SHA-256 is recorded in history; fresh configure, governance/diff checks, and 198/198 current-gate passed. |
 | T319 | Closed the bounded non-VM86 LGDT/LIDT `0F 01 /2,/3` table-load slice: protected CPL>0 now rejects before pseudo-descriptor reads, both forms have real/protected, attribute, source-atomicity, table-consumer, and PIC evidence, and VM86 plus 80286 LOCK remain transferred. Its 0319 artifact and 196/196 current-gate pass are retained in history. |
