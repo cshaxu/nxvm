@@ -17,6 +17,7 @@ test-behavior capability completion.
 | S2 project type vocabulary | `4e968c45d519a97ba5ee188a837ed95dc0542b36` migrates direct fixed-width spellings only in the exact inventory plus `tests/support/core_machine_cpu_fixture.h`, and adds the inventory-bounded positive/negative verifier. [S2 evidence](../etc/evidence/t317-s2-test-type-vocabulary-evidence.md) records the scope and token baseline; acceptance is `1124eb3c`. |
 | S3 fixture mechanics | `1f4c9af92d903922028f948460f4e86ef0324a3d` and `3cb1bd4b843ee5bfc4594b0c974b794d55d51819` centralize the mechanically identical lifecycle setup in private `tests/support` helpers. [S3 evidence](../etc/evidence/t317-s3-test-fixture-consolidation-evidence.md) lists the 35 full-helper callers, six lifecycle-tail callers, real-mode/captured-observation boundary, and retained owner semantics. Acceptance is `2d9ceefb`. |
 | S4 closure audit | This record independently rechecks the generated inventory, actual Ninja command audit, vocabulary gate, support boundary, then-deferred raw-type admission context, documentation governance, diff, and full current gate. It adds no runtime or test behavior. |
+| S5 global fixed-width vocabulary | `b1a474f312811283c052bcfbc5e95bdc2a696e00` migrates the approved 240-file, 4,138-spelling baseline across the repository and adds the global positive/negative verifier. `e19a9a4045950b855a7e9f99a2506e14fa8436e1` removes the obsolete inherited-test vocabulary debt. The exact foundational and controlled-fixture exceptions are recorded in [S5 evidence](../etc/evidence/t317-s5-global-type-vocabulary-evidence.md). |
 
 ## S4 Independent Audit
 
@@ -70,3 +71,19 @@ negative-fixture exceptions, source-equivalence review, and [S5 evidence](../etc
 
 The separate inherited strict-compilation admission remains bounded in the
 current TODO ledger. It does not alter the completed S5 vocabulary scope.
+
+## S5 Coordinator Closure Verification
+
+The coordinator independently configured `mingw-gcc-x64`, built the current
+GCC target and both vocabulary gates, and confirmed the global verifier's 467
+code/script paths contain no forbidden spelling outside the 16 foundational
+`src/type.h` aliases and the 28-token controlled negative fixture. The
+47-target Ninja command audit, documentation governance, `git diff --check`,
+and the production support-include search all passed. `ctest -L current-gate
+--output-on-failure -j 4` passed 194/194 tests.
+
+The executor's P1 build recorded the 0.5.0317 artifact hash
+`A7EC7165730E2B037C24693E1E6B0EBFA6C67B9126F9CD5D5863A62DCA963F24`.
+The coordinator rebuild at accepted source commit `e19a9a40` recorded
+`B93DAF1ED9813E120ECBDD20A6E7595EFFA054961E546A15DC6AFB333494D412`.
+These are separate build observations; the latter is the closure record.
