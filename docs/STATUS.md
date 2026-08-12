@@ -2,8 +2,25 @@
 
 ## Current Work
 
-**Idle.** The next 80386 capability or quality slice requires a separately
-admitted task packet.
+## M5 T317 S7 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Corrective; Ordinary Mode single-session execution for the retained T317 test-corpus-quality task. |
+| Admission And Approval | Owner approved on 2026-08-11: implement the audited low-risk developer-efficiency improvements in single-agent mode. Scope is configurable parallel current-gate execution, explicit media classification, and a non-media fast smoke entry point. No exceptions. |
+| Objective | Reduce local feedback time without weakening current coverage: run the complete current-gate suite with a validated, configurable CTest job count; label media-dependent smokes; and provide an explicit fast non-media smoke build preset. |
+| Non-goals | Do not remove, merge, weaken, reorder for semantic effect, or change assertions/timeouts of existing smokes; do not alter emulator runtime behavior, media assets, architecture, product artifact, or inherited monoliths. |
+| Reference Baseline | `61771bf341bb2d6536565abfe6066ade7a3db926` on `main`; clean worktree; current-gate is 194 CTests and serial evidence totals 147.27 seconds. Historical T317 evidence records `ctest -L current-gate --output-on-failure -j 4` passing 194/194. |
+| Files And ABI Surface | `CMakeLists.txt`, `CMakePresets.json`, `docs/STATUS.md`, `docs/history/M5-T317-test-corpus-quality.md`, and `docs/etc/evidence/t317-s7-developer-smoke-efficiency.md`; build/test registration only, with no C/C++ ABI surface. |
+| Applicable Rules | `docs/design/ARCHITECTURE.md`: build composition remains explicit and host/media boundaries remain visible. `docs/design/CODING.md`: CMake owns target/test registration. `docs/rules/ARCHITECTURE.md`: preserve explicit dependency direction and machine/media ownership. `docs/rules/CODING.md`: keep build configuration deterministic and fail invalid inputs. `docs/rules/DOCUMENT.md` and `docs/rules/EXECUTION.md`: one active packet, evidence, actual-change review, and closure audit. |
+| Verification | Freshly regenerate the MinGW Ninja build; prove invalid `PROJECT_CURRENT_SMOKE_JOBS` fails configuration; list `current-gate` and `media` labels with CTest; run `run-current-fast-smokes` and prove it excludes media; run full `run-current-smokes` at default parallelism and preserve all 194 current tests; run documentation governance and `git diff --check`. |
+| Expected Markers | `run-current-smokes` passes `--parallel ${PROJECT_CURRENT_SMOKE_JOBS}` after a positive-integer CMake validation; every media target has `media` alongside `current-gate;smoke`; `run-current-fast-smokes` excludes `media` and depends only on non-media smoke targets; `current-fast-smokes-gcc` selects it. |
+| Asset Needs | Existing owner-provided `O:/assets` FDD/HDD images only for the unchanged full media suite; fast entry deliberately requires none. |
+| Reporting Requirements | Record baseline and post-change test selection/timing, exact commands, invalid-input result, and 194-test preservation in the S7 evidence. Report any test-registration discrepancy or parallelism-induced nondeterminism before accepting scope. |
+| Stop Conditions | Stop and revise the packet if parallel execution introduces a reproducible test race/flakiness, if classification exposes a target requiring media but not listed in the media set, or if the change would require test semantic/runtime/asset changes. |
+| Exit Criteria | Configurable full parallel gate, accurate media labels, and fast non-media preset are implemented; no current test is removed; fresh configuration, focused selection checks, fast run, full 194-test current gate, documentation governance, and diff check pass; evidence/history/status are updated and actual changes are reviewed. |
+| Original Owner Request | Owner authorized T317 single-session implementation after the developer-efficiency research identified serial current-gate execution and missing media/fast entry classification. |
+| Similar-Issue Sweep | Audit every `add_test` path and current-gate custom target/preset with `rg -n "add_test\\(|LABELS|run-current|current-gate|media" CMakeLists.txt CMakePresets.json`; classify non-current tests as out of scope and record all current media/non-media registration dispositions in evidence. |
 
 ## Current Technical Baseline
 

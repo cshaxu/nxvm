@@ -71,6 +71,11 @@
       ]
     },
     {
+      "name": "current-fast-smokes-gcc",
+      "configurePreset": "mingw-gcc-x64",
+      "targets": ["run-current-fast-smokes"]
+    },
+    {
       "name": "vdm-minimal-gcc",
       "configurePreset": "mingw-gcc-x64",
       "targets": [

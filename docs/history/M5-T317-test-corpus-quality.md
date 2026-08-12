@@ -19,6 +19,7 @@ test-behavior capability completion.
 | S4 closure audit | This record independently rechecks the generated inventory, actual Ninja command audit, vocabulary gate, support boundary, then-deferred raw-type admission context, documentation governance, diff, and full current gate. It adds no runtime or test behavior. |
 | S5 global fixed-width vocabulary | `b1a474f312811283c052bcfbc5e95bdc2a696e00` migrates the approved 240-file, 4,138-spelling baseline across the repository and adds the global positive/negative verifier. `e19a9a4045950b855a7e9f99a2506e14fa8436e1` removes the obsolete inherited-test vocabulary debt. The exact foundational and controlled-fixture exceptions are recorded in [S5 evidence](../etc/evidence/t317-s5-global-type-vocabulary-evidence.md). |
 | S6 verifier correction | Corrects the stale type-facade guidance and replaces working-tree glob discovery with tracked-path discovery that requires root `CMakeLists.txt` coverage and a controlled in-memory root-script negative proof. [S6 evidence](../etc/evidence/t317-s6-global-type-vocabulary-verifier.md) records the 469-path verifier result and 194/194 current-gate regression. |
+| S7 developer smoke efficiency | Retains every current smoke while adding validated configurable CTest parallelism, explicit media labels, and the `current-fast-smokes-gcc` non-media preset. [S7 evidence](../etc/evidence/t317-s7-developer-smoke-efficiency.md) records the 194/15/179 selection partition, invalid-job rejection, 179/179 fast run, and 194-test default-parallel gate. |
 
 ## S4 Independent Audit
 
@@ -97,3 +98,13 @@ The executor's P1 build recorded the 0.5.0317 artifact hash
 The coordinator rebuild at accepted source commit `e19a9a40` recorded
 `B93DAF1ED9813E120ECBDD20A6E7595EFFA054961E546A15DC6AFB333494D412`.
 These are separate build observations; the latter is the closure record.
+
+## S7 Corrective Closure
+
+S7 is a developer-feedback improvement, not a coverage reduction. It keeps
+the complete current suite as `run-current-smokes`, validates a positive CTest
+job count before passing it to `--parallel`, labels the existing 15
+media-dependent tests, and exposes the remaining 179 current tests through
+the `current-fast-smokes-gcc` preset. The selection partition, unchanged
+194-test full gate, invalid-input failure, and parallel-run evidence are in
+[S7 evidence](../etc/evidence/t317-s7-developer-smoke-efficiency.md).
