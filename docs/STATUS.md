@@ -79,7 +79,3 @@ separately admitted numeric task packet.
   M1 FDD image while retaining the current MS-DOS 6.22 FDD and EWIN31 Setup
   HDD for their applicable checks. Fresh configuration restored 145/145 current
   gates without weakening old assertions or claiming broad DOS 6.22 support.
-
-- **M5 Td S59:** established the repository-relative current-media root,
-  approved-media identities, and protected-media change controls. Its initial
-  DOS 5 contract mismatch was classified and corrected by S60.
