@@ -2,28 +2,8 @@
 
 ## Current Work
 
-**Active.** M5 Td S67 is aligning the 80386DX completeness plan with its
-roadmap, Queue, evidence, and deferred-boundary records.
-
-## M5 Td S67 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Governance; M5 Td S67; Ordinary Mode. |
-| Admission And Approval | The owner approved this post-T319 documentation governance correction on 2026-08-11: establish the two-view 80386DX completeness plan without placing project-specific context in global execution rules. |
-| Objective | Define the project-level 80386DX completeness boundary, connect horizontal instruction-form evidence to vertical architecture-state closures, order the Queue accordingly, and record explicit deferred boundaries. |
-| Non-goals | No CPU, test, build, artifact, CMake, global-rule, or active implementation-task change; no 80386/80387 or Windows compatibility completion claim. |
-| Reference Baseline | `04d4b182` / closed T319, whose 0319 artifact remains the current developer artifact. |
-| Files And ABI Surface | `docs/design/GOAL.md`, `docs/design/ROADMAP.md`, `docs/QUEUE.md`, `docs/TODO.md`, `docs/etc/evidence/80386-closure-map.md`, the T316 ordinary matrix cross-reference, `docs/STATUS.md`, and the documentation index only; no runtime or ABI surface. |
-| Applicable Rules | Task Reading Set; `docs/rules/DOCUMENT.md`; `docs/rules/EXECUTION.md` identifier and closure requirements; principal-document authority boundaries. |
-| Verification | Documentation governance default command, documentation and governance-state scopes, `git diff --check`, actual-document authority review, commit, and push. |
-| Expected Markers | One indexed `80386-closure-map.md`; Roadmap and Queue state the complementary closure model; TODO has bounded VME/PVI, x87, and legacy-LOCK admission paths. |
-| Asset Needs | None. |
-| Reporting Requirements | Record the authority-boundary review, exact documents changed, verification results, commit, push, and confirmation that no global rule received project-specific content. |
-| Stop Conditions | Stop if the change requires a runtime claim, alters global execution policy, allocates a numeric task, or conflicts with a principal-document authority; request owner direction rather than inferring a new architecture decision. |
-| Exit Criteria | Goals define the bounded 80386DX outcome; Roadmap defines the two closure views; Queue names the closure-map handoff; map distinguishes complete/planned/deferred composition boundaries; TODO records VME/PVI, x87, and legacy LOCK admission conditions; all documentation gates pass and the Td record is committed and pushed. |
-| Original Owner Request | Avoid a piecemeal 80386 plan; retain fine-grained evidence while making the architecture-state dependency route explicit, without polluting global rules. |
-| Similar-Issue Sweep | Documentation-only: reviewed Goal, Roadmap, Queue, TODO, T316 matrix, Status, and `etc/` index coverage. No source defect class applies. |
+**Idle.** M5 Td S67 is closed; the next approved Queue candidate requires a
+separately admitted numeric task packet.
 
 ## Current Technical Baseline
 
@@ -54,6 +34,13 @@ roadmap, Queue, evidence, and deferred-boundary records.
 | T308 | Completed protected 32-bit same/outer error delivery and bounded contributory `#DF` containment through the existing route. Its 0308 artifact, 51 gates, and 137 CTests passed; triple-fault shutdown/reset remains deferred. |
 
 ## Recent Governance
+
+- **M5 Td S67:** defined the two complementary 80386DX completion views in
+  goal, roadmap, Queue, and an indexed supporting closure map; retained the
+  T316 form matrix as horizontal evidence, and recorded VME/PVI, x87, and
+  legacy LOCK boundaries without adding project-specific content to global
+  rules. Documentation and state checks plus diff check passed. Td work has no
+  runtime or artifact change.
 
 - **M5 Td S66:** replaced all-documents startup reading with a role- and
   change-triggered reading set; aligned implementation and governance P
