@@ -3931,7 +3931,7 @@ static C_VOID _s_task_cache_descriptor(t_cpu_data_sreg *cache,
         (_GetDescSeg_Limit(descriptor) << 12u | 0x0fffu) :
         _GetDescSeg_Limit(descriptor));
     cache->dpl = (type_unsigned_4)_GetDesc_DPL(descriptor);
-    if (sregtype == SREG_TR) {
+    if (sregtype == SREG_TR || sregtype == SREG_LDTR) {
         cache->sys.type = (type_unsigned_4)_GetDesc_Type(descriptor);
     } else if (_IsDescCode(descriptor)) {
         cache->seg.accessed = (type_bool)_IsDescUserAccessed(descriptor);
@@ -3949,18 +3949,61 @@ static C_VOID _s_task_cache_descriptor(t_cpu_data_sreg *cache,
     TYPE_TRACE_CALL_END;
 }
 
+static C_VOID _s_task_prepare_ldtr(core_machine_cpu_execution_context *context,
+    type_unsigned_16 selector, t_cpu_data_sreg *out_cache)
+{
+    type_unsigned_64 descriptor;
+
+    TYPE_TRACE_CALL_BEGIN("_s_task_prepare_ldtr");
+    STD_MEMSET(out_cache, 0, sizeof(*out_cache));
+    out_cache->sregtype = SREG_LDTR;
+    if (_IsSelectorNull(selector)) {
+        out_cache->selector = selector;
+        TYPE_TRACE_CALL_END;
+        return;
+    }
+    if (_GetSelector_TI(selector))
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(selector & 0xfffcu));
+    TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, selector,
+        TYPE_REFERENCE_OF(descriptor)));
+    if (!_IsDescLDT(descriptor))
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(selector & 0xfffcu));
+    if (!_IsDescPresent(descriptor))
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_NP(selector & 0xfffcu));
+    _s_task_cache_descriptor(out_cache, selector, descriptor, SREG_LDTR);
+    TYPE_TRACE_CALL_END;
+}
+
+static C_VOID _s_task_read_selector(core_machine_cpu_execution_context *context,
+    t_cpu_data_sreg *ldtr, type_unsigned_16 selector,
+    type_virtual_address rdata)
+{
+    TYPE_TRACE_CALL_BEGIN("_s_task_read_selector");
+    if (!_GetSelector_TI(selector)) {
+        TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, selector, rdata));
+        TYPE_TRACE_CALL_END;
+        return;
+    }
+    if (!ldtr->flagValid || TYPE_MASK_UNSIGNED_16(_GetSelector_Offset(selector) +
+        7u) > TYPE_MASK_UNSIGNED_16(ldtr->limit))
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(selector & 0xfffcu));
+    TYPE_TRACE_CHECK_RETURN(_kma_read_logical(context, ldtr,
+        _GetSelector_Offset(selector), rdata, 8u, 0u, TYPE_TRUE));
+    TYPE_TRACE_CALL_END;
+}
+
 static C_VOID _s_task_validate_data_selector(
-    core_machine_cpu_execution_context *context, type_unsigned_16 selector,
-    t_cpu_data_sreg_type sregtype, t_cpu_data_sreg *out_cache)
+    core_machine_cpu_execution_context *context, t_cpu_data_sreg *ldtr,
+    type_unsigned_16 selector, t_cpu_data_sreg_type sregtype,
+    t_cpu_data_sreg *out_cache)
 {
     type_unsigned_64 descriptor;
 
     TYPE_TRACE_CALL_BEGIN("_s_task_validate_data_selector");
-    if (_IsSelectorNull(selector) || _GetSelector_TI(selector) ||
-        _GetSelector_RPL(selector) != 0u) {
+    if (_IsSelectorNull(selector) || _GetSelector_RPL(selector) != 0u) {
         TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(selector & 0xfffcu));
     }
-    TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, selector,
+    TYPE_TRACE_CHECK_RETURN(_s_task_read_selector(context, ldtr, selector,
         TYPE_REFERENCE_OF(descriptor)));
     if (!_IsDescDataWritable(descriptor) || _GetDesc_DPL(descriptor) != 0u) {
         TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(selector & 0xfffcu));
@@ -3973,17 +4016,16 @@ static C_VOID _s_task_validate_data_selector(
 }
 
 static C_VOID _s_task_validate_code_selector(
-    core_machine_cpu_execution_context *context, type_unsigned_16 selector,
-    type_unsigned_32 eip, t_cpu_data_sreg *out_cache)
+    core_machine_cpu_execution_context *context, t_cpu_data_sreg *ldtr,
+    type_unsigned_16 selector, type_unsigned_32 eip, t_cpu_data_sreg *out_cache)
 {
     type_unsigned_64 descriptor;
 
     TYPE_TRACE_CALL_BEGIN("_s_task_validate_code_selector");
-    if (_IsSelectorNull(selector) || _GetSelector_TI(selector) ||
-        _GetSelector_RPL(selector) != 0u) {
+    if (_IsSelectorNull(selector) || _GetSelector_RPL(selector) != 0u) {
         TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(selector & 0xfffcu));
     }
-    TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, selector,
+    TYPE_TRACE_CHECK_RETURN(_s_task_read_selector(context, ldtr, selector,
         TYPE_REFERENCE_OF(descriptor)));
     if (!_IsDescCodeNonConform(descriptor) || _GetDesc_DPL(descriptor) != 0u) {
         TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(selector & 0xfffcu));
@@ -4072,6 +4114,7 @@ typedef struct task_switch_plan_32 {
     type_unsigned_64 old_descriptor;
     type_unsigned_64 new_descriptor;
     t_cpu_data_sreg newtr;
+    t_cpu_data_sreg newldtr;
     t_cpu_data_sreg newcs;
     t_cpu_data_sreg newss;
     t_cpu_data_sreg newds;
@@ -4173,20 +4216,23 @@ static C_VOID _s_task_plan_transition_32(
     TYPE_TRACE_CHECK_RETURN(_kma_read_logical(context, &plan->newtr,
         TASK_SWITCH_TSS32_CR3_OFFSET, TYPE_REFERENCE_OF(plan->incoming),
         TASK_SWITCH_TSS32_IMAGE_BYTES, 0u, TYPE_TRUE));
-    if (plan->incoming.ldtr.selector || plan->incoming.cr3 & ~VCPU_CR3_BASE)
+    if (plan->incoming.cr3 & ~VCPU_CR3_BASE)
         TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(newcs & 0xfffcu));
+    TYPE_TRACE_CHECK_RETURN(_s_task_prepare_ldtr(context,
+        plan->incoming.ldtr.selector, &plan->newldtr));
     TYPE_TRACE_CHECK_RETURN(_s_task_validate_code_selector(context,
-        plan->incoming.cs.selector, plan->incoming.eip, &plan->newcs));
+        &plan->newldtr, plan->incoming.cs.selector, plan->incoming.eip,
+        &plan->newcs));
     TYPE_TRACE_CHECK_RETURN(_s_task_validate_data_selector(context,
-        plan->incoming.ss.selector, SREG_STACK, &plan->newss));
+        &plan->newldtr, plan->incoming.ss.selector, SREG_STACK, &plan->newss));
     TYPE_TRACE_CHECK_RETURN(_s_task_validate_data_selector(context,
-        plan->incoming.ds.selector, SREG_DATA, &plan->newds));
+        &plan->newldtr, plan->incoming.ds.selector, SREG_DATA, &plan->newds));
     TYPE_TRACE_CHECK_RETURN(_s_task_validate_data_selector(context,
-        plan->incoming.es.selector, SREG_DATA, &plan->newes));
+        &plan->newldtr, plan->incoming.es.selector, SREG_DATA, &plan->newes));
     TYPE_TRACE_CHECK_RETURN(_s_task_validate_data_selector(context,
-        plan->incoming.fs.selector, SREG_DATA, &plan->newfs));
+        &plan->newldtr, plan->incoming.fs.selector, SREG_DATA, &plan->newfs));
     TYPE_TRACE_CHECK_RETURN(_s_task_validate_data_selector(context,
-        plan->incoming.gs.selector, SREG_DATA, &plan->newgs));
+        &plan->newldtr, plan->incoming.gs.selector, SREG_DATA, &plan->newgs));
     TYPE_TRACE_CHECK_RETURN(_m_test_logical(context, &plan->newss,
         plan->incoming.esp, 0u, TYPE_FALSE));
 
@@ -4250,8 +4296,7 @@ static C_VOID _s_task_commit_transition_32(core_machine_cpu_execution_context *c
     cpu_state.data.ds = plan->newds;
     cpu_state.data.fs = plan->newfs;
     cpu_state.data.gs = plan->newgs;
-    STD_MEMSET(&cpu_state.data.ldtr, 0, sizeof(cpu_state.data.ldtr));
-    cpu_state.data.ldtr.sregtype = SREG_LDTR;
+    cpu_state.data.ldtr = plan->newldtr;
     plan->newtr.sys.type = VCPU_DESC_SYS_TYPE_TSS_32_BUSY;
     cpu_state.data.tr = plan->newtr;
     _SetCR0_TS;
@@ -4278,6 +4323,7 @@ static C_VOID _ser_task_transition_tss(core_machine_cpu_execution_context *conte
     type_unsigned_64 old_descriptor;
     type_unsigned_64 new_descriptor;
     t_cpu_data_sreg newtr;
+    t_cpu_data_sreg newldtr;
     t_cpu_data_sreg newcs_cache;
     t_cpu_data_sreg newss_cache;
     t_cpu_data_sreg newds_cache;
@@ -4338,17 +4384,16 @@ static C_VOID _ser_task_transition_tss(core_machine_cpu_execution_context *conte
         _GetSelector_Offset(newcs), 8u, TYPE_TRUE, 0u, TYPE_TRUE));
     TYPE_TRACE_CHECK_RETURN(_kma_read_logical(context, &newtr, 0x0eu,
         TYPE_REFERENCE_OF(state), sizeof(state), 0u, TYPE_TRUE));
-    if (state.ldtr) {
-        TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(state.ldtr & 0xfffcu));
-    }
-    TYPE_TRACE_CHECK_RETURN(_s_task_validate_code_selector(context, state.cs,
-        state.ip, &newcs_cache));
-    TYPE_TRACE_CHECK_RETURN(_s_task_validate_data_selector(context, state.ss,
-        SREG_STACK, &newss_cache));
-    TYPE_TRACE_CHECK_RETURN(_s_task_validate_data_selector(context, state.ds,
-        SREG_DATA, &newds_cache));
-    TYPE_TRACE_CHECK_RETURN(_s_task_validate_data_selector(context, state.es,
-        SREG_DATA, &newes_cache));
+    TYPE_TRACE_CHECK_RETURN(_s_task_prepare_ldtr(context, state.ldtr,
+        &newldtr));
+    TYPE_TRACE_CHECK_RETURN(_s_task_validate_code_selector(context, &newldtr,
+        state.cs, state.ip, &newcs_cache));
+    TYPE_TRACE_CHECK_RETURN(_s_task_validate_data_selector(context, &newldtr,
+        state.ss, SREG_STACK, &newss_cache));
+    TYPE_TRACE_CHECK_RETURN(_s_task_validate_data_selector(context, &newldtr,
+        state.ds, SREG_DATA, &newds_cache));
+    TYPE_TRACE_CHECK_RETURN(_s_task_validate_data_selector(context, &newldtr,
+        state.es, SREG_DATA, &newes_cache));
 
     if (!nested)
         _ClrDescTSSBusy(old_descriptor);
@@ -4416,8 +4461,7 @@ static C_VOID _ser_task_transition_tss(core_machine_cpu_execution_context *conte
     cpu_state.data.cs = newcs_cache;
     cpu_state.data.ss = newss_cache;
     cpu_state.data.ds = newds_cache;
-    STD_MEMSET(&cpu_state.data.ldtr, 0, sizeof(cpu_state.data.ldtr));
-    cpu_state.data.ldtr.sregtype = SREG_LDTR;
+    cpu_state.data.ldtr = newldtr;
     STD_MEMSET(&cpu_state.data.fs, 0, sizeof(cpu_state.data.fs));
     cpu_state.data.fs.sregtype = SREG_DATA;
     STD_MEMSET(&cpu_state.data.gs, 0, sizeof(cpu_state.data.gs));
