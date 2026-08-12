@@ -2,27 +2,8 @@
 
 ## Current Work
 
-**M5 T326 S1: deliver protected-mode invalid-opcode faults through IDT vector 6 (Ordinary Mode).**
-
-## M5 T326 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New; Ordinary Mode. `M5 T326 S1` is the next numeric task after closed T325. |
-| Admission And Approval | Owner-approved autonomous continuation toward the Intel 80386DX architecture-coverage closure audit on 2026-08-12. T325 S3 transferred the reproduced High TODO. T326 audit found that real-IVT delivery would change 41 retained no-handler smoke contracts; this S therefore admits only ordinary protected-mode vector-6 delivery and records real-mode delivery as a separate High transfer. |
-| Objective | Make an active ordinary protected-mode invalid-opcode fault invoke IDT vector 6 as a restartable Intel 80386 fault, with no error code, rather than falling into a terminal fault path. Correct the reproduced shared protected exception-frame classifier so vector 6 is no-error-code while Intel error-code vectors 8/10--14/17 retain their frame contract; reconcile this with retained VM86 vector-6 behavior. |
-| Non-goals | No real-mode `#UD` IVT-policy migration, `#BP`/`#DB` policy, task switch, VME/PVI, generic IDT redesign, new public ABI, paging/translation change, opcode-family completion claim, or x87 execution. No exception-vector policy beyond the existing Intel error-code classification needed to make protected `#UD` vector 6 correct. |
-| Reference Baseline | `f1d9a0da` / `vm-0-5-0323`; retain T320 VM86 delivery, T321 exception delivery, T325 S3 protected `0F 01 /7` reproducer, and the Intel 80386 PRM exception authority as inputs. |
-| Files And ABI Surface | Expected: `src/core/machine/cpu_instructions.c` finalizer/error-frame classifier, one new owner-bound machine smoke, its target-local strict-GCC CMake registration, exception/closure evidence, TODO/closure-map disposition, and Status. No public interface or provider ABI change. |
-| Applicable Rules | `docs/design/GOAL.md` and Roadmap 80386DX completion program; T325 transfer/TODO and closure-map exception/paging rows; Architecture Rules one CPU exception owner/path; Coding Rules project types and test-only boundary; Documentation and Execution Rules packet/P lifecycle. Intel 80386 PRM 9.8.6 and 9.9 define `#UD` as vector 6, fault, restartable, and without error code. |
-| Verification | Reproduce and then prove protected-IDT 80386 vector-6 delivery for representative active `#UD` producers: invalid primary opcode, `0F` reserved form (`0F 01 /7`), invalid operand form, and LOCK-prefix rejection. Verify saved restart IP/CS/EFLAGS, the protected three-dword no-error-code frame, handler transfer/progress, producer nonpublication, valid-gate delivery, invalid protected-gate containment, retained real terminal behavior, and retained VM86 vector-6 behavior. Sweep and regression-prove the shared classifier's active no-error-code (`#DE/#NM/#MF/#BR`) and error-code (`#DF/#TS/#NP/#SS/#GP/#PF`) routes. Configure, strict compile, exact current registration, documentation governance, diff, specialized gate, and full current-gate must pass. |
-| Expected Markers | New `M5:T326:S1:PROTECTED-UD-DELIVERY:OK`; retained exception, VM86, paging, FPU-interface, and BOUND markers; full current and specialized gate success. |
-| Asset Needs | None; deterministic in-memory GDT, IDT, stack, code, diagnostic, and PIC fixtures only. |
-| Reporting Requirements | Perform and record an Intel form/producer audit before code. P1 is one complete implementation, evidence, self-review, commit, and push; then complete Ordinary-Mode actual-change review before a governance-only P2. Report any shared-route finding outside vector-6 delivery as a material objection. |
-| Stop Conditions | Stop before changing real-mode `#UD` policy, an exception-vector mapping other than protected `#UD` vector 6, task/TSS policy, public interface, or generic IDT mechanics. The only permitted shared serializer change is a mechanically enumerated error-code classifier matching Intel vectors 8/10--14/17; every changed route needs retained regression evidence. A producer that cannot be classified by the bounded sweep becomes a named transfer, not an untested completion claim. |
-| Exit Criteria | Ordinary protected `#UD` invokes vector 6 with the correct restart/no-error-code frame and no producer publication; the shared classifier makes every active no-error-code versus error-code route mechanically explicit and regression-proven; invalid vector-6 gate is contained truthfully; active producer classes are swept and classified; retained real terminal behavior, VM86, and `#DE/#PF/#MF/#NM/#BR` regressions pass; all required gates pass; real-mode/debug/task/VME and broader trap boundaries are explicitly transferred. |
-| Original Owner Request | Continue in single-session mode through the Intel 80386DX architecture-coverage closure audit, prioritizing correct, bounded architectural implementation and evidence. |
-| Similar-Issue Sweep | Search all tracked production `VCPUINS_EXCEPT_UD`, `_SetExcept_UD`, and `UndefinedOpcode` producers; classify their active protected behavior into the representative proof, a retained regression, or an explicit later boundary. Sweep all `ExecFinal` exception-vector branches and retained producer smokes (`#DE/#PF/#MF/#NM/#BR`) to ensure vector-6 repair does not alter another route. |
+**Idle.** T326 is closed; the next 80386DX package requires separate
+admission from the Queue.
 
 ## Current Technical Baseline
 
@@ -43,6 +24,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T326 | Closed ordinary protected-mode invalid-opcode delivery: `#UD` now reaches IDT vector 6 with a restartable three-dword no-error-code frame, while the explicit error-code classifier retains vectors 8/10--14/17. Four producer classes, invalid-gate containment, retained VM86 and 210/210 current-gate pass. Real-mode IVT migration transfers. [History](history/M5-T326-protected-invalid-opcode-delivery.md). |
 | T325 | Closed the CPU-native Intel 80386DX paging/translation package: CR0, CR2/CR3, 4-KiB PDE/PTE, U/S/R/W, A/D, cross-page atomicity, delivered `#PF`, no-persistent-cache behavior, and pre-486 `INVLPG #UD` are reconciled. Protected `#UD` delivery, task/VM86 paging, and persistent TLB/TR6/TR7 state transfer explicitly. [History](history/M5-T325-80386dx-paging-translation.md). |
 | T324 | Closed current-test/specialized-gate separation: `run-current-smokes` now runs only the full 209-test CTest smoke selection, `run-current-fast-smokes` retains the 194-test non-media selection, and `verify-current-specialized-gates` owns 46 named verifiers plus a mechanical target-graph check. `current-gates-gcc` composes exactly both roots; all layer baselines and evidence are retained in [T324 history](history/M5-T324-current-gate-separation.md). |
 | T323 | Closed the bounded 80386DX non-task, non-VM86 protection/privilege-transfer composition: direct far transfer, loaded segment rights, 16-bit same/outer gate entry, outer IRET, and parameterized 16-bit call gates now join retained selector, 32-bit, and outer-RETF evidence. The sole S7 serializer correction preflights/copies parameter words. Task/LDT/debug/VM86, paging, legacy LOCK, and x87 retain named boundaries; the 0323 artifact SHA-256 and 209/209 gate result are in the [closure audit](etc/evidence/t323-protection-privilege-closure-audit.md). |
@@ -50,7 +32,6 @@
 | T321 | Closed the bounded exception, interrupt, return, VM86 table-load, and processor-control composition program: S2 delivers active `#DE/#PF/#MF` vectors; S3 proves NMI/IRQ/TF ordering; S4 composes software INT/IRET with IRQ; S5 enforces VM86 LGDT/LIDT `#GP(0)` before source access; and S6 records the artifact and all transfers. The 0321 artifact, governance, and 202/202 current-gate passed. |
 | T320 | Closed the bounded VM86-to-CPL0 32-bit delivery foundation: `#GP/#UD/#NM/IRQ0` entry through TSS `SS0:ESP0`, full VM86 frame and failure boundaries, plus atomic nine-dword CPL0 `IRET` return with a real IRQ0-to-handler-to-VM86 round trip. `66` is classified as non-VM86 return, `67` succeeds, and VME/PVI/task/paging breadth remains transferred. Artifact 0320 SHA-256 is recorded in history; fresh configure, governance/diff checks, and 198/198 current-gate passed. |
 | T319 | Closed the bounded non-VM86 LGDT/LIDT `0F 01 /2,/3` table-load slice: protected CPL>0 now rejects before pseudo-descriptor reads, both forms have real/protected, attribute, source-atomicity, table-consumer, and PIC evidence, and VM86 plus 80286 LOCK remain transferred. Its 0319 artifact and 196/196 current-gate pass are retained in history. |
-| T318 | Closed the bounded SGDT/SIDT `0F 01 /0,/1 table-store slice: a local six-byte preflight/publication repair prevents partial pseudo-descriptor writes; both forms have profile, attribute, segment, rejection, protected atomicity, VM86 and IRQ-ordering evidence. 195/195 current-gate passed, and executor plus coordinator 0318 artifact hashes are retained in its history. LGDT/LIDT and wider processor-control work remain future bounded packages. |
 
 ## Recent Governance
 
