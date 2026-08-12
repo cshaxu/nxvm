@@ -2,34 +2,14 @@
 
 ## Current Work
 
-**Active.** M5 T329 S7 task paging and debug-trap state-machine composition
-(Ordinary Mode).
-
-## M5 T329 S7 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; Ordinary Mode, with the coordinator as sole planner, implementer, reviewer, and closer. |
-| Admission And Approval | Owner approved autonomous completion of T329 on 2026-08-12. This packet admits the final S7 boundary recorded by the accepted S1--S6 task-state record. |
-| Objective | Complete the 80386 task-transition composition that consumes a 32-bit incoming CR3 under the existing paging boundary and the TSS debug-trap field: preflight task-image/page accesses before transition publication, load CR3 atomically with task state, and deliver the post-switch TSS debug trap as a restart-safe `#DB` boundary. |
-| Non-goals | General paging implementation, persistent TLB, ordinary MOV DRx or test-register family closure, hardware breakpoints, VM86 task breadth, VME/PVI, TSS I/O bitmap behavior, 80287/80387, and non-task exception redesign are outside this S. |
-| Reference Baseline | `86c20d95` / `vm-0-5-0328`, with accepted T329 S1--S6 state-machine evidence and existing T325/T326 paging and exception boundaries. |
-| Files And ABI Surface | Task transition implementation and its existing owner smoke/evidence/Status only; any required exception hook remains private to core machine. No public ABI, provider, product, or paging-interface change. |
-| Applicable Rules | Task Reading Set; Execution, Coding, Architecture, Documentation rules; Intel 80386 task-switch, CR3, paging, and debug-trap semantics. The existing task plan/commit path remains the only owner of task-state publication. |
-| Verification | Owner smoke proves successful paging-enabled 32-bit task CR3 replacement and outbound CR3 image; controlled incoming task-image/page access failure leaves outgoing TSS, busy, TR, LDTR, and CR3 unchanged at an installed-handler boundary; TSS T-bit causes one delivered post-switch `#DB` with target task state already active and restart-safe frame. Retain prior task smoke and existing paging/debug regressions; run focused target, documentation governance, diff check, and full current gate. |
-| Expected Markers | Existing task-switch smoke retains its marker; evidence names CR3 success/fault and TSS debug-trap delivery boundaries. |
-| Asset Needs | No guest media, firmware, third-party import, or external runtime asset. |
-| Reporting Requirements | Record exact TSS offsets and ordering, task/page/debug ownership sweep, actual-change review, and final pushed implementation/governance closure. Stop and report a required generic paging, breakpoint, or exception-delivery redesign. |
-| Stop Conditions | Stop for a required change to generic page-walk/TLB policy, broad debug-register/breakpoint semantics, public ABI/provider behavior, or a shared exception-delivery change not limited to the TSS debug-trap post-switch boundary. |
-| Exit Criteria | Paging-enabled 32-bit task CR3 success and failure atomicity are proven; TSS debug-trap is represented and delivered after a completed task transition; prior T329 coverage and full current gate pass; closure evidence transfers only named non-goals. |
-| Original Owner Request | Complete T329 in single-agent mode as the Intel 80386 task-state closure package, with holistic preflight/plan/commit construction rather than incremental symptom patches. |
-| Similar-Issue Sweep | Audit all 32-bit task-image offsets, preflight/commit paths, CR3 publication points, and `#DB` producers/exception finalization; do not treat ordinary paging or DR instruction tests as task-switch proof. |
+**Idle.** M5 T329 is closed; the next Queue candidate requires a separately
+admitted task packet.
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** T328 selects `vm-0-5-0328` /
-  `build/output/nxvm_0_5_0328.exe`; commit `e5aa9d97` SHA-256 is
-  `52D81668FE747C5A1083EE5F9A5C33A5C71F41C5383B299B1728EAD8F523DFEA`.
+- **Current developer artifact:** T329 selects `vm-0-5-0329` /
+  `build/output/nxvm_0_5_0329.exe`; commit `ae91e592` SHA-256 is
+  `87982567ACDAC83253A8F6102330F5976B150F2C5AD3CB926D0D6BE4AA41C069`.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
@@ -43,13 +23,7 @@
 ## Recent M5 Closures
 
 | Task | Compact result |
-| T329 S6 | Closed non-null LDTR/LDT task images and task-local `TI=1` selector resolution for 16/32-bit protected transitions. The unified preflight validates incoming LDT state before selector use and atomically commits cached LDTR with task state; LDT type/present/limit and selector type/limit failures retain outgoing TSS, busy, TR, and LDTR state at installed-handler boundaries. [S6 evidence](etc/evidence/t329-s6-task-ldt-images.md) and 211/211 current-gate tests pass. Task paging/debug composition remains S7. |
-| T329 S5 | Closed nested protected-task `IRET` return for 16/32-bit TSS images, IDT task-gate entry, and a bounded 80386 `#GP`-delivery-to-`#DF` task-gate chain. The named transition boundary now distinguishes nested entry from backlink return, with busy/TR/TS/NT, image/cache, and 211/211 current-gate proof in [S5 evidence](etc/evidence/t329-s5-task-return-idt-task-gate.md). Non-null LDT, task paging, debug state, arbitrary chains, and failed-double-fault reset policy remain transferred. |
-| T329 S4 | Closed protected direct far-CALL and GDT task-gate entry for 16/32-bit TSS images: shared nested transition semantics, backlink/NT, busy/TR/TS, direct/indirect CALL and task-gate JMP/CALL, local `LOCK FF /3` rejection, installed-handler and terminal fault boundaries, and 211/211 current-gate proof. Nested IRET, IDT task gates/double fault, LDT, task paging, and debug remain transferred in [S4 evidence](etc/evidence/t329-s4-task-gate-call-entry.md). |
-| T329 S1 | Closed the bounded 80286/80386 protected direct far-JMP-to-16-bit-TSS matrix: direct/indirect and permitted `66h`/`67h` forms, descriptor/TSS faults, busy and `CR0.TS` publication, local pending-IRQ boundary, target-local strict GCC compile, and 211/211 current-gate evidence are in [T329 S1 evidence](etc/evidence/t329-s1-tss16-direct-jump.md). 32-bit TSS, task gates/CALL/NT, LDT task state, task paging, and broader VM86/debug behavior remain transferred. |
-| T329 S2 | Closed the bounded 80386 32-bit-TSS direct far-JMP slice: complete outgoing/incoming state including CR3 and FS/GS, `EA`/`FF /5` 66h/67h matrix, descriptor/TSS/stack preflight boundaries, busy/TS, null LDTR, pending IRQ, and direct/indirect LOCK rejection. The targeted `FF /5` LOCK repair leaves the shared prefix policy unchanged; task gates/CALL/NT, non-null LDT, task paging, and debug state remain transferred in [S2 evidence](etc/evidence/t329-s2-tss32-direct-jump.md). |
-| T329 S3 | Closed the direct 32-bit TSS image/fault-order contract: named/checked CR3-through-LDTR offsets, full outbound/inbound cache/state proof, and installed `#TS/#GP/#SS` handler checkpoints proving descriptor/TSS/stack preflight failures leave no partial TSS or busy-descriptor write. Task gates/CALL/NT, non-null LDT, task paging, and debug state remain transferred in [S3 evidence](etc/evidence/t329-s3-tss32-image-fault-order.md). |
-| --- | --- |
+| T329 | Closed the bounded Intel 80286/80386 protected task-transition state machine: 16/32-bit direct and task-gate entry, nested CALL/IRET state, incoming LDT images, source-CR3 preflight/incoming-CR3 commit, and TSS post-switch `#DB`. S7 proves target-page fetch, target-TSS `#PF` atomicity, and a target-state restart frame; the 0329 artifact and 211/211 gate result are in [history](history/M5-T329-task-transition-state-machine.md). |
 | T328 | Closed the historical LOCK-prefix legality matrix: 8086/80186 retain transparent valid-next-instruction semantics; 80286 adds protected `CPL <= IOPL`; retained 80386 memory-whitelist behavior stays intact. S2 reconciled the current closure map and ordinary matrix, removing the stale Deferred/TODO transfer without changing the user-owned Queue edit. Register, memory, REP, I/O, #GP frame, strict compile, artifact, and 211/211 gate evidence are in [history](history/M5-T328-legacy-lock-legality.md). |
 | T327 | Closed the current/specialized-gate reconciliation: fast smoke no longer builds classified media targets, and generated CTest/Ninja evidence now proves the full 210 = 15 media + 195 non-media partition, both developer roots, all specialized verifiers, and the aggregate's two roots. [History](history/M5-T327-current-gate-reconciliation.md). |
 | T326 | Closed ordinary protected-mode invalid-opcode delivery: `#UD` now reaches IDT vector 6 with a restartable three-dword no-error-code frame, while the explicit error-code classifier retains vectors 8/10--14/17. Four producer classes, invalid-gate containment, retained VM86 and 210/210 current-gate pass. Real-mode IVT migration transfers. [History](history/M5-T326-protected-invalid-opcode-delivery.md). |
@@ -57,7 +31,6 @@
 | T324 | Closed current-test/specialized-gate separation: `run-current-smokes` now runs only the full 209-test CTest smoke selection, `run-current-fast-smokes` retains the 194-test non-media selection, and `verify-current-specialized-gates` owns 46 named verifiers plus a mechanical target-graph check. `current-gates-gcc` composes exactly both roots; all layer baselines and evidence are retained in [T324 history](history/M5-T324-current-gate-separation.md). |
 | T323 | Closed the bounded 80386DX non-task, non-VM86 protection/privilege-transfer composition: direct far transfer, loaded segment rights, 16-bit same/outer gate entry, outer IRET, and parameterized 16-bit call gates now join retained selector, 32-bit, and outer-RETF evidence. The sole S7 serializer correction preflights/copies parameter words. Task/LDT/debug/VM86, paging, legacy LOCK, and x87 retain named boundaries; the 0323 artifact SHA-256 and 209/209 gate result are in the [closure audit](etc/evidence/t323-protection-privilege-closure-audit.md). |
 | T322 | Audited and withdrew the duplicate ordinary-execution/FLAGS candidate: T316's accepted S23--S65 owner smokes already cover the transferred Intel 80386 ordinary application forms. Remaining work is explicitly protection/privilege, paging, task/debug/VM86, legacy LOCK, or external x87 scope; no invented implementation slice or artifact was created. Documentation governance and diff checks passed. |
-| T321 | Closed the bounded exception, interrupt, return, VM86 table-load, and processor-control composition program: S2 delivers active `#DE/#PF/#MF` vectors; S3 proves NMI/IRQ/TF ordering; S4 composes software INT/IRET with IRQ; S5 enforces VM86 LGDT/LIDT `#GP(0)` before source access; and S6 records the artifact and all transfers. The 0321 artifact, governance, and 202/202 current-gate passed. |
 
 ## Recent Governance
 
