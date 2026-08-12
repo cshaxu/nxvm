@@ -2,28 +2,8 @@
 
 ## Current Work
 
-**Active: M5 T318 S1.** Implement Intel 80386 SGDT/SIDT descriptor-table store
-forms in Coordinated Dual-Session Mode.
-
-## M5 T318 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New; T318 is the next linear numeric implementation task after closed T317 and begins at S1. |
-| Admission And Approval | Owner's continuing approved objective is complete Intel 80386 implementation in Coordinated Dual-Session Mode; on 2026-08-11 the coordinator selected this first bounded processor-control handoff after T316 S66 and executor's independent read-only audit. Scope is only `0F 01 /0` SGDT and `/1` SIDT stores. |
-| Objective | Implement or correct and prove the Intel 80286/80386 SGDT and SIDT memory-only pseudo-descriptor store forms, then establish a truthful matrix/evidence baseline for this first processor-control slice. |
-| Non-goals | No LGDT/LIDT (`/2,/3`), SLDT/STR/LLDT/LTR, SMSW/LMSW, MOV CRx, paging/TLB, IDT gate delivery redesign, generic exception/IRQ/NMI work, task/V86 breadth, legacy LOCK-policy change, or 80387 implementation. |
-| Reference Baseline | `a8aa729e` / predecessor developer artifact `0.5.0317`; T316 S66 explicitly transferred SGDT/SIDT/LGDT/LIDT to the later processor-control package and withdrew its earlier uncommitted table-register smoke as non-evidence. Current route is `INS_0F_01` cases `/0,/1` and `_d_modrm_table_memory` in `src/core/machine/cpu_instructions.c`. |
-| Files And ABI Surface | Expected: local CPU handler only if a reproduced SGDT/SIDT defect requires it; one owner smoke under `tests/machine/`, CMake standalone/current-gate registration, T318 matrix/history evidence, `STATUS.md`, and current task artifact `0.5.0318`. No public API, ABI, provider, or test-support-to-production dependency. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/DOCUMENT.md`, `docs/design/CODING.md`, `docs/design/ARCHITECTURE.md`, `docs/design/ROADMAP.md`, `docs/QUEUE.md`, `docs/history/M5-T316-ordinary-execution-closure.md`, and `docs/etc/evidence/t316-ordinary-execution-matrix.md`. Intel 80386 PRM SGDT/SIDT form semantics are the behavioral authority. |
-| Verification | Audit all SGDT/SIDT forms and table-store route; add owner-focused smoke; verify 80286/80386 real and protected behavior, operand/address attributes, exact memory image/EIP/state preservation, ModRM/prefix/LOCK rejection, memory-limit atomicity, and no-shadow IRQ ordering; configure GCC, build focused target, register exact current-gate target, run documentation governance, diff check, full current gates, rebuild/copy `0.5.0318`, record SHA-256/runtime identity, and push. |
-| Expected Markers | One deterministic `M5:T318:S1:SGDT-SIDT:OK` owner marker; exact current-gate registration; evidence distinguishes 16-bit operand base representation from 32-bit form, and reports every matrix form as proved, rejected, or explicitly transferred. |
-| Asset Needs | None; deterministic CPU fixtures, local GCC/Ninja/CMake, and current-gate inputs only. |
-| Reporting Requirements | Executor first confirms or materially objects after its route/PRM/evidence review. It then returns only one complete, self-reviewed, committed and pushed P1 or a reproducible material blocker; no partial test, fixture, registration, documentation, or diagnostic delivery. It reports no intermediate progress unless a material contract change or blocker occurs. Coordinator independently reviews pushed code/evidence and alone accepts/closes the S. |
-| Stop Conditions | Stop for a required shared descriptor-memory, decoder, exception/interrupt-delivery, paging, or legacy-LOCK policy change; a semantic ambiguity requiring wider Intel authority; an unsafe state-publication change affecting `/2`--`/6`; or any need to include mutable LGDT/LIDT semantics. Report exact route/caller sweep and request a revised or later S rather than broadening silently. |
-| Exit Criteria | Every admitted `/0,/1` form is classified against Intel authority and has focused evidence: memory-only ModRM, 80286/80386 profile/mode behavior, 16/32 operand and address attributes, six-byte pseudo-descriptor image, DS/SS and admitted override addressing, rejection/no-publication, protected write-boundary atomicity, and pending-PIC no-shadow. Any defect receives a bounded sweep/static prevention where mechanically suitable. The exact owner smoke, current-gate, artifact, evidence, independent coordinator review, governance closure, commit, and push all pass. |
-| Original Owner Request | Continue the complete Intel 80386 plan in dual-session mode, using an instruction-form to implementation to test matrix, repairing omissions, performing differential/boundary review, and closing each package with evidence. |
-| Similar-Issue Sweep | Inspect every `INS_0F_01` subform and `_d_modrm_table_memory` caller, all table-register focused tests/CMake registrations, 0F metadata/profile routing, table-store memory writes, and existing T316 transfer/evidence records. Fix only SGDT/SIDT hits; classify `/2`--`/6` and broader shared paths as retained later-package work unless an approved revision is required. |
+**Idle.** M5 T318 is closed; the next 80386 capability or quality slice requires a
+separately admitted task packet.
 
 ## Current Technical Baseline
 
@@ -45,6 +25,7 @@ forms in Coordinated Dual-Session Mode.
 
 | Task | Compact result |
 | --- | --- |
+| T318 | Closed the bounded SGDT/SIDT `F 01 /0,/1 table-store slice: a local six-byte preflight/publication repair prevents partial pseudo-descriptor writes; both forms have profile, attribute, segment, rejection, protected atomicity, VM86 and IRQ-ordering evidence. 195/195 current-gate passed, and executor plus coordinator 0318 artifact hashes are retained in its history. LGDT/LIDT and wider processor-control work remain future bounded packages. |
 | T317 | Closed test-corpus quality plus corrective type-vocabulary and developer-feedback work. S7 retains the 194-test current gate while adding validated default-four-job CTest execution, 15 explicit media labels, and a 179-test non-media fast preset; its full gate, fast run, media verifier, documentation governance, and diff check passed. |
 | T316 | Closed the declared 80386 ordinary-execution slices through S66. Residual parent-family breadth remains explicitly transferred in the S66 matrix to named later Queue packages, the legacy LOCK TODO, or the external-coprocessor boundary; no whole-80386 claim. Its predecessor developer artifact and 194 current-gate tests passed. |
 | T314 | Closed the EGA CRTC 13h bound, registered the deterministic xasm smoke, restored six historical target-local strict GCC sets while retaining three selected libraries, and added the CRTC static closure verifier; the two inherited-governance debts remain. Its 0315 artifact, 52 gates, 147 CTests, and S2/S3/S6 markers passed. |
