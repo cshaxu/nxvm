@@ -273,6 +273,9 @@ target_link_libraries(core-machine-control-transfer-smoke PRIVATE core-machine)
 add_executable(core-machine-descriptor-system-smoke
     tests/machine/core_machine_descriptor_system_smoke.c)
 target_link_libraries(core-machine-descriptor-system-smoke PRIVATE core-machine)
+add_executable(core-machine-sgdt-sidt-smoke
+    tests/machine/core_machine_sgdt_sidt_smoke.c)
+target_link_libraries(core-machine-sgdt-sidt-smoke PRIVATE core-machine)
 add_executable(core-machine-interrupt-entry-smoke
     tests/machine/core_machine_interrupt_entry_smoke.c)
 target_link_libraries(core-machine-interrupt-entry-smoke PRIVATE core-machine)
@@ -1435,6 +1438,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-msw-s63-smoke
     core-machine-control-transfer-smoke
     core-machine-descriptor-system-smoke
+    core-machine-sgdt-sidt-smoke
     core-machine-interrupt-entry-smoke
     core-machine-idt-privilege-entry-smoke
     core-machine-real-mode-386-rep-cmps-smoke
@@ -1693,7 +1697,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0317 "0.5.0317")
+add_current_vm_artifact(vm-0-5-0318 "0.5.0318")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 
