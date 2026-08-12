@@ -38,8 +38,13 @@ evidence-led DOS and early Windows research. Prove that a second policy-free
 consumer can use core without making mantle, DOS, or NXVDM a current runtime.
 Before M6 admission, carry the owner-approved Intel 80386DX
 architecture-completeness program through its evidence-led Queue sequence.
-That program does not make an 80387 implementation or Windows-compatibility
-claim.
+That program has two complementary closure views: instruction-form coverage and
+architecture-state closure. The former reconciles each assigned Intel form with
+focused evidence; the latter closes the state transitions that make forms
+compose (real/protected/VM86 execution, privilege and exception delivery,
+paging, and system state). A completed opcode slice cannot by itself close a
+CPU family or stage. The program does not make an 80387 implementation or
+Windows-compatibility claim.
 
 ## M6: Build Mantle
 

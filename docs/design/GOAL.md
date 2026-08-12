@@ -25,6 +25,13 @@ instructions.
 5. **Trustworthy continuity.** Retain established NXVM boot, Console, and
    debugger value while improving compatibility, hardware fidelity, and host
    integration through bounded, reproducible evidence.
+6. **Intel 80386DX architectural completeness.** Before M6 admission, complete
+   the approved CPU-side 80386DX program through both instruction-form evidence
+   and architecture-state closure. This means real/protected/VM86 state
+   transitions, privilege and exception delivery, paging, and remaining system
+   state are reconciled against the Intel architecture; it is not a claim that
+   Windows boots, that every hardware device is complete, or that 80387 numeric
+   execution exists.
 
 [System Architecture](ARCHITECTURE.md) defines the concrete component shape,
 [Product UX](UI.md) defines product interaction, and [Roadmap](ROADMAP.md)
