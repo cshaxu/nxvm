@@ -2,8 +2,28 @@
 
 ## Current Work
 
-**Idle.** M5 T329 S6 is closed; T329 remains open for its final separately
-admitted task paging/debug state-machine slice.
+**Active.** M5 T329 S7 task paging and debug-trap state-machine composition
+(Ordinary Mode).
+
+## M5 T329 S7 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; Ordinary Mode, with the coordinator as sole planner, implementer, reviewer, and closer. |
+| Admission And Approval | Owner approved autonomous completion of T329 on 2026-08-12. This packet admits the final S7 boundary recorded by the accepted S1--S6 task-state record. |
+| Objective | Complete the 80386 task-transition composition that consumes a 32-bit incoming CR3 under the existing paging boundary and the TSS debug-trap field: preflight task-image/page accesses before transition publication, load CR3 atomically with task state, and deliver the post-switch TSS debug trap as a restart-safe `#DB` boundary. |
+| Non-goals | General paging implementation, persistent TLB, ordinary MOV DRx or test-register family closure, hardware breakpoints, VM86 task breadth, VME/PVI, TSS I/O bitmap behavior, 80287/80387, and non-task exception redesign are outside this S. |
+| Reference Baseline | `86c20d95` / `vm-0-5-0328`, with accepted T329 S1--S6 state-machine evidence and existing T325/T326 paging and exception boundaries. |
+| Files And ABI Surface | Task transition implementation and its existing owner smoke/evidence/Status only; any required exception hook remains private to core machine. No public ABI, provider, product, or paging-interface change. |
+| Applicable Rules | Task Reading Set; Execution, Coding, Architecture, Documentation rules; Intel 80386 task-switch, CR3, paging, and debug-trap semantics. The existing task plan/commit path remains the only owner of task-state publication. |
+| Verification | Owner smoke proves successful paging-enabled 32-bit task CR3 replacement and outbound CR3 image; controlled incoming task-image/page access failure leaves outgoing TSS, busy, TR, LDTR, and CR3 unchanged at an installed-handler boundary; TSS T-bit causes one delivered post-switch `#DB` with target task state already active and restart-safe frame. Retain prior task smoke and existing paging/debug regressions; run focused target, documentation governance, diff check, and full current gate. |
+| Expected Markers | Existing task-switch smoke retains its marker; evidence names CR3 success/fault and TSS debug-trap delivery boundaries. |
+| Asset Needs | No guest media, firmware, third-party import, or external runtime asset. |
+| Reporting Requirements | Record exact TSS offsets and ordering, task/page/debug ownership sweep, actual-change review, and final pushed implementation/governance closure. Stop and report a required generic paging, breakpoint, or exception-delivery redesign. |
+| Stop Conditions | Stop for a required change to generic page-walk/TLB policy, broad debug-register/breakpoint semantics, public ABI/provider behavior, or a shared exception-delivery change not limited to the TSS debug-trap post-switch boundary. |
+| Exit Criteria | Paging-enabled 32-bit task CR3 success and failure atomicity are proven; TSS debug-trap is represented and delivered after a completed task transition; prior T329 coverage and full current gate pass; closure evidence transfers only named non-goals. |
+| Original Owner Request | Complete T329 in single-agent mode as the Intel 80386 task-state closure package, with holistic preflight/plan/commit construction rather than incremental symptom patches. |
+| Similar-Issue Sweep | Audit all 32-bit task-image offsets, preflight/commit paths, CR3 publication points, and `#DB` producers/exception finalization; do not treat ordinary paging or DR instruction tests as task-switch proof. |
 
 ## Current Technical Baseline
 

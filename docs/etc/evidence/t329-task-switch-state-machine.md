@@ -71,7 +71,7 @@ The later S boundaries are intentional dependency cuts, not omitted tests:
 | S4 | Task gates, far `CALL` to TSS, backlink, and NT entry. | Requires one correct direct-switch state transition. |
 | S5 | Nested-task `IRET`, bounded IDT task-gate and double-fault task chains. | Closed: requires and proves S4's backlink/NT semantics; arbitrary chains and failed-`#DF` reset policy transfer. |
 | S6 | Closed non-null LDTR/LDT task images and task-local `TI=1` selector resolution for 16/32-bit transitions. | Uses S2's null-LDTR boundary and preserves its preflight/commit separation. |
-| S7 | Task switching with paging and debug state. | Requires S3 plus the existing paging/debug boundaries. |
+| S7 | Closed: task switching with the existing paging boundary and the TSS debug-trap field. | Uses S3 plus the existing paging/debug boundaries; see [S7 evidence](t329-s7-task-paging-debug.md). |
 
 Bochs and PCjs may later be used only as bounded, read-only differential
 diagnostic references under the source/research and recorder policies. They
