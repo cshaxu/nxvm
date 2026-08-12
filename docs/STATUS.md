@@ -2,14 +2,36 @@
 
 ## Current Work
 
-**Idle.** M5 T321 S5 is accepted and closed; S6 requires a separately admitted
-packet.
+**Active.** M5 T321 S6 reconciles the bounded processor-control closure,
+builds the T321 developer artifact, and performs the task-level closure audit
+in Ordinary Mode.
+
+## M5 T321 S6 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | The owner authorized continued single-session implementation toward the 80386DX architecture-coverage closure audit on 2026-08-12. T321 S1 defines S6 as the final bounded processor-control reconciliation and task closure. |
+| Objective | Reconcile the S2--S5 exception, event, return, table, CR0/MSW/CLTS, and CPU-side ESC/WAIT evidence with their state-consumer boundaries; classify every remaining T321 row as complete or transferred; build and record the required `0.5.0321` developer artifact; and close T321 only if the audit is truthful. |
+| Non-goals | No new paging policy, MOV CR implementation, task/LDT/debug/test-register implementation, VME/PVI, x87 numerical execution, 80186/80286 LOCK policy, device redesign, or Windows claim. |
+| Reference Baseline | `40da2307`; T321 S1 audit, S2--S5 evidence, T304/T316 S61--S65, T318--T320 records, 80386 closure map, Queue, and TODO ledger. |
+| Files And ABI Surface | Current artifact target/version only; closure-map, Queue, Status, T321 history and indexed evidence. Production source changes are prohibited unless the final audit reproduces an in-scope unclassified T321 control/delivery defect; any such finding requires a packet revision. |
+| Applicable Rules | Task Reading Set; execution, architecture, coding, and documentation rules; artifact identity and milestone-closure requirements; Intel 80386 control, table, exception, and interrupt forms; all cited owner evidence. |
+| Verification | Re-audit exact current producers/routes/forms and their owner smokes; build `vm-0-5-0321`, run artifact-target verification and SHA-256, fresh configure, documentation governance, diff check, and full current gate. Map every T321 objective to evidence or an explicit Queue/TODO/external boundary. |
+| Expected Markers | Existing S2--S5 markers remain green; current developer artifact is `build/output/nxvm_0_5_0321.exe` with SHA-256 and runtime identity in T321 history. |
+| Asset Needs | No new assets. Build output only; no firmware, guest media, or external source/provider import. |
+| Reporting Requirements | Record row-by-row closure/transfer evidence, source and test sweep, artifact commit/hash/banner, gates, remaining Queue order, and any rejected closure claim. |
+| Stop Conditions | Stop and revise for a new in-scope production defect, an incomplete or contradictory transfer, an artifact build/identity failure, or any required change beyond current artifact/closure documentation. |
+| Exit Criteria | All T321-bounded rows are evidenced or explicitly transferred; no partial/unclassified row remains under T321 ownership; artifact and full gates pass; history/Queue/closure map/Status agree; commit and push complete. |
+| Original Owner Request | Complete the owner-approved Intel 80386DX architecture program by matrix, implementation, test, boundary review, and governed evidence closure. |
+| Similar-Issue Sweep | Sweep all cited S2--S5 routes and current producer masks; the current artifact CMake target; closure-map/Queue/TODO transfers; and every retained T321 evidence link. |
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** T320 selects `vm-0-5-0320` /
-  `build/output/nxvm_0_5_0320.exe`; its commit, SHA-256, runtime identity, and
-  retained boundaries are in [T320 history](history/M5-T320-vm86-delivery.md).
+- **Current developer artifact:** T321 selects `vm-0-5-0321` /
+  `build/output/nxvm_0_5_0321.exe`; its SHA-256, runtime identity, and
+  bounded closure transfers are in
+  [T321 S6 evidence](etc/evidence/t321-s6-processor-control-closure.md).
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
