@@ -2,28 +2,8 @@
 
 ## Current Work
 
-M5 T324 S1 is active: separate current smoke execution from specialized
-verification gates (Ordinary Mode).
-
-## M5 T324 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner-authorized continuation of the Queue's ordered M5/80386DX program, 2026-08-12. T323 is closed. |
-| Objective | Mechanically separate developer smoke execution from specialized verification: `run-current-smokes` builds registered smoke executables and runs only the full `current-gate` CTest selection; `run-current-fast-smokes` remains the non-media selection; one dedicated verifier target owns all structural, provenance, static, and other `verify-*` checks; and `current-gates-gcc` composes the three layers without duplicate execution. |
-| Non-goals | No registered test, command, assertion, timeout, media classification, artifact contract, product behavior, source ABI, verifier semantics, or CTest registration may be removed, relabeled, or weakened. Do not make static verifiers into CTests or change tests only to alter timing. |
-| Reference Baseline | `7fde9768`; the Queue P1 current-test/specialized-gate candidate and T317 S7 smoke-scheduling evidence are inputs. |
-| Files And ABI Surface | Expected: CMake presets/target composition, a narrow mechanical verifier or evidence, Status, and T324 history/evidence. No product source, public API, fixture behavior, media asset, or test executable source change is admitted. |
-| Applicable Rules | Task Reading Set; execution/coding/documentation rules; Queue; CMake/CTest target graph; T317 S7 evidence; current artifact contract. |
-| Verification | Audit every existing `run-current-smokes` dependency and classify it. Prove exact full/media/non-media CTest counts and partition; prove every specialized verifier is absent from pure smoke and present in complete acceptance; verify no duplicate target execution in the complete graph; record elapsed baselines for full, fast, specialized, and aggregate gates; run documentation governance and diff check. |
-| Expected Markers | `M5:T324:S1:CURRENT-GATE-SEPARATION:OK`; `run-current-smokes`, `run-current-fast-smokes`, and `verify-current-specialized-gates` have distinct mechanical target roles. |
-| Asset Needs | Existing owner-provided local media only; no new asset, firmware, guest media, or network input. |
-| Reporting Requirements | Deliver one complete implementation P with full dependency classification, implementation, evidence, and all verification while retaining this packet. After push, perform ordinary-mode actual-change acceptance before a governance P closes S1. |
-| Stop Conditions | Stop if a verifier has an undocumented runtime dependency, accurate separation changes test/product behavior, a target cannot be classified without changing its contract, or CMake cannot prove the complete graph is non-duplicating. Revise the packet rather than weaken coverage. |
-| Exit Criteria | Full/fast CTest selections and media partition are exact; every specialized verifier has one defined owner target; pure smoke contains no verifier dependency; complete acceptance contains every verifier and smoke once; timing evidence is recorded; no scope drift; all gates pass; and a pushed governance P records acceptance. |
-| Original Owner Request | Complete the owner-approved Intel 80386DX architecture program with evidence-led code quality and package governance before M6. |
-| Similar-Issue Sweep | Review `PROJECT_CURRENT_*_SMOKE_TARGETS`, `project_add_current_smoke_test`, every `add_dependencies(run-current-smokes ...)`, `verify-*` target, `current-gates-gcc`, fast presets, CTest labels, media classification, and current artifact verification. |
+**Idle.** M5 T324 is closed; the next 80386DX Queue candidate requires a
+separately admitted task packet.
 
 ## Current Technical Baseline
 
@@ -44,6 +24,7 @@ verification gates (Ordinary Mode).
 
 | Task | Compact result |
 | --- | --- |
+| T324 | Closed current-test/specialized-gate separation: `run-current-smokes` now runs only the full 209-test CTest smoke selection, `run-current-fast-smokes` retains the 194-test non-media selection, and `verify-current-specialized-gates` owns 46 named verifiers plus a mechanical target-graph check. `current-gates-gcc` composes exactly both roots; all layer baselines and evidence are retained in [T324 history](history/M5-T324-current-gate-separation.md). |
 | T323 | Closed the bounded 80386DX non-task, non-VM86 protection/privilege-transfer composition: direct far transfer, loaded segment rights, 16-bit same/outer gate entry, outer IRET, and parameterized 16-bit call gates now join retained selector, 32-bit, and outer-RETF evidence. The sole S7 serializer correction preflights/copies parameter words. Task/LDT/debug/VM86, paging, legacy LOCK, and x87 retain named boundaries; the 0323 artifact SHA-256 and 209/209 gate result are in the [closure audit](etc/evidence/t323-protection-privilege-closure-audit.md). |
 | T322 | Audited and withdrew the duplicate ordinary-execution/FLAGS candidate: T316's accepted S23--S65 owner smokes already cover the transferred Intel 80386 ordinary application forms. Remaining work is explicitly protection/privilege, paging, task/debug/VM86, legacy LOCK, or external x87 scope; no invented implementation slice or artifact was created. Documentation governance and diff checks passed. |
 | T321 | Closed the bounded exception, interrupt, return, VM86 table-load, and processor-control composition program: S2 delivers active `#DE/#PF/#MF` vectors; S3 proves NMI/IRQ/TF ordering; S4 composes software INT/IRET with IRQ; S5 enforces VM86 LGDT/LIDT `#GP(0)` before source access; and S6 records the artifact and all transfers. The 0321 artifact, governance, and 202/202 current-gate passed. |
@@ -51,7 +32,6 @@ verification gates (Ordinary Mode).
 | T319 | Closed the bounded non-VM86 LGDT/LIDT `0F 01 /2,/3` table-load slice: protected CPL>0 now rejects before pseudo-descriptor reads, both forms have real/protected, attribute, source-atomicity, table-consumer, and PIC evidence, and VM86 plus 80286 LOCK remain transferred. Its 0319 artifact and 196/196 current-gate pass are retained in history. |
 | T318 | Closed the bounded SGDT/SIDT `0F 01 /0,/1 table-store slice: a local six-byte preflight/publication repair prevents partial pseudo-descriptor writes; both forms have profile, attribute, segment, rejection, protected atomicity, VM86 and IRQ-ordering evidence. 195/195 current-gate passed, and executor plus coordinator 0318 artifact hashes are retained in its history. LGDT/LIDT and wider processor-control work remain future bounded packages. |
 | T317 | Closed test-corpus quality plus corrective type-vocabulary and developer-feedback work. S7 retains the 194-test current gate while adding validated default-four-job CTest execution, 15 explicit media labels, and a 179-test non-media fast preset; its full gate, fast run, media verifier, documentation governance, and diff check passed. |
-| T316 | Closed the declared 80386 ordinary-execution slices through S66. Residual parent-family breadth remains explicitly transferred in the S66 matrix to named later Queue packages, the legacy LOCK TODO, or the external-coprocessor boundary; no whole-80386 claim. Its predecessor developer artifact and 194 current-gate tests passed. |
 
 ## Recent Governance
 
