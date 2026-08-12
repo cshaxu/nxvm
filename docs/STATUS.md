@@ -2,8 +2,27 @@
 
 ## Current Work
 
-**Idle.** M5 T329 S1 is closed; the next task-system slice requires separate
-Continuation admission.
+M5 T329 S2: 80386 32-bit TSS direct far-JMP transition (Ordinary Mode).
+
+## M5 T329 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; T329 S1 remains retained task progress. Ordinary Mode performs both implementation and acceptance review. |
+| Admission And Approval | Owner approved autonomous single-session progress toward the Intel 80386DX architecture-coverage closure audit on 2026-08-12, and on 2026-08-12 approved the T329 task-switch state-machine discipline: establish the complete bounded model before further production repairs; use Intel as authority and retain Bochs/PCjs only as non-product diagnostic references. This packet continues the open T329 task-system package after S1. |
+| Objective | First record and prove the bounded 80386 direct-task-JMP state machine, then implement and prove protected-mode direct far-JMP transfer between valid 32-bit TSS images, with paging disabled and a null incoming LDTR: direct `EA ptr16:16` / `EA ptr16:32` and memory-indirect `FF /5` forms, correctly spaced TSS state save/load, CR3 image transfer, descriptor busy state, `CR0.TS`, segment-cache publication, defined rejections, and the bounded pending-IRQ boundary. |
+| Non-goals | 16-bit TSS regression changes; task gates; far CALL-to-TSS; nested-task `IRET` / NT; non-null LDT task images; task switching while paging is enabled; task paging/TLB behavior; task-level debug state; generic exception/IRQ redesign; and any x87 claim. |
+| Reference Baseline | `778c35ca` / current `origin/main` after T329 S1 P2; preserve the user-owned uncommitted `docs/QUEUE.md`. |
+| Files And ABI Surface | Expected changes are local task-switch execution code, its focused owner smoke/CMake registration, T329 evidence, closure map, and STATUS. No public ABI, provider contract, or product-visible interface may change. |
+| Applicable Rules | Read the Task Reading Set; Execution P lifecycle and ordinary-mode self/acceptance review; Architecture single-owner/no-new-interface invariants; Coding project-type/C11/test-boundary rules; Documentation packet/evidence/closure rules. Apply [the T329 task-switch state-machine record](etc/evidence/t329-task-switch-state-machine.md): preflight must resolve every admitted failure before externally visible writes, commit must have no new ordinary fault point, and post-commit execution checks must be pre-proven. Each planned invariant is evidenced by the owner smoke, actual compile command, matrix record, and full current gate. |
+| Verification | Fresh GCC configure; focused task-switch smoke with a distinct S2 marker; actual Ninja compile command proving target-local strict GCC flags; exact current-gate registration; documentation governance; `git diff --check`; and full `ctest -L current-gate --output-on-failure -j 4`. |
+| Expected Markers | Retain T261 markers and emit `M5:T329:S2:TSS32-JMP:OK`; the exact CTest registration remains `current.core-machine-task-switch-smoke`. |
+| Asset Needs | None; deterministic in-memory GDT/TSS/IDT/PIC fixtures only. |
+| Reporting Requirements | Before production implementation, record the ordinary-mode contract review and a checkpointed diagnostic baseline that distinguishes preflight failure, commit completion, and first target instruction. Deliver one complete pushed P1 with requirement-to-proof evidence; after actual-change review, record and push the governance P2 closure. Report only a reproducible material blocker or the accepted completion. |
+| Stop Conditions | Stop before changing shared paging/TLB, generic segment/exception/IRQ, provider, or public-ABI code; before accepting a non-null LDT or paging-enabled task image; if preflight cannot cover a later post-commit fault; or if the required behavior crosses the S2 direct-JMP state machine. Record/transfer any such finding rather than silently broadening scope. |
+| Exit Criteria | The state-machine record maps every S2 preflight, commit, and post-commit invariant to owner evidence. The 80386-only bounded matrix is complete: default and `66h` direct/indirect forms plus `67h` indirect EA and combined form; complete 32-bit outgoing/incoming state including CR3 and FS/GS, busy/TS effects, null-LDTR boundary, defined descriptor/TSS/stack fault atomicity, `LOCK` rejection, and a pending IRQ accepted after a successful incoming-IF transition. No tested failure leaves an unclassified partial TSS or descriptor write. All required verification passes and remaining task-system breadth is explicitly transferred. |
+| Original Owner Request | Continue in single-session mode through the Intel 80386DX architecture-coverage closure audit, with rapid but quality-gated implementation, direct commit/push authorization, and an owner-approved holistic construction method rather than incremental symptom patches. |
+| Similar-Issue Sweep | Audit `_ser_jmp_far_tss`, its direct/indirect far-JMP callers, all 16/32 TSS field accesses, descriptor busy writes, CR3 loading, preflight/commit boundaries, and existing task-switch fixtures. Every 32-bit TSS hit is fixed, bounded, or transferred with a reason. |
 
 ## Current Technical Baseline
 
