@@ -129,6 +129,17 @@ candidate work, and detailed capability evidence belong in
   Bochx/Bochs bridge may be an optional developer tool with provenance,
   checkpoint schema, masks, instruction/time/no-progress/trace budgets, and
   cleanup. It is never a default build or acceptance substitute.
+- [ ] **Holistic execution-path architecture audit (`TODO(Medium)`).** Audit
+  cross-cutting CPU and machine-state work for incremental "patch-on-patch"
+  implementation that closes a local symptom without first establishing the
+  complete architectural state model, validation order, commit boundary,
+  caller set, and failure semantics. Admit only as a bounded family or
+  subsystem review with an Intel-authoritative form/state matrix, source and
+  ownership map, explicit preflight/commit/rollback contract, comparable
+  focused regressions, and a transfer record for every excluded behavior.
+  Repairs must address the shared model or deliberately retain a proven local
+  boundary; do not turn this debt into a repository-wide rewrite, speculative
+  abstraction, or an excuse to weaken existing evidence.
 
 ## Timing-Fidelity Debt
 
