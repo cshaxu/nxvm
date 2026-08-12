@@ -2,8 +2,8 @@
 
 ## Current Work
 
-**Idle.** M5 T317 is closed; the next 80386 capability or quality slice requires a
-separately admitted task packet.
+**Idle.** The next 80386 capability or quality slice requires a separately
+admitted task packet.
 
 ## Current Technical Baseline
 
@@ -27,7 +27,7 @@ separately admitted task packet.
 
 | Task | Compact result |
 | --- | --- |
-| T317 | Closed test-corpus quality and the corrective repository-wide fixed-width vocabulary migration: 467 code/script paths contain no direct fixed-width spelling outside the 16 foundational `src/type.h` aliases and 28-token controlled negative fixture. The global positive/negative verifier, 47 target-local strict GCC command audit, documentation governance, and 194/194 current-gate passed; the 0317 artifact was rebuilt and recorded at coordinator acceptance. |
+| T317 | Closed test-corpus quality and the corrective repository-wide fixed-width vocabulary migration. S6 corrected its stale facade guidance and changed global verifier discovery to 469 tracked code/script paths, including root CMake entry points and a controlled negative proof. The global verifier, 47 target-local strict GCC command audit, documentation governance, and 194/194 current-gate passed; the 0317 artifact was rebuilt and recorded at coordinator acceptance. |
 | T316 | Closed the declared 80386 ordinary-execution slices through S66. Residual parent-family breadth remains explicitly transferred in the S66 matrix to named later Queue packages, the legacy LOCK TODO, or the external-coprocessor boundary; no whole-80386 claim. Its predecessor developer artifact and 194 current-gate tests passed. |
 | T314 | Closed the EGA CRTC 13h bound, registered the deterministic xasm smoke, restored six historical target-local strict GCC sets while retaining three selected libraries, and added the CRTC static closure verifier; the two inherited-governance debts remain. Its 0315 artifact, 52 gates, 147 CTests, and S2/S3/S6 markers passed. |
 | T313 | Completed construction-failure atomicity and startup-failure visibility: single RAM allocation, transactional port/controller assembly, visible session start failure, and explicit debugger mappings. Its accepted artifact, 51 gates, 145 CTests, and S2--S6 focused markers passed. |

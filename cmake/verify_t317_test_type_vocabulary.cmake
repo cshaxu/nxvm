@@ -70,16 +70,40 @@ foreach(project_t317_type IN LISTS project_t317_forbidden_types)
     endif()
 endforeach()
 
+find_program(project_t317_git_executable git REQUIRED)
+execute_process(
+    COMMAND "${project_t317_git_executable}" -C "${PROJECT_T317_TYPE_SOURCE_DIR}"
+        ls-files -- src tests cmake tools CMakeLists.txt
+    RESULT_VARIABLE project_t317_git_result
+    OUTPUT_VARIABLE project_t317_tracked_paths
+    ERROR_VARIABLE project_t317_git_error)
+if(NOT project_t317_git_result EQUAL 0)
+    message(FATAL_ERROR "T317 global type vocabulary audit could not list tracked paths: ${project_t317_git_error}")
+endif()
+
+string(REPLACE "\n" ";" project_t317_tracked_paths "${project_t317_tracked_paths}")
 set(project_t317_code_files)
-foreach(project_t317_pattern IN ITEMS "src/*.c" "src/*.h" "tests/*.c"
-        "tests/*.h" "cmake/*.cmake" "tools/*.ps1")
-    file(GLOB_RECURSE project_t317_matches LIST_DIRECTORIES FALSE
-        RELATIVE "${PROJECT_T317_TYPE_SOURCE_DIR}"
-        "${PROJECT_T317_TYPE_SOURCE_DIR}/${project_t317_pattern}")
-    list(APPEND project_t317_code_files ${project_t317_matches})
+foreach(project_t317_file IN LISTS project_t317_tracked_paths)
+    if(project_t317_file MATCHES "\\.(c|h|cmake|ps1)$" OR
+            project_t317_file MATCHES "(^|/)CMakeLists\\.txt$")
+        list(APPEND project_t317_code_files "${project_t317_file}")
+    endif()
 endforeach()
 list(REMOVE_DUPLICATES project_t317_code_files)
 list(SORT project_t317_code_files)
+
+list(FIND project_t317_code_files "CMakeLists.txt" project_t317_root_cmake_index)
+if(project_t317_root_cmake_index EQUAL -1)
+    message(FATAL_ERROR "T317 global type vocabulary audit must cover tracked root CMakeLists.txt.")
+endif()
+file(READ "${PROJECT_T317_TYPE_SOURCE_DIR}/CMakeLists.txt" project_t317_root_cmake)
+list(GET project_t317_forbidden_types 0 project_t317_controlled_forbidden)
+string(APPEND project_t317_root_cmake "\n${project_t317_controlled_forbidden}\n")
+project_t317_content_has_forbidden("${project_t317_root_cmake}"
+    project_t317_root_negative_found)
+if(NOT project_t317_root_negative_found)
+    message(FATAL_ERROR "T317 root CMakeLists.txt controlled negative check failed.")
+endif()
 
 set(project_t317_checked_files 0)
 foreach(project_t317_file IN LISTS project_t317_code_files)
@@ -99,4 +123,4 @@ foreach(project_t317_file IN LISTS project_t317_code_files)
     math(EXPR project_t317_checked_files "${project_t317_checked_files} + 1")
 endforeach()
 
-message(STATUS "T317 global type vocabulary audit passed: ${project_t317_checked_files} code/script files; type facade aliases and controlled negative fixture only.")
+message(STATUS "T317 global type vocabulary audit passed: ${project_t317_checked_files} tracked code/script files; type facade aliases and controlled negative fixture only.")
