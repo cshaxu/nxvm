@@ -72,5 +72,21 @@ SHA-256 `60B3CDF0BA63C6303E9809146CEBF2B7CDC278D20A79D05174197E05089030D9`.
 
 The Intel 80386 PRM table-register entries govern only the admitted stores.
 The existing 8086 legacy `0F` POP-CS compatibility behavior is not an SGDT/SIDT
-form and is retained outside the 80286-or-later decoder scope.  T318 remains
-active pending coordinator review and closure.
+form and is retained outside the 80286-or-later decoder scope.  T318 is closed.
+
+## Coordinator Acceptance P4
+
+The coordinator independently reviewed all P1--P3 changes, including the local
+six-byte write preflight/publication helper, every owner-smoke vector, CMake
+registration, packet, matrix, and retained boundaries. It rebuilt the current
+artifact from the pushed P3 source, reran the focused owner marker and exact
+current-gate discovery, documentation governance, `git diff --check`, and the
+full 195-test current gate. All passed. The independent rebuild recorded
+SHA-256 `013F9BF11AC4A5600AB7587DBAE8E63CE2E86FB534BC861787F095DCC4E192EB`.
+
+The P3 executor rebuild hash
+`60B3CDF0BA63C6303E9809146CEBF2B7CDC278D20A79D05174197E05089030D9` and this
+coordinator rebuild hash are separate build observations of the same admitted
+source; this P4 record is the task-closure acceptance evidence. T318 closes
+only SGDT/SIDT. LGDT/LIDT and remaining processor-control work remain in the
+Queue for separately approved matrix slices.
