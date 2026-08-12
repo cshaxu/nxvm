@@ -2,8 +2,27 @@
 
 ## Current Work
 
-**Idle.** M5 T329 S3 is closed; T329 remains open for its next separately
-admitted state-machine slice.
+M5 T329 S4: 80386 task-gate and far-CALL-to-TSS entry (Ordinary Mode).
+
+## M5 T329 S4 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; T329 S1/S2/S3 remain retained task progress. Ordinary Mode performs implementation and acceptance review. |
+| Admission And Approval | Owner approved autonomous single-session continuation toward Intel 80386DX architecture closure and the accepted holistic task-switch state-machine method. S4 is the task-entry dependency cut after direct-JMP S2/S3. |
+| Objective | Implement and prove protected-mode 80386 task entry through a task gate and direct far CALL-to-available-TSS: 16-bit and 32-bit TSS forms as architecturally applicable, direct and memory-indirect CALL encodings, backlink save, NT publication, outgoing/incoming state and busy-descriptor transition, privilege/presence/type/limit failures, and pending-IRQ behavior after a valid incoming IF transition. |
+| Non-goals | Nested IRET task return; task-return/double-fault chains; non-null LDT; task paging/TLB; debug state; generic exception/IRQ redesign; call-gate behavior; and x87. |
+| Reference Baseline | `e76b4928` / current `origin/main` after T329 S3 P2; preserve user-owned uncommitted `docs/QUEUE.md`. |
+| Files And ABI Surface | Local task-switch execution code, its owner smoke/evidence/closure map and STATUS only. No public ABI, provider contract, or product-visible interface changes. |
+| Applicable Rules | Task Reading Set; Intel 80386 architecture as authority; Execution ordinary-mode lifecycle and actual-change review; Architecture/Coding/Documentation rules; accepted [T329 state-machine record](etc/evidence/t329-task-switch-state-machine.md). Task-gate and direct-TSS CALL routes must reuse a named transition planner/commit boundary, not duplicate independent state writes. Bochs/PCjs are read-only diagnostics only under source policy. |
+| Verification | Fresh GCC configure; focused task-switch marker; actual Ninja target-local strict GCC command; exact current registration; documentation governance; `git diff --check`; full `ctest -L current-gate --output-on-failure -j 16`. |
+| Expected Markers | Retain earlier markers and emit `M5:T329:S4:TSS-CALL-GATE:OK`; exact registration remains `current.core-machine-task-switch-smoke`. |
+| Asset Needs | None; deterministic in-memory GDT/TSS/IDT/PIC fixtures only. |
+| Reporting Requirements | Deliver one complete implementation P with an Intel form/state/fault matrix, shared-path audit, and requirement-to-proof evidence; after actual-change review push governance P closure. Report only a reproducible material blocker or accepted completion. |
+| Stop Conditions | Stop before shared paging/TLB, generic exception/IRQ, provider, or public-ABI changes; before nested IRET/task return, non-null LDT, paging/debug task state; or if CALL/task-gate entry cannot be modelled as a preflighted extension of the accepted planner/commit transition. Transfer rather than silently broaden. |
+| Exit Criteria | All admitted task-gate and direct-TSS CALL forms have focused success/fault/attribute/IRQ evidence. Valid entry proves backlink, NT, busy/TR/TS and complete image/cache publication. Installed fault handlers prove no partial outgoing TSS/descriptor state. Existing direct-JMP behavior remains green; remaining nested return/LDT/paging/debug work is explicitly transferred. |
+| Original Owner Request | Complete Intel 80386 with a holistic, maintainable design; avoid incremental symptom patches; commit and push accepted work. |
+| Similar-Issue Sweep | Audit `_e_call_far`, `_ser_call_far_task_gate`, `_ser_call_far_tss`, task-gate/JMP callers, all 16/32 TSS save/load paths, backlink/NT writes, descriptors, and task-switch fixtures. |
 
 ## Current Technical Baseline
 

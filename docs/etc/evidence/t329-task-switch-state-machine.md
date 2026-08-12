@@ -13,19 +13,20 @@ whose validation, externally visible writes, loaded CPU state, and next
 instruction must agree. A local smoke can expose a symptom, but cannot define
 the transition model by itself.
 
-## Direct-JMP State Machine
+## Task-Transition State Machine
 
 S2 establishes, and S3 strengthens, the protected CPL0 direct far `JMP` from a
-valid busy 32-bit TSS to an available 32-bit TSS. Paging is disabled and the
-incoming LDTR is null. Direct `EA ptr16:16`/`ptr16:32` and memory-indirect
-`FF /5` routes are forms of the same transition, not separate state models.
+valid busy 32-bit TSS to an available 32-bit TSS. S4 adds direct far `CALL`
+and GDT task-gate entry to that same transition. Paging is disabled and the
+incoming LDTR is null. Direct and memory-indirect transfer encodings are
+forms of one transition, not separate state models.
 
 | Phase | Required work | May publish architectural state? |
 | --- | --- | --- |
 | Decode | Classify profile, prefixes, `LOCK`, direct/indirect source, and selector. | No. |
 | Preflight | Read old and new descriptors; verify old TR, target TSS type/presence/limit, every read/write span, target TSS image, null LDTR, CR3 boundary, CS/SS/DS/ES/FS/GS selectors and caches, target instruction byte, and target stack boundary. | No. |
-| Plan | Materialize the outgoing TSS image, incoming CPU/cache image, and old/new descriptor updates as private values. All field offsets are named and compile-time checked. | No. |
-| Commit | Write the outgoing image, update old/new busy descriptors, then publish CR3, registers, EFLAGS, segment caches, LDTR, TR, and `CR0.TS` in one non-faulting local sequence. | Yes. |
+| Plan | Materialize the outgoing TSS image, incoming CPU/cache image, old/new descriptor updates, and transition kind as private values. All field offsets are named and compile-time checked. | No. |
+| Commit | Write the outgoing image; for nested CALL/task-gate entry, write backlink and retain old busy, otherwise clear it; then publish the target busy state, CR3, registers, EFLAGS including `NT` when nested, segment caches, LDTR, TR, and `CR0.TS` in one non-faulting local sequence. | Yes. |
 | Post-commit | Execute the target's next instruction or accept a pending IRQ according to the already-preflighted target state. | Yes. |
 
 No operation that can introduce an ordinary architectural fault is allowed

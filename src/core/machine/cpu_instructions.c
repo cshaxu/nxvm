@@ -3222,28 +3222,48 @@ static C_VOID _ser_call_far_call_gate(core_machine_cpu_execution_context *contex
     cpu_state.data.ip = TYPE_MASK_UNSIGNED_16(_GetDescGate_Offset(gate_desc));
     TYPE_TRACE_CALL_END;
 }
-_______todo _ser_call_far_task_gate(core_machine_cpu_execution_context *context, type_unsigned_16 newcs)
+static C_VOID _ser_task_switch_tss(core_machine_cpu_execution_context *context,
+    type_unsigned_16 newcs, type_bool nested);
+
+static C_VOID _ser_task_gate_target(core_machine_cpu_execution_context *context,
+    type_unsigned_16 gate_selector, type_bool nested)
 {
     type_unsigned_64 descriptor;
-    TYPE_TRACE_CALL_BEGIN("_ser_call_far_task_gate");
-    if (!_IsProtected)
+    type_unsigned_16 target_selector;
+
+    TYPE_TRACE_CALL_BEGIN("_ser_task_gate_target");
+    if (!_IsProtected || _GetEFLAGS_VM)
         TYPE_TRACE_IMPOSSIBLE_RETURN;
-    TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, newcs, TYPE_REFERENCE_OF(descriptor)));
+    TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, gate_selector,
+        TYPE_REFERENCE_OF(descriptor)));
     if (!_IsDescTaskGate(descriptor))
         TYPE_TRACE_IMPOSSIBLE_RETURN;
-    TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(0));
+    if (_GetDesc_DPL(descriptor) < _GetCPL ||
+        _GetDesc_DPL(descriptor) < _GetSelector_RPL(gate_selector))
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(gate_selector & 0xfffcu));
+    if (!_IsDescPresent(descriptor))
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_NP(gate_selector & 0xfffcu));
+    target_selector = TYPE_MASK_UNSIGNED_16(_GetDescGate_Selector(descriptor));
+    if (_IsSelectorNull(target_selector) || _GetSelector_TI(target_selector))
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(target_selector & 0xfffcu));
+    TYPE_TRACE_CHECK_RETURN(_ser_task_switch_tss(context, target_selector,
+        nested));
     TYPE_TRACE_CALL_END;
 }
-_______todo _ser_call_far_tss(core_machine_cpu_execution_context *context, type_unsigned_16 newcs)
+
+static C_VOID _ser_call_far_task_gate(core_machine_cpu_execution_context *context,
+    type_unsigned_16 newcs)
 {
-    type_unsigned_64 descriptor;
+    TYPE_TRACE_CALL_BEGIN("_ser_call_far_task_gate");
+    TYPE_TRACE_CHECK_RETURN(_ser_task_gate_target(context, newcs, TYPE_TRUE));
+    TYPE_TRACE_CALL_END;
+}
+
+static C_VOID _ser_call_far_tss(core_machine_cpu_execution_context *context,
+    type_unsigned_16 newcs)
+{
     TYPE_TRACE_CALL_BEGIN("_ser_call_far_tss");
-    if (!_IsProtected)
-        TYPE_TRACE_IMPOSSIBLE_RETURN;
-    TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, newcs, TYPE_REFERENCE_OF(descriptor)));
-    if (!_IsDescTSS(descriptor))
-        TYPE_TRACE_IMPOSSIBLE_RETURN;
-    TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(0));
+    TYPE_TRACE_CHECK_RETURN(_ser_task_switch_tss(context, newcs, TYPE_TRUE));
     TYPE_TRACE_CALL_END;
 }
 static C_VOID _ser_int_real(core_machine_cpu_execution_context *context, type_unsigned_8 intid, type_unsigned_8 byte)
@@ -3855,16 +3875,11 @@ _______todo _ser_jmp_far_call_gate(core_machine_cpu_execution_context *context, 
     TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(0));
     TYPE_TRACE_CALL_END;
 }
-_______todo _ser_jmp_far_task_gate(core_machine_cpu_execution_context *context, type_unsigned_16 newcs)
+static C_VOID _ser_jmp_far_task_gate(core_machine_cpu_execution_context *context,
+    type_unsigned_16 newcs)
 {
-    type_unsigned_64 descriptor;
     TYPE_TRACE_CALL_BEGIN("_ser_jmp_far_task_gate");
-    if (!_IsProtected)
-        TYPE_TRACE_IMPOSSIBLE_RETURN;
-    TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, newcs, TYPE_REFERENCE_OF(descriptor)));
-    if (!_IsDescTaskGate(descriptor))
-        TYPE_TRACE_IMPOSSIBLE_RETURN;
-    TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(0));
+    TYPE_TRACE_CHECK_RETURN(_ser_task_gate_target(context, newcs, TYPE_FALSE));
     TYPE_TRACE_CALL_END;
 }
 typedef struct task_switch_state_16 {
@@ -3971,6 +3986,7 @@ typedef struct task_switch_sreg_32 {
 } task_switch_sreg_32;
 
 #define TASK_SWITCH_TSS32_CR3_OFFSET 0x1cu
+#define TASK_SWITCH_TSS_BACKLINK_OFFSET 0x00u
 #define TASK_SWITCH_TSS32_EIP_OFFSET 0x20u
 #define TASK_SWITCH_TSS32_EFLAGS_OFFSET 0x24u
 #define TASK_SWITCH_TSS32_EAX_OFFSET 0x28u
@@ -4047,6 +4063,8 @@ typedef struct task_switch_plan_32 {
     t_cpu_data_sreg newgs;
     task_switch_state_32 incoming;
     task_switch_state_32 outgoing;
+    type_unsigned_16 backlink;
+    type_bool nested;
 } task_switch_plan_32;
 
 static C_VOID _s_task_write_state_32(core_machine_cpu_execution_context *context,
@@ -4092,10 +4110,11 @@ static C_VOID _s_task_write_state_32(core_machine_cpu_execution_context *context
     TYPE_TRACE_CALL_END;
 }
 
-static C_VOID _s_task_plan_jmp_32(core_machine_cpu_execution_context *context,
-    type_unsigned_16 newcs, task_switch_plan_32 *plan)
+static C_VOID _s_task_plan_transition_32(
+    core_machine_cpu_execution_context *context, type_unsigned_16 newcs,
+    type_bool nested, task_switch_plan_32 *plan)
 {
-    TYPE_TRACE_CALL_BEGIN("_s_task_plan_jmp_32");
+    TYPE_TRACE_CALL_BEGIN("_s_task_plan_transition_32");
     if (!_IsProtected || context->cpu_profile < CORE_MACHINE_CPU_PROFILE_80386)
         TYPE_TRACE_IMPOSSIBLE_RETURN;
     if (_GetCPL || _GetSelector_TI(newcs) || _GetSelector_RPL(newcs) != 0u)
@@ -4125,6 +4144,9 @@ static C_VOID _s_task_plan_jmp_32(core_machine_cpu_execution_context *context,
     TYPE_TRACE_CHECK_RETURN(_kma_test_access(context, &plan->newtr,
         TASK_SWITCH_TSS32_CR3_OFFSET, TASK_SWITCH_TSS32_IMAGE_BYTES,
         TYPE_FALSE, 0u, TYPE_TRUE));
+    if (nested)
+        TYPE_TRACE_CHECK_RETURN(_kma_test_access(context, &plan->newtr,
+            TASK_SWITCH_TSS_BACKLINK_OFFSET, 2u, TYPE_TRUE, 0u, TYPE_TRUE));
     TYPE_TRACE_CHECK_RETURN(_kma_test_access(context, &cpu_state.data.gdtr,
         _GetSelector_Offset(cpu_state.data.tr.selector), 8u, TYPE_TRUE, 0u,
         TYPE_TRUE));
@@ -4169,16 +4191,23 @@ static C_VOID _s_task_plan_jmp_32(core_machine_cpu_execution_context *context,
     plan->outgoing.fs.selector = cpu_state.data.fs.selector;
     plan->outgoing.gs.selector = cpu_state.data.gs.selector;
     plan->outgoing.ldtr.selector = cpu_state.data.ldtr.selector;
-    _ClrDescTSSBusy(plan->old_descriptor);
+    plan->nested = nested;
+    plan->backlink = cpu_state.data.tr.selector;
+    if (!nested)
+        _ClrDescTSSBusy(plan->old_descriptor);
     _SetDescTSSBusy(plan->new_descriptor);
     TYPE_TRACE_CALL_END;
 }
 
-static C_VOID _s_task_commit_jmp_32(core_machine_cpu_execution_context *context,
+static C_VOID _s_task_commit_transition_32(core_machine_cpu_execution_context *context,
     task_switch_plan_32 *plan)
 {
-    TYPE_TRACE_CALL_BEGIN("_s_task_commit_jmp_32");
+    TYPE_TRACE_CALL_BEGIN("_s_task_commit_transition_32");
     TYPE_TRACE_CHECK_RETURN(_s_task_write_state_32(context, &plan->outgoing));
+    if (plan->nested)
+        TYPE_TRACE_CHECK_RETURN(_kma_write_logical(context, &plan->newtr,
+            TASK_SWITCH_TSS_BACKLINK_OFFSET,
+            TYPE_REFERENCE_OF(plan->backlink), 2u, 0u, TYPE_TRUE));
     TYPE_TRACE_CHECK_RETURN(_s_write_xdt(context, cpu_state.data.tr.selector,
         TYPE_REFERENCE_OF(plan->old_descriptor)));
     TYPE_TRACE_CHECK_RETURN(_s_write_xdt(context, plan->newtr.selector,
@@ -4186,6 +4215,8 @@ static C_VOID _s_task_commit_jmp_32(core_machine_cpu_execution_context *context,
     cpu_state.data.cr3 = plan->incoming.cr3;
     cpu_state.data.eip = plan->incoming.eip;
     cpu_state.data.eflags = plan->incoming.eflags;
+    if (plan->nested)
+        _SetEFLAGS_NT;
     cpu_state.data.eax = plan->incoming.eax;
     cpu_state.data.ecx = plan->incoming.ecx;
     cpu_state.data.edx = plan->incoming.edx;
@@ -4208,19 +4239,22 @@ static C_VOID _s_task_commit_jmp_32(core_machine_cpu_execution_context *context,
     TYPE_TRACE_CALL_END;
 }
 
-static C_VOID _ser_jmp_far_tss_32(core_machine_cpu_execution_context *context,
-    type_unsigned_16 newcs)
+static C_VOID _ser_task_switch_tss_32(
+    core_machine_cpu_execution_context *context, type_unsigned_16 newcs,
+    type_bool nested)
 {
     task_switch_plan_32 plan;
 
-    TYPE_TRACE_CALL_BEGIN("_ser_jmp_far_tss_32");
+    TYPE_TRACE_CALL_BEGIN("_ser_task_switch_tss_32");
     STD_MEMSET(&plan, 0, sizeof(plan));
-    TYPE_TRACE_CHECK_RETURN(_s_task_plan_jmp_32(context, newcs, &plan));
-    TYPE_TRACE_CHECK_RETURN(_s_task_commit_jmp_32(context, &plan));
+    TYPE_TRACE_CHECK_RETURN(_s_task_plan_transition_32(context, newcs, nested,
+        &plan));
+    TYPE_TRACE_CHECK_RETURN(_s_task_commit_transition_32(context, &plan));
     TYPE_TRACE_CALL_END;
 }
 
-static C_VOID _ser_jmp_far_tss(core_machine_cpu_execution_context *context, type_unsigned_16 newcs)
+static C_VOID _ser_task_switch_tss(core_machine_cpu_execution_context *context,
+    type_unsigned_16 newcs, type_bool nested)
 {
     type_unsigned_64 old_descriptor;
     type_unsigned_64 new_descriptor;
@@ -4231,11 +4265,12 @@ static C_VOID _ser_jmp_far_tss(core_machine_cpu_execution_context *context, type
     t_cpu_data_sreg newes_cache;
     task_switch_state_16 state;
 
-    TYPE_TRACE_CALL_BEGIN("_ser_jmp_far_tss");
+    TYPE_TRACE_CALL_BEGIN("_ser_task_switch_tss");
     if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386 &&
         cpu_state.data.tr.flagValid &&
         cpu_state.data.tr.sys.type == VCPU_DESC_SYS_TYPE_TSS_32_BUSY) {
-        TYPE_TRACE_CHECK_RETURN(_ser_jmp_far_tss_32(context, newcs));
+        TYPE_TRACE_CHECK_RETURN(_ser_task_switch_tss_32(context, newcs,
+            nested));
         TYPE_TRACE_CALL_END;
         return;
     }
@@ -4272,6 +4307,9 @@ static C_VOID _ser_jmp_far_tss(core_machine_cpu_execution_context *context, type
         0x0eu, 0x1cu, TYPE_TRUE, 0u, TYPE_TRUE));
     TYPE_TRACE_CHECK_RETURN(_kma_test_access(context, &newtr, 0x0eu, 0x1eu,
         TYPE_FALSE, 0u, TYPE_TRUE));
+    if (nested)
+        TYPE_TRACE_CHECK_RETURN(_kma_test_access(context, &newtr,
+            TASK_SWITCH_TSS_BACKLINK_OFFSET, 2u, TYPE_TRUE, 0u, TYPE_TRUE));
     TYPE_TRACE_CHECK_RETURN(_kma_test_access(context, &cpu_state.data.gdtr,
         _GetSelector_Offset(cpu_state.data.tr.selector), 8u, TYPE_TRUE, 0u,
         TYPE_TRUE));
@@ -4291,8 +4329,14 @@ static C_VOID _ser_jmp_far_tss(core_machine_cpu_execution_context *context, type
     TYPE_TRACE_CHECK_RETURN(_s_task_validate_data_selector(context, state.es,
         SREG_DATA, &newes_cache));
 
-    _ClrDescTSSBusy(old_descriptor);
+    if (!nested)
+        _ClrDescTSSBusy(old_descriptor);
     _SetDescTSSBusy(new_descriptor);
+    if (nested)
+        TYPE_TRACE_CHECK_RETURN(_kma_write_logical(context, &newtr,
+            TASK_SWITCH_TSS_BACKLINK_OFFSET,
+            TYPE_REFERENCE_OF(cpu_state.data.tr.selector), 2u, 0u,
+            TYPE_TRUE));
     TYPE_TRACE_CHECK_RETURN(_s_write_tss(context, 0x0eu,
         TYPE_REFERENCE_OF(cpu_state.data.ip), 2u));
     TYPE_TRACE_CHECK_RETURN(_s_write_tss(context, 0x10u,
@@ -4344,6 +4388,8 @@ static C_VOID _ser_jmp_far_tss(core_machine_cpu_execution_context *context, type
         0xffff0000u | state.di : state.di;
     cpu_state.data.eip = state.ip;
     cpu_state.data.eflags = state.flags;
+    if (nested)
+        _SetEFLAGS_NT;
     cpu_state.data.es = newes_cache;
     cpu_state.data.cs = newcs_cache;
     cpu_state.data.ss = newss_cache;
@@ -5062,7 +5108,8 @@ static C_VOID _e_jmp_far(core_machine_cpu_execution_context *context, type_unsig
         else if (_IsDescTaskGate(descriptor))
             TYPE_TRACE_CHECK_RETURN(_ser_jmp_far_task_gate(context, newcs));
         else if (_IsDescTSS(descriptor))
-            TYPE_TRACE_CHECK_RETURN(_ser_jmp_far_tss(context, newcs));
+            TYPE_TRACE_CHECK_RETURN(_ser_task_switch_tss(context, newcs,
+                TYPE_FALSE));
         else
         {
             TYPE_TRACE_BLOCK_BEGIN("newcs(invalid)");
@@ -15109,6 +15156,8 @@ static C_VOID INS_FF(core_machine_cpu_execution_context *context)
             break;
         case 3: /* CALL_M16_32 */
             TYPE_TRACE_BLOCK_BEGIN("CALL_M16_32");
+            if (instruction_state.data.flagLock)
+                TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
             TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, _GetOperandSize));
             if (!instruction_state.data.flagMem)
             {
@@ -15204,6 +15253,8 @@ static C_VOID INS_FF(core_machine_cpu_execution_context *context)
             break;
         case 3: /* CALL_M16_16 */
             TYPE_TRACE_BLOCK_BEGIN("CALL_M16_16");
+            if (instruction_state.data.flagLock)
+                TYPE_TRACE_CHECK_RETURN(UndefinedOpcode(context));
             TYPE_TRACE_CHECK_RETURN(_d_modrm(context, 0, 2));
             if (!instruction_state.data.flagMem)
             {
