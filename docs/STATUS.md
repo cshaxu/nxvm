@@ -2,8 +2,27 @@
 
 ## Current Work
 
-**Idle.** T326 is closed; the next 80386DX package requires separate
-admission from the Queue.
+**M5 T327 S1: prove current-smoke and specialized-gate separation (Ordinary Mode).**
+
+## M5 T327 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New; Ordinary Mode. `M5 T327 S1` is the next numeric task after closed T326. |
+| Admission And Approval | Owner-approved autonomous continuation toward complete Intel 80386 coverage, with the Queue's top gate-separation prerequisite adopted on 2026-08-12. T324 already separated the roots; this S admits only the reproduced residual proof gap and stale selection evidence. |
+| Objective | Make the current-gate separation mechanical and current: prove that both full and fast developer smoke roots exclude specialized verifiers, that the specialized root contains every named verifier, that `current-gates-gcc` composes exactly those two roots, and that full/current-media/non-media CTest selections form the recorded exact partition. |
+| Non-goals | No product, CPU, test assertion, timeout, media-label, artifact, CTest registration, or verifier-semantic change. Do not add a static verifier as CTest, remove a gate to improve timing, or alter Queue-owned candidate text outside this S's evidence/state records. |
+| Reference Baseline | `0acae527` / `vm-0-5-0323`; retain T324's two-root design and evidence. The audit observes current selections of 210 full, 15 media, and 195 current non-media tests; counts are evidence, not a fixed future policy. |
+| Files And ABI Surface | Expected: the narrow CMake verifier and its CMake wiring, updated indexed gate evidence, one owner smoke only if a direct mechanical assertion needs it, and Status/history closure. No source-runtime, public ABI, CTest, or artifact surface change. |
+| Applicable Rules | Queue current-test/specialized-gate prerequisite; Roadmap M5/80386DX dependency order; Architecture Rules single ownership path; Coding Rules cohesive CMake/test-only helpers; Documentation and Execution Rules packet/P lifecycle and actual-change review. |
+| Verification | Fresh configure; prove actual Ninja dependency graphs for `run-current-smokes`, `run-current-fast-smokes`, and `verify-current-specialized-gates`; mechanically enumerate CTest full/media/current-non-media selection and assert the exact partition; prove the aggregate preset has exactly the two roots; run pure full, fast, specialized, aggregate, documentation governance, diff, and full current-gate. Record separate elapsed baselines without making them normative. |
+| Expected Markers | Retained `M5:T324:S1:CURRENT-GATE-SEPARATION:OK` or a successor marker with equivalent mechanical scope; fresh full/media/non-media counts and all four root commands pass. |
+| Asset Needs | No new media or runtime asset. Existing deterministic current tests and their existing classifications only. |
+| Reporting Requirements | Record the audit that distinguishes T324's retained separation from this missing verification coverage. P1 must contain every mechanical proof, evidence update, self-review, commit, and push; after independent Ordinary-Mode review, P2 contains only closure records. |
+| Stop Conditions | Stop if a verifier has an undocumented runtime dependency, if a correct partition requires changing an existing test label/timeout/command, or if graph proof exposes a target whose ownership cannot be classified without product behavior change. Revise or transfer rather than weaken coverage. |
+| Exit Criteria | Both developer roots are mechanically free of specialized verifiers; specialized and aggregate roots contain exactly the required ownership; the full/media/current-non-media CTest sets are mechanically enumerated and form a truthful partition; all root commands and full gate pass; the evidence supersedes stale counts; no registered test or product behavior changes. |
+| Original Owner Request | Complete Intel 80386 against an Intel form--implementation--test matrix, repair omissions, perform differential/boundary review, and close package evidence; Git commits and pushes are authorized. |
+| Similar-Issue Sweep | Audit all `verify-*` targets, both developer roots, the generated specialized manifest, CTest labels, and `current-gates-gcc` preset roots. Classify every observed dependency as smoke, specialized verifier, or an explicit blocker; do not infer separation from target naming alone. |
 
 ## Current Technical Baseline
 
