@@ -2,28 +2,8 @@
 
 ## Current Work
 
-**Active.** M5 T321 S3 closes the bounded 80386 hardware IRQ/NMI and gate-
-composition matrix in Ordinary Mode.
-
-## M5 T321 S3 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | The owner authorized continued single-session execution toward the 80386DX architecture-coverage closure audit on 2026-08-12. T321 S1 ordered this shared hardware-delivery closure after S2; S2 is accepted and closed at `241c93c1`. |
-| Objective | Reconcile and prove the 80386 external hardware-delivery path: maskable IRQ and NMI priority/classification in real, protected, and already-admitted VM86 entry; 16/32-bit interrupt and trap gate IF/TF/frame behavior; PIC/NMI acknowledgement only after successful entry; and the boundary with pending TF. |
-| Non-goals | No PIC, RTC, PIT, NMI-device, or generic interrupt-controller redesign; no new IRQ source; no task switch, VME/PVI, debugger/breakpoint matching, reset/shutdown/triple-fault policy, paging policy, x87 execution, or broad software-INT/IRET matrix. |
-| Reference Baseline | `241c93c1` / `vm-0-5-0320`; T321 S1 audit in `docs/etc/evidence/t321-s1-processor-control-closure-audit.md`, retained T305 hardware-entry evidence, and T320 VM86 delivery evidence. |
-| Files And ABI Surface | An S3 owner smoke and indexed evidence; existing retained tests only when an asserted delivery contract needs correction; `src/core/machine/cpu_instructions.c` only for a reproduced hardware-delivery defect and with a complete affected-caller sweep; CMake wiring and Status. No public API, PIC-provider, machine-interface, or device ABI change. |
-| Applicable Rules | Task Reading Set; `docs/rules/EXECUTION.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/rules/DOCUMENT.md`, project source layout, Intel 80386 interrupt/exception and protected-mode gate rules, T305/T308 retained evidence, T320 VM86 delivery matrix, and T321 S1 audit. |
-| Verification | Audit `ExecInt`, `_e_intr_n`, real/protected serializers, PIC scan/acknowledgement, NMI state, TF handling, and all current external-entry smokes. Add focused deterministic real/protected/VM86 priority vectors as required; prove gate frame width/order, IF/TF live and saved states, NMI versus IRQ ordering/mask boundary, rejected-entry pending preservation, and successful-entry acknowledgement. Fresh configure; exact current registration; documentation governance; diff check; full current gate. |
-| Expected Markers | One deterministic S3 owner marker and exactly one current-gate registration. The evidence distinguishes external IRQ/NMI frames (no error code) from S2 exception frames and records the priority/acknowledgement disposition without inspecting private decoder state. |
-| Asset Needs | None; deterministic local CPU/GDT/IDT/TSS/stack/PIC/NMI fixtures only. No source, firmware, guest media, or external device/provider import. |
-| Reporting Requirements | Record the source sweep, each event class/mode/gate combination, priority result, frame and FLAGS evidence, acknowledgement/pending disposition, retained-test reuse, any modified shared caller, and every transferred boundary in indexed evidence. Before implementation, confirm this matrix or report a material objection. |
-| Stop Conditions | Stop for a required PIC/NMI-device or provider-interface redesign, a generic event-loop or reset/triple-fault policy change, a task/VM86/VME/PVI expansion, paging policy, debugger architecture, or a shared serializer change whose caller sweep exceeds the admitted hardware-delivery paths. |
-| Exit Criteria | Every admitted IRQ/NMI/gate/TF matrix cell has focused or retained evidence; successful entry proves exact frame, gate FLAGS behavior, and acknowledgement, rejected entry preserves pending state, and the priority relation is explicit in all admitted modes. Required evidence, current-gate, commit, and push pass; all remaining interrupt/trap/control breadth is transferred. |
-| Original Owner Request | Continue single-session implementation through the 80386DX architecture-coverage closure audit with code quality preserved. |
-| Similar-Issue Sweep | Search `ExecInt`, `_e_intr_n`, `_ser_int_real`, `_ser_int_protected*`, `flagNMI/flagMaskNMI/flagMaskInt/flagHalt`, PIC scan/peek/get paths, external-entry and VM86 delivery tests, and all `_e_intr_n` callers; classify each hit as covered, fixed, retained, or transferred. |
+**Idle.** M5 T321 S3 is accepted and closed; S4 requires a separately admitted
+packet.
 
 ## Current Technical Baseline
 
@@ -44,6 +24,7 @@ composition matrix in Ordinary Mode.
 
 | Task | Compact result |
 | --- | --- |
+| T321 S3 | Closed the bounded shared hardware-delivery composition: a strict owner smoke proves NMI priority over IRQ0 and TF in real, protected, and VM86 entry, plus the VM86 NMI-mask/IRQ acknowledgement boundary; retained T305/T320/T316 evidence covers detailed gate, rejection, frame, and post-instruction TF cells. No PIC, NMI-device, or production event-loop change; 200/200 current-gate passed. |
 | T321 S2 | Closed exact active `#DE/#PF/#MF` producer delivery: `ExecFinal` now selects vectors 0/14/16 (including vector-zero admission), real `#DE/#MF` and protected `#PF` frames have direct producer evidence, and retained no-handler paging cases document the IDT-preflight PDE accessed-bit effect. New strict owner smoke and 199/199 current-gate passed; paging policy, x87 execution, IRQ composition, and other exception classes remain transferred. |
 | T321 S1 | Accepted the Intel/source/evidence closure audit: completed VM86 delivery was removed from Queue and marked complete in the closure map; all active exception-producer and processor-control intersections now have an explicit next-S or later-Queue destination. S2 owns the missing `#DE/#PF/#MF` delivery closure. Documentation governance and diff check passed. |
 | T320 | Closed the bounded VM86-to-CPL0 32-bit delivery foundation: `#GP/#UD/#NM/IRQ0` entry through TSS `SS0:ESP0`, full VM86 frame and failure boundaries, plus atomic nine-dword CPL0 `IRET` return with a real IRQ0-to-handler-to-VM86 round trip. `66` is classified as non-VM86 return, `67` succeeds, and VME/PVI/task/paging breadth remains transferred. Artifact 0320 SHA-256 is recorded in history; fresh configure, governance/diff checks, and 198/198 current-gate passed. |
