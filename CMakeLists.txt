@@ -284,6 +284,13 @@ if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(core-machine-protected-data-access-s2-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
+add_executable(core-machine-protected-16-gate-s3-smoke
+    tests/machine/core_machine_protected_16_gate_s3_smoke.c)
+target_link_libraries(core-machine-protected-16-gate-s3-smoke PRIVATE core-machine)
+if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
+    target_compile_options(core-machine-protected-16-gate-s3-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
 add_executable(core-machine-descriptor-system-smoke
     tests/machine/core_machine_descriptor_system_smoke.c)
 target_link_libraries(core-machine-descriptor-system-smoke PRIVATE core-machine)
@@ -1496,6 +1503,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-control-transfer-smoke
     core-machine-protected-far-s1-smoke
     core-machine-protected-data-access-s2-smoke
+    core-machine-protected-16-gate-s3-smoke
     core-machine-descriptor-system-smoke
     core-machine-sgdt-sidt-smoke
     core-machine-lgdt-lidt-smoke
