@@ -4726,60 +4726,12 @@ _______todo _e_iret(core_machine_cpu_execution_context *context, type_unsigned_8
                 TYPE_TRACE_BLOCK_END;
                 break;
             }
-            if (TYPE_GET_BIT(neweflags, VCPU_EFLAGS_VM) && !_GetCPL)
-            {
-                t_cpu_data_sreg newcs_cache = cpu_state.data.cs;
-                t_cpu_data_sreg newss_cache = cpu_state.data.ss;
-                t_cpu_data_sreg newes_cache = cpu_state.data.es;
-                t_cpu_data_sreg newds_cache = cpu_state.data.ds;
-                t_cpu_data_sreg newfs_cache = cpu_state.data.fs;
-                t_cpu_data_sreg newgs_cache = cpu_state.data.gs;
-                TYPE_TRACE_BLOCK_BEGIN("neweflags(VM),CPL(0)");
-                /* Preflight and read the complete nine-dword frame before
-                 * publishing VM, CPL, stack, or any segment cache. */
-                TYPE_TRACE_CHECK_RETURN(_s_test_ss_pop(context, 36u));
-                TYPE_TRACE_CHECK_RETURN(_s_peek_ss_pop(context, 12u,
-                    TYPE_REFERENCE_OF(newesp), 4u));
-                TYPE_TRACE_CHECK_RETURN(_s_peek_ss_pop(context, 16u,
-                    TYPE_REFERENCE_OF(xs_sel), 4u));
-                newss = TYPE_MASK_UNSIGNED_16(xs_sel);
-                TYPE_TRACE_CHECK_RETURN(_s_peek_ss_pop(context, 20u,
-                    TYPE_REFERENCE_OF(xs_sel), 4u));
-                newes = TYPE_MASK_UNSIGNED_16(xs_sel);
-                TYPE_TRACE_CHECK_RETURN(_s_peek_ss_pop(context, 24u,
-                    TYPE_REFERENCE_OF(xs_sel), 4u));
-                newds = TYPE_MASK_UNSIGNED_16(xs_sel);
-                TYPE_TRACE_CHECK_RETURN(_s_peek_ss_pop(context, 28u,
-                    TYPE_REFERENCE_OF(xs_sel), 4u));
-                newfs = TYPE_MASK_UNSIGNED_16(xs_sel);
-                TYPE_TRACE_CHECK_RETURN(_s_peek_ss_pop(context, 32u,
-                    TYPE_REFERENCE_OF(xs_sel), 4u));
-                newgs = TYPE_MASK_UNSIGNED_16(xs_sel);
-                _ser_iret_vm86_sreg(&newcs_cache, newcs, SREG_CODE);
-                _ser_iret_vm86_sreg(&newss_cache, newss, SREG_STACK);
-                _ser_iret_vm86_sreg(&newes_cache, newes, SREG_DATA);
-                _ser_iret_vm86_sreg(&newds_cache, newds, SREG_DATA);
-                _ser_iret_vm86_sreg(&newfs_cache, newfs, SREG_DATA);
-                _ser_iret_vm86_sreg(&newgs_cache, newgs, SREG_DATA);
-                cpu_state.data.eflags = (neweflags & ~mask) |
-                    (cpu_state.data.eflags & mask);
-                cpu_state.data.cs = newcs_cache;
-                cpu_state.data.ss = newss_cache;
-                cpu_state.data.es = newes_cache;
-                cpu_state.data.ds = newds_cache;
-                cpu_state.data.fs = newfs_cache;
-                cpu_state.data.gs = newgs_cache;
-                cpu_state.data.esp = newesp;
-                _MakeCPL(0x03);
-                TYPE_TRACE_BLOCK_END;
-            }
-            else
-            {
-                TYPE_TRACE_BLOCK_BEGIN("neweflags(!VM)/CPL(!0)");
-                /* return to proctected */
-                TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(0));
-                TYPE_TRACE_BLOCK_END;
-            }
+            /* CPL0 32-bit VM86 return is handled before this legacy pop path
+             * can publish its first frame field.  This retained path has no
+             * other supported protected return contract. */
+            TYPE_TRACE_BLOCK_BEGIN("unsupported protected return");
+            TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(0));
+            TYPE_TRACE_BLOCK_END;
             TYPE_TRACE_BLOCK_END;
         }
         TYPE_TRACE_BLOCK_END;

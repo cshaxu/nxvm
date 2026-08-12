@@ -12,6 +12,11 @@ frame/cache contents, continued VM86 execution, and the short-stack no-partial
 publication boundary.  It is registered as one current gate with target-local
 GCC `-Wall -Wextra -Wpedantic -Werror`.
 
+The S1 VM86 IRQ0 owner fixture additionally now installs a CPL0 `IRET` handler
+and proves the real delivery-to-return round trip: the saved VM86 frame is
+restored, VM86 resumes at the interrupted instruction boundary, and IRQ0
+remains delivered in ISR rather than being spuriously re-pended.
+
 ## Boundaries
 
 This history does not claim VM86-origin IRET, VME/PVI, NT/task returns, task
@@ -24,7 +29,7 @@ Detailed matrix and caller sweep: [T320 S2 evidence](../etc/evidence/t320-s2-vm8
 ## Artifact
 
 Fresh `mingw-gcc-x64` configuration rebuilt the current
-`build/output/nxvm_0_5_0320.exe` artifact from the P1 source tree.  Its
-SHA-256 is `FD44D59483AA9518E10626822C424BDCFA20B7945E18C39092EEF3D35A6152A6`;
+`build/output/nxvm_0_5_0320.exe` artifact from the P2 source tree. Its
+SHA-256 is `4E66566B83900E6AABC9ECA54732E1E5B266809846AFD740D7019BE9669A378A`;
 the CMake artifact target embeds version `0.5.0320` and runtime identity
 `Neko's x86 Virtual Machine`.

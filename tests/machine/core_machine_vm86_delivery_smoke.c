@@ -157,6 +157,41 @@ static C_INT vm86_delivery_irq0(C_VOID)
     }
     core_machine_destroy(state.machine); return !failed;
 }
+static C_INT vm86_delivery_irq0_iret_round_trip(C_VOID)
+{
+    vm86_delivery_state state;
+    core_machine_pic_irq_source irq;
+    core_machine_run_result result;
+    core_machine_cpu_diagnostic diagnostic;
+    C_INT failed = !vm86_delivery_prepare(&state, 0x20u);
+
+    if (!failed) {
+        failed |= core_machine_memory_write(state.machine, 0x2000u,
+            (const type_unsigned_8[]){ 0x90u, 0x90u }, 2u) != TYPE_STATUS_OK ||
+            core_machine_memory_write(state.machine, VM86_HANDLER_BASE,
+                (const type_unsigned_8[]){ 0xcfu }, 1u) != TYPE_STATUS_OK;
+        STD_MEMSET(&irq, 0, sizeof(irq));
+        state.machine->shared_pic_master.data.icw2 = 0x20u;
+        core_machine_pic_irq_source_bind(&irq, &state.machine->shared_pic_master,
+            &state.machine->shared_pic_slave, 0u);
+        core_machine_pic_irq_source_assert(&irq);
+        core_machine_pic_irq_source_deassert(&irq);
+        failed |= core_machine_run(state.machine,
+            (core_machine_run_budget){ 3u, 0u }, &result) != TYPE_STATUS_OK ||
+            result.reason != CORE_MACHINE_STOP_BUDGET ||
+            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != TYPE_STATUS_OK ||
+            diagnostic.first_fault.valid ||
+            !TYPE_GET_BIT(state.machine->executor_cpu.data.eflags, VCPU_EFLAGS_VM) ||
+            state.machine->executor_cpu.data.eip != 2u ||
+            state.machine->executor_cpu.data.cs.selector != 0x0200u ||
+            state.machine->executor_cpu.data.ss.selector != 0x0300u ||
+            state.machine->executor_cpu.data.esp != 0x00001234u ||
+            !TYPE_GET_BIT(state.machine->shared_pic_master.data.isr, VPIC_ISR_IRQ(0u)) ||
+            TYPE_GET_BIT(state.machine->shared_pic_master.data.irr, VPIC_IRR_IRQ(0u));
+    }
+    core_machine_destroy(state.machine);
+    return !failed;
+}
 static C_INT vm86_delivery_expect_prepublication(vm86_delivery_state *state)
 {
     core_machine_run_result result; core_machine_cpu_diagnostic diagnostic; t_cpu before, after;
@@ -256,7 +291,7 @@ C_INT main(C_VOID)
     if (!vm86_delivery_fault(6u, ud, sizeof(ud), 0) ||
         !vm86_delivery_fault(13u, gp, sizeof(gp), 1) ||
         !vm86_delivery_fault(7u, nm, sizeof(nm), 0) || !vm86_delivery_debug_tf() ||
-        !vm86_delivery_irq0() ||
+        !vm86_delivery_irq0() || !vm86_delivery_irq0_iret_round_trip() ||
         !vm86_delivery_invalid_gate() || !vm86_delivery_bad_gate_access(0x0eu) ||
         !vm86_delivery_bad_gate_access(0x80u) || !vm86_delivery_invalid_tss() ||
         !vm86_delivery_bad_tss(0) || !vm86_delivery_bad_tss(1) ||

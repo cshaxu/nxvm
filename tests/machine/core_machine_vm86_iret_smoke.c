@@ -31,9 +31,9 @@ static C_INT vm86_iret_prepare(vm86_iret_state *state,
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
     const type_unsigned_32 frame[9u] = {
-        0x00000010u, 0x00000200u, VCPU_EFLAGS_VM | VCPU_EFLAGS_IF,
-        0x00001234u, 0x00000300u, 0x00000500u, 0x00000400u,
-        0x00000600u, 0x00000700u
+        0x00000010u, 0xa5a50200u, VCPU_EFLAGS_VM | VCPU_EFLAGS_IF,
+        0x00001234u, 0xb6b60300u, 0xc7c70500u, 0xd8d80400u,
+        0xe9e90600u, 0xfafa0700u
     };
     t_cpu *cpu;
 
@@ -71,7 +71,11 @@ static C_INT vm86_iret_cache(const t_cpu_data_sreg *sreg,
 {
     return sreg->flagValid && sreg->selector == selector &&
         sreg->sregtype == kind && sreg->base == (type_unsigned_32)selector << 4u &&
-        sreg->limit == 0x0000ffffu && sreg->dpl == 3u;
+        sreg->limit == 0x0000ffffu && sreg->dpl == 3u &&
+        !sreg->seg.accessed && sreg->seg.executable == (kind == SREG_CODE) &&
+        (kind == SREG_CODE ? !sreg->seg.exec.defsize && !sreg->seg.exec.conform &&
+            sreg->seg.exec.readable : !sreg->seg.data.big &&
+            !sreg->seg.data.expdown && sreg->seg.data.writable);
 }
 
 static C_INT vm86_iret_success(const type_unsigned_8 *instruction,
@@ -87,8 +91,8 @@ static C_INT vm86_iret_success(const type_unsigned_8 *instruction,
             result.reason != CORE_MACHINE_STOP_BUDGET ||
             core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != TYPE_STATUS_OK ||
             diagnostic.first_fault.valid ||
-            !TYPE_GET_BIT(state.machine->executor_cpu.data.eflags, VCPU_EFLAGS_VM) ||
-            !TYPE_GET_BIT(state.machine->executor_cpu.data.eflags, VCPU_EFLAGS_IF) ||
+            state.machine->executor_cpu.data.eflags !=
+                (VCPU_EFLAGS_VM | VCPU_EFLAGS_IF) ||
             state.machine->executor_cpu.data.eip != 0x0011u ||
             state.machine->executor_cpu.data.esp != 0x00001234u ||
             !vm86_iret_cache(&state.machine->executor_cpu.data.cs, 0x0200u, SREG_CODE) ||

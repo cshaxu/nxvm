@@ -19,9 +19,14 @@ and emits `M5:T320:S2:VM86-IRET:OK`.
 
 | Vector | Actual proof |
 | --- | --- |
-| Valid `CF` | A CPL0 32-bit code frame restores all nine dwords, sets VM and IF, installs CS/SS/ES/DS/FS/GS real-mode-style caches, and executes the next VM86 NOP. |
+| Valid `CF` | A CPL0 32-bit code frame restores all nine fields, sets VM and IF, installs CS/SS/ES/DS/FS/GS real-mode-style caches, and executes the next VM86 NOP. The selector slots carry distinct nonzero high words and prove the architectural low-word selector extraction. |
 | `67 CF` | The no-EA address-size form has the same frame/cache result and next VM86 instruction execution. |
 | Short CPL0 stack | The 36-byte frame preflight fails before cache/VM/CPL/ESP publication; the complete captured CPU remains unchanged. |
+| S1 IRQ0 round trip | The S1 VM86 IRQ0 fixture now executes a CPL0 handler containing `IRET`; it restores the delivered nine-dword frame, resumes VM86 at the interrupted instruction boundary, executes the next VM86 NOP, retains VM86 CS/SS/ESP, and leaves IRQ0 in ISR with IRR clear. |
+
+`66 IRET` is a legal 16-bit protected-mode return form, but it cannot carry
+the VM flag in its popped FLAGS word and is therefore outside this VM86-return
+form. `67 IRET` has no effective address and preserves the 32-bit frame form.
 
 The local implementation now identifies the 32-bit VM frame before consuming
 the first three return words.  It preflights and peeks all nine dwords, builds
