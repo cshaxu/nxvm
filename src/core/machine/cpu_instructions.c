@@ -16888,6 +16888,7 @@ static C_VOID ExecFinal(core_machine_cpu_execution_context *context)
     type_unsigned_32 original_except;
     type_unsigned_32 original_excode;
     type_unsigned_8 exception_vector;
+    type_bool exception_deliverable;
     if (instruction_state.data.flagInsLoop)
     {
         cpu_state.data.cs = instruction_state.data.oldcpu.data.cs;
@@ -16908,25 +16909,52 @@ static C_VOID ExecFinal(core_machine_cpu_execution_context *context)
             fault_cpu.data.cr2 = cpu_state.data.cr2;
         }
         exception_vector = 0u;
-        if (instruction_state.data.except == VCPUINS_EXCEPT_GP)
+        exception_deliverable = TYPE_FALSE;
+        if (instruction_state.data.except == VCPUINS_EXCEPT_DE) {
+            exception_vector = 0x00u;
+            exception_deliverable = TYPE_TRUE;
+        }
+        else if (instruction_state.data.except == VCPUINS_EXCEPT_GP) {
             exception_vector = 0x0du;
+            exception_deliverable = TYPE_TRUE;
+        }
         else if (instruction_state.data.except == VCPUINS_EXCEPT_UD &&
-            TYPE_GET_BIT(fault_cpu.data.eflags, VCPU_EFLAGS_VM))
+            TYPE_GET_BIT(fault_cpu.data.eflags, VCPU_EFLAGS_VM)) {
             exception_vector = 0x06u;
-        else if (instruction_state.data.except == VCPUINS_EXCEPT_NM)
+            exception_deliverable = TYPE_TRUE;
+        }
+        else if (instruction_state.data.except == VCPUINS_EXCEPT_NM) {
             exception_vector = 0x07u;
-        else if (instruction_state.data.except == VCPUINS_EXCEPT_BR)
+            exception_deliverable = TYPE_TRUE;
+        }
+        else if (instruction_state.data.except == VCPUINS_EXCEPT_BR) {
             exception_vector = 0x05u;
-        else if (instruction_state.data.except == VCPUINS_EXCEPT_NP)
+            exception_deliverable = TYPE_TRUE;
+        }
+        else if (instruction_state.data.except == VCPUINS_EXCEPT_NP) {
             exception_vector = 0x0bu;
+            exception_deliverable = TYPE_TRUE;
+        }
         else if (instruction_state.data.except == VCPUINS_EXCEPT_SS &&
-            context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
+            context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
             exception_vector = 0x0cu;
+            exception_deliverable = TYPE_TRUE;
+        }
         else if (instruction_state.data.except == VCPUINS_EXCEPT_TS &&
-            context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
+            context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386) {
             exception_vector = 0x0au;
+            exception_deliverable = TYPE_TRUE;
+        }
+        else if (instruction_state.data.except == VCPUINS_EXCEPT_PF) {
+            exception_vector = 0x0eu;
+            exception_deliverable = TYPE_TRUE;
+        }
+        else if (instruction_state.data.except == VCPUINS_EXCEPT_MF) {
+            exception_vector = 0x10u;
+            exception_deliverable = TYPE_TRUE;
+        }
         if (TYPE_GET_BIT(fault_cpu.data.cr0, VCPU_CR0_PE) &&
-            exception_vector != 0u) {
+            exception_deliverable) {
             original_except = instruction_state.data.except;
             original_excode = instruction_state.data.excode;
             cpu_state = fault_cpu;
@@ -16973,6 +17001,32 @@ static C_VOID ExecFinal(core_machine_cpu_execution_context *context)
                 instruction_state.data.except = original_except;
                 instruction_state.data.excode = original_excode;
             }
+        }
+
+        if (!TYPE_GET_BIT(fault_cpu.data.cr0, VCPU_CR0_PE) &&
+            (instruction_state.data.except == VCPUINS_EXCEPT_DE ||
+             instruction_state.data.except == VCPUINS_EXCEPT_PF ||
+             instruction_state.data.except == VCPUINS_EXCEPT_MF)) {
+            original_except = instruction_state.data.except;
+            original_excode = instruction_state.data.excode;
+            cpu_state = fault_cpu;
+            _e_except_n(context, exception_vector, _GetOperandSize);
+            if (!instruction_state.data.except) {
+                if (context->diagnostic_provider != STD_NULL &&
+                    context->diagnostic_provider->record_delivered_exception !=
+                        STD_NULL) {
+                    instruction_state.data.except = original_except;
+                    instruction_state.data.excode = original_excode;
+                    context->diagnostic_provider->record_delivered_exception(
+                        context->diagnostic_context, &fault_cpu,
+                        &instruction_state);
+                    instruction_state.data.except = 0u;
+                }
+                return;
+            }
+            cpu_state = fault_cpu;
+            instruction_state.data.except = original_except;
+            instruction_state.data.excode = original_excode;
         }
 
         if (!TYPE_GET_BIT(fault_cpu.data.cr0, VCPU_CR0_PE) &&

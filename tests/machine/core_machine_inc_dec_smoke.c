@@ -67,6 +67,63 @@ static C_INT inc_dec_run(inc_dec_machine *state, const type_unsigned_8 *code,
     return 1;
 }
 
+static C_INT inc_dec_run_delivered_de(inc_dec_machine *state,
+    const type_unsigned_8 *code, STD_SIZE_T bytes, t_cpu *out,
+    core_machine_cpu_diagnostic *diagnostic)
+{
+    static const type_unsigned_8 handler[] = { 0xf4u };
+    const type_unsigned_16 handler_offset = 0x0100u;
+    const type_unsigned_16 code_offset = 0x0200u;
+    const type_unsigned_16 handler_segment = 0u;
+    core_machine_run_result result;
+    t_cpu before;
+    const type_unsigned_8 frame_width = code[0] == 0x66u ? 4u : 2u;
+    type_unsigned_16 frame16[3] = { 0u, 0u, 0u };
+    type_unsigned_32 frame32[3] = { 0u, 0u, 0u };
+
+    if (state == STD_NULL || state->machine == STD_NULL ||
+        !test_core_machine_fixture_prepare_real_mode_execution(state->machine, 0u) ||
+        core_machine_memory_write(state->machine, code_offset, code, bytes) !=
+            TYPE_STATUS_OK || core_machine_memory_write(state->machine, 0u,
+            &handler_offset, sizeof(handler_offset)) != TYPE_STATUS_OK ||
+        core_machine_memory_write(state->machine, 2u, &handler_segment,
+            sizeof(handler_segment)) != TYPE_STATUS_OK ||
+        core_machine_memory_write(state->machine, handler_offset, handler,
+            sizeof(handler)) != TYPE_STATUS_OK) {
+        return 0;
+    }
+    test_core_machine_fixture_resume_after_halt_at(state->machine, code_offset);
+    state->machine->executor_cpu.data.esp = 0x00008000u;
+    before = state->machine->executor_cpu;
+    if (core_machine_run(state->machine, (core_machine_run_budget){ 1u, 0u },
+            &result) != TYPE_STATUS_OK || result.reason != CORE_MACHINE_STOP_BUDGET ||
+        core_machine_get_cpu_diagnostic(state->machine, diagnostic) !=
+            TYPE_STATUS_OK) {
+        return 0;
+    }
+    *out = test_core_machine_fixture_capture_cpu_after_run(state->machine);
+    if (!(!diagnostic->first_fault.valid &&
+        diagnostic->last_delivered_exception.valid && TYPE_GET_BIT(
+            diagnostic->last_delivered_exception.exception_mask,
+            VCPUINS_EXCEPT_DE) && out->data.eip == handler_offset &&
+        out->data.esp == ((before.data.esp & 0xffff0000u) |
+            (type_unsigned_16)(before.data.esp - 3u * frame_width)))) {
+        return 0;
+    }
+    if (frame_width == 2u) {
+        return test_core_machine_fixture_read_linear(state->machine,
+            out->data.ss.base + (type_unsigned_16)out->data.esp,
+            TYPE_REFERENCE_OF(frame16), sizeof(frame16)) &&
+            frame16[0] == code_offset && frame16[1] == before.data.cs.selector &&
+            frame16[2] == (type_unsigned_16)before.data.eflags;
+    }
+    return test_core_machine_fixture_read_linear(state->machine,
+        out->data.ss.base + out->data.esp, TYPE_REFERENCE_OF(frame32),
+        sizeof(frame32)) && frame32[0] == code_offset &&
+        frame32[1] == before.data.cs.selector && frame32[2] == before.data.eflags;
+    return 1;
+}
+
 static type_unsigned_32 *inc_dec_register(t_cpu *cpu, type_unsigned_8 index)
 {
     switch (index) {
@@ -905,12 +962,11 @@ static C_INT inc_dec_test_div_idiv_de_nonpublication(C_VOID)
                 state.machine->executor_cpu.data.edx = edx;
                 state.machine->executor_cpu.data.ecx = ecx;
                 state.machine->executor_cpu.data.eflags = flags;
-                failed |= !inc_dec_run(&state, code[form], form < 4u ? 2u : 3u, 1,
-                    &after, &diagnostic) || !diagnostic.first_fault.valid || !TYPE_GET_BIT(
-                        diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_DE) ||
+                failed |= !inc_dec_run_delivered_de(&state, code[form],
+                    form < 4u ? 2u : 3u, &after, &diagnostic) ||
                     after.data.eax != eax || after.data.edx != edx ||
                     after.data.ecx != ecx || after.data.eflags != flags ||
-                    after.data.eip != 0u;
+                    after.data.eip != 0x0100u;
             }
             core_machine_destroy(state.machine);
             if (failed) return 0;
@@ -3047,11 +3103,10 @@ static C_INT inc_dec_test_decimal_adjust(C_VOID)
         if (!failed) {
             state.machine->executor_cpu.data.eax = eax_before;
             state.machine->executor_cpu.data.eflags = flags_before;
-            failed |= !inc_dec_run(&state, aam_zero, sizeof(aam_zero), 1, &after,
-                &diagnostic) || !diagnostic.first_fault.valid || !TYPE_GET_BIT(
-                diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_DE) ||
+            failed |= !inc_dec_run_delivered_de(&state, aam_zero,
+                sizeof(aam_zero), &after, &diagnostic) ||
                 after.data.eax != eax_before || after.data.eflags != flags_before ||
-                after.data.eip != 0u;
+                after.data.eip != 0x0100u;
         }
         core_machine_destroy(state.machine);
         if (failed) return 0;

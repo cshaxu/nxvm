@@ -116,6 +116,10 @@ static C_INT fpu_interface_s65_success(const type_unsigned_8 *code, STD_SIZE_T s
 static C_INT fpu_interface_s65_mf(C_VOID)
 {
     static const type_unsigned_8 wait[] = { 0x9bu };
+    static const type_unsigned_8 handler[] = { 0xf4u };
+    const type_unsigned_16 handler_offset = 0x0100u;
+    const type_unsigned_16 handler_segment = 0u;
+    type_unsigned_16 frame[3] = { 0u, 0u, 0u };
     fpu_interface_s65_machine state;
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
@@ -125,13 +129,36 @@ static C_INT fpu_interface_s65_mf(C_VOID)
         CORE_MACHINE_FPU_PROFILE_8087, &state);
 
     if (!failed) {
+        state.machine->executor_cpu.data.esp = 0x00008000u;
+        failed |= core_machine_memory_write(state.machine, 0x0040u,
+            &handler_offset, sizeof(handler_offset)) != TYPE_STATUS_OK ||
+            core_machine_memory_write(state.machine, 0x0042u, &handler_segment,
+                sizeof(handler_segment)) != TYPE_STATUS_OK ||
+            core_machine_memory_write(state.machine, handler_offset, handler,
+                sizeof(handler)) != TYPE_STATUS_OK;
         state.machine->fpu.pending_unmasked_exception = TYPE_TRUE;
         before = state.machine->executor_cpu;
         failed |= !fpu_interface_s65_run(&state, wait, sizeof(wait), &after,
-            &diagnostic, &status) || status != TYPE_STATUS_FAULT ||
-            !diagnostic.first_fault.valid || !TYPE_GET_BIT(
-                diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_MF) ||
-            !fpu_interface_s65_same(&before, &after);
+            &diagnostic, &status) || status != TYPE_STATUS_OK ||
+            diagnostic.first_fault.valid ||
+            !diagnostic.last_delivered_exception.valid || !TYPE_GET_BIT(
+                diagnostic.last_delivered_exception.exception_mask,
+                VCPUINS_EXCEPT_MF) || after.data.eip != handler_offset ||
+            after.data.esp != ((before.data.esp & 0xffff0000u) |
+                (type_unsigned_16)(before.data.esp - 6u)) ||
+            !test_core_machine_fixture_read_linear(state.machine,
+                after.data.ss.base + (type_unsigned_16)after.data.esp,
+                TYPE_REFERENCE_OF(frame), sizeof(frame)) ||
+            frame[0] != 0u || frame[1] != before.data.cs.selector ||
+            frame[2] != (type_unsigned_16)before.data.eflags ||
+            after.data.eax != before.data.eax || after.data.ebx != before.data.ebx ||
+            after.data.ecx != before.data.ecx || after.data.edx != before.data.edx ||
+            after.data.ebp != before.data.ebp || after.data.esi != before.data.esi ||
+            after.data.edi != before.data.edi ||
+            STD_MEMCMP(&after.data.es, &before.data.es, sizeof(after.data.es)) != 0 ||
+            STD_MEMCMP(&after.data.ds, &before.data.ds, sizeof(after.data.ds)) != 0 ||
+            STD_MEMCMP(&after.data.fs, &before.data.fs, sizeof(after.data.fs)) != 0 ||
+            STD_MEMCMP(&after.data.gs, &before.data.gs, sizeof(after.data.gs)) != 0;
     }
     core_machine_destroy(state.machine);
     return !failed;

@@ -1288,6 +1288,13 @@ target_link_libraries(core-machine-fpu-interface-s65-smoke PRIVATE core-machine)
 add_executable(core-machine-fpu-8087-smoke
     tests/machine/core_machine_fpu_8087_smoke.c)
 target_link_libraries(core-machine-fpu-8087-smoke PRIVATE core-machine)
+add_executable(core-machine-exception-delivery-s2-smoke
+    tests/machine/core_machine_exception_delivery_s2_smoke.c)
+target_link_libraries(core-machine-exception-delivery-s2-smoke PRIVATE core-machine)
+if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(core-machine-exception-delivery-s2-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
 add_executable(core-machine-int-ivt-smoke
     tests/machine/cpu_int_ivt_smoke.c)
 target_link_libraries(core-machine-int-ivt-smoke PRIVATE
@@ -1477,6 +1484,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-fpu-escape-smoke
     core-machine-fpu-interface-s65-smoke
     core-machine-fpu-8087-smoke
+    core-machine-exception-delivery-s2-smoke
     core-machine-trace-context-smoke
     core-machine-cpu-fault-diagnostic-smoke
     core-machine-configuration-smoke
