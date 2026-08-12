@@ -2,8 +2,28 @@
 
 ## Current Work
 
-**Idle.** M5 T323 S7 is closed; the next protected 80386DX matrix slice
-requires a separately admitted packet.
+M5 T323 S8 is active: audit the 80386DX protected segmentation and
+privilege-transfer closure against its Queue boundary (Ordinary Mode).
+
+## M5 T323 S8 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner authorization to execute in single-session mode through the 80386DX architecture-coverage closure audit, 2026-08-12. T323 S1--S7 are accepted. |
+| Objective | Perform the task-level closure audit for the Queue's 80386DX protection and privilege-transfer boundary: reconcile Intel 80286/80386 protected, non-VM86 segmentation, selector/cache, direct and gate transfers, outer stack transitions, and return composition with current code and focused evidence. |
+| Non-goals | No new product behavior, whole-CPU claim, paging, task gate/switch, LDT/debug/VM86 breadth, VME/PVI, x87 execution, legacy LOCK policy, or test-only evidence inflation is admitted. |
+| Reference Baseline | `0e676b8c`; accepted T303/T306/T307/T320/T321/T323 records, the current Queue, and the 80386DX closure map are inputs. |
+| Files And ABI Surface | Expected: Status, the T323 closure/audit evidence, and the closure map only if its current disposition changes. Code, CMake, fixtures, public ABI, and Queue are excluded unless a separately admitted corrective S is required. |
+| Applicable Rules | Task Reading Set; execution/documentation rules; Queue and roadmap; 80386DX closure map; retained T303/T306/T307/T320/T321/T323 evidence; Intel 80286/80386 protected segmentation, gates, returns, and privilege rules. |
+| Verification | Read each claimed code/evidence route, map every required condition to focused proof or an explicit named transfer, rerun the documentation governance and diff checks, inspect all proposed documentation changes, and report whether T323 can close or which exact corrective S remains. |
+| Expected Markers | `M5:T323:S8:PROTECTION-PRIVILEGE-AUDIT:OK`; no smoke target is expected unless a new corrective S is admitted. |
+| Asset Needs | No external asset, guest media, firmware, or imported source. |
+| Reporting Requirements | Deliver one complete audit P while retaining this packet. A task closure is permitted only if every T323-owned row is complete or explicitly transferred to a named Queue/TODO boundary; otherwise retain T323 open and admit the exact next corrective S. |
+| Stop Conditions | Stop before silently classifying an unproven architectural form as complete, modifying Queue ownership, revising global policy, or expanding into task/VM86/paging/x87/legacy LOCK behavior. Report the exact form and destination instead. |
+| Exit Criteria | The audit gives every T323-owned state/form a code-and-evidence basis; all residual rows have a precise owner; the closure map no longer says `Partial` for a condition claimed complete; governance and diff checks pass; and any task closure or next-S decision is truthful and pushed. |
+| Original Owner Request | Continue the owner-approved Intel 80386 implementation program in single-session mode through the 80386DX architecture coverage closure audit, with code quality and complete evidence. |
+| Similar-Issue Sweep | Reconcile `_ser_int_protected_16`, `_ser_int_protected_32_outer`, `_ser_call_far_call_gate`, `_ser_call_far_call_gate_32`, `_ser_ret_far_outer`, `_ser_iret_protected_outer`, selector/cache and TSS-stack preparation, plus their T303/T306/T307/T320/T321/T323 owner proofs. |
 
 ## Current Technical Baseline
 
