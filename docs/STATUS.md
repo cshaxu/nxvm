@@ -2,8 +2,28 @@
 
 ## Current Work
 
-**Idle.** M5 T321 S4 is accepted and closed; S5 requires a separately admitted
-packet.
+**Active.** M5 T321 S5 closes the transferred 80386 VM86 `LGDT/LIDT` privilege
+boundary in Ordinary Mode.
+
+## M5 T321 S5 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | The owner authorized continued single-session implementation toward the 80386DX architecture-coverage closure audit on 2026-08-12. T321 S1 explicitly transferred this exact VM86 consumer from T319 after T320 delivery became available. |
+| Objective | Make `0F 01 /2` LGDT and `/3` LIDT in VM86 raise `#GP(0)` before ModRM pseudo-descriptor source access, then prove their delivered CPL0 frame and retained table/source state. |
+| Non-goals | No non-VM86 LGDT/LIDT change, no SGDT/SIDT, no descriptor-table refactor, no TSS/VM86/exception broadening, no paging, task, VME/PVI, PIC, or public API change. |
+| Reference Baseline | `13c662c8` / `vm-0-5-0320`; T319 matrix and T320 VM86 delivery evidence. |
+| Files And ABI Surface | `cpu_instructions.c` only for the local /2,/3 privilege predicate, a strict owner smoke, CMake, indexed evidence, and Status. |
+| Applicable Rules | Task Reading Set; execution, architecture, coding, and documentation rules; Intel 80386 LGDT/LIDT privilege rules; T319/T320 evidence. |
+| Verification | Both forms in VM86 with a valid TSS/IDT13 handler; exact `#GP(0)` delivery/frame/restart, source and GDTR/IDTR preservation, focused marker, fresh configure, exact registration, documentation governance, diff check, and full current gate. |
+| Expected Markers | One S5 owner marker and one current-gate registration. |
+| Asset Needs | Deterministic local GDT/IDT/TSS fixtures only. |
+| Reporting Requirements | Record predicate defect, both forms, source/table nonpublication, frame result, caller sweep, and transferred boundaries. |
+| Stop Conditions | Stop for a required shared table serializer, TSS/exception planner, VM86 architecture, or public-interface change. |
+| Exit Criteria | Both VM86 forms deliver exact `#GP(0)` before source/table publication; no non-VM86 regression; evidence, gates, commit, and push pass. |
+| Original Owner Request | Continue toward the 80386DX architecture-coverage closure audit. |
+| Similar-Issue Sweep | Search all `INS_0F_01` system-register cases and T319/T320 owner tests; classify /0--/7 without changing non-/2,/3 behavior. |
 
 ## Current Technical Baseline
 
