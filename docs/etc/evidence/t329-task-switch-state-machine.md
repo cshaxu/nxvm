@@ -2,10 +2,11 @@
 
 ## Boundary
 
-This supporting record constrains the active T329 task-system package. Intel
-80386 behavior remains the authority. It does not allocate a task, replace the
-active [T329 S3 packet](../../STATUS.md), or claim that later task, LDT, VM86,
-or debug behavior is complete.
+This supporting record preserves the closed T329 task-system construction.
+Intel 80386 behavior remains the authority. It does not allocate a task or
+replace [Status](../../STATUS.md). It records only the bounded protected task
+transition state machine; ordinary debug-register and breakpoint behavior,
+VM86 task breadth, VME/PVI, and x87 execution remain separate boundaries.
 
 The record addresses a recurring construction risk: a task switch is not a
 sequence of independently safe assignments. It is one architectural transition
