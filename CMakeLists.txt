@@ -312,6 +312,13 @@ if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(core-machine-protected-16-outer-iret-s6-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
+add_executable(core-machine-protected-16-call-gate-s7-smoke
+    tests/machine/core_machine_protected_16_call_gate_s7_smoke.c)
+target_link_libraries(core-machine-protected-16-call-gate-s7-smoke PRIVATE core-machine)
+if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
+    target_compile_options(core-machine-protected-16-call-gate-s7-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
 add_executable(core-machine-descriptor-system-smoke
     tests/machine/core_machine_descriptor_system_smoke.c)
 target_link_libraries(core-machine-descriptor-system-smoke PRIVATE core-machine)
@@ -1528,6 +1535,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-protected-16-external-s4-smoke
     core-machine-protected-16-outer-s5-smoke
     core-machine-protected-16-outer-iret-s6-smoke
+    core-machine-protected-16-call-gate-s7-smoke
     core-machine-descriptor-system-smoke
     core-machine-sgdt-sidt-smoke
     core-machine-lgdt-lidt-smoke
