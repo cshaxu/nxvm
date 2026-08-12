@@ -2,8 +2,27 @@
 
 ## Current Work
 
-**Idle.** M5 T329 S2 is closed; T329 remains open for its next separately
-admitted state-machine slice.
+M5 T329 S3: 80386 complete 32-bit TSS direct-JMP image and fault order (Ordinary Mode).
+
+## M5 T329 S3 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; T329 S1/S2 remain retained task progress. Ordinary Mode performs implementation and acceptance review. |
+| Admission And Approval | Owner approved autonomous single-session continuation toward the Intel 80386DX architecture-coverage closure audit and the holistic task-switch state-machine method. This is the next dependency cut defined by the accepted T329 state-machine record. |
+| Objective | Complete the direct 80386 32-bit-TSS far-JMP state-image contract beyond S2's null-LDTR/paging-off minimal matrix: mechanically name/check every saved-image offset, prove exact full outgoing and incoming image/cache behavior, and close direct-JMP descriptor/TSS/stack failure ordering with installed handler-visible checkpoints. |
+| Non-goals | Task gates; far CALL-to-TSS; nested-task IRET/NT; non-null LDT; task switch with paging enabled; task paging/TLB; task debug state; generic exception/IRQ redesign; and x87 behavior. |
+| Reference Baseline | `b821830a` / current `origin/main` after T329 S2 P2; preserve user-owned uncommitted `docs/QUEUE.md`. |
+| Files And ABI Surface | Local task-switch execution code, task-switch owner smoke, T329 evidence/closure map, and STATUS only. No public ABI, provider contract, or product-visible interface change. |
+| Applicable Rules | Task Reading Set; Intel 80386 architecture as authority; Execution ordinary-mode P lifecycle and actual-change review; Architecture single-owner/no-new-interface; Coding project-type/C11/test-boundary; Documentation packet/evidence/closure rules. Apply the accepted [T329 task-switch state-machine record](etc/evidence/t329-task-switch-state-machine.md): preflight resolves every admitted fault before writes, commit has no ordinary fault point, and post-commit outcomes are separately proven. Bochs/PCjs are read-only diagnostic references only under source policy, never product source or acceptance oracle. |
+| Verification | Fresh GCC configure; focused task-switch marker; actual Ninja command with target-local strict GCC options; exact current registration; documentation governance; `git diff --check`; full `ctest -L current-gate --output-on-failure -j 16`. |
+| Expected Markers | Retain prior task-switch markers and emit `M5:T329:S3:TSS32-IMAGE:OK`; exact registration remains `current.core-machine-task-switch-smoke`. |
+| Asset Needs | None; deterministic in-memory GDT/TSS/IDT/PIC fixtures only. |
+| Reporting Requirements | Complete one implementation P with requirement-to-proof evidence and similar-issue sweep, then after actual code review commit a governance P closure. Report only a reproducible material blocker or accepted completion. |
+| Stop Conditions | Stop before modifying shared paging/TLB, generic segment/exception/IRQ, provider, or public ABI code; before accepting LDT/paging/debug task state; or if an admitted direct-JMP fault cannot be fully preflighted using equivalent semantics. Record and transfer rather than silently broaden. |
+| Exit Criteria | Every 32-bit TSS field/slot used by the direct path has a mechanical offset/size invariant and direct focused evidence. Valid transitions prove outgoing/incoming CPU, caches, busy descriptors, CR3, TS and null LDTR. Installed handler vectors distinguish required descriptor/TSS/stack preflight failures from post-commit behavior and prove no partial outgoing TSS/descriptor write. Direct forms and LOCK classification remain complete; all required gates pass; remaining task breadth is explicitly transferred. |
+| Original Owner Request | Complete Intel 80386 implementation with a holistic, maintainable design; avoid incremental symptom patches; commit and push accepted work. |
+| Similar-Issue Sweep | Audit all 32-bit TSS field offsets, every direct far-JMP caller, old/new descriptor writes, plan/commit post-preflight calls, and the focused task-switch fixture. Classify any path outside S3 explicitly. |
 
 ## Current Technical Baseline
 
