@@ -2,8 +2,27 @@
 
 ## Current Work
 
-**Idle.** M5 T325 remains open; S2 is accepted and the next paging/translation
-slice requires a separately admitted continuation packet.
+**M5 T325 S3: close the Intel 80386DX paging and translation package (Ordinary Mode).**
+
+## M5 T325 S3 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; Ordinary Mode. `M5 T325 S3` follows accepted S1 and S2 in the sole open numeric task. |
+| Admission And Approval | Owner-approved autonomous continuation of the Queue's 80386DX paging and translation closure on 2026-08-12. This final S admits the package-level form/state audit and bounded post-80386 invalidation rejection proof only. The S3 audit found protected-mode `#UD` IDT delivery absent from the shared finalizer; that separately tracked exception-delivery defect is transferred rather than silently absorbed. |
+| Objective | Close T325's native Intel 80386 non-PAE paging/translation package: reconcile CR0/CR2/CR3, 4-KiB PDE/PTE walk, U/S and R/W protection, A/D publication, cross-page atomicity, delivered `#PF`, and the no-persistent-cache model. Add a focused `0F 01 /7` `INVLPG` rejection proof for 80386's pre-486 boundary: metadata rejection occurs before effective-address decoding, and real-mode execution retains complete CPU state. |
+| Non-goals | No PAE, PSE, CR4, `INVLPG` implementation, persistent TLB/timing model, TR6/TR7, task-switch CR3 loading, VM86 paging-family breadth, page-table ABI, host-memory replacement, public API, generic exception/PIC redesign, or x87 work. |
+| Reference Baseline | `0e308e49` / `vm-0-5-0323`; T258/T311 retained walk and permission probes, T321 delivered-`#PF`, and T325 S1/S2 evidence are inputs requiring actual source/evidence reconciliation. |
+| Files And ABI Surface | Expected: existing owner paging smoke, paging closure map/audit/history, and task Status. Production change only for a reproduced local 80386 page-walk or `0F 01 /7` classification defect; no public ABI or memory-route change. |
+| Applicable Rules | `docs/design/GOAL.md` goal 6; Queue paging candidate; closure-map paging row; Architecture Rules single CPU executor/page-walk owner; Coding Rules project types and test-only fixture boundary; Documentation and Execution Rules packet/P/task-closure lifecycle. Intel 80386 PRM chapters 5, 6, 9, and 10 are form/state authority. |
+| Verification | Focused paging smoke extends with `0F 01 /7` 80186/80286/80386 real-mode `#UD` and complete-state nonpublication, plus 80386 `66`/`67`/combined/LOCK boundaries; source audit confirms metadata rejects `/7` before the table-memory decoder. Existing CR0, permission, cross-page, CR2/CR3, and delivered-`#PF` vectors run. Reconcile each native 80386 paging requirement to executable evidence or a named transfer; configure, exact registration, specialized verifier aggregate, governance, diff, and full current-gate pass. |
+| Expected Markers | `M5:T325:S3:PAGING-CLOSURE:OK` alongside retained T258/T311/T325 paging markers; specialized verifiers and full current-gate succeed. |
+| Asset Needs | None; deterministic in-memory page tables, descriptor/IDT state, and owner-local fixtures only. |
+| Reporting Requirements | Before code, retain the form/state closure ledger and similar-issue sweep. P1 is one complete pushed implementation/evidence/closure-map delivery; then perform Ordinary-Mode actual-change review before a pure governance P2 that writes the T325 history and closes S3 and T325. |
+| Stop Conditions | Stop before adding a persistent TLB, later-CPU `INVLPG`, task-switch state, VM86 paging breadth, a public interface, or generic exception delivery. The reproduced protected-mode `#UD` delivery gap is outside this paging package and must receive a distinct Queue/TODO transfer; any other shared-route defect requires a revised packet or later task. |
+| Exit Criteria | Every native 80386 paging requirement in this package is reconciled to focused evidence; `INVLPG` is proven as a pre-486 `#UD` with metadata rejection before EA decode and real-mode complete-state nonpublication; residual protected-`#UD` delivery, task/VM86 paging, and persistent-cache/test-register work has a precise Queue/TODO transfer; the T325 task-level audit, focused/retained regressions, current gate, specialized verifiers, governance, and diff checks pass. |
+| Original Owner Request | Complete Intel 80386 against the Intel form--implementation--test matrix; repair omissions, perform boundary/differential review, and close package evidence before M6. |
+| Similar-Issue Sweep | Sweep all CR0/CR2/CR3 users, page-walk and A/D publish paths, `#PF` producer/delivery evidence, `0F 01` reserved branches and pre-386 `0F` dispatch, translation-cache assumptions, current paging tests, Queue transfers, and closure-map statements. |
 
 ## Current Technical Baseline
 
