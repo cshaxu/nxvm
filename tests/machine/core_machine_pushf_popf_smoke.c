@@ -93,11 +93,14 @@ static C_INT pushf_test_vm86(C_VOID)
             state.machine->executor_cpu.data.esp = 0x8000u;
             state.machine->executor_cpu.data.eflags = flags;
             failed |= !pushf_run_vm86(&state, pushf, sizeof(pushf), flags, 0x8000u,
-                pass, &after, &diagnostic, &status, &reason);
+                0, &after, &diagnostic, &status, &reason);
             if (pass)
-                failed |= !diagnostic.first_fault.valid ||
-                    !TYPE_GET_BIT(diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_GP) ||
-                    after.data.esp != 0x8000u || after.data.eflags != flags || after.data.eip != 0u;
+                failed |= diagnostic.first_fault.valid ||
+                    !diagnostic.last_delivered_exception.valid || !TYPE_GET_BIT(
+                        diagnostic.last_delivered_exception.exception_mask, VCPUINS_EXCEPT_GP) ||
+                    after.data.cs.selector != 0x0008u || after.data.ss.selector != 0x0010u ||
+                    after.data.eip != 0x00000100u || TYPE_GET_BIT(after.data.eflags,
+                        VCPU_EFLAGS_VM);
             else
                 failed |= diagnostic.first_fault.valid || after.data.esp != 0x7ffeu || after.data.eip != 1u;
         }
@@ -119,11 +122,14 @@ static C_INT pushf_test_vm86(C_VOID)
             state.machine->executor_cpu.data.eflags = flags;
             failed |= core_machine_memory_write(state.machine, 0x8000u, &image, sizeof(image)) != TYPE_STATUS_OK ||
                 !pushf_run_vm86(&state, popf, sizeof(popf), flags, 0x8000u,
-                    pass, &after, &diagnostic, &status, &reason);
+                    0, &after, &diagnostic, &status, &reason);
             if (pass)
-                failed |= !diagnostic.first_fault.valid ||
-                    !TYPE_GET_BIT(diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_GP) ||
-                    after.data.esp != 0x8000u || after.data.eflags != flags || after.data.eip != 0u;
+                failed |= diagnostic.first_fault.valid ||
+                    !diagnostic.last_delivered_exception.valid || !TYPE_GET_BIT(
+                        diagnostic.last_delivered_exception.exception_mask, VCPUINS_EXCEPT_GP) ||
+                    after.data.cs.selector != 0x0008u || after.data.ss.selector != 0x0010u ||
+                    after.data.eip != 0x00000100u || TYPE_GET_BIT(after.data.eflags,
+                        VCPU_EFLAGS_VM);
             else
                 failed |= diagnostic.first_fault.valid || after.data.esp != 0x8002u || after.data.eip != 1u ||
                     (after.data.eflags & (VCPU_EFLAGS_ZF | VCPU_EFLAGS_IF)) != image;

@@ -279,6 +279,12 @@ target_link_libraries(core-machine-sgdt-sidt-smoke PRIVATE core-machine)
 add_executable(core-machine-lgdt-lidt-smoke
     tests/machine/core_machine_lgdt_lidt_smoke.c)
 target_link_libraries(core-machine-lgdt-lidt-smoke PRIVATE core-machine)
+add_executable(core-machine-vm86-delivery-smoke
+    tests/machine/core_machine_vm86_delivery_smoke.c)
+target_link_libraries(core-machine-vm86-delivery-smoke PRIVATE core-machine)
+if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(core-machine-vm86-delivery-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+endif()
 add_executable(core-machine-interrupt-entry-smoke
     tests/machine/core_machine_interrupt_entry_smoke.c)
 target_link_libraries(core-machine-interrupt-entry-smoke PRIVATE core-machine)
@@ -1443,6 +1449,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-descriptor-system-smoke
     core-machine-sgdt-sidt-smoke
     core-machine-lgdt-lidt-smoke
+    core-machine-vm86-delivery-smoke
     core-machine-interrupt-entry-smoke
     core-machine-idt-privilege-entry-smoke
     core-machine-real-mode-386-rep-cmps-smoke
@@ -1701,7 +1708,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0319 "0.5.0319")
+add_current_vm_artifact(vm-0-5-0320 "0.5.0320")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 

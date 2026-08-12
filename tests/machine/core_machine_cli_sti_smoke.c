@@ -418,11 +418,17 @@ static C_INT cli_sti_test_vm86(C_VOID)
 
             if (!failed) {
                 failed |= !cli_sti_run_vm86(&state, &opcodes[opcode], 1u,
-                    flags, pass, &after, &diagnostic);
+                    flags, 0, &after, &diagnostic);
                 if (pass) {
-                    failed |= !diagnostic.first_fault.valid || !TYPE_GET_BIT(
-                        diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_GP) ||
-                        after.data.eip != 0u || after.data.eflags != flags;
+                    failed |= diagnostic.first_fault.valid ||
+                        !diagnostic.last_delivered_exception.valid ||
+                        !TYPE_GET_BIT(diagnostic.last_delivered_exception.exception_mask,
+                            VCPUINS_EXCEPT_GP) ||
+                        diagnostic.last_delivered_exception.exception_code != 0u ||
+                        after.data.cs.selector != 0x0008u ||
+                        after.data.ss.selector != 0x0010u || after.data.eip != 0x00000100u ||
+                        TYPE_GET_BIT(after.data.eflags, VCPU_EFLAGS_VM) ||
+                        TYPE_GET_BIT(after.data.eflags, VCPU_EFLAGS_IF);
                 } else {
                     failed |= diagnostic.first_fault.valid || after.data.eip != 1u ||
                         after.data.eflags != expected;
