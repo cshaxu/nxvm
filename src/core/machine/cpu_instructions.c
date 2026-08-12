@@ -2632,6 +2632,27 @@ static C_VOID _d_modrm_table_memory(core_machine_cpu_execution_context *context,
     TYPE_TRACE_CHECK_RETURN(_d_modrm_ea(context, 0, 6));
     TYPE_TRACE_CALL_END;
 }
+/* Store one six-byte SGDT/SIDT pseudo-descriptor after a complete write check. */
+static C_VOID _m_write_table_pseudo_descriptor(
+    core_machine_cpu_execution_context *context, type_unsigned_16 limit,
+    type_unsigned_32 base)
+{
+    type_unsigned_8 image[6];
+    TYPE_TRACE_CALL_BEGIN("_m_write_table_pseudo_descriptor");
+    image[0] = TYPE_MASK_UNSIGNED_8(limit);
+    image[1] = TYPE_MASK_UNSIGNED_8(limit >> 8u);
+    image[2] = TYPE_MASK_UNSIGNED_8(base);
+    image[3] = TYPE_MASK_UNSIGNED_8(base >> 8u);
+    image[4] = TYPE_MASK_UNSIGNED_8(base >> 16u);
+    image[5] = TYPE_MASK_UNSIGNED_8(base >> 24u);
+    TYPE_TRACE_CHECK_RETURN(_m_test_access(context,
+        instruction_state.data.mrm.rsreg, instruction_state.data.mrm.offset,
+        6, TYPE_TRUE));
+    TYPE_TRACE_CHECK_RETURN(_m_write_logical(context,
+        instruction_state.data.mrm.rsreg, instruction_state.data.mrm.offset,
+        (type_virtual_address)image, 6));
+    TYPE_TRACE_CALL_END;
+}
 static C_VOID _d_modrm(core_machine_cpu_execution_context *context, type_unsigned_8 regbyte, type_unsigned_8 rmbyte)
 {
     TYPE_TRACE_CALL_BEGIN("_d_modrm");
@@ -15586,43 +15607,19 @@ static C_VOID INS_0F_01(core_machine_cpu_execution_context *context)
     case 0: /* SGDT_M32_16 */
         TYPE_TRACE_BLOCK_BEGIN("SGDT_M32_16");
         TYPE_TRACE_CHECK_RETURN(_d_modrm_table_memory(context, modrm));
-        instruction_state.data.crm = cpu_state.data.gdtr.limit;
-        TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
-        instruction_state.data.mrm.offset += 2;
-        switch (_GetOperandSize)
-        {
-        case 2:
-            instruction_state.data.crm = TYPE_MASK_UNSIGNED_24(cpu_state.data.gdtr.base);
-            break;
-        case 4:
-            instruction_state.data.crm = TYPE_MASK_UNSIGNED_32(cpu_state.data.gdtr.base);
-            break;
-        default:
-            TYPE_TRACE_IMPOSSIBLE_RETURN;
-            break;
-        }
-        TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 4));
+        TYPE_TRACE_CHECK_RETURN(_m_write_table_pseudo_descriptor(context,
+            cpu_state.data.gdtr.limit, _GetOperandSize == 2 ?
+            TYPE_MASK_UNSIGNED_24(cpu_state.data.gdtr.base) :
+            cpu_state.data.gdtr.base));
         TYPE_TRACE_BLOCK_END;
         break;
     case 1: /* SIDT_M32_16 */
         TYPE_TRACE_BLOCK_BEGIN("SIDT_M32_16");
         TYPE_TRACE_CHECK_RETURN(_d_modrm_table_memory(context, modrm));
-        instruction_state.data.crm = cpu_state.data.idtr.limit;
-        TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 2));
-        instruction_state.data.mrm.offset += 2;
-        switch (_GetOperandSize)
-        {
-        case 2:
-            instruction_state.data.crm = TYPE_MASK_UNSIGNED_24(cpu_state.data.idtr.base);
-            break;
-        case 4:
-            instruction_state.data.crm = TYPE_MASK_UNSIGNED_32(cpu_state.data.idtr.base);
-            break;
-        default:
-            TYPE_TRACE_IMPOSSIBLE_RETURN;
-            break;
-        }
-        TYPE_TRACE_CHECK_RETURN(_m_write_rm(context, 4));
+        TYPE_TRACE_CHECK_RETURN(_m_write_table_pseudo_descriptor(context,
+            cpu_state.data.idtr.limit, _GetOperandSize == 2 ?
+            TYPE_MASK_UNSIGNED_24(cpu_state.data.idtr.base) :
+            cpu_state.data.idtr.base));
         TYPE_TRACE_BLOCK_END;
         break;
     case 2: /* LGDT_M32_16 */

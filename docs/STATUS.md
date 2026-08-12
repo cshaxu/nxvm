@@ -2,17 +2,35 @@
 
 ## Current Work
 
-**Idle.** The next 80386 capability or quality slice requires a separately
-admitted task packet.
+**Active: M5 T318 S1.** Implement Intel 80386 SGDT/SIDT descriptor-table store
+forms in Coordinated Dual-Session Mode.
+
+## M5 T318 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New; T318 is the next linear numeric implementation task after closed T317 and begins at S1. |
+| Admission And Approval | Owner's continuing approved objective is complete Intel 80386 implementation in Coordinated Dual-Session Mode; on 2026-08-11 the coordinator selected this first bounded processor-control handoff after T316 S66 and executor's independent read-only audit. Scope is only `0F 01 /0` SGDT and `/1` SIDT stores. |
+| Objective | Implement or correct and prove the Intel 80286/80386 SGDT and SIDT memory-only pseudo-descriptor store forms, then establish a truthful matrix/evidence baseline for this first processor-control slice. |
+| Non-goals | No LGDT/LIDT (`/2,/3`), SLDT/STR/LLDT/LTR, SMSW/LMSW, MOV CRx, paging/TLB, IDT gate delivery redesign, generic exception/IRQ/NMI work, task/V86 breadth, legacy LOCK-policy change, or 80387 implementation. |
+| Reference Baseline | `a8aa729e` / predecessor developer artifact `0.5.0317`; T316 S66 explicitly transferred SGDT/SIDT/LGDT/LIDT to the later processor-control package and withdrew its earlier uncommitted table-register smoke as non-evidence. Current route is `INS_0F_01` cases `/0,/1` and `_d_modrm_table_memory` in `src/core/machine/cpu_instructions.c`. |
+| Files And ABI Surface | Expected: local CPU handler only if a reproduced SGDT/SIDT defect requires it; one owner smoke under `tests/machine/`, CMake standalone/current-gate registration, T318 matrix/history evidence, `STATUS.md`, and current task artifact `0.5.0318`. No public API, ABI, provider, or test-support-to-production dependency. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/DOCUMENT.md`, `docs/design/CODING.md`, `docs/design/ARCHITECTURE.md`, `docs/design/ROADMAP.md`, `docs/QUEUE.md`, `docs/history/M5-T316-ordinary-execution-closure.md`, and `docs/etc/evidence/t316-ordinary-execution-matrix.md`. Intel 80386 PRM SGDT/SIDT form semantics are the behavioral authority. |
+| Verification | Audit all SGDT/SIDT forms and table-store route; add owner-focused smoke; verify 80286/80386 real and protected behavior, operand/address attributes, exact memory image/EIP/state preservation, ModRM/prefix/LOCK rejection, memory-limit atomicity, and no-shadow IRQ ordering; configure GCC, build focused target, register exact current-gate target, run documentation governance, diff check, full current gates, rebuild/copy `0.5.0318`, record SHA-256/runtime identity, and push. |
+| Expected Markers | One deterministic `M5:T318:S1:SGDT-SIDT:OK` owner marker; exact current-gate registration; evidence distinguishes 16-bit operand base representation from 32-bit form, and reports every matrix form as proved, rejected, or explicitly transferred. |
+| Asset Needs | None; deterministic CPU fixtures, local GCC/Ninja/CMake, and current-gate inputs only. |
+| Reporting Requirements | Executor first confirms or materially objects after its route/PRM/evidence review. It then returns only one complete, self-reviewed, committed and pushed P1 or a reproducible material blocker; no partial test, fixture, registration, documentation, or diagnostic delivery. It reports no intermediate progress unless a material contract change or blocker occurs. Coordinator independently reviews pushed code/evidence and alone accepts/closes the S. |
+| Stop Conditions | Stop for a required shared descriptor-memory, decoder, exception/interrupt-delivery, paging, or legacy-LOCK policy change; a semantic ambiguity requiring wider Intel authority; an unsafe state-publication change affecting `/2`--`/6`; or any need to include mutable LGDT/LIDT semantics. Report exact route/caller sweep and request a revised or later S rather than broadening silently. |
+| Exit Criteria | Every admitted `/0,/1` form is classified against Intel authority and has focused evidence: memory-only ModRM, 80286/80386 profile/mode behavior, 16/32 operand and address attributes, six-byte pseudo-descriptor image, DS/SS and admitted override addressing, rejection/no-publication, protected write-boundary atomicity, and pending-PIC no-shadow. Any defect receives a bounded sweep/static prevention where mechanically suitable. The exact owner smoke, current-gate, artifact, evidence, independent coordinator review, governance closure, commit, and push all pass. |
+| Original Owner Request | Continue the complete Intel 80386 plan in dual-session mode, using an instruction-form to implementation to test matrix, repairing omissions, performing differential/boundary review, and closing each package with evidence. |
+| Similar-Issue Sweep | Inspect every `INS_0F_01` subform and `_d_modrm_table_memory` caller, all table-register focused tests/CMake registrations, 0F metadata/profile routing, table-store memory writes, and existing T316 transfer/evidence records. Fix only SGDT/SIDT hits; classify `/2`--`/6` and broader shared paths as retained later-package work unless an approved revision is required. |
 
 ## Current Technical Baseline
 
 - **Current task artifact:** `current-gcc` and
-  `verify-current-artifact-target` select `vm-0-5-0317` / `build/output/nxvm_0_5_0317.exe`.
-  S5 recorded its executor build as SHA-256
-  `A7EC7165730E2B037C24693E1E6B0EBFA6C67B9126F9CD5D5863A62DCA963F24`.
-  Coordinator acceptance rebuilt the same source and recorded SHA-256
-  `B93DAF1ED9813E120ECBDD20A6E7595EFFA054961E546A15DC6AFB333494D412`.
+  `verify-current-artifact-target` select `vm-0-5-0318` / `build/output/nxvm_0_5_0318.exe`.
+  T318 S1 records the source commit, SHA-256, and runtime identity in
+  [its history](history/M5-T318-sgdt-sidt.md).
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
