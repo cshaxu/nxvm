@@ -51,15 +51,16 @@ candidate work, and detailed capability evidence belong in
   `98`/`99` or import 80386 validation into legacy profiles without that
   review.
 
-- [ ] **Protected-mode invalid-opcode delivery (`TODO(High)`).** T325 S3
-  reproduces that `ExecFinal` routes `#UD` through an IDT only for VM86; an
-  ordinary protected-mode `0F 01 /7` fault instead falls into the later
-  terminal `#GP` path even with a valid vector-6 gate. Admit a bounded shared
-  exception-delivery task with the complete active protected `#UD` producer
-  sweep, real/protected/VM86 vector-6 frame and restart proofs, invalid-gate
-  containment, and retained `#DE/#PF/#MF/#NM/#BR` regressions. Do not repair
-  only `INVLPG`, alter generic IDT policy without the producer sweep, or claim
-  breakpoint/debug/task exception completion.
+- [ ] **Real-mode invalid-opcode IVT delivery (`TODO(High)`).** T326 S1 closes
+  protected/VM86 `#UD` vector-6 delivery but reproduces that 41 retained
+  real-mode owner smokes deliberately rely on their no-handler `#UD` terminal
+  diagnostic and full pre-instruction nonpublication boundary. Admit only with
+  an explicit real-IVT vector-6 policy, complete migration of every affected
+  real-mode owner fixture to a deterministic IVT/handler or a retained terminal
+  classification, exact 16-bit frame/restart/IF-TF proof, and all current-gate
+  regressions. Do not special-case one opcode, infer vector presence from a
+  nonzero default firmware entry, or change protected/VM86 delivery while
+  bypassing the corpus migration.
 
 - [ ] **Broaden real-mode 8086 corpus (`TODO(High)`).** T240 established a
   reset-vector baseline for segment override, `REP`/direction strings,

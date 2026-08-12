@@ -4240,6 +4240,12 @@ _______todo _e_intr_n(core_machine_cpu_execution_context *context,
     }
     TYPE_TRACE_CALL_END;
 }
+static type_bool _e_exception_has_error_code(type_unsigned_8 exid)
+{
+    return exid == 0x08u || exid == 0x0au || exid == 0x0bu ||
+        exid == 0x0cu || exid == 0x0du || exid == 0x0eu || exid == 0x11u;
+}
+
 _______todo _e_except_n(core_machine_cpu_execution_context *context, type_unsigned_8 exid, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_e_except_n");
@@ -4254,9 +4260,7 @@ _______todo _e_except_n(core_machine_cpu_execution_context *context, type_unsign
     {
         TYPE_TRACE_BLOCK_BEGIN("!Real");
         TYPE_TRACE_CHECK_RETURN(_ser_int_protected(context, exid, byte,
-            TYPE_FALSE, !_GetEFLAGS_VM || exid == 0x08u || exid == 0x0au ||
-            exid == 0x0bu || exid == 0x0cu || exid == 0x0du || exid == 0x0eu ||
-            exid == 0x11u));
+            TYPE_FALSE, _e_exception_has_error_code(exid)));
         TYPE_TRACE_BLOCK_END;
     }
     TYPE_TRACE_CALL_END;
@@ -16918,8 +16922,7 @@ static C_VOID ExecFinal(core_machine_cpu_execution_context *context)
             exception_vector = 0x0du;
             exception_deliverable = TYPE_TRUE;
         }
-        else if (instruction_state.data.except == VCPUINS_EXCEPT_UD &&
-            TYPE_GET_BIT(fault_cpu.data.eflags, VCPU_EFLAGS_VM)) {
+        else if (instruction_state.data.except == VCPUINS_EXCEPT_UD) {
             exception_vector = 0x06u;
             exception_deliverable = TYPE_TRUE;
         }

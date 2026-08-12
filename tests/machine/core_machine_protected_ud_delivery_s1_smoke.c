@@ -1,0 +1,243 @@
+#include "type.h"
+
+#include "core/machine/cpu.h"
+#include "core/machine/cpu_instructions.h"
+#include "core/machine/machine_interface.h"
+#include "../support/core_machine_cpu_fixture.h"
+
+#define UD_S1_GDT_BASE 0x0300u
+#define UD_S1_IDT_BASE 0x0400u
+#define UD_S1_CODE_BASE 0x2000u
+#define UD_S1_STACK_BASE 0x3000u
+#define UD_S1_HANDLER_OFFSET 0x0100u
+
+typedef struct ud_s1_machine {
+    core_machine *machine;
+} ud_s1_machine;
+
+static C_VOID ud_s1_reset(C_VOID *opaque)
+{
+    ud_s1_machine *state = (ud_s1_machine *)opaque;
+
+    if (state != STD_NULL) {
+        (C_VOID)test_core_machine_fixture_reset_real_mode(state->machine);
+    }
+}
+
+static const core_machine_execution_provider ud_s1_provider = {
+    ud_s1_reset, STD_NULL, STD_NULL
+};
+
+static C_INT ud_s1_prepare(ud_s1_machine *state)
+{
+    const core_machine_config config = {
+        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
+    };
+
+    if (state == STD_NULL) {
+        return 0;
+    }
+    STD_MEMSET(state, 0, sizeof(*state));
+    return test_core_machine_fixture_create_bind_freeze_reset(&config,
+        &ud_s1_provider, state, &state->machine) &&
+        test_core_machine_fixture_prepare_real_mode_execution(state->machine, 0u);
+}
+
+static C_INT ud_s1_gprs_same(const t_cpu *before, const t_cpu *after)
+{
+    return before->data.eax == after->data.eax &&
+        before->data.ecx == after->data.ecx &&
+        before->data.edx == after->data.edx &&
+        before->data.ebx == after->data.ebx &&
+        before->data.ebp == after->data.ebp &&
+        before->data.esi == after->data.esi &&
+        before->data.edi == after->data.edi;
+}
+
+static C_INT ud_s1_data_sregs_same(const t_cpu *before, const t_cpu *after)
+{
+    return STD_MEMCMP(&before->data.es, &after->data.es,
+            sizeof(before->data.es)) == 0 &&
+        STD_MEMCMP(&before->data.ss, &after->data.ss,
+            sizeof(before->data.ss)) == 0 &&
+        STD_MEMCMP(&before->data.ds, &after->data.ds,
+            sizeof(before->data.ds)) == 0 &&
+        STD_MEMCMP(&before->data.fs, &after->data.fs,
+            sizeof(before->data.fs)) == 0 &&
+        STD_MEMCMP(&before->data.gs, &after->data.gs,
+            sizeof(before->data.gs)) == 0;
+}
+
+static C_INT ud_s1_delivered(const core_machine_cpu_diagnostic *diagnostic)
+{
+    return !diagnostic->first_fault.valid &&
+        diagnostic->last_delivered_exception.valid && TYPE_GET_BIT(
+            diagnostic->last_delivered_exception.exception_mask,
+            VCPUINS_EXCEPT_UD) &&
+        diagnostic->last_delivered_exception.exception_code == 0u;
+}
+
+static C_INT ud_s1_boot_protected(ud_s1_machine *state,
+    const type_unsigned_8 *code, STD_SIZE_T bytes, type_bool valid_gate)
+{
+    static const type_unsigned_8 gdt[] = {
+        0u,0u,0u,0u,0u,0u,0u,0u,
+        0xffu,0xffu,0u,0x20u,0u,0x9au,0u,0u,
+        0xffu,0xffu,0u,0x30u,0u,0x92u,0u,0u
+    };
+    type_unsigned_8 idt[6u * 8u + 8u] = { 0u };
+    t_cpu *cpu;
+
+    if (!ud_s1_prepare(state)) {
+        return 0;
+    }
+    if (valid_gate) {
+        idt[6u * 8u] = 0u;
+        idt[6u * 8u + 1u] = 0x01u;
+        idt[6u * 8u + 2u] = 0x08u;
+        idt[6u * 8u + 5u] = 0x8eu;
+    }
+    if (core_machine_memory_write(state->machine, UD_S1_GDT_BASE, gdt,
+            sizeof(gdt)) != TYPE_STATUS_OK ||
+        core_machine_memory_write(state->machine, UD_S1_IDT_BASE, idt,
+            sizeof(idt)) != TYPE_STATUS_OK ||
+        core_machine_memory_write(state->machine, UD_S1_CODE_BASE, code,
+            bytes) != TYPE_STATUS_OK ||
+        core_machine_memory_write(state->machine,
+            UD_S1_CODE_BASE + UD_S1_HANDLER_OFFSET,
+            (const type_unsigned_8[]){ 0xf4u }, 1u) != TYPE_STATUS_OK) {
+        return 0;
+    }
+    cpu = &state->machine->executor_cpu;
+    cpu->data.cr0 = VCPU_CR0_PE;
+    cpu->data.eflags = VCPU_EFLAGS_CF | VCPU_EFLAGS_IF | VCPU_EFLAGS_DF;
+    cpu->data.gdtr.flagValid = TYPE_TRUE;
+    cpu->data.gdtr.sregtype = SREG_GDTR;
+    cpu->data.gdtr.base = UD_S1_GDT_BASE;
+    cpu->data.gdtr.limit = sizeof(gdt) - 1u;
+    cpu->data.idtr.flagValid = TYPE_TRUE;
+    cpu->data.idtr.sregtype = SREG_IDTR;
+    cpu->data.idtr.base = UD_S1_IDT_BASE;
+    cpu->data.idtr.limit = sizeof(idt) - 1u;
+    cpu->data.cs.selector = 0x0008u;
+    cpu->data.cs.base = UD_S1_CODE_BASE;
+    cpu->data.cs.limit = 0xffffu;
+    cpu->data.cs.flagValid = TYPE_TRUE;
+    cpu->data.cs.sregtype = SREG_CODE;
+    cpu->data.cs.dpl = 0u;
+    cpu->data.cs.seg.executable = TYPE_TRUE;
+    cpu->data.ss.selector = 0x0010u;
+    cpu->data.ss.base = UD_S1_STACK_BASE;
+    cpu->data.ss.limit = 0xffffu;
+    cpu->data.ss.flagValid = TYPE_TRUE;
+    cpu->data.ss.sregtype = SREG_STACK;
+    cpu->data.ss.dpl = 0u;
+    cpu->data.ss.seg.data.writable = TYPE_TRUE;
+    cpu->data.ds = cpu->data.ss;
+    cpu->data.ds.sregtype = SREG_DATA;
+    cpu->data.es = cpu->data.ds;
+    cpu->data.fs = cpu->data.ds;
+    cpu->data.gs = cpu->data.ds;
+    cpu->data.esp = 0x00008000u;
+    cpu->data.eip = 0u;
+    return 1;
+}
+
+static C_INT ud_s1_protected_delivery(const type_unsigned_8 *code,
+    STD_SIZE_T bytes)
+{
+    type_unsigned_32 frame[3u] = { 0u, 0u, 0u };
+    ud_s1_machine state;
+    core_machine_run_result result;
+    core_machine_cpu_diagnostic diagnostic;
+    t_cpu before;
+    t_cpu after;
+    C_INT failed = !ud_s1_boot_protected(&state, code, bytes, TYPE_TRUE);
+
+    if (!failed) {
+        before = state.machine->executor_cpu;
+        failed |= core_machine_run(state.machine,
+            (core_machine_run_budget){ 1u, 0u }, &result) != TYPE_STATUS_OK ||
+            result.reason != CORE_MACHINE_STOP_BUDGET ||
+            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
+                TYPE_STATUS_OK;
+        after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        failed |= !ud_s1_delivered(&diagnostic) ||
+            after.data.eip != UD_S1_HANDLER_OFFSET ||
+            after.data.esp != before.data.esp - 12u ||
+            after.data.eflags != (before.data.eflags & ~VCPU_EFLAGS_IF) ||
+            !ud_s1_gprs_same(&before, &after) ||
+            !ud_s1_data_sregs_same(&before, &after) ||
+            !test_core_machine_fixture_read_linear(state.machine,
+                after.data.ss.base + after.data.esp, TYPE_REFERENCE_OF(frame),
+                sizeof(frame)) || frame[0] != 0u ||
+            frame[1] != before.data.cs.selector ||
+            frame[2] != before.data.eflags;
+    }
+    if (!failed) {
+        failed |= core_machine_run(state.machine,
+            (core_machine_run_budget){ 1u, 0u }, &result) != TYPE_STATUS_OK ||
+            result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+            state.machine->executor_cpu.data.eip != UD_S1_HANDLER_OFFSET + 1u;
+    }
+    core_machine_destroy(state.machine);
+    return !failed;
+}
+
+static C_INT ud_s1_protected_invalid_gate(C_VOID)
+{
+    static const type_unsigned_8 code[] = { 0x0fu, 0x01u, 0xf8u };
+    ud_s1_machine state;
+    core_machine_run_result result;
+    core_machine_cpu_diagnostic diagnostic;
+    t_cpu before;
+    t_cpu after;
+    C_INT failed = !ud_s1_boot_protected(&state, code, sizeof(code), TYPE_FALSE);
+
+    if (!failed) {
+        before = state.machine->executor_cpu;
+        failed |= core_machine_run(state.machine,
+            (core_machine_run_budget){ 1u, 0u }, &result) != TYPE_STATUS_FAULT ||
+            result.reason != CORE_MACHINE_STOP_FAULT ||
+            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
+                TYPE_STATUS_OK;
+        after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        failed |= !diagnostic.first_fault.valid || !TYPE_GET_BIT(
+            diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
+            after.data.eip != before.data.eip || after.data.esp != before.data.esp ||
+            after.data.eflags != before.data.eflags ||
+            !ud_s1_gprs_same(&before, &after) ||
+            !ud_s1_data_sregs_same(&before, &after);
+    }
+    core_machine_destroy(state.machine);
+    return !failed;
+}
+
+C_INT main(C_VOID)
+{
+    static const type_unsigned_8 invalid_primary[] = { 0xf1u };
+    static const type_unsigned_8 reserved_0f[] = { 0x0fu, 0x01u, 0xf8u };
+    static const type_unsigned_8 invalid_operand[] = { 0x62u, 0xc0u };
+    static const type_unsigned_8 invalid_lock[] = { 0xf0u, 0x90u };
+    const type_unsigned_8 *forms[] = {
+        invalid_primary, reserved_0f, invalid_operand, invalid_lock
+    };
+    const STD_SIZE_T sizes[] = {
+        sizeof(invalid_primary), sizeof(reserved_0f), sizeof(invalid_operand),
+        sizeof(invalid_lock)
+    };
+    STD_SIZE_T index;
+
+    for (index = 0u; index < sizeof(forms) / sizeof(forms[0]); ++index) {
+        if (!ud_s1_protected_delivery(forms[index], sizes[index])) {
+            return 1;
+        }
+    }
+    if (!ud_s1_protected_invalid_gate()) {
+        return 1;
+    }
+    STD_PRINTF("M5:T326:S1:PROTECTED-UD-DELIVERY:OK\n");
+    return 0;
+}
