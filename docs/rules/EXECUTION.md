@@ -300,17 +300,30 @@ ascending order; never skip an identifier and never reopen a closed task or
 subtask identifier.
 
 Allocate implementation subtask (`S`) and standalone documentation (`Td S`)
-identifiers strictly after the latest closed identifier in their own sequence.
+identifiers strictly after the latest used identifier in their own sequence.
 Historical records and any historical discontinuity do not become reusable
-capacity. Later identifiers continue from the latest closed identifier and
-never fill a historical gap.
+capacity. Later identifiers continue from the latest used identifier and never
+fill a historical gap.
 
-The governance gate derives closed identifiers from Git commit subjects. A new
-numeric task must be the next global `T` and start at `S1`; a corrective task
-may only use the most recently closed numeric `T` with that task's next unused
-`S`; and a `Td` packet must use the next `S` for its milestone. The packet's
-`Identifier Mode` explicitly declares `New`, `Corrective`, or `Governance` so
-the rule is inspectable before code changes begin.
+Git commit subjects prove the immutable `P` history and the highest used `S`.
+`STATUS.md` task-level rows determine whether the latest numeric task is
+closed: a `| T<n> |` row is closed; a `| T<n> S<m> |` row is retained progress
+for the one latest open numeric task. The governance gate combines only those
+machine-readable forms. It never infers task state from free prose or from the
+mere existence of an implementation commit.
+
+The packet's `Identifier Mode` explicitly declares `New`, `Continuation`,
+`Corrective`, or `Governance` so allocation is inspectable before code changes
+begin:
+
+- `New` requires the latest numeric task to have a task-level closure row (or
+  no numeric history), allocates the next global `T`, and starts at `S1`.
+- `Continuation` requires retained progress for the latest open numeric task,
+  uses that same `T`, and allocates exactly its next unused `S`.
+- `Corrective` requires no open numeric task and may use only the most recently
+  closed numeric `T` with that task's next unused `S`.
+- `Governance` allocates the next milestone-local `Td S` and never allocates a
+  numeric implementation task.
 
 The only corrective exception is narrow: when there is no active task, the
 most recently closed **numeric** task may receive its next unused subtask for
