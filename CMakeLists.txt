@@ -270,6 +270,13 @@ target_link_libraries(core-machine-msw-s63-smoke PRIVATE core-machine)
 add_executable(core-machine-control-transfer-smoke
     tests/machine/core_machine_control_transfer_smoke.c)
 target_link_libraries(core-machine-control-transfer-smoke PRIVATE core-machine)
+add_executable(core-machine-protected-far-s1-smoke
+    tests/machine/core_machine_protected_far_s1_smoke.c)
+target_link_libraries(core-machine-protected-far-s1-smoke PRIVATE core-machine)
+if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
+    target_compile_options(core-machine-protected-far-s1-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
 add_executable(core-machine-descriptor-system-smoke
     tests/machine/core_machine_descriptor_system_smoke.c)
 target_link_libraries(core-machine-descriptor-system-smoke PRIVATE core-machine)
@@ -1480,6 +1487,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-clts-s62-smoke
     core-machine-msw-s63-smoke
     core-machine-control-transfer-smoke
+    core-machine-protected-far-s1-smoke
     core-machine-descriptor-system-smoke
     core-machine-sgdt-sidt-smoke
     core-machine-lgdt-lidt-smoke
