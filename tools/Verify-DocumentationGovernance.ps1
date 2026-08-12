@@ -218,7 +218,21 @@ function Require-ActivePacketSchema([pscustomobject]$packet) {
     }
 }
 
-function Require-ActiveIdentifier([pscustomobject]$packet, [string]$repositoryRoot) {
+function Get-StatusClosureRows([string]$status) {
+    $closureSection = [regex]::Match($status, '(?ms)^## Recent M\d+ Closures\r?\n(?<body>.*?)(?=^## |\z)')
+    Require ($closureSection.Success) "STATUS.md must contain a recent milestone-closure section."
+    return @([regex]::Matches(
+            $closureSection.Groups['body'].Value,
+            '(?m)^\| T(?<task>\d+)(?: S(?<subtask>\d+))? \|'
+        ) | ForEach-Object {
+            [pscustomobject]@{
+                Task = [int]$_.Groups['task'].Value
+                HasSubtask = $_.Groups['subtask'].Success
+            }
+        })
+}
+
+function Require-ActiveIdentifier([pscustomobject]$packet, [string]$repositoryRoot, [string]$status) {
     $modeMatch = [regex]::Match($packet.Body, '(?m)^\|\s*Identifier Mode\s*\|\s*(?<mode>[^|]+?)\s*\|\s*$')
     Require $modeMatch.Success "Active task packet must declare Identifier Mode."
     $mode = $modeMatch.Groups['mode'].Value.Trim().Split(';')[0].Trim()
@@ -241,13 +255,39 @@ function Require-ActiveIdentifier([pscustomobject]$packet, [string]$repositoryRo
 
     $numeric = @($closed | Where-Object { -not $_.IsDocumentation })
     $latestTask = if ($numeric.Count -eq 0) { 0 } else { ($numeric | Measure-Object -Property Task -Maximum).Maximum }
+    $closureRows = @(Get-StatusClosureRows $status)
+    $progressRows = @($closureRows | Where-Object HasSubtask)
+    $progressTasks = @($progressRows | ForEach-Object Task | Select-Object -Unique)
+    Require ($progressTasks.Count -le 1) "STATUS.md may retain subtask progress for only one open numeric task."
+    $openTask = if ($progressTasks.Count -eq 1) { $progressTasks[0] } else { $null }
+    if ($null -ne $openTask) {
+        Require (-not ($closureRows | Where-Object { -not $_.HasSubtask -and $_.Task -eq $openTask })) `
+            "STATUS.md must replace closed-task subtask progress with one task-level summary."
+        Require ($openTask -eq $latestTask) `
+            "STATUS.md subtask progress must belong to the latest open numeric task."
+    }
     if ($mode -eq 'New') {
+        if ($latestTask -gt 0) {
+            Require ($null -eq $openTask -and ($closureRows | Where-Object { -not $_.HasSubtask -and $_.Task -eq $latestTask })) `
+                "A new task packet requires the latest numeric task T$latestTask to be task-level closed."
+        }
         Require ($packet.Task -eq ($latestTask + 1) -and $packet.Subtask -eq 1) `
             "A new task packet must use T$($latestTask + 1) S1."
         return
     }
+    if ($mode -eq 'Continuation') {
+        Require ($null -ne $openTask -and $packet.Task -eq $openTask) `
+            "A continuation packet may only use the latest open numeric task T$openTask."
+        $taskRecords = @($numeric | Where-Object { $_.Task -eq $packet.Task })
+        Require ($taskRecords.Count -gt 0) "A continuation packet requires prior committed evidence for T$($packet.Task)."
+        $expectedSubtask = ($taskRecords | Measure-Object -Property Subtask -Maximum).Maximum + 1
+        Require ($packet.Subtask -eq $expectedSubtask) `
+            "A continuation packet must use T$($packet.Task) S$expectedSubtask."
+        return
+    }
     if ($mode -eq 'Corrective') {
-        Require ($latestTask -gt 0 -and $packet.Task -eq $latestTask) `
+        Require ($null -eq $openTask) "A corrective packet cannot run while numeric task T$openTask remains open."
+        Require ($latestTask -gt 0 -and $packet.Task -eq $latestTask -and ($closureRows | Where-Object { -not $_.HasSubtask -and $_.Task -eq $latestTask })) `
             "A corrective packet may only use the most recently closed numeric task T$latestTask."
         $taskRecords = @($numeric | Where-Object { $_.Task -eq $packet.Task })
         $expectedSubtask = ($taskRecords | Measure-Object -Property Subtask -Maximum).Maximum + 1
@@ -255,7 +295,7 @@ function Require-ActiveIdentifier([pscustomobject]$packet, [string]$repositoryRo
             "A corrective packet must use T$($packet.Task) S$expectedSubtask."
         return
     }
-    throw "Numeric task packet Identifier Mode must be New or Corrective."
+    throw "Numeric task packet Identifier Mode must be New, Continuation, or Corrective."
 }
 
 function Require-NoTaskIdentifier([string]$path, [string]$text) {
@@ -443,6 +483,9 @@ if ($SelfTest) {
         $activeNumericPacket = $validPacket.Replace("M5 Td S50", "M5 T301 S1").Replace(
             "| Identifier Mode | Governance |",
             "| Identifier Mode | New |"
+        ).Replace(
+            "| --- | --- |",
+            "| --- | --- |`n| T300 | Closed fixture |"
         )
         Set-SelfTestFile $fixtureRoot "docs/STATUS.md" $activeNumericPacket
         git -C $fixtureRoot add docs/STATUS.md
@@ -456,6 +499,37 @@ if ($SelfTest) {
         Set-SelfTestFile $fixtureRoot "docs/STATUS.md" $latestTaskProgress
         Require (Invoke-SelfTestCheck $fixtureRoot) `
             "Documentation schema rejected compact progress for the latest open numeric task."
+        $continuationPacket = $activeNumericPacket.Replace("M5 T301 S1", "M5 T301 S2").Replace(
+            "| Identifier Mode | New |",
+            "| Identifier Mode | Continuation |"
+        ).Replace(
+            "| --- | --- |",
+            "| --- | --- |`n| T301 S1 | Fixture progress |"
+        )
+        Set-SelfTestFile $fixtureRoot "docs/STATUS.md" $continuationPacket
+        Require (Invoke-SelfTestCheck $fixtureRoot) `
+            "Documentation schema rejected the next subtask of the latest open numeric task."
+        Set-SelfTestFile $fixtureRoot "docs/STATUS.md" ($continuationPacket.Replace("M5 T301 S2", "M5 T301 S3"))
+        Require (-not (Invoke-SelfTestCheck $fixtureRoot -Quiet)) `
+            "Documentation schema accepted a skipped continuation subtask identifier."
+        Set-SelfTestFile $fixtureRoot "docs/STATUS.md" ($continuationPacket.Replace("M5 T301 S2", "M5 T302 S1"))
+        Require (-not (Invoke-SelfTestCheck $fixtureRoot -Quiet)) `
+            "Documentation schema accepted a foreign continuation task identifier."
+        Set-SelfTestFile $fixtureRoot "docs/STATUS.md" ($activeNumericPacket.Replace(
+            "| Identifier Mode | New |",
+            "| Identifier Mode | Continuation |"
+        ).Replace("M5 T301 S1", "M5 T301 S2"))
+        Require (-not (Invoke-SelfTestCheck $fixtureRoot -Quiet)) `
+            "Documentation schema accepted continuation without retained task progress."
+        Set-SelfTestFile $fixtureRoot "docs/STATUS.md" ($continuationPacket.Replace(
+            "M5 T301 S2",
+            "M5 T302 S1"
+        ).Replace(
+            "| Identifier Mode | Continuation |",
+            "| Identifier Mode | New |"
+        ))
+        Require (-not (Invoke-SelfTestCheck $fixtureRoot -Quiet)) `
+            "Documentation schema accepted a new task while the latest numeric task remains open."
         $mixedTaskClosure = $latestTaskProgress.Replace(
             "| T301 S1 | Fixture progress |",
             "| T301 S1 | Fixture progress |`n| T301 | Closed fixture |"
@@ -751,7 +825,7 @@ else {
     $activePacket = Get-ActivePacket $status
     Require ($null -ne $activePacket) "Active STATUS.md must expose a parseable task packet."
     Require-ActivePacketSchema $activePacket
-    Require-ActiveIdentifier $activePacket $RepositoryRoot
+    Require-ActiveIdentifier $activePacket $RepositoryRoot $status
 }
 
 Require (-not ($todo -match '(?m)^[-*] \[x\]')) `
@@ -767,15 +841,7 @@ Require (-not ($queue -match '(?m)^\s*\d+\)\s+')) `
     "QUEUE.md must use Markdown ordered-list syntax for candidates."
 $closureSection = [regex]::Match($status, '(?ms)^## Recent M\d+ Closures\r?\n(?<body>.*?)(?=^## |\z)')
 Require ($closureSection.Success) "STATUS.md must contain a recent milestone-closure section."
-$closureRows = @([regex]::Matches(
-        $closureSection.Groups['body'].Value,
-        '(?m)^\| T(?<task>\d+)(?: S(?<subtask>\d+))? \|'
-    ) | ForEach-Object {
-        [pscustomobject]@{
-            Task = [int]$_.Groups['task'].Value
-            HasSubtask = $_.Groups['subtask'].Success
-        }
-    })
+$closureRows = @(Get-StatusClosureRows $status)
 $subtaskProgressRows = @($closureRows | Where-Object HasSubtask)
 if ($subtaskProgressRows.Count -gt 0) {
     $progressTaskNumbers = @($subtaskProgressRows | ForEach-Object Task | Select-Object -Unique)

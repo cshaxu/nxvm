@@ -2,8 +2,8 @@
 
 ## Current Work
 
-**Idle.** M5 T320 S1 is closed; the inverse CPL0 `IRET` return to
-VM86 requires a separately admitted T320 S2 packet.
+**Idle.** M5 Td S68 is closed; T320 may now admit its sequential S2 under
+the explicit `Continuation` identifier mode.
 
 ## Current Technical Baseline
 
@@ -35,6 +35,14 @@ VM86 requires a separately admitted T320 S2 packet.
 | T308 | Completed protected 32-bit same/outer error delivery and bounded contributory `#DF` containment through the existing route. Its 0308 artifact, 51 gates, and 137 CTests passed; triple-fault shutdown/reset remains deferred. |
 
 ## Recent Governance
+
+- **M5 Td S68:** reconciled open numeric-task progress with identifier
+  allocation: commit history proves used S/P records, Status structural rows
+  determine task closure, and the verifier permits only the exact next S of the
+  latest retained-open task under `Continuation`. Added positive and
+  skipped/foreign/missing-progress/new-task negative self-tests. Documentation
+  self-test, default check, and diff check passed. Td work has no runtime or
+  artifact change.
 
 - **M5 Td S67:** defined the two complementary 80386DX completion views in
   goal, roadmap, Queue, and an indexed supporting closure map; retained the
@@ -75,8 +83,3 @@ VM86 requires a separately admitted T320 S2 packet.
 - **M5 Td S61:** restored Queue dependency order by placing residual M5 work
   before M6 mantle candidates; removed stale package/index detail; and changed
   historical evidence to name closure artifacts rather than current state.
-
-- **M5 Td S60:** routed every DOS 5-bound smoke contract through the explicit
-  M1 FDD image while retaining the current MS-DOS 6.22 FDD and EWIN31 Setup
-  HDD for their applicable checks. Fresh configuration restored 145/145 current
-  gates without weakening old assertions or claiming broad DOS 6.22 support.
