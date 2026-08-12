@@ -299,7 +299,6 @@ static C_INT hlt_s49_test_vm86(C_VOID)
     cli_sti_machine state;
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
-    t_cpu before;
     t_cpu after;
     type_status status;
     const type_unsigned_32 flags = VCPU_EFLAGS_VM | VCPU_EFLAGS_CF |
@@ -331,18 +330,20 @@ static C_INT hlt_s49_test_vm86(C_VOID)
         state.machine->executor_cpu.data.ss.dpl = 3u;
         state.machine->executor_cpu.data.ss.flagValid = TYPE_TRUE;
         state.machine->executor_cpu.data.ss.seg.data.big = TYPE_FALSE;
-        before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         status = core_machine_run(state.machine,
             (core_machine_run_budget){ 1u, 0u }, &result);
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
             TYPE_STATUS_OK;
-        failed |= status != TYPE_STATUS_FAULT;
-        failed |= result.reason != CORE_MACHINE_STOP_FAULT;
-        failed |= !diagnostic.first_fault.valid;
-        failed |= !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
+        failed |= status != TYPE_STATUS_OK;
+        failed |= result.reason != CORE_MACHINE_STOP_BUDGET;
+        failed |= diagnostic.first_fault.valid;
+        failed |= !diagnostic.last_delivered_exception.valid;
+        failed |= !TYPE_GET_BIT(diagnostic.last_delivered_exception.exception_mask,
             VCPUINS_EXCEPT_GP);
-        failed |= STD_MEMCMP(&before, &after, sizeof(before)) != 0;
+        failed |= after.data.cs.selector != 0x0008u ||
+            after.data.ss.selector != 0x0010u || after.data.eip != 0x00000100u ||
+            TYPE_GET_BIT(after.data.eflags, VCPU_EFLAGS_VM);
     }
     core_machine_destroy(state.machine);
     return !failed;

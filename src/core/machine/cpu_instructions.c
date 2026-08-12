@@ -3445,17 +3445,26 @@ static C_VOID _ser_int_protected_32_outer(core_machine_cpu_execution_context *co
     type_unsigned_16 newss;
     type_unsigned_16 oldcs;
     type_unsigned_16 oldss;
+    type_unsigned_16 oldes;
+    type_unsigned_16 oldds;
+    type_unsigned_16 oldfs;
+    type_unsigned_16 oldgs;
     type_unsigned_32 newesp;
     type_unsigned_32 oldeip;
     type_unsigned_32 oldesp;
     type_unsigned_32 oldeflags;
     type_unsigned_32 oldcs_frame;
     type_unsigned_32 oldss_frame;
+    type_unsigned_32 oldes_frame;
+    type_unsigned_32 oldds_frame;
+    type_unsigned_32 oldfs_frame;
+    type_unsigned_32 oldgs_frame;
     type_unsigned_32 error_code;
     type_unsigned_8 oldcpl;
     type_unsigned_8 target_cpl;
     type_unsigned_8 frame_dwords;
     type_bool interrupt_gate;
+    type_bool vm86_origin;
     t_cpu_data_sreg newcs_cache;
     t_cpu_data_sreg newss_cache;
 
@@ -3467,6 +3476,26 @@ static C_VOID _ser_int_protected_32_outer(core_machine_cpu_execution_context *co
     if (!_IsDescPresent(gate_desc))
         TYPE_TRACE_CHECK_RETURN(_SetExcept_NP(_ser_idt_error_code(intid)));
     oldcpl = _GetCPL;
+    vm86_origin = _GetEFLAGS_VM;
+    if (vm86_origin) {
+        oldcs = cpu_state.data.cs.selector;
+        oldss = cpu_state.data.ss.selector;
+        oldes = cpu_state.data.es.selector;
+        oldds = cpu_state.data.ds.selector;
+        oldfs = cpu_state.data.fs.selector;
+        oldgs = cpu_state.data.gs.selector;
+        oldeip = cpu_state.data.eip;
+        oldesp = cpu_state.data.esp;
+        oldeflags = cpu_state.data.eflags;
+        oldcs_frame = oldcs;
+        oldss_frame = oldss;
+        oldes_frame = oldes;
+        oldds_frame = oldds;
+        oldfs_frame = oldfs;
+        oldgs_frame = oldgs;
+        /* Descriptor and target-stack validation use protected semantics. */
+        TYPE_CLEAR_BIT(cpu_state.data.eflags, VCPU_EFLAGS_VM);
+    }
     if (software_origin && _GetDesc_DPL(gate_desc) < oldcpl)
         TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(_ser_idt_error_code(intid)));
     newcs = TYPE_MASK_UNSIGNED_16(_GetDescGate_Selector(gate_desc));
@@ -3493,15 +3522,18 @@ static C_VOID _ser_int_protected_32_outer(core_machine_cpu_execution_context *co
         _GetSelector_RPL(newss) != target_cpl)
         TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(newss & 0xfffcu));
 
-    oldcs = cpu_state.data.cs.selector;
-    oldss = cpu_state.data.ss.selector;
-    oldeip = cpu_state.data.eip;
-    oldesp = cpu_state.data.esp;
-    oldeflags = cpu_state.data.eflags;
-    oldcs_frame = oldcs;
-    oldss_frame = oldss;
+    if (!vm86_origin) {
+        oldcs = cpu_state.data.cs.selector;
+        oldss = cpu_state.data.ss.selector;
+        oldeip = cpu_state.data.eip;
+        oldesp = cpu_state.data.esp;
+        oldeflags = cpu_state.data.eflags;
+        oldcs_frame = oldcs;
+        oldss_frame = oldss;
+    }
     error_code = TYPE_MASK_UNSIGNED_32(instruction_state.data.excode);
-    frame_dwords = (type_unsigned_8)(5u + (error_frame ? 1u : 0u));
+    frame_dwords = (type_unsigned_8)(5u + (vm86_origin ? 4u : 0u) +
+        (error_frame ? 1u : 0u));
     newcs_cache = cpu_state.data.cs;
     TYPE_TRACE_CHECK_RETURN(_ksa_prepare_code_sreg(context, newcs, target_cpl,
         &newcs_cache, &code_desc));
@@ -3524,6 +3556,12 @@ static C_VOID _ser_int_protected_32_outer(core_machine_cpu_execution_context *co
     else
         cpu_state.data.sp = TYPE_MASK_UNSIGNED_16(newesp);
     _MakeCPL(target_cpl);
+    if (vm86_origin) {
+        TYPE_TRACE_CHECK_RETURN(_kec_push(context, TYPE_REFERENCE_OF(oldgs_frame), 4u));
+        TYPE_TRACE_CHECK_RETURN(_kec_push(context, TYPE_REFERENCE_OF(oldfs_frame), 4u));
+        TYPE_TRACE_CHECK_RETURN(_kec_push(context, TYPE_REFERENCE_OF(oldds_frame), 4u));
+        TYPE_TRACE_CHECK_RETURN(_kec_push(context, TYPE_REFERENCE_OF(oldes_frame), 4u));
+    }
     TYPE_TRACE_CHECK_RETURN(_kec_push(context, TYPE_REFERENCE_OF(oldss_frame), 4u));
     TYPE_TRACE_CHECK_RETURN(_kec_push(context, TYPE_REFERENCE_OF(oldesp), 4u));
     TYPE_TRACE_CHECK_RETURN(_kec_push(context, TYPE_REFERENCE_OF(oldeflags), 4u));
@@ -3532,6 +3570,12 @@ static C_VOID _ser_int_protected_32_outer(core_machine_cpu_execution_context *co
     if (error_frame)
         TYPE_TRACE_CHECK_RETURN(_kec_push(context, TYPE_REFERENCE_OF(error_code),
             4u));
+    if (vm86_origin) {
+        STD_MEMSET(&cpu_state.data.es, 0, sizeof(cpu_state.data.es));
+        STD_MEMSET(&cpu_state.data.ds, 0, sizeof(cpu_state.data.ds));
+        STD_MEMSET(&cpu_state.data.fs, 0, sizeof(cpu_state.data.fs));
+        STD_MEMSET(&cpu_state.data.gs, 0, sizeof(cpu_state.data.gs));
+    }
     cpu_state.data.cs = newcs_cache;
     cpu_state.data.eip = TYPE_MASK_UNSIGNED_32(_GetDescGate_Offset(gate_desc));
     if (interrupt_gate) _ClrEFLAGS_IF;
@@ -3622,6 +3666,14 @@ static C_VOID _ser_int_protected(core_machine_cpu_execution_context *context,
         TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(_ser_idt_error_code(intid)));
     TYPE_TRACE_CHECK_RETURN(_s_read_idt(context, intid,
         TYPE_REFERENCE_OF(gate_desc)));
+    /* VM86 admission is limited to a 32-bit interrupt gate. */
+    if (_GetEFLAGS_VM && _GetDesc_Type(gate_desc) !=
+        VCPU_DESC_SYS_TYPE_INTGATE_32)
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(_ser_idt_error_code(intid)));
+    /* An unavailable target-stack facility is an architectural task fault. */
+    if (_GetEFLAGS_VM && (!cpu_state.data.tr.flagValid ||
+        cpu_state.data.tr.sys.type != VCPU_DESC_SYS_TYPE_TSS_32_BUSY))
+        TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(0));
     switch (_GetDesc_Type(gate_desc)) {
     case VCPU_DESC_SYS_TYPE_INTGATE_16:
         TYPE_TRACE_CHECK_RETURN(_ser_int_protected_16(context, intid,
@@ -3631,8 +3683,6 @@ static C_VOID _ser_int_protected(core_machine_cpu_execution_context *context,
     case VCPU_DESC_SYS_TYPE_TRAPGATE_32:
         if (context->cpu_profile < CORE_MACHINE_CPU_PROFILE_80386)
             TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(_ser_idt_error_code(intid)));
-        if (_GetEFLAGS_VM)
-            TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(0));
         TYPE_TRACE_CHECK_RETURN(_ser_int_protected_32_same(context, intid,
             gate_desc, software_origin, flagext));
         break;
@@ -4204,7 +4254,9 @@ _______todo _e_except_n(core_machine_cpu_execution_context *context, type_unsign
     {
         TYPE_TRACE_BLOCK_BEGIN("!Real");
         TYPE_TRACE_CHECK_RETURN(_ser_int_protected(context, exid, byte,
-            TYPE_FALSE, TYPE_TRUE));
+            TYPE_FALSE, !_GetEFLAGS_VM || exid == 0x08u || exid == 0x0au ||
+            exid == 0x0bu || exid == 0x0cu || exid == 0x0du || exid == 0x0eu ||
+            exid == 0x11u));
         TYPE_TRACE_BLOCK_END;
     }
     TYPE_TRACE_CALL_END;
@@ -16797,6 +16849,9 @@ static C_VOID ExecFinal(core_machine_cpu_execution_context *context)
         exception_vector = 0u;
         if (instruction_state.data.except == VCPUINS_EXCEPT_GP)
             exception_vector = 0x0du;
+        else if (instruction_state.data.except == VCPUINS_EXCEPT_UD &&
+            TYPE_GET_BIT(fault_cpu.data.eflags, VCPU_EFLAGS_VM))
+            exception_vector = 0x06u;
         else if (instruction_state.data.except == VCPUINS_EXCEPT_NM)
             exception_vector = 0x07u;
         else if (instruction_state.data.except == VCPUINS_EXCEPT_BR)

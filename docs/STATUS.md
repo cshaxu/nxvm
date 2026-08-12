@@ -2,14 +2,34 @@
 
 ## Current Work
 
-**Idle.** M5 Td S67 is closed; the next approved Queue candidate requires a
-separately admitted numeric task packet.
+**Active.** M5 T320 S1 establishes the Intel 80386 VM86-to-protected CPL0
+exception and IRQ delivery foundation in Coordinated Dual-Session Mode.
+
+## M5 T320 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New; M5 T320 S1; Coordinated Dual-Session Mode. The executor twice stopped without a complete P1 after the entry-only packet revision; on 2026-08-11 the owner explicitly overrode the fallback and re-delegated the same uncommitted P1 to the existing `executor` session. On 2026-08-11 the owner also approved the narrow direct-consumer test migration below. The coordinator independently reviews any complete pushed delivery before governance closure. |
+| Admission And Approval | The owner approved this first Queue candidate on 2026-08-11 after T319 closed its non-VM86 LGDT/LIDT slice. This prerequisite owns the VM86-to-protected exception/interrupt transfer required before later privileged VM86 instruction families are re-admitted. The owner approved the entry-only revision and re-authorized Coordinated Dual-Session execution on the same date. After the caller sweep exposed direct legacy VM86 matrix consumers, the owner explicitly authorized this S1 expansion: migrate only the valid-delivery assertions in S50, S55, S62, and S63 to the new CPL0-delivered contract; retain their invalid-facility terminal boundaries and all non-VM86 assertions. |
+| Objective | Implement and prove the 80386 protected-mode path from VM86 to a CPL0 32-bit IDT interrupt gate for synchronous `#GP`, `#UD`, and `#NM` plus external IRQ0: validate the gate/TSS target stack, atomically select TSS `SS0:ESP0`, construct the Intel VM86 transition frame, and enter CPL0 with correct gate effects. Reconcile the four direct historical VM86 consumers (`S50`, `S55`, `S62`, and `S63`) only where a valid IDT/TSS facility now makes that producer deliver to CPL0. The inverse CPL0 `IRET` transition is explicitly deferred to T320 S2. |
+| Non-goals | CPL0 `IRET` return to VM86, VME/PVI, task gates/switches, paging breadth, call gates, VM86 instruction-family completion, arbitrary VM86 IRET/NT/task returns, 16-bit gate breadth, NMI redesign, generic PIC redesign, descriptor-table load forms, and 80387 implementation. The later processor-control package owns VM86 LGDT/LIDT proof. |
+| Reference Baseline | `c48d28e8`; current developer artifact remains the closed T319 build until this S emits the allocated T320 artifact. |
+| Files And ABI Surface | May change only protected exception/interrupt/IRET delivery paths, their direct stack/TSS/segment helpers if a focused defect proves it, the owner smoke, `core_machine_software_int_s50_smoke.c`, `core_machine_port_io_s55_smoke.c`, `core_machine_clts_s62_smoke.c`, and `core_machine_msw_s63_smoke.c` for the owner-approved direct-consumer migration, CMake registration/artifact wiring, T320 evidence/history, and STATUS. No public ABI, provider boundary, generic memory/paging, task-switch, VME/PVI, x87-provider, or unrelated test migration. |
+| Applicable Rules | Task Reading Set; `docs/rules/EXECUTION.md`, `docs/rules/CODING.md`, `docs/rules/ARCHITECTURE.md`, and `docs/rules/DOCUMENT.md`; Intel 80386 protected/virtual-8086 interrupt, exception, TSS, and IRET rules; project type vocabulary and target-local strict GCC rules. |
+| Verification | Fresh GCC configure; strict owner target; deterministic owner marker; exact current-gate registration; valid VM86 `#GP`, `#UD`, `#NM`, and IRQ0 paths through a 32-bit CPL0 interrupt gate; full frame/stack/cache/gate-effect assertions; invalid-gate/TSS/target-SS atomicity; for S50/S55/S62/S63, valid IDT/TSS VM86 producer cases assert the delivered CPL0 boundary while invalid delivery facilities retain their established terminal diagnostic boundary; documentation governance; diff check; T320 artifact rebuild, identity, and SHA-256; complete current-gates-gcc; commit and push. |
+| Expected Markers | One deterministic `M5:T320:S1:VM86-DELIVERY:OK` marker and exactly one `current.core-machine-vm86-delivery-smoke` current-gate registration. |
+| Asset Needs | None; deterministic local CPU, GDT, IDT, 32-bit TSS, stack, PIC, and owner-controlled fault fixtures only. |
+| Reporting Requirements | The packet was revised before implementation on 2026-08-11 to transfer inverse `IRET` return to the planned S2. The owner then explicitly re-delegated the entry-only P1 and subsequently approved the four-file direct-consumer migration to the existing executor session. Executor supplies one complete P1: full implementation/evidence/registration/artifact package, self-review, commands, commit, and immediate push; it must not report partial vectors as a delivery. Coordinator independently reviews actual code/tests/CMake/evidence against this packet and then either issues one consolidated corrective brief or accepts and closes governance. |
+| Stop Conditions | Stop rather than broaden if valid VM86 delivery requires a generic paging/memory transaction, task switching, VME/PVI, a provider ABI change, a nonlocal PIC redesign, a semantic change to unrelated real/protected delivery, or a consumer migration outside the named S50/S55/S62/S63 VM86 branches. If a delivery failure class reaches another caller, record the caller sweep and request a revised scope before changing it. |
+| Exit Criteria | For all four admitted origins, a valid VM86 source reaches the chosen CPL0 handler through a 32-bit IDT interrupt gate and TSS `SS0:ESP0`; the exact VM86 frame and saved source state are asserted, and IF/TF/gate effects are correct. The named S50/S55/S62/S63 VM86 cases truthfully assert that valid facilities deliver, while their invalid-facility paths retain precise terminal boundaries and non-VM86 coverage remains unchanged. Invalid IDT/TSS/target-SS/stack cases retain pre-publication state or use precisely documented delivered-fault boundaries. No inverse VM86 IRET, VME/PVI, task switch, paging, or later VM86 instruction family may be claimed. All required gates, artifact evidence, commit, and push must pass. |
+| Original Owner Request | Use Coordinated Dual-Session Mode to implement the next high-ROI 80386 prerequisite after T319, keeping boundaries explicit and code quality/gates complete. |
+| Similar-Issue Sweep | Audit every caller and mode branch of `_ser_int_protected`, `_ser_int_protected_32_outer`, `_e_except_n`, `_e_intr_n`, and protected IRET. The direct consumer sweep already identified S47/S48/S49 and the approved S50/S55/S62/S63 set. Dispose each remaining VM86-relevant hit as covered, out of scope with reason, or a TODO/next-package transfer; do not alter unrelated real/protected delivery silently. |
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** T319 selects `vm-0-5-0319` /
-  `build/output/nxvm_0_5_0319.exe`; its commit, SHA-256, runtime identity, and
-  retained boundaries are in [T319 history](history/M5-T319-lgdt-lidt.md).
+- **Current developer artifact:** T320 selects `vm-0-5-0320` /
+  `build/output/nxvm_0_5_0320.exe`; its commit, SHA-256, runtime identity, and
+  retained boundaries are in [T320 history](history/M5-T320-vm86-delivery.md).
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
