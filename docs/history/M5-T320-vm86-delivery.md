@@ -17,11 +17,13 @@ The failure matrix covers invalid/missing/non-present/wrong-type gates,
 invalid/non-busy/short TSS states, invalid SS0 forms, and an insufficient new
 stack, always by full pre-publication CPU-state comparison.
 
-The direct historical VM86 consumers of this route (`CLI`/`STI`,
-`PUSHF`/`POPF`, and `HLT`) were updated only where their former terminal-#GP
-assertion contradicted this newly admitted valid-gate delivery. Their inherited
-S47/S48 sources include the corrected owner assertion; no instruction behavior
-or non-VM86 assertion changed.
+The direct historical VM86 consumers were reviewed exhaustively: S47/S48
+inherit the migrated `PUSHF`/`POPF` and `CLI`/`STI` valid-GP assertion; S49
+contains the corresponding valid-GP `HLT` assertion. S50 inherits the CLI/STI
+proof, while its native VM86 cases deliberately have no admitted valid
+IDT/TSS facility. The native S55 I/O, S62 CLTS, and S63 SMSW/LMSW VM86 branches
+also lack that premise and retain their terminal diagnostic matrices. No
+instruction behavior or non-VM86 assertion changed.
 
 Detailed form, frame, failure-boundary, and caller-sweep evidence is in
 [T320 S1 matrix](../etc/evidence/t320-s1-vm86-delivery-matrix.md).
