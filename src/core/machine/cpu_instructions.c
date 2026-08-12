@@ -132,12 +132,6 @@ static C_VOID _kma_prepare_physical_linear(core_machine_cpu_execution_context *c
         }
         TYPE_TRACE_BLOCK_END;
     }
-    else if (write && _GetCR0_WP && !_IsPageEntryWritable(cpde))
-    {
-        cpu_state.data.cr2 = linear;
-        TYPE_TRACE_CHECK_RETURN(_SetExcept_PF(_MakePageFaultErrorCode(1, 1, 0)));
-        return;
-    }
     ppte = _GetPageEntry_Base(cpde) + _GetLinear_Page(linear) * 4;
     TYPE_TRACE_CHECK_RETURN(_kma_read_physical(context, ppte, TYPE_REFERENCE_OF(cpte), 4));
     if (!_IsPageEntryPresent(cpte))
@@ -168,12 +162,6 @@ static C_VOID _kma_prepare_physical_linear(core_machine_cpu_execution_context *c
             TYPE_TRACE_BLOCK_END;
         }
         TYPE_TRACE_BLOCK_END;
-    }
-    else if (write && _GetCR0_WP && !_IsPageEntryWritable(cpte))
-    {
-        cpu_state.data.cr2 = linear;
-        TYPE_TRACE_CHECK_RETURN(_SetExcept_PF(_MakePageFaultErrorCode(1, 1, 0)));
-        return;
     }
     translation->physical = _GetPageEntry_Base(cpte) + _GetLinear_Offset(linear);
     translation->ppde = ppde;
@@ -1576,7 +1564,8 @@ static C_VOID _s_load_cr0_msw(core_machine_cpu_execution_context *context, type_
 static C_VOID _s_write_cr0_80386(core_machine_cpu_execution_context *context,
     type_unsigned_32 value)
 {
-    const type_unsigned_32 mutable_mask = VCPU_CR0_PE | VCPU_CR0_PG;
+    const type_unsigned_32 mutable_mask = VCPU_CR0_PE | VCPU_CR0_MP |
+        VCPU_CR0_EM | VCPU_CR0_TS | VCPU_CR0_ET | VCPU_CR0_PG;
     const type_unsigned_32 retained_mask = ~mutable_mask;
 
     TYPE_TRACE_CALL_BEGIN("_s_write_cr0_80386");

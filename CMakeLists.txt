@@ -390,6 +390,10 @@ target_link_libraries(core-machine-segment-selector-smoke PRIVATE core-machine)
 add_executable(core-machine-80386-paging-smoke
     tests/machine/core_machine_80386_paging_smoke.c)
 target_link_libraries(core-machine-80386-paging-smoke PRIVATE core-machine)
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(core-machine-80386-paging-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
 
 add_executable(core-machine-protected-privilege-smoke
     tests/machine/core_machine_protected_privilege_smoke.c)
