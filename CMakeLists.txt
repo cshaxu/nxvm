@@ -1346,6 +1346,13 @@ if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(core-machine-exception-delivery-s2-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
+add_executable(core-machine-protected-ud-delivery-s1-smoke
+    tests/machine/core_machine_protected_ud_delivery_s1_smoke.c)
+target_link_libraries(core-machine-protected-ud-delivery-s1-smoke PRIVATE core-machine)
+if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(core-machine-protected-ud-delivery-s1-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
 add_executable(core-machine-hardware-delivery-s3-smoke
     tests/machine/core_machine_hardware_delivery_s3_smoke.c)
 target_link_libraries(core-machine-hardware-delivery-s3-smoke PRIVATE core-machine)
@@ -1564,6 +1571,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-fpu-interface-s65-smoke
     core-machine-fpu-8087-smoke
     core-machine-exception-delivery-s2-smoke
+    core-machine-protected-ud-delivery-s1-smoke
     core-machine-hardware-delivery-s3-smoke
     core-machine-interrupt-return-composition-s4-smoke
     core-machine-vm86-lgdt-lidt-s5-smoke

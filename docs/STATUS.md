@@ -2,8 +2,27 @@
 
 ## Current Work
 
-**Idle.** T325 is closed; the next 80386DX package requires separate
-admission from the Queue.
+**M5 T326 S1: deliver protected-mode invalid-opcode faults through IDT vector 6 (Ordinary Mode).**
+
+## M5 T326 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New; Ordinary Mode. `M5 T326 S1` is the next numeric task after closed T325. |
+| Admission And Approval | Owner-approved autonomous continuation toward the Intel 80386DX architecture-coverage closure audit on 2026-08-12. T325 S3 transferred the reproduced High TODO. T326 audit found that real-IVT delivery would change 41 retained no-handler smoke contracts; this S therefore admits only ordinary protected-mode vector-6 delivery and records real-mode delivery as a separate High transfer. |
+| Objective | Make an active ordinary protected-mode invalid-opcode fault invoke IDT vector 6 as a restartable Intel 80386 fault, with no error code, rather than falling into a terminal fault path. Correct the reproduced shared protected exception-frame classifier so vector 6 is no-error-code while Intel error-code vectors 8/10--14/17 retain their frame contract; reconcile this with retained VM86 vector-6 behavior. |
+| Non-goals | No real-mode `#UD` IVT-policy migration, `#BP`/`#DB` policy, task switch, VME/PVI, generic IDT redesign, new public ABI, paging/translation change, opcode-family completion claim, or x87 execution. No exception-vector policy beyond the existing Intel error-code classification needed to make protected `#UD` vector 6 correct. |
+| Reference Baseline | `f1d9a0da` / `vm-0-5-0323`; retain T320 VM86 delivery, T321 exception delivery, T325 S3 protected `0F 01 /7` reproducer, and the Intel 80386 PRM exception authority as inputs. |
+| Files And ABI Surface | Expected: `src/core/machine/cpu_instructions.c` finalizer/error-frame classifier, one new owner-bound machine smoke, its target-local strict-GCC CMake registration, exception/closure evidence, TODO/closure-map disposition, and Status. No public interface or provider ABI change. |
+| Applicable Rules | `docs/design/GOAL.md` and Roadmap 80386DX completion program; T325 transfer/TODO and closure-map exception/paging rows; Architecture Rules one CPU exception owner/path; Coding Rules project types and test-only boundary; Documentation and Execution Rules packet/P lifecycle. Intel 80386 PRM 9.8.6 and 9.9 define `#UD` as vector 6, fault, restartable, and without error code. |
+| Verification | Reproduce and then prove protected-IDT 80386 vector-6 delivery for representative active `#UD` producers: invalid primary opcode, `0F` reserved form (`0F 01 /7`), invalid operand form, and LOCK-prefix rejection. Verify saved restart IP/CS/EFLAGS, the protected three-dword no-error-code frame, handler transfer/progress, producer nonpublication, valid-gate delivery, invalid protected-gate containment, retained real terminal behavior, and retained VM86 vector-6 behavior. Sweep and regression-prove the shared classifier's active no-error-code (`#DE/#NM/#MF/#BR`) and error-code (`#DF/#TS/#NP/#SS/#GP/#PF`) routes. Configure, strict compile, exact current registration, documentation governance, diff, specialized gate, and full current-gate must pass. |
+| Expected Markers | New `M5:T326:S1:PROTECTED-UD-DELIVERY:OK`; retained exception, VM86, paging, FPU-interface, and BOUND markers; full current and specialized gate success. |
+| Asset Needs | None; deterministic in-memory GDT, IDT, stack, code, diagnostic, and PIC fixtures only. |
+| Reporting Requirements | Perform and record an Intel form/producer audit before code. P1 is one complete implementation, evidence, self-review, commit, and push; then complete Ordinary-Mode actual-change review before a governance-only P2. Report any shared-route finding outside vector-6 delivery as a material objection. |
+| Stop Conditions | Stop before changing real-mode `#UD` policy, an exception-vector mapping other than protected `#UD` vector 6, task/TSS policy, public interface, or generic IDT mechanics. The only permitted shared serializer change is a mechanically enumerated error-code classifier matching Intel vectors 8/10--14/17; every changed route needs retained regression evidence. A producer that cannot be classified by the bounded sweep becomes a named transfer, not an untested completion claim. |
+| Exit Criteria | Ordinary protected `#UD` invokes vector 6 with the correct restart/no-error-code frame and no producer publication; the shared classifier makes every active no-error-code versus error-code route mechanically explicit and regression-proven; invalid vector-6 gate is contained truthfully; active producer classes are swept and classified; retained real terminal behavior, VM86, and `#DE/#PF/#MF/#NM/#BR` regressions pass; all required gates pass; real-mode/debug/task/VME and broader trap boundaries are explicitly transferred. |
+| Original Owner Request | Continue in single-session mode through the Intel 80386DX architecture-coverage closure audit, prioritizing correct, bounded architectural implementation and evidence. |
+| Similar-Issue Sweep | Search all tracked production `VCPUINS_EXCEPT_UD`, `_SetExcept_UD`, and `UndefinedOpcode` producers; classify their active protected behavior into the representative proof, a retained regression, or an explicit later boundary. Sweep all `ExecFinal` exception-vector branches and retained producer smokes (`#DE/#PF/#MF/#NM/#BR`) to ensure vector-6 repair does not alter another route. |
 
 ## Current Technical Baseline
 
