@@ -16,7 +16,7 @@ test-behavior capability completion.
 | S1 strict target-local compilation | `5fdfbe8137660941395634f3b7254e8b9ba2aa25` adds the 47-entry CMake inventory and applies `-Wall -Wextra -Wpedantic -Werror` privately to exactly its GCC/Clang smoke executables. `00a09d1d9d85f767979f6d6e317ca83766310cc1` strengthens the retained FPU #NM real-mode frame test. The accepted record is [S1 evidence](../etc/evidence/t317-s1-strict-gcc-evidence.md); acceptance is `58b6b299`. |
 | S2 project type vocabulary | `4e968c45d519a97ba5ee188a837ed95dc0542b36` migrates direct fixed-width spellings only in the exact inventory plus `tests/support/core_machine_cpu_fixture.h`, and adds the inventory-bounded positive/negative verifier. [S2 evidence](../etc/evidence/t317-s2-test-type-vocabulary-evidence.md) records the scope and token baseline; acceptance is `1124eb3c`. |
 | S3 fixture mechanics | `1f4c9af92d903922028f948460f4e86ef0324a3d` and `3cb1bd4b843ee5bfc4594b0c974b794d55d51819` centralize the mechanically identical lifecycle setup in private `tests/support` helpers. [S3 evidence](../etc/evidence/t317-s3-test-fixture-consolidation-evidence.md) lists the 35 full-helper callers, six lifecycle-tail callers, real-mode/captured-observation boundary, and retained owner semantics. Acceptance is `2d9ceefb`. |
-| S4 closure audit | This record independently rechecks the generated inventory, actual Ninja command audit, vocabulary gate, support boundary, deferred raw-type admission path, documentation governance, diff, and full current gate. It adds no runtime or test behavior. |
+| S4 closure audit | This record independently rechecks the generated inventory, actual Ninja command audit, vocabulary gate, support boundary, then-deferred raw-type admission context, documentation governance, diff, and full current gate. It adds no runtime or test behavior. |
 
 ## S4 Independent Audit
 
@@ -60,11 +60,13 @@ lexical type spelling through the single `src/type.h` facade while retaining
 the original S1--S4 smoke, strict-command, and lifecycle evidence. The factual
 details and the 0.5.0317 artifact hash are recorded in [S5 evidence](../etc/evidence/t317-s5-global-type-vocabulary-evidence.md).
 
-## S1--S4 Deferred Boundary
+## S1--S4 Historical Deferred Boundary
 
-The type-vocabulary verifier deliberately does not scan inherited tests or the
-repository at large. [TODO: inherited test raw-type vocabulary](../TODO.md)
-requires a separately approved inventory, token baseline, equivalence review,
-and scoped negative/positive verifier before such a migration may be claimed.
-The existing inherited strict-compilation admission remains separately bounded
-in the same TODO ledger. Neither debt alters the closed T317 47-source scope.
+At S1--S4, the type-vocabulary verifier deliberately did not scan inherited
+tests or the repository at large. That was historical context for the original
+47-source closure, not a current exemption: S5 subsequently closed the wider
+lexical migration through its owner-approved global scan, exact facade and
+negative-fixture exceptions, source-equivalence review, and [S5 evidence](../etc/evidence/t317-s5-global-type-vocabulary-evidence.md).
+
+The separate inherited strict-compilation admission remains bounded in the
+current TODO ledger. It does not alter the completed S5 vocabulary scope.
