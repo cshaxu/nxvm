@@ -2,27 +2,8 @@
 
 ## Current Work
 
-**M5 T325 S1: correct Intel 80386 CR0 paging-control and supervisor page-write semantics (Ordinary Mode).**
-
-## M5 T325 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New; Ordinary Mode. `M5 T325 S1` is the next linear implementation identifier after closed T324. |
-| Admission And Approval | Owner-approved autonomous continuation of the ordered Queue candidate **80386DX paging and translation closure** on 2026-08-12. This S admits only the 80386 CR0/page-protection correction and its focused evidence. |
-| Objective | Reconcile the CPU executor with the Intel 80386 CR0 and page-protection contract: make `MP`/`EM`/`TS`/`ET` CR0 controls reachable through `MOV CR0`, retain only the defined PE/PG transition boundary, and remove the post-80386 `CR0.WP` supervisor-write rule from the 80386 page walk. Prove CPL0 still writes read-only pages, while CPL3 U/S and R/W protection remains intact. |
-| Non-goals | No PE-clear/re-entry transition, PAE, PSE, 80486 `WP`, CR4, `INVLPG`, persistent-TLB/test-register design, task-switch paging state, page-table ABI, host-memory substitution, public API, x87 execution, VM86 paging breadth, or generic exception/PIC redesign. |
-| Reference Baseline | `ed376b82` / `vm-0-5-0323`; retain T258/T311 paging probes and T321 delivered-`#PF` foundation as evidence inputs, not as unreviewed authority. |
-| Files And ABI Surface | Expected: `src/core/machine/cpu.h`, `src/core/machine/cpu_instructions.c`, one owner-focused paging/control smoke and its target registration, the paging evidence/closure map, and task history. No public header or product ABI change. |
-| Applicable Rules | `docs/design/GOAL.md` goal 6; Queue paging candidate; `docs/etc/evidence/80386-closure-map.md` paging row; Architecture Rules one CPU-executor/page-walk owner; Coding Rules project types and target-local strict compilation; Documentation and Execution Rules packet/P lifecycle. Intel 80386 PRM Chapters 4--6 is form authority. |
-| Verification | Focused real/protected CPL0/CPL3 prepared-state smoke; `MOV CR0` control-bit and fault/publication checks; supervisor versus user read-only-page outcomes; retained paging smoke; CMake configure; exact current registration; documentation governance; `git diff --check`; full current-gate CTest and specialized verification aggregate. |
-| Expected Markers | New focused marker `M5:T325:S1:CR0-PAGING-CONTROL:OK`; retained T258/T311 paging markers; full current-gate and specialized-verifier success. |
-| Asset Needs | None; deterministic in-memory GDT/IDT/page-table fixtures only. |
-| Reporting Requirements | Before code, record the CR0/80386 PRM form audit and any material objection. P1 is one complete, pushed implementation delivery with requirement-to-proof evidence; then perform the Ordinary-Mode actual-change review before a pure governance P2. |
-| Stop Conditions | Stop before accepting uncertain PE/PG transition semantics, a change to task-switch/TLB/test-register behavior, a public interface, a generic exception delivery policy, or an architecture requirement beyond 80386. A failure requiring any shared route outside the named CR0/page-walk helpers requires a revised packet or later S. |
-| Exit Criteria | Intel 80386 `MP`/`EM`/`TS`/`ET` writability and CPL0/CPL3 page-write behavior are explicitly classified and mechanically tested; no 80486 `WP` behavior remains in the 80386 page walker; every touched helper/caller is swept; focused and retained paging regressions, current gate, specialized verifiers, governance, and diff checks pass; evidence names PE-clear, paging/task/debug transfers. |
-| Original Owner Request | Continue in single-session mode through the Intel 80386DX architecture-coverage closure audit, prioritizing correct, bounded architectural implementation and evidence. |
-| Similar-Issue Sweep | Sweep all CR0 readers/writers, all page-protection branches, direct control-register forms, existing T311 WP claims, and their focused tests; classify test-register/TLB and task-switch consumers rather than silently absorbing them. |
+**Idle.** M5 T325 remains open; S1 is accepted and the next paging/translation
+slice requires a separately admitted continuation packet.
 
 ## Current Technical Baseline
 
@@ -43,6 +24,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T325 S1 | Accepted the Intel 80386 CR0/page-protection correction: `MOV CR0` now writes `MP`/`EM`/`TS`/`ET`; ET write semantics were re-audited against Intel 80386 section 11.1.1; stale 80486 `WP` CPL0 write faults were removed while CPL3 U/S/R/W protection remains. The focused paging marker, 209/209 current-gate, specialized verifiers, governance, and diff check passed. [Evidence](etc/evidence/t325-s1-cr0-paging-control.md). |
 | T324 | Closed current-test/specialized-gate separation: `run-current-smokes` now runs only the full 209-test CTest smoke selection, `run-current-fast-smokes` retains the 194-test non-media selection, and `verify-current-specialized-gates` owns 46 named verifiers plus a mechanical target-graph check. `current-gates-gcc` composes exactly both roots; all layer baselines and evidence are retained in [T324 history](history/M5-T324-current-gate-separation.md). |
 | T323 | Closed the bounded 80386DX non-task, non-VM86 protection/privilege-transfer composition: direct far transfer, loaded segment rights, 16-bit same/outer gate entry, outer IRET, and parameterized 16-bit call gates now join retained selector, 32-bit, and outer-RETF evidence. The sole S7 serializer correction preflights/copies parameter words. Task/LDT/debug/VM86, paging, legacy LOCK, and x87 retain named boundaries; the 0323 artifact SHA-256 and 209/209 gate result are in the [closure audit](etc/evidence/t323-protection-privilege-closure-audit.md). |
 | T322 | Audited and withdrew the duplicate ordinary-execution/FLAGS candidate: T316's accepted S23--S65 owner smokes already cover the transferred Intel 80386 ordinary application forms. Remaining work is explicitly protection/privilege, paging, task/debug/VM86, legacy LOCK, or external x87 scope; no invented implementation slice or artifact was created. Documentation governance and diff checks passed. |
