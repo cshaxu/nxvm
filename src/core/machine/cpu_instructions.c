@@ -15624,6 +15624,8 @@ static C_VOID INS_0F_01(core_machine_cpu_execution_context *context)
         break;
     case 2: /* LGDT_M32_16 */
         TYPE_TRACE_BLOCK_BEGIN("LGDT_M32_16");
+        if (_IsProtected && !_GetEFLAGS_VM && _GetCPL)
+            TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(0));
         TYPE_TRACE_CHECK_RETURN(_d_modrm_table_memory(context, modrm));
         TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
         limit = TYPE_MASK_UNSIGNED_16(instruction_state.data.crm);
@@ -15648,6 +15650,8 @@ static C_VOID INS_0F_01(core_machine_cpu_execution_context *context)
         break;
     case 3: /* LIDT_M32_16 */
         TYPE_TRACE_BLOCK_BEGIN("LIDT_M32_16");
+        if (_IsProtected && !_GetEFLAGS_VM && _GetCPL)
+            TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(0));
         TYPE_TRACE_CHECK_RETURN(_d_modrm_table_memory(context, modrm));
         TYPE_TRACE_CHECK_RETURN(_m_read_rm(context, 2));
         limit = TYPE_MASK_UNSIGNED_16(instruction_state.data.crm);

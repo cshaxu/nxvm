@@ -276,6 +276,9 @@ target_link_libraries(core-machine-descriptor-system-smoke PRIVATE core-machine)
 add_executable(core-machine-sgdt-sidt-smoke
     tests/machine/core_machine_sgdt_sidt_smoke.c)
 target_link_libraries(core-machine-sgdt-sidt-smoke PRIVATE core-machine)
+add_executable(core-machine-lgdt-lidt-smoke
+    tests/machine/core_machine_lgdt_lidt_smoke.c)
+target_link_libraries(core-machine-lgdt-lidt-smoke PRIVATE core-machine)
 add_executable(core-machine-interrupt-entry-smoke
     tests/machine/core_machine_interrupt_entry_smoke.c)
 target_link_libraries(core-machine-interrupt-entry-smoke PRIVATE core-machine)
@@ -1439,6 +1442,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-control-transfer-smoke
     core-machine-descriptor-system-smoke
     core-machine-sgdt-sidt-smoke
+    core-machine-lgdt-lidt-smoke
     core-machine-interrupt-entry-smoke
     core-machine-idt-privilege-entry-smoke
     core-machine-real-mode-386-rep-cmps-smoke
@@ -1697,7 +1701,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0318 "0.5.0318")
+add_current_vm_artifact(vm-0-5-0319 "0.5.0319")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 
@@ -2108,6 +2112,7 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(vm-full-pc-session-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-core-executor-storage-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-executor-run-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(core-machine-lgdt-lidt-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-cpu-pic-lifecycle-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vdm-machine PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vdm-composition PRIVATE -Wall -Wextra -Wpedantic -Werror)
