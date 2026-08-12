@@ -454,6 +454,74 @@ static C_INT paging_test_control_forms(C_VOID)
     return failed;
 }
 
+static C_INT paging_test_invlpg_real_case(core_machine_cpu_profile profile,
+    const type_unsigned_8 *code, STD_SIZE_T code_size)
+{
+    paging_machine state;
+    core_machine_run_result result;
+    core_machine_cpu_diagnostic diagnostic;
+    t_cpu before;
+    t_cpu after;
+    C_INT failed = !paging_prepare(&state, profile);
+
+    if (!failed) {
+        state.machine->executor_cpu.data.eax = 0x11223344u;
+        state.machine->executor_cpu.data.ecx = 0x55667788u;
+        state.machine->executor_cpu.data.edx = 0x99aabbccu;
+        state.machine->executor_cpu.data.ebx = 0xddeeff00u;
+        state.machine->executor_cpu.data.esi = 0x13579bdfu;
+        state.machine->executor_cpu.data.edi = 0x2468ace0u;
+        state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF | VCPU_EFLAGS_IF;
+        before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        failed |= core_machine_memory_write(state.machine, 0u, code, code_size) !=
+                TYPE_STATUS_OK || !paging_run(state.machine, 1, &result,
+                &diagnostic);
+        after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        failed |= !diagnostic.first_fault.valid || !TYPE_GET_BIT(
+                diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||
+            diagnostic.first_fault.exception_code != 0u ||
+            diagnostic.first_fault.point.cs != 0u ||
+            diagnostic.first_fault.point.linear_pc != 0u || STD_MEMCMP(&after,
+                &before, sizeof(after)) != 0;
+    }
+    core_machine_destroy(state.machine);
+    return failed;
+}
+
+static C_INT paging_test_invlpg_rejection(C_VOID)
+{
+    static const type_unsigned_8 invlpg[] = {
+        0x0fu, 0x01u, 0x3eu, 0x00u, 0x20u
+    };
+    static const type_unsigned_8 operand_size[] = {
+        0x66u, 0x0fu, 0x01u, 0x3eu, 0x00u, 0x20u
+    };
+    static const type_unsigned_8 address_size[] = {
+        0x67u, 0x0fu, 0x01u, 0x3eu, 0x00u, 0x20u
+    };
+    static const type_unsigned_8 combined_size[] = {
+        0x66u, 0x67u, 0x0fu, 0x01u, 0x3eu, 0x00u, 0x20u
+    };
+    static const type_unsigned_8 locked[] = {
+        0xf0u, 0x0fu, 0x01u, 0x3eu, 0x00u, 0x20u
+    };
+    if (paging_test_invlpg_real_case(CORE_MACHINE_CPU_PROFILE_80186, invlpg,
+            sizeof(invlpg))) return 1;
+    if (paging_test_invlpg_real_case(CORE_MACHINE_CPU_PROFILE_80286, invlpg,
+            sizeof(invlpg))) return 2;
+    if (paging_test_invlpg_real_case(CORE_MACHINE_CPU_PROFILE_80386,
+            invlpg, sizeof(invlpg))) return 3;
+    if (paging_test_invlpg_real_case(CORE_MACHINE_CPU_PROFILE_80386,
+            operand_size, sizeof(operand_size))) return 4;
+    if (paging_test_invlpg_real_case(CORE_MACHINE_CPU_PROFILE_80386,
+            address_size, sizeof(address_size))) return 5;
+    if (paging_test_invlpg_real_case(CORE_MACHINE_CPU_PROFILE_80386,
+            combined_size, sizeof(combined_size))) return 6;
+    if (paging_test_invlpg_real_case(CORE_MACHINE_CPU_PROFILE_80386,
+            locked, sizeof(locked))) return 7;
+    return 0;
+}
+
 static C_INT paging_test_cr0_mutable_controls(C_VOID)
 {
     static const type_unsigned_8 write_mutable[] = {
@@ -1176,18 +1244,19 @@ C_INT main(C_VOID)
     const C_INT delivered = paging_test_delivered_page_fault();
     const C_INT faults = paging_test_page_faults();
     const C_INT controls = paging_test_control_forms();
+    const C_INT invlpg = paging_test_invlpg_rejection();
     const C_INT cr0_controls = paging_test_cr0_mutable_controls();
     const C_INT cr3_reload = paging_test_cr3_directory_reload();
     const C_INT no_stale_translation = paging_test_no_stale_translation();
     const C_INT permissions = paging_test_permissions();
     const C_INT cross_page = paging_test_cross_page();
 
-    if (valid || delivered || faults || controls || cr0_controls || cr3_reload ||
-        no_stale_translation || permissions || cross_page) {
+    if (valid || delivered || faults || controls || invlpg || cr0_controls ||
+        cr3_reload || no_stale_translation || permissions || cross_page) {
         STD_FPRINTF(STD_STDERR,
-            "M5:T258:S2:I386-PAGING:FAIL valid=%d delivered=%d faults=%d controls=%d cr0=%d cr3=%d stale=%d permissions=%d cross=%d\n",
-            valid, delivered, faults, controls, cr0_controls, cr3_reload,
-            no_stale_translation, permissions, cross_page);
+            "M5:T258:S2:I386-PAGING:FAIL valid=%d delivered=%d faults=%d controls=%d invlpg=%d cr0=%d cr3=%d stale=%d permissions=%d cross=%d\n",
+            valid, delivered, faults, controls, invlpg, cr0_controls,
+            cr3_reload, no_stale_translation, permissions, cross_page);
         return 1;
     }
     STD_PRINTF("M5:T258:S2:I386-PAGING:OK\n");
@@ -1196,5 +1265,6 @@ C_INT main(C_VOID)
     STD_PRINTF("M5:T311:S4:CROSS-PAGE:OK\n");
     STD_PRINTF("M5:T325:S1:CR0-PAGING-CONTROL:OK\n");
     STD_PRINTF("M5:T325:S2:CR2-CR3-TRANSLATION:OK\n");
+    STD_PRINTF("M5:T325:S3:PAGING-CLOSURE:OK\n");
     return 0;
 }

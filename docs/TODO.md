@@ -51,6 +51,16 @@ candidate work, and detailed capability evidence belong in
   `98`/`99` or import 80386 validation into legacy profiles without that
   review.
 
+- [ ] **Protected-mode invalid-opcode delivery (`TODO(High)`).** T325 S3
+  reproduces that `ExecFinal` routes `#UD` through an IDT only for VM86; an
+  ordinary protected-mode `0F 01 /7` fault instead falls into the later
+  terminal `#GP` path even with a valid vector-6 gate. Admit a bounded shared
+  exception-delivery task with the complete active protected `#UD` producer
+  sweep, real/protected/VM86 vector-6 frame and restart proofs, invalid-gate
+  containment, and retained `#DE/#PF/#MF/#NM/#BR` regressions. Do not repair
+  only `INVLPG`, alter generic IDT policy without the producer sweep, or claim
+  breakpoint/debug/task exception completion.
+
 - [ ] **Broaden real-mode 8086 corpus (`TODO(High)`).** T240 established a
   reset-vector baseline for segment override, `REP`/direction strings,
   `INT`/`IRET`, port I/O, and fault retention.  Extend only through a failing
