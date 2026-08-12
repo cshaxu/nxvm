@@ -2,28 +2,28 @@
 
 ## Current Work
 
-M5 T323 S5 is active: close protected CPL3-to-CPL0 16-bit external IRQ/NMI
-gate entry through TSS-selected stacks (Ordinary Mode).
+M5 T323 S6 is active: close protected CPL0-to-CPL3 16-bit outer `IRET`
+return and publication boundaries (Ordinary Mode).
 
-## M5 T323 S5 Packet
+## M5 T323 S6 Packet
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | Owner authorization to continue the ordered Intel 80386DX Queue program in Ordinary Mode, 2026-08-12. T323 S1--S4 are accepted in Status progress. |
-| Objective | Complete the Intel 80286/80386 protected, non-VM86, CPL3-to-CPL0 16-bit external-event entry slice: PIC IRQ0 and NMI through DPL-zero interrupt/trap gates onto TSS-selected CPL0 stacks, with exact privilege-change frames, IF/TF effects, source acknowledgment, and prepublication failure boundaries. |
-| Non-goals | 32-bit/VM86 gates and frames, outer `IRET` return, task/call gates, software INT breadth, error-code producer breadth, paging, generic exception policy, TSS task switching, and PIC/controller redesign are outside S5. |
-| Reference Baseline | `fa411fac`; accepted T323 S1--S4 evidence and retained T307/T320 privilege-transfer records are inputs. |
-| Files And ABI Surface | Expected: one owner-local `tests/machine` smoke, target-local CMake/current-gate registration, T323 evidence, and STATUS. The existing 16-bit gate serializer may receive a focused local correction only when a reproducer and caller sweep require it; no public ABI, provider, product, test-support API, descriptor/TSS helper, or PIC-controller change is admitted. |
-| Applicable Rules | Task Reading Set, architecture/coding/documentation rules, Intel 80286/80386 protected interrupt/trap gate and TSS stack-switch rules, and retained T307/T320 evidence. No imported implementation source. |
-| Verification | Focused owner marker; configure; exact current-gate discovery; full current-gate; refreshed `vm-0-5-0323` developer artifact plus SHA-256 if production changes; documentation governance; diff check; and actual-change review. Matrix must include 80286 TSS16 and 80386 TSS16/TSS32 entry, CPL3 DPL-zero gates, IRQ0/NMI, interrupt/trap IF/TF effects, exact five-word outer frame and target stack/cache publication, rejected TSS/SS/gate boundaries, and PIC/NMI source ownership. |
-| Expected Markers | `M5:T323:S5:PROTECTED-16-OUTER:OK` and exactly one `current.core-machine-protected-16-outer-s5-smoke` item. |
+| Admission And Approval | Owner authorization to continue the ordered Intel 80386DX Queue program in Ordinary Mode, 2026-08-12. T323 S1--S5 are accepted in Status progress. |
+| Objective | Complete the Intel 80286/80386 protected, non-VM86, CPL0-to-CPL3 16-bit outer-`IRET` slice: exact five-word source-frame consumption, target CS/SS/cache/CPL and SP publication, permitted FLAGS result, return continuation, and prepublication failure atomicity. |
+| Non-goals | 32-bit or VM86 returns, task/NT return, call/far returns, same-CPL IRET breadth, VME/PVI, paging, generic exception policy, TSS task switching, and PIC/controller redesign are outside S6. |
+| Reference Baseline | `63bfba4f`; accepted T323 S1--S5 evidence and retained T306/T320 protected-return records are inputs. |
+| Files And ABI Surface | Expected: one owner-local `tests/machine` smoke, target-local CMake/current-gate registration, T323 evidence, and STATUS. The existing outer-IRET serializer may receive a focused local correction only when a reproducer and caller sweep require it; no public ABI, provider, product, test-support API, descriptor helper, or generic return/exception refactor is admitted. |
+| Applicable Rules | Task Reading Set, architecture/coding/documentation rules, Intel 80286/80386 protected outer-IRET and selector/cache publication rules, and retained T306/T320 evidence. No imported implementation source. |
+| Verification | Focused owner marker; configure; exact current-gate discovery; full current-gate; refreshed `vm-0-5-0323` developer artifact plus SHA-256 if production changes; documentation governance; diff check; and actual-change review. Matrix must include 80286/80386 default 16-bit IRET plus 80386 67 classification, valid CPL3 code/stack selectors and five-word frames, permitted FLAGS/CPL/cache/SP results, invalid CS/SS/limit source boundaries, and pending IRQ ordering after restored IF. |
+| Expected Markers | `M5:T323:S6:PROTECTED-16-OUTER-IRET:OK` and exactly one `current.core-machine-protected-16-outer-iret-s6-smoke` item. |
 | Asset Needs | No external asset, guest media, firmware, or network source. |
-| Reporting Requirements | Complete one full implementation P with source/test/CMake/evidence and all verification while retaining this packet; report a material stop condition. After push, perform Ordinary-Mode actual-change acceptance before a separate governance P closes S5. |
-| Stop Conditions | Stop before a required outer `IRET`, 32-bit/VM86 serializer, task switch, descriptor/TSS helper, PIC-controller/helper, or generic exception-finalizer change; sweep callers and revise/transfer rather than broaden silently. |
-| Exit Criteria | Every declared S5 matrix row is proven or explicitly classified; successful entry proves the exact frame, stack/cache publication, IF/TF state, target progress, and source acknowledgment; rejected entry proves source retention and no target-stack publication; no in-scope row remains partial or missing; all required gates pass; evidence records production result and transfers; and a pushed governance P records acceptance. |
+| Reporting Requirements | Complete one full implementation P with source/test/CMake/evidence and all verification while retaining this packet; report a material stop condition. After push, perform Ordinary-Mode actual-change acceptance before a separate governance P closes S6. |
+| Stop Conditions | Stop before a required 32-bit/VM86/task return, selector/descriptor helper, PIC-controller/helper, or generic return/exception-finalizer change; sweep callers and revise/transfer rather than broaden silently. |
+| Exit Criteria | Every declared S6 matrix row is proven or explicitly classified; successful return proves exact frame consumption, CPL/cache/stack/FLAGS publication and post-return IRQ ordering; rejected return proves no partial target publication; no in-scope row remains partial or missing; all required gates pass; evidence records production result and transfers; and a pushed governance P records acceptance. |
 | Original Owner Request | Continue the owner-approved Intel 80386 implementation program in single-session mode through the 80386DX architecture coverage closure audit, with code quality and complete evidence. |
-| Similar-Issue Sweep | Audit `_ser_int_protected_16`, `_ser_int_protected`, TSS16/TSS32 stack reads, `_ksa_prepare_stack_sreg`, stack-frame preflight, `_e_intr_n`, `ExecInt`, PIC scan/peek/get and NMI acknowledgment, DPL checks, and retained T307/T320 outer-entry owner smokes. Keep outer IRET, 32-bit, VM86, task, and error-frame consumers separate. |
+| Similar-Issue Sweep | Audit `_e_iret`, `_ser_iret_protected_outer`, 16-bit stack peek/pop, selector/cache preparation, restored-FLAGS IF handling, `ExecInt`, PIC scan/peek/get, and retained T306/T320 outer-return owner smokes. Keep 32-bit/VM86/task returns and generic return/exception consumers separate. |
 
 ## Current Technical Baseline
 
@@ -44,6 +44,7 @@ gate entry through TSS-selected stacks (Ordinary Mode).
 
 | Task | Compact result |
 | --- | --- |
+| T323 S5 | Accepted protected CPL3-to-CPL0 16-bit external entry: 80286 TSS16 and 80386 TSS16/TSS32 paths publish the five-word outer frame, DPL0 CS/SS stack state, gate-specific IF/TF effects, and IRQ/NMI acknowledgment. Invalid TSS plus null/non-present SS0 retain target-stack/PIC publication boundaries. No production change; target-local strict GCC, governance, and 207/207 current-gate passed. [Evidence](etc/evidence/t323-s5-protected-16-outer.md). |
 | T323 S4 | Accepted same-CPL3 16-bit protected external entry: 80286/80386 IRQ0 and NMI bypass DPL-zero interrupt/trap gate software policy, publish the exact three-word frame and gate-specific IF/TF state, and acknowledge their source. Invalid and non-present external gates retain source ownership and target-stack nonpublication after the source NOP. No production change; target-local strict GCC, governance, and 206/206 current-gate passed. [Evidence](etc/evidence/t323-s4-protected-16-external.md). |
 | T323 S3 | Accepted same-CPL 16-bit protected interrupt/trap gates: 80286/80386 software frames, 66/67/LOCK classification, software DPL rejection, existing error-code frame, and external IRQ frame are focused-proven. `_ser_int_protected_16` now distinguishes software origin from error frame, accepts trap gates, clears IF only for interrupt gates, and clears TF for both. Target-local strict GCC, refreshed 0323 artifact, governance, and 205/205 current-gate passed. [Evidence](etc/evidence/t323-s3-protected-16-gate.md). |
 | T323 S2 | Accepted the protected loaded DS/ES/SS data-access matrix: 80286/80386 cache rights, null/read-only/ordinary/expand-down limits, DS/SS/ES selection, profile/LOCK rejection, and the corrected same-CPL 16-bit IRQ0 FLAGS/CS/IP frame are focused-proven. The sole `_ser_int_protected` call-site repair passes the existing error-frame classification; target-local strict GCC, the 0323 artifact, governance, and 204/204 current-gate passed. [Evidence](etc/evidence/t323-s2-protected-data-access.md). |
