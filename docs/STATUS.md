@@ -2,27 +2,8 @@
 
 ## Current Work
 
-**M5 T327 S1: prove current-smoke and specialized-gate separation (Ordinary Mode).**
-
-## M5 T327 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New; Ordinary Mode. `M5 T327 S1` is the next numeric task after closed T326. |
-| Admission And Approval | Owner-approved autonomous continuation toward complete Intel 80386 coverage, with the Queue's top gate-separation prerequisite adopted on 2026-08-12. T324 already separated the roots; this S admits only the reproduced residual proof gap and stale selection evidence. |
-| Objective | Make the current-gate separation mechanical and current: prove that both full and fast developer smoke roots exclude specialized verifiers, that the specialized root contains every named verifier, that `current-gates-gcc` composes exactly those two roots, and that full/current-media/non-media CTest selections form the recorded exact partition. |
-| Non-goals | No product, CPU, test assertion, timeout, media-label, artifact, CTest registration, or verifier-semantic change. Do not add a static verifier as CTest, remove a gate to improve timing, or alter Queue-owned candidate text outside this S's evidence/state records. |
-| Reference Baseline | `0acae527` / `vm-0-5-0323`; retain T324's two-root design and evidence. The audit observes current selections of 210 full, 15 media, and 195 current non-media tests; counts are evidence, not a fixed future policy. |
-| Files And ABI Surface | Expected: the narrow CMake verifier and its CMake wiring, updated indexed gate evidence, one owner smoke only if a direct mechanical assertion needs it, and Status/history closure. No source-runtime, public ABI, CTest, or artifact surface change. |
-| Applicable Rules | Queue current-test/specialized-gate prerequisite; Roadmap M5/80386DX dependency order; Architecture Rules single ownership path; Coding Rules cohesive CMake/test-only helpers; Documentation and Execution Rules packet/P lifecycle and actual-change review. |
-| Verification | Fresh configure; prove actual Ninja dependency graphs for `run-current-smokes`, `run-current-fast-smokes`, and `verify-current-specialized-gates`; mechanically enumerate CTest full/media/current-non-media selection and assert the exact partition; prove the aggregate preset has exactly the two roots; run pure full, fast, specialized, aggregate, documentation governance, diff, and full current-gate. Record separate elapsed baselines without making them normative. |
-| Expected Markers | Retained `M5:T324:S1:CURRENT-GATE-SEPARATION:OK` or a successor marker with equivalent mechanical scope; fresh full/media/non-media counts and all four root commands pass. |
-| Asset Needs | No new media or runtime asset. Existing deterministic current tests and their existing classifications only. |
-| Reporting Requirements | Record the audit that distinguishes T324's retained separation from this missing verification coverage. P1 must contain every mechanical proof, evidence update, self-review, commit, and push; after independent Ordinary-Mode review, P2 contains only closure records. |
-| Stop Conditions | Stop if a verifier has an undocumented runtime dependency, if a correct partition requires changing an existing test label/timeout/command, or if graph proof exposes a target whose ownership cannot be classified without product behavior change. Revise or transfer rather than weaken coverage. |
-| Exit Criteria | Both developer roots are mechanically free of specialized verifiers; specialized and aggregate roots contain exactly the required ownership; the full/media/current-non-media CTest sets are mechanically enumerated and form a truthful partition; all root commands and full gate pass; the evidence supersedes stale counts; no registered test or product behavior changes. |
-| Original Owner Request | Complete Intel 80386 against an Intel form--implementation--test matrix, repair omissions, perform differential/boundary review, and close package evidence; Git commits and pushes are authorized. |
-| Similar-Issue Sweep | Audit all `verify-*` targets, both developer roots, the generated specialized manifest, CTest labels, and `current-gates-gcc` preset roots. Classify every observed dependency as smoke, specialized verifier, or an explicit blocker; do not infer separation from target naming alone. |
+**Idle.** T327 is closed; the next 80386DX package requires separate
+admission from the Queue.
 
 ## Current Technical Baseline
 
@@ -43,6 +24,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T327 | Closed the current/specialized-gate reconciliation: fast smoke no longer builds classified media targets, and generated CTest/Ninja evidence now proves the full 210 = 15 media + 195 non-media partition, both developer roots, all specialized verifiers, and the aggregate's two roots. [History](history/M5-T327-current-gate-reconciliation.md). |
 | T326 | Closed ordinary protected-mode invalid-opcode delivery: `#UD` now reaches IDT vector 6 with a restartable three-dword no-error-code frame, while the explicit error-code classifier retains vectors 8/10--14/17. Four producer classes, invalid-gate containment, retained VM86 and 210/210 current-gate pass. Real-mode IVT migration transfers. [History](history/M5-T326-protected-invalid-opcode-delivery.md). |
 | T325 | Closed the CPU-native Intel 80386DX paging/translation package: CR0, CR2/CR3, 4-KiB PDE/PTE, U/S/R/W, A/D, cross-page atomicity, delivered `#PF`, no-persistent-cache behavior, and pre-486 `INVLPG #UD` are reconciled. Protected `#UD` delivery, task/VM86 paging, and persistent TLB/TR6/TR7 state transfer explicitly. [History](history/M5-T325-80386dx-paging-translation.md). |
 | T324 | Closed current-test/specialized-gate separation: `run-current-smokes` now runs only the full 209-test CTest smoke selection, `run-current-fast-smokes` retains the 194-test non-media selection, and `verify-current-specialized-gates` owns 46 named verifiers plus a mechanical target-graph check. `current-gates-gcc` composes exactly both roots; all layer baselines and evidence are retained in [T324 history](history/M5-T324-current-gate-separation.md). |
@@ -50,7 +32,6 @@
 | T322 | Audited and withdrew the duplicate ordinary-execution/FLAGS candidate: T316's accepted S23--S65 owner smokes already cover the transferred Intel 80386 ordinary application forms. Remaining work is explicitly protection/privilege, paging, task/debug/VM86, legacy LOCK, or external x87 scope; no invented implementation slice or artifact was created. Documentation governance and diff checks passed. |
 | T321 | Closed the bounded exception, interrupt, return, VM86 table-load, and processor-control composition program: S2 delivers active `#DE/#PF/#MF` vectors; S3 proves NMI/IRQ/TF ordering; S4 composes software INT/IRET with IRQ; S5 enforces VM86 LGDT/LIDT `#GP(0)` before source access; and S6 records the artifact and all transfers. The 0321 artifact, governance, and 202/202 current-gate passed. |
 | T320 | Closed the bounded VM86-to-CPL0 32-bit delivery foundation: `#GP/#UD/#NM/IRQ0` entry through TSS `SS0:ESP0`, full VM86 frame and failure boundaries, plus atomic nine-dword CPL0 `IRET` return with a real IRQ0-to-handler-to-VM86 round trip. `66` is classified as non-VM86 return, `67` succeeds, and VME/PVI/task/paging breadth remains transferred. Artifact 0320 SHA-256 is recorded in history; fresh configure, governance/diff checks, and 198/198 current-gate passed. |
-| T319 | Closed the bounded non-VM86 LGDT/LIDT `0F 01 /2,/3` table-load slice: protected CPL>0 now rejects before pseudo-descriptor reads, both forms have real/protected, attribute, source-atomicity, table-consumer, and PIC evidence, and VM86 plus 80286 LOCK remain transferred. Its 0319 artifact and 196/196 current-gate pass are retained in history. |
 
 ## Recent Governance
 
