@@ -8,7 +8,8 @@ Before changing work for an S, every participant reads:
 
 1. this guide;
 2. the active [Status](STATUS.md) packet and its S brief;
-3. [Execution Rules](rules/EXECUTION.md); and
+3. the [Execution Rules](rules/EXECUTION.md) reading index and the lifecycle
+   paragraphs it names; and
 4. [Contributing](../CONTRIBUTING.md).
 
 The active packet or brief may name additional authorities, local instructions,

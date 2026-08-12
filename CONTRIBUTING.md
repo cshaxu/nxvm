@@ -26,15 +26,9 @@ Every change records:
 - tests and evidence added or updated; and
 - any deferred issue, owner-approved exception, or research boundary.
 
-Report only information applicable to the report type. A completion or blocker
-delivery uses four items: completion or blocker, pushed commit, verification
-result or evidence location, and known boundary or transfer. Contract
-confirmation or objection and S-required progress reports state the applicable
-decision or progress node and link to evidence. Link to committed evidence,
-task history, or indexed supporting material instead of copying command output,
-requirement matrices, or an implementation narrative into the conversation.
-This report format is an index; it does not replace the complete review and
-evidence record required by the [Execution Rules](docs/rules/EXECUTION.md).
+Use the concise, purpose-specific conversation reports required by the
+[Execution Rules](docs/rules/EXECUTION.md); they index durable evidence and do
+not replace the required review record.
 
 ## Commits And Tracking
 
