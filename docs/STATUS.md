@@ -7,7 +7,7 @@
 
 ## M5 T319 S1 Packet
 
-| Field | Record |
+| Field | Required record |
 | --- | --- |
 | Identifier Mode | M5 T319 S1; Coordinated Dual-Session Mode; implementation is delegated only to the existing `executor` session and independently reviewed by the coordinator. |
 | Admission And Approval | The owner’s active complete-80386 goal authorizes continued bounded matrix work. Coordinator admission on 2026-08-11 accepts only this corrected T319 slice after the read-only PRM/erratum and route audit; 80286 LOCK behavior is explicitly transferred to the retained legacy-LOCK policy debt rather than silently weakened. |
