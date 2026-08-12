@@ -2,34 +2,13 @@
 
 ## Current Work
 
-**Active.** M5 T319 S1 is implementing the bounded non-VM86 Intel 80286/80386
-LGDT/LIDT `0F 01 /2,/3` table-load slice in Ordinary Mode.
-
-## M5 T319 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New; M5 T319 S1; Ordinary Mode. After two executor stops without a complete P3, the coordinator takes over the same uncommitted implementation P under the owner-approved dual-session fallback rule. |
-| Admission And Approval | The owner's active complete-80386 goal authorizes continued bounded matrix work. On 2026-08-11 the owner explicitly approved retaining and completing this non-VM86 LGDT/LIDT slice, while transferring its VM86 rejection/delivery case to the ordered VM86-to-protected delivery foundation; 80286 LOCK remains transferred to the retained legacy-LOCK policy debt. Executor reported two clean-worktree, incomplete P3 stops on 2026-08-11; per the approved fallback policy the coordinator now executes the same P3 in Ordinary Mode. |
-| Objective | Implement or correct and prove Intel 80286/80386 `LGDT m16&24/m16&32` (`0F 01 /2`) and `LIDT m16&24/m16&32` (`0F 01 /3`): memory-only six-byte table loads in real mode and protected CPL0, protected CPL>0 `#GP(0)` rejection before source-memory publication, 80386 operand/address attributes, and 80386 LOCK rejection. The VM86 `#GP(0)` producer/delivery proof is transferred, not claimed. |
-| Non-goals | SGDT/SIDT, SMSW/LMSW, SLDT/STR/LLDT/LTR, `MOV CRx`, paging, generic prefix/legacy-LOCK policy redesign, generic interrupt/exception redesign, task switching, all VM86 execution and delivery work, and x87 implementation. VM86 LGDT/LIDT rejection is a required later re-admission after the Queue delivery-foundation candidate completes. |
-| Reference Baseline | `98e0a732`; the preceding T318 developer artifact closed only the paired SGDT/SIDT stores and remains retained evidence, not proof of this load slice. |
-| Files And ABI Surface | May change only the local `INS_0F_01` `/2,/3` paths and/or `_s_load_gdtr`/`_s_load_idtr` if a focused defect proves it, a new owner smoke, CMake registration, T319 evidence/history, STATUS, and current 0319 artifact wiring. No public ABI, provider, shared memory/paging, generic decoder, or global prefix-policy change. |
-| Applicable Rules | Task Reading Set; `docs/rules/EXECUTION.md`; `docs/rules/CODING.md`; `docs/rules/DOCUMENT.md`; Intel 80386 PRM LGDT/LIDT entry for non-VM86 real/protected behavior; target-local strict GCC and project type vocabulary rules. The Intel VM86 documentation correction defines the transferred later obligation. |
-| Verification | Fresh GCC configure; focused owner marker; exact current-gate discovery; real and protected CPL0/CPL>0 plus table-consumer vectors for both opcodes; documentation governance; `git diff --check`; current artifact rebuild/runtime identity/hash; full `current-gates-gcc`; commit and push. No VM86 execution vector belongs to this S. |
-| Expected Markers | A new deterministic `M5:T319:S1:LGDT-LIDT:OK` marker; exactly one `current.core-machine-lgdt-lidt-smoke` registration; full current-gate pass. |
-| Asset Needs | None; deterministic local CPU, GDT/IDT/TSS/PIC fixtures only. |
-| Reporting Requirements | The coordinator completes one full P3, self-reviews the actual changes against every exit criterion, commits and pushes it, then independently performs the Ordinary-Mode acceptance review before a governance closure P. Report form-to-vector evidence, changed-code and caller sweep, commands, artifact identity/hash, and every transfer. |
-| Stop Conditions | Stop rather than broaden if 80286 LOCK correctness requires `PREFIX_LOCK` or global legacy policy; if protected CPL rejection needs generic decode, segment translation, fault priority, or delivery changes; if source atomicity needs shared memory/paging changes; if new table consumers require interrupt/exception redesign; or if any `/0,/1,/4-/6` or unrelated descriptor/task/control form must change. A VM86 case is transferred rather than implemented here. |
-| Exit Criteria | For each `/2` and `/3`: 80286/80386 real and protected CPL0 success; protected CPL>0 `#GP(0)` with no source read/table publication; 16/32 operand and 80386 `67`/combined EA layouts; DS, SS-default, and one override source selection; memory-only direct-ModRM/rejected profiles/80386 LOCK boundaries; source-limit and table-state atomicity; no-shadow PIC success; a bounded post-load GDTR/IDTR consumer; all required gates, artifact evidence, commit, and push. 80286 LOCK and VM86 rejection/delivery must be explicitly recorded as transferred, not claimed. |
-| Original Owner Request | Continue the complete 80386 plan in dual-session mode, with Intel form-to-implementation-to-test evidence, bounded governance, code quality, and commit/push authority. |
-| Similar-Issue Sweep | Inspect both `/2` and `/3` symmetrically; sweep only their direct helper/caller and downstream bounded GDT/IDT consumers. Confirm no change leaks to T318 stores, `/4-/6`, generic prefix policy, VM86 delivery, or shared exception/memory architecture. |
+**Idle.** M5 T319 S1 is closed; the next 80386 matrix slice requires a
+separately admitted packet.
 ## Current Technical Baseline
 
-- **Current task artifact:** `current-gcc` and
-  `verify-current-artifact-target` selects `vm-0-5-0319` / `build/output/nxvm_0_5_0319.exe` for the active T319 implementation.
-  The preceding T318 record retains its source commit, SHA-256, and runtime
-  identity in [task history](history/M5-T318-sgdt-sidt.md).
+- **Current developer artifact:** T319 selects `vm-0-5-0319` /
+  `build/output/nxvm_0_5_0319.exe`; its commit, SHA-256, runtime identity, and
+  retained boundaries are in [T319 history](history/M5-T319-lgdt-lidt.md).
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
@@ -44,6 +23,7 @@ LGDT/LIDT `0F 01 /2,/3` table-load slice in Ordinary Mode.
 
 | Task | Compact result |
 | --- | --- |
+| T319 | Closed the bounded non-VM86 LGDT/LIDT `0F 01 /2,/3` table-load slice: protected CPL>0 now rejects before pseudo-descriptor reads, both forms have real/protected, attribute, source-atomicity, table-consumer, and PIC evidence, and VM86 plus 80286 LOCK remain transferred. Its 0319 artifact and 196/196 current-gate pass are retained in history. |
 | T318 | Closed the bounded SGDT/SIDT `0F 01 /0,/1 table-store slice: a local six-byte preflight/publication repair prevents partial pseudo-descriptor writes; both forms have profile, attribute, segment, rejection, protected atomicity, VM86 and IRQ-ordering evidence. 195/195 current-gate passed, and executor plus coordinator 0318 artifact hashes are retained in its history. LGDT/LIDT and wider processor-control work remain future bounded packages. |
 | T317 | Closed test-corpus quality plus corrective type-vocabulary and developer-feedback work. S7 retains the 194-test current gate while adding validated default-four-job CTest execution, 15 explicit media labels, and a 179-test non-media fast preset; its full gate, fast run, media verifier, documentation governance, and diff check passed. |
 | T316 | Closed the declared 80386 ordinary-execution slices through S66. Residual parent-family breadth remains explicitly transferred in the S66 matrix to named later Queue packages, the legacy LOCK TODO, or the external-coprocessor boundary; no whole-80386 claim. Its predecessor developer artifact and 194 current-gate tests passed. |
@@ -51,7 +31,6 @@ LGDT/LIDT `0F 01 /2,/3` table-load slice in Ordinary Mode.
 | T313 | Completed construction-failure atomicity and startup-failure visibility: single RAM allocation, transactional port/controller assembly, visible session start failure, and explicit debugger mappings. Its accepted artifact, 51 gates, 145 CTests, and S2--S6 focused markers passed. |
 | T307 | Completed 80386 32-bit CPL3-to-CPL0 IDT and call-gate entry with TSS32 target stacks, preflighted atomic publication, and Intel-correct target-SS `#TS` classification. Its 0307 artifact, 51 gates, 137 CTests, and 9 focused/retained probes passed; product observation remained host-window limited before guest input. |
 | T308 | Completed protected 32-bit same/outer error delivery and bounded contributory `#DF` containment through the existing route. Its 0308 artifact, 51 gates, and 137 CTests passed; triple-fault shutdown/reset remains deferred. |
-| T309 | Completed the form-level 80386 audit and bounded trace-design record without runtime or artifact change; it selected T310 through evidence rather than a completeness claim. |
 
 ## Recent Governance
 
