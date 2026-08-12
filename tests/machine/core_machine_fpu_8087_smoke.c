@@ -143,6 +143,10 @@ static C_INT test_unmasked_fwait(C_VOID)
     const type_unsigned_32 one = 0x3f800000u;
     const type_unsigned_32 zero = 0u;
     const type_unsigned_16 unmask_zero_divide = 0x037bu;
+    static const type_unsigned_8 handler[] = { 0xf4u };
+    const type_unsigned_16 handler_offset = 0x0200u;
+    const type_unsigned_16 handler_segment = 0u;
+    type_unsigned_16 frame[3] = { 0u, 0u, 0u };
     fpu_test_machine state;
     core_machine_cpu_diagnostic diagnostic;
     core_machine_fpu_state fpu_state;
@@ -155,10 +159,20 @@ static C_INT test_unmasked_fwait(C_VOID)
         failed |= !fpu_test_write(&state, FPU_TEST_ZERO, &zero, sizeof(zero));
         failed |= !fpu_test_write(&state, FPU_TEST_CONTROL, &unmask_zero_divide,
             sizeof(unmask_zero_divide));
-        failed |= !fpu_test_run(&state, 5u, TYPE_STATUS_FAULT, &diagnostic);
-        failed |= !diagnostic.first_fault.valid || !TYPE_GET_BIT(
-            diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_MF) ||
-            TYPE_GET_BIT(diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD);
+        state.machine->executor_cpu.data.esp = 0x00008000u;
+        failed |= !fpu_test_write(&state, 0x0040u, &handler_offset,
+            sizeof(handler_offset)) || !fpu_test_write(&state, 0x0042u,
+            &handler_segment, sizeof(handler_segment)) || !fpu_test_write(
+            &state, handler_offset, handler, sizeof(handler));
+        failed |= !fpu_test_run(&state, 5u, TYPE_STATUS_OK, &diagnostic);
+        failed |= diagnostic.first_fault.valid ||
+            !diagnostic.last_delivered_exception.valid || !TYPE_GET_BIT(
+                diagnostic.last_delivered_exception.exception_mask,
+                VCPUINS_EXCEPT_MF) || state.machine->executor_cpu.data.eip !=
+                handler_offset || state.machine->executor_cpu.data.esp !=
+                0x00007ffau || !test_core_machine_fixture_read_linear(
+                state.machine, 0x00007ffau, TYPE_REFERENCE_OF(frame),
+                sizeof(frame)) || frame[0] != 14u || frame[1] != 0u;
         failed |= core_machine_get_fpu_state(state.machine, &fpu_state) !=
             TYPE_STATUS_OK || (fpu_state.status_word & 0x0084u) != 0x0084u ||
             !fpu_state.pending_unmasked_exception;

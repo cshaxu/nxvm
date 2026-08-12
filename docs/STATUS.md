@@ -2,8 +2,28 @@
 
 ## Current Work
 
-**Idle.** M5 T321 S1 is accepted and closed; S2 requires a separately admitted
-packet.
+**Active.** M5 T321 S2 closes the bounded 80386 `#DE`, `#PF`, and `#MF`
+exception-vector and frame-delivery gap in Ordinary Mode.
+
+## M5 T321 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | The owner authorized continued single-session 80386DX architecture coverage on 2026-08-12. Accepted T321 S1 identified this shared exception-delivery gap and ordered S2 before dependent IRQ/control consumers. |
+| Objective | Implement and prove Intel 80386 delivery for the existing `#DE`, `#PF`, and `#MF` producers: exact vectors 0, 14, and 16; real/protected mode disposition; error-code versus no-error-code frame shape; restart/trap state; and failed-delivery containment. |
+| Non-goals | No paging policy or translation change, no x87/80287/80387 numerical execution, no debug/breakpoint/overflow/NMI policy, no task switch, VME/PVI, reset/shutdown/triple-fault policy, generic PIC redesign, or new public/provider ABI. |
+| Reference Baseline | `2f18e0bb` / `vm-0-5-0320`; T321 S1 audit in `docs/etc/evidence/t321-s1-processor-control-closure-audit.md`. |
+| Files And ABI Surface | `src/core/machine/cpu_instructions.c` only for proven shared finalizer/delivery fixes; a new owner smoke; direct producer regressions `core_machine_inc_dec_smoke.c`, `core_machine_80386_paging_smoke.c`, `core_machine_fpu_interface_s65_smoke.c`, and `core_machine_fpu_8087_smoke.c` only where their former terminal expectation must become an installed-vector delivery assertion; CMake registration/artifact wiring, T321 evidence/history, and Status. No shared paging walk, FPU provider, memory, or public API change. |
+| Applicable Rules | Task Reading Set; `docs/rules/EXECUTION.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/rules/DOCUMENT.md`, project source layout, Intel 80386 exceptions/interrupts and page-fault frame rules, and T308 retained delivery evidence. |
+| Verification | Focused real/protected vectors for divide error, page fault, and WAIT pending FPU error; exact IDT entry, diagnostic, saved frame and error-code checks; failure-preflight preservation; migrate each named direct producer regression only to its equivalent installed-vector contract; direct producer/caller sweep; fresh configure; exact current registration; artifact build/SHA-256; documentation governance; diff check; full current gate. |
+| Expected Markers | New deterministic owner marker and exactly one current-gate registration. `#DE` and `#MF` frames contain saved EIP/CS/EFLAGS only; `#PF` adds its unchanged producer error code below that frame. |
+| Asset Needs | None; deterministic local CPU/GDT/IDT/stack/page/FPU-provider fixtures only. No source, firmware, guest media, or external provider import. |
+| Reporting Requirements | Record every producer, exact vector, frame layout, real/protected outcome, failed-delivery disposition, modified caller, and excluded architecture boundary in indexed evidence. Before implementation, confirm this matrix or report a material objection. |
+| Stop Conditions | Stop for a required paging-walker change, FPU provider ABI/numerical implementation, generic interrupt/PIC redesign, debug/NMI/trap policy, task/VM86 expansion, or a double/triple-fault/reset contract beyond retained T308 behavior. |
+| Exit Criteria | Every current `#DE`, `#PF`, and `#MF` producer has an exact delivery/terminal disposition; valid real/protected vectors prove correct frame, restart/error-code, gate, and handler behavior; invalid delivery proves contained no-partial publication; no unrelated exception class changes; required artifact, evidence, gates, commit, and push pass. |
+| Original Owner Request | Continue in Ordinary Mode toward the 80386DX architecture-coverage closure audit. |
+| Similar-Issue Sweep | Search all `_SetExcept_DE/_PF/_MF` producers, `ExecFinal` exact-mask dispatch, `_e_except_n` error-frame selection, real/protected interrupt planners, paging/fpu focused tests, and every changed helper caller. |
 
 ## Current Technical Baseline
 

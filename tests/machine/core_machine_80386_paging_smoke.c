@@ -156,6 +156,79 @@ static C_INT paging_expect_fault(const core_machine_cpu_diagnostic *diagnostic,
         diagnostic->first_fault.point.linear_pc == point_linear;
 }
 
+static C_INT paging_test_delivered_page_fault(C_VOID)
+{
+    static const type_unsigned_8 protected_code[] = {
+        0xbcu, 0x00u, 0x50u,
+        0x66u, 0xb8u, 0x00u, 0x10u, 0x00u, 0x00u,
+        0x0fu, 0x22u, 0xd8u,
+        0x66u, 0xb8u, 0x01u, 0x00u, 0x00u, 0x80u,
+        0x0fu, 0x22u, 0xc0u,
+        0xf4u
+    };
+    static const type_unsigned_8 faulting_code[] = { 0xa1u, 0x00u, 0x90u };
+    static const type_unsigned_8 hlt[] = { 0xf4u };
+    const type_unsigned_8 gate[] = { 0x00u, 0x01u, 0x08u, 0x00u,
+        0x00u, 0x8eu, 0x00u, 0x00u };
+    const type_unsigned_32 code_entry = TEST_PAGE_PRESENT | TEST_PAGE_WRITABLE;
+    const type_unsigned_32 data_entry = TEST_DATA_PHYSICAL | TEST_PAGE_PRESENT |
+        TEST_PAGE_WRITABLE;
+    const type_unsigned_32 stack_entry = TEST_STACK_PHYSICAL | TEST_PAGE_PRESENT |
+        TEST_PAGE_WRITABLE;
+    paging_machine state;
+    core_machine_run_result result;
+    core_machine_cpu_diagnostic diagnostic;
+    t_cpu before;
+    t_cpu after;
+    type_unsigned_32 frame[4] = { 0u, 0u, 0u, 0u };
+    C_INT failed = !paging_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+
+    if (!failed) {
+        failed |= !paging_install_tables(state.machine, code_entry, data_entry,
+            stack_entry) || !paging_write_bootstrap(state.machine, protected_code,
+            sizeof(protected_code));
+        failed |= !paging_run(state.machine, 0, &result, &diagnostic);
+    }
+    if (!failed) {
+        failed |= core_machine_memory_write(state.machine, 0x0500u + 14u * 8u,
+            gate, sizeof(gate)) != TYPE_STATUS_OK || core_machine_memory_write(
+            state.machine, 0x0080u, faulting_code, sizeof(faulting_code)) !=
+            TYPE_STATUS_OK || core_machine_memory_write(state.machine, 0x0100u,
+            hlt, sizeof(hlt)) != TYPE_STATUS_OK;
+        state.machine->executor_cpu.data.idtr.base = 0x0500u;
+        state.machine->executor_cpu.data.idtr.limit = 14u * 8u + 7u;
+        state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF | VCPU_EFLAGS_IF;
+        test_core_machine_fixture_resume_after_halt_at(state.machine, 0x0080u);
+        before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        failed |= core_machine_run(state.machine, (core_machine_run_budget){ 1u, 0u },
+            &result) != TYPE_STATUS_OK || result.reason != CORE_MACHINE_STOP_BUDGET ||
+            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
+            TYPE_STATUS_OK;
+        after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        failed |= diagnostic.first_fault.valid ||
+            !diagnostic.last_delivered_exception.valid || !TYPE_GET_BIT(
+                diagnostic.last_delivered_exception.exception_mask,
+                VCPUINS_EXCEPT_PF) || diagnostic.last_delivered_exception.exception_code != 0u ||
+            after.data.eip != 0x0100u || after.data.cr2 != 0x00009000u ||
+            after.data.esp != 0x00004ff0u || !test_core_machine_fixture_read_linear(
+                state.machine, after.data.ss.base + after.data.esp,
+                TYPE_REFERENCE_OF(frame), sizeof(frame)) || frame[0] != 0u ||
+            frame[1] != 0x0080u || frame[2] != TEST_CODE_SELECTOR ||
+            frame[3] != before.data.eflags || after.data.eax != before.data.eax ||
+            after.data.ebx != before.data.ebx || after.data.ecx != before.data.ecx ||
+            after.data.edx != before.data.edx || after.data.ebp != before.data.ebp ||
+            after.data.esi != before.data.esi || after.data.edi != before.data.edi;
+    }
+    if (!failed) {
+        failed |= core_machine_run(state.machine, (core_machine_run_budget){ 1u, 0u },
+            &result) != TYPE_STATUS_OK || result.reason !=
+            CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+            state.machine->executor_cpu.data.eip != 0x0101u;
+    }
+    core_machine_destroy(state.machine);
+    return failed;
+}
+
 static C_INT paging_test_valid_path(C_VOID)
 {
     static const type_unsigned_8 protected_code[] = {
@@ -607,7 +680,8 @@ static C_INT paging_test_permissions(C_VOID)
             pde_data, TEST_PERMISSION_CODE | TEST_PAGE_PRESENT |
             TEST_PAGE_WRITABLE, data_user,
             stack_user, 1, 0, &eip) || !paging_permission_expect_fault(&state,
-            eip, 0x05u, TEST_PERMISSION_CODE, TEST_PAGE_DIRECTORY, pde_code,
+            eip, 0x05u, TEST_PERMISSION_CODE, TEST_PAGE_DIRECTORY,
+            pde_code | TEST_PAGE_ACCESSED,
             TEST_PAGE_TABLE + 7u * 4u, TEST_PERMISSION_CODE |
             TEST_PAGE_PRESENT | TEST_PAGE_WRITABLE, PAGING_PERMISSION_FETCH))
         failed = 1;
@@ -931,7 +1005,8 @@ static C_INT paging_test_cross_fetch(C_VOID)
         TEST_PERMISSION_CODE + 0x0fffu) || cpu.data.cr2 !=
         TEST_PERMISSION_CODE + 0x1000u || cpu.data.eip != 0x0fffu ||
         !paging_cross_entries(state.machine, TEST_PAGE_DIRECTORY,
-            TEST_PAGE_TABLE + 7u * 4u, TEST_PAGE_TABLE + 8u * 4u, pde,
+            TEST_PAGE_TABLE + 7u * 4u, TEST_PAGE_TABLE + 8u * 4u,
+            pde | TEST_PAGE_ACCESSED,
             code_first, TEST_CROSS_CODE_PHYSICAL | TEST_PAGE_WRITABLE);
     core_machine_destroy(state.machine);
     return failed;
@@ -946,15 +1021,16 @@ static C_INT paging_test_cross_page(C_VOID)
 C_INT main(C_VOID)
 {
     const C_INT valid = paging_test_valid_path();
+    const C_INT delivered = paging_test_delivered_page_fault();
     const C_INT faults = paging_test_page_faults();
     const C_INT controls = paging_test_control_forms();
     const C_INT permissions = paging_test_permissions();
     const C_INT cross_page = paging_test_cross_page();
 
-    if (valid || faults || controls || permissions || cross_page) {
+    if (valid || delivered || faults || controls || permissions || cross_page) {
         STD_FPRINTF(STD_STDERR,
-            "M5:T258:S2:I386-PAGING:FAIL valid=%d faults=%d controls=%d permissions=%d cross=%d\n",
-            valid, faults, controls, permissions, cross_page);
+            "M5:T258:S2:I386-PAGING:FAIL valid=%d delivered=%d faults=%d controls=%d permissions=%d cross=%d\n",
+            valid, delivered, faults, controls, permissions, cross_page);
         return 1;
     }
     STD_PRINTF("M5:T258:S2:I386-PAGING:OK\n");
