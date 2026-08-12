@@ -2,35 +2,17 @@
 
 ## Current Work
 
-**Active: M5 T317 S5.** Migrate the repository to the project fixed-width type
-vocabulary in Coordinated Dual-Session Mode.
+**Idle.** M5 T317 is closed; the next 80386 capability or quality slice requires a
+separately admitted task packet.
 
-## M5 T317 S5 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Corrective; the owner approved an in-scope global type-vocabulary repair under the closed-task exception for the most recently closed numeric T317. |
-| Admission And Approval | Owner approved this S5 package on 2026-08-11 after review of the 240-file, 4,138-spelling baseline. The approved scope is repository-wide direct fixed-width vocabulary migration with only the explicit type-facade and controlled negative-fixture lexical exceptions. |
-| Objective | Replace direct standard fixed-width type spellings in all applicable tracked C, header, CMake, and PowerShell code with project type vocabulary, preserve behavior and ABI, establish a repository-wide static verifier with positive and negative self-checks, and record every exception or deferred unsafe inherited file. |
-| Non-goals | No CPU feature, x87, device, timing, product behavior, public API design, test-support-to-production dependency, broad refactor, or warning-policy change; no repository-wide claim for non-fixed-width C-library, platform SDK, or atomic vocabulary not named by the baseline. |
-| Reference Baseline | `63e84740` / predecessor 0.5.0316 artifact; baseline is 240 tracked code/script files and 4,138 direct fixed-width spellings: 124 `src/` files / 2,085, 114 `tests/` files / 2,044, and two build/validation scripts / nine. |
-| Files And ABI Surface | Expected tracked `src/`, `tests/`, `cmake/`, `tools/`, `src/type.h`, CMake verification/evidence, TODO/history/STATUS, and the required T317 `0.5.0317` developer artifact record. No new public interface and no `src/` include of `tests/support`. |
-| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/CODING.md`, `docs/rules/DOCUMENT.md`, `docs/rules/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/design/ARCHITECTURE.md`, and the T317 history/plan. |
-| Verification | Fix and record the exact baseline; compile all affected targets under GCC; run source-equivalence/ABI review appropriate to each substitution; run new global positive/negative static verifier, strict and existing T317 type gates, documentation governance, diff check, full current-gates-gcc, and rebuild/record the T317 0.5.0317 developer artifact SHA-256. |
-| Expected Markers | Deterministic global fixed-width vocabulary verifier reports zero forbidden direct spellings outside the exact exception list; its positive and negative self-checks pass; evidence records pre/post file/token counts and every per-file deferment or exception. |
-| Asset Needs | None; deterministic local source, CMake, GCC/Ninja, and current-gate inputs only. |
-| Reporting Requirements | Executor confirms or materially objects, then returns only one complete committed/pushed P1 or reproducible material blocker. P1 must map every baseline group, lexical exception, changed validator behavior, deferred inherited file, artifact result, and verification result. Coordinator alone accepts and re-closes S5/T317. |
-| Stop Conditions | Stop if a replacement changes ABI, native/platform interop, atomic representation, generated-source contract, or runtime behavior; if a fixed-width use lacks a proven project-type equivalent; if the type facade or negative fixture needs a broader exception; or if a legacy file cannot be safely migrated without a named TODO admission path. |
-| Exit Criteria | The exact global baseline is zero outside `src/type.h` foundational aliases and explicitly controlled negative validation fixtures; every exception/deferment is enumerated; global verifier self-checks pass; no `src/` include of `tests/support`; ABI/source equivalence and all required gates/artifact checks pass; pushed implementation passes coordinator review and corrective T317 closure. |
-| Original Owner Request | Expand T317's prior local vocabulary rule to the whole repository: cover `src/`, `tests/`, and applicable build/verification scripts; use fixed baseline and equivalent migration; add positive/negative static validation; list unsafe inherited files individually rather than blanket-exempting them. |
-| Similar-Issue Sweep | Scan all tracked C, headers, CMake, and PowerShell code for exact-width, least/fast, max, and pointer-width standard integer spellings; inspect type facade, project aliases, validators, fixtures, and generated/artifact paths; record each hit as migrated, foundational exception, controlled validation input, or a per-file TODO. |
 ## Current Technical Baseline
 
 - **Current task artifact:** `current-gcc` and
   `verify-current-artifact-target` select `vm-0-5-0317` / `build/output/nxvm_0_5_0317.exe`.
-  S5 rebuilt this developer artifact as SHA-256
-  `A7EC7165730E2B037C24693E1E6B0EBFA6C67B9126F9CD5D5863A62DCA963F24`;
-  its source commit is finalized only by the coordinator's subsequent acceptance commit.
+  S5 recorded its executor build as SHA-256
+  `A7EC7165730E2B037C24693E1E6B0EBFA6C67B9126F9CD5D5863A62DCA963F24`.
+  Coordinator acceptance rebuilt the same source and recorded SHA-256
+  `B93DAF1ED9813E120ECBDD20A6E7595EFFA054961E546A15DC6AFB333494D412`.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
@@ -45,6 +27,7 @@ vocabulary in Coordinated Dual-Session Mode.
 
 | Task | Compact result |
 | --- | --- |
+| T317 | Closed test-corpus quality and the corrective repository-wide fixed-width vocabulary migration: 467 code/script paths contain no direct fixed-width spelling outside the 16 foundational `src/type.h` aliases and 28-token controlled negative fixture. The global positive/negative verifier, 47 target-local strict GCC command audit, documentation governance, and 194/194 current-gate passed; the 0317 artifact was rebuilt and recorded at coordinator acceptance. |
 | T316 | Closed the declared 80386 ordinary-execution slices through S66. Residual parent-family breadth remains explicitly transferred in the S66 matrix to named later Queue packages, the legacy LOCK TODO, or the external-coprocessor boundary; no whole-80386 claim. Its predecessor developer artifact and 194 current-gate tests passed. |
 | T314 | Closed the EGA CRTC 13h bound, registered the deterministic xasm smoke, restored six historical target-local strict GCC sets while retaining three selected libraries, and added the CRTC static closure verifier; the two inherited-governance debts remain. Its 0315 artifact, 52 gates, 147 CTests, and S2/S3/S6 markers passed. |
 | T313 | Completed construction-failure atomicity and startup-failure visibility: single RAM allocation, transactional port/controller assembly, visible session start failure, and explicit debugger mappings. Its accepted artifact, 51 gates, 145 CTests, and S2--S6 focused markers passed. |
