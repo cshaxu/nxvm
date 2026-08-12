@@ -9,13 +9,13 @@
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | M5 T319 S1; Coordinated Dual-Session Mode; implementation is delegated only to the existing `executor` session and independently reviewed by the coordinator. |
-| Admission And Approval | The owner’s active complete-80386 goal authorizes continued bounded matrix work. Coordinator admission on 2026-08-11 accepts only this corrected T319 slice after the read-only PRM/erratum and route audit; 80286 LOCK behavior is explicitly transferred to the retained legacy-LOCK policy debt rather than silently weakened. |
+| Identifier Mode | New; M5 T319 S1; Coordinated Dual-Session Mode; implementation is delegated only to the existing `executor` session and independently reviewed by the coordinator. |
+| Admission And Approval | The owner's active complete-80386 goal authorizes continued bounded matrix work. Coordinator admission on 2026-08-11 accepts only this corrected T319 slice after the read-only PRM/erratum and route audit; 80286 LOCK behavior is explicitly transferred to the retained legacy-LOCK policy debt rather than silently weakened. |
 | Objective | Implement or correct and prove Intel 80286/80386 `LGDT m16&24/m16&32` (`0F 01 /2`) and `LIDT m16&24/m16&32` (`0F 01 /3`): memory-only six-byte table loads in real mode and protected CPL0, protected CPL>0 and VM86 `#GP(0)` rejection before source-memory publication, 80386 operand/address attributes, and 80386 LOCK rejection. |
 | Non-goals | SGDT/SIDT, SMSW/LMSW, SLDT/STR/LLDT/LTR, `MOV CRx`, paging, generic prefix/legacy-LOCK policy redesign, generic interrupt/exception redesign, task switching, broad VM86 work, and x87 implementation. |
 | Reference Baseline | `98e0a732` / `vm-0-5-0318`; T318 closed only the paired SGDT/SIDT stores and remains retained evidence, not proof of this load slice. |
 | Files And ABI Surface | May change only the local `INS_0F_01` `/2,/3` paths and/or `_s_load_gdtr`/`_s_load_idtr` if a focused defect proves it, a new owner smoke, CMake registration, T319 evidence/history, STATUS, and current 0319 artifact wiring. No public ABI, provider, shared memory/paging, generic decoder, or global prefix-policy change. |
-| Applicable Rules | Task Reading Set; `docs/rules/EXECUTION.md`; `docs/rules/CODING.md`; `docs/rules/DOCUMENT.md`; Intel 80386 PRM LGDT/LIDT entry as corrected by Intel’s VM86 documentation change; target-local strict GCC and project type vocabulary rules. |
+| Applicable Rules | Task Reading Set; `docs/rules/EXECUTION.md`; `docs/rules/CODING.md`; `docs/rules/DOCUMENT.md`; Intel 80386 PRM LGDT/LIDT entry as corrected by Intel's VM86 documentation change; target-local strict GCC and project type vocabulary rules. |
 | Verification | Fresh GCC configure; focused owner marker; exact current-gate discovery; real/protected/VM86 and table-consumer vectors for both opcodes; documentation governance; `git diff --check`; current artifact rebuild/runtime identity/hash; full `current-gates-gcc`; commit and push. |
 | Expected Markers | A new deterministic `M5:T319:S1:LGDT-LIDT:OK` marker; exactly one `current.core-machine-lgdt-lidt-smoke` registration; full current-gate pass. |
 | Asset Needs | None; deterministic local CPU, GDT/IDT/TSS/PIC fixtures only. |
