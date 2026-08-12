@@ -1584,6 +1584,12 @@ set(PROJECT_CURRENT_ALL_SMOKE_TARGETS
     ${PROJECT_CURRENT_SMOKE_TARGETS}
     ${PROJECT_CURRENT_MEDIA_SMOKE_TARGETS})
 list(REMOVE_DUPLICATES PROJECT_CURRENT_ALL_SMOKE_TARGETS)
+set(PROJECT_CURRENT_SMOKE_JOBS "4" CACHE STRING
+    "Positive CTest parallel job count for current smoke targets")
+if(NOT PROJECT_CURRENT_SMOKE_JOBS MATCHES "^[1-9][0-9]*$")
+    message(FATAL_ERROR
+        "PROJECT_CURRENT_SMOKE_JOBS must be a positive integer, got: ${PROJECT_CURRENT_SMOKE_JOBS}")
+endif()
 set(PROJECT_ASSETS_ROOT "${CMAKE_SOURCE_DIR}/../../assets" CACHE PATH
     "Owner-provided local asset root for current runtime smoke coverage")
 set(PROJECT_FDD_SMOKE_IMAGE "${PROJECT_ASSETS_ROOT}/fdd.img" CACHE FILEPATH
@@ -1598,8 +1604,13 @@ function(project_add_current_smoke_test target)
         message(FATAL_ERROR "Current smoke target is missing: ${target}")
     endif()
     add_test(NAME "current.${target}" COMMAND "$<TARGET_FILE:${target}>" ${ARGN})
+    set(current_smoke_labels "current-gate;smoke")
+    list(FIND PROJECT_CURRENT_MEDIA_SMOKE_TARGETS ${target} media_smoke_index)
+    if(NOT media_smoke_index EQUAL -1)
+        list(APPEND current_smoke_labels media)
+    endif()
     set_tests_properties("current.${target}" PROPERTIES
-        LABELS "current-gate;smoke"
+        LABELS "${current_smoke_labels}"
         TIMEOUT 30)
 endfunction()
 
@@ -1631,8 +1642,17 @@ endforeach()
 add_custom_target(run-current-smokes
     COMMAND "${CMAKE_CTEST_COMMAND}" --test-dir "${CMAKE_BINARY_DIR}"
         --output-on-failure --no-tests=error --label-regex "^current-gate$"
+        --parallel "${PROJECT_CURRENT_SMOKE_JOBS}"
     DEPENDS ${PROJECT_CURRENT_ALL_SMOKE_TARGETS}
     COMMENT "Building and executing current runnable smoke coverage"
+    VERBATIM)
+
+add_custom_target(run-current-fast-smokes
+    COMMAND "${CMAKE_CTEST_COMMAND}" --test-dir "${CMAKE_BINARY_DIR}"
+        --output-on-failure --no-tests=error --label-regex "^current-gate$"
+        --label-exclude "media" --parallel "${PROJECT_CURRENT_SMOKE_JOBS}"
+    DEPENDS ${PROJECT_CURRENT_SMOKE_TARGETS}
+    COMMENT "Building and executing current non-media smoke coverage"
     VERBATIM)
 
 project_configure_t317_strict_cpu_smokes()
