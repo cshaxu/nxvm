@@ -5,10 +5,10 @@ reserve a numeric task identifier, or define a technical baseline. The first
 approved candidate enters [STATUS.md](STATUS.md) and receives the next linear
 numeric identifier under [rules/EXECUTION.md](rules/EXECUTION.md).
 
-Before M6 admission, complete the remaining M5 candidates. The current bounded
-LGDT/LIDT load work is not repeated here: it retains its non-VM86 boundary
-while the ordered candidates below begin with the shared prerequisite exposed
-by its VM86 stop condition.
+Before M6 admission, complete the remaining M5 candidates. The completed
+VM86-to-protected delivery prerequisite lets the ordered candidates below begin
+with its direct consumer. The bounded LGDT/LIDT load work retains its non-VM86
+boundary until that consumer re-admits the VM86 case.
 
 Every 80386DX candidate is matrix-driven rather than Windows-demand-driven.
 Before admitting a task, audit its relevant Intel 80386 PRM instruction and
@@ -25,14 +25,6 @@ state closures below. Every admitted 80386DX candidate identifies the map rows
 it advances and any residual row it transfers. A completed smoke count or
 opcode slice is never a substitute for a closed state transition.
 
-1. **P0 - VM86-to-protected exception and interrupt delivery foundation.**
-   Implement the shared 80386 VM86 `#GP`/`#UD`/`#NM` and IRQ path through an
-   IDT gate to CPL0: TSS-selected `SS0:ESP0` stack transition, Intel-correct
-   VM86 exception frame, gate effects, failure atomicity, and a bounded IRET
-   return proof. It must not claim VME/PVI, task switching, paging breadth, or
-   every VM86 instruction. This is the prerequisite for VM86 rejection
-   semantics in privileged instruction families, including the deferred
-   LGDT/LIDT case.
 1. **P0 - 80386DX exception, interrupt, and processor-control closure.**
    Complete remaining architected fault, trap, interrupt, return, CR0/CR2/CR3,
    descriptor-table load, and coprocessor-interface behavior without
