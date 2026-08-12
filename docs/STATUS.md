@@ -3,34 +3,34 @@
 ## Current Work
 
 M5 T323 S2 is active: close protected data-segment access-rights, null-cache,
-and limit/expand-down atomicity boundaries (Ordinary Mode).
+limit/expand-down atomicity, and reproduced 16-bit protected IRQ frame boundaries
+(Ordinary Mode; packet revised 2026-08-12).
 
 ## M5 T323 S2 Packet
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | Owner authorization to continue the ordered Intel 80386DX Queue program in Ordinary Mode, 2026-08-12. S1 is accepted in Status progress; S2 is the next bounded protection/privilege slice. |
-| Objective | Complete the Intel 80286/80386 protected, non-VM86 data-segment access matrix for already-loaded DS/ES/SS caches: readable versus read-only/writable use, null data-cache use, ordinary and expand-down limits, DS/SS default selection and ES string destination, with precise fault/no-publication boundaries. |
-| Non-goals | Segment-selector load semantics, code-segment transfers, call/task gates, outer returns, stack switching, paging, VM86, general descriptor-helper redesign, and ordinary opcode-form breadth are outside S2. |
-| Reference Baseline | `93b6b67d` / `vm-0-5-0321`; accepted T323 S1 direct-far evidence and retained T301/T307/T320/T321 records are inputs. |
-| Files And ABI Surface | Expected: one owner-local `tests/machine` smoke, target-local CMake/current-gate registration, T323 evidence, STATUS, and only a reproduced local production correction. No public ABI, provider, product, or test-support API is admitted. |
+| Admission And Approval | Owner authorization to continue the ordered Intel 80386DX Queue program in Ordinary Mode, 2026-08-12. This 2026-08-12 revision admits the reproduced 16-bit protected interrupt-gate frame classification because it is required to close S2's protected data-access IRQ boundary. S1 is accepted in Status progress. |
+| Objective | Complete the Intel 80286/80386 protected, non-VM86 data-segment access matrix for already-loaded DS/ES/SS caches: readable versus read-only/writable use, null data-cache use, ordinary and expand-down limits, DS/SS default selection and ES string destination, with precise fault/no-publication boundaries; repair the reproduced same-CPL external IRQ0 16-bit gate frame so it saves the actual continuation IP and has no error-code word. |
+| Non-goals | Segment-selector load semantics, code-segment transfers, call/task gates, outer returns, stack switching, paging, VM86, general descriptor-helper redesign, ordinary opcode-form breadth, and 32-bit/outer/VM86 interrupt-frame breadth are outside S2. |
+| Reference Baseline | `5fb2cd4c`; accepted T323 S1 direct-far evidence and retained T301/T307/T320/T321 records are inputs. |
+| Files And ABI Surface | Expected: one owner-local `tests/machine` smoke, target-local CMake/current-gate registration, T323 evidence, STATUS, the one reproduced `_ser_int_protected` 16-bit gate call-site correction, and the required T323 developer artifact. No public ABI, provider, product, or test-support API is admitted. |
 | Applicable Rules | Task Reading Set, architecture/coding/documentation rules, and Intel 80386 PRM protected data-segment access rules. No imported implementation source. |
-| Verification | Focused owner marker; configure; exact current-gate discovery; full current-gate; documentation governance; diff check; and actual-change review. Matrix must include 80286/80386, 66/67 where meaningful, DS/SS/ES selection, read/write, null/read-only/expand-down/limit faults, profile/LOCK classification, and successful IRQ no-shadow. |
+| Verification | Focused owner marker; configure; exact current-gate discovery; full current-gate; the `vm-0-5-0323` developer artifact plus SHA-256; documentation governance; diff check; and actual-change review. Matrix must include 80286/80386, 66/67 where meaningful, DS/SS/ES selection, read/write, null/read-only/expand-down/limit faults, profile/LOCK classification, and a protected 16-bit IRQ0 frame with continuation IP after the successful access and exactly FLAGS/CS/IP (no error-code word). |
 | Expected Markers | `M5:T323:S2:PROTECTED-DATA-ACCESS:OK` and exactly one `current.core-machine-protected-data-access-s2-smoke` item. |
 | Asset Needs | No external asset, guest media, firmware, or network source. |
 | Reporting Requirements | Complete one full implementation P with source/test/CMake/evidence and all verification while retaining this packet; report a material stop condition. After push, perform Ordinary-Mode actual-change acceptance before a separate governance P closes S2. |
-| Stop Conditions | Stop before a required shared descriptor, logical-memory, stack, paging, exception-delivery, or selector-load helper change; perform caller sweep and revise/transfer rather than broaden silently. |
+| Stop Conditions | Stop before any shared descriptor, logical-memory, stack, paging, selector-load, or exception-delivery change beyond the admitted 16-bit gate frame-classification call site; perform caller sweep and revise/transfer rather than broaden silently. |
 | Exit Criteria | Every declared S2 matrix row is proven or explicitly classified; faults prove the stated CPU/cache/memory publication boundary; no in-scope row remains partial or missing; all required gates pass; evidence records production result and transfers; and a pushed governance P records acceptance. |
 | Original Owner Request | Continue the owner-approved Intel 80386 implementation program in single-session mode through the 80386DX architecture coverage closure audit, with code quality and complete evidence. |
-| Similar-Issue Sweep | Audit `_kma_test_logical`, `_m_read_rm`, `_m_write_rm`, string fixed-ES paths, and cached DS/ES/SS use sites. Separate selector-load and paging consumers from actual data-access behavior. |
+| Similar-Issue Sweep | Audit `_kma_test_logical`, `_m_read_rm`, `_m_write_rm`, string fixed-ES paths, and cached DS/ES/SS use sites. For the reproduced gate defect, sweep every `_ser_int_protected_16` caller and distinguish error-frame classification from gate type, software origin, and 32-bit/outer delivery. Separate selector-load and paging consumers from actual data-access behavior. |
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** T321 selects `vm-0-5-0321` /
-  `build/output/nxvm_0_5_0321.exe`; its SHA-256, runtime identity, and
-  bounded closure transfers are in
-  [T321 history](history/M5-T321-exception-processor-control-closure.md).
+- **Current developer artifact:** T323 selects `vm-0-5-0323` /
+  `build/output/nxvm_0_5_0323.exe`; its source commit, SHA-256, and bounded
+  protection/privilege closure transfers will be recorded at T323 closure.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.

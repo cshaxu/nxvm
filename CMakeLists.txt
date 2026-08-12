@@ -277,6 +277,13 @@ if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(core-machine-protected-far-s1-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
+add_executable(core-machine-protected-data-access-s2-smoke
+    tests/machine/core_machine_protected_data_access_s2_smoke.c)
+target_link_libraries(core-machine-protected-data-access-s2-smoke PRIVATE core-machine)
+if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
+    target_compile_options(core-machine-protected-data-access-s2-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
 add_executable(core-machine-descriptor-system-smoke
     tests/machine/core_machine_descriptor_system_smoke.c)
 target_link_libraries(core-machine-descriptor-system-smoke PRIVATE core-machine)
@@ -1488,6 +1495,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-msw-s63-smoke
     core-machine-control-transfer-smoke
     core-machine-protected-far-s1-smoke
+    core-machine-protected-data-access-s2-smoke
     core-machine-descriptor-system-smoke
     core-machine-sgdt-sidt-smoke
     core-machine-lgdt-lidt-smoke
@@ -1755,7 +1763,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0321 "0.5.0321")
+add_current_vm_artifact(vm-0-5-0323 "0.5.0323")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 
