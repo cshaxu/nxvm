@@ -4063,7 +4063,9 @@ typedef struct task_switch_sreg_32 {
 #define TASK_SWITCH_TSS32_FS_OFFSET 0x58u
 #define TASK_SWITCH_TSS32_GS_OFFSET 0x5cu
 #define TASK_SWITCH_TSS32_LDTR_OFFSET 0x60u
-#define TASK_SWITCH_TSS32_IMAGE_BYTES 0x48u
+#define TASK_SWITCH_TSS32_DEBUG_TRAP_OFFSET 0x64u
+#define TASK_SWITCH_TSS32_STATE_BYTES 0x48u
+#define TASK_SWITCH_TSS32_INCOMING_BYTES 0x4au
 
 typedef struct task_switch_state_32 {
     type_unsigned_32 cr3;
@@ -4088,7 +4090,7 @@ typedef struct task_switch_state_32 {
 
 _Static_assert(sizeof(task_switch_sreg_32) == 4u,
     "80386 TSS selector slots are four bytes");
-_Static_assert(sizeof(task_switch_state_32) == TASK_SWITCH_TSS32_IMAGE_BYTES,
+_Static_assert(sizeof(task_switch_state_32) == TASK_SWITCH_TSS32_STATE_BYTES,
     "80386 TSS saved-state image spans 0x1c through 0x63");
 _Static_assert(offsetof(task_switch_state_32, cr3) == 0u &&
     offsetof(task_switch_state_32, eip) == 4u &&
@@ -4123,9 +4125,13 @@ typedef struct task_switch_plan_32 {
     t_cpu_data_sreg newgs;
     task_switch_state_32 incoming;
     task_switch_state_32 outgoing;
+    type_unsigned_16 debug_trap;
     type_unsigned_16 backlink;
     type_bool nested;
 } task_switch_plan_32;
+
+static C_VOID _e_except_n(core_machine_cpu_execution_context *context,
+    type_unsigned_8 exid, type_unsigned_8 byte);
 
 static C_VOID _s_task_write_state_32(core_machine_cpu_execution_context *context,
     const task_switch_state_32 *state)
@@ -4200,10 +4206,10 @@ static C_VOID _s_task_plan_transition_32(
         TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(newcs & 0xfffcu));
 
     TYPE_TRACE_CHECK_RETURN(_kma_test_access(context, &cpu_state.data.tr,
-        TASK_SWITCH_TSS32_CR3_OFFSET, TASK_SWITCH_TSS32_IMAGE_BYTES,
+        TASK_SWITCH_TSS32_CR3_OFFSET, TASK_SWITCH_TSS32_STATE_BYTES,
         TYPE_TRUE, 0u, TYPE_TRUE));
     TYPE_TRACE_CHECK_RETURN(_kma_test_access(context, &plan->newtr,
-        TASK_SWITCH_TSS32_CR3_OFFSET, TASK_SWITCH_TSS32_IMAGE_BYTES,
+        TASK_SWITCH_TSS32_CR3_OFFSET, TASK_SWITCH_TSS32_INCOMING_BYTES,
         TYPE_FALSE, 0u, TYPE_TRUE));
     if (nested)
         TYPE_TRACE_CHECK_RETURN(_kma_test_access(context, &plan->newtr,
@@ -4215,7 +4221,10 @@ static C_VOID _s_task_plan_transition_32(
         _GetSelector_Offset(newcs), 8u, TYPE_TRUE, 0u, TYPE_TRUE));
     TYPE_TRACE_CHECK_RETURN(_kma_read_logical(context, &plan->newtr,
         TASK_SWITCH_TSS32_CR3_OFFSET, TYPE_REFERENCE_OF(plan->incoming),
-        TASK_SWITCH_TSS32_IMAGE_BYTES, 0u, TYPE_TRUE));
+        TASK_SWITCH_TSS32_STATE_BYTES, 0u, TYPE_TRUE));
+    TYPE_TRACE_CHECK_RETURN(_kma_read_logical(context, &plan->newtr,
+        TASK_SWITCH_TSS32_DEBUG_TRAP_OFFSET, TYPE_REFERENCE_OF(plan->debug_trap),
+        2u, 0u, TYPE_TRUE));
     if (plan->incoming.cr3 & ~VCPU_CR3_BASE)
         TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(newcs & 0xfffcu));
     TYPE_TRACE_CHECK_RETURN(_s_task_prepare_ldtr(context,
@@ -4314,6 +4323,19 @@ static C_VOID _ser_task_switch_tss_32(
     TYPE_TRACE_CHECK_RETURN(_s_task_plan_transition_32(context, newcs, nested,
         returning, &plan));
     TYPE_TRACE_CHECK_RETURN(_s_task_commit_transition_32(context, &plan));
+    if (TYPE_GET_LSB(plan.debug_trap)) {
+        t_cpu trap_cpu = cpu_state;
+
+        TYPE_TRACE_CHECK_RETURN(_e_except_n(context, 0x01u, _GetOperandSize));
+        if (context->diagnostic_provider != STD_NULL &&
+            context->diagnostic_provider->record_delivered_exception != STD_NULL) {
+            instruction_state.data.except = VCPUINS_EXCEPT_DB;
+            instruction_state.data.excode = 0u;
+            context->diagnostic_provider->record_delivered_exception(
+                context->diagnostic_context, &trap_cpu, &instruction_state);
+            instruction_state.data.except = 0u;
+        }
+    }
     TYPE_TRACE_CALL_END;
 }
 

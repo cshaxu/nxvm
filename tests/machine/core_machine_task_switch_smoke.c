@@ -62,6 +62,13 @@ static C_INT write_bytes(core_machine *machine, type_unsigned_32 address,
         TYPE_STATUS_OK;
 }
 
+static C_INT task_switch_write_u32(core_machine *machine, type_unsigned_32 address,
+    type_unsigned_32 value)
+{
+    return core_machine_memory_write(machine, address, &value,
+        sizeof(value)) == TYPE_STATUS_OK;
+}
+
 static C_INT task_switch_prepare(task_switch_fixture *fixture,
     core_machine_cpu_profile profile)
 {
@@ -731,7 +738,10 @@ typedef enum task_switch_tss32_rejection {
     TASK_SWITCH_TSS32_LDT_NOT_PRESENT,
     TASK_SWITCH_TSS32_LDT_SHORT,
     TASK_SWITCH_TSS32_LDT_BAD_CODE,
-    TASK_SWITCH_TSS32_LDT_BAD_DATA
+    TASK_SWITCH_TSS32_LDT_BAD_DATA,
+    TASK_SWITCH_TSS32_DEBUG_TRAP_SUCCESS,
+    TASK_SWITCH_TSS32_PAGING_SUCCESS,
+    TASK_SWITCH_TSS32_PAGING_TSS_FAULT
 } task_switch_tss32_rejection;
 
 static C_INT task_switch_expect_tss32_direct(type_bool operand32,
@@ -750,9 +760,14 @@ static C_INT task_switch_expect_tss32_direct(type_bool operand32,
     type_unsigned_8 busy[2] = {0u, 0u};
     type_bool task_return = rejection ==
         TASK_SWITCH_TSS32_REJECTION_NESTED_RETURN;
-    type_bool ldt_case = rejection >= TASK_SWITCH_TSS32_LDT_SUCCESS;
+    type_bool ldt_case = rejection >= TASK_SWITCH_TSS32_LDT_SUCCESS &&
+        rejection <= TASK_SWITCH_TSS32_LDT_BAD_DATA;
     type_bool ldt_success = rejection == TASK_SWITCH_TSS32_LDT_SUCCESS;
     type_bool ldt_failure = ldt_case && !ldt_success;
+    type_bool debug_trap = rejection == TASK_SWITCH_TSS32_DEBUG_TRAP_SUCCESS;
+    type_bool paging = rejection == TASK_SWITCH_TSS32_PAGING_SUCCESS;
+    type_bool paging_tss_fault = rejection == TASK_SWITCH_TSS32_PAGING_TSS_FAULT;
+    type_unsigned_32 target_base = paging_tss_fault ? 0x7000u : TASK_B_BASE;
     C_INT rejection_failed;
     t_cpu cpu;
     static const type_unsigned_8 gdt_pointer[] = { 0x47u,0,0,0x03u,0,0 };
@@ -781,6 +796,22 @@ static C_INT task_switch_expect_tss32_direct(type_bool operand32,
     };
     static const type_unsigned_8 source32[] = {
         TASK_SWITCH_SOURCE_GPRS, 0x66,0xea,0,0,0,0,0x30,0
+    };
+    static const type_unsigned_8 paging_source[] = {
+        TASK_SWITCH_SOURCE_GPRS,
+        0x66u,0xb8u,0x00u,0x10u,0x00u,0x00u,
+        0x0fu,0x22u,0xd8u,
+        0x66u,0xb8u,0x01u,0x00u,0x00u,0x80u,
+        0x0fu,0x22u,0xc0u,
+        0x66u,0xb8u,0x11u,0x11u,0x11u,0x11u,
+        0xeau,0,0,0x30u,0
+    };
+    static const type_unsigned_8 paging_fault_source[] = {
+        0x66u,0xb8u,0x00u,0x10u,0x00u,0x00u,
+        0x0fu,0x22u,0xd8u,
+        0x66u,0xb8u,0x01u,0x00u,0x00u,0x80u,
+        0x0fu,0x22u,0xc0u,
+        0xeau,0,0,0x30u,0
     };
     static const type_unsigned_8 call16[] = {
         TASK_SWITCH_SOURCE_GPRS, 0x9au,0,0,0x30u,0
@@ -855,6 +886,10 @@ static C_INT task_switch_expect_tss32_direct(type_bool operand32,
     static const type_unsigned_8 fault_gate[] = {
         0x80u,0x01u,0x08u,0,0,0x86u,0,0
     };
+    static const type_unsigned_8 debug_gate[] = {
+        0x80u,0x01u,0x08u,0,0,0x8eu,0,0
+    };
+    static const type_unsigned_8 debug_handler[] = { 0x40u, 0xf4u };
     type_unsigned_8 ldt[] = {
         0,0,0,0,0,0,0,0,
         0xff,0xff,0,0x20,0,0x9a,0,0,
@@ -889,6 +924,16 @@ static C_INT task_switch_expect_tss32_direct(type_bool operand32,
     C_INT failed = !task_switch_prepare(&fixture, CORE_MACHINE_CPU_PROFILE_80386);
 
     STD_MEMSET(&irq, 0, sizeof(irq));
+    if (paging) {
+        source = paging_source;
+        source_bytes = sizeof(paging_source);
+        target.cr3 = 0x00004000u;
+    }
+    if (paging_tss_fault) {
+        source = paging_fault_source;
+        source_bytes = sizeof(paging_fault_source);
+        gdt[51] = 0x70u;
+    }
     if (indirect) {
         if (nested) {
             source = lock ? call_lock_indirect :
@@ -937,7 +982,8 @@ static C_INT task_switch_expect_tss32_direct(type_bool operand32,
         source = task_return_call16;
         source_bytes = sizeof(task_return_call16);
     }
-    if (rejection != TASK_SWITCH_TSS32_REJECTION_NONE && !ldt_success && !task_return) {
+    if (rejection != TASK_SWITCH_TSS32_REJECTION_NONE && !ldt_success &&
+        !task_return && !debug_trap && !paging && !paging_tss_fault) {
         source = nested ? (task_gate ? task_gate_call16 : call16) :
             source_rejection;
         source_bytes = nested ? (task_gate ? sizeof(task_gate_call16) :
@@ -984,16 +1030,44 @@ static C_INT task_switch_expect_tss32_direct(type_bool operand32,
             (pending_irq && (!write_bytes(fixture.machine, IDT_BASE + 0x100u,
                 irq_gate, sizeof(irq_gate)) || !write_bytes(fixture.machine,
                 KERNEL_BASE + 0x180u, halt, sizeof(halt)))) ||
-            (rejection != TASK_SWITCH_TSS32_REJECTION_NONE && !ldt_case && !task_return &&
+            (rejection != TASK_SWITCH_TSS32_REJECTION_NONE && !ldt_case &&
+                !task_return && !debug_trap && !paging && !paging_tss_fault &&
                 (!write_bytes(fixture.machine, IDT_BASE +
                     ((rejection == TASK_SWITCH_TSS32_REJECTION_STACK_LIMIT ?
                         12u : rejection == TASK_SWITCH_TSS32_REJECTION_TARGET_BUSY ?
                         13u : 10u) * 8u), fault_gate, sizeof(fault_gate)) ||
                 !write_bytes(fixture.machine, KERNEL_BASE + 0x180u, halt,
                     sizeof(halt)))) ||
-            core_machine_memory_write(fixture.machine, TASK_B_BASE + 0x1cu,
+            core_machine_memory_write(fixture.machine, target_base + 0x1cu,
                 &target, sizeof(target)) != TYPE_STATUS_OK;
-        if (rejection != TASK_SWITCH_TSS32_REJECTION_NONE && !ldt_case && !task_return) {
+        if (paging || paging_tss_fault) {
+            static const type_unsigned_8 paging_target_code[] = {
+                0x66u, 0xb8u, 0x34u, 0x12u, 0x00u, 0x00u, 0xf4u
+            };
+            type_unsigned_32 page;
+
+            for (page = 0u; page < 12u; ++page) {
+                if (paging_tss_fault && page == 7u) continue;
+                failed |= !task_switch_write_u32(fixture.machine, 0xa000u +
+                    page * 4u, page * 0x1000u | 0x003u);
+            }
+            failed |= !task_switch_write_u32(fixture.machine, 0x1000u,
+                    0xa003u) || (paging && (!task_switch_write_u32(fixture.machine,
+                    0x4000u, 0xc003u) || !task_switch_write_u32(fixture.machine,
+                    0xc000u + 2u * 4u, 0xb003u) || !write_bytes(fixture.machine,
+                    0xb100u, paging_target_code, sizeof(paging_target_code))));
+        }
+        if (paging_tss_fault) {
+            failed |= !write_bytes(fixture.machine, IDT_BASE + 14u * 8u,
+                    fault_gate, sizeof(fault_gate)) || !write_bytes(fixture.machine,
+                    KERNEL_BASE + 0x180u, halt, sizeof(halt));
+            fixture.machine->executor_cpu.data.idtr.flagValid = TYPE_TRUE;
+            fixture.machine->executor_cpu.data.idtr.sregtype = SREG_IDTR;
+            fixture.machine->executor_cpu.data.idtr.base = IDT_BASE;
+            fixture.machine->executor_cpu.data.idtr.limit = 0x0077u;
+        }
+        if (rejection != TASK_SWITCH_TSS32_REJECTION_NONE && !ldt_case &&
+            !task_return && !debug_trap && !paging && !paging_tss_fault) {
             fixture.machine->executor_cpu.data.idtr.flagValid = TYPE_TRUE;
             fixture.machine->executor_cpu.data.idtr.sregtype = SREG_IDTR;
             fixture.machine->executor_cpu.data.idtr.base = IDT_BASE;
@@ -1016,11 +1090,46 @@ static C_INT task_switch_expect_tss32_direct(type_bool operand32,
             core_machine_pic_irq_source_assert(&irq);
             core_machine_pic_irq_source_deassert(&irq);
         }
+        if (debug_trap) {
+            const type_unsigned_16 debug_bit = 1u;
+
+            failed |= !write_bytes(fixture.machine, IDT_BASE + 8u, debug_gate,
+                    sizeof(debug_gate)) || !write_bytes(fixture.machine,
+                    KERNEL_BASE + 0x180u, debug_handler, sizeof(debug_handler)) ||
+                core_machine_memory_write(fixture.machine, target_base + 0x64u,
+                    &debug_bit, sizeof(debug_bit)) != TYPE_STATUS_OK;
+            fixture.machine->executor_cpu.data.idtr.flagValid = TYPE_TRUE;
+            fixture.machine->executor_cpu.data.idtr.sregtype = SREG_IDTR;
+            fixture.machine->executor_cpu.data.idtr.base = IDT_BASE;
+            fixture.machine->executor_cpu.data.idtr.limit = 0x000fu;
+        }
         status = core_machine_run(fixture.machine, budget, &result);
         failed |= status != (lock ? TYPE_STATUS_FAULT : TYPE_STATUS_OK) ||
             result.reason != (lock ? CORE_MACHINE_STOP_FAULT :
                 CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT);
         cpu = test_core_machine_fixture_capture_cpu_after_run(fixture.machine);
+        if (paging_tss_fault) {
+            STD_MEMSET(&outgoing, 0, sizeof(outgoing));
+            failed |= core_machine_get_cpu_diagnostic(fixture.machine, &diagnostic) !=
+                    TYPE_STATUS_OK || diagnostic.first_fault.valid ||
+                !diagnostic.last_delivered_exception.valid ||
+                diagnostic.last_delivered_exception.exception_mask !=
+                    VCPUINS_EXCEPT_PF || cpu.data.eip != 0x181u ||
+                cpu.data.tr.selector != 0x28u || cpu.data.ldtr.selector != 0u ||
+                cpu.data.cr3 != 0x00001000u ||
+                core_machine_memory_read(fixture.machine, TASK_A_BASE + 0x1cu,
+                    &outgoing, sizeof(outgoing)) != TYPE_STATUS_OK ||
+                core_machine_memory_read(fixture.machine, GDT_BASE + 0x2du,
+                    &busy[0], 1u) != TYPE_STATUS_OK ||
+                core_machine_memory_read(fixture.machine, GDT_BASE + 0x35u,
+                    &busy[1], 1u) != TYPE_STATUS_OK || busy[0] != 0x8bu ||
+                busy[1] != 0x89u || outgoing.cr3 != 0u || outgoing.eip != 0u ||
+                outgoing.eflags != 0u || outgoing.eax != 0u || outgoing.ecx != 0u ||
+                outgoing.edx != 0u || outgoing.ebx != 0u || outgoing.esp != 0u ||
+                outgoing.ebp != 0u || outgoing.esi != 0u || outgoing.edi != 0u;
+            core_machine_destroy(fixture.machine);
+            return failed;
+        }
         if (ldt_failure) {
             STD_MEMSET(&outgoing, 0, sizeof(outgoing));
             failed |= core_machine_memory_read(fixture.machine, TASK_A_BASE + 0x1cu,
@@ -1057,15 +1166,17 @@ static C_INT task_switch_expect_tss32_direct(type_bool operand32,
             TYPE_STATUS_OK || (lock && (!diagnostic.first_fault.valid ||
                 !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
                 VCPUINS_EXCEPT_UD) || diagnostic.first_fault.exception_code !=
-            0u)) || (rejection != TASK_SWITCH_TSS32_REJECTION_NONE && !ldt_case && !task_return &&
+            0u)) || (rejection != TASK_SWITCH_TSS32_REJECTION_NONE && !ldt_case &&
+                !task_return && !debug_trap && !paging && !paging_tss_fault &&
                 (!diagnostic.last_delivered_exception.valid ||
                 diagnostic.last_delivered_exception.exception_mask !=
                     (rejection == TASK_SWITCH_TSS32_REJECTION_STACK_LIMIT ?
                         VCPUINS_EXCEPT_SS : rejection == TASK_SWITCH_TSS32_REJECTION_TARGET_BUSY ?
                         VCPUINS_EXCEPT_GP : VCPUINS_EXCEPT_TS))) ||
-            (rejection == TASK_SWITCH_TSS32_REJECTION_NONE && !lock &&
+            (rejection == TASK_SWITCH_TSS32_REJECTION_NONE && !lock && !debug_trap &&
                 diagnostic.last_delivered_exception.valid);
-        if (rejection != TASK_SWITCH_TSS32_REJECTION_NONE && !ldt_case && !task_return) {
+        if (rejection != TASK_SWITCH_TSS32_REJECTION_NONE && !ldt_case &&
+            !task_return && !debug_trap && !paging && !paging_tss_fault) {
             STD_MEMSET(&outgoing, 0, sizeof(outgoing));
             rejection_failed = core_machine_memory_read(fixture.machine, TASK_A_BASE + 0x1cu,
                     &outgoing, sizeof(outgoing)) != TYPE_STATUS_OK ||
@@ -1135,6 +1246,20 @@ static C_INT task_switch_expect_tss32_direct(type_bool operand32,
                     VPIC_ISR_IRQ(0u)) || TYPE_GET_BIT(
                     fixture.machine->shared_pic_master.data.irr, VPIC_IRR_IRQ(0u));
         }
+        if (debug_trap) {
+            type_unsigned_32 frame[3] = {0u, 0u, 0u};
+
+            failed |= !diagnostic.last_delivered_exception.valid ||
+                diagnostic.last_delivered_exception.exception_mask !=
+                    VCPUINS_EXCEPT_DB || diagnostic.last_delivered_exception.point.eip !=
+                    target.eip || cpu.data.eip != 0x182u ||
+                cpu.data.eax != target.eax + 1u || cpu.data.esp != 0x7ff4u ||
+                TYPE_GET_BIT(cpu.data.eflags, VCPU_EFLAGS_IF) ||
+                !test_core_machine_fixture_read_linear(fixture.machine,
+                    cpu.data.ss.base + cpu.data.esp, TYPE_REFERENCE_OF(frame),
+                    sizeof(frame)) || frame[0] != target.eip || frame[1] !=
+                    target.cs.selector || frame[2] != target.eflags;
+        }
         STD_MEMSET(&outgoing, 0, sizeof(outgoing));
         failed |= core_machine_memory_read(fixture.machine, TASK_A_BASE + 0x1cu,
                 &outgoing, sizeof(outgoing)) != TYPE_STATUS_OK ||
@@ -1142,7 +1267,8 @@ static C_INT task_switch_expect_tss32_direct(type_bool operand32,
                 &backlink, sizeof(backlink)) != TYPE_STATUS_OK ||
                 backlink != 0x28u)) ||
             (saved_eip = outgoing.eip) != source_bytes ||
-            outgoing.cr3 != 0u || outgoing.eflags != 0x2u ||
+            outgoing.cr3 != (paging ? 0x00001000u : 0u) ||
+            outgoing.eflags != 0x2u ||
             outgoing.eax != 0x11111111u || outgoing.ecx != 0x22222222u ||
             outgoing.edx != 0x33333333u || outgoing.ebx != 0x44444444u ||
             outgoing.esp != 0x55550000u || outgoing.ebp != 0x66666666u ||
@@ -1156,13 +1282,15 @@ static C_INT task_switch_expect_tss32_direct(type_bool operand32,
                 &busy[1], 1u) != TYPE_STATUS_OK ||
             busy[0] != (nested ? 0x8bu : 0x89u) ||
             busy[1] != 0x8bu;
-        failed |= cpu.data.eip != (pending_irq ? 0x181u : 0x101u) ||
-            (!pending_irq && cpu.data.eflags != (target.eflags |
+        failed |= cpu.data.eip != (pending_irq ? 0x181u : debug_trap ? 0x182u :
+                paging ? 0x107u : 0x101u) ||
+            (!pending_irq && !debug_trap && cpu.data.eflags != (target.eflags |
                 (nested ? VCPU_EFLAGS_NT : 0u))) ||
-            cpu.data.eax != target.eax ||
+            cpu.data.eax != (paging ? 0x00001234u : target.eax +
+                (debug_trap ? 1u : 0u)) ||
             cpu.data.ecx != target.ecx || cpu.data.edx != target.edx ||
-            cpu.data.ebx != target.ebx || cpu.data.esp != (pending_irq ?
-                0x7ffau : target.esp) ||
+            cpu.data.ebx != target.ebx || cpu.data.esp != (pending_irq ? 0x7ffau :
+                debug_trap ? 0x7ff4u : target.esp) ||
             cpu.data.ebp != target.ebp || cpu.data.esi != target.esi ||
             cpu.data.edi != target.edi || cpu.data.tr.selector != 0x30u ||
             cpu.data.cr3 != target.cr3 ||
@@ -1266,6 +1394,15 @@ int main(void)
     failed |= task_switch_expect_tss32_direct(TYPE_FALSE, TYPE_FALSE, TYPE_FALSE,
         TASK_SWITCH_TSS32_LDT_BAD_DATA, TYPE_FALSE, TYPE_FALSE, TYPE_FALSE,
         TYPE_FALSE);
+    failed |= task_switch_expect_tss32_direct(TYPE_FALSE, TYPE_FALSE, TYPE_FALSE,
+        TASK_SWITCH_TSS32_DEBUG_TRAP_SUCCESS, TYPE_FALSE, TYPE_FALSE, TYPE_FALSE,
+        TYPE_FALSE);
+    failed |= task_switch_expect_tss32_direct(TYPE_FALSE, TYPE_FALSE, TYPE_FALSE,
+        TASK_SWITCH_TSS32_PAGING_SUCCESS, TYPE_FALSE, TYPE_FALSE, TYPE_FALSE,
+        TYPE_FALSE);
+    failed |= task_switch_expect_tss32_direct(TYPE_FALSE, TYPE_FALSE, TYPE_FALSE,
+        TASK_SWITCH_TSS32_PAGING_TSS_FAULT, TYPE_FALSE, TYPE_FALSE, TYPE_FALSE,
+        TYPE_FALSE);
     failed |= task_switch_expect_tss32_direct(TYPE_TRUE, TYPE_FALSE, TYPE_FALSE,
         TASK_SWITCH_TSS32_REJECTION_NONE, TYPE_FALSE, TYPE_FALSE, TYPE_FALSE,
         TYPE_FALSE);
@@ -1356,5 +1493,7 @@ int main(void)
     STD_PRINTF("M5:T329:S3:TSS32-IMAGE:OK\n");
     STD_PRINTF("M5:T329:S4:TSS-CALL-GATE:OK\n");
     STD_PRINTF("M5:T329:S5:TASK-RETURN:OK\n");
+    STD_PRINTF("M5:T329:S6:TASK-LDT:OK\n");
+    STD_PRINTF("M5:T329:S7:TASK-PAGING-DEBUG:OK\n");
     return 0;
 }
