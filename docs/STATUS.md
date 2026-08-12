@@ -2,28 +2,9 @@
 
 ## Current Work
 
-M5 T323 S1 is active: close the protected-mode direct far `CALL`/`JMP`
-code-descriptor privilege and atomicity matrix (Ordinary Mode).
-
-## M5 T323 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner authorization to continue the ordered Intel 80386DX Queue program in Ordinary Mode, 2026-08-12. The coordinator performs the executor-side implementation and independent acceptance review sequentially. This is the first bounded slice of Queue P1, 80386DX protection and privilege-transfer closure. |
-| Objective | Complete the Intel 80286/80386 protected, non-VM86 direct far code-segment transfer matrix for `CALL ptr16:16/32`, `JMP ptr16:16/32`, and their memory-indirect `FF /3` and `FF /5` forms: descriptor type/present/DPL/RPL classification, code-limit preflight, CS/cache and CALL-frame publication, and fault atomicity. |
-| Non-goals | Call gates, task gates/TSS transfers, outer-privilege `RETF`/`IRET`, interrupt/exception redesign, VM86, paging, general stack-helper redesign, near transfers, and product/guest behavior are outside S1. Existing T303 same-CPL smoke is retained evidence, not a substitute for this matrix. |
-| Reference Baseline | `8c1da3ec` / `vm-0-5-0321`; T303, T307, T320, T321, and T322 history/evidence are the retained boundary records. |
-| Files And ABI Surface | Expected: one owner-local `tests/machine` smoke, target-local CMake/current-gate registration, T323 protection evidence, STATUS, and (only if a reproduced local defect requires it) `src/core/machine/cpu_instructions.c`. No public ABI, provider interface, product composition, or shared helper change is admitted by default. |
-| Applicable Rules | Read the Task Reading Set; `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, and `docs/rules/DOCUMENT.md`. Intel 80386 PRM direct far-transfer rules are the semantic authority; no reference implementation source is imported. |
-| Verification | New focused owner marker; configure; exact CTest current-gate discovery; `ctest --test-dir build\\mingw-gcc-x64 -L current-gate --output-on-failure -j 4`; documentation governance; `git diff --check`; and actual command/evidence review. Test 80286/80386 protected same-CPL nonconforming and conforming success/deny paths, immediate and memory-indirect forms, 16/32 operand and 80386 address attributes, pre-386 attributes, LOCK, selector/type/present/limit and stack-write/read boundaries, plus successful pending-IRQ no-shadow. |
-| Expected Markers | A deterministic `M5:T323:S1:PROTECTED-FAR:OK` marker and exactly one `current.core-machine-protected-far-s1-smoke` current-gate item. |
-| Asset Needs | No firmware, guest media, network source, or non-repository asset. |
-| Reporting Requirements | Before implementation, perform the Ordinary-Mode contract confirmation. The single implementation P must include all source/test/CMake/evidence and verification while retaining this active packet; report a material stop condition immediately. After self-review, commit and push; then independently re-review the actual pushed changes before the separate governance P records acceptance and closes S1. |
-| Stop Conditions | Stop before any call-gate/task/outer-return/VM86/paging or generic exception/stack-helper change. A reproduced need to alter a shared descriptor, memory, or delivery helper requires a caller sweep and packet revision or later S; do not broaden silently. |
-| Exit Criteria | Every declared form and mode is either focused-proven or explicitly classified at its stated boundary; all failure paths prove no unintended CS/cache/EIP/ESP/EFLAGS/frame publication at the observable boundary; no in-scope PRM row remains partial, missing, or unclassified; current-gate and documentation checks pass; evidence records production change or no-defect result; and the coordinator completes actual-change acceptance and a pushed governance closure P. |
-| Original Owner Request | Continue the owner-approved Intel 80386 implementation program in single-session mode through the 80386DX architecture coverage closure audit, with code quality and complete evidence. |
-| Similar-Issue Sweep | Audit all `_ser_call_far_cs_*`, `_ser_jmp_far_cs_*`, `_e_call_far`, `_e_jmp_far`, and `FF /3,/5` callers. Record direct code-descriptor coverage separately from call-gate/task and outer-return consumers; any equivalent defect outside this direct-transfer matrix is transferred rather than silently fixed. |
+M5 T323 remains open. S1 is accepted: direct protected far code-descriptor
+`CALL`/`JMP` coverage is closed; the next protection/privilege slice requires
+a separately admitted continuation packet.
 
 ## Current Technical Baseline
 
@@ -45,6 +26,7 @@ code-descriptor privilege and atomicity matrix (Ordinary Mode).
 
 | Task | Compact result |
 | --- | --- |
+| T323 S1 | Accepted the direct protected far `CALL`/`JMP` code-descriptor matrix: 80286/80386 immediate and `FF /3,/5` forms, 66/67 routes, descriptor/RPL/DPL/present classification, target and stack preflight, LOCK/profile rejection, and protected IRQ0 no-shadow are focused-proven. No production change; target-local strict GCC, governance, and 203/203 current-gate passed. [Evidence](etc/evidence/t323-s1-protected-far-transfer.md). |
 | T322 | Audited and withdrew the duplicate ordinary-execution/FLAGS candidate: T316's accepted S23--S65 owner smokes already cover the transferred Intel 80386 ordinary application forms. Remaining work is explicitly protection/privilege, paging, task/debug/VM86, legacy LOCK, or external x87 scope; no invented implementation slice or artifact was created. Documentation governance and diff checks passed. |
 | T321 | Closed the bounded exception, interrupt, return, VM86 table-load, and processor-control composition program: S2 delivers active `#DE/#PF/#MF` vectors; S3 proves NMI/IRQ/TF ordering; S4 composes software INT/IRET with IRQ; S5 enforces VM86 LGDT/LIDT `#GP(0)` before source access; and S6 records the artifact and all transfers. The 0321 artifact, governance, and 202/202 current-gate passed. |
 | T320 | Closed the bounded VM86-to-CPL0 32-bit delivery foundation: `#GP/#UD/#NM/IRQ0` entry through TSS `SS0:ESP0`, full VM86 frame and failure boundaries, plus atomic nine-dword CPL0 `IRET` return with a real IRQ0-to-handler-to-VM86 round trip. `66` is classified as non-VM86 return, `67` succeeds, and VME/PVI/task/paging breadth remains transferred. Artifact 0320 SHA-256 is recorded in history; fresh configure, governance/diff checks, and 198/198 current-gate passed. |
