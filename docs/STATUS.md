@@ -2,28 +2,8 @@
 
 ## Current Work
 
-**Active.** M5 T321 S5 closes the transferred 80386 VM86 `LGDT/LIDT` privilege
-boundary in Ordinary Mode.
-
-## M5 T321 S5 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | The owner authorized continued single-session implementation toward the 80386DX architecture-coverage closure audit on 2026-08-12. T321 S1 explicitly transferred this exact VM86 consumer from T319 after T320 delivery became available. |
-| Objective | Make `0F 01 /2` LGDT and `/3` LIDT in VM86 raise `#GP(0)` before ModRM pseudo-descriptor source access, then prove their delivered CPL0 frame and retained table/source state. |
-| Non-goals | No non-VM86 LGDT/LIDT change, no SGDT/SIDT, no descriptor-table refactor, no TSS/VM86/exception broadening, no paging, task, VME/PVI, PIC, or public API change. |
-| Reference Baseline | `13c662c8` / `vm-0-5-0320`; T319 matrix and T320 VM86 delivery evidence. |
-| Files And ABI Surface | `cpu_instructions.c` only for the local /2,/3 privilege predicate, a strict owner smoke, CMake, indexed evidence, and Status. |
-| Applicable Rules | Task Reading Set; execution, architecture, coding, and documentation rules; Intel 80386 LGDT/LIDT privilege rules; T319/T320 evidence. |
-| Verification | Both forms in VM86 with a valid TSS/IDT13 handler; exact `#GP(0)` delivery/frame/restart, source and GDTR/IDTR preservation, focused marker, fresh configure, exact registration, documentation governance, diff check, and full current gate. |
-| Expected Markers | One S5 owner marker and one current-gate registration. |
-| Asset Needs | Deterministic local GDT/IDT/TSS fixtures only. |
-| Reporting Requirements | Record predicate defect, both forms, source/table nonpublication, frame result, caller sweep, and transferred boundaries. |
-| Stop Conditions | Stop for a required shared table serializer, TSS/exception planner, VM86 architecture, or public-interface change. |
-| Exit Criteria | Both VM86 forms deliver exact `#GP(0)` before source/table publication; no non-VM86 regression; evidence, gates, commit, and push pass. |
-| Original Owner Request | Continue toward the 80386DX architecture-coverage closure audit. |
-| Similar-Issue Sweep | Search all `INS_0F_01` system-register cases and T319/T320 owner tests; classify /0--/7 without changing non-/2,/3 behavior. |
+**Idle.** M5 T321 S5 is accepted and closed; S6 requires a separately admitted
+packet.
 
 ## Current Technical Baseline
 
@@ -44,6 +24,7 @@ boundary in Ordinary Mode.
 
 | Task | Compact result |
 | --- | --- |
+| T321 S5 | Closed the transferred VM86 LGDT/LIDT boundary: `/2` and `/3` now raise `#GP(0)` before ModRM/source access; exact ten-dword VM86 error-frame, source/table nonpublication, and CPL0 handler transfer are proven. Non-VM86 table behavior remains T319; no table/TSS/PIC refactor. 202/202 current-gate passed. |
 | T321 S4 | Closed bounded software/return composition: `INT 31h` enters an IRET handler while IRQ0 is pending; IRET consumes the software frame, restores IF, and IRQ0 then enters with saved IP 2 and the restored FLAGS. Retained S50--S52/T320 evidence owns individual INT, gate, IRET, outer-return, and VM86 matrices. No production or PIC change; 201/201 current-gate passed. |
 | T321 S3 | Closed the bounded shared hardware-delivery composition: a strict owner smoke proves NMI priority over IRQ0 and TF in real, protected, and VM86 entry, plus the VM86 NMI-mask/IRQ acknowledgement boundary; retained T305/T320/T316 evidence covers detailed gate, rejection, frame, and post-instruction TF cells. No PIC, NMI-device, or production event-loop change; 200/200 current-gate passed. |
 | T321 S2 | Closed exact active `#DE/#PF/#MF` producer delivery: `ExecFinal` now selects vectors 0/14/16 (including vector-zero admission), real `#DE/#MF` and protected `#PF` frames have direct producer evidence, and retained no-handler paging cases document the IDT-preflight PDE accessed-bit effect. New strict owner smoke and 199/199 current-gate passed; paging policy, x87 execution, IRQ composition, and other exception classes remain transferred. |
