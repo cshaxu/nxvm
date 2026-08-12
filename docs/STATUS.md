@@ -2,8 +2,27 @@
 
 ## Current Work
 
-**Idle.** M5 T325 remains open; S1 is accepted and the next paging/translation
-slice requires a separately admitted continuation packet.
+**M5 T325 S2: reconcile Intel 80386 CR2/CR3 translation and diagnostic semantics (Ordinary Mode).**
+
+## M5 T325 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; Ordinary Mode. `M5 T325 S2` follows accepted S1 in the sole open numeric task. |
+| Admission And Approval | Owner-approved autonomous continuation of the Queue's 80386DX paging and translation closure on 2026-08-12. This S admits the remaining bounded CR2/CR3 consumer and translation-cache contract only. |
+| Objective | Reconcile Intel 80386 `MOV CR2/CR3` privilege, fixed-32-bit form, CR3 page-directory selection, `#PF` CR2 diagnostic, and CR3 reload invalidation contract with the CPU executor. Prove the implementation's deliberate no-persistent-TLB model never retains a stale translation. |
+| Non-goals | No PAE, PSE, 80486 `INVLPG`, CR4, 80386 TR6/TR7 test-register model, persistent TLB or timing model, task-switch CR3 loading, PE-clear/re-entry, page-table ABI, host-memory replacement, public API, generic exception/PIC redesign, or VM86 paging breadth. |
+| Reference Baseline | `c5459a85` / `vm-0-5-0323`; retain T258/T311/T321 and T325 S1 paging and delivered-`#PF` probes as evidence inputs, not as unreviewed authority. |
+| Files And ABI Surface | Expected: one or more existing owner paging/control smokes, their already registered target-local strict-GCC targets if changed, paging evidence/closure map, and task Status. Production changes only if a reproduced CR2/CR3 or page-walk defect is local to those routes; no public ABI change. |
+| Applicable Rules | `docs/design/GOAL.md` goal 6; Queue paging candidate; closure-map paging row; Architecture Rules CPU executor owns page walk; Coding Rules project types, target-local strict compilation, and test-only fixture boundary; Documentation and Execution Rules packet/P lifecycle. Intel 80386 PRM Chapters 4, 5, 9, and 10 are form authority. |
+| Verification | Focused real/protected CPL0 and protected CPL3/VM86 classification; CR2/CR3 read-write, reserved/register-only and 66/67/LOCK forms; two distinguishable page directories through guest CR3 reload; page-table edit visibility/no stale translation; delivered `#PF` CR2 and frame evidence; current registration, configure, governance, diff, full current-gate, and specialized verifier aggregate. |
+| Expected Markers | Existing focused paging/control markers extended with `M5:T325:S2:CR2-CR3-TRANSLATION:OK`; retained T258/T311/T321 paging and exception markers; full current-gate and specialized-verifier success. |
+| Asset Needs | None; deterministic in-memory page-directory, table, GDT, IDT, and PIC fixtures only. |
+| Reporting Requirements | Before code, record the Intel form audit, no-cache/TLB boundary, caller sweep, and any material objection. P1 is one complete pushed implementation/evidence delivery; then perform Ordinary-Mode actual-change review before a pure governance P2. |
+| Stop Conditions | Stop before adding a persistent TLB, TR6/TR7 semantics, task-switch state, a public interface, generic exception delivery policy, or any requirement beyond Intel 80386. A defect requiring a shared route outside `MOV CRx` or page-walk ownership requires a revised packet or later S. |
+| Exit Criteria | CR2/CR3 forms and privilege/attribute boundaries are explicitly classified; guest CR3 reload selects the new directory and no stale translation remains; `#PF` CR2 evidence retains its handler/frame boundary; touched callers are swept; focused and retained regressions, current gate, specialized verifiers, governance, and diff checks pass; TLB/test-register/task transfers are named. |
+| Original Owner Request | Continue in single-session mode through the Intel 80386DX architecture-coverage closure audit, prioritizing correct, bounded architectural implementation and evidence. |
+| Similar-Issue Sweep | Sweep all CR2/CR3 readers/writers, direct control-register forms, translation-cache assumptions, page-walk page-table reads, `#PF` diagnostic publication, retained T258/T311/T321 claims, and their focused tests; classify every production hit as fixed, applicable evidence, or a named later transfer. |
 
 ## Current Technical Baseline
 
