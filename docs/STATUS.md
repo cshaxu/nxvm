@@ -2,29 +2,28 @@
 
 ## Current Work
 
-M5 T323 S2 is active: close protected data-segment access-rights, null-cache,
-limit/expand-down atomicity, and reproduced 16-bit protected IRQ frame boundaries
-(Ordinary Mode; packet revised 2026-08-12).
+M5 T323 S3 is active: close Intel 80286/80386 protected same-CPL 16-bit
+interrupt/trap-gate entry, frame, and failure boundaries (Ordinary Mode).
 
-## M5 T323 S2 Packet
+## M5 T323 S3 Packet
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | Owner authorization to continue the ordered Intel 80386DX Queue program in Ordinary Mode, 2026-08-12. This 2026-08-12 revision admits the reproduced 16-bit protected interrupt-gate frame classification because it is required to close S2's protected data-access IRQ boundary. S1 is accepted in Status progress. |
-| Objective | Complete the Intel 80286/80386 protected, non-VM86 data-segment access matrix for already-loaded DS/ES/SS caches: readable versus read-only/writable use, null data-cache use, ordinary and expand-down limits, DS/SS default selection and ES string destination, with precise fault/no-publication boundaries; repair the reproduced same-CPL external IRQ0 16-bit gate frame so it saves the actual continuation IP and has no error-code word. |
-| Non-goals | Segment-selector load semantics, code-segment transfers, call/task gates, outer returns, stack switching, paging, VM86, general descriptor-helper redesign, ordinary opcode-form breadth, and 32-bit/outer/VM86 interrupt-frame breadth are outside S2. |
-| Reference Baseline | `5fb2cd4c`; accepted T323 S1 direct-far evidence and retained T301/T307/T320/T321 records are inputs. |
-| Files And ABI Surface | Expected: one owner-local `tests/machine` smoke, target-local CMake/current-gate registration, T323 evidence, STATUS, the one reproduced `_ser_int_protected` 16-bit gate call-site correction, and the required T323 developer artifact. No public ABI, provider, product, or test-support API is admitted. |
-| Applicable Rules | Task Reading Set, architecture/coding/documentation rules, and Intel 80386 PRM protected data-segment access rules. No imported implementation source. |
-| Verification | Focused owner marker; configure; exact current-gate discovery; full current-gate; the `vm-0-5-0323` developer artifact plus SHA-256; documentation governance; diff check; and actual-change review. Matrix must include 80286/80386, 66/67 where meaningful, DS/SS/ES selection, read/write, null/read-only/expand-down/limit faults, profile/LOCK classification, and a protected 16-bit IRQ0 frame with continuation IP after the successful access and exactly FLAGS/CS/IP (no error-code word). |
-| Expected Markers | `M5:T323:S2:PROTECTED-DATA-ACCESS:OK` and exactly one `current.core-machine-protected-data-access-s2-smoke` item. |
+| Admission And Approval | Owner authorization to continue the ordered Intel 80386DX Queue program in Ordinary Mode, 2026-08-12. S1 and S2 are accepted in Status progress. This admission follows S2's reproduced 16-bit IRQ-frame correction and the coordinator's actual-code audit, which found that `_ser_int_protected_16` rejects the architecturally valid 16-bit trap gate and always clears IF. |
+| Objective | Complete the Intel 80286/80386 protected, non-VM86, same-CPL 16-bit IDT gate matrix: interrupt and trap gate admission, software and external origin classification, exact FLAGS/CS/IP versus error-code frame shapes, gate-controlled IF/TF publication, target accessed-bit publication, and rejected-entry atomicity. Repair only a reproduced local 16-bit gate-type/IF implementation defect if focused evidence requires it. |
+| Non-goals | 32-bit gates or frames, CPL transitions and TSS stack switching, VM86, task/call gates, IRET, reset/triple-fault policy, paging, new fault origins, generic exception redesign, and PIC/controller redesign are outside S3. |
+| Reference Baseline | `39a42450`; accepted T323 S1/S2 evidence and retained T305/T321 interrupt-delivery records are inputs. |
+| Files And ABI Surface | Expected: one owner-local `tests/machine` smoke, target-local CMake/current-gate registration, T323 evidence, STATUS, and only a reproduced `_ser_int_protected_16` gate-type/IF correction. No public ABI, provider, product, test-support API, or shared descriptor/stack-helper redesign is admitted. |
+| Applicable Rules | Task Reading Set, architecture/coding/documentation rules, Intel 80286/80386 PRM protected interrupt/trap gate rules, and retained T305/T321 evidence. No imported implementation source. |
+| Verification | Focused owner marker; configure; exact current-gate discovery; full current-gate; refreshed `vm-0-5-0323` developer artifact plus SHA-256; documentation governance; diff check; and actual-change review. Matrix must include 80286/80386 16-bit interrupt and trap gates, software INT and external IRQ origin/DPL treatment, ordinary and error-code frame shapes, IF/TF effects, 80386 66/67 instruction-prefix classification without changing gate width, LOCK rejection, and IDT/type/present/DPL/target/stack failure nonpublication. |
+| Expected Markers | `M5:T323:S3:PROTECTED-16-GATE:OK` and exactly one `current.core-machine-protected-16-gate-s3-smoke` item. |
 | Asset Needs | No external asset, guest media, firmware, or network source. |
-| Reporting Requirements | Complete one full implementation P with source/test/CMake/evidence and all verification while retaining this packet; report a material stop condition. After push, perform Ordinary-Mode actual-change acceptance before a separate governance P closes S2. |
-| Stop Conditions | Stop before any shared descriptor, logical-memory, stack, paging, selector-load, or exception-delivery change beyond the admitted 16-bit gate frame-classification call site; perform caller sweep and revise/transfer rather than broaden silently. |
-| Exit Criteria | Every declared S2 matrix row is proven or explicitly classified; faults prove the stated CPU/cache/memory publication boundary; no in-scope row remains partial or missing; all required gates pass; evidence records production result and transfers; and a pushed governance P records acceptance. |
+| Reporting Requirements | Complete one full implementation P with source/test/CMake/evidence and all verification while retaining this packet; report a material stop condition. After push, perform Ordinary-Mode actual-change acceptance before a separate governance P closes S3. |
+| Stop Conditions | Stop before a required 32-bit/outer/VM86 serializer, TSS/stack helper, IDT/descriptor helper, PIC-controller, or generic exception-finalizer change; sweep callers and revise/transfer rather than broaden silently. |
+| Exit Criteria | Every declared S3 matrix row is proven or explicitly classified; successful entry proves exact 16-bit frame and IF/TF result; rejected entry proves stated no-publication boundary; no in-scope row remains partial or missing; all required gates pass; evidence records production result and transfers; and a pushed governance P records acceptance. |
 | Original Owner Request | Continue the owner-approved Intel 80386 implementation program in single-session mode through the 80386DX architecture coverage closure audit, with code quality and complete evidence. |
-| Similar-Issue Sweep | Audit `_kma_test_logical`, `_m_read_rm`, `_m_write_rm`, string fixed-ES paths, and cached DS/ES/SS use sites. For the reproduced gate defect, sweep every `_ser_int_protected_16` caller and distinguish error-frame classification from gate type, software origin, and 32-bit/outer delivery. Separate selector-load and paging consumers from actual data-access behavior. |
+| Similar-Issue Sweep | Audit `_ser_int_protected`, `_ser_int_protected_16`, 32-bit same/outer serializers, `_e_int_n`, `_e_intr_n`, `_e_except_n`, `ExecFinal`, `ExecInt`, IDT gate-type consumers, and retained interrupt-entry owner smokes. Distinguish gate type from software/external/fault origin and error-frame classification; keep 32-bit/outer/VM86 consumers separate. |
 
 ## Current Technical Baseline
 
@@ -45,6 +44,7 @@ limit/expand-down atomicity, and reproduced 16-bit protected IRQ frame boundarie
 
 | Task | Compact result |
 | --- | --- |
+| T323 S2 | Accepted the protected loaded DS/ES/SS data-access matrix: 80286/80386 cache rights, null/read-only/ordinary/expand-down limits, DS/SS/ES selection, profile/LOCK rejection, and the corrected same-CPL 16-bit IRQ0 FLAGS/CS/IP frame are focused-proven. The sole `_ser_int_protected` call-site repair passes the existing error-frame classification; target-local strict GCC, the 0323 artifact, governance, and 204/204 current-gate passed. [Evidence](etc/evidence/t323-s2-protected-data-access.md). |
 | T323 S1 | Accepted the direct protected far `CALL`/`JMP` code-descriptor matrix: 80286/80386 immediate and `FF /3,/5` forms, 66/67 routes, descriptor/RPL/DPL/present classification, target and stack preflight, LOCK/profile rejection, and protected IRQ0 no-shadow are focused-proven. No production change; target-local strict GCC, governance, and 203/203 current-gate passed. [Evidence](etc/evidence/t323-s1-protected-far-transfer.md). |
 | T322 | Audited and withdrew the duplicate ordinary-execution/FLAGS candidate: T316's accepted S23--S65 owner smokes already cover the transferred Intel 80386 ordinary application forms. Remaining work is explicitly protection/privilege, paging, task/debug/VM86, legacy LOCK, or external x87 scope; no invented implementation slice or artifact was created. Documentation governance and diff checks passed. |
 | T321 | Closed the bounded exception, interrupt, return, VM86 table-load, and processor-control composition program: S2 delivers active `#DE/#PF/#MF` vectors; S3 proves NMI/IRQ/TF ordering; S4 composes software INT/IRET with IRQ; S5 enforces VM86 LGDT/LIDT `#GP(0)` before source access; and S6 records the artifact and all transfers. The 0321 artifact, governance, and 202/202 current-gate passed. |
