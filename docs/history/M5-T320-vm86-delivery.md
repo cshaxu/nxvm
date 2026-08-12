@@ -1,6 +1,6 @@
 # M5 T320: VM86 CPL0 Delivery
 
-## Implementation P1
+## S1: VM86 To CPL0 Delivery
 
 T320 S1 implements the bounded 80386 VM86-to-CPL0 entry foundation: protected
 32-bit IDT interrupt-gate delivery for `#GP`, `#UD`, `#NM`, and external IRQ0.
@@ -28,13 +28,28 @@ instruction behavior or non-VM86 assertion changed.
 Detailed form, frame, failure-boundary, and caller-sweep evidence is in
 [T320 S1 matrix](../etc/evidence/t320-s1-vm86-delivery-matrix.md).
 
+## S2: CPL0 IRET Return To VM86
+
+T320 S2 adds the bounded Intel 80386 inverse: a CPL0 32-bit `IRET` atomically
+returns from the full nine-dword VM86 frame. It preflights and reads every
+field before publishing VM, segment caches, EIP, ESP, or CPL, then restores
+real-mode-style caches for CS, SS, ES, DS, FS, and GS.
+
+The S2 owner smoke proves direct `IRET` and `67 IRET`, exact FLAGS/cache
+properties, low-word selector extraction, continued VM86 execution, and the
+short-stack no-publication boundary. The S1 IRQ0 fixture additionally installs
+an `IRET` handler and proves the real VM86 delivery-to-return round trip.
+`66 IRET` is a legal 16-bit protected-mode return but cannot carry VM in its
+popped FLAGS word, so it is not a VM86-return form. Detailed S2 evidence is in
+[the S2 matrix](../etc/evidence/t320-s2-vm86-iret-matrix.md).
+
 ## Verification And Artifact
 
 - Fresh `mingw-gcc-x64` configure and the exact single current registration
   passed; the focused owner marker was `M5:T320:S1:VM86-DELIVERY:OK`.
 - The current developer artifact is
   `build/output/nxvm_0_5_0320.exe`, built from this P1 source tree.
-- SHA-256: `4A25D30E0C588F887048B265C761DD57C8E20D7C8C456C3A39B0B6544458DE09`.
+- SHA-256: `4E66566B83900E6AABC9ECA54732E1E5B266809846AFD740D7019BE9669A378A`.
 - Runtime identity is `Neko's x86 Virtual Machine`; the CMake target embeds
   build version `0.5.0320`. The ordinary console executable has no
   non-interactive version switch, so its identity is recorded from its emitted
@@ -42,16 +57,16 @@ Detailed form, frame, failure-boundary, and caller-sweep evidence is in
 
 ## Retained Boundaries
 
-CPL0 `IRET` return to VM86 is T320 S2. VME/PVI, task gates/switching, 16-bit
-VM86 gates, paging, NMI/PIC redesign, VM86 LGDT/LIDT, and x87/provider work
-remain outside T320 S1.
+VME/PVI, VM86-origin IRET, task gates/switching, 16-bit VM86 gates, paging,
+NMI/PIC redesign, VM86 LGDT/LIDT, and x87/provider work remain outside T320.
 
 ## Coordinator Acceptance
 
-The coordinator independently reviewed implementation P1 (`afa35a6b`), the
-direct-consumer and diagnostic corrective P2 (`bf1628f5`), and the packet
-consistency corrective P3 (`e69fae9e`). Fresh configuration, the complete
-197-test current gate, documentation governance, `git diff --check`, and the
-recorded `0320` artifact SHA-256 were independently re-run. S1 is accepted;
-the T320 package remains open for a separately admitted S2 covering the
-inverse CPL0 `IRET` return to VM86.
+The coordinator independently accepted S1 implementation P1 (`afa35a6b`),
+its direct-consumer and diagnostic P2 (`bf1628f5`), and packet P3
+(`e69fae9e`). S2 P1 (`be84b715`) established the local path but was not
+accepted until the consolidated ordinary-mode P2 (`e0ead63b`) supplied the
+round-trip, full-cache, selector-word, and dead-path evidence. Fresh
+configuration, documentation governance, `git diff --check`, and the complete
+198-test current gate were re-run. T320 is closed as the bounded VM86-to-CPL0
+delivery foundation.
