@@ -584,7 +584,6 @@ add_custom_target(verify-global-fixed-width-vocabulary
     VERBATIM)
 add_custom_target(verify-t317-test-type-vocabulary
     DEPENDS verify-global-fixed-width-vocabulary)
-add_dependencies(run-current-smokes verify-t317-test-type-vocabulary)
 
 if(CMAKE_GENERATOR MATCHES "Ninja")
     add_custom_target(verify-t317-strict-cpu-smoke-coverage
@@ -595,7 +594,6 @@ if(CMAKE_GENERATOR MATCHES "Ninja")
         DEPENDS ${PROJECT_T317_STRICT_CPU_SMOKE_TARGETS}
         COMMENT "Verifying T317 target-local strict CPU smoke compilation"
         VERBATIM)
-    add_dependencies(run-current-smokes verify-t317-strict-cpu-smoke-coverage)
 endif()
 endfunction()
 
@@ -1867,7 +1865,6 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
             -RepositoryRoot "${CMAKE_SOURCE_DIR}"
         COMMENT "Verifying M5 public raw-borrow closure"
         VERBATIM)
-    add_dependencies(run-current-smokes verify-public-raw-borrow-closure)
 
     add_custom_target(verify-session-readiness
         COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
@@ -1895,7 +1892,6 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_bounded_formatting.cmake"
         COMMENT "Verifying bounded formatting facade closure"
         VERBATIM)
-    add_dependencies(run-current-smokes verify-bounded-formatting)
 
     add_custom_target(verify-documentation-governance
         COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
@@ -1936,14 +1932,12 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_firmware_capability.cmake"
         COMMENT "Verifying M5 T297 firmware capability closure"
         VERBATIM)
-    add_dependencies(run-current-smokes verify-firmware-capability)
 
     add_custom_target(verify-debugger-capability
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_debugger_capability.cmake"
         COMMENT "Verifying M5 T298 debugger capability closure"
         VERBATIM)
-    add_dependencies(run-current-smokes verify-debugger-capability)
 
     add_custom_target(verify-request-transport-closure
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
@@ -2016,42 +2010,36 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_t264_core_vm_ownership.cmake"
         COMMENT "Verifying M5 T264 core/VM PC/AT ownership closure"
         VERBATIM)
-    add_dependencies(run-current-smokes verify-t264-core-vm-pcat-ownership)
 
     add_custom_target(verify-ega-sequencer-boundary
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_ega_sequencer_boundary.cmake"
         COMMENT "Verifying M5 T235 EGA sequencer ownership boundary"
         VERBATIM)
-    add_dependencies(run-current-smokes verify-ega-sequencer-boundary)
 
     add_custom_target(verify-ega-controller-boundary
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_ega_controller_boundary.cmake"
         COMMENT "Verifying M5 T236 EGA controller ownership boundary"
         VERBATIM)
-    add_dependencies(run-current-smokes verify-ega-controller-boundary)
 
     add_custom_target(verify-ega-crtc-boundary
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_ega_crtc_boundary.cmake"
         COMMENT "Verifying T314 EGA CRTC boundary closure"
         VERBATIM)
-    add_dependencies(run-current-smokes verify-ega-crtc-boundary)
 
     add_custom_target(verify-ega-planar-boundary
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_ega_planar_boundary.cmake"
         COMMENT "Verifying M5 T238 EGA planar ownership boundary"
         VERBATIM)
-    add_dependencies(run-current-smokes verify-ega-planar-boundary)
 
     add_custom_target(verify-rom-ega-int10-boundary
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_rom_ega_int10_boundary.cmake"
         COMMENT "Verifying M5 T239 ROM EGA INT 10h boundary"
         VERBATIM)
-    add_dependencies(run-current-smokes verify-rom-ega-int10-boundary)
 
     add_custom_target(verify-t285-ega-mode10
         COMMAND "${CMAKE_COMMAND}"
@@ -2062,7 +2050,6 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
         DEPENDS core-machine-ega-mode10-contract-smoke vm-ega-mode10-boot-smoke
         COMMENT "Verifying M5 T285 EGA mode 10h direct corpus"
         VERBATIM)
-    add_dependencies(run-current-smokes verify-t285-ega-mode10)
 
     add_custom_target(verify-vm-session-owner-closure
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
@@ -2075,120 +2062,174 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_keyboard_portal_closure.cmake"
         COMMENT "Verifying M5 T210 keyboard portal retirement"
         VERBATIM)
-    add_dependencies(run-current-smokes verify-keyboard-portal-closure)
 
     add_custom_target(verify-boot-failure-portal-closure
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_boot_failure_portal_closure.cmake"
         COMMENT "Verifying M5 T211 boot-failure portal retirement"
         VERBATIM)
-    add_dependencies(run-current-smokes verify-boot-failure-portal-closure)
 
     add_custom_target(verify-hdc-portal-closure
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_hdc_portal_closure.cmake"
         COMMENT "Verifying M5 T213 HDC portal retirement"
         VERBATIM)
-    add_dependencies(run-current-smokes verify-hdc-portal-closure)
 
     add_custom_target(verify-cmos-rtc-boundary
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_cmos_rtc_boundary.cmake"
         COMMENT "Verifying VM CMOS/RTC deterministic-time boundary"
         VERBATIM)
-    add_dependencies(run-current-smokes verify-cmos-rtc-boundary)
 
     add_custom_target(verify-rational-clock-boundary
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_rational_clock_boundary.cmake"
         COMMENT "Verifying core rational device-clock boundary"
         VERBATIM)
-    add_dependencies(run-current-smokes verify-rational-clock-boundary)
 
     add_custom_target(verify-ata-pio-feature-boundary
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_ata_pio_feature_boundary.cmake"
         COMMENT "Verifying VM ATA PIO feature ownership boundary"
         VERBATIM)
-    add_dependencies(run-current-smokes verify-ata-pio-feature-boundary)
 
     add_custom_target(verify-hdd-legacy-api-closure
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_hdd_legacy_api_closure.cmake"
         COMMENT "Verifying obsolete HDD transfer API closure"
         VERBATIM)
-    add_dependencies(run-current-smokes verify-hdd-legacy-api-closure)
 
     add_custom_target(verify-vm-media-atomic-save
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_vm_media_atomic_save.cmake"
         COMMENT "Verifying VM media save failure preservation"
         VERBATIM)
-    add_dependencies(run-current-smokes verify-vm-media-atomic-save)
 
     add_custom_target(verify-core-utils-boundary
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_core_utils_boundary.cmake"
         COMMENT "Verifying M5 T234 neutral core utility boundary"
         VERBATIM)
-    add_dependencies(run-current-smokes verify-core-utils-boundary)
 
     add_custom_target(verify-session-layout-boundary
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_session_layout_boundary.cmake"
         COMMENT "Verifying VM session private-layout boundary"
         VERBATIM)
-    add_dependencies(run-current-smokes verify-session-layout-boundary)
 
     add_custom_target(verify-cancellable-wait-boundary
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_cancellable_wait_boundary.cmake"
         COMMENT "Verifying cancellable host-wait boundary"
         VERBATIM)
-    add_dependencies(run-current-smokes verify-cancellable-wait-boundary)
 
     add_custom_target(verify-vm-composition-lifecycle
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_vm_composition_lifecycle.cmake"
         COMMENT "Verifying VM composition lifecycle closure"
         VERBATIM)
-    add_dependencies(run-current-smokes verify-vm-composition-lifecycle)
 
     add_custom_target(verify-fpu-boundary
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_fpu_boundary.cmake"
         COMMENT "Verifying T262 core-owned FPU boundary"
         VERBATIM)
-    add_dependencies(run-current-smokes verify-fpu-boundary)
 
     add_custom_target(verify-core-cpu-pic-authority
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_core_cpu_pic_authority.cmake"
         COMMENT "Verifying T295 core-owned CPU/PIC lifecycle authority"
         VERBATIM)
-    add_dependencies(run-current-smokes verify-core-cpu-pic-authority)
 
     add_custom_target(verify-core-display-authority
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_core_display_authority.cmake"
         COMMENT "Verifying T296 core-owned display and port authority"
         VERBATIM)
-    add_dependencies(run-current-smokes verify-core-display-authority)
 
     add_custom_target(verify-core-dma-rtc-authority
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_core_dma_rtc_authority.cmake"
         COMMENT "Verifying T296 core-owned DMA and RTC/CMOS/NMI authority"
         VERBATIM)
-    add_dependencies(run-current-smokes verify-core-dma-rtc-authority)
 
     add_custom_target(verify-core-controller-authority
         COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_core_controller_authority.cmake"
         COMMENT "Verifying T296 core-owned FDC/HDC controller authority"
         VERBATIM)
-    add_dependencies(run-current-smokes verify-core-controller-authority)
 endif()
+
+set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
+    verify-t317-test-type-vocabulary
+    verify-t317-strict-cpu-smoke-coverage
+    verify-documentation-governance
+    verify-dependency-dag
+    verify-live-machine-authority
+    verify-facade-ownership
+    verify-executor-closure
+    verify-public-raw-borrow-closure
+    verify-session-readiness
+    verify-product-session-manager
+    verify-c-facade-headers
+    verify-bounded-formatting
+    verify-vm-provider-composition
+    verify-ram-reconfigure-closure
+    verify-linux-platform-contract
+    verify-current-artifact-target
+    verify-request-transport-closure
+    verify-keyboard-ingress-boundary
+    verify-aux-mouse-boundary
+    verify-dma-fdc-boundary
+    verify-fdc-state-machine-boundary
+    verify-host-cancellation-boundary
+    verify-keyboard-transport-surface
+    verify-console-adapter-closure
+    verify-current-media-smoke-classification
+    verify-linux-adapter-hygiene
+    verify-default-pc-at-profile-closure
+    verify-t264-core-vm-pcat-ownership
+    verify-ega-sequencer-boundary
+    verify-ega-controller-boundary
+    verify-keyboard-portal-closure
+    verify-t285-ega-mode10
+    verify-boot-failure-portal-closure
+    verify-cmos-rtc-boundary
+    verify-rational-clock-boundary
+    verify-ata-pio-feature-boundary
+    verify-hdd-legacy-api-closure
+    verify-vm-media-atomic-save
+    verify-core-utils-boundary
+    verify-cancellable-wait-boundary
+    verify-vm-composition-lifecycle
+    verify-fpu-boundary
+    verify-core-cpu-pic-authority
+    verify-core-display-authority
+    verify-core-dma-rtc-authority
+    verify-core-controller-authority)
+set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_TARGETS)
+foreach(target IN LISTS PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES)
+    if(TARGET ${target})
+        list(APPEND PROJECT_CURRENT_SPECIALIZED_VERIFIER_TARGETS ${target})
+    endif()
+endforeach()
+file(GENERATE
+    OUTPUT "${CMAKE_BINARY_DIR}/current-specialized-verifier-targets.txt"
+    CONTENT "$<JOIN:${PROJECT_CURRENT_SPECIALIZED_VERIFIER_TARGETS},\n>\n")
+add_custom_target(verify-current-gate-separation
+    COMMAND "${CMAKE_COMMAND}"
+        -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+        -DPROJECT_NINJA:FILEPATH=${CMAKE_MAKE_PROGRAM}
+        -DPROJECT_SPECIALIZED_TARGETS_FILE:FILEPATH=${CMAKE_BINARY_DIR}/current-specialized-verifier-targets.txt
+        -P "${CMAKE_SOURCE_DIR}/cmake/verify_current_gate_separation.cmake"
+    COMMENT "Verifying current smoke and specialized gate separation"
+    VERBATIM)
+list(APPEND PROJECT_CURRENT_SPECIALIZED_VERIFIER_TARGETS
+    verify-current-gate-separation)
+add_custom_target(verify-current-specialized-gates
+    DEPENDS ${PROJECT_CURRENT_SPECIALIZED_VERIFIER_TARGETS}
+    COMMENT "Running current specialized verification gates"
+    VERBATIM)
 
 if(PROJECT_ENABLE_BOCHX_RESEARCH)
     add_executable(research-bochx-manifest-check

@@ -2,8 +2,28 @@
 
 ## Current Work
 
-**Idle.** M5 T323 is closed; the next 80386DX Queue candidate requires a
-separately admitted task packet.
+M5 T324 S1 is active: separate current smoke execution from specialized
+verification gates (Ordinary Mode).
+
+## M5 T324 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner-authorized continuation of the Queue's ordered M5/80386DX program, 2026-08-12. T323 is closed. |
+| Objective | Mechanically separate developer smoke execution from specialized verification: `run-current-smokes` builds registered smoke executables and runs only the full `current-gate` CTest selection; `run-current-fast-smokes` remains the non-media selection; one dedicated verifier target owns all structural, provenance, static, and other `verify-*` checks; and `current-gates-gcc` composes the three layers without duplicate execution. |
+| Non-goals | No registered test, command, assertion, timeout, media classification, artifact contract, product behavior, source ABI, verifier semantics, or CTest registration may be removed, relabeled, or weakened. Do not make static verifiers into CTests or change tests only to alter timing. |
+| Reference Baseline | `7fde9768`; the Queue P1 current-test/specialized-gate candidate and T317 S7 smoke-scheduling evidence are inputs. |
+| Files And ABI Surface | Expected: CMake presets/target composition, a narrow mechanical verifier or evidence, Status, and T324 history/evidence. No product source, public API, fixture behavior, media asset, or test executable source change is admitted. |
+| Applicable Rules | Task Reading Set; execution/coding/documentation rules; Queue; CMake/CTest target graph; T317 S7 evidence; current artifact contract. |
+| Verification | Audit every existing `run-current-smokes` dependency and classify it. Prove exact full/media/non-media CTest counts and partition; prove every specialized verifier is absent from pure smoke and present in complete acceptance; verify no duplicate target execution in the complete graph; record elapsed baselines for full, fast, specialized, and aggregate gates; run documentation governance and diff check. |
+| Expected Markers | `M5:T324:S1:CURRENT-GATE-SEPARATION:OK`; `run-current-smokes`, `run-current-fast-smokes`, and `verify-current-specialized-gates` have distinct mechanical target roles. |
+| Asset Needs | Existing owner-provided local media only; no new asset, firmware, guest media, or network input. |
+| Reporting Requirements | Deliver one complete implementation P with full dependency classification, implementation, evidence, and all verification while retaining this packet. After push, perform ordinary-mode actual-change acceptance before a governance P closes S1. |
+| Stop Conditions | Stop if a verifier has an undocumented runtime dependency, accurate separation changes test/product behavior, a target cannot be classified without changing its contract, or CMake cannot prove the complete graph is non-duplicating. Revise the packet rather than weaken coverage. |
+| Exit Criteria | Full/fast CTest selections and media partition are exact; every specialized verifier has one defined owner target; pure smoke contains no verifier dependency; complete acceptance contains every verifier and smoke once; timing evidence is recorded; no scope drift; all gates pass; and a pushed governance P records acceptance. |
+| Original Owner Request | Complete the owner-approved Intel 80386DX architecture program with evidence-led code quality and package governance before M6. |
+| Similar-Issue Sweep | Review `PROJECT_CURRENT_*_SMOKE_TARGETS`, `project_add_current_smoke_test`, every `add_dependencies(run-current-smokes ...)`, `verify-*` target, `current-gates-gcc`, fast presets, CTest labels, media classification, and current artifact verification. |
 
 ## Current Technical Baseline
 
