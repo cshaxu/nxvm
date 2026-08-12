@@ -3305,7 +3305,7 @@ static type_unsigned_16 _ser_idt_error_code(type_unsigned_8 intid)
     return TYPE_MASK_UNSIGNED_16(intid * 8u + 2u);
 }
 static C_VOID _ser_int_protected_16(core_machine_cpu_execution_context *context,
-    type_unsigned_8 intid, type_bool is_exception)
+    type_unsigned_8 intid, type_bool software_origin, type_bool error_frame)
 {
     type_unsigned_64 gate_desc;
     type_unsigned_64 code_desc;
@@ -3323,6 +3323,7 @@ static C_VOID _ser_int_protected_16(core_machine_cpu_execution_context *context,
     type_unsigned_8 oldcpl;
     type_unsigned_8 target_cpl;
     type_unsigned_8 frame_words;
+    type_bool interrupt_gate;
     t_cpu_data_sreg newcs_cache;
     t_cpu_data_sreg newss_cache;
 
@@ -3333,14 +3334,16 @@ static C_VOID _ser_int_protected_16(core_machine_cpu_execution_context *context,
     }
     TYPE_TRACE_CHECK_RETURN(_s_read_idt(context, intid,
         TYPE_REFERENCE_OF(gate_desc)));
-    if (_GetDesc_Type(gate_desc) != VCPU_DESC_SYS_TYPE_INTGATE_16) {
+    interrupt_gate = _GetDesc_Type(gate_desc) == VCPU_DESC_SYS_TYPE_INTGATE_16;
+    if (!interrupt_gate && _GetDesc_Type(gate_desc) !=
+        VCPU_DESC_SYS_TYPE_TRAPGATE_16) {
         TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(_ser_idt_error_code(intid)));
     }
     if (!_IsDescPresent(gate_desc)) {
         TYPE_TRACE_CHECK_RETURN(_SetExcept_NP(_ser_idt_error_code(intid)));
     }
     oldcpl = _GetCPL;
-    if (!is_exception && _GetDesc_DPL(gate_desc) < oldcpl) {
+    if (software_origin && _GetDesc_DPL(gate_desc) < oldcpl) {
         TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(_ser_idt_error_code(intid)));
     }
     newcs = TYPE_MASK_UNSIGNED_16(_GetDescGate_Selector(gate_desc));
@@ -3370,7 +3373,7 @@ static C_VOID _ser_int_protected_16(core_machine_cpu_execution_context *context,
     TYPE_TRACE_CHECK_RETURN(_kma_test_access(context, &newcs_cache,
         TYPE_MASK_UNSIGNED_16(_GetDescGate_Offset(gate_desc)), 1u, 0,
         target_cpl, 1));
-    frame_words = (type_unsigned_8)(3u + (is_exception ? 1u : 0u));
+    frame_words = (type_unsigned_8)(3u + (error_frame ? 1u : 0u));
     if (target_cpl < oldcpl) {
         if (!cpu_state.data.tr.flagValid) {
             TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(0));
@@ -3426,13 +3429,14 @@ static C_VOID _ser_int_protected_16(core_machine_cpu_execution_context *context,
     TYPE_TRACE_CHECK_RETURN(_kec_push(context, TYPE_REFERENCE_OF(oldflags), 2u));
     TYPE_TRACE_CHECK_RETURN(_kec_push(context, TYPE_REFERENCE_OF(oldcs), 2u));
     TYPE_TRACE_CHECK_RETURN(_kec_push(context, TYPE_REFERENCE_OF(oldip), 2u));
-    if (is_exception) {
+    if (error_frame) {
         TYPE_TRACE_CHECK_RETURN(_kec_push(context, TYPE_REFERENCE_OF(error_code),
             2u));
     }
     cpu_state.data.cs = newcs_cache;
     cpu_state.data.ip = TYPE_MASK_UNSIGNED_16(_GetDescGate_Offset(gate_desc));
-    _ClrEFLAGS_IF;
+    if (interrupt_gate) _ClrEFLAGS_IF;
+    _ClrEFLAGS_TF;
     TYPE_TRACE_CALL_END;
 }
 static C_VOID _ser_int_protected_32_outer(core_machine_cpu_execution_context *context,
@@ -3676,8 +3680,9 @@ static C_VOID _ser_int_protected(core_machine_cpu_execution_context *context,
         TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(0));
     switch (_GetDesc_Type(gate_desc)) {
     case VCPU_DESC_SYS_TYPE_INTGATE_16:
+    case VCPU_DESC_SYS_TYPE_TRAPGATE_16:
         TYPE_TRACE_CHECK_RETURN(_ser_int_protected_16(context, intid,
-            flagext));
+            software_origin, flagext));
         break;
     case VCPU_DESC_SYS_TYPE_INTGATE_32:
     case VCPU_DESC_SYS_TYPE_TRAPGATE_32:
@@ -3687,7 +3692,6 @@ static C_VOID _ser_int_protected(core_machine_cpu_execution_context *context,
             gate_desc, software_origin, flagext));
         break;
     case VCPU_DESC_SYS_TYPE_TASKGATE:
-    case VCPU_DESC_SYS_TYPE_TRAPGATE_16:
         TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(0));
         break;
     default:
