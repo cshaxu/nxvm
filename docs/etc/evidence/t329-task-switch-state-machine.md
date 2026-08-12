@@ -4,7 +4,7 @@
 
 This supporting record constrains the active T329 task-system package. Intel
 80386 behavior remains the authority. It does not allocate a task, replace the
-active [T329 S2 packet](../../STATUS.md), or claim that later task, LDT, VM86,
+active [T329 S3 packet](../../STATUS.md), or claim that later task, LDT, VM86,
 or debug behavior is complete.
 
 The record addresses a recurring construction risk: a task switch is not a
@@ -13,12 +13,12 @@ whose validation, externally visible writes, loaded CPU state, and next
 instruction must agree. A local smoke can expose a symptom, but cannot define
 the transition model by itself.
 
-## S2 State Machine
+## Direct-JMP State Machine
 
-S2 is limited to a protected, CPL0 direct far `JMP` from a valid busy 32-bit
-TSS to an available 32-bit TSS. Paging is disabled and the incoming LDTR is
-null. Direct `EA ptr16:16`/`ptr16:32` and memory-indirect `FF /5` routes are
-forms of the same transition, not separate state models.
+S2 establishes, and S3 strengthens, the protected CPL0 direct far `JMP` from a
+valid busy 32-bit TSS to an available 32-bit TSS. Paging is disabled and the
+incoming LDTR is null. Direct `EA ptr16:16`/`ptr16:32` and memory-indirect
+`FF /5` routes are forms of the same transition, not separate state models.
 
 | Phase | Required work | May publish architectural state? |
 | --- | --- | --- |
@@ -33,7 +33,7 @@ after the first commit write. If the core cannot preflight that operation with
 the same semantics, S2 stops and transfers the missing transaction boundary;
 it does not retain a partial commit and add a local exception workaround.
 
-## Required S2 Checkpoints
+## Required Direct-JMP Checkpoints
 
 The owner smoke uses bounded execution budgets and records distinct outcomes:
 
@@ -43,12 +43,15 @@ The owner smoke uses bounded execution budgets and records distinct outcomes:
 3. first target instruction; and
 4. pending IRQ accepted after a successful incoming-IF transition.
 
-An IDT diagnostic handler may observe an already-delivered exception, but it
-must not be the only evidence of which state-machine phase produced it.
+S3 installs `#TS`, `#GP`, and `#SS` handlers on a valid source stack. It reads
+the still-accessible old TSS and GDT after handler entry, proving that each
+admitted descriptor/TSS/stack rejection occurred before the first commit
+write. This supplements, rather than replaces, the no-IDT terminal boundary.
 
 ## TSS32 Image Contract
 
-S2 names the 32-bit TSS fields instead of relying on an incidental C layout:
+S2 names the 32-bit TSS fields instead of relying on an incidental C layout;
+S3 binds every name to a shared offset constant and C11 `offsetof` assertion:
 CR3, EIP, EFLAGS, EAX/ECX/EDX/EBX/ESP/EBP/ESI/EDI, followed by four-byte
 selector slots for ES/CS/SS/DS/FS/GS/LDTR. The implementation asserts each
 offset used by S2. It records the exact outgoing instruction boundary and

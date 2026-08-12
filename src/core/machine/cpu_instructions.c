@@ -3970,6 +3970,26 @@ typedef struct task_switch_sreg_32 {
     type_unsigned_16 reserved;
 } task_switch_sreg_32;
 
+#define TASK_SWITCH_TSS32_CR3_OFFSET 0x1cu
+#define TASK_SWITCH_TSS32_EIP_OFFSET 0x20u
+#define TASK_SWITCH_TSS32_EFLAGS_OFFSET 0x24u
+#define TASK_SWITCH_TSS32_EAX_OFFSET 0x28u
+#define TASK_SWITCH_TSS32_ECX_OFFSET 0x2cu
+#define TASK_SWITCH_TSS32_EDX_OFFSET 0x30u
+#define TASK_SWITCH_TSS32_EBX_OFFSET 0x34u
+#define TASK_SWITCH_TSS32_ESP_OFFSET 0x38u
+#define TASK_SWITCH_TSS32_EBP_OFFSET 0x3cu
+#define TASK_SWITCH_TSS32_ESI_OFFSET 0x40u
+#define TASK_SWITCH_TSS32_EDI_OFFSET 0x44u
+#define TASK_SWITCH_TSS32_ES_OFFSET 0x48u
+#define TASK_SWITCH_TSS32_CS_OFFSET 0x4cu
+#define TASK_SWITCH_TSS32_SS_OFFSET 0x50u
+#define TASK_SWITCH_TSS32_DS_OFFSET 0x54u
+#define TASK_SWITCH_TSS32_FS_OFFSET 0x58u
+#define TASK_SWITCH_TSS32_GS_OFFSET 0x5cu
+#define TASK_SWITCH_TSS32_LDTR_OFFSET 0x60u
+#define TASK_SWITCH_TSS32_IMAGE_BYTES 0x48u
+
 typedef struct task_switch_state_32 {
     type_unsigned_32 cr3;
     type_unsigned_32 eip;
@@ -3993,8 +4013,27 @@ typedef struct task_switch_state_32 {
 
 _Static_assert(sizeof(task_switch_sreg_32) == 4u,
     "80386 TSS selector slots are four bytes");
-_Static_assert(sizeof(task_switch_state_32) == 0x48u,
+_Static_assert(sizeof(task_switch_state_32) == TASK_SWITCH_TSS32_IMAGE_BYTES,
     "80386 TSS saved-state image spans 0x1c through 0x63");
+_Static_assert(offsetof(task_switch_state_32, cr3) == 0u &&
+    offsetof(task_switch_state_32, eip) == 4u &&
+    offsetof(task_switch_state_32, eflags) == 8u &&
+    offsetof(task_switch_state_32, eax) == 12u &&
+    offsetof(task_switch_state_32, ecx) == 16u &&
+    offsetof(task_switch_state_32, edx) == 20u &&
+    offsetof(task_switch_state_32, ebx) == 24u &&
+    offsetof(task_switch_state_32, esp) == 28u &&
+    offsetof(task_switch_state_32, ebp) == 32u &&
+    offsetof(task_switch_state_32, esi) == 36u &&
+    offsetof(task_switch_state_32, edi) == 40u &&
+    offsetof(task_switch_state_32, es) == 44u &&
+    offsetof(task_switch_state_32, cs) == 48u &&
+    offsetof(task_switch_state_32, ss) == 52u &&
+    offsetof(task_switch_state_32, ds) == 56u &&
+    offsetof(task_switch_state_32, fs) == 60u &&
+    offsetof(task_switch_state_32, gs) == 64u &&
+    offsetof(task_switch_state_32, ldtr) == 68u,
+    "80386 TSS image fields retain their named offsets");
 
 typedef struct task_switch_plan_32 {
     type_unsigned_64 old_descriptor;
@@ -4014,41 +4053,41 @@ static C_VOID _s_task_write_state_32(core_machine_cpu_execution_context *context
     const task_switch_state_32 *state)
 {
     TYPE_TRACE_CALL_BEGIN("_s_task_write_state_32");
-    TYPE_TRACE_CHECK_RETURN(_s_write_tss(context, 0x1cu,
+    TYPE_TRACE_CHECK_RETURN(_s_write_tss(context, TASK_SWITCH_TSS32_CR3_OFFSET,
         TYPE_REFERENCE_OF(state->cr3), 4u));
-    TYPE_TRACE_CHECK_RETURN(_s_write_tss(context, 0x20u,
+    TYPE_TRACE_CHECK_RETURN(_s_write_tss(context, TASK_SWITCH_TSS32_EIP_OFFSET,
         TYPE_REFERENCE_OF(state->eip), 4u));
-    TYPE_TRACE_CHECK_RETURN(_s_write_tss(context, 0x24u,
+    TYPE_TRACE_CHECK_RETURN(_s_write_tss(context, TASK_SWITCH_TSS32_EFLAGS_OFFSET,
         TYPE_REFERENCE_OF(state->eflags), 4u));
-    TYPE_TRACE_CHECK_RETURN(_s_write_tss(context, 0x28u,
+    TYPE_TRACE_CHECK_RETURN(_s_write_tss(context, TASK_SWITCH_TSS32_EAX_OFFSET,
         TYPE_REFERENCE_OF(state->eax), 4u));
-    TYPE_TRACE_CHECK_RETURN(_s_write_tss(context, 0x2cu,
+    TYPE_TRACE_CHECK_RETURN(_s_write_tss(context, TASK_SWITCH_TSS32_ECX_OFFSET,
         TYPE_REFERENCE_OF(state->ecx), 4u));
-    TYPE_TRACE_CHECK_RETURN(_s_write_tss(context, 0x30u,
+    TYPE_TRACE_CHECK_RETURN(_s_write_tss(context, TASK_SWITCH_TSS32_EDX_OFFSET,
         TYPE_REFERENCE_OF(state->edx), 4u));
-    TYPE_TRACE_CHECK_RETURN(_s_write_tss(context, 0x34u,
+    TYPE_TRACE_CHECK_RETURN(_s_write_tss(context, TASK_SWITCH_TSS32_EBX_OFFSET,
         TYPE_REFERENCE_OF(state->ebx), 4u));
-    TYPE_TRACE_CHECK_RETURN(_s_write_tss(context, 0x38u,
+    TYPE_TRACE_CHECK_RETURN(_s_write_tss(context, TASK_SWITCH_TSS32_ESP_OFFSET,
         TYPE_REFERENCE_OF(state->esp), 4u));
-    TYPE_TRACE_CHECK_RETURN(_s_write_tss(context, 0x3cu,
+    TYPE_TRACE_CHECK_RETURN(_s_write_tss(context, TASK_SWITCH_TSS32_EBP_OFFSET,
         TYPE_REFERENCE_OF(state->ebp), 4u));
-    TYPE_TRACE_CHECK_RETURN(_s_write_tss(context, 0x40u,
+    TYPE_TRACE_CHECK_RETURN(_s_write_tss(context, TASK_SWITCH_TSS32_ESI_OFFSET,
         TYPE_REFERENCE_OF(state->esi), 4u));
-    TYPE_TRACE_CHECK_RETURN(_s_write_tss(context, 0x44u,
+    TYPE_TRACE_CHECK_RETURN(_s_write_tss(context, TASK_SWITCH_TSS32_EDI_OFFSET,
         TYPE_REFERENCE_OF(state->edi), 4u));
-    TYPE_TRACE_CHECK_RETURN(_s_write_tss(context, 0x48u,
+    TYPE_TRACE_CHECK_RETURN(_s_write_tss(context, TASK_SWITCH_TSS32_ES_OFFSET,
         TYPE_REFERENCE_OF(state->es.selector), 2u));
-    TYPE_TRACE_CHECK_RETURN(_s_write_tss(context, 0x4cu,
+    TYPE_TRACE_CHECK_RETURN(_s_write_tss(context, TASK_SWITCH_TSS32_CS_OFFSET,
         TYPE_REFERENCE_OF(state->cs.selector), 2u));
-    TYPE_TRACE_CHECK_RETURN(_s_write_tss(context, 0x50u,
+    TYPE_TRACE_CHECK_RETURN(_s_write_tss(context, TASK_SWITCH_TSS32_SS_OFFSET,
         TYPE_REFERENCE_OF(state->ss.selector), 2u));
-    TYPE_TRACE_CHECK_RETURN(_s_write_tss(context, 0x54u,
+    TYPE_TRACE_CHECK_RETURN(_s_write_tss(context, TASK_SWITCH_TSS32_DS_OFFSET,
         TYPE_REFERENCE_OF(state->ds.selector), 2u));
-    TYPE_TRACE_CHECK_RETURN(_s_write_tss(context, 0x58u,
+    TYPE_TRACE_CHECK_RETURN(_s_write_tss(context, TASK_SWITCH_TSS32_FS_OFFSET,
         TYPE_REFERENCE_OF(state->fs.selector), 2u));
-    TYPE_TRACE_CHECK_RETURN(_s_write_tss(context, 0x5cu,
+    TYPE_TRACE_CHECK_RETURN(_s_write_tss(context, TASK_SWITCH_TSS32_GS_OFFSET,
         TYPE_REFERENCE_OF(state->gs.selector), 2u));
-    TYPE_TRACE_CHECK_RETURN(_s_write_tss(context, 0x60u,
+    TYPE_TRACE_CHECK_RETURN(_s_write_tss(context, TASK_SWITCH_TSS32_LDTR_OFFSET,
         TYPE_REFERENCE_OF(state->ldtr.selector), 2u));
     TYPE_TRACE_CALL_END;
 }
@@ -4080,17 +4119,20 @@ static C_VOID _s_task_plan_jmp_32(core_machine_cpu_execution_context *context,
     if (plan->newtr.limit < 0x67u)
         TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(newcs & 0xfffcu));
 
-    TYPE_TRACE_CHECK_RETURN(_kma_test_access(context, &cpu_state.data.tr, 0x1cu,
-        sizeof(plan->outgoing), TYPE_TRUE, 0u, TYPE_TRUE));
-    TYPE_TRACE_CHECK_RETURN(_kma_test_access(context, &plan->newtr, 0x1cu,
-        sizeof(plan->incoming), TYPE_FALSE, 0u, TYPE_TRUE));
+    TYPE_TRACE_CHECK_RETURN(_kma_test_access(context, &cpu_state.data.tr,
+        TASK_SWITCH_TSS32_CR3_OFFSET, TASK_SWITCH_TSS32_IMAGE_BYTES,
+        TYPE_TRUE, 0u, TYPE_TRUE));
+    TYPE_TRACE_CHECK_RETURN(_kma_test_access(context, &plan->newtr,
+        TASK_SWITCH_TSS32_CR3_OFFSET, TASK_SWITCH_TSS32_IMAGE_BYTES,
+        TYPE_FALSE, 0u, TYPE_TRUE));
     TYPE_TRACE_CHECK_RETURN(_kma_test_access(context, &cpu_state.data.gdtr,
         _GetSelector_Offset(cpu_state.data.tr.selector), 8u, TYPE_TRUE, 0u,
         TYPE_TRUE));
     TYPE_TRACE_CHECK_RETURN(_kma_test_access(context, &cpu_state.data.gdtr,
         _GetSelector_Offset(newcs), 8u, TYPE_TRUE, 0u, TYPE_TRUE));
-    TYPE_TRACE_CHECK_RETURN(_kma_read_logical(context, &plan->newtr, 0x1cu,
-        TYPE_REFERENCE_OF(plan->incoming), sizeof(plan->incoming), 0u, TYPE_TRUE));
+    TYPE_TRACE_CHECK_RETURN(_kma_read_logical(context, &plan->newtr,
+        TASK_SWITCH_TSS32_CR3_OFFSET, TYPE_REFERENCE_OF(plan->incoming),
+        TASK_SWITCH_TSS32_IMAGE_BYTES, 0u, TYPE_TRUE));
     if (plan->incoming.ldtr.selector || plan->incoming.cr3 & ~VCPU_CR3_BASE)
         TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(newcs & 0xfffcu));
     TYPE_TRACE_CHECK_RETURN(_s_task_validate_code_selector(context,

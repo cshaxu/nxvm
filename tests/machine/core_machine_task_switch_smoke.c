@@ -467,6 +467,7 @@ static C_INT task_switch_expect_tss32_direct(type_bool operand32,
     type_unsigned_32 saved_eip = 0u;
     task_switch_smoke_tss32_state outgoing;
     type_unsigned_8 busy[2] = {0u, 0u};
+    C_INT rejection_failed;
     t_cpu cpu;
     static const type_unsigned_8 gdt_pointer[] = { 0x3fu,0,0,0x03u,0,0 };
     type_unsigned_8 gdt[] = {
@@ -478,7 +479,7 @@ static C_INT task_switch_expect_tss32_direct(type_bool operand32,
     static const type_unsigned_8 bootstrap[] = {
         0x0f,0x01,0x16,0,0x01, 0xb8,1,0,0x0f,0x01,0xf0,
         0xb8,0x28,0,0x0f,0,0xd8, 0xb8,0x10,0,0x8e,0xd0,0x8e,0xd8,
-        0x8e,0xc0,0x8e,0xe0,0x8e,0xe8, 0xea,0,0,0x08,0
+        0x8e,0xc0,0x8e,0xe0,0x8e,0xe8, 0xbc,0,0x80, 0xea,0,0,0x08,0
     };
 #define TASK_SWITCH_SOURCE_GPRS \
     0x66,0xb8,0x11,0x11,0x11,0x11, \
@@ -501,6 +502,9 @@ static C_INT task_switch_expect_tss32_direct(type_bool operand32,
     static const type_unsigned_8 source_lock_indirect[] = {
         TASK_SWITCH_SOURCE_GPRS, 0xf0u,0xffu,0x2eu,0x00u,0x52u
     };
+    static const type_unsigned_8 source_rejection[] = {
+        0xb8,0x11,0x11, 0xea,0,0,0x30,0
+    };
     static const type_unsigned_8 indirect16[] = {
         TASK_SWITCH_SOURCE_GPRS, 0xff,0x2eu,0x00u,0x52u
     };
@@ -518,6 +522,9 @@ static C_INT task_switch_expect_tss32_direct(type_bool operand32,
     static const type_unsigned_8 pointer32[] = { 0,0,0,0,0x30u,0 };
     static const type_unsigned_8 halt[] = { 0xf4u };
     static const type_unsigned_8 irq_gate[] = {
+        0x80u,0x01u,0x08u,0,0,0x86u,0,0
+    };
+    static const type_unsigned_8 fault_gate[] = {
         0x80u,0x01u,0x08u,0,0,0x86u,0,0
     };
     task_switch_smoke_tss32_state target = {
@@ -558,6 +565,10 @@ static C_INT task_switch_expect_tss32_direct(type_bool operand32,
     }
     if (rejection == TASK_SWITCH_TSS32_REJECTION_INVALID_CODE)
         target.cs.selector = 0x10u;
+    if (rejection != TASK_SWITCH_TSS32_REJECTION_NONE) {
+        source = source_rejection;
+        source_bytes = sizeof(source_rejection);
+    }
     if (rejection == TASK_SWITCH_TSS32_REJECTION_TARGET_BUSY)
         gdt[0x35u] = 0x8bu;
     if (rejection == TASK_SWITCH_TSS32_REJECTION_OLD_SHORT)
@@ -588,8 +599,21 @@ static C_INT task_switch_expect_tss32_direct(type_bool operand32,
             (pending_irq && (!write_bytes(fixture.machine, IDT_BASE + 0x100u,
                 irq_gate, sizeof(irq_gate)) || !write_bytes(fixture.machine,
                 KERNEL_BASE + 0x180u, halt, sizeof(halt)))) ||
+            (rejection != TASK_SWITCH_TSS32_REJECTION_NONE &&
+                (!write_bytes(fixture.machine, IDT_BASE +
+                    ((rejection == TASK_SWITCH_TSS32_REJECTION_STACK_LIMIT ?
+                        12u : rejection == TASK_SWITCH_TSS32_REJECTION_TARGET_BUSY ?
+                        13u : 10u) * 8u), fault_gate, sizeof(fault_gate)) ||
+                !write_bytes(fixture.machine, KERNEL_BASE + 0x180u, halt,
+                    sizeof(halt)))) ||
             core_machine_memory_write(fixture.machine, TASK_B_BASE + 0x1cu,
                 &target, sizeof(target)) != TYPE_STATUS_OK;
+        if (rejection != TASK_SWITCH_TSS32_REJECTION_NONE) {
+            fixture.machine->executor_cpu.data.idtr.flagValid = TYPE_TRUE;
+            fixture.machine->executor_cpu.data.idtr.sregtype = SREG_IDTR;
+            fixture.machine->executor_cpu.data.idtr.base = IDT_BASE;
+            fixture.machine->executor_cpu.data.idtr.limit = 0x006fu;
+        }
         if (pending_irq) {
             fixture.machine->executor_cpu.data.idtr.flagValid = TYPE_TRUE;
             fixture.machine->executor_cpu.data.idtr.sregtype = SREG_IDTR;
@@ -602,24 +626,45 @@ static C_INT task_switch_expect_tss32_direct(type_bool operand32,
             core_machine_pic_irq_source_deassert(&irq);
         }
         status = core_machine_run(fixture.machine, budget, &result);
-        failed |= status != (rejection != TASK_SWITCH_TSS32_REJECTION_NONE || lock ?
-                TYPE_STATUS_FAULT : TYPE_STATUS_OK) ||
-            result.reason != (rejection != TASK_SWITCH_TSS32_REJECTION_NONE || lock ? CORE_MACHINE_STOP_FAULT :
+        failed |= status != (lock ? TYPE_STATUS_FAULT : TYPE_STATUS_OK) ||
+            result.reason != (lock ? CORE_MACHINE_STOP_FAULT :
                 CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT);
         cpu = test_core_machine_fixture_capture_cpu_after_run(fixture.machine);
         failed |= core_machine_get_cpu_diagnostic(fixture.machine, &diagnostic) !=
-            TYPE_STATUS_OK || diagnostic.first_fault.valid !=
-                (rejection != TASK_SWITCH_TSS32_REJECTION_NONE || lock) ||
-            (rejection != TASK_SWITCH_TSS32_REJECTION_NONE && (!TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
-                VCPUINS_EXCEPT_DF) || diagnostic.first_fault.exception_code !=
-                0u)) || (lock && (!TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
+            TYPE_STATUS_OK || (lock && (!diagnostic.first_fault.valid ||
+                !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
                 VCPUINS_EXCEPT_UD) || diagnostic.first_fault.exception_code !=
-                0u)) || (rejection == TASK_SWITCH_TSS32_REJECTION_NONE && !lock &&
+                0u)) || (rejection != TASK_SWITCH_TSS32_REJECTION_NONE &&
+                (!diagnostic.last_delivered_exception.valid ||
+                diagnostic.last_delivered_exception.exception_mask !=
+                    (rejection == TASK_SWITCH_TSS32_REJECTION_STACK_LIMIT ?
+                        VCPUINS_EXCEPT_SS : rejection == TASK_SWITCH_TSS32_REJECTION_TARGET_BUSY ?
+                        VCPUINS_EXCEPT_GP : VCPUINS_EXCEPT_TS))) ||
+            (rejection == TASK_SWITCH_TSS32_REJECTION_NONE && !lock &&
                 diagnostic.last_delivered_exception.valid);
         if (rejection != TASK_SWITCH_TSS32_REJECTION_NONE) {
-            failed |= cpu.data.eip != source_bytes - (operand32 ? 8u : 5u) ||
-                cpu.data.eax != 0x11111111u ||
-                cpu.data.tr.selector != 0x28u;
+            STD_MEMSET(&outgoing, 0, sizeof(outgoing));
+            rejection_failed = core_machine_memory_read(fixture.machine, TASK_A_BASE + 0x1cu,
+                    &outgoing, sizeof(outgoing)) != TYPE_STATUS_OK ||
+                core_machine_memory_read(fixture.machine, GDT_BASE + 0x2du,
+                    &busy[0], 1u) != TYPE_STATUS_OK ||
+                core_machine_memory_read(fixture.machine, GDT_BASE + 0x35u,
+                    &busy[1], 1u) != TYPE_STATUS_OK || cpu.data.eip != 0x181u ||
+                cpu.data.eax != 0x00001111u ||
+                cpu.data.tr.selector != 0x28u ||
+                outgoing.cr3 != 0u || outgoing.eip != 0u ||
+                outgoing.eflags != 0u || outgoing.eax != 0u ||
+                outgoing.ecx != 0u || outgoing.edx != 0u ||
+                outgoing.ebx != 0u || outgoing.esp != 0u ||
+                outgoing.ebp != 0u || outgoing.esi != 0u ||
+                outgoing.edi != 0u || outgoing.es.selector != 0u ||
+                outgoing.cs.selector != 0u || outgoing.ss.selector != 0u ||
+                outgoing.ds.selector != 0u || outgoing.fs.selector != 0u ||
+                outgoing.gs.selector != 0u || outgoing.ldtr.selector != 0u ||
+                busy[0] != 0x8bu ||
+                busy[1] != (rejection ==
+                    TASK_SWITCH_TSS32_REJECTION_TARGET_BUSY ? 0x8bu : 0x89u);
+            failed |= rejection_failed;
             core_machine_destroy(fixture.machine);
             return failed;
         }
@@ -756,5 +801,6 @@ int main(void)
     STD_PRINTF("M5:T261:S5:SS-CACHE:OK\n");
     STD_PRINTF("M5:T329:S1:TSS16-JMP:OK\n");
     STD_PRINTF("M5:T329:S2:TSS32-JMP:OK\n");
+    STD_PRINTF("M5:T329:S3:TSS32-IMAGE:OK\n");
     return 0;
 }
