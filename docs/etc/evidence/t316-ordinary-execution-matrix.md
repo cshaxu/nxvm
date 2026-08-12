@@ -11,6 +11,11 @@ smokes supersede its former `0F`-integer *unproven* dispositions where listed
 below. No external implementation source was imported or used as repository
 evidence.
 
+Its rows are horizontal instruction-form evidence. The supporting
+[80386DX closure map](80386-closure-map.md) cross-references their residual
+states to the Queue's vertical exception, privilege, paging, and system-state
+closures; neither record supersedes the Roadmap or Queue.
+
 The review traced each group through the single primary decoder `ExecIns`, its
 metadata/profile query `core_machine_cpu_instruction_metadata_get` /
 `core_machine_cpu_profile_allows_form`, and the `INS_0F` secondary gate in

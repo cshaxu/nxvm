@@ -19,6 +19,12 @@ in-scope form is partial, missing, or unclassified. A family candidate advances
 only when its whole assigned matrix is resolved by implementation and focused
 evidence, or by an approved boundary classification.
 
+The [80386DX closure map](etc/evidence/80386-closure-map.md) is the supporting
+crosswalk between those horizontal form matrices and the vertical architecture
+state closures below. Every admitted 80386DX candidate identifies the map rows
+it advances and any residual row it transfers. A completed smoke count or
+opcode slice is never a substitute for a closed state transition.
+
 1. **P0 - VM86-to-protected exception and interrupt delivery foundation.**
    Implement the shared 80386 VM86 `#GP`/`#UD`/`#NM` and IRQ path through an
    IDT gate to CPL0: TSS-selected `SS0:ESP0` stack transition, Intel-correct

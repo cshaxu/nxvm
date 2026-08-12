@@ -109,6 +109,12 @@ candidate work, and detailed capability evidence belong in
   FPU delivery only with a corpus-driven instruction matrix; that admission must
   rerun the retained ESC/WAIT no-FPU, vector-7, optional-8087, and provider
   boundary tests alongside its new execution tests.
+- [ ] **VME/PVI virtual-8086 extensions (`TODO(Medium)`).** The 80386DX
+  program covers ordinary VM86 execution and delivery foundations, not the
+  later VME/PVI extensions. Admit only with the Intel control-register and
+  virtual-interrupt contract, VM86-to-CPL0 frame and TSS-stack evidence,
+  privilege/fault matrix, and regressions that retain ordinary VM86 behavior.
+  Do not infer VME/PVI support from a VM86 instruction or exception path.
 - [ ] **CPU-fault outcome audit (`TODO(Medium)`).** T214 established a
   session-owned fault result. Revisit only with a reproducible case showing a
   fault/detail is not available to the retained Console/debugger boundary;
