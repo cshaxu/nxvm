@@ -5,6 +5,8 @@
 #include "vm/composition/session/session_interface.h"
 #include "vm/profile/default_profile/pc_at_profile.h"
 
+static C_INT verify_recovery(C_VOID);
+
 static C_VOID initialize_config(vm_session *session,
     const vm_profile_default_pc_at_descriptor *profile)
 {
@@ -168,6 +170,36 @@ static C_INT verify_controller_failure(
     return 1;
 }
 
+static C_INT verify_hdc_failure(
+    const vm_profile_default_pc_at_descriptor *source)
+{
+    vm_profile_default_pc_at_descriptor profile = *source;
+
+    profile.hdc_pio.data_port = 0u;
+    return verify_failure(&profile);
+}
+
+static C_INT verify_image_failure(
+    const vm_profile_default_pc_at_descriptor *profile, const C_CHAR *fdd_image,
+    const C_CHAR *hdd_image)
+{
+    const vm_session_config config = {
+        .memory_bytes = profile->default_memory_bytes,
+        .cpu_profile = profile->cpu_profile,
+        .fpu_profile = profile->fpu_profile,
+        .fdd_image = fdd_image,
+        .hdd_image = hdd_image
+    };
+    vm_session *session = STD_NULL;
+
+    if (vm_session_create(&config, &session) != TYPE_STATUS_FAULT ||
+        session != STD_NULL) {
+        vm_session_destroy(session);
+        return 1;
+    }
+    return verify_recovery();
+}
+
 static C_INT verify_recovery(C_VOID)
 {
     vm_session *session = STD_NULL;
@@ -189,10 +221,14 @@ C_INT main(C_VOID)
     if (profile == STD_NULL || verify_create_materialization(profile) != 0 ||
         verify_core_failure(profile) != 0 ||
         verify_firmware_failure(profile) != 0 ||
-        verify_controller_failure(profile) != 0 || verify_recovery() != 0) {
+        verify_controller_failure(profile) != 0 || verify_hdc_failure(profile) != 0 ||
+        verify_image_failure(profile, "t332-missing-fdd.img", STD_NULL) != 0 ||
+        verify_image_failure(profile, STD_NULL, "t332-missing-hdd.img") != 0 ||
+        verify_recovery() != 0) {
         return 1;
     }
     STD_PRINTF("M5:T300:S3:SESSION-INITIALIZATION-ATOMICITY:OK\n");
     STD_PRINTF("M5:T332:S1:SESSION-CONFIG-MATERIALIZATION:OK\n");
+    STD_PRINTF("M5:T332:S2:SESSION-CONSTRUCTION-TRANSACTION:OK\n");
     return 0;
 }

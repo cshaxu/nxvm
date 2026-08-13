@@ -2,14 +2,35 @@
 
 ## Current Work
 
-**Idle.** M5 T332 S1 is accepted; T332 remains open and requires a separately
-admitted S2 lifecycle-transaction packet.
+**Active.** M5 T332 S2 establishes one private VM session construction
+transaction and failure-atomicity boundary (single-agent execution cycle).
+
+## M5 T332 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved the T332 proposal and its staged VM-session lifecycle transaction on 2026-08-12, then approved continuation after S1 acceptance. Single-agent execution is owner-directed. |
+| Objective | Map all VM session construction stages and converge identical failure teardown at the VM composition owner, so failure leaves no active session, core machine, provider binding, or externally visible partial state. Prove the normal and late image/media paths remain intact. |
+| Non-goals | No public `vm_session_config` API or ABI change; no core/device/provider semantic change, generic rollback framework, fixture-lifecycle work (S3), rules edit, guest media import, or mantle/DOS/NXVDM work. |
+| Reference Baseline | `66da5eef`, accepted T332 S1; active artifact remains `vm-0-5-0332`. |
+| Candidate Proposal | [VM session construction transaction](../proposals/m5-vm-session-construction-transaction.md). |
+| Files And ABI Surface | Expected private VM composition files under `src/vm/composition/session/`, owner product smoke and CMake/evidence/history/Current updates. No new public header, public state, or product-visible API. |
+| Applicable Rules | `docs/README.md` Task Reading Set; `docs/rules/EXECUTION.md` lifecycle, holistic-remediation, actual-change review, and artifact rules; `docs/rules/ARCHITECTURE.md` one stateful construction/rollback owner and composition-root invariants; `docs/rules/CODING.md` bounded owner-local helper rule; `docs/design/ARCHITECTURE.md` VM composition ownership; `docs/design/CODING.md` source/test placement. |
+| Verification | First record a stage/caller/rollback map. Add deterministic stage-failure and late image/media failure/recovery proof; retain normal default/configured creation. Build the T332 artifact, run focused session smoke, current artifact verifier, documentation governance, `git diff --check`, specialized gates, and full current CTest selection. |
+| Expected Markers | Existing `M5:T300:S3:SESSION-INITIALIZATION-ATOMICITY:OK` and S1 marker remain; add `M5:T332:S2:SESSION-CONSTRUCTION-TRANSACTION:OK`. |
+| Asset Needs | None. Failure tests use invalid profile data or nonexistent paths only; no guest image or external source is admitted. |
+| Reporting Requirements | Before implementation, record the complete stage/caller/teardown map and either confirm the one-owner boundary or report a stop condition. Deliver one complete P1 with code review, failure/recovery evidence, artifact identity, and similar-issue sweep; push immediately. |
+| Stop Conditions | Stop for a required public interface, a core/device/provider behavior defect outside VM composition, an image/media dependency that cannot be deterministically injected, or a rollback that must cross a distinct product owner. Transfer each such item explicitly. |
+| Exit Criteria | One private transaction/rollback ownership path replaces identical partial teardown; all admitted stage failures and late image/media failure prove no partial session publication and recovery; normal creation remains valid; evidence/history/artifact are updated and full verification passes. |
+| Original Owner Request | The owner asked to create a documentation Td, then execute the two VM-session and fixture findings as multiple subtasks; S2 is the approved lifecycle/failure-atomicity subtask. |
+| Similar-Issue Sweep | Inspect every `vm_session_create`, initialize, finalize, storage/control/provider lifecycle, machine-device configuration, image insertion, and failure return path. Classify each as converged, intentionally distinct owner behavior, or separately deferred debt. |
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** active T332 S1 selects `vm-0-5-0332` /
+- **Current developer artifact:** active T332 S2 selects `vm-0-5-0332` /
   `build/output/nxvm_0_5_0332.exe`; the verified active-P1 output SHA-256 is
-  `1DF13B58B316026C233127B9407A03003C8B997221B431BB321F01E4D0C54A7E`.
+  `0429D3ED2D0D55CB8DB7E8BE0F89344B2FF842C1A0DD25E33A07C4FAD7463D5D`.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.

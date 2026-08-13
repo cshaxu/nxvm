@@ -94,6 +94,14 @@ static C_VOID vm_session_apply_core_config_overrides(vm_session *session,
     session->core_machine_config.fpu_profile = config->fpu_profile;
 }
 
+static C_VOID vm_session_storage_rollback(vm_session *machine)
+{
+    if (machine == STD_NULL) return;
+    core_machine_display_provider_slot_finalize(&machine->display_provider);
+    core_machine_destroy(machine->core_machine);
+    machine->core_machine = STD_NULL;
+}
+
 C_INT vm_session_insert_fdd(vm_session *session, const C_CHAR *path)
 {
     if (session == STD_NULL || !vm_session_copy_path(session->fdd_image_path,
@@ -179,9 +187,7 @@ type_status vm_session_storage_initialize(vm_session *machine)
     if (attribute_ports == STD_NULL || sequencer_ports == STD_NULL ||
         graphics_ports == STD_NULL || crtc_ports == STD_NULL ||
         cmos_ports == STD_NULL || cmos_route == STD_NULL || fdc_route == STD_NULL) {
-        core_machine_display_provider_slot_finalize(&machine->display_provider);
-        core_machine_destroy(machine->core_machine);
-        machine->core_machine = STD_NULL;
+        vm_session_storage_rollback(machine);
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     display_config.text_timing = machine->profile->cga_text_timing;
@@ -227,9 +233,7 @@ type_status vm_session_storage_initialize(vm_session *machine)
             &rtc_cmos_config);
     }
     if (status != TYPE_STATUS_OK) {
-        core_machine_display_provider_slot_finalize(&machine->display_provider);
-        core_machine_destroy(machine->core_machine);
-        machine->core_machine = STD_NULL;
+        vm_session_storage_rollback(machine);
         return status;
     }
     core_machine_media_registry_initialize(&machine->media_registry);
