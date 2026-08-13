@@ -347,7 +347,8 @@ static C_INT bound_s54_test_rejections(C_VOID)
     return 1;
 }
 
-static C_INT bound_s54_test_real_br_delivery(C_VOID)
+static C_INT bound_s54_test_real_br_delivery_profile(
+    core_machine_cpu_profile profile)
 {
     static const type_unsigned_8 code[] = { 0x62u, 0x06u, 0x00u, 0x04u };
     static const type_unsigned_8 handler[] = { 0xf4u };
@@ -359,7 +360,7 @@ static C_INT bound_s54_test_real_br_delivery(C_VOID)
     core_machine_cpu_diagnostic diagnostic;
     t_cpu before;
     t_cpu after;
-    C_INT failed = !bound_s54_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    C_INT failed = !bound_s54_prepare(&state, profile);
 
     if (!failed) {
         bound_s54_seed(&state.machine->executor_cpu);
@@ -393,6 +394,14 @@ static C_INT bound_s54_test_real_br_delivery(C_VOID)
     }
     core_machine_destroy(state.machine);
     return !failed;
+}
+
+static C_INT bound_s54_test_real_br_delivery(C_VOID)
+{
+    return bound_s54_test_real_br_delivery_profile(
+        CORE_MACHINE_CPU_PROFILE_80186) &&
+        bound_s54_test_real_br_delivery_profile(
+            CORE_MACHINE_CPU_PROFILE_80386);
 }
 
 static C_INT bound_s54_test_signed_lower_bound(C_VOID)

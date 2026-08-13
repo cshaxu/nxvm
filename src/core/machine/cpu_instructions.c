@@ -10324,7 +10324,7 @@ static C_VOID IMUL_R32_RM32_I8(core_machine_cpu_execution_context *context)
 static C_VOID INSB(core_machine_cpu_execution_context *context)
 {
     TYPE_TRACE_CALL_BEGIN("INSB");
-    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80186)
     {
         _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE)
@@ -10378,7 +10378,7 @@ static C_VOID INSB(core_machine_cpu_execution_context *context)
 static C_VOID INSW(core_machine_cpu_execution_context *context)
 {
     TYPE_TRACE_CALL_BEGIN("INSW");
-    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80186)
     {
         _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE)
@@ -10432,7 +10432,7 @@ static C_VOID INSW(core_machine_cpu_execution_context *context)
 static C_VOID OUTSB(core_machine_cpu_execution_context *context)
 {
     TYPE_TRACE_CALL_BEGIN("OUTSB");
-    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80186)
     {
         _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE)
@@ -10486,7 +10486,7 @@ static C_VOID OUTSB(core_machine_cpu_execution_context *context)
 static C_VOID OUTSW(core_machine_cpu_execution_context *context)
 {
     TYPE_TRACE_CALL_BEGIN("OUTSW");
-    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80386)
+    if (context->cpu_profile >= CORE_MACHINE_CPU_PROFILE_80186)
     {
         _adv;
         if (instruction_state.data.prefix_rep == PREFIX_REP_NONE)
