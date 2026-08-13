@@ -2,7 +2,29 @@
 
 ## Current Work
 
-**Idle.** M5 T343 is closed; the next candidate is the Windows 3.x readiness map.
+**M5 T344 S1 - active.** Reconcile the T337 `#UD` inventory so a fresh GCC
+configuration is reproducible without weakening the source-sensitive gate.
+
+## M5 T344 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | The owner approved the full-tree audit report and its four ordered build-quality repairs on 2026-08-13. This packet admits the first Queue-ordered T344 S1 repair. |
+| Objective | Give `core-machine-vm86-delivery-smoke` exactly one truthful T337 current-gate `#UD` disposition so a fresh out-of-tree GCC configure succeeds while the source-sensitive inventory remains enforced. |
+| Non-goals | No CPU semantic, VM86 behavior, current-gate membership, test assertion, warning-policy, global compiler-flag, rule, or fixture change. Do not delete, bypass, or weaken the T337 inventory verifier. |
+| Reference Baseline | `1b88740f` (`M5 T343 S1 P2`), [T344 baseline audit](../etc/evidence/t344-code-quality-baseline-audit.md), [T337 `#UD` evidence](../etc/evidence/t337-s1-real-ud-delivery.md), current CMake source, Queue, TODO, and the build-quality proposal. |
+| Candidate Proposal | [Build-quality reproducibility](../proposals/m5-build-quality-reproducibility.md). |
+| Files And ABI Surface | Expected: `CMakeLists.txt`, T344 evidence/history/Current only. No public ABI, production source, smoke source, target membership, or runtime artifact change. |
+| Applicable Rules | `docs/rules/EXECUTION.md`: mechanism-owner sweep and complete P. `docs/rules/ARCHITECTURE.md`: one current-gate classification owner. `docs/rules/CODING.md`: no duplicate route. `docs/rules/DOCUMENT.md`: Current/history/evidence topology. |
+| Verification | Configure a fresh disposable GCC/Ninja build directory; prove the specific target has exactly one inventory/disposition entry; build its target and run its exact current-gate CTest; run documentation governance and diff check. |
+| Expected Markers | Fresh configure succeeds; T337 inventory still rejects an unclassified `#UD` owner; `current.core-machine-vm86-delivery-smoke` remains registered and passes. |
+| Asset Needs | No external assets, firmware, guest media, or source import. |
+| Reporting Requirements | Deliver one complete pushed P with the classification rationale, fresh configure result, exact smoke result, inventory sweep, and gate results. |
+| Stop Conditions | Stop if the smoke actually requires source/CPU behavior change, a second T337 policy category, a broader inventory redesign, external source, or any warning-policy change. Return that issue to the coordinator rather than weakening the gate. |
+| Exit Criteria | The fresh configure succeeds; the target has one truthful classification and no duplicate entry; its current-gate smoke passes; documentation governance/diff check pass; and the complete P is committed and pushed. |
+| Original Owner Request | Audit the entire codebase for code quality, record all findings, and admit the four resulting quality improvements for implementation. |
+| Similar-Issue Sweep | Inspect every target in `PROJECT_CURRENT_SMOKE_TARGETS` whose machine source contains `VCPUINS_EXCEPT_UD`, `_SetExcept_UD`, or `UndefinedOpcode`; verify each has exactly one T337 inventory and disposition path. |
 
 ## Current Technical Baseline
 
