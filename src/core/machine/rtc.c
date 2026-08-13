@@ -53,6 +53,12 @@ static type_unsigned_8 core_machine_rtc_days_in_month(const core_machine_rtc *cm
         days[cmos->calendar.month - 1u];
 }
 
+static type_bool core_machine_rtc_alarm_field_matches(type_unsigned_8 alarm,
+    type_unsigned_8 current)
+{
+    return (alarm & 0xc0u) == 0xc0u || alarm == current;
+}
+
 static C_VOID core_machine_rtc_raise_if_enabled(core_machine_rtc *cmos)
 {
     type_unsigned_8 flags = cmos->registers[CORE_MACHINE_RTC_REG_C];
@@ -62,6 +68,10 @@ static C_VOID core_machine_rtc_raise_if_enabled(core_machine_rtc *cmos)
         ((flags & CORE_MACHINE_RTC_REG_C_UF) != 0u && (enable & CORE_MACHINE_RTC_REG_B_UIE) != 0u)) {
         cmos->registers[CORE_MACHINE_RTC_REG_C] |= CORE_MACHINE_RTC_REG_C_IRQF;
         core_machine_pic_irq_source_assert(&cmos->irq_source);
+    } else {
+        cmos->registers[CORE_MACHINE_RTC_REG_C] &=
+            (type_unsigned_8)~CORE_MACHINE_RTC_REG_C_IRQF;
+        core_machine_pic_irq_source_deassert(&cmos->irq_source);
     }
 }
 
@@ -92,11 +102,15 @@ static C_VOID core_machine_rtc_increment_second(core_machine_rtc *cmos)
 
 static C_INT core_machine_rtc_alarm_matches(const core_machine_rtc *cmos)
 {
-    return cmos->registers[CORE_MACHINE_RTC_SECOND_ALARM] ==
-        core_machine_rtc_encode(cmos, cmos->calendar.second) &&
-        cmos->registers[CORE_MACHINE_RTC_MINUTE_ALARM] ==
-        core_machine_rtc_encode(cmos, cmos->calendar.minute) &&
-        cmos->registers[CORE_MACHINE_RTC_HOUR_ALARM] == core_machine_rtc_hour_encode(cmos);
+    return core_machine_rtc_alarm_field_matches(
+        cmos->registers[CORE_MACHINE_RTC_SECOND_ALARM],
+        core_machine_rtc_encode(cmos, cmos->calendar.second)) &&
+        core_machine_rtc_alarm_field_matches(
+            cmos->registers[CORE_MACHINE_RTC_MINUTE_ALARM],
+            core_machine_rtc_encode(cmos, cmos->calendar.minute)) &&
+        core_machine_rtc_alarm_field_matches(
+            cmos->registers[CORE_MACHINE_RTC_HOUR_ALARM],
+            core_machine_rtc_hour_encode(cmos));
 }
 
 static type_unsigned_32 core_machine_rtc_periodic_hz(const core_machine_rtc *cmos)
@@ -217,6 +231,7 @@ C_VOID core_machine_rtc_write_selected(core_machine_rtc *cmos, type_unsigned_8 v
 {
     if (cmos != STD_NULL) {
         core_machine_rtc_write_register(cmos, cmos->selected_register, value);
+        core_machine_rtc_raise_if_enabled(cmos);
     }
 }
 
