@@ -1,7 +1,7 @@
 # Architecture Rules
 
 Use the public [Architecture Governance skill](https://github.com/cshaxu/skills/blob/main/architecture-governance/SKILL.md).
-The concrete ntvdm64 component and composition map is
+The concrete NXVM-repository component and composition map is
 [design/ARCHITECTURE.md](../design/ARCHITECTURE.md).
 
 ## Non-Negotiable Invariants

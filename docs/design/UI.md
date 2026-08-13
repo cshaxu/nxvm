@@ -1,8 +1,8 @@
 # Product UX
 
-This document defines the high-level interaction of the two products. Detailed
-CLI grammar, containment rules, debugger commands, acceptance cases, and M8
-delivery criteria are retained in
+This document defines the high-level interaction of the current NXVM product
+and future NXVDM product. Detailed CLI grammar, containment rules, debugger
+commands, acceptance cases, and M8 delivery criteria are retained in
 [etc/requirements/nxvdm-runtime-detail.md](../etc/requirements/nxvdm-runtime-detail.md).
 
 ## NXVM

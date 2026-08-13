@@ -7,15 +7,16 @@ indexed in [etc/README.md](../etc/README.md); they cannot override this file.
 
 ## Product Shape
 
-ntvdm64 has two product forms and three planned reusable components:
+The NXVM repository has one current product, one future product, and three
+planned reusable components:
 
 | Form or component | Purpose | Current state |
 | --- | --- | --- |
-| `nxvm.exe` / `vm` | Bootable whole-machine VM with the retained NXVM Console and debugger. | Runnable product. |
+| `nxvm.exe` / `vm` | Bootable whole-machine VM with the retained NXVM Console and debugger. | Current primary, runnable product. |
 | `core` | Product-neutral machine, platform, and reusable product tooling. | Shared source foundation; not yet a separate artifact. |
 | `mantle` | Policy-free VDM session composition over core and admitted runtime adapters. | Future component. |
 | `dos` | Owned DOS implementation independent of the other components. | Future component. |
-| `nxvdm.exe` / `vdm` | Non-bootable DOS application runner over mantle and dos. | Future product; only a non-runnable skeleton exists. |
+| `nxvdm.exe` / `vdm` | Non-bootable DOS application runner over mantle and dos. | Future secondary product; only a non-runnable skeleton exists. |
 
 The medium-term build targets are `core.dll`, `mantle.dll`, and `dos.dll`.
 They are architectural commitments, not current release artifacts.

@@ -1,7 +1,7 @@
 # Documentation Rules
 
 Use the public [Documentation Governance skill](https://github.com/cshaxu/skills/blob/main/documentation-governance/SKILL.md)
-for reusable method. This file is the ntvdm64-specific authority.
+for reusable method. This file is the NXVM-repository-specific authority.
 
 `docs/README.md` is the sole entry point. Its direct file is exactly
 `README.md`. Its direct directories are exactly `rules/`, `design/`,
@@ -21,7 +21,7 @@ are linked rule-versus-project-design authorities. `rules/CODING.md` and
 [design/CODING.md](../design/CODING.md) have the same distinction.
 
 `rules/ARCHITECTURE.md` owns abstract enforceable invariants; only
-`design/ARCHITECTURE.md` maps ntvdm64 components, modules, coupling,
+`design/ARCHITECTURE.md` maps NXVM-repository components, modules, coupling,
 composition, and host boundaries. `rules/CODING.md` owns coding discipline;
 only `design/CODING.md` maps source directories, entry points, and naming.
 

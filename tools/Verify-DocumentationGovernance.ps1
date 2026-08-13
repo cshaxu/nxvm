@@ -352,7 +352,7 @@ function New-SelfTestRepository([string]$root) {
   ]
 }
 '@
-    Set-SelfTestFile $root "README.md" "# ntvdm64`n`n## Start Here`n`n## Project Boundary"
+    Set-SelfTestFile $root "README.md" "# NXVM`n`n## Start Here`n`n## Project Boundary"
     Set-SelfTestFile $root "AGENTS.md" "# Agent Instructions`n`n## Authority`n`n## Execution"
     Set-SelfTestFile $root "CONTRIBUTING.md" "# Contributing`n`n## Change Submission`n`n## Review Record`n`n## Commits And Tracking"
     Set-SelfTestFile $root "THIRD_PARTY_NOTICES.md" "# Third-Party Notices"
@@ -718,9 +718,16 @@ foreach ($requiredReadingLink in @('states/CURRENT.md', 'rules/EXECUTION.md', '.
         "docs/README.md Task Reading Set must link to $requiredReadingLink."
 }
 
-Require-HeadingSchema "README.md" $rootReadme "ntvdm64" @(
+Require-HeadingSchema "README.md" $rootReadme "NXVM" @(
+    '^Introduction$',
+    '^Platform$',
+    '^Build$',
+    '^Quick Start$',
+    '^Components$',
+    '^Historical Application Captures$',
     '^Start Here$',
-    '^Project Boundary$'
+    '^Project Boundary$',
+    '^References$'
 )
 Require-HeadingSchema "AGENTS.md" $agents "Agent Instructions" @(
     '^Authority$',

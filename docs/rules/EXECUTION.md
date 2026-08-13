@@ -1,6 +1,6 @@
 # Execution Policy
 
-This file owns ntvdm64's mandatory request lifecycle, identifiers, evidence,
+This file owns the NXVM repository's mandatory request lifecycle, identifiers, evidence,
 artifact, and milestone gates. The public
 [Execution Governance skill](https://github.com/cshaxu/skills/blob/main/execution-governance/SKILL.md)
 is supplementary reusable guidance, not a prerequisite. One subtask is active

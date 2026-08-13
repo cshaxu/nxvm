@@ -1,9 +1,9 @@
 # Project Goals
 
-ntvdm64 evolves the NXVM foundation into a portable, evidence-led x86 runtime
-with a bootable VM product and a non-invasive DOS application product. These
-are strategic outcomes, not present compatibility claims or implementation
-instructions.
+NXVM is the current product of a portable, evidence-led x86 codebase. The
+repository evolves its NXVM machine foundation toward a future, non-invasive
+NXVDM DOS application product. These are strategic outcomes, not present
+compatibility claims or implementation instructions.
 
 1. **Multi-profile NXVM.** Preserve a capable bootable `nxvm.exe` while making
    it able to select reproducible machine profiles. The target family includes
@@ -14,7 +14,7 @@ instructions.
    then pursue Windows 95 as a longer-horizon compatibility target. Each claim
    is gated by an owned corpus rather than an aspirational CPU label or boot
    attempt.
-3. **Multi-runtime VDM foundation.** Make `core` and `mantle` able to support
+3. **Multi-runtime VDM foundation.** Make the NXVM-derived `core` and `mantle` able to support
    the owned DOS/VDM implementation and separately admitted external VDM or
    DOS implementations. The owned path remains the default; an external
    adapter never becomes an implicit dependency, shared public ABI, or release

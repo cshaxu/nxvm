@@ -2,7 +2,7 @@
 
 ## Current Work
 
-**Idle.** No implementation task is active.
+**Idle.** No active task packet.
 
 ## Current Technical Baseline
 
@@ -33,6 +33,13 @@
 | T338 | Closed the 8086/80186 profile baseline: S2 ALU/FLAGS/conditions, S3 inherited data/control/I/O, and S4 80186 extensions cover every S1 allocation; the retained T328 rule is the only legacy `LOCK` owner. The sole reproduced defect was four incorrect INS/OUTS 80386 guards, corrected to 80186. Protected, 80386DX, and x87 boundaries transfer explicitly. Artifact verification, governance, and 218/218 current-gate passed. [History](../history/M5-T338-8086-80186-profile-closure.md). |
 
 ## Recent Governance
+
+- **M5 Td S82:** restored all 19 historical NXVM README screenshots as static
+  documentation assets; rebuilt the public README around the current CMake
+  path and truthful NXVM-first, future-NXVDM boundary; and aligned the current
+  design/rule wording and README schema self-test. Documentation self-test,
+  default governance check, README-link check, and diff check passed. Td work
+  has no runtime or artifact change.
 
 - **M5 Td S81:** withdrew the duplicate 80286 `LOCK` candidate after the
   T339 closure audit reconfirmed that accepted T328 already owns the complete
@@ -78,10 +85,3 @@
   work, and renamed the architecture status reference to `CURRENT.md`.
   Documentation self-test, combined governance check, and diff check passed.
   Td work has no runtime or artifact change.
-
-- **M5 Td S73:** replaced ordinary/dual-session branches with one
-  coordinator/executor role cycle. One session switches roles and cannot claim
-  independent review; two sessions obtain independent coordinator review. P,
-  Td/T closure, packet, stop, handoff, and role-authority constraints remain
-  explicit. Documentation self-test, combined governance check, and diff check
-  passed. Td work has no runtime or artifact change.
