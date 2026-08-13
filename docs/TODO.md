@@ -139,7 +139,20 @@ candidate work, and detailed capability evidence belong in
   focused regressions, and a transfer record for every excluded behavior.
   Repairs must address the shared model or deliberately retain a proven local
   boundary; do not turn this debt into a repository-wide rewrite, speculative
-  abstraction, or an excuse to weaken existing evidence.
+  abstraction, or an excuse to weaken existing evidence.  The concrete
+  admission method and observed failure shape are retained in
+  [the supporting debt report](etc/evidence/holistic-execution-path-audit-debt.md).
+
+- [ ] **Task-switch transition unification (`TODO(Medium)`).** The retained
+  16-bit and 32-bit protected task-switch paths use different internal
+  construction styles: the newer 32-bit direct-JMP path has an explicit
+  plan/commit boundary while the historical 16-bit path is integrated. Admit
+  only before task-system closure, with a complete caller/write inventory and
+  an Intel-backed common transition vocabulary for `JMP`, `CALL`, task gates,
+  backlink, NT, busy descriptors, `TR`, and `CR0.TS`. Preserve accepted
+  direct-JMP evidence and leave nested IRET, IDT task gates, LDT, paging, and
+  debug work in their named packages. The exact boundary is retained in
+  [the supporting debt report](etc/evidence/task-switch-transition-unification-debt.md).
 
 ## Timing-Fidelity Debt
 
