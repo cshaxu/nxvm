@@ -2,29 +2,8 @@
 
 ## Current Work
 
-M5 T349 S4 - dual-8259A request lifecycle and composition reconciliation
-(Single-Session Mode).
-
-## M5 T349 S4 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner approved continuous holistic PC/AT device/L3 completion; T349 S3 P2 `19746b45` accepts the final T349 receiver on 2026-08-13. |
-| Objective | Complete the retained PC/AT PIC request boundary: edge/level delivery, multiple asserted sources on one line, master/slave cascade reassertion, reset/finalize and every PIT/KBC/FDC/HDC/RTC producer lifecycle. Define the exact current deterministic-L3 spurious IRQ7/15 boundary and transfer only physical-INTA behavior that this architecture deliberately lacks. |
-| Non-goals | Poll/special-mask/SFNM and command priority core, CPU exception/IRET/frame redesign, physical INTA or wire waveform, arbitrary boards, APIC, host bridge, x87, device protocol semantics, and Windows claims are outside this S. |
-| Reference Baseline | `19746b45` / T349 S3 accepted; [S1 ledger](../etc/evidence/t349-s1-pcat-pic-compliance-ledger.md), [S2 evidence](../etc/evidence/t349-s2-pcat-pic-command-priority.md), [S3 evidence](../etc/evidence/t349-s3-pcat-pic-ocw3.md), and [PIC proposal](../proposals/m5-pcat-pic-compliance.md). |
-| Candidate Proposal | [PC/AT 8259A compliance](../proposals/m5-pcat-pic-compliance.md). |
-| Files And ABI Surface | Expected: PIC source/headers only if lifecycle ownership needs repair, one owner-local lifecycle smoke and CMake registration, retained device/timeline smokes, S4 evidence, Current, and T349 history. Existing source-provider and CPU ABI remain stable. |
-| Applicable Rules | Task Reading Set; one PIC owner for controller state; device source only asserts/deasserts its physical line; deterministic `DMA -> PIT -> PIC` refresh; no second source truth; owner-local tests; Intel 8259A/IBM PC/AT cascade plus the accepted L3 architecture boundary. |
-| Verification | Focused proof must cover edge retention, level reassertion, two sources on one master line, slave cascade level reassertion, reset/finalize/source-bind behavior, empty acknowledgement nonpublication, and the producer reset/deassert inventory. Retain CPU delivery and T346 arbitration/timeline regressions; run full current-gate and governance. |
-| Expected Markers | Add `M5:T349:S4:PIC-LIFECYCLE:OK`; retain T216, T349 S2/S3, T346/T347/T348, PIT/KBC/RTC/FDC/HDC and CPU delivery markers. |
-| Asset Needs | Intel 8259A and IBM PC/AT published documentation only; no source import, guest media, host device, or external runtime. |
-| Reporting Requirements | Record each producer bind/assert/deassert/reset/finalize site, all lifecycle state mutation, spurious scope decision, physical-INTA transfer, and full verification. Deliver one complete pushed P1. |
-| Stop Conditions | Stop for CPU delivery/frame redesign, source-provider ABI change, physical INTA implementation, arbitrary cascade topology, generic scheduler change, or a repair outside PIC-local lifecycle/composition. |
-| Exit Criteria | Every T349 ledger row is accepted with focused proof or an explicit physical-INTA/L3 transfer; no producer lifecycle or controller state owner is unclassified; the task closure audit can move the proposal into history. |
-| Original Owner Request | Make core-machine devices stable, comprehensive, and reliable at deterministic L3 before Windows testing. |
-| Similar-Issue Sweep | Inspect all `core_machine_pic_irq_source` bind/assert/deassert/reset/finalize calls, per-line asserted/IRR changes, level refresh, master IR2 materialization, PIC reset/finalize, and every T346/T347/T348 producer lifecycle. |
+**Idle.** T349 is closed; the next PC/AT platform-signals receiver requires a
+separately admitted packet.
 
 ## Current Technical Baseline
 
@@ -45,9 +24,7 @@ M5 T349 S4 - dual-8259A request lifecycle and composition reconciliation
 
 | Task | Compact result |
 | --- | --- |
-| T349 S3 | Completed OCW3 persistent status reads, one-poll acknowledgement, special-mask priority/EOI semantics, and PC/AT SFNM cascade behavior through the S2 PIC owner; 225 current-gate tests passed. [Evidence](../etc/evidence/t349-s3-pcat-pic-ocw3.md). |
-| T349 S2 | Reconciled ICW restart, IRR/ISR port reads, fixed/rotated priority, EOI/AEOI, and PC/AT cascade selection into one PIC-owned scan/peek/get acknowledgement path; 224 current-gate tests passed. [Evidence](../etc/evidence/t349-s2-pcat-pic-command-priority.md). |
-| T349 S1 | Accepted the PC/AT dual-8259A manual-to-source-to-proof ledger: every controller, source, consumer, reset, and L3 row now has accepted evidence or one S2--S4 receiver. [Evidence](../etc/evidence/t349-s1-pcat-pic-compliance-ledger.md). |
+| T349 | Closed PC/AT dual-8259A command/priority/cascade, OCW3 poll/status/special-mask/SFNM, and retained edge/level producer lifecycle; physical INTA spurious behavior transfers only to L3 bus timing. 226 current-gate tests passed. [History](../history/M5-T349-pcat-pic-compliance.md). |
 | T348 | Closed PC/AT dual-8237A DMA topology, page/word layout, request/cascade/EOP, validation-before-publication, M2M lifecycle, and FDC crossing bounce path; 223 current-gate tests passed. [History](../history/M5-T348-pcat-dma-completeness.md). |
 | T347 | Closed retained PC/AT FDC and ATA PIO service timing: pending command/data states, reset/control/media cancellation, one FDC-then-ATA readiness owner, trace order, focused VM/DOS/HDD evidence, and 222 current-gate tests passed. [History](../history/M5-T347-storage-controller-service-timing.md). |
 | T346 | Closed deterministic PC/AT L3 convergence: one reset-safe due-event owner, equal-tick `DMA -> PIT -> PIC -> FDC -> HDC -> RTC -> KBC -> VADP` ordering, copied host boundaries, exact storage/NMI/peripheral transfers, and evidence-backed Windows handoff. [History](../history/M5-T346-core-machine-device-l3-convergence.md). |
@@ -55,7 +32,6 @@ M5 T349 S4 - dual-8259A request lifecycle and composition reconciliation
 | T344 | Closed build-quality reproducibility: fresh configuration, 305-row truthful strict-compile matrix (130 retained strict/175 deferred), canonical 218-target current-gate registration, 53 historical fixture shapes, and strict-declaration uniqueness are mechanically verified. [History](../history/M5-T344-build-quality-reproducibility.md). |
 | T343 | Closed the four-profile CPU program: one final ledger reconciles the 8086, 80186, 80286, and 80386DX execution, protected-state, delivery, task/paging/debug, and CPU-side coprocessor-interface boundaries. VME/PVI, persistent cache, x87 execution, timing/device, and Windows/product work remain explicit external candidates. [Closure ledger](../etc/evidence/t343-s1-four-profile-cross-closure.md). |
 | T342 | Closed the 80386DX profile ledger: T340 form and T341 state evidence reconcile every assigned row once, and the closure map now names the accepted state owners instead of stale future transfers. Only explicit post-80386, x87, timing/device, and Windows boundaries remain external. [Closure audit](../etc/evidence/t342-s1-80386dx-profile-closure-audit.md). |
-| T341 | Closed the 80386DX system-state package: CR/DR/TR/table state, VM86/task/paging composition, and ordinary debug/vector-1 now have one audited owner/proof graph; only explicit later-CPU, x87, timing/device, and Windows boundaries transfer. [Closure audit](../etc/evidence/t341-s5-80386dx-system-state-closure-audit.md). |
 
 ## Recent Governance
 

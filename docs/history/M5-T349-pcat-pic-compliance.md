@@ -7,14 +7,14 @@ request producers, and T348's completed DMA path. It closes the bounded PC/AT
 master/slave Intel 8259A-compatible PIC mechanism before later platform-signal
 and peripheral packages consume its delivery contract.
 
-## Active Subtasks
+## Completed Subtasks
 
-| Subtask | Purpose |
+| Subtask | Closed outcome |
 | --- | --- |
-| S1 | Build the complete manual-to-source-to-proof compliance ledger and assign every adopted gap to a bounded later S or explicit transfer. |
-| S2 | Reconcile ICW/OCW command state, priority, EOI/AEOI, and PC/AT cascade selection/acknowledgement through one PIC-owned mechanism. |
-| S3 | Complete OCW3 poll/read/special-mask/SFNM state through the S2 controller selection and acknowledgement owner. |
-| S4 | Close edge/level/source/reset composition and the deterministic-L3 spurious IRQ boundary, then audit T349 closure. |
+| S1 | Built the complete manual-to-source-to-proof compliance ledger and assigned every adopted gap to a bounded later S or explicit transfer. |
+| S2 | Reconciled ICW/OCW command state, priority, EOI/AEOI, and PC/AT cascade selection/acknowledgement through one PIC-owned mechanism. |
+| S3 | Completed OCW3 poll/read/special-mask/SFNM state through the S2 controller selection and acknowledgement owner. |
+| S4 | Closed edge/level/source/reset composition and the deterministic-L3 spurious IRQ boundary. |
 
 ## Accepted Progress
 
@@ -39,3 +39,28 @@ It also records the deliberate deterministic-L3 boundary: the current ordered
 selection/acknowledgement model has no physical INTA race from which to create
 a synthetic spurious IRQ7/IRQ15; that electrical bus transaction remains a
 later L3 bus-timing receiver.
+
+## Closure Audit
+
+T349 satisfies the requested deterministic-L3 PC/AT PIC result without
+overclaiming electrical bus behavior. S1's manual-to-source ledger has one
+accepted proof owner for initialization, command state, priority, cascade,
+poll, special mask, SFNM, edge/level lifecycle, all retained producers, and
+the CPU request consumer. S2 made selection and acknowledgement controller
+owned; S3 made OCW3 a view of that same mechanism; S4 made device source
+release explicit across reset/finalize and captured same-line/cascade level
+composition.
+
+The closure evidence is retained in the indexed S1 ledger and the S2, S3, and
+S4 records. Fresh configuration, focused PIC/device/CPU proofs, documentation
+governance, diff check, and 226 current-gate tests passed at S4 acceptance.
+The retained proposal accompanies this history record.
+
+## Explicit Transfers
+
+Physical INTA sampling, lost-edge spurious IRQ7/IRQ15 behavior, wire/pin
+waveforms, READY/wait duration, APIC, arbitrary cascade boards, and generic
+CPU delivery redesign remain outside T349. The queued L3 bus-timing
+convergence candidate is the sole receiver for a physical-INTA transaction;
+the platform-signal, KBC/AUX, video, and port-topology candidates own their
+respective devices. No transfer creates a second PIC state owner.
