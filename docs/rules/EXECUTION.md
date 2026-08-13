@@ -53,19 +53,6 @@ this review. In Coordinated Dual-Session Mode, the coordinator performs it
 independently before acceptance; the executor's report is an evidence index,
 not a substitute for reviewing the actual Git/worktree changes.
 
-**Concise reporting.** Each conversation report states only the information
-applicable to its purpose. A completion delivery records completion, pushed
-commit, verification result or evidence location, and known boundary or
-transfer. A blocker delivery records the blocker, current commit status if
-any, relevant evidence, and the requested decision or transfer. Contract
-confirmation or objection and S-required progress reports state the applicable
-decision or progress node and link to their evidence. Reports link to rather
-than reproduce command output,
-requirement matrices, implementation narratives, or full evidence. The
-committed delivery and its indexed evidence retain the complete
-requirement-to-proof record. Concise reporting never reduces self-review,
-actual-change review, verification, or acceptance requirements.
-
 ## Execution Modes
 
 Every admitted T task package declares either **Ordinary Mode** or
@@ -211,9 +198,9 @@ existing named conversation and never create a duplicate role conversation.
    implementation-P evidence, a reproducible material blocker, or a fact that
    changes the S contract.
 4. Before returning that delivery, the executor re-reads the S brief and
-   self-reviews every acceptance requirement against actual evidence. It records
-   the complete requirement-to-proof mapping in the delivery or indexed evidence
-   and sends the concise report required above.
+   self-reviews every acceptance requirement against actual evidence. Its report
+   maps requirements to evidence and names changed files, shared impact,
+   verification results, known gaps, and the outside-scope disposition.
 5. The executor commits and pushes that complete implementation P before
    reporting it. The coordinator independently reviews the original request, S
    brief, packet, evidence, applicable rules, and the pushed P's actual
