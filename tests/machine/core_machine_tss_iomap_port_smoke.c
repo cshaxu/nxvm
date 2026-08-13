@@ -94,10 +94,8 @@ static C_INT iomap_prepare(iomap_machine *state, core_machine_cpu_profile profil
     if (core_machine_create(&config, &state->machine) != TYPE_STATUS_OK) return 0;
     if (core_machine_install_port_provider(state->machine, 0x00e0u, 0x00e1u,
             &iomap_port_provider, &state->port) != TYPE_STATUS_OK ||
-        core_machine_bind_execution_provider(state->machine,
-            &iomap_execution_provider, state) != TYPE_STATUS_OK ||
-        core_machine_freeze_execution_providers(state->machine) != TYPE_STATUS_OK ||
-        core_machine_reset(state->machine) != TYPE_STATUS_OK) {
+        !test_core_machine_fixture_bind_freeze_reset(state->machine,
+            &iomap_execution_provider, state)) {
         core_machine_destroy(state->machine);
         state->machine = STD_NULL;
         return 0;

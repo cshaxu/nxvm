@@ -2,8 +2,29 @@
 
 ## Current Work
 
-**Idle.** M5 T344 S3 is closed; the next build-quality repair requires a
-separately admitted packet.
+**M5 T344 S4 - active.** Classify and converge only proven equivalent
+historical machine-fixture lifecycle tails.
+
+## M5 T344 S4 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | The owner approved the complete ordered T344 build-quality program on 2026-08-13 and directed single-agent completion. S3 closed as `69a3158e`; this packet admits the Queue-ordered historical fixture-shape classification. |
+| Objective | Establish a fixed source-to-shape inventory for every historical `tests/machine` direct machine constructor outside T332's fixed 47-owner set. Migrate only a source whose create/bind/freeze/reset tail is behaviorally identical to the existing private support helper; record every retained device, descriptor, multi-machine, failure-lifecycle, or wrapper shape with a precise future admission condition. |
+| Non-goals | No generic fixture framework, no test-only public API, no production/product-visible state, no test behavior change, and no extraction across distinct provider lifetime, GDT/IDT, device registration, reset ordering, or failure-observation semantics. Do not treat a textual call sequence alone as equivalence. |
+| Reference Baseline | `69a3158e` (`M5 T344 S3 P2`), [T332 fixture evidence](../etc/evidence/t332-s3-cpu-fixture-lifecycle.md), [T344 baseline audit](../etc/evidence/t344-code-quality-baseline-audit.md), [build-quality proposal](../proposals/m5-build-quality-reproducibility.md), test sources, and `tests/support/core_machine_cpu_fixture.h`. |
+| Candidate Proposal | [Build-quality reproducibility](../proposals/m5-build-quality-reproducibility.md). |
+| Files And ABI Surface | Expected: a fixed T344 fixture inventory/verifier, T344 evidence and Current, `tests/support/core_machine_cpu_fixture.h` only if a complete shared setup responsibility is proved, and only the owner tests admitted by that inventory. No production source or public header/API change. |
+| Applicable Rules | `docs/rules/EXECUTION.md`: source-scope and similar-issue sweep. `docs/rules/ARCHITECTURE.md`: one setup/lifecycle owner. `docs/rules/CODING.md`: bounded test-support helper only. `docs/rules/DOCUMENT.md`: evidence/Current topology. |
+| Verification | Mechanically validate the fixed inventory and each source disposition; build every migrated owner; rerun each migrated current-gate smoke and full current-gate; run fresh configure, specialized gates, documentation governance, and diff check. |
+| Expected Markers | Every direct historical constructor outside T332 has one shape/disposition; migrated owners use the existing support lifecycle tail; retained owners name their semantic difference and later admission condition; no direct bind/freeze tail remains unclassified. |
+| Asset Needs | No external assets, firmware, guest media, or source import. |
+| Reporting Requirements | Deliver one complete pushed P with inventory counts, migrated/retained source lists, equivalence and retained-boundary rationale, verifier result, focused/current-gate results, and any new corrective transfer. |
+| Stop Conditions | Stop if a candidate shares calls but differs in provider/device registration timing, descriptor state, reset/failure observation, multiple-machine lifetime, or teardown semantics; retain it with an exact future admission condition rather than forcing a helper. |
+| Exit Criteria | The fixed historical inventory covers every in-scope direct constructor once; every repeated lifecycle tail is either migrated through the private support owner or explicitly retained with a semantic reason/admission condition; no source falls through an unclassified direct bind/freeze path; governance/diff/fresh configure/specialized/full current-gate pass; and the complete P is committed and pushed. |
+| Original Owner Request | Audit the entire codebase for code quality, record all findings, and admit the four resulting quality improvements for implementation. |
+| Similar-Issue Sweep | Search all tracked `tests/machine` sources for create/bind/freeze/reset, direct source-wrapper includes, provider/device registration, GDT/IDT construction, multi-machine lifecycle, and reset/failure observations; compare against T332's fixed inventory and classify each remaining direct constructor. |
 
 ## Current Technical Baseline
 

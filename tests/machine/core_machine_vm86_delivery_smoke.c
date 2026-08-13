@@ -54,9 +54,8 @@ static C_INT vm86_delivery_prepare(vm86_delivery_state *state, type_unsigned_8 v
     idt[8u] = 0u; idt[9u] = 0x01u; idt[10u] = 0x08u; idt[13u] = 0x8eu;
     STD_MEMCPY(&tss[4u], &esp0, sizeof(esp0)); STD_MEMCPY(&tss[8u], &ss0, sizeof(ss0));
     if (core_machine_create(&config, &state->machine) != TYPE_STATUS_OK ||
-        core_machine_bind_execution_provider(state->machine, &vm86_delivery_provider, state) != TYPE_STATUS_OK ||
-        core_machine_freeze_execution_providers(state->machine) != TYPE_STATUS_OK ||
-        core_machine_reset(state->machine) != TYPE_STATUS_OK ||
+        !test_core_machine_fixture_bind_freeze_reset(state->machine,
+            &vm86_delivery_provider, state) ||
         core_machine_memory_write(state->machine, VM86_GDT_BASE, gdt, sizeof(gdt)) != TYPE_STATUS_OK ||
         core_machine_memory_write(state->machine, VM86_IDT_BASE, idt, sizeof(idt)) != TYPE_STATUS_OK ||
         core_machine_memory_write(state->machine, VM86_TSS_BASE, tss, sizeof(tss)) != TYPE_STATUS_OK ||

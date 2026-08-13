@@ -83,10 +83,8 @@ static C_INT movx_prepare(core_machine_cpu_profile profile,
         (provider != STD_NULL && test_core_machine_fixture_register_memory_device_provider(
             state->machine, MOVX_SOURCE_MEMORY, 2u, movx_read, movx_write,
             movx_query, provider) != TYPE_STATUS_OK) ||
-        core_machine_bind_execution_provider(state->machine,
-            &movx_execution_provider, state) != TYPE_STATUS_OK ||
-        core_machine_freeze_execution_providers(state->machine) != TYPE_STATUS_OK ||
-        core_machine_reset(state->machine) != TYPE_STATUS_OK) {
+        !test_core_machine_fixture_bind_freeze_reset(state->machine,
+            &movx_execution_provider, state)) {
         core_machine_destroy(state->machine);
         state->machine = STD_NULL;
         return 0;

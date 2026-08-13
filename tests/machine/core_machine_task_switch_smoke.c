@@ -82,10 +82,8 @@ static C_INT task_switch_prepare(task_switch_fixture *fixture,
     if (fixture == STD_NULL) return 0;
     STD_MEMSET(fixture, 0, sizeof(*fixture));
     if (core_machine_create(&config, &fixture->machine) != TYPE_STATUS_OK) return 0;
-    if (core_machine_bind_execution_provider(fixture->machine,
-            &task_switch_provider, fixture) != TYPE_STATUS_OK ||
-        core_machine_freeze_execution_providers(fixture->machine) != TYPE_STATUS_OK ||
-        core_machine_reset(fixture->machine) != TYPE_STATUS_OK) {
+    if (!test_core_machine_fixture_bind_freeze_reset(fixture->machine,
+            &task_switch_provider, fixture)) {
         core_machine_destroy(fixture->machine);
         fixture->machine = STD_NULL;
         return 0;

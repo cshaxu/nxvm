@@ -103,10 +103,8 @@ static C_INT oas_prepare(oas_machine *state, core_machine_cpu_profile profile,
         (oas_next_port_state != STD_NULL && core_machine_install_port_provider(
             state->machine, 0x00e0u, 0x00e0u, &oas_port_provider,
             oas_next_port_state) != TYPE_STATUS_OK) ||
-        core_machine_bind_execution_provider(state->machine, &oas_provider,
-            state) != TYPE_STATUS_OK ||
-        core_machine_freeze_execution_providers(state->machine) != TYPE_STATUS_OK ||
-        core_machine_reset(state->machine) != TYPE_STATUS_OK ||
+        !test_core_machine_fixture_bind_freeze_reset(state->machine,
+            &oas_provider, state) ||
         !oas_write(state, OAS_GDT_POINTER, gdt_pointer, sizeof(gdt_pointer)) ||
         !oas_write(state, OAS_GDT_ADDRESS, gdt, sizeof(gdt)) ||
         !oas_write(state, 0u, real_code, sizeof(real_code)) ||

@@ -49,10 +49,8 @@ static C_INT vm86_iret_prepare(vm86_iret_state *state,
 
     STD_MEMSET(state, 0, sizeof(*state));
     if (core_machine_create(&config, &state->machine) != TYPE_STATUS_OK ||
-        core_machine_bind_execution_provider(state->machine,
-            &vm86_iret_provider, state) != TYPE_STATUS_OK ||
-        core_machine_freeze_execution_providers(state->machine) != TYPE_STATUS_OK ||
-        core_machine_reset(state->machine) != TYPE_STATUS_OK ||
+        !test_core_machine_fixture_bind_freeze_reset(state->machine,
+            &vm86_iret_provider, state) ||
         core_machine_memory_write(state->machine, VM86_IRET_CODE, instruction,
             bytes) != TYPE_STATUS_OK ||
         core_machine_memory_write(state->machine, 0x2010u,
