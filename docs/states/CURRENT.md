@@ -2,29 +2,9 @@
 
 ## Current Work
 
-**Active.** M5 T346 S2 establishes the deterministic machine-time, due-event,
-and transaction foundation required before controller timing migration.
-
-## M5 T346 S2 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner approved 2026-08-13 completion of T346; S1 accepted the dependency order and requires this foundation before any device-local timing expansion. |
-| Objective | Create one core-owned deterministic timeline that orders due events by `(due_tick, sequence)`, supports cancellation/reset, and records bounded CPU-retirement, memory, I/O, and DMA transaction checkpoints without host time. Integrate it into the machine run/reset lifecycle without changing selected device behavior. |
-| Non-goals | Do not migrate PIC/PIT/DMA/RTC/FDC/ATA/KBC/VADP behavior yet, add wall-clock/thread scheduling, simulate prefetch/pins/cycle-exact timing, revise CPU instruction semantics, expose mutable core state cross-module, or implement x87. |
-| Reference Baseline | `b361761b`; S1 evidence defines the current L2 fixed-order scheduler and the required S2 mechanism boundary. |
-| Candidate Proposal | [M5 core-machine device parity and L3 timing convergence](../proposals/m5-core-machine-device-l3-convergence.md), S2. |
-| Files And ABI Surface | `src/core/machine` timeline/trace/machine internals and narrowly additive copied observation/trace contracts; one owner smoke, CMake registration, T346 evidence/history/current state. No VM platform, firmware, device-controller, x87, or external-reference source change. |
-| Applicable Rules | Task Reading Set; Architecture one owner/no mirror state/opaque-boundary invariants; Coding C11/type vocabulary/cohesive owner rules; Execution mechanism-defect, actual-review, current-gate, and closure rules; source policy no-copy reference discipline. |
-| Verification | Focused smoke proves monotonic time, due-time ordering, stable sequence tie-break, callback reentrancy, cancellation, reset removal, transaction ordering, and deterministic replay. Machine smoke proves retirement checkpoint ordering without host time. Configure, exact current-gate discovery, documentation governance, diff check, and full current gate pass. |
-| Expected Markers | `M5:T346:S2:TIMELINE:OK`; events and transactions are emitted in deterministic `(tick, sequence)` order, no cancelled/reset callback fires, and existing device clocks retain their observable L2 behavior. |
-| Asset Needs | No guest media or firmware. Bochs/PCjs remain read-only structural references only; primary hardware contracts are deferred to the controller S packets. |
-| Reporting Requirements | Record API ownership, event/transaction ordering, reset/cancellation semantics, caller sweep, existing scheduler compatibility, and every deferred controller migration. No unproven device timing claim. |
-| Stop Conditions | Stop if integration requires changing controller-visible behavior, a shared CPU/memory/port ABI break, host scheduling, or a device-specific hardware rule. Transfer that work to S3/S4 rather than broadening S2. |
-| Exit Criteria | One machine-owned foundation is exercised by focused and machine-level proofs, has no parallel scheduler or host-time path, preserves existing current-gate behavior, and leaves every controller migration explicitly assigned to S3/S4. |
-| Original Owner Request | Reach sufficient device/bus/port parity and full L3 timing for Windows 3.x research, excluding x87, through a holistic core-machine plan. |
-| Similar-Issue Sweep | Audit existing clocks, scheduler, trace, memory, port, DMA and provider advance paths for duplicate timeline/transaction state; adopt or transfer each instead of introducing a second owner. |
+**Active.** M5 T346 remains open between accepted subtasks. S3 requires a
+separately admitted packet for interrupt, timer, DMA, and storage event
+migration; no implementation runs before that admission.
 
 ## Current Technical Baseline
 
@@ -45,7 +25,7 @@ and transaction foundation required before controller timing migration.
 
 | Task | Compact result |
 | --- | --- |
-| T346 S1 | Accepted the whole-core-machine L2/L3 audit: 55 core-machine units and 187 machine smokes reconcile one owner ledger for memory/A20/ROM, ports, PIC/PIT/DMA/RTC, KBC, FDC/ATA, VADP/display, firmware, and host boundaries. L3 requires a common due-event/arbitration and transaction contract before device expansion; x87 is excluded. [Evidence](../etc/evidence/t346-s1-core-machine-device-l3-audit.md). |
+| T346 S2 | Accepted the deterministic time/event foundation: one machine-owned `(due_tick, sequence)` timeline with cancellation/reset and bounded CPU, DMA, checked-memory, and port transaction checkpoints. Existing L2 controller behavior remains intentionally intact; device adoption transfers to S3/S4. [Evidence](../etc/evidence/t346-s2-deterministic-timeline-foundation.md). |
 | T345 | Closed direct-compilation strictness convergence: 251/305 direct commands are target-local strict; the 54 remaining commands have a complete 175-row ownership ledger and an exact 51-source residual production record with durable bounded admissions. No global flags, inherited-runtime rewrites, or false linked-dependency claims. [History](../history/M5-T345-direct-compilation-strictness-convergence.md). |
 | T344 | Closed build-quality reproducibility: fresh configuration, 305-row truthful strict-compile matrix (130 retained strict/175 deferred), canonical 218-target current-gate registration, 53 historical fixture shapes, and strict-declaration uniqueness are mechanically verified. [History](../history/M5-T344-build-quality-reproducibility.md). |
 | T343 | Closed the four-profile CPU program: one final ledger reconciles the 8086, 80186, 80286, and 80386DX execution, protected-state, delivery, task/paging/debug, and CPU-side coprocessor-interface boundaries. VME/PVI, persistent cache, x87 execution, timing/device, and Windows/product work remain explicit external candidates. [Closure ledger](../etc/evidence/t343-s1-four-profile-cross-closure.md). |
