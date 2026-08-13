@@ -110,6 +110,11 @@ type_status core_machine_memory_register_device_provider(t_ram *ram,
     type_unsigned_32 physical_start, STD_SIZE_T bytes,
     core_machine_memory_device_read read, core_machine_memory_device_write write,
     core_machine_memory_device_query query, C_VOID *owner);
+type_status core_machine_memory_register_device_provider_and_write_observer(
+    t_ram *ram, type_unsigned_32 physical_start, STD_SIZE_T bytes,
+    core_machine_memory_device_read read, core_machine_memory_device_write write,
+    core_machine_memory_device_query query, C_VOID *owner,
+    core_machine_memory_write_observer callback);
 C_VOID core_machine_memory_freeze_mappings(t_ram *ram);
 type_status core_machine_memory_read_real_from(t_ram *ram, type_unsigned_16 segment,
     type_unsigned_16 offset, C_VOID *out_data, STD_SIZE_T size);

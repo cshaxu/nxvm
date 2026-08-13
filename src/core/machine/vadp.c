@@ -881,6 +881,7 @@ type_status core_machine_vadp_configure_ega_sequencer(t_vadp *adapter,
     t_ram *memory, const core_machine_vadp_ega_sequencer_config *config)
 {
     type_status status;
+    type_virtual_address planar_vram = 0u;
 
     if (adapter == STD_NULL || memory == STD_NULL || config == STD_NULL ||
         config->aperture_base != CORE_MACHINE_VADP_EGA_APERTURE_BASE ||
@@ -888,23 +889,25 @@ type_status core_machine_vadp_configure_ega_sequencer(t_vadp *adapter,
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     if (adapter->data.ega_sequencer_configured) return TYPE_STATUS_INVALID_STATE;
-    status = core_machine_memory_register_write_observer(memory,
-        core_machine_vadp_ega_write_observer, adapter);
-    if (status != TYPE_STATUS_OK) return status;
     if (config->planar_ega) {
-        adapter->data.ega_planar_vram = (type_virtual_address)STD_CALLOC(1u,
+        planar_vram = (type_virtual_address)STD_CALLOC(1u,
             CORE_MACHINE_VADP_EGA_PLANES * CORE_MACHINE_VADP_EGA_PLANE_BYTES);
-        if (adapter->data.ega_planar_vram == 0u) return TYPE_STATUS_NO_MEMORY;
-        status = core_machine_memory_register_device_provider(memory,
+        if (planar_vram == 0u) return TYPE_STATUS_NO_MEMORY;
+        status = core_machine_memory_register_device_provider_and_write_observer(memory,
             CORE_MACHINE_VADP_EGA_APERTURE_BASE,
             CORE_MACHINE_VADP_EGA_APERTURE_BYTES,
             core_machine_vadp_ega_planar_read, core_machine_vadp_ega_planar_write,
-            core_machine_vadp_ega_planar_query, adapter);
+            core_machine_vadp_ega_planar_query, adapter,
+            core_machine_vadp_ega_write_observer);
         if (status != TYPE_STATUS_OK) {
-            STD_FREE((C_VOID *)adapter->data.ega_planar_vram);
-            adapter->data.ega_planar_vram = 0u;
+            STD_FREE((C_VOID *)planar_vram);
             return status;
         }
+        adapter->data.ega_planar_vram = planar_vram;
+    } else {
+        status = core_machine_memory_register_write_observer(memory,
+            core_machine_vadp_ega_write_observer, adapter);
+        if (status != TYPE_STATUS_OK) return status;
     }
     adapter->data.ega_sequencer = *config;
     adapter->data.ega_sequencer_configured = TYPE_TRUE;
