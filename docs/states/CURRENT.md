@@ -2,29 +2,8 @@
 
 ## Current Work
 
-**M5 T340 S4 - active.** Audit the complete 80386DX width, prefix, FS/GS,
-and non-privileged integer-form ledger before closing T340.
-
-## M5 T340 S4 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | The owner approved Queue-ordered single-agent implementation through four-profile cross-closure verification on 2026-08-13. T340 S1 allocation (`11d811e7`), S2 prefix/width reconciliation (`8c212f99`), and S3 non-privileged `0F` reconciliation (`4cde54fe`) are accepted; this is the package's audit-only closure step. |
-| Objective | Audit T340's complete assigned width, prefix, FS/GS, primary-form, and non-privileged `0F` ledger against actual source, registration, focused proof, the S1--S3 evidence, and the original owner request. Close T340 only if every in-scope row is accepted, externally bounded, or transferred once to T341; return any gap to an exact T340 mechanism owner rather than repairing it in the audit. |
-| Non-goals | No opcode, prefix, decoder, CMake, test, production, artifact, device, product, or rule change; no CR/DR/TR, descriptor/table cache policy, gate/frame, VM86, paging, task, debug/breakpoint, VME/PVI, x87, timing, Windows, or earlier-profile claim. |
-| Reference Baseline | `4cde54fe` (`M5 T340 S3 P1: reconcile nonprivileged 0F forms`), all T340 S1--S3 evidence, T316/T310/T322 reconciliation, T328 LOCK evidence, T336 four-profile ledger, T339 transfer audit, and the 80386DX closure map. |
-| Candidate Proposal | [80386DX width, prefix, and integer-form closure](../proposals/m5-80386dx-width-integer-closure.md), [four-profile CPU-completeness program](../proposals/m5-four-profile-cpu-completeness-program.md), and [80386DX admission policy](../proposals/m5-80386dx-candidate-policy.md). |
-| Files And ABI Surface | Expected: T340 closure audit, indexed evidence/history, supporting index, and Current only. No source, CMake, public ABI, artifact, device, product, or rules change. |
-| Applicable Rules | `docs/rules/EXECUTION.md`: package closure audit and actual-change review. `docs/rules/ARCHITECTURE.md`: one mechanism owner and retained true width/layout differences. `docs/rules/DOCUMENT.md`: task closure/history/index/Current topology. |
-| Verification | Re-run S1--S3 static source/registration queries; inspect every changed T340 document and actual source/evidence destination; compare the original owner request, Queue proposal, T336/T339 transfer records, TODO external boundaries, and closure-map rows. Run all T340 focused owner tests, full current gate, documentation governance, diff check, and task-status topology checks. |
-| Expected Markers | One indexed S4 closure audit shows no T340 row is partial, missing, or unclassified; every non-T340 row names T341, a retained accepted prior owner, or an explicit external/post-80386 boundary. |
-| Asset Needs | Intel 80386 architecture manuals already used by project evidence. No guest media, firmware, third-party source, binary, or trace. |
-| Reporting Requirements | Deliver one complete pushed closure-audit P with the original-request mapping, actual source/evidence review, exact T341/external transfers, full gates, and a truthful T340 completion conclusion. |
-| Stop Conditions | Stop if any T340 row lacks actual proof, needs a code/test repair, or has an ambiguous receiver; return it to a new bounded T340 corrective S or the earliest Queue/TODO owner. Do not close the package on a smoke count. |
-| Exit Criteria | Every T340 form row has accepted proof, an Intel-required retained difference, or one exact T341/external transfer; task history/evidence/index/Current closure satisfy governance; full gates pass; the closure P is committed and pushed; and no T340 implementation work remains. |
-| Original Owner Request | Implement the Queue in order, in single-agent mode and with a holistic view, through four-profile cross-closure verification. |
-| Similar-Issue Sweep | Re-run S1--S3 sweeps across all prefix/width/FS-GS and assigned `0F` source/registration owners; inspect Queue, TODO, closure map, and historic transfer ledgers for duplicate, missing, or ambiguous receivers. |
+**Idle.** T340 is closed; the next Queue candidate is the 80386DX system,
+VM86, paging, and debug state package.
 
 ## Current Technical Baseline
 
@@ -44,9 +23,7 @@ and non-privileged integer-form ledger before closing T340.
 ## Recent M5 Closures
 
 | Task | Compact result |
-| T340 S3 | Reconciled every assigned non-privileged 80386DX `0F` metadata family to one dispatch/FLAGS/publication owner and focused proof; privileged secondary forms remain T341 transfers. [Evidence](../etc/evidence/t340-s3-nonprivileged-0f-reconciliation.md). |
-| T340 S2 | Reconciled the single prefix, width, effective-address, FS/GS, and `LOCK` mechanisms against seven owner smokes; no duplicate construction or in-scope defect was reproduced, and state rows remain T341 transfers. [Evidence](../etc/evidence/t340-s2-prefix-width-fsgs-reconciliation.md). |
-| T340 S1 | Allocated the finite 80386DX width/prefix/non-privileged-integer ledger; form rows now flow to T340 S2/S3, privileged state to T341, and both later audits remain verification-only. [Allocation evidence](../etc/evidence/t340-s1-80386dx-form-state-allocation.md). |
+| T340 | Closed the 80386DX width, prefix, FS/GS, and non-privileged integer-form package: S1 allocated the finite form/state ledger; S2/S3 reconciled the shared mechanisms and every assigned `0F` family; S4 confirmed accepted proof or one exact T341/external transfer for each row. [Closure audit](../etc/evidence/t340-s4-80386dx-form-closure-audit.md). |
 | T339 | Closed the Queue-ordered 80286 descriptor-transfer package: S2--S6 proved table/system-word, selector/cache, protected entry, protected return, and TSS16 transition mechanisms; S7 reconciled the source graph, retained T328 `LOCK` policy, and exact T341--T342 transfers. [Closure audit](../etc/evidence/t339-s7-80286-descriptor-transfer-audit.md). |
 | T338 | Closed the 8086/80186 profile baseline: S2 ALU/FLAGS/conditions, S3 inherited data/control/I/O, and S4 80186 extensions cover every S1 allocation; the retained T328 rule is the only legacy `LOCK` owner. The sole reproduced defect was four incorrect INS/OUTS 80386 guards, corrected to 80186. Protected, 80386DX, and x87 boundaries transfer explicitly. Artifact verification, governance, and 218/218 current-gate passed. [History](../history/M5-T338-8086-80186-profile-closure.md). |
 | T337 | Closed shared CPU state and delivery foundations: vector-6 fault delivery/rollback, software and external origin composition, IRQ/NMI/TF priority, frame timing, inhibition, and post-commit task debug trap have one proof/owner. DR6/DR7 transfers to 80386DX; reset/shutdown/triple-fault remains bounded CPU/machine debt. [History](../history/M5-T337-shared-state-delivery.md). |
@@ -54,7 +31,6 @@ and non-privileged integer-form ledger before closing T340.
 | T335 | Closed the xasm public-capacity/failure contract: the product facade now uses byte spans, explicit capacities, `type_status`, and commit-on-success result publication; debugger, firmware, and VM debug callback callers migrated with no raw bypass. A dedicated allocation-injection smoke proves capacity, malformed-input, facade-allocation, and engine-allocation failures preserve caller sentinels; `current-gate` passed 216/216. [History](../history/M5-T335-xasm-capacity-failure-contract.md). |
 | T334 | Closed EGA sequencer registration atomicity: memory owns coupled provider/observer validation and publication; VADP allocates before publication; allocation and either registry-capacity failure preserve state, while retry publishes exactly one of each. Strict focused smoke and 215/215 current-gate passed. [History](../history/M5-T334-ega-registration-transaction.md). |
 | T333 | Closed retained interactive-input failure handling: all 44 Console/debugger readers are inventoried; 43 debugger calls converge at one private boundary; Console stops before parse/execute; EOF/allocation failure and context reuse are covered by two owner-separated smoke targets. Corrective S4 restored its required `0.5.0333` artifact and identity. Evidence and review are in [history](../history/M5-T333-interactive-input-failure-contract.md). |
-| T332 | Closed VM session construction drift: one private profile materialization/override path; one early-storage rollback owner with stage-failure and late-media recovery proof; and a fixed 47-owner CPU smoke lifecycle closure with inherited-source migration and static guard. The retained artifact, full gates, and residual historical-fixture transfer are in [history](../history/M5-T332-vm-session-construction-transaction.md). |
 
 ## Recent Governance
 

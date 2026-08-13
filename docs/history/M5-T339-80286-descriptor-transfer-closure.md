@@ -8,10 +8,9 @@ gate, 16-bit stack/frame, transfer, task, validation, commit, rollback, and
 delivery rows. It preserves genuine 16-bit layouts and transfers 80386-only
 state explicitly rather than treating later implementation as proof.
 
-The active packet in [CURRENT](../states/CURRENT.md) defines each admitted S.
-The active [proposal](../proposals/m5-80286-descriptor-transfer-closure.md)
-defines the task boundary until task closure retains it in this history
-directory.
+The active packet in [CURRENT](../states/CURRENT.md) defined each admitted S.
+The retained [proposal companion](M5-T339-80286-descriptor-transfer-closure-proposal.md)
+records the task boundary at closure.
 
 ## S1 Allocation
 

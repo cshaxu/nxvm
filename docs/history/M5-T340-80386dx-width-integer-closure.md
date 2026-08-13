@@ -8,8 +8,9 @@ non-privileged integer-form closure. It must preserve the established
 8086/80186/80286 dispositions and transfer privileged state, VM86, paging,
 task, debug, and breakpoint work to the following 80386DX state candidate.
 
-The active packet in [CURRENT](../states/CURRENT.md) owns the admitted S
-contract. The linked proposal remains current until T340 closes.
+The active packet in [CURRENT](../states/CURRENT.md) owned the admitted S
+contract while T340 was active. The retained proposal is
+[the T340 proposal companion](M5-T340-80386dx-width-integer-closure-proposal.md).
 
 ## S1 Allocation
 
@@ -52,3 +53,8 @@ The indexed [S4 closure audit](../etc/evidence/t340-s4-80386dx-form-closure-audi
 maps the original request and every T340 form boundary to accepted proof,
 T341, an earlier retained owner, or an explicit external boundary. It is the
 required evidence for task closure.
+
+T340 closed after S4 accepted that audit. The next mechanism-owned work is the
+Queue's 80386DX system, VM86, paging, and debug closure; the later 80386DX and
+four-profile candidates remain audit-only and cannot absorb an implementation
+gap from this package.
