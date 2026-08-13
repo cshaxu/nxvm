@@ -29,6 +29,23 @@ publication, restart, and appropriate IRQ/fault proof. Intel-required width
 differences stay explicit; accidental construction divergence is repaired at
 its mechanism owner.
 
+## Admission Sequence
+
+The candidate is deliberately staged by mechanism, not by a convenient list
+of opcodes:
+
+1. freeze the primary/`0F`, prefix, FS/GS, and width ledger against accepted
+   T316, T310, T322, T336, and T339 evidence;
+2. reconcile residual operand/address and prefix materialization rows,
+   including independent `66`, `67`, and combined forms;
+3. reconcile any still-unproved non-privileged integer primary/`0F` form at
+   its shared FLAGS, operand, memory-publication, and `LOCK` owner; and
+4. audit the resulting ledger and return every state row to its exact owner.
+
+An allocation step may truthfully conclude that accepted evidence already
+closes a proposed row. It records that proof and does not invent a runtime
+subtask merely to consume the candidate.
+
 ## Non-goals And Stop Conditions
 
 CR/DR/TR privilege, paging translation, VM86 transitions, task state,
