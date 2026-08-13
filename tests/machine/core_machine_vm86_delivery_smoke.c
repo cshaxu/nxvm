@@ -136,6 +136,36 @@ static C_INT vm86_delivery_debug_tf(C_VOID)
     }
     core_machine_destroy(state.machine); return !failed;
 }
+static C_INT vm86_delivery_debug_breakpoint(C_VOID)
+{
+    vm86_delivery_state state;
+    core_machine_run_result result;
+    core_machine_cpu_diagnostic diagnostic;
+    type_unsigned_32 frame[9u] = {0u};
+    C_INT failed = !vm86_delivery_prepare(&state, 1u);
+
+    if (!failed) {
+        state.machine->executor_cpu.data.dr0 = 0x2000u;
+        state.machine->executor_cpu.data.dr6 = 0u;
+        state.machine->executor_cpu.data.dr7 = 0x00000001u;
+        failed |= core_machine_memory_write(state.machine, 0x2000u,
+            (const type_unsigned_8[]){0x90u}, 1u) != TYPE_STATUS_OK ||
+            core_machine_run(state.machine, (core_machine_run_budget){4u,0u},
+                &result) != TYPE_STATUS_OK ||
+            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
+                TYPE_STATUS_OK || diagnostic.first_fault.valid ||
+            !diagnostic.last_delivered_exception.valid ||
+            diagnostic.last_delivered_exception.exception_mask !=
+                VCPUINS_EXCEPT_DB || state.machine->executor_cpu.data.eip !=
+                0x101u || (state.machine->executor_cpu.data.dr6 & 1u) == 0u ||
+            core_machine_memory_read_physical(&state.machine->executor_memory,
+                VM86_STACK_TOP - 36u, (type_virtual_address)frame,
+                sizeof(frame)) != TYPE_STATUS_OK || frame[0] != 0u ||
+            frame[2u] != (VCPU_EFLAGS_VM | VCPU_EFLAGS_IF | VCPU_EFLAGS_RF);
+    }
+    core_machine_destroy(state.machine);
+    return !failed;
+}
 static C_INT vm86_delivery_irq0(C_VOID)
 {
     vm86_delivery_state state; core_machine_pic_irq_source irq; core_machine_run_result result;
@@ -387,6 +417,7 @@ C_INT main(C_VOID)
     if (!vm86_delivery_fault(6u, ud, sizeof(ud), 0) ||
         !vm86_delivery_fault(13u, gp, sizeof(gp), 1) ||
         !vm86_delivery_fault(7u, nm, sizeof(nm), 0) || !vm86_delivery_debug_tf() ||
+        !vm86_delivery_debug_breakpoint() ||
         !vm86_delivery_irq0() || !vm86_delivery_irq0_iret_round_trip() ||
         !vm86_delivery_paging_composition() ||
         !vm86_delivery_invalid_gate() || !vm86_delivery_bad_gate_access(0x0eu) ||

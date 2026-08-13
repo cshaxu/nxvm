@@ -50,3 +50,13 @@ return probes without creating a second executor, page walker, or TSS format.
 The accepted S3 delivery is `cf43c5b8`. S4 now owns ordinary DR6/DR7
 breakpoint matching, cause publication, priority, and vector-1 delivery as one
 debug state-machine mechanism.
+
+## S4 Ordinary Debug And Vector-1 Composition
+
+The indexed [S4 debug graph](../etc/evidence/t341-s4-ordinary-debug-vector1.md)
+binds instruction-breakpoint faults, post-access data traps, sampled TF/RF,
+incoming-TSS task debug, DR6 cause publication, DR7 local/global task
+semantics, and real/protected/VM86 vector-1 delivery to one execution path.
+It also corrects the earlier TF/PIC ordering statement: an ordinary sampled TF
+trap is selected before a pending maskable IRQ; an interrupt-gate handler then
+has its ordinary IF-clearing behavior.

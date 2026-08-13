@@ -43,6 +43,10 @@
 #define _SetExcept_FPU_UNSUPPORTED(n) (TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_FPU_UNSUPPORTED), instruction_state.data.excode = (n), STD_PRINTF("FPU(%x) - configured model is not implemented\n", instruction_state.data.excode))
 #define _SetExcept_CE(n) (TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_CE), instruction_state.data.excode = (n), STD_PRINTF("#CE(%x) - internal error\n", instruction_state.data.excode))
 
+#define VCPU_DR6_BS 0x00004000u
+#define VCPU_DR6_BT 0x00008000u
+#define VCPU_DR7_LOCAL_ENABLE_MASK 0x00000155u
+
 static C_VOID UndefinedOpcode(core_machine_cpu_execution_context *context);
 
 /* memory management unit */
@@ -4421,10 +4425,12 @@ static C_VOID _ser_task_transition_tss_plan(
     newtr.sys.type = new_is_32 ? VCPU_DESC_SYS_TYPE_TSS_32_BUSY :
         VCPU_DESC_SYS_TYPE_TSS_16_BUSY;
     cpu_state.data.tr = newtr;
+    if (new_is_32) cpu_state.data.dr7 &= ~VCPU_DR7_LOCAL_ENABLE_MASK;
     _SetCR0_TS;
     if (new_is_32 && TYPE_GET_LSB(debug_trap)) {
         t_cpu trap_cpu = cpu_state;
 
+        cpu_state.data.dr6 |= VCPU_DR6_BT;
         TYPE_TRACE_CHECK_RETURN(_e_except_n(context, 0x01u, _GetOperandSize));
         if (context->diagnostic_provider != STD_NULL &&
             context->diagnostic_provider->record_delivered_exception != STD_NULL) {
@@ -17389,6 +17395,8 @@ static C_VOID MOVSX_R32_RM16(core_machine_cpu_execution_context *context)
     TYPE_TRACE_CALL_END;
 }
 
+static C_VOID ExecFinal(core_machine_cpu_execution_context *context);
+
 static C_VOID ExecInit(core_machine_cpu_execution_context *context)
 {
     instruction_state.data.flagIgnore = TYPE_FALSE;
@@ -17425,6 +17433,8 @@ static C_VOID ExecInit(core_machine_cpu_execution_context *context)
     instruction_state.data.udf = TYPE_ZERO_32;
     instruction_state.data.mrm.rsreg = STD_NULL;
     instruction_state.data.mrm.offset = TYPE_ZERO_32;
+    context->debug_tf_before = _GetEFLAGS_TF;
+    context->debug_rf_before = _GetEFLAGS_RF;
 #if VCPUINS_TRACE == 1
     if (context->trace != STD_NULL)
         type_trace_initialize(context->trace);
@@ -17435,6 +17445,143 @@ static C_VOID ExecInit(core_machine_cpu_execution_context *context)
         context->diagnostic_provider->record_instruction(context->diagnostic_context,
                                                          &cpu_state, &instruction_state);
     }
+}
+
+static type_unsigned_32 _debug_breakpoint_address(type_unsigned_8 index,
+    const t_cpu *cpu)
+{
+    switch (index) {
+    case 0u: return cpu->data.dr0;
+    case 1u: return cpu->data.dr1;
+    case 2u: return cpu->data.dr2;
+    case 3u: return cpu->data.dr3;
+    default: return TYPE_ZERO_32;
+    }
+}
+
+static type_bool _debug_breakpoint_enabled(type_unsigned_8 index,
+    const t_cpu *cpu)
+{
+    type_unsigned_32 enable_mask = ((type_unsigned_32)1u << (index * 2u)) |
+        ((type_unsigned_32)1u << (index * 2u + 1u));
+
+    return (cpu->data.dr7 & enable_mask) != TYPE_ZERO_32;
+}
+
+static type_unsigned_8 _debug_breakpoint_length(type_unsigned_8 length)
+{
+    switch (length) {
+    case 0u: return 1u;
+    case 1u: return 2u;
+    case 3u: return 4u;
+    default: return 0u;
+    }
+}
+
+static type_unsigned_32 _debug_match_instruction_breakpoint(
+    core_machine_cpu_execution_context *context)
+{
+    type_unsigned_32 enabled = TYPE_ZERO_32;
+    type_unsigned_8 index;
+
+    if (context->cpu_profile < CORE_MACHINE_CPU_PROFILE_80386 ||
+        context->debug_rf_before) return TYPE_ZERO_32;
+    for (index = 0u; index < 4u; ++index) {
+        type_unsigned_32 control = (cpu_state.data.dr7 >> (16u + index * 4u)) &
+            0x0fu;
+
+        if ((control & 3u) != 0u || (control >> 2u) != 0u ||
+            _debug_breakpoint_address(index, &cpu_state) !=
+                instruction_state.data.linear) continue;
+        if (_debug_breakpoint_enabled(index, &cpu_state)) {
+            enabled |= (type_unsigned_32)1u << index;
+        }
+    }
+    return enabled;
+}
+
+static type_unsigned_32 _debug_match_data_breakpoint(
+    core_machine_cpu_execution_context *context)
+{
+    type_unsigned_32 enabled = TYPE_ZERO_32;
+    type_unsigned_8 index;
+    type_unsigned_8 access_index;
+
+    if (context->cpu_profile < CORE_MACHINE_CPU_PROFILE_80386) return TYPE_ZERO_32;
+    for (access_index = 0u; access_index < instruction_state.data.msize;
+        ++access_index) {
+        const t_cpuins_data_memory *access =
+            &instruction_state.data.mem[access_index];
+
+        for (index = 0u; index < 4u; ++index) {
+            type_unsigned_32 control =
+                (cpu_state.data.dr7 >> (16u + index * 4u)) & 0x0fu;
+            type_unsigned_8 rw = control & 3u;
+            type_unsigned_8 length = _debug_breakpoint_length(control >> 2u);
+            type_unsigned_64 address;
+            type_unsigned_64 first;
+            type_unsigned_64 last;
+
+            if (access->byte == 0u || rw == 0u || rw == 2u ||
+                (rw == 1u && !access->flagWrite) ||
+                length == 0u) continue;
+            address = _debug_breakpoint_address(index, &cpu_state) &
+                ~(type_unsigned_32)(length - 1u);
+            first = access->linear;
+            last = first + access->byte - 1u;
+            if (last < address || first >= address + length) continue;
+            if (_debug_breakpoint_enabled(index, &cpu_state)) {
+                enabled |= (type_unsigned_32)1u << index;
+            }
+        }
+    }
+    return enabled;
+}
+
+static C_VOID _debug_schedule_trap(core_machine_cpu_execution_context *context,
+    type_unsigned_32 cause)
+{
+    if (cause == TYPE_ZERO_32) return;
+    cpu_state.data.dr6 |= cause;
+    context->debug_trap_pending = TYPE_TRUE;
+    context->debug_trap_cause |= cause;
+}
+
+static C_VOID _debug_complete_instruction(
+    core_machine_cpu_execution_context *context, type_unsigned_8 opcode)
+{
+    type_unsigned_32 cause;
+
+    if (instruction_state.data.except) return;
+    cause = _debug_match_data_breakpoint(context);
+    if (context->debug_tf_before) cause |= VCPU_DR6_BS;
+    _debug_schedule_trap(context, cause);
+    if (context->debug_rf_before && opcode != 0xcfu) _ClrEFLAGS_RF;
+}
+
+static C_VOID _debug_deliver_trap(core_machine_cpu_execution_context *context)
+{
+    t_cpu trap_cpu;
+    type_unsigned_32 cause;
+
+    if (!context->debug_trap_pending) return;
+    cause = context->debug_trap_cause;
+    context->debug_trap_pending = TYPE_FALSE;
+    context->debug_trap_cause = TYPE_ZERO_32;
+    trap_cpu = cpu_state;
+    ExecInit(context);
+    _e_intr_n(context, 0x01u, _GetOperandSize, TYPE_TRUE);
+    if (!instruction_state.data.except && context->diagnostic_provider !=
+        STD_NULL && context->diagnostic_provider->record_delivered_exception !=
+        STD_NULL) {
+        instruction_state.data.except = VCPUINS_EXCEPT_DB;
+        instruction_state.data.excode = cause;
+        context->diagnostic_provider->record_delivered_exception(
+            context->diagnostic_context, &trap_cpu, &instruction_state);
+        instruction_state.data.except = TYPE_ZERO_32;
+        instruction_state.data.excode = TYPE_ZERO_32;
+    }
+    ExecFinal(context);
 }
 static type_bool _e_is_contributory_exception(type_unsigned_32 exception)
 {
@@ -17496,6 +17643,10 @@ static C_VOID ExecFinal(core_machine_cpu_execution_context *context)
     if (instruction_state.data.except)
     {
         fault_cpu = instruction_state.data.oldcpu;
+        if (instruction_state.data.except == VCPUINS_EXCEPT_DB) {
+            fault_cpu.data.dr6 = cpu_state.data.dr6;
+            fault_cpu.data.eflags |= VCPU_EFLAGS_RF;
+        }
         if (TYPE_GET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_PF))
         {
             fault_cpu.data.cr2 = cpu_state.data.cr2;
@@ -17504,6 +17655,10 @@ static C_VOID ExecFinal(core_machine_cpu_execution_context *context)
         exception_deliverable = TYPE_FALSE;
         if (instruction_state.data.except == VCPUINS_EXCEPT_DE) {
             exception_vector = 0x00u;
+            exception_deliverable = TYPE_TRUE;
+        }
+        else if (instruction_state.data.except == VCPUINS_EXCEPT_DB) {
+            exception_vector = 0x01u;
             exception_deliverable = TYPE_TRUE;
         }
         else if (instruction_state.data.except == VCPUINS_EXCEPT_GP) {
@@ -17561,6 +17716,7 @@ static C_VOID ExecFinal(core_machine_cpu_execution_context *context)
                         &instruction_state);
                     instruction_state.data.except = 0u;
                 }
+                if (original_except == VCPUINS_EXCEPT_DB) _ClrEFLAGS_RF;
                 return;
             }
             cpu_state = fault_cpu;
@@ -17596,6 +17752,7 @@ static C_VOID ExecFinal(core_machine_cpu_execution_context *context)
 
         if (!TYPE_GET_BIT(fault_cpu.data.cr0, VCPU_CR0_PE) &&
             (instruction_state.data.except == VCPUINS_EXCEPT_DE ||
+             instruction_state.data.except == VCPUINS_EXCEPT_DB ||
              instruction_state.data.except == VCPUINS_EXCEPT_PF ||
              instruction_state.data.except == VCPUINS_EXCEPT_MF ||
              instruction_state.data.except == VCPUINS_EXCEPT_UD) &&
@@ -17631,7 +17788,16 @@ static C_VOID ExecFinal(core_machine_cpu_execution_context *context)
 static C_VOID ExecIns(core_machine_cpu_execution_context *context)
 {
     type_unsigned_8 opcode = 0;
+    type_unsigned_32 debug_cause;
+
     ExecInit(context);
+    debug_cause = _debug_match_instruction_breakpoint(context);
+    if (debug_cause != TYPE_ZERO_32) {
+        cpu_state.data.dr6 |= debug_cause;
+        instruction_state.data.except = VCPUINS_EXCEPT_DB;
+        ExecFinal(context);
+        return;
+    }
     do
     {
         TYPE_TRACE_CALL_BEGIN("ExecIns");
@@ -17647,6 +17813,7 @@ static C_VOID ExecIns(core_machine_cpu_execution_context *context)
         TYPE_TRACE_CHECK_BREAK(_s_test_esp(context));
         TYPE_TRACE_CALL_END;
     } while (_kdf_check_prefix(context, opcode));
+    _debug_complete_instruction(context, opcode);
     if (instruction_state.data.flagWE && instruction_state.data.weLinear == instruction_state.data.linear)
     {
         STD_PRINTF("Watch point caught at L%08x: EXECUTED\n", instruction_state.data.linear);
@@ -17659,9 +17826,8 @@ static C_VOID ExecInt(core_machine_cpu_execution_context *context)
 {
     type_unsigned_8 intr = 0x00;
     /* hardware interrupt handler */
-    if (instruction_state.data.flagMaskInt)
-        return;
-    if (!cpu_state.data.flagMaskNMI && cpu_state.data.flagNMI)
+    if (!instruction_state.data.flagMaskInt && !cpu_state.data.flagMaskNMI &&
+        cpu_state.data.flagNMI)
     {
         ExecInit(context);
         _e_intr_n(context, 0x02, _GetOperandSize, TYPE_TRUE);
@@ -17671,7 +17837,10 @@ static C_VOID ExecInt(core_machine_cpu_execution_context *context)
         }
         ExecFinal(context);
     }
-    if (_GetEFLAGS_IF && core_machine_pic_scan_interrupt(
+    _debug_deliver_trap(context);
+    if (context->stop_requested) return;
+    if (!instruction_state.data.flagMaskInt && _GetEFLAGS_IF &&
+        core_machine_pic_scan_interrupt(
                              context->pic_master, context->pic_slave))
     {
         intr = core_machine_pic_peek_interrupt(context->pic_master,
@@ -17684,13 +17853,6 @@ static C_VOID ExecInt(core_machine_cpu_execution_context *context)
                 context->pic_slave);
             instruction_state.data.flagIgnore = TYPE_TRUE;
         }
-        ExecFinal(context);
-    }
-    if (_GetEFLAGS_TF)
-    {
-        cpu_state.data.flagHalt = TYPE_FALSE;
-        ExecInit(context);
-        _e_intr_n(context, 0x01, _GetOperandSize, TYPE_TRUE);
         ExecFinal(context);
     }
 }
@@ -18253,6 +18415,10 @@ C_VOID core_machine_cpu_execution_reset(
     core_machine_cpu_execution_context *context)
 {
     STD_MEMSET((C_VOID *)(&instruction_state.data), TYPE_ZERO_8, sizeof(t_cpuins_data));
+    context->debug_trap_pending = TYPE_FALSE;
+    context->debug_tf_before = TYPE_FALSE;
+    context->debug_rf_before = TYPE_FALSE;
+    context->debug_trap_cause = TYPE_ZERO_32;
 }
 C_VOID core_machine_cpu_execution_refresh(
     core_machine_cpu_execution_context *context)
