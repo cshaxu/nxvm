@@ -2,8 +2,30 @@
 
 ## Current Work
 
-**Idle.** M5 Td S77 is closed. The next implementation task requires a separately
-admitted packet.
+**M5 T333 S1 - active.** Inventory the retained interactive-input mechanism and
+define its owner contract before any repair. The approved candidate is
+[the P1 interactive input failure contract](../proposals/m5-interactive-input-failure-contract.md).
+
+## M5 T333 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner-approved on 2026-08-12: admit the first Queue candidate as T333 after Td S78, then begin implementation. Scope is the P1 retained VM Console/core debugger input-failure mechanism. |
+| Objective | Inventory every direct interactive `STD_FGETS` caller in the retained VM Console and core debugger; establish the one owner-level EOF/read-error/allocation-failure contract and the complete S2 repair scope. |
+| Non-goals | No production repair in S1; no command-UX redesign, xasm API redesign, generic input framework, new public callback ABI, guest-execution change, or session-selection change. |
+| Reference Baseline | `68745ea6` (`M5 Td S78 P1: queue interactive input failure contract`); current artifact remains `vm-0-5-0332` / `build/output/nxvm_0_5_0332.exe`. |
+| Candidate Proposal | [M5 interactive input failure contract](../proposals/m5-interactive-input-failure-contract.md). |
+| Files And ABI Surface | Inspect `src/core/product/debug/debug.c`, `src/core/product/debug/debug.h`, `src/vm/product/console.c`, `src/vm/product/console.h`, their tests and input-provider consumers. S1 changes only packet/evidence documentation; no ABI change. |
+| Applicable Rules | `docs/rules/EXECUTION.md`: lifecycle, mechanism-defect owner/variants/commit boundary, actual-change audit. `docs/rules/CODING.md`: repair repeated defect at owner boundary; no duplicate side path. `docs/rules/ARCHITECTURE.md`: one owner and production path; no mutable public internals. `docs/rules/DOCUMENT.md`: Current holds the active contract; durable inventory is indexed supporting evidence. |
+| Verification | `git diff --check`; `powershell -NoProfile -ExecutionPolicy Bypass -File tools/Verify-DocumentationGovernance.ps1 -RepositoryRoot .`; static complete-callsite inventory using `git grep`/`rg`, including direct readers, prompt nesting, parser entry, allocation, cleanup, and existing tests. |
+| Expected Markers | Durable inventory records each direct retained Console/debugger reader and its success/failure ownership; no unclassified caller; `Documentation governance checks passed`. |
+| Asset Needs | None. No source, firmware, guest media, third-party code, or Microsoft material. |
+| Reporting Requirements | Executor reports confirmation or objection before changing code, one progress note after the inventory, then a concise delivery with commit, evidence, verification, and S2 boundary. |
+| Stop Conditions | Stop and report if the contract requires a public ABI, platform dependency, command-UX change, or cannot cover a discovered caller without a material semantic exception. Do not implement S2 until the coordinator admits it. |
+| Exit Criteria | An indexed complete inventory identifies owner, variants/callers, input/read failure path, parser/execute boundary, argument-storage lifetime, test coverage, and proposed validation-to-cleanup boundary; documentation checks pass; S2 is bounded without speculative implementation. |
+| Original Owner Request | Create and queue a task for the P1 interactive input failure issue, then commit the governance change and start T333 implementation. |
+| Similar-Issue Sweep | Cover every direct `STD_FGETS` use in `src/core/product/debug/` and `src/vm/product/console.c`, not merely main prompts or the two `STD_STRLEN(...)-1` sites; classify any other product interactive reader discovered by the repository-wide scan. |
 
 ## Current Technical Baseline
 
