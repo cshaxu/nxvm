@@ -2,30 +2,8 @@
 
 ## Current Work
 
-**M5 T337 S3 - active.** Perform the task-level closure audit for shared CPU
-state and delivery foundations; verify every original proposal row is proven
-or transferred once before closing T337 and advancing the Queue.
-
-## M5 T337 S3 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | The owner approved on 2026-08-13 Queue-ordered single-agent implementation through four-profile cross-closure. T337 S1 (`742c6f01`) and S2 (`e47ccb3b`, accepted in `10bf5f3c`) are complete. This S is the required T-level closure audit; it may not add runtime scope. |
-| Objective | Re-read the original shared-delivery proposal, T336 ledger, S1/S2 evidence, current source/CMake enforcement, Queue, and TODO. Map every proposal completion row to current proof or a single named transfer; audit code quality, documentation ownership, artifact identity, and open debt; retain a concise task-closure record that makes later profile packages' dependency on T337 explicit. |
-| Non-goals | No CPU, device, test semantic, ABI, artifact-version, Queue-order, or rule change except the normal task-closure moves and compact Current/history/proposal retention records. No new shared mechanism, DR6/DR7 matching, reset/shutdown/triple-fault implementation, VME/PVI, x87 execution, or profile instruction form. |
-| Reference Baseline | `10bf5f3c` (`M5 T337 S2 P2: accept shared delivery reconciliation`), current developer artifact `vm-0-5-0337` / `0.5.0337`. |
-| Candidate Proposal | [Shared CPU state and delivery foundations](../proposals/m5-cpu-shared-state-delivery.md); [four-profile CPU-completeness program](../proposals/m5-four-profile-cpu-completeness-program.md). |
-| Files And ABI Surface | Expected: one T337 closure-audit evidence record, T337 history, Current, Queue, proposal-to-history retention move, and no production/test/CMake behavior edit. No ABI or runtime artifact change. |
-| Applicable Rules | `docs/rules/EXECUTION.md`: task-level closure, actual-change review, transfer/identifier/commit lifecycle. `docs/rules/DOCUMENT.md`: proposal/history/Current/Queue ownership and compact retention. `docs/rules/ARCHITECTURE.md`: one owner per delivery transition. |
-| Verification | Compare every original proposal row with S1/S2 evidence and current production route; check Queue/TODO have exactly one transfer for every excluded residual; run documentation governance and diff check. Reconfirm `vm-0-5-0337` identity via the artifact verifier and ensure the previous 217/217 gate result is accurately linked, not rerun as a substitute for audit. |
-| Expected Markers | A closure audit table has no unclassified proposal row; T337 history and retained proposal record one exact result/transfer; Current has no active T337 packet after acceptance; Queue advances to 8086/80186 closure without duplicate shared-delivery candidate. |
-| Asset Needs | No new assets, guest media, firmware, external source, binary, or trace. |
-| Reporting Requirements | Deliver one complete pushed documentation P with the original-row map, exact current evidence, all transfers, closure decision, governance/artifact/diff results, and no runtime claim. Report an unclassified proposal row or incompatible ownership before closure. |
-| Stop Conditions | Stop if any original shared-delivery row lacks proof or an exact Queue/TODO owner, if closing requires a new runtime mechanism, or if proposal/history retention would lose evidence. Admit a bounded continuation instead of closing T337. |
-| Exit Criteria | Every original proposal completion row is proven or transferred exactly once; the task-level audit covers source/CMake/docs/debt/artifact identity; documentation ownership and mechanical gates pass; P is committed and pushed; then the governance P truthfully closes S3 and T337. |
-| Original Owner Request | Implement the Queue in order, in single-agent mode and with a holistic view, through four-profile cross-closure verification. |
-| Similar-Issue Sweep | Check all T337 history/evidence/proposal/Queue/TODO references; search current production/CMake for `ExecFinal`, `ExecInt`, `_e_except_n`, `_e_intr_n`, `VCPUINS_EXCEPT_UD`, `VCPUINS_EXCEPT_DB`, reset/shutdown/triple-fault terms, and the current artifact target. |
+**Idle.** T337 is closed. The next Queue candidate is the 8086/80186 profile
+closure; it requires a separately admitted task packet.
 
 ## Current Technical Baseline
 
@@ -45,8 +23,7 @@ or transferred once before closing T337 and advancing the Queue.
 ## Recent M5 Closures
 
 | Task | Compact result |
-| T337 S2 | Accepted the shared-delivery reconciliation: all 71 current-gate `#UD` owners now have one explicit valid-vector, invalid-IVT rollback, or no-real-negative disposition; descriptor-system and segment-selector rollback owners were corrected, while real/protected/VM86 frame timing remains explicitly separated. DR6/DR7 transfers to 80386DX and reset/shutdown/triple-fault to bounded CPU/machine debt. `vm-0-5-0337`, all 50 specialized gates, and 217/217 current-gate passed. [Evidence](../etc/evidence/t337-s2-shared-delivery-reconciliation.md). |
-| T337 S1 | Accepted real-mode vector-6 `#UD` final delivery: all primary, `0F`, operand, profile, and LOCK representatives converge at `ExecFinal`; valid IVT proof covers the 16-bit restart frame, IF/TF and handler progress, while invalid-IVT rollback retains the terminal diagnostic. A configure-time 69-owner upper-bound inventory prevents a current-gate `tests/machine` `#UD` source from bypassing classification. Focused and 217/217 direct current-gate tests passed. [Evidence](../etc/evidence/t337-s1-real-ud-delivery.md). |
+| T337 | Closed shared CPU state and delivery foundations: vector-6 fault delivery/rollback, software and external origin composition, IRQ/NMI/TF priority, frame timing, inhibition, and post-commit task debug trap have one proof/owner. DR6/DR7 transfers to 80386DX; reset/shutdown/triple-fault remains bounded CPU/machine debt. [History](../history/M5-T337-shared-state-delivery.md). |
 | T336 | Closed the four-profile CPU coverage audit: the primary/`0F` metadata and dispatch forms, real/protected/VM86 state rows, historic evidence, explicit 80386 exclusions, and open CPU debt now have a single indexed disposition. Every residual has one Queue, TODO, or external owner; the next candidate is shared state and delivery foundations. [History](../history/M5-T336-four-profile-coverage.md). |
 | T335 | Closed the xasm public-capacity/failure contract: the product facade now uses byte spans, explicit capacities, `type_status`, and commit-on-success result publication; debugger, firmware, and VM debug callback callers migrated with no raw bypass. A dedicated allocation-injection smoke proves capacity, malformed-input, facade-allocation, and engine-allocation failures preserve caller sentinels; `current-gate` passed 216/216. [History](../history/M5-T335-xasm-capacity-failure-contract.md). |
 | T334 | Closed EGA sequencer registration atomicity: memory owns coupled provider/observer validation and publication; VADP allocates before publication; allocation and either registry-capacity failure preserve state, while retry publishes exactly one of each. Strict focused smoke and 215/215 current-gate passed. [History](../history/M5-T334-ega-registration-transaction.md). |
@@ -54,7 +31,6 @@ or transferred once before closing T337 and advancing the Queue.
 | T332 | Closed VM session construction drift: one private profile materialization/override path; one early-storage rollback owner with stage-failure and late-media recovery proof; and a fixed 47-owner CPU smoke lifecycle closure with inherited-source migration and static guard. The retained artifact, full gates, and residual historical-fixture transfer are in [history](../history/M5-T332-vm-session-construction-transaction.md). |
 | T331 | Closed the bounded real-mode `ExecFinal` final-delivery construction: `#DE/#MF/#BR/#NM/#GP` share one rollback/diagnostic plan, and `#GP` IVT success no longer records a terminal fault before transfer. Real-mode `#PF` is architecturally outside paging's protected-mode state. The new `#GP` frame/failed-IVT regression, mechanical construction verifier, artifact, and 212/212 current-gate result are retained in [history](../history/M5-T331-exception-final-delivery.md). |
 | T330 | Closed the whole-codebase construction-drift package: one task-transition constructor, FDD/HDD backing/create atomicity, and CALL-gate dual-fault preflight convergence. Its mechanism matrices remain retained evidence; they are not a current mandatory rule. Intel-required layouts remain explicit; T330 artifact, focused regressions, 211/211 current-gate, and governance evidence are in [history](../history/M5-T330-width-path-convergence.md). |
-| T329 | Closed the bounded Intel 80286/80386 protected task-transition state machine: 16/32-bit direct and task-gate entry, nested CALL/IRET state, incoming LDT images, source-CR3 preflight/incoming-CR3 commit, and TSS post-switch `#DB`. S7 proves target-page fetch, target-TSS `#PF` atomicity, and a target-state restart frame; the 0329 artifact and 211/211 gate result are in [history](../history/M5-T329-task-transition-state-machine.md). |
 
 ## Recent Governance
 
