@@ -25,3 +25,12 @@ cannot implement a missing S2--S6 mechanism.
 The Queue and linked program proposals use the same dependency chain:
 T339 descriptor/transfer closure, 80286 `LOCK`/profile closure, 80386DX form
 closure, 80386DX state closure, 80386DX audit, then final four-profile audit.
+
+## S2--S7 Closure
+
+S2--S6 closed table/system-word, selector/cache, protected entry, protected
+return, and TSS16 task-transition mechanisms. S7 reconciles their source
+owners, focused proof, publication/fault boundaries, and exact transfers in
+the [80286 closure audit](../etc/evidence/t339-s7-80286-descriptor-transfer-audit.md).
+The remaining `LOCK`, 80386DX width, and 80386DX state rows remain queued
+work, not implicit T339 completion.
