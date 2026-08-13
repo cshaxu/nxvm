@@ -60,3 +60,10 @@ semantics, and real/protected/VM86 vector-1 delivery to one execution path.
 It also corrects the earlier TF/PIC ordering statement: an ordinary sampled TF
 trap is selected before a pending maskable IRQ; an interrupt-gate handler then
 has its ordinary IF-clearing behavior.
+
+## S5 Closure Audit
+
+The [S5 closure audit](../etc/evidence/t341-s5-80386dx-system-state-closure-audit.md)
+reconciles every S1 allocation exactly once with its S2/S3/S4 owner and focused
+proof. T341 therefore closes the 80386DX system-state package and transfers
+only explicit later-CPU, x87, timing/device, and Windows boundaries.
