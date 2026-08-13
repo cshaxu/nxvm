@@ -35,7 +35,8 @@ typedef enum task_switch_case {
     TASK_SWITCH_CASE_TASK_GATE_SUCCESS,
     TASK_SWITCH_CASE_IDT_TASK_GATE,
     TASK_SWITCH_CASE_NESTED_RETURN,
-    TASK_SWITCH_CASE_LDT_SUCCESS
+    TASK_SWITCH_CASE_LDT_SUCCESS,
+    TASK_SWITCH_CASE_LDT_NOT_PRESENT
 } task_switch_case;
 
 typedef enum task_switch_task_gate_rejection {
@@ -184,11 +185,15 @@ static C_INT task_switch_install(task_switch_fixture *fixture,
         kernel_code[3] = 0xccu;
         break;
     case TASK_SWITCH_CASE_LDT_SUCCESS:
+    case TASK_SWITCH_CASE_LDT_NOT_PRESENT:
         task_b_state[34] = 0x14u;
         task_b_state[36] = 0x0cu;
         task_b_state[38] = 0x14u;
         task_b_state[40] = 0x14u;
         task_b_state[42] = 0x40u;
+        if (test_case == TASK_SWITCH_CASE_LDT_NOT_PRESENT) {
+            ldt_descriptor[5] = 0x02u;
+        }
         break;
     case TASK_SWITCH_CASE_INDIRECT_OPERAND_ADDRESS32_SUCCESS:
         bootstrap_code = real_code_with_ds;
@@ -272,7 +277,8 @@ static C_INT task_switch_install(task_switch_fixture *fixture,
         write_bytes(fixture->machine, TASK_A_BASE, (const type_unsigned_8[44]){0}, 44u) &&
         write_bytes(fixture->machine, TASK_B_BASE, task_b_state,
             sizeof(task_b_state)) &&
-        (test_case != TASK_SWITCH_CASE_LDT_SUCCESS ||
+        ((test_case != TASK_SWITCH_CASE_LDT_SUCCESS &&
+            test_case != TASK_SWITCH_CASE_LDT_NOT_PRESENT) ||
             (write_bytes(fixture->machine, GDT_BASE + 0x40u, ldt_descriptor,
                 sizeof(ldt_descriptor)) && write_bytes(fixture->machine,
                 0x0900u, ldt, sizeof(ldt)))) &&
@@ -534,7 +540,9 @@ static C_INT task_switch_expect_task_gate_rejection(
                 (!diagnostic.last_delivered_exception.valid ||
                     diagnostic.last_delivered_exception.exception_mask != VCPUINS_EXCEPT_GP) :
                 (!diagnostic.first_fault.valid || !TYPE_GET_BIT(
-                    diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_DF))) ||
+                    diagnostic.first_fault.exception_mask,
+                    profile == CORE_MACHINE_CPU_PROFILE_80286 ?
+                        VCPUINS_EXCEPT_NP : VCPUINS_EXCEPT_DF))) ||
             after.data.tr.selector != 0x28u || after.data.eax != 0x1111u ||
             after.data.ecx != 0u || after.data.edx != 0u || after.data.ebx != 0u ||
             after.data.esi != 0u || after.data.edi != 0u;
@@ -1530,12 +1538,20 @@ int main(void)
     failed |= task_switch_expect_pending_irq(CORE_MACHINE_CPU_PROFILE_80386);
     failed |= task_switch_expect_task_gate_rejection(CORE_MACHINE_CPU_PROFILE_80286,
         TASK_SWITCH_TASK_GATE_REJECTION_PRIVILEGE);
+    failed |= task_switch_expect_task_gate_rejection(CORE_MACHINE_CPU_PROFILE_80286,
+        TASK_SWITCH_TASK_GATE_REJECTION_NOT_PRESENT);
     failed |= task_switch_expect_task_gate_rejection(CORE_MACHINE_CPU_PROFILE_80386,
         TASK_SWITCH_TASK_GATE_REJECTION_NOT_PRESENT);
     failed |= task_switch_expect_fault(CORE_MACHINE_CPU_PROFILE_80286,
         TASK_SWITCH_CASE_INVALID_SELECTOR, VCPUINS_EXCEPT_GP, 0x0040u);
     failed |= task_switch_expect_fault(CORE_MACHINE_CPU_PROFILE_80286,
         TASK_SWITCH_CASE_NOT_PRESENT, VCPUINS_EXCEPT_NP, 0x0030u);
+    failed |= task_switch_expect_fault(CORE_MACHINE_CPU_PROFILE_80286,
+        TASK_SWITCH_CASE_BUSY, VCPUINS_EXCEPT_GP, 0x0030u);
+    failed |= task_switch_expect_fault(CORE_MACHINE_CPU_PROFILE_80286,
+        TASK_SWITCH_CASE_SHORT_TSS, VCPUINS_EXCEPT_TS, 0x0030u);
+    failed |= task_switch_expect_fault(CORE_MACHINE_CPU_PROFILE_80286,
+        TASK_SWITCH_CASE_LDT_NOT_PRESENT, VCPUINS_EXCEPT_NP, 0x0040u);
     failed |= task_switch_expect_fault(CORE_MACHINE_CPU_PROFILE_80386,
         TASK_SWITCH_CASE_BUSY, VCPUINS_EXCEPT_DF, 0u);
     failed |= task_switch_expect_fault(CORE_MACHINE_CPU_PROFILE_80386,
