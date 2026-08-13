@@ -22,7 +22,7 @@ C_INT main(C_VOID)
 {
     const core_machine_vadp_ega_sequencer_config config = {
         CORE_MACHINE_VADP_EGA_APERTURE_BASE, CORE_MACHINE_VADP_EGA_APERTURE_BYTES,
-        0x03u, 0x00u, 0x0fu, 0x02u
+        0x03u, 0x00u, 0x0fu, 0x02u, TYPE_FALSE
     };
     t_port port;
     t_ram memory;

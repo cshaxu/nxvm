@@ -2,8 +2,29 @@
 
 ## Current Work
 
-**Idle.** M5 T345 remains open; S1 is closed. T345 S2 requires a separately
-admitted packet.
+**Active.** M5 T345 S2 promotes only the pure project-owned current-gate test
+targets identified by S1 to target-local strict GCC compilation.
+
+## M5 T345 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved 2026-08-13 the admitted T345 strictness-convergence task and its holistic implementation. S1 evidence bounds this continuation to pure project-owned test targets only. |
+| Objective | Promote every current-gate executable whose direct C sources are exclusively project-owned `tests/` sources to target-local `-Wall -Wextra -Wpedantic -Werror`, remediate its direct warnings, and prove actual Ninja coverage. |
+| Non-goals | Do not promote a target that directly compiles production source, add a global flag, suppress a warning, change runtime behavior, alter fixture architecture, repair inherited/mixed production, or modify docs/rules. |
+| Reference Baseline | `e5140f39`; T345 S1 fixed 121 owner-test rows, of which 118 targets are pure and 3 owner-test rows share targets with six embedded production rows. The pure cohort has 18 warnings in 11 sources. |
+| Candidate Proposal | [M5 direct-compilation strictness convergence](../proposals/m5-direct-compilation-strictness-convergence.md), S2. |
+| Files And ABI Surface | CMake target-local options and T345 verifier/evidence/history/state records; the 11 warning-owning project test sources only if required. No public or runtime ABI surface. |
+| Applicable Rules | Task Reading Set; Execution lifecycle, similar-issue sweep, and closure review; Coding test boundaries and project vocabulary; Documentation authority boundaries. Architecture runtime invariants are preserved because no production behavior changes. |
+| Verification | Fresh GCC configure; exact pure-cohort inventory; actual Ninja command verifier proving all four flags on every promoted direct test source and no promotion of mixed targets; focused affected smokes; specialized gates; documentation governance; diff check; full current-gate. |
+| Expected Markers | A mechanical S2 verifier reports the exact promoted target/source count and zero mixed-target promotions; affected smoke markers and current-gate pass. |
+| Asset Needs | No external source, firmware, guest media, or protected asset. |
+| Reporting Requirements | Record promoted targets/sources, every repaired warning class/source, actual command proof, and the three owner-test rows intentionally retained with their embedded-production targets. Report any warning requiring test semantic or shared-fixture change. |
+| Stop Conditions | Stop if a pure target contains an unclassified non-test direct source, a warning repair changes test/runtime semantics, or a target-local option reaches embedded production source. Transfer rather than weaken `-Werror`. |
+| Exit Criteria | Every S1-proven pure owner-test target is directly strict and warning-clean; all 18 baseline warnings are resolved without suppression; the 3 mixed owner-test rows remain unpromoted and are explicitly carried into S3; required gates pass. |
+| Original Owner Request | Holistically consume T344's deferred strict-compilation surface, rather than leaving 175 untracked rows or repairing warnings one at a time. |
+| Similar-Issue Sweep | Recompute the entire T345 owner-test target partition from actual target sources. Reject a pure/mixed mismatch and inspect every baseline warning, not only the first failing smoke. |
 
 ## Current Technical Baseline
 

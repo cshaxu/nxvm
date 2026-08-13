@@ -6,9 +6,14 @@ if(NOT DEFINED PROJECT_T345_OWNERSHIP_MATRIX_FILE OR
         NOT EXISTS "${PROJECT_T345_OWNERSHIP_MATRIX_FILE}")
     message(FATAL_ERROR "T345 deferred ownership matrix is required.")
 endif()
+if(NOT DEFINED PROJECT_T345_S2_TARGETS_FILE OR
+        NOT EXISTS "${PROJECT_T345_S2_TARGETS_FILE}")
+    message(FATAL_ERROR "T345 S2 target inventory is required.")
+endif()
 
 file(STRINGS "${PROJECT_T345_T344_MATRIX_FILE}" project_t345_t344_rows)
 file(STRINGS "${PROJECT_T345_OWNERSHIP_MATRIX_FILE}" project_t345_ownership_rows)
+file(STRINGS "${PROJECT_T345_S2_TARGETS_FILE}" project_t345_s2_targets)
 set(project_t345_expected_keys)
 foreach(project_t345_row IN LISTS project_t345_t344_rows)
     string(REPLACE "|" ";" project_t345_fields "${project_t345_row}")
@@ -19,7 +24,11 @@ foreach(project_t345_row IN LISTS project_t345_t344_rows)
     list(GET project_t345_fields 0 project_t345_target)
     list(GET project_t345_fields 1 project_t345_source)
     list(GET project_t345_fields 2 project_t345_status)
-    if(project_t345_status STREQUAL "deferred")
+    list(FIND project_t345_s2_targets "${project_t345_target}" project_t345_s2_target_index)
+    if(project_t345_status STREQUAL "deferred" OR
+            (project_t345_status STREQUAL "retained-strict" AND
+            NOT project_t345_s2_target_index EQUAL -1 AND
+            project_t345_source MATCHES "^tests/"))
         list(APPEND project_t345_expected_keys "${project_t345_target}|${project_t345_source}")
     endif()
 endforeach()
@@ -68,6 +77,7 @@ endforeach()
 
 list(LENGTH project_t345_expected_keys project_t345_expected_count)
 list(LENGTH project_t345_seen_keys project_t345_seen_count)
+list(LENGTH project_t345_s2_targets project_t345_s2_target_count)
 if(NOT project_t345_seen_count EQUAL project_t345_expected_count)
     message(FATAL_ERROR "T345 ownership matrix has ${project_t345_seen_count} rows; expected ${project_t345_expected_count}.")
 endif()
@@ -77,5 +87,8 @@ if(NOT project_t345_owner_test_count EQUAL 121 OR
         NOT project_t345_mixed_count EQUAL 47)
     message(FATAL_ERROR
         "Unexpected T345 ownership counts: tests=${project_t345_owner_test_count}, embedded=${project_t345_embedded_count}, type=${project_t345_type_count}, mixed=${project_t345_mixed_count}.")
+endif()
+if(NOT project_t345_s2_target_count EQUAL 118)
+    message(FATAL_ERROR "T345 S2 target inventory has ${project_t345_s2_target_count} entries; expected 118.")
 endif()
 message(STATUS "T345 deferred ownership passed: ${project_t345_seen_count} rows (121 owner tests, 6 embedded production tests, 1 type foundation, 47 mixed/inherited production).")

@@ -227,7 +227,6 @@ static C_INT setcc_test_pre_fault_nonpublication(C_VOID)
     t_cpu after;
     core_machine_cpu_diagnostic diagnostic;
     core_machine_run_result result;
-    type_status status;
     C_INT failed = !setcc_prepare(CORE_MACHINE_CPU_PROFILE_80286, &state);
 
     if (!failed) {

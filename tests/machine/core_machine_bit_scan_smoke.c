@@ -30,8 +30,13 @@ static const core_machine_execution_provider scan_execution={scan_reset,STD_NULL
 static C_INT scan_prepare(core_machine_cpu_profile profile,scan_provider *provider,
     scan_machine *state)
 {
-    const core_machine_config config={CORE_MACHINE_MINIMUM_MEMORY_BYTES,profile,CORE_MACHINE_FPU_PROFILE_NONE};
-    if(state==STD_NULL)return 0;STD_MEMSET(state,0,sizeof(*state));
+    const core_machine_config config = {
+        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .cpu_profile = profile,
+        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
+    };
+    if (state == STD_NULL) return 0;
+    STD_MEMSET(state, 0, sizeof(*state));
     if(core_machine_create(&config,&state->machine)!=TYPE_STATUS_OK||
         (provider!=STD_NULL&&test_core_machine_fixture_register_memory_device_provider(state->machine,
             SCAN_PROVIDER_ADDRESS,4u,scan_read,scan_write,scan_query,provider)!=TYPE_STATUS_OK)||
@@ -66,7 +71,8 @@ static C_INT scan_test_forms(C_VOID)
         const type_unsigned_32 expected=opcode? (width?31u:15u):5u;
         scan_machine state;t_cpu after;core_machine_cpu_diagnostic diagnostic;type_unsigned_32 read=0u;
         C_INT failed=!scan_prepare(CORE_MACHINE_CPU_PROFILE_80386,STD_NULL,&state);
-        if(memory&&width)code[bytes++]=0x67u;if(width)code[bytes++]=0x66u;
+        if (memory && width) code[bytes++] = 0x67u;
+        if (width) code[bytes++] = 0x66u;
         code[bytes++]=0x0fu;code[bytes++]=opcodes[opcode];
         if(memory){code[bytes++]=0x0eu;if(width){}else{code[bytes++]=0x00u;code[bytes++]=0x40u;}}
         else code[bytes++]=0xc8u;
@@ -75,7 +81,8 @@ static C_INT scan_test_forms(C_VOID)
             state.machine->executor_cpu.data.ecx=0xaabbccddu;
             state.machine->executor_cpu.data.esi=0x4000u;
             state.machine->executor_cpu.data.eflags=flags;
-            failed|=memory&&core_machine_memory_write(state.machine,0x4000u,&source,width?4u:2u)!=TYPE_STATUS_OK||
+            failed |= (memory && core_machine_memory_write(state.machine, 0x4000u,
+                &source, width ? 4u : 2u) != TYPE_STATUS_OK) ||
                 !scan_run_real(&state,code,bytes,0,&after,&diagnostic)||diagnostic.first_fault.valid;
             if(!zero)failed|=(width?after.data.ecx:(after.data.ecx&0xffffu))!=expected||
                 TYPE_GET_BIT(after.data.eflags,VCPU_EFLAGS_ZF);

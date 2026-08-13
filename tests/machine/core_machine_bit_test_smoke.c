@@ -60,8 +60,11 @@ static const core_machine_execution_provider bit_provider = {bit_reset,STD_NULL,
 static C_INT bit_prepare(core_machine_cpu_profile profile, bit_memory_provider *provider,
     bit_machine *state)
 {
-    const core_machine_config config = {CORE_MACHINE_MINIMUM_MEMORY_BYTES,profile,
-        CORE_MACHINE_FPU_PROFILE_NONE};
+    const core_machine_config config = {
+        .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
+        .cpu_profile = profile,
+        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
+    };
     if (state == STD_NULL) return 0;
     STD_MEMSET(state,0,sizeof(*state));
     if (core_machine_create(&config,&state->machine) != TYPE_STATUS_OK ||

@@ -65,3 +65,21 @@ overlength string.  The largest clusters are inherited CPU executor,
 xasm/debug, and Console sources; owner-test warnings are limited to eleven
 sources.  Later S units must use this baseline to group a genuinely common
 owner mechanism, rather than applying per-file warning suppressions.
+
+## S2 Pure Owner-Test Strict Cohort
+
+S2 recomputes the partition from target source lists, before adding any
+options.  It promotes 118 targets whose complete direct C source set is under
+`tests/`; the actual T344 Ninja verifier reports 248 retained-strict and 57
+deferred rows after promotion.  The three owner-test sources compiled by mixed
+targets remain deferred with their six embedded production rows:
+`core-product-xasm-contract-smoke`,
+`core-product-debug-input-failure-smoke`, and
+`vm-product-console-input-failure-smoke`.
+
+All 18 project-test warning instances were corrected without suppression or
+test-contract changes: designated initializers preserve prior zero-valued
+configuration fields, dead locals/labels were removed, and compact conditions
+were parenthesized or separated without changing evaluation.  The combined
+T344 actual-command verifier and T345 ownership verifier prove both the four
+target-local flags on every promoted source and the retained mixed boundary.
