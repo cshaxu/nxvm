@@ -2,8 +2,29 @@
 
 ## Current Work
 
-**Idle.** T349 is closed; the next PC/AT platform-signals receiver requires a
-separately admitted packet.
+M5 T350 S1 - PC/AT platform-signals manual-to-source completeness ledger
+(Single-Session Mode).
+
+## M5 T350 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner approved continuous holistic device/L3 completion after T349 closure `f9225093` on 2026-08-13. |
+| Objective | Build the finite Intel 8254, Motorola MC146818A, and IBM PC/AT signal ledger: counters/gates/output, channel-0 IRQ0, channel-2/port-61/PPI/speaker, calendar/periodic/update/alarm/register-C/IRQ8, CMOS index-NMI mask, and parity/I/O-channel NMI sources. Map each row to source, reset/finalize, consumer, proof, S2--S4 receiver, or named transfer. |
+| Non-goals | No speculative speaker/PPI or NMI implementation, host audio/wall clock, RTC-to-NMI route, CPU delivery redesign, firmware rewrite, arbitrary board wiring, external source import, x87, or Windows claim. |
+| Reference Baseline | `f9225093` / T349 closed; [platform-signals proposal](../proposals/m5-pcat-platform-signals.md), [T346 L3 audit](../etc/evidence/t346-s1-core-machine-device-l3-audit.md), [T349 lifecycle evidence](../etc/evidence/t349-s4-pcat-pic-lifecycle.md), and [PC/AT profile boundary](../etc/architecture/pc-at-profile.md). |
+| Candidate Proposal | [PC/AT platform signals: PIT, PPI, RTC, and NMI](../proposals/m5-pcat-platform-signals.md). |
+| Files And ABI Surface | Expected: one S1 ledger, supporting-document index, Current, T350 history, proposal/Queue wording only if the ledger exposes a receiver correction. No runtime, public ABI, or external asset change. |
+| Applicable Rules | Task Reading Set; deterministic `DMA -> PIT -> PIC -> FDC -> HDC -> RTC -> KBC -> VADP` order; one owner per mutable signal; PC/AT profile policy stays in VM; source policy; primary-manual and project-owned probe discipline. |
+| Verification | Reproduce the source/port/timeline/reset/finalize/consumer sweep mechanically; cross-check current PIT/RTC/CMOS/NMI tests and primary manuals; verify every adopted or transferred row once, proposal/Queue links, governance, and diff check. |
+| Expected Markers | Retain PIT waveform/readback/divider, RTC/CMOS, NMI delivery, T346 timeline, and T349 PIC lifecycle markers; S1 adds a ledger rather than a runtime marker. |
+| Asset Needs | Published Intel 8254, Motorola MC146818A, and IBM PC/AT technical-reference material only; no firmware, guest media, or copied reference source. |
+| Reporting Requirements | Record manual authority, implementation owner, writer/reader, signal direction, timing/reset/finalize semantics, proof, residual risk, and exact next receiver for every row. |
+| Stop Conditions | Stop for a needed generic CPU/NMI delivery change, host-time/audio integration, source-provider ABI change, ambiguous PC/AT board wiring, third-party source import, or an unbounded new device. |
+| Exit Criteria | Every selected platform signal is classified as accepted proof, S2--S4 receiver, or explicit Queue/TODO transfer with admission condition; no current source/consumer/lifecycle route is unowned or unclassified. |
+| Original Owner Request | Make core-machine devices stable, comprehensive, and reliable at deterministic L3 before deciding any Windows execution route. |
+| Similar-Issue Sweep | Inspect all PIT/RTC/CMOS/NMI/PPI registrations, port callbacks, gates/output transitions, IRQ/NMI assertions, timeline advance entries, reset/finalize routes, VM profile declarations, and existing device tests. |
 
 ## Current Technical Baseline
 

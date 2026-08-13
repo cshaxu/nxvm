@@ -65,6 +65,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t349-s2-pcat-pic-command-priority.md` | Verification owner | T349 S2 dual-8259A command, priority, cascade selection, and acknowledgement reconciliation. Retain with T349 history at task closure. |
 | `evidence/t349-s3-pcat-pic-ocw3.md` | Verification owner | T349 S3 OCW3 poll, status-read, special-mask, and SFNM state-machine reconciliation. Retain with T349 history at task closure. |
 | `evidence/t349-s4-pcat-pic-lifecycle.md` | Verification owner | T349 S4 PIC source lifecycle, level/cascade composition, deterministic-L3 spurious boundary, and producer reset/finalize reconciliation. Retain with T349 history at task closure. |
+| `evidence/t350-s1-pcat-platform-signals-ledger.md` | Verification owner | T350 S1 8254/MC146818/IBM-PC/AT platform-signal owner, proof, lifecycle, and receiver ledger. Retain with T350 history at task closure. |
 | `operations/` | Execution, source, and release owners | Toolchain, policy, templates, release procedure, and closure material. |
 | `research/` | Source owner | Provenance, external references, and non-product research. |
 | `history/` | Documentation owner | Read-only legacy and M5 migration/roadmap evidence. |
