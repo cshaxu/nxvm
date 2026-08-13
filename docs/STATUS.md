@@ -2,7 +2,29 @@
 
 ## Current Work
 
-**Idle.** M5 T330 is closed; the next Queue candidate requires a separately admitted task packet.
+**Active: M5 T330 S4.** Remove the residual unreachable 32-bit task-transition
+construction so the T330 plan is the sole private 80386 task-transition model
+(Ordinary Mode; corrective reopening approved by the owner).
+
+## M5 T330 S4 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Corrective; T330 is the most recently closed numeric task, and S4 is its next unused subtask. |
+| Admission And Approval | Owner approved reopening T330 on 2026-08-12 after the whole-source construction audit found a residual duplicate task-transition model; scope is the first of four ordered corrective S tasks. |
+| Objective | Delete the unreachable legacy private 32-bit task-transition plan/commit/wrapper and prove `_ser_task_transition_tss_plan` remains the sole private 80386 task-transition construction path, without changing accepted task-switch behavior. |
+| Non-goals | No Intel TSS-layout rewrite, new task-switch semantics, generic descriptor/memory/exception change, call-gate change, media-provider change, or new architecture package. |
+| Reference Baseline | `1e0a9f362684ae6de7da1b6e30b105cde2978265` / `vm-0-5-0330`; read current T330 history and width-path inventory before implementation. |
+| Files And ABI Surface | `src/core/machine/cpu_instructions.c`, CMake/static-verifier material if needed, T330 evidence/history, and `docs/STATUS.md`; private implementation only, no public ABI or CPU state-layout change. |
+| Applicable Rules | `docs/rules/EXECUTION.md` corrective allocation, P lifecycle, similar-issue sweep, and actual-change review; architecture and coding rules; source layout; documentation rules on closure. The invariant is one private construction owner per task-transition mechanism while real 286/386 layouts remain explicit. |
+| Verification | Fresh GCC configure; focused `core-machine-task-switch-smoke`; mechanical source closure proving the removed legacy names have no definition/reference and the actual task entry routes converge through `_ser_task_transition_tss_plan`; current-gate; documentation governance; `git diff --check`. |
+| Expected Markers | Existing `M5:T330:S1:TASK-TRANSITION:OK` remains green; a committed static verifier, if added, reports its own deterministic success marker. |
+| Asset Needs | None; no external source, guest media, firmware, or reference implementation. |
+| Reporting Requirements | Ordinary Mode: contract confirmation, then one complete pushed implementation P with requirement-to-proof evidence; coordinator-side actual-change review and a separate governance P on acceptance. |
+| Stop Conditions | Stop before changing shared descriptor, memory, exception, or task-entry semantics; stop and revise the packet if deletion exposes a live caller, changes a required Intel fault/order boundary, or needs an external source import. |
+| Exit Criteria | The legacy 32-bit plan/commit/wrapper is absent, no task entry bypasses the canonical plan, all retained task-switch evidence and gates pass, and the T330 inventory/history accurately record this corrective closure. |
+| Original Owner Request | Reopen T330 and implement the four audited items as four ordered S tasks, beginning now. |
+| Similar-Issue Sweep | Audit all task-transition constructors and all callers of task plan/commit helpers in `src/core/machine/cpu_instructions.c`; classify every hit as canonical, deleted, or Intel-required layout helper. |
 
 ## Current Technical Baseline
 
