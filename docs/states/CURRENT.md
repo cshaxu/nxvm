@@ -2,29 +2,29 @@
 
 ## Current Work
 
-**M5 T340 S1 - active.** Freeze the complete 80386DX width, prefix, and
-non-privileged integer-form ledger before implementation begins.
+**M5 T340 S2 - active.** Reconcile residual 80386DX prefix, operand/address,
+and FS/GS form evidence at their shared mechanism owners.
 
-## M5 T340 S1 Packet
+## M5 T340 S2 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | The owner approved Queue-ordered single-agent implementation through four-profile cross-closure verification on 2026-08-13. T339 is closed (`9a5036e3`); Td S81 removed the duplicate pre-386 `LOCK` candidate, so this Queue candidate receives the next linear numeric identifier. |
-| Objective | Produce the complete 80386DX residual width/prefix/integer form and mechanism ledger from metadata, dispatch, current owner smokes, and the T336/T339 transfers. Allocate every in-scope row to bounded T340 follow-up S work or exactly to the later 80386DX system-state candidate; no runtime implementation occurs in S1. |
-| Non-goals | No opcode handler, prefix, decoder, CMake, test, production, artifact, or rule change; no CR/DR/TR privilege, VM86, paging, task, breakpoint, VME/PVI, x87, timing, device, or Windows claim. S1 does not use 80386 evidence to repair an earlier-profile row. |
-| Reference Baseline | `377f9d79` (`M5 Td S81 P1: withdraw duplicate LOCK candidate`), accepted T339 closure audit, T336 four-profile ledger, 80386DX closure map, and the Queue-linked 80386DX width/prefix/integer proposal. |
+| Identifier Mode | Continuation |
+| Admission And Approval | The owner approved Queue-ordered single-agent implementation through four-profile cross-closure verification on 2026-08-13. T340 S1 allocation was accepted and pushed as `11d811e7`; this S is the dependency-safe next mechanism owner from its indexed ledger. |
+| Objective | Reconcile every T340-assigned residual `66`/`67`, prefix-composition, and FS/GS form row against metadata, dispatch, and actual owner-smoke proof. Where a shared prefix, operand/address, or FS/GS form mechanism is incomplete, repair it at that mechanism owner and prove its complete bounded matrix; otherwise record the accepted proof without duplicating historical tests. |
+| Non-goals | No CR/DR/TR privilege, descriptor/table cache policy, 32-bit gates/frames, VM86, paging, task, debug/breakpoint, VME/PVI, x87, timing, device, Windows, or earlier-profile repair. Do not turn the S into an every-opcode Cartesian product or change rules. |
+| Reference Baseline | `11d811e7` (`M5 T340 S1 P1: allocate 80386DX form closure`), its indexed allocation ledger, accepted T316 S64/T328 prefix evidence, T316 FS/GS owner smokes, T310/T322 reconciliation, and T339 selector/cache transfer evidence. |
 | Candidate Proposal | [80386DX width, prefix, and integer-form closure](../proposals/m5-80386dx-width-integer-closure.md), [four-profile CPU-completeness program](../proposals/m5-four-profile-cpu-completeness-program.md), and [80386DX admission policy](../proposals/m5-80386dx-candidate-policy.md). |
-| Files And ABI Surface | Expected: T340 history, indexed allocation evidence, Queue-linked CPU proposals, the supporting-document index, and Current only. No source, CMake, test, public ABI, artifact, device, or product boundary change. |
-| Applicable Rules | `docs/rules/EXECUTION.md`: complete allocation P, source/evidence/transfer sweep, actual-change review. `docs/rules/ARCHITECTURE.md`: one mechanism owner and explicit true width/layout differences. `docs/rules/DOCUMENT.md`: Current/history/evidence ownership and index coverage. |
-| Verification | Audit primary and `0F` metadata/dispatch, prefix and operand/address decode, FS/GS routes, state writers, current strict smoke registration, T316/T310/T322/T336/T339 evidence, and every T341/T342 transfer. Record a finite mechanism table, exact follow-up S breakdown, non-goals, stop boundaries, historic-proof disposition, and no unowned partial row. Run documentation governance and diff check. |
-| Expected Markers | One indexed T340 S1 allocation ledger maps every residual 80386DX width/prefix/non-privileged integer row to a T340 S or T341 system-state transfer; a later S cannot claim a form family closed while an in-scope row remains unclassified. |
+| Files And ABI Surface | Expected: prefix/decode or owner smoke sources only if an actual in-scope defect is reproduced; their CMake registration only if a dedicated owner test is required; T340 evidence/history/index and Current. No public ABI, artifact, device, product, or rules change. |
+| Applicable Rules | `docs/rules/EXECUTION.md`: complete P, similar-issue sweep, actual-change review. `docs/rules/ARCHITECTURE.md`: one mechanism owner and retained true width/layout differences. `docs/rules/CODING.md`: project types, bounded publication, and test ownership. `docs/rules/DOCUMENT.md`: Current/history/evidence ownership and index coverage. |
+| Verification | Inspect all primary/`0F` 80386 metadata rows using `66`/`67` or FS/GS; prefix loop, `_GetOperandSize`, address decoder, selector/cache routes, `LOCK` classification, and all owner-smoke/CMake registrations named in the S1 ledger. Compare exact form, EIP, width, segment selection, defined FLAGS, publication, fault/restart, and IRQ proof. If changed, run focused proof, strict target compile, documentation governance, diff check, and full current gate. |
+| Expected Markers | An indexed S2 reconciliation records one actual-proof or concrete defect disposition for every S1 prefix/width/FS-GS row; any repair names the shared owner and a complete similar-issue sweep. No state-owner row is claimed closed. |
 | Asset Needs | Intel 80386 architecture manuals already used by project evidence. No guest media, firmware, third-party source, binary, or trace. |
-| Reporting Requirements | Deliver one complete pushed allocation P with the source/form/owner inventory, bounded S breakdown, current evidence disposition, exact transfers, and no runtime-completion claim. |
-| Stop Conditions | Stop if a row requires CR/DR/TR privilege, VM86, paging, task, debug/breakpoint, generic delivery redesign, a prior-profile repair, or Intel classification cannot be established; transfer it to the earliest owner rather than enlarging T340. |
-| Exit Criteria | Every T340-assigned residual row has one planned mechanism owner and future S, every excluded state row has an exact T341/T342 or TODO owner, the proposed S sequence is dependency-safe, documentation gates pass, and the P is committed and pushed. |
+| Reporting Requirements | Deliver one complete pushed P with the row-by-row disposition, actual source/test review, any bounded repair and sweep, gates, and exact T341 transfer. Do not report a smoke count as a family closure. |
+| Stop Conditions | Stop if a row requires CR/DR/TR privilege, descriptor/table cache policy, gate/frame layout, VM86, paging, task, debug/breakpoint, generic delivery redesign, a prior-profile repair, or Intel classification cannot be established; transfer it to T341 or the earliest owner rather than enlarging S2. |
+| Exit Criteria | Every S1 prefix/width/FS-GS residual row has accepted actual proof, a bounded in-scope repair with proof, or one exact T341/earlier-owner transfer; no invented duplicate test remains; the evidence/index/history and Current progress are updated; all required gates pass; and the P is committed and pushed. |
 | Original Owner Request | Implement the Queue in order, in single-agent mode and with a holistic view, through four-profile cross-closure verification. |
-| Similar-Issue Sweep | Search all `0F` and primary metadata entries at profile 80386, prefix classification and `_GetOperandSize`/address decode, FS/GS selector routes, integer/FLAGS helpers and writers, owner smokes/CMake registrations, T316/T310/T322/T336/T339 evidence, Queue, TODO, and 80386DX closure map. |
+| Similar-Issue Sweep | Search every `PREFIX_*`, `66`/`67` profile gate, `_GetOperandSize`, address-size route, FS/GS read/write/selector consumer, `LOCK` route, and current owner smoke/CMake registration. Classify each production hit as proven, repaired, or exactly transferred; exclude privileged state only with its T341 receiver. |
 
 ## Current Technical Baseline
 

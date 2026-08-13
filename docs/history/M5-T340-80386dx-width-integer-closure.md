@@ -21,3 +21,7 @@ The indexed [S1 allocation ledger](../etc/evidence/t340-s1-80386dx-form-state-al
 is the durable form-to-mechanism record. It distinguishes accepted bounded
 ordinary evidence from genuinely residual width/prefix work and transfers
 privileged state without renumbering historical proof.
+
+S1 was accepted through the complete documentation and transfer review. Its
+implementation delivery is `11d811e7`; S2 now owns only the prefix,
+operand/address, and FS/GS reconciliation specified by that ledger.
