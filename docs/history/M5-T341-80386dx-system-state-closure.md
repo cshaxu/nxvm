@@ -21,3 +21,7 @@ privilege, mode, and publication boundaries match the T341 row.
 
 The indexed allocation ledger determines the later bounded mechanism S work.
 It cannot close a runtime row or introduce a new execution path.
+
+S1 was accepted through source, evidence, and focused-owner review. Its
+implementation delivery is `b4d4251c`; S2 now owns only the CR/DR/TR/LDT/table
+reconciliation defined by that ledger.
