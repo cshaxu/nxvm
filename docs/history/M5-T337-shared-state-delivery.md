@@ -44,3 +44,14 @@ documentation governance, diff check, and 217/217 direct current-gate tests
 pass. The T337 developer artifact is `build/output/nxvm_0_5_0337.exe`
 (`vm-0-5-0337`, banner `0.5.0337`), SHA-256
 `342FFC183170169729B5BDEE8F4F3512EB86FD27B4EF979D875466927B75E4F0`.
+
+## S3 Result
+
+S3 completed the required task-level closure audit. The original proposal's
+common exception, IRQ/NMI, frame-layout, privilege/TSS-stack, rollback,
+inhibition, and task-debug rows are mapped to retained T321/T326/T329/T331 and
+T337 evidence. Intel-required pre-instruction, post-instruction, and
+post-commit timing distinctions remain separate constructions. DR6/DR7 has
+one 80386DX owner; reset/shutdown/triple-fault has one bounded CPU/machine
+TODO; VME/PVI remains outside the four-profile program. The audit is retained
+in [T337 S3 evidence](../etc/evidence/t337-s3-task-closure-audit.md).

@@ -2,8 +2,30 @@
 
 ## Current Work
 
-**Idle.** T337 remains open. S1 and S2 are accepted; any remaining shared-
-delivery work requires a separately admitted packet.
+**M5 T337 S3 - active.** Perform the task-level closure audit for shared CPU
+state and delivery foundations; verify every original proposal row is proven
+or transferred once before closing T337 and advancing the Queue.
+
+## M5 T337 S3 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | The owner approved on 2026-08-13 Queue-ordered single-agent implementation through four-profile cross-closure. T337 S1 (`742c6f01`) and S2 (`e47ccb3b`, accepted in `10bf5f3c`) are complete. This S is the required T-level closure audit; it may not add runtime scope. |
+| Objective | Re-read the original shared-delivery proposal, T336 ledger, S1/S2 evidence, current source/CMake enforcement, Queue, and TODO. Map every proposal completion row to current proof or a single named transfer; audit code quality, documentation ownership, artifact identity, and open debt; retain a concise task-closure record that makes later profile packages' dependency on T337 explicit. |
+| Non-goals | No CPU, device, test semantic, ABI, artifact-version, Queue-order, or rule change except the normal task-closure moves and compact Current/history/proposal retention records. No new shared mechanism, DR6/DR7 matching, reset/shutdown/triple-fault implementation, VME/PVI, x87 execution, or profile instruction form. |
+| Reference Baseline | `10bf5f3c` (`M5 T337 S2 P2: accept shared delivery reconciliation`), current developer artifact `vm-0-5-0337` / `0.5.0337`. |
+| Candidate Proposal | [Shared CPU state and delivery foundations](../proposals/m5-cpu-shared-state-delivery.md); [four-profile CPU-completeness program](../proposals/m5-four-profile-cpu-completeness-program.md). |
+| Files And ABI Surface | Expected: one T337 closure-audit evidence record, T337 history, Current, Queue, proposal-to-history retention move, and no production/test/CMake behavior edit. No ABI or runtime artifact change. |
+| Applicable Rules | `docs/rules/EXECUTION.md`: task-level closure, actual-change review, transfer/identifier/commit lifecycle. `docs/rules/DOCUMENT.md`: proposal/history/Current/Queue ownership and compact retention. `docs/rules/ARCHITECTURE.md`: one owner per delivery transition. |
+| Verification | Compare every original proposal row with S1/S2 evidence and current production route; check Queue/TODO have exactly one transfer for every excluded residual; run documentation governance and diff check. Reconfirm `vm-0-5-0337` identity via the artifact verifier and ensure the previous 217/217 gate result is accurately linked, not rerun as a substitute for audit. |
+| Expected Markers | A closure audit table has no unclassified proposal row; T337 history and retained proposal record one exact result/transfer; Current has no active T337 packet after acceptance; Queue advances to 8086/80186 closure without duplicate shared-delivery candidate. |
+| Asset Needs | No new assets, guest media, firmware, external source, binary, or trace. |
+| Reporting Requirements | Deliver one complete pushed documentation P with the original-row map, exact current evidence, all transfers, closure decision, governance/artifact/diff results, and no runtime claim. Report an unclassified proposal row or incompatible ownership before closure. |
+| Stop Conditions | Stop if any original shared-delivery row lacks proof or an exact Queue/TODO owner, if closing requires a new runtime mechanism, or if proposal/history retention would lose evidence. Admit a bounded continuation instead of closing T337. |
+| Exit Criteria | Every original proposal completion row is proven or transferred exactly once; the task-level audit covers source/CMake/docs/debt/artifact identity; documentation ownership and mechanical gates pass; P is committed and pushed; then the governance P truthfully closes S3 and T337. |
+| Original Owner Request | Implement the Queue in order, in single-agent mode and with a holistic view, through four-profile cross-closure verification. |
+| Similar-Issue Sweep | Check all T337 history/evidence/proposal/Queue/TODO references; search current production/CMake for `ExecFinal`, `ExecInt`, `_e_except_n`, `_e_intr_n`, `VCPUINS_EXCEPT_UD`, `VCPUINS_EXCEPT_DB`, reset/shutdown/triple-fault terms, and the current artifact target. |
 
 ## Current Technical Baseline
 
