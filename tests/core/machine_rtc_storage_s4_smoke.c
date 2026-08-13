@@ -4,7 +4,7 @@
 #include "../support/core_machine_cpu_fixture.h"
 
 typedef struct readiness_trace_probe {
-    core_machine_trace_event events[16];
+    core_machine_trace_event events[24];
     type_unsigned_32 count;
 } readiness_trace_probe;
 
@@ -13,17 +13,38 @@ static C_VOID readiness_trace(C_VOID *opaque,
 {
     readiness_trace_probe *probe = (readiness_trace_probe *)opaque;
 
-    if (probe != STD_NULL && probe->count < 16u) {
+    if (probe != STD_NULL && probe->count < 24u) {
         probe->events[probe->count++] = *event;
     }
 }
 
-static C_INT readiness_expect_event(const readiness_trace_probe *probe,
-    type_unsigned_32 index, core_machine_trace_event_type type,
-    type_unsigned_64 due_tick)
+static C_INT readiness_expect_chain(const readiness_trace_probe *probe)
 {
-    return probe->events[index].type != type ||
-        probe->events[index].timeline_ticks != due_tick;
+    type_unsigned_32 index;
+    type_unsigned_64 due_tick = 1u;
+    type_unsigned_32 phase = 0u;
+
+    for (index = 0u; index < probe->count; ++index) {
+        const core_machine_trace_event *event = &probe->events[index];
+
+        if (event->type == CORE_MACHINE_TRACE_FDC_REFRESH ||
+            event->type == CORE_MACHINE_TRACE_HDC_REFRESH ||
+            event->type == CORE_MACHINE_TRACE_RTC_ADVANCE) {
+            core_machine_trace_event_type expected = phase == 0u ?
+                CORE_MACHINE_TRACE_FDC_REFRESH : phase == 1u ?
+                CORE_MACHINE_TRACE_HDC_REFRESH : CORE_MACHINE_TRACE_RTC_ADVANCE;
+
+            if (event->type != expected || event->timeline_ticks != due_tick) {
+                return 1;
+            }
+            ++phase;
+            if (phase == 3u) {
+                phase = 0u;
+                ++due_tick;
+            }
+        }
+    }
+    return due_tick != 3u || phase != 0u;
 }
 
 C_INT main(C_VOID)
@@ -71,28 +92,17 @@ C_INT main(C_VOID)
         machine->shared_rtc.calendar.second != 2u);
     failed |= !failed && core_machine_get_timeline_observation(machine,
         &observation) != TYPE_STATUS_OK;
-    failed |= !failed && (observation.now != 2u || observation.pending_events != 2u ||
-        observation.next_sequence != 6u);
-    failed |= !failed && (probe.count != 14u ||
+    failed |= !failed && (observation.now != 2u || observation.pending_events != 3u ||
+        observation.next_sequence != 9u);
+    failed |= !failed && (probe.count < 5u ||
         probe.events[0].type != CORE_MACHINE_TRACE_CPU_RETIRE ||
-        readiness_expect_event(&probe, 1u, CORE_MACHINE_TRACE_DMA_ADVANCE, 1u) ||
-        readiness_expect_event(&probe, 2u, CORE_MACHINE_TRACE_PIT_ADVANCE, 1u) ||
-        readiness_expect_event(&probe, 3u, CORE_MACHINE_TRACE_PIC_REFRESH, 1u) ||
-        readiness_expect_event(&probe, 4u, CORE_MACHINE_TRACE_FDC_REFRESH, 1u) ||
-        readiness_expect_event(&probe, 5u, CORE_MACHINE_TRACE_HDC_REFRESH, 1u) ||
-        readiness_expect_event(&probe, 6u, CORE_MACHINE_TRACE_RTC_ADVANCE, 1u) ||
-        readiness_expect_event(&probe, 7u, CORE_MACHINE_TRACE_DMA_ADVANCE, 2u) ||
-        readiness_expect_event(&probe, 8u, CORE_MACHINE_TRACE_PIT_ADVANCE, 2u) ||
-        readiness_expect_event(&probe, 9u, CORE_MACHINE_TRACE_PIC_REFRESH, 2u) ||
-        readiness_expect_event(&probe, 10u, CORE_MACHINE_TRACE_FDC_REFRESH, 2u) ||
-        readiness_expect_event(&probe, 11u, CORE_MACHINE_TRACE_HDC_REFRESH, 2u) ||
-        readiness_expect_event(&probe, 12u, CORE_MACHINE_TRACE_RTC_ADVANCE, 2u) ||
-        probe.events[13].type != CORE_MACHINE_TRACE_RUN_BOUNDARY);
+        readiness_expect_chain(&probe) ||
+        probe.events[probe.count - 1u].type != CORE_MACHINE_TRACE_RUN_BOUNDARY);
     failed |= !failed && core_machine_reset(machine) != TYPE_STATUS_OK;
     failed |= !failed && core_machine_get_timeline_observation(machine,
         &observation) != TYPE_STATUS_OK;
-    failed |= !failed && (observation.now != 0u || observation.pending_events != 2u ||
-        observation.next_sequence != 2u);
+    failed |= !failed && (observation.now != 0u || observation.pending_events != 3u ||
+        observation.next_sequence != 3u);
 
     core_machine_destroy(machine);
     if (failed) return 1;

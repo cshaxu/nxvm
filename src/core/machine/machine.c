@@ -324,24 +324,46 @@ static C_VOID core_machine_readiness_tick(C_VOID *opaque,
     }
 }
 
+/*
+ * Guest input and video state advance after the readiness boundary.  Host
+ * presentation consumes only copied snapshots outside this callback and does
+ * not participate in machine time.
+ */
+static C_VOID core_machine_peripheral_tick(C_VOID *opaque,
+    type_unsigned_64 due_tick)
+{
+    core_machine *machine = (core_machine *)opaque;
+    type_unsigned_64 kbc_ticks;
+    type_unsigned_64 vadp_ticks;
+    core_machine_timeline_token next;
+
+    if (machine == STD_NULL) {
+        return;
+    }
+    kbc_ticks = core_machine_clock_domain_advance(&machine->kbc_clock, 1u);
+    core_machine_kbc_advance(&machine->shared_kbc, kbc_ticks);
+    core_machine_trace_record(machine, CORE_MACHINE_TRACE_KBC_ADVANCE,
+        0u, (type_unsigned_32)kbc_ticks, 0u);
+    vadp_ticks = core_machine_clock_domain_advance(&machine->vadp_clock, 1u);
+    core_machine_vadp_advance(&machine->shared_vadp, &machine->executor_memory,
+        vadp_ticks);
+    core_machine_trace_record(machine, CORE_MACHINE_TRACE_VADP_ADVANCE,
+        0u, (type_unsigned_32)vadp_ticks, 0u);
+    if (due_tick != UINT64_MAX) {
+        (C_VOID)core_machine_timeline_schedule(&machine->timeline,
+            due_tick + 1u, core_machine_peripheral_tick, machine, &next);
+    }
+}
+
 static C_VOID core_machine_advance_scheduler(core_machine *machine,
     type_unsigned_64 elapsed_ticks)
 {
-    type_unsigned_64 vadp_ticks;
-    type_unsigned_64 kbc_ticks;
     type_unsigned_64 provider_ticks;
 
     (C_VOID)core_machine_timeline_advance(&machine->timeline,
         machine->elapsed_ticks);
-    vadp_ticks = core_machine_clock_domain_advance(&machine->vadp_clock,
-        elapsed_ticks);
-    kbc_ticks = core_machine_clock_domain_advance(&machine->kbc_clock,
-        elapsed_ticks);
     provider_ticks = core_machine_clock_domain_advance(&machine->provider_clock,
         elapsed_ticks);
-    core_machine_vadp_advance(&machine->shared_vadp, &machine->executor_memory,
-        vadp_ticks);
-    core_machine_kbc_advance(&machine->shared_kbc, kbc_ticks);
     if (machine->execution_provider != STD_NULL &&
         machine->execution_provider->advance_time != STD_NULL) {
         machine->execution_provider->advance_time(
@@ -1249,6 +1271,7 @@ static type_status core_machine_cold_reset(core_machine *machine)
     {
         core_machine_timeline_token first_arbitration;
         core_machine_timeline_token first_readiness;
+        core_machine_timeline_token first_peripheral;
 
         if (core_machine_timeline_schedule(&machine->timeline, 1u,
                 core_machine_arbitration_tick, machine,
@@ -1258,6 +1281,11 @@ static type_status core_machine_cold_reset(core_machine *machine)
         if (core_machine_timeline_schedule(&machine->timeline, 1u,
                 core_machine_readiness_tick, machine,
                 &first_readiness) != TYPE_STATUS_OK) {
+            return TYPE_STATUS_FAULT;
+        }
+        if (core_machine_timeline_schedule(&machine->timeline, 1u,
+                core_machine_peripheral_tick, machine,
+                &first_peripheral) != TYPE_STATUS_OK) {
             return TYPE_STATUS_FAULT;
         }
     }

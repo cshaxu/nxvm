@@ -2,9 +2,29 @@
 
 ## Current Work
 
-**Active.** M5 T346 remains open between accepted subtasks. S5 requires a
-separately admitted packet for input, display, and presentation timing; no
-implementation runs before that admission.
+**Active.** M5 T346 S5 migrates guest input/display clock consumption to the
+deterministic timeline and reconfirms the copied host-presentation boundary.
+
+## M5 T346 S5 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved continued completion of T346 on 2026-08-13; this packet admits only guest KBC/VADP clock migration and host-boundary reconciliation. |
+| Objective | Move KBC/AUX response/typematic and VADP guest display progression from the post-retirement batch scheduler to one reset-safe due-time peripheral callback; prove deterministic ordering and explicitly retain host presentation/input cadence outside guest time. |
+| Non-goals | No new AUX protocol, speaker/PPI, VGA/VBE, display-mode breadth, renderer, host input polling, thread, wall-clock, or platform policy change. No new host presentation cadence claim. |
+| Reference Baseline | `4f27846e` / M5 T346 S4 P2, clean worktree. |
+| Candidate Proposal | [M5 Core-Machine Device Parity And L3 Timing Convergence](../proposals/m5-core-machine-device-l3-convergence.md), S5. |
+| Files And ABI Surface | Expected: machine/trace private ownership, focused core smoke/CMake/evidence/CURRENT/history/TODO only. No platform or host-facing ABI. |
+| Applicable Rules | Task Reading Set; execution and actual-change review; architecture single guest-time owner and copied-host-boundary invariant; C11/project-type/strict owner-test rules; documentation topology. |
+| Verification | Fresh configure; focused S5 trace smoke; retained KBC/AUX/VADP/display, S2/S3/S4 timing smokes; exact registration; governance/diff checks; full current-gate. |
+| Expected Markers | New `M5:T346:S5:INPUT-DISPLAY-TIMELINE:OK`; retained markers remain unchanged. |
+| Asset Needs | No external source, firmware, guest media, host event, renderer, thread, or wall-clock asset. |
+| Reporting Requirements | Record old scheduler paths, new callback order/reset behavior, and every host presentation/input crossing. Commit and push the complete P only. |
+| Stop Conditions | Stop for platform/renderer/host-input policy change, a needed guest device semantic change beyond clock ownership, or an unclassified alternate KBC/VADP advance path. Do not turn a host refresh into guest time. |
+| Exit Criteria | KBC and VADP each have one timeline-owned machine advance path with reset replacement and trace proof; all host crossings are copied/snapshot boundaries or transfer entries; no batch scheduler call remains for the migrated guest domains. |
+| Original Owner Request | Produce a holistic, polished PC/AT-class core-machine device/L3 plan suitable for Windows 3.x research, excluding x87 execution. |
+| Similar-Issue Sweep | Search all KBC/VADP advance calls, guest input submission paths, display snapshot/presentation publication paths, and scheduler callbacks. Classify every hit as migrated, intentionally standalone test/controller use, host boundary, or TODO transfer. |
 
 ## Current Technical Baseline
 

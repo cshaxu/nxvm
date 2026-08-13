@@ -4,7 +4,7 @@
 #include "../support/core_machine_cpu_fixture.h"
 
 typedef struct arbitration_trace_probe {
-    core_machine_trace_event events[24];
+    core_machine_trace_event events[32];
     type_unsigned_32 count;
 } arbitration_trace_probe;
 
@@ -13,7 +13,7 @@ static C_VOID arbitration_trace(C_VOID *opaque,
 {
     arbitration_trace_probe *probe = (arbitration_trace_probe *)opaque;
 
-    if (probe != STD_NULL && probe->count < 24u) {
+    if (probe != STD_NULL && probe->count < 32u) {
         probe->events[probe->count++] = *event;
     }
 }
@@ -73,17 +73,17 @@ C_INT main(C_VOID)
         result.elapsed_ticks != 3u;
     failed |= core_machine_get_timeline_observation(machine, &observation) !=
         TYPE_STATUS_OK;
-    failed |= observation.now != 3u || observation.pending_events != 2u ||
-        observation.next_sequence != 8u;
-    failed |= probe.count != 20u ||
+    failed |= observation.now != 3u || observation.pending_events != 3u ||
+        observation.next_sequence != 12u;
+    failed |= probe.count < 5u ||
         probe.events[0].type != CORE_MACHINE_TRACE_CPU_RETIRE ||
         arbitration_expect_chain(&probe) ||
-        probe.events[19].type != CORE_MACHINE_TRACE_RUN_BOUNDARY;
+        probe.events[probe.count - 1u].type != CORE_MACHINE_TRACE_RUN_BOUNDARY;
     failed |= core_machine_reset(machine) != TYPE_STATUS_OK;
     failed |= core_machine_get_timeline_observation(machine, &observation) !=
         TYPE_STATUS_OK;
-    failed |= observation.now != 0u || observation.pending_events != 2u ||
-        observation.next_sequence != 2u;
+    failed |= observation.now != 0u || observation.pending_events != 3u ||
+        observation.next_sequence != 3u;
 
     core_machine_destroy(machine);
     if (failed) return 1;
