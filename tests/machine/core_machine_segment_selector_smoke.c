@@ -735,7 +735,6 @@ static C_INT segment_test_real_sreg_loads(C_VOID)
     for (index = 0u; index < sizeof(forms) / sizeof(forms[0]); ++index) {
         type_unsigned_8 code[] = { 0xb8u,0x34u,0x12u,0x8eu,forms[index].mov_modrm,0xf4u };
         segment_machine state;
-        t_cpu before;
         t_cpu cpu;
         const t_cpu_data_sreg *sreg;
 

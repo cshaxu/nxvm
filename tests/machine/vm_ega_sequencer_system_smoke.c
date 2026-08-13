@@ -30,7 +30,6 @@ C_INT main(C_VOID)
         CORE_MACHINE_VADP_EGA_APERTURE_BASE, &read_value,
         sizeof(read_value)) != TYPE_STATUS_OK || read_value != aperture_value;
 
-done:
     vm_session_destroy(session);
     if (failed) return 1;
     STD_PRINTF("M5:T235:S3:EGA-SEQUENCER:SYSTEM:OK\n");

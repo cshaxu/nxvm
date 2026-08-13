@@ -32,7 +32,6 @@ C_INT main(C_VOID)
     (C_VOID)core_machine_debug_read_port(session->core_machine, 0x03dau, &port_value);
     failed |= core_machine_debug_write_port(session->core_machine, 0x03c0u, 0x10u) != TYPE_STATUS_OK || core_machine_debug_read_port(session->core_machine, 0x03c1u, &port_value) != TYPE_STATUS_OK || port_value != 0x01u;
 
-done:
     vm_session_destroy(session);
     if (failed) return 1;
     STD_PRINTF("M5:T236:S3:EGA-CONTROLLER:SYSTEM:OK\n");

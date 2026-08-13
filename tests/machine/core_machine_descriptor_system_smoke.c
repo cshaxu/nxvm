@@ -249,10 +249,10 @@ static C_INT dt_test_msw_and_control_registers(C_VOID)
     static const type_unsigned_8 protected_mov[] = {0x0fu,0x20u,0xc0u,0xf4u};
     static const type_unsigned_8 invalid_cr0_write[] = {0x0fu,0x22u,0xc0u,0xf4u};
     type_unsigned_32 values[] = {0x00000001u, 0x12345678u, 0x00123000u};
+    type_unsigned_16 observed = 0u;
     STD_SIZE_T index;
     {
         descriptor_system_machine state;
-        type_unsigned_16 observed = 0u;
         C_INT failed = !dt_prepare(&state);
 
         if (!failed) {
@@ -281,7 +281,6 @@ static C_INT dt_test_msw_and_control_registers(C_VOID)
     }
     {
         descriptor_system_machine state;
-        type_unsigned_16 observed = 0u;
         C_INT failed = !dt_prepare(&state);
 
         if (!failed) {
@@ -493,7 +492,6 @@ static C_INT dt_test_selector_stores(C_VOID)
 
     for (index = 0u; index < 2u; ++index) {
         descriptor_system_machine state;
-        type_unsigned_16 observed = 0u;
         C_INT failed = !dt_prepare(&state);
 
         if (!failed) {

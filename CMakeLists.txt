@@ -2708,6 +2708,68 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(vm-execution-context-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 
+# T345 S2 promotes only non-strict current-gate executables whose complete
+# direct C source set is project-owned test code. Targets that compile even one
+# production source remain outside this cohort for S3 ownership separation.
+set(PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS)
+set(PROJECT_T345_S2_MIXED_OWNER_TEST_TARGETS)
+foreach(project_t345_target IN LISTS PROJECT_T344_CURRENT_GATE_TARGETS)
+    get_target_property(project_t345_options ${project_t345_target} COMPILE_OPTIONS)
+    set(project_t345_already_strict TRUE)
+    foreach(project_t345_flag IN ITEMS -Wall -Wextra -Wpedantic -Werror)
+        list(FIND project_t345_options "${project_t345_flag}" project_t345_flag_index)
+        if(project_t345_flag_index EQUAL -1)
+            set(project_t345_already_strict FALSE)
+        endif()
+    endforeach()
+    if(project_t345_already_strict)
+        continue()
+    endif()
+    get_target_property(project_t345_sources ${project_t345_target} SOURCES)
+    set(project_t345_has_c_source FALSE)
+    set(project_t345_all_test_sources TRUE)
+    foreach(project_t345_source IN LISTS project_t345_sources)
+        if(IS_ABSOLUTE "${project_t345_source}")
+            set(project_t345_source_path "${project_t345_source}")
+        else()
+            set(project_t345_source_path "${CMAKE_SOURCE_DIR}/${project_t345_source}")
+        endif()
+        if(NOT project_t345_source_path MATCHES "\\.c$" OR
+                NOT EXISTS "${project_t345_source_path}")
+            continue()
+        endif()
+        set(project_t345_has_c_source TRUE)
+        file(RELATIVE_PATH project_t345_relative_source
+            "${CMAKE_SOURCE_DIR}" "${project_t345_source_path}")
+        if(NOT project_t345_relative_source MATCHES "^tests/")
+            set(project_t345_all_test_sources FALSE)
+        endif()
+    endforeach()
+    if(project_t345_has_c_source AND project_t345_all_test_sources)
+        list(APPEND PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS ${project_t345_target})
+    elseif(project_t345_has_c_source)
+        list(APPEND PROJECT_T345_S2_MIXED_OWNER_TEST_TARGETS ${project_t345_target})
+    endif()
+endforeach()
+list(LENGTH PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS project_t345_s2_pure_count)
+list(LENGTH PROJECT_T345_S2_MIXED_OWNER_TEST_TARGETS project_t345_s2_mixed_count)
+if(NOT project_t345_s2_pure_count EQUAL 118 OR
+        NOT project_t345_s2_mixed_count EQUAL 3)
+    message(FATAL_ERROR
+        "T345 S2 expected 118 pure and 3 mixed owner-test targets; found ${project_t345_s2_pure_count} pure and ${project_t345_s2_mixed_count} mixed.")
+endif()
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    foreach(project_t345_target IN LISTS PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS)
+        target_compile_options(${project_t345_target} PRIVATE
+            -Wall -Wextra -Wpedantic -Werror)
+    endforeach()
+endif()
+string(REPLACE ";" "\n" project_t345_s2_target_contents
+    "${PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS}")
+file(GENERATE
+    OUTPUT "${CMAKE_BINARY_DIR}/t345-s2-owner-test-strict-targets.txt"
+    CONTENT "${project_t345_s2_target_contents}\n")
+
 # T344 owns a direct-command matrix for every production library/current
 # artifact and every current-gate executable.  A linked strict library never
 # substitutes for the direct compile command of a smoke source.
@@ -2844,10 +2906,16 @@ foreach(project_t344_entry IN LISTS PROJECT_T344_DIRECT_COMPILE_MATRIX)
     list(GET project_t345_fields 0 project_t345_target)
     list(GET project_t345_fields 1 project_t345_source)
     list(GET project_t345_fields 2 project_t345_status)
-    if(NOT project_t345_status STREQUAL "deferred")
+    list(FIND PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS
+        "${project_t345_target}" project_t345_s2_target_index)
+    if(project_t345_status STREQUAL "retained-strict" AND
+            NOT project_t345_s2_target_index EQUAL -1 AND
+            project_t345_source MATCHES "^tests/")
+        set(project_t345_class project-owned-owner-test)
+        set(project_t345_mechanism s2-owner-test-strict-cohort)
+    elseif(NOT project_t345_status STREQUAL "deferred")
         continue()
-    endif()
-    if(project_t345_source MATCHES "^tests/")
+    elseif(project_t345_source MATCHES "^tests/")
         set(project_t345_class project-owned-owner-test)
         set(project_t345_mechanism s2-owner-test-strict-cohort)
     elseif(project_t345_target STREQUAL "type-facade")
@@ -2875,6 +2943,7 @@ add_custom_target(verify-t345-deferred-direct-ownership
     COMMAND "${CMAKE_COMMAND}"
         -DPROJECT_T345_T344_MATRIX_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t344-direct-compilation-matrix.txt
         -DPROJECT_T345_OWNERSHIP_MATRIX_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t345-deferred-direct-ownership-matrix.txt
+        -DPROJECT_T345_S2_TARGETS_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t345-s2-owner-test-strict-targets.txt
         -P "${CMAKE_SOURCE_DIR}/cmake/verify_t345_deferred_direct_ownership.cmake"
     COMMENT "Verifying T345 deferred direct-compilation ownership"
     VERBATIM)
@@ -2882,6 +2951,7 @@ add_custom_target(verify-t345-deferred-direct-ownership-selftest
     COMMAND "${CMAKE_COMMAND}"
         -DPROJECT_T345_VERIFIER:FILEPATH=${CMAKE_SOURCE_DIR}/cmake/verify_t345_deferred_direct_ownership.cmake
         -DPROJECT_T345_T344_MATRIX_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t344-direct-compilation-matrix.txt
+        -DPROJECT_T345_S2_TARGETS_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t345-s2-owner-test-strict-targets.txt
         -DPROJECT_T345_INVALID_OWNERSHIP_MATRIX_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t345-invalid-deferred-direct-ownership-matrix.txt
         -P "${CMAKE_SOURCE_DIR}/cmake/verify_t345_deferred_direct_ownership_selftest.cmake"
     COMMENT "Self-testing T345 deferred direct-compilation ownership verification"
