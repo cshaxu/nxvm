@@ -14,7 +14,6 @@ each later candidate consumes the earlier state-machine and profile evidence;
 the final candidate is verification only and may return a missing row to its
 proper implementation owner.
 
-1. [Shared CPU state and delivery foundations](../proposals/m5-cpu-shared-state-delivery.md). Complete common delivery and rollback contracts before profile packages rely on them.
 1. [8086 and 80186 profile closure](../proposals/m5-8086-80186-profile-closure.md). Close the real-mode baseline and 80186 extensions, including the 8086/80186 `LOCK` legality matrix.
 1. [80286 protected-mode and descriptor closure](../proposals/m5-80286-protected-mode-closure.md). Close 80286 descriptors, gates, transfers, and the 80286 `LOCK` legality matrix on the now-stable shared delivery basis.
 1. [80386DX extended instruction and system-state closure](../proposals/m5-80386dx-extended-state-closure.md); [80386DX admission policy](../proposals/m5-80386dx-candidate-policy.md). Close 32-bit, VM86, paging/debug, and residual system-state rows without reclassifying older-profile behavior.

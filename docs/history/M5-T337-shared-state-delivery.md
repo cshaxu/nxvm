@@ -55,3 +55,10 @@ post-commit timing distinctions remain separate constructions. DR6/DR7 has
 one 80386DX owner; reset/shutdown/triple-fault has one bounded CPU/machine
 TODO; VME/PVI remains outside the four-profile program. The audit is retained
 in [T337 S3 evidence](../etc/evidence/t337-s3-task-closure-audit.md).
+
+## Closure
+
+T337 is closed. Its retained proposal is
+[historical background](M5-T337-shared-state-delivery-proposal.md); the Queue
+now advances to the 8086/80186 profile-closure candidate. No shared delivery
+row remains implicitly owned by T337.
