@@ -9,8 +9,8 @@ protected semantics, 80386DX width/state semantics, or external coprocessor
 execution.
 
 The active packet in [CURRENT](../states/CURRENT.md) defines each admitted S.
-The active [proposal](../proposals/m5-8086-80186-profile-closure.md) defines
-the task boundary until task closure moves it into this history directory.
+The original proposal is retained as
+[historical background](M5-T338-8086-80186-profile-closure-proposal.md).
 
 ## S1 Result
 
@@ -70,3 +70,10 @@ delivery helper changed. The owner tests now directly prove 80186 `BOUND`
 `1d8fe07a` was reviewed; the rebuilt developer artifact SHA-256 is
 `7D79417889821695DB4993DFEA5134B01E5B16D69007C20A6F1E3CBB8C75C05F`, and the
 complete current-gate passed 218/218.
+
+## Closure
+
+T338 is closed. S5 reconciled every S1 allocation to accepted S2--S4 evidence
+or an explicit 80286, 80386DX, or external-coprocessor transfer. T328 remains
+the sole legacy `LOCK` policy owner. The Queue now advances to the 80286
+descriptor-table and protected-transfer closure candidate.
