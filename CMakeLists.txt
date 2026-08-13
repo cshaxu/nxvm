@@ -2186,11 +2186,18 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_core_controller_authority.cmake"
         COMMENT "Verifying T296 core-owned FDC/HDC controller authority"
         VERBATIM)
+
+    add_custom_target(verify-t330-task-transition-construction
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_t330_task_transition_construction.cmake"
+        COMMENT "Verifying T330 task-transition construction closure"
+        VERBATIM)
 endif()
 
 set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
     verify-t317-test-type-vocabulary
     verify-t317-strict-cpu-smoke-coverage
+    verify-t330-task-transition-construction
     verify-documentation-governance
     verify-dependency-dag
     verify-live-machine-authority

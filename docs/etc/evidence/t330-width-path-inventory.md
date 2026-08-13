@@ -146,3 +146,26 @@ stack word plus EFLAGS and non-stack GPRs remain unchanged. The retained
 privilege-entry corpus proves the lower-CPL TSS/parameter/outer-stack path and
 its descriptor, TSS, and stack failure boundaries. This preserves the genuine
 word/dword frame distinction rather than abstracting the two layouts.
+
+## T330 S4 Corrective: Single Task-Transition Construction Owner
+
+The whole-source corrective audit found that the former private
+`task_switch_plan_32`, `_s_task_plan_transition_32`,
+`_s_task_commit_transition_32`, and `_ser_task_switch_tss_32` construction
+chain remained compiled after S1, but no task entry called it. Keeping this
+dead second model would permit future 32-bit-only changes to diverge from the
+accepted independent old/new-format plan.
+
+S4 removes that unreachable chain. The retained private owners are explicit:
+`_ser_task_transition_tss_plan` stages validation and materialization,
+`_ser_task_transition_tss` selects the plan, `_ser_task_switch_tss` reaches it
+for direct and task-gate entry, and `_ser_task_return_tss` reaches it for the
+backlink return. `_s_task_write_state_16` and `_s_task_write_state_32` remain
+layout writers, not parallel transition constructors.
+
+`verify-t330-task-transition-construction` mechanically rejects each removed
+identifier and requires the canonical plan plus both entry and return call
+fragments. The retained task-switch smoke continues to cover all 286/386
+source/target pairs, direct/task-gate entry, nested return, descriptor/TSS,
+LDT, stack, paging, and debug boundaries. No architectural TSS layout,
+descriptor/memory owner, or task-switch behavior changed.
