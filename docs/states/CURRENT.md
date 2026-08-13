@@ -2,8 +2,29 @@
 
 ## Current Work
 
-**Idle.** T338 remains open. S1--S3 are accepted; S4 requires a separately
-admitted packet.
+**M5 T338 S4 - active.** Close all 80186-only primary-extension forms and
+their 8086 rejection boundary.
+
+## M5 T338 S4 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | The owner approved Queue-ordered single-agent implementation through four-profile cross-closure verification on 2026-08-13. The accepted T338 S1 ledger assigns this complete 80186-only primary-extension boundary to S4 after S2 and S3. |
+| Objective | Implement or correct complete 8086 rejection and 80186 acceptance evidence for `60`--`62`, `68`--`6F`, `C0/C1`, and `C8/C9`: PUSHA/POPA, BOUND, immediate PUSH/IMUL, INS/OUTS, immediate-count Group 2 shifts/rotates, and ENTER/LEAVE. Prove defined state, stack images, signed operands, port/memory effects, REP/DF, exceptions, restart/nonpublication, and the inherited T328 legacy `LOCK` boundary. |
+| Non-goals | No 8086 inherited forms (S2/S3), 80286-only ARPL/protected selector semantics, protected I/O permissions, VM86, paging, 80386 operand/address-width behavior, x87, or new generic fixture/prefix/delivery framework. Existing 80286/80386 vectors may only support shared-path regression; they do not define S4 completion. |
+| Reference Baseline | `1689231b` (`M5 T338 S3 P2: accept legacy data control matrix`), accepted [S1 allocation](../etc/evidence/t338-s1-8086-80186-form-allocation.md), and T338 S2/S3 evidence. |
+| Candidate Proposal | [8086 and 80186 profile closure](../proposals/m5-8086-80186-profile-closure.md) and the accepted [T338 S1 allocation](../etc/evidence/t338-s1-8086-80186-form-allocation.md). |
+| Files And ABI Surface | Expected: local 80186 instruction handlers only if a defect is reproduced; existing owner smokes and T338 evidence/history/Current. No public ABI, device model, generic fixture framework, shared prefix/delivery interface, or product change. |
+| Applicable Rules | `docs/rules/EXECUTION.md`: full P and complete form/caller/write/fault sweep. `docs/rules/ARCHITECTURE.md`: one owner for prefix, port, stack, and delivery mechanics. `docs/rules/CODING.md`: project types, local style, and owner-bound tests. |
+| Verification | Build an opcode and ModRM form ledger. For each family, prove 8086 `#UD` before source/stack/memory/I/O publication and 80186 default 16-bit acceptance, including all defined state and family-specific fault/restart conditions. Sweep metadata, primary dispatch, handlers, shared stack/string/port/arithmetic paths, existing owners, CMake registrations, and T328 `LOCK` evidence. Run focused owners, exact registrations, metadata/static gates, artifact verifier, documentation governance, diff check, and full current-gate. |
+| Expected Markers | Complete S4 evidence names one current-gate owner for every allocated opcode and ModRM extension; no allocated 80186 form is represented only by a 80386 execution. New marker, if necessary, uses `M5:T338:S4:`. |
+| Asset Needs | Intel 80186 and 80386 instruction manuals only. No guest media, firmware, third-party source, or binary asset. |
+| Reporting Requirements | Before source edits, record the complete handler/caller/write/fault inventory and any material boundary objection. Otherwise deliver one complete pushed P with ledger, profile evidence, defect/similar-issue disposition, artifact/gate results, and no partial-completion claim. |
+| Stop Conditions | Stop if correctness needs protected selector/gate/IOPL state, VM86/paging, 80386 width semantics, global prefix/port/delivery redesign, or Intel behavior cannot be verified. Transfer instead of fitting a local symptom. |
+| Exit Criteria | Every S4 opcode and ModRM extension has 8086 rejection plus 80186 default-form evidence; every family-specific defined state, fault/restart, and side-effect boundary is proven or explicitly transferred; any discovered shared-mechanism defect is fixed with its caller sweep; required gates pass; the complete P is committed and pushed. |
+| Original Owner Request | Implement the Queue in order, in single-agent mode and with a holistic view, through four-profile cross-closure verification. |
+| Similar-Issue Sweep | Search `60`--`62`, `68`--`6F`, `C0/C1`, and `C8/C9` metadata/dispatch/handlers; `_e_push`, `_e_pop`, `_a_imul3`, `_m_*`, `_p_*`, string iteration, Group 2 flag helpers, `ExecFinal`, prefix handling, current owner smokes, CMake registrations, and T328 evidence. |
 
 ## Current Technical Baseline
 

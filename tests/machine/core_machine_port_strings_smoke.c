@@ -131,9 +131,9 @@ static C_INT port_strings_memory(port_strings_machine *state, type_unsigned_32 a
         STD_MEMCMP(&observed, &expected, width) == 0;
 }
 
-static C_INT port_strings_single(C_INT input, const type_unsigned_8 *code,
-    type_unsigned_8 bytes, type_unsigned_8 width, C_INT address32, type_unsigned_32 memory,
-    type_unsigned_32 value)
+static C_INT port_strings_single(core_machine_cpu_profile profile, C_INT input,
+    const type_unsigned_8 *code, type_unsigned_8 bytes, type_unsigned_8 width,
+    C_INT address32, type_unsigned_32 memory, type_unsigned_32 value)
 {
     port_strings_machine state;
     t_cpu before;
@@ -142,7 +142,7 @@ static C_INT port_strings_single(C_INT input, const type_unsigned_8 *code,
     core_machine_run_result result;
     type_status status;
     type_unsigned_32 index = address32 ? 0x1020u : input ? 0x20u : 0x10u;
-    C_INT failed = !port_strings_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
+    C_INT failed = !port_strings_prepare(profile, &state);
 
     if (!failed) {
         port_strings_seed(&state);
@@ -178,7 +178,7 @@ static C_INT port_strings_single(C_INT input, const type_unsigned_8 *code,
     return !failed;
 }
 
-static C_INT port_strings_test_single(C_VOID)
+static C_INT port_strings_test_single_profile(core_machine_cpu_profile profile)
 {
     static const type_unsigned_8 insb = 0x6cu;
     static const type_unsigned_8 insw = 0x6du;
@@ -191,22 +191,32 @@ static C_INT port_strings_test_single(C_VOID)
     static const type_unsigned_8 ins_combined[] = {0x66u, 0x67u, 0x6du};
     static const type_unsigned_8 out_combined[] = {0x66u, 0x67u, 0x6fu};
 
-    return port_strings_single(1, &insb, 1u, 1u, 0, 0x30020u, 0x5au) &&
-        port_strings_single(1, &insw, 1u, 2u, 0, 0x30020u, 0x5a5au) &&
-        port_strings_single(0, &outsb, 1u, 1u, 0, 0x20010u, 0x5au) &&
-        port_strings_single(0, &outsw, 1u, 2u, 0, 0x20010u, 0x5a5au) &&
-        port_strings_single(1, insd, sizeof(insd), 4u, 0, 0x30020u,
-        0x5a5a5a5au) && port_strings_single(0, outsd, sizeof(outsd), 4u,
-        0, 0x20010u, 0x5a5a5a5au) && port_strings_single(1, ins32,
-        sizeof(ins32), 1u, 1, 0x31020u, 0x5au) &&
-        port_strings_single(0, out32, sizeof(out32), 1u, 1, 0x21010u,
-        0x5au) && port_strings_single(1, ins_combined, sizeof(ins_combined),
-        4u, 1, 0x31020u, 0x5a5a5a5au) && port_strings_single(0,
+    if (!port_strings_single(profile, 1, &insb, 1u, 1u, 0, 0x30020u, 0x5au) ||
+        !port_strings_single(profile, 1, &insw, 1u, 2u, 0, 0x30020u,
+            0x5a5au) || !port_strings_single(profile, 0, &outsb, 1u, 1u, 0,
+            0x20010u, 0x5au) || !port_strings_single(profile, 0, &outsw, 1u,
+            2u, 0, 0x20010u, 0x5a5au)) return 0;
+    if (profile != CORE_MACHINE_CPU_PROFILE_80386) return 1;
+    return port_strings_single(profile, 1, insd, sizeof(insd), 4u, 0,
+        0x30020u, 0x5a5a5a5au) && port_strings_single(profile, 0, outsd,
+        sizeof(outsd), 4u, 0, 0x20010u, 0x5a5a5a5au) &&
+        port_strings_single(profile, 1, ins32, sizeof(ins32), 1u, 1,
+        0x31020u, 0x5au) && port_strings_single(profile, 0, out32,
+        sizeof(out32), 1u, 1, 0x21010u, 0x5au) &&
+        port_strings_single(profile, 1, ins_combined, sizeof(ins_combined),
+        4u, 1, 0x31020u, 0x5a5a5a5au) && port_strings_single(profile, 0,
         out_combined, sizeof(out_combined), 4u, 1, 0x21010u, 0x5a5a5a5au);
 }
 
-static C_INT port_strings_rep(C_INT input, const type_unsigned_8 *code, type_unsigned_8 bytes,
-    type_unsigned_8 width, C_INT address32)
+static C_INT port_strings_test_single(C_VOID)
+{
+    return port_strings_test_single_profile(CORE_MACHINE_CPU_PROFILE_80186) &&
+        port_strings_test_single_profile(CORE_MACHINE_CPU_PROFILE_80386);
+}
+
+static C_INT port_strings_rep(core_machine_cpu_profile profile, C_INT input,
+    const type_unsigned_8 *code, type_unsigned_8 bytes, type_unsigned_8 width,
+    C_INT address32)
 {
     port_strings_machine state;
     t_cpu before;
@@ -218,7 +228,7 @@ static C_INT port_strings_rep(C_INT input, const type_unsigned_8 *code, type_uns
     type_unsigned_32 base = input ? (address32 ? 0x31020u : 0x30020u) :
         (address32 ? 0x21010u : 0x20010u);
     type_unsigned_8 item;
-    C_INT failed = !port_strings_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
+    C_INT failed = !port_strings_prepare(profile, &state);
 
     if (!failed) {
         port_strings_seed(&state);
@@ -267,14 +277,23 @@ static C_INT port_strings_rep(C_INT input, const type_unsigned_8 *code, type_uns
 static C_INT port_strings_test_rep(C_VOID)
 {
     static const type_unsigned_8 rep_insb[] = {0xf3u, 0x6cu};
+    static const type_unsigned_8 rep_insw[] = {0xf3u, 0x6du};
     static const type_unsigned_8 rep_outsb[] = {0xf3u, 0x6eu};
+    static const type_unsigned_8 rep_outsw[] = {0xf3u, 0x6fu};
     static const type_unsigned_8 rep_insd[] = {0xf3u, 0x66u, 0x67u, 0x6du};
     static const type_unsigned_8 rep_outsd[] = {0xf3u, 0x66u, 0x67u, 0x6fu};
 
-    return port_strings_rep(1, rep_insb, sizeof(rep_insb), 1u, 0) &&
-        port_strings_rep(0, rep_outsb, sizeof(rep_outsb), 1u, 0) &&
-        port_strings_rep(1, rep_insd, sizeof(rep_insd), 4u, 1) &&
-        port_strings_rep(0, rep_outsd, sizeof(rep_outsd), 4u, 1);
+    return port_strings_rep(CORE_MACHINE_CPU_PROFILE_80186, 1, rep_insb,
+        sizeof(rep_insb), 1u, 0) && port_strings_rep(
+        CORE_MACHINE_CPU_PROFILE_80186, 1, rep_insw, sizeof(rep_insw), 2u,
+        0) && port_strings_rep(
+        CORE_MACHINE_CPU_PROFILE_80186, 0, rep_outsb, sizeof(rep_outsb), 1u,
+        0) && port_strings_rep(CORE_MACHINE_CPU_PROFILE_80186, 0, rep_outsw,
+        sizeof(rep_outsw), 2u, 0) && port_strings_rep(
+        CORE_MACHINE_CPU_PROFILE_80386, 1, rep_insd,
+        sizeof(rep_insd), 4u, 1) && port_strings_rep(
+        CORE_MACHINE_CPU_PROFILE_80386, 0, rep_outsd, sizeof(rep_outsd), 4u,
+        1);
 }
 
 static C_INT port_strings_rep_zero(C_INT input, const type_unsigned_8 *code,
@@ -778,7 +797,7 @@ static C_INT port_strings_expect_ud(core_machine_cpu_profile profile,
 
 static C_INT port_strings_test_rejections(C_VOID)
 {
-    static const core_machine_cpu_profile legacy[] = {
+    static const core_machine_cpu_profile pre386[] = {
         CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186,
         CORE_MACHINE_CPU_PROFILE_80286
     };
@@ -793,10 +812,13 @@ static C_INT port_strings_test_rejections(C_VOID)
     type_unsigned_8 profile;
     type_unsigned_8 form;
 
-    for (profile = 0u; profile != sizeof(legacy) / sizeof(legacy[0]); ++profile)
-        for (form = 0u; form != 9u; ++form)
-            if (!port_strings_expect_ud(legacy[profile], forms[form], bytes[form]))
-                return 0;
+    for (form = 0u; form != 6u; ++form)
+        if (!port_strings_expect_ud(CORE_MACHINE_CPU_PROFILE_8086,
+                forms[form], bytes[form])) return 0;
+    for (profile = 0u; profile != sizeof(pre386) / sizeof(pre386[0]); ++profile)
+        for (form = 6u; form != 9u; ++form)
+            if (!port_strings_expect_ud(pre386[profile], forms[form],
+                    bytes[form])) return 0;
     for (form = 9u; form != sizeof(bytes); ++form)
         if (!port_strings_expect_ud(CORE_MACHINE_CPU_PROFILE_80386, forms[form],
             bytes[form]))

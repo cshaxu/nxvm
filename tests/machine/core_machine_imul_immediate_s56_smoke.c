@@ -287,9 +287,19 @@ static C_INT imul_s56_test_memory_forms(C_VOID)
     const type_unsigned_8 sizes[] = {
         sizeof(word_iw), sizeof(word_ib), sizeof(dword_iw), sizeof(dword_ib)
     };
+    static const core_machine_cpu_profile word_profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80186, CORE_MACHINE_CPU_PROFILE_80286,
+        CORE_MACHINE_CPU_PROFILE_80386
+    };
     type_unsigned_8 form;
 
     for (form = 0u; form != sizeof(codes) / sizeof(codes[0]); ++form) {
+        const type_unsigned_8 profile_count = form < 2u ?
+            sizeof(word_profiles) / sizeof(word_profiles[0]) : 1u;
+        type_unsigned_8 profile_index;
+
+        for (profile_index = 0u; profile_index != profile_count;
+            ++profile_index) {
         core_machine *machine = STD_NULL;
         core_machine_run_result result;
         core_machine_cpu_diagnostic diagnostic;
@@ -297,8 +307,8 @@ static C_INT imul_s56_test_memory_forms(C_VOID)
         t_cpu after;
         type_unsigned_32 source_after = 0u;
         C_INT dword = form >= 2u;
-        C_INT failed = !imul_s56_prepare(&machine,
-            CORE_MACHINE_CPU_PROFILE_80386);
+        C_INT failed = !imul_s56_prepare(&machine, form < 2u ?
+            word_profiles[profile_index] : CORE_MACHINE_CPU_PROFILE_80386);
 
         if (!failed) {
             imul_s56_seed(&machine->executor_cpu);
@@ -334,6 +344,7 @@ static C_INT imul_s56_test_memory_forms(C_VOID)
         core_machine_destroy(machine);
         if (failed) {
             return 0;
+        }
         }
     }
     return 1;

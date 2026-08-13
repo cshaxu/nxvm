@@ -611,12 +611,83 @@ static C_INT rotate_test_shift_profile_and_fault(C_VOID)
     return 1;
 }
 
+static C_INT rotate_test_80186_immediate_extensions(C_VOID)
+{
+    type_unsigned_8 width_index;
+    type_unsigned_8 extension;
+
+    for (width_index = 0u; width_index != 2u; ++width_index)
+    for (extension = 0u; extension != 8u; ++extension) {
+        const type_unsigned_8 width = width_index == 0u ? 8u : 16u;
+        const type_unsigned_8 opcode = width == 8u ? 0xc0u : 0xc1u;
+        const type_unsigned_8 code[] = {
+            opcode, (type_unsigned_8)((extension << 3u) | 0xc0u), 1u
+        };
+        const type_unsigned_32 initial = width == 8u ? 0x11223381u :
+            0x11228181u;
+        type_unsigned_32 expected = initial;
+        type_unsigned_32 carry = 1u;
+        type_unsigned_8 effective = 0u;
+        rotate_machine state;
+        t_cpu before;
+        t_cpu after;
+        core_machine_cpu_diagnostic diagnostic;
+        C_INT failed = !rotate_prepare(CORE_MACHINE_CPU_PROFILE_80186,
+            &state);
+
+        if (!failed) {
+            state.machine->executor_cpu.data.eax = initial;
+            state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF |
+                VCPU_EFLAGS_AF | VCPU_EFLAGS_ZF;
+            before = test_core_machine_fixture_capture_cpu_after_run(
+                state.machine);
+            if (extension < 4u)
+                expected = rotate_result(extension, width, initial, 1u,
+                    &carry, &effective);
+            else if (extension == 4u)
+                expected = shift_result(0u, width, initial, 1u, &carry);
+            else if (extension == 5u)
+                expected = shift_result(1u, width, initial, 1u, &carry);
+            else if (extension == 7u)
+                expected = shift_result(2u, width, initial, 1u, &carry);
+            if (extension == 6u) {
+                failed |= !rotate_run_real(&state, code, sizeof(code), 1,
+                    &after, &diagnostic) || !diagnostic.first_fault.valid ||
+                    !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
+                        VCPUINS_EXCEPT_UD) || after.data.eip != 0u ||
+                    after.data.eax != before.data.eax || after.data.ecx !=
+                        before.data.ecx || after.data.edx != before.data.edx ||
+                    after.data.ebx != before.data.ebx || after.data.esp !=
+                        before.data.esp || after.data.ebp != before.data.ebp ||
+                    after.data.esi != before.data.esi || after.data.edi !=
+                        before.data.edi || after.data.eflags !=
+                        before.data.eflags;
+            } else {
+                failed |= !rotate_run_real(&state, code, sizeof(code), 0,
+                    &after, &diagnostic) || diagnostic.first_fault.valid ||
+                    after.data.eip != sizeof(code) ||
+                    (width == 8u ? after.data.al : after.data.ax) !=
+                        (width == 8u ? (type_unsigned_8)expected :
+                            (type_unsigned_16)expected) ||
+                    (width == 8u && after.data.eax !=
+                        ((initial & 0xffffff00u) | (expected & 0xffu))) ||
+                    (width == 16u && after.data.eax !=
+                        ((initial & 0xffff0000u) | (expected & 0xffffu)));
+            }
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+    }
+    return 1;
+}
+
 C_INT main(C_VOID)
 {
     if (!rotate_test_forms() || !rotate_test_count_zero() || !rotate_test_non_one() ||
         !rotate_test_shift_forms() ||
         !rotate_test_shift_boundaries() ||
         !rotate_test_shift_profile_and_fault() ||
+        !rotate_test_80186_immediate_extensions() ||
         !rotate_test_profile() || !rotate_test_access_failure())
         return 1;
     STD_PRINTF("M5:T316:S18:ROTATE:OK\n");
