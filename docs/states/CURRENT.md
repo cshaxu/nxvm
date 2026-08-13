@@ -2,29 +2,8 @@
 
 ## Current Work
 
-**Active.** M5 T346 S5 migrates guest input/display clock consumption to the
-deterministic timeline and reconfirms the copied host-presentation boundary.
-
-## M5 T346 S5 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner approved continued completion of T346 on 2026-08-13; this packet admits only guest KBC/VADP clock migration and host-boundary reconciliation. |
-| Objective | Move KBC/AUX response/typematic and VADP guest display progression from the post-retirement batch scheduler to one reset-safe due-time peripheral callback; prove deterministic ordering and explicitly retain host presentation/input cadence outside guest time. |
-| Non-goals | No new AUX protocol, speaker/PPI, VGA/VBE, display-mode breadth, renderer, host input polling, thread, wall-clock, or platform policy change. No new host presentation cadence claim. |
-| Reference Baseline | `4f27846e` / M5 T346 S4 P2, clean worktree. |
-| Candidate Proposal | [M5 Core-Machine Device Parity And L3 Timing Convergence](../proposals/m5-core-machine-device-l3-convergence.md), S5. |
-| Files And ABI Surface | Expected: machine/trace private ownership, focused core smoke/CMake/evidence/CURRENT/history/TODO only. No platform or host-facing ABI. |
-| Applicable Rules | Task Reading Set; execution and actual-change review; architecture single guest-time owner and copied-host-boundary invariant; C11/project-type/strict owner-test rules; documentation topology. |
-| Verification | Fresh configure; focused S5 trace smoke; retained KBC/AUX/VADP/display, S2/S3/S4 timing smokes; exact registration; governance/diff checks; full current-gate. |
-| Expected Markers | New `M5:T346:S5:INPUT-DISPLAY-TIMELINE:OK`; retained markers remain unchanged. |
-| Asset Needs | No external source, firmware, guest media, host event, renderer, thread, or wall-clock asset. |
-| Reporting Requirements | Record old scheduler paths, new callback order/reset behavior, and every host presentation/input crossing. Commit and push the complete P only. |
-| Stop Conditions | Stop for platform/renderer/host-input policy change, a needed guest device semantic change beyond clock ownership, or an unclassified alternate KBC/VADP advance path. Do not turn a host refresh into guest time. |
-| Exit Criteria | KBC and VADP each have one timeline-owned machine advance path with reset replacement and trace proof; all host crossings are copied/snapshot boundaries or transfer entries; no batch scheduler call remains for the migrated guest domains. |
-| Original Owner Request | Produce a holistic, polished PC/AT-class core-machine device/L3 plan suitable for Windows 3.x research, excluding x87 execution. |
-| Similar-Issue Sweep | Search all KBC/VADP advance calls, guest input submission paths, display snapshot/presentation publication paths, and scheduler callbacks. Classify every hit as migrated, intentionally standalone test/controller use, host boundary, or TODO transfer. |
+**Active.** M5 T346 S5 is accepted; the task is awaiting admission of its S6
+closure audit. No implementation runs between those units.
 
 ## Current Technical Baseline
 
@@ -45,7 +24,7 @@ deterministic timeline and reconfirms the copied host-presentation boundary.
 
 | Task | Compact result |
 | --- | --- |
-| T346 S4 | Accepted RTC/FDC media-observation readiness: an independent RTC clock and reset-safe due-time callback establish `DMA -> PIT -> PIC -> FDC -> HDC -> RTC` ordering. Synchronous FDC/ATA service and absent PC/AT NMI sources transfer precisely; no arbitrary physical delay claim. [Evidence](../etc/evidence/t346-s4-rtc-storage-readiness.md). |
+| T346 S5 | Accepted KBC/VADP timeline migration: a reset-safe peripheral callback completes same-tick order `DMA -> PIT -> PIC -> FDC -> HDC -> RTC -> KBC -> VADP`; input/display host crossings remain copied boundaries. [Evidence](../etc/evidence/t346-s5-input-display-timeline.md). |
 | T345 | Closed direct-compilation strictness convergence: 251/305 direct commands are target-local strict; the 54 remaining commands have a complete 175-row ownership ledger and an exact 51-source residual production record with durable bounded admissions. No global flags, inherited-runtime rewrites, or false linked-dependency claims. [History](../history/M5-T345-direct-compilation-strictness-convergence.md). |
 | T344 | Closed build-quality reproducibility: fresh configuration, 305-row truthful strict-compile matrix (130 retained strict/175 deferred), canonical 218-target current-gate registration, 53 historical fixture shapes, and strict-declaration uniqueness are mechanically verified. [History](../history/M5-T344-build-quality-reproducibility.md). |
 | T343 | Closed the four-profile CPU program: one final ledger reconciles the 8086, 80186, 80286, and 80386DX execution, protected-state, delivery, task/paging/debug, and CPU-side coprocessor-interface boundaries. VME/PVI, persistent cache, x87 execution, timing/device, and Windows/product work remain explicit external candidates. [Closure ledger](../etc/evidence/t343-s1-four-profile-cross-closure.md). |

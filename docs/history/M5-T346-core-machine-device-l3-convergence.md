@@ -68,3 +68,15 @@ media-result, DRQ/DMA/IRQ, abort/reset, and hardware-duration contract is a
 single explicit TODO rather than a fabricated L3 duration. PC/AT parity and
 I/O-channel NMI production likewise remains a separately admitted boundary;
 the retained CMOS index-port bit is only the NMI mask.
+
+### S5 - Input, Display, And Peripheral Timing
+
+Accepted the implementation and evidence at
+`docs/etc/evidence/t346-s5-input-display-timeline.md`. KBC/AUX guest response
+and typematic state, followed by VADP guest raster state, now advance only from
+the reset-safe timeline peripheral callback. The full equal-tick machine order
+is `DMA -> PIT -> PIC -> FDC -> HDC -> RTC -> KBC -> VADP`. The sweep confirms
+that the VM-session/platform display crossing is a copied snapshot and mailbox
+boundary, and that no host presentation or input cadence supplies guest time.
+Speaker/PPI, advanced AUX behavior, broader video modes, and host policy retain
+their separately recorded boundaries.
