@@ -17597,7 +17597,8 @@ static C_VOID ExecFinal(core_machine_cpu_execution_context *context)
         if (!TYPE_GET_BIT(fault_cpu.data.cr0, VCPU_CR0_PE) &&
             (instruction_state.data.except == VCPUINS_EXCEPT_DE ||
              instruction_state.data.except == VCPUINS_EXCEPT_PF ||
-             instruction_state.data.except == VCPUINS_EXCEPT_MF) &&
+             instruction_state.data.except == VCPUINS_EXCEPT_MF ||
+             instruction_state.data.except == VCPUINS_EXCEPT_UD) &&
             _e_final_deliver_real_exception(context, &fault_cpu,
                 exception_vector))
             return;

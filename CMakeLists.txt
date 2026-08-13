@@ -1436,6 +1436,13 @@ if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(core-machine-protected-ud-delivery-s1-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
+add_executable(core-machine-real-ud-delivery-s1-smoke
+    tests/machine/core_machine_real_ud_delivery_s1_smoke.c)
+target_link_libraries(core-machine-real-ud-delivery-s1-smoke PRIVATE core-machine)
+if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(core-machine-real-ud-delivery-s1-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
 add_executable(core-machine-hardware-delivery-s3-smoke
     tests/machine/core_machine_hardware_delivery_s3_smoke.c)
 target_link_libraries(core-machine-hardware-delivery-s3-smoke PRIVATE core-machine)
@@ -1657,6 +1664,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-exception-delivery-s2-smoke
     core-machine-real-exception-final-s1-smoke
     core-machine-protected-ud-delivery-s1-smoke
+    core-machine-real-ud-delivery-s1-smoke
     core-machine-hardware-delivery-s3-smoke
     core-machine-interrupt-return-composition-s4-smoke
     core-machine-vm86-lgdt-lidt-s5-smoke
@@ -1757,6 +1765,141 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     vm-platform-host-surface-smoke
     vdm-minimal-session-smoke
     vdm-minimal-presentation-smoke)
+
+# T337 deliberately inventories the complete current-gate surface that names
+# a #UD producer/assertion. It is an upper bound over real-mode owners: the
+# dedicated S1 smoke proves vector-6 delivery, while retained owners keep
+# their explicit no-handler terminal contracts. Keep this list exact so a new
+# current-gate #UD source cannot silently bypass that classification.
+set(PROJECT_T337_UD_CURRENT_GATE_TARGETS
+    core-machine-80286-protected-mode-smoke
+    core-machine-80386-paging-smoke
+    core-machine-arpl-s53-smoke
+    core-machine-arpl-smoke
+    core-machine-bit-scan-smoke
+    core-machine-bit-test-smoke
+    core-machine-bound-s54-smoke
+    core-machine-cli-sti-s48-smoke
+    core-machine-clts-s62-smoke
+    core-machine-cmps-smoke
+    core-machine-control-transfer-smoke
+    core-machine-cpu-fault-diagnostic-smoke
+    core-machine-cpu-profile-gate-smoke
+    core-machine-descriptor-system-smoke
+    core-machine-direct-flags-smoke
+    core-machine-double-shift-smoke
+    core-machine-enter-leave-smoke
+    core-machine-fpu-8087-smoke
+    core-machine-fpu-escape-smoke
+    core-machine-fpu-interface-s65-smoke
+    core-machine-fs-gs-stack-smoke
+    core-machine-gpr-mov-smoke
+    core-machine-gpr-push-pop-smoke
+    core-machine-hlt-s49-smoke
+    core-machine-imul2-smoke
+    core-machine-imul-immediate-s56-smoke
+    core-machine-inc-dec-smoke
+    core-machine-iret-outer-s52-smoke
+    core-machine-iret-s51-smoke
+    core-machine-lahf-sahf-smoke
+    core-machine-lar-lsl-s57-smoke
+    core-machine-lea-smoke
+    core-machine-legacy-lock-s1-smoke
+    core-machine-legacy-sreg-stack-smoke
+    core-machine-les-lds-s41-smoke
+    core-machine-les-lds-smoke
+    core-machine-lgdt-lidt-smoke
+    core-machine-lods-smoke
+    core-machine-lss-lfs-lgs-smoke
+    core-machine-moffs-smoke
+    core-machine-movs-smoke
+    core-machine-movx-smoke
+    core-machine-msw-s63-smoke
+    core-machine-port-io-s55-smoke
+    core-machine-port-strings-smoke
+    core-machine-prefix-attributes-s64-smoke
+    core-machine-protected-16-gate-s3-smoke
+    core-machine-protected-data-access-s2-smoke
+    core-machine-protected-far-s1-smoke
+    core-machine-protected-ud-delivery-s1-smoke
+    core-machine-pusha-popa-smoke
+    core-machine-pushf-popf-s47-smoke
+    core-machine-push-immediate-smoke
+    core-machine-real-mode-corpus-smoke
+    core-machine-real-ud-delivery-s1-smoke
+    core-machine-rotate-smoke
+    core-machine-scas-smoke
+    core-machine-segment-selector-smoke
+    core-machine-setcc-smoke
+    core-machine-sgdt-sidt-smoke
+    core-machine-sign-extend-smoke
+    core-machine-software-int-s50-smoke
+    core-machine-sreg-mov-smoke
+    core-machine-stos-smoke
+    core-machine-task-switch-smoke
+    core-machine-verr-verw-s58-smoke
+    core-machine-xchg-smoke
+    vm-dos-mem-fault-smoke
+    vm-fault-outcome-runner-smoke)
+
+foreach(t337_ud_target IN LISTS PROJECT_T337_UD_CURRENT_GATE_TARGETS)
+    list(FIND PROJECT_CURRENT_SMOKE_TARGETS "${t337_ud_target}"
+        t337_ud_current_index)
+    if(t337_ud_current_index LESS 0)
+        message(FATAL_ERROR
+            "T337 #UD owner is not a current-gate target: ${t337_ud_target}")
+    endif()
+    get_target_property(t337_ud_sources ${t337_ud_target} SOURCES)
+    set(t337_ud_found FALSE)
+    foreach(t337_ud_source IN LISTS t337_ud_sources)
+        if(IS_ABSOLUTE "${t337_ud_source}")
+            set(t337_ud_source_path "${t337_ud_source}")
+        else()
+            set(t337_ud_source_path "${CMAKE_SOURCE_DIR}/${t337_ud_source}")
+        endif()
+        if(EXISTS "${t337_ud_source_path}")
+            file(READ "${t337_ud_source_path}" t337_ud_source_text)
+            if(t337_ud_source_text MATCHES
+                "VCPUINS_EXCEPT_UD|_SetExcept_UD|UndefinedOpcode")
+                set(t337_ud_found TRUE)
+            endif()
+        endif()
+    endforeach()
+    if(NOT t337_ud_found)
+        message(FATAL_ERROR
+            "T337 #UD owner has no #UD source assertion: ${t337_ud_target}")
+    endif()
+endforeach()
+
+function(t337_verify_ud_current_gate_inventory)
+foreach(t337_current_target IN LISTS PROJECT_CURRENT_SMOKE_TARGETS)
+    get_target_property(t337_current_sources ${t337_current_target} SOURCES)
+    foreach(t337_current_source IN LISTS t337_current_sources)
+        if(NOT t337_current_source MATCHES "^tests/machine/")
+            continue()
+        endif()
+        if(IS_ABSOLUTE "${t337_current_source}")
+            set(t337_current_source_path "${t337_current_source}")
+        else()
+            set(t337_current_source_path
+                "${CMAKE_SOURCE_DIR}/${t337_current_source}")
+        endif()
+        if(EXISTS "${t337_current_source_path}")
+            file(READ "${t337_current_source_path}" t337_current_source_text)
+            if(t337_current_source_text MATCHES
+                "VCPUINS_EXCEPT_UD|_SetExcept_UD|UndefinedOpcode")
+                list(FIND PROJECT_T337_UD_CURRENT_GATE_TARGETS
+                    "${t337_current_target}" t337_ud_inventory_index)
+                if(t337_ud_inventory_index LESS 0)
+                    message(FATAL_ERROR
+                        "Current-gate #UD source lacks T337 inventory: "
+                        "${t337_current_target}")
+                endif()
+            endif()
+        endif()
+    endforeach()
+endforeach()
+endfunction()
 if(WIN32)
     list(APPEND PROJECT_CURRENT_SMOKE_TARGETS vm-w32-text-palette-smoke)
 endif()
@@ -1765,6 +1908,8 @@ if(WIN32)
     list(APPEND PROJECT_CURRENT_SMOKE_TARGETS
         vm-platform-win32-keyboard-scan-smoke)
 endif()
+
+t337_verify_ud_current_gate_inventory()
 
 set(PROJECT_LEGACY_M1_FDD_SMOKE_TARGETS
     vm-dos-prompt-smoke
