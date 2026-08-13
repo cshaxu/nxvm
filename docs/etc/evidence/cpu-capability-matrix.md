@@ -1,0 +1,21 @@
+# CPU Capability Evidence Matrix
+
+This matrix records project-owned evidence, not an x86 marketing label. A
+capability remains unavailable to a profile unless its required instruction,
+fault, prefix/addressing, register/FLAGS, and side-effect probes have passed.
+
+| Capability | Current verdict | M5 T1 S1 evidence | Remaining gate |
+| --- | --- | --- | --- |
+| `x86.real_mode_8086` | partial evidence; not yet profile-claimable | one-step immediate MOV, immediate ADD, relative jump, segment-prefix NOP, and `#UD` capture on the retained baseline | broaden instruction, memory, stack, interrupt, FLAGS, and side-effect matrix; cross-check applicable cases |
+| `x86.protected_mode_286` | bounded partial evidence; not profile-claimable beyond the admitted subset | T257/T259: GDT-only 16-bit `LGDT`/`LMSW`, selector loads, same-CPL far transfer, CPL3 software-gate entry, 16-bit TSS `SS0:SP0` switch, outer `IRET`, and delivered `#GP`; T261 adds CPL0 GDT 16-bit-TSS far-JMP switching with task-state save/restore, busy transitions, and task-B `#SS` stack-limit evidence | CPL3 paging permissions, generic IDT/hardware delivery, LDT, task gate/far-CALL/nested task return, 32-bit semantics, and broader descriptor/fault corpus; 80286 has no I/O map |
+| `x86.i386_decode` | partial evidence; not yet profile-claimable | operand-size-prefixed immediate MOV | broader `0F` and prefix/decode matrix with positive and negative cases |
+| `x86.i386_real_mode` | unknown | none | evidence-backed 32-bit real-mode execution matrix |
+| `x86.i386_protected_mode` | bounded partial evidence; not profile-claimable beyond the admitted 16-bit subset | T259 runs the 16-bit CPL3 gate/outer-`IRET`/delivered-`#GP` corpus; T260 adds 32-bit-TSS I/O-map allow/deny and bounds checks; T261 adds the same bounded 16-bit-TSS far-JMP switch path as 80286 | 32-bit frames/gates, CPL3 paging, generic IDT/hardware delivery, 32-bit TSS switching, task gate/far-CALL/nested task return, and broader corpus |
+| `x86.i386_paging` | bounded CPL0 partial evidence; not profile-claimable beyond the admitted path | T258: 4 KiB PDE/PTE walk through core physical memory; fetch/data/stack mapping; A/D updates; non-present `#PF` with CR2; narrowed CR0/CR2/CR3 forms | CPL3 P/W/U faults, broader protected IDT delivery, TLB behavior, PSE/PAE, and task switching under paging |
+| `fpu.esc` | `FPU=none` consumes legal ESC encodings; exact 8087 supports finite `m32real` load/store, bounded register arithmetic, status/stack state, and `FWAIT` pending-exception observation | T153--T158 prove FPU=none profile/CR0 behavior; T262 proves the exact-8087 core-only corpus | 80287/80387, broad formats, complete IEEE behavior, environment save/restore, and protected-mode FPU delivery remain deferred |
+
+The baseline probe harness records an instruction window of at most 15 bytes,
+CS:IP and linear PC, EAX/EBX/ECX/EDX, FLAGS, and exception mask/code. It has no
+guest-media dependency. The retained owner-built `vm-dos-mem-fault-smoke`
+proves that `MEM` reaching `DB E3` does not receive `#UD`; it remains a DOS
+regression sample, not an x87 or 80386-completeness claim.

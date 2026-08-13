@@ -1,0 +1,46 @@
+#ifndef CORE_MACHINE_CONTROLLER_INTERFACE_H
+#define CORE_MACHINE_CONTROLLER_INTERFACE_H
+
+#include "type.h"
+
+#include "core/machine/media_interface.h"
+
+#define CORE_MACHINE_FDC_DRIVE_COUNT 4u
+
+/* A controller may retain this frozen core-issued nonce, but never DMA
+ * registers, guest memory, a controller implementation pointer, or an address.
+ * Core validates it against the receiving machine's private DMA state. */
+typedef struct core_machine_dma_request_binding {
+    type_native_unsigned core_token;
+    type_unsigned_8 channel;
+} core_machine_dma_request_binding;
+
+typedef struct core_machine_fdc_config {
+    type_unsigned_16 dor_port;
+    type_unsigned_16 status_port;
+    type_unsigned_16 data_port;
+    type_unsigned_16 direction_port;
+    type_unsigned_16 control_port;
+    type_unsigned_8 irq;
+    type_unsigned_8 dma_channel;
+} core_machine_fdc_config;
+
+typedef struct core_machine_fdc_drive_bindings {
+    core_machine_media_id media_id[CORE_MACHINE_FDC_DRIVE_COUNT];
+} core_machine_fdc_drive_bindings;
+
+typedef struct core_machine_hdc_config {
+    type_unsigned_16 data_port;
+    type_unsigned_16 error_features_port;
+    type_unsigned_16 sector_count_port;
+    type_unsigned_16 sector_number_port;
+    type_unsigned_16 cylinder_low_port;
+    type_unsigned_16 cylinder_high_port;
+    type_unsigned_16 drive_head_port;
+    type_unsigned_16 status_command_port;
+    type_unsigned_16 alternate_status_device_control_port;
+    type_unsigned_8 irq;
+    type_bool lba28_supported;
+} core_machine_hdc_config;
+
+#endif

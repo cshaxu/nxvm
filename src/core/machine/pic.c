@@ -1,0 +1,612 @@
+/* Copyright 2012-2014 Neko. */
+
+/*
+ * VPIC implements programmable interrupt controller with
+ * two Intel 8259A chips, one master and one slave.
+ */
+
+#include "type.h"
+
+#include "core/machine/pit.h"
+#include "core/machine/port.h"
+#include "core/machine/pic.h"
+
+/*
+ * GetRegTopId: Internal function
+ * Returns id of highest priority interrupt
+ * Returns 0x08 if reg is null
+ */
+static type_unsigned_8 GetRegTopId(t_pic *rpic, type_unsigned_8 reg) {
+    type_unsigned_8 id = 0;
+    if (reg == TYPE_ZERO_8) {
+        return 0x08;
+    }
+    reg = (reg << (VPIC_MAX_IRQ_COUNT - (rpic->data.irx))) | (reg>> (rpic->data.irx));
+    while ((id < VPIC_MAX_IRQ_COUNT) && !TYPE_MASK_UNSIGNED_1(reg >> id)) {
+        id++;
+    }
+    return (id + rpic->data.irx) % VPIC_MAX_IRQ_COUNT;
+}
+/*
+ * GetRegTopId: Internal function
+ * Returns flag of higher priority interrupt
+ */
+static type_bool HasINTR(t_pic *rpic) {
+    type_unsigned_8 reqId; /* top requested C_INT id in master pic */
+    type_unsigned_8 svcId; /* top in service C_INT id in master pic */
+    reqId = VPIC_GetIntrTopId(rpic);
+    svcId = VPIC_GetIsrTopId(rpic);
+    if (reqId == 0x08) {
+        /* no interrupt to pick up */
+        return TYPE_FALSE;
+    }
+    if (svcId == 0x08) {
+        /* no interrupt in service */
+        return TYPE_TRUE;
+    }
+    /*
+     * if irid and isid are on the same side of top priority C_INT
+     * request id, do regular comparison; otherwise order them.
+     * for example, if irid < irx, that means irid's priority is lower
+     * than irx, and we need to add VPIC_MAX_IRQ_COUNT to it to ensure
+     * that it's priority is lower than irx in following comparison
+     * (irid < isid) or (irid <= isid).
+     */
+    if (reqId < rpic->data.irx) {
+        reqId += VPIC_MAX_IRQ_COUNT;
+    }
+    if (svcId < rpic->data.irx) {
+        svcId += VPIC_MAX_IRQ_COUNT;
+    }
+    if (TYPE_GET_BIT(rpic->data.icw4, VPIC_ICW4_SFNM)) {
+        return reqId <= svcId;
+    } else {
+        return reqId < svcId;
+    }
+}
+/*
+ * RespondINTR: Internal function
+ * Adds INTR to IRR and removes it from ISR
+ */
+static C_VOID RespondINTR(t_pic *rpic, type_unsigned_8 id) {
+    TYPE_SET_BIT(rpic->data.isr, VPIC_ISR_IRQ(id)); /* put C_INT into ISR */
+    TYPE_CLEAR_BIT(rpic->data.irr, VPIC_IRR_IRQ(id)); /* remove C_INT from  IRR */
+    if (TYPE_GET_BIT(rpic->data.icw4, VPIC_ICW4_AEOI)) {
+        /* Auto EOI Mode */
+        TYPE_CLEAR_BIT(rpic->data.isr, VPIC_ISR_IRQ(id));
+        if (TYPE_GET_BIT(rpic->data.ocw2, VPIC_OCW2_R)) {
+            /* Rotate Mode */
+            rpic->data.irx = (id + 1) % VPIC_MAX_IRQ_COUNT;
+        }
+    }
+}
+
+static C_INT core_machine_pic_is_level(const t_pic *pic)
+{
+    return pic != STD_NULL && TYPE_GET_BIT(pic->data.icw1, VPIC_ICW1_LTIM);
+}
+
+static t_pic *core_machine_pic_irq_source_controller(
+    core_machine_pic_irq_source *source, type_unsigned_8 *out_line)
+{
+    if (source == STD_NULL || out_line == STD_NULL) return STD_NULL;
+    if (source->irq < 8u) {
+        *out_line = source->irq;
+        return source->master;
+    }
+    if (source->irq < 16u) {
+        *out_line = (type_unsigned_8)(source->irq - 8u);
+        return source->slave;
+    }
+    return STD_NULL;
+}
+
+/*
+ * io_read_00x0
+ * PIC provide POLL, IRR, ISR based on OCW3
+ * Reference: 16-32.PDF, Page 192
+ * Reference: PC.PDF, Page 950
+ */
+static C_VOID io_read_00x0(t_pic *rpic, t_port *port) {
+    if (TYPE_GET_BIT(rpic->data.ocw3, VPIC_OCW3_P)) {
+        /* P=1 (Poll Command) */
+        if (VPIC_GetIntrTopId(rpic) == 0x08) {
+            /* set all bits to 0 if there's no interrupt in queue */
+            port->data.ioByte = TYPE_ZERO_8;
+        } else {
+            /* set highest bit to 1 if there's an interrupt in queue */
+            port->data.ioByte = VPIC_POLL_I | VPIC_GetIntrTopId(rpic);
+        }
+    } else {
+        switch (rpic->data.ocw3 & (VPIC_OCW3_RR | VPIC_OCW3_RIS)) {
+        case 0x02:
+            /* RR=1, RIS=0, Read IRR */
+            port->data.ioByte = rpic->data.irr;
+            break;
+        case 0x03:
+            /* RR=1, RIS=1, Read ISR */
+            port->data.ioByte = rpic->data.isr;
+            break;
+        default:
+            /* RR=0, No Operation */
+            break;
+        }
+    }
+}
+/*
+ * io_write_00x0
+ * PIC get ICW1, OCW2, OCW3
+ * Reference: 16-32.PDF, Page 184
+ * Reference: PC.PDF, Page 950
+ */
+static C_VOID io_write_00x0(t_pic *rpic, t_port *port) {
+    type_unsigned_8 id;
+    if (TYPE_GET_BIT(port->data.ioByte, VPIC_ICW1_I)) {
+        /* ICW1 (D4=1) */
+        rpic->data.icw1 = port->data.ioByte;
+        rpic->data.status = ICW2;
+        if (TYPE_GET_BIT(rpic->data.icw1, VPIC_ICW1_IC4)) {
+            /* D0=1, IC4=1 */
+        } else {
+            /* D0=0, IC4=0 */
+            rpic->data.icw4 = TYPE_ZERO_8;
+        }
+        if (TYPE_GET_BIT(rpic->data.icw1, VPIC_ICW1_SNGL)) {
+            /* D1=1, SNGL=1, ICW3=0 */
+        } else {
+            /* D1=0, SNGL=0, ICW3=1 */
+        }
+        if (TYPE_GET_BIT(rpic->data.icw1, VPIC_ICW1_LTIM)) {
+            /* D3=1, LTIM=1, Level Triggered Mode */
+        } else {
+            /* D3=0, LTIM=0, Edge  Triggered Mode */
+        }
+    } else {
+        /* OCWs (D4=0) */
+        if (TYPE_GET_BIT(port->data.ioByte, VPIC_OCW3_I)) {
+            /* OCW3 (D3=1) */
+            if (TYPE_GET_BIT(port->data.ioByte, VPIC_OCW3_ESMM)) {
+                /* ESMM=1: Enable Special Mask Mode */
+                rpic->data.ocw3 = port->data.ioByte;
+                if (TYPE_GET_BIT(rpic->data.ocw3, VPIC_OCW3_SMM)) {
+                    /* SMM=1: Set Special Mask Mode */
+                } else {
+                    /* SMM=0: Clear Sepcial Mask Mode */
+                }
+            } else {
+                /* ESMM=0: Keep SMM */
+                rpic->data.ocw3 = (rpic->data.ocw3 & VPIC_OCW3_SMM) | (port->data.ioByte & ~VPIC_OCW3_SMM);
+            }
+        } else {
+            /* OCW2 (D3=0) */
+            switch (port->data.ioByte & (VPIC_OCW2_EOI | VPIC_OCW2_SL | VPIC_OCW2_R)) {
+            /* D7=R, D6=SL, D5=EOI(End Of Interrupt) */
+            case 0x80:
+                /* 100: Set (Rotate Priorities in Auto EOI Mode) */
+                if (TYPE_GET_BIT(rpic->data.icw4, VPIC_ICW4_AEOI)) {
+                    rpic->data.ocw2 = port->data.ioByte;
+                }
+                break;
+            case 0x00:
+                /* 000: Clear (Rotate Priorities in Auto EOI Mode) */
+                if (TYPE_GET_BIT(rpic->data.icw4, VPIC_ICW4_AEOI)) {
+                    rpic->data.ocw2 = port->data.ioByte;
+                }
+                /* Bug in easyVM (0x00 ?= 0x20) */
+                break;
+            case 0x20:
+                /* 001: Non-specific EOI Command */
+                /* Set bit of highest priority interrupt in ISR to 0,
+                 IR0 > IR1 > IR2(IR8 > ... > IR15) > IR3 > ... > IR7 */
+                rpic->data.ocw2 = port->data.ioByte;
+                if (rpic->data.isr) {
+                    id = VPIC_GetIsrTopId(rpic);
+                    TYPE_CLEAR_BIT(rpic->data.isr, VPIC_ISR_IRQ(id));
+                }
+                break;
+            case 0x60:
+                /* 011: Specific EOI Command */
+                rpic->data.ocw2 = port->data.ioByte;
+                if (rpic->data.isr) {
+                    /* Get L2,L1,L0 */
+                    id = rpic->data.ocw2 & VPIC_OCW2_L;
+                    TYPE_CLEAR_BIT(rpic->data.isr, VPIC_ISR_IRQ(id));
+                }
+                /* Bug in easyVM: "isr &= (1 << i)" */
+                break;
+            case 0xa0:
+                /* 101: Rotate Priorities on Non-specific EOI */
+                rpic->data.ocw2 = port->data.ioByte;
+                if (rpic->data.isr) {
+                    id = VPIC_GetIsrTopId(rpic);
+                    TYPE_CLEAR_BIT(rpic->data.isr, VPIC_ISR_IRQ(id));
+                    rpic->data.irx = (id + 1) % VPIC_MAX_IRQ_COUNT;
+                }
+                break;
+            case 0xe0:
+                /* 111: Rotate Priority on Specific EOI Command */
+                rpic->data.ocw2 = port->data.ioByte;
+                if (rpic->data.isr) {
+                    id = VPIC_GetIsrTopId(rpic);
+                    TYPE_CLEAR_BIT(rpic->data.isr, VPIC_ISR_IRQ(id));
+                    rpic->data.irx = ((rpic->data.ocw2 & VPIC_OCW2_L) + 1) % VPIC_MAX_IRQ_COUNT;
+                }
+                break;
+            case 0xc0:
+                /* 110: Set Priority (does not reset current ISR bit) */
+                rpic->data.ocw2 = port->data.ioByte;
+                rpic->data.irx = (VPIC_GetOCW2_L(rpic->data.ocw2) + 1) % VPIC_MAX_IRQ_COUNT;
+                break;
+            case 0x40:
+                /* 010: No Operation */
+                break;
+            default:
+                break;
+            }
+        }
+    }
+}
+/*
+ * io_read_00x1
+ * PIC provide IMR
+ * Reference: 16-32.PDF, Page 184
+ */
+static C_VOID io_read_00x1(t_pic *rpic, t_port *port) {
+    port->data.ioByte = rpic->data.imr;
+}
+/*
+ * io_write_00x1
+ * PIC get ICW2, ICW3, ICW4, OCW1 after ICW1
+ */
+static C_VOID io_write_00x1(t_pic *rpic, t_port *port) {
+    switch (rpic->data.status) {
+    case ICW2:
+        rpic->data.icw2 = port->data.ioByte & VPIC_ICW2_VALID;
+        if (!TYPE_GET_BIT(rpic->data.icw1, VPIC_ICW1_SNGL)) {
+            /* ICW1.SNGL=0, ICW3=1 */
+            rpic->data.status = ICW3;
+        } else if (TYPE_GET_BIT(rpic->data.icw1, VPIC_ICW1_IC4)) {
+            /* ICW1.SNGL=1, IC4=1 */
+            rpic->data.status = ICW4;
+        } else {
+            /* ICW1.SNGL=1, IC4=0 */
+            rpic->data.status = OCW1;
+        }
+        break;
+    case ICW3:
+        rpic->data.icw3 = port->data.ioByte;
+        if (TYPE_GET_BIT(rpic->data.icw1, VPIC_ICW1_IC4)) {
+            /* ICW1.IC4=1 */
+            rpic->data.status = ICW4;
+        } else {
+            rpic->data.status = OCW1;
+        }
+        break;
+    case ICW4:
+        rpic->data.icw4 = port->data.ioByte & VPIC_ICW4_VALID;
+        if (TYPE_GET_BIT(rpic->data.icw4, VPIC_ICW4_uPM)) {
+            /* uPM=1, 16-bit 80x86 */
+        } else {
+            /* uPM=0, 8-bit 8080/8085 */
+        }
+        if (TYPE_GET_BIT(rpic->data.icw4, VPIC_ICW4_AEOI)) {
+            /* AEOI=1, Automatic End of Interrupt */
+        } else {
+            /* AEOI=0, Non-automatic End of Interrupt */
+        }
+        if (TYPE_GET_BIT(rpic->data.icw4, VPIC_ICW4_BUF)) {
+            /* BUF=1, Buffer */
+            if (TYPE_GET_BIT(rpic->data.icw4, VPIC_ICW4_MS)) {
+                /* M/S=1, Master 8259A */
+            } else {
+                /* M/S=0, Slave 8259A */
+            }
+        } else {
+            /* BUF=0, Non-buffer */
+        }
+        if (TYPE_GET_BIT(rpic->data.icw4, VPIC_ICW4_SFNM)) {
+            /* SFNM=1, Special Fully Nested Mode */
+        } else {
+            /* SFNM=0, Non-special Fully Nested Mode */
+        }
+        rpic->data.status = OCW1;
+        break;
+    case OCW1:
+        rpic->data.ocw1 = port->data.ioByte;
+        if (TYPE_GET_BIT(rpic->data.ocw3, VPIC_OCW3_SMM)) {
+            rpic->data.isr &= ~(rpic->data.imr);
+        }
+        break;
+    default:
+        break;
+    }
+}
+
+/* The provider owner is the composition-owned PIC selected for this port. */
+static C_VOID io_read_0020(t_port *port, type_unsigned_16 port_id, C_VOID *owner) {
+    (C_VOID)port_id;
+    io_read_00x0((t_pic *)owner, port);
+}
+static C_VOID io_read_0021(t_port *port, type_unsigned_16 port_id, C_VOID *owner) {
+    (C_VOID)port_id;
+    io_read_00x1((t_pic *)owner, port);
+}
+static C_VOID io_read_00A0(t_port *port, type_unsigned_16 port_id, C_VOID *owner) {
+    (C_VOID)port_id;
+    io_read_00x0((t_pic *)owner, port);
+}
+static C_VOID io_read_00A1(t_port *port, type_unsigned_16 port_id, C_VOID *owner) {
+    (C_VOID)port_id;
+    io_read_00x1((t_pic *)owner, port);
+}
+static C_VOID io_write_0020(t_port *port, type_unsigned_16 port_id, C_VOID *owner) {
+    (C_VOID)port_id;
+    io_write_00x0((t_pic *)owner, port);
+}
+static C_VOID io_write_0021(t_port *port, type_unsigned_16 port_id, C_VOID *owner) {
+    (C_VOID)port_id;
+    io_write_00x1((t_pic *)owner, port);
+}
+static C_VOID io_write_00A0(t_port *port, type_unsigned_16 port_id, C_VOID *owner) {
+    (C_VOID)port_id;
+    io_write_00x0((t_pic *)owner, port);
+}
+static C_VOID io_write_00A1(t_port *port, type_unsigned_16 port_id, C_VOID *owner) {
+    (C_VOID)port_id;
+    io_write_00x1((t_pic *)owner, port);
+}
+
+/*
+ * vpicSetIRQ
+ * Puts C_INT request into IRR
+ * Called by C_INT request sender of devices, e.g. vpitIntTick
+ */
+C_VOID core_machine_pic_irq_source_bind(core_machine_pic_irq_source *source,
+    t_pic *master, t_pic *slave, type_unsigned_8 irq_id)
+{
+    if (source == STD_NULL || master == STD_NULL || slave == STD_NULL ||
+        irq_id >= 16u || irq_id == 2u) return;
+    STD_MEMSET(source, TYPE_ZERO_8, sizeof(*source));
+    source->master = master;
+    source->slave = slave;
+    source->irq = irq_id;
+}
+
+C_VOID core_machine_pic_irq_source_assert(core_machine_pic_irq_source *source)
+{
+    t_pic *controller;
+    type_unsigned_8 line;
+
+    if (source == STD_NULL || source->asserted) return;
+    controller = core_machine_pic_irq_source_controller(source, &line);
+    if (controller == STD_NULL) return;
+    source->asserted = TYPE_TRUE;
+    if (controller->data.asserted[line] != 0xffu) ++controller->data.asserted[line];
+    TYPE_SET_BIT(controller->data.irr, VPIC_IRR_IRQ(line));
+}
+
+C_VOID core_machine_pic_irq_source_deassert(core_machine_pic_irq_source *source)
+{
+    t_pic *controller;
+    type_unsigned_8 line;
+
+    if (source == STD_NULL || !source->asserted) return;
+    controller = core_machine_pic_irq_source_controller(source, &line);
+    source->asserted = TYPE_FALSE;
+    if (controller == STD_NULL || controller->data.asserted[line] == 0u) return;
+    --controller->data.asserted[line];
+    if (core_machine_pic_is_level(controller) && controller->data.asserted[line] == 0u) {
+        TYPE_CLEAR_BIT(controller->data.irr, VPIC_IRR_IRQ(line));
+    }
+}
+
+C_VOID core_machine_pic_timer_output(C_VOID *owner, type_bool asserted) {
+    if (asserted) {
+        core_machine_pic_irq_source_assert((core_machine_pic_irq_source *)owner);
+    } else {
+        core_machine_pic_irq_source_deassert((core_machine_pic_irq_source *)owner);
+    }
+}
+
+type_bool core_machine_pic_scan_interrupt(t_pic *master, t_pic *slave) {
+    type_bool flagINTR;
+    if (master == STD_NULL || slave == STD_NULL) return TYPE_FALSE;
+    flagINTR = HasINTR(master);
+    if (flagINTR && (VPIC_GetIntrTopId(master) == 2)) {
+        /* check slave pic */
+        flagINTR = HasINTR(slave);
+    }
+    return flagINTR;
+}
+type_unsigned_8 core_machine_pic_peek_interrupt(t_pic *master, t_pic *slave) {
+    type_unsigned_8 reqId1;
+    type_unsigned_8 reqId2;
+
+    if (master == STD_NULL || slave == STD_NULL) return 0;
+    reqId1 = VPIC_GetIntrTopId(master);
+    if (reqId1 == 0x02) {
+        reqId2 = VPIC_GetIntrTopId(slave);
+        return (type_unsigned_8)(reqId2 | slave->data.icw2);
+    }
+    return (type_unsigned_8)(reqId1 | master->data.icw2);
+}
+type_unsigned_8 core_machine_pic_get_interrupt(t_pic *master, t_pic *slave) {
+    type_unsigned_8 reqId1; /* top requested C_INT id in master pic */
+    type_unsigned_8 reqId2; /* top requested C_INT id in slave pic */
+    if (master == STD_NULL || slave == STD_NULL) return 0;
+    reqId1 = VPIC_GetIntrTopId(master);
+    RespondINTR(master, reqId1);
+    if (reqId1 == 0x02) {
+        /* if IR2 has C_INT request, then test slave pic */
+        reqId2 = VPIC_GetIntrTopId(slave);
+        RespondINTR(slave, reqId2);
+        /* find the final C_INT id based on slave ICW2 */
+        return (reqId2 | slave->data.icw2);
+    } else {
+        /* find the final C_INT id based on master ICW2 */
+        return (reqId1 | master->data.icw2);
+    }
+}
+
+C_VOID core_machine_pic_initialize(t_pic *master, t_pic *slave, t_port *port)
+{
+    if (master == STD_NULL || slave == STD_NULL || port == STD_NULL) return;
+    STD_MEMSET((C_VOID *)master, TYPE_ZERO_8, sizeof(*master));
+    STD_MEMSET((C_VOID *)slave, TYPE_ZERO_8, sizeof(*slave));
+    core_machine_port_add_read(port, 0x0020, io_read_0020, master);
+    core_machine_port_add_read(port, 0x0021, io_read_0021, master);
+    core_machine_port_add_read(port, 0x00a0, io_read_00A0, slave);
+    core_machine_port_add_read(port, 0x00a1, io_read_00A1, slave);
+    core_machine_port_add_write(port, 0x0020, io_write_0020, master);
+    core_machine_port_add_write(port, 0x0021, io_write_0021, master);
+    core_machine_port_add_write(port, 0x00a0, io_write_00A0, slave);
+    core_machine_port_add_write(port, 0x00a1, io_write_00A1, slave);
+}
+C_VOID core_machine_pic_reset(t_pic *master, t_pic *slave) {
+    if (master == STD_NULL || slave == STD_NULL) return;
+    STD_MEMSET((C_VOID *)(&master->data), TYPE_ZERO_8, sizeof(t_pic_data));
+    STD_MEMSET((C_VOID *)(&slave->data), TYPE_ZERO_8, sizeof(t_pic_data));
+    master->data.status = slave->data.status = ICW1;
+    master->data.ocw3 = slave->data.ocw3 = VPIC_OCW3_RR;
+}
+C_VOID core_machine_pic_refresh(t_pic *master, t_pic *slave) {
+    type_unsigned_8 id;
+    if (master == STD_NULL || slave == STD_NULL) return;
+    if (core_machine_pic_is_level(master)) {
+        for (id = 0u; id < VPIC_MAX_IRQ_COUNT; ++id) {
+            if (master->data.asserted[id] != 0u) {
+                TYPE_SET_BIT(master->data.irr, VPIC_IRR_IRQ(id));
+            }
+        }
+    }
+    if (core_machine_pic_is_level(slave)) {
+        for (id = 0u; id < VPIC_MAX_IRQ_COUNT; ++id) {
+            if (slave->data.asserted[id] != 0u) {
+                TYPE_SET_BIT(slave->data.irr, VPIC_IRR_IRQ(id));
+            }
+        }
+    }
+    if (slave->data.irr & (~slave->data.imr)) {
+        /* if slave pic has requested C_INT, then
+         * pass the request into IR2 of master pic */
+        TYPE_SET_BIT(master->data.irr, VPIC_IRR_IRQ(2));
+    } else {
+        /* remove IR2 from master pic */
+        TYPE_CLEAR_BIT(master->data.irr, VPIC_IRR_IRQ(2));
+    }
+}
+C_VOID core_machine_pic_finalize(t_pic *master, t_pic *slave) {
+    (C_VOID)master;
+    (C_VOID)slave;
+}
+
+/*
+Test Case for regular IBM PC use
+Initialize (ICW1, ICW2, ICW3, ICW4 50%)
+o20 11
+o21 08
+o21 04
+o21 11
+oa0 11
+oa1 70
+oa1 02
+oa1 01
+    PrintInfo
+iff20
+    Mask IRQ 5 and IRQ c by OCW1
+o21 20
+oa1 10
+    SetIRQs
+off20 1
+off20 5
+off20 a
+off20 c
+off20 d
+    ScanINTR
+        iff21
+        result should be 01
+    GetINTR
+        iff22
+        result should be 09
+    EOI 0x20, PrintInfo, look at IRR, ISR(0), IMR
+        o20 20
+    ScanINTR
+        iff21
+        result should be 01
+    GetINTR
+        iff22
+        result should be 72 now ISR1 is 4, ISR2 is 4
+        SetIRQ
+            off20 0
+        ScanINTR
+            iff21
+            result should be 01
+        GetINTR
+            iff22
+            result should be 08
+        EOI
+            o20 20, now ISR1 should be 4, ISR2 should be 4
+        SetIRQ
+            off20 8
+        ScanINTR
+            iff21
+            result should be 01
+        GetINTR
+            iff22
+            result should be 01, ISR2 should be 5
+        EOI
+            oa0 20, now ISR1 should be 4, ISR2 should be 4
+        SetIRQ
+            off20 4
+        ScanINTR
+            iff21
+            result should be 00
+    EOI
+        oa0 20
+        o20 20
+    ScanINTR, PrintInfo, look at IRR, ISR, IMR
+    GetINTR, PrintInfo, look at IRR, ISR, IMR
+    EOI 0x20, PrintInfo, look at IRR, ISR, IMR (think about pic2)
+
+    Test case for port commands
+    Initialize
+o20 11
+o21 08
+o21 04
+o21 11
+oa0 11
+oa1 70
+oa1 02
+oa1 01
+    SetIRQs
+off20 1
+off20 5
+off20 a
+off20 c
+off20 d
+    Test ESMM (OCW3 50%)
+        o20 29    ocw3 = 0010 1001, see if D5 changes
+        o20 4a    ocw3 = 0100 1010, see if D5 changes
+        o20 6c    ocw3 = 0110 1100, see if D5 changes
+        o20 49    ocw3 = 0100 1001, see if D5 changes
+    Test SMM (OCW1)
+        o20 49, disable SMM
+        iff21
+        iff22, get ISR 1
+        o21 33
+        iff20, print info
+        o20 6c, enable SMM
+        o21 33
+        iff20, print info
+    Test P/RR/RIS (OCW3 50%)
+        o20 4c    ocw3 = 0100 1100, enable poll
+        i20        see poll
+        o20 4a    ocw3 = 0100 1010, disable poll, enable IRR
+        i20        see irr
+        o20 4b    ocw3 = 0100 1011, disable poll, enable ISR
+        i20        see isr
+    Test AEOI (ICW4 50%)
+    not tested yet
+    Test OCW2
+    not tested yet
+*/

@@ -1,0 +1,3085 @@
+cmake_minimum_required(VERSION 3.23)
+
+# M0 validates the selected C toolchain. M1 adds the imported baseline target;
+# M3 later adds the refactored machine target after M2 design approval.
+project(ntvdm64 LANGUAGES C)
+
+# Current runnable smoke coverage is registered with CTest. Build presets use
+# run-current-smokes so a successful gate means the selected smoke programs
+# executed, not merely that they linked.
+enable_testing()
+
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_C_EXTENSIONS OFF)
+
+option(PROJECT_ENABLE_BOCHX_RESEARCH
+    "Build the local-only Bochx experiment manifest validator" OFF)
+
+set(PROJECT_VM_PLATFORM_TEST_FAILURE_STAGE "0" CACHE STRING
+    "Test-only Win32 platform startup failure stage (0 disables injection)")
+if(NOT PROJECT_VM_PLATFORM_TEST_FAILURE_STAGE STREQUAL "0")
+    if(NOT WIN32 OR NOT PROJECT_VM_PLATFORM_TEST_FAILURE_STAGE MATCHES "^[1-9]$")
+        message(FATAL_ERROR
+            "PROJECT_VM_PLATFORM_TEST_FAILURE_STAGE must be 0 or 1 through 9 on Win32.")
+    endif()
+    add_compile_definitions(
+        NTVDM64_VM_PLATFORM_TEST_FAILURE_STAGE=${PROJECT_VM_PLATFORM_TEST_FAILURE_STAGE})
+endif()
+
+if(NOT CMAKE_C_COMPILER_ID MATCHES "^(GNU|MSVC|Clang)$")
+    message(FATAL_ERROR "ntvdm64 requires GCC, MSVC, or Clang C11 support.")
+endif()
+
+if(NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
+    message(FATAL_ERROR "ntvdm64 requires a 64-bit C toolchain.")
+endif()
+
+find_program(POWERSHELL_EXECUTABLE NAMES powershell pwsh)
+if(NOT WIN32)
+    add_compile_definitions(_POSIX_C_SOURCE=200809L _DEFAULT_SOURCE=1)
+endif()
+
+set(PROJECT_PROBE_DIR "${CMAKE_BINARY_DIR}/probes")
+
+add_library(core-machine STATIC
+    src/core/machine/clock.c
+    src/core/machine/debug.c
+    src/core/machine/entry_plan_interface.c
+    src/core/machine/fdc.c
+    src/core/machine/hdc.c
+    src/core/machine/machine.c
+    src/core/machine/memory_interface.c
+    src/core/machine/media_interface.c
+    src/core/machine/port_interface.c
+    src/core/machine/presentation_interface.c
+    src/core/machine/rom_mapping_interface.c
+    src/core/machine/trace_interface.c
+)
+# This is the complete public core-machine runtime. It extends the primitive
+# storage/executor target below; it is not a second guest executor.
+add_library(core-machine-runtime ALIAS core-machine)
+target_include_directories(core-machine PUBLIC
+    "${CMAKE_SOURCE_DIR}/src"
+)
+
+add_executable(core-machine-contract-smoke
+    tests/core/core_contract_smoke.c
+)
+add_executable(vm-default-pc-at-profile-smoke
+    tests/firmware/default_pc_at_profile_smoke.c)
+target_link_libraries(vm-default-pc-at-profile-smoke PRIVATE vm-profile)
+add_executable(vm-hdc-port-smoke tests/machine/vm_hdc_port_smoke.c)
+target_link_libraries(vm-hdc-port-smoke PRIVATE vm-composition)
+add_executable(vm-media-provider-smoke tests/machine/vm_media_provider_smoke.c)
+target_link_libraries(vm-media-provider-smoke PRIVATE vm-machine core-machine)
+add_executable(vm-hdc-hdd-boot-smoke tests/machine/vm_hdc_hdd_boot_smoke.c)
+target_link_libraries(vm-hdc-hdd-boot-smoke PRIVATE vm-composition)
+add_executable(vm-default-pc-at-apply-smoke
+    tests/machine/vm_default_pc_at_apply_smoke.c)
+target_link_libraries(vm-default-pc-at-apply-smoke PRIVATE vm-composition)
+
+add_executable(vm-default-pc-at-rom-materialization-smoke
+    tests/machine/vm_default_pc_at_rom_materialization_smoke.c)
+target_link_libraries(vm-default-pc-at-rom-materialization-smoke PRIVATE vm-composition)
+add_executable(vm-timer-firmware-smoke
+    tests/machine/vm_timer_firmware_smoke.c)
+target_link_libraries(vm-timer-firmware-smoke PRIVATE vm-composition)
+add_executable(vm-product-default-profile-smoke tests/products/nxvm_default_profile_smoke.c)
+target_link_libraries(vm-product-default-profile-smoke PRIVATE vm-composition)
+add_executable(vm-product-console-smoke
+    tests/products/nxvm_console_smoke.c
+    tests/products/support/vm_session_console.c)
+target_include_directories(vm-product-console-smoke PRIVATE
+    "${CMAKE_SOURCE_DIR}/tests")
+target_link_libraries(vm-product-console-smoke PRIVATE vm-product)
+add_executable(vm-product-console-lifecycle-smoke
+    tests/products/nxvm_console_lifecycle_smoke.c)
+target_link_libraries(vm-product-console-lifecycle-smoke PRIVATE
+    vm-product vm-composition)
+add_executable(vm-product-session-smoke tests/products/nxvm_session_smoke.c)
+target_link_libraries(vm-product-session-smoke PRIVATE vm-composition)
+add_executable(vm-session-initialization-atomicity-smoke
+    tests/products/vm_session_initialization_atomicity_smoke.c)
+target_link_libraries(vm-session-initialization-atomicity-smoke PRIVATE vm-composition)
+add_executable(vm-session-manager-smoke
+    tests/products/nxvm_session_manager_smoke.c)
+target_link_libraries(vm-session-manager-smoke PRIVATE vm-composition)
+add_executable(vm-session-profile-smoke
+    tests/products/nxvm_session_profile_smoke.c)
+target_link_libraries(vm-session-profile-smoke PRIVATE vm-composition)
+add_executable(vm-session-reconfigure-smoke
+    tests/products/nxvm_session_reconfigure_smoke.c)
+target_link_libraries(vm-session-reconfigure-smoke PRIVATE vm-composition)
+
+target_link_libraries(core-machine-contract-smoke PRIVATE core-machine)
+
+add_executable(core-machine-instance-smoke
+    tests/core/machine_instance_smoke.c
+)
+target_link_libraries(core-machine-instance-smoke PRIVATE core-machine)
+
+add_executable(core-machine-lifecycle-smoke
+    tests/core/machine_lifecycle_smoke.c
+)
+target_link_libraries(core-machine-lifecycle-smoke PRIVATE core-machine)
+
+add_executable(core-machine-firmware-capability-smoke
+    tests/core/machine_firmware_capability_smoke.c)
+target_link_libraries(core-machine-firmware-capability-smoke PRIVATE core-machine)
+
+add_executable(core-machine-time-smoke tests/core/machine_time_smoke.c)
+target_link_libraries(core-machine-time-smoke PRIVATE core-machine)
+
+add_executable(core-machine-scheduler-smoke
+    tests/core/machine_scheduler_smoke.c)
+target_link_libraries(core-machine-scheduler-smoke PRIVATE core-machine)
+
+add_executable(core-machine-timing-checkpoint-smoke
+    tests/core/machine_timing_checkpoint_smoke.c)
+target_link_libraries(core-machine-timing-checkpoint-smoke PRIVATE core-machine)
+
+add_executable(core-machine-rational-clock-smoke
+    tests/core/machine_rational_clock_smoke.c)
+target_link_libraries(core-machine-rational-clock-smoke PRIVATE core-machine)
+
+add_executable(core-machine-real-mode-tick-smoke
+    tests/machine/core_machine_real_mode_tick_smoke.c)
+target_link_libraries(core-machine-real-mode-tick-smoke PRIVATE core-machine)
+
+add_executable(core-machine-instruction-timing-smoke
+    tests/machine/core_machine_instruction_timing_smoke.c)
+target_link_libraries(core-machine-instruction-timing-smoke PRIVATE core-machine)
+
+add_executable(core-machine-real-mode-corpus-smoke
+    tests/machine/core_machine_real_mode_corpus_smoke.c)
+target_link_libraries(core-machine-real-mode-corpus-smoke PRIVATE core-machine)
+
+add_executable(core-machine-real-mode-386-address-smoke
+    tests/machine/core_machine_real_mode_386_address_smoke.c)
+target_link_libraries(core-machine-real-mode-386-address-smoke PRIVATE core-machine)
+add_executable(core-machine-operand-address-smoke
+    tests/machine/core_machine_operand_address_smoke.c)
+target_link_libraries(core-machine-operand-address-smoke PRIVATE core-machine)
+add_executable(core-machine-prefix-attributes-s64-smoke
+    tests/machine/core_machine_prefix_attributes_s64_smoke.c)
+target_link_libraries(core-machine-prefix-attributes-s64-smoke PRIVATE core-machine)
+add_executable(core-machine-legacy-lock-s1-smoke
+    tests/machine/core_machine_legacy_lock_s1_smoke.c)
+target_link_libraries(core-machine-legacy-lock-s1-smoke PRIVATE core-machine)
+if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
+    target_compile_options(core-machine-legacy-lock-s1-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
+add_executable(core-machine-setcc-smoke tests/machine/core_machine_setcc_smoke.c)
+target_link_libraries(core-machine-setcc-smoke PRIVATE core-machine)
+add_executable(core-machine-movx-smoke tests/machine/core_machine_movx_smoke.c)
+target_link_libraries(core-machine-movx-smoke PRIVATE core-machine)
+add_executable(core-machine-bit-test-smoke tests/machine/core_machine_bit_test_smoke.c)
+target_link_libraries(core-machine-bit-test-smoke PRIVATE core-machine)
+add_executable(core-machine-inc-dec-smoke tests/machine/core_machine_inc_dec_smoke.c)
+target_link_libraries(core-machine-inc-dec-smoke PRIVATE core-machine)
+add_executable(core-machine-legacy-alu-s2-smoke
+    tests/machine/core_machine_legacy_alu_s2_smoke.c)
+target_link_libraries(core-machine-legacy-alu-s2-smoke PRIVATE core-machine)
+if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
+    target_compile_options(core-machine-legacy-alu-s2-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
+add_executable(core-machine-rotate-smoke tests/machine/core_machine_rotate_smoke.c)
+target_link_libraries(core-machine-rotate-smoke PRIVATE core-machine)
+add_executable(core-machine-eflags-local-smoke tests/machine/core_machine_eflags_local_smoke.c)
+target_link_libraries(core-machine-eflags-local-smoke PRIVATE core-machine)
+add_executable(core-machine-pushf-popf-smoke tests/machine/core_machine_pushf_popf_smoke.c)
+target_link_libraries(core-machine-pushf-popf-smoke PRIVATE core-machine)
+add_executable(core-machine-pushf-popf-s47-smoke tests/machine/core_machine_pushf_popf_s47_smoke.c)
+target_link_libraries(core-machine-pushf-popf-s47-smoke PRIVATE core-machine)
+add_executable(core-machine-cli-sti-smoke tests/machine/core_machine_cli_sti_smoke.c)
+target_link_libraries(core-machine-cli-sti-smoke PRIVATE core-machine)
+add_executable(core-machine-cli-sti-s48-smoke tests/machine/core_machine_cli_sti_s48_smoke.c)
+target_link_libraries(core-machine-cli-sti-s48-smoke PRIVATE core-machine)
+add_executable(core-machine-hlt-s49-smoke tests/machine/core_machine_hlt_s49_smoke.c)
+target_link_libraries(core-machine-hlt-s49-smoke PRIVATE core-machine)
+add_executable(core-machine-software-int-s50-smoke tests/machine/core_machine_software_int_s50_smoke.c)
+target_link_libraries(core-machine-software-int-s50-smoke PRIVATE core-machine)
+add_executable(core-machine-iret-s51-smoke tests/machine/core_machine_iret_s51_smoke.c)
+target_link_libraries(core-machine-iret-s51-smoke PRIVATE core-machine)
+add_executable(core-machine-iret-outer-s52-smoke tests/machine/core_machine_iret_outer_s52_smoke.c)
+target_link_libraries(core-machine-iret-outer-s52-smoke PRIVATE core-machine)
+add_executable(core-machine-fs-gs-stack-smoke tests/machine/core_machine_fs_gs_stack_smoke.c)
+target_link_libraries(core-machine-fs-gs-stack-smoke PRIVATE core-machine)
+add_executable(core-machine-lss-lfs-lgs-smoke tests/machine/core_machine_lss_lfs_lgs_smoke.c)
+target_link_libraries(core-machine-lss-lfs-lgs-smoke PRIVATE core-machine)
+add_executable(core-machine-les-lds-smoke tests/machine/core_machine_les_lds_smoke.c)
+target_link_libraries(core-machine-les-lds-smoke PRIVATE core-machine)
+
+add_executable(core-machine-les-lds-s41-smoke
+    tests/machine/core_machine_les_lds_s41_smoke.c)
+target_link_libraries(core-machine-les-lds-s41-smoke PRIVATE core-machine)
+add_executable(core-machine-lea-smoke tests/machine/core_machine_lea_smoke.c)
+target_link_libraries(core-machine-lea-smoke PRIVATE core-machine)
+add_executable(core-machine-xchg-smoke tests/machine/core_machine_xchg_smoke.c)
+target_link_libraries(core-machine-xchg-smoke PRIVATE core-machine)
+add_executable(core-machine-sign-extend-smoke tests/machine/core_machine_sign_extend_smoke.c)
+target_link_libraries(core-machine-sign-extend-smoke PRIVATE core-machine)
+add_executable(core-machine-moffs-smoke tests/machine/core_machine_moffs_smoke.c)
+target_link_libraries(core-machine-moffs-smoke PRIVATE core-machine)
+add_executable(core-machine-gpr-mov-smoke tests/machine/core_machine_gpr_mov_smoke.c)
+target_link_libraries(core-machine-gpr-mov-smoke PRIVATE core-machine)
+add_executable(core-machine-sreg-mov-smoke tests/machine/core_machine_sreg_mov_smoke.c)
+target_link_libraries(core-machine-sreg-mov-smoke PRIVATE core-machine)
+add_executable(core-machine-movs-smoke tests/machine/core_machine_movs_smoke.c)
+target_link_libraries(core-machine-movs-smoke PRIVATE core-machine)
+add_executable(core-machine-stos-smoke tests/machine/core_machine_stos_smoke.c)
+target_link_libraries(core-machine-stos-smoke PRIVATE core-machine)
+add_executable(core-machine-lods-smoke tests/machine/core_machine_lods_smoke.c)
+target_link_libraries(core-machine-lods-smoke PRIVATE core-machine)
+add_executable(core-machine-scas-smoke tests/machine/core_machine_scas_smoke.c)
+target_link_libraries(core-machine-scas-smoke PRIVATE core-machine)
+add_executable(core-machine-pusha-popa-smoke
+    tests/machine/core_machine_pusha_popa_smoke.c)
+target_link_libraries(core-machine-pusha-popa-smoke PRIVATE core-machine)
+add_executable(core-machine-enter-leave-smoke
+    tests/machine/core_machine_enter_leave_smoke.c)
+target_link_libraries(core-machine-enter-leave-smoke PRIVATE core-machine)
+add_executable(core-machine-gpr-push-pop-smoke
+    tests/machine/core_machine_gpr_push_pop_smoke.c)
+target_link_libraries(core-machine-gpr-push-pop-smoke PRIVATE core-machine)
+add_executable(core-machine-push-immediate-smoke
+    tests/machine/core_machine_push_immediate_smoke.c)
+target_link_libraries(core-machine-push-immediate-smoke PRIVATE core-machine)
+add_executable(core-machine-legacy-sreg-stack-smoke
+    tests/machine/core_machine_legacy_sreg_stack_smoke.c)
+target_link_libraries(core-machine-legacy-sreg-stack-smoke PRIVATE core-machine)
+add_executable(core-machine-double-shift-smoke tests/machine/core_machine_double_shift_smoke.c)
+target_link_libraries(core-machine-double-shift-smoke PRIVATE core-machine)
+add_executable(core-machine-bit-scan-smoke tests/machine/core_machine_bit_scan_smoke.c)
+target_link_libraries(core-machine-bit-scan-smoke PRIVATE core-machine)
+add_executable(core-machine-imul2-smoke tests/machine/core_machine_imul2_smoke.c)
+target_link_libraries(core-machine-imul2-smoke PRIVATE core-machine)
+add_executable(core-machine-imul-immediate-s56-smoke
+    tests/machine/core_machine_imul_immediate_s56_smoke.c)
+target_link_libraries(core-machine-imul-immediate-s56-smoke PRIVATE core-machine)
+add_executable(core-machine-lar-lsl-s57-smoke
+    tests/machine/core_machine_lar_lsl_s57_smoke.c)
+target_link_libraries(core-machine-lar-lsl-s57-smoke PRIVATE core-machine)
+add_executable(core-machine-verr-verw-s58-smoke
+    tests/machine/core_machine_verr_verw_s58_smoke.c)
+target_link_libraries(core-machine-verr-verw-s58-smoke PRIVATE core-machine)
+add_executable(core-machine-debug-mov-s59-smoke
+    tests/machine/core_machine_debug_mov_s59_smoke.c)
+target_link_libraries(core-machine-debug-mov-s59-smoke PRIVATE core-machine)
+add_executable(core-machine-tf-db-s60-smoke
+    tests/machine/core_machine_tf_db_s60_smoke.c)
+target_link_libraries(core-machine-tf-db-s60-smoke PRIVATE core-machine)
+add_executable(core-machine-dttr-s61-smoke
+    tests/machine/core_machine_dttr_s61_smoke.c)
+target_link_libraries(core-machine-dttr-s61-smoke PRIVATE core-machine)
+add_executable(core-machine-clts-s62-smoke
+    tests/machine/core_machine_clts_s62_smoke.c)
+target_link_libraries(core-machine-clts-s62-smoke PRIVATE core-machine)
+add_executable(core-machine-msw-s63-smoke
+    tests/machine/core_machine_msw_s63_smoke.c)
+target_link_libraries(core-machine-msw-s63-smoke PRIVATE core-machine)
+add_executable(core-machine-control-transfer-smoke
+    tests/machine/core_machine_control_transfer_smoke.c)
+target_link_libraries(core-machine-control-transfer-smoke PRIVATE core-machine)
+add_executable(core-machine-protected-far-s1-smoke
+    tests/machine/core_machine_protected_far_s1_smoke.c)
+target_link_libraries(core-machine-protected-far-s1-smoke PRIVATE core-machine)
+if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
+    target_compile_options(core-machine-protected-far-s1-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
+add_executable(core-machine-protected-data-access-s2-smoke
+    tests/machine/core_machine_protected_data_access_s2_smoke.c)
+target_link_libraries(core-machine-protected-data-access-s2-smoke PRIVATE core-machine)
+if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
+    target_compile_options(core-machine-protected-data-access-s2-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
+add_executable(core-machine-protected-16-gate-s3-smoke
+    tests/machine/core_machine_protected_16_gate_s3_smoke.c)
+target_link_libraries(core-machine-protected-16-gate-s3-smoke PRIVATE core-machine)
+if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
+    target_compile_options(core-machine-protected-16-gate-s3-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
+add_executable(core-machine-protected-16-external-s4-smoke
+    tests/machine/core_machine_protected_16_external_s4_smoke.c)
+target_link_libraries(core-machine-protected-16-external-s4-smoke PRIVATE core-machine)
+if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
+    target_compile_options(core-machine-protected-16-external-s4-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
+add_executable(core-machine-protected-16-outer-s5-smoke
+    tests/machine/core_machine_protected_16_outer_s5_smoke.c)
+target_link_libraries(core-machine-protected-16-outer-s5-smoke PRIVATE core-machine)
+if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
+    target_compile_options(core-machine-protected-16-outer-s5-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
+add_executable(core-machine-protected-16-outer-iret-s6-smoke
+    tests/machine/core_machine_protected_16_outer_iret_s6_smoke.c)
+target_link_libraries(core-machine-protected-16-outer-iret-s6-smoke PRIVATE core-machine)
+if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
+    target_compile_options(core-machine-protected-16-outer-iret-s6-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
+add_executable(core-machine-protected-16-call-gate-s7-smoke
+    tests/machine/core_machine_protected_16_call_gate_s7_smoke.c)
+target_link_libraries(core-machine-protected-16-call-gate-s7-smoke PRIVATE core-machine)
+if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
+    target_compile_options(core-machine-protected-16-call-gate-s7-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
+add_executable(core-machine-descriptor-system-smoke
+    tests/machine/core_machine_descriptor_system_smoke.c)
+target_link_libraries(core-machine-descriptor-system-smoke PRIVATE core-machine)
+add_executable(core-machine-sgdt-sidt-smoke
+    tests/machine/core_machine_sgdt_sidt_smoke.c)
+target_link_libraries(core-machine-sgdt-sidt-smoke PRIVATE core-machine)
+add_executable(core-machine-lgdt-lidt-smoke
+    tests/machine/core_machine_lgdt_lidt_smoke.c)
+target_link_libraries(core-machine-lgdt-lidt-smoke PRIVATE core-machine)
+add_executable(core-machine-vm86-delivery-smoke
+    tests/machine/core_machine_vm86_delivery_smoke.c)
+target_link_libraries(core-machine-vm86-delivery-smoke PRIVATE core-machine)
+if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(core-machine-vm86-delivery-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+endif()
+add_executable(core-machine-vm86-iret-smoke
+    tests/machine/core_machine_vm86_iret_smoke.c)
+target_link_libraries(core-machine-vm86-iret-smoke PRIVATE core-machine)
+if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(core-machine-vm86-iret-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+endif()
+add_executable(core-machine-interrupt-entry-smoke
+    tests/machine/core_machine_interrupt_entry_smoke.c)
+target_link_libraries(core-machine-interrupt-entry-smoke PRIVATE core-machine)
+add_executable(core-machine-idt-privilege-entry-smoke
+    tests/machine/core_machine_idt_privilege_entry_smoke.c)
+target_link_libraries(core-machine-idt-privilege-entry-smoke PRIVATE core-machine)
+add_executable(core-machine-real-mode-386-rep-cmps-smoke
+    tests/machine/core_machine_real_mode_386_rep_cmps_smoke.c)
+target_link_libraries(core-machine-real-mode-386-rep-cmps-smoke PRIVATE core-machine)
+
+add_executable(core-machine-cmps-smoke
+    tests/machine/core_machine_cmps_smoke.c)
+target_link_libraries(core-machine-cmps-smoke PRIVATE core-machine)
+
+add_executable(core-machine-port-strings-smoke
+    tests/machine/core_machine_port_strings_smoke.c)
+target_link_libraries(core-machine-port-strings-smoke PRIVATE core-machine)
+add_executable(core-machine-port-io-s55-smoke
+    tests/machine/core_machine_port_io_s55_smoke.c)
+target_link_libraries(core-machine-port-io-s55-smoke PRIVATE core-machine)
+
+add_executable(core-machine-lahf-sahf-smoke
+    tests/machine/core_machine_lahf_sahf_smoke.c)
+target_link_libraries(core-machine-lahf-sahf-smoke PRIVATE core-machine)
+
+add_executable(core-machine-direct-flags-smoke
+    tests/machine/core_machine_direct_flags_smoke.c)
+target_link_libraries(core-machine-direct-flags-smoke PRIVATE core-machine)
+
+add_executable(core-machine-80286-protected-mode-smoke
+    tests/machine/core_machine_80286_protected_mode_smoke.c)
+target_link_libraries(core-machine-80286-protected-mode-smoke PRIVATE core-machine)
+
+add_executable(core-machine-arpl-smoke
+    tests/machine/core_machine_arpl_smoke.c)
+target_link_libraries(core-machine-arpl-smoke PRIVATE core-machine)
+add_executable(core-machine-arpl-s53-smoke
+    tests/machine/core_machine_arpl_s53_smoke.c)
+target_link_libraries(core-machine-arpl-s53-smoke PRIVATE core-machine)
+add_executable(core-machine-bound-s54-smoke
+    tests/machine/core_machine_bound_s54_smoke.c)
+target_link_libraries(core-machine-bound-s54-smoke PRIVATE core-machine)
+
+add_executable(core-machine-segment-selector-smoke
+    tests/machine/core_machine_segment_selector_smoke.c)
+target_link_libraries(core-machine-segment-selector-smoke PRIVATE core-machine)
+
+add_executable(core-machine-80386-paging-smoke
+    tests/machine/core_machine_80386_paging_smoke.c)
+target_link_libraries(core-machine-80386-paging-smoke PRIVATE core-machine)
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(core-machine-80386-paging-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
+
+add_executable(core-machine-protected-privilege-smoke
+    tests/machine/core_machine_protected_privilege_smoke.c)
+target_link_libraries(core-machine-protected-privilege-smoke PRIVATE core-machine)
+
+add_executable(core-machine-protected-return-atomicity-smoke
+    tests/machine/core_machine_protected_return_atomicity_smoke.c)
+target_link_libraries(core-machine-protected-return-atomicity-smoke PRIVATE core-machine)
+add_executable(core-machine-protected-iret-smoke
+    tests/machine/core_machine_protected_iret_smoke.c)
+target_link_libraries(core-machine-protected-iret-smoke PRIVATE core-machine)
+
+add_executable(core-machine-call-gate-smoke
+    tests/machine/core_machine_call_gate_smoke.c)
+target_link_libraries(core-machine-call-gate-smoke PRIVATE core-machine)
+add_executable(core-machine-call-gate-privilege-entry-smoke
+    tests/machine/core_machine_call_gate_privilege_entry_smoke.c)
+target_link_libraries(core-machine-call-gate-privilege-entry-smoke PRIVATE core-machine)
+
+add_executable(core-machine-tss-iomap-port-smoke
+    tests/machine/core_machine_tss_iomap_port_smoke.c)
+target_link_libraries(core-machine-tss-iomap-port-smoke PRIVATE core-machine)
+
+add_executable(core-machine-task-switch-smoke
+    tests/machine/core_machine_task_switch_smoke.c)
+target_link_libraries(core-machine-task-switch-smoke PRIVATE core-machine)
+if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
+    target_compile_options(core-machine-task-switch-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
+
+add_executable(core-machine-stopped-lifecycle-smoke
+    tests/core/machine_stopped_lifecycle_smoke.c
+)
+target_link_libraries(core-machine-stopped-lifecycle-smoke PRIVATE core-machine)
+add_executable(core-machine-cpu-pic-lifecycle-smoke
+    tests/core/machine_cpu_pic_lifecycle_smoke.c
+)
+target_link_libraries(core-machine-cpu-pic-lifecycle-smoke PRIVATE core-machine)
+add_executable(core-machine-memory-reconfigure-smoke
+    tests/core/machine_memory_reconfigure_smoke.c
+)
+target_link_libraries(core-machine-memory-reconfigure-smoke PRIVATE core-machine)
+
+add_executable(core-machine-checked-memory-smoke
+    tests/core/machine_checked_memory_smoke.c
+)
+target_link_libraries(core-machine-checked-memory-smoke PRIVATE core-machine)
+
+
+add_executable(core-machine-immutable-rom-mapping-smoke
+    tests/core/machine_immutable_rom_mapping_smoke.c
+)
+target_link_libraries(core-machine-immutable-rom-mapping-smoke PRIVATE core-machine)
+
+add_executable(core-machine-entry-plan-smoke
+    tests/core/machine_entry_plan_smoke.c
+)
+target_link_libraries(core-machine-entry-plan-smoke PRIVATE core-machine)
+
+add_executable(core-machine-configuration-smoke
+    tests/core/machine_configuration_smoke.c
+)
+target_link_libraries(core-machine-configuration-smoke PRIVATE core-machine)
+
+add_executable(core-machine-port-ownership-smoke
+    tests/machine/core_machine_port_ownership_smoke.c
+)
+target_link_libraries(core-machine-port-ownership-smoke PRIVATE core-machine)
+
+add_executable(core-machine-trace-smoke
+    tests/core/machine_trace_smoke.c
+)
+target_link_libraries(core-machine-trace-smoke PRIVATE core-machine)
+
+add_executable(core-machine-debug-smoke
+    tests/core/machine_debug_smoke.c
+)
+target_link_libraries(core-machine-debug-smoke PRIVATE core-machine)
+
+add_executable(core-machine-presentation-smoke tests/core/presentation_smoke.c)
+target_link_libraries(core-machine-presentation-smoke PRIVATE core-machine)
+
+# T317 owns this exact source-to-target inventory.  Keep strict options on the
+# smoke executables themselves: core-machine is a linked dependency and is not
+# evidence of strict compilation for a smoke source.
+function(project_configure_t317_strict_cpu_smokes)
+set(PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY
+    "core-machine-arpl-s53-smoke|tests/machine/core_machine_arpl_s53_smoke.c"
+    "core-machine-bound-s54-smoke|tests/machine/core_machine_bound_s54_smoke.c"
+    "core-machine-cli-sti-s48-smoke|tests/machine/core_machine_cli_sti_s48_smoke.c"
+    "core-machine-cli-sti-smoke|tests/machine/core_machine_cli_sti_smoke.c"
+    "core-machine-clts-s62-smoke|tests/machine/core_machine_clts_s62_smoke.c"
+    "core-machine-cmps-smoke|tests/machine/core_machine_cmps_smoke.c"
+    "core-machine-debug-mov-s59-smoke|tests/machine/core_machine_debug_mov_s59_smoke.c"
+    "core-machine-direct-flags-smoke|tests/machine/core_machine_direct_flags_smoke.c"
+    "core-machine-dttr-s61-smoke|tests/machine/core_machine_dttr_s61_smoke.c"
+    "core-machine-eflags-local-smoke|tests/machine/core_machine_eflags_local_smoke.c"
+    "core-machine-enter-leave-smoke|tests/machine/core_machine_enter_leave_smoke.c"
+    "core-machine-fpu-interface-s65-smoke|tests/machine/core_machine_fpu_interface_s65_smoke.c"
+    "core-machine-fs-gs-stack-smoke|tests/machine/core_machine_fs_gs_stack_smoke.c"
+    "core-machine-gpr-mov-smoke|tests/machine/core_machine_gpr_mov_smoke.c"
+    "core-machine-gpr-push-pop-smoke|tests/machine/core_machine_gpr_push_pop_smoke.c"
+    "core-machine-hlt-s49-smoke|tests/machine/core_machine_hlt_s49_smoke.c"
+    "core-machine-imul-immediate-s56-smoke|tests/machine/core_machine_imul_immediate_s56_smoke.c"
+    "core-machine-inc-dec-smoke|tests/machine/core_machine_inc_dec_smoke.c"
+    "core-machine-iret-outer-s52-smoke|tests/machine/core_machine_iret_outer_s52_smoke.c"
+    "core-machine-iret-s51-smoke|tests/machine/core_machine_iret_s51_smoke.c"
+    "core-machine-lahf-sahf-smoke|tests/machine/core_machine_lahf_sahf_smoke.c"
+    "core-machine-lar-lsl-s57-smoke|tests/machine/core_machine_lar_lsl_s57_smoke.c"
+    "core-machine-lea-smoke|tests/machine/core_machine_lea_smoke.c"
+    "core-machine-legacy-sreg-stack-smoke|tests/machine/core_machine_legacy_sreg_stack_smoke.c"
+    "core-machine-les-lds-s41-smoke|tests/machine/core_machine_les_lds_s41_smoke.c"
+    "core-machine-les-lds-smoke|tests/machine/core_machine_les_lds_smoke.c"
+    "core-machine-lods-smoke|tests/machine/core_machine_lods_smoke.c"
+    "core-machine-lss-lfs-lgs-smoke|tests/machine/core_machine_lss_lfs_lgs_smoke.c"
+    "core-machine-moffs-smoke|tests/machine/core_machine_moffs_smoke.c"
+    "core-machine-movs-smoke|tests/machine/core_machine_movs_smoke.c"
+    "core-machine-msw-s63-smoke|tests/machine/core_machine_msw_s63_smoke.c"
+    "core-machine-port-io-s55-smoke|tests/machine/core_machine_port_io_s55_smoke.c"
+    "core-machine-port-strings-smoke|tests/machine/core_machine_port_strings_smoke.c"
+    "core-machine-prefix-attributes-s64-smoke|tests/machine/core_machine_prefix_attributes_s64_smoke.c"
+    "core-machine-push-immediate-smoke|tests/machine/core_machine_push_immediate_smoke.c"
+    "core-machine-pusha-popa-smoke|tests/machine/core_machine_pusha_popa_smoke.c"
+    "core-machine-pushf-popf-s47-smoke|tests/machine/core_machine_pushf_popf_s47_smoke.c"
+    "core-machine-pushf-popf-smoke|tests/machine/core_machine_pushf_popf_smoke.c"
+    "core-machine-rotate-smoke|tests/machine/core_machine_rotate_smoke.c"
+    "core-machine-scas-smoke|tests/machine/core_machine_scas_smoke.c"
+    "core-machine-sign-extend-smoke|tests/machine/core_machine_sign_extend_smoke.c"
+    "core-machine-software-int-s50-smoke|tests/machine/core_machine_software_int_s50_smoke.c"
+    "core-machine-sreg-mov-smoke|tests/machine/core_machine_sreg_mov_smoke.c"
+    "core-machine-stos-smoke|tests/machine/core_machine_stos_smoke.c"
+    "core-machine-tf-db-s60-smoke|tests/machine/core_machine_tf_db_s60_smoke.c"
+    "core-machine-verr-verw-s58-smoke|tests/machine/core_machine_verr_verw_s58_smoke.c"
+    "core-machine-xchg-smoke|tests/machine/core_machine_xchg_smoke.c")
+
+list(LENGTH PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY project_t317_inventory_count)
+if(NOT project_t317_inventory_count EQUAL 47)
+    message(FATAL_ERROR "T317 strict CPU smoke inventory must contain 47 entries.")
+endif()
+
+set(PROJECT_T317_STRICT_CPU_SMOKE_TARGETS)
+set(PROJECT_T317_STRICT_CPU_SMOKE_SOURCES)
+foreach(project_t317_inventory_entry IN LISTS PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY)
+    string(REPLACE "|" ";" project_t317_inventory_fields
+        "${project_t317_inventory_entry}")
+    list(GET project_t317_inventory_fields 0 project_t317_target)
+    list(GET project_t317_inventory_fields 1 project_t317_source)
+    if(NOT TARGET ${project_t317_target})
+        message(FATAL_ERROR "T317 strict CPU smoke target is missing: ${project_t317_target}")
+    endif()
+    get_target_property(project_t317_target_sources ${project_t317_target} SOURCES)
+    list(FIND project_t317_target_sources ${project_t317_source}
+        project_t317_source_index)
+    if(project_t317_source_index EQUAL -1)
+        message(FATAL_ERROR
+            "T317 strict CPU smoke mapping is invalid: ${project_t317_target} does not own ${project_t317_source}")
+    endif()
+    list(APPEND PROJECT_T317_STRICT_CPU_SMOKE_TARGETS ${project_t317_target})
+    list(APPEND PROJECT_T317_STRICT_CPU_SMOKE_SOURCES ${project_t317_source})
+endforeach()
+list(REMOVE_DUPLICATES PROJECT_T317_STRICT_CPU_SMOKE_TARGETS)
+list(REMOVE_DUPLICATES PROJECT_T317_STRICT_CPU_SMOKE_SOURCES)
+list(LENGTH PROJECT_T317_STRICT_CPU_SMOKE_TARGETS project_t317_target_count)
+list(LENGTH PROJECT_T317_STRICT_CPU_SMOKE_SOURCES project_t317_source_count)
+if(NOT project_t317_target_count EQUAL 47 OR NOT project_t317_source_count EQUAL 47)
+    message(FATAL_ERROR "T317 strict CPU smoke inventory must have 47 unique targets and sources.")
+endif()
+
+if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
+    foreach(project_t317_target IN LISTS PROJECT_T317_STRICT_CPU_SMOKE_TARGETS)
+        target_compile_options(${project_t317_target} PRIVATE
+            -Wall -Wextra -Wpedantic -Werror)
+    endforeach()
+endif()
+
+string(REPLACE ";" "\n" project_t317_inventory_contents
+    "${PROJECT_T317_STRICT_CPU_SMOKE_INVENTORY}")
+file(GENERATE
+    OUTPUT "${CMAKE_BINARY_DIR}/t317-strict-cpu-smoke-inventory.txt"
+    CONTENT "${project_t317_inventory_contents}\n")
+
+# S2 consumes the S1 inventory above and no broader test or source surface.
+set(PROJECT_T317_TEST_TYPE_VOCABULARY_SUPPORT_HEADERS
+    "tests/support/core_machine_cpu_fixture.h")
+string(REPLACE ";" "\n" project_t317_type_support_contents
+    "${PROJECT_T317_TEST_TYPE_VOCABULARY_SUPPORT_HEADERS}")
+file(GENERATE
+    OUTPUT "${CMAKE_BINARY_DIR}/t317-test-type-vocabulary-support-headers.txt"
+    CONTENT "${project_t317_type_support_contents}\n")
+add_custom_target(verify-global-fixed-width-vocabulary
+    COMMAND "${CMAKE_COMMAND}"
+        -DPROJECT_T317_TYPE_SOURCE_DIR=${CMAKE_SOURCE_DIR}
+        -P "${CMAKE_SOURCE_DIR}/cmake/verify_t317_test_type_vocabulary.cmake"
+    COMMENT "Verifying global fixed-width type vocabulary"
+    VERBATIM)
+add_custom_target(verify-t317-test-type-vocabulary
+    DEPENDS verify-global-fixed-width-vocabulary)
+
+if(CMAKE_GENERATOR MATCHES "Ninja")
+    add_custom_target(verify-t317-strict-cpu-smoke-coverage
+        COMMAND "${CMAKE_COMMAND}"
+            -DPROJECT_T317_STRICT_INVENTORY_FILE=${CMAKE_BINARY_DIR}/t317-strict-cpu-smoke-inventory.txt
+            -DPROJECT_T317_STRICT_NINJA=${CMAKE_MAKE_PROGRAM}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_t317_strict_cpu_smoke_coverage.cmake"
+        DEPENDS ${PROJECT_T317_STRICT_CPU_SMOKE_TARGETS}
+        COMMENT "Verifying T317 target-local strict CPU smoke compilation"
+        VERBATIM)
+endif()
+
+endfunction()
+
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(core-machine PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(vm-default-pc-at-profile-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(vm-hdc-port-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(vm-hdc-hdd-boot-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(vm-default-pc-at-apply-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(vm-product-default-profile-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(vm-product-console-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(vm-product-console-lifecycle-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(vm-product-session-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(vm-session-initialization-atomicity-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(core-machine-contract-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(core-machine-instance-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(core-machine-configuration-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(core-machine-port-ownership-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(core-machine-lifecycle-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(core-machine-firmware-capability-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(core-machine-stopped-lifecycle-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(core-machine-memory-reconfigure-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(core-machine-checked-memory-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(core-machine-immutable-rom-mapping-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(core-machine-entry-plan-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(core-machine-trace-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(core-machine-debug-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(core-machine-presentation-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+endif()
+
+if(POWERSHELL_EXECUTABLE)
+    add_custom_target(generate-m1-probe
+        COMMAND "${CMAKE_COMMAND}" -E make_directory "${PROJECT_PROBE_DIR}"
+        COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
+            -File "${CMAKE_SOURCE_DIR}/tools/New-DosProbe.ps1"
+            -OutputDirectory "${PROJECT_PROBE_DIR}"
+            -Name "m1-text-exit"
+            -Marker "NTVDM64:M1:TEXT:OK"
+            -ExitCode 42
+        BYPRODUCTS
+            "${PROJECT_PROBE_DIR}/m1-text-exit.com"
+            "${PROJECT_PROBE_DIR}/m1-text-exit.json"
+        COMMENT "Generating deterministic M1 DOS COM probe"
+        VERBATIM
+    )
+endif()
+
+set(CORE_PRODUCT_SOURCES
+    src/core/product/utils.c
+)
+# The ISO C facade is below every product and module layer. Keep it separate
+# from core-machine so platform-only targets never acquire a machine dependency.
+add_library(type-facade STATIC src/type.c)
+target_include_directories(type-facade PUBLIC
+    "${CMAKE_SOURCE_DIR}/src"
+)
+
+add_library(core-utils STATIC src/core/utils/wait.c)
+target_include_directories(core-utils PUBLIC
+    "${CMAKE_SOURCE_DIR}/src"
+)
+target_link_libraries(core-utils PUBLIC type-facade)
+
+set(VM_PROFILE_SOURCES
+    src/vm/profile/default_profile/pc_at_profile.c
+    src/vm/profile/default_profile/keyboard_mapper.c
+    src/vm/profile/default_profile/mouse_mapper.c
+    src/vm/profile/default_profile/firmware/bios.c
+    src/vm/profile/default_profile/firmware/qdcga.c
+)
+
+set(VM_RUNTIME_SOURCES
+    ${CORE_PRODUCT_SOURCES}
+    ${VM_PROFILE_SOURCES}
+)
+
+set(VM_PRODUCT_SOURCES
+    src/vm/product/console.c
+)
+set(CORE_PRODUCT_DEBUG_SOURCES
+    src/core/product/debug/debug_access.c
+    src/core/product/debug/debug.c
+    src/core/product/debug/xasm32/aasm32.c
+    src/core/product/debug/xasm32/dasm32.c
+)
+set(VM_COMPOSITION_SOURCES
+    src/vm/composition/session/session_factory.c
+    src/vm/composition/session/console_machine_adapter.c
+    src/vm/composition/session/debug_target.c
+    src/vm/composition/session/media.c
+    src/vm/composition/session/display.c
+    src/vm/composition/session/lifecycle.c
+    src/vm/composition/session/session.c
+    src/vm/composition/session/control.c
+    src/vm/composition/session/fault.c
+    src/vm/composition/session/execution.c
+    src/vm/composition/session/runner.c
+    src/vm/composition/session/provider_lifecycle.c
+    src/vm/composition/session/machine_devices.c
+    src/vm/composition/session/profile_firmware.c
+    src/vm/composition/session/machine_info.c
+)
+set(VM_MACHINE_SOURCES
+    src/vm/machine/fdd.c
+    src/vm/machine/hdd.c
+    src/vm/machine/media_save.c
+    src/vm/machine/debug.c
+)
+set(CORE_MACHINE_SOURCES
+    src/core/machine/display.c
+    src/core/machine/vadp.c
+    src/core/machine/port.c
+    src/core/machine/memory.c
+    src/core/machine/cpu.c
+    src/core/machine/fpu.c
+    src/core/machine/cpu_instructions.c
+    src/core/machine/pic.c
+    src/core/machine/pit.c
+    src/core/machine/dma.c
+    src/core/machine/kbc.c
+    src/core/machine/rtc.c
+)
+add_library(core-platform STATIC
+    src/core/platform/backing_resource_interface.c
+    src/core/platform/input.c
+    src/core/platform/presentation_mailbox.c
+    src/core/platform/wait.c)
+if(WIN32)
+    target_sources(core-platform PRIVATE
+        src/core/platform/win32/sleep.c)
+else()
+    target_sources(core-platform PRIVATE
+        src/core/platform/linux/sleep.c)
+endif()
+target_include_directories(core-platform PUBLIC
+    "${CMAKE_SOURCE_DIR}/src"
+)
+target_link_libraries(core-platform PUBLIC type-facade)
+add_executable(vm-platform-host-surface-smoke
+    tests/platform/vm_platform_host_surface_smoke.c
+)
+target_link_libraries(vm-platform-host-surface-smoke PRIVATE
+    vm-platform
+)
+set(VM_PLATFORM_SOURCES
+    src/vm/platform/platform.c
+    src/vm/platform/host_surface.c
+    src/vm/platform/execution.c
+    src/vm/platform/input_flush.c
+)
+if(WIN32)
+    list(APPEND VM_PLATFORM_SOURCES
+        src/vm/platform/win32/win32.c
+        src/vm/platform/win32/w32cdisp.c
+        src/vm/platform/win32/w32adisp.c
+        src/vm/platform/win32/win32con.c
+        src/vm/platform/win32/win32app.c
+    )
+else()
+    list(APPEND VM_PLATFORM_SOURCES
+        src/vm/platform/linux/linux.c
+        src/vm/platform/linux/linuxcon.c
+    )
+    find_package(Curses REQUIRED)
+    find_package(Threads REQUIRED)
+endif()
+add_library(vm-platform-requests STATIC
+    src/vm/platform/request_bridge.c
+)
+target_include_directories(vm-platform-requests PUBLIC
+    "${CMAKE_SOURCE_DIR}/src"
+)
+target_link_libraries(vm-platform-requests PUBLIC type-facade)
+add_executable(vm-platform-request-bridge-smoke
+    tests/platform/vm_request_bridge_smoke.c
+)
+target_link_libraries(vm-platform-request-bridge-smoke PRIVATE
+    vm-platform-requests
+)
+add_library(vm-request-transport STATIC
+    src/vm/platform/vm_request_transport.c
+)
+target_include_directories(vm-request-transport PUBLIC
+    "${CMAKE_SOURCE_DIR}/src"
+)
+target_link_libraries(vm-request-transport PUBLIC
+    vm-platform-requests
+)
+add_executable(vm-request-transport-smoke
+    tests/adapters/nxvm_vm_request_transport_smoke.c
+)
+target_link_libraries(vm-request-transport-smoke PRIVATE
+    vm-request-transport
+)
+
+add_library(core-product-debug STATIC ${CORE_PRODUCT_DEBUG_SOURCES})
+target_include_directories(core-product-debug PUBLIC
+    "${CMAKE_SOURCE_DIR}/src"
+)
+target_link_libraries(core-product-debug PUBLIC type-facade core-utils)
+
+add_library(core-machine-executor STATIC
+    ${CORE_MACHINE_SOURCES}
+)
+# CPU/RAM/port primitives used by the one runtime target above. The legacy
+# target name stays for existing build scripts; new CMake code uses this alias.
+add_library(core-machine-primitives ALIAS core-machine-executor)
+target_include_directories(core-machine-executor PUBLIC
+    "${CMAKE_SOURCE_DIR}/src"
+)
+target_link_libraries(core-machine-executor PUBLIC type-facade)
+target_link_libraries(core-machine PUBLIC core-machine-executor)
+
+add_library(core-product-utils STATIC ${CORE_PRODUCT_SOURCES})
+target_include_directories(core-product-utils PUBLIC
+    "${CMAKE_SOURCE_DIR}/src"
+)
+target_link_libraries(core-product-utils PUBLIC core-product-debug)
+
+add_library(core-product-session STATIC
+    src/core/product/session/command.c
+    src/core/product/session/manager.c
+)
+target_include_directories(core-product-session PUBLIC
+    "${CMAKE_SOURCE_DIR}/src"
+)
+target_link_libraries(core-product-session PUBLIC type-facade)
+
+add_executable(core-utils-wait-smoke
+    tests/core/core_utils_wait_smoke.c
+)
+target_link_libraries(core-utils-wait-smoke PRIVATE
+    core-utils
+)
+
+add_executable(std-snprintf-smoke
+    tests/core/std_snprintf_smoke.c
+)
+target_link_libraries(std-snprintf-smoke PRIVATE type-facade)
+
+add_executable(core-product-session-contract-smoke
+    tests/product/core_product_session_contract_smoke.c
+)
+target_include_directories(core-product-session-contract-smoke PRIVATE
+    "${CMAKE_SOURCE_DIR}/src"
+)
+target_link_libraries(core-product-session-contract-smoke PRIVATE
+    type-facade
+)
+
+add_executable(core-product-session-manager-smoke
+    tests/product/core_product_session_manager_smoke.c
+)
+target_link_libraries(core-product-session-manager-smoke PRIVATE
+    core-product-session
+)
+
+add_executable(core-product-debug-target-smoke
+    tests/product/core_product_debug_target_smoke.c
+)
+target_include_directories(core-product-debug-target-smoke PRIVATE
+    "${CMAKE_SOURCE_DIR}/src"
+)
+target_link_libraries(core-product-debug-target-smoke PRIVATE
+    core-product-debug
+)
+
+add_executable(core-product-debug-input-failure-smoke
+    tests/product/core_product_debug_input_failure_smoke.c
+    src/core/product/debug/debug.c
+    src/core/product/debug/debug_access.c
+)
+target_include_directories(core-product-debug-input-failure-smoke PRIVATE
+    "${CMAKE_SOURCE_DIR}/src"
+)
+target_compile_definitions(core-product-debug-input-failure-smoke PRIVATE
+    STD_MALLOC=test_debug_input_malloc
+)
+target_link_libraries(core-product-debug-input-failure-smoke PRIVATE
+    core-product-utils
+    core-utils
+    type-facade
+)
+
+add_executable(vm-product-console-input-failure-smoke
+    tests/product/vm_product_console_input_failure_smoke.c
+    src/vm/product/console.c
+)
+target_include_directories(vm-product-console-input-failure-smoke PRIVATE
+    "${CMAKE_SOURCE_DIR}/src"
+)
+target_compile_definitions(vm-product-console-input-failure-smoke PRIVATE
+    STD_MALLOC=test_console_input_malloc
+)
+target_link_libraries(vm-product-console-input-failure-smoke PRIVATE
+    core-product-session
+    type-facade
+)
+
+add_executable(core-product-xasm-smoke
+    tests/product/core_product_xasm_smoke.c
+)
+target_include_directories(core-product-xasm-smoke PRIVATE
+    "${CMAKE_SOURCE_DIR}/src"
+)
+target_link_libraries(core-product-xasm-smoke PRIVATE
+    core-product-utils
+)
+
+add_executable(core-product-xasm-contract-smoke
+    tests/product/core_product_xasm_contract_smoke.c
+    src/core/product/utils.c
+    src/core/product/debug/xasm32/aasm32.c
+    src/core/product/debug/xasm32/dasm32.c
+)
+target_include_directories(core-product-xasm-contract-smoke PRIVATE
+    "${CMAKE_SOURCE_DIR}/src"
+)
+target_compile_definitions(core-product-xasm-contract-smoke PRIVATE
+    STD_MALLOC=test_xasm_malloc
+)
+target_link_libraries(core-product-xasm-contract-smoke PRIVATE
+    type-facade
+)
+
+
+add_library(vm-profile STATIC ${VM_PROFILE_SOURCES})
+target_include_directories(vm-profile PUBLIC
+    "${CMAKE_SOURCE_DIR}/src"
+)
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(vm-profile PRIVATE -Wall -Wextra -Wpedantic -Werror)
+endif()
+target_link_libraries(vm-profile PUBLIC
+    core-machine
+    type-facade)
+
+add_library(vm-platform STATIC ${VM_PLATFORM_SOURCES})
+target_include_directories(vm-platform PUBLIC
+    "${CMAKE_SOURCE_DIR}/src"
+)
+target_link_libraries(vm-platform PUBLIC
+    type-facade
+    core-utils
+    core-platform)
+if(NOT WIN32)
+    target_include_directories(vm-platform PRIVATE ${CURSES_INCLUDE_DIRS})
+    target_link_libraries(vm-platform PUBLIC ${CURSES_LIBRARIES} Threads::Threads)
+endif()
+
+add_executable(core-platform-input-source-smoke
+    tests/platform/core_platform_input_source_smoke.c
+)
+target_link_libraries(core-platform-input-source-smoke PRIVATE core-platform)
+add_executable(core-platform-wait-smoke
+    tests/platform/core_platform_wait_smoke.c
+)
+target_link_libraries(core-platform-wait-smoke PRIVATE core-platform)
+add_executable(core-platform-backing-resource-smoke
+    tests/platform/core_platform_backing_resource_smoke.c
+)
+target_link_libraries(core-platform-backing-resource-smoke PRIVATE core-platform)
+
+add_executable(vm-keyboard-host-ingress-smoke
+    tests/platform/vm_keyboard_host_ingress_smoke.c
+)
+target_link_libraries(vm-keyboard-host-ingress-smoke PRIVATE
+    vm-composition)
+if(WIN32)
+    add_executable(vm-platform-win32-keyboard-scan-smoke
+        tests/platform/vm_platform_win32_keyboard_scan_smoke.c)
+    target_link_libraries(vm-platform-win32-keyboard-scan-smoke PRIVATE
+        vm-platform)
+    add_executable(vm-w32-text-palette-smoke
+        tests/platform/vm_w32_text_palette_smoke.c)
+    target_link_libraries(vm-w32-text-palette-smoke PRIVATE vm-platform)
+endif()
+add_executable(vm-host-cancellation-smoke
+    tests/platform/vm_host_cancellation_smoke.c
+)
+target_link_libraries(vm-host-cancellation-smoke PRIVATE
+    vm-composition)
+
+add_executable(vm-platform-execution-smoke
+    tests/platform/vm_platform_execution_smoke.c
+)
+target_link_libraries(vm-platform-execution-smoke PRIVATE vm-platform)
+add_executable(vm-platform-run-handle-smoke
+    tests/platform/vm_platform_run_handle_smoke.c
+)
+target_link_libraries(vm-platform-run-handle-smoke PRIVATE
+    vm-composition)
+if(NOT PROJECT_VM_PLATFORM_TEST_FAILURE_STAGE STREQUAL "0")
+    add_executable(vm-platform-win32-startup-failure-smoke
+        tests/platform/vm_platform_win32_startup_failure_smoke.c
+    )
+    target_link_libraries(vm-platform-win32-startup-failure-smoke PRIVATE
+        vm-composition)
+    add_executable(vm-session-startup-failure-smoke
+        tests/platform/vm_session_startup_failure_smoke.c
+    )
+    target_link_libraries(vm-session-startup-failure-smoke PRIVATE
+        vm-product vm-composition)
+endif()
+if(NOT WIN32)
+    add_executable(vm-platform-linux-run-handle-smoke
+        tests/platform/vm_platform_linux_run_handle_smoke.c
+    )
+    target_link_libraries(vm-platform-linux-run-handle-smoke PRIVATE
+        vm-composition)
+endif()
+add_executable(vm-multi-window-session-smoke
+    tests/platform/vm_multi_window_session_smoke.c
+)
+target_link_libraries(vm-multi-window-session-smoke PRIVATE
+    vm-composition)
+
+add_executable(core-platform-presentation-mailbox-smoke
+    tests/platform/core_platform_presentation_mailbox_smoke.c
+)
+target_link_libraries(core-platform-presentation-mailbox-smoke PRIVATE
+    core-platform)
+
+add_executable(vm-platform-surface-context-smoke
+    tests/platform/vm_platform_surface_context_smoke.c
+)
+target_link_libraries(vm-platform-surface-context-smoke PRIVATE
+    vm-platform)
+
+add_executable(vm-platform-mode-context-smoke
+    tests/platform/vm_platform_mode_context_smoke.c
+)
+target_link_libraries(vm-platform-mode-context-smoke PRIVATE
+    vm-composition)
+
+add_library(vm-composition STATIC ${VM_COMPOSITION_SOURCES})
+target_include_directories(vm-composition PUBLIC
+    "${CMAKE_SOURCE_DIR}/src"
+)
+target_link_libraries(vm-composition PUBLIC
+    vm-machine
+    core-machine
+    core-utils
+    core-product-session
+    "$<LINK_GROUP:RESCAN,core-product-debug,core-product-utils>"
+    vm-profile
+    vm-product
+    vm-request-transport
+    vm-platform
+    user32
+    gdi32)
+
+add_library(vm-machine STATIC ${VM_MACHINE_SOURCES})
+target_include_directories(vm-machine PUBLIC
+    "${CMAKE_SOURCE_DIR}/src"
+)
+target_link_libraries(vm-machine PUBLIC
+    core-machine)
+
+add_library(vm-product STATIC ${VM_PRODUCT_SOURCES})
+target_include_directories(vm-product PUBLIC
+    "${CMAKE_SOURCE_DIR}/src"
+)
+target_link_libraries(vm-product PUBLIC
+    core-product-utils)
+
+add_executable(vm-cpu-probe-smoke
+    tests/adapters/nxvm_vm_cpu_probe_smoke.c
+    tests/adapters/support/vm_cpu_probe.c
+)
+target_include_directories(vm-cpu-probe-smoke PRIVATE
+    "${CMAKE_SOURCE_DIR}/tests")
+target_link_libraries(vm-cpu-probe-smoke PRIVATE vm-composition)
+
+add_executable(vm-execution-context-smoke
+    tests/machine/vm_execution_context_smoke.c
+)
+target_link_libraries(vm-execution-context-smoke PRIVATE
+    vm-composition
+)
+
+add_executable(vm-cpu-stop-smoke
+    tests/machine/vm_cpu_stop_smoke.c
+)
+target_link_libraries(vm-cpu-stop-smoke PRIVATE
+    vm-composition
+)
+
+add_executable(core-machine-cpu-context-smoke
+    tests/machine/cpu_execution_context_smoke.c
+)
+target_link_libraries(core-machine-cpu-context-smoke PRIVATE
+    core-machine
+)
+
+add_executable(core-machine-trace-context-smoke
+    tests/machine/cpu_trace_context_smoke.c
+)
+target_link_libraries(core-machine-trace-context-smoke PRIVATE
+    core-machine
+)
+
+add_executable(core-machine-cpu-fault-diagnostic-smoke
+    tests/machine/cpu_fault_diagnostic_smoke.c
+)
+target_link_libraries(core-machine-cpu-fault-diagnostic-smoke PRIVATE
+    core-machine
+)
+
+add_executable(core-machine-ram-port-context-smoke
+    tests/machine/ram_port_context_smoke.c
+)
+target_link_libraries(core-machine-ram-port-context-smoke PRIVATE
+    core-machine
+)
+add_executable(core-machine-pit-readback-smoke
+    tests/machine/core_machine_pit_readback_smoke.c
+)
+target_link_libraries(core-machine-pit-readback-smoke PRIVATE core-machine)
+add_executable(core-machine-pit-waveform-smoke
+    tests/machine/core_machine_pit_waveform_smoke.c
+)
+target_link_libraries(core-machine-pit-waveform-smoke PRIVATE core-machine)
+add_executable(core-machine-pit-divider-smoke
+    tests/core/machine_pit_divider_smoke.c
+)
+target_link_libraries(core-machine-pit-divider-smoke PRIVATE core-machine)
+add_executable(core-machine-pic-irq-lifecycle-smoke
+    tests/machine/core_machine_pic_irq_lifecycle_smoke.c)
+target_link_libraries(core-machine-pic-irq-lifecycle-smoke PRIVATE core-machine)
+add_executable(core-machine-kbc-controller-smoke
+    tests/machine/core_machine_kbc_controller_smoke.c
+)
+target_link_libraries(core-machine-kbc-controller-smoke PRIVATE core-machine)
+add_executable(core-machine-kbc-aux-port-smoke
+    tests/machine/core_machine_kbc_aux_port_smoke.c
+)
+target_link_libraries(core-machine-kbc-aux-port-smoke PRIVATE core-machine)
+add_executable(core-machine-dma-channel-smoke
+    tests/machine/core_machine_dma_channel_smoke.c
+)
+target_link_libraries(core-machine-dma-channel-smoke PRIVATE core-machine)
+add_executable(core-machine-dma-binding-token-smoke
+    tests/machine/core_machine_dma_binding_token_smoke.c
+)
+target_link_libraries(core-machine-dma-binding-token-smoke PRIVATE core-machine)
+add_executable(core-machine-media-provider-smoke
+    tests/machine/core_machine_media_provider_smoke.c
+)
+target_link_libraries(core-machine-media-provider-smoke PRIVATE core-machine)
+add_executable(core-machine-rtc-smoke tests/machine/core_machine_rtc_smoke.c)
+target_link_libraries(core-machine-rtc-smoke PRIVATE core-machine)
+add_executable(core-machine-fdc-smoke tests/machine/core_machine_fdc_smoke.c)
+target_link_libraries(core-machine-fdc-smoke PRIVATE core-machine)
+add_executable(core-machine-fdc-topology-port-smoke
+    tests/machine/core_machine_fdc_topology_port_smoke.c)
+target_link_libraries(core-machine-fdc-topology-port-smoke PRIVATE core-machine)
+add_executable(core-machine-fdc-media-change-port-smoke
+    tests/machine/core_machine_fdc_media_change_port_smoke.c)
+target_link_libraries(core-machine-fdc-media-change-port-smoke PRIVATE core-machine)
+add_executable(core-machine-hdc-smoke tests/machine/core_machine_hdc_smoke.c)
+target_link_libraries(core-machine-hdc-smoke PRIVATE core-machine)
+add_executable(core-machine-controller-authority-smoke
+    tests/machine/core_machine_controller_authority_smoke.c)
+target_link_libraries(core-machine-controller-authority-smoke PRIVATE core-machine)
+add_executable(core-mantle-shape-smoke tests/machine/core_mantle_shape_smoke.c)
+target_link_libraries(core-mantle-shape-smoke PRIVATE core-machine core-platform)
+add_executable(vm-kbc-aux-guest-smoke
+    tests/machine/vm_kbc_aux_guest_smoke.c
+)
+target_link_libraries(vm-kbc-aux-guest-smoke PRIVATE vm-composition)
+add_executable(vm-mouse-driver-dos-smoke
+    tests/machine/vm_mouse_driver_dos_smoke.c
+)
+target_link_libraries(vm-mouse-driver-dos-smoke PRIVATE vm-composition)
+add_executable(vm-fdc-read-track-dos-smoke
+    tests/machine/vm_fdc_read_track_dos_smoke.c
+)
+target_link_libraries(vm-fdc-read-track-dos-smoke PRIVATE vm-composition)
+add_executable(vm-ata-pio-dos-smoke
+    tests/machine/vm_ata_pio_dos_smoke.c
+)
+target_link_libraries(vm-ata-pio-dos-smoke PRIVATE vm-composition)
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(vm-ata-pio-dos-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+endif()
+add_executable(vm-windows31-checkpoint
+    tests/machine/vm_windows31_checkpoint.c
+)
+target_link_libraries(vm-windows31-checkpoint PRIVATE vm-composition)
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(vm-windows31-checkpoint PRIVATE -Wall -Wextra -Wpedantic -Werror)
+endif()
+add_executable(vm-windows31-setup-probe
+    tests/machine/vm_windows31_setup_probe.c
+)
+target_link_libraries(vm-windows31-setup-probe PRIVATE vm-composition)
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(vm-windows31-setup-probe PRIVATE -Wall -Wextra -Wpedantic -Werror)
+endif()
+add_executable(vm-windows31-int13-trace-probe
+    tests/machine/vm_windows31_int13_trace_probe.c
+)
+target_link_libraries(vm-windows31-int13-trace-probe PRIVATE vm-composition)
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(vm-windows31-int13-trace-probe PRIVATE -Wall -Wextra -Wpedantic -Werror)
+endif()
+add_executable(vm-dos-fdisk-probe
+    tests/machine/vm_dos_fdisk_probe.c
+)
+target_link_libraries(vm-dos-fdisk-probe PRIVATE vm-composition)
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(vm-dos-fdisk-probe PRIVATE -Wall -Wextra -Wpedantic -Werror)
+endif()
+add_executable(vm-windows31-hdd-admission-probe
+    tests/machine/vm_windows31_hdd_admission_probe.c
+)
+target_link_libraries(vm-windows31-hdd-admission-probe PRIVATE vm-composition)
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(vm-windows31-hdd-admission-probe PRIVATE -Wall -Wextra -Wpedantic -Werror)
+endif()
+add_executable(vm-keyboard-set1-mapper-smoke
+    tests/machine/vm_keyboard_set1_mapper_smoke.c
+)
+target_link_libraries(vm-keyboard-set1-mapper-smoke PRIVATE vm-profile)
+add_executable(core-machine-vadp-text-smoke
+    tests/machine/core_machine_vadp_text_smoke.c
+)
+target_link_libraries(core-machine-vadp-text-smoke PRIVATE core-machine)
+
+add_executable(core-machine-vadp-text-status-smoke
+    tests/machine/core_machine_vadp_text_status_smoke.c
+)
+target_link_libraries(core-machine-vadp-text-status-smoke PRIVATE core-machine)
+add_executable(core-machine-display-authority-smoke
+    tests/machine/core_machine_display_authority_smoke.c
+)
+target_link_libraries(core-machine-display-authority-smoke PRIVATE core-machine)
+add_executable(core-machine-dma-rtc-authority-smoke
+    tests/machine/core_machine_dma_rtc_authority_smoke.c
+)
+target_link_libraries(core-machine-dma-rtc-authority-smoke PRIVATE core-machine)
+add_executable(core-machine-cga-graphics-port-smoke
+    tests/machine/core_machine_cga_graphics_port_smoke.c
+)
+target_link_libraries(core-machine-cga-graphics-port-smoke PRIVATE core-machine)
+add_executable(core-machine-cga-640-port-smoke
+    tests/machine/core_machine_cga_640_port_smoke.c
+)
+target_link_libraries(core-machine-cga-640-port-smoke PRIVATE core-machine)
+add_executable(core-machine-ega-sequencer-port-smoke
+    tests/machine/core_machine_ega_sequencer_port_smoke.c
+)
+target_link_libraries(core-machine-ega-sequencer-port-smoke PRIVATE core-machine)
+add_executable(core-machine-ega-registration-transaction-smoke
+    tests/machine/core_machine_ega_registration_transaction_smoke.c
+    src/core/machine/vadp.c
+)
+target_include_directories(core-machine-ega-registration-transaction-smoke PRIVATE
+    "${CMAKE_SOURCE_DIR}/src"
+)
+target_compile_definitions(core-machine-ega-registration-transaction-smoke PRIVATE
+    STD_CALLOC=test_ega_registration_calloc
+)
+target_link_libraries(core-machine-ega-registration-transaction-smoke PRIVATE
+    core-machine
+)
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(core-machine-ega-registration-transaction-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
+add_executable(core-machine-ega-controller-port-smoke
+    tests/machine/core_machine_ega_controller_port_smoke.c
+)
+target_link_libraries(core-machine-ega-controller-port-smoke PRIVATE core-machine)
+add_executable(core-machine-ega-crtc-boundary-port-smoke
+    tests/machine/core_machine_ega_crtc_boundary_port_smoke.c
+)
+target_link_libraries(core-machine-ega-crtc-boundary-port-smoke PRIVATE core-machine)
+add_executable(core-machine-ega-planar-port-smoke
+    tests/machine/core_machine_ega_planar_port_smoke.c
+)
+target_link_libraries(core-machine-ega-planar-port-smoke PRIVATE core-machine)
+add_executable(core-machine-ega-mode10-contract-smoke
+    tests/machine/core_machine_ega_mode10_contract_smoke.c
+)
+target_link_libraries(core-machine-ega-mode10-contract-smoke PRIVATE core-machine)
+add_executable(vm-ega-controller-system-smoke
+    tests/machine/vm_ega_controller_system_smoke.c
+)
+target_link_libraries(vm-ega-controller-system-smoke PRIVATE vm-composition)
+add_executable(vm-ega-planar-system-smoke
+    tests/machine/vm_ega_planar_system_smoke.c
+)
+target_link_libraries(vm-ega-planar-system-smoke PRIVATE vm-composition)
+add_executable(vm-ega-sequencer-system-smoke
+    tests/machine/vm_ega_sequencer_system_smoke.c
+)
+target_link_libraries(vm-ega-sequencer-system-smoke PRIVATE vm-composition)
+add_executable(vm-cga-graphics-system-smoke
+    tests/machine/vm_cga_graphics_system_smoke.c
+)
+target_link_libraries(vm-cga-graphics-system-smoke PRIVATE vm-composition)
+add_executable(vm-cga-graphics-dos-smoke
+    tests/machine/vm_cga_graphics_dos_smoke.c
+)
+target_link_libraries(vm-cga-graphics-dos-smoke PRIVATE vm-composition)
+add_executable(vm-cga-640-system-smoke
+    tests/machine/vm_cga_640_system_smoke.c
+)
+target_link_libraries(vm-cga-640-system-smoke PRIVATE vm-composition)
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(vm-cga-640-system-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+endif()
+add_executable(vm-ega-planar-dos-smoke
+    tests/machine/vm_ega_planar_dos_smoke.c
+)
+target_link_libraries(vm-ega-planar-dos-smoke PRIVATE vm-composition)
+add_executable(vm-rom-ega-int10-system-smoke
+    tests/machine/vm_rom_ega_int10_system_smoke.c
+)
+target_link_libraries(vm-rom-ega-int10-system-smoke PRIVATE vm-composition)
+add_executable(vm-rom-text-write-char-smoke
+    tests/machine/vm_rom_text_write_char_smoke.c
+)
+target_link_libraries(vm-rom-text-write-char-smoke PRIVATE vm-composition)
+add_executable(vm-rom-int13-hdd-type-smoke
+    tests/machine/vm_rom_int13_hdd_type_smoke.c
+)
+target_link_libraries(vm-rom-int13-hdd-type-smoke PRIVATE vm-composition)
+add_executable(vm-ega-mode10-boot-smoke
+    tests/machine/vm_ega_mode10_boot_smoke.c
+)
+target_link_libraries(vm-ega-mode10-boot-smoke PRIVATE vm-composition)
+add_executable(vm-rom-ega-int10-dos-smoke
+    tests/machine/vm_ega_planar_dos_smoke.c
+)
+target_compile_definitions(vm-rom-ega-int10-dos-smoke PRIVATE
+    VM_EGA_PLANAR_ROM_INT10_SMOKE=1)
+target_link_libraries(vm-rom-ega-int10-dos-smoke PRIVATE vm-composition)
+
+add_executable(vm-cmos-authority-smoke tests/machine/vm_cmos_authority_smoke.c)
+target_link_libraries(vm-cmos-authority-smoke PRIVATE vm-composition)
+add_executable(vm-cmos-rtc-port-smoke tests/machine/vm_cmos_rtc_port_smoke.c)
+target_link_libraries(vm-cmos-rtc-port-smoke PRIVATE vm-composition)
+add_executable(vm-pcat-ownership-smoke tests/machine/vm_pcat_ownership_smoke.c)
+target_link_libraries(vm-pcat-ownership-smoke PRIVATE vm-composition)
+add_executable(vm-fdd-authority-smoke tests/machine/vm_fdd_authority_smoke.c)
+target_link_libraries(vm-fdd-authority-smoke PRIVATE vm-composition)
+add_executable(vm-fdc-authority-smoke tests/machine/vm_fdc_authority_smoke.c)
+target_link_libraries(vm-fdc-authority-smoke PRIVATE vm-composition)
+add_executable(vm-fdc-port-smoke tests/machine/vm_fdc_port_smoke.c)
+target_link_libraries(vm-fdc-port-smoke PRIVATE vm-composition)
+add_executable(vm-fdc-t242-corpus-port-smoke
+    tests/machine/vm_fdc_t242_corpus_port_smoke.c)
+target_link_libraries(vm-fdc-t242-corpus-port-smoke PRIVATE vm-composition)
+add_executable(vm-hdd-authority-smoke tests/machine/vm_hdd_authority_smoke.c)
+target_link_libraries(vm-hdd-authority-smoke PRIVATE vm-composition)
+add_executable(vm-bios-authority-smoke tests/machine/vm_bios_authority_smoke.c)
+target_link_libraries(vm-bios-authority-smoke PRIVATE vm-composition)
+add_executable(vm-boot-failure-lifecycle-smoke
+    tests/machine/vm_boot_failure_lifecycle_smoke.c)
+target_link_libraries(vm-boot-failure-lifecycle-smoke PRIVATE vm-composition)
+add_executable(vm-no-media-video-port-smoke
+    tests/machine/vm_no_media_video_port_smoke.c)
+target_link_libraries(vm-no-media-video-port-smoke PRIVATE vm-composition)
+add_executable(vm-runner-display-cadence-smoke
+    tests/machine/vm_runner_display_cadence_smoke.c)
+target_link_libraries(vm-runner-display-cadence-smoke PRIVATE vm-composition)
+add_executable(vm-dos-video-port-smoke
+    tests/machine/vm_dos_video_port_smoke.c)
+target_link_libraries(vm-dos-video-port-smoke PRIVATE vm-composition)
+add_executable(vm-debug-authority-smoke tests/machine/vm_debug_authority_smoke.c)
+target_link_libraries(vm-debug-authority-smoke PRIVATE vm-composition)
+add_executable(vm-dos-prompt-smoke
+    tests/machine/vm_dos_prompt_smoke.c)
+target_link_libraries(vm-dos-prompt-smoke PRIVATE
+    vm-composition)
+add_executable(vm-dos-keyboard-smoke
+    tests/machine/vm_dos_keyboard_smoke.c)
+target_link_libraries(vm-dos-keyboard-smoke PRIVATE
+    vm-composition)
+add_executable(vm-dos-mem-fault-smoke
+    tests/machine/vm_dos_mem_fault_smoke.c)
+target_link_libraries(vm-dos-mem-fault-smoke PRIVATE
+    vm-composition)
+add_executable(vm-fault-outcome-runner-smoke
+    tests/machine/vm_fault_outcome_runner_smoke.c)
+target_link_libraries(vm-fault-outcome-runner-smoke PRIVATE vm-composition)
+add_executable(core-machine-cpu-fpu-profile-smoke
+    tests/machine/cpu_fpu_profile_smoke.c)
+target_link_libraries(core-machine-cpu-fpu-profile-smoke PRIVATE
+    core-machine)
+add_executable(core-machine-cpu-profile-gate-smoke
+    tests/machine/cpu_profile_gate_smoke.c)
+target_link_libraries(core-machine-cpu-profile-gate-smoke PRIVATE
+    core-machine)
+add_executable(core-machine-fpu-escape-smoke
+    tests/machine/fpu_escape_smoke.c)
+target_link_libraries(core-machine-fpu-escape-smoke PRIVATE core-machine)
+add_executable(core-machine-fpu-interface-s65-smoke
+    tests/machine/core_machine_fpu_interface_s65_smoke.c)
+target_link_libraries(core-machine-fpu-interface-s65-smoke PRIVATE core-machine)
+add_executable(core-machine-fpu-8087-smoke
+    tests/machine/core_machine_fpu_8087_smoke.c)
+target_link_libraries(core-machine-fpu-8087-smoke PRIVATE core-machine)
+add_executable(core-machine-exception-delivery-s2-smoke
+    tests/machine/core_machine_exception_delivery_s2_smoke.c)
+target_link_libraries(core-machine-exception-delivery-s2-smoke PRIVATE core-machine)
+if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(core-machine-exception-delivery-s2-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
+add_executable(core-machine-real-exception-final-s1-smoke
+    tests/machine/core_machine_real_exception_final_s1_smoke.c)
+target_link_libraries(core-machine-real-exception-final-s1-smoke PRIVATE core-machine)
+if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(core-machine-real-exception-final-s1-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
+add_executable(core-machine-protected-ud-delivery-s1-smoke
+    tests/machine/core_machine_protected_ud_delivery_s1_smoke.c)
+target_link_libraries(core-machine-protected-ud-delivery-s1-smoke PRIVATE core-machine)
+if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(core-machine-protected-ud-delivery-s1-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
+add_executable(core-machine-real-ud-delivery-s1-smoke
+    tests/machine/core_machine_real_ud_delivery_s1_smoke.c)
+target_link_libraries(core-machine-real-ud-delivery-s1-smoke PRIVATE core-machine)
+if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(core-machine-real-ud-delivery-s1-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
+add_executable(core-machine-hardware-delivery-s3-smoke
+    tests/machine/core_machine_hardware_delivery_s3_smoke.c)
+target_link_libraries(core-machine-hardware-delivery-s3-smoke PRIVATE core-machine)
+if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(core-machine-hardware-delivery-s3-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
+add_executable(core-machine-interrupt-return-composition-s4-smoke
+    tests/machine/core_machine_interrupt_return_composition_s4_smoke.c)
+target_link_libraries(core-machine-interrupt-return-composition-s4-smoke PRIVATE core-machine)
+if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(core-machine-interrupt-return-composition-s4-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
+add_executable(core-machine-vm86-lgdt-lidt-s5-smoke
+    tests/machine/core_machine_vm86_lgdt_lidt_s5_smoke.c)
+target_link_libraries(core-machine-vm86-lgdt-lidt-s5-smoke PRIVATE core-machine)
+if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(core-machine-vm86-lgdt-lidt-s5-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
+add_executable(core-machine-int-ivt-smoke
+    tests/machine/cpu_int_ivt_smoke.c)
+target_link_libraries(core-machine-int-ivt-smoke PRIVATE
+    core-machine)
+add_executable(core-machine-cpu-fpu-profile-closure-smoke
+    tests/machine/cpu_fpu_profile_closure_smoke.c)
+target_link_libraries(core-machine-cpu-fpu-profile-closure-smoke PRIVATE
+    core-machine)
+add_custom_target(core-machine-cpu-fpu-static-closure
+    COMMAND ${CMAKE_COMMAND} -DPROJECT_SOURCE_DIR=${CMAKE_SOURCE_DIR}
+        -P ${CMAKE_SOURCE_DIR}/cmake/verify_cpu_fpu_closure.cmake
+    DEPENDS core-machine-cpu-fpu-profile-closure-smoke)
+add_custom_target(core-machine-lifecycle-ownership-closure
+    COMMAND ${CMAKE_COMMAND} -DPROJECT_SOURCE_DIR=${CMAKE_SOURCE_DIR}
+        -P ${CMAKE_SOURCE_DIR}/cmake/verify_core_lifecycle_ownership.cmake)
+add_executable(vm-two-session-isolation-smoke
+    tests/machine/vm_two_session_isolation_smoke.c)
+target_link_libraries(vm-two-session-isolation-smoke PRIVATE
+    vm-composition)
+add_executable(vm-debug-pause-boundary-smoke
+    tests/machine/vm_debug_pause_boundary_smoke.c)
+target_link_libraries(vm-debug-pause-boundary-smoke PRIVATE
+    vm-composition)
+add_executable(vm-unified-debug-backend-smoke
+    tests/machine/vm_unified_debug_backend_smoke.c)
+target_link_libraries(vm-unified-debug-backend-smoke PRIVATE
+    vm-composition)
+add_executable(vm-debug-target-smoke
+    tests/machine/vm_debug_target_smoke.c
+)
+target_link_libraries(vm-debug-target-smoke PRIVATE
+    vm-composition
+)
+
+add_executable(vm-full-pc-session-smoke
+    tests/products/nxvm_full_pc_session_smoke.c
+)
+target_link_libraries(vm-full-pc-session-smoke PRIVATE vm-composition)
+
+add_executable(vm-core-executor-storage-smoke
+    tests/machine/vm_core_executor_storage_smoke.c
+)
+target_link_libraries(vm-core-executor-storage-smoke PRIVATE
+    vm-composition)
+add_executable(core-machine-executor-run-smoke
+    tests/machine/core_machine_executor_run_smoke.c
+)
+target_link_libraries(core-machine-executor-run-smoke PRIVATE
+    core-machine
+    core-machine
+)
+
+add_executable(core-machine-ram-create-smoke
+    tests/machine/core_machine_ram_create_smoke.c
+)
+target_link_libraries(core-machine-ram-create-smoke PRIVATE core-machine)
+
+add_executable(core-machine-port-assembly-smoke
+    tests/machine/core_machine_port_assembly_smoke.c
+)
+target_link_libraries(core-machine-port-assembly-smoke PRIVATE core-machine)
+
+add_library(vdm-machine STATIC
+    src/vdm/machine/dos_minimal.c
+)
+target_include_directories(vdm-machine PUBLIC
+    "${CMAKE_SOURCE_DIR}/src"
+)
+target_link_libraries(vdm-machine PUBLIC core-machine)
+
+add_library(vdm-composition STATIC
+    src/vdm/composition/session.c
+    src/vdm/composition/presentation.c
+)
+target_include_directories(vdm-composition PUBLIC
+    "${CMAKE_SOURCE_DIR}/src"
+)
+target_link_libraries(vdm-composition PUBLIC vdm-machine)
+
+add_executable(vdm-minimal-session-smoke
+    tests/products/ntvdm64_minimal_session_smoke.c
+)
+target_link_libraries(vdm-minimal-session-smoke PRIVATE
+    vdm-composition
+)
+
+add_executable(vdm-minimal-presentation-smoke
+    tests/adapters/dos_minimal_presentation_smoke.c
+)
+target_link_libraries(vdm-minimal-presentation-smoke PRIVATE
+    vdm-composition
+)
+
+set(PROJECT_CURRENT_SMOKE_TARGETS
+    vm-default-pc-at-profile-smoke
+    vm-hdc-port-smoke
+    vm-media-provider-smoke
+    vm-default-pc-at-apply-smoke
+    vm-default-pc-at-rom-materialization-smoke
+    vm-two-session-isolation-smoke
+    vm-core-executor-storage-smoke
+    core-machine-executor-run-smoke
+    core-machine-ram-create-smoke
+    core-machine-port-assembly-smoke
+    core-machine-time-smoke
+    core-machine-scheduler-smoke
+    core-machine-timing-checkpoint-smoke
+    core-machine-rational-clock-smoke
+    core-machine-real-mode-tick-smoke
+    core-machine-instruction-timing-smoke
+    core-machine-real-mode-corpus-smoke
+    core-machine-real-mode-386-address-smoke
+    core-machine-operand-address-smoke
+    core-machine-prefix-attributes-s64-smoke
+    core-machine-legacy-lock-s1-smoke
+    core-machine-setcc-smoke
+    core-machine-movx-smoke
+    core-machine-bit-test-smoke
+    core-machine-inc-dec-smoke
+    core-machine-legacy-alu-s2-smoke
+    core-machine-rotate-smoke
+    core-machine-eflags-local-smoke
+    core-machine-pushf-popf-smoke
+    core-machine-pushf-popf-s47-smoke
+    core-machine-cli-sti-smoke
+    core-machine-cli-sti-s48-smoke
+    core-machine-hlt-s49-smoke
+    core-machine-software-int-s50-smoke
+    core-machine-iret-s51-smoke
+    core-machine-iret-outer-s52-smoke
+    core-machine-fs-gs-stack-smoke
+    core-machine-lss-lfs-lgs-smoke
+    core-machine-les-lds-smoke
+    core-machine-les-lds-s41-smoke
+    core-machine-pusha-popa-smoke
+    core-machine-enter-leave-smoke
+    core-machine-gpr-push-pop-smoke
+    core-machine-push-immediate-smoke
+    core-machine-legacy-sreg-stack-smoke
+    core-machine-lea-smoke
+    core-machine-xchg-smoke
+    core-machine-sign-extend-smoke
+    core-machine-moffs-smoke
+    core-machine-gpr-mov-smoke
+    core-machine-sreg-mov-smoke
+    core-machine-movs-smoke
+    core-machine-stos-smoke
+    core-machine-lods-smoke
+    core-machine-scas-smoke
+    core-machine-cmps-smoke
+    core-machine-port-strings-smoke
+    core-machine-port-io-s55-smoke
+    core-machine-lahf-sahf-smoke
+    core-machine-direct-flags-smoke
+    core-machine-debug-mov-s59-smoke
+    core-machine-double-shift-smoke
+    core-machine-bit-scan-smoke
+    core-machine-imul2-smoke
+    core-machine-imul-immediate-s56-smoke
+    core-machine-lar-lsl-s57-smoke
+    core-machine-verr-verw-s58-smoke
+    core-machine-tf-db-s60-smoke
+    core-machine-dttr-s61-smoke
+    core-machine-clts-s62-smoke
+    core-machine-msw-s63-smoke
+    core-machine-control-transfer-smoke
+    core-machine-protected-far-s1-smoke
+    core-machine-protected-data-access-s2-smoke
+    core-machine-protected-16-gate-s3-smoke
+    core-machine-protected-16-external-s4-smoke
+    core-machine-protected-16-outer-s5-smoke
+    core-machine-protected-16-outer-iret-s6-smoke
+    core-machine-protected-16-call-gate-s7-smoke
+    core-machine-descriptor-system-smoke
+    core-machine-sgdt-sidt-smoke
+    core-machine-lgdt-lidt-smoke
+    core-machine-vm86-delivery-smoke
+    core-machine-vm86-iret-smoke
+    core-machine-interrupt-entry-smoke
+    core-machine-idt-privilege-entry-smoke
+    core-machine-real-mode-386-rep-cmps-smoke
+    core-machine-80286-protected-mode-smoke
+    core-machine-arpl-smoke
+    core-machine-arpl-s53-smoke
+    core-machine-bound-s54-smoke
+    core-machine-segment-selector-smoke
+    core-machine-cpu-profile-gate-smoke
+    core-machine-protected-privilege-smoke
+    core-machine-protected-return-atomicity-smoke
+    core-machine-protected-iret-smoke
+    core-machine-call-gate-smoke
+    core-machine-call-gate-privilege-entry-smoke
+    core-machine-tss-iomap-port-smoke
+    core-machine-task-switch-smoke
+    core-machine-80386-paging-smoke
+    core-machine-fpu-escape-smoke
+    core-machine-fpu-interface-s65-smoke
+    core-machine-fpu-8087-smoke
+    core-machine-exception-delivery-s2-smoke
+    core-machine-real-exception-final-s1-smoke
+    core-machine-protected-ud-delivery-s1-smoke
+    core-machine-real-ud-delivery-s1-smoke
+    core-machine-hardware-delivery-s3-smoke
+    core-machine-interrupt-return-composition-s4-smoke
+    core-machine-vm86-lgdt-lidt-s5-smoke
+    core-machine-trace-context-smoke
+    core-machine-cpu-fault-diagnostic-smoke
+    core-machine-configuration-smoke
+    core-machine-port-ownership-smoke
+    core-machine-firmware-capability-smoke
+    core-machine-ram-port-context-smoke
+    core-machine-pit-readback-smoke
+    core-machine-pit-waveform-smoke
+    core-machine-pit-divider-smoke
+    core-machine-pic-irq-lifecycle-smoke
+    core-machine-kbc-controller-smoke
+    core-machine-kbc-aux-port-smoke
+    core-machine-dma-channel-smoke
+    core-machine-dma-binding-token-smoke
+    core-machine-media-provider-smoke
+    core-machine-rtc-smoke
+    core-machine-fdc-smoke
+    core-machine-fdc-topology-port-smoke
+    core-machine-fdc-media-change-port-smoke
+    core-machine-hdc-smoke
+    core-machine-controller-authority-smoke
+    core-mantle-shape-smoke
+    vm-kbc-aux-guest-smoke
+    vm-keyboard-set1-mapper-smoke
+    core-machine-vadp-text-smoke
+    core-machine-vadp-text-status-smoke
+    core-machine-display-authority-smoke
+    core-machine-dma-rtc-authority-smoke
+    core-machine-cga-graphics-port-smoke
+    core-machine-cga-640-port-smoke
+    core-machine-ega-sequencer-port-smoke
+    core-machine-ega-registration-transaction-smoke
+    core-machine-ega-controller-port-smoke
+    core-machine-ega-crtc-boundary-port-smoke
+    core-machine-ega-planar-port-smoke
+    core-machine-ega-mode10-contract-smoke
+    vm-cga-graphics-system-smoke
+    vm-cga-640-system-smoke
+    vm-ega-sequencer-system-smoke
+    vm-ega-controller-system-smoke
+    vm-ega-planar-system-smoke
+    vm-rom-ega-int10-system-smoke
+    vm-rom-text-write-char-smoke
+    vm-rom-int13-hdd-type-smoke
+    vm-ega-mode10-boot-smoke
+    core-machine-stopped-lifecycle-smoke
+    core-machine-cpu-pic-lifecycle-smoke
+    core-machine-memory-reconfigure-smoke
+    core-machine-checked-memory-smoke
+    core-machine-immutable-rom-mapping-smoke
+    core-machine-entry-plan-smoke
+    core-machine-int-ivt-smoke
+    vm-boot-failure-lifecycle-smoke
+    vm-request-transport-smoke
+    core-utils-wait-smoke
+    std-snprintf-smoke
+    core-product-xasm-smoke
+    core-product-xasm-contract-smoke
+    core-product-session-contract-smoke
+    core-product-session-manager-smoke
+    core-product-debug-target-smoke
+    core-product-debug-input-failure-smoke
+    vm-product-console-input-failure-smoke
+    vm-platform-surface-context-smoke
+    vm-platform-execution-smoke
+    vm-platform-run-handle-smoke
+    vm-multi-window-session-smoke
+    core-platform-input-source-smoke
+    core-platform-wait-smoke
+    core-platform-backing-resource-smoke
+    vm-keyboard-host-ingress-smoke
+    vm-host-cancellation-smoke
+    core-platform-presentation-mailbox-smoke
+    vm-platform-mode-context-smoke
+    vm-dos-prompt-smoke
+    vm-dos-keyboard-smoke
+    vm-dos-mem-fault-smoke
+    vm-fault-outcome-runner-smoke
+    vm-cmos-rtc-port-smoke
+    vm-pcat-ownership-smoke
+    vm-fdc-port-smoke
+    vm-fdc-t242-corpus-port-smoke
+    vm-no-media-video-port-smoke
+    vm-hdc-hdd-boot-smoke
+    vm-runner-display-cadence-smoke
+    vm-debug-pause-boundary-smoke
+    vm-unified-debug-backend-smoke
+    vm-product-console-smoke
+    vm-product-console-lifecycle-smoke
+    vm-debug-target-smoke
+    vm-product-session-smoke
+    vm-session-initialization-atomicity-smoke
+    vm-session-manager-smoke
+    vm-session-reconfigure-smoke
+    vm-platform-host-surface-smoke
+    vdm-minimal-session-smoke
+    vdm-minimal-presentation-smoke)
+
+# T337 deliberately inventories the complete current-gate surface that names
+# a #UD producer/assertion. It is an upper bound over real-mode owners: the
+# dedicated S1 smoke proves vector-6 delivery, while retained owners keep
+# their explicit no-handler terminal contracts. Keep this list exact so a new
+# current-gate #UD source cannot silently bypass that classification.
+set(PROJECT_T337_UD_CURRENT_GATE_TARGETS
+    core-machine-80286-protected-mode-smoke
+    core-machine-80386-paging-smoke
+    core-machine-arpl-s53-smoke
+    core-machine-arpl-smoke
+    core-machine-bit-scan-smoke
+    core-machine-bit-test-smoke
+    core-machine-bound-s54-smoke
+    core-machine-cli-sti-s48-smoke
+    core-machine-clts-s62-smoke
+    core-machine-cmps-smoke
+    core-machine-control-transfer-smoke
+    core-machine-cpu-fault-diagnostic-smoke
+    core-machine-cpu-profile-gate-smoke
+    core-machine-descriptor-system-smoke
+    core-machine-direct-flags-smoke
+    core-machine-debug-mov-s59-smoke
+    core-machine-double-shift-smoke
+    core-machine-enter-leave-smoke
+    core-machine-fpu-8087-smoke
+    core-machine-fpu-escape-smoke
+    core-machine-fpu-interface-s65-smoke
+    core-machine-fs-gs-stack-smoke
+    core-machine-gpr-mov-smoke
+    core-machine-gpr-push-pop-smoke
+    core-machine-hlt-s49-smoke
+    core-machine-imul2-smoke
+    core-machine-imul-immediate-s56-smoke
+    core-machine-inc-dec-smoke
+    core-machine-iret-outer-s52-smoke
+    core-machine-iret-s51-smoke
+    core-machine-lahf-sahf-smoke
+    core-machine-lar-lsl-s57-smoke
+    core-machine-lea-smoke
+    core-machine-legacy-lock-s1-smoke
+    core-machine-legacy-alu-s2-smoke
+    core-machine-legacy-sreg-stack-smoke
+    core-machine-les-lds-s41-smoke
+    core-machine-les-lds-smoke
+    core-machine-lgdt-lidt-smoke
+    core-machine-lods-smoke
+    core-machine-lss-lfs-lgs-smoke
+    core-machine-moffs-smoke
+    core-machine-movs-smoke
+    core-machine-movx-smoke
+    core-machine-msw-s63-smoke
+    core-machine-port-io-s55-smoke
+    core-machine-port-strings-smoke
+    core-machine-prefix-attributes-s64-smoke
+    core-machine-protected-16-gate-s3-smoke
+    core-machine-protected-data-access-s2-smoke
+    core-machine-protected-far-s1-smoke
+    core-machine-protected-ud-delivery-s1-smoke
+    core-machine-pusha-popa-smoke
+    core-machine-pushf-popf-s47-smoke
+    core-machine-push-immediate-smoke
+    core-machine-real-mode-corpus-smoke
+    core-machine-real-ud-delivery-s1-smoke
+    core-machine-rotate-smoke
+    core-machine-scas-smoke
+    core-machine-segment-selector-smoke
+    core-machine-setcc-smoke
+    core-machine-sgdt-sidt-smoke
+    core-machine-sign-extend-smoke
+    core-machine-software-int-s50-smoke
+    core-machine-sreg-mov-smoke
+    core-machine-stos-smoke
+    core-machine-task-switch-smoke
+    core-machine-tf-db-s60-smoke
+    core-machine-verr-verw-s58-smoke
+    core-machine-vm86-delivery-smoke
+    core-machine-xchg-smoke
+    vm-dos-mem-fault-smoke
+    vm-fault-outcome-runner-smoke)
+
+# A real-mode #UD owner must not rely on an all-zero IVT entry.  The terminal
+# class is discovered from the concrete shared preflight in its owned source;
+# the remaining two classes are deliberately explicit because they do not use
+# that rollback helper.  Keep these target lists exact: configure fails if an
+# inventoried owner has no one disposition.
+set(PROJECT_T337_UD_REAL_DELIVERY_TARGETS
+    core-machine-debug-mov-s59-smoke
+    core-machine-real-mode-corpus-smoke
+    core-machine-real-ud-delivery-s1-smoke
+    core-machine-tf-db-s60-smoke)
+set(PROJECT_T337_UD_NO_REAL_NEGATIVE_TARGETS
+    core-machine-fpu-8087-smoke
+    core-machine-fpu-escape-smoke
+    core-machine-msw-s63-smoke
+    core-machine-protected-16-gate-s3-smoke
+    core-machine-protected-data-access-s2-smoke
+    core-machine-protected-far-s1-smoke
+    core-machine-protected-ud-delivery-s1-smoke
+    core-machine-task-switch-smoke
+    core-machine-vm86-delivery-smoke
+    vm-dos-mem-fault-smoke)
+
+foreach(t337_ud_target IN LISTS PROJECT_T337_UD_CURRENT_GATE_TARGETS)
+    list(FIND PROJECT_CURRENT_SMOKE_TARGETS "${t337_ud_target}"
+        t337_ud_current_index)
+    if(t337_ud_current_index LESS 0)
+        message(FATAL_ERROR
+            "T337 #UD owner is not a current-gate target: ${t337_ud_target}")
+    endif()
+    get_target_property(t337_ud_sources ${t337_ud_target} SOURCES)
+    set(t337_ud_found FALSE)
+    set(t337_ud_terminal FALSE)
+    set(t337_ud_delivery_marker FALSE)
+    foreach(t337_ud_source IN LISTS t337_ud_sources)
+        if(IS_ABSOLUTE "${t337_ud_source}")
+            set(t337_ud_source_path "${t337_ud_source}")
+        else()
+            set(t337_ud_source_path "${CMAKE_SOURCE_DIR}/${t337_ud_source}")
+        endif()
+        if(EXISTS "${t337_ud_source_path}")
+            file(READ "${t337_ud_source_path}" t337_ud_source_text)
+            if(t337_ud_source_text MATCHES
+                "VCPUINS_EXCEPT_UD|_SetExcept_UD|UndefinedOpcode")
+                set(t337_ud_found TRUE)
+            endif()
+            if(t337_ud_source_text MATCHES
+                "test_core_machine_fixture_preflight_real_ud_terminal")
+                set(t337_ud_terminal TRUE)
+            endif()
+            if(t337_ud_source_text MATCHES "T337_REAL_UD_VECTOR6_DELIVERY")
+                set(t337_ud_delivery_marker TRUE)
+            endif()
+        endif()
+    endforeach()
+    if(NOT t337_ud_found)
+        message(FATAL_ERROR
+            "T337 #UD owner has no #UD source assertion: ${t337_ud_target}")
+    endif()
+    list(FIND PROJECT_T337_UD_REAL_DELIVERY_TARGETS "${t337_ud_target}"
+        t337_ud_delivery_index)
+    list(FIND PROJECT_T337_UD_NO_REAL_NEGATIVE_TARGETS "${t337_ud_target}"
+        t337_ud_nonreal_index)
+    if(t337_ud_terminal)
+        if(NOT t337_ud_delivery_index LESS 0 OR NOT t337_ud_nonreal_index LESS 0)
+            message(FATAL_ERROR
+                "T337 #UD terminal owner has a conflicting disposition: "
+                "${t337_ud_target}")
+        endif()
+    elseif(t337_ud_delivery_index LESS 0 AND t337_ud_nonreal_index LESS 0)
+        message(FATAL_ERROR
+            "T337 #UD owner lacks real-mode delivery disposition: "
+            "${t337_ud_target}")
+    elseif(NOT t337_ud_delivery_index LESS 0 AND NOT t337_ud_nonreal_index LESS 0)
+        message(FATAL_ERROR
+            "T337 #UD owner has multiple non-terminal dispositions: "
+            "${t337_ud_target}")
+    elseif(NOT t337_ud_delivery_index LESS 0 AND
+        NOT t337_ud_delivery_marker)
+        message(FATAL_ERROR
+            "T337 #UD delivery owner lacks its source contract marker: "
+            "${t337_ud_target}")
+    endif()
+endforeach()
+
+function(t337_verify_ud_current_gate_inventory)
+foreach(t337_current_target IN LISTS PROJECT_CURRENT_SMOKE_TARGETS)
+    get_target_property(t337_current_sources ${t337_current_target} SOURCES)
+    foreach(t337_current_source IN LISTS t337_current_sources)
+        if(NOT t337_current_source MATCHES "^tests/machine/")
+            continue()
+        endif()
+        if(IS_ABSOLUTE "${t337_current_source}")
+            set(t337_current_source_path "${t337_current_source}")
+        else()
+            set(t337_current_source_path
+                "${CMAKE_SOURCE_DIR}/${t337_current_source}")
+        endif()
+        if(EXISTS "${t337_current_source_path}")
+            file(READ "${t337_current_source_path}" t337_current_source_text)
+            if(t337_current_source_text MATCHES
+                "VCPUINS_EXCEPT_UD|_SetExcept_UD|UndefinedOpcode")
+                list(FIND PROJECT_T337_UD_CURRENT_GATE_TARGETS
+                    "${t337_current_target}" t337_ud_inventory_index)
+                if(t337_ud_inventory_index LESS 0)
+                    message(FATAL_ERROR
+                        "Current-gate #UD source lacks T337 inventory: "
+                        "${t337_current_target}")
+                endif()
+            endif()
+        endif()
+    endforeach()
+endforeach()
+endfunction()
+if(WIN32)
+    list(APPEND PROJECT_CURRENT_SMOKE_TARGETS vm-w32-text-palette-smoke)
+endif()
+
+if(WIN32)
+    list(APPEND PROJECT_CURRENT_SMOKE_TARGETS
+        vm-platform-win32-keyboard-scan-smoke)
+endif()
+
+t337_verify_ud_current_gate_inventory()
+
+set(PROJECT_LEGACY_M1_FDD_SMOKE_TARGETS
+    vm-dos-prompt-smoke
+    vm-dos-keyboard-smoke
+    vm-dos-mem-fault-smoke
+    vm-dos-video-port-smoke
+    vm-cga-graphics-dos-smoke
+    vm-ega-planar-dos-smoke
+    vm-rom-ega-int10-dos-smoke
+    vm-mouse-driver-dos-smoke
+    vm-fdc-read-track-dos-smoke)
+set(PROJECT_CURRENT_FDD_SMOKE_TARGETS
+    vm-timer-firmware-smoke
+    vm-debug-pause-boundary-smoke
+    vm-unified-debug-backend-smoke)
+set(PROJECT_CURRENT_FDD_HDD_SMOKE_TARGETS vm-product-session-smoke)
+set(PROJECT_LEGACY_M1_FDD_CURRENT_HDD_SMOKE_TARGETS vm-ata-pio-dos-smoke)
+set(PROJECT_CURRENT_HDD_SMOKE_TARGETS vm-hdc-hdd-boot-smoke)
+set(PROJECT_CURRENT_MEDIA_SMOKE_TARGETS
+    ${PROJECT_LEGACY_M1_FDD_SMOKE_TARGETS}
+    ${PROJECT_CURRENT_FDD_SMOKE_TARGETS}
+    ${PROJECT_CURRENT_HDD_SMOKE_TARGETS}
+    ${PROJECT_CURRENT_FDD_HDD_SMOKE_TARGETS}
+    ${PROJECT_LEGACY_M1_FDD_CURRENT_HDD_SMOKE_TARGETS})
+
+# T344 keeps the current gate as one canonical partition.  A duplicate is a
+# registration defect, not an aggregate-list cleanup opportunity.
+function(project_t344_verify_current_gate_partition)
+    set(project_t344_current_targets)
+    foreach(project_t344_target IN LISTS PROJECT_CURRENT_SMOKE_TARGETS)
+        if(NOT TARGET ${project_t344_target})
+            message(FATAL_ERROR
+                "T344 current-gate target is missing: ${project_t344_target}")
+        endif()
+        list(FIND project_t344_current_targets "${project_t344_target}"
+            project_t344_target_index)
+        if(NOT project_t344_target_index EQUAL -1)
+            message(FATAL_ERROR
+                "T344 current-gate target is duplicated: ${project_t344_target}")
+        endif()
+        list(APPEND project_t344_current_targets "${project_t344_target}")
+    endforeach()
+
+    set(project_t344_media_targets)
+    foreach(project_t344_list IN ITEMS
+            PROJECT_LEGACY_M1_FDD_SMOKE_TARGETS
+            PROJECT_CURRENT_FDD_SMOKE_TARGETS
+            PROJECT_CURRENT_FDD_HDD_SMOKE_TARGETS
+            PROJECT_LEGACY_M1_FDD_CURRENT_HDD_SMOKE_TARGETS
+            PROJECT_CURRENT_HDD_SMOKE_TARGETS)
+        foreach(project_t344_target IN LISTS ${project_t344_list})
+            if(NOT TARGET ${project_t344_target})
+                message(FATAL_ERROR
+                    "T344 current media target is missing: ${project_t344_target}")
+            endif()
+            list(FIND project_t344_current_targets "${project_t344_target}"
+                project_t344_target_index)
+            list(FIND project_t344_media_targets "${project_t344_target}"
+                project_t344_media_index)
+            if(NOT project_t344_media_index EQUAL -1)
+                message(FATAL_ERROR
+                    "T344 current media target has multiple classifications: "
+                    "${project_t344_target}")
+            endif()
+            list(APPEND project_t344_media_targets "${project_t344_target}")
+            if(project_t344_target_index EQUAL -1)
+                list(APPEND project_t344_current_targets "${project_t344_target}")
+            endif()
+        endforeach()
+    endforeach()
+    set(PROJECT_T344_CURRENT_GATE_TARGETS "${project_t344_current_targets}"
+        PARENT_SCOPE)
+endfunction()
+project_t344_verify_current_gate_partition()
+set(PROJECT_CURRENT_ALL_SMOKE_TARGETS
+    ${PROJECT_T344_CURRENT_GATE_TARGETS})
+set(PROJECT_CURRENT_NONMEDIA_SMOKE_TARGETS
+    ${PROJECT_CURRENT_SMOKE_TARGETS})
+list(REMOVE_ITEM PROJECT_CURRENT_NONMEDIA_SMOKE_TARGETS
+    ${PROJECT_CURRENT_MEDIA_SMOKE_TARGETS})
+set(PROJECT_CURRENT_SMOKE_JOBS "4" CACHE STRING
+    "Positive CTest parallel job count for current smoke targets")
+if(NOT PROJECT_CURRENT_SMOKE_JOBS MATCHES "^[1-9][0-9]*$")
+    message(FATAL_ERROR
+        "PROJECT_CURRENT_SMOKE_JOBS must be a positive integer, got: ${PROJECT_CURRENT_SMOKE_JOBS}")
+endif()
+set(PROJECT_ASSETS_ROOT "${CMAKE_SOURCE_DIR}/../../assets" CACHE PATH
+    "Owner-provided local asset root for current runtime smoke coverage")
+set(PROJECT_FDD_SMOKE_IMAGE "${PROJECT_ASSETS_ROOT}/fdd.img" CACHE FILEPATH
+    "Owner-provided FDD image for current runtime smoke coverage")
+set(PROJECT_M1_FDD_SMOKE_IMAGE "${PROJECT_ASSETS_ROOT}/fdd-msdos500.img" CACHE FILEPATH
+    "Owner-provided historical M1 DOS 5 FDD image for legacy smoke coverage")
+set(PROJECT_HDD_SMOKE_IMAGE "${PROJECT_ASSETS_ROOT}/hdd.img" CACHE FILEPATH
+    "Owner-provided HDD image for current runtime smoke coverage")
+
+function(project_add_current_smoke_test target)
+    if(NOT TARGET ${target})
+        message(FATAL_ERROR "Current smoke target is missing: ${target}")
+    endif()
+    get_property(project_t344_registered_targets GLOBAL
+        PROPERTY PROJECT_T344_CURRENT_GATE_REGISTERED_TARGETS)
+    list(FIND project_t344_registered_targets "${target}"
+        project_t344_registered_index)
+    if(NOT project_t344_registered_index EQUAL -1)
+        message(FATAL_ERROR "Current smoke target is registered twice: ${target}")
+    endif()
+    set_property(GLOBAL APPEND PROPERTY
+        PROJECT_T344_CURRENT_GATE_REGISTERED_TARGETS "${target}")
+    add_test(NAME "current.${target}" COMMAND "$<TARGET_FILE:${target}>" ${ARGN})
+    set(current_smoke_labels "current-gate;smoke")
+    list(FIND PROJECT_CURRENT_MEDIA_SMOKE_TARGETS ${target} media_smoke_index)
+    if(NOT media_smoke_index EQUAL -1)
+        list(APPEND current_smoke_labels media)
+    endif()
+    set_tests_properties("current.${target}" PROPERTIES
+        LABELS "${current_smoke_labels}"
+        TIMEOUT 30)
+endfunction()
+
+foreach(target IN LISTS PROJECT_CURRENT_ALL_SMOKE_TARGETS)
+    list(FIND PROJECT_CURRENT_MEDIA_SMOKE_TARGETS ${target} media_smoke_index)
+    if(media_smoke_index EQUAL -1)
+        project_add_current_smoke_test(${target})
+    endif()
+endforeach()
+
+foreach(target IN LISTS PROJECT_CURRENT_FDD_SMOKE_TARGETS)
+    project_add_current_smoke_test(${target} "${PROJECT_FDD_SMOKE_IMAGE}")
+endforeach()
+foreach(target IN LISTS PROJECT_LEGACY_M1_FDD_SMOKE_TARGETS)
+    project_add_current_smoke_test(${target} "${PROJECT_M1_FDD_SMOKE_IMAGE}")
+endforeach()
+foreach(target IN LISTS PROJECT_CURRENT_HDD_SMOKE_TARGETS)
+    project_add_current_smoke_test(${target} "${PROJECT_HDD_SMOKE_IMAGE}")
+endforeach()
+foreach(target IN LISTS PROJECT_CURRENT_FDD_HDD_SMOKE_TARGETS)
+    project_add_current_smoke_test(${target} "${PROJECT_FDD_SMOKE_IMAGE}"
+        "${PROJECT_HDD_SMOKE_IMAGE}")
+endforeach()
+foreach(target IN LISTS PROJECT_LEGACY_M1_FDD_CURRENT_HDD_SMOKE_TARGETS)
+    project_add_current_smoke_test(${target} "${PROJECT_M1_FDD_SMOKE_IMAGE}"
+        "${PROJECT_HDD_SMOKE_IMAGE}")
+endforeach()
+
+get_property(project_t344_registered_targets GLOBAL
+    PROPERTY PROJECT_T344_CURRENT_GATE_REGISTERED_TARGETS)
+foreach(project_t344_target IN LISTS PROJECT_T344_CURRENT_GATE_TARGETS)
+    list(FIND project_t344_registered_targets "${project_t344_target}"
+        project_t344_registered_index)
+    if(project_t344_registered_index EQUAL -1)
+        message(FATAL_ERROR
+            "T344 canonical current-gate target is not registered: ${project_t344_target}")
+    endif()
+endforeach()
+list(LENGTH PROJECT_T344_CURRENT_GATE_TARGETS project_t344_expected_current_count)
+list(LENGTH project_t344_registered_targets project_t344_registered_current_count)
+if(NOT project_t344_expected_current_count EQUAL project_t344_registered_current_count)
+    message(FATAL_ERROR
+        "T344 current-gate registration has an unexpected target.")
+endif()
+file(GENERATE
+    OUTPUT "${CMAKE_BINARY_DIR}/t344-current-gate-targets.txt"
+    CONTENT "$<JOIN:${PROJECT_T344_CURRENT_GATE_TARGETS},\n>\n")
+add_custom_target(verify-t344-current-gate-registration
+    COMMAND "${CMAKE_COMMAND}"
+        -DPROJECT_T344_CURRENT_TARGETS_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t344-current-gate-targets.txt
+        -DPROJECT_T344_CTEST_TEST_FILE:FILEPATH=${CMAKE_BINARY_DIR}/CTestTestfile.cmake
+        -P "${CMAKE_SOURCE_DIR}/cmake/verify_t344_current_gate_registration.cmake"
+    COMMENT "Verifying T344 current-gate registration integrity"
+    VERBATIM)
+
+add_custom_target(run-current-smokes
+    COMMAND "${CMAKE_CTEST_COMMAND}" --test-dir "${CMAKE_BINARY_DIR}"
+        --output-on-failure --no-tests=error --label-regex "^current-gate$"
+        --parallel "${PROJECT_CURRENT_SMOKE_JOBS}"
+    DEPENDS ${PROJECT_CURRENT_ALL_SMOKE_TARGETS}
+    COMMENT "Building and executing current runnable smoke coverage"
+    VERBATIM)
+
+add_custom_target(run-current-fast-smokes
+    COMMAND "${CMAKE_CTEST_COMMAND}" --test-dir "${CMAKE_BINARY_DIR}"
+        --output-on-failure --no-tests=error --label-regex "^current-gate$"
+        --label-exclude "media" --parallel "${PROJECT_CURRENT_SMOKE_JOBS}"
+    DEPENDS ${PROJECT_CURRENT_NONMEDIA_SMOKE_TARGETS}
+    COMMENT "Building and executing current non-media smoke coverage"
+    VERBATIM)
+
+project_configure_t317_strict_cpu_smokes()
+
+add_custom_target(verify-t332-cpu-fixture-lifecycle
+    COMMAND "${CMAKE_COMMAND}"
+        -DPROJECT_T332_SOURCE_DIR=${CMAKE_SOURCE_DIR}
+        -DPROJECT_T332_INVENTORY_FILE=${CMAKE_BINARY_DIR}/t317-strict-cpu-smoke-inventory.txt
+        -P "${CMAKE_SOURCE_DIR}/cmake/verify_t332_cpu_fixture_lifecycle.cmake"
+    COMMENT "Verifying T332 CPU smoke fixture lifecycle closure"
+    VERBATIM)
+
+add_custom_target(verify-t344-historical-fixture-shapes
+    COMMAND "${CMAKE_COMMAND}"
+        -DPROJECT_T344_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+        -P "${CMAKE_SOURCE_DIR}/cmake/verify_t344_historical_fixture_shapes.cmake"
+    COMMENT "Verifying T344 historical fixture shapes"
+    VERBATIM)
+
+add_custom_target(verify-t338-legacy-profile-metadata
+    COMMAND "${CMAKE_COMMAND}"
+        -DPROJECT_SOURCE_DIR=${CMAKE_SOURCE_DIR}
+        -P "${CMAKE_SOURCE_DIR}/cmake/verify_t338_legacy_profile_metadata.cmake"
+    COMMENT "Verifying T338 8086/80186 profile metadata and LOCK ownership"
+    VERBATIM)
+
+
+# CMake builds the current source artifact only. Historical task executables are
+# retained evidence under build/output and are never regenerated from newer
+# source under their former task/version names.
+function(add_current_vm_artifact target version)
+    string(REGEX REPLACE "^([0-9]+)\\.([0-9]+)\\.([0-9][0-9][0-9][0-9])$"
+        "nxvm_\\1_\\2_\\3.exe" task_artifact_filename "${version}")
+    if(task_artifact_filename STREQUAL version)
+        message(FATAL_ERROR "Invalid NXVM current artifact version: ${version}")
+    endif()
+
+    add_executable(${target} EXCLUDE_FROM_ALL
+        src/vm/main.c
+        src/vm/composition/session/machine_info.c)
+    target_compile_definitions(${target} PRIVATE "PRODUCT_BUILD_VERSION=\"${version}\"")
+    target_include_directories(${target} PRIVATE
+        "${CMAKE_SOURCE_DIR}/src")
+    target_link_libraries(${target} PRIVATE
+        vm-product
+        vm-composition)
+
+    if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+        target_compile_options(${target} PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    endif()
+
+    add_custom_command(TARGET ${target} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_BINARY_DIR}/output"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "$<TARGET_FILE:${target}>"
+            "${CMAKE_BINARY_DIR}/output/${task_artifact_filename}"
+        COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_SOURCE_DIR}/build/output"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "$<TARGET_FILE:${target}>"
+            "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
+endfunction()
+
+add_current_vm_artifact(vm-0-5-0344 "0.5.0344")
+option(PROJECT_VERIFY_DEPENDENCY_DAG
+    "Reject newly introduced mixed-owner CMake targets" ON)
+
+if(PROJECT_VERIFY_DEPENDENCY_DAG)
+    function(project_verify_target_source_owners target)
+        get_target_property(target_sources ${target} SOURCES)
+        set(owners)
+        foreach(source IN LISTS target_sources)
+            get_filename_component(source_path "${source}" ABSOLUTE
+                BASE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+            file(RELATIVE_PATH source_relative "${CMAKE_SOURCE_DIR}" "${source_path}")
+            if(source_relative MATCHES "^src/(core|vm|vdm)/([^/]+)/")
+                list(APPEND owners "${CMAKE_MATCH_1}/${CMAKE_MATCH_2}")
+            endif()
+        endforeach()
+        list(REMOVE_DUPLICATES owners)
+        list(LENGTH owners owner_count)
+        if(owner_count GREATER 1)
+            message(FATAL_ERROR
+                "Dependency DAG violation: target ${target} mixes source owners: ${owners}")
+        endif()
+    endfunction()
+
+    get_property(PROJECT_ALL_TARGETS DIRECTORY PROPERTY BUILDSYSTEM_TARGETS)
+    foreach(target IN LISTS PROJECT_ALL_TARGETS)
+        project_verify_target_source_owners(${target})
+    endforeach()
+
+    if(POWERSHELL_EXECUTABLE)
+    add_custom_target(verify-dependency-dag
+        COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
+            -File "${CMAKE_SOURCE_DIR}/tools/Verify-DependencyDag.ps1"
+            -RepositoryRoot "${CMAKE_SOURCE_DIR}"
+        COMMENT "Verifying M5 source dependency allowlist"
+        VERBATIM)
+
+    add_custom_target(verify-live-machine-authority
+        COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
+            -File "${CMAKE_SOURCE_DIR}/tools/VerifyLiveMachineAuthority.ps1"
+            -RepositoryRoot "${CMAKE_SOURCE_DIR}"
+        COMMENT "Verifying M5 live-machine storage closure"
+        VERBATIM)
+
+    add_custom_target(verify-facade-ownership
+        COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
+            -File "${CMAKE_SOURCE_DIR}/tools/VerifyFacadeOwnership.ps1"
+            -RepositoryRoot "${CMAKE_SOURCE_DIR}"
+        COMMENT "Verifying M5 residual facade ownership baseline"
+        VERBATIM)
+
+    add_custom_target(verify-executor-closure
+        COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
+            -File "${CMAKE_SOURCE_DIR}/tools/VerifyExecutorClosure.ps1"
+            -RepositoryRoot "${CMAKE_SOURCE_DIR}"
+        COMMENT "Verifying M5 single executor closure"
+        VERBATIM)
+
+    add_custom_target(verify-public-raw-borrow-closure
+        COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
+            -File "${CMAKE_SOURCE_DIR}/tools/VerifyPublicRawBorrowClosure.ps1"
+            -RepositoryRoot "${CMAKE_SOURCE_DIR}"
+        COMMENT "Verifying M5 public raw-borrow closure"
+        VERBATIM)
+
+    add_custom_target(verify-session-readiness
+        COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
+            -File "${CMAKE_SOURCE_DIR}/tools/VerifySessionReadiness.ps1"
+            -RepositoryRoot "${CMAKE_SOURCE_DIR}"
+        COMMENT "Verifying M5 mutable-state inventory"
+        VERBATIM)
+
+    add_custom_target(verify-product-session-manager
+        COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
+            -File "${CMAKE_SOURCE_DIR}/tools/VerifyProductSessionManager.ps1"
+            -RepositoryRoot "${CMAKE_SOURCE_DIR}"
+        COMMENT "Verifying M5 product-session manager closure"
+        VERBATIM)
+
+    add_custom_target(verify-c-facade-headers
+        COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
+            -File "${CMAKE_SOURCE_DIR}/tools/Verify-CFacadeHeaders.ps1"
+            -RepositoryRoot "${CMAKE_SOURCE_DIR}"
+        COMMENT "Verifying ISO C header facade ownership"
+        VERBATIM)
+
+    add_custom_target(verify-bounded-formatting
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_bounded_formatting.cmake"
+        COMMENT "Verifying bounded formatting facade closure"
+        VERBATIM)
+
+    add_custom_target(verify-documentation-governance
+        COMMAND "${POWERSHELL_EXECUTABLE}" -NoProfile -ExecutionPolicy Bypass
+            -File "${CMAKE_SOURCE_DIR}/tools/Verify-DocumentationGovernance.ps1"
+            -RepositoryRoot "${CMAKE_SOURCE_DIR}"
+        COMMENT "Verifying documentation governance closure"
+        VERBATIM)
+    else()
+        message(STATUS "PowerShell verification targets are unavailable on this host.")
+    endif()
+
+    add_custom_target(verify-vm-provider-composition
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_vm_provider_composition.cmake"
+        COMMENT "Verifying VM provider composition separation"
+        VERBATIM)
+
+    add_custom_target(verify-ram-reconfigure-closure
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_ram_reconfigure_closure.cmake"
+        COMMENT "Verifying M5 RAM cold-reconfiguration closure"
+        VERBATIM)
+
+    add_custom_target(verify-linux-platform-contract
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_linux_platform_contract.cmake"
+        COMMENT "Verifying Linux platform source contract"
+        VERBATIM)
+
+    add_custom_target(verify-current-artifact-target
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_current_artifact_target.cmake"
+        COMMENT "Verifying current artifact target truthfulness"
+        VERBATIM)
+
+    add_custom_target(verify-firmware-capability
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_firmware_capability.cmake"
+        COMMENT "Verifying M5 T297 firmware capability closure"
+        VERBATIM)
+
+    add_custom_target(verify-debugger-capability
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_debugger_capability.cmake"
+        COMMENT "Verifying M5 T298 debugger capability closure"
+        VERBATIM)
+
+    add_custom_target(verify-request-transport-closure
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_request_transport_closure.cmake"
+        COMMENT "Verifying request transport ingress-only closure"
+        VERBATIM)
+
+    add_custom_target(verify-keyboard-ingress-boundary
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_keyboard_ingress_boundary.cmake"
+        COMMENT "Verifying VM keyboard-state ingress boundary"
+        VERBATIM)
+
+    add_custom_target(verify-aux-mouse-boundary
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_aux_mouse_boundary.cmake"
+        COMMENT "Verifying VM AUX mouse ingress boundary"
+        VERBATIM)
+
+    add_custom_target(verify-dma-fdc-boundary
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_dma_fdc_boundary.cmake"
+        COMMENT "Verifying core DMA and FDC channel boundary"
+        VERBATIM)
+
+    add_custom_target(verify-fdc-state-machine-boundary
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_fdc_state_machine_boundary.cmake"
+        COMMENT "Verifying VM FDC/FDD state-machine ownership boundary"
+        VERBATIM)
+
+    add_custom_target(verify-host-cancellation-boundary
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_host_cancellation_boundary.cmake"
+        COMMENT "Verifying host cancellation report boundary"
+        VERBATIM)
+
+    add_custom_target(verify-keyboard-transport-surface
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_keyboard_transport_surface.cmake"
+        COMMENT "Verifying VM keyboard transport surface closure"
+        VERBATIM)
+
+    add_custom_target(verify-console-adapter-closure
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_console_adapter_closure.cmake"
+        COMMENT "Verifying Console adapter selected-borrow closure"
+        VERBATIM)
+
+    add_custom_target(verify-current-media-smoke-classification
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_current_media_smoke_classification.cmake"
+        COMMENT "Verifying current media smoke classification"
+        VERBATIM)
+
+    add_custom_target(verify-linux-adapter-hygiene
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_linux_adapter_hygiene.cmake"
+        COMMENT "Verifying Linux adapter hygiene"
+        VERBATIM)
+
+    add_custom_target(verify-default-pc-at-profile-closure
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_default_pc_at_profile_closure.cmake"
+        COMMENT "Verifying default PC/AT profile ownership closure"
+        VERBATIM)
+
+    add_custom_target(verify-t264-core-vm-pcat-ownership
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_t264_core_vm_ownership.cmake"
+        COMMENT "Verifying M5 T264 core/VM PC/AT ownership closure"
+        VERBATIM)
+
+    add_custom_target(verify-ega-sequencer-boundary
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_ega_sequencer_boundary.cmake"
+        COMMENT "Verifying M5 T235 EGA sequencer ownership boundary"
+        VERBATIM)
+
+    add_custom_target(verify-ega-controller-boundary
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_ega_controller_boundary.cmake"
+        COMMENT "Verifying M5 T236 EGA controller ownership boundary"
+        VERBATIM)
+
+    add_custom_target(verify-ega-crtc-boundary
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_ega_crtc_boundary.cmake"
+        COMMENT "Verifying T314 EGA CRTC boundary closure"
+        VERBATIM)
+
+    add_custom_target(verify-ega-planar-boundary
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_ega_planar_boundary.cmake"
+        COMMENT "Verifying M5 T238 EGA planar ownership boundary"
+        VERBATIM)
+
+    add_custom_target(verify-rom-ega-int10-boundary
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_rom_ega_int10_boundary.cmake"
+        COMMENT "Verifying M5 T239 ROM EGA INT 10h boundary"
+        VERBATIM)
+
+    add_custom_target(verify-t285-ega-mode10
+        COMMAND "${CMAKE_COMMAND}"
+            -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -DCORE_SMOKE_EXE:FILEPATH=$<TARGET_FILE:core-machine-ega-mode10-contract-smoke>
+            -DVM_SMOKE_EXE:FILEPATH=$<TARGET_FILE:vm-ega-mode10-boot-smoke>
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_t285_ega_mode10.cmake"
+        DEPENDS core-machine-ega-mode10-contract-smoke vm-ega-mode10-boot-smoke
+        COMMENT "Verifying M5 T285 EGA mode 10h direct corpus"
+        VERBATIM)
+
+    add_custom_target(verify-vm-session-owner-closure
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_vm_session_owner_closure.cmake"
+        COMMENT "Verifying M5 VM session direct ownership closure"
+        VERBATIM)
+
+    add_custom_target(verify-keyboard-portal-closure
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_keyboard_portal_closure.cmake"
+        COMMENT "Verifying M5 T210 keyboard portal retirement"
+        VERBATIM)
+
+    add_custom_target(verify-boot-failure-portal-closure
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_boot_failure_portal_closure.cmake"
+        COMMENT "Verifying M5 T211 boot-failure portal retirement"
+        VERBATIM)
+
+    add_custom_target(verify-hdc-portal-closure
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_hdc_portal_closure.cmake"
+        COMMENT "Verifying M5 T213 HDC portal retirement"
+        VERBATIM)
+
+    add_custom_target(verify-cmos-rtc-boundary
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_cmos_rtc_boundary.cmake"
+        COMMENT "Verifying VM CMOS/RTC deterministic-time boundary"
+        VERBATIM)
+
+    add_custom_target(verify-rational-clock-boundary
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_rational_clock_boundary.cmake"
+        COMMENT "Verifying core rational device-clock boundary"
+        VERBATIM)
+
+    add_custom_target(verify-ata-pio-feature-boundary
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_ata_pio_feature_boundary.cmake"
+        COMMENT "Verifying VM ATA PIO feature ownership boundary"
+        VERBATIM)
+
+    add_custom_target(verify-hdd-legacy-api-closure
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_hdd_legacy_api_closure.cmake"
+        COMMENT "Verifying obsolete HDD transfer API closure"
+        VERBATIM)
+
+    add_custom_target(verify-vm-media-atomic-save
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_vm_media_atomic_save.cmake"
+        COMMENT "Verifying VM media save failure preservation"
+        VERBATIM)
+
+    add_custom_target(verify-core-utils-boundary
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_core_utils_boundary.cmake"
+        COMMENT "Verifying M5 T234 neutral core utility boundary"
+        VERBATIM)
+
+    add_custom_target(verify-session-layout-boundary
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_session_layout_boundary.cmake"
+        COMMENT "Verifying VM session private-layout boundary"
+        VERBATIM)
+
+    add_custom_target(verify-cancellable-wait-boundary
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_cancellable_wait_boundary.cmake"
+        COMMENT "Verifying cancellable host-wait boundary"
+        VERBATIM)
+
+    add_custom_target(verify-vm-composition-lifecycle
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_vm_composition_lifecycle.cmake"
+        COMMENT "Verifying VM composition lifecycle closure"
+        VERBATIM)
+
+    add_custom_target(verify-fpu-boundary
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_fpu_boundary.cmake"
+        COMMENT "Verifying T262 core-owned FPU boundary"
+        VERBATIM)
+
+    add_custom_target(verify-core-cpu-pic-authority
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_core_cpu_pic_authority.cmake"
+        COMMENT "Verifying T295 core-owned CPU/PIC lifecycle authority"
+        VERBATIM)
+
+    add_custom_target(verify-core-display-authority
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_core_display_authority.cmake"
+        COMMENT "Verifying T296 core-owned display and port authority"
+        VERBATIM)
+
+    add_custom_target(verify-core-dma-rtc-authority
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_core_dma_rtc_authority.cmake"
+        COMMENT "Verifying T296 core-owned DMA and RTC/CMOS/NMI authority"
+        VERBATIM)
+
+    add_custom_target(verify-core-controller-authority
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_core_controller_authority.cmake"
+        COMMENT "Verifying T296 core-owned FDC/HDC controller authority"
+        VERBATIM)
+
+    add_custom_target(verify-t330-task-transition-construction
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_t330_task_transition_construction.cmake"
+        COMMENT "Verifying T330 task-transition construction closure"
+        VERBATIM)
+
+    add_custom_target(verify-t331-real-exception-final-construction
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_t331_real_exception_final_construction.cmake"
+        COMMENT "Verifying T331 real exception final-delivery construction"
+        VERBATIM)
+endif()
+
+set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
+    verify-t317-test-type-vocabulary
+    verify-t317-strict-cpu-smoke-coverage
+    verify-t332-cpu-fixture-lifecycle
+    verify-t344-historical-fixture-shapes
+    verify-t344-strict-declaration-uniqueness
+    verify-t338-legacy-profile-metadata
+    verify-t330-task-transition-construction
+    verify-t331-real-exception-final-construction
+    verify-documentation-governance
+    verify-dependency-dag
+    verify-live-machine-authority
+    verify-facade-ownership
+    verify-executor-closure
+    verify-public-raw-borrow-closure
+    verify-session-readiness
+    verify-product-session-manager
+    verify-c-facade-headers
+    verify-bounded-formatting
+    verify-vm-provider-composition
+    verify-ram-reconfigure-closure
+    verify-linux-platform-contract
+    verify-current-artifact-target
+    verify-request-transport-closure
+    verify-keyboard-ingress-boundary
+    verify-aux-mouse-boundary
+    verify-dma-fdc-boundary
+    verify-fdc-state-machine-boundary
+    verify-host-cancellation-boundary
+    verify-keyboard-transport-surface
+    verify-console-adapter-closure
+    verify-current-media-smoke-classification
+    verify-linux-adapter-hygiene
+    verify-default-pc-at-profile-closure
+    verify-t264-core-vm-pcat-ownership
+    verify-ega-sequencer-boundary
+    verify-ega-controller-boundary
+    verify-keyboard-portal-closure
+    verify-t285-ega-mode10
+    verify-boot-failure-portal-closure
+    verify-cmos-rtc-boundary
+    verify-rational-clock-boundary
+    verify-ata-pio-feature-boundary
+    verify-hdd-legacy-api-closure
+    verify-vm-media-atomic-save
+    verify-core-utils-boundary
+    verify-cancellable-wait-boundary
+    verify-vm-composition-lifecycle
+    verify-t344-current-gate-registration
+    verify-fpu-boundary
+    verify-core-cpu-pic-authority
+    verify-core-display-authority
+    verify-core-dma-rtc-authority
+    verify-core-controller-authority)
+set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_TARGETS)
+foreach(target IN LISTS PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES)
+    if(TARGET ${target})
+        list(APPEND PROJECT_CURRENT_SPECIALIZED_VERIFIER_TARGETS ${target})
+    endif()
+endforeach()
+file(GENERATE
+    OUTPUT "${CMAKE_BINARY_DIR}/current-specialized-verifier-targets.txt"
+    CONTENT "$<JOIN:${PROJECT_CURRENT_SPECIALIZED_VERIFIER_TARGETS},\n>\n")
+add_custom_target(verify-current-gate-separation
+    COMMAND "${CMAKE_COMMAND}"
+        -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+        -DPROJECT_NINJA:FILEPATH=${CMAKE_MAKE_PROGRAM}
+        -DPROJECT_SPECIALIZED_TARGETS_FILE:FILEPATH=${CMAKE_BINARY_DIR}/current-specialized-verifier-targets.txt
+        -DPROJECT_CTEST_TEST_FILE:FILEPATH=${CMAKE_BINARY_DIR}/CTestTestfile.cmake
+        -P "${CMAKE_SOURCE_DIR}/cmake/verify_current_gate_separation.cmake"
+    COMMENT "Verifying current smoke and specialized gate separation"
+    VERBATIM)
+list(APPEND PROJECT_CURRENT_SPECIALIZED_VERIFIER_TARGETS
+    verify-current-gate-separation)
+add_custom_target(verify-current-specialized-gates
+    DEPENDS ${PROJECT_CURRENT_SPECIALIZED_VERIFIER_TARGETS}
+    COMMENT "Running current specialized verification gates"
+    VERBATIM)
+
+if(PROJECT_ENABLE_BOCHX_RESEARCH)
+    add_executable(research-bochx-manifest-check
+        tools/research/bochx/bochx_manifest_check.c
+    )
+    if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+        target_compile_options(research-bochx-manifest-check PRIVATE
+            -Wall -Wextra -Wpedantic -Werror)
+    endif()
+endif()
+
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(core-platform PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(core-utils PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(core-product-session PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(vm-request-transport PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(vm-platform-host-surface-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(core-platform-input-source-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(core-platform-presentation-mailbox-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(core-platform-wait-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(core-platform-backing-resource-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(vm-full-pc-session-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(vm-core-executor-storage-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(core-machine-executor-run-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(core-machine-lgdt-lidt-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(core-machine-cpu-pic-lifecycle-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(vdm-machine PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(vdm-composition PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(vdm-minimal-session-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(vdm-minimal-presentation-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(vm-cpu-probe-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(vm-execution-context-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+endif()
+
+# T345 S2 promotes only non-strict current-gate executables whose complete
+# direct C source set is project-owned test code. Targets that compile even one
+# production source remain outside this cohort for S3 ownership separation.
+set(PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS)
+set(PROJECT_T345_S2_MIXED_OWNER_TEST_TARGETS)
+foreach(project_t345_target IN LISTS PROJECT_T344_CURRENT_GATE_TARGETS)
+    get_target_property(project_t345_options ${project_t345_target} COMPILE_OPTIONS)
+    set(project_t345_already_strict TRUE)
+    foreach(project_t345_flag IN ITEMS -Wall -Wextra -Wpedantic -Werror)
+        list(FIND project_t345_options "${project_t345_flag}" project_t345_flag_index)
+        if(project_t345_flag_index EQUAL -1)
+            set(project_t345_already_strict FALSE)
+        endif()
+    endforeach()
+    if(project_t345_already_strict)
+        continue()
+    endif()
+    get_target_property(project_t345_sources ${project_t345_target} SOURCES)
+    set(project_t345_has_c_source FALSE)
+    set(project_t345_all_test_sources TRUE)
+    foreach(project_t345_source IN LISTS project_t345_sources)
+        if(IS_ABSOLUTE "${project_t345_source}")
+            set(project_t345_source_path "${project_t345_source}")
+        else()
+            set(project_t345_source_path "${CMAKE_SOURCE_DIR}/${project_t345_source}")
+        endif()
+        if(NOT project_t345_source_path MATCHES "\\.c$" OR
+                NOT EXISTS "${project_t345_source_path}")
+            continue()
+        endif()
+        set(project_t345_has_c_source TRUE)
+        file(RELATIVE_PATH project_t345_relative_source
+            "${CMAKE_SOURCE_DIR}" "${project_t345_source_path}")
+        if(NOT project_t345_relative_source MATCHES "^tests/")
+            set(project_t345_all_test_sources FALSE)
+        endif()
+    endforeach()
+    if(project_t345_has_c_source AND project_t345_all_test_sources)
+        list(APPEND PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS ${project_t345_target})
+    elseif(project_t345_has_c_source)
+        list(APPEND PROJECT_T345_S2_MIXED_OWNER_TEST_TARGETS ${project_t345_target})
+    endif()
+endforeach()
+list(LENGTH PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS project_t345_s2_pure_count)
+list(LENGTH PROJECT_T345_S2_MIXED_OWNER_TEST_TARGETS project_t345_s2_mixed_count)
+if(NOT project_t345_s2_pure_count EQUAL 118 OR
+        NOT project_t345_s2_mixed_count EQUAL 3)
+    message(FATAL_ERROR
+        "T345 S2 expected 118 pure and 3 mixed owner-test targets; found ${project_t345_s2_pure_count} pure and ${project_t345_s2_mixed_count} mixed.")
+endif()
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    foreach(project_t345_target IN LISTS PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS)
+        target_compile_options(${project_t345_target} PRIVATE
+            -Wall -Wextra -Wpedantic -Werror)
+    endforeach()
+endif()
+string(REPLACE ";" "\n" project_t345_s2_target_contents
+    "${PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS}")
+file(GENERATE
+    OUTPUT "${CMAKE_BINARY_DIR}/t345-s2-owner-test-strict-targets.txt"
+    CONTENT "${project_t345_s2_target_contents}\n")
+
+# T345 S3 promotes only production targets whose complete direct source
+# surface is independently owned by the target and clean in the S1 audit.
+# Their strictness remains target-local and never substitutes for a linked
+# production dependency.
+set(PROJECT_T345_S3_SAFE_PRODUCTION_STRICT_ENTRIES
+    "type-facade|src/type.c"
+    "core-product-utils|src/core/product/utils.c"
+    "vm-platform-requests|src/vm/platform/request_bridge.c")
+set(PROJECT_T345_S3_SAFE_PRODUCTION_STRICT_TARGETS)
+foreach(project_t345_s3_entry IN LISTS PROJECT_T345_S3_SAFE_PRODUCTION_STRICT_ENTRIES)
+    string(REPLACE "|" ";" project_t345_s3_fields "${project_t345_s3_entry}")
+    list(GET project_t345_s3_fields 0 project_t345_s3_target)
+    list(GET project_t345_s3_fields 1 project_t345_s3_source)
+    get_target_property(project_t345_s3_sources ${project_t345_s3_target} SOURCES)
+    list(LENGTH project_t345_s3_sources project_t345_s3_source_count)
+    list(FIND project_t345_s3_sources "${project_t345_s3_source}"
+        project_t345_s3_source_index)
+    if(NOT project_t345_s3_source_count EQUAL 1 OR
+            project_t345_s3_source_index EQUAL -1)
+        message(FATAL_ERROR
+            "T345 S3 requires ${project_t345_s3_target} to compile only ${project_t345_s3_source} directly.")
+    endif()
+    list(APPEND PROJECT_T345_S3_SAFE_PRODUCTION_STRICT_TARGETS
+        "${project_t345_s3_target}")
+endforeach()
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    foreach(project_t345_s3_target IN LISTS PROJECT_T345_S3_SAFE_PRODUCTION_STRICT_TARGETS)
+        target_compile_options(${project_t345_s3_target} PRIVATE
+            -Wall -Wextra -Wpedantic -Werror)
+    endforeach()
+endif()
+string(REPLACE ";" "\n" project_t345_s3_entry_contents
+    "${PROJECT_T345_S3_SAFE_PRODUCTION_STRICT_ENTRIES}")
+file(GENERATE
+    OUTPUT "${CMAKE_BINARY_DIR}/t345-s3-safe-production-strict-entries.txt"
+    CONTENT "${project_t345_s3_entry_contents}\n")
+
+# T345 S4 retains every production source that cannot be promoted without
+# mixing inherited/runtime ownership.  This exact source ledger is consumed by
+# the verifier; the supporting evidence and TODO define each domain's risk and
+# next admission condition.
+set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
+    "core-machine-executor|src/core/machine/display.c|machine-executor"
+    "core-machine-executor|src/core/machine/vadp.c|machine-executor"
+    "core-machine-executor|src/core/machine/port.c|machine-executor"
+    "core-machine-executor|src/core/machine/memory.c|machine-executor"
+    "core-machine-executor|src/core/machine/cpu.c|machine-executor"
+    "core-machine-executor|src/core/machine/fpu.c|machine-executor"
+    "core-machine-executor|src/core/machine/cpu_instructions.c|machine-executor"
+    "core-machine-executor|src/core/machine/pic.c|machine-executor"
+    "core-machine-executor|src/core/machine/pit.c|machine-executor"
+    "core-machine-executor|src/core/machine/dma.c|machine-executor"
+    "core-machine-executor|src/core/machine/kbc.c|machine-executor"
+    "core-machine-executor|src/core/machine/rtc.c|machine-executor"
+    "core-product-debug|src/core/product/debug/debug_access.c|debug-xasm"
+    "core-product-debug|src/core/product/debug/debug.c|debug-xasm"
+    "core-product-debug|src/core/product/debug/xasm32/aasm32.c|debug-xasm"
+    "core-product-debug|src/core/product/debug/xasm32/dasm32.c|debug-xasm"
+    "core-product-xasm-contract-smoke|src/core/product/utils.c|debug-xasm-contract"
+    "core-product-xasm-contract-smoke|src/core/product/debug/xasm32/aasm32.c|debug-xasm-contract"
+    "core-product-xasm-contract-smoke|src/core/product/debug/xasm32/dasm32.c|debug-xasm-contract"
+    "core-product-debug-input-failure-smoke|src/core/product/debug/debug.c|debug-input-failure"
+    "core-product-debug-input-failure-smoke|src/core/product/debug/debug_access.c|debug-input-failure"
+    "vm-product-console-input-failure-smoke|src/vm/product/console.c|console-input-failure"
+    "vm-product|src/vm/product/console.c|console-product"
+    "vm-platform|src/vm/platform/platform.c|win32-platform"
+    "vm-platform|src/vm/platform/host_surface.c|win32-platform"
+    "vm-platform|src/vm/platform/execution.c|win32-platform"
+    "vm-platform|src/vm/platform/input_flush.c|win32-platform"
+    "vm-platform|src/vm/platform/win32/win32.c|win32-platform"
+    "vm-platform|src/vm/platform/win32/w32cdisp.c|win32-platform"
+    "vm-platform|src/vm/platform/win32/w32adisp.c|win32-platform"
+    "vm-platform|src/vm/platform/win32/win32con.c|win32-platform"
+    "vm-platform|src/vm/platform/win32/win32app.c|win32-platform"
+    "vm-machine|src/vm/machine/fdd.c|vm-machine"
+    "vm-machine|src/vm/machine/hdd.c|vm-machine"
+    "vm-machine|src/vm/machine/media_save.c|vm-machine"
+    "vm-machine|src/vm/machine/debug.c|vm-machine"
+    "vm-composition|src/vm/composition/session/session_factory.c|vm-composition"
+    "vm-composition|src/vm/composition/session/console_machine_adapter.c|vm-composition"
+    "vm-composition|src/vm/composition/session/debug_target.c|vm-composition"
+    "vm-composition|src/vm/composition/session/media.c|vm-composition"
+    "vm-composition|src/vm/composition/session/display.c|vm-composition"
+    "vm-composition|src/vm/composition/session/lifecycle.c|vm-composition"
+    "vm-composition|src/vm/composition/session/session.c|vm-composition"
+    "vm-composition|src/vm/composition/session/control.c|vm-composition"
+    "vm-composition|src/vm/composition/session/fault.c|vm-composition"
+    "vm-composition|src/vm/composition/session/execution.c|vm-composition"
+    "vm-composition|src/vm/composition/session/runner.c|vm-composition"
+    "vm-composition|src/vm/composition/session/provider_lifecycle.c|vm-composition"
+    "vm-composition|src/vm/composition/session/machine_devices.c|vm-composition"
+    "vm-composition|src/vm/composition/session/profile_firmware.c|vm-composition"
+    "vm-composition|src/vm/composition/session/machine_info.c|vm-composition")
+string(REPLACE ";" "\n" project_t345_s4_residual_contents
+    "${PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES}")
+file(GENERATE
+    OUTPUT "${CMAKE_BINARY_DIR}/t345-s4-residual-direct-entries.txt"
+    CONTENT "${project_t345_s4_residual_contents}\n")
+
+# T344 owns a direct-command matrix for every production library/current
+# artifact and every current-gate executable.  A linked strict library never
+# substitutes for the direct compile command of a smoke source.
+set(PROJECT_T344_PRODUCTION_TARGETS
+    type-facade
+    core-utils
+    core-machine
+    core-machine-executor
+    core-platform
+    vm-platform-requests
+    vm-request-transport
+    core-product-debug
+    core-product-utils
+    core-product-session
+    vm-profile
+    vm-platform
+    vm-composition
+    vm-machine
+    vm-product
+    vdm-machine
+    vdm-composition
+    vm-0-5-0344)
+set(PROJECT_T344_DIRECT_COMPILE_TARGETS
+    ${PROJECT_T344_PRODUCTION_TARGETS}
+    ${PROJECT_T344_CURRENT_GATE_TARGETS})
+list(REMOVE_DUPLICATES PROJECT_T344_DIRECT_COMPILE_TARGETS)
+
+set(PROJECT_T344_DIRECT_COMPILE_MATRIX)
+set(PROJECT_T344_STRICT_DIRECT_TARGETS)
+foreach(project_t344_target IN LISTS PROJECT_T344_DIRECT_COMPILE_TARGETS)
+    if(NOT TARGET ${project_t344_target})
+        message(FATAL_ERROR "T344 direct-compilation target is missing: ${project_t344_target}")
+    endif()
+    get_target_property(project_t344_target_sources ${project_t344_target} SOURCES)
+    get_target_property(project_t344_target_options ${project_t344_target} COMPILE_OPTIONS)
+    set(project_t344_target_strict TRUE)
+    foreach(project_t344_required_flag IN ITEMS -Wall -Wextra -Wpedantic -Werror)
+        list(FIND project_t344_target_options "${project_t344_required_flag}"
+            project_t344_flag_index)
+        if(project_t344_flag_index EQUAL -1)
+            set(project_t344_target_strict FALSE)
+        endif()
+    endforeach()
+    foreach(project_t344_source IN LISTS project_t344_target_sources)
+        if(IS_ABSOLUTE "${project_t344_source}")
+            set(project_t344_source_path "${project_t344_source}")
+        else()
+            set(project_t344_source_path "${CMAKE_SOURCE_DIR}/${project_t344_source}")
+        endif()
+        if(NOT project_t344_source_path MATCHES "\\.c$" OR
+                NOT EXISTS "${project_t344_source_path}")
+            continue()
+        endif()
+        if(project_t344_target_strict)
+            set(project_t344_status retained-strict)
+            set(project_t344_reason target-local-strict-options)
+        elseif(project_t344_source MATCHES "^src/")
+            set(project_t344_status deferred)
+            set(project_t344_reason inherited-or-mixed-production-warning-admission)
+        else()
+            set(project_t344_status deferred)
+            set(project_t344_reason owner-test-warning-remediation-admission)
+        endif()
+        list(APPEND PROJECT_T344_DIRECT_COMPILE_MATRIX
+            "${project_t344_target}|${project_t344_source}|${project_t344_status}|${project_t344_reason}")
+    endforeach()
+    if(project_t344_target_strict)
+        list(APPEND PROJECT_T344_STRICT_DIRECT_TARGETS ${project_t344_target})
+    endif()
+endforeach()
+
+# T344 owns target-local strict declarations.  Repeating one option produces
+# the same compiler command twice and hides a configuration construction error.
+get_property(project_t344_configured_targets DIRECTORY PROPERTY BUILDSYSTEM_TARGETS)
+set(PROJECT_T344_STRICT_DECLARATION_MATRIX)
+foreach(project_t344_target IN LISTS project_t344_configured_targets)
+    get_target_property(project_t344_options ${project_t344_target} COMPILE_OPTIONS)
+    foreach(project_t344_strict_option IN ITEMS -Wall -Wextra -Wpedantic -Werror)
+        set(project_t344_strict_option_count 0)
+        foreach(project_t344_option IN LISTS project_t344_options)
+            if(project_t344_option STREQUAL project_t344_strict_option)
+                list(APPEND PROJECT_T344_STRICT_DECLARATION_MATRIX
+                    "${project_t344_target}|${project_t344_strict_option}")
+                math(EXPR project_t344_strict_option_count
+                    "${project_t344_strict_option_count} + 1")
+            endif()
+        endforeach()
+        if(project_t344_strict_option_count GREATER 1)
+            message(FATAL_ERROR
+                "T344 duplicate target-local strict option ${project_t344_strict_option} on ${project_t344_target}")
+        endif()
+    endforeach()
+endforeach()
+string(REPLACE ";" "\n" project_t344_strict_declaration_contents
+    "${PROJECT_T344_STRICT_DECLARATION_MATRIX}")
+file(GENERATE
+    OUTPUT "${CMAKE_BINARY_DIR}/t344-strict-declaration-matrix.txt"
+    CONTENT "${project_t344_strict_declaration_contents}\n")
+add_custom_target(verify-t344-strict-declaration-uniqueness
+    COMMAND "${CMAKE_COMMAND}"
+        -DPROJECT_T344_STRICT_DECLARATION_MATRIX:FILEPATH=${CMAKE_BINARY_DIR}/t344-strict-declaration-matrix.txt
+        -P "${CMAKE_SOURCE_DIR}/cmake/verify_t344_strict_declaration_uniqueness.cmake"
+    COMMENT "Verifying T344 strict declaration uniqueness"
+    VERBATIM)
+list(LENGTH PROJECT_T344_DIRECT_COMPILE_MATRIX project_t344_matrix_count)
+if(project_t344_matrix_count EQUAL 0)
+    message(FATAL_ERROR "T344 direct-compilation matrix is empty.")
+endif()
+string(REPLACE ";" "\n" project_t344_matrix_contents
+    "${PROJECT_T344_DIRECT_COMPILE_MATRIX}")
+file(GENERATE
+    OUTPUT "${CMAKE_BINARY_DIR}/t344-direct-compilation-matrix.txt"
+    CONTENT "${project_t344_matrix_contents}\n")
+
+if(CMAKE_GENERATOR MATCHES "Ninja")
+    add_custom_target(verify-t344-direct-compilation-matrix
+        COMMAND "${CMAKE_COMMAND}"
+            -DPROJECT_T344_MATRIX_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t344-direct-compilation-matrix.txt
+            -DPROJECT_T344_NINJA:FILEPATH=${CMAKE_MAKE_PROGRAM}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_t344_direct_compilation_matrix.cmake"
+        DEPENDS ${PROJECT_T344_STRICT_DIRECT_TARGETS}
+        COMMENT "Verifying T344 direct strict-compilation matrix"
+        VERBATIM)
+    add_dependencies(verify-current-specialized-gates
+        verify-t344-direct-compilation-matrix)
+endif()
+
+# T345 consumes only T344's deferred direct commands. It makes the ownership
+# boundary explicit before a later S can promote any target to strict GCC
+# compilation; a linked strict library is never an ownership classification.
+set(PROJECT_T345_DEFERRED_OWNERSHIP_MATRIX)
+foreach(project_t344_entry IN LISTS PROJECT_T344_DIRECT_COMPILE_MATRIX)
+    string(REPLACE "|" ";" project_t345_fields "${project_t344_entry}")
+    list(GET project_t345_fields 0 project_t345_target)
+    list(GET project_t345_fields 1 project_t345_source)
+    list(GET project_t345_fields 2 project_t345_status)
+    list(FIND PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS
+        "${project_t345_target}" project_t345_s2_target_index)
+    list(FIND PROJECT_T345_S3_SAFE_PRODUCTION_STRICT_TARGETS
+        "${project_t345_target}" project_t345_s3_target_index)
+    if(project_t345_status STREQUAL "retained-strict" AND
+            NOT project_t345_s2_target_index EQUAL -1 AND
+            project_t345_source MATCHES "^tests/")
+        set(project_t345_class project-owned-owner-test)
+        set(project_t345_mechanism s2-owner-test-strict-cohort)
+    elseif(project_t345_status STREQUAL "retained-strict" AND
+            NOT project_t345_s3_target_index EQUAL -1)
+        if(project_t345_target STREQUAL "type-facade")
+            set(project_t345_class type-foundation-production)
+        else()
+            set(project_t345_class safely-separable-production)
+        endif()
+        set(project_t345_mechanism s3-safe-production-strict-cohort)
+    elseif(NOT project_t345_status STREQUAL "deferred")
+        continue()
+    elseif(project_t345_source MATCHES "^tests/")
+        set(project_t345_class project-owned-owner-test)
+        set(project_t345_mechanism s2-owner-test-strict-cohort)
+    elseif(project_t345_target STREQUAL "type-facade")
+        set(project_t345_class type-foundation-production)
+        set(project_t345_mechanism s3-type-facade-warning-remediation)
+    elseif(project_t345_target MATCHES "-smoke$")
+        set(project_t345_class embedded-production-test)
+        set(project_t345_mechanism s3-production-owner-warning-remediation)
+    else()
+        set(project_t345_class mixed-or-inherited-production)
+        set(project_t345_mechanism s3-ownership-separation-and-warning-remediation)
+    endif()
+    list(APPEND PROJECT_T345_DEFERRED_OWNERSHIP_MATRIX
+        "${project_t345_target}|${project_t345_source}|${project_t345_class}|${project_t345_mechanism}")
+endforeach()
+string(REPLACE ";" "\n" project_t345_ownership_contents
+    "${PROJECT_T345_DEFERRED_OWNERSHIP_MATRIX}")
+file(GENERATE
+    OUTPUT "${CMAKE_BINARY_DIR}/t345-deferred-direct-ownership-matrix.txt"
+    CONTENT "${project_t345_ownership_contents}\n")
+file(WRITE "${CMAKE_BINARY_DIR}/t345-invalid-deferred-direct-ownership-matrix.txt"
+    "duplicate|tests/duplicate.c|project-owned-owner-test|s2-owner-test-strict-cohort\n"
+    "duplicate|tests/duplicate.c|project-owned-owner-test|s2-owner-test-strict-cohort\n")
+add_custom_target(verify-t345-deferred-direct-ownership
+    COMMAND "${CMAKE_COMMAND}"
+        -DPROJECT_T345_T344_MATRIX_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t344-direct-compilation-matrix.txt
+        -DPROJECT_T345_OWNERSHIP_MATRIX_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t345-deferred-direct-ownership-matrix.txt
+        -DPROJECT_T345_S2_TARGETS_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t345-s2-owner-test-strict-targets.txt
+        -DPROJECT_T345_S3_ENTRIES_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t345-s3-safe-production-strict-entries.txt
+        -DPROJECT_T345_S4_RESIDUAL_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t345-s4-residual-direct-entries.txt
+        -P "${CMAKE_SOURCE_DIR}/cmake/verify_t345_deferred_direct_ownership.cmake"
+    COMMENT "Verifying T345 deferred direct-compilation ownership"
+    VERBATIM)
+add_custom_target(verify-t345-deferred-direct-ownership-selftest
+    COMMAND "${CMAKE_COMMAND}"
+        -DPROJECT_T345_VERIFIER:FILEPATH=${CMAKE_SOURCE_DIR}/cmake/verify_t345_deferred_direct_ownership.cmake
+        -DPROJECT_T345_T344_MATRIX_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t344-direct-compilation-matrix.txt
+        -DPROJECT_T345_S2_TARGETS_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t345-s2-owner-test-strict-targets.txt
+        -DPROJECT_T345_S3_ENTRIES_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t345-s3-safe-production-strict-entries.txt
+        -DPROJECT_T345_S4_RESIDUAL_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t345-s4-residual-direct-entries.txt
+        -DPROJECT_T345_INVALID_OWNERSHIP_MATRIX_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t345-invalid-deferred-direct-ownership-matrix.txt
+        -P "${CMAKE_SOURCE_DIR}/cmake/verify_t345_deferred_direct_ownership_selftest.cmake"
+    COMMENT "Self-testing T345 deferred direct-compilation ownership verification"
+    VERBATIM)
+if(CMAKE_GENERATOR MATCHES "Ninja")
+    add_custom_target(audit-t345-deferred-direct-warnings
+        COMMAND "${CMAKE_COMMAND}"
+            -DPROJECT_T345_OWNERSHIP_MATRIX_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t345-deferred-direct-ownership-matrix.txt
+            -DPROJECT_T345_NINJA:FILEPATH=${CMAKE_MAKE_PROGRAM}
+            -DPROJECT_T345_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -DPROJECT_T345_OUTPUT_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t345-deferred-direct-warning-baseline.txt
+            -P "${CMAKE_SOURCE_DIR}/cmake/audit_t345_deferred_direct_warnings.cmake"
+        COMMENT "Auditing T345 deferred direct-compilation warnings"
+        VERBATIM)
+endif()
+add_dependencies(verify-current-specialized-gates
+    verify-t345-deferred-direct-ownership
+    verify-t345-deferred-direct-ownership-selftest)

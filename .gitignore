@@ -1,49 +1,12 @@
-# Bochs project files
-/bochx/bochs-2.6/
-!/bochx/bochs-2.6/bochs.h
-!/bochx/bochs-2.6/config.cc
-!/bochx/bochs-2.6/config.h
-!/bochx/bochs-2.6/cpu/cpu.cc
-!/bochx/bochs-2.6/cpu/data_xfer16.cc
-!/bochx/bochs-2.6/cpu/init.cc
-!/bochx/bochs-2.6/cpu/paging.cc
-!/bochx/bochs-2.6/vs2008/bochs.vcproj
-!/bochx/bochs-2.6/vs2008/cpu.vcproj
-
-# Object files
-*.o
-
-# Libraries
-*.lib
-*.a
-
-# Shared objects (inc. Windows DLLs)
+/build/
+/out/
+/artifacts/
+/local-assets/
+!.gitkeep
+*.user
+*.suo
+*.vcxproj.user
+*.pdb
+*.obj
+*.exe
 *.dll
-*.so
-*.so.*
-*.dylib
-
-# Executables
-*.out
-*.app
-/nxvm
-bochx/bochx
-
-# Automake directories
-/autom4te.cache/
-.deps/
-.dirstamp
-
-# Automake makefiles
-/config.h.in~
-/Makefile
-/config.h
-/config.status
-/config.log
-/stamp-h1
-
-# Astyle trash
-*.orig
-
-# Mac OS X trash
-.DS_Store

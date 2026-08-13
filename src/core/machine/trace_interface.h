@@ -1,0 +1,48 @@
+#ifndef CORE_MACHINE_TRACE_INTERFACE_H
+#define CORE_MACHINE_TRACE_INTERFACE_H
+
+
+#include "type.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+typedef struct core_machine core_machine;
+
+typedef enum core_machine_trace_event_type {
+    CORE_MACHINE_TRACE_RESET = 1,
+    CORE_MACHINE_TRACE_PORT_READ,
+    CORE_MACHINE_TRACE_PORT_WRITE,
+    CORE_MACHINE_TRACE_RUN_BOUNDARY,
+    CORE_MACHINE_TRACE_STOP,
+    CORE_MACHINE_TRACE_FAULT
+} core_machine_trace_event_type;
+
+typedef struct core_machine_trace_event {
+    core_machine_trace_event_type type;
+    type_unsigned_64 sequence;
+    type_unsigned_32 linear_pc;
+    type_unsigned_32 address;
+    type_unsigned_32 value;
+    type_unsigned_32 detail;
+} core_machine_trace_event;
+
+typedef C_VOID (*core_machine_trace_event_provider)(
+    C_VOID *context,
+    const core_machine_trace_event *event);
+
+typedef struct core_machine_trace_provider {
+    core_machine_trace_event_provider callback;
+    C_VOID *context;
+} core_machine_trace_provider;
+
+type_status core_machine_set_trace_provider(
+    core_machine *machine,
+    const core_machine_trace_provider *provider);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif

@@ -1,0 +1,98 @@
+/* Copyright 2012-2014 Neko. */
+
+#ifndef VM_PLATFORM_H
+#define VM_PLATFORM_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include "type.h"
+#include "vm/platform/host_surface.h"
+#include "core/platform/input_interface.h"
+#include "core/platform/presentation_mailbox_interface.h"
+#include "core/utils/wait_provider.h"
+#include "vm/platform/execution.h"
+
+typedef enum vm_platform_display_mode {
+    VM_PLATFORM_DISPLAY_CONSOLE,
+    VM_PLATFORM_DISPLAY_WINDOW,
+    VM_PLATFORM_DISPLAY_AUTO
+} vm_platform_display_mode;
+
+typedef struct vm_platform_run_context {
+    const vm_platform_execution_transport *execution;
+    core_platform_input_source *input_source;
+    const core_platform_presentation_mailbox *presentation;
+    const core_utils_wait_scope *wait_scope;
+    vm_platform_host_surface_context console_surface;
+    vm_platform_host_surface_context window_surface;
+    C_VOID *console_renderer;
+    C_VOID *window_renderer;
+    type_unsigned_64 terminal_displayed_generation;
+    vm_platform_display_mode display_mode;
+    C_INT auto_window_active;
+    C_INT auto_promotion_pending;
+} vm_platform_run_context;
+
+typedef enum vm_platform_run_event {
+    VM_PLATFORM_RUN_EVENT_NONE,
+    VM_PLATFORM_RUN_EVENT_STOP_REQUESTED,
+    VM_PLATFORM_RUN_EVENT_KERNEL_COMPLETED,
+    VM_PLATFORM_RUN_EVENT_DISPLAY_COMPLETED,
+    VM_PLATFORM_RUN_EVENT_STARTUP_FAILED
+} vm_platform_run_event;
+
+typedef struct vm_platform_run_handle {
+    const vm_platform_run_context *context;
+    C_VOID *backend;
+    STD_ATOMIC_INT last_event;
+    STD_ATOMIC_BOOL stop_reported;
+    C_INT active;
+    C_INT window_display;
+} vm_platform_run_handle;
+
+C_VOID vm_platform_run_context_initialize(
+    vm_platform_run_context *context,
+    const vm_platform_execution_transport *execution,
+    core_platform_input_source *input_source,
+    const core_platform_presentation_mailbox *presentation,
+    const core_utils_wait_scope *wait_scope);
+C_INT vm_platform_run_context_get_window_display(
+    const vm_platform_run_context *context);
+C_INT vm_platform_run_context_get_display_mode(
+    const vm_platform_run_context *context);
+C_VOID vm_platform_run_context_set_display_mode(
+    vm_platform_run_context *context, vm_platform_display_mode mode);
+C_VOID vm_platform_run_context_set_window_display(
+    vm_platform_run_context *context, C_INT enabled);
+C_INT vm_platform_run_context_request_graphics_promotion(
+    vm_platform_run_context *context);
+C_INT vm_platform_run_context_take_auto_promotion(
+    vm_platform_run_context *context);
+C_VOID vm_platform_run_handle_initialize(vm_platform_run_handle *handle);
+C_INT vm_platform_run_handle_is_active(const vm_platform_run_handle *handle);
+C_INT vm_platform_run_handle_is_window_display(
+    const vm_platform_run_handle *handle);
+C_VOID vm_platform_run_handle_report(
+    vm_platform_run_handle *handle, vm_platform_run_event event);
+vm_platform_run_event vm_platform_run_handle_get_last_event(
+    const vm_platform_run_handle *handle);
+C_INT vm_platform_run_handle_take_stop_report(
+    vm_platform_run_handle *handle);
+C_VOID vm_platform_run_handle_request_stop(vm_platform_run_handle *handle);
+C_VOID vm_platform_run_handle_join(vm_platform_run_handle *handle);
+C_VOID vm_platform_run_handle_finalize(vm_platform_run_handle *handle);
+
+/* Device Operations */
+C_VOID vm_platform_display_set_screen(const vm_platform_run_context *context);
+C_VOID vm_platform_display_paint(const vm_platform_run_context *context);
+
+type_status vm_platform_start(const vm_platform_run_context *context,
+    vm_platform_run_handle *handle);
+
+#ifdef __cplusplus
+}/*_EOCD_*/
+#endif
+
+#endif

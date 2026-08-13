@@ -1,0 +1,58 @@
+#include "type.h"
+
+#include "vm/profile/default_profile/pc_at_profile.h"
+
+C_INT main(C_VOID)
+{
+    const vm_profile_default_pc_at_descriptor *profile =
+        vm_profile_default_pc_at_descriptor_get();
+    const vm_profile_default_pc_at_port_range *cmos_ports;
+    const vm_profile_default_pc_at_port_range *fdc_ports;
+    const vm_profile_default_pc_at_route *fdc_route;
+
+    if (profile == STD_NULL ||
+        STD_STRCMP(profile->identity, "default-pc-at") != 0 ||
+        profile->rom.linear_start != 0xfffffff0u ||
+        profile->rom.physical_start != 0x000ffff0u ||
+        profile->rom.bytes != 16u ||
+        profile->rom.reset_segment != 0xf000u ||
+        profile->rom.reset_offset != 0xfff0u ||
+        profile->cpu_profile != CORE_MACHINE_CPU_PROFILE_80386 ||
+        profile->fpu_profile != CORE_MACHINE_FPU_PROFILE_NONE ||
+        profile->clock_plan.dma.numerator != 1u ||
+        profile->clock_plan.dma.denominator != 1u ||
+        profile->clock_plan.pit.numerator != 1u ||
+        profile->clock_plan.pit.denominator != 4u ||
+        profile->clock_plan.vadp.numerator != 1u ||
+        profile->clock_plan.vadp.denominator != 1u ||
+        profile->clock_plan.kbc.numerator != 1u ||
+        profile->clock_plan.kbc.denominator != 1u ||
+        profile->clock_plan.provider.numerator != 1u ||
+        profile->clock_plan.provider.denominator != 1u ||
+        profile->kbc_typematic_initial_ticks != 0u ||
+        profile->kbc_typematic_repeat_ticks != 0u ||
+        profile->kbc_command_response_ticks != 0u ||
+        profile->cga_text_timing.active_display_ticks != 48u ||
+        profile->cga_text_timing.horizontal_blank_ticks != 8u ||
+        profile->cga_text_timing.vertical_retrace_ticks != 8u ||
+        profile->cmos.equipment != 0x21u ||
+        profile->cmos.base_memory_kib != 0x027fu ||
+        profile->cmos.fixed_disk_type != 0xf0u ||
+        profile->cmos.fixed_disk_type_extended_0 != 0x2fu ||
+        profile->firmware_service_count != 14u) return 1;
+
+    cmos_ports = vm_profile_default_pc_at_port_range_find(profile,
+        VM_PROFILE_DEFAULT_PC_AT_DEVICE_CMOS);
+    fdc_ports = vm_profile_default_pc_at_port_range_find(profile,
+        VM_PROFILE_DEFAULT_PC_AT_DEVICE_FDC);
+    fdc_route = vm_profile_default_pc_at_route_find(profile,
+        VM_PROFILE_DEFAULT_PC_AT_DEVICE_FDC);
+    if (cmos_ports == STD_NULL || cmos_ports->first != 0x0070u ||
+        cmos_ports->last != 0x0071u || fdc_ports == STD_NULL ||
+        fdc_ports->first != 0x03f2u || fdc_ports->last != 0x03f7u ||
+        fdc_route == STD_NULL || fdc_route->irq != 6u ||
+        fdc_route->dma_channel != 2u) return 1;
+
+    puts("M5:T208:S2:DEFAULT-PC-AT-PROFILE:OK");
+    return 0;
+}

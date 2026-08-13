@@ -1,0 +1,47 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 23,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "mingw-gcc-x64",
+      "displayName": "MinGW-w64 GCC x64",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/mingw-gcc-x64",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_C_COMPILER": "gcc"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "current-gcc",
+      "configurePreset": "mingw-gcc-x64",
+      "targets": ["vm-0-5-0344"]
+    },
+    {
+      "name": "current-gates-gcc",
+      "configurePreset": "mingw-gcc-x64",
+      "targets": [
+        "run-current-smokes",
+        "verify-current-specialized-gates"
+      ]
+    },
+    {
+      "name": "current-fast-smokes-gcc",
+      "configurePreset": "mingw-gcc-x64",
+      "targets": ["run-current-fast-smokes"]
+    },
+    {
+      "name": "vdm-minimal-gcc",
+      "configurePreset": "mingw-gcc-x64",
+      "targets": [
+        "vdm-minimal-session-smoke"
+      ]
+    }
+  ]
+}

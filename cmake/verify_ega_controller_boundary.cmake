@@ -1,0 +1,38 @@
+if(NOT DEFINED PROJECT_SOURCE_DIR)
+    message(FATAL_ERROR "PROJECT_SOURCE_DIR is required")
+endif()
+
+file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/vadp.c" vadp_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/memory.c" memory_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/profile/default_profile/pc_at_profile.c"
+    profile_source)
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/composition/session/session.c"
+    session_source)
+
+if(vadp_source MATCHES "#include[ \t]+\"(vm/|vdm/|core/platform/|core/product/)")
+    message(FATAL_ERROR "T236 VADP imports a product or platform owner")
+endif()
+if(memory_source MATCHES "GRAPHICS_REGISTER|ATTRIBUTE_REGISTER|VADP_PORT")
+    message(FATAL_ERROR "T236 RAM acquired graphics-controller policy")
+endif()
+
+foreach(required IN ITEMS
+    "VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP_GRAPHICS"
+    "VM_PROFILE_DEFAULT_PC_AT_DEVICE_VADP_ATTRIBUTE"
+    "0x03ceu"
+    "0x03cfu"
+    "0x03c0u"
+    "0x03c1u"
+    "core_machine_configure_display")
+    if(required STREQUAL "core_machine_configure_display")
+        set(source_text "${session_source}")
+    else()
+        set(source_text "${profile_source}")
+    endif()
+    string(FIND "${source_text}" "${required}" position)
+    if(position EQUAL -1)
+        message(FATAL_ERROR "T236 profile/composition binding is missing ${required}")
+    endif()
+endforeach()
+
+message("M5:T236:EGA-CONTROLLER:BOUNDARY:OK")

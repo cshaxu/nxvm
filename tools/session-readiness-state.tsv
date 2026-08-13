@@ -1,0 +1,4 @@
+# Relative source path<TAB>classification<TAB>closure task<TAB>owner
+src/core/machine/dma.c	process-wide-token-issuer	T300	core/machine
+src/vm/platform/win32/win32con.c	process-exclusive-lease	T90	vm/platform
+src/vm/platform/linux/linuxcon.c	process-exclusive-lease	T90	vm/platform

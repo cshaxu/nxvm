@@ -1,0 +1,13 @@
+* text=auto eol=lf
+# Preserve legacy non-UTF-8 Win32 source bytes during the completed M5 move.
+src/vm/platform/win32/win32.c -text -whitespace
+# Preserve the imported NXVM CPU units while their authority is migrated.
+src/core/machine/cpu.c -text -whitespace
+src/core/machine/cpu.h -text -whitespace
+src/core/machine/cpu_instructions.c -text -whitespace
+src/core/machine/cpu_instructions.h -text -whitespace
+*.com binary
+*.exe binary
+*.dll binary
+*.img binary
+*.rom binary
