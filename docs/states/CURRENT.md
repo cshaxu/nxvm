@@ -2,28 +2,8 @@
 
 ## Current Work
 
-M5 T348 S2 - PC/AT DMA port, page, and byte/word transfer repair (Single-Session Mode).
-
-## M5 T348 S2 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner approved continuous holistic PC/AT device/L3 implementation on 2026-08-13; accepted T348 S1 ledger assigns this bounded shared-mechanism repair. |
-| Objective | Repair the shared dual-8237A address-step mechanism so byte and word DMA retain their programmed page on wrap, then prove PC/AT primary/secondary port, page, and transfer-layout behavior through one owner smoke. |
-| Non-goals | No request-priority/cascade policy change, external EOP/polarity ABI, generic transaction rollback, bus-duration model, FDC/ATA semantic change, host DMA, or Windows claim; those remain S3/S4/later Queue boundaries. |
-| Reference Baseline | `4e643857` / accepted T348 S1; [T348 ledger](../etc/evidence/t348-s1-dual-8237a-gap-ledger.md) and [DMA proposal](../proposals/m5-pcat-dma-completeness.md). |
-| Candidate Proposal | [PC/AT 8237A DMA completeness](../proposals/m5-pcat-dma-completeness.md). |
-| Files And ABI Surface | Expected: local `dma` implementation/helper and existing DMA owner smoke, evidence/index/Current; no public DMA binding, media, FDC, ATA, or timeline ABI change. |
-| Applicable Rules | Task Reading Set; source/research policy; architecture shared validation/publication owner; coding reuse existing owner fixture; Intel 8237A and IBM PC/AT byte/word page contracts; T346 deterministic grant boundary. |
-| Verification | Cover every primary/secondary address/count/control/page register's adopted read/write route; byte channels 0--3 and word channels 5--7; exact 24-bit address calculation, even word layout, increment/decrement and 64 KiB/128 KiB same-page wrap; transfer/terminal/auto-init preservation; fresh configure, focused DMA/FDC probes, governance, diff check, and current gate. |
-| Expected Markers | Retain `M5:T269:S1:DMA-GRANT:PORT:OK`, `M5:T269:S4:DMA-MODES:OK`, FDC/DMA binding markers and T346 arbitration markers; add `M5:T348:S2:DMA-PORT-PAGE:OK`. |
-| Asset Needs | Published Intel/IBM hardware documentation only; no source import, firmware, guest media, or host device. |
-| Reporting Requirements | Record the preflight/commit boundary for address update, exact port/page matrix, byte/word distinctions, source/test/caller sweep, defect fix rationale, retained S3/S4 receivers, and one complete pushed P1. |
-| Stop Conditions | Stop for a need to change binding ABI, generic memory transaction semantics, shared timeline scheduling, external provider contract, or a hardware behavior not bounded by this port/page/layout mechanism. |
-| Exit Criteria | The page-crossing reproducer becomes a correct permanent regression for both layouts/directions; every adopted port/page route is exercised once; no transfer crosses its PC/AT page; no unrelated arbitration/provider behavior changes; S3/S4 boundaries remain exact. |
-| Original Owner Request | Make core-machine devices stable, comprehensive, and reliable at the selected deterministic L3 event-and-bus level before Windows testing. |
-| Similar-Issue Sweep | Inspect every `currAddr`, page, base/current reload, physical-address calculation, primary/secondary port decode/readback, word-channel shift, decrement, auto-init, memory-to-memory path, existing DMA/FDC smoke, and machine arbitration caller. |
+**Idle.** M5 T348 S2 is accepted; request, priority, cascade, and EOP behavior
+require a separately admitted continuation packet.
 
 ## Current Technical Baseline
 
@@ -44,6 +24,7 @@ M5 T348 S2 - PC/AT DMA port, page, and byte/word transfer repair (Single-Session
 
 | Task | Compact result |
 | --- | --- |
+| T348 S2 | Repaired the shared dual-8237A page-wrap mechanism and secondary page-port controller selection; primary/secondary sparse register, control, page, byte/word transfer, and same-page wrap regressions are permanent. S3 retains request/priority/cascade/EOP. [Evidence](../etc/evidence/t348-s2-dma-port-page-layout.md). |
 | T348 S1 | Accepted the dual-8237A contract/gap ledger: a reproduced shared page-boundary crossing defect, exact port/page/word/cascade/test map, and S2--S4 ownership plan. [Evidence](../etc/evidence/t348-s1-dual-8237a-gap-ledger.md). |
 | T347 | Closed retained PC/AT FDC and ATA PIO service timing: pending command/data states, reset/control/media cancellation, one FDC-then-ATA readiness owner, trace order, focused VM/DOS/HDD evidence, and 222 current-gate tests passed. [History](../history/M5-T347-storage-controller-service-timing.md). |
 | T346 | Closed deterministic PC/AT L3 convergence: one reset-safe due-event owner, equal-tick `DMA -> PIT -> PIC -> FDC -> HDC -> RTC -> KBC -> VADP` ordering, copied host boundaries, exact storage/NMI/peripheral transfers, and evidence-backed Windows handoff. [History](../history/M5-T346-core-machine-device-l3-convergence.md). |
