@@ -32,3 +32,6 @@ The indexed [S2 reconciliation](../etc/evidence/t340-s2-prefix-width-fsgs-reconc
 records the actual single prefix, width, effective-address, FS/GS, and `LOCK`
 mechanism owners. It accepts focused proof rather than duplicating completed
 ordinary-form smokes, and transfers state-owned rows to T341.
+
+The accepted S2 delivery is `8c212f99`. S3 owns the remaining non-privileged
+secondary integer and conditional-control reconciliation.
