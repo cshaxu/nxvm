@@ -2,28 +2,8 @@
 
 ## Current Work
 
-M5 T348 S1 - Dual-8237A contract and gap ledger (Single-Session Mode).
-
-## M5 T348 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner approved the Queue-ordered PC/AT device and L3 program, and instructed continuous holistic implementation on 2026-08-13. |
-| Objective | Establish one complete, manual-led dual-8237A/PC-AT DMA behavior, ownership, port, channel, transfer, and timing ledger; reproduce every suspected construction defect before later implementation slices are admitted. |
-| Non-goals | No speculative DMA rewrite, controller-duration constants, host DMA, generic bus scheduler, peripheral shortcut, Windows claim, or 8237A behavior not classified by the primary contract. |
-| Reference Baseline | `d2e511a6` / closed T347; [DMA proposal](../proposals/m5-pcat-dma-completeness.md), [T346 timeline foundation](../etc/evidence/t346-s2-deterministic-timeline-foundation.md), and T347 storage history. |
-| Candidate Proposal | [PC/AT 8237A DMA completeness](../proposals/m5-pcat-dma-completeness.md). |
-| Files And ABI Surface | Expected: DMA focused audit/evidence and, only for reproduced probe infrastructure, owner-local tests; no production, public ABI, timeline, FDC, or ATA behavior change in S1. |
-| Applicable Rules | Task Reading Set; source/research policy; architecture single owner/validation-publication invariant; coding owner-local fixtures; T346 timeline order; T347 storage-service boundary. |
-| Verification | Produce a fixed port/channel/mode/ownership ledger, caller and write sweep, manual-reference map, existing-test coverage map, and focused reproducer results for each suspected defect; fresh configuration, governance, diff check, and current gate. |
-| Expected Markers | Retain `M5:T269:S4:DMA-MODES:OK`, DMA channel/binding/authority markers, T346 arbitration/timeline markers, and FDC/ATA service markers; add a T348 S1 audit marker only if a bounded owner smoke is necessary. |
-| Asset Needs | Published controller/manual reference only; no third-party source import, firmware, guest media, or reference-emulator dependency. |
-| Reporting Requirements | Record exact PC/AT port/page/cascade matrix, every register/mode status, real versus accidental 16-bit-word layout distinction, caller/write/fault/publication boundaries, non-goal receiver, and a complete P1 delivery. |
-| Stop Conditions | Stop for a need to import/copy third-party source, redefine global memory/port ownership, add another scheduler, change media/provider ABI, or repair an unbounded shared machine mechanism not isolated by the ledger. |
-| Exit Criteria | Every relevant dual-8237A behavior is classified once with source/test evidence; all reproduced defects have bounded later-S owners; all unsupported modes have one named Queue/TODO transfer; no local code change is claimed as DMA completeness. |
-| Original Owner Request | Make core-machine devices stable, comprehensive, and reliable at the selected deterministic L3 event-and-bus level before Windows testing. |
-| Similar-Issue Sweep | Inspect all DMA ports, page mappings, primary/secondary selection, cascade paths, request bindings, transfer callbacks, memory writes, reset/finalization, machine timeline/arbitration calls, FDC DMA callers, tests, Queue, and TODO. |
+**Idle.** M5 T348 S1 is accepted; the dual-8237A port/page and byte/word
+repair requires a separately admitted continuation packet.
 
 ## Current Technical Baseline
 
@@ -44,6 +24,7 @@ M5 T348 S1 - Dual-8237A contract and gap ledger (Single-Session Mode).
 
 | Task | Compact result |
 | --- | --- |
+| T348 S1 | Accepted the dual-8237A contract/gap ledger: a reproduced shared page-boundary crossing defect, exact port/page/word/cascade/test map, and S2--S4 ownership plan. [Evidence](../etc/evidence/t348-s1-dual-8237a-gap-ledger.md). |
 | T347 | Closed retained PC/AT FDC and ATA PIO service timing: pending command/data states, reset/control/media cancellation, one FDC-then-ATA readiness owner, trace order, focused VM/DOS/HDD evidence, and 222 current-gate tests passed. [History](../history/M5-T347-storage-controller-service-timing.md). |
 | T346 | Closed deterministic PC/AT L3 convergence: one reset-safe due-event owner, equal-tick `DMA -> PIT -> PIC -> FDC -> HDC -> RTC -> KBC -> VADP` ordering, copied host boundaries, exact storage/NMI/peripheral transfers, and evidence-backed Windows handoff. [History](../history/M5-T346-core-machine-device-l3-convergence.md). |
 | T345 | Closed direct-compilation strictness convergence: 251/305 direct commands are target-local strict; the 54 remaining commands have a complete 175-row ownership ledger and an exact 51-source residual production record with durable bounded admissions. No global flags, inherited-runtime rewrites, or false linked-dependency claims. [History](../history/M5-T345-direct-compilation-strictness-convergence.md). |
