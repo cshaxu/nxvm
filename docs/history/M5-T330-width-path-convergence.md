@@ -93,16 +93,17 @@ through vector 10, proving that the new-stack validation wins before any target
 publication. No
 shared exception, descriptor, paging, or ABI behavior was changed.
 
-## Continuation S7: State-Machine Matrix Discipline
+## Historical S7: State-Machine Matrix Discipline
 
-T330 converts its prevention finding into a mandatory Execution Rule. Before
-P1, a CPU state-machine S must identify every caller, relevant state/width/mode
-dimension, validation and competing-fault order, source and target preflight,
-materialization, writes, commit/rollback, and delivery dependency; each variant
-receives focused evidence or a named transfer. The rule preserves Intel-defined
-layout differences and ordinary shared decode/read/write instruction paths. It
-adds no runtime behavior and no broad semantic parser: actual-change review is
-the enforcement point for the matrix and its caller-graph evidence.
+T330 S7 documented a state-machine matrix practice for its own review: before
+P1, the task recorded callers, state/width/mode dimensions, validation and
+competing-fault order, source and target preflight, materialization, writes,
+commit/rollback, delivery dependency, and named transfers. The practice
+preserved Intel-defined layouts and ordinary shared decode/read/write paths.
+
+This was subsequently withdrawn as a project-wide Execution Rule. It remains
+historical T330 evidence only; current packet and review requirements are
+defined exclusively by `docs/rules/EXECUTION.md`.
 
 ## Final Closure Audit
 
@@ -110,15 +111,14 @@ The owner reopened T330 to resolve four audited construction-drift items. S4
 removed the unreachable parallel 32-bit task-transition constructor and added
 its static closure gate. S5 reconciled the FDD/HDD provider backing and failed-
 construction contract. S6 corrected the CALL-gate preflight sequence in both
-widths and proved the competing-fault result. S7 made the resulting full
-mechanism matrix a mandatory pre-P1/review artifact for future CPU state-machine
-work. These corrections retain Intel-defined layouts and do not replace shared
+widths and proved the competing-fault result. S7 retained the resulting full
+mechanism matrix as T330 review evidence. These corrections retain Intel-defined layouts and do not replace shared
 memory, descriptor, exception, paging, media-interface, or controller owners.
 
 The runnable S6 source commit is `f8116f99`; its T330 developer artifact is
 `build/output/nxvm_0_5_0330.exe` with SHA-256
 `926D0F4A2CDB48367C522AD799FF4E9C2DE7AD6BF6C75EDB7889E2D8B9B62CAA`.
-The S7 documentation-only continuation does not rebuild that artifact. S4--S6
+The S7 documentation-only continuation did not rebuild that artifact. S4--S6
 focused checks and current-gate CTest 211/211 passed; S7 documentation
-self-test, default governance check, and diff check passed. The retained Queue
-and TODO work remains outside this closure.
+self-test, default governance check, and diff check passed. The resolved
+task-switch debt is not retained as current Queue or TODO work.
