@@ -17554,7 +17554,10 @@ static C_VOID _debug_complete_instruction(
 
     if (instruction_state.data.except) return;
     cause = _debug_match_data_breakpoint(context);
-    if (context->debug_tf_before) cause |= VCPU_DR6_BS;
+    /* An interrupt gate can clear TF while completing the instruction.  A
+     * single-step trap is pending only when tracing remained enabled at the
+     * architectural completion boundary. */
+    if (context->debug_tf_before && _GetEFLAGS_TF) cause |= VCPU_DR6_BS;
     _debug_schedule_trap(context, cause);
     if (context->debug_rf_before && opcode != 0xcfu) _ClrEFLAGS_RF;
 }

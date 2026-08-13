@@ -190,14 +190,16 @@ static C_INT pushf_popf_s47_test_attributes_and_rejects(C_VOID)
                         ((before.data.eflags & ~(VCPU_EFLAGS_RESERVED | VCPU_EFLAGS_VM |
                         VCPU_EFLAGS_RF)) | 0x02u) : (observed & 0xffffu) !=
                         (((before.data.eflags & ~VCPU_EFLAGS_RESERVED) | 0x02u) &
-                        0xffffu));
+                        0xffffu)) || after.data.eflags !=
+                        (before.data.eflags & ~VCPU_EFLAGS_RF);
                 else
                     failed |= after.data.eflags != (width == 4u ?
                         ((image & ~(VCPU_EFLAGS_RESERVED | VCPU_EFLAGS_RF |
                         VCPU_EFLAGS_VM)) | (before.data.eflags &
-                        (VCPU_EFLAGS_RESERVED | VCPU_EFLAGS_RF | VCPU_EFLAGS_VM))) :
+                        (VCPU_EFLAGS_RESERVED | VCPU_EFLAGS_VM))) :
                         ((image & ~(VCPU_EFLAGS_RESERVED | 0xffff0000u)) |
-                        (before.data.eflags & (VCPU_EFLAGS_RESERVED | 0xffff0000u))));
+                        (before.data.eflags & (VCPU_EFLAGS_RESERVED |
+                        (0xffff0000u & ~VCPU_EFLAGS_RF)))));
             }
             core_machine_destroy(state.machine);
             if (failed)

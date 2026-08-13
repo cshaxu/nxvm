@@ -1851,6 +1851,7 @@ set(PROJECT_T337_UD_CURRENT_GATE_TARGETS
     core-machine-task-switch-smoke
     core-machine-tf-db-s60-smoke
     core-machine-verr-verw-s58-smoke
+    core-machine-vm86-delivery-smoke
     core-machine-xchg-smoke
     vm-dos-mem-fault-smoke
     vm-fault-outcome-runner-smoke)
@@ -1874,6 +1875,7 @@ set(PROJECT_T337_UD_NO_REAL_NEGATIVE_TARGETS
     core-machine-protected-far-s1-smoke
     core-machine-protected-ud-delivery-s1-smoke
     core-machine-task-switch-smoke
+    core-machine-vm86-delivery-smoke
     vm-dos-mem-fault-smoke)
 
 foreach(t337_ud_target IN LISTS PROJECT_T337_UD_CURRENT_GATE_TARGETS)
@@ -2133,7 +2135,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0338 "0.5.0338")
+add_current_vm_artifact(vm-0-5-0344 "0.5.0344")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 
