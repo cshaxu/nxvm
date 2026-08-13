@@ -26,3 +26,10 @@ each retained command, response, timing, profile, reset/finalize, and host
 boundary row to S2--S5 or the existing advanced-AUX TODO. Its
 [ledger](../etc/evidence/t351-s1-kbc-aux-ledger.md) preserves primary-source
 provenance without importing any external implementation.
+
+S2 is accepted at `386aba69`: it repairs the selected IBM controller self-test
+transition so `AAh` inhibits the keyboard interface, refreshes stale FIFO-head
+IRQ eligibility, and returns controller-origin `55h`; `AEh` restores eligible
+keyboard FIFO and IRQ1 publication. Its
+[controller evidence](../etc/evidence/t351-s2-kbc-controller.md) retains one
+FIFO/output-port/reset owner and leaves keyboard/AUX device protocol to S3/S4.
