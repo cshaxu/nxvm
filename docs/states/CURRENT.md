@@ -2,29 +2,29 @@
 
 ## Current Work
 
-**M5 T339 S6 - active.** Close the 80286 TSS16 task-state transition matrix
-before the 80286 descriptor-transfer audit proceeds.
+**M5 T339 S7 - active.** Audit the completed 80286 descriptor-transfer ledger
+before the 80286 `LOCK` closure begins.
 
-## M5 T339 S6 Packet
+## M5 T339 S7 Packet
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | The owner approved Queue-ordered single-agent implementation through four-profile cross-closure verification on 2026-08-13. Accepted T339 S5 (`e49f9cd9`) closes the preceding protected 16-bit return and frame-consumption matrix. |
-| Objective | Reconcile and, only where a reproducer requires it, implement the complete 80286 TSS16 task-state transition matrix: direct far TSS `CALL/JMP`, task-gate entry, nested-task `IRET`, busy/backlink, LDT/TI, and the incoming/outgoing TSS16 image. Prove descriptor/type/limit/present validation, code/stack/cache materialization, old/new busy and backlink publication, fault-before-commit, and post-commit IRQ/debug ordering under one transition-plan ledger. |
-| Non-goals | No 80286 `LOCK` legality matrix; no ordinary entry/gate or return-frame work, 80386 TSS32/CR3/paging/debug-trap state, VM86 task behavior, VME/PVI, x87, generic fixture framework, generic descriptor/delivery rewrite, or selector-cache reimplementation. |
-| Reference Baseline | `e49f9cd9` (`M5 T339 S5 P1: close protected return matrix`), the accepted [S1 allocation](../etc/evidence/t339-s1-80286-descriptor-transfer-allocation.md), retained T329 task-transition records, T337 delivery foundations, and the 80286 descriptor-transfer proposal. |
+| Admission And Approval | The owner approved Queue-ordered single-agent implementation through four-profile cross-closure verification on 2026-08-13. Accepted T339 S6 (`ce37054a`) closes the TSS16 direct/task-gate/nested-return matrix. |
+| Objective | Audit the complete T339 S2--S6 80286 descriptor-table, selector/cache, protected entry, return, and TSS16 ledgers against the current source graph. Reconcile every assigned row, historic evidence claim, validation/materialization/commit owner, failure boundary, and exact transfer; prepare the verified input ledger for T340 without implementing new runtime behavior. |
+| Non-goals | No 80286 `LOCK` implementation or legality matrix; no new opcode, handler, CMake test, product artifact, generic fixture, descriptor/delivery rewrite, 80386 width/VM86/paging/debug state, x87, or source cleanup. An implementation gap returns to its earliest mechanism owner; S7 does not absorb it. |
+| Reference Baseline | `ce37054a` (`M5 T339 S6 P1: close TSS16 transition matrix`), the S1 allocation, S2--S6 evidence, retained T323/T329/T330 records, T337 delivery foundations, and the 80286 descriptor-transfer proposal. |
 | Candidate Proposal | [80286 descriptor-table and protected-transfer closure](../proposals/m5-80286-descriptor-transfer-closure.md) and the accepted [T339 allocation](../etc/evidence/t339-s1-80286-descriptor-transfer-allocation.md). |
-| Files And ABI Surface | Expected: local TSS16 transition handlers only if a reproducer requires it; owner-bound smokes, CMake registration, T339 evidence/history/Current, and required artifact identity. No public ABI, generic descriptor/table/decoder/exception/fixture interface, device model, or product boundary change. |
-| Applicable Rules | `docs/rules/EXECUTION.md`: full P, complete form/caller/write/fault sweep, and actual-change review. `docs/rules/ARCHITECTURE.md`: one validation/materialization/commit owner; no partial table image or post-commit fault. `docs/rules/CODING.md`: project types, local style, and owner-bound tests. |
-| Verification | Audit `_ser_task_transition_tss`, `_ser_task_switch_tss`, `_ser_task_return_tss`, direct far TSS and task-gate dispatch, `_s_load_tr`, `_s_load_ldtr`, all TSS16 reads/writes, descriptor/busy/backlink writers, cache materialization, and every direct/gate/nested-return caller. For every admitted transition prove 80286 real/protected and privilege disposition, genuine TSS16 layout, descriptor/table/LDT/stack/code validation, old/new image and busy/backlink publication, failure restart/nonpublication, and post-commit IRQ/debug ordering. Run focused owners, exact registrations, static inventories, artifact verifier, documentation governance, diff check, and full current gate. |
-| Expected Markers | A complete S6 matrix has one current-gate owner per direct TSS, task-gate, and nested-return origin; no 80286 task/TSS row is represented only by a 80386 TSS32, VM86, ordinary-return, or gate-entry vector. New marker, if necessary, uses `M5:T339:S6:`. |
+| Files And ABI Surface | Expected: T339 audit evidence/history/Current only. No production, CMake, test, public ABI, generic descriptor/table/decoder/exception/fixture interface, device model, or product boundary change. |
+| Applicable Rules | `docs/rules/EXECUTION.md`: audit-only P, complete source/evidence/transfer sweep, and actual-change review. `docs/rules/ARCHITECTURE.md`: one validation/materialization/commit owner and no false transactional claim. `docs/rules/DOCUMENT.md`: Current/history/evidence ownership and indexed supporting material. |
+| Verification | Re-run the S2--S6 source searches and focused owners; compare each S ledger to primary/`0F` metadata, direct/gate/return/task callers, state writers, cache/table/TSS/frame publication, and fault/delivery owner. Reconcile every assigned row as proved, transferred, or returned to its earliest owner. Run artifact identity, documentation governance, diff check, and full current gate. |
+| Expected Markers | The audit produces one indexed S7 closure ledger. No T339 assigned row remains partial, missing, or classified only by a 80386DX, VM86, or historic smoke; every transfer names T340, T341, or T342. |
 | Asset Needs | Intel 80286 and 80386 architecture manuals already used by project evidence. No guest media, firmware, third-party source, binary, or trace. |
-| Reporting Requirements | Before source edits, record the handler/caller/write/fault inventory and any material boundary objection. Otherwise deliver one complete pushed P with form matrix, historic-evidence disposition, defect/similar-issue result, artifact/gate results, and no partial-completion claim. |
-| Stop Conditions | Stop if correctness requires `66/67`, TSS32/CR3/paging/debug-trap layouts, VM86 task behavior, generic descriptor-table/decoder/delivery redesign, or Intel behavior cannot be classified. Transfer the row rather than fitting a local symptom. |
-| Exit Criteria | Every S6 task/TSS16 form and origin has an 80286 real/protected/privilege disposition; table/cache/TSS/frame state, fault/restart/nonpublication, and post-commit IRQ/debug boundaries are proved or exactly transferred; any mechanism defect is fixed with its complete caller sweep; required gates pass; the P is committed and pushed. |
+| Reporting Requirements | Deliver one complete pushed audit P with the source/evidence crosswalk, every row disposition, exact transfers, defect/return-to-owner result, artifact/gate results, and no implementation or partial-completion claim. |
+| Stop Conditions | Stop if an assigned row is not proved or exactly transferred, a source/evidence conflict requires runtime implementation, a historic claim cannot be made truthful, or a 80286 behavior cannot be classified. Return the gap to S2--S6 rather than close T339. |
+| Exit Criteria | One audit ledger reconciles every S2--S6 allocation row and direct caller/writer/fault edge; all remaining work is transferred exactly to T340/T341/T342; documentation and current gates pass; the P is committed and pushed, then T339 may close. |
 | Original Owner Request | Implement the Queue in order, in single-agent mode and with a holistic view, through four-profile cross-closure verification. |
-| Similar-Issue Sweep | Search direct far TSS and task-gate dispatch, `_ser_task_(transition|switch|return)_tss`, `_s_load_{tr,ldtr}`, all TSS16 reads/writes, busy/backlink writers, cache/register writers, profile metadata, current owner smokes, CMake registrations, and T329/T330/T337 evidence. |
+| Similar-Issue Sweep | Search all S2--S6 routes named by the S1 ledger, `INS_0F_00/01`, selector/cache loaders, protected entry/return serializers, task transition/switch/return, direct/gate dispatch, frame/table/TSS writers, profile metadata, current owners, CMake registrations, and T323/T329/T330/T337 evidence. |
 
 ## Current Technical Baseline
 
@@ -44,6 +44,7 @@ before the 80286 descriptor-transfer audit proceeds.
 ## Recent M5 Closures
 
 | Task | Compact result |
+| T339 S6 | Closed the 80286 TSS16 transition matrix: direct `JMP/CALL`, GDT/IDT task gates, nested `IRET`, busy/backlink, LDT/TI, busy/short/not-present validation, and post-switch PIC ordering now have explicit 80286 evidence. Task-switch fault state is recorded at its actual save/target-commit boundary; TSS32, width, VM86, paging/debug, and `LOCK` retain their assigned owners. [Evidence](../etc/evidence/t339-s6-tss16-transition-matrix.md). |
 | T339 S5 | Closed the 80286 protected 16-bit return matrix: same/outer IRET, same/outer RETF, RETF imm16 parameter skipping, cache/frame atomicity, and restored-IF PIC entry now have 80286 proof. `LOCK`, width, VM86, task, and generic `#TS/#SS` delivery semantics retain their explicit owners. [Evidence](../etc/evidence/t339-s5-protected-return-matrix.md). |
 | T339 S4 | Closed the 80286 protected 16-bit entry/gate matrix: direct far transfer; software, PIC, and NMI origins; same- and outer-CPL 16-bit gate frames; DPL-error frame ordering; and TSS16 outer-stack publication now have one ledger. The generic 80286 `#TS/#SS` final-delivery boundary transfers explicitly to T342; `LOCK`, width, VM86, return, and task semantics retain their assigned owners. [Evidence](../etc/evidence/t339-s4-protected-entry-gate-matrix.md). |
 | T339 S3 | Closed the 80286 selector-query and cache-materialization matrix: all `0F 00 /0`--`/5`, LAR/LSL, MOV/legacy segment-stack, and LES/LDS routes have a shared lookup/load inventory. The selector owner now proves real 80286 GDT/LDT (TI) query, register and memory DTTR forms, valid cache publication, null DS invalid-cache success, and 16-bit-gate `#NP/#GP` cache nonpublication. `LOCK`, 32-bit/VM86, entry/return, and task semantics retain their exact later owners. [Evidence](../etc/evidence/t339-s3-selector-cache-matrix.md). |
