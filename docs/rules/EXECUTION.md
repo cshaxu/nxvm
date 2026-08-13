@@ -285,35 +285,6 @@ sweep not applicable only for work that cannot correct a defect class, such as
 standalone documentation; it must state that reason. A defect-fix task cannot
 complete with an undocumented production hit or an untracked deferral.
 
-**CPU state-machine mechanism matrix.** Before an implementation P1 begins, an
-S whose primary subject changes or
-depends on a CPU state-machine mechanism must record a complete mechanism
-matrix in its active packet or indexed evidence. This applies to mode, CPL,
-segment/cache, descriptor, task/TSS, gate, exception/interrupt, return, VM86,
-control-register, or paging transitions. It does not apply merely because an
-ordinary instruction has an operand- or address-size form that already travels
-through one common checked decode/read/write pipeline.
-
-The matrix identifies the mechanism owner and every entry caller; source and
-target state dimensions (including real Intel width/layout differences);
-validation and competing-fault order; all source reads and target-memory
-preflight; state materialization; descriptor or memory writes; commit and
-rollback/publication boundaries; and every dependent exception or interrupt
-delivery path. It maps each relevant cross-product to focused evidence or a
-named transfer with its owning later package. A declared non-goal does not
-erase a reachable variant: it must state why the variant is outside the
-admitted boundary and where it is transferred.
-
-An implementation P may preserve separate 16-bit and 32-bit code where Intel
-defines different layouts, frames, or state fields. It must nevertheless
-compare their shared validation, materialization, preflight, commit, and fault
-semantics before changing either path. A symptom-only patch is rejected when
-the matrix has not classified the sibling callers or width/mode paths that can
-reach the same mechanism. During actual-change review, the reviewer verifies
-the matrix against the changed caller graph and tests; a later discovered
-variant requires a packet revision or explicit transfer, not an unrecorded
-incremental follow-up.
-
 ## Work Identifiers
 
 Numeric `T` identifiers are reserved for implementation tasks. A standalone
