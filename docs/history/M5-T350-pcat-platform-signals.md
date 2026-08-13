@@ -34,3 +34,20 @@ the documented alarm don't-care match, and proves CMOS index/mask separation,
 reset/finalize, and retained deterministic readiness. Its
 [evidence](../etc/evidence/t350-s3-rtc-cmos.md) retains the exact manual,
 source, and proof boundary.
+
+S4 is accepted at `742035c3`: the complete producer/consumer sweep finds no
+selected PC/AT parity or I/O-channel-check source contract. It retains the
+CPU NMI state as a consumer and CMOS bit 7 as mask-only, then transfers the
+missing board source to the bounded NMI TODO rather than synthesize one. Its
+[decision evidence](../etc/evidence/t350-s4-pcat-nmi-decision.md) records the
+exact future admission condition.
+
+## Closure
+
+T350 closes the selected PC/AT platform-signal graph. PIT channel 0 has one
+8254-to-IRQ0 lifecycle owner; MC146818 events have one calendar-to-IRQ8 owner
+and a separate CMOS mask/index adapter; all selected reset/finalize and
+deterministic-readiness paths have focused proof. Port-61/PPI/speaker and a
+real parity/I/O-channel-check producer stay explicit TODO receivers because no
+current profile/corpus establishes their board contracts. The task makes no
+host-clock, host-audio, firmware, generic CPU-delivery, or Windows claim.
