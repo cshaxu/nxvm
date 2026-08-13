@@ -92,3 +92,14 @@ and the new SS invalid; both serializers deliver the width-specific `#TS` code
 through vector 10, proving that the new-stack validation wins before any target
 publication. No
 shared exception, descriptor, paging, or ABI behavior was changed.
+
+## Continuation S7: State-Machine Matrix Discipline
+
+T330 converts its prevention finding into a mandatory Execution Rule. Before
+P1, a CPU state-machine S must identify every caller, relevant state/width/mode
+dimension, validation and competing-fault order, source and target preflight,
+materialization, writes, commit/rollback, and delivery dependency; each variant
+receives focused evidence or a named transfer. The rule preserves Intel-defined
+layout differences and ordinary shared decode/read/write instruction paths. It
+adds no runtime behavior and no broad semantic parser: actual-change review is
+the enforcement point for the matrix and its caller-graph evidence.
