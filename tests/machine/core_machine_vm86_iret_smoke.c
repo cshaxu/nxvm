@@ -6,6 +6,9 @@
 
 #define VM86_IRET_CODE 0x0100u
 #define VM86_IRET_STACK 0x8000u
+#define VM86_IRET_PAGE_DIRECTORY 0xa000u
+#define VM86_IRET_PAGE_TABLE 0xb000u
+#define VM86_IRET_PAGE_FLAGS 0x00000007u
 
 typedef struct vm86_iret_state { core_machine *machine; } vm86_iret_state;
 
@@ -20,6 +23,13 @@ static C_VOID vm86_iret_reset(C_VOID *opaque)
 static const core_machine_execution_provider vm86_iret_provider = {
     vm86_iret_reset, STD_NULL, STD_NULL
 };
+
+static C_INT vm86_iret_write_u32(core_machine *machine,
+    type_unsigned_32 address, type_unsigned_32 value)
+{
+    return core_machine_memory_write(machine, address, &value, sizeof(value)) ==
+        TYPE_STATUS_OK;
+}
 
 static C_INT vm86_iret_prepare(vm86_iret_state *state,
     const type_unsigned_8 *instruction, type_unsigned_8 bytes,
@@ -123,11 +133,48 @@ static C_INT vm86_iret_stack_atomic(C_VOID)
     return !failed;
 }
 
+static C_INT vm86_iret_paging_success(C_VOID)
+{
+    vm86_iret_state state;
+    core_machine_run_result result;
+    core_machine_cpu_diagnostic diagnostic;
+    C_INT failed = !vm86_iret_prepare(&state, (const type_unsigned_8[]){ 0xcfu },
+        1u, 0x0000ffffu);
+
+    if (!failed) {
+        failed |= !vm86_iret_write_u32(state.machine, VM86_IRET_PAGE_DIRECTORY,
+                VM86_IRET_PAGE_TABLE | VM86_IRET_PAGE_FLAGS) ||
+            !vm86_iret_write_u32(state.machine, VM86_IRET_PAGE_TABLE,
+                VM86_IRET_PAGE_FLAGS) ||
+            !vm86_iret_write_u32(state.machine, VM86_IRET_PAGE_TABLE + 2u * 4u,
+                0x2000u | VM86_IRET_PAGE_FLAGS) ||
+            !vm86_iret_write_u32(state.machine, VM86_IRET_PAGE_TABLE + 8u * 4u,
+                0x8000u | VM86_IRET_PAGE_FLAGS);
+        state.machine->executor_cpu.data.cr3 = VM86_IRET_PAGE_DIRECTORY;
+        state.machine->executor_cpu.data.cr0 |= VCPU_CR0_PG;
+        failed |= core_machine_run(state.machine,
+                (core_machine_run_budget){ 2u, 0u }, &result) != TYPE_STATUS_OK ||
+            result.reason != CORE_MACHINE_STOP_BUDGET ||
+            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
+                TYPE_STATUS_OK || diagnostic.first_fault.valid ||
+            state.machine->executor_cpu.data.cr3 != VM86_IRET_PAGE_DIRECTORY ||
+            state.machine->executor_cpu.data.eip != 0x0011u ||
+            state.machine->executor_cpu.data.esp != 0x00001234u ||
+            !TYPE_GET_BIT(state.machine->executor_cpu.data.eflags,
+                VCPU_EFLAGS_VM) || !vm86_iret_cache(
+                &state.machine->executor_cpu.data.cs, 0x0200u, SREG_CODE) ||
+            !vm86_iret_cache(&state.machine->executor_cpu.data.ss, 0x0300u,
+                SREG_STACK);
+    }
+    core_machine_destroy(state.machine);
+    return !failed;
+}
+
 C_INT main(C_VOID)
 {
     if (!vm86_iret_success((const type_unsigned_8[]){ 0xcfu }, 1u) ||
         !vm86_iret_success((const type_unsigned_8[]){ 0x67u, 0xcfu }, 2u) ||
-        !vm86_iret_stack_atomic())
+        !vm86_iret_stack_atomic() || !vm86_iret_paging_success())
         return 1;
     STD_PRINTF("M5:T320:S2:VM86-IRET:OK\n");
     return 0;

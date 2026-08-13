@@ -38,6 +38,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t340-s4-80386dx-form-closure-audit.md` | Verification owner | T340 S4 original-request, source/evidence, transfer, and task-close audit for the 80386DX form package. Retire into T340 history at task closure. |
 | `evidence/t341-s1-80386dx-system-state-allocation.md` | Verification owner | T341 S1 complete privileged-state owner, reader/writer, validation-to-commit, proof, and transfer allocation ledger. Retire into T341 history at task closure. |
 | `evidence/t341-s2-control-debug-table-reconciliation.md` | Verification owner | T341 S2 CR/DR/TR/LDT/table state-owner, form/privilege/publication, retained-proof, and external-transfer reconciliation. Retire into T341 history at task closure. |
+| `evidence/t341-s3-vm86-task-paging-composition.md` | Verification owner | T341 S3 VM86 entry/return, task/TSS, paging, frame, stack, fault, and commit-boundary composition graph. Retire into T341 history at task closure. |
 | `operations/` | Execution, source, and release owners | Toolchain, policy, templates, release procedure, and closure material. |
 | `research/` | Source owner | Provenance, external references, and non-product research. |
 | `history/` | Documentation owner | Read-only legacy and M5 migration/roadmap evidence. |

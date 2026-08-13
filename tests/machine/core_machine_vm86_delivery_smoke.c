@@ -10,6 +10,9 @@
 #define VM86_TSS_BASE 0x0600u
 #define VM86_HANDLER_BASE 0x2100u
 #define VM86_STACK_TOP 0x9000u
+#define VM86_PAGE_DIRECTORY 0xa000u
+#define VM86_PAGE_TABLE 0xb000u
+#define VM86_PAGE_FLAGS 0x00000007u
 
 typedef struct vm86_delivery_state { core_machine *machine; } vm86_delivery_state;
 
@@ -21,6 +24,13 @@ static C_VOID vm86_delivery_reset(C_VOID *opaque)
 static const core_machine_execution_provider vm86_delivery_provider = {
     vm86_delivery_reset, STD_NULL, STD_NULL
 };
+
+static C_INT vm86_delivery_write_u32(core_machine *machine,
+    type_unsigned_32 address, type_unsigned_32 value)
+{
+    return core_machine_memory_write(machine, address, &value, sizeof(value)) ==
+        TYPE_STATUS_OK;
+}
 static C_INT vm86_delivery_prepare(vm86_delivery_state *state, type_unsigned_8 vector)
 {
     const core_machine_config config = {
@@ -192,6 +202,92 @@ static C_INT vm86_delivery_irq0_iret_round_trip(C_VOID)
     core_machine_destroy(state.machine);
     return !failed;
 }
+
+static C_INT vm86_delivery_enable_paging(vm86_delivery_state *state,
+    type_bool source_page_present)
+{
+    const type_unsigned_32 page_entry = VM86_PAGE_FLAGS;
+
+    if (!(vm86_delivery_write_u32(state->machine, VM86_PAGE_DIRECTORY,
+            VM86_PAGE_TABLE | VM86_PAGE_FLAGS) &&
+        vm86_delivery_write_u32(state->machine, VM86_PAGE_TABLE,
+            page_entry) &&
+        vm86_delivery_write_u32(state->machine, VM86_PAGE_TABLE + 2u * 4u,
+            0x2000u | VM86_PAGE_FLAGS) &&
+        vm86_delivery_write_u32(state->machine, VM86_PAGE_TABLE + 4u * 4u,
+            source_page_present ? 0x4000u | VM86_PAGE_FLAGS : 0u) &&
+        vm86_delivery_write_u32(state->machine, VM86_PAGE_TABLE + 8u * 4u,
+            0x8000u | VM86_PAGE_FLAGS) &&
+        vm86_delivery_write_u32(state->machine, VM86_PAGE_TABLE + 9u * 4u,
+            0x9000u | VM86_PAGE_FLAGS))) return 0;
+    state->machine->executor_cpu.data.cr3 = VM86_PAGE_DIRECTORY;
+    state->machine->executor_cpu.data.cr0 |= VCPU_CR0_PG;
+    return 1;
+}
+
+static C_INT vm86_delivery_paging_composition(C_VOID)
+{
+    static const type_unsigned_8 ud[] = { 0x0fu, 0x0bu };
+    static const type_unsigned_8 nop[] = { 0x90u };
+    vm86_delivery_state state;
+    core_machine_run_result result;
+    core_machine_cpu_diagnostic diagnostic;
+    type_unsigned_32 frame[10u] = { 0u };
+    C_INT failed = !vm86_delivery_prepare(&state, 6u);
+
+    if (!failed) {
+        failed |= core_machine_memory_write(state.machine, 0x2000u, ud,
+                sizeof(ud)) != TYPE_STATUS_OK ||
+            !vm86_delivery_enable_paging(&state, TYPE_TRUE) ||
+            core_machine_run(state.machine, (core_machine_run_budget){ 8u, 0u },
+                &result) != TYPE_STATUS_OK ||
+            result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
+                TYPE_STATUS_OK || diagnostic.first_fault.valid ||
+            !diagnostic.last_delivered_exception.valid || !TYPE_GET_BIT(
+                diagnostic.last_delivered_exception.exception_mask,
+                VCPUINS_EXCEPT_UD) || state.machine->executor_cpu.data.eip !=
+                0x101u || state.machine->executor_cpu.data.cr3 !=
+                VM86_PAGE_DIRECTORY || state.machine->executor_cpu.data.esp !=
+                VM86_STACK_TOP - 36u || core_machine_memory_read_physical(
+                &state.machine->executor_memory, VM86_STACK_TOP - 36u,
+                (type_virtual_address)frame, sizeof(frame)) != TYPE_STATUS_OK ||
+            frame[0] != 0u || frame[1] != 0x0200u || frame[2] !=
+                (VCPU_EFLAGS_VM | VCPU_EFLAGS_IF);
+    }
+    core_machine_destroy(state.machine);
+    if (failed) return 0;
+
+    failed = !vm86_delivery_prepare(&state, 14u);
+    if (!failed) {
+        state.machine->executor_cpu.data.cs.selector = 0x0400u;
+        state.machine->executor_cpu.data.cs.base = 0x4000u;
+        failed |= core_machine_memory_write(state.machine, 0x4000u, nop,
+                sizeof(nop)) != TYPE_STATUS_OK ||
+            !vm86_delivery_enable_paging(&state, TYPE_FALSE) ||
+            core_machine_run(state.machine, (core_machine_run_budget){ 8u, 0u },
+                &result) != TYPE_STATUS_OK ||
+            result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
+                TYPE_STATUS_OK || diagnostic.first_fault.valid ||
+            !diagnostic.last_delivered_exception.valid || !TYPE_GET_BIT(
+                diagnostic.last_delivered_exception.exception_mask,
+                VCPUINS_EXCEPT_PF) || diagnostic.last_delivered_exception.
+                exception_code != 4u || state.machine->executor_cpu.data.cr2 !=
+                0x4000u || state.machine->executor_cpu.data.eip != 0x101u ||
+            state.machine->executor_cpu.data.esp != VM86_STACK_TOP - 40u ||
+            state.machine->executor_cpu.data.cs.selector != 0x0008u ||
+            state.machine->executor_cpu.data.ss.selector != 0x0010u ||
+            core_machine_memory_read_physical(&state.machine->executor_memory,
+                VM86_STACK_TOP - 40u, (type_virtual_address)frame,
+                sizeof(frame)) != TYPE_STATUS_OK || frame[0] != 4u ||
+            frame[1] != 0u || frame[2] != 0x0400u || frame[3] !=
+                (VCPU_EFLAGS_VM | VCPU_EFLAGS_IF) || frame[4] != 0x1234u ||
+            frame[5] != 0x0300u;
+    }
+    core_machine_destroy(state.machine);
+    return !failed;
+}
 static C_INT vm86_delivery_expect_prepublication(vm86_delivery_state *state)
 {
     core_machine_run_result result; core_machine_cpu_diagnostic diagnostic; t_cpu before, after;
@@ -292,6 +388,7 @@ C_INT main(C_VOID)
         !vm86_delivery_fault(13u, gp, sizeof(gp), 1) ||
         !vm86_delivery_fault(7u, nm, sizeof(nm), 0) || !vm86_delivery_debug_tf() ||
         !vm86_delivery_irq0() || !vm86_delivery_irq0_iret_round_trip() ||
+        !vm86_delivery_paging_composition() ||
         !vm86_delivery_invalid_gate() || !vm86_delivery_bad_gate_access(0x0eu) ||
         !vm86_delivery_bad_gate_access(0x80u) || !vm86_delivery_invalid_tss() ||
         !vm86_delivery_bad_tss(0) || !vm86_delivery_bad_tss(1) ||
