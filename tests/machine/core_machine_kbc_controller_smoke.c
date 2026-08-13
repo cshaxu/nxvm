@@ -176,6 +176,8 @@ C_INT main(C_VOID)
         kbc.data.scan_set != CORE_MACHINE_KBC_SCAN_SET_1;
     core_machine_port_write(&port, 0x0060u, 0x00u);
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xfeu;
+    core_machine_port_write(&port, 0x0060u, 0xfeu);
+    failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xaau;
     failed |= core_machine_kbc_submit_scan_code(&kbc, 0x1eu) != TYPE_STATUS_OK ||
         core_machine_kbc_read_byte(&port, 0x0060u) != 0x1eu;
     core_machine_port_write(&port, 0x0064u, 0xd0u);

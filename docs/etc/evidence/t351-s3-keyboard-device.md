@@ -43,7 +43,7 @@ unselected scan-set paths retain their explicit `FEh` response.
 | Command/state | Result and owner | Proof |
 | --- | --- | --- |
 | `FFh` | keyboard ACK/BAT, default scan set/LED/typematic, selected scanning recovery | retained controller smoke. |
-| `FEh` | keyboard-only latest/prior history; controller `D0h` reply does not affect replay | strengthened controller smoke queues a scan byte, consumes controller output, then receives the scan byte from RESEND. |
+| `FEh` | keyboard-only latest/prior history; controller `D0h` reply does not affect replay; repeated RESEND after keyboard `FEh` uses prior byte | strengthened controller smoke proves both prior-byte and controller-isolation cases. |
 | `FDh`--`F7h` | ACK with LED/typematic/scanning unchanged | strengthened controller smoke proves `FDh`; identical switch branch owns the whole selected NOP range. |
 | `EDh`, `F0h`, `F3h` | ACK then one pending parameter state; selected LED/scan-set/typematic validation | retained controller smoke. |
 | `EEh`, `F2h` | echo or identify response is keyboard-origin and follows the one FIFO/delay owner | retained controller smoke. |
