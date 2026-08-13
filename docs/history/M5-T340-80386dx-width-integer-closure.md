@@ -25,3 +25,10 @@ privileged state without renumbering historical proof.
 S1 was accepted through the complete documentation and transfer review. Its
 implementation delivery is `11d811e7`; S2 now owns only the prefix,
 operand/address, and FS/GS reconciliation specified by that ledger.
+
+## S2 Reconciliation
+
+The indexed [S2 reconciliation](../etc/evidence/t340-s2-prefix-width-fsgs-reconciliation.md)
+records the actual single prefix, width, effective-address, FS/GS, and `LOCK`
+mechanism owners. It accepts focused proof rather than duplicating completed
+ordinary-form smokes, and transfers state-owned rows to T341.
