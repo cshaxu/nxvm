@@ -2,29 +2,29 @@
 
 ## Current Work
 
-M5 T350 S1 - PC/AT platform-signals manual-to-source completeness ledger
+M5 T350 S2 - 8254 retained counter, gate, and IRQ0 signal reconciliation
 (Single-Session Mode).
 
-## M5 T350 S1 Packet
+## M5 T350 S2 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner approved continuous holistic device/L3 completion after T349 closure `f9225093` on 2026-08-13. |
-| Objective | Build the finite Intel 8254, Motorola MC146818A, and IBM PC/AT signal ledger: counters/gates/output, channel-0 IRQ0, channel-2/port-61/PPI/speaker, calendar/periodic/update/alarm/register-C/IRQ8, CMOS index-NMI mask, and parity/I/O-channel NMI sources. Map each row to source, reset/finalize, consumer, proof, S2--S4 receiver, or named transfer. |
-| Non-goals | No speculative speaker/PPI or NMI implementation, host audio/wall clock, RTC-to-NMI route, CPU delivery redesign, firmware rewrite, arbitrary board wiring, external source import, x87, or Windows claim. |
-| Reference Baseline | `f9225093` / T349 closed; [platform-signals proposal](../proposals/m5-pcat-platform-signals.md), [T346 L3 audit](../etc/evidence/t346-s1-core-machine-device-l3-audit.md), [T349 lifecycle evidence](../etc/evidence/t349-s4-pcat-pic-lifecycle.md), and [PC/AT profile boundary](../etc/architecture/pc-at-profile.md). |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved continuous holistic device/L3 completion; T350 S1 accepted at `b5708af1` on 2026-08-13. |
+| Objective | Reconcile every retained Intel 8254 counter/gate/output mechanism and the PC/AT channel-0 IRQ0 route: mode/load/count/latch/readback/BCD state, output callback publication, edge consumption, reset/finalize, and deterministic `DMA -> PIT -> PIC` visibility. Prove the declared subset or transfer real electrical/pin timing exactly once. |
+| Non-goals | Port 61h/PPI/speaker, host audio, channel-2 board wiring, RTC/CMOS/NMI, CPU delivery redesign, arbitrary 8254 clone behavior, oscillator/pin waveform, source import, x87, and Windows claims are outside this S. |
+| Reference Baseline | `b5708af1` / T350 S1 accepted; [S1 ledger](../etc/evidence/t350-s1-pcat-platform-signals-ledger.md), [platform-signals proposal](../proposals/m5-pcat-platform-signals.md), [T346 L3 audit](../etc/evidence/t346-s1-core-machine-device-l3-audit.md), and [T349 lifecycle evidence](../etc/evidence/t349-s4-pcat-pic-lifecycle.md). |
 | Candidate Proposal | [PC/AT platform signals: PIT, PPI, RTC, and NMI](../proposals/m5-pcat-platform-signals.md). |
-| Files And ABI Surface | Expected: one S1 ledger, supporting-document index, Current, T350 history, proposal/Queue wording only if the ledger exposes a receiver correction. No runtime, public ABI, or external asset change. |
-| Applicable Rules | Task Reading Set; deterministic `DMA -> PIT -> PIC -> FDC -> HDC -> RTC -> KBC -> VADP` order; one owner per mutable signal; PC/AT profile policy stays in VM; source policy; primary-manual and project-owned probe discipline. |
-| Verification | Reproduce the source/port/timeline/reset/finalize/consumer sweep mechanically; cross-check current PIT/RTC/CMOS/NMI tests and primary manuals; verify every adopted or transferred row once, proposal/Queue links, governance, and diff check. |
-| Expected Markers | Retain PIT waveform/readback/divider, RTC/CMOS, NMI delivery, T346 timeline, and T349 PIC lifecycle markers; S1 adds a ledger rather than a runtime marker. |
+| Files And ABI Surface | Expected: PIT source/headers only if a retained state/output/lifecycle repair is reproduced, owner-local 8254/IRQ0 smoke and CMake registration, S2 evidence, Current, and T350 history. PIC and CPU ABI remain stable. |
+| Applicable Rules | Task Reading Set; one PIT owner for counter/output state; T349 PIC source lifecycle; deterministic `DMA -> PIT -> PIC` arbitration; no host time/audio; primary-manual and project-owned probe discipline. |
+| Verification | Build a manual-form matrix for counters 0--2, modes/gates/latches/readback/BCD and channel-0 IRQ0. Prove source state, output transition, PIC request/acknowledgement, reset/finalize, exact equal-tick order, and nonpublication on invalid control forms. Retain T346/T349 and CPU delivery regressions; run full current-gate and governance. |
+| Expected Markers | Add `M5:T350:S2:PIT-IRQ0:OK`; retain PIT waveform/readback/divider, T346 timeline/arbitration, T349 PIC lifecycle, and CPU hardware-delivery markers. |
 | Asset Needs | Published Intel 8254, Motorola MC146818A, and IBM PC/AT technical-reference material only; no firmware, guest media, or copied reference source. |
-| Reporting Requirements | Record manual authority, implementation owner, writer/reader, signal direction, timing/reset/finalize semantics, proof, residual risk, and exact next receiver for every row. |
-| Stop Conditions | Stop for a needed generic CPU/NMI delivery change, host-time/audio integration, source-provider ABI change, ambiguous PC/AT board wiring, third-party source import, or an unbounded new device. |
-| Exit Criteria | Every selected platform signal is classified as accepted proof, S2--S4 receiver, or explicit Queue/TODO transfer with admission condition; no current source/consumer/lifecycle route is unowned or unclassified. |
+| Reporting Requirements | Record every 8254 form/state, writer/reader, gate/output/IRQ0 transition, reset/finalize behavior, timeline order, proof, residual electrical boundary, and any repair/caller sweep. |
+| Stop Conditions | Stop for a need to implement port 61h/PPI/speaker, a generic PIC/CPU delivery change, source-provider ABI change, host timing/audio, an unbounded clone behavior, or a repair outside PIT-local state/output lifecycle. |
+| Exit Criteria | Every retained 8254/IRQ0 ledger row is accepted with focused proof or one explicit physical-electrical transfer; no PIT output, IRQ0 source, reset/finalize, or timeline owner is unclassified. |
 | Original Owner Request | Make core-machine devices stable, comprehensive, and reliable at deterministic L3 before deciding any Windows execution route. |
-| Similar-Issue Sweep | Inspect all PIT/RTC/CMOS/NMI/PPI registrations, port callbacks, gates/output transitions, IRQ/NMI assertions, timeline advance entries, reset/finalize routes, VM profile declarations, and existing device tests. |
+| Similar-Issue Sweep | Inspect all PIT port readers/writers, counter/gate/output transitions, BCD/load/latch/readback forms, output callbacks, IRQ0 bind/assert/deassert, reset/finalize, arbitration scheduling, and every existing PIT/IRQ0 test. |
 
 ## Current Technical Baseline
 
@@ -45,6 +45,7 @@ M5 T350 S1 - PC/AT platform-signals manual-to-source completeness ledger
 
 | Task | Compact result |
 | --- | --- |
+| T350 S1 | Accepted the 8254/MC146818/IBM-PC/AT signal ledger: retained PIT/IRQ0 and RTC/CMOS/IRQ8 routes have bounded owners; port-61/speaker and a physical NMI producer remain explicit conditional receivers. [Evidence](../etc/evidence/t350-s1-pcat-platform-signals-ledger.md). |
 | T349 | Closed PC/AT dual-8259A command/priority/cascade, OCW3 poll/status/special-mask/SFNM, and retained edge/level producer lifecycle; physical INTA spurious behavior transfers only to L3 bus timing. 226 current-gate tests passed. [History](../history/M5-T349-pcat-pic-compliance.md). |
 | T348 | Closed PC/AT dual-8237A DMA topology, page/word layout, request/cascade/EOP, validation-before-publication, M2M lifecycle, and FDC crossing bounce path; 223 current-gate tests passed. [History](../history/M5-T348-pcat-dma-completeness.md). |
 | T347 | Closed retained PC/AT FDC and ATA PIO service timing: pending command/data states, reset/control/media cancellation, one FDC-then-ATA readiness owner, trace order, focused VM/DOS/HDD evidence, and 222 current-gate tests passed. [History](../history/M5-T347-storage-controller-service-timing.md). |

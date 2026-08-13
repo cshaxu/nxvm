@@ -18,7 +18,7 @@ KBC, video, port-topology, and L3 bus-timing work proceed.
 
 ## Accepted Progress
 
-S1 builds the complete 8254/MC146818/IBM-PC/AT signal graph and assigns the
+S1 is accepted at `b5708af1`: it builds the complete 8254/MC146818/IBM-PC/AT signal graph and assigns the
 retained PIT/IRQ0, RTC/CMOS/IRQ8, channel-2/PPI/speaker, and NMI rows to one
 owner or exact receiver. Its [ledger](../etc/evidence/t350-s1-pcat-platform-signals-ledger.md)
 keeps port-61/speaker and a real NMI producer explicitly unimplemented until
