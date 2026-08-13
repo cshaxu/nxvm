@@ -2,34 +2,14 @@
 
 ## Current Work
 
-**Active: M5 T330 S5.** Reconcile FDD/HDD media-provider backing preconditions
-and create failure atomicity (Ordinary Mode; owner-approved T330 continuation).
-
-## M5 T330 S5 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; T330 S4 is retained progress for the latest open numeric task, and S5 is its next unused subtask. |
-| Admission And Approval | Owner approved reopening T330 on 2026-08-12 to implement the second audited construction-drift item after S4 acceptance. |
-| Objective | Make FDD and HDD implementations of the shared `core_machine_media_provider` contract reject a present-but-null backing safely, and ensure FDD create does not publish present/generation state unless backing exists. |
-| Non-goals | No shared media-interface API change, FDD/HDD geometry unification, sparse backing, host I/O redesign, controller protocol change, or new filesystem abstraction. |
-| Reference Baseline | `5be61847448924543ef15645bef3cc8d341cc1fd` / `vm-0-5-0330`; S4 accepted. Read `media_interface.c`, both VM provider implementations, and `vm_media_provider_smoke.c`. |
-| Files And ABI Surface | `src/vm/machine/fdd.c`, `src/vm/machine/hdd.c`, `tests/machine/vm_media_provider_smoke.c`, CMake only if registration changes, T330 evidence/history, and `docs/STATUS.md`; no public ABI change. |
-| Applicable Rules | Execution similar-issue sweep and actual-change review; architecture ownership and coding rules. The invariant is that a provider must not dereference absent backing and a failed construction must not publish a present medium. |
-| Verification | Focused `vm-media-provider-smoke` proves FDD/HDD direct provider and registry-facing null-backing behavior, FDD failed-create nonpublication, existing replace/insert/remove atomicity, and ordinary successful media operations; fresh GCC configure; current-gate; documentation governance; `git diff --check`. |
-| Expected Markers | Retained `M5:T272:S2:VM-MEDIA-PROVIDER:OK`, `M5:T280:S2:ATOMIC-MEDIA:OK`, and `M5:T283:S6:ATOMIC-SAVE:OK`. |
-| Asset Needs | None; deterministic in-memory media and temporary test files only. |
-| Reporting Requirements | Ordinary Mode contract confirmation, then one complete pushed implementation P with requirement-to-proof evidence; coordinator actual-change review and a governance P on acceptance. |
-| Stop Conditions | Stop before changing `core_machine_media_interface`, controller-visible protocol, public media ABI, or host persistence policy; revise if a shared-interface change is required. |
-| Exit Criteria | FDD and HDD both safely classify null backing without dereference, FDD create failure publishes neither present nor a generation increment, the comparable provider cases are covered, all retained media regressions and current gates pass, and T330 evidence records the scoped convergence. |
-| Original Owner Request | Reopen T330 and implement the four audited items as four ordered S tasks, beginning now. |
-| Similar-Issue Sweep | Inspect every production `core_machine_media_provider` implementation and each FDD/HDD create, replace, insert, remove, read, write, and format route; classify each precondition/commit hit as aligned, fixed, or intentionally capacity-specific. |
+**Idle.** M5 T330 remains open. S5 is accepted; the protected CALL-gate
+dual-fault ordering audit requires a separately admitted Continuation packet.
 
 ## Current Technical Baseline
 
 - **Current developer artifact:** T330 selects `vm-0-5-0330` /
-  `build/output/nxvm_0_5_0330.exe`; commit `af006a19` SHA-256 is
-  `F0AEC7780F2BC0A0AEF6451B91CCD4EE25DF6A9D1EE4A5AFA8D1AD3E58F9707A`.
+  `build/output/nxvm_0_5_0330.exe`; commit `629d2291` SHA-256 is
+  `3411E34A87EC701EA9E8C0E5F25F4C1FD6F495834E23BB9F541B2CE9A34C7D65`.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
@@ -43,7 +23,7 @@ and create failure atomicity (Ordinary Mode; owner-approved T330 continuation).
 ## Recent M5 Closures
 
 | Task | Compact result |
-| T330 S4 | Retired the unreachable 32-bit task-transition plan/commit/wrapper, retained only the independent-format canonical plan, and added a current specialized static closure verifier. The focused task-switch smoke, static verifier, current-gate CTest 211/211, documentation governance, and gate-separation verifier pass. [History](history/M5-T330-width-path-convergence.md). |
+| T330 S5 | Reconciled FDD/HDD provider backing preconditions: malformed present/null backing now returns `PERMANENT`, FDD failed creation publishes neither presence nor generation, and direct plus registry-facing cases are covered. Focused media, current-artifact, current-gate CTest 211/211, and documentation governance pass. [History](history/M5-T330-width-path-convergence.md). |
 | T329 | Closed the bounded Intel 80286/80386 protected task-transition state machine: 16/32-bit direct and task-gate entry, nested CALL/IRET state, incoming LDT images, source-CR3 preflight/incoming-CR3 commit, and TSS post-switch `#DB`. S7 proves target-page fetch, target-TSS `#PF` atomicity, and a target-state restart frame; the 0329 artifact and 211/211 gate result are in [history](history/M5-T329-task-transition-state-machine.md). |
 | T328 | Closed the historical LOCK-prefix legality matrix: 8086/80186 retain transparent valid-next-instruction semantics; 80286 adds protected `CPL <= IOPL`; retained 80386 memory-whitelist behavior stays intact. S2 reconciled the current closure map and ordinary matrix, removing the stale Deferred/TODO transfer without changing the user-owned Queue edit. Register, memory, REP, I/O, #GP frame, strict compile, artifact, and 211/211 gate evidence are in [history](history/M5-T328-legacy-lock-legality.md). |
 | T327 | Closed the current/specialized-gate reconciliation: fast smoke no longer builds classified media targets, and generated CTest/Ninja evidence now proves the full 210 = 15 media + 195 non-media partition, both developer roots, all specialized verifiers, and the aggregate's two roots. [History](history/M5-T327-current-gate-reconciliation.md). |
