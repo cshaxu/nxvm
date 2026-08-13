@@ -2,8 +2,28 @@
 
 ## Current Work
 
-**Idle.** M5 T330 remains open. S4 is accepted; the FDD/HDD provider
-construction reconciliation requires a separately admitted Continuation packet.
+**Active: M5 T330 S5.** Reconcile FDD/HDD media-provider backing preconditions
+and create failure atomicity (Ordinary Mode; owner-approved T330 continuation).
+
+## M5 T330 S5 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; T330 S4 is retained progress for the latest open numeric task, and S5 is its next unused subtask. |
+| Admission And Approval | Owner approved reopening T330 on 2026-08-12 to implement the second audited construction-drift item after S4 acceptance. |
+| Objective | Make FDD and HDD implementations of the shared `core_machine_media_provider` contract reject a present-but-null backing safely, and ensure FDD create does not publish present/generation state unless backing exists. |
+| Non-goals | No shared media-interface API change, FDD/HDD geometry unification, sparse backing, host I/O redesign, controller protocol change, or new filesystem abstraction. |
+| Reference Baseline | `5be61847448924543ef15645bef3cc8d341cc1fd` / `vm-0-5-0330`; S4 accepted. Read `media_interface.c`, both VM provider implementations, and `vm_media_provider_smoke.c`. |
+| Files And ABI Surface | `src/vm/machine/fdd.c`, `src/vm/machine/hdd.c`, `tests/machine/vm_media_provider_smoke.c`, CMake only if registration changes, T330 evidence/history, and `docs/STATUS.md`; no public ABI change. |
+| Applicable Rules | Execution similar-issue sweep and actual-change review; architecture ownership and coding rules. The invariant is that a provider must not dereference absent backing and a failed construction must not publish a present medium. |
+| Verification | Focused `vm-media-provider-smoke` proves FDD/HDD direct provider and registry-facing null-backing behavior, FDD failed-create nonpublication, existing replace/insert/remove atomicity, and ordinary successful media operations; fresh GCC configure; current-gate; documentation governance; `git diff --check`. |
+| Expected Markers | Retained `M5:T272:S2:VM-MEDIA-PROVIDER:OK`, `M5:T280:S2:ATOMIC-MEDIA:OK`, and `M5:T283:S6:ATOMIC-SAVE:OK`. |
+| Asset Needs | None; deterministic in-memory media and temporary test files only. |
+| Reporting Requirements | Ordinary Mode contract confirmation, then one complete pushed implementation P with requirement-to-proof evidence; coordinator actual-change review and a governance P on acceptance. |
+| Stop Conditions | Stop before changing `core_machine_media_interface`, controller-visible protocol, public media ABI, or host persistence policy; revise if a shared-interface change is required. |
+| Exit Criteria | FDD and HDD both safely classify null backing without dereference, FDD create failure publishes neither present nor a generation increment, the comparable provider cases are covered, all retained media regressions and current gates pass, and T330 evidence records the scoped convergence. |
+| Original Owner Request | Reopen T330 and implement the four audited items as four ordered S tasks, beginning now. |
+| Similar-Issue Sweep | Inspect every production `core_machine_media_provider` implementation and each FDD/HDD create, replace, insert, remove, read, write, and format route; classify each precondition/commit hit as aligned, fixed, or intentionally capacity-specific. |
 
 ## Current Technical Baseline
 
