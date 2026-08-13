@@ -33,7 +33,7 @@ normal way to cross a boundary; a copied summary is not a second authority.
 | Location | Contains | Does not contain |
 | --- | --- | --- |
 | `docs/README.md` | Task reading set and authority map. | Product design, task state, or policy copies. |
-| `states/CURRENT.md` | One active packet, current baseline, active-task progress, and capped recent task closures. | Milestone plan, reading guide, or completed task packet. |
+| `states/CURRENT.md` | One active packet while an S executes, or compact progress between accepted S units of one open numeric T; current baseline and capped recent task closures. | Milestone plan, reading guide, or completed task packet. |
 | `states/QUEUE.md` | Ordered, unnumbered candidate links. | Task identifiers, baseline, detailed contract, or active plan. |
 | `states/TODO.md` | Open debt or deferred admission with priority and admission path. | Goals, roadmap, completed work, or active plan. |
 | `proposals/` | Candidate background, bounded approach, and reference material. | Active task contract, task identifier, or completed-task authority. |
@@ -61,7 +61,9 @@ normal way to cross a boundary; a copied summary is not a second authority.
   closure summary and retain detailed evidence in its history or indexed
   supporting record. The recent task-level closure list is capped at eight
   rows.
-- `states/CURRENT.md` records the active contract, current phase, concise progress, and
+- `states/CURRENT.md` records the active contract when an S executes, or the
+  machine-readable compact progress of the latest open numeric T between
+  accepted S units, plus current phase, concise progress, and
   links to durable evidence. Long command output, requirement matrices,
   implementation narratives, and detailed review records belong in the
   committed delivery, numbered task history, or indexed `etc/` evidence. A

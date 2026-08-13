@@ -2,29 +2,9 @@
 
 ## Current Work
 
-**Active.** M5 T346 S1 audits the complete core-machine device, bus, port, and
-deterministic L3-timing surface before any device implementation is admitted.
-
-## M5 T346 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner approved 2026-08-13 the next highest-priority core-machine device, bus, port, and L3 timing audit, excluding x87 execution, before Windows 3.x readiness work. |
-| Objective | Produce one whole-machine capability and L3-readiness ledger for every core-machine device, bus, port, memory mapping, IRQ/DMA route, clock source, reset path, and current proof; determine a dependency-ordered device-completion plan for a Windows 3.x research machine. |
-| Non-goals | Do not implement or alter device/CPU/x87 behavior, import or copy Bochs/PCjs source or firmware, run proprietary Windows media, claim cycle-exact timing, add a host-time dependency, or modify docs/rules. |
-| Reference Baseline | `61d86cb8`; T343 closed the CPU-profile form/state program and T345 closed the direct-compilation ledger. The Queue now places this convergence program before the Windows 3.x readiness map. Existing device/timing TODO entries and `current-capability-baseline.md` require reconciliation, not blind reuse. |
-| Candidate Proposal | [M5 core-machine device parity and L3 timing convergence](../proposals/m5-core-machine-device-l3-convergence.md), S1. |
-| Files And ABI Surface | Documentation, evidence, Queue, TODO, task history, and current state only. Production, test, CMake, ABI, artifact, firmware, and reference trees are read-only. |
-| Applicable Rules | Task Reading Set; Execution audit, evidence, source/research, similar-issue, and task-closure rules; Architecture one-owner, deterministic state, and host-boundary invariants; Coding no-copy/no-mirror-state discipline; Documentation authority boundaries; source policy for Bochs/PCjs research. |
-| Verification | Enumerate tracked `src/core/machine`, relevant `src/vm` composition/adapter routes, tests, CMake current targets, port/IRQ/DMA/clock/reset searches, TODOs, and retained evidence. Record exact source queries and reference-tree paths. Verify documentation governance and diff check. |
-| Expected Markers | One indexed evidence ledger covers every discovered core-machine family exactly once, identifies each timing model and proof strength, and maps every gap to an S2--S5 receiver, Queue candidate, or exact TODO. |
-| Asset Needs | Read-only local Bochs 2.6 compatibility and PCjs source trees; public hardware documentation references only. No guest media, firmware, binary trace, source import, or product dependency. |
-| Reporting Requirements | Report coverage counts, reference discipline, L3 definition, owner/dependency graph, Windows relevance, risks, stale-evidence disposition, and every deferred feature with its receiver. Do not call a reference implementation an oracle without a primary hardware/probe requirement. |
-| Stop Conditions | Stop if the audit needs proprietary media, source import/license review, a hardware contract unavailable to the repository, or a runtime change to inspect behavior. Record the missing authority or admit a separate research/probe task instead. |
-| Exit Criteria | The ledger covers the entire intended surface with source/test/evidence references, classifies each item as implemented, partial, missing, or unknown, defines the concrete L3 gap/dependency order, reconciles stale capability claims, and creates a non-overlapping next-work plan. |
-| Original Owner Request | Make the core machine polished and sufficiently faithful across devices, chips, buses, ports, and L3 timing for Windows 3.x emulation research, excluding x87. |
-| Similar-Issue Sweep | Search all tracked production, test, build, and documentation paths for device, port, IRQ, DMA, clock, scheduler, bus, reset, and host-time mechanisms; group aliases and adapters under their one production owner rather than auditing only obvious device files. |
+**Active.** M5 T346 remains open between accepted subtasks. S2 requires a
+separately admitted packet for the deterministic time, event, and transaction
+foundation; no implementation runs before that admission.
 
 ## Current Technical Baseline
 
@@ -45,6 +25,7 @@ deterministic L3-timing surface before any device implementation is admitted.
 
 | Task | Compact result |
 | --- | --- |
+| T346 S1 | Accepted the whole-core-machine L2/L3 audit: 55 core-machine units and 187 machine smokes reconcile one owner ledger for memory/A20/ROM, ports, PIC/PIT/DMA/RTC, KBC, FDC/ATA, VADP/display, firmware, and host boundaries. L3 requires a common due-event/arbitration and transaction contract before device expansion; x87 is excluded. [Evidence](../etc/evidence/t346-s1-core-machine-device-l3-audit.md). |
 | T345 | Closed direct-compilation strictness convergence: 251/305 direct commands are target-local strict; the 54 remaining commands have a complete 175-row ownership ledger and an exact 51-source residual production record with durable bounded admissions. No global flags, inherited-runtime rewrites, or false linked-dependency claims. [History](../history/M5-T345-direct-compilation-strictness-convergence.md). |
 | T344 | Closed build-quality reproducibility: fresh configuration, 305-row truthful strict-compile matrix (130 retained strict/175 deferred), canonical 218-target current-gate registration, 53 historical fixture shapes, and strict-declaration uniqueness are mechanically verified. [History](../history/M5-T344-build-quality-reproducibility.md). |
 | T343 | Closed the four-profile CPU program: one final ledger reconciles the 8086, 80186, 80286, and 80386DX execution, protected-state, delivery, task/paging/debug, and CPU-side coprocessor-interface boundaries. VME/PVI, persistent cache, x87 execution, timing/device, and Windows/product work remain explicit external candidates. [Closure ledger](../etc/evidence/t343-s1-four-profile-cross-closure.md). |

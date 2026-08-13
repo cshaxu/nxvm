@@ -532,6 +532,26 @@ if ($SelfTest) {
         Set-SelfTestFile $fixtureRoot "docs/states/CURRENT.md" $latestTaskProgress
         Require (Invoke-SelfTestCheck $fixtureRoot) `
             "Documentation schema rejected compact progress for the latest open numeric task."
+        $betweenSubtasks = [regex]::Replace(
+            $activeNumericPacket,
+            '(?ms)^## M5 T301 S1 Packet\r?\n.*?(?=^## Current Technical Baseline)',
+            ''
+        ).Replace(
+            "**Active.**",
+            "**Active.** T301 remains open between accepted subtasks."
+        ).Replace(
+            "| --- | --- |",
+            "| --- | --- |`n| T301 S1 | Fixture progress |"
+        )
+        Set-SelfTestFile $fixtureRoot "docs/states/CURRENT.md" $betweenSubtasks
+        Require (Invoke-SelfTestCheck $fixtureRoot) `
+            "Documentation schema rejected an open task between accepted subtasks."
+        Set-SelfTestFile $fixtureRoot "docs/states/CURRENT.md" ($betweenSubtasks.Replace(
+            "| T301 S1 | Fixture progress |`n",
+            ""
+        ))
+        Require (-not (Invoke-SelfTestCheck $fixtureRoot -Quiet)) `
+            "Documentation schema accepted an active packetless status without task progress."
         $continuationPacket = $activeNumericPacket.Replace("M5 T301 S1", "M5 T301 S2").Replace(
             "| Identifier Mode | New |",
             "| Identifier Mode | Continuation |"
@@ -867,12 +887,19 @@ if ($idle) {
         "Idle CURRENT.md must not retain completed narrative before its technical baseline."
 }
 else {
-    Require (($status | Select-String -AllMatches -Pattern '(?m)^## M\d+ (?:T\d+|Td) S\d+ Packet$').Matches.Count -eq 1) `
-        "Active CURRENT.md must contain exactly one task packet."
-    $activePacket = Get-ActivePacket $status
-    Require ($null -ne $activePacket) "Active CURRENT.md must expose a parseable task packet."
-    Require-ActivePacketSchema $activePacket
-    Require-ActiveIdentifier $activePacket $RepositoryRoot $status
+    $packetCount = ($status | Select-String -AllMatches -Pattern '(?m)^## M\d+ (?:T\d+|Td) S\d+ Packet$').Matches.Count
+    Require ($packetCount -le 1) "Active CURRENT.md must not contain multiple task packets."
+    if ($packetCount -eq 1) {
+        $activePacket = Get-ActivePacket $status
+        Require ($null -ne $activePacket) "Active CURRENT.md must expose a parseable task packet."
+        Require-ActivePacketSchema $activePacket
+        Require-ActiveIdentifier $activePacket $RepositoryRoot $status
+    }
+    else {
+        $betweenSubtasks = @(Get-StatusClosureRows $status | Where-Object HasSubtask)
+        Require ($betweenSubtasks.Count -eq 1) `
+            "Active CURRENT.md without a task packet must retain exactly one latest-task subtask progress row."
+    }
 }
 
 Require (-not ($todo -match '(?m)^[-*] \[x\]')) `

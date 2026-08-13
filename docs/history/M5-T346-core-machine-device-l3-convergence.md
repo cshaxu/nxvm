@@ -15,3 +15,17 @@ No later device or timing implementation may bypass that ledger or make a
 Bochs/PCjs implementation a project dependency.  Subsequent S units are
 admitted from its owner/dependency results, not preallocated from convenient
 port batches.
+
+## Completed Subtasks
+
+### S1 - Whole-Machine Capability, Reference, And L3 Audit
+
+Accepted the indexed whole-machine ledger at
+`docs/etc/evidence/t346-s1-core-machine-device-l3-audit.md`. It measured the
+current deterministic, host-clock-independent L2 scheduler and identified the
+required L3 foundation: one due-event/arbitration owner plus bounded memory,
+I/O, and DMA transaction visibility. It allocated S2 before all controller
+expansion, S3/S4 as dependent device migrations, and S5 as the reconciliation
+handoff to the Windows readiness map. It refreshed stale capability wording,
+preserved unselected device debt in TODO, and excluded x87 execution and source
+import.

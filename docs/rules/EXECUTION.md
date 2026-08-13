@@ -4,8 +4,10 @@ This file owns the NXVM repository's mandatory request lifecycle, identifiers, e
 artifact, and milestone gates. The public
 [Execution Governance skill](https://github.com/cshaxu/skills/blob/main/execution-governance/SKILL.md)
 is supplementary reusable guidance, not a prerequisite. One subtask is active
-at a time. Follow the local requirement packet and closure audit defined here.
-Before implementation, the coordinator creates the one active subtask packet
+at a time. Between accepted subtasks, the latest open numeric task may retain
+only its compact progress and has no active packet. Follow the local
+requirement packet and closure audit defined here. Before implementation, the
+coordinator creates the one active subtask packet
 in `states/CURRENT.md` as the fixed two-column `Field | Required record` table;
 the executor reads, questions, and executes that packet. It must record
 identifier mode, admission and owner approval, objective, non-goals, reference
@@ -77,11 +79,13 @@ self-review, actual-change review, verification, or acceptance requirements.
 
 ## Roles And Execution Cycle
 
-Every admitted S follows one coordinator/executor lifecycle with one active
+Every executing S follows one coordinator/executor lifecycle with one active
 `states/CURRENT.md` packet, the same identifier rules, evidence requirements,
-similar-issue sweep, and closure audit. One session may perform both roles in
-sequence, or two sessions may each perform one role; session assignment never
-changes the lifecycle or authority.
+similar-issue sweep, and closure audit. Between an accepted S and the next
+admission, that packet is removed and the latest open numeric T retains its
+compact progress row; no implementation may run in that interval. One session
+may perform both roles in sequence, or two sessions may each perform one role;
+session assignment never changes the lifecycle or authority.
 
 **T, S, and P.**
 
