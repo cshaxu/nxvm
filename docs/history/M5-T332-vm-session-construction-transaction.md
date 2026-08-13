@@ -36,3 +36,15 @@ packet. Fresh configuration, the focused session smoke, the artifact verifier,
 212-test current CTest selection passed. The aggregate wrapper exceeded the
 environment's 124-second no-output limit; its two complete dependencies were
 run separately and passed.
+
+## S2: Lifecycle Transaction And Failure Atomicity
+
+S2 records the private VM session construction-stage map and converges the two
+identical early-storage teardown branches at `vm_session_storage_rollback`.
+It retains the necessary lifecycle and outer-create rollback owners for later
+stages, then proves core, firmware, FDC, HDC, and late FDD/HDD image failures
+do not publish a session and permit recovery. The detailed stage and sweep
+record is [T332 S2 evidence](../etc/evidence/t332-s2-vm-session-construction-transaction.md).
+
+The rebuilt T332 artifact remains `vm-0-5-0332`, SHA-256
+`0429D3ED2D0D55CB8DB7E8BE0F89344B2FF842C1A0DD25E33A07C4FAD7463D5D`.
