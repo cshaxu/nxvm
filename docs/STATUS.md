@@ -2,8 +2,30 @@
 
 ## Current Work
 
-**Idle.** M5 T329 is closed; the next Queue candidate requires a separately
-admitted task packet.
+M5 T330 S1 - task-transition source/target-width plan convergence (Ordinary
+Mode). Complete the whole-file construction audit, then repair the task
+transition mechanism's proven 286/386 source/target-format coupling without
+erasing Intel-required TSS layouts.
+
+## M5 T330 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New; Ordinary Mode; owner-authorized T330 S1. |
+| Admission And Approval | Owner approved T330 on 2026-08-12 after the holistic 16/32-bit task-transition divergence review, then explicitly expanded it to all analogous accidental construction divergences in `cpu_instructions.c`. It consumes the Queue's holistic-audit and task-switch-unification debts; no prior task history is rewritten. |
+| Objective | Establish the semantic inventory of 16/32-bit execution-path pairs and other width-derived sibling routes in `cpu_instructions.c`; distinguish Intel-required layout/semantic differences from accidental duplicated validation, materialization, preflight, commit, fault ordering, or atomicity. A syntactically different pair belongs to the same audit when it implements the same architectural mechanism. S1 repairs the proven task-transition divergence with one private plan/commit vocabulary that chooses the outgoing and incoming TSS formats independently, preserves their actual layouts, writes the complete 286 image including LDTR, and proves all four old-to-new TSS-width pairs. The separately bounded call-gate privilege-rule drift is reserved for a following T330 S2, not silently omitted. |
+| Non-goals | No blanket conversion of every width-specific handler into a framework; no public CPU-state or generic transaction interface; no x87 execution, VME/PVI, ordinary debug-register/breakpoint, generic paging/TLB, general exception/IRQ redesign, arbitrary task-chain, double-fault reset, TSS I/O bitmap, or Windows behavior claim. Retain every Intel-required width-specific layout and accepted behavior unless a focused reproducer proves a defect. |
+| Reference Baseline | `2f5d3b66` / `vm-0-5-0329`; Queue's holistic-execution-path and task-transition-unification debts; T329 state-machine history; and the Intel 80286/80386 form/state requirements used to classify each audited pair. |
+| Files And ABI Surface | Expected private CPU implementation, targeted owner smokes/evidence/Status/closure-map/history updates: principally `src/core/machine/cpu_instructions.c` and existing focused tests, with a new smoke/CMake registration only when an existing owner cannot prove the contract. No public ABI or provider interface change. |
+| Applicable Rules | Task Reading Set; `docs/rules/EXECUTION.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/DOCUMENT.md`; preserve checked-memory, descriptor/cache ownership, and project type vocabulary. |
+| Verification | Commit an inventory that maps every relevant width-parallel execution family and its caller/write/validation/fault/commit boundary. For S1, prove each old-to-new TSS-width pair for direct `JMP`, nested `CALL`/task-gate entry, and bounded nested `IRET` return as applicable, including target-image read, complete old-image write including LDTR, backlink, descriptor-write fault boundaries, and the 386-only CR3/FS/GS/VM/T-bit dispositions. Run configure, exact current registration, documentation governance, diff check, and full current-gate. |
+| Expected Markers | Retain accepted markers, including `M5:T329:S1:TSS16-JMP:OK` through `M5:T329:S7:TASK-PAGING-DEBUG:OK`; add T330 owner marker(s) and inventory evidence naming every audited family, its classification, and any caller/fault disposition. |
+| Asset Needs | No guest media, firmware, external source import, or external network asset. |
+| Reporting Requirements | Report only a complete P1 delivery or a material stop condition; each report maps callers, images/writes, validation/fault/commit boundary, actual changed code, and verification. |
+| Stop Conditions | Stop for a required public interface, shared checked-memory/descriptor/paging/exception redesign, an Intel rule requiring an unmodeled partial-publication boundary, a pair whose provenance or architecture rule cannot be established, or an audit finding that requires an unrelated state-family package; record evidence and request owner direction rather than symptom-patching. |
+| Exit Criteria | The inventory classifies every relevant width-parallel execution family as shared-mechanism retained, Intel-required divergent, separately admitted, or outside scope with a precise reason. One private task-transition vocabulary selects outgoing and incoming layouts independently; all its callers use it; width-specific TSS readers/writers retain true layouts; all four width pairs and entry/return semantics have focused success/fault evidence. The identified 32-bit call-gate same-CPL rule remains explicitly queued for T330 S2. S1 has a caller/write/fault sweep, excluded breadth is transferred accurately, and all gates pass. |
+| Original Owner Request | Begin the 16/32-bit CPU task-transition execution-path divergence review now, map both widths/callers/writes/validation/fault/commit boundaries, distinguish Intel layout differences from accidental divergence, and preserve the active-packet rule. Owner authorized T330, then clarified that it must address this technical debt across all analogous CPU instruction code. |
+| Similar-Issue Sweep | Inventory all `cpu_instructions.c` semantic sibling routes that differ by TSS, gate, operand, address, stack, or frame width, not merely similarly named functions. For every candidate, sweep callers, checked-memory/descriptor writes, CPU/cache publication, and exception/IRQ boundaries. The mandatory first sweep covers all `_ser_task_transition_tss` callers and every `_s_write_tss`, `_s_write_xdt`, backlink, TR/LDTR/cache, CR3, `CR0.TS`, and TSS debug-trap publication boundary. |
 
 ## Current Technical Baseline
 
