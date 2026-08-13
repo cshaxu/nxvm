@@ -14,3 +14,8 @@ metadata/dispatch, mutable-state owners, exact current-gate evidence,
 mode/privilege/prefix/`LOCK` dispositions, and all transfers. Its indexed
 residual table is the only basis for closing T342 or admitting any returned
 implementation work.
+
+The [S1 profile audit](../etc/evidence/t342-s1-80386dx-profile-closure-audit.md)
+finds no returned implementation row. It reconciles the stale closure-map
+transfers to the accepted T341 state evidence and preserves only named
+outside-80386 boundaries.
