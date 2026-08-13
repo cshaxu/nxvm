@@ -21,10 +21,20 @@ together with the [80386DX admission policy](../proposals/m5-80386dx-candidate-p
 are shared planning references for the corresponding candidates below; they do
 not allocate a numeric task.
 
-After the CPU-profile program and its deterministic PC/AT device/L3
-predecessor close, the remaining M5 candidates consume those results but are
-not part of the profile-completeness claim:
+After the CPU-profile program and the deterministic PC/AT device/L3 foundation
+close, the following device-completeness sequence consumes those results.  It
+precedes Windows readiness because readiness must not be used to hide known
+controller-service and chipset gaps.  Each candidate remains bounded by its
+own manual/probe contract; completing one does not imply board-wide parity.
 
+1. [PC/AT storage controller service timing](../proposals/m5-storage-controller-service-timing.md).
+1. [PC/AT 8237A DMA completeness](../proposals/m5-pcat-dma-completeness.md).
+1. [PC/AT 8259A compliance](../proposals/m5-pcat-pic-compliance.md).
+1. [PC/AT platform signals: PIT, PPI, RTC, and NMI](../proposals/m5-pcat-platform-signals.md).
+1. [PC/AT 8042 and AUX completeness](../proposals/m5-kbc-aux-completeness.md).
+1. [PC/AT digital video completeness](../proposals/m5-vadp-digital-video-completeness.md).
+1. [PC/AT port topology and selected peripheral completion](../proposals/m5-pcat-port-topology-and-peripherals.md).
+1. [L3 bus-timing convergence](../proposals/m5-l3-bus-timing-convergence.md).
 1. [Windows 3.x readiness map](../proposals/m5-windows-3x-readiness-map.md).
 1. [M5 closure audit](../proposals/m5-closure-audit.md).
 

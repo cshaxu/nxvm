@@ -2,8 +2,28 @@
 
 ## Current Work
 
-**Idle.** M5 T346 is closed; the Windows 3.x readiness map is the next M5
-candidate and requires its own approved packet.
+M5 T347 S1 - storage-service lifecycle foundation (Single-Session Mode).
+
+## M5 T347 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New; single-session coordinator/executor roles are performed sequentially in this session. |
+| Admission And Approval | Owner approved the post-T346 PC/AT device-completeness sequence and immediate storage-service work on 2026-08-13. |
+| Objective | Establish the complete FDC/ATA command-service lifecycle and timeline-integration mechanism needed before either controller is migrated from synchronous completion. |
+| Non-goals | No arbitrary delays, host I/O timing, new FDC/ATA command breadth, LBA48/ATAPI, DMA redesign, Windows media, or cycle-exact claim. |
+| Reference Baseline | `9879959c` / `vm-0-5-0346`; T346 S4/S6 storage-transfer evidence. |
+| Candidate Proposal | [PC/AT storage controller service timing](../proposals/m5-storage-controller-service-timing.md). |
+| Files And ABI Surface | Expected: `src/core/machine/{machine,fdc,hdc,timeline,trace_interface}.*`, focused owner tests, CMake, and indexed evidence; no new public mutable storage or host ABI without renewed approval. |
+| Applicable Rules | Task Reading Set; architecture single-owner/dependency invariants; coding owner-local helper discipline; source policy; T346 timeline and storage-transfer evidence. |
+| Verification | Source/caller/write inventory for FDC and ATA; focused transition proofs; timeline/reset/cancellation and trace-order proof; retained FDC/HDC/DMA/PIC tests; fresh configuration; documentation governance; diff check; current gate. |
+| Expected Markers | A new owner-local storage-lifecycle marker plus retained FDC/HDC/DMA/timeline markers; final commands are recorded with their results. |
+| Asset Needs | No guest media, firmware, or third-party source import. Primary controller documentation may be consulted under the source policy. |
+| Reporting Requirements | Record state/caller/transition inventory, chosen owner and publication boundaries, each transferred behavior, actual-change review, and one pushed complete P delivery. |
+| Stop Conditions | Stop for a needed generic scheduler, DMA, media-provider ABI, public host interface, unbounded event capacity, unsupported command semantic, or any change that would alter CPU/interrupt delivery rather than controller service ownership. |
+| Exit Criteria | One evidence-backed lifecycle contract identifies every retained FDC/ATA command/service path, its validation-to-commit/cancel boundary, timeline event owner, and required later migration; no synchronous path is mislabeled as L3 service timing. |
+| Original Owner Request | Build the high-value PC/AT device-completeness and L3 program holistically, beginning now and deferring Windows-startup testing. |
+| Similar-Issue Sweep | Inspect every FDC and ATA command, data, status, reset, media-change, DRQ, DMA, IRQ, and `refresh` path; also inspect all timeline scheduling/cancellation callers for duplicate controller-service ownership. |
 
 ## Current Technical Baseline
 
