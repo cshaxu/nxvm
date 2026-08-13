@@ -42,3 +42,6 @@ The indexed [S3 reconciliation](../etc/evidence/t340-s3-nonprivileged-0f-reconci
 maps every assigned secondary metadata family to its sole dispatch/FLAGS or
 publication owner and actual focused proof. Privileged state rows remain
 T341 transfers.
+
+The accepted S3 delivery is `4cde54fe`. S4 performs the required package
+closure audit and cannot add implementation work.
