@@ -22,6 +22,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t337-s2-shared-delivery-reconciliation.md` | Verification owner | T337 S2 cross-owner reconciliation of shared synchronous, software, external, TF, and task-debug delivery paths. Retire into T337 history at task closure. |
 | `evidence/t338-s1-8086-80186-form-allocation.md` | Verification owner | T338 S1 exhaustive 8086/80186 primary-form, legacy-LOCK, and later-S allocation ledger. Retire into T338 history at task closure. |
 | `evidence/t338-s2-legacy-alu-profile-matrix.md` | Verification owner | T338 S2 low-profile ALU/FLAGS/condition form, rejection, and legacy-LOCK crosswalk. Retire into T338 history at task closure. |
+| `evidence/t338-s3-legacy-data-control-profile-matrix.md` | Verification owner | T338 S3 8086/80186 data, string, stack, real-control/interrupt, ordinary-I/O, and legacy-LOCK form/owner crosswalk. Retire into T338 history at task closure. |
 | `operations/` | Execution, source, and release owners | Toolchain, policy, templates, release procedure, and closure material. |
 | `research/` | Source owner | Provenance, external references, and non-product research. |
 | `history/` | Documentation owner | Read-only legacy and M5 migration/roadmap evidence. |
