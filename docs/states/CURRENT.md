@@ -2,28 +2,9 @@
 
 ## Current Work
 
-M5 T348 S3 - PC/AT 8237A request, cascade, priority, and EOP contract (Single-Session Mode).
-
-## M5 T348 S3 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner approved continuous holistic PC/AT device/L3 implementation on 2026-08-13; accepted T348 S1/S2 evidence assigns the remaining request-selection mechanism here. |
-| Objective | Establish one PC/AT dual-8237A logical request-to-grant owner: valid software/hardware requests, fixed/rotating priority, primary-through-secondary cascade channel 4, controller disable, and an opaque binding-scoped external-EOP termination signal. |
-| Non-goals | No physical DREQ/DACK voltage-level observation, compressed/READY bus-cycle duration, host DMA, new device policy, FDC/ATA command semantics, generic transaction rollback, memory-to-memory dual-channel EOP/auto-init termination, or Windows claim; electrical/bus duration remains the later L3 bus-timing candidate and transaction/reset reconciliation remains S4. |
-| Reference Baseline | `a31dd0fc` / accepted T348 S2; [T348 ledger](../etc/evidence/t348-s1-dual-8237a-gap-ledger.md), [S2 evidence](../etc/evidence/t348-s2-dma-port-page-layout.md), and [DMA proposal](../proposals/m5-pcat-dma-completeness.md). |
-| Candidate Proposal | [PC/AT 8237A DMA completeness](../proposals/m5-pcat-dma-completeness.md). |
-| Files And ABI Surface | Expected: local DMA request/arbitration implementation, opaque binding-scoped termination operation, existing DMA owner smoke, evidence/index/Current; no raw controller layout, FDC/ATA media, platform scheduler, or host API exposure. |
-| Applicable Rules | Task Reading Set; architecture single mutable request/grant owner; coding bounded owner-local helpers and project types; Intel 8237A request, priority, cascade, and EOP contract; IBM PC/AT channel-4 cascade wiring; T346 one-grant timeline boundary. |
-| Verification | Prove software request is block-mode-only and non-maskable, hardware request obeys mask/deassert, fixed and rotating selection on both controllers, primary work is selected only through secondary cascade channel 4, channel 4 remains unbindable, primary/secondary disable prevents grants, and external EOP after an active ordinary binding callback publishes the specified TC/request/mask or auto-init result. Prove memory-to-memory starts from software request channel 0 alone; retain its dual-channel terminal/auto-init semantics for S4. Re-run S2 byte/word/port regressions, configure, focused DMA/FDC/arbitration probes, governance, diff check, and full current gate. |
-| Expected Markers | Retain T269/T230/T348 S2 markers, FDC/DMA binding and T346 arbitration markers; add `M5:T348:S3:DMA-REQUEST-CASCADE:OK`. |
-| Asset Needs | Published Intel 8237A and IBM PC/AT documentation only; no source import, firmware, guest media, or host device. |
-| Reporting Requirements | Record selection/preflight/commit order, software versus hardware request disposition, cascade and rotate state, EOP callback/terminal effects, all caller/write sweeps, physical-signal boundary, and one complete pushed P1. |
-| Stop Conditions | Stop for a need to expose raw controller layout, alter a FDC/ATA/device ABI beyond the bounded opaque binding signal, change generic memory transaction semantics, create a scheduler, or claim electrical/cycle timing without a separate L3 admission. |
-| Exit Criteria | Every ordinary logical request-to-grant state has one owner and permanent proof; no request can bypass masks/cascade/disable or select an unsupported mode; ordinary-channel EOP is binding-scoped and cannot terminate another channel; memory-to-memory terminal/auto-init, S4, and later electrical timing boundaries remain exact. |
-| Original Owner Request | Make core-machine devices stable, comprehensive, and reliable at the selected deterministic L3 event-and-bus level before Windows testing. |
-| Similar-Issue Sweep | Inspect all request/status/mask/ISR/priority/EOP reads and writes, primary/secondary selection, channel-4 derivation, mode and command gates, memory-to-memory initiation, opaque binding validation, DMA/FDC consumers, timeline caller, and existing DMA/FDC/arbitration smoke owners. |
+**Idle.** M5 T348 S3 is accepted; DMA transaction atomicity, memory-to-memory
+terminal/reset behavior, and consumer/timeline reconciliation require a
+separately admitted continuation packet.
 
 ## Current Technical Baseline
 
@@ -44,6 +25,7 @@ M5 T348 S3 - PC/AT 8237A request, cascade, priority, and EOP contract (Single-Se
 
 | Task | Compact result |
 | --- | --- |
+| T348 S3 | Unified logical DMA request/grant selection: held DREQ, valid software request, fixed/rotating priority, true channel-4 cascade, controller disable isolation, and binding-scoped ordinary EOP. Memory-to-memory terminal/auto-init and transaction/reset work transfer to S4. [Evidence](../etc/evidence/t348-s3-dma-request-cascade.md). |
 | T348 S2 | Repaired the shared dual-8237A page-wrap mechanism and secondary page-port controller selection; primary/secondary sparse register, control, page, byte/word transfer, and same-page wrap regressions are permanent. S3 retains request/priority/cascade/EOP. [Evidence](../etc/evidence/t348-s2-dma-port-page-layout.md). |
 | T348 S1 | Accepted the dual-8237A contract/gap ledger: a reproduced shared page-boundary crossing defect, exact port/page/word/cascade/test map, and S2--S4 ownership plan. [Evidence](../etc/evidence/t348-s1-dual-8237a-gap-ledger.md). |
 | T347 | Closed retained PC/AT FDC and ATA PIO service timing: pending command/data states, reset/control/media cancellation, one FDC-then-ATA readiness owner, trace order, focused VM/DOS/HDD evidence, and 222 current-gate tests passed. [History](../history/M5-T347-storage-controller-service-timing.md). |
