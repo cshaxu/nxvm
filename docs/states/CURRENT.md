@@ -2,8 +2,29 @@
 
 ## Current Work
 
-**Idle.** T338 is closed. The Queue advances to the 80286 descriptor-table and
-protected-transfer closure candidate.
+**M5 T339 S1 - active.** Allocate the complete 80286 descriptor-table and
+protected-transfer form/state ledger before implementation.
+
+## M5 T339 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | The owner approved Queue-ordered single-agent implementation through four-profile cross-closure verification on 2026-08-13. T338 closed at `54d94e28`; the next Queue candidate is the approved 80286 descriptor-table and protected-transfer closure. |
+| Objective | Produce the complete 80286 allocation ledger for `0F 00`, `0F 01`, `0F 02/03`, `0F 06`, selector/cache validation, GDT/LDT/IDT state, gates, 16-bit protected stack/frame/fault/return behavior, and task boundaries. Reconcile historic evidence, establish one mechanism owner and exact future S allocation for every form/mode/exception boundary, and refine the Queue/proposal dependency contracts for the approved four-profile program. |
+| Non-goals | No production or test behavior change, no 80286 LOCK matrix (next Queue candidate), no 80386 operand/address width, VM86, paging, debug, VME/PVI, x87, generic delivery rewrite, or generic fixture framework. |
+| Reference Baseline | `54d94e28` (`M5 T338 S5 P2: close legacy profile package`), the 80286 descriptor-transfer proposal, T336 four-profile ledger, and accepted T323/T318/T319/T320/T321/T329 evidence. |
+| Candidate Proposal | [80286 descriptor-table and protected-transfer closure](../proposals/m5-80286-descriptor-transfer-closure.md) and the [80286 closure context](../proposals/m5-80286-protected-mode-closure.md). |
+| Files And ABI Surface | T339 history, Current, supporting evidence/index, Queue, and the approved four-profile candidate proposals only. No production, CMake, test, ABI, artifact, or runtime change. |
+| Applicable Rules | `docs/rules/EXECUTION.md`: full form/state allocation and similar-issue mechanism sweep. `docs/rules/ARCHITECTURE.md`: one validation/materialization/commit owner; preserve true 16-bit layouts. `docs/rules/DOCUMENT.md`: task status, evidence, and proposal ownership. |
+| Verification | Audit metadata, `0F` dispatch, descriptor/table/selector/gate/task/return helpers, state writes, validation/preflight/commit/rollback/delivery callers, current-gate owners, historical evidence, Queue, and TODO. Record form/mode/privilege/type/present/fault/publication disposition for every assigned row; run documentation governance and diff check. |
+| Expected Markers | The ledger has no 80286 descriptor/transfer row classified only by a nearby 80386 route; each row names a future T339 S, accepted owner, or exact 80386DX transfer. |
+| Asset Needs | Intel 80286 and 80386 architecture manuals already used by project evidence. No guest media, firmware, third-party source, or binary asset. |
+| Reporting Requirements | Deliver one complete pushed allocation P with the form/state/caller/write/fault inventory, exact S breakdown, historical-evidence disposition, and all transfer/debt boundaries. No partial implementation claim. |
+| Stop Conditions | Stop if an assigned row cannot be classified from current Intel authority/evidence, a required state boundary needs a shared redesign outside 80286 scope, or a ledger would silently absorb 80386-only semantics. Record an exact transfer or request owner direction. |
+| Exit Criteria | Every assigned 80286 descriptor/table/transfer row has one implementation S, accepted evidence owner, or exact transfer; all relevant existing partial claims are normalized; the ledger P is committed and pushed. |
+| Original Owner Request | Implement the Queue in order, in single-agent mode and with a holistic view, through four-profile cross-closure verification. |
+| Similar-Issue Sweep | Search all metadata and `0F` dispatch/handlers; `_s_*`, `_k*`, `_e_*`, `_ser_*`, `ExecFinal`, descriptor/table/selector/gate/task/return writes; current owner smokes and CMake registrations; T323/T318/T319/T320/T321/T329/T336 evidence; Queue and TODO transfers. |
 
 ## Current Technical Baseline
 

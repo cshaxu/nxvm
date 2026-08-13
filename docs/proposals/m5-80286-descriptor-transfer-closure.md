@@ -16,6 +16,17 @@ contracts but owns the 80286-specific selector, descriptor, table, gate, and
 validation, preflight, commit, rollback, and exception delivery before fixing
 one opcode symptom. Genuine 16-bit layouts remain explicit.
 
+## Execution Shape
+
+The first admitted S creates a form/state ledger before any implementation.
+It allocates the table/selector instruction families, protected data and
+far-transfer consumers, gate/external-entry paths, 16-bit privilege-return
+paths, and task-state paths to bounded follow-up S work. An implementation S
+owns a complete mechanism matrix, including all callers and fault/publication
+boundaries of that mechanism; it must not close one opcode while leaving its
+same-owner variant implicit. The ledger, rather than this proposal, determines
+the exact number of implementation S work units from source evidence.
+
 ## Required Matrix
 
 The admission ledger expands each opcode/ModRM extension by real and protected
@@ -24,6 +35,12 @@ memory source or destination, restart, publication, and real `#UD`/protected
 fault delivery. It reconciles prior bounded evidence rather than counting it
 as complete by name. Rows whose semantics are genuinely 80386-only transfer
 once to the 80386DX system-state candidate.
+
+For each stateful row, record the descriptor table/register, validation source,
+cache or table write, stack/frame layout, preflight point, commit point,
+rollback rule, exception producer, and delivery owner. This separates true
+80286 layouts from accidental divergence and gives the next candidate a stable
+input ledger.
 
 ## Non-goals And Stop Conditions
 
@@ -38,4 +55,5 @@ state contract.
 Every assigned descriptor/table/transfer row has focused mode/form evidence
 or one exact transfer; no assigned row remains partial, missing, or
 unclassified. The result must leave a complete input ledger for the 80286
-`LOCK` and profile-close candidate.
+`LOCK` and profile-close candidate, including every transferred 80386DX-only
+row and its receiving state owner.

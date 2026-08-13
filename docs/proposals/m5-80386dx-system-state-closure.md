@@ -14,6 +14,13 @@ maps all callers, validation, materialization, preflight, commit, rollback,
 and fault/delivery boundaries. Existing bounded paging, VM86-delivery, and
 task-transition evidence is reused only after exact scope comparison.
 
+The initial ledger divides work by state owner: VM86 entry/exit and frame
+rules; task/TSS transition; paging translation and page-fault composition;
+CR/DR/TR privilege and validation; and breakpoint/debug cause plus vector-1
+delivery. It records all readers/writers, preflight/commit/rollback, frame and
+stack selection, and cross-owner handoff. A caller-level symptom cannot close
+a state-owner row without that complete construction audit.
+
 ## Required Matrix
 
 Reconcile CR/DR/TR form and privilege tables; DR6/DR7 matching/cause and
@@ -33,4 +40,5 @@ matrix is admitted.
 
 All assigned state and privileged-form rows have an exact proof or an approved
 outside-80386/TODO transfer. The result supplies a closed source ledger for
-the 80386DX profile audit.
+the 80386DX profile audit, with genuine 16/32-bit layout differences retained
+as explicit contracts rather than flattened helper behavior.

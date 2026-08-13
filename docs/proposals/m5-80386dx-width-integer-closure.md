@@ -13,6 +13,13 @@ those profile dispositions and start with a complete metadata/form inventory.
 For each mechanism, map decoder, prefix, addressing, state writes, validation,
 commit, rollback, and fault order before a handler repair.
 
+Its allocation starts from the residual 80386DX form ledger and groups rows by
+the construction they share: prefix/decode composition, operand/address
+materialization, FS/GS selection, integer operation/FLAGS, and memory
+publication. A form may be split only when it crosses one of those mechanism
+boundaries. A 16-bit predecessor result is evidence of a baseline disposition,
+not proof of its 32-bit variation.
+
 ## Required Matrix
 
 Cover all residual `66`/`67` and combined rows, FS/GS behavior, declared
@@ -33,4 +40,5 @@ repair.
 
 Every allocated 80386DX width/prefix/integer row is proved or transferred once
 to the 80386DX system-state candidate; no row remains partial by a smoke-count
-claim.
+claim. The transfer ledger names the receiving state owner, not merely
+"80386 system work".

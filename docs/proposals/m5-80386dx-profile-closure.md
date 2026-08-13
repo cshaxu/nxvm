@@ -13,6 +13,12 @@ checks the current source graph, metadata, focused evidence, mode/privilege
 matrices, `LOCK`/prefix classifications, and all transfers. It distinguishes
 Intel-required 16/32-bit structure from accidental construction divergence.
 
+The audit compares the source inventory, Intel row ledger, focused evidence,
+and transfer records in that order. It produces a single residual table whose
+only valid outcomes are accepted evidence, precise architectural rejection,
+Intel-required retained difference, or return to a named implementation
+owner. It does not introduce a catch-all cleanup S.
+
 ## Non-goals And Stop Conditions
 
 It does not repair a missing handler, state transition, or test matrix. Any

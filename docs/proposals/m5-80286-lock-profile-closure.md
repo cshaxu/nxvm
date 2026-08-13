@@ -14,6 +14,12 @@ descriptor/transfer ledger. It owns 80286 classification, not a new decoder
 policy. Audit prefix ordering, whitelist/handler callers, memory preflight,
 publication, fault/restart, and legal atomic behavior as one mechanism.
 
+It first freezes the input inventory: every allocated memory-capable form has
+one 80286 `LOCK` disposition and one evidence owner. Only then may it repair a
+shared prefix/preflight mechanism. A change to that mechanism requires a
+caller sweep across all affected 8086--80286 forms, rather than a per-opcode
+exception list.
+
 ## Required Matrix
 
 For each allocated memory-capable form, record legal locked memory execution,
@@ -33,4 +39,4 @@ by a shared delivery mechanism not already covered by its contract.
 
 The 80286 ledger and `LOCK` matrix have no in-scope partial, missing, or
 unclassified row. Every remaining 80386-only row is transferred once to the
-80386DX candidates.
+80386DX candidates, together with the exact receiving form or state owner.
