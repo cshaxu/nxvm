@@ -2,29 +2,7 @@
 
 ## Current Work
 
-M5 T330 S3 - developer-artifact refresh (Ordinary Mode). Produce and verify the
-required current `0.5.0330` developer artifact for the accepted T330 CPU-path
-changes; no runtime behavior change is admitted.
-
-## M5 T330 S3 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; Ordinary Mode; owner authorized complete execution of T330, and S3 closes the task-artifact obligation omitted by accepted S1/S2 implementation commits. |
-| Admission And Approval | The owner authorized full single-session completion of T330 on 2026-08-12. Closure review found the mandatory developer-artifact record absent; this bounded continuation produces it without changing the accepted CPU semantics. |
-| Objective | Make `vm-0-5-0330` the sole current developer artifact target, build and copy `nxvm_0_5_0330.exe`, and record its source commit, SHA-256, version/banner classification, and verification in T330 history. |
-| Non-goals | No CPU, emulator, test, ABI, provider, dependency, source-layout, Queue, TODO, or product behavior change. Do not regenerate or relabel historical artifacts. |
-| Reference Baseline | Accepted T330 S2 commit `263766f0` and its [width-path inventory](etc/evidence/t330-width-path-inventory.md); task-artifact requirements in `docs/rules/EXECUTION.md`. |
-| Files And ABI Surface | CMake current-artifact declaration and build preset, T330 Status/history records, plus the ignored local `build/output/nxvm_0_5_0330.exe`. No production source or public interface. |
-| Applicable Rules | Task Reading Set; `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/rules/CODING.md`, `docs/design/CODING.md`; task-level artifact identity and build-tree hygiene apply. |
-| Verification | Fresh GCC configure; build `vm-0-5-0330`; run `verify-current-artifact-target`; inspect executable version/banner where available; calculate SHA-256; run documentation governance, diff check, focused retained T330 smokes, and full current-gate. |
-| Expected Markers | `verify-current-artifact-target` selects only `vm-0-5-0330`; retained T330 S1/S2 smoke markers pass; history records the SHA-256 and current-artifact classification. |
-| Asset Needs | No guest media, firmware, network asset, or imported source. The output EXE remains ignored local developer evidence under `build/output/`. |
-| Reporting Requirements | Report a complete artifact P or a material build/identity blocker, including exact artifact path, source commit, SHA-256, target selection, retained smoke/gate result, and build-tree disposition. |
-| Stop Conditions | Stop for an artifact target needing a runtime/ABI change, an identity/banner conflict, a build result that cannot be tied to the accepted T330 source, or a required change outside the named build/status/history surface. |
-| Exit Criteria | T330 has a verified `0.5.0330` current developer artifact and immutable record; no historical task target is regenerated; all required checks pass; then T330 can receive its task-level closure summary. |
-| Original Owner Request | Fully execute T330 in single-agent mode after its holistic audit of analogous accidental 16/32-bit construction divergence. |
-| Similar-Issue Sweep | Inspect current-artifact target, build preset, Status baseline, and T330 history together; classify all 0329 references as retained baseline/history or update the current T330 identity. Do not make a repository-wide historical-artifact rewrite. |
+**Idle.** M5 T330 is closed; the next Queue candidate requires a separately admitted task packet.
 
 ## Current Technical Baseline
 
@@ -44,7 +22,7 @@ changes; no runtime behavior change is admitted.
 ## Recent M5 Closures
 
 | Task | Compact result |
-| T330 S1 | Accepted progress: the holistic audit converged all 286/386 TSS source/target pairs behind an independent-format private plan, completed the 286 LDTR write/preflight, and corrected 32-bit same-CPL CALL-gate TSS dependence. S3 refreshes the mandatory developer artifact. [History](history/M5-T330-width-path-convergence.md); 211/211 current-gate. |
+| T330 | Closed the holistic 16/32-bit construction audit: all 286/386 TSS source/target pairs now use an independent-format private plan, the complete 286 LDTR image is saved, 32-bit same-CPL CALL gates accept equal DPL without TSS or outer-frame writes, and `0.5.0330` is the verified current artifact. [History](history/M5-T330-width-path-convergence.md); 211/211 current-gate. |
 | T329 | Closed the bounded Intel 80286/80386 protected task-transition state machine: 16/32-bit direct and task-gate entry, nested CALL/IRET state, incoming LDT images, source-CR3 preflight/incoming-CR3 commit, and TSS post-switch `#DB`. S7 proves target-page fetch, target-TSS `#PF` atomicity, and a target-state restart frame; the 0329 artifact and 211/211 gate result are in [history](history/M5-T329-task-transition-state-machine.md). |
 | T328 | Closed the historical LOCK-prefix legality matrix: 8086/80186 retain transparent valid-next-instruction semantics; 80286 adds protected `CPL <= IOPL`; retained 80386 memory-whitelist behavior stays intact. S2 reconciled the current closure map and ordinary matrix, removing the stale Deferred/TODO transfer without changing the user-owned Queue edit. Register, memory, REP, I/O, #GP frame, strict compile, artifact, and 211/211 gate evidence are in [history](history/M5-T328-legacy-lock-legality.md). |
 | T327 | Closed the current/specialized-gate reconciliation: fast smoke no longer builds classified media targets, and generated CTest/Ninja evidence now proves the full 210 = 15 media + 195 non-media partition, both developer roots, all specialized verifiers, and the aggregate's two roots. [History](history/M5-T327-current-gate-reconciliation.md). |
