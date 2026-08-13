@@ -33,3 +33,10 @@ IRQ eligibility, and returns controller-origin `55h`; `AEh` restores eligible
 keyboard FIFO and IRQ1 publication. Its
 [controller evidence](../etc/evidence/t351-s2-kbc-controller.md) retains one
 FIFO/output-port/reset owner and leaves keyboard/AUX device protocol to S3/S4.
+
+S3 is accepted at `a9d8bd01`: it gives the selected AT keyboard private
+response history at the one FIFO enqueue boundary, so controller/AUX output
+cannot corrupt `FEh` RESEND. It also reconciles selected default, enable/disable,
+typematic, and NOP command state without a second queue or host boundary. Its
+[keyboard evidence](../etc/evidence/t351-s3-keyboard-device.md) leaves all AUX
+device behavior to S4.

@@ -2,29 +2,8 @@
 
 ## Current Work
 
-M5 T351 S3 - PC/AT keyboard device protocol and IRQ1 lifecycle
-(Single-Session Mode).
-
-## M5 T351 S3 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner approved continuous holistic device/L3 completion on 2026-08-13; T351 S2 accepted at `90d73bae`. |
-| Objective | Reconcile the selected AT keyboard command and scan-code state machine: ACK/RESEND/BAT/identify, LED/typematic/scan-set parameter states, default/disable/enable/reset transitions, keyboard-owned response history, queued scan-code/typematic publication, delayed response, IRQ1 eligibility, and reset/finalize lifecycle. |
-| Non-goals | No controller command/status/output-port change except necessary single-FIFO integration, no AUX-device protocol, host passthrough, firmware/physical serial timing, arbitrary scan sets, guessed keyboard error codes, port-61/PPI, generic PIC/timeline refactor, x87, or Windows claim. |
-| Reference Baseline | `90d73bae` / T351 S2 accepted; [S1 ledger](../etc/evidence/t351-s1-kbc-aux-ledger.md), [S2 controller evidence](../etc/evidence/t351-s2-kbc-controller.md), IBM PC/AT Technical Reference keyboard chapter, and selected project keyboard/DOS probes. |
-| Candidate Proposal | [PC/AT 8042 and AUX completeness](../proposals/m5-kbc-aux-completeness.md). |
-| Files And ABI Surface | Expected: private KBC keyboard state/helpers, owner KBC-controller or dedicated keyboard smoke, CMake only if a new owner target is justified, S3 evidence, Current, and T351 history. No public host/input/profile API, second FIFO, controller/AUX protocol, PIC, or timeline ownership change. |
-| Applicable Rules | Task Reading Set; one KBC FIFO and origin owner; keyboard response history cannot use controller/AUX data; validation/state transition before response publication; copied host boundary; deterministic timeline owner; primary-manual/project-probe discipline; no source import. |
-| Verification | Prove full selected command matrix: `FF`, `FE`, `FD`--`F7`, `ED`, `EE`, `F0`, `F2`, `F3`, `F4`, `F5`, `F6`, invalid commands and parameter routes. Prove keyboard-only RESEND across intervening controller/AUX bytes, disable/default/enable/reset state, queued scan/typematic cancellation, delayed response, IRQ1 head lifecycle, full FIFO handling, reset/finalize, retained mapper/ingress/DOS behavior, and full current gate. |
-| Expected Markers | Retain controller, keyboard mapper/host-ingress/DOS, AUX guest, mouse and timeline markers; add a dedicated S3 marker only if existing controller ownership cannot express the complete keyboard matrix. |
-| Asset Needs | Published IBM keyboard/PC/AT documentation and project-owned probes only; no firmware, host capture, guest media addition, or third-party source. |
-| Reporting Requirements | Record every selected command and parameter transition, response-history ownership, response/scan publication ordering, IRQ1 and reset/finalize result, reproduced defects, similar-issue sweep, and precise retained S4 boundaries. |
-| Stop Conditions | Stop for a required physical serial/ACK acceptance timing model, unselected scan-set/device behavior, public/profile/host ABI change, controller/AUX semantic change, PIC/timeline mechanism defect, source import, or non-keyboard owner. Transfer rather than infer. |
-| Exit Criteria | Every selected keyboard command, parameter state, response/scan byte, IRQ1 route, delay, full FIFO, reset/finalize, and copied ingress boundary has one exact owner and proof. No controller or AUX byte can alter keyboard RESEND semantics; S4 AUX device rows remain explicit. |
-| Original Owner Request | Make core-machine devices stable, comprehensive, and reliable at deterministic L3 before deciding any Windows execution route. |
-| Similar-Issue Sweep | Inspect all keyboard command cases, pending-write states, response/FIFO enqueue and dequeue helpers, last-output fields, scan-code and typematic writers, IRQ1 refresh paths, reset/finalize, session/mapper ingress, keyboard/AUX smokes, and profile timing binds. |
+M5 T351 remains open. S3 is accepted; S4 selected AUX-device protocol is the
+next bounded subtask.
 
 ## Current Technical Baseline
 
@@ -45,7 +24,7 @@ M5 T351 S3 - PC/AT keyboard device protocol and IRQ1 lifecycle
 
 | Task | Compact result |
 | --- | --- |
-| T351 S2 | Accepted the selected IBM 8042 controller lifecycle: `AAh` now inhibits keyboard input, refreshes FIFO-head IRQ eligibility, returns controller `55h`, and `AEh` restores keyboard/IRQ1 publication. Command, FIFO, A20/reset, IRQ, reset/finalize, and L3 boundaries remain singly owned; keyboard/AUX device protocol stays S3/S4. 228 current-gate tests passed. [Evidence](../etc/evidence/t351-s2-kbc-controller.md). |
+| T351 S3 | Accepted selected AT keyboard command and IRQ1 behavior: keyboard-only RESEND history is isolated from controller/AUX output; `F5/F6/F4` default/scan state and `FD`--`F7` ACK NOP behavior are reconciled under the existing FIFO/timeline owner. AUX remains S4. 228 current-gate tests passed. [Evidence](../etc/evidence/t351-s3-keyboard-device.md). |
 | T350 | Closed the selected PC/AT signal graph: retained 8254/IRQ0 and MC146818/CMOS/IRQ8 owners now have focused lifecycle proof; RTC alarm and IRQF defects are repaired; speaker/PPI and parity/I/O-channel NMI remain exact corpus/contract-gated TODO transfers. 228 current-gate tests passed. [History](../history/M5-T350-pcat-platform-signals.md). |
 | T349 | Closed PC/AT dual-8259A command/priority/cascade, OCW3 poll/status/special-mask/SFNM, and retained edge/level producer lifecycle; physical INTA spurious behavior transfers only to L3 bus timing. 226 current-gate tests passed. [History](../history/M5-T349-pcat-pic-compliance.md). |
 | T348 | Closed PC/AT dual-8237A DMA topology, page/word layout, request/cascade/EOP, validation-before-publication, M2M lifecycle, and FDC crossing bounce path; 223 current-gate tests passed. [History](../history/M5-T348-pcat-dma-completeness.md). |
