@@ -38,3 +38,19 @@ sole legacy-LOCK policy owner. Commit `9eb3729f` was reviewed; the T338
 developer artifact SHA-256 is
 `E9626E829FE8F9A1BE7A25219D48295D704C5831F64C4D2D50709671CB144F13`, and
 the complete current-gate passed 218/218.
+
+## S3 Result
+
+S3 closes the inherited 8086/80186 data, string, stack, real-control/interrupt,
+and ordinary port-I/O boundary. Its retained matrix assigns each allocated form
+family to an existing current-gate owner and records the defined publication,
+stack, segment, REP/DF, IVT, callback, rejection, and T328 `LOCK` boundary.
+
+The only implementation adjustment was within the existing control-transfer
+owner: its real-mode fixture is now profile-parameterized and proves both 8086
+and 80186 direct/indirect far transfers, `RETF iw`, near call/return/jump
+forms, and the reserved `FF /7` nonpublication path. The mechanism sweep found
+no production defect. Commit `317d9df5` was reviewed; the developer artifact
+remains SHA-256
+`E9626E829FE8F9A1BE7A25219D48295D704C5831F64C4D2D50709671CB144F13`, and the
+complete current-gate passed 218/218.
