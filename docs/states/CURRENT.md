@@ -2,8 +2,29 @@
 
 ## Current Work
 
-**Idle.** M5 T342 is closed; the Queue's four-profile cross-closure candidate
-requires a separately admitted T343 packet.
+**M5 T343 S1 - active.** Reconcile the 8086, 80186, 80286, and 80386DX
+ledgers into the final CPU-profile cross-closure record.
+
+## M5 T343 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | The owner approved Queue-ordered, single-agent implementation through the four-profile cross-closure verification on 2026-08-13. T342 closed at `4e4c7a79`; this packet admits the final CPU-profile Queue candidate as T343 S1. |
+| Objective | Reconcile every applicable 8086, 80186, 80286, and 80386DX form/state row into one truthful profile and mode disposition ledger. Verify shared delivery first, then form/profile classification, then cross-profile state composition; close only if no in-scope row is partial, missing, or unclassified. |
+| Non-goals | No production, test, CMake, artifact, device, product, or rule change. No new instruction or state implementation, no Windows/timing/device/x87 conclusion, and no audit-side repair. |
+| Reference Baseline | `4e4c7a79` (`M5 T342 S1 P2: close 80386DX profile audit`), T336/T337/T338/T339/T340/T341/T342 histories and indexed evidence, current Queue/TODO, the cross-closure proposal, and Intel manuals already cited by retained evidence. |
+| Candidate Proposal | [Four-profile cross-closure verification](../proposals/m5-cpu-profile-cross-closure.md) and [four-profile CPU-completeness program](../proposals/m5-four-profile-cpu-completeness-program.md). |
+| Files And ABI Surface | Expected: T343 ledger evidence/history/Current and, only if a stale evidence disposition is found, the affected evidence map. No public ABI, source, CMake, artifact, device, product, or rule change. |
+| Applicable Rules | `docs/rules/EXECUTION.md`: audit-only closure, similar-issue sweep, complete P, actual-change review, and lifecycle. `docs/rules/ARCHITECTURE.md`: one mutable-state owner and explicit layout differences. `docs/rules/CODING.md`: no duplicate abstraction. `docs/rules/DOCUMENT.md`: Current/history/evidence topology. |
+| Verification | Re-read the original profile program and closure map. Compare every predecessor ledger with current profile metadata/dispatch, current-gate proof, mode/privilege/prefix/LOCK dispositions, Queue/TODO transfers, and actual shared delivery/state owners. Run documentation governance and diff check; rerun runtime gates only if a discrepancy needs confirmation. |
+| Expected Markers | One indexed final ledger maps each form/state family across all applicable profiles to accepted proof, exact rejection, Intel-required retained difference, or explicit external transfer. No cross-profile inheritance, duplicate construction, or unclassified partial remains. |
+| Asset Needs | Intel manuals already cited by retained evidence. No guest media, firmware, third-party source, binary, or trace. |
+| Reporting Requirements | Deliver one complete pushed P with the final profile disposition ledger, source/evidence sweep, every accepted/returned/external row, documentation-gate result, and M5 CPU-program handoff. |
+| Stop Conditions | Stop if a row needs implementation, a missing form family, a shared state repair, VME/PVI, later-CPU semantics, persistent-cache model, x87 execution, timing/device/product behavior, a rule change, or external source/import. Return it to the earliest owner or explicit TODO; do not repair under T343. |
+| Exit Criteria | Every applicable four-profile form/state row has exactly one truthful disposition; all T336--T342 transfers are reconciled; no in-scope partial/missing/unclassified row remains; evidence/history/Current are truthful; and the audit P is committed and pushed. |
+| Original Owner Request | Implement the Queue in order, in single-agent mode and with a holistic view, through four-profile cross-closure verification. |
+| Similar-Issue Sweep | Sweep all tracked CPU execution/machine-state source, profile metadata/dispatch, current-gate registration, T336--T342 evidence/history, Queue, TODO, and closure-map references for profile gates, real/protected/VM86 state, prefixes/LOCK, frames/restart, privilege, task, paging, debug, and VM86. Record every hit's owner/disposition; no broad repository rewrite. |
 
 ## Current Technical Baseline
 
