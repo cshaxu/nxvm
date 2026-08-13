@@ -2,8 +2,29 @@
 
 ## Current Work
 
-**Idle.** M5 Td S74 is closed. The next ordered Queue candidate requires owner
-admission.
+**Active.** M5 T331 S1 audits and converges the real-mode final exception
+delivery construction in single-session coordinator/executor mode.
+
+## M5 T331 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New; T331 begins from the first ordered M5 Queue candidate and S1 is the first implementation subtask. |
+| Admission And Approval | Owner approved single-session completion of T331 on 2026-08-12. This S admits only the real-mode `ExecFinal` final-delivery construction and its direct evidence. |
+| Objective | Establish the complete real-mode final-exception delivery matrix for the currently evidenced `#DE`, `#MF`, `#BR`, `#NM`, and `#GP` producers; replace equivalent duplicated final-delivery construction in `ExecFinal` with one private plan while preserving each Intel vector, frame width, restart, diagnostic, and terminal behavior. Real-mode `#PF` transfers because no current real producer evidence exists. |
+| Non-goals | Do not redesign `_ser_int_real`, protected-mode delivery, `IRET`, PIC/NMI policy, real-mode `#UD`, reset/triple-fault policy, VME/PVI, x87 execution, public ABI, or `docs/rules/*`. |
+| Reference Baseline | `83338834` / `vm-0-5-0330`; the current developer artifact remains T330 until T331 produces its verified artifact. |
+| Candidate Proposal | [Holistic execution-path architecture audit and remediation plan](../proposals/m5-holistic-execution-path-audit.md), constrained by the [M5 80386DX admission policy](../proposals/m5-80386dx-candidate-policy.md). |
+| Files And ABI Surface | Expected: `src/core/machine/cpu_instructions.c`, focused owner test(s), CMake registration only if a new test is needed, `docs/etc/evidence/`, `docs/history/`, and this packet. No public interface or product ABI change. |
+| Applicable Rules | `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/design/ARCHITECTURE.md`, and `docs/design/CODING.md`; only a standalone Td may modify rules. |
+| Verification | Audit every `ExecFinal` exception-mask branch and direct final-delivery caller; run focused producer/vector/frame/handler regressions for each admitted real path, fresh GCC configuration, applicable static verifier, documentation governance, diff check, current-gate CTest, and T331 developer-artifact build/hash. |
+| Expected Markers | Existing focused markers remain valid; any new owner smoke emits `M5:T331:S1:REAL-EXCEPTION-FINAL:OK`. |
+| Asset Needs | No guest media, firmware, external source, or runtime asset. Intel 80386 architecture documentation is a requirements reference only. |
+| Reporting Requirements | In this single-session run, first record the coordinator brief, then executor-side contract and actual-change review before implementation P1; report only a pushed complete P, a reproducible material blocker, or a packet-revision need. |
+| Stop Conditions | Stop for a required change to `_ser_int_real`, protected serializer, shared memory/descriptor/stack helper, external/public ABI, or an Intel outcome contradiction not resolvable within final-delivery construction; classify and transfer it rather than silently widening scope. |
+| Exit Criteria | One evidence-backed real-mode delivery plan owns all currently evidenced masks; no duplicate plan-equivalent tail remains; each in-scope vector has success and failed-delivery/terminal classification plus producer/frame/restart proof; all retained gates pass; real-mode `#PF` and every excluded path have a named transfer; T331 artifact and SHA-256 are recorded. |
+| Original Owner Request | Thoroughly clean up patch-on-patch construction consequences such as repeated construction, multiple mergeable paths, and nesting, using a top-down design. |
+| Similar-Issue Sweep | Search all `ExecFinal` exception classification/delivery branches and all `_e_except_n` callers; classify protected, real, and deferred paths. Mechanically prevent reintroduction of a direct real-mode final-delivery bypass outside the private plan where feasible. |
 
 ## Current Technical Baseline
 
