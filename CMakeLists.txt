@@ -876,6 +876,38 @@ target_link_libraries(core-product-debug-target-smoke PRIVATE
     core-product-debug
 )
 
+add_executable(core-product-debug-input-failure-smoke
+    tests/product/core_product_debug_input_failure_smoke.c
+    src/core/product/debug/debug.c
+    src/core/product/debug/debug_access.c
+)
+target_include_directories(core-product-debug-input-failure-smoke PRIVATE
+    "${CMAKE_SOURCE_DIR}/src"
+)
+target_compile_definitions(core-product-debug-input-failure-smoke PRIVATE
+    STD_MALLOC=test_debug_input_malloc
+)
+target_link_libraries(core-product-debug-input-failure-smoke PRIVATE
+    core-product-utils
+    core-utils
+    type-facade
+)
+
+add_executable(vm-product-console-input-failure-smoke
+    tests/product/vm_product_console_input_failure_smoke.c
+    src/vm/product/console.c
+)
+target_include_directories(vm-product-console-input-failure-smoke PRIVATE
+    "${CMAKE_SOURCE_DIR}/src"
+)
+target_compile_definitions(vm-product-console-input-failure-smoke PRIVATE
+    STD_MALLOC=test_console_input_malloc
+)
+target_link_libraries(vm-product-console-input-failure-smoke PRIVATE
+    core-product-session
+    type-facade
+)
+
 add_executable(core-product-xasm-smoke
     tests/product/core_product_xasm_smoke.c
 )
@@ -1654,6 +1686,8 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-product-session-contract-smoke
     core-product-session-manager-smoke
     core-product-debug-target-smoke
+    core-product-debug-input-failure-smoke
+    vm-product-console-input-failure-smoke
     vm-platform-surface-context-smoke
     vm-platform-execution-smoke
     vm-platform-run-handle-smoke
