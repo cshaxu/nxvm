@@ -2,29 +2,29 @@
 
 ## Current Work
 
-**M5 T339 S1 - active.** Allocate the complete 80286 descriptor-table and
-protected-transfer form/state ledger before implementation.
+**M5 T339 S2 - active.** Close the 80286 descriptor-table and system-word
+form matrix before selector, gate, return, or task work proceeds.
 
-## M5 T339 S1 Packet
+## M5 T339 S2 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | The owner approved Queue-ordered single-agent implementation through four-profile cross-closure verification on 2026-08-13. T338 closed at `54d94e28`; the next Queue candidate is the approved 80286 descriptor-table and protected-transfer closure. |
-| Objective | Produce the complete 80286 allocation ledger for `0F 00`, `0F 01`, `0F 02/03`, `0F 06`, selector/cache validation, GDT/LDT/IDT state, gates, 16-bit protected stack/frame/fault/return behavior, and task boundaries. Reconcile historic evidence, establish one mechanism owner and exact future S allocation for every form/mode/exception boundary, and refine the Queue/proposal dependency contracts for the approved four-profile program. |
-| Non-goals | No production or test behavior change, no 80286 LOCK matrix (next Queue candidate), no 80386 operand/address width, VM86, paging, debug, VME/PVI, x87, generic delivery rewrite, or generic fixture framework. |
-| Reference Baseline | `54d94e28` (`M5 T338 S5 P2: close legacy profile package`), the 80286 descriptor-transfer proposal, T336 four-profile ledger, and accepted T323/T318/T319/T320/T321/T329 evidence. |
-| Candidate Proposal | [80286 descriptor-table and protected-transfer closure](../proposals/m5-80286-descriptor-transfer-closure.md) and the [80286 closure context](../proposals/m5-80286-protected-mode-closure.md). |
-| Files And ABI Surface | T339 history, Current, supporting evidence/index, Queue, and the approved four-profile candidate proposals only. No production, CMake, test, ABI, artifact, or runtime change. |
-| Applicable Rules | `docs/rules/EXECUTION.md`: full form/state allocation and similar-issue mechanism sweep. `docs/rules/ARCHITECTURE.md`: one validation/materialization/commit owner; preserve true 16-bit layouts. `docs/rules/DOCUMENT.md`: task status, evidence, and proposal ownership. |
-| Verification | Audit metadata, `0F` dispatch, descriptor/table/selector/gate/task/return helpers, state writes, validation/preflight/commit/rollback/delivery callers, current-gate owners, historical evidence, Queue, and TODO. Record form/mode/privilege/type/present/fault/publication disposition for every assigned row; run documentation governance and diff check. |
-| Expected Markers | The ledger has no 80286 descriptor/transfer row classified only by a nearby 80386 route; each row names a future T339 S, accepted owner, or exact 80386DX transfer. |
-| Asset Needs | Intel 80286 and 80386 architecture manuals already used by project evidence. No guest media, firmware, third-party source, or binary asset. |
-| Reporting Requirements | Deliver one complete pushed allocation P with the form/state/caller/write/fault inventory, exact S breakdown, historical-evidence disposition, and all transfer/debt boundaries. No partial implementation claim. |
-| Stop Conditions | Stop if an assigned row cannot be classified from current Intel authority/evidence, a required state boundary needs a shared redesign outside 80286 scope, or a ledger would silently absorb 80386-only semantics. Record an exact transfer or request owner direction. |
-| Exit Criteria | Every assigned 80286 descriptor/table/transfer row has one implementation S, accepted evidence owner, or exact transfer; all relevant existing partial claims are normalized; the ledger P is committed and pushed. |
+| Identifier Mode | Continuation |
+| Admission And Approval | The owner approved Queue-ordered single-agent implementation through four-profile cross-closure verification on 2026-08-13. Accepted T339 S1 (`ed43acee`) allocates this next descriptor-table and system-word mechanism matrix. |
+| Objective | Reconcile and, only where a reproducer requires it, implement the complete 80286 `0F 01 /0`--`/4,/6` and `0F 06` matrix: SGDT, SIDT, LGDT, LIDT, SMSW, LMSW, and CLTS. Prove table/system-word decode, 16-bit pseudo-descriptor or MSW image, privilege, memory preflight, publication, restart, and post-success IRQ ordering under one mechanism-owned ledger. |
+| Non-goals | No 80286 `LOCK` legality matrix, selector-cache forms (`0F 00`, `0F 02/03`, MOV/POP Sreg, LES/LDS), gate entry, return, task/TSS work, 80386 `66/67`, VM86, paging, CR0 32-bit semantics, debug, VME/PVI, x87, generic fixture framework, or generic delivery rewrite. |
+| Reference Baseline | `ed43acee` (`M5 T339 S1 P1: allocate 80286 transfer closure`), the accepted [S1 allocation](../etc/evidence/t339-s1-80286-descriptor-transfer-allocation.md), retained T318/T319/T316 S61/S62/S63 evidence, and the 80286 descriptor-transfer proposal. |
+| Candidate Proposal | [80286 descriptor-table and protected-transfer closure](../proposals/m5-80286-descriptor-transfer-closure.md) and the accepted [T339 allocation](../etc/evidence/t339-s1-80286-descriptor-transfer-allocation.md). |
+| Files And ABI Surface | Expected: local descriptor/system-word handlers only if a defect is reproduced; owner-bound smokes, CMake registration, T339 evidence/history/Current, and required artifact identity. No public ABI, generic decoder/memory/exception/fixture interface, device model, or product boundary change. |
+| Applicable Rules | `docs/rules/EXECUTION.md`: full P, complete form/caller/write/fault sweep, and actual-change review. `docs/rules/ARCHITECTURE.md`: one validation/materialization/commit owner; no partial table image or post-commit fault. `docs/rules/CODING.md`: project types, local style, and owner-bound tests. |
+| Verification | Audit `INS_0F_01`, `CLTS`, `_d_modrm_table_memory`, pseudo-descriptor read/write, `_s_load_gdtr`, `_s_load_idtr`, `_s_load_cr0_msw`, all table/system-word callers and writes. For each form prove 80286 real/protected disposition, CPL boundary, memory-only ModRM, table/MSW image, source/destination limit fault atomicity, restart/nonpublication, and pending-IRQ ordering where successful. Run focused owners, exact registrations, static inventories, artifact verifier, documentation governance, diff check, and full current gate. |
+| Expected Markers | A complete S2 matrix has one current-gate owner per allocated form; no 80286 table/system-word row is represented only by 80386 width/VM86 proof. New marker, if necessary, uses `M5:T339:S2:`. |
+| Asset Needs | Intel 80286 and 80386 architecture manuals already used by project evidence. No guest media, firmware, third-party source, binary, or trace. |
+| Reporting Requirements | Before source edits, record the handler/caller/write/fault inventory and any material boundary objection. Otherwise deliver one complete pushed P with form matrix, historic-evidence disposition, defect/similar-issue result, artifact/gate results, and no partial-completion claim. |
+| Stop Conditions | Stop if correctness requires `66/67`, VM86, paging/CR0 32-bit state, selector/gate/task mechanics, generic descriptor-memory or delivery redesign, or Intel behavior cannot be classified. Transfer the row rather than fitting a local symptom. |
+| Exit Criteria | Every S2 form and ModRM extension has an 80286 real/protected/privilege disposition; table or MSW state, fault/restart/nonpublication, and successful IRQ boundaries are proved or exactly transferred; any mechanism defect is fixed with its complete caller sweep; required gates pass; the P is committed and pushed. |
 | Original Owner Request | Implement the Queue in order, in single-agent mode and with a holistic view, through four-profile cross-closure verification. |
-| Similar-Issue Sweep | Search all metadata and `0F` dispatch/handlers; `_s_*`, `_k*`, `_e_*`, `_ser_*`, `ExecFinal`, descriptor/table/selector/gate/task/return writes; current owner smokes and CMake registrations; T323/T318/T319/T320/T321/T329/T336 evidence; Queue and TODO transfers. |
+| Similar-Issue Sweep | Search `0F 01`, `0F 06`, `INS_0F_01`, `CLTS`, `_d_modrm_table_memory`, `_m_read_rm`, `_m_write_table_pseudo_descriptor`, `_s_load_gdtr`, `_s_load_idtr`, `_s_load_cr0_msw`, profile metadata, current owner smokes, CMake registrations, and T318/T319/T316 evidence. |
 
 ## Current Technical Baseline
 
@@ -44,6 +44,7 @@ protected-transfer form/state ledger before implementation.
 ## Recent M5 Closures
 
 | Task | Compact result |
+| T339 S1 | Allocated every 80286 descriptor/table, selector/cache, protected-entry, protected-return, and TSS16 transfer row to mechanism-owned S2--S6 work; S7 is audit-only. The Queue is now an explicit 80286-to-80386DX dependency chain, and every 32-bit, VM86, paging, debug, and x87 boundary names its receiving owner. [Ledger](../etc/evidence/t339-s1-80286-descriptor-transfer-allocation.md). |
 | T338 | Closed the 8086/80186 profile baseline: S2 ALU/FLAGS/conditions, S3 inherited data/control/I/O, and S4 80186 extensions cover every S1 allocation; the retained T328 rule is the only legacy `LOCK` owner. The sole reproduced defect was four incorrect INS/OUTS 80386 guards, corrected to 80186. Protected, 80386DX, and x87 boundaries transfer explicitly. Artifact verification, governance, and 218/218 current-gate passed. [History](../history/M5-T338-8086-80186-profile-closure.md). |
 | T337 | Closed shared CPU state and delivery foundations: vector-6 fault delivery/rollback, software and external origin composition, IRQ/NMI/TF priority, frame timing, inhibition, and post-commit task debug trap have one proof/owner. DR6/DR7 transfers to 80386DX; reset/shutdown/triple-fault remains bounded CPU/machine debt. [History](../history/M5-T337-shared-state-delivery.md). |
 | T336 | Closed the four-profile CPU coverage audit: the primary/`0F` metadata and dispatch forms, real/protected/VM86 state rows, historic evidence, explicit 80386 exclusions, and open CPU debt now have a single indexed disposition. Every residual has one Queue, TODO, or external owner; the next candidate is shared state and delivery foundations. [History](../history/M5-T336-four-profile-coverage.md). |
