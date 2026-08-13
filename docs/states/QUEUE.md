@@ -14,9 +14,18 @@ each later candidate consumes the earlier state-machine and profile evidence;
 the final candidate is verification only and may return a missing row to its
 proper implementation owner.
 
+The [80286 closure context](../proposals/m5-80286-protected-mode-closure.md)
+and [80386DX closure context](../proposals/m5-80386dx-extended-state-closure.md),
+together with the [80386DX admission policy](../proposals/m5-80386dx-candidate-policy.md),
+are shared planning references for the corresponding candidates below; they do
+not allocate a numeric task.
+
 1. [8086 and 80186 profile closure](../proposals/m5-8086-80186-profile-closure.md). Close the real-mode baseline and 80186 extensions, including the 8086/80186 `LOCK` legality matrix.
-1. [80286 protected-mode and descriptor closure](../proposals/m5-80286-protected-mode-closure.md). Close 80286 descriptors, gates, transfers, and the 80286 `LOCK` legality matrix on the now-stable shared delivery basis.
-1. [80386DX extended instruction and system-state closure](../proposals/m5-80386dx-extended-state-closure.md); [80386DX admission policy](../proposals/m5-80386dx-candidate-policy.md). Close 32-bit, VM86, paging/debug, and residual system-state rows without reclassifying older-profile behavior.
+1. [80286 descriptor-table and protected-transfer closure](../proposals/m5-80286-descriptor-transfer-closure.md). Reconcile the remaining 80286 `0F` descriptor/table forms, selector and gate transfers, 16-bit protected stack/frame rules, and their validation-to-delivery boundaries.
+1. [80286 `LOCK` and profile closure](../proposals/m5-80286-lock-profile-closure.md). Establish the complete 80286 legal-versus-illegal `LOCK` matrix, then reconcile every inherited and 80286-only form/mode row before 32-bit work can rely on it.
+1. [80386DX width, prefix, and integer-form closure](../proposals/m5-80386dx-width-integer-closure.md). Close all residual 32-bit operand/address, prefix, primary, and integer `0F` rows as form families, without borrowing an older-profile disposition.
+1. [80386DX system, VM86, paging, and debug closure](../proposals/m5-80386dx-system-state-closure.md). Close the residual 80386DX state and privileged-form rows by their state owner: VM86/task interaction, paging/system control, and debug/breakpoint behavior.
+1. [80386DX profile closure](../proposals/m5-80386dx-profile-closure.md). Reconcile the completed 80386DX form and state ledgers; return any missing implementation row to its owning candidate rather than closing it by audit.
 1. [Four-profile cross-closure verification](../proposals/m5-cpu-profile-cross-closure.md). Reconcile the completed ledgers and state transitions; it may not substitute a smoke count for an unresolved implementation row.
 1. [Windows 3.x readiness map](../proposals/m5-windows-3x-readiness-map.md).
 1. [M5 closure audit](../proposals/m5-closure-audit.md).
