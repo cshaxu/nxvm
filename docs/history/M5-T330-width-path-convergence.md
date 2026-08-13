@@ -103,3 +103,22 @@ receives focused evidence or a named transfer. The rule preserves Intel-defined
 layout differences and ordinary shared decode/read/write instruction paths. It
 adds no runtime behavior and no broad semantic parser: actual-change review is
 the enforcement point for the matrix and its caller-graph evidence.
+
+## Final Closure Audit
+
+The owner reopened T330 to resolve four audited construction-drift items. S4
+removed the unreachable parallel 32-bit task-transition constructor and added
+its static closure gate. S5 reconciled the FDD/HDD provider backing and failed-
+construction contract. S6 corrected the CALL-gate preflight sequence in both
+widths and proved the competing-fault result. S7 made the resulting full
+mechanism matrix a mandatory pre-P1/review artifact for future CPU state-machine
+work. These corrections retain Intel-defined layouts and do not replace shared
+memory, descriptor, exception, paging, media-interface, or controller owners.
+
+The runnable S6 source commit is `f8116f99`; its T330 developer artifact is
+`build/output/nxvm_0_5_0330.exe` with SHA-256
+`926D0F4A2CDB48367C522AD799FF4E9C2DE7AD6BF6C75EDB7889E2D8B9B62CAA`.
+The S7 documentation-only continuation does not rebuild that artifact. S4--S6
+focused checks and current-gate CTest 211/211 passed; S7 documentation
+self-test, default governance check, and diff check passed. The retained Queue
+and TODO work remains outside this closure.

@@ -2,28 +2,8 @@
 
 ## Current Work
 
-**Active: M5 T330 S7.** Integrate full mechanism-matrix discipline for CPU
-state-machine work (Ordinary Mode; owner-approved T330 continuation).
-
-## M5 T330 S7 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; T330 S6 is retained progress for the latest open numeric task, and S7 is its next unused subtask. |
-| Admission And Approval | Owner approved reopening T330 on 2026-08-12 to implement the fourth audited construction-drift item after S6 acceptance. |
-| Objective | Make a full mechanism matrix a mandatory pre-P1 admission and review artifact for CPU state-machine work, so implementation cannot close a local symptom while width, mode, caller, validation, materialization, commit, rollback, and fault variants remain unclassified. |
-| Non-goals | No source-wide rewrite, generic prose classifier, automatic semantic verifier, CPU behavior change, architecture abstraction framework, or requirement that Intel-defined 16/32-bit layouts be merged. |
-| Reference Baseline | `07ac6fc2e6ae262399f9891efe41032b4d9ccf61` / `vm-0-5-0330`; read T330 inventory/history, the holistic construction debt record, Queue matrix rule, and the Execution/Documentation authorities. |
-| Files And ABI Surface | `docs/rules/EXECUTION.md`, `docs/STATUS.md`, T330 evidence/history, and no runtime source, CMake, public ABI, or verifier unless a narrow mechanical recurrence can be named. |
-| Applicable Rules | Documentation authority boundaries and execution lifecycle. The rule must be mandatory but apply only to CPU state-machine mechanisms, not ordinary instruction-form slices already owned by a common checked pipeline. |
-| Verification | Documentation governance self-test and default check, `git diff --check`, actual authority-boundary review, and a T330 evidence matrix that maps the rule to task transition, CALL-gate, exception/IRQ, IRET, VM86, descriptor, and paging examples. |
-| Expected Markers | Documentation governance self-test and default success; no runtime marker or artifact revision is required for this documentation-only continuation. |
-| Asset Needs | None. |
-| Reporting Requirements | Ordinary Mode contract confirmation, one complete pushed documentation P with requirement-to-proof evidence, coordinator actual-change review, and governance P on acceptance. |
-| Stop Conditions | Stop if enforcing the rule needs a broad semantic parser, duplicates architecture authority, or changes CPU behavior; retain structural documentation governance and record any future mechanical shape separately. |
-| Exit Criteria | Execution rules require a full state-machine mechanism matrix before P1 and reject piecemeal closure claims; scope, required dimensions, evidence, retained Intel layout distinction, transfer rule, and reviewer obligation are explicit; documentation gates pass. |
-| Original Owner Request | Reopen T330 and implement the four audited items as four ordered S tasks, beginning now. |
-| Similar-Issue Sweep | Review current execution, Queue, roadmap, T330 inventory, and holistic debt guidance for competing or incomplete matrix language; consolidate only the mandatory lifecycle rule in its proper authority and link rather than duplicate supporting detail. |
+**Idle.** M5 T330 is closed. The next ordered Queue candidate requires owner
+admission.
 
 ## Current Technical Baseline
 
@@ -43,7 +23,7 @@ state-machine work (Ordinary Mode; owner-approved T330 continuation).
 ## Recent M5 Closures
 
 | Task | Compact result |
-| T330 S6 | Reconciled 16/32-bit outer CALL-gate preflight order to validate the TSS/new stack and target frame before reading old parameters; paired dual faults now deliver the target-stack `#TS` before the source-stack `#SS`. The focused retained call-gate smokes, current artifact, current-gate CTest 211/211, and documentation governance pass. [History](history/M5-T330-width-path-convergence.md). |
+| T330 | Closed the whole-codebase construction-drift package: one task-transition constructor, FDD/HDD backing/create atomicity, CALL-gate dual-fault preflight convergence, and mandatory CPU state-machine mechanism matrices before P1. Intel-required layouts remain explicit; T330 artifact, focused regressions, 211/211 current-gate, and governance evidence are in [history](history/M5-T330-width-path-convergence.md). |
 | T329 | Closed the bounded Intel 80286/80386 protected task-transition state machine: 16/32-bit direct and task-gate entry, nested CALL/IRET state, incoming LDT images, source-CR3 preflight/incoming-CR3 commit, and TSS post-switch `#DB`. S7 proves target-page fetch, target-TSS `#PF` atomicity, and a target-state restart frame; the 0329 artifact and 211/211 gate result are in [history](history/M5-T329-task-transition-state-machine.md). |
 | T328 | Closed the historical LOCK-prefix legality matrix: 8086/80186 retain transparent valid-next-instruction semantics; 80286 adds protected `CPL <= IOPL`; retained 80386 memory-whitelist behavior stays intact. S2 reconciled the current closure map and ordinary matrix, removing the stale Deferred/TODO transfer without changing the user-owned Queue edit. Register, memory, REP, I/O, #GP frame, strict compile, artifact, and 211/211 gate evidence are in [history](history/M5-T328-legacy-lock-legality.md). |
 | T327 | Closed the current/specialized-gate reconciliation: fast smoke no longer builds classified media targets, and generated CTest/Ninja evidence now proves the full 210 = 15 media + 195 non-media partition, both developer roots, all specialized verifiers, and the aggregate's two roots. [History](history/M5-T327-current-gate-reconciliation.md). |
