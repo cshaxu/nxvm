@@ -2,29 +2,8 @@
 
 ## Current Work
 
-M5 T350 S3 - MC146818 event, CMOS adapter, and IRQ8 signal reconciliation
-(Single-Session Mode).
-
-## M5 T350 S3 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner approved continuous holistic device/L3 completion; T350 S2 accepted at `6cbb67a9` on 2026-08-13. |
-| Objective | Reconcile the retained MC146818 calendar, BCD/binary and 12/24-hour conversion, update/periodic/alarm flags, register-C acknowledgement and IRQ8 lifecycle, CMOS 70h/71h index/data plus bit-7 NMI-mask adapter, reset/finalize, and deterministic readiness-to-next-arbitration visibility. Repair only reproduced RTC/adapter-local defects. |
-| Non-goals | No host wall clock, firmware/BDA rewrite, RTC-to-NMI route, parity/I/O-channel NMI producer, port-61/PPI/speaker, generic PIC/CPU delivery redesign, arbitrary RTC clone extensions, external source import, x87, or Windows claim. |
-| Reference Baseline | `6cbb67a9` / T350 S2 accepted; [S1 ledger](../etc/evidence/t350-s1-pcat-platform-signals-ledger.md), [platform-signals proposal](../proposals/m5-pcat-platform-signals.md), [T346 L3 audit](../etc/evidence/t346-s1-core-machine-device-l3-audit.md), and [T349 lifecycle evidence](../etc/evidence/t349-s4-pcat-pic-lifecycle.md). |
-| Candidate Proposal | [PC/AT platform signals: PIT, PPI, RTC, and NMI](../proposals/m5-pcat-platform-signals.md). |
-| Files And ABI Surface | Expected: RTC/CMOS adapter source only if an event/alarm/lifecycle defect is reproduced, one owner-local RTC signal smoke and CMake registration, S3 evidence, Current, and T350 history. PIC, CPU, VM profile, and firmware ABI remain stable. |
-| Applicable Rules | Task Reading Set; one RTC owner for calendar/register/event state; T349 PIC source lifecycle; port 70h bit 7 is mask-only; readiness callback precedes next PIC arbitration; no host time; primary-manual and project-owned probe discipline. |
-| Verification | Build a manual-form matrix for calendar rollover, BCD/binary and 12/24 conversion, SET, periodic/update/alarm flags and enables, alarm don't-care, register-C read acknowledgement, IRQ8/PIC consumption, 70h/71h adapter mask/index separation, reset/finalize, and readiness ordering. Retain T346/T349, CMOS, timer-firmware, and CPU delivery regressions; run full current-gate and governance. |
-| Expected Markers | Add `M5:T350:S3:RTC-CMOS:OK`; retain RTC/CMOS/authority, timer-firmware, T346 timeline/arbitration, T349 PIC lifecycle, and CPU hardware-delivery markers. |
-| Asset Needs | Published Intel 8254, Motorola MC146818A, and IBM PC/AT technical-reference material only; no firmware, guest media, or copied reference source. |
-| Reporting Requirements | Record every RTC event/register writer/reader, IRQ8 source transition, adapter mask/index operation, reset/finalize behavior, timeline order, proof, residual clone/electrical boundary, and any repair/caller sweep. |
-| Stop Conditions | Stop for a required RTC-to-NMI route, generic PIC/CPU delivery change, host-time integration, firmware/profile ABI change, source-provider ABI change, clone-specific extension, or a repair outside RTC/adapter-local state. |
-| Exit Criteria | Every retained RTC/CMOS/IRQ8 ledger row is accepted with focused proof or one explicit clone/electrical transfer; no event, register-C acknowledgement, NMI-mask adapter, reset/finalize, or timeline owner is unclassified. |
-| Original Owner Request | Make core-machine devices stable, comprehensive, and reliable at deterministic L3 before deciding any Windows execution route. |
-| Similar-Issue Sweep | Inspect all RTC register readers/writers, event/flag/IRQ8 transitions, CMOS port provider routes, NMI mask get/set, reset/finalize, readiness scheduling, VM profile declarations, and every RTC/CMOS/NMI test. |
+M5 T350 remains open. S3 is accepted; S4 decides the selected PC/AT NMI
+producer or records its evidence-backed transfer before task closure.
 
 ## Current Technical Baseline
 
@@ -45,6 +24,7 @@ M5 T350 S3 - MC146818 event, CMOS adapter, and IRQ8 signal reconciliation
 
 | Task | Compact result |
 | --- | --- |
+| T350 S3 | Reconciled MC146818 calendar/event state, alarm don't-care matching, immediate Register-B IRQF/IRQ8 synchronization, Register-C acknowledgement, 70h/71h mask/index separation, reset/finalize lifecycle, and retained next-arbitration visibility. 228 current-gate tests passed. [Evidence](../etc/evidence/t350-s3-rtc-cmos.md). |
 | T350 S2 | Reconciled retained 8254 counter state, output/gate/latch/BCD behavior and the one channel-0 IRQ0 lifecycle; channel-2/port-61/speaker remains an explicit corpus-gated receiver. 227 current-gate tests passed. [Evidence](../etc/evidence/t350-s2-pit-irq0.md). |
 | T350 S1 | Accepted the 8254/MC146818/IBM-PC/AT signal ledger: retained PIT/IRQ0 and RTC/CMOS/IRQ8 routes have bounded owners; port-61/speaker and a physical NMI producer remain explicit conditional receivers. [Evidence](../etc/evidence/t350-s1-pcat-platform-signals-ledger.md). |
 | T349 | Closed PC/AT dual-8259A command/priority/cascade, OCW3 poll/status/special-mask/SFNM, and retained edge/level producer lifecycle; physical INTA spurious behavior transfers only to L3 bus timing. 226 current-gate tests passed. [History](../history/M5-T349-pcat-pic-compliance.md). |

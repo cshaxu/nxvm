@@ -27,3 +27,10 @@ their independent admission conditions are met.
 S2 is accepted at `6cbb67a9`: it reconciles the retained 8254 counter/output subset and its one channel-0
 IRQ0 path. Its [evidence](../etc/evidence/t350-s2-pit-irq0.md) keeps channel-2
 and port-61/speaker explicitly outside the counter-0 mechanism.
+
+S3 is accepted at `6af43223`: it reconciles MC146818 event flags and their
+Register-B enable image through one IRQF/IRQ8 synchronization owner, repairs
+the documented alarm don't-care match, and proves CMOS index/mask separation,
+reset/finalize, and retained deterministic readiness. Its
+[evidence](../etc/evidence/t350-s3-rtc-cmos.md) retains the exact manual,
+source, and proof boundary.
