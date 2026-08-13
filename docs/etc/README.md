@@ -49,6 +49,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t345-s3-production-ownership.md` | Verification owner | T345 S3 production direct-command strict-promotion and retained ownership/risk/admission ledger. Retire into T345 history at task closure. |
 | `evidence/t346-s1-core-machine-device-l3-audit.md` | Verification owner | T346 S1 whole core-machine device, bus, port, reference-discipline, and L3-readiness ledger. Merge into T346 history at task closure. |
 | `evidence/t346-s2-deterministic-timeline-foundation.md` | Verification owner | T346 S2 timeline, copied transaction checkpoint, reset/cancellation, and controller-migration foundation. Merge into T346 history at task closure. |
+| `evidence/t346-s3-pic-pit-dma-arbitration.md` | Verification owner | T346 S3 PIC/PIT/DMA timeline arbitration, due-tick ordering, reset cancellation, and retained-controller transfer boundary. Merge into T346 history at task closure. |
 | `operations/` | Execution, source, and release owners | Toolchain, policy, templates, release procedure, and closure material. |
 | `research/` | Source owner | Provenance, external references, and non-product research. |
 | `history/` | Documentation owner | Read-only legacy and M5 migration/roadmap evidence. |

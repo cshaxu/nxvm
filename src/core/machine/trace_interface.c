@@ -95,6 +95,7 @@ C_VOID core_machine_trace_record(
     event->type = type;
     event->sequence = trace->next_sequence++;
     event->elapsed_ticks = machine->elapsed_ticks;
+    event->timeline_ticks = machine->timeline.now;
     event->linear_pc = core_machine_trace_linear_pc(machine);
     event->address = address;
     event->value = value;

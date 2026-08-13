@@ -62,21 +62,30 @@ machine-time/event/bus transaction owner needed for L3.  Preserve existing
 device observable behavior until each device adopts the new contract through
 its own bounded proof.  Do not create a parallel scheduler or host-time path.
 
-### S3 - Interrupt, Timer, DMA, And Storage Ordering
+### S3 - Interrupt, Timer, And DMA Arbitration
 
-Converge PIC/PIT/RTC/NMI/DMA/FDC/ATA event visibility, arbitration, service
-time, and reset/abort semantics on the S2 foundation.  Split a device family
-only where it has a true hardware contract difference; use DOS/Windows-relevant
-corpora and deterministic ordering probes.
+Converge PIC/PIT/DMA event visibility, equal-tick arbitration, one-unit
+grant pacing, and reset/abort cancellation on the S2 foundation. These units
+share the immediate interrupt and bus-ownership contract; their packet must
+prove priority and transaction ordering without making a storage or renderer
+claim.
 
-### S4 - Input, Display, And Peripheral Timing
+### S4 - RTC And Storage Readiness
 
-Converge KBC/AUX, speaker if present, CGA/EGA/VADP, CMOS, and host-presentation
-boundaries.  Keep guest timing/state in core and host rendering/input policy in
-adapters.  Do not claim VGA/VBE, composite simulation, or host wall-clock
+Converge RTC periodic/update/NMI visibility and FDC/ATA readiness, service,
+media change, completion, abort, IRQ, and DMA-request timing on the S2/S3 foundation.
+This is intentionally separate from S3 because RTC divisor state and
+controller/media completion are not PIC/PIT arbitration semantics. Use
+DOS/Windows-relevant corpora and deterministic ordering probes.
+
+### S5 - Input, Display, And Peripheral Timing
+
+Converge KBC/AUX, speaker if present, CGA/EGA/VADP, and host-presentation
+boundaries. Keep guest timing/state in core and host rendering/input policy in
+adapters. Do not claim VGA/VBE, composite simulation, or host wall-clock
 fidelity unless separately admitted.
 
-### S5 - PC/AT L3 Closure And Windows Handoff
+### S6 - PC/AT L3 Closure And Windows Handoff
 
 Reconcile the machine ledger, prove each admitted L3 contract, transfer every
 unsupported hardware feature precisely, and update the Windows 3.x readiness

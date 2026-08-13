@@ -40,5 +40,5 @@ by `(due_tick, sequence)`, with cancellation and cold-reset removal. Copied
 trace checkpoints cover CPU retirement, retained DMA advancement, checked
 external memory transactions, and existing port transactions at machine time.
 S2 deliberately retains the L2 controller scheduler and assigns every
-controller migration to S3/S4; it does not claim device-specific L3 service
+controller migration to S3--S5; it does not claim device-specific L3 service
 timing or host-time behavior.

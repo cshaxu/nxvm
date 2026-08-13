@@ -18,6 +18,8 @@ typedef enum core_machine_trace_event_type {
     CORE_MACHINE_TRACE_MEMORY_WRITE,
     CORE_MACHINE_TRACE_CPU_RETIRE,
     CORE_MACHINE_TRACE_DMA_ADVANCE,
+    CORE_MACHINE_TRACE_PIT_ADVANCE,
+    CORE_MACHINE_TRACE_PIC_REFRESH,
     CORE_MACHINE_TRACE_RUN_BOUNDARY,
     CORE_MACHINE_TRACE_STOP,
     CORE_MACHINE_TRACE_FAULT
@@ -27,6 +29,7 @@ typedef struct core_machine_trace_event {
     core_machine_trace_event_type type;
     type_unsigned_64 sequence;
     type_unsigned_64 elapsed_ticks;
+    type_unsigned_64 timeline_ticks;
     type_unsigned_32 linear_pc;
     type_unsigned_32 address;
     type_unsigned_32 value;

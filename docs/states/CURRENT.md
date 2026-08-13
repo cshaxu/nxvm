@@ -2,9 +2,30 @@
 
 ## Current Work
 
-**Active.** M5 T346 remains open between accepted subtasks. S3 requires a
-separately admitted packet for interrupt, timer, DMA, and storage event
-migration; no implementation runs before that admission.
+**Active.** M5 T346 S3 migrates the PIC/PIT/DMA arbitration chain onto the
+accepted deterministic machine timeline before any storage or display timing
+claim.
+
+## M5 T346 S3 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved 2026-08-13 completion of the T346 core-machine parity and L3 program. S1/S2 establish the dependency ledger and deterministic timeline required for this migration. |
+| Objective | Make PIC/PIT/DMA equal-tick arbitration and one-unit grant pacing run through the machine-owned timeline, with deterministic reset/cancellation and copied trace evidence. Preserve the selected controller registers and the existing non-storage device boundary. |
+| Non-goals | Do not migrate RTC, FDC, ATA, KBC/AUX, VADP, presentation, host time, x87, generic CPU semantics, or media service duration. Do not claim cycle-exact pins, prefetch, or Windows installation readiness. |
+| Reference Baseline | `6ab054d6`; S1 device/L3 ledger and S2 timeline evidence are the controlling mechanism records. |
+| Candidate Proposal | [M5 core-machine device parity and L3 timing convergence](../proposals/m5-core-machine-device-l3-convergence.md), S3. |
+| Files And ABI Surface | `src/core/machine` machine/timeline/clock/PIC/PIT/DMA internals and bounded copied tracing only; owner smoke and focused existing smoke updates, CMake, T346 evidence/history/current state. No new mutable public controller or VM interface. |
+| Applicable Rules | Task Reading Set; Architecture single-owner/event-publication/no-mirror-state invariants; Coding C11/type/cohesion rules; Execution actual-review, mechanism-defect, current-gate, and closure rules; source policy no-copy reference discipline. |
+| Verification | Prove retirement-to-due-tick execution, deterministic same-tick PIC/PIT/DMA order, PIT IRQ edge and DMA one-grant pacing, reset cancellation, and no regression of existing PIC/PIT/DMA focused proofs. Configure, exact current-gate discovery, documentation governance, diff check, and full current gate pass. |
+| Expected Markers | `M5:T346:S3:ARBITRATION:OK`; trace/checkpoints show the timeline owns controller advancement, cancelled reset work never fires, and equal timestamps obey the recorded PIC/PIT/DMA order. |
+| Asset Needs | No guest media or firmware. Bochs/PCjs are read-only structural references; primary controller contracts remain project evidence and hardware documentation. |
+| Reporting Requirements | Record prior and new caller/order maps, every clock and callback owner, reset/cancellation behavior, PIC/PIT/DMA transaction/IRQ evidence, retained storage/input/display paths, and no unproven service-time claim. |
+| Stop Conditions | Stop and transfer if a correct result requires a storage/media, RTC, KBC, VADP, host scheduler, public ABI, or CPU-delivery redesign; those have distinct S4/S5 or external contracts. |
+| Exit Criteria | PIC/PIT/DMA have one timeline-driven arbitration path with no retained competing machine scheduler path; focused proofs cover ordering, reset, IRQ and DMA publication; every non-migrated controller remains explicitly assigned. |
+| Original Owner Request | Reach sufficient device/bus/port parity and deterministic L3 timing for Windows 3.x research, excluding x87, through a holistic core-machine plan. |
+| Similar-Issue Sweep | Sweep all machine scheduler, clock-domain, PIC/PIT/DMA refresh, IRQ-source, and DMA-binding paths for duplicate event ownership; adopt one owner or transfer exact excluded controller work. |
 
 ## Current Technical Baseline
 

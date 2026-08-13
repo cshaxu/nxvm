@@ -87,19 +87,31 @@ static C_INT timeline_machine_contract(C_VOID)
     failed |= result.reason != CORE_MACHINE_STOP_BUDGET || result.elapsed_ticks != 1u;
     failed |= core_machine_get_timeline_observation(machine, &observation) !=
         TYPE_STATUS_OK;
-    failed |= observation.now != 1u || observation.pending_events != 0u ||
-        observation.next_sequence != 0u;
-    failed |= trace_probe.count != 3u ||
+    failed |= observation.now != 1u || observation.pending_events != 1u ||
+        observation.next_sequence != 2u;
+    failed |= trace_probe.count != 5u ||
         trace_probe.events[0].type != CORE_MACHINE_TRACE_CPU_RETIRE ||
         trace_probe.events[0].elapsed_ticks != 1u ||
+        trace_probe.events[0].timeline_ticks != 0u ||
         trace_probe.events[0].value != 1u ||
         trace_probe.events[1].type != CORE_MACHINE_TRACE_DMA_ADVANCE ||
         trace_probe.events[1].elapsed_ticks != 1u ||
+        trace_probe.events[1].timeline_ticks != 1u ||
         trace_probe.events[1].value != 1u ||
-        trace_probe.events[2].type != CORE_MACHINE_TRACE_RUN_BOUNDARY ||
+        trace_probe.events[2].type != CORE_MACHINE_TRACE_PIT_ADVANCE ||
         trace_probe.events[2].elapsed_ticks != 1u ||
+        trace_probe.events[2].timeline_ticks != 1u ||
+        trace_probe.events[2].value != 1u ||
+        trace_probe.events[3].type != CORE_MACHINE_TRACE_PIC_REFRESH ||
+        trace_probe.events[3].elapsed_ticks != 1u ||
+        trace_probe.events[3].timeline_ticks != 1u ||
+        trace_probe.events[4].type != CORE_MACHINE_TRACE_RUN_BOUNDARY ||
+        trace_probe.events[4].elapsed_ticks != 1u ||
+        trace_probe.events[4].timeline_ticks != 1u ||
         trace_probe.events[0].sequence >= trace_probe.events[1].sequence ||
-        trace_probe.events[1].sequence >= trace_probe.events[2].sequence;
+        trace_probe.events[1].sequence >= trace_probe.events[2].sequence ||
+        trace_probe.events[2].sequence >= trace_probe.events[3].sequence ||
+        trace_probe.events[3].sequence >= trace_probe.events[4].sequence;
     core_machine_destroy(machine);
     return failed;
 }

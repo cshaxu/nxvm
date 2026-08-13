@@ -247,27 +247,24 @@ static C_INT core_machine_clock_plan_is_valid(
         core_machine_clock_ratio_is_valid(&plan->provider);
 }
 
-static C_VOID core_machine_advance_scheduler(core_machine *machine,
-    type_unsigned_64 elapsed_ticks)
+/*
+ * PIC/PIT/DMA share one immediate arbitration boundary. The callback owns one
+ * machine tick; scheduling the next tick from the callback preserves both
+ * deterministic due-time order and the existing one-grant DMA semantics.
+ */
+static C_VOID core_machine_arbitration_tick(C_VOID *opaque,
+    type_unsigned_64 due_tick)
 {
+    core_machine *machine = (core_machine *)opaque;
     type_unsigned_64 dma_ticks;
     type_unsigned_64 pit_ticks;
-    type_unsigned_64 vadp_ticks;
-    type_unsigned_64 kbc_ticks;
-    type_unsigned_64 provider_ticks;
+    core_machine_timeline_token next;
 
-    (C_VOID)core_machine_timeline_advance(&machine->timeline,
-        machine->elapsed_ticks);
-    dma_ticks = core_machine_clock_domain_advance(&machine->dma_clock,
-        elapsed_ticks);
-    pit_ticks = core_machine_clock_domain_advance(&machine->pit_clock,
-        elapsed_ticks);
-    vadp_ticks = core_machine_clock_domain_advance(&machine->vadp_clock,
-        elapsed_ticks);
-    kbc_ticks = core_machine_clock_domain_advance(&machine->kbc_clock,
-        elapsed_ticks);
-    provider_ticks = core_machine_clock_domain_advance(&machine->provider_clock,
-        elapsed_ticks);
+    if (machine == STD_NULL) {
+        return;
+    }
+    dma_ticks = core_machine_clock_domain_advance(&machine->dma_clock, 1u);
+    pit_ticks = core_machine_clock_domain_advance(&machine->pit_clock, 1u);
     core_machine_dma_advance(&machine->shared_dma_latch,
         &machine->shared_dma_primary, &machine->shared_dma_secondary,
         &machine->executor_memory, dma_ticks);
@@ -275,9 +272,38 @@ static C_VOID core_machine_advance_scheduler(core_machine *machine,
         core_machine_trace_record(machine, CORE_MACHINE_TRACE_DMA_ADVANCE,
             0u, (type_unsigned_32)dma_ticks, 0u);
     }
+    core_machine_pit_advance(&machine->shared_pit, pit_ticks);
+    if (pit_ticks != 0u) {
+        core_machine_trace_record(machine, CORE_MACHINE_TRACE_PIT_ADVANCE,
+            0u, (type_unsigned_32)pit_ticks, 0u);
+    }
+    core_machine_pic_refresh(&machine->shared_pic_master,
+        &machine->shared_pic_slave);
+    core_machine_trace_record(machine, CORE_MACHINE_TRACE_PIC_REFRESH,
+        0u, 0u, 0u);
+    if (due_tick != UINT64_MAX) {
+        (C_VOID)core_machine_timeline_schedule(&machine->timeline,
+            due_tick + 1u, core_machine_arbitration_tick, machine, &next);
+    }
+}
+
+static C_VOID core_machine_advance_scheduler(core_machine *machine,
+    type_unsigned_64 elapsed_ticks)
+{
+    type_unsigned_64 vadp_ticks;
+    type_unsigned_64 kbc_ticks;
+    type_unsigned_64 provider_ticks;
+
+    (C_VOID)core_machine_timeline_advance(&machine->timeline,
+        machine->elapsed_ticks);
+    vadp_ticks = core_machine_clock_domain_advance(&machine->vadp_clock,
+        elapsed_ticks);
+    kbc_ticks = core_machine_clock_domain_advance(&machine->kbc_clock,
+        elapsed_ticks);
+    provider_ticks = core_machine_clock_domain_advance(&machine->provider_clock,
+        elapsed_ticks);
     core_machine_fdc_refresh(&machine->fdc);
     core_machine_hdc_refresh(&machine->hdc);
-    core_machine_pit_advance(&machine->shared_pit, pit_ticks);
     core_machine_vadp_advance(&machine->shared_vadp, &machine->executor_memory,
         vadp_ticks);
     core_machine_kbc_advance(&machine->shared_kbc, kbc_ticks);
@@ -289,8 +315,6 @@ static C_VOID core_machine_advance_scheduler(core_machine *machine,
         machine->execution_provider->advance_time(
             machine->execution_provider_context, provider_ticks);
     }
-    core_machine_pic_refresh(&machine->shared_pic_master,
-        &machine->shared_pic_slave);
 }
 
 static C_INT core_machine_valid_cpu_profile(core_machine_cpu_profile profile)
@@ -1187,6 +1211,15 @@ static type_status core_machine_cold_reset(core_machine *machine)
     core_machine_clock_domain_reset(&machine->vadp_clock);
     core_machine_clock_domain_reset(&machine->kbc_clock);
     core_machine_clock_domain_reset(&machine->provider_clock);
+    {
+        core_machine_timeline_token first_arbitration;
+
+        if (core_machine_timeline_schedule(&machine->timeline, 1u,
+                core_machine_arbitration_tick, machine,
+                &first_arbitration) != TYPE_STATUS_OK) {
+            return TYPE_STATUS_FAULT;
+        }
+    }
     machine->entry_plan_applied = TYPE_FALSE;
     core_machine_cpu_diagnostic_reset(machine);
     if (machine->execution_provider != STD_NULL &&
