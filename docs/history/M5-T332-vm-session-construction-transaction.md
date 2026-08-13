@@ -3,7 +3,7 @@
 ## Scope
 
 T332 is the owner-approved VM-composition construction-drift package admitted
-from [its active proposal](../proposals/m5-vm-session-construction-transaction.md).
+from its retained [proposal](M5-T332-vm-session-construction-transaction-proposal.md).
 It has three bounded subtasks: configuration materialization, lifecycle failure
 atomicity, and test-fixture lifecycle convergence. Detailed completion evidence
 is appended as each accepted subtask is committed.
@@ -65,3 +65,14 @@ historical sources that would otherwise bypass it, and adds a narrow static
 closure verifier. The residual older CPU/device fixture audit is explicitly
 transferred to TODO rather than treated as equivalent without a source-to-target
 and semantic inventory. The detailed classification is [T332 S3 evidence](../etc/evidence/t332-s3-cpu-fixture-lifecycle.md).
+
+## S3 Acceptance And Task Closure
+
+Coordinator review confirms that the five inherited sources now use the same
+private support lifecycle as their wrapper targets, while the remaining direct
+constructors are either pre-bind instruction-specific setup or explicitly
+deferred for a separately inventoried historical audit. The fixture verifier,
+affected smoke executions, fresh artifact build, 52 specialized verifiers,
+documentation governance, diff check, and full 212-test current CTest
+selection passed. T332 is therefore closed; its proposal is retained beside
+this history record.
