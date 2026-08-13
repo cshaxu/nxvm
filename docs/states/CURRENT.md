@@ -2,28 +2,8 @@
 
 ## Current Work
 
-M5 T347 S2 - FDC deferred command and completion service (Single-Session Mode).
-
-## M5 T347 S2 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; single-session coordinator/executor roles are performed sequentially in this session. |
-| Admission And Approval | Owner approved the post-T346 PC/AT device-completeness sequence and immediate storage-service work on 2026-08-13; T347 S1 P1 established the lifecycle contract. |
-| Objective | Move every retained FDC command-finalization and transfer-completion publication from the issuing port/DMA transaction to explicit controller-local service states advanced only by the existing readiness timeline owner. |
-| Non-goals | No ATA implementation, arbitrary delays, new FDC command breadth, host I/O timing, generic scheduler/DMA/media-provider redesign, Windows media, or cycle-exact claim. |
-| Reference Baseline | `4a7e784d` / M5 T347 S1 P1; [storage lifecycle evidence](../etc/evidence/t347-s1-storage-service-lifecycle.md). |
-| Candidate Proposal | [PC/AT storage controller service timing](../proposals/m5-storage-controller-service-timing.md). |
-| Files And ABI Surface | Expected: `src/core/machine/{machine,fdc,trace_interface}.*`, FDC-focused tests/CMake/evidence, and Current; no controller timeline pointer, public mutable storage, host ABI, or ATA source change. |
-| Applicable Rules | Task Reading Set; architecture one owner/one production path; coding owner-local state helpers; T346 timeline ordering; T347 S1 lifecycle contract; source policy. |
-| Verification | Prove command-pending busy/no-DRQ/no-IRQ state, next-readiness service for every retained command class, data-transfer completion deferral, DMA/non-DMA behavior, reset/DOR/media-loss cancellation, result/status/MSR ordering, trace order, retained FDC/DMA/PIC/timeline tests, fresh configuration, governance, diff check, and current gate. |
-| Expected Markers | New `M5:T347:S2:FDC-SERVICE:OK` plus retained FDC media/change/read-track, DMA channel, PIC lifecycle, T346 timeline/arbitration/readiness markers. |
-| Asset Needs | No guest media, firmware, or third-party code import. The existing uPD765/8272A primary protocol reference is research-only. |
-| Reporting Requirements | Record command-to-state table, write/caller sweep, every observable publication boundary, reset/cancellation result, actual-change review, and one pushed complete P delivery. |
-| Stop Conditions | Stop for a required generic scheduler/timeline capacity change, DMA or media-provider ABI change, unbounded transfer buffer, CPU/interrupt-delivery change, required command not in the retained surface, or a primary-contract conflict requiring a different service owner. |
-| Exit Criteria | All retained FDC commands and completion paths enter/leave named local pending states; final command/data transaction cannot publish execution-completion DRQ/DMA/IRQ; the next readiness and later arbitration visibility is evidenced; reset, media-loss, DOR disable, and finalization cancel pending work; ATA behavior is unchanged and not claimed. |
-| Original Owner Request | Build the high-value PC/AT device-completeness and L3 program holistically, beginning now and deferring Windows-startup testing. |
-| Similar-Issue Sweep | Inspect every FDC command, data, status, DOR, control, DMA, result, reset, refresh, finalization, and machine readiness call; reject any direct completion-side DRQ/DMA/IRQ publication outside the local service advance. |
+**Idle.** M5 T347 S2 is accepted and closed; the next storage-controller
+service slice requires a separately admitted packet.
 
 ## Current Technical Baseline
 
@@ -44,6 +24,7 @@ M5 T347 S2 - FDC deferred command and completion service (Single-Session Mode).
 
 | Task | Compact result |
 | --- | --- |
+| T347 S2 | Accepted FDC deferred command/completion lifecycle: the existing readiness owner alone advances command and final-transfer publication; pending MSR, DMA/non-DMA, DOR/reset/media cancellation, VM FDC, and T242 read-track proof passed. [Evidence](../etc/evidence/t347-s2-fdc-deferred-service.md). |
 | T347 S1 | Accepted storage-service lifecycle inventory: retained FDC/ATA command, data, reset, cancellation, media, DRQ/DMA/IRQ, and readiness paths now have one shared visibility rule and an exact S2--S4 migration sequence. [Evidence](../etc/evidence/t347-s1-storage-service-lifecycle.md). |
 | T346 | Closed deterministic PC/AT L3 convergence: one reset-safe due-event owner, equal-tick `DMA -> PIT -> PIC -> FDC -> HDC -> RTC -> KBC -> VADP` ordering, copied host boundaries, exact storage/NMI/peripheral transfers, and evidence-backed Windows handoff. [History](../history/M5-T346-core-machine-device-l3-convergence.md). |
 | T345 | Closed direct-compilation strictness convergence: 251/305 direct commands are target-local strict; the 54 remaining commands have a complete 175-row ownership ledger and an exact 51-source residual production record with durable bounded admissions. No global flags, inherited-runtime rewrites, or false linked-dependency claims. [History](../history/M5-T345-direct-compilation-strictness-convergence.md). |
