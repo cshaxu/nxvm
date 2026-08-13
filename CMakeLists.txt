@@ -617,6 +617,7 @@ if(CMAKE_GENERATOR MATCHES "Ninja")
         COMMENT "Verifying T317 target-local strict CPU smoke compilation"
         VERBATIM)
 endif()
+
 endfunction()
 
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
@@ -2833,3 +2834,69 @@ if(CMAKE_GENERATOR MATCHES "Ninja")
     add_dependencies(verify-current-specialized-gates
         verify-t344-direct-compilation-matrix)
 endif()
+
+# T345 consumes only T344's deferred direct commands. It makes the ownership
+# boundary explicit before a later S can promote any target to strict GCC
+# compilation; a linked strict library is never an ownership classification.
+set(PROJECT_T345_DEFERRED_OWNERSHIP_MATRIX)
+foreach(project_t344_entry IN LISTS PROJECT_T344_DIRECT_COMPILE_MATRIX)
+    string(REPLACE "|" ";" project_t345_fields "${project_t344_entry}")
+    list(GET project_t345_fields 0 project_t345_target)
+    list(GET project_t345_fields 1 project_t345_source)
+    list(GET project_t345_fields 2 project_t345_status)
+    if(NOT project_t345_status STREQUAL "deferred")
+        continue()
+    endif()
+    if(project_t345_source MATCHES "^tests/")
+        set(project_t345_class project-owned-owner-test)
+        set(project_t345_mechanism s2-owner-test-strict-cohort)
+    elseif(project_t345_target STREQUAL "type-facade")
+        set(project_t345_class type-foundation-production)
+        set(project_t345_mechanism s3-type-facade-warning-remediation)
+    elseif(project_t345_target MATCHES "-smoke$")
+        set(project_t345_class embedded-production-test)
+        set(project_t345_mechanism s3-production-owner-warning-remediation)
+    else()
+        set(project_t345_class mixed-or-inherited-production)
+        set(project_t345_mechanism s3-ownership-separation-and-warning-remediation)
+    endif()
+    list(APPEND PROJECT_T345_DEFERRED_OWNERSHIP_MATRIX
+        "${project_t345_target}|${project_t345_source}|${project_t345_class}|${project_t345_mechanism}")
+endforeach()
+string(REPLACE ";" "\n" project_t345_ownership_contents
+    "${PROJECT_T345_DEFERRED_OWNERSHIP_MATRIX}")
+file(GENERATE
+    OUTPUT "${CMAKE_BINARY_DIR}/t345-deferred-direct-ownership-matrix.txt"
+    CONTENT "${project_t345_ownership_contents}\n")
+file(WRITE "${CMAKE_BINARY_DIR}/t345-invalid-deferred-direct-ownership-matrix.txt"
+    "duplicate|tests/duplicate.c|project-owned-owner-test|s2-owner-test-strict-cohort\n"
+    "duplicate|tests/duplicate.c|project-owned-owner-test|s2-owner-test-strict-cohort\n")
+add_custom_target(verify-t345-deferred-direct-ownership
+    COMMAND "${CMAKE_COMMAND}"
+        -DPROJECT_T345_T344_MATRIX_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t344-direct-compilation-matrix.txt
+        -DPROJECT_T345_OWNERSHIP_MATRIX_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t345-deferred-direct-ownership-matrix.txt
+        -P "${CMAKE_SOURCE_DIR}/cmake/verify_t345_deferred_direct_ownership.cmake"
+    COMMENT "Verifying T345 deferred direct-compilation ownership"
+    VERBATIM)
+add_custom_target(verify-t345-deferred-direct-ownership-selftest
+    COMMAND "${CMAKE_COMMAND}"
+        -DPROJECT_T345_VERIFIER:FILEPATH=${CMAKE_SOURCE_DIR}/cmake/verify_t345_deferred_direct_ownership.cmake
+        -DPROJECT_T345_T344_MATRIX_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t344-direct-compilation-matrix.txt
+        -DPROJECT_T345_INVALID_OWNERSHIP_MATRIX_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t345-invalid-deferred-direct-ownership-matrix.txt
+        -P "${CMAKE_SOURCE_DIR}/cmake/verify_t345_deferred_direct_ownership_selftest.cmake"
+    COMMENT "Self-testing T345 deferred direct-compilation ownership verification"
+    VERBATIM)
+if(CMAKE_GENERATOR MATCHES "Ninja")
+    add_custom_target(audit-t345-deferred-direct-warnings
+        COMMAND "${CMAKE_COMMAND}"
+            -DPROJECT_T345_OWNERSHIP_MATRIX_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t345-deferred-direct-ownership-matrix.txt
+            -DPROJECT_T345_NINJA:FILEPATH=${CMAKE_MAKE_PROGRAM}
+            -DPROJECT_T345_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -DPROJECT_T345_OUTPUT_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t345-deferred-direct-warning-baseline.txt
+            -P "${CMAKE_SOURCE_DIR}/cmake/audit_t345_deferred_direct_warnings.cmake"
+        COMMENT "Auditing T345 deferred direct-compilation warnings"
+        VERBATIM)
+endif()
+add_dependencies(verify-current-specialized-gates
+    verify-t345-deferred-direct-ownership
+    verify-t345-deferred-direct-ownership-selftest)

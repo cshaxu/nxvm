@@ -2,8 +2,29 @@
 
 ## Current Work
 
-**Idle.** M5 T344 is closed. The next Queue candidate is the Windows 3.x
-readiness map.
+**Active.** M5 T345 S1 establishes the whole-graph direct-compilation
+ownership and diagnostic baseline before any deferred source is promoted.
+
+## M5 T345 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner approved 2026-08-13: admit the T344 deferred direct-compilation work as the next quality task, add its proposal and Queue entry, and begin implementation. |
+| Objective | Regenerate and classify every T344 deferred direct C source/target row into a reproducible ownership and direct-warning baseline with one precise S2/S3 admission mechanism. |
+| Non-goals | Do not add strict flags, change source behavior, suppress warnings, change docs/rules, claim linked dependency coverage, or repair xasm/device/runtime debt. |
+| Reference Baseline | `be54d3ea74dcd32e49ec1a11def213402a849e9f` / `vm-0-5-0344`; T344 direct matrix contains 305 rows: 130 retained strict, 54 deferred production, and 121 deferred owner test. |
+| Candidate Proposal | [M5 direct-compilation strictness convergence](../proposals/m5-direct-compilation-strictness-convergence.md), Queue item 1. |
+| Files And ABI Surface | CMake direct-matrix/verifier surface and new T345 evidence/history/proposal/state records only; no runtime or public ABI surface. |
+| Applicable Rules | Task Reading Set; Execution lifecycle, similar-issue sweep, and task-closure requirements; Documentation authority boundaries; Coding direct-compilation vocabulary. Architecture runtime invariants are not applicable because S1 changes no production behavior. |
+| Verification | Fresh MinGW GCC/Ninja configure; generated direct matrix; S1 classifier/verifier positive run and negative self-check; existing T344 direct matrix verification; documentation governance; `git diff --check`; current-gate if configuration changes require it. |
+| Expected Markers | A committed T345 S1 ownership/warning-baseline evidence record and a mechanical verifier reporting every deferred row classified with a named mechanism. |
+| Asset Needs | No external source, firmware, guest media, or protected asset. |
+| Reporting Requirements | Record source/target counts, every ownership class, baseline command/toolchain, warning classes, duplicate source relationships, and any source outside the fixed matrix. Report a material mechanism/risk conflict before proceeding. |
+| Stop Conditions | Stop if classification requires a global compiler policy, a source/runtime change, an unowned build generator, or a row cannot be attributed to a direct configured target/source pair. Transfer such a condition rather than inventing a category. |
+| Exit Criteria | All 175 deferred rows are present exactly once in committed T345 evidence, have an actual-command and warning-baseline record, one defined ownership/admission mechanism, and mechanical positive/negative verification. No source receives strict flags in S1. |
+| Original Owner Request | Add the T344 deferred non-strict compilation scope to durable governance, avoid incremental warning patches, create a proposal/Queue task, and begin holistic implementation. |
+| Similar-Issue Sweep | Whole configured T344 direct matrix is the sweep scope. Search and classify all deferred rows, not only the 54 inherited production rows or a convenient test subset; a matrix mismatch is a blocker. |
 
 ## Current Technical Baseline
 
