@@ -2,29 +2,8 @@
 
 ## Current Work
 
-**Active.** M5 T332 S1 materializes VM session configuration through one private
-profile-default-plus-override path (single-session coordinator/executor cycle).
-
-## M5 T332 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner approved T332 in this thread on 2026-08-12 after Td S76, expressly authorizing the VM-session and fixture findings to proceed as multiple subtasks. The owner requested T313, but linear identifier governance requires new T332 because T313 is closed. |
-| Objective | Eliminate the duplicated `vm_session_create` default/configuration branches by materializing profile defaults once and applying explicit caller overrides once, with no behavior or API change. |
-| Non-goals | No lifecycle rollback refactor, media/provider behavior change, fixture consolidation, public config API, core/device ownership change, mantle/DOS/NXVDM work, or rules edit. |
-| Reference Baseline | `26a48fde`; clean `main` and `origin/main` before admission, with the accepted T331 artifact as the prior developer baseline. |
-| Candidate Proposal | [VM session construction transaction](../proposals/m5-vm-session-construction-transaction.md). |
-| Files And ABI Surface | Expected: `src/vm/composition/session/session.c`, an owner session smoke under `tests/products/`, CMake registration/evidence as required, `docs/states/CURRENT.md`, and T332 history. Private helper only; `vm_session_config` and all public ABI remain unchanged. |
-| Applicable Rules | `docs/README.md` Task Reading Set; `docs/rules/EXECUTION.md`; `docs/rules/ARCHITECTURE.md` single owner/composition-root invariants; `docs/rules/CODING.md` private cohesive helper and project vocabulary; `docs/design/ARCHITECTURE.md` VM composition ownership; `docs/design/CODING.md` source/test placement. |
-| Verification | Focused default/configured session creation and retained memory-reconfigure/initialization-atomicity smokes; configuration and developer-artifact build; documentation governance; `git diff --check`; full `current-gates-gcc`. Record exact command results and T332 artifact SHA-256. |
-| Expected Markers | Existing session smoke markers remain unchanged; new focused proof demonstrates equivalent profile-derived timing/clock/KBC fields plus explicit default/override memory, CPU, and FPU choices. |
-| Asset Needs | None; no guest media, firmware import, external source, or machine-local asset. |
-| Reporting Requirements | Before edits, report contract confirmation or a stop-condition objection. Deliver one complete pushed P1 with actual-change review, changed files, default/override evidence, API/no-behavior boundary, full verification, artifact identity, and similar-issue sweep. |
-| Stop Conditions | Stop for a required public API/config semantic change, a discovered lifecycle/device defect outside materialization, required rules change, or evidence that config branches intentionally select distinct profile semantics. |
-| Exit Criteria | One private profile-default materialization plus one bounded override path replaces both duplicated branches; no `vm_session_config` ABI or runtime selection behavior changes; all affected construction/reconfigure evidence and full current gate pass; artifact/evidence/history are updated and P1 is pushed. |
-| Original Owner Request | The owner requested a documentation Td first, then multiple subtasks for the two VM-session findings and test-fixture finding; after identifier correction, the owner approved the new task. |
-| Similar-Issue Sweep | Inspect VM composition for other duplicated profile-default/override materialization paths and classify each as shared helper, intentional distinct product policy, or deferred separately bounded debt. |
+**Idle.** M5 T332 S1 is accepted; T332 remains open and requires a separately
+admitted S2 lifecycle-transaction packet.
 
 ## Current Technical Baseline
 
@@ -44,6 +23,7 @@ profile-default-plus-override path (single-session coordinator/executor cycle).
 ## Recent M5 Closures
 
 | Task | Compact result |
+| T332 S1 | Accepted `f0b1a9bd`: VM session creation now has one private profile-default materialization followed by explicit memory/CPU/FPU overrides. The focused default/override/core-value proof, 49/49 specialized gates, 212/212 current CTests, and T332 artifact SHA-256 are retained in [history](../history/M5-T332-vm-session-construction-transaction.md). |
 | T331 | Closed the bounded real-mode `ExecFinal` final-delivery construction: `#DE/#MF/#BR/#NM/#GP` share one rollback/diagnostic plan, and `#GP` IVT success no longer records a terminal fault before transfer. Real-mode `#PF` is architecturally outside paging's protected-mode state. The new `#GP` frame/failed-IVT regression, mechanical construction verifier, artifact, and 212/212 current-gate result are retained in [history](../history/M5-T331-exception-final-delivery.md). |
 | T330 | Closed the whole-codebase construction-drift package: one task-transition constructor, FDD/HDD backing/create atomicity, and CALL-gate dual-fault preflight convergence. Its mechanism matrices remain retained evidence; they are not a current mandatory rule. Intel-required layouts remain explicit; T330 artifact, focused regressions, 211/211 current-gate, and governance evidence are in [history](../history/M5-T330-width-path-convergence.md). |
 | T329 | Closed the bounded Intel 80286/80386 protected task-transition state machine: 16/32-bit direct and task-gate entry, nested CALL/IRET state, incoming LDT images, source-CR3 preflight/incoming-CR3 commit, and TSS post-switch `#DB`. S7 proves target-page fetch, target-TSS `#PF` atomicity, and a target-state restart frame; the 0329 artifact and 211/211 gate result are in [history](../history/M5-T329-task-transition-state-machine.md). |
