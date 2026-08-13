@@ -2,8 +2,28 @@
 
 ## Current Work
 
-**Idle.** M5 T347 S3 is accepted and closed; the cross-controller storage
-reconciliation requires a separately admitted packet.
+M5 T347 S4 - Cross-controller storage lifecycle reconciliation (Single-Session Mode).
+
+## M5 T347 S4 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; single-session coordinator and executor roles are performed sequentially in this session. |
+| Admission And Approval | Owner approved the post-T346 PC/AT device-completeness sequence on 2026-08-13; accepted T347 S1--S3 establish the lifecycle and both controller migrations. |
+| Objective | Reconcile and prove the complete retained FDC plus ATA service lifecycle under one readiness owner: fixed order, pending visibility, cancellation, next-arbitration publication, and all explicit deferred boundaries. |
+| Non-goals | No new storage commands, ATA/FDC mechanics, generic scheduler or bus redesign, DMA redesign, media ABI change, host timing, guest media, Windows readiness claim, or physical disk-duration claim. |
+| Reference Baseline | `4376aff9` / T347 S3 closure; [T347 S1](../etc/evidence/t347-s1-storage-service-lifecycle.md), [S2](../etc/evidence/t347-s2-fdc-deferred-service.md), and [S3](../etc/evidence/t347-s3-ata-deferred-service.md) evidence. |
+| Candidate Proposal | [PC/AT storage controller service timing](../proposals/m5-storage-controller-service-timing.md). |
+| Files And ABI Surface | Expected: storage/timeline focused tests, evidence/index, Current, and only a narrowly reproduced lifecycle correction in `machine`, `fdc`, or `hdc`; no public/host/media/DMA ABI change. |
+| Applicable Rules | Task Reading Set; architecture one timeline owner and copied boundary; coding owner-local fixtures; T346 due-event order; T347 lifecycle contract; source policy. |
+| Verification | Build a finite command/data/reset/cancellation matrix for both controllers; prove FDC-before-ATA service in one readiness tick, later PIC/DMA arbitration visibility, result/status acknowledgement, cancellation before service, no direct service caller, focused FDC/ATA/VM/timeline probes, fresh configuration, governance, diff check, and current gate. |
+| Expected Markers | Retained `M5:T347:S2:FDC-SERVICE:OK`, `M5:T347:S3:ATA-SERVICE:OK`, FDC media/read-track, ATA DOS/HDD boot, and T346 timeline/arbitration/readiness markers; add a cross-storage marker only if a bounded owner smoke is necessary. |
+| Asset Needs | No guest media, firmware, or third-party code import. Existing controller protocol references remain research-only. |
+| Reporting Requirements | Record the combined state/caller/order/cancellation table, actual source/test review, every non-goal receiver, task closure audit, and one pushed complete P delivery. |
+| Stop Conditions | Stop for a reproduced need for a new timeline capacity, cross-controller shared scheduler, DMA/media/provider ABI change, unbounded buffering, CPU delivery change, or hardware requirement outside retained controller surfaces. |
+| Exit Criteria | Every retained FDC/ATA command and final-data path is reconciled once; one readiness owner and FDC-then-ATA order are proven; reset/control/media cancellation cannot publish stale work; all intentional non-L3-mechanical boundaries have named Queue/TODO receivers; no unsupported board-wide parity claim. |
+| Original Owner Request | Build high-value PC/AT device completeness and L3 timing holistically before Windows-startup testing. |
+| Similar-Issue Sweep | Inspect all readiness/timeline registrations, FDC/HDC service and refresh calls, command/data/control/reset/finalization callers, trace tests, DMA/PIC visibility tests, and storage TODO/Queue transfers. |
 
 ## Current Technical Baseline
 

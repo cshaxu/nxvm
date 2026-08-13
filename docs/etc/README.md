@@ -56,6 +56,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t347-s1-storage-service-lifecycle.md` | Verification owner | T347 S1 FDC/ATA command-service lifecycle, timeline-owner, caller/write, cancellation, and migration inventory. Retire into T347 history at task closure. |
 | `evidence/t347-s2-fdc-deferred-service.md` | Verification owner | T347 S2 FDC pending-command and pending-completion lifecycle, readiness owner, cancellation sweep, and focused proof. Retire into T347 history at task closure. |
 | `evidence/t347-s3-ata-deferred-service.md` | Verification owner | T347 S3 ATA PIO pending-command and sector-completion lifecycle, task-file capture, readiness owner, cancellation sweep, and VM proof. Retire into T347 history at task closure. |
+| `evidence/t347-s4-storage-reconciliation.md` | Verification owner | T347 S4 retained FDC/ATA lifecycle, sole readiness owner, fixed service order, cancellation, and L3-boundary reconciliation. Retire into T347 history at task closure. |
 | `operations/` | Execution, source, and release owners | Toolchain, policy, templates, release procedure, and closure material. |
 | `research/` | Source owner | Provenance, external references, and non-product research. |
 | `history/` | Documentation owner | Read-only legacy and M5 migration/roadmap evidence. |

@@ -27,7 +27,9 @@ typedef enum core_machine_trace_event_type {
     CORE_MACHINE_TRACE_VADP_ADVANCE,
     CORE_MACHINE_TRACE_RUN_BOUNDARY,
     CORE_MACHINE_TRACE_STOP,
-    CORE_MACHINE_TRACE_FAULT
+    CORE_MACHINE_TRACE_FAULT,
+    CORE_MACHINE_TRACE_FDC_ADVANCE,
+    CORE_MACHINE_TRACE_HDC_ADVANCE
 } core_machine_trace_event_type;
 
 typedef struct core_machine_trace_event {

@@ -27,18 +27,22 @@ static C_INT readiness_expect_chain(const readiness_trace_probe *probe)
     for (index = 0u; index < probe->count; ++index) {
         const core_machine_trace_event *event = &probe->events[index];
 
-        if (event->type == CORE_MACHINE_TRACE_FDC_REFRESH ||
+        if (event->type == CORE_MACHINE_TRACE_FDC_ADVANCE ||
+            event->type == CORE_MACHINE_TRACE_FDC_REFRESH ||
+            event->type == CORE_MACHINE_TRACE_HDC_ADVANCE ||
             event->type == CORE_MACHINE_TRACE_HDC_REFRESH ||
             event->type == CORE_MACHINE_TRACE_RTC_ADVANCE) {
             core_machine_trace_event_type expected = phase == 0u ?
-                CORE_MACHINE_TRACE_FDC_REFRESH : phase == 1u ?
+                CORE_MACHINE_TRACE_FDC_ADVANCE : phase == 1u ?
+                CORE_MACHINE_TRACE_FDC_REFRESH : phase == 2u ?
+                CORE_MACHINE_TRACE_HDC_ADVANCE : phase == 3u ?
                 CORE_MACHINE_TRACE_HDC_REFRESH : CORE_MACHINE_TRACE_RTC_ADVANCE;
 
             if (event->type != expected || event->timeline_ticks != due_tick) {
                 return 1;
             }
             ++phase;
-            if (phase == 3u) {
+            if (phase == 5u) {
                 phase = 0u;
                 ++due_tick;
             }
