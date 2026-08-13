@@ -36,3 +36,6 @@ that TR6/TR7 require the explicitly deferred persistent-cache model.
 
 S2 transfers only VM86/task/paging composition to S3 and ordinary breakpoint
 cause/vector-1 delivery to S4. It makes no production change.
+
+The accepted S2 delivery is `3f4f3cb2`. S3 now owns the VM86, task/TSS, and
+paging composition graph, retaining genuine TSS and frame layout differences.
