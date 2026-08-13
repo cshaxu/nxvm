@@ -256,6 +256,8 @@ static C_VOID core_machine_advance_scheduler(core_machine *machine,
     type_unsigned_64 kbc_ticks;
     type_unsigned_64 provider_ticks;
 
+    (C_VOID)core_machine_timeline_advance(&machine->timeline,
+        machine->elapsed_ticks);
     dma_ticks = core_machine_clock_domain_advance(&machine->dma_clock,
         elapsed_ticks);
     pit_ticks = core_machine_clock_domain_advance(&machine->pit_clock,
@@ -269,6 +271,10 @@ static C_VOID core_machine_advance_scheduler(core_machine *machine,
     core_machine_dma_advance(&machine->shared_dma_latch,
         &machine->shared_dma_primary, &machine->shared_dma_secondary,
         &machine->executor_memory, dma_ticks);
+    if (dma_ticks != 0u) {
+        core_machine_trace_record(machine, CORE_MACHINE_TRACE_DMA_ADVANCE,
+            0u, (type_unsigned_32)dma_ticks, 0u);
+    }
     core_machine_fdc_refresh(&machine->fdc);
     core_machine_hdc_refresh(&machine->hdc);
     core_machine_pit_advance(&machine->shared_pit, pit_ticks);
@@ -962,6 +968,19 @@ type_status core_machine_get_elapsed_ticks(
     return TYPE_STATUS_OK;
 }
 
+type_status core_machine_get_timeline_observation(const core_machine *machine,
+    core_machine_timeline_observation *out_observation)
+{
+    if (machine == STD_NULL || out_observation == STD_NULL) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    out_observation->now = machine->timeline.now;
+    out_observation->next_sequence = machine->timeline.next_sequence;
+    out_observation->pending_events = core_machine_timeline_pending_count(
+        &machine->timeline);
+    return TYPE_STATUS_OK;
+}
+
 type_status core_machine_get_cpu_diagnostic(
     const core_machine *machine, core_machine_cpu_diagnostic *out_diagnostic)
 {
@@ -1022,6 +1041,10 @@ static type_status core_machine_create_internal(
 
     machine->lifecycle = CORE_MACHINE_INITIALIZED;
     machine->cpu_profile = core_machine_resolve_cpu_profile(config->cpu_profile);
+    if (core_machine_timeline_initialize(&machine->timeline) != TYPE_STATUS_OK) {
+        STD_FREE(machine);
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
     core_machine_resolve_instruction_timing(&machine->instruction_timing,
         &config->instruction_timing, config->ticks_per_instruction);
     machine->maximum_instruction_ticks = core_machine_instruction_maximum_ticks(
@@ -1158,6 +1181,7 @@ static type_status core_machine_cold_reset(core_machine *machine)
     STD_ATOMIC_STORE(&machine->stop_requested, 0);
     machine->fault_detail = 0u;
     machine->elapsed_ticks = 0u;
+    core_machine_timeline_reset(&machine->timeline);
     core_machine_clock_domain_reset(&machine->dma_clock);
     core_machine_clock_domain_reset(&machine->pit_clock);
     core_machine_clock_domain_reset(&machine->vadp_clock);
@@ -1350,6 +1374,9 @@ type_status core_machine_run(
                 result->ticks += instruction_ticks;
                 machine->elapsed_ticks += instruction_ticks;
                 result->elapsed_ticks = machine->elapsed_ticks;
+                core_machine_trace_record(machine, CORE_MACHINE_TRACE_CPU_RETIRE,
+                    core_machine_linear_pc(machine),
+                    (type_unsigned_32)instruction_ticks, 0u);
                 core_machine_advance_scheduler(machine, instruction_ticks);
             }
             if (machine->executor_cpu.data.flagHalt) {

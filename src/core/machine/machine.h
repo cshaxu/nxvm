@@ -18,6 +18,8 @@
 
 #include "core/machine/clock.h"
 
+#include "core/machine/timeline.h"
+
 #include "core/machine/memory.h"
 
 #include "core/machine/port.h"
@@ -71,6 +73,7 @@ struct core_machine {
     STD_ATOMIC_BOOL stop_requested;
     type_unsigned_32 fault_detail;
     type_unsigned_64 elapsed_ticks;
+    core_machine_timeline timeline;
     core_machine_instruction_timing instruction_timing;
     type_unsigned_64 maximum_instruction_ticks;
     core_machine_clock_domain dma_clock;

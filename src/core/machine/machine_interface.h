@@ -164,6 +164,12 @@ typedef struct core_machine_observation {
     core_machine_cpu_diagnostic diagnostic;
 } core_machine_observation;
 
+typedef struct core_machine_timeline_observation {
+    type_unsigned_64 now;
+    type_unsigned_64 next_sequence;
+    type_unsigned_32 pending_events;
+} core_machine_timeline_observation;
+
 type_status core_machine_create(
     const core_machine_config *config,
     core_machine **out_machine);
@@ -191,6 +197,8 @@ type_status core_machine_get_memory_bytes(
     const core_machine *machine, STD_SIZE_T *out_memory_bytes);
 type_status core_machine_get_elapsed_ticks(
     const core_machine *machine, type_unsigned_64 *out_elapsed_ticks);
+type_status core_machine_get_timeline_observation(const core_machine *machine,
+    core_machine_timeline_observation *out_observation);
 
 type_status core_machine_get_cpu_diagnostic(
     const core_machine *machine,

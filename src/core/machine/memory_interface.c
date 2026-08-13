@@ -23,8 +23,16 @@ type_status core_machine_memory_read(
     if (machine->executor_memory.connect.backing == 0u) {
         return TYPE_STATUS_INVALID_STATE;
     }
-    return core_machine_memory_read_physical((t_ram *)&machine->executor_memory,
-        physical, (type_virtual_address)out_data, size);
+    {
+        type_status status = core_machine_memory_read_physical(
+            (t_ram *)&machine->executor_memory, physical,
+            (type_virtual_address)out_data, size);
+
+        core_machine_trace_record((core_machine *)machine,
+            CORE_MACHINE_TRACE_MEMORY_READ, physical, (type_unsigned_32)size,
+            (type_unsigned_32)status);
+        return status;
+    }
 }
 
 type_status core_machine_memory_write(
@@ -46,8 +54,14 @@ type_status core_machine_memory_write(
     if (machine->executor_memory.connect.backing == 0u) {
         return TYPE_STATUS_INVALID_STATE;
     }
-    return core_machine_memory_write_physical(&machine->executor_memory, physical,
-        (type_virtual_address)data, size);
+    {
+        type_status status = core_machine_memory_write_physical(
+            &machine->executor_memory, physical, (type_virtual_address)data, size);
+
+        core_machine_trace_record(machine, CORE_MACHINE_TRACE_MEMORY_WRITE,
+            physical, (type_unsigned_32)size, (type_unsigned_32)status);
+        return status;
+    }
 }
 
 type_status core_machine_memory_query(

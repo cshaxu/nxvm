@@ -55,6 +55,7 @@ add_library(core-machine STATIC
     src/core/machine/presentation_interface.c
     src/core/machine/rom_mapping_interface.c
     src/core/machine/trace_interface.c
+    src/core/machine/timeline.c
 )
 # This is the complete public core-machine runtime. It extends the primitive
 # storage/executor target below; it is not a second guest executor.
@@ -142,6 +143,10 @@ target_link_libraries(core-machine-timing-checkpoint-smoke PRIVATE core-machine)
 add_executable(core-machine-rational-clock-smoke
     tests/core/machine_rational_clock_smoke.c)
 target_link_libraries(core-machine-rational-clock-smoke PRIVATE core-machine)
+
+add_executable(core-machine-timeline-s2-smoke
+    tests/core/machine_timeline_s2_smoke.c)
+target_link_libraries(core-machine-timeline-s2-smoke PRIVATE core-machine)
 
 add_executable(core-machine-real-mode-tick-smoke
     tests/machine/core_machine_real_mode_tick_smoke.c)
@@ -1580,6 +1585,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-scheduler-smoke
     core-machine-timing-checkpoint-smoke
     core-machine-rational-clock-smoke
+    core-machine-timeline-s2-smoke
     core-machine-real-mode-tick-smoke
     core-machine-instruction-timing-smoke
     core-machine-real-mode-corpus-smoke
@@ -2753,10 +2759,10 @@ foreach(project_t345_target IN LISTS PROJECT_T344_CURRENT_GATE_TARGETS)
 endforeach()
 list(LENGTH PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS project_t345_s2_pure_count)
 list(LENGTH PROJECT_T345_S2_MIXED_OWNER_TEST_TARGETS project_t345_s2_mixed_count)
-if(NOT project_t345_s2_pure_count EQUAL 118 OR
+if(NOT project_t345_s2_pure_count EQUAL 119 OR
         NOT project_t345_s2_mixed_count EQUAL 3)
     message(FATAL_ERROR
-        "T345 S2 expected 118 pure and 3 mixed owner-test targets; found ${project_t345_s2_pure_count} pure and ${project_t345_s2_mixed_count} mixed.")
+        "T345 S2 expected 119 pure and 3 mixed owner-test targets; found ${project_t345_s2_pure_count} pure and ${project_t345_s2_mixed_count} mixed.")
 endif()
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     foreach(project_t345_target IN LISTS PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS)
