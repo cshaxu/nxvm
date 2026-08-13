@@ -382,7 +382,7 @@ function New-SelfTestRepository([string]$root) {
     Set-SelfTestFile $root "docs/rules/ARCHITECTURE.md" "# Architecture Rules`n`n## Non-Negotiable Invariants`n`n## Source And Research Admission"
     Set-SelfTestFile $root "docs/rules/CODING.md" "# Coding Standard`n`n## Source Discipline`n`n## Test Boundaries"
     Set-SelfTestFile $root "docs/rules/DOCUMENT.md" "# Documentation Rules`n`n## Authority Boundaries"
-    Set-SelfTestFile $root "docs/rules/EXECUTION.md" "# Execution Policy`n`n## Request Lifecycle`n`n## Execution Modes`n`n## Change Discipline`n`n## Similar-Issue Sweep`n`n## Work Identifiers`n`n## Linear Identifier Allocation`n`n## Documentation Governance Gate`n`n## Milestone Closure Evidence`n`n## Build Tree Hygiene`n`n## Recorder Trace Containment"
+    Set-SelfTestFile $root "docs/rules/EXECUTION.md" "# Execution Policy`n`n## Request Lifecycle`n`n## Roles And Execution Cycle`n`n## Change Discipline`n`n## Similar-Issue Sweep`n`n## Work Identifiers`n`n## Linear Identifier Allocation`n`n## Documentation Governance Gate`n`n## Milestone Closure Evidence`n`n## Build Tree Hygiene`n`n## Recorder Trace Containment"
     Set-SelfTestFile $root "docs/design/GOAL.md" "# Project Goals`n`n1. Strategic outcome"
     Set-SelfTestFile $root "docs/design/ARCHITECTURE.md" "# System Architecture`n`n## Product Shape`n`n## Modules, Ownership, And Assembly`n`n## Product And Host Boundary`n`n## Runtime Admission Boundary"
     Set-SelfTestFile $root "docs/design/CODING.md" "# Source Layout`n`n## Current And Target Trees`n`n## Files And Names`n`n## Source Organization"
@@ -746,7 +746,7 @@ Require-HeadingSchema "docs/rules/DOCUMENT.md" $documentRules `
 Require-HeadingSchema "docs/rules/EXECUTION.md" $executionRules `
     "Execution Policy" @(
         '^Request Lifecycle$',
-        '^Execution Modes$',
+        '^Roles And Execution Cycle$',
         '^Change Discipline$',
         '^Similar-Issue Sweep$',
         '^Work Identifiers$',
@@ -794,7 +794,7 @@ Require-RequiredH2 "docs/rules/CODING.md" $codingRules @(
 )
 Require-RequiredH2 "docs/rules/DOCUMENT.md" $documentRules @('^Authority Boundaries$')
 Require-RequiredH2 "docs/rules/EXECUTION.md" $executionRules @(
-    '^Request Lifecycle$', '^Execution Modes$', '^Change Discipline$', '^Similar-Issue Sweep$',
+    '^Request Lifecycle$', '^Roles And Execution Cycle$', '^Change Discipline$', '^Similar-Issue Sweep$',
     '^Work Identifiers$', '^Linear Identifier Allocation$',
     '^Documentation Governance Gate$', '^Milestone Closure Evidence$',
     '^Build Tree Hygiene$', '^Recorder Trace Containment$'

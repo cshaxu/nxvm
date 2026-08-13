@@ -2,7 +2,7 @@
 
 ## Current Work
 
-**Idle.** M5 Td S72 is closed. The next ordered Queue candidate requires owner
+**Idle.** M5 Td S73 is closed. The next ordered Queue candidate requires owner
 admission.
 
 ## Current Technical Baseline
@@ -33,6 +33,13 @@ admission.
 | T323 | Closed the bounded 80386DX non-task, non-VM86 protection/privilege-transfer composition: direct far transfer, loaded segment rights, 16-bit same/outer gate entry, outer IRET, and parameterized 16-bit call gates now join retained selector, 32-bit, and outer-RETF evidence. The sole S7 serializer correction preflights/copies parameter words. Task/LDT/debug/VM86, paging, legacy LOCK, and x87 retain named boundaries; the 0323 artifact SHA-256 and 209/209 gate result are in the [closure audit](../etc/evidence/t323-protection-privilege-closure-audit.md). |
 
 ## Recent Governance
+
+- **M5 Td S73:** replaced ordinary/dual-session branches with one
+  coordinator/executor role cycle. One session switches roles and cannot claim
+  independent review; two sessions obtain independent coordinator review. P,
+  Td/T closure, packet, stop, handoff, and role-authority constraints remain
+  explicit. Documentation self-test, combined governance check, and diff check
+  passed. Td work has no runtime or artifact change.
 
 - **M5 Td S72:** aligned executor-facing governance: the coordinator creates
   active packets; executor findings are reported for coordinator triage; every
@@ -82,9 +89,3 @@ admission.
   change.
 
 - **M5 Td S65:** aligned active numeric-task progress retention with task-level closure consolidation, added narrow structural checker coverage (including retained-progress self-tests), and preserved the eight-row cap for task-level closures. Td work has no runtime or artifact change.
-
-- **M5 Td S64:** requires an actual-change review before a task or subtask is
-  accepted: reports, test summaries, and diff statistics are evidence indexes,
-  not substitutes for reading the relevant changed code, build, test, and
-  documentation artifacts. In dual-session mode the coordinator owns that
-  independent review. Td work has no runtime or artifact change.
