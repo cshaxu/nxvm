@@ -69,4 +69,4 @@ by [Architecture Rules](../rules/ARCHITECTURE.md) and the indexed
 [source policy](../etc/operations/policy/source-policy.md).
 
 Current delivery state and staged implementation goals are defined only by
-[ROADMAP.md](ROADMAP.md) and [STATUS.md](../STATUS.md).
+[ROADMAP.md](ROADMAP.md) and [STATUS.md](../states/CURRENT.md).

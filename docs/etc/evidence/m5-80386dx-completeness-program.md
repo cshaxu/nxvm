@@ -33,7 +33,7 @@ project and are not silently admitted by this program.
 
 ## Continuous Delivery Shape
 
-The ordered candidates in [QUEUE.md](../../QUEUE.md) are intentionally
+The ordered candidates in [QUEUE.md](../../states/QUEUE.md) are intentionally
 unnumbered. A package advances one admitted task at a time under
 [Execution Policy](../../rules/EXECUTION.md); it does not reserve numeric `T`
 identifiers or create several active packets.

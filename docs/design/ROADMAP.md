@@ -2,7 +2,7 @@
 
 The roadmap defines milestone outcomes and their dependency order. It does not
 allocate tasks or prescribe implementation steps; those belong to
-[QUEUE.md](../QUEUE.md), [TODO.md](../TODO.md), and approved task packets.
+[QUEUE.md](../states/QUEUE.md), [TODO.md](../states/TODO.md), and approved task packets.
 Detailed historical and M5 planning material is retained in
 [etc/history/m5/roadmap-detail.md](../etc/history/m5/roadmap-detail.md).
 

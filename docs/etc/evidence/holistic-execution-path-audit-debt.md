@@ -59,6 +59,6 @@ queue or TODO transfer.  It must not claim global architectural cleanup.
 
 ## Relationship To Current Debt
 
-`docs/TODO.md` retains the open ledger entry and its priority/admission
+`docs/states/TODO.md` retains the open ledger entry and its priority/admission
 condition.  The queue candidate references this report so that a future task
 begins from a concrete audit method rather than another local symptom.

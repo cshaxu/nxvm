@@ -7,7 +7,7 @@ This is the sole documentation entry point.
 Before changing work for an S, every participant reads:
 
 1. this guide;
-2. the active [Status](STATUS.md) packet and its S brief;
+2. the active [Current](states/CURRENT.md) packet and its S brief;
 3. the [Execution Rules](rules/EXECUTION.md) reading index and the lifecycle
    paragraphs it names; and
 4. [Contributing](../CONTRIBUTING.md).
@@ -15,7 +15,7 @@ Before changing work for an S, every participant reads:
 The active packet or brief may name additional authorities, local instructions,
 evidence, or artifacts; those are also required. Then apply these triggers:
 
-- A coordinator planning or admitting an S also reads [Queue](QUEUE.md) and
+- A coordinator planning or admitting an S also reads [Queue](states/QUEUE.md) and
   [Roadmap](design/ROADMAP.md). When closing an S, the coordinator also reads
   [Documentation Rules](rules/DOCUMENT.md).
 - A code or build change reads [System Architecture](design/ARCHITECTURE.md),
@@ -54,9 +54,10 @@ For system-wide orientation, read the current authorities in this order:
 
 ## Daily Operation
 
-`STATUS.md` is the only active-task and technical-baseline authority.
-`QUEUE.md` contains ordered, unnumbered candidate work; only an approved active
-task receives a numeric identifier. `TODO.md` contains unplanned debt only.
+`states/CURRENT.md` is the only active-task and technical-baseline authority.
+`states/QUEUE.md` contains ordered, unnumbered candidate work; every candidate
+links to its proposal. Only an approved active task receives a numeric
+identifier. `states/TODO.md` contains unplanned debt only.
 
 ## Supporting Detail
 

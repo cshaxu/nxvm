@@ -1,7 +1,7 @@
 # Contributing
 
 Read the [Documentation Guide](docs/README.md), the active
-[Project Status](docs/STATUS.md), and [Execution Rules](docs/rules/EXECUTION.md)
+[Project Status](docs/states/CURRENT.md), and [Execution Rules](docs/rules/EXECUTION.md)
 before proposing or changing work. Follow the guide's **Task Reading Set** for
 your role and change surface. The design and rule documents linked there are
 the implementation authorities; this file does not restate them.

@@ -4,7 +4,7 @@
 
 This supporting record preserves the closed T329 task-system construction.
 Intel 80386 behavior remains the authority. It does not allocate a task or
-replace [Status](../../STATUS.md). It records only the bounded protected task
+replace [Status](../../states/CURRENT.md). It records only the bounded protected task
 transition state machine; ordinary debug-register and breakpoint behavior,
 VM86 task breadth, VME/PVI, and x87 execution remain separate boundaries.
 

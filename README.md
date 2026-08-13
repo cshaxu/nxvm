@@ -15,7 +15,7 @@ status authority.
   [Source Layout](docs/design/CODING.md) define the product and source shape.
 - [Product UX](docs/design/UI.md) defines high-level interaction.
 - [Roadmap](docs/design/ROADMAP.md) defines milestone outcomes and order.
-- [Project Status](docs/STATUS.md) is the only current task and technical
+- [Project Status](docs/states/CURRENT.md) is the only current task and technical
   baseline authority.
 
 ## Project Boundary

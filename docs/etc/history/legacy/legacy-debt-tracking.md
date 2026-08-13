@@ -1,9 +1,9 @@
 # Legacy Debt Tracking
 
-> Superseded by [docs/TODO.md](../../../TODO.md). Retained only as a historical
+> Superseded by [docs/states/TODO.md](../../../states/TODO.md). Retained only as a historical
 > description of an earlier governance layout; it is not current policy.
 
-[`../TODO.md`](../../../TODO.md) is the sole live technical-debt ledger. It records
+[`../TODO.md`](../../../states/TODO.md) is the sole live technical-debt ledger. It records
 known compatibility gaps, architecture risks, platform limitations, and
 recurring review failures. `STATUS.md` remains the sole active-work
 authority; the ledger never starts a task or changes product behavior.
