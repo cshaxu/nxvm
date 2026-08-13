@@ -59,6 +59,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t347-s4-storage-reconciliation.md` | Verification owner | Historical T347 S4 retained FDC/ATA lifecycle, sole readiness owner, fixed service order, cancellation, and L3-boundary reconciliation. |
 | `evidence/t348-s1-dual-8237a-gap-ledger.md` | Verification owner | T348 S1 dual-8237A/PC-AT DMA contract, ownership, source/proof gap ledger, and bounded S2--S4 receiver plan. Retain with T348 history at task closure. |
 | `evidence/t348-s2-dma-port-page-layout.md` | Verification owner | T348 S2 shared PC/AT DMA page-boundary and peer-page-port repairs, byte/word layout matrix, and retained S3/S4 transfers. Retain with T348 history at task closure. |
+| `evidence/t348-s3-dma-request-cascade.md` | Verification owner | T348 S3 PC/AT logical request, priority, cascade, controller-disable, and binding-scoped EOP contract. Retain with T348 history at task closure. |
 | `operations/` | Execution, source, and release owners | Toolchain, policy, templates, release procedure, and closure material. |
 | `research/` | Source owner | Provenance, external references, and non-product research. |
 | `history/` | Documentation owner | Read-only legacy and M5 migration/roadmap evidence. |

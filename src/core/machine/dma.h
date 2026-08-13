@@ -179,6 +179,8 @@ extern "C"
         const core_machine_dma_request_binding *binding);
     C_VOID core_machine_dma_request_deassert(t_dma *primary, t_dma *secondary,
         const core_machine_dma_request_binding *binding);
+    C_VOID core_machine_dma_request_terminate(t_dma *primary, t_dma *secondary,
+        const core_machine_dma_request_binding *binding);
     C_VOID core_machine_dma_finalize(t_latch *latch, t_dma *primary,
                                      t_dma *secondary);
 

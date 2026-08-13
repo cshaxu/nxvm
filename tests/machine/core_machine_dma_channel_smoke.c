@@ -10,6 +10,14 @@ typedef struct core_machine_dma_fixture {
     C_UINT terminal_count;
 } core_machine_dma_fixture;
 
+typedef struct core_machine_dma_eop_fixture {
+    core_machine_dma_fixture transfer;
+    t_dma *primary;
+    t_dma *secondary;
+    const core_machine_dma_request_binding *binding;
+    type_bool terminate_on_read;
+} core_machine_dma_eop_fixture;
+
 typedef struct core_machine_dma_word_fixture {
     type_unsigned_16 words[3];
     type_unsigned_8 next;
@@ -29,6 +37,30 @@ static C_VOID core_machine_dma_fixture_terminal(C_VOID *owner, t_latch *latch)
 
     (C_VOID)latch;
     if (fixture != STD_NULL) ++fixture->terminal_count;
+}
+
+static C_VOID core_machine_dma_eop_fixture_read(C_VOID *owner, t_latch *latch)
+{
+    core_machine_dma_eop_fixture *fixture =
+        (core_machine_dma_eop_fixture *)owner;
+
+    if (fixture == STD_NULL || latch == STD_NULL) return;
+    latch->data.byte = fixture->transfer.bytes[fixture->transfer.next++];
+    if (fixture->terminate_on_read) {
+        fixture->terminate_on_read = TYPE_FALSE;
+        core_machine_dma_request_terminate(fixture->primary, fixture->secondary,
+            fixture->binding);
+    }
+}
+
+static C_VOID core_machine_dma_eop_fixture_terminal(C_VOID *owner,
+    t_latch *latch)
+{
+    core_machine_dma_eop_fixture *fixture =
+        (core_machine_dma_eop_fixture *)owner;
+
+    (C_VOID)latch;
+    if (fixture != STD_NULL) ++fixture->transfer.terminal_count;
 }
 
 static C_VOID core_machine_dma_word_fixture_read(C_VOID *owner, t_latch *latch)
@@ -113,14 +145,23 @@ C_INT main(C_VOID)
     static const core_machine_dma_channel_provider word_provider = {
         core_machine_dma_word_fixture_read, STD_NULL, STD_NULL
     };
+    static const core_machine_dma_channel_provider eop_provider = {
+        core_machine_dma_eop_fixture_read, STD_NULL,
+        core_machine_dma_eop_fixture_terminal
+    };
     t_latch latch = {0};
     t_dma primary = {0};
     t_dma secondary = {0};
     t_ram memory = {0};
     t_port port;
     core_machine_dma_request_binding binding = {0};
+    core_machine_dma_request_binding priority_binding = {0};
+    core_machine_dma_request_binding eop_binding = {0};
     core_machine_dma_request_binding word_bindings[3] = {{0}};
     core_machine_dma_fixture fixture = {{0xa5u, 0x5au}, 0u, 0u};
+    core_machine_dma_fixture priority_fixture = {{0x71u, 0x72u}, 0u, 0u};
+    core_machine_dma_eop_fixture eop_fixture = {{{0x91u, 0x92u}, 0u, 0u},
+        STD_NULL, STD_NULL, STD_NULL, TYPE_FALSE};
     core_machine_dma_word_fixture word_fixture = {{0x1234u, 0x5678u,
         0x9abcu}, 0u};
     type_unsigned_8 bytes[2] = {0};
@@ -142,6 +183,10 @@ C_INT main(C_VOID)
     core_machine_dma_reset(&latch, &primary, &secondary);
     if (core_machine_dma_bind_channel(&latch, &primary, &secondary, 2u,
             &provider, &fixture, &binding) != TYPE_STATUS_OK ||
+        core_machine_dma_bind_channel(&latch, &primary, &secondary, 1u,
+            &provider, &priority_fixture, &priority_binding) != TYPE_STATUS_OK ||
+        core_machine_dma_bind_channel(&latch, &primary, &secondary, 3u,
+            &eop_provider, &eop_fixture, &eop_binding) != TYPE_STATUS_OK ||
         core_machine_dma_bind_channel(&latch, &primary, &secondary, 5u,
             &word_provider, &word_fixture, &word_bindings[0]) != TYPE_STATUS_OK ||
         core_machine_dma_bind_channel(&latch, &primary, &secondary, 6u,
@@ -151,6 +196,9 @@ C_INT main(C_VOID)
         failed = 1;
         goto done;
     }
+    eop_fixture.primary = &primary;
+    eop_fixture.secondary = &secondary;
+    eop_fixture.binding = &eop_binding;
 
     /* Block-mode device -> RAM: count is inclusive, but each core DMA grant
      * may expose only one byte. */
@@ -252,8 +300,9 @@ C_INT main(C_VOID)
         failed = 1;
     }
 
-    /* Demand and single modes consume one request per grant. A second byte
-     * requires a fresh device request, never an implicit block continuation. */
+    /* A held hardware DREQ remains a level until its owner deasserts it. Demand
+     * and single modes therefore receive one deterministic grant per tick while
+     * the request remains asserted. */
     fixture.bytes[0] = 0x11u;
     fixture.bytes[1] = 0x22u;
     fixture.next = 0u;
@@ -267,22 +316,12 @@ C_INT main(C_VOID)
     core_machine_dma_advance(&latch, &primary, &secondary, &memory, 1u);
     if (core_machine_memory_read_physical(&memory, 0x11240u,
             (type_virtual_address)bytes, sizeof(bytes)) != TYPE_STATUS_OK ||
-        bytes[0] != 0x11u || bytes[1] != 0u || fixture.terminal_count != 0u) {
+        bytes[0] != 0x11u || bytes[1] != 0x22u || fixture.terminal_count != 1u ||
+        (primary.data.mask & VDMA_MASK_DRQ(2u)) == 0u) {
         STD_FPRINTF(STD_STDERR, "DMA demand first: %02x %02x tc=%u\n",
             bytes[0], bytes[1], fixture.terminal_count);
         failed = 1;
     }
-    core_machine_dma_request_assert(&primary, &secondary, &binding);
-    core_machine_dma_advance(&latch, &primary, &secondary, &memory, 1u);
-    if (core_machine_memory_read_physical(&memory, 0x11240u,
-            (type_virtual_address)bytes, sizeof(bytes)) != TYPE_STATUS_OK ||
-        bytes[1] != 0x22u || fixture.terminal_count != 1u ||
-        (primary.data.mask & VDMA_MASK_DRQ(2u)) == 0u) {
-        STD_FPRINTF(STD_STDERR, "DMA demand second: %02x %02x tc=%u mask=%02x\n",
-            bytes[0], bytes[1], fixture.terminal_count, primary.data.mask);
-        failed = 1;
-    }
-
     fixture.bytes[0] = 0x33u;
     fixture.bytes[1] = 0x44u;
     fixture.next = 0u;
@@ -296,22 +335,12 @@ C_INT main(C_VOID)
     core_machine_dma_advance(&latch, &primary, &secondary, &memory, 1u);
     if (core_machine_memory_read_physical(&memory, 0x11242u,
             (type_virtual_address)bytes, sizeof(bytes)) != TYPE_STATUS_OK ||
-        bytes[0] != 0x33u || bytes[1] != 0u || fixture.terminal_count != 0u) {
+        bytes[0] != 0x33u || bytes[1] != 0x44u || fixture.terminal_count != 1u ||
+        (primary.data.mask & VDMA_MASK_DRQ(2u)) == 0u) {
         STD_FPRINTF(STD_STDERR, "DMA single first: %02x %02x tc=%u\n",
             bytes[0], bytes[1], fixture.terminal_count);
         failed = 1;
     }
-    core_machine_dma_request_assert(&primary, &secondary, &binding);
-    core_machine_dma_advance(&latch, &primary, &secondary, &memory, 1u);
-    if (core_machine_memory_read_physical(&memory, 0x11242u,
-            (type_virtual_address)bytes, sizeof(bytes)) != TYPE_STATUS_OK ||
-        bytes[1] != 0x44u || fixture.terminal_count != 1u ||
-        (primary.data.mask & VDMA_MASK_DRQ(2u)) == 0u) {
-        STD_FPRINTF(STD_STDERR, "DMA single second: %02x %02x tc=%u mask=%02x\n",
-            bytes[0], bytes[1], fixture.terminal_count, primary.data.mask);
-        failed = 1;
-    }
-
     /* Memory-to-memory uses the same grant boundary. Channel 0 is the
      * source request and channel 1 supplies the destination count. */
     bytes[0] = 0x55u;
@@ -330,8 +359,6 @@ C_INT main(C_VOID)
     core_machine_port_write(&port, 0x000eu, 0u);
     core_machine_port_write(&port, 0x00d4u, 0u);
     core_machine_port_write(&port, 0x0009u, 0x04u);
-    core_machine_port_write(&port, 0x0009u, 0x05u);
-    core_machine_port_write(&port, 0x00d2u, 0x04u);
     core_machine_dma_advance(&latch, &primary, &secondary, &memory, 1u);
     if (core_machine_memory_read_physical(&memory, 0x0300u,
             (type_virtual_address)bytes, sizeof(bytes)) != TYPE_STATUS_OK ||
@@ -514,6 +541,207 @@ C_INT main(C_VOID)
         failed = 1;
     }
 
+    /* Software request bits are non-maskable, but the 8237A admits them only
+     * for block mode. A primary request reaches the primary controller through
+     * the secondary controller's reserved cascade channel. */
+    core_machine_dma_reset(&latch, &primary, &secondary);
+    fixture.bytes[0] = 0x61u;
+    fixture.bytes[1] = 0x62u;
+    fixture.next = 0u;
+    fixture.terminal_count = 0u;
+    core_machine_dma_write_channel2(&port, 0x1800u, 0u, 1u, 0x86u);
+    core_machine_port_write(&port, 0x000au, 0x06u);
+    core_machine_port_write(&port, 0x0009u, 0x06u);
+    core_machine_dma_advance(&latch, &primary, &secondary, &memory, 2u);
+    if (core_machine_memory_read_physical(&memory, 0x1800u,
+            (type_virtual_address)bytes, sizeof(bytes)) != TYPE_STATUS_OK ||
+        bytes[0] != 0x61u || bytes[1] != 0x62u ||
+        fixture.terminal_count != 1u || primary.data.request != 0u ||
+        (primary.data.mask & VDMA_MASK_DRQ(2u)) == 0u) {
+        failed = 1;
+    }
+
+    core_machine_dma_reset(&latch, &primary, &secondary);
+    bytes[0] = 0u;
+    fixture.bytes[0] = 0x63u;
+    fixture.next = 0u;
+    core_machine_dma_write_channel2(&port, 0x1810u, 0u, 0u, 0x06u);
+    core_machine_port_write(&port, 0x000eu, 0u);
+    core_machine_port_write(&port, 0x0009u, 0x06u);
+    core_machine_dma_advance(&latch, &primary, &secondary, &memory, 1u);
+    if (core_machine_memory_read_physical(&memory, 0x1810u,
+            (type_virtual_address)bytes, 1u) != TYPE_STATUS_OK || bytes[0] != 0u ||
+        !VDMA_GetREQUEST_DRQ(primary.data.request, 2u)) {
+        failed = 1;
+    }
+
+    /* Channel 4 is the board cascade path, not a bindable or software-forced
+     * primary transfer source. */
+    if (core_machine_dma_bind_channel(&latch, &primary, &secondary, 4u,
+            &provider, &fixture, &binding) != TYPE_STATUS_INVALID_ARGUMENT) {
+        failed = 1;
+    }
+    core_machine_port_write(&port, 0x00d2u, 0x04u);
+    core_machine_dma_advance(&latch, &primary, &secondary, &memory, 1u);
+    if (core_machine_memory_read_physical(&memory, 0x1810u,
+            (type_virtual_address)bytes, 1u) != TYPE_STATUS_OK || bytes[0] != 0u) {
+        failed = 1;
+    }
+
+    /* Fixed priority selects the lower primary channel first. Rotating
+     * priority moves the last served channel behind its peer. */
+    core_machine_dma_reset(&latch, &primary, &secondary);
+    fixture.bytes[0] = 0x72u;
+    fixture.next = 0u;
+    priority_fixture.bytes[0] = 0x71u;
+    priority_fixture.next = 0u;
+    core_machine_dma_write_primary_channel(&port, 1u, 0x1900u, 0u, 0x45u);
+    core_machine_dma_write_primary_channel(&port, 2u, 0x1902u, 0u, 0x46u);
+    core_machine_port_write(&port, 0x000eu, 0u);
+    core_machine_dma_request_assert(&primary, &secondary, &priority_binding);
+    core_machine_dma_request_assert(&primary, &secondary, &binding);
+    core_machine_dma_advance(&latch, &primary, &secondary, &memory, 1u);
+    if (core_machine_memory_read_physical(&memory, 0x1900u,
+            (type_virtual_address)bytes, 1u) != TYPE_STATUS_OK || bytes[0] != 0x71u ||
+        core_machine_memory_read_physical(&memory, 0x1902u,
+            (type_virtual_address)bytes, 1u) != TYPE_STATUS_OK || bytes[0] != 0u) {
+        failed = 1;
+    }
+
+    core_machine_dma_reset(&latch, &primary, &secondary);
+    fixture.bytes[0] = 0x92u;
+    fixture.bytes[1] = 0x93u;
+    fixture.next = 0u;
+    priority_fixture.bytes[0] = 0x81u;
+    priority_fixture.bytes[1] = 0x82u;
+    priority_fixture.next = 0u;
+    core_machine_dma_write_primary_channel(&port, 1u, 0x1910u, 1u, 0x45u);
+    core_machine_dma_write_primary_channel(&port, 2u, 0x1912u, 1u, 0x46u);
+    core_machine_port_write(&port, 0x0008u, VDMA_COMMAND_R);
+    core_machine_port_write(&port, 0x000eu, 0u);
+    core_machine_dma_request_assert(&primary, &secondary, &priority_binding);
+    core_machine_dma_request_assert(&primary, &secondary, &binding);
+    core_machine_dma_advance(&latch, &primary, &secondary, &memory, 2u);
+    if (core_machine_memory_read_physical(&memory, 0x1910u,
+            (type_virtual_address)bytes, 1u) != TYPE_STATUS_OK || bytes[0] != 0x81u ||
+        core_machine_memory_read_physical(&memory, 0x1912u,
+            (type_virtual_address)bytes, 1u) != TYPE_STATUS_OK || bytes[0] != 0x92u) {
+        failed = 1;
+    }
+
+    /* Secondary local channels retain the same rotation rule without letting
+     * their word transfers escape the secondary controller. */
+    core_machine_dma_reset(&latch, &primary, &secondary);
+    word_fixture.words[0] = 0xa135u;
+    word_fixture.words[1] = 0xb246u;
+    word_fixture.next = 0u;
+    core_machine_dma_write_secondary_channel(&port, 1u, 0x0a00u, 1u, 0u,
+        0x45u);
+    core_machine_dma_write_secondary_channel(&port, 2u, 0x0a01u, 1u, 0u,
+        0x46u);
+    core_machine_port_write(&port, 0x00d0u, VDMA_COMMAND_R);
+    core_machine_port_write(&port, 0x00dcu, 0u);
+    core_machine_dma_request_assert(&primary, &secondary, &word_bindings[0]);
+    core_machine_dma_request_assert(&primary, &secondary, &word_bindings[1]);
+    core_machine_dma_advance(&latch, &primary, &secondary, &memory, 2u);
+    if (core_machine_memory_read_physical(&memory, 0x1400u,
+            (type_virtual_address)words, sizeof(words[0])) != TYPE_STATUS_OK ||
+        words[0] != 0xa135u ||
+        core_machine_memory_read_physical(&memory, 0x1402u,
+            (type_virtual_address)words, sizeof(words[0])) != TYPE_STATUS_OK ||
+        words[0] != 0xb246u) {
+        failed = 1;
+    }
+
+    /* Either controller disable gate prevents a pending bound request from
+     * publishing a device or memory transfer until software reenables it. */
+    core_machine_dma_reset(&latch, &primary, &secondary);
+    bytes[0] = 0u;
+    fixture.bytes[0] = 0xa1u;
+    fixture.next = 0u;
+    core_machine_dma_write_channel2(&port, 0x1a00u, 0u, 0u, 0x86u);
+    core_machine_port_write(&port, 0x000eu, 0u);
+    core_machine_dma_request_assert(&primary, &secondary, &binding);
+    core_machine_port_write(&port, 0x0008u, VDMA_COMMAND_CTRL);
+    core_machine_dma_advance(&latch, &primary, &secondary, &memory, 1u);
+    core_machine_port_write(&port, 0x0008u, 0u);
+    core_machine_dma_advance(&latch, &primary, &secondary, &memory, 1u);
+    if (core_machine_memory_read_physical(&memory, 0x1a00u,
+            (type_virtual_address)bytes, 1u) != TYPE_STATUS_OK || bytes[0] != 0xa1u) {
+        failed = 1;
+    }
+
+    core_machine_dma_reset(&latch, &primary, &secondary);
+    words[0] = 0u;
+    word_fixture.words[0] = 0xb357u;
+    word_fixture.next = 0u;
+    core_machine_dma_write_secondary_channel(&port, 1u, 0x0af0u, 0u, 0u,
+        0x85u);
+    core_machine_port_write(&port, 0x00dcu, 0u);
+    core_machine_port_write(&port, 0x0008u, VDMA_COMMAND_CTRL);
+    core_machine_dma_request_assert(&primary, &secondary, &word_bindings[0]);
+    core_machine_dma_advance(&latch, &primary, &secondary, &memory, 1u);
+    if (core_machine_memory_read_physical(&memory, 0x15e0u,
+            (type_virtual_address)words, sizeof(words[0])) != TYPE_STATUS_OK ||
+        words[0] != 0xb357u) {
+        failed = 1;
+    }
+
+    core_machine_dma_reset(&latch, &primary, &secondary);
+    words[0] = 0u;
+    word_fixture.words[0] = 0xc357u;
+    word_fixture.next = 0u;
+    core_machine_dma_write_secondary_channel(&port, 1u, 0x0b00u, 0u, 0u,
+        0x85u);
+    core_machine_port_write(&port, 0x00dcu, 0u);
+    core_machine_dma_request_assert(&primary, &secondary, &word_bindings[0]);
+    core_machine_port_write(&port, 0x00d0u, VDMA_COMMAND_CTRL);
+    core_machine_dma_advance(&latch, &primary, &secondary, &memory, 1u);
+    core_machine_port_write(&port, 0x00d0u, 0u);
+    core_machine_dma_advance(&latch, &primary, &secondary, &memory, 1u);
+    if (core_machine_memory_read_physical(&memory, 0x1600u,
+            (type_virtual_address)words, sizeof(words[0])) != TYPE_STATUS_OK ||
+        words[0] != 0xc357u) {
+        failed = 1;
+    }
+
+    /* External EOP is accepted only from the active opaque binding. It closes
+     * the active service, records TC/masking, and leaves other channels alone. */
+    core_machine_dma_reset(&latch, &primary, &secondary);
+    eop_fixture.transfer.bytes[0] = 0xd1u;
+    eop_fixture.transfer.bytes[1] = 0xd2u;
+    eop_fixture.transfer.next = 0u;
+    eop_fixture.transfer.terminal_count = 0u;
+    eop_fixture.terminate_on_read = TYPE_TRUE;
+    core_machine_dma_write_primary_channel(&port, 3u, 0x1b00u, 2u, 0x87u);
+    core_machine_port_write(&port, 0x000eu, 0u);
+    core_machine_dma_request_assert(&primary, &secondary, &eop_binding);
+    core_machine_dma_advance(&latch, &primary, &secondary, &memory, 2u);
+    if (core_machine_memory_read_physical(&memory, 0x1b00u,
+            (type_virtual_address)bytes, sizeof(bytes)) != TYPE_STATUS_OK ||
+        bytes[0] != 0xd1u || bytes[1] != 0u ||
+        eop_fixture.transfer.terminal_count != 1u ||
+        (primary.data.status & VDMA_STATUS_TC(3u)) == 0u ||
+        (primary.data.mask & VDMA_MASK_DRQ(3u)) == 0u) {
+        failed = 1;
+    }
+
+    core_machine_dma_reset(&latch, &primary, &secondary);
+    eop_fixture.transfer.bytes[0] = 0xe1u;
+    eop_fixture.transfer.next = 0u;
+    eop_fixture.transfer.terminal_count = 0u;
+    eop_fixture.terminate_on_read = TYPE_TRUE;
+    core_machine_dma_write_primary_channel(&port, 3u, 0x1b10u, 2u, 0x97u);
+    core_machine_port_write(&port, 0x000eu, 0u);
+    core_machine_dma_request_assert(&primary, &secondary, &eop_binding);
+    core_machine_dma_advance(&latch, &primary, &secondary, &memory, 1u);
+    if (eop_fixture.transfer.terminal_count != 1u ||
+        primary.data.currAddr[3] != 0x1b10u || primary.data.currCount[3] != 2u ||
+        (primary.data.mask & VDMA_MASK_DRQ(3u)) != 0u ||
+        (primary.data.status & VDMA_STATUS_TC(3u)) != 0u) {
+        failed = 1;
+    }
+
 done:
     core_machine_dma_finalize(&latch, &primary, &secondary);
     core_machine_memory_finalize(&memory);
@@ -523,5 +751,6 @@ done:
     STD_PRINTF("M5:T269:S4:DMA-MODES:OK\n");
     STD_PRINTF("M5:T230:S3:DMA-CHANNEL:OK\n");
     STD_PRINTF("M5:T348:S2:DMA-PORT-PAGE:OK\n");
+    STD_PRINTF("M5:T348:S3:DMA-REQUEST-CASCADE:OK\n");
     return 0;
 }

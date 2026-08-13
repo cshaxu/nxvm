@@ -204,6 +204,30 @@ static type_unsigned_8 GetRegTopId(t_dma *rdma, type_unsigned_8 reg) {
     }
     return (id + rdma->data.drx) % VDMA_CHANNEL_COUNT;
 }
+
+static type_bool dma_software_request_is_valid(const t_dma *dma,
+    type_unsigned_8 channel)
+{
+    return VDMA_GetREQUEST_DRQ(dma->data.request, channel) &&
+        (VDMA_GetMODE_M(dma->data.mode[channel]) == 0x02u ||
+            (channel == 0u && TYPE_GET_BIT(dma->data.command,
+                VDMA_COMMAND_M2M)));
+}
+
+static type_unsigned_8 dma_pending_requests(const t_dma *dma)
+{
+    type_unsigned_8 pending = VDMA_GetSTATUS_DRQS(dma->data.status) &
+        (type_unsigned_8)~dma->data.mask;
+    type_unsigned_8 channel;
+
+    for (channel = 0u; channel < VDMA_CHANNEL_COUNT; ++channel) {
+        if (dma_software_request_is_valid(dma, channel)) {
+            TYPE_SET_BIT(pending, VDMA_REQUEST_DRQ(channel));
+        }
+    }
+    return pending;
+}
+
 static C_VOID IncreaseCurrAddr(t_dma *rdma, type_unsigned_8 id) {
     rdma->data.currAddr[id]++;
 }
@@ -275,11 +299,9 @@ static C_VOID Transmission(t_dma *rdma, t_latch *latch, t_ram *ram,
 static C_VOID Execute(t_dma *rdma, t_latch *latch, t_ram *ram,
                     type_unsigned_8 id, type_bool flagWord) {
     type_bool flagM2M = ((id == 0) &&
-                      VDMA_GetREQUEST_DRQ(rdma->data.request, 1) &&
+                      VDMA_GetREQUEST_DRQ(rdma->data.request, 0) &&
                       TYPE_GET_BIT(rdma->data.command, VDMA_COMMAND_M2M));
     type_bool request_asserted = VDMA_GetSTATUS_DRQ(rdma->data.status, id);
-    TYPE_CLEAR_BIT(rdma->data.status, VDMA_STATUS_DRQ(id));
-    TYPE_CLEAR_BIT(rdma->data.request, VDMA_REQUEST_DRQ(id));
     if (TYPE_GET_BIT(rdma->data.command, VDMA_COMMAND_R)) {
         rdma->data.drx = (id + 1) % VDMA_CHANNEL_COUNT;
     }
@@ -341,12 +363,12 @@ static C_VOID Execute(t_dma *rdma, t_latch *latch, t_ram *ram,
             break;
         }
         if (rdma->data.currCount[id] == TYPE_MAX_UNSIGNED_16) {
-            TYPE_SET_BIT(rdma->data.status, VDMA_STATUS_TC(id)); /* set termination count */
             rdma->data.flagEOP = TYPE_TRUE;
         }
     }
     if (rdma->data.flagEOP) {
         rdma->data.isr = TYPE_ZERO_8;
+        TYPE_CLEAR_BIT(rdma->data.request, VDMA_REQUEST_DRQ(id));
         if (flagM2M) {
             TYPE_CLEAR_BIT(rdma->data.request, VDMA_REQUEST_DRQ(0));
             TYPE_CLEAR_BIT(rdma->data.request, VDMA_REQUEST_DRQ(1));
@@ -359,6 +381,7 @@ static C_VOID Execute(t_dma *rdma, t_latch *latch, t_ram *ram,
             rdma->data.currCount[id] = rdma->data.baseCount[id];
             TYPE_CLEAR_BIT(rdma->data.mask, VDMA_MASK_DRQ(id));
         } else {
+            TYPE_SET_BIT(rdma->data.status, VDMA_STATUS_TC(id));
             TYPE_SET_BIT(rdma->data.mask, VDMA_MASK_DRQ(id));
         }
     }
@@ -450,6 +473,31 @@ C_VOID core_machine_dma_request_deassert(t_dma *primary, t_dma *secondary,
         binding->channel, TYPE_FALSE);
 }
 
+C_VOID core_machine_dma_request_terminate(t_dma *primary, t_dma *secondary,
+    const core_machine_dma_request_binding *binding)
+{
+    t_dma *dma;
+    type_unsigned_8 channel;
+
+    if (binding == STD_NULL || primary == STD_NULL || secondary == STD_NULL ||
+        binding->core_token == 0u ||
+        binding->core_token != primary->connect.request_token ||
+        primary->connect.peer != secondary) return;
+    if (binding->channel <= 3u) {
+        dma = primary;
+        channel = binding->channel;
+    } else if (binding->channel >= 5u && binding->channel <= 7u) {
+        dma = secondary;
+        channel = binding->channel - 4u;
+    } else {
+        return;
+    }
+    if (TYPE_GET_BIT(dma->data.isr, VDMA_ISR_IS) &&
+        VDMA_GetISR_ISR(dma->data.isr) == channel) {
+        dma->data.flagEOP = TYPE_TRUE;
+    }
+}
+
 C_VOID core_machine_dma_initialize(t_latch *latch, t_dma *primary,
     t_dma *secondary, t_port *port)
 {
@@ -521,7 +569,8 @@ static C_VOID core_machine_dma_advance_one(t_latch *latch, t_dma *primary,
     if (TYPE_GET_BIT(secondary->data.isr, VDMA_ISR_IS)) {
         if (VDMA_GetISR_ISR(secondary->data.isr)) {
             Execute(secondary, latch, ram, VDMA_GetISR_ISR(secondary->data.isr), TYPE_TRUE);
-        } else if (TYPE_GET_BIT(primary->data.isr, VDMA_ISR_IS)) {
+        } else if (!TYPE_GET_BIT(primary->data.command, VDMA_COMMAND_CTRL) &&
+            TYPE_GET_BIT(primary->data.isr, VDMA_ISR_IS)) {
             Execute(primary, latch, ram, VDMA_GetISR_ISR(primary->data.isr), TYPE_FALSE);
         }
         if (!TYPE_GET_BIT(primary->data.isr, VDMA_ISR_IS)) {
@@ -529,26 +578,32 @@ static C_VOID core_machine_dma_advance_one(t_latch *latch, t_dma *primary,
         }
         return;
     }
-    if (TYPE_GET_BIT(primary->data.isr, VDMA_ISR_IS)) {
+    if (!TYPE_GET_BIT(primary->data.command, VDMA_COMMAND_CTRL) &&
+        TYPE_GET_BIT(primary->data.isr, VDMA_ISR_IS)) {
         Execute(primary, latch, ram, VDMA_GetISR_ISR(primary->data.isr), TYPE_FALSE);
         return;
     }
     if (!TYPE_GET_BIT(secondary->data.isr, VDMA_ISR_IS)) {
-        realDRQ2 = secondary->data.request | (VDMA_GetSTATUS_DRQS(secondary->data.status) & ~secondary->data.mask);
+        realDRQ1 = TYPE_GET_BIT(primary->data.command, VDMA_COMMAND_CTRL) ?
+            TYPE_ZERO_8 : dma_pending_requests(primary);
+        realDRQ2 = dma_pending_requests(secondary) &
+            (type_unsigned_8)~VDMA_REQUEST_DRQ(0);
+        if (realDRQ1 != TYPE_ZERO_8) {
+            TYPE_SET_BIT(realDRQ2, VDMA_REQUEST_DRQ(0));
+        }
         if (realDRQ2 == TYPE_ZERO_8) {
             return;
         }
         id = GetRegTopId(secondary, realDRQ2);
         if (id == 0) {
-            if (TYPE_GET_BIT(primary->data.command, VDMA_COMMAND_CTRL)) {
-                return;
-            }
-            realDRQ1 = primary->data.request | (VDMA_GetSTATUS_DRQS(primary->data.status) & ~primary->data.mask);
             if (realDRQ1 == TYPE_ZERO_8) {
                 return;
             }
             id = GetRegTopId(primary, realDRQ1);
             VDMA_SetISR(secondary->data.isr, 0);
+            if (TYPE_GET_BIT(secondary->data.command, VDMA_COMMAND_R)) {
+                secondary->data.drx = 1u;
+            }
             VDMA_SetISR(primary->data.isr, id);
             Execute(primary, latch, ram, id, TYPE_FALSE);
             if (!TYPE_GET_BIT(primary->data.isr, VDMA_ISR_IS)) {
