@@ -19,3 +19,8 @@ The [S1 four-profile ledger](../etc/evidence/t343-s1-four-profile-cross-closure.
 finds no returned implementation row. It records the completed profile/state
 boundary and the explicit external exclusions that must not be mistaken for
 CPU-profile gaps.
+
+The original admission rationale is retained as the
+[T343 proposal](M5-T343-four-profile-cross-closure-proposal.md). Completion
+does not turn its explicit VME/PVI, persistent-cache, x87-execution,
+timing/device, or Windows/product boundaries into CPU-profile claims.

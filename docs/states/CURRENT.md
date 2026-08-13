@@ -2,29 +2,7 @@
 
 ## Current Work
 
-**M5 T343 S1 - active.** Reconcile the 8086, 80186, 80286, and 80386DX
-ledgers into the final CPU-profile cross-closure record.
-
-## M5 T343 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | The owner approved Queue-ordered, single-agent implementation through the four-profile cross-closure verification on 2026-08-13. T342 closed at `4e4c7a79`; this packet admits the final CPU-profile Queue candidate as T343 S1. |
-| Objective | Reconcile every applicable 8086, 80186, 80286, and 80386DX form/state row into one truthful profile and mode disposition ledger. Verify shared delivery first, then form/profile classification, then cross-profile state composition; close only if no in-scope row is partial, missing, or unclassified. |
-| Non-goals | No production, test, CMake, artifact, device, product, or rule change. No new instruction or state implementation, no Windows/timing/device/x87 conclusion, and no audit-side repair. |
-| Reference Baseline | `4e4c7a79` (`M5 T342 S1 P2: close 80386DX profile audit`), T336/T337/T338/T339/T340/T341/T342 histories and indexed evidence, current Queue/TODO, the cross-closure proposal, and Intel manuals already cited by retained evidence. |
-| Candidate Proposal | [Four-profile cross-closure verification](../proposals/m5-cpu-profile-cross-closure.md) and [four-profile CPU-completeness program](../proposals/m5-four-profile-cpu-completeness-program.md). |
-| Files And ABI Surface | Expected: T343 ledger evidence/history/Current and, only if a stale evidence disposition is found, the affected evidence map. No public ABI, source, CMake, artifact, device, product, or rule change. |
-| Applicable Rules | `docs/rules/EXECUTION.md`: audit-only closure, similar-issue sweep, complete P, actual-change review, and lifecycle. `docs/rules/ARCHITECTURE.md`: one mutable-state owner and explicit layout differences. `docs/rules/CODING.md`: no duplicate abstraction. `docs/rules/DOCUMENT.md`: Current/history/evidence topology. |
-| Verification | Re-read the original profile program and closure map. Compare every predecessor ledger with current profile metadata/dispatch, current-gate proof, mode/privilege/prefix/LOCK dispositions, Queue/TODO transfers, and actual shared delivery/state owners. Run documentation governance and diff check; rerun runtime gates only if a discrepancy needs confirmation. |
-| Expected Markers | One indexed final ledger maps each form/state family across all applicable profiles to accepted proof, exact rejection, Intel-required retained difference, or explicit external transfer. No cross-profile inheritance, duplicate construction, or unclassified partial remains. |
-| Asset Needs | Intel manuals already cited by retained evidence. No guest media, firmware, third-party source, binary, or trace. |
-| Reporting Requirements | Deliver one complete pushed P with the final profile disposition ledger, source/evidence sweep, every accepted/returned/external row, documentation-gate result, and M5 CPU-program handoff. |
-| Stop Conditions | Stop if a row needs implementation, a missing form family, a shared state repair, VME/PVI, later-CPU semantics, persistent-cache model, x87 execution, timing/device/product behavior, a rule change, or external source/import. Return it to the earliest owner or explicit TODO; do not repair under T343. |
-| Exit Criteria | Every applicable four-profile form/state row has exactly one truthful disposition; all T336--T342 transfers are reconciled; no in-scope partial/missing/unclassified row remains; evidence/history/Current are truthful; and the audit P is committed and pushed. |
-| Original Owner Request | Implement the Queue in order, in single-agent mode and with a holistic view, through four-profile cross-closure verification. |
-| Similar-Issue Sweep | Sweep all tracked CPU execution/machine-state source, profile metadata/dispatch, current-gate registration, T336--T342 evidence/history, Queue, TODO, and closure-map references for profile gates, real/protected/VM86 state, prefixes/LOCK, frames/restart, privilege, task, paging, debug, and VM86. Record every hit's owner/disposition; no broad repository rewrite. |
+**Idle.** M5 T343 is closed; the next candidate is the Windows 3.x readiness map.
 
 ## Current Technical Baseline
 
@@ -44,6 +22,7 @@ ledgers into the final CPU-profile cross-closure record.
 ## Recent M5 Closures
 
 | Task | Compact result |
+| T343 | Closed the four-profile CPU program: one final ledger reconciles the 8086, 80186, 80286, and 80386DX execution, protected-state, delivery, task/paging/debug, and CPU-side coprocessor-interface boundaries. VME/PVI, persistent cache, x87 execution, timing/device, and Windows/product work remain explicit external candidates. [Closure ledger](../etc/evidence/t343-s1-four-profile-cross-closure.md). |
 | T342 | Closed the 80386DX profile ledger: T340 form and T341 state evidence reconcile every assigned row once, and the closure map now names the accepted state owners instead of stale future transfers. Only explicit post-80386, x87, timing/device, and Windows boundaries remain external. [Closure audit](../etc/evidence/t342-s1-80386dx-profile-closure-audit.md). |
 | T341 | Closed the 80386DX system-state package: CR/DR/TR/table state, VM86/task/paging composition, and ordinary debug/vector-1 now have one audited owner/proof graph; only explicit later-CPU, x87, timing/device, and Windows boundaries transfer. [Closure audit](../etc/evidence/t341-s5-80386dx-system-state-closure-audit.md). |
 | T340 | Closed the 80386DX width, prefix, FS/GS, and non-privileged integer-form package: S1 allocated the finite form/state ledger; S2/S3 reconciled the shared mechanisms and every assigned `0F` family; S4 confirmed accepted proof or one exact T341/external transfer for each row. [Closure audit](../etc/evidence/t340-s4-80386dx-form-closure-audit.md). |
@@ -51,7 +30,6 @@ ledgers into the final CPU-profile cross-closure record.
 | T338 | Closed the 8086/80186 profile baseline: S2 ALU/FLAGS/conditions, S3 inherited data/control/I/O, and S4 80186 extensions cover every S1 allocation; the retained T328 rule is the only legacy `LOCK` owner. The sole reproduced defect was four incorrect INS/OUTS 80386 guards, corrected to 80186. Protected, 80386DX, and x87 boundaries transfer explicitly. Artifact verification, governance, and 218/218 current-gate passed. [History](../history/M5-T338-8086-80186-profile-closure.md). |
 | T337 | Closed shared CPU state and delivery foundations: vector-6 fault delivery/rollback, software and external origin composition, IRQ/NMI/TF priority, frame timing, inhibition, and post-commit task debug trap have one proof/owner. DR6/DR7 transfers to 80386DX; reset/shutdown/triple-fault remains bounded CPU/machine debt. [History](../history/M5-T337-shared-state-delivery.md). |
 | T336 | Closed the four-profile CPU coverage audit: the primary/`0F` metadata and dispatch forms, real/protected/VM86 state rows, historic evidence, explicit 80386 exclusions, and open CPU debt now have a single indexed disposition. Every residual has one Queue, TODO, or external owner; the next candidate is shared state and delivery foundations. [History](../history/M5-T336-four-profile-coverage.md). |
-| T335 | Closed the xasm public-capacity/failure contract: the product facade now uses byte spans, explicit capacities, `type_status`, and commit-on-success result publication; debugger, firmware, and VM debug callback callers migrated with no raw bypass. A dedicated allocation-injection smoke proves capacity, malformed-input, facade-allocation, and engine-allocation failures preserve caller sentinels; `current-gate` passed 216/216. [History](../history/M5-T335-xasm-capacity-failure-contract.md). |
 
 ## Recent Governance
 
