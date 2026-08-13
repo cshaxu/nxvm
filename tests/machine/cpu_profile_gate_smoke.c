@@ -58,6 +58,9 @@ static C_INT run_case(core_machine_cpu_profile profile, const C_UCHAR *program,
     if (!failed) {
         failed |= core_machine_memory_write(state.machine, 0u, program,
             program_size) != TYPE_STATUS_OK;
+        if (expect_ud)
+            failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
+                state.machine);
         run_status = core_machine_run(state.machine, budget, &result);
         failed |= run_status != (expect_ud ? TYPE_STATUS_FAULT : TYPE_STATUS_OK);
         failed |= expect_ud && result.reason != CORE_MACHINE_STOP_FAULT;

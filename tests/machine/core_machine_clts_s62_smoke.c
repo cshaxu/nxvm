@@ -106,6 +106,8 @@ static C_INT clts_s62_expect_ud(core_machine_cpu_profile profile,
     if (!failed) {
         clts_s62_seed(&state);
         state.machine->executor_cpu.data.cr0 |= VCPU_CR0_TS;
+        failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
+            state.machine);
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !clts_s62_run(&state, code, bytes, 1u, &status, &result,
             &diagnostic) || status != TYPE_STATUS_FAULT ||

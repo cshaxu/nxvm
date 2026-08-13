@@ -121,6 +121,8 @@ static C_INT fs_gs_test_80286_reject(C_VOID)
                 state.machine->executor_cpu.data.fs.selector = 0x1234u;
                 state.machine->executor_cpu.data.gs.selector = 0x5678u;
                 state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF | VCPU_EFLAGS_ZF;
+                failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
+                    state.machine);
                 before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
                 failed |= !fs_gs_run(&state, code, size ? 3u : 2u, &after,
                         &diagnostic, &status) || status != TYPE_STATUS_FAULT ||

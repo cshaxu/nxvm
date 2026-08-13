@@ -107,7 +107,9 @@ static C_INT protected_mode_run(core_machine *machine,
         core_machine_memory_write(machine, 0u, real_code, real_code_size) !=
             TYPE_STATUS_OK ||
         core_machine_memory_write(machine, TEST_CODE_ADDRESS, protected_code,
-            protected_code_size) != TYPE_STATUS_OK) return 0;
+            protected_code_size) != TYPE_STATUS_OK ||
+        (expect_fault && machine->cpu_profile <= CORE_MACHINE_CPU_PROFILE_80286 &&
+            !test_core_machine_fixture_preflight_real_ud_terminal(machine))) return 0;
     if (core_machine_run(machine, budget, out_result) !=
             (expect_fault ? TYPE_STATUS_FAULT : TYPE_STATUS_OK) ||
         out_result->reason != (expect_fault ? CORE_MACHINE_STOP_FAULT :

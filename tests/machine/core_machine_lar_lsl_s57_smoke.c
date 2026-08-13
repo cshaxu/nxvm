@@ -370,6 +370,8 @@ static C_INT lar_lsl_s57_test_profile_and_lock_rejects(C_VOID)
             if (!failed) {
                 failed |= core_machine_memory_write(state.machine, 0u,
                     forms[form], lengths[form]) != TYPE_STATUS_OK;
+                failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
+                    state.machine);
                 before = state.machine->executor_cpu;
                 failed |= core_machine_run(state.machine, budget, &result) !=
                     TYPE_STATUS_FAULT;
@@ -401,6 +403,8 @@ static C_INT lar_lsl_s57_test_profile_and_lock_rejects(C_VOID)
         if (!failed) {
             failed |= core_machine_memory_write(state.machine, 0u,
                 forms[form], lengths[form]) != TYPE_STATUS_OK;
+            failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
+                state.machine);
             before = state.machine->executor_cpu;
             failed |= core_machine_run(state.machine, budget, &result) !=
                 TYPE_STATUS_FAULT;
@@ -451,6 +455,8 @@ static C_INT lar_lsl_s57_test_real_mode_rejects(C_VOID)
                 state.machine->executor_cpu.data.ecx = 0x00000010u;
                 state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_IF |
                     VCPU_EFLAGS_CF;
+                failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
+                    state.machine);
                 before = state.machine->executor_cpu;
                 failed |= core_machine_run(state.machine, budget, &result) !=
                     TYPE_STATUS_FAULT || result.reason != CORE_MACHINE_STOP_FAULT;

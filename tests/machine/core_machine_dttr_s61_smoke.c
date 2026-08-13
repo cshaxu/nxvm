@@ -144,6 +144,8 @@ static C_INT dttr_s61_test_attributes(C_VOID)
         failed |= core_machine_memory_write(state.machine,
             protected ? DTTR_S61_CODE : 0u, code, bytes) != TYPE_STATUS_OK;
         test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
+        if (!protected) failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
+            state.machine);
         status = core_machine_run(state.machine, (core_machine_run_budget){1u,0u},
             &result);
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);

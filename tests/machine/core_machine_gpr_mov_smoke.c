@@ -283,6 +283,8 @@ static C_INT gpr_mov_test_immediate_and_reject(C_VOID)
                 gpr_mov_seed(&state);
                 failed |= core_machine_memory_write(state.machine, 0x1000u,
                     &image, sizeof(image)) != TYPE_STATUS_OK;
+                failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
+                    state.machine);
                 before = test_core_machine_fixture_capture_cpu_after_run(
                     state.machine);
                 failed |= !gpr_mov_run(&state, code, form ? 6u : 5u,
@@ -397,6 +399,8 @@ static C_INT gpr_mov_test_prefix_lock(C_VOID)
                 gpr_mov_seed(&state);
                 failed |= core_machine_memory_write(state.machine, 0x1000u,
                     &image, sizeof(image)) != TYPE_STATUS_OK;
+                failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
+                    state.machine);
                 before = test_core_machine_fixture_capture_cpu_after_run(
                     state.machine);
                 failed |= !gpr_mov_run(&state, prefix_codes[form],
@@ -427,6 +431,8 @@ static C_INT gpr_mov_test_prefix_lock(C_VOID)
             gpr_mov_seed(&state);
             failed |= core_machine_memory_write(state.machine, 0x1000u,
                 &image, sizeof(image)) != TYPE_STATUS_OK;
+            failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
+                state.machine);
             before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= !gpr_mov_run(&state, lock_codes[form], lock_sizes[form],
                 &after, &diagnostic, &status) || status != TYPE_STATUS_FAULT ||

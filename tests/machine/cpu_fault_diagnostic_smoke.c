@@ -32,6 +32,7 @@ C_INT main(C_VOID)
     program[CORE_MACHINE_CPU_DIAGNOSTIC_WINDOW_CAPACITY + 1u] = 0x90u;
     if (core_machine_memory_write(machine, 0u, program, sizeof(program)) !=
         TYPE_STATUS_OK) goto fail;
+    if (!test_core_machine_fixture_preflight_real_ud_terminal(machine)) goto fail;
     if (
         core_machine_run(machine, budget, &result) != TYPE_STATUS_FAULT ||
         core_machine_get_cpu_diagnostic(machine, &diagnostic) != TYPE_STATUS_OK) goto fail;

@@ -29,6 +29,8 @@ static C_INT core_machine_real_mode_tick_case(
     failed |= core_machine_reset(machine) != TYPE_STATUS_OK;
     failed |= core_machine_memory_write(machine, 0xfffffff0u, program,
         program_bytes) != TYPE_STATUS_OK;
+    if (expected_status == TYPE_STATUS_FAULT)
+        failed |= !test_core_machine_fixture_preflight_real_ud_terminal(machine);
     status = core_machine_run(machine, budget, &result);
     failed |= status != expected_status || result.reason != expected_reason ||
         result.executed != expected_executed || result.ticks != expected_ticks ||

@@ -312,6 +312,8 @@ static C_INT sign_extend_test_prefix_reject(C_VOID)
                     failed |= !test_core_machine_fixture_prepare_real_mode_execution(
                         state.machine, 0u);
                     sign_extend_set_registers(&state);
+                    failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
+                        state.machine);
                     before = test_core_machine_fixture_capture_cpu_after_run(
                         state.machine);
                     failed |= !sign_extend_run(&state, code, sizeof(code),
@@ -427,6 +429,8 @@ static C_INT sign_extend_test_lock_diagnostic(C_VOID)
                 state.machine, 0u);
             sign_extend_set_registers(&state);
             state.machine->executor_cpu.data.eax = 0xaabb0080u;
+            failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
+                state.machine);
             before = test_core_machine_fixture_capture_cpu_after_run(
                 state.machine);
             failed |= !sign_extend_run(&state, code, sizeof(code), &after,

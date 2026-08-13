@@ -4,6 +4,8 @@
 #include "core/machine/machine_interface.h"
 #include "../support/core_machine_cpu_fixture.h"
 
+/* T337_REAL_UD_VECTOR6_DELIVERY: this owner proves the shared real #UD path. */
+
 #define REAL_UD_CODE_OFFSET 0x0200u
 #define REAL_UD_HANDLER_OFFSET 0x0100u
 #define REAL_UD_STACK_OFFSET 0x8000u

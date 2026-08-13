@@ -174,6 +174,8 @@ static C_INT direct_flags_expect_ud(core_machine_cpu_profile profile,
 
     if (!failed) {
         direct_flags_seed(&state);
+        failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
+            state.machine);
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !direct_flags_run(&state, code, bytes, &after, &diagnostic,
             &status, &result) || status != TYPE_STATUS_FAULT ||

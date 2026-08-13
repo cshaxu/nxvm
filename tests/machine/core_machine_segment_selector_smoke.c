@@ -89,6 +89,9 @@ static C_INT segment_run_ud(segment_machine *state, const type_unsigned_8 *code,
     if (state == STD_NULL || state->machine == STD_NULL || code == STD_NULL ||
         out_cpu == STD_NULL || !segment_write(state, address, code, code_size))
         return 0;
+    if (!TYPE_GET_BIT(state->machine->executor_cpu.data.cr0, VCPU_CR0_PE) &&
+        !test_core_machine_fixture_preflight_real_ud_terminal(state->machine))
+        return 0;
     test_core_machine_fixture_resume_after_halt_at(state->machine,
         address == 0u ? 0u : address - SEG_CODE_ADDRESS);
     if (core_machine_run(state->machine, budget, &result) != TYPE_STATUS_FAULT ||
@@ -944,6 +947,8 @@ static C_INT segment_test_rejected_forms(C_VOID)
 
             if (profiles[profile_index] > maximum_profiles[program_index]) continue;
             if (!segment_prepare(&state, profiles[profile_index])) return 1;
+            failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
+                state.machine);
             failed |= !segment_write(&state, 0u, programs[program_index],
                 sizes[program_index]);
             failed |= core_machine_run(state.machine,

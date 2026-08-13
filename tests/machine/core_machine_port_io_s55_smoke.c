@@ -449,8 +449,10 @@ static C_INT port_io_s55_expect_ud(core_machine_cpu_profile profile,
 
     if (!failed) {
         port_io_s55_seed(&state.machine->executor_cpu);
+        failed = !test_core_machine_fixture_preflight_real_ud_terminal(
+            state.machine);
         before = state.machine->executor_cpu;
-        failed = core_machine_memory_write(state.machine, 0u, code, bytes) !=
+        failed |= core_machine_memory_write(state.machine, 0u, code, bytes) !=
             TYPE_STATUS_OK;
         if (!failed) {
             status = core_machine_run(state.machine,

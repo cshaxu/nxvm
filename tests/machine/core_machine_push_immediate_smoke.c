@@ -134,6 +134,8 @@ static C_INT push_immediate_expect_ud(core_machine_cpu_profile profile,
         push_immediate_seed(&state);
         failed |= core_machine_memory_write(state.machine, 0x7ffcu, &sentinel,
             sizeof(sentinel)) != TYPE_STATUS_OK;
+        failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
+            state.machine);
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !push_immediate_run(&state, code, bytes,
             (core_machine_run_budget){1u, 0u}, &after, &diagnostic, &status,

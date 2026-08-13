@@ -246,6 +246,8 @@ static C_INT verr_verw_s58_expect_ud(core_machine_cpu_profile profile,
         state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF |
             VCPU_EFLAGS_PF | VCPU_EFLAGS_AF | VCPU_EFLAGS_SF |
             VCPU_EFLAGS_OF | VCPU_EFLAGS_IF;
+        failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
+            state.machine);
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_memory_write(state.machine, 0u, code, code_size) !=
             TYPE_STATUS_OK;

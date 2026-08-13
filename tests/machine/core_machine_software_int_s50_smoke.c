@@ -301,6 +301,8 @@ static C_INT software_int_s50_test_rejections(C_VOID)
                 if (!failed) {
                     software_int_s50_seed(&state, VCPU_EFLAGS_OF |
                         VCPU_EFLAGS_IF | VCPU_EFLAGS_CF);
+                    failed = !test_core_machine_fixture_preflight_real_ud_terminal(
+                        state.machine);
                     before = test_core_machine_fixture_capture_cpu_after_run(
                         state.machine);
                     status = core_machine_run(state.machine,
@@ -363,6 +365,8 @@ static C_INT software_int_s50_test_rejections(C_VOID)
             if (!failed) {
                 software_int_s50_seed(&state, VCPU_EFLAGS_OF |
                     VCPU_EFLAGS_IF | VCPU_EFLAGS_CF);
+                failed = !test_core_machine_fixture_preflight_real_ud_terminal(
+                    state.machine);
                 before = test_core_machine_fixture_capture_cpu_after_run(
                     state.machine);
                 status = core_machine_run(state.machine,

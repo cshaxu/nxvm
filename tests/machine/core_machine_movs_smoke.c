@@ -456,6 +456,8 @@ static C_INT movs_test_rejections(C_VOID)
                     &source, sizeof(source)) != TYPE_STATUS_OK ||
                     core_machine_memory_write(state.machine, 0x20020u,
                     &destination, sizeof(destination)) != TYPE_STATUS_OK;
+                failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
+                    state.machine);
                 before = test_core_machine_fixture_capture_cpu_after_run(
                     state.machine);
                 failed |= !movs_run(&state, prefixes[form], prefix_bytes[form],
@@ -491,6 +493,8 @@ static C_INT movs_test_rejections(C_VOID)
                 &source, sizeof(source)) != TYPE_STATUS_OK ||
                 core_machine_memory_write(state.machine, 0x20020u,
                 &destination, sizeof(destination)) != TYPE_STATUS_OK;
+            failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
+                state.machine);
             before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= !movs_run(&state, locks[form], lock_bytes[form], &after,
                 &diagnostic, &status) || status != TYPE_STATUS_FAULT ||

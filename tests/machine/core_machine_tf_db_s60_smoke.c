@@ -4,6 +4,8 @@
 #include "core/machine/machine_interface.h"
 #include "../support/core_machine_cpu_fixture.h"
 
+/* T337_REAL_UD_VECTOR6_DELIVERY: this owner installs and observes vector 6. */
+
 #define TF_DB_S60_GDT_POINTER 0x0100u
 #define TF_DB_S60_GDT 0x0300u
 #define TF_DB_S60_IDT 0x0400u
@@ -84,6 +86,16 @@ static C_INT tf_db_s60_install_real_vector(tf_db_s60_machine *state)
     return core_machine_memory_write(state->machine, 4u, vector, sizeof(vector)) ==
         TYPE_STATUS_OK && core_machine_memory_write(state->machine, 0x0100u,
             handler, sizeof(handler)) == TYPE_STATUS_OK;
+}
+
+static C_INT tf_db_s60_install_real_ud_vector(tf_db_s60_machine *state)
+{
+    static const type_unsigned_8 handler[] = { 0xf4u };
+    static const type_unsigned_8 vector[] = { 0x00u, 0x01u, 0x00u, 0x00u };
+
+    return core_machine_memory_write(state->machine, 0x18u, vector,
+        sizeof(vector)) == TYPE_STATUS_OK && core_machine_memory_write(
+            state->machine, 0x0100u, handler, sizeof(handler)) == TYPE_STATUS_OK;
 }
 
 static C_INT tf_db_s60_boot_protected(tf_db_s60_machine *state)
@@ -233,11 +245,13 @@ static C_INT tf_db_s60_expect_ud_no_trap(core_machine_cpu_profile profile,
     tf_db_s60_machine state;
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
+    t_cpu before;
     t_cpu after;
     type_status status;
     C_INT failed = !tf_db_s60_prepare(&state, profile);
 
-    if (!failed) failed = !tf_db_s60_install_real_vector(&state);
+    if (!failed) failed = !tf_db_s60_install_real_vector(&state) ||
+        !tf_db_s60_install_real_ud_vector(&state);
     if (!failed) {
         state.machine->executor_cpu.data.esp = 0x8000u;
         state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_TF | VCPU_EFLAGS_IF |
@@ -245,12 +259,26 @@ static C_INT tf_db_s60_expect_ud_no_trap(core_machine_cpu_profile profile,
         failed |= core_machine_memory_write(state.machine, 0u, code, code_bytes) !=
             TYPE_STATUS_OK;
         test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
-        status = core_machine_run(state.machine, (core_machine_run_budget){ 1u, 0u },
+        before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        status = core_machine_run(state.machine, (core_machine_run_budget){ 2u, 0u },
             &result);
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
-            TYPE_STATUS_OK || status != TYPE_STATUS_FAULT ||
-            result.reason != CORE_MACHINE_STOP_FAULT || after.data.eip == 0x0101u;
+            TYPE_STATUS_OK || status != TYPE_STATUS_OK ||
+            result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+            diagnostic.first_fault.valid || !diagnostic.last_delivered_exception.valid ||
+            !TYPE_GET_BIT(diagnostic.last_delivered_exception.exception_mask,
+                VCPUINS_EXCEPT_UD) || after.data.eip != 0x0101u ||
+            after.data.esp != ((before.data.esp & 0xffff0000u) |
+                (type_unsigned_16)(before.data.esp - 6u)) ||
+            after.data.eflags != (before.data.eflags &
+                ~(VCPU_EFLAGS_IF | VCPU_EFLAGS_TF)) || after.data.eax !=
+            before.data.eax || after.data.ecx != before.data.ecx ||
+            after.data.edx != before.data.edx || after.data.ebx != before.data.ebx ||
+            after.data.ebp != before.data.ebp || after.data.esi != before.data.esi ||
+            after.data.edi != before.data.edi || !tf_db_s60_sregs_same(&before,
+                &after) || !tf_db_s60_frame_real(&state, &after, 0u,
+                (type_unsigned_16)before.data.eflags);
     }
     if (state.machine != STD_NULL) core_machine_destroy(state.machine);
     return failed;

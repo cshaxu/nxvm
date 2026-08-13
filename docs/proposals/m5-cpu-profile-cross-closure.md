@@ -15,3 +15,13 @@ profile matrices, open TODO transfers, and Intel boundaries. It closes only
 when no in-scope row is partial, missing, or unclassified; any discovered gap
 returns to a newly ordered implementation candidate before Windows readiness
 or M5 closure work proceeds.
+
+## Required reconciliation order
+
+First verify the shared delivery rows, then compare each form's 8086/80186,
+80286, and 80386DX disposition, and finally reconcile cross-profile state
+composition: prefix and `LOCK` legality, operand/address attributes, frame and
+restart rules, privilege, task, paging, debug, and VM86 boundaries. The audit
+must distinguish Intel-required layout differences from accidental divergent
+construction. It may close evidence only; a missing mechanism is returned to
+the earliest owning implementation candidate with a precise admission reason.

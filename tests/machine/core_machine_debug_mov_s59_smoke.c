@@ -4,6 +4,8 @@
 #include "core/machine/machine_interface.h"
 #include "../support/core_machine_cpu_fixture.h"
 
+/* T337_REAL_UD_VECTOR6_DELIVERY: this owner installs and observes vector 6. */
+
 #define DEBUG_MOV_S59_GDT_POINTER 0x0100u
 #define DEBUG_MOV_S59_GDT 0x0300u
 #define DEBUG_MOV_S59_CODE 0x2000u
@@ -108,6 +110,36 @@ static C_INT debug_mov_s59_sregs_same(const t_cpu *before, const t_cpu *after)
         STD_MEMCMP(&before->data.gs, &after->data.gs, sizeof(before->data.gs)) == 0;
 }
 
+static C_INT debug_mov_s59_install_real_ud_vector(debug_mov_s59_machine *state)
+{
+    static const type_unsigned_8 handler[] = { 0xf4u };
+    static const type_unsigned_8 vector[] = { 0x00u, 0x01u, 0x00u, 0x00u };
+
+    return core_machine_memory_write(state->machine, 0x18u, vector,
+        sizeof(vector)) == TYPE_STATUS_OK && core_machine_memory_write(
+            state->machine, 0x0100u, handler, sizeof(handler)) == TYPE_STATUS_OK;
+}
+
+static C_INT debug_mov_s59_ud_delivered(const t_cpu *before, const t_cpu *after,
+    const core_machine_cpu_diagnostic *diagnostic)
+{
+    return !diagnostic->first_fault.valid &&
+        diagnostic->last_delivered_exception.valid && TYPE_GET_BIT(
+            diagnostic->last_delivered_exception.exception_mask, VCPUINS_EXCEPT_UD) &&
+        after->data.eip == 0x0101u && after->data.esp ==
+            ((before->data.esp & 0xffff0000u) |
+                (type_unsigned_16)(before->data.esp - 6u)) &&
+        after->data.eax == before->data.eax && after->data.ecx == before->data.ecx &&
+        after->data.edx == before->data.edx && after->data.ebx == before->data.ebx &&
+        after->data.ebp == before->data.ebp && after->data.esi == before->data.esi &&
+        after->data.edi == before->data.edi && after->data.eflags ==
+            (before->data.eflags & ~(VCPU_EFLAGS_IF | VCPU_EFLAGS_TF)) &&
+        after->data.dr0 == before->data.dr0 && after->data.dr1 == before->data.dr1 &&
+        after->data.dr2 == before->data.dr2 && after->data.dr3 == before->data.dr3 &&
+        after->data.dr6 == before->data.dr6 && after->data.dr7 == before->data.dr7 &&
+        debug_mov_s59_sregs_same(before, after);
+}
+
 static C_INT debug_mov_s59_reject_state_same(const t_cpu *before,
     const t_cpu *after)
 {
@@ -196,15 +228,14 @@ static C_INT debug_mov_s59_test_real_profiles(C_VOID)
         core_machine_cpu_diagnostic diagnostic;
         type_status status;
 
-        if (!debug_mov_s59_prepare(&state, rejected[i])) return 1;
+        if (!debug_mov_s59_prepare(&state, rejected[i]) ||
+            !debug_mov_s59_install_real_ud_vector(&state)) return 1;
         state.machine->executor_cpu.data.eax = 0xaabbccddu;
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !debug_mov_s59_run(&state, reject_code, sizeof(reject_code),
             &after, &diagnostic, &status);
-        failed |= status != TYPE_STATUS_FAULT || after.data.eip != 0u ||
-            after.data.eax != before.data.eax ||
-            after.data.eflags != before.data.eflags ||
-            !debug_mov_s59_sregs_same(&before, &after);
+        failed |= status != TYPE_STATUS_OK || !debug_mov_s59_ud_delivered(&before,
+            &after, &diagnostic);
         core_machine_destroy(state.machine);
     }
     {

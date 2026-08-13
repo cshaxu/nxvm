@@ -182,8 +182,9 @@ static C_INT imul_s56_expect_ud(core_machine_cpu_profile profile,
 
     if (!failed) {
         imul_s56_seed(&machine->executor_cpu);
+        failed = !test_core_machine_fixture_preflight_real_ud_terminal(machine);
         before = machine->executor_cpu;
-        failed = core_machine_memory_write(machine, 0u, code, bytes) !=
+        failed |= core_machine_memory_write(machine, 0u, code, bytes) !=
             TYPE_STATUS_OK;
         if (!failed) {
             failed = core_machine_run(machine,

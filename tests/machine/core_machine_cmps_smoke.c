@@ -199,6 +199,8 @@ static C_INT cmps_flag_case(type_unsigned_8 left, type_unsigned_8 right, type_un
 
     if (!failed) {
         cmps_seed(&state);
+        failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
+            state.machine);
         failed |= core_machine_memory_write(state.machine, 0x20010u, &left,
             sizeof(left)) != TYPE_STATUS_OK || core_machine_memory_write(
             state.machine, 0x30020u, &right, sizeof(right)) != TYPE_STATUS_OK;
@@ -436,6 +438,8 @@ static C_INT cmps_expect_ud(core_machine_cpu_profile profile,
         failed |= core_machine_memory_write(state.machine, 0x20010u, &left,
             sizeof(left)) != TYPE_STATUS_OK || core_machine_memory_write(
             state.machine, 0x30020u, &right, sizeof(right)) != TYPE_STATUS_OK;
+        failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
+            state.machine);
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !cmps_run(&state, code, bytes, 1u, &after, &diagnostic,
             &status, &result) || status != TYPE_STATUS_FAULT ||

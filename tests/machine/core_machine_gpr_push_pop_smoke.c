@@ -372,6 +372,8 @@ static C_INT gpr_push_pop_expect_ud(core_machine_cpu_profile profile,
         failed |= core_machine_memory_write(state.machine, 0x20u, &source,
             sizeof(source)) != TYPE_STATUS_OK || core_machine_memory_write(
             state.machine, 0x7ffcu, &source, sizeof(source)) != TYPE_STATUS_OK;
+        failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
+            state.machine);
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_memory_write(state.machine, 0u, code, bytes) !=
             TYPE_STATUS_OK;
@@ -414,10 +416,7 @@ static C_INT gpr_push_pop_test_rejections(C_VOID)
             type_unsigned_8 bytes = form == 2u ? 3u : 2u;
 
             if (!gpr_push_pop_expect_ud(legacy[profile], attrs[form], bytes))
-            {
-                STD_PRINTF("reject attr p=%u f=%u\n", profile, form);
                 return 0;
-            }
         }
     }
     for (form = 0u; form != sizeof(locks) / sizeof(locks[0]); ++form)
@@ -427,10 +426,7 @@ static C_INT gpr_push_pop_test_rejections(C_VOID)
 
         if (!gpr_push_pop_expect_ud(CORE_MACHINE_CPU_PROFILE_80386, locks[form],
             bytes))
-        {
-            STD_PRINTF("reject lock f=%u\n", form);
             return 0;
-        }
     }
     for (form = 1u; form != 8u; ++form)
     {
@@ -438,10 +434,7 @@ static C_INT gpr_push_pop_test_rejections(C_VOID)
 
         if (!gpr_push_pop_expect_ud(CORE_MACHINE_CPU_PROFILE_80386, code,
             sizeof(code)))
-        {
-            STD_PRINTF("reject ext f=%u\n", form);
             return 0;
-        }
     }
     return 1;
 }

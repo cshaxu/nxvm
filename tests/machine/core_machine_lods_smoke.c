@@ -166,6 +166,8 @@ static C_INT lods_expect_ud(core_machine_cpu_profile profile,
         failed |= core_machine_memory_write(state.machine, 0x10010u, &source,
             sizeof(source)) != TYPE_STATUS_OK || core_machine_memory_write(
             state.machine, 0u, code, bytes) != TYPE_STATUS_OK;
+        failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
+            state.machine);
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         status = core_machine_run(state.machine,
             (core_machine_run_budget){1u, 0u}, &result);

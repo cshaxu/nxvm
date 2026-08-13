@@ -202,6 +202,8 @@ static C_INT lgdt_lidt_expect_ud(core_machine_cpu_profile profile,
 
     if (!failed) {
         lgdt_lidt_seed(&state.machine->executor_cpu);
+        failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
+            state.machine);
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !lgdt_lidt_run(&state, code, bytes, 1u, &status, &result, &diagnostic);
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);

@@ -297,6 +297,8 @@ static C_INT port_strings_rep_zero(C_INT input, const type_unsigned_8 *code,
             sizeof(source)) != TYPE_STATUS_OK || core_machine_memory_write(
             state.machine, 0x30020u, &destination, sizeof(destination)) !=
             TYPE_STATUS_OK;
+        failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
+            state.machine);
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !port_strings_run(&state, code, bytes, 1u, &after,
             &diagnostic, &status, &result) || status != TYPE_STATUS_OK ||
@@ -757,6 +759,8 @@ static C_INT port_strings_expect_ud(core_machine_cpu_profile profile,
             sizeof(source)) != TYPE_STATUS_OK || core_machine_memory_write(
             state.machine, 0x30020u, &destination, sizeof(destination)) !=
             TYPE_STATUS_OK;
+        failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
+            state.machine);
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !port_strings_run(&state, code, bytes, 1u, &after,
             &diagnostic, &status, &result) || status != TYPE_STATUS_FAULT ||

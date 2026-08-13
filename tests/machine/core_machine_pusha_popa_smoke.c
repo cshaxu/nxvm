@@ -277,6 +277,8 @@ static C_INT pusha_popa_test_reject_case(core_machine_cpu_profile profile,
         failed |= core_machine_memory_write(state.machine, 0x7fe0u, image,
             sizeof(image)) != TYPE_STATUS_OK || core_machine_memory_write(
             state.machine, 0x8000u, image, sizeof(image)) != TYPE_STATUS_OK;
+        failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
+            state.machine);
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !pusha_popa_run(&state, code, bytes,
             (core_machine_run_budget){1u, 0u}, &after, &diagnostic, &status,

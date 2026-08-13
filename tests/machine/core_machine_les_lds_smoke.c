@@ -135,6 +135,8 @@ static C_INT lld_test_reg_direct_ud(C_VOID)
                 state.machine, 0u);
             state.machine->executor_cpu.data.es.selector = 0x1111u;
             state.machine->executor_cpu.data.ds.selector = 0x2222u;
+            failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
+                state.machine);
             before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= !lld_run_prepared(&state, code, sizeof(code), &after,
                     &diagnostic, &status) || status != TYPE_STATUS_FAULT ||
@@ -180,6 +182,8 @@ static C_INT lld_test_80286_operand32_ud(C_VOID)
                     state.machine, 0u);
                 state.machine->executor_cpu.data.es.selector = 0x1111u;
                 state.machine->executor_cpu.data.ds.selector = 0x2222u;
+                failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
+                    state.machine);
                 before = test_core_machine_fixture_capture_cpu_after_run(
                     state.machine);
                 failed |= !lld_run_prepared(&state, code, sizeof(code), &after,

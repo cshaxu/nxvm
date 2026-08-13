@@ -25,3 +25,22 @@ fresh GCC configuration, the strict owner smoke, documentation governance,
 diff check, and 217/217 direct current-gate tests. The project wrapper target
 did not emit a test failure but exceeded the local 124-second command limit;
 the direct CTest run is the retained full gate result.
+
+## S2 Result
+
+S2 reconciles every current-gate owner affected by the S1 real-mode `#UD`
+contract. The CMake inventory classifies all 71 current-gate `#UD` sources as
+explicit invalid-IVT rollback, valid vector-6 delivery, or no real-mode
+negative path; configuration rejects an omitted or contradictory class. The
+descriptor-system and segment-selector LxS owners now apply the rollback
+preflight at their concrete negative execution boundary, and the aggregate
+delivery owner consequently remains green. It retains the separate
+pre-instruction fault rollback, post-instruction external/TF delivery, and
+post-commit task debug-trap paths; their distinct saved-IP rules are
+architectural, not construction drift. Ordinary DR6/DR7 breakpoint behavior
+transfers to the 80386DX package, while reset/shutdown/triple-fault policy has
+a dedicated shared CPU/machine TODO. Fresh configuration, focused owners,
+documentation governance, diff check, and 217/217 direct current-gate tests
+pass. The T337 developer artifact is `build/output/nxvm_0_5_0337.exe`
+(`vm-0-5-0337`, banner `0.5.0337`), SHA-256
+`342FFC183170169729B5BDEE8F4F3512EB86FD27B4EF979D875466927B75E4F0`.

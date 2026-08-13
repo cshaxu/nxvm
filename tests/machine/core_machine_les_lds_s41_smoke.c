@@ -233,6 +233,8 @@ static C_INT les_lds_s41_expect_ud(core_machine_cpu_profile profile,
 
     if (!failed) {
         les_lds_s41_seed(&state);
+        failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
+            state.machine);
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !les_lds_s41_run(&state, code, bytes, &after, &diagnostic,
             &status, &result) || status != TYPE_STATUS_FAULT ||

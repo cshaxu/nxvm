@@ -404,7 +404,8 @@ static C_INT prefix_attributes_s64_test_attributes_and_lock(C_VOID)
         failed |= core_machine_memory_write(state.machine, 0x0100u, &image,
             sizeof(image)) != TYPE_STATUS_OK;
         before = state.machine->executor_cpu;
-        failed |= !prefix_attributes_s64_run(&state, lock_read,
+        failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
+            state.machine) || !prefix_attributes_s64_run(&state, lock_read,
             sizeof(lock_read), 1u, &after, &diagnostic, &status) ||
             status != TYPE_STATUS_FAULT || !diagnostic.first_fault.valid ||
             !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
@@ -442,7 +443,8 @@ static C_INT prefix_attributes_s64_test_attributes_and_lock(C_VOID)
                     &state);
                 if (!failed) {
                     before = state.machine->executor_cpu;
-                    failed |= !prefix_attributes_s64_run(&state, forms[form],
+                    failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
+                        state.machine) || !prefix_attributes_s64_run(&state, forms[form],
                         lengths[form], 1u, &after, &diagnostic, &status) ||
                         status != TYPE_STATUS_FAULT ||
                         !diagnostic.first_fault.valid ||

@@ -392,6 +392,8 @@ static C_INT arpl_s53_expect_ud(core_machine_cpu_profile profile,
             memory_before, sizeof(memory_before)) != TYPE_STATUS_OK;
     }
     if (!failed) {
+        failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
+            state.machine);
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_run(state.machine,
             (core_machine_run_budget){ 1u, 0u }, &result) != TYPE_STATUS_FAULT;
