@@ -99,6 +99,30 @@ a single instruction-execution owner and 536 internal helpers.  Any split or
 warning cleanup must preserve instruction-state, fault, validation, and commit
 ownership and use the existing holistic-execution-path debt process.
 
+### F7 - Shared Debug Completion Drift Broke Two Current-Gate Owners (S1)
+
+The first full S1 current-gate run reproduced two unrelated-looking failures:
+`current.core-machine-pushf-popf-s47-smoke` reported its attribute stage, and
+`current.core-machine-software-int-s50-smoke` returned without its success
+marker.  Rebuilding the exact targets reproduced both failures, so neither was
+masked as a stale executable or removed from the gate.
+
+The common cause was the T341 debug-completion owner.  It queued a TF
+single-step trap solely from the pre-instruction TF state, even where a
+successful interrupt gate had cleared TF at the architectural completion
+boundary.  A software `INT` could therefore receive an erroneous later #DB.
+`_debug_complete_instruction` now requires both the pre-instruction trace
+state and post-completion TF before scheduling BS.  The only use of
+`debug_tf_before` is this owner; focused T341 TF/DB, S47, and S50 tests cover
+ordinary tracing, RF clearing, and the software-interrupt boundary.
+
+The S47 assertion was also stale: RF is consumed for a successful non-IRET
+instruction by the same debug-completion mechanism.  Its PUSHF/POPF attribute
+matrix now proves that RF is not pushed, is cleared after successful PUSHF and
+POPF/POPFD execution, and that VM/reserved-bit treatment remains unchanged.
+No CPU instruction encoding, interrupt-frame serializer, public ABI, or
+current-gate membership was weakened.
+
 ## T344 Admission Consequences
 
 T344 orders four bounded S units:
@@ -114,3 +138,35 @@ T344 orders four bounded S units:
 The task explicitly leaves inherited executor warning cleanup, xasm internal
 capacity redesign, and non-equivalent fixture/device setup to their existing
 or newly recorded admission boundaries.
+
+## S1 Clean-Configure Reconciliation
+
+S1 classified `core-machine-vm86-delivery-smoke` as a T337 current-gate `#UD`
+owner with the retained non-real-negative disposition.  Its `#UD` assertion is
+inside the VM86-to-protected delivery fixture, not an unowned real-mode
+terminal or a new vector-6 policy producer.  The target is now listed once in
+the T337 owner inventory and once in that disposition list; its existing
+current-gate membership is unchanged.
+
+Fresh configuration in `build/t344-clean-gcc` succeeded with MinGW GCC 16.1.0.
+The clean build of `core-machine-vm86-delivery-smoke` and the exact
+`current.core-machine-vm86-delivery-smoke` CTest both passed.  This validates
+the configuration-time source scan without weakening it or changing guest
+execution behavior.
+
+The complete configuration-time sweep continues to inspect every listed
+current-gate target source for `VCPUINS_EXCEPT_UD`, `_SetExcept_UD`, or
+`UndefinedOpcode` and rejects a missing, conflicting, or duplicate terminal,
+real-delivery, or explicit non-real disposition.  S1's added VM86 target is
+the sole new listed disposition.
+
+## S1 Current-Gate Recovery
+
+After the clean configuration, exact rebuilt tests for VM86 delivery,
+PUSHF/POPF S47, software INT S50, and the T341 TF/DB owner all passed.  The
+complete current-gate result is 218/218 passing in 12.16 seconds real time.
+The task artifact `build/output/nxvm_0_5_0344.exe` was rebuilt from this
+source graph with SHA-256
+`84674E5B32F3CD5C21834F23277E46BEC86156958878D4A6DD5223D325BD74A2`.
+This recovery keeps the gate as a runtime oracle: it neither excludes the two
+tests nor accepts a binary built before the source repair.
