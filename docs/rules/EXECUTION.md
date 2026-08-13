@@ -49,10 +49,11 @@ Before accepting or closing any task or subtask, inspect its actual repository
 changes, rather than relying only on a report, test summary, or diff statistic.
 Review the relevant added, modified, renamed, and deleted files and the actual
 code, build, test, and documentation changes against the packet scope, exit
-criteria, and recorded evidence. In Ordinary Mode, the single session performs
-this review. In Coordinated Dual-Session Mode, the coordinator performs it
-independently before acceptance; the executor's report is an evidence index,
-not a substitute for reviewing the actual Git/worktree changes.
+criteria, and recorded evidence. In a one-session run, the session performs
+this review after switching to the coordinator role. When separate sessions
+hold the roles, the coordinator performs it independently before acceptance;
+the executor's report is an evidence index, not a substitute for reviewing the
+actual Git/worktree changes.
 
 **Concise reporting.** Each conversation report states only the information
 applicable to its purpose. A completion delivery records completion, pushed
@@ -66,13 +67,13 @@ or full evidence. The committed delivery and its indexed evidence retain the
 complete requirement-to-proof record. Concise reporting never reduces
 self-review, actual-change review, verification, or acceptance requirements.
 
-## Execution Modes
+## Roles And Execution Cycle
 
-Every admitted T task package declares either **Ordinary Mode** or
-**Coordinated Dual-Session Mode**. Both modes retain one active `states/CURRENT.md`
-packet, the same identifier rules, evidence requirements, similar-issue sweep,
-and closure audit. The modes change who performs each role; they do not weaken
-the T/S/P lifecycle.
+Every admitted S follows one coordinator/executor lifecycle with one active
+`states/CURRENT.md` packet, the same identifier rules, evidence requirements,
+similar-issue sweep, and closure audit. One session may perform both roles in
+sequence, or two sessions may each perform one role; session assignment never
+changes the lifecycle or authority.
 
 **T, S, and P.**
 
@@ -161,11 +162,12 @@ contract change pauses work pending coordinator direction; a corrective brief
 then continues under the same goal. The goal is retired only when the executor
 session ends or the coordinator transfers or cancels that executor role.
 
-An unreported stop occurs when the executor stops active work without reporting
-progress, a result, or a blocker to the coordinator. The coordinator checks
-every five minutes whether the executor is in a stopped state; when it is and
-no such report was made, the coordinator records one stop for that S. Reported
-waiting for coordinator direction is not an unreported stop.
+When a separate executor session is assigned, an unreported stop occurs when it
+stops active work without reporting progress, a result, or a blocker to the
+coordinator. The coordinator checks every five minutes whether that executor is
+stopped; when it is and no report was made, the coordinator records one stop
+for that S. Reported waiting for coordinator direction is not an unreported
+stop.
 
 Only the coordinator may create, admit, re-plan, suspend, close, cancel, or
 reorder T packages and their S tasks. The executor may question and execute an
@@ -182,73 +184,41 @@ tasks does not close a T. A T-level audit reviews documentation, code quality,
 open debt, task evidence, and applicable rules; it cannot be bypassed by a
 passing local implementation.
 
-**Per-S reading index.** Before first work, and again on its first resume in
-either mode, the executor first follows the [Task Reading Set](../README.md)
+**Per-S reading index.** Before first work, and again on its first resume, the
+executor first follows the [Task Reading Set](../README.md)
 and then reads the active packet plus the S-contract, P-lifecycle,
 completion-goal, stop, and role-authority paragraphs above. It also reads each
 project rule triggered by the packet or change surface. This index is
 navigation only; the referenced authorities remain the sole requirements
 sources.
 
-**Coordinated Dual-Session Mode.**
+**Role cycle.**
 
-This mode uses exactly the existing conversations named `coordinator` and
-`executor`. Create a named conversation only when it does not exist; reuse an
-existing named conversation and never create a duplicate role conversation.
+1. The coordinator admits a bounded S packet under an approved T or standalone
+   Td work, and provides the executor the complete S brief.
+2. The executor scrutinizes the brief, relevant routes, existing evidence, and
+   task-specific risks. It reports either a material objection or confirmation
+   before execution. An objection pauses affected work for coordinator decision
+   and, if needed, packet/brief revision; it cannot be overridden by a request
+   to continue.
+3. After confirmation, the executor works under its durable completion goal,
+   sends the S-required progress reports, self-reviews every acceptance
+   requirement against actual evidence, then commits and pushes only its
+   complete P. A partial implementation, local smoke, diagnosis, internal
+   batch, packet preparation, registration lookup, or status update is not a
+   completion point.
+4. The coordinator reviews the original request, S brief, packet, evidence,
+   applicable rules, and the pushed P's actual Git/worktree changes. The
+   executor report is only an evidence index. The coordinator either issues one
+   consolidated corrective brief or accepts the P and applies the applicable
+   P-lifecycle closure above.
 
-1. The coordinator selects an approved T, admits its bounded S packet, and
-   sends the executor the complete S brief.
-2. The executor independently scrutinizes the brief, relevant routes, existing
-   evidence, and task-specific risks. It records ordinary implementation details
-   under stated reasonable assumptions. A material scope, evidence, risk, or
-   clarification objection pauses affected work and is reported for coordinator
-   decision and, if needed, packet/brief revision; the coordinator must not
-   override an unresolved material objection merely by requesting continued
-   work. The executor reports either its objection or its confirmation of the
-   S contract before execution begins.
-3. After confirming the S contract, the executor continues under its durable
-   completion goal and executes the complete implementation P under the
-   lifecycle and reporting rules above. A partial implementation, local smoke, diagnostic,
-   internal batch, packet preparation, registration lookup, or status update is
-   not a formal completion point. The executor sends progress reports at the
-   nodes required by the S brief. It formally returns only complete
-   implementation-P evidence, a reproducible material blocker, or a fact that
-   changes the S contract.
-4. Before returning that delivery, the executor re-reads the S brief and
-   self-reviews every acceptance requirement against actual evidence. It records
-   the complete requirement-to-proof mapping in the delivery or indexed evidence
-   and sends the concise report required above.
-5. The executor commits and pushes that complete implementation P before
-   reporting it. The coordinator independently reviews the original request, S
-   brief, packet, evidence, applicable rules, and the pushed P's actual
-   Git/worktree changes. The
-   executor report is an evidence index, not a substitute for this review. The
-   coordinator runs required verification and either rejects the delivery with
-   one consolidated corrective brief or accepts it.
-6. On acceptance of a numbered implementation P, the coordinator completes the
-   applicable Status, history, and governance closure, commits and pushes the
-   purely governance P, and then plans the next S from the resulting repository
-   state. A complete Td P needs no later governance P.
-
-**Ordinary Mode.**
-
-One conversation may perform both coordinator and executor roles. It retains
-the same T/S/P model, active-packet rule, evidence standard, and closure audit.
-Combining people does not combine governance stages.
-
-The single session first plans or adopts the coordinator S brief, then performs
-the executor-side contract review, self-review, commit, and push of the
-complete P. It then performs the coordinator-side actual-change review and
-acceptance; for a numbered implementation T, acceptance requires the later
-governance P. Before the P commit, it explicitly compares the S brief with the
-actual changes and evidence, checks for scope drift and unresolved objections,
-and runs required verification. A discovered material contradiction requires a
-brief revision or a later S; it must not be silently absorbed.
-
-Ordinary Mode must not claim independent dual-session review. If an active S
-changes execution mode, its handoff record states the accepted brief, current
-evidence, unresolved objections, and worktree state; the receiving mode then
-continues under its own role rules.
+A one-session run explicitly switches between these roles and repeats the
+coordinator-side actual-change review after the executor-side P; it must not
+claim independent review. A two-session run assigns the roles to separate
+sessions, so the coordinator review is independent. If a role moves between
+sessions mid-S, its handoff records the accepted brief, current evidence,
+unresolved objections, and worktree state before the receiving session resumes.
 ## Change Discipline
 
 Structural relocation uses `git mv`: repair direct includes and build paths,
