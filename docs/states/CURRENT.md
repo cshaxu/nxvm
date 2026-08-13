@@ -2,29 +2,8 @@
 
 ## Current Work
 
-**Active.** M5 T345 S3 separates safely strictable production direct commands
-from retained inherited or mixed production ownership.
-
-## M5 T345 S3 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner approved 2026-08-13 the admitted T345 strictness-convergence task and its holistic implementation. S1 and S2 established the complete direct-command baseline and pure-test cohort; this continuation consumes the production partition named by the approved proposal. |
-| Objective | Audit all 54 non-owner-test rows from the original 175-row ledger (48 production and six embedded-production-test rows) as target/source ownership units; promote only direct-source-complete, safely separable production targets that are warning-clean, and record one precise ownership, risk, and future admission trigger for every retained row. |
-| Non-goals | Do not add global flags, call linked strict libraries direct coverage, make inherited runtime or xasm/Console/Win32 warning cleanups, change production behavior, suppress a warning, redesign firmware string materialization, or modify docs/rules. |
-| Reference Baseline | `62079d95`; T345 S2 leaves 57 T344-deferred direct rows: three warning-clean owner-test rows in mixed targets, six embedded-production-test rows, one type foundation, and 47 mixed/inherited production rows. The fresh 175-row audit records 207 remaining warnings: 67 embedded and 140 mixed/inherited; all owner-test rows are zero-warning. |
-| Candidate Proposal | [M5 direct-compilation strictness convergence](../proposals/m5-direct-compilation-strictness-convergence.md), S3. |
-| Files And ABI Surface | CMake target-local options and T345 verifier/evidence/history/state records. Production source is read-only unless a directly promoted target's local direct warning requires a bounded behavior-preserving correction; no public ABI change. |
-| Applicable Rules | Task Reading Set; Execution lifecycle, ownership and similar-issue sweep; Architecture single-owner and no duplicate truth-source invariants; Coding source discipline and bounded local helpers; Documentation authority boundaries. |
-| Verification | Fresh GCC configure; complete S3 target/source ownership ledger; actual Ninja direct-command proof for every promoted target; warning audit; specialized T344/T345 gates; documentation governance; diff check; full current-gate. |
-| Expected Markers | The T345 verifier reports all original 175 ownership rows exactly once, with each newly strict production row tagged as a safe S3 direct cohort and every residual row bearing an exact future trigger. T344 actual command verification proves target-local flags. |
-| Asset Needs | No external source, firmware, guest media, or protected asset. |
-| Reporting Requirements | Record the target/source provenance decision, warning count, and strict/deferred disposition for all production rows; name the precise retained target/source domain, risk, and one admission trigger. Report any proposed production behavior or shared-helper repair instead of implementing it implicitly. |
-| Stop Conditions | Stop and transfer if strict promotion reaches a non-audited source, a direct warning needs semantic/shared-runtime change, target separation changes architecture, or a source lacks an ownership decision. Do not weaken `-Werror`. |
-| Exit Criteria | Every production and embedded-production-test S1 row is classified once; every promoted target is direct-source-complete and warning-clean under actual target-local strict flags; every retained row has exact ownership/risk/admission trigger; all required gates pass. |
-| Original Owner Request | Holistically consume T344's deferred strict-compilation surface, rather than leaving 175 untracked rows or repairing warnings one at a time. |
-| Similar-Issue Sweep | Re-audit every non-owner-test row from the original 175 audit, including clean rows. Group by target ownership and warning mechanism; reject a claim that a strict linked dependency covers a direct source. |
+**Idle.** M5 T345 remains open; S3 is closed. T345 S4 requires a separately
+admitted packet.
 
 ## Current Technical Baseline
 
@@ -47,6 +26,7 @@ from retained inherited or mixed production ownership.
 | --- | --- |
 | T345 S1 | Classified all 175 T344 deferred direct source/target rows: 121 project-owned test, 6 embedded production test, 1 type foundation, and 47 mixed/inherited production. Actual Ninja-command warning baseline records 225 warnings; exact non-current request-bridge test drift transferred to TODO. [Evidence](../etc/evidence/t345-s1-direct-compilation-ownership.md). |
 | T345 S2 | Promoted 118 pure project-owned current-gate test targets to target-local strict GCC compilation and removed all 18 baseline warnings without suppression or runtime-contract change. The 121 owner-test direct commands now audit at zero warnings; three owner-test rows in mixed targets transfer with their six embedded production rows to S3. [Evidence](../etc/evidence/t345-s1-direct-compilation-ownership.md). |
+| T345 S3 | Promoted the `type-facade`, `core-product-utils`, and `vm-platform-requests` single-source, warning-clean production targets to target-local strict GCC compilation. All remaining mixed/embedded production rows now have exact ownership, warning, risk, and admission records; no inherited runtime behavior changed. [Evidence](../etc/evidence/t345-s3-production-ownership.md). |
 | T344 | Closed build-quality reproducibility: fresh configuration, 305-row truthful strict-compile matrix (130 retained strict/175 deferred), canonical 218-target current-gate registration, 53 historical fixture shapes, and strict-declaration uniqueness are mechanically verified. [History](../history/M5-T344-build-quality-reproducibility.md). |
 | T343 | Closed the four-profile CPU program: one final ledger reconciles the 8086, 80186, 80286, and 80386DX execution, protected-state, delivery, task/paging/debug, and CPU-side coprocessor-interface boundaries. VME/PVI, persistent cache, x87 execution, timing/device, and Windows/product work remain explicit external candidates. [Closure ledger](../etc/evidence/t343-s1-four-profile-cross-closure.md). |
 | T342 | Closed the 80386DX profile ledger: T340 form and T341 state evidence reconcile every assigned row once, and the closure map now names the accepted state owners instead of stale future transfers. Only explicit post-80386, x87, timing/device, and Windows boundaries remain external. [Closure audit](../etc/evidence/t342-s1-80386dx-profile-closure-audit.md). |
