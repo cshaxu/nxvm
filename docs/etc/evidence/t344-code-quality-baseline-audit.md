@@ -179,7 +179,7 @@ ownership boundary, and emits one generated row for every direct C source:
 `target|source|status|reason`.  This is a direct-command matrix, not a claim
 about libraries linked by an executable.
 
-The GCC/Ninja baseline contains 228 in-scope targets and 297 direct C source
+The GCC/Ninja baseline contains 236 in-scope targets and 305 direct C source
 rows.  The verifier builds all retained-strict targets, obtains the actual
 `ninja -t commands <target>` command for every row, and rejects a missing or
 duplicate target/source row, an unknown status, an empty reason, a strict row
@@ -188,12 +188,12 @@ strict.  The resulting dispositions are:
 
 | Disposition | Direct C rows | Meaning and admission condition |
 | --- | ---: | --- |
-| Retained strict | 129 | The target directly declares `-Wall -Wextra -Wpedantic -Werror`; actual command verification is mandatory. |
+| Retained strict | 130 | The target directly declares `-Wall -Wextra -Wpedantic -Werror`; actual command verification is mandatory. |
 | Deferred production | 54 | The source belongs to a mixed or inherited production target, including `core-machine-executor`, VM composition/platform/product layers, and the retained type facade. A later task must establish that target's source ownership and clean its warnings without changing inherited behavior before adding target-local flags. |
-| Deferred owner test | 114 | The current-gate executable's own test source has no proven target-local strict build. Its exact admission condition is a target-local warning baseline and remediation; linking to a strict library is explicitly insufficient. |
+| Deferred owner test | 121 | The current-gate executable's own test source has no proven target-local strict build. Its exact admission condition is a target-local warning baseline and remediation; linking to a strict library is explicitly insufficient. |
 
 No target was newly promoted to strict in S2: the audit did not silently turn
-the 168 deferred direct commands into quality claims or scope a broad warning
+the 175 deferred direct commands into quality claims or scope a broad warning
 cleanup under this matrix task.  The generated
 `t344-direct-compilation-matrix.txt` remains the reproducible row-level
 evidence for the configured build, while the committed verifier is the
@@ -219,3 +219,45 @@ priority; it removes the stale cross-mechanism claim and its committed
 diagnostic print.  Exact S4, S5, S3, and T341 focused tests pass after the
 repair.  Fresh configuration, the 297-row strict matrix verifier, governance,
 diff check, and the full 218/218 current-gate also pass.
+
+## S3 Current-Gate Registration Integrity
+
+The raw ordinary list had two duplicate target identities:
+`core-machine-debug-mov-s59-smoke` and
+`core-machine-tf-db-s60-smoke`.  Their later aggregate
+`REMOVE_DUPLICATES` concealed the defect rather than rejecting it.  The
+ordinary list now contains each target once.  The five deliberately
+media-classified targets that also appear in the ordinary membership list
+remain unchanged: media classification controls their argument-bearing
+registration, not a second CTest member.
+
+`project_t344_verify_current_gate_partition` now builds one explicit
+canonical union: it rejects a missing or duplicate ordinary target, a missing
+or multiply classified media target, and preserves a deliberate ordinary/media
+reference as one canonical member.  Registration records every target in a
+global configure-time property and rejects a second registration.  The new
+`verify-t344-current-gate-registration` parses the generated
+`CTestTestfile.cmake` and rejects duplicate, missing, unlabeled, or
+out-of-canonical `current.*` tests.
+
+The canonical set has 218 current-gate targets and the generated CTest file
+contains exactly those 218 labelled registrations.  The same canonical set is
+now the input to the direct-compilation matrix, correcting S2's former
+ordinary-list-only input.  Its regenerated result is 305 direct C rows across
+236 production/current-gate targets: 130 retained strict, 54 deferred
+production, and 121 deferred owner-test rows.  No member, media argument,
+label, timeout, or smoke behavior changed.
+
+The S2 scan also found one distinct later cleanup: identical target-local
+strict options are declared twice for
+`core-platform-presentation-mailbox-smoke`.  It does not weaken compilation
+or affect registration, but must be removed by a later bounded T344 corrective
+subtask together with a complete strict-declaration duplicate sweep.
+
+Fresh configuration, the registration verifier, the regenerated direct matrix,
+all 53 specialized verification targets, documentation governance, diff check,
+and the full 218/218 current-gate pass.  The source-level guards are the
+negative proof: a duplicate ordinary entry, a duplicate media classification,
+or a nonexistent target stops configuration before any CTest registration;
+the generated-file verifier independently rejects an incomplete, duplicate,
+unlabeled, or out-of-canonical CTest result.
