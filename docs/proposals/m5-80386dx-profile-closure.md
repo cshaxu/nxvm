@@ -19,6 +19,14 @@ only valid outcomes are accepted evidence, precise architectural rejection,
 Intel-required retained difference, or return to a named implementation
 owner. It does not introduce a catch-all cleanup S.
 
+## Audit Outputs
+
+Each audited form/state row has exactly one result: accepted proof,
+Intel-required retained difference, explicit external/post-80386 boundary, or
+a return to the exact form/state mechanism owner. A return records its source
+route and missing mode, prefix, or fault proof; it never becomes an audit-side
+patch.
+
 ## Non-goals And Stop Conditions
 
 It does not repair a missing handler, state transition, or test matrix. Any

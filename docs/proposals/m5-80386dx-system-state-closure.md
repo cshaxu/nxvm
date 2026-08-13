@@ -29,6 +29,22 @@ and state rows; and outstanding system/table forms. Preserve true 16/32-bit
 layouts and prove frame, stack, restart, nonpublication, and TSS-dependent
 behavior where applicable.
 
+## Admission Sequence
+
+The state package is split only along real state-owner boundaries:
+
+1. map all readers/writers and transitions for CR/DR/TR, table/system forms,
+   VM86/task, paging, and debug delivery;
+2. close privileged control/table and CR/DR/TR validation-to-commit rows;
+3. close VM86/task/paging composition while retaining genuine 16/32-bit TSS,
+   frame, and stack layouts; and
+4. close ordinary breakpoint/debug cause and vector-1 composition, then audit
+   every state transfer together.
+
+Accepted paging, task-transition, or VM86-delivery evidence is reused only
+after exact scope comparison. A new state subtask is admitted only for an
+unproved composition or reproduced mechanism defect.
+
 ## Non-goals And Stop Conditions
 
 VME/PVI, 486+ features, persistent TLB/test-register models, x87 numerical

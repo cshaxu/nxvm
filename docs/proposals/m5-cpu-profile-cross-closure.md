@@ -30,3 +30,10 @@ Its durable output is the final four-profile disposition ledger: each
 applicable form/state transition names its Intel profile boundary, mode and
 privilege condition, evidence owner, and any deliberate external transfer.
 No Windows, timing, device, or x87 conclusion follows from this ledger.
+
+## Audit Outputs
+
+This final audit is a dependency barrier, not a sixth implementation bucket.
+It checks delivery first, then form dispositions, then cross-profile state
+composition. Any gap returns to the earliest form or state candidate with a
+finite missing matrix; no cleanup is implemented inside the audit.
