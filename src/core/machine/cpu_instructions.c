@@ -3030,59 +3030,66 @@ static C_VOID _ser_call_far_call_gate_32(core_machine_cpu_execution_context *con
     TYPE_TRACE_CHECK_RETURN(_s_read_xdt(context, newcs,
         TYPE_REFERENCE_OF(code_desc)));
     if (!_IsDescCodeNonConform(code_desc) ||
-        _GetDesc_DPL(code_desc) >= oldcpl)
+        _GetDesc_DPL(code_desc) > oldcpl)
         TYPE_TRACE_CHECK_RETURN(_SetExcept_GP(newcs & 0xfffcu));
     target_cpl = (type_unsigned_8)_GetDesc_DPL(code_desc);
     if (!_IsDescPresent(code_desc))
         TYPE_TRACE_CHECK_RETURN(_SetExcept_NP(newcs & 0xfffcu));
-    if (!cpu_state.data.tr.flagValid || cpu_state.data.tr.sys.type !=
-        VCPU_DESC_SYS_TYPE_TSS_32_BUSY)
-        TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(0));
-    TYPE_TRACE_CHECK_RETURN(_s_test_tss(context, 4u, 6u));
-    TYPE_TRACE_CHECK_RETURN(_s_read_tss(context, 4u, TYPE_REFERENCE_OF(newesp),
-        4u));
-    TYPE_TRACE_CHECK_RETURN(_s_read_tss(context, 8u, TYPE_REFERENCE_OF(newss),
-        2u));
-    TYPE_TRACE_CHECK_RETURN(_ser_check_call_gate_stack_sreg(context, newss,
-        target_cpl, TYPE_REFERENCE_OF(ss_desc)));
-
     oldcs = cpu_state.data.cs.selector;
     oldss = cpu_state.data.ss.selector;
     oldeip = cpu_state.data.eip;
     oldesp = cpu_state.data.esp;
     oldcs_frame = oldcs;
     oldss_frame = oldss;
-    parameter_count = (type_unsigned_8)_GetDescCall_Count(gate_desc);
-    for (index = 0u; index < parameter_count; ++index)
-        TYPE_TRACE_CHECK_RETURN(_s_peek_ss_pop(context, (type_unsigned_32)index *
-            4u, TYPE_REFERENCE_OF(parameters[index]), 4u));
     newcs_cache = cpu_state.data.cs;
     TYPE_TRACE_CHECK_RETURN(_ksa_prepare_code_sreg(context, newcs, target_cpl,
         &newcs_cache, &code_desc));
     TYPE_TRACE_CHECK_RETURN(_kma_test_access(context, &newcs_cache,
         TYPE_MASK_UNSIGNED_32(_GetDescGate_Offset(gate_desc)), 1u, 0,
         target_cpl, 1));
-    newss_cache = cpu_state.data.ss;
-    TYPE_TRACE_CHECK_RETURN(_ksa_prepare_stack_sreg(context, newss, target_cpl,
-        &newss_cache, &ss_desc));
-    TYPE_TRACE_CHECK_RETURN(_s_test_stack_frame_32(context, &newss_cache,
-        newesp, (type_unsigned_8)(4u + parameter_count), target_cpl));
-
-    TYPE_TRACE_CHECK_RETURN(_s_write_xdt(context, newss,
-        TYPE_REFERENCE_OF(ss_desc)));
-    TYPE_TRACE_CHECK_RETURN(_s_write_xdt(context, newcs,
-        TYPE_REFERENCE_OF(code_desc)));
-    cpu_state.data.ss = newss_cache;
-    if (newss_cache.seg.data.big)
-        cpu_state.data.esp = newesp;
-    else
-        cpu_state.data.sp = TYPE_MASK_UNSIGNED_16(newesp);
-    _MakeCPL(target_cpl);
-    TYPE_TRACE_CHECK_RETURN(_kec_push(context, TYPE_REFERENCE_OF(oldss_frame), 4u));
-    TYPE_TRACE_CHECK_RETURN(_kec_push(context, TYPE_REFERENCE_OF(oldesp), 4u));
-    for (index = parameter_count; index > 0u; --index)
-        TYPE_TRACE_CHECK_RETURN(_kec_push(context,
-            TYPE_REFERENCE_OF(parameters[index - 1u]), 4u));
+    if (target_cpl < oldcpl) {
+        if (!cpu_state.data.tr.flagValid || cpu_state.data.tr.sys.type !=
+            VCPU_DESC_SYS_TYPE_TSS_32_BUSY)
+            TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(0));
+        TYPE_TRACE_CHECK_RETURN(_s_test_tss(context, 4u, 6u));
+        TYPE_TRACE_CHECK_RETURN(_s_read_tss(context, 4u,
+            TYPE_REFERENCE_OF(newesp), 4u));
+        TYPE_TRACE_CHECK_RETURN(_s_read_tss(context, 8u,
+            TYPE_REFERENCE_OF(newss), 2u));
+        TYPE_TRACE_CHECK_RETURN(_ser_check_call_gate_stack_sreg(context, newss,
+            target_cpl, TYPE_REFERENCE_OF(ss_desc)));
+        parameter_count = (type_unsigned_8)_GetDescCall_Count(gate_desc);
+        for (index = 0u; index < parameter_count; ++index)
+            TYPE_TRACE_CHECK_RETURN(_s_peek_ss_pop(context,
+                (type_unsigned_32)index * 4u,
+                TYPE_REFERENCE_OF(parameters[index]), 4u));
+        newss_cache = cpu_state.data.ss;
+        TYPE_TRACE_CHECK_RETURN(_ksa_prepare_stack_sreg(context, newss,
+            target_cpl, &newss_cache, &ss_desc));
+        TYPE_TRACE_CHECK_RETURN(_s_test_stack_frame_32(context, &newss_cache,
+            newesp, (type_unsigned_8)(4u + parameter_count), target_cpl));
+        TYPE_TRACE_CHECK_RETURN(_s_write_xdt(context, newss,
+            TYPE_REFERENCE_OF(ss_desc)));
+        TYPE_TRACE_CHECK_RETURN(_s_write_xdt(context, newcs,
+            TYPE_REFERENCE_OF(code_desc)));
+        cpu_state.data.ss = newss_cache;
+        if (newss_cache.seg.data.big)
+            cpu_state.data.esp = newesp;
+        else
+            cpu_state.data.sp = TYPE_MASK_UNSIGNED_16(newesp);
+        _MakeCPL(target_cpl);
+        TYPE_TRACE_CHECK_RETURN(_kec_push(context, TYPE_REFERENCE_OF(oldss_frame),
+            4u));
+        TYPE_TRACE_CHECK_RETURN(_kec_push(context, TYPE_REFERENCE_OF(oldesp),
+            4u));
+        for (index = parameter_count; index > 0u; --index)
+            TYPE_TRACE_CHECK_RETURN(_kec_push(context,
+                TYPE_REFERENCE_OF(parameters[index - 1u]), 4u));
+    } else {
+        TYPE_TRACE_CHECK_RETURN(_s_test_ss_push(context, 8u));
+        TYPE_TRACE_CHECK_RETURN(_s_write_xdt(context, newcs,
+            TYPE_REFERENCE_OF(code_desc)));
+    }
     TYPE_TRACE_CHECK_RETURN(_kec_push(context, TYPE_REFERENCE_OF(oldcs_frame), 4u));
     TYPE_TRACE_CHECK_RETURN(_kec_push(context, TYPE_REFERENCE_OF(oldeip), 4u));
     cpu_state.data.cs = newcs_cache;

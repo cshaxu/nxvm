@@ -127,3 +127,22 @@ return all enter through it. The plan is the only T330 S1 writer of the
 cross-format outgoing image, backlink, and old/new TSS descriptors; its
 checked-memory preflight remains in the existing descriptor/TSS ownership
 layer. No generic memory, descriptor, paging, or exception mechanism changed.
+
+## T330 S2 Call-Gate Convergence And Evidence
+
+The 32-bit CALL-gate serializer now matches the retained 16-bit privilege
+decision: a nonconforming target code descriptor is valid when its DPL equals
+the current CPL, and only a target DPL greater than CPL faults. The 32-bit
+route now reads the TSS, selects a replacement SS:ESP, copies parameters, and
+writes the old SS/ESP frame fields only when the target CPL is lower. Its
+same-CPL path instead preflights and publishes just the 32-bit return EIP/CS
+frame on the current stack; it requires no TR/TSS.
+
+`core_machine_call_gate_privilege_entry_smoke` adds a CPL0-to-CPL0 32-bit
+CALL-gate transfer with an invalid TR. It proves the equal-DPL target is
+accepted, EIP/CS select the target, the current SS remains selected, ESP moves
+by exactly two dwords, the saved EIP/CS image is correct, and the adjacent
+stack word plus EFLAGS and non-stack GPRs remain unchanged. The retained
+privilege-entry corpus proves the lower-CPL TSS/parameter/outer-stack path and
+its descriptor, TSS, and stack failure boundaries. This preserves the genuine
+word/dword frame distinction rather than abstracting the two layouts.
