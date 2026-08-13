@@ -656,6 +656,55 @@ static C_INT cg_test_outer_gp_double_fault(C_INT double_fault_gate_valid)
     return !failed;
 }
 
+static C_INT cg_test_32_same_cpl_without_tss(C_VOID)
+{
+    call_gate_privilege_machine state;
+    core_machine_cpu_diagnostic diagnostic;
+    t_cpu before;
+    t_cpu after;
+    type_unsigned_32 frame[3] = {0u, 0u, 0u};
+    const type_unsigned_32 sentinel[3] = {0x11223344u, 0x55667788u,
+        0x99aabbccu};
+    static const type_unsigned_8 call[] = {0x9au,0u,0u,0u,0u,0x33u,0u};
+    t_cpu *cpu;
+    C_INT failed = !cg_prepare(&state, 0xecu, 3u);
+
+    if (!failed) {
+        cpu = &state.machine->executor_cpu;
+        cpu->data.cs.selector = 0x0008u;
+        cpu->data.cs.base = CG_KERNEL_CODE_BASE;
+        cpu->data.cs.dpl = 0u;
+        cpu->data.ss.selector = 0x0010u;
+        cpu->data.ss.dpl = 0u;
+        cpu->data.tr.flagValid = TYPE_FALSE;
+        cpu->data.eip = 0u;
+        cpu->data.esp = 0x00008800u;
+        failed |= !cg_write(&state, CG_KERNEL_CODE_BASE, call, sizeof(call)) ||
+            !cg_write(&state, 0x000087f8u, sentinel, sizeof(sentinel));
+    }
+    if (!failed) {
+        before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        failed |= !cg_run(&state, 0, &after, &diagnostic) ||
+            diagnostic.first_fault.valid || diagnostic.last_delivered_exception.valid ||
+            after.data.cs.selector != 0x0008u ||
+            after.data.ss.selector != 0x0010u ||
+            after.data.eip != CG_HANDLER_OFFSET + 1u ||
+            after.data.esp != 0x000087f8u ||
+            after.data.eflags != before.data.eflags ||
+            after.data.eax != before.data.eax ||
+            after.data.ecx != before.data.ecx ||
+            after.data.edx != before.data.edx ||
+            after.data.ebx != before.data.ebx ||
+            after.data.ebp != before.data.ebp ||
+            after.data.esi != before.data.esi ||
+            after.data.edi != before.data.edi ||
+            !cg_read(&state, after.data.esp, frame, sizeof(frame)) ||
+            frame[0] != 7u || frame[1] != 8u || frame[2] != sentinel[2];
+    }
+    core_machine_destroy(state.machine);
+    return !failed;
+}
+
 int main(void)
 {
     C_INT failed = !cg_test_success(0u) || !cg_test_success(2u) ||
@@ -686,12 +735,14 @@ int main(void)
             CALL_GATE_OUTER_DELIVERY_TARGET_NOT_PRESENT) ||
         !cg_test_outer_gp_delivery_failure(
             CALL_GATE_OUTER_DELIVERY_STACK_LIMIT) ||
-        !cg_test_outer_gp_double_fault(1) || !cg_test_outer_gp_double_fault(0);
+        !cg_test_outer_gp_double_fault(1) || !cg_test_outer_gp_double_fault(0) ||
+        !cg_test_32_same_cpl_without_tss();
 
     if (failed) return 1;
     STD_PRINTF("M5:T307:CALL-GATE-PRIVILEGE-ENTRY:OK\n");
     STD_PRINTF("M5:T308:S3:SAME-CPL-TS-DELIVERY:OK\n");
     STD_PRINTF("M5:T308:S5:OUTER-CPL-ERROR-DELIVERY:OK\n");
     STD_PRINTF("M5:T308:S6:DOUBLE-FAULT-CONTAINMENT:OK\n");
+    STD_PRINTF("M5:T330:S2:CALL-GATE-SAME-CPL:OK\n");
     return 0;
 }
