@@ -69,6 +69,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t350-s2-pit-irq0.md` | Verification owner | T350 S2 retained 8254 counter, output, channel-0 IRQ0, and lifecycle reconciliation. Retain with T350 history at task closure. |
 | `evidence/t350-s3-rtc-cmos.md` | Verification owner | T350 S3 MC146818 calendar, event/IRQ8, CMOS adapter, lifecycle, and deterministic-readiness reconciliation. Retain with T350 history at task closure. |
 | `evidence/t350-s4-pcat-nmi-decision.md` | Verification owner | T350 S4 IBM PC/AT NMI producer decision, source/consumer sweep, and exact deferred admission boundary. Retain with T350 history at task closure. |
+| `evidence/t351-s1-kbc-aux-ledger.md` | Verification owner | T351 S1 8042/controller/keyboard/AUX manual-to-source-to-proof ledger and S2--S5 receiver plan. Retain with T351 history at task closure. |
 | `operations/` | Execution, source, and release owners | Toolchain, policy, templates, release procedure, and closure material. |
 | `research/` | Source owner | Provenance, external references, and non-product research. |
 | `history/` | Documentation owner | Read-only legacy and M5 migration/roadmap evidence. |
