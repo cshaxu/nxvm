@@ -47,6 +47,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t344-historical-fixture-shapes.md` | Verification owner | T344 S4 fixed direct-constructor fixture-shape inventory, shared-tail convergence, and retained admission boundaries. Retire into T344 history at task closure. |
 | `evidence/t345-s1-direct-compilation-ownership.md` | Verification owner | T345 S1 whole-graph deferred direct-command ownership, warning-baseline, and out-of-matrix build finding. Retire into T345 history at task closure. |
 | `evidence/t345-s3-production-ownership.md` | Verification owner | T345 S3 production direct-command strict-promotion and retained ownership/risk/admission ledger. Retire into T345 history at task closure. |
+| `evidence/t346-s1-core-machine-device-l3-audit.md` | Verification owner | T346 S1 whole core-machine device, bus, port, reference-discipline, and L3-readiness ledger. Merge into T346 history at task closure. |
 | `operations/` | Execution, source, and release owners | Toolchain, policy, templates, release procedure, and closure material. |
 | `research/` | Source owner | Provenance, external references, and non-product research. |
 | `history/` | Documentation owner | Read-only legacy and M5 migration/roadmap evidence. |

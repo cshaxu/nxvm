@@ -7,6 +7,11 @@ candidate work, and detailed capability evidence belong in
 [design/GOAL.md](../design/GOAL.md), [QUEUE.md](QUEUE.md), and
 [etc/evidence/current-capability-baseline.md](../etc/evidence/current-capability-baseline.md).
 
+T346 S1 records the whole-machine L2 baseline and assigns its selected
+time/event, storage, input, and display convergence work through the active
+task. Entries below remain unplanned boundaries unless a later T346 packet
+explicitly adopts them.
+
 
 ## Hardware And Compatibility Debt
 
@@ -36,6 +41,16 @@ candidate work, and detailed capability evidence belong in
   color, phase, and colorburst as an optional renderer/profile capability only
   after digital CGA is complete. Do not fold it into VADP digital state or use
   it to claim EGA/VGA support.
+- [ ] **PC/AT speaker/PPI `61h` (`TODO(Medium)`).** No core speaker/PPI owner
+  exists. Admit it only from a DOS or Windows corpus that needs gate/speaker
+  timing, with a documented 8253 channel-2 and port-`61h` contract,
+  deterministic event ownership, reset behavior, and a copied host-audio
+  boundary. Do not use host audio time as guest time.
+- [ ] **Serial, parallel, and game-port interfaces (`TODO(Low)`).** These
+  controllers have no selected core owners. Admit one interface at a time only
+  from a named corpus and hardware contract, preserving core-owned port,
+  IRQ/DMA, reset, and deterministic-event boundaries; do not add generic host
+  device passthrough or infer Windows relevance from reference-emulator scope.
 
 ## CPU, Time, And Debugging Debt
 
@@ -139,16 +154,19 @@ candidate work, and detailed capability evidence belong in
 
 The current core is deterministic and host-clock-independent: completed
 instructions advance core elapsed ticks and devices consume frozen accumulated
-clock ratios. These levels are deferred compatibility admissions, not the
-default definition of NXVM completion.
+clock ratios. T346 S1 classifies this as L2 rather than L3 because it has no
+single due-event/arbitration or bus-transaction contract. These entries are
+deferred compatibility admissions, not the default definition of NXVM
+completion.
 
 - [ ] **Instruction-timed execution (`TODO(Medium)`).** Give each admitted
   instruction deterministic profile-specific cost, including applicable
   prefix/branch/memory/I/O variants, before expanding the timing corpus.
 - [ ] **Bus-timed PC/AT operation (`TODO(High)`).** T269 admits deterministic
-  one-unit DMA grant pacing and its fixed visibility boundary. Model remaining
-  memory/I/O wait states, CPU bus ownership, and device-specific timing only
-  through later corpus-driven admissions.
+  one-unit DMA grant pacing and its fixed visibility boundary. T346 must first
+  provide one due-event/arbitration and transaction contract; then model
+  remaining memory/I/O wait states, CPU bus ownership, and device-specific
+  timing only through later corpus-driven admissions.
 - [ ] **Cycle-exact profiles (`TODO(High)`).** Only where a profile genuinely
   requires it, model clock phases, prefetch/bus behavior, and device
   microstates without silently changing the retained executor.
