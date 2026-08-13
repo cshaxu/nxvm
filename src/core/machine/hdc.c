@@ -599,6 +599,7 @@ C_VOID core_machine_hdc_refresh(core_machine_hdc *hdc)
 C_VOID core_machine_hdc_finalize(core_machine_hdc *hdc)
 {
     if (hdc == STD_NULL) return;
+    core_machine_pic_irq_source_deassert(&hdc->connect.irq_source);
     STD_MEMSET(&hdc->data, 0, sizeof(hdc->data));
     STD_MEMSET(&hdc->connect, 0, sizeof(hdc->connect));
 }

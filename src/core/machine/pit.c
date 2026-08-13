@@ -421,6 +421,16 @@ C_VOID core_machine_pit_reset(t_pit *pit)
 {
     type_native_unsigned id;
     if (pit == STD_NULL) return;
+    /*
+     * The PIT owns the output level but not its consumer.  Drop every live
+     * output before clearing the local latch so a bound PIC source also
+     * releases its asserted state across a machine reset.
+     */
+    for (id = 0u; id < 3u; ++id) {
+        if (pit->data.flagOutput[id] && pit->connect.output[id] != STD_NULL) {
+            pit->connect.output[id](pit->connect.output_owner[id], TYPE_FALSE);
+        }
+    }
     STD_MEMSET((C_VOID *)&pit->data, TYPE_ZERO_8, sizeof(pit->data));
     for (id = 0u; id < 3u; ++id) {
         pit->data.flagReady[id] = TYPE_TRUE;
@@ -440,4 +450,13 @@ C_VOID core_machine_pit_advance(t_pit *pit, type_unsigned_64 elapsed_ticks)
     }
 }
 
-C_VOID core_machine_pit_finalize(t_pit *pit) { (C_VOID)pit; }
+C_VOID core_machine_pit_finalize(t_pit *pit)
+{
+    type_native_unsigned id;
+    if (pit == STD_NULL) return;
+    for (id = 0u; id < 3u; ++id) {
+        if (pit->data.flagOutput[id] && pit->connect.output[id] != STD_NULL) {
+            pit->connect.output[id](pit->connect.output_owner[id], TYPE_FALSE);
+        }
+    }
+}

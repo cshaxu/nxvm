@@ -2,8 +2,29 @@
 
 ## Current Work
 
-**Idle.** M5 T349 S3 is accepted; request lifecycle, spurious IRQ, and
-composition reconciliation require a separately admitted continuation packet.
+M5 T349 S4 - dual-8259A request lifecycle and composition reconciliation
+(Single-Session Mode).
+
+## M5 T349 S4 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved continuous holistic PC/AT device/L3 completion; T349 S3 P2 `19746b45` accepts the final T349 receiver on 2026-08-13. |
+| Objective | Complete the retained PC/AT PIC request boundary: edge/level delivery, multiple asserted sources on one line, master/slave cascade reassertion, reset/finalize and every PIT/KBC/FDC/HDC/RTC producer lifecycle. Define the exact current deterministic-L3 spurious IRQ7/15 boundary and transfer only physical-INTA behavior that this architecture deliberately lacks. |
+| Non-goals | Poll/special-mask/SFNM and command priority core, CPU exception/IRET/frame redesign, physical INTA or wire waveform, arbitrary boards, APIC, host bridge, x87, device protocol semantics, and Windows claims are outside this S. |
+| Reference Baseline | `19746b45` / T349 S3 accepted; [S1 ledger](../etc/evidence/t349-s1-pcat-pic-compliance-ledger.md), [S2 evidence](../etc/evidence/t349-s2-pcat-pic-command-priority.md), [S3 evidence](../etc/evidence/t349-s3-pcat-pic-ocw3.md), and [PIC proposal](../proposals/m5-pcat-pic-compliance.md). |
+| Candidate Proposal | [PC/AT 8259A compliance](../proposals/m5-pcat-pic-compliance.md). |
+| Files And ABI Surface | Expected: PIC source/headers only if lifecycle ownership needs repair, one owner-local lifecycle smoke and CMake registration, retained device/timeline smokes, S4 evidence, Current, and T349 history. Existing source-provider and CPU ABI remain stable. |
+| Applicable Rules | Task Reading Set; one PIC owner for controller state; device source only asserts/deasserts its physical line; deterministic `DMA -> PIT -> PIC` refresh; no second source truth; owner-local tests; Intel 8259A/IBM PC/AT cascade plus the accepted L3 architecture boundary. |
+| Verification | Focused proof must cover edge retention, level reassertion, two sources on one master line, slave cascade level reassertion, reset/finalize/source-bind behavior, empty acknowledgement nonpublication, and the producer reset/deassert inventory. Retain CPU delivery and T346 arbitration/timeline regressions; run full current-gate and governance. |
+| Expected Markers | Add `M5:T349:S4:PIC-LIFECYCLE:OK`; retain T216, T349 S2/S3, T346/T347/T348, PIT/KBC/RTC/FDC/HDC and CPU delivery markers. |
+| Asset Needs | Intel 8259A and IBM PC/AT published documentation only; no source import, guest media, host device, or external runtime. |
+| Reporting Requirements | Record each producer bind/assert/deassert/reset/finalize site, all lifecycle state mutation, spurious scope decision, physical-INTA transfer, and full verification. Deliver one complete pushed P1. |
+| Stop Conditions | Stop for CPU delivery/frame redesign, source-provider ABI change, physical INTA implementation, arbitrary cascade topology, generic scheduler change, or a repair outside PIC-local lifecycle/composition. |
+| Exit Criteria | Every T349 ledger row is accepted with focused proof or an explicit physical-INTA/L3 transfer; no producer lifecycle or controller state owner is unclassified; the task closure audit can move the proposal into history. |
+| Original Owner Request | Make core-machine devices stable, comprehensive, and reliable at deterministic L3 before Windows testing. |
+| Similar-Issue Sweep | Inspect all `core_machine_pic_irq_source` bind/assert/deassert/reset/finalize calls, per-line asserted/IRR changes, level refresh, master IR2 materialization, PIC reset/finalize, and every T346/T347/T348 producer lifecycle. |
 
 ## Current Technical Baseline
 

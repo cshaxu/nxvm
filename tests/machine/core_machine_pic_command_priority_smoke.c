@@ -59,7 +59,8 @@ static C_INT pic_command_priority_test_initialization_and_registers(C_VOID)
         fixture.master.data.isr != 0u || fixture.master.data.irx != 0u ||
         fixture.master.data.icw2 != 0u || fixture.master.data.icw3 != 0u ||
         fixture.master.data.icw4 != 0u || fixture.master.data.ocw1 != 0u ||
-        fixture.master.data.ocw2 != 0u || fixture.master.data.ocw3 != 0u ||
+        fixture.master.data.ocw2 != 0u ||
+        fixture.master.data.ocw3 != VPIC_OCW3_RR ||
         fixture.master.data.status != ICW2;
     failed |= core_machine_pic_get_interrupt(&fixture.master, &fixture.slave) != 0u ||
         fixture.master.data.isr != 0u;

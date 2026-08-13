@@ -197,7 +197,10 @@ C_VOID core_machine_rtc_advance(core_machine_rtc *cmos, type_unsigned_64 elapsed
     core_machine_rtc_raise_if_enabled(cmos);
 }
 
-C_VOID core_machine_rtc_finalize(core_machine_rtc *cmos) { (C_VOID)cmos; }
+C_VOID core_machine_rtc_finalize(core_machine_rtc *cmos)
+{
+    if (cmos != STD_NULL) core_machine_pic_irq_source_deassert(&cmos->irq_source);
+}
 
 C_VOID core_machine_rtc_select_register(core_machine_rtc *cmos, type_unsigned_8 index)
 {
