@@ -197,17 +197,21 @@ static C_INT segment_boot_protected_286(segment_machine *state)
     static const type_unsigned_8 gdt_pointer[] = {
         0x37u, 0x00u, 0x00u, 0x03u, 0x00u, 0x00u
     };
+    static const type_unsigned_8 idt_pointer[] = {
+        0x6fu, 0x00u, 0x00u, 0x04u, 0x00u, 0x00u
+    };
     static const type_unsigned_8 gdt[] = {
         0,0,0,0,0,0,0,0,
         0xff,0xff,0,0x20,0,0x9a,0,0,
         0xff,0xff,0,0x30,0,0x92,0,0,
         0xff,0xff,0,0x30,0,0x12,0,0,
         0xff,0xff,0,0x30,0,0x98,0,0,
-        0,0,0,0,0,0x80,0,0,
+        0x0fu,0,0,0x50u,0,0x82u,0,0,
         0xff,0xff,0,0x00,0,0x89,0,0
     };
     static const type_unsigned_8 real_code[] = {
         0x0fu,0x01u,0x16u,0x00u,0x01u,
+        0x0fu,0x01u,0x1eu,0x10u,0x01u,
         0xb8u,0x01u,0x00u,0x0fu,0x01u,0xf0u,
         0xb8u,0x10u,0x00u,0x8eu,0xd8u,0x8eu,0xc0u,0x8eu,0xd0u,
         0xbcu,0x00u,0x80u,0xeau,0x00u,0x00u,0x08u,0x00u
@@ -215,12 +219,26 @@ static C_INT segment_boot_protected_286(segment_machine *state)
     static const type_unsigned_8 halt[] = { 0xf4u };
     const core_machine_run_budget budget = { 96u, 0u };
     core_machine_run_result result;
+    type_unsigned_8 idt[0x70u] = { 0u };
+
+    idt[11u * 8u + 1u] = 0x01u;
+    idt[11u * 8u + 2u] = 0x08u;
+    idt[11u * 8u + 5u] = 0x86u;
+    idt[12u * 8u + 1u] = 0x01u;
+    idt[12u * 8u + 2u] = 0x08u;
+    idt[12u * 8u + 5u] = 0x86u;
+    idt[13u * 8u + 1u] = 0x01u;
+    idt[13u * 8u + 2u] = 0x08u;
+    idt[13u * 8u + 5u] = 0x86u;
 
     if (!segment_write(state, SEG_GDT_POINTER, gdt_pointer,
             sizeof(gdt_pointer)) || !segment_write(state, SEG_GDT_ADDRESS, gdt,
-            sizeof(gdt)) || !segment_write(state, 0u, real_code,
+            sizeof(gdt)) || !segment_write(state, 0x0110u, idt_pointer,
+            sizeof(idt_pointer)) || !segment_write(state, 0x0400u, idt,
+            sizeof(idt)) || !segment_write(state, 0u, real_code,
             sizeof(real_code)) || !segment_write(state, SEG_CODE_ADDRESS, halt,
-            sizeof(halt))) return 0;
+            sizeof(halt)) || !segment_write(state, SEG_CODE_ADDRESS + 0x100u,
+            halt, sizeof(halt))) return 0;
     return core_machine_run(state->machine, budget, &result) == TYPE_STATUS_OK &&
         result.reason == CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
 }
@@ -301,11 +319,60 @@ static C_INT segment_test_80286_protected_legal_forms(C_VOID)
     static const type_unsigned_8 verw_code[] = {
         0xb8u,0x10u,0x00u,0x0fu,0x00u,0xe8u,0xf4u
     };
+    static const type_unsigned_8 mov_load_code[] = {
+        0xb8u,0x10u,0x00u,0x8eu,0xd8u,0xf4u
+    };
+    static const type_unsigned_8 mov_store_code[] = { 0x8cu,0xd8u,0xf4u };
+    static const type_unsigned_8 pop_load_code[] = {
+        0xb8u,0x10u,0x00u,0x50u,0x1fu,0xf4u
+    };
+    static const type_unsigned_8 push_store_code[] = { 0x06u,0xf4u };
+    static const type_unsigned_8 ldt_lar_code[] = {
+        0xb8u,0x28u,0x00u,0x0fu,0x00u,0xd0u,
+        0xb8u,0x0cu,0x00u,0x0fu,0x02u,0xc8u,0xf4u
+    };
+    static const type_unsigned_8 ldt_lsl_code[] = {
+        0xb8u,0x28u,0x00u,0x0fu,0x00u,0xd0u,
+        0xb8u,0x0cu,0x00u,0x0fu,0x03u,0xc8u,0xf4u
+    };
+    static const type_unsigned_8 ldt_verr_code[] = {
+        0xb8u,0x28u,0x00u,0x0fu,0x00u,0xd0u,
+        0xb8u,0x0cu,0x00u,0x0fu,0x00u,0xe0u,0xf4u
+    };
+    static const type_unsigned_8 ldt_verw_code[] = {
+        0xb8u,0x28u,0x00u,0x0fu,0x00u,0xd0u,
+        0xb8u,0x0cu,0x00u,0x0fu,0x00u,0xe8u,0xf4u
+    };
+    static const type_unsigned_8 lldt_memory_code[] = {
+        0x0fu,0x00u,0x16u,0x00u,0x04u,0xf4u
+    };
+    static const type_unsigned_8 sldt_memory_code[] = {
+        0xb8u,0x28u,0x00u,0x0fu,0x00u,0xd0u,
+        0x0fu,0x00u,0x06u,0x00u,0x04u,0xf4u
+    };
+    static const type_unsigned_8 ltr_memory_code[] = {
+        0x0fu,0x00u,0x1eu,0x00u,0x04u,0xf4u
+    };
+    static const type_unsigned_8 str_memory_code[] = {
+        0xb8u,0x30u,0x00u,0x0fu,0x00u,0xd8u,
+        0x0fu,0x00u,0x0eu,0x00u,0x04u,0xf4u
+    };
+    static const type_unsigned_8 ldt_descriptor[] = {
+        0xffu,0xffu,0,0x70u,0,0x92u,0,0
+    };
     static const type_unsigned_8 pointer[] = { 0x78u,0x56u,0x10u,0x00u };
     const type_unsigned_8 *codes[] = { les_code, lds_code, lar_code, lsl_code,
-        verr_code, verw_code };
+        verr_code, verw_code, mov_load_code, mov_store_code, pop_load_code,
+        push_store_code, ldt_lar_code, ldt_lsl_code, ldt_verr_code,
+        ldt_verw_code, lldt_memory_code, sldt_memory_code, ltr_memory_code,
+        str_memory_code };
     const STD_SIZE_T sizes[] = { sizeof(les_code), sizeof(lds_code),
-        sizeof(lar_code), sizeof(lsl_code), sizeof(verr_code), sizeof(verw_code) };
+        sizeof(lar_code), sizeof(lsl_code), sizeof(verr_code), sizeof(verw_code),
+        sizeof(mov_load_code), sizeof(mov_store_code), sizeof(pop_load_code),
+        sizeof(push_store_code), sizeof(ldt_lar_code), sizeof(ldt_lsl_code),
+        sizeof(ldt_verr_code), sizeof(ldt_verw_code), sizeof(lldt_memory_code),
+        sizeof(sldt_memory_code), sizeof(ltr_memory_code),
+        sizeof(str_memory_code) };
     STD_SIZE_T index;
     C_INT failed = 0;
 
@@ -317,6 +384,14 @@ static C_INT segment_test_80286_protected_legal_forms(C_VOID)
             !segment_boot_protected_286(&state)) return 1;
         if (index < 2u) failed |= !segment_write(&state,
             SEG_DATA_ADDRESS + 0x0400u, pointer, sizeof(pointer));
+        if (index >= 10u) failed |= !segment_write(&state, 0x5008u,
+            ldt_descriptor, sizeof(ldt_descriptor));
+        if (index == 14u || index == 16u) {
+            type_unsigned_16 selector = index == 14u ? 0x0028u : 0x0030u;
+
+            failed |= !segment_write(&state, SEG_DATA_ADDRESS + 0x0400u,
+                &selector, sizeof(selector));
+        }
         failed |= !segment_run_halt(&state, codes[index], sizes[index],
             SEG_CODE_ADDRESS, &cpu);
         switch (index) {
@@ -336,6 +411,63 @@ static C_INT segment_test_80286_protected_legal_forms(C_VOID)
             failed |= (cpu.data.eax & 0xffffu) != 0xffffu ||
                 !TYPE_GET_BIT(cpu.data.eflags, VCPU_EFLAGS_ZF);
             break;
+        case 6u:
+            failed |= cpu.data.ds.selector != 0x0010u;
+            break;
+        case 7u:
+            failed |= (cpu.data.eax & 0xffffu) != 0x0010u;
+            break;
+        case 8u:
+            failed |= cpu.data.ds.selector != 0x0010u ||
+                cpu.data.esp != 0x8000u;
+            break;
+        case 9u:
+        {
+            type_unsigned_16 selector = 0u;
+
+            failed |= cpu.data.esp != 0x7ffeu ||
+                core_machine_memory_read(state.machine, SEG_DATA_ADDRESS + 0x7ffeu,
+                    &selector, sizeof(selector)) != TYPE_STATUS_OK ||
+                selector != 0x0010u;
+            break;
+        }
+        case 10u:
+            failed |= cpu.data.ldtr.selector != 0x0028u ||
+                (cpu.data.ecx & 0xffffu) != 0x9200u ||
+                !TYPE_GET_BIT(cpu.data.eflags, VCPU_EFLAGS_ZF);
+            break;
+        case 11u:
+            failed |= cpu.data.ldtr.selector != 0x0028u ||
+                (cpu.data.ecx & 0xffffu) != 0xffffu ||
+                !TYPE_GET_BIT(cpu.data.eflags, VCPU_EFLAGS_ZF);
+            break;
+        case 14u:
+            failed |= cpu.data.ldtr.selector != 0x0028u;
+            break;
+        case 15u:
+        {
+            type_unsigned_16 selector = 0u;
+
+            failed |= cpu.data.ldtr.selector != 0x0028u ||
+                core_machine_memory_read(state.machine,
+                SEG_DATA_ADDRESS + 0x0400u, &selector, sizeof(selector)) !=
+                TYPE_STATUS_OK || selector != 0x0028u;
+            break;
+        }
+        case 16u:
+            failed |= cpu.data.tr.selector != 0x0030u ||
+                !cpu.data.tr.flagValid;
+            break;
+        case 17u:
+        {
+            type_unsigned_16 selector = 0u;
+
+            failed |= cpu.data.tr.selector != 0x0030u ||
+                core_machine_memory_read(state.machine,
+                SEG_DATA_ADDRESS + 0x0400u, &selector, sizeof(selector)) !=
+                TYPE_STATUS_OK || selector != 0x0030u;
+            break;
+        }
         default:
             failed |= !TYPE_GET_BIT(cpu.data.eflags, VCPU_EFLAGS_ZF);
             break;
@@ -343,6 +475,83 @@ static C_INT segment_test_80286_protected_legal_forms(C_VOID)
         core_machine_destroy(state.machine);
     }
     return failed;
+}
+
+static C_INT segment_test_80286_protected_cache_rejections(C_VOID)
+{
+    static const type_unsigned_8 nonpresent_ds[] = {
+        0xb8u,0x18u,0x00u,0x8eu,0xd8u
+    };
+    static const type_unsigned_8 execute_only_ds[] = {
+        0xb8u,0x20u,0x00u,0x8eu,0xd8u
+    };
+    static const type_unsigned_8 null_ds[] = {
+        0xb8u,0x00u,0x00u,0x8eu,0xd8u,0xf4u
+    };
+    static const type_unsigned_8 null_ss[] = {
+        0xb8u,0x00u,0x00u,0x8eu,0xd0u
+    };
+    const type_unsigned_8 *codes[] = {
+        nonpresent_ds, execute_only_ds, null_ds, null_ss
+    };
+    const STD_SIZE_T sizes[] = {
+        sizeof(nonpresent_ds), sizeof(execute_only_ds), sizeof(null_ds),
+        sizeof(null_ss)
+    };
+    const type_unsigned_32 exceptions[] = {
+        VCPUINS_EXCEPT_NP, VCPUINS_EXCEPT_GP, 0u, VCPUINS_EXCEPT_GP
+    };
+    type_unsigned_8 form;
+
+    for (form = 0u; form != sizeof(codes) / sizeof(codes[0]); ++form) {
+        segment_machine state;
+        core_machine_run_result result;
+        core_machine_cpu_diagnostic diagnostic;
+        t_cpu before;
+        t_cpu after;
+        C_INT failed = !segment_prepare(&state, CORE_MACHINE_CPU_PROFILE_80286) ||
+            !segment_boot_protected_286(&state);
+
+        if (!failed) {
+            before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+            failed |= !segment_write(&state, SEG_CODE_ADDRESS, codes[form],
+                sizes[form]);
+            test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
+            failed |= core_machine_run(state.machine,
+                (core_machine_run_budget){ form == 2u ? 16u : 2u, 0u },
+                &result) != TYPE_STATUS_OK ||
+                core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
+                TYPE_STATUS_OK;
+            after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+            if (form == 2u) {
+                failed |= result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+                    diagnostic.first_fault.valid || after.data.ds.selector != 0u ||
+                    after.data.ds.flagValid || after.data.eax != before.data.eax ||
+                    STD_MEMCMP(&after.data.es, &before.data.es,
+                    sizeof(after.data.es)) != 0 ||
+                    STD_MEMCMP(&after.data.ss, &before.data.ss,
+                    sizeof(after.data.ss)) != 0;
+            } else {
+                const t_cpu_data_sreg *target = form == 3u ? &after.data.ss :
+                    &after.data.ds;
+                const t_cpu_data_sreg *before_target = form == 3u ?
+                    &before.data.ss : &before.data.ds;
+
+                failed |= result.reason != CORE_MACHINE_STOP_BUDGET ||
+                    diagnostic.first_fault.valid ||
+                    !diagnostic.last_delivered_exception.valid ||
+                    !TYPE_GET_BIT(diagnostic.last_delivered_exception.exception_mask,
+                    exceptions[form]) || after.data.eip != 0x100u ||
+                    STD_MEMCMP(target, before_target, sizeof(*target)) != 0 ||
+                    after.data.eax != before.data.eax ||
+                    STD_MEMCMP(&after.data.es, &before.data.es,
+                    sizeof(after.data.es)) != 0;
+            }
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+    }
+    return 1;
 }
 
 typedef struct segment_lxs_form {
@@ -1019,6 +1228,8 @@ C_INT main(C_VOID)
 {
     C_INT real_loads = segment_test_real_load_forms();
     C_INT protected_286 = segment_test_80286_protected_legal_forms();
+    C_INT protected_286_rejections =
+        segment_test_80286_protected_cache_rejections();
     C_INT lxs_memory_only = segment_test_lxs_memory_only();
     C_INT lxs_atomicity = segment_test_lxs_fault_atomicity();
     C_INT real_sregs = segment_test_real_sreg_loads();
@@ -1030,12 +1241,12 @@ C_INT main(C_VOID)
     C_INT atomicity = segment_test_pop_fault_atomicity();
     C_INT metadata = segment_test_metadata();
 
-    if (real_loads || protected_286 || lxs_memory_only || lxs_atomicity || real_sregs || protected_sregs ||
+    if (real_loads || protected_286 || protected_286_rejections || lxs_memory_only || lxs_atomicity || real_sregs || protected_sregs ||
         protected_sreg_failures || protected_forms || query_edges || rejected ||
         atomicity || metadata) {
         STD_FPRINTF(STD_STDERR,
-            "M5:T301:SEGMENT-SELECTOR:FAIL real=%d protected-286=%d lxs=%d lxs-atomic=%d sreg-real=%d sreg-protected=%d sreg-fault=%d protected=%d query=%d rejected=%d atomic=%d metadata=%d\n",
-            real_loads, protected_286, lxs_memory_only, lxs_atomicity, real_sregs, protected_sregs,
+            "M5:T301:SEGMENT-SELECTOR:FAIL real=%d protected-286=%d protected-286-reject=%d lxs=%d lxs-atomic=%d sreg-real=%d sreg-protected=%d sreg-fault=%d protected=%d query=%d rejected=%d atomic=%d metadata=%d\n",
+            real_loads, protected_286, protected_286_rejections, lxs_memory_only, lxs_atomicity, real_sregs, protected_sregs,
             protected_sreg_failures, protected_forms, query_edges, rejected,
             atomicity, metadata);
         return 1;
