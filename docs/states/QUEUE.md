@@ -24,7 +24,6 @@ not allocate a numeric task.
 After the CPU-profile program closes, the remaining M5 candidates consume its
 result but are not part of the profile-completeness claim:
 
-1. [Direct-compilation strictness convergence](../proposals/m5-direct-compilation-strictness-convergence.md).
 1. [Windows 3.x readiness map](../proposals/m5-windows-3x-readiness-map.md).
 1. [M5 closure audit](../proposals/m5-closure-audit.md).
 

@@ -2,29 +2,7 @@
 
 ## Current Work
 
-**Active.** M5 T345 S4 reconciles the complete direct-compilation ledger and
-transfers the remaining mixed production strictness work as exact debt.
-
-## M5 T345 S4 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner approved 2026-08-13 the admitted T345 strictness-convergence task and its holistic implementation. S1--S3 completed the direct ownership baseline and allowed strict cohorts; this continuation performs the proposal's required whole-graph reconciliation and task closure audit. |
-| Objective | Reconcile all 305 T344 direct C rows into actual strict coverage or an exact residual ownership record; add a mechanical residual production ledger and durable TODO transfer for unresolved mixed/embedded production, then close T345 only after reviewing code quality, evidence, documentation, and gates. |
-| Non-goals | Do not add a global compiler policy, suppress warnings, modify inherited/runtime/xasm/Console/Win32 source, claim a linked library covers direct compilation, or modify docs/rules. |
-| Reference Baseline | `dbaefc97`; T345 S3 proves 251 retained-strict rows and 54 deferred rows. The original 175-row ownership ledger is complete: 121 owner-test, six embedded-production-test, one type foundation, two safely separable production, and 45 mixed/inherited production. |
-| Candidate Proposal | [M5 direct-compilation strictness convergence](../proposals/m5-direct-compilation-strictness-convergence.md), S4. |
-| Files And ABI Surface | T345 CMake verifier/residual inventory, evidence, TODO, history, Queue/proposal retention, and current state only. No runtime, public ABI, or production source change. |
-| Applicable Rules | Task Reading Set; Execution task-closure and similar-issue-sweep requirements; Architecture ownership and direct-path invariants; Coding no-suppression discipline; Documentation authority, Queue, TODO, history, and active-packet boundaries. |
-| Verification | Fresh GCC configure; T344 actual direct-command matrix; T345 ownership and residual-ledger verifier plus negative self-test; fresh warning audit; specialized gates; documentation governance; diff check; full current-gate. |
-| Expected Markers | Matrix reports 305 rows with 251 retained-strict and 54 deferred; T345 reports all 175 original ownership keys and exactly 51 residual production entries, each mapped to one named future admission domain. |
-| Asset Needs | No external source, firmware, guest media, or protected asset. |
-| Reporting Requirements | Report final direct strict/deferred counts, every residual domain and warning total, TODO path, exact gates, closure-audit result, and any remaining owner decision. Do not report T345 complete until proposal/history/Queue retention agrees. |
-| Stop Conditions | Stop if a direct row is unclassified, a residual production source lacks exact owner/risk/trigger, a proposed debt transfer broadens behavior scope, or matrix/gate results disagree. Do not close on a summary-only claim. |
-| Exit Criteria | Every configured direct production/current-gate C row is directly strict or has one precise deferred record; residual production debt is durable and actionable; history, Queue, proposal retention, current state, documentation governance, and all required gates agree; task-level closure audit passes. |
-| Original Owner Request | Holistically consume T344's deferred strict-compilation surface, rather than leaving 175 untracked rows or repairing warnings one at a time. |
-| Similar-Issue Sweep | Rebuild the entire 305-row matrix and compare every non-strict direct row against the explicit S4 residual ledger. Reject duplicates, missing rows, or any residual whose target/source does not match the S3 ownership evidence. |
+**Idle.** No implementation task is active.
 
 ## Current Technical Baseline
 
@@ -45,9 +23,7 @@ transfers the remaining mixed production strictness work as exact debt.
 
 | Task | Compact result |
 | --- | --- |
-| T345 S1 | Classified all 175 T344 deferred direct source/target rows: 121 project-owned test, 6 embedded production test, 1 type foundation, and 47 mixed/inherited production. Actual Ninja-command warning baseline records 225 warnings; exact non-current request-bridge test drift transferred to TODO. [Evidence](../etc/evidence/t345-s1-direct-compilation-ownership.md). |
-| T345 S2 | Promoted 118 pure project-owned current-gate test targets to target-local strict GCC compilation and removed all 18 baseline warnings without suppression or runtime-contract change. The 121 owner-test direct commands now audit at zero warnings; three owner-test rows in mixed targets transfer with their six embedded production rows to S3. [Evidence](../etc/evidence/t345-s1-direct-compilation-ownership.md). |
-| T345 S3 | Promoted the `type-facade`, `core-product-utils`, and `vm-platform-requests` single-source, warning-clean production targets to target-local strict GCC compilation. All remaining mixed/embedded production rows now have exact ownership, warning, risk, and admission records; no inherited runtime behavior changed. [Evidence](../etc/evidence/t345-s3-production-ownership.md). |
+| T345 | Closed direct-compilation strictness convergence: 251/305 direct commands are target-local strict; the 54 remaining commands have a complete 175-row ownership ledger and an exact 51-source residual production record with durable bounded admissions. No global flags, inherited-runtime rewrites, or false linked-dependency claims. [History](../history/M5-T345-direct-compilation-strictness-convergence.md). |
 | T344 | Closed build-quality reproducibility: fresh configuration, 305-row truthful strict-compile matrix (130 retained strict/175 deferred), canonical 218-target current-gate registration, 53 historical fixture shapes, and strict-declaration uniqueness are mechanically verified. [History](../history/M5-T344-build-quality-reproducibility.md). |
 | T343 | Closed the four-profile CPU program: one final ledger reconciles the 8086, 80186, 80286, and 80386DX execution, protected-state, delivery, task/paging/debug, and CPU-side coprocessor-interface boundaries. VME/PVI, persistent cache, x87 execution, timing/device, and Windows/product work remain explicit external candidates. [Closure ledger](../etc/evidence/t343-s1-four-profile-cross-closure.md). |
 | T342 | Closed the 80386DX profile ledger: T340 form and T341 state evidence reconcile every assigned row once, and the closure map now names the accepted state owners instead of stale future transfers. Only explicit post-80386, x87, timing/device, and Windows boundaries remain external. [Closure audit](../etc/evidence/t342-s1-80386dx-profile-closure-audit.md). |
@@ -55,7 +31,6 @@ transfers the remaining mixed production strictness work as exact debt.
 | T340 | Closed the 80386DX width, prefix, FS/GS, and non-privileged integer-form package: S1 allocated the finite form/state ledger; S2/S3 reconciled the shared mechanisms and every assigned `0F` family; S4 confirmed accepted proof or one exact T341/external transfer for each row. [Closure audit](../etc/evidence/t340-s4-80386dx-form-closure-audit.md). |
 | T339 | Closed the Queue-ordered 80286 descriptor-transfer package: S2--S6 proved table/system-word, selector/cache, protected entry, protected return, and TSS16 transition mechanisms; S7 reconciled the source graph, retained T328 `LOCK` policy, and exact T341--T342 transfers. [Closure audit](../etc/evidence/t339-s7-80286-descriptor-transfer-audit.md). |
 | T338 | Closed the 8086/80186 profile baseline: S2 ALU/FLAGS/conditions, S3 inherited data/control/I/O, and S4 80186 extensions cover every S1 allocation; the retained T328 rule is the only legacy `LOCK` owner. The sole reproduced defect was four incorrect INS/OUTS 80386 guards, corrected to 80186. Protected, 80386DX, and x87 boundaries transfer explicitly. Artifact verification, governance, and 218/218 current-gate passed. [History](../history/M5-T338-8086-80186-profile-closure.md). |
-| T337 | Closed shared CPU state and delivery foundations: vector-6 fault delivery/rollback, software and external origin composition, IRQ/NMI/TF priority, frame timing, inhibition, and post-commit task debug trap have one proof/owner. DR6/DR7 transfers to 80386DX; reset/shutdown/triple-fault remains bounded CPU/machine debt. [History](../history/M5-T337-shared-state-delivery.md). |
 
 ## Recent Governance
 
