@@ -1,4 +1,10 @@
-# Task-Switch Transition Unification Debt
+# Task-Switch Transition Unification: Resolved Historical Debt
+
+**Resolution status:** T330 closed this debt. Its private transition plan now
+selects outgoing and incoming 286/386 TSS layouts independently, and the
+remaining 16/32-bit differences are Intel-defined layouts rather than parallel
+construction mechanisms. This document is retained as pre-admission and
+closure evidence; it is not an open TODO, Queue candidate, or current rule.
 
 ## Boundary
 
@@ -33,7 +39,7 @@ ordering behavior.  Conversely, an indiscriminate generic rewrite could erase
 already-proven 16-bit behavior.  The debt therefore requires a bounded
 transition unification task, not an opportunistic refactor.
 
-## Required Future Task
+## Historical Admission Criteria (Satisfied By T330)
 
 Before the task-system package closes, admit a dedicated task-switch
 unification slice that:
@@ -54,7 +60,7 @@ The task must not introduce a second public CPU-state interface, test mirror
 state, generic transaction framework, paging/debug expansion, or a speculative
 cross-family abstraction.
 
-## Completion Standard
+## Historical Completion Standard
 
 Closure requires a single documented transition vocabulary used by both TSS
 width paths or an explicit, tested exception justified by an Intel layout or

@@ -2,7 +2,7 @@
 
 ## Current Work
 
-**Idle.** Td S75 is closed; the first M5 Queue candidate is now the uncompleted
+**Idle.** Td S76 is closed; the first M5 Queue candidate remains the uncompleted
 80386DX architecture-coverage closure audit.
 
 ## Current Technical Baseline
@@ -24,7 +24,7 @@
 
 | Task | Compact result |
 | T331 | Closed the bounded real-mode `ExecFinal` final-delivery construction: `#DE/#MF/#BR/#NM/#GP` share one rollback/diagnostic plan, and `#GP` IVT success no longer records a terminal fault before transfer. Real-mode `#PF` is architecturally outside paging's protected-mode state. The new `#GP` frame/failed-IVT regression, mechanical construction verifier, artifact, and 212/212 current-gate result are retained in [history](../history/M5-T331-exception-final-delivery.md). |
-| T330 | Closed the whole-codebase construction-drift package: one task-transition constructor, FDD/HDD backing/create atomicity, CALL-gate dual-fault preflight convergence, and mandatory CPU state-machine mechanism matrices before P1. Intel-required layouts remain explicit; T330 artifact, focused regressions, 211/211 current-gate, and governance evidence are in [history](../history/M5-T330-width-path-convergence.md). |
+| T330 | Closed the whole-codebase construction-drift package: one task-transition constructor, FDD/HDD backing/create atomicity, and CALL-gate dual-fault preflight convergence. Its mechanism matrices remain retained evidence; they are not a current mandatory rule. Intel-required layouts remain explicit; T330 artifact, focused regressions, 211/211 current-gate, and governance evidence are in [history](../history/M5-T330-width-path-convergence.md). |
 | T329 | Closed the bounded Intel 80286/80386 protected task-transition state machine: 16/32-bit direct and task-gate entry, nested CALL/IRET state, incoming LDT images, source-CR3 preflight/incoming-CR3 commit, and TSS post-switch `#DB`. S7 proves target-page fetch, target-TSS `#PF` atomicity, and a target-state restart frame; the 0329 artifact and 211/211 gate result are in [history](../history/M5-T329-task-transition-state-machine.md). |
 | T328 | Closed the historical LOCK-prefix legality matrix: 8086/80186 retain transparent valid-next-instruction semantics; 80286 adds protected `CPL <= IOPL`; retained 80386 memory-whitelist behavior stays intact. S2 reconciled the current closure map and ordinary matrix, removing the stale Deferred/TODO transfer without changing the user-owned Queue edit. Register, memory, REP, I/O, #GP frame, strict compile, artifact, and 211/211 gate evidence are in [history](../history/M5-T328-legacy-lock-legality.md). |
 | T327 | Closed the current/specialized-gate reconciliation: fast smoke no longer builds classified media targets, and generated CTest/Ninja evidence now proves the full 210 = 15 media + 195 non-media partition, both developer roots, all specialized verifiers, and the aggregate's two roots. [History](../history/M5-T327-current-gate-reconciliation.md). |
@@ -33,6 +33,12 @@
 | T324 | Closed current-test/specialized-gate separation: `run-current-smokes` now runs only the full 209-test CTest smoke selection, `run-current-fast-smokes` retains the 194-test non-media selection, and `verify-current-specialized-gates` owns 46 named verifiers plus a mechanical target-graph check. `current-gates-gcc` composes exactly both roots; all layer baselines and evidence are retained in [T324 history](../history/M5-T324-current-gate-separation.md). |
 
 ## Recent Governance
+
+- **M5 Td S76:** retired the closed T330 task-switch debt from TODO and the
+  unqueued proposal surface; retained its proposal, debt report, history, and
+  matrix as explicitly historical/non-current evidence; and corrected the
+  stale T330 closure summary. Documentation governance and diff check passed.
+  Td work has no runtime or artifact change.
 
 - **M5 Td S75:** reconciled Queue state with recorded closures: removed only
   the T323 protection/privilege, T325 paging, T328 legacy LOCK, and T330
@@ -82,10 +88,3 @@
   skipped/foreign/missing-progress/new-task negative self-tests. Documentation
   self-test, default check, and diff check passed. Td work has no runtime or
   artifact change.
-
-- **M5 Td S67:** defined the two complementary 80386DX completion views in
-  goal, roadmap, Queue, and an indexed supporting closure map; retained the
-  T316 form matrix as horizontal evidence, and recorded VME/PVI, x87, and
-  legacy LOCK boundaries without adding project-specific content to global
-  rules. Documentation and state checks plus diff check passed. Td work has no
-  runtime or artifact change.
