@@ -2,14 +2,35 @@
 
 ## Current Work
 
-**Idle.** Td S76 is closed; the first M5 Queue candidate remains the uncompleted
-80386DX architecture-coverage closure audit.
+**Active.** M5 T332 S1 materializes VM session configuration through one private
+profile-default-plus-override path (single-session coordinator/executor cycle).
+
+## M5 T332 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner approved T332 in this thread on 2026-08-12 after Td S76, expressly authorizing the VM-session and fixture findings to proceed as multiple subtasks. The owner requested T313, but linear identifier governance requires new T332 because T313 is closed. |
+| Objective | Eliminate the duplicated `vm_session_create` default/configuration branches by materializing profile defaults once and applying explicit caller overrides once, with no behavior or API change. |
+| Non-goals | No lifecycle rollback refactor, media/provider behavior change, fixture consolidation, public config API, core/device ownership change, mantle/DOS/NXVDM work, or rules edit. |
+| Reference Baseline | `26a48fde`; clean `main` and `origin/main` before admission, with the accepted T331 artifact as the prior developer baseline. |
+| Candidate Proposal | [VM session construction transaction](../proposals/m5-vm-session-construction-transaction.md). |
+| Files And ABI Surface | Expected: `src/vm/composition/session/session.c`, an owner session smoke under `tests/products/`, CMake registration/evidence as required, `docs/states/CURRENT.md`, and T332 history. Private helper only; `vm_session_config` and all public ABI remain unchanged. |
+| Applicable Rules | `docs/README.md` Task Reading Set; `docs/rules/EXECUTION.md`; `docs/rules/ARCHITECTURE.md` single owner/composition-root invariants; `docs/rules/CODING.md` private cohesive helper and project vocabulary; `docs/design/ARCHITECTURE.md` VM composition ownership; `docs/design/CODING.md` source/test placement. |
+| Verification | Focused default/configured session creation and retained memory-reconfigure/initialization-atomicity smokes; configuration and developer-artifact build; documentation governance; `git diff --check`; full `current-gates-gcc`. Record exact command results and T332 artifact SHA-256. |
+| Expected Markers | Existing session smoke markers remain unchanged; new focused proof demonstrates equivalent profile-derived timing/clock/KBC fields plus explicit default/override memory, CPU, and FPU choices. |
+| Asset Needs | None; no guest media, firmware import, external source, or machine-local asset. |
+| Reporting Requirements | Before edits, report contract confirmation or a stop-condition objection. Deliver one complete pushed P1 with actual-change review, changed files, default/override evidence, API/no-behavior boundary, full verification, artifact identity, and similar-issue sweep. |
+| Stop Conditions | Stop for a required public API/config semantic change, a discovered lifecycle/device defect outside materialization, required rules change, or evidence that config branches intentionally select distinct profile semantics. |
+| Exit Criteria | One private profile-default materialization plus one bounded override path replaces both duplicated branches; no `vm_session_config` ABI or runtime selection behavior changes; all affected construction/reconfigure evidence and full current gate pass; artifact/evidence/history are updated and P1 is pushed. |
+| Original Owner Request | The owner requested a documentation Td first, then multiple subtasks for the two VM-session findings and test-fixture finding; after identifier correction, the owner approved the new task. |
+| Similar-Issue Sweep | Inspect VM composition for other duplicated profile-default/override materialization paths and classify each as shared helper, intentional distinct product policy, or deferred separately bounded debt. |
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** T331 selects `vm-0-5-0331` /
-  `build/output/nxvm_0_5_0331.exe`; commit `0b3ca98d` SHA-256 is
-  `DEC95998E27E5F4FAF05D5C7EAFCE62DB0C507D3E9E0EE27A4D46FD513BE18D3`.
+- **Current developer artifact:** active T332 S1 selects `vm-0-5-0332` /
+  `build/output/nxvm_0_5_0332.exe`; the verified active-P1 output SHA-256 is
+  `1DF13B58B316026C233127B9407A03003C8B997221B431BB321F01E4D0C54A7E`.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.

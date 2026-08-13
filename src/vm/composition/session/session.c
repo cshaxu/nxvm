@@ -65,6 +65,35 @@ static C_INT vm_session_copy_path(C_CHAR *destination, STD_SIZE_T capacity,
     return 1;
 }
 
+static C_INT vm_session_materialize_profile_core_config(vm_session *session)
+{
+    const vm_profile_default_pc_at_descriptor *profile;
+
+    if (session == STD_NULL || session->profile == STD_NULL) return 0;
+    profile = session->profile;
+    session->core_machine_config = (core_machine_config) {
+        .memory_bytes = profile->default_memory_bytes,
+        .cpu_profile = profile->cpu_profile,
+        .fpu_profile = profile->fpu_profile,
+        .ticks_per_instruction = profile->ticks_per_instruction,
+        .instruction_timing = profile->instruction_timing,
+        .clock_plan = profile->clock_plan,
+        .kbc_typematic_initial_ticks = profile->kbc_typematic_initial_ticks,
+        .kbc_typematic_repeat_ticks = profile->kbc_typematic_repeat_ticks,
+        .kbc_command_response_ticks = profile->kbc_command_response_ticks
+    };
+    return 1;
+}
+
+static C_VOID vm_session_apply_core_config_overrides(vm_session *session,
+    const vm_session_config *config)
+{
+    if (session == STD_NULL || config == STD_NULL) return;
+    session->core_machine_config.memory_bytes = config->memory_bytes;
+    session->core_machine_config.cpu_profile = config->cpu_profile;
+    session->core_machine_config.fpu_profile = config->fpu_profile;
+}
+
 C_INT vm_session_insert_fdd(vm_session *session, const C_CHAR *path)
 {
     if (session == STD_NULL || !vm_session_copy_path(session->fdd_image_path,
@@ -235,37 +264,13 @@ C_INT vm_session_create(const vm_session_config *config, vm_session **out_sessio
         STD_FREE(session);
         return TYPE_STATUS_FAULT;
     }
+    if (!vm_session_materialize_profile_core_config(session)) {
+        STD_FREE(session);
+        return TYPE_STATUS_FAULT;
+    }
     if (config != STD_NULL) {
         session->retained_config = *config;
-        session->core_machine_config.memory_bytes = config->memory_bytes;
-        session->core_machine_config.cpu_profile = config->cpu_profile;
-        session->core_machine_config.fpu_profile = config->fpu_profile;
-        session->core_machine_config.ticks_per_instruction =
-            session->profile->ticks_per_instruction;
-        session->core_machine_config.instruction_timing =
-            session->profile->instruction_timing;
-        session->core_machine_config.clock_plan = session->profile->clock_plan;
-        session->core_machine_config.kbc_typematic_initial_ticks =
-            session->profile->kbc_typematic_initial_ticks;
-        session->core_machine_config.kbc_typematic_repeat_ticks =
-            session->profile->kbc_typematic_repeat_ticks;
-        session->core_machine_config.kbc_command_response_ticks =
-            session->profile->kbc_command_response_ticks;
-    } else {
-        session->core_machine_config.memory_bytes = session->profile->default_memory_bytes;
-        session->core_machine_config.cpu_profile = session->profile->cpu_profile;
-        session->core_machine_config.fpu_profile = session->profile->fpu_profile;
-        session->core_machine_config.ticks_per_instruction =
-            session->profile->ticks_per_instruction;
-        session->core_machine_config.instruction_timing =
-            session->profile->instruction_timing;
-        session->core_machine_config.clock_plan = session->profile->clock_plan;
-        session->core_machine_config.kbc_typematic_initial_ticks =
-            session->profile->kbc_typematic_initial_ticks;
-        session->core_machine_config.kbc_typematic_repeat_ticks =
-            session->profile->kbc_typematic_repeat_ticks;
-        session->core_machine_config.kbc_command_response_ticks =
-            session->profile->kbc_command_response_ticks;
+        vm_session_apply_core_config_overrides(session, config);
     }
     {
         type_status status = vm_session_initialize(session);

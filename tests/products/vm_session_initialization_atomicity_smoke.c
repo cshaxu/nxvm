@@ -24,6 +24,83 @@ static C_VOID initialize_config(vm_session *session,
         profile->kbc_command_response_ticks;
 }
 
+static C_INT profile_timing_is_materialized(const core_machine_config *config,
+    const vm_profile_default_pc_at_descriptor *profile)
+{
+    return config != STD_NULL && profile != STD_NULL &&
+        config->ticks_per_instruction == profile->ticks_per_instruction &&
+        STD_MEMCMP(&config->instruction_timing, &profile->instruction_timing,
+            sizeof(config->instruction_timing)) == 0 &&
+        STD_MEMCMP(&config->clock_plan, &profile->clock_plan,
+            sizeof(config->clock_plan)) == 0 &&
+        config->kbc_typematic_initial_ticks ==
+            profile->kbc_typematic_initial_ticks &&
+        config->kbc_typematic_repeat_ticks ==
+            profile->kbc_typematic_repeat_ticks &&
+        config->kbc_command_response_ticks ==
+            profile->kbc_command_response_ticks;
+}
+
+static C_INT session_core_config_is_applied(const vm_session *session,
+    STD_SIZE_T memory_bytes, core_machine_cpu_profile cpu_profile,
+    core_machine_fpu_profile fpu_profile)
+{
+    STD_SIZE_T observed_memory_bytes = 0u;
+    core_machine_cpu_profile observed_cpu_profile;
+    core_machine_fpu_profile observed_fpu_profile;
+
+    return session != STD_NULL && session->core_machine != STD_NULL &&
+        core_machine_get_memory_bytes(session->core_machine,
+            &observed_memory_bytes) == TYPE_STATUS_OK &&
+        core_machine_get_cpu_profile(session->core_machine,
+            &observed_cpu_profile) == TYPE_STATUS_OK &&
+        core_machine_get_fpu_profile(session->core_machine,
+            &observed_fpu_profile) == TYPE_STATUS_OK &&
+        observed_memory_bytes == memory_bytes &&
+        observed_cpu_profile == cpu_profile && observed_fpu_profile == fpu_profile;
+}
+
+static C_INT verify_create_materialization(
+    const vm_profile_default_pc_at_descriptor *profile)
+{
+    const vm_session_config overrides = {
+        .memory_bytes = 32u * 1024u * 1024u,
+        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80286,
+        .fpu_profile = CORE_MACHINE_FPU_PROFILE_8087
+    };
+    vm_session *default_session = STD_NULL;
+    vm_session *configured_session = STD_NULL;
+    C_INT failed = 0;
+
+    failed |= vm_session_create(STD_NULL, &default_session) != TYPE_STATUS_OK ||
+        default_session == STD_NULL ||
+        default_session->core_machine_config.memory_bytes !=
+            profile->default_memory_bytes ||
+        default_session->core_machine_config.cpu_profile != profile->cpu_profile ||
+        default_session->core_machine_config.fpu_profile != profile->fpu_profile ||
+        !profile_timing_is_materialized(&default_session->core_machine_config,
+            profile) || !session_core_config_is_applied(default_session,
+            profile->default_memory_bytes, profile->cpu_profile,
+            profile->fpu_profile);
+    failed |= !failed && (vm_session_create(&overrides, &configured_session) !=
+        TYPE_STATUS_OK || configured_session == STD_NULL ||
+        configured_session->core_machine_config.memory_bytes !=
+            overrides.memory_bytes ||
+        configured_session->core_machine_config.cpu_profile !=
+            overrides.cpu_profile ||
+        configured_session->core_machine_config.fpu_profile !=
+            overrides.fpu_profile ||
+        configured_session->retained_config.memory_bytes != overrides.memory_bytes ||
+        configured_session->retained_config.cpu_profile != overrides.cpu_profile ||
+        configured_session->retained_config.fpu_profile != overrides.fpu_profile ||
+        !profile_timing_is_materialized(&configured_session->core_machine_config,
+            profile) || !session_core_config_is_applied(configured_session,
+            overrides.memory_bytes, overrides.cpu_profile, overrides.fpu_profile));
+    vm_session_destroy(configured_session);
+    vm_session_destroy(default_session);
+    return failed;
+}
+
 static C_INT verify_failure(const vm_profile_default_pc_at_descriptor *profile)
 {
     vm_session session = {0};
@@ -109,11 +186,13 @@ C_INT main(C_VOID)
     const vm_profile_default_pc_at_descriptor *profile =
         vm_profile_default_pc_at_descriptor_get();
 
-    if (profile == STD_NULL || verify_core_failure(profile) != 0 ||
+    if (profile == STD_NULL || verify_create_materialization(profile) != 0 ||
+        verify_core_failure(profile) != 0 ||
         verify_firmware_failure(profile) != 0 ||
         verify_controller_failure(profile) != 0 || verify_recovery() != 0) {
         return 1;
     }
     STD_PRINTF("M5:T300:S3:SESSION-INITIALIZATION-ATOMICITY:OK\n");
+    STD_PRINTF("M5:T332:S1:SESSION-CONFIG-MATERIALIZATION:OK\n");
     return 0;
 }
