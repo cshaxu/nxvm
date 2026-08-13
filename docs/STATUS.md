@@ -14,7 +14,7 @@ changes; no runtime behavior change is admitted.
 | Admission And Approval | The owner authorized full single-session completion of T330 on 2026-08-12. Closure review found the mandatory developer-artifact record absent; this bounded continuation produces it without changing the accepted CPU semantics. |
 | Objective | Make `vm-0-5-0330` the sole current developer artifact target, build and copy `nxvm_0_5_0330.exe`, and record its source commit, SHA-256, version/banner classification, and verification in T330 history. |
 | Non-goals | No CPU, emulator, test, ABI, provider, dependency, source-layout, Queue, TODO, or product behavior change. Do not regenerate or relabel historical artifacts. |
-| Reference Baseline | `263766f0` / `vm-0-5-0329`; accepted T330 S1/S2 evidence at `docs/etc/evidence/t330-width-path-inventory.md`; task-artifact requirements in `docs/rules/EXECUTION.md`. |
+| Reference Baseline | Accepted T330 S2 commit `263766f0` and its [width-path inventory](etc/evidence/t330-width-path-inventory.md); task-artifact requirements in `docs/rules/EXECUTION.md`. |
 | Files And ABI Surface | CMake current-artifact declaration and build preset, T330 Status/history records, plus the ignored local `build/output/nxvm_0_5_0330.exe`. No production source or public interface. |
 | Applicable Rules | Task Reading Set; `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/rules/CODING.md`, `docs/design/CODING.md`; task-level artifact identity and build-tree hygiene apply. |
 | Verification | Fresh GCC configure; build `vm-0-5-0330`; run `verify-current-artifact-target`; inspect executable version/banner where available; calculate SHA-256; run documentation governance, diff check, focused retained T330 smokes, and full current-gate. |
