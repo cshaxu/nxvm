@@ -78,8 +78,21 @@ C_INT main(C_VOID)
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xfau;
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0xabu;
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0x83u;
+    failed |= core_machine_pic_get_interrupt(&pic_master, &pic_slave) != 0x09u;
+    core_machine_port_write(&port, 0x0020u, 0x20u);
     core_machine_port_write(&port, 0x0064u, 0xaau);
-    failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0x55u;
+    failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0x55u ||
+        kbc.data.keyboard_enabled ||
+        (kbc.data.command_byte & CORE_MACHINE_KBC_COMMAND_DISABLE_KEYBOARD) == 0u ||
+        core_machine_kbc_submit_scan_code(&kbc, 0x1eu) !=
+            TYPE_STATUS_INVALID_STATE ||
+        (pic_master.data.irr & VPIC_IRR_IRQ(1u)) != 0u;
+    core_machine_port_write(&port, 0x0064u, 0xaeu);
+    failed |= !kbc.data.keyboard_enabled ||
+        (kbc.data.command_byte & CORE_MACHINE_KBC_COMMAND_DISABLE_KEYBOARD) != 0u ||
+        core_machine_kbc_submit_scan_code(&kbc, 0x1eu) != TYPE_STATUS_OK ||
+        core_machine_kbc_read_byte(&port, 0x0060u) != 0x1eu;
+    core_machine_port_write(&port, 0x0020u, 0x20u);
     core_machine_port_write(&port, 0x0064u, 0xabu);
     failed |= core_machine_kbc_read_byte(&port, 0x0060u) != 0u;
 

@@ -11,7 +11,6 @@
 
 #define CORE_MACHINE_KBC_COMMAND_IRQ1 0x01u
 #define CORE_MACHINE_KBC_COMMAND_SYSTEM 0x04u
-#define CORE_MACHINE_KBC_COMMAND_DISABLE_KEYBOARD 0x10u
 #define CORE_MACHINE_KBC_OUTPUT_RESET 0x01u
 #define CORE_MACHINE_KBC_OUTPUT_A20 0x02u
 
@@ -495,7 +494,13 @@ static C_VOID core_machine_kbc_write_command(t_port *port,
         controller->data.pending_write = CORE_MACHINE_KBC_PENDING_COMMAND_BYTE;
         break;
     case 0xaau:
+        /* IBM PC/AT initialization specifies that a successful controller
+         * self-test inhibits the keyboard interface before reporting 55h.
+         * The host must explicitly re-enable it with AEh or a command byte. */
+        controller->data.keyboard_enabled = TYPE_FALSE;
+        controller->data.command_byte |= CORE_MACHINE_KBC_COMMAND_DISABLE_KEYBOARD;
         controller->data.system_flag = TYPE_TRUE;
+        core_machine_kbc_refresh_current_irq(controller);
         core_machine_kbc_schedule_response_byte(controller, 0x55u,
             CORE_MACHINE_KBC_OUTPUT_CONTROLLER);
         break;

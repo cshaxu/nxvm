@@ -24,6 +24,7 @@ typedef struct core_machine_cpu_execution_context
 
 #define CORE_MACHINE_KBC_COMMAND_TRANSLATION 0x40u
 #define CORE_MACHINE_KBC_COMMAND_IRQ12 0x02u
+#define CORE_MACHINE_KBC_COMMAND_DISABLE_KEYBOARD 0x10u
 #define CORE_MACHINE_KBC_COMMAND_DISABLE_AUX 0x20u
 
 #define VKBC_STATUS_OBF 0x01 /* output buffer contains a byte */
