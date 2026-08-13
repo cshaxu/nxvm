@@ -2,34 +2,14 @@
 
 ## Current Work
 
-**Active: M5 T330 S6.** Audit and reconcile protected 16/32-bit CALL-gate
-outer-CPL dual-fault preflight ordering (Ordinary Mode; owner-approved T330 continuation).
-
-## M5 T330 S6 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; T330 S5 is retained progress for the latest open numeric task, and S6 is its next unused subtask. |
-| Admission And Approval | Owner approved reopening T330 on 2026-08-12 to implement the third audited construction-drift item after S5 acceptance. |
-| Objective | Establish the Intel-required validation order for protected outer-CPL 16-bit and 32-bit CALL gates when an old-stack parameter access and a TR/TSS/new-stack candidate can both fault; reconcile only an accidental ordering drift while preserving real frame and TSS-layout differences. |
-| Non-goals | No generic exception delivery redesign, task-switch change, interrupt/trap-gate change, call-gate ABI change, frame-layout unification, VM86 expansion, or paging-policy change. |
-| Reference Baseline | `e50ffd792125e3eb8c219711cb0043143c6c166c` / `vm-0-5-0330`; read both call-gate serializers, T323 S7 evidence, retained privilege-entry smoke, and Intel 80386 protected-mode call-gate validation order. |
-| Files And ABI Surface | `src/core/machine/cpu_instructions.c` only if the dual-fault proof contradicts the current 16-bit order; a focused owner smoke or the retained call-gate smoke, CMake only if a target is needed, T330 evidence/history, and `docs/STATUS.md`; no public ABI change. |
-| Applicable Rules | Execution full-mechanism and similar-issue rules; architecture ownership and coding rules. Map source-parameter read, TR/TSS read, new-SS validation, target-stack preflight, descriptor accessed-bit writes, and commit publication before implementation. |
-| Verification | Prove 16-bit and 32-bit outer-CPL success plus controlled old-stack and new-stack/TR/TSS failures; add dual-fault priority vectors with source/target state and descriptor-byte nonpublication; compare the observable producer/fault result to Intel authority; fresh GCC configure, focused smoke, current-gate, documentation governance, and `git diff --check`. |
-| Expected Markers | Retained `M5:T307:CALL-GATE-PRIVILEGE-ENTRY:OK`, `M5:T323:S7:PROTECTED-16-CALL-GATE:OK`, and `M5:T330:S2:CALL-GATE-SAME-CPL:OK`; add an S6 marker only if a new owner smoke is required. |
-| Asset Needs | None; deterministic protected-mode GDT/TSS/stack fixtures only. |
-| Reporting Requirements | Ordinary Mode contract confirmation, one complete pushed implementation-or-audit P with requirement-to-proof evidence, coordinator actual-change review, and governance P on acceptance. |
-| Stop Conditions | Stop before changing shared exception delivery, descriptor/TSS helpers, paging policy, or a frame layout. If Intel authority does not specify the competing-fault priority, retain the code and record the observed order rather than normalize it speculatively. |
-| Exit Criteria | Both widths have an explicit mechanism matrix and controlled dual-fault evidence; any proven accidental preflight-order drift is fixed across both serializers with no early publication, otherwise the divergence is recorded as intentionally observed; all retained call-gate and current-gate regressions pass. |
-| Original Owner Request | Reopen T330 and implement the four audited items as four ordered S tasks, beginning now. |
-| Similar-Issue Sweep | Inspect both protected CALL-gate serializers and every caller through far-CALL dispatch; classify every source-stack, TR/TSS, new-SS, target-stack, descriptor-write, and commit boundary as shared, width-layout-specific, fixed, or transferred. |
+**Idle.** M5 T330 remains open. S6 is accepted; the state-machine mechanism
+matrix governance integration requires a separately admitted Continuation packet.
 
 ## Current Technical Baseline
 
 - **Current developer artifact:** T330 selects `vm-0-5-0330` /
-  `build/output/nxvm_0_5_0330.exe`; commit `629d2291` SHA-256 is
-  `3411E34A87EC701EA9E8C0E5F25F4C1FD6F495834E23BB9F541B2CE9A34C7D65`.
+  `build/output/nxvm_0_5_0330.exe`; commit `f8116f99` SHA-256 is
+  `926D0F4A2CDB48367C522AD799FF4E9C2DE7AD6BF6C75EDB7889E2D8B9B62CAA`.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
@@ -43,7 +23,7 @@ outer-CPL dual-fault preflight ordering (Ordinary Mode; owner-approved T330 cont
 ## Recent M5 Closures
 
 | Task | Compact result |
-| T330 S5 | Reconciled FDD/HDD provider backing preconditions: malformed present/null backing now returns `PERMANENT`, FDD failed creation publishes neither presence nor generation, and direct plus registry-facing cases are covered. Focused media, current-artifact, current-gate CTest 211/211, and documentation governance pass. [History](history/M5-T330-width-path-convergence.md). |
+| T330 S6 | Reconciled 16/32-bit outer CALL-gate preflight order to validate the TSS/new stack and target frame before reading old parameters; paired dual faults now deliver the target-stack `#TS` before the source-stack `#SS`. The focused retained call-gate smokes, current artifact, current-gate CTest 211/211, and documentation governance pass. [History](history/M5-T330-width-path-convergence.md). |
 | T329 | Closed the bounded Intel 80286/80386 protected task-transition state machine: 16/32-bit direct and task-gate entry, nested CALL/IRET state, incoming LDT images, source-CR3 preflight/incoming-CR3 commit, and TSS post-switch `#DB`. S7 proves target-page fetch, target-TSS `#PF` atomicity, and a target-state restart frame; the 0329 artifact and 211/211 gate result are in [history](history/M5-T329-task-transition-state-machine.md). |
 | T328 | Closed the historical LOCK-prefix legality matrix: 8086/80186 retain transparent valid-next-instruction semantics; 80286 adds protected `CPL <= IOPL`; retained 80386 memory-whitelist behavior stays intact. S2 reconciled the current closure map and ordinary matrix, removing the stale Deferred/TODO transfer without changing the user-owned Queue edit. Register, memory, REP, I/O, #GP frame, strict compile, artifact, and 211/211 gate evidence are in [history](history/M5-T328-legacy-lock-legality.md). |
 | T327 | Closed the current/specialized-gate reconciliation: fast smoke no longer builds classified media targets, and generated CTest/Ninja evidence now proves the full 210 = 15 media + 195 non-media partition, both developer roots, all specialized verifiers, and the aggregate's two roots. [History](history/M5-T327-current-gate-reconciliation.md). |

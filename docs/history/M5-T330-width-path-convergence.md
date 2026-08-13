@@ -42,9 +42,9 @@ accepted implementation commits: `82bea776` (S1) and `263766f0` (S2).
 
 ## Developer Artifact
 
-Commit `629d2291` makes `vm-0-5-0330` the sole current-artifact target. Its
+Commit `f8116f99` makes `vm-0-5-0330` the sole current-artifact target. Its
 locally retained developer output is `build/output/nxvm_0_5_0330.exe`,
-SHA-256 `3411E34A87EC701EA9E8C0E5F25F4C1FD6F495834E23BB9F541B2CE9A34C7D65`.
+SHA-256 `926D0F4A2CDB48367C522AD799FF4E9C2DE7AD6BF6C75EDB7889E2D8B9B62CAA`.
 The executable embeds version `0.5.0330`; `verify-current-artifact-target`
 selects only that target. Historical task artifacts remain evidence and are
 not rebuilt or relabeled.
