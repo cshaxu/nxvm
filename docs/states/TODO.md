@@ -135,15 +135,6 @@ candidate work, and detailed capability evidence belong in
   abstraction, or an excuse to weaken existing evidence.  The concrete
   admission method and observed failure shape are retained in
   [the supporting debt report](../etc/evidence/holistic-execution-path-audit-debt.md).
-- [ ] **Historical CPU fixture lifecycle audit (`TODO(Medium)`).** T332 S3
-  mechanically closes the fixed 47 T316 owner-smoke bind/freeze/reset set and
-  its five inherited source owners. The remaining older CPU/device/protected
-  smoke constructors require a separate source-to-target inventory and a
-  semantic classification before any shared helper migration. Admit only with
-  a fixed list, proof that each setup phase is genuinely equivalent, a narrow
-  structural gate, and preserved owner-local provider/GDT/IDT/device state; do
-  not create a generic fixture framework or replace distinct device semantics.
-
 ## Timing-Fidelity Debt
 
 The current core is deterministic and host-clock-independent: completed
