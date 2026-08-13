@@ -10,10 +10,25 @@ if(NOT DEFINED PROJECT_T345_S2_TARGETS_FILE OR
         NOT EXISTS "${PROJECT_T345_S2_TARGETS_FILE}")
     message(FATAL_ERROR "T345 S2 target inventory is required.")
 endif()
+if(NOT DEFINED PROJECT_T345_S3_ENTRIES_FILE OR
+        NOT EXISTS "${PROJECT_T345_S3_ENTRIES_FILE}")
+    message(FATAL_ERROR "T345 S3 production inventory is required.")
+endif()
 
 file(STRINGS "${PROJECT_T345_T344_MATRIX_FILE}" project_t345_t344_rows)
 file(STRINGS "${PROJECT_T345_OWNERSHIP_MATRIX_FILE}" project_t345_ownership_rows)
 file(STRINGS "${PROJECT_T345_S2_TARGETS_FILE}" project_t345_s2_targets)
+file(STRINGS "${PROJECT_T345_S3_ENTRIES_FILE}" project_t345_s3_entries)
+set(project_t345_s3_targets)
+foreach(project_t345_s3_entry IN LISTS project_t345_s3_entries)
+    string(REPLACE "|" ";" project_t345_s3_fields "${project_t345_s3_entry}")
+    list(LENGTH project_t345_s3_fields project_t345_s3_field_count)
+    if(NOT project_t345_s3_field_count EQUAL 2)
+        message(FATAL_ERROR "Malformed T345 S3 entry: ${project_t345_s3_entry}")
+    endif()
+    list(GET project_t345_s3_fields 0 project_t345_s3_target)
+    list(APPEND project_t345_s3_targets "${project_t345_s3_target}")
+endforeach()
 set(project_t345_expected_keys)
 foreach(project_t345_row IN LISTS project_t345_t344_rows)
     string(REPLACE "|" ";" project_t345_fields "${project_t345_row}")
@@ -25,10 +40,13 @@ foreach(project_t345_row IN LISTS project_t345_t344_rows)
     list(GET project_t345_fields 1 project_t345_source)
     list(GET project_t345_fields 2 project_t345_status)
     list(FIND project_t345_s2_targets "${project_t345_target}" project_t345_s2_target_index)
+    list(FIND project_t345_s3_targets "${project_t345_target}" project_t345_s3_target_index)
     if(project_t345_status STREQUAL "deferred" OR
             (project_t345_status STREQUAL "retained-strict" AND
             NOT project_t345_s2_target_index EQUAL -1 AND
-            project_t345_source MATCHES "^tests/"))
+            project_t345_source MATCHES "^tests/") OR
+            (project_t345_status STREQUAL "retained-strict" AND
+            NOT project_t345_s3_target_index EQUAL -1))
         list(APPEND project_t345_expected_keys "${project_t345_target}|${project_t345_source}")
     endif()
 endforeach()
@@ -37,6 +55,7 @@ set(project_t345_seen_keys)
 set(project_t345_owner_test_count 0)
 set(project_t345_embedded_count 0)
 set(project_t345_type_count 0)
+set(project_t345_safe_production_count 0)
 set(project_t345_mixed_count 0)
 foreach(project_t345_row IN LISTS project_t345_ownership_rows)
     string(REPLACE "|" ";" project_t345_fields "${project_t345_row}")
@@ -65,8 +84,11 @@ foreach(project_t345_row IN LISTS project_t345_ownership_rows)
             project_t345_mechanism STREQUAL "s3-production-owner-warning-remediation")
         math(EXPR project_t345_embedded_count "${project_t345_embedded_count} + 1")
     elseif(project_t345_class STREQUAL "type-foundation-production" AND
-            project_t345_mechanism STREQUAL "s3-type-facade-warning-remediation")
+            project_t345_mechanism STREQUAL "s3-safe-production-strict-cohort")
         math(EXPR project_t345_type_count "${project_t345_type_count} + 1")
+    elseif(project_t345_class STREQUAL "safely-separable-production" AND
+            project_t345_mechanism STREQUAL "s3-safe-production-strict-cohort")
+        math(EXPR project_t345_safe_production_count "${project_t345_safe_production_count} + 1")
     elseif(project_t345_class STREQUAL "mixed-or-inherited-production" AND
             project_t345_mechanism STREQUAL "s3-ownership-separation-and-warning-remediation")
         math(EXPR project_t345_mixed_count "${project_t345_mixed_count} + 1")
@@ -83,12 +105,18 @@ if(NOT project_t345_seen_count EQUAL project_t345_expected_count)
 endif()
 if(NOT project_t345_owner_test_count EQUAL 121 OR
         NOT project_t345_embedded_count EQUAL 6 OR
-        NOT project_t345_type_count EQUAL 1 OR
-        NOT project_t345_mixed_count EQUAL 47)
+        NOT project_t345_type_count EQUAL 1)
     message(FATAL_ERROR
-        "Unexpected T345 ownership counts: tests=${project_t345_owner_test_count}, embedded=${project_t345_embedded_count}, type=${project_t345_type_count}, mixed=${project_t345_mixed_count}.")
+        "Unexpected T345 ownership counts: tests=${project_t345_owner_test_count}, embedded=${project_t345_embedded_count}, type=${project_t345_type_count}.")
 endif()
 if(NOT project_t345_s2_target_count EQUAL 118)
     message(FATAL_ERROR "T345 S2 target inventory has ${project_t345_s2_target_count} entries; expected 118.")
 endif()
-message(STATUS "T345 deferred ownership passed: ${project_t345_seen_count} rows (121 owner tests, 6 embedded production tests, 1 type foundation, 47 mixed/inherited production).")
+list(LENGTH project_t345_s3_entries project_t345_s3_entry_count)
+if(NOT project_t345_safe_production_count EQUAL 2 OR
+        NOT project_t345_s3_entry_count EQUAL 3 OR
+        NOT project_t345_mixed_count EQUAL 45)
+    message(FATAL_ERROR
+        "Unexpected T345 S3 counts: safe=${project_t345_safe_production_count}, entries=${project_t345_s3_entry_count}, mixed=${project_t345_mixed_count}.")
+endif()
+message(STATUS "T345 deferred ownership passed: ${project_t345_seen_count} rows (121 owner tests, 6 embedded production tests, 1 type foundation, 2 safely separable production, 45 mixed/inherited production).")
