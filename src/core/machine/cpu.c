@@ -32,6 +32,10 @@ C_VOID core_machine_cpu_execution_context_initialize(
     context->diagnostic_context = STD_NULL;
     context->stop_requested = TYPE_FALSE;
     context->reset_requested = TYPE_FALSE;
+    context->debug_trap_pending = TYPE_FALSE;
+    context->debug_tf_before = TYPE_FALSE;
+    context->debug_rf_before = TYPE_FALSE;
+    context->debug_trap_cause = TYPE_ZERO_32;
     context->cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
     context->fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE;
     context->fpu = STD_NULL;
@@ -91,6 +95,10 @@ C_VOID core_machine_cpu_state_initialize(
     if (context != STD_NULL) {
         context->stop_requested = TYPE_FALSE;
         context->reset_requested = TYPE_FALSE;
+        context->debug_trap_pending = TYPE_FALSE;
+        context->debug_tf_before = TYPE_FALSE;
+        context->debug_rf_before = TYPE_FALSE;
+        context->debug_trap_cause = TYPE_ZERO_32;
     }
     core_machine_cpu_execution_initialize(context);
 }

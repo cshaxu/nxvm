@@ -13,8 +13,8 @@ layout remains selected by the existing real/protected serializers.
 | --- | --- | --- | --- |
 | Synchronous exception frame and rollback | `ExecFinal` -> `_e_except_n` | T326, T331, T337 S1 | Complete for the admitted fault vectors; vector-specific producer work remains with its form owner. |
 | `INT3`, `INT ib`, and `INTO` | `_e_int3`, `_e_int_n`, `_e_into` | `core-machine-software-int-s50-smoke`, T321 S4 | Complete shared software-origin composition; DPL/form matrices remain their instruction owners. |
-| NMI, PIC IRQ, and TF priority | `ExecInt` -> `_e_intr_n` | `core-machine-hardware-delivery-s3-smoke`, T321 S3 | Complete: unmasked NMI precedes IF-qualified PIC IRQ, which precedes TF; each uses the preselected real/protected/VM86 frame. |
-| TF post-instruction vector 1 | `ExecInt` -> `_e_intr_n(1)` | `core-machine-tf-db-s60-smoke` | Complete for real/protected saved-IP and rejection ordering. |
+| NMI and PIC IRQ priority | `ExecInt` -> `_e_intr_n` | `core-machine-hardware-delivery-s3-smoke`, T321 S3 | Complete: unmasked NMI precedes an IF-qualified PIC IRQ; each uses the preselected real/protected/VM86 frame. |
+| TF post-instruction vector 1 | `ExecInt` -> the ordinary debug owner -> `_e_intr_n(1)` | T341 S4 and `core-machine-tf-db-s60-smoke` | T341 S4 corrects the former PIC-before-TF ordering claim: sampled TF is selected before a pending maskable IRQ and preserves the ordinary vector-1 frame contract. |
 | Software-return and pending IRQ composition | `_e_int_n` / `_e_iret` / `ExecInt` | `core-machine-interrupt-return-composition-s4-smoke`, T321 S4 | Complete shared composition; task and VM86 breadth stay profile/state owned. |
 | Incoming-TSS debug trap | task transition -> `_e_except_n(1)` after commit | `core-machine-task-switch-smoke`, T329 S7 | Complete as a post-commit task mechanism; it must not go through pre-instruction rollback. |
 | DR moves versus hardware breakpoints | `MOV DRx` handler only | `core-machine-debug-mov-s59-smoke` | Register transfer is bounded evidence; DR6/DR7 breakpoint matching and `#DB` cause bits transfer to 80386DX. |

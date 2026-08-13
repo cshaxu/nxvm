@@ -2,6 +2,7 @@
 
 #include "core/machine/cpu.h"
 #include "core/machine/machine_interface.h"
+#include "core/machine/pic.h"
 #include "../support/core_machine_cpu_fixture.h"
 
 /* T337_REAL_UD_VECTOR6_DELIVERY: this owner installs and observes vector 6. */
@@ -59,7 +60,8 @@ static C_INT tf_db_s60_run(tf_db_s60_machine *state,
         out_result == STD_NULL || out_cpu == STD_NULL || out_diagnostic == STD_NULL ||
         core_machine_memory_write(state->machine, code_address, code,
             code_bytes) != TYPE_STATUS_OK) return 0;
-    test_core_machine_fixture_resume_after_halt_at(state->machine, 0u);
+    test_core_machine_fixture_resume_after_halt_at(state->machine, code_address -
+        state->machine->executor_cpu.data.cs.base);
     status = core_machine_run(state->machine, (core_machine_run_budget){ 3u, 0u },
         out_result);
     if (core_machine_get_cpu_diagnostic(state->machine, out_diagnostic) !=
@@ -96,6 +98,16 @@ static C_INT tf_db_s60_install_real_ud_vector(tf_db_s60_machine *state)
     return core_machine_memory_write(state->machine, 0x18u, vector,
         sizeof(vector)) == TYPE_STATUS_OK && core_machine_memory_write(
             state->machine, 0x0100u, handler, sizeof(handler)) == TYPE_STATUS_OK;
+}
+
+static C_INT tf_db_s60_install_real_irq0_vector(tf_db_s60_machine *state)
+{
+    static const type_unsigned_8 handler[] = { 0xf4u };
+    static const type_unsigned_8 vector[] = { 0x10u, 0x01u, 0x00u, 0x00u };
+
+    return core_machine_memory_write(state->machine, 0x80u, vector,
+        sizeof(vector)) == TYPE_STATUS_OK && core_machine_memory_write(
+            state->machine, 0x0110u, handler, sizeof(handler)) == TYPE_STATUS_OK;
 }
 
 static C_INT tf_db_s60_boot_protected(tf_db_s60_machine *state)
@@ -319,13 +331,200 @@ static C_INT tf_db_s60_test_rejections(C_VOID)
     return failed;
 }
 
+static C_INT tf_db_s60_test_hardware_real(C_VOID)
+{
+    static const type_unsigned_8 nop[] = { 0x90u };
+    static const type_unsigned_8 write[] = {
+        0xc6u, 0x06u, 0x00u, 0x10u, 0x5au
+    };
+    static const type_unsigned_8 rf_code[] = { 0x90u, 0xf4u };
+    tf_db_s60_machine state;
+    core_machine_run_result result;
+    core_machine_cpu_diagnostic diagnostic;
+    t_cpu before;
+    t_cpu after;
+    type_unsigned_8 value = 0u;
+    C_INT failed = !tf_db_s60_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+
+    if (!failed) failed = !tf_db_s60_install_real_vector(&state);
+    if (!failed) {
+        state.machine->executor_cpu.data.esp = 0x8000u;
+        state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_IF | VCPU_EFLAGS_CF;
+        state.machine->executor_cpu.data.dr0 = 0u;
+        state.machine->executor_cpu.data.dr6 = 0u;
+        state.machine->executor_cpu.data.dr7 = 0x00000001u;
+        before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        failed |= !tf_db_s60_run(&state, nop, sizeof(nop), 0u, &result, &after,
+            &diagnostic) || result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+            diagnostic.first_fault.valid || !diagnostic.last_delivered_exception.valid ||
+            diagnostic.last_delivered_exception.exception_mask != VCPUINS_EXCEPT_DB ||
+            after.data.eip != 0x0101u || (after.data.dr6 & 1u) == 0u ||
+            after.data.eax != before.data.eax || after.data.ecx != before.data.ecx ||
+            after.data.edx != before.data.edx || after.data.ebx != before.data.ebx ||
+            after.data.ebp != before.data.ebp || after.data.esi != before.data.esi ||
+            after.data.edi != before.data.edi || !tf_db_s60_sregs_same(&before,
+                &after) || !tf_db_s60_frame_real(&state, &after, 0u,
+                (type_unsigned_16)before.data.eflags);
+    }
+    if (state.machine != STD_NULL) core_machine_destroy(state.machine);
+    if (failed) return 1;
+
+    failed = !tf_db_s60_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    if (!failed) failed = !tf_db_s60_install_real_vector(&state);
+    if (!failed) {
+        static const type_unsigned_8 read[] = { 0xa1u, 0x00u, 0x10u };
+        static const type_unsigned_8 source[] = { 0x5au, 0x34u, 0x56u, 0x78u };
+
+        state.machine->executor_cpu.data.esp = 0x8000u;
+        state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_IF |
+            VCPU_EFLAGS_CF;
+        state.machine->executor_cpu.data.dr0 = 0x1001u;
+        state.machine->executor_cpu.data.dr1 = 0x1001u;
+        state.machine->executor_cpu.data.dr6 = 0u;
+        state.machine->executor_cpu.data.dr7 = 0x00ff0008u;
+        before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        failed |= core_machine_memory_write(state.machine, 0x1000u, source,
+                sizeof(source)) != TYPE_STATUS_OK || !tf_db_s60_run(&state,
+                read, sizeof(read), 0x0200u, &result, &after, &diagnostic) ||
+            result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+            diagnostic.first_fault.valid || !diagnostic.last_delivered_exception.valid ||
+            diagnostic.last_delivered_exception.exception_mask != VCPUINS_EXCEPT_DB ||
+            after.data.eip != 0x0101u || (after.data.dr6 & 3u) != 2u ||
+            (after.data.eax & 0xffffu) != 0x345au ||
+            !tf_db_s60_frame_real(&state, &after, 0x0200u + sizeof(read),
+                (type_unsigned_16)before.data.eflags);
+    }
+    if (state.machine != STD_NULL) core_machine_destroy(state.machine);
+    if (failed) return 1;
+
+    failed = !tf_db_s60_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    if (!failed) failed = !tf_db_s60_install_real_vector(&state);
+    if (!failed) {
+        state.machine->executor_cpu.data.esp = 0x8000u;
+        state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_TF | VCPU_EFLAGS_IF |
+            VCPU_EFLAGS_CF;
+        state.machine->executor_cpu.data.dr0 = 0x1000u;
+        state.machine->executor_cpu.data.dr6 = 0u;
+        state.machine->executor_cpu.data.dr7 = 0x00010101u;
+        before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        failed |= !tf_db_s60_run(&state, write, sizeof(write), 0x0200u, &result,
+            &after, &diagnostic) || result.reason !=
+                CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT || diagnostic.first_fault.valid ||
+            !diagnostic.last_delivered_exception.valid ||
+            diagnostic.last_delivered_exception.exception_mask != VCPUINS_EXCEPT_DB ||
+            after.data.eip != 0x0101u || (after.data.dr6 &
+                (1u | 0x00004000u)) != (1u | 0x00004000u) ||
+            core_machine_memory_read(state.machine, 0x1000u, &value,
+                sizeof(value)) != TYPE_STATUS_OK || value != 0x5au ||
+            !tf_db_s60_frame_real(&state, &after, 0x0200u + sizeof(write),
+                (type_unsigned_16)before.data.eflags);
+    }
+    if (state.machine != STD_NULL) core_machine_destroy(state.machine);
+    if (failed) return 1;
+
+    failed = !tf_db_s60_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+    if (!failed) {
+        state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_RF | VCPU_EFLAGS_IF;
+        state.machine->executor_cpu.data.dr0 = 0u;
+        state.machine->executor_cpu.data.dr6 = 0u;
+        state.machine->executor_cpu.data.dr7 = 0x00000001u;
+        failed |= !tf_db_s60_run(&state, rf_code, sizeof(rf_code), 0u, &result,
+            &after, &diagnostic) || result.reason !=
+                CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT || diagnostic.first_fault.valid ||
+            diagnostic.last_delivered_exception.valid || after.data.eip !=
+                sizeof(rf_code) || TYPE_GET_BIT(after.data.eflags,
+                    VCPU_EFLAGS_RF) || after.data.dr6 != 0u;
+    }
+    if (state.machine != STD_NULL) core_machine_destroy(state.machine);
+    return failed;
+}
+
+static C_INT tf_db_s60_test_hardware_protected(C_VOID)
+{
+    static const type_unsigned_8 nop[] = { 0x90u };
+    tf_db_s60_machine state;
+    core_machine_run_result result;
+    core_machine_cpu_diagnostic diagnostic;
+    t_cpu before;
+    t_cpu after;
+    type_unsigned_32 frame[3u] = { 0u, 0u, 0u };
+    C_INT failed = !tf_db_s60_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+
+    if (!failed) failed = !tf_db_s60_boot_protected(&state) ||
+        !tf_db_s60_install_protected_vector(&state);
+    if (!failed) {
+        state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_IF | VCPU_EFLAGS_CF;
+        state.machine->executor_cpu.data.dr0 = TF_DB_S60_CODE;
+        state.machine->executor_cpu.data.dr6 = 0u;
+        state.machine->executor_cpu.data.dr7 = 0x00000001u;
+        before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        failed |= !tf_db_s60_run(&state, nop, sizeof(nop), TF_DB_S60_CODE,
+            &result, &after, &diagnostic) || result.reason !=
+                CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT || diagnostic.first_fault.valid ||
+            !diagnostic.last_delivered_exception.valid ||
+            diagnostic.last_delivered_exception.exception_mask != VCPUINS_EXCEPT_DB ||
+            after.data.eip != 0x101u || (after.data.dr6 & 1u) == 0u ||
+            core_machine_memory_read_physical(&state.machine->executor_memory,
+                after.data.ss.base + after.data.esp, (type_virtual_address)frame,
+                sizeof(frame)) != TYPE_STATUS_OK || frame[0] != 0u || frame[1] !=
+                before.data.cs.selector || frame[2] != (before.data.eflags |
+                    VCPU_EFLAGS_RF);
+    }
+    if (state.machine != STD_NULL) core_machine_destroy(state.machine);
+    return failed;
+}
+
+static C_INT tf_db_s60_test_tf_priority_over_irq(C_VOID)
+{
+    static const type_unsigned_8 nop[] = { 0x90u };
+    tf_db_s60_machine state;
+    core_machine_pic_irq_source irq;
+    core_machine_run_result result;
+    core_machine_cpu_diagnostic diagnostic;
+    t_cpu after;
+    type_unsigned_16 frame[3u] = { 0u, 0u, 0u };
+    C_INT failed = !tf_db_s60_prepare(&state, CORE_MACHINE_CPU_PROFILE_80386);
+
+    if (!failed) failed = !tf_db_s60_install_real_vector(&state) ||
+        !tf_db_s60_install_real_irq0_vector(&state);
+    if (!failed) {
+        state.machine->executor_cpu.data.esp = 0x8000u;
+        state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_TF |
+            VCPU_EFLAGS_IF;
+        STD_MEMSET(&irq, TYPE_ZERO_8, sizeof(irq));
+        state.machine->shared_pic_master.data.icw2 = 0x20u;
+        core_machine_pic_irq_source_bind(&irq, &state.machine->shared_pic_master,
+            &state.machine->shared_pic_slave, 0u);
+        core_machine_pic_irq_source_assert(&irq);
+        core_machine_pic_irq_source_deassert(&irq);
+        failed |= !tf_db_s60_run(&state, nop, sizeof(nop), 0u, &result, &after,
+            &diagnostic) || result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+            diagnostic.first_fault.valid || !diagnostic.last_delivered_exception.valid ||
+            diagnostic.last_delivered_exception.exception_mask != VCPUINS_EXCEPT_DB ||
+            (after.data.dr6 & 0x00004000u) == 0u || after.data.eip != 0x0101u ||
+            TYPE_GET_BIT(state.machine->shared_pic_master.data.isr,
+                VPIC_ISR_IRQ(0u)) || !TYPE_GET_BIT(
+                    state.machine->shared_pic_master.data.irr, VPIC_IRR_IRQ(0u)) ||
+            core_machine_memory_read_physical(&state.machine->executor_memory,
+                after.data.ss.base + (type_unsigned_16)after.data.esp,
+                (type_virtual_address)frame, sizeof(frame)) != TYPE_STATUS_OK ||
+            frame[0] != 1u || frame[1] != 0u;
+    }
+    if (state.machine != STD_NULL) core_machine_destroy(state.machine);
+    return failed;
+}
+
 C_INT main(C_VOID)
 {
     C_INT real = tf_db_s60_test_real();
     C_INT protected_attributes = tf_db_s60_test_protected_attributes();
     C_INT rejections = tf_db_s60_test_rejections();
-    if (real || protected_attributes || rejections) {
-        STD_FPRINTF(STD_STDERR, "M5:T316:S60:TF-DB failed real=%d protected=%d reject=%d\n", real, protected_attributes, rejections);
+    C_INT hardware_real = tf_db_s60_test_hardware_real();
+    C_INT hardware_protected = tf_db_s60_test_hardware_protected();
+    C_INT priority = tf_db_s60_test_tf_priority_over_irq();
+    if (real || protected_attributes || rejections || hardware_real ||
+        hardware_protected || priority) {
+        STD_FPRINTF(STD_STDERR, "M5:T316:S60:TF-DB failed real=%d protected=%d reject=%d hardware-real=%d hardware-protected=%d priority=%d\n", real, protected_attributes, rejections, hardware_real, hardware_protected, priority);
         return 1;
     }
     STD_PRINTF("M5:T316:S60:TF-DB:OK\n");

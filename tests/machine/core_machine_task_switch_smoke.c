@@ -1286,6 +1286,7 @@ static C_INT task_switch_expect_tss32_direct(type_bool operand32,
             fixture.machine->executor_cpu.data.idtr.sregtype = SREG_IDTR;
             fixture.machine->executor_cpu.data.idtr.base = IDT_BASE;
             fixture.machine->executor_cpu.data.idtr.limit = 0x000fu;
+            fixture.machine->executor_cpu.data.dr7 = 0x000003ffu;
         }
         status = core_machine_run(fixture.machine, budget, &result);
         failed |= status != (lock ? TYPE_STATUS_FAULT : TYPE_STATUS_OK) ||
@@ -1438,6 +1439,8 @@ static C_INT task_switch_expect_tss32_direct(type_bool operand32,
                     VCPUINS_EXCEPT_DB || diagnostic.last_delivered_exception.point.eip !=
                     target.eip || cpu.data.eip != 0x182u ||
                 cpu.data.eax != target.eax + 1u || cpu.data.esp != 0x7ff4u ||
+                (cpu.data.dr6 & 0x00008000u) == 0u ||
+                (cpu.data.dr7 & 0x000003ffu) != 0x000002aau ||
                 TYPE_GET_BIT(cpu.data.eflags, VCPU_EFLAGS_IF) ||
                 !test_core_machine_fixture_read_linear(fixture.machine,
                     cpu.data.ss.base + cpu.data.esp, TYPE_REFERENCE_OF(frame),

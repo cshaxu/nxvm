@@ -152,6 +152,11 @@ struct core_machine_cpu_execution_context {
     C_VOID *diagnostic_context;
     type_bool stop_requested;
     type_bool reset_requested;
+    /* Private CPU-execution state for post-instruction 80386 debug traps. */
+    type_bool debug_trap_pending;
+    type_bool debug_tf_before;
+    type_bool debug_rf_before;
+    type_unsigned_32 debug_trap_cause;
     core_machine_cpu_profile cpu_profile;
     core_machine_fpu_profile fpu_profile;
     core_machine_fpu *fpu;
