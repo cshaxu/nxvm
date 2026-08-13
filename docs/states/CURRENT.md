@@ -2,8 +2,30 @@
 
 ## Current Work
 
-**Idle.** M5 T333 is closed. The next implementation task requires a separately
-admitted packet.
+**M5 T333 S4 - active.** Correct the T333 runnable-artifact omission before a
+new task is admitted. This is the narrow closed-task corrective exception in
+the [Execution Rules](../rules/EXECUTION.md#linear-identifier-allocation).
+
+## M5 T333 S4 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Corrective |
+| Admission And Approval | Owner approved this corrective repair on 2026-08-13 after the code-quality audit showed that closed T333 changed `src/core/product/debug/debug.c` and `src/vm/product/console.c` without its own developer artifact. T333 is the latest closed numeric task and no numeric task is open. The permitted scope is only T333's missing runnable-artifact identity and closure evidence. |
+| Objective | Build and record T333's required `0.5.0333` VM developer artifact, then correct the CMake target, preset, Current baseline, and T333 closure record so they identify the same build. |
+| Non-goals | No production behavior, input-failure mechanism, test behavior, public ABI, Queue ordering, EGA repair, generic artifact framework, or historical artifact regeneration. |
+| Reference Baseline | `6f55d22b` (`M5 T333 S3 P2: close interactive input failure contract`), whose source is the accepted T333 implementation but whose current baseline incorrectly remains T332 `0.5.0332`. |
+| Candidate Proposal | Retained [T333 interactive-input proposal](../history/M5-T333-interactive-input-failure-contract-proposal.md); this is its narrow post-closure artifact correction. |
+| Files And ABI Surface | `CMakeLists.txt`, `CMakePresets.json`, `docs/states/CURRENT.md`, and `docs/history/M5-T333-interactive-input-failure-contract.md`; ignored `build/output/nxvm_0_5_0333.exe`. No source API or ABI changes. |
+| Applicable Rules | `docs/rules/EXECUTION.md`: corrective-S exception, artifact identity, final verification, actual-change audit, and closure. `docs/rules/DOCUMENT.md`: Current owns active status/baseline and history owns closed-task detail. `docs/rules/ARCHITECTURE.md` and `docs/rules/CODING.md`: not applicable beyond preserving the existing runtime and ownership boundary because this S changes no production source. |
+| Verification | Fresh GCC configuration; build `current-gcc`; prove `verify-current-artifact-target` selects only `vm-0-5-0333`; verify copied artifact existence, SHA-256, and CMake-supplied `0.5.0333` identity; run `current-gates-gcc`, documentation governance, and `git diff --check`. |
+| Expected Markers | `vm-0-5-0333`; `build/output/nxvm_0_5_0333.exe`; one current artifact target; recorded SHA-256; `0.5.0333` compile definition. |
+| Asset Needs | None. No source, firmware, guest media, third-party code, or Microsoft material. |
+| Reporting Requirements | Executor reports artifact-target confirmation and final commit/hash/gate result. In this single-session run, the coordinator role independently reviews every changed CMake and documentation file, the copied artifact identity, and the final diff before closure. |
+| Stop Conditions | Stop if producing the artifact changes production behavior, requires a second current artifact target, cannot establish the version identity, or exposes any non-T333 scope change. |
+| Exit Criteria | Exactly one current target and preset select `vm-0-5-0333`; the copied artifact exists with recorded SHA-256 and `0.5.0333` identity; all required gates pass; Current and T333 history name the same artifact and source commit; T333 closes again before T334 admission. |
+| Original Owner Request | Reopen the T333 artifact issue separately, then repair the EGA registration failure under T334. |
+| Similar-Issue Sweep | Inspect every `add_current_vm_artifact`, `current-gcc` preset target, Current artifact reference, and T333 task record; classify old task-named executables as historical evidence only and do not regenerate them. |
 
 ## Current Technical Baseline
 
