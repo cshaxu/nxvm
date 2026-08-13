@@ -34,6 +34,13 @@ admission.
 
 ## Recent Governance
 
+- **M5 Td S70:** restored concise purpose-specific reporting and the
+  active-contract/compact-Status boundary after later commits had superseded
+  them; removed the Queue candidate already closed as T324; recorded bounded
+  holistic-execution and task-transition debt candidates with evidence; and
+  refreshed the retained governance summary. Documentation default/self-test
+  and diff check passed. Td work has no runtime or artifact change.
+
 - **M5 Td S68:** reconciled open numeric-task progress with identifier
   allocation: commit history proves used S/P records, Status structural rows
   determine task closure, and the verifier permits only the exact next S of the
@@ -77,7 +84,3 @@ admission.
   candidate with its ordered family sequence, scoped 80386-to-x87 coupling
   without admitting an 80387, and recorded the required reuse and coverage
   discipline. Td work has no runtime or artifact change.
-
-- **M5 Td S61:** restored Queue dependency order by placing residual M5 work
-  before M6 mantle candidates; removed stale package/index detail; and changed
-  historical evidence to name closure artifacts rather than current state.

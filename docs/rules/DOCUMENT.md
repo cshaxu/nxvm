@@ -58,6 +58,11 @@ normal way to cross a boundary; a copied summary is not a second authority.
   closure summary and retain detailed evidence in its history or indexed
   supporting record. The recent task-level closure list is capped at eight
   rows.
+- `STATUS.md` records the active contract, current phase, concise progress, and
+  links to durable evidence. Long command output, requirement matrices,
+  implementation narratives, and detailed review records belong in the
+  committed delivery, numbered task history, or indexed `etc/` evidence. A
+  link does not move task authority: the active packet remains the contract.
 - [QUEUE.md](../QUEUE.md) contains only unnumbered, ordered candidate work.
   [TODO.md](../TODO.md) contains only unplanned debt.
 - Each numeric implementation task closed under this topology has one

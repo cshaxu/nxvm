@@ -25,6 +25,23 @@ state closures below. Every admitted 80386DX candidate identifies the map rows
 it advances and any residual row it transfers. A completed smoke count or
 opcode slice is never a substitute for a closed state transition.
 
+1. **Holistic execution-path architecture audit and remediation plan.** Address
+   the open [holistic construction debt](etc/evidence/holistic-execution-path-audit-debt.md)
+   before further broad CPU-family implementation. Select one bounded,
+   high-leverage CPU or machine-state family; establish its Intel form/state
+   matrix, ownership/caller map, validation order, commit/fault boundary, and
+   transfer record; then repair only the model-level defects that the audit
+   proves. Preserve accepted behavior and focused evidence. Do not turn the
+   audit into a repository-wide rewrite, an unused framework, or a rationale to
+   weaken existing gates.
+1. **Task-switch transition unification.** Resolve the explicit
+   [16-bit/32-bit task-transition construction debt](etc/evidence/task-switch-transition-unification-debt.md)
+   before declaring the task-system family closed. Map all current task-entry
+   callers and TSS/descriptor writes; align the reviewable preflight, planning,
+   and commit semantics for `JMP`, `CALL`, and task-gate entry while preserving
+   width-specific Intel TSS layouts; and rerun the accepted direct-JMP plus new
+   task-entry fault matrices. Nested return, IDT task gates, LDT, paging, and
+   debug state remain separately assigned rather than being silently absorbed.
 1. **P1 - 80386DX protection and privilege-transfer closure.** Complete
    descriptor, segmentation, privilege, gate, and user/kernel transfer
    behavior required by the Intel 80386 architecture. This consumes the proven
