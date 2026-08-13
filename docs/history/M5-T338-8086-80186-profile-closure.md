@@ -54,3 +54,19 @@ no production defect. Commit `317d9df5` was reviewed; the developer artifact
 remains SHA-256
 `E9626E829FE8F9A1BE7A25219D48295D704C5831F64C4D2D50709671CB144F13`, and the
 complete current-gate passed 218/218.
+
+## S4 Result
+
+S4 closes all 80186-only primary extensions and the corresponding 8086
+rejection boundary: PUSHA/POPA, BOUND, immediate PUSH/IMUL, INS/OUTS,
+immediate-count Group 2, and ENTER/LEAVE. The matrix keeps Intel-defined stack,
+signed-bound, port, REP, and undefined-extension behavior explicit.
+
+The profile sweep reproduced a shared local defect: all four INS/OUTS handlers
+incorrectly required 80386 even though the opcode metadata and architecture
+define them from 80186. The guards now converge on 80186; no port, prefix, or
+delivery helper changed. The owner tests now directly prove 80186 `BOUND`
+`#BR`, immediate-IMUL r/m16, and all byte/word `C0/C1` extensions. Commit
+`1d8fe07a` was reviewed; the rebuilt developer artifact SHA-256 is
+`7D79417889821695DB4993DFEA5134B01E5B16D69007C20A6F1E3CBB8C75C05F`, and the
+complete current-gate passed 218/218.

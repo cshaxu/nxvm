@@ -2,35 +2,14 @@
 
 ## Current Work
 
-**M5 T338 S4 - active.** Close all 80186-only primary-extension forms and
-their 8086 rejection boundary.
-
-## M5 T338 S4 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | The owner approved Queue-ordered single-agent implementation through four-profile cross-closure verification on 2026-08-13. The accepted T338 S1 ledger assigns this complete 80186-only primary-extension boundary to S4 after S2 and S3. |
-| Objective | Implement or correct complete 8086 rejection and 80186 acceptance evidence for `60`--`62`, `68`--`6F`, `C0/C1`, and `C8/C9`: PUSHA/POPA, BOUND, immediate PUSH/IMUL, INS/OUTS, immediate-count Group 2 shifts/rotates, and ENTER/LEAVE. Prove defined state, stack images, signed operands, port/memory effects, REP/DF, exceptions, restart/nonpublication, and the inherited T328 legacy `LOCK` boundary. |
-| Non-goals | No 8086 inherited forms (S2/S3), 80286-only ARPL/protected selector semantics, protected I/O permissions, VM86, paging, 80386 operand/address-width behavior, x87, or new generic fixture/prefix/delivery framework. Existing 80286/80386 vectors may only support shared-path regression; they do not define S4 completion. |
-| Reference Baseline | `1689231b` (`M5 T338 S3 P2: accept legacy data control matrix`), accepted [S1 allocation](../etc/evidence/t338-s1-8086-80186-form-allocation.md), and T338 S2/S3 evidence. |
-| Candidate Proposal | [8086 and 80186 profile closure](../proposals/m5-8086-80186-profile-closure.md) and the accepted [T338 S1 allocation](../etc/evidence/t338-s1-8086-80186-form-allocation.md). |
-| Files And ABI Surface | Expected: local 80186 instruction handlers only if a defect is reproduced; existing owner smokes and T338 evidence/history/Current. No public ABI, device model, generic fixture framework, shared prefix/delivery interface, or product change. |
-| Applicable Rules | `docs/rules/EXECUTION.md`: full P and complete form/caller/write/fault sweep. `docs/rules/ARCHITECTURE.md`: one owner for prefix, port, stack, and delivery mechanics. `docs/rules/CODING.md`: project types, local style, and owner-bound tests. |
-| Verification | Build an opcode and ModRM form ledger. For each family, prove 8086 `#UD` before source/stack/memory/I/O publication and 80186 default 16-bit acceptance, including all defined state and family-specific fault/restart conditions. Sweep metadata, primary dispatch, handlers, shared stack/string/port/arithmetic paths, existing owners, CMake registrations, and T328 `LOCK` evidence. Run focused owners, exact registrations, metadata/static gates, artifact verifier, documentation governance, diff check, and full current-gate. |
-| Expected Markers | Complete S4 evidence names one current-gate owner for every allocated opcode and ModRM extension; no allocated 80186 form is represented only by a 80386 execution. New marker, if necessary, uses `M5:T338:S4:`. |
-| Asset Needs | Intel 80186 and 80386 instruction manuals only. No guest media, firmware, third-party source, or binary asset. |
-| Reporting Requirements | Before source edits, record the complete handler/caller/write/fault inventory and any material boundary objection. Otherwise deliver one complete pushed P with ledger, profile evidence, defect/similar-issue disposition, artifact/gate results, and no partial-completion claim. |
-| Stop Conditions | Stop if correctness needs protected selector/gate/IOPL state, VM86/paging, 80386 width semantics, global prefix/port/delivery redesign, or Intel behavior cannot be verified. Transfer instead of fitting a local symptom. |
-| Exit Criteria | Every S4 opcode and ModRM extension has 8086 rejection plus 80186 default-form evidence; every family-specific defined state, fault/restart, and side-effect boundary is proven or explicitly transferred; any discovered shared-mechanism defect is fixed with its caller sweep; required gates pass; the complete P is committed and pushed. |
-| Original Owner Request | Implement the Queue in order, in single-agent mode and with a holistic view, through four-profile cross-closure verification. |
-| Similar-Issue Sweep | Search `60`--`62`, `68`--`6F`, `C0/C1`, and `C8/C9` metadata/dispatch/handlers; `_e_push`, `_e_pop`, `_a_imul3`, `_m_*`, `_p_*`, string iteration, Group 2 flag helpers, `ExecFinal`, prefix handling, current owner smokes, CMake registrations, and T328 evidence. |
+**Idle.** T338 remains open. S1--S4 are accepted; S5 requires a separately
+admitted closure-audit packet.
 
 ## Current Technical Baseline
 
 - **Current developer artifact:** T338 S1/S2 select `vm-0-5-0338` /
   `build/output/nxvm_0_5_0338.exe`; the rebuilt developer output SHA-256 is
-  `E9626E829FE8F9A1BE7A25219D48295D704C5831F64C4D2D50709671CB144F13`.
+  `7D79417889821695DB4993DFEA5134B01E5B16D69007C20A6F1E3CBB8C75C05F`.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
@@ -47,6 +26,7 @@ their 8086 rejection boundary.
 | T338 S1 | Accepted the exhaustive 8086/80186 primary-form and legacy-LOCK allocation: every in-scope form, extension, reserved rejection, external boundary, and later-profile transfer has one disposition; S2--S5 boundaries are fixed without creating a second LOCK policy. `vm-0-5-0338`, 52 specialized gates, and 217/217 current-gate passed. [Evidence](../etc/evidence/t338-s1-8086-80186-form-allocation.md). |
 | T338 S2 | Accepted the complete 8086/80186 legacy ALU, FLAGS, condition, adjustment, shift, Group 1--3, and grouped-form matrix. No production defect reproduced; the owner smoke proves real `#DE` IVT restart/nonpublication and links every memory-capable form to T328's sole legacy-LOCK contract. `vm-0-5-0338`, documentation governance, and 218/218 current-gate passed. [Evidence](../etc/evidence/t338-s2-legacy-alu-profile-matrix.md). |
 | T338 S3 | Accepted the complete inherited 8086/80186 data, string, stack, real control/interrupt, and ordinary port-I/O matrix. Existing owner smokes supply the form proofs; the control owner now executes near/far transfer, `RETF iw`, and `FF /7` on both profiles. No production defect reproduced. `vm-0-5-0338`, documentation governance, and 218/218 current-gate passed. [Evidence](../etc/evidence/t338-s3-legacy-data-control-profile-matrix.md). |
+| T338 S4 | Accepted all 80186-only primary extensions and the 8086 rejection boundary. Four INS/OUTS handlers now correctly admit 80186; BOUND `#BR`, immediate IMUL r/m16, and all `C0/C1` extensions have direct low-profile evidence. `vm-0-5-0338`, documentation governance, and 218/218 current-gate passed. [Evidence](../etc/evidence/t338-s4-80186-extension-profile-matrix.md). |
 | T337 | Closed shared CPU state and delivery foundations: vector-6 fault delivery/rollback, software and external origin composition, IRQ/NMI/TF priority, frame timing, inhibition, and post-commit task debug trap have one proof/owner. DR6/DR7 transfers to 80386DX; reset/shutdown/triple-fault remains bounded CPU/machine debt. [History](../history/M5-T337-shared-state-delivery.md). |
 | T336 | Closed the four-profile CPU coverage audit: the primary/`0F` metadata and dispatch forms, real/protected/VM86 state rows, historic evidence, explicit 80386 exclusions, and open CPU debt now have a single indexed disposition. Every residual has one Queue, TODO, or external owner; the next candidate is shared state and delivery foundations. [History](../history/M5-T336-four-profile-coverage.md). |
 | T335 | Closed the xasm public-capacity/failure contract: the product facade now uses byte spans, explicit capacities, `type_status`, and commit-on-success result publication; debugger, firmware, and VM debug callback callers migrated with no raw bypass. A dedicated allocation-injection smoke proves capacity, malformed-input, facade-allocation, and engine-allocation failures preserve caller sentinels; `current-gate` passed 216/216. [History](../history/M5-T335-xasm-capacity-failure-contract.md). |
