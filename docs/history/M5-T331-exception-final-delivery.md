@@ -23,3 +23,12 @@ the protected or unproven paths transferred outside this bounded S. It also
 records the single private `ExecFinal` construction boundary that replaced the
 duplicated real-mode tails without merging Intel-defined vector or frame
 semantics.
+
+## Closure
+
+S1 completed in `0b3ca98d` with developer artifact `vm-0-5-0331` SHA-256
+`DEC95998E27E5F4FAF05D5C7EAFCE62DB0C507D3E9E0EE27A4D46FD513BE18D3`.
+Fresh GCC configuration, the construction verifier, focused owner and retained
+producer regressions, documentation governance, diff check, and 212/212
+current-gate tests passed. Paging requires protected mode, so real-mode `#PF`
+is an architectural non-applicability rather than an unimplemented producer.
