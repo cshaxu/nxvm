@@ -155,6 +155,15 @@ default definition of NXVM completion.
 
 ## Architecture And Portability Debt
 
+- [ ] **Dormant VM request-bridge smoke interface drift (`TODO(Medium)`).**
+  A T345 whole-tree audit reproduced that non-current
+  `vm-request-bridge-smoke` still names removed `VM_PLATFORM_REQUEST_KEY_PRESS`
+  and `key_press` request fields, so an `all` build stops before completion.
+  Admit only with the request-transport owner: reconcile the smoke with the
+  current request event contract, prove copied payload semantics, and decide
+  whether it becomes current-gate or remains an explicitly non-current target.
+  Do not restore production compatibility aliases or quietly exclude it from
+  an all-target build.
 - [ ] **Inherited NXVM strict compilation (`TODO(Medium)`).** Admit only when
   an inherited unit is substantively changed or safely separated from a mixed
   target. Record the diagnostic baseline, exact modification scope, selected

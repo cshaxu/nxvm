@@ -1,0 +1,15 @@
+if(NOT DEFINED PROJECT_T345_VERIFIER OR NOT EXISTS "${PROJECT_T345_VERIFIER}" OR
+        NOT DEFINED PROJECT_T345_T344_MATRIX_FILE OR NOT EXISTS "${PROJECT_T345_T344_MATRIX_FILE}" OR
+        NOT DEFINED PROJECT_T345_INVALID_OWNERSHIP_MATRIX_FILE OR NOT EXISTS "${PROJECT_T345_INVALID_OWNERSHIP_MATRIX_FILE}")
+    message(FATAL_ERROR "T345 ownership verifier self-test inputs are required.")
+endif()
+execute_process(
+    COMMAND "${CMAKE_COMMAND}"
+        -DPROJECT_T345_T344_MATRIX_FILE:FILEPATH=${PROJECT_T345_T344_MATRIX_FILE}
+        -DPROJECT_T345_OWNERSHIP_MATRIX_FILE:FILEPATH=${PROJECT_T345_INVALID_OWNERSHIP_MATRIX_FILE}
+        -P "${PROJECT_T345_VERIFIER}"
+    RESULT_VARIABLE project_t345_selftest_result)
+if(project_t345_selftest_result EQUAL 0)
+    message(FATAL_ERROR "T345 ownership verifier accepted its invalid duplicate fixture.")
+endif()
+message(STATUS "T345 deferred ownership verifier self-test passed.")
