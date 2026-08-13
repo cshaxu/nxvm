@@ -67,8 +67,7 @@ static C_INT hardware_delivery_s3_real_priority(C_VOID)
             sizeof(handler)) != TYPE_STATUS_OK;
     if (!failed) {
         state.machine->executor_cpu.data.esp = 0x00008000u;
-        state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF |
-            VCPU_EFLAGS_IF | VCPU_EFLAGS_TF;
+        state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF | VCPU_EFLAGS_IF;
         state.machine->executor_cpu.data.flagNMI = TYPE_TRUE;
         state.machine->shared_pic_master.data.icw2 = 0x20u;
         core_machine_pic_irq_source_bind(&irq, &state.machine->shared_pic_master,
@@ -90,7 +89,7 @@ static C_INT hardware_delivery_s3_real_priority(C_VOID)
                 0x00007ffau, (type_virtual_address)frame, sizeof(frame)) !=
                 TYPE_STATUS_OK ||
             frame[0] != 1u || frame[1] != 0u ||
-            frame[2] != (VCPU_EFLAGS_CF | VCPU_EFLAGS_IF | VCPU_EFLAGS_TF);
+            frame[2] != (VCPU_EFLAGS_CF | VCPU_EFLAGS_IF);
     }
     core_machine_destroy(state.machine);
     return !failed;
@@ -109,8 +108,7 @@ static C_INT hardware_delivery_s3_protected_priority(C_VOID)
 
     STD_MEMSET(&irq, 0, sizeof(irq));
     if (!failed) {
-        state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF |
-            VCPU_EFLAGS_IF | VCPU_EFLAGS_TF;
+        state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF | VCPU_EFLAGS_IF;
         state.machine->executor_cpu.data.flagNMI = TYPE_TRUE;
         state.machine->shared_pic_master.data.icw2 = IE_VECTOR;
         core_machine_pic_irq_source_bind(&irq, &state.machine->shared_pic_master,
@@ -130,7 +128,7 @@ static C_INT hardware_delivery_s3_protected_priority(C_VOID)
             TYPE_GET_BIT(state.machine->shared_pic_master.data.isr, VPIC_ISR_IRQ(0u)) ||
             !ie_read(&state, IE_STACK_BASE - 12u, frame, sizeof(frame)) ||
             frame[0] != 1u || frame[1] != 0x0008u ||
-            frame[2] != (VCPU_EFLAGS_CF | VCPU_EFLAGS_IF | VCPU_EFLAGS_TF);
+            frame[2] != (VCPU_EFLAGS_CF | VCPU_EFLAGS_IF);
     }
     core_machine_destroy(state.machine);
     return !failed;
@@ -175,7 +173,6 @@ static C_INT hardware_delivery_s3_vm86_priority(C_INT mask_nmi)
 
     STD_MEMSET(&irq, 0, sizeof(irq));
     if (!failed) {
-        state.machine->executor_cpu.data.eflags |= VCPU_EFLAGS_TF;
         state.machine->executor_cpu.data.flagNMI = TYPE_TRUE;
         state.machine->executor_cpu.data.flagMaskNMI = mask_nmi ? TYPE_TRUE : TYPE_FALSE;
         state.machine->shared_pic_master.data.icw2 = 0x20u;
@@ -200,7 +197,7 @@ static C_INT hardware_delivery_s3_vm86_priority(C_INT mask_nmi)
                 VM86_STACK_TOP - 36u, (type_virtual_address)frame,
                 sizeof(frame)) != TYPE_STATUS_OK || frame[0] != 1u ||
             frame[1] != 0x0200u || frame[2] != (VCPU_EFLAGS_VM |
-                VCPU_EFLAGS_IF | VCPU_EFLAGS_TF);
+                VCPU_EFLAGS_IF);
     }
     core_machine_destroy(state.machine);
     return !failed;

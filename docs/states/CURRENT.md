@@ -2,29 +2,30 @@
 
 ## Current Work
 
-**M5 T344 S1 - active.** Reconcile the T337 `#UD` inventory so a fresh GCC
-configuration is reproducible without weakening the source-sensitive gate.
+**M5 T344 S2 - active.** Establish a truthful direct-compilation strictness
+matrix for every production and current-gate target without a global warning
+policy.
 
-## M5 T344 S1 Packet
+## M5 T344 S2 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | The owner approved the full-tree audit report and its four ordered build-quality repairs on 2026-08-13, then directed completion of current code-quality governance in single-agent mode. This revised packet retains S1's clean-configure repair and admits the reproducible current-gate baseline diagnosis discovered during its required regression run. |
-| Objective | Give `core-machine-vm86-delivery-smoke` exactly one truthful T337 current-gate `#UD` disposition so a fresh out-of-tree GCC configure succeeds while the source-sensitive inventory remains enforced; diagnose and repair the two reproducibly failing current-gate owner tests or their shared delivery mechanism so this quality baseline is green. |
-| Non-goals | No weakening, deletion, or bypass of the T337 inventory verifier or current-gate membership; no global compiler-flag/rule change; no speculative CPU redesign; no fixture-framework extraction. A reproduced shared CPU/delivery defect may be repaired only after a complete caller, validation-to-commit, fault/frame, and regression sweep. |
-| Reference Baseline | `e8ee896e` (`M5 T344 S1 P0`), [T344 baseline audit](../etc/evidence/t344-code-quality-baseline-audit.md), [T337 `#UD` evidence](../etc/evidence/t337-s1-real-ud-delivery.md), current CMake source, Queue, TODO, and the build-quality proposal. |
+| Identifier Mode | Continuation |
+| Admission And Approval | The owner approved the T344 four-repair code-quality program on 2026-08-13 and directed its single-agent completion. S1 was accepted as `eb423b88`, which restored a fresh configuration and current-gate baseline without weakening either gate. This packet admits the Queue-ordered S2 coverage-matrix repair. |
+| Objective | Derive a source-to-target strict-compilation matrix from actual GCC/Ninja direct compile commands for every configured production target and every current-gate executable; classify each direct source compilation as retained strict, newly strict, or deferred with a precise inherited/mixed ownership reason and admission condition. Add a narrow mechanical verifier and apply target-local strict flags only to proven repository-owned targets. Recover the three stale protected/external-delivery smoke owners exposed by the fresh strict rebuild: their external-event rows must not also claim TF debug-trap priority, which remains owned by the accepted T341 debug smoke. |
+| Non-goals | No global `-Werror`, no claim that a linked dependency is strictly compiled, no warning suppression or diagnostic weakening, no inherited executor warning cleanup, no xasm/debug redesign, no CPU semantic change, and no fixture extraction. The baseline repair may change only the three affected owner tests and their evidence; it must not alter `ExecInt`, debug scheduling, or delivery precedence. A target that cannot safely adopt strict flags remains an explicit deferred matrix row, never an implicit exemption. |
+| Reference Baseline | `eb423b88` (`M5 T344 S1 P1`), [T344 baseline audit](../etc/evidence/t344-code-quality-baseline-audit.md), the build-quality proposal, `CMakeLists.txt`, generated Ninja commands, Queue, and TODO. |
 | Candidate Proposal | [Build-quality reproducibility](../proposals/m5-build-quality-reproducibility.md). |
-| Files And ABI Surface | Expected: `CMakeLists.txt`, `CMakePresets.json`, the two failing owner smokes and any proven shared delivery owner, T344 evidence/history/Current. No public ABI, target membership, or product-behavior change; refresh only the required T344 developer artifact. |
-| Applicable Rules | `docs/rules/EXECUTION.md`: mechanism-owner sweep and complete P. `docs/rules/ARCHITECTURE.md`: one current-gate classification owner. `docs/rules/CODING.md`: no duplicate route. `docs/rules/DOCUMENT.md`: Current/history/evidence topology. |
-| Verification | Configure a fresh disposable GCC/Ninja build directory; prove the specific target has exactly one inventory/disposition entry; rebuild and run the exact VM86, PUSHF/POPF S47, and software-INT S50 tests; run full current-gate, documentation governance, and diff check. Any production repair also needs caller and focused fault/frame ordering evidence. |
-| Expected Markers | Fresh configure succeeds; T337 inventory still rejects an unclassified `#UD` owner; all three exact tests pass; full current-gate is green; no stale executable is used as proof. |
+| Files And ABI Surface | Expected: `CMakeLists.txt`, a CMake-only verifier, T344 evidence/history/Current, and only proven repository-owned target-local compile-option declarations; plus the three stale current-gate owner tests `core_machine_protected_16_external_s4_smoke.c`, `core_machine_protected_16_outer_s5_smoke.c`, and `core_machine_hardware_delivery_s3_smoke.c`. No public ABI, target membership, product behavior, or production-source implementation change. |
+| Applicable Rules | `docs/rules/EXECUTION.md`: complete source-scope and similar-issue sweep. `docs/rules/ARCHITECTURE.md`: one build-quality ownership path. `docs/rules/CODING.md`: project-owned strictness without duplicate facade. `docs/rules/DOCUMENT.md`: Current/history/evidence topology. |
+| Verification | Fresh GCC/Ninja configure; generate the matrix from direct Ninja commands; mechanically verify every matrix target/source row and its declared classification; build every strict target; inspect representative deferred direct commands to prove they are not misreported; prove the three repaired external-delivery owners pass without TF and that the retained T341 TF-before-PIC owner still passes; run documentation governance, diff check, and full current-gate. |
+| Expected Markers | Every configured production/current-gate target has one direct-compilation disposition; every retained/new strict source command contains `-Wall -Wextra -Wpedantic -Werror`; no deferred row claims linked-dependency coverage; full gate remains green. |
 | Asset Needs | No external assets, firmware, guest media, or source import. |
-| Reporting Requirements | Deliver one complete pushed P with the classification rationale, fresh configure result, exact smoke results, any shared-mechanism caller sweep, regression diagnosis/repair evidence, inventory sweep, and gate results. |
-| Stop Conditions | Stop if recovery requires a second T337 policy category, a broader inventory redesign, external source, warning-policy change, unbounded CPU architecture change, or an unproven behavior change. Return that issue to the coordinator rather than weakening a gate. |
-| Exit Criteria | The fresh configure succeeds; the target has one truthful classification and no duplicate entry; all three exact smokes and full current-gate pass; any repair has complete caller/frame/fault evidence; documentation governance/diff check pass; and the complete P is committed and pushed. |
+| Reporting Requirements | Deliver one complete pushed P with the generated matrix, target/source count, each deferred reason/admission condition, actual direct-command verifier result, newly strict target rationale, and gate results. |
+| Stop Conditions | Stop if a proposed strict extension needs warning suppression, a global policy, production semantic change, inherited warning cleanup, unsupported generator parsing, or an unclassifiable target/source ownership boundary. Record that exact blocker and transfer rather than falsely classify it. |
+| Exit Criteria | Every in-scope production/current-gate target has one evidence-backed direct-compilation disposition; strict rows are mechanically verified from actual commands and build; all newly strict targets are proven repository-owned; every deferred row has an exact reason and admission condition; governance/diff/full current-gate pass; and the complete P is committed and pushed. |
 | Original Owner Request | Audit the entire codebase for code quality, record all findings, and admit the four resulting quality improvements for implementation. |
-| Similar-Issue Sweep | Inspect every target in `PROJECT_CURRENT_SMOKE_TARGETS` whose machine source contains `VCPUINS_EXCEPT_UD`, `_SetExcept_UD`, or `UndefinedOpcode`; verify each has exactly one T337 inventory and disposition path. |
+| Similar-Issue Sweep | Enumerate all configured non-imported production targets and every `PROJECT_CURRENT_SMOKE_TARGETS` executable. For each direct C source compile command, record strict flags and source ownership; search all target-local strict declarations for omissions, duplicates, and claims based only on linked libraries. |
 
 ## Current Technical Baseline
 
@@ -44,6 +45,8 @@ configuration is reproducible without weakening the source-sensitive gate.
 ## Recent M5 Closures
 
 | Task | Compact result |
+| --- | --- |
+| T344 S1 | Restored fresh GCC configuration by giving VM86 delivery one explicit non-real T337 `#UD` disposition; repaired shared TF post-interrupt trap scheduling and stale RF smoke expectations; exact regressions and 218/218 current-gate passed. [Evidence](../etc/evidence/t344-code-quality-baseline-audit.md). |
 | T343 | Closed the four-profile CPU program: one final ledger reconciles the 8086, 80186, 80286, and 80386DX execution, protected-state, delivery, task/paging/debug, and CPU-side coprocessor-interface boundaries. VME/PVI, persistent cache, x87 execution, timing/device, and Windows/product work remain explicit external candidates. [Closure ledger](../etc/evidence/t343-s1-four-profile-cross-closure.md). |
 | T342 | Closed the 80386DX profile ledger: T340 form and T341 state evidence reconcile every assigned row once, and the closure map now names the accepted state owners instead of stale future transfers. Only explicit post-80386, x87, timing/device, and Windows boundaries remain external. [Closure audit](../etc/evidence/t342-s1-80386dx-profile-closure-audit.md). |
 | T341 | Closed the 80386DX system-state package: CR/DR/TR/table state, VM86/task/paging composition, and ordinary debug/vector-1 now have one audited owner/proof graph; only explicit later-CPU, x87, timing/device, and Windows boundaries transfer. [Closure audit](../etc/evidence/t341-s5-80386dx-system-state-closure-audit.md). |

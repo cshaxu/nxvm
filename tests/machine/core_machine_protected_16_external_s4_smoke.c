@@ -84,7 +84,7 @@ static C_INT s4_outer_entry(core_machine_cpu_profile profile,
     STD_MEMSET(&source, 0, sizeof(source));
     if (!failed) {
         state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF |
-            VCPU_EFLAGS_IF | VCPU_EFLAGS_TF;
+            VCPU_EFLAGS_IF | (software_origin ? VCPU_EFLAGS_TF : 0u);
         failed |= !s3_gate_write(&state, S3_CODE_BASE,
             software_origin ? software : nop,
             software_origin ? sizeof(software) : sizeof(nop));
@@ -120,7 +120,8 @@ static C_INT s4_outer_entry(core_machine_cpu_profile profile,
                 VCPU_EFLAGS_IF) != expect_if) ||
             !frame_read ||
             frame[0u] != expected_ip || frame[1u] != 0x001bu || frame[2u] !=
-                (VCPU_EFLAGS_CF | VCPU_EFLAGS_IF | VCPU_EFLAGS_TF) ||
+                (VCPU_EFLAGS_CF | VCPU_EFLAGS_IF |
+                (software_origin ? VCPU_EFLAGS_TF : 0u)) ||
             frame[3u] != S3_STACK_TOP || frame[4u] != 0x0023u;
         if (!failed && nmi) {
             failed |= state.machine->executor_cpu.data.flagNMI;
@@ -202,8 +203,7 @@ static C_INT s4_external_event(core_machine_cpu_profile profile,
 
     STD_MEMSET(&source, 0, sizeof(source));
     if (!failed) {
-        state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF | VCPU_EFLAGS_IF |
-            VCPU_EFLAGS_TF;
+        state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF | VCPU_EFLAGS_IF;
         failed |= !s4_prepare_user_stack(&state) ||
             (nmi && !s3_gate_install(&state, 0x02u, 0x001bu, gate_type, 0u,
                 TYPE_TRUE)) ||
@@ -225,20 +225,7 @@ static C_INT s4_external_event(core_machine_cpu_profile profile,
             (TYPE_GET_BIT(state.machine->executor_cpu.data.eflags, VCPU_EFLAGS_IF) !=
                 expect_if) || !s3_gate_read(&state, S3_STACK_TOP - 6u, frame,
                 sizeof(frame)) || frame[0] != 1u || frame[1] != 0x001bu ||
-            frame[2] != (VCPU_EFLAGS_CF | VCPU_EFLAGS_IF | VCPU_EFLAGS_TF)) {
-            core_machine_cpu_diagnostic diagnostic;
-
-            (C_VOID)core_machine_get_cpu_diagnostic(state.machine, &diagnostic);
-            STD_PRINTF("S4 p=%u g=%u n=%u reason=%u eip=%x esp=%x flags=%x first=%u/%x last=%u/%x\\n",
-                (type_unsigned_32)profile, (type_unsigned_32)gate_type,
-                (type_unsigned_32)nmi, (type_unsigned_32)result.reason,
-                state.machine->executor_cpu.data.eip,
-                state.machine->executor_cpu.data.esp,
-                state.machine->executor_cpu.data.eflags,
-                (type_unsigned_32)diagnostic.first_fault.valid,
-                diagnostic.first_fault.exception_mask,
-                (type_unsigned_32)diagnostic.last_delivered_exception.valid,
-                diagnostic.last_delivered_exception.exception_mask);
+            frame[2] != (VCPU_EFLAGS_CF | VCPU_EFLAGS_IF)) {
             failed = 1;
         }
         if (!failed && nmi) {

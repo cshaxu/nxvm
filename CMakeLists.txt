@@ -2615,3 +2615,96 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(vm-cpu-probe-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-execution-context-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
+
+# T344 owns a direct-command matrix for every production library/current
+# artifact and every current-gate executable.  A linked strict library never
+# substitutes for the direct compile command of a smoke source.
+set(PROJECT_T344_PRODUCTION_TARGETS
+    type-facade
+    core-utils
+    core-machine
+    core-machine-executor
+    core-platform
+    vm-platform-requests
+    vm-request-transport
+    core-product-debug
+    core-product-utils
+    core-product-session
+    vm-profile
+    vm-platform
+    vm-composition
+    vm-machine
+    vm-product
+    vdm-machine
+    vdm-composition
+    vm-0-5-0344)
+set(PROJECT_T344_DIRECT_COMPILE_TARGETS
+    ${PROJECT_T344_PRODUCTION_TARGETS}
+    ${PROJECT_CURRENT_SMOKE_TARGETS})
+list(REMOVE_DUPLICATES PROJECT_T344_DIRECT_COMPILE_TARGETS)
+
+set(PROJECT_T344_DIRECT_COMPILE_MATRIX)
+set(PROJECT_T344_STRICT_DIRECT_TARGETS)
+foreach(project_t344_target IN LISTS PROJECT_T344_DIRECT_COMPILE_TARGETS)
+    if(NOT TARGET ${project_t344_target})
+        message(FATAL_ERROR "T344 direct-compilation target is missing: ${project_t344_target}")
+    endif()
+    get_target_property(project_t344_target_sources ${project_t344_target} SOURCES)
+    get_target_property(project_t344_target_options ${project_t344_target} COMPILE_OPTIONS)
+    set(project_t344_target_strict TRUE)
+    foreach(project_t344_required_flag IN ITEMS -Wall -Wextra -Wpedantic -Werror)
+        list(FIND project_t344_target_options "${project_t344_required_flag}"
+            project_t344_flag_index)
+        if(project_t344_flag_index EQUAL -1)
+            set(project_t344_target_strict FALSE)
+        endif()
+    endforeach()
+    foreach(project_t344_source IN LISTS project_t344_target_sources)
+        if(IS_ABSOLUTE "${project_t344_source}")
+            set(project_t344_source_path "${project_t344_source}")
+        else()
+            set(project_t344_source_path "${CMAKE_SOURCE_DIR}/${project_t344_source}")
+        endif()
+        if(NOT project_t344_source_path MATCHES "\\.c$" OR
+                NOT EXISTS "${project_t344_source_path}")
+            continue()
+        endif()
+        if(project_t344_target_strict)
+            set(project_t344_status retained-strict)
+            set(project_t344_reason target-local-strict-options)
+        elseif(project_t344_source MATCHES "^src/")
+            set(project_t344_status deferred)
+            set(project_t344_reason inherited-or-mixed-production-warning-admission)
+        else()
+            set(project_t344_status deferred)
+            set(project_t344_reason owner-test-warning-remediation-admission)
+        endif()
+        list(APPEND PROJECT_T344_DIRECT_COMPILE_MATRIX
+            "${project_t344_target}|${project_t344_source}|${project_t344_status}|${project_t344_reason}")
+    endforeach()
+    if(project_t344_target_strict)
+        list(APPEND PROJECT_T344_STRICT_DIRECT_TARGETS ${project_t344_target})
+    endif()
+endforeach()
+list(LENGTH PROJECT_T344_DIRECT_COMPILE_MATRIX project_t344_matrix_count)
+if(project_t344_matrix_count EQUAL 0)
+    message(FATAL_ERROR "T344 direct-compilation matrix is empty.")
+endif()
+string(REPLACE ";" "\n" project_t344_matrix_contents
+    "${PROJECT_T344_DIRECT_COMPILE_MATRIX}")
+file(GENERATE
+    OUTPUT "${CMAKE_BINARY_DIR}/t344-direct-compilation-matrix.txt"
+    CONTENT "${project_t344_matrix_contents}\n")
+
+if(CMAKE_GENERATOR MATCHES "Ninja")
+    add_custom_target(verify-t344-direct-compilation-matrix
+        COMMAND "${CMAKE_COMMAND}"
+            -DPROJECT_T344_MATRIX_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t344-direct-compilation-matrix.txt
+            -DPROJECT_T344_NINJA:FILEPATH=${CMAKE_MAKE_PROGRAM}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_t344_direct_compilation_matrix.cmake"
+        DEPENDS ${PROJECT_T344_STRICT_DIRECT_TARGETS}
+        COMMENT "Verifying T344 direct strict-compilation matrix"
+        VERBATIM)
+    add_dependencies(verify-current-specialized-gates
+        verify-t344-direct-compilation-matrix)
+endif()

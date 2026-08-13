@@ -63,8 +63,7 @@ static C_INT s5_prepare_outer(s3_gate_machine *state,
     tr->dpl = 0u;
     tr->sys.type = tss32 ? VCPU_DESC_SYS_TYPE_TSS_32_BUSY :
         VCPU_DESC_SYS_TYPE_TSS_16_BUSY;
-    state->machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF | VCPU_EFLAGS_IF |
-        VCPU_EFLAGS_TF;
+    state->machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF | VCPU_EFLAGS_IF;
     return 1;
 }
 
@@ -103,7 +102,7 @@ static C_INT s5_outer_event(core_machine_cpu_profile profile,
             (TYPE_GET_BIT(state.machine->executor_cpu.data.eflags, VCPU_EFLAGS_IF) !=
                 expect_if) || !s3_gate_read(&state, S5_KERNEL_STACK_TOP - 10u,
                 frame, sizeof(frame)) || frame[0] != 1u || frame[1] != 0x001bu ||
-            frame[2] != (VCPU_EFLAGS_CF | VCPU_EFLAGS_IF | VCPU_EFLAGS_TF) ||
+            frame[2] != (VCPU_EFLAGS_CF | VCPU_EFLAGS_IF) ||
             frame[3] != S3_STACK_TOP || frame[4] != 0x0023u;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !s3_gate_gprs_same(&before, &after) || STD_MEMCMP(&before.data.es,

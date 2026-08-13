@@ -170,3 +170,52 @@ source graph with SHA-256
 `84674E5B32F3CD5C21834F23277E46BEC86156958878D4A6DD5223D325BD74A2`.
 This recovery keeps the gate as a runtime oracle: it neither excludes the two
 tests nor accepts a binary built before the source repair.
+
+## S2 Direct-Compilation Matrix
+
+The T344 CMake inventory combines the 18 declared production targets with the
+canonical current-gate target list, removes duplicate target names at that
+ownership boundary, and emits one generated row for every direct C source:
+`target|source|status|reason`.  This is a direct-command matrix, not a claim
+about libraries linked by an executable.
+
+The GCC/Ninja baseline contains 228 in-scope targets and 297 direct C source
+rows.  The verifier builds all retained-strict targets, obtains the actual
+`ninja -t commands <target>` command for every row, and rejects a missing or
+duplicate target/source row, an unknown status, an empty reason, a strict row
+without all four flags, or a deferred row whose actual command is already
+strict.  The resulting dispositions are:
+
+| Disposition | Direct C rows | Meaning and admission condition |
+| --- | ---: | --- |
+| Retained strict | 129 | The target directly declares `-Wall -Wextra -Wpedantic -Werror`; actual command verification is mandatory. |
+| Deferred production | 54 | The source belongs to a mixed or inherited production target, including `core-machine-executor`, VM composition/platform/product layers, and the retained type facade. A later task must establish that target's source ownership and clean its warnings without changing inherited behavior before adding target-local flags. |
+| Deferred owner test | 114 | The current-gate executable's own test source has no proven target-local strict build. Its exact admission condition is a target-local warning baseline and remediation; linking to a strict library is explicitly insufficient. |
+
+No target was newly promoted to strict in S2: the audit did not silently turn
+the 168 deferred direct commands into quality claims or scope a broad warning
+cleanup under this matrix task.  The generated
+`t344-direct-compilation-matrix.txt` remains the reproducible row-level
+evidence for the configured build, while the committed verifier is the
+mechanical closure gate.
+
+## S2 Fresh-Rebuild Current-Gate Recovery
+
+The strict matrix verifier rebuilt owners that had previously been satisfied
+by stale executables.  That exposed three obsolete test contracts:
+`core-machine-protected-16-external-s4-smoke`,
+`core-machine-protected-16-outer-s5-smoke`, and
+`core-machine-hardware-delivery-s3-smoke` set TF while asserting an unrelated
+external NMI/PIC delivery result without installing a vector-1 handler.  The
+accepted T341 mechanism requires a sampled TF trap before a pending maskable
+PIC IRQ; its dedicated `core-machine-tf-db-s60-smoke` is the sole owner of
+that ordering.
+
+The three external-delivery owners now initialise only CF|IF for their
+hardware-origin rows and expect that same saved FLAGS image.  Software-INT
+rows in the S4 owner retain their TF-specific frame coverage.  The repair
+does not alter `ExecInt`, debug scheduling, gate serialization, or interrupt
+priority; it removes the stale cross-mechanism claim and its committed
+diagnostic print.  Exact S4, S5, S3, and T341 focused tests pass after the
+repair.  Fresh configuration, the 297-row strict matrix verifier, governance,
+diff check, and the full 218/218 current-gate also pass.
