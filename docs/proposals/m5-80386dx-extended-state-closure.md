@@ -26,7 +26,7 @@ mode, privilege, prefix, and fault contract, or is explicitly outside 80386.
 
 1. [Closed width, prefix, and integer-form proposal](../history/M5-T340-80386dx-width-integer-closure-proposal.md)
    closes residual form-family rows without obscuring older-profile results.
-2. [System, VM86, paging, and debug closure](m5-80386dx-system-state-closure.md)
+2. [System, VM86, paging, and debug closure](../history/M5-T341-80386dx-system-state-closure-proposal.md)
    owns residual privileged state composition and its form consumers.
 3. [80386DX profile closure](m5-80386dx-profile-closure.md) reconciles the
    resulting form and state ledgers and returns a missing row to its owner.

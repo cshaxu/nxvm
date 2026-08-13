@@ -21,7 +21,6 @@ together with the [80386DX admission policy](../proposals/m5-80386dx-candidate-p
 are shared planning references for the corresponding candidates below; they do
 not allocate a numeric task.
 
-1. [80386DX system, VM86, paging, and debug closure](../proposals/m5-80386dx-system-state-closure.md). Close the state-owner tracks that make the form ledger compose: VM86/task, paging/system control, CR/DR/TR, and debug/breakpoint delivery.
 1. [80386DX profile closure](../proposals/m5-80386dx-profile-closure.md). Audit the completed 80386DX ledgers only; return every gap to one of the two implementation candidates above or its earliest predecessor.
 1. [Four-profile cross-closure verification](../proposals/m5-cpu-profile-cross-closure.md). Reconcile one disposition per applicable form and execution state across 8086, 80186, 80286, and 80386DX; it is verification only.
 
