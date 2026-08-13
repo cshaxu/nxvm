@@ -2,7 +2,30 @@
 
 ## Current Work
 
-**Idle.**
+**M5 T337 S1 - active.** Establish the real-mode vector-6 `#UD` IVT delivery
+contract and migrate the affected current-gate owner fixtures from an implicit
+terminal boundary to an explicit deliberate classification.
+
+## M5 T337 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner approved on 2026-08-13 the Queue-ordered single-agent four-profile program. T337 is the first Shared CPU State And Delivery Foundations candidate admitted after T336. |
+| Objective | Make every real-mode invalid-opcode producer follow one Intel vector-6 delivery policy when a valid IVT entry is installed, while retaining a deterministic explicit no-handler terminal policy; inventory and migrate every affected current-gate owner fixture. |
+| Non-goals | No protected/VM86 delivery rewrite, generic exception/NMI/PIC redesign, debug/breakpoint behavior, new public interface, firmware default-vector change, x87 execution, VME/PVI, or per-opcode exception side path. |
+| Reference Baseline | `35771a72` (`M5 T336 S1 P1: audit four-profile CPU coverage`), current artifact `vm-0-5-0335`. T326 and its 41-fixture real-mode transfer are the direct baseline. |
+| Candidate Proposal | [Shared CPU state and delivery foundations](../proposals/m5-cpu-shared-state-delivery.md); [M5 80386DX admission policy](../proposals/m5-80386dx-candidate-policy.md). |
+| Files And ABI Surface | Expected: `src/core/machine/cpu_instructions.c`; one owner smoke and only migrated affected `tests/machine/*.c`; CMake/evidence/history/Current/TODO as required. No public ABI or firmware image change. |
+| Applicable Rules | `docs/rules/EXECUTION.md`: mechanism owner, similar-issue sweep, full P delivery. `docs/rules/ARCHITECTURE.md`: one exception-delivery owner. `docs/rules/CODING.md`: preserve existing executor style and test ownership. `docs/etc/operations/policy/source-policy.md`: Intel authority, no reference import. |
+| Verification | Enumerate every real-mode `VCPUINS_EXCEPT_UD` owner smoke and classify it as explicit vector-6 delivery or deliberate no-handler terminal. Prove representative primary, `0F`, operand-form, profile, and LOCK producers; verify restart IP, 16-bit FLAGS/CS/IP frame, IF/TF effects, handler transfer/progress, failure atomicity, and retained terminal behavior. Run focused owners, strict build, current-gate, documentation governance, and `git diff --check`. |
+| Expected Markers | One new owner marker proves real vector-6 delivery and no-handler containment; a durable migration matrix accounts for every real-mode current-gate `#UD` assertion. |
+| Asset Needs | Intel 80386 PRM only. No guest media, firmware, external source, binary, or trace. |
+| Reporting Requirements | Report a material contract objection before code change; otherwise deliver one complete pushed P with the source sweep, migrated-fixture matrix, focused proof, full gates, and remaining shared-delivery transfers. |
+| Stop Conditions | Stop if Intel requires a reset/firmware policy beyond a valid/invalid IVT distinction, a migration needs a new test/public interface, real and protected delivery cannot share the existing finalizer without changing unrelated exception semantics, or a producer has no safe fixture classification. |
+| Exit Criteria | Every affected real-mode current-gate owner is accounted for and either migrated to deterministic vector-6 proof or deliberately retains a tested terminal no-handler contract; all real `#UD` producers converge through one finalizer policy; no protected/VM86 regression; gates pass; P is committed and pushed. |
+| Original Owner Request | Implement the Queue in order, in single-agent mode and with a holistic view, through four-profile cross-closure verification. |
+| Similar-Issue Sweep | Search all tracked source and tests for `VCPUINS_EXCEPT_UD`, `_SetExcept_UD`, `UndefinedOpcode`, and real-mode fixture setup; inspect every current-gate owner hit, source producer, finalizer branch, and IVT/frame consumer. |
 
 ## Current Technical Baseline
 

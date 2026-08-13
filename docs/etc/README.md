@@ -18,6 +18,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t335-s1-xasm-contract-inventory.md` | Verification owner | T335 S1 complete xasm public-entry, caller, capacity, failure-publication, and S2 migration inventory. Retire into T335 history at closure. |
 | `evidence/t335-s2-xasm-migration.md` | Verification owner | T335 S2 bounded facade/caller migration and artifact verification evidence. Retire into T335 history at closure. |
 | `evidence/t335-s3-xasm-contract-proof.md` | Verification owner | T335 S3 deterministic capacity and failure-atomicity proof. Retire into T335 history at closure. |
+| `evidence/t337-s1-real-ud-delivery.md` | Verification owner | T337 S1 real-mode `#UD` vector-6 policy, producer proof, and mechanically bounded current-gate owner inventory. Retire into T337 history at task closure. |
 | `operations/` | Execution, source, and release owners | Toolchain, policy, templates, release procedure, and closure material. |
 | `research/` | Source owner | Provenance, external references, and non-product research. |
 | `history/` | Documentation owner | Read-only legacy and M5 migration/roadmap evidence. |

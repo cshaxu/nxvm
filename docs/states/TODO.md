@@ -39,17 +39,6 @@ candidate work, and detailed capability evidence belong in
 
 ## CPU, Time, And Debugging Debt
 
-- [ ] **Real-mode invalid-opcode IVT delivery (`TODO(High)`).** T326 S1 closes
-  protected/VM86 `#UD` vector-6 delivery but reproduces that 41 retained
-  real-mode owner smokes deliberately rely on their no-handler `#UD` terminal
-  diagnostic and full pre-instruction nonpublication boundary. Admit only with
-  an explicit real-IVT vector-6 policy, complete migration of every affected
-  real-mode owner fixture to a deterministic IVT/handler or a retained terminal
-  classification, exact 16-bit frame/restart/IF-TF proof, and all current-gate
-  regressions. Do not special-case one opcode, infer vector presence from a
-  nonzero default firmware entry, or change protected/VM86 delivery while
-  bypassing the corpus migration.
-
 - [ ] **Broaden real-mode 8086 corpus (`TODO(High)`).** T240 established a
   reset-vector baseline for segment override, `REP`/direction strings,
   `INT`/`IRET`, port I/O, and fault retention.  Extend only through a failing
