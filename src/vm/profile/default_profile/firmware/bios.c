@@ -92,6 +92,24 @@ static C_INT bios_image_write_code(type_unsigned_8 *image, type_unsigned_16 offs
     return code->length;
 }
 
+static C_INT bios_image_write_fixed_code(type_unsigned_8 *image,
+    const vm_profile_default_bios_code *code)
+{
+    if (code == STD_NULL || code->offset == TYPE_MAX_UNSIGNED_16 ||
+        code->offset < VBIOS_ADDR_FDC_SERVICE ||
+        code->offset >= VBIOS_ADDR_FDC_SERVICE_LIMIT ||
+        code->length > VBIOS_ADDR_FDC_SERVICE_LIMIT - code->offset) return 0;
+    return bios_image_write_code(image, code->offset, code);
+}
+
+static C_INT bios_image_write_sequential_code(type_unsigned_8 *image,
+    type_unsigned_16 offset, const vm_profile_default_bios_code *code)
+{
+    if (code == STD_NULL || code->length == 0u || offset > VBIOS_ADDR_FDC_SERVICE ||
+        code->length > VBIOS_ADDR_FDC_SERVICE - offset) return 0;
+    return bios_image_write_code(image, offset, code);
+}
+
 static C_VOID bios_image_load_keyboard_tables(type_unsigned_8 *image)
 {
     static const type_unsigned_8 normal[0x59] = {
@@ -135,7 +153,9 @@ static C_VOID bios_image_load_keyboard_tables(type_unsigned_8 *image)
 static C_INT bios_image_load(t_bios *bios, type_unsigned_8 *image, type_unsigned_8 *ivt)
 {
     static const type_unsigned_8 iret[] = { 0xcfu };
-    vm_profile_default_bios_code code = { (type_unsigned_8 *)iret, sizeof(iret) };
+    vm_profile_default_bios_code code = {
+        (type_unsigned_8 *)iret, sizeof(iret), TYPE_MAX_UNSIGNED_16
+    };
     type_native_unsigned index;
     type_unsigned_16 build_ip;
 
@@ -148,20 +168,27 @@ static C_INT bios_image_load(t_bios *bios, type_unsigned_8 *image, type_unsigned
     image[VBIOS_ADDR_ROM_INFO + 5u] = 0xb4u;
     image[VBIOS_ADDR_ROM_INFO + 6u] = 0x40u;
     build_ip = 0u;
-    build_ip = (type_unsigned_16)(build_ip + bios_image_write_code(image, build_ip, &code));
+    build_ip = (type_unsigned_16)(build_ip + bios_image_write_sequential_code(image,
+        build_ip, &code));
     for (index = 0u; index < 0x100u; ++index) {
-        type_unsigned_16 vector_offset = bios->connect.intTable[index].bytes == STD_NULL ?
-            VBIOS_ADDR_START_OFF : build_ip;
+        vm_profile_default_bios_code *interrupt = &bios->connect.intTable[index];
+        type_unsigned_16 vector_offset = interrupt->bytes == STD_NULL ?
+            VBIOS_ADDR_START_OFF : interrupt->offset == TYPE_MAX_UNSIGNED_16 ?
+            build_ip : interrupt->offset;
 
         ivt[index * 4u] = TYPE_MASK_UNSIGNED_8(vector_offset);
         ivt[index * 4u + 1u] = TYPE_MASK_UNSIGNED_8(vector_offset >> 8);
         ivt[index * 4u + 2u] = TYPE_MASK_UNSIGNED_8(VBIOS_ADDR_START_SEG);
         ivt[index * 4u + 3u] = TYPE_MASK_UNSIGNED_8(VBIOS_ADDR_START_SEG >> 8);
-        if (bios->connect.intTable[index].bytes != STD_NULL) {
-            type_unsigned_16 length = (type_unsigned_16)bios_image_write_code(image, build_ip,
-                &bios->connect.intTable[index]);
+        if (interrupt->bytes != STD_NULL) {
+            type_unsigned_16 length = interrupt->offset == TYPE_MAX_UNSIGNED_16 ?
+                (type_unsigned_16)bios_image_write_sequential_code(image, build_ip,
+                    interrupt) :
+                (type_unsigned_16)bios_image_write_fixed_code(image, interrupt);
             if (length == 0u) return 0;
-            build_ip = (type_unsigned_16)(build_ip + length);
+            if (interrupt->offset == TYPE_MAX_UNSIGNED_16) {
+                build_ip = (type_unsigned_16)(build_ip + length);
+            }
         }
     }
     image[VBIOS_ADDR_POST_OFF] = 0xeau;
@@ -170,12 +197,12 @@ static C_INT bios_image_load(t_bios *bios, type_unsigned_8 *image, type_unsigned
     image[VBIOS_ADDR_POST_OFF + 3u] = 0x00u;
     image[VBIOS_ADDR_POST_OFF + 4u] = 0xf0u;
     for (index = 0u; index < bios->connect.postCount; ++index) {
-        type_unsigned_16 length = (type_unsigned_16)bios_image_write_code(image, build_ip,
-            &bios->connect.postTable[index]);
+        type_unsigned_16 length = (type_unsigned_16)bios_image_write_sequential_code(image,
+            build_ip, &bios->connect.postTable[index]);
         if (length == 0u) return 0;
         build_ip = (type_unsigned_16)(build_ip + length);
     }
-    if (bios_image_write_code(image, build_ip, &bios->connect.bootCode) == 0u) {
+    if (bios_image_write_sequential_code(image, build_ip, &bios->connect.bootCode) == 0u) {
         return 0;
     }
     bios->data.buildCS = VBIOS_ADDR_START_SEG;
@@ -199,6 +226,14 @@ C_VOID vm_profile_default_bios_add_post_code(t_bios *bios, type_unsigned_8 *byte
 C_VOID vm_profile_default_bios_add_interrupt_code(t_bios *bios, type_unsigned_8 *bytes,
     type_unsigned_16 length, type_unsigned_8 intid)
 {
+    vm_profile_default_bios_add_interrupt_code_at(bios, bytes, length,
+        TYPE_MAX_UNSIGNED_16, intid);
+}
+
+C_VOID vm_profile_default_bios_add_interrupt_code_at(t_bios *bios,
+    type_unsigned_8 *bytes, type_unsigned_16 length, type_unsigned_16 offset,
+    type_unsigned_8 intid)
+{
     if (bios == STD_NULL || bytes == STD_NULL || length == 0u) {
         STD_FREE(bytes);
         return;
@@ -206,6 +241,7 @@ C_VOID vm_profile_default_bios_add_interrupt_code(t_bios *bios, type_unsigned_8 
     STD_FREE(bios->connect.intTable[intid].bytes);
     bios->connect.intTable[intid].bytes = bytes;
     bios->connect.intTable[intid].length = length;
+    bios->connect.intTable[intid].offset = offset;
 }
 
 C_VOID vm_profile_default_bios_set_boot_code(t_bios *bios, type_unsigned_8 *bytes,

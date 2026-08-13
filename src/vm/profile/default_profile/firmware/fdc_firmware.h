@@ -119,6 +119,147 @@ mov ah, 04                  \n\
 stc                         \n\
 jmp near $(label_int_40_end)\n\
 $(label_int_40_02_work):    \n\
+; 8237A page registers do not carry across a 64KiB current-address wrap. \n\
+; Split crossing caller buffers through the reserved 9fc0h bounce page. \n\
+push ax                           \n\
+push bx                           \n\
+push cx                           \n\
+push dx                           \n\
+push si                           \n\
+push bp                           \n\
+mov bp, ax                        \n\
+and bp, 00ff                      \n\
+mov si, es                        \n\
+shl si, 01                        \n\
+shl si, 01                        \n\
+shl si, 01                        \n\
+shl si, 01                        \n\
+add si, bx                        \n\
+mov ax, bp                        \n\
+or ax, ax                         \n\
+jz $(label_int_40_02_direct_restore) \n\
+mov cl, 09                        \n\
+shl ax, cl                        \n\
+dec ax                            \n\
+add ax, si                        \n\
+jc $(label_int_40_02_bounce_restore) \n\
+pop bp                            \n\
+pop si                            \n\
+pop dx                            \n\
+pop cx                            \n\
+pop bx                            \n\
+pop ax                            \n\
+jmp near $(label_int_40_02_direct) \n\
+$(label_int_40_02_bounce_restore): \n\
+pop bp                            \n\
+pop si                            \n\
+pop dx                            \n\
+pop cx                            \n\
+pop bx                            \n\
+pop ax                            \n\
+jmp near $(label_int_40_02_bounce) \n\
+$(label_int_40_02_direct_restore): \n\
+pop bp                            \n\
+pop si                            \n\
+pop dx                            \n\
+pop cx                            \n\
+pop bx                            \n\
+pop ax                            \n\
+jmp near $(label_int_40_02_direct) \n\
+$(label_int_40_02_bounce):       \n\
+push bx                          \n\
+push cx                          \n\
+push dx                          \n\
+push bp                          \n\
+push si                          \n\
+push di                          \n\
+push ds                          \n\
+push es                          \n\
+mov bp, ax                       \n\
+and bp, 00ff                     \n\
+mov si, es                       \n\
+mov di, bx                       \n\
+$(label_int_40_02_bounce_l1):    \n\
+mov ax, 9fc0                     \n\
+mov es, ax                       \n\
+xor bx, bx                       \n\
+mov ax, 0201                     \n\
+push cx                          \n\
+push dx                          \n\
+int 40                            \n\
+jnc $(label_int_40_02_bounce_read_restore) \n\
+pop dx                           \n\
+pop cx                           \n\
+jmp near $(label_int_40_02_bounce_error) \n\
+$(label_int_40_02_bounce_read_restore): \n\
+pop dx                           \n\
+pop cx                           \n\
+jmp near $(label_int_40_02_bounce_read) \n\
+$(label_int_40_02_bounce_error): \n\
+jmp near $(label_int_40_02_bounce_fail) \n\
+$(label_int_40_02_bounce_read):  \n\
+push cx                          \n\
+push dx                          \n\
+mov ax, si                       \n\
+mov bx, di                       \n\
+mov dx, bx                       \n\
+shr dx, 01                       \n\
+shr dx, 01                       \n\
+shr dx, 01                       \n\
+shr dx, 01                       \n\
+add ax, dx                       \n\
+mov es, ax                       \n\
+and bx, 000f                     \n\
+mov di, bx                       \n\
+push ds                          \n\
+mov ax, 9fc0                     \n\
+mov ds, ax                       \n\
+xor si, si                       \n\
+mov cx, 0200                     \n\
+cld                              \n\
+rep:                              \n\
+movsb                             \n\
+pop ds                           \n\
+mov si, es                       \n\
+pop dx                           \n\
+pop cx                           \n\
+inc cl                           \n\
+cmp cl, 13                       \n\
+jb $(label_int_40_02_bounce_next) \n\
+mov cl, 01                       \n\
+inc dh                           \n\
+cmp dh, 02                       \n\
+jb $(label_int_40_02_bounce_next) \n\
+mov dh, 00                       \n\
+inc ch                           \n\
+$(label_int_40_02_bounce_next):  \n\
+dec bp                           \n\
+jz $(label_int_40_02_bounce_done) \n\
+jmp near $(label_int_40_02_bounce_l1) \n\
+$(label_int_40_02_bounce_done):  \n\
+pop es                           \n\
+pop ds                           \n\
+pop di                           \n\
+pop si                           \n\
+pop bp                           \n\
+pop dx                           \n\
+pop cx                           \n\
+pop bx                           \n\
+mov ah, 00                       \n\
+clc                              \n\
+jmp near $(label_int_40_end)     \n\
+$(label_int_40_02_bounce_fail):  \n\
+pop es                           \n\
+pop ds                           \n\
+pop di                           \n\
+pop si                           \n\
+pop bp                           \n\
+pop dx                           \n\
+pop cx                           \n\
+pop bx                           \n\
+stc                              \n\
+jmp near $(label_int_40_end)     \n\
+$(label_int_40_02_direct):       \n\
 ; set dma                        \n\
 push bx                          \n\
 push cx                          \n\

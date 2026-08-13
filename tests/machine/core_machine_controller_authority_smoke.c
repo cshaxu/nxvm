@@ -159,11 +159,18 @@ C_INT main(C_VOID)
                     0x20u) != TYPE_STATUS_OK ||
                 core_machine_bus_read(machine, hdc_config.status_command_port,
                     &status) != TYPE_STATUS_OK ||
+                status != CORE_MACHINE_HDC_STATUS_BSY) {
+                failed |= 0x08;
+            } else {
+                core_machine_hdc_advance(&machine->hdc);
+                if (core_machine_bus_read(machine, hdc_config.status_command_port,
+                        &status) != TYPE_STATUS_OK ||
                 core_machine_bus_read(machine, hdc_config.error_features_port,
                     &error) != TYPE_STATUS_OK ||
                 status != (CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_ERR) ||
                 error != CORE_MACHINE_HDC_ERROR_ABORT) {
-                failed |= 0x08;
+                    failed |= 0x08;
+                }
             }
             if (core_machine_reset(machine) != TYPE_STATUS_OK ||
                 machine->fdc.data.phase != core_machine_fdc_PHASE_COMMAND ||

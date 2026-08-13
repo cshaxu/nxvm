@@ -23,6 +23,10 @@ typedef struct core_machine_dma_word_fixture {
     type_unsigned_8 next;
 } core_machine_dma_word_fixture;
 
+typedef struct core_machine_dma_failure_fixture {
+    C_UINT writes;
+} core_machine_dma_failure_fixture;
+
 static C_VOID core_machine_dma_fixture_read(C_VOID *owner, t_latch *latch)
 {
     core_machine_dma_fixture *fixture = (core_machine_dma_fixture *)owner;
@@ -70,6 +74,16 @@ static C_VOID core_machine_dma_word_fixture_read(C_VOID *owner, t_latch *latch)
 
     if (fixture == STD_NULL || latch == STD_NULL) return;
     latch->data.word = fixture->words[fixture->next++];
+}
+
+static C_VOID core_machine_dma_failure_fixture_write(C_VOID *owner,
+    t_latch *latch)
+{
+    core_machine_dma_failure_fixture *fixture =
+        (core_machine_dma_failure_fixture *)owner;
+
+    (C_VOID)latch;
+    if (fixture != STD_NULL) ++fixture->writes;
 }
 
 static C_VOID core_machine_dma_write_channel2(t_port *port, type_unsigned_16 address,
@@ -149,6 +163,9 @@ C_INT main(C_VOID)
         core_machine_dma_eop_fixture_read, STD_NULL,
         core_machine_dma_eop_fixture_terminal
     };
+    static const core_machine_dma_channel_provider failure_provider = {
+        STD_NULL, core_machine_dma_failure_fixture_write, STD_NULL
+    };
     t_latch latch = {0};
     t_dma primary = {0};
     t_dma secondary = {0};
@@ -157,11 +174,13 @@ C_INT main(C_VOID)
     core_machine_dma_request_binding binding = {0};
     core_machine_dma_request_binding priority_binding = {0};
     core_machine_dma_request_binding eop_binding = {0};
+    core_machine_dma_request_binding failure_binding = {0};
     core_machine_dma_request_binding word_bindings[3] = {{0}};
     core_machine_dma_fixture fixture = {{0xa5u, 0x5au}, 0u, 0u};
     core_machine_dma_fixture priority_fixture = {{0x71u, 0x72u}, 0u, 0u};
     core_machine_dma_eop_fixture eop_fixture = {{{0x91u, 0x92u}, 0u, 0u},
         STD_NULL, STD_NULL, STD_NULL, TYPE_FALSE};
+    core_machine_dma_failure_fixture failure_fixture = {0u};
     core_machine_dma_word_fixture word_fixture = {{0x1234u, 0x5678u,
         0x9abcu}, 0u};
     type_unsigned_8 bytes[2] = {0};
@@ -183,6 +202,8 @@ C_INT main(C_VOID)
     core_machine_dma_reset(&latch, &primary, &secondary);
     if (core_machine_dma_bind_channel(&latch, &primary, &secondary, 2u,
             &provider, &fixture, &binding) != TYPE_STATUS_OK ||
+        core_machine_dma_bind_channel(&latch, &primary, &secondary, 0u,
+            &failure_provider, &failure_fixture, &failure_binding) != TYPE_STATUS_OK ||
         core_machine_dma_bind_channel(&latch, &primary, &secondary, 1u,
             &provider, &priority_fixture, &priority_binding) != TYPE_STATUS_OK ||
         core_machine_dma_bind_channel(&latch, &primary, &secondary, 3u,
@@ -212,11 +233,6 @@ C_INT main(C_VOID)
         bytes[0] != 0xa5u || bytes[1] != 0u || fixture.terminal_count != 0u ||
         (primary.data.status & VDMA_STATUS_TC(2u)) != 0u ||
         (primary.data.mask & VDMA_MASK_DRQ(2u)) != 0u) {
-        STD_FPRINTF(STD_STDERR,
-            "DMA first: %02x %02x tc=%u status=%02x mask=%02x req=%02x slave=%02x/%02x\n",
-            bytes[0], bytes[1], fixture.terminal_count, primary.data.status,
-            primary.data.mask, primary.data.request, secondary.data.status,
-            secondary.data.mask);
         failed = 1;
     }
     core_machine_dma_advance(&latch, &primary, &secondary, &memory, 1u);
@@ -226,10 +242,6 @@ C_INT main(C_VOID)
         fixture.terminal_count != 1u ||
         (primary.data.status & VDMA_STATUS_TC(2u)) == 0u ||
         (primary.data.mask & VDMA_MASK_DRQ(2u)) == 0u) {
-        STD_FPRINTF(STD_STDERR,
-            "DMA second: %02x %02x tc=%u status=%02x mask=%02x\n",
-            bytes[0], bytes[1], fixture.terminal_count, primary.data.status,
-            primary.data.mask);
         failed = 1;
     }
 
@@ -248,8 +260,6 @@ C_INT main(C_VOID)
     if (core_machine_memory_read_physical(&memory, 0x11234u,
             (type_virtual_address)bytes, sizeof(bytes)) != TYPE_STATUS_OK ||
         bytes[0] != 0u) {
-        STD_FPRINTF(STD_STDERR, "DMA masked: %02x status=%02x mask=%02x\n",
-            bytes[0], primary.data.status, primary.data.mask);
         failed = 1;
     }
     core_machine_port_write(&port, 0x000au, 0x02u);
@@ -258,8 +268,6 @@ C_INT main(C_VOID)
     if (core_machine_memory_read_physical(&memory, 0x11234u,
             (type_virtual_address)bytes, sizeof(bytes)) != TYPE_STATUS_OK ||
         bytes[0] != 0u) {
-        STD_FPRINTF(STD_STDERR, "DMA deassert: %02x status=%02x mask=%02x\n",
-            bytes[0], primary.data.status, primary.data.mask);
         failed = 1;
     }
 
@@ -279,9 +287,6 @@ C_INT main(C_VOID)
         bytes[0] != 0xc3u || primary.data.currAddr[2] != 0x1236u ||
         primary.data.currCount[2] != 0u ||
         (primary.data.mask & VDMA_MASK_DRQ(2u)) != 0u) {
-        STD_FPRINTF(STD_STDERR, "DMA auto-init: %02x addr=%04x count=%04x mask=%02x\n",
-            bytes[0], primary.data.currAddr[2], primary.data.currCount[2],
-            primary.data.mask);
         failed = 1;
     }
 
@@ -295,8 +300,6 @@ C_INT main(C_VOID)
     if (core_machine_memory_read_physical(&memory, 0x11238u,
             (type_virtual_address)bytes, 1u) != TYPE_STATUS_OK ||
         bytes[0] != 0x7eu || primary.data.currAddr[2] != 0x1237u) {
-        STD_FPRINTF(STD_STDERR, "DMA decrement: %02x addr=%04x\n", bytes[0],
-            primary.data.currAddr[2]);
         failed = 1;
     }
 
@@ -318,8 +321,6 @@ C_INT main(C_VOID)
             (type_virtual_address)bytes, sizeof(bytes)) != TYPE_STATUS_OK ||
         bytes[0] != 0x11u || bytes[1] != 0x22u || fixture.terminal_count != 1u ||
         (primary.data.mask & VDMA_MASK_DRQ(2u)) == 0u) {
-        STD_FPRINTF(STD_STDERR, "DMA demand first: %02x %02x tc=%u\n",
-            bytes[0], bytes[1], fixture.terminal_count);
         failed = 1;
     }
     fixture.bytes[0] = 0x33u;
@@ -337,8 +338,6 @@ C_INT main(C_VOID)
             (type_virtual_address)bytes, sizeof(bytes)) != TYPE_STATUS_OK ||
         bytes[0] != 0x33u || bytes[1] != 0x44u || fixture.terminal_count != 1u ||
         (primary.data.mask & VDMA_MASK_DRQ(2u)) == 0u) {
-        STD_FPRINTF(STD_STDERR, "DMA single first: %02x %02x tc=%u\n",
-            bytes[0], bytes[1], fixture.terminal_count);
         failed = 1;
     }
     /* Memory-to-memory uses the same grant boundary. Channel 0 is the
@@ -364,19 +363,14 @@ C_INT main(C_VOID)
             (type_virtual_address)bytes, sizeof(bytes)) != TYPE_STATUS_OK ||
         bytes[0] != 0x55u || bytes[1] != 0u ||
         (primary.data.status & VDMA_STATUS_TC(0u)) != 0u) {
-        STD_FPRINTF(STD_STDERR, "DMA m2m first: %02x %02x status=%02x\n",
-            bytes[0], bytes[1], primary.data.status);
         failed = 1;
     }
     core_machine_dma_advance(&latch, &primary, &secondary, &memory, 1u);
     if (core_machine_memory_read_physical(&memory, 0x0300u,
             (type_virtual_address)bytes, sizeof(bytes)) != TYPE_STATUS_OK ||
         bytes[0] != 0x55u || bytes[1] != 0x66u ||
-        (primary.data.status & VDMA_STATUS_TC(0u)) == 0u ||
+        (primary.data.status & VDMA_STATUS_TC(1u)) == 0u ||
         primary.data.request != 0u || primary.data.isr != 0u) {
-        STD_FPRINTF(STD_STDERR, "DMA m2m second: %02x %02x status=%02x req=%02x isr=%02x\n",
-            bytes[0], bytes[1], primary.data.status, primary.data.request,
-            primary.data.isr);
         failed = 1;
     }
 
@@ -742,6 +736,160 @@ C_INT main(C_VOID)
         failed = 1;
     }
 
+    /* A rejected physical route is a preflight failure: no provider, memory,
+     * latch, address/count, request, terminal, or mask state may publish. */
+    core_machine_dma_reset(&latch, &primary, &secondary);
+    fixture.bytes[0] = 0xf1u;
+    fixture.next = 0u;
+    fixture.terminal_count = 0u;
+    core_machine_dma_write_channel2(&port, 0x0000u, 0x20u, 0u, 0x86u);
+    core_machine_port_write(&port, 0x000eu, 0u);
+    core_machine_dma_request_assert(&primary, &secondary, &binding);
+    core_machine_dma_advance(&latch, &primary, &secondary, &memory, 1u);
+    if (fixture.next != 0u || fixture.terminal_count != 0u ||
+        primary.data.currAddr[2] != 0u || primary.data.currCount[2] != 0u ||
+        !VDMA_GetSTATUS_DRQ(primary.data.status, 2u) ||
+        primary.data.isr != 0u ||
+        (primary.data.mask & VDMA_MASK_DRQ(2u)) != 0u) {
+        failed = 1;
+    }
+
+    core_machine_dma_reset(&latch, &primary, &secondary);
+    failure_fixture.writes = 0u;
+    core_machine_dma_write_primary_channel(&port, 0u, 0u, 0u, 0x88u);
+    core_machine_port_write(&port, 0x0087u, 0x20u);
+    core_machine_port_write(&port, 0x000eu, 0u);
+    core_machine_dma_request_assert(&primary, &secondary, &failure_binding);
+    core_machine_dma_advance(&latch, &primary, &secondary, &memory, 1u);
+    if (failure_fixture.writes != 0u || primary.data.currAddr[0] != 0u ||
+        primary.data.currCount[0] != 0u ||
+        !VDMA_GetSTATUS_DRQ(primary.data.status, 0u) ||
+        primary.data.isr != 0u ||
+        (primary.data.mask & VDMA_MASK_DRQ(0u)) != 0u) {
+        failed = 1;
+    }
+
+    /* M2M terminates through channel 1's count. Auto-init restores both
+     * participating current register pairs and leaves their mask/TC clear. */
+    bytes[0] = 0x5cu;
+    zeroes[0] = 0u;
+    if (core_machine_memory_write_physical(&memory, 0x0210u,
+            (type_virtual_address)bytes, 1u) != TYPE_STATUS_OK ||
+        core_machine_memory_write_physical(&memory, 0x0310u,
+            (type_virtual_address)zeroes, 1u) != TYPE_STATUS_OK) {
+        failed = 1;
+        goto done;
+    }
+    core_machine_dma_reset(&latch, &primary, &secondary);
+    priority_fixture.terminal_count = 0u;
+    core_machine_dma_write_primary_channel(&port, 0u, 0x0210u, 0u, 0x90u);
+    core_machine_dma_write_primary_channel(&port, 1u, 0x0310u, 0u, 0x91u);
+    core_machine_port_write(&port, 0x0008u, VDMA_COMMAND_M2M);
+    core_machine_port_write(&port, 0x000eu, 0u);
+    core_machine_port_write(&port, 0x0009u, 0x04u);
+    core_machine_dma_advance(&latch, &primary, &secondary, &memory, 1u);
+    if (core_machine_memory_read_physical(&memory, 0x0310u,
+            (type_virtual_address)bytes, 1u) != TYPE_STATUS_OK || bytes[0] != 0x5cu ||
+        primary.data.currAddr[0] != 0x0210u || primary.data.currCount[0] != 0u ||
+        primary.data.currAddr[1] != 0x0310u || primary.data.currCount[1] != 0u ||
+        (primary.data.mask & (VDMA_MASK_DRQ(0u) | VDMA_MASK_DRQ(1u))) != 0u ||
+        (primary.data.status & (VDMA_STATUS_TC(0u) | VDMA_STATUS_TC(1u))) != 0u ||
+        priority_fixture.terminal_count != 1u) {
+        failed = 1;
+    }
+
+    /* An active channel-0 binding may terminate M2M after one committed
+     * primitive. Channel 1 remains the terminal-count owner, and the second
+     * source byte must remain unconsumed. */
+    bytes[0] = 0x61u;
+    bytes[1] = 0x62u;
+    zeroes[0] = 0u;
+    zeroes[1] = 0u;
+    if (core_machine_memory_write_physical(&memory, 0x0220u,
+            (type_virtual_address)bytes, sizeof(bytes)) != TYPE_STATUS_OK ||
+        core_machine_memory_write_physical(&memory, 0x0320u,
+            (type_virtual_address)zeroes, sizeof(zeroes)) != TYPE_STATUS_OK) {
+        failed = 1;
+        goto done;
+    }
+    core_machine_dma_reset(&latch, &primary, &secondary);
+    priority_fixture.terminal_count = 0u;
+    core_machine_dma_write_primary_channel(&port, 0u, 0x0220u, 1u, 0x80u);
+    core_machine_dma_write_primary_channel(&port, 1u, 0x0320u, 1u, 0x81u);
+    core_machine_port_write(&port, 0x0008u, VDMA_COMMAND_M2M);
+    core_machine_port_write(&port, 0x000eu, 0u);
+    core_machine_port_write(&port, 0x0009u, 0x04u);
+    core_machine_dma_advance(&latch, &primary, &secondary, &memory, 1u);
+    core_machine_dma_request_terminate(&primary, &secondary, &failure_binding);
+    core_machine_dma_advance(&latch, &primary, &secondary, &memory, 1u);
+    if (core_machine_memory_read_physical(&memory, 0x0320u,
+            (type_virtual_address)zeroes, sizeof(zeroes)) != TYPE_STATUS_OK ||
+        zeroes[0] != 0x61u || zeroes[1] != 0u ||
+        priority_fixture.terminal_count != 1u ||
+        (primary.data.status & VDMA_STATUS_TC(1u)) == 0u ||
+        (primary.data.mask & (VDMA_MASK_DRQ(0u) | VDMA_MASK_DRQ(1u))) !=
+            (VDMA_MASK_DRQ(0u) | VDMA_MASK_DRQ(1u)) ||
+        primary.data.currAddr[0] != 0x0221u ||
+        primary.data.currAddr[1] != 0x0321u) {
+        failed = 1;
+    }
+
+    /* M2M validates both physical routes before it moves its temporary latch,
+     * count, current addresses, or software request. */
+    core_machine_dma_reset(&latch, &primary, &secondary);
+    core_machine_dma_write_primary_channel(&port, 0u, 0u, 0u, 0x80u);
+    core_machine_dma_write_primary_channel(&port, 1u, 0x0400u, 0u, 0x81u);
+    core_machine_port_write(&port, 0x0087u, 0x20u);
+    core_machine_port_write(&port, 0x0008u, VDMA_COMMAND_M2M);
+    core_machine_port_write(&port, 0x000eu, 0u);
+    core_machine_port_write(&port, 0x0009u, 0x04u);
+    core_machine_dma_advance(&latch, &primary, &secondary, &memory, 1u);
+    if (primary.data.currAddr[0] != 0u || primary.data.currAddr[1] != 0x0400u ||
+        primary.data.currCount[1] != 0u || !VDMA_GetREQUEST_DRQ(
+            primary.data.request, 0u) || primary.data.isr != 0u ||
+        primary.data.temp != 0u) {
+        failed = 1;
+    }
+
+    core_machine_dma_reset(&latch, &primary, &secondary);
+    core_machine_dma_write_primary_channel(&port, 0u, 0x0410u, 0u, 0x80u);
+    core_machine_dma_write_primary_channel(&port, 1u, 0u, 0u, 0x81u);
+    core_machine_port_write(&port, 0x0083u, 0x20u);
+    core_machine_port_write(&port, 0x0008u, VDMA_COMMAND_M2M);
+    core_machine_port_write(&port, 0x000eu, 0u);
+    core_machine_port_write(&port, 0x0009u, 0x04u);
+    core_machine_dma_advance(&latch, &primary, &secondary, &memory, 1u);
+    if (primary.data.currAddr[0] != 0x0410u || primary.data.currAddr[1] != 0u ||
+        primary.data.currCount[1] != 0u || !VDMA_GetREQUEST_DRQ(
+            primary.data.request, 0u) || primary.data.isr != 0u ||
+        primary.data.temp != 0u) {
+        failed = 1;
+    }
+
+    /* Reset clears transient controller state but does not revoke a machine
+     * binding; the previously issued opaque request remains usable. */
+    core_machine_dma_reset(&latch, &primary, &secondary);
+    core_machine_dma_request_assert(&primary, &secondary, &binding);
+    core_machine_dma_reset(&latch, &primary, &secondary);
+    if (primary.connect.read_provider[2] != core_machine_dma_fixture_read ||
+        primary.connect.device_owner[2] != &fixture ||
+        primary.data.status != 0u || primary.data.request != 0u ||
+        primary.data.isr != 0u || primary.data.temp != 0u ||
+        primary.data.flagEOP || primary.data.mask != VDMA_MASK_VALID) {
+        failed = 1;
+    }
+    fixture.bytes[0] = 0x6du;
+    fixture.next = 0u;
+    core_machine_dma_write_channel2(&port, 0x1c00u, 0u, 0u, 0x86u);
+    core_machine_port_write(&port, 0x000eu, 0u);
+    core_machine_dma_request_assert(&primary, &secondary, &binding);
+    core_machine_dma_advance(&latch, &primary, &secondary, &memory, 1u);
+    if (core_machine_memory_read_physical(&memory, 0x1c00u,
+            (type_virtual_address)bytes, 1u) != TYPE_STATUS_OK ||
+        bytes[0] != 0x6du) {
+        failed = 1;
+    }
+
 done:
     core_machine_dma_finalize(&latch, &primary, &secondary);
     core_machine_memory_finalize(&memory);
@@ -752,5 +900,6 @@ done:
     STD_PRINTF("M5:T230:S3:DMA-CHANNEL:OK\n");
     STD_PRINTF("M5:T348:S2:DMA-PORT-PAGE:OK\n");
     STD_PRINTF("M5:T348:S3:DMA-REQUEST-CASCADE:OK\n");
+    STD_PRINTF("M5:T348:S4:DMA-TRANSACTION-LIFECYCLE:OK\n");
     return 0;
 }

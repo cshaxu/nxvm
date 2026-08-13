@@ -70,6 +70,18 @@ static C_VOID vm_session_profile_firmware_add_interrupt(vm_session *session,
         length, vector);
 }
 
+static C_VOID vm_session_profile_firmware_add_interrupt_at(vm_session *session,
+    const C_CHAR *statement, type_unsigned_16 offset, type_unsigned_8 vector)
+{
+    type_unsigned_8 *bytes;
+    type_unsigned_16 length;
+
+    if (session == STD_NULL) return;
+    length = vm_session_profile_firmware_assemble(statement, &bytes);
+    vm_profile_default_bios_add_interrupt_code_at(&session->default_bios, bytes,
+        length, offset, vector);
+}
+
 static C_VOID vm_session_profile_firmware_set_boot(vm_session *session,
     const C_CHAR *statement)
 {
@@ -129,8 +141,8 @@ static C_VOID vm_session_profile_firmware_apply(
         break;
     case VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_FDC_INT13:
     case VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_FDC_INT40:
-        vm_session_profile_firmware_add_interrupt(session,
-            VFDC_INT_SOFT_FDD_40, vector);
+        vm_session_profile_firmware_add_interrupt_at(session,
+            VFDC_INT_SOFT_FDD_40, VBIOS_ADDR_FDC_SERVICE, vector);
         break;
     case VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_HDC_INT13:
         vm_session_profile_firmware_add_interrupt(session,

@@ -55,13 +55,17 @@ C_INT main(C_VOID)
         &observation) != TYPE_STATUS_OK;
     failed |= !failed && (observation.now != 1u || observation.pending_events != 3u ||
         observation.next_sequence != 6u);
-    failed |= !failed && (probe.count != 10u ||
+    failed |= !failed && (probe.count != 12u ||
         probe.events[0].type != CORE_MACHINE_TRACE_CPU_RETIRE ||
-        input_display_expect_event(&probe, 7u, CORE_MACHINE_TRACE_KBC_ADVANCE) ||
-        input_display_expect_event(&probe, 8u, CORE_MACHINE_TRACE_VADP_ADVANCE) ||
-        probe.events[7].sequence >= probe.events[8].sequence ||
-        probe.events[8].sequence >= probe.events[9].sequence ||
-        probe.events[9].type != CORE_MACHINE_TRACE_RUN_BOUNDARY);
+        input_display_expect_event(&probe, 4u, CORE_MACHINE_TRACE_FDC_ADVANCE) ||
+        input_display_expect_event(&probe, 5u, CORE_MACHINE_TRACE_FDC_REFRESH) ||
+        input_display_expect_event(&probe, 6u, CORE_MACHINE_TRACE_HDC_ADVANCE) ||
+        input_display_expect_event(&probe, 7u, CORE_MACHINE_TRACE_HDC_REFRESH) ||
+        input_display_expect_event(&probe, 9u, CORE_MACHINE_TRACE_KBC_ADVANCE) ||
+        input_display_expect_event(&probe, 10u, CORE_MACHINE_TRACE_VADP_ADVANCE) ||
+        probe.events[9].sequence >= probe.events[10].sequence ||
+        probe.events[10].sequence >= probe.events[11].sequence ||
+        probe.events[11].type != CORE_MACHINE_TRACE_RUN_BOUNDARY);
     failed |= !failed && core_machine_reset(machine) != TYPE_STATUS_OK;
     failed |= !failed && core_machine_get_timeline_observation(machine,
         &observation) != TYPE_STATUS_OK;

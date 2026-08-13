@@ -2,7 +2,28 @@
 
 ## Current Work
 
-**Idle.** M5 T348 S3 is accepted; DMA transaction, memory-to-memory terminal/reset, and consumer/timeline reconciliation require S4.
+M5 T348 S4 - PC/AT DMA transaction, memory-to-memory, and consumer lifecycle reconciliation (Single-Session Mode).
+
+## M5 T348 S4 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved continuous holistic PC/AT device/L3 implementation on 2026-08-13; accepted T348 S1--S3 evidence assigns transaction/lifecycle closure here. |
+| Objective | Establish DMA validation-before-publication for ordinary and memory-to-memory transfers, complete memory-to-memory terminal/EOP/auto-init ownership, and reconcile reset/finalize/FDC/ATA/PIC/timeline visibility with the retained one-grant owner.  The default FDC firmware must treat the 8237A 64KiB address wrap as a hardware boundary: it must not depend on page-register carry and must route an INT 13h buffer-crossing sector through its owned reserved bounce path. |
+| Non-goals | No physical DREQ/DACK/EOP waveform, compressed/READY duration, generic bus wait-state model, host DMA, new media command semantics, device policy, or Windows claim; electrical timing remains the later L3 bus-timing candidate. |
+| Reference Baseline | `79ed1cb0` / accepted T348 S3; [T348 ledger](../etc/evidence/t348-s1-dual-8237a-gap-ledger.md), [S2 evidence](../etc/evidence/t348-s2-dma-port-page-layout.md), [S3 evidence](../etc/evidence/t348-s3-dma-request-cascade.md), and [DMA proposal](../proposals/m5-pcat-dma-completeness.md). |
+| Candidate Proposal | [PC/AT 8237A DMA completeness](../proposals/m5-pcat-dma-completeness.md). |
+| Files And ABI Surface | Expected: local DMA transaction/terminal implementation and owner smoke, potentially checked-memory query use, default-profile FDC firmware and its VM boundary proof, FDC/ATA/PIC/timeline evidence/index/Current; no raw provider layout, scheduler, host API, media format, or product ABI expansion. |
+| Applicable Rules | Task Reading Set; architecture one validation-to-commit owner and no partial publication; coding shared owner-local transaction helper; Intel 8237A M2M/EOP/auto-init semantics; checked physical-memory routing; T346 deterministic `DMA -> PIT -> PIC -> FDC -> HDC` due-event boundary; T347 service owner. |
+| Verification | Force ordinary device-to-memory write-route and memory-to-device read-route failures and M2M source/destination failures; require no provider callback, latch/counter/address/request/terminal publication before a failed preflight. Prove M2M channel-0 software initiation, terminal count and binding isolation, and any supported auto-init disposition. Prove reset/finalize clear transient request/service/EOP state while preserving valid binding ownership.  Invoke default-profile floppy INT 13h with a one-sector buffer that crosses a 64KiB DMA window; prove both destination fragments receive the sector, the reserved bounce region is not guest-visible conventional memory, and channel 2 uses no page carry. Re-run FDC/ATA/PIC/timeline focused owners and full current gate. |
+| Expected Markers | Retain T269/T230/T348 S2/S3, FDC/DMA binding, T346 arbitration and T347 storage markers; add `M5:T348:S4:DMA-TRANSACTION-LIFECYCLE:OK`. |
+| Asset Needs | Published Intel 8237A and IBM PC/AT documentation only; no source import, firmware, guest media, or host device. |
+| Reporting Requirements | Record exact validation/commit sequence for every transfer direction, M2M terminal source, memory-route failure result, reset/finalize consumer sweep, retained electrical timing boundary, and one complete pushed P1. |
+| Stop Conditions | Stop for a need to alter generic memory-route semantics, expose raw DMA/provider layout, change FDC/ATA command ABI, reduce reported conventional memory beyond the profile's existing reserved top 1KiB, create a scheduler, or model electrical/bus-cycle timing without separate L3 admission. |
+| Exit Criteria | No failed physical route can publish a provider effect, latch, counter, address, request, terminal callback, or memory write; every adopted M2M terminal/auto-init state has one owner/proof; the default FDC firmware has no dependency on DMA page carry across its 64KiB boundary and has an owned tested crossing path; reset and due-event consumer visibility are deterministic; later electrical timing remains exact. |
+| Original Owner Request | Make core-machine devices stable, comprehensive, and reliable at the selected deterministic L3 event-and-bus level before Windows testing. |
+| Similar-Issue Sweep | Inspect every DMA physical read/write/query, latch/temp/counter/address/request/mask/TC/EOP mutation, ordinary/M2M terminal branch, reset/finalize, FDC and ATA DMA/PIO state, PIC observation, readiness and timeline caller, and all relevant owner smokes. |
 
 ## Current Technical Baseline
 

@@ -234,8 +234,33 @@ static C_VOID IncreaseCurrAddr(t_dma *rdma, type_unsigned_8 id) {
 static C_VOID DecreaseCurrAddr(t_dma *rdma, type_unsigned_8 id) {
     rdma->data.currAddr[id]--;
 }
-static C_VOID Transmission(t_dma *rdma, t_latch *latch, t_ram *ram,
-                         type_unsigned_8 id, type_bool flagWord) {
+
+static type_unsigned_32 dma_physical_address(const t_dma *dma,
+    type_unsigned_8 channel, type_bool word)
+{
+    type_unsigned_32 address = (type_unsigned_32)dma->data.page[channel] << 16u;
+
+    address += word ? (type_unsigned_32)dma->data.currAddr[channel] << 1u :
+        dma->data.currAddr[channel];
+    return address;
+}
+
+static type_bool dma_memory_route_is_valid(t_ram *ram,
+    type_unsigned_32 physical, type_native_unsigned bytes,
+    core_machine_memory_access access)
+{
+    core_machine_memory_route route;
+
+    return core_machine_memory_query_physical(ram, physical, bytes, access,
+        &route) == TYPE_STATUS_OK;
+}
+
+static type_bool Transmission(t_dma *rdma, t_latch *latch, t_ram *ram,
+    type_unsigned_8 id, type_bool flagWord)
+{
+    type_unsigned_32 physical = dma_physical_address(rdma, id, flagWord);
+    type_native_unsigned bytes = flagWord ? 2u : 1u;
+
     switch (VDMA_GetMODE_TT(rdma->data.mode[id])) {
     case 0x00:
         /* verify */
@@ -246,19 +271,21 @@ static C_VOID Transmission(t_dma *rdma, t_latch *latch, t_ram *ram,
         } else {
             IncreaseCurrAddr(rdma, id);
         }
-        break;
+        return TYPE_TRUE;
     case 0x01:
         /* write */
+        if (!dma_memory_route_is_valid(ram, physical, bytes,
+                CORE_MACHINE_MEMORY_ACCESS_WRITE)) {
+            return TYPE_FALSE;
+        }
         if (rdma->connect.read_provider[id] != STD_NULL) {
             rdma->connect.read_provider[id](rdma->connect.device_owner[id], latch);
         }
         if (!flagWord) {
-            core_machine_memory_write_physical(ram,
-                (rdma->data.page[id] << 16) + rdma->data.currAddr[id],
+            core_machine_memory_write_physical(ram, physical,
                 (type_virtual_address)(&latch->data.byte), 1);
         } else {
-            core_machine_memory_write_physical(ram,
-                (rdma->data.page[id] << 16) + (rdma->data.currAddr[id] << 1),
+            core_machine_memory_write_physical(ram, physical,
                 (type_virtual_address)(&latch->data.word), 2);
         }
         rdma->data.currCount[id]--;
@@ -267,16 +294,18 @@ static C_VOID Transmission(t_dma *rdma, t_latch *latch, t_ram *ram,
         } else {
             IncreaseCurrAddr(rdma, id);
         }
-        break;
+        return TYPE_TRUE;
     case 0x02:
         /* read */
+        if (!dma_memory_route_is_valid(ram, physical, bytes,
+                CORE_MACHINE_MEMORY_ACCESS_READ)) {
+            return TYPE_FALSE;
+        }
         if (!flagWord) {
-            core_machine_memory_read_physical(ram,
-                (rdma->data.page[id] << 16) + rdma->data.currAddr[id],
+            core_machine_memory_read_physical(ram, physical,
                 (type_virtual_address)(&latch->data.byte), 1);
         } else {
-            core_machine_memory_read_physical(ram,
-                (rdma->data.page[id] << 16) + (rdma->data.currAddr[id] << 1),
+            core_machine_memory_read_physical(ram, physical,
                 (type_virtual_address)(&latch->data.word), 2);
         }
         if (rdma->connect.write_provider[id] != STD_NULL) {
@@ -288,14 +317,44 @@ static C_VOID Transmission(t_dma *rdma, t_latch *latch, t_ram *ram,
         } else {
             IncreaseCurrAddr(rdma, id);
         }
-        break;
+        return TYPE_TRUE;
     case 0x03:
         /* illegal */
-        break;
+        return TYPE_FALSE;
     default:
-        break;
+        return TYPE_FALSE;
     }
 }
+
+static C_VOID dma_complete_transfer(t_dma *dma, t_latch *latch,
+    type_unsigned_8 channel, type_bool memory_to_memory)
+{
+    type_unsigned_8 first = memory_to_memory ? 0u : channel;
+    type_unsigned_8 last = memory_to_memory ? 1u : channel;
+    type_unsigned_8 index;
+
+    dma->data.isr = TYPE_ZERO_8;
+    for (index = first; index <= last; ++index) {
+        TYPE_CLEAR_BIT(dma->data.request, VDMA_REQUEST_DRQ(index));
+        if (dma->connect.close_provider[index] != STD_NULL) {
+            dma->connect.close_provider[index](dma->connect.device_owner[index],
+                latch);
+        }
+        if (TYPE_GET_BIT(dma->data.mode[index], VDMA_MODE_AI)) {
+            dma->data.currAddr[index] = dma->data.baseAddr[index];
+            dma->data.currCount[index] = dma->data.baseCount[index];
+            TYPE_CLEAR_BIT(dma->data.mask, VDMA_MASK_DRQ(index));
+        } else {
+            TYPE_SET_BIT(dma->data.mask, VDMA_MASK_DRQ(index));
+        }
+    }
+    if (!TYPE_GET_BIT(dma->data.mode[memory_to_memory ? 1u : channel],
+            VDMA_MODE_AI)) {
+        TYPE_SET_BIT(dma->data.status,
+            VDMA_STATUS_TC(memory_to_memory ? 1u : channel));
+    }
+}
+
 static C_VOID Execute(t_dma *rdma, t_latch *latch, t_ram *ram,
                     type_unsigned_8 id, type_bool flagWord) {
     type_bool flagM2M = ((id == 0) &&
@@ -308,11 +367,20 @@ static C_VOID Execute(t_dma *rdma, t_latch *latch, t_ram *ram,
     if (flagM2M) {
         /* memory-to-memory */
         if (rdma->data.currCount[1] != 0xffff && !rdma->data.flagEOP) {
-            core_machine_memory_read_physical(ram,
-                (rdma->data.page[0] << 16) + rdma->data.currAddr[0],
+            type_unsigned_32 source = dma_physical_address(rdma, 0u, TYPE_FALSE);
+            type_unsigned_32 destination = dma_physical_address(rdma, 1u,
+                TYPE_FALSE);
+
+            if (!dma_memory_route_is_valid(ram, source, 1u,
+                    CORE_MACHINE_MEMORY_ACCESS_READ) ||
+                !dma_memory_route_is_valid(ram, destination, 1u,
+                    CORE_MACHINE_MEMORY_ACCESS_WRITE)) {
+                rdma->data.isr = TYPE_ZERO_8;
+                return;
+            }
+            core_machine_memory_read_physical(ram, source,
                 (type_virtual_address)(&rdma->data.temp), 1);
-            core_machine_memory_write_physical(ram,
-                (rdma->data.page[1] << 16) + rdma->data.currAddr[1],
+            core_machine_memory_write_physical(ram, destination,
                 (type_virtual_address)(&rdma->data.temp), 1);
             rdma->data.currCount[1]--;
             if (TYPE_GET_BIT(rdma->data.mode[id], VDMA_MODE_AIDS)) {
@@ -328,7 +396,6 @@ static C_VOID Execute(t_dma *rdma, t_latch *latch, t_ram *ram,
             }
         }
         if (rdma->data.currCount[1] == TYPE_MAX_UNSIGNED_16) {
-            TYPE_SET_BIT(rdma->data.status, VDMA_STATUS_TC(0));
             rdma->data.flagEOP = TYPE_TRUE;
         }
     } else {
@@ -338,20 +405,29 @@ static C_VOID Execute(t_dma *rdma, t_latch *latch, t_ram *ram,
             /* demand */
             if (request_asserted && rdma->data.currCount[id] !=
                 TYPE_MAX_UNSIGNED_16 && !rdma->data.flagEOP) {
-                Transmission(rdma, latch, ram, id, flagWord);
+                if (!Transmission(rdma, latch, ram, id, flagWord)) {
+                    rdma->data.isr = TYPE_ZERO_8;
+                    return;
+                }
             }
             if (!rdma->data.flagEOP) rdma->data.isr = TYPE_ZERO_8;
             break;
         case 0x01:
             /* single */
-            Transmission(rdma, latch, ram, id, flagWord);
+            if (!Transmission(rdma, latch, ram, id, flagWord)) {
+                rdma->data.isr = TYPE_ZERO_8;
+                return;
+            }
             if (!rdma->data.flagEOP) rdma->data.isr = TYPE_ZERO_8;
             break;
         case 0x02:
             /* block */
             if (rdma->data.currCount[id] != TYPE_MAX_UNSIGNED_16 &&
                 !rdma->data.flagEOP) {
-                Transmission(rdma, latch, ram, id, flagWord);
+                if (!Transmission(rdma, latch, ram, id, flagWord)) {
+                    rdma->data.isr = TYPE_ZERO_8;
+                    return;
+                }
             }
             break;
         case 0x03:
@@ -367,23 +443,7 @@ static C_VOID Execute(t_dma *rdma, t_latch *latch, t_ram *ram,
         }
     }
     if (rdma->data.flagEOP) {
-        rdma->data.isr = TYPE_ZERO_8;
-        TYPE_CLEAR_BIT(rdma->data.request, VDMA_REQUEST_DRQ(id));
-        if (flagM2M) {
-            TYPE_CLEAR_BIT(rdma->data.request, VDMA_REQUEST_DRQ(0));
-            TYPE_CLEAR_BIT(rdma->data.request, VDMA_REQUEST_DRQ(1));
-        }
-        if (rdma->connect.close_provider[id] != STD_NULL) {
-            rdma->connect.close_provider[id](rdma->connect.device_owner[id], latch);
-        }
-        if (TYPE_GET_BIT(rdma->data.mode[id], VDMA_MODE_AI)) {
-            rdma->data.currAddr[id] = rdma->data.baseAddr[id];
-            rdma->data.currCount[id] = rdma->data.baseCount[id];
-            TYPE_CLEAR_BIT(rdma->data.mask, VDMA_MASK_DRQ(id));
-        } else {
-            TYPE_SET_BIT(rdma->data.status, VDMA_STATUS_TC(id));
-            TYPE_SET_BIT(rdma->data.mask, VDMA_MASK_DRQ(id));
-        }
+        dma_complete_transfer(rdma, latch, id, flagM2M);
     }
     rdma->data.flagEOP = TYPE_FALSE;
 }

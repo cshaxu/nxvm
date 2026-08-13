@@ -1213,12 +1213,17 @@ add_executable(vm-fdc-read-track-dos-smoke
     tests/machine/vm_fdc_read_track_dos_smoke.c
 )
 target_link_libraries(vm-fdc-read-track-dos-smoke PRIVATE vm-composition)
+add_executable(vm-fdc-dma-boundary-smoke
+    tests/machine/vm_fdc_dma_boundary_smoke.c
+)
+target_link_libraries(vm-fdc-dma-boundary-smoke PRIVATE vm-composition)
 add_executable(vm-ata-pio-dos-smoke
     tests/machine/vm_ata_pio_dos_smoke.c
 )
 target_link_libraries(vm-ata-pio-dos-smoke PRIVATE vm-composition)
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(vm-ata-pio-dos-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    target_compile_options(vm-fdc-dma-boundary-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
 endif()
 add_executable(vm-windows31-checkpoint
     tests/machine/vm_windows31_checkpoint.c
@@ -1584,6 +1589,7 @@ target_link_libraries(vdm-minimal-presentation-smoke PRIVATE
 
 set(PROJECT_CURRENT_SMOKE_TARGETS
     vm-default-pc-at-profile-smoke
+    vm-fdc-dma-boundary-smoke
     vm-hdc-port-smoke
     vm-media-provider-smoke
     vm-default-pc-at-apply-smoke

@@ -17,6 +17,7 @@ typedef struct core_machine_firmware_context core_machine_firmware_context;
 typedef struct vm_profile_default_bios_code {
     type_unsigned_8 *bytes;
     type_unsigned_16 length;
+    type_unsigned_16 offset;
 } vm_profile_default_bios_code;
 
 typedef struct {
@@ -49,6 +50,8 @@ typedef struct t_bios {
 #define VBIOS_ADDR_HDD_PARAM 0xe431 /* hard disk parameter table offset */
 #define VBIOS_ADDR_KEYB_SCAN_ASCII_NORMAL 0xe000
 #define VBIOS_ADDR_KEYB_SCAN_ASCII_SHIFT  0xe080
+#define VBIOS_ADDR_FDC_SERVICE             0x0c00
+#define VBIOS_ADDR_FDC_SERVICE_LIMIT       VBIOS_ADDR_KEYB_SCAN_ASCII_NORMAL
 
 #define VBIOS_ADDR_HDD_PARAM_OFFSET   0x0104
 #define VBIOS_ADDR_HDD_PARAM_SEGMENT  0x0106
@@ -167,6 +170,9 @@ C_VOID vm_profile_default_bios_add_post_code(t_bios *bios, type_unsigned_8 *byte
     type_unsigned_16 length);
 C_VOID vm_profile_default_bios_add_interrupt_code(t_bios *bios, type_unsigned_8 *bytes,
     type_unsigned_16 length, type_unsigned_8 intid);
+C_VOID vm_profile_default_bios_add_interrupt_code_at(t_bios *bios,
+    type_unsigned_8 *bytes, type_unsigned_16 length, type_unsigned_16 offset,
+    type_unsigned_8 intid);
 C_VOID vm_profile_default_bios_set_boot_code(t_bios *bios, type_unsigned_8 *bytes,
     type_unsigned_16 length);
 C_VOID vm_profile_default_bios_initialize(t_bios *bios);
