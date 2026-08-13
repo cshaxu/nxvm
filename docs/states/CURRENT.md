@@ -2,29 +2,8 @@
 
 ## Current Work
 
-M5 T349 S2 - dual-8259A command, priority, and cascade core (Single-Session
-Mode).
-
-## M5 T349 S2 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner approved continuous holistic PC/AT device/L3 completion; T349 S1 P2 `5664e427` accepts the ledger and its S2 receiver on 2026-08-13. |
-| Objective | Complete the finite PC/AT dual-8259A ICW/OCW priority core: reinitialization state, IMR/IRR/ISR visibility, fixed and rotated priority, specific/non-specific EOI, AEOI, configured master/slave cascade eligibility, and acknowledgement ordering. Replace any split arbitration construction with one PIC-owned selection/commit path. |
-| Non-goals | Poll, special mask, SFNM, spurious IRQ7/15, source lifecycle/reset composition, CPU exception/IRET redesign, electrical INTA, arbitrary boards, APIC, host bridge, x87, and Windows claims remain outside this S. |
-| Reference Baseline | `5664e427` / T349 S1 accepted; [S1 ledger](../etc/evidence/t349-s1-pcat-pic-compliance-ledger.md); [PIC proposal](../proposals/m5-pcat-pic-compliance.md). |
-| Candidate Proposal | [PC/AT 8259A compliance](../proposals/m5-pcat-pic-compliance.md). |
-| Files And ABI Surface | Expected: `pic.c`/`pic.h`, one owner-local PIC command/priority smoke and CMake registration, S2 evidence, Current, and T349 history. Existing source/provider ABI and CPU binding remain stable. |
-| Applicable Rules | Task Reading Set; one PIC owner for controller-visible state; equivalent priority variants share selection/commit ownership; deterministic `DMA -> PIT -> PIC` boundary; owner-local tests without mirror controller state; Intel 8259A/IBM PC/AT cascade contract. |
-| Verification | New focused smoke must exercise ICW restart, port IRR/ISR reads, IMR, fixed/rotated priority, specific/non-specific EOI, AEOI, masked/unmasked slave cascade and a blocked-slave/lower-master arbitration case; it must prove scan/peek/get acknowledgement state. Retain CPU hardware delivery and T346 timeline proof; run full current-gate and documentation governance. |
-| Expected Markers | Add `M5:T349:S2:PIC-COMMAND-PRIORITY:OK`; retain T216 PIC lifecycle, CPU hardware delivery, T346 arbitration/timeline, and device producer markers. |
-| Asset Needs | Intel 8259A and IBM PC/AT published documentation only; no source import, guest media, host device, or external runtime. |
-| Reporting Requirements | Record all changed PIC state readers/writers, the selection-to-acknowledgement boundary, every reproduced defect, retained S3/S4 transfer, and full verification in evidence. Deliver one complete pushed P1. |
-| Stop Conditions | Stop for CPU delivery/frame redesign, source-provider ABI change, physical INTA model, arbitrary cascade topology, special-mask/SFNM/poll/spurious semantics, or a repair outside PIC-local command/priority/cascade state. |
-| Exit Criteria | One PIC-owned selection/commit mechanism governs fixed/rotated master and PC/AT slave eligibility; all S2 command state has focused proof; no remaining S2 row is merely inferred from legacy smoke; S3/S4 boundaries remain explicit. |
-| Original Owner Request | Make core-machine devices stable, comprehensive, and reliable at deterministic L3 before Windows testing. |
-| Similar-Issue Sweep | Inspect every `irr`, `imr`, `isr`, `irx`, `icw*`, `ocw2`, scan/peek/get, ICW/OCW port path, master/slave cascade call, and CPU acknowledgement caller; classify every hit as unified, intentionally distinct, or transferred to S3/S4. |
+**Idle.** M5 T349 S2 is accepted; OCW3 poll, special-mask, and SFNM
+completion requires a separately admitted continuation packet.
 
 ## Current Technical Baseline
 
@@ -45,6 +24,7 @@ Mode).
 
 | Task | Compact result |
 | --- | --- |
+| T349 S2 | Reconciled ICW restart, IRR/ISR port reads, fixed/rotated priority, EOI/AEOI, and PC/AT cascade selection into one PIC-owned scan/peek/get acknowledgement path; 224 current-gate tests passed. [Evidence](../etc/evidence/t349-s2-pcat-pic-command-priority.md). |
 | T349 S1 | Accepted the PC/AT dual-8259A manual-to-source-to-proof ledger: every controller, source, consumer, reset, and L3 row now has accepted evidence or one S2--S4 receiver. [Evidence](../etc/evidence/t349-s1-pcat-pic-compliance-ledger.md). |
 | T348 | Closed PC/AT dual-8237A DMA topology, page/word layout, request/cascade/EOP, validation-before-publication, M2M lifecycle, and FDC crossing bounce path; 223 current-gate tests passed. [History](../history/M5-T348-pcat-dma-completeness.md). |
 | T347 | Closed retained PC/AT FDC and ATA PIO service timing: pending command/data states, reset/control/media cancellation, one FDC-then-ATA readiness owner, trace order, focused VM/DOS/HDD evidence, and 222 current-gate tests passed. [History](../history/M5-T347-storage-controller-service-timing.md). |

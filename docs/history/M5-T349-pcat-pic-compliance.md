@@ -22,6 +22,7 @@ route, and L3 boundary. The task continues with S2 command/priority/cascade,
 S3 OCW3 modes, and S4 request/spurious/composition reconciliation. See the
 [S1 evidence](../etc/evidence/t349-s1-pcat-pic-compliance-ledger.md).
 
-S2 is active: it owns ICW restart, priority selection, EOI/AEOI, and the
-PC/AT cascade acknowledgement path. Its completion evidence is retained in
-[the S2 command/priority record](../etc/evidence/t349-s2-pcat-pic-command-priority.md).
+S2 is accepted at `8cce3b3a`: ICW restart, command-visible IRR/ISR, priority,
+EOI/AEOI, and cascade acknowledgement now share one controller-owned
+selection/commit path. Its completion evidence is retained in [the S2
+command/priority record](../etc/evidence/t349-s2-pcat-pic-command-priority.md).
