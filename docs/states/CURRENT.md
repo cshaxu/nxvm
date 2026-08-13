@@ -2,8 +2,29 @@
 
 ## Current Work
 
-**Idle.** T340 is closed; the next Queue candidate is the 80386DX system,
-VM86, paging, and debug state package.
+**M5 T341 S1 - active.** Allocate the complete 80386DX system-state ledger
+before admitting any isolated control, VM86, paging, task, or debug repair.
+
+## M5 T341 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | The owner approved Queue-ordered, single-agent implementation through the four-profile cross-closure verification on 2026-08-13. This is the next Queue candidate after closed T340. |
+| Objective | Build the finite 80386DX privileged-state ledger: CR0/CR2/CR3, DR0--DR7, TR/LDT/table forms, VM86 entry/exit and delivery, paging translation/fault composition, task/TSS transitions, and breakpoint/vector-1 delivery. Map every state owner, reader/writer, validation, materialization, preflight, commit, rollback, frame/stack, and fault/delivery boundary; allocate only genuinely unresolved mechanism rows to later T341 S work. |
+| Non-goals | No isolated opcode repair, generic interrupt/paging/task rewrite, VME/PVI, 486+ features, persistent TLB, test-register model, x87 execution, timing, device, Windows, product, artifact, or rules change. Existing accepted evidence is not reimplemented merely to increase smoke count. |
+| Reference Baseline | `0e7af96b` (`M5 T340 S4 P2: close 80386DX form package`), the Queue proposal, T320/T321/T325/T326/T329/T337 evidence, T339/T340 transfer audits, T336 four-profile closure record, current TODO, and the 80386DX closure map. |
+| Candidate Proposal | [80386DX system, VM86, paging, and debug closure](../proposals/m5-80386dx-system-state-closure.md), [80386DX extended-state closure context](../proposals/m5-80386dx-extended-state-closure.md), [four-profile CPU-completeness program](../proposals/m5-four-profile-cpu-completeness-program.md), and [80386DX admission policy](../proposals/m5-80386dx-candidate-policy.md). |
+| Files And ABI Surface | Expected: T341 history, indexed state-allocation evidence, Current, and only documentation necessary to retain exact transfers. No production, test, CMake, public ABI, artifact, device, or rule change in S1. |
+| Applicable Rules | `docs/rules/EXECUTION.md`: allocation, mechanism sweep, actual-change review, and task lifecycle. `docs/rules/ARCHITECTURE.md`: one mutable-state owner and explicit semantic/layout differences. `docs/rules/CODING.md`: no duplicate abstraction. `docs/rules/DOCUMENT.md`: Queue/Current/history/evidence topology. |
+| Verification | Inspect actual execution routes and all relevant current-gate owners; compare the Intel 80386 state/form matrix with T320/T321/T325/T326/T329/T337 records and current TODO. Run exact focused retained state tests, documentation governance, and diff check. |
+| Expected Markers | One indexed ledger classifies every T341 row as accepted retained proof, a bounded T341 mechanism owner, or a single external/post-80386 TODO. It names all readers/writers and prevents later S work from using a local opcode smoke as a state-closure claim. |
+| Asset Needs | Intel 80386 manuals already cited by retained evidence. No guest media, firmware, third-party source, binary, or trace. |
+| Reporting Requirements | Deliver one complete pushed allocation P with the full row-to-owner table, exact static/source and focused-test evidence, later S sequence, transfers, and any material contract objection. |
+| Stop Conditions | Stop if a required row has ambiguous ownership, an unproved shared delivery/paging/task mechanism, an incompatible Intel layout, or requires an external source/import. Do not assign an implementation S until the owner and complete validation-to-commit boundary are known. |
+| Exit Criteria | Every assigned state/form row is classified once; every unresolved row has a bounded T341 owner with a complete mechanism matrix; accepted evidence and external boundaries are exact; history/index/Current satisfy governance; focused retained proof, governance, and diff checks pass; the allocation P is committed and pushed. |
+| Original Owner Request | Implement the Queue in order, in single-agent mode and with a holistic view, through four-profile cross-closure verification. |
+| Similar-Issue Sweep | Sweep all tracked CPU execution, machine state, current-gate registration, prior state evidence, Queue, and TODO references for CR/DR/TR, VM86, task/TSS, paging, table, and breakpoint/vector-1 construction. Record every hit's owner or transfer; no broad repository rewrite. |
 
 ## Current Technical Baseline
 
