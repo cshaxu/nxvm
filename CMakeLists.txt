@@ -1866,7 +1866,6 @@ set(PROJECT_T337_UD_REAL_DELIVERY_TARGETS
     core-machine-real-ud-delivery-s1-smoke
     core-machine-tf-db-s60-smoke)
 set(PROJECT_T337_UD_NO_REAL_NEGATIVE_TARGETS
-    core-machine-control-transfer-smoke
     core-machine-fpu-8087-smoke
     core-machine-fpu-escape-smoke
     core-machine-msw-s63-smoke
