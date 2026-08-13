@@ -36,6 +36,12 @@ closure are accepted; S3 requires a separately admitted packet.
 
 ## Recent Governance
 
+- **M5 Td S80:** reordered the four-profile CPU-completeness Queue into
+  dependency-bounded 8086/80186, 80286 descriptor-transfer, 80286 `LOCK`,
+  80386DX form, 80386DX state, 80386DX audit, and cross-profile closure
+  candidates; added the corresponding unnumbered proposals. Documentation
+  governance and diff check passed. Td work has no runtime or artifact change.
+
 - **M5 Td S79:** reordered the M5 CPU-completeness program around a
   four-profile audit, shared delivery foundations, 8086/80186, 80286, and
   80386DX closure candidates, then cross-profile verification. Each candidate
@@ -81,11 +87,3 @@ closure are accepted; S3 requires a separately admitted packet.
   without a later governance P. Positive and missing-proposal negative
   self-tests, the combined governance check, and diff check passed. Td work
   has no runtime or artifact change.
-
-- **M5 Td S71:** adopted the shared `states/` and `proposals/` topology:
-  migrated Current, Queue, and TODO; extracted every Queue candidate detail to
-  a linked proposal; updated current links and the topology/self-test verifier;
-  and made execution the single authority for proposal admission, task
-  numbering, history naming, retention, and withdrawal. Only standalone Td
-  work may modify `docs/rules/`. Documentation self-test, combined governance
-  check, and diff check passed. Td work has no runtime or artifact change.

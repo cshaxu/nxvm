@@ -1,10 +1,10 @@
-# 80386DX Extended Instruction And System-State Closure
+# 80386DX Closure Program Context
 
-## Objective
+## Purpose
 
-Close the audit-assigned 80386DX-only forms and state: 32-bit operand/address
-variants, 0F extensions, FS/GS and debug state, paging, VM86, and 32-bit
-system/descriptor behavior.
+This shared context defines the 80386DX boundary. The Queue breaks it into
+form/width closure, system-state closure, and a final profile audit. It is not
+itself an admission contract or a numeric task.
 
 ## Dependency and scope
 
@@ -22,18 +22,14 @@ profile disposition to make a 32-bit form convenient.
 Every assigned 80386DX form and state transition has focused evidence for its
 mode, privilege, prefix, and fault contract, or is explicitly outside 80386.
 
-## T336 Audit-Derived Breakdown
+## Ordered Breakdown
 
-Admission divides the retained rows by mechanism rather than opcode smoke:
-
-1. primary 32-bit operand/address and prefix combinations not already proven
-   by the semantic-class closure;
-2. all metadata-valid `0F` data/control/segment forms, including complete
-   CR/DR/TR privilege and state classification, ordinary DR6/DR7 breakpoint
-   matching/cause behavior, and their vector-1 interaction;
-3. residual VM86, paging/task interaction, debug/breakpoint, and system-state
-   rows after the shared-delivery and 80286 candidates close; and
-4. a 80386DX profile-close audit against the complete form ledger.
+1. [Width, prefix, and integer-form closure](m5-80386dx-width-integer-closure.md)
+   closes residual form-family rows without obscuring older-profile results.
+2. [System, VM86, paging, and debug closure](m5-80386dx-system-state-closure.md)
+   owns residual privileged state composition and its form consumers.
+3. [80386DX profile closure](m5-80386dx-profile-closure.md) reconciles the
+   resulting form and state ledgers and returns a missing row to its owner.
 
 Each admission begins with the vertical state owner (translation, debug,
 VM86, descriptor/table state, or shared execution plan) and its callers,

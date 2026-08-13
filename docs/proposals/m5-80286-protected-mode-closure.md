@@ -1,10 +1,11 @@
-# 80286 Protected-Mode And Descriptor Closure
+# 80286 Protected-Mode Closure Program Context
 
-## Objective
+## Purpose
 
-Close audit-assigned 80286 protected-mode instruction and state rows:
-descriptor validation, privilege, GDT/LDT/IDT and gate behavior, 16-bit task
-state, and their required failure and return contracts.
+This shared context defines the 80286 closure boundary. The Queue allocates
+its implementation in two ordered candidates: descriptor/transfer mechanics,
+then the `LOCK` matrix and profile-close reconciliation. It is not itself an
+admission contract or a numeric task.
 
 ## Dependency and scope
 
@@ -23,18 +24,12 @@ route happens to be nearby.
 All assigned 80286 rows have a form-and-mode proof or an explicit transfer;
 no accidental reuse of a 386 construction path is presented as a 286 contract.
 
-## T336 Audit-Derived Breakdown
+## Ordered Breakdown
 
-The expected sequence is:
-
-1. reconcile every `0F 00`, `0F 01`, `0F 02/03`, and `0F 06` form and its
-   descriptor/table/privilege disposition;
-2. close the 16-bit protected transfer, gate, stack, and task rows that remain
-   after T323/T329;
-3. establish the 80286 `LOCK` legality matrix for every allocated
-   memory-capable form, including legal atomic forms, profile-invalid forms,
-   and prefix/fault publication behavior; and
-4. perform an 80286 profile-close audit.
+1. [Descriptor-table and protected-transfer closure](m5-80286-descriptor-transfer-closure.md)
+   resolves table/selector/gate and 16-bit transfer ownership first.
+2. [80286 `LOCK` and profile closure](m5-80286-lock-profile-closure.md)
+   consumes that proof, establishes the matrix, and performs the profile audit.
 
 The tasks preserve true 16-bit TSS, gate, and frame layouts and transfer only
 80386-only address, VM86, paging, debug, or register behavior forward.
@@ -45,5 +40,5 @@ For a repeated protected-state mechanism, map descriptor/selector validation,
 memory preflight, state materialization, commit, rollback, and all callers
 before changing one form. An apparently common 16/32 implementation may share
 only a private plan that selects the real architecture layout independently.
-The candidate closes only when its assigned ledger and 80286 `LOCK` matrix
-have no in-scope partial, missing, or unclassified row.
+The two candidates together close only when the assigned ledger and 80286
+`LOCK` matrix have no in-scope partial, missing, or unclassified row.
