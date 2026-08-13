@@ -2,29 +2,8 @@
 
 ## Current Work
 
-**M5 T344 S5 - active.** Remove duplicate target-local strict declarations
-and mechanically prevent their recurrence.
-
-## M5 T344 S5 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | The owner approved complete single-agent T344 build-quality completion on 2026-08-13. S2 evidence identified this exact corrective; S4 closed locally as `334bf984` pending a transient remote push. This packet admits only the bounded strict-declaration cleanup. |
-| Objective | Remove the duplicate strict GCC declaration for `core-platform-presentation-mailbox-smoke` and add a configure-time mechanical check that no configured target receives any one of the four target-local strict options more than once. |
-| Non-goals | No global compiler policy, no promotion of deferred targets, no source-warning cleanup, no new strict target, no inherited-target claim, and no production or test runtime change. |
-| Reference Baseline | Local `334bf984` (`M5 T344 S4 P2`), [T344 baseline audit](../etc/evidence/t344-code-quality-baseline-audit.md), [build-quality proposal](../proposals/m5-build-quality-reproducibility.md), and CMake direct compile matrix. |
-| Candidate Proposal | [Build-quality reproducibility](../proposals/m5-build-quality-reproducibility.md). |
-| Files And ABI Surface | Expected: `CMakeLists.txt`, T344 evidence, and Current only. No source, public header/API, artifact, or runtime surface change. |
-| Applicable Rules | `docs/rules/EXECUTION.md`: mechanism-owner and similar-issue sweep. `docs/rules/ARCHITECTURE.md`: one build-policy owner. `docs/rules/CODING.md`: no duplicate construction. `docs/rules/DOCUMENT.md`: evidence and Current topology. |
-| Verification | Fresh GCC configure must fail if a target receives a duplicate member of `-Wall -Wextra -Wpedantic -Werror`; direct strict matrix and all specialized gates must pass; full current-gate, documentation governance, and diff check must pass. |
-| Expected Markers | Configure-time strict-declaration uniqueness check passes over all configured targets; `core-platform-presentation-mailbox-smoke` has exactly one each of the four strict options; the direct matrix remains 305 rows with 130 retained strict and 175 deferred. |
-| Asset Needs | No external assets, firmware, guest media, or source import. |
-| Reporting Requirements | Deliver one complete pushed P with the duplicate sweep scope, removed declaration, negative checker rationale, exact configure/matrix/specialized/current-gate evidence, and no policy expansion. |
-| Stop Conditions | Stop if removing a duplicate changes a target's effective compile command, or if another declaration requires a policy/ownership decision rather than de-duplication; record the exact target and transfer instead of broadening strictness. |
-| Exit Criteria | The duplicate is removed; every configured target is mechanically checked for duplicate strict options; fresh configure and all required gates pass; evidence records the full sweep and unchanged direct-coverage disposition; the complete P is committed and pushed. |
-| Original Owner Request | Audit the entire codebase for code quality, record all findings, and admit the four resulting quality improvements for implementation. |
-| Similar-Issue Sweep | Inspect all configured targets' local `COMPILE_OPTIONS` after every strict declaration, including the T317 loop, retained strict targets, and all explicitly deferred targets; reject duplicate members rather than relying on a textual search or linked dependency. |
+**Idle.** M5 T344 is closed. The next Queue candidate is the Windows 3.x
+readiness map.
 
 ## Current Technical Baseline
 
@@ -45,10 +24,7 @@ and mechanically prevent their recurrence.
 
 | Task | Compact result |
 | --- | --- |
-| T344 S4 | Fixed and mechanically verified the 53 direct historical machine-constructor shapes: 22 exact bind/freeze/reset tails now use the existing private test helper, and 31 device, prebind, timing, or failure-observation shapes retain explicit admission conditions. Fresh configure, specialized gates, and 218/218 current-gate passed. [Evidence](../etc/evidence/t344-historical-fixture-shapes.md). |
-| T344 S3 | Replaced aggregate duplicate suppression with one canonical 218-target current-gate union, removed the two raw duplicate entries, and mechanically proved exact CTest registration/labels. Corrected the strict matrix to consume all canonical media owners: 305 rows, 130 retained strict, 175 deferred. Specialized gates and 218/218 current-gate passed. [Evidence](../etc/evidence/t344-code-quality-baseline-audit.md). |
-| T344 S2 | Generated and mechanically verified a 297-row GCC/Ninja direct-compilation matrix: 129 retained strict and 168 precisely deferred, with no transitive-coverage claim. Fresh rebuilding exposed three stale hardware-delivery TF assertions; their narrowly corrected owner smokes and the dedicated T341 debug-priority smoke, governance, and 218/218 current-gate all pass. [Evidence](../etc/evidence/t344-code-quality-baseline-audit.md). |
-| T344 S1 | Restored fresh GCC configuration by giving VM86 delivery one explicit non-real T337 `#UD` disposition; repaired shared TF post-interrupt trap scheduling and stale RF smoke expectations; exact regressions and 218/218 current-gate passed. [Evidence](../etc/evidence/t344-code-quality-baseline-audit.md). |
+| T344 | Closed build-quality reproducibility: fresh configuration, 305-row truthful strict-compile matrix (130 retained strict/175 deferred), canonical 218-target current-gate registration, 53 historical fixture shapes, and strict-declaration uniqueness are mechanically verified. [History](../history/M5-T344-build-quality-reproducibility.md). |
 | T343 | Closed the four-profile CPU program: one final ledger reconciles the 8086, 80186, 80286, and 80386DX execution, protected-state, delivery, task/paging/debug, and CPU-side coprocessor-interface boundaries. VME/PVI, persistent cache, x87 execution, timing/device, and Windows/product work remain explicit external candidates. [Closure ledger](../etc/evidence/t343-s1-four-profile-cross-closure.md). |
 | T342 | Closed the 80386DX profile ledger: T340 form and T341 state evidence reconcile every assigned row once, and the closure map now names the accepted state owners instead of stale future transfers. Only explicit post-80386, x87, timing/device, and Windows boundaries remain external. [Closure audit](../etc/evidence/t342-s1-80386dx-profile-closure-audit.md). |
 | T341 | Closed the 80386DX system-state package: CR/DR/TR/table state, VM86/task/paging composition, and ordinary debug/vector-1 now have one audited owner/proof graph; only explicit later-CPU, x87, timing/device, and Windows boundaries transfer. [Closure audit](../etc/evidence/t341-s5-80386dx-system-state-closure-audit.md). |
@@ -56,7 +32,6 @@ and mechanically prevent their recurrence.
 | T339 | Closed the Queue-ordered 80286 descriptor-transfer package: S2--S6 proved table/system-word, selector/cache, protected entry, protected return, and TSS16 transition mechanisms; S7 reconciled the source graph, retained T328 `LOCK` policy, and exact T341--T342 transfers. [Closure audit](../etc/evidence/t339-s7-80286-descriptor-transfer-audit.md). |
 | T338 | Closed the 8086/80186 profile baseline: S2 ALU/FLAGS/conditions, S3 inherited data/control/I/O, and S4 80186 extensions cover every S1 allocation; the retained T328 rule is the only legacy `LOCK` owner. The sole reproduced defect was four incorrect INS/OUTS 80386 guards, corrected to 80186. Protected, 80386DX, and x87 boundaries transfer explicitly. Artifact verification, governance, and 218/218 current-gate passed. [History](../history/M5-T338-8086-80186-profile-closure.md). |
 | T337 | Closed shared CPU state and delivery foundations: vector-6 fault delivery/rollback, software and external origin composition, IRQ/NMI/TF priority, frame timing, inhibition, and post-commit task debug trap have one proof/owner. DR6/DR7 transfers to 80386DX; reset/shutdown/triple-fault remains bounded CPU/machine debt. [History](../history/M5-T337-shared-state-delivery.md). |
-| T336 | Closed the four-profile CPU coverage audit: the primary/`0F` metadata and dispatch forms, real/protected/VM86 state rows, historic evidence, explicit 80386 exclusions, and open CPU debt now have a single indexed disposition. Every residual has one Queue, TODO, or external owner; the next candidate is shared state and delivery foundations. [History](../history/M5-T336-four-profile-coverage.md). |
 
 ## Recent Governance
 
