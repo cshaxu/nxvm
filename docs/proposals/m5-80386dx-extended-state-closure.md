@@ -28,7 +28,7 @@ mode, privilege, prefix, and fault contract, or is explicitly outside 80386.
    closes residual form-family rows without obscuring older-profile results.
 2. [System, VM86, paging, and debug closure](../history/M5-T341-80386dx-system-state-closure-proposal.md)
    owns residual privileged state composition and its form consumers.
-3. [80386DX profile closure](m5-80386dx-profile-closure.md) reconciles the
+3. [80386DX profile closure](../history/M5-T342-80386dx-profile-closure-proposal.md) reconciles the
    resulting form and state ledgers and returns a missing row to its owner.
 
 Each admission begins with the vertical state owner (translation, debug,
