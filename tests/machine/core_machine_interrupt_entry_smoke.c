@@ -116,11 +116,8 @@ static C_INT ie_prepare(interrupt_entry_machine *state,
         gdt[13] = 0x92u;
     if (negative == INTERRUPT_ENTRY_NEGATIVE_CODE_LIMIT)
         gdt[8] = 0u;
-    if (core_machine_create(&config, &state->machine) != TYPE_STATUS_OK ||
-        core_machine_bind_execution_provider(state->machine, &ie_provider,
-            state) != TYPE_STATUS_OK ||
-        core_machine_freeze_execution_providers(state->machine) != TYPE_STATUS_OK ||
-        core_machine_reset(state->machine) != TYPE_STATUS_OK ||
+    if (!test_core_machine_fixture_create_bind_freeze_reset(&config,
+            &ie_provider, state, &state->machine) ||
         !ie_write(state, IE_GDT_BASE, gdt, sizeof(gdt)) ||
         !ie_write(state, IE_IDT_BASE, idt, sizeof(idt)) ||
         !ie_write(state, IE_CODE_BASE, code, sizeof(code)) ||

@@ -1801,6 +1801,14 @@ add_custom_target(run-current-fast-smokes
 
 project_configure_t317_strict_cpu_smokes()
 
+add_custom_target(verify-t332-cpu-fixture-lifecycle
+    COMMAND "${CMAKE_COMMAND}"
+        -DPROJECT_T332_SOURCE_DIR=${CMAKE_SOURCE_DIR}
+        -DPROJECT_T332_INVENTORY_FILE=${CMAKE_BINARY_DIR}/t317-strict-cpu-smoke-inventory.txt
+        -P "${CMAKE_SOURCE_DIR}/cmake/verify_t332_cpu_fixture_lifecycle.cmake"
+    COMMENT "Verifying T332 CPU smoke fixture lifecycle closure"
+    VERBATIM)
+
 
 # CMake builds the current source artifact only. Historical task executables are
 # retained evidence under build/output and are never regenerated from newer
@@ -2211,6 +2219,7 @@ endif()
 set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
     verify-t317-test-type-vocabulary
     verify-t317-strict-cpu-smoke-coverage
+    verify-t332-cpu-fixture-lifecycle
     verify-t330-task-transition-construction
     verify-t331-real-exception-final-construction
     verify-documentation-governance

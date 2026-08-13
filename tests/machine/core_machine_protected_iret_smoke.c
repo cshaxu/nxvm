@@ -71,11 +71,8 @@ static C_INT iret_prepare(iret_machine *state, iret_negative negative,
         gdt[8u] = 0u;
         gdt[9u] = 0u;
     }
-    if (core_machine_create(&config, &state->machine) != TYPE_STATUS_OK ||
-        core_machine_bind_execution_provider(state->machine, &iret_provider,
-            state) != TYPE_STATUS_OK ||
-        core_machine_freeze_execution_providers(state->machine) != TYPE_STATUS_OK ||
-        core_machine_reset(state->machine) != TYPE_STATUS_OK ||
+    if (!test_core_machine_fixture_create_bind_freeze_reset(&config,
+            &iret_provider, state, &state->machine) ||
         !iret_write(state, IRET_GDT_BASE, gdt, sizeof(gdt))) {
         core_machine_destroy(state->machine);
         state->machine = STD_NULL;

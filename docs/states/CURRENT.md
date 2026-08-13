@@ -2,8 +2,29 @@
 
 ## Current Work
 
-**Idle.** M5 T332 S2 is accepted; T332 remains open and requires a separately
-admitted S3 fixture-lifecycle convergence packet.
+**Active.** M5 T332 S3 converges genuinely common CPU smoke lifecycle setup
+under `tests/support` while retaining owner-local instruction fixtures.
+
+## M5 T332 S3 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved T332's staged VM-session and fixture findings on 2026-08-12, including the bounded fixture-lifecycle subtask after accepted S1/S2. Single-agent execution is owner-directed. |
+| Objective | Audit direct CPU smoke lifecycle shapes and move only their identical create, owner setup, bind/freeze/reset, run, observation, and cleanup tail into a setup-only `tests/support` helper, preserving local provider/GDT/IDT/memory setup and all instruction assertions. |
+| Non-goals | No product-visible or production helper, no test mirror state, no generic test framework, no broad test rewrite, no CPU instruction behavior change, no rules edit, and no consolidation of distinct device or protected-mode fixture semantics. |
+| Reference Baseline | `04dafd65`, accepted T332 S2; active artifact remains `vm-0-5-0332`. |
+| Candidate Proposal | [VM session construction transaction](../proposals/m5-vm-session-construction-transaction.md). |
+| Files And ABI Surface | Expected `tests/support/` private test helper, only audited owner smoke sources, CMake/static verifier/evidence/history/Current updates. No production source or public header/API change. |
+| Applicable Rules | `docs/README.md` Task Reading Set; `docs/rules/EXECUTION.md` holistic-remediation, actual-change review, static closure, and artifact rules; `docs/rules/ARCHITECTURE.md` single test construction path/no mirror-state invariant; `docs/rules/CODING.md` bounded cohesive helper rule; `docs/design/CODING.md` tests/support setup-only responsibility. |
+| Verification | Record fixed source inventory and exact lifecycle-shape queries before edits. Add a narrow positive/negative structural verifier, run every migrated owner smoke, the T332 artifact build and current artifact verifier, documentation governance, diff check, specialized gates, and full current CTest selection. |
+| Expected Markers | Existing smoke markers are unchanged. The structural verifier reports its fixed inventory and rejects direct reintroduction of the converged lifecycle shape in covered owners. |
+| Asset Needs | None; no guest media, firmware import, external source, or machine-local input. |
+| Reporting Requirements | Report the inventory classification before implementation: converged owner set, retained distinct fixtures, and the common helper contract. Deliver one complete P1 with actual code review, affected-smoke evidence, structural verifier result, artifact identity, and similar-issue sweep; push immediately. |
+| Stop Conditions | Stop for a helper that would require product-visible state, obscure instruction-specific setup, force incompatible protected/device semantics into one fixture, or expose a production lifecycle defect. Transfer any excluded recurring shape explicitly. |
+| Exit Criteria | A narrow tests/support helper owns only the audited common lifecycle; every migrated smoke preserves its local setup and behavior; structural inventory blocks the old duplicate shape in the covered set; all affected and full gates pass; evidence/history/artifact are updated and P1 is pushed. |
+| Original Owner Request | The owner asked to turn the VM session findings and the fixture finding into multiple subtasks; S3 is the final fixture-lifecycle convergence subtask. |
+| Similar-Issue Sweep | Search all tracked CPU smoke sources for direct create/bind/freeze/reset/run/destroy shapes. Classify every hit as migrated, intentionally local with a semantic reason, or separately deferred rather than silently exempting a directory. |
 
 ## Current Technical Baseline
 
