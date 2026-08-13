@@ -81,7 +81,9 @@ typedef struct t_kbc_data {
     type_unsigned_8 scan_set;
     type_unsigned_8 led_state;
     type_unsigned_8 typematic;
-    type_unsigned_8 last_output_byte;
+    type_unsigned_8 last_keyboard_output_byte;
+    type_unsigned_8 previous_keyboard_output_byte;
+    type_bool keyboard_has_output;
     type_unsigned_8 typematic_scan_code;
     type_unsigned_8 delayed_response[CORE_MACHINE_KBC_RESPONSE_CAPACITY];
     core_machine_kbc_output_origin delayed_response_origin;

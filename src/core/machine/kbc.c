@@ -85,7 +85,14 @@ static type_status core_machine_kbc_enqueue(t_kbc *controller, type_unsigned_8 v
     controller->data.fifo[tail] = value;
     controller->data.fifo_origin[tail] = origin;
     ++controller->data.fifo_count;
-    controller->data.last_output_byte = value;
+    if (origin == CORE_MACHINE_KBC_OUTPUT_KEYBOARD) {
+        if (controller->data.keyboard_has_output) {
+            controller->data.previous_keyboard_output_byte =
+                controller->data.last_keyboard_output_byte;
+        }
+        controller->data.last_keyboard_output_byte = value;
+        controller->data.keyboard_has_output = TYPE_TRUE;
+    }
     core_machine_kbc_refresh_current_irq(controller);
     return TYPE_STATUS_OK;
 }
@@ -134,9 +141,9 @@ static C_VOID core_machine_kbc_set_defaults(t_kbc *controller)
     controller->data.scan_set = CORE_MACHINE_KBC_SCAN_SET_1;
     controller->data.led_state = 0u;
     core_machine_kbc_set_typematic(controller, CORE_MACHINE_KBC_DEFAULT_TYPEMATIC);
-    controller->data.scanning_enabled = TYPE_TRUE;
     controller->data.typematic_active = TYPE_FALSE;
     controller->data.typematic_remaining_ticks = 0u;
+    controller->data.typematic_scan_code = 0u;
 }
 
 static type_bool core_machine_kbc_is_typematic_scan_code(type_unsigned_8 scan_code)
@@ -219,6 +226,7 @@ static C_VOID core_machine_kbc_handle_keyboard_command(t_kbc *controller,
         core_machine_kbc_schedule_response(controller, reset_ok, sizeof(reset_ok),
             CORE_MACHINE_KBC_OUTPUT_KEYBOARD);
         core_machine_kbc_set_defaults(controller);
+        controller->data.scanning_enabled = TYPE_TRUE;
         break;
     case 0xedu:
         core_machine_kbc_schedule_response_byte(controller, CORE_MACHINE_KBC_ACK,
@@ -241,12 +249,14 @@ static C_VOID core_machine_kbc_handle_keyboard_command(t_kbc *controller,
         break;
     case 0xf4u:
         controller->data.scanning_enabled = TYPE_TRUE;
+        controller->data.typematic_active = TYPE_FALSE;
+        controller->data.typematic_scan_code = 0u;
         core_machine_kbc_schedule_response_byte(controller, CORE_MACHINE_KBC_ACK,
             CORE_MACHINE_KBC_OUTPUT_KEYBOARD);
         break;
     case 0xf5u:
+        core_machine_kbc_set_defaults(controller);
         controller->data.scanning_enabled = TYPE_FALSE;
-        controller->data.typematic_active = TYPE_FALSE;
         core_machine_kbc_schedule_response_byte(controller, CORE_MACHINE_KBC_ACK,
             CORE_MACHINE_KBC_OUTPUT_KEYBOARD);
         break;
@@ -260,8 +270,19 @@ static C_VOID core_machine_kbc_handle_keyboard_command(t_kbc *controller,
             CORE_MACHINE_KBC_OUTPUT_KEYBOARD);
         break;
     case 0xfeu:
-        resend = controller->data.last_output_byte;
+        resend = controller->data.last_keyboard_output_byte;
+        if (resend == CORE_MACHINE_KBC_RESEND &&
+            controller->data.keyboard_has_output) {
+            resend = controller->data.previous_keyboard_output_byte;
+        }
         core_machine_kbc_schedule_response_byte(controller, resend,
+            CORE_MACHINE_KBC_OUTPUT_KEYBOARD);
+        break;
+    case 0xfdu:
+    case 0xfcu:
+    case 0xfbu:
+    case 0xf7u:
+        core_machine_kbc_schedule_response_byte(controller, CORE_MACHINE_KBC_ACK,
             CORE_MACHINE_KBC_OUTPUT_KEYBOARD);
         break;
     default:
@@ -602,6 +623,7 @@ C_VOID core_machine_kbc_reset(t_kbc *controller)
     controller->data.keyboard_enabled = TYPE_TRUE;
     controller->data.aux_enabled = TYPE_TRUE;
     core_machine_kbc_set_defaults(controller);
+    controller->data.scanning_enabled = TYPE_TRUE;
     core_machine_kbc_set_aux_defaults(controller);
     controller->data.system_flag = TYPE_TRUE;
     core_machine_kbc_apply_output_port(controller, controller->data.output_port);

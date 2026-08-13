@@ -2,8 +2,29 @@
 
 ## Current Work
 
-M5 T351 remains open. S2 is accepted; S3 keyboard-device protocol is the next
-bounded subtask.
+M5 T351 S3 - PC/AT keyboard device protocol and IRQ1 lifecycle
+(Single-Session Mode).
+
+## M5 T351 S3 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved continuous holistic device/L3 completion on 2026-08-13; T351 S2 accepted at `90d73bae`. |
+| Objective | Reconcile the selected AT keyboard command and scan-code state machine: ACK/RESEND/BAT/identify, LED/typematic/scan-set parameter states, default/disable/enable/reset transitions, keyboard-owned response history, queued scan-code/typematic publication, delayed response, IRQ1 eligibility, and reset/finalize lifecycle. |
+| Non-goals | No controller command/status/output-port change except necessary single-FIFO integration, no AUX-device protocol, host passthrough, firmware/physical serial timing, arbitrary scan sets, guessed keyboard error codes, port-61/PPI, generic PIC/timeline refactor, x87, or Windows claim. |
+| Reference Baseline | `90d73bae` / T351 S2 accepted; [S1 ledger](../etc/evidence/t351-s1-kbc-aux-ledger.md), [S2 controller evidence](../etc/evidence/t351-s2-kbc-controller.md), IBM PC/AT Technical Reference keyboard chapter, and selected project keyboard/DOS probes. |
+| Candidate Proposal | [PC/AT 8042 and AUX completeness](../proposals/m5-kbc-aux-completeness.md). |
+| Files And ABI Surface | Expected: private KBC keyboard state/helpers, owner KBC-controller or dedicated keyboard smoke, CMake only if a new owner target is justified, S3 evidence, Current, and T351 history. No public host/input/profile API, second FIFO, controller/AUX protocol, PIC, or timeline ownership change. |
+| Applicable Rules | Task Reading Set; one KBC FIFO and origin owner; keyboard response history cannot use controller/AUX data; validation/state transition before response publication; copied host boundary; deterministic timeline owner; primary-manual/project-probe discipline; no source import. |
+| Verification | Prove full selected command matrix: `FF`, `FE`, `FD`--`F7`, `ED`, `EE`, `F0`, `F2`, `F3`, `F4`, `F5`, `F6`, invalid commands and parameter routes. Prove keyboard-only RESEND across intervening controller/AUX bytes, disable/default/enable/reset state, queued scan/typematic cancellation, delayed response, IRQ1 head lifecycle, full FIFO handling, reset/finalize, retained mapper/ingress/DOS behavior, and full current gate. |
+| Expected Markers | Retain controller, keyboard mapper/host-ingress/DOS, AUX guest, mouse and timeline markers; add a dedicated S3 marker only if existing controller ownership cannot express the complete keyboard matrix. |
+| Asset Needs | Published IBM keyboard/PC/AT documentation and project-owned probes only; no firmware, host capture, guest media addition, or third-party source. |
+| Reporting Requirements | Record every selected command and parameter transition, response-history ownership, response/scan publication ordering, IRQ1 and reset/finalize result, reproduced defects, similar-issue sweep, and precise retained S4 boundaries. |
+| Stop Conditions | Stop for a required physical serial/ACK acceptance timing model, unselected scan-set/device behavior, public/profile/host ABI change, controller/AUX semantic change, PIC/timeline mechanism defect, source import, or non-keyboard owner. Transfer rather than infer. |
+| Exit Criteria | Every selected keyboard command, parameter state, response/scan byte, IRQ1 route, delay, full FIFO, reset/finalize, and copied ingress boundary has one exact owner and proof. No controller or AUX byte can alter keyboard RESEND semantics; S4 AUX device rows remain explicit. |
+| Original Owner Request | Make core-machine devices stable, comprehensive, and reliable at deterministic L3 before deciding any Windows execution route. |
+| Similar-Issue Sweep | Inspect all keyboard command cases, pending-write states, response/FIFO enqueue and dequeue helpers, last-output fields, scan-code and typematic writers, IRQ1 refresh paths, reset/finalize, session/mapper ingress, keyboard/AUX smokes, and profile timing binds. |
 
 ## Current Technical Baseline
 
