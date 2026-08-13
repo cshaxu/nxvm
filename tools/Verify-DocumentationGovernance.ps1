@@ -446,6 +446,10 @@ if ($SelfTest) {
         Require (-not (Invoke-SelfTestCheck $fixtureRoot -Quiet)) `
             "Documentation schema accepted a Queue task identifier."
         Set-SelfTestFile $fixtureRoot "docs/states/QUEUE.md" "# Queue`n`n1. [Candidate work](../proposals/candidate.md)"
+        Set-SelfTestFile $fixtureRoot "docs/proposals/orphan.md" "# Orphaned Candidate"
+        Require (-not (Invoke-SelfTestCheck $fixtureRoot -Quiet)) `
+            "Documentation schema accepted a proposal not linked from Queue."
+        Remove-Item -LiteralPath (Join-Path $fixtureRoot "docs/proposals/orphan.md") -Force
         Set-SelfTestFile $fixtureRoot "docs/states/TODO.md" "# Long-Term Review Ledger`n`n## Compatibility Debt`n`n- [x] **Closed (`TODO(High)`).**"
         Require (-not (Invoke-SelfTestCheck $fixtureRoot -Quiet)) `
             "Documentation schema accepted a completed debt entry."
@@ -880,6 +884,10 @@ Require ($queueEntries.Count -gt 0) "QUEUE.md must contain at least one ordered 
 foreach ($queueEntry in $queueEntries) {
     Require ($queueEntry.Groups['entry'].Value -match '\]\(\.\./proposals/[^)]+\.md\)') `
         "Every QUEUE.md candidate must link to one proposal."
+}
+foreach ($proposalFile in @(Get-ChildItem -LiteralPath $proposalsPath -File -Filter '*.md')) {
+    Require ($queue -match [regex]::Escape("../proposals/$($proposalFile.Name)")) `
+        "Every docs/proposals/ file must be linked from QUEUE.md: $($proposalFile.Name)"
 }
 $closureSection = [regex]::Match($status, '(?ms)^## Recent M\d+ Closures\r?\n(?<body>.*?)(?=^## |\z)')
 Require ($closureSection.Success) "CURRENT.md must contain a recent milestone-closure section."

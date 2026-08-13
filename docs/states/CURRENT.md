@@ -2,13 +2,13 @@
 
 ## Current Work
 
-**Idle.** M5 T332 is closed. The next implementation task requires a separately
+**Idle.** M5 Td S77 is closed. The next implementation task requires a separately
 admitted packet.
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** active T332 S2 selects `vm-0-5-0332` /
-  `build/output/nxvm_0_5_0332.exe`; the verified active-P1 output SHA-256 is
+- **Current developer artifact:** T332 S2 selected `vm-0-5-0332` /
+  `build/output/nxvm_0_5_0332.exe`; the verified P1 output SHA-256 is
   `0429D3ED2D0D55CB8DB7E8BE0F89344B2FF842C1A0DD25E33A07C4FAD7463D5D`.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
@@ -33,6 +33,14 @@ admitted packet.
 | T325 | Closed the CPU-native Intel 80386DX paging/translation package: CR0, CR2/CR3, 4-KiB PDE/PTE, U/S/R/W, A/D, cross-page atomicity, delivered `#PF`, no-persistent-cache behavior, and pre-486 `INVLPG #UD` are reconciled. Protected `#UD` delivery, task/VM86 paging, and persistent TLB/TR6/TR7 state transfer explicitly. [History](../history/M5-T325-80386dx-paging-translation.md). |
 
 ## Recent Governance
+
+- **M5 Td S77:** moved the closed T323/T325/T328 proposals into matching
+  history companions; made every current proposal require a Queue link and
+  added the orphan-proposal negative self-test; compacted repeated
+  mechanism-defect requirements into role-specific authorities; clarified
+  historical terminology retention and the idle T332 artifact wording.
+  Documentation self-test, combined governance check, and diff check passed.
+  Td work has no runtime or artifact change.
 
 - **M5 Td S76:** retired the closed T330 task-switch debt from TODO and the
   unqueued proposal surface; retained its proposal, debt report, history, and
@@ -80,11 +88,3 @@ admitted packet.
   holistic-execution and task-transition debt candidates with evidence; and
   refreshed the retained governance summary. Documentation default/self-test
   and diff check passed. Td work has no runtime or artifact change.
-
-- **M5 Td S68:** reconciled open numeric-task progress with identifier
-  allocation: commit history proves used S/P records, Status structural rows
-  determine task closure, and the verifier permits only the exact next S of the
-  latest retained-open task under `Continuation`. Added positive and
-  skipped/foreign/missing-progress/new-task negative self-tests. Documentation
-  self-test, default check, and diff check passed. Td work has no runtime or
-  artifact change.

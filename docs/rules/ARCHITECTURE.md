@@ -10,8 +10,11 @@ The concrete ntvdm64 component and composition map is
   dependency cycle, reverse dependency, or peer-to-peer integration may hide
   behind an aggregate target, adapter, callback, global, or test helper.
 - Every mutable state, namespace, registry, route, conflict decision, dispatch
-  path, and public operation has one explicit owner and one production path.
-  A legacy or adapter path cannot become a second truth source.
+  path, public operation, and stateful construction or failure boundary has one
+  explicit owner, mechanism contract, and production path. Equivalent variants
+  share preparation and publication ownership; distinct paths require a
+  documented semantic, layout, lifetime, or host-capability difference. A
+  legacy or adapter path cannot become a second truth source.
 - A public cross-module interface never exposes mutable internal layout or a
   raw CPU, RAM, port, device, executor, or session pointer. It uses an opaque
   handle, copied snapshot, or bounded typed operation with explicit lifetime

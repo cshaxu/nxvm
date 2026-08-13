@@ -70,7 +70,9 @@ normal way to cross a boundary; a copied summary is not a second authority.
   candidate links; each candidate's details belong in its linked `proposals/`
   document. A shared proposal context may be linked by more than one candidate
   when it carries their common admission constraints; it is not a candidate
-  itself. [states/TODO.md](../states/TODO.md) contains only unplanned debt.
+  itself. Every `proposals/` file is linked from Queue while it is current;
+  retained closed or withdrawn work moves to history. [states/TODO.md](../states/TODO.md)
+  contains only unplanned debt.
 - Each numeric implementation task closed under this topology has one
   `history/M<milestone>-T<task>-*.md` main record and, when retained, one
   `history/M<milestone>-T<task>-*-proposal.md` proposal companion. Earlier
@@ -79,6 +81,8 @@ normal way to cross a boundary; a copied summary is not a second authority.
   and Git.
 - `etc/history/legacy/` is read-only aggregation retained during migration. It
   is evidence, never a current authority.
+- Historical records preserve terminology current at closure; do not rewrite
+  them solely for a later document rename, but keep their links valid.
 
 The [Documentation Governance Gate](EXECUTION.md#documentation-governance-gate)
 owns closure commands and mechanical checks. It validates topology, principal

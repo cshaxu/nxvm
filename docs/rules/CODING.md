@@ -26,6 +26,10 @@ The concrete source tree and naming map is
 - Prefer an existing clear boundary over a duplicate abstraction. A helper,
   adapter, or compatibility layer needs a named responsibility and cannot
   merely forward the same object.
+- Repair a repeated mechanism defect at its owning boundary; do not add a
+  duplicate side path. Separate code needs a real semantic, layout, lifetime,
+  or platform difference. Prefer a bounded owner-local helper to a broad
+  framework when it expresses the complete shared contract.
 
 ## Test Boundaries
 
