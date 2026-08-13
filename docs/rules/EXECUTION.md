@@ -46,6 +46,13 @@ evidence, run the required verification, record the retrospective/prevention
 action when applicable, and report the result. A task is not complete merely
 because its implementation or tests look complete.
 
+**Mechanism defects.** For a repeated construction, lifecycle, state-publication,
+validation, or failure-atomicity defect, the packet and evidence identify the
+shared owner, relevant variants and callers, and the validation-to-commit or
+rollback boundary. The scope repairs that mechanism or explicitly transfers an
+excluded variant through Queue or TODO; the architecture and coding rules own
+the resulting production-path constraint.
+
 Before accepting or closing any task or subtask, inspect its actual repository
 changes, rather than relying only on a report, test summary, or diff statistic.
 Review the relevant added, modified, renamed, and deleted files and the actual
