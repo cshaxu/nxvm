@@ -1247,6 +1247,23 @@ add_executable(core-machine-ega-sequencer-port-smoke
     tests/machine/core_machine_ega_sequencer_port_smoke.c
 )
 target_link_libraries(core-machine-ega-sequencer-port-smoke PRIVATE core-machine)
+add_executable(core-machine-ega-registration-transaction-smoke
+    tests/machine/core_machine_ega_registration_transaction_smoke.c
+    src/core/machine/vadp.c
+)
+target_include_directories(core-machine-ega-registration-transaction-smoke PRIVATE
+    "${CMAKE_SOURCE_DIR}/src"
+)
+target_compile_definitions(core-machine-ega-registration-transaction-smoke PRIVATE
+    STD_CALLOC=test_ega_registration_calloc
+)
+target_link_libraries(core-machine-ega-registration-transaction-smoke PRIVATE
+    core-machine
+)
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(core-machine-ega-registration-transaction-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
 add_executable(core-machine-ega-controller-port-smoke
     tests/machine/core_machine_ega_controller_port_smoke.c
 )
@@ -1658,6 +1675,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-cga-graphics-port-smoke
     core-machine-cga-640-port-smoke
     core-machine-ega-sequencer-port-smoke
+    core-machine-ega-registration-transaction-smoke
     core-machine-ega-controller-port-smoke
     core-machine-ega-crtc-boundary-port-smoke
     core-machine-ega-planar-port-smoke
@@ -1879,7 +1897,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0333 "0.5.0333")
+add_current_vm_artifact(vm-0-5-0334 "0.5.0334")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 

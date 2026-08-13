@@ -145,11 +145,9 @@ type_status core_machine_memory_register_mapping(t_ram *ram,
     return TYPE_STATUS_OK;
 }
 
-type_status core_machine_memory_register_write_observer(t_ram *ram,
+static type_status core_machine_memory_validate_write_observer(const t_ram *ram,
     core_machine_memory_write_observer callback, C_VOID *owner)
 {
-    core_machine_memory_write_observer_slot *slot;
-
     if (ram == STD_NULL || callback == STD_NULL || owner == STD_NULL ||
         ram->connect.mappings_frozen) {
         return TYPE_STATUS_INVALID_ARGUMENT;
@@ -158,18 +156,14 @@ type_status core_machine_memory_register_write_observer(t_ram *ram,
         CORE_MACHINE_MEMORY_WRITE_OBSERVER_CAPACITY) {
         return TYPE_STATUS_NO_MEMORY;
     }
-    slot = &ram->connect.write_observers[ram->connect.write_observer_count++];
-    slot->callback = callback;
-    slot->owner = owner;
     return TYPE_STATUS_OK;
 }
 
-type_status core_machine_memory_register_device_provider(t_ram *ram,
+static type_status core_machine_memory_validate_device_provider(const t_ram *ram,
     type_unsigned_32 physical_start, STD_SIZE_T bytes,
     core_machine_memory_device_read read, core_machine_memory_device_write write,
     core_machine_memory_device_query query, C_VOID *owner)
 {
-    core_machine_memory_device_provider *provider;
     type_native_unsigned index;
     type_unsigned_64 end;
 
@@ -186,20 +180,83 @@ type_status core_machine_memory_register_device_provider(t_ram *ram,
     for (index = 0u; index < ram->connect.device_provider_count; ++index) {
         const core_machine_memory_device_provider *existing =
             &ram->connect.device_providers[index];
-        type_unsigned_64 existing_end = (type_unsigned_64)existing->physical_start + existing->bytes;
+        type_unsigned_64 existing_end = (type_unsigned_64)existing->physical_start +
+            existing->bytes;
 
         if ((type_unsigned_64)physical_start < existing_end &&
             (type_unsigned_64)existing->physical_start < end) {
             return TYPE_STATUS_INVALID_ARGUMENT;
         }
     }
-    provider = &ram->connect.device_providers[ram->connect.device_provider_count++];
+    return TYPE_STATUS_OK;
+}
+
+static C_VOID core_machine_memory_append_write_observer(t_ram *ram,
+    core_machine_memory_write_observer callback, C_VOID *owner)
+{
+    core_machine_memory_write_observer_slot *slot =
+        &ram->connect.write_observers[ram->connect.write_observer_count++];
+
+    slot->callback = callback;
+    slot->owner = owner;
+}
+
+static C_VOID core_machine_memory_append_device_provider(t_ram *ram,
+    type_unsigned_32 physical_start, STD_SIZE_T bytes,
+    core_machine_memory_device_read read, core_machine_memory_device_write write,
+    core_machine_memory_device_query query, C_VOID *owner)
+{
+    core_machine_memory_device_provider *provider =
+        &ram->connect.device_providers[ram->connect.device_provider_count++];
+
     provider->physical_start = physical_start;
     provider->bytes = bytes;
     provider->read = read;
     provider->write = write;
     provider->query = query;
     provider->owner = owner;
+}
+
+type_status core_machine_memory_register_write_observer(t_ram *ram,
+    core_machine_memory_write_observer callback, C_VOID *owner)
+{
+    type_status status = core_machine_memory_validate_write_observer(ram,
+        callback, owner);
+
+    if (status != TYPE_STATUS_OK) return status;
+    core_machine_memory_append_write_observer(ram, callback, owner);
+    return TYPE_STATUS_OK;
+}
+
+type_status core_machine_memory_register_device_provider(t_ram *ram,
+    type_unsigned_32 physical_start, STD_SIZE_T bytes,
+    core_machine_memory_device_read read, core_machine_memory_device_write write,
+    core_machine_memory_device_query query, C_VOID *owner)
+{
+    type_status status = core_machine_memory_validate_device_provider(ram,
+        physical_start, bytes, read, write, query, owner);
+
+    if (status != TYPE_STATUS_OK) return status;
+    core_machine_memory_append_device_provider(ram, physical_start, bytes, read,
+        write, query, owner);
+    return TYPE_STATUS_OK;
+}
+
+type_status core_machine_memory_register_device_provider_and_write_observer(
+    t_ram *ram, type_unsigned_32 physical_start, STD_SIZE_T bytes,
+    core_machine_memory_device_read read, core_machine_memory_device_write write,
+    core_machine_memory_device_query query, C_VOID *owner,
+    core_machine_memory_write_observer callback)
+{
+    type_status status = core_machine_memory_validate_device_provider(ram,
+        physical_start, bytes, read, write, query, owner);
+
+    if (status != TYPE_STATUS_OK) return status;
+    status = core_machine_memory_validate_write_observer(ram, callback, owner);
+    if (status != TYPE_STATUS_OK) return status;
+    core_machine_memory_append_device_provider(ram, physical_start, bytes, read,
+        write, query, owner);
+    core_machine_memory_append_write_observer(ram, callback, owner);
     return TYPE_STATUS_OK;
 }
 

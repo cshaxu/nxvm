@@ -2,14 +2,36 @@
 
 ## Current Work
 
-**Idle.** M5 T333 is closed with its corrective `0.5.0333` artifact. The next
-implementation task requires a separately admitted packet.
+**M5 T334 S1 - active.** Repair EGA sequencer registration failure atomicity at
+the memory registry owner. The owner-approved candidate is
+[the EGA registration transaction](../proposals/m5-ega-registration-transaction.md).
+
+## M5 T334 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner approved on 2026-08-13: after T333 closes, admit the audited EGA observer/provider registration defect as T334 and execute it to closure. Scope is the shared memory registry and its sole coupled VADP caller. |
+| Objective | Make planar EGA sequencer configuration failure-atomic: failed allocation, observer-capacity failure, and provider-capacity failure leave no registration or VADP-owned allocation; a later valid retry publishes exactly one provider and observer. |
+| Non-goals | No EGA behavior breadth, registry-capacity increase, public product ABI, generic transaction framework, xasm work, CPU work, or unrelated memory-registry migration. |
+| Reference Baseline | `81a602fd` (`M5 T333 S4 P2: close artifact correction`) and its recorded `0.5.0333` developer artifact. The audited defect is in `core_machine_vadp_configure_ega_sequencer` after early observer publication. |
+| Candidate Proposal | [M5 EGA registration transaction](../proposals/m5-ega-registration-transaction.md). |
+| Files And ABI Surface | `src/core/machine/memory.c`, `src/core/machine/memory.h`, `src/core/machine/vadp.c`, one owner-bound `tests/machine/` smoke, CMake registration/current artifact target and preset, Current/history/proposal/Queue records, and ignored `build/output/nxvm_0_5_0334.exe`. No product-facing ABI changes. |
+| Applicable Rules | `docs/rules/EXECUTION.md`: mechanism-defect owner/variants/preflight-commit boundary, actual-change audit, artifact and closure. `docs/rules/ARCHITECTURE.md`: one owner for stateful failure boundaries. `docs/rules/CODING.md`: repair at the owning boundary with no duplicate VADP side path; tests prove the owned boundary. `docs/rules/DOCUMENT.md`: Current owns the active contract and history retains closure. |
+| Verification | Static caller and failure-point inventory; strict focused smoke proving allocation failure, observer-capacity failure, provider-capacity failure, retry, and exactly-one success registration; fresh GCC configuration; `verify-ega-sequencer-boundary`, documentation governance, current-artifact verification, `current-gates-gcc`, artifact SHA-256/version identity, and `git diff --check`. |
+| Expected Markers | `M5:T334:S1:EGA-REGISTRATION-TRANSACTION:OK`; `vm-0-5-0334`; `build/output/nxvm_0_5_0334.exe`; one provider and one observer only after successful planar EGA configuration. |
+| Asset Needs | None. No source, firmware, guest media, third-party code, or Microsoft material. |
+| Reporting Requirements | Executor reports the owner/caller inventory before implementation, then delivers focused and full-gate evidence. In this single-session run, coordinator review inspects registry validation/publication ordering, all failure cleanup, CMake source separation for allocation injection, artifact identity, and every changed document before closure. |
+| Stop Conditions | Stop if a second coupled caller requires different rollback semantics, if proof needs mutable public registry access or a process-global allocator hook, or if the repair changes guest-visible EGA behavior. Record a transferred issue rather than broadening the task. |
+| Exit Criteria | The sole coupled caller uses the memory-owned atomic operation; no failed case changes registry counts or VADP configured/allocation state; retry and successful exact-one registration are proven; all listed verification passes; T334 `0.5.0334` artifact/hash is recorded; proposal moves to history and Queue/current state close consistently. |
+| Original Owner Request | Reopen T333 only for its artifact correction, then create T334 to repair the EGA registration failure and execute both fully. |
+| Similar-Issue Sweep | Inventory all `core_machine_memory_register_write_observer` and `core_machine_memory_register_device_provider` callers, all VADP EGA configuration fallible operations, and every test using EGA setup. Classify whether any other caller needs coupled atomic publication; cover it only if it shares the same contract, otherwise transfer it explicitly. |
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** T333 S4 selected `vm-0-5-0333` /
-  `build/output/nxvm_0_5_0333.exe`; the verified P1 output SHA-256 is
-  `EB89A9701036EFF6FEBFD211B12C92832FFB90CAE51672FEEF4241C6BE5A7A3E`.
+- **Current developer artifact:** T334 S1 selected `vm-0-5-0334` /
+  `build/output/nxvm_0_5_0334.exe`; the verified P1 output SHA-256 is
+  `B71758ABB6EA25B6F818786FCDA8D668F773925917E0C6385F26B0D419C25579`.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
