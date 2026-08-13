@@ -2,29 +2,8 @@
 
 ## Current Work
 
-**Active.** M5 T345 S1 establishes the whole-graph direct-compilation
-ownership and diagnostic baseline before any deferred source is promoted.
-
-## M5 T345 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner approved 2026-08-13: admit the T344 deferred direct-compilation work as the next quality task, add its proposal and Queue entry, and begin implementation. |
-| Objective | Regenerate and classify every T344 deferred direct C source/target row into a reproducible ownership and direct-warning baseline with one precise S2/S3 admission mechanism. |
-| Non-goals | Do not add strict flags, change source behavior, suppress warnings, change docs/rules, claim linked dependency coverage, or repair xasm/device/runtime debt. |
-| Reference Baseline | `be54d3ea74dcd32e49ec1a11def213402a849e9f` / `vm-0-5-0344`; T344 direct matrix contains 305 rows: 130 retained strict, 54 deferred production, and 121 deferred owner test. |
-| Candidate Proposal | [M5 direct-compilation strictness convergence](../proposals/m5-direct-compilation-strictness-convergence.md), Queue item 1. |
-| Files And ABI Surface | CMake direct-matrix/verifier surface and new T345 evidence/history/proposal/state records only; no runtime or public ABI surface. |
-| Applicable Rules | Task Reading Set; Execution lifecycle, similar-issue sweep, and task-closure requirements; Documentation authority boundaries; Coding direct-compilation vocabulary. Architecture runtime invariants are not applicable because S1 changes no production behavior. |
-| Verification | Fresh MinGW GCC/Ninja configure; generated direct matrix; S1 classifier/verifier positive run and negative self-check; existing T344 direct matrix verification; documentation governance; `git diff --check`; current-gate if configuration changes require it. |
-| Expected Markers | A committed T345 S1 ownership/warning-baseline evidence record and a mechanical verifier reporting every deferred row classified with a named mechanism. |
-| Asset Needs | No external source, firmware, guest media, or protected asset. |
-| Reporting Requirements | Record source/target counts, every ownership class, baseline command/toolchain, warning classes, duplicate source relationships, and any source outside the fixed matrix. Report a material mechanism/risk conflict before proceeding. |
-| Stop Conditions | Stop if classification requires a global compiler policy, a source/runtime change, an unowned build generator, or a row cannot be attributed to a direct configured target/source pair. Transfer such a condition rather than inventing a category. |
-| Exit Criteria | All 175 deferred rows are present exactly once in committed T345 evidence, have an actual-command and warning-baseline record, one defined ownership/admission mechanism, and mechanical positive/negative verification. No source receives strict flags in S1. |
-| Original Owner Request | Add the T344 deferred non-strict compilation scope to durable governance, avoid incremental warning patches, create a proposal/Queue task, and begin holistic implementation. |
-| Similar-Issue Sweep | Whole configured T344 direct matrix is the sweep scope. Search and classify all deferred rows, not only the 54 inherited production rows or a convenient test subset; a matrix mismatch is a blocker. |
+**Idle.** M5 T345 remains open; S1 is closed. T345 S2 requires a separately
+admitted packet.
 
 ## Current Technical Baseline
 
@@ -45,6 +24,7 @@ ownership and diagnostic baseline before any deferred source is promoted.
 
 | Task | Compact result |
 | --- | --- |
+| T345 S1 | Classified all 175 T344 deferred direct source/target rows: 121 project-owned test, 6 embedded production test, 1 type foundation, and 47 mixed/inherited production. Actual Ninja-command warning baseline records 225 warnings; exact non-current request-bridge test drift transferred to TODO. [Evidence](../etc/evidence/t345-s1-direct-compilation-ownership.md). |
 | T344 | Closed build-quality reproducibility: fresh configuration, 305-row truthful strict-compile matrix (130 retained strict/175 deferred), canonical 218-target current-gate registration, 53 historical fixture shapes, and strict-declaration uniqueness are mechanically verified. [History](../history/M5-T344-build-quality-reproducibility.md). |
 | T343 | Closed the four-profile CPU program: one final ledger reconciles the 8086, 80186, 80286, and 80386DX execution, protected-state, delivery, task/paging/debug, and CPU-side coprocessor-interface boundaries. VME/PVI, persistent cache, x87 execution, timing/device, and Windows/product work remain explicit external candidates. [Closure ledger](../etc/evidence/t343-s1-four-profile-cross-closure.md). |
 | T342 | Closed the 80386DX profile ledger: T340 form and T341 state evidence reconcile every assigned row once, and the closure map now names the accepted state owners instead of stale future transfers. Only explicit post-80386, x87, timing/device, and Windows boundaries remain external. [Closure audit](../etc/evidence/t342-s1-80386dx-profile-closure-audit.md). |
