@@ -17441,6 +17441,39 @@ static type_bool _e_is_contributory_exception(type_unsigned_32 exception)
     return exception == VCPUINS_EXCEPT_TS || exception == VCPUINS_EXCEPT_NP ||
         exception == VCPUINS_EXCEPT_SS || exception == VCPUINS_EXCEPT_GP;
 }
+/* Real-mode final delivery has one rollback and diagnostic boundary.  The
+ * vector remains an architectural property of the producer; this helper owns
+ * only the common fault-state restoration around IVT delivery. */
+static type_bool _e_final_deliver_real_exception(
+    core_machine_cpu_execution_context *context, const t_cpu *fault_cpu,
+    type_unsigned_8 exception_vector)
+{
+    type_unsigned_32 original_except;
+    type_unsigned_32 original_excode;
+
+    TYPE_TRACE_CALL_BEGIN("_e_final_deliver_real_exception");
+    original_except = instruction_state.data.except;
+    original_excode = instruction_state.data.excode;
+    cpu_state = *fault_cpu;
+    _e_except_n(context, exception_vector, _GetOperandSize);
+    if (instruction_state.data.except) {
+        cpu_state = *fault_cpu;
+        instruction_state.data.except = original_except;
+        instruction_state.data.excode = original_excode;
+        TYPE_TRACE_CALL_END;
+        return TYPE_FALSE;
+    }
+    if (context->diagnostic_provider != STD_NULL &&
+        context->diagnostic_provider->record_delivered_exception != STD_NULL) {
+        instruction_state.data.except = original_except;
+        instruction_state.data.excode = original_excode;
+        context->diagnostic_provider->record_delivered_exception(
+            context->diagnostic_context, fault_cpu, &instruction_state);
+        instruction_state.data.except = 0u;
+    }
+    TYPE_TRACE_CALL_END;
+    return TYPE_TRUE;
+}
 static C_VOID ExecFinal(core_machine_cpu_execution_context *context)
 {
     t_cpu fault_cpu;
@@ -17564,78 +17597,25 @@ static C_VOID ExecFinal(core_machine_cpu_execution_context *context)
         if (!TYPE_GET_BIT(fault_cpu.data.cr0, VCPU_CR0_PE) &&
             (instruction_state.data.except == VCPUINS_EXCEPT_DE ||
              instruction_state.data.except == VCPUINS_EXCEPT_PF ||
-             instruction_state.data.except == VCPUINS_EXCEPT_MF)) {
-            original_except = instruction_state.data.except;
-            original_excode = instruction_state.data.excode;
-            cpu_state = fault_cpu;
-            _e_except_n(context, exception_vector, _GetOperandSize);
-            if (!instruction_state.data.except) {
-                if (context->diagnostic_provider != STD_NULL &&
-                    context->diagnostic_provider->record_delivered_exception !=
-                        STD_NULL) {
-                    instruction_state.data.except = original_except;
-                    instruction_state.data.excode = original_excode;
-                    context->diagnostic_provider->record_delivered_exception(
-                        context->diagnostic_context, &fault_cpu,
-                        &instruction_state);
-                    instruction_state.data.except = 0u;
-                }
-                return;
-            }
-            cpu_state = fault_cpu;
-            instruction_state.data.except = original_except;
-            instruction_state.data.excode = original_excode;
-        }
+             instruction_state.data.except == VCPUINS_EXCEPT_MF) &&
+            _e_final_deliver_real_exception(context, &fault_cpu,
+                exception_vector))
+            return;
 
         if (!TYPE_GET_BIT(fault_cpu.data.cr0, VCPU_CR0_PE) &&
-            TYPE_GET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_BR)) {
-            original_except = instruction_state.data.except;
-            original_excode = instruction_state.data.excode;
-            cpu_state = fault_cpu;
-            TYPE_CLEAR_BIT(instruction_state.data.except, VCPUINS_EXCEPT_BR);
-            _e_except_n(context, 0x05u, _GetOperandSize);
-            if (!instruction_state.data.except) {
-                if (context->diagnostic_provider != STD_NULL &&
-                    context->diagnostic_provider->record_delivered_exception !=
-                        STD_NULL) {
-                    instruction_state.data.except = original_except;
-                    instruction_state.data.excode = original_excode;
-                    context->diagnostic_provider->record_delivered_exception(
-                        context->diagnostic_context, &fault_cpu,
-                        &instruction_state);
-                    instruction_state.data.except = 0u;
-                }
-                return;
-            }
-            cpu_state = fault_cpu;
-            instruction_state.data.except = original_except;
-            instruction_state.data.excode = original_excode;
-        }
+            TYPE_GET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_BR) &&
+            _e_final_deliver_real_exception(context, &fault_cpu, 0x05u))
+            return;
 
         if (!TYPE_GET_BIT(fault_cpu.data.cr0, VCPU_CR0_PE) &&
-            TYPE_GET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_NM)) {
-            original_except = instruction_state.data.except;
-            original_excode = instruction_state.data.excode;
-            cpu_state = fault_cpu;
-            TYPE_CLEAR_BIT(instruction_state.data.except, VCPUINS_EXCEPT_NM);
-            _e_except_n(context, 0x07u, _GetOperandSize);
-            if (!instruction_state.data.except) {
-                if (context->diagnostic_provider != STD_NULL &&
-                    context->diagnostic_provider->record_delivered_exception !=
-                        STD_NULL) {
-                    instruction_state.data.except = original_except;
-                    instruction_state.data.excode = original_excode;
-                    context->diagnostic_provider->record_delivered_exception(
-                        context->diagnostic_context, &fault_cpu,
-                        &instruction_state);
-                    instruction_state.data.except = 0u;
-                }
-                return;
-            }
-            cpu_state = fault_cpu;
-            instruction_state.data.except = original_except;
-            instruction_state.data.excode = original_excode;
-        }
+            TYPE_GET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_NM) &&
+            _e_final_deliver_real_exception(context, &fault_cpu, 0x07u))
+            return;
+
+        if (!TYPE_GET_BIT(fault_cpu.data.cr0, VCPU_CR0_PE) &&
+            TYPE_GET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_GP) &&
+            _e_final_deliver_real_exception(context, &fault_cpu, 0x0du))
+            return;
 
         if (context->diagnostic_provider != STD_NULL &&
             context->diagnostic_provider->record_fault != STD_NULL)
@@ -17644,16 +17624,6 @@ static C_VOID ExecFinal(core_machine_cpu_execution_context *context)
                                                        &fault_cpu, &instruction_state);
         }
         cpu_state = fault_cpu;
-        /* A protected #GP has already had its one bounded IDT-delivery
-         * attempt above. This remaining path preserves the original terminal
-         * fault; real mode retains its IVT delivery behavior. */
-        if (TYPE_GET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_GP) &&
-            !TYPE_GET_BIT(cpu_state.data.cr0, VCPU_CR0_PE))
-        {
-            ExecInit(context);
-            TYPE_CLEAR_BIT(instruction_state.data.except, VCPUINS_EXCEPT_GP);
-            _e_except_n(context, 0x0d, _GetOperandSize);
-        }
         core_machine_cpu_execution_request_stop(context);
     }
 }

@@ -1357,6 +1357,13 @@ if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(core-machine-exception-delivery-s2-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
+add_executable(core-machine-real-exception-final-s1-smoke
+    tests/machine/core_machine_real_exception_final_s1_smoke.c)
+target_link_libraries(core-machine-real-exception-final-s1-smoke PRIVATE core-machine)
+if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(core-machine-real-exception-final-s1-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
 add_executable(core-machine-protected-ud-delivery-s1-smoke
     tests/machine/core_machine_protected_ud_delivery_s1_smoke.c)
 target_link_libraries(core-machine-protected-ud-delivery-s1-smoke PRIVATE core-machine)
@@ -1583,6 +1590,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-fpu-interface-s65-smoke
     core-machine-fpu-8087-smoke
     core-machine-exception-delivery-s2-smoke
+    core-machine-real-exception-final-s1-smoke
     core-machine-protected-ud-delivery-s1-smoke
     core-machine-hardware-delivery-s3-smoke
     core-machine-interrupt-return-composition-s4-smoke
@@ -1829,7 +1837,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0330 "0.5.0330")
+add_current_vm_artifact(vm-0-5-0331 "0.5.0331")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 
@@ -2192,12 +2200,19 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_t330_task_transition_construction.cmake"
         COMMENT "Verifying T330 task-transition construction closure"
         VERBATIM)
+
+    add_custom_target(verify-t331-real-exception-final-construction
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_t331_real_exception_final_construction.cmake"
+        COMMENT "Verifying T331 real exception final-delivery construction"
+        VERBATIM)
 endif()
 
 set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
     verify-t317-test-type-vocabulary
     verify-t317-strict-cpu-smoke-coverage
     verify-t330-task-transition-construction
+    verify-t331-real-exception-final-construction
     verify-documentation-governance
     verify-dependency-dag
     verify-live-machine-authority
