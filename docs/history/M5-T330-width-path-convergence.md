@@ -66,3 +66,17 @@ current specialized verifier that proves the accepted T330 private transition
 plan is the sole constructor reached by task entry and backlink return. The
 correction preserves the separate Intel 286/386 TSS layouts and the accepted
 task-switch test corpus; it does not broaden task-switch semantics.
+
+## Continuation S5: Media-Provider Backing Construction
+
+The whole-codebase follow-up corrected the only shared-media construction
+drift: FDD could publish a present medium after allocation had left its backing
+null, while FDD direct callbacks and HDD formatting could dereference a null
+backing in a malformed present context. The two provider implementations now
+classify that state as a permanent media failure before dereference; FDD create
+publishes presence and generation only when backing exists. The focused media
+provider smoke proves direct and registry-facing read/write/format rejection,
+FDD failed-create nonpublication, and all retained normal replacement, remove,
+insert, formatting, capacity, and atomic-save paths. This is provider-local
+contract convergence, not a media-interface, controller, or persistence-policy
+change.

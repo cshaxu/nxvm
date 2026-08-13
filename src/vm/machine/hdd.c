@@ -82,6 +82,8 @@ static core_machine_media_result vm_machine_hdd_media_format(C_VOID *context,
     if (hdd == STD_NULL || !hdd->connect.flagDiskExist)
         return CORE_MACHINE_MEDIA_RESULT_ABSENT;
     if (hdd->connect.flagReadOnly) return CORE_MACHINE_MEDIA_RESULT_READ_ONLY;
+    if (hdd->connect.pImgBase == (type_virtual_address)STD_NULL)
+        return CORE_MACHINE_MEDIA_RESULT_PERMANENT;
     sector_total = hdd->connect.virtual_byte_count / hdd->data.nbyte;
     if (logical_sector >= sector_total || sector_count > sector_total - logical_sector)
         return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;

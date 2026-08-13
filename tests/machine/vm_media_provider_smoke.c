@@ -64,13 +64,41 @@ static C_INT vm_media_provider_expect_hdd_capacity(t_hdd *hdd,
     return 0;
 }
 
+static C_INT vm_media_provider_expect_null_backing(
+    core_machine_media_registry *registry, core_machine_media_id id,
+    C_VOID *context, const core_machine_media_provider *provider,
+    type_unsigned_8 *byte)
+{
+    core_machine_media_result result;
+
+    if (provider->read_bytes(context, 0u, byte, 1u) !=
+            CORE_MACHINE_MEDIA_RESULT_PERMANENT ||
+        provider->write_bytes(context, 0u, byte, 1u) !=
+            CORE_MACHINE_MEDIA_RESULT_PERMANENT ||
+        provider->format_sectors(context, 0u, 1u, 0xa5u) !=
+            CORE_MACHINE_MEDIA_RESULT_PERMANENT ||
+        core_machine_media_read_bytes(registry, id, 0u, byte, 1u, &result) !=
+            TYPE_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_PERMANENT ||
+        core_machine_media_write_bytes(registry, id, 0u, byte, 1u, &result) !=
+            TYPE_STATUS_OK || result != CORE_MACHINE_MEDIA_RESULT_PERMANENT ||
+        core_machine_media_format_sectors(registry, id, 0u, 1u, 0xa5u,
+            &result) != TYPE_STATUS_OK ||
+        result != CORE_MACHINE_MEDIA_RESULT_PERMANENT) {
+        return 1;
+    }
+    return 0;
+}
+
 C_INT main(C_VOID)
 {
     core_machine_media_registry registry;
     core_machine_media_info info;
     core_machine_media_result result;
     t_fdd fdd;
+    t_fdd failed_fdd;
+    t_fdd null_fdd;
     t_hdd hdd;
+    t_hdd null_hdd;
     type_unsigned_8 bytes[512] = {0};
     type_unsigned_8 hdd_bytes[513] = {0x5au};
     type_unsigned_8 tail_write = 0xa7u;
@@ -84,7 +112,23 @@ C_INT main(C_VOID)
     C_INT failed = 0;
 
     vm_machine_fdd_initialize(&fdd);
+    vm_machine_fdd_initialize(&failed_fdd);
+    vm_machine_fdd_finalize(&failed_fdd);
     vm_machine_hdd_initialize(&hdd);
+    STD_MEMSET(&null_fdd, TYPE_ZERO_8, sizeof(null_fdd));
+    null_fdd.data.ncyl = 80u;
+    null_fdd.data.nhead = 2u;
+    null_fdd.data.nsector = 18u;
+    null_fdd.data.nbyte = 512u;
+    null_fdd.connect.flagDiskExist = TYPE_TRUE;
+    null_fdd.connect.media_generation = 3u;
+    STD_MEMSET(&null_hdd, TYPE_ZERO_8, sizeof(null_hdd));
+    null_hdd.data.nhead = 16u;
+    null_hdd.data.nsector = 63u;
+    null_hdd.data.nbyte = 512u;
+    null_hdd.connect.flagDiskExist = TYPE_TRUE;
+    null_hdd.connect.virtual_byte_count = 512u;
+    null_hdd.connect.media_generation = 7u;
     if (vm_media_provider_write_byte_file(vm_media_provider_save_target, 0x39u) ||
         vm_media_provider_write_byte_file(vm_media_provider_save_collision, collision_byte) ||
         vm_machine_media_save_atomically(vm_media_provider_save_target, &save_byte,
@@ -96,6 +140,12 @@ C_INT main(C_VOID)
         vm_media_provider_read_byte_file(vm_media_provider_save_target, save_byte)) {
         failed = 1;
     }
+    vm_machine_fdd_create_for(&failed_fdd);
+    if (!failed && (failed_fdd.connect.flagDiskExist ||
+        failed_fdd.connect.media_generation != 0u ||
+        failed_fdd.connect.pImgBase != (type_virtual_address)STD_NULL)) {
+        failed = 1;
+    }
     vm_machine_fdd_create_for(&fdd);
     vm_machine_hdd_create(&hdd, 2u);
     core_machine_media_registry_initialize(&registry);
@@ -103,12 +153,22 @@ C_INT main(C_VOID)
             vm_machine_fdd_media_provider()) != TYPE_STATUS_OK ||
         core_machine_media_registry_bind(&registry, 2u, &hdd,
             vm_machine_hdd_media_provider()) != TYPE_STATUS_OK ||
+        core_machine_media_registry_bind(&registry, 3u, &null_fdd,
+            vm_machine_fdd_media_provider()) != TYPE_STATUS_OK ||
+        core_machine_media_registry_bind(&registry, 4u, &null_hdd,
+            vm_machine_hdd_media_provider()) != TYPE_STATUS_OK ||
         core_machine_media_registry_freeze(&registry) != TYPE_STATUS_OK ||
         core_machine_media_query(&registry, 1u, &info, &result) != TYPE_STATUS_OK ||
         result != CORE_MACHINE_MEDIA_RESULT_OK || !info.present ||
         info.geometry.bytes_per_sector != 512u ||
         core_machine_media_query(&registry, 2u, &info, &result) != TYPE_STATUS_OK ||
         result != CORE_MACHINE_MEDIA_RESULT_OK || info.geometry.cylinders != 2u) {
+        failed = 1;
+    }
+    if (!failed && (vm_media_provider_expect_null_backing(&registry, 3u,
+        &null_fdd, vm_machine_fdd_media_provider(), &bytes[0]) ||
+        vm_media_provider_expect_null_backing(&registry, 4u, &null_hdd,
+            vm_machine_hdd_media_provider(), &bytes[0]))) {
         failed = 1;
     }
     fdd_generation = fdd.connect.media_generation;
@@ -190,6 +250,7 @@ C_INT main(C_VOID)
     if (temporary_image != STD_NULL) (C_VOID)STD_FCLOSE(temporary_image);
     core_machine_media_registry_finalize(&registry);
     vm_machine_fdd_finalize(&fdd);
+    vm_machine_fdd_finalize(&failed_fdd);
     vm_machine_hdd_finalize(&hdd);
     (C_VOID)STD_REMOVE("vm_media_provider_t280.img");
     (C_VOID)STD_REMOVE(vm_media_provider_save_target);

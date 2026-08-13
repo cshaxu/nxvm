@@ -44,6 +44,8 @@ static core_machine_media_result vm_machine_fdd_media_read(C_VOID *context,
 
     if (fdd == STD_NULL || !fdd->connect.flagDiskExist)
         return CORE_MACHINE_MEDIA_RESULT_ABSENT;
+    if (buffer == STD_NULL || fdd->connect.pImgBase == (type_virtual_address)STD_NULL)
+        return CORE_MACHINE_MEDIA_RESULT_PERMANENT;
     image_size = vm_machine_fdd_image_size(fdd);
     if (offset > image_size || byte_count > image_size - offset)
         return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
@@ -60,6 +62,8 @@ static core_machine_media_result vm_machine_fdd_media_write(C_VOID *context,
     if (fdd == STD_NULL || !fdd->connect.flagDiskExist)
         return CORE_MACHINE_MEDIA_RESULT_ABSENT;
     if (fdd->connect.flagReadOnly) return CORE_MACHINE_MEDIA_RESULT_READ_ONLY;
+    if (buffer == STD_NULL || fdd->connect.pImgBase == (type_virtual_address)STD_NULL)
+        return CORE_MACHINE_MEDIA_RESULT_PERMANENT;
     image_size = vm_machine_fdd_image_size(fdd);
     if (offset > image_size || byte_count > image_size - offset)
         return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
@@ -76,6 +80,8 @@ static core_machine_media_result vm_machine_fdd_media_format(C_VOID *context,
     if (fdd == STD_NULL || !fdd->connect.flagDiskExist)
         return CORE_MACHINE_MEDIA_RESULT_ABSENT;
     if (fdd->connect.flagReadOnly) return CORE_MACHINE_MEDIA_RESULT_READ_ONLY;
+    if (fdd->connect.pImgBase == (type_virtual_address)STD_NULL)
+        return CORE_MACHINE_MEDIA_RESULT_PERMANENT;
     sector_total = (type_unsigned_64)fdd->data.ncyl * fdd->data.nhead * fdd->data.nsector;
     if (logical_sector >= sector_total || sector_count > sector_total - logical_sector)
         return CORE_MACHINE_MEDIA_RESULT_INVALID_RANGE;
@@ -221,7 +227,7 @@ C_VOID vm_machine_fdd_finalize(t_fdd *fdd)
 
 C_VOID vm_machine_fdd_create_for(t_fdd *fdd)
 {
-    if (fdd != STD_NULL) {
+    if (fdd != STD_NULL && fdd->connect.pImgBase != (type_virtual_address)STD_NULL) {
         fdd->connect.flagDiskExist = TYPE_TRUE;
         fdd->connect.media_generation++;
     }

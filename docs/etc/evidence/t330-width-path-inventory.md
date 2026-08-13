@@ -169,3 +169,26 @@ fragments. The retained task-switch smoke continues to cover all 286/386
 source/target pairs, direct/task-gate entry, nested return, descriptor/TSS,
 LDT, stack, paging, and debug boundaries. No architectural TSS layout,
 descriptor/memory owner, or task-switch behavior changed.
+
+## T330 S5 Media-Provider Construction Reconciliation
+
+The whole-repository construction sweep found the two production
+`core_machine_media_provider` implementations in `vm/machine/fdd.c` and
+`vm/machine/hdd.c`. Both providers now reject a present medium whose backing
+pointer is null before any read, write, or format dereference. FDD now follows
+the same construction boundary as HDD: `create_for` publishes present state
+and advances the media generation only after backing exists. HDD already used
+a candidate-and-commit create path; its format callback was the remaining
+backing-precondition omission and now shares the provider contract.
+
+`vm-media-provider-smoke` binds deliberately present-but-null FDD and HDD
+contexts through the registry and also invokes their provider callbacks
+directly. Read, write, and format deterministically return `PERMANENT` without
+publication. It separately simulates a finalized FDD allocation failure and
+proves `create_for` leaves presence, generation, and backing unchanged. The
+retained normal FDD/HDD create, replacement, insert, remove, formatting, and
+atomic-save cases remain in the same smoke. The sweep classified all FDD/HDD
+create, replace, insert, remove, read, write, and format routes: candidate
+commit routes are aligned; direct FDD I/O and both format callbacks were fixed;
+remove/save paths already fail before mutation when persistence lacks backing.
+No shared media interface, controller protocol, or public ABI changed.
