@@ -94,11 +94,11 @@ static C_INT ct_prepare(ct_machine *state, core_machine_cpu_profile profile,
     return 1;
 }
 
-static C_INT ct_prepare_real(ct_machine *state)
+static C_INT ct_prepare_real(ct_machine *state, core_machine_cpu_profile profile)
 {
     const core_machine_config config = {
         .memory_bytes = CORE_MACHINE_MINIMUM_MEMORY_BYTES,
-        .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
+        .cpu_profile = profile,
         .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
     };
     static const type_unsigned_8 reset_jump[] = {0xeau,0,0,0,0};
@@ -132,6 +132,19 @@ static C_INT ct_run(ct_machine *state, const type_unsigned_8 *code,
     if ((expected_reason == CORE_MACHINE_STOP_FAULT && status != TYPE_STATUS_FAULT) ||
         (expected_reason != CORE_MACHINE_STOP_FAULT && status != TYPE_STATUS_OK) ||
         result.reason != expected_reason) return 0;
+    *out_cpu = test_core_machine_fixture_capture_cpu_after_run(state->machine);
+    return 1;
+}
+
+static C_INT ct_run_real(ct_machine *state, const type_unsigned_8 *code,
+    STD_SIZE_T code_size, t_cpu *out_cpu)
+{
+    const core_machine_run_budget budget = { 48u, 0u };
+    core_machine_run_result result;
+
+    if (!ct_write(state, 0u, code, code_size) ||
+        core_machine_run(state->machine, budget, &result) != TYPE_STATUS_OK ||
+        result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT) return 0;
     *out_cpu = test_core_machine_fixture_capture_cpu_after_run(state->machine);
     return 1;
 }
@@ -330,7 +343,7 @@ static C_INT ct_test_16bit_code_and_real_mode(C_VOID)
         t_cpu after;
         const core_machine_run_budget budget = {48u,0u};
         core_machine_run_result result;
-        C_INT failed = !ct_prepare_real(&state);
+        C_INT failed = !ct_prepare_real(&state, CORE_MACHINE_CPU_PROFILE_80386);
 
         if (!failed) {
             state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_ZF | 0x00000002u;
@@ -806,12 +819,13 @@ static C_INT ct_test_far_indirect_forms(C_VOID)
     return 1;
 }
 
-static C_INT ct_test_far_real_mode(C_VOID)
+static C_INT ct_test_far_real_mode_profile(core_machine_cpu_profile profile)
 {
     static const type_unsigned_8 jmp[] = {0xeau,0,0,0,1};
     static const type_unsigned_8 call[] = {0x9au,0,0,0,1,0xf4u};
     static const type_unsigned_8 halt[] = {0xf4u};
     static const type_unsigned_8 retf[] = {0xcbu};
+    static const type_unsigned_8 retf_immediate[] = {0xcau,2u,0u};
     static const type_unsigned_8 indirect_jmp[] = {0xffu,0x2eu,0,1};
     static const type_unsigned_8 indirect_call[] = {0xffu,0x1eu,0,1,0xb0u,0xa5u,0xf4u};
     static const type_unsigned_8 pointer[] = {0,0,0,1};
@@ -819,7 +833,7 @@ static C_INT ct_test_far_real_mode(C_VOID)
     core_machine_run_result result;
     ct_machine state;
     t_cpu after;
-    C_INT failed = !ct_prepare_real(&state);
+    C_INT failed = !ct_prepare_real(&state, profile);
 
     if (!failed) {
         failed = !ct_write(&state, 0u, jmp, sizeof(jmp)) ||
@@ -831,7 +845,20 @@ static C_INT ct_test_far_real_mode(C_VOID)
     }
     core_machine_destroy(state.machine);
     if (failed) return 0;
-    failed = !ct_prepare_real(&state);
+    failed = !ct_prepare_real(&state, profile);
+    if (!failed) {
+        state.machine->executor_cpu.data.sp = 0x8000u;
+        failed = !ct_write(&state, 0u, call, sizeof(call)) ||
+            !ct_write(&state, 0x1000u, retf_immediate, sizeof(retf_immediate)) ||
+            core_machine_run(state.machine, budget, &result) != TYPE_STATUS_OK ||
+            result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
+        after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        failed |= after.data.cs.selector != 0u || after.data.cs.base != 0u ||
+            after.data.sp != 0x8002u;
+    }
+    core_machine_destroy(state.machine);
+    if (failed) return 0;
+    failed = !ct_prepare_real(&state, profile);
     if (!failed) {
         failed = !ct_write(&state, 0u, call, sizeof(call)) ||
             !ct_write(&state, 0x1000u, retf, sizeof(retf)) ||
@@ -842,7 +869,7 @@ static C_INT ct_test_far_real_mode(C_VOID)
     }
     core_machine_destroy(state.machine);
     if (failed) return 0;
-    failed = !ct_prepare_real(&state);
+    failed = !ct_prepare_real(&state, profile);
     if (!failed) {
         failed = !ct_write(&state, 0u, indirect_jmp, sizeof(indirect_jmp)) ||
             !ct_write(&state, 0x0100u, pointer, sizeof(pointer)) ||
@@ -854,7 +881,7 @@ static C_INT ct_test_far_real_mode(C_VOID)
     }
     core_machine_destroy(state.machine);
     if (failed) return 0;
-    failed = !ct_prepare_real(&state);
+    failed = !ct_prepare_real(&state, profile);
     if (!failed) {
         failed = !ct_write(&state, 0u, indirect_call, sizeof(indirect_call)) ||
             !ct_write(&state, 0x0100u, pointer, sizeof(pointer)) ||
@@ -869,6 +896,147 @@ static C_INT ct_test_far_real_mode(C_VOID)
     return !failed;
 }
 
+static C_INT ct_test_far_real_mode(C_VOID)
+{
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186
+    };
+    STD_SIZE_T index;
+
+    for (index = 0u; index < sizeof(profiles) / sizeof(profiles[0]); ++index) {
+        if (!ct_test_far_real_mode_profile(profiles[index])) return 0;
+    }
+    return 1;
+}
+
+static C_INT ct_test_legacy_real_near_control(C_VOID)
+{
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186
+    };
+    static const type_unsigned_8 jump_near[] = { 0xe9u, 2u, 0u, 0xb0u, 0u, 0xf4u };
+    static const type_unsigned_8 jump_short[] = { 0xebu, 2u, 0xb0u, 0u, 0xf4u };
+    static const type_unsigned_8 call_near[] = {
+        0xe8u, 3u, 0u, 0xb0u, 0xa5u, 0xf4u, 0xc3u
+    };
+    static const type_unsigned_8 call_indirect[] = {
+        0xb8u, 8u, 0u, 0xffu, 0xd0u, 0xb0u, 0xa5u, 0xf4u, 0xc3u
+    };
+    static const type_unsigned_8 jump_indirect[] = {
+        0xb8u, 5u, 0u, 0xffu, 0xe0u, 0xb0u, 0xa5u, 0xf4u
+    };
+    static const type_unsigned_8 return_immediate[] = { 0xc2u, 2u, 0u, 0xf4u };
+    static const type_unsigned_8 return_target[] = { 3u, 0u };
+    STD_SIZE_T index;
+
+    for (index = 0u; index < sizeof(profiles) / sizeof(profiles[0]); ++index) {
+        ct_machine state;
+        t_cpu before;
+        t_cpu after;
+        C_INT failed = !ct_prepare_real(&state, profiles[index]);
+
+        if (!failed) {
+            before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+            failed = !ct_run_real(&state, jump_near, sizeof(jump_near), &after) ||
+                after.data.ip != sizeof(jump_near) || after.data.ax != before.data.ax ||
+                after.data.sp != before.data.sp || after.data.eflags != before.data.eflags;
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+        failed = !ct_prepare_real(&state, profiles[index]);
+        if (!failed) {
+            before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+            failed = !ct_run_real(&state, jump_short, sizeof(jump_short), &after) ||
+                after.data.ip != sizeof(jump_short) || after.data.ax != before.data.ax ||
+                after.data.sp != before.data.sp || after.data.eflags != before.data.eflags;
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+        failed = !ct_prepare_real(&state, profiles[index]);
+        if (!failed) {
+            before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+            failed = !ct_run_real(&state, call_near, sizeof(call_near), &after) ||
+                after.data.al != 0xa5u || after.data.sp != before.data.sp ||
+                after.data.eflags != before.data.eflags;
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+        failed = !ct_prepare_real(&state, profiles[index]);
+        if (!failed) {
+            before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+            failed = !ct_run_real(&state, call_indirect, sizeof(call_indirect), &after) ||
+                after.data.al != 0xa5u || after.data.sp != before.data.sp ||
+                after.data.eflags != before.data.eflags;
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+        failed = !ct_prepare_real(&state, profiles[index]);
+        if (!failed) {
+            before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+            failed = !ct_run_real(&state, jump_indirect, sizeof(jump_indirect), &after) ||
+                after.data.al != 0xa5u || after.data.sp != before.data.sp ||
+                after.data.eflags != before.data.eflags;
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+        failed = !ct_prepare_real(&state, profiles[index]);
+        if (!failed) {
+            state.machine->executor_cpu.data.sp = 0x8000u;
+            failed = !ct_write(&state, 0x8000u, return_target, sizeof(return_target));
+            before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+            if (!failed) failed = !ct_run_real(&state, return_immediate,
+                sizeof(return_immediate), &after) || after.data.ip != 4u ||
+                after.data.sp != before.data.sp + 4u ||
+                after.data.eflags != before.data.eflags;
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+    }
+    return 1;
+}
+
+static C_INT ct_test_legacy_ff_reserved(C_VOID)
+{
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_8086, CORE_MACHINE_CPU_PROFILE_80186
+    };
+    static const type_unsigned_8 code[] = { 0xffu, 0xf8u };
+    STD_SIZE_T index;
+
+    for (index = 0u; index < sizeof(profiles) / sizeof(profiles[0]); ++index) {
+        const core_machine_run_budget budget = { 1u, 0u };
+        core_machine_run_result result;
+        core_machine_cpu_diagnostic diagnostic;
+        ct_machine state;
+        t_cpu before;
+        t_cpu after;
+        type_status status;
+        C_INT failed = !ct_prepare_real(&state, profiles[index]);
+
+        if (!failed) {
+            failed = !test_core_machine_fixture_prepare_real_mode_execution(
+                state.machine, 0u) ||
+                !test_core_machine_fixture_preflight_real_ud_terminal(state.machine);
+            before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+            if (!failed) {
+                failed = !ct_write(&state, 0u, code, sizeof(code));
+                status = core_machine_run(state.machine, budget, &result);
+                after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+                failed |= status != TYPE_STATUS_FAULT ||
+                    result.reason != CORE_MACHINE_STOP_FAULT ||
+                    core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
+                        TYPE_STATUS_OK || !diagnostic.first_fault.valid ||
+                    !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
+                        VCPUINS_EXCEPT_UD) || STD_MEMCMP(&before.data,
+                        &after.data, sizeof(before.data)) != 0;
+            }
+        }
+        core_machine_destroy(state.machine);
+        if (failed) return 0;
+    }
+    return 1;
+}
+
 C_INT main(C_VOID)
 {
     if (!ct_test_jcc_short() || !ct_test_near_and_short_jumps() ||
@@ -878,7 +1046,8 @@ C_INT main(C_VOID)
         !ct_test_ret_target_fault_is_atomic() || !ct_test_near_call_and_ret_forms() ||
         !ct_test_near_indirect_and_fault_boundaries() ||
         !ct_test_far_same_cpl_return_validation() || !ct_test_far_immediate_forms() ||
-        !ct_test_far_indirect_forms() || !ct_test_far_real_mode()) return 1;
+        !ct_test_far_indirect_forms() || !ct_test_far_real_mode() ||
+        !ct_test_legacy_real_near_control() || !ct_test_legacy_ff_reserved()) return 1;
     STD_PRINTF("M5:T303:CONTROL-TRANSFER:OK\n");
     return 0;
 }
