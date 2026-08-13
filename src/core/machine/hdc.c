@@ -348,6 +348,9 @@ static C_VOID core_machine_hdc_next_read_sector(core_machine_hdc *hdc)
         return;
     }
     hdc->data.data_index = 0u;
+    hdc->data.phase = CORE_MACHINE_HDC_PHASE_DATA_READ;
+    hdc->data.status = CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_DSC |
+        CORE_MACHINE_HDC_STATUS_DRQ;
     core_machine_hdc_raise_irq(hdc);
 }
 
@@ -363,7 +366,27 @@ static C_VOID core_machine_hdc_next_write_sector(core_machine_hdc *hdc)
     if (!core_machine_hdc_advance_sector(hdc)) return;
     hdc->data.data_index = 0u;
     STD_MEMSET(hdc->data.data, 0, sizeof(hdc->data.data));
+    hdc->data.phase = CORE_MACHINE_HDC_PHASE_DATA_WRITE;
+    hdc->data.status = CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_DSC |
+        CORE_MACHINE_HDC_STATUS_DRQ;
     core_machine_hdc_raise_irq(hdc);
+}
+
+static C_VOID core_machine_hdc_capture_command(core_machine_hdc *hdc,
+    type_unsigned_8 command)
+{
+    if (hdc == STD_NULL || hdc->data.reset_asserted) return;
+    hdc->data.pending_command = command;
+    hdc->data.pending_features = hdc->data.features;
+    hdc->data.pending_sector_count = hdc->data.sector_count;
+    hdc->data.pending_sector_number = hdc->data.sector_number;
+    hdc->data.pending_cylinder_low = hdc->data.cylinder_low;
+    hdc->data.pending_cylinder_high = hdc->data.cylinder_high;
+    hdc->data.pending_drive_head = hdc->data.drive_head;
+    hdc->data.error = 0u;
+    core_machine_hdc_clear_irq(hdc);
+    hdc->data.phase = CORE_MACHINE_HDC_PHASE_PENDING_COMMAND;
+    hdc->data.status = CORE_MACHINE_HDC_STATUS_BSY;
 }
 
 static C_VOID core_machine_hdc_execute_command(core_machine_hdc *hdc, type_unsigned_8 command)
@@ -371,9 +394,6 @@ static C_VOID core_machine_hdc_execute_command(core_machine_hdc *hdc, type_unsig
     if (hdc == STD_NULL) return;
     hdc->data.last_command = command;
     ++hdc->data.command_count;
-    hdc->data.error = 0u;
-    core_machine_hdc_clear_irq(hdc);
-    if (hdc->data.reset_asserted) return;
     if (!core_machine_hdc_selected_master(hdc)) {
         core_machine_hdc_fail(hdc, CORE_MACHINE_HDC_ERROR_ABORT);
         return;
@@ -430,7 +450,8 @@ static type_status core_machine_hdc_port_read(C_VOID *opaque, type_unsigned_16 p
         *out_value = word;
         hdc->data.data_index = (type_unsigned_16)(hdc->data.data_index + sizeof(word));
         if (hdc->data.data_index == sizeof(hdc->data.data)) {
-            core_machine_hdc_next_read_sector(hdc);
+            hdc->data.phase = CORE_MACHINE_HDC_PHASE_PENDING_READ_SECTOR;
+            hdc->data.status = CORE_MACHINE_HDC_STATUS_BSY;
         }
         return TYPE_STATUS_OK;
     }
@@ -472,7 +493,8 @@ static type_status core_machine_hdc_port_write(C_VOID *opaque, type_unsigned_16 
         STD_MEMCPY(&hdc->data.data[hdc->data.data_index], &word, sizeof(word));
         hdc->data.data_index = (type_unsigned_16)(hdc->data.data_index + sizeof(word));
         if (hdc->data.data_index == sizeof(hdc->data.data)) {
-            core_machine_hdc_next_write_sector(hdc);
+            hdc->data.phase = CORE_MACHINE_HDC_PHASE_PENDING_WRITE_SECTOR;
+            hdc->data.status = CORE_MACHINE_HDC_STATUS_BSY;
         }
         return TYPE_STATUS_OK;
     }
@@ -489,7 +511,7 @@ static type_status core_machine_hdc_port_write(C_VOID *opaque, type_unsigned_16 
     } else if (port == hdc->connect.config.drive_head_port) {
         hdc->data.drive_head = (type_unsigned_8)value;
     } else if (port == hdc->connect.config.status_command_port) {
-        core_machine_hdc_execute_command(hdc, (type_unsigned_8)value);
+        core_machine_hdc_capture_command(hdc, (type_unsigned_8)value);
     } else if (port == hdc->connect.config.alternate_status_device_control_port) {
         type_unsigned_8 device_control = (type_unsigned_8)value;
         type_bool reset_asserted = (device_control &
@@ -549,6 +571,24 @@ C_VOID core_machine_hdc_reset(core_machine_hdc *hdc)
     STD_MEMSET(&hdc->data, 0, sizeof(hdc->data));
     core_machine_hdc_clear_irq(hdc);
     hdc->data.status = CORE_MACHINE_HDC_STATUS_DRDY | CORE_MACHINE_HDC_STATUS_DSC;
+}
+
+C_VOID core_machine_hdc_advance(core_machine_hdc *hdc)
+{
+    if (hdc == STD_NULL) return;
+    if (hdc->data.phase == CORE_MACHINE_HDC_PHASE_PENDING_COMMAND) {
+        hdc->data.features = hdc->data.pending_features;
+        hdc->data.sector_count = hdc->data.pending_sector_count;
+        hdc->data.sector_number = hdc->data.pending_sector_number;
+        hdc->data.cylinder_low = hdc->data.pending_cylinder_low;
+        hdc->data.cylinder_high = hdc->data.pending_cylinder_high;
+        hdc->data.drive_head = hdc->data.pending_drive_head;
+        core_machine_hdc_execute_command(hdc, hdc->data.pending_command);
+    } else if (hdc->data.phase == CORE_MACHINE_HDC_PHASE_PENDING_READ_SECTOR) {
+        core_machine_hdc_next_read_sector(hdc);
+    } else if (hdc->data.phase == CORE_MACHINE_HDC_PHASE_PENDING_WRITE_SECTOR) {
+        core_machine_hdc_next_write_sector(hdc);
+    }
 }
 
 C_VOID core_machine_hdc_refresh(core_machine_hdc *hdc)

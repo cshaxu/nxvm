@@ -24,8 +24,11 @@ typedef struct t_pic t_pic;
 
 typedef enum core_machine_hdc_phase {
     CORE_MACHINE_HDC_PHASE_IDLE,
+    CORE_MACHINE_HDC_PHASE_PENDING_COMMAND,
     CORE_MACHINE_HDC_PHASE_DATA_READ,
-    CORE_MACHINE_HDC_PHASE_DATA_WRITE
+    CORE_MACHINE_HDC_PHASE_DATA_WRITE,
+    CORE_MACHINE_HDC_PHASE_PENDING_READ_SECTOR,
+    CORE_MACHINE_HDC_PHASE_PENDING_WRITE_SECTOR
 } core_machine_hdc_phase;
 
 typedef struct core_machine_hdc_data {
@@ -41,6 +44,13 @@ typedef struct core_machine_hdc_data {
     type_bool irq_pending;
     type_bool reset_asserted;
     type_unsigned_8 last_command;
+    type_unsigned_8 pending_command;
+    type_unsigned_8 pending_features;
+    type_unsigned_8 pending_sector_count;
+    type_unsigned_8 pending_sector_number;
+    type_unsigned_8 pending_cylinder_low;
+    type_unsigned_8 pending_cylinder_high;
+    type_unsigned_8 pending_drive_head;
     type_unsigned_16 sectors_remaining;
     type_unsigned_32 command_count;
     core_machine_hdc_phase phase;
@@ -66,6 +76,7 @@ C_VOID core_machine_hdc_connect(core_machine_hdc *hdc,
     t_pic *pic_master, t_pic *pic_slave, const core_machine_hdc_config *config);
 C_VOID core_machine_hdc_initialize(core_machine_hdc *hdc);
 C_VOID core_machine_hdc_reset(core_machine_hdc *hdc);
+C_VOID core_machine_hdc_advance(core_machine_hdc *hdc);
 C_VOID core_machine_hdc_refresh(core_machine_hdc *hdc);
 C_VOID core_machine_hdc_finalize(core_machine_hdc *hdc);
 const core_machine_port_provider *core_machine_hdc_port_provider(C_VOID);

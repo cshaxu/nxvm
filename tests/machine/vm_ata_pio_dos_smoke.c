@@ -12,7 +12,7 @@
 #define VM_ATA253_MARKER_CELL 1920u
 
 typedef struct vm_ata253_program {
-    type_unsigned_8 bytes[192];
+    type_unsigned_8 bytes[256];
     type_unsigned_16 length;
 } vm_ata253_program;
 
@@ -69,6 +69,26 @@ static C_INT vm_ata253_discard_words(vm_ata253_program *program, type_unsigned_1
         vm_ata253_put(program, 0xfdu);
 }
 
+static C_INT vm_ata253_wait_drq(vm_ata253_program *program)
+{
+    return vm_ata253_put(program, 0xbau) && vm_ata253_word(program, 0x01f7u) &&
+        vm_ata253_put(program, 0xecu) && vm_ata253_put(program, 0xa8u) &&
+        vm_ata253_put(program, CORE_MACHINE_HDC_STATUS_BSY) && vm_ata253_put(program, 0x75u) &&
+        vm_ata253_put(program, 0xfbu) && vm_ata253_put(program, 0xa8u) &&
+        vm_ata253_put(program, CORE_MACHINE_HDC_STATUS_DRQ) && vm_ata253_put(program, 0x74u) &&
+        vm_ata253_put(program, 0xf7u);
+}
+
+static C_INT vm_ata253_wait_ready(vm_ata253_program *program)
+{
+    return vm_ata253_put(program, 0xbau) && vm_ata253_word(program, 0x01f7u) &&
+        vm_ata253_put(program, 0xecu) && vm_ata253_put(program, 0xa8u) &&
+        vm_ata253_put(program, CORE_MACHINE_HDC_STATUS_BSY) && vm_ata253_put(program, 0x75u) &&
+        vm_ata253_put(program, 0xfbu) && vm_ata253_put(program, 0xa8u) &&
+        vm_ata253_put(program, CORE_MACHINE_HDC_STATUS_DRQ) && vm_ata253_put(program, 0x75u) &&
+        vm_ata253_put(program, 0xf7u);
+}
+
 static C_INT vm_ata253_marker(vm_ata253_program *program, type_unsigned_8 character,
     type_unsigned_8 exit_code)
 {
@@ -93,11 +113,16 @@ static C_INT vm_ata253_build_program(vm_ata253_program *program)
     STD_MEMSET(program, 0, sizeof(*program));
     if (!vm_ata253_set_nien(program, 1) ||
         !vm_ata253_out_task_file(program, 0x30u) ||
+        !vm_ata253_wait_drq(program) ||
         !vm_ata253_put(program, 0xbau) || !vm_ata253_word(program, 0x01f0u) ||
         !vm_ata253_write_sector(program, 0x1357u) ||
+        !vm_ata253_wait_drq(program) ||
+        !vm_ata253_put(program, 0xbau) || !vm_ata253_word(program, 0x01f0u) ||
         !vm_ata253_write_sector(program, 0x2468u) ||
+        !vm_ata253_wait_ready(program) ||
         !vm_ata253_set_nien(program, 0) ||
         !vm_ata253_out_task_file(program, 0x20u) ||
+        !vm_ata253_wait_drq(program) ||
         !vm_ata253_put(program, 0xbau) || !vm_ata253_word(program, 0x01f0u) ||
         !vm_ata253_put(program, 0xedu) || !vm_ata253_put(program, 0x3du) ||
         !vm_ata253_word(program, 0x1357u) || !vm_ata253_put(program, 0x75u)) {
@@ -105,6 +130,8 @@ static C_INT vm_ata253_build_program(vm_ata253_program *program)
     }
     first_failure = program->length;
     if (!vm_ata253_put(program, 0u) || !vm_ata253_discard_words(program, 255u) ||
+        !vm_ata253_wait_drq(program) ||
+        !vm_ata253_put(program, 0xbau) || !vm_ata253_word(program, 0x01f0u) ||
         !vm_ata253_put(program, 0xedu) || !vm_ata253_put(program, 0x3du) ||
         !vm_ata253_word(program, 0x2468u) || !vm_ata253_put(program, 0x75u)) {
         return 0;
