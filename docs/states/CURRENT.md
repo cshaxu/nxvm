@@ -2,8 +2,29 @@
 
 ## Current Work
 
-**Idle.** M5 T348 is closed; PC/AT 8259A compliance requires a separately
-admitted task.
+M5 T349 S1 - PC/AT 8259A compliance contract and gap ledger (Single-Session
+Mode).
+
+## M5 T349 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner approved continuous holistic PC/AT device and L3 completion before Windows research; Queue selects the next 8259A candidate on 2026-08-13. |
+| Objective | Produce the complete PC/AT dual-8259A compliance ledger before any behavior repair: map initialization, PC/AT cascade, IRR/ISR/IMR, priority, EOI, AEOI, poll, special-mask/SFNM, edge/level, spurious IRQ, reset/finalize, CPU delivery and every request producer to exact source, existing proof, manual requirement, and bounded receiver. Reproduce each claimed mechanism defect with a focused owner probe or classify it as an explicit later transfer. |
+| Non-goals | No CPU exception/IRET redesign, new interrupt source, generic scheduler, arbitrary non-PC/AT board modes, PIC electrical waveform, host IRQ bridge, x87, or Windows claim. S1 does not silently repair production behavior; later admitted S units own repairs selected by this ledger. |
+| Reference Baseline | `5fe8a9da` / T348 closed; [PIC proposal](../proposals/m5-pcat-pic-compliance.md), [T346 history](../history/M5-T346-core-machine-device-l3-convergence.md), [T347 history](../history/M5-T347-storage-controller-service-timing.md), and [T348 history](../history/M5-T348-pcat-dma-completeness.md). |
+| Candidate Proposal | [PC/AT 8259A compliance](../proposals/m5-pcat-pic-compliance.md). |
+| Files And ABI Surface | Expected: PIC source/headers, composition/timeline/delivery callers, retained current-gate PIC/IRQ smokes, a new ledger/evidence artifact, Current, and T349 history only. No production behavior change except an owner probe if essential to reproduce a documented gap. |
+| Applicable Rules | Task Reading Set; architecture one controller owner and deterministic `DMA -> PIT -> PIC` boundary; coding owner-local test/ledger discipline; Intel 8259A and IBM PC/AT master/slave cascade contract; T346 trace/timeline and T347/T348 producer lifecycle boundaries. |
+| Verification | Inventory every PIC register/control/read path, all producer bind/assert/deassert callers, CPU scan/peek/get callers, reset/finalize and timeline calls. Crosswalk each adopted 8259A/PC/AT feature to current proof or a focused reproducible probe. Run retained PIC lifecycle, CPU delivery, producer, T346 arbitration/timeline and full current-gate checks; record exact gap disposition, later S order, and explicit external transfers. |
+| Expected Markers | Retain `M5:T216:S1:PIC-IRQ-LIFECYCLE:OK`, CPU/PIC lifecycle, T346 arbitration/timeline, T347 storage and T348 DMA markers; add an S1 ledger marker only if a deterministic owner probe is required. |
+| Asset Needs | Published Intel 8259A and IBM PC/AT documentation only; no firmware, guest media, host device, third-party source import, or external runtime dependency. |
+| Reporting Requirements | Record manual requirement, source owner, all caller/write paths, current proof, reproduction or reason no probe is possible, exact receiver, and every excluded electrical/non-PC/AT boundary. Deliver one complete pushed S1 P1. |
+| Stop Conditions | Stop for a need to redesign CPU delivery, add a second scheduling/interrupt owner, alter device producer ABI, model physical INTA or IRQ waveform, import source, or make any production repair before an owner-approved later S packet. |
+| Exit Criteria | The finite dual-8259A PC/AT mechanism has no unclassified row: each behavior is proven, reproduced as defective with one bounded later S receiver, or explicitly transferred to Queue/TODO with reason. No claimed implementation is inferred from incidental CPU smoke coverage. |
+| Original Owner Request | Make core-machine devices stable, comprehensive, and reliable at the selected deterministic L3 event-and-bus level before Windows testing. |
+| Similar-Issue Sweep | Inspect all tracked PIC data/control fields, port callbacks, source bind/assert/deassert calls, scan/peek/get callers, reset/finalize, timeline trace/refresh, and current test evidence; include both master and slave/cascade paths. |
 
 ## Current Technical Baseline
 
