@@ -50,8 +50,13 @@ and display breadth, and legally handled installation media/checkpoints.
 
 The closure reruns the S2--S5 focused markers, their exact CTest registrations,
 fresh configuration, documentation governance, diff check, and the complete
-current gate. The current task artifact is `nxvm_0_5_0346.exe`; its source
-commit, SHA-256, and runtime banner are recorded with the accepted S6 commit.
+current gate. Source commit `fda545e18b018a1c1bfb72c86beccd434b9b8089`
+builds and copies `build/output/nxvm_0_5_0346.exe`, SHA-256
+`7715C8C290969A99CCC1137D2DEEC64421FF245A22BD35287A2AED0C75A8E260`.
+Its startup banner identifies `Neko's x86 Virtual Machine [0.5.0346]`.
+The direct parallel current-gate run passed 222/222 tests. The aggregate build
+wrapper exceeded its non-streaming command timeout, so the recorded gate is
+the direct CTest result, not a claim that the wrapper completed.
 
 The retained DMA/RTC authority smoke was also reconciled with this contract:
 it now retires a NOP and then HLT across two due ticks. The first RTC update

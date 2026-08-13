@@ -8,14 +8,14 @@ core-machine device, bus, port, memory-map, interrupt, DMA, and deterministic
 timing gaps relevant to a PC/AT-class Windows 3.x research machine.  It
 excludes numerical x87 execution.
 
-## Active Plan
+## Closure
 
-S1 established the source/evidence/reference ledger and L3 dependency graph.
-S2 supplied its deterministic time/event foundation without migrating a
-controller. No later device or timing implementation may bypass the ledger or
-make a Bochs/PCjs implementation a project dependency. Subsequent S units are
-admitted from the recorded owner/dependency results, not preallocated from
-convenient port batches.
+T346 closes its selected deterministic PC/AT device/L3 program. Its detailed
+ledger reconciliation, Windows handoff, artifact provenance, and retained
+timing limits are indexed at
+`docs/etc/evidence/t346-s6-l3-closure-windows-handoff.md`. No later device or
+timing task may bypass that ledger or make a Bochs/PCjs implementation a
+project dependency.
 
 ## Completed Subtasks
 
@@ -93,3 +93,12 @@ RTC, KBC/AUX, and VADP in that order. This is not a cycle-exact, controller
 service-duration, or Windows-compatibility claim. The Windows readiness
 candidate receives only the evidenced blockers, and no Windows corpus or media
 was used.
+
+The task-level developer artifact is `nxvm_0_5_0346.exe`, built from
+`fda545e18b018a1c1bfb72c86beccd434b9b8089` with SHA-256
+`7715C8C290969A99CCC1137D2DEEC64421FF245A22BD35287A2AED0C75A8E260`.
+Its banner is `Neko's x86 Virtual Machine [0.5.0346]`. Fresh configuration,
+the retained S2--S5 focused proofs, documentation governance, diff check, and
+the direct parallel 222-test current gate passed. The aggregate build wrapper
+timed out without streamed failure output; the successful direct CTest result
+is the recorded runtime gate.

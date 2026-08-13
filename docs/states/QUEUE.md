@@ -21,10 +21,10 @@ together with the [80386DX admission policy](../proposals/m5-80386dx-candidate-p
 are shared planning references for the corresponding candidates below; they do
 not allocate a numeric task.
 
-After the CPU-profile program closes, the remaining M5 candidates consume its
-result but are not part of the profile-completeness claim:
+After the CPU-profile program and its deterministic PC/AT device/L3
+predecessor close, the remaining M5 candidates consume those results but are
+not part of the profile-completeness claim:
 
-1. [Core-machine device parity and L3 timing convergence](../proposals/m5-core-machine-device-l3-convergence.md). This is one dependency-ordered program: whole-machine ledger first, then one deterministic time/event/transaction foundation, then PIC/PIT/DMA arbitration, RTC/storage readiness, input/display convergence, and a PC/AT L3 transfer audit. It excludes x87 and is the sole predecessor of Windows readiness; no device-local convenience batch may bypass the foundation.
 1. [Windows 3.x readiness map](../proposals/m5-windows-3x-readiness-map.md).
 1. [M5 closure audit](../proposals/m5-closure-audit.md).
 
