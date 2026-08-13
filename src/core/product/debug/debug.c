@@ -24,6 +24,12 @@ static C_VOID core_product_debug_flush_console_input(core_product_debug_context 
     }
 }
 
+static C_INT core_product_debug_read_line(C_CHAR *buffer, STD_SIZE_T buffer_size)
+{
+    return buffer != STD_NULL && buffer_size != 0u && buffer_size <= 0x7fffffffu &&
+        STD_FGETS(buffer, (C_INT)buffer_size, STD_STDIN) != STD_NULL;
+}
+
 #define nErrPos (debugContext->error_position)
 #define narg (debugContext->argument_count)
 #define arg (debugContext->arguments)
@@ -109,6 +115,12 @@ static C_VOID debug_set_flag(core_product_debug_context *debugContext, type_unsi
 #define _ds ((type_unsigned_16)debug_register(debugContext, CORE_PRODUCT_DEBUG_DS))
 #define _fs ((type_unsigned_16)debug_register(debugContext, CORE_PRODUCT_DEBUG_FS))
 #define _gs ((type_unsigned_16)debug_register(debugContext, CORE_PRODUCT_DEBUG_GS))
+
+static C_VOID core_product_debug_finalize_arguments(core_product_debug_context *context)
+{
+    STD_FREE((C_VOID *)context->arguments);
+    context->arguments = STD_NULL;
+}
 
 static C_VOID seterr(core_product_debug_context *debugContext, STD_SIZE_T pos)
 {
@@ -265,7 +277,7 @@ static C_VOID aconsole(core_product_debug_context *debugContext)
     {
         STD_PRINTF("%04X:%04X ", asmSegRec, asmPtrRec);
         core_product_debug_flush_console_input(debugContext);
-        STD_FGETS(cmdAsmBuff, 0x100, STD_STDIN);
+        if (!core_product_debug_read_line(cmdAsmBuff, sizeof(cmdAsmBuff))) return;
         type_string_lower(cmdAsmBuff);
         if (!STD_STRLEN(cmdAsmBuff))
         {
@@ -477,7 +489,7 @@ static C_VOID e(core_product_debug_context *debugContext)
         core_product_debug_read_real(seg, ptr, (C_VOID *)(&val), 1);
         STD_PRINTF("%02X", val);
         STD_PRINTF(".");
-        STD_FGETS(s, 0x100, STD_STDIN);
+        if (!core_product_debug_read_line(s, sizeof(s))) return;
         type_string_lower(s);              /* MARK */
         val = scannubit8(debugContext, s); /* MARK */
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos)
@@ -828,7 +840,7 @@ static C_VOID rscanregs(core_product_debug_context *debugContext)
         STD_PRINTF("AX ");
         STD_PRINTF("%04X", _ax);
         STD_PRINTF("\n:");
-        STD_FGETS(s, 0x100, STD_STDIN);
+        if (!core_product_debug_read_line(s, sizeof(s))) return;
         value = scannubit16(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos)
         {
@@ -840,7 +852,7 @@ static C_VOID rscanregs(core_product_debug_context *debugContext)
         STD_PRINTF("BX ");
         STD_PRINTF("%04X", _bx);
         STD_PRINTF("\n:");
-        STD_FGETS(s, 0x100, STD_STDIN);
+        if (!core_product_debug_read_line(s, sizeof(s))) return;
         value = scannubit16(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos)
         {
@@ -852,7 +864,7 @@ static C_VOID rscanregs(core_product_debug_context *debugContext)
         STD_PRINTF("CX ");
         STD_PRINTF("%04X", _cx);
         STD_PRINTF("\n:");
-        STD_FGETS(s, 0x100, STD_STDIN);
+        if (!core_product_debug_read_line(s, sizeof(s))) return;
         value = scannubit16(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos)
         {
@@ -864,7 +876,7 @@ static C_VOID rscanregs(core_product_debug_context *debugContext)
         STD_PRINTF("DX ");
         STD_PRINTF("%04X", _dx);
         STD_PRINTF("\n:");
-        STD_FGETS(s, 0x100, STD_STDIN);
+        if (!core_product_debug_read_line(s, sizeof(s))) return;
         value = scannubit16(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos)
         {
@@ -876,7 +888,7 @@ static C_VOID rscanregs(core_product_debug_context *debugContext)
         STD_PRINTF("BP ");
         STD_PRINTF("%04X", _bp);
         STD_PRINTF("\n:");
-        STD_FGETS(s, 0x100, STD_STDIN);
+        if (!core_product_debug_read_line(s, sizeof(s))) return;
         value = scannubit16(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos)
         {
@@ -888,7 +900,7 @@ static C_VOID rscanregs(core_product_debug_context *debugContext)
         STD_PRINTF("SP ");
         STD_PRINTF("%04X", _sp);
         STD_PRINTF("\n:");
-        STD_FGETS(s, 0x100, STD_STDIN);
+        if (!core_product_debug_read_line(s, sizeof(s))) return;
         value = scannubit16(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos)
         {
@@ -900,7 +912,7 @@ static C_VOID rscanregs(core_product_debug_context *debugContext)
         STD_PRINTF("SI ");
         STD_PRINTF("%04X", _si);
         STD_PRINTF("\n:");
-        STD_FGETS(s, 0x100, STD_STDIN);
+        if (!core_product_debug_read_line(s, sizeof(s))) return;
         value = scannubit16(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos)
         {
@@ -912,7 +924,7 @@ static C_VOID rscanregs(core_product_debug_context *debugContext)
         STD_PRINTF("DI ");
         STD_PRINTF("%04X", _di);
         STD_PRINTF("\n:");
-        STD_FGETS(s, 0x100, STD_STDIN);
+        if (!core_product_debug_read_line(s, sizeof(s))) return;
         value = scannubit16(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos)
         {
@@ -924,7 +936,7 @@ static C_VOID rscanregs(core_product_debug_context *debugContext)
         STD_PRINTF("SS ");
         STD_PRINTF("%04X", _ss);
         STD_PRINTF("\n:");
-        STD_FGETS(s, 0x100, STD_STDIN);
+        if (!core_product_debug_read_line(s, sizeof(s))) return;
         value = scannubit16(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos)
         {
@@ -939,7 +951,7 @@ static C_VOID rscanregs(core_product_debug_context *debugContext)
         STD_PRINTF("CS ");
         STD_PRINTF("%04X", _cs);
         STD_PRINTF("\n:");
-        STD_FGETS(s, 0x100, STD_STDIN);
+        if (!core_product_debug_read_line(s, sizeof(s))) return;
         value = scannubit16(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos)
         {
@@ -954,7 +966,7 @@ static C_VOID rscanregs(core_product_debug_context *debugContext)
         STD_PRINTF("DS ");
         STD_PRINTF("%04X", _ds);
         STD_PRINTF("\n:");
-        STD_FGETS(s, 0x100, STD_STDIN);
+        if (!core_product_debug_read_line(s, sizeof(s))) return;
         value = scannubit16(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos)
         {
@@ -969,7 +981,7 @@ static C_VOID rscanregs(core_product_debug_context *debugContext)
         STD_PRINTF("ES ");
         STD_PRINTF("%04X", _es);
         STD_PRINTF("\n:");
-        STD_FGETS(s, 0x100, STD_STDIN);
+        if (!core_product_debug_read_line(s, sizeof(s))) return;
         value = scannubit16(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos)
         {
@@ -984,7 +996,7 @@ static C_VOID rscanregs(core_product_debug_context *debugContext)
         STD_PRINTF("IP ");
         STD_PRINTF("%04X", _ip);
         STD_PRINTF("\n:");
-        STD_FGETS(s, 0x100, STD_STDIN);
+        if (!core_product_debug_read_line(s, sizeof(s))) return;
         value = scannubit16(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos)
         {
@@ -995,7 +1007,7 @@ static C_VOID rscanregs(core_product_debug_context *debugContext)
     {
         rprintflags(debugContext);
         STD_PRINTF(" -");
-        STD_FGETS(s, 0x100, STD_STDIN);
+        if (!core_product_debug_read_line(s, sizeof(s))) return;
         type_string_lower(s);
         if (!STD_STRCMP(s, "ov"))
         {
@@ -1273,7 +1285,7 @@ static C_VOID v(core_product_debug_context *debugContext)
     STD_SIZE_T i;
     C_CHAR str[0x100];
     STD_PRINTF(":");
-    STD_FGETS(str, 0x100, STD_STDIN);
+    if (!core_product_debug_read_line(str, sizeof(str))) return;
     str[STD_STRLEN(str) - 1] = '\0';
     for (i = 0; i < STD_STRLEN(str); ++i)
     {
@@ -1413,7 +1425,7 @@ static C_VOID xaconsole(core_product_debug_context *debugContext, type_unsigned_
     while (!flagExitAsm)
     {
         STD_PRINTF("L%08X ", linear);
-        STD_FGETS(astmt, 0x100, STD_STDIN);
+        if (!core_product_debug_read_line(astmt, sizeof(astmt))) return;
         core_product_debug_flush_console_input(debugContext);
         astmt[STD_STRLEN(astmt) - 1] = 0;
         if (!STD_STRLEN(astmt))
@@ -1628,7 +1640,7 @@ static C_VOID xe(core_product_debug_context *debugContext)
             return;
         }
         STD_PRINTF("L%08X  %02X.", linear, val);
-        STD_FGETS(s, 0x100, STD_STDIN);
+        if (!core_product_debug_read_line(s, sizeof(s))) return;
         type_string_lower(s);
         val = scannubit8(debugContext, s);
         if (nErrPos)
@@ -1909,7 +1921,7 @@ static C_VOID xrscanreg(core_product_debug_context *debugContext)
         STD_PRINTF("EAX ");
         STD_PRINTF("%08X", _eax);
         STD_PRINTF("\n:");
-        STD_FGETS(s, 0x100, STD_STDIN);
+        if (!core_product_debug_read_line(s, sizeof(s))) return;
         value = scannubit32(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos)
         {
@@ -1921,7 +1933,7 @@ static C_VOID xrscanreg(core_product_debug_context *debugContext)
         STD_PRINTF("ECX ");
         STD_PRINTF("%08X", _ecx);
         STD_PRINTF("\n:");
-        STD_FGETS(s, 0x100, STD_STDIN);
+        if (!core_product_debug_read_line(s, sizeof(s))) return;
         value = scannubit32(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos)
         {
@@ -1933,7 +1945,7 @@ static C_VOID xrscanreg(core_product_debug_context *debugContext)
         STD_PRINTF("EDX ");
         STD_PRINTF("%08X", _edx);
         STD_PRINTF("\n:");
-        STD_FGETS(s, 0x100, STD_STDIN);
+        if (!core_product_debug_read_line(s, sizeof(s))) return;
         value = scannubit32(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos)
         {
@@ -1945,7 +1957,7 @@ static C_VOID xrscanreg(core_product_debug_context *debugContext)
         STD_PRINTF("EBX ");
         STD_PRINTF("%08X", _ebx);
         STD_PRINTF("\n:");
-        STD_FGETS(s, 0x100, STD_STDIN);
+        if (!core_product_debug_read_line(s, sizeof(s))) return;
         value = scannubit32(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos)
         {
@@ -1957,7 +1969,7 @@ static C_VOID xrscanreg(core_product_debug_context *debugContext)
         STD_PRINTF("ESP ");
         STD_PRINTF("%08X", _esp);
         STD_PRINTF("\n:");
-        STD_FGETS(s, 0x100, STD_STDIN);
+        if (!core_product_debug_read_line(s, sizeof(s))) return;
         value = scannubit32(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos)
         {
@@ -1969,7 +1981,7 @@ static C_VOID xrscanreg(core_product_debug_context *debugContext)
         STD_PRINTF("EBP ");
         STD_PRINTF("%08X", _ebp);
         STD_PRINTF("\n:");
-        STD_FGETS(s, 0x100, STD_STDIN);
+        if (!core_product_debug_read_line(s, sizeof(s))) return;
         value = scannubit32(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos)
         {
@@ -1981,7 +1993,7 @@ static C_VOID xrscanreg(core_product_debug_context *debugContext)
         STD_PRINTF("ESI ");
         STD_PRINTF("%08X", _esi);
         STD_PRINTF("\n:");
-        STD_FGETS(s, 0x100, STD_STDIN);
+        if (!core_product_debug_read_line(s, sizeof(s))) return;
         value = scannubit32(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos)
         {
@@ -1993,7 +2005,7 @@ static C_VOID xrscanreg(core_product_debug_context *debugContext)
         STD_PRINTF("EDI ");
         STD_PRINTF("%08X", _edi);
         STD_PRINTF("\n:");
-        STD_FGETS(s, 0x100, STD_STDIN);
+        if (!core_product_debug_read_line(s, sizeof(s))) return;
         value = scannubit32(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos)
         {
@@ -2005,7 +2017,7 @@ static C_VOID xrscanreg(core_product_debug_context *debugContext)
         STD_PRINTF("EIP ");
         STD_PRINTF("%08X", _eip);
         STD_PRINTF("\n:");
-        STD_FGETS(s, 0x100, STD_STDIN);
+        if (!core_product_debug_read_line(s, sizeof(s))) return;
         value = scannubit32(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos)
         {
@@ -2017,7 +2029,7 @@ static C_VOID xrscanreg(core_product_debug_context *debugContext)
         STD_PRINTF("EFLAGS ");
         STD_PRINTF("%08X", _eflags);
         STD_PRINTF("\n:");
-        STD_FGETS(s, 0x100, STD_STDIN);
+        if (!core_product_debug_read_line(s, sizeof(s))) return;
         value = scannubit32(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos)
         {
@@ -2028,7 +2040,7 @@ static C_VOID xrscanreg(core_product_debug_context *debugContext)
     {
         core_product_debug_print_segment_registers();
         STD_PRINTF(":");
-        STD_FGETS(s, 0x100, STD_STDIN);
+        if (!core_product_debug_read_line(s, sizeof(s))) return;
         value = scannubit16(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos)
         {
@@ -2042,7 +2054,7 @@ static C_VOID xrscanreg(core_product_debug_context *debugContext)
     {
         core_product_debug_print_segment_registers();
         STD_PRINTF(":");
-        STD_FGETS(s, 0x100, STD_STDIN);
+        if (!core_product_debug_read_line(s, sizeof(s))) return;
         value = scannubit16(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos)
         {
@@ -2056,7 +2068,7 @@ static C_VOID xrscanreg(core_product_debug_context *debugContext)
     {
         core_product_debug_print_segment_registers();
         STD_PRINTF(":");
-        STD_FGETS(s, 0x100, STD_STDIN);
+        if (!core_product_debug_read_line(s, sizeof(s))) return;
         value = scannubit16(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos)
         {
@@ -2070,7 +2082,7 @@ static C_VOID xrscanreg(core_product_debug_context *debugContext)
     {
         core_product_debug_print_segment_registers();
         STD_PRINTF(":");
-        STD_FGETS(s, 0x100, STD_STDIN);
+        if (!core_product_debug_read_line(s, sizeof(s))) return;
         value = scannubit16(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos)
         {
@@ -2084,7 +2096,7 @@ static C_VOID xrscanreg(core_product_debug_context *debugContext)
     {
         core_product_debug_print_segment_registers();
         STD_PRINTF(":");
-        STD_FGETS(s, 0x100, STD_STDIN);
+        if (!core_product_debug_read_line(s, sizeof(s))) return;
         value = scannubit16(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos)
         {
@@ -2098,7 +2110,7 @@ static C_VOID xrscanreg(core_product_debug_context *debugContext)
     {
         core_product_debug_print_segment_registers();
         STD_PRINTF(":");
-        STD_FGETS(s, 0x100, STD_STDIN);
+        if (!core_product_debug_read_line(s, sizeof(s))) return;
         value = scannubit16(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos)
         {
@@ -2113,7 +2125,7 @@ static C_VOID xrscanreg(core_product_debug_context *debugContext)
         STD_PRINTF("CR0 ");
         STD_PRINTF("%08X", _cr(0));
         STD_PRINTF("\n:");
-        STD_FGETS(s, 0x100, STD_STDIN);
+        if (!core_product_debug_read_line(s, sizeof(s))) return;
         value = scannubit32(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos)
         {
@@ -2125,7 +2137,7 @@ static C_VOID xrscanreg(core_product_debug_context *debugContext)
         STD_PRINTF("CR1 ");
         STD_PRINTF("%08X", _cr(1));
         STD_PRINTF("\n:");
-        STD_FGETS(s, 0x100, STD_STDIN);
+        if (!core_product_debug_read_line(s, sizeof(s))) return;
         value = scannubit32(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos)
         {
@@ -2137,7 +2149,7 @@ static C_VOID xrscanreg(core_product_debug_context *debugContext)
         STD_PRINTF("CR2 ");
         STD_PRINTF("%08X", _cr(2));
         STD_PRINTF("\n:");
-        STD_FGETS(s, 0x100, STD_STDIN);
+        if (!core_product_debug_read_line(s, sizeof(s))) return;
         value = scannubit32(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos)
         {
@@ -2149,7 +2161,7 @@ static C_VOID xrscanreg(core_product_debug_context *debugContext)
         STD_PRINTF("CR3 ");
         STD_PRINTF("%08X", _cr(3));
         STD_PRINTF("\n:");
-        STD_FGETS(s, 0x100, STD_STDIN);
+        if (!core_product_debug_read_line(s, sizeof(s))) return;
         value = scannubit32(debugContext, s);
         if (s[0] != '\0' && s[0] != '\n' && !nErrPos)
         {
@@ -2570,12 +2582,17 @@ C_VOID core_product_debug_main(core_product_debug_context *context,
     xdlin = 0;
     xulin = core_product_debug_get_code_base() + _eip;
     arg = (C_CHAR **)STD_MALLOC(DEBUG_MAXNARG * sizeof(C_CHAR *));
+    if (arg == STD_NULL) {
+        context->target = STD_NULL;
+        context->input_provider = STD_NULL;
+        return;
+    }
     flagExit = 0;
     while (!flagExit)
     {
         core_product_debug_flush_console_input(debugContext);
         STD_PRINTF("-");
-        STD_FGETS(strCmdBuff, 0x100, STD_STDIN);
+        if (!core_product_debug_read_line(strCmdBuff, sizeof(strCmdBuff))) break;
         parse(debugContext);
         exec(debugContext);
         if (nErrPos)
@@ -2587,7 +2604,7 @@ C_VOID core_product_debug_main(core_product_debug_context *context,
             STD_PRINTF("^ Error\n");
         }
     }
-    STD_FREE((C_VOID *)arg);
+    core_product_debug_finalize_arguments(context);
     context->target = STD_NULL;
     context->input_provider = STD_NULL;
 }

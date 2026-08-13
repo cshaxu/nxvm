@@ -52,6 +52,12 @@ static C_VOID parse(vm_product_console_context *context)
     }
 }
 
+static C_INT vm_product_console_read_line(C_CHAR *buffer, STD_SIZE_T buffer_size)
+{
+    return buffer != STD_NULL && buffer_size != 0u && buffer_size <= 0x7fffffffu &&
+        STD_FGETS(buffer, (C_INT)buffer_size, STD_STDIN) != STD_NULL;
+}
+
 /* Prints help commands. */
 #define GetHelp          \
     if (1)               \
@@ -610,10 +616,12 @@ static C_VOID execute(vm_product_console_context *context)
 }
 
 /* Initializes console */
-static C_VOID vm_product_console_initialize(vm_product_console_context *context)
+static C_INT vm_product_console_initialize(vm_product_console_context *context)
 {
     argArray = (C_CHAR **)STD_MALLOC(CONSOLE_MAXNARG * sizeof(C_CHAR *));
+    if (argArray == STD_NULL) return TYPE_FALSE;
     flagExit = 0;
+    return TYPE_TRUE;
 }
 
 /* Finalizes console */
@@ -623,6 +631,7 @@ static C_VOID vm_product_console_finalize(vm_product_console_context *context)
     {
         STD_FREE((C_VOID *)argArray);
     }
+    argArray = STD_NULL;
 }
 
 /* Entry point of product console */
@@ -643,12 +652,12 @@ C_VOID vm_product_console_main(vm_product_console_context *context,
     vm_product_console_context_initialize(context);
     machineProvider = machine_provider;
     sessionManager = session_manager;
-    vm_product_console_initialize(context);
+    if (!vm_product_console_initialize(context)) return;
     STD_PRINTF("\nPlease enter 'HELP' for information.\n\n");
     while (!flagExit)
     {
         STD_PRINTF("Console> ");
-        STD_FGETS(strCmdBuff, 0x100, STD_STDIN);
+        if (!vm_product_console_read_line(strCmdBuff, sizeof(strCmdBuff))) break;
         parse(context);
         execute(context);
     }
