@@ -21,8 +21,6 @@ together with the [80386DX admission policy](../proposals/m5-80386dx-candidate-p
 are shared planning references for the corresponding candidates below; they do
 not allocate a numeric task.
 
-1. [Four-profile cross-closure verification](../proposals/m5-cpu-profile-cross-closure.md). Reconcile one disposition per applicable form and execution state across 8086, 80186, 80286, and 80386DX; it is verification only.
-
 After the CPU-profile program closes, the remaining M5 candidates consume its
 result but are not part of the profile-completeness claim:
 
