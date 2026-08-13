@@ -27,42 +27,76 @@ static type_unsigned_8 GetRegTopId(t_pic *rpic, type_unsigned_8 reg) {
     }
     return (id + rpic->data.irx) % VPIC_MAX_IRQ_COUNT;
 }
-/*
- * GetRegTopId: Internal function
- * Returns flag of higher priority interrupt
- */
-static type_bool HasINTR(t_pic *rpic) {
-    type_unsigned_8 reqId; /* top requested C_INT id in master pic */
-    type_unsigned_8 svcId; /* top in service C_INT id in master pic */
-    reqId = VPIC_GetIntrTopId(rpic);
-    svcId = VPIC_GetIsrTopId(rpic);
-    if (reqId == 0x08) {
-        /* no interrupt to pick up */
-        return TYPE_FALSE;
+/* The rank is relative to the current rotating priority base. */
+static type_unsigned_8 core_machine_pic_priority_rank(const t_pic *pic,
+    type_unsigned_8 id)
+{
+    return (type_unsigned_8)((id + VPIC_MAX_IRQ_COUNT - pic->data.irx) %
+        VPIC_MAX_IRQ_COUNT);
+}
+
+static type_bool core_machine_pic_request_can_interrupt(const t_pic *pic,
+    type_unsigned_8 request)
+{
+    type_unsigned_8 service;
+    type_unsigned_8 request_rank;
+    type_unsigned_8 service_rank;
+
+    service = VPIC_GetIsrTopId((t_pic *)pic);
+    if (service == VPIC_MAX_IRQ_COUNT) return TYPE_TRUE;
+    request_rank = core_machine_pic_priority_rank(pic, request);
+    service_rank = core_machine_pic_priority_rank(pic, service);
+    if (TYPE_GET_BIT(pic->data.icw4, VPIC_ICW4_SFNM)) {
+        return request_rank <= service_rank;
     }
-    if (svcId == 0x08) {
-        /* no interrupt in service */
+    return request_rank < service_rank;
+}
+
+static type_bool core_machine_pic_select_controller(const t_pic *pic,
+    type_unsigned_8 *out_id)
+{
+    type_unsigned_8 offset;
+    type_unsigned_8 id;
+
+    if (pic == STD_NULL || out_id == STD_NULL) return TYPE_FALSE;
+    for (offset = 0u; offset < VPIC_MAX_IRQ_COUNT; ++offset) {
+        id = (type_unsigned_8)((pic->data.irx + offset) % VPIC_MAX_IRQ_COUNT);
+        if (TYPE_GET_BIT(pic->data.irr & ~pic->data.imr, VPIC_IRR_IRQ(id)) &&
+            core_machine_pic_request_can_interrupt(pic, id)) {
+            *out_id = id;
+            return TYPE_TRUE;
+        }
+    }
+    return TYPE_FALSE;
+}
+
+static type_bool core_machine_pic_select(t_pic *master, t_pic *slave,
+    type_unsigned_8 *out_master_id, type_unsigned_8 *out_slave_id)
+{
+    type_unsigned_8 offset;
+    type_unsigned_8 master_id;
+    type_unsigned_8 slave_id;
+
+    if (master == STD_NULL || slave == STD_NULL || out_master_id == STD_NULL ||
+        out_slave_id == STD_NULL) return TYPE_FALSE;
+    for (offset = 0u; offset < VPIC_MAX_IRQ_COUNT; ++offset) {
+        master_id = (type_unsigned_8)((master->data.irx + offset) %
+            VPIC_MAX_IRQ_COUNT);
+        if (!TYPE_GET_BIT(master->data.irr & ~master->data.imr,
+                VPIC_IRR_IRQ(master_id)) ||
+            !core_machine_pic_request_can_interrupt(master, master_id)) {
+            continue;
+        }
+        if (master_id == 2u) {
+            if (!core_machine_pic_select_controller(slave, &slave_id)) continue;
+            *out_slave_id = slave_id;
+        } else {
+            *out_slave_id = VPIC_MAX_IRQ_COUNT;
+        }
+        *out_master_id = master_id;
         return TYPE_TRUE;
     }
-    /*
-     * if irid and isid are on the same side of top priority C_INT
-     * request id, do regular comparison; otherwise order them.
-     * for example, if irid < irx, that means irid's priority is lower
-     * than irx, and we need to add VPIC_MAX_IRQ_COUNT to it to ensure
-     * that it's priority is lower than irx in following comparison
-     * (irid < isid) or (irid <= isid).
-     */
-    if (reqId < rpic->data.irx) {
-        reqId += VPIC_MAX_IRQ_COUNT;
-    }
-    if (svcId < rpic->data.irx) {
-        svcId += VPIC_MAX_IRQ_COUNT;
-    }
-    if (TYPE_GET_BIT(rpic->data.icw4, VPIC_ICW4_SFNM)) {
-        return reqId <= svcId;
-    } else {
-        return reqId < svcId;
-    }
+    return TYPE_FALSE;
 }
 /*
  * RespondINTR: Internal function
@@ -79,6 +113,23 @@ static C_VOID RespondINTR(t_pic *rpic, type_unsigned_8 id) {
             rpic->data.irx = (id + 1) % VPIC_MAX_IRQ_COUNT;
         }
     }
+}
+
+static C_VOID core_machine_pic_begin_initialization(t_pic *pic,
+    type_unsigned_8 icw1)
+{
+    pic->data.irr = TYPE_ZERO_8;
+    pic->data.imr = TYPE_ZERO_8;
+    pic->data.isr = TYPE_ZERO_8;
+    pic->data.icw1 = icw1;
+    pic->data.icw2 = TYPE_ZERO_8;
+    pic->data.icw3 = TYPE_ZERO_8;
+    pic->data.icw4 = TYPE_ZERO_8;
+    pic->data.ocw1 = TYPE_ZERO_8;
+    pic->data.ocw2 = TYPE_ZERO_8;
+    pic->data.ocw3 = TYPE_ZERO_8;
+    pic->data.irx = TYPE_ZERO_8;
+    pic->data.status = ICW2;
 }
 
 static C_INT core_machine_pic_is_level(const t_pic *pic)
@@ -143,8 +194,7 @@ static C_VOID io_write_00x0(t_pic *rpic, t_port *port) {
     type_unsigned_8 id;
     if (TYPE_GET_BIT(port->data.ioByte, VPIC_ICW1_I)) {
         /* ICW1 (D4=1) */
-        rpic->data.icw1 = port->data.ioByte;
-        rpic->data.status = ICW2;
+        core_machine_pic_begin_initialization(rpic, port->data.ioByte);
         if (TYPE_GET_BIT(rpic->data.icw1, VPIC_ICW1_IC4)) {
             /* D0=1, IC4=1 */
         } else {
@@ -409,23 +459,17 @@ C_VOID core_machine_pic_timer_output(C_VOID *owner, type_bool asserted) {
 }
 
 type_bool core_machine_pic_scan_interrupt(t_pic *master, t_pic *slave) {
-    type_bool flagINTR;
-    if (master == STD_NULL || slave == STD_NULL) return TYPE_FALSE;
-    flagINTR = HasINTR(master);
-    if (flagINTR && (VPIC_GetIntrTopId(master) == 2)) {
-        /* check slave pic */
-        flagINTR = HasINTR(slave);
-    }
-    return flagINTR;
+    type_unsigned_8 master_id;
+    type_unsigned_8 slave_id;
+
+    return core_machine_pic_select(master, slave, &master_id, &slave_id);
 }
 type_unsigned_8 core_machine_pic_peek_interrupt(t_pic *master, t_pic *slave) {
     type_unsigned_8 reqId1;
     type_unsigned_8 reqId2;
 
-    if (master == STD_NULL || slave == STD_NULL) return 0;
-    reqId1 = VPIC_GetIntrTopId(master);
+    if (!core_machine_pic_select(master, slave, &reqId1, &reqId2)) return 0;
     if (reqId1 == 0x02) {
-        reqId2 = VPIC_GetIntrTopId(slave);
         return (type_unsigned_8)(reqId2 | slave->data.icw2);
     }
     return (type_unsigned_8)(reqId1 | master->data.icw2);
@@ -433,13 +477,12 @@ type_unsigned_8 core_machine_pic_peek_interrupt(t_pic *master, t_pic *slave) {
 type_unsigned_8 core_machine_pic_get_interrupt(t_pic *master, t_pic *slave) {
     type_unsigned_8 reqId1; /* top requested C_INT id in master pic */
     type_unsigned_8 reqId2; /* top requested C_INT id in slave pic */
-    if (master == STD_NULL || slave == STD_NULL) return 0;
-    reqId1 = VPIC_GetIntrTopId(master);
+    if (!core_machine_pic_select(master, slave, &reqId1, &reqId2)) return 0;
     RespondINTR(master, reqId1);
     if (reqId1 == 0x02) {
         /* if IR2 has C_INT request, then test slave pic */
-        reqId2 = VPIC_GetIntrTopId(slave);
         RespondINTR(slave, reqId2);
+        core_machine_pic_refresh(master, slave);
         /* find the final C_INT id based on slave ICW2 */
         return (reqId2 | slave->data.icw2);
     } else {
@@ -486,7 +529,7 @@ C_VOID core_machine_pic_refresh(t_pic *master, t_pic *slave) {
             }
         }
     }
-    if (slave->data.irr & (~slave->data.imr)) {
+    if (core_machine_pic_select_controller(slave, &id)) {
         /* if slave pic has requested C_INT, then
          * pass the request into IR2 of master pic */
         TYPE_SET_BIT(master->data.irr, VPIC_IRR_IRQ(2));

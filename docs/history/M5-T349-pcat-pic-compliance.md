@@ -12,6 +12,7 @@ and peripheral packages consume its delivery contract.
 | Subtask | Purpose |
 | --- | --- |
 | S1 | Build the complete manual-to-source-to-proof compliance ledger and assign every adopted gap to a bounded later S or explicit transfer. |
+| S2 | Reconcile ICW/OCW command state, priority, EOI/AEOI, and PC/AT cascade selection/acknowledgement through one PIC-owned mechanism. |
 
 ## Accepted Progress
 
@@ -20,3 +21,7 @@ every adopted controller mode, request producer, CPU consumer, reset/finalize
 route, and L3 boundary. The task continues with S2 command/priority/cascade,
 S3 OCW3 modes, and S4 request/spurious/composition reconciliation. See the
 [S1 evidence](../etc/evidence/t349-s1-pcat-pic-compliance-ledger.md).
+
+S2 is active: it owns ICW restart, priority selection, EOI/AEOI, and the
+PC/AT cascade acknowledgement path. Its completion evidence is retained in
+[the S2 command/priority record](../etc/evidence/t349-s2-pcat-pic-command-priority.md).
