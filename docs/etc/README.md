@@ -24,6 +24,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t338-s2-legacy-alu-profile-matrix.md` | Verification owner | T338 S2 low-profile ALU/FLAGS/condition form, rejection, and legacy-LOCK crosswalk. Retire into T338 history at task closure. |
 | `evidence/t338-s3-legacy-data-control-profile-matrix.md` | Verification owner | T338 S3 8086/80186 data, string, stack, real-control/interrupt, ordinary-I/O, and legacy-LOCK form/owner crosswalk. Retire into T338 history at task closure. |
 | `evidence/t338-s4-80186-extension-profile-matrix.md` | Verification owner | T338 S4 80186-only primary extension, 8086 rejection, and legacy-LOCK crosswalk. Retire into T338 history at task closure. |
+| `evidence/t338-s5-profile-close-audit.md` | Verification owner | T338 S5 complete 8086/80186 allocation, transfer, and legacy-LOCK closure audit. Retire into T338 history at task closure. |
 | `operations/` | Execution, source, and release owners | Toolchain, policy, templates, release procedure, and closure material. |
 | `research/` | Source owner | Provenance, external references, and non-product research. |
 | `history/` | Documentation owner | Read-only legacy and M5 migration/roadmap evidence. |

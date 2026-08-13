@@ -2,8 +2,29 @@
 
 ## Current Work
 
-**Idle.** T338 remains open. S1--S4 are accepted; S5 requires a separately
-admitted closure-audit packet.
+**M5 T338 S5 - active.** Reconcile the complete 8086/80186 allocation and
+close T338 only if every in-scope row has accepted evidence or an exact transfer.
+
+## M5 T338 S5 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | The owner approved Queue-ordered single-agent implementation through four-profile cross-closure verification on 2026-08-13. T338 S1 assigns its profile-close audit to S5 after accepted S2--S4. |
+| Objective | Audit every S1 primary-form row against accepted S2/S3/S4 evidence, current-gate owners, metadata/dispatch disposition, the one T328 legacy `LOCK` contract, and exact 80286/80386/external transfers. Close T338 only if no 8086/80186 row is partial or unclassified. |
+| Non-goals | No new opcode behavior, test framework, production fix, prefix-policy rewrite, protected/VM86/paging work, 80386 width/state work, or x87 implementation. A discovered implementation gap stops the audit and requires a new corrective S. |
+| Reference Baseline | `bc309cce` (`M5 T338 S4 P2: accept 80186 extension matrix`), accepted S1 allocation and accepted S2--S4 matrices. |
+| Candidate Proposal | [8086 and 80186 profile closure](../proposals/m5-8086-80186-profile-closure.md). |
+| Files And ABI Surface | T338 evidence, history, Current, and task proposal retention only. No production, CMake, test, ABI, artifact, or runtime change. |
+| Applicable Rules | `docs/rules/EXECUTION.md`: closure audit and actual-evidence review. `docs/rules/DOCUMENT.md`: Current/history/evidence ownership and task-closure topology. |
+| Verification | Reconcile each S1 row to one accepted S2/S3/S4 matrix or an explicit later Queue/external boundary; inspect current-gate registration for named owners; rerun documentation governance, diff check, artifact verifier, and full current-gate. |
+| Expected Markers | The reconciliation has no in-scope partial/unclassified row, one T328 legacy-LOCK reference, and one exact transfer for every protected, 80386, or external-coprocessor boundary. |
+| Asset Needs | No new asset. Existing Intel-form authority and committed evidence only. |
+| Reporting Requirements | Deliver one complete pushed audit P with every row disposition, actual current-gate/artifact result, task-closure recommendation, and no partial closure claim. |
+| Stop Conditions | Stop if a row lacks accepted proof, a named owner is absent from current-gate, a transfer has no Queue/TODO/external destination, or closure needs a production/test change. Admit a corrective S instead of stretching this audit. |
+| Exit Criteria | Every S1 allocation is closed or exactly transferred; S2--S4 evidence, T328 linkage, artifact and full gate are verified; T338 history/proposal/status closure is committed and pushed. |
+| Original Owner Request | Implement the Queue in order, in single-agent mode and with a holistic view, through four-profile cross-closure verification. |
+| Similar-Issue Sweep | Compare the complete S1 form table with S2/S3/S4 matrices, CMake current-gate target list, metadata/dispatch profile gates, T328 evidence, Queue candidates, TODO debt, and external-coprocessor boundary. |
 
 ## Current Technical Baseline
 
