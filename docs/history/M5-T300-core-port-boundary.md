@@ -12,6 +12,6 @@ static/governance gates and 129 CTests, and produced
 
 The implementation closed in `c42ca2f`, `1f4b100`, `c87772e`, `928b6f2`,
 `caf4a70`, `6404450`, `85eb753`, and `ffbf60e`. The current baseline and
-artifact identity are recorded only in [STATUS.md](../STATUS.md). The preceding
+artifact identity are recorded only in [STATUS.md](../states/CURRENT.md). The preceding
 aggregated record remains read-only in
 [etc/history/legacy/m5.md](../etc/history/legacy/m5.md).

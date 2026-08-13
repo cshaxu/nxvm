@@ -7,7 +7,7 @@ family in the single core CPU executor: `MOV`/`POP` segment loads,
 `LDS`/`LES`/`LFS`/`LGS`/`LSS`, `ARPL`, `LAR`, `LSL`, `VERR`, and `VERW`.
 It neither adds a second executor or state owner nor changes Console,
 debugger, boot, or media behavior. The active S4 packet and current artifact
-remain authoritative in [STATUS.md](../STATUS.md); the coordinator independently
+remain authoritative in [STATUS.md](../states/CURRENT.md); the coordinator independently
 accepted the implementation evidence and closed the task.
 
 ## Reference Conclusion

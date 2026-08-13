@@ -117,7 +117,7 @@ experiments; preserve the retained NXVM Console/debugger, FDD/HDD boot, and
 developer artifacts. Core may admit only policy-free contracts with a concrete
 NXVM need and a stable, trusted research requirement; no external ABI or
 runtime dependency enters core. `nxvm.exe` has no new process CLI. The detailed
-queue remains [Queue](../../../QUEUE.md).
+queue remains [Queue](../../../states/QUEUE.md).
 T255 freezes machine-profile admission as an immutable VM declaration and
 composition-owned construction boundary; it does not implement a new profile,
 selector, or external-ROM loader.

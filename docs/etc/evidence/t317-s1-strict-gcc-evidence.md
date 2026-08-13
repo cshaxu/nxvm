@@ -37,7 +37,7 @@ FLAGS, with the 16-bit three-word SP decrement preserving ESP's high half.
 The handler then executes through its halt while advancing AX.  The pre-existing
 no-FPU consume cases and the optional-8087 success case remain intact.  This
 is a retained-test expectation migration only; it makes no FPU/provider or
-CPU delivery change.  `docs/TODO.md` records that any future FPU-execution
+CPU delivery change.  `docs/states/TODO.md` records that any future FPU-execution
 admission must rerun these no-FPU, vector-7, optional-8087, and provider
 boundary probes.
 

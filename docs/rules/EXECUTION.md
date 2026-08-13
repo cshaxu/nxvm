@@ -5,7 +5,7 @@ artifact, and milestone gates. The public
 [Execution Governance skill](https://github.com/cshaxu/skills/blob/main/execution-governance/SKILL.md)
 is supplementary reusable guidance, not a prerequisite. One subtask is active
 at a time. Follow the local requirement packet and closure audit defined here.
-Before implementation, create the one active subtask packet in `STATUS.md` as
+Before implementation, create the one active subtask packet in `states/CURRENT.md` as
 the fixed two-column `Field | Required record` table. It must record identifier
 mode, admission and owner approval, objective, non-goals, reference baseline,
 files/ABI surface, applicable rules, exact verification, expected markers,
@@ -34,11 +34,11 @@ Answer a question, discussion, or exploration normally. When an owner requests
 one or more changes, preserve the request, inspect the current system and
 applicable rules, and split the work into bounded tasks with explicit exit
 criteria before implementation. Obtain approval before admitting the work to
-`STATUS.md`; only that one active packet may execute.
+`states/CURRENT.md`; only that one active packet may execute.
 
 During execution, record discovered repository issues. Fix a clear in-scope
 instance as an added subtask and run the similar-issue sweep; otherwise record
-the issue in `TODO.md` with priority, boundary, admission condition, and risk.
+the issue in `states/TODO.md` with priority, boundary, admission condition, and risk.
 At closure, re-read the original owner request, map every requested outcome to
 evidence, run the required verification, record the retrospective/prevention
 action when applicable, and report the result. A task is not complete merely
@@ -68,21 +68,21 @@ self-review, actual-change review, verification, or acceptance requirements.
 ## Execution Modes
 
 Every admitted T task package declares either **Ordinary Mode** or
-**Coordinated Dual-Session Mode**. Both modes retain one active `STATUS.md`
+**Coordinated Dual-Session Mode**. Both modes retain one active `states/CURRENT.md`
 packet, the same identifier rules, evidence requirements, similar-issue sweep,
 and closure audit. The modes change who performs each role; they do not weaken
 the T/S/P lifecycle.
 
 **T, S, and P.**
 
-`QUEUE.md` owns the ordered queue of T task packages. A T is a bounded,
+`states/QUEUE.md` owns the ordered queue of T task packages. A T is a bounded,
 owner-approved goal with a stated scope, non-goals, dependencies, completion
 standard, and stop condition. It is not a pre-allocation of every implementation
 step. The coordinator observes the evidence produced by each admitted S and
 dynamically plans the next S within the active T boundary.
 
 An S is the smallest implementation, review, and acceptance unit inside an
-active T. Its active `STATUS.md` packet is the required task contract. Each S
+active T. Its active `states/CURRENT.md` packet is the required task contract. Each S
 brief must state its objective, precise scope, non-goals, authority/baseline,
 verification and evidence requirements, quality standard, expected changed
 surface, reporting requirements (initial objection or confirmation,
@@ -168,7 +168,7 @@ admitted S, and may commit and push only its complete assigned P. It may not
 allocate identifiers, admit or expand S scope, create the next S, or close a T.
 A finding outside an admitted S is
 reported to the coordinator; the coordinator decides whether it is an in-scope
-S revision, a later S in the active T, a future T, or a `TODO.md` deferral.
+S revision, a later S in the active T, a future T, or a `states/TODO.md` deferral.
 
 A T closes only when its stated completion standard is proven, every in-scope
 remaining gap is closed or explicitly transferred through the normal queue/debt
@@ -249,7 +249,10 @@ Structural relocation uses `git mv`: repair direct includes and build paths,
 run the relevant checks, then continue with the next bounded move. A deferred
 issue uses `TODO(High)`, `TODO(Medium)`, or `TODO(Low)` only with a ledger entry
 and bounded admission path. Do not leave an equivalent production defect
-unclassified after a local fix; apply the similar-issue sweep below.
+unclassified after a local fix; apply the similar-issue sweep below. Only an
+admitted standalone `Td` task may modify `docs/rules/`. An implementation T or
+S must report a needed rule change for separate Td admission; it may not fold
+that change into its implementation or governance closure.
 
 Every successful task or subtask commit must be pushed to its configured remote
 immediately. Do not accumulate local completed commits or defer the push until
@@ -272,7 +275,7 @@ site. Its active task packet and completion evidence must record a
   and task/governance records relevant to the defect class; every exclusion
   needs a short reason;
 - every production-path hit and its disposition: fixed, not applicable with a
-  reason, or deferred into `TODO.md` with priority, owner/boundary, and an
+  reason, or deferred into `states/TODO.md` with priority, owner/boundary, and an
   admission task or gate; and
 - the post-fix result, including a focused regression. When the defect class
   is mechanically detectable, add or update a closure/static gate so the same
@@ -305,13 +308,19 @@ description` for an implementation task and its task-specific design work.
 
 ## Linear Identifier Allocation
 
-`QUEUE.md` holds ordered but unnumbered candidates. Allocate the next numeric
-task identifier only when the owner approves one candidate and it becomes the
-single active packet in `STATUS.md`. Reordering, withdrawing, or refining a
-candidate consumes no identifier. Numeric tasks therefore exist only while
-active and after closure in implementation history. Allocate them in strict
-ascending order; never skip an identifier and never reopen a closed task or
-subtask identifier.
+`states/QUEUE.md` holds ordered but unnumbered candidates. A candidate enters
+that Queue only after its proposal is stored in `docs/proposals/`. Allocate the
+next numeric task identifier only when the owner approves one candidate and it
+becomes the single active packet in `states/CURRENT.md`; at that transition,
+create its `docs/history/M<milestone>-T<task>-<name>.md` main record. At task
+closure, retain the proposal by moving it to
+`docs/history/M<milestone>-T<task>-<name>-proposal.md`. When a candidate or
+task is withdrawn and will not be implemented, clean up or retain its proposal
+and main record according to the documented retention decision. Reordering,
+withdrawing, or refining an unapproved candidate consumes no identifier.
+Numeric tasks therefore exist only while active and after closure in
+implementation history. Allocate them in strict ascending order; never skip an
+identifier and never reopen a closed task or subtask identifier.
 
 Allocate implementation subtask (`S`) and standalone documentation (`Td S`)
 identifiers strictly after the latest used identifier in their own sequence.
@@ -320,7 +329,7 @@ capacity. Later identifiers continue from the latest used identifier and never
 fill a historical gap.
 
 Git commit subjects prove the immutable `P` history and the highest used `S`.
-`STATUS.md` task-level rows determine whether the latest numeric task is
+`states/CURRENT.md` task-level rows determine whether the latest numeric task is
 closed: a `| T<n> |` row is closed; a `| T<n> S<m> |` row is retained progress
 for the one latest open numeric task. The governance gate combines only those
 machine-readable forms. It never infers task state from free prose or from the
@@ -384,7 +393,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File tools/Verify-DocumentationGo
 `Documentation` verifies topology, principal-document schemas, the Task
 Reading Set navigation, `etc/` index coverage, relative Markdown links,
 mojibake, and machine-local paths. `GovernanceState` verifies active-packet
-fields and identifier continuity, the sole `STATUS.md` technical baseline,
+fields and identifier continuity, the sole `states/CURRENT.md` technical baseline,
 queue/debt boundaries, artifact identity, and capped Status summaries. The
 configured `current-gates-gcc` target runs the default combined check when
 PowerShell is available. A failure blocks closure until the documents are

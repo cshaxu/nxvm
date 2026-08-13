@@ -5,7 +5,7 @@
 This supporting crosswalk prevents an accumulation of opcode smokes from being
 mistaken for a complete 80386DX architecture claim. It records the two views
 required by [the M5 roadmap](../../design/ROADMAP.md) and the ordered
-[Queue](../../QUEUE.md): horizontal instruction-form evidence and vertical
+[Queue](../../states/QUEUE.md): horizontal instruction-form evidence and vertical
 architecture-state closure. It does not allocate tasks, define a current
 baseline, or supersede those principal authorities.
 

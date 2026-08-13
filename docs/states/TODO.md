@@ -2,10 +2,10 @@
 
 This ledger records only open debt and deferred admissions. Each entry carries
 a priority and a bounded admission condition. It does not activate work,
-allocate a task identifier, or override [STATUS.md](STATUS.md). Current goals,
+allocate a task identifier, or override [CURRENT.md](CURRENT.md). Current goals,
 candidate work, and detailed capability evidence belong in
-[design/GOAL.md](design/GOAL.md), [QUEUE.md](QUEUE.md), and
-[etc/evidence/current-capability-baseline.md](etc/evidence/current-capability-baseline.md).
+[design/GOAL.md](../design/GOAL.md), [QUEUE.md](QUEUE.md), and
+[etc/evidence/current-capability-baseline.md](../etc/evidence/current-capability-baseline.md).
 
 
 ## Hardware And Compatibility Debt
@@ -74,7 +74,7 @@ candidate work, and detailed capability evidence belong in
   real VM/M5 consumers. Re-admit only from an owner-supplied bounded checkpoint
   or trace naming one form and its required state/fault boundary; preserve the
   per-family thresholds in
-  [T312 evidence](etc/evidence/t312-system-extension-admission.md). Do not use
+  [T312 evidence](../etc/evidence/t312-system-extension-admission.md). Do not use
   this ledger entry to start M6 or claim system-family completion.
 - [ ] **Internal descriptor vocabulary cleanup (`TODO(Low)`).** Rename the
   internal segment-descriptor field vocabulary only through a future
@@ -141,7 +141,7 @@ candidate work, and detailed capability evidence belong in
   boundary; do not turn this debt into a repository-wide rewrite, speculative
   abstraction, or an excuse to weaken existing evidence.  The concrete
   admission method and observed failure shape are retained in
-  [the supporting debt report](etc/evidence/holistic-execution-path-audit-debt.md).
+  [the supporting debt report](../etc/evidence/holistic-execution-path-audit-debt.md).
 
 - [ ] **Task-switch transition unification (`TODO(Medium)`).** The retained
   16-bit and 32-bit protected task-switch paths use different internal
@@ -152,7 +152,7 @@ candidate work, and detailed capability evidence belong in
   backlink, NT, busy descriptors, `TR`, and `CR0.TS`. Preserve accepted
   direct-JMP evidence and leave nested IRET, IDT task gates, LDT, paging, and
   debug work in their named packages. The exact boundary is retained in
-  [the supporting debt report](etc/evidence/task-switch-transition-unification-debt.md).
+  [the supporting debt report](../etc/evidence/task-switch-transition-unification-debt.md).
 
 ## Timing-Fidelity Debt
 

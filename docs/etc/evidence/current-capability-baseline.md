@@ -1,6 +1,6 @@
 # Current Capability Baseline Detail
 
-> Supporting T300-era capability inventory. [STATUS.md](../../STATUS.md) is
+> Supporting T300-era capability inventory. [STATUS.md](../../states/CURRENT.md) is
 > the sole current technical-baseline authority; this record provides detail
 > for planning and must be refreshed or retired when its evidence changes.
 

@@ -220,7 +220,7 @@ function Require-ActivePacketSchema([pscustomobject]$packet) {
 
 function Get-StatusClosureRows([string]$status) {
     $closureSection = [regex]::Match($status, '(?ms)^## Recent M\d+ Closures\r?\n(?<body>.*?)(?=^## |\z)')
-    Require ($closureSection.Success) "STATUS.md must contain a recent milestone-closure section."
+    Require ($closureSection.Success) "CURRENT.md must contain a recent milestone-closure section."
     return @([regex]::Matches(
             $closureSection.Groups['body'].Value,
             '(?m)^\| T(?<task>\d+)(?: S(?<subtask>\d+))? \|'
@@ -258,13 +258,13 @@ function Require-ActiveIdentifier([pscustomobject]$packet, [string]$repositoryRo
     $closureRows = @(Get-StatusClosureRows $status)
     $progressRows = @($closureRows | Where-Object HasSubtask)
     $progressTasks = @($progressRows | ForEach-Object Task | Select-Object -Unique)
-    Require ($progressTasks.Count -le 1) "STATUS.md may retain subtask progress for only one open numeric task."
+    Require ($progressTasks.Count -le 1) "CURRENT.md may retain subtask progress for only one open numeric task."
     $openTask = if ($progressTasks.Count -eq 1) { $progressTasks[0] } else { $null }
     if ($null -ne $openTask) {
         Require (-not ($closureRows | Where-Object { -not $_.HasSubtask -and $_.Task -eq $openTask })) `
-            "STATUS.md must replace closed-task subtask progress with one task-level summary."
+            "CURRENT.md must replace closed-task subtask progress with one task-level summary."
         Require ($openTask -eq $latestTask) `
-            "STATUS.md subtask progress must belong to the latest open numeric task."
+            "CURRENT.md subtask progress must belong to the latest open numeric task."
     }
     if ($mode -eq 'New') {
         if ($latestTask -gt 0) {
@@ -353,10 +353,11 @@ function New-SelfTestRepository([string]$root) {
     Set-SelfTestFile $root "CONTRIBUTING.md" "# Contributing`n`n## Change Submission`n`n## Review Record`n`n## Commits And Tracking"
     Set-SelfTestFile $root "THIRD_PARTY_NOTICES.md" "# Third-Party Notices"
     Set-SelfTestFile $root "tests/README.md" "# Test Directory"
-    Set-SelfTestFile $root "docs/README.md" "# Documentation Guide`n`n## Task Reading Set`n`n[Status](STATUS.md)`n[Execution](rules/EXECUTION.md)`n[Contributing](../CONTRIBUTING.md)`n`n## Daily Operation`n`n## Supporting Detail"
-    Set-SelfTestFile $root "docs/QUEUE.md" "# Queue`n`n1. Candidate work"
-    Set-SelfTestFile $root "docs/TODO.md" "# Long-Term Review Ledger`n`n## Compatibility Debt`n`n- [ ] **Fixture debt (`TODO(High)`).** Admit only with evidence."
-    Set-SelfTestFile $root "docs/STATUS.md" @'
+    Set-SelfTestFile $root "docs/README.md" "# Documentation Guide`n`n## Task Reading Set`n`n[Current](states/CURRENT.md)`n[Execution](rules/EXECUTION.md)`n[Contributing](../CONTRIBUTING.md)`n`n## Daily Operation`n`n## Supporting Detail"
+    Set-SelfTestFile $root "docs/states/QUEUE.md" "# Queue`n`n1. [Candidate work](../proposals/candidate.md)"
+    Set-SelfTestFile $root "docs/states/TODO.md" "# Long-Term Review Ledger`n`n## Compatibility Debt`n`n- [ ] **Fixture debt (`TODO(High)`).** Admit only with evidence."
+    Set-SelfTestFile $root "docs/proposals/candidate.md" "# Candidate Work"
+    Set-SelfTestFile $root "docs/states/CURRENT.md" @'
 # Project Status
 
 ## Current Work
@@ -424,7 +425,7 @@ if ($SelfTest) {
         Require (-not (Invoke-SelfTestCheck $fixtureRoot -Quiet)) `
             "Documentation schema accepted a machine-local path in a test README."
         Set-SelfTestFile $fixtureRoot "tests/README.md" "# Test Directory"
-        $validStatus = Get-Content -Raw -LiteralPath (Join-Path $fixtureRoot "docs/STATUS.md")
+        $validStatus = Get-Content -Raw -LiteralPath (Join-Path $fixtureRoot "docs/states/CURRENT.md")
         Set-SelfTestFile $fixtureRoot "docs/design/ARCHITECTURE.md" "# System Architecture"
         Require (-not (Invoke-SelfTestCheck $fixtureRoot -Quiet)) `
             "Documentation schema accepted a principal document without required sections."
@@ -433,18 +434,18 @@ if ($SelfTest) {
         Require (-not (Invoke-SelfTestCheck $fixtureRoot -Quiet)) `
             "Documentation schema accepted an unindexed supporting file."
         Remove-Item -LiteralPath (Join-Path $fixtureRoot "docs/etc/unindexed.md") -Force
-        Set-SelfTestFile $fixtureRoot "docs/README.md" "# Documentation Guide`n`n## Task Reading Set`n`n[Status](STATUS.md)`n[Execution](rules/EXECUTION.md)`n[Contributing](../CONTRIBUTING.md)`n[missing](missing.md)`n`n## Daily Operation`n`n## Supporting Detail"
+        Set-SelfTestFile $fixtureRoot "docs/README.md" "# Documentation Guide`n`n## Task Reading Set`n`n[Current](states/CURRENT.md)`n[Execution](rules/EXECUTION.md)`n[Contributing](../CONTRIBUTING.md)`n[missing](missing.md)`n`n## Daily Operation`n`n## Supporting Detail"
         Require (-not (Invoke-SelfTestCheck $fixtureRoot -Quiet)) `
             "Documentation schema accepted a broken relative Markdown link."
-        Set-SelfTestFile $fixtureRoot "docs/README.md" "# Documentation Guide`n`n## Task Reading Set`n`n[Status](STATUS.md)`n[Execution](rules/EXECUTION.md)`n[Contributing](../CONTRIBUTING.md)`n`n## Daily Operation`n`n## Supporting Detail"
-        Set-SelfTestFile $fixtureRoot "docs/QUEUE.md" "# Queue`n`n1. T301 is not allowed here"
+        Set-SelfTestFile $fixtureRoot "docs/README.md" "# Documentation Guide`n`n## Task Reading Set`n`n[Current](states/CURRENT.md)`n[Execution](rules/EXECUTION.md)`n[Contributing](../CONTRIBUTING.md)`n`n## Daily Operation`n`n## Supporting Detail"
+        Set-SelfTestFile $fixtureRoot "docs/states/QUEUE.md" "# Queue`n`n1. T301 is not allowed here"
         Require (-not (Invoke-SelfTestCheck $fixtureRoot -Quiet)) `
             "Documentation schema accepted a Queue task identifier."
-        Set-SelfTestFile $fixtureRoot "docs/QUEUE.md" "# Queue`n`n1. Candidate work"
-        Set-SelfTestFile $fixtureRoot "docs/TODO.md" "# Long-Term Review Ledger`n`n## Compatibility Debt`n`n- [x] **Closed (`TODO(High)`).**"
+        Set-SelfTestFile $fixtureRoot "docs/states/QUEUE.md" "# Queue`n`n1. [Candidate work](../proposals/candidate.md)"
+        Set-SelfTestFile $fixtureRoot "docs/states/TODO.md" "# Long-Term Review Ledger`n`n## Compatibility Debt`n`n- [x] **Closed (`TODO(High)`).**"
         Require (-not (Invoke-SelfTestCheck $fixtureRoot -Quiet)) `
             "Documentation schema accepted a completed debt entry."
-        Set-SelfTestFile $fixtureRoot "docs/TODO.md" "# Long-Term Review Ledger`n`n## Compatibility Debt`n`n- [ ] **Fixture debt (`TODO(High)`).** Admit only with evidence."
+        Set-SelfTestFile $fixtureRoot "docs/states/TODO.md" "# Long-Term Review Ledger`n`n## Compatibility Debt`n`n- [ ] **Fixture debt (`TODO(High)`).** Admit only with evidence."
         $incompletePacket = $validStatus.Replace(
             "**Idle.**",
             "**Active: M5 Td S50.**"
@@ -452,7 +453,7 @@ if ($SelfTest) {
             "## Current Technical Baseline",
             "## M5 Td S50 Packet`n`n| Field | Required record |`n| --- | --- |`n| Identifier Mode | Governance |`n`n## Current Technical Baseline"
         )
-        Set-SelfTestFile $fixtureRoot "docs/STATUS.md" $incompletePacket
+        Set-SelfTestFile $fixtureRoot "docs/states/CURRENT.md" $incompletePacket
         Require (-not (Invoke-SelfTestCheck $fixtureRoot -Quiet)) `
             "Documentation schema accepted an incomplete active task packet."
         $packetRows = @'
@@ -481,16 +482,16 @@ if ($SelfTest) {
             "## Current Technical Baseline",
             "## M5 Td S50 Packet`n`n$packetRows`n## Current Technical Baseline"
         )
-        Set-SelfTestFile $fixtureRoot "docs/STATUS.md" $validPacket
+        Set-SelfTestFile $fixtureRoot "docs/states/CURRENT.md" $validPacket
         Require (Invoke-SelfTestCheck $fixtureRoot) `
             "Documentation schema rejected a complete next-identifier packet."
-        Set-SelfTestFile $fixtureRoot "docs/STATUS.md" ($validPacket.Replace("| Field | Required record |", "Field | Required record"))
+        Set-SelfTestFile $fixtureRoot "docs/states/CURRENT.md" ($validPacket.Replace("| Field | Required record |", "Field | Required record"))
         Require (-not (Invoke-SelfTestCheck $fixtureRoot -Quiet)) `
             "Documentation schema accepted an active packet without the fixed table header."
-        Set-SelfTestFile $fixtureRoot "docs/STATUS.md" ($validPacket.Replace("M5 Td S50", "M5 Td S51"))
+        Set-SelfTestFile $fixtureRoot "docs/states/CURRENT.md" ($validPacket.Replace("M5 Td S50", "M5 Td S51"))
         Require (-not (Invoke-SelfTestCheck $fixtureRoot -Quiet)) `
             "Documentation schema accepted a skipped Td identifier."
-        Set-SelfTestFile $fixtureRoot "docs/STATUS.md" ($validPacket.Replace("M5 Td S50", "M5 T302 S1").Replace("Governance", "New"))
+        Set-SelfTestFile $fixtureRoot "docs/states/CURRENT.md" ($validPacket.Replace("M5 Td S50", "M5 T302 S1").Replace("Governance", "New"))
         Require (-not (Invoke-SelfTestCheck $fixtureRoot -Quiet)) `
             "Documentation schema accepted a skipped numeric task identifier."
         $activeNumericPacket = $validPacket.Replace("M5 Td S50", "M5 T301 S1").Replace(
@@ -500,8 +501,8 @@ if ($SelfTest) {
             "| --- | --- |",
             "| --- | --- |`n| T300 | Closed fixture |"
         )
-        Set-SelfTestFile $fixtureRoot "docs/STATUS.md" $activeNumericPacket
-        git -C $fixtureRoot add docs/STATUS.md
+        Set-SelfTestFile $fixtureRoot "docs/states/CURRENT.md" $activeNumericPacket
+        git -C $fixtureRoot add docs/states/CURRENT.md
         git -C $fixtureRoot commit -q -m "M5 T301 S1 P0: admit fixture"
         Require (Invoke-SelfTestCheck $fixtureRoot) `
             "Documentation schema treated a committed active-packet admission as closed."
@@ -509,7 +510,7 @@ if ($SelfTest) {
             "| --- | --- |",
             "| --- | --- |`n| T301 S1 | Fixture progress |"
         )
-        Set-SelfTestFile $fixtureRoot "docs/STATUS.md" $latestTaskProgress
+        Set-SelfTestFile $fixtureRoot "docs/states/CURRENT.md" $latestTaskProgress
         Require (Invoke-SelfTestCheck $fixtureRoot) `
             "Documentation schema rejected compact progress for the latest open numeric task."
         $continuationPacket = $activeNumericPacket.Replace("M5 T301 S1", "M5 T301 S2").Replace(
@@ -519,22 +520,22 @@ if ($SelfTest) {
             "| --- | --- |",
             "| --- | --- |`n| T301 S1 | Fixture progress |"
         )
-        Set-SelfTestFile $fixtureRoot "docs/STATUS.md" $continuationPacket
+        Set-SelfTestFile $fixtureRoot "docs/states/CURRENT.md" $continuationPacket
         Require (Invoke-SelfTestCheck $fixtureRoot) `
             "Documentation schema rejected the next subtask of the latest open numeric task."
-        Set-SelfTestFile $fixtureRoot "docs/STATUS.md" ($continuationPacket.Replace("M5 T301 S2", "M5 T301 S3"))
+        Set-SelfTestFile $fixtureRoot "docs/states/CURRENT.md" ($continuationPacket.Replace("M5 T301 S2", "M5 T301 S3"))
         Require (-not (Invoke-SelfTestCheck $fixtureRoot -Quiet)) `
             "Documentation schema accepted a skipped continuation subtask identifier."
-        Set-SelfTestFile $fixtureRoot "docs/STATUS.md" ($continuationPacket.Replace("M5 T301 S2", "M5 T302 S1"))
+        Set-SelfTestFile $fixtureRoot "docs/states/CURRENT.md" ($continuationPacket.Replace("M5 T301 S2", "M5 T302 S1"))
         Require (-not (Invoke-SelfTestCheck $fixtureRoot -Quiet)) `
             "Documentation schema accepted a foreign continuation task identifier."
-        Set-SelfTestFile $fixtureRoot "docs/STATUS.md" ($activeNumericPacket.Replace(
+        Set-SelfTestFile $fixtureRoot "docs/states/CURRENT.md" ($activeNumericPacket.Replace(
             "| Identifier Mode | New |",
             "| Identifier Mode | Continuation |"
         ).Replace("M5 T301 S1", "M5 T301 S2"))
         Require (-not (Invoke-SelfTestCheck $fixtureRoot -Quiet)) `
             "Documentation schema accepted continuation without retained task progress."
-        Set-SelfTestFile $fixtureRoot "docs/STATUS.md" ($continuationPacket.Replace(
+        Set-SelfTestFile $fixtureRoot "docs/states/CURRENT.md" ($continuationPacket.Replace(
             "M5 T301 S2",
             "M5 T302 S1"
         ).Replace(
@@ -547,22 +548,22 @@ if ($SelfTest) {
             "| T301 S1 | Fixture progress |",
             "| T301 S1 | Fixture progress |`n| T301 | Closed fixture |"
         )
-        Set-SelfTestFile $fixtureRoot "docs/STATUS.md" $mixedTaskClosure
+        Set-SelfTestFile $fixtureRoot "docs/states/CURRENT.md" $mixedTaskClosure
         Require (-not (Invoke-SelfTestCheck $fixtureRoot -Quiet)) `
             "Documentation schema accepted mixed task-progress and task-closure rows."
         $staleTaskProgress = $latestTaskProgress.Replace("T301 S1", "T300 S4")
-        Set-SelfTestFile $fixtureRoot "docs/STATUS.md" $staleTaskProgress
+        Set-SelfTestFile $fixtureRoot "docs/states/CURRENT.md" $staleTaskProgress
         Require (-not (Invoke-SelfTestCheck $fixtureRoot -Quiet)) `
             "Documentation schema accepted progress for a non-latest numeric task."
         $multipleTaskProgress = $latestTaskProgress.Replace(
             "| T301 S1 | Fixture progress |",
             "| T301 S1 | Fixture progress |`n| T300 S4 | Fixture progress |"
         )
-        Set-SelfTestFile $fixtureRoot "docs/STATUS.md" $multipleTaskProgress
+        Set-SelfTestFile $fixtureRoot "docs/states/CURRENT.md" $multipleTaskProgress
         Require (-not (Invoke-SelfTestCheck $fixtureRoot -Quiet)) `
             "Documentation schema accepted progress for multiple numeric tasks."
-        Set-SelfTestFile $fixtureRoot "docs/STATUS.md" $validStatus
-        Set-SelfTestFile $fixtureRoot "docs/STATUS.md" @'
+        Set-SelfTestFile $fixtureRoot "docs/states/CURRENT.md" $validStatus
+        Set-SelfTestFile $fixtureRoot "docs/states/CURRENT.md" @'
 # Project Status
 
 ## Current Work
@@ -595,13 +596,16 @@ if ($SelfTest) {
 }
 
 $docsRoot = Join-Path $RepositoryRoot "docs"
-$statusPath = Join-Path $docsRoot "STATUS.md"
-$queuePath = Join-Path $docsRoot "QUEUE.md"
+$statesPath = Join-Path $docsRoot "states"
+$proposalsPath = Join-Path $docsRoot "proposals"
+$statusPath = Join-Path $statesPath "CURRENT.md"
+$queuePath = Join-Path $statesPath "QUEUE.md"
 $presetPath = Join-Path $RepositoryRoot "CMakePresets.json"
-$todoPath = Join-Path $docsRoot "TODO.md"
+$todoPath = Join-Path $statesPath "TODO.md"
 
-$expectedRootFiles = @("QUEUE.md", "README.md", "STATUS.md", "TODO.md")
-$expectedRootDirectories = @("design", "etc", "history", "rules")
+$expectedRootFiles = @("README.md")
+$expectedRootDirectories = @("design", "etc", "history", "proposals", "rules", "states")
+$expectedStateFiles = @("CURRENT.md", "QUEUE.md", "TODO.md")
 $expectedRuleFiles = @("ARCHITECTURE.md", "CODING.md", "DOCUMENT.md", "EXECUTION.md")
 $expectedDesignFiles = @("ARCHITECTURE.md", "CODING.md", "GOAL.md", "ROADMAP.md", "UI.md")
 $RunDocumentation = $Scope -in @('All', 'Documentation')
@@ -611,9 +615,9 @@ if ($RunDocumentation) {
 $rootFiles = @(Get-ChildItem -LiteralPath $docsRoot -File | ForEach-Object Name)
 $rootDirectories = @(Get-ChildItem -LiteralPath $docsRoot -Directory | ForEach-Object Name)
 Require (Test-ExactNameSet $rootFiles $expectedRootFiles) `
-    "docs/ must contain only README.md, STATUS.md, QUEUE.md, and TODO.md."
+    "docs/ must contain only README.md."
 Require (Test-ExactNameSet $rootDirectories $expectedRootDirectories) `
-    "docs/ must contain only rules/, design/, history/, and etc/."
+    "docs/ must contain only rules/, design/, history/, states/, proposals/, and etc/."
 
 $rulesPath = Join-Path $docsRoot "rules"
 $designPath = Join-Path $docsRoot "design"
@@ -641,6 +645,10 @@ Require (@(Get-ChildItem -LiteralPath $designPath -Directory).Count -eq 0) `
     "docs/design/ must not contain subdirectories."
 Require (@(Get-ChildItem -LiteralPath $historyPath -Directory).Count -eq 0) `
     "docs/history/ must not contain subdirectories."
+Require (Test-ExactNameSet @(Get-ChildItem -LiteralPath $statesPath -File | ForEach-Object Name) $expectedStateFiles) `
+    "docs/states/ must contain only CURRENT.md, QUEUE.md, and TODO.md."
+Require (@(Get-ChildItem -LiteralPath $statesPath -Directory).Count -eq 0) `
+    "docs/states/ must not contain subdirectories."
 Require (Test-Path -LiteralPath $etcIndexPath) `
     "docs/etc/ must contain its supporting-documentation index."
 $etcIndex = Get-Content -Raw -LiteralPath $etcIndexPath
@@ -686,7 +694,7 @@ $executionRules = Get-Content -Raw -LiteralPath (Join-Path $rulesPath "EXECUTION
 
 Require ($docsReadme -match '(?m)^## Task Reading Set$') `
     "docs/README.md must contain the Task Reading Set section."
-foreach ($requiredReadingLink in @('STATUS.md', 'rules/EXECUTION.md', '../CONTRIBUTING.md')) {
+foreach ($requiredReadingLink in @('states/CURRENT.md', 'rules/EXECUTION.md', '../CONTRIBUTING.md')) {
     Require ($docsReadme -match [regex]::Escape("($requiredReadingLink)")) `
         "docs/README.md Task Reading Set must link to $requiredReadingLink."
 }
@@ -787,11 +795,11 @@ Require-RequiredH2 "docs/design/UI.md" $uiDesign @(
     '^NXVM$', '^NXVDM$', '^Presentation And Debugging$', '^Host Resources$'
 )
 
-Require-NoTaskIdentifier "docs/QUEUE.md" (Get-Content -Raw -LiteralPath $queuePath)
+Require-NoTaskIdentifier "docs/states/QUEUE.md" (Get-Content -Raw -LiteralPath $queuePath)
 Require-NoTaskIdentifier "docs/design/GOAL.md" $goalDesign
 Require-NoTaskIdentifier "docs/design/UI.md" $uiDesign
 Require-NoTaskIdentifier "docs/design/ROADMAP.md" $roadmapDesign
-Require-NoChecklist "docs/QUEUE.md" (Get-Content -Raw -LiteralPath $queuePath)
+Require-NoChecklist "docs/states/QUEUE.md" (Get-Content -Raw -LiteralPath $queuePath)
 Require-NoChecklist "docs/design/GOAL.md" $goalDesign
 Require-NoChecklist "docs/design/ARCHITECTURE.md" $architectureDesign
 Require-NoChecklist "docs/design/CODING.md" $codingDesign
@@ -808,35 +816,35 @@ $status = Get-Content -Raw -LiteralPath $statusPath
 $queue = Get-Content -Raw -LiteralPath $queuePath
 $todo = Get-Content -Raw -LiteralPath $todoPath
 
-Require-HeadingSchema "docs/STATUS.md" $status "Project Status" @(
+Require-HeadingSchema "docs/states/CURRENT.md" $status "Project Status" @(
     '^Current Work$',
     '^Current Technical Baseline$',
     '^Recent M\d+ Closures$',
     '^Recent Governance$',
     '^M\d+ (?:T\d+|Td) S\d+ Packet$'
 )
-Require-HeadingSchema "docs/QUEUE.md" $queue "Queue" @()
-Require-HeadingSchema "docs/TODO.md" $todo "Long-Term Review Ledger" @('^.+ Debt$')
+Require-HeadingSchema "docs/states/QUEUE.md" $queue "Queue" @('^M\d+ Candidates$')
+Require-HeadingSchema "docs/states/TODO.md" $todo "Long-Term Review Ledger" @('^.+ Debt$')
 
 Require (($status | Select-String -AllMatches -Pattern '(?m)^## Current Technical Baseline$').Matches.Count -eq 1) `
-    "STATUS.md must contain exactly one Current Technical Baseline heading."
+    "CURRENT.md must contain exactly one Current Technical Baseline heading."
 
 $activePacket = $null
 $idle = $status -match '(?m)^\*\*Idle\.'
 if ($idle) {
     Require (-not ($status -match '(?m)^## (Historical )?T\d+(?: S\d+)? Packet$')) `
-        "Idle STATUS.md must not retain a task packet."
+        "Idle CURRENT.md must not retain a task packet."
     $baselineOffset = $status.IndexOf("## Current Technical Baseline")
-    Require ($baselineOffset -ge 0) "Idle STATUS.md must contain a technical baseline."
+    Require ($baselineOffset -ge 0) "Idle CURRENT.md must contain a technical baseline."
     $idlePrefixLines = ([regex]::Split($status.Substring(0, $baselineOffset), "`r?`n")).Count
     Require ($idlePrefixLines -le 8) `
-        "Idle STATUS.md must not retain completed narrative before its technical baseline."
+        "Idle CURRENT.md must not retain completed narrative before its technical baseline."
 }
 else {
     Require (($status | Select-String -AllMatches -Pattern '(?m)^## M\d+ (?:T\d+|Td) S\d+ Packet$').Matches.Count -eq 1) `
-        "Active STATUS.md must contain exactly one task packet."
+        "Active CURRENT.md must contain exactly one task packet."
     $activePacket = Get-ActivePacket $status
-    Require ($null -ne $activePacket) "Active STATUS.md must expose a parseable task packet."
+    Require ($null -ne $activePacket) "Active CURRENT.md must expose a parseable task packet."
     Require-ActivePacketSchema $activePacket
     Require-ActiveIdentifier $activePacket $RepositoryRoot $status
 }
@@ -852,29 +860,35 @@ Require (-not ($queue -match '(?m)^\s*[-*]\s+')) `
     "QUEUE.md must use ordered candidates rather than an unordered list."
 Require (-not ($queue -match '(?m)^\s*\d+\)\s+')) `
     "QUEUE.md must use Markdown ordered-list syntax for candidates."
+$queueEntries = @([regex]::Matches($queue, '(?m)^\d+\.\s+(?<entry>.+)$'))
+Require ($queueEntries.Count -gt 0) "QUEUE.md must contain at least one ordered candidate."
+foreach ($queueEntry in $queueEntries) {
+    Require ($queueEntry.Groups['entry'].Value -match '\]\(\.\./proposals/[^)]+\.md\)') `
+        "Every QUEUE.md candidate must link to one proposal."
+}
 $closureSection = [regex]::Match($status, '(?ms)^## Recent M\d+ Closures\r?\n(?<body>.*?)(?=^## |\z)')
-Require ($closureSection.Success) "STATUS.md must contain a recent milestone-closure section."
+Require ($closureSection.Success) "CURRENT.md must contain a recent milestone-closure section."
 $closureRows = @(Get-StatusClosureRows $status)
 $subtaskProgressRows = @($closureRows | Where-Object HasSubtask)
 if ($subtaskProgressRows.Count -gt 0) {
     $progressTaskNumbers = @($subtaskProgressRows | ForEach-Object Task | Select-Object -Unique)
     Require ($progressTaskNumbers.Count -eq 1) `
-        "STATUS.md may retain subtask progress for only one open numeric task."
+        "CURRENT.md may retain subtask progress for only one open numeric task."
     $progressTask = $progressTaskNumbers[0]
     $closedNumericRecords = @(Get-ClosedIdentifierRecords $RepositoryRoot | Where-Object { -not $_.IsDocumentation })
     $latestNumericTask = ($closedNumericRecords | Measure-Object -Property Task -Maximum).Maximum
     Require ($progressTask -eq $latestNumericTask) `
-        "STATUS.md subtask progress must belong to the latest open numeric task."
+        "CURRENT.md subtask progress must belong to the latest open numeric task."
     Require (-not ($closureRows | Where-Object { -not $_.HasSubtask -and $_.Task -eq $progressTask })) `
-        "STATUS.md must replace closed-task subtask progress with one task-level summary."
+        "CURRENT.md must replace closed-task subtask progress with one task-level summary."
 }
 $taskClosureCount = @($closureRows | Where-Object { -not $_.HasSubtask }).Count
-Require ($taskClosureCount -le 8) "STATUS.md must retain at most eight recent task-level closure rows."
+Require ($taskClosureCount -le 8) "CURRENT.md must retain at most eight recent task-level closure rows."
 
 $governanceSection = [regex]::Match($status, '(?ms)^## Recent Governance\r?\n(?<body>.*?)(?=^## |\z)')
-Require ($governanceSection.Success) "STATUS.md must contain a Recent Governance section."
+Require ($governanceSection.Success) "CURRENT.md must contain a Recent Governance section."
 $governanceCount = ([regex]::Matches($governanceSection.Groups['body'].Value, '(?m)^- \*\*M\d+ Td S\d+:')).Count
-Require ($governanceCount -le 8) "STATUS.md must retain at most eight recent governance rows."
+Require ($governanceCount -le 8) "CURRENT.md must retain at most eight recent governance rows."
 
 $presets = Get-Content -Raw -LiteralPath $presetPath | ConvertFrom-Json
 $currentPreset = @($presets.buildPresets | Where-Object { $_.name -eq "current-gcc" })
@@ -886,9 +900,9 @@ $expectedArtifact = "nxvm_" + ($currentTarget.Substring(3) -replace '-', '_') + 
 $statusTargets = @([regex]::Matches($status, '\bvm-0-5-\d{4}\b') | ForEach-Object Value | Select-Object -Unique)
 $statusArtifacts = @([regex]::Matches($status, '\bnxvm_0_5_\d{4}\.exe\b') | ForEach-Object Value | Select-Object -Unique)
 Require ($statusTargets.Count -eq 1 -and $statusTargets[0] -eq $currentTarget) `
-    "STATUS.md current target must match CMakePresets.json ($currentTarget)."
+    "CURRENT.md current target must match CMakePresets.json ($currentTarget)."
 Require ($statusArtifacts.Count -eq 1 -and $statusArtifacts[0] -eq $expectedArtifact) `
-    "STATUS.md current artifact must match CMakePresets.json ($expectedArtifact)."
+    "CURRENT.md current artifact must match CMakePresets.json ($expectedArtifact)."
 }
 
 if ($RunDocumentation) {

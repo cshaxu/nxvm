@@ -4,7 +4,7 @@
 
 T317 repairs only project-owned CPU test corpus code added by T316 and its
 setup-only support surface. It precedes, but does not replace or reorder, the
-existing 80386DX capability candidates in [Queue](../../QUEUE.md). It makes no
+existing 80386DX capability candidates in [Queue](../../states/QUEUE.md). It makes no
 CPU behavior, ABI, product, x87, device, timing, or Windows-readiness claim.
 
 The audited baseline is 47 `tests/machine` smoke sources added by T316. The

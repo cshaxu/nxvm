@@ -19,7 +19,7 @@ instruction named by the active packet or S brief.
 
 ## Execution
 
-- `docs/STATUS.md` holds the only active packet. Follow
+- `docs/states/CURRENT.md` holds the only active packet. Follow
   `docs/rules/EXECUTION.md` for task allocation, evidence, artifacts, and
   closure.
 - Apply the relevant architecture, coding, source, and documentation rules;

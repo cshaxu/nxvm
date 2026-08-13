@@ -106,4 +106,4 @@ implicit waiver. Current milestone state remains in `STATUS.md`.
 - Lifecycle and public-contract detail: [Machine Contract Details](../../architecture/machine-contract-details.md)
 - Coding and execution rules: [Coding Standard](../../../rules/CODING.md) and
   [Execution Policy](../../../rules/EXECUTION.md)
-- Open work and approved deferrals: [TODO Ledger](../../../TODO.md)
+- Open work and approved deferrals: [TODO Ledger](../../../states/TODO.md)
