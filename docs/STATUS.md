@@ -2,8 +2,28 @@
 
 ## Current Work
 
-**Idle.** M5 T330 remains open. S6 is accepted; the state-machine mechanism
-matrix governance integration requires a separately admitted Continuation packet.
+**Active: M5 T330 S7.** Integrate full mechanism-matrix discipline for CPU
+state-machine work (Ordinary Mode; owner-approved T330 continuation).
+
+## M5 T330 S7 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; T330 S6 is retained progress for the latest open numeric task, and S7 is its next unused subtask. |
+| Admission And Approval | Owner approved reopening T330 on 2026-08-12 to implement the fourth audited construction-drift item after S6 acceptance. |
+| Objective | Make a full mechanism matrix a mandatory pre-P1 admission and review artifact for CPU state-machine work, so implementation cannot close a local symptom while width, mode, caller, validation, materialization, commit, rollback, and fault variants remain unclassified. |
+| Non-goals | No source-wide rewrite, generic prose classifier, automatic semantic verifier, CPU behavior change, architecture abstraction framework, or requirement that Intel-defined 16/32-bit layouts be merged. |
+| Reference Baseline | `07ac6fc2e6ae262399f9891efe41032b4d9ccf61` / `vm-0-5-0330`; read T330 inventory/history, the holistic construction debt record, Queue matrix rule, and the Execution/Documentation authorities. |
+| Files And ABI Surface | `docs/rules/EXECUTION.md`, `docs/STATUS.md`, T330 evidence/history, and no runtime source, CMake, public ABI, or verifier unless a narrow mechanical recurrence can be named. |
+| Applicable Rules | Documentation authority boundaries and execution lifecycle. The rule must be mandatory but apply only to CPU state-machine mechanisms, not ordinary instruction-form slices already owned by a common checked pipeline. |
+| Verification | Documentation governance self-test and default check, `git diff --check`, actual authority-boundary review, and a T330 evidence matrix that maps the rule to task transition, CALL-gate, exception/IRQ, IRET, VM86, descriptor, and paging examples. |
+| Expected Markers | Documentation governance self-test and default success; no runtime marker or artifact revision is required for this documentation-only continuation. |
+| Asset Needs | None. |
+| Reporting Requirements | Ordinary Mode contract confirmation, one complete pushed documentation P with requirement-to-proof evidence, coordinator actual-change review, and governance P on acceptance. |
+| Stop Conditions | Stop if enforcing the rule needs a broad semantic parser, duplicates architecture authority, or changes CPU behavior; retain structural documentation governance and record any future mechanical shape separately. |
+| Exit Criteria | Execution rules require a full state-machine mechanism matrix before P1 and reject piecemeal closure claims; scope, required dimensions, evidence, retained Intel layout distinction, transfer rule, and reviewer obligation are explicit; documentation gates pass. |
+| Original Owner Request | Reopen T330 and implement the four audited items as four ordered S tasks, beginning now. |
+| Similar-Issue Sweep | Review current execution, Queue, roadmap, T330 inventory, and holistic debt guidance for competing or incomplete matrix language; consolidate only the mandatory lifecycle rule in its proper authority and link rather than duplicate supporting detail. |
 
 ## Current Technical Baseline
 

@@ -223,3 +223,25 @@ precedes the selected fault. Existing
 success, isolated source-stack, isolated TSS/new-SS, target-stack, descriptor,
 and IRQ vectors remain in their respective owner smokes. No exception-delivery,
 descriptor/TSS helper, paging, or frame-layout mechanism changed.
+
+## T330 S7 State-Machine Matrix Rule Map
+
+The Execution rule now requires a mechanism matrix before P1 for stateful CPU
+work. T330 provides the concrete review map: task transition has independent
+old/new TSS width selection and all direct, task-gate, IDT, and backlink callers;
+CALL gates have width-specific frames but one validation/preflight/commit
+boundary; protected exception/IRQ entry and IRET retain distinct same-, outer-,
+and VM86 frames; descriptor/control state owns table and control-register
+publication; and paging owns translation, access, fault, and rollback state.
+Each is a mechanism rather than a bag of opcodes, so its matrix explicitly
+records callers, state dimensions, fault priority, preflight, commit, and
+transfers. Ordinary operand/address dispatch remains outside this special rule
+when it already reaches the common checked decode/read/write pipeline.
+
+The rule does not attempt a prose parser or force false unification. Its
+enforcement point is the active packet plus actual-change review: the executor
+must supply the matrix before P1, and the reviewer compares it with the caller
+graph and tests before accepting a symptom repair. T330 S1/S4, S5, and S6 are
+the three observed recurrence classes that motivated it: parallel task
+constructors, provider construction/commit publication, and width-divergent
+CALL-gate preflight ordering.
