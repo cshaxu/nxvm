@@ -84,11 +84,21 @@ C_VOID vm_machine_debug_refresh(t_debug *debug,
 
         /* disassemble opcode */
         if (debug->connect.observation.instruction_byte_count) {
-            debug->connect.observation.instruction_byte_count = debug->connect.disassembleProvider == STD_NULL ?
-                0u : debug->connect.disassembleProvider(
-                    debug->connect.disassembleContext, stmt,
+            STD_SIZE_T decoded_bytes = 0u;
+            if (debug->connect.disassembleProvider == STD_NULL ||
+                debug->connect.disassembleProvider(
+                    debug->connect.disassembleContext, stmt, sizeof(stmt),
                     debug->connect.observation.instruction_bytes,
-                    debug->connect.observation.code_default_size);
+                    sizeof(debug->connect.observation.instruction_bytes),
+                    &decoded_bytes,
+                    debug->connect.observation.code_default_size) != TYPE_STATUS_OK ||
+                decoded_bytes > sizeof(debug->connect.observation.instruction_bytes)) {
+                debug->connect.observation.instruction_byte_count = 0u;
+                (C_VOID)STD_SNPRINTF(stmt, sizeof(stmt), "<ERROR>");
+            } else {
+                debug->connect.observation.instruction_byte_count =
+                    (type_unsigned_8)decoded_bytes;
+            }
             for (i = 0; i < STD_STRLEN(stmt); ++i) {
                 if (stmt[i] == '\n') {
                     stmt[i] = ' ';

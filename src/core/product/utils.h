@@ -9,10 +9,19 @@ extern "C"
 #endif
 
 #include "type.h"
-    /* Assembler Library */
-    type_unsigned_8 core_product_utils_aasm32(const C_CHAR *stmt, type_unsigned_8 *rcode, C_INT flag32);
-    type_unsigned_32 core_product_utils_aasm32x(const C_CHAR *stmt, type_unsigned_8 *rcode, C_INT flag32);
-    type_unsigned_8 core_product_utils_dasm32(C_CHAR *stmt, type_unsigned_8 *rcode, C_INT flag32);
+
+#define CORE_PRODUCT_UTILS_XASM_MAX_STATEMENT_BYTES 255u
+#define CORE_PRODUCT_UTILS_XASM_MAX_CODE_BYTES 15u
+
+type_status core_product_utils_assemble(const C_CHAR *statement,
+    STD_SIZE_T statement_bytes, type_unsigned_8 *code,
+    STD_SIZE_T code_capacity, STD_SIZE_T *out_code_bytes, C_INT flag32);
+type_status core_product_utils_assemble_paragraph(const C_CHAR *statement,
+    STD_SIZE_T statement_bytes, type_unsigned_8 *code,
+    STD_SIZE_T code_capacity, STD_SIZE_T *out_code_bytes, C_INT flag32);
+type_status core_product_utils_disassemble(const type_unsigned_8 *code,
+    STD_SIZE_T code_bytes, C_CHAR *statement, STD_SIZE_T statement_capacity,
+    STD_SIZE_T *out_statement_bytes, C_INT flag32);
 
 #ifdef __cplusplus
 } /*_EOCD_*/

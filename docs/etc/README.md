@@ -16,6 +16,8 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t333-s2-interactive-input-repair.md` | Verification owner | T333 S2 owner-local interactive-input repair and static/build evidence. Retire into the T333 history record when the task closes. |
 | `evidence/t333-s3-interactive-input-proof.md` | Verification owner | T333 S3 owner-separated EOF/allocation-failure smoke design and expected proof. Retire into the T333 history record when the task closes. |
 | `evidence/t335-s1-xasm-contract-inventory.md` | Verification owner | T335 S1 complete xasm public-entry, caller, capacity, failure-publication, and S2 migration inventory. Retire into T335 history at closure. |
+| `evidence/t335-s2-xasm-migration.md` | Verification owner | T335 S2 bounded facade/caller migration and artifact verification evidence. Retire into T335 history at closure. |
+| `evidence/t335-s3-xasm-contract-proof.md` | Verification owner | T335 S3 deterministic capacity and failure-atomicity proof. Retire into T335 history at closure. |
 | `operations/` | Execution, source, and release owners | Toolchain, policy, templates, release procedure, and closure material. |
 | `research/` | Source owner | Provenance, external references, and non-product research. |
 | `history/` | Documentation owner | Read-only legacy and M5 migration/roadmap evidence. |

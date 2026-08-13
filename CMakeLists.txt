@@ -918,6 +918,22 @@ target_link_libraries(core-product-xasm-smoke PRIVATE
     core-product-utils
 )
 
+add_executable(core-product-xasm-contract-smoke
+    tests/product/core_product_xasm_contract_smoke.c
+    src/core/product/utils.c
+    src/core/product/debug/xasm32/aasm32.c
+    src/core/product/debug/xasm32/dasm32.c
+)
+target_include_directories(core-product-xasm-contract-smoke PRIVATE
+    "${CMAKE_SOURCE_DIR}/src"
+)
+target_compile_definitions(core-product-xasm-contract-smoke PRIVATE
+    STD_MALLOC=test_xasm_malloc
+)
+target_link_libraries(core-product-xasm-contract-smoke PRIVATE
+    type-facade
+)
+
 
 add_library(vm-profile STATIC ${VM_PROFILE_SOURCES})
 target_include_directories(vm-profile PUBLIC
@@ -1701,6 +1717,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-utils-wait-smoke
     std-snprintf-smoke
     core-product-xasm-smoke
+    core-product-xasm-contract-smoke
     core-product-session-contract-smoke
     core-product-session-manager-smoke
     core-product-debug-target-smoke
@@ -1897,7 +1914,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0334 "0.5.0334")
+add_current_vm_artifact(vm-0-5-0335 "0.5.0335")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 

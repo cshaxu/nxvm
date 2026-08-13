@@ -10,16 +10,98 @@
 
 #include "core/product/utils.h"
 
-/* Assembler Library */
-type_unsigned_8 core_product_utils_aasm32(const C_CHAR *stmt, type_unsigned_8 *rcode, C_INT flag32)
+#define CORE_PRODUCT_UTILS_XASM_STATEMENT_CAPACITY \
+    (CORE_PRODUCT_UTILS_XASM_MAX_STATEMENT_BYTES + 1u)
+
+static type_status core_product_utils_validate_statement(const C_CHAR *statement,
+    STD_SIZE_T statement_bytes, C_INT paragraph)
 {
-    return aasm32(stmt, rcode, flag32);
+    STD_SIZE_T index;
+    STD_SIZE_T line_bytes = 0u;
+
+    if (statement == STD_NULL || statement_bytes == 0u) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    for (index = 0u; index < statement_bytes; ++index) {
+        if (statement[index] == '\0') return TYPE_STATUS_INVALID_ARGUMENT;
+        if (statement[index] == '\n' && paragraph) {
+            if (line_bytes > CORE_PRODUCT_UTILS_XASM_MAX_STATEMENT_BYTES) {
+                return TYPE_STATUS_INVALID_ARGUMENT;
+            }
+            line_bytes = 0u;
+        } else {
+            ++line_bytes;
+            if (line_bytes > CORE_PRODUCT_UTILS_XASM_MAX_STATEMENT_BYTES) {
+                return TYPE_STATUS_INVALID_ARGUMENT;
+            }
+        }
+    }
+    return TYPE_STATUS_OK;
 }
-type_unsigned_32 core_product_utils_aasm32x(const C_CHAR *stmt, type_unsigned_8 *rcode, C_INT flag32)
+
+type_status core_product_utils_assemble(const C_CHAR *statement,
+    STD_SIZE_T statement_bytes, type_unsigned_8 *code,
+    STD_SIZE_T code_capacity, STD_SIZE_T *out_code_bytes, C_INT flag32)
 {
-    return aasm32x(stmt, rcode, flag32);
+    C_CHAR local_statement[CORE_PRODUCT_UTILS_XASM_STATEMENT_CAPACITY];
+    type_unsigned_8 local_code[CORE_PRODUCT_UTILS_XASM_MAX_CODE_BYTES];
+    type_unsigned_8 code_bytes;
+    type_status status;
+
+    if (code == STD_NULL || out_code_bytes == STD_NULL || code_capacity == 0u ||
+        (flag32 != TYPE_FALSE && flag32 != TYPE_TRUE)) return TYPE_STATUS_INVALID_ARGUMENT;
+    status = core_product_utils_validate_statement(statement, statement_bytes,
+        TYPE_FALSE);
+    if (status != TYPE_STATUS_OK) return status;
+    STD_MEMCPY(local_statement, statement, statement_bytes);
+    local_statement[statement_bytes] = '\0';
+    code_bytes = aasm32(local_statement, local_code, flag32);
+    if (code_bytes == 0u || code_bytes > code_capacity) return TYPE_STATUS_FAULT;
+    STD_MEMCPY(code, local_code, code_bytes);
+    *out_code_bytes = code_bytes;
+    return TYPE_STATUS_OK;
 }
-type_unsigned_8 core_product_utils_dasm32(C_CHAR *stmt, type_unsigned_8 *rcode, C_INT flag32)
+
+type_status core_product_utils_assemble_paragraph(const C_CHAR *statement,
+    STD_SIZE_T statement_bytes, type_unsigned_8 *code,
+    STD_SIZE_T code_capacity, STD_SIZE_T *out_code_bytes, C_INT flag32)
 {
-    return dasm32(stmt, rcode, flag32);
+    C_CHAR *local_statement;
+    type_status status;
+
+    if (code == STD_NULL || out_code_bytes == STD_NULL || code_capacity == 0u ||
+        statement_bytes == (STD_SIZE_T)-1 ||
+        (flag32 != TYPE_FALSE && flag32 != TYPE_TRUE)) return TYPE_STATUS_INVALID_ARGUMENT;
+    status = core_product_utils_validate_statement(statement, statement_bytes,
+        TYPE_TRUE);
+    if (status != TYPE_STATUS_OK) return status;
+    local_statement = (C_CHAR *)STD_MALLOC(statement_bytes + 1u);
+    if (local_statement == STD_NULL) return TYPE_STATUS_NO_MEMORY;
+    STD_MEMCPY(local_statement, statement, statement_bytes);
+    local_statement[statement_bytes] = '\0';
+    status = aasm32x(local_statement, code_capacity, code, out_code_bytes, flag32);
+    STD_FREE(local_statement);
+    return status;
+}
+
+type_status core_product_utils_disassemble(const type_unsigned_8 *code,
+    STD_SIZE_T code_bytes, C_CHAR *statement, STD_SIZE_T statement_capacity,
+    STD_SIZE_T *out_statement_bytes, C_INT flag32)
+{
+    C_CHAR local_statement[CORE_PRODUCT_UTILS_XASM_STATEMENT_CAPACITY];
+    type_unsigned_8 decoded_bytes;
+    STD_SIZE_T statement_bytes;
+
+    if (code == STD_NULL || statement == STD_NULL || out_statement_bytes == STD_NULL ||
+        code_bytes < CORE_PRODUCT_UTILS_XASM_MAX_CODE_BYTES ||
+        statement_capacity == 0u ||
+        (flag32 != TYPE_FALSE && flag32 != TYPE_TRUE)) return TYPE_STATUS_INVALID_ARGUMENT;
+    decoded_bytes = dasm32(local_statement, (type_unsigned_8 *)code, flag32);
+    statement_bytes = STD_STRLEN(local_statement);
+    if (decoded_bytes == 0u || statement_bytes >= statement_capacity) {
+        return TYPE_STATUS_FAULT;
+    }
+    STD_MEMCPY(statement, local_statement, statement_bytes + 1u);
+    *out_statement_bytes = statement_bytes;
+    return TYPE_STATUS_OK;
 }

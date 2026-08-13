@@ -9,10 +9,10 @@ extern "C" {
 
 #include "type.h"
 
-/* assemble single instruction */
+/* Internal xasm engine entries.  Public callers use core/product/utils.h. */
 type_unsigned_8 aasm32(const C_CHAR *stmt, type_unsigned_8 *rcode, C_INT flag32);
-/* assemble a paragraph of instructions */
-type_unsigned_32 aasm32x(const C_CHAR *stmt, type_unsigned_8 *rcode, C_INT flag32);
+type_status aasm32x(const C_CHAR *stmt, STD_SIZE_T code_capacity,
+    type_unsigned_8 *rcode, STD_SIZE_T *out_code_bytes, C_INT flag32);
 
 #ifdef __cplusplus
 }/*_EOCD_*/
