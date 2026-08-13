@@ -13,7 +13,7 @@ unproven exception class.
 | Bound range exceeded (`#BR`) | 5 | `core_machine_bound_s54_smoke` | Retained real delivery. |
 | Device not available (`#NM`) | 7 | `fpu_escape_smoke`; `core_machine_fpu_interface_s65_smoke` | Retained real delivery. |
 | General protection (`#GP`) | 13 | `core_machine_real_exception_final_s1_smoke` | New success and failed-IVT-delivery proof. |
-| Page fault (`#PF`) | 14 | `core_machine_80386_paging_smoke` | Protected-mode evidence only; transfer real-mode producer work. |
+| Page fault (`#PF`) | 14 | `core_machine_80386_paging_smoke` | Protected-mode only: paging requires PE, so no real-mode producer applies. |
 
 ## Construction Contract
 
@@ -34,9 +34,8 @@ producer and final vector leaves the original terminal `#GP` snapshot intact.
 The production query `rg -n "_e_except_n\\(|_SetExcept_(DE|PF|MF|BR|NM|GP)|ExecFinal" src`
 classified the direct final-delivery paths. `#DE`, `#MF`, `#BR`, `#NM`, and
 `#GP` use the plan; protected delivery remains in the protected branch;
-real-mode `#PF` has no current producer proof and transfers to a later paging
-or exception-delivery package. No serializer, memory, descriptor, or stack
-helper changed.
+real-mode `#PF` is not applicable because paging requires PE. No serializer,
+memory, descriptor, or stack helper changed.
 
 ## Mechanical Closure
 
