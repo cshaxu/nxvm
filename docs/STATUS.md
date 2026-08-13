@@ -2,29 +2,29 @@
 
 ## Current Work
 
-M5 T330 S2 - 32-bit call-gate same-CPL convergence (Ordinary Mode). Repair the
-proven common privilege-rule and same-CPL construction drift without merging
-Intel-required 16/32-bit gate and frame layouts.
+M5 T330 S3 - developer-artifact refresh (Ordinary Mode). Produce and verify the
+required current `0.5.0330` developer artifact for the accepted T330 CPU-path
+changes; no runtime behavior change is admitted.
 
-## M5 T330 S2 Packet
+## M5 T330 S3 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | Continuation; Ordinary Mode; owner-authorized T330 S2 after accepted T330 S1. |
-| Admission And Approval | Owner approved T330 on 2026-08-12 and required that all analogous accidental 16/32-bit construction divergences found by the whole-file audit be resolved in T330. S1 identified this bounded call-gate drift and reserved it explicitly; S2 consumes that approved finding without widening into generic privilege or exception redesign. |
-| Objective | Make the 32-bit protected CALL-gate route obey the shared Intel target privilege rule (`target DPL <= CPL`) and construct the same-CPL frame without requiring a TSS. Retain distinct 16/32-bit parameter and frame layouts, validation, and checked-stack preflight. |
-| Non-goals | No task-gate, far-JMP-gate, outer-CPL call-gate, VME/PVI, VM86, generic TSS, generic exception/IRQ, public ABI, or broad descriptor-helper redesign. Do not merge 16/32 frame layouts or relax a privilege check beyond the Intel CALL-gate rule. |
-| Reference Baseline | `82bea776` / `vm-0-5-0329`; accepted T330 S1 inventory at `docs/etc/evidence/t330-width-path-inventory.md`; Intel 80386 protected CALL-gate semantics; and retained call-gate focused evidence. |
-| Files And ABI Surface | Private `cpu_instructions.c` CALL-gate serializer and an existing focused call-gate owner smoke or a new owner smoke if needed, plus narrow evidence/Status updates. No public API, provider, generic descriptor, or TSS interface change. |
-| Applicable Rules | Task Reading Set; `docs/rules/EXECUTION.md`, `docs/rules/ARCHITECTURE.md`, `docs/rules/CODING.md`, `docs/design/ARCHITECTURE.md`, `docs/design/CODING.md`, `docs/rules/DOCUMENT.md`; preserve checked-memory, descriptor/cache ownership, and project type vocabulary. |
-| Verification | Audit both serializers and callers. Prove 32-bit same-CPL CALL-gate success without a valid TR/TSS, equal-DPL target acceptance, lower-target-CPL TSS stack-switch retention, rejected higher-DPL/nonpresent/invalid target boundaries, exact 32-bit frame/parameter publication, prefix/LOCK classification, and pending-IRQ ordering. Run focused, configure, exact current registration, documentation governance, diff check, and full current-gate. |
-| Expected Markers | Retain existing call-gate markers and add or extend one owner marker that names T330 S2 CALL-gate same-CPL proof; inventory evidence records the caller/write/fault sweep and retained layout distinction. |
-| Asset Needs | No guest media, firmware, external source import, or external network asset. |
-| Reporting Requirements | Report only a complete implementation P or material stop condition, mapping the privilege comparison, TSS dependency branch, stack/frame writes, callers, faults, and gate result to evidence. |
-| Stop Conditions | Stop for a required generic TSS/descriptor/checked-stack/exception redesign, a caller requiring a distinct unmodeled privilege transition, an Intel semantic conflict, or a correction crossing into a separate VM86/outer-CPL package. Record the transfer rather than symptom-patching. |
-| Exit Criteria | The 32-bit same-CPL route accepts an equal-DPL nonconforming target, requires no TSS unless a lower-CPL stack transition needs one, and preflights/publishes the correct 32-bit frame atomically. Both serializers retain Intel-required frame differences; caller and fault boundaries are evidenced, the inventory is updated, and all gates pass. |
-| Original Owner Request | Holistically audit and repair accidental 16/32-bit construction drift throughout `cpu_instructions.c`, preserving genuine Intel layout differences. |
-| Similar-Issue Sweep | Compare `_ser_call_far_call_gate` and `_ser_call_far_call_gate_32` branch-by-branch: gate/target privilege checks, TSS dependency, parameter copy, frame preflight, descriptor writes, stack writes, and CPU/cache publication. Sweep `_e_call_far` callers and retained CALL-gate smokes; classify any new non-layout divergence in the inventory. |
+| Identifier Mode | Continuation; Ordinary Mode; owner authorized complete execution of T330, and S3 closes the task-artifact obligation omitted by accepted S1/S2 implementation commits. |
+| Admission And Approval | The owner authorized full single-session completion of T330 on 2026-08-12. Closure review found the mandatory developer-artifact record absent; this bounded continuation produces it without changing the accepted CPU semantics. |
+| Objective | Make `vm-0-5-0330` the sole current developer artifact target, build and copy `nxvm_0_5_0330.exe`, and record its source commit, SHA-256, version/banner classification, and verification in T330 history. |
+| Non-goals | No CPU, emulator, test, ABI, provider, dependency, source-layout, Queue, TODO, or product behavior change. Do not regenerate or relabel historical artifacts. |
+| Reference Baseline | `263766f0` / `vm-0-5-0329`; accepted T330 S1/S2 evidence at `docs/etc/evidence/t330-width-path-inventory.md`; task-artifact requirements in `docs/rules/EXECUTION.md`. |
+| Files And ABI Surface | CMake current-artifact declaration and build preset, T330 Status/history records, plus the ignored local `build/output/nxvm_0_5_0330.exe`. No production source or public interface. |
+| Applicable Rules | Task Reading Set; `docs/rules/EXECUTION.md`, `docs/rules/DOCUMENT.md`, `docs/rules/CODING.md`, `docs/design/CODING.md`; task-level artifact identity and build-tree hygiene apply. |
+| Verification | Fresh GCC configure; build `vm-0-5-0330`; run `verify-current-artifact-target`; inspect executable version/banner where available; calculate SHA-256; run documentation governance, diff check, focused retained T330 smokes, and full current-gate. |
+| Expected Markers | `verify-current-artifact-target` selects only `vm-0-5-0330`; retained T330 S1/S2 smoke markers pass; history records the SHA-256 and current-artifact classification. |
+| Asset Needs | No guest media, firmware, network asset, or imported source. The output EXE remains ignored local developer evidence under `build/output/`. |
+| Reporting Requirements | Report a complete artifact P or a material build/identity blocker, including exact artifact path, source commit, SHA-256, target selection, retained smoke/gate result, and build-tree disposition. |
+| Stop Conditions | Stop for an artifact target needing a runtime/ABI change, an identity/banner conflict, a build result that cannot be tied to the accepted T330 source, or a required change outside the named build/status/history surface. |
+| Exit Criteria | T330 has a verified `0.5.0330` current developer artifact and immutable record; no historical task target is regenerated; all required checks pass; then T330 can receive its task-level closure summary. |
+| Original Owner Request | Fully execute T330 in single-agent mode after its holistic audit of analogous accidental 16/32-bit construction divergence. |
+| Similar-Issue Sweep | Inspect current-artifact target, build preset, Status baseline, and T330 history together; classify all 0329 references as retained baseline/history or update the current T330 identity. Do not make a repository-wide historical-artifact rewrite. |
 
 ## Current Technical Baseline
 
@@ -44,7 +44,7 @@ Intel-required 16/32-bit gate and frame layouts.
 ## Recent M5 Closures
 
 | Task | Compact result |
-| T330 S1 | Accepted progress: unified all 286/386 task-transition width pairs behind a private plan; preserved real TSS layouts, completed the 286 LDTR write/preflight, and corrected null non-stack selector materialization. Evidence: [T330 inventory](etc/evidence/t330-width-path-inventory.md); 211/211 current-gate. |
+| T330 S1 | Accepted progress: the holistic audit converged all 286/386 TSS source/target pairs behind an independent-format private plan, completed the 286 LDTR write/preflight, and corrected 32-bit same-CPL CALL-gate TSS dependence. S3 refreshes the mandatory developer artifact. [History](history/M5-T330-width-path-convergence.md); 211/211 current-gate. |
 | T329 | Closed the bounded Intel 80286/80386 protected task-transition state machine: 16/32-bit direct and task-gate entry, nested CALL/IRET state, incoming LDT images, source-CR3 preflight/incoming-CR3 commit, and TSS post-switch `#DB`. S7 proves target-page fetch, target-TSS `#PF` atomicity, and a target-state restart frame; the 0329 artifact and 211/211 gate result are in [history](history/M5-T329-task-transition-state-machine.md). |
 | T328 | Closed the historical LOCK-prefix legality matrix: 8086/80186 retain transparent valid-next-instruction semantics; 80286 adds protected `CPL <= IOPL`; retained 80386 memory-whitelist behavior stays intact. S2 reconciled the current closure map and ordinary matrix, removing the stale Deferred/TODO transfer without changing the user-owned Queue edit. Register, memory, REP, I/O, #GP frame, strict compile, artifact, and 211/211 gate evidence are in [history](history/M5-T328-legacy-lock-legality.md). |
 | T327 | Closed the current/specialized-gate reconciliation: fast smoke no longer builds classified media targets, and generated CTest/Ninja evidence now proves the full 210 = 15 media + 195 non-media partition, both developer roots, all specialized verifiers, and the aggregate's two roots. [History](history/M5-T327-current-gate-reconciliation.md). |
@@ -52,7 +52,6 @@ Intel-required 16/32-bit gate and frame layouts.
 | T325 | Closed the CPU-native Intel 80386DX paging/translation package: CR0, CR2/CR3, 4-KiB PDE/PTE, U/S/R/W, A/D, cross-page atomicity, delivered `#PF`, no-persistent-cache behavior, and pre-486 `INVLPG #UD` are reconciled. Protected `#UD` delivery, task/VM86 paging, and persistent TLB/TR6/TR7 state transfer explicitly. [History](history/M5-T325-80386dx-paging-translation.md). |
 | T324 | Closed current-test/specialized-gate separation: `run-current-smokes` now runs only the full 209-test CTest smoke selection, `run-current-fast-smokes` retains the 194-test non-media selection, and `verify-current-specialized-gates` owns 46 named verifiers plus a mechanical target-graph check. `current-gates-gcc` composes exactly both roots; all layer baselines and evidence are retained in [T324 history](history/M5-T324-current-gate-separation.md). |
 | T323 | Closed the bounded 80386DX non-task, non-VM86 protection/privilege-transfer composition: direct far transfer, loaded segment rights, 16-bit same/outer gate entry, outer IRET, and parameterized 16-bit call gates now join retained selector, 32-bit, and outer-RETF evidence. The sole S7 serializer correction preflights/copies parameter words. Task/LDT/debug/VM86, paging, legacy LOCK, and x87 retain named boundaries; the 0323 artifact SHA-256 and 209/209 gate result are in the [closure audit](etc/evidence/t323-protection-privilege-closure-audit.md). |
-| T322 | Audited and withdrew the duplicate ordinary-execution/FLAGS candidate: T316's accepted S23--S65 owner smokes already cover the transferred Intel 80386 ordinary application forms. Remaining work is explicitly protection/privilege, paging, task/debug/VM86, legacy LOCK, or external x87 scope; no invented implementation slice or artifact was created. Documentation governance and diff checks passed. |
 
 ## Recent Governance
 
