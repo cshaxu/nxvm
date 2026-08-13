@@ -80,3 +80,16 @@ that the VM-session/platform display crossing is a copied snapshot and mailbox
 boundary, and that no host presentation or input cadence supplies guest time.
 Speaker/PPI, advanced AUX behavior, broader video modes, and host policy retain
 their separately recorded boundaries.
+
+### S6 - PC/AT L3 Closure And Windows Handoff
+
+The closure reconciliation is retained at
+`docs/etc/evidence/t346-s6-l3-closure-windows-handoff.md`. It maps every S1
+device/bus/timing family either to accepted S2--S5 evidence or to one exact
+later Queue/TODO admission. T346 therefore closes the selected deterministic
+PC/AT L3 event-and-bus contract: the timeline is ordered by `(due_tick,
+sequence)` and equal ticks process DMA, PIT, PIC, FDC observation, ATA refresh,
+RTC, KBC/AUX, and VADP in that order. This is not a cycle-exact, controller
+service-duration, or Windows-compatibility claim. The Windows readiness
+candidate receives only the evidenced blockers, and no Windows corpus or media
+was used.

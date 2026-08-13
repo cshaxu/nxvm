@@ -2246,7 +2246,8 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0344 "0.5.0344")
+set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0346)
+add_current_vm_artifact(vm-0-5-0346 "0.5.0346")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 
@@ -2911,7 +2912,7 @@ set(PROJECT_T344_PRODUCTION_TARGETS
     vm-product
     vdm-machine
     vdm-composition
-    vm-0-5-0344)
+    ${PROJECT_CURRENT_VM_ARTIFACT_TARGET})
 set(PROJECT_T344_DIRECT_COMPILE_TARGETS
     ${PROJECT_T344_PRODUCTION_TARGETS}
     ${PROJECT_T344_CURRENT_GATE_TARGETS})

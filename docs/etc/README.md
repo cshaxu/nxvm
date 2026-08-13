@@ -52,6 +52,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t346-s3-pic-pit-dma-arbitration.md` | Verification owner | T346 S3 PIC/PIT/DMA timeline arbitration, due-tick ordering, reset cancellation, and retained-controller transfer boundary. Merge into T346 history at task closure. |
 | `evidence/t346-s4-rtc-storage-readiness.md` | Verification owner | T346 S4 RTC/FDC media-observation timeline migration, reset/order proof, and exact synchronous storage-service transfer. Merge into T346 history at task closure. |
 | `evidence/t346-s5-input-display-timeline.md` | Verification owner | T346 S5 KBC/VADP timeline migration, reset/order proof, and copied host presentation/input boundary audit. Merge into T346 history at task closure. |
+| `evidence/t346-s6-l3-closure-windows-handoff.md` | Verification owner | T346 S6 deterministic PC/AT L3 closure reconciliation and evidence-backed Windows readiness handoff. Retain with T346 history at task closure. |
 | `operations/` | Execution, source, and release owners | Toolchain, policy, templates, release procedure, and closure material. |
 | `research/` | Source owner | Provenance, external references, and non-product research. |
 | `history/` | Documentation owner | Read-only legacy and M5 migration/roadmap evidence. |

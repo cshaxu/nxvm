@@ -7,10 +7,10 @@ candidate work, and detailed capability evidence belong in
 [design/GOAL.md](../design/GOAL.md), [QUEUE.md](QUEUE.md), and
 [etc/evidence/current-capability-baseline.md](../etc/evidence/current-capability-baseline.md).
 
-T346 S1 records the whole-machine L2 baseline and assigns its selected
-time/event, storage, input, and display convergence work through the active
-task. Entries below remain unplanned boundaries unless a later T346 packet
-explicitly adopts them.
+T346 closes the selected deterministic PC/AT L3 event-ordering foundation and
+transfers the unselected controller-service, peripheral, and compatibility
+boundaries below. These entries remain unplanned until a later approved task
+adopts them.
 
 
 ## Hardware And Compatibility Debt
@@ -153,11 +153,11 @@ explicitly adopts them.
 ## Timing-Fidelity Debt
 
 The current core is deterministic and host-clock-independent: completed
-instructions advance core elapsed ticks and devices consume frozen accumulated
-clock ratios. T346 S1 classifies this as L2 rather than L3 because it has no
-single due-event/arbitration or bus-transaction contract. These entries are
-deferred compatibility admissions, not the default definition of NXVM
-completion.
+instructions advance core elapsed ticks and T346 binds selected device work to
+one reset-safe due-event timeline with stated equal-tick ordering and copied
+transaction checkpoints. This is the project's L3 event-and-bus contract, not
+cycle-exact hardware timing. These entries remain deferred compatibility
+admissions, not the default definition of NXVM completion.
 
 - [ ] **FDC/ATA command-service timing (`TODO(High)`).** T346 S4 moves RTC
   advancement and FDC media-generation observation to deterministic due events,
@@ -183,8 +183,8 @@ completion.
   instruction deterministic profile-specific cost, including applicable
   prefix/branch/memory/I/O variants, before expanding the timing corpus.
 - [ ] **Bus-timed PC/AT operation (`TODO(High)`).** T269 admits deterministic
-  one-unit DMA grant pacing and its fixed visibility boundary. T346 must first
-  provide one due-event/arbitration and transaction contract; then model
+  one-unit DMA grant pacing and its fixed visibility boundary. T346 now provides
+  one due-event/arbitration and transaction contract; a later task may model
   remaining memory/I/O wait states, CPU bus ownership, and device-specific
   timing only through later corpus-driven admissions.
 - [ ] **Cycle-exact profiles (`TODO(High)`).** Only where a profile genuinely

@@ -34,7 +34,11 @@ implementation plan for core convergence.
 ## M5: Converge Core And NXVM
 
 Complete the shared-core/NXVM boundary and the PC/AT fidelity required for
-evidence-led DOS and early Windows research. Prove that a second policy-free
+evidence-led DOS and early Windows research. The completed device-timing
+program establishes deterministic L3 event-and-bus ordering for the selected
+PC/AT device corpus; controller service durations, general wait states,
+cycle-exact behavior, and unselected peripherals remain separately admitted
+work. Prove that a second policy-free
 consumer can use core without making mantle, DOS, or NXVDM a current runtime.
 Before M6 admission, carry the owner-approved Intel 80386DX
 architecture-completeness program through its evidence-led Queue sequence.

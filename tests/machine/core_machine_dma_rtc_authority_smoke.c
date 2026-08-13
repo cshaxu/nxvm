@@ -38,10 +38,10 @@ int main(C_VOID)
     core_machine_dma_wiring dma_wiring = {2u};
     core_machine_rtc_cmos_config rtc_config = {0};
     core_machine_dma_request_binding fdc_request = {0};
-    core_machine_run_budget budget = {1u, 0u};
+    core_machine_run_budget budget = {2u, 0u};
     core_machine_run_result result;
     core_machine *machine = STD_NULL;
-    type_unsigned_8 halt = 0xf4u;
+    const type_unsigned_8 program[] = { 0x90u, 0xf4u };
     type_unsigned_8 interrupt_vector = 0u;
     C_INT nmi_masked = 0;
     C_INT interrupt_pending = 0;
@@ -95,14 +95,14 @@ int main(C_VOID)
     core_machine_dma_rtc_initialize_pic(machine);
     core_machine_dma_rtc_cmos_write(machine, CORE_MACHINE_RTC_REG_B,
         CORE_MACHINE_RTC_REG_B_24H | CORE_MACHINE_RTC_REG_B_UIE);
-    if (core_machine_memory_write(machine, 0xfffffff0u, &halt, sizeof(halt)) !=
+    if (core_machine_memory_write(machine, 0xfffffff0u, program, sizeof(program)) !=
             TYPE_STATUS_OK || core_machine_run(machine, budget, &result) !=
             TYPE_STATUS_OK || result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
-        result.ticks != 1u) {
+        result.ticks != 2u) {
         failed = 1;
         stage = 3;
     } else if (core_machine_dma_rtc_cmos_read(machine,
-            CORE_MACHINE_RTC_SECOND) != 0x01u) {
+            CORE_MACHINE_RTC_SECOND) != 0x02u) {
         failed = 1;
         stage = 4;
     } else if (!(interrupt_pending = core_machine_pic_scan_interrupt(

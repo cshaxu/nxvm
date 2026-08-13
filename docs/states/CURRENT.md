@@ -2,14 +2,35 @@
 
 ## Current Work
 
-**Active.** M5 T346 S5 is accepted; the task is awaiting admission of its S6
-closure audit. No implementation runs between those units.
+**Active.** M5 T346 S6 reconciles the accepted device/timing program and
+hands an evidence-backed PC/AT L3 boundary to the Windows 3.x readiness map.
+
+## M5 T346 S6 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved completing T346 on 2026-08-13. This packet admits only the T346 closure audit, evidence reconciliation, current developer-artifact update, and Windows-readiness handoff. |
+| Objective | Reconcile every S1 ledger family against S2--S5 implementation/evidence or one exact Queue/TODO receiver; state the achieved deterministic PC/AT L3 contract without a cycle-exact or Windows-installation claim; refresh the Windows readiness map with evidence-backed blockers. |
+| Non-goals | No new device/controller, x87 execution, Windows guest media, installation/run attempt, renderer/host policy, arbitrary storage delay, generic bus wait-state, or CPU-timing implementation. No M5 milestone closure. |
+| Reference Baseline | `30d8223c` / M5 T346 S5 P2, clean worktree. |
+| Candidate Proposal | [M5 Core-Machine Device Parity And L3 Timing Convergence](../proposals/m5-core-machine-device-l3-convergence.md), S6. |
+| Files And ABI Surface | Evidence/history/current capability/Windows proposal/Queue/TODO/roadmap/CMake current-artifact identity and local developer artifact only. No runtime interface, device ABI, or host boundary change. |
+| Applicable Rules | Task Reading Set; execution T-level closure and actual-change review; documentation topology; current-artifact identity; architecture single guest-time owner and copied-host boundary; source/research policy. |
+| Verification | Fresh configure; all retained S2--S5 focused markers and exact registrations; actual current artifact build/copy, SHA-256 and banner capture; documentation governance; diff check; full current-gate. |
+| Expected Markers | Retained `M5:T346:S2:TIMELINE:OK`, `M5:T346:S3:ARBITRATION:OK`, `M5:T346:S4:RTC-STORAGE-READINESS:OK`, and `M5:T346:S5:INPUT-DISPLAY-TIMELINE:OK`; developer artifact `nxvm_0_5_0346.exe`. |
+| Asset Needs | No external source, firmware, guest media, Windows binary, host event, renderer, thread, or wall-clock asset. |
+| Reporting Requirements | Publish one indexed reconciliation table mapping every S1 family to accepted evidence or a unique receiver; state artifact SHA-256/source commit/banner; list Windows blockers and explicitly state that no Windows installation was run. |
+| Stop Conditions | Stop for an unclassified S1 ledger family, conflicting owner/receiver, artifact build that changes product behavior, needed host/renderer/guest-media work, or a claim requiring a real Windows corpus. Transfer rather than invent evidence. |
+| Exit Criteria | Every T346-in-scope family is evidence-backed under the stated L3 contract or transferred once with owner/risk/admission condition; S1/S2--S5 detail is merged into T346 history; Windows readiness proposal names only evidenced blockers; artifact identity is 0.5.0346 with recorded verification; Queue no longer presents closed T346 as a candidate. |
+| Original Owner Request | Produce a holistic, polished PC/AT-class core-machine device/L3 plan suitable for Windows 3.x research, excluding x87 execution. |
+| Similar-Issue Sweep | Re-read S1's 55-unit ledger; search device advance/refresh calls, timeline scheduling, host input/display crossings, all T346 evidence receivers, Queue, TODO, capability baseline, and Windows proposal. Classify each hit as accepted contract, explicit transfer, or stale claim corrected here. |
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** T344 selects `vm-0-5-0344` /
-  `build/output/nxvm_0_5_0344.exe`; the rebuilt developer output SHA-256 is
-  `84674E5B32F3CD5C21834F23277E46BEC86156958878D4A6DD5223D325BD74A2`.
+- **Current developer artifact:** T346 selects `vm-0-5-0346` /
+  `build/output/nxvm_0_5_0346.exe`; its closure-build SHA-256 is
+  `7715C8C290969A99CCC1137D2DEEC64421FF245A22BD35287A2AED0C75A8E260`.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
