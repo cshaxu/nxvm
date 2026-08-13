@@ -43,6 +43,12 @@ at its mechanism owner before profile-specific callers duplicate it.
 5. Cross-profile closure is last. It reconciles evidence; it does not perform
    missing implementation under a verification label.
 
+The Queue realizes this as six candidate packages: 80286 descriptor/transfer;
+80286 `LOCK` and profile closure; 80386DX form closure; 80386DX state closure;
+80386DX audit; and final four-profile audit. This prevents a broad
+"80386-complete" task from hiding dependencies between 16-bit protected
+construction, width-form behavior, and system-state delivery.
+
 Within a candidate, admit a mechanism owner before isolated opcode symptoms:
 first map callers, state writes, validation/preflight, commit, rollback, and
 fault ordering; then implement a bounded matrix slice; then sweep equivalent

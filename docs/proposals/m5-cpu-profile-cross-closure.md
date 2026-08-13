@@ -25,3 +25,8 @@ restart rules, privilege, task, paging, debug, and VM86 boundaries. The audit
 must distinguish Intel-required layout differences from accidental divergent
 construction. It may close evidence only; a missing mechanism is returned to
 the earliest owning implementation candidate with a precise admission reason.
+
+Its durable output is the final four-profile disposition ledger: each
+applicable form/state transition names its Intel profile boundary, mode and
+privilege condition, evidence owner, and any deliberate external transfer.
+No Windows, timing, device, or x87 conclusion follows from this ledger.
