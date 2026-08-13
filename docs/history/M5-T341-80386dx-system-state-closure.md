@@ -39,3 +39,10 @@ cause/vector-1 delivery to S4. It makes no production change.
 
 The accepted S2 delivery is `3f4f3cb2`. S3 now owns the VM86, task/TSS, and
 paging composition graph, retaining genuine TSS and frame layout differences.
+
+## S3 VM86, Task, And Paging Composition
+
+The indexed [S3 composition graph](../etc/evidence/t341-s3-vm86-task-paging-composition.md)
+ties VM86 entry and return to the same page-walk, TSS stack, frame, and task
+plan/commit contracts. It adds mapped VM86 source delivery and mapped IRET
+return probes without creating a second executor, page walker, or TSS format.
