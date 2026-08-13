@@ -40,6 +40,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t341-s2-control-debug-table-reconciliation.md` | Verification owner | T341 S2 CR/DR/TR/LDT/table state-owner, form/privilege/publication, retained-proof, and external-transfer reconciliation. Retire into T341 history at task closure. |
 | `evidence/t341-s3-vm86-task-paging-composition.md` | Verification owner | T341 S3 VM86 entry/return, task/TSS, paging, frame, stack, fault, and commit-boundary composition graph. Retire into T341 history at task closure. |
 | `evidence/t341-s4-ordinary-debug-vector1.md` | Verification owner | T341 S4 ordinary 80386 DR6/DR7 matching, RF/TF/task-debug, and vector-1 delivery graph. Retire into T341 history at task closure. |
+| `evidence/t341-s5-80386dx-system-state-closure-audit.md` | Verification owner | T341 S5 allocation-to-owner closure audit and explicit 80386DX external transfers. Retire into T341 history at task closure. |
 | `operations/` | Execution, source, and release owners | Toolchain, policy, templates, release procedure, and closure material. |
 | `research/` | Source owner | Provenance, external references, and non-product research. |
 | `history/` | Documentation owner | Read-only legacy and M5 migration/roadmap evidence. |
