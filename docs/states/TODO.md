@@ -170,14 +170,16 @@ admissions, not the default definition of NXVM completion.
   owner; do not insert arbitrary delay constants, use host I/O timing, or add
   a second controller scheduler.
 
-- [ ] **PC/AT NMI source ownership (`TODO(Medium)`).** T346 S4 confirms that
+- [ ] **PC/AT NMI source ownership (`TODO(Medium)`).** T350 S4 reconfirms that
   RTC periodic/update conditions publish IRQ8, while the CMOS index-port bit
   only controls the existing architected NMI mask; no parity or I/O-channel
-  check producer is presently modeled. Admit a bounded NMI-source task only
-  with a selected PC/AT source contract, mask/assert/deassert/reset ordering,
-  VM86/protected delivery evidence, and a deterministic timeline visibility
-  rule. Do not manufacture an RTC NMI, bypass the core mask, or refactor
-  generic CPU delivery without a reproduced shared defect.
+  check producer, latch, clear operation, profile wiring, or deterministic
+  source owner is presently modeled. Admit one selected IBM PC/AT source only
+  with its assertion/clear semantics, mask/reset/finalize ordering, profile
+  wiring, deterministic timeline visibility, and real/protected/VM86 delivery
+  evidence. Do not manufacture an RTC NMI, seed a synthetic source, infer it
+  from port 61h, bypass the core mask, or refactor generic CPU delivery without
+  a reproduced shared defect. See [T350 S4 evidence](../etc/evidence/t350-s4-pcat-nmi-decision.md).
 
 - [ ] **Instruction-timed execution (`TODO(Medium)`).** Give each admitted
   instruction deterministic profile-specific cost, including applicable

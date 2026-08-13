@@ -2,8 +2,29 @@
 
 ## Current Work
 
-M5 T350 remains open. S3 is accepted; S4 decides the selected PC/AT NMI
-producer or records its evidence-backed transfer before task closure.
+M5 T350 S4 - PC/AT parity and I/O-channel-check NMI producer decision
+(Single-Session Mode).
+
+## M5 T350 S4 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved continuous holistic device/L3 completion; T350 S3 accepted at `6af43223` on 2026-08-13. |
+| Objective | Complete the S1-selected IBM PC/AT parity/I/O-channel-check NMI decision: prove one hardware producer has a complete manual contract, state owner, profile wiring, deterministic assertion/deassertion/reset path, and focused probe, or record a precise evidence-backed transfer without inventing a source. |
+| Non-goals | No RTC-to-NMI route, no port-61/PPI/speaker by implication, no arbitrary board wiring, no generic CPU/NMI delivery rewrite, no host fault passthrough, no new firmware behavior, x87, or Windows claim. |
+| Reference Baseline | `6af43223` / T350 S3 accepted; [S1 signal ledger](../etc/evidence/t350-s1-pcat-platform-signals-ledger.md), [S3 RTC evidence](../etc/evidence/t350-s3-rtc-cmos.md), and [platform-signals proposal](../proposals/m5-pcat-platform-signals.md). |
+| Candidate Proposal | [PC/AT platform signals: PIT, PPI, RTC, and NMI](../proposals/m5-pcat-platform-signals.md). |
+| Files And ABI Surface | Expected: S4 evidence, TODO receiver refinement if non-admitted, Current, T350 history, Queue/history relocation only when task closes. Production code and public interfaces change only if the complete selected producer contract is reproduced. |
+| Applicable Rules | Task Reading Set; one mutable producer owner; CMOS bit 7 is mask-only; no synthetic signal; deterministic timeline ownership; primary IBM PC/AT evidence; existing CPU NMI delivery is a consumer, not producer proof. |
+| Verification | Sweep all NMI writes/readers, mask operations, port registrations, profile wiring, reset/finalize, readiness callbacks, and NMI tests. Re-run retained hardware-delivery, CMOS/RTC, timeline/arbitration, and full current-gate proof. If no producer is admissible, verify the named TODO has a boundary, risk, and admission condition. |
+| Expected Markers | Retain existing hardware-NMI, CMOS/RTC, and T346 timeline markers; add no synthetic producer marker when the contract does not admit one. |
+| Asset Needs | IBM PC/AT Technical Reference and project-owned source/test probes only; no firmware, guest media, host fault input, or third-party source. |
+| Reporting Requirements | Record every NMI producer candidate, existing CPU consumer and mask path, profile/port/timeline result, decision, exact TODO receiver, and all retained evidence. |
+| Stop Conditions | Stop for a producer requiring undocumented board wiring, a port-61/PPI implementation, host error passthrough, generic CPU delivery change, or a profile/firmware ABI change. Transfer rather than synthesize. |
+| Exit Criteria | Exactly one selected hardware producer is implemented with complete state/lifecycle/proof, or every observed absence is transferred to the named PC/AT NMI TODO with a reproducible admission condition; no RTC, CMOS-mask, or CPU-consumer route is misclassified as a producer. |
+| Original Owner Request | Make core-machine devices stable, comprehensive, and reliable at deterministic L3 before deciding any Windows execution route. |
+| Similar-Issue Sweep | Inspect all tracked production source, machine/profile composition, tests, build descriptions, and task records matching NMI, parity, I/O-channel-check, CMOS mask, port 61h, reset/finalize, readiness, and CPU pending-NMI state. |
 
 ## Current Technical Baseline
 
