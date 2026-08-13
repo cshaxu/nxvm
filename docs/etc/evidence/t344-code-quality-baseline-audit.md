@@ -269,3 +269,26 @@ support-tail migrations, and 31 retained semantic shapes are recorded in
 [T344 historical fixture shapes](t344-historical-fixture-shapes.md). The
 mechanical verifier rejects an unclassified direct constructor or a migrated
 owner that restores raw bind/freeze calls.
+
+## T344 S5 Strict-Declaration Uniqueness
+
+The direct strict-declaration sweep reproduced one harmless but misleading
+duplication: `core-platform-presentation-mailbox-smoke` declared each of
+`-Wall`, `-Wextra`, `-Wpedantic`, and `-Werror` twice. One declaration was
+removed. The target's effective direct compile command therefore remains
+strict but contains each option once.
+
+Configuration now walks every root configured target's local
+`COMPILE_OPTIONS` and stops if any strict option is repeated. It also generates
+`t344-strict-declaration-matrix.txt`; the independent
+`verify-t344-strict-declaration-uniqueness` gate rejects an invalid or repeated
+target/option record and self-checks its duplicate detector with a synthetic
+duplicate. This is a declaration-integrity check only. It neither changes the
+T344 direct matrix's retained/deferred ownership disposition nor claims that a
+linked strict target compiles another target's source strictly.
+
+The negative configuration proof temporarily repeated the mailbox target's
+strict declaration. Fresh CMake configuration stopped at the new guard with
+`T344 duplicate target-local strict option -Wall on
+core-platform-presentation-mailbox-smoke`; the temporary line was removed
+before the final fresh configuration and gate run.

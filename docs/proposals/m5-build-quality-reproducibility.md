@@ -53,6 +53,14 @@ record each retained variant and its future admission condition.  No test-only
 public interface, product-visible state, or generic fixture framework is
 permitted.
 
+### S5 - Strict-Declaration Uniqueness Corrective
+
+Remove the reproduced duplicate target-local strict declaration and verify
+configured target properties so a target cannot receive any member of the
+strict GCC option set twice. This is a de-duplication check only: it does not
+promote deferred targets, make a global warning policy, or infer direct-source
+coverage through linked libraries.
+
 ## Shared Completion Standard
 
 Every S must self-review and provide exact changed surface, fresh configure

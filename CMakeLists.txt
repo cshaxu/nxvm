@@ -2600,6 +2600,7 @@ set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
     verify-t317-strict-cpu-smoke-coverage
     verify-t332-cpu-fixture-lifecycle
     verify-t344-historical-fixture-shapes
+    verify-t344-strict-declaration-uniqueness
     verify-t338-legacy-profile-metadata
     verify-t330-task-transition-construction
     verify-t331-real-exception-final-construction
@@ -2693,7 +2694,6 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     target_compile_options(core-platform-presentation-mailbox-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-platform-wait-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-platform-backing-resource-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
-    target_compile_options(core-platform-presentation-mailbox-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-full-pc-session-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(vm-core-executor-storage-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
     target_compile_options(core-machine-executor-run-smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -2777,6 +2777,40 @@ foreach(project_t344_target IN LISTS PROJECT_T344_DIRECT_COMPILE_TARGETS)
         list(APPEND PROJECT_T344_STRICT_DIRECT_TARGETS ${project_t344_target})
     endif()
 endforeach()
+
+# T344 owns target-local strict declarations.  Repeating one option produces
+# the same compiler command twice and hides a configuration construction error.
+get_property(project_t344_configured_targets DIRECTORY PROPERTY BUILDSYSTEM_TARGETS)
+set(PROJECT_T344_STRICT_DECLARATION_MATRIX)
+foreach(project_t344_target IN LISTS project_t344_configured_targets)
+    get_target_property(project_t344_options ${project_t344_target} COMPILE_OPTIONS)
+    foreach(project_t344_strict_option IN ITEMS -Wall -Wextra -Wpedantic -Werror)
+        set(project_t344_strict_option_count 0)
+        foreach(project_t344_option IN LISTS project_t344_options)
+            if(project_t344_option STREQUAL project_t344_strict_option)
+                list(APPEND PROJECT_T344_STRICT_DECLARATION_MATRIX
+                    "${project_t344_target}|${project_t344_strict_option}")
+                math(EXPR project_t344_strict_option_count
+                    "${project_t344_strict_option_count} + 1")
+            endif()
+        endforeach()
+        if(project_t344_strict_option_count GREATER 1)
+            message(FATAL_ERROR
+                "T344 duplicate target-local strict option ${project_t344_strict_option} on ${project_t344_target}")
+        endif()
+    endforeach()
+endforeach()
+string(REPLACE ";" "\n" project_t344_strict_declaration_contents
+    "${PROJECT_T344_STRICT_DECLARATION_MATRIX}")
+file(GENERATE
+    OUTPUT "${CMAKE_BINARY_DIR}/t344-strict-declaration-matrix.txt"
+    CONTENT "${project_t344_strict_declaration_contents}\n")
+add_custom_target(verify-t344-strict-declaration-uniqueness
+    COMMAND "${CMAKE_COMMAND}"
+        -DPROJECT_T344_STRICT_DECLARATION_MATRIX:FILEPATH=${CMAKE_BINARY_DIR}/t344-strict-declaration-matrix.txt
+        -P "${CMAKE_SOURCE_DIR}/cmake/verify_t344_strict_declaration_uniqueness.cmake"
+    COMMENT "Verifying T344 strict declaration uniqueness"
+    VERBATIM)
 list(LENGTH PROJECT_T344_DIRECT_COMPILE_MATRIX project_t344_matrix_count)
 if(project_t344_matrix_count EQUAL 0)
     message(FATAL_ERROR "T344 direct-compilation matrix is empty.")
