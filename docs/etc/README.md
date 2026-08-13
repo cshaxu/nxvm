@@ -57,6 +57,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t347-s2-fdc-deferred-service.md` | Verification owner | Historical T347 S2 FDC pending-command and pending-completion lifecycle, readiness owner, cancellation sweep, and focused proof. |
 | `evidence/t347-s3-ata-deferred-service.md` | Verification owner | Historical T347 S3 ATA PIO pending-command and sector-completion lifecycle, task-file capture, readiness owner, cancellation sweep, and VM proof. |
 | `evidence/t347-s4-storage-reconciliation.md` | Verification owner | Historical T347 S4 retained FDC/ATA lifecycle, sole readiness owner, fixed service order, cancellation, and L3-boundary reconciliation. |
+| `evidence/t348-s1-dual-8237a-gap-ledger.md` | Verification owner | T348 S1 dual-8237A/PC-AT DMA contract, ownership, source/proof gap ledger, and bounded S2--S4 receiver plan. Retain with T348 history at task closure. |
 | `operations/` | Execution, source, and release owners | Toolchain, policy, templates, release procedure, and closure material. |
 | `research/` | Source owner | Provenance, external references, and non-product research. |
 | `history/` | Documentation owner | Read-only legacy and M5 migration/roadmap evidence. |
