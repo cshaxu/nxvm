@@ -35,9 +35,8 @@ static C_INT scan_prepare(core_machine_cpu_profile profile,scan_provider *provid
     if(core_machine_create(&config,&state->machine)!=TYPE_STATUS_OK||
         (provider!=STD_NULL&&test_core_machine_fixture_register_memory_device_provider(state->machine,
             SCAN_PROVIDER_ADDRESS,4u,scan_read,scan_write,scan_query,provider)!=TYPE_STATUS_OK)||
-        core_machine_bind_execution_provider(state->machine,&scan_execution,state)!=TYPE_STATUS_OK||
-        core_machine_freeze_execution_providers(state->machine)!=TYPE_STATUS_OK||
-        core_machine_reset(state->machine)!=TYPE_STATUS_OK) {
+        !test_core_machine_fixture_bind_freeze_reset(state->machine,
+            &scan_execution,state)) {
         core_machine_destroy(state->machine);state->machine=STD_NULL;return 0;
     }
     return 1;

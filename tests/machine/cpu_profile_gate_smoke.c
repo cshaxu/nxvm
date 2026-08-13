@@ -34,10 +34,8 @@ static C_INT prepare_machine(core_machine_cpu_profile profile,
     if (state == STD_NULL) return 1;
     STD_MEMSET(state, 0, sizeof(*state));
     if (core_machine_create(&config, &state->machine) != TYPE_STATUS_OK) return 1;
-    if (core_machine_bind_execution_provider(state->machine,
-            &cpu_profile_execution_provider, state) != TYPE_STATUS_OK ||
-        core_machine_freeze_execution_providers(state->machine) != TYPE_STATUS_OK ||
-        core_machine_reset(state->machine) != TYPE_STATUS_OK) {
+    if (!test_core_machine_fixture_bind_freeze_reset(state->machine,
+            &cpu_profile_execution_provider, state)) {
         core_machine_destroy(state->machine);
         state->machine = STD_NULL;
         return 1;

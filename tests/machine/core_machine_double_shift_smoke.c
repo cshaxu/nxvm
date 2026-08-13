@@ -21,9 +21,8 @@ static C_INT shift_prepare(core_machine_cpu_profile profile,shift_machine *state
     if(state==STD_NULL)return 0;
     STD_MEMSET(state,0,sizeof(*state));
     if(core_machine_create(&config,&state->machine)!=TYPE_STATUS_OK||
-        core_machine_bind_execution_provider(state->machine,&shift_provider,state)!=TYPE_STATUS_OK||
-        core_machine_freeze_execution_providers(state->machine)!=TYPE_STATUS_OK||
-        core_machine_reset(state->machine)!=TYPE_STATUS_OK) {
+        !test_core_machine_fixture_bind_freeze_reset(state->machine,
+            &shift_provider,state)) {
         core_machine_destroy(state->machine);state->machine=STD_NULL;return 0;
     }
     return 1;

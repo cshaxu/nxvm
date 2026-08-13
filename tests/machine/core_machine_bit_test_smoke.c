@@ -68,9 +68,8 @@ static C_INT bit_prepare(core_machine_cpu_profile profile, bit_memory_provider *
         (provider!=STD_NULL&&test_core_machine_fixture_register_memory_device_provider(
             state->machine,BIT_SOURCE_MEMORY,4u,bit_memory_read,bit_memory_write,
             bit_memory_query,provider)!=TYPE_STATUS_OK)||
-        core_machine_bind_execution_provider(state->machine,&bit_provider,state) != TYPE_STATUS_OK ||
-        core_machine_freeze_execution_providers(state->machine) != TYPE_STATUS_OK ||
-        core_machine_reset(state->machine) != TYPE_STATUS_OK) {
+        !test_core_machine_fixture_bind_freeze_reset(state->machine,
+            &bit_provider,state)) {
         core_machine_destroy(state->machine); state->machine=STD_NULL; return 0;
     }
     return 1;

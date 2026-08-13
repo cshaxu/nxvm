@@ -261,3 +261,11 @@ negative proof: a duplicate ordinary entry, a duplicate media classification,
 or a nonexistent target stops configuration before any CTest registration;
 the generated-file verifier independently rejects an incomplete, duplicate,
 unlabeled, or out-of-canonical CTest result.
+
+## T344 S4 Historical Fixture Shapes
+
+The fixed 53-source historical direct-constructor inventory, 22 private
+support-tail migrations, and 31 retained semantic shapes are recorded in
+[T344 historical fixture shapes](t344-historical-fixture-shapes.md). The
+mechanical verifier rejects an unclassified direct constructor or a migrated
+owner that restores raw bind/freeze calls.

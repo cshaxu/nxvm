@@ -95,10 +95,8 @@ static C_INT cg_prepare(call_gate_privilege_machine *state, type_unsigned_8 gate
     STD_MEMCPY(&tss[4], &esp0, sizeof(esp0));
     STD_MEMCPY(&tss[8], &ss0, sizeof(ss0));
     if (core_machine_create(&config, &state->machine) != TYPE_STATUS_OK ||
-        core_machine_bind_execution_provider(state->machine, &cg_provider,
-            state) != TYPE_STATUS_OK ||
-        core_machine_freeze_execution_providers(state->machine) != TYPE_STATUS_OK ||
-        core_machine_reset(state->machine) != TYPE_STATUS_OK ||
+        !test_core_machine_fixture_bind_freeze_reset(state->machine,
+            &cg_provider, state) ||
         !cg_write(state, CG_GDT_BASE, gdt, sizeof(gdt)) ||
         !cg_write(state, CG_TSS_BASE, tss, sizeof(tss)) ||
         !cg_write(state, CG_USER_CODE_BASE, call, sizeof(call)) ||

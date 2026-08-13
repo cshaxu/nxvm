@@ -2174,6 +2174,13 @@ add_custom_target(verify-t332-cpu-fixture-lifecycle
     COMMENT "Verifying T332 CPU smoke fixture lifecycle closure"
     VERBATIM)
 
+add_custom_target(verify-t344-historical-fixture-shapes
+    COMMAND "${CMAKE_COMMAND}"
+        -DPROJECT_T344_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+        -P "${CMAKE_SOURCE_DIR}/cmake/verify_t344_historical_fixture_shapes.cmake"
+    COMMENT "Verifying T344 historical fixture shapes"
+    VERBATIM)
+
 add_custom_target(verify-t338-legacy-profile-metadata
     COMMAND "${CMAKE_COMMAND}"
         -DPROJECT_SOURCE_DIR=${CMAKE_SOURCE_DIR}
@@ -2592,6 +2599,7 @@ set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
     verify-t317-test-type-vocabulary
     verify-t317-strict-cpu-smoke-coverage
     verify-t332-cpu-fixture-lifecycle
+    verify-t344-historical-fixture-shapes
     verify-t338-legacy-profile-metadata
     verify-t330-task-transition-construction
     verify-t331-real-exception-final-construction
