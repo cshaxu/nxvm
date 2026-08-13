@@ -5,21 +5,21 @@ artifact, and milestone gates. The public
 [Execution Governance skill](https://github.com/cshaxu/skills/blob/main/execution-governance/SKILL.md)
 is supplementary reusable guidance, not a prerequisite. One subtask is active
 at a time. Follow the local requirement packet and closure audit defined here.
-Before implementation, create the one active subtask packet in `states/CURRENT.md` as
-the fixed two-column `Field | Required record` table. It must record identifier
-mode, admission and owner approval, objective, non-goals, reference baseline,
-files/ABI surface, applicable rules, exact verification, expected markers,
-asset needs, reporting requirements, stop conditions, exit criteria,
-original owner request, and the similar-issue sweep. The gate rejects a packet
-missing a field, its fixed table
-shape, or an empty record value. The rules review names each applicable
-invariant, its planned evidence,
-and any requested owner-approved exception; a task may mark a rule not
-applicable only with a short reason.
+Before implementation, the coordinator creates the one active subtask packet
+in `states/CURRENT.md` as the fixed two-column `Field | Required record` table;
+the executor reads, questions, and executes that packet. It must record
+identifier mode, admission and owner approval, objective, non-goals, reference
+baseline, candidate proposal, files/ABI surface, applicable rules, exact
+verification, expected markers, asset needs, reporting requirements, stop
+conditions, exit criteria, original owner request, and the similar-issue sweep.
+The gate rejects a packet missing a field, its fixed table shape, or an empty
+record value. The rules review names each applicable invariant, its planned
+evidence, and any requested owner-approved exception; a task may mark a rule
+not applicable only with a short reason.
 
 The exact packet fields, in the required table's first column, are: `Identifier
 Mode`, `Admission And Approval`, `Objective`, `Non-goals`, `Reference
-Baseline`, `Files And ABI Surface`, `Applicable Rules`, `Verification`,
+Baseline`, `Candidate Proposal`, `Files And ABI Surface`, `Applicable Rules`, `Verification`,
 `Expected Markers`, `Asset Needs`, `Reporting Requirements`, `Stop Conditions`,
 `Exit Criteria`, `Original Owner Request`, and `Similar-Issue Sweep`.
 
@@ -36,9 +36,10 @@ applicable rules, and split the work into bounded tasks with explicit exit
 criteria before implementation. Obtain approval before admitting the work to
 `states/CURRENT.md`; only that one active packet may execute.
 
-During execution, record discovered repository issues. Fix a clear in-scope
-instance as an added subtask and run the similar-issue sweep; otherwise record
-the issue in `states/TODO.md` with priority, boundary, admission condition, and risk.
+During execution, the executor reports discovered repository issues. Fix a
+clear in-scope instance as an added subtask and run the similar-issue sweep;
+otherwise the coordinator records the issue in `states/TODO.md` with priority,
+boundary, admission condition, and risk.
 At closure, re-read the original owner request, map every requested outcome to
 evidence, run the required verification, record the retrospective/prevention
 action when applicable, and report the result. A task is not complete merely
@@ -101,14 +102,16 @@ packet, not an independent contract. A coordinator message may reproduce or
 clarify it, but may not add a material requirement without the packet/brief
 revision required above.
 
-A P is one sequential, pushed commit within an S. The executor forms an
-implementation P by completing its assigned brief, performing the required
-self-review, committing, and immediately pushing that complete delivery. It is
-not a planning marker, internal batch, or partial implementation milestone: it
-must satisfy the entire assigned brief, including every required implementation,
-task documentation update, focused proof, regression/gate result, and evidence
-artifact. The coordinator then reviews the pushed implementation P
-independently.
+A P is one sequential, pushed commit within an S. For a numbered implementation
+T, the executor forms an implementation P by completing its assigned brief,
+performing the required self-review, committing, and immediately pushing that
+complete delivery. It is not a planning marker, internal batch, or partial
+implementation milestone: it must satisfy the entire assigned brief, including
+every required implementation, task documentation update, focused proof,
+regression/gate result, and evidence artifact. The coordinator then reviews the
+pushed implementation P independently. A standalone Td P is its complete
+governance delivery: it may include truthful status closure, and requires no
+later coordinator governance P.
 
 Each pushed implementation or governance commit consumes the next `P<part>` in
 that S's commit-subject sequence; the two roles share one consecutive sequence.
@@ -130,20 +133,22 @@ After the T has closed, the coordinator uses the narrow corrective-S exception
 in **Linear Identifier Allocation** when it applies; otherwise it admits a new
 T. The corrective S begins its own implementation-P lifecycle.
 
-The governance P required after coordinator acceptance is the sole exception:
-it is a later P without a rejected implementation P, records only truthful
-closure, and adds no implementation scope.
+For a numbered implementation T, the governance P required after coordinator
+acceptance is the sole exception: it is a later P without a rejected
+implementation P, records only truthful closure, and adds no implementation
+scope. It does not apply to standalone Td work.
 
-When the coordinator accepts an implementation P, the coordinator updates the
-applicable Status, history, and governance records, commits and pushes that
-purely governance P, and closes the S. The governance P records acceptance; it
-does not add implementation scope. Pure documentation, status, or state changes
-therefore remain in the current S when they are required for its closure, but do
-not by themselves allocate a new T or S.
+When the coordinator accepts a numbered implementation P, the coordinator
+updates the applicable Status, history, and governance records, commits and
+pushes that purely governance P, and closes the S. The governance P records
+acceptance; it does not add implementation scope. Pure documentation, status,
+or state changes therefore remain in the current S when they are required for
+its closure, but do not by themselves allocate a new T or S.
 
-After pushing the governance P, the coordinator reports to the owner the
-accepted implementation P, verification conclusion, closed S or T, transferred
-or deferred items, and every remaining owner decision.
+After pushing the numbered-T governance P, the coordinator reports to the owner
+the accepted implementation P, verification conclusion, closed S or T,
+transferred or deferred items, and every remaining owner decision. A Td
+completion report instead names its complete Td P and governance result.
 
 **Executor completion goal.** An executor creates one durable goal for its
 entire executor session: **Complete the coordinator's assignment fully.** It
@@ -220,9 +225,10 @@ existing named conversation and never create a duplicate role conversation.
    executor report is an evidence index, not a substitute for this review. The
    coordinator runs required verification and either rejects the delivery with
    one consolidated corrective brief or accepts it.
-6. On acceptance, the coordinator completes the applicable Status, history, and
-   governance closure, commits and pushes the purely governance P, and then
-   plans the next S from the resulting repository state.
+6. On acceptance of a numbered implementation P, the coordinator completes the
+   applicable Status, history, and governance closure, commits and pushes the
+   purely governance P, and then plans the next S from the resulting repository
+   state. A complete Td P needs no later governance P.
 
 **Ordinary Mode.**
 
@@ -231,10 +237,10 @@ the same T/S/P model, active-packet rule, evidence standard, and closure audit.
 Combining people does not combine governance stages.
 
 The single session first plans or adopts the coordinator S brief, then performs
-the executor-side contract review, self-review, commit, and push of the complete
-implementation P. It then performs the coordinator-side actual-change review
-and acceptance; on acceptance, it commits and pushes the governance P. Before
-the implementation-P commit, it explicitly compares the S brief with the
+the executor-side contract review, self-review, commit, and push of the
+complete P. It then performs the coordinator-side actual-change review and
+acceptance; for a numbered implementation T, acceptance requires the later
+governance P. Before the P commit, it explicitly compares the S brief with the
 actual changes and evidence, checks for scope drift and unresolved objections,
 and runs required verification. A discovered material contradiction requires a
 brief revision or a later S; it must not be silently absorbed.
