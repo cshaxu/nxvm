@@ -25,3 +25,14 @@ It cannot close a runtime row or introduce a new execution path.
 S1 was accepted through source, evidence, and focused-owner review. Its
 implementation delivery is `b4d4251c`; S2 now owns only the CR/DR/TR/LDT/table
 reconciliation defined by that ledger.
+
+## S2 Control, Debug-Register, And Table-State Reconciliation
+
+The indexed [S2 reconciliation](../etc/evidence/t341-s2-control-debug-table-reconciliation.md)
+maps every assigned form to its one decoder and mutable-state owner, retaining
+the exact prior proof where its state and delivery contract match. It confirms
+that DR4/DR5 are Intel-reserved on the 80386 rather than later-CPU aliases and
+that TR6/TR7 require the explicitly deferred persistent-cache model.
+
+S2 transfers only VM86/task/paging composition to S3 and ordinary breakpoint
+cause/vector-1 delivery to S4. It makes no production change.
