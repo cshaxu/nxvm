@@ -48,7 +48,7 @@ descriptor, cache, or delivery code changed.
 
 ## Exact Transfers
 
-`LOCK` legality transfers to T340. TSS32 images, CR3/paging, debug-trap,
-32-bit operand/address forms, and VM86 task interactions transfer to T341 or
-T342 as assigned by the T339 S1 ledger. Generic exception-delivery redesign is
-not claimed by S6.
+Accepted T328 retains pre-386 `LOCK` legality. TSS32 images, CR3/paging,
+debug-trap, 32-bit operand/address forms, and VM86 task interactions transfer
+to T341 or T342 as assigned by the T339 S1 ledger. Generic exception-delivery
+redesign is not claimed by S6.

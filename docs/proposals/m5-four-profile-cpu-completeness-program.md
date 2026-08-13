@@ -43,9 +43,10 @@ at its mechanism owner before profile-specific callers duplicate it.
 5. Cross-profile closure is last. It reconciles evidence; it does not perform
    missing implementation under a verification label.
 
-The Queue realizes this as six candidate packages: 80286 descriptor/transfer;
-80286 `LOCK` and profile closure; 80386DX form closure; 80386DX state closure;
-80386DX audit; and final four-profile audit. This prevents a broad
+The Queue realizes this as five candidate packages: 80286 descriptor/transfer;
+80386DX form closure; 80386DX state closure; 80386DX audit; and final
+four-profile audit. T328 already closes the 8086/80186/80286 legacy `LOCK`
+policy, so it is retained evidence rather than a duplicate candidate. This prevents a broad
 "80386-complete" task from hiding dependencies between 16-bit protected
 construction, width-form behavior, and system-state delivery.
 
@@ -62,10 +63,10 @@ never patched separately in each instruction handler.
 - Audit profile gates, operand/address attributes, valid and invalid `LOCK`
   use, defined FLAGS, state publication, restart point, and applicable
   real/protected/VM86 delivery. Do not assert architecturally undefined FLAGS.
-- For 8086, 80186, and 80286, maintain an explicit legal-versus-illegal
-  `LOCK` matrix for every allocated memory-capable form. A decoder-wide policy
-  is acceptable evidence only after its whitelist, all callers, and all
-  profile exceptions are audited.
+- For 8086, 80186, and 80286, retain T328's explicit legal-versus-illegal
+  `LOCK` policy matrix for every allocated memory-capable mechanism. A
+  decoder-wide policy is acceptable evidence only after its whitelist, all
+  callers, and all profile exceptions are audited.
 - Preserve true 16-bit and 32-bit architectural layouts. A common private
   plan may select each real layout independently; it must not flatten the
   layouts or change validation-to-commit/fault ordering.

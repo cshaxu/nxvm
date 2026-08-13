@@ -22,7 +22,6 @@ are shared planning references for the corresponding candidates below; they do
 not allocate a numeric task.
 
 1. [80286 descriptor-table and protected-transfer closure](../proposals/m5-80286-descriptor-transfer-closure.md). Establish the 80286 descriptor, gate, 16-bit frame, return, and task-transition ledger, then close its mechanism-owned rows.
-1. [80286 `LOCK` and profile closure](../proposals/m5-80286-lock-profile-closure.md). Consume that ledger to prove 80286 `LOCK` legality and close the remaining inherited/80286 form-mode rows before 32-bit work relies on them.
 1. [80386DX width, prefix, and integer-form closure](../proposals/m5-80386dx-width-integer-closure.md). Add genuine 32-bit form families: operand/address width, prefix composition, FS/GS, and non-privileged primary/`0F` integer forms, without borrowing an older-profile disposition.
 1. [80386DX system, VM86, paging, and debug closure](../proposals/m5-80386dx-system-state-closure.md). Close the state-owner tracks that make the form ledger compose: VM86/task, paging/system control, CR/DR/TR, and debug/breakpoint delivery.
 1. [80386DX profile closure](../proposals/m5-80386dx-profile-closure.md). Audit the completed 80386DX ledgers only; return every gap to one of the two implementation candidates above or its earliest predecessor.

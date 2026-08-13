@@ -22,9 +22,10 @@ return; and TSS16 task transition. It retains true 16-bit layouts and records
 all 80386DX transfers explicitly. S7 is the T339 audit-only closure step; it
 cannot implement a missing S2--S6 mechanism.
 
-The Queue and linked program proposals use the same dependency chain:
-T339 descriptor/transfer closure, 80286 `LOCK`/profile closure, 80386DX form
-closure, 80386DX state closure, 80386DX audit, then final four-profile audit.
+The Queue and linked program proposals use the same dependency chain: T339
+descriptor/transfer closure, retained T328 pre-386 `LOCK` policy, 80386DX
+form closure, 80386DX state closure, 80386DX audit, then final four-profile
+audit.
 
 ## S2--S7 Closure
 

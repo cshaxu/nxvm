@@ -34,7 +34,7 @@ following using actual 80286 execution:
 
 ## Exact Transfers
 
-- The 80286 `LOCK` legality matrix remains T340's sole owner.
+- Accepted T328 remains the sole pre-386 `LOCK` policy owner.
 - FS/GS, LSS/LFS/LGS, `66/67`, VM86, paging, debug, VME/PVI, and all 32-bit
   selector/image behavior transfer to T341/T342.
 - Call/interrupt/task gates, outer-stack selection, and delivered 16-bit

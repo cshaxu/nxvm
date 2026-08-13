@@ -33,13 +33,14 @@ ordering distinction, not a duplicate construction path.
 
 | Residual boundary | Receiving owner |
 | --- | --- |
-| 80286 `LOCK` legality for memory-capable S2--S6 forms and inherited profile rows | T340, 80286 `LOCK` and profile closure |
+| 80286 `LOCK` legality for memory-capable S2--S6 forms and inherited profile rows | Accepted T328 legacy `LOCK` matrix |
 | `66/67`, FS/GS, 32-bit operands/effective addresses, 32-bit gate/frame and TSS32 layouts | T341, 80386DX width/prefix/integer closure |
 | VM86 entry/return/task semantics, paging/CR3, debug/DR state, generic 80286 `#TS/#SS` delivery composition | T342, 80386DX system/VM86/paging/debug closure |
 
 No S2--S6 allocation row remains partial or unclassified after these explicit
-transfers. The current owners and exact current-gate targets are retained in
-the S2--S6 evidence documents; this audit does not replace them.
+transfers and the retained T328 prefix-policy disposition. The current owners
+and exact current-gate targets are retained in the S2--S6 evidence documents;
+this audit does not replace them.
 
 ## Verification Record
 

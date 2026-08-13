@@ -31,7 +31,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t339-s4-protected-entry-gate-matrix.md` | Verification owner | T339 S4 80286 direct/gate/external entry, TSS16 outer-stack, frame, origin-order, and exact-transfer evidence. Retire into T339 history at task closure. |
 | `evidence/t339-s5-protected-return-matrix.md` | Verification owner | T339 S5 80286 IRET/RETF frame-consumption, cache, atomicity, restored-IF, and exact-transfer evidence. Retire into T339 history at task closure. |
 | `evidence/t339-s6-tss16-transition-matrix.md` | Verification owner | T339 S6 80286 TSS16 direct/task-gate/nested-return, validation, cache, fault-boundary, and exact-transfer evidence. Retire into T339 history at task closure. |
-| `evidence/t339-s7-80286-descriptor-transfer-audit.md` | Verification owner | T339 S7 audit of all S2--S6 80286 descriptor-transfer owners, publication/fault boundaries, and T340--T342 transfers. Retire into T339 history at task closure. |
+| `evidence/t339-s7-80286-descriptor-transfer-audit.md` | Verification owner | T339 S7 audit of all S2--S6 80286 descriptor-transfer owners, publication/fault boundaries, retained T328 policy, and T341--T342 transfers. Retire into T339 history at task closure. |
 | `operations/` | Execution, source, and release owners | Toolchain, policy, templates, release procedure, and closure material. |
 | `research/` | Source owner | Provenance, external references, and non-product research. |
 | `history/` | Documentation owner | Read-only legacy and M5 migration/roadmap evidence. |

@@ -32,7 +32,7 @@ No S2 reproducer required a CPU handler change.
 | `LMSW` and `CLTS` 80286 CPL3 delivery | S2 proves their 80286 CPL0 behavior and records the protected privilege producer in the handler audit.  Complete 80286 CPL3 exception gate/frame delivery belongs to T339 S4's 16-bit protected-entry mechanism.  It must provide the selected 16-bit IDT/frame proof before that transfer is considered closed; S2 does not substitute a hand-built no-IDT terminal state. |
 
 `66/67`, VM86, CR0 32-bit/paging effects transfer to T341/T342.  The complete
-80286 `LOCK` legality matrix transfers to T340.  S2 neither infers those
+Accepted T328 owns the pre-386 `LOCK` policy matrix. S2 neither infers those
 results from the shared 80386 decoder nor changes their owner.
 
 ## Configuration-Gate Correction
