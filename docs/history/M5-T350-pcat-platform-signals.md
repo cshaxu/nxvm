@@ -24,6 +24,6 @@ owner or exact receiver. Its [ledger](../etc/evidence/t350-s1-pcat-platform-sign
 keeps port-61/speaker and a real NMI producer explicitly unimplemented until
 their independent admission conditions are met.
 
-S2 reconciles the retained 8254 counter/output subset and its one channel-0
+S2 is accepted at `6cbb67a9`: it reconciles the retained 8254 counter/output subset and its one channel-0
 IRQ0 path. Its [evidence](../etc/evidence/t350-s2-pit-irq0.md) keeps channel-2
 and port-61/speaker explicitly outside the counter-0 mechanism.
