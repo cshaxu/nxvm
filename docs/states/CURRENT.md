@@ -2,8 +2,29 @@
 
 ## Current Work
 
-**Idle.** M5 T341 is closed; the Queue's 80386DX profile-closure candidate
-requires a separately admitted T342 packet.
+**M5 T342 S1 - active.** Audit the completed 80386DX form and state ledgers
+before the four-profile cross-closure verification.
+
+## M5 T342 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | The owner approved Queue-ordered, single-agent implementation through the four-profile cross-closure verification on 2026-08-13. T341 closed at `fe37b08b`; this packet admits the next Queue candidate as T342 S1. |
+| Objective | Audit every 80386DX-assigned form and system-state row against the Intel 80386 form/state ledger, current production graph, exact focused evidence, mode/privilege/prefix/LOCK classifications, and transfers. Close only a truthful residual table that returns each discrepancy to its earliest owner. |
+| Non-goals | No production, test, CMake, artifact, device, product, or rule change. No new opcode or system-state implementation, no broad cleanup, no Windows claim, and no profile-cross-closure conclusion. |
+| Reference Baseline | `fe37b08b` (`M5 T341 S5 P2: close 80386DX system state`), T340/T341 histories and evidence, T336 closure map, current Queue/TODO, the 80386DX profile proposal, and Intel 80386 manuals already cited by retained evidence. |
+| Candidate Proposal | [80386DX profile closure](../proposals/m5-80386dx-profile-closure.md), [four-profile CPU-completeness program](../proposals/m5-four-profile-cpu-completeness-program.md), and [80386DX admission policy](../proposals/m5-80386dx-candidate-policy.md). |
+| Files And ABI Surface | Expected: T342 audit evidence/history/Current only. No public ABI, source, CMake, artifact, device, product, or rule change. |
+| Applicable Rules | `docs/rules/EXECUTION.md`: allocation, audit-only closure, similar-issue sweep, complete P, actual-change review, and lifecycle. `docs/rules/ARCHITECTURE.md`: one mutable-state owner and explicit semantic/layout differences. `docs/rules/CODING.md`: no duplicate abstraction. `docs/rules/DOCUMENT.md`: Current/history/evidence topology. |
+| Verification | Reconcile T340's width/form ledger and T341's state ledger with current CPU metadata/dispatch/owners, assigned current-gate proof, Queue, TODO, and closure map. Query all 80386-only primary/`0F` forms, `66/67`, FS/GS, DR/CR/TR/table, VM86, paging, task, frame, debug, and `LOCK` paths. Run documentation governance and diff check; rerun runtime gates only if a discrepancy requires evidence confirmation. |
+| Expected Markers | One indexed residual table gives every assigned row exactly one accepted proof, precise rejection, Intel-required retained difference, explicit external boundary, or earliest-owner return. No audit-side repair, duplicate owner, silent inherited proof, or unclassified partial row remains. |
+| Asset Needs | Intel 80386 manuals already cited by retained evidence. No guest media, firmware, third-party source, binary, or trace. |
+| Reporting Requirements | Deliver one complete pushed P with the full residual table, exact source/evidence queries, every transfer or acceptance, documentation-gate result, and next Queue handoff. |
+| Stop Conditions | Stop if an audit finding needs a source/test/CMake repair, a missing unallocated family, VME/PVI, later-CPU semantics, persistent-cache model, x87 execution, timing/device/product behavior, a rule change, or external source/import. Return it to the earliest implementation owner or explicit TODO; do not repair under T342. |
+| Exit Criteria | Every 80386DX-assigned form/state row has exactly one truthful disposition; all T340/T341 transfers are reconciled; no in-scope production hit or partial evidence claim is unclassified; evidence/history/Current are truthful; and the audit P is committed and pushed. |
+| Original Owner Request | Implement the Queue in order, in single-agent mode and with a holistic view, through four-profile cross-closure verification. |
+| Similar-Issue Sweep | Sweep all tracked CPU execution and machine-state source, metadata/dispatch, current-gate registrations, T336/T340/T341 evidence, Queue, TODO, history, and closure-map references for 80386-only forms/state. Record every hit's exact owner and disposition; no broad repository rewrite. |
 
 ## Current Technical Baseline
 
