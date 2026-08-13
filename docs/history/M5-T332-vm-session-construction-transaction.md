@@ -56,3 +56,12 @@ identical early-stage teardown, while lifecycle and outer-create rollback retain
 their distinct initialized-state ownership. The focused session smoke, fresh
 artifact build, 49 specialized verifiers, documentation governance, diff
 check, and full 212-test current CTest selection passed.
+
+## S3: CPU Fixture Lifecycle Convergence
+
+S3 uses the pre-existing T317 fixed 47-owner inventory to retain the one
+`tests/support` bind/freeze/reset lifecycle path, migrates five inherited
+historical sources that would otherwise bypass it, and adds a narrow static
+closure verifier. The residual older CPU/device fixture audit is explicitly
+transferred to TODO rather than treated as equivalent without a source-to-target
+and semantic inventory. The detailed classification is [T332 S3 evidence](../etc/evidence/t332-s3-cpu-fixture-lifecycle.md).
