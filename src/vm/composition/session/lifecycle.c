@@ -49,11 +49,14 @@ static C_VOID vm_session_wait(C_VOID *context, type_unsigned_32 milliseconds)
     core_platform_sleep_milliseconds(milliseconds);
 }
 
-static type_unsigned_8 vm_session_debug_disassemble(C_VOID *context,
-    C_CHAR *statement, type_unsigned_8 *code, C_INT flag32)
+static type_status vm_session_debug_disassemble(C_VOID *context,
+    C_CHAR *statement, STD_SIZE_T statement_capacity,
+    const type_unsigned_8 *code, STD_SIZE_T code_bytes,
+    STD_SIZE_T *out_code_bytes, C_INT flag32)
 {
     (C_VOID)context;
-    return core_product_utils_dasm32(statement, code, flag32);
+    return core_product_utils_disassemble(code, code_bytes, statement,
+        statement_capacity, out_code_bytes, flag32);
 }
 
 static C_VOID vm_session_input_submit(C_VOID *context,

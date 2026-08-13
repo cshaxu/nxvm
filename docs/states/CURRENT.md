@@ -2,36 +2,13 @@
 
 ## Current Work
 
-**M5 T335 S1 - active.** Inventory and fix the bounded public xasm contract
-before implementation migration. The owner-approved candidate is
-[the xasm capacity and failure contract](../proposals/m5-xasm-capacity-failure-contract.md).
-
-## M5 T335 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner approved on 2026-08-13: admit and execute the existing xasm capacity/failure TODO after T334 closes. S1 is the required complete mechanism inventory and exact API decision before source migration. |
-| Objective | Enumerate every xasm public symbol, caller, fixed buffer, allocation and output-publication point; define one bounded core-product facade with explicit capacities, result/failure semantics, and caller migration plan. |
-| Non-goals | No xasm opcode/syntax expansion, implementation rewrite, string-only patch, product UX change, generic framework, or source migration before the S1 decision is recorded. |
-| Reference Baseline | `0b5dd143` (`M5 T334 S1 P2: close EGA registration transaction`), current artifact `0.5.0334`. The open debt is the former `TODO.md` xasm entry and T314 evidence. |
-| Candidate Proposal | [M5 xasm capacity and failure contract](../proposals/m5-xasm-capacity-failure-contract.md). |
-| Files And ABI Surface | S1 changes only proposal, Current, Queue/TODO, history, and indexed evidence. It inspects `src/core/product/utils.*`, xasm headers/engines, debugger, VM firmware/lifecycle, and product tests. No production API or artifact changes in S1. |
-| Applicable Rules | `docs/rules/EXECUTION.md`: mechanism-defect inventory, owner/variants/failure boundary, actual-change audit. `docs/rules/ARCHITECTURE.md`: one owner and explicit public failure semantics. `docs/rules/CODING.md`: minimum public capability and owner-bound repair. `docs/rules/DOCUMENT.md`: active contract and durable evidence boundaries. |
-| Verification | Repository-wide symbol/caller scan; source-level buffer/allocation/publication inventory; inspect all direct public headers; documentation governance and `git diff --check`. |
-| Expected Markers | A durable matrix classifies every current entry point/caller and names input, output, success, failure, capacity, migration, and test obligations; no unclassified public raw API or caller remains. |
-| Asset Needs | None. No source, firmware, guest media, third-party code, or Microsoft material. |
-| Reporting Requirements | Executor reports the API decision and any scope objection before code migration. In this single-session run, coordinator review checks every inventory row against actual source/callers and verifies no S2 source change is hidden in S1. |
-| Stop Conditions | Stop if a discovered non-xasm public consumer, generated firmware contract, or binary compatibility commitment needs owner choice beyond the current TODO. Do not select a compatibility shim that leaves an unbounded public bypass. |
-| Exit Criteria | Durable inventory and exact S2 contract name all entry points, callers, capacities, output and failure-atomicity rules, internal-bound strategy, test seams, and explicit transfers; governance/diff checks pass; no production source changes are made. |
-| Original Owner Request | Put the xasm TODO into the queue and execute it. |
-| Similar-Issue Sweep | Search all `aasm32`, `aasm32x`, `dasm32`, `core_product_utils_*asm*` symbols, raw pointer calls, fixed arrays, `STD_MALLOC/CALLOC`, and string writes in xasm and all `src/`/`tests/` callers. |
+**Idle.**
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** T334 S1 selected `vm-0-5-0334` /
-  `build/output/nxvm_0_5_0334.exe`; the verified P1 output SHA-256 is
-  `B71758ABB6EA25B6F818786FCDA8D668F773925917E0C6385F26B0D419C25579`.
+- **Current developer artifact:** T335 S2 selects `vm-0-5-0335` /
+  `build/output/nxvm_0_5_0335.exe`; the verified P1 output SHA-256 is
+  `3BB4A1B2FFAED8979B3D15A2B363C322B38A318F3570408E87E554FFA42F9013`.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
@@ -45,6 +22,7 @@ before implementation migration. The owner-approved candidate is
 ## Recent M5 Closures
 
 | Task | Compact result |
+| T335 | Closed the xasm public-capacity/failure contract: the product facade now uses byte spans, explicit capacities, `type_status`, and commit-on-success result publication; debugger, firmware, and VM debug callback callers migrated with no raw bypass. A dedicated allocation-injection smoke proves capacity, malformed-input, facade-allocation, and engine-allocation failures preserve caller sentinels; `current-gate` passed 216/216. [History](../history/M5-T335-xasm-capacity-failure-contract.md). |
 | T334 | Closed EGA sequencer registration atomicity: memory owns coupled provider/observer validation and publication; VADP allocates before publication; allocation and either registry-capacity failure preserve state, while retry publishes exactly one of each. Strict focused smoke and 215/215 current-gate passed. [History](../history/M5-T334-ega-registration-transaction.md). |
 | T333 | Closed retained interactive-input failure handling: all 44 Console/debugger readers are inventoried; 43 debugger calls converge at one private boundary; Console stops before parse/execute; EOF/allocation failure and context reuse are covered by two owner-separated smoke targets. Corrective S4 restored its required `0.5.0333` artifact and identity. Evidence and review are in [history](../history/M5-T333-interactive-input-failure-contract.md). |
 | T332 | Closed VM session construction drift: one private profile materialization/override path; one early-storage rollback owner with stage-failure and late-media recovery proof; and a fixed 47-owner CPU smoke lifecycle closure with inherited-source migration and static guard. The retained artifact, full gates, and residual historical-fixture transfer are in [history](../history/M5-T332-vm-session-construction-transaction.md). |
@@ -52,7 +30,6 @@ before implementation migration. The owner-approved candidate is
 | T330 | Closed the whole-codebase construction-drift package: one task-transition constructor, FDD/HDD backing/create atomicity, and CALL-gate dual-fault preflight convergence. Its mechanism matrices remain retained evidence; they are not a current mandatory rule. Intel-required layouts remain explicit; T330 artifact, focused regressions, 211/211 current-gate, and governance evidence are in [history](../history/M5-T330-width-path-convergence.md). |
 | T329 | Closed the bounded Intel 80286/80386 protected task-transition state machine: 16/32-bit direct and task-gate entry, nested CALL/IRET state, incoming LDT images, source-CR3 preflight/incoming-CR3 commit, and TSS post-switch `#DB`. S7 proves target-page fetch, target-TSS `#PF` atomicity, and a target-state restart frame; the 0329 artifact and 211/211 gate result are in [history](../history/M5-T329-task-transition-state-machine.md). |
 | T328 | Closed the historical LOCK-prefix legality matrix: 8086/80186 retain transparent valid-next-instruction semantics; 80286 adds protected `CPL <= IOPL`; retained 80386 memory-whitelist behavior stays intact. S2 reconciled the current closure map and ordinary matrix, removing the stale Deferred/TODO transfer without changing the user-owned Queue edit. Register, memory, REP, I/O, #GP frame, strict compile, artifact, and 211/211 gate evidence are in [history](../history/M5-T328-legacy-lock-legality.md). |
-| T327 | Closed the current/specialized-gate reconciliation: fast smoke no longer builds classified media targets, and generated CTest/Ninja evidence now proves the full 210 = 15 media + 195 non-media partition, both developer roots, all specialized verifiers, and the aggregate's two roots. [History](../history/M5-T327-current-gate-reconciliation.md). |
 
 ## Recent Governance
 

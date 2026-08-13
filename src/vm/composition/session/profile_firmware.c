@@ -19,7 +19,7 @@
 static type_unsigned_16 vm_session_profile_firmware_assemble(const C_CHAR *statement,
     type_unsigned_8 **out_bytes)
 {
-    type_unsigned_32 length;
+    STD_SIZE_T length;
     STD_SIZE_T capacity;
     STD_SIZE_T index;
     type_unsigned_8 *bytes;
@@ -33,7 +33,12 @@ static type_unsigned_16 vm_session_profile_firmware_assemble(const C_CHAR *state
     if (capacity > TYPE_MAX_UNSIGNED_16 / 15u) return 0u;
     bytes = (type_unsigned_8 *)STD_MALLOC(capacity * 15u);
     if (bytes == STD_NULL) return 0u;
-    length = core_product_utils_aasm32x(statement, bytes, TYPE_FALSE);
+    if (core_product_utils_assemble_paragraph(statement, STD_STRLEN(statement),
+            bytes, capacity * CORE_PRODUCT_UTILS_XASM_MAX_CODE_BYTES, &length,
+            TYPE_FALSE) != TYPE_STATUS_OK) {
+        STD_FREE(bytes);
+        return 0u;
+    }
     if (length == 0u || length > TYPE_MAX_UNSIGNED_16) {
         STD_FREE(bytes);
         return 0u;

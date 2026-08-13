@@ -289,7 +289,11 @@ static C_VOID aconsole(core_product_debug_context *debugContext)
             continue;
         }
         errAsmPos = 0;
-        len = core_product_utils_aasm32(cmdAsmBuff, acode, core_product_debug_get_code_default_size());
+        if (core_product_utils_assemble(cmdAsmBuff, STD_STRLEN(cmdAsmBuff),
+                acode, sizeof(acode), &len,
+                core_product_debug_get_code_default_size()) != TYPE_STATUS_OK) {
+            len = 0u;
+        }
         if (!len)
         {
             errAsmPos = STD_STRLEN(cmdAsmBuff) + 9;
@@ -769,7 +773,13 @@ static type_unsigned_8 uprintins(core_product_debug_context *debugContext, type_
     }
     else
     {
-        len = core_product_utils_dasm32(stmt, ucode, core_product_debug_get_code_default_size());
+        if (core_product_utils_disassemble(ucode, sizeof(ucode), stmt,
+                sizeof(stmt), &i,
+                core_product_debug_get_code_default_size()) != TYPE_STATUS_OK) {
+            len = 0u;
+        } else {
+            len = (type_unsigned_8)i;
+        }
         sbin[0] = 0;
         sbin_cursor = sbin;
         sbin_remaining = sizeof(sbin);
@@ -1382,7 +1392,13 @@ static type_unsigned_8 xuprintins(core_product_debug_context *debugContext, type
     }
     else
     {
-        len = core_product_utils_dasm32(stmt, ucode, core_product_debug_get_code_default_size());
+        if (core_product_utils_disassemble(ucode, sizeof(ucode), stmt,
+                sizeof(stmt), &i,
+                core_product_debug_get_code_default_size()) != TYPE_STATUS_OK) {
+            len = 0u;
+        } else {
+            len = (type_unsigned_8)i;
+        }
         sbin[0] = 0;
         sbin_cursor = sbin;
         sbin_remaining = sizeof(sbin);
@@ -1434,7 +1450,11 @@ static C_VOID xaconsole(core_product_debug_context *debugContext, type_unsigned_
             continue;
         }
         errAsmPos = 0;
-        len = core_product_utils_aasm32(astmt, acode, core_product_debug_get_code_default_size());
+        if (core_product_utils_assemble(astmt, STD_STRLEN(astmt), acode,
+                sizeof(acode), &len,
+                core_product_debug_get_code_default_size()) != TYPE_STATUS_OK) {
+            len = 0u;
+        }
         if (!len)
         {
             errAsmPos = STD_STRLEN(astmt) + 9;

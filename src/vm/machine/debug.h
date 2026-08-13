@@ -19,8 +19,10 @@ typedef enum vm_machine_debug_pause_reason {
 
 typedef C_VOID (*vm_machine_debug_pause_callback)(C_VOID *context,
     vm_machine_debug_pause_reason reason);
-typedef type_unsigned_8 (*vm_machine_debug_disassemble_provider)(C_VOID *context,
-    C_CHAR *statement, type_unsigned_8 *code, C_INT flag32);
+typedef type_status (*vm_machine_debug_disassemble_provider)(C_VOID *context,
+    C_CHAR *statement, STD_SIZE_T statement_capacity,
+    const type_unsigned_8 *code, STD_SIZE_T code_bytes,
+    STD_SIZE_T *out_code_bytes, C_INT flag32);
 
 typedef struct {
     STD_FILE *recordFile; /* pointer to dump file */

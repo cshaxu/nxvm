@@ -10560,23 +10560,36 @@ static C_VOID asmx_parse_instr(aasm32_context *aasmContext, t_aasm_instr *rinstr
         }
     }
 }
-static type_unsigned_32 aasm32x_execute(aasm32_context *aasmContext, const C_CHAR *stmt, type_unsigned_8 *rcode, C_INT flag32)
+static type_status aasm32x_execute(aasm32_context *aasmContext,
+    const C_CHAR *stmt, STD_SIZE_T code_capacity, type_unsigned_8 *rcode,
+    STD_SIZE_T *out_code_bytes, C_INT flag32)
 {
     type_signed_32 i, j, k, count;
-    type_unsigned_32 len;
+    STD_SIZE_T len;
     type_unsigned_32 offset;
+    STD_SIZE_T statement_bytes;
     C_CHAR imm[0x100];
     t_aasm_instr *instr;
+    if (stmt == STD_NULL || rcode == STD_NULL || out_code_bytes == STD_NULL) {
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
+    statement_bytes = STD_STRLEN(stmt);
+    if (statement_bytes > 0x7fffffffu) return TYPE_STATUS_INVALID_ARGUMENT;
     count = 1;
     flagError = 0;
-    for (i = 0; i < (type_signed_32)STD_STRLEN(stmt); ++i)
+    for (i = 0; i < (type_signed_32)statement_bytes; ++i)
     {
         if (stmt[i] == '\n')
         {
+            if (count == 0x7fffffff) return TYPE_STATUS_NO_MEMORY;
             count++;
         }
     }
-    instr = (t_aasm_instr *)STD_MALLOC(count * sizeof(t_aasm_instr));
+    if ((STD_SIZE_T)count > (STD_SIZE_T)-1 / sizeof(*instr)) {
+        return TYPE_STATUS_NO_MEMORY;
+    }
+    instr = (t_aasm_instr *)STD_MALLOC((STD_SIZE_T)count * sizeof(*instr));
+    if (instr == STD_NULL) return TYPE_STATUS_NO_MEMORY;
     i = j = k = 0;
     while (is_space(aasmContext, stmt[i]))
     {
@@ -10624,12 +10637,20 @@ static type_unsigned_32 aasm32x_execute(aasm32_context *aasmContext, const C_CHA
         }
         else
         {
+            if (j >= (type_signed_32)(sizeof(instr[k].stmt) - 1u)) {
+                STD_FREE((C_VOID *)instr);
+                return TYPE_STATUS_INVALID_ARGUMENT;
+            }
             instr[k].stmt[j] = stmt[i];
             i++;
             j++;
         }
     }
     count = k;
+    if (count == 0) {
+        STD_FREE((C_VOID *)instr);
+        return TYPE_STATUS_FAULT;
+    }
     for (i = 0; i < count; ++i)
     {
         STD_MEMSET((C_VOID *)instr[i].code_array, 0x00, 15);
@@ -10653,7 +10674,7 @@ static type_unsigned_32 aasm32x_execute(aasm32_context *aasmContext, const C_CHA
         if (flagError)
         {
             STD_FREE((C_VOID *)instr);
-            return 0;
+            return TYPE_STATUS_FAULT;
         }
         if (!instr[i].code_len)
         {
@@ -10679,7 +10700,7 @@ static type_unsigned_32 aasm32x_execute(aasm32_context *aasmContext, const C_CHA
         if (flagError)
         {
             STD_FREE((C_VOID *)instr);
-            return 0;
+            return TYPE_STATUS_FAULT;
         }
     }
     /* i: label; j: instr to be materialized; k: size iterator */
@@ -10710,14 +10731,12 @@ static type_unsigned_32 aasm32x_execute(aasm32_context *aasmContext, const C_CHA
                         {
                             offset += instr[k].code_len;
                         }
-                        STD_STRCPY(instr[j].stmt, instr[j].op_str);
                         switch (instr[j].ptr)
                         {
                         case PTR_SHORT:
-                            STD_STRCAT(instr[j].stmt, " short ");
                             if (offset < 0x80)
                             {
-                                STD_SNPRINTF(imm, sizeof(imm), "+%02x", (type_unsigned_8)offset);
+                                STD_SNPRINTF(imm, sizeof(imm), "short +%02x", (type_unsigned_8)offset);
                             }
                             else
                             {
@@ -10726,13 +10745,12 @@ static type_unsigned_32 aasm32x_execute(aasm32_context *aasmContext, const C_CHA
                             }
                             break;
                         case PTR_NEAR:
-                            STD_STRCAT(instr[j].stmt, " near ");
                             switch (_GetOperandSize)
                             {
                             case 2:
                                 if (offset < 0x8000)
                                 {
-                                    STD_SNPRINTF(imm, sizeof(imm), "+%04x", (type_unsigned_16)offset);
+                                    STD_SNPRINTF(imm, sizeof(imm), "near +%04x", (type_unsigned_16)offset);
                                 }
                                 else
                                 {
@@ -10743,7 +10761,7 @@ static type_unsigned_32 aasm32x_execute(aasm32_context *aasmContext, const C_CHA
                             case 4:
                                 if (offset < 0x80000000)
                                 {
-                                    STD_SNPRINTF(imm, sizeof(imm), "+%08x", (type_unsigned_32)offset);
+                                    STD_SNPRINTF(imm, sizeof(imm), "near +%08x", (type_unsigned_32)offset);
                                 }
                                 else
                                 {
@@ -10759,13 +10777,18 @@ static type_unsigned_32 aasm32x_execute(aasm32_context *aasmContext, const C_CHA
                             flagError = 1;
                             break;
                         }
-                        STD_STRCAT(instr[j].stmt, imm);
+                        if (STD_SNPRINTF(instr[j].stmt, sizeof(instr[j].stmt),
+                                "%s %s", instr[j].op_str, imm) < 0 ||
+                            STD_STRLEN(instr[j].op_str) + 1u + STD_STRLEN(imm) >=
+                                sizeof(instr[j].stmt)) {
+                            flagError = 1;
+                        }
                         aasm32_execute(aasmContext, instr[j].stmt, instr[j].code_array, flag32);
                     }
                     if (flagError)
                     {
                         STD_FREE((C_VOID *)instr);
-                        return 0;
+                        return TYPE_STATUS_FAULT;
                     }
                 }
                 if (!j)
@@ -10790,14 +10813,12 @@ static type_unsigned_32 aasm32x_execute(aasm32_context *aasmContext, const C_CHA
                         {
                             offset += instr[k].code_len;
                         }
-                        STD_STRCPY(instr[j].stmt, instr[j].op_str);
                         switch (instr[j].ptr)
                         {
                         case PTR_SHORT:
-                            STD_STRCAT(instr[j].stmt, " short ");
                             if (offset < 0x80)
                             {
-                                STD_SNPRINTF(imm, sizeof(imm), "-%02x", (type_unsigned_8)offset);
+                                STD_SNPRINTF(imm, sizeof(imm), "short -%02x", (type_unsigned_8)offset);
                             }
                             else
                             {
@@ -10806,13 +10827,12 @@ static type_unsigned_32 aasm32x_execute(aasm32_context *aasmContext, const C_CHA
                             }
                             break;
                         case PTR_NEAR:
-                            STD_STRCAT(instr[j].stmt, " near ");
                             switch (_GetOperandSize)
                             {
                             case 2:
                                 if (offset < 0x8000)
                                 {
-                                    STD_SNPRINTF(imm, sizeof(imm), "-%04x", (type_unsigned_16)offset);
+                                    STD_SNPRINTF(imm, sizeof(imm), "near -%04x", (type_unsigned_16)offset);
                                 }
                                 else
                                 {
@@ -10823,7 +10843,7 @@ static type_unsigned_32 aasm32x_execute(aasm32_context *aasmContext, const C_CHA
                             case 4:
                                 if (offset < 0x80000000)
                                 {
-                                    STD_SNPRINTF(imm, sizeof(imm), "-%08x", (type_unsigned_32)offset);
+                                    STD_SNPRINTF(imm, sizeof(imm), "near -%08x", (type_unsigned_32)offset);
                                 }
                                 else
                                 {
@@ -10839,13 +10859,18 @@ static type_unsigned_32 aasm32x_execute(aasm32_context *aasmContext, const C_CHA
                             flagError = 1;
                             break;
                         }
-                        STD_STRCAT(instr[j].stmt, imm);
+                        if (STD_SNPRINTF(instr[j].stmt, sizeof(instr[j].stmt),
+                                "%s %s", instr[j].op_str, imm) < 0 ||
+                            STD_STRLEN(instr[j].op_str) + 1u + STD_STRLEN(imm) >=
+                                sizeof(instr[j].stmt)) {
+                            flagError = 1;
+                        }
                         aasm32_execute(aasmContext, instr[j].stmt, instr[j].code_array, flag32);
                     }
                     if (flagError)
                     {
                         STD_FREE((C_VOID *)instr);
-                        return 0;
+                        return TYPE_STATUS_FAULT;
                     }
                 }
             }
@@ -10859,17 +10884,30 @@ static type_unsigned_32 aasm32x_execute(aasm32_context *aasmContext, const C_CHA
         STD_PRINTF("[");
         for (j = 0;j < instr[i].code_len;++j) STD_PRINTF("%02X", instr[i].code_array[j]);
         STD_PRINTF("]\n");*/
-        STD_MEMCPY((C_VOID *)(rcode + len), (C_VOID *)instr[i].code_array, instr[i].code_len);
+        if ((STD_SIZE_T)instr[i].code_len > code_capacity - len) {
+            STD_FREE((C_VOID *)instr);
+            return TYPE_STATUS_FAULT;
+        }
+        len += instr[i].code_len;
+    }
+    len = 0;
+    for (i = 0; i < count; ++i)
+    {
+        STD_MEMCPY((C_VOID *)(rcode + len), (C_VOID *)instr[i].code_array,
+            instr[i].code_len);
         len += instr[i].code_len;
     }
     STD_FREE((C_VOID *)instr);
-    return len;
+    *out_code_bytes = len;
+    return TYPE_STATUS_OK;
 }
 
-type_unsigned_32 aasm32x(const C_CHAR *stmt, type_unsigned_8 *rcode, C_INT flag32)
+type_status aasm32x(const C_CHAR *stmt, STD_SIZE_T code_capacity,
+    type_unsigned_8 *rcode, STD_SIZE_T *out_code_bytes, C_INT flag32)
 {
     aasm32_context local_context;
 
     STD_MEMSET(&local_context, 0, sizeof(local_context));
-    return aasm32x_execute(&local_context, stmt, rcode, flag32);
+    return aasm32x_execute(&local_context, stmt, code_capacity, rcode,
+        out_code_bytes, flag32);
 }
