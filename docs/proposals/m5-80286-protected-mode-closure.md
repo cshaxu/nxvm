@@ -17,3 +17,12 @@ unless the ledger assigns a shared prerequisite.
 
 All assigned 80286 rows have a form-and-mode proof or an explicit transfer;
 no accidental reuse of a 386 construction path is presented as a 286 contract.
+
+## T336 Audit-Derived Breakdown
+
+The expected sequence is: first reconcile every `0F 00`, `0F 01`, `0F 02/03`,
+and `0F 06` form and its descriptor/table/privilege disposition; then close
+the 16-bit protected transfer, gate, stack, and task rows that remain after
+T323/T329; finally perform an 80286 profile-close audit. The tasks preserve
+true 16-bit TSS, gate, and frame layouts and transfer only 80386-only address,
+VM86, paging, debug, or register behavior forward.
