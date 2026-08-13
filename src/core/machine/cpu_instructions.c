@@ -3059,15 +3059,15 @@ static C_VOID _ser_call_far_call_gate_32(core_machine_cpu_execution_context *con
         TYPE_TRACE_CHECK_RETURN(_ser_check_call_gate_stack_sreg(context, newss,
             target_cpl, TYPE_REFERENCE_OF(ss_desc)));
         parameter_count = (type_unsigned_8)_GetDescCall_Count(gate_desc);
-        for (index = 0u; index < parameter_count; ++index)
-            TYPE_TRACE_CHECK_RETURN(_s_peek_ss_pop(context,
-                (type_unsigned_32)index * 4u,
-                TYPE_REFERENCE_OF(parameters[index]), 4u));
         newss_cache = cpu_state.data.ss;
         TYPE_TRACE_CHECK_RETURN(_ksa_prepare_stack_sreg(context, newss,
             target_cpl, &newss_cache, &ss_desc));
         TYPE_TRACE_CHECK_RETURN(_s_test_stack_frame_32(context, &newss_cache,
             newesp, (type_unsigned_8)(4u + parameter_count), target_cpl));
+        for (index = 0u; index < parameter_count; ++index)
+            TYPE_TRACE_CHECK_RETURN(_s_peek_ss_pop(context,
+                (type_unsigned_32)index * 4u,
+                TYPE_REFERENCE_OF(parameters[index]), 4u));
         TYPE_TRACE_CHECK_RETURN(_s_write_xdt(context, newss,
             TYPE_REFERENCE_OF(ss_desc)));
         TYPE_TRACE_CHECK_RETURN(_s_write_xdt(context, newcs,
@@ -3169,10 +3169,6 @@ static C_VOID _ser_call_far_call_gate(core_machine_cpu_execution_context *contex
         TYPE_MASK_UNSIGNED_16(_GetDescGate_Offset(gate_desc)), 1u, 0,
         target_cpl, 1));
     if (target_cpl < oldcpl) {
-        for (index = 0u; index < parameter_count; ++index)
-            TYPE_TRACE_CHECK_RETURN(_s_peek_ss_pop(context,
-                (type_unsigned_32)index * 2u,
-                TYPE_REFERENCE_OF(parameters[index]), 2u));
         if (!cpu_state.data.tr.flagValid) {
             TYPE_TRACE_CHECK_RETURN(_SetExcept_TS(0));
         }
@@ -3204,6 +3200,10 @@ static C_VOID _ser_call_far_call_gate(core_machine_cpu_execution_context *contex
             target_cpl, &newss_cache, &ss_desc));
         TYPE_TRACE_CHECK_RETURN(_s_test_stack_frame_16(context, &newss_cache,
             newsp, (type_unsigned_8)(4u + parameter_count), target_cpl));
+        for (index = 0u; index < parameter_count; ++index)
+            TYPE_TRACE_CHECK_RETURN(_s_peek_ss_pop(context,
+                (type_unsigned_32)index * 2u,
+                TYPE_REFERENCE_OF(parameters[index]), 2u));
 
         TYPE_TRACE_CHECK_RETURN(_s_write_xdt(context, newss,
             TYPE_REFERENCE_OF(ss_desc)));

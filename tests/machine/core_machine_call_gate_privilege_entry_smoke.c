@@ -215,11 +215,11 @@ static C_INT cg_install_ts_delivery_gate(call_gate_privilege_machine *state,
 }
 
 static C_INT cg_prepare_ts_delivery(call_gate_privilege_machine *state,
-    type_unsigned_8 gate_access)
+    type_unsigned_8 gate_access, type_unsigned_8 parameter_count)
 {
     type_unsigned_16 invalid_ss0 = 0x0013u;
 
-    return cg_prepare(state, 0xecu, 0u) &&
+    return cg_prepare(state, 0xecu, parameter_count) &&
         cg_write(state, CG_TSS_BASE + 8u, &invalid_ss0, sizeof(invalid_ss0)) &&
         cg_install_ts_delivery_gate(state, gate_access);
 }
@@ -449,7 +449,7 @@ static C_INT cg_test_ts_delivery(C_VOID)
     core_machine_cpu_diagnostic diagnostic;
     t_cpu after;
     type_unsigned_32 frame[4] = {0u,0u,0u,0u};
-    C_INT failed = !cg_prepare_ts_delivery(&state, 0xeeu);
+    C_INT failed = !cg_prepare_ts_delivery(&state, 0xeeu, 0u);
 
     if (!failed) {
         failed |= !cg_run_budget(&state, &after, &diagnostic) ||
@@ -471,6 +471,31 @@ static C_INT cg_test_ts_delivery(C_VOID)
     return !failed;
 }
 
+static C_INT cg_test_outer_preflight_priority(C_VOID)
+{
+    call_gate_privilege_machine state;
+    core_machine_cpu_diagnostic diagnostic;
+    t_cpu after;
+    C_INT failed = !cg_prepare_ts_delivery(&state, 0xeeu, 1u);
+
+    if (!failed) {
+        state.machine->executor_cpu.data.esp = 0x00000100u;
+        state.machine->executor_cpu.data.ss.limit = 0x00000100u;
+        failed |= !cg_run_budget(&state, &after, &diagnostic) ||
+            diagnostic.first_fault.valid ||
+            !diagnostic.last_delivered_exception.valid ||
+            diagnostic.delivered_exception_count != 1u ||
+            !TYPE_GET_BIT(diagnostic.last_delivered_exception.exception_mask,
+                VCPUINS_EXCEPT_TS) ||
+            diagnostic.last_delivered_exception.exception_code != 0x0010u ||
+            after.data.cs.selector != 0x001bu ||
+            after.data.ss.selector != 0x0023u ||
+            after.data.eip != CG_HANDLER_OFFSET || after.data.esp != 0x000000f0u;
+    }
+    core_machine_destroy(state.machine);
+    return !failed;
+}
+
 static C_INT cg_test_ts_delivery_failure(call_gate_ts_delivery_failure failure)
 {
     call_gate_privilege_machine state;
@@ -486,7 +511,7 @@ static C_INT cg_test_ts_delivery_failure(call_gate_ts_delivery_failure failure)
 
     if (failure == CALL_GATE_TS_DELIVERY_INVALID_GATE) gate_access = 0x80u;
     if (failure == CALL_GATE_TS_DELIVERY_NONPRESENT_GATE) gate_access = 0x6eu;
-    failed = !cg_prepare_ts_delivery(&state, gate_access);
+    failed = !cg_prepare_ts_delivery(&state, gate_access, 0u);
     if (!failed && failure == CALL_GATE_TS_DELIVERY_STACK_LIMIT)
         state.machine->executor_cpu.data.ss.limit = 0x000087feu;
     if (!failed) {
@@ -724,6 +749,7 @@ int main(void)
             VCPUINS_EXCEPT_DF, 0u) ||
         !cg_test_target_failure_atomic(CALL_GATE_TARGET_STACK_BOUNDARY,
             VCPUINS_EXCEPT_DF, 0u) || !cg_test_ts_delivery() ||
+        !cg_test_outer_preflight_priority() ||
         !cg_test_ts_delivery_failure(CALL_GATE_TS_DELIVERY_INVALID_GATE) ||
         !cg_test_ts_delivery_failure(CALL_GATE_TS_DELIVERY_NONPRESENT_GATE) ||
         !cg_test_ts_delivery_failure(CALL_GATE_TS_DELIVERY_STACK_LIMIT) ||

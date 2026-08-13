@@ -80,3 +80,15 @@ FDD failed-create nonpublication, and all retained normal replacement, remove,
 insert, formatting, capacity, and atomic-save paths. This is provider-local
 contract convergence, not a media-interface, controller, or persistence-policy
 change.
+
+## Continuation S6: CALL-Gate Preflight Convergence
+
+S6 reconciles the accidental preflight-order drift between 16-bit and 32-bit
+outer-CPL CALL-gate serializers. Both now validate the TSS-provided replacement
+stack and its full target frame before reading old-stack parameters, as required
+by the Intel 80386 CALL sequence. The width-specific TSS, parameter, and frame
+layouts remain explicit. Paired dual-fault vectors make an old parameter unreadable
+and the new SS invalid; both serializers deliver the width-specific `#TS` code
+through vector 10, proving that the new-stack validation wins before any target
+publication. No
+shared exception, descriptor, paging, or ABI behavior was changed.

@@ -192,3 +192,34 @@ create, replace, insert, remove, read, write, and format routes: candidate
 commit routes are aligned; direct FDD I/O and both format callbacks were fixed;
 remove/save paths already fail before mutation when persistence lacks backing.
 No shared media interface, controller protocol, or public ABI changed.
+
+## T330 S6 CALL-Gate Preflight Ordering
+
+The Intel 80386 CALL operation specifies the more-privilege sequence: obtain
+the replacement stack from the TSS, validate its selector and descriptor,
+verify its frame capacity and target instruction pointer, then copy the old
+stack parameters before publishing the replacement frame. The retained
+[80386 CALL reference](https://www.ardent-tool.com/CPU/docs/Intel/386/manuals/prref386/CALL.htm)
+lists the ordering explicitly. Parameter word/dword width and the 16/32-bit
+TSS/frame layouts remain architecturally distinct; their validation ordering
+does not.
+
+The source sweep covered both call-gate serializers and their only far-CALL
+dispatcher. Before S6, the 16-bit path read all old-stack parameter words
+before checking TR/TSS/new SS, while the 32-bit path checked the new selector
+but read parameter dwords before it preflighted the replacement frame. Both
+routes now use the same mechanism boundary: validate target code and TSS/new
+SS, prepare and preflight the replacement stack, read the bounded old-stack
+parameter image, then write descriptor accessed bits and publish stack/CPL/CS.
+
+The retained 16-bit and 32-bit owner smokes each create a controlled dual
+fault: the old stack makes the first parameter unreadable while the TSS supplies
+an invalid replacement SS selector. A same-CPL vector-10 handler remains
+capable of taking the resulting `#TS`: the 16-bit null selector reports
+`#TS(0000)` and the 32-bit selector-with-RPL reports `#TS(0010)`. Both widths
+now deliver that target-stack `#TS` rather than reaching the old-stack `#SS`;
+no target descriptor, replacement stack, CPL, or call-frame publication
+precedes the selected fault. Existing
+success, isolated source-stack, isolated TSS/new-SS, target-stack, descriptor,
+and IRQ vectors remain in their respective owner smokes. No exception-delivery,
+descriptor/TSS helper, paging, or frame-layout mechanism changed.
