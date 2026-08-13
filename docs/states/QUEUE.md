@@ -27,7 +27,6 @@ precedes Windows readiness because readiness must not be used to hide known
 controller-service and chipset gaps.  Each candidate remains bounded by its
 own manual/probe contract; completing one does not imply board-wide parity.
 
-1. [PC/AT 8237A DMA completeness](../proposals/m5-pcat-dma-completeness.md).
 1. [PC/AT 8259A compliance](../proposals/m5-pcat-pic-compliance.md).
 1. [PC/AT platform signals: PIT, PPI, RTC, and NMI](../proposals/m5-pcat-platform-signals.md).
 1. [PC/AT 8042 and AUX completeness](../proposals/m5-kbc-aux-completeness.md).

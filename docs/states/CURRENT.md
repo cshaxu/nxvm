@@ -2,28 +2,8 @@
 
 ## Current Work
 
-M5 T348 S4 - PC/AT DMA transaction, memory-to-memory, and consumer lifecycle reconciliation (Single-Session Mode).
-
-## M5 T348 S4 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner approved continuous holistic PC/AT device/L3 implementation on 2026-08-13; accepted T348 S1--S3 evidence assigns transaction/lifecycle closure here. |
-| Objective | Establish DMA validation-before-publication for ordinary and memory-to-memory transfers, complete memory-to-memory terminal/EOP/auto-init ownership, and reconcile reset/finalize/FDC/ATA/PIC/timeline visibility with the retained one-grant owner.  The default FDC firmware must treat the 8237A 64KiB address wrap as a hardware boundary: it must not depend on page-register carry and must route an INT 13h buffer-crossing sector through its owned reserved bounce path. |
-| Non-goals | No physical DREQ/DACK/EOP waveform, compressed/READY duration, generic bus wait-state model, host DMA, new media command semantics, device policy, or Windows claim; electrical timing remains the later L3 bus-timing candidate. |
-| Reference Baseline | `79ed1cb0` / accepted T348 S3; [T348 ledger](../etc/evidence/t348-s1-dual-8237a-gap-ledger.md), [S2 evidence](../etc/evidence/t348-s2-dma-port-page-layout.md), [S3 evidence](../etc/evidence/t348-s3-dma-request-cascade.md), and [DMA proposal](../proposals/m5-pcat-dma-completeness.md). |
-| Candidate Proposal | [PC/AT 8237A DMA completeness](../proposals/m5-pcat-dma-completeness.md). |
-| Files And ABI Surface | Expected: local DMA transaction/terminal implementation and owner smoke, potentially checked-memory query use, default-profile FDC firmware and its VM boundary proof, FDC/ATA/PIC/timeline evidence/index/Current; no raw provider layout, scheduler, host API, media format, or product ABI expansion. |
-| Applicable Rules | Task Reading Set; architecture one validation-to-commit owner and no partial publication; coding shared owner-local transaction helper; Intel 8237A M2M/EOP/auto-init semantics; checked physical-memory routing; T346 deterministic `DMA -> PIT -> PIC -> FDC -> HDC` due-event boundary; T347 service owner. |
-| Verification | Force ordinary device-to-memory write-route and memory-to-device read-route failures and M2M source/destination failures; require no provider callback, latch/counter/address/request/terminal publication before a failed preflight. Prove M2M channel-0 software initiation, terminal count and binding isolation, and any supported auto-init disposition. Prove reset/finalize clear transient request/service/EOP state while preserving valid binding ownership.  Invoke default-profile floppy INT 13h with a one-sector buffer that crosses a 64KiB DMA window; prove both destination fragments receive the sector, the reserved bounce region is not guest-visible conventional memory, and channel 2 uses no page carry. Re-run FDC/ATA/PIC/timeline focused owners and full current gate. |
-| Expected Markers | Retain T269/T230/T348 S2/S3, FDC/DMA binding, T346 arbitration and T347 storage markers; add `M5:T348:S4:DMA-TRANSACTION-LIFECYCLE:OK`. |
-| Asset Needs | Published Intel 8237A and IBM PC/AT documentation only; no source import, firmware, guest media, or host device. |
-| Reporting Requirements | Record exact validation/commit sequence for every transfer direction, M2M terminal source, memory-route failure result, reset/finalize consumer sweep, retained electrical timing boundary, and one complete pushed P1. |
-| Stop Conditions | Stop for a need to alter generic memory-route semantics, expose raw DMA/provider layout, change FDC/ATA command ABI, reduce reported conventional memory beyond the profile's existing reserved top 1KiB, create a scheduler, or model electrical/bus-cycle timing without separate L3 admission. |
-| Exit Criteria | No failed physical route can publish a provider effect, latch, counter, address, request, terminal callback, or memory write; every adopted M2M terminal/auto-init state has one owner/proof; the default FDC firmware has no dependency on DMA page carry across its 64KiB boundary and has an owned tested crossing path; reset and due-event consumer visibility are deterministic; later electrical timing remains exact. |
-| Original Owner Request | Make core-machine devices stable, comprehensive, and reliable at the selected deterministic L3 event-and-bus level before Windows testing. |
-| Similar-Issue Sweep | Inspect every DMA physical read/write/query, latch/temp/counter/address/request/mask/TC/EOP mutation, ordinary/M2M terminal branch, reset/finalize, FDC and ATA DMA/PIO state, PIC observation, readiness and timeline caller, and all relevant owner smokes. |
+**Idle.** M5 T348 is closed; PC/AT 8259A compliance requires a separately
+admitted task.
 
 ## Current Technical Baseline
 
@@ -44,9 +24,7 @@ M5 T348 S4 - PC/AT DMA transaction, memory-to-memory, and consumer lifecycle rec
 
 | Task | Compact result |
 | --- | --- |
-| T348 S3 | Unified logical DMA request/grant selection: held DREQ, valid software request, fixed/rotating priority, true channel-4 cascade, controller disable isolation, and binding-scoped ordinary EOP. Memory-to-memory terminal/auto-init and transaction/reset work transfer to S4. [Evidence](../etc/evidence/t348-s3-dma-request-cascade.md). |
-| T348 S2 | Repaired the shared dual-8237A page-wrap mechanism and secondary page-port controller selection; primary/secondary sparse register, control, page, byte/word transfer, and same-page wrap regressions are permanent. S3 retains request/priority/cascade/EOP. [Evidence](../etc/evidence/t348-s2-dma-port-page-layout.md). |
-| T348 S1 | Accepted the dual-8237A contract/gap ledger: a reproduced shared page-boundary crossing defect, exact port/page/word/cascade/test map, and S2--S4 ownership plan. [Evidence](../etc/evidence/t348-s1-dual-8237a-gap-ledger.md). |
+| T348 | Closed PC/AT dual-8237A DMA topology, page/word layout, request/cascade/EOP, validation-before-publication, M2M lifecycle, and FDC crossing bounce path; 223 current-gate tests passed. [History](../history/M5-T348-pcat-dma-completeness.md). |
 | T347 | Closed retained PC/AT FDC and ATA PIO service timing: pending command/data states, reset/control/media cancellation, one FDC-then-ATA readiness owner, trace order, focused VM/DOS/HDD evidence, and 222 current-gate tests passed. [History](../history/M5-T347-storage-controller-service-timing.md). |
 | T346 | Closed deterministic PC/AT L3 convergence: one reset-safe due-event owner, equal-tick `DMA -> PIT -> PIC -> FDC -> HDC -> RTC -> KBC -> VADP` ordering, copied host boundaries, exact storage/NMI/peripheral transfers, and evidence-backed Windows handoff. [History](../history/M5-T346-core-machine-device-l3-convergence.md). |
 | T345 | Closed direct-compilation strictness convergence: 251/305 direct commands are target-local strict; the 54 remaining commands have a complete 175-row ownership ledger and an exact 51-source residual production record with durable bounded admissions. No global flags, inherited-runtime rewrites, or false linked-dependency claims. [History](../history/M5-T345-direct-compilation-strictness-convergence.md). |
@@ -54,7 +32,6 @@ M5 T348 S4 - PC/AT DMA transaction, memory-to-memory, and consumer lifecycle rec
 | T343 | Closed the four-profile CPU program: one final ledger reconciles the 8086, 80186, 80286, and 80386DX execution, protected-state, delivery, task/paging/debug, and CPU-side coprocessor-interface boundaries. VME/PVI, persistent cache, x87 execution, timing/device, and Windows/product work remain explicit external candidates. [Closure ledger](../etc/evidence/t343-s1-four-profile-cross-closure.md). |
 | T342 | Closed the 80386DX profile ledger: T340 form and T341 state evidence reconcile every assigned row once, and the closure map now names the accepted state owners instead of stale future transfers. Only explicit post-80386, x87, timing/device, and Windows boundaries remain external. [Closure audit](../etc/evidence/t342-s1-80386dx-profile-closure-audit.md). |
 | T341 | Closed the 80386DX system-state package: CR/DR/TR/table state, VM86/task/paging composition, and ordinary debug/vector-1 now have one audited owner/proof graph; only explicit later-CPU, x87, timing/device, and Windows boundaries transfer. [Closure audit](../etc/evidence/t341-s5-80386dx-system-state-closure-audit.md). |
-| T340 | Closed the 80386DX width, prefix, FS/GS, and non-privileged integer-form package: S1 allocated the finite form/state ledger; S2/S3 reconciled the shared mechanisms and every assigned `0F` family; S4 confirmed accepted proof or one exact T341/external transfer for each row. [Closure audit](../etc/evidence/t340-s4-80386dx-form-closure-audit.md). |
 
 ## Recent Governance
 
