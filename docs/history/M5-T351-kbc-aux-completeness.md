@@ -16,3 +16,13 @@ and bus-timing candidates proceed.
 | S3 | Reconcile selected keyboard protocol and IRQ1 lifecycle. |
 | S4 | Reconcile selected AUX protocol and IRQ12 lifecycle or record exact transfers. |
 | S5 | Audit the combined deterministic controller state graph and close the package. |
+
+## Accepted Progress
+
+S1 is accepted at `a2e7fc47`: it establishes the single 8042-owned
+guest-visible FIFO and its keyboard/AUX IRQ lifecycle, distinguishes the IBM
+PC/AT controller from the selected PS/2-compatible AUX extension, and assigns
+each retained command, response, timing, profile, reset/finalize, and host
+boundary row to S2--S5 or the existing advanced-AUX TODO. Its
+[ledger](../etc/evidence/t351-s1-kbc-aux-ledger.md) preserves primary-source
+provenance without importing any external implementation.

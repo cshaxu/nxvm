@@ -2,29 +2,8 @@
 
 ## Current Work
 
-M5 T351 S1 - PC/AT 8042, keyboard, and AUX contract ledger
-(Single-Session Mode).
-
-## M5 T351 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner approved continuous holistic device/L3 completion on 2026-08-13; T350 closed at `54a8f8a0`. |
-| Objective | Build a complete Intel 8042 and selected PC/AT keyboard/AUX manual-to-source-to-proof ledger. Allocate each controller command/status/FIFO, keyboard response, AUX response/report, IRQ1/IRQ12, A20/reset, delayed-response, profile, reset/finalize, and deterministic-L3 row to one owner, a bounded S2--S5 receiver, or an exact transfer. |
-| Non-goals | No production behavior change, source import, host-input passthrough, guest-memory shortcut, firmware rewrite, port-61/PPI, arbitrary PS/2 clone feature, x87, or Windows compatibility claim. |
-| Reference Baseline | `54a8f8a0` / T350 closed; [8042/AUX proposal](../proposals/m5-kbc-aux-completeness.md), [T346 L3 audit](../etc/evidence/t346-s1-core-machine-device-l3-audit.md), and T350 platform-signal history. |
-| Candidate Proposal | [PC/AT 8042 and AUX completeness](../proposals/m5-kbc-aux-completeness.md). |
-| Files And ABI Surface | Expected: S1 ledger evidence, supporting index, Current, and T351 history only. No source, public interface, CMake, profile, or runtime artifact change. |
-| Applicable Rules | Task Reading Set; one controller owner for guest-visible FIFO and IRQ routes; copied host-input boundary; deterministic timeline owner; no source import; primary-manual and project-owned probe discipline. |
-| Verification | Inventory every `kbc.c` reader/writer, KBC port/provider, controller callback, IRQ source, timing callback, reset/finalize path, VM profile/composition binding, host mapper/transport boundary, and focused KBC/AUX test. Crosswalk each retained manual behavior and classify it once. Run governance and the retained KBC/AUX/timeline current-gate regressions. |
-| Expected Markers | Retain controller, AUX, guest keyboard/mouse, T346 timeline, and CPU hardware-delivery markers. S1 creates no runtime marker. |
-| Asset Needs | Published Intel 8042 and IBM PC/AT documentation plus project-owned probes only; no firmware, guest media, host input capture, or third-party source. |
-| Reporting Requirements | Record every command/status/FIFO/device/event/IRQ/reset/timeline/profile row, its proof and receiver, every unselected feature, source provenance, and the exact S2--S5 sequence. |
-| Stop Conditions | Stop for a required undocumented controller behavior, host-input ABI change, firmware/profile ABI change, public interface change, third-party source import, or a gap needing a non-8042 device owner. Transfer rather than infer behavior. |
-| Exit Criteria | Every retained controller, keyboard, and AUX row has one manual/source/proof owner and a bounded S2--S5 or named TODO/Queue receiver; no IRQ route, response delay, FIFO, host boundary, reset/finalize, or profile/timeline owner remains unclassified. |
-| Original Owner Request | Make core-machine devices stable, comprehensive, and reliable at deterministic L3 before deciding any Windows execution route. |
-| Similar-Issue Sweep | Inspect all tracked production source, VM composition/profile, tests, CMake targets, and task records matching 8042, KBC, keyboard, AUX, mouse, PS/2, IRQ1, IRQ12, A20, reset, FIFO, delay, timeline, and host input. |
+M5 T351 remains open. S1 is accepted; S2 controller mechanics is the next
+bounded subtask.
 
 ## Current Technical Baseline
 
@@ -45,6 +24,7 @@ M5 T351 S1 - PC/AT 8042, keyboard, and AUX contract ledger
 
 | Task | Compact result |
 | --- | --- |
+| T351 S1 | Accepted the Intel 8042/PC/AT keyboard and selected AUX manual-to-source-to-proof state ledger. It assigns controller, keyboard, AUX, FIFO, IRQ, A20/reset, profile, reset/finalize, and deterministic-L3 rows to S2--S5 or a precise advanced-AUX TODO; it makes no runtime claim. [Evidence](../etc/evidence/t351-s1-kbc-aux-ledger.md). |
 | T350 | Closed the selected PC/AT signal graph: retained 8254/IRQ0 and MC146818/CMOS/IRQ8 owners now have focused lifecycle proof; RTC alarm and IRQF defects are repaired; speaker/PPI and parity/I/O-channel NMI remain exact corpus/contract-gated TODO transfers. 228 current-gate tests passed. [History](../history/M5-T350-pcat-platform-signals.md). |
 | T349 | Closed PC/AT dual-8259A command/priority/cascade, OCW3 poll/status/special-mask/SFNM, and retained edge/level producer lifecycle; physical INTA spurious behavior transfers only to L3 bus timing. 226 current-gate tests passed. [History](../history/M5-T349-pcat-pic-compliance.md). |
 | T348 | Closed PC/AT dual-8237A DMA topology, page/word layout, request/cascade/EOP, validation-before-publication, M2M lifecycle, and FDC crossing bounce path; 223 current-gate tests passed. [History](../history/M5-T348-pcat-dma-completeness.md). |
