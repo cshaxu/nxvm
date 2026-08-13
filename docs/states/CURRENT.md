@@ -34,6 +34,14 @@
 
 ## Recent Governance
 
+- **M5 Td S83:** corrected the NXVM self-sibling instruction in `AGENTS.md`;
+  renamed the VM-platform injected test macro to
+  `VM_PLATFORM_TEST_FAILURE_STAGE` across CMake, implementation, and smoke
+  sources; and aligned CMake's project identity and diagnostics with NXVM.
+  Documentation self-test, default governance check, exact macro/search audit,
+  and diff check passed. Td work has no intended runtime or artifact behavior
+  change.
+
 - **M5 Td S82:** restored all 19 historical NXVM README screenshots as static
   documentation assets; rebuilt the public README around the current CMake
   path and truthful NXVM-first, future-NXVDM boundary; and aligned the current
@@ -79,9 +87,3 @@
   transition-unification candidates; retained the remaining candidate order.
   Documentation governance and diff check passed. Td work has no runtime or
   artifact change.
-
-- **M5 Td S74:** clarified that an executor reports a discovered issue while
-  the coordinator alone revises the active packet/brief or admits later S
-  work, and renamed the architecture status reference to `CURRENT.md`.
-  Documentation self-test, combined governance check, and diff check passed.
-  Td work has no runtime or artifact change.

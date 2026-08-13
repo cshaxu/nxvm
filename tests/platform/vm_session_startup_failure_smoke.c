@@ -13,7 +13,7 @@
 #include "vm/composition/session/session.h"
 #include "vm/product/console.h"
 
-#if !defined(NTVDM64_VM_PLATFORM_TEST_FAILURE_STAGE)
+#if !defined(VM_PLATFORM_TEST_FAILURE_STAGE)
 #error "This smoke requires a dedicated failure-stage build."
 #endif
 
@@ -54,7 +54,7 @@ int main(void)
             session_manager, (C_VOID **)&session) != TYPE_STATUS_OK ||
         session == STD_NULL) goto done;
     vm_platform_run_context_set_window_display(&session->platform_run_context,
-        stage_uses_window(NTVDM64_VM_PLATFORM_TEST_FAILURE_STAGE));
+        stage_uses_window(VM_PLATFORM_TEST_FAILURE_STAGE));
     vm_session_machine_provider_initialize(&machine_provider, session_manager);
     vm_product_console_main(&console_context, &machine_provider, session_manager);
     fflush(STD_STDOUT);

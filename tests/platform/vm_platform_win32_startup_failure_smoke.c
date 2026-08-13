@@ -5,7 +5,7 @@
 #include "vm/composition/session/session.h"
 #include "vm/platform/platform.h"
 
-#if !defined(NTVDM64_VM_PLATFORM_TEST_FAILURE_STAGE)
+#if !defined(VM_PLATFORM_TEST_FAILURE_STAGE)
 #error "This smoke requires a dedicated failure-stage build."
 #endif
 
@@ -38,7 +38,7 @@ static C_INT assert_failed_session_start(vm_session *session)
 int main(void)
 {
     vm_session *session = ((vm_session *)STD_CALLOC(1u, sizeof(vm_session)));
-    C_INT stage = NTVDM64_VM_PLATFORM_TEST_FAILURE_STAGE;
+    C_INT stage = VM_PLATFORM_TEST_FAILURE_STAGE;
     C_INT passed = 0;
 
     if (session == STD_NULL) return 1;

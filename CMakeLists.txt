@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.23)
 
 # M0 validates the selected C toolchain. M1 adds the imported baseline target;
 # M3 later adds the refactored machine target after M2 design approval.
-project(ntvdm64 LANGUAGES C)
+project(nxvm LANGUAGES C)
 
 # Current runnable smoke coverage is registered with CTest. Build presets use
 # run-current-smokes so a successful gate means the selected smoke programs
@@ -24,15 +24,15 @@ if(NOT PROJECT_VM_PLATFORM_TEST_FAILURE_STAGE STREQUAL "0")
             "PROJECT_VM_PLATFORM_TEST_FAILURE_STAGE must be 0 or 1 through 9 on Win32.")
     endif()
     add_compile_definitions(
-        NTVDM64_VM_PLATFORM_TEST_FAILURE_STAGE=${PROJECT_VM_PLATFORM_TEST_FAILURE_STAGE})
+        VM_PLATFORM_TEST_FAILURE_STAGE=${PROJECT_VM_PLATFORM_TEST_FAILURE_STAGE})
 endif()
 
 if(NOT CMAKE_C_COMPILER_ID MATCHES "^(GNU|MSVC|Clang)$")
-    message(FATAL_ERROR "ntvdm64 requires GCC, MSVC, or Clang C11 support.")
+    message(FATAL_ERROR "NXVM requires GCC, MSVC, or Clang C11 support.")
 endif()
 
 if(NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
-    message(FATAL_ERROR "ntvdm64 requires a 64-bit C toolchain.")
+    message(FATAL_ERROR "NXVM requires a 64-bit C toolchain.")
 endif()
 
 find_program(POWERSHELL_EXECUTABLE NAMES powershell pwsh)

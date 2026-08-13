@@ -87,8 +87,8 @@ static C_INT win32app_display_ready_wait_cancelled(C_VOID *context)
 
 static C_INT win32app_test_should_fail(C_INT stage)
 {
-#if defined(NTVDM64_VM_PLATFORM_TEST_FAILURE_STAGE)
-    return NTVDM64_VM_PLATFORM_TEST_FAILURE_STAGE == stage;
+#if defined(VM_PLATFORM_TEST_FAILURE_STAGE)
+    return VM_PLATFORM_TEST_FAILURE_STAGE == stage;
 #else
     (C_VOID)stage;
     return 0;

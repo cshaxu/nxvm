@@ -10,8 +10,8 @@ instruction named by the active packet or S brief.
 - The authorities selected by the Task Reading Set are the project
   authorities. This file is an execution pointer and must not be used as a
   second architecture, policy, or status source.
-- Sibling repositories, including `../nxvm`, are read-only unless an approved
-  task explicitly authorizes an import into this repository.
+- Sibling repositories are read-only unless an approved task explicitly
+  authorizes an import into this repository.
 - Read the [source and research policy](docs/etc/operations/policy/source-policy.md)
   before importing, deriving, or researching source, firmware, guest media, or
   Microsoft components. Do not commit protected guest media, Microsoft

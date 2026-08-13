@@ -23,8 +23,8 @@ static vm_platform_host_surface_lease win32_console_lease = {
 
 static C_INT win32con_test_should_fail(C_INT stage)
 {
-#if defined(NTVDM64_VM_PLATFORM_TEST_FAILURE_STAGE)
-    return NTVDM64_VM_PLATFORM_TEST_FAILURE_STAGE == stage;
+#if defined(VM_PLATFORM_TEST_FAILURE_STAGE)
+    return VM_PLATFORM_TEST_FAILURE_STAGE == stage;
 #else
     (C_VOID)stage;
     return 0;
