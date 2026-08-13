@@ -14,3 +14,8 @@ S1 creates the final profile/mode disposition ledger. It checks shared
 delivery before form classification and cross-profile state composition, while
 preserving genuine Intel layout differences. The indexed ledger determines
 whether the M5 CPU-profile program can truthfully close.
+
+The [S1 four-profile ledger](../etc/evidence/t343-s1-four-profile-cross-closure.md)
+finds no returned implementation row. It records the completed profile/state
+boundary and the explicit external exclusions that must not be mistaken for
+CPU-profile gaps.

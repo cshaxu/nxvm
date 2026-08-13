@@ -14,6 +14,15 @@ evidence and no unclassified in-scope form. `Planned` means the Queue owns the
 next admission. `Deferred` means the entry has the named debt boundary rather
 than a completion claim.
 
+## Four-Profile Program Disposition
+
+The horizontal and vertical rows below are reconciled by the final
+[T343 four-profile ledger](t343-s1-four-profile-cross-closure.md).  Together
+they close the M5 CPU-profile program only at its stated 8086, 80186, 80286,
+and 80386DX architectural boundary.  The retained VME/PVI, persistent-cache,
+x87-execution, timing/device, and Windows/product rows remain explicit
+external work; they are not evidence gaps silently absorbed by that closure.
+
 ## Architecture-State Closures
 
 | Closure | Required composition boundary | Current disposition | Queue or debt destination |
