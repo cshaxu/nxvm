@@ -13,6 +13,7 @@ and peripheral packages consume its delivery contract.
 | --- | --- |
 | S1 | Build the complete manual-to-source-to-proof compliance ledger and assign every adopted gap to a bounded later S or explicit transfer. |
 | S2 | Reconcile ICW/OCW command state, priority, EOI/AEOI, and PC/AT cascade selection/acknowledgement through one PIC-owned mechanism. |
+| S3 | Complete OCW3 poll/read/special-mask/SFNM state through the S2 controller selection and acknowledgement owner. |
 
 ## Accepted Progress
 
@@ -26,3 +27,6 @@ S2 is accepted at `8cce3b3a`: ICW restart, command-visible IRR/ISR, priority,
 EOI/AEOI, and cascade acknowledgement now share one controller-owned
 selection/commit path. Its completion evidence is retained in [the S2
 command/priority record](../etc/evidence/t349-s2-pcat-pic-command-priority.md).
+
+S3 is active: it owns OCW3 status, poll, special-mask, and PC/AT SFNM state.
+Its completion evidence is retained in [the S3 OCW3 record](../etc/evidence/t349-s3-pcat-pic-ocw3.md).

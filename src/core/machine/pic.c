@@ -39,16 +39,18 @@ static type_bool core_machine_pic_request_can_interrupt(const t_pic *pic,
     type_unsigned_8 request)
 {
     type_unsigned_8 service;
+    type_unsigned_8 effective_isr;
     type_unsigned_8 request_rank;
     type_unsigned_8 service_rank;
 
-    service = VPIC_GetIsrTopId((t_pic *)pic);
+    effective_isr = pic->data.isr;
+    if (TYPE_GET_BIT(pic->data.ocw3, VPIC_OCW3_SMM)) {
+        effective_isr &= ~pic->data.imr;
+    }
+    service = GetRegTopId((t_pic *)pic, effective_isr);
     if (service == VPIC_MAX_IRQ_COUNT) return TYPE_TRUE;
     request_rank = core_machine_pic_priority_rank(pic, request);
     service_rank = core_machine_pic_priority_rank(pic, service);
-    if (TYPE_GET_BIT(pic->data.icw4, VPIC_ICW4_SFNM)) {
-        return request_rank <= service_rank;
-    }
     return request_rank < service_rank;
 }
 
@@ -70,6 +72,17 @@ static type_bool core_machine_pic_select_controller(const t_pic *pic,
     return TYPE_FALSE;
 }
 
+static type_bool core_machine_pic_sfnm_cascade_can_interrupt(
+    const t_pic *master, type_unsigned_8 master_id, const t_pic *slave)
+{
+    type_unsigned_8 slave_id;
+
+    return master_id == 2u &&
+        TYPE_GET_BIT(master->data.icw4, VPIC_ICW4_SFNM) &&
+        VPIC_GetIsrTopId((t_pic *)master) == 2u &&
+        core_machine_pic_select_controller(slave, &slave_id);
+}
+
 static type_bool core_machine_pic_select(t_pic *master, t_pic *slave,
     type_unsigned_8 *out_master_id, type_unsigned_8 *out_slave_id)
 {
@@ -83,8 +96,12 @@ static type_bool core_machine_pic_select(t_pic *master, t_pic *slave,
         master_id = (type_unsigned_8)((master->data.irx + offset) %
             VPIC_MAX_IRQ_COUNT);
         if (!TYPE_GET_BIT(master->data.irr & ~master->data.imr,
-                VPIC_IRR_IRQ(master_id)) ||
-            !core_machine_pic_request_can_interrupt(master, master_id)) {
+                VPIC_IRR_IRQ(master_id))) {
+            continue;
+        }
+        if (!core_machine_pic_request_can_interrupt(master, master_id) &&
+            !core_machine_pic_sfnm_cascade_can_interrupt(master, master_id,
+                slave)) {
             continue;
         }
         if (master_id == 2u) {
@@ -127,9 +144,19 @@ static C_VOID core_machine_pic_begin_initialization(t_pic *pic,
     pic->data.icw4 = TYPE_ZERO_8;
     pic->data.ocw1 = TYPE_ZERO_8;
     pic->data.ocw2 = TYPE_ZERO_8;
-    pic->data.ocw3 = TYPE_ZERO_8;
+    pic->data.ocw3 = VPIC_OCW3_RR;
     pic->data.irx = TYPE_ZERO_8;
     pic->data.status = ICW2;
+}
+
+static type_unsigned_8 core_machine_pic_eoi_service(const t_pic *pic)
+{
+    type_unsigned_8 effective_isr = pic->data.isr;
+
+    if (TYPE_GET_BIT(pic->data.ocw3, VPIC_OCW3_SMM)) {
+        effective_isr &= ~pic->data.imr;
+    }
+    return GetRegTopId((t_pic *)pic, effective_isr);
 }
 
 static C_INT core_machine_pic_is_level(const t_pic *pic)
@@ -159,15 +186,19 @@ static t_pic *core_machine_pic_irq_source_controller(
  * Reference: PC.PDF, Page 950
  */
 static C_VOID io_read_00x0(t_pic *rpic, t_port *port) {
+    type_unsigned_8 id;
+
     if (TYPE_GET_BIT(rpic->data.ocw3, VPIC_OCW3_P)) {
         /* P=1 (Poll Command) */
-        if (VPIC_GetIntrTopId(rpic) == 0x08) {
+        if (!core_machine_pic_select_controller(rpic, &id)) {
             /* set all bits to 0 if there's no interrupt in queue */
             port->data.ioByte = TYPE_ZERO_8;
         } else {
-            /* set highest bit to 1 if there's an interrupt in queue */
-            port->data.ioByte = VPIC_POLL_I | VPIC_GetIntrTopId(rpic);
+            /* A poll read acknowledges the selected controller request. */
+            port->data.ioByte = VPIC_POLL_I | id;
+            RespondINTR(rpic, id);
         }
+        TYPE_CLEAR_BIT(rpic->data.ocw3, VPIC_OCW3_P);
     } else {
         switch (rpic->data.ocw3 & (VPIC_OCW3_RR | VPIC_OCW3_RIS)) {
         case 0x02:
@@ -215,9 +246,16 @@ static C_VOID io_write_00x0(t_pic *rpic, t_port *port) {
         /* OCWs (D4=0) */
         if (TYPE_GET_BIT(port->data.ioByte, VPIC_OCW3_I)) {
             /* OCW3 (D3=1) */
+            type_unsigned_8 old_ocw3 = rpic->data.ocw3;
+            type_unsigned_8 ocw3 = port->data.ioByte;
+
+            if (!TYPE_GET_BIT(ocw3, VPIC_OCW3_RR)) {
+                ocw3 = (ocw3 & ~(VPIC_OCW3_RR | VPIC_OCW3_RIS)) |
+                    (old_ocw3 & (VPIC_OCW3_RR | VPIC_OCW3_RIS));
+            }
             if (TYPE_GET_BIT(port->data.ioByte, VPIC_OCW3_ESMM)) {
                 /* ESMM=1: Enable Special Mask Mode */
-                rpic->data.ocw3 = port->data.ioByte;
+                rpic->data.ocw3 = ocw3;
                 if (TYPE_GET_BIT(rpic->data.ocw3, VPIC_OCW3_SMM)) {
                     /* SMM=1: Set Special Mask Mode */
                 } else {
@@ -225,7 +263,8 @@ static C_VOID io_write_00x0(t_pic *rpic, t_port *port) {
                 }
             } else {
                 /* ESMM=0: Keep SMM */
-                rpic->data.ocw3 = (rpic->data.ocw3 & VPIC_OCW3_SMM) | (port->data.ioByte & ~VPIC_OCW3_SMM);
+                rpic->data.ocw3 = (old_ocw3 & VPIC_OCW3_SMM) |
+                    (ocw3 & ~VPIC_OCW3_SMM);
             }
         } else {
             /* OCW2 (D3=0) */
@@ -249,8 +288,8 @@ static C_VOID io_write_00x0(t_pic *rpic, t_port *port) {
                 /* Set bit of highest priority interrupt in ISR to 0,
                  IR0 > IR1 > IR2(IR8 > ... > IR15) > IR3 > ... > IR7 */
                 rpic->data.ocw2 = port->data.ioByte;
-                if (rpic->data.isr) {
-                    id = VPIC_GetIsrTopId(rpic);
+                id = core_machine_pic_eoi_service(rpic);
+                if (id != VPIC_MAX_IRQ_COUNT) {
                     TYPE_CLEAR_BIT(rpic->data.isr, VPIC_ISR_IRQ(id));
                 }
                 break;
@@ -267,8 +306,8 @@ static C_VOID io_write_00x0(t_pic *rpic, t_port *port) {
             case 0xa0:
                 /* 101: Rotate Priorities on Non-specific EOI */
                 rpic->data.ocw2 = port->data.ioByte;
-                if (rpic->data.isr) {
-                    id = VPIC_GetIsrTopId(rpic);
+                id = core_machine_pic_eoi_service(rpic);
+                if (id != VPIC_MAX_IRQ_COUNT) {
                     TYPE_CLEAR_BIT(rpic->data.isr, VPIC_ISR_IRQ(id));
                     rpic->data.irx = (id + 1) % VPIC_MAX_IRQ_COUNT;
                 }
@@ -363,9 +402,6 @@ static C_VOID io_write_00x1(t_pic *rpic, t_port *port) {
         break;
     case OCW1:
         rpic->data.ocw1 = port->data.ioByte;
-        if (TYPE_GET_BIT(rpic->data.ocw3, VPIC_OCW3_SMM)) {
-            rpic->data.isr &= ~(rpic->data.imr);
-        }
         break;
     default:
         break;

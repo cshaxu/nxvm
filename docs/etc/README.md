@@ -63,6 +63,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t348-s4-dma-transaction-lifecycle.md` | Verification owner | T348 S4 PC/AT DMA validation-before-publication, M2M terminal/auto-init, reset, and retained consumer/timeline reconciliation. Retain with T348 history at task closure. |
 | `evidence/t349-s1-pcat-pic-compliance-ledger.md` | Verification owner | T349 S1 Intel 8259A/PC/AT dual-PIC manual-to-source-to-proof ledger and bounded S2--S4 receiver plan. Retain with T349 history at task closure. |
 | `evidence/t349-s2-pcat-pic-command-priority.md` | Verification owner | T349 S2 dual-8259A command, priority, cascade selection, and acknowledgement reconciliation. Retain with T349 history at task closure. |
+| `evidence/t349-s3-pcat-pic-ocw3.md` | Verification owner | T349 S3 OCW3 poll, status-read, special-mask, and SFNM state-machine reconciliation. Retain with T349 history at task closure. |
 | `operations/` | Execution, source, and release owners | Toolchain, policy, templates, release procedure, and closure material. |
 | `research/` | Source owner | Provenance, external references, and non-product research. |
 | `history/` | Documentation owner | Read-only legacy and M5 migration/roadmap evidence. |
