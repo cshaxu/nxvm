@@ -58,3 +58,16 @@ the constrained xasm boundary.  Splitting adjacent C literals would preserve
 the same overlength translation unit string; adding an unbounded runtime
 concatenation would violate the known capacity contract.  It is retained with
 the exact future admission above rather than suppressed.
+
+## S4 Reconciliation Contract
+
+`PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES` is the exact 51-entry source ledger
+for the retained production and embedded-production paths.  The T345 verifier
+derives the expected set from the generated ownership matrix, rejects a
+missing, duplicate, or unexpected target/source pair, and requires every
+entry to name a nonempty domain.  It consequently reconciles the whole
+305-row T344 matrix as 251 direct strict commands and 54 deferred commands:
+121 project-owned owner-test rows, six embedded-production-test rows, one
+type-foundation row, two safely separable production rows, and 45
+mixed/inherited production rows.  The durable TODO above carries the retained
+domains into future bounded admissions; it does not reclassify them as strict.

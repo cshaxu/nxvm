@@ -2,8 +2,29 @@
 
 ## Current Work
 
-**Idle.** M5 T345 remains open; S3 is closed. T345 S4 requires a separately
-admitted packet.
+**Active.** M5 T345 S4 reconciles the complete direct-compilation ledger and
+transfers the remaining mixed production strictness work as exact debt.
+
+## M5 T345 S4 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved 2026-08-13 the admitted T345 strictness-convergence task and its holistic implementation. S1--S3 completed the direct ownership baseline and allowed strict cohorts; this continuation performs the proposal's required whole-graph reconciliation and task closure audit. |
+| Objective | Reconcile all 305 T344 direct C rows into actual strict coverage or an exact residual ownership record; add a mechanical residual production ledger and durable TODO transfer for unresolved mixed/embedded production, then close T345 only after reviewing code quality, evidence, documentation, and gates. |
+| Non-goals | Do not add a global compiler policy, suppress warnings, modify inherited/runtime/xasm/Console/Win32 source, claim a linked library covers direct compilation, or modify docs/rules. |
+| Reference Baseline | `dbaefc97`; T345 S3 proves 251 retained-strict rows and 54 deferred rows. The original 175-row ownership ledger is complete: 121 owner-test, six embedded-production-test, one type foundation, two safely separable production, and 45 mixed/inherited production. |
+| Candidate Proposal | [M5 direct-compilation strictness convergence](../proposals/m5-direct-compilation-strictness-convergence.md), S4. |
+| Files And ABI Surface | T345 CMake verifier/residual inventory, evidence, TODO, history, Queue/proposal retention, and current state only. No runtime, public ABI, or production source change. |
+| Applicable Rules | Task Reading Set; Execution task-closure and similar-issue-sweep requirements; Architecture ownership and direct-path invariants; Coding no-suppression discipline; Documentation authority, Queue, TODO, history, and active-packet boundaries. |
+| Verification | Fresh GCC configure; T344 actual direct-command matrix; T345 ownership and residual-ledger verifier plus negative self-test; fresh warning audit; specialized gates; documentation governance; diff check; full current-gate. |
+| Expected Markers | Matrix reports 305 rows with 251 retained-strict and 54 deferred; T345 reports all 175 original ownership keys and exactly 51 residual production entries, each mapped to one named future admission domain. |
+| Asset Needs | No external source, firmware, guest media, or protected asset. |
+| Reporting Requirements | Report final direct strict/deferred counts, every residual domain and warning total, TODO path, exact gates, closure-audit result, and any remaining owner decision. Do not report T345 complete until proposal/history/Queue retention agrees. |
+| Stop Conditions | Stop if a direct row is unclassified, a residual production source lacks exact owner/risk/trigger, a proposed debt transfer broadens behavior scope, or matrix/gate results disagree. Do not close on a summary-only claim. |
+| Exit Criteria | Every configured direct production/current-gate C row is directly strict or has one precise deferred record; residual production debt is durable and actionable; history, Queue, proposal retention, current state, documentation governance, and all required gates agree; task-level closure audit passes. |
+| Original Owner Request | Holistically consume T344's deferred strict-compilation surface, rather than leaving 175 untracked rows or repairing warnings one at a time. |
+| Similar-Issue Sweep | Rebuild the entire 305-row matrix and compare every non-strict direct row against the explicit S4 residual ledger. Reject duplicates, missing rows, or any residual whose target/source does not match the S3 ownership evidence. |
 
 ## Current Technical Baseline
 

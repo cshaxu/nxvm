@@ -164,10 +164,19 @@ default definition of NXVM completion.
   whether it becomes current-gate or remains an explicitly non-current target.
   Do not restore production compatibility aliases or quietly exclude it from
   an all-target build.
-- [ ] **Inherited NXVM strict compilation (`TODO(Medium)`).** Admit only when
-  an inherited unit is substantively changed or safely separated from a mixed
-  target. Record the diagnostic baseline, exact modification scope, selected
-  constraints, and regression result.
+- [ ] **Residual direct-production strict compilation (`TODO(Medium)`).**
+  T345 closes the whole configured direct-command ledger but retains 51
+  production-source entries that cannot truthfully receive target-local
+  `-Werror` as part of a mixed target: the core machine executor, xasm/debug
+  and its failure smokes, retained Console and its failure smoke, mixed Win32
+  platform, VM machine, and VM composition/firmware targets. Their exact
+  source list, warning counts, behavior risk, and one admission trigger per
+  domain are retained in [the T345 production ledger](../etc/evidence/t345-s3-production-ownership.md).
+  Admit one named ownership domain only when its source is substantively
+  changed or can be safely separated; record the direct diagnostic baseline,
+  caller/behavior sweep, target-local options, and regression result. Do not
+  add a global flag, treat a linked strict library as direct coverage, or use a
+  blanket inherited exemption.
 - [ ] **Linux runtime verification (`TODO(Medium)`).** Linux source is a
   portability asset, not a support claim. Add native POSIX compile and runtime
   probes after an approved POSIX environment is available; do not install WSL

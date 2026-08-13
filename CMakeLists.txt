@@ -2807,6 +2807,68 @@ file(GENERATE
     OUTPUT "${CMAKE_BINARY_DIR}/t345-s3-safe-production-strict-entries.txt"
     CONTENT "${project_t345_s3_entry_contents}\n")
 
+# T345 S4 retains every production source that cannot be promoted without
+# mixing inherited/runtime ownership.  This exact source ledger is consumed by
+# the verifier; the supporting evidence and TODO define each domain's risk and
+# next admission condition.
+set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
+    "core-machine-executor|src/core/machine/display.c|machine-executor"
+    "core-machine-executor|src/core/machine/vadp.c|machine-executor"
+    "core-machine-executor|src/core/machine/port.c|machine-executor"
+    "core-machine-executor|src/core/machine/memory.c|machine-executor"
+    "core-machine-executor|src/core/machine/cpu.c|machine-executor"
+    "core-machine-executor|src/core/machine/fpu.c|machine-executor"
+    "core-machine-executor|src/core/machine/cpu_instructions.c|machine-executor"
+    "core-machine-executor|src/core/machine/pic.c|machine-executor"
+    "core-machine-executor|src/core/machine/pit.c|machine-executor"
+    "core-machine-executor|src/core/machine/dma.c|machine-executor"
+    "core-machine-executor|src/core/machine/kbc.c|machine-executor"
+    "core-machine-executor|src/core/machine/rtc.c|machine-executor"
+    "core-product-debug|src/core/product/debug/debug_access.c|debug-xasm"
+    "core-product-debug|src/core/product/debug/debug.c|debug-xasm"
+    "core-product-debug|src/core/product/debug/xasm32/aasm32.c|debug-xasm"
+    "core-product-debug|src/core/product/debug/xasm32/dasm32.c|debug-xasm"
+    "core-product-xasm-contract-smoke|src/core/product/utils.c|debug-xasm-contract"
+    "core-product-xasm-contract-smoke|src/core/product/debug/xasm32/aasm32.c|debug-xasm-contract"
+    "core-product-xasm-contract-smoke|src/core/product/debug/xasm32/dasm32.c|debug-xasm-contract"
+    "core-product-debug-input-failure-smoke|src/core/product/debug/debug.c|debug-input-failure"
+    "core-product-debug-input-failure-smoke|src/core/product/debug/debug_access.c|debug-input-failure"
+    "vm-product-console-input-failure-smoke|src/vm/product/console.c|console-input-failure"
+    "vm-product|src/vm/product/console.c|console-product"
+    "vm-platform|src/vm/platform/platform.c|win32-platform"
+    "vm-platform|src/vm/platform/host_surface.c|win32-platform"
+    "vm-platform|src/vm/platform/execution.c|win32-platform"
+    "vm-platform|src/vm/platform/input_flush.c|win32-platform"
+    "vm-platform|src/vm/platform/win32/win32.c|win32-platform"
+    "vm-platform|src/vm/platform/win32/w32cdisp.c|win32-platform"
+    "vm-platform|src/vm/platform/win32/w32adisp.c|win32-platform"
+    "vm-platform|src/vm/platform/win32/win32con.c|win32-platform"
+    "vm-platform|src/vm/platform/win32/win32app.c|win32-platform"
+    "vm-machine|src/vm/machine/fdd.c|vm-machine"
+    "vm-machine|src/vm/machine/hdd.c|vm-machine"
+    "vm-machine|src/vm/machine/media_save.c|vm-machine"
+    "vm-machine|src/vm/machine/debug.c|vm-machine"
+    "vm-composition|src/vm/composition/session/session_factory.c|vm-composition"
+    "vm-composition|src/vm/composition/session/console_machine_adapter.c|vm-composition"
+    "vm-composition|src/vm/composition/session/debug_target.c|vm-composition"
+    "vm-composition|src/vm/composition/session/media.c|vm-composition"
+    "vm-composition|src/vm/composition/session/display.c|vm-composition"
+    "vm-composition|src/vm/composition/session/lifecycle.c|vm-composition"
+    "vm-composition|src/vm/composition/session/session.c|vm-composition"
+    "vm-composition|src/vm/composition/session/control.c|vm-composition"
+    "vm-composition|src/vm/composition/session/fault.c|vm-composition"
+    "vm-composition|src/vm/composition/session/execution.c|vm-composition"
+    "vm-composition|src/vm/composition/session/runner.c|vm-composition"
+    "vm-composition|src/vm/composition/session/provider_lifecycle.c|vm-composition"
+    "vm-composition|src/vm/composition/session/machine_devices.c|vm-composition"
+    "vm-composition|src/vm/composition/session/profile_firmware.c|vm-composition"
+    "vm-composition|src/vm/composition/session/machine_info.c|vm-composition")
+string(REPLACE ";" "\n" project_t345_s4_residual_contents
+    "${PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES}")
+file(GENERATE
+    OUTPUT "${CMAKE_BINARY_DIR}/t345-s4-residual-direct-entries.txt"
+    CONTENT "${project_t345_s4_residual_contents}\n")
+
 # T344 owns a direct-command matrix for every production library/current
 # artifact and every current-gate executable.  A linked strict library never
 # substitutes for the direct compile command of a smoke source.
@@ -2992,6 +3054,7 @@ add_custom_target(verify-t345-deferred-direct-ownership
         -DPROJECT_T345_OWNERSHIP_MATRIX_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t345-deferred-direct-ownership-matrix.txt
         -DPROJECT_T345_S2_TARGETS_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t345-s2-owner-test-strict-targets.txt
         -DPROJECT_T345_S3_ENTRIES_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t345-s3-safe-production-strict-entries.txt
+        -DPROJECT_T345_S4_RESIDUAL_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t345-s4-residual-direct-entries.txt
         -P "${CMAKE_SOURCE_DIR}/cmake/verify_t345_deferred_direct_ownership.cmake"
     COMMENT "Verifying T345 deferred direct-compilation ownership"
     VERBATIM)
@@ -3001,6 +3064,7 @@ add_custom_target(verify-t345-deferred-direct-ownership-selftest
         -DPROJECT_T345_T344_MATRIX_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t344-direct-compilation-matrix.txt
         -DPROJECT_T345_S2_TARGETS_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t345-s2-owner-test-strict-targets.txt
         -DPROJECT_T345_S3_ENTRIES_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t345-s3-safe-production-strict-entries.txt
+        -DPROJECT_T345_S4_RESIDUAL_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t345-s4-residual-direct-entries.txt
         -DPROJECT_T345_INVALID_OWNERSHIP_MATRIX_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t345-invalid-deferred-direct-ownership-matrix.txt
         -P "${CMAKE_SOURCE_DIR}/cmake/verify_t345_deferred_direct_ownership_selftest.cmake"
     COMMENT "Self-testing T345 deferred direct-compilation ownership verification"
