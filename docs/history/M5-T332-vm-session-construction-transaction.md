@@ -26,3 +26,13 @@ failure/recovery evidence and emits `M5:T332:S1:SESSION-CONFIG-MATERIALIZATION:O
 
 The T332 developer artifact is `vm-0-5-0332`, SHA-256
 `1DF13B58B316026C233127B9407A03003C8B997221B431BB321F01E4D0C54A7E`.
+
+## S1 Acceptance
+
+Coordinator review found the private helper surface, explicit override set,
+retained-config behavior, and actual-core observation aligned with the S1
+packet. Fresh configuration, the focused session smoke, the artifact verifier,
+49 specialized verifiers, documentation governance, diff check, and the full
+212-test current CTest selection passed. The aggregate wrapper exceeded the
+environment's 124-second no-output limit; its two complete dependencies were
+run separately and passed.
