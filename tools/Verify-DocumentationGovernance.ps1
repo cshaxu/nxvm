@@ -206,7 +206,7 @@ function Require-ActivePacketSchema([pscustomobject]$packet) {
         "Active task packet must contain the fixed Field table separator."
     $requiredFields = @(
         'Identifier Mode', 'Admission And Approval', 'Objective', 'Non-goals',
-        'Reference Baseline', 'Files And ABI Surface', 'Applicable Rules',
+        'Reference Baseline', 'Candidate Proposal', 'Files And ABI Surface', 'Applicable Rules',
         'Verification', 'Expected Markers', 'Asset Needs',
         'Reporting Requirements', 'Stop Conditions',
         'Exit Criteria', 'Original Owner Request', 'Similar-Issue Sweep'
@@ -215,6 +215,10 @@ function Require-ActivePacketSchema([pscustomobject]$packet) {
         $pattern = '(?m)^\|\s*' + [regex]::Escape($field) + '\s*\|\s*\S.+?\s*\|\s*$'
         Require ($packet.Body -match $pattern) `
             "Active task packet must contain a non-empty '$field' table record."
+    }
+    if (-not $packet.IsDocumentation) {
+        Require ($packet.Body -match '(?m)^\|\s*Candidate Proposal\s*\|[^|]*\]\(\.\./proposals/[^)]+\.md\)[^|]*\|\s*$') `
+            "Numbered task packet must link its Candidate Proposal from docs/proposals/."
     }
 }
 
@@ -464,6 +468,7 @@ if ($SelfTest) {
 | Objective | Fixture objective |
 | Non-goals | Fixture non-goals |
 | Reference Baseline | T300 |
+| Candidate Proposal | Not applicable |
 | Files And ABI Surface | Documentation only |
 | Applicable Rules | Documentation rules |
 | Verification | Fixture gate |
@@ -498,6 +503,9 @@ if ($SelfTest) {
             "| Identifier Mode | Governance |",
             "| Identifier Mode | New |"
         ).Replace(
+            "| Candidate Proposal | Not applicable |",
+            "| Candidate Proposal | [Fixture proposal](../proposals/candidate.md) |"
+        ).Replace(
             "| --- | --- |",
             "| --- | --- |`n| T300 | Closed fixture |"
         )
@@ -506,6 +514,13 @@ if ($SelfTest) {
         git -C $fixtureRoot commit -q -m "M5 T301 S1 P0: admit fixture"
         Require (Invoke-SelfTestCheck $fixtureRoot) `
             "Documentation schema treated a committed active-packet admission as closed."
+        Set-SelfTestFile $fixtureRoot "docs/states/CURRENT.md" ($activeNumericPacket.Replace(
+            "| Candidate Proposal | [Fixture proposal](../proposals/candidate.md) |",
+            "| Candidate Proposal | Not applicable |"
+        ))
+        Require (-not (Invoke-SelfTestCheck $fixtureRoot -Quiet)) `
+            "Documentation schema accepted a numbered task packet without a Candidate Proposal link."
+        Set-SelfTestFile $fixtureRoot "docs/states/CURRENT.md" $activeNumericPacket
         $latestTaskProgress = $validPacket.Replace(
             "| --- | --- |",
             "| --- | --- |`n| T301 S1 | Fixture progress |"
