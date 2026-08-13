@@ -35,6 +35,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t340-s1-80386dx-form-state-allocation.md` | Verification owner | T340 S1 finite 80386DX form/state allocation, mechanism-owned S sequence, and current Queue receiver correction. Retire into T340 history at task closure. |
 | `evidence/t340-s2-prefix-width-fsgs-reconciliation.md` | Verification owner | T340 S2 actual prefix, operand/address-size, FS/GS, and LOCK mechanism reconciliation with exact owner-proof and T341 transfer dispositions. Retire into T340 history at task closure. |
 | `evidence/t340-s3-nonprivileged-0f-reconciliation.md` | Verification owner | T340 S3 metadata, dispatch, proof, and transfer reconciliation for every assigned non-privileged 80386DX `0F` family. Retire into T340 history at task closure. |
+| `evidence/t340-s4-80386dx-form-closure-audit.md` | Verification owner | T340 S4 original-request, source/evidence, transfer, and task-close audit for the 80386DX form package. Retire into T340 history at task closure. |
 | `operations/` | Execution, source, and release owners | Toolchain, policy, templates, release procedure, and closure material. |
 | `research/` | Source owner | Provenance, external references, and non-product research. |
 | `history/` | Documentation owner | Read-only legacy and M5 migration/roadmap evidence. |

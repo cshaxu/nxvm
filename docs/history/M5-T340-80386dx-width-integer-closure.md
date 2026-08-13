@@ -45,3 +45,10 @@ T341 transfers.
 
 The accepted S3 delivery is `4cde54fe`. S4 performs the required package
 closure audit and cannot add implementation work.
+
+## S4 Closure Audit
+
+The indexed [S4 closure audit](../etc/evidence/t340-s4-80386dx-form-closure-audit.md)
+maps the original request and every T340 form boundary to accepted proof,
+T341, an earlier retained owner, or an explicit external boundary. It is the
+required evidence for task closure.
