@@ -2,30 +2,8 @@
 
 ## Current Work
 
-**M5 T338 S1 - active.** Establish the complete 8086/80186 primary-form and
-`LOCK` allocation ledger before implementation slices close the legacy profile
-boundary.
-
-## M5 T338 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | The owner approved on 2026-08-13 the Queue-ordered single-agent four-profile program, including the 8086/80186 closure after T337. T337 closed in `c2dd549d`; this is the next Queue candidate and begins T338. |
-| Objective | Derive one exhaustive 8086/80186 primary-form ledger from Intel profile availability, current metadata/dispatch, existing owner evidence, and T336's transfer map. Classify every inherited or 80186-only form, ModRM extension, defined FLAGS/stack quirk, attribute/profile rejection, and memory-capable `LOCK` disposition as current proof, bounded implementation slice, later-profile transfer, reserved rejection, or external coprocessor boundary. Identify shared decode/prefix/LOCK owners and exact caller/write/validation/commit/rollback paths before any handler repair. |
-| Non-goals | No instruction semantic, decoder, prefix, production, fixture, or public-interface change; no 80286 protected, 80386 width/VM86/paging/debug, x87 execution, device/timing, or corpus-only completion claim. This S allocates the legacy task; it does not close a form merely because existing code is reachable. |
-| Reference Baseline | `c2dd549d` (`M5 T337 S3 P2: close shared delivery foundations`), retained T337 developer artifact `0.5.0337`, and the T336 coverage ledger. |
-| Candidate Proposal | [8086 and 80186 profile closure](../proposals/m5-8086-80186-profile-closure.md); [four-profile CPU-completeness program](../proposals/m5-four-profile-cpu-completeness-program.md). |
-| Files And ABI Surface | Expected: T338 history record, Current packet, one indexed form-allocation evidence ledger, and only the task's required developer-artifact identity update. No production or test behavior/API/ABI change. |
-| Applicable Rules | `docs/rules/EXECUTION.md`: full-P, mechanism-defect, ledger/transfer, artifact, and closure lifecycle. `docs/rules/ARCHITECTURE.md`: one owner per state transition and no duplicate construction. `docs/rules/CODING.md`: no speculative abstraction. `docs/etc/operations/policy/source-policy.md`: Intel authority only; no reference import. |
-| Verification | Enumerate metadata and primary dispatch assignments; inspect every 8086/80186 handler family and existing owner smoke/evidence; search all tracked sources/CMake/docs for `PREFIX_LOCK`, prefix decode, minimum-profile gates, `UndefinedOpcode`, and real-mode `#UD` owners. Rebuild the task developer artifact as `vm-0-5-0338`, run artifact/document governance and diff checks, and record the exact later implementation S boundaries with no unclassified in-scope row. |
-| Expected Markers | One form ledger maps every 8086/80186 candidate form to valid/rejected/transferred/external disposition and evidence; one complete LOCK matrix names legal/illegal/profile outcomes for every allocated memory-capable form; each future slice has a mechanism owner, form set, proof, stop condition, and no duplicated profile scope. |
-| Asset Needs | Intel 8086/80186/80386 instruction manuals already approved as architectural authority. No guest media, firmware, external source, binary, or trace. |
-| Reporting Requirements | Report a material classification conflict before implementation. Otherwise deliver one complete pushed P with the exact inventory commands, form/LOCK ledger, existing-evidence limitations, every later-slice boundary, artifact identity, and governance results. |
-| Stop Conditions | Stop if the Intel/profile form set cannot be reconstructed from the authoritative materials and current metadata, if a common decoder/prefix change is required to make the ledger truthful, or if an in-scope form depends on 80286/80386 state. Transfer the row exactly; do not infer semantics or expand a later profile into T338. |
-| Exit Criteria | No 8086/80186 form, ModRM extension, LOCK classification, or defined state/fault row is unclassified; every partial row has one bounded subsequent S or later-task/TODO owner; no runtime claim is made; task artifact, documentation governance, and diff gates pass; the P is committed and pushed. |
-| Original Owner Request | Implement the Queue in order, in single-agent mode and with a holistic view, through four-profile cross-closure verification. |
-| Similar-Issue Sweep | Search all tracked production, test, build, Queue, TODO, history, and evidence paths for 8086/80186 metadata, `PREFIX_LOCK`, `UndefinedOpcode`, primary dispatch `00`--`FF`, arithmetic/stack/string/I/O forms, and retained legacy-profile smoke evidence. |
+**Idle.** T338 remains open. S1 form allocation is accepted; the first legacy
+ALU/FLAGS/condition implementation slice requires a separately admitted packet.
 
 ## Current Technical Baseline
 
@@ -45,6 +23,7 @@ boundary.
 ## Recent M5 Closures
 
 | Task | Compact result |
+| T338 S1 | Accepted the exhaustive 8086/80186 primary-form and legacy-LOCK allocation: every in-scope form, extension, reserved rejection, external boundary, and later-profile transfer has one disposition; S2--S5 boundaries are fixed without creating a second LOCK policy. `vm-0-5-0338`, 52 specialized gates, and 217/217 current-gate passed. [Evidence](../etc/evidence/t338-s1-8086-80186-form-allocation.md). |
 | T337 | Closed shared CPU state and delivery foundations: vector-6 fault delivery/rollback, software and external origin composition, IRQ/NMI/TF priority, frame timing, inhibition, and post-commit task debug trap have one proof/owner. DR6/DR7 transfers to 80386DX; reset/shutdown/triple-fault remains bounded CPU/machine debt. [History](../history/M5-T337-shared-state-delivery.md). |
 | T336 | Closed the four-profile CPU coverage audit: the primary/`0F` metadata and dispatch forms, real/protected/VM86 state rows, historic evidence, explicit 80386 exclusions, and open CPU debt now have a single indexed disposition. Every residual has one Queue, TODO, or external owner; the next candidate is shared state and delivery foundations. [History](../history/M5-T336-four-profile-coverage.md). |
 | T335 | Closed the xasm public-capacity/failure contract: the product facade now uses byte spans, explicit capacities, `type_status`, and commit-on-success result publication; debugger, firmware, and VM debug callback callers migrated with no raw bypass. A dedicated allocation-injection smoke proves capacity, malformed-input, facade-allocation, and engine-allocation failures preserve caller sentinels; `current-gate` passed 216/216. [History](../history/M5-T335-xasm-capacity-failure-contract.md). |
