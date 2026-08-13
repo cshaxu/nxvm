@@ -2,9 +2,7 @@
 
 ## Current Work
 
-**Idle.** M5 T348 S3 is accepted; DMA transaction atomicity, memory-to-memory
-terminal/reset behavior, and consumer/timeline reconciliation require a
-separately admitted continuation packet.
+**Idle.** M5 T348 S3 is accepted; DMA transaction, memory-to-memory terminal/reset, and consumer/timeline reconciliation require S4.
 
 ## Current Technical Baseline
 
