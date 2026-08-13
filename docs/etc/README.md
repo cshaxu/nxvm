@@ -43,6 +43,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t341-s5-80386dx-system-state-closure-audit.md` | Verification owner | T341 S5 allocation-to-owner closure audit and explicit 80386DX external transfers. Retire into T341 history at task closure. |
 | `evidence/t342-s1-80386dx-profile-closure-audit.md` | Verification owner | T342 S1 source/evidence residual table for final 80386DX profile closure. Retire into T342 history at task closure. |
 | `evidence/t343-s1-four-profile-cross-closure.md` | Verification owner | T343 S1 final 8086/80186/80286/80386DX profile and state disposition ledger. Retire into T343 history at task closure. |
+| `evidence/t344-code-quality-baseline-audit.md` | Verification owner | T344 full-tree code-quality baseline: clean-configuration, direct strict-compilation, current-gate registration, fixture-shape, and retained-debt findings. Retire into T344 history at task closure. |
 | `operations/` | Execution, source, and release owners | Toolchain, policy, templates, release procedure, and closure material. |
 | `research/` | Source owner | Provenance, external references, and non-product research. |
 | `history/` | Documentation owner | Read-only legacy and M5 migration/roadmap evidence. |

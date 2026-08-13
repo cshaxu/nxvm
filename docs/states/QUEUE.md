@@ -24,6 +24,7 @@ not allocate a numeric task.
 After the CPU-profile program closes, the remaining M5 candidates consume its
 result but are not part of the profile-completeness claim:
 
+1. [Build-quality reproducibility](../proposals/m5-build-quality-reproducibility.md). Reconcile clean configuration, direct strict-compilation coverage, current-gate registration integrity, and historical test-fixture shapes before Windows readiness work consumes them.
 1. [Windows 3.x readiness map](../proposals/m5-windows-3x-readiness-map.md).
 1. [M5 closure audit](../proposals/m5-closure-audit.md).
 
