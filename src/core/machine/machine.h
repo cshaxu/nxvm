@@ -78,6 +78,7 @@ struct core_machine {
     type_unsigned_64 maximum_instruction_ticks;
     core_machine_clock_domain dma_clock;
     core_machine_clock_domain pit_clock;
+    core_machine_clock_domain rtc_clock;
     core_machine_clock_domain vadp_clock;
     core_machine_clock_domain kbc_clock;
     core_machine_clock_domain provider_clock;

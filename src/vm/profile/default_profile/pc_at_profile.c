@@ -46,7 +46,7 @@ static const vm_profile_default_pc_at_descriptor default_pc_at_descriptor = {
     CORE_MACHINE_FPU_PROFILE_NONE,
     1u,
     { 1u, 0u, 0u, 0u, 0u, 0u },
-    { { 1u, 1u, 0u }, { 1u, 4u, 0u }, { 1u, 1u, 0u },
+    { { 1u, 1u, 0u }, { 1u, 4u, 0u }, { 1u, 1u, 0u }, { 1u, 1u, 0u },
         { 1u, 1u, 0u }, { 1u, 1u, 0u } },
     0u,
     0u,

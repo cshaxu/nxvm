@@ -44,6 +44,7 @@ typedef struct core_machine_clock_ratio {
 typedef struct core_machine_clock_plan {
     core_machine_clock_ratio dma;
     core_machine_clock_ratio pit;
+    core_machine_clock_ratio rtc;
     core_machine_clock_ratio vadp;
     core_machine_clock_ratio kbc;
     core_machine_clock_ratio provider;

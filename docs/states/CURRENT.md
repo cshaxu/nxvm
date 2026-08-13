@@ -2,9 +2,29 @@
 
 ## Current Work
 
-**Active.** M5 T346 remains open between accepted subtasks. S4 requires a
-separately admitted packet for RTC and storage readiness; no implementation
-runs before that admission.
+**Active.** M5 T346 S4 migrates RTC and storage-observation readiness onto the
+deterministic timeline, while transferring unproven mechanical service timing.
+
+## M5 T346 S4 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved the M5 core-machine device/L3 program and its continuing execution; this S admits the evidence-bounded RTC/storage slice on 2026-08-13. |
+| Objective | Move RTC clock conversion/advance and FDC media-change observation from the post-retirement batch scheduler to one reset-safe timeline readiness callback with explicit due-time trace evidence; audit ATA/FDC command completion paths and transfer any unsupported physical service-duration claim exactly once. |
+| Non-goals | No invented seek, rotation, transfer-rate, or wall-clock duration; no FDC/ATA command-state rewrite without an admitted hardware contract; no NMI producer claim, host-provider migration, input/display work, x87 work, or generic PIC/DMA refactor. |
+| Reference Baseline | `b813dd82` / M5 T346 S3 P2, with a clean worktree. |
+| Candidate Proposal | [M5 Core-Machine Device Parity And L3 Timing Convergence](../proposals/m5-core-machine-device-l3-convergence.md), S4. |
+| Files And ABI Surface | Expected: `src/core/machine/machine.[ch]`, `machine_interface.h`, trace interface, focused core smoke/CMake/evidence/CURRENT/TODO; a clock-plan field may be added only to separate RTC from the retained provider domain. No public raw-device or host-time interface. |
+| Applicable Rules | Task Reading Set; execution lifecycle and actual-change review; architecture single-owner/timeline invariant; C11/project-type/strict-owner-test rules; documentation topology. Evidence maps each changed callback and transferred controller path. |
+| Verification | Fresh configure; focused readiness smoke; retained RTC, FDC media-change, ATA/HDC and S2/S3 timeline smokes; exact CTest registration; documentation governance; diff check; full current-gate. |
+| Expected Markers | New `M5:T346:S4:RTC-STORAGE-READINESS:OK`; retained markers remain unchanged. |
+| Asset Needs | No imported source, firmware, guest media, or external hardware source. Existing synthetic media fixtures only. |
+| Reporting Requirements | Record actual callback order/reset cancellation and each FDC/ATA completion path; report a material contract objection before any controller-state change. Commit and push the complete P only. |
+| Stop Conditions | Stop for a needed generic PIC/DMA/port/media-provider change, a hardware-source requirement that alters service semantics, or evidence that a controller has an unclassified second timing path. Do not replace missing service knowledge with arbitrary delay constants. |
+| Exit Criteria | RTC and FDC media observation have one timeline-owned due-time path, reset cancels/recreates it, and a focused trace proves ordering. ATA/FDC command-ready/IRQ/DMA timing is either independently evidence-backed or transferred with owner, risk, and concrete admission trigger; no synchronous path is misrepresented as L3 mechanical timing. |
+| Original Owner Request | Audit and improve devices, chips, buses, ports and L3 timing holistically for a polished Windows 3.x-ready core machine, excluding x87. |
+| Similar-Issue Sweep | Search all machine scheduler calls and RTC/FDC/HDC advance/refresh/command-completion paths. Classify every hit as migrated, retained under another S, or transferred to TODO; add a focused regression for the migrated timing shape. |
 
 ## Current Technical Baseline
 

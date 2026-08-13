@@ -23,6 +23,8 @@ C_INT main(C_VOID)
         profile->clock_plan.dma.denominator != 1u ||
         profile->clock_plan.pit.numerator != 1u ||
         profile->clock_plan.pit.denominator != 4u ||
+        profile->clock_plan.rtc.numerator != 1u ||
+        profile->clock_plan.rtc.denominator != 1u ||
         profile->clock_plan.vadp.numerator != 1u ||
         profile->clock_plan.vadp.denominator != 1u ||
         profile->clock_plan.kbc.numerator != 1u ||

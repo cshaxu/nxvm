@@ -159,6 +159,26 @@ single due-event/arbitration or bus-transaction contract. These entries are
 deferred compatibility admissions, not the default definition of NXVM
 completion.
 
+- [ ] **FDC/ATA command-service timing (`TODO(High)`).** T346 S4 moves RTC
+  advancement and FDC media-generation observation to deterministic due events,
+  but the 8272A final-command path and ATA PIO command/sector paths still
+  complete synchronously and can publish DMA/DRQ/IRQ in the issuing port
+  transaction. Admit one storage-service state-machine task only with primary
+  controller contracts and deterministic probes for command acceptance,
+  pending/busy visibility, media-provider result, abort/reset cancellation,
+  DRQ/DMA/IRQ ordering, and per-command completion. Preserve the S4 timeline
+  owner; do not insert arbitrary delay constants, use host I/O timing, or add
+  a second controller scheduler.
+
+- [ ] **PC/AT NMI source ownership (`TODO(Medium)`).** T346 S4 confirms that
+  RTC periodic/update conditions publish IRQ8, while the CMOS index-port bit
+  only controls the existing architected NMI mask; no parity or I/O-channel
+  check producer is presently modeled. Admit a bounded NMI-source task only
+  with a selected PC/AT source contract, mask/assert/deassert/reset ordering,
+  VM86/protected delivery evidence, and a deterministic timeline visibility
+  rule. Do not manufacture an RTC NMI, bypass the core mask, or refactor
+  generic CPU delivery without a reproduced shared defect.
+
 - [ ] **Instruction-timed execution (`TODO(Medium)`).** Give each admitted
   instruction deterministic profile-specific cost, including applicable
   prefix/branch/memory/I/O variants, before expanding the timing corpus.

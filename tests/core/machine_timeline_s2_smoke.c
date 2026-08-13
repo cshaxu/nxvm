@@ -12,7 +12,7 @@ typedef struct timeline_probe {
 } timeline_probe;
 
 typedef struct timeline_trace_probe {
-    core_machine_trace_event events[8];
+    core_machine_trace_event events[10];
     type_unsigned_32 count;
 } timeline_trace_probe;
 
@@ -87,9 +87,9 @@ static C_INT timeline_machine_contract(C_VOID)
     failed |= result.reason != CORE_MACHINE_STOP_BUDGET || result.elapsed_ticks != 1u;
     failed |= core_machine_get_timeline_observation(machine, &observation) !=
         TYPE_STATUS_OK;
-    failed |= observation.now != 1u || observation.pending_events != 1u ||
-        observation.next_sequence != 2u;
-    failed |= trace_probe.count != 5u ||
+    failed |= observation.now != 1u || observation.pending_events != 2u ||
+        observation.next_sequence != 4u;
+    failed |= trace_probe.count != 8u ||
         trace_probe.events[0].type != CORE_MACHINE_TRACE_CPU_RETIRE ||
         trace_probe.events[0].elapsed_ticks != 1u ||
         trace_probe.events[0].timeline_ticks != 0u ||
@@ -105,13 +105,22 @@ static C_INT timeline_machine_contract(C_VOID)
         trace_probe.events[3].type != CORE_MACHINE_TRACE_PIC_REFRESH ||
         trace_probe.events[3].elapsed_ticks != 1u ||
         trace_probe.events[3].timeline_ticks != 1u ||
-        trace_probe.events[4].type != CORE_MACHINE_TRACE_RUN_BOUNDARY ||
-        trace_probe.events[4].elapsed_ticks != 1u ||
+        trace_probe.events[4].type != CORE_MACHINE_TRACE_FDC_REFRESH ||
         trace_probe.events[4].timeline_ticks != 1u ||
+        trace_probe.events[5].type != CORE_MACHINE_TRACE_HDC_REFRESH ||
+        trace_probe.events[5].timeline_ticks != 1u ||
+        trace_probe.events[6].type != CORE_MACHINE_TRACE_RTC_ADVANCE ||
+        trace_probe.events[6].timeline_ticks != 1u ||
+        trace_probe.events[7].type != CORE_MACHINE_TRACE_RUN_BOUNDARY ||
+        trace_probe.events[7].elapsed_ticks != 1u ||
+        trace_probe.events[7].timeline_ticks != 1u ||
         trace_probe.events[0].sequence >= trace_probe.events[1].sequence ||
         trace_probe.events[1].sequence >= trace_probe.events[2].sequence ||
         trace_probe.events[2].sequence >= trace_probe.events[3].sequence ||
-        trace_probe.events[3].sequence >= trace_probe.events[4].sequence;
+        trace_probe.events[3].sequence >= trace_probe.events[4].sequence ||
+        trace_probe.events[4].sequence >= trace_probe.events[5].sequence ||
+        trace_probe.events[5].sequence >= trace_probe.events[6].sequence ||
+        trace_probe.events[6].sequence >= trace_probe.events[7].sequence;
     core_machine_destroy(machine);
     return failed;
 }
