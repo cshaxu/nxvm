@@ -20,7 +20,6 @@ together with the [80386DX admission policy](../proposals/m5-80386dx-candidate-p
 are shared planning references for the corresponding candidates below; they do
 not allocate a numeric task.
 
-1. [8086 and 80186 profile closure](../proposals/m5-8086-80186-profile-closure.md). Close the real-mode baseline and 80186 extensions, including the 8086/80186 `LOCK` legality matrix.
 1. [80286 descriptor-table and protected-transfer closure](../proposals/m5-80286-descriptor-transfer-closure.md). Reconcile the remaining 80286 `0F` descriptor/table forms, selector and gate transfers, 16-bit protected stack/frame rules, and their validation-to-delivery boundaries.
 1. [80286 `LOCK` and profile closure](../proposals/m5-80286-lock-profile-closure.md). Establish the complete 80286 legal-versus-illegal `LOCK` matrix, then reconcile every inherited and 80286-only form/mode row before 32-bit work can rely on it.
 1. [80386DX width, prefix, and integer-form closure](../proposals/m5-80386dx-width-integer-closure.md). Close all residual 32-bit operand/address, prefix, primary, and integer `0F` rows as form families, without borrowing an older-profile disposition.

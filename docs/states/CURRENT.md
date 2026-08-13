@@ -2,33 +2,12 @@
 
 ## Current Work
 
-**M5 T338 S5 - active.** Reconcile the complete 8086/80186 allocation and
-close T338 only if every in-scope row has accepted evidence or an exact transfer.
-
-## M5 T338 S5 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | The owner approved Queue-ordered single-agent implementation through four-profile cross-closure verification on 2026-08-13. T338 S1 assigns its profile-close audit to S5 after accepted S2--S4. |
-| Objective | Audit every S1 primary-form row against accepted S2/S3/S4 evidence, current-gate owners, metadata/dispatch disposition, the one T328 legacy `LOCK` contract, and exact 80286/80386/external transfers. Close T338 only if no 8086/80186 row is partial or unclassified. |
-| Non-goals | No new opcode behavior, test framework, production fix, prefix-policy rewrite, protected/VM86/paging work, 80386 width/state work, or x87 implementation. A discovered implementation gap stops the audit and requires a new corrective S. |
-| Reference Baseline | `bc309cce` (`M5 T338 S4 P2: accept 80186 extension matrix`), accepted S1 allocation and accepted S2--S4 matrices. |
-| Candidate Proposal | [8086 and 80186 profile closure](../proposals/m5-8086-80186-profile-closure.md). |
-| Files And ABI Surface | T338 evidence, history, Current, and task proposal retention only. No production, CMake, test, ABI, artifact, or runtime change. |
-| Applicable Rules | `docs/rules/EXECUTION.md`: closure audit and actual-evidence review. `docs/rules/DOCUMENT.md`: Current/history/evidence ownership and task-closure topology. |
-| Verification | Reconcile each S1 row to one accepted S2/S3/S4 matrix or an explicit later Queue/external boundary; inspect current-gate registration for named owners; rerun documentation governance, diff check, artifact verifier, and full current-gate. |
-| Expected Markers | The reconciliation has no in-scope partial/unclassified row, one T328 legacy-LOCK reference, and one exact transfer for every protected, 80386, or external-coprocessor boundary. |
-| Asset Needs | No new asset. Existing Intel-form authority and committed evidence only. |
-| Reporting Requirements | Deliver one complete pushed audit P with every row disposition, actual current-gate/artifact result, task-closure recommendation, and no partial closure claim. |
-| Stop Conditions | Stop if a row lacks accepted proof, a named owner is absent from current-gate, a transfer has no Queue/TODO/external destination, or closure needs a production/test change. Admit a corrective S instead of stretching this audit. |
-| Exit Criteria | Every S1 allocation is closed or exactly transferred; S2--S4 evidence, T328 linkage, artifact and full gate are verified; T338 history/proposal/status closure is committed and pushed. |
-| Original Owner Request | Implement the Queue in order, in single-agent mode and with a holistic view, through four-profile cross-closure verification. |
-| Similar-Issue Sweep | Compare the complete S1 form table with S2/S3/S4 matrices, CMake current-gate target list, metadata/dispatch profile gates, T328 evidence, Queue candidates, TODO debt, and external-coprocessor boundary. |
+**Idle.** T338 is closed. The Queue advances to the 80286 descriptor-table and
+protected-transfer closure candidate.
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** T338 S1/S2 select `vm-0-5-0338` /
+- **Current developer artifact:** T338 selected `vm-0-5-0338` /
   `build/output/nxvm_0_5_0338.exe`; the rebuilt developer output SHA-256 is
   `7D79417889821695DB4993DFEA5134B01E5B16D69007C20A6F1E3CBB8C75C05F`.
 - **T285 display implementation:** `INT 10h` mode `10h` /
@@ -44,10 +23,7 @@ close T338 only if every in-scope row has accepted evidence or an exact transfer
 ## Recent M5 Closures
 
 | Task | Compact result |
-| T338 S1 | Accepted the exhaustive 8086/80186 primary-form and legacy-LOCK allocation: every in-scope form, extension, reserved rejection, external boundary, and later-profile transfer has one disposition; S2--S5 boundaries are fixed without creating a second LOCK policy. `vm-0-5-0338`, 52 specialized gates, and 217/217 current-gate passed. [Evidence](../etc/evidence/t338-s1-8086-80186-form-allocation.md). |
-| T338 S2 | Accepted the complete 8086/80186 legacy ALU, FLAGS, condition, adjustment, shift, Group 1--3, and grouped-form matrix. No production defect reproduced; the owner smoke proves real `#DE` IVT restart/nonpublication and links every memory-capable form to T328's sole legacy-LOCK contract. `vm-0-5-0338`, documentation governance, and 218/218 current-gate passed. [Evidence](../etc/evidence/t338-s2-legacy-alu-profile-matrix.md). |
-| T338 S3 | Accepted the complete inherited 8086/80186 data, string, stack, real control/interrupt, and ordinary port-I/O matrix. Existing owner smokes supply the form proofs; the control owner now executes near/far transfer, `RETF iw`, and `FF /7` on both profiles. No production defect reproduced. `vm-0-5-0338`, documentation governance, and 218/218 current-gate passed. [Evidence](../etc/evidence/t338-s3-legacy-data-control-profile-matrix.md). |
-| T338 S4 | Accepted all 80186-only primary extensions and the 8086 rejection boundary. Four INS/OUTS handlers now correctly admit 80186; BOUND `#BR`, immediate IMUL r/m16, and all `C0/C1` extensions have direct low-profile evidence. `vm-0-5-0338`, documentation governance, and 218/218 current-gate passed. [Evidence](../etc/evidence/t338-s4-80186-extension-profile-matrix.md). |
+| T338 | Closed the 8086/80186 profile baseline: S2 ALU/FLAGS/conditions, S3 inherited data/control/I/O, and S4 80186 extensions cover every S1 allocation; the retained T328 rule is the only legacy `LOCK` owner. The sole reproduced defect was four incorrect INS/OUTS 80386 guards, corrected to 80186. Protected, 80386DX, and x87 boundaries transfer explicitly. Artifact verification, governance, and 218/218 current-gate passed. [History](../history/M5-T338-8086-80186-profile-closure.md). |
 | T337 | Closed shared CPU state and delivery foundations: vector-6 fault delivery/rollback, software and external origin composition, IRQ/NMI/TF priority, frame timing, inhibition, and post-commit task debug trap have one proof/owner. DR6/DR7 transfers to 80386DX; reset/shutdown/triple-fault remains bounded CPU/machine debt. [History](../history/M5-T337-shared-state-delivery.md). |
 | T336 | Closed the four-profile CPU coverage audit: the primary/`0F` metadata and dispatch forms, real/protected/VM86 state rows, historic evidence, explicit 80386 exclusions, and open CPU debt now have a single indexed disposition. Every residual has one Queue, TODO, or external owner; the next candidate is shared state and delivery foundations. [History](../history/M5-T336-four-profile-coverage.md). |
 | T335 | Closed the xasm public-capacity/failure contract: the product facade now uses byte spans, explicit capacities, `type_status`, and commit-on-success result publication; debugger, firmware, and VM debug callback callers migrated with no raw bypass. A dedicated allocation-injection smoke proves capacity, malformed-input, facade-allocation, and engine-allocation failures preserve caller sentinels; `current-gate` passed 216/216. [History](../history/M5-T335-xasm-capacity-failure-contract.md). |
@@ -55,7 +31,6 @@ close T338 only if every in-scope row has accepted evidence or an exact transfer
 | T333 | Closed retained interactive-input failure handling: all 44 Console/debugger readers are inventoried; 43 debugger calls converge at one private boundary; Console stops before parse/execute; EOF/allocation failure and context reuse are covered by two owner-separated smoke targets. Corrective S4 restored its required `0.5.0333` artifact and identity. Evidence and review are in [history](../history/M5-T333-interactive-input-failure-contract.md). |
 | T332 | Closed VM session construction drift: one private profile materialization/override path; one early-storage rollback owner with stage-failure and late-media recovery proof; and a fixed 47-owner CPU smoke lifecycle closure with inherited-source migration and static guard. The retained artifact, full gates, and residual historical-fixture transfer are in [history](../history/M5-T332-vm-session-construction-transaction.md). |
 | T331 | Closed the bounded real-mode `ExecFinal` final-delivery construction: `#DE/#MF/#BR/#NM/#GP` share one rollback/diagnostic plan, and `#GP` IVT success no longer records a terminal fault before transfer. Real-mode `#PF` is architecturally outside paging's protected-mode state. The new `#GP` frame/failed-IVT regression, mechanical construction verifier, artifact, and 212/212 current-gate result are retained in [history](../history/M5-T331-exception-final-delivery.md). |
-| T330 | Closed the whole-codebase construction-drift package: one task-transition constructor, FDD/HDD backing/create atomicity, and CALL-gate dual-fault preflight convergence. Its mechanism matrices remain retained evidence; they are not a current mandatory rule. Intel-required layouts remain explicit; T330 artifact, focused regressions, 211/211 current-gate, and governance evidence are in [history](../history/M5-T330-width-path-convergence.md). |
 
 ## Recent Governance
 
