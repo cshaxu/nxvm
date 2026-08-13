@@ -33,6 +33,12 @@
 
 ## Recent Governance
 
+- **M5 Td S79:** reordered the M5 CPU-completeness program around a
+  four-profile audit, shared delivery foundations, 8086/80186, 80286, and
+  80386DX closure candidates, then cross-profile verification. Each candidate
+  has a linked unnumbered proposal; no implementation task was allocated.
+  Documentation governance, Queue-link verification, and diff check passed.
+
 - **M5 Td S77:** moved the closed T323/T325/T328 proposals into matching
   history companions; made every current proposal require a Queue link and
   added the orphan-proposal negative self-test; compacted repeated
@@ -80,10 +86,3 @@
   numbering, history naming, retention, and withdrawal. Only standalone Td
   work may modify `docs/rules/`. Documentation self-test, combined governance
   check, and diff check passed. Td work has no runtime or artifact change.
-
-- **M5 Td S70:** restored concise purpose-specific reporting and the
-  active-contract/compact-Status boundary after later commits had superseded
-  them; removed the Queue candidate already closed as T324; recorded bounded
-  holistic-execution and task-transition debt candidates with evidence; and
-  refreshed the retained governance summary. Documentation default/self-test
-  and diff check passed. Td work has no runtime or artifact change.
