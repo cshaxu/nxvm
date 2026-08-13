@@ -28,5 +28,6 @@ EOI/AEOI, and cascade acknowledgement now share one controller-owned
 selection/commit path. Its completion evidence is retained in [the S2
 command/priority record](../etc/evidence/t349-s2-pcat-pic-command-priority.md).
 
-S3 is active: it owns OCW3 status, poll, special-mask, and PC/AT SFNM state.
+S3 is accepted at `c79553f8`: OCW3 status, poll, special-mask, and PC/AT
+SFNM state now use the same controller selection/acknowledgement mechanism.
 Its completion evidence is retained in [the S3 OCW3 record](../etc/evidence/t349-s3-pcat-pic-ocw3.md).

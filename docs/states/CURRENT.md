@@ -2,28 +2,8 @@
 
 ## Current Work
 
-M5 T349 S3 - dual-8259A OCW3 controller modes (Single-Session Mode).
-
-## M5 T349 S3 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner approved continuous holistic PC/AT device/L3 completion; T349 S2 P2 `b70ed3b0` accepts the S3 OCW3 receiver on 2026-08-13. |
-| Objective | Complete the finite OCW3 state machine on the retained dual 8259A owner: persistent IRR/ISR read selection, one-poll acknowledgement semantics, special-mask priority effect without destructive ISR mutation, and the PC/AT-relevant SFNM cascade decision. Use the existing S2 selection/commit owner rather than a second acknowledgement path. |
-| Non-goals | ICW/OCW2 fixed/rotating/AEOI core, spurious IRQ7/15, source lifecycle/reset composition, CPU exception/IRET redesign, physical INTA, arbitrary cascade boards, APIC, host bridge, x87, and Windows claims are outside this S. |
-| Reference Baseline | `b70ed3b0` / T349 S2 accepted; [S1 ledger](../etc/evidence/t349-s1-pcat-pic-compliance-ledger.md), [S2 evidence](../etc/evidence/t349-s2-pcat-pic-command-priority.md), and [PIC proposal](../proposals/m5-pcat-pic-compliance.md). |
-| Candidate Proposal | [PC/AT 8259A compliance](../proposals/m5-pcat-pic-compliance.md). |
-| Files And ABI Surface | Expected: PIC source/headers only if controller-local state needs repair, the S2 owner smoke or a narrowly added OCW3 owner smoke, CMake registration if new, S3 evidence, Current, and T349 history. No source-provider or CPU binding ABI change. |
-| Applicable Rules | Task Reading Set; one PIC owner for all controller-visible selection/commit state; OCW3 command variants reuse the S2 acknowledgement path; deterministic PIC boundary; owner-local tests; Intel 8259A and IBM PC/AT cascade contract. |
-| Verification | Focused proof must cover OCW3 RR/RIS persistence, poll no-request/request/AEOI and state acknowledgement, special-mask entry/exit with nested ISR and priority, and SFNM master/slave cascade disposition. It must demonstrate no direct mirror-state mutation and retain S2/cascade/CPU delivery regressions, documentation governance, and full current-gate. |
-| Expected Markers | Extend the PIC command owner marker or add one narrowly named S3 marker; retain T216 lifecycle, T349 S2 command/priority, hardware delivery, and T346 timeline markers. |
-| Asset Needs | Intel 8259A and IBM PC/AT published documentation only; no imported code, guest media, host dependency, or external runtime. |
-| Reporting Requirements | Record manual requirement, OCW3 state readers/writers, prior mismatch, selection/acknowledgement reuse, SFNM PC/AT scope decision, S4 transfer, and full verification. Deliver one complete pushed P1. |
-| Stop Conditions | Stop for a CPU delivery/frame redesign, device-source ABI change, physical INTA model, arbitrary multi-slave topology, spurious IRQ semantics, or repair outside the PIC-local OCW3 state machine. |
-| Exit Criteria | Every supported OCW3 mode has focused state and port proof through the sole S2 selection/commit boundary; no destructive special-mask side path remains; SFNM is correctly proven or explicitly bounded by the documented PC/AT contract; S4 stays explicit. |
-| Original Owner Request | Make core-machine devices stable, comprehensive, and reliable at deterministic L3 before Windows testing. |
-| Similar-Issue Sweep | Inspect every OCW3 bit read/write, `imr`/`isr` priority comparison, poll read, SMM mutation, SFNM comparison, cascade selection, and all public scan/peek/get callers. |
+**Idle.** M5 T349 S3 is accepted; request lifecycle, spurious IRQ, and
+composition reconciliation require a separately admitted continuation packet.
 
 ## Current Technical Baseline
 
@@ -44,6 +24,7 @@ M5 T349 S3 - dual-8259A OCW3 controller modes (Single-Session Mode).
 
 | Task | Compact result |
 | --- | --- |
+| T349 S3 | Completed OCW3 persistent status reads, one-poll acknowledgement, special-mask priority/EOI semantics, and PC/AT SFNM cascade behavior through the S2 PIC owner; 225 current-gate tests passed. [Evidence](../etc/evidence/t349-s3-pcat-pic-ocw3.md). |
 | T349 S2 | Reconciled ICW restart, IRR/ISR port reads, fixed/rotated priority, EOI/AEOI, and PC/AT cascade selection into one PIC-owned scan/peek/get acknowledgement path; 224 current-gate tests passed. [Evidence](../etc/evidence/t349-s2-pcat-pic-command-priority.md). |
 | T349 S1 | Accepted the PC/AT dual-8259A manual-to-source-to-proof ledger: every controller, source, consumer, reset, and L3 row now has accepted evidence or one S2--S4 receiver. [Evidence](../etc/evidence/t349-s1-pcat-pic-compliance-ledger.md). |
 | T348 | Closed PC/AT dual-8237A DMA topology, page/word layout, request/cascade/EOP, validation-before-publication, M2M lifecycle, and FDC crossing bounce path; 223 current-gate tests passed. [History](../history/M5-T348-pcat-dma-completeness.md). |
