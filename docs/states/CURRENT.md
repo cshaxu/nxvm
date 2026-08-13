@@ -2,35 +2,14 @@
 
 ## Current Work
 
-**M5 T338 S2 - active.** Close the complete 8086/80186 legacy ALU, FLAGS,
-condition, adjustment, shift, multiply/divide, and grouped-form boundary.
-
-## M5 T338 S2 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | The owner approved the Queue-ordered single-agent four-profile program on 2026-08-13. T338 S1 form allocation was accepted in `01ee8448`; it assigns this full legacy ALU/FLAGS/condition mechanism as the first implementation slice. |
-| Objective | Implement or correct every 8086/80186 form allocated to T338 S2: binary arithmetic `00`--`05` through `38`--`3D`; Group 1 `80/81/83`; DAA/DAS/AAA/AAS; INC/DEC register and `FE`; TEST forms; all conditional branches `70`--`7F` and loops `E0`--`E3`; Group 2 `D0`--`D3` plus 80186 `C0/C1`; AAM/AAD/XLAT; Group 3 `F6/F7` arithmetic; CMC/CLC/STC/CLD/STD; CBW/CWD; LAHF/SAHF; and all applicable reserved/profile rejection. Prove every ModRM extension, defined FLAGS only, valid 8086/80186 profile behavior, real-mode exception/restart/nonpublication, and T328 legacy LOCK linkage. |
-| Non-goals | No data/string/stack/control/I/O implementation (T338 S3), no 80186 PUSHA/BOUND/PUSH/IMUL/INS-OUTS/ENTER bundle (T338 S4), no protected selector/privilege/paging/VM86/80386 width semantics, no undefined FLAGS assertion, no new global LOCK policy, and no x87 execution. |
-| Reference Baseline | `01ee8448` (`M5 T338 S1 P2: accept legacy form allocation`), current artifact `vm-0-5-0338` / `0.5.0338`, and the accepted [S1 ledger](../etc/evidence/t338-s1-8086-80186-form-allocation.md). |
-| Candidate Proposal | [8086 and 80186 profile closure](../proposals/m5-8086-80186-profile-closure.md); [T338 S1 form allocation](../etc/evidence/t338-s1-8086-80186-form-allocation.md). |
-| Files And ABI Surface | Expected: local CPU arithmetic/condition handlers only if reproduced; one owner-bound legacy ALU smoke or an expanded coherent existing owner; CMake current-gate registration; T338 evidence/history/Current. No public ABI, device model, generic fixture framework, or shared delivery/prefix interface change. |
-| Applicable Rules | `docs/rules/EXECUTION.md`: full P, mechanism/caller/write/fault sweep. `docs/rules/ARCHITECTURE.md`: shared validation/commit owner. `docs/rules/CODING.md`: existing local code style, project types, and no duplicate test framework. `docs/etc/operations/policy/source-policy.md`: Intel authority only. |
-| Verification | Before repair, map `_a_*`, `_kaf_set_flags`, grouped decode, `_m_read_rm`/`_m_write_rm`, profile gate, and `ExecFinal` callers/writes/rollback. Build a form-by-profile-by-ModRM ledger with success, reserved, divide/overflow, memory access, and real `#UD`/fault vectors. Assert only Intel-defined FLAGS; check EIP, GPR/memory publication, fault restart, and valid or invalid IVT delivery as appropriate. Run focused smoke, exact current-gate registration, T338 metadata guard, artifact verifier, documentation governance, diff check, and complete current-gate. |
-| Expected Markers | One `M5:T338:S2:LEGACY-ALU:OK` owner marker; complete table records all allocated form/extension/profile rows; no repeated handler construction remains without an Intel-required difference; every valid memory-capable form explicitly links to T328 legacy LOCK behavior, while invalid forms stay invalid. |
-| Asset Needs | Intel 8086/80186/80386 instruction manuals only. No guest media, firmware, external source, binary, or trace. |
-| Reporting Requirements | Report a material mechanism/scope objection before source change. Otherwise deliver one complete pushed P with form/ModRM/profile/FLAGS table, caller/write/fault sweep, reproduced defect and all equivalent fixes, unchanged undefined-FLAGS boundary, exact transfer list, artifact/gate results, and no partial completion claim. |
-| Stop Conditions | Stop if a correct fix needs a global prefix/LOCK policy rewrite, generic arithmetic/flags redesign beyond all named callers, protected/VM86/paging state, a later-profile width contract, or Intel behavior cannot be verified. Transfer/revise the packet rather than patch a local symptom. |
-| Exit Criteria | Every allocated opcode and ModRM extension has an 8086/80186 disposition and focused proof; every discovered same-mechanism defect is fixed or exactly transferred; defined FLAGS, publication, restart and legacy LOCK linkage are proven; all required gates pass; the complete P is committed and pushed. |
-| Original Owner Request | Implement the Queue in order, in single-agent mode and with a holistic view, through four-profile cross-closure verification. |
-| Similar-Issue Sweep | Search all tracked production/tests/CMake/evidence for the named primary ranges, `INS_80`, `INS_81`, `INS_83`, `INS_C0`, `INS_C1`, `INS_D0`--`INS_D3`, `INS_F6`, `INS_F7`, `INS_FE`, `_a_`, `_kaf_set_flags`, `CMP_FLAG`, `PREFIX_LOCK`, `UndefinedOpcode`, and legacy profile gates. |
+**Idle.** T338 remains open. S1 allocation and S2 legacy ALU/FLAGS/condition
+closure are accepted; S3 requires a separately admitted packet.
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** T338 S1 selects `vm-0-5-0338` /
+- **Current developer artifact:** T338 S1/S2 select `vm-0-5-0338` /
   `build/output/nxvm_0_5_0338.exe`; the rebuilt developer output SHA-256 is
-  `322B835AF2E0647A65627023ACD87D50A9F8F6F3BF0D9F95C384D2A8D213214C`.
+  `E9626E829FE8F9A1BE7A25219D48295D704C5831F64C4D2D50709671CB144F13`.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
@@ -45,6 +24,7 @@ condition, adjustment, shift, multiply/divide, and grouped-form boundary.
 
 | Task | Compact result |
 | T338 S1 | Accepted the exhaustive 8086/80186 primary-form and legacy-LOCK allocation: every in-scope form, extension, reserved rejection, external boundary, and later-profile transfer has one disposition; S2--S5 boundaries are fixed without creating a second LOCK policy. `vm-0-5-0338`, 52 specialized gates, and 217/217 current-gate passed. [Evidence](../etc/evidence/t338-s1-8086-80186-form-allocation.md). |
+| T338 S2 | Accepted the complete 8086/80186 legacy ALU, FLAGS, condition, adjustment, shift, Group 1--3, and grouped-form matrix. No production defect reproduced; the owner smoke proves real `#DE` IVT restart/nonpublication and links every memory-capable form to T328's sole legacy-LOCK contract. `vm-0-5-0338`, documentation governance, and 218/218 current-gate passed. [Evidence](../etc/evidence/t338-s2-legacy-alu-profile-matrix.md). |
 | T337 | Closed shared CPU state and delivery foundations: vector-6 fault delivery/rollback, software and external origin composition, IRQ/NMI/TF priority, frame timing, inhibition, and post-commit task debug trap have one proof/owner. DR6/DR7 transfers to 80386DX; reset/shutdown/triple-fault remains bounded CPU/machine debt. [History](../history/M5-T337-shared-state-delivery.md). |
 | T336 | Closed the four-profile CPU coverage audit: the primary/`0F` metadata and dispatch forms, real/protected/VM86 state rows, historic evidence, explicit 80386 exclusions, and open CPU debt now have a single indexed disposition. Every residual has one Queue, TODO, or external owner; the next candidate is shared state and delivery foundations. [History](../history/M5-T336-four-profile-coverage.md). |
 | T335 | Closed the xasm public-capacity/failure contract: the product facade now uses byte spans, explicit capacities, `type_status`, and commit-on-success result publication; debugger, firmware, and VM debug callback callers migrated with no raw bypass. A dedicated allocation-injection smoke proves capacity, malformed-input, facade-allocation, and engine-allocation failures preserve caller sentinels; `current-gate` passed 216/216. [History](../history/M5-T335-xasm-capacity-failure-contract.md). |
