@@ -2,8 +2,28 @@
 
 ## Current Work
 
-**Idle.** M5 T330 remains open. S5 is accepted; the protected CALL-gate
-dual-fault ordering audit requires a separately admitted Continuation packet.
+**Active: M5 T330 S6.** Audit and reconcile protected 16/32-bit CALL-gate
+outer-CPL dual-fault preflight ordering (Ordinary Mode; owner-approved T330 continuation).
+
+## M5 T330 S6 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation; T330 S5 is retained progress for the latest open numeric task, and S6 is its next unused subtask. |
+| Admission And Approval | Owner approved reopening T330 on 2026-08-12 to implement the third audited construction-drift item after S5 acceptance. |
+| Objective | Establish the Intel-required validation order for protected outer-CPL 16-bit and 32-bit CALL gates when an old-stack parameter access and a TR/TSS/new-stack candidate can both fault; reconcile only an accidental ordering drift while preserving real frame and TSS-layout differences. |
+| Non-goals | No generic exception delivery redesign, task-switch change, interrupt/trap-gate change, call-gate ABI change, frame-layout unification, VM86 expansion, or paging-policy change. |
+| Reference Baseline | `e50ffd792125e3eb8c219711cb0043143c6c166c` / `vm-0-5-0330`; read both call-gate serializers, T323 S7 evidence, retained privilege-entry smoke, and Intel 80386 protected-mode call-gate validation order. |
+| Files And ABI Surface | `src/core/machine/cpu_instructions.c` only if the dual-fault proof contradicts the current 16-bit order; a focused owner smoke or the retained call-gate smoke, CMake only if a target is needed, T330 evidence/history, and `docs/STATUS.md`; no public ABI change. |
+| Applicable Rules | Execution full-mechanism and similar-issue rules; architecture ownership and coding rules. Map source-parameter read, TR/TSS read, new-SS validation, target-stack preflight, descriptor accessed-bit writes, and commit publication before implementation. |
+| Verification | Prove 16-bit and 32-bit outer-CPL success plus controlled old-stack and new-stack/TR/TSS failures; add dual-fault priority vectors with source/target state and descriptor-byte nonpublication; compare the observable producer/fault result to Intel authority; fresh GCC configure, focused smoke, current-gate, documentation governance, and `git diff --check`. |
+| Expected Markers | Retained `M5:T307:CALL-GATE-PRIVILEGE-ENTRY:OK`, `M5:T323:S7:PROTECTED-16-CALL-GATE:OK`, and `M5:T330:S2:CALL-GATE-SAME-CPL:OK`; add an S6 marker only if a new owner smoke is required. |
+| Asset Needs | None; deterministic protected-mode GDT/TSS/stack fixtures only. |
+| Reporting Requirements | Ordinary Mode contract confirmation, one complete pushed implementation-or-audit P with requirement-to-proof evidence, coordinator actual-change review, and governance P on acceptance. |
+| Stop Conditions | Stop before changing shared exception delivery, descriptor/TSS helpers, paging policy, or a frame layout. If Intel authority does not specify the competing-fault priority, retain the code and record the observed order rather than normalize it speculatively. |
+| Exit Criteria | Both widths have an explicit mechanism matrix and controlled dual-fault evidence; any proven accidental preflight-order drift is fixed across both serializers with no early publication, otherwise the divergence is recorded as intentionally observed; all retained call-gate and current-gate regressions pass. |
+| Original Owner Request | Reopen T330 and implement the four audited items as four ordered S tasks, beginning now. |
+| Similar-Issue Sweep | Inspect both protected CALL-gate serializers and every caller through far-CALL dispatch; classify every source-stack, TR/TSS, new-SS, target-stack, descriptor-write, and commit boundary as shared, width-layout-specific, fixed, or transferred. |
 
 ## Current Technical Baseline
 

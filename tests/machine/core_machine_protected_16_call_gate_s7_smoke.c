@@ -242,6 +242,43 @@ static C_INT s7_reject(type_unsigned_8 condition)
     return !failed;
 }
 
+static C_INT s7_outer_preflight_priority(C_VOID)
+{
+    s3_gate_machine state;
+    core_machine_run_result result;
+    core_machine_cpu_diagnostic diagnostic;
+    type_unsigned_16 zero = 0u;
+    C_INT failed = !s7_prepare_outer(&state, CORE_MACHINE_CPU_PROFILE_80386,
+        TYPE_TRUE);
+
+    if (!failed) {
+        failed |= !s7_install_call_gate(&state, 3u, 1u, TYPE_TRUE) ||
+            !s7_write_call(&state, S7_CALL_GATE_SELECTOR) ||
+            !s3_gate_install(&state, 10u, 0x001bu,
+                VCPU_DESC_SYS_TYPE_INTGATE_16, 0u, TYPE_TRUE) ||
+            !s3_gate_write(&state, S7_TSS_BASE + 8u, &zero, sizeof(zero));
+        state.machine->executor_cpu.data.sp = 0x0100u;
+        state.machine->executor_cpu.data.ss.limit = 0x0100u;
+    }
+    if (!failed) {
+        failed |= core_machine_run(state.machine,
+            (core_machine_run_budget){1u,0u}, &result) != TYPE_STATUS_OK ||
+            result.reason != CORE_MACHINE_STOP_BUDGET ||
+            core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=
+                TYPE_STATUS_OK || diagnostic.first_fault.valid ||
+            !diagnostic.last_delivered_exception.valid ||
+            diagnostic.delivered_exception_count != 1u ||
+            diagnostic.last_delivered_exception.exception_mask != VCPUINS_EXCEPT_TS ||
+            diagnostic.last_delivered_exception.exception_code != 0u ||
+            state.machine->executor_cpu.data.cs.selector != 0x001bu ||
+            state.machine->executor_cpu.data.ss.selector != 0x0023u ||
+            state.machine->executor_cpu.data.eip != S3_HANDLER ||
+            state.machine->executor_cpu.data.sp != 0x00f8u;
+    }
+    core_machine_destroy(state.machine);
+    return !failed;
+}
+
 static C_INT s7_irq_no_shadow(C_VOID)
 {
     s3_gate_machine state;
@@ -312,6 +349,7 @@ C_INT main(C_VOID)
         !s7_reject(S7_REJECT_NULL_SS) || !s7_reject(S7_REJECT_GATE_DPL) ||
         !s7_reject(S7_REJECT_TARGET_CODE) || !s7_reject(S7_REJECT_STACK) ||
         !s7_reject(S7_REJECT_PARAMETER_SOURCE) ||
+        !s7_outer_preflight_priority() ||
         !s7_irq_no_shadow();
 
     if (failed) return 1;
