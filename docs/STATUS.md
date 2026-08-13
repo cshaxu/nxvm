@@ -28,9 +28,9 @@ changes; no runtime behavior change is admitted.
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** T329 selects `vm-0-5-0329` /
-  `build/output/nxvm_0_5_0329.exe`; commit `ae91e592` SHA-256 is
-  `87982567ACDAC83253A8F6102330F5976B150F2C5AD3CB926D0D6BE4AA41C069`.
+- **Current developer artifact:** T330 selects `vm-0-5-0330` /
+  `build/output/nxvm_0_5_0330.exe`; commit `af006a19` SHA-256 is
+  `F0AEC7780F2BC0A0AEF6451B91CCD4EE25DF6A9D1EE4A5AFA8D1AD3E58F9707A`.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
