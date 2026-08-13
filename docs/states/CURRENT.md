@@ -2,29 +2,29 @@
 
 ## Current Work
 
-**M5 T341 S4 - active.** Close ordinary 80386 DR6/DR7 matching and vector-1
-delivery as one debug state-machine mechanism before profile audit.
+**M5 T341 S5 - active.** Audit the completed 80386DX system-state package
+against its original allocation ledger before the four-profile audit.
 
-## M5 T341 S4 Packet
+## M5 T341 S5 Packet
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | The owner approved Queue-ordered, single-agent implementation through the four-profile cross-closure verification on 2026-08-13. T341 S1--S3 are accepted; S3 implementation is `cf43c5b8`. |
-| Objective | Close ordinary 80386 instruction and data-breakpoint matching, DR6 cause publication, DR7 enable/type/length interpretation, RF/TF and task-debug interaction, and vector-1 exception delivery as one validation-to-commit state machine. Repair the shared debug owner only if the full mechanism audit reproduces a defect. |
-| Non-goals | No VME/PVI, 486+ debug extensions, persistent translation cache or TR6/TR7 model, debugger UI, host breakpoint facility, x87 execution, timing, device, Windows, product, artifact, or rule change. No isolated DR bit or vector-1 symptom repair without all matching, priority, publication, and delivery consumers. |
-| Reference Baseline | `cf43c5b8` (`M5 T341 S3 P1: compose VM86 task paging state`), S1/S2/S3 evidence, T329/T337 task and delivery records, T340 transfer audit, current TODO, and the 80386DX closure map. |
+| Admission And Approval | The owner approved Queue-ordered, single-agent implementation through the four-profile cross-closure verification on 2026-08-13. T341 S1--S4 are accepted; S4 implementation is `b71d8923`. |
+| Objective | Audit the complete T341 S1--S4 80386DX system-state allocation ledger against current production owners, focused proof, inherited evidence, Queue, and TODO. Close the package only if every allocated row has an exact accepted disposition; otherwise return the row once to an earlier T341 mechanism S, TODO, or an explicit post-80386 boundary. |
+| Non-goals | No production, test, CMake, artifact, product, device, or rule change. No new instruction slice, no reopening a closed form solely for broader coverage, no implicit profile-completeness claim, and no repair under the audit. |
+| Reference Baseline | `b71d8923` (`M5 T341 S4 P1: reconcile ordinary debug delivery`), the S1 allocation ledger, S2/S3/S4 evidence, T329/T337 task and delivery records, T340 transfer audit, current Queue/TODO, and the 80386DX closure map. |
 | Candidate Proposal | [80386DX system, VM86, paging, and debug closure](../proposals/m5-80386dx-system-state-closure.md), [80386DX extended-state closure context](../proposals/m5-80386dx-extended-state-closure.md), [four-profile CPU-completeness program](../proposals/m5-four-profile-cpu-completeness-program.md), and [80386DX admission policy](../proposals/m5-80386dx-candidate-policy.md). |
-| Files And ABI Surface | Expected: T341 debug evidence/history/Current and, if the mechanism audit reproduces a defect, its one CPU debug/delivery owner with focused test and CMake registration. No public ABI, artifact, device, product, or rule change. |
-| Applicable Rules | `docs/rules/EXECUTION.md`: mechanism sweep, complete P, actual-change review, and task lifecycle. `docs/rules/ARCHITECTURE.md`: one mutable-state owner and explicit semantic/layout differences. `docs/rules/CODING.md`: no duplicate abstraction. `docs/rules/DOCUMENT.md`: Current/history/evidence topology. |
-| Verification | Audit all DR6/DR7 writers/readers, memory and instruction debug checks, RF/TF/task-debug ordering, `ExecFinal`, `ExecInt`, and every vector-1 current-gate owner. Build or extend one focused matrix for execute/data matching, enable/type/length, cause bits, disabled/nonmatching nonpublication, priority, restart/frame, real/protected/VM86 classification, and task handoff. Run full current gate, documentation governance, and diff check. |
-| Expected Markers | One indexed debug graph names the sole match/classification and vector-1 delivery owners; every DR7 configuration either has exact proof, a bounded repair, or one explicit external transfer. DR6 publication and vector-1 delivery occur only after the instruction or memory access contract permits them. |
+| Files And ABI Surface | Expected: T341 closure evidence/history/Current only. No public ABI, source, CMake, artifact, device, product, or rule change. |
+| Applicable Rules | `docs/rules/EXECUTION.md`: T-level closure audit, similar-issue sweep, complete P, actual-change review, and lifecycle. `docs/rules/ARCHITECTURE.md`: one mutable-state owner and explicit semantic/layout differences. `docs/rules/CODING.md`: no duplicate abstraction. `docs/rules/DOCUMENT.md`: Current/history/evidence topology. |
+| Verification | Re-read the original owner request and S1 ledger. Sweep all allocated CR/DR/TR/LDT/table, VM86/task/paging, and debug/vector-1 owners; compare each source route with the exact accepted proof and current-gate registration. Reconcile every residual with Queue/TODO/external boundary, then run documentation governance and diff check. No runtime gate is claimed by this audit unless it is rerun for a discovered discrepancy. |
+| Expected Markers | One indexed closure audit maps every S1 row to an accepted S2/S3/S4 proof, one retained exact owner, or one explicit external transfer. No duplicate mutable-state owner, undocumented production hit, or unclassified transfer remains. |
 | Asset Needs | Intel 80386 manuals already cited by retained evidence. No guest media, firmware, third-party source, binary, or trace. |
-| Reporting Requirements | Deliver one complete pushed P with the debug state-machine graph, exact retained or new proof, all changed paths and caller sweep, complete gate results, and transfers. |
-| Stop Conditions | Stop if a required path needs VME/PVI, later-CPU debug semantics, host-debugger policy, persistent translation cache, generic exception redesign, an incompatible Intel layout, or an external source/import. Revise the packet before broadening scope. |
-| Exit Criteria | Every ordinary 80386 DR6/DR7 and vector-1 composition row has exact proof, a bounded repaired owner, or one explicit external transfer; all debug/delivery callers are reviewed; required gates pass; evidence/history/Current are truthful; and the complete P is committed and pushed. |
+| Reporting Requirements | Deliver one complete pushed P with the row-by-row closure audit, exact retained proof/transfer, source and evidence sweep, documentation-gate result, and any returned work. |
+| Stop Conditions | Stop if a residual requires a production repair, an unallocated instruction family, VME/PVI, later-CPU debug semantics, persistent translation cache, x87 execution, timing/device/product behavior, a rule change, or external source/import. Return it through the named owner rather than repairing it under S5. |
+| Exit Criteria | Every S1 allocated row is reconciled exactly once; S2/S3/S4 outcomes and all external transfers are truthful; no in-scope unclassified production hit remains; evidence/history/Current are truthful; and the audit P is committed and pushed. |
 | Original Owner Request | Implement the Queue in order, in single-agent mode and with a holistic view, through four-profile cross-closure verification. |
-| Similar-Issue Sweep | Sweep all tracked CPU execution, machine state, current-gate registration, prior debug and delivery evidence, Queue, and TODO references for DR0--DR7, RF, TF, breakpoint/watchpoint, vector 1, task debug trap, exception frame, and IRQ/exception priority construction. Record every hit's owner, exact retained proof, repair, or transfer; no broad repository rewrite. |
+| Similar-Issue Sweep | Sweep all tracked CPU execution and machine-state source, current-gate registration, S1--S4 evidence, Queue, TODO, and closure-map references for CR0--CR3, DR0--DR7, TR/LDT/table state, VM86, task/TSS, paging, vector 1, RF/TF, exception frame, and IRQ/exception construction. Record every hit's exact owner and disposition; no broad repository rewrite. |
 
 ## Current Technical Baseline
 
@@ -44,6 +44,7 @@ delivery as one debug state-machine mechanism before profile audit.
 ## Recent M5 Closures
 
 | Task | Compact result |
+| T341 S4 | Reconciled ordinary 80386 DR6/DR7 matching with pre-instruction fault rollback, post-access/TF traps, RF, TSS debug `BT`, local/global DR7 task handoff, and real/protected/VM86 vector-1 delivery. Corrected the retained TF-before-PIC ordering claim; 218/218 current-gate passed. [Evidence](../etc/evidence/t341-s4-ordinary-debug-vector1.md). |
 | T341 S3 | Reconciled VM86 entry/return, task/TSS, and paging as one state-machine graph. Added mapped VM86 source delivery and mapped IRET-return probes without duplicating page walk, TSS plan, or delivery ownership. [Evidence](../etc/evidence/t341-s3-vm86-task-paging-composition.md). |
 | T341 S2 | Reconciled CR/DR/TR/LDT/table forms to their sole decoder and mutable-state owner; retained proof covers exact 80386 forms, while TR6/TR7 stay at the explicit no-persistent-cache boundary and S4 owns ordinary breakpoint/vector-1 behavior. [Evidence](../etc/evidence/t341-s2-control-debug-table-reconciliation.md). |
 | T341 S1 | Allocated the complete 80386DX privileged-state ledger. S2 owns CR/DR/TR/LDT/table reconciliation, S3 owns VM86/task/paging composition, S4 owns ordinary breakpoint/vector-1, and S5 remains audit-only. [Allocation ledger](../etc/evidence/t341-s1-80386dx-system-state-allocation.md). |
