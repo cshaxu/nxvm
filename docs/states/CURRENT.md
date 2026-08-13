@@ -2,29 +2,8 @@
 
 ## Current Work
 
-M5 T351 S4 - selected AUX device protocol and IRQ12 lifecycle
-(Single-Session Mode).
-
-## M5 T351 S4 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner approved continuous holistic device/L3 completion on 2026-08-13; T351 S3 accepted at `b7fd97cf`. |
-| Objective | Reconcile the selected standard three-byte relative AUX device state machine: `FF`, `F6`, `F5`, `F4`, `F2`, `F3`, `E8`, `E9`, invalid command/parameter, report framing and clipping, response delay, IRQ12 eligibility, controller enable gate, reset, finalize, and copied mouse ingress. |
-| Non-goals | No claim that AUX was original IBM PC/AT hardware; no wheel/sample-rate identification, scaling effect, remote/read-data, resend/error timing, capture mode, host capture, keyboard protocol, controller command/output-port semantics, second FIFO, guessed device behavior, generic PIC/timeline refactor, x87, or Windows claim. |
-| Reference Baseline | `b7fd97cf` / T351 S3 accepted; [S1 ledger](../etc/evidence/t351-s1-kbc-aux-ledger.md), [S2 controller evidence](../etc/evidence/t351-s2-kbc-controller.md), selected PS/2-compatible device reference, existing `TODO(Medium) Advanced 8042 AUX protocol`, and project AUX/mouse probes. |
-| Candidate Proposal | [PC/AT 8042 and AUX completeness](../proposals/m5-kbc-aux-completeness.md). |
-| Files And ABI Surface | Expected: private KBC AUX state/helpers only if a reproduced selected-protocol defect requires it; existing AUX owner smoke/evidence/TODO/Current/history. No public host-input/profile interface, controller or keyboard protocol, PIC, timeline, or device-identity expansion. |
-| Applicable Rules | Task Reading Set; one KBC FIFO with per-byte origin; selected AUX behavior is an explicit compatible extension, not a PC/AT substitution; state change before reply/report publication; copied host boundary; deterministic readiness owner; exact TODO transfer; no source import. |
-| Verification | Exercise every selected AUX command and parameter state, standard packet button/sign/overflow framing, no-change suppression, `F5/F4` reporting gate, `A7/A8` controller gate, command-byte IRQ12 gate, delayed replies, full FIFO/no side effect, reset/finalize source release, VM guest ingress at execution boundary, mouse DOS consumer, retained timeline, governance, and full current gate. |
-| Expected Markers | Retain AUX port/guest, mouse DOS, KBC controller, host ingress, and T346 timeline markers; add a dedicated S4 marker only if the existing AUX owner smoke cannot express the complete selected matrix. |
-| Asset Needs | Published compatible-device documentation and project-owned probes only; no firmware, guest-media addition, host capture, or third-party source. |
-| Reporting Requirements | Record selected command/parameter/report/IRQ/reset outcomes, any reproduced defect and sweep, controller-vs-device ownership, ingress/timeline proof, and exact advanced-AUX TODO transfer. |
-| Stop Conditions | Stop for a required unsourced AUX command, wheel/remote/scaling/resend behavior, public/profile/host ABI change, controller/keyboard semantic change, PIC/timeline mechanism defect, source import, or need to represent an original-PC/AT device that did not exist. Transfer rather than infer. |
-| Exit Criteria | Every selected AUX command, parameter, response/report byte, IRQ12 route, delay, controller gate, reset/finalize, and copied ingress boundary has one proof owner. Every advanced AUX behavior has the named TODO receiver and admission condition; no selected result crosses keyboard/controller ownership. |
-| Original Owner Request | Make core-machine devices stable, comprehensive, and reliable at deterministic L3 before deciding any Windows execution route. |
-| Similar-Issue Sweep | Inspect all AUX command cases, pending parameter and D4 routes, FIFO/report helpers, IRQ12 refresh/deassert paths, controller command-byte/interface gates, reset/finalize, session mouse ingress, AUX/guest/DOS tests, profile timing binds, and AUX TODO/proposal records. |
+M5 T351 remains open. S4 is accepted; S5 combined controller/keyboard/AUX
+lifecycle audit is the next bounded subtask.
 
 ## Current Technical Baseline
 
@@ -45,7 +24,7 @@ M5 T351 S4 - selected AUX device protocol and IRQ12 lifecycle
 
 | Task | Compact result |
 | --- | --- |
-| T351 S3 | Accepted selected AT keyboard command and IRQ1 behavior: keyboard-only RESEND history is isolated from controller/AUX output; `F5/F6/F4` default/scan state and `FD`--`F7` ACK NOP behavior are reconciled under the existing FIFO/timeline owner. AUX remains S4. 228 current-gate tests passed. [Evidence](../etc/evidence/t351-s3-keyboard-device.md). |
+| T351 S4 | Accepted the selected compatible three-byte AUX device: command-byte/interface IRQ12 gates, response delay, report clipping/no-change/full-FIFO atomicity, reset/finalize, copied guest ingress, and DOS consumer proof are reconciled. Wheel, scaling, remote/read-data, resend/error, and capture remain exact advanced-AUX TODO transfers. 228 current-gate tests passed. [Evidence](../etc/evidence/t351-s4-aux-device.md). |
 | T350 | Closed the selected PC/AT signal graph: retained 8254/IRQ0 and MC146818/CMOS/IRQ8 owners now have focused lifecycle proof; RTC alarm and IRQF defects are repaired; speaker/PPI and parity/I/O-channel NMI remain exact corpus/contract-gated TODO transfers. 228 current-gate tests passed. [History](../history/M5-T350-pcat-platform-signals.md). |
 | T349 | Closed PC/AT dual-8259A command/priority/cascade, OCW3 poll/status/special-mask/SFNM, and retained edge/level producer lifecycle; physical INTA spurious behavior transfers only to L3 bus timing. 226 current-gate tests passed. [History](../history/M5-T349-pcat-pic-compliance.md). |
 | T348 | Closed PC/AT dual-8237A DMA topology, page/word layout, request/cascade/EOP, validation-before-publication, M2M lifecycle, and FDC crossing bounce path; 223 current-gate tests passed. [History](../history/M5-T348-pcat-dma-completeness.md). |

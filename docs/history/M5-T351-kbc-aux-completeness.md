@@ -40,3 +40,10 @@ cannot corrupt `FEh` RESEND. It also reconciles selected default, enable/disable
 typematic, and NOP command state without a second queue or host boundary. Its
 [keyboard evidence](../etc/evidence/t351-s3-keyboard-device.md) leaves all AUX
 device behavior to S4.
+
+S4 is accepted at `da411b9b`: it proves and reconciles the selected compatible
+three-byte AUX command/report path through its one FIFO/IRQ12 owner, including
+delay, reset/finalize, copied guest ingress, and full-FIFO atomicity. Its
+[AUX evidence](../etc/evidence/t351-s4-aux-device.md) transfers wheel, scaling,
+remote/read-data, resend/error, and capture behavior to the bounded advanced
+AUX TODO rather than calling them PC/AT behavior.
