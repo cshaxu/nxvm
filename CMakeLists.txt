@@ -2082,6 +2082,13 @@ add_custom_target(verify-t332-cpu-fixture-lifecycle
     COMMENT "Verifying T332 CPU smoke fixture lifecycle closure"
     VERBATIM)
 
+add_custom_target(verify-t338-legacy-profile-metadata
+    COMMAND "${CMAKE_COMMAND}"
+        -DPROJECT_SOURCE_DIR=${CMAKE_SOURCE_DIR}
+        -P "${CMAKE_SOURCE_DIR}/cmake/verify_t338_legacy_profile_metadata.cmake"
+    COMMENT "Verifying T338 8086/80186 profile metadata and LOCK ownership"
+    VERBATIM)
+
 
 # CMake builds the current source artifact only. Historical task executables are
 # retained evidence under build/output and are never regenerated from newer
@@ -2118,7 +2125,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0337 "0.5.0337")
+add_current_vm_artifact(vm-0-5-0338 "0.5.0338")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 
@@ -2493,6 +2500,7 @@ set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
     verify-t317-test-type-vocabulary
     verify-t317-strict-cpu-smoke-coverage
     verify-t332-cpu-fixture-lifecycle
+    verify-t338-legacy-profile-metadata
     verify-t330-task-transition-construction
     verify-t331-real-exception-final-construction
     verify-documentation-governance
