@@ -36,10 +36,11 @@ applicable rules, and split the work into bounded tasks with explicit exit
 criteria before implementation. Obtain approval before admitting the work to
 `states/CURRENT.md`; only that one active packet may execute.
 
-During execution, the executor reports discovered repository issues. Fix a
-clear in-scope instance as an added subtask and run the similar-issue sweep;
-otherwise the coordinator records the issue in `states/TODO.md` with priority,
-boundary, admission condition, and risk.
+During execution, the executor reports discovered repository issues. For a
+clear in-scope instance, the coordinator either revises the active packet/brief
+or admits a later subtask, then requires the similar-issue sweep; otherwise the
+coordinator records the issue in `states/TODO.md` with priority, boundary,
+admission condition, and risk. The executor never adds a subtask itself.
 At closure, re-read the original owner request, map every requested outcome to
 evidence, run the required verification, record the retrospective/prevention
 action when applicable, and report the result. A task is not complete merely
