@@ -179,6 +179,13 @@ add_executable(core-machine-bit-test-smoke tests/machine/core_machine_bit_test_s
 target_link_libraries(core-machine-bit-test-smoke PRIVATE core-machine)
 add_executable(core-machine-inc-dec-smoke tests/machine/core_machine_inc_dec_smoke.c)
 target_link_libraries(core-machine-inc-dec-smoke PRIVATE core-machine)
+add_executable(core-machine-legacy-alu-s2-smoke
+    tests/machine/core_machine_legacy_alu_s2_smoke.c)
+target_link_libraries(core-machine-legacy-alu-s2-smoke PRIVATE core-machine)
+if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
+    target_compile_options(core-machine-legacy-alu-s2-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
 add_executable(core-machine-rotate-smoke tests/machine/core_machine_rotate_smoke.c)
 target_link_libraries(core-machine-rotate-smoke PRIVATE core-machine)
 add_executable(core-machine-eflags-local-smoke tests/machine/core_machine_eflags_local_smoke.c)
@@ -1583,6 +1590,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-movx-smoke
     core-machine-bit-test-smoke
     core-machine-inc-dec-smoke
+    core-machine-legacy-alu-s2-smoke
     core-machine-rotate-smoke
     core-machine-eflags-local-smoke
     core-machine-pushf-popf-smoke
@@ -1808,6 +1816,7 @@ set(PROJECT_T337_UD_CURRENT_GATE_TARGETS
     core-machine-lar-lsl-s57-smoke
     core-machine-lea-smoke
     core-machine-legacy-lock-s1-smoke
+    core-machine-legacy-alu-s2-smoke
     core-machine-legacy-sreg-stack-smoke
     core-machine-les-lds-s41-smoke
     core-machine-les-lds-smoke

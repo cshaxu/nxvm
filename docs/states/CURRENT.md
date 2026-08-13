@@ -2,8 +2,29 @@
 
 ## Current Work
 
-**Idle.** T338 remains open. S1 form allocation is accepted; the first legacy
-ALU/FLAGS/condition implementation slice requires a separately admitted packet.
+**M5 T338 S2 - active.** Close the complete 8086/80186 legacy ALU, FLAGS,
+condition, adjustment, shift, multiply/divide, and grouped-form boundary.
+
+## M5 T338 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | The owner approved the Queue-ordered single-agent four-profile program on 2026-08-13. T338 S1 form allocation was accepted in `01ee8448`; it assigns this full legacy ALU/FLAGS/condition mechanism as the first implementation slice. |
+| Objective | Implement or correct every 8086/80186 form allocated to T338 S2: binary arithmetic `00`--`05` through `38`--`3D`; Group 1 `80/81/83`; DAA/DAS/AAA/AAS; INC/DEC register and `FE`; TEST forms; all conditional branches `70`--`7F` and loops `E0`--`E3`; Group 2 `D0`--`D3` plus 80186 `C0/C1`; AAM/AAD/XLAT; Group 3 `F6/F7` arithmetic; CMC/CLC/STC/CLD/STD; CBW/CWD; LAHF/SAHF; and all applicable reserved/profile rejection. Prove every ModRM extension, defined FLAGS only, valid 8086/80186 profile behavior, real-mode exception/restart/nonpublication, and T328 legacy LOCK linkage. |
+| Non-goals | No data/string/stack/control/I/O implementation (T338 S3), no 80186 PUSHA/BOUND/PUSH/IMUL/INS-OUTS/ENTER bundle (T338 S4), no protected selector/privilege/paging/VM86/80386 width semantics, no undefined FLAGS assertion, no new global LOCK policy, and no x87 execution. |
+| Reference Baseline | `01ee8448` (`M5 T338 S1 P2: accept legacy form allocation`), current artifact `vm-0-5-0338` / `0.5.0338`, and the accepted [S1 ledger](../etc/evidence/t338-s1-8086-80186-form-allocation.md). |
+| Candidate Proposal | [8086 and 80186 profile closure](../proposals/m5-8086-80186-profile-closure.md); [T338 S1 form allocation](../etc/evidence/t338-s1-8086-80186-form-allocation.md). |
+| Files And ABI Surface | Expected: local CPU arithmetic/condition handlers only if reproduced; one owner-bound legacy ALU smoke or an expanded coherent existing owner; CMake current-gate registration; T338 evidence/history/Current. No public ABI, device model, generic fixture framework, or shared delivery/prefix interface change. |
+| Applicable Rules | `docs/rules/EXECUTION.md`: full P, mechanism/caller/write/fault sweep. `docs/rules/ARCHITECTURE.md`: shared validation/commit owner. `docs/rules/CODING.md`: existing local code style, project types, and no duplicate test framework. `docs/etc/operations/policy/source-policy.md`: Intel authority only. |
+| Verification | Before repair, map `_a_*`, `_kaf_set_flags`, grouped decode, `_m_read_rm`/`_m_write_rm`, profile gate, and `ExecFinal` callers/writes/rollback. Build a form-by-profile-by-ModRM ledger with success, reserved, divide/overflow, memory access, and real `#UD`/fault vectors. Assert only Intel-defined FLAGS; check EIP, GPR/memory publication, fault restart, and valid or invalid IVT delivery as appropriate. Run focused smoke, exact current-gate registration, T338 metadata guard, artifact verifier, documentation governance, diff check, and complete current-gate. |
+| Expected Markers | One `M5:T338:S2:LEGACY-ALU:OK` owner marker; complete table records all allocated form/extension/profile rows; no repeated handler construction remains without an Intel-required difference; every valid memory-capable form explicitly links to T328 legacy LOCK behavior, while invalid forms stay invalid. |
+| Asset Needs | Intel 8086/80186/80386 instruction manuals only. No guest media, firmware, external source, binary, or trace. |
+| Reporting Requirements | Report a material mechanism/scope objection before source change. Otherwise deliver one complete pushed P with form/ModRM/profile/FLAGS table, caller/write/fault sweep, reproduced defect and all equivalent fixes, unchanged undefined-FLAGS boundary, exact transfer list, artifact/gate results, and no partial completion claim. |
+| Stop Conditions | Stop if a correct fix needs a global prefix/LOCK policy rewrite, generic arithmetic/flags redesign beyond all named callers, protected/VM86/paging state, a later-profile width contract, or Intel behavior cannot be verified. Transfer/revise the packet rather than patch a local symptom. |
+| Exit Criteria | Every allocated opcode and ModRM extension has an 8086/80186 disposition and focused proof; every discovered same-mechanism defect is fixed or exactly transferred; defined FLAGS, publication, restart and legacy LOCK linkage are proven; all required gates pass; the complete P is committed and pushed. |
+| Original Owner Request | Implement the Queue in order, in single-agent mode and with a holistic view, through four-profile cross-closure verification. |
+| Similar-Issue Sweep | Search all tracked production/tests/CMake/evidence for the named primary ranges, `INS_80`, `INS_81`, `INS_83`, `INS_C0`, `INS_C1`, `INS_D0`--`INS_D3`, `INS_F6`, `INS_F7`, `INS_FE`, `_a_`, `_kaf_set_flags`, `CMP_FLAG`, `PREFIX_LOCK`, `UndefinedOpcode`, and legacy profile gates. |
 
 ## Current Technical Baseline
 
