@@ -1632,7 +1632,6 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-imul-immediate-s56-smoke
     core-machine-lar-lsl-s57-smoke
     core-machine-verr-verw-s58-smoke
-    core-machine-debug-mov-s59-smoke
     core-machine-tf-db-s60-smoke
     core-machine-dttr-s61-smoke
     core-machine-clts-s62-smoke
@@ -1666,7 +1665,6 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-call-gate-privilege-entry-smoke
     core-machine-tss-iomap-port-smoke
     core-machine-task-switch-smoke
-    core-machine-tf-db-s60-smoke
     core-machine-80386-paging-smoke
     core-machine-fpu-escape-smoke
     core-machine-fpu-interface-s65-smoke
@@ -2003,10 +2001,58 @@ set(PROJECT_CURRENT_MEDIA_SMOKE_TARGETS
     ${PROJECT_CURRENT_HDD_SMOKE_TARGETS}
     ${PROJECT_CURRENT_FDD_HDD_SMOKE_TARGETS}
     ${PROJECT_LEGACY_M1_FDD_CURRENT_HDD_SMOKE_TARGETS})
+
+# T344 keeps the current gate as one canonical partition.  A duplicate is a
+# registration defect, not an aggregate-list cleanup opportunity.
+function(project_t344_verify_current_gate_partition)
+    set(project_t344_current_targets)
+    foreach(project_t344_target IN LISTS PROJECT_CURRENT_SMOKE_TARGETS)
+        if(NOT TARGET ${project_t344_target})
+            message(FATAL_ERROR
+                "T344 current-gate target is missing: ${project_t344_target}")
+        endif()
+        list(FIND project_t344_current_targets "${project_t344_target}"
+            project_t344_target_index)
+        if(NOT project_t344_target_index EQUAL -1)
+            message(FATAL_ERROR
+                "T344 current-gate target is duplicated: ${project_t344_target}")
+        endif()
+        list(APPEND project_t344_current_targets "${project_t344_target}")
+    endforeach()
+
+    set(project_t344_media_targets)
+    foreach(project_t344_list IN ITEMS
+            PROJECT_LEGACY_M1_FDD_SMOKE_TARGETS
+            PROJECT_CURRENT_FDD_SMOKE_TARGETS
+            PROJECT_CURRENT_FDD_HDD_SMOKE_TARGETS
+            PROJECT_LEGACY_M1_FDD_CURRENT_HDD_SMOKE_TARGETS
+            PROJECT_CURRENT_HDD_SMOKE_TARGETS)
+        foreach(project_t344_target IN LISTS ${project_t344_list})
+            if(NOT TARGET ${project_t344_target})
+                message(FATAL_ERROR
+                    "T344 current media target is missing: ${project_t344_target}")
+            endif()
+            list(FIND project_t344_current_targets "${project_t344_target}"
+                project_t344_target_index)
+            list(FIND project_t344_media_targets "${project_t344_target}"
+                project_t344_media_index)
+            if(NOT project_t344_media_index EQUAL -1)
+                message(FATAL_ERROR
+                    "T344 current media target has multiple classifications: "
+                    "${project_t344_target}")
+            endif()
+            list(APPEND project_t344_media_targets "${project_t344_target}")
+            if(project_t344_target_index EQUAL -1)
+                list(APPEND project_t344_current_targets "${project_t344_target}")
+            endif()
+        endforeach()
+    endforeach()
+    set(PROJECT_T344_CURRENT_GATE_TARGETS "${project_t344_current_targets}"
+        PARENT_SCOPE)
+endfunction()
+project_t344_verify_current_gate_partition()
 set(PROJECT_CURRENT_ALL_SMOKE_TARGETS
-    ${PROJECT_CURRENT_SMOKE_TARGETS}
-    ${PROJECT_CURRENT_MEDIA_SMOKE_TARGETS})
-list(REMOVE_DUPLICATES PROJECT_CURRENT_ALL_SMOKE_TARGETS)
+    ${PROJECT_T344_CURRENT_GATE_TARGETS})
 set(PROJECT_CURRENT_NONMEDIA_SMOKE_TARGETS
     ${PROJECT_CURRENT_SMOKE_TARGETS})
 list(REMOVE_ITEM PROJECT_CURRENT_NONMEDIA_SMOKE_TARGETS
@@ -2030,6 +2076,15 @@ function(project_add_current_smoke_test target)
     if(NOT TARGET ${target})
         message(FATAL_ERROR "Current smoke target is missing: ${target}")
     endif()
+    get_property(project_t344_registered_targets GLOBAL
+        PROPERTY PROJECT_T344_CURRENT_GATE_REGISTERED_TARGETS)
+    list(FIND project_t344_registered_targets "${target}"
+        project_t344_registered_index)
+    if(NOT project_t344_registered_index EQUAL -1)
+        message(FATAL_ERROR "Current smoke target is registered twice: ${target}")
+    endif()
+    set_property(GLOBAL APPEND PROPERTY
+        PROJECT_T344_CURRENT_GATE_REGISTERED_TARGETS "${target}")
     add_test(NAME "current.${target}" COMMAND "$<TARGET_FILE:${target}>" ${ARGN})
     set(current_smoke_labels "current-gate;smoke")
     list(FIND PROJECT_CURRENT_MEDIA_SMOKE_TARGETS ${target} media_smoke_index)
@@ -2065,6 +2120,33 @@ foreach(target IN LISTS PROJECT_LEGACY_M1_FDD_CURRENT_HDD_SMOKE_TARGETS)
     project_add_current_smoke_test(${target} "${PROJECT_M1_FDD_SMOKE_IMAGE}"
         "${PROJECT_HDD_SMOKE_IMAGE}")
 endforeach()
+
+get_property(project_t344_registered_targets GLOBAL
+    PROPERTY PROJECT_T344_CURRENT_GATE_REGISTERED_TARGETS)
+foreach(project_t344_target IN LISTS PROJECT_T344_CURRENT_GATE_TARGETS)
+    list(FIND project_t344_registered_targets "${project_t344_target}"
+        project_t344_registered_index)
+    if(project_t344_registered_index EQUAL -1)
+        message(FATAL_ERROR
+            "T344 canonical current-gate target is not registered: ${project_t344_target}")
+    endif()
+endforeach()
+list(LENGTH PROJECT_T344_CURRENT_GATE_TARGETS project_t344_expected_current_count)
+list(LENGTH project_t344_registered_targets project_t344_registered_current_count)
+if(NOT project_t344_expected_current_count EQUAL project_t344_registered_current_count)
+    message(FATAL_ERROR
+        "T344 current-gate registration has an unexpected target.")
+endif()
+file(GENERATE
+    OUTPUT "${CMAKE_BINARY_DIR}/t344-current-gate-targets.txt"
+    CONTENT "$<JOIN:${PROJECT_T344_CURRENT_GATE_TARGETS},\n>\n")
+add_custom_target(verify-t344-current-gate-registration
+    COMMAND "${CMAKE_COMMAND}"
+        -DPROJECT_T344_CURRENT_TARGETS_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t344-current-gate-targets.txt
+        -DPROJECT_T344_CTEST_TEST_FILE:FILEPATH=${CMAKE_BINARY_DIR}/CTestTestfile.cmake
+        -P "${CMAKE_SOURCE_DIR}/cmake/verify_t344_current_gate_registration.cmake"
+    COMMENT "Verifying T344 current-gate registration integrity"
+    VERBATIM)
 
 add_custom_target(run-current-smokes
     COMMAND "${CMAKE_CTEST_COMMAND}" --test-dir "${CMAKE_BINARY_DIR}"
@@ -2552,6 +2634,7 @@ set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
     verify-core-utils-boundary
     verify-cancellable-wait-boundary
     verify-vm-composition-lifecycle
+    verify-t344-current-gate-registration
     verify-fpu-boundary
     verify-core-cpu-pic-authority
     verify-core-display-authority
@@ -2640,7 +2723,7 @@ set(PROJECT_T344_PRODUCTION_TARGETS
     vm-0-5-0344)
 set(PROJECT_T344_DIRECT_COMPILE_TARGETS
     ${PROJECT_T344_PRODUCTION_TARGETS}
-    ${PROJECT_CURRENT_SMOKE_TARGETS})
+    ${PROJECT_T344_CURRENT_GATE_TARGETS})
 list(REMOVE_DUPLICATES PROJECT_T344_DIRECT_COMPILE_TARGETS)
 
 set(PROJECT_T344_DIRECT_COMPILE_MATRIX)

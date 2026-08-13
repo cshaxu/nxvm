@@ -2,8 +2,29 @@
 
 ## Current Work
 
-**Idle.** M5 T344 S2 is closed; the next build-quality repair requires a
-separately admitted packet.
+**M5 T344 S3 - active.** Make current-gate registration unique and
+mechanically complete at its canonical CMake boundary.
+
+## M5 T344 S3 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | The owner approved the complete ordered T344 build-quality program on 2026-08-13 and directed single-agent completion. S2 closed as `adb5eab4`; this packet admits the Queue-ordered current-gate registration-integrity repair. |
+| Objective | Eliminate duplicate target membership at the canonical current-gate list boundary and make configure fail for a duplicate or missing target in any current-gate partition. Mechanically prove that exactly the canonical target set is registered once as `current.*` current-gate tests. Correct S2's direct-compilation matrix input to consume this same complete canonical set, including media owners, then regenerate and reverify the matrix. |
+| Non-goals | Do not add, remove, rename, relabel, or otherwise change current-gate members; do not change media arguments, CTest behavior, smoke implementation, or create a second registration path. Do not deduplicate an erroneous list silently or alter strictness policy. |
+| Reference Baseline | `adb5eab4` (`M5 T344 S2 P2`), [T344 baseline audit](../etc/evidence/t344-code-quality-baseline-audit.md), [build-quality proposal](../proposals/m5-build-quality-reproducibility.md), current CMake source, and generated `CTestTestfile.cmake`. |
+| Candidate Proposal | [Build-quality reproducibility](../proposals/m5-build-quality-reproducibility.md). |
+| Files And ABI Surface | Expected: `CMakeLists.txt`, one narrow CMake verifier, T344 evidence, and Current. No source/test implementation, public ABI, executable membership, CTest command/label/timeout, or product behavior change. |
+| Applicable Rules | `docs/rules/EXECUTION.md`: complete source-scope and similar-issue sweep. `docs/rules/ARCHITECTURE.md`: one registration owner. `docs/rules/CODING.md`: no duplicate registration facade. `docs/rules/DOCUMENT.md`: Current/evidence topology. |
+| Verification | Fresh GCC/Ninja configure must reject duplicate/missing registration inputs through the canonical verifier; mechanically compare generated canonical targets with `CTestTestfile.cmake` current-gate registrations, including labels and exact-one occurrence; rerun the corrected complete direct-compilation matrix verifier; run documentation governance, diff check, and full current-gate. |
+| Expected Markers | Every current-gate partition target exists exactly once, every canonical target has exactly one `current.<target>` registration carrying `current-gate`, no CTest current-gate target is outside that set, and the direct-compilation matrix includes every canonical current-gate target. |
+| Asset Needs | No external assets, firmware, guest media, or source import. |
+| Reporting Requirements | Deliver one complete pushed P with removed duplicate identities, canonical/registered count, verifier result, membership-preservation evidence, and full-gate result. |
+| Stop Conditions | Stop if enforcing uniqueness would require changing an intentional media invocation, member list, CTest argument, label, timeout, or a separate registration mechanism. Record the exact distinction rather than collapsing variants. |
+| Exit Criteria | The canonical lists and every derived partition have a configure-time existence/uniqueness proof; generated CTest registration is mechanically one-to-one with that canonical set; membership and invocation semantics remain unchanged; governance/diff/full current-gate pass; and the complete P is committed and pushed. |
+| Original Owner Request | Audit the entire codebase for code quality, record all findings, and admit the four resulting quality improvements for implementation. |
+| Similar-Issue Sweep | Inspect every current-gate source list, platform append, media partition, registration loop, generated CTest declaration, and existing current-gate verifier. Search all CMake registration calls for an alternate path or a duplicate-suppressing aggregate. |
 
 ## Current Technical Baseline
 
