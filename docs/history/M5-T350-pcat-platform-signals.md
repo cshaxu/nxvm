@@ -23,3 +23,7 @@ retained PIT/IRQ0, RTC/CMOS/IRQ8, channel-2/PPI/speaker, and NMI rows to one
 owner or exact receiver. Its [ledger](../etc/evidence/t350-s1-pcat-platform-signals-ledger.md)
 keeps port-61/speaker and a real NMI producer explicitly unimplemented until
 their independent admission conditions are met.
+
+S2 reconciles the retained 8254 counter/output subset and its one channel-0
+IRQ0 path. Its [evidence](../etc/evidence/t350-s2-pit-irq0.md) keeps channel-2
+and port-61/speaker explicitly outside the counter-0 mechanism.
