@@ -42,3 +42,15 @@ external memory transactions, and existing port transactions at machine time.
 S2 deliberately retains the L2 controller scheduler and assigns every
 controller migration to S3--S5; it does not claim device-specific L3 service
 timing or host-time behavior.
+
+### S3 - PIC, PIT, And DMA Arbitration
+
+Accepted the implementation and evidence at
+`docs/etc/evidence/t346-s3-pic-pit-dma-arbitration.md`. The machine now
+advances the PIC/PIT/DMA chain only through a one-tick timeline callback in
+the stable order DMA, PIT, PIC. Copied trace records distinguish the
+post-retirement elapsed observation from the full 64-bit due-event time. Cold
+reset cancels the prior callback and schedules exactly one new tick-one
+callback. RTC/NMI, storage, input, display, and host presentation retain their
+separate S4/S5 assignments; no service duration or sub-instruction claim is
+made.
