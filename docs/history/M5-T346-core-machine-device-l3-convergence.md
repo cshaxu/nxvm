@@ -54,3 +54,17 @@ reset cancels the prior callback and schedules exactly one new tick-one
 callback. RTC/NMI, storage, input, display, and host presentation retain their
 separate S4/S5 assignments; no service duration or sub-instruction claim is
 made.
+
+### S4 - RTC And Storage-Observation Readiness
+
+Accepted the implementation and evidence at
+`docs/etc/evidence/t346-s4-rtc-storage-readiness.md`. The core machine now
+uses a distinct RTC clock domain and a reset-safe timeline readiness callback
+after the S3 arbitration chain. At each due tick it deterministically performs
+FDC media observation, retained ATA refresh, and RTC advance; copied trace
+events expose this sequence. The controller sweep establishes that FDC final
+commands and ATA PIO service are still synchronous, so their pending/busy,
+media-result, DRQ/DMA/IRQ, abort/reset, and hardware-duration contract is a
+single explicit TODO rather than a fabricated L3 duration. PC/AT parity and
+I/O-channel NMI production likewise remains a separately admitted boundary;
+the retained CMOS index-port bit is only the NMI mask.
