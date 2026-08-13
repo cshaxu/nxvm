@@ -46,3 +46,7 @@ The indexed [S3 composition graph](../etc/evidence/t341-s3-vm86-task-paging-comp
 ties VM86 entry and return to the same page-walk, TSS stack, frame, and task
 plan/commit contracts. It adds mapped VM86 source delivery and mapped IRET
 return probes without creating a second executor, page walker, or TSS format.
+
+The accepted S3 delivery is `cf43c5b8`. S4 now owns ordinary DR6/DR7
+breakpoint matching, cause publication, priority, and vector-1 delivery as one
+debug state-machine mechanism.
