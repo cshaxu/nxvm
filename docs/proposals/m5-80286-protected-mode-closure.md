@@ -26,7 +26,7 @@ no accidental reuse of a 386 construction path is presented as a 286 contract.
 
 ## Ordered Breakdown
 
-1. [Descriptor-table and protected-transfer closure](m5-80286-descriptor-transfer-closure.md)
+1. [Closed descriptor-table and protected-transfer proposal](../history/M5-T339-80286-descriptor-transfer-closure-proposal.md)
    resolves table/selector/gate and 16-bit transfer ownership. Accepted
    [T328 legacy LOCK evidence](../history/M5-T328-legacy-lock-legality.md)
    remains the pre-386 prefix-policy owner.

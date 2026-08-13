@@ -24,7 +24,7 @@ mode, privilege, prefix, and fault contract, or is explicitly outside 80386.
 
 ## Ordered Breakdown
 
-1. [Width, prefix, and integer-form closure](m5-80386dx-width-integer-closure.md)
+1. [Closed width, prefix, and integer-form proposal](../history/M5-T340-80386dx-width-integer-closure-proposal.md)
    closes residual form-family rows without obscuring older-profile results.
 2. [System, VM86, paging, and debug closure](m5-80386dx-system-state-closure.md)
    owns residual privileged state composition and its form consumers.
