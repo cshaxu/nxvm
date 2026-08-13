@@ -56,6 +56,8 @@ static C_INT setcc_run_one(setcc_machine *state, const type_unsigned_8 *code,
         !test_core_machine_fixture_prepare_real_mode_execution(state->machine, 0u) ||
         core_machine_memory_write(state->machine, 0u, code, code_size) !=
             TYPE_STATUS_OK) return 0;
+    if (expect_fault && !test_core_machine_fixture_preflight_real_ud_terminal(
+            state->machine)) return 0;
     status = core_machine_run(state->machine, budget, &result);
     if (core_machine_get_cpu_diagnostic(state->machine, out_diagnostic) !=
         TYPE_STATUS_OK || status != (expect_fault ? TYPE_STATUS_FAULT : TYPE_STATUS_OK) ||

@@ -94,6 +94,9 @@ static C_INT lea_test_real_forms(C_VOID)
                 failed |= !test_core_machine_fixture_prepare_real_mode_execution(
                     state.machine, 0u);
                 lea_set_registers(&state);
+                if (profile != 3u && form != 0u)
+                    failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
+                        state.machine);
                 before = test_core_machine_fixture_capture_cpu_after_run(
                     state.machine);
                 failed |= !lea_run_prepared(&state, codes[form],
@@ -148,6 +151,8 @@ static C_INT lea_test_register_direct(C_VOID)
             failed |= !test_core_machine_fixture_prepare_real_mode_execution(
                 state.machine, 0u);
             lea_set_registers(&state);
+            failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
+                state.machine);
             before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= !lea_run_prepared(&state, code, sizeof(code), &after,
                     &diagnostic, &status) || status != TYPE_STATUS_FAULT ||
@@ -178,6 +183,8 @@ static C_INT lea_test_lock_ud(C_VOID)
         failed |= !test_core_machine_fixture_prepare_real_mode_execution(
             state.machine, 0u);
         lea_set_registers(&state);
+        failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
+            state.machine);
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !lea_run_prepared(&state, code, sizeof(code), &after,
                 &diagnostic, &status) || status != TYPE_STATUS_FAULT ||

@@ -83,6 +83,7 @@ static C_INT bit_run(bit_machine *state,const type_unsigned_8 *code,STD_SIZE_T b
     type_status status;
     if (state==STD_NULL || state->machine==STD_NULL || !test_core_machine_fixture_prepare_real_mode_execution(state->machine,0u) ||
         core_machine_memory_write(state->machine,0u,code,bytes)!=TYPE_STATUS_OK) return 0;
+    if(fault&&!test_core_machine_fixture_preflight_real_ud_terminal(state->machine))return 0;
     status=core_machine_run(state->machine,budget,&result);
     if (status!=(fault?TYPE_STATUS_FAULT:TYPE_STATUS_OK) || result.reason!=(fault?CORE_MACHINE_STOP_FAULT:CORE_MACHINE_STOP_BUDGET) ||
         core_machine_get_cpu_diagnostic(state->machine,diagnostic)!=TYPE_STATUS_OK) return 0;

@@ -211,9 +211,11 @@ static C_INT cli_sti_s48_test_prefixes(C_VOID)
                     code[2] = opcode;
                 }
                 if (!failed) {
+                    failed = !test_core_machine_fixture_preflight_real_ud_terminal(
+                        state.machine);
                     before = test_core_machine_fixture_capture_cpu_after_run(
                         state.machine);
-                    failed = core_machine_memory_write(state.machine, 0u, code,
+                    failed |= core_machine_memory_write(state.machine, 0u, code,
                         bytes) != TYPE_STATUS_OK;
                     status = core_machine_run(state.machine,
                         (core_machine_run_budget){ 1u, 0u }, &result);
@@ -311,9 +313,11 @@ static C_INT cli_sti_s48_test_386_prefix_and_lock(C_VOID)
                 code[3] = opcode;
             }
             if (!failed) {
+                failed = !test_core_machine_fixture_preflight_real_ud_terminal(
+                    state.machine);
                 before = test_core_machine_fixture_capture_cpu_after_run(
                     state.machine);
-                failed = core_machine_memory_write(state.machine, 0u, code,
+                failed |= core_machine_memory_write(state.machine, 0u, code,
                     bytes) != TYPE_STATUS_OK;
                 status = core_machine_run(state.machine,
                     (core_machine_run_budget){ 1u, 0u }, &result);

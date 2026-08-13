@@ -1617,6 +1617,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-port-io-s55-smoke
     core-machine-lahf-sahf-smoke
     core-machine-direct-flags-smoke
+    core-machine-debug-mov-s59-smoke
     core-machine-double-shift-smoke
     core-machine-bit-scan-smoke
     core-machine-imul2-smoke
@@ -1657,6 +1658,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-call-gate-privilege-entry-smoke
     core-machine-tss-iomap-port-smoke
     core-machine-task-switch-smoke
+    core-machine-tf-db-s60-smoke
     core-machine-80386-paging-smoke
     core-machine-fpu-escape-smoke
     core-machine-fpu-interface-s65-smoke
@@ -1787,6 +1789,7 @@ set(PROJECT_T337_UD_CURRENT_GATE_TARGETS
     core-machine-cpu-profile-gate-smoke
     core-machine-descriptor-system-smoke
     core-machine-direct-flags-smoke
+    core-machine-debug-mov-s59-smoke
     core-machine-double-shift-smoke
     core-machine-enter-leave-smoke
     core-machine-fpu-8087-smoke
@@ -1837,10 +1840,33 @@ set(PROJECT_T337_UD_CURRENT_GATE_TARGETS
     core-machine-sreg-mov-smoke
     core-machine-stos-smoke
     core-machine-task-switch-smoke
+    core-machine-tf-db-s60-smoke
     core-machine-verr-verw-s58-smoke
     core-machine-xchg-smoke
     vm-dos-mem-fault-smoke
     vm-fault-outcome-runner-smoke)
+
+# A real-mode #UD owner must not rely on an all-zero IVT entry.  The terminal
+# class is discovered from the concrete shared preflight in its owned source;
+# the remaining two classes are deliberately explicit because they do not use
+# that rollback helper.  Keep these target lists exact: configure fails if an
+# inventoried owner has no one disposition.
+set(PROJECT_T337_UD_REAL_DELIVERY_TARGETS
+    core-machine-debug-mov-s59-smoke
+    core-machine-real-mode-corpus-smoke
+    core-machine-real-ud-delivery-s1-smoke
+    core-machine-tf-db-s60-smoke)
+set(PROJECT_T337_UD_NO_REAL_NEGATIVE_TARGETS
+    core-machine-control-transfer-smoke
+    core-machine-fpu-8087-smoke
+    core-machine-fpu-escape-smoke
+    core-machine-msw-s63-smoke
+    core-machine-protected-16-gate-s3-smoke
+    core-machine-protected-data-access-s2-smoke
+    core-machine-protected-far-s1-smoke
+    core-machine-protected-ud-delivery-s1-smoke
+    core-machine-task-switch-smoke
+    vm-dos-mem-fault-smoke)
 
 foreach(t337_ud_target IN LISTS PROJECT_T337_UD_CURRENT_GATE_TARGETS)
     list(FIND PROJECT_CURRENT_SMOKE_TARGETS "${t337_ud_target}"
@@ -1851,6 +1877,8 @@ foreach(t337_ud_target IN LISTS PROJECT_T337_UD_CURRENT_GATE_TARGETS)
     endif()
     get_target_property(t337_ud_sources ${t337_ud_target} SOURCES)
     set(t337_ud_found FALSE)
+    set(t337_ud_terminal FALSE)
+    set(t337_ud_delivery_marker FALSE)
     foreach(t337_ud_source IN LISTS t337_ud_sources)
         if(IS_ABSOLUTE "${t337_ud_source}")
             set(t337_ud_source_path "${t337_ud_source}")
@@ -1863,11 +1891,42 @@ foreach(t337_ud_target IN LISTS PROJECT_T337_UD_CURRENT_GATE_TARGETS)
                 "VCPUINS_EXCEPT_UD|_SetExcept_UD|UndefinedOpcode")
                 set(t337_ud_found TRUE)
             endif()
+            if(t337_ud_source_text MATCHES
+                "test_core_machine_fixture_preflight_real_ud_terminal")
+                set(t337_ud_terminal TRUE)
+            endif()
+            if(t337_ud_source_text MATCHES "T337_REAL_UD_VECTOR6_DELIVERY")
+                set(t337_ud_delivery_marker TRUE)
+            endif()
         endif()
     endforeach()
     if(NOT t337_ud_found)
         message(FATAL_ERROR
             "T337 #UD owner has no #UD source assertion: ${t337_ud_target}")
+    endif()
+    list(FIND PROJECT_T337_UD_REAL_DELIVERY_TARGETS "${t337_ud_target}"
+        t337_ud_delivery_index)
+    list(FIND PROJECT_T337_UD_NO_REAL_NEGATIVE_TARGETS "${t337_ud_target}"
+        t337_ud_nonreal_index)
+    if(t337_ud_terminal)
+        if(NOT t337_ud_delivery_index LESS 0 OR NOT t337_ud_nonreal_index LESS 0)
+            message(FATAL_ERROR
+                "T337 #UD terminal owner has a conflicting disposition: "
+                "${t337_ud_target}")
+        endif()
+    elseif(t337_ud_delivery_index LESS 0 AND t337_ud_nonreal_index LESS 0)
+        message(FATAL_ERROR
+            "T337 #UD owner lacks real-mode delivery disposition: "
+            "${t337_ud_target}")
+    elseif(NOT t337_ud_delivery_index LESS 0 AND NOT t337_ud_nonreal_index LESS 0)
+        message(FATAL_ERROR
+            "T337 #UD owner has multiple non-terminal dispositions: "
+            "${t337_ud_target}")
+    elseif(NOT t337_ud_delivery_index LESS 0 AND
+        NOT t337_ud_delivery_marker)
+        message(FATAL_ERROR
+            "T337 #UD delivery owner lacks its source contract marker: "
+            "${t337_ud_target}")
     endif()
 endforeach()
 
@@ -2059,7 +2118,7 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-add_current_vm_artifact(vm-0-5-0335 "0.5.0335")
+add_current_vm_artifact(vm-0-5-0337 "0.5.0337")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 

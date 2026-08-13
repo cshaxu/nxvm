@@ -92,6 +92,10 @@ static C_INT dt_run(descriptor_system_machine *state, const type_unsigned_8 *cod
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
 
+    if (expect_fault && expect_exception == VCPUINS_EXCEPT_UD &&
+        !TYPE_GET_BIT(state->machine->executor_cpu.data.cr0, VCPU_CR0_PE) &&
+        !test_core_machine_fixture_preflight_real_ud_terminal(state->machine))
+        return 0;
     if (!dt_write(state, 0u, code, bytes) ||
         core_machine_run(state->machine, budget, &result) !=
             (expect_fault ? TYPE_STATUS_FAULT : TYPE_STATUS_OK) ||
@@ -879,8 +883,10 @@ static C_INT dt_test_register_and_privilege_faults(C_VOID)
 
         if (!failed) {
             dt_set_tables(&state, 0x11112222u, 0x3333u, 0x44445555u, 0x6666u);
+            failed = !test_core_machine_fixture_preflight_real_ud_terminal(
+                state.machine);
             before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
-            failed = !dt_run(&state, register_code[index], 3u, 1,
+            failed |= !dt_run(&state, register_code[index], 3u, 1,
                 VCPUINS_EXCEPT_UD);
             after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= !dt_tables_equal(&before, &after);

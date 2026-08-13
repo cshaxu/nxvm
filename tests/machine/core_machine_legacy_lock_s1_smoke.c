@@ -268,7 +268,8 @@ static C_INT legacy_lock_s1_test_legacy_ud(C_VOID)
 
         if (!failed) {
             before = state.machine->executor_cpu;
-            failed |= !legacy_lock_s1_run(&state, code, sizeof(code), 1u,
+            failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
+                state.machine) || !legacy_lock_s1_run(&state, code, sizeof(code), 1u,
                 &after, &diagnostic, &status, &result) ||
                 status != TYPE_STATUS_FAULT || !diagnostic.first_fault.valid ||
                 !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
@@ -429,7 +430,8 @@ static C_INT legacy_lock_s1_test_80386_regression(C_VOID)
     failed = !legacy_lock_s1_prepare(CORE_MACHINE_CPU_PROFILE_80386, &state);
     if (!failed) {
         before = state.machine->executor_cpu;
-        failed |= !legacy_lock_s1_run(&state, invalid, sizeof(invalid), 1u,
+        failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
+            state.machine) || !legacy_lock_s1_run(&state, invalid, sizeof(invalid), 1u,
             &after, &diagnostic, &status, &result) || status != TYPE_STATUS_FAULT ||
             !diagnostic.first_fault.valid || !TYPE_GET_BIT(
                 diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) ||

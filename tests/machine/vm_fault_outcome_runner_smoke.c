@@ -20,7 +20,8 @@ static C_INT vm_fault_outcome_prepare(vm_session *session)
     if (session == STD_NULL || session->core_machine == STD_NULL) return 0;
     return test_core_machine_fixture_prepare_real_mode_execution(
             session->core_machine, 0u) && core_machine_memory_write(session->core_machine, 0u, program,
-        sizeof(program)) == TYPE_STATUS_OK;
+        sizeof(program)) == TYPE_STATUS_OK &&
+        test_core_machine_fixture_preflight_real_ud_terminal(session->core_machine);
 }
 
 C_INT main(C_VOID)

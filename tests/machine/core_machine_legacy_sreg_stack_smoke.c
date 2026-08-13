@@ -52,6 +52,8 @@ static C_INT legacy_sreg_stack_test_lock(C_VOID)
             state.machine->executor_cpu.data.esp = 0x12348000u;
             failed |= core_machine_memory_write(state.machine, 0x7ffcu, &sentinel,
                 sizeof(sentinel)) != TYPE_STATUS_OK;
+            failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
+                state.machine);
             before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= core_machine_memory_write(state.machine, 0u, code, sizeof(code)) !=
                 TYPE_STATUS_OK;
@@ -388,6 +390,8 @@ static C_INT legacy_sreg_stack_test_attributes(C_VOID)
                         code[1] = prefixes[attribute][1];
                         code[2] = opcode;
                     }
+                    failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
+                        state.machine);
                     before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
                     failed |= core_machine_memory_write(state.machine, 0u,
                         code, bytes) != TYPE_STATUS_OK;

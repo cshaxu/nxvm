@@ -135,6 +135,8 @@ static C_INT xchg_test_profiles_and_lock(C_VOID)
             failed |= !test_core_machine_fixture_prepare_real_mode_execution(state.machine,0u);
             state.machine->executor_cpu.data.eax=0x11223344u;
             state.machine->executor_cpu.data.eflags=VCPU_EFLAGS_CF;
+            failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
+                state.machine);
             before=test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= !xchg_run(&state,prefixes[form],form==2u?4u:3u,&after,&diagnostic,&status) ||
                 status!=TYPE_STATUS_FAULT || !diagnostic.first_fault.valid || !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,VCPUINS_EXCEPT_UD) ||
@@ -325,6 +327,8 @@ static C_INT xchg_test_lock(C_VOID)
             !xchg_run(&state,memory_code,sizeof(memory_code),&after,&diagnostic,&status) || status!=TYPE_STATUS_OK ||
             after.data.eax!=0xaabb7788u;
         state.machine->executor_cpu.data.eip = 0u;
+        failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
+            state.machine);
         before=test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !xchg_run(&state,register_code,sizeof(register_code),&after,&diagnostic,&status) ||
             status!=TYPE_STATUS_FAULT || !diagnostic.first_fault.valid || !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,VCPUINS_EXCEPT_UD) ||
@@ -560,6 +564,8 @@ static C_INT xchg_test_accumulator_reject(C_VOID)
                 state.machine->executor_cpu.data.eax = 0xaabb3344u;
                 state.machine->executor_cpu.data.ecx = 0x55667788u;
                 state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF;
+                failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
+                    state.machine);
                 before = test_core_machine_fixture_capture_cpu_after_run(
                     state.machine);
                 failed |= !xchg_run(&state, code, sizeof(code), &after,
@@ -620,6 +626,8 @@ static C_INT xchg_test_accumulator_lock(C_VOID)
             state.machine->executor_cpu.data.eax = 0xaabb3344u;
             state.machine->executor_cpu.data.ecx = 0x55667788u;
             state.machine->executor_cpu.data.eflags = VCPU_EFLAGS_CF;
+            failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
+                state.machine);
             before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed |= !xchg_run(&state, code, sizeof(code), &after,
                 &diagnostic, &status) ||

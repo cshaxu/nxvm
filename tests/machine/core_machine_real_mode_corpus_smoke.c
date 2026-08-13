@@ -7,6 +7,8 @@
 #include "core/machine/port_interface.h"
 #include "../support/core_machine_cpu_fixture.h"
 
+/* T337_REAL_UD_VECTOR6_DELIVERY: the corpus installs and observes vector 6. */
+
 #define CORPUS_RESET_LINEAR 0xfffffff0u
 #define CORPUS_RESET_PHYSICAL 0x000ffff0u
 #define CORPUS_RESET_WINDOW 64u
@@ -54,26 +56,32 @@ static C_INT corpus_run_to_ud(core_machine *machine, const type_unsigned_8 *prog
     STD_SIZE_T program_bytes, core_machine_cpu_fault_snapshot *out_fault)
 {
     static const type_unsigned_8 reset_jump[] = { 0xeau, 0x00u, 0x00u, 0x00u, 0x00u };
+    static const type_unsigned_8 ud_vector[] = { 0x00u, 0x03u, 0x00u, 0x00u };
+    static const type_unsigned_8 ud_handler[] = { 0xf4u };
     const core_machine_run_budget budget = { 128u, 0u };
     core_machine_run_result result;
     core_machine_cpu_diagnostic diagnostic;
+    type_status status;
+    C_INT failed = 0;
 
-    if (machine == STD_NULL || program == STD_NULL || out_fault == STD_NULL ||
-        core_machine_memory_write(machine, CORPUS_RESET_LINEAR, reset_jump,
-            sizeof(reset_jump)) != TYPE_STATUS_OK ||
-        core_machine_memory_write(machine, 0u, program,
-            program_bytes) != TYPE_STATUS_OK ||
-        core_machine_run(machine, budget, &result) != TYPE_STATUS_FAULT ||
-        result.reason != CORE_MACHINE_STOP_FAULT ||
-        core_machine_get_cpu_diagnostic(machine, &diagnostic) != TYPE_STATUS_OK ||
-        !diagnostic.first_fault.valid ||
-        !TYPE_GET_BIT(diagnostic.first_fault.exception_mask,
-            VCPUINS_EXCEPT_UD) ||
-        diagnostic.first_fault.point.bytes[0] != 0x66u) {
+    if (machine == STD_NULL || program == STD_NULL || out_fault == STD_NULL)
         return 1;
-    }
-    *out_fault = diagnostic.first_fault;
-    return 0;
+    failed |= core_machine_memory_write(machine, CORPUS_RESET_LINEAR, reset_jump,
+        sizeof(reset_jump)) != TYPE_STATUS_OK || core_machine_memory_write(
+        machine, 0u, program, program_bytes) != TYPE_STATUS_OK ||
+        core_machine_memory_write(machine, 0x0018u, ud_vector,
+        sizeof(ud_vector)) != TYPE_STATUS_OK || core_machine_memory_write(
+        machine, 0x0300u, ud_handler, sizeof(ud_handler)) != TYPE_STATUS_OK;
+    status = core_machine_run(machine, budget, &result);
+    failed |= status != TYPE_STATUS_OK ||
+        result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
+    failed |= core_machine_get_cpu_diagnostic(machine, &diagnostic) != TYPE_STATUS_OK ||
+        diagnostic.first_fault.valid || !diagnostic.last_delivered_exception.valid ||
+        !TYPE_GET_BIT(diagnostic.last_delivered_exception.exception_mask,
+            VCPUINS_EXCEPT_UD) ||
+        diagnostic.last_delivered_exception.point.bytes[0] != 0x66u;
+    *out_fault = diagnostic.last_delivered_exception;
+    return failed;
 }
 
 static C_INT corpus_run_to_halt(core_machine *machine, const type_unsigned_8 *program,

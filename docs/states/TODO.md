@@ -39,6 +39,14 @@ candidate work, and detailed capability evidence belong in
 
 ## CPU, Time, And Debugging Debt
 
+- [ ] **Architectural reset, shutdown, and triple-fault policy (`TODO(Medium)`).**
+  The machine currently exposes a KBC-originated reset request and lifecycle
+  stop, but it has no Intel-defined CPU reset/shutdown/triple-fault contract.
+  Admit only as a dedicated shared CPU/machine lifecycle task after defining
+  the reset vector, state publication, fault escalation, and product-visible
+  recovery boundary; do not infer that policy from a device request or fold it
+  into the 80386DX instruction matrix.
+
 - [ ] **Broaden real-mode 8086 corpus (`TODO(High)`).** T240 established a
   reset-vector baseline for segment override, `REP`/direction strings,
   `INT`/`IRET`, port I/O, and fault retention.  Extend only through a failing

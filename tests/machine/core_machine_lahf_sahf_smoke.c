@@ -175,6 +175,8 @@ static C_INT lahf_sahf_expect_ud(core_machine_cpu_profile profile,
 
     if (!failed) {
         lahf_sahf_seed(&state);
+        failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
+            state.machine);
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !lahf_sahf_run(&state, code, bytes, &after, &diagnostic,
             &status, &result) || status != TYPE_STATUS_FAULT ||

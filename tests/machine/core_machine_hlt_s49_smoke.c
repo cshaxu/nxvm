@@ -178,9 +178,11 @@ static C_INT hlt_s49_test_attributes_and_rejections(C_VOID)
             }
             if (!failed) {
                 hlt_s49_seed(&state);
+                failed = !test_core_machine_fixture_preflight_real_ud_terminal(
+                    state.machine);
                 before = test_core_machine_fixture_capture_cpu_after_run(
                     state.machine);
-                failed = !hlt_s49_run(&state, code, bytes, 1u, &status,
+                failed |= !hlt_s49_run(&state, code, bytes, 1u, &status,
                     &result, &after, &diagnostic);
                 failed |= status != TYPE_STATUS_FAULT;
                 failed |= result.reason != CORE_MACHINE_STOP_FAULT;
@@ -216,9 +218,11 @@ static C_INT hlt_s49_test_attributes_and_rejections(C_VOID)
         }
         if (!failed) {
             hlt_s49_seed(&state);
+            failed = !test_core_machine_fixture_preflight_real_ud_terminal(
+                state.machine);
             before = test_core_machine_fixture_capture_cpu_after_run(
                 state.machine);
-            failed = !hlt_s49_run(&state, code, bytes, 1u, &status, &result,
+            failed |= !hlt_s49_run(&state, code, bytes, 1u, &status, &result,
                 &after, &diagnostic);
             failed |= status != TYPE_STATUS_FAULT;
             failed |= result.reason != CORE_MACHINE_STOP_FAULT;

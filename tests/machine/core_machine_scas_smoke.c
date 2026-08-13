@@ -303,6 +303,8 @@ static C_INT scas_expect_ud(core_machine_cpu_profile profile,
         scas_seed(&state);
         failed |= core_machine_memory_write(state.machine, 0x20020u, &image,
             sizeof(image)) != TYPE_STATUS_OK;
+        failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
+            state.machine);
         before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= !scas_run(&state, code, bytes, 1u, &after, &diagnostic,
             &status, &result) || status != TYPE_STATUS_FAULT ||

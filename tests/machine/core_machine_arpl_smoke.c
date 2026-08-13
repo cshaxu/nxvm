@@ -214,6 +214,8 @@ static C_INT arpl_test_rejected_forms(C_VOID)
         }
         failed |= core_machine_memory_write(state.machine, 0u, program,
             sizeof(program)) != TYPE_STATUS_OK;
+        failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
+            state.machine);
         failed |= core_machine_run(state.machine, budget, &result) !=
             TYPE_STATUS_FAULT || result.reason != CORE_MACHINE_STOP_FAULT;
         failed |= core_machine_get_cpu_diagnostic(state.machine, &diagnostic) !=

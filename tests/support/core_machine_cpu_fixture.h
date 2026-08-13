@@ -118,6 +118,23 @@ static inline C_INT test_core_machine_fixture_prepare_real_mode_execution(
     return 1;
 }
 
+/*
+ * A negative real-mode #UD test that proves only producer rollback must make
+ * vector 6 unavailable explicitly. Real hardware otherwise consumes the IVT
+ * entry and publishes an interrupt frame, even when its contents are zero.
+ * Call this immediately before the negative run; owners that prove delivery
+ * instead install and validate a vector-6 handler themselves.
+ */
+static inline C_INT test_core_machine_fixture_preflight_real_ud_terminal(
+    core_machine *machine)
+{
+    if (machine == STD_NULL) return 0;
+    if (machine->executor_cpu.data.idtr.limit >= 0x18u) {
+        machine->executor_cpu.data.idtr.limit = 0x17u;
+    }
+    return 1;
+}
+
 static inline C_VOID test_core_machine_fixture_resume_after_halt_at(
     core_machine *machine, type_unsigned_32 eip)
 {

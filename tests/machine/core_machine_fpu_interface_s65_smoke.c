@@ -176,6 +176,8 @@ static C_INT fpu_interface_s65_reject(const type_unsigned_8 *code, STD_SIZE_T si
         CORE_MACHINE_FPU_PROFILE_NONE, &state);
 
     if (!failed) {
+        failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
+            state.machine);
         before = state.machine->executor_cpu;
         failed |= !fpu_interface_s65_run(&state, code, size, &after,
             &diagnostic, &status) || status != TYPE_STATUS_FAULT ||

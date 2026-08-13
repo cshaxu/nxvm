@@ -228,6 +228,8 @@ static C_INT pushf_popf_s47_test_attributes_and_rejects(C_VOID)
                 }
                 if (!failed)
                 {
+                    failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
+                        state.machine);
                     before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
                     failed |= !pushf_popf_s47_step(&state, code, bytes, &status,
                         &diagnostic, &after) || status != TYPE_STATUS_FAULT ||
@@ -283,6 +285,8 @@ static C_INT pushf_popf_s47_test_lock(C_VOID)
                 failed |= core_machine_memory_write(state.machine, 0x7ffcu, &sentinel,
                     sizeof(sentinel)) != TYPE_STATUS_OK || core_machine_memory_write(
                     state.machine, 0x8000u, &sentinel, sizeof(sentinel)) != TYPE_STATUS_OK;
+                failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
+                    state.machine);
                 before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
                 failed |= !pushf_popf_s47_step(&state, code, bytes, &status, &diagnostic,
                     &after) || status != TYPE_STATUS_FAULT || !diagnostic.first_fault.valid ||

@@ -149,6 +149,7 @@ static C_INT timing_test_fault(C_VOID)
     if (!failed) {
         failed |= core_machine_memory_write(machine, TIMING_RESET_LINEAR, fault,
             sizeof(fault)) != TYPE_STATUS_OK ||
+            !test_core_machine_fixture_preflight_real_ud_terminal(machine) ||
             core_machine_run(machine, budget, &result) != TYPE_STATUS_FAULT ||
             result.reason != CORE_MACHINE_STOP_FAULT || result.executed != 0u ||
             result.ticks != 0u || result.elapsed_ticks != 0u;

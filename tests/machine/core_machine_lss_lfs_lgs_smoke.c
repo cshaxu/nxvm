@@ -126,6 +126,7 @@ static C_INT lfg_test_reg_direct_80386(C_VOID)
             s.machine->executor_cpu.data.ss.selector = 0x0018u;
             s.machine->executor_cpu.data.fs.selector = 0x1111u;
             s.machine->executor_cpu.data.gs.selector = 0x2222u;
+            f |= !test_core_machine_fixture_preflight_real_ud_terminal(s.machine);
             b = test_core_machine_fixture_capture_cpu_after_run(s.machine);
             f |= !lfg_run_prepared(&s, c, 3u, &a, &d, &st) ||
                 st != TYPE_STATUS_FAULT || !d.first_fault.valid ||
@@ -174,6 +175,7 @@ static C_INT lfg_test_80286_memory(C_VOID)
                 s.machine->executor_cpu.data.ss.selector = 0x0018u;
                 s.machine->executor_cpu.data.fs.selector = 0x1111u;
                 s.machine->executor_cpu.data.gs.selector = 0x2222u;
+                f |= !test_core_machine_fixture_preflight_real_ud_terminal(s.machine);
                 b = test_core_machine_fixture_capture_cpu_after_run(s.machine);
                 f |= !lfg_run_prepared(&s, c, z ? 6u : 5u, &a, &d, &st) ||
                     st != TYPE_STATUS_FAULT || !d.first_fault.valid ||

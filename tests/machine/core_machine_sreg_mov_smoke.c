@@ -116,7 +116,8 @@ static C_INT sreg_mov_expect_ud(sreg_mov_machine *state, const type_unsigned_8 *
     type_status status;
     C_INT passed;
 
-    passed = sreg_mov_run(state, code, bytes, &after, &diagnostic, &status) &&
+    passed = test_core_machine_fixture_preflight_real_ud_terminal(state->machine) &&
+        sreg_mov_run(state, code, bytes, &after, &diagnostic, &status) &&
         status == TYPE_STATUS_FAULT && diagnostic.first_fault.valid &&
         TYPE_GET_BIT(diagnostic.first_fault.exception_mask, VCPUINS_EXCEPT_UD) &&
         sreg_mov_all_same(before, &after);

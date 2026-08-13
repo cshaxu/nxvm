@@ -13,6 +13,10 @@ bounded tasks by actual mechanism ownership and dependency. It preserves
 architectural differences from 8086--80286. VME/PVI, 486+ instructions, x87
 execution, timing, and device fidelity are explicit external boundaries.
 
+This candidate is downstream of the shared, 8086/80186, and 80286 packages.
+It may consume their documented contracts, but must not alter an earlier
+profile disposition to make a 32-bit form convenient.
+
 ## Completion standard
 
 Every assigned 80386DX form and state transition has focused evidence for its
@@ -25,10 +29,17 @@ Admission divides the retained rows by mechanism rather than opcode smoke:
 1. primary 32-bit operand/address and prefix combinations not already proven
    by the semantic-class closure;
 2. all metadata-valid `0F` data/control/segment forms, including complete
-   CR/DR/TR privilege and state classification;
+   CR/DR/TR privilege and state classification, ordinary DR6/DR7 breakpoint
+   matching/cause behavior, and their vector-1 interaction;
 3. residual VM86, paging/task interaction, debug/breakpoint, and system-state
    rows after the shared-delivery and 80286 candidates close; and
 4. a 80386DX profile-close audit against the complete form ledger.
+
+Each admission begins with the vertical state owner (translation, debug,
+VM86, descriptor/table state, or shared execution plan) and its callers,
+validation, materialization, commit, rollback, and fault boundaries. It then
+allocates the related opcode forms as one bounded proof matrix. This prevents
+the remaining work from degrading into independent smoke-driven patches.
 
 VME/PVI, later-CPU forms, persistent TLB models, and x87 execution stay outside
 unless a separate owner decision expands the architecture boundary.

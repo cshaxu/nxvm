@@ -322,6 +322,8 @@ static C_INT bound_s54_test_rejections(C_VOID)
 
             if (!failed) {
                 bound_s54_seed(&state.machine->executor_cpu);
+                failed |= !test_core_machine_fixture_preflight_real_ud_terminal(
+                    state.machine);
                 before = state.machine->executor_cpu;
                 failed = core_machine_memory_write(state.machine, 0u,
                     codes[index], bytes[index]) != TYPE_STATUS_OK;
