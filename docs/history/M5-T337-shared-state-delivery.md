@@ -19,3 +19,9 @@ evidence records valid-IVT frame/handler proof for primary, `0F`, operand,
 profile, and LOCK producers, a failed-IVT rollback boundary, and a
 configure-time inventory of every current-gate `tests/machine` source naming a
 `#UD` producer or assertion. Protected and VM86 behavior remains T326 evidence.
+
+S1 implementation `8de04d4b` and this governance acceptance were verified by
+fresh GCC configuration, the strict owner smoke, documentation governance,
+diff check, and 217/217 direct current-gate tests. The project wrapper target
+did not emit a test failure but exceeded the local 124-second command limit;
+the direct CTest run is the retained full gate result.
