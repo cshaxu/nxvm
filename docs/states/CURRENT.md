@@ -2,8 +2,30 @@
 
 ## Current Work
 
-**Idle.** M5 T334 is closed with its `0.5.0334` artifact. The next
-implementation task requires a separately admitted packet.
+**M5 T335 S1 - active.** Inventory and fix the bounded public xasm contract
+before implementation migration. The owner-approved candidate is
+[the xasm capacity and failure contract](../proposals/m5-xasm-capacity-failure-contract.md).
+
+## M5 T335 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner approved on 2026-08-13: admit and execute the existing xasm capacity/failure TODO after T334 closes. S1 is the required complete mechanism inventory and exact API decision before source migration. |
+| Objective | Enumerate every xasm public symbol, caller, fixed buffer, allocation and output-publication point; define one bounded core-product facade with explicit capacities, result/failure semantics, and caller migration plan. |
+| Non-goals | No xasm opcode/syntax expansion, implementation rewrite, string-only patch, product UX change, generic framework, or source migration before the S1 decision is recorded. |
+| Reference Baseline | `0b5dd143` (`M5 T334 S1 P2: close EGA registration transaction`), current artifact `0.5.0334`. The open debt is the former `TODO.md` xasm entry and T314 evidence. |
+| Candidate Proposal | [M5 xasm capacity and failure contract](../proposals/m5-xasm-capacity-failure-contract.md). |
+| Files And ABI Surface | S1 changes only proposal, Current, Queue/TODO, history, and indexed evidence. It inspects `src/core/product/utils.*`, xasm headers/engines, debugger, VM firmware/lifecycle, and product tests. No production API or artifact changes in S1. |
+| Applicable Rules | `docs/rules/EXECUTION.md`: mechanism-defect inventory, owner/variants/failure boundary, actual-change audit. `docs/rules/ARCHITECTURE.md`: one owner and explicit public failure semantics. `docs/rules/CODING.md`: minimum public capability and owner-bound repair. `docs/rules/DOCUMENT.md`: active contract and durable evidence boundaries. |
+| Verification | Repository-wide symbol/caller scan; source-level buffer/allocation/publication inventory; inspect all direct public headers; documentation governance and `git diff --check`. |
+| Expected Markers | A durable matrix classifies every current entry point/caller and names input, output, success, failure, capacity, migration, and test obligations; no unclassified public raw API or caller remains. |
+| Asset Needs | None. No source, firmware, guest media, third-party code, or Microsoft material. |
+| Reporting Requirements | Executor reports the API decision and any scope objection before code migration. In this single-session run, coordinator review checks every inventory row against actual source/callers and verifies no S2 source change is hidden in S1. |
+| Stop Conditions | Stop if a discovered non-xasm public consumer, generated firmware contract, or binary compatibility commitment needs owner choice beyond the current TODO. Do not select a compatibility shim that leaves an unbounded public bypass. |
+| Exit Criteria | Durable inventory and exact S2 contract name all entry points, callers, capacities, output and failure-atomicity rules, internal-bound strategy, test seams, and explicit transfers; governance/diff checks pass; no production source changes are made. |
+| Original Owner Request | Put the xasm TODO into the queue and execute it. |
+| Similar-Issue Sweep | Search all `aasm32`, `aasm32x`, `dasm32`, `core_product_utils_*asm*` symbols, raw pointer calls, fixed arrays, `STD_MALLOC/CALLOC`, and string writes in xasm and all `src/`/`tests/` callers. |
 
 ## Current Technical Baseline
 

@@ -8,6 +8,7 @@ is retained separately so this queue remains a short ordering surface.
 
 ## M5 Candidates
 
+1. [xasm capacity and failure contract](../proposals/m5-xasm-capacity-failure-contract.md).
 1. [80386DX architecture-coverage closure audit](../proposals/m5-80386dx-architecture-coverage-audit.md); [M5 80386DX admission policy](../proposals/m5-80386dx-candidate-policy.md).
 1. [Windows 3.x readiness map](../proposals/m5-windows-3x-readiness-map.md).
 1. [M5 closure audit](../proposals/m5-closure-audit.md).

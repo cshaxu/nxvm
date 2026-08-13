@@ -121,10 +121,6 @@ candidate work, and detailed capability evidence belong in
 - [ ] **Debugger assembler `checkop` review (`TODO(Low)`).** Keep runtime
   disassemble/reassemble comparison out of per-instruction refresh. Add a
   focused regression only when an owned BIOS/debugger defect requires it.
-- [ ] **xasm API capacity and failure semantics (`TODO(Medium)`).** Admit only
-  with explicit input/output capacities, return and failure-atomicity
-  contracts, caller inventory/migration, and bounded assembler/disassembler
-  regressions. A local string-operation substitution cannot claim closure.
 - [ ] **Bounded differential debugging (`TODO(Low)`).** A historical
   Bochx/Bochs bridge may be an optional developer tool with provenance,
   checkpoint schema, masks, instruction/time/no-progress/trace budgets, and
