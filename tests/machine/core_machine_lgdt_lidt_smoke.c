@@ -445,7 +445,8 @@ static C_INT lgdt_lidt_test_pending_pic(C_VOID)
     }
     return 1;
 }
-static C_INT lgdt_lidt_boot_protected(lgdt_lidt_machine *state)
+static C_INT lgdt_lidt_boot_protected(lgdt_lidt_machine *state,
+    core_machine_cpu_profile profile)
 {
     static const type_unsigned_8 gdt_pointer[] = {
         0x3fu,0x00u,0x00u,0x03u,0x00u,0x00u
@@ -463,7 +464,15 @@ static C_INT lgdt_lidt_boot_protected(lgdt_lidt_machine *state)
         0xffu,0xffu,0,0x70u,0,0x92u,0,0,
         0xffu,0xffu,0,0x20u,0,0xfau,0,0
     };
-    static const type_unsigned_8 real_code[] = {
+    static const type_unsigned_8 real_code_286[] = {
+        0x0fu,0x01u,0x16u,0x00u,0x01u,0x0fu,0x01u,0x1eu,0x10u,0x01u,
+        0xb8u,0x01u,0x00u,0x0fu,0x01u,0xf0u,
+        0xb8u,0x10u,0x00u,0x8eu,0xd0u,
+        0xb8u,0x18u,0x00u,0x8eu,0xd8u,
+        0xb8u,0x20u,0x00u,0x8eu,0xc0u,
+        0xeau,0x00u,0x00u,0x08u,0x00u
+    };
+    static const type_unsigned_8 real_code_386[] = {
         0x0fu,0x01u,0x16u,0x00u,0x01u,0x0fu,0x01u,0x1eu,0x10u,0x01u,
         0xb8u,0x01u,0x00u,0x0fu,0x01u,0xf0u,
         0xb8u,0x10u,0x00u,0x8eu,0xd0u,
@@ -475,11 +484,16 @@ static C_INT lgdt_lidt_boot_protected(lgdt_lidt_machine *state)
     };
     type_unsigned_8 idt[0x108u] = {0u};
     core_machine_run_result result;
+    const type_unsigned_8 *real_code = profile == CORE_MACHINE_CPU_PROFILE_80286 ?
+        real_code_286 : real_code_386;
+    STD_SIZE_T real_code_bytes = profile == CORE_MACHINE_CPU_PROFILE_80286 ?
+        sizeof(real_code_286) : sizeof(real_code_386);
 
     idt[13u * 8u + 1u] = 0x01u;
     idt[13u * 8u + 2u] = 0x38u;
-    idt[13u * 8u + 5u] = 0xeeu;
-    return lgdt_lidt_prepare(state, CORE_MACHINE_CPU_PROFILE_80386) &&
+    idt[13u * 8u + 5u] = profile == CORE_MACHINE_CPU_PROFILE_80286 ?
+        0x86u : 0xeeu;
+    return lgdt_lidt_prepare(state, profile) &&
         core_machine_memory_write(state->machine, 0x0100u, gdt_pointer,
             sizeof(gdt_pointer)) == TYPE_STATUS_OK &&
         core_machine_memory_write(state->machine, LGDT_LIDT_GDT_BASE, gdt,
@@ -489,7 +503,7 @@ static C_INT lgdt_lidt_boot_protected(lgdt_lidt_machine *state)
         core_machine_memory_write(state->machine, LGDT_LIDT_IDT_BASE, idt,
             sizeof(idt)) == TYPE_STATUS_OK &&
         core_machine_memory_write(state->machine, 0u, real_code,
-            sizeof(real_code)) == TYPE_STATUS_OK &&
+            real_code_bytes) == TYPE_STATUS_OK &&
         core_machine_memory_write(state->machine, 0x2100u,
             (const type_unsigned_8[]){0x90u}, 1u) == TYPE_STATUS_OK &&
         core_machine_memory_write(state->machine, 0x2000u,
@@ -505,16 +519,20 @@ static C_INT lgdt_lidt_test_protected_cpl_reject(C_VOID)
         {0x0fu,0x01u,0x16u,0x00u,0x04u},
         {0x0fu,0x01u,0x1eu,0x00u,0x04u}
     };
-    type_unsigned_8 opcode;
+    static const core_machine_cpu_profile profiles[] = {
+        CORE_MACHINE_CPU_PROFILE_80286, CORE_MACHINE_CPU_PROFILE_80386
+    };
+    type_unsigned_8 opcode, profile;
 
-    for (opcode = 0u; opcode != 2u; ++opcode) {
+    for (profile = 0u; profile != sizeof(profiles) / sizeof(profiles[0]);
+        ++profile) for (opcode = 0u; opcode != 2u; ++opcode) {
         lgdt_lidt_machine state;
         core_machine_run_result result, handler_result;
         core_machine_cpu_diagnostic diagnostic;
         t_cpu before, after;
         type_unsigned_8 source[6] = {0x5au,0x5au,0x5au,0x5au,0x5au,0x5au};
         type_unsigned_8 observed[6];
-        C_INT failed = !lgdt_lidt_boot_protected(&state);
+        C_INT failed = !lgdt_lidt_boot_protected(&state, profiles[profile]);
 
         if (!failed) {
             test_core_machine_fixture_resume_after_halt_at(state.machine, 0u);
