@@ -35,6 +35,9 @@ static type_unsigned_8 core_machine_fdc_sector_size(type_unsigned_8 code)
 static type_unsigned_8 core_machine_fdc_msr(const core_machine_fdc *fdc)
 {
     switch (fdc->data.phase) {
+    case core_machine_fdc_PHASE_PENDING_COMMAND:
+    case core_machine_fdc_PHASE_PENDING_COMPLETE:
+        return VFDC_MSR_CB;
     case core_machine_fdc_PHASE_RESULT:
         return VFDC_MSR_RQM | VFDC_MSR_DIO | VFDC_MSR_CB;
     case core_machine_fdc_PHASE_EXECUTION_READ:
@@ -162,6 +165,7 @@ static C_VOID core_machine_fdc_raise_irq(core_machine_fdc *fdc)
 static C_VOID core_machine_fdc_cancel_execution(core_machine_fdc *fdc)
 {
     core_machine_fdc_deassert_dma(fdc);
+    fdc->data.pending_st1 = 0u;
     fdc->data.transfer_remaining = 0u;
     fdc->data.byte_offset = 0u;
     fdc->data.format_headers_remaining = 0u;
@@ -169,9 +173,11 @@ static C_VOID core_machine_fdc_cancel_execution(core_machine_fdc *fdc)
 
 static C_INT core_machine_fdc_execution_active(const core_machine_fdc *fdc)
 {
-    return fdc != STD_NULL && (fdc->data.phase == core_machine_fdc_PHASE_EXECUTION_READ ||
+    return fdc != STD_NULL && (fdc->data.phase == core_machine_fdc_PHASE_PENDING_COMMAND ||
+        fdc->data.phase == core_machine_fdc_PHASE_EXECUTION_READ ||
         fdc->data.phase == core_machine_fdc_PHASE_EXECUTION_WRITE ||
-        fdc->data.phase == core_machine_fdc_PHASE_EXECUTION_FORMAT);
+        fdc->data.phase == core_machine_fdc_PHASE_EXECUTION_FORMAT ||
+        fdc->data.phase == core_machine_fdc_PHASE_PENDING_COMPLETE);
 }
 
 static C_VOID core_machine_fdc_command_phase(core_machine_fdc *fdc)
@@ -181,6 +187,7 @@ static C_VOID core_machine_fdc_command_phase(core_machine_fdc *fdc)
     fdc->data.command_index = 0u;
     fdc->data.result_length = 0u;
     fdc->data.result_index = 0u;
+    fdc->data.pending_st1 = 0u;
 }
 
 static C_VOID core_machine_fdc_result_phase(core_machine_fdc *fdc, type_unsigned_8 length)
@@ -209,10 +216,9 @@ static C_VOID core_machine_fdc_set_result(core_machine_fdc *fdc, type_unsigned_8
 static C_VOID core_machine_fdc_complete_transfer(core_machine_fdc *fdc,
     type_unsigned_8 st1)
 {
-    core_machine_fdc_set_result(fdc, st1 == 0u ? core_machine_fdc_ST0_NORMAL :
-        core_machine_fdc_ST0_ABNORMAL, st1, 0u);
-    core_machine_fdc_result_phase(fdc, 7u);
-    core_machine_fdc_raise_irq(fdc);
+    core_machine_fdc_deassert_dma(fdc);
+    fdc->data.pending_st1 = st1;
+    fdc->data.phase = core_machine_fdc_PHASE_PENDING_COMPLETE;
 }
 
 static C_VOID core_machine_fdc_complete_simple(core_machine_fdc *fdc, type_unsigned_8 st0,
@@ -633,7 +639,9 @@ static C_VOID core_machine_fdc_write_data(t_port *port, type_unsigned_16 id,
     }
     if (fdc->data.command_index >= sizeof(fdc->data.cmd)) return;
     fdc->data.cmd[fdc->data.command_index++] = fdc->connect.port->data.ioByte;
-    if (fdc->data.command_index == fdc->data.command_length) core_machine_fdc_execute(fdc);
+    if (fdc->data.command_index == fdc->data.command_length) {
+        fdc->data.phase = core_machine_fdc_PHASE_PENDING_COMMAND;
+    }
 }
 
 static C_VOID core_machine_fdc_write_control(t_port *port, type_unsigned_16 id,
@@ -695,6 +703,20 @@ C_VOID core_machine_fdc_reset(core_machine_fdc *fdc)
     core_machine_fdc_deassert_dma(fdc);
     core_machine_pic_irq_source_deassert(&fdc->connect.irq_source);
     core_machine_fdc_reset_controller(fdc);
+}
+
+C_VOID core_machine_fdc_advance(core_machine_fdc *fdc)
+{
+    if (fdc == STD_NULL) return;
+    if (fdc->data.phase == core_machine_fdc_PHASE_PENDING_COMMAND) {
+        core_machine_fdc_execute(fdc);
+    } else if (fdc->data.phase == core_machine_fdc_PHASE_PENDING_COMPLETE) {
+        core_machine_fdc_set_result(fdc, fdc->data.pending_st1 == 0u ?
+            core_machine_fdc_ST0_NORMAL : core_machine_fdc_ST0_ABNORMAL,
+            fdc->data.pending_st1, 0u);
+        core_machine_fdc_result_phase(fdc, 7u);
+        core_machine_fdc_raise_irq(fdc);
+    }
 }
 
 C_VOID core_machine_fdc_refresh(core_machine_fdc *fdc)

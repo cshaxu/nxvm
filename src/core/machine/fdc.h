@@ -20,9 +20,11 @@ typedef struct t_port t_port;
 
 typedef enum core_machine_fdc_phase {
     core_machine_fdc_PHASE_COMMAND = 0,
+    core_machine_fdc_PHASE_PENDING_COMMAND,
     core_machine_fdc_PHASE_EXECUTION_READ,
     core_machine_fdc_PHASE_EXECUTION_WRITE,
     core_machine_fdc_PHASE_EXECUTION_FORMAT,
+    core_machine_fdc_PHASE_PENDING_COMPLETE,
     core_machine_fdc_PHASE_RESULT
 } core_machine_fdc_phase;
 
@@ -47,6 +49,7 @@ typedef struct {
     type_unsigned_8 cmd[9];
     type_unsigned_8 ret[7];
     type_unsigned_8 st0, st1, st2, st3; /* state registers */
+    type_unsigned_8 pending_st1;
     type_unsigned_16 cylinder;
     type_unsigned_16 head;
     type_unsigned_16 sector;
@@ -199,6 +202,7 @@ C_VOID core_machine_fdc_connect(core_machine_fdc *fdc,
 const core_machine_dma_channel_provider *core_machine_fdc_dma_provider(C_VOID);
 C_VOID core_machine_fdc_initialize(core_machine_fdc *fdc);
 C_VOID core_machine_fdc_reset(core_machine_fdc *fdc);
+C_VOID core_machine_fdc_advance(core_machine_fdc *fdc);
 C_VOID core_machine_fdc_refresh(core_machine_fdc *fdc);
 C_VOID core_machine_fdc_finalize(core_machine_fdc *fdc);
 C_VOID core_machine_fdc_print(const core_machine_fdc *fdc);

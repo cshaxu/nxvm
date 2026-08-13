@@ -292,9 +292,10 @@ static C_VOID core_machine_arbitration_tick(C_VOID *opaque,
  * RTC progression and removable-media observation have a distinct readiness
  * boundary.  This callback intentionally follows the immediate DMA/PIT/PIC
  * arbitration callback at a shared due tick: sources made ready here become
- * eligible for PIC arbitration at the following due tick.  ATA/FDC command
- * service remains intentionally outside this owner until its hardware timing
- * contract is admitted; refresh is only the existing media-observation path.
+ * eligible for PIC arbitration at the following due tick.  FDC command and
+ * completion service is advanced here before its media-observation refresh;
+ * ATA service remains outside this owner until its separate contract is
+ * admitted.
  */
 static C_VOID core_machine_readiness_tick(C_VOID *opaque,
     type_unsigned_64 due_tick)
@@ -306,6 +307,7 @@ static C_VOID core_machine_readiness_tick(C_VOID *opaque,
     if (machine == STD_NULL) {
         return;
     }
+    core_machine_fdc_advance(&machine->fdc);
     core_machine_fdc_refresh(&machine->fdc);
     core_machine_trace_record(machine, CORE_MACHINE_TRACE_FDC_REFRESH,
         0u, 0u, 0u);

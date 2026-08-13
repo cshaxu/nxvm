@@ -2,28 +2,28 @@
 
 ## Current Work
 
-M5 T347 S1 - storage-service lifecycle foundation (Single-Session Mode).
+M5 T347 S2 - FDC deferred command and completion service (Single-Session Mode).
 
-## M5 T347 S1 Packet
+## M5 T347 S2 Packet
 
 | Field | Required record |
 | --- | --- |
-| Identifier Mode | New; single-session coordinator/executor roles are performed sequentially in this session. |
-| Admission And Approval | Owner approved the post-T346 PC/AT device-completeness sequence and immediate storage-service work on 2026-08-13. |
-| Objective | Establish the complete FDC/ATA command-service lifecycle and timeline-integration mechanism needed before either controller is migrated from synchronous completion. |
-| Non-goals | No arbitrary delays, host I/O timing, new FDC/ATA command breadth, LBA48/ATAPI, DMA redesign, Windows media, or cycle-exact claim. |
-| Reference Baseline | `9879959c` / `vm-0-5-0346`; T346 S4/S6 storage-transfer evidence. |
+| Identifier Mode | Continuation; single-session coordinator/executor roles are performed sequentially in this session. |
+| Admission And Approval | Owner approved the post-T346 PC/AT device-completeness sequence and immediate storage-service work on 2026-08-13; T347 S1 P1 established the lifecycle contract. |
+| Objective | Move every retained FDC command-finalization and transfer-completion publication from the issuing port/DMA transaction to explicit controller-local service states advanced only by the existing readiness timeline owner. |
+| Non-goals | No ATA implementation, arbitrary delays, new FDC command breadth, host I/O timing, generic scheduler/DMA/media-provider redesign, Windows media, or cycle-exact claim. |
+| Reference Baseline | `4a7e784d` / M5 T347 S1 P1; [storage lifecycle evidence](../etc/evidence/t347-s1-storage-service-lifecycle.md). |
 | Candidate Proposal | [PC/AT storage controller service timing](../proposals/m5-storage-controller-service-timing.md). |
-| Files And ABI Surface | Expected: `src/core/machine/{machine,fdc,hdc,timeline,trace_interface}.*`, focused owner tests, CMake, and indexed evidence; no new public mutable storage or host ABI without renewed approval. |
-| Applicable Rules | Task Reading Set; architecture single-owner/dependency invariants; coding owner-local helper discipline; source policy; T346 timeline and storage-transfer evidence. |
-| Verification | Source/caller/write inventory for FDC and ATA; focused transition proofs; timeline/reset/cancellation and trace-order proof; retained FDC/HDC/DMA/PIC tests; fresh configuration; documentation governance; diff check; current gate. |
-| Expected Markers | A new owner-local storage-lifecycle marker plus retained FDC/HDC/DMA/timeline markers; final commands are recorded with their results. |
-| Asset Needs | No guest media, firmware, or third-party source import. Primary controller documentation may be consulted under the source policy. |
-| Reporting Requirements | Record state/caller/transition inventory, chosen owner and publication boundaries, each transferred behavior, actual-change review, and one pushed complete P delivery. |
-| Stop Conditions | Stop for a needed generic scheduler, DMA, media-provider ABI, public host interface, unbounded event capacity, unsupported command semantic, or any change that would alter CPU/interrupt delivery rather than controller service ownership. |
-| Exit Criteria | One evidence-backed lifecycle contract identifies every retained FDC/ATA command/service path, its validation-to-commit/cancel boundary, timeline event owner, and required later migration; no synchronous path is mislabeled as L3 service timing. |
+| Files And ABI Surface | Expected: `src/core/machine/{machine,fdc,trace_interface}.*`, FDC-focused tests/CMake/evidence, and Current; no controller timeline pointer, public mutable storage, host ABI, or ATA source change. |
+| Applicable Rules | Task Reading Set; architecture one owner/one production path; coding owner-local state helpers; T346 timeline ordering; T347 S1 lifecycle contract; source policy. |
+| Verification | Prove command-pending busy/no-DRQ/no-IRQ state, next-readiness service for every retained command class, data-transfer completion deferral, DMA/non-DMA behavior, reset/DOR/media-loss cancellation, result/status/MSR ordering, trace order, retained FDC/DMA/PIC/timeline tests, fresh configuration, governance, diff check, and current gate. |
+| Expected Markers | New `M5:T347:S2:FDC-SERVICE:OK` plus retained FDC media/change/read-track, DMA channel, PIC lifecycle, T346 timeline/arbitration/readiness markers. |
+| Asset Needs | No guest media, firmware, or third-party code import. The existing uPD765/8272A primary protocol reference is research-only. |
+| Reporting Requirements | Record command-to-state table, write/caller sweep, every observable publication boundary, reset/cancellation result, actual-change review, and one pushed complete P delivery. |
+| Stop Conditions | Stop for a required generic scheduler/timeline capacity change, DMA or media-provider ABI change, unbounded transfer buffer, CPU/interrupt-delivery change, required command not in the retained surface, or a primary-contract conflict requiring a different service owner. |
+| Exit Criteria | All retained FDC commands and completion paths enter/leave named local pending states; final command/data transaction cannot publish execution-completion DRQ/DMA/IRQ; the next readiness and later arbitration visibility is evidenced; reset, media-loss, DOR disable, and finalization cancel pending work; ATA behavior is unchanged and not claimed. |
 | Original Owner Request | Build the high-value PC/AT device-completeness and L3 program holistically, beginning now and deferring Windows-startup testing. |
-| Similar-Issue Sweep | Inspect every FDC and ATA command, data, status, reset, media-change, DRQ, DMA, IRQ, and `refresh` path; also inspect all timeline scheduling/cancellation callers for duplicate controller-service ownership. |
+| Similar-Issue Sweep | Inspect every FDC command, data, status, DOR, control, DMA, result, reset, refresh, finalization, and machine readiness call; reject any direct completion-side DRQ/DMA/IRQ publication outside the local service advance. |
 
 ## Current Technical Baseline
 
@@ -44,6 +44,7 @@ M5 T347 S1 - storage-service lifecycle foundation (Single-Session Mode).
 
 | Task | Compact result |
 | --- | --- |
+| T347 S1 | Accepted storage-service lifecycle inventory: retained FDC/ATA command, data, reset, cancellation, media, DRQ/DMA/IRQ, and readiness paths now have one shared visibility rule and an exact S2--S4 migration sequence. [Evidence](../etc/evidence/t347-s1-storage-service-lifecycle.md). |
 | T346 | Closed deterministic PC/AT L3 convergence: one reset-safe due-event owner, equal-tick `DMA -> PIT -> PIC -> FDC -> HDC -> RTC -> KBC -> VADP` ordering, copied host boundaries, exact storage/NMI/peripheral transfers, and evidence-backed Windows handoff. [History](../history/M5-T346-core-machine-device-l3-convergence.md). |
 | T345 | Closed direct-compilation strictness convergence: 251/305 direct commands are target-local strict; the 54 remaining commands have a complete 175-row ownership ledger and an exact 51-source residual production record with durable bounded admissions. No global flags, inherited-runtime rewrites, or false linked-dependency claims. [History](../history/M5-T345-direct-compilation-strictness-convergence.md). |
 | T344 | Closed build-quality reproducibility: fresh configuration, 305-row truthful strict-compile matrix (130 retained strict/175 deferred), canonical 218-target current-gate registration, 53 historical fixture shapes, and strict-declaration uniqueness are mechanically verified. [History](../history/M5-T344-build-quality-reproducibility.md). |

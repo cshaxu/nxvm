@@ -4,7 +4,7 @@
 #include "core/machine/media_interface.h"
 #include "core/machine/port.h"
 
-static C_VOID core_machine_controller_fdc_command(t_port *port,
+static C_VOID core_machine_controller_fdc_command(core_machine_fdc *fdc, t_port *port,
     const type_unsigned_8 *bytes, STD_SIZE_T count)
 {
     STD_SIZE_T index;
@@ -12,13 +12,15 @@ static C_VOID core_machine_controller_fdc_command(t_port *port,
     for (index = 0u; index < count; ++index) {
         core_machine_port_write(port, 0x03f5u, bytes[index]);
     }
+    core_machine_fdc_advance(fdc);
 }
 
-static C_INT core_machine_controller_fdc_result(t_port *port, type_unsigned_8 *result,
-    STD_SIZE_T count)
+static C_INT core_machine_controller_fdc_result(core_machine_fdc *fdc, t_port *port,
+    type_unsigned_8 *result, STD_SIZE_T count)
 {
     STD_SIZE_T index;
 
+    core_machine_fdc_advance(fdc);
     for (index = 0u; index < count; ++index) {
         result[index] = (type_unsigned_8)core_machine_port_read(port, 0x03f5u);
     }
@@ -137,18 +139,18 @@ C_INT main(C_VOID)
                 machine->hdc.connect.media_id != hdc_topology.media_id;
 
             core_machine_port_write(port, fdc_config.dor_port, 0x1cu);
-            core_machine_controller_fdc_command(port, specify_non_dma,
+            core_machine_controller_fdc_command(&machine->fdc, port, specify_non_dma,
                 sizeof(specify_non_dma));
-            core_machine_controller_fdc_command(port, read_absent,
+            core_machine_controller_fdc_command(&machine->fdc, port, read_absent,
                 sizeof(read_absent));
-            failed |= !core_machine_controller_fdc_result(port, result,
+            failed |= !core_machine_controller_fdc_result(&machine->fdc, port, result,
                 sizeof(result)) || result[0] != core_machine_fdc_ST0_ABNORMAL ||
                 result[1] != 0x04u;
 
-            core_machine_controller_fdc_command(port, write_absent,
+            core_machine_controller_fdc_command(&machine->fdc, port, write_absent,
                 sizeof(write_absent));
             core_machine_port_write(port, fdc_config.data_port, 0x5au);
-            failed |= !core_machine_controller_fdc_result(port, result,
+            failed |= !core_machine_controller_fdc_result(&machine->fdc, port, result,
                 sizeof(result)) || result[0] != core_machine_fdc_ST0_ABNORMAL ||
                 result[1] != 0x04u;
 

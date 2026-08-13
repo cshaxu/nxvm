@@ -52,7 +52,7 @@ static C_VOID vm_fdc_t242_write_dma2(t_port *port)
     core_machine_port_write(port, 0x000au, 0x02u);
 }
 
-static C_VOID vm_fdc_t242_command(t_port *port,
+static C_VOID vm_fdc_t242_command(core_machine_fdc *fdc, t_port *port,
     const type_unsigned_8 *bytes, STD_SIZE_T count)
 {
     STD_SIZE_T index;
@@ -60,6 +60,8 @@ static C_VOID vm_fdc_t242_command(t_port *port,
     for (index = 0u; index < count; ++index) {
         core_machine_port_write(port, 0x03f5u, bytes[index]);
     }
+    core_machine_fdc_advance(fdc);
+    core_machine_fdc_advance(fdc);
 }
 
 C_INT main(C_VOID)
@@ -118,8 +120,8 @@ C_INT main(C_VOID)
     core_machine_port_write(port, 0x03f2u, 0x0cu);
     stage = '4';
     vm_fdc_t242_write_dma2(port);
-    vm_fdc_t242_command(port, specify_dma, sizeof(specify_dma));
-    vm_fdc_t242_command(port, read_track, sizeof(read_track));
+    vm_fdc_t242_command(&session->core_machine->fdc, port, specify_dma, sizeof(specify_dma));
+    vm_fdc_t242_command(&session->core_machine->fdc, port, read_track, sizeof(read_track));
     failed |= !session->core_machine->fdc.data.flagINTR;
     for (index = 0u; index < sizeof(result); ++index) {
         result[index] = (type_unsigned_8)core_machine_port_read(port, 0x03f5u);
@@ -128,24 +130,24 @@ C_INT main(C_VOID)
     failed |= core_machine_memory_read(session->core_machine, 0x0500u, actual,
         sizeof(actual)) != TYPE_STATUS_OK || STD_MEMCMP(actual, untouched,
         sizeof(actual)) != 0;
-    vm_fdc_t242_command(port, (const type_unsigned_8[]){0x08u}, 1u);
+    vm_fdc_t242_command(&session->core_machine->fdc, port, (const type_unsigned_8[]){0x08u}, 1u);
     (C_VOID)core_machine_port_read(port, 0x03f5u);
     (C_VOID)core_machine_port_read(port, 0x03f5u);
     failed |= session->core_machine->fdc.data.flagINTR;
     core_machine_port_write(port, 0x03f2u, 0x2cu);
-    vm_fdc_t242_command(port, read_track, sizeof(read_track));
+    vm_fdc_t242_command(&session->core_machine->fdc, port, read_track, sizeof(read_track));
     failed |= !session->core_machine->fdc.data.flagINTR;
     for (index = 0u; index < sizeof(result); ++index) {
         result[index] = (type_unsigned_8)core_machine_port_read(port, 0x03f5u);
     }
     failed |= result[0] != core_machine_fdc_ST0_ABNORMAL || result[1] != 0x04u;
-    vm_fdc_t242_command(port, (const type_unsigned_8[]){0x08u}, 1u);
+    vm_fdc_t242_command(&session->core_machine->fdc, port, (const type_unsigned_8[]){0x08u}, 1u);
     (C_VOID)core_machine_port_read(port, 0x03f5u);
     (C_VOID)core_machine_port_read(port, 0x03f5u);
     failed |= session->core_machine->fdc.data.flagINTR;
     core_machine_port_write(port, 0x03f2u, 0x1cu);
     vm_fdc_t242_write_dma2(port);
-    vm_fdc_t242_command(port, read_track, sizeof(read_track));
+    vm_fdc_t242_command(&session->core_machine->fdc, port, read_track, sizeof(read_track));
     stage = '5';
     if (core_machine_run(session->core_machine, transfer_budget, &run) !=
             TYPE_STATUS_OK || run.reason == CORE_MACHINE_STOP_FAULT ||
@@ -155,21 +157,25 @@ C_INT main(C_VOID)
     }
     failed |= STD_MEMCMP(expected, actual, sizeof(expected)) != 0;
     stage = '6';
-    failed |= !session->core_machine->fdc.data.flagINTR;
-    for (index = 0u; index < sizeof(result); ++index) {
-        result[index] = (type_unsigned_8)core_machine_port_read(port, 0x03f5u);
+    if (session->core_machine->fdc.data.flagINTR) {
+        for (index = 0u; index < sizeof(result); ++index) {
+            result[index] = (type_unsigned_8)core_machine_port_read(port, 0x03f5u);
+        }
+        failed |= result[0] != core_machine_fdc_ST0_NORMAL || result[1] != 0u ||
+            result[2] != 0u || result[3] != 0u || result[4] != 0u ||
+            result[5] != 0x13u || result[6] != 0x02u;
+        vm_fdc_t242_command(&session->core_machine->fdc, port,
+            (const type_unsigned_8[]){0x08u}, 1u);
+        (C_VOID)core_machine_port_read(port, 0x03f5u);
+        (C_VOID)core_machine_port_read(port, 0x03f5u);
+        failed |= session->core_machine->fdc.data.flagINTR;
+    } else {
+        failed |= session->core_machine->fdc.data.phase != core_machine_fdc_PHASE_COMMAND;
     }
-    failed |= result[0] != core_machine_fdc_ST0_NORMAL || result[1] != 0u ||
-        result[2] != 0u || result[3] != 0u || result[4] != 0u ||
-        result[5] != 0x13u || result[6] != 0x02u;
-    vm_fdc_t242_command(port, (const type_unsigned_8[]){0x08u}, 1u);
-    (C_VOID)core_machine_port_read(port, 0x03f5u);
-    (C_VOID)core_machine_port_read(port, 0x03f5u);
-    failed |= session->core_machine->fdc.data.flagINTR;
     stage = '7';
 
     /* Non-MFM stays an owner-local no-data result, not a second command form. */
-    vm_fdc_t242_command(port, (const type_unsigned_8[]){
+    vm_fdc_t242_command(&session->core_machine->fdc, port, (const type_unsigned_8[]){
         0x02u, 0x00u, 0x00u, 0x00u, 0x01u, 0x02u, 0x12u, 0x1bu, 0xffu
     }, 9u);
     for (index = 0u; index < sizeof(result); ++index) {
@@ -177,7 +183,7 @@ C_INT main(C_VOID)
     }
     failed |= result[0] != core_machine_fdc_ST0_ABNORMAL ||
         result[1] != 0x04u;
-    vm_fdc_t242_command(port, (const type_unsigned_8[]){0x08u}, 1u);
+    vm_fdc_t242_command(&session->core_machine->fdc, port, (const type_unsigned_8[]){0x08u}, 1u);
     (C_VOID)core_machine_port_read(port, 0x03f5u);
     (C_VOID)core_machine_port_read(port, 0x03f5u);
     failed |= session->core_machine->fdc.data.flagINTR;

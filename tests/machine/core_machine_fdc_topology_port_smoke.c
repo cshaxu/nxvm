@@ -50,39 +50,41 @@ static const core_machine_media_provider core_machine_fdc_topology_provider = {
     STD_NULL
 };
 
-static C_VOID core_machine_fdc_topology_command(t_port *port, const type_unsigned_8 *bytes,
-    STD_SIZE_T count)
+static C_VOID core_machine_fdc_topology_command(core_machine_fdc *fdc, t_port *port,
+    const type_unsigned_8 *bytes, STD_SIZE_T count)
 {
     STD_SIZE_T index;
 
     for (index = 0u; index < count; ++index) {
         core_machine_port_write(port, 0x03f5u, bytes[index]);
     }
+    core_machine_fdc_advance(fdc);
 }
 
-static C_INT core_machine_fdc_topology_result(t_port *port, type_unsigned_8 *result,
-    STD_SIZE_T count)
+static C_INT core_machine_fdc_topology_result(core_machine_fdc *fdc, t_port *port,
+    type_unsigned_8 *result, STD_SIZE_T count)
 {
     STD_SIZE_T index;
 
+    core_machine_fdc_advance(fdc);
     for (index = 0u; index < count; ++index) {
         result[index] = (type_unsigned_8)core_machine_port_read(port, 0x03f5u);
     }
     return (core_machine_port_read(port, 0x03f4u) & (VFDC_MSR_CB | VFDC_MSR_DIO)) == 0u;
 }
 
-static C_INT core_machine_fdc_topology_read_sector(t_port *port, type_unsigned_8 unit,
-    type_unsigned_8 expected, type_unsigned_8 *result)
+static C_INT core_machine_fdc_topology_read_sector(core_machine_fdc *fdc, t_port *port,
+    type_unsigned_8 unit, type_unsigned_8 expected, type_unsigned_8 *result)
 {
     const type_unsigned_8 command[] = {0xe6u, unit, 0u, 0u, 1u, 2u, 1u, 0x1bu, 0xffu};
     type_unsigned_32 index;
 
-    core_machine_fdc_topology_command(port, command, sizeof(command));
+    core_machine_fdc_topology_command(fdc, port, command, sizeof(command));
     if (core_machine_port_read(port, 0x03f5u) != expected) return 0;
     for (index = 1u; index < 512u; ++index) {
         (C_VOID)core_machine_port_read(port, 0x03f5u);
     }
-    return core_machine_fdc_topology_result(port, result, 7u) &&
+    return core_machine_fdc_topology_result(fdc, port, result, 7u) &&
         result[0] == core_machine_fdc_ST0_NORMAL && result[1] == 0u;
 }
 
@@ -144,38 +146,38 @@ int main(C_VOID)
                 failed |= 0x04;
             } else {
                 core_machine_port_write(port, 0x03f2u, 0x1cu);
-                core_machine_fdc_topology_command(port, specify_non_dma,
+                core_machine_fdc_topology_command(fdc, port, specify_non_dma,
                     sizeof(specify_non_dma));
-                core_machine_fdc_topology_command(port, sense_drive,
+                core_machine_fdc_topology_command(fdc, port, sense_drive,
                     sizeof(sense_drive));
-                failed |= !core_machine_fdc_topology_result(port, result, 1u) ||
+                failed |= !core_machine_fdc_topology_result(fdc, port, result, 1u) ||
                     result[0] != 0x30u ||
-                    !core_machine_fdc_topology_read_sector(port, 0u, 0xa1u, result) ||
+                    !core_machine_fdc_topology_read_sector(fdc, port, 0u, 0xa1u, result) ||
                     drive0.read_count != 512u || drive1.read_count != 0u;
 
                 core_machine_port_write(port, 0x03f2u, 0x2du);
                 sense_drive[1] = 1u;
-                core_machine_fdc_topology_command(port, sense_drive,
+                core_machine_fdc_topology_command(fdc, port, sense_drive,
                     sizeof(sense_drive));
-                failed |= !core_machine_fdc_topology_result(port, result, 1u) ||
+                failed |= !core_machine_fdc_topology_result(fdc, port, result, 1u) ||
                     result[0] != 0x31u ||
-                    !core_machine_fdc_topology_read_sector(port, 1u, 0xb2u, result) ||
+                    !core_machine_fdc_topology_read_sector(fdc, port, 1u, 0xb2u, result) ||
                     drive0.read_count != 512u || drive1.read_count != 512u;
 
-                core_machine_fdc_topology_command(port,
+                core_machine_fdc_topology_command(fdc, port,
                     (const type_unsigned_8[]){0xe6u, 0u, 0u, 0u, 1u, 2u, 1u, 0x1bu, 0xffu}, 9u);
-                failed |= !core_machine_fdc_topology_result(port, result, 7u) ||
+                failed |= !core_machine_fdc_topology_result(fdc, port, result, 7u) ||
                     result[0] != core_machine_fdc_ST0_ABNORMAL || result[1] != 0x04u ||
                     drive0.read_count != 512u || drive1.read_count != 512u;
 
                 core_machine_port_write(port, 0x03f2u, 0x4eu);
                 sense_drive[1] = 2u;
-                core_machine_fdc_topology_command(port, sense_drive,
+                core_machine_fdc_topology_command(fdc, port, sense_drive,
                     sizeof(sense_drive));
-                failed |= !core_machine_fdc_topology_result(port, result, 1u) ||
+                failed |= !core_machine_fdc_topology_result(fdc, port, result, 1u) ||
                     result[0] != 0x12u;
-                core_machine_fdc_topology_command(port, read_absent, sizeof(read_absent));
-                failed |= !core_machine_fdc_topology_result(port, result, 7u) ||
+                core_machine_fdc_topology_command(fdc, port, read_absent, sizeof(read_absent));
+                failed |= !core_machine_fdc_topology_result(fdc, port, result, 7u) ||
                     result[0] != core_machine_fdc_ST0_ABNORMAL || result[1] != 0x04u ||
                     drive0.read_count != 512u || drive1.read_count != 512u;
             }
