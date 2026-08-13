@@ -84,7 +84,8 @@ static C_VOID dma_write_mask(t_dma *dma, t_port *port)
 
 static t_dma *dma_controller(t_dma *primary, type_unsigned_16 port_id)
 {
-    return port_id >= 0x00c0u ? primary->connect.peer : primary;
+    return ((port_id >= 0x0089u && port_id <= 0x008fu) ||
+        port_id >= 0x00c0u) ? primary->connect.peer : primary;
 }
 
 static type_unsigned_8 dma_page_channel(type_unsigned_16 port_id)
@@ -205,15 +206,9 @@ static type_unsigned_8 GetRegTopId(t_dma *rdma, type_unsigned_8 reg) {
 }
 static C_VOID IncreaseCurrAddr(t_dma *rdma, type_unsigned_8 id) {
     rdma->data.currAddr[id]++;
-    if (rdma->data.currAddr[id] == TYPE_ZERO_16) {
-        rdma->data.page[id]++;
-    }
 }
 static C_VOID DecreaseCurrAddr(t_dma *rdma, type_unsigned_8 id) {
     rdma->data.currAddr[id]--;
-    if (rdma->data.currAddr[id] == TYPE_MAX_UNSIGNED_16) {
-        rdma->data.page[id]--;
-    }
 }
 static C_VOID Transmission(t_dma *rdma, t_latch *latch, t_ram *ram,
                          type_unsigned_8 id, type_bool flagWord) {
