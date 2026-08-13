@@ -2,8 +2,8 @@
 
 ## Current Work
 
-**Idle.** M5 T331 is closed; the next candidate requires a separately
-admitted packet.
+**Idle.** Td S75 is closed; the first M5 Queue candidate is now the uncompleted
+80386DX architecture-coverage closure audit.
 
 ## Current Technical Baseline
 
@@ -33,6 +33,12 @@ admitted packet.
 | T324 | Closed current-test/specialized-gate separation: `run-current-smokes` now runs only the full 209-test CTest smoke selection, `run-current-fast-smokes` retains the 194-test non-media selection, and `verify-current-specialized-gates` owns 46 named verifiers plus a mechanical target-graph check. `current-gates-gcc` composes exactly both roots; all layer baselines and evidence are retained in [T324 history](../history/M5-T324-current-gate-separation.md). |
 
 ## Recent Governance
+
+- **M5 Td S75:** reconciled Queue state with recorded closures: removed only
+  the T323 protection/privilege, T325 paging, T328 legacy LOCK, and T330
+  transition-unification candidates; retained the remaining candidate order.
+  Documentation governance and diff check passed. Td work has no runtime or
+  artifact change.
 
 - **M5 Td S74:** clarified that an executor reports a discovered issue while
   the coordinator alone revises the active packet/brief or admits later S
@@ -83,13 +89,3 @@ admitted packet.
   legacy LOCK boundaries without adding project-specific content to global
   rules. Documentation and state checks plus diff check passed. Td work has no
   runtime or artifact change.
-
-- **M5 Td S66:** replaced all-documents startup reading with a role- and
-  change-triggered reading set; aligned implementation and governance P
-  lifecycle in both execution modes; clarified owner approval, coordinator and
-  executor reporting, S-brief authority, corrective re-admission, and Status
-  retention; added the `Reporting Requirements` packet field; and split the
-  governance verifier into diagnostic documentation and state scopes while
-  retaining its combined closure gate. Documentation and state checks, combined
-  check, self-test, and diff check passed. Td work has no runtime or artifact
-  change.

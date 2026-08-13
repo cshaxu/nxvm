@@ -8,10 +8,6 @@ is retained separately so this queue remains a short ordering surface.
 
 ## M5 Candidates
 
-1. [Task-switch transition unification](../proposals/m5-task-switch-transition-unification.md); [M5 80386DX admission policy](../proposals/m5-80386dx-candidate-policy.md).
-1. [80386DX protection and privilege-transfer closure](../proposals/m5-protection-privilege-transfer-closure.md); [M5 80386DX admission policy](../proposals/m5-80386dx-candidate-policy.md).
-1. [80386DX paging and translation closure](../proposals/m5-paging-translation-closure.md); [M5 80386DX admission policy](../proposals/m5-80386dx-candidate-policy.md).
-1. [80186 and 80286 legacy LOCK-prefix legality matrix](../proposals/m5-legacy-lock-legality.md); [M5 80386DX admission policy](../proposals/m5-80386dx-candidate-policy.md).
 1. [80386DX architecture-coverage closure audit](../proposals/m5-80386dx-architecture-coverage-audit.md); [M5 80386DX admission policy](../proposals/m5-80386dx-candidate-policy.md).
 1. [Windows 3.x readiness map](../proposals/m5-windows-3x-readiness-map.md).
 1. [M5 closure audit](../proposals/m5-closure-audit.md).
