@@ -24,6 +24,21 @@ guest execution path changed.
 - `current-gates-gcc` passed 214/214 current tests; real time was 35.84 seconds.
 - Documentation governance and `git diff --check` passed.
 
+## S4 Corrective Artifact Closure
+
+The later quality audit found that T333's runnable source change had closed
+without the task-specific developer artifact required by the execution policy.
+Corrective S4 therefore changed only the current artifact target and preset to
+`vm-0-5-0333` / `0.5.0333`; it made no production-source, ABI, test, or input
+behavior change.
+
+- Accepted artifact-target source commit: `0619a824`.
+- Local developer artifact: `build/output/nxvm_0_5_0333.exe`.
+- SHA-256: `EB89A9701036EFF6FEBFD211B12C92832FFB90CAE51672FEEF4241C6BE5A7A3E`.
+- `verify-current-artifact-target` reports exactly
+  `M5:T197:S1:CURRENT-ARTIFACT-TARGET:vm-0-5-0333:OK`; the compiled binary
+  contains the CMake-supplied `0.5.0333` identity and retained product name.
+
 ## Boundary
 
 The existing xasm capacity and failure-semantics TODO remains open. The
