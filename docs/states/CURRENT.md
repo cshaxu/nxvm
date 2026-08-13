@@ -2,29 +2,8 @@
 
 ## Current Work
 
-M5 T347 S3 - ATA PIO deferred command and sector-completion service
-(Single-Session Mode).
-
-## M5 T347 S3 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation; single-session coordinator and executor roles are performed sequentially in this session. |
-| Admission And Approval | Owner approved the post-T346 PC/AT device-completeness sequence on 2026-08-13; accepted T347 S1/S2 establish the common lifecycle and FDC precedent. |
-| Objective | Move every retained ATA PIO command acceptance and sector/final completion publication from its issuing command/data port transaction to named HDC-local pending states advanced only by the existing readiness timeline owner. |
-| Non-goals | No ATA command-set expansion, LBA48, ATAPI, bus mastering, cache policy, host blocking I/O, generic scheduler/DMA/media-provider redesign, Windows media, or physical seek/rotation timing claim. |
-| Reference Baseline | `be37c125` / T347 S2 governance closure; [storage lifecycle evidence](../etc/evidence/t347-s1-storage-service-lifecycle.md) and [FDC service evidence](../etc/evidence/t347-s2-fdc-deferred-service.md). |
-| Candidate Proposal | [PC/AT storage controller service timing](../proposals/m5-storage-controller-service-timing.md). |
-| Files And ABI Surface | Expected: `src/core/machine/{machine,hdc,trace_interface}.*`, retained ATA/FDC timeline tests, evidence, and Current; no controller timeline pointer, media-provider ABI, host ABI, or FDC behavior change. |
-| Applicable Rules | Task Reading Set; architecture one owner/one production path; coding owner-local state helpers; T346 due-event order; T347 lifecycle contract; source policy. |
-| Verification | Prove command-pending BSY/no-DRQ/no-IRQ state; next-readiness handling of retained READ/WRITE/IDENTIFY and failure paths; each final data-sector boundary deferred before next DRQ/final IRQ; nIEN/status/alternate-status/SRST cancellation; CHS/LBA28 and media-failure behavior; later-arbitration visibility; retained HDC/ATA/DMA/PIC/timeline tests, fresh configuration, governance, diff check, and current gate. |
-| Expected Markers | New `M5:T347:S3:ATA-SERVICE:OK` plus retained ATA PIO/DOS, HDC/nIEN, PIC lifecycle, FDC service, and T346 timeline/arbitration/readiness markers. |
-| Asset Needs | No guest media, firmware, or third-party code import. Existing ATA PIO register/status reference is research-only. |
-| Reporting Requirements | Record command-to-state and data-sector tables, complete command/data/control/read caller sweep, observable status/DRQ/IRQ boundaries, reset/cancellation results, actual-change review, and one pushed complete P delivery. |
-| Stop Conditions | Stop for a required generic scheduler/timeline capacity change, DMA/media-provider ABI change, unbounded buffer, CPU/interrupt-delivery change, required command outside the retained surface, or primary ATA contract conflict requiring a different service owner. |
-| Exit Criteria | Every retained ATA PIO command and sector/final-completion path enters/leaves named local pending states; command and final-data transactions cannot publish next-DRQ/final-IRQ completion; reset/nIEN/media failure cancel pending work; status versus alternate-status behavior remains exact; FDC stays unchanged and ATA makes no mechanical-duration claim. |
-| Original Owner Request | Build high-value PC/AT device completeness and L3 timing holistically before Windows-startup testing. |
-| Similar-Issue Sweep | Inspect every HDC command/data/task-file/status/control/nIEN/SRST/media/reset/finalization/refresh path and the machine readiness caller; reject direct command/data-side DRQ/IRQ completion outside local service advance. |
+**Idle.** M5 T347 S3 is accepted and closed; the cross-controller storage
+reconciliation requires a separately admitted packet.
 
 ## Current Technical Baseline
 
@@ -45,6 +24,7 @@ M5 T347 S3 - ATA PIO deferred command and sector-completion service
 
 | Task | Compact result |
 | --- | --- |
+| T347 S3 | Accepted ATA PIO deferred service: task-file capture and command BSY, retained READ/WRITE/IDENTIFY service, per-sector pending transitions, nIEN/SRST/media behavior, two-sector DOS PIO, and HDD boot proof passed. [Evidence](../etc/evidence/t347-s3-ata-deferred-service.md). |
 | T347 S2 | Accepted FDC deferred command/completion lifecycle: the existing readiness owner alone advances command and final-transfer publication; pending MSR, DMA/non-DMA, DOR/reset/media cancellation, VM FDC, and T242 read-track proof passed. [Evidence](../etc/evidence/t347-s2-fdc-deferred-service.md). |
 | T347 S1 | Accepted storage-service lifecycle inventory: retained FDC/ATA command, data, reset, cancellation, media, DRQ/DMA/IRQ, and readiness paths now have one shared visibility rule and an exact S2--S4 migration sequence. [Evidence](../etc/evidence/t347-s1-storage-service-lifecycle.md). |
 | T346 | Closed deterministic PC/AT L3 convergence: one reset-safe due-event owner, equal-tick `DMA -> PIT -> PIC -> FDC -> HDC -> RTC -> KBC -> VADP` ordering, copied host boundaries, exact storage/NMI/peripheral transfers, and evidence-backed Windows handoff. [History](../history/M5-T346-core-machine-device-l3-convergence.md). |
