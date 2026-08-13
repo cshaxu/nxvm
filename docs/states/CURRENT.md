@@ -2,29 +2,8 @@
 
 ## Current Work
 
-**Active.** M5 T332 S2 establishes one private VM session construction
-transaction and failure-atomicity boundary (single-agent execution cycle).
-
-## M5 T332 S2 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner approved the T332 proposal and its staged VM-session lifecycle transaction on 2026-08-12, then approved continuation after S1 acceptance. Single-agent execution is owner-directed. |
-| Objective | Map all VM session construction stages and converge identical failure teardown at the VM composition owner, so failure leaves no active session, core machine, provider binding, or externally visible partial state. Prove the normal and late image/media paths remain intact. |
-| Non-goals | No public `vm_session_config` API or ABI change; no core/device/provider semantic change, generic rollback framework, fixture-lifecycle work (S3), rules edit, guest media import, or mantle/DOS/NXVDM work. |
-| Reference Baseline | `66da5eef`, accepted T332 S1; active artifact remains `vm-0-5-0332`. |
-| Candidate Proposal | [VM session construction transaction](../proposals/m5-vm-session-construction-transaction.md). |
-| Files And ABI Surface | Expected private VM composition files under `src/vm/composition/session/`, owner product smoke and CMake/evidence/history/Current updates. No new public header, public state, or product-visible API. |
-| Applicable Rules | `docs/README.md` Task Reading Set; `docs/rules/EXECUTION.md` lifecycle, holistic-remediation, actual-change review, and artifact rules; `docs/rules/ARCHITECTURE.md` one stateful construction/rollback owner and composition-root invariants; `docs/rules/CODING.md` bounded owner-local helper rule; `docs/design/ARCHITECTURE.md` VM composition ownership; `docs/design/CODING.md` source/test placement. |
-| Verification | First record a stage/caller/rollback map. Add deterministic stage-failure and late image/media failure/recovery proof; retain normal default/configured creation. Build the T332 artifact, run focused session smoke, current artifact verifier, documentation governance, `git diff --check`, specialized gates, and full current CTest selection. |
-| Expected Markers | Existing `M5:T300:S3:SESSION-INITIALIZATION-ATOMICITY:OK` and S1 marker remain; add `M5:T332:S2:SESSION-CONSTRUCTION-TRANSACTION:OK`. |
-| Asset Needs | None. Failure tests use invalid profile data or nonexistent paths only; no guest image or external source is admitted. |
-| Reporting Requirements | Before implementation, record the complete stage/caller/teardown map and either confirm the one-owner boundary or report a stop condition. Deliver one complete P1 with code review, failure/recovery evidence, artifact identity, and similar-issue sweep; push immediately. |
-| Stop Conditions | Stop for a required public interface, a core/device/provider behavior defect outside VM composition, an image/media dependency that cannot be deterministically injected, or a rollback that must cross a distinct product owner. Transfer each such item explicitly. |
-| Exit Criteria | One private transaction/rollback ownership path replaces identical partial teardown; all admitted stage failures and late image/media failure prove no partial session publication and recovery; normal creation remains valid; evidence/history/artifact are updated and full verification passes. |
-| Original Owner Request | The owner asked to create a documentation Td, then execute the two VM-session and fixture findings as multiple subtasks; S2 is the approved lifecycle/failure-atomicity subtask. |
-| Similar-Issue Sweep | Inspect every `vm_session_create`, initialize, finalize, storage/control/provider lifecycle, machine-device configuration, image insertion, and failure return path. Classify each as converged, intentionally distinct owner behavior, or separately deferred debt. |
+**Idle.** M5 T332 S2 is accepted; T332 remains open and requires a separately
+admitted S3 fixture-lifecycle convergence packet.
 
 ## Current Technical Baseline
 
@@ -45,6 +24,7 @@ transaction and failure-atomicity boundary (single-agent execution cycle).
 
 | Task | Compact result |
 | T332 S1 | Accepted `f0b1a9bd`: VM session creation now has one private profile-default materialization followed by explicit memory/CPU/FPU overrides. The focused default/override/core-value proof, 49/49 specialized gates, 212/212 current CTests, and T332 artifact SHA-256 are retained in [history](../history/M5-T332-vm-session-construction-transaction.md). |
+| T332 S2 | Accepted `e23db308`: equivalent early storage teardown now has one private rollback owner; core, firmware, FDC, HDC, and late FDD/HDD image failures prove no session publication and recovery. The stage map, 49/49 specialized gates, 212/212 current CTests, and artifact identity are retained in [history](../history/M5-T332-vm-session-construction-transaction.md). |
 | T331 | Closed the bounded real-mode `ExecFinal` final-delivery construction: `#DE/#MF/#BR/#NM/#GP` share one rollback/diagnostic plan, and `#GP` IVT success no longer records a terminal fault before transfer. Real-mode `#PF` is architecturally outside paging's protected-mode state. The new `#GP` frame/failed-IVT regression, mechanical construction verifier, artifact, and 212/212 current-gate result are retained in [history](../history/M5-T331-exception-final-delivery.md). |
 | T330 | Closed the whole-codebase construction-drift package: one task-transition constructor, FDD/HDD backing/create atomicity, and CALL-gate dual-fault preflight convergence. Its mechanism matrices remain retained evidence; they are not a current mandatory rule. Intel-required layouts remain explicit; T330 artifact, focused regressions, 211/211 current-gate, and governance evidence are in [history](../history/M5-T330-width-path-convergence.md). |
 | T329 | Closed the bounded Intel 80286/80386 protected task-transition state machine: 16/32-bit direct and task-gate entry, nested CALL/IRET state, incoming LDT images, source-CR3 preflight/incoming-CR3 commit, and TSS post-switch `#DB`. S7 proves target-page fetch, target-TSS `#PF` atomicity, and a target-state restart frame; the 0329 artifact and 211/211 gate result are in [history](../history/M5-T329-task-transition-state-machine.md). |

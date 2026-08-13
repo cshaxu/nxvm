@@ -48,3 +48,11 @@ record is [T332 S2 evidence](../etc/evidence/t332-s2-vm-session-construction-tra
 
 The rebuilt T332 artifact remains `vm-0-5-0332`, SHA-256
 `0429D3ED2D0D55CB8DB7E8BE0F89344B2FF842C1A0DD25E33A07C4FAD7463D5D`.
+
+## S2 Acceptance
+
+Coordinator review confirms that the early storage rollback only replaces
+identical early-stage teardown, while lifecycle and outer-create rollback retain
+their distinct initialized-state ownership. The focused session smoke, fresh
+artifact build, 49 specialized verifiers, documentation governance, diff
+check, and full 212-test current CTest selection passed.
