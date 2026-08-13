@@ -35,8 +35,8 @@ publisher or parallel TSS16-stack reader exists in S4 scope.
 
 ## Exact Transfers
 
-- `LOCK` legality for the memory-capable far forms is T340's explicit 80286
-  matrix, not an inference from the 80386 prefix policy.
+- `LOCK` legality for the memory-capable far forms is the accepted T328
+  pre-386 matrix, not an inference from the 80386 prefix policy.
 - `66/67`, 32-bit gate/frame/call-gate layouts, FS/GS, and 80386DX form
   composition transfer to T341.
 - VM86 gate entry, paging fault composition, 80386 contributory/double-fault

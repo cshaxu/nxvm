@@ -23,7 +23,7 @@ separately admitted packet.
 ## Recent M5 Closures
 
 | Task | Compact result |
-| T339 | Closed the Queue-ordered 80286 descriptor-transfer package: S2--S6 proved table/system-word, selector/cache, protected entry, protected return, and TSS16 transition mechanisms; S7 reconciled the source graph and exact T340--T342 transfers. [Closure audit](../etc/evidence/t339-s7-80286-descriptor-transfer-audit.md). |
+| T339 | Closed the Queue-ordered 80286 descriptor-transfer package: S2--S6 proved table/system-word, selector/cache, protected entry, protected return, and TSS16 transition mechanisms; S7 reconciled the source graph, retained T328 `LOCK` policy, and exact T341--T342 transfers. [Closure audit](../etc/evidence/t339-s7-80286-descriptor-transfer-audit.md). |
 | T338 | Closed the 8086/80186 profile baseline: S2 ALU/FLAGS/conditions, S3 inherited data/control/I/O, and S4 80186 extensions cover every S1 allocation; the retained T328 rule is the only legacy `LOCK` owner. The sole reproduced defect was four incorrect INS/OUTS 80386 guards, corrected to 80186. Protected, 80386DX, and x87 boundaries transfer explicitly. Artifact verification, governance, and 218/218 current-gate passed. [History](../history/M5-T338-8086-80186-profile-closure.md). |
 | T337 | Closed shared CPU state and delivery foundations: vector-6 fault delivery/rollback, software and external origin composition, IRQ/NMI/TF priority, frame timing, inhibition, and post-commit task debug trap have one proof/owner. DR6/DR7 transfers to 80386DX; reset/shutdown/triple-fault remains bounded CPU/machine debt. [History](../history/M5-T337-shared-state-delivery.md). |
 | T336 | Closed the four-profile CPU coverage audit: the primary/`0F` metadata and dispatch forms, real/protected/VM86 state rows, historic evidence, explicit 80386 exclusions, and open CPU debt now have a single indexed disposition. Every residual has one Queue, TODO, or external owner; the next candidate is shared state and delivery foundations. [History](../history/M5-T336-four-profile-coverage.md). |
@@ -33,6 +33,13 @@ separately admitted packet.
 | T332 | Closed VM session construction drift: one private profile materialization/override path; one early-storage rollback owner with stage-failure and late-media recovery proof; and a fixed 47-owner CPU smoke lifecycle closure with inherited-source migration and static guard. The retained artifact, full gates, and residual historical-fixture transfer are in [history](../history/M5-T332-vm-session-construction-transaction.md). |
 
 ## Recent Governance
+
+- **M5 Td S81:** withdrew the duplicate 80286 `LOCK` candidate after the
+  T339 closure audit reconfirmed that accepted T328 already owns the complete
+  pre-386 prefix-policy matrix. The Queue now advances directly from T339 to
+  the 80386DX form closure; current proposals and T339 transfer ledgers name
+  T328, T341, and T342 truthfully. Documentation governance and diff check
+  passed. Td work has no runtime or artifact change.
 
 - **M5 Td S80:** reordered the four-profile CPU-completeness Queue into
   dependency-bounded 8086/80186, 80286 descriptor-transfer, 80286 `LOCK`,
@@ -78,10 +85,3 @@ separately admitted packet.
   Td/T closure, packet, stop, handoff, and role-authority constraints remain
   explicit. Documentation self-test, combined governance check, and diff check
   passed. Td work has no runtime or artifact change.
-
-- **M5 Td S72:** aligned executor-facing governance: the coordinator creates
-  active packets; executor findings are reported for coordinator triage; every
-  numbered T packet must link its candidate proposal; and Td P1 is complete
-  without a later governance P. Positive and missing-proposal negative
-  self-tests, the combined governance check, and diff check passed. Td work
-  has no runtime or artifact change.

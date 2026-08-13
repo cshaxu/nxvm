@@ -38,12 +38,12 @@ publication boundary. A named smoke is never a substitute for that comparison.
 
 | Later S | Complete mechanism matrix | Required rows and proof boundary | Exact transfers |
 | --- | --- | --- | --- |
-| S2: descriptor-table and system-word forms | `0F 01 /0`--`/4,/6` and `0F 06`; table-register/table-memory and CR0 low-word materialization. | SGDT/SIDT/LGDT/LIDT/SMSW/LMSW/CLTS across 80286 real/protected CPL conditions; memory-only ModRM; pseudo-descriptor/image widths; GDT/IDT/MSW publication; read/write limit atomicity; `#UD`/`#GP` restart; no-shadow IRQ after successful forms. | `66/67`, VM86, CR0 32-bit/paging effects -> T341/T342. 80286 `LOCK` classification -> T340. |
-| S3: selector-query and cache-load forms | `0F 00 /0`--`/5`, `0F 02/03`, `8C/8E`, legacy segment POP/PUSH, and `C4/C5` protected consumers. | SLDT/STR/LLDT/LTR/VERR/VERW/LAR/LSL plus selector/cache loads: null, TI, GDT/LDT, type, DPL/RPL, present/accessed, source-limit and cache/destination publication. Preserve only true 16-bit selectors and operands. | FS/GS, `LSS/LFS/LGS`, 32-bit operands/addressing -> T341. VM86 selector behavior -> T342. `LOCK` -> T340. |
-| S4: protected 16-bit entry and gate transfer | Direct far `CALL/JMP`, software/external/NMI entry, 16-bit interrupt/trap/call gates and TSS16 outer-stack selection. | Code/gate DPL/type/present/limit validation; three/four/five-word frame images; IF/TF and error-code rules; PIC/NMI order; same/outer CPL and prepublication failure. All gate readers/writers are swept together. | 32-bit gates/frames, VM86 entry, paging fault composition -> T342. `LOCK`/80386 attributes -> T340/T341. |
+| S2: descriptor-table and system-word forms | `0F 01 /0`--`/4,/6` and `0F 06`; table-register/table-memory and CR0 low-word materialization. | SGDT/SIDT/LGDT/LIDT/SMSW/LMSW/CLTS across 80286 real/protected CPL conditions; memory-only ModRM; pseudo-descriptor/image widths; GDT/IDT/MSW publication; read/write limit atomicity; `#UD`/`#GP` restart; no-shadow IRQ after successful forms. | `66/67`, VM86, CR0 32-bit/paging effects -> T341/T342. Accepted T328 owns pre-386 `LOCK`. |
+| S3: selector-query and cache-load forms | `0F 00 /0`--`/5`, `0F 02/03`, `8C/8E`, legacy segment POP/PUSH, and `C4/C5` protected consumers. | SLDT/STR/LLDT/LTR/VERR/VERW/LAR/LSL plus selector/cache loads: null, TI, GDT/LDT, type, DPL/RPL, present/accessed, source-limit and cache/destination publication. Preserve only true 16-bit selectors and operands. | FS/GS, `LSS/LFS/LGS`, 32-bit operands/addressing -> T341. VM86 selector behavior -> T342. Accepted T328 owns `LOCK`. |
+| S4: protected 16-bit entry and gate transfer | Direct far `CALL/JMP`, software/external/NMI entry, 16-bit interrupt/trap/call gates and TSS16 outer-stack selection. | Code/gate DPL/type/present/limit validation; three/four/five-word frame images; IF/TF and error-code rules; PIC/NMI order; same/outer CPL and prepublication failure. All gate readers/writers are swept together. | 32-bit gates/frames, VM86 entry, paging fault composition -> T342. Accepted T328 owns `LOCK`; 80386 attributes -> T341. |
 | S5: protected 16-bit return and frame composition | `IRET`, `RETF`, and matching return stack/cache publication after S4. | Same/outer return, source-frame preflight, CS/SS/cache selection, IOPL/IF permitted FLAGS, 16-bit SP high-half discipline, restored-IF IRQ order, and no-publication rejection. | Return-to-VM86, 32-bit frames, NT/task return and VME/PVI -> T342. |
 | S6: TSS16 task-state closure | Direct far TSS jump/call, task-gate entry, nested task IRET, busy/back-link, LDT/TI and TSS16 image. | TSS16 descriptor/type/limit/present, incoming/outgoing image, selector/cache materialization, old/new busy state, backlink/NT, target stack/code preflight, fault-before-commit and post-commit IRQ/debug ordering. | TSS32, CR3/paging, debug-trap and VM86 task interactions -> T342. |
-| S7: 80286 descriptor-transfer closure audit | All S2--S6 ledgers and their shared validation-to-delivery edges. | Compare source, metadata, form matrix, state writers, focused proof, `LOCK` handoff and every historic claim. Return a gap to S2--S6; do not implement under audit. | Produce the input ledger for T340 and explicit T341/T342 transfers. |
+| S7: 80286 descriptor-transfer closure audit | All S2--S6 ledgers and their shared validation-to-delivery edges. | Compare source, metadata, form matrix, state writers, focused proof, retained T328 `LOCK` ownership and every historic claim. Return a gap to S2--S6; do not implement under audit. | Produce the input ledger for T341/T342 transfers. |
 
 ## Required Cross-Cutting Invariants
 
@@ -58,8 +58,8 @@ mechanism rather than copying a nearby 80386 result:
 3. Any fault after a source read but before commit has a recorded state and
    memory/cache nonpublication boundary; a delivered exception may change only
    the documented delivery state.
-4. `LOCK` is not inferred from the 80386 whitelist. Each 80286 memory-capable
-   allocated form transfers its legality to T340.
+4. `LOCK` is not inferred from the 80386 whitelist. Accepted T328 owns the
+   pre-386 legality policy for each allocated memory-capable mechanism.
 5. No VM86, 32-bit width, FS/GS, paging, debug, or x87 conclusion is made
    from an 80286 vector. Those transfers are explicit above.
 

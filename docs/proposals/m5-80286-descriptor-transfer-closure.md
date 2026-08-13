@@ -44,8 +44,8 @@ input ledger.
 
 ## Non-goals And Stop Conditions
 
-Do not establish the 80286 `LOCK` matrix here; it belongs to the next
-candidate. Do not add 32-bit operand/address behavior, VM86, paging, DR/TR
+Do not duplicate the accepted T328 80286 `LOCK` matrix here. Do not add 32-bit
+operand/address behavior, VM86, paging, DR/TR
 breadth, VME/PVI, or x87 execution. Stop and transfer if correctness requires
 a generic delivery redesign outside the assigned 80286 routes or a 80386-only
 state contract.

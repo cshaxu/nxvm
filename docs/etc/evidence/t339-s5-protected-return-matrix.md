@@ -35,7 +35,7 @@ they are not alternate implementations of this mechanism.
 
 ## Exact Transfers
 
-- 80286 `LOCK` legality for memory-capable return forms is T340's explicit
+- 80286 `LOCK` legality for memory-capable return forms is T328's accepted
   matrix; it is not inferred from the 80386 lock whitelist.
 - `66/67`, 32-bit frames, FS/GS and 80386DX form composition transfer to T341.
 - Return-to-VM86, VME/PVI, paging-associated fault composition and the shared
