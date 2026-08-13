@@ -2770,6 +2770,43 @@ file(GENERATE
     OUTPUT "${CMAKE_BINARY_DIR}/t345-s2-owner-test-strict-targets.txt"
     CONTENT "${project_t345_s2_target_contents}\n")
 
+# T345 S3 promotes only production targets whose complete direct source
+# surface is independently owned by the target and clean in the S1 audit.
+# Their strictness remains target-local and never substitutes for a linked
+# production dependency.
+set(PROJECT_T345_S3_SAFE_PRODUCTION_STRICT_ENTRIES
+    "type-facade|src/type.c"
+    "core-product-utils|src/core/product/utils.c"
+    "vm-platform-requests|src/vm/platform/request_bridge.c")
+set(PROJECT_T345_S3_SAFE_PRODUCTION_STRICT_TARGETS)
+foreach(project_t345_s3_entry IN LISTS PROJECT_T345_S3_SAFE_PRODUCTION_STRICT_ENTRIES)
+    string(REPLACE "|" ";" project_t345_s3_fields "${project_t345_s3_entry}")
+    list(GET project_t345_s3_fields 0 project_t345_s3_target)
+    list(GET project_t345_s3_fields 1 project_t345_s3_source)
+    get_target_property(project_t345_s3_sources ${project_t345_s3_target} SOURCES)
+    list(LENGTH project_t345_s3_sources project_t345_s3_source_count)
+    list(FIND project_t345_s3_sources "${project_t345_s3_source}"
+        project_t345_s3_source_index)
+    if(NOT project_t345_s3_source_count EQUAL 1 OR
+            project_t345_s3_source_index EQUAL -1)
+        message(FATAL_ERROR
+            "T345 S3 requires ${project_t345_s3_target} to compile only ${project_t345_s3_source} directly.")
+    endif()
+    list(APPEND PROJECT_T345_S3_SAFE_PRODUCTION_STRICT_TARGETS
+        "${project_t345_s3_target}")
+endforeach()
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+    foreach(project_t345_s3_target IN LISTS PROJECT_T345_S3_SAFE_PRODUCTION_STRICT_TARGETS)
+        target_compile_options(${project_t345_s3_target} PRIVATE
+            -Wall -Wextra -Wpedantic -Werror)
+    endforeach()
+endif()
+string(REPLACE ";" "\n" project_t345_s3_entry_contents
+    "${PROJECT_T345_S3_SAFE_PRODUCTION_STRICT_ENTRIES}")
+file(GENERATE
+    OUTPUT "${CMAKE_BINARY_DIR}/t345-s3-safe-production-strict-entries.txt"
+    CONTENT "${project_t345_s3_entry_contents}\n")
+
 # T344 owns a direct-command matrix for every production library/current
 # artifact and every current-gate executable.  A linked strict library never
 # substitutes for the direct compile command of a smoke source.
@@ -2908,11 +2945,21 @@ foreach(project_t344_entry IN LISTS PROJECT_T344_DIRECT_COMPILE_MATRIX)
     list(GET project_t345_fields 2 project_t345_status)
     list(FIND PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS
         "${project_t345_target}" project_t345_s2_target_index)
+    list(FIND PROJECT_T345_S3_SAFE_PRODUCTION_STRICT_TARGETS
+        "${project_t345_target}" project_t345_s3_target_index)
     if(project_t345_status STREQUAL "retained-strict" AND
             NOT project_t345_s2_target_index EQUAL -1 AND
             project_t345_source MATCHES "^tests/")
         set(project_t345_class project-owned-owner-test)
         set(project_t345_mechanism s2-owner-test-strict-cohort)
+    elseif(project_t345_status STREQUAL "retained-strict" AND
+            NOT project_t345_s3_target_index EQUAL -1)
+        if(project_t345_target STREQUAL "type-facade")
+            set(project_t345_class type-foundation-production)
+        else()
+            set(project_t345_class safely-separable-production)
+        endif()
+        set(project_t345_mechanism s3-safe-production-strict-cohort)
     elseif(NOT project_t345_status STREQUAL "deferred")
         continue()
     elseif(project_t345_source MATCHES "^tests/")
@@ -2944,6 +2991,7 @@ add_custom_target(verify-t345-deferred-direct-ownership
         -DPROJECT_T345_T344_MATRIX_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t344-direct-compilation-matrix.txt
         -DPROJECT_T345_OWNERSHIP_MATRIX_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t345-deferred-direct-ownership-matrix.txt
         -DPROJECT_T345_S2_TARGETS_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t345-s2-owner-test-strict-targets.txt
+        -DPROJECT_T345_S3_ENTRIES_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t345-s3-safe-production-strict-entries.txt
         -P "${CMAKE_SOURCE_DIR}/cmake/verify_t345_deferred_direct_ownership.cmake"
     COMMENT "Verifying T345 deferred direct-compilation ownership"
     VERBATIM)
@@ -2952,6 +3000,7 @@ add_custom_target(verify-t345-deferred-direct-ownership-selftest
         -DPROJECT_T345_VERIFIER:FILEPATH=${CMAKE_SOURCE_DIR}/cmake/verify_t345_deferred_direct_ownership.cmake
         -DPROJECT_T345_T344_MATRIX_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t344-direct-compilation-matrix.txt
         -DPROJECT_T345_S2_TARGETS_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t345-s2-owner-test-strict-targets.txt
+        -DPROJECT_T345_S3_ENTRIES_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t345-s3-safe-production-strict-entries.txt
         -DPROJECT_T345_INVALID_OWNERSHIP_MATRIX_FILE:FILEPATH=${CMAKE_BINARY_DIR}/t345-invalid-deferred-direct-ownership-matrix.txt
         -P "${CMAKE_SOURCE_DIR}/cmake/verify_t345_deferred_direct_ownership_selftest.cmake"
     COMMENT "Self-testing T345 deferred direct-compilation ownership verification"
