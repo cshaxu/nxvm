@@ -14,6 +14,16 @@ inventories the existing synthetic cadence and the sole retirement publication
 owner, identifies primary profile references and their assumptions, allocates
 the selected S2 corpus, and transfers physical timing dependencies precisely.
 
+## Accepted S2--S4 Progress
+
+S2 added the nonpublishing 80386 `Jcc` lexical-preview prerequisite. S3 added
+the first selected 80386 source ledger at the sole retirement publisher. S4
+added the selected 8086 ledger using Tables 2-20 and 2-21, including EA,
+segment-override and odd-word additions, profile-local `REP MOVSB`, and an
+explicit unsupported-form fallback. Its focused proof covers fault/stop,
+reset, budget, overflow, and scheduler publication; 80186, 80286, and
+unallocated 80386 rows remain separate source-ledger transfers.
+
 ## Intended Task Closure
 
 T357 closes only after the selected corpus advances guest time from the single
