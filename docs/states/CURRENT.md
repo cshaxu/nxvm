@@ -34,6 +34,12 @@
 
 ## Recent Governance
 
+- **M5 Td S89 P1:** made the queued complete instruction-timing proposal the
+  sole current explanation of the shared four-profile audit method and the
+  distinct 8086/80186/80286/80386 accounting boundaries. It changes neither
+  rules, README, Queue ordering, TODO, runtime, nor the documentation
+  topology. Documentation governance and diff check passed.
+
 - **M5 Td S90:** made completed PC/AT device-service timing an explicit
   prerequisite of selected-profile model-L3 phase refinement; retained the
   established Queue order and withdrew the unstarted T362 preparation.
@@ -76,9 +82,3 @@
   stale missing-feature blocker. Physical device timing and Windows
   compatibility remain unclaimed. Documentation governance and diff check
   passed; Td work has no runtime change.
-
-- **M5 Td S84:** retired the stale FDC/ATA command-service TODO after the
-  accepted T347 pending-command/readiness-service closure and T354 consumer
-  audit reconfirmed its claim was no longer true. Physical wait/cycle fidelity
-  remains in the existing bus-timed and cycle-exact debt entries. Documentation
-  governance and diff check passed; Td work has no runtime change.

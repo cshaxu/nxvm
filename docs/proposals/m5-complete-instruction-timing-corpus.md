@@ -17,6 +17,33 @@ same-profile external model where Intel has no value; or an explicit
 borrow, or silently override either authority decision. Model-derived timing
 is not a physical cycle claim.
 
+## Shared method, profile-local timing accounts
+
+The four profiles share one audit method: each applicable
+profile/form/context receives one source disposition, reaches the existing one
+successful-retirement tick publisher, has source-labelled regression evidence,
+and transfers every non-CPU contribution to one named receiver. This does not
+make their timing data or accounting formulas interchangeable.
+
+- **8086** uses its source-defined rows plus separately owned effective-
+  address, odd-word, and segment-prefix additions only where the selected
+  source accounting calls for them.
+- **80186** uses its own Intel domains and same-profile model scalars. An
+  eligible scalar outside an Intel closed range is visibly constrained within
+  that range; an EA-included scalar never receives 8086 EA/odd-word additions
+  again.
+- **80286** and **80386** use their distinct Intel rows and their own mode,
+  privilege, prefix, and addressing contexts. Neither provides a value for an
+  earlier profile or inherits a legacy accounting formula.
+
+For every profile, CPU instruction clocks remain distinct from bus waits,
+prefetch/cache effects, DMA/HOLD, device service, and interrupt/fault-delivery
+cycles. Those contributions retain their own named receiver. A fallback is a
+visible transfer, never a claim of one-cycle accuracy. Closure therefore asks
+whether every implemented profile/form/context has one provenance, one CPU
+publisher, and one explicit non-CPU boundary, not whether all four processors
+share a numerical formula.
+
 ## Required scope
 
 For each profile, classify every implemented instruction form and relevant
