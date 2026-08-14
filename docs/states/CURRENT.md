@@ -2,8 +2,28 @@
 
 ## Current Work
 
-T366 S9 is accepted at `16609f35`. The next T366 S audits every successful
-80286 unallocated timing publisher before physical-time admission can resume.
+**Active implementation packet:** M5 T366 S10, 80286 unallocated-timing audit.
+
+## M5 T366 S10 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner: repository owner; persistent M5 L3 direction and accepted S9 transfer authorize the selected 80286 publisher audit. No exception. |
+| Objective | Inventory every successful 80286 path that emits `CORE_MACHINE_SOURCE_UNALLOCATED_TICKS`, classify its opcode/prefix/form origin and create a mechanical closure check. |
+| Non-goals | No guessed timing values, opcode semantic change, physical-time claim, device/bus timing or source import. |
+| Reference Baseline | S9 proves those one-tick values enter elapsed time; T363/T360 timing inventory and 80286 ledger smoke retain the existing classifier boundary. |
+| Candidate Proposal | [Bus-Timed PC/AT Operation](../proposals/m5-bus-timed-pcat-operation.md). |
+| Files And ABI Surface | Timing classifier, a static verifier or focused audit proof, CMake, evidence/history/current packet only. |
+| Applicable Rules | Execution evidence/sweep, one retirement publisher, C11 cohesion, source policy and documentation indexing apply; no waiver. |
+| Verification | Mechanical audit must identify all 80286 unallocated successful-publisher sites and focused proof must retain their observed behavior; run affected tests, current gate, documentation governance and diff check. |
+| Expected Markers | New S10 audit marker plus existing timing/current-gate markers. |
+| Asset Needs | Repository and public Intel sources only; no ROM/media. |
+| Reporting Requirements | Report every hit, its receiver, whether behavior changes, and final evidence. |
+| Stop Conditions | Stop if a hit cannot be tied to a successful-retirement route or requires an unapproved source assumption. |
+| Exit Criteria | Every selected 80286 one-tick successful path is mechanically enumerated and assigned to a precise next receiver. |
+| Original Owner Request | Reach L3 only through complete source-backed timing, not fallback values. |
+| Similar-Issue Sweep | Search all timing classifiers, fallback constants, timing tests, verifier inventory and elapsed-tick publishers; classify every hit. |
 
 ## Current Technical Baseline
 
