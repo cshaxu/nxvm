@@ -16,3 +16,9 @@ helper, classifier and timing smoke. Register forms retain S11's two clocks.
 All other memory addressing forms retain the `7*` effective-address receiver;
 `D2`/`D3` and `C0`/`C1` retain count-dependent CPU-ledger receivers; `/6`
 remains undefined. No device, bus or physical-clock claim is made.
+
+## Verification
+
+The focused 80286 instruction-timing-ledger smoke, configured
+`run-current-smokes` gate, documentation-governance check, and `git diff
+--check` passed. The implementation changes no public ABI or device behavior.

@@ -2,28 +2,9 @@
 
 ## Current Work
 
-**Active implementation packet:** M5 T366 S12, 80286 Group-2 direct-memory timing.
-
-## M5 T366 S12 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner: repository owner; persistent M5 L3 direction, accepted S11 transfer, and the owner's instruction to continue authorize this source-determinate 80286 timing-family repair. No exception. |
-| Objective | Give successful valid `D0`/`D1` Group-2 implicit-count-one direct-address memory forms (`mod=00,r/m=110`) their 80286 cost of seven clocks. |
-| Non-goals | No other memory addressing form, register form rework, `D2`/`D3` CL-count form, `C0`/`C1` immediate-count form, `/6` undefined encoding, opcode semantic change, physical-time, device/bus timing, firmware/media or source import. |
-| Reference Baseline | The AMD 80286 Shift/Rotate table gives register/memory by 1 as `2,7*`. S11 owns the register `2`; direct-address memory has no effective-address addition in the existing 80286 helper and therefore has the determinate base value `7`. |
-| Candidate Proposal | [Bus-Timed PC/AT Operation](../proposals/m5-bus-timed-pcat-operation.md). |
-| Files And ABI Surface | Private 80286 timing classifier, 80286 timing-ledger smoke, focused evidence/history/current packet and documentation index only; no public ABI. |
-| Applicable Rules | Execution evidence/sweep, one successful-retirement publisher, core ownership, C11 cohesion, source policy and documentation indexing apply; no waiver. |
-| Verification | Prove byte and word direct-address memory execution retires at seven ticks, preserve register, non-direct-memory and undefined-encoding boundaries, run focused smoke, S10 static check, current gate, documentation governance and diff check. |
-| Expected Markers | Existing 80286 instruction-timing-ledger and S10 audit markers plus current-gate markers. |
-| Asset Needs | Public Intel/AMD documentation and repository tests only; no ROM, media, firmware or third-party source. |
-| Reporting Requirements | State source row, exact ModR/M coverage, unchanged excluded forms, sweep result and final evidence. |
-| Stop Conditions | Stop and transfer if direct memory has a hidden effective-address term or the classifier cannot distinguish it from other memory forms or `/6`. |
-| Exit Criteria | Every valid direct-address memory `D0`/`D1` implicit-count-one Group-2 form publishes seven clocks through the sole retirement path; all excluded forms retain explicit receivers. |
-| Original Owner Request | Reach L3 only through complete source-backed timing, using reference emulators only when authorities lack determinate values. |
-| Similar-Issue Sweep | Inspect all `D0`--`D3`, `C0`/`C1`, Group-2 executor, 80286 effective-address helper, classifier fallbacks and timing tests; fix only valid `D0`/`D1` direct-address memory forms and record every exclusion. |
+T366 S12 is accepted at `5fe66bd8`. The next T366 S must derive or audit the
+remaining Group-2 effective-address and count-dependent forms before any
+physical-time or device-timing claim can resume.
 
 ## Current Technical Baseline
 
@@ -44,7 +25,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T366 S11 | Accepted at `8190857f`: valid register-direct `D0`/`D1` Group-2 implicit-count-one forms publish two 80286 clocks; memory and count-dependent forms remain explicit CPU-ledger transfers. [Timing evidence](../etc/evidence/t366-s11-80286-group2-register-timing.md). No physical-time or device-timing claim. |
+| T366 S12 | Accepted at `5fe66bd8`: valid direct-address-memory `D0`/`D1` Group-2 implicit-count-one forms publish seven 80286 clocks; other memory and count-dependent forms remain explicit CPU-ledger transfers. [Timing evidence](../etc/evidence/t366-s12-80286-group2-direct-memory-timing.md). No physical-time or device-timing claim. |
 | T365 | Closed at `febc9352`: IBM PC/AT parity/I/O-check NMI sources cannot be selected without a profile input, status/latch/clear and lifecycle contract; CPU and CMOS remain delivery/mask only. [Closure audit](../etc/evidence/t365-s2-pcat-nmi-nonadmission-closure-audit.md). Blocks physical/cycle-exact L3 closure; no synthetic source. |
 | T364 | Closed at `7d574ae3`: all selected PC/AT components, ports/routes and lifecycle/timing owners are inventoried; optional and physical gaps retain exact Queue/TODO receivers. [Closure audit](../etc/evidence/t364-s2-pcat-device-completeness-closure-audit.md). No model-L3 claim. |
 | T363 | Closed at `312ef2f9`: all 256 primary and 256 secondary dispatch slots have one source-backed successful-retirement owner or an exact explicit receiver; inventory and 246/246 current-gate passed. [Closure audit](../etc/evidence/t363-s7-complete-instruction-timing-closure-audit.md). No physical/cycle-exact L3 claim. |

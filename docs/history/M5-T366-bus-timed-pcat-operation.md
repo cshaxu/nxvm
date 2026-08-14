@@ -108,3 +108,10 @@ S11 gives valid register-direct `D0`/`D1` implicit-count-one Group-2 forms
 their two-clock 80286 source-table value while preserving memory, count-based,
 and `/6` undefined boundaries. Its [timing evidence](../etc/evidence/t366-s11-80286-group2-register-timing.md)
 records the sweep and receiver transfer. S11 is accepted at `8190857f`.
+
+### S12: 80286 Group-2 direct-memory timing
+
+S12 gives valid direct-address-memory `D0`/`D1` implicit-count-one Group-2
+forms their seven-clock source-table value without treating the `7*`
+effective-address notation as a universal memory constant. Its [timing evidence](../etc/evidence/t366-s12-80286-group2-direct-memory-timing.md)
+records the retained forms and receiver transfer. S12 is accepted at `5fe66bd8`.
