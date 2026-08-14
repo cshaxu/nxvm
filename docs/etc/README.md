@@ -73,6 +73,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t351-s2-kbc-controller.md` | Verification owner | T351 S2 selected IBM 8042 controller command, FIFO, IRQ, self-test, output-port, and lifecycle reconciliation. Retain with T351 history at task closure. |
 | `evidence/t351-s3-keyboard-device.md` | Verification owner | T351 S3 selected AT keyboard command, response-history, FIFO, typematic, IRQ1, and lifecycle reconciliation. Retain with T351 history at task closure. |
 | `evidence/t351-s4-aux-device.md` | Verification owner | T351 S4 selected compatible AUX command, report, IRQ12, delay, ingress, and explicit advanced-protocol transfer. Retain with T351 history at task closure. |
+| `evidence/t351-s5-kbc-lifecycle.md` | Verification owner | T351 S5 combined one-FIFO controller/keyboard/AUX promotion, source-IRQ lifecycle, reset/finalize, and retained-transfer closure. Retain with T351 history at task closure. |
 | `operations/` | Execution, source, and release owners | Toolchain, policy, templates, release procedure, and closure material. |
 | `research/` | Source owner | Provenance, external references, and non-product research. |
 | `history/` | Documentation owner | Read-only legacy and M5 migration/roadmap evidence. |

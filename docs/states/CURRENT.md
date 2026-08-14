@@ -2,14 +2,35 @@
 
 ## Current Work
 
-M5 T351 remains open. S4 is accepted; S5 combined controller/keyboard/AUX
-lifecycle audit is the next bounded subtask.
+M5 T351 S5 - combined 8042, keyboard, and AUX lifecycle closure
+(Single-Session Mode).
+
+## M5 T351 S5 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved continuous holistic device/L3 completion on 2026-08-13; T351 S4 accepted at `cd99fc9b`. |
+| Objective | Complete T351's closure audit: prove one KBC FIFO promotes controller/keyboard/AUX origins with correct IRQ1/IRQ12 eligibility and deassertion; reconcile delayed response, full/disabled states, equal-tick KBC ordering, profile/session copied ingress, reset/finalize, all S1--S4 transfers, task artifact, evidence, Queue/history, and T-level closure. |
+| Non-goals | No new controller, keyboard, or AUX feature; no advanced AUX protocol, host passthrough, firmware, port-61/PPI, NMI source, generic PIC/timeline refactor, device identity expansion, x87, or Windows runtime claim. |
+| Reference Baseline | `cd99fc9b` / T351 S4 accepted; [T351 S1 ledger](../etc/evidence/t351-s1-kbc-aux-ledger.md), [S2 controller](../etc/evidence/t351-s2-kbc-controller.md), [S3 keyboard](../etc/evidence/t351-s3-keyboard-device.md), [S4 AUX](../etc/evidence/t351-s4-aux-device.md), T346 deterministic timeline closure, and T351 proposal. |
+| Candidate Proposal | [PC/AT 8042 and AUX completeness](../proposals/m5-kbc-aux-completeness.md). |
+| Files And ABI Surface | Expected: a focused combined KBC lifecycle smoke and CMake registration if proof gap requires it; S5 evidence, Current/history, Queue/proposal relocation, current developer artifact target/version/SHA only. No public interface, host/input/profile ABI, second FIFO, advanced device command, or unrelated device change. |
+| Applicable Rules | Task Reading Set; one guest-visible FIFO and per-head IRQ owner; controller/keyboard/AUX variants share publication and reset/finalize ownership; machine remains deterministic readiness owner; copied host boundary; full task closure audit; exact advanced-AUX/NMI/port-61 transfers; artifact identity rule; no source import. |
+| Verification | Prove mixed controller/keyboard/AUX FIFO order, promotion and source deassert/reassert, disabled command-byte/interface gates, delayed response behind queued origin bytes, reset/finalize cancellation, machine equal-tick trace ordering, copied session ingress, and no duplicate writer. Re-run all retained focused KBC/AUX/keyboard/mouse/timeline tests and full current gate. Build `vm-0-5-0351`, copy `nxvm_0_5_0351.exe`, record SHA-256 and identity, run governance, artifact verifier, and diff check. |
+| Expected Markers | Retain S2 controller, S3 keyboard, S4 AUX, guest/DOS mouse, ingress, and T346 timeline markers; add a combined S5 marker only if a dedicated owner smoke is required. |
+| Asset Needs | Project sources, published documentation already recorded in S1--S4, and existing project probes only; no firmware, guest media addition, host capture, or third-party source. |
+| Reporting Requirements | Map original owner request to S1--S5 evidence; report combined FIFO/IRQ/reset/timing proof, all task-level transfers, developer artifact SHA-256, exact full-gate result, Queue/proposal disposition, and any residual owner decision. |
+| Stop Conditions | Stop for a new public/profile/host ABI, an uncovered controller/keyboard/AUX semantic requiring S2--S4 corrective work, generic PIC/timeline mechanism defect, artifact build identity failure, source import, or requirement to implement an unselected advanced device feature. Admit corrective work rather than hide it in closure. |
+| Exit Criteria | One stable deterministic L3 state graph covers every selected controller/keyboard/AUX signal and lifecycle; all S1--S4 rows are proven or precisely transferred; a verified T351 artifact and SHA exist; proposal is retained in history, Queue advances, governance passes, and no unclassified KBC/AUX boundary remains. |
+| Original Owner Request | Make core-machine devices stable, comprehensive, and reliable at deterministic L3 before deciding any Windows execution route. |
+| Similar-Issue Sweep | Inspect all KBC FIFO/origin/IRQ helpers, port writers/readers, delayed and typematic timing paths, machine timeline/profile/reset/finalize routes, session ingress, KBC/AUX/keyboard/mouse current targets, CMake artifact wiring, Queue/TODO/history/proposal records, and prior T346/T350 transfers. |
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** T346 selects `vm-0-5-0346` /
-  `build/output/nxvm_0_5_0346.exe`; its closure-build SHA-256 is
-  `7715C8C290969A99CCC1137D2DEEC64421FF245A22BD35287A2AED0C75A8E260`.
+- **Current developer artifact:** T351 selects `vm-0-5-0351` /
+  `build/output/nxvm_0_5_0351.exe`; its closure-build SHA-256 is
+  `C20F4B631F8E63DD4D963C2F85E69D735EC05793B3DCC0C2AC11E65FA6D3FB9C`.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
