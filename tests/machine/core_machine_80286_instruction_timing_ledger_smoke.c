@@ -308,6 +308,8 @@ C_INT main(C_VOID)
     static const type_unsigned_8 std[] = { 0xfdu };
     static const type_unsigned_8 cli[] = { 0xfau };
     static const type_unsigned_8 sti[] = { 0xfbu };
+    static const type_unsigned_8 sahf[] = { 0x9eu };
+    static const type_unsigned_8 lahf[] = { 0x9fu };
     static const type_unsigned_8 immediate[] = { 0xb8u, 0x34u, 0x12u };
     static const type_unsigned_8 registers[] = { 0x8bu, 0xc1u };
 
@@ -319,6 +321,8 @@ C_INT main(C_VOID)
         timing_80286_case(std, sizeof(std), 2u) ||
         timing_80286_case(cli, sizeof(cli), 3u) ||
         timing_80286_case(sti, sizeof(sti), 2u) ||
+        timing_80286_case(sahf, sizeof(sahf), 2u) ||
+        timing_80286_case(lahf, sizeof(lahf), 2u) ||
         timing_80286_case(immediate, sizeof(immediate), 2u) ||
         timing_80286_case(registers, sizeof(registers), 2u)) return 1;
     if (timing_80286_memory()) return 2;

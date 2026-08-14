@@ -1,0 +1,30 @@
+# T366 S17: 80286 LAHF/SAHF Timing
+
+## Source And Scope
+
+The [AMD 80286 instruction summary](https://www.bitsavers.org/components/amd/x86/_dataSheets/1985_80286.pdf)
+lists `LAHF` (`9F`) and `SAHF` (`9E`) at two clocks in both real-address and
+protected virtual-address modes. S17 allocates those fixed values only after
+the existing unprefixed 80286 handlers successfully retire.
+
+## Construction And Sweep
+
+`core_machine_80286_source_instruction_cost()` remains the only successful
+retirement publisher. Its combined `9E`/`9F` branch assigns two ticks after
+the shared primary and control/stack classifiers decline the opcodes. The
+focused timing-ledger smoke proves each opcode publishes two ticks. The
+existing `core-machine-lahf-sahf-smoke`, exercised by the current-smokes gate,
+retains semantic, prefix, profile and fault coverage.
+
+The sweep covers the opcode dispatch/handlers, primary and control/stack
+classifiers, every profile classifier, direct 80286 fallback routing and
+semantic proof. Prefixes, fault/delivery timing, other profiles, memory/bus
+waits, device service and physical time remain their existing receivers. No
+public ABI or device behavior changes.
+
+## Verification
+
+The focused `core-machine-80286-instruction-timing-ledger-smoke` passed and
+emitted `M5:T357:S6:80286-INSTRUCTION-TIMING-LEDGER:OK`. The configured
+`run-current-smokes` gate passed. Documentation governance and `git diff
+--check` are recorded with implementation delivery and acceptance review.
