@@ -35,6 +35,12 @@ admitted packet.
 
 ## Recent Governance
 
+- **M5 Td S89:** converted the remaining primary-source and PC/AT NMI debt
+  into three bounded proposals; ordered authority review before the complete
+  timing corpus, and device audit before NMI ownership and physical timing.
+  Documentation governance and diff check passed; Td work has no runtime,
+  artifact, or task-activation change.
+
 - **M5 Td S88:** reconciled the active T359 mechanism plan after S3 acceptance:
   S4 owns the stateful string/repeat/ordinary-I/O timing mechanism, and the
   secondary, privileged, and closure units follow as S5--S7. Documentation
@@ -79,10 +85,3 @@ admitted packet.
   Documentation self-test, default governance check, exact macro/search audit,
   and diff check passed. Td work has no intended runtime or artifact behavior
   change.
-
-- **M5 Td S82:** restored all 19 historical NXVM README screenshots as static
-  documentation assets; rebuilt the public README around the current CMake
-  path and truthful NXVM-first, future-NXVDM boundary; and aligned the current
-  design/rule wording and README schema self-test. Documentation self-test,
-  default governance check, README-link check, and diff check passed. Td work
-  has no runtime or artifact change.

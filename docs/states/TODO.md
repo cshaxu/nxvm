@@ -175,6 +175,7 @@ admissions, not the default definition of NXVM completion.
   publication/rollback design, all selected Group-3 and immediate-IMUL form
   coverage, and a consumer sweep. Do not choose a minimum, maximum, midpoint,
   later-processor formula, host benchmark, or secondary emulator value.
+  [Queue receiver](../proposals/m5-legacy-dynamic-arithmetic-timing-authority.md).
 
 - [ ] **80286 NOP table/prose source conflict (`TODO(Medium)`).** T360 S2
   retains the formal Appendix-B opcode-clock row, `NOP = 3`, because the owner
@@ -186,6 +187,7 @@ admissions, not the default definition of NXVM completion.
   not average values, replace the row from prose alone, use host benchmarks or
   secondary emulators as authority, or change a timing value outside that
   source-backed admission.
+  [Queue receiver](../proposals/m5-80286-nop-source-conflict-review.md).
 
 - [ ] **PC/AT NMI source ownership (`TODO(Medium)`).** T350 S4 reconfirms that
   RTC periodic/update conditions publish IRQ8, while the CMOS index-port bit
@@ -197,6 +199,7 @@ admissions, not the default definition of NXVM completion.
   evidence. Do not manufacture an RTC NMI, seed a synthetic source, infer it
   from port 61h, bypass the core mask, or refactor generic CPU delivery without
   a reproduced shared defect. See [T350 S4 evidence](../etc/evidence/t350-s4-pcat-nmi-decision.md).
+  [Queue receiver](../proposals/m5-pcat-nmi-source-ownership.md).
 
 - [ ] **Unselected PC/AT physical timing (`TODO(Medium)`).** The M5 Queue now
   owns selected bus timing, device-service timing, and cycle-exact work through

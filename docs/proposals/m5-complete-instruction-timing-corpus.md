@@ -8,6 +8,11 @@ work begins with a full Intel-manual form inventory and mechanism ownership
 map; it must not append isolated clocks when a guest test happens to need an
 opcode.
 
+This candidate consumes the preceding legacy dynamic-arithmetic authority and
+80286 NOP source-conflict reviews. It may retain a precise transfer if either
+review proves that a source cannot yet support allocation; it must not reopen,
+average, or silently override either authority decision.
+
 ## Required scope
 
 For each profile, classify every implemented instruction form and relevant
@@ -62,5 +67,5 @@ the machine is cycle exact.
    and delivery assumptions are bounded; transfer delivery cycles rather than
    inventing them.
 6. **S7 -- task closure audit.** Verify every receiver has an exact source row
-   or a truthful Queue/TODO transfer, then hand primary-source conflicts to
-   the next Queue candidate, Four-profile Intel timing source reconciliation.
+   or a truthful Queue/TODO transfer, including the named physical/device and
+   cycle-exact receivers. It does not allocate a new source-conflict task.

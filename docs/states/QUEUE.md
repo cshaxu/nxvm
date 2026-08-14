@@ -27,8 +27,11 @@ lowest-priority consumer: it must expose a remaining gap, never hide one.
 Each candidate has a bounded primary-manual/probe contract; completing one
 does not silently upgrade a different device, profile, or Windows mode.
 
+1. [Legacy dynamic arithmetic timing authority](../proposals/m5-legacy-dynamic-arithmetic-timing-authority.md).
+1. [80286 NOP timing source conflict review](../proposals/m5-80286-nop-source-conflict-review.md).
 1. [Complete instruction-timing corpus](../proposals/m5-complete-instruction-timing-corpus.md).
 1. [PC/AT device, chip, port, and bus completeness audit](../proposals/m5-pcat-device-completeness-audit.md).
+1. [PC/AT NMI source ownership](../proposals/m5-pcat-nmi-source-ownership.md).
 1. [Bus-timed PC/AT operation](../proposals/m5-bus-timed-pcat-operation.md).
 1. [PC/AT device service-timing corpus](../proposals/m5-device-service-timing-corpus.md).
 1. [Cycle-exact selected profile](../proposals/m5-cycle-exact-selected-profile.md).

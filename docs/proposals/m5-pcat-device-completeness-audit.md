@@ -15,6 +15,10 @@ state surface, reset and error behavior, event/timing owner, consumers, gaps,
 and the earliest bounded implementation candidate.  Classify absent devices
 separately from selected-but-incomplete devices.
 
+The resulting NMI source inventory is the explicit prerequisite of the later
+PC/AT NMI source-ownership candidate; this audit does not select or synthesize
+an NMI producer itself.
+
 ## Non-goals and stop conditions
 
 Do not implement a device merely because another emulator has it, import
