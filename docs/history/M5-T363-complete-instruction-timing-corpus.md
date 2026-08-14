@@ -58,3 +58,12 @@ confirms the selected non-privileged `0F` integer forms, their legal
 prefix/width variants, and their 106-clock preflight boundary retain one
 source-backed publisher. S6 may reconcile only privileged/table/control/debug
 and task timing forms.
+
+### S6: Privileged, table, selector, control, debug, and task-adjacent matrix
+
+S6 is accepted at `0721ba8f`. Its
+[reconciliation](../etc/evidence/t363-s6-privileged-reconciliation.md)
+confirms all selected successful 80386 system forms retain one source-backed
+publisher, while context-incomplete 80286, transition/delivery and physical
+forms remain explicit receivers. S7 may perform only the task-level corpus
+closure audit.
