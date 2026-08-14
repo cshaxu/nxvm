@@ -53,3 +53,24 @@ records the Intel-range ledger, selected MAME i86/i186 constants, explicit
 execution boundary. The result is a source-labelled model-L3 allocation only;
 it makes no physical or cycle-exact claim. The next T361 S is the separately
 bounded 80286 `NOP` Appendix-B/prose source and consumer review.
+
+### S4: 80286 NOP primary-source and consumer review
+
+S4 is accepted at `a5442d96`. Its
+[audit](../etc/evidence/t361-s4-80286-nop-source-consumer-audit.md) verifies
+that Intel 210498-005's Chapter 3 overview example says two clocks while its
+Appendix-B per-instruction `90 NOP` row says three. The already selected
+per-instruction row remains the sole CPU instruction-retirement allocation;
+the runtime value and focused tests remain three clocks.
+
+## Closure Audit
+
+T361 closes with every admitted item evidenced: S1--S3 establish the
+source-labelled 8086/80186 dynamic-arithmetic policy, selected model values,
+explicit reference-exhausted rows, and the synchronous-fault nonpublication
+boundary; S4 resolves the 80286 `NOP` source conflict and removes its TODO.
+The remaining range-invalid immediate-IMUL rows transfer to the ordered
+[Intel-constrained normalization proposal](../proposals/m5-intel-constrained-legacy-timing-normalization.md), which owns any future clamp policy,
+complete fallback sweep, and regression corpus. No physical or cycle-exact
+claim, third-party source import, firmware/media asset, or unresolved T361
+consumer remains.

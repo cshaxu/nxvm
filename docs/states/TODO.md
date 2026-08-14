@@ -175,7 +175,7 @@ admissions, not the default definition of NXVM completion.
   publication/rollback design, all selected Group-3 and immediate-IMUL form
   coverage, and a consumer sweep. Do not choose a minimum, maximum, midpoint,
   later-processor formula, host benchmark, or secondary emulator value.
-  [Queue receiver](../proposals/m5-legacy-dynamic-arithmetic-timing-authority.md).
+  [Queue receiver](../proposals/m5-intel-constrained-legacy-timing-normalization.md).
 
 - [ ] **PC/AT NMI source ownership (`TODO(Medium)`).** T350 S4 reconfirms that
   RTC periodic/update conditions publish IRQ8, while the CMOS index-port bit

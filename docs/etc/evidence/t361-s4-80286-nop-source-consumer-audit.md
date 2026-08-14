@@ -44,10 +44,10 @@ Queue candidates.
 
 ## Verification record
 
-- `ninja -C build\\mingw-gcc-x64 core-machine-80286-instruction-timing-ledger-smoke core-machine-instruction-timing-ledger-smoke core-machine-real-mode-tick-smoke verify-t360-timing-source-inventory verify-documentation-governance` passed. The inventory and documentation checks passed during the target build.
-- `build\\mingw-gcc-x64\\core-machine-80286-instruction-timing-ledger-smoke.exe` passed with `M5:T357:S6:80286-INSTRUCTION-TIMING-LEDGER:OK`; its direct `90` case retains the three-tick assertion.
-- `build\\mingw-gcc-x64\\core-machine-instruction-timing-ledger-smoke.exe` passed with `M5:T357:S3:INSTRUCTION-TIMING-LEDGER:OK`.
-- `build\\mingw-gcc-x64\\core-machine-real-mode-tick-smoke.exe` passed with `M5:T218:S2:REAL-MODE-TICKS:OK`.
+- `ninja -C build/mingw-gcc-x64 core-machine-80286-instruction-timing-ledger-smoke core-machine-instruction-timing-ledger-smoke core-machine-real-mode-tick-smoke verify-t360-timing-source-inventory verify-documentation-governance` passed. The inventory and documentation checks passed during the target build.
+- `build/mingw-gcc-x64/core-machine-80286-instruction-timing-ledger-smoke.exe` passed with `M5:T357:S6:80286-INSTRUCTION-TIMING-LEDGER:OK`; its direct `90` case retains the three-tick assertion.
+- `build/mingw-gcc-x64/core-machine-instruction-timing-ledger-smoke.exe` passed with `M5:T357:S3:INSTRUCTION-TIMING-LEDGER:OK`.
+- `build/mingw-gcc-x64/core-machine-real-mode-tick-smoke.exe` passed with `M5:T218:S2:REAL-MODE-TICKS:OK`.
 - `git diff --check` passed before staging. The change modifies a source comment and documentation only; it does not alter a runnable path, so the packet's conditional full-current-gate requirement is not triggered.
 
 The task does not add a new runtime marker because it intentionally leaves the

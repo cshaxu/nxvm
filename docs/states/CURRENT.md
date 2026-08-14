@@ -2,30 +2,7 @@
 
 ## Current Work
 
-**Active.** M5 T361 S4 is the bounded 80286 `NOP` primary-source and consumer
-review. It must retain or revise the existing three-clock row only through a
-primary-source semantic-context decision.
-
-## M5 T361 S4 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | The owner approved completion of current T361 and subsequent Queue work through model-L3 closure on 2026-08-14. This continuation is the already-recorded next T361 S: the 80286 `NOP` Appendix-B/prose review. The owner permits Git pushes. |
-| Objective | Establish the edition, page, wording, and semantic context of the Intel 210498-005 Appendix-B `NOP = 3` row and the conflicting two-clock prose; decide whether the existing source allocation remains valid or must change, then sweep every 80286 `NOP` timing classifier, focused smoke, scheduler, trace, and device consumer. |
-| Non-goals | No 8086/80186 dynamic-arithmetic normalization (the next Queue candidate owns it), no emulator or benchmark authority, no averaging or midpoint, no general 80286 corpus expansion, no bus/prefetch/device/service timing, no exception-delivery change, no 80386 allocation, and no physical or cycle-exact claim. |
-| Reference Baseline | `a71a7822` / `vm-0-5-0359`; [legacy dynamic arithmetic timing authority](../proposals/m5-legacy-dynamic-arithmetic-timing-authority.md), the T360 S2 [precedence record](../etc/evidence/t360-s2-80286-nop-authority-precedence.md), and `TODO(Medium)` 80286 `NOP` debt. |
-| Candidate Proposal | [Legacy dynamic arithmetic timing authority](../proposals/m5-legacy-dynamic-arithmetic-timing-authority.md). |
-| Files And ABI Surface | Primary-source research and evidence, `docs/states/CURRENT.md`, `docs/states/TODO.md`, T361 history, and only if the primary decision requires it the existing private 80286 timing ledger/classifier and its focused test/CMake registration. No public ABI, imported code, dependency, firmware, media, or product-composition surface. |
-| Applicable Rules | Task Reading Set; Execution packet/P/closure and similar-issue rules; Documentation authority boundaries; source/research policy; Architecture single-owner and source-admission invariants; Coding source/test rules if code changes. The one successful-retirement publisher and CPU-versus-machine timing ownership remain invariant. |
-| Verification | Record reproducible Intel edition/page/excerpts by semantic role without committing protected source; compare table and prose contexts; run an exact repository sweep for 80286 `NOP` timing consumers; prove the selected row once through each classifier and focused smoke, and prove no downstream owner substitutes a second value. Run focused tests if code changes, documentation governance, diff check, and the full current gate if a runnable path changes. |
-| Expected Markers | Existing 80286 timing-ledger and instruction-timing smoke markers remain passing; any changed direct proof exposes `M5:T361:S4:80286-NOP`. |
-| Asset Needs | Read-only Intel 210498-005 primary manual and existing repository evidence; no guest media, binary asset, source import, download retention, or hardware measurement. |
-| Reporting Requirements | First report confirms that the S is source-precedence-only. Report the table/prose semantic comparison and consumer-sweep disposition before any runtime edit. Final evidence names every reviewed consumer, chosen authority, unchanged/changed result, source boundary, and any transfer. |
-| Stop Conditions | Stop and retain the existing explicit debt if the manual edition/page/context cannot be reproduced, the statements cannot be compared without unsupported inference, a change needs a non-primary authority, or a consumer requires broader timing/bus/device/delivery work. Do not guess, average, or change a value outside a source-backed decision. |
-| Exit Criteria | A durable evidence record gives a primary-source retain-or-revise decision, maps both statements' semantic context, covers every in-scope consumer, proves one source allocation and one publisher, updates the TODO/records truthfully, and passes the required gates without an untracked residual. |
-| Original Owner Request | Complete the current T361 and subsequent tasks until model-L3 timing is fully closed; where primary Intel authority has no deterministic timing, prefer 86Box/MAME/PCjs as applicable reference sources. For this `NOP` conflict, the active proposal confines authority to the primary manual. |
-| Similar-Issue Sweep | Search tracked `src`, `tests`, CMake, documentation, and evidence for `80286.*NOP`, `NOP.*80286`, `NOP = 3`, `NOP = 2`, and the 80286 source-timing enum; classify every timing owner/consumer as retained, revised, not applicable, or transferred with an explicit receiver. |
+**Idle.**
 
 ## Current Technical Baseline
 
@@ -46,7 +23,7 @@ primary-source semantic-context decision.
 
 | Task | Compact result |
 | --- | --- |
-| T361 S3 | Accepted at `914c6afc`: MAME constants are used only where they stay within Intel Table 1-16 ranges; range-invalid or incomparable immediate-IMUL forms remain reference-exhausted. Successful synchronous fault delivery stops the faulting round with zero retirement/ticks, and handler retirement begins on a later run. [Evidence](../etc/evidence/t361-s3-synchronous-fault-retirement-audit.md). No physical or cycle-exact claim. |
+| T361 | Closed at `a5442d96`: S1--S3 established the source-labelled 8086/80186 allocation and synchronous-fault publication boundary; S4 retained Intel 210498-005 Appendix-B `90 NOP = 3` after a page/context and consumer audit. Immediate-IMUL normalization transfers to the first Queue candidate. [S4 evidence](../etc/evidence/t361-s4-80286-nop-source-consumer-audit.md). No physical or cycle-exact claim. |
 | T360 | Closed four-profile timing source reconciliation: primary-authority inventory, owner-selected 80286 NOP table precedence, exact legacy range transfer, contextual classifier audit, and final source/receiver closure. 245/245 current-gate tests passed; no L3 or cycle-exact claim. [Closure audit](../etc/evidence/t360-s5-four-profile-timing-source-closure-audit.md). |
 | T359 | Closed its bounded four-profile instruction-retirement corpus: S1 inventory plus S2--S6 source classifiers use one successful-retirement publisher; S7 verifies all unallocated rows transfer to T360, bus/service, cycle-exact, or x87/VME receivers. 245/245 current-gate tests passed. No L3 or cycle-exact claim is made. [Closure audit](../etc/evidence/t359-s7-complete-instruction-timing-closure-audit.md). |
 | T358 | Closed cross-mode mechanism coherence: reconciled I/O permission, exception/IRQ entry, selector/task/return transition, paging/linear access, and prefix/LOCK/width/string classifiers; repaired 80286 delivery, LOCK group legality, and repeated-width preview divergence; passed 240 current-gate tests. [Closure audit](../etc/evidence/t358-cross-mode-mechanism-closure-audit.md). |
@@ -54,7 +31,6 @@ primary-source semantic-context decision.
 | T356 | Closed the M5 closure audit with an explicit M5-open decision: all selected device owners are evidenced, but instruction timing, bus availability/wait states and selected-profile cycle exactness remain ordered implementation prerequisites; corpus-gated peripheral, storage and product boundaries remain explicit transfers. [History](../history/M5-T356-m5-closure-audit.md). |
 | T355 | Closed the bounded Windows 3.x readiness map: an opt-in BYOB HDD/INT13 checkpoint passed, all four probes remain host-observation/non-current, T347/T354 storage/L3 is a verified prerequisite, and all display, input, NMI, physical-timing, Setup, and compatibility breadth remains explicitly transferred. [History](../history/M5-T355-windows-3x-readiness-map.md). |
 | T354 | Closed selected L3 bus timing: core-local checked CPU/DMA transaction begin/commit/cancel trace, deterministic CPU-retire then DMA/PIT/PIC then FDC/HDC ordering, reset cancellation/trace continuity, and retained firmware/DOS consumers. Exact bus cycles, pin waveforms, physical wait tables, host time, and Windows readiness remain explicit transfers. 234 current-gate tests passed. [History](../history/M5-T354-physical-l3-bus-timing-convergence.md). |
-| T353 | Closed selected PC/AT topology: the default profile's 75 exact directional leaves and five named routes validate before core publication, remain exact through session reset and deterministic-L3 rearm, and have firmware-visible reset proof. Optional PPI/speaker, NMI, and interface breadth remain corpus-gated TODO transfers; physical bus timing transfers to the next L3 package. 231 current-gate tests passed. [History](../history/M5-T353-pcat-port-topology-and-peripherals.md). |
 
 ## Recent Governance
 
