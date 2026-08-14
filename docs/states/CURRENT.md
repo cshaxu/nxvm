@@ -2,8 +2,29 @@
 
 ## Current Work
 
-**Open.** M5 T358 S3 is accepted; the next cross-mode mechanism requires a
-separately admitted continuation packet.
+**Active.** M5 T358 S4 audits paging and linear-memory access from translation
+validation through `#PF` delivery and access publication.
+
+## M5 T358 S4 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved execution of the ordered Queue through L3 closure on 2026-08-14. Single-agent continuation follows accepted T358 S1--S3 and Td S87 handoff. |
+| Objective | Audit the 80386 paging and linear-memory mechanism as one decision-to-publication route: page walk, PDE/PTE permission and A/D updates, CR2 and `#PF` producer/delivery state, cross-page transaction cancellation, and every adopted real/protected/VM86 caller. Repair only reproduced accidental construction divergence. Also make the default current-gate reproducible by isolating the independently reproduced host-thread timer smoke scheduling failure without changing guest timer behavior. |
+| Non-goals | PAE, large pages, persistent TLB or `INVLPG` behavior, paging-policy expansion, VME/PVI, debugger raw-control mutation, physical wait/bus timing, device timing, host time, numerical x87, or Windows compatibility. The added CTest isolation may not alter timer logic, guest ticks, device ownership, or test assertions. |
+| Reference Baseline | `1d5655b1` / current task artifact `vm-0-5-0358`. |
+| Candidate Proposal | [Cross-mode mechanism coherence](../proposals/m5-cross-mode-mechanism-coherence.md), retained [T311 paging boundary](../history/M5-T311-paging-boundary-family.md), and current [Queue](QUEUE.md). |
+| Files And ABI Surface | Existing private CPU translation, logical memory, execution-finalization, and adopted instruction callers; CMake CTest scheduling metadata for the existing timer firmware smoke; owner paging evidence, task history/status, and current artifact only. No public CPU, memory, pager, debugger, provider, or device ABI. |
+| Applicable Rules | Task Reading Set, execution, architecture, coding, documentation, and source/research policy; one checked translation/transaction owner, validation before A/D or guest-data publication, and explicit Intel-required mode/permission differences. |
+| Verification | Enumerate translation/page-walk, logical read/write, preview, instruction fetch, data/stack/string, and exception-finalizer callers. For each classify permissions, A/D and CR2 mutation, fault delivery, and commit/cancellation. Reproduce any divergence with focused variants; run the owner paging marker, retained delivery/VM86 markers, the timer smoke alone and repeated default parallel current gates, governance, artifact rebuild/hash, and diff checks. |
+| Expected Markers | Retained `M5:T258:S2:I386-PAGING:OK`, `M5:T311:S3:PAGING-PERMISSIONS:OK`, `M5:T311:S4:CROSS-PAGE:OK`, `M5:T320:S1:VM86-DELIVERY:OK`, and rebuilt `vm-0-5-0358` artifact. |
+| Asset Needs | Intel 80386 paging and page-fault authority plus project-owned synthetic page tables, GDT/IDT/TSS fixtures only; no guest media, firmware, or external-source import. |
+| Reporting Requirements | One complete P1 only: caller/write ledger, reproduced outcomes, every in-scope repair and similar-issue sweep, focused and retained markers, full gate, artifact hash, commit, and push. Do not report a single permission bit, fault vector, or page-crossing probe as delivery. |
+| Stop Conditions | Stop and split if the correction needs TLB/INVLPG or PAE/large-page semantics, a public paging/debugger/provider interface, physical bus/device timing, VME/PVI policy, a timer-runtime behavioral change, or a new paging-policy decision rather than a shared-mechanism inconsistency; record exact callers and transfer. |
+| Exit Criteria | Every adopted translation and linear-memory caller has one classified validation-to-publication contract; every reproduced accidental divergence is repaired and swept; Intel-required permission/mode distinctions are retained; default parallel current-gate scheduling is reproducible without changing timer runtime behavior; all gates pass and excluded paging state-machine work remains transferred. |
+| Original Owner Request | Continue the ordered Queue holistically until L3 closure audit, avoiding symptom-patch tactics. |
+| Similar-Issue Sweep | Search tracked production translation, logical-memory, `#PF`/CR2, A/D, preview, and execution-finalizer paths plus their current-gate owners; inspect all current host-thread firmware smokes for an equivalent CTest scheduling contract; classify every hit as repaired, covered common owner, Intel-required difference, or explicit Queue/TODO transfer before closure. |
 
 ## Current Technical Baseline
 
