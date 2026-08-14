@@ -2,29 +2,10 @@
 
 ## Current Work
 
-**Active implementation packet:** M5 T366 S3, selected Model 339
-system-board-memory-parity NMI lifecycle.
-
-## M5 T366 S3 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner: repository owner. Approval: the owner's continuing instruction to implement T361 and its successors through the M5 L3 closure, and the 2026-08-14 approved Model 339 Type 3 baseline; the latter explicitly directs a no-fixed-disk 5170, distinguishes ATA/HDC from future MFM/ST-506, and restricts reference emulators to cross-checking. Approved scope: only the selected system-board RAM-parity NMI lifecycle needed before bus availability. No exception is approved. |
-| Objective | Implement one core-owned, opt-in system-board RAM-parity controller with a documented port `61h` status/control contract, CMOS `70h` NMI-mask interaction, reset/finalize behavior, deterministic pending-NMI visibility, and real/protected/ordinary-VM86 delivery coverage. The controller is not a new generic machine baseline: only a later selected-profile composition may enable it. |
-| Non-goals | Do not change the current default PC/AT CPU, RAM, ATA/HDC, FDC, display, ROM, or boot topology; claim it is Model 339; implement I/O-channel check, expansion-memory parity, MFM/ST-506, speaker/timer port-B behavior beyond preserving its owned bits, bus waits, DMA/HOLD, or physical/cycle timing; import firmware/media/reference code; or use RTC, CMOS, PIC, or CPU delivery state as an NMI producer. |
-| Reference Baseline | T366 S2 accepted at `0e04b405`, with the IBM PC/AT Technical Reference March 1986 as primary behavioral authority and its selected Model 339 Type 3 scope in [profile lock](../etc/evidence/t366-s2-5170-profile-lock.md). T365's [non-admission decision](../etc/evidence/t365-s1-pcat-nmi-source-decision.md) remains the source/receiver audit. The current implementation has CPU `flagNMI` delivery and CMOS masking but no `61h` or parity owner. |
-| Candidate Proposal | [Bus-Timed PC/AT Operation](../proposals/m5-bus-timed-pcat-operation.md), NMI-source stage only. |
-| Files And ABI Surface | Expected: `src/core/machine/{machine.c,machine.h,machine_interface.h}` plus a cohesive parity owner if justified; default profile/session composition only for opt-in registration; focused machine/product tests and CMake test registration; `docs/etc/evidence/`, `docs/etc/README.md`, `docs/history/M5-T366-bus-timed-pcat-operation.md`, and this packet. A public operation may expose only a bounded configuration and copied observation contract, never a raw machine/CPU/RAM/device pointer; no test-only public injection ABI. |
-| Applicable Rules | Execution: packet, one-S/P lifecycle, self-review, similar-issue sweep and durable evidence. Architecture: one mutable-state owner and composition-only integration; core remains VM-neutral; no raw mutable cross-module ABI. Coding: C11, one cohesive owner, no test mirror or test-only public contract. Documentation: evidence indexed and active status only here. Source policy: IBM material remains documentation/research only, with no imported listing, ROM, media, or vendor binary. All apply; no rule is waived. |
-| Verification | Build and run a focused parity/NMI smoke covering clean state, board-parity assertion/latch, `61h` status, `61h` disable/enable clear sequence, `70h` mask deferral/release, reset/finalize, and real/protected/ordinary-VM86 NMI delivery; run every existing PC/AT topology/composition test affected by the added port; run the current required test gate and documentation-governance gate; run `git diff --check`. Record exact commands and markers in indexed evidence. |
-| Expected Markers | Focused proof emits `M5:T366:S3:PLANAR-PARITY-NMI:OK`; existing PC/AT checks retain their current markers; governance completes successfully. |
-| Asset Needs | None. Tests use repository-authored code only. No ROM, DOS, diagnostics, guest media, emulator trace, or third-party source is required. |
-| Reporting Requirements | Report the initial contract confirmation, a progress update after the owner/latch/control path is integrated, and final pushed P with evidence, verification, changed ownership boundary, and explicit transfers. |
-| Stop Conditions | Stop and return to the owner if IBM authority cannot determine the selected Type-3 port/latch semantics; an actual 5170 profile change becomes necessary; port-B ownership cannot preserve unrelated speaker/timer bits; a public synthetic fault-injection ABI would be needed; any selected route requires I/O-channel check, unselected hardware, timing allocation, or external/protected asset. |
-| Exit Criteria | One configuration-gated system-board parity owner has an assertion source, latch/status, documented `61h` clear path, `70h` mask relationship, reset/finalize behavior, and delivery proof in each named CPU mode. No default profile misidentification or unselected I/O-check/storage/timing behavior is introduced; tests and evidence prove it. |
-| Original Owner Request | The owner confirmed the machine direction: use the late IBM PC/AT 5170 Model 339 / Type 3 as the 80286 L3 baseline (8 MHz, Rev.3 BIOS dated 1985-11-15, 512 KB planar, 101-key keyboard), initially without a hard disk; use a named 3.5-inch 1.44 MB drive only as a documented field upgrade; do not add 1 MB expansion; retain future MFM/ST-506 disk/controller work in TODO; do not call the current ATA/HDC model IBM 30 MB MFM; and use 86Box `ibmat`/MAME `ibm5170a` solely for behavioral cross-checking, never as exact-machine authority. |
-| Similar-Issue Sweep | Inspect all port `61h`, parity, channel-check, `flagNMI`, NMI-mask, reset/finalize, configuration rollback, profile leaf, and CPU-mode delivery paths. Repair the shared ownership/lifecycle mechanism or transfer each excluded source; do not add a parallel device or direct CPU-state write. |
+**No active implementation packet.** T366 S3 is accepted. Its next S must
+admit a selected-profile composition/memory binding for the locked 512 KB
+Model 339 planar RAM before bus-availability work; it must retain separate
+I/O-channel-check, speaker/timer and MFM/ST-506 receivers.
 
 ## Current Technical Baseline
 
@@ -45,7 +26,7 @@ system-board-memory-parity NMI lifecycle.
 
 | Task | Compact result |
 | --- | --- |
-| T366 S2 | Accepted at `0e04b405`: locks a field-configured IBM 5170 Model 339 Type 3 baseline--8 MHz, 512 KB, Rev.3 ROM slot, 101-key keyboard, CGA and TEAC 1.44 MB drive--with no fixed disk or serial/parallel adapter. ATA/HDC is explicitly distinct from the deferred MFM/ST-506 path. [Profile lock](../etc/evidence/t366-s2-5170-profile-lock.md). No timing allocation. |
+| T366 S3 | Accepted at `b7bfe7a4`: core owns an opt-in Model 339 planar-RAM-parity source at `61h`; its latch/status, bit-2 clear/re-enable, `70h` NMI-mask interaction and reset are proven without altering the generic PC/AT profile. [Lifecycle evidence](../etc/evidence/t366-s3-planar-parity-nmi.md). I/O-channel check, physical parity-memory binding and timing remain transfers. |
 | T365 | Closed at `febc9352`: IBM PC/AT parity/I/O-check NMI sources cannot be selected without a profile input, status/latch/clear and lifecycle contract; CPU and CMOS remain delivery/mask only. [Closure audit](../etc/evidence/t365-s2-pcat-nmi-nonadmission-closure-audit.md). Blocks physical/cycle-exact L3 closure; no synthetic source. |
 | T364 | Closed at `7d574ae3`: all selected PC/AT components, ports/routes and lifecycle/timing owners are inventoried; optional and physical gaps retain exact Queue/TODO receivers. [Closure audit](../etc/evidence/t364-s2-pcat-device-completeness-closure-audit.md). No model-L3 claim. |
 | T363 | Closed at `312ef2f9`: all 256 primary and 256 secondary dispatch slots have one source-backed successful-retirement owner or an exact explicit receiver; inventory and 246/246 current-gate passed. [Closure audit](../etc/evidence/t363-s7-complete-instruction-timing-closure-audit.md). No physical/cycle-exact L3 claim. |
