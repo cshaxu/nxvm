@@ -2,29 +2,8 @@
 
 ## Current Work
 
-**Active.** M5 T358 S5 audits shared prefix, `LOCK`, operand/address-width,
-and string-repeat classification through handler execution and publication.
-
-## M5 T358 S5 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner approved ordered single-agent execution of M5 Queue work on 2026-08-14. This is the final mechanism unit of already open T358 after accepted S1--S4. |
-| Objective | Establish one decision-to-publication ledger for instruction-prefix classification: repeated segment, `F2`/`F3`, `66`, `67`, and `F0 LOCK`; trace each shared classifier into representative ordinary and string handlers, and repair only a reproduced mismatch between classification, handler execution, fault ordering, or publication. |
-| Non-goals | No opcode-family breadth closure, global prefix-policy rewrite, VME/PVI, 486+ prefix behavior, numerical x87, physical bus/prefetch timing, device timing, host scheduling, or Windows claim. Do not flatten Intel-required per-instruction prefix validity, fixed-segment string semantics, or 16/32-bit layout differences. |
-| Reference Baseline | `213d1904` / current task artifact `vm-0-5-0358`. |
-| Candidate Proposal | [Cross-mode mechanism coherence](../proposals/m5-cross-mode-mechanism-coherence.md) and [Queue](QUEUE.md). |
-| Files And ABI Surface | Private CPU decode/classifier and instruction-state paths, adopted handler tests/evidence, status/history, and current artifact only. No public CPU, provider, device, debugger, or test-support ABI. |
-| Applicable Rules | Task Reading Set, execution, architecture, coding, documentation, and source/research policy; one prefix decision owner, handler compatibility with decoded state, validation before guest/external publication, and explicit Intel-required profile/form differences. |
-| Verification | Inventory prefix lexing, profile gates, prefix-state writers, `LOCK` validity decision, operand/address-size selectors, and every `prefix_rep` loop owner. For each classify last-prefix semantics, mode/profile disposition, fault/publication boundary, and handler consumer. Re-run retained S64 prefix owner plus representative ordinary, string, protected, VM86, and pending-IRQ owners; add focused proof only for a reproduced gap; run full current gate, governance, artifact rebuild/hash, and diff checks. |
-| Expected Markers | Retained `M5:T316:S64:PREFIX-ATTRIBUTES:OK`, current ordinary/string owner markers, and rebuilt `vm-0-5-0358` artifact. |
-| Asset Needs | Intel 80386 instruction-prefix, LOCK, string, and operand/address-size authority plus project-owned synthetic fixtures only; no guest media, firmware, or external-source import. |
-| Reporting Requirements | One complete P1 only: classifier/caller ledger, all reproduced outcomes, every in-scope repair and similar-issue sweep, retained/focused markers, full gate, artifact hash, commit, and push. Do not report a single opcode vector, prefix spelling, or registration as delivery. |
-| Stop Conditions | Stop and split if a correction requires an opcode-family semantic redesign, a public decoder/provider API, VME/PVI or later-CPU policy, physical prefetch/bus timing, device behavior, or an Intel-source ambiguity that cannot be resolved within the 80386 authority; record exact owner and transfer. |
-| Exit Criteria | Every shared prefix-state producer and classified handler consumer has one decision-to-publication contract; any reproduced accidental divergence is repaired and caller-swept; Intel-required form/profile differences remain explicit; retained prefix evidence is reconciled rather than duplicated; all gates pass and excluded timing/state-machine work is transferred. |
-| Original Owner Request | Continue the ordered Queue holistically through L3 closure, avoiding symptom-patch tactics and preserving true architectural distinctions. |
-| Similar-Issue Sweep | Search all prefix lexeme, state, `LOCK`, width, repeat, and string-loop owners plus their instruction-family callers and current-gate tests; classify every hit as common owner, repaired divergence, Intel-required difference, or Queue/TODO transfer before closure. |
+**Idle.** M5 T358 is closed; the next Queue candidate requires a separately
+admitted task packet.
 
 ## Current Technical Baseline
 
@@ -45,7 +24,7 @@ and string-repeat classification through handler execution and publication.
 
 | Task | Compact result |
 | --- | --- |
-| T358 S4 | Accepted paging and linear-memory coherence: one translation/A-D/CR2 publication ledger across guest, fetch, descriptor and transition callers; no duplicate walker or A/D publisher; host-thread current smokes are CTest-serialized to eliminate a reproduced guest-independent pause-watchdog flake. Two parallel 240-test gates and the `vm-0-5-0358` artifact SHA remained stable. [History](../history/M5-T358-cross-mode-mechanism-coherence.md) |
+| T358 | Closed cross-mode mechanism coherence: reconciled I/O permission, exception/IRQ entry, selector/task/return transition, paging/linear access, and prefix/LOCK/width/string classifiers; repaired 80286 delivery, LOCK group legality, and repeated-width preview divergence; passed 240 current-gate tests. [Closure audit](../etc/evidence/t358-cross-mode-mechanism-closure-audit.md). |
 | T357 | Closed finite source-backed 8086/80186/80286/80386 instruction timing at one successful-retirement publisher: selected form ledgers, 80386 protected/VM86 ordinary I/O, Appendix-B `NOP = 3` consumer reconciliation, 240 current-gate tests, and artifact SHA-256 `83A249015C03CF875896A440D5B43A430C2D875A63F0BE4B9709014A753CAD95`. Unselected forms, waits, physical bus/prefetch, device latency and cycle-exact work remain explicit transfers. [Closure audit](../etc/evidence/t357-s8-cross-profile-closure-audit.md). |
 | T356 | Closed the M5 closure audit with an explicit M5-open decision: all selected device owners are evidenced, but instruction timing, bus availability/wait states and selected-profile cycle exactness remain ordered implementation prerequisites; corpus-gated peripheral, storage and product boundaries remain explicit transfers. [History](../history/M5-T356-m5-closure-audit.md). |
 | T355 | Closed the bounded Windows 3.x readiness map: an opt-in BYOB HDD/INT13 checkpoint passed, all four probes remain host-observation/non-current, T347/T354 storage/L3 is a verified prerequisite, and all display, input, NMI, physical-timing, Setup, and compatibility breadth remains explicitly transferred. [History](../history/M5-T355-windows-3x-readiness-map.md). |
@@ -53,7 +32,6 @@ and string-repeat classification through handler execution and publication.
 | T353 | Closed selected PC/AT topology: the default profile's 75 exact directional leaves and five named routes validate before core publication, remain exact through session reset and deterministic-L3 rearm, and have firmware-visible reset proof. Optional PPI/speaker, NMI, and interface breadth remain corpus-gated TODO transfers; physical bus timing transfers to the next L3 package. 231 current-gate tests passed. [History](../history/M5-T353-pcat-port-topology-and-peripherals.md). |
 | T352 | Closed selected digital CGA/EGA: one VADP owner for registers, apertures, raster, planar state, reset, and capture; deterministic VADP-after-KBC timing and copied session/mailbox composition; its recorded developer artifact and SHA-256 remain in task history; 229 current-gate tests passed. [History](../history/M5-T352-vadp-digital-video-completeness.md). |
 | T351 | Closed selected IBM-PC/AT 8042 controller, AT keyboard, and compatible three-byte AUX at deterministic L3: one FIFO, controller/keyboard/AUX head promotion, IRQ1/IRQ12 source lifecycle, delayed/reset/finalize, copied ingress, and exact advanced-AUX/NMI/port-61 transfers. 228 current-gate tests passed. [History](../history/M5-T351-kbc-aux-completeness.md). |
-| T350 | Closed the selected PC/AT signal graph: retained 8254/IRQ0 and MC146818/CMOS/IRQ8 owners now have focused lifecycle proof; RTC alarm and IRQF defects are repaired; speaker/PPI and parity/I/O-channel NMI remain exact corpus/contract-gated TODO transfers. 228 current-gate tests passed. [History](../history/M5-T350-pcat-platform-signals.md). |
 
 ## Recent Governance
 

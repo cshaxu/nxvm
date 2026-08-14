@@ -27,7 +27,6 @@ lowest-priority consumer: it must expose a remaining gap, never hide one.
 Each candidate has a bounded primary-manual/probe contract; completing one
 does not silently upgrade a different device, profile, or Windows mode.
 
-1. [Cross-mode mechanism coherence](../proposals/m5-cross-mode-mechanism-coherence.md).
 1. [Complete instruction-timing corpus](../proposals/m5-complete-instruction-timing-corpus.md).
 1. [Four-profile Intel timing source reconciliation](../proposals/m5-four-profile-timing-source-reconciliation.md).
 1. [PC/AT device, chip, port, and bus completeness audit](../proposals/m5-pcat-device-completeness-audit.md).
@@ -41,6 +40,10 @@ does not silently upgrade a different device, profile, or Windows mode.
 1. [M5 final L3 and Windows closure audit](../proposals/m5-final-l3-windows-closure-audit.md).
 
 Closed proposal reference:
+[Cross-mode mechanism coherence](../proposals/m5-cross-mode-mechanism-coherence.md)
+is closed and retained as its five shared CPU mechanism ledgers and task-level
+transfer record, not as a candidate.
+
 [Instruction-timed execution](../proposals/m5-instruction-timed-execution.md)
 is closed and retained as its finite source-ledger and transfer record, not as
 a candidate.

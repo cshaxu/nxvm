@@ -66,8 +66,24 @@ gate. Two fresh parallel current-gate runs passed 240/240. The active developer
 artifact SHA-256 remains
 `59FAC0E73FED23BA47F3F25C1946C8D2949CFB186C480CE9841588E47E754E2E`.
 
-## Remaining Scope
+## Accepted S5 Progress
 
-T358 retains its proposal order: shared prefix/LOCK/width/string classifiers.
-This is a separately admitted S unit;
-T358 does not claim VME/PVI, device behavior, bus timing, or x87 execution.
+S5 was accepted at `f2892ebf`. Its [prefix-classifier ledger](../etc/evidence/t358-s5-prefix-classifier-coherence.md)
+maps runtime and preview prefix recognition, segment/width/repeat state,
+LOCK classification, and all string-family consumers. It repairs two shared
+construction divergences: 80386 LOCK now rejects read-only or invalid group
+forms before operand decoding, and preview treats repeated `66`/`67` as the
+same presence attributes used by execution. The retained prefix owner and
+timing-preview smoke prove legal write forms, full illegal-form
+nonpublication, and repeated width behavior.
+
+The accepted current-gate result is 240/240 passing. The active developer
+artifact SHA-256 remains
+`59FAC0E73FED23BA47F3F25C1946C8D2949CFB186C480CE9841588E47E754E2E`.
+
+## Closure
+
+The [task-level closure audit](../etc/evidence/t358-cross-mode-mechanism-closure-audit.md)
+accepts all five proposal mechanisms and transfers only the named timing,
+physical-bus, device, later-CPU, x87, and Windows boundaries. T358 is closed;
+the next Queue candidate consumes this mechanism baseline.
