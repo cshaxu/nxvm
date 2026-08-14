@@ -33,6 +33,7 @@ Each candidate has a bounded primary-manual/probe contract; completing one
 does not silently upgrade a different device, profile, or Windows mode.
 
 1. [Legacy dynamic arithmetic timing authority](../proposals/m5-legacy-dynamic-arithmetic-timing-authority.md).
+1. [Intel-constrained legacy timing-model normalization](../proposals/m5-intel-constrained-legacy-timing-normalization.md).
 1. [Complete instruction-timing corpus](../proposals/m5-complete-instruction-timing-corpus.md).
 1. [PC/AT device, chip, port, and bus completeness audit](../proposals/m5-pcat-device-completeness-audit.md).
 1. [PC/AT NMI source ownership](../proposals/m5-pcat-nmi-source-ownership.md).
