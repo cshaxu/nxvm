@@ -27,7 +27,7 @@ detailed [S2 transaction-owner evidence](../etc/evidence/t354-s2-transaction-own
 transfers deterministic competing-owner policy to S3 and session/consumer
 closure to S4.
 
-S3 is delivered pending acceptance.  It reconciles existing selected
+S3 was accepted at `8d29e836`.  It reconciles existing selected
 same-guest-tick ordering without inventing physical duration: CPU transaction
 commit precedes retirement; arbitration then services DMA, PIT, and PIC; and
 the equal-due readiness callback advances/refreshes FDC then HDC.  The focused
