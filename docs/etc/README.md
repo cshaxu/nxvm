@@ -90,6 +90,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t355-s1-readiness-ledger.md` | Verification owner | T355 S1 existing Windows checkpoint/probe, media, CPU/device/L3 prerequisite, host-observation, and ordered-receiver ledger. Retain with T355 history at task closure. |
 | `evidence/t355-s2-opt-in-checkpoint-harness.md` | Verification owner | T355 S2 explicit BYOB HDD/INT13 checkpoint invocation, current-gate exclusion, absent-input proof, and host-observation boundary. Retain with T355 history at task closure. |
 | `evidence/t355-s3-hdd-int13-checkpoint.md` | Verification owner | T355 S3 approved local HDD/INT13 checkpoint identity/result, host-observation limitation, and precise transfer ledger. Retain with T355 history at task closure. |
+| `evidence/t355-s4-readiness-reconciliation.md` | Verification owner | T355 S4 four-probe, provenance, current-gate, device/timing-transfer, and task-closure reconciliation. Retain with T355 history at task closure. |
 | `operations/` | Execution, source, and release owners | Toolchain, policy, templates, release procedure, and closure material. |
 | `research/` | Source owner | Provenance, external references, and non-product research. |
 | `history/` | Documentation owner | Read-only legacy and M5 migration/roadmap evidence. |

@@ -21,7 +21,7 @@ driver corpus.
 | PC/AT NMI sources | CMOS exposes only the existing NMI mask; parity/I/O-channel producers are absent. | Select a PC/AT source and prove mask/assert/deassert/reset plus protected/VM86 delivery on the timeline. |
 | Windows display/input corpus | VADP/KBC timing ownership is deterministic, but no Windows driver or setup corpus selects the needed video/AUX surface. | Owner-supplied, legally handled Windows corpus with declared display, keyboard, and optional mouse checkpoint. |
 | Digital video breadth | The retained CGA/EGA modes are bounded; VGA/VBE and remaining digital CGA behavior are not claimed. | Corpus-selected mode/CRTC contract with core-owned state and copied-frame evidence. |
-| Guest media and installation | No Windows image or installation was introduced or run. | BYOB/provenance decision plus a bounded installation/startup checkpoint and captured prerequisite failures. |
+| Guest media and installation | S3 ran one approved BYOB HDD/INT13 geometry/read checkpoint only; it did not run installation, startup, or Setup. | A separately approved BYOB installation/startup checkpoint with captured prerequisite failures. |
 
 CPU T343 is an accepted four-profile form/state closure. Numerical x87
 execution, VME/PVI, persistent cache/TLB behavior, broad device parity, and

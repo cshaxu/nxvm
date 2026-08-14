@@ -32,3 +32,11 @@ geometry/read result through the retained ATA readiness path.  Its detailed
 [checkpoint record](../etc/evidence/t355-s3-hdd-int13-checkpoint.md) makes no
 Windows boot or compatibility claim and transfers the complete map
 reconciliation to S4.
+
+## S4 delivery pending acceptance
+
+S4 reconciles the four retained probes, local-media boundary, current-gate
+partition, accepted storage/timing prerequisites, and all device/product
+transfers.  Its [reconciliation evidence](../etc/evidence/t355-s4-readiness-reconciliation.md)
+is the task-level closure audit; it does not make an installation or
+compatibility claim.

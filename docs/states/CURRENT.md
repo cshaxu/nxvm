@@ -2,7 +2,29 @@
 
 ## Current Work
 
-**Active.** M5 T355 remains open between accepted subtasks.
+**Active.** M5 T355 S4 reconciles the readiness map and closes its bounded
+checkpoint/provenance task; it does not claim Windows compatibility.
+
+## M5 T355 S4 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved continued holistic device/L3 completion and readiness-map work on 2026-08-13. Accepted S1--S3 commits through `40638d7d` authorize final reconciliation and T355 closure. |
+| Objective | Reconcile the complete four-probe ledger, selected HDD/INT13 result, source/media boundary, current-gate partition, accepted T347--T354 prerequisites, and deferred device/product work; close T355 only with truthful transfers. |
+| Non-goals | No Setup, installation, Standard/Enhanced Mode, new guest/media execution, media persistence, core/device/timing implementation, current-gate promotion, or Windows compatibility claim. |
+| Reference Baseline | `40638d7d` on `master`, accepted T355 S3 HDD/INT13 checkpoint. |
+| Candidate Proposal | [Windows 3.x readiness map](../proposals/m5-windows-3x-readiness-map.md); [S1 ledger](../etc/evidence/t355-s1-readiness-ledger.md); [S2 harness](../etc/evidence/t355-s2-opt-in-checkpoint-harness.md); [S3 checkpoint](../etc/evidence/t355-s3-hdd-int13-checkpoint.md). |
+| Files And ABI Surface | Documentation state, task history/proposal retention, Queue/TODO/evidence indexes, and stale readiness wording only. No source, build, runtime, media, current-gate, or ABI change. |
+| Applicable Rules | Task Reading Set; execution lifecycle and closure audit; documentation rules; source policy. Existing device/timing claims must retain their accepted owner/evidence boundaries. |
+| Verification | Mechanically sweep all Windows probe targets, media variables, current-gate registration and CTest discovery; inspect T347--T354 and open TODO/Queue transfers; validate documentation governance, Queue links, and diff check. |
+| Expected Markers | No `windows31` current-gate tests; one retained opt-in checkpoint target; governance and Queue-link validation; one truthful T355 closure record. |
+| Asset Needs | None. No media access or checkpoint rerun occurs in S4. |
+| Reporting Requirements | Record every probe disposition, approved checkpoint result, untouched host boundary, current-gate result, accepted prerequisite, unresolved device/product transfer, and exact T355 closure outcome. |
+| Stop Conditions | Stop for owner decision if reconciliation reveals an unowned or contradictory core/device/timing claim that needs implementation, media access, or a new compatibility contract rather than a precise transfer. |
+| Exit Criteria | T355 is closed only if its one checkpoint is fully bounded, every non-selected Windows probe and device/product dependency has an owner/transfer, proposal/history/Queue topology is valid, and no Windows compatibility or physical-L3 overclaim remains. |
+| Original Owner Request | Fully and stably implement high-value devices and selected L3 before using a Windows consumer to decide subsequent work. |
+| Similar-Issue Sweep | Inspect all `vm_windows31_*` targets/sources, CMake media/current lists, fixture record, T347--T354 histories/evidence, current capability baseline, Queue, TODO, and source-policy references. |
 
 ## Current Technical Baseline
 
