@@ -2,15 +2,34 @@
 
 ## Current Work
 
-**Active.** M5 T357 remains open after accepting S4; the next source-backed
-timing-ledger packet must cover transferred 80186 and 80286 rows or a further
-bounded 80386 transfer.
+**Active.** M5 T357 S5 allocates the selected 80186 source-timing ledger.
+
+## M5 T357 S5 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner-approved T357 continuation. S5 owns only the selected 80186 source timing rows; it does not infer 80286 or remaining 80386 values. |
+| Objective | Replace compatibility cadence for the selected 80186 corpus with Table 1-16's parenthesized 80186 values at the existing CPU-retirement publisher. |
+| Non-goals | Do not allocate 8086, 80286, or further 80386 rows; do not model 80188, prefetch depletion, wait states, HOLD/DMA, device latency, exact exception/IRQ cycles, bus phases, x87, host time, or Windows behavior. |
+| Reference Baseline | `95a4fe22` / `vm-0-5-0357`, with accepted S1--S4 evidence and Intel iAPX 86/88/186/188 User's Manual Table 1-16. |
+| Candidate Proposal | [Instruction-timed execution](../proposals/m5-instruction-timed-execution.md) and [T357 task record](../history/M5-T357-instruction-timed-execution.md). |
+| Files And ABI Surface | Private timing ownership, owner smoke/target, evidence/index/current/history facts only. No public ABI, CPU execution API, device contract, or second timing writer. |
+| Applicable Rules | Apply the Task Reading Set, execution/coding/architecture/documentation/source-policy authorities. One post-refresh/pre-publication elapsed-tick owner remains mandatory. |
+| Verification | Prove Table 1-16 values for selected `NOP`, `CLC`, immediate/register/direct-memory/moffs `MOV`, single and bounded `REP MOVSB`, short `Jcc`, immediate/DX `IN`/`OUT`, segment override and odd-word additions; prove compatibility independence, fallback, fault/stop/reset/budget/overflow and deterministic provider publication. |
+| Expected Markers | `M5:T357:S5:80186-INSTRUCTION-TIMING-LEDGER:OK`; prior timing markers and full current-gate remain green. |
+| Asset Needs | Read-only Intel iAPX 86/88/186/188 User's Manual Table 1-16. No external source, firmware, guest media, or local path enters the repository. |
+| Reporting Requirements | Record source-to-form values, source assumptions, exact commands/results, changed surface, similar-issue sweep, artifact result, and explicit unallocated-form transfers; document actual-change review before closure. |
+| Stop Conditions | Stop if a selected value depends on an unmodelled prefetch/bus/device/interrupt condition, needs a second time writer or public mutable ledger, or cannot be distinguished from the source table. Transfer rather than guess. |
+| Exit Criteria | Listed 80186 rows have cited values and focused proof; only 80186 selects them after refresh; no selected row derives from compatibility configuration; fault/stop/reset/budget/overflow proofs and full current-gate pass; 80286 and remaining 80386 rows remain explicit transfers. |
+| Original Owner Request | Complete T357 as a profile-aware instruction-form timing prerequisite without claiming bus or cycle-exact timing. |
+| Similar-Issue Sweep | Sweep all profile timing branches, ledger lookups, maximum derivation, compatibility paths, elapsed-tick writers/readers, and selected timing smokes; retain only profile-specific differences substantiated by the source tables. |
 
 ## Current Technical Baseline
 
 - **Current developer artifact:** T357 selects `vm-0-5-0357` /
-  `build/output/nxvm_0_5_0357.exe`; S4 rebuilt it as
-  `DCAA7143AF6A53D75FA3F3FD72E8BA65682C95DAC539747A71E8AF0BCC90E926`.
+  `build/output/nxvm_0_5_0357.exe`; S5 rebuilt it as
+  `42D26E22DBA6149F2D2D0F2CAA6D6EE3DD73A9BECF0348C3EAF4554E5DCB225F`.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
