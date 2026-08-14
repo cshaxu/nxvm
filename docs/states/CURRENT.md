@@ -9,12 +9,12 @@
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | Owner: repository owner; persistent M5 L3 direction and accepted S9 transfer authorize the selected 80286 publisher audit. No exception. |
+| Admission And Approval | Owner: repository owner; persistent M5 L3 direction and accepted S9 transfer authorize the selected 80286 publisher audit. The owner's 2026-08-14 confirmation also authorizes a bounded reference-baseline clarification: Model 339/Type 3, 8 MHz, Rev.3 ROM slots, 512 KB planar RAM, 101-key keyboard, CGA, and a named 3.5-inch 1.44 MB field-upgrade drive, with no fixed disk and no 1 MB expansion. No exception. |
 | Objective | Inventory every successful 80286 path that emits `CORE_MACHINE_SOURCE_UNALLOCATED_TICKS`, classify its opcode/prefix/form origin and create a mechanical closure check. |
 | Non-goals | No guessed timing values, opcode semantic change, physical-time claim, device/bus timing or source import. |
-| Reference Baseline | S9 proves those one-tick values enter elapsed time; T363/T360 timing inventory and 80286 ledger smoke retain the existing classifier boundary. |
+| Reference Baseline | S9 proves those one-tick values enter elapsed time; T363/T360 timing inventory and 80286 ledger smoke retain the existing classifier boundary. T366 S2 remains the exact Model 339 baseline authority; its named field-upgrade drive is not a factory component and its absent MFM/ST-506 route is distinct from the current ATA/HDC model. |
 | Candidate Proposal | [Bus-Timed PC/AT Operation](../proposals/m5-bus-timed-pcat-operation.md). |
-| Files And ABI Surface | Timing classifier, a static verifier or focused audit proof, CMake, evidence/history/current packet only. |
+| Files And ABI Surface | Timing classifier, a static verifier or focused audit proof, CMake, evidence/history/current packet, and the candidate proposal only where needed to prevent an ATA/HDC-to-IBM-MFM baseline misstatement. |
 | Applicable Rules | Execution evidence/sweep, one retirement publisher, C11 cohesion, source policy and documentation indexing apply; no waiver. |
 | Verification | Mechanical audit must identify all 80286 unallocated successful-publisher sites and focused proof must retain their observed behavior; run affected tests, current gate, documentation governance and diff check. |
 | Expected Markers | New S10 audit marker plus existing timing/current-gate markers. |

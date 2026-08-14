@@ -13,9 +13,12 @@ source lifecycle, before it allocates bus availability.
 
 **Profile-lock stage.** Before any timing allocation, record the exact IBM
 PC/AT 5170 system-board revision and manual edition, CPU clock, motherboard
-RAM, ROM configuration, selected diskette-drive/FDC DMA channel-2 path, every
-selected ISA adapter, and a project-owned firmware/DOS probe corpus. An
-unselected adapter cannot supply a timing value.
+RAM, ROM configuration, selected diskette-drive/FDC DMA-channel-2 path, every
+selected ISA adapter, and a project-owned firmware/DOS probe corpus. The
+locked Model 339/Type 3 configuration is 8 MHz, Rev.3 ROM slots, 512 KB planar
+RAM, 101-key keyboard, CGA, and a named 3.5-inch 1.44 MB field-upgrade drive;
+it has no fixed disk and no 1 MB expansion. The field upgrade is not a factory
+component. An unselected adapter cannot supply a timing value.
 
 **NMI-source stage.** After that lock, select one documented board parity or
 I/O-channel-check source and define its producer, latch/clear operation,
@@ -29,8 +32,11 @@ for CPU memory/I/O availability, named memory and port wait states, DMA
 HOLD/HLDA-style exclusion, and selected device ready/DRQ/IRQ visibility.
 Use the existing transaction begin/commit/cancel lifecycle rather than a
 parallel scheduler or test-only mirror state.  Map validation, reservation,
-commit, cancellation, reset and trace behavior across CPU, DMA, PIC, FDC and
-HDC; distinguish logical interrupt acknowledgement from physical INTA.
+commit, cancellation, reset and trace behavior across CPU, DMA, PIC, and the
+selected FDC; distinguish logical interrupt acknowledgement from physical
+INTA. The current ATA/HDC is not a selected 5170 component. A future IBM
+fixed-disk route requires its own MFM/ST-506 controller-and-drive admission;
+it must not reuse ATA ports, media, timing, or terminology.
 
 ## Non-goals and stop conditions
 
