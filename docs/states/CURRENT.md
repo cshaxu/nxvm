@@ -2,29 +2,7 @@
 
 ## Current Work
 
-**Active.** M5 T365 S2 audits the NMI non-admission receiver and task closure;
-it allocates no producer, route or timing value.
-
-## M5 T365 S2 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | The owner directed ordered L3 implementation on 2026-08-14. T365 S1 was accepted at `bbd6ccec`; its source decision admits this audit-only closure unit. Git pushes are permitted. |
-| Objective | Verify that the non-admitted parity/I/O-check NMI source has one truthful T365/TODO receiver, cannot be substituted by CMOS/RTC/PIC/CPU test state, and blocks downstream L3 closure honestly. |
-| Non-goals | No NMI producer, port 61, generic delivery change, bus/service timing, firmware/media import, host source or physical/cycle-exact claim. |
-| Reference Baseline | `bbd6ccec`; [T365 S1 decision](../etc/evidence/t365-s1-pcat-nmi-source-decision.md), T350 S4, T364 closure, Queue and TODO. |
-| Candidate Proposal | [PC/AT NMI source ownership](../proposals/m5-pcat-nmi-source-ownership.md). |
-| Files And ABI Surface | Evidence/history/status only. No public ABI or runnable path. |
-| Applicable Rules | Task Reading Set; Execution task-closure/evidence rules; Documentation topology; Architecture source/lifecycle ownership. |
-| Verification | Recheck profile, CMOS mask, CPU delivery, PIC/RTC routes, TODO/Queue receiver and documentation governance/diff. |
-| Expected Markers | T365 S2 non-admission closure marker and retained mask/delivery markers. |
-| Asset Needs | No new assets; existing IBM PC/AT provenance only. |
-| Reporting Requirements | State exact blocker, receiver, downstream L3 impact and closure decision. |
-| Stop Conditions | Stop without closure if a second source/receiver, concealed synthetic producer or misleading downstream admission exists. |
-| Exit Criteria | Non-admission and receiver are complete, singular and truthful; T365 closes without an NMI implementation claim. |
-| Original Owner Request | Continue ordered Queue implementation toward comprehensive L3 precision. |
-| Similar-Issue Sweep | Recheck NMI/parity/channel-check/port61/CMOS/RTC/PIC/CPU paths and Queue/TODO receivers. |
+**Idle.**
 
 ## Current Technical Baseline
 
@@ -45,7 +23,7 @@ it allocates no producer, route or timing value.
 
 | Task | Compact result |
 | --- | --- |
-| T365 S1 | Accepted at `6b922ba1`: IBM documents parity/I/O-check NMI sources, but no selected profile source contract exists; CPU/CMOS remain delivery/mask only. [Decision](../etc/evidence/t365-s1-pcat-nmi-source-decision.md). |
+| T365 | Closed at `febc9352`: IBM PC/AT parity/I/O-check NMI sources cannot be selected without a profile input, status/latch/clear and lifecycle contract; CPU and CMOS remain delivery/mask only. [Closure audit](../etc/evidence/t365-s2-pcat-nmi-nonadmission-closure-audit.md). Blocks physical/cycle-exact L3 closure; no synthetic source. |
 | T364 | Closed at `7d574ae3`: all selected PC/AT components, ports/routes and lifecycle/timing owners are inventoried; optional and physical gaps retain exact Queue/TODO receivers. [Closure audit](../etc/evidence/t364-s2-pcat-device-completeness-closure-audit.md). No model-L3 claim. |
 | T363 | Closed at `312ef2f9`: all 256 primary and 256 secondary dispatch slots have one source-backed successful-retirement owner or an exact explicit receiver; inventory and 246/246 current-gate passed. [Closure audit](../etc/evidence/t363-s7-complete-instruction-timing-closure-audit.md). No physical/cycle-exact L3 claim. |
 | T362 | Closed at `316c2334`: S1--S2 normalize every eligible 80186 immediate-IMUL source row in one private direct/constrained model table; S3 resolves stale full-gate verifier assumptions and records 246/246 current-gate tests. [Closure audit](../etc/evidence/t362-s3-legacy-timing-normalization-closure-audit.md). Model-L3 only; no physical/cycle-exact claim. |
