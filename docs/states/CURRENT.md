@@ -2,7 +2,29 @@
 
 ## Current Work
 
-**Active.** M5 T354 remains open between accepted subtasks.
+**Active.** M5 T354 S3 reconciles selected DMA/CPU ownership and
+controller-service competition at the accepted transaction boundary.
+
+## M5 T354 S3 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved holistic CPU-external device/L3 completion on 2026-08-13. T354 S2 is accepted at `406471d3` / `8d19152e` and transfers selected contention policy to this S. |
+| Objective | Establish only evidence-backed deterministic ownership/visibility rules between accepted synchronous CPU/DMA transactions, 8237A request/grant/EOP, retained FDC/ATA readiness service, and 8259A acknowledgement visibility. |
+| Non-goals | No invented wait duration, instruction-internal CPU continuation, generic bus facade, controller command rewrite, physical HOLD/HLDA/DACK/INTA waveform, guest-media import, Windows readiness claim, or unselected device timing. |
+| Reference Baseline | `8d19152e` on `master`, T354 S2 accepted CPU/DMA transaction owner. |
+| Candidate Proposal | [M5 physical L3 bus-timing convergence](../proposals/m5-l3-bus-timing-convergence.md), S3; [T354 S1 ledger](../etc/evidence/t354-s1-l3-transaction-timing-ledger.md); [T354 S2 owner evidence](../etc/evidence/t354-s2-transaction-owner.md). |
+| Files And ABI Surface | Only core-local arbitration/timeline/DMA/PIC/FDC/ATA transaction bindings demonstrably required by the audit, focused owner smoke, CMake, indexed evidence, history, and CURRENT. No VM/profile/provider ABI or stopped/paused API change. |
+| Applicable Rules | `docs/README.md` Task Reading Set; `docs/rules/EXECUTION.md` mechanism-defect lifecycle; architecture/coding rules; source policy; Intel 8237A and IBM PC/AT primary references; accepted T346--T354 evidence. |
+| Verification | Sweep S2 transaction producer/trace, DMA ordinary/M2M request/grant/EOP, CPU retirement/timeline order, FDC/ATA readiness and DRQ crossings, PIC refresh/acknowledgement visibility, reset/cancel/finalize, and existing timing smokes. Prove every selected rule from source/manual/corpus evidence, deterministic simultaneous ordering, no partial commit, and retained trace/replay behavior. Run focused tests, fresh configuration, governance, diff check, and full current gate. |
+| Expected Markers | New S3 competition marker if a mechanism is required; existing arbitration/storage/PIC markers; documentation governance; full current gate. |
+| Asset Needs | Repository sources plus permitted Intel 8237A and IBM PC/AT technical-reference metadata only. No firmware, guest media, host capture, or external source import. |
+| Reporting Requirements | Record requester/owner/consumer, due-tick and transaction ordering, validation-to-commit/cancel boundary, manual/corpus basis, exact absent physical duration, and every transferred non-selected rule. |
+| Stop Conditions | Stop for owner direction if a truthful result requires instruction-internal CPU suspension, a generic controller/bus API, a duration not established by reference/corpus, a public ABI change, or reopening accepted controller command semantics without a reproduced defect. |
+| Exit Criteria | Every selected competing requester has one deterministic visibility/commit owner or an explicit transfer; CPU/DMA/service/PIC ordering has focused proof at the S2 boundary; no second ownership truth, per-device delay, partial publication, or unallocated tie remains. |
+| Original Owner Request | Holistically complete CPU-external chips, buses, devices, and ports to stable reliable selected L3 before choosing the next product step; do not use a Windows run as a substitute for architecture. |
+| Similar-Issue Sweep | Include transaction trace, CPU retirement, clock conversion, timeline equal-due order, DMA ordinary/M2M, FDC/ATA pending service and DRQ, PIC source refresh/acknowledgement, reset/session paths, and stopped/paused APIs. |
 
 ## Current Technical Baseline
 

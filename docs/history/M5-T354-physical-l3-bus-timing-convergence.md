@@ -26,3 +26,11 @@ duration or instruction continuation: the executor remains atomic. The
 detailed [S2 transaction-owner evidence](../etc/evidence/t354-s2-transaction-owner.md)
 transfers deterministic competing-owner policy to S3 and session/consumer
 closure to S4.
+
+S3 is delivered pending acceptance.  It reconciles existing selected
+same-guest-tick ordering without inventing physical duration: CPU transaction
+commit precedes retirement; arbitration then services DMA, PIT, and PIC; and
+the equal-due readiness callback advances/refreshes FDC then HDC.  The focused
+[competition evidence](../etc/evidence/t354-s3-competition.md) proves that
+ordering and transfers reset, trace-consumer, and final selected-L3 closure to
+S4.

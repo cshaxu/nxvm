@@ -85,6 +85,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t353-s4-pcat-composition-closure.md` | Verification owner | T353 S4 selected PC/AT session reset, topology, deterministic timeline, firmware-visible reset, and exact-transfer closure proof. Retain with T353 history at task closure. |
 | `evidence/t354-s1-l3-transaction-timing-ledger.md` | Verification owner | T354 S1 selected CPU/DMA/device transaction, timing, lifecycle, trace, and S2--S4 allocation ledger. Retain with T354 history at task closure. |
 | `evidence/t354-s2-transaction-owner.md` | Verification owner | T354 S2 core-local selected CPU/DMA synchronous transaction-owner, validation-to-commit/cancel/reset/trace sweep, focused proof, and S3/S4 transfer boundary. Retain with T354 history at task closure. |
+| `evidence/t354-s3-competition.md` | Verification owner | T354 S3 deterministic CPU/DMA/PIT/PIC/FDC/HDC competition ordering, selected ownership/visibility boundary, focused trace proof, and S4 transfer. Retain with T354 history at task closure. |
 | `operations/` | Execution, source, and release owners | Toolchain, policy, templates, release procedure, and closure material. |
 | `research/` | Source owner | Provenance, external references, and non-product research. |
 | `history/` | Documentation owner | Read-only legacy and M5 migration/roadmap evidence. |

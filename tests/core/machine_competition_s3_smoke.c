@@ -1,0 +1,174 @@
+#include "type.h"
+
+#include "core/machine/dma.h"
+#include "core/machine/machine.h"
+#include "core/machine/machine_interface.h"
+#include "core/machine/transaction.h"
+#include "../support/core_machine_cpu_fixture.h"
+
+typedef struct competition_probe {
+    core_machine_trace_event events[64];
+    type_unsigned_32 count;
+} competition_probe;
+
+typedef struct competition_dma_source {
+    type_unsigned_8 value;
+} competition_dma_source;
+
+static C_VOID competition_trace(C_VOID *opaque,
+    const core_machine_trace_event *event)
+{
+    competition_probe *probe = (competition_probe *)opaque;
+
+    if (probe != STD_NULL && probe->count < 64u) {
+        probe->events[probe->count++] = *event;
+    }
+}
+
+static C_VOID competition_dma_read(C_VOID *opaque, t_latch *latch)
+{
+    competition_dma_source *source = (competition_dma_source *)opaque;
+
+    if (source != STD_NULL && latch != STD_NULL) latch->data.byte = source->value;
+}
+
+static C_INT competition_find_event(const competition_probe *probe,
+    core_machine_trace_event_type type, type_unsigned_32 *out_index)
+{
+    type_unsigned_32 index;
+
+    if (probe == STD_NULL || out_index == STD_NULL) return 0;
+    for (index = 0u; index < probe->count; ++index) {
+        if (probe->events[index].type == type) {
+            *out_index = index;
+            return 1;
+        }
+    }
+    return 0;
+}
+
+static C_INT competition_find_transaction(const competition_probe *probe,
+    core_machine_trace_event_type phase, core_machine_transaction_owner owner,
+    core_machine_transaction_kind kind, type_unsigned_32 *out_index)
+{
+    type_unsigned_32 index;
+
+    if (probe == STD_NULL || out_index == STD_NULL) return 0;
+    for (index = 0u; index < probe->count; ++index) {
+        const core_machine_trace_event *event = &probe->events[index];
+
+        if (event->type == phase && (event->detail & 0xffu) == owner &&
+            ((event->detail >> 8u) & 0xffu) == kind) {
+            *out_index = index;
+            return 1;
+        }
+    }
+    return 0;
+}
+
+static C_VOID competition_program_dma_channel2(t_port *port)
+{
+    core_machine_port_write(port, 0x000cu, 0u);
+    core_machine_port_write(port, 0x0004u, 0x34u);
+    core_machine_port_write(port, 0x0004u, 0x12u);
+    core_machine_port_write(port, 0x0005u, 0u);
+    core_machine_port_write(port, 0x0005u, 0u);
+    core_machine_port_write(port, 0x0081u, 1u);
+    core_machine_port_write(port, 0x000bu, 0x46u);
+    core_machine_port_write(port, 0x000au, 0x02u);
+}
+
+C_INT main(C_VOID)
+{
+    static const core_machine_dma_channel_provider dma_provider = {
+        competition_dma_read, STD_NULL, STD_NULL
+    };
+    const type_unsigned_8 nop = 0x90u;
+    core_machine *machine = STD_NULL;
+    core_machine_config config = {0};
+    core_machine_trace_provider trace;
+    core_machine_dma_request_binding binding = {0};
+    core_machine_run_budget budget = {1u, 0u};
+    core_machine_run_result result;
+    competition_probe probe = {{{0}}, 0u};
+    competition_dma_source source = {0xa5u};
+    type_unsigned_8 byte = 0u;
+    type_unsigned_32 cpu_begin;
+    type_unsigned_32 cpu_commit;
+    type_unsigned_32 cpu_retire;
+    type_unsigned_32 dma_begin;
+    type_unsigned_32 dma_commit;
+    type_unsigned_32 dma_advance;
+    type_unsigned_32 pit_advance;
+    type_unsigned_32 pic_refresh;
+    type_unsigned_32 fdc_advance;
+    type_unsigned_32 fdc_refresh;
+    type_unsigned_32 hdc_advance;
+    type_unsigned_32 hdc_refresh;
+    C_INT failed = 0;
+
+    trace.callback = competition_trace;
+    trace.context = &probe;
+    failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK;
+    failed |= test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
+        0x000ffff0u, 16u) != TYPE_STATUS_OK;
+    failed |= core_machine_dma_bind_channel(&machine->shared_dma_latch,
+        &machine->shared_dma_primary, &machine->shared_dma_secondary, 2u,
+        &dma_provider, &source, &binding) != TYPE_STATUS_OK;
+    failed |= core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK;
+    failed |= core_machine_reset(machine) != TYPE_STATUS_OK;
+    failed |= core_machine_memory_write(machine, 0xfffffff0u, &nop, 1u) !=
+        TYPE_STATUS_OK;
+    competition_program_dma_channel2(&machine->executor_port);
+    core_machine_dma_request_assert(&machine->shared_dma_primary,
+        &machine->shared_dma_secondary, &binding);
+    failed |= core_machine_set_trace_provider(machine, &trace) != TYPE_STATUS_OK;
+    failed |= core_machine_run(machine, budget, &result) != TYPE_STATUS_OK;
+    failed |= result.reason != CORE_MACHINE_STOP_BUDGET ||
+        result.executed != 1u || result.elapsed_ticks != 1u;
+    failed |= core_machine_memory_read(machine, 0x11234u, &byte, 1u) !=
+        TYPE_STATUS_OK || byte != 0xa5u;
+    failed |= !competition_find_transaction(&probe,
+        CORE_MACHINE_TRACE_TRANSACTION_BEGIN,
+        CORE_MACHINE_TRANSACTION_OWNER_CPU,
+        CORE_MACHINE_TRANSACTION_CPU_MEMORY_READ, &cpu_begin);
+    failed |= !competition_find_transaction(&probe,
+        CORE_MACHINE_TRACE_TRANSACTION_COMMIT,
+        CORE_MACHINE_TRANSACTION_OWNER_CPU,
+        CORE_MACHINE_TRANSACTION_CPU_MEMORY_READ, &cpu_commit);
+    failed |= !competition_find_event(&probe, CORE_MACHINE_TRACE_CPU_RETIRE,
+        &cpu_retire);
+    failed |= !competition_find_transaction(&probe,
+        CORE_MACHINE_TRACE_TRANSACTION_BEGIN,
+        CORE_MACHINE_TRANSACTION_OWNER_DMA,
+        CORE_MACHINE_TRANSACTION_DMA_MEMORY_WRITE, &dma_begin);
+    failed |= !competition_find_transaction(&probe,
+        CORE_MACHINE_TRACE_TRANSACTION_COMMIT,
+        CORE_MACHINE_TRANSACTION_OWNER_DMA,
+        CORE_MACHINE_TRANSACTION_DMA_MEMORY_WRITE, &dma_commit);
+    failed |= !competition_find_event(&probe, CORE_MACHINE_TRACE_DMA_ADVANCE,
+        &dma_advance);
+    failed |= !competition_find_event(&probe, CORE_MACHINE_TRACE_PIT_ADVANCE,
+        &pit_advance);
+    failed |= !competition_find_event(&probe, CORE_MACHINE_TRACE_PIC_REFRESH,
+        &pic_refresh);
+    failed |= !competition_find_event(&probe, CORE_MACHINE_TRACE_FDC_ADVANCE,
+        &fdc_advance);
+    failed |= !competition_find_event(&probe, CORE_MACHINE_TRACE_FDC_REFRESH,
+        &fdc_refresh);
+    failed |= !competition_find_event(&probe, CORE_MACHINE_TRACE_HDC_ADVANCE,
+        &hdc_advance);
+    failed |= !competition_find_event(&probe, CORE_MACHINE_TRACE_HDC_REFRESH,
+        &hdc_refresh);
+    failed |= cpu_begin >= cpu_commit || cpu_commit >= cpu_retire ||
+        cpu_retire >= dma_begin || dma_begin >= dma_commit ||
+        dma_commit >= dma_advance || dma_advance >= pit_advance ||
+        pit_advance >= pic_refresh || pic_refresh >= fdc_advance ||
+        fdc_advance >= fdc_refresh || fdc_refresh >= hdc_advance ||
+        hdc_advance >= hdc_refresh;
+
+    core_machine_destroy(machine);
+    if (failed) return 1;
+    STD_PRINTF("M5:T354:S3:COMPETITION:OK\n");
+    return 0;
+}
