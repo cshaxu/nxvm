@@ -116,6 +116,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t361-s1-legacy-dynamic-arithmetic-authority-audit.md` | Verification owner | T361 S1 primary-source, consumer, and observation-decision audit for legacy dynamic arithmetic timing. Retain with T361 history at task closure. |
 | `evidence/t361-s2-legacy-dynamic-arithmetic-cross-reference.md` | Verification owner | T361 S2 owner-approved Bochs, PCjs, PC110-EMU, and public-source triangulation; records why it yields no admissible legacy formula and preserves the hardware-observation transfer. Retain with T361 history at task closure. |
 | `evidence/t361-s3-synchronous-fault-retirement-audit.md` | Verification owner | T361 S3 in-progress model-derived dynamic-arithmetic and execution-round audit. Retain with T361 history at task closure. |
+| `evidence/t361-s4-80286-nop-source-consumer-audit.md` | Verification owner | T361 S4 Intel 210498-005 page/context decision, single-owner consumer sweep, and resolved 80286 `NOP` source-conflict record. Retain with T361 history at task closure. |
 | `operations/` | Execution, source, and release owners | Toolchain, policy, templates, release procedure, and closure material. |
 | `research/` | Source owner | Provenance, external references, and non-product research. |
 | `history/` | Documentation owner | Read-only legacy and M5 migration/roadmap evidence. |

@@ -2,9 +2,30 @@
 
 ## Current Work
 
-**Active.** M5 T361 remains open between accepted S units. S3 accepted a
-range-checked model allocation and synchronous-fault execution-round boundary;
-the separately bounded 80286 `NOP` review is the next admissible S.
+**Active.** M5 T361 S4 is the bounded 80286 `NOP` primary-source and consumer
+review. It must retain or revise the existing three-clock row only through a
+primary-source semantic-context decision.
+
+## M5 T361 S4 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | The owner approved completion of current T361 and subsequent Queue work through model-L3 closure on 2026-08-14. This continuation is the already-recorded next T361 S: the 80286 `NOP` Appendix-B/prose review. The owner permits Git pushes. |
+| Objective | Establish the edition, page, wording, and semantic context of the Intel 210498-005 Appendix-B `NOP = 3` row and the conflicting two-clock prose; decide whether the existing source allocation remains valid or must change, then sweep every 80286 `NOP` timing classifier, focused smoke, scheduler, trace, and device consumer. |
+| Non-goals | No 8086/80186 dynamic-arithmetic normalization (the next Queue candidate owns it), no emulator or benchmark authority, no averaging or midpoint, no general 80286 corpus expansion, no bus/prefetch/device/service timing, no exception-delivery change, no 80386 allocation, and no physical or cycle-exact claim. |
+| Reference Baseline | `a71a7822` / `vm-0-5-0359`; [legacy dynamic arithmetic timing authority](../proposals/m5-legacy-dynamic-arithmetic-timing-authority.md), the T360 S2 [precedence record](../etc/evidence/t360-s2-80286-nop-authority-precedence.md), and `TODO(Medium)` 80286 `NOP` debt. |
+| Candidate Proposal | [Legacy dynamic arithmetic timing authority](../proposals/m5-legacy-dynamic-arithmetic-timing-authority.md). |
+| Files And ABI Surface | Primary-source research and evidence, `docs/states/CURRENT.md`, `docs/states/TODO.md`, T361 history, and only if the primary decision requires it the existing private 80286 timing ledger/classifier and its focused test/CMake registration. No public ABI, imported code, dependency, firmware, media, or product-composition surface. |
+| Applicable Rules | Task Reading Set; Execution packet/P/closure and similar-issue rules; Documentation authority boundaries; source/research policy; Architecture single-owner and source-admission invariants; Coding source/test rules if code changes. The one successful-retirement publisher and CPU-versus-machine timing ownership remain invariant. |
+| Verification | Record reproducible Intel edition/page/excerpts by semantic role without committing protected source; compare table and prose contexts; run an exact repository sweep for 80286 `NOP` timing consumers; prove the selected row once through each classifier and focused smoke, and prove no downstream owner substitutes a second value. Run focused tests if code changes, documentation governance, diff check, and the full current gate if a runnable path changes. |
+| Expected Markers | Existing 80286 timing-ledger and instruction-timing smoke markers remain passing; any changed direct proof exposes `M5:T361:S4:80286-NOP`. |
+| Asset Needs | Read-only Intel 210498-005 primary manual and existing repository evidence; no guest media, binary asset, source import, download retention, or hardware measurement. |
+| Reporting Requirements | First report confirms that the S is source-precedence-only. Report the table/prose semantic comparison and consumer-sweep disposition before any runtime edit. Final evidence names every reviewed consumer, chosen authority, unchanged/changed result, source boundary, and any transfer. |
+| Stop Conditions | Stop and retain the existing explicit debt if the manual edition/page/context cannot be reproduced, the statements cannot be compared without unsupported inference, a change needs a non-primary authority, or a consumer requires broader timing/bus/device/delivery work. Do not guess, average, or change a value outside a source-backed decision. |
+| Exit Criteria | A durable evidence record gives a primary-source retain-or-revise decision, maps both statements' semantic context, covers every in-scope consumer, proves one source allocation and one publisher, updates the TODO/records truthfully, and passes the required gates without an untracked residual. |
+| Original Owner Request | Complete the current T361 and subsequent tasks until model-L3 timing is fully closed; where primary Intel authority has no deterministic timing, prefer 86Box/MAME/PCjs as applicable reference sources. For this `NOP` conflict, the active proposal confines authority to the primary manual. |
+| Similar-Issue Sweep | Search tracked `src`, `tests`, CMake, documentation, and evidence for `80286.*NOP`, `NOP.*80286`, `NOP = 3`, `NOP = 2`, and the 80286 source-timing enum; classify every timing owner/consumer as retained, revised, not applicable, or transferred with an explicit receiver. |
 
 ## Current Technical Baseline
 

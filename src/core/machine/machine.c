@@ -396,9 +396,9 @@ static const core_machine_source_timing_entry
     { CORE_MACHINE_SOURCE_TIMING_IRET, 28u }
 };
 
-/* Intel 80286/80287 Programmer's Reference Manual, Appendix B.  The owner
- * selects its formal opcode-table row for NOP (3 clocks); the incompatible
- * prose value is recorded for later independent verification. */
+/* Intel 210498-005, Appendix B p. B-78: the per-instruction NOP row is three
+ * clocks.  Chapter 3 p. 3-15 has a two-clock overview example; T361 S4
+ * records that distinct context without making it a second runtime owner. */
 static const core_machine_source_timing_entry
     core_machine_80286_source_timing_ledger[] = {
     { CORE_MACHINE_SOURCE_TIMING_NOP, 3u },
