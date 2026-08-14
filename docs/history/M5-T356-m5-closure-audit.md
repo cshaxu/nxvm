@@ -14,3 +14,11 @@ S1 was accepted at `cfbcaadf`.  It establishes the complete current device/L3 le
 It finds selected owners/evidence coherent, distinguishes deterministic L3
 from physical timing, and assigns every non-selected boundary to a finite
 receiver.  It makes no M5-close decision.
+
+## S2 delivery pending acceptance
+
+S2 turns the timing residual into the ordered instruction-timed, bus-timed,
+and cycle-exact selected-profile candidates, and records why corpus-gated
+peripherals remain TODO rather than speculative implementation work.  The
+[receiver plan](../etc/evidence/t356-s2-receiver-plan.md) retains every S1
+deferred row.
