@@ -33,23 +33,30 @@ implementation plan for core convergence.
 
 ## M5: Converge Core And NXVM
 
-Complete the shared-core/NXVM boundary and the selected PC/AT machine to
-source-backed L3 timing: every selected device, chip, port, bus route, reset,
-IRQ/DRQ lifecycle, availability/wait state, and cross-device event order has
-one owner and a declared timing contract. Carry the Intel 8086, 80186, 80286,
-and 80386DX form/state program through its evidence-led Queue sequence before
-using a guest operating system as validation. That program has complementary
-instruction-form and architecture-state closure views; it includes
-real/protected/VM86 transitions, privilege/exception delivery, paging, and
-remaining system state. A completed opcode slice never closes a CPU family,
+Complete the shared-core/NXVM boundary through three source-backed L3 baseline
+machines: IBM PC/AT 5170 80286 first, then one exact Compaq DeskPro 386 80386
+configuration, and then a distinct 8088 CPU profile plus an IBM 5150/XT 8088
+(8086-class ISA) baseline. For each baseline, every selected device,
+chip, port, bus route, reset, IRQ/DRQ lifecycle, availability/wait state, and
+cross-device event order has one owner and a declared timing contract. Carry
+the Intel 8086, 8088, 80186, 80286, and 80386DX form/state program through its
+evidence-led Queue sequence before using a guest operating system as
+validation. The 8088 profile retains 8086 instruction semantics but separately
+owns its external bus and prefetch/timing boundary. The 8086 and 80186 retain
+CPU boundaries but have no physical-machine baseline until separately selected
+systems are admitted. That program has
+complementary instruction-form and architecture-state closure views; it
+includes real/protected/VM86 transitions, privilege/exception delivery, paging,
+and remaining system state. A completed opcode slice never closes a CPU family,
 device, or stage by itself, and M5 makes no 80387 claim.
 
-After the selected-machine L3 closure audit accepts those prerequisites, M5
-ends with an approved BYOB Windows 3.1 corpus: Standard Mode and 386 Enhanced
-Mode must each install, start normally, reach a named ready checkpoint, and
-shut down normally. These are final compatibility consumers, not substitutes
-for device/timing evidence. Windows media is never committed or made a default
-dependency.
+After the 5170, DeskPro 386, and 5150/XT 8088 baseline-machine L3 closure
+audits accept those prerequisites, M5 ends with an approved BYOB Windows 3.1
+corpus on the frozen DeskPro 386:
+Standard Mode and 386 Enhanced Mode must each install, start normally, reach a
+named ready checkpoint, and shut down normally. These are final compatibility
+consumers, not substitutes for device/timing evidence. Windows media is never
+committed or made a default dependency.
 
 ## M6: Build Mantle
 

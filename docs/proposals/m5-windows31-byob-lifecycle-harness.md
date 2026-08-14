@@ -3,7 +3,9 @@
 ## Purpose
 
 Provide a legal, reproducible, owner-supplied Windows 3.1 observation harness
-only after the M5 L3 machine audit accepts the selected profile.
+only after the 5170, DeskPro 386, and 5150/XT 8088 baseline-machine L3
+closures are accepted. Windows runs against the frozen selected 80386 DeskPro
+386 profile.
 
 ## Required scope
 

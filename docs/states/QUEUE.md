@@ -21,14 +21,18 @@ together with the [80386DX admission policy](../proposals/m5-80386dx-candidate-p
 are shared planning references for the corresponding candidates below; they do
 not allocate a numeric task.
 
-M5 first closes architecture coherence and every selected PC/AT hardware
-owner to an evidence-backed, source-labelled model-L3 representation. Exact
-Intel values take precedence; Intel ranges accept only same-profile external
-models that stay within range; no-Intel rows require named same-profile models;
-otherwise a visible reference-exhausted transfer remains. Physical cycle
-exactness is not claimed without measurement. Windows 3.1 is deliberately the
-final, lowest-priority consumer: it must expose a remaining gap, never hide
-one.
+M5 first closes architecture coherence and the IBM PC/AT 5170 80286 baseline
+machine to an evidence-backed, source-labelled model-L3 representation. It
+then closes a Compaq DeskPro 386 80386 baseline, admits a distinct 8088 CPU
+profile, and closes an IBM 5150/XT 8088 (8086-class ISA) baseline before
+Windows 3.1 is admitted. Exact Intel values take precedence;
+Intel ranges accept only same-profile external models that stay within range;
+no-Intel rows require named same-profile models; otherwise a visible
+reference-exhausted transfer remains. The 8086 and 80186 retain CPU timing
+ledgers but have no selected physical-machine baseline in this program.
+Physical cycle exactness is not claimed without measurement. Windows 3.1 is
+deliberately the final, lowest-priority consumer: it must expose a remaining
+gap, never hide one.
 Each candidate has a bounded primary-manual/probe contract; completing one
 does not silently upgrade a different device, profile, or Windows mode.
 
@@ -40,6 +44,9 @@ does not silently upgrade a different device, profile, or Windows mode.
 1. [PC/AT device service-timing corpus](../proposals/m5-device-service-timing-corpus.md).
 1. [Selected-profile model-L3 phase refinement](../proposals/m5-cycle-exact-selected-profile.md).
 1. [M5 L3 machine closure audit](../proposals/m5-l3-machine-closure-audit.md).
+1. [Compaq DeskPro 386 80386 baseline-machine L3 closure](../proposals/m5-80386-deskpro-386-l3-baseline.md).
+1. [8088 CPU-profile admission and timing closure](../proposals/m5-8088-cpu-profile.md).
+1. [IBM 5150/XT 8088 baseline-machine L3 closure](../proposals/m5-8088-5150-xt-l3-baseline.md).
 1. [Windows 3.1 BYOB lifecycle harness](../proposals/m5-windows31-byob-lifecycle-harness.md).
 1. [Windows 3.1 Standard Mode lifecycle](../proposals/m5-windows31-standard-mode-lifecycle.md).
 1. [Windows 3.1 386 Enhanced Mode lifecycle](../proposals/m5-windows31-enhanced-mode-lifecycle.md).

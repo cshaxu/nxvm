@@ -2,9 +2,9 @@
 
 ## Current Work
 
-**No active implementation packet.** T366 S1 is accepted; a physical target and
-reproducible corpus are required before a bus-availability implementation S can
-be admitted.
+**No active implementation packet.** T366 S1 is accepted; its next S may
+adopt the owner-approved 5170 baseline once its exact board revision and probe
+corpus are prepared.
 
 ## Current Technical Baseline
 
@@ -36,6 +36,13 @@ be admitted.
 | T358 | Closed cross-mode mechanism coherence: reconciled I/O permission, exception/IRQ entry, selector/task/return transition, paging/linear access, and prefix/LOCK/width/string classifiers; repaired 80286 delivery, LOCK group legality, and repeated-width preview divergence; passed 240 current-gate tests. [Closure audit](../etc/evidence/t358-cross-mode-mechanism-closure-audit.md). |
 
 ## Recent Governance
+
+- **M5 Td S90 P1:** ordered M5 physical L3 closure as IBM PC/AT 5170 80286,
+  exact Compaq DeskPro 386 80386, distinct 8088 CPU profile, and IBM 5150/XT
+  8088 before the DeskPro-based Windows 3.1 corpus. It retains standalone
+  8086/80186 CPU profiles, adds bounded 8088/DeskPro proposals, and changes no
+  runtime, artifact, or task activation. Documentation governance and diff
+  check passed.
 
 - **M5 Td S89 P1:** made the queued complete instruction-timing proposal the
   sole current explanation of the shared four-profile audit method and the
@@ -78,10 +85,4 @@ be admitted.
   candidates for the remaining full instruction corpus and the independent
   80286 Appendix-B source reconciliation; retained bus-timed and cycle-exact
   work in their dependency order. Documentation governance and diff check
-  passed; Td work has no runtime change.
-
-- **M5 Td S85:** corrected the Windows readiness candidate so FDC/ATA
-  pending/readiness service is an accepted regression baseline, rather than a
-  stale missing-feature blocker. Physical device timing and Windows
-  compatibility remain unclaimed. Documentation governance and diff check
   passed; Td work has no runtime change.

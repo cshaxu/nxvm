@@ -81,3 +81,10 @@ VME/PVI, later-CPU instructions, persistent TLB/test-register models, x87
 numerical execution, timing fidelity, devices, and Windows compatibility are
 not silently part of CPU-profile closure. Each remains external until a Queue
 candidate or TODO gives it a bounded owner and admission condition.
+
+The later 8088 CPU-profile candidate is deliberately separate from this
+four-profile instruction/form program. It follows the DeskPro 386 closure,
+retains 8086 instruction semantics while adding the 8088 external bus and
+fetch/prefetch timing boundary required by the selected IBM 5150/XT machine,
+and neither changes a completed 8086 row nor turns the four-profile semantic
+ledger into an inferred physical-machine claim.
