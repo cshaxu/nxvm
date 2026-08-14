@@ -2,7 +2,29 @@
 
 ## Current Work
 
-**Idle.**
+**Active.** M5 T354 S1 builds the selected PC/AT transaction/timing ledger
+before any L3 physical wait, arbitration, or controller-service change.
+
+## M5 T354 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner approved the holistic CPU-external device/L3 completion direction and authorized implementation through reliable selected L3 on 2026-08-13. This S admits only the T354 S1 ledger; no timing implementation is approved until a later packet consumes its result. |
+| Objective | Produce the complete selected PC/AT CPU/DMA/device transaction, timing, lifecycle, and proof ledger that distinguishes deterministic ordering, implemented latency, supported immediate behavior, and unproven physical timing. |
+| Non-goals | No production timing/wait/arbitration change; no new device, PPI/speaker, NMI source, external asset, Windows run, generic bus wrapper, or source import. |
+| Reference Baseline | `7b36b6f4` on `master`, after T353 selected PC/AT topology closure. |
+| Candidate Proposal | [M5 physical L3 bus-timing convergence](../proposals/m5-l3-bus-timing-convergence.md), S1. |
+| Files And ABI Surface | `docs/states/CURRENT.md`, one indexed T354 S1 evidence ledger, T354 history record, and only necessary Queue/TODO transfer links. No C/CMake/public ABI/runtime artifact changes. |
+| Applicable Rules | `docs/README.md` Task Reading Set; `docs/rules/EXECUTION.md` S/P and mechanism-defect lifecycle; `docs/rules/DOCUMENT.md` authority/index/debt boundary; `docs/rules/ARCHITECTURE.md` ownership; source policy for reference research; T346--T353 evidence and T354 proposal. |
+| Verification | Sweep core memory/port/bus/timeline/DMA/PIC/FDC/HDC/PIT/RTC/KBC/VADP and VM profile/session consumers; map all schedule/reset/finalize/trace/commit sites; reconcile every selected row to source/evidence/current behavior and one S2/S3/S4/TODO receiver. Verify documentation governance and diff check. |
+| Expected Markers | `Documentation governance checks passed`; no runtime marker applies to this audit-only S. |
+| Asset Needs | Repository sources/evidence and permitted reference metadata only. No guest media, firmware, host capture, or external source import. |
+| Reporting Requirements | Record each owner, caller/reader/writer, timing unit/state, validation-to-commit boundary, reset/cancellation behavior, existing proof, defect/risk, and exact receiver; report a material timing-contract discovery before changing code. |
+| Stop Conditions | Stop for owner direction if the audit needs an unapproved external hardware corpus/manual, changes the selected topology, or demonstrates a shared timing defect requiring implementation before the ledger can truthfully allocate it. |
+| Exit Criteria | Every selected transaction/timing row is classified and allocated to exactly one immediate proof, S2/S3/S4 receiver, or TODO transfer; no false L3/cycle-exact claim, unowned timing state, or unclassified selected producer/consumer remains. |
+| Original Owner Request | Holistically audit and complete CPU-external chips, buses, devices, and ports to stable reliable L3 before deciding the next product step; use manuals/reference implementations as evidence without importing them. |
+| Similar-Issue Sweep | Include all existing timeline callbacks, core memory/port dispatch, CPU retirement, DMA grant/request/EOP, PIC acknowledgement, controller readiness, session reset/finalize, and trace paths; do not restrict the audit to the first reproduced wait symptom. |
 
 ## Current Technical Baseline
 
