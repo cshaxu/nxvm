@@ -51,7 +51,7 @@ width/address semantics while retaining the corresponding source row.
 
 `REP LODS` has no exact 80286 Appendix-B formula in the selected primary
 source table.  It remains a visible unallocated successful-retirement
-transfer to [T360 source reconciliation](../../proposals/m5-four-profile-timing-source-reconciliation.md);
+transfer to [T360 source reconciliation](../../history/M5-T360-four-profile-timing-source-reconciliation-proposal.md);
 this S does not manufacture a value.  The same transfer applies to an
 architecturally accepted but source-undefined repeat-prefix combination.
 

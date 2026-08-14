@@ -69,3 +69,9 @@ S4 is accepted at `614751b0`. Its [contextual source-row disposition](../etc/evi
 S4 changes no runtime timing value, execution semantics, CMake target, artifact,
 or ABI. Documentation governance, the retained T360 source-inventory verifier,
 and 245/245 current-gate tests passed.
+
+### S5: Four-profile source and consumer closure audit
+
+S5 is accepted at `efa2790d`. Its [task-level closure audit](../etc/evidence/t360-s5-four-profile-timing-source-closure-audit.md) maps the original request to all ten timing consumers and every T359 transfer. It confirms the one post-refresh publisher, no hidden numeric allocation, no profile borrowing, and no prose-derived NOP consumer. The two exact source ambiguities remain bounded TODO admissions; system/descriptor context, physical wait, device service, and delivery/cycle work each retain their named Queue receiver.
+
+T360 closes as a source-reconciliation prerequisite only. It makes no complete-corpus, L3, or cycle-exact claim. Documentation governance, the T360 verifier, and 245/245 current-gate tests passed.

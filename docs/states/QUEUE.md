@@ -28,7 +28,6 @@ Each candidate has a bounded primary-manual/probe contract; completing one
 does not silently upgrade a different device, profile, or Windows mode.
 
 1. [Complete instruction-timing corpus](../proposals/m5-complete-instruction-timing-corpus.md).
-1. [Four-profile Intel timing source reconciliation](../proposals/m5-four-profile-timing-source-reconciliation.md).
 1. [PC/AT device, chip, port, and bus completeness audit](../proposals/m5-pcat-device-completeness-audit.md).
 1. [Bus-timed PC/AT operation](../proposals/m5-bus-timed-pcat-operation.md).
 1. [PC/AT device service-timing corpus](../proposals/m5-device-service-timing-corpus.md).
