@@ -2,8 +2,29 @@
 
 ## Current Work
 
-**Idle.** T354 selected L3 closure is current; the Windows readiness-map
-candidate is reconciled and requires a separately admitted packet.
+**Active.** M5 T355 S1 audits the Windows 3.x readiness boundary and existing
+checkpoint evidence; it does not execute Setup or claim compatibility.
+
+## M5 T355 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner approved continued holistic device/L3 completion and the next readiness-map decision on 2026-08-13. This S is audit-only. |
+| Objective | Produce one source/provenance/device/timing readiness ledger for existing Windows checkpoint probes and select the earliest real receiver without executing guest Setup. |
+| Non-goals | No Setup run, media import/copy/hash change, Windows compatibility claim, x87 execution, CPU-form repair, host-time model, device implementation, or rule change. |
+| Reference Baseline | `324b41c1` on `master`, corrected readiness proposal and accepted selected-L3 closure. |
+| Candidate Proposal | [Windows 3.x readiness map](../proposals/m5-windows-3x-readiness-map.md); [T354 selected-L3 closure](../history/M5-T354-physical-l3-bus-timing-convergence.md); [current runtime media](../etc/evidence/fixtures/current-runtime-media.md). |
+| Files And ABI Surface | Focused indexed evidence, T355 history, proposal refinement if required, CMake/probe source audit only, CURRENT, Queue/TODO transfers. No runtime or ABI change. |
+| Applicable Rules | Task Reading Set; execution lifecycle; documentation rules; source/research policy for existing Microsoft-media provenance. Architecture/coding rules apply to audit classification only; no code change is allowed. |
+| Verification | Sweep all `vm_windows31_*` probes, CMake target/test/media routing, fixture record, CPU/profile selection, checkpoint labels, host-time calls, and retained device/L3 evidence. Prove every row from current source/evidence and run governance/diff check. |
+| Expected Markers | T355 S1 readiness-ledger evidence, documentation governance, diff check. |
+| Asset Needs | Existing repository source and approved local-media metadata only; no guest execution or new asset access. |
+| Reporting Requirements | Record probe purpose, execution status, media/provenance boundary, required CPU/device/timing behavior, host dependency, confidence, and exact task/TODO receiver for every gap. |
+| Stop Conditions | Stop for owner direction if audit requires reading/running unapproved media, changing a probe, using a host observation as architecture authority, or selecting a device feature without a source/corpus contract. |
+| Exit Criteria | One complete readiness ledger classifies every existing probe and prerequisite; no stale blocker remains; next receiver is ordered by evidence and does not rely on Windows execution. |
+| Original Owner Request | Fully and stably implement high-value devices and selected L3 before using a Windows consumer to decide subsequent work. |
+| Similar-Issue Sweep | Include T346--T354 evidence, all Windows probe sources, CMake registration/labels, approved media metadata, CPU closure transfers, and device/timing TODO entries. |
 
 ## Current Technical Baseline
 
