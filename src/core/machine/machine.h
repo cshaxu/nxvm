@@ -79,6 +79,9 @@ struct core_machine {
     core_machine_transaction_state transaction;
     core_machine_instruction_timing instruction_timing;
     type_unsigned_64 maximum_instruction_ticks;
+    type_bool source_repeat_active;
+    type_unsigned_16 source_repeat_cs;
+    type_unsigned_32 source_repeat_eip;
     core_machine_clock_domain dma_clock;
     core_machine_clock_domain pit_clock;
     core_machine_clock_domain rtc_clock;

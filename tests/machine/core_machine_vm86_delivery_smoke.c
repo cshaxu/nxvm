@@ -36,7 +36,13 @@ static C_INT vm86_delivery_prepare(vm86_delivery_state *state, type_unsigned_8 v
     const core_machine_config config = {
         .memory_bytes = 0x100000u,
         .cpu_profile = CORE_MACHINE_CPU_PROFILE_80386,
-        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE
+        .fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE,
+        .clock_plan.dma = { 1u, 1000000u, 0u },
+        .clock_plan.pit = { 1u, 1000000u, 0u },
+        .clock_plan.rtc = { 1u, 1000000u, 0u },
+        .clock_plan.vadp = { 1u, 1000000u, 0u },
+        .clock_plan.kbc = { 1u, 1000000u, 0u },
+        .clock_plan.provider = { 1u, 1000000u, 0u }
     };
     static const type_unsigned_8 gdt[] = {
         0,0,0,0,0,0,0,0, 0xffu,0xffu,0,0x20u,0,0x9au,0x40u,0,

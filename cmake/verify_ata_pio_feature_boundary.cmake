@@ -5,6 +5,8 @@ endif()
 file(READ "${PROJECT_SOURCE_DIR}/src/core/machine/hdc.c" hdc_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/profile/default_profile/pc_at_profile.h"
     profile_header)
+file(READ "${PROJECT_SOURCE_DIR}/src/vm/profile/default_profile/pc_at_profile.c"
+    profile_source)
 file(READ "${PROJECT_SOURCE_DIR}/src/vm/composition/session/machine_devices.c"
     devices_source)
 file(READ "${PROJECT_SOURCE_DIR}/tests/machine/core_machine_hdc_smoke.c"
@@ -50,9 +52,22 @@ endforeach()
 foreach(required IN ITEMS "lba28_supported" "slave_present"
     "secondary_channel_present")
     string(FIND "${profile_header}" "${required}" profile_position)
-    string(FIND "${devices_source}" "${required}" device_position)
-    if(profile_position EQUAL -1 OR device_position EQUAL -1)
+    if(profile_position EQUAL -1)
         message(FATAL_ERROR "ATA PIO profile feature declaration is incomplete: ${required}")
+    endif()
+endforeach()
+
+string(FIND "${devices_source}" "lba28_supported" lba_mapping_position)
+if(lba_mapping_position EQUAL -1)
+    message(FATAL_ERROR "ATA PIO composition omits the supported LBA28 feature")
+endif()
+
+foreach(required IN ITEMS "descriptor->hdc_pio.lba28_supported"
+    "!descriptor->hdc_pio.slave_present"
+    "!descriptor->hdc_pio.secondary_channel_present")
+    string(FIND "${profile_source}" "${required}" profile_policy_position)
+    if(profile_policy_position EQUAL -1)
+        message(FATAL_ERROR "ATA PIO profile policy is incomplete: ${required}")
     endif()
 endforeach()
 

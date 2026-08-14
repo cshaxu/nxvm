@@ -183,6 +183,203 @@ static type_unsigned_32 core_machine_instruction_prefix_count(const t_cpuins_dat
     return count;
 }
 
+typedef enum core_machine_source_timing_form {
+    CORE_MACHINE_SOURCE_TIMING_NOP,
+    CORE_MACHINE_SOURCE_TIMING_CLC,
+    CORE_MACHINE_SOURCE_TIMING_MOV_IMMEDIATE,
+    CORE_MACHINE_SOURCE_TIMING_MOV_REGISTER_REGISTER,
+    CORE_MACHINE_SOURCE_TIMING_MOV_RM_REGISTER,
+    CORE_MACHINE_SOURCE_TIMING_MOV_REGISTER_RM,
+    CORE_MACHINE_SOURCE_TIMING_MOV_MOFFS_READ,
+    CORE_MACHINE_SOURCE_TIMING_MOV_MOFFS_WRITE,
+    CORE_MACHINE_SOURCE_TIMING_MOVSB,
+    CORE_MACHINE_SOURCE_TIMING_IN_IMMEDIATE,
+    CORE_MACHINE_SOURCE_TIMING_IN_DX,
+    CORE_MACHINE_SOURCE_TIMING_OUT_IMMEDIATE,
+    CORE_MACHINE_SOURCE_TIMING_OUT_DX
+} core_machine_source_timing_form;
+
+typedef struct core_machine_source_timing_entry {
+    core_machine_source_timing_form form;
+    type_unsigned_8 ticks;
+} core_machine_source_timing_entry;
+
+/* Intel 80386 PRM section 17.2.2.3 selected rows.  These are core clocks
+ * under the manual's prefetched/no-wait/no-HOLD assumptions; they are not
+ * device service, bus arbitration, or host-time values. */
+static const core_machine_source_timing_entry
+    core_machine_80386_source_timing_ledger[] = {
+    { CORE_MACHINE_SOURCE_TIMING_NOP, 3u },
+    { CORE_MACHINE_SOURCE_TIMING_CLC, 2u },
+    { CORE_MACHINE_SOURCE_TIMING_MOV_IMMEDIATE, 2u },
+    { CORE_MACHINE_SOURCE_TIMING_MOV_REGISTER_REGISTER, 2u },
+    { CORE_MACHINE_SOURCE_TIMING_MOV_RM_REGISTER, 2u },
+    { CORE_MACHINE_SOURCE_TIMING_MOV_REGISTER_RM, 4u },
+    { CORE_MACHINE_SOURCE_TIMING_MOV_MOFFS_READ, 4u },
+    { CORE_MACHINE_SOURCE_TIMING_MOV_MOFFS_WRITE, 2u },
+    { CORE_MACHINE_SOURCE_TIMING_MOVSB, 7u },
+    { CORE_MACHINE_SOURCE_TIMING_IN_IMMEDIATE, 12u },
+    { CORE_MACHINE_SOURCE_TIMING_IN_DX, 13u },
+    { CORE_MACHINE_SOURCE_TIMING_OUT_IMMEDIATE, 10u },
+    { CORE_MACHINE_SOURCE_TIMING_OUT_DX, 11u }
+};
+
+#define CORE_MACHINE_80386_JCC_NOT_TAKEN_TICKS 3u
+#define CORE_MACHINE_80386_JCC_TAKEN_TICKS 7u
+#define CORE_MACHINE_80386_REP_MOVSB_SETUP_TICKS 5u
+#define CORE_MACHINE_80386_REP_MOVSB_ITERATION_TICKS 4u
+#define CORE_MACHINE_80386_SOURCE_UNALLOCATED_TICKS 1u
+#define CORE_MACHINE_80386_SOURCE_MAXIMUM_TICKS 22u
+
+static type_unsigned_64 core_machine_source_timing_lookup(
+    core_machine_source_timing_form form)
+{
+    STD_SIZE_T index;
+
+    for (index = 0u; index < sizeof(core_machine_80386_source_timing_ledger) /
+            sizeof(core_machine_80386_source_timing_ledger[0]); ++index) {
+        if (core_machine_80386_source_timing_ledger[index].form == form) {
+            return core_machine_80386_source_timing_ledger[index].ticks;
+        }
+    }
+    return CORE_MACHINE_80386_SOURCE_UNALLOCATED_TICKS;
+}
+
+static C_INT core_machine_source_timing_modrm_is_memory(
+    const t_cpuins_data *data, type_unsigned_32 opcode_index)
+{
+    return opcode_index + 1u < data->oplen &&
+        (data->opcodes[opcode_index + 1u] >> 6u) != 3u;
+}
+
+static type_unsigned_64 core_machine_source_timing_rep_movsb(
+    core_machine *machine, const t_cpuins_data *data)
+{
+    type_unsigned_32 count = data->prefix_addrsize ? data->oldcpu.data.ecx :
+        data->oldcpu.data.cx;
+    C_INT continuing = machine->source_repeat_active &&
+        machine->source_repeat_cs == data->oldcpu.data.cs.selector &&
+        machine->source_repeat_eip == data->oldcpu.data.eip;
+    type_unsigned_64 ticks = count == 0u ?
+        CORE_MACHINE_80386_REP_MOVSB_SETUP_TICKS : continuing ?
+        CORE_MACHINE_80386_REP_MOVSB_ITERATION_TICKS :
+        CORE_MACHINE_80386_REP_MOVSB_SETUP_TICKS +
+            CORE_MACHINE_80386_REP_MOVSB_ITERATION_TICKS;
+
+    machine->source_repeat_active = count != 0u &&
+        machine->executor_cpu.data.eip == data->oldcpu.data.eip;
+    if (machine->source_repeat_active) {
+        machine->source_repeat_cs = data->oldcpu.data.cs.selector;
+        machine->source_repeat_eip = data->oldcpu.data.eip;
+    }
+    return ticks;
+}
+
+static C_INT core_machine_source_instruction_cost(core_machine *machine,
+    type_unsigned_64 *out_ticks)
+{
+    const t_cpuins_data *data = &machine->executor_cpu_instructions.data;
+    type_unsigned_32 prefixes = core_machine_instruction_prefix_count(data);
+    type_unsigned_8 opcode;
+    type_unsigned_32 fallthrough;
+    core_machine_cpu_instruction_lexeme lexeme;
+
+    if (out_ticks == STD_NULL) return 0;
+    if (prefixes >= data->oplen) {
+        machine->source_repeat_active = TYPE_FALSE;
+        *out_ticks = 0u;
+        return 1;
+    }
+    opcode = data->opcodes[prefixes];
+    if (data->prefix_rep == PREFIX_REP_REPZ && opcode == 0xa4u) {
+        *out_ticks = core_machine_source_timing_rep_movsb(machine, data);
+        return 1;
+    }
+    machine->source_repeat_active = TYPE_FALSE;
+    if (prefixes != 0u) {
+        *out_ticks = CORE_MACHINE_80386_SOURCE_UNALLOCATED_TICKS;
+        return 1;
+    }
+    if (opcode >= 0x70u && opcode <= 0x7fu) {
+        fallthrough = data->oldcpu.data.eip + 2u;
+        if (!data->oldcpu.data.cs.seg.exec.defsize) fallthrough &= 0xffffu;
+        if (machine->executor_cpu.data.eip == fallthrough) {
+            *out_ticks = CORE_MACHINE_80386_JCC_NOT_TAKEN_TICKS;
+        } else if (core_machine_cpu_execution_preview_lexeme(
+                &machine->executor_cpu_execution, &lexeme) && lexeme.available) {
+            *out_ticks = CORE_MACHINE_80386_JCC_TAKEN_TICKS +
+                lexeme.component_count;
+        } else {
+            *out_ticks = CORE_MACHINE_80386_SOURCE_UNALLOCATED_TICKS;
+        }
+        return 1;
+    }
+    switch (opcode) {
+    case 0x90u:
+        *out_ticks = core_machine_source_timing_lookup(
+            CORE_MACHINE_SOURCE_TIMING_NOP);
+        return 1;
+    case 0xf8u:
+        *out_ticks = core_machine_source_timing_lookup(
+            CORE_MACHINE_SOURCE_TIMING_CLC);
+        return 1;
+    case 0x88u: case 0x89u:
+        *out_ticks = core_machine_source_timing_lookup(
+            core_machine_source_timing_modrm_is_memory(data, prefixes) ?
+            CORE_MACHINE_SOURCE_TIMING_MOV_RM_REGISTER :
+            CORE_MACHINE_SOURCE_TIMING_MOV_REGISTER_REGISTER);
+        return 1;
+    case 0x8au: case 0x8bu:
+        *out_ticks = core_machine_source_timing_lookup(
+            core_machine_source_timing_modrm_is_memory(data, prefixes) ?
+            CORE_MACHINE_SOURCE_TIMING_MOV_REGISTER_RM :
+            CORE_MACHINE_SOURCE_TIMING_MOV_REGISTER_REGISTER);
+        return 1;
+    case 0xa0u: case 0xa1u:
+        *out_ticks = core_machine_source_timing_lookup(
+            CORE_MACHINE_SOURCE_TIMING_MOV_MOFFS_READ);
+        return 1;
+    case 0xa2u: case 0xa3u:
+        *out_ticks = core_machine_source_timing_lookup(
+            CORE_MACHINE_SOURCE_TIMING_MOV_MOFFS_WRITE);
+        return 1;
+    case 0xa4u:
+        *out_ticks = core_machine_source_timing_lookup(
+            CORE_MACHINE_SOURCE_TIMING_MOVSB);
+        return 1;
+    case 0xe4u: case 0xe5u:
+        if ((machine->executor_cpu.data.cr0 & VCPU_CR0_PE) != 0u) break;
+        *out_ticks = core_machine_source_timing_lookup(
+            CORE_MACHINE_SOURCE_TIMING_IN_IMMEDIATE);
+        return 1;
+    case 0xecu: case 0xedu:
+        if ((machine->executor_cpu.data.cr0 & VCPU_CR0_PE) != 0u) break;
+        *out_ticks = core_machine_source_timing_lookup(
+            CORE_MACHINE_SOURCE_TIMING_IN_DX);
+        return 1;
+    case 0xe6u: case 0xe7u:
+        if ((machine->executor_cpu.data.cr0 & VCPU_CR0_PE) != 0u) break;
+        *out_ticks = core_machine_source_timing_lookup(
+            CORE_MACHINE_SOURCE_TIMING_OUT_IMMEDIATE);
+        return 1;
+    case 0xeeu: case 0xefu:
+        if ((machine->executor_cpu.data.cr0 & VCPU_CR0_PE) != 0u) break;
+        *out_ticks = core_machine_source_timing_lookup(
+            CORE_MACHINE_SOURCE_TIMING_OUT_DX);
+        return 1;
+    default:
+        if (opcode >= 0xb0u && opcode <= 0xbfu) {
+            *out_ticks = core_machine_source_timing_lookup(
+                CORE_MACHINE_SOURCE_TIMING_MOV_IMMEDIATE);
+        } else {
+            *out_ticks = CORE_MACHINE_80386_SOURCE_UNALLOCATED_TICKS;
+        }
+        return 1;
+    }
+    *out_ticks = CORE_MACHINE_80386_SOURCE_UNALLOCATED_TICKS;
+    return 1;
+}
+
 static type_unsigned_64 core_machine_instruction_maximum_ticks(
     const core_machine_instruction_timing *timing)
 {
@@ -192,7 +389,7 @@ static type_unsigned_64 core_machine_instruction_maximum_ticks(
         timing->io_surcharge + timing->rep_iteration_surcharge;
 }
 
-static C_INT core_machine_instruction_cost(core_machine *machine,
+static C_INT core_machine_compatibility_instruction_cost(core_machine *machine,
     type_unsigned_64 *out_ticks)
 {
     const t_cpuins_data *data = &machine->executor_cpu_instructions.data;
@@ -234,6 +431,16 @@ static C_INT core_machine_instruction_cost(core_machine *machine,
     }
     *out_ticks = ticks;
     return 1;
+}
+
+static C_INT core_machine_instruction_cost(core_machine *machine,
+    type_unsigned_64 *out_ticks)
+{
+    if (machine == STD_NULL || out_ticks == STD_NULL) return 0;
+    if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386) {
+        return core_machine_source_instruction_cost(machine, out_ticks);
+    }
+    return core_machine_compatibility_instruction_cost(machine, out_ticks);
 }
 
 static C_VOID core_machine_transaction_trace(C_VOID *opaque,
@@ -1158,8 +1365,9 @@ static type_status core_machine_create_internal(
     }
     core_machine_resolve_instruction_timing(&machine->instruction_timing,
         &config->instruction_timing, config->ticks_per_instruction);
-    machine->maximum_instruction_ticks = core_machine_instruction_maximum_ticks(
-        &machine->instruction_timing);
+    machine->maximum_instruction_ticks = machine->cpu_profile ==
+        CORE_MACHINE_CPU_PROFILE_80386 ? CORE_MACHINE_80386_SOURCE_MAXIMUM_TICKS :
+        core_machine_instruction_maximum_ticks(&machine->instruction_timing);
     if (core_machine_clock_domain_initialize(&machine->dma_clock,
             &config->clock_plan.dma) != TYPE_STATUS_OK ||
         core_machine_clock_domain_initialize(&machine->pit_clock,
@@ -1307,6 +1515,7 @@ static type_status core_machine_cold_reset(core_machine *machine)
     STD_ATOMIC_STORE(&machine->stop_requested, 0);
     machine->fault_detail = 0u;
     machine->elapsed_ticks = 0u;
+    machine->source_repeat_active = TYPE_FALSE;
     core_machine_transaction_reset(&machine->transaction);
     core_machine_timeline_reset(&machine->timeline);
     core_machine_clock_domain_reset(&machine->dma_clock);

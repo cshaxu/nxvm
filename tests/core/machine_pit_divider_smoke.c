@@ -30,6 +30,7 @@ C_INT main(C_VOID)
     C_INT failed = 0;
 
     config.ticks_per_instruction = 1u;
+    config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80286;
     config.clock_plan.pit.numerator = 1u;
     config.clock_plan.pit.denominator = 4u;
     failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK;

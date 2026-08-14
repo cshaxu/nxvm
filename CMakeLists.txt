@@ -190,6 +190,15 @@ add_executable(core-machine-cpu-timing-preview-smoke
     tests/machine/core_machine_cpu_timing_preview_smoke.c)
 target_link_libraries(core-machine-cpu-timing-preview-smoke PRIVATE core-machine)
 
+add_executable(core-machine-instruction-timing-ledger-smoke
+    tests/machine/core_machine_instruction_timing_ledger_smoke.c)
+target_link_libraries(core-machine-instruction-timing-ledger-smoke PRIVATE
+    core-machine)
+if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
+    target_compile_options(core-machine-instruction-timing-ledger-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
+
 add_executable(core-machine-real-mode-corpus-smoke
     tests/machine/core_machine_real_mode_corpus_smoke.c)
 target_link_libraries(core-machine-real-mode-corpus-smoke PRIVATE core-machine)
@@ -1665,6 +1674,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-real-mode-tick-smoke
     core-machine-instruction-timing-smoke
     core-machine-cpu-timing-preview-smoke
+    core-machine-instruction-timing-ledger-smoke
     core-machine-real-mode-corpus-smoke
     core-machine-real-mode-386-address-smoke
     core-machine-operand-address-smoke

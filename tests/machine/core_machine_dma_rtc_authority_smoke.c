@@ -49,6 +49,7 @@ int main(C_VOID)
     C_INT stage = 1;
 
     machine_config.ticks_per_instruction = 1u;
+    machine_config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80286;
     rtc_config.index_port = 0x0070u;
     rtc_config.data_port = 0x0071u;
     rtc_config.irq = 8u;

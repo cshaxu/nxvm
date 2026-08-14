@@ -2,14 +2,35 @@
 
 ## Current Work
 
-**Active.** M5 T357 remains open between accepted subtasks; S3 will add the
-source-backed timing ledger that consumes S2's private CPU preview.
+**Active.** M5 T357 S3 establishes the immutable, source-backed 80386 CPU
+timing ledger and its single retirement-time consumer for the selected L3 corpus.
+
+## M5 T357 S3 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved continuous holistic L3 implementation on 2026-08-13. T357 S1 and S2 are accepted at `9f869306` and `dcd735a3`; S3 consumes the S1 form contract and the S2 private preview rather than extending synthetic surcharge recognition. |
+| Objective | Replace selected 80386 CPU instruction-cost synthesis with one immutable, source-backed ledger and one owner-local classification route at the existing successful-retirement publication boundary. Establish an explicit unavailable/transfer disposition for every form not supported by a cited 80386 row. |
+| Non-goals | No guessed cycle values; no per-opcode guest-success patching; no 8086/80186/80286 source timing admission in this S; no public mutable timing table or new product API; no device/port latency, wait-state, HOLD/DMA, prefetch/cache/pin waveform, exact fault/interrupt cycle, x87, host-time, Windows-readiness, or M5-closure claim. |
+| Reference Baseline | `dcd735a3` on `master`; accepted [S1 source contract](../etc/evidence/t357-s1-instruction-timing-contract.md), accepted [S2 CPU preview](../etc/evidence/t357-s2-cpu-timing-preview-plan.md), and [instruction-timed-execution proposal](../proposals/m5-instruction-timed-execution.md). |
+| Candidate Proposal | [Instruction-timed execution](../proposals/m5-instruction-timed-execution.md). |
+| Files And ABI Surface | CPU/machine-private timing owner, existing timing smoke plus one ledger owner smoke, CMake/evidence/CURRENT/history as required. Compatibility configuration/profile composition may be translated once only if no second mutable timing truth remains. No public interface growth, device source, third-party import, or product-boundary change. |
+| Applicable Rules | Task Reading Set; accepted T357 S1/S2 evidence; architecture single-owner/variant/one-publication invariant; coding single type/vocabulary and bounded-owner rules; execution mechanism/similar-issue sweep; source policy; T354 deterministic timeline contract. |
+| Verification | Record exact 80386 primary source/table locations and values for every admitted form/variant. Prove profile/form selection, taken/not-taken `Jcc` using S2 `m`, prefix and selected string rules, register-versus-memory/port distinctions, stable unavailable disposition, budget/overflow/reset/fault/no-publication, and unchanged deterministic scheduler ordering. Record 8086/80186/80286 as later T357 source-ledger transfers, build `nxvm_0_5_0357.exe`, record SHA-256, and pass current-gates-gcc. |
+| Expected Markers | Indexed source-to-ledger table; owner timing-ledger smoke; explicit Jcc next-component proof; no synthetic recognition path; artifact SHA-256; full current-gate result. |
+| Asset Needs | Primary Intel manuals as research references only; no guest media, firmware, Bochs/PCjs source import, or external runtime dependency. |
+| Reporting Requirements | Deliver one complete implementation P only after every selected 80386 form value, source location, unavailable policy, caller/write/fault sweep, focused proof, artifact, and current gate is complete. Report a source conflict or any required bus/chipset model immediately. |
+| Stop Conditions | Stop for owner decision if an exact selected value lacks a primary source, a form requires device/bus timing to be meaningful, compatibility translation creates a second timing truth, or correct integration requires public ABI, generic executor, scheduler, or device redesign. Transfer rather than invent a value. |
+| Exit Criteria | Selected source-backed forms use only the immutable ledger at successful retirement; unsupported forms follow a tested stable disposition; no fault/stop/overflow publishes form time; S2 preview is used only where source semantics require `m`; reset/scheduler/device ordering remain deterministic; artifact/evidence/history and full sweep are complete. |
+| Original Owner Request | Fully and stably implement high-value devices and complete L3 timing before deciding the next phase, using a holistic mechanism rather than incremental patches. |
+| Similar-Issue Sweep | Recheck every `ticks_per_instruction`, `instruction_timing`, `maximum_instruction_ticks`, elapsed-tick writer/reader, profile/composition propagation, CPU retire/trace/scheduler path, selected prefix/branch/string/memory/port form, reset/fault/interrupt/budget branch, timing smoke, CMake gate, evidence, Queue, TODO, and roadmap reference. |
 
 ## Current Technical Baseline
 
 - **Current developer artifact:** T357 selects `vm-0-5-0357` /
-  `build/output/nxvm_0_5_0357.exe`; S2 must build and record its SHA-256
-  before acceptance.
+  `build/output/nxvm_0_5_0357.exe`; S3 rebuilt it as
+  `12921803AAC84B617326A832654BB5E27D4C2DF6E016B9D6FCF7278C651999CC`.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.

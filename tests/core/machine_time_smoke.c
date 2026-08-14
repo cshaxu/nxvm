@@ -20,6 +20,7 @@ C_INT main(C_VOID)
     C_INT failed = 0;
 
     config.ticks_per_instruction = 3u;
+    config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80286;
     failed |= machine_time_expect(core_machine_create(&config, &machine));
     failed |= test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,
         0x000ffff0u, 16u) != TYPE_STATUS_OK;

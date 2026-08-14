@@ -43,6 +43,7 @@ C_INT main(C_VOID)
     type_unsigned_8 second[CHECKPOINTS];
     C_INT failed = 0;
 
+    config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80286;
     STD_MEMSET(program, 0x90, sizeof(program));
     failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK;
     failed |= test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,

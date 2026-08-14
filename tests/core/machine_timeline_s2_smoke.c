@@ -85,6 +85,7 @@ static C_INT timeline_machine_contract(C_VOID)
     const type_unsigned_8 nop = 0x90u;
     C_INT failed = 0;
 
+    config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80286;
     trace.context = &trace_probe;
     failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK;
     failed |= test_core_machine_fixture_register_reset_mapping(machine, 0xfffffff0u,

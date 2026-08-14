@@ -29,6 +29,7 @@ set(project_t344_retained_sources
     "tests/machine/core_machine_bound_s54_smoke.c"
     "tests/machine/core_machine_control_transfer_smoke.c"
     "tests/machine/core_machine_controller_authority_smoke.c"
+    "tests/machine/core_machine_cpu_timing_preview_smoke.c"
     "tests/machine/core_machine_display_authority_smoke.c"
     "tests/machine/core_machine_dma_binding_token_smoke.c"
     "tests/machine/core_machine_dma_rtc_authority_smoke.c"
@@ -39,6 +40,7 @@ set(project_t344_retained_sources
     "tests/machine/core_machine_hdc_smoke.c"
     "tests/machine/core_machine_imul_immediate_s56_smoke.c"
     "tests/machine/core_machine_instruction_timing_smoke.c"
+    "tests/machine/core_machine_instruction_timing_ledger_smoke.c"
     "tests/machine/core_machine_lar_lsl_s57_smoke.c"
     "tests/machine/core_machine_legacy_lock_s1_smoke.c"
     "tests/machine/core_machine_port_assembly_smoke.c"
@@ -52,6 +54,7 @@ set(project_t344_retained_sources
     "tests/machine/core_machine_real_mode_386_rep_cmps_smoke.c"
     "tests/machine/core_machine_real_mode_corpus_smoke.c"
     "tests/machine/core_machine_real_mode_tick_smoke.c"
+    "tests/machine/core_machine_rtc_cmos_s3_smoke.c"
     "tests/machine/core_machine_verr_verw_s58_smoke.c"
     "tests/machine/core_mantle_shape_smoke.c"
     "tests/machine/cpu_fault_diagnostic_smoke.c"
@@ -60,12 +63,12 @@ set(project_t344_retained_sources
 set(project_t344_inventory ${project_t344_migrated_sources}
     ${project_t344_retained_sources})
 list(LENGTH project_t344_inventory project_t344_inventory_count)
-if(NOT project_t344_inventory_count EQUAL 53)
-    message(FATAL_ERROR "T344 fixture-shape inventory must contain 53 direct constructors.")
+if(NOT project_t344_inventory_count EQUAL 56)
+    message(FATAL_ERROR "T344 fixture-shape inventory must contain 56 direct constructors.")
 endif()
 list(REMOVE_DUPLICATES project_t344_inventory)
 list(LENGTH project_t344_inventory project_t344_unique_count)
-if(NOT project_t344_unique_count EQUAL 53)
+if(NOT project_t344_unique_count EQUAL 56)
     message(FATAL_ERROR "T344 fixture-shape inventory contains a duplicate source.")
 endif()
 
@@ -82,8 +85,8 @@ foreach(project_t344_source IN LISTS project_t344_machine_sources)
 endforeach()
 list(SORT project_t344_direct_sources)
 list(LENGTH project_t344_direct_sources project_t344_direct_count)
-if(NOT project_t344_direct_count EQUAL 53)
-    message(FATAL_ERROR "T344 expected 53 direct machine constructors, found ${project_t344_direct_count}.")
+if(NOT project_t344_direct_count EQUAL 56)
+    message(FATAL_ERROR "T344 expected 56 direct machine constructors, found ${project_t344_direct_count}.")
 endif()
 foreach(project_t344_source IN LISTS project_t344_direct_sources)
     list(FIND project_t344_inventory "${project_t344_source}" project_t344_index)
@@ -102,4 +105,4 @@ foreach(project_t344_source IN LISTS project_t344_migrated_sources)
     endif()
 endforeach()
 
-message(STATUS "T344 historical fixture shapes passed: 53 direct constructors, 22 shared tails, 31 retained shapes.")
+message(STATUS "T344 historical fixture shapes passed: 56 direct constructors, 22 shared tails, 34 retained shapes.")

@@ -43,6 +43,7 @@ static C_INT rational_clock_prepare(core_machine **out_machine,
     core_machine_config config = { 0 };
 
     config.ticks_per_instruction = 1u;
+    config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80286;
     config.clock_plan.provider.numerator = 3u;
     config.clock_plan.provider.denominator = 2u;
     config.clock_plan.provider.reset_phase = 1u;

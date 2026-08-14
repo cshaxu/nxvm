@@ -71,6 +71,7 @@ C_INT main(C_VOID)
     type_unsigned_32 cpu_retire;
     C_INT failed = 0;
 
+    config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80286;
     trace.callback = lifecycle_trace;
     trace.context = &probe;
     failed |= core_machine_create(&config, &machine) != TYPE_STATUS_OK;

@@ -76,6 +76,7 @@ C_INT main(C_VOID)
     C_INT failed = 0;
 
     config.ticks_per_instruction = 2u;
+    config.cpu_profile = CORE_MACHINE_CPU_PROFILE_80286;
     config.clock_plan.rtc.numerator = 1u;
     config.clock_plan.rtc.denominator = 1u;
     rtc_config.index_port = 0x0070u;
