@@ -13,3 +13,9 @@ implement a device.
 
 S1 inventories all selected core-owned components and optional-interface
 absence against retained primary-source provenance and T346--T354 evidence.
+
+S1 is accepted at `df97131a`. Its
+[completeness ledger](../etc/evidence/t364-s1-pcat-device-completeness-ledger.md)
+classifies every selected component and names the NMI, bus/service and
+optional-interface receivers. S2 may only perform the task-level closure
+audit; it must not add a device or timing value.
