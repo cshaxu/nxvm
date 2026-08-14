@@ -2,8 +2,29 @@
 
 ## Current Work
 
-M5 T352 remains open. S2 is accepted; S3 selected CGA mode, aperture, and
-copied-frame reconciliation is the next bounded subtask.
+M5 T352 S3 - selected CGA mode, aperture, and copied-frame reconciliation
+(Single-Session Mode).
+
+## M5 T352 S3 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved continuous holistic device/L3 implementation on 2026-08-13; T352 S1/S2 accepted at `6e68050b`/`0914e475`; S1 assigns the selected CGA digital rows to this S. |
+| Objective | Reconcile the selected digital CGA text, `320x200x4`, and mode `06h` `640x200x2` state paths: mode/color and B8000 aperture interpretation, odd/even raster addressing, palette/video-enable behavior, CRTC-selected page/cursor interaction, dirty/capture publication, reset, and ROM writer use. Repair a complete shared CGA mechanism only if a focused vector reproduces a defect. |
+| Non-goals | No EGA planar/controller behavior, VGA/VBE/SVGA, composite/NTSC simulation, light pen, unselected CGA geometry/modes, host renderer/pacing, firmware service expansion, generic RAM/timeline refactor, or Windows claim. |
+| Reference Baseline | `0914e475`; [T352 S1 ledger](../etc/evidence/t352-s1-digital-video-ledger.md), [S2 lifecycle audit](../etc/evidence/t352-s2-vadp-register-raster.md), retained T254/T266 digital CGA records, and current CGA port/VM/DOS/ROM display tests. |
+| Candidate Proposal | [PC/AT digital video completeness](../proposals/m5-vadp-digital-video-completeness.md). |
+| Files And ABI Surface | Expected: private VADP CGA mechanism and focused owner smoke/evidence/history/Current only if a reproduced issue requires it. No public snapshot format, profile/host ABI, imported firmware, EGA state, renderer API, or artifact identity change. |
+| Applicable Rules | One VADP owner controls selected mode, aperture, palette, raster decode, dirty/capture/reset; selected CGA variants share validation and copied publication where their memory layout agrees; CRTC state remains S2's guarded bank; VM/platform consume copied output only; deterministic VADP advance remains T346's sole timing owner. |
+| Verification | Sweep mode/color ports, selected CGA snapshot decoders/palettes, B8000 reads/writes, CRTC start/cursor consumers, reset/capture dirty state, QDCGA/ROM mode writers, display copy consumers, and all CGA focused/system/DOS targets. Prove selected mode switch/reset/palette/video-enable, odd/even/address wrap, CRTC page/cursor compatibility, copied-frame nonaliasing, and unsupported mode nonpublication. Run focused and system/DOS owners, governance, diff check, and full current gate. |
+| Expected Markers | Retain current CGA graphics/high-resolution port, VM CGA system/DOS, ROM-video, VADP text/status, and copied-display markers; add an owner marker only if a new mechanism fixture is necessary. |
+| Asset Needs | Existing code, selected IBM CGA tables recorded in S1, and project tests only; no firmware/media addition, host capture, external source import, or composite reference dependency. |
+| Reporting Requirements | Record exact selected CGA mode/register/memory/palette/raster/copy evidence, writer-reader-reset sweep, any reproduced mechanism defect and caller impact, unsupported boundary, and precise S4/S5 transfers. |
+| Stop Conditions | Stop for an unselected CGA mode/register, composite/light-pen requirement, public copied-frame format or host ABI change, EGA dependency, generic memory/timeline defect, ambiguous hardware rule, or required firmware/Windows behavior outside selected paths. Transfer or seek approval rather than expand S3. |
+| Exit Criteria | Every selected CGA mode/aperture/raster/palette/copy/reset row has one VADP owner and direct proof; no competing decoder, stale capture, incorrect selected address mapping, palette/video-enable publication, or unclassified firmware writer remains; all EGA and unselected CGA breadth is precisely transferred. |
+| Original Owner Request | Make CPU/fpu-external core-machine devices, chips, buses, and ports comprehensive and stable at deterministic L3 before choosing a Windows execution route. |
+| Similar-Issue Sweep | Sweep VADP CGA mode/color/status and snapshot helpers, CRTC text consumers, all B8000 physical accesses and observers, profile/QDCGA/ROM writers, VM copied display session/mailbox/platform readers, CGA/ROM/DOS tests, T346 timing records, Queue, and TODO transfers. |
 
 ## Current Technical Baseline
 

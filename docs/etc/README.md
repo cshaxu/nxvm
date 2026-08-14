@@ -76,6 +76,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t351-s5-kbc-lifecycle.md` | Verification owner | T351 S5 combined one-FIFO controller/keyboard/AUX promotion, source-IRQ lifecycle, reset/finalize, and retained-transfer closure. Retain with T351 history at task closure. |
 | `evidence/t352-s1-digital-video-ledger.md` | Verification owner | T352 S1 selected CGA/EGA VADP register, aperture, raster, timeline, copied-frame, proof, and S2--S5 transfer ledger. Retain with T352 history at task closure. |
 | `evidence/t352-s2-vadp-register-raster.md` | Verification owner | T352 S2 selected VADP callback, CRTC-bound, raster/status, reset/timeline, and copied-consumer mechanism audit. Retain with T352 history at task closure. |
+| `evidence/t352-s3-cga-digital-path.md` | Verification owner | T352 S3 selected CGA text/graphics mode, interleaved aperture, palette, CRTC, copied-frame, and unselected-CRTC transfer evidence. Retain with T352 history at task closure. |
 | `operations/` | Execution, source, and release owners | Toolchain, policy, templates, release procedure, and closure material. |
 | `research/` | Source owner | Provenance, external references, and non-product research. |
 | `history/` | Documentation owner | Read-only legacy and M5 migration/roadmap evidence. |
