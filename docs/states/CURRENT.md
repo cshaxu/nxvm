@@ -2,35 +2,14 @@
 
 ## Current Work
 
-**Active.** M5 T359 S5 allocates the source-backed 80386 secondary-integer and
-remaining prefix/width timing mechanism.
-
-## M5 T359 S5 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner approved ordered single-agent execution through the M5 L3 closure audit. T359 S4 was accepted at `0612d4ca`; the approved timing-corpus proposal allocates S5 next. |
-| Objective | Complete the exact primary-source disposition and successful-retirement timing mechanism for admitted 80386 non-privileged secondary integer forms: near `Jcc`, `SETcc`, bit test/modify, double shifts, two-operand `IMUL`, bit scan, and `MOVZX`/`MOVSX`; reconcile their legal `66`/`67`/segment/LOCK lexical and operand/address-width variants without duplicating S2 or S4 owners. |
-| Non-goals | No S4 string/repeat/ordinary-I/O rows; no table/selector/control/debug/task/VM86 privileged corpus (S6); no generic exception/IRQ delivery, physical bus/I/O service, waits, HOLD/DMA/prefetch/cache/pin timing, x87, public ABI, or Intel-undefined FLAGS timing. |
-| Reference Baseline | `0612d4ca` / current task artifact `vm-0-5-0359`. |
-| Candidate Proposal | [Complete instruction-timing corpus](../proposals/m5-complete-instruction-timing-corpus.md), [S1 inventory](../etc/evidence/t359-s1-four-profile-instruction-timing-inventory.md), [S2 ledger](../etc/evidence/t359-s2-four-profile-arithmetic-data-source-ledger.md), [S4 ledger](../etc/evidence/t359-s4-four-profile-string-io-source-ledger.md), and [Queue](QUEUE.md). |
-| Files And ABI Surface | Private source classifier/state only at `src/core/machine/machine.c` if required; existing decode/lexeme/operand outcome inspection; owner smoke, source ledger, CMake current-gate registration, task history/status, and current artifact. No CPU decoder, provider/device/public ABI, generic scheduler, or exception-delivery change absent an approved revised packet. |
-| Applicable Rules | Task Reading Set, execution, architecture, coding, documentation, and source/research policy; one post-refresh successful-retirement publisher; 80386 PRM source precedence; source-selected lexical/operand outcomes rather than handler-local clocks; defined-state evidence; caller/write/fault sweep; reuse S2/S4 mechanisms where semantics match; transfer any privileged, physical, or source-incomplete dependency rather than infer clocks. |
-| Verification | Build a form-to-source ledger for every assigned `0F` integer opcode/form and its accepted 80386 real/protected/ordinary-VM86 disposition. Prove taken/not-taken, register/memory and immediate/count shapes, legal operand/address/segment/LOCK variants, dynamic result-selected rows, defined EIP/GPR/FLAGS, fault/restart zero cost, preflight maximum, reset/provider publication, and that no admitted successful form reaches the one-tick receiver. Reuse retained S2/S4 proof only where the shared outcome mechanism and source row are identical. Run focused owner and retained markers, inventory verifier, full current-gate, governance, artifact target/hash, and diff checks. |
-| Expected Markers | Existing T357/T359 timing markers; a new T359 S5 secondary-integer timing marker; `verify-t359-instruction-timing-inventory`; rebuilt `vm-0-5-0359` artifact. |
-| Asset Needs | Intel 80386 PRM section 17.2.2.3 / timing table and exact instruction pages, plus the project-owned source/tests and prior T359 ledgers. No Bochs/PCjs code, firmware, guest media, or third-party source import. |
-| Reporting Requirements | One complete P1 only: source ledger, all admitted mechanism implementation/proof, caller/write/failure sweep, retained-owner and physical/source-conflict transfers, current-gate, artifact hash, commit, and push. Do not deliver one `0F` opcode, one prefix, a lookup, registration, or status update as a partial P. |
-| Stop Conditions | Stop for owner direction if an assigned form lacks an exact primary row, depends on delivery or physical timing, needs a generic lexical/decoder/exception mechanism change, or requires privileged/cross-mode state not selected here. Record exact forms and transfer; do not infer clocks or widen a shared owner silently. |
-| Exit Criteria | Every assigned S5 form has an exact source-backed profile/mode/variant disposition and shares a truthful secondary/prefix-width outcome mechanism where semantics match; S4, S6--S7, T360, and later physical receivers own every excluded dependency; no one-tick fallback remains for an admitted successful form; all required checks pass. |
-| Original Owner Request | Execute the current Queue until a comprehensive L3 timing closure audit, with holistic mechanism planning rather than patch-on-patch clock additions. |
-| Similar-Issue Sweep | Search every 80386 secondary dispatch/handler, metadata/profile gate, prefix/LOCK and operand/address lexical path, dynamic-result helper, timing ledger/max/publisher, current `0F` and prefix tests, T357/T359 evidence, Queue, and TODO. Classify each hit as S5-owned, retained S2/S4, S6--S7, T360 source conflict, or physical receiver. |
+**Active.** M5 T359 remains open between accepted S units; no implementation may
+start until the next packet is admitted.
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** T359 S4 `vm-0-5-0359` /
+- **Current developer artifact:** T359 S5 `vm-0-5-0359` /
   `build/output/nxvm_0_5_0359.exe` as
-  `D8422AE25FF8608282FAD66E057F76F5BC56143377AAAF4210BF4396A7B9FD89`.
+  `CB9AC61ABF122C726D493F88D76721B26A88B581538988C496B26B5969E85538`.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
@@ -45,7 +24,7 @@ remaining prefix/width timing mechanism.
 
 | Task | Compact result |
 | --- | --- |
-| T359 S4 | Accepted one private four-profile string/repeat/ordinary-I/O classifier at the successful-retirement publisher. It allocates all cited primitive and defined REP rows for `MOVS`, `CMPS`, `STOS`, `LODS`, `SCAS`, `INS`, `OUTS`, and ordinary `IN`/`OUT`; preserves reset/continuation and 80386 protected/permission/VM86 I/O outcomes; and transfers only 80286 `REP LODS`, physical service, exceptions, and later privileged work. [Evidence](../etc/evidence/t359-s4-four-profile-string-io-source-ledger.md). |
+| T359 S5 | Accepted one private 80386 secondary-integer classifier at the successful-retirement publisher. It allocates near `Jcc`, bit test/modify, double shifts, two-operand `IMUL`, bit scan, and `MOVZX`/`MOVSX`; retains S2 `SETcc`; lifts the correct maximum preflight to 106 for 32-bit zero `BSR`; and transfers privileged forms, physical timing, and source conflicts. [Evidence](../etc/evidence/t359-s5-80386-secondary-source-ledger.md). |
 | T358 | Closed cross-mode mechanism coherence: reconciled I/O permission, exception/IRQ entry, selector/task/return transition, paging/linear access, and prefix/LOCK/width/string classifiers; repaired 80286 delivery, LOCK group legality, and repeated-width preview divergence; passed 240 current-gate tests. [Closure audit](../etc/evidence/t358-cross-mode-mechanism-closure-audit.md). |
 | T357 | Closed finite source-backed 8086/80186/80286/80386 instruction timing at one successful-retirement publisher: selected form ledgers, 80386 protected/VM86 ordinary I/O, Appendix-B `NOP = 3` consumer reconciliation, 240 current-gate tests, and artifact SHA-256 `83A249015C03CF875896A440D5B43A430C2D875A63F0BE4B9709014A753CAD95`. Unselected forms, waits, physical bus/prefetch, device latency and cycle-exact work remain explicit transfers. [Closure audit](../etc/evidence/t357-s8-cross-profile-closure-audit.md). |
 | T356 | Closed the M5 closure audit with an explicit M5-open decision: all selected device owners are evidenced, but instruction timing, bus availability/wait states and selected-profile cycle exactness remain ordered implementation prerequisites; corpus-gated peripheral, storage and product boundaries remain explicit transfers. [History](../history/M5-T356-m5-closure-audit.md). |

@@ -66,3 +66,26 @@ secondary, and privileged timing remain later receivers. The inventory
 verifier, documentation governance, and 243/243 current-gate tests passed.
 The rebuilt developer artifact is `build/output/nxvm_0_5_0359.exe`, SHA-256
 `D8422AE25FF8608282FAD66E057F76F5BC56143377AAAF4210BF4396A7B9FD89`.
+
+### S5: 80386 secondary-integer and prefix/width timing
+
+S5 is accepted at `4c857b37`. Its
+[source ledger](../etc/evidence/t359-s5-80386-secondary-source-ledger.md)
+adds one private secondary-encoding classifier at the same successful-retirement
+publisher. It allocates 80386 near `Jcc`, bit test/modify, double shifts,
+two-operand `IMUL`, bit scan, and `MOVZX`/`MOVSX`, while retaining S2's exact
+`SETcc` owner and its PRM early-out multiplier mechanism. The classifier uses
+the decoder-captured source operand and the existing lexeme preview; no handler
+or decoder owns a clock.
+
+The selected PRM `10+3n` bit-scan equation exposes a 106-clock 32-bit all-zero
+`BSR` maximum. S5 raises only the global preflight maximum and updates retained
+smokes to distinguish that global 105/106 admission boundary from their own
+instruction-result assertions. The owner smoke covers branch truth, register
+and memory rows, immediate extensions, 66/67/FS/LOCK examples, dynamic `IMUL`,
+scan extremes, preflight, and rejected-LOCK zero publication. Privileged
+secondary forms, delivery timing, physical timing, and unresolved source
+conflicts remain S6/T360 transfers. The inventory verifier, documentation
+governance, and 244/244 current-gate tests passed. The rebuilt artifact is
+`build/output/nxvm_0_5_0359.exe`, SHA-256
+`CB9AC61ABF122C726D493F88D76721B26A88B581538988C496B26B5969E85538`.
