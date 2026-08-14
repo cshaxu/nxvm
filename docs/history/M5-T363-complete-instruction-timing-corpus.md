@@ -67,3 +67,13 @@ confirms all selected successful 80386 system forms retain one source-backed
 publisher, while context-incomplete 80286, transition/delivery and physical
 forms remain explicit receivers. S7 may perform only the task-level corpus
 closure audit.
+
+### S7: Task-level complete corpus closure audit
+
+S7 is accepted at `312ef2f9` and closes T363. Its
+[closure audit](../etc/evidence/t363-s7-complete-instruction-timing-closure-audit.md)
+verifies the complete 256-primary plus 256-secondary dispatch allocation,
+one successful-retirement publisher, indexed evidence and truthful residual
+receivers. The inventory verifier and 246/246 current-gate suite passed.
+Physical/cycle-exact, bus/service, delivery, x87 and VME/PVI work remains at
+its named Queue or TODO receiver.

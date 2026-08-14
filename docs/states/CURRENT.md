@@ -2,29 +2,8 @@
 
 ## Current Work
 
-**Active.** M5 T363 S7 performs the task-level complete instruction-timing
-corpus closure audit; it allocates no new runtime timing row.
-
-## M5 T363 S7 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | The owner directed current-Queue execution through complete instruction timing on 2026-08-14. T363 S6 was accepted at `2117eb4b`; the approved T363 mechanism order admits this audit-only closure unit. Git pushes are permitted. |
-| Objective | Audit all T363 S1--S6 form allocations, one-publisher publication boundary, current inventory/gates, evidence/history/status, artifacts, and every residual receiver; close T363 only if its complete corpus standard is proven. |
-| Non-goals | No new timing allocation or runtime behavior; no reclassification of an unresolved source, 80286 contextual receiver, transition/delivery, bus/service/prefetch/cache/wait, x87, ABI, import, measurement, or physical/cycle-exact claim. |
-| Reference Baseline | `2117eb4b` / `vm-0-5-0362`; [T363 S1 inventory](../etc/evidence/t363-s1-complete-instruction-timing-inventory.md), T363 S2--S6 reconciliations, [T359 S7 closure audit](../etc/evidence/t359-s7-complete-instruction-timing-closure-audit.md), and T360 transfers. |
-| Candidate Proposal | [Complete instruction-timing corpus](../proposals/m5-complete-instruction-timing-corpus.md). |
-| Files And ABI Surface | Evidence/history/status, current-gate and inventory verification only. No public ABI or runnable path change. |
-| Applicable Rules | Task Reading Set; Execution task-closure/evidence/full-gate rules; Architecture one successful-retirement owner; Documentation closure/topology rules; source/research policy. |
-| Verification | Re-run complete inventory/static owner sweep and full current gate; review all S commits and tracked changes, evidence/index/history/status, Queue/TODO receiver links and no-second-publisher result; governance and diff check. |
-| Expected Markers | T363 S7 complete-corpus closure marker, T359 inventory and current-gate markers. |
-| Asset Needs | No new assets or research; retain existing source provenance and do not import downloads, code, firmware or guest media. |
-| Reporting Requirements | State every resolved owner and every exact remaining receiver, current-gate count, artifact decision, closure decision, and no-L3-overclaim boundary. |
-| Stop Conditions | Stop without closure if any form lacks source/receiver disposition, a second publisher exists, an unreviewed runnable change appears, or a Queue/TODO transfer is absent or misleading. |
-| Exit Criteria | Every implemented form/profile/context has one evidenced owner or an exact truthful receiver; full/static/governance gates pass; task history/status close truthfully with no physical/cycle-exact claim. |
-| Original Owner Request | Execute the current Queue through complete instruction timing, using Intel first and 86Box/MAME/PCjs only as applicable model sources where primary timing is non-deterministic. |
-| Similar-Issue Sweep | Search all primary/secondary dispatch, profile metadata, source classifiers/fallbacks/publishers, handlers, decoder/delivery helpers, CMake/tests, T363 evidence/history/status, Queue and TODO receivers. |
+**No active implementation packet.** T363 is closed; the next ordered Queue
+candidate requires separate owner-approved admission.
 
 ## Current Technical Baseline
 
@@ -45,7 +24,7 @@ corpus closure audit; it allocates no new runtime timing row.
 
 | Task | Compact result |
 | --- | --- |
-| T363 S6 | Accepted at `0721ba8f`: the selected 80386 privileged/system matrix retains exact successful rows and explicit 80286/delivery/physical receivers without a runtime change. [Reconciliation](../etc/evidence/t363-s6-privileged-reconciliation.md). |
+| T363 | Closed at `312ef2f9`: all 256 primary and 256 secondary dispatch slots have one source-backed successful-retirement owner or an exact explicit receiver; inventory and 246/246 current-gate passed. [Closure audit](../etc/evidence/t363-s7-complete-instruction-timing-closure-audit.md). No physical/cycle-exact L3 claim. |
 | T362 | Closed at `316c2334`: S1--S2 normalize every eligible 80186 immediate-IMUL source row in one private direct/constrained model table; S3 resolves stale full-gate verifier assumptions and records 246/246 current-gate tests. [Closure audit](../etc/evidence/t362-s3-legacy-timing-normalization-closure-audit.md). Model-L3 only; no physical/cycle-exact claim. |
 | T361 | Closed at `a5442d96`: S1--S3 established the source-labelled 8086/80186 allocation and synchronous-fault publication boundary; S4 retained Intel 210498-005 Appendix-B `90 NOP = 3` after a page/context and consumer audit. Immediate-IMUL normalization transfers to the first Queue candidate. [S4 evidence](../etc/evidence/t361-s4-80286-nop-source-consumer-audit.md). No physical or cycle-exact claim. |
 | T360 | Closed four-profile timing source reconciliation: primary-authority inventory, owner-selected 80286 NOP table precedence, exact legacy range transfer, contextual classifier audit, and final source/receiver closure. 245/245 current-gate tests passed; no L3 or cycle-exact claim. [Closure audit](../etc/evidence/t360-s5-four-profile-timing-source-closure-audit.md). |
