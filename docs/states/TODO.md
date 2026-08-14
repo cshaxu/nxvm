@@ -202,7 +202,7 @@ admissions, not the default definition of NXVM completion.
   Do not restore production compatibility aliases or quietly exclude it from
   an all-target build.
 - [ ] **Residual direct-production strict compilation (`TODO(Medium)`).**
-  T345 closes the whole configured direct-command ledger but retains 51
+  T345 closes the whole configured direct-command ledger but retains 52
   production-source entries that cannot truthfully receive target-local
   `-Werror` as part of a mixed target: the core machine executor, xasm/debug
   and its failure smokes, retained Console and its failure smoke, mixed Win32

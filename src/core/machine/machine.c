@@ -1214,6 +1214,14 @@ static type_status core_machine_create_internal(
         core_machine_destroy(machine);
         return TYPE_STATUS_NO_MEMORY;
     }
+    /* The 80386 reset vector is at physical FFFFFFF0.  The PC/AT firmware
+     * window aliases its final 64 KiB at F0000 so every supported profile has
+     * a deterministic reset fetch without requiring a per-fixture mapping. */
+    if (core_machine_memory_register_mapping(&machine->executor_memory,
+            0xffff0000u, 0x000f0000u, 0x00010000u) != TYPE_STATUS_OK) {
+        core_machine_destroy(machine);
+        return TYPE_STATUS_INVALID_ARGUMENT;
+    }
     port_checkpoint = core_machine_port_registration_begin(&machine->executor_port);
     core_machine_memory_register_ports(&machine->executor_memory,
         &machine->executor_port);

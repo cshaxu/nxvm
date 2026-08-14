@@ -32,18 +32,28 @@
 /* address size of the source operand */
 #define _GetAddressSize ((cpu_state.data.cs.seg.exec.defsize ^ instruction_state.data.prefix_addrsize) ? 4 : 2)
 /* if opcode indicates a prefix */
-#define _SetExcept_DE(n) (TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_DE), instruction_state.data.excode = (n), STD_PRINTF("#DE(%x) - divide error\n", instruction_state.data.excode))
-#define _SetExcept_PF(n) (TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_PF), instruction_state.data.excode = (n), STD_PRINTF("#PF(%x) - page fault\n", instruction_state.data.excode))
-#define _SetExcept_GP(n) (TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_GP), instruction_state.data.excode = (n), STD_PRINTF("#GP(%x) - general protect\n", instruction_state.data.excode))
-#define _SetExcept_SS(n) (TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_SS), instruction_state.data.excode = (n), STD_PRINTF("#SS(%x) - stack segment\n", instruction_state.data.excode))
-#define _SetExcept_UD(n) (TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_UD), instruction_state.data.excode = (n), STD_PRINTF("#UD(%x) - undefined\n", instruction_state.data.excode))
-#define _SetExcept_NP(n) (TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_NP), instruction_state.data.excode = (n), STD_PRINTF("#NP(%x) - not present\n", instruction_state.data.excode))
-#define _SetExcept_BR(n) (TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_BR), instruction_state.data.excode = (n), STD_PRINTF("#BR(%x) - boundary\n", instruction_state.data.excode))
-#define _SetExcept_TS(n) (TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_TS), instruction_state.data.excode = (n), STD_PRINTF("#TS(%x) - task state\n", instruction_state.data.excode))
-#define _SetExcept_NM(n) (TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_NM), instruction_state.data.excode = (n), STD_PRINTF("#NM(%x) - coprocessor not available\n", instruction_state.data.excode))
-#define _SetExcept_MF(n) (TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_MF), instruction_state.data.excode = (n), STD_PRINTF("#MF(%x) - x87 floating point error\n", instruction_state.data.excode))
-#define _SetExcept_FPU_UNSUPPORTED(n) (TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_FPU_UNSUPPORTED), instruction_state.data.excode = (n), STD_PRINTF("FPU(%x) - configured model is not implemented\n", instruction_state.data.excode))
-#define _SetExcept_CE(n) (TYPE_SET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_CE), instruction_state.data.excode = (n), STD_PRINTF("#CE(%x) - internal error\n", instruction_state.data.excode))
+static C_VOID core_machine_cpu_execution_raise_exception(
+    core_machine_cpu_execution_context *context, type_unsigned_32 exception,
+    type_unsigned_32 code, const C_CHAR *name, const C_CHAR *description)
+{
+    TYPE_SET_BIT(instruction_state.data.except, exception);
+    instruction_state.data.excode = code;
+    if (!context->preview_mode) {
+        STD_PRINTF("%s(%x) - %s\n", name, code, description);
+    }
+}
+#define _SetExcept_DE(n) core_machine_cpu_execution_raise_exception(context, VCPUINS_EXCEPT_DE, (n), "#DE", "divide error")
+#define _SetExcept_PF(n) core_machine_cpu_execution_raise_exception(context, VCPUINS_EXCEPT_PF, (n), "#PF", "page fault")
+#define _SetExcept_GP(n) core_machine_cpu_execution_raise_exception(context, VCPUINS_EXCEPT_GP, (n), "#GP", "general protect")
+#define _SetExcept_SS(n) core_machine_cpu_execution_raise_exception(context, VCPUINS_EXCEPT_SS, (n), "#SS", "stack segment")
+#define _SetExcept_UD(n) core_machine_cpu_execution_raise_exception(context, VCPUINS_EXCEPT_UD, (n), "#UD", "undefined")
+#define _SetExcept_NP(n) core_machine_cpu_execution_raise_exception(context, VCPUINS_EXCEPT_NP, (n), "#NP", "not present")
+#define _SetExcept_BR(n) core_machine_cpu_execution_raise_exception(context, VCPUINS_EXCEPT_BR, (n), "#BR", "boundary")
+#define _SetExcept_TS(n) core_machine_cpu_execution_raise_exception(context, VCPUINS_EXCEPT_TS, (n), "#TS", "task state")
+#define _SetExcept_NM(n) core_machine_cpu_execution_raise_exception(context, VCPUINS_EXCEPT_NM, (n), "#NM", "coprocessor not available")
+#define _SetExcept_MF(n) core_machine_cpu_execution_raise_exception(context, VCPUINS_EXCEPT_MF, (n), "#MF", "x87 floating point error")
+#define _SetExcept_FPU_UNSUPPORTED(n) core_machine_cpu_execution_raise_exception(context, VCPUINS_EXCEPT_FPU_UNSUPPORTED, (n), "FPU", "configured model is not implemented")
+#define _SetExcept_CE(n) core_machine_cpu_execution_raise_exception(context, VCPUINS_EXCEPT_CE, (n), "#CE", "internal error")
 
 #define VCPU_DR6_BS 0x00004000u
 #define VCPU_DR6_BT 0x00008000u
@@ -71,7 +81,7 @@ static C_VOID _kma_write_ref(core_machine_cpu_execution_context *context, type_v
 static C_VOID _kma_read_physical(core_machine_cpu_execution_context *context, type_unsigned_32 physical, type_virtual_address rdata, type_unsigned_8 byte)
 {
     TYPE_TRACE_CALL_BEGIN("_kma_read_physical");
-    if (context->transaction != STD_NULL && core_machine_transaction_begin(
+    if (!context->preview_mode && context->transaction != STD_NULL && core_machine_transaction_begin(
             context->transaction, CORE_MACHINE_TRANSACTION_OWNER_CPU,
             CORE_MACHINE_TRANSACTION_CPU_MEMORY_READ, physical, byte, 0u) !=
             TYPE_STATUS_OK) {
@@ -79,10 +89,10 @@ static C_VOID _kma_read_physical(core_machine_cpu_execution_context *context, ty
     }
     if (core_machine_memory_read_physical(context->memory, physical, rdata,
             byte) != TYPE_STATUS_OK) {
-        core_machine_transaction_cancel(context->transaction);
+        if (!context->preview_mode) core_machine_transaction_cancel(context->transaction);
         TYPE_TRACE_CHECK_RETURN(_SetExcept_CE(physical));
     }
-    core_machine_transaction_commit(context->transaction);
+    if (!context->preview_mode) core_machine_transaction_commit(context->transaction);
     TYPE_TRACE_CALL_END;
 }
 /* write content to physical */
@@ -202,7 +212,7 @@ static C_VOID _kma_prepare_physical_linear(core_machine_cpu_execution_context *c
 static C_VOID _kma_commit_physical_linear(core_machine_cpu_execution_context *context, t_kma_linear_translation *translation, type_bool write)
 {
     TYPE_TRACE_CALL_BEGIN("_kma_commit_physical_linear");
-    if (!translation->paging)
+    if (context->preview_mode || !translation->paging)
     {
         TYPE_TRACE_CALL_END;
         return;
@@ -7517,6 +7527,183 @@ static C_VOID _a_scas(core_machine_cpu_execution_context *context, type_unsigned
     TYPE_TRACE_CALL_END;
 }
 #define _adv TYPE_TRACE_CHECK_RETURN(_d_skip(context, 1))
+
+static type_bool core_machine_cpu_instruction_lexeme_is_prefix(
+    type_unsigned_8 byte, core_machine_cpu_profile profile)
+{
+    switch (byte) {
+    case 0x26u: case 0x2eu: case 0x36u: case 0x3eu:
+    case 0xf0u: case 0xf2u: case 0xf3u:
+        return TYPE_TRUE;
+    case 0x64u: case 0x65u: case 0x66u: case 0x67u:
+        return profile >= CORE_MACHINE_CPU_PROFILE_80386;
+    default:
+        return TYPE_FALSE;
+    }
+}
+
+static type_bool core_machine_cpu_instruction_lexeme_has_modrm(
+    type_unsigned_8 opcode, type_bool extended)
+{
+    if (extended) {
+        return opcode <= 0x03u ||
+            (opcode >= 0x20u && opcode <= 0x26u) ||
+            (opcode >= 0x90u && opcode <= 0x9fu) || opcode == 0xa3u ||
+            (opcode >= 0xa4u && opcode <= 0xa5u) || opcode == 0xabu ||
+            (opcode >= 0xacu && opcode <= 0xadu) || opcode == 0xafu ||
+            (opcode >= 0xb0u && opcode <= 0xbfu);
+    }
+    return (opcode <= 0x03u) || (opcode >= 0x08u && opcode <= 0x0bu) ||
+        (opcode >= 0x10u && opcode <= 0x13u) ||
+        (opcode >= 0x18u && opcode <= 0x1bu) ||
+        (opcode >= 0x20u && opcode <= 0x23u) ||
+        (opcode >= 0x28u && opcode <= 0x2bu) ||
+        (opcode >= 0x30u && opcode <= 0x33u) ||
+        (opcode >= 0x38u && opcode <= 0x3bu) || opcode == 0x62u ||
+        opcode == 0x63u || opcode == 0x69u || opcode == 0x6bu ||
+        (opcode >= 0x80u && opcode <= 0x8fu) || opcode == 0xc0u ||
+        opcode == 0xc1u || (opcode >= 0xc4u && opcode <= 0xc7u) ||
+        (opcode >= 0xd0u && opcode <= 0xd3u) ||
+        (opcode >= 0xd8u && opcode <= 0xdfu) || opcode == 0xf6u ||
+        opcode == 0xf7u || opcode == 0xfeu || opcode == 0xffu;
+}
+
+static type_unsigned_8 core_machine_cpu_instruction_lexeme_immediate_bytes(
+    type_unsigned_8 opcode, type_bool extended, type_unsigned_8 modrm,
+    type_unsigned_8 operand_bytes, type_unsigned_8 address_bytes)
+{
+    if (extended) {
+        if (opcode >= 0x80u && opcode <= 0x8fu) return operand_bytes;
+        if (opcode == 0xa4u || opcode == 0xacu) return 1u;
+        if (opcode == 0xbau) return 1u;
+        return 0u;
+    }
+    if ((opcode & 0xc7u) == 0x04u || opcode == 0x6au ||
+        (opcode >= 0x70u && opcode <= 0x7fu) || opcode == 0x80u ||
+        opcode == 0x82u || opcode == 0x83u || opcode == 0xa8u ||
+        (opcode >= 0xb0u && opcode <= 0xb7u) || opcode == 0xc0u ||
+        opcode == 0xc1u || opcode == 0xcdu || opcode == 0xd4u ||
+        opcode == 0xd5u || (opcode >= 0xe0u && opcode <= 0xe3u) ||
+        (opcode >= 0xe4u && opcode <= 0xe7u) || opcode == 0xebu ||
+        (opcode == 0xf6u && ((modrm >> 3u) & 7u) <= 1u)) return 1u;
+    if ((opcode & 0xc7u) == 0x05u || opcode == 0x68u || opcode == 0x69u ||
+        opcode == 0x81u || opcode == 0xa9u ||
+        (opcode >= 0xb8u && opcode <= 0xbfu) || opcode == 0xc7u ||
+        opcode == 0xe8u || opcode == 0xe9u ||
+        (opcode == 0xf7u && ((modrm >> 3u) & 7u) <= 1u)) return operand_bytes;
+    if (opcode >= 0xa0u && opcode <= 0xa3u) return address_bytes;
+    if (opcode == 0x9au || opcode == 0xeau) return operand_bytes + 2u;
+    if (opcode == 0xc2u || opcode == 0xcau) return 2u;
+    if (opcode == 0xc8u) return 3u;
+    return 0u;
+}
+
+type_bool core_machine_cpu_instruction_lexeme_scan(
+    const type_unsigned_8 *bytes, type_unsigned_8 available_bytes,
+    core_machine_cpu_profile profile, type_bool code_32,
+    core_machine_cpu_instruction_lexeme *out_lexeme)
+{
+    type_unsigned_8 index = 0u;
+    type_unsigned_8 components = 0u;
+    type_unsigned_8 opcode;
+    type_unsigned_8 modrm = 0u;
+    type_unsigned_8 operand_bytes;
+    type_unsigned_8 address_bytes;
+    type_unsigned_8 displacement = 0u;
+    type_unsigned_8 immediate;
+    type_bool extended = TYPE_FALSE;
+    type_bool lock_prefix = TYPE_FALSE;
+    core_machine_cpu_instruction_metadata metadata;
+
+    if (out_lexeme == STD_NULL) return TYPE_FALSE;
+    *out_lexeme = (core_machine_cpu_instruction_lexeme) { 0u, 0u, TYPE_FALSE };
+    if (bytes == STD_NULL || available_bytes == 0u ||
+        profile < CORE_MACHINE_CPU_PROFILE_8086 ||
+        profile > CORE_MACHINE_CPU_PROFILE_80386) return TYPE_FALSE;
+    while (index < available_bytes && index < 15u &&
+        core_machine_cpu_instruction_lexeme_is_prefix(bytes[index], profile)) {
+        if (bytes[index] == 0xf0u) lock_prefix = TYPE_TRUE;
+        ++index;
+        ++components;
+    }
+    if (index < available_bytes && profile < CORE_MACHINE_CPU_PROFILE_80386 &&
+        (bytes[index] == 0x64u || bytes[index] == 0x65u ||
+         bytes[index] == 0x66u || bytes[index] == 0x67u)) return TYPE_FALSE;
+    if (index >= available_bytes || index >= 15u) return TYPE_FALSE;
+    opcode = bytes[index++];
+    ++components;
+    operand_bytes = code_32 ? 4u : 2u;
+    address_bytes = code_32 ? 4u : 2u;
+    if (profile >= CORE_MACHINE_CPU_PROFILE_80386) {
+        type_unsigned_8 prefix_index;
+
+        for (prefix_index = 0u; prefix_index < index - 1u; ++prefix_index) {
+            if (bytes[prefix_index] == 0x66u) operand_bytes =
+                operand_bytes == 2u ? 4u : 2u;
+            if (bytes[prefix_index] == 0x67u) address_bytes =
+                address_bytes == 2u ? 4u : 2u;
+        }
+    }
+    if (opcode == 0x0fu) {
+        if (profile < CORE_MACHINE_CPU_PROFILE_80286 || index >= available_bytes ||
+            index >= 15u) return TYPE_FALSE;
+        opcode = bytes[index++];
+        ++components;
+        extended = TYPE_TRUE;
+    }
+    if (core_machine_cpu_instruction_lexeme_has_modrm(opcode, extended)) {
+        type_unsigned_8 mod;
+        type_unsigned_8 rm;
+
+        if (index >= available_bytes || index >= 15u) return TYPE_FALSE;
+        modrm = bytes[index++];
+        ++components;
+        mod = modrm >> 6u;
+        rm = modrm & 7u;
+        if (mod != 3u) {
+            if (address_bytes == 4u) {
+                if (rm == 4u) {
+                    type_unsigned_8 sib;
+
+                    if (index >= available_bytes || index >= 15u) return TYPE_FALSE;
+                    sib = bytes[index++];
+                    ++components;
+                    if (mod == 0u && (sib & 7u) == 5u) displacement = 4u;
+                } else if (mod == 0u && rm == 5u) {
+                    displacement = 4u;
+                }
+                if (mod == 1u) displacement = 1u;
+                if (mod == 2u) displacement = 4u;
+            } else {
+                if (mod == 0u && rm == 6u) displacement = 2u;
+                if (mod == 1u) displacement = 1u;
+                if (mod == 2u) displacement = 2u;
+            }
+        }
+    }
+    metadata = core_machine_cpu_instruction_metadata_get(extended ?
+        CORE_MACHINE_CPU_INSTRUCTION_0F : CORE_MACHINE_CPU_INSTRUCTION_PRIMARY,
+        opcode, modrm);
+    if (!metadata.valid || profile < metadata.minimum_cpu || lock_prefix) {
+        return TYPE_FALSE;
+    }
+    immediate = core_machine_cpu_instruction_lexeme_immediate_bytes(opcode,
+        extended, modrm, operand_bytes, address_bytes);
+    if ((type_unsigned_16)index + displacement + immediate > available_bytes ||
+        (type_unsigned_16)index + displacement + immediate > 15u) return TYPE_FALSE;
+    if (displacement != 0u) {
+        index = (type_unsigned_8)(index + displacement);
+        ++components;
+    }
+    if (immediate != 0u) {
+        index = (type_unsigned_8)(index + immediate);
+        ++components;
+    }
+    out_lexeme->byte_count = index;
+    out_lexeme->component_count = components;
+    out_lexeme->available = TYPE_TRUE;
+    return TYPE_TRUE;
+}
 
 core_machine_cpu_instruction_metadata core_machine_cpu_instruction_metadata_get(
     core_machine_cpu_instruction_space space, type_unsigned_8 opcode, type_unsigned_8 modrm)
@@ -17486,6 +17673,38 @@ static C_VOID ExecInit(core_machine_cpu_execution_context *context)
         context->diagnostic_provider->record_instruction(context->diagnostic_context,
                                                          &cpu_state, &instruction_state);
     }
+}
+
+type_bool core_machine_cpu_execution_preview_lexeme(
+    const core_machine_cpu_execution_context *context,
+    core_machine_cpu_instruction_lexeme *out_lexeme)
+{
+    core_machine_cpu_execution_context preview;
+    t_cpu preview_cpu;
+    t_cpuins preview_instructions;
+
+    if (out_lexeme == STD_NULL) return TYPE_FALSE;
+    *out_lexeme = (core_machine_cpu_instruction_lexeme) { 0u, 0u, TYPE_FALSE };
+    if (context == STD_NULL || context->cpu == STD_NULL ||
+        context->instructions == STD_NULL || context->memory == STD_NULL) {
+        return TYPE_FALSE;
+    }
+    preview_cpu = *context->cpu;
+    preview_instructions = *context->instructions;
+    preview = *context;
+    preview.cpu = &preview_cpu;
+    preview.instructions = &preview_instructions;
+    preview.transaction = STD_NULL;
+    preview.trace = STD_NULL;
+    preview.diagnostic_provider = STD_NULL;
+    preview.diagnostic_context = STD_NULL;
+    preview.preview_mode = TYPE_TRUE;
+    ExecInit(&preview);
+    if (preview_instructions.data.except) return TYPE_FALSE;
+    return core_machine_cpu_instruction_lexeme_scan(
+        preview_instructions.data.opcodes,
+        (type_unsigned_8)sizeof(preview_instructions.data.opcodes),
+        preview.cpu_profile, preview_cpu.data.cs.seg.exec.defsize, out_lexeme);
 }
 
 static type_unsigned_32 _debug_breakpoint_address(type_unsigned_8 index,

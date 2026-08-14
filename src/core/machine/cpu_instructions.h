@@ -120,6 +120,15 @@ typedef struct core_machine_cpu_instruction_metadata {
     C_INT valid;
 } core_machine_cpu_instruction_metadata;
 
+/* A lexical result is intentionally narrower than instruction decoding: it
+ * names only the byte-layout components used by 80386 Jcc's `m` timing term.
+ * It never validates operands or applies instruction semantics. */
+typedef struct core_machine_cpu_instruction_lexeme {
+    type_unsigned_8 byte_count;
+    type_unsigned_8 component_count;
+    type_bool available;
+} core_machine_cpu_instruction_lexeme;
+
 typedef struct {
     /* instruction dispatch */
     core_machine_cpu_instruction_handler insTable[0x100];
@@ -159,6 +168,9 @@ struct core_machine_cpu_execution_context {
     type_bool debug_tf_before;
     type_bool debug_rf_before;
     type_unsigned_32 debug_trap_cause;
+    /* A temporary CPU-owned lexical fetch may validate bytes without any
+     * architectural, transaction, trace, or diagnostic publication. */
+    type_bool preview_mode;
     core_machine_cpu_profile cpu_profile;
     core_machine_fpu_profile fpu_profile;
     core_machine_fpu *fpu;
@@ -198,6 +210,13 @@ C_VOID core_machine_cpu_execution_finalize(
     core_machine_cpu_execution_context *context);
 core_machine_cpu_instruction_metadata core_machine_cpu_instruction_metadata_get(
     core_machine_cpu_instruction_space space, type_unsigned_8 opcode, type_unsigned_8 modrm);
+type_bool core_machine_cpu_instruction_lexeme_scan(
+    const type_unsigned_8 *bytes, type_unsigned_8 available_bytes,
+    core_machine_cpu_profile profile, type_bool code_32,
+    core_machine_cpu_instruction_lexeme *out_lexeme);
+type_bool core_machine_cpu_execution_preview_lexeme(
+    const core_machine_cpu_execution_context *context,
+    core_machine_cpu_instruction_lexeme *out_lexeme);
 
 #define VCPUINS_EXCEPT_DE  0x00000001 /* 00 - fault: divide error */
 #define VCPUINS_EXCEPT_DB  0x00000002 /* 01 - trap/fault: debug exception */

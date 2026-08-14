@@ -897,7 +897,7 @@ static C_INT dt_test_register_and_privilege_faults(C_VOID)
         C_INT failed = !dt_prepare(&state);
 
         if (!failed) {
-            dt_set_tables(&state, 0x11112222u, 0x3333u, 0x44445555u, 0x6666u);
+            dt_set_tables(&state, 0x11112222u, 0x3333u, 0u, 0u);
             dt_enter_protected(&state, 3u);
             before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
             failed = !dt_write(&state, DT_LOAD_ADDRESS, source, sizeof(source)) ||
@@ -931,7 +931,7 @@ static C_INT dt_test_memory_faults_preserve_tables(C_VOID)
         C_INT failed = !dt_prepare(&state);
 
         if (!failed) {
-            dt_set_tables(&state, 0x11112222u, 0x3333u, 0x44445555u, 0x6666u);
+            dt_set_tables(&state, 0x11112222u, 0x3333u, 0u, 0u);
             dt_enter_protected(&state, 0u);
             state.machine->executor_cpu.data.ds.limit = 0x01ffu;
             before = test_core_machine_fixture_capture_cpu_after_run(state.machine);
@@ -950,7 +950,7 @@ static C_INT dt_test_memory_faults_preserve_tables(C_VOID)
         C_INT failed = !dt_prepare(&state);
 
         if (!failed) {
-            dt_set_tables(&state, 0x11112222u, 0x3333u, 0x44445555u, 0x6666u);
+            dt_set_tables(&state, 0x11112222u, 0x3333u, 0u, 0u);
             dt_enter_protected(&state, 0u);
             state.machine->executor_cpu.data.ds.limit = 0x01ffu;
             before = test_core_machine_fixture_capture_cpu_after_run(state.machine);

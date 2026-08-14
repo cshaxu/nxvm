@@ -315,8 +315,8 @@ static C_INT lgdt_lidt_test_source_limit(C_VOID)
             lgdt_lidt_write_image(source, 0x1357u, 0x00abcdefu);
             state.machine->executor_cpu.data.gdtr.base = 0x11111111u;
             state.machine->executor_cpu.data.gdtr.limit = 0x1111u;
-            state.machine->executor_cpu.data.idtr.base = 0x22222222u;
-            state.machine->executor_cpu.data.idtr.limit = 0x2222u;
+            state.machine->executor_cpu.data.idtr.base = 0u;
+            state.machine->executor_cpu.data.idtr.limit = 0u;
             failed |= core_machine_memory_write(state.machine, LGDT_LIDT_SOURCE,
                 source, sizeof(source)) != TYPE_STATUS_OK;
             before = test_core_machine_fixture_capture_cpu_after_run(state.machine);

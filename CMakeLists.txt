@@ -186,6 +186,10 @@ add_executable(core-machine-instruction-timing-smoke
     tests/machine/core_machine_instruction_timing_smoke.c)
 target_link_libraries(core-machine-instruction-timing-smoke PRIVATE core-machine)
 
+add_executable(core-machine-cpu-timing-preview-smoke
+    tests/machine/core_machine_cpu_timing_preview_smoke.c)
+target_link_libraries(core-machine-cpu-timing-preview-smoke PRIVATE core-machine)
+
 add_executable(core-machine-real-mode-corpus-smoke
     tests/machine/core_machine_real_mode_corpus_smoke.c)
 target_link_libraries(core-machine-real-mode-corpus-smoke PRIVATE core-machine)
@@ -1660,6 +1664,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-input-display-s5-smoke
     core-machine-real-mode-tick-smoke
     core-machine-instruction-timing-smoke
+    core-machine-cpu-timing-preview-smoke
     core-machine-real-mode-corpus-smoke
     core-machine-real-mode-386-address-smoke
     core-machine-operand-address-smoke
@@ -2323,8 +2328,8 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0352)
-add_current_vm_artifact(vm-0-5-0352 "0.5.0352")
+set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0357)
+add_current_vm_artifact(vm-0-5-0357 "0.5.0357")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 
@@ -2852,10 +2857,10 @@ foreach(project_t345_target IN LISTS PROJECT_T344_CURRENT_GATE_TARGETS)
 endforeach()
 list(LENGTH PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS project_t345_s2_pure_count)
 list(LENGTH PROJECT_T345_S2_MIXED_OWNER_TEST_TARGETS project_t345_s2_mixed_count)
-if(NOT project_t345_s2_pure_count EQUAL 130 OR
+if(NOT project_t345_s2_pure_count EQUAL 131 OR
         NOT project_t345_s2_mixed_count EQUAL 3)
     message(FATAL_ERROR
-        "T345 S2 expected 130 pure and 3 mixed owner-test targets; found ${project_t345_s2_pure_count} pure and ${project_t345_s2_mixed_count} mixed.")
+        "T345 S2 expected 131 pure and 3 mixed owner-test targets; found ${project_t345_s2_pure_count} pure and ${project_t345_s2_mixed_count} mixed.")
 endif()
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     foreach(project_t345_target IN LISTS PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS)
@@ -2915,6 +2920,7 @@ set(PROJECT_T345_S4_RESIDUAL_DIRECT_ENTRIES
     "core-machine-executor|src/core/machine/vadp.c|machine-executor"
     "core-machine-executor|src/core/machine/port.c|machine-executor"
     "core-machine-executor|src/core/machine/memory.c|machine-executor"
+    "core-machine-executor|src/core/machine/transaction.c|machine-executor"
     "core-machine-executor|src/core/machine/cpu.c|machine-executor"
     "core-machine-executor|src/core/machine/fpu.c|machine-executor"
     "core-machine-executor|src/core/machine/cpu_instructions.c|machine-executor"

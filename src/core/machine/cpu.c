@@ -39,6 +39,7 @@ C_VOID core_machine_cpu_execution_context_initialize(
     context->debug_tf_before = TYPE_FALSE;
     context->debug_rf_before = TYPE_FALSE;
     context->debug_trap_cause = TYPE_ZERO_32;
+    context->preview_mode = TYPE_FALSE;
     context->cpu_profile = CORE_MACHINE_CPU_PROFILE_80386;
     context->fpu_profile = CORE_MACHINE_FPU_PROFILE_NONE;
     context->fpu = STD_NULL;
