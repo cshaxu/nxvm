@@ -204,6 +204,10 @@ static C_INT timing_80286_boundaries(C_VOID)
     static const type_unsigned_8 shift_memory[] = { 0xd0u, 0x06u, 0x00u, 0x10u };
     static const type_unsigned_8 shift_word_memory[] = { 0xd1u, 0x06u, 0x00u, 0x10u };
     static const type_unsigned_8 shift_indexed_memory[] = { 0xd0u, 0x4au, 0x01u };
+    static const type_unsigned_8 shift_cl[] = { 0xd2u, 0xc0u };
+    static const type_unsigned_8 shift_count[] = { 0xc1u, 0xc0u, 0x04u };
+    static const type_unsigned_8 shift_cl_memory[] = { 0xd2u, 0x06u, 0x00u, 0x10u };
+    static const type_unsigned_8 shift_count_memory[] = { 0xc1u, 0x4au, 0x01u, 0x04u };
     static const type_unsigned_8 shift_undefined[] = { 0xd0u, 0xf0u };
     static const type_unsigned_8 fault[] = { 0x66u, 0x90u };
     static const type_unsigned_8 maximum[] = { 0xf3u, 0xa4u };
@@ -228,6 +232,22 @@ static C_INT timing_80286_boundaries(C_VOID)
         (machine->executor_cpu.data.si = 0u), 0) || core_machine_memory_write(
             machine, 0x1001u, source, 1u) != TYPE_STATUS_OK ||
         !timing_80286_run(machine, &state, 1u, 8u);
+    if (!failed) failed |= !timing_80286_load(machine, shift_cl,
+        sizeof(shift_cl)) || ((machine->executor_cpu.data.cx = 4u), 0) ||
+        !timing_80286_run(machine, &state, 1u, 9u);
+    if (!failed) failed |= !timing_80286_load(machine, shift_count,
+        sizeof(shift_count)) || !timing_80286_run(machine, &state, 1u, 9u);
+    if (!failed) failed |= !timing_80286_load(machine, shift_cl_memory,
+        sizeof(shift_cl_memory)) || ((machine->executor_cpu.data.cx = 4u), 0) ||
+        !timing_80286_run(machine, &state, 1u, 12u);
+    if (!failed) failed |= !timing_80286_load(machine, shift_count_memory,
+        sizeof(shift_count_memory)) || ((machine->executor_cpu.data.bp = 0x1000u),
+        (machine->executor_cpu.data.si = 0u), 0) || core_machine_memory_write(
+            machine, 0x1001u, source, 1u) != TYPE_STATUS_OK ||
+        !timing_80286_run(machine, &state, 1u, 13u);
+    if (!failed) failed |= !timing_80286_load(machine, shift_cl,
+        sizeof(shift_cl)) || ((machine->executor_cpu.data.cx = 0x24u), 0) ||
+        !timing_80286_run(machine, &state, 1u, 9u);
     if (!failed) failed |= !timing_80286_load(machine, shift_undefined,
         sizeof(shift_undefined)) || !test_core_machine_fixture_preflight_real_ud_terminal(
             machine) || core_machine_run(machine, one, &result) != TYPE_STATUS_FAULT ||

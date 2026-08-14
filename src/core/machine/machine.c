@@ -1498,6 +1498,18 @@ static type_unsigned_64 core_machine_80286_timing_odd_word(
         CORE_MACHINE_80286_ODD_WORD_TICKS : 0u;
 }
 
+static type_unsigned_8 core_machine_80286_group2_count(
+    const t_cpuins_data *data, type_unsigned_32 prefixes, type_unsigned_8 opcode)
+{
+    if (opcode == 0xd2u || opcode == 0xd3u) {
+        return TYPE_MASK_UNSIGNED_8(data->oldcpu.data.cx) & 0x1fu;
+    }
+    if ((opcode == 0xc0u || opcode == 0xc1u) && prefixes + 2u < data->oplen) {
+        return TYPE_MASK_UNSIGNED_8(data->cimm) & 0x1fu;
+    }
+    return 0u;
+}
+
 static C_INT core_machine_primary_source_instruction_cost(
     core_machine *machine, type_unsigned_64 *out_ticks)
 {
@@ -2678,6 +2690,18 @@ static C_INT core_machine_80286_source_instruction_cost(core_machine *machine,
             ((data->opcodes[prefixes + 1u] >> 3u) & 7u) != 6u) {
             *out_ticks = 7u + core_machine_80286_timing_effective_address(
                 data, prefixes);
+            return 1;
+        }
+        *out_ticks = CORE_MACHINE_SOURCE_UNALLOCATED_TICKS;
+        return 1;
+    case 0xc0u: case 0xc1u: case 0xd2u: case 0xd3u:
+        if (prefixes + 1u < data->oplen &&
+            ((data->opcodes[prefixes + 1u] >> 3u) & 7u) != 6u) {
+            memory_ticks = core_machine_80286_group2_count(data, prefixes,
+                opcode);
+            *out_ticks = data->flagMem ? 8u + memory_ticks +
+                core_machine_80286_timing_effective_address(data, prefixes) :
+                5u + memory_ticks;
             return 1;
         }
         *out_ticks = CORE_MACHINE_SOURCE_UNALLOCATED_TICKS;

@@ -23,6 +23,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t366-s11-80286-group2-register-timing.md` | Verification owner | T366 S11 source-bounded 80286 `D0`/`D1` register-direct Group-2 timing and remaining-form transfers. Retain with T366 history at task closure. |
 | `evidence/t366-s12-80286-group2-direct-memory-timing.md` | Verification owner | T366 S12 source-bounded 80286 `D0`/`D1` direct-address-memory Group-2 timing and remaining-form transfers. Retain with T366 history at task closure. |
 | `evidence/t366-s13-80286-group2-ea-memory-timing.md` | Verification owner | T366 S13 source-bounded 80286 `D0`/`D1` effective-address memory Group-2 timing and count-form transfers. Retain with T366 history at task closure. |
+| `evidence/t366-s14-80286-group2-count-timing.md` | Verification owner | T366 S14 source-bounded 80286 count-dependent Group-2 timing and masked-count proof. Retain with T366 history at task closure. |
 | `evidence/t333-s1-interactive-input-inventory.md` | Verification owner | T333 S1 retained Console/debugger direct-input inventory and S2 boundary. Retire into the T333 history record when the task closes. |
 | `evidence/t333-s2-interactive-input-repair.md` | Verification owner | T333 S2 owner-local interactive-input repair and static/build evidence. Retire into the T333 history record when the task closes. |
 | `evidence/t333-s3-interactive-input-proof.md` | Verification owner | T333 S3 owner-separated EOF/allocation-failure smoke design and expected proof. Retire into the T333 history record when the task closes. |
