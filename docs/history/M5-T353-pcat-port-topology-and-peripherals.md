@@ -16,3 +16,10 @@ the range-only topology construction, including dual-DMA sparse leaves, port
 `92h`, sparse controller windows, and ATA's separate descriptor, to S2.  It
 retains speaker/PPI and optional interface breadth as existing exact debt
 receivers.
+
+S2 is accepted at `c64a9c51` and corrected at `6c6a9ef4`.  It replaces the
+range-only construction with an exact directional port-leaf and named-route
+contract, validates that contract before core-machine publication, and proves
+every leaf against the frozen registry plus every selected IRQ/DMA binding.
+Its [evidence](../etc/evidence/t353-s2-profile-topology-contract.md) retains
+ATA feature semantics as one source and leaves no selected sparse range claim.
