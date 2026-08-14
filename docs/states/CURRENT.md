@@ -2,29 +2,8 @@
 
 ## Current Work
 
-**Active.** M5 T361 S2 legacy dynamic-arithmetic cross-reference research is
-admitted under an owner-approved external-observation contract.
-
-## M5 T361 S2 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | The owner approved this S on 2026-08-14 after S1: retain S1's primary-source no-formula result, record it, and directly consult local Bochs 2.6, PCjs, and public material. This is a bounded source-policy exception for research only: external implementations are observational inputs, never Intel authority, imported source, runtime dependency, or code-copy source. |
-| Objective | Build a reproducible cross-reference record for the S1 8086/80186 dynamic arithmetic forms, compare candidate operand-to-clock models with Intel's documented ranges, and determine whether a profile-local formula can be admitted without guessing. |
-| Non-goals | No copying, transliteration, import, dependency, or runtime integration of Bochs/PCjs; no host benchmark; no real-hardware claim without a separate contract; no bus/prefetch/device/cycle-exact work; no 80286/80386 timing change; no range endpoint/midpoint selection. |
-| Reference Baseline | `2e19c914` / `vm-0-5-0359`; S1 evidence `docs/etc/evidence/t361-s1-legacy-dynamic-arithmetic-authority-audit.md`; candidate `docs/proposals/m5-legacy-dynamic-arithmetic-timing-authority.md`. |
-| Candidate Proposal | [Legacy dynamic arithmetic timing authority](../proposals/m5-legacy-dynamic-arithmetic-timing-authority.md), with this owner-approved S2 research exception superseding only its ban on Bochs/PCjs values. |
-| Files And ABI Surface | `docs/etc/evidence/t361-s2-legacy-dynamic-arithmetic-cross-reference.md`, `docs/etc/README.md`, `docs/history/M5-T361-legacy-dynamic-arithmetic-timing-authority.md`, and `docs/states/CURRENT.md`; source/timing code only if the exit criteria authorize a converged model. No public ABI, product dependency, or external source import. |
-| Applicable Rules | Read `docs/README.md` Task Reading Set, `docs/rules/EXECUTION.md` S/P lifecycle and mechanism clauses, `docs/rules/DOCUMENT.md`, `docs/rules/ARCHITECTURE.md` source/research invariant, `docs/rules/CODING.md` if code is changed, and `docs/etc/operations/policy/source-policy.md`. Evidence records exact external repository revision/path or URL, observed behavior, license boundary, and non-import conclusion. |
-| Verification | Re-run S1 focused legacy timing smokes; mechanically enumerate every S1 transferred form; for each candidate formula, enumerate representative operands and prove every predicted value lies within the profile's Intel table range. Verify every cited external path/URL is readable and every formula is independently attributed. Run documentation governance and `git diff --check`; run current-gate if any code changes. |
-| Expected Markers | Existing `current.core-machine-8086-instruction-timing-ledger-smoke` and `current.core-machine-80186-instruction-timing-ledger-smoke` remain passing. Any new model test must have a `M5:T361:S2` owner marker. |
-| Asset Needs | Owner-provided read-only Bochs 2.6, PCjs, and PC110-EMU checkouts plus public technical sources; no firmware, guest media, binary trace, download, or repository asset. |
-| Reporting Requirements | Record candidate formulas, exact provenance, profile/form applicability, input domain, comparison result, disagreement, and non-import conclusion. Report a blocker if external candidates disagree, lack a derivable model, exceed Intel ranges, or imply architecture beyond this scope. |
-| Stop Conditions | Stop before code allocation if no candidate converges; if an external code import, license review, real hardware, bus/prefetch model, shared timing publisher, or change outside S1 forms is needed; or if candidate evidence conflicts with Intel range. Transfer rather than guess. |
-| Exit Criteria | Every S1 transferred form has a cross-reference disposition. Runtime allocation occurs only when at least two independent observational sources converge on a reproducible profile-local formula, the formula stays within Intel's documented range for its enumerated domain, focused proof covers the consumer and faults remain nonpublishing, and the evidence labels the result as owner-approved observational triangulation. Otherwise the task records no allocation and an exact next admission condition. |
-| Original Owner Request | Record the S1 observation and directly consult Bochs, PCjs, and existing public material; the owner issued this request on 2026-08-14. |
-| Similar-Issue Sweep | Sweep all S1 transferred 8086/80186 Group-3 and immediate-IMUL forms, all successful-retirement timing consumers, and all direct external candidate sources consulted; distinguish a real shared formula from profile/layout-specific behavior. |
+**Active.** M5 T361 remains open between accepted S units; S2 found no external
+formula and transferred exact hardware observation to the retained timing debt.
 
 ## Current Technical Baseline
 
@@ -45,7 +24,7 @@ admitted under an owner-approved external-observation contract.
 
 | Task | Compact result |
 | --- | --- |
-| T361 S1 | Accepted the legacy dynamic-arithmetic source audit: 8086/80186 tables supply ranges but no formula, current routes remain explicitly unallocated, and a real-hardware observation contract is the only alternative path. [Evidence](../etc/evidence/t361-s1-legacy-dynamic-arithmetic-authority-audit.md). |
+| T361 S2 | Accepted the S1 primary-source audit and owner-approved Bochs/PCjs/PC110/public cross-reference: neither supplies a convergent 8086/80186 dynamic-arithmetic formula; the retained one-tick marker is not L3 timing, and the exact hardware-observation contract remains required. [S1 evidence](../etc/evidence/t361-s1-legacy-dynamic-arithmetic-authority-audit.md); [S2 evidence](../etc/evidence/t361-s2-legacy-dynamic-arithmetic-cross-reference.md). |
 | T360 | Closed four-profile timing source reconciliation: primary-authority inventory, owner-selected 80286 NOP table precedence, exact legacy range transfer, contextual classifier audit, and final source/receiver closure. 245/245 current-gate tests passed; no L3 or cycle-exact claim. [Closure audit](../etc/evidence/t360-s5-four-profile-timing-source-closure-audit.md). |
 | T359 | Closed its bounded four-profile instruction-retirement corpus: S1 inventory plus S2--S6 source classifiers use one successful-retirement publisher; S7 verifies all unallocated rows transfer to T360, bus/service, cycle-exact, or x87/VME receivers. 245/245 current-gate tests passed. No L3 or cycle-exact claim is made. [Closure audit](../etc/evidence/t359-s7-complete-instruction-timing-closure-audit.md). |
 | T358 | Closed cross-mode mechanism coherence: reconciled I/O permission, exception/IRQ entry, selector/task/return transition, paging/linear access, and prefix/LOCK/width/string classifiers; repaired 80286 delivery, LOCK group legality, and repeated-width preview divergence; passed 240 current-gate tests. [Closure audit](../etc/evidence/t358-cross-mode-mechanism-closure-audit.md). |
