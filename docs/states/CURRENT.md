@@ -2,29 +2,9 @@
 
 ## Current Work
 
-M5 T353 S1 - PC/AT selected port-topology, route, and lifecycle ledger
-(Single-Session Mode).
-
-## M5 T353 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner approved continuous holistic device/L3 implementation on 2026-08-13 and authorized execution after T352 closure; this packet admits the first Queue candidate as T353 S1. |
-| Objective | Produce a complete selected PC/AT manual/profile/composition/core/proof ledger for declared and actually registered port ranges, IRQ/DMA routes, reset/finalize ownership, and firmware-visible topology; allocate every row to T353 S2--S4 or one exact transfer. |
-| Non-goals | No unapproved device implementation, generic port framework, host passthrough, serial/parallel/game/MIDI/network/SCSI/PCI/ISA-PnP, VGA/VBE, speaker/PPI implementation without corpus, physical bus timing, Windows execution, or x87. |
-| Reference Baseline | `a8636687`; [T353 proposal](../proposals/m5-pcat-port-topology-and-peripherals.md), T346--T352 histories/evidence, default PC/AT profile, machine/session composition, current controller and port tests, and the IBM PC/AT reference admitted as documentation research only. |
-| Candidate Proposal | [PC/AT port topology and selected peripheral completion](../proposals/m5-pcat-port-topology-and-peripherals.md). |
-| Files And ABI Surface | Expected: evidence/history/Current and a focused static or owner ledger test only if required. No production/public port/profile/platform ABI change in S1. |
-| Applicable Rules | The profile declares composition topology; each registered range, command state, IRQ/DMA route, and lifecycle has one owner; core owns guest port dispatch/time; platform code cannot mutate guest device state; absent devices need exact corpus-gated transfer, not a false support claim. |
-| Verification | Sweep profile port/route declarations, session and machine-device wiring, core port registrations, controller reset/finalize/timeline paths, firmware writers, current port/topology/ownership tests, Queue/TODO. Produce a row-by-row ledger with manual/source/proof/receiver classification; run affected focused gates, governance, diff check, and full current gate. |
-| Expected Markers | Retain selected PIC/PIT/DMA/KBC/VADP/CMOS/FDC/HDC/topology markers; add an S1 marker only if a mechanical owner-ledger verifier is necessary. |
-| Asset Needs | Existing source, project evidence, and documentation research only; no firmware/media download, third-party source, host device, or Windows corpus. |
-| Reporting Requirements | Record every declared and registered range, owner, IRQ/DMA, reset/finalize and proof; name any actual mismatch and caller sweep; distinguish selected completion from deferred peripherals; propose bounded S2--S4 receivers. |
-| Stop Conditions | Stop for a public profile/port ABI change, a generic registration/IRQ/DMA framework defect, required unselected peripheral implementation, ambiguous PC/AT hardware contract, host passthrough, firmware/Windows dependency, or source import. Transfer or seek approval rather than broaden. |
-| Exit Criteria | Each selected declared or registered port row has one truthful owner/proof/receiver disposition; no ambiguous profile-to-registration or lifecycle route remains; every missing optional device has a bounded TODO/Queue admission condition; S2--S4 scope follows the evidence rather than an address-list patch. |
-| Original Owner Request | Make CPU/fpu-external core-machine devices, chips, buses, and ports comprehensive and stable at deterministic L3 before choosing a Windows execution route. |
-| Similar-Issue Sweep | Sweep PC/AT descriptor ranges/routes, session storage/device composition, machine configure/assembly/reset/finalize, port registry, PIC/DMA/timeline consumers, selected controller/profile/firmware tests, T346--T352 evidence, Queue, TODO, and any source/manual references. |
+**Active.** T353 remains open between accepted subtasks; S2 will replace the
+ambiguous range-only declaration with one selected, direction-aware topology
+contract before changing any controller behavior.
 
 ## Current Technical Baseline
 
@@ -45,6 +25,7 @@ M5 T353 S1 - PC/AT selected port-topology, route, and lifecycle ledger
 
 | Task | Compact result |
 | --- | --- |
+| T353 S1 | Accepted the selected PC/AT source/manual-to-profile-to-composition-to-core ledger. It identifies incomplete dual-DMA coverage, invisible `92h`, sparse-range ambiguity, and ATA's split declaration as one S2 topology-contract repair; speaker/PPI and optional interfaces remain exact TODO transfers. Five focused topology tests and 229 current-gate tests passed. [Evidence](../etc/evidence/t353-s1-pcat-port-topology-ledger.md). |
 | T352 | Closed selected digital CGA/EGA: one VADP owner for registers, apertures, raster, planar state, reset, and capture; deterministic VADP-after-KBC timing and copied session/mailbox composition; `vm-0-5-0352` SHA-256 `37A00874C05FB402151AF1A77BD28796D03B2A738D6F3EC08761E4541F2D6BB4`; 229 current-gate tests passed. [History](../history/M5-T352-vadp-digital-video-completeness.md). |
 | T351 | Closed selected IBM-PC/AT 8042 controller, AT keyboard, and compatible three-byte AUX at deterministic L3: one FIFO, controller/keyboard/AUX head promotion, IRQ1/IRQ12 source lifecycle, delayed/reset/finalize, copied ingress, and exact advanced-AUX/NMI/port-61 transfers. 228 current-gate tests passed. [History](../history/M5-T351-kbc-aux-completeness.md). |
 | T350 | Closed the selected PC/AT signal graph: retained 8254/IRQ0 and MC146818/CMOS/IRQ8 owners now have focused lifecycle proof; RTC alarm and IRQF defects are repaired; speaker/PPI and parity/I/O-channel NMI remain exact corpus/contract-gated TODO transfers. 228 current-gate tests passed. [History](../history/M5-T350-pcat-platform-signals.md). |

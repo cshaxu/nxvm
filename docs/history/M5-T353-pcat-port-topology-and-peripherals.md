@@ -9,7 +9,10 @@ not claim all historical PC/AT peripherals or Windows readiness.
 
 ## Accepted Progress
 
-S1 is active.  Its required ledger will establish the selected
-manual-to-profile-to-composition-to-core-to-proof mapping and allocate every
-declaration/registration discrepancy to S2--S4 or an existing exact debt
-receiver.
+S1 is accepted at `a95f6bd3`.  Its
+[ledger](../etc/evidence/t353-s1-pcat-port-topology-ledger.md) maps the
+selected manual-to-profile-to-composition-to-core-to-proof surface and assigns
+the range-only topology construction, including dual-DMA sparse leaves, port
+`92h`, sparse controller windows, and ATA's separate descriptor, to S2.  It
+retains speaker/PPI and optional interface breadth as existing exact debt
+receivers.
