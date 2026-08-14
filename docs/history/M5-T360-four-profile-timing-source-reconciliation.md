@@ -43,3 +43,21 @@ as its only admission route.
 S2 changes no runtime value, CMake target, artifact, ABI, or CPU behavior.
 Documentation governance, the retained T360 source-inventory verifier, and
 diff check passed.
+
+### S3: 8086/80186 range-form disposition
+
+S3 is accepted at `63152b80`. Its [range-form disposition
+record](../etc/evidence/t360-s3-8086-80186-range-form-disposition.md) confirms
+that the selected 8086 `MUL`/`IMUL` and 80186 `MUL`/`IMUL`/`DIV`/`IDIV` plus
+immediate-`IMUL` table rows are ranges without a primary operand-to-clock
+formula. Both profile-local source routes retain the visible unallocated
+successful-retirement transfer; no minimum, maximum, midpoint, later-profile,
+emulator, or benchmark approximation is admitted. The exact future admission
+is one `TODO(Medium)` requiring a source-backed formula or separately approved
+observation contract plus profile-local capture, rollback, and full consumer
+sweep.
+
+S3 changes no instruction semantics, runtime timing number, CMake target,
+artifact, ABI, or test logic. The retained 8086/80186 timing-ledger smokes,
+T360 inventory verifier, documentation governance, diff check, and 245/245
+current-gate tests passed.
