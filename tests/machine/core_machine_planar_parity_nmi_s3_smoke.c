@@ -28,7 +28,7 @@ static C_INT planar_parity_s4_shared_memory(C_VOID)
     if (!failed) failed |= core_machine_memory_read(machine, 0x1234u, &read,
             sizeof(read)) != TYPE_STATUS_OK || read != written ||
         core_machine_get_planar_parity_observation(machine, &observation) !=
-            TYPE_STATUS_OK || !observation.latched;
+            TYPE_STATUS_OK || !observation.latched || !observation.nmi_signaled;
     core_machine_destroy(machine);
     return failed;
 }

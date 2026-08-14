@@ -3939,9 +3939,10 @@ static type_status core_machine_create_internal(
         core_machine_destroy(machine);
         return TYPE_STATUS_NO_MEMORY;
     }
-    /* The 80386 reset vector is at physical FFFFFFF0.  The PC/AT firmware
-     * window aliases its final 64 KiB at F0000 so every supported profile has
-     * a deterministic reset fetch without requiring a per-fixture mapping. */
+    /* The 80386 reset vector is at physical FFFFFFF0.  Configurations with
+     * at least 1 MiB of backing RAM retain the PC/AT firmware window's final
+     * 64 KiB alias at F0000.  Low-RAM configurations instead provide their
+     * reset ROM through an explicit immutable mapping. */
     if (memory_bytes >= 0x00100000u &&
         core_machine_memory_register_mapping(&machine->executor_memory,
             0xffff0000u, 0x000f0000u, 0x00010000u) != TYPE_STATUS_OK) {

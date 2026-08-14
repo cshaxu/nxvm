@@ -14,7 +14,7 @@ route; no parallel RAM or test-only public corruption API exists.
 
 `core-machine-planar-parity-nmi-s3-smoke` now emits
 `M5:T366:S4:PLANAR-MEMORY-PARITY:OK`. It proves 512 KB creation, good-parity
-write, owner-local stored-parity mismatch/read/NMI latch, and reset. A parity-
+write, owner-local stored-parity mismatch/read/NMI latch and publication, and reset. A parity-
 bound machine rejects RAM reconfiguration. An ordinary machine also rejects a
 post-freeze shrink below its retained high BIOS alias; that is a mapping
 invariant, not a 512 KB admission failure.
