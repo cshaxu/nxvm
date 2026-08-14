@@ -2,29 +2,8 @@
 
 ## Current Work
 
-**Active.** M5 T359 S4 allocates the source-backed four-profile string, repeat,
-and ordinary-I/O timing mechanism.
-
-## M5 T359 S4 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner approved ordered single-agent execution through the M5 L3 closure audit. T359 S3 was accepted at `89ec6b81`; Td S88 reconciled the retained mechanism plan at `c6095ff0`. |
-| Objective | Replace the successful-retirement one-tick receiver for exact source-backed string, repeat, and ordinary port-I/O forms with one private four-profile stateful classifier at the sole timing publisher. Cover `MOVS`, `CMPS`, `STOS`, `LODS`, `SCAS`, `INS`, `OUTS`, immediate-port and DX-port `IN`/`OUT`, and their source-backed repeat/count/direction/width outcomes. |
-| Non-goals | No 80386 secondary integer/prefix-width corpus (S5); no table/selector/control/debug/task/VM86 privileged corpus (S6); no generic exception/IRQ delivery timing, provider/device service latency, I/O bus waits, HOLD/DMA/prefetch/cache/pin timing, x87, public ABI, or Intel-undefined FLAGS timing. |
-| Reference Baseline | `c6095ff0` / current task artifact `vm-0-5-0359`. |
-| Candidate Proposal | [Complete instruction-timing corpus](../proposals/m5-complete-instruction-timing-corpus.md), [S1 inventory](../etc/evidence/t359-s1-four-profile-instruction-timing-inventory.md), [S3 ledger](../etc/evidence/t359-s3-four-profile-control-stack-source-ledger.md), and [Queue](QUEUE.md). |
-| Files And ABI Surface | Private timing classification and repeat state in `src/core/machine/machine.c`, existing decoder/lexeme/provider outcome inspection, owner smoke and source ledger evidence, CMake current-gate registration, task status, and current artifact. No port-provider/device/public ABI, generic scheduler, or exception-delivery change. |
-| Applicable Rules | Task Reading Set, execution, architecture, coding, documentation, and source/research policy; one post-refresh successful-retirement publisher; Appendix-B precedence; source-selected repeat/provider outcomes rather than handler-local clocks; defined-state evidence; caller/write/fault sweep; transfer any physical or privileged dependency rather than infer clocks. |
-| Verification | Build an exact Intel source-to-form ledger for all four profiles and real/protected/ordinary-VM86 dispositions. Prove primitive and repeated count-zero/one/multiple, DF and compare-stop outcomes, source/destination segment selection, operand/address width, ordinary port width/provider outcome, defined EIP/GPR/FLAGS, restart/fault zero cost, preflight maximum, reset/repeat/provider publication, and no admitted successful form reaches the one-tick receiver. Prove every excluded privilege, provider-error, exception, or physical wait path is transferred. Run focused owner and retained markers, inventory verifier, full current-gate, governance, artifact target/hash, and diff checks. |
-| Expected Markers | Existing T357/T359 timing markers; a new T359 S4 string-I/O timing marker; `verify-t359-instruction-timing-inventory`; rebuilt `vm-0-5-0359` artifact. |
-| Asset Needs | Intel 8086 Tables 2-20/2-21, iAPX 86/88/186/188 timing table, 80286/80287 PRM Appendix B, and 80386 PRM timing tables/instruction pages; project-owned source/tests only. No Bochs/PCjs code, firmware, guest media, or third-party source import. |
-| Reporting Requirements | One complete P1 only: source ledger, all admitted mechanism implementation/proof, caller/write/failure sweep, source conflict/physical transfers, current-gate, artifact hash, commit, and push. Do not deliver a primitive, one repeat vector, one port opcode, or registration/status update as a partial P. |
-| Stop Conditions | Stop for owner direction if an admitted row lacks an exact primary source, depends on physical/provider service or exception-delivery timing, requires a generic repeat/I/O/exception mechanism change, or needs a privileged/cross-mode transition not selected here. Record exact forms and transfer; do not infer clocks. |
-| Exit Criteria | Every S4 form has an exact source-backed profile/mode/variant disposition and shares one truthful string/repeat/I-O outcome mechanism where semantics match; 80386 secondary, privileged, exception, and physical dependencies are transferred to S5--S7, T360, or later Queue receivers; no one-tick fallback remains for an admitted successful form; all required checks pass. |
-| Original Owner Request | Execute the current Queue until a comprehensive L3 timing closure audit, with holistic mechanism planning rather than patch-on-patch clock additions. |
-| Similar-Issue Sweep | Search all string and port-I/O handlers, repeat/prefix and direction/count state, provider permission/error paths, segment/width selection, source timing ledgers, timing maxima/publisher, current string and I/O tests, T357/T359 evidence, Queue, and TODO. Classify each hit as S4-owned, S5--S7, T360 source conflict, or physical receiver. |
+**Active.** M5 T359 remains open between accepted S units; no implementation may
+start until the next packet is admitted.
 
 ## Current Technical Baseline
 
@@ -45,7 +24,7 @@ and ordinary-I/O timing mechanism.
 
 | Task | Compact result |
 | --- | --- |
-| T359 S3 | Private four-profile control/stack classifier at that same publisher; it allocates successful real-mode direct/indirect control, stack, loop, HLT, INT/INTO/IRET rows, transfers protected/physical transitions, and reconciles timing consumers. [Evidence](../etc/evidence/t359-s3-four-profile-control-stack-source-ledger.md). |
+| T359 S4 | Accepted one private four-profile string/repeat/ordinary-I/O classifier at the successful-retirement publisher. It allocates all cited primitive and defined REP rows for `MOVS`, `CMPS`, `STOS`, `LODS`, `SCAS`, `INS`, `OUTS`, and ordinary `IN`/`OUT`; preserves reset/continuation and 80386 protected/permission/VM86 I/O outcomes; and transfers only 80286 `REP LODS`, physical service, exceptions, and later privileged work. [Evidence](../etc/evidence/t359-s4-four-profile-string-io-source-ledger.md). |
 | T358 | Closed cross-mode mechanism coherence: reconciled I/O permission, exception/IRQ entry, selector/task/return transition, paging/linear access, and prefix/LOCK/width/string classifiers; repaired 80286 delivery, LOCK group legality, and repeated-width preview divergence; passed 240 current-gate tests. [Closure audit](../etc/evidence/t358-cross-mode-mechanism-closure-audit.md). |
 | T357 | Closed finite source-backed 8086/80186/80286/80386 instruction timing at one successful-retirement publisher: selected form ledgers, 80386 protected/VM86 ordinary I/O, Appendix-B `NOP = 3` consumer reconciliation, 240 current-gate tests, and artifact SHA-256 `83A249015C03CF875896A440D5B43A430C2D875A63F0BE4B9709014A753CAD95`. Unselected forms, waits, physical bus/prefetch, device latency and cycle-exact work remain explicit transfers. [Closure audit](../etc/evidence/t357-s8-cross-profile-closure-audit.md). |
 | T356 | Closed the M5 closure audit with an explicit M5-open decision: all selected device owners are evidenced, but instruction timing, bus availability/wait states and selected-profile cycle exactness remain ordered implementation prerequisites; corpus-gated peripheral, storage and product boundaries remain explicit transfers. [History](../history/M5-T356-m5-closure-audit.md). |

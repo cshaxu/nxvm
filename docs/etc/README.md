@@ -104,6 +104,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t357-s8-cross-profile-closure-audit.md` | Verification owner | T357 S8 finite four-profile instruction-timing corpus, one-owner, Appendix-B/TODO, transfer, gate, and artifact closure audit. Retain with T357 history at task closure. |
 | `evidence/t359-s1-four-profile-instruction-timing-inventory.md` | Verification owner | T359 S1 complete primary/secondary/profile/classifier timing-disposition inventory, ordered mechanism receivers, and physical/source-transfer boundary. Retain with T359 history at task closure. |
 | `evidence/t359-s2-four-profile-arithmetic-data-source-ledger.md` | Verification owner | T359 S2 primary arithmetic, FLAGS, data, ModRM/EA, and Group-3 source ledger, normalized classifier rules, source maximum, and T360 range-only transfer. Retain with T359 history at task closure. |
+| `evidence/t359-s4-four-profile-string-io-source-ledger.md` | Verification owner | T359 S4 string, repeat, and ordinary-I/O source ledger, unified successful-retirement classifier, and T360 source transfer. Retain with T359 history at task closure. |
 | `operations/` | Execution, source, and release owners | Toolchain, policy, templates, release procedure, and closure material. |
 | `research/` | Source owner | Provenance, external references, and non-product research. |
 | `history/` | Documentation owner | Read-only legacy and M5 migration/roadmap evidence. |
