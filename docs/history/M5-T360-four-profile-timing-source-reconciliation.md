@@ -61,3 +61,11 @@ S3 changes no instruction semantics, runtime timing number, CMake target,
 artifact, ABI, or test logic. The retained 8086/80186 timing-ledger smokes,
 T360 inventory verifier, documentation governance, diff check, and 245/245
 current-gate tests passed.
+
+### S4: 80286/80386 contextual source-row normalization
+
+S4 is accepted at `614751b0`. Its [contextual source-row disposition](../etc/evidence/t360-s4-80286-80386-contextual-source-disposition.md) audits every T359-selected 80286 and 80386 timing owner for following-byte, EA/odd-word, mode/privilege, prefix, `m`, and descriptor-granularity conditions. The selected rows retain one post-refresh publisher; no source-row mismatch or second publisher was reproduced. The unallocated 80286 system/descriptor forms and 80386 descriptor-granular `LSL` remain exact transfers to the later complete instruction-timing corpus rather than borrowing a 80386 number or guessing a capture rule. Fault, delivery, bus, device, and cycle-exact conditions remain separate receivers.
+
+S4 changes no runtime timing value, execution semantics, CMake target, artifact,
+or ABI. Documentation governance, the retained T360 source-inventory verifier,
+and 245/245 current-gate tests passed.
