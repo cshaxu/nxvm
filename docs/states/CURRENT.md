@@ -2,10 +2,11 @@
 
 ## Current Work
 
-**Active.** M5 T361 S3 legacy dynamic-arithmetic reference-model selection is
-admitted under the owner-approved no-hardware measurement policy.
+**Active.** M5 T361 remains open between accepted S units. S3 accepted a
+range-checked model allocation and synchronous-fault execution-round boundary;
+the separately bounded 80286 `NOP` review is the next admissible S.
 
-## M5 T361 S3 Packet
+## Accepted M5 T361 S3 Packet (historical)
 
 | Field | Required record |
 | --- | --- |
@@ -45,6 +46,7 @@ admitted under the owner-approved no-hardware measurement policy.
 
 | Task | Compact result |
 | --- | --- |
+| T361 S3 | Accepted at `914c6afc`: MAME constants are used only where they stay within Intel Table 1-16 ranges; range-invalid or incomparable immediate-IMUL forms remain reference-exhausted. Successful synchronous fault delivery stops the faulting round with zero retirement/ticks, and handler retirement begins on a later run. [Evidence](../etc/evidence/t361-s3-synchronous-fault-retirement-audit.md). No physical or cycle-exact claim. |
 | T361 S2 | Accepted the S1 primary-source audit and owner-approved Bochs/PCjs/PC110/public cross-reference: neither supplies a convergent 8086/80186 dynamic-arithmetic formula; the retained one-tick marker is not L3 timing, and the exact hardware-observation contract remains required. [S1 evidence](../etc/evidence/t361-s1-legacy-dynamic-arithmetic-authority-audit.md); [S2 evidence](../etc/evidence/t361-s2-legacy-dynamic-arithmetic-cross-reference.md). |
 | T360 | Closed four-profile timing source reconciliation: primary-authority inventory, owner-selected 80286 NOP table precedence, exact legacy range transfer, contextual classifier audit, and final source/receiver closure. 245/245 current-gate tests passed; no L3 or cycle-exact claim. [Closure audit](../etc/evidence/t360-s5-four-profile-timing-source-closure-audit.md). |
 | T359 | Closed its bounded four-profile instruction-retirement corpus: S1 inventory plus S2--S6 source classifiers use one successful-retirement publisher; S7 verifies all unallocated rows transfer to T360, bus/service, cycle-exact, or x87/VME receivers. 245/245 current-gate tests passed. No L3 or cycle-exact claim is made. [Closure audit](../etc/evidence/t359-s7-complete-instruction-timing-closure-audit.md). |

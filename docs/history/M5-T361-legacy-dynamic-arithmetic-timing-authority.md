@@ -45,3 +45,11 @@ and PC110-EMU for their narrower functional/machine roles. QEMU `icount` is
 retained solely as a deterministic event/instruction-count architecture
 reference, not a CPU-cycle source. Every resulting allocation remains
 source-labelled and range-checked where Intel specifies a range.
+
+S3 is accepted at `914c6afc`. Its
+[audit](../etc/evidence/t361-s3-synchronous-fault-retirement-audit.md)
+records the Intel-range ledger, selected MAME i86/i186 constants, explicit
+`reference-exhausted` immediate forms, and the no-retirement synchronous-fault
+execution boundary. The result is a source-labelled model-L3 allocation only;
+it makes no physical or cycle-exact claim. The next T361 S is the separately
+bounded 80286 `NOP` Appendix-B/prose source and consumer review.
