@@ -2,29 +2,8 @@
 
 ## Current Work
 
-**Active.** M5 T358 S2 audits and reconciles the shared exception and IRQ
-entry mechanism across real, protected, and VM86 execution.
-
-## M5 T358 S2 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner approved execution of the ordered Queue through L3 closure on 2026-08-14. Single-agent execution follows accepted T358 S1. |
-| Objective | Build one source-to-commit ledger for every currently delivered synchronous exception and hardware IRQ path from producer/classification through `ExecFinal`, serializer, frame/stack preflight, state publication, PIC acknowledgment, and diagnostic boundary; repair every reproduced accidental divergence within this shared entry mechanism. |
-| Non-goals | VME/PVI, 486+ extensions, numerical x87 behavior, task-gate/task-switch redesign, IRET return semantics, paging algorithm redesign, NMI/PIC policy redesign, device-side IRQ production, or physical interrupt/bus timing. |
-| Reference Baseline | `dce4b9fe` / current task artifact `vm-0-5-0358`. |
-| Candidate Proposal | [Cross-mode mechanism coherence](../proposals/m5-cross-mode-mechanism-coherence.md). |
-| Files And ABI Surface | Existing exception/IRQ execution-finalizer and serializer owners, every direct producer/caller, one owner-bound smoke and evidence ledger if existing evidence is insufficient, CMake current-gate/artifact wiring, and task history/status; no public CPU, PIC, provider, or TSS ABI. |
-| Applicable Rules | Task Reading Set, execution, architecture, coding, documentation, and source/research policy; preserve genuine 16-/32-bit frame/TSS layouts and maintain one validation-to-publication owner. |
-| Verification | Mechanically enumerate delivered exception masks and all `ExecInt` callers; prove real, protected same-CPL, protected outer-CPL, and VM86 applicable frame/restart/IF/TF/segment/stack outcomes, synchronous-fault priority over pending IRQ, and PIC acknowledge only after successful entry. Include failure preflight/nonpublication and retained full current gate, governance, artifact hash, and diff checks. |
-| Expected Markers | `M5:T358:S2:EXCEPTION-IRQ:OK`; full current-gate and rebuilt `vm-0-5-0358` artifact. |
-| Asset Needs | Intel 80386 exception/interrupt authority and project-owned synthetic IDT/TSS/PIC fixtures only; no guest media, firmware, or external-source import. |
-| Reporting Requirements | One complete P1 only: producer/caller/frame ledger, exact reproduced outcomes, every shared repair and similar-issue sweep, focused marker, full gate, artifact hash, commit, and push. Do not report an opcode-local or one-vector result as delivery. |
-| Stop Conditions | Stop and split if closure requires new PIC/NMI/device policy, task switching, inverse IRET, paging/TLB semantics, a public ABI, or a genuine Intel layout difference outside the entry owner; record the exact transfer and affected callers. |
-| Exit Criteria | All currently supported entry producers and hardware IRQ callers have one classified delivery contract with mode-appropriate frame and commit evidence; any accidental shared-owner divergence is repaired and swept; all required gates pass; excluded system mechanisms remain explicit transfers. |
-| Original Owner Request | Continue the ordered Queue holistically until L3 closure audit, avoiding symptom-patch tactics. |
-| Similar-Issue Sweep | Enumerate `ExecFinal` exception-mask branches, `_e_except_n`/`_e_intr_n` callers, real/protected serializers, and every PIC/NMI invocation before changing code; classify each as fixed, covered, Intel-required distinct layout, or explicit transfer. |
+**Open.** M5 T358 S2 is accepted; the next cross-mode mechanism requires a
+separately admitted continuation packet.
 
 ## Current Technical Baseline
 
@@ -45,7 +24,7 @@ entry mechanism across real, protected, and VM86 execution.
 
 | Task | Compact result |
 | --- | --- |
-| T358 S1 | Accepted one shared I/O-permission decision boundary for ordinary and string I/O across real, protected, TSS-map, and VM86 outcomes; repaired legacy word-`OUT` checked propagation, expanded caller proof, passed 240 current-gate tests, and recorded the `vm-0-5-0358` artifact. [History](../history/M5-T358-cross-mode-mechanism-coherence.md) |
+| T358 S2 | Accepted I/O-permission and exception/IRQ-entry coherence across real, protected, and VM86 paths; repaired 80286 protected `#SS/#TS` vector classification, proved 16-bit error frames, retained distinct frame layouts, passed 240 current-gate tests, and rebuilt `vm-0-5-0358`. [History](../history/M5-T358-cross-mode-mechanism-coherence.md) |
 | T357 | Closed finite source-backed 8086/80186/80286/80386 instruction timing at one successful-retirement publisher: selected form ledgers, 80386 protected/VM86 ordinary I/O, Appendix-B `NOP = 3` consumer reconciliation, 240 current-gate tests, and artifact SHA-256 `83A249015C03CF875896A440D5B43A430C2D875A63F0BE4B9709014A753CAD95`. Unselected forms, waits, physical bus/prefetch, device latency and cycle-exact work remain explicit transfers. [Closure audit](../etc/evidence/t357-s8-cross-profile-closure-audit.md). |
 | T356 | Closed the M5 closure audit with an explicit M5-open decision: all selected device owners are evidenced, but instruction timing, bus availability/wait states and selected-profile cycle exactness remain ordered implementation prerequisites; corpus-gated peripheral, storage and product boundaries remain explicit transfers. [History](../history/M5-T356-m5-closure-audit.md). |
 | T355 | Closed the bounded Windows 3.x readiness map: an opt-in BYOB HDD/INT13 checkpoint passed, all four probes remain host-observation/non-current, T347/T354 storage/L3 is a verified prerequisite, and all display, input, NMI, physical-timing, Setup, and compatibility breadth remains explicitly transferred. [History](../history/M5-T355-windows-3x-readiness-map.md). |

@@ -22,6 +22,21 @@ The accepted current-gate result is 240/240 passing.  The active developer
 artifact is `build/output/nxvm_0_5_0358.exe`, SHA-256
 `5606F34537F86B11B3891980B77F8C48273F4F0903C7AB4EEE8F2DF5617D0181`.
 
+## Accepted S2 Progress
+
+S2 was accepted at `e177f6ca`.  Its [exception and IRQ entry
+ledger](../etc/evidence/t358-s2-exception-irq-coherence.md) classifies every
+current synchronous producer, final-delivery route, serializer layout, and
+NMI/PIC caller.  It corrects the accidental 80386-only `ExecFinal` threshold
+for 80286 protected-mode `#SS` and `#TS`; valid 16-bit IDT probes now prove
+vector 12/vector 10 error-code frames, restart IPs, and handler entry.  The
+existing real, 80386 same/outer, VM86, failed-preflight, and PIC proofs are
+retained without flattening their real layout differences.
+
+The accepted current-gate result is 240/240 passing.  The active developer
+artifact is `build/output/nxvm_0_5_0358.exe`, SHA-256
+`59FAC0E73FED23BA47F3F25C1946C8D2949CFB186C480CE9841588E47E754E2E`.
+
 ## Remaining Scope
 
 T358 retains its proposal order: exception/IRQ delivery; segment, descriptor,
