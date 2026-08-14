@@ -2,7 +2,29 @@
 
 ## Current Work
 
-**Active.** M5 T363 remains open between accepted S units.
+**Active.** M5 T363 S3 reconciles successful control, stack, and real-control
+timing forms while retaining privileged and delivery transitions as transfers.
+
+## M5 T363 S3 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | The owner directed current-Queue execution through complete instruction timing on 2026-08-14. T363 S2 was accepted at `e627ea46`; its S1 mechanism plan admits this bounded control/stack unit. Git pushes are permitted. |
+| Objective | Reconcile all successful CALL/JMP/RET, stack, LOOP/Jcc, HLT, INT/INTO/IRET and real-control forms across four profiles against primary rows, with exact shape/mode/prefix/publication ownership. |
+| Non-goals | No arithmetic/data/string/I-O/secondary/privileged allocation; no cross-privilege, task, VM86, generic exception/NMI/IRQ delivery, bus/device/prefetch, x87, ABI, import, measurement, or physical/cycle-exact claim. |
+| Reference Baseline | `e627ea46` / `vm-0-5-0362`; [T363 S1 inventory](../etc/evidence/t363-s1-complete-instruction-timing-inventory.md), T359 S3 control/stack ledger, and T360 contextual disposition. |
+| Candidate Proposal | [Complete instruction-timing corpus](../proposals/m5-complete-instruction-timing-corpus.md). |
+| Files And ABI Surface | Private control/stack timing classifier, focused corpus, evidence/history/status and T363 artifact only if runnable behavior changes. No public ABI. |
+| Applicable Rules | Task Reading Set; Execution source/evidence/artifact/full-gate rules; Architecture single successful-retirement owner; Coding private classifier/test rules; Documentation and source/research policy. |
+| Verification | Full control/stack source matrix, prefix/memory/EA/odd-word and 80286/80386 next-term accounting, real-mode publication/fault transfer sweep, focused smoke, static inventory, governance, artifact/hash if changed and full gate. |
+| Expected Markers | T363 S3 control/stack marker and retained timing inventory/current-gate markers. |
+| Asset Needs | Read-only Intel manuals; external models only under the approved primary-gap ladder; no retained downloads, code, firmware or guest media. |
+| Reporting Requirements | Name every selected/no-op/changed/transferred form, exact mode/privilege boundary, artifact identity if any, and S4 receiver. |
+| Stop Conditions | Stop if a source row needs unmodeled descriptor/task/delivery/physical context, a second publisher, or profile borrowing. Preserve an explicit receiver rather than guess. |
+| Exit Criteria | All S3 successful forms have a complete source allocation or explicit receiver; focused/full gates pass; no physical/cycle-exact claim. |
+| Original Owner Request | Execute the current Queue through complete instruction timing, using Intel first and 86Box/MAME/PCjs only as applicable model sources where primary timing is non-deterministic. |
+| Similar-Issue Sweep | Search every control/stack opcode and group extension, prefixes, source classifier/ledger, mode/privilege/outcome branches, fault publication, corpus tests, CMake and evidence. |
 
 ## Current Technical Baseline
 
