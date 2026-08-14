@@ -31,3 +31,23 @@ the retained PIT/RTC/NMI records. No named corpus and no selected channel-2 or
 port-`61h` hardware contract exist, so it makes no peripheral claim or code
 change. Port-`61h` PPI/speaker, parity/I/O-channel NMI, and serial/parallel/game
 interfaces retain their separate exact TODO receivers and admission conditions.
+
+S4 is accepted at `f7369f96`. Its
+[composition closure evidence](../etc/evidence/t353-s4-pcat-composition-closure.md)
+adds an ordinary, media-free VM-session proof. It checks all 75 directional
+leaves and five actual route bindings both at creation and after reset, retains
+the sparse non-leaves, proves the `F000:FFF0` firmware reset vector, advances
+then rearms the deterministic timeline, and proves reset clears the selected
+CMOS NMI mask. No selected composition or lifecycle defect reproduced.
+
+## Closure
+
+T353 closes the selected default PC/AT topology package. Its exact profile
+leaves, actual registrations, routes, construction validation, reset/finalize
+ownership, deterministic L3 rearm, and firmware-visible reset state have one
+evidence-backed owner path. The task does not claim unselected peripherals or
+physical bus fidelity: port-`61h` PPI/speaker, parity/I/O-channel NMI, and
+serial/parallel/game controllers retain their separate corpus-gated TODOs;
+wait states, INTA waveforms, DMA/refresh contention, and controller service
+durations transfer to the queued L3 bus-timing candidate. Windows readiness
+remains a later consumer, not closure evidence.

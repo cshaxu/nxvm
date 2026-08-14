@@ -2,30 +2,7 @@
 
 ## Current Work
 
-**Active.** M5 T353 S4 composes the selected PC/AT topology through session
-creation/reset, deterministic timeline service, and firmware-visible state
-before the task-level closure audit.
-
-## M5 T353 S4 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner approved T353's proposed S4 sequence and the CPU-external selected-device/L3 completion direction on 2026-08-13. This S may repair only a reproduced selected-topology composition, reset, timeline, or firmware-visible defect after a full owner/caller sweep. |
-| Objective | Prove that the accepted default PC/AT directional-port and named-route contract is preserved through ordinary VM-session creation and reset, core deterministic-L3 timeline rearming, and firmware-visible reset state; close T353 only if no selected composition defect remains. |
-| Non-goals | No new peripheral, PPI/speaker, NMI producer, serial/parallel/game interface, host passthrough, physical bus wait state, INTA waveform, controller-duration, cycle-exact timing, firmware feature, Windows execution claim, or generic port-bus framework. |
-| Reference Baseline | `8a68e861` on `master`, after T353 S3's accepted no-owner peripheral decision. |
-| Candidate Proposal | [M5 PC/AT port topology and selected peripheral completion](../proposals/m5-pcat-port-topology-and-peripherals.md), S4. |
-| Files And ABI Surface | Expected: one owner-local VM/session smoke, its CMake target/current-gate registration, T353 evidence/index/history/current closure. Production changes only for a reproduced selected composition/reset/timeline/firmware defect, with all writers/readers/registration/reset/finalize consumers swept. No public ABI change. |
-| Applicable Rules | `docs/README.md` Task Reading Set; `docs/rules/EXECUTION.md` S/P lifecycle, mechanism defect and task closure audit; `docs/rules/ARCHITECTURE.md` single ownership/composition boundary; `docs/rules/CODING.md` test boundary; `docs/rules/DOCUMENT.md` current/history/evidence topology; T353 proposal; T346 deterministic-L3 and T353 S1--S3 evidence. |
-| Verification | New focused owner smoke must create an ordinary session; compare every selected profile leaf and all named route bindings to the frozen core both before and after session reset; prove sparse non-leaves remain absent; mutate reset-owned selected state then reset and prove reset/firmware restoration, reset vector, timeline `now`/pending-event rearm, and no stale topology publication. Configure, exact current-gate discovery, focused marker, documentation governance, diff check, and full current gate must pass. |
-| Expected Markers | New `M5:T353:S4:PCAT-COMPOSITION:OK`; exact `current.vm-pcat-composition-s4-smoke`; `Documentation governance checks passed`; full current gate passes. |
-| Asset Needs | No external asset, guest media, firmware image, or external source. The committed default profile and generated firmware path are the only inputs. |
-| Reporting Requirements | Record the initial/reset topology, route, timeline, firmware-visible, and sparse-port proof; state every reset/finalize/caller sweep result and each unchanged transfer. This single session must push one complete implementation P before independently reviewing actual changes as coordinator. |
-| Stop Conditions | Stop for owner direction if a proof requires an unselected peripheral, an external corpus, a physical timing model, a generic session/port abstraction, or a shared core/firmware lifecycle change whose full caller/failure sweep exceeds the selected topology boundary. |
-| Exit Criteria | The focused proof covers creation and reset lifecycle of every selected leaf/route, selected mutable reset state, deterministic timeline rearm, firmware-visible reset vector, and sparse-port absence; any reproduced in-scope defect is repaired with mechanism evidence; full gates pass; all remaining optional/per-physical-timing gaps are explicitly transferred; then T353 receives a task-level closure audit. |
-| Original Owner Request | Continue the CPU-external PC/AT device/L3 program holistically, reach a stable reliable selected L3 machine before deciding the next package, and avoid speculative peripherals or Windows as a shortcut. |
-| Similar-Issue Sweep | Review VM session initialization, reset callback, provider lifecycle reset/finalize, profile firmware reset, core cold reset, profile leaf/route validation, FDC/HDC/CMOS/VADP/KBC/DMA/PIC/PIT bindings, and timeline rearm. Classify physical bus timing and optional peripherals only as transfers. |
+**Idle.**
 
 ## Current Technical Baseline
 
@@ -46,7 +23,7 @@ before the task-level closure audit.
 
 | Task | Compact result |
 | --- | --- |
-| T353 S3 | Accepted S1's selected PC/AT ledger, S2's exact 75-leaf/named-route contract, and S3's repository-corpus decision: no port-`61h` PPI/speaker corpus or hardware contract exists, so its exact `TODO(Medium)` receiver and the separate NMI and optional-interface receivers remain authoritative. 230 current-gate tests passed. [S1](../etc/evidence/t353-s1-pcat-port-topology-ledger.md), [S2](../etc/evidence/t353-s2-profile-topology-contract.md), [S3](../etc/evidence/t353-s3-pcat-peripheral-admission-decision.md). |
+| T353 | Closed selected PC/AT topology: the default profile's 75 exact directional leaves and five named routes validate before core publication, remain exact through session reset and deterministic-L3 rearm, and have firmware-visible reset proof. Optional PPI/speaker, NMI, and interface breadth remain corpus-gated TODO transfers; physical bus timing transfers to the next L3 package. 231 current-gate tests passed. [History](../history/M5-T353-pcat-port-topology-and-peripherals.md). |
 | T352 | Closed selected digital CGA/EGA: one VADP owner for registers, apertures, raster, planar state, reset, and capture; deterministic VADP-after-KBC timing and copied session/mailbox composition; `vm-0-5-0352` SHA-256 `37A00874C05FB402151AF1A77BD28796D03B2A738D6F3EC08761E4541F2D6BB4`; 229 current-gate tests passed. [History](../history/M5-T352-vadp-digital-video-completeness.md). |
 | T351 | Closed selected IBM-PC/AT 8042 controller, AT keyboard, and compatible three-byte AUX at deterministic L3: one FIFO, controller/keyboard/AUX head promotion, IRQ1/IRQ12 source lifecycle, delayed/reset/finalize, copied ingress, and exact advanced-AUX/NMI/port-61 transfers. 228 current-gate tests passed. [History](../history/M5-T351-kbc-aux-completeness.md). |
 | T350 | Closed the selected PC/AT signal graph: retained 8254/IRQ0 and MC146818/CMOS/IRQ8 owners now have focused lifecycle proof; RTC alarm and IRQF defects are repaired; speaker/PPI and parity/I/O-channel NMI remain exact corpus/contract-gated TODO transfers. 228 current-gate tests passed. [History](../history/M5-T350-pcat-platform-signals.md). |
@@ -54,7 +31,6 @@ before the task-level closure audit.
 | T348 | Closed PC/AT dual-8237A DMA topology, page/word layout, request/cascade/EOP, validation-before-publication, M2M lifecycle, and FDC crossing bounce path; 223 current-gate tests passed. [History](../history/M5-T348-pcat-dma-completeness.md). |
 | T347 | Closed retained PC/AT FDC and ATA PIO service timing: pending command/data states, reset/control/media cancellation, one FDC-then-ATA readiness owner, trace order, focused VM/DOS/HDD evidence, and 222 current-gate tests passed. [History](../history/M5-T347-storage-controller-service-timing.md). |
 | T346 | Closed deterministic PC/AT L3 convergence: one reset-safe due-event owner, equal-tick `DMA -> PIT -> PIC -> FDC -> HDC -> RTC -> KBC -> VADP` ordering, copied host boundaries, exact storage/NMI/peripheral transfers, and evidence-backed Windows handoff. [History](../history/M5-T346-core-machine-device-l3-convergence.md). |
-| T345 | Closed direct-compilation strictness convergence: 251/305 direct commands are target-local strict; the 54 remaining commands have a complete 175-row ownership ledger and an exact 51-source residual production record with durable bounded admissions. No global flags, inherited-runtime rewrites, or false linked-dependency claims. [History](../history/M5-T345-direct-compilation-strictness-convergence.md). |
 
 ## Recent Governance
 
