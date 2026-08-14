@@ -2399,8 +2399,8 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0358)
-add_current_vm_artifact(vm-0-5-0358 "0.5.0358")
+set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0359)
+add_current_vm_artifact(vm-0-5-0359 "0.5.0359")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 
@@ -2769,6 +2769,12 @@ if(PROJECT_VERIFY_DEPENDENCY_DAG)
             -P "${CMAKE_SOURCE_DIR}/cmake/verify_t331_real_exception_final_construction.cmake"
         COMMENT "Verifying T331 real exception final-delivery construction"
         VERBATIM)
+
+    add_custom_target(verify-t359-instruction-timing-inventory
+        COMMAND "${CMAKE_COMMAND}" -DPROJECT_SOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+            -P "${CMAKE_SOURCE_DIR}/cmake/verify_t359_instruction_timing_inventory.cmake"
+        COMMENT "Verifying T359 four-profile instruction timing inventory"
+        VERBATIM)
 endif()
 
 set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
@@ -2780,6 +2786,7 @@ set(PROJECT_CURRENT_SPECIALIZED_VERIFIER_CANDIDATES
     verify-t338-legacy-profile-metadata
     verify-t330-task-transition-construction
     verify-t331-real-exception-final-construction
+    verify-t359-instruction-timing-inventory
     verify-documentation-governance
     verify-dependency-dag
     verify-live-machine-authority

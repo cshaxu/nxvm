@@ -2,14 +2,35 @@
 
 ## Current Work
 
-**Idle.** M5 T358 is closed; the next Queue candidate requires a separately
-admitted task packet.
+**Active.** M5 T359 S1 inventories every implemented 8086, 80186, 80286, and
+80386 instruction form before allocating complete timing mechanisms.
+
+## M5 T359 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner approved ordered single-agent execution of the M5 Queue through L3 closure on 2026-08-14. T358 closed at `2a2008e3`; this admits the next Queue candidate's inventory-only first S. |
+| Objective | Produce one complete four-profile implementation inventory mapping every primary and `0F` form, profile gate, applicable mode/prefix/addressing class, handler owner, and current timing disposition to an Intel primary source row, dynamic formula, unsupported/rejected classification, or explicit source/implementation receiver. Allocate only coherent shared timing mechanisms for later S units. |
+| Non-goals | No isolated clock edit, timing-value change, CPU semantic repair, source import, bus wait/HOLD/DMA/prefetch/cache/pin timing, device service latency, x87 execution, VME/PVI, or Windows claim. S1 creates no implementation task merely because a handler exists. |
+| Reference Baseline | `2a2008e3` / current task artifact `vm-0-5-0359`. |
+| Candidate Proposal | [Complete instruction-timing corpus](../proposals/m5-complete-instruction-timing-corpus.md) and [Queue](QUEUE.md). |
+| Files And ABI Surface | CPU metadata/dispatch and timing publisher inspection, existing timing ledgers/tests, CMake inventory verifier and current-artifact preset identity, new inventory evidence, task history/status, Queue/TODO transfer records, and current artifact only. No production, provider, device, or public ABI change in S1. |
+| Applicable Rules | Task Reading Set, execution, architecture, coding, documentation, and source/research policy; one successful-retirement elapsed-tick publisher, source provenance before timing assertion, mechanism-level allocation, and explicit physical-timing transfer. |
+| Verification | Mechanically enumerate implementation dispatch/metadata and current timing calls for primary and `0F` spaces; reconcile profile thresholds, 66/67/F0/F2/F3 and real/protected/VM86 dispositions against retained T357 evidence and Intel source authorities; verify every row has exactly one classification and every missing source/implementation receiver has a Queue/TODO destination. Run inventory consistency checks, retained timing owners, governance, artifact verifier/hash, and diff checks. |
+| Expected Markers | Retained T357 timing-preview and four-profile ledger markers, an S1 inventory consistency marker, and rebuilt `vm-0-5-0359` artifact. |
+| Asset Needs | Intel 8086/80186/80286/80386 primary timing manuals and project-owned metadata/tests only; no guest media, firmware, third-party source import, or copied emulator code. |
+| Reporting Requirements | One complete P1 only: complete inventory and source map, mechanism allocation or transfer table, duplicate/missing classification sweep, consistency proof, retained markers, full required gates, artifact hash, commit, and push. Do not report a subset opcode table or a single timing probe as S1 delivery. |
+| Stop Conditions | Stop and request source/owner direction if a primary timing table is unavailable or contradictory without an approved precedence rule, an implementation table cannot be mechanically enumerated, a row requires a CPU semantic change, or a value depends on physical bus/device timing. Record the exact forms and transfer; do not infer clocks. |
+| Exit Criteria | Every currently implemented instruction form and relevant selected classifier variant has one auditable timing disposition; no unclassified row is concealed by a broad family label; later implementation S units are ordered by shared timing mechanism and dependency; all non-CPU timing is explicitly transferred. |
+| Original Owner Request | Execute the current Queue until a comprehensive L3 timing closure audit, with holistic mechanism planning rather than patch-on-patch clock additions. |
+| Similar-Issue Sweep | Search all dispatch tables, metadata, timing publishers, profile gates, prefix classifiers, timing previews, current timing tests, T357 ledgers, Queue, and TODO. Classify every hit as current source-backed evidence, allocated mechanism, unsupported/profile rejection, source gap, or physical-timing transfer. |
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** T358 S2 active `vm-0-5-0358` /
-  `build/output/nxvm_0_5_0358.exe` as
-  `59FAC0E73FED23BA47F3F25C1946C8D2949CFB186C480CE9841588E47E754E2E`.
+- **Current developer artifact:** T359 S1 `vm-0-5-0359` /
+  `build/output/nxvm_0_5_0359.exe` as
+  `A9F0D342753C7F3BDC2C0492E08E103F3A0D8C7BB651ACE5ABAD5D75F0C39134`.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
