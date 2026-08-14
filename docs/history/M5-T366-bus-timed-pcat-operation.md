@@ -101,3 +101,10 @@ in the 80286 ledger. Its [inventory evidence](../etc/evidence/t366-s10-80286-una
 assigns the remaining fallback receiver to source-backed CPU-ledger closure;
 it makes no timing allocation or physical-time claim. S10 is accepted at
 `cc4c9987`.
+
+### S11: 80286 Group-2 register shift/rotate timing
+
+S11 gives valid register-direct `D0`/`D1` implicit-count-one Group-2 forms
+their two-clock 80286 source-table value while preserving memory, count-based,
+and `/6` undefined boundaries. Its [timing evidence](../etc/evidence/t366-s11-80286-group2-register-timing.md)
+records the sweep and receiver transfer. S11 is accepted at `8190857f`.

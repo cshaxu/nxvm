@@ -20,3 +20,10 @@ remain the next CPU-ledger receiver. Memory `D0`/`D1` forms retain the source
 table's `7*` effective-address-dependent receiver. `/6` remains the existing
 undefined-opcode path, proven by the focused smoke. No device, bus or physical
 clock claim is made.
+
+## Verification
+
+The focused 80286 instruction-timing-ledger smoke, S10 publisher-inventory
+static check, configured `run-current-smokes` gate, documentation-governance
+check, and `git diff --check` passed. The implementation changes no public ABI
+or device behavior.
