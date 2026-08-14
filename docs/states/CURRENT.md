@@ -2,14 +2,35 @@
 
 ## Current Work
 
-**Open.** M5 T359 S1 is accepted; S2 must allocate arithmetic, FLAGS, data,
-and ModRM/EA timing as one source-backed mechanism packet.
+**Active.** M5 T359 S2 allocates the source-backed four-profile arithmetic,
+FLAGS, data, and ModRM/EA timing mechanism.
+
+## M5 T359 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved ordered single-agent execution of the M5 Queue through L3 closure on 2026-08-14. T359 S1 was accepted at `498838f8`; its complete receiver inventory admits this first implementation mechanism. |
+| Objective | Replace the visible one-tick transfer only for primary arithmetic, defined-FLAGS, data, and ModRM/EA forms with private, immutable, four-profile primary-source classifications at the one successful-retirement publisher. Cover exact primary ALU forms `00`--`3D`, groups `80/81/83`, TEST/XCHG, adjustment and conversion forms, INC/DEC, immediate IMUL, Group 3 arithmetic, byte INC/DEC, selected register/memory/moffs/immediate MOV, LEA, and 80386 `0F 90`--`9F` SETcc where one shared data/FLAGS/EA mechanism is real. |
+| Non-goals | No call/return/interrupt/LOOP/Jcc breadth, string/repeat, ordinary I/O, privileged `0F`, selector/table/task/debug timing, x87 execution, physical waits/HOLD/DMA/prefetch/cache/pin timing, device latency, fault/interrupt delivery clocks, source import, or public timing ABI. Do not assign a timing value to an Intel-undefined FLAGS result. |
+| Reference Baseline | `498838f8` / current task artifact `vm-0-5-0359`. |
+| Candidate Proposal | [Complete instruction-timing corpus](../proposals/m5-complete-instruction-timing-corpus.md), [S1 inventory](../etc/evidence/t359-s1-four-profile-instruction-timing-inventory.md), and [Queue](QUEUE.md). |
+| Files And ABI Surface | Private source-cost classification in `src/core/machine/machine.c`, existing CPU metadata/decoder/lexeme inspection, owner timing smoke(s), source ledger evidence, CMake current-gate registration only if a new owner smoke is needed, task history/status, and current artifact. No provider, device, public ABI, or generic scheduler change. |
+| Applicable Rules | Task Reading Set, execution, architecture, coding, documentation, and source/research policy; one post-refresh successful-retirement publisher; profile-local primary-source values; shared classification rather than per-opcode patches; defined-state-only assertions; exact validation-to-publication and source/caller sweep; Appendix-B precedence with contradictions transferred to T360. |
+| Verification | Build a source-to-form table with exact Intel table/page/row and assumptions for every admitted form/profile/mode. Prove register/memory/ModRM/EA, operand/address width, legal prefix/LOCK, real/protected/ordinary-VM86 disposition where a source row exists, defined FLAGS, result/publication, fault/restart zero-cost, preflight maximum, reset/repeat state, and one elapsed-tick/provider publication. Mechanically prove no admitted form still falls through to the one-tick receiver; run focused owner markers, inventory verifier, full current-gate, governance, artifact target/hash, and diff checks. |
+| Expected Markers | Existing T357 ledger markers; a new T359 S2 arithmetic/data timing marker; `verify-t359-instruction-timing-inventory`; rebuilt `vm-0-5-0359` artifact. |
+| Asset Needs | Intel 8086 Tables 2-20/2-21, iAPX 86/88/186/188 Table 1-16, 80286/80287 PRM Appendix B, and 80386 PRM section 17.2.2.3 or exact instruction tables; project-owned source/tests only. No Bochs/PCjs code, firmware, guest media, or third-party source import. |
+| Reporting Requirements | One complete P1 only: exact source ledger and assumptions, full admitted mechanism implementation/proof, caller/write/failure sweep, source conflict/physical transfers, current-gate, artifact hash, commit, and push. Do not deliver one opcode family, one profile, or one focused clock as a partial P. |
+| Stop Conditions | Stop for owner direction if an admitted profile/form lacks an exact primary row, table assumptions require physical timing, a source conflict lacks the already-approved Appendix-B precedence, a semantic defect is required outside the shared classification owner, or an unselected control/string/privileged mechanism is needed. Record exact forms and transfer; do not infer clocks. |
+| Exit Criteria | Every S2 form listed in Objective has an exact source-backed profile/mode/variant disposition and shares one truthful cost mechanism where semantics match; every non-source or physical dependency is transferred to S3--S6, T360, or later Queue receiver; no one-tick fallback remains for an admitted successful form; all required checks pass. |
+| Original Owner Request | Execute the current Queue until a comprehensive L3 timing closure audit, with holistic mechanism planning rather than patch-on-patch clock additions. |
+| Similar-Issue Sweep | Search all primary ALU/data/group handlers, `0F 90`--`9F`, metadata gates, prefix/LOCK classifier, ModRM/EA and operand-width helpers, all source-cost cases/ledger entries, timing maxima, elapsed publisher, profile tests, T357/T359 evidence, Queue, and TODO. Classify each hit as S2-owned, later S3--S6, T360 source conflict, or physical receiver. |
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** T359 S1 `vm-0-5-0359` /
+- **Current developer artifact:** T359 S2 `vm-0-5-0359` /
   `build/output/nxvm_0_5_0359.exe` as
-  `A9F0D342753C7F3BDC2C0492E08E103F3A0D8C7BB651ACE5ABAD5D75F0C39134`.
+  `2D91DCD23488FD86E64B1EB5126C27DE293183619F7841C96E447FBA63E15904`.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.

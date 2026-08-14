@@ -183,6 +183,25 @@ static type_unsigned_32 core_machine_instruction_prefix_count(const t_cpuins_dat
     return count;
 }
 
+static C_INT core_machine_80386_timing_has_source_prefixes(
+    const t_cpuins_data *data, type_unsigned_32 prefixes)
+{
+    type_unsigned_32 index;
+
+    if (data == STD_NULL || prefixes == 0u) return prefixes == 0u;
+    for (index = 0u; index < prefixes; ++index) {
+        switch (data->opcodes[index]) {
+        case 0x26u: case 0x2eu: case 0x36u: case 0x3eu:
+        case 0x64u: case 0x65u: case 0x66u: case 0x67u:
+        case 0xf0u:
+            break;
+        default:
+            return 0;
+        }
+    }
+    return 1;
+}
+
 typedef enum core_machine_source_timing_form {
     CORE_MACHINE_SOURCE_TIMING_NOP,
     CORE_MACHINE_SOURCE_TIMING_CLC,
@@ -204,7 +223,39 @@ typedef enum core_machine_source_timing_form {
     CORE_MACHINE_SOURCE_TIMING_OUT_IMMEDIATE_PROTECTED,
     CORE_MACHINE_SOURCE_TIMING_OUT_IMMEDIATE_PERMISSION,
     CORE_MACHINE_SOURCE_TIMING_OUT_DX_PROTECTED,
-    CORE_MACHINE_SOURCE_TIMING_OUT_DX_PERMISSION
+    CORE_MACHINE_SOURCE_TIMING_OUT_DX_PERMISSION,
+    CORE_MACHINE_SOURCE_TIMING_ALU_ADD_RM_REGISTER,
+    CORE_MACHINE_SOURCE_TIMING_ALU_ADD_REGISTER_RM,
+    CORE_MACHINE_SOURCE_TIMING_ALU_SUB_RM_REGISTER,
+    CORE_MACHINE_SOURCE_TIMING_ALU_SUB_REGISTER_RM,
+    CORE_MACHINE_SOURCE_TIMING_ALU_ACCUMULATOR_IMMEDIATE,
+    CORE_MACHINE_SOURCE_TIMING_ALU_REGISTER_IMMEDIATE,
+    CORE_MACHINE_SOURCE_TIMING_ALU_RM_IMMEDIATE,
+    CORE_MACHINE_SOURCE_TIMING_CMP_RM_REGISTER,
+    CORE_MACHINE_SOURCE_TIMING_CMP_REGISTER_RM,
+    CORE_MACHINE_SOURCE_TIMING_CMP_RM_IMMEDIATE,
+    CORE_MACHINE_SOURCE_TIMING_TEST_RM_REGISTER,
+    CORE_MACHINE_SOURCE_TIMING_TEST_ACCUMULATOR_IMMEDIATE,
+    CORE_MACHINE_SOURCE_TIMING_TEST_REGISTER_IMMEDIATE,
+    CORE_MACHINE_SOURCE_TIMING_TEST_RM_IMMEDIATE,
+    CORE_MACHINE_SOURCE_TIMING_XCHG_REGISTER,
+    CORE_MACHINE_SOURCE_TIMING_XCHG_RM_REGISTER,
+    CORE_MACHINE_SOURCE_TIMING_INC_DEC_REGISTER,
+    CORE_MACHINE_SOURCE_TIMING_INC_DEC_RM,
+    CORE_MACHINE_SOURCE_TIMING_MOV_RM_IMMEDIATE,
+    CORE_MACHINE_SOURCE_TIMING_LEA,
+    CORE_MACHINE_SOURCE_TIMING_ADJUST_SIMPLE,
+    CORE_MACHINE_SOURCE_TIMING_ADJUST_AAM,
+    CORE_MACHINE_SOURCE_TIMING_ADJUST_AAD,
+    CORE_MACHINE_SOURCE_TIMING_CONVERSION,
+    CORE_MACHINE_SOURCE_TIMING_GROUP3_NOT,
+    CORE_MACHINE_SOURCE_TIMING_GROUP3_NEG,
+    CORE_MACHINE_SOURCE_TIMING_GROUP3_MUL,
+    CORE_MACHINE_SOURCE_TIMING_GROUP3_IMUL,
+    CORE_MACHINE_SOURCE_TIMING_GROUP3_DIV,
+    CORE_MACHINE_SOURCE_TIMING_GROUP3_IDIV,
+    CORE_MACHINE_SOURCE_TIMING_IMUL_IMMEDIATE,
+    CORE_MACHINE_SOURCE_TIMING_SETCC
 } core_machine_source_timing_form;
 
 typedef struct core_machine_source_timing_entry {
@@ -305,26 +356,26 @@ static const core_machine_source_timing_entry
 #define CORE_MACHINE_80386_REP_MOVSB_SETUP_TICKS 5u
 #define CORE_MACHINE_80386_REP_MOVSB_ITERATION_TICKS 4u
 #define CORE_MACHINE_SOURCE_UNALLOCATED_TICKS 1u
-#define CORE_MACHINE_80386_SOURCE_MAXIMUM_TICKS 27u
+#define CORE_MACHINE_80386_SOURCE_MAXIMUM_TICKS 46u
 #define CORE_MACHINE_8086_REP_MOVSB_SETUP_TICKS 9u
 #define CORE_MACHINE_8086_REP_MOVSB_ITERATION_TICKS 17u
 #define CORE_MACHINE_8086_JCC_NOT_TAKEN_TICKS 4u
 #define CORE_MACHINE_8086_JCC_TAKEN_TICKS 16u
 #define CORE_MACHINE_8086_SEGMENT_OVERRIDE_TICKS 2u
 #define CORE_MACHINE_8086_ODD_WORD_TICKS 4u
-#define CORE_MACHINE_8086_SOURCE_MAXIMUM_TICKS 27u
+#define CORE_MACHINE_8086_SOURCE_MAXIMUM_TICKS 83u
 #define CORE_MACHINE_80186_REP_MOVSB_SETUP_TICKS 8u
 #define CORE_MACHINE_80186_REP_MOVSB_ITERATION_TICKS 8u
 #define CORE_MACHINE_80186_JCC_NOT_TAKEN_TICKS 4u
 #define CORE_MACHINE_80186_JCC_TAKEN_TICKS 13u
-#define CORE_MACHINE_80186_SOURCE_MAXIMUM_TICKS 27u
+#define CORE_MACHINE_80186_SOURCE_MAXIMUM_TICKS 19u
 #define CORE_MACHINE_80286_REP_MOVSB_SETUP_TICKS 5u
 #define CORE_MACHINE_80286_REP_MOVSB_ITERATION_TICKS 4u
 #define CORE_MACHINE_80286_JCC_NOT_TAKEN_TICKS 3u
 #define CORE_MACHINE_80286_JCC_TAKEN_TICKS 7u
 #define CORE_MACHINE_80286_BASE_INDEX_DISPLACEMENT_TICKS 1u
 #define CORE_MACHINE_80286_ODD_WORD_TICKS 2u
-#define CORE_MACHINE_80286_SOURCE_MAXIMUM_TICKS 9u
+#define CORE_MACHINE_80286_SOURCE_MAXIMUM_TICKS 28u
 
 typedef struct core_machine_legacy_source_timing_contract {
     const core_machine_source_timing_entry *ledger;
@@ -478,6 +529,243 @@ static type_unsigned_64 core_machine_8086_timing_odd_word(
     return data->mrm.rsreg != STD_NULL &&
         ((data->mrm.rsreg->base + data->mrm.offset) & 1u) != 0u ?
         CORE_MACHINE_8086_ODD_WORD_TICKS : 0u;
+}
+
+typedef struct core_machine_primary_timing_shape {
+    core_machine_source_timing_form form;
+    C_INT memory;
+    C_INT word;
+} core_machine_primary_timing_shape;
+
+static type_unsigned_8 core_machine_source_timing_primary_word_transfers(
+    const core_machine_primary_timing_shape *shape)
+{
+    if (shape == STD_NULL || !shape->memory || !shape->word) return 0u;
+    switch (shape->form) {
+    case CORE_MACHINE_SOURCE_TIMING_ALU_ADD_RM_REGISTER:
+    case CORE_MACHINE_SOURCE_TIMING_ALU_SUB_RM_REGISTER:
+    case CORE_MACHINE_SOURCE_TIMING_ALU_RM_IMMEDIATE:
+    case CORE_MACHINE_SOURCE_TIMING_XCHG_RM_REGISTER:
+    case CORE_MACHINE_SOURCE_TIMING_INC_DEC_RM:
+    case CORE_MACHINE_SOURCE_TIMING_GROUP3_NOT:
+    case CORE_MACHINE_SOURCE_TIMING_GROUP3_NEG:
+        return 2u;
+    case CORE_MACHINE_SOURCE_TIMING_MOV_RM_IMMEDIATE:
+        return 1u;
+    case CORE_MACHINE_SOURCE_TIMING_CMP_RM_REGISTER:
+    case CORE_MACHINE_SOURCE_TIMING_CMP_REGISTER_RM:
+    case CORE_MACHINE_SOURCE_TIMING_CMP_RM_IMMEDIATE:
+    case CORE_MACHINE_SOURCE_TIMING_TEST_RM_REGISTER:
+    case CORE_MACHINE_SOURCE_TIMING_TEST_RM_IMMEDIATE:
+    case CORE_MACHINE_SOURCE_TIMING_ALU_ADD_REGISTER_RM:
+    case CORE_MACHINE_SOURCE_TIMING_ALU_SUB_REGISTER_RM:
+        return 1u;
+    case CORE_MACHINE_SOURCE_TIMING_GROUP3_MUL:
+    case CORE_MACHINE_SOURCE_TIMING_GROUP3_IMUL:
+    case CORE_MACHINE_SOURCE_TIMING_GROUP3_DIV:
+    case CORE_MACHINE_SOURCE_TIMING_GROUP3_IDIV:
+    case CORE_MACHINE_SOURCE_TIMING_IMUL_IMMEDIATE:
+        return 1u;
+    default:
+        return 0u;
+    }
+}
+
+/* This is intentionally an encoding classifier, not an instruction-handler
+ * classifier.  A shared handler does not make r/m read, r/m write, and
+ * register forms one timing row. */
+static C_INT core_machine_source_timing_primary_shape(
+    const t_cpuins_data *data, type_unsigned_32 opcode_index,
+    core_machine_primary_timing_shape *out_shape)
+{
+    type_unsigned_8 opcode;
+    type_unsigned_8 modrm;
+    type_unsigned_8 group;
+    C_INT memory;
+    C_INT word;
+
+    if (data == STD_NULL || out_shape == STD_NULL ||
+        opcode_index >= data->oplen) return 0;
+    opcode = data->opcodes[opcode_index];
+    memory = core_machine_source_timing_modrm_is_memory(data, opcode_index);
+    word = (opcode & 1u) != 0u;
+    out_shape->memory = memory;
+    out_shape->word = word;
+
+    if ((opcode <= 0x3du && (opcode & 7u) <= 5u) ||
+        opcode == 0x84u || opcode == 0x85u || opcode == 0x86u ||
+        opcode == 0x87u || (opcode >= 0x88u && opcode <= 0x8bu) ||
+        opcode == 0x8du || opcode == 0xa8u ||
+        opcode == 0xa9u || opcode == 0xc6u || opcode == 0xc7u ||
+        opcode == 0xfeu || opcode == 0xffu || opcode == 0xf6u ||
+        opcode == 0xf7u || opcode == 0x69u || opcode == 0x6bu ||
+        (opcode >= 0x80u && opcode <= 0x83u)) {
+        if (opcode_index + 1u >= data->oplen) return 0;
+        modrm = data->opcodes[opcode_index + 1u];
+    } else {
+        modrm = 0u;
+    }
+
+    if (opcode == 0x69u || opcode == 0x6bu) {
+        out_shape->form = CORE_MACHINE_SOURCE_TIMING_IMUL_IMMEDIATE;
+        return 1;
+    }
+    if (opcode >= 0x88u && opcode <= 0x8bu) {
+        out_shape->form = !memory ?
+            CORE_MACHINE_SOURCE_TIMING_MOV_REGISTER_REGISTER :
+            (opcode == 0x88u || opcode == 0x89u ?
+                CORE_MACHINE_SOURCE_TIMING_MOV_RM_REGISTER :
+                CORE_MACHINE_SOURCE_TIMING_MOV_REGISTER_RM);
+        return 1;
+    }
+    if (opcode >= 0xa0u && opcode <= 0xa3u) {
+        out_shape->form = opcode == 0xa0u || opcode == 0xa1u ?
+            CORE_MACHINE_SOURCE_TIMING_MOV_MOFFS_READ :
+            CORE_MACHINE_SOURCE_TIMING_MOV_MOFFS_WRITE;
+        out_shape->memory = TYPE_TRUE;
+        return 1;
+    }
+    if (opcode >= 0xb0u && opcode <= 0xbfu) {
+        out_shape->form = CORE_MACHINE_SOURCE_TIMING_MOV_IMMEDIATE;
+        out_shape->memory = TYPE_FALSE;
+        return 1;
+    }
+    if (opcode <= 0x3du && (opcode & 7u) <= 5u) {
+        group = opcode >> 3u;
+        if ((opcode & 7u) == 4u || (opcode & 7u) == 5u) {
+            out_shape->form = group == 7u ?
+                CORE_MACHINE_SOURCE_TIMING_CMP_RM_IMMEDIATE :
+                CORE_MACHINE_SOURCE_TIMING_ALU_ACCUMULATOR_IMMEDIATE;
+            out_shape->memory = TYPE_FALSE;
+            return 1;
+        }
+        if (group == 7u) {
+            out_shape->form = (opcode & 2u) == 0u ?
+                CORE_MACHINE_SOURCE_TIMING_CMP_RM_REGISTER :
+                CORE_MACHINE_SOURCE_TIMING_CMP_REGISTER_RM;
+            return 1;
+        }
+        if ((opcode & 2u) == 0u) {
+            out_shape->form = group == 0u || group == 2u || group == 4u ?
+                CORE_MACHINE_SOURCE_TIMING_ALU_ADD_RM_REGISTER :
+                CORE_MACHINE_SOURCE_TIMING_ALU_SUB_RM_REGISTER;
+        } else {
+            out_shape->form = group == 0u || group == 2u || group == 4u ?
+                CORE_MACHINE_SOURCE_TIMING_ALU_ADD_REGISTER_RM :
+                CORE_MACHINE_SOURCE_TIMING_ALU_SUB_REGISTER_RM;
+        }
+        return 1;
+    }
+
+    if (opcode >= 0x80u && opcode <= 0x83u) {
+        group = (modrm >> 3u) & 7u;
+        out_shape->form = group == 7u ?
+            CORE_MACHINE_SOURCE_TIMING_CMP_RM_IMMEDIATE :
+            CORE_MACHINE_SOURCE_TIMING_ALU_RM_IMMEDIATE;
+        return 1;
+    }
+    if (opcode == 0x84u || opcode == 0x85u) {
+        out_shape->form = CORE_MACHINE_SOURCE_TIMING_TEST_RM_REGISTER;
+        return 1;
+    }
+    if (opcode == 0xa8u || opcode == 0xa9u) {
+        out_shape->form = CORE_MACHINE_SOURCE_TIMING_TEST_ACCUMULATOR_IMMEDIATE;
+        out_shape->memory = TYPE_FALSE;
+        return 1;
+    }
+    if (opcode == 0x86u || opcode == 0x87u) {
+        out_shape->form = memory ?
+            CORE_MACHINE_SOURCE_TIMING_XCHG_RM_REGISTER :
+            CORE_MACHINE_SOURCE_TIMING_XCHG_REGISTER;
+        return 1;
+    }
+    if (opcode >= 0x91u && opcode <= 0x97u) {
+        out_shape->form = CORE_MACHINE_SOURCE_TIMING_XCHG_REGISTER;
+        out_shape->memory = TYPE_FALSE;
+        out_shape->word = TYPE_TRUE;
+        return 1;
+    }
+    if (opcode >= 0x40u && opcode <= 0x4fu) {
+        out_shape->form = CORE_MACHINE_SOURCE_TIMING_INC_DEC_REGISTER;
+        out_shape->memory = TYPE_FALSE;
+        out_shape->word = TYPE_TRUE;
+        return 1;
+    }
+    if (opcode == 0xfeu || opcode == 0xffu) {
+        group = (modrm >> 3u) & 7u;
+        if (group > 1u) return 0;
+        out_shape->form = memory ? CORE_MACHINE_SOURCE_TIMING_INC_DEC_RM :
+            CORE_MACHINE_SOURCE_TIMING_INC_DEC_REGISTER;
+        return 1;
+    }
+    if (opcode == 0xf6u || opcode == 0xf7u) {
+        group = (modrm >> 3u) & 7u;
+        switch (group) {
+        case 0u:
+            out_shape->form = memory ?
+                CORE_MACHINE_SOURCE_TIMING_TEST_RM_IMMEDIATE :
+                CORE_MACHINE_SOURCE_TIMING_TEST_REGISTER_IMMEDIATE;
+            break;
+        case 2u:
+            out_shape->form = CORE_MACHINE_SOURCE_TIMING_GROUP3_NOT;
+            break;
+        case 3u:
+            out_shape->form = CORE_MACHINE_SOURCE_TIMING_GROUP3_NEG;
+            break;
+        case 4u:
+            out_shape->form = CORE_MACHINE_SOURCE_TIMING_GROUP3_MUL;
+            break;
+        case 5u:
+            out_shape->form = CORE_MACHINE_SOURCE_TIMING_GROUP3_IMUL;
+            break;
+        case 6u:
+            out_shape->form = CORE_MACHINE_SOURCE_TIMING_GROUP3_DIV;
+            break;
+        case 7u:
+            out_shape->form = CORE_MACHINE_SOURCE_TIMING_GROUP3_IDIV;
+            break;
+        default:
+            return 0;
+        }
+        return 1;
+    }
+    if (opcode == 0xc6u || opcode == 0xc7u) {
+        if (((modrm >> 3u) & 7u) != 0u) return 0;
+        out_shape->form = memory ? CORE_MACHINE_SOURCE_TIMING_MOV_RM_IMMEDIATE :
+            CORE_MACHINE_SOURCE_TIMING_MOV_IMMEDIATE;
+        return 1;
+    }
+    if (opcode == 0x8du) {
+        out_shape->form = CORE_MACHINE_SOURCE_TIMING_LEA;
+        return memory;
+    }
+    if (opcode == 0x27u || opcode == 0x2fu || opcode == 0x37u ||
+        opcode == 0x3fu) {
+        out_shape->form = CORE_MACHINE_SOURCE_TIMING_ADJUST_SIMPLE;
+        out_shape->memory = TYPE_FALSE;
+        return 1;
+    }
+    if (opcode == 0xd4u || opcode == 0xd5u) {
+        out_shape->form = opcode == 0xd4u ? CORE_MACHINE_SOURCE_TIMING_ADJUST_AAM :
+            CORE_MACHINE_SOURCE_TIMING_ADJUST_AAD;
+        out_shape->memory = TYPE_FALSE;
+        return 1;
+    }
+    if (opcode == 0x98u || opcode == 0x99u) {
+        out_shape->form = CORE_MACHINE_SOURCE_TIMING_CONVERSION;
+        out_shape->memory = TYPE_FALSE;
+        return 1;
+    }
+    if (opcode == 0x0fu && opcode_index + 2u < data->oplen &&
+        data->opcodes[opcode_index + 1u] >= 0x90u &&
+        data->opcodes[opcode_index + 1u] <= 0x9fu) {
+        out_shape->form = CORE_MACHINE_SOURCE_TIMING_SETCC;
+        out_shape->memory = core_machine_source_timing_modrm_is_memory(data,
+            opcode_index + 1u);
+        out_shape->word = TYPE_FALSE;
+        return 1;
+    }
+    return 0;
 }
 
 static C_INT core_machine_legacy_source_instruction_cost(core_machine *machine,
@@ -645,6 +933,505 @@ static type_unsigned_64 core_machine_80286_timing_odd_word(
     return data->mrm.rsreg != STD_NULL &&
         ((data->mrm.rsreg->base + data->mrm.offset) & 1u) != 0u ?
         CORE_MACHINE_80286_ODD_WORD_TICKS : 0u;
+}
+
+static C_INT core_machine_primary_source_instruction_cost(
+    core_machine *machine, type_unsigned_64 *out_ticks)
+{
+    const t_cpuins_data *data;
+    core_machine_primary_timing_shape shape;
+    type_unsigned_32 prefixes;
+    type_unsigned_8 opcode;
+    type_unsigned_64 ticks;
+    type_unsigned_8 transfers;
+    C_INT segment_override;
+
+    if (machine == STD_NULL || out_ticks == STD_NULL) return 0;
+    data = &machine->executor_cpu_instructions.data;
+    prefixes = core_machine_instruction_prefix_count(data);
+    segment_override = core_machine_8086_timing_has_segment_override(data,
+        prefixes);
+    if (prefixes >= data->oplen ||
+        (prefixes != 0u &&
+            ((machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_80386 &&
+                !core_machine_80386_timing_has_source_prefixes(data,
+                    prefixes)) ||
+             (machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80386 &&
+                !segment_override))) ||
+        !core_machine_source_timing_primary_shape(data, prefixes, &shape)) {
+        return 0;
+    }
+    opcode = data->opcodes[prefixes];
+    transfers = core_machine_source_timing_primary_word_transfers(&shape);
+
+    switch (machine->cpu_profile) {
+    case CORE_MACHINE_CPU_PROFILE_8086:
+        switch (shape.form) {
+        case CORE_MACHINE_SOURCE_TIMING_ALU_ADD_RM_REGISTER:
+        case CORE_MACHINE_SOURCE_TIMING_ALU_SUB_RM_REGISTER:
+            ticks = shape.memory ? 16u : 3u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_ALU_ADD_REGISTER_RM:
+        case CORE_MACHINE_SOURCE_TIMING_ALU_SUB_REGISTER_RM:
+            ticks = shape.memory ? 9u : 3u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_ALU_ACCUMULATOR_IMMEDIATE:
+        case CORE_MACHINE_SOURCE_TIMING_ALU_REGISTER_IMMEDIATE:
+            ticks = 4u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_ALU_RM_IMMEDIATE:
+            ticks = shape.memory ? 17u : 4u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_CMP_RM_REGISTER:
+        case CORE_MACHINE_SOURCE_TIMING_CMP_REGISTER_RM:
+            ticks = shape.memory ? 9u : 3u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_CMP_RM_IMMEDIATE:
+            ticks = shape.memory ? 10u : 4u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_TEST_RM_REGISTER:
+            ticks = shape.memory ? 9u : 3u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_TEST_ACCUMULATOR_IMMEDIATE:
+            ticks = 4u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_TEST_REGISTER_IMMEDIATE:
+            ticks = 5u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_TEST_RM_IMMEDIATE:
+            ticks = shape.memory ? 11u : 5u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_XCHG_REGISTER:
+            ticks = 3u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_XCHG_RM_REGISTER:
+            ticks = 17u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_INC_DEC_REGISTER:
+            ticks = shape.word ? 2u : 3u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_INC_DEC_RM:
+            ticks = 15u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_MOV_IMMEDIATE:
+            ticks = 4u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_MOV_RM_IMMEDIATE:
+            ticks = shape.memory ? 10u : 4u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_LEA:
+            ticks = 2u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_ADJUST_SIMPLE:
+            ticks = opcode == 0x37u || opcode == 0x3fu ? 8u : 4u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_ADJUST_AAM:
+            ticks = 83u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_ADJUST_AAD:
+            ticks = 60u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_CONVERSION:
+            ticks = opcode == 0x99u ? 5u : 2u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_GROUP3_NOT:
+        case CORE_MACHINE_SOURCE_TIMING_GROUP3_NEG:
+            ticks = shape.memory ? 16u : 3u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_GROUP3_MUL:
+        case CORE_MACHINE_SOURCE_TIMING_GROUP3_IMUL:
+        case CORE_MACHINE_SOURCE_TIMING_GROUP3_DIV:
+        case CORE_MACHINE_SOURCE_TIMING_GROUP3_IDIV:
+        case CORE_MACHINE_SOURCE_TIMING_IMUL_IMMEDIATE:
+            return 0;
+        default:
+            return 0;
+        }
+        if (shape.memory) {
+            ticks += core_machine_8086_timing_effective_address(data, prefixes);
+            ticks += (type_unsigned_64)transfers *
+                core_machine_8086_timing_odd_word(data);
+            if (segment_override) ticks += CORE_MACHINE_8086_SEGMENT_OVERRIDE_TICKS;
+        }
+        break;
+    case CORE_MACHINE_CPU_PROFILE_80186:
+        switch (shape.form) {
+        case CORE_MACHINE_SOURCE_TIMING_ALU_ADD_RM_REGISTER:
+        case CORE_MACHINE_SOURCE_TIMING_ALU_ADD_REGISTER_RM:
+        case CORE_MACHINE_SOURCE_TIMING_ALU_SUB_RM_REGISTER:
+        case CORE_MACHINE_SOURCE_TIMING_ALU_SUB_REGISTER_RM:
+            ticks = shape.memory ? 10u : 3u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_ALU_ACCUMULATOR_IMMEDIATE:
+            ticks = shape.word ? 4u : 3u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_ALU_REGISTER_IMMEDIATE:
+            ticks = 4u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_ALU_RM_IMMEDIATE:
+            ticks = shape.memory ? 16u : 4u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_CMP_RM_REGISTER:
+        case CORE_MACHINE_SOURCE_TIMING_CMP_REGISTER_RM:
+            ticks = shape.memory ? 10u : 3u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_CMP_RM_IMMEDIATE:
+            ticks = shape.memory ? 10u : (shape.word ? 4u : 3u);
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_TEST_RM_REGISTER:
+            ticks = shape.memory ? 10u : 3u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_TEST_ACCUMULATOR_IMMEDIATE:
+            ticks = shape.word ? 4u : 3u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_TEST_REGISTER_IMMEDIATE:
+            ticks = 4u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_TEST_RM_IMMEDIATE:
+            ticks = shape.memory ? 10u : 4u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_XCHG_REGISTER:
+            ticks = opcode >= 0x91u ? 3u : 4u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_XCHG_RM_REGISTER:
+            ticks = 17u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_INC_DEC_REGISTER:
+            ticks = 3u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_INC_DEC_RM:
+            ticks = 15u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_MOV_IMMEDIATE:
+            ticks = 4u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_MOV_RM_IMMEDIATE:
+            ticks = shape.memory ? (shape.word ? 13u : 12u) : 4u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_LEA:
+            ticks = 6u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_ADJUST_SIMPLE:
+            if (opcode == 0x37u) ticks = 8u;
+            else if (opcode == 0x3fu) ticks = 7u;
+            else ticks = 4u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_ADJUST_AAM:
+            ticks = 19u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_ADJUST_AAD:
+            ticks = 15u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_CONVERSION:
+            ticks = opcode == 0x99u ? 4u : 2u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_GROUP3_NOT:
+        case CORE_MACHINE_SOURCE_TIMING_GROUP3_NEG:
+            ticks = 3u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_GROUP3_MUL:
+        case CORE_MACHINE_SOURCE_TIMING_GROUP3_IMUL:
+        case CORE_MACHINE_SOURCE_TIMING_GROUP3_DIV:
+        case CORE_MACHINE_SOURCE_TIMING_GROUP3_IDIV:
+        case CORE_MACHINE_SOURCE_TIMING_IMUL_IMMEDIATE:
+            return 0;
+        default:
+            return 0;
+        }
+        if (shape.memory) {
+            ticks += core_machine_8086_timing_effective_address(data, prefixes);
+            ticks += (type_unsigned_64)transfers *
+                core_machine_8086_timing_odd_word(data);
+            if (segment_override) ticks += CORE_MACHINE_8086_SEGMENT_OVERRIDE_TICKS;
+        }
+        break;
+    case CORE_MACHINE_CPU_PROFILE_80286:
+        switch (shape.form) {
+        case CORE_MACHINE_SOURCE_TIMING_ALU_ADD_RM_REGISTER:
+        case CORE_MACHINE_SOURCE_TIMING_ALU_ADD_REGISTER_RM:
+        case CORE_MACHINE_SOURCE_TIMING_ALU_SUB_RM_REGISTER:
+        case CORE_MACHINE_SOURCE_TIMING_ALU_SUB_REGISTER_RM:
+            ticks = shape.memory ? 7u : 2u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_ALU_ACCUMULATOR_IMMEDIATE:
+        case CORE_MACHINE_SOURCE_TIMING_ALU_REGISTER_IMMEDIATE:
+            ticks = 3u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_ALU_RM_IMMEDIATE:
+            ticks = shape.memory ? 7u : 3u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_CMP_RM_REGISTER:
+            ticks = shape.memory ? 7u : 2u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_CMP_REGISTER_RM:
+            ticks = shape.memory ? 6u : 2u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_CMP_RM_IMMEDIATE:
+            ticks = shape.memory ? 6u : 3u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_TEST_RM_REGISTER:
+            ticks = shape.memory ? 6u : 2u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_TEST_ACCUMULATOR_IMMEDIATE:
+        case CORE_MACHINE_SOURCE_TIMING_TEST_REGISTER_IMMEDIATE:
+            ticks = 3u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_TEST_RM_IMMEDIATE:
+            ticks = shape.memory ? 6u : 3u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_XCHG_REGISTER:
+            ticks = 3u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_XCHG_RM_REGISTER:
+            ticks = shape.memory ? 5u : 3u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_INC_DEC_REGISTER:
+            ticks = 2u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_INC_DEC_RM:
+            ticks = shape.memory ? 7u : 2u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_MOV_IMMEDIATE:
+        case CORE_MACHINE_SOURCE_TIMING_MOV_RM_IMMEDIATE:
+            ticks = shape.memory ? 3u : 2u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_LEA:
+            ticks = 3u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_ADJUST_SIMPLE:
+            ticks = 3u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_ADJUST_AAM:
+            ticks = 16u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_ADJUST_AAD:
+            ticks = 14u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_CONVERSION:
+            ticks = 2u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_GROUP3_NOT:
+        case CORE_MACHINE_SOURCE_TIMING_GROUP3_NEG:
+            ticks = shape.memory ? 7u : 2u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_GROUP3_MUL:
+        case CORE_MACHINE_SOURCE_TIMING_GROUP3_IMUL:
+        case CORE_MACHINE_SOURCE_TIMING_IMUL_IMMEDIATE:
+            ticks = shape.word ? (shape.memory ? 24u : 21u) :
+                (shape.memory ? 16u : 13u);
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_GROUP3_DIV:
+            ticks = shape.word ? (shape.memory ? 25u : 22u) :
+                (shape.memory ? 17u : 14u);
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_GROUP3_IDIV:
+            ticks = shape.word ? (shape.memory ? 28u : 25u) :
+                (shape.memory ? 20u : 17u);
+            break;
+        default:
+            return 0;
+        }
+        if (shape.memory) {
+            ticks += core_machine_80286_timing_effective_address(data, prefixes);
+            ticks += (type_unsigned_64)transfers *
+                core_machine_80286_timing_odd_word(data);
+        }
+        break;
+    case CORE_MACHINE_CPU_PROFILE_80386:
+        switch (shape.form) {
+        case CORE_MACHINE_SOURCE_TIMING_ALU_ADD_RM_REGISTER:
+            ticks = shape.memory ? 7u : 2u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_ALU_ADD_REGISTER_RM:
+            ticks = shape.memory ? 6u : 2u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_ALU_SUB_RM_REGISTER:
+            ticks = shape.memory ? 6u : 2u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_ALU_SUB_REGISTER_RM:
+            ticks = shape.memory ? 7u : 2u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_ALU_ACCUMULATOR_IMMEDIATE:
+        case CORE_MACHINE_SOURCE_TIMING_ALU_REGISTER_IMMEDIATE:
+            ticks = 2u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_ALU_RM_IMMEDIATE:
+            ticks = shape.memory ? 7u : 2u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_CMP_RM_REGISTER:
+            ticks = shape.memory ? 5u : 2u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_CMP_REGISTER_RM:
+            ticks = shape.memory ? 6u : 2u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_CMP_RM_IMMEDIATE:
+            ticks = shape.memory ? 5u : 2u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_TEST_RM_REGISTER:
+        case CORE_MACHINE_SOURCE_TIMING_TEST_RM_IMMEDIATE:
+            ticks = shape.memory ? 5u : 2u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_TEST_ACCUMULATOR_IMMEDIATE:
+        case CORE_MACHINE_SOURCE_TIMING_TEST_REGISTER_IMMEDIATE:
+            ticks = 2u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_XCHG_REGISTER:
+            ticks = 3u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_XCHG_RM_REGISTER:
+            ticks = shape.memory ? 5u : 3u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_INC_DEC_REGISTER:
+            ticks = 2u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_INC_DEC_RM:
+            ticks = shape.memory ? 6u : 2u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_MOV_REGISTER_REGISTER:
+        case CORE_MACHINE_SOURCE_TIMING_MOV_IMMEDIATE:
+            ticks = 2u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_MOV_RM_REGISTER:
+            ticks = shape.memory ? 2u : 2u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_MOV_REGISTER_RM:
+        case CORE_MACHINE_SOURCE_TIMING_MOV_MOFFS_READ:
+            ticks = shape.memory ? 4u : 2u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_MOV_MOFFS_WRITE:
+            ticks = 2u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_MOV_RM_IMMEDIATE:
+            ticks = 2u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_LEA:
+            ticks = 2u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_ADJUST_SIMPLE:
+            ticks = 4u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_ADJUST_AAM:
+            ticks = 17u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_ADJUST_AAD:
+            ticks = 19u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_CONVERSION:
+            ticks = 3u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_GROUP3_NOT:
+        case CORE_MACHINE_SOURCE_TIMING_GROUP3_NEG:
+            ticks = shape.memory ? 6u : 2u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_GROUP3_DIV:
+            if (!shape.word) ticks = shape.memory ? 17u : 14u;
+            else if (data->prefix_oprsize) ticks = shape.memory ? 41u : 38u;
+            else ticks = shape.memory ? 25u : 22u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_GROUP3_IDIV:
+            if (!shape.word) ticks = shape.memory ? 22u : 19u;
+            else if (data->prefix_oprsize) ticks = shape.memory ? 46u : 43u;
+            else ticks = shape.memory ? 30u : 27u;
+            break;
+        case CORE_MACHINE_SOURCE_TIMING_SETCC:
+            ticks = shape.memory ? 5u : 4u;
+            break;
+        default:
+            return 0;
+        }
+        break;
+    default:
+        return 0;
+    }
+    *out_ticks = ticks;
+    return 1;
+}
+
+static type_unsigned_64 core_machine_80386_timing_signed_magnitude(
+    type_unsigned_64 value, type_unsigned_8 bytes)
+{
+    type_unsigned_64 mask;
+    type_unsigned_64 sign;
+
+    if (bytes == 0u || bytes > sizeof(value)) return 0u;
+    mask = bytes == sizeof(value) ? UINT64_MAX :
+        (UINT64_C(1) << (bytes * 8u)) - 1u;
+    value &= mask;
+    sign = UINT64_C(1) << (bytes * 8u - 1u);
+    return (value & sign) == 0u ? value : ((~value + 1u) & mask);
+}
+
+static type_unsigned_64 core_machine_80386_timing_ceiling_log2(
+    type_unsigned_64 value)
+{
+    type_unsigned_64 result = 0u;
+
+    while (value > 1u) {
+        value = (value + 1u) >> 1u;
+        ++result;
+    }
+    return result;
+}
+
+/* Intel 80386 PRM, IMUL/MUL timing tables: use the underlined optimizing
+ * multiplier only.  `crm` and `cimm` are decoder-owned values captured during
+ * the real execution; this timing path never rereads a register or memory. */
+static C_INT core_machine_80386_dynamic_multiply_cost(core_machine *machine,
+    type_unsigned_64 *out_ticks)
+{
+    const t_cpuins_data *data;
+    type_unsigned_32 prefixes;
+    type_unsigned_8 opcode;
+    type_unsigned_8 extension;
+    type_unsigned_8 operand_bytes;
+    type_unsigned_64 multiplier;
+    type_unsigned_64 magnitude;
+    type_unsigned_64 scale;
+    C_INT signed_multiplier;
+    C_INT memory_multiplier;
+
+    if (machine == STD_NULL || out_ticks == STD_NULL ||
+        machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80386) return 0;
+    data = &machine->executor_cpu_instructions.data;
+    prefixes = core_machine_instruction_prefix_count(data);
+    if (prefixes + 1u >= data->oplen ||
+        !core_machine_80386_timing_has_source_prefixes(data, prefixes)) {
+        return 0;
+    }
+    opcode = data->opcodes[prefixes];
+    extension = (data->opcodes[prefixes + 1u] >> 3u) & 7u;
+    operand_bytes = data->oldcpu.data.cs.seg.exec.defsize ? 4u : 2u;
+    if (data->prefix_oprsize) operand_bytes = operand_bytes == 4u ? 2u : 4u;
+    signed_multiplier = TYPE_FALSE;
+    memory_multiplier = TYPE_FALSE;
+
+    if (opcode == 0xf6u || opcode == 0xf7u) {
+        if (extension != 4u && extension != 5u) return 0;
+        operand_bytes = opcode == 0xf6u ? 1u : operand_bytes;
+        multiplier = data->crm;
+        signed_multiplier = extension == 5u;
+        memory_multiplier = core_machine_source_timing_modrm_is_memory(data,
+            prefixes);
+    } else if (opcode == 0x69u) {
+        multiplier = data->crm;
+        signed_multiplier = TYPE_TRUE;
+        memory_multiplier = core_machine_source_timing_modrm_is_memory(data,
+            prefixes);
+    } else if (opcode == 0x6bu) {
+        multiplier = data->cimm;
+        operand_bytes = 1u;
+        signed_multiplier = TYPE_TRUE;
+    } else {
+        return 0;
+    }
+    magnitude = signed_multiplier ? core_machine_80386_timing_signed_magnitude(
+        multiplier, operand_bytes) : multiplier &
+        (operand_bytes == 4u ? UINT32_MAX :
+            operand_bytes == 2u ? UINT16_MAX : UINT8_MAX);
+    scale = core_machine_80386_timing_ceiling_log2(magnitude);
+    *out_ticks = magnitude == 0u ? 9u : (scale < 3u ? 3u : scale) + 6u;
+    if (memory_multiplier) *out_ticks += 3u;
+    return 1;
 }
 
 static C_INT core_machine_80286_source_instruction_cost(core_machine *machine,
@@ -912,6 +1699,12 @@ static C_INT core_machine_instruction_cost(core_machine *machine,
     type_unsigned_64 *out_ticks)
 {
     if (machine == STD_NULL || out_ticks == STD_NULL) return 0;
+    if (core_machine_80386_dynamic_multiply_cost(machine, out_ticks)) {
+        return 1;
+    }
+    if (core_machine_primary_source_instruction_cost(machine, out_ticks)) {
+        return 1;
+    }
     if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_8086) {
         return core_machine_8086_source_instruction_cost(machine, out_ticks);
     }

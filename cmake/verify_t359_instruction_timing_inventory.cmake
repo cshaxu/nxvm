@@ -6,7 +6,10 @@ set(t359_source "${PROJECT_SOURCE_DIR}/src/core/machine/cpu_instructions.c")
 set(t359_machine "${PROJECT_SOURCE_DIR}/src/core/machine/machine.c")
 set(t359_inventory
     "${PROJECT_SOURCE_DIR}/docs/etc/evidence/t359-s1-four-profile-instruction-timing-inventory.md")
-foreach(t359_file IN ITEMS "${t359_source}" "${t359_machine}" "${t359_inventory}")
+set(t359_s2_ledger
+    "${PROJECT_SOURCE_DIR}/docs/etc/evidence/t359-s2-four-profile-arithmetic-data-source-ledger.md")
+foreach(t359_file IN ITEMS "${t359_source}" "${t359_machine}" "${t359_inventory}"
+    "${t359_s2_ledger}")
     if(NOT EXISTS "${t359_file}")
         message(FATAL_ERROR "T359 timing inventory input is missing: ${t359_file}")
     endif()
@@ -14,6 +17,7 @@ endforeach()
 file(READ "${t359_source}" t359_source_text)
 file(READ "${t359_machine}" t359_machine_text)
 file(READ "${t359_inventory}" t359_inventory_text)
+file(READ "${t359_s2_ledger}" t359_s2_ledger_text)
 
 function(t359_require text pattern description)
     if(NOT "${text}" MATCHES "${pattern}")
@@ -32,6 +36,8 @@ t359_require("${t359_machine_text}" "core_machine_8086_source_instruction_cost" 
 t359_require("${t359_machine_text}" "core_machine_80186_source_instruction_cost" "80186 source owner is missing")
 t359_require("${t359_machine_text}" "core_machine_80286_source_instruction_cost" "80286 source owner is missing")
 t359_require("${t359_machine_text}" "core_machine_80386_source_instruction_cost" "80386 source owner is missing")
+t359_require("${t359_machine_text}" "core_machine_primary_source_instruction_cost" "S2 primary source owner is missing")
+t359_require("${t359_machine_text}" "core_machine_80386_dynamic_multiply_cost" "S2 dynamic multiplier owner is missing")
 string(REGEX MATCHALL
     "instruction_state\\.connect\\.insTable\\[0x[0-9a-f][0-9a-f]\\] ="
     t359_primary_assignments "${t359_source_text}")
@@ -77,5 +83,43 @@ foreach(t359_anchor IN ITEMS
     string(REPLACE ")" "\\)" t359_pattern "${t359_pattern}")
     t359_require("${t359_inventory_text}" "${t359_pattern}" "missing inventory anchor ${t359_anchor}")
 endforeach()
+
+# S2 is a central source classifier.  These anchors deliberately name encoding
+# shapes rather than handlers, so a later handler-local edit cannot silently
+# return an admitted successful form to the unallocated one-tick receiver.
+foreach(t359_s2_anchor IN ITEMS
+    "CORE_MACHINE_SOURCE_TIMING_ALU_ADD_RM_REGISTER"
+    "CORE_MACHINE_SOURCE_TIMING_CMP_RM_IMMEDIATE"
+    "CORE_MACHINE_SOURCE_TIMING_TEST_RM_IMMEDIATE"
+    "CORE_MACHINE_SOURCE_TIMING_XCHG_RM_REGISTER"
+    "CORE_MACHINE_SOURCE_TIMING_INC_DEC_RM"
+    "CORE_MACHINE_SOURCE_TIMING_GROUP3_IDIV"
+    "CORE_MACHINE_SOURCE_TIMING_IMUL_IMMEDIATE"
+    "CORE_MACHINE_SOURCE_TIMING_MOV_MOFFS_READ"
+    "CORE_MACHINE_SOURCE_TIMING_SETCC"
+    "core_machine_source_timing_primary_word_transfers"
+    "core_machine_primary_source_instruction_cost"
+    "core_machine_80386_dynamic_multiply_cost")
+    t359_require("${t359_machine_text}" "${t359_s2_anchor}"
+        "missing S2 classifier anchor ${t359_s2_anchor}")
+endforeach()
+
+string(FIND "${t359_machine_text}"
+    "if (core_machine_primary_source_instruction_cost(machine, out_ticks))"
+    t359_s2_primary_publisher)
+string(FIND "${t359_machine_text}"
+    "core_machine_8086_source_instruction_cost(machine, out_ticks)"
+    t359_s2_legacy_publisher)
+if(t359_s2_primary_publisher LESS 0 OR t359_s2_legacy_publisher LESS 0 OR
+    t359_s2_primary_publisher GREATER t359_s2_legacy_publisher)
+    message(FATAL_ERROR
+        "T359 S2 primary timing classifier must precede the unallocated legacy receiver")
+endif()
+t359_require("${t359_s2_ledger_text}" "## Primary-row normalization"
+    "S2 source ledger is missing normalization evidence")
+t359_require("${t359_s2_ledger_text}" "## Dynamic-form disposition"
+    "S2 source ledger is missing dynamic-form disposition")
+t359_require("${t359_s2_ledger_text}" "T360"
+    "S2 source ledger is missing range-form transfer")
 
 message(STATUS "T359 four-profile instruction timing inventory passed.")

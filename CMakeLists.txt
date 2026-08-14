@@ -199,6 +199,14 @@ if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 
+add_executable(core-machine-t359-s2-timing-smoke
+    tests/machine/core_machine_t359_s2_timing_smoke.c)
+target_link_libraries(core-machine-t359-s2-timing-smoke PRIVATE core-machine)
+if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
+    target_compile_options(core-machine-t359-s2-timing-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
+
 add_executable(core-machine-8086-instruction-timing-ledger-smoke
     tests/machine/core_machine_8086_instruction_timing_ledger_smoke.c)
 target_link_libraries(core-machine-8086-instruction-timing-ledger-smoke PRIVATE
@@ -1711,6 +1719,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-instruction-timing-smoke
     core-machine-cpu-timing-preview-smoke
     core-machine-instruction-timing-ledger-smoke
+    core-machine-t359-s2-timing-smoke
     core-machine-8086-instruction-timing-ledger-smoke
     core-machine-80186-instruction-timing-ledger-smoke
     core-machine-80286-instruction-timing-ledger-smoke

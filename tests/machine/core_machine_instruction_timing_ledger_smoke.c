@@ -244,7 +244,7 @@ static C_INT timing_ledger_test_jcc_and_repeat(C_VOID)
 
 static C_INT timing_ledger_test_unavailable_and_fault(C_VOID)
 {
-    static const type_unsigned_8 unallocated[] = { 0x31u, 0xc0u };
+    static const type_unsigned_8 unallocated[] = { 0xd0u, 0xc0u };
     static const type_unsigned_8 fault[] = { 0xf0u, 0x90u };
     timing_ledger_state state = { 0u, 0u, 0u };
     const core_machine_run_budget budget = { 1u, 0u };
@@ -273,7 +273,7 @@ static C_INT timing_ledger_test_budget_overflow_and_reset(C_VOID)
 {
     static const type_unsigned_8 nop[] = { 0x90u };
     const core_machine_run_budget insufficient = { 1u, 26u };
-    const core_machine_run_budget sufficient = { 1u, 27u };
+    const core_machine_run_budget sufficient = { 1u, 46u };
     core_machine_run_result result;
     timing_ledger_state state = { 0u, 0u, 0u };
     core_machine *machine = STD_NULL;
