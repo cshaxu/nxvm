@@ -2,29 +2,7 @@
 
 ## Current Work
 
-**Active.** M5 T363 S2 reconciles the primary arithmetic, FLAGS, data, and
-ModR/M/EA timing matrix from the S1 inventory before changing any row.
-
-## M5 T363 S2 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | The owner directed current-Queue execution through complete instruction timing on 2026-08-14. T363 S1 is accepted at `5e44789a`; its S1 inventory explicitly admits this bounded S2 mechanism unit. Git pushes are permitted. |
-| Objective | Reconcile every primary ALU/FLAGS/data/ModR-M/EA, Group, TEST/XCHG, conversion, and adjustment form across four profiles against Intel source rows and existing owner tables; implement only complete, source-backed shared classifiers and regressions. |
-| Non-goals | No control/stack/string/I-O/secondary/privileged timing, no reinterpretation of accepted T357--T362 rows without source conflict evidence, no bus/prefetch/cache/device/service/delivery timing, x87 timing, public ABI, source import, measurement, or physical/cycle-exact claim. |
-| Reference Baseline | `5e44789a` / `vm-0-5-0362`; [T363 S1 inventory](../etc/evidence/t363-s1-complete-instruction-timing-inventory.md), T359 S2 source ledger, T360 reconciliation, and T362 normalization closure. |
-| Candidate Proposal | [Complete instruction-timing corpus](../proposals/m5-complete-instruction-timing-corpus.md). |
-| Files And ABI Surface | Private `src/core/machine/machine.c` source classifier/ledger and focused timing corpus only if required by complete source rows; S2 evidence/history/status and developer artifact under `0.5.0363` if runnable behavior changes. No public ABI. |
-| Applicable Rules | Task Reading Set; Execution source/evidence/artifact/full-gate rules; Architecture one owner and successful-retirement invariants; Coding private-helper/test rules; Documentation and source/research policy. |
-| Verification | Form-by-form Intel/source ledger, profile and prefix/memory/EA/odd-word accounting, one-publisher/fault nonpublication sweep, focused corpus, static inventory, documentation governance, artifact/hash if changed, and full current gate. |
-| Expected Markers | T363 S2 arithmetic/data source marker, retained T359/T360 inventory markers, and current-gate markers. |
-| Asset Needs | Read-only primary Intel manuals; MAME/86Box/PCjs only for a primary non-deterministic row under the approved ladder; no retained third-party code/download/media. |
-| Reporting Requirements | Record every selected/no-op/changed/reference-exhausted row, raw/model accounting where used, prefix/memory ownership, artifact identity, and S3 transfer boundary. |
-| Stop Conditions | Stop and retain/transfer any row whose Intel form/context or accounting basis is incomplete, needs a second publisher, or depends on physical bus/device/delivery state. Do not average, borrow profiles, or append handler-local clocks. |
-| Exit Criteria | Every S2 form has an exact source-backed allocation or explicit receiver, no qualifying one-tick transfer remains, regressions and required gates pass, and records make no physical/cycle-exact claim. |
-| Original Owner Request | Execute the current Queue through complete instruction timing, using Intel first and 86Box/MAME/PCjs only as applicable model sources where primary timing is non-deterministic. |
-| Similar-Issue Sweep | Search all primary ALU/data/group encodings, timing-form enum/ledgers/classifiers, metadata/profile gates, prefix/EA/odd-word helpers, current fallback sites, tests, CMake and evidence; classify every hit. |
+**Active.** M5 T363 remains open between accepted S units.
 
 ## Current Technical Baseline
 
@@ -45,7 +23,7 @@ ModR/M/EA timing matrix from the S1 inventory before changing any row.
 
 | Task | Compact result |
 | --- | --- |
-| T363 S1 | Accepted pending this commit: 256 primary plus 256 secondary assignments, metadata/profile rejection, seven timing owners, source ladder, explicit descriptor transfers, and S2--S7 mechanism receivers are recorded in the [inventory](../etc/evidence/t363-s1-complete-instruction-timing-inventory.md). |
+| T363 S2 | Accepted at `50861f53`: the complete primary arithmetic/FLAGS/data/ModR-M/EA matrix retains one source-backed owner, its dynamic peers, and explicit physical receivers without a runtime change. [Reconciliation](../etc/evidence/t363-s2-arithmetic-data-reconciliation.md). |
 | T362 | Closed at `316c2334`: S1--S2 normalize every eligible 80186 immediate-IMUL source row in one private direct/constrained model table; S3 resolves stale full-gate verifier assumptions and records 246/246 current-gate tests. [Closure audit](../etc/evidence/t362-s3-legacy-timing-normalization-closure-audit.md). Model-L3 only; no physical/cycle-exact claim. |
 | T361 | Closed at `a5442d96`: S1--S3 established the source-labelled 8086/80186 allocation and synchronous-fault publication boundary; S4 retained Intel 210498-005 Appendix-B `90 NOP = 3` after a page/context and consumer audit. Immediate-IMUL normalization transfers to the first Queue candidate. [S4 evidence](../etc/evidence/t361-s4-80286-nop-source-consumer-audit.md). No physical or cycle-exact claim. |
 | T360 | Closed four-profile timing source reconciliation: primary-authority inventory, owner-selected 80286 NOP table precedence, exact legacy range transfer, contextual classifier audit, and final source/receiver closure. 245/245 current-gate tests passed; no L3 or cycle-exact claim. [Closure audit](../etc/evidence/t360-s5-four-profile-timing-source-closure-audit.md). |

@@ -23,3 +23,10 @@ S1 is accepted at the pending T363 S1 P1 commit. Its
 retains the complete dispatch partition, source ladder, explicit descriptor
 transfers, and the bounded S2--S7 mechanism order. S2 may now reconcile the
 primary arithmetic/FLAGS/data/ModR-M/EA matrix only.
+
+### S2: Arithmetic, FLAGS, data and ModR/M/EA source matrix
+
+S2 is accepted at `50861f53`. Its
+[reconciliation](../etc/evidence/t363-s2-arithmetic-data-reconciliation.md)
+confirms complete shared source ownership without a runtime change. S3 may
+reconcile only control, stack and real-control timing.
