@@ -94,6 +94,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t356-s1-m5-device-l3-closure-ledger.md` | Verification owner | T356 S1 full current core-machine owner, evidence, timing/reset, current-gate, and deferred-receiver ledger. Retain with T356 history at task closure. |
 | `evidence/t356-s2-receiver-plan.md` | Verification owner | T356 S2 timing dependency order and exact retained device/product receiver plan. Retain with T356 history at task closure. |
 | `evidence/t356-s3-m5-closure-reconciliation.md` | Verification owner | T356 S3 final M5 closure eligibility decision, source/evidence/debt/Queue sweep, and explicit M5-open transfer. Retain with T356 history at task closure. |
+| `evidence/t357-s1-instruction-timing-contract.md` | Verification owner | T357 S1 source-to-form timing contract, elapsed-time ownership inventory, primary-reference assumptions, selected S2 corpus, and physical-timing transfers. Retain with T357 history at task closure. |
 | `operations/` | Execution, source, and release owners | Toolchain, policy, templates, release procedure, and closure material. |
 | `research/` | Source owner | Provenance, external references, and non-product research. |
 | `history/` | Documentation owner | Read-only legacy and M5 migration/roadmap evidence. |

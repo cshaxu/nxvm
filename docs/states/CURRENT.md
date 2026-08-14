@@ -2,8 +2,30 @@
 
 ## Current Work
 
-**Idle.** T356 is closed; M5 remains open and instruction-timed execution is
-the next queued prerequisite for full L3.
+**Active.** M5 T357 S1 establishes the source-backed, profile-aware
+instruction-time contract required before its implementation can advance guest
+time.
+
+## M5 T357 S1 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | New |
+| Admission And Approval | Owner approved the holistic device/L3 program and ordered implementation through reliable L3 on 2026-08-13. T356 closed at `02e11506` with M5 open and this first queued prerequisite selected. |
+| Objective | Establish the complete source-to-form timing contract for 8086, 80186, 80286, and 80386 selected execution forms; identify the one CPU elapsed-time owner, its validation-to-retirement boundary, and the exact implementation-ready profile/form ledger for T357. |
+| Non-goals | No guessed cycle values, CPU opcode repair, wait-state or bus-ownership model, prefetch queue, pin waveform, cache model, x87 timing, host-time coupling, Windows claim, or M5 closure. |
+| Reference Baseline | `02e11506` on `master`; T356 final reconciliation, current selected-L3 trace/ordering, and the queued instruction-timed-execution proposal. |
+| Candidate Proposal | [Instruction-timed execution](../proposals/m5-instruction-timed-execution.md); [T356 receiver plan](../etc/evidence/t356-s2-receiver-plan.md); [T356 reconciliation](../etc/evidence/t356-s3-m5-closure-reconciliation.md). |
+| Files And ABI Surface | Documentation, T357 history, indexed evidence, Queue/CURRENT, and source inspection only. No C/CMake/runtime/ABI/current-gate/product change in S1. |
+| Applicable Rules | Task Reading Set; execution lifecycle and mechanism-defect sweep; documentation rules; architecture one-owner/variant rules; source-and-research policy; roadmap M5 ordering. |
+| Verification | Inventory every elapsed-tick reader/writer and current cost branch; reconcile the current timing smoke with the source contract; cite primary Intel timing references and their stated assumptions; classify each selected form/variant as S2 implementation, later bus-timed receiver, or explicit transfer; run documentation governance and diff checks. |
+| Expected Markers | One indexed T357 S1 timing-contract ledger; one implementation-ready selected corpus with profile, form, evidence, and source reference; no unclassified existing elapsed-time writer or cost branch. |
+| Asset Needs | No guest media, firmware, or third-party source import. External manuals are research references only; record URLs/provenance without copying them into the repository. |
+| Reporting Requirements | Record the existing synthetic-cost limitation, one owner/publication point, timing-reference assumptions, every selected class, every excluded physical dependency, and the S2 implementation boundary. |
+| Stop Conditions | Stop for owner decision if an Intel source cannot support a selected profile/form value, if the existing publication point cannot carry a profile/form result without a shared CPU executor redesign, or if a required cost depends on wait states, bus ownership, prefetch, or unavailable corpus. Do not invent values. |
+| Exit Criteria | A committed evidence-led timing contract maps all current elapsed-time paths and the selected S2 corpus to primary sources or explicit transfer; Queue/history/status topology and governance pass; S2 can implement without rediscovering timing scope. |
+| Original Owner Request | Fully and stably implement high-value devices and complete L3 timing before deciding the next phase; use a holistic mechanism plan rather than incremental opcode patches. |
+| Similar-Issue Sweep | Search all tracked core/VM execution, clock, timeline, transaction, test, configuration, profile, CMake, evidence, Queue, TODO, and roadmap paths for elapsed-tick publication, timing configuration, instruction-cost logic, and device-clock consumption. |
 
 ## Current Technical Baseline
 
