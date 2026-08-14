@@ -119,7 +119,8 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t361-s4-80286-nop-source-consumer-audit.md` | Verification owner | T361 S4 Intel 210498-005 page/context decision, single-owner consumer sweep, and resolved 80286 `NOP` source-conflict record. Retain with T361 history at task closure. |
 | `evidence/t362-s1-legacy-timing-normalization-ledger.md` | Verification owner | T362 S1 Intel/MAME source-domain, accounting-boundary, normalization-eligibility, and fallback-owner ledger. Retain with T362 history at task closure. |
 | `evidence/t362-s2-legacy-timing-normalization-acceptance.md` | Verification owner | T362 S2 private immediate-IMUL normalization table, regression, artifact, and S3-handoff acceptance record. Retain with T362 history at task closure. |
-| `evidence/t362-s3-closure-audit-findings.md` | Verification owner | T362 S3 independent allocation audit and T344 full-gate maintenance findings passed to S4. Retain with T362 history at task closure. |
+| `evidence/t362-s3-closure-audit-findings.md` | Verification owner | T362 S3 independent allocation audit and T344 full-gate maintenance findings resolved within S3. Retain with T362 history at task closure. |
+| `evidence/t362-s3-legacy-timing-normalization-closure-audit.md` | Verification owner | T362 S3 allocated/residual-row, verifier-maintenance, artifact, and full-gate task-closure audit. Retain with T362 history. |
 | `operations/` | Execution, source, and release owners | Toolchain, policy, templates, release procedure, and closure material. |
 | `research/` | Source owner | Provenance, external references, and non-product research. |
 | `history/` | Documentation owner | Read-only legacy and M5 migration/roadmap evidence. |
