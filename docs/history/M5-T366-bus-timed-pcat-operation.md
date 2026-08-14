@@ -85,3 +85,9 @@ S8 finds that the retained readiness tick has no uPD765 clock-domain conversion.
 Its [non-admission evidence](../etc/evidence/t366-s8-fdc-service-timing-nonadmission.md)
 transfers all numeric FDC service timing to the next T366 S.
 S8 is accepted at `5cf16ce4`.
+
+### S9: Physical-time non-admission
+
+S9 finds that successful unallocated 80286 cost publishers prevent `elapsed_ticks`
+from denoting a physical 8 MHz clock. Its [non-admission evidence](../etc/evidence/t366-s9-physical-time-nonadmission.md)
+transfers that prerequisite to complete CPU timing closure.

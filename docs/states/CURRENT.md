@@ -2,8 +2,28 @@
 
 ## Current Work
 
-T366 S8 is accepted at `5cf16ce4`. The next T366 S must establish the selected
-5170 physical-time basis before it can allocate any FDC clock-domain timing.
+**Active implementation packet:** M5 T366 S9, 5170 physical-time basis.
+
+## M5 T366 S9 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner: repository owner; persistent M5 L3 direction and accepted S8 transfer authorize selected 8 MHz 5170 time-basis work. No exception. |
+| Objective | Define one source-labelled relation between selected 80286 execution time and the 8 MHz Model 339 physical clock without changing any unproved instruction cost. |
+| Non-goals | No bus wait/prefetch, DMA/FDC/PIT/RTC device delay, cache, firmware, cycle-exact or other profile claim. |
+| Reference Baseline | S2 locks 8 MHz Model 339. S8 proves elapsed ticks are abstract retirement costs; Intel instruction tables remain individual-cost authority. |
+| Candidate Proposal | [Bus-Timed PC/AT Operation](../proposals/m5-bus-timed-pcat-operation.md). |
+| Files And ABI Surface | Clock-plan/execution publication/profile configuration, focused proof, evidence/history/current only. |
+| Applicable Rules | Execution evidence/sweep, one clock owner, source policy, C11 cohesion and documentation indexing apply; no waiver. |
+| Verification | Prove the selected ratio, reset and profile isolation; run focused clock/timing/profile tests, current gate, documentation governance and diff check. |
+| Expected Markers | New S9 physical-time marker and retained current-gate markers. |
+| Asset Needs | Intel/IBM public documentation and permitted reference cross-check only; no ROM/media. |
+| Reporting Requirements | State source basis, exact meaning of a tick, excluded timing and final evidence. |
+| Stop Conditions | Stop and transfer if no source-backed mapping exists without redefining instruction costs. |
+| Exit Criteria | Model 339 has one explicit physical-time conversion usable by later clock domains, or an exact non-admission transfer. |
+| Original Owner Request | Achieve L3 through source-backed selected-machine timing, using reference emulators only when authority lacks determinate values. |
+| Similar-Issue Sweep | Inspect every elapsed-tick publisher/consumer, clock-plan field, 80286 profile materialization and timing test; repair one owner or transfer excluded variant. |
 
 ## Current Technical Baseline
 
