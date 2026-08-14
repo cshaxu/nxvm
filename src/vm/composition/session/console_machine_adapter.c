@@ -165,7 +165,10 @@ static C_VOID vm_session_machine_create_hdd(C_VOID *context, type_unsigned_16 cy
 {
     vm_session *session = vm_session_machine_borrow_selected(context);
 
-    if (session != STD_NULL) vm_machine_hdd_create(&session->hdd, cylinders);
+    if (session != STD_NULL && session->profile != STD_NULL &&
+        session->profile->hdc_present) {
+        vm_machine_hdd_create(&session->hdd, cylinders);
+    }
 }
 
 static C_INT vm_session_machine_insert_hdd(C_VOID *context, const C_CHAR *path)
@@ -179,7 +182,8 @@ static C_INT vm_session_machine_remove_hdd(C_VOID *context, const C_CHAR *path)
 {
     vm_session *session = vm_session_machine_borrow_selected(context);
 
-    return session != STD_NULL ? vm_machine_hdd_remove(&session->hdd, path) : -1;
+    return session != STD_NULL && session->profile != STD_NULL &&
+        session->profile->hdc_present ? vm_machine_hdd_remove(&session->hdd, path) : -1;
 }
 
 static type_status vm_session_machine_start(C_VOID *context)

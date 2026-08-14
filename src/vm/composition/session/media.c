@@ -19,9 +19,11 @@ type_status vm_session_bind_media(vm_session *machine)
             VM_SESSION_MEDIA_FDD_ID, &machine->fdd,
             vm_machine_fdd_media_provider());
     if (status != TYPE_STATUS_OK) return status;
-    status = core_machine_media_registry_bind(&machine->media_registry,
-            VM_SESSION_MEDIA_HDD_ID, &machine->hdd,
-            vm_machine_hdd_media_provider());
-    if (status != TYPE_STATUS_OK) return status;
+    if (machine->profile != STD_NULL && machine->profile->hdc_present) {
+        status = core_machine_media_registry_bind(&machine->media_registry,
+                VM_SESSION_MEDIA_HDD_ID, &machine->hdd,
+                vm_machine_hdd_media_provider());
+        if (status != TYPE_STATUS_OK) return status;
+    }
     return core_machine_media_registry_freeze(&machine->media_registry);
 }

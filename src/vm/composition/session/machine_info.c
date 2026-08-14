@@ -24,8 +24,10 @@ C_VOID vm_session_print_machine(const vm_session *session)
     STD_PRINTF("Floppy Disk Drive: %s, %.2f MB, %s\n", VM_MACHINE_DEVICE_FDD,
         vm_machine_fdd_image_size(&session->fdd) * 1. / VFDD_BYTE_PER_MB,
         session->fdd.connect.flagDiskExist ? "inserted" : "not inserted");
-    STD_PRINTF("Hard Disk Drive:   %d cylinders, %.2f MB, %s\n",
-        session->hdd.data.ncyl,
-        vm_machine_hdd_image_size(&session->hdd) * 1. / VHDD_BYTE_PER_MB,
-        session->hdd.connect.flagDiskExist ? "connected" : "disconnected");
+    if (session->profile != STD_NULL && session->profile->hdc_present) {
+        STD_PRINTF("Hard Disk Drive:   %d cylinders, %.2f MB, %s\n",
+            session->hdd.data.ncyl,
+            vm_machine_hdd_image_size(&session->hdd) * 1. / VHDD_BYTE_PER_MB,
+            session->hdd.connect.flagDiskExist ? "connected" : "disconnected");
+    }
 }

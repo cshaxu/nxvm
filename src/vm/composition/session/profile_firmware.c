@@ -279,6 +279,8 @@ C_VOID vm_session_profile_firmware_register_fdc(vm_session *session)
 
 C_VOID vm_session_profile_firmware_register_hdc(vm_session *session)
 {
+    if (session == STD_NULL || session->profile == STD_NULL ||
+        !session->profile->hdc_present) return;
     vm_session_profile_firmware_apply_range(session,
         VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_HDC_INT13,
         VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_HDC_INT13);

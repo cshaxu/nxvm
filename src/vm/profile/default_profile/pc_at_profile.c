@@ -110,6 +110,23 @@ default_pc_at_firmware_services[] = {
     { VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_PIC_POST, 0u }
 };
 
+static const vm_profile_default_pc_at_firmware_service
+ibm_5170_model_339_firmware_services[] = {
+    { VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_VIDEO_INT10, 0x10u },
+    { VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_CMOS_POST, 0u },
+    { VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_TIMER_IRQ0, 0x08u },
+    { VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_TIMER_INT1A, 0x1au },
+    { VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_KEYBOARD_IRQ1, 0x09u },
+    { VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_KEYBOARD_INT16, 0x16u },
+    { VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_DMA_POST, 0u },
+    { VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_FDC_POST, 0u },
+    { VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_FDC_IRQ6, 0x0eu },
+    { VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_FDC_INT13, 0x13u },
+    { VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_FDC_INT40, 0x40u },
+    { VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_PIT_POST, 0u },
+    { VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_PIC_POST, 0u }
+};
+
 static const vm_profile_default_pc_at_descriptor default_pc_at_descriptor = {
     "default-pc-at",
     1u,
@@ -131,6 +148,8 @@ static const vm_profile_default_pc_at_descriptor default_pc_at_descriptor = {
             0x08u, 0x09u, 0x0au, 0x0bu, 0x0cu, 0x0du, 0x0eu, 0x0fu,
             0x01u, 0x00u, 0x0fu, 0x00u, 0x00u } },
     16u * 1024u * 1024u,
+    TYPE_TRUE,
+    TYPE_FALSE,
     { 0xfffffff0u, 0x000ffff0u, 16u, 0xf000u, 0xfff0u },
     { 0x21u, 0x027fu, 0x40u, 0xf0u, 0x2fu, 0u, 0x80u },
     default_pc_at_port_leaves,
@@ -145,10 +164,53 @@ static const vm_profile_default_pc_at_descriptor default_pc_at_descriptor = {
         sizeof(default_pc_at_firmware_services[0])
 };
 
+static const vm_profile_default_pc_at_descriptor ibm_5170_model_339_descriptor = {
+    "ibm-5170-model-339",
+    1u,
+    CORE_MACHINE_CPU_PROFILE_80286,
+    CORE_MACHINE_FPU_PROFILE_NONE,
+    1u,
+    { 1u, 0u, 0u, 0u, 0u, 0u },
+    { { 1u, 1u, 0u }, { 1u, 4u, 0u }, { 1u, 1u, 0u }, { 1u, 1u, 0u },
+        { 1u, 1u, 0u }, { 1u, 1u, 0u } },
+    0u,
+    0u,
+    0u,
+    50000u,
+    { 48u, 8u, 8u },
+    { CORE_MACHINE_VADP_EGA_APERTURE_BASE, CORE_MACHINE_VADP_EGA_APERTURE_BYTES,
+        0x03u, 0x00u, 0x0fu, 0x02u, TYPE_TRUE },
+    { { 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x00u, 0x05u, 0x00u, 0xffu },
+        { 0x00u, 0x01u, 0x02u, 0x03u, 0x04u, 0x05u, 0x06u, 0x07u,
+            0x08u, 0x09u, 0x0au, 0x0bu, 0x0cu, 0x0du, 0x0eu, 0x0fu,
+            0x01u, 0x00u, 0x0fu, 0x00u, 0x00u } },
+    512u * 1024u,
+    TYPE_FALSE,
+    TYPE_TRUE,
+    { 0xfffffff0u, 0x000ffff0u, 16u, 0xf000u, 0xfff0u },
+    { 0x21u, 0x0200u, 0x40u, 0x00u, 0x00u, 0u, 0x80u },
+    default_pc_at_port_leaves,
+    sizeof(default_pc_at_port_leaves) / sizeof(default_pc_at_port_leaves[0]),
+    default_pc_at_routes,
+    sizeof(default_pc_at_routes) / sizeof(default_pc_at_routes[0]),
+    { 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u, 0u,
+        VM_PROFILE_DEFAULT_PC_AT_NO_DMA_CHANNEL,
+        0u, 0u, TYPE_FALSE, TYPE_FALSE, TYPE_FALSE },
+    ibm_5170_model_339_firmware_services,
+    sizeof(ibm_5170_model_339_firmware_services) /
+        sizeof(ibm_5170_model_339_firmware_services[0])
+};
+
 const vm_profile_default_pc_at_descriptor *
 vm_profile_default_pc_at_descriptor_get(C_VOID)
 {
     return &default_pc_at_descriptor;
+}
+
+const vm_profile_default_pc_at_descriptor *
+vm_profile_ibm_5170_model_339_descriptor_get(C_VOID)
+{
+    return &ibm_5170_model_339_descriptor;
 }
 
 const vm_profile_default_pc_at_port_leaf *
@@ -161,6 +223,8 @@ vm_profile_default_pc_at_port_leaf_find(
     if (descriptor == STD_NULL) return STD_NULL;
     for (index = 0u; index < descriptor->port_leaf_count; ++index) {
         if (descriptor->port_leaves[index].device == device &&
+            (device != VM_PROFILE_DEFAULT_PC_AT_DEVICE_HDC ||
+            descriptor->hdc_present) &&
             descriptor->port_leaves[index].port == port) {
             return &descriptor->port_leaves[index];
         }
@@ -177,7 +241,9 @@ vm_profile_default_pc_at_port_leaf_at(
 
     if (descriptor == STD_NULL) return STD_NULL;
     for (index = 0u; index < descriptor->port_leaf_count; ++index) {
-        if (descriptor->port_leaves[index].device == device) {
+        if (descriptor->port_leaves[index].device == device &&
+            (device != VM_PROFILE_DEFAULT_PC_AT_DEVICE_HDC ||
+            descriptor->hdc_present)) {
             if (ordinal == 0u) return &descriptor->port_leaves[index];
             --ordinal;
         }
@@ -205,6 +271,18 @@ C_INT vm_profile_default_pc_at_descriptor_is_valid(
 {
     STD_SIZE_T index;
 
+    if (descriptor == &ibm_5170_model_339_descriptor) {
+        return descriptor->cpu_profile == CORE_MACHINE_CPU_PROFILE_80286 &&
+            descriptor->default_memory_bytes == 512u * 1024u &&
+            !descriptor->hdc_present && descriptor->planar_parity_present &&
+            descriptor->cmos.base_memory_kib == 0x0200u &&
+            descriptor->cmos.floppy_type == 0x40u &&
+            descriptor->cmos.fixed_disk_type == 0u &&
+            descriptor->cmos.fixed_disk_type_extended_0 == 0u &&
+            descriptor->firmware_service_count ==
+            sizeof(ibm_5170_model_339_firmware_services) /
+                sizeof(ibm_5170_model_339_firmware_services[0]);
+    }
     if (descriptor == STD_NULL || descriptor->port_leaves == STD_NULL ||
         descriptor->routes == STD_NULL || descriptor->port_leaf_count !=
         sizeof(default_pc_at_port_leaves) / sizeof(default_pc_at_port_leaves[0]) ||
@@ -219,7 +297,8 @@ C_INT vm_profile_default_pc_at_descriptor_is_valid(
         if (STD_MEMCMP(&descriptor->routes[index], &default_pc_at_routes[index],
                 sizeof(default_pc_at_routes[index])) != 0) return 0;
     }
-    return descriptor->hdc_pio.data_port == 0x01f0u &&
+    return descriptor->hdc_present && !descriptor->planar_parity_present &&
+        descriptor->hdc_pio.data_port == 0x01f0u &&
         descriptor->hdc_pio.error_features_port == 0x01f1u &&
         descriptor->hdc_pio.sector_count_port == 0x01f2u &&
         descriptor->hdc_pio.sector_number_port == 0x01f3u &&

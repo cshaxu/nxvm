@@ -51,6 +51,18 @@ static type_unsigned_16 vm_session_read_u16(const C_VOID *source)
     return value;
 }
 
+static const vm_profile_default_pc_at_descriptor *
+vm_session_profile_select(vm_session_profile_kind kind)
+{
+    if (kind == VM_SESSION_PROFILE_DEFAULT_PC_AT) {
+        return vm_profile_default_pc_at_descriptor_get();
+    }
+    if (kind == VM_SESSION_PROFILE_IBM_5170_MODEL_339) {
+        return vm_profile_ibm_5170_model_339_descriptor_get();
+    }
+    return STD_NULL;
+}
+
 static C_INT vm_session_copy_path(C_CHAR *destination, STD_SIZE_T capacity,
     const C_CHAR *source)
 {
@@ -121,7 +133,8 @@ C_INT vm_session_insert_fdd(vm_session *session, const C_CHAR *path)
 
 C_INT vm_session_insert_hdd(vm_session *session, const C_CHAR *path)
 {
-    if (session == STD_NULL || !vm_session_copy_path(session->hdd_image_path,
+    if (session == STD_NULL || session->profile == STD_NULL ||
+        !session->profile->hdc_present || !vm_session_copy_path(session->hdd_image_path,
             sizeof(session->hdd_image_path), path) ||
         vm_machine_hdd_insert(&session->hdd, path) != 0) return -1;
     session->retained_config.hdd_image = session->hdd_image_path;
@@ -133,7 +146,11 @@ C_VOID vm_session_apply_boot_preference(vm_session *session)
 {
     C_INT boot_hdd;
 
-    if (session == STD_NULL) return;
+    if (session == STD_NULL || session->profile == STD_NULL) return;
+    if (!session->profile->hdc_present) {
+        vm_profile_default_bios_set_boot_hdd(&session->default_bios, 0);
+        return;
+    }
     boot_hdd = session->boot_preference == VM_SESSION_BOOT_PREFERENCE_HDD ||
         (session->boot_preference == VM_SESSION_BOOT_PREFERENCE_AUTO &&
             !session->fdd.connect.flagDiskExist && session->hdd.connect.flagDiskExist);
@@ -142,7 +159,8 @@ C_VOID vm_session_apply_boot_preference(vm_session *session)
 
 C_VOID vm_session_set_boot_hdd(vm_session *session, C_INT enabled)
 {
-    if (session == STD_NULL) return;
+    if (session == STD_NULL || session->profile == STD_NULL ||
+        !session->profile->hdc_present) return;
     session->boot_preference = enabled ? VM_SESSION_BOOT_PREFERENCE_HDD :
         VM_SESSION_BOOT_PREFERENCE_FDD;
     session->retained_config.boot_hdd = enabled != 0;
@@ -182,6 +200,18 @@ type_status vm_session_storage_initialize(vm_session *machine)
     status = core_machine_create(&machine->core_machine_config,
         &machine->core_machine);
     if (status != TYPE_STATUS_OK) return status;
+    if (machine->profile->planar_parity_present) {
+        const core_machine_planar_parity_config parity = {
+            CORE_MACHINE_PC_AT_PORT_B, machine->profile->default_memory_bytes
+        };
+
+        status = core_machine_configure_planar_parity(machine->core_machine,
+            &parity);
+        if (status != TYPE_STATUS_OK) {
+            vm_session_storage_rollback(machine);
+            return status;
+        }
+    }
     core_machine_display_provider_slot_initialize(&machine->display_provider);
     vm_session_bind_display(machine);
     attribute_first = vm_session_profile_port_leaf(machine->profile,
@@ -289,7 +319,8 @@ C_INT vm_session_create(const vm_session_config *config, vm_session **out_sessio
     *out_session = STD_NULL;
     session = (vm_session *)STD_CALLOC(1u, sizeof(*session));
     if (session == STD_NULL) return TYPE_STATUS_NO_MEMORY;
-    session->profile = vm_profile_default_pc_at_descriptor_get();
+    session->profile = vm_session_profile_select(config == STD_NULL ?
+        VM_SESSION_PROFILE_DEFAULT_PC_AT : config->profile_kind);
     if (session->profile == STD_NULL) {
         STD_FREE(session);
         return TYPE_STATUS_FAULT;
@@ -300,7 +331,14 @@ C_INT vm_session_create(const vm_session_config *config, vm_session **out_sessio
     }
     if (config != STD_NULL) {
         session->retained_config = *config;
-        vm_session_apply_core_config_overrides(session, config);
+        if (!session->profile->hdc_present && (config->hdd_image != STD_NULL ||
+            config->create_hdd_cylinders != 0u || config->boot_hdd)) {
+            STD_FREE(session);
+            return TYPE_STATUS_INVALID_ARGUMENT;
+        }
+        if (session->profile == vm_profile_default_pc_at_descriptor_get()) {
+            vm_session_apply_core_config_overrides(session, config);
+        }
     }
     {
         type_status status = vm_session_initialize(session);
@@ -323,10 +361,11 @@ C_INT vm_session_create(const vm_session_config *config, vm_session **out_sessio
         return TYPE_STATUS_FAULT;
     }
     if (config != STD_NULL && config->create_fdd) vm_machine_fdd_create_for(&session->fdd);
-    if (config != STD_NULL && config->create_hdd_cylinders != 0u) {
+    if (config != STD_NULL && session->profile->hdc_present &&
+        config->create_hdd_cylinders != 0u) {
         vm_machine_hdd_create(&session->hdd, config->create_hdd_cylinders);
     }
-    if (config != STD_NULL && config->boot_hdd) {
+    if (config != STD_NULL && session->profile->hdc_present && config->boot_hdd) {
         session->boot_preference = VM_SESSION_BOOT_PREFERENCE_HDD;
     }
     vm_session_apply_boot_preference(session);

@@ -121,6 +121,8 @@ typedef struct vm_profile_default_pc_at_descriptor {
     core_machine_vadp_ega_sequencer_config ega_sequencer;
     core_machine_vadp_ega_controller_config ega_controllers;
     STD_SIZE_T default_memory_bytes;
+    type_bool hdc_present;
+    type_bool planar_parity_present;
     vm_profile_default_pc_at_rom_mapping rom;
     vm_profile_default_pc_at_cmos_defaults cmos;
     const vm_profile_default_pc_at_port_leaf *port_leaves;
@@ -134,6 +136,8 @@ typedef struct vm_profile_default_pc_at_descriptor {
 
 const vm_profile_default_pc_at_descriptor *
 vm_profile_default_pc_at_descriptor_get(C_VOID);
+const vm_profile_default_pc_at_descriptor *
+vm_profile_ibm_5170_model_339_descriptor_get(C_VOID);
 const vm_profile_default_pc_at_port_leaf *
 vm_profile_default_pc_at_port_leaf_find(
     const vm_profile_default_pc_at_descriptor *descriptor,

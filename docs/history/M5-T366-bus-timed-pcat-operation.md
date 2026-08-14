@@ -50,3 +50,12 @@ source to the one shared physical RAM route. Its [memory/parity evidence](../etc
 records write-establish/read-check behavior, the low-memory high-ROM boundary,
 reset and reconfiguration disposition. S4 is accepted at `ff5fbb53`; it adds
 no default-profile identity, I/O-channel check or timing allocation.
+
+### S5: Model 339 selectable session composition
+
+S5 adds one explicit Model 339 session selection, carrying the selected 80286,
+512 KB planar parity and no-fixed-disk topology through the existing
+composition lifecycle. Its [composition evidence](../etc/evidence/t366-s5-model-339-composition.md)
+records the suppressed ATA/HDC controller, media, firmware and console paths
+and the retained default profile. It does not select the IBM ROM, exact CGA
+surface, MFM/ST-506 or any timing contract.

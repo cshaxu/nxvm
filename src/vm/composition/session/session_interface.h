@@ -8,7 +8,13 @@
 
 
 
+typedef enum vm_session_profile_kind {
+    VM_SESSION_PROFILE_DEFAULT_PC_AT,
+    VM_SESSION_PROFILE_IBM_5170_MODEL_339
+} vm_session_profile_kind;
+
 typedef struct vm_session_config {
+    vm_session_profile_kind profile_kind;
     STD_SIZE_T memory_bytes;
     const C_CHAR *fdd_image;
     const C_CHAR *hdd_image;
@@ -36,4 +42,3 @@ C_INT vm_session_get_reset_vector(const vm_session *session,
     vm_session_reset_vector *out_vector);
 
 #endif
-

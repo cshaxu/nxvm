@@ -13,7 +13,9 @@ C_VOID vm_session_machine_devices_initialize_media(vm_session *session)
 {
     if (session == STD_NULL) return;
     vm_machine_fdd_initialize(&session->fdd);
-    vm_machine_hdd_initialize(&session->hdd);
+    if (session->profile != STD_NULL && session->profile->hdc_present) {
+        vm_machine_hdd_initialize(&session->hdd);
+    }
 }
 
 static type_status vm_session_machine_devices_configure_fdc(vm_session *session)
@@ -66,6 +68,7 @@ static type_status vm_session_machine_devices_configure_hdc(vm_session *session)
 
     if (session == STD_NULL || session->profile == STD_NULL ||
         session->core_machine == STD_NULL) return TYPE_STATUS_INVALID_ARGUMENT;
+    if (!session->profile->hdc_present) return TYPE_STATUS_OK;
     ports = &session->profile->hdc_pio;
     if (!vm_profile_default_pc_at_descriptor_is_valid(session->profile)) {
         return TYPE_STATUS_INVALID_ARGUMENT;
@@ -103,19 +106,25 @@ C_VOID vm_session_machine_devices_refresh(vm_session *session)
 {
     if (session == STD_NULL) return;
     vm_machine_fdd_refresh(&session->fdd);
-    vm_machine_hdd_refresh(&session->hdd);
+    if (session->profile != STD_NULL && session->profile->hdc_present) {
+        vm_machine_hdd_refresh(&session->hdd);
+    }
 }
 
 C_VOID vm_session_machine_devices_reset(vm_session *session)
 {
     if (session == STD_NULL) return;
     vm_machine_fdd_reset(&session->fdd);
-    vm_machine_hdd_reset(&session->hdd);
+    if (session->profile != STD_NULL && session->profile->hdc_present) {
+        vm_machine_hdd_reset(&session->hdd);
+    }
 }
 
 C_VOID vm_session_machine_devices_finalize(vm_session *session)
 {
     if (session == STD_NULL) return;
     vm_machine_fdd_finalize(&session->fdd);
-    vm_machine_hdd_finalize(&session->hdd);
+    if (session->profile != STD_NULL && session->profile->hdc_present) {
+        vm_machine_hdd_finalize(&session->hdd);
+    }
 }
