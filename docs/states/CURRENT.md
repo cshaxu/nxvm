@@ -2,35 +2,14 @@
 
 ## Current Work
 
-**Active.** M5 T357 S8 performs the final finite-corpus cross-profile closure
-audit for instruction-timed execution.
-
-## M5 T357 S8 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner-approved completion of T357 after accepted S1--S7. |
-| Objective | Audit and close only the finite source-backed 8086, 80186, 80286, and 80386 instruction-timing corpus allocated by the T357 proposal; verify one successful-retirement publication owner and exact transfers for all non-corpus timing work. |
-| Non-goals | Do not add new opcode timing rows, alter instruction semantics, claim memory wait states, prefetch, bus/HOLD/DMA arbitration, device latency, fault/interrupt-cycle timing, x87, VME/PVI, host time, or cycle-exact/L3 completion. |
-| Reference Baseline | `91b3fb2d` / `vm-0-5-0357`, accepted T357 S1--S7 evidence, and the selected Intel 8086/80186/80286/80386 manual tables. |
-| Candidate Proposal | [Instruction-timed execution](../proposals/m5-instruction-timed-execution.md) and [T357 task record](../history/M5-T357-instruction-timed-execution.md). |
-| Files And ABI Surface | Audit evidence, task history, CURRENT, Queue/TODO transfer references if a verified omission requires them, and developer artifact metadata only. No runtime/API/ABI or broad timing-ledger change absent a newly approved corrective packet. |
-| Applicable Rules | Apply the Task Reading Set and execution/coding/architecture/documentation/source-policy authorities. Appendix-B selected values control; an actual table/prose conflict must remain a precise TODO revisit. |
-| Verification | Reconcile every allocated S1--S7 profile/form/mode row to its evidence and smoke; confirm the sole successful-retirement elapsed-tick publisher, source maximum/budget/fallback/reset/fault boundaries, current-gate, documentation governance, and developer artifact hash. |
-| Expected Markers | All focused T357 ledger markers and the full current-gate are green; one closure record identifies the finite corpus and explicit transfers. |
-| Asset Needs | Read-only retained Intel manual tables and locally recorded T357 evidence. No external asset enters the repository. |
-| Reporting Requirements | Record the row-by-row profile/mode closure, Appendix-B precedence/TODO disposition, artifact command/SHA-256, full-gate result, and every transferred timing category without claiming L3 cycle exactness. |
-| Stop Conditions | Stop if an allocated row lacks authority/evidence, an elapsed-time writer or source/config leakage is found, a transfer is unowned, or closure requires runtime repair; return that finding to its mechanism owner rather than closing T357. |
-| Exit Criteria | The finite corpus is fully accounted for across four profiles; S3/S6/S7 I/O and VM86 boundaries are reconciled; all non-selected timing remains explicitly transferred; the artifact and gates are verified; no completion language exceeds instruction-timed execution. |
-| Original Owner Request | Complete T357 as a profile-aware instruction-form timing prerequisite without claiming bus or cycle-exact timing. |
-| Similar-Issue Sweep | Sweep all T357 evidence, source-ledger forms and profile tables, timing consumers, fallback/max/budget paths, elapsed writers, Queue/TODO transfers, and the retained artifact process. |
+**Idle.** M5 T357 is closed; Cross-Mode Mechanism Coherence is the next M5
+candidate before bus-timed PC/AT work.
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** T357 selects `vm-0-5-0357` /
-  `build/output/nxvm_0_5_0357.exe`; S6 rebuilt it at `b5a0a37f` as
-  `E0A9E0343787196A3292978D64AB03B92F9E904CCF7AA88680C376F2EFA08772`.
+- **Current developer artifact:** T357 closed `vm-0-5-0357` /
+  `build/output/nxvm_0_5_0357.exe` as
+  `83A249015C03CF875896A440D5B43A430C2D875A63F0BE4B9709014A753CAD95`.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
@@ -45,7 +24,7 @@ audit for instruction-timed execution.
 
 | Task | Compact result |
 | --- | --- |
-| T357 S7 | Closes the selected 80386 ordinary `IN`/`OUT` protected and permission-map timing rows from Appendix B, including the VM86 TSS I/O-map admission repair shared by ordinary and string I/O. The 80286 `NOP = 3` consumer sweep retains device-clock ratios and repairs only affected expected observables/trace capacity. 240 current-gate tests passed. [S7](../etc/evidence/t357-s7-80386-protected-io-timing.md). |
+| T357 | Closed finite source-backed 8086/80186/80286/80386 instruction timing at one successful-retirement publisher: selected form ledgers, 80386 protected/VM86 ordinary I/O, Appendix-B `NOP = 3` consumer reconciliation, 240 current-gate tests, and artifact SHA-256 `83A249015C03CF875896A440D5B43A430C2D875A63F0BE4B9709014A753CAD95`. Unselected forms, waits, physical bus/prefetch, device latency and cycle-exact work remain explicit transfers. [Closure audit](../etc/evidence/t357-s8-cross-profile-closure-audit.md). |
 | T356 | Closed the M5 closure audit with an explicit M5-open decision: all selected device owners are evidenced, but instruction timing, bus availability/wait states and selected-profile cycle exactness remain ordered implementation prerequisites; corpus-gated peripheral, storage and product boundaries remain explicit transfers. [History](../history/M5-T356-m5-closure-audit.md). |
 | T355 | Closed the bounded Windows 3.x readiness map: an opt-in BYOB HDD/INT13 checkpoint passed, all four probes remain host-observation/non-current, T347/T354 storage/L3 is a verified prerequisite, and all display, input, NMI, physical-timing, Setup, and compatibility breadth remains explicitly transferred. [History](../history/M5-T355-windows-3x-readiness-map.md). |
 | T354 | Closed selected L3 bus timing: core-local checked CPU/DMA transaction begin/commit/cancel trace, deterministic CPU-retire then DMA/PIT/PIC then FDC/HDC ordering, reset cancellation/trace continuity, and retained firmware/DOS consumers. Exact bus cycles, pin waveforms, physical wait tables, host time, and Windows readiness remain explicit transfers. 234 current-gate tests passed. [History](../history/M5-T354-physical-l3-bus-timing-convergence.md). |

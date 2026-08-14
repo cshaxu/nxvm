@@ -49,10 +49,23 @@ provider interface was introduced. The same acceptance sweep reconciles every
 current 80286 `NOP` time consumer with the authoritative three-clock value
 without changing device clock domains.
 
-## Intended Task Closure
+## S8 Closure Audit
 
-T357 closes only after the selected corpus advances guest time from the single
+S8 reconciled the finite S1--S7 corpus across all four profiles, the selected
+80386 protected/permission/VM86 port-I/O modes, the sole elapsed-time writer,
+and all active timing consumers. It rebuilt
+`build/output/nxvm_0_5_0357.exe` with SHA-256
+`83A249015C03CF875896A440D5B43A430C2D875A63F0BE4B9709014A753CAD95`;
+the direct current-gate result was 240/240 passing. The detailed closure,
+Appendix-B precedence, and unselected-form transfers are retained in the
+[S8 audit](../etc/evidence/t357-s8-cross-profile-closure-audit.md).
+
+## Closed Scope And Transfers
+
+T357 closed only its selected corpus: it advances guest time from the single
 CPU retirement owner with profile/form evidence, fault and reset publication
-proof, and retained deterministic L3 regressions.  Memory/I/O wait states,
-CPU/DMA physical ownership, prefetch, and cycle-exact behavior transfer to the
-subsequent bus-timed and selected-profile candidates.
+proof, and retained deterministic L3 regressions. Unselected CPU timing,
+memory/I/O wait states, CPU/DMA physical ownership, prefetch, device latency,
+fault/interrupt cycle costs, and cycle-exact behavior transfer to the
+subsequent Cross-Mode Mechanism Coherence, bus-timed, and selected-profile
+candidates.

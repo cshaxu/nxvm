@@ -27,11 +27,15 @@ precedes Windows readiness because readiness must not be used to hide known
 controller-service and chipset gaps.  Each candidate remains bounded by its
 own manual/probe contract; completing one does not imply board-wide parity.
 
-1. [Instruction-timed execution](../proposals/m5-instruction-timed-execution.md).
+1. [Cross-mode mechanism coherence](../proposals/m5-cross-mode-mechanism-coherence.md).
 1. [Bus-timed PC/AT operation](../proposals/m5-bus-timed-pcat-operation.md).
 1. [Cycle-exact selected profile](../proposals/m5-cycle-exact-selected-profile.md).
 
 Closed proposal reference:
+[Instruction-timed execution](../proposals/m5-instruction-timed-execution.md)
+is closed as T357 and retained as its finite source-ledger and transfer record,
+not as a candidate.
+
 [L3 bus-timing convergence](../proposals/m5-l3-bus-timing-convergence.md)
 is closed and retained as the selected-L3 admission and transfer record, not
 as a candidate.
