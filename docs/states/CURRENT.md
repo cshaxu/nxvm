@@ -2,30 +2,29 @@
 
 ## Current Work
 
-**Active.** M5 T362 S3 independently audits the completed immediate-IMUL
-normalization allocation and closes the task only if its residual transfers
-and current-gate evidence are complete.
+**Active.** M5 T362 S4 repairs the two independent T344 verifier failures
+found by S3, without changing the immediate-IMUL timing allocation.
 
-## M5 T362 S3 Packet
+## M5 T362 S4 Packet
 
 | Field | Required record |
 | --- | --- |
 | Identifier Mode | Continuation |
-| Admission And Approval | The owner directed current-Queue execution through complete instruction timing on 2026-08-14. T362 S2 implementation is accepted at `94e970a6`; this independent S3 closure audit is required by the approved proposal. Git pushes are permitted. |
-| Objective | Audit all T361-transferred dynamic-arithmetic forms, the four-row 80186 immediate-IMUL allocation, residual fallback receivers, successful-retirement ownership, records, artifact identity, and full current gate; close T362 only when each remains accounted. |
-| Non-goals | No new timing allocation, no change to 8086/Group-3 rows or 80286/80386 timing, no unsupported-prefix routing, exception-delivery, bus/prefetch/device/service change, public ABI, external import, measurement, or physical/cycle-exact claim. |
-| Reference Baseline | `94e970a6` / `vm-0-5-0362`; T362 [S1 ledger](../etc/evidence/t362-s1-legacy-timing-normalization-ledger.md), [S2 acceptance](../etc/evidence/t362-s2-legacy-timing-normalization-acceptance.md), and [normalization proposal](../proposals/m5-intel-constrained-legacy-timing-normalization.md). |
+| Admission And Approval | The owner directed current-Queue execution through complete instruction timing on 2026-08-14. T362 S3 at `3f2d90a9` found two full-gate verifier defects and requires this bounded continuation. Git pushes are permitted. |
+| Objective | Repair T344 current-gate CTest syntax recognition and reconcile its direct-fixture inventory with the six currently enumerated source files; run the full gate and preserve T362's accepted timing allocation. |
+| Non-goals | No instruction timing allocation/change, no CPU execution or machine behavior change, no public ABI, external import, measurement, device/bus/prefetch/service work, or physical/cycle-exact claim. |
+| Reference Baseline | `3f2d90a9` / `vm-0-5-0362`; [S3 findings](../etc/evidence/t362-s3-closure-audit-findings.md), [S2 acceptance](../etc/evidence/t362-s2-legacy-timing-normalization-acceptance.md), and [normalization proposal](../proposals/m5-intel-constrained-legacy-timing-normalization.md). |
 | Candidate Proposal | [Intel-constrained legacy timing-model normalization](../proposals/m5-intel-constrained-legacy-timing-normalization.md). |
-| Files And ABI Surface | Audit/evidence/history/status only unless an audit finding requires an explicitly admitted corrective S. No planned public header or ABI change. |
-| Applicable Rules | Task Reading Set; Execution P/closure, similar-issue, artifact, full-gate, Architecture single-owner/source-admission, Coding source/test, Documentation, and source/research rules. CPU-versus-machine and successful-retirement ownership remain mandatory. |
-| Verification | Reconcile all 8086 and 80186 T361 rows against S1/S2, independently prove 69/6B register/memory consumers and residual fallback receivers, run focused smoke/static sweep/documentation governance/diff check/artifact identity/full current gate. |
-| Expected Markers | `M5:T362:S2:LEGACY-TIMING-NORMALIZATION:OK` and retained current-gate markers. |
-| Asset Needs | Existing local source, T362 evidence, read-only cited manual/MAME revisions; no retained download, third-party source, media, or protected binary. |
-| Reporting Requirements | Produce a closure audit naming each allocated and retained row, exact artifact identity, all gates, any variance, and the next Queue candidate. |
-| Stop Conditions | Stop and admit a corrective S if an audit needs new allocation, a second publisher, public interface, machine/bus owner, source import, or accounting change. |
-| Exit Criteria | The four immediate rows have one central allocation/provenance, all prior qualifying one-tick fallbacks are absent, residual transfers are explicit, artifact/full gate pass, and closure makes no physical/cycle-exact claim. |
+| Files And ABI Surface | `cmake/verify_t344_current_gate_registration.cmake`, `cmake/verify_t344_historical_fixture_shapes.cmake`, evidence/history/status only. No public header or ABI. |
+| Applicable Rules | Task Reading Set; Execution P/closure, full-gate, Coding verifier/test, Documentation, and source/research rules. CPU-versus-machine and successful-retirement ownership remain unchanged. |
+| Verification | Prove both T344 findings are repaired, rerun focused T362 smoke, documentation governance, diff check, artifact identity, and full current gate. |
+| Expected Markers | T344 registration/fixture-shape success, `M5:T362:S2:LEGACY-TIMING-NORMALIZATION:OK`, and retained current-gate markers. |
+| Asset Needs | Existing local source and T362 evidence; no retained download, third-party source, media, or protected binary. |
+| Reporting Requirements | Record the exact verifier grammar/inventory changes, T362 non-behavior impact, full-gate result, and whether S5 closure audit remains. |
+| Stop Conditions | Stop if repair would change test execution semantics, timing allocation, CTest registration ownership, public interface, or a machine owner. |
+| Exit Criteria | Both T344 verifiers and the full current gate pass with the T362 timing allocation/artifact unchanged. |
 | Original Owner Request | Execute the current Queue through complete instruction timing, using Intel first and 86Box/MAME/PCjs only as applicable model sources where primary timing is non-deterministic. |
-| Similar-Issue Sweep | Search production source, tests, CMake and records for all T361 forms, immediate-IMUL encodings, one-tick transfers, central-table consumers, and source-retirement publishers; classify every hit as allocated or explicitly retained. |
+| Similar-Issue Sweep | Search CMake-generated CTest syntax and all direct `core_machine_create` fixture sources; distinguish stale verifier assumptions from T362 behavior changes. |
 
 ## Current Technical Baseline
 
@@ -48,6 +47,7 @@ and current-gate evidence are complete.
 | --- | --- |
 | T362 S1 | Accepted at `ba5a1221`: Intel Table 1-16 and same-profile MAME i186 scalars establish direct or constrained dispositions for every immediate-IMUL route, with no double EA/odd-word ownership. [Ledger](../etc/evidence/t362-s1-legacy-timing-normalization-ledger.md). No physical or cycle-exact claim. |
 | T362 S2 | Accepted at `94e970a6`: one private 80186 immediate-IMUL table removes the three eligible one-tick fallbacks, preserves the existing successful-retirement publisher, and passes its focused regression; S3 independently audits closure. [Acceptance](../etc/evidence/t362-s2-legacy-timing-normalization-acceptance.md). |
+| T362 S3 | Audit finding at `3f2d90a9`: the required full gate exposes only stale T344 CTest-parser and fixture-inventory assumptions; S4 is bounded to repair them before closure. [Findings](../etc/evidence/t362-s3-closure-audit-findings.md). |
 | T361 | Closed at `a5442d96`: S1--S3 established the source-labelled 8086/80186 allocation and synchronous-fault publication boundary; S4 retained Intel 210498-005 Appendix-B `90 NOP = 3` after a page/context and consumer audit. Immediate-IMUL normalization transfers to the first Queue candidate. [S4 evidence](../etc/evidence/t361-s4-80286-nop-source-consumer-audit.md). No physical or cycle-exact claim. |
 | T360 | Closed four-profile timing source reconciliation: primary-authority inventory, owner-selected 80286 NOP table precedence, exact legacy range transfer, contextual classifier audit, and final source/receiver closure. 245/245 current-gate tests passed; no L3 or cycle-exact claim. [Closure audit](../etc/evidence/t360-s5-four-profile-timing-source-closure-audit.md). |
 | T359 | Closed its bounded four-profile instruction-retirement corpus: S1 inventory plus S2--S6 source classifiers use one successful-retirement publisher; S7 verifies all unallocated rows transfer to T360, bus/service, cycle-exact, or x87/VME receivers. 245/245 current-gate tests passed. No L3 or cycle-exact claim is made. [Closure audit](../etc/evidence/t359-s7-complete-instruction-timing-closure-audit.md). |
