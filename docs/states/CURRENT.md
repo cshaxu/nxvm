@@ -2,29 +2,8 @@
 
 ## Current Work
 
-**Active.** M5 T361 S1 legacy dynamic arithmetic primary-source audit is
-admitted in single-session mode.
-
-## M5 T361 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner approved the next Queue candidate after Td S89 `c2ae7b49`: begin the legacy dynamic arithmetic timing-authority task in single-session mode. |
-| Objective | Audit the primary Intel record for every T360-transferred 8086/80186 range-only arithmetic form and decide whether a complete operand-to-clock formula exists; if none exists, specify the exact owner decision and observation-contract requirements needed before any timing allocation. |
-| Non-goals | No runtime clock allocation, endpoint/midpoint guess, later-profile borrowing, host benchmark, Bochs/PCjs authority, hardware observation run, instruction-semantics change, bus/device/delivery timing, global timing refactor, or ABI change. |
-| Reference Baseline | `c2ae7b49`, T360 S3/S5 evidence, T359 S2 arithmetic ledger, 8086 Tables 2-20/2-21 and 80186 Table 1-16 primary editions recorded by T360 S1. |
-| Candidate Proposal | [Legacy dynamic arithmetic timing authority](../proposals/m5-legacy-dynamic-arithmetic-timing-authority.md), bounded S1 source-formula audit. |
-| Files And ABI Surface | Evidence/history/CURRENT and TODO only if a precise admission condition needs correction. No `src/`, CMake, test, artifact, public API, or runtime timing change. |
-| Applicable Rules | Task Reading Set; source policy; architecture one-publisher rule; `EXECUTION.md` mechanism/evidence/transfer/similar-issue/closure rules; `DOCUMENT.md` topology rule. |
-| Verification | Build a form-by-form 8086/80186 source ledger for `F6`/`F7` `/4`--`/7` and 80186 `69`/`6B`; inspect all source timing consumers and retained timing smokes; search primary manual/provenance records for an operand formula; prove the present fallback remains unallocated; run focused 8086/80186 timing smokes, documentation governance, diff check, and full current gate. |
-| Expected Markers | Indexed S1 authority ledger; each range form marked formula-complete or no-formula; no numeric runtime delta; one exact observation-contract decision point if primary authority remains incomplete. |
-| Asset Needs | Existing primary manual scans and committed evidence only; no imported source, firmware, guest media, hardware probe, host measurement, or external executable. |
-| Reporting Requirements | Record form/source wording, formula applicability, all consumer dispositions, explicit no-formula evidence if applicable, the required owner choice, and no-L3/cycle-exact boundary. |
-| Stop Conditions | Stop before any allocation if the primary record lacks a complete formula, if a formula requires an unapproved processor stepping/measurement assumption, if a hidden numeric allocation is found, or if an observation contract would require owner approval; report the exact decision rather than inferring a value. |
-| Exit Criteria | Every transferred form has a primary-source formula disposition; no endpoint or borrowed timing is introduced; all existing consumers remain one-publisher/unallocated unless a formula proves otherwise; any necessary observation path is a bounded owner decision; focused and full-gate proof passes. |
-| Original Owner Request | Reach a complete L3 timing decision without hiding source gaps: add the remaining timing work in dependency order and advance the next admitted package in single-session mode. |
-| Similar-Issue Sweep | Search all tracked timing owners, arithmetic handlers and tests, T357/T359/T360 records, Queue and TODO for `MUL`, `IMUL`, `DIV`, `IDIV`, `69`, `6B`, range, parenthesized clock, dynamic formula, unallocated ticks, and hardware observation wording; classify every hit as T361 scope, fixed source row, or explicit other receiver. |
+**Active.** M5 T361 remains open between accepted S units; S1 recorded no
+primary formula, and any observation work requires an owner-approved contract.
 
 ## Current Technical Baseline
 
@@ -45,6 +24,7 @@ admitted in single-session mode.
 
 | Task | Compact result |
 | --- | --- |
+| T361 S1 | Accepted the legacy dynamic-arithmetic source audit: 8086/80186 tables supply ranges but no formula, current routes remain explicitly unallocated, and a real-hardware observation contract is the only alternative path. [Evidence](../etc/evidence/t361-s1-legacy-dynamic-arithmetic-authority-audit.md). |
 | T360 | Closed four-profile timing source reconciliation: primary-authority inventory, owner-selected 80286 NOP table precedence, exact legacy range transfer, contextual classifier audit, and final source/receiver closure. 245/245 current-gate tests passed; no L3 or cycle-exact claim. [Closure audit](../etc/evidence/t360-s5-four-profile-timing-source-closure-audit.md). |
 | T359 | Closed its bounded four-profile instruction-retirement corpus: S1 inventory plus S2--S6 source classifiers use one successful-retirement publisher; S7 verifies all unallocated rows transfer to T360, bus/service, cycle-exact, or x87/VME receivers. 245/245 current-gate tests passed. No L3 or cycle-exact claim is made. [Closure audit](../etc/evidence/t359-s7-complete-instruction-timing-closure-audit.md). |
 | T358 | Closed cross-mode mechanism coherence: reconciled I/O permission, exception/IRQ entry, selector/task/return transition, paging/linear access, and prefix/LOCK/width/string classifiers; repaired 80286 delivery, LOCK group legality, and repeated-width preview divergence; passed 240 current-gate tests. [Closure audit](../etc/evidence/t358-cross-mode-mechanism-closure-audit.md). |
