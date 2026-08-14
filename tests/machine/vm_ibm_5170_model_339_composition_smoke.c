@@ -36,6 +36,10 @@ static C_INT vm_model_339_selected_contract(C_VOID)
     if (profile == STD_NULL ||
         !vm_profile_default_pc_at_descriptor_is_valid(profile) ||
         profile->hdc_present || !profile->planar_parity_present ||
+        profile->firmware_slot !=
+            VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_SLOT_IBM_5170_REV3_ABSTRACT ||
+        !profile->diskette_drive_a_field_upgrade ||
+        profile->cmos.floppy_type != 0x40u ||
         vm_profile_has_hdc_firmware(profile) ||
         vm_profile_default_pc_at_port_leaf_find(profile,
             VM_PROFILE_DEFAULT_PC_AT_DEVICE_HDC, 0x01f0u) != STD_NULL ||

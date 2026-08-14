@@ -69,3 +69,10 @@ records the focused isolation proof and remaining display/timing transfers.
 S6 is accepted at `dd464d74`; IBM ROM identity, exhaustive CGA timing, the
 1.44 MB field-upgrade FDC topology, MFM/ST-506 and bus timing remain later
 transfers.
+
+### S7: Model 339 firmware and field-upgrade FDC topology
+
+S7 declares the non-vendor Rev.3 firmware slot and the selected drive-A field
+upgrade while proving the existing FDC port, IRQ6 and DMA2 composition. Its
+[topology evidence](../etc/evidence/t366-s7-model-339-firmware-fdc-topology.md)
+records the source boundary and retained timing transfers.

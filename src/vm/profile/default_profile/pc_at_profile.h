@@ -73,6 +73,11 @@ typedef struct vm_profile_default_pc_at_rom_mapping {
     type_unsigned_16 reset_offset;
 } vm_profile_default_pc_at_rom_mapping;
 
+typedef enum vm_profile_default_pc_at_firmware_slot {
+    VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_SLOT_GENERIC,
+    VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_SLOT_IBM_5170_REV3_ABSTRACT
+} vm_profile_default_pc_at_firmware_slot;
+
 typedef struct vm_profile_default_pc_at_cmos_defaults {
     type_unsigned_8 equipment;
     type_unsigned_16 base_memory_kib;
@@ -125,6 +130,8 @@ typedef struct vm_profile_default_pc_at_descriptor {
     type_bool planar_parity_present;
     type_bool ega_present;
     type_bool cga_vram_present;
+    vm_profile_default_pc_at_firmware_slot firmware_slot;
+    type_bool diskette_drive_a_field_upgrade;
     vm_profile_default_pc_at_rom_mapping rom;
     vm_profile_default_pc_at_cmos_defaults cmos;
     const vm_profile_default_pc_at_port_leaf *port_leaves;

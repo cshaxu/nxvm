@@ -82,6 +82,9 @@ target_link_libraries(vm-ibm-5170-model-339-composition-smoke PRIVATE vm-composi
 add_executable(vm-ibm-5170-model-339-cga-topology-smoke
     tests/machine/vm_ibm_5170_model_339_cga_topology_smoke.c)
 target_link_libraries(vm-ibm-5170-model-339-cga-topology-smoke PRIVATE vm-composition)
+add_executable(vm-ibm-5170-model-339-firmware-fdc-topology-smoke
+    tests/machine/vm_ibm_5170_model_339_firmware_fdc_topology_smoke.c)
+target_link_libraries(vm-ibm-5170-model-339-firmware-fdc-topology-smoke PRIVATE vm-composition)
 add_executable(vm-hdc-port-smoke tests/machine/vm_hdc_port_smoke.c)
 target_link_libraries(vm-hdc-port-smoke PRIVATE vm-composition)
 add_executable(vm-media-provider-smoke tests/machine/vm_media_provider_smoke.c)
@@ -1770,6 +1773,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     vm-pcat-composition-s4-smoke
     vm-ibm-5170-model-339-composition-smoke
     vm-ibm-5170-model-339-cga-topology-smoke
+    vm-ibm-5170-model-339-firmware-fdc-topology-smoke
     vm-fdc-dma-boundary-smoke
     vm-hdc-port-smoke
     vm-media-provider-smoke
@@ -3033,10 +3037,10 @@ foreach(project_t345_target IN LISTS PROJECT_T344_CURRENT_GATE_TARGETS)
 endforeach()
 list(LENGTH PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS project_t345_s2_pure_count)
 list(LENGTH PROJECT_T345_S2_MIXED_OWNER_TEST_TARGETS project_t345_s2_mixed_count)
-if(NOT project_t345_s2_pure_count EQUAL 134 OR
+if(NOT project_t345_s2_pure_count EQUAL 135 OR
         NOT project_t345_s2_mixed_count EQUAL 3)
     message(FATAL_ERROR
-        "T345 S2 expected 134 pure and 3 mixed owner-test targets; found ${project_t345_s2_pure_count} pure and ${project_t345_s2_mixed_count} mixed.")
+        "T345 S2 expected 135 pure and 3 mixed owner-test targets; found ${project_t345_s2_pure_count} pure and ${project_t345_s2_mixed_count} mixed.")
 endif()
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     foreach(project_t345_target IN LISTS PROJECT_T345_S2_OWNER_TEST_STRICT_TARGETS)

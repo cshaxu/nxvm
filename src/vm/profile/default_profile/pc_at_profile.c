@@ -152,6 +152,8 @@ static const vm_profile_default_pc_at_descriptor default_pc_at_descriptor = {
     TYPE_FALSE,
     TYPE_TRUE,
     TYPE_FALSE,
+    VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_SLOT_GENERIC,
+    TYPE_FALSE,
     { 0xfffffff0u, 0x000ffff0u, 16u, 0xf000u, 0xfff0u },
     { 0x21u, 0x027fu, 0x40u, 0xf0u, 0x2fu, 0u, 0x80u },
     default_pc_at_port_leaves,
@@ -190,6 +192,8 @@ static const vm_profile_default_pc_at_descriptor ibm_5170_model_339_descriptor =
     TYPE_FALSE,
     TYPE_TRUE,
     TYPE_FALSE,
+    TYPE_TRUE,
+    VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_SLOT_IBM_5170_REV3_ABSTRACT,
     TYPE_TRUE,
     { 0xfffffff0u, 0x000ffff0u, 16u, 0xf000u, 0xfff0u },
     { 0x21u, 0x0200u, 0x40u, 0x00u, 0x00u, 0u, 0x80u },
@@ -287,6 +291,9 @@ C_INT vm_profile_default_pc_at_descriptor_is_valid(
             !descriptor->hdc_present && descriptor->planar_parity_present &&
             !descriptor->ega_present &&
             descriptor->cga_vram_present &&
+            descriptor->firmware_slot ==
+                VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_SLOT_IBM_5170_REV3_ABSTRACT &&
+            descriptor->diskette_drive_a_field_upgrade &&
             descriptor->cmos.base_memory_kib == 0x0200u &&
             descriptor->cmos.floppy_type == 0x40u &&
             descriptor->cmos.fixed_disk_type == 0u &&
@@ -311,6 +318,8 @@ C_INT vm_profile_default_pc_at_descriptor_is_valid(
     }
     return descriptor->hdc_present && !descriptor->planar_parity_present &&
         descriptor->ega_present && !descriptor->cga_vram_present &&
+        descriptor->firmware_slot == VM_PROFILE_DEFAULT_PC_AT_FIRMWARE_SLOT_GENERIC &&
+        !descriptor->diskette_drive_a_field_upgrade &&
         descriptor->hdc_pio.data_port == 0x01f0u &&
         descriptor->hdc_pio.error_features_port == 0x01f1u &&
         descriptor->hdc_pio.sector_count_port == 0x01f2u &&
