@@ -82,6 +82,10 @@ struct core_machine {
     type_bool source_repeat_active;
     type_unsigned_16 source_repeat_cs;
     type_unsigned_32 source_repeat_eip;
+    type_unsigned_8 source_repeat_opcode;
+    type_unsigned_8 source_repeat_prefix;
+    type_bool source_repeat_operand_size;
+    type_bool source_repeat_address_size;
     core_machine_clock_domain dma_clock;
     core_machine_clock_domain pit_clock;
     core_machine_clock_domain rtc_clock;

@@ -10,8 +10,10 @@ set(t359_s2_ledger
     "${PROJECT_SOURCE_DIR}/docs/etc/evidence/t359-s2-four-profile-arithmetic-data-source-ledger.md")
 set(t359_s3_ledger
     "${PROJECT_SOURCE_DIR}/docs/etc/evidence/t359-s3-four-profile-control-stack-source-ledger.md")
+set(t359_s4_ledger
+    "${PROJECT_SOURCE_DIR}/docs/etc/evidence/t359-s4-four-profile-string-io-source-ledger.md")
 foreach(t359_file IN ITEMS "${t359_source}" "${t359_machine}" "${t359_inventory}"
-    "${t359_s2_ledger}" "${t359_s3_ledger}")
+    "${t359_s2_ledger}" "${t359_s3_ledger}" "${t359_s4_ledger}")
     if(NOT EXISTS "${t359_file}")
         message(FATAL_ERROR "T359 timing inventory input is missing: ${t359_file}")
     endif()
@@ -21,6 +23,7 @@ file(READ "${t359_machine}" t359_machine_text)
 file(READ "${t359_inventory}" t359_inventory_text)
 file(READ "${t359_s2_ledger}" t359_s2_ledger_text)
 file(READ "${t359_s3_ledger}" t359_s3_ledger_text)
+file(READ "${t359_s4_ledger}" t359_s4_ledger_text)
 
 function(t359_require text pattern description)
     if(NOT "${text}" MATCHES "${pattern}")
@@ -156,6 +159,40 @@ foreach(t359_s3_ledger_anchor IN ITEMS
     "T360")
     t359_require("${t359_s3_ledger_text}" "${t359_s3_ledger_anchor}"
         "S3 source ledger is missing ${t359_s3_ledger_anchor}")
+endforeach()
+
+# S4 keeps all admitted string/repeat/ordinary-I/O rows at the same publisher.
+# These anchors reject a return to the old MOVSB-only special case or to a
+# handler-local port clock.
+foreach(t359_s4_anchor IN ITEMS
+    "CORE_MACHINE_SOURCE_TIMING_STRING_MOVS"
+    "CORE_MACHINE_SOURCE_TIMING_STRING_CMPS"
+    "CORE_MACHINE_SOURCE_TIMING_STRING_STOS"
+    "CORE_MACHINE_SOURCE_TIMING_STRING_LODS"
+    "CORE_MACHINE_SOURCE_TIMING_STRING_SCAS"
+    "CORE_MACHINE_SOURCE_TIMING_STRING_INS"
+    "CORE_MACHINE_SOURCE_TIMING_STRING_OUTS"
+    "core_machine_string_io_source_instruction_cost"
+    "core_machine_source_timing_repeat_string"
+    "core_machine_80386_source_string_port_entry")
+    t359_require("${t359_machine_text}" "${t359_s4_anchor}"
+        "missing S4 classifier anchor ${t359_s4_anchor}")
+endforeach()
+string(FIND "${t359_machine_text}"
+    "if (core_machine_string_io_source_instruction_cost(machine, out_ticks))"
+    t359_s4_publisher)
+if(t359_s4_publisher LESS 0 OR t359_s4_publisher GREATER t359_s2_primary_publisher)
+    message(FATAL_ERROR
+        "T359 S4 string/I-O classifier must precede the other source receivers")
+endif()
+foreach(t359_s4_ledger_anchor IN ITEMS
+    "## Four-profile rows"
+    "## Ordinary port I/O"
+    "## Defined transfers"
+    "REP LODS"
+    "T360")
+    t359_require("${t359_s4_ledger_text}" "${t359_s4_ledger_anchor}"
+        "S4 source ledger is missing ${t359_s4_ledger_anchor}")
 endforeach()
 
 message(STATUS "T359 four-profile instruction timing inventory passed.")

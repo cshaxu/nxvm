@@ -36,12 +36,12 @@ extensions are rejected rather than folded into the group.
 | --- | --- | --- | --- |
 | `00`--`05`, `08`--`0D`, `10`--`15`, `18`--`1D`, `20`--`25`, `28`--`2D`, `30`--`35`, `38`--`3D` | 8086 | receiver | S2 arithmetic/defined-FLAGS and r/m timing matrix |
 | `06/07`, `0E`, `16/17`, `1E/1F` | 8086 | receiver | S3 stack, selector image, and real-control timing |
-| `26/2E/36/3E`, `F2/F3` prefix classifiers | 8086 | receiver | S3 string/repeat and prefix-form timing; S4 physical prefetch transfer |
+| `26/2E/36/3E`, `F2/F3` prefix classifiers | 8086 | receiver | S4 string/repeat source timing; physical prefetch transfers later |
 | `27/2F/37/3F` | 8086 | receiver | S2 decimal/ASCII adjustment timing |
 | `40`--`4F`, `50`--`5F` | 8086 | receiver | S2 register arithmetic; S3 stack timing |
-| `60/61`, `62`, `68`--`6F`, `C0/C1`, `C8/C9` | 80186 | receiver; rejected on 8086 | S2 arithmetic/BOUND; S3 string/stack/control; exact source conflicts transfer to T360 |
+| `60/61`, `62`, `68`--`6F`, `C0/C1`, `C8/C9` | 80186 | receiver; rejected on 8086 | S2 arithmetic/BOUND; S3 stack/control; S4 strings; exact source conflicts transfer to T360 |
 | `63` | 80286 | receiver; rejected below 80286 | S6 protected descriptor/privilege timing |
-| `64/65`, `66/67` | 80386 | receiver; rejected below 80386 | S4 80386 prefix/width timing matrix |
+| `64/65`, `66/67` | 80386 | receiver; rejected below 80386 | S4 string/I-O width selection; S5 remaining prefix/width matrix |
 | `70`--`7F` short `Jcc` | 8086 | selected for unprefixed taken/not-taken only; every other legal variant receiver | T357 S3--S6; S3 completes branch/lexeme timing |
 | `80/81/83 /0`--`/7`; `82`; `84/85`; `86/87` | 8086 | receiver; `82` rejected | S2 immediate-ALU, TEST, XCHG and LOCK-aware memory timing |
 | `88`--`8B` | 8086 | selected for the exact T357 register/memory rows; prefix/width/mode variants receiver | T357 S3--S6; S2 completes data/EA variants |
@@ -49,8 +49,8 @@ extensions are rejected rather than folded into the group.
 | `90` | 8086 | selected only unprefixed | T357 S3--S6; S2 prefix and exchange variants |
 | `91`--`97`, `98/99`, `9A`, `9B`, `9C`--`9F` | 8086 | receiver; `9B` CPU-side external boundary | S2 conversion/FLAGS; S3 control/stack; external x87 timing excluded |
 | `A0`--`A3` | 8086 | selected for exact T357 moffs read/write rows; legal attributes receiver | T357 S3--S6; S2 width/prefix variants |
-| `A4` | 8086 | selected unprefixed and exact `F3 MOVSB` formula only; other segment/repeat/width variants receiver | T357 S3--S6; S3 complete string matrix |
-| `A5`--`A7`, `A8/A9`, `AA`--`AF` | 8086 | receiver | S2 TEST; S3 string/repeat timing |
+| `A4`--`A7`, `AA`--`AF` | 8086 | selected where the S4 source ledger defines the primitive or repeat row; transferred only for the explicit 80286 `REP LODS` source gap | S4 string/repeat timing |
+| `A8/A9` | 8086 | receiver | S2 TEST timing |
 | `B0`--`BF` | 8086 | selected only unprefixed immediate-register rows | T357 S3--S6; S2 width/prefix variants |
 | `C2/C3`, `C4/C5`, `C6/C7`, `C8/C9`, `CA/CB`, `CC`--`CF` | 8086 or 80186 as metadata states | receiver; `C8/C9` rejected on 8086 | S2 immediate data; S3 call/return/far-load/software-delivery; S3 80186 frame timing |
 | `D0`--`D5`, `D7` | 8086 | receiver; `D6` rejected | S2 rotate/decimal/XLAT timing |
@@ -141,5 +141,5 @@ the metadata, dispatch, and source-cost owners.  It intentionally does not
 parse C as a full compiler: metadata and dispatch remain the mechanical
 inventory, while this checked record owns the semantic timing disposition.
 
-The T359 developer artifact is `build/output/nxvm_0_5_0359.exe`, SHA-256
-`A9F0D342753C7F3BDC2C0492E08E103F3A0D8C7BB651ACE5ABAD5D75F0C39134`.
+The T359 S4 developer artifact is `build/output/nxvm_0_5_0359.exe`, SHA-256
+`D8422AE25FF8608282FAD66E057F76F5BC56143377AAAF4210BF4396A7B9FD89`.
