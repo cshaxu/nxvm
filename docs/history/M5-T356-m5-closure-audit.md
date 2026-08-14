@@ -15,9 +15,9 @@ It finds selected owners/evidence coherent, distinguishes deterministic L3
 from physical timing, and assigns every non-selected boundary to a finite
 receiver.  It makes no M5-close decision.
 
-## S2 delivery pending acceptance
+## Accepted S2 progress
 
-S2 turns the timing residual into the ordered instruction-timed, bus-timed,
+S2 was accepted at `a42c0733`.  It turns the timing residual into the ordered instruction-timed, bus-timed,
 and cycle-exact selected-profile candidates, and records why corpus-gated
 peripherals remain TODO rather than speculative implementation work.  The
 [receiver plan](../etc/evidence/t356-s2-receiver-plan.md) retains every S1

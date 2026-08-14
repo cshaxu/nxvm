@@ -2,29 +2,7 @@
 
 ## Current Work
 
-**Active.** M5 T356 S2 turns the audited device/L3 residuals into ordered,
-bounded receiver proposals; it does not implement device or timing behavior.
-
-## M5 T356 S2 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner approved the holistic device/L3 program on 2026-08-13. Accepted S1 `cfbcaadf` / `adbf5285` requires finite receivers before any M5-close decision. |
-| Objective | Create and order exact Queue proposals for instruction-timed execution, bus-timed PC/AT operation, and a selected cycle-exact profile; reconcile every other S1 deferred device/product row to an existing precise TODO or explicit non-admission. |
-| Non-goals | No source/runtime/CMake/current-gate change, no M5 closure, media access, hardware behavior synthesis, x87 work, rule change, Windows claim, or M6 admission. |
-| Reference Baseline | `adbf5285` on `master`, accepted T356 S1 device/L3 ledger. |
-| Candidate Proposal | [M5 closure audit](../proposals/m5-closure-audit.md); [S1 ledger](../etc/evidence/t356-s1-m5-device-l3-closure-ledger.md); [Timing-Fidelity TODO](TODO.md#timing-fidelity-debt). |
-| Files And ABI Surface | Queue, new proposals, TODO/evidence/history/CURRENT documentation only. No source, build, runtime, ABI, current-gate or media change. |
-| Applicable Rules | Task Reading Set; execution lifecycle; documentation rules; architecture rules for one owner/dependency direction; source policy. |
-| Verification | Every S1 deferred row has a Queue proposal, existing TODO with admission condition, or explicit external/product boundary; proposals state prerequisites, owner, validation/commit boundary, evidence, non-goals and stop conditions; Queue links and governance pass. |
-| Expected Markers | Three linked timing proposals in dependency order; no duplicated current/Queue owner; no unclassified S1 residual; governance and diff checks pass. |
-| Asset Needs | None. Do not access guest media, external source, firmware, or corpora. |
-| Reporting Requirements | Record each S1 residual disposition, reason for priority/order, predecessor/successor dependency, precise proof requirement, and every deliberately retained TODO. |
-| Stop Conditions | Stop for owner decision if a receiver needs a particular hardware manual/corpus, source import, media use, or product scope that cannot be stated honestly from current evidence. |
-| Exit Criteria | An ordered finite program exists for all three timing layers; all device/product residuals remain truthfully queued or deferred; no candidate claims implementation before its prerequisite proof exists. |
-| Original Owner Request | Fully and stably implement every high-value device and complete L3 timing before deciding the next program phase. |
-| Similar-Issue Sweep | Reconcile every S1 ledger row, all TODO priority/admission text, Queue order, M5/M6 roadmap boundaries, current capability baseline, and prior T346--T355 transfers. |
+**Active.** M5 T356 remains open between accepted subtasks.
 
 ## Current Technical Baseline
 
@@ -45,7 +23,7 @@ bounded receiver proposals; it does not implement device or timing behavior.
 
 | Task | Compact result |
 | --- | --- |
-| T356 S1 | Accepted the full current device/L3 ledger: selected core owners and evidence are coherent; deterministic event-and-bus ordering is distinct from instruction timing, wait-state ownership and cycle-exact behavior; S2 receives the finite timing/device receiver plan. [Evidence](../etc/evidence/t356-s1-m5-device-l3-closure-ledger.md). |
+| T356 S2 | Accepted the complete receiver plan: instruction costs precede bus availability/wait states, which precede one selected cycle-exact profile; every corpus-gated peripheral, storage, product and x87 boundary remains an explicit TODO/Queue transfer. [Evidence](../etc/evidence/t356-s2-receiver-plan.md). |
 | T355 | Closed the bounded Windows 3.x readiness map: an opt-in BYOB HDD/INT13 checkpoint passed, all four probes remain host-observation/non-current, T347/T354 storage/L3 is a verified prerequisite, and all display, input, NMI, physical-timing, Setup, and compatibility breadth remains explicitly transferred. [History](../history/M5-T355-windows-3x-readiness-map.md). |
 | T354 | Closed selected L3 bus timing: core-local checked CPU/DMA transaction begin/commit/cancel trace, deterministic CPU-retire then DMA/PIT/PIC then FDC/HDC ordering, reset cancellation/trace continuity, and retained firmware/DOS consumers. Exact bus cycles, pin waveforms, physical wait tables, host time, and Windows readiness remain explicit transfers. 234 current-gate tests passed. [History](../history/M5-T354-physical-l3-bus-timing-convergence.md). |
 | T353 | Closed selected PC/AT topology: the default profile's 75 exact directional leaves and five named routes validate before core publication, remain exact through session reset and deterministic-L3 rearm, and have firmware-visible reset proof. Optional PPI/speaker, NMI, and interface breadth remain corpus-gated TODO transfers; physical bus timing transfers to the next L3 package. 231 current-gate tests passed. [History](../history/M5-T353-pcat-port-topology-and-peripherals.md). |
