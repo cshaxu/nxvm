@@ -101,17 +101,20 @@ append isolated clocks:
 1. **S2 -- arithmetic, FLAGS, data and ModRM/EA source matrix.** Primary ALU,
    group forms, TEST/XCHG, conversion, adjustment, and selected data forms;
    shared defined-FLAGS and r/m classification.
-2. **S3 -- control, stack, string, repeat and ordinary-I/O source matrix.**
-   Calls/returns/interrupt instructions, LOOP/Jcc breadth, string primitive
-   and restart formulas, stacks, HLT, and remaining ordinary I/O variants.
-3. **S4 -- 80386 secondary integer and prefix/width source matrix.** Near Jcc,
+2. **S3 -- control and stack source matrix.** Calls/returns/interrupt
+   instructions, LOOP/Jcc breadth, stacks, HLT, and source-backed real-mode
+   return paths.
+3. **S4 -- string, repeat and ordinary-I/O source matrix.** String primitive
+   and restart formulas, repeat/count/direction variants, and remaining
+   ordinary I/O variants.
+4. **S5 -- 80386 secondary integer and prefix/width source matrix.** Near Jcc,
    SETcc, bit/double-shift/IMUL/scan/MOVX, 66/67/prefix variants, and their
    shared lexical/operand-address mechanisms.
-4. **S5 -- 80286/80386 privileged-form timing and corpus reconciliation.**
+5. **S6 -- 80286/80386 privileged-form timing and corpus reconciliation.**
    Table/selector/control/debug/task/VM86 forms only after their primary rows
    and delivery assumptions are bounded; transfer delivery cycles rather than
    inventing them.
-5. **S6 -- task closure audit.** Verify every receiver has an exact source row
+6. **S7 -- task closure audit.** Verify every receiver has an exact source row
    or a truthful Queue/TODO transfer, then hand primary-source conflicts to
    the next Queue candidate, Four-profile Intel timing source reconciliation.
 

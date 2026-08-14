@@ -36,6 +36,12 @@ start until the next packet is admitted.
 
 ## Recent Governance
 
+- **M5 Td S88:** reconciled the active T359 mechanism plan after S3 acceptance:
+  S4 owns the stateful string/repeat/ordinary-I/O timing mechanism, and the
+  secondary, privileged, and closure units follow as S5--S7. Documentation
+  governance, the T359 inventory verifier, and diff check passed; Td work has
+  no runtime or artifact change.
+
 - **M5 Td S87:** reconciled the T358 continuation handoff: removed the
   duplicate empty history heading, retained the approved Queue order, and
   restored compact open-T358 status. Documentation governance and diff check
@@ -81,10 +87,3 @@ start until the next packet is admitted.
   design/rule wording and README schema self-test. Documentation self-test,
   default governance check, README-link check, and diff check passed. Td work
   has no runtime or artifact change.
-
-- **M5 Td S81:** withdrew the duplicate 80286 `LOCK` candidate after the
-  T339 closure audit reconfirmed that accepted T328 already owns the complete
-  pre-386 prefix-policy matrix. The Queue now advances directly from T339 to
-  the 80386DX form closure; current proposals and T339 transfer ledgers name
-  T328, T341, and T342 truthfully. Documentation governance and diff check
-  passed. Td work has no runtime or artifact change.

@@ -76,9 +76,10 @@ foreach(t359_anchor IN ITEMS
     "0F BA /4`--`/7"
     "0F B2`--`B7"
     "S2 -- arithmetic, FLAGS, data and ModRM/EA source matrix"
-    "S3 -- control, stack, string, repeat and ordinary-I/O source matrix"
-    "S4 -- 80386 secondary integer and prefix/width source matrix"
-    "S5 -- 80286/80386 privileged-form timing and corpus reconciliation"
+    "S3 -- control and stack source matrix"
+    "S4 -- string, repeat and ordinary-I/O source matrix"
+    "S5 -- 80386 secondary integer and prefix/width source matrix"
+    "S6 -- 80286/80386 privileged-form timing and corpus reconciliation"
     "Four-profile Intel timing source reconciliation")
     string(REPLACE "*" "\\*" t359_pattern "${t359_anchor}")
     string(REPLACE "+" "\\+" t359_pattern "${t359_pattern}")

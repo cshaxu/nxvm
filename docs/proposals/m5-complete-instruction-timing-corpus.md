@@ -41,3 +41,26 @@ validation-to-publication sweep; focused mode/prefix/fault/restart tests;
 actual current-gate; and explicit Queue/TODO transfer of non-CPU physical
 timing. Completion means the instruction corpus is accounted for, not that
 the machine is cycle exact.
+
+## Ordered mechanism units
+
+1. **S2 -- arithmetic, FLAGS, data and ModRM/EA source matrix.** Primary ALU,
+   group forms, TEST/XCHG, conversion, adjustment, selected data forms, and
+   shared defined-FLAGS/r-m classification.
+2. **S3 -- control and stack source matrix.** Calls/returns/interrupt
+   instructions, LOOP/Jcc breadth, stacks, HLT, and source-backed real-mode
+   return paths. Protected, cross-privilege, VM86, task, and generic-delivery
+   forms remain transfers rather than inferred clocks.
+3. **S4 -- string, repeat and ordinary-I/O source matrix.** String primitive
+   and restart formulas, repeat/count/direction variants, and the remaining
+   ordinary I/O variants share a stateful iteration/provider mechanism.
+4. **S5 -- 80386 secondary integer and prefix/width source matrix.** Near Jcc,
+   SETcc, bit/double-shift/IMUL/scan/MOVX, 66/67/prefix variants, and their
+   shared lexical/operand-address mechanisms.
+5. **S6 -- 80286/80386 privileged-form timing and corpus reconciliation.**
+   Table/selector/control/debug/task/VM86 forms only after their primary rows
+   and delivery assumptions are bounded; transfer delivery cycles rather than
+   inventing them.
+6. **S7 -- task closure audit.** Verify every receiver has an exact source row
+   or a truthful Queue/TODO transfer, then hand primary-source conflicts to
+   the next Queue candidate, Four-profile Intel timing source reconciliation.
