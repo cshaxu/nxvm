@@ -7,7 +7,7 @@ completed controller/input graph closed by T351.  It reconciles the selected
 digital CGA/EGA display state graph before port-topology and bus-timing
 candidates proceed.
 
-## Active Subtasks
+## Completed Subtasks
 
 | Subtask | Purpose |
 | --- | --- |
@@ -45,7 +45,26 @@ captured-value isolation proof without conflating the real 320 and mode-10
 layouts.  S5 retains cross-mode/timeline/presentation composition and task
 artifact closure.
 
-S5 delivery composes text, selected CGA, selected EGA, reset/re-arm, retained
-VADP timeline placement, and the copied session-to-mailbox boundary.  It also
-builds the T352 developer artifact.  The detailed state/result matrix is
-retained in the S5 evidence pending task acceptance.
+S5 is accepted at `629907e5`: it composes text, selected CGA, selected EGA,
+reset/re-arm, retained VADP timeline placement, and the copied
+session-to-mailbox boundary.  It builds `vm-0-5-0352` /
+`build/output/nxvm_0_5_0352.exe`, SHA-256
+`37A00874C05FB402151AF1A77BD28796D03B2A738D6F3EC08761E4541F2D6BB4`.
+
+## Task Closure
+
+T352 closes the selected digital CGA/EGA state graph: VADP owns all selected
+guest register, aperture, raster, plane/latch, reset, and capture state;
+`machine.c` advances VADP after KBC at deterministic due ticks; session and
+platform consume only copied display values.  S1 assigns every selected row to
+S2--S5, and their indexed evidence records the proof and remaining boundary.
+
+The retained transfers are additional digital CGA geometry/light pen,
+composite simulation, broad EGA compatibility and unselected controller/CRTC
+semantics, VGA/VBE/SVGA, physical dot-clock/scanline contention, host
+renderer/event-loop pacing, firmware service breadth, and Windows execution.
+They remain explicit TODO or later Queue work; none is represented as selected
+digital-video parity by this closure.
+
+The original candidate is retained as
+[its proposal companion](M5-T352-vadp-digital-video-completeness-proposal.md).

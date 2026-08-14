@@ -37,6 +37,12 @@ adopts them.
   display-enable/vertical-retrace. Deferred: additional 40/80-column geometry
   breadth and light pen. Every admission retains one VADP owner, B8000h
   mapping, copied-frame output, and port/memory/frame plus DOS-fixture evidence.
+- [ ] **Broaden digital EGA and admit VGA compatibility (`TODO(Medium)`).** T352
+  closes only direct planar `320x200x16` and mode-10 `640x350x16` through one
+  VADP owner. Admit the next adapter package only with a complete IBM EGA/VGA
+  register/mode/CRTC matrix, explicit aperture and palette semantics, reset and
+  copied-frame proof, and focused plus guest-path evidence. Do not infer VGA,
+  VBE, generic BIOS-mode, or arbitrary CRTC support from T352's selected paths.
 - [ ] **CGA composite-video fidelity (`TODO(Low)`).** Treat NTSC artifact
   color, phase, and colorburst as an optional renderer/profile capability only
   after digital CGA is complete. Do not fold it into VADP digital state or use
