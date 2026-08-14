@@ -35,6 +35,12 @@ candidate before bus-timed PC/AT work.
 
 ## Recent Governance
 
+- **M5 Td S86:** replaced the completed instruction-timing TODO with ordered
+  candidates for the remaining full instruction corpus and the independent
+  80286 Appendix-B source reconciliation; retained bus-timed and cycle-exact
+  work in their dependency order. Documentation governance and diff check
+  passed; Td work has no runtime change.
+
 - **M5 Td S85:** corrected the Windows readiness candidate so FDC/ATA
   pending/readiness service is an accepted regression baseline, rather than a
   stale missing-feature blocker. Physical device timing and Windows
