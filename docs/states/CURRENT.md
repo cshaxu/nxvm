@@ -2,29 +2,9 @@
 
 ## Current Work
 
-**Active.** M5 T366 S2 locks the exact IBM 5170 baseline and project-owned
-probe-corpus boundary; it allocates no availability or device timing.
-
-## M5 T366 S2 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | The owner directed continued work toward comprehensive L3 precision and, on 2026-08-14, approved the 5170-first Queue order, exact baseline-machine method, and later full current-product device closure. Git pushes are permitted. |
-| Objective | Select and record one exact field-configured IBM PC/AT 5170 physical baseline that can govern later NMI and bus work: Model 339 Type 3 system board, 8 MHz 80286, 512 KB system-board RAM, Rev.3 1985-11-15 ROM slot, 101-key keyboard, IBM CGA, and one explicitly identified TEAC FD-235HF-A529 3.5-inch 1.44 MB drive on the IBM diskette controller/DMA channel-2 route. The original Model 339 MFM fixed disk and serial/parallel hardware are deliberately unselected; the 1.44 MB drive is a documented field upgrade, not an IBM factory configuration. Define only the project-owned probe-corpus boundary needed to measure this configuration later. |
-| Non-goals | No vendor ROM, DOS or diagnostic media import; no ROM hash catalogue; no runtime profile, wait state, NMI producer, DMA arbitration, FDC latency, serial/parallel, HDD, or display implementation; no physical/cycle-exact claim. |
-| Reference Baseline | `0cb7158f`; T366 S1 inventory at `098a146a`; IBM PC/AT 5170 Models 319/339 technical material and March 1986 Technical Reference; TEAC FD-235HF-A529 specification; T365 source non-admission; [Bus-timed PC/AT operation](../proposals/m5-bus-timed-pcat-operation.md); source policy; Queue and TODO. |
-| Candidate Proposal | [Bus-timed PC/AT operation](../proposals/m5-bus-timed-pcat-operation.md). |
-| Files And ABI Surface | `docs/states/CURRENT.md`, T366 history/proposal and evidence/index records only. No public ABI, runtime behavior, artifact revision, firmware, guest media, or third-party source. |
-| Applicable Rules | Task Reading Set; Execution packet, continuation, evidence, closure and push rules; Documentation topology; Architecture ownership/lifecycle rules; source and research policy. |
-| Verification | Reconcile every selected/non-selected component with the Model 339 Type 3 board/ROM and TEAC-drive contracts; verify all source links, Queue/TODO receivers, documentation governance, and diff check. |
-| Expected Markers | One T366 S2 profile-lock evidence record names the exact Model 339 field configuration, primary-source basis, local-only ROM constraint, project-owned probe categories, NMI candidate boundary, and every excluded device receiver. |
-| Asset Needs | Public manual/announcement metadata only. Firmware, DOS, diagnostics, disk images, ROM bytes, hashes, local paths and third-party source remain outside the repository. |
-| Reporting Requirements | Report the exact Model 339 field configuration, the correction from the non-physical 360 KB FDC assumption to the selected 1.44 MB drive, source/probe boundary, NMI handoff, MFM/ST-506 TODO receiver, excluded-device receivers, no-runtime-change result, verification and pushed commit. |
-| Stop Conditions | Stop without a selection if Model 339/Type 3/ROM/drive/CGA provenance conflicts, if any selected source lacks a primary contract, or if the record would imply a vendor asset or timing value. |
-| Exit Criteria | A reproducible, source-labelled 5170 baseline and project-owned probe-corpus design exist; it permits the next T366 NMI-source S but contains no timing allocation or unsupported device claim. |
-| Original Owner Request | Follow the current Queue to comprehensively realize L3 precision before entering Windows 3.1 work. |
-| Similar-Issue Sweep | Recheck Queue, TODO, Roadmap, Goal, T366 S1, T365 receiver, current capability baseline, and all current 5170 proposal references for board/model/drive contradictions, stale 360 KB claims, hidden vendor-asset assumptions, and unowned selected devices. |
+**No active implementation packet.** T366 S2 is accepted. Its next S may
+admit the selected Model 339 system-board-memory-parity NMI lifecycle; it must
+not allocate bus availability until that source has a complete owner contract.
 
 ## Current Technical Baseline
 
@@ -45,7 +25,7 @@ probe-corpus boundary; it allocates no availability or device timing.
 
 | Task | Compact result |
 | --- | --- |
-| T366 S1 | Accepted at `098a146a`: the deterministic default composition has synchronous transaction ownership but no selected board/revision, wait-state contract, or firmware/DOS timing corpus. [Inventory](../etc/evidence/t366-s1-pcat-bus-profile-route-inventory.md). No timing allocation. |
+| T366 S2 | Accepted at `0e04b405`: locks a field-configured IBM 5170 Model 339 Type 3 baseline--8 MHz, 512 KB, Rev.3 ROM slot, 101-key keyboard, CGA and TEAC 1.44 MB drive--with no fixed disk or serial/parallel adapter. ATA/HDC is explicitly distinct from the deferred MFM/ST-506 path. [Profile lock](../etc/evidence/t366-s2-5170-profile-lock.md). No timing allocation. |
 | T365 | Closed at `febc9352`: IBM PC/AT parity/I/O-check NMI sources cannot be selected without a profile input, status/latch/clear and lifecycle contract; CPU and CMOS remain delivery/mask only. [Closure audit](../etc/evidence/t365-s2-pcat-nmi-nonadmission-closure-audit.md). Blocks physical/cycle-exact L3 closure; no synthetic source. |
 | T364 | Closed at `7d574ae3`: all selected PC/AT components, ports/routes and lifecycle/timing owners are inventoried; optional and physical gaps retain exact Queue/TODO receivers. [Closure audit](../etc/evidence/t364-s2-pcat-device-completeness-closure-audit.md). No model-L3 claim. |
 | T363 | Closed at `312ef2f9`: all 256 primary and 256 secondary dispatch slots have one source-backed successful-retirement owner or an exact explicit receiver; inventory and 246/246 current-gate passed. [Closure audit](../etc/evidence/t363-s7-complete-instruction-timing-closure-audit.md). No physical/cycle-exact L3 claim. |
