@@ -124,3 +124,21 @@ coverage. The inventory verifier, documentation governance, and 245/245
 current-gate tests passed. The rebuilt developer artifact is
 `build/output/nxvm_0_5_0359.exe`, SHA-256
 `65823D830715FC8925DBD810C2BCDEC3AEEB654D3B6B96BB022870ABF9B6783D`.
+
+### S7: Complete instruction-timing corpus closure audit
+
+S7 is accepted at `d5f76911`. The
+[closure audit](../etc/evidence/t359-s7-complete-instruction-timing-closure-audit.md)
+reconciles the complete S1 primary and secondary inventory to the S2--S6
+source ledgers and the sole successful-retirement publisher. It confirms the
+retained one-tick result is an explicit transfer sentinel, not an Intel timing
+claim, and finds no handler-local or second elapsed-tick publisher.
+
+The task closes only the bounded source-accounted instruction-retirement
+corpus. It transfers range-only and conflicting primary material, 80286
+Appendix-B normalization, granular LSL, and incomplete selected variants to
+T360; delivery and transition paths to the cycle-exact receiver; physical
+wait/ownership to bus timing; device service to its own corpus; and x87/VME
+breadth to their existing TODOs. The inventory verifier, documentation
+governance, diff check, and 245/245 current-gate tests passed. T359 does not
+make an L3 or cycle-exact claim.
