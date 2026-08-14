@@ -37,6 +37,13 @@ corpus are prepared.
 
 ## Recent Governance
 
+- **M5 Td S91 P1:** made the architecture design explicitly retain one shared
+  core decode/execution and CPU/DMA transaction lifecycle across machine
+  profiles. 8088 owns only its documented external-bus and prefetch/timing
+  difference; 80286/80386 retain only their documented architectural and
+  board-local differences. Documentation governance and diff check passed; no
+  runtime, artifact, task-activation, or queue change.
+
 - **M5 Td S90 P1:** ordered M5 physical L3 closure as IBM PC/AT 5170 80286,
   exact Compaq DeskPro 386 80386, distinct 8088 CPU profile, and IBM 5150/XT
   8088 before the DeskPro-based Windows 3.1 corpus. It retains standalone
@@ -80,9 +87,3 @@ corpus are prepared.
   decision. T358 S1 was isolated during this Td delivery and is now restored
   as the sole active packet. Documentation governance and diff check passed;
   Td work has no runtime change.
-
-- **M5 Td S86:** replaced the completed instruction-timing TODO with ordered
-  candidates for the remaining full instruction corpus and the independent
-  80286 Appendix-B source reconciliation; retained bus-timed and cycle-exact
-  work in their dependency order. Documentation governance and diff check
-  passed; Td work has no runtime change.
