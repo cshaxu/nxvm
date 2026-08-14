@@ -12,9 +12,10 @@ the existing unprefixed 80286 handlers successfully retire.
 `core_machine_80286_source_instruction_cost()` remains the only successful
 retirement publisher. Its combined `9E`/`9F` branch assigns two ticks after
 the shared primary and control/stack classifiers decline the opcodes. The
-focused timing-ledger smoke proves each opcode publishes two ticks. The
-existing `core-machine-lahf-sahf-smoke`, exercised by the current-smokes gate,
-retains semantic, prefix, profile and fault coverage.
+focused timing-ledger smoke proves each opcode publishes two ticks and asserts
+the transferred/preserved AH and FLAGS state. The existing
+`core-machine-lahf-sahf-smoke`, exercised by the current-smokes gate, retains
+broader semantic, prefix, profile and fault coverage.
 
 The sweep covers the opcode dispatch/handlers, primary and control/stack
 classifiers, every profile classifier, direct 80286 fallback routing and
@@ -24,7 +25,9 @@ public ABI or device behavior changes.
 
 ## Verification
 
+P1 correctly established the source timing branches but omitted the
+packet-required focused AH/FLAGS checks. P2 adds that one consolidated proof.
 The focused `core-machine-80286-instruction-timing-ledger-smoke` passed and
-emitted `M5:T357:S6:80286-INSTRUCTION-TIMING-LEDGER:OK`. The configured
+emitted `M5:T357:S6:80286-INSTRUCTION-TIMING-LEDGER:OK`; the configured
 `run-current-smokes` gate passed. Documentation governance and `git diff
---check` are recorded with implementation delivery and acceptance review.
+--check` are recorded with P2 delivery and acceptance review.

@@ -113,6 +113,34 @@ static C_INT timing_80286_case(const type_unsigned_8 *program, STD_SIZE_T bytes,
     return failed;
 }
 
+static C_INT timing_80286_lahf_sahf(C_VOID)
+{
+    static const type_unsigned_8 lahf[] = { 0x9fu };
+    static const type_unsigned_8 sahf[] = { 0x9eu };
+    const type_unsigned_32 transferred = VCPU_EFLAGS_CF | VCPU_EFLAGS_PF |
+        VCPU_EFLAGS_AF | VCPU_EFLAGS_ZF | VCPU_EFLAGS_SF;
+    const type_unsigned_32 preserved = VCPU_EFLAGS_IF | VCPU_EFLAGS_DF |
+        VCPU_EFLAGS_OF;
+    timing_80286_state state = { 0u, 0u, 0u };
+    core_machine *machine = STD_NULL;
+    C_INT failed = !timing_80286_prepare(&machine, &state);
+
+    if (!failed) failed |= !timing_80286_load(machine, lahf, sizeof(lahf)) ||
+        ((machine->executor_cpu.data.eax = 0x11223344u),
+            (machine->executor_cpu.data.eflags = transferred), 0) ||
+        !timing_80286_run(machine, &state, 1u, 2u) ||
+        machine->executor_cpu.data.eax != 0x1122d744u ||
+        machine->executor_cpu.data.eflags != transferred;
+    if (!failed) failed |= !timing_80286_load(machine, sahf, sizeof(sahf)) ||
+        ((machine->executor_cpu.data.eax = 0x1122d744u),
+            (machine->executor_cpu.data.eflags = preserved), 0) ||
+        !timing_80286_run(machine, &state, 1u, 2u) ||
+        machine->executor_cpu.data.eax != 0x1122d744u ||
+        machine->executor_cpu.data.eflags != (preserved | transferred);
+    core_machine_destroy(machine);
+    return failed;
+}
+
 static C_INT timing_80286_memory(C_VOID)
 {
     static const type_unsigned_8 direct_read[] = { 0x8bu, 0x0eu, 0x00u, 0x10u };
@@ -325,6 +353,7 @@ C_INT main(C_VOID)
         timing_80286_case(lahf, sizeof(lahf), 2u) ||
         timing_80286_case(immediate, sizeof(immediate), 2u) ||
         timing_80286_case(registers, sizeof(registers), 2u)) return 1;
+    if (timing_80286_lahf_sahf()) return 5;
     if (timing_80286_memory()) return 2;
     if (timing_80286_control_ports()) return 3;
     if (timing_80286_boundaries()) return 4;
