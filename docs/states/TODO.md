@@ -190,11 +190,13 @@ admissions, not the default definition of NXVM completion.
 - [ ] **Instruction-timed execution (`TODO(Medium)`).** Give each admitted
   instruction deterministic profile-specific cost, including applicable
   prefix/branch/memory/I/O variants, before expanding the timing corpus.
-- [ ] **Bus-timed PC/AT operation (`TODO(High)`).** T269 admits deterministic
-  one-unit DMA grant pacing and its fixed visibility boundary. T346 now provides
-  one due-event/arbitration and transaction contract; a later task may model
-  remaining memory/I/O wait states, CPU bus ownership, and device-specific
-  timing only through later corpus-driven admissions.
+- [ ] **Bus-timed PC/AT operation (`TODO(High)`).** T354 closes selected L3:
+  checked CPU/DMA transaction publication, deterministic CPU/DMA/PIT/PIC/FDC/HDC
+  visibility, reset cancellation, and trace proof. A later task may model
+  remaining memory/I/O wait states, physical CPU bus ownership, and
+  device-specific timing only through a primary-contract or corpus-driven
+  admission; it must not reinterpret T354's synchronous selected boundary as
+  a cycle or pin waveform claim.
 - [ ] **Cycle-exact profiles (`TODO(High)`).** Only where a profile genuinely
   requires it, model clock phases, prefetch/bus behavior, and device
   microstates without silently changing the retained executor.

@@ -35,9 +35,18 @@ the equal-due readiness callback advances/refreshes FDC then HDC.  The focused
 ordering and transfers reset, trace-consumer, and final selected-L3 closure to
 S4.
 
-S4 is delivered pending acceptance.  Its
+S4 was accepted at `ff7a9f43`.  Its
 [selected-L3 closure audit](../etc/evidence/t354-s4-selected-l3-closure.md)
 proves transaction cancellation before reset, trace continuity after reset,
 and a fresh post-reset CPU commit/retire sequence.  It reconciles retained
 firmware/DOS consumers without treating them as a timing oracle, and records
 all unmodeled physical timing and Windows readiness as explicit transfers.
+
+## Closure
+
+T354 closes the selected PC/AT L3 event-and-transaction contract.  The current
+core has no hidden second CPU/DMA transaction owner, no unallocated selected
+equal-tick ordering, and no transaction state that leaks through reset.  This
+is intentionally below cycle-exact fidelity: the remaining physical wait,
+bus-pin, pipeline, analog, host-time, and Windows-readiness questions are
+separate admissions with their own evidence requirements.
