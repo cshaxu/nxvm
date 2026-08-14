@@ -2,8 +2,8 @@
 
 ## Current Work
 
-**No active implementation packet.** T363 is closed; the next ordered Queue
-candidate requires separate owner-approved admission.
+**Idle.** T363 is closed; the next ordered Queue candidate requires separate
+owner-approved admission.
 
 ## Current Technical Baseline
 
