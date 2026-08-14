@@ -76,6 +76,7 @@ typedef struct t_vadp_data {
     type_unsigned_8 text_cells[CORE_MACHINE_DISPLAY_MAX_COLUMNS *
         CORE_MACHINE_DISPLAY_MAX_ROWS * 2u];
     type_unsigned_8 graphics_bytes[CORE_MACHINE_VADP_VIDEO_BYTES];
+    type_unsigned_8 cga_vram[CORE_MACHINE_VADP_VIDEO_BYTES];
     type_unsigned_8 characters[CORE_MACHINE_DISPLAY_MAX_COLUMNS *
         CORE_MACHINE_DISPLAY_MAX_ROWS];
     type_unsigned_8 attributes[CORE_MACHINE_DISPLAY_MAX_COLUMNS *
@@ -93,6 +94,8 @@ typedef struct t_vadp {
 } t_vadp;
 
 C_VOID core_machine_vadp_initialize(t_vadp *adapter, t_port *port);
+C_VOID core_machine_vadp_configure_ega_ports(t_vadp *adapter, t_port *port);
+type_status core_machine_vadp_configure_cga_memory(t_vadp *adapter, t_ram *memory);
 C_VOID core_machine_vadp_reset(t_vadp *adapter);
 C_VOID core_machine_vadp_advance(t_vadp *adapter, t_ram *memory,
     type_unsigned_64 elapsed_ticks);

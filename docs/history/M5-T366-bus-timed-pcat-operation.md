@@ -59,3 +59,10 @@ composition lifecycle. Its [composition evidence](../etc/evidence/t366-s5-model-
 records the suppressed ATA/HDC controller, media, firmware and console paths
 and the retained default profile. It does not select the IBM ROM, exact CGA
 surface, MFM/ST-506 or any timing contract. S5 is accepted at `fd920773`.
+
+### S6: Model 339 CGA display topology
+
+S6 selects the existing CGA VADP surface and owner-local VRAM for the 512 KB
+Model 339 while making EGA registration optional for the retained default
+profile. Its [topology evidence](../etc/evidence/t366-s6-model-339-cga-topology.md)
+records the focused isolation proof and remaining display/timing transfers.

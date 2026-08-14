@@ -34,6 +34,7 @@ int main(C_VOID)
     display_config.text_timing.active_display_ticks = 48u;
     display_config.text_timing.horizontal_blank_ticks = 8u;
     display_config.text_timing.vertical_retrace_ticks = 8u;
+    display_config.ega_present = TYPE_TRUE;
     display_config.ega_sequencer.aperture_base = CORE_MACHINE_VADP_EGA_APERTURE_BASE;
     display_config.ega_sequencer.aperture_bytes = CORE_MACHINE_VADP_EGA_APERTURE_BYTES;
     display_config.ega_sequencer.reset = 0x03u;

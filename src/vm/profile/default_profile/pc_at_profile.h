@@ -123,6 +123,8 @@ typedef struct vm_profile_default_pc_at_descriptor {
     STD_SIZE_T default_memory_bytes;
     type_bool hdc_present;
     type_bool planar_parity_present;
+    type_bool ega_present;
+    type_bool cga_vram_present;
     vm_profile_default_pc_at_rom_mapping rom;
     vm_profile_default_pc_at_cmos_defaults cmos;
     const vm_profile_default_pc_at_port_leaf *port_leaves;

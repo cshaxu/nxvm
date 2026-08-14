@@ -41,6 +41,7 @@ C_INT main(C_VOID)
     core_machine_port_initialize(&port);
     core_machine_memory_initialize(&memory);
     core_machine_vadp_initialize(&vadp, &port);
+    core_machine_vadp_configure_ega_ports(&vadp, &port);
     failed |= core_machine_vadp_configure_ega_sequencer(&vadp, &memory,
         &sequencer) != TYPE_STATUS_OK;
     failed |= core_machine_vadp_configure_ega_controllers(&vadp,

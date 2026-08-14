@@ -238,23 +238,28 @@ type_status vm_session_storage_initialize(vm_session *machine)
         VM_PROFILE_DEFAULT_PC_AT_ROUTE_CMOS_IRQ8);
     fdc_route = vm_profile_default_pc_at_route_find(machine->profile,
         VM_PROFILE_DEFAULT_PC_AT_ROUTE_FDC_IRQ6_DMA2);
-    if (attribute_first == STD_NULL || attribute_last == STD_NULL ||
-        sequencer_first == STD_NULL || sequencer_last == STD_NULL ||
-        graphics_first == STD_NULL || graphics_last == STD_NULL ||
-        crtc_first == STD_NULL || crtc_last == STD_NULL || cmos_first == STD_NULL ||
+    if ((machine->profile->ega_present && (attribute_first == STD_NULL ||
+        attribute_last == STD_NULL || sequencer_first == STD_NULL ||
+        sequencer_last == STD_NULL || graphics_first == STD_NULL ||
+        graphics_last == STD_NULL)) || crtc_first == STD_NULL ||
+        crtc_last == STD_NULL || cmos_first == STD_NULL ||
         cmos_last == STD_NULL || cmos_route == STD_NULL || fdc_route == STD_NULL) {
         vm_session_storage_rollback(machine);
         return TYPE_STATUS_INVALID_ARGUMENT;
     }
     display_config.text_timing = machine->profile->cga_text_timing;
+    display_config.cga_vram_present = machine->profile->cga_vram_present;
+    display_config.ega_present = machine->profile->ega_present;
     display_config.ega_sequencer = machine->profile->ega_sequencer;
     display_config.ega_controllers = machine->profile->ega_controllers;
-    display_config.ports.attribute_first = attribute_first->port;
-    display_config.ports.attribute_last = attribute_last->port;
-    display_config.ports.sequencer_first = sequencer_first->port;
-    display_config.ports.sequencer_last = sequencer_last->port;
-    display_config.ports.graphics_first = graphics_first->port;
-    display_config.ports.graphics_last = graphics_last->port;
+    if (machine->profile->ega_present) {
+        display_config.ports.attribute_first = attribute_first->port;
+        display_config.ports.attribute_last = attribute_last->port;
+        display_config.ports.sequencer_first = sequencer_first->port;
+        display_config.ports.sequencer_last = sequencer_last->port;
+        display_config.ports.graphics_first = graphics_first->port;
+        display_config.ports.graphics_last = graphics_last->port;
+    }
     display_config.ports.crtc_first = crtc_first->port;
     display_config.ports.crtc_last = crtc_last->port;
     display_config.provider = &machine->display_provider;

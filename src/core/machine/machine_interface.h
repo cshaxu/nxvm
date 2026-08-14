@@ -90,6 +90,8 @@ typedef struct core_machine_display_port_topology {
  * one-time display declaration has been applied. */
 typedef struct core_machine_display_config {
     core_machine_vadp_text_timing text_timing;
+    type_bool cga_vram_present;
+    type_bool ega_present;
     core_machine_vadp_ega_sequencer_config ega_sequencer;
     core_machine_vadp_ega_controller_config ega_controllers;
     core_machine_display_port_topology ports;

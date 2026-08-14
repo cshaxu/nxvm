@@ -43,6 +43,47 @@ _Static_assert(CORE_MACHINE_VADP_CRTC_CURSOR_TOP <
 
 static C_VOID core_machine_vadp_mark_dirty(t_vadp *adapter);
 
+static type_status core_machine_vadp_cga_read(C_VOID *owner,
+    type_unsigned_32 physical, type_virtual_address destination,
+    type_native_unsigned bytes)
+{
+    t_vadp *adapter = (t_vadp *)owner;
+
+    if (adapter == STD_NULL || destination == 0u || physical < CORE_MACHINE_VADP_VIDEO_BASE ||
+        (type_unsigned_64)physical - CORE_MACHINE_VADP_VIDEO_BASE + bytes >
+        CORE_MACHINE_VADP_VIDEO_BYTES) return TYPE_STATUS_UNSUPPORTED;
+    STD_MEMCPY((C_VOID *)destination, adapter->data.cga_vram +
+        physical - CORE_MACHINE_VADP_VIDEO_BASE, bytes);
+    return TYPE_STATUS_OK;
+}
+
+static type_status core_machine_vadp_cga_write(C_VOID *owner,
+    type_unsigned_32 physical, type_virtual_address source,
+    type_native_unsigned bytes)
+{
+    t_vadp *adapter = (t_vadp *)owner;
+
+    if (adapter == STD_NULL || source == 0u || physical < CORE_MACHINE_VADP_VIDEO_BASE ||
+        (type_unsigned_64)physical - CORE_MACHINE_VADP_VIDEO_BASE + bytes >
+        CORE_MACHINE_VADP_VIDEO_BYTES) return TYPE_STATUS_UNSUPPORTED;
+    STD_MEMCPY(adapter->data.cga_vram + physical - CORE_MACHINE_VADP_VIDEO_BASE,
+        (const C_VOID *)source, bytes);
+    core_machine_vadp_mark_dirty(adapter);
+    return TYPE_STATUS_OK;
+}
+
+static type_status core_machine_vadp_cga_query(C_VOID *owner,
+    type_unsigned_32 physical, type_native_unsigned bytes,
+    core_machine_memory_access access)
+{
+    (C_VOID)owner;
+    return (access == CORE_MACHINE_MEMORY_ACCESS_READ ||
+        access == CORE_MACHINE_MEMORY_ACCESS_WRITE) &&
+        physical >= CORE_MACHINE_VADP_VIDEO_BASE &&
+        (type_unsigned_64)physical - CORE_MACHINE_VADP_VIDEO_BASE + bytes <=
+        CORE_MACHINE_VADP_VIDEO_BYTES ? TYPE_STATUS_OK : TYPE_STATUS_UNSUPPORTED;
+}
+
 static C_INT core_machine_vadp_is_graphics_mode(const t_vadp *adapter)
 {
     return adapter != STD_NULL &&
@@ -727,28 +768,8 @@ static C_VOID core_machine_vadp_write_sequencer_data(t_port *port,
     }
 }
 
-static C_VOID core_machine_vadp_register_ports(t_vadp *adapter, t_port *port)
+static C_VOID core_machine_vadp_register_cga_ports(t_vadp *adapter, t_port *port)
 {
-    core_machine_port_add_write(port, CORE_MACHINE_VADP_PORT_ATTRIBUTE,
-        core_machine_vadp_write_attribute, adapter);
-    core_machine_port_add_read(port, CORE_MACHINE_VADP_PORT_ATTRIBUTE_DATA_READ,
-        core_machine_vadp_read_attribute_data, adapter);
-    core_machine_port_add_read(port, CORE_MACHINE_VADP_PORT_GRAPHICS_INDEX,
-        core_machine_vadp_read_graphics_index, adapter);
-    core_machine_port_add_write(port, CORE_MACHINE_VADP_PORT_GRAPHICS_INDEX,
-        core_machine_vadp_write_graphics_index, adapter);
-    core_machine_port_add_read(port, CORE_MACHINE_VADP_PORT_GRAPHICS_DATA,
-        core_machine_vadp_read_graphics_data, adapter);
-    core_machine_port_add_write(port, CORE_MACHINE_VADP_PORT_GRAPHICS_DATA,
-        core_machine_vadp_write_graphics_data, adapter);
-    core_machine_port_add_read(port, CORE_MACHINE_VADP_PORT_SEQUENCER_INDEX,
-        core_machine_vadp_read_sequencer_index, adapter);
-    core_machine_port_add_write(port, CORE_MACHINE_VADP_PORT_SEQUENCER_INDEX,
-        core_machine_vadp_write_sequencer_index, adapter);
-    core_machine_port_add_read(port, CORE_MACHINE_VADP_PORT_SEQUENCER_DATA,
-        core_machine_vadp_read_sequencer_data, adapter);
-    core_machine_port_add_write(port, CORE_MACHINE_VADP_PORT_SEQUENCER_DATA,
-        core_machine_vadp_write_sequencer_data, adapter);
     core_machine_port_add_read(port, CORE_MACHINE_VADP_PORT_CRTC_INDEX,
         core_machine_vadp_read_crtc_index, adapter);
     core_machine_port_add_write(port, CORE_MACHINE_VADP_PORT_CRTC_INDEX,
@@ -773,8 +794,33 @@ C_VOID core_machine_vadp_initialize(t_vadp *adapter, t_port *port)
 {
     if (adapter == STD_NULL || port == STD_NULL) return;
     STD_MEMSET(adapter, TYPE_ZERO_8, sizeof(*adapter));
-    core_machine_vadp_register_ports(adapter, port);
+    core_machine_vadp_register_cga_ports(adapter, port);
     core_machine_vadp_reset(adapter);
+}
+
+C_VOID core_machine_vadp_configure_ega_ports(t_vadp *adapter, t_port *port)
+{
+    if (adapter == STD_NULL || port == STD_NULL) return;
+    core_machine_port_add_write(port, CORE_MACHINE_VADP_PORT_ATTRIBUTE,
+        core_machine_vadp_write_attribute, adapter);
+    core_machine_port_add_read(port, CORE_MACHINE_VADP_PORT_ATTRIBUTE_DATA_READ,
+        core_machine_vadp_read_attribute_data, adapter);
+    core_machine_port_add_read(port, CORE_MACHINE_VADP_PORT_GRAPHICS_INDEX,
+        core_machine_vadp_read_graphics_index, adapter);
+    core_machine_port_add_write(port, CORE_MACHINE_VADP_PORT_GRAPHICS_INDEX,
+        core_machine_vadp_write_graphics_index, adapter);
+    core_machine_port_add_read(port, CORE_MACHINE_VADP_PORT_GRAPHICS_DATA,
+        core_machine_vadp_read_graphics_data, adapter);
+    core_machine_port_add_write(port, CORE_MACHINE_VADP_PORT_GRAPHICS_DATA,
+        core_machine_vadp_write_graphics_data, adapter);
+    core_machine_port_add_read(port, CORE_MACHINE_VADP_PORT_SEQUENCER_INDEX,
+        core_machine_vadp_read_sequencer_index, adapter);
+    core_machine_port_add_write(port, CORE_MACHINE_VADP_PORT_SEQUENCER_INDEX,
+        core_machine_vadp_write_sequencer_index, adapter);
+    core_machine_port_add_read(port, CORE_MACHINE_VADP_PORT_SEQUENCER_DATA,
+        core_machine_vadp_read_sequencer_data, adapter);
+    core_machine_port_add_write(port, CORE_MACHINE_VADP_PORT_SEQUENCER_DATA,
+        core_machine_vadp_write_sequencer_data, adapter);
 }
 
 C_VOID core_machine_vadp_reset(t_vadp *adapter)
@@ -875,6 +921,15 @@ type_status core_machine_vadp_configure_text_timing(t_vadp *adapter,
     adapter->data.text_timing = *timing;
     adapter->data.raster_phase = timing->vertical_retrace_ticks;
     return TYPE_STATUS_OK;
+}
+
+type_status core_machine_vadp_configure_cga_memory(t_vadp *adapter, t_ram *memory)
+{
+    return adapter == STD_NULL || memory == STD_NULL ? TYPE_STATUS_INVALID_ARGUMENT :
+        core_machine_memory_register_device_provider(memory,
+            CORE_MACHINE_VADP_VIDEO_BASE, CORE_MACHINE_VADP_VIDEO_BYTES,
+            core_machine_vadp_cga_read, core_machine_vadp_cga_write,
+            core_machine_vadp_cga_query, adapter);
 }
 
 type_status core_machine_vadp_configure_ega_sequencer(t_vadp *adapter,
