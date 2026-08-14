@@ -11,6 +11,11 @@ static C_INT pcat_topology_registry_matches_profile(
     const vm_profile_default_pc_at_descriptor *profile)
 {
     vm_session *session = STD_NULL;
+    const vm_profile_default_pc_at_route *pit_route;
+    const vm_profile_default_pc_at_route *keyboard_route;
+    const vm_profile_default_pc_at_route *aux_route;
+    const vm_profile_default_pc_at_route *cmos_route;
+    const vm_profile_default_pc_at_route *fdc_route;
     STD_SIZE_T index;
     C_INT failed = 0;
 
@@ -28,6 +33,29 @@ static C_INT pcat_topology_registry_matches_profile(
             core_machine_port_has_write(&session->core_machine->executor_port,
                 leaf->port) != leaf->write;
     }
+    pit_route = vm_profile_default_pc_at_route_find(profile,
+        VM_PROFILE_DEFAULT_PC_AT_ROUTE_PIT_IRQ0);
+    keyboard_route = vm_profile_default_pc_at_route_find(profile,
+        VM_PROFILE_DEFAULT_PC_AT_ROUTE_KBC_KEYBOARD_IRQ1);
+    aux_route = vm_profile_default_pc_at_route_find(profile,
+        VM_PROFILE_DEFAULT_PC_AT_ROUTE_KBC_AUX_IRQ12);
+    cmos_route = vm_profile_default_pc_at_route_find(profile,
+        VM_PROFILE_DEFAULT_PC_AT_ROUTE_CMOS_IRQ8);
+    fdc_route = vm_profile_default_pc_at_route_find(profile,
+        VM_PROFILE_DEFAULT_PC_AT_ROUTE_FDC_IRQ6_DMA2);
+    failed |= pit_route == STD_NULL || keyboard_route == STD_NULL ||
+        aux_route == STD_NULL || cmos_route == STD_NULL || fdc_route == STD_NULL ||
+        session->core_machine->shared_pit_irq0_source.irq != pit_route->irq ||
+        session->core_machine->shared_kbc.connect.irq1_source.irq !=
+            keyboard_route->irq ||
+        session->core_machine->shared_kbc.connect.irq12_source.irq !=
+            aux_route->irq ||
+        session->core_machine->rtc_cmos_config.irq != cmos_route->irq ||
+        session->core_machine->fdc_topology.config.irq != fdc_route->irq ||
+        session->core_machine->fdc_topology.config.dma_channel !=
+            fdc_route->dma_channel ||
+        session->core_machine->hdc_topology.config.irq !=
+            profile->hdc_pio.irq;
     failed |= core_machine_port_has_read(&session->core_machine->executor_port,
             0x0061u) ||
         core_machine_port_has_write(&session->core_machine->executor_port,

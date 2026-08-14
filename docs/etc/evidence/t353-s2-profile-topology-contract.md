@@ -68,10 +68,12 @@ descriptor validator.
 
 `current.vm-pcat-topology-s2-smoke` creates the ordinary VM session, checks
 every profile leaf against the frozen core port registry, confirms selected
-sparse non-leaves remain unregistered, validates all five routes, and mutates
-a leaf in a cloned descriptor to prove rejection before core-machine
-publication.  The retained default-profile and session-initialization
-atomicity smokes prove the profile contract and lifecycle consumers.
+sparse non-leaves remain unregistered, and compares PIT, KBC keyboard/AUX,
+CMOS, FDC/DMA, and ATA IRQ bindings with the declared sources.  It also
+validates all five routes and mutates a leaf in a cloned descriptor to prove
+rejection before core-machine publication.  The retained default-profile and
+session-initialization atomicity smokes prove the profile contract and
+lifecycle consumers.
 
 Focused execution passed all three markers.  Fresh configuration, exact
 current-gate registration, documentation governance, diff check, and the full
