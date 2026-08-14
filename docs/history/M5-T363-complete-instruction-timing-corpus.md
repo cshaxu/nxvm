@@ -40,3 +40,12 @@ INT/INTO/IRET and real-control ownership without a runtime change. Protected,
 VM86, task, cross-privilege, generic delivery, and physical forms remain
 explicit receivers. S4 may reconcile only string/repeat and ordinary I/O
 timing.
+
+### S4: String, repeat, and ordinary-I/O source matrix
+
+S4 is accepted at `76222b51`. Its
+[reconciliation](../etc/evidence/t363-s4-string-io-reconciliation.md)
+confirms complete selected primitive, REP/restart and ordinary-I/O ownership,
+with one restart-safe publisher and explicit 80286 `REP LODS` and physical/
+provider receivers. The focused smoke and 246/246 current-gate suite passed.
+S5 may reconcile only 80386 secondary integer and prefix/width timing.

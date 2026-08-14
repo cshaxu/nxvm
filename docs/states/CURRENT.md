@@ -2,30 +2,8 @@
 
 ## Current Work
 
-**Active.** M5 T363 S4 reconciles string, repeat, and ordinary-I/O timing
-forms while retaining source-undefined and physical/provider paths as
-explicit transfers.
-
-## M5 T363 S4 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | The owner directed current-Queue execution through complete instruction timing on 2026-08-14. T363 S3 was accepted at `3806da6c`; the approved T363 mechanism order admits this bounded string/repeat/I-O unit. Git pushes are permitted. |
-| Objective | Reconcile every successful string primitive, REP/restart/count/direction variant, and ordinary `E4`--`E7`/`EC`--`EF` I/O form across all four profiles, with exact mode/prefix/provider/publication ownership. |
-| Non-goals | No arithmetic/control/secondary/privileged allocation; no source value for 80286 `REP LODS`; no denied/provider-fault/delivery, port-service, physical memory/I-O waits, HOLD/DMA, prefetch/cache/pin, x87, ABI, import, measurement, or physical/cycle-exact claim. |
-| Reference Baseline | `3806da6c` / `vm-0-5-0362`; [T363 S1 inventory](../etc/evidence/t363-s1-complete-instruction-timing-inventory.md), [T359 S4 string/I-O ledger](../etc/evidence/t359-s4-four-profile-string-io-source-ledger.md), and accepted T357/T360 source dispositions. |
-| Candidate Proposal | [Complete instruction-timing corpus](../proposals/m5-complete-instruction-timing-corpus.md). |
-| Files And ABI Surface | Private string/I-O timing classifier, repeat state publisher, focused corpus, evidence/history/status and T363 artifact only if runnable behavior changes. No public ABI. |
-| Applicable Rules | Task Reading Set; Execution source/evidence/artifact/full-gate rules; Architecture one successful-retirement owner; Coding private classifier/test rules; Documentation and source/research policy. |
-| Verification | Complete primitive/REP/ordinary-I-O source matrix; count-zero/one/multiple, comparison-stop, prefix/width/address/mode/permission, restart/reset and zero-publication sweep; focused smoke, static inventory, governance, artifact/hash if changed and full gate. |
-| Expected Markers | T363 S4 string/repeat/I-O reconciliation marker and retained timing inventory/current-gate markers. |
-| Asset Needs | Read-only Intel manuals; external models only under the approved primary-gap ladder; no retained downloads, code, firmware or guest media. |
-| Reporting Requirements | Name every selected/no-op/changed/transferred form, repeat/restart and provider boundary, exact mode/privilege handling, artifact identity if any, and S5 receiver. |
-| Stop Conditions | Stop if a source row requires unmodeled provider, delivery, physical, or shared mode-state context, a second publisher, or profile borrowing. Preserve an explicit receiver rather than guess. |
-| Exit Criteria | Every S4 successful form has a complete source allocation or explicit receiver; focused/full gates pass; no physical/cycle-exact claim. |
-| Original Owner Request | Execute the current Queue through complete instruction timing, using Intel first and 86Box/MAME/PCjs only as applicable model sources where primary timing is non-deterministic. |
-| Similar-Issue Sweep | Search every string and ordinary-I/O opcode, repeat signature/state, prefixes, source classifier/ledger, provider/fault/mode branches, publication, corpus tests, CMake and evidence. |
+**Active.** M5 T363 remains open between accepted S units; no implementation
+packet is active while its next bounded continuation is prepared.
 
 ## Current Technical Baseline
 
@@ -46,7 +24,7 @@ explicit transfers.
 
 | Task | Compact result |
 | --- | --- |
-| T363 S3 | Accepted at `6523d514`: the complete successful control/stack/real-control matrix retains one source-backed owner and explicit privileged/delivery receivers without a runtime change. [Reconciliation](../etc/evidence/t363-s3-control-stack-reconciliation.md). |
+| T363 S4 | Accepted at `76222b51`: the complete string/repeat/ordinary-I-O matrix retains one source-backed owner, restart-safe state publication, and explicit source/physical receivers without a runtime change. [Reconciliation](../etc/evidence/t363-s4-string-io-reconciliation.md). |
 | T362 | Closed at `316c2334`: S1--S2 normalize every eligible 80186 immediate-IMUL source row in one private direct/constrained model table; S3 resolves stale full-gate verifier assumptions and records 246/246 current-gate tests. [Closure audit](../etc/evidence/t362-s3-legacy-timing-normalization-closure-audit.md). Model-L3 only; no physical/cycle-exact claim. |
 | T361 | Closed at `a5442d96`: S1--S3 established the source-labelled 8086/80186 allocation and synchronous-fault publication boundary; S4 retained Intel 210498-005 Appendix-B `90 NOP = 3` after a page/context and consumer audit. Immediate-IMUL normalization transfers to the first Queue candidate. [S4 evidence](../etc/evidence/t361-s4-80286-nop-source-consumer-audit.md). No physical or cycle-exact claim. |
 | T360 | Closed four-profile timing source reconciliation: primary-authority inventory, owner-selected 80286 NOP table precedence, exact legacy range transfer, contextual classifier audit, and final source/receiver closure. 245/245 current-gate tests passed; no L3 or cycle-exact claim. [Closure audit](../etc/evidence/t360-s5-four-profile-timing-source-closure-audit.md). |
