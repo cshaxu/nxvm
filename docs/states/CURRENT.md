@@ -2,30 +2,8 @@
 
 ## Current Work
 
-**Active.** M5 T357 S2 establishes the CPU-owned, side-effect-free timing
-preview required to classify source-backed taken-branch timing without a
-second execution decoder.
-
-## M5 T357 S2 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner approved continuous holistic L3 implementation on 2026-08-13. T357 S1 was accepted at `9f869306`; its source-backed `Jcc` requirement exposed this prerequisite. The owner direction is implemented as a bounded S2 mechanism first, followed by a timing-ledger S. Full-gate execution may repair a directly reproduced baseline reset/fixture contract only when that repair is local, evidence-backed, and does not broaden timing semantics. |
-| Objective | Add one CPU-owned, private, side-effect-free preview that reports the Intel `m` component count for the next architecturally fetchable instruction. It must let taken-branch timing consume CPU lexical-format truth without executing, publishing, tracing, faulting, or mutating that instruction. |
-| Non-goals | No timing ledger or synthetic-cost replacement yet; no guessed branch value; no public timing API, second execution/semantic decoder, CPU semantic repair except a directly reproduced baseline gate contract, wait-state/bus/HOLD/DMA model, prefetch/cache/pin waveform model, exact interrupt/fault cycles, x87 timing, host time, or M5 closure. |
-| Reference Baseline | `9f869306` on `master`; accepted [S1 timing contract](../etc/evidence/t357-s1-instruction-timing-contract.md), in particular the 80386 `Jcc` `7+m` row, current CPU fetch/decode route, and T354 selected-L3 ordering. |
-| Candidate Proposal | [Instruction-timed execution](../proposals/m5-instruction-timed-execution.md); [T357 S1 contract](../etc/evidence/t357-s1-instruction-timing-contract.md). |
-| Files And ABI Surface | `src/core/machine/cpu.c`, `cpu_instructions.c`, private CPU declarations, `machine.c`, owner smoke/CMake/evidence/history/CURRENT as necessary; directly reproduced descriptor no-IDT fixture repairs are limited to their existing owner smokes. `machine.c` may consume a private preview only after the preview contract is proven. No `machine_interface.h`, VM/profile composition, device source, public mutable table, third-party import, or product-boundary change. |
-| Applicable Rules | Task Reading Set; S1 contract; architecture single-owner/variant/one-publication invariant; coding single type/vocabulary and bounded-owner rules; execution mechanism/similar-issue sweep; source policy; T354 deterministic timeline contract. |
-| Verification | Map all CPU instruction-fetch/decode/length and linear-memory-preview routes. Prove prefix, ModR/M, SIB, displacement and immediate component accounting; valid and inaccessible next-instruction boundaries; no CPU/register/memory/trace/diagnostic/timeline/device publication; default PC/AT reset-vector alias determinism; source-compatible selected taken-`Jcc` proof; and any corrected no-IDT fixture at its real terminal boundary. Build the current developer artifact `nxvm_0_5_0357.exe`, record SHA-256/runtime identity, and run full current-gates-gcc. |
-| Expected Markers | CPU timing-preview owner smoke marker; an exact taken-`Jcc` component proof; preview source/caller/write/fault ledger; artifact SHA-256 record; full current-gate result. |
-| Asset Needs | Primary manual text only as external research reference; no guest media, firmware, Bochs/PCjs source import, or external runtime dependency. |
-| Reporting Requirements | Report one complete implementation P only after every preview route, nonpublication boundary, taken-`Jcc` proof, sweep, artifact, and current-gate is complete. Report a material source/architecture conflict immediately; do not publish internal batches. |
-| Stop Conditions | Stop for owner decision if a correct preview requires a second independent decoder, execution/semantic side effect, observable memory/transaction/trace mutation, public CPU API expansion, or a generic CPU-executor or device scheduler redesign. Transfer instead of guessing. |
-| Exit Criteria | The CPU owns exactly one preview route whose component result is sufficient for 80386 `Jcc` `m`; all previewed fetch/decode variants have no guest or diagnostic publication; inaccessible input has an explicit nonpublishing result; the machine has no duplicate execution/semantic parser; deterministic reset/full gate remain green; artifact/evidence/history and similar-issue sweep are complete. |
-| Original Owner Request | Fully and stably implement high-value devices and complete L3 timing before deciding the next phase, using a holistic mechanism rather than incremental patches. |
-| Similar-Issue Sweep | Recheck all CPU fetch/decode/length/prefix/ModR-M/SIB/displacement/immediate, `ExecInit`/`ExecIns`, linear memory preview/read, fault/diagnostic/trace/transaction, debug, reset, and `Jcc` references. Enumerate every production hit as preview owner, consumer, not applicable, or explicitly transferred. |
+**Active.** M5 T357 remains open between accepted subtasks; S3 will add the
+source-backed timing ledger that consumes S2's private CPU preview.
 
 ## Current Technical Baseline
 
@@ -46,7 +24,7 @@ second execution decoder.
 
 | Task | Compact result |
 | --- | --- |
-| T357 S1 | Accepted the source-backed instruction-time contract: one CPU retirement publication point, all current synthetic-cost paths inventoried, primary 8086--80386 reference assumptions recorded, selected form corpus allocated, and bus/cycle-exact boundaries transferred. [Evidence](../etc/evidence/t357-s1-instruction-timing-contract.md). |
+| T357 S2 | Accepted CPU-private nonpublishing lexical timing preview for the selected 80386 `Jcc` `m` prerequisite; prefix/ModR/M/SIB/displacement/immediate accounting, unavailable boundaries, reset alias, and no-publication proof passed. Artifact SHA-256 `CF8C225A4AD850C6EB9EA79A0C106171B0C0CF7340BE139EC8999F4DAFFA9B8C`; 235 current-gate tests passed. [Evidence](../etc/evidence/t357-s2-cpu-timing-preview-plan.md). |
 | T356 | Closed the M5 closure audit with an explicit M5-open decision: all selected device owners are evidenced, but instruction timing, bus availability/wait states and selected-profile cycle exactness remain ordered implementation prerequisites; corpus-gated peripheral, storage and product boundaries remain explicit transfers. [History](../history/M5-T356-m5-closure-audit.md). |
 | T355 | Closed the bounded Windows 3.x readiness map: an opt-in BYOB HDD/INT13 checkpoint passed, all four probes remain host-observation/non-current, T347/T354 storage/L3 is a verified prerequisite, and all display, input, NMI, physical-timing, Setup, and compatibility breadth remains explicitly transferred. [History](../history/M5-T355-windows-3x-readiness-map.md). |
 | T354 | Closed selected L3 bus timing: core-local checked CPU/DMA transaction begin/commit/cancel trace, deterministic CPU-retire then DMA/PIT/PIC then FDC/HDC ordering, reset cancellation/trace continuity, and retained firmware/DOS consumers. Exact bus cycles, pin waveforms, physical wait tables, host time, and Windows readiness remain explicit transfers. 234 current-gate tests passed. [History](../history/M5-T354-physical-l3-bus-timing-convergence.md). |
