@@ -2,7 +2,7 @@
 
 ## Current Work
 
-**Idle.**
+**Active.** M5 T363 remains open between accepted S units.
 
 ## Current Technical Baseline
 
@@ -23,6 +23,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T363 S1 | Accepted pending this commit: 256 primary plus 256 secondary assignments, metadata/profile rejection, seven timing owners, source ladder, explicit descriptor transfers, and S2--S7 mechanism receivers are recorded in the [inventory](../etc/evidence/t363-s1-complete-instruction-timing-inventory.md). |
 | T362 | Closed at `316c2334`: S1--S2 normalize every eligible 80186 immediate-IMUL source row in one private direct/constrained model table; S3 resolves stale full-gate verifier assumptions and records 246/246 current-gate tests. [Closure audit](../etc/evidence/t362-s3-legacy-timing-normalization-closure-audit.md). Model-L3 only; no physical/cycle-exact claim. |
 | T361 | Closed at `a5442d96`: S1--S3 established the source-labelled 8086/80186 allocation and synchronous-fault publication boundary; S4 retained Intel 210498-005 Appendix-B `90 NOP = 3` after a page/context and consumer audit. Immediate-IMUL normalization transfers to the first Queue candidate. [S4 evidence](../etc/evidence/t361-s4-80286-nop-source-consumer-audit.md). No physical or cycle-exact claim. |
 | T360 | Closed four-profile timing source reconciliation: primary-authority inventory, owner-selected 80286 NOP table precedence, exact legacy range transfer, contextual classifier audit, and final source/receiver closure. 245/245 current-gate tests passed; no L3 or cycle-exact claim. [Closure audit](../etc/evidence/t360-s5-four-profile-timing-source-closure-audit.md). |
