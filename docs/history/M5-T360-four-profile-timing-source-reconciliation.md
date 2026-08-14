@@ -27,3 +27,19 @@ normalization, and S5 closure audit. It adds only a static source-inventory
 verifier; no runtime timing value, artifact, ABI, or CPU behavior changed.
 Documentation governance, the verifier, and 245/245 current-gate tests
 passed.
+
+### S2: 80286 NOP authority precedence
+
+S2 is accepted at `b29b5fbf`. Its [NOP authority-precedence
+record](../etc/evidence/t360-s2-80286-nop-authority-precedence.md) applies the
+owner's source-selection rule to the 210498-005 conflict: the formal Appendix
+B opcode-table row remains the sole current selected allocation, `NOP = 3`.
+The source-ledger entry, classifier routes, direct 80286 proof, generic timing
+proof, and downstream scheduler/device records have no prose-derived two-clock
+consumer. The unresolved prose statement is retained as a precise
+`TODO(Medium)` with an edition/page/context review and complete consumer sweep
+as its only admission route.
+
+S2 changes no runtime value, CMake target, artifact, ABI, or CPU behavior.
+Documentation governance, the retained T360 source-inventory verifier, and
+diff check passed.

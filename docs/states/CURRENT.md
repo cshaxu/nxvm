@@ -2,29 +2,8 @@
 
 ## Current Work
 
-**Active.** M5 T360 S2 80286 NOP authority-precedence reconciliation is
-admitted in single-session mode.
-
-## M5 T360 S2 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner-approved continuation of T360 after accepted S1 `99db9201`; the owner explicitly directs that a supported Appendix-B opcode-clock table row is authoritative and any prose conflict is retained for later revisit. |
-| Objective | Reconcile the 80286 NOP table/prose conflict under that authority rule: retain formal Appendix-B `NOP = 3` as the sole current allocation, sweep every NOP timing consumer, and record the prose `2` statement as a precise TODO revisit rather than an inferred compromise. |
-| Non-goals | No timing value change, source/runtime/CMake behavior change, source import, edition-averaging, host benchmark, Bochs/PCjs authority, bus/delivery/cycle-exact allocation, or broader Appendix-B reconciliation. |
-| Reference Baseline | `99db9201`, T360 S1 inventory, T357 S6/S7 80286 evidence, and the owner-approved Appendix-B precedence instruction. |
-| Candidate Proposal | [Four-profile Intel timing source reconciliation](../proposals/m5-four-profile-timing-source-reconciliation.md), bounded S2 unit; S1 inventory identifies this conflict as the first reconciliation case. |
-| Files And ABI Surface | Documentation/evidence/TODO/history/CURRENT only. No `src/`, CMake, artifact, ABI, or test target change. |
-| Applicable Rules | Task Reading Set; source policy; `EXECUTION.md` evidence/transfer rules; `DOCUMENT.md` TODO/current/history topology; owner Appendix-B precedence instruction. |
-| Verification | Cross-check formal Appendix-B row and prose observation against retained primary-source links; search `machine.c`, timing ledgers, timing smokes, scheduler/trace/device-consumer evidence and TODO for every 80286 NOP value; verify exactly one current allocation `3`, no prose-derived `2`, and one precise TODO revisit. Run documentation governance and diff check. |
-| Expected Markers | Indexed T360 S2 NOP precedence record; a `TODO(Medium)` source-conflict revisit; documentation governance passes; no runtime/artifact delta. |
-| Asset Needs | Existing primary manual scans and evidence only; no imported source, guest media, firmware, or external executable. |
-| Reporting Requirements | State the formal table/prose conflict, owner-selected precedence, every swept consumer class, retained value, exact TODO admission condition, and no-runtime-change proof. |
-| Stop Conditions | Stop if the primary table cannot be identified, if any current consumer uses `2`, if a consumer has no source disposition, or if reconciliation needs a timing-code change; report the exact consumer rather than broadening S2. |
-| Exit Criteria | Appendix-B `NOP = 3` is the sole documented current allocation; all known consumers are reconciled; prose conflict has a precise TODO revisit; no runtime values change; governance passes. |
-| Original Owner Request | When Appendix B supplies a value, use Appendix B; record a conflict with prose or other material in TODO for later revisit. |
-| Similar-Issue Sweep | Search every 80286 instruction ledger, source timing array/lookup, timing test, scheduler/device elapsed consumer, documentation source reference, Queue and TODO entry for NOP values, table/prose precedence, and hidden one-clock/two-clock assumptions. |
+**Active.** M5 T360 remains open between accepted S units; no implementation may
+start until the next packet is admitted.
 
 ## Current Technical Baseline
 
@@ -45,7 +24,7 @@ admitted in single-session mode.
 
 | Task | Compact result |
 | --- | --- |
-| T360 S1 | Accepted the four-profile source-authority and consumer inventory: it binds ten timing consumers to four Intel manual baselines, records the 80286 NOP table/prose conflict without altering its provisional row, and bounds S2--S5 reconciliation. [Evidence](../etc/evidence/t360-s1-four-profile-source-authority-consumer-inventory.md). |
+| T360 S2 | Accepted the owner-selected 80286 NOP source precedence: Appendix-B `NOP = 3` remains the sole current allocation, all timing consumers are reconciled, and the conflicting prose has one exact `TODO(Medium)` revisit. [Evidence](../etc/evidence/t360-s2-80286-nop-authority-precedence.md). |
 | T359 | Closed its bounded four-profile instruction-retirement corpus: S1 inventory plus S2--S6 source classifiers use one successful-retirement publisher; S7 verifies all unallocated rows transfer to T360, bus/service, cycle-exact, or x87/VME receivers. 245/245 current-gate tests passed. No L3 or cycle-exact claim is made. [Closure audit](../etc/evidence/t359-s7-complete-instruction-timing-closure-audit.md). |
 | T358 | Closed cross-mode mechanism coherence: reconciled I/O permission, exception/IRQ entry, selector/task/return transition, paging/linear access, and prefix/LOCK/width/string classifiers; repaired 80286 delivery, LOCK group legality, and repeated-width preview divergence; passed 240 current-gate tests. [Closure audit](../etc/evidence/t358-cross-mode-mechanism-closure-audit.md). |
 | T357 | Closed finite source-backed 8086/80186/80286/80386 instruction timing at one successful-retirement publisher: selected form ledgers, 80386 protected/VM86 ordinary I/O, Appendix-B `NOP = 3` consumer reconciliation, 240 current-gate tests, and artifact SHA-256 `83A249015C03CF875896A440D5B43A430C2D875A63F0BE4B9709014A753CAD95`. Unselected forms, waits, physical bus/prefetch, device latency and cycle-exact work remain explicit transfers. [Closure audit](../etc/evidence/t357-s8-cross-profile-closure-audit.md). |
