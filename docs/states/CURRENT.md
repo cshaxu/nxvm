@@ -2,8 +2,30 @@
 
 ## Current Work
 
-**Active.** M5 T363 remains open between accepted S units; no implementation
-packet is active while its next bounded continuation is prepared.
+**Active.** M5 T363 S6 reconciles source-backed 80286/80386 privileged,
+table, selector, control, debug, and task-adjacent successful forms while
+retaining transition and delivery timing as explicit transfers.
+
+## M5 T363 S6 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | The owner directed current-Queue execution through complete instruction timing on 2026-08-14. T363 S5 was accepted at `b02a7a11`; the approved T363 mechanism order admits this bounded privileged-form unit. Git pushes are permitted. |
+| Objective | Reconcile every selected successful 80286/80386 table, selector, control, debug, full-pointer, FS/GS stack, and task-adjacent form against exact source rows, one publisher, and profile/mode/privilege outcomes. |
+| Non-goals | No 80286 receiver allocation lacking normalized post-refresh context; no task switch, gate/cross-privilege/VM86 delivery, exception/IRQ/NMI delivery, physical bus/service/prefetch/cache/wait, x87, ABI, import, measurement, or physical/cycle-exact claim. |
+| Reference Baseline | `b02a7a11` / `vm-0-5-0362`; [T363 S1 inventory](../etc/evidence/t363-s1-complete-instruction-timing-inventory.md), [T359 S6 privileged ledger](../etc/evidence/t359-s6-privileged-source-ledger.md), and accepted S3/S5 evidence. |
+| Candidate Proposal | [Complete instruction-timing corpus](../proposals/m5-complete-instruction-timing-corpus.md). |
+| Files And ABI Surface | Private privileged timing classifier, focused corpus, evidence/history/status and T363 artifact only if runnable behavior changes. No public ABI. |
+| Applicable Rules | Task Reading Set; Execution source/evidence/artifact/full-gate rules; Architecture one successful-retirement owner; Coding private classifier/test rules; Documentation and source/research policy. |
+| Verification | Complete form/profile/mode/privilege matrix; table/selector/control/debug/full-pointer/FS-GS and rejected-prefix/fault/delivery sweep; focused smoke, static inventory, governance, artifact/hash if changed and full gate. |
+| Expected Markers | T363 S6 privileged-form reconciliation marker and retained timing inventory/current-gate markers. |
+| Asset Needs | Read-only Intel manuals; external models only under the approved primary-gap ladder; no retained downloads, code, firmware or guest media. |
+| Reporting Requirements | Name every selected/no-op/changed/transferred form, exact profile/mode boundary, artifact identity if any, and S7 receiver. |
+| Stop Conditions | Stop if a row requires unmodeled descriptor granularity, transition/delivery, physical context, a second publisher, or profile borrowing. Preserve an explicit receiver rather than guess. |
+| Exit Criteria | Every S6 successful form has a complete source allocation or explicit receiver; focused/full gates pass; no physical/cycle-exact claim. |
+| Original Owner Request | Execute the current Queue through complete instruction timing, using Intel first and 86Box/MAME/PCjs only as applicable model sources where primary timing is non-deterministic. |
+| Similar-Issue Sweep | Search all system `0F` extensions and `63`, 80286/80386 mode/privilege branches, table/selector/control/debug/task routes, prefixes, publication, corpus tests, CMake and evidence. |
 
 ## Current Technical Baseline
 
