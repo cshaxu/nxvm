@@ -2,30 +2,9 @@
 
 ## Current Work
 
-**Active.** M5 T366 S1 inventories the selected PC/AT bus-availability
-contract and current transaction routes; it allocates no wait state or physical
-cycle claim.
-
-## M5 T366 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | The owner directed continuing ordered L3 implementation on 2026-08-14, after T365 closure at `2941e1a4`; this admits the next Queue candidate's bounded source/route inventory. Git pushes are permitted. |
-| Objective | Establish whether one documented IBM PC/AT profile and bounded firmware/DOS corpus can support a single owner for CPU memory/I/O availability, named waits, and DMA exclusion; map the existing transaction, CPU, DMA, PIC, FDC and HDC routes before allocating behavior. |
-| Non-goals | No wait-state value, DMA arbitration, bus scheduler, physical/cycle-exact claim, NMI producer, generic interrupt change, firmware/media import, host-time coupling or peripheral expansion. |
-| Reference Baseline | `2941e1a4`; [bus-timed PC/AT operation proposal](../proposals/m5-bus-timed-pcat-operation.md), T364 completeness ledger/closure, T365 NMI closure, T354 transaction evidence and Queue/TODO. |
-| Candidate Proposal | [Bus-timed PC/AT operation](../proposals/m5-bus-timed-pcat-operation.md). |
-| Files And ABI Surface | Evidence/history/status only. No public ABI, runnable behavior or artifact revision in this inventory S. |
-| Applicable Rules | Task Reading Set; Execution packet/evidence/closure rules; Documentation topology; Architecture ownership/lifecycle rules; source and research policy for manuals and reference-model consultation. |
-| Verification | Inspect current transaction, CPU memory/I/O, DMA, PIC, FDC and HDC owner routes; reconcile selected-profile evidence, Queue/TODO receivers and primary-source availability; run documentation governance and diff check. |
-| Expected Markers | T366 S1 source/route inventory with one explicit admissibility decision and preserved NMI/physical transfers. |
-| Asset Needs | No firmware, guest media or third-party source import. Public manuals and reference-model behavior may be consulted under the source policy only. |
-| Reporting Requirements | State the selected profile/corpus candidate, documented or missing availability/ownership facts, exact receiver/stop decision, and no-runtime-change result. |
-| Stop Conditions | Stop without timing allocation if a documented PC/AT source cannot identify required waits/ownership, if any route needs a separate device contract, or if the NMI receiver would be silently bypassed. |
-| Exit Criteria | One evidence-backed S1 inventory either bounds a safe next bus-contract S or records a singular non-admission/transfer; no invented timing value or physical claim. |
-| Original Owner Request | Continue ordered Queue implementation toward comprehensive L3 precision. |
-| Similar-Issue Sweep | Recheck all selected CPU memory/I/O, DMA, PIC, FDC, HDC and transaction lifecycle routes for duplicate availability owners, hidden wait values, host-time coupling and untracked NMI dependencies. |
+**No active implementation packet.** T366 S1 is accepted; a physical target and
+reproducible corpus are required before a bus-availability implementation S can
+be admitted.
 
 ## Current Technical Baseline
 
@@ -46,6 +25,7 @@ cycle claim.
 
 | Task | Compact result |
 | --- | --- |
+| T366 S1 | Accepted at `098a146a`: the deterministic default composition has synchronous transaction ownership but no selected board/revision, wait-state contract, or firmware/DOS timing corpus. [Inventory](../etc/evidence/t366-s1-pcat-bus-profile-route-inventory.md). No timing allocation. |
 | T365 | Closed at `febc9352`: IBM PC/AT parity/I/O-check NMI sources cannot be selected without a profile input, status/latch/clear and lifecycle contract; CPU and CMOS remain delivery/mask only. [Closure audit](../etc/evidence/t365-s2-pcat-nmi-nonadmission-closure-audit.md). Blocks physical/cycle-exact L3 closure; no synthetic source. |
 | T364 | Closed at `7d574ae3`: all selected PC/AT components, ports/routes and lifecycle/timing owners are inventoried; optional and physical gaps retain exact Queue/TODO receivers. [Closure audit](../etc/evidence/t364-s2-pcat-device-completeness-closure-audit.md). No model-L3 claim. |
 | T363 | Closed at `312ef2f9`: all 256 primary and 256 secondary dispatch slots have one source-backed successful-retirement owner or an exact explicit receiver; inventory and 246/246 current-gate passed. [Closure audit](../etc/evidence/t363-s7-complete-instruction-timing-closure-audit.md). No physical/cycle-exact L3 claim. |
