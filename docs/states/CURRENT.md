@@ -2,29 +2,9 @@
 
 ## Current Work
 
-**Active implementation packet:** M5 T366 S4, Model 339 planar-memory/parity
-binding.
-
-## M5 T366 S4 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner: repository owner. Approval: continuing M5 L3 implementation direction and the approved 2026-08-14 Model 339 Type 3 baseline. Scope: make the selected 512 KB system-board RAM and its S3 parity source a truthful, bounded core/profile contract before bus availability. No exception is approved. |
-| Objective | Permit a 512 KB planar-memory configuration; bind an opt-in Model 339 planar-RAM parity owner to the one shared physical-memory read/write path; establish stored parity on writes and parity fault assertion on mismatched reads; preserve reset, mapping and source-lifecycle ownership. |
-| Non-goals | Do not replace the generic default PC/AT profile; claim its 80386/ATA configuration is a 5170; select I/O-channel check, expansion memory, speaker/timer, MFM/ST-506, 1 MB expansion, bus waits, DMA arbitration, refresh timing, or any cycle timing. Do not add a test-only public corruption API or import protected material. |
-| Reference Baseline | T366 S2 Model 339 lock at `0e04b405`; T366 S3 parity source accepted at `b7bfe7a4`; current core minimum memory is 2 MB while `memory.c` owns the CPU/DMA/firmware/display physical read/write route. |
-| Candidate Proposal | [Bus-Timed PC/AT Operation](../proposals/m5-bus-timed-pcat-operation.md), profile/NMI stage before the bus stage. |
-| Files And ABI Surface | Expected: shared core memory/machine configuration and parity state, an explicitly selected VM profile/composition boundary if needed, focused tests/CMake registration, current packet, evidence/index and T366 history. Public contracts may expose configuration and copied observation only; no raw RAM/CPU pointer. |
-| Applicable Rules | Execution packet/evidence/acceptance; architecture one shared RAM and source owner with composition-only integration; coding C11/cohesive owner/no test mirror; documentation indexed evidence/status-only packet; source policy documentation/research only. All apply; no waiver. |
-| Verification | Focused proof must create 512 KB, establish good parity through CPU and DMA-visible writes, detect a controlled owner-local stored-parity mismatch through a shared read, prove `61h`/`70h` lifecycle and reset/reconfigure behavior, and retain non-parity memory routes. Run affected profile/topology tests, current smoke gate, documentation governance and `git diff --check`. |
-| Expected Markers | Focused proof emits `M5:T366:S4:PLANAR-MEMORY-PARITY:OK`; existing current-gate markers remain successful. |
-| Asset Needs | None; repository-authored code and fixtures only. |
-| Reporting Requirements | Report contract confirmation, shared-route implementation progress, and final pushed evidence/verification/transfers. |
-| Stop Conditions | Stop for missing authority on 512 KB planar parity behavior, if a second RAM path/public corruption API is required, if low-memory mappings cannot be preserved, or if scope requires unselected I/O channel, devices or timing. |
-| Exit Criteria | One 512 KB-admissible configuration and one shared memory parity binding prove write-establish/read-check/fault/latch/mask/reset behavior without changing default PC/AT identity; every excluded source retains its receiver. |
-| Original Owner Request | Use the late IBM PC/AT 5170 Model 339 / Type 3 as the 80286 L3 baseline with 512 KB planar memory and no fixed disk, while retaining separate ATA/HDC and deferred MFM/ST-506 paths. |
-| Similar-Issue Sweep | Inspect core memory allocation, every physical read/write caller, mappings/providers, reset/reconfigure, profile memory declarations, parity/NMI/port-61 control and all lower-memory checks. Repair the shared mechanism or transfer excluded variants. |
+T366 S4 is accepted. The next T366 S may admit only the explicitly selected
+Model 339 VM profile/composition boundary; the generic 80386/ATA PC/AT profile
+remains a separate product configuration.
 
 ## Current Technical Baseline
 
@@ -45,7 +25,7 @@ binding.
 
 | Task | Compact result |
 | --- | --- |
-| T366 S3 | Accepted at `b7bfe7a4`: core owns an opt-in Model 339 planar-RAM-parity source at `61h`; its latch/status, bit-2 clear/re-enable, `70h` NMI-mask interaction and reset are proven without altering the generic PC/AT profile. [Lifecycle evidence](../etc/evidence/t366-s3-planar-parity-nmi.md). I/O-channel check, physical parity-memory binding and timing remain transfers. |
+| T366 S4 | Accepted at `ff5fbb53`: a Model 339 selection can create 512 KB planar RAM and bind stored parity to the one shared physical read/write route; mismatches retain the S3 `61h`/`70h` NMI lifecycle, while the generic 80386/ATA PC/AT identity stays unchanged. [Memory/parity evidence](../etc/evidence/t366-s4-planar-memory-parity.md). Explicit VM composition, I/O-channel check and timing remain transfers. |
 | T365 | Closed at `febc9352`: IBM PC/AT parity/I/O-check NMI sources cannot be selected without a profile input, status/latch/clear and lifecycle contract; CPU and CMOS remain delivery/mask only. [Closure audit](../etc/evidence/t365-s2-pcat-nmi-nonadmission-closure-audit.md). Blocks physical/cycle-exact L3 closure; no synthetic source. |
 | T364 | Closed at `7d574ae3`: all selected PC/AT components, ports/routes and lifecycle/timing owners are inventoried; optional and physical gaps retain exact Queue/TODO receivers. [Closure audit](../etc/evidence/t364-s2-pcat-device-completeness-closure-audit.md). No model-L3 claim. |
 | T363 | Closed at `312ef2f9`: all 256 primary and 256 secondary dispatch slots have one source-backed successful-retirement owner or an exact explicit receiver; inventory and 246/246 current-gate passed. [Closure audit](../etc/evidence/t363-s7-complete-instruction-timing-closure-audit.md). No physical/cycle-exact L3 claim. |

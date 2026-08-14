@@ -48,5 +48,5 @@ or allocate timing.
 S4 makes 512 KB an admissible initial memory configuration and binds the S3
 source to the one shared physical RAM route. Its [memory/parity evidence](../etc/evidence/t366-s4-planar-memory-parity.md)
 records write-establish/read-check behavior, the low-memory high-ROM boundary,
-reset and reconfiguration disposition. It adds no default-profile identity,
-I/O-channel check or timing allocation.
+reset and reconfiguration disposition. S4 is accepted at `ff5fbb53`; it adds
+no default-profile identity, I/O-channel check or timing allocation.
