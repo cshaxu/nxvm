@@ -16,3 +16,9 @@ The sweep covers every valid `D0`/`D1` register or memory encoding, `D2`/`D3`,
 Register and direct-memory values retain S11/S12 outcomes. `D2`/`D3` and
 `C0`/`C1` retain count-dependent CPU-ledger receivers; `/6` remains undefined.
 No device, bus or physical-clock claim is made.
+
+## Verification
+
+The focused 80286 instruction-timing-ledger smoke, configured
+`run-current-smokes` gate, documentation-governance check, and `git diff
+--check` passed. The implementation changes no public ABI or device behavior.

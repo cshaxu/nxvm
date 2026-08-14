@@ -115,3 +115,11 @@ S12 gives valid direct-address-memory `D0`/`D1` implicit-count-one Group-2
 forms their seven-clock source-table value without treating the `7*`
 effective-address notation as a universal memory constant. Its [timing evidence](../etc/evidence/t366-s12-80286-group2-direct-memory-timing.md)
 records the retained forms and receiver transfer. S12 is accepted at `5fe66bd8`.
+
+### S13: 80286 Group-2 effective-address memory timing
+
+S13 extends the accepted `D0`/`D1` implicit-count-one memory timing to every
+valid memory addressing form through the existing Appendix-B EA helper. Its
+[timing evidence](../etc/evidence/t366-s13-80286-group2-ea-memory-timing.md)
+records complete memory coverage and the remaining count-form receiver. S13 is
+accepted at `56f21513`.
