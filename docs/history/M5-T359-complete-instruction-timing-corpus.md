@@ -11,4 +11,3 @@ with physical bus, device, or host timing.
 
 No subtask has been accepted yet.  T359 S1 is the active inventory and
 mechanism-allocation subtask.
-

@@ -39,7 +39,7 @@ extensions are rejected rather than folded into the group.
 | `26/2E/36/3E`, `F2/F3` prefix classifiers | 8086 | receiver | S3 string/repeat and prefix-form timing; S4 physical prefetch transfer |
 | `27/2F/37/3F` | 8086 | receiver | S2 decimal/ASCII adjustment timing |
 | `40`--`4F`, `50`--`5F` | 8086 | receiver | S2 register arithmetic; S3 stack timing |
-| `60/61`, `62`, `68`--`6F`, `C0/C1`, `C8/C9` | 80186 | receiver; rejected on 8086 | S2 arithmetic/BOUND; S3 string/stack/control; S5 80186 source reconciliation |
+| `60/61`, `62`, `68`--`6F`, `C0/C1`, `C8/C9` | 80186 | receiver; rejected on 8086 | S2 arithmetic/BOUND; S3 string/stack/control; exact source conflicts transfer to T360 |
 | `63` | 80286 | receiver; rejected below 80286 | S6 protected descriptor/privilege timing |
 | `64/65`, `66/67` | 80386 | receiver; rejected below 80386 | S4 80386 prefix/width timing matrix |
 | `70`--`7F` short `Jcc` | 8086 | selected for unprefixed taken/not-taken only; every other legal variant receiver | T357 S3--S6; S3 completes branch/lexeme timing |
