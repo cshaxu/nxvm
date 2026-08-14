@@ -79,6 +79,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t352-s3-cga-digital-path.md` | Verification owner | T352 S3 selected CGA text/graphics mode, interleaved aperture, palette, CRTC, copied-frame, and unselected-CRTC transfer evidence. Retain with T352 history at task closure. |
 | `evidence/t352-s4-ega-planar-path.md` | Verification owner | T352 S4 selected EGA planar registration, aperture/latch/write, 320/640 capture, reset/copy, and exact transfer evidence. Retain with T352 history at task closure. |
 | `evidence/t352-s5-display-composition.md` | Verification owner | T352 S5 selected cross-mode/reset/timeline/mailbox composition, artifact, and task-closure evidence. Retain with T352 history at task closure. |
+| `evidence/t353-s1-pcat-port-topology-ledger.md` | Verification owner | T353 S1 selected PC/AT profile-to-composition-to-core port, route, lifecycle, and receiver ledger. Retain with T353 history at task closure. |
 | `operations/` | Execution, source, and release owners | Toolchain, policy, templates, release procedure, and closure material. |
 | `research/` | Source owner | Provenance, external references, and non-product research. |
 | `history/` | Documentation owner | Read-only legacy and M5 migration/roadmap evidence. |
