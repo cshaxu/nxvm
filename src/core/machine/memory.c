@@ -119,9 +119,33 @@ static type_status core_machine_memory_allocate_for_with_test(t_ram *ram,
     return TYPE_STATUS_OK;
 }
 
+static type_unsigned_8 core_machine_memory_odd_parity(type_unsigned_8 value)
+{
+    type_unsigned_8 parity = 0u;
+    while (value != 0u) { parity ^= value & 1u; value >>= 1u; }
+    return parity;
+}
+
 type_status core_machine_memory_allocate_for(t_ram *ram, STD_SIZE_T bytes)
 {
     return core_machine_memory_allocate_for_with_test(ram, bytes, STD_NULL);
+}
+
+type_status core_machine_memory_enable_parity(t_ram *ram, STD_SIZE_T bytes,
+    core_machine_memory_parity_fault_observer fault, C_VOID *owner)
+{
+    type_unsigned_8 *parity;
+
+    if (ram == STD_NULL || fault == STD_NULL || owner == STD_NULL || bytes == 0u ||
+        bytes > ram->connect.installed_bytes || ram->connect.mappings_frozen ||
+        ram->connect.parity != 0u) return TYPE_STATUS_INVALID_ARGUMENT;
+    parity = (type_unsigned_8 *)STD_CALLOC(bytes, sizeof(*parity));
+    if (parity == STD_NULL) return TYPE_STATUS_NO_MEMORY;
+    ram->connect.parity = (type_virtual_address)parity;
+    ram->connect.parity_bytes = bytes;
+    ram->connect.parity_fault = fault;
+    ram->connect.parity_owner = owner;
+    return TYPE_STATUS_OK;
 }
 
 type_status core_machine_memory_register_mapping(t_ram *ram,
@@ -305,6 +329,19 @@ type_status core_machine_memory_read_physical(t_ram *ram, type_unsigned_32 physi
     }
     STD_MEMCPY((C_VOID *)destination,
         (C_VOID *)(ram->connect.backing + offset), byte);
+    if (ram->connect.parity != 0u && offset < ram->connect.parity_bytes) {
+        type_native_unsigned index;
+        type_native_unsigned checked = byte;
+        if (checked > ram->connect.parity_bytes - offset) checked =
+            ram->connect.parity_bytes - offset;
+        for (index = 0u; index < checked; ++index) {
+            if (((type_unsigned_8 *)ram->connect.parity)[offset + index] !=
+                core_machine_memory_odd_parity(((type_unsigned_8 *)destination)[index])) {
+                ram->connect.parity_fault(ram->connect.parity_owner);
+                break;
+            }
+        }
+    }
     return TYPE_STATUS_OK;
 }
 type_status core_machine_memory_write_physical(t_ram *ram, type_unsigned_32 physical,
@@ -330,6 +367,14 @@ type_status core_machine_memory_write_physical(t_ram *ram, type_unsigned_32 phys
     }
     STD_MEMCPY((C_VOID *)(ram->connect.backing + offset),
         (C_VOID *)source, byte);
+    if (ram->connect.parity != 0u && offset < ram->connect.parity_bytes) {
+        type_native_unsigned index;
+        type_native_unsigned written = byte;
+        if (written > ram->connect.parity_bytes - offset) written =
+            ram->connect.parity_bytes - offset;
+        for (index = 0u; index < written; ++index) ((type_unsigned_8 *)ram->connect.parity)[offset + index] =
+            core_machine_memory_odd_parity(((const type_unsigned_8 *)source)[index]);
+    }
     for (index = 0u; index < ram->connect.write_observer_count; ++index) {
         core_machine_memory_write_observer_slot *slot =
             &ram->connect.write_observers[index];
@@ -377,6 +422,8 @@ C_VOID core_machine_memory_reset(t_ram *ram)
     STD_MEMSET((C_VOID *)&ram->data, TYPE_ZERO_8, sizeof(ram->data));
     STD_MEMSET((C_VOID *)ram->connect.backing, TYPE_ZERO_8,
         ram->connect.backing_capacity);
+    if (ram->connect.parity != 0u) STD_MEMSET((C_VOID *)ram->connect.parity,
+        TYPE_ZERO_8, ram->connect.parity_bytes);
 }
 
 C_VOID core_machine_memory_finalize(t_ram *ram)
@@ -385,6 +432,7 @@ C_VOID core_machine_memory_finalize(t_ram *ram)
     if (ram->connect.backing != 0u) {
         STD_FREE((C_VOID *)ram->connect.backing);
     }
+    if (ram->connect.parity != 0u) STD_FREE((C_VOID *)ram->connect.parity);
     ram->connect.backing = 0u;
     ram->connect.installed_bytes = 0u;
     ram->connect.backing_capacity = 0u;

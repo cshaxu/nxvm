@@ -116,6 +116,7 @@ typedef struct core_machine_rtc_cmos_config {
 typedef struct core_machine_planar_parity_config {
     /* IBM PC/AT system-board port B; other mappings are not this controller. */
     type_unsigned_16 port;
+    STD_SIZE_T memory_bytes;
 } core_machine_planar_parity_config;
 
 typedef struct core_machine_planar_parity_observation {

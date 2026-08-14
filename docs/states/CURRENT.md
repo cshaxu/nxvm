@@ -2,10 +2,29 @@
 
 ## Current Work
 
-**No active implementation packet.** T366 S3 is accepted. Its next S must
-admit a selected-profile composition/memory binding for the locked 512 KB
-Model 339 planar RAM before bus-availability work; it must retain separate
-I/O-channel-check, speaker/timer and MFM/ST-506 receivers.
+**Active implementation packet:** M5 T366 S4, Model 339 planar-memory/parity
+binding.
+
+## M5 T366 S4 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner: repository owner. Approval: continuing M5 L3 implementation direction and the approved 2026-08-14 Model 339 Type 3 baseline. Scope: make the selected 512 KB system-board RAM and its S3 parity source a truthful, bounded core/profile contract before bus availability. No exception is approved. |
+| Objective | Permit a 512 KB planar-memory configuration; bind an opt-in Model 339 planar-RAM parity owner to the one shared physical-memory read/write path; establish stored parity on writes and parity fault assertion on mismatched reads; preserve reset, mapping and source-lifecycle ownership. |
+| Non-goals | Do not replace the generic default PC/AT profile; claim its 80386/ATA configuration is a 5170; select I/O-channel check, expansion memory, speaker/timer, MFM/ST-506, 1 MB expansion, bus waits, DMA arbitration, refresh timing, or any cycle timing. Do not add a test-only public corruption API or import protected material. |
+| Reference Baseline | T366 S2 Model 339 lock at `0e04b405`; T366 S3 parity source accepted at `b7bfe7a4`; current core minimum memory is 2 MB while `memory.c` owns the CPU/DMA/firmware/display physical read/write route. |
+| Candidate Proposal | [Bus-Timed PC/AT Operation](../proposals/m5-bus-timed-pcat-operation.md), profile/NMI stage before the bus stage. |
+| Files And ABI Surface | Expected: shared core memory/machine configuration and parity state, an explicitly selected VM profile/composition boundary if needed, focused tests/CMake registration, current packet, evidence/index and T366 history. Public contracts may expose configuration and copied observation only; no raw RAM/CPU pointer. |
+| Applicable Rules | Execution packet/evidence/acceptance; architecture one shared RAM and source owner with composition-only integration; coding C11/cohesive owner/no test mirror; documentation indexed evidence/status-only packet; source policy documentation/research only. All apply; no waiver. |
+| Verification | Focused proof must create 512 KB, establish good parity through CPU and DMA-visible writes, detect a controlled owner-local stored-parity mismatch through a shared read, prove `61h`/`70h` lifecycle and reset/reconfigure behavior, and retain non-parity memory routes. Run affected profile/topology tests, current smoke gate, documentation governance and `git diff --check`. |
+| Expected Markers | Focused proof emits `M5:T366:S4:PLANAR-MEMORY-PARITY:OK`; existing current-gate markers remain successful. |
+| Asset Needs | None; repository-authored code and fixtures only. |
+| Reporting Requirements | Report contract confirmation, shared-route implementation progress, and final pushed evidence/verification/transfers. |
+| Stop Conditions | Stop for missing authority on 512 KB planar parity behavior, if a second RAM path/public corruption API is required, if low-memory mappings cannot be preserved, or if scope requires unselected I/O channel, devices or timing. |
+| Exit Criteria | One 512 KB-admissible configuration and one shared memory parity binding prove write-establish/read-check/fault/latch/mask/reset behavior without changing default PC/AT identity; every excluded source retains its receiver. |
+| Original Owner Request | Use the late IBM PC/AT 5170 Model 339 / Type 3 as the 80286 L3 baseline with 512 KB planar memory and no fixed disk, while retaining separate ATA/HDC and deferred MFM/ST-506 paths. |
+| Similar-Issue Sweep | Inspect core memory allocation, every physical read/write caller, mappings/providers, reset/reconfigure, profile memory declarations, parity/NMI/port-61 control and all lower-memory checks. Repair the shared mechanism or transfer excluded variants. |
 
 ## Current Technical Baseline
 

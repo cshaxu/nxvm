@@ -42,3 +42,11 @@ the source. CMOS `70h` remains mask-only. The [lifecycle evidence](../etc/eviden
 records focused producer proof and the retained cross-mode NMI consumer proof.
 It does not enable the generic default PC/AT profile, select I/O-channel check,
 or allocate timing.
+
+### S4: Model 339 planar memory and parity binding
+
+S4 makes 512 KB an admissible initial memory configuration and binds the S3
+source to the one shared physical RAM route. Its [memory/parity evidence](../etc/evidence/t366-s4-planar-memory-parity.md)
+records write-establish/read-check behavior, the low-memory high-ROM boundary,
+reset and reconfiguration disposition. It adds no default-profile identity,
+I/O-channel check or timing allocation.

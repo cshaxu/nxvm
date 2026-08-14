@@ -5,10 +5,53 @@
 
 #include "../support/core_machine_cpu_fixture.h"
 
-int main(void)
+static C_INT planar_parity_s4_shared_memory(C_VOID)
 {
     core_machine_config config = {0};
-    core_machine_planar_parity_config parity = {CORE_MACHINE_PC_AT_PORT_B};
+    core_machine_planar_parity_config parity = {CORE_MACHINE_PC_AT_PORT_B, 512u * 1024u};
+    core_machine_planar_parity_observation observation;
+    core_machine *machine = STD_NULL;
+    type_unsigned_8 written = 0x5au;
+    type_unsigned_8 read = 0u;
+    C_INT failed = 0;
+
+    config.memory_bytes = 512u * 1024u;
+    if (core_machine_create(&config, &machine) != TYPE_STATUS_OK) failed = 1;
+    else if (core_machine_configure_planar_parity(machine, &parity) != TYPE_STATUS_OK) failed = 2;
+    else if (core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK) failed = 3;
+    else if (core_machine_reset(machine) != TYPE_STATUS_OK) failed = 4;
+    if (!failed) failed |= core_machine_memory_write(machine, 0x1234u, &written,
+            sizeof(written)) != TYPE_STATUS_OK ||
+        machine->executor_memory.connect.parity == 0u ||
+        core_machine_reconfigure_memory(machine, 512u * 1024u) != TYPE_STATUS_INVALID_STATE;
+    if (!failed) ((type_unsigned_8 *)machine->executor_memory.connect.parity)[0x1234u] ^= 1u;
+    if (!failed) failed |= core_machine_memory_read(machine, 0x1234u, &read,
+            sizeof(read)) != TYPE_STATUS_OK || read != written ||
+        core_machine_get_planar_parity_observation(machine, &observation) !=
+            TYPE_STATUS_OK || !observation.latched;
+    core_machine_destroy(machine);
+    return failed;
+}
+
+static C_INT planar_parity_s4_unbound_reconfigure(C_VOID)
+{
+    core_machine_config config = {0};
+    core_machine *machine = STD_NULL;
+    C_INT failed = 0;
+
+    config.memory_bytes = 2u * 1024u * 1024u;
+    if (core_machine_create(&config, &machine) != TYPE_STATUS_OK) failed = 1;
+    else if (core_machine_freeze_execution_providers(machine) != TYPE_STATUS_OK) failed = 2;
+    else if (core_machine_reset(machine) != TYPE_STATUS_OK) failed = 3;
+    else if (core_machine_reconfigure_memory(machine, 512u * 1024u) != TYPE_STATUS_INVALID_STATE) failed = 4;
+    core_machine_destroy(machine);
+    return failed;
+}
+
+C_INT main(C_VOID)
+{
+    core_machine_config config = {0};
+    core_machine_planar_parity_config parity = {CORE_MACHINE_PC_AT_PORT_B, 512u * 1024u};
     core_machine_rtc_cmos_config cmos = {0};
     core_machine_planar_parity_observation observation;
     core_machine *machine = STD_NULL;
@@ -48,6 +91,8 @@ int main(void)
             TYPE_STATUS_OK || !observation.enabled || observation.latched;
     core_machine_destroy(machine);
     if (failed) return 1;
-    STD_PRINTF("M5:T366:S3:PLANAR-PARITY-NMI:OK\n");
+    failed |= planar_parity_s4_shared_memory() || planar_parity_s4_unbound_reconfigure();
+    if (failed) return 1;
+    STD_PRINTF("M5:T366:S4:PLANAR-MEMORY-PARITY:OK\n");
     return 0;
 }

@@ -3299,6 +3299,11 @@ static C_VOID core_machine_planar_parity_refresh_nmi(core_machine *machine)
     }
 }
 
+static C_VOID core_machine_planar_parity_memory_fault(C_VOID *owner)
+{
+    (C_VOID)core_machine_report_planar_parity_fault((core_machine *)owner);
+}
+
 static type_status core_machine_planar_parity_port_read(C_VOID *owner,
     type_unsigned_16 port, type_unsigned_32 *out_value)
 {
@@ -3446,6 +3451,8 @@ type_status core_machine_configure_planar_parity(core_machine *machine,
     if (!core_machine_configuration_is_open(machine) || machine->planar_parity_configured)
         return TYPE_STATUS_INVALID_STATE;
     if (config == STD_NULL || config->port != CORE_MACHINE_PC_AT_PORT_B ||
+        config->memory_bytes == 0u || config->memory_bytes >
+            machine->executor_memory.connect.installed_bytes ||
         core_machine_port_has_read(&machine->executor_port,
             config->port) || core_machine_port_has_write(&machine->executor_port,
             config->port)) return TYPE_STATUS_INVALID_ARGUMENT;
@@ -3459,6 +3466,13 @@ type_status core_machine_configure_planar_parity(core_machine *machine,
     machine->planar_parity_config = *config;
     machine->planar_parity_port_b = 0x04u;
     machine->planar_parity_configured = TYPE_TRUE;
+    status = core_machine_memory_enable_parity(&machine->executor_memory,
+        config->memory_bytes, core_machine_planar_parity_memory_fault, machine);
+    if (status != TYPE_STATUS_OK) {
+        machine->planar_parity_configured = TYPE_FALSE;
+        core_machine_port_rollback_registration(&machine->executor_port, checkpoint);
+        return status;
+    }
     return TYPE_STATUS_OK;
 }
 
@@ -3928,7 +3942,8 @@ static type_status core_machine_create_internal(
     /* The 80386 reset vector is at physical FFFFFFF0.  The PC/AT firmware
      * window aliases its final 64 KiB at F0000 so every supported profile has
      * a deterministic reset fetch without requiring a per-fixture mapping. */
-    if (core_machine_memory_register_mapping(&machine->executor_memory,
+    if (memory_bytes >= 0x00100000u &&
+        core_machine_memory_register_mapping(&machine->executor_memory,
             0xffff0000u, 0x000f0000u, 0x00010000u) != TYPE_STATUS_OK) {
         core_machine_destroy(machine);
         return TYPE_STATUS_INVALID_ARGUMENT;
@@ -4081,6 +4096,7 @@ type_status core_machine_reconfigure_memory(core_machine *machine,
     if (machine == STD_NULL || !core_machine_mutable_operation_is_allowed(machine) ||
         !machine->execution_provider_frozen ||
         machine->lifecycle != CORE_MACHINE_STOPPED ||
+        machine->planar_parity_configured ||
         memory_bytes < CORE_MACHINE_MINIMUM_MEMORY_BYTES ||
         memory_bytes > CORE_MACHINE_MAXIMUM_MEMORY_BYTES) {
         return TYPE_STATUS_INVALID_STATE;

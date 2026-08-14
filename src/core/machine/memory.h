@@ -26,6 +26,7 @@ typedef struct {
 
 typedef C_VOID (*core_machine_memory_write_observer)(C_VOID *owner,
     type_unsigned_32 physical, type_native_unsigned bytes);
+typedef C_VOID (*core_machine_memory_parity_fault_observer)(C_VOID *owner);
 
 typedef type_status (*core_machine_memory_device_read)(C_VOID *owner,
     type_unsigned_32 physical, type_virtual_address destination,
@@ -57,8 +58,12 @@ typedef struct {
 
 typedef struct {
     type_virtual_address backing;
+    type_virtual_address parity;
     type_native_unsigned installed_bytes;
     type_native_unsigned backing_capacity;
+    type_native_unsigned parity_bytes;
+    core_machine_memory_parity_fault_observer parity_fault;
+    C_VOID *parity_owner;
     core_machine_memory_mapping mappings[CORE_MACHINE_MEMORY_MAPPING_CAPACITY];
     type_native_unsigned mapping_count;
     core_machine_memory_write_observer_slot
@@ -101,6 +106,8 @@ C_VOID core_machine_memory_register_ports(t_ram *ram, t_port *port);
 
 
 type_status core_machine_memory_allocate_for(t_ram *ram, STD_SIZE_T bytes);
+type_status core_machine_memory_enable_parity(t_ram *ram, STD_SIZE_T bytes,
+    core_machine_memory_parity_fault_observer fault, C_VOID *owner);
 type_status core_machine_memory_register_mapping(t_ram *ram,
     type_unsigned_32 physical_start,
     type_unsigned_32 backing_start, STD_SIZE_T bytes);
