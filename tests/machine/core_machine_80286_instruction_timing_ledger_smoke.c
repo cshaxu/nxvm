@@ -202,6 +202,7 @@ static C_INT timing_80286_boundaries(C_VOID)
     static const type_unsigned_8 shift_byte[] = { 0xd0u, 0xc0u };
     static const type_unsigned_8 shift_word[] = { 0xd1u, 0xc0u };
     static const type_unsigned_8 shift_memory[] = { 0xd0u, 0x06u, 0x00u, 0x10u };
+    static const type_unsigned_8 shift_word_memory[] = { 0xd1u, 0x06u, 0x00u, 0x10u };
     static const type_unsigned_8 shift_undefined[] = { 0xd0u, 0xf0u };
     static const type_unsigned_8 fault[] = { 0x66u, 0x90u };
     static const type_unsigned_8 maximum[] = { 0xf3u, 0xa4u };
@@ -218,7 +219,9 @@ static C_INT timing_80286_boundaries(C_VOID)
     if (!failed) failed |= !timing_80286_load(machine, shift_word,
         sizeof(shift_word)) || !timing_80286_run(machine, &state, 1u, 2u);
     if (!failed) failed |= !timing_80286_load(machine, shift_memory,
-        sizeof(shift_memory)) || !timing_80286_run(machine, &state, 1u, 1u);
+        sizeof(shift_memory)) || !timing_80286_run(machine, &state, 1u, 7u);
+    if (!failed) failed |= !timing_80286_load(machine, shift_word_memory,
+        sizeof(shift_word_memory)) || !timing_80286_run(machine, &state, 1u, 7u);
     if (!failed) failed |= !timing_80286_load(machine, shift_undefined,
         sizeof(shift_undefined)) || !test_core_machine_fixture_preflight_real_ud_terminal(
             machine) || core_machine_run(machine, one, &result) != TYPE_STATUS_FAULT ||

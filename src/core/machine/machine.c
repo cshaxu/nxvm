@@ -2674,6 +2674,12 @@ static C_INT core_machine_80286_source_instruction_cost(core_machine *machine,
             *out_ticks = 2u;
             return 1;
         }
+        if (data->flagMem && prefixes + 1u < data->oplen &&
+            (data->opcodes[prefixes + 1u] & 0xc7u) == 6u &&
+            ((data->opcodes[prefixes + 1u] >> 3u) & 7u) != 6u) {
+            *out_ticks = 7u;
+            return 1;
+        }
         *out_ticks = CORE_MACHINE_SOURCE_UNALLOCATED_TICKS;
         return 1;
     default:
