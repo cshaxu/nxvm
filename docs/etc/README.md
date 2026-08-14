@@ -131,6 +131,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t364-s1-pcat-device-completeness-ledger.md` | Verification owner | T364 S1 selected PC/AT component, port/route, lifecycle/timing-owner, absence, and earliest-receiver ledger. Retain with T364 history at task closure. |
 | `evidence/t364-s2-pcat-device-completeness-closure-audit.md` | Verification owner | T364 task-level selected-PC/AT component/route/owner/receiver completeness closure audit. Retain with T364 history. |
 | `evidence/t365-s1-pcat-nmi-source-decision.md` | Verification owner | T365 S1 IBM PC/AT NMI candidate, mask/delivery, profile-input and truthful non-admission decision. Retain with T365 history at task closure. |
+| `evidence/t365-s2-pcat-nmi-nonadmission-closure-audit.md` | Verification owner | T365 task-level PC/AT NMI non-admission, singular receiver, and downstream L3 blocker audit. Retain with T365 history. |
 | `operations/` | Execution, source, and release owners | Toolchain, policy, templates, release procedure, and closure material. |
 | `research/` | Source owner | Provenance, external references, and non-product research. |
 | `history/` | Documentation owner | Read-only legacy and M5 migration/roadmap evidence. |

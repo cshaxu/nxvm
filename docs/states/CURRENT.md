@@ -2,8 +2,29 @@
 
 ## Current Work
 
-**Active.** M5 T365 remains open between accepted S units; its non-admission
-closure audit is being prepared.
+**Active.** M5 T365 S2 audits the NMI non-admission receiver and task closure;
+it allocates no producer, route or timing value.
+
+## M5 T365 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | The owner directed ordered L3 implementation on 2026-08-14. T365 S1 was accepted at `bbd6ccec`; its source decision admits this audit-only closure unit. Git pushes are permitted. |
+| Objective | Verify that the non-admitted parity/I/O-check NMI source has one truthful T365/TODO receiver, cannot be substituted by CMOS/RTC/PIC/CPU test state, and blocks downstream L3 closure honestly. |
+| Non-goals | No NMI producer, port 61, generic delivery change, bus/service timing, firmware/media import, host source or physical/cycle-exact claim. |
+| Reference Baseline | `bbd6ccec`; [T365 S1 decision](../etc/evidence/t365-s1-pcat-nmi-source-decision.md), T350 S4, T364 closure, Queue and TODO. |
+| Candidate Proposal | [PC/AT NMI source ownership](../proposals/m5-pcat-nmi-source-ownership.md). |
+| Files And ABI Surface | Evidence/history/status only. No public ABI or runnable path. |
+| Applicable Rules | Task Reading Set; Execution task-closure/evidence rules; Documentation topology; Architecture source/lifecycle ownership. |
+| Verification | Recheck profile, CMOS mask, CPU delivery, PIC/RTC routes, TODO/Queue receiver and documentation governance/diff. |
+| Expected Markers | T365 S2 non-admission closure marker and retained mask/delivery markers. |
+| Asset Needs | No new assets; existing IBM PC/AT provenance only. |
+| Reporting Requirements | State exact blocker, receiver, downstream L3 impact and closure decision. |
+| Stop Conditions | Stop without closure if a second source/receiver, concealed synthetic producer or misleading downstream admission exists. |
+| Exit Criteria | Non-admission and receiver are complete, singular and truthful; T365 closes without an NMI implementation claim. |
+| Original Owner Request | Continue ordered Queue implementation toward comprehensive L3 precision. |
+| Similar-Issue Sweep | Recheck NMI/parity/channel-check/port61/CMOS/RTC/PIC/CPU paths and Queue/TODO receivers. |
 
 ## Current Technical Baseline
 
