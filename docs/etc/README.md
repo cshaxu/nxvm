@@ -111,6 +111,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t360-s1-four-profile-source-authority-consumer-inventory.md` | Verification owner | T360 S1 Intel-manual edition, timing-consumer, conflict and later-subtask inventory. It is authority reconciliation evidence, not a timing table. |
 | `evidence/t360-s2-80286-nop-authority-precedence.md` | Verification owner | T360 S2 primary-source precedence, current `NOP = 3` consumer sweep, and bounded table/prose revisit transfer. Retain with T360 history at task closure. |
 | `evidence/t360-s3-8086-80186-range-form-disposition.md` | Verification owner | T360 S3 source-range disposition for 8086/80186 dynamic arithmetic and exact formula admission transfer. Retain with T360 history at task closure. |
+| `evidence/t360-s4-80286-80386-contextual-source-disposition.md` | Verification owner | T360 S4 complete 80286/80386 source-context, classifier, and exact-transfer disposition. Retain with T360 history at task closure. |
 | `operations/` | Execution, source, and release owners | Toolchain, policy, templates, release procedure, and closure material. |
 | `research/` | Source owner | Provenance, external references, and non-product research. |
 | `history/` | Documentation owner | Read-only legacy and M5 migration/roadmap evidence. |
