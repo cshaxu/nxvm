@@ -41,7 +41,7 @@ one named future admission path. Numerical x87 execution remains excluded.
 ## Windows Research Handoff
 
 The Windows readiness candidate now consumes this evidence through
-`docs/proposals/m5-windows-3x-readiness-map.md`. No Windows binary, setup,
+`docs/history/M5-T355-windows-3x-readiness-map-proposal.md`. No Windows binary, setup,
 driver, or startup corpus was used by T346. Therefore the handoff identifies
 prerequisites only: storage service timing, NMI sources, corpus-selected input
 and display breadth, and legally handled installation media/checkpoints.

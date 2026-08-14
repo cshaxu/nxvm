@@ -33,10 +33,10 @@ geometry/read result through the retained ATA readiness path.  Its detailed
 Windows boot or compatibility claim and transfers the complete map
 reconciliation to S4.
 
-## S4 delivery pending acceptance
+## Accepted S4 progress and task closure
 
-S4 reconciles the four retained probes, local-media boundary, current-gate
+S4 was accepted at `e2f4c722`.  It reconciles the four retained probes, local-media boundary, current-gate
 partition, accepted storage/timing prerequisites, and all device/product
 transfers.  Its [reconciliation evidence](../etc/evidence/t355-s4-readiness-reconciliation.md)
-is the task-level closure audit; it does not make an installation or
-compatibility claim.
+is the task-level closure audit.  T355 closes as a bounded readiness map; it
+does not make an installation or compatibility claim.

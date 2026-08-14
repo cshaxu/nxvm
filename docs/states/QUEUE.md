@@ -27,7 +27,6 @@ precedes Windows readiness because readiness must not be used to hide known
 controller-service and chipset gaps.  Each candidate remains bounded by its
 own manual/probe contract; completing one does not imply board-wide parity.
 
-1. [Windows 3.x readiness map](../proposals/m5-windows-3x-readiness-map.md).
 1. [M5 closure audit](../proposals/m5-closure-audit.md).
 
 Closed proposal reference:
