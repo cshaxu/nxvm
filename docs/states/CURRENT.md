@@ -86,11 +86,3 @@ candidate before bus-timed PC/AT work.
   80386DX closure candidates, then cross-profile verification. Each candidate
   has a linked unnumbered proposal; no implementation task was allocated.
   Documentation governance, Queue-link verification, and diff check passed.
-
-- **M5 Td S77:** moved the closed T323/T325/T328 proposals into matching
-  history companions; made every current proposal require a Queue link and
-  added the orphan-proposal negative self-test; compacted repeated
-  mechanism-defect requirements into role-specific authorities; clarified
-  historical terminology retention and the idle T332 artifact wording.
-  Documentation self-test, combined governance check, and diff check passed.
-  Td work has no runtime or artifact change.
