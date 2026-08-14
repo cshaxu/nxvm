@@ -31,7 +31,7 @@ status flip-flop reset, phase/reset behavior, timeline advance, and copied
 consumer isolation.  Its [evidence](../etc/evidence/t352-s2-vadp-register-raster.md)
 retains selected CGA/EGA mode/aperture work for S3/S4 and composition for S5.
 
-S3 delivery reconciles the selected digital CGA text, 320x200x4, and mode-06h
+S3 is accepted at `30c15d44`: it reconciles the selected digital CGA text, 320x200x4, and mode-06h
 640x200x2 decoders, ports, B8000/interleaved layout, palette, copied frame,
 reset, and ROM-writer boundary.  Its
 [evidence](../etc/evidence/t352-s3-cga-digital-path.md) retains graphics CRTC
