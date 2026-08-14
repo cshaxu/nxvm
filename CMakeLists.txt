@@ -257,12 +257,12 @@ if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 
-add_executable(core-machine-legacy-dynamic-arithmetic-timing-s3-smoke
-    tests/machine/core_machine_legacy_dynamic_arithmetic_timing_s3_smoke.c)
-target_link_libraries(core-machine-legacy-dynamic-arithmetic-timing-s3-smoke PRIVATE
+add_executable(core-machine-legacy-timing-normalization-s2-smoke
+    tests/machine/core_machine_legacy_timing_normalization_s2_smoke.c)
+target_link_libraries(core-machine-legacy-timing-normalization-s2-smoke PRIVATE
     core-machine)
 if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
-    target_compile_options(core-machine-legacy-dynamic-arithmetic-timing-s3-smoke PRIVATE
+    target_compile_options(core-machine-legacy-timing-normalization-s2-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 
@@ -1791,7 +1791,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-t359-s6-timing-smoke
     core-machine-8086-instruction-timing-ledger-smoke
     core-machine-80186-instruction-timing-ledger-smoke
-    core-machine-legacy-dynamic-arithmetic-timing-s3-smoke
+    core-machine-legacy-timing-normalization-s2-smoke
     core-machine-80286-instruction-timing-ledger-smoke
     core-machine-80386-protected-io-timing-smoke
     core-machine-real-mode-corpus-smoke
@@ -2478,8 +2478,8 @@ function(add_current_vm_artifact target version)
             "${CMAKE_SOURCE_DIR}/build/output/${task_artifact_filename}")
 endfunction()
 
-set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0359)
-add_current_vm_artifact(vm-0-5-0359 "0.5.0359")
+set(PROJECT_CURRENT_VM_ARTIFACT_TARGET vm-0-5-0362)
+add_current_vm_artifact(vm-0-5-0362 "0.5.0362")
 option(PROJECT_VERIFY_DEPENDENCY_DAG
     "Reject newly introduced mixed-owner CMake targets" ON)
 

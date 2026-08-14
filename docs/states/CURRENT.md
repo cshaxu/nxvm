@@ -2,15 +2,35 @@
 
 ## Current Work
 
-**Active.** M5 T362 remains open between accepted S units. S1 accepted the
-immediate-IMUL source-domain ledger; the centralized profile-local allocation
-and regression corpus is the next admissible S.
+**Active.** M5 T362 S2 centralizes the eligible 80186 immediate-IMUL timing
+model and its regression corpus.
+
+## M5 T362 S2 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | The owner directed current-Queue execution through complete instruction timing on 2026-08-14. T362 S1 was accepted at `09dbc685`; its bounded S2 implementation is approved by the active proposal and ledger. Git pushes are permitted. |
+| Objective | Replace the three scoped 80186 immediate-IMUL one-tick transfers with one private profile-local model table that records raw MAME scalar, Intel bounds, and direct/constrained selected CPU clocks; update the dedicated regression corpus and prove the single successful-retirement publisher. |
+| Non-goals | No change to 8086 or Group-3 rows, 80286/80386 timing, unsupported prefix routing, exception delivery, bus/prefetch/device/service time, public ABI, external code import, physical measurement, or cycle-exact claim. |
+| Reference Baseline | `09dbc685` / `vm-0-5-0359`; T362 S1 [ledger](../etc/evidence/t362-s1-legacy-timing-normalization-ledger.md) and [normalization proposal](../proposals/m5-intel-constrained-legacy-timing-normalization.md). |
+| Candidate Proposal | [Intel-constrained legacy timing-model normalization](../proposals/m5-intel-constrained-legacy-timing-normalization.md). |
+| Files And ABI Surface | Private `src/core/machine/machine.c` model helper, dedicated legacy dynamic-arithmetic smoke/CMake registration, evidence/history/status, developer artifact and SHA-256 record. No public header or ABI. |
+| Applicable Rules | Task Reading Set; Execution P/closure, similar-issue, artifact, and full-gate rules; Architecture single-owner/source-admission invariants; Coding source/test rules; Documentation boundaries; source/research policy. One successful-retirement publisher and CPU-versus-machine ownership remain mandatory. |
+| Verification | Prove 69 register lower clamp 25 to 29, 69 memory direct 32, 6B register direct 22, 6B memory upper clamp 29 to 24; segment-prefix/memory ownership, no double EA/odd-word charge, profile rejection, divide fault nonpublication, focused smoke, static source sweep, documentation governance, diff check, developer artifact build/hash, and full current gate. |
+| Expected Markers | `M5:T362:S2:LEGACY-TIMING-NORMALIZATION:OK` plus retained fault and current-gate markers. |
+| Asset Needs | Existing local source, T362 evidence, read-only cited manual/MAME revisions; no retained download, third-party source, media, or protected binary. |
+| Reporting Requirements | Report the central table shape before implementation completion, identify every changed fallback and no-op direct row, and record artifact identity, tests, source provenance, and remaining S3 audit work. |
+| Stop Conditions | Stop if a selected value needs a second publisher, a public interface, a machine/bus owner, a source import, or an accounting change beyond S1. Retain an explicit transfer rather than synthesizing an unsupported prefix or form. |
+| Exit Criteria | All four immediate forms have exactly one centralized selected value and provenance, qualifying one-tick fallbacks are gone, focused tests prove both clamp bounds/direct cases and publication boundaries, the artifact/full gate pass, and records make no physical/cycle-exact claim. |
+| Original Owner Request | Execute the current Queue through complete instruction timing, using Intel first and 86Box/MAME/PCjs only as applicable model sources where primary timing is non-deterministic. |
+| Similar-Issue Sweep | Search production source, tests, CMake and records for the immediate-IMUL forms and one-tick transfers; verify every 69/6B register/memory route reaches the single private model table and that unrelated unallocated routes retain their owners. |
 
 ## Current Technical Baseline
 
-- **Current developer artifact:** T359 S6 `vm-0-5-0359` /
-  `build/output/nxvm_0_5_0359.exe` as
-  `65823D830715FC8925DBD810C2BCDEC3AEEB654D3B6B96BB022870ABF9B6783D`.
+- **Current developer artifact:** T362 S2 `vm-0-5-0362` /
+  `build/output/nxvm_0_5_0362.exe`; its SHA-256 and source commit are
+  recorded in the T362 S2 acceptance evidence.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.

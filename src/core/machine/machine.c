@@ -1225,11 +1225,71 @@ static C_INT core_machine_source_timing_primary_shape(
     return 0;
 }
 
-/* The 8086 entries retain its source-manual memory additions.  The selected
+typedef enum core_machine_80186_immediate_imul_provenance {
+    CORE_MACHINE_80186_IMMEDIATE_IMUL_DIRECT = 0,
+    CORE_MACHINE_80186_IMMEDIATE_IMUL_INTEL_CONSTRAINED
+} core_machine_80186_immediate_imul_provenance;
+
+typedef struct core_machine_80186_immediate_imul_timing {
+    type_unsigned_8 opcode;
+    C_INT memory;
+    type_unsigned_8 raw_model_ticks;
+    type_unsigned_8 intel_minimum_ticks;
+    type_unsigned_8 intel_maximum_ticks;
+    type_unsigned_8 selected_ticks;
+    core_machine_80186_immediate_imul_provenance provenance;
+} core_machine_80186_immediate_imul_timing;
+
+/* This project-owned table transcribes the T362 S1 ledger.  The raw i80186
+ * model scalar includes effective-address work; it is normalized only inside
+ * the documented Intel form domain and never receives the 8086 EA/odd-word
+ * additions.  It is not an import of the reference implementation. */
+static const core_machine_80186_immediate_imul_timing
+    core_machine_80186_immediate_imul_timings[] = {
+    { 0x6bu, TYPE_FALSE, 22u, 22u, 24u, 22u,
+        CORE_MACHINE_80186_IMMEDIATE_IMUL_DIRECT },
+    { 0x6bu, TYPE_TRUE, 29u, 22u, 24u, 24u,
+        CORE_MACHINE_80186_IMMEDIATE_IMUL_INTEL_CONSTRAINED },
+    { 0x69u, TYPE_FALSE, 25u, 29u, 32u, 29u,
+        CORE_MACHINE_80186_IMMEDIATE_IMUL_INTEL_CONSTRAINED },
+    { 0x69u, TYPE_TRUE, 32u, 29u, 32u, 32u,
+        CORE_MACHINE_80186_IMMEDIATE_IMUL_DIRECT }
+};
+
+static C_INT core_machine_80186_immediate_imul_model_cost(type_unsigned_8 opcode,
+    C_INT memory, type_unsigned_64 *out_ticks)
+{
+    STD_SIZE_T index;
+
+    if (out_ticks == STD_NULL) return 0;
+    for (index = 0u; index < sizeof(core_machine_80186_immediate_imul_timings) /
+        sizeof(core_machine_80186_immediate_imul_timings[0]); ++index) {
+        const core_machine_80186_immediate_imul_timing *timing =
+            &core_machine_80186_immediate_imul_timings[index];
+        type_unsigned_8 normalized = timing->raw_model_ticks;
+        C_INT constrained;
+
+        if (timing->opcode != opcode || timing->memory != memory) continue;
+        if (normalized < timing->intel_minimum_ticks) {
+            normalized = timing->intel_minimum_ticks;
+        } else if (normalized > timing->intel_maximum_ticks) {
+            normalized = timing->intel_maximum_ticks;
+        }
+        constrained = normalized != timing->raw_model_ticks;
+        if (normalized != timing->selected_ticks ||
+            constrained != (timing->provenance ==
+                CORE_MACHINE_80186_IMMEDIATE_IMUL_INTEL_CONSTRAINED)) {
+            return 0;
+        }
+        *out_ticks = timing->selected_ticks;
+        return 1;
+    }
+    return 0;
+}
+
+/* The 8086 entries retain their source-manual memory additions.  The selected
  * 80186 reference model already includes effective-address time, so only its
- * documented segment-prefix cost is added here.  This is a project-owned
- * transcription of constants documented in the T361 S3 evidence, not an
- * import of a reference implementation. */
+ * documented segment-prefix cost is added here. */
 static C_INT core_machine_legacy_dynamic_arithmetic_model_cost(
     core_machine *machine, type_unsigned_64 *out_ticks)
 {
@@ -1293,17 +1353,8 @@ static C_INT core_machine_legacy_dynamic_arithmetic_model_cost(
         else ticks = shape.word ? 59u : 50u;
         break;
     case CORE_MACHINE_SOURCE_TIMING_IMUL_IMMEDIATE:
-        /* MAME's i80186 69h register constant is 25, outside Intel Table
-         * 1-16's 29--32 range.  Retain this form on the explicit unallocated
-         * route rather than choosing a table endpoint or importing a new
-         * approximation.  Its 6Bh register constant remains within the
-         * 22--24 model domain recorded in the T361 S3 evidence.  The manual
-         * does not give an independent 80186 memory-source row for either
-         * immediate form, so MAME's EA-included memory constants likewise
-         * remain reference-exhausted rather than being compared to a
-         * register-only range. */
-        if (opcode != 0x6bu || shape.memory) return 0;
-        ticks = 22u;
+        if (!core_machine_80186_immediate_imul_model_cost(opcode,
+            shape.memory, &ticks)) return 0;
         break;
     default:
         return 0;
