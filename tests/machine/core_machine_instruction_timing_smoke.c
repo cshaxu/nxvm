@@ -124,7 +124,7 @@ static C_INT timing_test_quantum_and_reset(C_VOID)
                 result.reason != CORE_MACHINE_STOP_BUDGET || result.executed != 1u;
             split_ticks += result.ticks;
         }
-        failed |= split_ticks != 35u;
+        failed |= split_ticks != 9u;
         failed |= core_machine_reset(machine) != TYPE_STATUS_OK ||
             core_machine_memory_write(machine, TIMING_RESET_LINEAR, program,
                 sizeof(program)) != TYPE_STATUS_OK ||
@@ -192,15 +192,15 @@ C_INT main(C_VOID)
     static const type_unsigned_8 rep_movsb[] = { 0xb9u, 0x03u, 0x00u, 0xf3u, 0xa4u };
     C_INT failed = 0;
 
-    failed |= timing_case(nop, sizeof(nop), 1u, 10u);
-    failed |= timing_case(register_mov, sizeof(register_mov), 1u, 10u);
-    failed |= timing_case(prefixed_nop, sizeof(prefixed_nop), 1u, 12u);
-    failed |= timing_case(memory_mov, sizeof(memory_mov), 1u, 13u);
-    failed |= timing_case(out_port, sizeof(out_port), 1u, 15u);
-    failed |= timing_case(in_port, sizeof(in_port), 1u, 15u);
-    failed |= timing_case(taken_branch, sizeof(taken_branch), 2u, 27u);
-    failed |= timing_case(not_taken_branch, sizeof(not_taken_branch), 2u, 20u);
-    failed |= timing_case(rep_movsb, sizeof(rep_movsb), 4u, 52u);
+    failed |= timing_case(nop, sizeof(nop), 1u, 3u);
+    failed |= timing_case(register_mov, sizeof(register_mov), 1u, 2u);
+    failed |= timing_case(prefixed_nop, sizeof(prefixed_nop), 1u, 1u);
+    failed |= timing_case(memory_mov, sizeof(memory_mov), 1u, 5u);
+    failed |= timing_case(out_port, sizeof(out_port), 1u, 3u);
+    failed |= timing_case(in_port, sizeof(in_port), 1u, 5u);
+    failed |= timing_case(taken_branch, sizeof(taken_branch), 2u, 8u);
+    failed |= timing_case(not_taken_branch, sizeof(not_taken_branch), 2u, 4u);
+    failed |= timing_case(rep_movsb, sizeof(rep_movsb), 4u, 19u);
     failed |= timing_test_quantum_and_reset();
     failed |= timing_test_fault();
     failed |= timing_test_stop();

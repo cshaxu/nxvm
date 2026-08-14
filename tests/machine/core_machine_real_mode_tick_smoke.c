@@ -67,17 +67,17 @@ C_INT main(C_VOID)
         1u, 2u);
     failed |= core_machine_real_mode_tick_case("out", out_80, sizeof(out_80),
         CORE_MACHINE_CPU_PROFILE_80286, TYPE_STATUS_OK, CORE_MACHINE_STOP_BUDGET,
-        1u, 2u);
+        1u, 3u);
     failed |= core_machine_real_mode_tick_case("int", int_20, sizeof(int_20),
         CORE_MACHINE_CPU_PROFILE_80286, TYPE_STATUS_OK, CORE_MACHINE_STOP_BUDGET,
-        1u, 2u);
+        1u, 1u);
     failed |= core_machine_real_mode_tick_case("segment-prefix", prefixed_nop,
         sizeof(prefixed_nop),
         CORE_MACHINE_CPU_PROFILE_80286, TYPE_STATUS_OK, CORE_MACHINE_STOP_BUDGET,
-        1u, 2u);
+        1u, 1u);
     failed |= core_machine_real_mode_tick_case("hlt", halt, sizeof(halt),
         CORE_MACHINE_CPU_PROFILE_80286, TYPE_STATUS_OK,
-        CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT, 1u, 2u);
+        CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT, 1u, 1u);
     failed |= core_machine_real_mode_tick_case("operand-size-prefix",
         operand_size_prefix,
         sizeof(operand_size_prefix), CORE_MACHINE_CPU_PROFILE_80286,

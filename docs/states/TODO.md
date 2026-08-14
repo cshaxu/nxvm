@@ -179,6 +179,15 @@ admissions, not the default definition of NXVM completion.
 - [ ] **Instruction-timed execution (`TODO(Medium)`).** Give each admitted
   instruction deterministic profile-specific cost, including applicable
   prefix/branch/memory/I/O variants, before expanding the timing corpus.
+- [ ] **80286 Appendix-B timing-source reconciliation (`TODO(Low)`).** T357 S6
+  uses every selected formal Intel 80286/80287 Programmer's Reference Manual
+  Appendix B opcode-table row as the present ledger authority. It presently
+  records the cross-section `NOP` discrepancy: Appendix B says `3` clocks,
+  while manual prose says `2`. Revisit every such recorded discrepancy against
+  another primary Intel edition and a bounded reference/measurement probe
+  before changing a source-backed row. Preserve the Appendix-B allocation
+  unless that admission records the authority, affected rows, compatibility
+  impact, focused regressions, and full timing gate.
 - [ ] **Bus-timed PC/AT operation (`TODO(High)`).** T354 closes selected L3:
   checked CPU/DMA transaction publication, deterministic CPU/DMA/PIT/PIC/FDC/HDC
   visibility, reset cancellation, and trace proof. A later task may model

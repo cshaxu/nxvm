@@ -2,9 +2,28 @@
 
 ## Current Work
 
-**Active.** M5 T357 remains open after accepting S5; the next source-backed
-timing-ledger packet must cover transferred 80286 rows or a further bounded
-80386 transfer.
+**Active.** M5 T357 S6 allocates selected source-backed 80286 timing rows.
+
+## M5 T357 S6 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner-approved T357 continuation. For every selected 80286 opcode with a formal Intel PRM Appendix B row, the owner selects that row as the current source of truth; `NOP = 3` clocks is one such allocation. |
+| Objective | Replace compatibility cadence for selected 80286 forms with Appendix B values at the existing CPU-retirement publisher, retaining real/protected distinctions only where Appendix B requires them. |
+| Non-goals | Do not model prefetch depletion, bus waits, HOLD/DMA, device latency, exact exception/IRQ cycles, x87, host time, or Windows behavior. An Appendix-B-versus-prose or other-section discrepancy is recorded for later independent verification, not treated as an unallocated selected timing row. |
+| Reference Baseline | `b7eb4fb6` / `vm-0-5-0357`, accepted S1--S5 evidence, and Intel 80286/80287 Programmer's Reference Manual Appendix B. |
+| Candidate Proposal | [Instruction-timed execution](../proposals/m5-instruction-timed-execution.md) and [T357 task record](../history/M5-T357-instruction-timed-execution.md). |
+| Files And ABI Surface | Private timing selection, owner smoke/target, evidence/index/current/history only; no public ABI or second time writer. |
+| Applicable Rules | Apply Task Reading Set and execution/coding/architecture/documentation/source-policy authorities; publish elapsed ticks only after successful refresh. |
+| Verification | Prove selected CLC, register/memory/moffs MOV, MOVSB/REP, Jcc, IN/OUT, base-index-displacement and odd-word additions, compatibility independence, fallback, fault/stop/reset/budget/overflow and deterministic publication. |
+| Expected Markers | `M5:T357:S6:80286-INSTRUCTION-TIMING-LEDGER:OK`; full current-gate remains green. |
+| Asset Needs | Read-only Intel 80286/80287 Programmer's Reference Manual Appendix B. No external material enters the repository. |
+| Reporting Requirements | Record Appendix-B source values and construction distinctions; enumerate every observed cross-section discrepancy, its Appendix-B allocation, and its later-verification TODO; then record commands/results, sweep, artifact and actual-change review before closure. |
+| Stop Conditions | Stop if a selected opcode has no formal Appendix B value, or requires unmodelled bus/device/delivery conditions; transfer rather than guess. Cross-section disagreement alone is recorded for later review and does not override Appendix B. |
+| Exit Criteria | All admitted Appendix-B rows, including `NOP = 3`, have focused proof and full gate; every observed source discrepancy has a later-verification TODO; unallocated forms remain explicit transfers; no selected value derives from compatibility configuration. |
+| Original Owner Request | Complete source-backed instruction-form timing without claiming bus/cycle-exact fidelity. |
+| Similar-Issue Sweep | Sweep profile dispatch, contracts, maximums, compatibility paths, elapsed writers/readers, selected timing smokes and source conflicts. |
 
 ## Current Technical Baseline
 
