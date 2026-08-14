@@ -28,7 +28,9 @@ controller-service and chipset gaps.  Each candidate remains bounded by its
 own manual/probe contract; completing one does not imply board-wide parity.
 
 1. [Cross-mode mechanism coherence](../proposals/m5-cross-mode-mechanism-coherence.md).
+1. [Complete instruction-timing corpus](../proposals/m5-complete-instruction-timing-corpus.md).
 1. [Bus-timed PC/AT operation](../proposals/m5-bus-timed-pcat-operation.md).
+1. [80286 Appendix-B timing source reconciliation](../proposals/m5-80286-appendix-b-source-reconciliation.md).
 1. [Cycle-exact selected profile](../proposals/m5-cycle-exact-selected-profile.md).
 
 Closed proposal reference:
