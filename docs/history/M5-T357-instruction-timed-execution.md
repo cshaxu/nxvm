@@ -29,6 +29,14 @@ S5 added the selected 80186 Table 1-16 ledger. It shares only the genuine
 `MOV`, moffs, Jcc, `REP MOVSB`, and `OUT`; 80286 remains the compatibility
 profile until its own source-ledger packet.
 
+S6 replaces that 80286 compatibility cadence with the selected formal
+Appendix-B ledger, including `NOP`, `MOV`, `MOVSB`/`REP MOVSB`, short Jcc, and
+port forms.  It retains a distinct 80286 EA/odd-word construction rather than
+borrowing the different 8086/80186 rules; all profiles still use the one
+successful-retirement elapsed-tick publisher.  The Appendix-B `NOP = 3`
+allocation is authoritative for this ledger, while its conflict with manual
+prose is an explicit later reconciliation debt.
+
 ## Intended Task Closure
 
 T357 closes only after the selected corpus advances guest time from the single

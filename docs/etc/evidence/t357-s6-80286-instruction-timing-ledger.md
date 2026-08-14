@@ -72,3 +72,17 @@ HOLD/DMA, port/device service, physical bus ownership, and exact
 fault/interrupt timing remain transfers to the existing timing and bus debt.
 The Appendix-B-versus-prose `NOP` discrepancy remains a later source
 reconciliation task; it does not reopen the selected Appendix-B allocation.
+
+## Verification record
+
+Implementation commit `b5a0a37f` rebuilt the task developer artifact
+`build/output/nxvm_0_5_0357.exe` from the current `vm-0-5-0357` target.  Its
+SHA-256 is
+`E0A9E0343787196A3292978D64AB03B92F9E904CCF7AA88680C376F2EFA08772`.
+
+The focused owner marker, exact CTest registration, documentation governance,
+`git diff --check`, the T344 fixture-shape verifier, and direct current-gate
+CTest all pass.  The direct CTest invocation reports 239/239 passing tests.
+The project aggregate `current-gates-gcc` wrapper exceeded the local 120-second
+command limit without a failing-test report; its equivalent static verifier and
+direct current-gate CTest were both run successfully above.

@@ -2,34 +2,15 @@
 
 ## Current Work
 
-**Active.** M5 T357 S6 allocates selected source-backed 80286 timing rows.
-
-## M5 T357 S6 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner-approved T357 continuation. For every selected 80286 opcode with a formal Intel PRM Appendix B row, the owner selects that row as the current source of truth; `NOP = 3` clocks is one such allocation. |
-| Objective | Replace compatibility cadence for selected 80286 forms with Appendix B values at the existing CPU-retirement publisher, retaining real/protected distinctions only where Appendix B requires them. |
-| Non-goals | Do not model prefetch depletion, bus waits, HOLD/DMA, device latency, exact exception/IRQ cycles, x87, host time, or Windows behavior. An Appendix-B-versus-prose or other-section discrepancy is recorded for later independent verification, not treated as an unallocated selected timing row. |
-| Reference Baseline | `b7eb4fb6` / `vm-0-5-0357`, accepted S1--S5 evidence, and Intel 80286/80287 Programmer's Reference Manual Appendix B. |
-| Candidate Proposal | [Instruction-timed execution](../proposals/m5-instruction-timed-execution.md) and [T357 task record](../history/M5-T357-instruction-timed-execution.md). |
-| Files And ABI Surface | Private timing selection, owner smoke/target, evidence/index/current/history only; no public ABI or second time writer. |
-| Applicable Rules | Apply Task Reading Set and execution/coding/architecture/documentation/source-policy authorities; publish elapsed ticks only after successful refresh. |
-| Verification | Prove selected CLC, register/memory/moffs MOV, MOVSB/REP, Jcc, IN/OUT, base-index-displacement and odd-word additions, compatibility independence, fallback, fault/stop/reset/budget/overflow and deterministic publication. |
-| Expected Markers | `M5:T357:S6:80286-INSTRUCTION-TIMING-LEDGER:OK`; full current-gate remains green. |
-| Asset Needs | Read-only Intel 80286/80287 Programmer's Reference Manual Appendix B. No external material enters the repository. |
-| Reporting Requirements | Record Appendix-B source values and construction distinctions; enumerate every observed cross-section discrepancy, its Appendix-B allocation, and its later-verification TODO; then record commands/results, sweep, artifact and actual-change review before closure. |
-| Stop Conditions | Stop if a selected opcode has no formal Appendix B value, or requires unmodelled bus/device/delivery conditions; transfer rather than guess. Cross-section disagreement alone is recorded for later review and does not override Appendix B. |
-| Exit Criteria | All admitted Appendix-B rows, including `NOP = 3`, have focused proof and full gate; every observed source discrepancy has a later-verification TODO; unallocated forms remain explicit transfers; no selected value derives from compatibility configuration. |
-| Original Owner Request | Complete source-backed instruction-form timing without claiming bus/cycle-exact fidelity. |
-| Similar-Issue Sweep | Sweep profile dispatch, contracts, maximums, compatibility paths, elapsed writers/readers, selected timing smokes and source conflicts. |
+**Active.** M5 T357 remains open after accepting S6; the next packet must cover
+the remaining selected 80386 source-backed rows or the final cross-profile
+closure audit.
 
 ## Current Technical Baseline
 
 - **Current developer artifact:** T357 selects `vm-0-5-0357` /
-  `build/output/nxvm_0_5_0357.exe`; S5 rebuilt it as
-  `42D26E22DBA6149F2D2D0F2CAA6D6EE3DD73A9BECF0348C3EAF4554E5DCB225F`.
+  `build/output/nxvm_0_5_0357.exe`; S6 rebuilt it at `b5a0a37f` as
+  `E0A9E0343787196A3292978D64AB03B92F9E904CCF7AA88680C376F2EFA08772`.
 - **T285 display implementation:** `INT 10h` mode `10h` /
   `EGA-640x350x16-direct` has a VADP-owned planar frame path and copied-frame
   consumer boundary; mode 0Dh remains a separate retained path.
@@ -44,7 +25,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T357 S5 | Latest accepted T357 progress adds selected 80186 Table 1-16 values through a shared legacy construction with profile-local immutable contracts. S5 proves the 80186-specific `MOV`, moffs, Jcc, `REP MOVSB`, `IN`/`OUT`, segment/odd-word, fallback and publication boundaries; generic cadence tests transfer to 80286 compatibility. Artifact SHA-256 `42D26E22DBA6149F2D2D0F2CAA6D6EE3DD73A9BECF0348C3EAF4554E5DCB225F`; 57 static gates and 238 current-gate tests passed. [S5](../etc/evidence/t357-s5-80186-instruction-timing-ledger.md). |
+| T357 S6 | Latest accepted T357 progress replaces 80286 compatibility cadence with selected Appendix-B `NOP`, `MOV`, `MOVSB`/`REP`, Jcc and `IN`/`OUT` rows. It retains distinct 80286 base-index-displacement/odd-word construction, fallback and publication boundaries; Appendix B controls the `NOP = 3` allocation while the conflicting prose is a later TODO. Artifact SHA-256 `E0A9E0343787196A3292978D64AB03B92F9E904CCF7AA88680C376F2EFA08772`; 239 current-gate tests passed. [S6](../etc/evidence/t357-s6-80286-instruction-timing-ledger.md). |
 | T356 | Closed the M5 closure audit with an explicit M5-open decision: all selected device owners are evidenced, but instruction timing, bus availability/wait states and selected-profile cycle exactness remain ordered implementation prerequisites; corpus-gated peripheral, storage and product boundaries remain explicit transfers. [History](../history/M5-T356-m5-closure-audit.md). |
 | T355 | Closed the bounded Windows 3.x readiness map: an opt-in BYOB HDD/INT13 checkpoint passed, all four probes remain host-observation/non-current, T347/T354 storage/L3 is a verified prerequisite, and all display, input, NMI, physical-timing, Setup, and compatibility breadth remains explicitly transferred. [History](../history/M5-T355-windows-3x-readiness-map.md). |
 | T354 | Closed selected L3 bus timing: core-local checked CPU/DMA transaction begin/commit/cancel trace, deterministic CPU-retire then DMA/PIT/PIC then FDC/HDC ordering, reset cancellation/trace continuity, and retained firmware/DOS consumers. Exact bus cycles, pin waveforms, physical wait tables, host time, and Windows readiness remain explicit transfers. 234 current-gate tests passed. [History](../history/M5-T354-physical-l3-bus-timing-convergence.md). |
