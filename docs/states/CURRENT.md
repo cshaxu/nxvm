@@ -2,29 +2,9 @@
 
 ## Current Work
 
-**Active.** M5 T357 S3 establishes the immutable, source-backed 80386 CPU
-timing ledger and its single retirement-time consumer for the selected L3 corpus.
-
-## M5 T357 S3 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner approved continuous holistic L3 implementation on 2026-08-13. T357 S1 and S2 are accepted at `9f869306` and `dcd735a3`; S3 consumes the S1 form contract and the S2 private preview rather than extending synthetic surcharge recognition. |
-| Objective | Replace selected 80386 CPU instruction-cost synthesis with one immutable, source-backed ledger and one owner-local classification route at the existing successful-retirement publication boundary. Establish an explicit unavailable/transfer disposition for every form not supported by a cited 80386 row. |
-| Non-goals | No guessed cycle values; no per-opcode guest-success patching; no 8086/80186/80286 source timing admission in this S; no public mutable timing table or new product API; no device/port latency, wait-state, HOLD/DMA, prefetch/cache/pin waveform, exact fault/interrupt cycle, x87, host-time, Windows-readiness, or M5-closure claim. |
-| Reference Baseline | `dcd735a3` on `master`; accepted [S1 source contract](../etc/evidence/t357-s1-instruction-timing-contract.md), accepted [S2 CPU preview](../etc/evidence/t357-s2-cpu-timing-preview-plan.md), and [instruction-timed-execution proposal](../proposals/m5-instruction-timed-execution.md). |
-| Candidate Proposal | [Instruction-timed execution](../proposals/m5-instruction-timed-execution.md). |
-| Files And ABI Surface | CPU/machine-private timing owner, existing timing smoke plus one ledger owner smoke, CMake/evidence/CURRENT/history as required. Compatibility configuration/profile composition may be translated once only if no second mutable timing truth remains. No public interface growth, device source, third-party import, or product-boundary change. |
-| Applicable Rules | Task Reading Set; accepted T357 S1/S2 evidence; architecture single-owner/variant/one-publication invariant; coding single type/vocabulary and bounded-owner rules; execution mechanism/similar-issue sweep; source policy; T354 deterministic timeline contract. |
-| Verification | Record exact 80386 primary source/table locations and values for every admitted form/variant. Prove profile/form selection, taken/not-taken `Jcc` using S2 `m`, prefix and selected string rules, register-versus-memory/port distinctions, stable unavailable disposition, budget/overflow/reset/fault/no-publication, and unchanged deterministic scheduler ordering. Record 8086/80186/80286 as later T357 source-ledger transfers, build `nxvm_0_5_0357.exe`, record SHA-256, and pass current-gates-gcc. |
-| Expected Markers | Indexed source-to-ledger table; owner timing-ledger smoke; explicit Jcc next-component proof; no synthetic recognition path; artifact SHA-256; full current-gate result. |
-| Asset Needs | Primary Intel manuals as research references only; no guest media, firmware, Bochs/PCjs source import, or external runtime dependency. |
-| Reporting Requirements | Deliver one complete implementation P only after every selected 80386 form value, source location, unavailable policy, caller/write/fault sweep, focused proof, artifact, and current gate is complete. Report a source conflict or any required bus/chipset model immediately. |
-| Stop Conditions | Stop for owner decision if an exact selected value lacks a primary source, a form requires device/bus timing to be meaningful, compatibility translation creates a second timing truth, or correct integration requires public ABI, generic executor, scheduler, or device redesign. Transfer rather than invent a value. |
-| Exit Criteria | Selected source-backed forms use only the immutable ledger at successful retirement; unsupported forms follow a tested stable disposition; no fault/stop/overflow publishes form time; S2 preview is used only where source semantics require `m`; reset/scheduler/device ordering remain deterministic; artifact/evidence/history and full sweep are complete. |
-| Original Owner Request | Fully and stably implement high-value devices and complete L3 timing before deciding the next phase, using a holistic mechanism rather than incremental patches. |
-| Similar-Issue Sweep | Recheck every `ticks_per_instruction`, `instruction_timing`, `maximum_instruction_ticks`, elapsed-tick writer/reader, profile/composition propagation, CPU retire/trace/scheduler path, selected prefix/branch/string/memory/port form, reset/fault/interrupt/budget branch, timing smoke, CMake gate, evidence, Queue, TODO, and roadmap reference. |
+**Active.** M5 T357 remains open after accepting S3; the next source-backed
+timing-ledger packet must cover the transferred 8086, 80186, and 80286 rows or
+a further bounded 80386 transfer.
 
 ## Current Technical Baseline
 
@@ -45,7 +25,7 @@ timing ledger and its single retirement-time consumer for the selected L3 corpus
 
 | Task | Compact result |
 | --- | --- |
-| T357 S2 | Accepted CPU-private nonpublishing lexical timing preview for the selected 80386 `Jcc` `m` prerequisite; prefix/ModR/M/SIB/displacement/immediate accounting, unavailable boundaries, reset alias, and no-publication proof passed. Artifact SHA-256 `CF8C225A4AD850C6EB9EA79A0C106171B0C0CF7340BE139EC8999F4DAFFA9B8C`; 235 current-gate tests passed. [Evidence](../etc/evidence/t357-s2-cpu-timing-preview-plan.md). |
+| T357 S3 | Latest accepted T357 progress: S1 timing contract, S2's nonpublishing 80386 `Jcc` lexical `m` preview, and S3's immutable ledger for selected NOP/CLC/MOV/MOVSB/REP MOVSB, short Jcc and real-mode IN/OUT forms. S3 adds the zero-tick delivered-exception boundary, deterministic scheduler integration, and explicit unsupported-form transfers. Artifact SHA-256 `12921803AAC84B617326A832654BB5E27D4C2DF6E016B9D6FCF7278C651999CC`; 57 static gates and 236 current-gate tests passed. [S1](../etc/evidence/t357-s1-instruction-timing-contract.md), [S2](../etc/evidence/t357-s2-cpu-timing-preview-plan.md), [S3](../etc/evidence/t357-s3-80386-instruction-timing-ledger.md). |
 | T356 | Closed the M5 closure audit with an explicit M5-open decision: all selected device owners are evidenced, but instruction timing, bus availability/wait states and selected-profile cycle exactness remain ordered implementation prerequisites; corpus-gated peripheral, storage and product boundaries remain explicit transfers. [History](../history/M5-T356-m5-closure-audit.md). |
 | T355 | Closed the bounded Windows 3.x readiness map: an opt-in BYOB HDD/INT13 checkpoint passed, all four probes remain host-observation/non-current, T347/T354 storage/L3 is a verified prerequisite, and all display, input, NMI, physical-timing, Setup, and compatibility breadth remains explicitly transferred. [History](../history/M5-T355-windows-3x-readiness-map.md). |
 | T354 | Closed selected L3 bus timing: core-local checked CPU/DMA transaction begin/commit/cancel trace, deterministic CPU-retire then DMA/PIT/PIC then FDC/HDC ordering, reset cancellation/trace continuity, and retained firmware/DOS consumers. Exact bus cycles, pin waveforms, physical wait tables, host time, and Windows readiness remain explicit transfers. 234 current-gate tests passed. [History](../history/M5-T354-physical-l3-bus-timing-convergence.md). |
