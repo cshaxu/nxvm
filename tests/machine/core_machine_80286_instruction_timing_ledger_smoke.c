@@ -199,7 +199,10 @@ static C_INT timing_80286_control_ports(C_VOID)
 static C_INT timing_80286_boundaries(C_VOID)
 {
     static const type_unsigned_8 nop[] = { 0x90u };
-    static const type_unsigned_8 unallocated[] = { 0xd0u, 0xc0u };
+    static const type_unsigned_8 shift_byte[] = { 0xd0u, 0xc0u };
+    static const type_unsigned_8 shift_word[] = { 0xd1u, 0xc0u };
+    static const type_unsigned_8 shift_memory[] = { 0xd0u, 0x06u, 0x00u, 0x10u };
+    static const type_unsigned_8 shift_undefined[] = { 0xd0u, 0xf0u };
     static const type_unsigned_8 fault[] = { 0x66u, 0x90u };
     static const type_unsigned_8 maximum[] = { 0xf3u, 0xa4u };
     static const type_unsigned_8 source[] = { 0x78u };
@@ -210,8 +213,17 @@ static C_INT timing_80286_boundaries(C_VOID)
     core_machine *machine = STD_NULL;
     C_INT failed = !timing_80286_prepare(&machine, &state);
 
-    if (!failed) failed |= !timing_80286_load(machine, unallocated,
-        sizeof(unallocated)) || !timing_80286_run(machine, &state, 1u, 1u);
+    if (!failed) failed |= !timing_80286_load(machine, shift_byte,
+        sizeof(shift_byte)) || !timing_80286_run(machine, &state, 1u, 2u);
+    if (!failed) failed |= !timing_80286_load(machine, shift_word,
+        sizeof(shift_word)) || !timing_80286_run(machine, &state, 1u, 2u);
+    if (!failed) failed |= !timing_80286_load(machine, shift_memory,
+        sizeof(shift_memory)) || !timing_80286_run(machine, &state, 1u, 1u);
+    if (!failed) failed |= !timing_80286_load(machine, shift_undefined,
+        sizeof(shift_undefined)) || !test_core_machine_fixture_preflight_real_ud_terminal(
+            machine) || core_machine_run(machine, one, &result) != TYPE_STATUS_FAULT ||
+        result.reason != CORE_MACHINE_STOP_FAULT || result.executed != 0u ||
+        result.ticks != 0u || state.advanced_ticks != 0u;
     if (!failed) failed |= !timing_80286_load(machine, fault, sizeof(fault)) ||
         !test_core_machine_fixture_preflight_real_ud_terminal(machine) ||
         core_machine_run(machine, one, &result) != TYPE_STATUS_FAULT ||

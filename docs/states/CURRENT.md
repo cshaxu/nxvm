@@ -2,10 +2,28 @@
 
 ## Current Work
 
-T366 S10 is accepted at `cc4c9987`. The next T366 S may admit one narrowly
-source-backed 80286 successful-retirement timing family; it must not revive an
-8 MHz physical-time or device-timing claim before the remaining CPU ledger is
-closed.
+**Active implementation packet:** M5 T366 S11, 80286 Group-2 register shift/rotate timing.
+
+## M5 T366 S11 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner: repository owner; persistent M5 L3 direction, accepted S10 audit, and the owner's instruction to continue authorize one source-determinate 80286 timing-family repair. No exception. |
+| Objective | Give successful `D0`/`D1` Group-2 register-direct, implicit-count-one shift/rotate forms their Intel/AMD-table 80286 cost of two clocks. |
+| Non-goals | No memory form, `D2`/`D3` CL-count form, `C0`/`C1` immediate-count form, `/6` undefined encoding, opcode semantic change, physical-time, device/bus timing, firmware/media or source import. |
+| Reference Baseline | S10 identifies `D0 C0` as a one-tick fallback. The AMD 80286 instruction summary's Shift/Rotate table gives register/memory by 1 as register `2`, memory `7*`; `D0`/`D1` select byte/word implicit-count-one forms. The existing executor raises `#UD` for Group-2 `/6`. |
+| Candidate Proposal | [Bus-Timed PC/AT Operation](../proposals/m5-bus-timed-pcat-operation.md). |
+| Files And ABI Surface | Private 80286 timing classifier, 80286 timing-ledger smoke, focused evidence/history/current packet and documentation index only; no public ABI. |
+| Applicable Rules | Execution evidence/sweep, one successful-retirement publisher, core ownership, C11 cohesion, source policy and documentation indexing apply; no waiver. |
+| Verification | Prove byte and word register-direct execution retire at two ticks, preserve memory and undefined-encoding boundaries, run the focused smoke, S10 static check, current gate, documentation governance and diff check. |
+| Expected Markers | Existing 80286 instruction-timing-ledger and S10 audit markers plus current-gate markers. |
+| Asset Needs | Public Intel/AMD documentation and repository tests only; no ROM, media, firmware or third-party source. |
+| Reporting Requirements | State source row, exact opcode/form coverage, unchanged excluded forms, sweep result and final evidence. |
+| Stop Conditions | Stop and transfer if the classifier cannot distinguish valid register forms from `/6`, or if the source table needs a value beyond the admitted form. |
+| Exit Criteria | Every valid register-direct `D0`/`D1` implicit-count-one Group-2 form publishes two clocks through the sole retirement path; all excluded forms retain explicit receivers. |
+| Original Owner Request | Reach L3 only through complete source-backed timing, using reference emulators only when authorities lack determinate values. |
+| Similar-Issue Sweep | Inspect all `D0`--`D3`, `C0`/`C1`, Group-2 execution handlers, timing classifier fallbacks and 80286 timing tests; fix only valid `D0`/`D1` register-direct forms and record every exclusion. |
 
 ## Current Technical Baseline
 
