@@ -2,16 +2,20 @@
 
 ## Purpose
 
-Extend T357's finite source-backed timing corpus into a complete,
-profile-aware 8086, 80186, 80286, and 80386 instruction timing program. The
-work begins with a full Intel-manual form inventory and mechanism ownership
-map; it must not append isolated clocks when a guest test happens to need an
-opcode.
+Establish a complete, profile-aware 8086, 80186, 80286, and 80386
+instruction-timing corpus. T357's accepted finite source-backed ledger is
+existing evidence and a reconciliation baseline, not a boundary on this
+corpus. The work begins with a full Intel-manual form inventory and mechanism
+ownership map; it must not append isolated clocks when a guest test happens
+to need an opcode.
 
 This candidate consumes the preceding legacy dynamic-arithmetic authority and
-80286 NOP source-conflict reviews. It may retain a precise transfer if either
-review proves that a source cannot yet support allocation; it must not reopen,
-average, or silently override either authority decision.
+80286 NOP source-conflict reviews. It applies the shared evidence ladder:
+exact Intel value; Intel-range-constrained same-profile external model; named
+same-profile external model where Intel has no value; or an explicit
+`reference-exhausted` transfer. It must not reopen, average, cross-profile
+borrow, or silently override either authority decision. Model-derived timing
+is not a physical cycle claim.
 
 ## Required scope
 
@@ -44,10 +48,18 @@ Require an Intel source-to-form matrix covering all four profiles; a
 classification for every implementation table/handler; source/caller and
 validation-to-publication sweep; focused mode/prefix/fault/restart tests;
 actual current-gate; and explicit Queue/TODO transfer of non-CPU physical
-timing. Completion means the instruction corpus is accounted for, not that
-the machine is cycle exact.
+timing. Completion means the instruction corpus is accounted for and every
+model-derived or reference-exhausted row is visible to the later selected
+profile audit; it does not make the machine physically cycle exact.
 
 ## Ordered mechanism units
+
+1. **S1 -- full form inventory, ownership, and source classification.**
+   Enumerate every implemented form and relevant profile, mode, prefix, and
+   addressing variant; assign its shared timing mechanism and evidence-ladder
+   disposition before allocating any runtime value. Record every unsupported
+   or profile-rejected form and give each reference-exhausted or physical-
+   timing row one explicit receiver.
 
 1. **S2 -- arithmetic, FLAGS, data and ModRM/EA source matrix.** Primary ALU,
    group forms, TEST/XCHG, conversion, adjustment, selected data forms, and

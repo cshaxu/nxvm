@@ -257,6 +257,15 @@ if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
         -Wall -Wextra -Wpedantic -Werror)
 endif()
 
+add_executable(core-machine-legacy-dynamic-arithmetic-timing-s3-smoke
+    tests/machine/core_machine_legacy_dynamic_arithmetic_timing_s3_smoke.c)
+target_link_libraries(core-machine-legacy-dynamic-arithmetic-timing-s3-smoke PRIVATE
+    core-machine)
+if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
+    target_compile_options(core-machine-legacy-dynamic-arithmetic-timing-s3-smoke PRIVATE
+        -Wall -Wextra -Wpedantic -Werror)
+endif()
+
 add_executable(core-machine-80286-instruction-timing-ledger-smoke
     tests/machine/core_machine_80286_instruction_timing_ledger_smoke.c)
 target_link_libraries(core-machine-80286-instruction-timing-ledger-smoke PRIVATE
@@ -562,6 +571,28 @@ if(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang)$")
     target_compile_options(core-machine-task-switch-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
 endif()
+
+# These established corpus owners assert handler-visible results.  T361 S3
+# keeps fault delivery and handler retirement as two public runs; compile the
+# owners against the fixture adapter so their retained assertions observe the
+# latter only after the zero-retirement delivery boundary.
+foreach(target IN ITEMS
+    core-machine-t359-s4-timing-smoke
+    core-machine-iret-outer-s52-smoke
+    core-machine-debug-mov-s59-smoke
+    core-machine-tf-db-s60-smoke
+    core-machine-vm86-delivery-smoke
+    core-machine-interrupt-entry-smoke
+    core-machine-80286-protected-mode-smoke
+    core-machine-arpl-s53-smoke
+    core-machine-protected-privilege-smoke
+    core-machine-protected-return-atomicity-smoke
+    core-machine-call-gate-privilege-entry-smoke
+    core-machine-tss-iomap-port-smoke
+    core-machine-task-switch-smoke)
+    target_compile_definitions(${target} PRIVATE
+        CORE_MACHINE_TEST_CONTINUE_DELIVERED_FAULT=1)
+endforeach()
 
 add_executable(core-machine-stopped-lifecycle-smoke
     tests/core/machine_stopped_lifecycle_smoke.c
@@ -1625,6 +1656,8 @@ endif()
 add_executable(core-machine-vm86-lgdt-lidt-s5-smoke
     tests/machine/core_machine_vm86_lgdt_lidt_s5_smoke.c)
 target_link_libraries(core-machine-vm86-lgdt-lidt-s5-smoke PRIVATE core-machine)
+target_compile_definitions(core-machine-vm86-lgdt-lidt-s5-smoke PRIVATE
+    CORE_MACHINE_TEST_CONTINUE_DELIVERED_FAULT=1)
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     target_compile_options(core-machine-vm86-lgdt-lidt-s5-smoke PRIVATE
         -Wall -Wextra -Wpedantic -Werror)
@@ -1758,6 +1791,7 @@ set(PROJECT_CURRENT_SMOKE_TARGETS
     core-machine-t359-s6-timing-smoke
     core-machine-8086-instruction-timing-ledger-smoke
     core-machine-80186-instruction-timing-ledger-smoke
+    core-machine-legacy-dynamic-arithmetic-timing-s3-smoke
     core-machine-80286-instruction-timing-ledger-smoke
     core-machine-80386-protected-io-timing-smoke
     core-machine-real-mode-corpus-smoke

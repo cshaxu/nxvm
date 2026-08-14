@@ -431,7 +431,7 @@ static C_INT fpu_interface_s65_protected_nm(C_VOID)
         failed |= core_machine_memory_write(state.machine, FPU_S65_CODE_BASE, esc,
             sizeof(esc)) != TYPE_STATUS_OK || core_machine_run(state.machine,
             (core_machine_run_budget){64u,0u}, &result) != TYPE_STATUS_OK ||
-            result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+            result.reason != CORE_MACHINE_STOP_BUDGET ||
             core_machine_get_cpu_diagnostic(state.machine, &diagnostic) != TYPE_STATUS_OK;
         after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
         failed |= core_machine_memory_read_physical(&state.machine->executor_memory,
@@ -439,7 +439,8 @@ static C_INT fpu_interface_s65_protected_nm(C_VOID)
             sizeof(frame_ip)) != TYPE_STATUS_OK;
         failed |= !diagnostic.last_delivered_exception.valid || !TYPE_GET_BIT(
             diagnostic.last_delivered_exception.exception_mask,
-            VCPUINS_EXCEPT_NM) || after.data.eip != 0x101u || frame_ip != 0u ||
+            VCPUINS_EXCEPT_NM) || result.executed != 0u || result.ticks != 0u ||
+            after.data.eip != 0x100u || frame_ip != 0u ||
             after.data.eax != before.data.eax || after.data.ecx != before.data.ecx ||
             after.data.edx != before.data.edx || after.data.ebx != before.data.ebx ||
             after.data.ebp != before.data.ebp || after.data.esi != before.data.esi ||
@@ -448,6 +449,11 @@ static C_INT fpu_interface_s65_protected_nm(C_VOID)
             STD_MEMCMP(&after.data.es, &before.data.es, sizeof(after.data.es)) != 0 ||
             STD_MEMCMP(&after.data.fs, &before.data.fs, sizeof(after.data.fs)) != 0 ||
             STD_MEMCMP(&after.data.gs, &before.data.gs, sizeof(after.data.gs)) != 0;
+        failed |= core_machine_run(state.machine,
+            (core_machine_run_budget){1u,0u}, &result) != TYPE_STATUS_OK ||
+            result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
+        after = test_core_machine_fixture_capture_cpu_after_run(state.machine);
+        failed |= after.data.eip != 0x101u;
     }
     core_machine_destroy(state.machine);
     return !failed;

@@ -143,6 +143,34 @@ static inline C_VOID test_core_machine_fixture_resume_after_halt_at(
     machine->executor_cpu.data.eip = eip;
 }
 
+/* Legacy corpus targets which assert handler-visible state can opt into this
+ * adapter while retaining the production two-round fault boundary.  It makes
+ * the delivery round observable as zero retirement before invoking the
+ * handler's distinct execution round.  Focused S3 tests call core_machine_run
+ * directly and assert that first result themselves. */
+static inline type_status test_core_machine_fixture_run_after_delivery(
+    core_machine *machine, core_machine_run_budget budget,
+    core_machine_run_result *out_result)
+{
+    type_status status = core_machine_run(machine, budget, out_result);
+    core_machine_cpu_diagnostic diagnostic;
+    type_bool delivered = TYPE_FALSE;
+
+    if (status == TYPE_STATUS_OK && out_result != STD_NULL &&
+        out_result->reason == CORE_MACHINE_STOP_BUDGET &&
+        core_machine_get_cpu_diagnostic(machine, &diagnostic) == TYPE_STATUS_OK) {
+        delivered = diagnostic.last_delivered_exception.valid;
+    }
+    if (delivered) {
+        status = core_machine_run(machine, budget, out_result);
+    }
+    return status;
+}
+
+#ifdef CORE_MACHINE_TEST_CONTINUE_DELIVERED_FAULT
+#define core_machine_run test_core_machine_fixture_run_after_delivery
+#endif
+
 static inline C_INT test_core_machine_fixture_read_linear(
     core_machine *machine, type_unsigned_32 address, type_virtual_address destination,
     STD_SIZE_T bytes)

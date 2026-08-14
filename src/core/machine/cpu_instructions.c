@@ -17924,6 +17924,15 @@ static type_bool _e_final_deliver_real_exception(
     TYPE_TRACE_CALL_END;
     return TYPE_TRUE;
 }
+
+static C_VOID _e_mark_instruction_fault_delivered(
+    core_machine_cpu_execution_context *context)
+{
+    if (context != STD_NULL && context->instruction_in_progress) {
+        context->instruction_fault_delivered = TYPE_TRUE;
+    }
+}
+
 static C_VOID ExecFinal(core_machine_cpu_execution_context *context)
 {
     t_cpu fault_cpu;
@@ -18020,6 +18029,7 @@ static C_VOID ExecFinal(core_machine_cpu_execution_context *context)
                     instruction_state.data.except = 0u;
                 }
                 if (original_except == VCPUINS_EXCEPT_DB) _ClrEFLAGS_RF;
+                _e_mark_instruction_fault_delivered(context);
                 return;
             }
             cpu_state = fault_cpu;
@@ -18040,6 +18050,7 @@ static C_VOID ExecFinal(core_machine_cpu_execution_context *context)
                             &instruction_state);
                         instruction_state.data.except = 0u;
                     }
+                    _e_mark_instruction_fault_delivered(context);
                     return;
                 }
                 /* A failed #DF delivery is terminal here; reset policy is deferred. */
@@ -18060,23 +18071,31 @@ static C_VOID ExecFinal(core_machine_cpu_execution_context *context)
              instruction_state.data.except == VCPUINS_EXCEPT_MF ||
              instruction_state.data.except == VCPUINS_EXCEPT_UD) &&
             _e_final_deliver_real_exception(context, &fault_cpu,
-                exception_vector))
+                exception_vector)) {
+            _e_mark_instruction_fault_delivered(context);
             return;
+        }
 
         if (!TYPE_GET_BIT(fault_cpu.data.cr0, VCPU_CR0_PE) &&
             TYPE_GET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_BR) &&
-            _e_final_deliver_real_exception(context, &fault_cpu, 0x05u))
+            _e_final_deliver_real_exception(context, &fault_cpu, 0x05u)) {
+            _e_mark_instruction_fault_delivered(context);
             return;
+        }
 
         if (!TYPE_GET_BIT(fault_cpu.data.cr0, VCPU_CR0_PE) &&
             TYPE_GET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_NM) &&
-            _e_final_deliver_real_exception(context, &fault_cpu, 0x07u))
+            _e_final_deliver_real_exception(context, &fault_cpu, 0x07u)) {
+            _e_mark_instruction_fault_delivered(context);
             return;
+        }
 
         if (!TYPE_GET_BIT(fault_cpu.data.cr0, VCPU_CR0_PE) &&
             TYPE_GET_BIT(instruction_state.data.except, VCPUINS_EXCEPT_GP) &&
-            _e_final_deliver_real_exception(context, &fault_cpu, 0x0du))
+            _e_final_deliver_real_exception(context, &fault_cpu, 0x0du)) {
+            _e_mark_instruction_fault_delivered(context);
             return;
+        }
 
         if (context->diagnostic_provider != STD_NULL &&
             context->diagnostic_provider->record_fault != STD_NULL)
@@ -18722,16 +18741,33 @@ C_VOID core_machine_cpu_execution_reset(
     context->debug_tf_before = TYPE_FALSE;
     context->debug_rf_before = TYPE_FALSE;
     context->debug_trap_cause = TYPE_ZERO_32;
+    context->instruction_in_progress = TYPE_FALSE;
+    context->instruction_fault_delivered = TYPE_FALSE;
 }
 C_VOID core_machine_cpu_execution_refresh(
     core_machine_cpu_execution_context *context)
 {
+    context->instruction_fault_delivered = TYPE_FALSE;
     if (!cpu_state.data.flagHalt)
     {
+        context->instruction_in_progress = TYPE_TRUE;
         ExecIns(context);
+        context->instruction_in_progress = TYPE_FALSE;
     }
     ExecInt(context);
 }
+
+type_bool core_machine_cpu_execution_consume_instruction_fault_delivery(
+    core_machine_cpu_execution_context *context)
+{
+    type_bool delivered;
+
+    if (context == STD_NULL) return TYPE_FALSE;
+    delivered = context->instruction_fault_delivered;
+    context->instruction_fault_delivered = TYPE_FALSE;
+    return delivered;
+}
+
 C_VOID core_machine_cpu_execution_finalize(
     core_machine_cpu_execution_context *context)
 {

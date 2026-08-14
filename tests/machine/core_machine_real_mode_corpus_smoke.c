@@ -74,12 +74,16 @@ static C_INT corpus_run_to_ud(core_machine *machine, const type_unsigned_8 *prog
         machine, 0x0300u, ud_handler, sizeof(ud_handler)) != TYPE_STATUS_OK;
     status = core_machine_run(machine, budget, &result);
     failed |= status != TYPE_STATUS_OK ||
-        result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
+        result.reason != CORE_MACHINE_STOP_BUDGET;
     failed |= core_machine_get_cpu_diagnostic(machine, &diagnostic) != TYPE_STATUS_OK ||
         diagnostic.first_fault.valid || !diagnostic.last_delivered_exception.valid ||
         !TYPE_GET_BIT(diagnostic.last_delivered_exception.exception_mask,
             VCPUINS_EXCEPT_UD) ||
         diagnostic.last_delivered_exception.point.bytes[0] != 0x66u;
+    status = core_machine_run(machine, (core_machine_run_budget){ 1u, 0u },
+        &result);
+    failed |= status != TYPE_STATUS_OK ||
+        result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
     *out_fault = diagnostic.last_delivered_exception;
     return failed;
 }

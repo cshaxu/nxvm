@@ -115,6 +115,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t360-s5-four-profile-timing-source-closure-audit.md` | Verification owner | T360 S5 task-level authority, consumer, transfer, and no-L3-overclaim closure audit. Retain with T360 history at task closure. |
 | `evidence/t361-s1-legacy-dynamic-arithmetic-authority-audit.md` | Verification owner | T361 S1 primary-source, consumer, and observation-decision audit for legacy dynamic arithmetic timing. Retain with T361 history at task closure. |
 | `evidence/t361-s2-legacy-dynamic-arithmetic-cross-reference.md` | Verification owner | T361 S2 owner-approved Bochs, PCjs, PC110-EMU, and public-source triangulation; records why it yields no admissible legacy formula and preserves the hardware-observation transfer. Retain with T361 history at task closure. |
+| `evidence/t361-s3-synchronous-fault-retirement-audit.md` | Verification owner | T361 S3 in-progress model-derived dynamic-arithmetic and execution-round audit. Retain with T361 history at task closure. |
 | `operations/` | Execution, source, and release owners | Toolchain, policy, templates, release procedure, and closure material. |
 | `research/` | Source owner | Provenance, external references, and non-product research. |
 | `history/` | Documentation owner | Read-only legacy and M5 migration/roadmap evidence. |

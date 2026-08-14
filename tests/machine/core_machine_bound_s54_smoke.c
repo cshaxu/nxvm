@@ -465,13 +465,17 @@ static C_INT bound_s54_test_protected_br_delivery(C_VOID)
         failed |= core_machine_memory_write(state.machine, BOUND_S54_CODE_BASE,
             code, sizeof(code)) != TYPE_STATUS_OK;
         failed |= !bound_s54_run(&state, 64u, &result, &after, &diagnostic);
-        failed |= result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
+        failed |= result.reason != CORE_MACHINE_STOP_BUDGET;
         failed |= diagnostic.first_fault.valid;
         failed |= !diagnostic.last_delivered_exception.valid;
         failed |= !TYPE_GET_BIT(diagnostic.last_delivered_exception.exception_mask,
             VCPUINS_EXCEPT_BR);
-        failed |= after.data.eip != 0x00000101u;
+        failed |= result.executed != 0u || result.ticks != 0u;
+        failed |= after.data.eip != 0x00000100u;
         failed |= after.data.eax != before.data.eax;
+        failed |= !bound_s54_run(&state, 1u, &result, &after, &diagnostic);
+        failed |= result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT;
+        failed |= after.data.eip != 0x00000101u;
     }
     core_machine_destroy(state.machine);
     return !failed;
@@ -506,12 +510,17 @@ static C_INT bound_s54_test_protected_ds_upper_limit(C_VOID)
         failed |= core_machine_memory_write(state.machine, BOUND_S54_CODE_BASE,
             code, sizeof(code)) != TYPE_STATUS_OK;
         failed |= !bound_s54_run(&state, 64u, &result, &after, &diagnostic);
+        failed |= result.reason != CORE_MACHINE_STOP_BUDGET ||
+            result.executed != 0u || result.ticks != 0u;
         failed |= diagnostic.first_fault.valid;
         failed |= !diagnostic.last_delivered_exception.valid;
         failed |= !TYPE_GET_BIT(diagnostic.last_delivered_exception.exception_mask,
             VCPUINS_EXCEPT_GP);
-        failed |= after.data.eip != 0x00000101u;
+        failed |= after.data.eip != 0x00000100u;
         failed |= after.data.eax != before.data.eax;
+        failed |= !bound_s54_run(&state, 1u, &result, &after, &diagnostic);
+        failed |= result.reason != CORE_MACHINE_STOP_WAITING_FOR_INTERRUPT ||
+            after.data.eip != 0x00000101u;
     }
     core_machine_destroy(state.machine);
     return !failed;

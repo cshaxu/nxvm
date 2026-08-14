@@ -2,8 +2,29 @@
 
 ## Current Work
 
-**Active.** M5 T361 remains open between accepted S units; S2 found no external
-formula and transferred exact hardware observation to the retained timing debt.
+**Active.** M5 T361 S3 legacy dynamic-arithmetic reference-model selection is
+admitted under the owner-approved no-hardware measurement policy.
+
+## M5 T361 S3 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | The owner approved this S on 2026-08-14 and clarified the source order in the current request: exclude unavailable real-hardware measurement; use Intel/manual values first, then 86Box for early-PC timing, MAME i86/i186 for 80186 timing, and PCjs as an 8086 model; inspect Bochs, PC110-EMU, and QEMU for their narrower relevance. Use an existing model for an Intel range only after range comparison, and use a documented same-profile model where no primary value exists. |
+| Objective | Audit 86Box, MAME i86/i186, PCjs, QEMU, Bochs, PC110-EMU, and any publicly found same-profile candidate for every T361 8086/80186 dynamic-arithmetic form; apply the exact-Intel, Intel-range-constrained external model, no-Intel external model, or reference-exhausted ladder, and implement only values justified by that policy. Reconcile the shared execution-round boundary so an original instruction whose synchronous exception is successfully delivered does not retire or publish instruction ticks, while its delivery state remains committed. |
+| Non-goals | No claim that emulator values are physical measurements; no copied/imported third-party code or dependency; no hardware measurement, host benchmark, self-referential NXVM fallback, bus/prefetch/device timing, generic arithmetic refactor, 80286/80386 allocation, or physical cycle-exact claim. Do not alter exception frame layout, vector selection, IDT/IVT delivery, external PIC IRQ/NMI, or post-instruction debug-trap architecture; only make the existing execution-round outcome visible to the sole publisher. The separately bounded 80286 `NOP` source/consumer review remains the next T361 S, not an S3 implementation item. |
+| Reference Baseline | `3ef7f1d7` / `vm-0-5-0359`; S1/S2 evidence and [legacy dynamic arithmetic proposal](../proposals/m5-legacy-dynamic-arithmetic-timing-authority.md). |
+| Candidate Proposal | [Legacy dynamic arithmetic timing authority](../proposals/m5-legacy-dynamic-arithmetic-timing-authority.md), revised under the owner's no-hardware, model-derived allocation policy. |
+| Files And ABI Surface | Research evidence, timing ledgers/tests, private `src/core/machine/` execution-round outcome and timing allocation, task history, TODO/Queue disposition, and `docs/states/CURRENT.md`. No public ABI, external source import, product dependency, or firmware/media asset. |
+| Applicable Rules | Read the Task Reading Set, execution S/P/mechanism clauses, documentation and architecture rules, coding rules if code changes, and source/research policy. Preserve one successful-retirement publisher; label every non-primary value as model-derived and every no-source result as reference-exhausted. |
+| Verification | Enumerate each form and source revision/path; prove exact Intel values where available; for Intel ranges enumerate the selected model domain and prove every value stays in range; prove source-profile/form match, no-fault allocation and fault nonpublication. The focused execution-round matrix must prove successfully delivered synchronous `#DE/#GP/#UD/#BR/#NM/#MF/#NP/#SS/#TS/#PF` do not retire or publish original-instruction ticks; an execution-before `#DB` follows that rule; a successful instruction followed by TF `#DB` still retires once; external IRQ/NMI still retire the successful predecessor; terminal delivery failure remains zero; and handler instructions retire only on a later run. Run focused timing smokes, documentation governance, diff check, and full current-gate for code changes. |
+| Expected Markers | Existing 8086 and 80186 timing-ledger smokes remain passing; any allocation proof has an `M5:T361:S3` marker. |
+| Asset Needs | Read-only local PCjs, Bochs 2.6, and PC110-EMU; publicly readable 86Box, MAME i86/i186, QEMU, and discovered same-profile reference source documentation; no binary asset, guest media, download, or imported source. |
+| Reporting Requirements | Record the exact relevance or non-relevance of 86Box, MAME i86/i186, and QEMU; for every form record all candidate sources, revision/path, profile/form match, formula or constant, Intel range comparison when available, rejection reason, selected provenance label, and non-import conclusion. |
+| Stop Conditions | Stop allocation for a form if no consulted implementation exposes a reproducible same-profile model, if a selected range model violates Intel bounds, if source/license/import or an exception delivery/layout/vector semantic change beyond the private execution-round outcome is needed, or if references require a behavior beyond the admitted profile/form boundary. Record `reference-exhausted` precisely; do not guess or reuse NXVM's marker as evidence. |
+| Exit Criteria | Every S1 form has an exact Intel, range-constrained model-derived, no-Intel model-derived, or explicit reference-exhausted disposition; every runtime value has focused consumer/fault proof and provenance; the shared execution-round boundary is proven for every listed synchronous fault class, execution-before and post-instruction `#DB`, IRQ/NMI, terminal fault, and subsequent handler retirement; QEMU, all specified local references, and all admitted public candidates are audited; closure material states model-L3 versus non-physical boundaries without an untracked residual. |
+| Original Owner Request | With no physical hardware available, use documents where available; otherwise treat 86Box, MAME, and PCjs as preferred reference sources, audit QEMU, Bochs, and PC110-EMU at their applicable boundaries, and implement the most practical source-labelled L3 model. |
+| Similar-Issue Sweep | Sweep every S1 transferred 8086/80186 Group-3 and immediate-IMUL form, their profile/prefix/register-memory variants, all successful-retirement consumers, and every specified external implementation; distinguish an actual formula from a constant, benchmark calibration, or absent timing model. |
 
 ## Current Technical Baseline
 

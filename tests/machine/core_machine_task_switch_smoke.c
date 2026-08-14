@@ -1284,6 +1284,14 @@ static C_INT task_switch_expect_tss32_direct(type_bool operand32,
             fixture.machine->executor_cpu.data.idtr.sregtype = SREG_IDTR;
             fixture.machine->executor_cpu.data.idtr.base = IDT_BASE;
             fixture.machine->executor_cpu.data.idtr.limit = 0x000fu;
+            /* Exercise the task-switch clearing of DR7 local enables without
+             * arming an execution breakpoint at the bootstrap entry (linear
+             * address zero).  The TSS debug word below is the #DB source
+             * under test. */
+            fixture.machine->executor_cpu.data.dr0 = 0xffffffffu;
+            fixture.machine->executor_cpu.data.dr1 = 0xffffffffu;
+            fixture.machine->executor_cpu.data.dr2 = 0xffffffffu;
+            fixture.machine->executor_cpu.data.dr3 = 0xffffffffu;
             fixture.machine->executor_cpu.data.dr7 = 0x000003ffu;
         }
         status = core_machine_run(fixture.machine, budget, &result);

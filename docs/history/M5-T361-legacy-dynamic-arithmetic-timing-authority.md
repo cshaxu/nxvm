@@ -3,10 +3,12 @@
 ## Task Record
 
 T361 consumes the T360 S3 transfer for range-only 8086 and 80186 arithmetic
-timing. It must establish a legitimate source formula or an owner-approved
-hardware-observation contract before any dynamic timing allocation. It does
-not borrow 80386 behavior, choose a range endpoint, or turn host measurement
-or another emulator into authority.
+timing and the retained 80286 `NOP` source conflict. It establishes the
+approved profile-local timing authority or model-derived disposition for the
+legacy arithmetic forms, then performs the bounded Appendix-B-versus-prose
+precedence and consumer review for 80286 `NOP`. It does not borrow 80386
+behavior, choose a range endpoint, or turn host measurement or another
+emulator into primary authority.
 
 ## Accepted Progress
 
@@ -19,9 +21,27 @@ primary material, or approve the bounded real-hardware observation contract
 specified by S1. Focused legacy timing smokes and 245/245 current-gate tests
 passed; S1 makes no runtime, ABI, artifact, L3, or cycle-exact change.
 
+The owner subsequently excluded unavailable physical-hardware measurement and
+approved the source-labelled reference-model path. After the dynamic arithmetic
+S units, the next T361 S is the narrow 80286 `NOP` Appendix-B/prose source and
+consumer review; it is no longer a separate Queue candidate.
+
 ### S2: Owner-approved external cross-reference research
 
-S2 is active.  The owner authorized a bounded non-importing review of Bochs,
-PCjs, PC110-EMU, and public technical material.  Its result and exact source
-boundary are recorded in the
+S2 is accepted at `3ef7f1d7`. The owner authorized a bounded non-importing
+review of Bochs, PCjs, PC110-EMU, and public technical material. Its result
+and exact source boundary are recorded in the
 [cross-reference evidence](../etc/evidence/t361-s2-legacy-dynamic-arithmetic-cross-reference.md).
+
+### S3: Reference-model selection correction
+
+The owner clarified that PCjs is not to be treated as the universal early-x86
+timing reference. PCjs declares CPU models through 80386, but its timing data
+does not establish an independent 80186 table and some of its 8086 arithmetic
+constants are explicitly benchmark-adjusted. S3 therefore ranks candidate
+inspection by relevance: Intel documentation first; 86Box for early-PC timing;
+MAME i86/i186 for 80186; PCjs only as a verified 8086 candidate; then Bochs
+and PC110-EMU for their narrower functional/machine roles. QEMU `icount` is
+retained solely as a deterministic event/instruction-count architecture
+reference, not a CPU-cycle source. Every resulting allocation remains
+source-labelled and range-checked where Intel specifies a range.

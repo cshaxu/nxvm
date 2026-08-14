@@ -187,7 +187,8 @@ admissions, not the default definition of NXVM completion.
   not average values, replace the row from prose alone, use host benchmarks or
   secondary emulators as authority, or change a timing value outside that
   source-backed admission.
-  [Queue receiver](../proposals/m5-80286-nop-source-conflict-review.md).
+  [T361 receiver](../proposals/m5-legacy-dynamic-arithmetic-timing-authority.md):
+  the bounded review is its next S, not a separate Queue candidate.
 
 - [ ] **PC/AT NMI source ownership (`TODO(Medium)`).** T350 S4 reconfirms that
   RTC periodic/update conditions publish IRQ8, while the CMOS index-port bit

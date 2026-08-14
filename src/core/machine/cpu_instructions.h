@@ -163,6 +163,11 @@ struct core_machine_cpu_execution_context {
     C_VOID *diagnostic_context;
     type_bool stop_requested;
     type_bool reset_requested;
+    /* Private execution-round outcome.  A successfully delivered synchronous
+     * exception preserves its architectural delivery but must not be mistaken
+     * for retirement of the faulting instruction by the machine clock owner. */
+    type_bool instruction_in_progress;
+    type_bool instruction_fault_delivered;
     /* Private CPU-execution state for post-instruction 80386 debug traps. */
     type_bool debug_trap_pending;
     type_bool debug_tf_before;
@@ -205,6 +210,8 @@ C_VOID core_machine_cpu_execution_initialize(
 C_VOID core_machine_cpu_execution_reset(
     core_machine_cpu_execution_context *context);
 C_VOID core_machine_cpu_execution_refresh(
+    core_machine_cpu_execution_context *context);
+type_bool core_machine_cpu_execution_consume_instruction_fault_delivery(
     core_machine_cpu_execution_context *context);
 C_VOID core_machine_cpu_execution_finalize(
     core_machine_cpu_execution_context *context);

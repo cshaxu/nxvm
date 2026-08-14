@@ -22,19 +22,23 @@ are shared planning references for the corresponding candidates below; they do
 not allocate a numeric task.
 
 M5 first closes architecture coherence and every selected PC/AT hardware
-owner to an evidence-backed L3 model.  Windows 3.1 is deliberately the final,
-lowest-priority consumer: it must expose a remaining gap, never hide one.
+owner to an evidence-backed, source-labelled model-L3 representation. Exact
+Intel values take precedence; Intel ranges accept only same-profile external
+models that stay within range; no-Intel rows require named same-profile models;
+otherwise a visible reference-exhausted transfer remains. Physical cycle
+exactness is not claimed without measurement. Windows 3.1 is deliberately the
+final, lowest-priority consumer: it must expose a remaining gap, never hide
+one.
 Each candidate has a bounded primary-manual/probe contract; completing one
 does not silently upgrade a different device, profile, or Windows mode.
 
 1. [Legacy dynamic arithmetic timing authority](../proposals/m5-legacy-dynamic-arithmetic-timing-authority.md).
-1. [80286 NOP timing source conflict review](../proposals/m5-80286-nop-source-conflict-review.md).
 1. [Complete instruction-timing corpus](../proposals/m5-complete-instruction-timing-corpus.md).
 1. [PC/AT device, chip, port, and bus completeness audit](../proposals/m5-pcat-device-completeness-audit.md).
 1. [PC/AT NMI source ownership](../proposals/m5-pcat-nmi-source-ownership.md).
 1. [Bus-timed PC/AT operation](../proposals/m5-bus-timed-pcat-operation.md).
 1. [PC/AT device service-timing corpus](../proposals/m5-device-service-timing-corpus.md).
-1. [Cycle-exact selected profile](../proposals/m5-cycle-exact-selected-profile.md).
+1. [Selected-profile model-L3 phase refinement](../proposals/m5-cycle-exact-selected-profile.md).
 1. [M5 L3 machine closure audit](../proposals/m5-l3-machine-closure-audit.md).
 1. [Windows 3.1 BYOB lifecycle harness](../proposals/m5-windows31-byob-lifecycle-harness.md).
 1. [Windows 3.1 Standard Mode lifecycle](../proposals/m5-windows31-standard-mode-lifecycle.md).

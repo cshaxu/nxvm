@@ -135,6 +135,8 @@ typedef struct core_machine_hdc_topology {
 
 typedef enum core_machine_stop_reason {
     CORE_MACHINE_STOP_NONE = 0,
+    /* Also used for a successfully delivered synchronous fault: that run
+     * retires no instruction and advances no machine time. */
     CORE_MACHINE_STOP_BUDGET,
     CORE_MACHINE_STOP_PAUSED,
     CORE_MACHINE_STOP_GUEST_EXIT,

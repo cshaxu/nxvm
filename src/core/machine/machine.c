@@ -1225,6 +1225,96 @@ static C_INT core_machine_source_timing_primary_shape(
     return 0;
 }
 
+/* The 8086 entries retain its source-manual memory additions.  The selected
+ * 80186 reference model already includes effective-address time, so only its
+ * documented segment-prefix cost is added here.  This is a project-owned
+ * transcription of constants documented in the T361 S3 evidence, not an
+ * import of a reference implementation. */
+static C_INT core_machine_legacy_dynamic_arithmetic_model_cost(
+    core_machine *machine, type_unsigned_64 *out_ticks)
+{
+    const t_cpuins_data *data;
+    core_machine_primary_timing_shape shape;
+    type_unsigned_32 prefixes;
+    type_unsigned_8 opcode;
+    type_unsigned_64 ticks;
+    C_INT segment_override;
+
+    if (machine == STD_NULL || out_ticks == STD_NULL ||
+        (machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_8086 &&
+            machine->cpu_profile != CORE_MACHINE_CPU_PROFILE_80186)) {
+        return 0;
+    }
+    data = &machine->executor_cpu_instructions.data;
+    prefixes = core_machine_instruction_prefix_count(data);
+    if (prefixes >= data->oplen ||
+        !core_machine_source_timing_primary_shape(data, prefixes, &shape)) {
+        return 0;
+    }
+    segment_override = core_machine_8086_timing_has_segment_override(data,
+        prefixes);
+    if (prefixes != 0u && !segment_override) return 0;
+    opcode = data->opcodes[prefixes];
+
+    if (machine->cpu_profile == CORE_MACHINE_CPU_PROFILE_8086) {
+        if (shape.form == CORE_MACHINE_SOURCE_TIMING_GROUP3_MUL) {
+            if (!shape.memory) ticks = shape.word ? 118u : 70u;
+            else ticks = shape.word ? 128u : 76u;
+        } else if (shape.form == CORE_MACHINE_SOURCE_TIMING_GROUP3_IMUL) {
+            if (!shape.memory) ticks = shape.word ? 128u : 80u;
+            else ticks = shape.word ? 138u : 86u;
+        } else {
+            return 0;
+        }
+        if (shape.memory) {
+            ticks += core_machine_8086_timing_effective_address(data, prefixes);
+            if (shape.word) ticks += core_machine_8086_timing_odd_word(data);
+            if (segment_override) ticks += CORE_MACHINE_8086_SEGMENT_OVERRIDE_TICKS;
+        }
+        *out_ticks = ticks;
+        return 1;
+    }
+
+    switch (shape.form) {
+    case CORE_MACHINE_SOURCE_TIMING_GROUP3_MUL:
+        if (!shape.memory) ticks = shape.word ? 35u : 26u;
+        else ticks = shape.word ? 41u : 32u;
+        break;
+    case CORE_MACHINE_SOURCE_TIMING_GROUP3_IMUL:
+        if (!shape.memory) ticks = shape.word ? 34u : 25u;
+        else ticks = shape.word ? 40u : 31u;
+        break;
+    case CORE_MACHINE_SOURCE_TIMING_GROUP3_DIV:
+        if (!shape.memory) ticks = shape.word ? 38u : 29u;
+        else ticks = shape.word ? 44u : 35u;
+        break;
+    case CORE_MACHINE_SOURCE_TIMING_GROUP3_IDIV:
+        if (!shape.memory) ticks = shape.word ? 53u : 44u;
+        else ticks = shape.word ? 59u : 50u;
+        break;
+    case CORE_MACHINE_SOURCE_TIMING_IMUL_IMMEDIATE:
+        /* MAME's i80186 69h register constant is 25, outside Intel Table
+         * 1-16's 29--32 range.  Retain this form on the explicit unallocated
+         * route rather than choosing a table endpoint or importing a new
+         * approximation.  Its 6Bh register constant remains within the
+         * 22--24 model domain recorded in the T361 S3 evidence.  The manual
+         * does not give an independent 80186 memory-source row for either
+         * immediate form, so MAME's EA-included memory constants likewise
+         * remain reference-exhausted rather than being compared to a
+         * register-only range. */
+        if (opcode != 0x6bu || shape.memory) return 0;
+        ticks = 22u;
+        break;
+    default:
+        return 0;
+    }
+    if (segment_override && shape.memory) {
+        ticks += CORE_MACHINE_8086_SEGMENT_OVERRIDE_TICKS;
+    }
+    *out_ticks = ticks;
+    return 1;
+}
+
 static C_INT core_machine_legacy_source_instruction_cost(core_machine *machine,
     type_unsigned_64 *out_ticks,
     const core_machine_legacy_source_timing_contract *contract)
@@ -2678,6 +2768,9 @@ static C_INT core_machine_instruction_cost(core_machine *machine,
     if (core_machine_80386_dynamic_multiply_cost(machine, out_ticks)) {
         return 1;
     }
+    if (core_machine_legacy_dynamic_arithmetic_model_cost(machine, out_ticks)) {
+        return 1;
+    }
     if (core_machine_80386_secondary_source_instruction_cost(machine, out_ticks)) {
         return 1;
     }
@@ -3991,6 +4084,18 @@ type_status core_machine_run(
                 result->detail = machine->fault_detail;
                 result->elapsed_ticks = machine->elapsed_ticks;
                 return TYPE_STATUS_FAULT;
+            }
+            if (core_machine_cpu_execution_consume_instruction_fault_delivery(
+                    &machine->executor_cpu_execution)) {
+                /* The synchronous exception frame and vector are committed, but
+                 * the faulting instruction did not retire.  The handler starts
+                 * at the next public execution round, without publishing CPU
+                 * or device time for this faulting round. */
+                machine->lifecycle = CORE_MACHINE_PAUSED;
+                result->reason = CORE_MACHINE_STOP_BUDGET;
+                result->linear_pc = core_machine_linear_pc(machine);
+                result->elapsed_ticks = machine->elapsed_ticks;
+                return TYPE_STATUS_OK;
             }
             {
                 type_unsigned_64 instruction_ticks;
