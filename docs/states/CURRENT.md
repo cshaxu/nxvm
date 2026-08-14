@@ -2,8 +2,8 @@
 
 ## Current Work
 
-**Idle.** T354 selected L3 closure is current; the next device or
-product-readiness candidate requires a separately admitted packet.
+**Idle.** T354 selected L3 closure is current; the Windows readiness-map
+candidate is reconciled and requires a separately admitted packet.
 
 ## Current Technical Baseline
 
@@ -34,6 +34,12 @@ product-readiness candidate requires a separately admitted packet.
 | T347 | Closed retained PC/AT FDC and ATA PIO service timing: pending command/data states, reset/control/media cancellation, one FDC-then-ATA readiness owner, trace order, focused VM/DOS/HDD evidence, and 222 current-gate tests passed. [History](../history/M5-T347-storage-controller-service-timing.md). |
 
 ## Recent Governance
+
+- **M5 Td S85:** corrected the Windows readiness candidate so FDC/ATA
+  pending/readiness service is an accepted regression baseline, rather than a
+  stale missing-feature blocker. Physical device timing and Windows
+  compatibility remain unclaimed. Documentation governance and diff check
+  passed; Td work has no runtime change.
 
 - **M5 Td S84:** retired the stale FDC/ATA command-service TODO after the
   accepted T347 pending-command/readiness-service closure and T354 consumer
@@ -81,10 +87,4 @@ product-readiness candidate requires a separately admitted packet.
   mechanism-defect requirements into role-specific authorities; clarified
   historical terminology retention and the idle T332 artifact wording.
   Documentation self-test, combined governance check, and diff check passed.
-  Td work has no runtime or artifact change.
-
-- **M5 Td S76:** retired the closed T330 task-switch debt from TODO and the
-  unqueued proposal surface; retained its proposal, debt report, history, and
-  matrix as explicitly historical/non-current evidence; and corrected the
-  stale T330 closure summary. Documentation governance and diff check passed.
   Td work has no runtime or artifact change.

@@ -17,7 +17,7 @@ driver corpus.
 
 | Boundary | Why it blocks a readiness conclusion | Admission condition |
 | --- | --- | --- |
-| FDC/ATA command-service timing | Current command/sector service can publish DRQ/DMA/IRQ synchronously, so installer media readiness is not yet evidenced. | One primary controller contract plus deterministic pending, completion, abort/reset, media-result, and DRQ/DMA/IRQ probes. |
+| FDC/ATA command-service regression | T347 already moves retained FDC/ATA issue and final-sector publication through pending states and the deterministic readiness owner; a readiness map must verify this baseline remains intact for the selected media path. | Re-run the accepted pending/busy, abort/reset, media-result, DRQ/DMA/IRQ, FDC read-track, and ATA PIO consumer proofs; any regression returns to the storage owner rather than becoming a new readiness feature. |
 | PC/AT NMI sources | CMOS exposes only the existing NMI mask; parity/I/O-channel producers are absent. | Select a PC/AT source and prove mask/assert/deassert/reset plus protected/VM86 delivery on the timeline. |
 | Windows display/input corpus | VADP/KBC timing ownership is deterministic, but no Windows driver or setup corpus selects the needed video/AUX surface. | Owner-supplied, legally handled Windows corpus with declared display, keyboard, and optional mouse checkpoint. |
 | Digital video breadth | The retained CGA/EGA modes are bounded; VGA/VBE and remaining digital CGA behavior are not claimed. | Corpus-selected mode/CRTC contract with core-owned state and copied-frame evidence. |
