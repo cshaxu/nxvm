@@ -2,29 +2,8 @@
 
 ## Current Work
 
-**Active.** M5 T359 S1 inventories every implemented 8086, 80186, 80286, and
-80386 instruction form before allocating complete timing mechanisms.
-
-## M5 T359 S1 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | New |
-| Admission And Approval | Owner approved ordered single-agent execution of the M5 Queue through L3 closure on 2026-08-14. T358 closed at `2a2008e3`; this admits the next Queue candidate's inventory-only first S. |
-| Objective | Produce one complete four-profile implementation inventory mapping every primary and `0F` form, profile gate, applicable mode/prefix/addressing class, handler owner, and current timing disposition to an Intel primary source row, dynamic formula, unsupported/rejected classification, or explicit source/implementation receiver. Allocate only coherent shared timing mechanisms for later S units. |
-| Non-goals | No isolated clock edit, timing-value change, CPU semantic repair, source import, bus wait/HOLD/DMA/prefetch/cache/pin timing, device service latency, x87 execution, VME/PVI, or Windows claim. S1 creates no implementation task merely because a handler exists. |
-| Reference Baseline | `2a2008e3` / current task artifact `vm-0-5-0359`. |
-| Candidate Proposal | [Complete instruction-timing corpus](../proposals/m5-complete-instruction-timing-corpus.md) and [Queue](QUEUE.md). |
-| Files And ABI Surface | CPU metadata/dispatch and timing publisher inspection, existing timing ledgers/tests, CMake inventory verifier and current-artifact preset identity, new inventory evidence, task history/status, Queue/TODO transfer records, and current artifact only. No production, provider, device, or public ABI change in S1. |
-| Applicable Rules | Task Reading Set, execution, architecture, coding, documentation, and source/research policy; one successful-retirement elapsed-tick publisher, source provenance before timing assertion, mechanism-level allocation, and explicit physical-timing transfer. |
-| Verification | Mechanically enumerate implementation dispatch/metadata and current timing calls for primary and `0F` spaces; reconcile profile thresholds, 66/67/F0/F2/F3 and real/protected/VM86 dispositions against retained T357 evidence and Intel source authorities; verify every row has exactly one classification and every missing source/implementation receiver has a Queue/TODO destination. Run inventory consistency checks, retained timing owners, governance, artifact verifier/hash, and diff checks. |
-| Expected Markers | Retained T357 timing-preview and four-profile ledger markers, an S1 inventory consistency marker, and rebuilt `vm-0-5-0359` artifact. |
-| Asset Needs | Intel 8086/80186/80286/80386 primary timing manuals and project-owned metadata/tests only; no guest media, firmware, third-party source import, or copied emulator code. |
-| Reporting Requirements | One complete P1 only: complete inventory and source map, mechanism allocation or transfer table, duplicate/missing classification sweep, consistency proof, retained markers, full required gates, artifact hash, commit, and push. Do not report a subset opcode table or a single timing probe as S1 delivery. |
-| Stop Conditions | Stop and request source/owner direction if a primary timing table is unavailable or contradictory without an approved precedence rule, an implementation table cannot be mechanically enumerated, a row requires a CPU semantic change, or a value depends on physical bus/device timing. Record the exact forms and transfer; do not infer clocks. |
-| Exit Criteria | Every currently implemented instruction form and relevant selected classifier variant has one auditable timing disposition; no unclassified row is concealed by a broad family label; later implementation S units are ordered by shared timing mechanism and dependency; all non-CPU timing is explicitly transferred. |
-| Original Owner Request | Execute the current Queue until a comprehensive L3 timing closure audit, with holistic mechanism planning rather than patch-on-patch clock additions. |
-| Similar-Issue Sweep | Search all dispatch tables, metadata, timing publishers, profile gates, prefix classifiers, timing previews, current timing tests, T357 ledgers, Queue, and TODO. Classify every hit as current source-backed evidence, allocated mechanism, unsupported/profile rejection, source gap, or physical-timing transfer. |
+**Open.** M5 T359 S1 is accepted; S2 must allocate arithmetic, FLAGS, data,
+and ModRM/EA timing as one source-backed mechanism packet.
 
 ## Current Technical Baseline
 
@@ -45,6 +24,7 @@
 
 | Task | Compact result |
 | --- | --- |
+| T359 S1 | Accepted a mechanically checked 256-primary/256-secondary four-profile timing inventory. Every executable timing form now has a selected row, receiver, external boundary, or rejection; S2--S6 are dependency-ordered by mechanism. The one-tick unallocated fallback remains a transfer, not an Intel timing claim. [Evidence](../etc/evidence/t359-s1-four-profile-instruction-timing-inventory.md). |
 | T358 | Closed cross-mode mechanism coherence: reconciled I/O permission, exception/IRQ entry, selector/task/return transition, paging/linear access, and prefix/LOCK/width/string classifiers; repaired 80286 delivery, LOCK group legality, and repeated-width preview divergence; passed 240 current-gate tests. [Closure audit](../etc/evidence/t358-cross-mode-mechanism-closure-audit.md). |
 | T357 | Closed finite source-backed 8086/80186/80286/80386 instruction timing at one successful-retirement publisher: selected form ledgers, 80386 protected/VM86 ordinary I/O, Appendix-B `NOP = 3` consumer reconciliation, 240 current-gate tests, and artifact SHA-256 `83A249015C03CF875896A440D5B43A430C2D875A63F0BE4B9709014A753CAD95`. Unselected forms, waits, physical bus/prefetch, device latency and cycle-exact work remain explicit transfers. [Closure audit](../etc/evidence/t357-s8-cross-profile-closure-audit.md). |
 | T356 | Closed the M5 closure audit with an explicit M5-open decision: all selected device owners are evidenced, but instruction timing, bus availability/wait states and selected-profile cycle exactness remain ordered implementation prerequisites; corpus-gated peripheral, storage and product boundaries remain explicit transfers. [History](../history/M5-T356-m5-closure-audit.md). |
