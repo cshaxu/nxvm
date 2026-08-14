@@ -19,7 +19,7 @@ while the existing `core_machine_bus_*` API is stopped/paused-only and is not
 that owner. S2 receives the common mechanism decision, S3 receives admitted
 DMA/CPU/service competition, and S4 receives reset/trace/consumer closure.
 
-S2 is delivered locally pending task acceptance. It creates a core-owned
+S2 was accepted at `406471d3`. It creates a core-owned
 synchronous CPU/DMA transaction owner around selected checked physical-memory
 and CPU-port paths, with begin/commit/cancel/reset trace semantics. It adds no
 duration or instruction continuation: the executor remains atomic. The

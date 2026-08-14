@@ -2,29 +2,7 @@
 
 ## Current Work
 
-**Active.** M5 T354 S2 reconciles the selected CPU/DMA transaction ownership
-boundary before controller-specific competition work.
-
-## M5 T354 S2 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner approved the holistic CPU-external device/L3 completion direction on 2026-08-13. T354 S1 is accepted at `e9a259db` / `e2b10cdd` and allocates the repeated CPU/DMA direct transaction construction to this S. |
-| Objective | Establish one bounded core-owned selected CPU/DMA transaction availability, ownership, commit, cancellation, reset, and trace boundary, using only the hardware/corpus contract necessary for deterministic selected L3. |
-| Non-goals | No guessed wait-state table, generic port facade, public debugger/configuration API timing, controller command rewrite, physical waveform/cycle claim, host clock, unselected peripheral, Windows run, or external source import. |
-| Reference Baseline | `e2b10cdd` on `master`, T354 S1 ledger acceptance. |
-| Candidate Proposal | [M5 physical L3 bus-timing convergence](../proposals/m5-l3-bus-timing-convergence.md), S2; [T354 S1 ledger](../etc/evidence/t354-s1-l3-transaction-timing-ledger.md). |
-| Files And ABI Surface | Core-local transaction owner and only the CPU/DMA execution bindings/readers/writers it proves necessary; focused owner smoke, CMake registration, indexed evidence, task history, and CURRENT. No public VM/profile/provider ABI or stopped/paused API contract change. |
-| Applicable Rules | `docs/README.md` Task Reading Set; `docs/rules/EXECUTION.md` mechanism-defect lifecycle; `docs/rules/ARCHITECTURE.md` core ownership; `docs/rules/CODING.md`; source policy; Intel 8237A and IBM PC/AT primary timing references; T346--T354 evidence. |
-| Verification | Sweep CPU physical-memory/port access, instruction-retirement scheduler, DMA ordinary/M2M paths, timeline callbacks, reset/finalize, trace, and all relevant focused tests. Prove deterministic owner selection, no partial publication on denied/cancelled work, reset cancellation, trace order, and no regression to stopped/paused APIs. Run focused owner tests, fresh configuration, documentation governance, diff check, and full current gate. |
-| Expected Markers | New focused transaction owner marker; `Documentation governance checks passed`; full current gate passes. |
-| Asset Needs | Repository sources plus permitted Intel 8237A and IBM PC/AT technical-reference metadata. No firmware, guest media, host capture, or external source import. |
-| Reporting Requirements | Record the manual-to-mechanism justification, every CPU/DMA reader/writer and transition, exact validation-to-commit/cancel/reset/trace contract, timing units and deliberately unmodeled duration, and any caller requiring a distinct receiver. |
-| Stop Conditions | Stop for owner direction if a truthful implementation requires instruction-internal continuation, a public CPU/provider ABI change, a controller-local duration assumption, or a generic port/memory bus abstraction beyond the selected CPU/DMA boundary. |
-| Exit Criteria | Every selected CPU/DMA execution access is either routed through one common bounded owner or proven to remain deliberately immediate under it; owner selection and commit/cancel/reset/trace semantics have focused proof; no per-device delay counter, duplicated bus truth, partial visibility, or unallocated caller remains. |
-| Original Owner Request | Holistically complete CPU-external chips, buses, devices, and ports to stable reliable selected L3 before choosing the next product step; do not use a Windows run as a substitute for the architecture. |
-| Similar-Issue Sweep | Include CPU fetch/data/I/O helpers, DMA ordinary/M2M access, retirement and timeline ordering, PIC/FDC/ATA service boundaries, trace, cold/session reset, immutable memory/A20, and stopped/paused bus APIs. |
+**Active.** M5 T354 remains open between accepted subtasks.
 
 ## Current Technical Baseline
 
@@ -45,7 +23,7 @@ boundary before controller-specific competition work.
 
 | Task | Compact result |
 | --- | --- |
-| T354 S1 | Accepted physical-L3 transaction ledger: deterministic due-event ordering is retained, but CPU/DMA direct transaction construction has no common availability-to-commit owner; S2 receives that mechanism decision, S3 receives admitted competition, and S4 receives lifecycle/trace closure. [Evidence](../etc/evidence/t354-s1-l3-transaction-timing-ledger.md). |
+| T354 S2 | Accepted one core-local synchronous CPU/DMA transaction owner for selected physical memory and CPU-port routes: begin/commit/cancel/reset trace records, checked DMA ordinary/M2M transitions, no guessed duration or second bus facade, and retained deterministic L3 event ordering. The reset prefetch fixtures now map the required 16-byte decoder window and select named trace events. S3 receives competition; S4 receives lifecycle/consumer closure. 232 current-gate tests passed. [Evidence](../etc/evidence/t354-s2-transaction-owner.md). |
 | T353 | Closed selected PC/AT topology: the default profile's 75 exact directional leaves and five named routes validate before core publication, remain exact through session reset and deterministic-L3 rearm, and have firmware-visible reset proof. Optional PPI/speaker, NMI, and interface breadth remain corpus-gated TODO transfers; physical bus timing transfers to the next L3 package. 231 current-gate tests passed. [History](../history/M5-T353-pcat-port-topology-and-peripherals.md). |
 | T352 | Closed selected digital CGA/EGA: one VADP owner for registers, apertures, raster, planar state, reset, and capture; deterministic VADP-after-KBC timing and copied session/mailbox composition; `vm-0-5-0352` SHA-256 `37A00874C05FB402151AF1A77BD28796D03B2A738D6F3EC08761E4541F2D6BB4`; 229 current-gate tests passed. [History](../history/M5-T352-vadp-digital-video-completeness.md). |
 | T351 | Closed selected IBM-PC/AT 8042 controller, AT keyboard, and compatible three-byte AUX at deterministic L3: one FIFO, controller/keyboard/AUX head promotion, IRQ1/IRQ12 source lifecycle, delayed/reset/finalize, copied ingress, and exact advanced-AUX/NMI/port-61 transfers. 228 current-gate tests passed. [History](../history/M5-T351-kbc-aux-completeness.md). |
