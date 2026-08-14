@@ -2,29 +2,9 @@
 
 ## Current Work
 
-**Active implementation packet:** M5 T366 S5, Model 339 selectable session
-composition.
-
-## M5 T366 S5 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner: repository owner. Approval: persistent M5 L3 direction plus the approved 2026-08-14 Model 339 Type 3 baseline. Scope: make the locked 80286/512 KB/planar-parity/no-fixed-disk selection an explicit session choice, without changing the retained generic 80386/ATA PC/AT session. No exception is approved. |
-| Objective | Add one explicit Model 339 session-profile selector and descriptor; materialize its selected 80286, 512 KB planar memory, Model 339 parity binding and no-fixed-disk topology; ensure ATA/HDC configuration and hard-disk media operations are unavailable for that selection. The exact 8 MHz timing contract remains a later bus/timing S. |
-| Non-goals | Do not alter the generic default PC/AT identity or its ATA/HDC behavior; claim a repository-authored BIOS is IBM Rev.3 ROM; select MFM/ST-506, I/O-channel check, expansion memory, serial/parallel hardware, 80287, exact CGA port/video behavior, FDC service timing, bus waits, arbitration, refresh or any physical/cycle timing. |
-| Reference Baseline | T366 S2 profile lock at `0e04b405`, T366 S3 source lifecycle at `b7bfe7a4`, and T366 S4 shared planar parity at `ff5fbb53`; `vm_session` currently hard-wires one default 80386/ATA descriptor and configures both FDC and HDC unconditionally. |
-| Candidate Proposal | [Bus-Timed PC/AT Operation](../proposals/m5-bus-timed-pcat-operation.md), profile/NMI stage before bus availability. |
-| Files And ABI Surface | Expected: session selection configuration, PC/AT descriptor/validation and device/firmware composition decisions, focused composition tests/CMake registration, current packet, indexed evidence and T366 history. A public selector may expose only a stable profile identity; raw device or RAM pointers remain private. |
-| Applicable Rules | Execution packet/evidence/acceptance and similar-issue sweep; architecture composition owns profile choice and device topology while core owns parity; coding C11/cohesive validation/no parallel profile path; documentation indexed evidence/status-only packet; source policy prohibits IBM ROM/media import. All apply; no waiver. |
-| Verification | Focused proof must create both default and Model 339 sessions, demonstrate the selected CPU/memory/parity contract, show absent ATA port ownership and rejected HDD input/boot operations for Model 339, and prove default ATA behavior remains. Run affected session/profile topology tests, current smoke gate, documentation governance and `git diff --check`. |
-| Expected Markers | New focused proof emits `M5:T366:S5:MODEL339-COMPOSITION:OK`; existing current-gate markers remain successful. |
-| Asset Needs | None; repository-authored code and fixtures only. No vendor ROM, media, image, hash or local path. |
-| Reporting Requirements | Report selector/ownership confirmation, the selected and deliberately unselected surfaces, focused proof and final pushed evidence/transfers. |
-| Stop Conditions | Stop for any requirement to call the generic ATA HDC an IBM MFM subsystem, to install external IBM firmware/media, to make CGA/EGA behavior ambiguous, or to add a duplicate session lifecycle rather than selecting through the existing composition owner. |
-| Exit Criteria | One request selects the bounded Model 339 core/device contract while the default profile remains unchanged; Model 339 has no ATA/HDC lifecycle or hard-disk input path, and every remaining hardware/firmware/timing gap has a named receiver. |
-| Original Owner Request | Use the late IBM PC/AT 5170 Model 339 / Type 3 as the 80286 L3 baseline with 512 KB planar memory, 101-key keyboard, documented TEAC 1.44 MB field upgrade and no fixed disk; never mislabel the separate ATA/HDC implementation as IBM MFM. |
-| Similar-Issue Sweep | Inspect every session profile assignment/validation, profile-derived core field, device setup/reset/finalize path, firmware hook, storage operation, console adapter and test fixture. Repair the shared selection mechanism or transfer unsupported Model 339 device behavior to its exact later receiver. |
+T366 S5 is accepted. The next S must separate the selected IBM CGA display
+surface from the retained generic EGA-derived VADP composition before it can
+claim a runnable Model 339 hardware composition.
 
 ## Current Technical Baseline
 
@@ -45,7 +25,7 @@ composition.
 
 | Task | Compact result |
 | --- | --- |
-| T366 S4 | Accepted at `ff5fbb53`: a Model 339 selection can create 512 KB planar RAM and bind stored parity to the one shared physical read/write route; mismatches retain the S3 `61h`/`70h` NMI lifecycle, while the generic 80386/ATA PC/AT identity stays unchanged. [Memory/parity evidence](../etc/evidence/t366-s4-planar-memory-parity.md). Explicit VM composition, I/O-channel check and timing remain transfers. |
+| T366 S5 | Accepted at `fd920773`: explicit session selection fixes Model 339 to 80286/512 KB planar parity/no ATA-HDC while retaining the generic 80386/ATA profile. [Composition evidence](../etc/evidence/t366-s5-model-339-composition.md). IBM CGA display separation, IBM ROM, MFM/ST-506 and timing remain transfers. |
 | T365 | Closed at `febc9352`: IBM PC/AT parity/I/O-check NMI sources cannot be selected without a profile input, status/latch/clear and lifecycle contract; CPU and CMOS remain delivery/mask only. [Closure audit](../etc/evidence/t365-s2-pcat-nmi-nonadmission-closure-audit.md). Blocks physical/cycle-exact L3 closure; no synthetic source. |
 | T364 | Closed at `7d574ae3`: all selected PC/AT components, ports/routes and lifecycle/timing owners are inventoried; optional and physical gaps retain exact Queue/TODO receivers. [Closure audit](../etc/evidence/t364-s2-pcat-device-completeness-closure-audit.md). No model-L3 claim. |
 | T363 | Closed at `312ef2f9`: all 256 primary and 256 secondary dispatch slots have one source-backed successful-retirement owner or an exact explicit receiver; inventory and 246/246 current-gate passed. [Closure audit](../etc/evidence/t363-s7-complete-instruction-timing-closure-audit.md). No physical/cycle-exact L3 claim. |

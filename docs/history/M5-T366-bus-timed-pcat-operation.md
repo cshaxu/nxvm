@@ -58,4 +58,4 @@ S5 adds one explicit Model 339 session selection, carrying the selected 80286,
 composition lifecycle. Its [composition evidence](../etc/evidence/t366-s5-model-339-composition.md)
 records the suppressed ATA/HDC controller, media, firmware and console paths
 and the retained default profile. It does not select the IBM ROM, exact CGA
-surface, MFM/ST-506 or any timing contract.
+surface, MFM/ST-506 or any timing contract. S5 is accepted at `fd920773`.
