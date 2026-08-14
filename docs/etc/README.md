@@ -133,6 +133,7 @@ principal documents named in [docs/README.md](../README.md).
 | `evidence/t365-s1-pcat-nmi-source-decision.md` | Verification owner | T365 S1 IBM PC/AT NMI candidate, mask/delivery, profile-input and truthful non-admission decision. Retain with T365 history at task closure. |
 | `evidence/t365-s2-pcat-nmi-nonadmission-closure-audit.md` | Verification owner | T365 task-level PC/AT NMI non-admission, singular receiver, and downstream L3 blocker audit. Retain with T365 history. |
 | `evidence/t366-s1-pcat-bus-profile-route-inventory.md` | Verification owner | T366 S1 selected-PC/AT board/profile source and CPU/DMA/device route inventory, with explicit non-admission pending an owner-selected physical target and corpus. Retain with T366 history while the task is open. |
+| `evidence/t366-s2-5170-profile-lock.md` | Verification owner | T366 S2 exact IBM 5170 Model 339/Type 3 field configuration, source boundary, non-asset ROM constraint, project-owned probe-corpus design, NMI handoff, MFM/ST-506 receiver and excluded-device receivers. Retain with T366 history while the task is open. |
 | `operations/` | Execution, source, and release owners | Toolchain, policy, templates, release procedure, and closure material. |
 | `research/` | Source owner | Provenance, external references, and non-product research. |
 | `history/` | Documentation owner | Read-only legacy and M5 migration/roadmap evidence. |

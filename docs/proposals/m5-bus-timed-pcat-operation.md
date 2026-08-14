@@ -12,8 +12,8 @@ source lifecycle, before it allocates bus availability.
 ## Required scope
 
 **Profile-lock stage.** Before any timing allocation, record the exact IBM
-PC/AT 5170 system-board revision and manual edition, 6 MHz 80286, 512 KiB
-motherboard RAM, ROM configuration, 360 KiB FDC/DMA channel-2 path, every
+PC/AT 5170 system-board revision and manual edition, CPU clock, motherboard
+RAM, ROM configuration, selected diskette-drive/FDC DMA channel-2 path, every
 selected ISA adapter, and a project-owned firmware/DOS probe corpus. An
 unselected adapter cannot supply a timing value.
 

@@ -22,3 +22,14 @@ finds no selected physical target or reproducible corpus from which to allocate
 availability state. A later S requires the owner decision recorded there; it
 must retain the T365 NMI receiver and may not use reference-model code as a
 timing authority.
+
+### S2: Exact 5170 profile and probe-corpus lock
+
+S2 selects a field-configured IBM 5170 Model 339 Type 3 at 8 MHz with 512 KB
+system-board RAM, Rev.3 ROM slot, 101-key keyboard, IBM CGA and a documented
+TEAC 1.44 MB drive. The Model 339 MFM fixed disk and serial/parallel hardware
+are deliberately unselected; the drive is a documented field upgrade, not a
+factory Model 339 claim. Its [profile lock](../etc/evidence/t366-s2-5170-profile-lock.md)
+corrects the stale 360 KB drive wording, names a repository-owned future probe
+corpus and MFM/ST-506 TODO receiver, and narrows the next S to the board
+memory-parity NMI lifecycle. It allocates no timing or runtime behavior.

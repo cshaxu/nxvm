@@ -31,6 +31,15 @@ adopts them.
   Range cache miss must not block or mutate guest state from a host callback;
   it requires a separately admitted pending-I/O/controller-ready/IRQ timing
   model. Do not add an unconsumed generic filesystem API.
+- [ ] **IBM 5170 MFM/ST-506 fixed-disk route (`TODO(Medium)`).** The selected
+  Model 339 Type 3 L3 baseline deliberately has no fixed disk. Its historical
+  30 MB storage uses IBM's Fixed Disk/Diskette Adapter and an MFM/ST-506 path,
+  not the current ATA/HDC controller. Admit it only as a separately selected
+  controller/drive profile with the adapter's port/IRQ14/reset/error and
+  command/service contract, MFM data and timing ownership, one project-owned
+  probe corpus, and a decision whether its adapter-parity state produces
+  I/O-channel-check NMI. Do not alias ATA registers, ATA media or ATA timing to
+  IBM MFM, import firmware/media, or use a generic hard-disk backend as proof.
 - [ ] **Complete digital CGA (`TODO(Medium)`).** Keep it separate from EGA/VGA.
   T254 admitted `640x200x2`; T266 closes the bounded 6845 text subset:
   display-start/page, cursor address/shape/hidden state, and deterministic
