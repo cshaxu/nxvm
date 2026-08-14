@@ -91,3 +91,4 @@ S8 is accepted at `5cf16ce4`.
 S9 finds that successful unallocated 80286 cost publishers prevent `elapsed_ticks`
 from denoting a physical 8 MHz clock. Its [non-admission evidence](../etc/evidence/t366-s9-physical-time-nonadmission.md)
 transfers that prerequisite to complete CPU timing closure.
+S9 is accepted at `16609f35`.

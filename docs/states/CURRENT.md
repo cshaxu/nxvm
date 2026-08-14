@@ -2,28 +2,8 @@
 
 ## Current Work
 
-**Active implementation packet:** M5 T366 S9, 5170 physical-time basis.
-
-## M5 T366 S9 Packet
-
-| Field | Required record |
-| --- | --- |
-| Identifier Mode | Continuation |
-| Admission And Approval | Owner: repository owner; persistent M5 L3 direction and accepted S8 transfer authorize selected 8 MHz 5170 time-basis work. No exception. |
-| Objective | Define one source-labelled relation between selected 80286 execution time and the 8 MHz Model 339 physical clock without changing any unproved instruction cost. |
-| Non-goals | No bus wait/prefetch, DMA/FDC/PIT/RTC device delay, cache, firmware, cycle-exact or other profile claim. |
-| Reference Baseline | S2 locks 8 MHz Model 339. S8 proves elapsed ticks are abstract retirement costs; Intel instruction tables remain individual-cost authority. |
-| Candidate Proposal | [Bus-Timed PC/AT Operation](../proposals/m5-bus-timed-pcat-operation.md). |
-| Files And ABI Surface | Clock-plan/execution publication/profile configuration, focused proof, evidence/history/current only. |
-| Applicable Rules | Execution evidence/sweep, one clock owner, source policy, C11 cohesion and documentation indexing apply; no waiver. |
-| Verification | Prove the selected ratio, reset and profile isolation; run focused clock/timing/profile tests, current gate, documentation governance and diff check. |
-| Expected Markers | New S9 physical-time marker and retained current-gate markers. |
-| Asset Needs | Intel/IBM public documentation and permitted reference cross-check only; no ROM/media. |
-| Reporting Requirements | State source basis, exact meaning of a tick, excluded timing and final evidence. |
-| Stop Conditions | Stop and transfer if no source-backed mapping exists without redefining instruction costs. |
-| Exit Criteria | Model 339 has one explicit physical-time conversion usable by later clock domains, or an exact non-admission transfer. |
-| Original Owner Request | Achieve L3 through source-backed selected-machine timing, using reference emulators only when authority lacks determinate values. |
-| Similar-Issue Sweep | Inspect every elapsed-tick publisher/consumer, clock-plan field, 80286 profile materialization and timing test; repair one owner or transfer excluded variant. |
+T366 S9 is accepted at `16609f35`. The next T366 S audits every successful
+80286 unallocated timing publisher before physical-time admission can resume.
 
 ## Current Technical Baseline
 
@@ -44,7 +24,7 @@
 
 | Task | Compact result |
 | --- | --- |
-| T366 S8 | Accepted at `5cf16ce4`: FDC numeric service timing is not admitted because project ticks lack a uPD765 clock conversion. [Non-admission evidence](../etc/evidence/t366-s8-fdc-service-timing-nonadmission.md). Physical time, FDC service, MFM/ST-506 and bus timing remain transfers. |
+| T366 S9 | Accepted at `16609f35`: successful unallocated 80286 timing publishers prevent an 8 MHz physical-time claim. [Non-admission evidence](../etc/evidence/t366-s9-physical-time-nonadmission.md). CPU timing closure, physical time and device timing remain transfers. |
 | T365 | Closed at `febc9352`: IBM PC/AT parity/I/O-check NMI sources cannot be selected without a profile input, status/latch/clear and lifecycle contract; CPU and CMOS remain delivery/mask only. [Closure audit](../etc/evidence/t365-s2-pcat-nmi-nonadmission-closure-audit.md). Blocks physical/cycle-exact L3 closure; no synthetic source. |
 | T364 | Closed at `7d574ae3`: all selected PC/AT components, ports/routes and lifecycle/timing owners are inventoried; optional and physical gaps retain exact Queue/TODO receivers. [Closure audit](../etc/evidence/t364-s2-pcat-device-completeness-closure-audit.md). No model-L3 claim. |
 | T363 | Closed at `312ef2f9`: all 256 primary and 256 secondary dispatch slots have one source-backed successful-retirement owner or an exact explicit receiver; inventory and 246/246 current-gate passed. [Closure audit](../etc/evidence/t363-s7-complete-instruction-timing-closure-audit.md). No physical/cycle-exact L3 claim. |
