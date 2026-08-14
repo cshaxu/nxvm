@@ -13,12 +13,12 @@ claim physical or cycle-exact timing.
 
 ### S1: Full form inventory, ownership, and source classification
 
-S1 is active. It reconciles the 256 primary and 256 secondary dispatch slots,
+S1 reconciled the 256 primary and 256 secondary dispatch slots,
 metadata/profile rejection, current source-cost owners, existing T357--T362
 evidence, and every remaining fallback into a complete source and mechanism
 ledger before any runtime allocation.
 
-S1 is accepted at the pending T363 S1 P1 commit. Its
+S1 is accepted at `5e44789a`. Its
 [inventory](../etc/evidence/t363-s1-complete-instruction-timing-inventory.md)
 retains the complete dispatch partition, source ladder, explicit descriptor
 transfers, and the bounded S2--S7 mechanism order. S2 may now reconcile the
@@ -30,3 +30,13 @@ S2 is accepted at `50861f53`. Its
 [reconciliation](../etc/evidence/t363-s2-arithmetic-data-reconciliation.md)
 confirms complete shared source ownership without a runtime change. S3 may
 reconcile only control, stack and real-control timing.
+
+### S3: Control, stack, and real-control source matrix
+
+S3 is accepted at `6523d514`. Its
+[reconciliation](../etc/evidence/t363-s3-control-stack-reconciliation.md)
+confirms complete successful CALL/JMP/RET, stack, LOOP/Jcc, HLT,
+INT/INTO/IRET and real-control ownership without a runtime change. Protected,
+VM86, task, cross-privilege, generic delivery, and physical forms remain
+explicit receivers. S4 may reconcile only string/repeat and ordinary I/O
+timing.
