@@ -2,8 +2,29 @@
 
 ## Current Work
 
-**Active.** M5 T363 remains open between accepted S units; no implementation
-packet is active while its task-level closure audit is prepared.
+**Active.** M5 T363 S7 performs the task-level complete instruction-timing
+corpus closure audit; it allocates no new runtime timing row.
+
+## M5 T363 S7 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | The owner directed current-Queue execution through complete instruction timing on 2026-08-14. T363 S6 was accepted at `2117eb4b`; the approved T363 mechanism order admits this audit-only closure unit. Git pushes are permitted. |
+| Objective | Audit all T363 S1--S6 form allocations, one-publisher publication boundary, current inventory/gates, evidence/history/status, artifacts, and every residual receiver; close T363 only if its complete corpus standard is proven. |
+| Non-goals | No new timing allocation or runtime behavior; no reclassification of an unresolved source, 80286 contextual receiver, transition/delivery, bus/service/prefetch/cache/wait, x87, ABI, import, measurement, or physical/cycle-exact claim. |
+| Reference Baseline | `2117eb4b` / `vm-0-5-0362`; [T363 S1 inventory](../etc/evidence/t363-s1-complete-instruction-timing-inventory.md), T363 S2--S6 reconciliations, [T359 S7 closure audit](../etc/evidence/t359-s7-complete-instruction-timing-closure-audit.md), and T360 transfers. |
+| Candidate Proposal | [Complete instruction-timing corpus](../proposals/m5-complete-instruction-timing-corpus.md). |
+| Files And ABI Surface | Evidence/history/status, current-gate and inventory verification only. No public ABI or runnable path change. |
+| Applicable Rules | Task Reading Set; Execution task-closure/evidence/full-gate rules; Architecture one successful-retirement owner; Documentation closure/topology rules; source/research policy. |
+| Verification | Re-run complete inventory/static owner sweep and full current gate; review all S commits and tracked changes, evidence/index/history/status, Queue/TODO receiver links and no-second-publisher result; governance and diff check. |
+| Expected Markers | T363 S7 complete-corpus closure marker, T359 inventory and current-gate markers. |
+| Asset Needs | No new assets or research; retain existing source provenance and do not import downloads, code, firmware or guest media. |
+| Reporting Requirements | State every resolved owner and every exact remaining receiver, current-gate count, artifact decision, closure decision, and no-L3-overclaim boundary. |
+| Stop Conditions | Stop without closure if any form lacks source/receiver disposition, a second publisher exists, an unreviewed runnable change appears, or a Queue/TODO transfer is absent or misleading. |
+| Exit Criteria | Every implemented form/profile/context has one evidenced owner or an exact truthful receiver; full/static/governance gates pass; task history/status close truthfully with no physical/cycle-exact claim. |
+| Original Owner Request | Execute the current Queue through complete instruction timing, using Intel first and 86Box/MAME/PCjs only as applicable model sources where primary timing is non-deterministic. |
+| Similar-Issue Sweep | Search all primary/secondary dispatch, profile metadata, source classifiers/fallbacks/publishers, handlers, decoder/delivery helpers, CMake/tests, T363 evidence/history/status, Queue and TODO receivers. |
 
 ## Current Technical Baseline
 
