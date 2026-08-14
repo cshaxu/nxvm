@@ -26,8 +26,8 @@ allocate fault, delivery, or bus timing.
 
 | Consumer in `machine.c` | Profile/form class | Current source record | T360 disposition |
 | --- | --- | --- | --- |
-| `core_machine_8086_source_instruction_cost` | 8086 selected primary forms and additions | T359 S2/S3/S4 ledgers | S2 rechecks range and table-form boundaries; fixed selected rows remain unchanged until evidence says otherwise. |
-| `core_machine_80186_source_instruction_cost` | 80186 selected primary forms | T359 S2/S3/S4 ledgers | S2 resolves parenthesized/range interpretation per form. |
+| `core_machine_8086_source_instruction_cost` | 8086 selected primary forms and additions | T359 S2/S3/S4 ledgers | S3 rechecks range and table-form boundaries; fixed selected rows remain unchanged until evidence says otherwise. |
+| `core_machine_80186_source_instruction_cost` | 80186 selected primary forms | T359 S2/S3/S4 ledgers | S3 resolves parenthesized/range interpretation per form. |
 | `core_machine_80286_source_instruction_cost` | 80286 selected primary forms, following-byte and memory additions | T357 S6 and T359 ledgers | S3 normalizes Appendix-B row, following-byte, protected state and NOP conflict. |
 | `core_machine_80386_source_instruction_cost` | retained fixed primary rows | T359 S2/S3 and 80386 PRM | S4 performs form/prefix/mode citation sweep; no later-profile row may backfill earlier profiles. |
 | `core_machine_primary_source_instruction_cost` | ALU/data/Group-3/SETcc | T359 S2 ledger | S2/S4 classify formula/range and lexical variants. |

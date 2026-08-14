@@ -165,6 +165,17 @@ transaction checkpoints. This is the project's L3 event-and-bus contract, not
 cycle-exact hardware timing. These entries remain deferred compatibility
 admissions, not the default definition of NXVM completion.
 
+- [ ] **8086/80186 dynamic arithmetic source formula (`TODO(Medium)`).** T360
+  S3 confirms that the selected 8086 `MUL`/`IMUL` and 80186
+  `MUL`/`IMUL`/`DIV`/`IDIV` plus `69`/`6B` immediate-`IMUL` rows are primary
+  table ranges without an operand-to-clock rule. They remain explicit
+  `CORE_MACHINE_SOURCE_UNALLOCATED_TICKS` transfers, not one-clock hardware
+  claims. Re-admit only with an Intel-primary exact formula or a separately
+  owner-approved hardware-observation contract, profile-local capture and
+  publication/rollback design, all selected Group-3 and immediate-IMUL form
+  coverage, and a consumer sweep. Do not choose a minimum, maximum, midpoint,
+  later-processor formula, host benchmark, or secondary emulator value.
+
 - [ ] **80286 NOP table/prose source conflict (`TODO(Medium)`).** T360 S2
   retains the formal Appendix-B opcode-clock row, `NOP = 3`, because the owner
   directs that a supported Appendix-B row wins over conflicting prose. The

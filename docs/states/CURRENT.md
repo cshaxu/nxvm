@@ -2,8 +2,29 @@
 
 ## Current Work
 
-**Active.** M5 T360 remains open between accepted S units; no implementation may
-start until the next packet is admitted.
+**Active.** M5 T360 S3 8086/80186 range-form disposition is admitted in
+single-session mode.
+
+## M5 T360 S3 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner-approved continuation of T360 after accepted S2 `ed163252`, under the approved four-profile source-reconciliation proposal and the owner's direction to complete the queue in single-session mode. |
+| Objective | Reconcile every selected 8086/80186 instruction form whose primary timing source supplies only a range: determine whether the cited manual provides a bounded operand-to-clock formula; otherwise retain the current explicit unallocated successful-retirement transfer and create one exact future source-review TODO. |
+| Non-goals | No midpoint/minimum/maximum allocation, runtime timing change, source import, host benchmark, emulator authority, 80286/80386 row normalization, new instruction semantics, bus/device/delivery/cycle-exact allocation, or generic timing refactor. |
+| Reference Baseline | `ed163252`, T360 S1 inventory, T359 S2 dynamic-form ledger, T357 S4/S5 source ledgers, and the 8086/80186 primary manual editions named there. |
+| Candidate Proposal | [Four-profile Intel timing source reconciliation](../proposals/m5-four-profile-timing-source-reconciliation.md), bounded S3 range-form unit. |
+| Files And ABI Surface | Documentation/evidence/TODO/history/CURRENT only unless primary material supplies a complete operand-to-clock rule and focused implementation proof is then admitted through a packet revision. No `src/`, CMake, artifact, ABI, or test target change in the present evidence-only disposition. |
+| Applicable Rules | Task Reading Set; source policy; `EXECUTION.md` source/evidence/transfer and similar-issue rules; `DOCUMENT.md` TODO/current/history topology; architecture single-owner rule. |
+| Verification | Sweep `F6`/`F7` `/4`--`/7` and `69`/`6B` through source classifier, ledgers, timing smokes, Queue and TODO; cross-check 8086 Tables 2-20/2-21 and 80186 Table 1-16 wording; prove every selected range form still reaches only `CORE_MACHINE_SOURCE_UNALLOCATED_TICKS`, with no exact formula inferred; run focused 8086/80186 timing-ledger smokes, T360 verifier, documentation governance, and diff check. |
+| Expected Markers | Indexed T360 S3 range-form record; one `TODO(Medium)` source-formula admission path; no source-timing or artifact delta; focused retained ledger markers pass. |
+| Asset Needs | Existing primary manual scans and retained evidence only; no external source import, guest media, firmware, or executable. |
+| Reporting Requirements | State each 8086/80186 range family, cited wording/disposition, classifier route, transfer result, exact TODO admission condition, and proof that no approximation or runtime value was introduced. |
+| Stop Conditions | Stop and request a packet revision if a primary manual supplies a complete operand-to-clock rule, if a range form already has a hidden numeric allocation, if a selected form cannot be traced to the unallocated transfer, or if any result needs source/runtime/CMake change. |
+| Exit Criteria | Every selected 8086/80186 range form has a source-backed formula or a documented no-formula transfer; no midpoint or hidden allocation remains; the transfer has one precise TODO receiver; focused and governance proof pass. |
+| Original Owner Request | Reconcile every selected four-profile timing row against primary Intel material; where it remains ambiguous, retain the formally selected value or exact transfer rather than averaging or inferring a profile-wide answer. |
+| Similar-Issue Sweep | Search all tracked timing source classifiers, instruction ledgers, source manuals/evidence, timing smokes, Queue and TODO for range notation, `MUL`, `IMUL`, `DIV`, `IDIV`, `69`, `6B`, and unallocated source-timing paths; classify every hit as selected scope, non-range, or an explicit later receiver. |
 
 ## Current Technical Baseline
 
