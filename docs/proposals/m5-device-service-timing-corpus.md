@@ -13,9 +13,10 @@ owner for command acceptance, busy/ready transitions, DRQ/IRQ assertions, data
 phases, acknowledgement, reset/cancellation, and deterministic event ordering.
 Start with PIT/PIC/RTC, DMA, KBC/PPI/NMI, the selected display adapter, and
 FDC; split a device when its manual or corpus establishes an independent state
-machine. ATA/HDC, VADP breadth, AUX and unselected ISA adapters stay explicit
-compatibility-profile transfers. Preserve the existing transaction and
-copied-host-boundary contracts.
+machine. The supported ATA/HDC path, exposed VADP display surface, and bounded
+AUX path transfer to the later current-product device L3 candidate; unselected
+ISA adapters remain outside this 5170 baseline. Preserve the existing
+transaction and copied-host-boundary contracts.
 
 ## Non-goals and stop conditions
 

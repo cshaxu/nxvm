@@ -48,10 +48,16 @@ systems are admitted. That program has
 complementary instruction-form and architecture-state closure views; it
 includes real/protected/VM86 transitions, privilege/exception delivery, paging,
 and remaining system state. A completed opcode slice never closes a CPU family,
-device, or stage by itself, and M5 makes no 80387 claim.
+device, or stage by itself, and M5 makes no 80387 claim. Before its final
+audit, M5 also closes every device capability currently supported by the
+product--including its current storage, display, input, and any exposed optional
+I/O surface--to a declared profile-local L3 contract or removes it from the
+supported product surface; no supported capability may remain a
+compatibility-only exception.
 
-After the 5170, DeskPro 386, and 5150/XT 8088 baseline-machine L3 closure
-audits accept those prerequisites, M5 ends with an approved BYOB Windows 3.1
+After the 5170, DeskPro 386, 5150/XT 8088 baseline-machine, and current-product
+device-capability L3 closure audits accept those prerequisites, M5 ends with
+an approved BYOB Windows 3.1
 corpus on the frozen DeskPro 386:
 Standard Mode and 386 Enhanced Mode must each install, start normally, reach a
 named ready checkpoint, and shut down normally. These are final compatibility

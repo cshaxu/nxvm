@@ -3,8 +3,8 @@
 ## Purpose
 
 Make the final M5 decision only after the 5170, DeskPro 386, 8088 CPU-profile,
-and 5150/XT 8088 baseline-machine L3 evidence and both Windows 3.1
-lifecycle corpora are complete.
+5150/XT 8088 baseline-machine, current-product device-capability L3 evidence,
+and both Windows 3.1 lifecycle corpora are complete.
 
 ## Required scope
 
@@ -13,7 +13,9 @@ decision, artifact, and BYOB result. Prove or reject the two M5 outcomes
 separately: the IBM PC/AT 5170, exact Compaq DeskPro 386, closed 8088 CPU
 profile, and IBM 5150/XT 8088 profiles each have source-backed or explicitly
 model-derived L3 timing for their
-declared device corpora, with every reference-exhausted boundary visible; and
+declared device corpora, and every currently supported product device
+capability has a profile-local source-backed or explicitly model-derived L3
+contract, with every reference-exhausted boundary visible; and
 Windows 3.1 Standard plus 386 Enhanced Mode install, start, and shut down
 normally through the approved harness on the DeskPro 386. Transfer all
 unsupported profiles/devices/compatibility breadth explicitly.

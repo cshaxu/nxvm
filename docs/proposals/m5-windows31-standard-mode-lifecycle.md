@@ -5,7 +5,7 @@
 Use the approved BYOB harness to make the final M5 Standard Mode claim:
 Windows 3.1 can install, start, reach a named ready checkpoint, and shut down
 normally on the frozen 80386 DeskPro 386 profile after the 5170, DeskPro 386,
-and 5150/XT 8088 baseline L3 closures.
+5150/XT 8088 baseline, and current-product device-capability L3 closures.
 
 ## Required scope
 

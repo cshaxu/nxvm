@@ -10,7 +10,8 @@ compatibility claims or implementation instructions.
    default PC/AT, Compaq DeskPro 386 informed by PCjs behavior research, and
    IBM PC 110 with its separately evidenced hardware requirements.
 2. **M5 L3 and Windows completion.** Finish M5 with source-backed L3 timing
-   for the selected PC/AT device corpus, then make that profile capable of
+   for the three selected baseline machines and every device capability the
+   current product supports, then make the frozen DeskPro profile capable of
    evidence-backed Windows 3.1 Standard Mode and 386 Enhanced Mode install,
    normal start, named ready checkpoint, and normal shutdown. Each claim is
    gated by an owned corpus rather than an aspirational CPU label or boot

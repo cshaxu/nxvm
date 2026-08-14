@@ -24,8 +24,9 @@ not allocate a numeric task.
 M5 first closes architecture coherence and the IBM PC/AT 5170 80286 baseline
 machine to an evidence-backed, source-labelled model-L3 representation. It
 then closes a Compaq DeskPro 386 80386 baseline, admits a distinct 8088 CPU
-profile, and closes an IBM 5150/XT 8088 (8086-class ISA) baseline before
-Windows 3.1 is admitted. Exact Intel values take precedence;
+profile, closes an IBM 5150/XT 8088 (8086-class ISA) baseline, and closes every
+currently supported product device capability to the same declared L3 standard
+before Windows 3.1 is admitted. Exact Intel values take precedence;
 Intel ranges accept only same-profile external models that stay within range;
 no-Intel rows require named same-profile models; otherwise a visible
 reference-exhausted transfer remains. The 8086 and 80186 retain CPU timing
@@ -36,10 +37,6 @@ gap, never hide one.
 Each candidate has a bounded primary-manual/probe contract; completing one
 does not silently upgrade a different device, profile, or Windows mode.
 
-1. [Intel-constrained legacy timing-model normalization](../proposals/m5-intel-constrained-legacy-timing-normalization.md).
-1. [Complete instruction-timing corpus](../proposals/m5-complete-instruction-timing-corpus.md).
-1. [PC/AT device, chip, port, and bus completeness audit](../proposals/m5-pcat-device-completeness-audit.md).
-1. [PC/AT NMI source ownership](../proposals/m5-pcat-nmi-source-ownership.md).
 1. [Bus-timed PC/AT operation](../proposals/m5-bus-timed-pcat-operation.md).
 1. [PC/AT device service-timing corpus](../proposals/m5-device-service-timing-corpus.md).
 1. [Selected-profile model-L3 phase refinement](../proposals/m5-cycle-exact-selected-profile.md).
@@ -47,12 +44,19 @@ does not silently upgrade a different device, profile, or Windows mode.
 1. [Compaq DeskPro 386 80386 baseline-machine L3 closure](../proposals/m5-80386-deskpro-386-l3-baseline.md).
 1. [8088 CPU-profile admission and timing closure](../proposals/m5-8088-cpu-profile.md).
 1. [IBM 5150/XT 8088 baseline-machine L3 closure](../proposals/m5-8088-5150-xt-l3-baseline.md).
+1. [Current-product device-capability L3 closure](../proposals/m5-current-product-device-l3-closure.md).
 1. [Windows 3.1 BYOB lifecycle harness](../proposals/m5-windows31-byob-lifecycle-harness.md).
 1. [Windows 3.1 Standard Mode lifecycle](../proposals/m5-windows31-standard-mode-lifecycle.md).
 1. [Windows 3.1 386 Enhanced Mode lifecycle](../proposals/m5-windows31-enhanced-mode-lifecycle.md).
 1. [M5 final L3 and Windows closure audit](../proposals/m5-final-l3-windows-closure-audit.md).
 
 Closed proposal reference:
+The recently closed timing normalization, instruction corpus, PC/AT
+completeness, and NMI non-admission work is retained in task history, not as
+candidates. The active bus candidate consumes the NMI finding: profile lock
+must precede source lifecycle, which must precede any bus-availability
+allocation.
+
 [Cross-mode mechanism coherence](../proposals/m5-cross-mode-mechanism-coherence.md)
 is closed and retained as its five shared CPU mechanism ledgers and task-level
 transfer record, not as a candidate.

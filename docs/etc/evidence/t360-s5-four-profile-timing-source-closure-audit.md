@@ -47,7 +47,7 @@ interrupted instructions do not publish a successful-retirement source row.
 | --- | --- |
 | 8086/80186 dynamic arithmetic ranges | `TODO(Medium)`: primary formula or separately approved observation contract, profile-local capture/rollback, complete form and consumer sweep. |
 | 80286 Appendix-B/prose `NOP` conflict | `TODO(Medium)`: edition/page/semantic-context review plus every classifier, smoke, scheduler and device consumer. |
-| 80286 system/descriptor forms and 80386 descriptor-granular `LSL` | Queue candidate [Complete instruction-timing corpus](../../proposals/m5-complete-instruction-timing-corpus.md): profile-local form/context matrix and capture feasibility before allocation. |
+| 80286 system/descriptor forms and 80386 descriptor-granular `LSL` | Closed [instruction-timing corpus proposal](../../history/M5-T363-complete-instruction-timing-corpus-proposal.md): its profile-local form/context matrix and capture feasibility record remains available for historical audit. |
 | Memory/I/O waits, HOLD/DMA ownership, prefetch/cache/alignment and pin phases | Queue candidate [Bus-timed PC/AT operation](../../proposals/m5-bus-timed-pcat-operation.md), then [Cycle-exact selected profile](../../proposals/m5-cycle-exact-selected-profile.md). |
 | Device command and service latency | Queue candidate [PC/AT device service-timing corpus](../../proposals/m5-device-service-timing-corpus.md). |
 | Exceptions, IRQ/NMI, task switch, outer-privilege/VM86 frames and rejected forms | Queue candidate [Cycle-exact selected profile](../../proposals/m5-cycle-exact-selected-profile.md); no synthetic successful-retirement clock. |

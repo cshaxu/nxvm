@@ -70,7 +70,7 @@ source-labelled 8086/80186 dynamic-arithmetic policy, selected model values,
 explicit reference-exhausted rows, and the synchronous-fault nonpublication
 boundary; S4 resolves the 80286 `NOP` source conflict and removes its TODO.
 The remaining range-invalid immediate-IMUL rows transfer to the ordered
-[Intel-constrained normalization proposal](../proposals/m5-intel-constrained-legacy-timing-normalization.md), which owns any future clamp policy,
+[Intel-constrained normalization proposal](M5-T362-intel-constrained-legacy-timing-normalization-proposal.md), which owns its completed clamp policy,
 complete fallback sweep, and regression corpus. No physical or cycle-exact
 claim, third-party source import, firmware/media asset, or unresolved T361
 consumer remains.

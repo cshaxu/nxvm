@@ -20,6 +20,13 @@ source-backed 8088 differences required by the selected 5150/XT corpus. The
 later 5150/XT task owns board-specific waits, adapters, DMA/PIC/device timing,
 and physical closure.
 
+The ledger must also consume the retained 8086 dynamic-arithmetic timing
+transfers that affect the 8088 semantic profile. Each form must receive an
+Intel-exact, source-labelled model, or explicit reference-exhausted disposition
+before the 5150/XT closure; it may not inherit the closed T362 proposal as a
+live receiver. The separate 80186-only rows remain CPU debt because this M5
+program selects no 80186 machine.
+
 ## Non-goals and stop conditions
 
 No replacement or deletion of 8086, no invented instruction semantic

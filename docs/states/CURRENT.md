@@ -2,9 +2,10 @@
 
 ## Current Work
 
-**No active implementation packet.** T366 S1 is accepted; its next S may
-adopt the owner-approved 5170 baseline once its exact board revision and probe
-corpus are prepared.
+**No active implementation packet.** T366 S1 is accepted; its next S first
+locks the owner-approved 5170 baseline's exact board revision and probe corpus,
+then must establish the selected board NMI source lifecycle before allocating
+bus availability.
 
 ## Current Technical Baseline
 
@@ -36,6 +37,13 @@ corpus are prepared.
 | T358 | Closed cross-mode mechanism coherence: reconciled I/O permission, exception/IRQ entry, selector/task/return transition, paging/linear access, and prefix/LOCK/width/string classifiers; repaired 80286 delivery, LOCK group legality, and repeated-width preview divergence; passed 240 current-gate tests. [Closure audit](../etc/evidence/t358-cross-mode-mechanism-closure-audit.md). |
 
 ## Recent Governance
+
+- **M5 Td S92 P1:** reconciled M5's executable Queue with closed T362--T365
+  history; makes T366's profile-lock, selected-NMI-source, and bus-allocation
+  order explicit; and adds a pre-Windows closure for every current-product
+  device capability. TODO retains only genuinely unplanned, unsupported, or
+  80186-only debt. Documentation governance and diff check passed; no runtime,
+  artifact, or task-activation change.
 
 - **M5 Td S91 P1:** made the architecture design explicitly retain one shared
   core decode/execution and CPU/DMA transaction lifecycle across machine

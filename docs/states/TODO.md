@@ -174,28 +174,17 @@ admissions, not the default definition of NXVM completion.
   owner-approved hardware-observation contract, profile-local capture and
   publication/rollback design, all selected Group-3 and immediate-IMUL form
   coverage, and a consumer sweep. Do not choose a minimum, maximum, midpoint,
-  later-processor formula, host benchmark, or secondary emulator value.
-  [Queue receiver](../proposals/m5-intel-constrained-legacy-timing-normalization.md).
+  later-processor formula, host benchmark, or secondary emulator value. The
+  8086 rows are a required input to the queued 8088 CPU-profile closure; the
+  80186-only rows remain unplanned because M5 selects no 80186 machine.
 
-- [ ] **PC/AT NMI source ownership (`TODO(Medium)`).** T350 S4 reconfirms that
-  RTC periodic/update conditions publish IRQ8, while the CMOS index-port bit
-  only controls the existing architected NMI mask; no parity or I/O-channel
-  check producer, latch, clear operation, profile wiring, or deterministic
-  source owner is presently modeled. Admit one selected IBM PC/AT source only
-  with its assertion/clear semantics, mask/reset/finalize ordering, profile
-  wiring, deterministic timeline visibility, and real/protected/VM86 delivery
-  evidence. Do not manufacture an RTC NMI, seed a synthetic source, infer it
-  from port 61h, bypass the core mask, or refactor generic CPU delivery without
-  a reproduced shared defect. See [T350 S4 evidence](../etc/evidence/t350-s4-pcat-nmi-decision.md).
-  [Queue receiver](../proposals/m5-pcat-nmi-source-ownership.md).
-
-- [ ] **Unselected PC/AT physical timing (`TODO(Medium)`).** The M5 Queue now
-  owns selected bus timing, device-service timing, and cycle-exact work through
-  its linked proposals. Retain only timing outside those selected corpus and
-  profile contracts here: analog/pin-level behavior, unsupported peripherals,
-  and a historical clone without an approved primary contract. Admit one
-  boundary only after the M5 L3 audit records why it is not part of the chosen
-  machine profile; do not create a second bus or device-timing owner.
+- [ ] **Unsupported physical timing (`TODO(Medium)`).** The M5 Queue owns the
+  three baseline machines and every device capability currently supported by
+  the product. Retain only behavior outside that surface here: analog/pin-level
+  behavior, unsupported peripherals, optional protocols not exposed by the
+  product, and a historical clone without an approved primary contract. Admit
+  one boundary only after the M5 L3 audit records why it is not supported; do
+  not create a second bus or device-timing owner.
 
 ## Architecture And Portability Debt
 
