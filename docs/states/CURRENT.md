@@ -2,8 +2,29 @@
 
 ## Current Work
 
-**Open.** M5 T358 S2 is accepted; the next cross-mode mechanism requires a
-separately admitted continuation packet.
+**Active.** M5 T358 S3 audits selector, descriptor, table, task, and return
+transitions across real, protected, and VM86 execution.
+
+## M5 T358 S3 Packet
+
+| Field | Required record |
+| --- | --- |
+| Identifier Mode | Continuation |
+| Admission And Approval | Owner approved execution of the ordered Queue through L3 closure on 2026-08-14. Single-agent execution follows accepted T358 S1--S2. |
+| Objective | Audit selector, descriptor, table, task, and return transitions as one validation-to-publication mechanism: map every current selector/cache materialization route, verify its descriptor and memory preflight versus commit/fault boundary, and repair each reproduced accidental construction divergence without flattening Intel-required layouts. |
+| Non-goals | New task-switch semantics, VME/PVI, task-gate policy, inverse IRET feature breadth, paging/TLB redesign, a public CPU/TSS ABI, generic descriptor framework, device IRQ policy, numerical x87, or physical timing. |
+| Reference Baseline | `c0c94688` / current task artifact `vm-0-5-0358`. |
+| Candidate Proposal | [Cross-mode mechanism coherence](../proposals/m5-cross-mode-mechanism-coherence.md) and retained [T330 width-path inventory](../etc/evidence/t330-width-path-inventory.md). |
+| Files And ABI Surface | Existing private selector/cache, descriptor/table, task-transition, and return owners plus all direct callers; owner-bound tests and evidence ledger; task history/status and current artifact only. No public CPU, descriptor, TSS, PIC, or provider ABI. |
+| Applicable Rules | Task Reading Set, execution, architecture, coding, documentation, and source/research policy; one owner for mutable cache/descriptor publication, preflight before commit, and explicit Intel-required width/layout distinctions. |
+| Verification | Enumerate `_s_load_sreg`, `_ksa_prepare_code_sreg`, `_ksa_prepare_stack_sreg`, `_s_load_ldtr`, `_s_load_tr`, task-transition, far/call-gate, interrupt, and IRET callers. For each classify validation/materialization/preflight/commit/fault behavior; add focused evidence for each reproduced defect and its variants; run full current gate, governance, artifact rebuild/hash, and diff checks. |
+| Expected Markers | Retained `M5:T301:SEGMENT-SELECTOR:OK`, `M5:T330:S1:TASK-TRANSITION:OK`, `M5:T330:S2:CALL-GATE-SAME-CPL:OK`, and `M5:T316:S51:IRET:OK`; full current-gate and rebuilt `vm-0-5-0358` artifact. |
+| Asset Needs | Intel 80286/80386 descriptor, task, gate, and return authority plus project-owned synthetic GDT/LDT/IDT/TSS fixtures only; no guest media, firmware, or external-source import. |
+| Reporting Requirements | One complete P1 only: caller and write ledger, reproduced outcomes, all repairs and similar-issue sweep, focused marker, full gate, artifact hash, commit, and push. Do not report one selector opcode or one layout as delivery. |
+| Stop Conditions | Stop and split if the required correction changes task-switch/task-gate or inverse-IRET semantics, needs a generic descriptor/TSS API, reaches paging/TLB or device policy, or is an Intel-required layout difference rather than construction drift; record exact callers and transfer. |
+| Exit Criteria | Every current selector/cache transition route has one classified validation-to-publication contract; every reproduced accidental divergence is repaired and swept; genuine 16-/32-bit/TSS/VM86 layout differences are explicitly retained; all gates pass and excluded state-machine work remains transferred. |
+| Original Owner Request | Continue the ordered Queue holistically until L3 closure audit, avoiding symptom-patch tactics. |
+| Similar-Issue Sweep | Search every production and current-gate caller of the named selector/cache helpers and every descriptor/TSS/stack write they publish; classify each hit as repaired, covered common owner, Intel-required layout, or explicit transfer before closure. |
 
 ## Current Technical Baseline
 

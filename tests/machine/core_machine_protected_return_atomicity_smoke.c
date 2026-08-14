@@ -489,7 +489,7 @@ C_INT main(C_VOID)
 {
     static const atomic_return_case cases[] = {
         { "nonpresent-cs", 0x002bu, 0x0023u, 11u, 0x0028u, VCPUINS_EXCEPT_NP, 1 },
-        { "nonpresent-ss", 0x001bu, 0x0033u, 12u, 0x0030u, VCPUINS_EXCEPT_SS, 0 },
+        { "nonpresent-ss", 0x001bu, 0x0033u, 12u, 0x0030u, VCPUINS_EXCEPT_SS, 1 },
         { "inaccessible-entry", 0x003bu, 0x0023u, 13u, 0x0038u, VCPUINS_EXCEPT_GP, 1 },
         { "conforming-cs", 0x0043u, 0x0023u, 13u, 0x0040u, VCPUINS_EXCEPT_GP, 1 }
     };
